@@ -1,0 +1,39 @@
+{
+  "name": "Alphabet",
+  "ticker": "GOOGL",
+  "result": "매수",
+  "date": "2026-03-15 19:35:44",
+  "elapsed": 0,
+  "consensus_score": 4.06,
+  "analyst_count": 67,
+  "recommendation_detail": {
+    "strongBuy": 13,
+    "buy": 45,
+    "hold": 9,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "price_targets": {
+    "current": 302.28,
+    "high": 443.0,
+    "low": 185.0,
+    "mean": 376.94928,
+    "median": 387.5
+  },
+  "current_price": 302.28,
+  "upside_potential": 24.7,
+  "key_stats": {
+    "name": "Alphabet Inc.",
+    "sector": "Communication Services",
+    "industry": "Internet Content & Information",
+    "market_cap": 3656681259008,
+    "pe_ratio": 27.937155,
+    "forward_pe": 22.539068,
+    "dividend_yield": 0.28,
+    "beta": 1.112,
+    "fifty_two_week_high": 349.0,
+    "fifty_two_week_low": 140.53,
+    "currency": "USD"
+  },
+  "source": "yfinance"
+}

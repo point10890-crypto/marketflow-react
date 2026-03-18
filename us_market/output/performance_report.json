@@ -1,0 +1,232 @@
+{
+  "generated_at": "2026-02-19T10:15:18.926428",
+  "summary": {
+    "total_picks": 10,
+    "unique_tickers": 10,
+    "snapshots": 1,
+    "tracking_period": "2026-02-19 ~ 2026-02-19",
+    "win_rate": 0.0,
+    "avg_return": 0.0,
+    "avg_alpha": 0.0,
+    "max_gain": {
+      "pct": 0.0,
+      "ticker": "BLK"
+    },
+    "max_loss": {
+      "pct": 0.0,
+      "ticker": "BLK"
+    },
+    "total_winners": 0,
+    "total_losers": 10
+  },
+  "snapshots": [
+    {
+      "date": "2026-02-19",
+      "picks_count": 10,
+      "avg_return": 0.0,
+      "spy_return": 0,
+      "alpha": 0.0,
+      "win_rate": 60.0,
+      "win_count": 6,
+      "loss_count": 4
+    }
+  ],
+  "picks": [
+    {
+      "ticker": "BLK",
+      "name": "BlackRock, Inc.",
+      "sector": "Financial Services",
+      "snapshot_date": "2026-02-19",
+      "entry_price": 1092.26,
+      "current_price": 1092.260009765625,
+      "return_pct": 0.0,
+      "spy_return_pct": 0,
+      "alpha": 0.0,
+      "composite_score": 86.6,
+      "grade": "A",
+      "signal": "Strong Buy",
+      "rsi": 42.4
+    },
+    {
+      "ticker": "NEE",
+      "name": "NextEra Energy, Inc.",
+      "sector": "Utilities",
+      "snapshot_date": "2026-02-19",
+      "entry_price": 91.22,
+      "current_price": 91.22000122070312,
+      "return_pct": 0.0,
+      "spy_return_pct": 0,
+      "alpha": 0.0,
+      "composite_score": 85.1,
+      "grade": "A",
+      "signal": "Strong Buy",
+      "rsi": 63.0
+    },
+    {
+      "ticker": "NVDA",
+      "name": "NVIDIA Corporation",
+      "sector": "Technology",
+      "snapshot_date": "2026-02-19",
+      "entry_price": 187.98,
+      "current_price": 187.97999572753906,
+      "return_pct": -0.0,
+      "spy_return_pct": 0,
+      "alpha": -0.0,
+      "composite_score": 83.6,
+      "grade": "A",
+      "signal": "Strong Buy",
+      "rsi": 46.8
+    },
+    {
+      "ticker": "VRTX",
+      "name": "Vertex Pharmaceuticals Incorpor",
+      "sector": "Healthcare",
+      "snapshot_date": "2026-02-19",
+      "entry_price": 470.31,
+      "current_price": 470.30999755859375,
+      "return_pct": -0.0,
+      "spy_return_pct": 0,
+      "alpha": -0.0,
+      "composite_score": 82.9,
+      "grade": "A",
+      "signal": "Strong Buy",
+      "rsi": 46.8
+    },
+    {
+      "ticker": "TXN",
+      "name": "Texas Instruments Incorporated",
+      "sector": "Technology",
+      "snapshot_date": "2026-02-19",
+      "entry_price": 223.32,
+      "current_price": 223.32000732421875,
+      "return_pct": 0.0,
+      "spy_return_pct": 0,
+      "alpha": 0.0,
+      "composite_score": 81.8,
+      "grade": "A",
+      "signal": "Strong Buy",
+      "rsi": 60.6
+    },
+    {
+      "ticker": "MDLZ",
+      "name": "Mondelez International, Inc.",
+      "sector": "Consumer Defensive",
+      "snapshot_date": "2026-02-19",
+      "entry_price": 60.08,
+      "current_price": 60.08000183105469,
+      "return_pct": 0.0,
+      "spy_return_pct": 0,
+      "alpha": 0.0,
+      "composite_score": 80.6,
+      "grade": "A",
+      "signal": "Strong Buy",
+      "rsi": 62.3
+    },
+    {
+      "ticker": "RTX",
+      "name": "RTX Corporation",
+      "sector": "Industrials",
+      "snapshot_date": "2026-02-19",
+      "entry_price": 204.81,
+      "current_price": 204.80999755859375,
+      "return_pct": -0.0,
+      "spy_return_pct": 0,
+      "alpha": -0.0,
+      "composite_score": 80.1,
+      "grade": "A",
+      "signal": "Strong Buy",
+      "rsi": 59.1
+    },
+    {
+      "ticker": "GS",
+      "name": "Goldman Sachs Group, Inc. (The)",
+      "sector": "Financial Services",
+      "snapshot_date": "2026-02-19",
+      "entry_price": 933.73,
+      "current_price": 933.72998046875,
+      "return_pct": -0.0,
+      "spy_return_pct": 0,
+      "alpha": -0.0,
+      "composite_score": 80.0,
+      "grade": "A",
+      "signal": "Strong Buy",
+      "rsi": 49.3
+    },
+    {
+      "ticker": "CSCO",
+      "name": "Cisco Systems, Inc.",
+      "sector": "Technology",
+      "snapshot_date": "2026-02-19",
+      "entry_price": 78.18,
+      "current_price": 78.18000030517578,
+      "return_pct": 0.0,
+      "spy_return_pct": 0,
+      "alpha": 0.0,
+      "composite_score": 79.0,
+      "grade": "A",
+      "signal": "Strong Buy",
+      "rsi": 48.6
+    },
+    {
+      "ticker": "ABBV",
+      "name": "AbbVie Inc.",
+      "sector": "Healthcare",
+      "snapshot_date": "2026-02-19",
+      "entry_price": 228.72,
+      "current_price": 228.72000122070312,
+      "return_pct": 0.0,
+      "spy_return_pct": 0,
+      "alpha": 0.0,
+      "composite_score": 77.9,
+      "grade": "A",
+      "signal": "Strong Buy",
+      "rsi": 62.4
+    }
+  ],
+  "by_grade": {
+    "A": {
+      "count": 10,
+      "win_rate": 0.0,
+      "avg_return": 0.0,
+      "avg_alpha": 0.0
+    }
+  },
+  "by_sector": {
+    "Financial Services": {
+      "count": 2,
+      "win_rate": 0.0,
+      "avg_return": 0.0,
+      "avg_alpha": 0.0
+    },
+    "Utilities": {
+      "count": 1,
+      "win_rate": 0.0,
+      "avg_return": 0.0,
+      "avg_alpha": 0.0
+    },
+    "Technology": {
+      "count": 3,
+      "win_rate": 0.0,
+      "avg_return": 0.0,
+      "avg_alpha": 0.0
+    },
+    "Healthcare": {
+      "count": 2,
+      "win_rate": 0.0,
+      "avg_return": 0.0,
+      "avg_alpha": 0.0
+    },
+    "Consumer Defensive": {
+      "count": 1,
+      "win_rate": 0.0,
+      "avg_return": 0.0,
+      "avg_alpha": 0.0
+    },
+    "Industrials": {
+      "count": 1,
+      "win_rate": 0.0,
+      "avg_return": 0.0,
+      "avg_alpha": 0.0
+    }
+  }
+}

@@ -1,0 +1,449 @@
+{
+  "timestamp": "2026-03-15T15:38:49.987461",
+  "version": "2.0",
+  "market_data": {
+    "timestamp": "2026-03-15T15:38:49.987469",
+    "indices": {
+      "SPY": {
+        "name": "S&P 500",
+        "price": 662.29,
+        "change": -0.57,
+        "prev_close": 666.06,
+        "high_52w": 697.84,
+        "low_52w": 477.64,
+        "pct_from_high": -5.09
+      },
+      "QQQ": {
+        "name": "NASDAQ 100",
+        "price": 593.72,
+        "change": -0.59,
+        "prev_close": 597.26,
+        "high_52w": 636.6,
+        "low_52w": 400.96,
+        "pct_from_high": -6.74
+      },
+      "DIA": {
+        "name": "Dow Jones",
+        "price": 466.41,
+        "change": -0.23,
+        "prev_close": 467.48,
+        "high_52w": 504.67,
+        "low_52w": 361.47,
+        "pct_from_high": -7.58
+      },
+      "IWM": {
+        "name": "Russell 2000",
+        "price": 246.59,
+        "change": -0.33,
+        "prev_close": 247.41,
+        "high_52w": 271.6,
+        "low_52w": 170.2,
+        "pct_from_high": -9.21
+      }
+    },
+    "futures": {
+      "ES=F": {
+        "name": "S&P 500 Futures",
+        "price": 6636.0,
+        "change": -0.62,
+        "prev_close": 6677.5,
+        "high_52w": 7043.0,
+        "low_52w": 4832.0,
+        "pct_from_high": -5.78
+      },
+      "NQ=F": {
+        "name": "NASDAQ Futures",
+        "price": 24394.25,
+        "change": -0.67,
+        "prev_close": 24560.0,
+        "high_52w": 26399.0,
+        "low_52w": 16460.0,
+        "pct_from_high": -7.59
+      },
+      "YM=F": {
+        "name": "Dow Futures",
+        "price": 46592.0,
+        "change": -0.28,
+        "prev_close": 46721.0,
+        "high_52w": 50611.0,
+        "low_52w": 36708.0,
+        "pct_from_high": -7.94
+      }
+    },
+    "bonds": {
+      "^TNX": {
+        "name": "10Y Treasury",
+        "price": 4.28,
+        "change": 0.28,
+        "prev_close": 4.27,
+        "high_52w": 4.63,
+        "low_52w": null,
+        "pct_from_high": -7.43
+      },
+      "^FVX": {
+        "name": "5Y Treasury",
+        "price": 3.87,
+        "change": -0.26,
+        "prev_close": 3.88,
+        "high_52w": 4.22,
+        "low_52w": null,
+        "pct_from_high": -8.26
+      },
+      "^IRX": {
+        "name": "3M T-Bill",
+        "price": 3.6,
+        "change": -0.06,
+        "prev_close": 3.61,
+        "high_52w": 4.3,
+        "low_52w": null,
+        "pct_from_high": -16.31
+      }
+    },
+    "currencies": {
+      "DX-Y.NYB": {
+        "name": "Dollar Index",
+        "price": 100.36,
+        "change": 0.62,
+        "prev_close": 99.74,
+        "high_52w": 104.68,
+        "low_52w": 95.55,
+        "pct_from_high": -4.13
+      },
+      "USDKRW=X": {
+        "name": "USD/KRW",
+        "price": 1494.4,
+        "change": 1.62,
+        "prev_close": 1470.58,
+        "high_52w": 1506.25,
+        "low_52w": 1322.42,
+        "pct_from_high": -0.79
+      },
+      "USDJPY=X": {
+        "name": "USD/JPY",
+        "price": 159.72,
+        "change": 0.32,
+        "prev_close": 159.21,
+        "high_52w": 159.72,
+        "low_52w": 139.89,
+        "pct_from_high": null
+      },
+      "EURUSD=X": {
+        "name": "EUR/USD",
+        "price": 1.14,
+        "change": -1.04,
+        "prev_close": 1.15,
+        "high_52w": 1.2,
+        "low_52w": 1.07,
+        "pct_from_high": -4.99
+      }
+    },
+    "commodities": {
+      "GC=F": {
+        "name": "Gold",
+        "price": 5061.7,
+        "change": -1.06,
+        "prev_close": 5115.8,
+        "high_52w": 5586.2,
+        "low_52w": 2949.7,
+        "pct_from_high": -9.39
+      },
+      "CL=F": {
+        "name": "Crude Oil",
+        "price": 98.71,
+        "change": 3.11,
+        "prev_close": 95.73,
+        "high_52w": 119.48,
+        "low_52w": 54.98,
+        "pct_from_high": -17.38
+      },
+      "BTC-USD": {
+        "name": "Bitcoin",
+        "price": 71447.44,
+        "change": 0.68,
+        "prev_close": 70968.27,
+        "high_52w": 126198.07,
+        "low_52w": 60074.2,
+        "pct_from_high": -43.38
+      }
+    },
+    "korean_indices": {
+      "^KS11": {
+        "name": "KOSPI",
+        "price": 5487.24,
+        "change": -1.72,
+        "prev_close": 5583.25,
+        "high_52w": 6347.41,
+        "low_52w": 2284.72,
+        "pct_from_high": -13.55
+      },
+      "^KQ11": {
+        "name": "KOSDAQ",
+        "price": 1152.96,
+        "change": 0.4,
+        "prev_close": 1148.4,
+        "high_52w": 1215.67,
+        "low_52w": 637.55,
+        "pct_from_high": -5.16
+      }
+    },
+    "vix": {
+      "value": 27.19,
+      "change": -0.37,
+      "level": "Fear",
+      "color": "#FF5722"
+    }
+  },
+  "vix": {
+    "value": 27.19,
+    "change": -0.37,
+    "level": "Fear",
+    "color": "#FF5722"
+  },
+  "fear_greed": {
+    "score": 56,
+    "level": "Neutral",
+    "color": "#FFC107",
+    "components": {
+      "vix": {
+        "value": 27.19,
+        "score": 43
+      },
+      "momentum": {
+        "pct_from_high": -5.09,
+        "score": 75
+      },
+      "breadth": {
+        "spy_chg": -0.57,
+        "iwm_chg": -0.33,
+        "score": 52
+      },
+      "safe_haven": {
+        "stock_chg": -0.57,
+        "gold_chg": -1.06,
+        "score": 55
+      },
+      "junk_bond": {
+        "yield_change": 0.28,
+        "score": 51
+      }
+    }
+  },
+  "ai_analysis": {
+    "content": "",
+    "citations": []
+  },
+  "quant_signals": {
+    "regime": {
+      "regime": "neutral",
+      "confidence": 50.0
+    },
+    "prediction": {
+      "spy_bullish": 50,
+      "qqq_bullish": 50
+    },
+    "risk": {
+      "risk_level": "Elevated",
+      "var_95_5d": 2058.96,
+      "cvar_95_5d": 2403.41
+    },
+    "top_picks": [
+      {
+        "ticker": "AKAM",
+        "name": "Akamai Technologies, Inc.",
+        "final_score": 81.6,
+        "quant_score": 75.8,
+        "ai_bonus": 21,
+        "ai_recommendation": "매수",
+        "grade": "🌟 A급 (적극 매수)",
+        "current_price": 105.47,
+        "target_upside": 3.0,
+        "sd_stage": "Strong Accumulation",
+        "inst_pct": 102.51,
+        "rsi": 58.2,
+        "ai_summary": "```json\n{\n  \"thesis\": \"아카마이(AKAM)는 분산형 AI 플랫폼 확장을 통한 새로운 성장 동력을 확보하고 있으며, 강력한 기관 수급(102.5%)이 이를 뒷받침하고 있으나, 30배가 넘는 P/E와 최근 이익 전망치 하향 조정에 따른 단기 변동성 리스크가 상존합니다.\",\n  \"catalysts\": [\n    {\n      \"point\": \"AI 인프라 확장을 통한 신성장 동력 확보\",\n      \"evidence\": \"Blackwell GPU 구축을 통한 분산형 AI 플랫폼 야망 확대 [Insider Monkey, 2026-03-12]\"\n    },\n    {\n      \"point\": \"강력한 기관 수급 및 기술적 강세\",\n      \"evidence\": \"기관 보유 비중 102.5%, 수급 점수 85/100 (Strong Accumulation), MA Signal Bullish [수치 분석]\"\n    }\n  ],\n  \"bear_cases\": [\n    {\n   ",
+        "rank": 1
+      },
+      {
+        "ticker": "AAPL",
+        "name": "Apple Inc.",
+        "final_score": 75.3,
+        "quant_score": 59.1,
+        "ai_bonus": 28,
+        "ai_recommendation": "적극 매수",
+        "grade": "📊 C급 (관망)",
+        "current_price": 255.76,
+        "target_upside": 15.5,
+        "sd_stage": "Neutral",
+        "inst_pct": 65.21,
+        "rsi": 39.8,
+        "ai_summary": "```json\n{\n  \"thesis\": \"안정적인 수급(기관 보유 65.2%)과 기술적 상승 신호(MA Bullish)가 확인되나, P/E 34.73배의 밸류에이션 부담이 존재하여 신중한 매수(Accumulation) 관점이 유효함.\",\n  \"catalysts\": [\n    {\n      \"point\": \"거물급 투자자의 지분 확대에 따른 투자 심리 개선\",\n      \"evidence\": \"조지 소로스가 애플 주식 보유량을 두 배로 늘리며 강한 확신을 보임 [Barchart.com, 2026-02-26]\"\n    },\n    {\n      \"point\": \"압도적인 설치 기반(Installed Base)을 통한 서비스 수익화 잠재력\",\n      \"evidence\": \"전 세계적으로 25억 대의 활성 기기를 보유하여 생태계 락인(Lock-in) 효과 극대화 [Seeking Alpha, 2026-02-23]\"\n    },\n    {\n      \"point\": \"견조한 매출 성장세 지",
+        "rank": 2
+      },
+      {
+        "ticker": "AEP",
+        "name": "American Electric Power Company, Inc.",
+        "final_score": 74.0,
+        "quant_score": 66.3,
+        "ai_bonus": 21,
+        "ai_recommendation": "매수",
+        "grade": "📈 B급 (매수 고려)",
+        "current_price": 132.22,
+        "target_upside": 3.8,
+        "sd_stage": "Accumulation",
+        "inst_pct": 84.89,
+        "rsi": 63.5,
+        "ai_summary": "```json\n{\n  \"thesis\": \"American Electric Power(AEP)는 13.2%의 견조한 매출 성장과 84.9%의 높은 기관 보유율을 바탕으로 안정적인 유틸리티 주식으로서의 매력을 지니고 있으나, VIX 27.29의 높은 시장 변동성과 4.27%의 국채 금리 환경 하에서 밸류에이션 부담이 존재합니다.\",\n  \"catalysts\": [\n    {\n      \"point\": \"기관 투자자의 지속적인 매수세\",\n      \"evidence\": \"Van ECK Associates Corp가 19,050주를 추가 매수하며 기관 보유율 84.9%를 유지 [MarketBeat, 2026-03-12]\"\n    },\n    {\n      \"point\": \"주주 환원 정책 강화\",\n      \"evidence\": \"AEP Plantations의 자사주 매입을 통한 Treasury Stock 확대 [TipRanks, 2026-03-12]\"\n    },\n    {\n      \"p",
+        "rank": 3
+      },
+      {
+        "ticker": "APP",
+        "name": "AppLovin Corporation",
+        "final_score": 70.2,
+        "quant_score": 61.5,
+        "ai_bonus": 21,
+        "ai_recommendation": "조정 시 매수",
+        "grade": "📈 B급 (매수 고려)",
+        "current_price": 449.33,
+        "target_upside": 44.3,
+        "sd_stage": "Accumulation",
+        "inst_pct": 81.16,
+        "rsi": 46.9,
+        "ai_summary": "```json\n{\n  \"thesis\": \"AppLovin(APP)은 65.9%의 강력한 매출 성장률과 기관의 높은 보유 비중(81.2%)을 바탕으로 매수 고려 대상(B급)으로 평가되나, 높은 매크로 변동성(VIX 27.29)과 다소 높은 밸류에이션(P/E 44.84)으로 인해 리스크 관리가 필요합니다.\",\n  \"catalysts\": [\n    {\n      \"point\": \"강력한 매출 성장과 시장의 긍정적 평가\",\n      \"evidence\": \"매출 성장률 65.9% 달성 및 '3 Reasons We Love This Stock' 보도 [Yahoo Finance, 2026-03-11]\"\n    },\n    {\n      \"point\": \"기관 투자자의 높은 신뢰도 및 수급\",\n      \"evidence\": \"기관 보유 비중 81.2% 및 수급 점수 60/100 (Accumulation) [수치 분석]\"\n    },\n    {\n      \"point\": \"주가 조정 시 매수 기",
+        "rank": 4
+      },
+      {
+        "ticker": "ADM",
+        "name": "Archer-Daniels-Midland Company",
+        "final_score": 70.0,
+        "quant_score": 61.2,
+        "ai_bonus": 21,
+        "ai_recommendation": "매수",
+        "grade": "📈 B급 (매수 고려)",
+        "current_price": 72.5,
+        "target_upside": -16.2,
+        "sd_stage": "Strong Accumulation",
+        "inst_pct": 87.97,
+        "rsi": 69.2,
+        "ai_summary": "```json\n{\n  \"thesis\": \"ADM은 강력한 기관 수급(88.0%)과 기술적 강세(수급점수 95/100, Bullish MA)를 보이며 시장 대비 아웃퍼폼하고 있으나, 높은 밸류에이션(P/E 32.51)과 역성장(매출 -13.7%), 그리고 내부자 매도 등의 펀더멘털 리스크가 상존하여 신중한 매수 접근이 필요합니다.\",\n  \"catalysts\": [\n    {\n      \"point\": \"강력한 기관 수급 및 기술적 모멘텀\",\n      \"evidence\": \"기관 보유 비율 88.0%, 수급 점수 95/100 (Strong Accumulation), S&P 500 대비 +9.1% 초과 수익 [수치 분석]\"\n    },\n    {\n      \"point\": \"농가 지원을 통한 장기 공급망 안정화\",\n      \"evidence\": \"파산이 증가하는 가운데 중서부 수백 개 농장에 새로운 지원 제공 [Stock Titan, 2026-03-12]\"\n    }\n  ],\n  \"b",
+        "rank": 5
+      }
+    ],
+    "backtest": {
+      "total_return": "N/A",
+      "alpha": "N/A",
+      "sharpe": "N/A",
+      "max_dd": "N/A",
+      "win_rate": "N/A"
+    },
+    "track_record": {
+      "total_picks": "N/A",
+      "win_rate": 33.3,
+      "avg_return": -3.13,
+      "alpha": "N/A"
+    },
+    "decision_signal": {
+      "score": 45,
+      "action": "HOLD",
+      "timing": "SELECTIVE",
+      "components": {
+        "market_gate": {
+          "score": 50,
+          "contribution": 0
+        },
+        "regime": {
+          "regime": "neutral",
+          "contribution": 0
+        },
+        "prediction": {
+          "spy_bullish": 50,
+          "contribution": 0
+        },
+        "risk": {
+          "level": "Elevated",
+          "contribution": 0
+        },
+        "sector_phase": {
+          "phase": "Late Cycle",
+          "contribution": -5
+        }
+      }
+    }
+  },
+  "sector_rotation": {
+    "content": "",
+    "citations": []
+  },
+  "smart_money": {
+    "top_picks": {
+      "timestamp": "2026-03-13T15:37:01.787979",
+      "picks": [
+        {
+          "rank": 1,
+          "ticker": "AKAM",
+          "name": "Akamai Technologies, Inc.",
+          "final_score": 81.6,
+          "ai_recommendation": "매수",
+          "target_upside": 3.0,
+          "sd_stage": "Strong Accumulation"
+        },
+        {
+          "rank": 2,
+          "ticker": "AAPL",
+          "name": "Apple Inc.",
+          "final_score": 75.3,
+          "ai_recommendation": "적극 매수",
+          "target_upside": 15.5,
+          "sd_stage": "Neutral"
+        },
+        {
+          "rank": 3,
+          "ticker": "AEP",
+          "name": "American Electric Power Company, Inc.",
+          "final_score": 74.0,
+          "ai_recommendation": "매수",
+          "target_upside": 3.8,
+          "sd_stage": "Accumulation"
+        },
+        {
+          "rank": 4,
+          "ticker": "APP",
+          "name": "AppLovin Corporation",
+          "final_score": 70.2,
+          "ai_recommendation": "조정 시 매수",
+          "target_upside": 44.3,
+          "sd_stage": "Accumulation"
+        },
+        {
+          "rank": 5,
+          "ticker": "ADM",
+          "name": "Archer-Daniels-Midland Company",
+          "final_score": 70.0,
+          "ai_recommendation": "매수",
+          "target_upside": -16.2,
+          "sd_stage": "Strong Accumulation"
+        }
+      ]
+    },
+    "performance": {
+      "recent_dates": [
+        {
+          "date": "2026-03-13",
+          "avg_return": 0.54,
+          "win_rate": 60.0
+        },
+        {
+          "date": "2026-02-27",
+          "avg_return": -4.61,
+          "win_rate": 20.0
+        },
+        {
+          "date": "2026-02-26",
+          "avg_return": -5.31,
+          "win_rate": 20.0
+        }
+      ],
+      "overall_avg": -3.13,
+      "overall_win_rate": 33.3
+    }
+  }
+}

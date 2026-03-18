@@ -1,0 +1,57 @@
+[
+  {
+    "ticker": "AKAM",
+    "news_score": 0,
+    "sentiment": "neutral",
+    "reason": "뉴스 없음",
+    "action": "HOLD",
+    "catalysts": [],
+    "risk": "",
+    "citations": [],
+    "analyzed_at": "2026-03-15T15:38:44.157993"
+  },
+  {
+    "ticker": "AWK",
+    "news_score": 0,
+    "sentiment": "neutral",
+    "reason": "뉴스 없음",
+    "action": "HOLD",
+    "catalysts": [],
+    "risk": "",
+    "citations": [],
+    "analyzed_at": "2026-03-15T15:38:45.177930"
+  },
+  {
+    "ticker": "ALL",
+    "news_score": 0,
+    "sentiment": "neutral",
+    "reason": "뉴스 없음",
+    "action": "HOLD",
+    "catalysts": [],
+    "risk": "",
+    "citations": [],
+    "analyzed_at": "2026-03-15T15:38:46.194087"
+  },
+  {
+    "ticker": "AON",
+    "news_score": 0,
+    "sentiment": "neutral",
+    "reason": "뉴스 없음",
+    "action": "HOLD",
+    "catalysts": [],
+    "risk": "",
+    "citations": [],
+    "analyzed_at": "2026-03-15T15:38:47.201970"
+  },
+  {
+    "ticker": "AEP",
+    "news_score": 0,
+    "sentiment": "neutral",
+    "reason": "뉴스 없음",
+    "action": "HOLD",
+    "catalysts": [],
+    "risk": "",
+    "citations": [],
+    "analyzed_at": "2026-03-15T15:38:48.215465"
+  }
+]

@@ -1,0 +1,41 @@
+name: Deploy Spring Boot to Render
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'backend/**'
+      - 'render.yaml'
+      - '.github/workflows/deploy-backend.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Render Deploy
+        run: |
+          echo "=== Triggering Render deploy ==="
+          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" \
+            -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}")
+          echo "Render response: HTTP $RESPONSE"
+          if [ "$RESPONSE" != "200" ] && [ "$RESPONSE" != "201" ]; then
+            echo "Warning: Render deploy hook returned HTTP $RESPONSE"
+          else
+            echo "Render deploy triggered successfully"
+          fi
+
+      - name: Wait and health check
+        run: |
+          echo "=== Waiting for Render deploy (max 5min) ==="
+          for i in $(seq 1 10); do
+            sleep 30
+            CODE=$(curl -s -o /dev/null -w "%{http_code}" \
+              --max-time 30 \
+              "${{ secrets.RENDER_API_URL }}/api/health" 2>/dev/null || echo "000")
+            echo "  Check $i/10: HTTP $CODE"
+            if [ "$CODE" = "200" ]; then
+              echo "  Backend is live!"
+              break
+            fi
+          done

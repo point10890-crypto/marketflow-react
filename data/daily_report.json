@@ -1,0 +1,12 @@
+{
+  "date": "2026-03-13",
+  "open_signals": 197,
+  "closed_signals": 1101,
+  "today_new_signals": 15,
+  "total_signals": 1298,
+  "generated_at": "2026-03-13T15:08:47.813501",
+  "env": {
+    "base_dir": "C:\\bitman_service",
+    "python": "C:\\bitman_service\\.venv\\Scripts\\python.exe"
+  }
+}

@@ -1,0 +1,115 @@
+{
+  "timestamp": "2026-02-25T09:37:33.721559",
+  "top_picks": [
+    {
+      "ticker": "NVDA",
+      "name": "NVIDIA Corporation",
+      "sector": "Technology",
+      "price": 192.85,
+      "composite_score": 83.7,
+      "rsi": 63.3,
+      "rank": 1,
+      "grade": "A",
+      "signal": "Strong Buy"
+    },
+    {
+      "ticker": "VRTX",
+      "name": "Vertex Pharmaceuticals Incorpor",
+      "sector": "Healthcare",
+      "price": 487.43,
+      "composite_score": 82.9,
+      "rsi": 58.9,
+      "rank": 2,
+      "grade": "A",
+      "signal": "Strong Buy"
+    },
+    {
+      "ticker": "MDLZ",
+      "name": "Mondelez International, Inc.",
+      "sector": "Consumer Defensive",
+      "price": 61.13,
+      "composite_score": 80.6,
+      "rsi": 57.6,
+      "rank": 3,
+      "grade": "A",
+      "signal": "Strong Buy"
+    },
+    {
+      "ticker": "RTX",
+      "name": "RTX Corporation",
+      "sector": "Industrials",
+      "price": 198.46,
+      "composite_score": 80.1,
+      "rsi": 43.3,
+      "rank": 4,
+      "grade": "A",
+      "signal": "Strong Buy"
+    },
+    {
+      "ticker": "CSCO",
+      "name": "Cisco Systems, Inc.",
+      "sector": "Technology",
+      "price": 78.14,
+      "composite_score": 79.1,
+      "rsi": 40.2,
+      "rank": 5,
+      "grade": "A",
+      "signal": "Strong Buy"
+    },
+    {
+      "ticker": "AAPL",
+      "name": "Apple Inc.",
+      "sector": "Technology",
+      "price": 272.14,
+      "composite_score": 77.9,
+      "rsi": 52.5,
+      "rank": 6,
+      "grade": "A",
+      "signal": "Strong Buy"
+    },
+    {
+      "ticker": "ABBV",
+      "name": "AbbVie Inc.",
+      "sector": "Healthcare",
+      "price": 228.44,
+      "composite_score": 77.8,
+      "rsi": 53.2,
+      "rank": 7,
+      "grade": "A",
+      "signal": "Strong Buy"
+    },
+    {
+      "ticker": "REGN",
+      "name": "Regeneron Pharmaceuticals, Inc.",
+      "sector": "Healthcare",
+      "price": 772.19,
+      "composite_score": 77.7,
+      "rsi": 54.2,
+      "rank": 8,
+      "grade": "A",
+      "signal": "Strong Buy"
+    },
+    {
+      "ticker": "PEP",
+      "name": "Pepsico, Inc.",
+      "sector": "Consumer Defensive",
+      "price": 169.54,
+      "composite_score": 76.5,
+      "rsi": 61.5,
+      "rank": 9,
+      "grade": "A",
+      "signal": "Strong Buy"
+    },
+    {
+      "ticker": "COST",
+      "name": "Costco Wholesale Corporation",
+      "sector": "Consumer Defensive",
+      "price": 998.43,
+      "composite_score": 76.0,
+      "rsi": 57.0,
+      "rank": 10,
+      "grade": "A",
+      "signal": "Strong Buy"
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "name": "Netflix",
+  "ticker": "NFLX",
+  "result": "매수",
+  "date": "2026-03-15 19:35:48",
+  "elapsed": 0,
+  "consensus_score": 3.77,
+  "analyst_count": 43,
+  "recommendation_detail": {
+    "strongBuy": 8,
+    "buy": 20,
+    "hold": 13,
+    "sell": 1,
+    "strongSell": 1
+  },
+  "price_targets": {
+    "current": 95.31,
+    "high": 151.4,
+    "low": 80.0,
+    "mean": 113.16614,
+    "median": 113.5
+  },
+  "current_price": 95.31,
+  "upside_potential": 18.7,
+  "key_stats": {
+    "name": "Netflix, Inc.",
+    "sector": "Communication Services",
+    "industry": "Entertainment",
+    "market_cap": 404294467584,
+    "pe_ratio": 37.671936,
+    "forward_pe": 24.833504,
+    "dividend_yield": null,
+    "beta": 1.714,
+    "fifty_two_week_high": 134.115,
+    "fifty_two_week_low": 75.01,
+    "currency": "USD"
+  },
+  "source": "yfinance"
+}

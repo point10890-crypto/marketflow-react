@@ -1,0 +1,3500 @@
+{
+  "metadata": {
+    "generated_at": "2026-03-15T16:11:38.479991",
+    "market": "KR",
+    "gate": "YELLOW",
+    "gate_score": 25,
+    "processing_time_sec": 78.5
+  },
+  "summary": {
+    "total_screened": 500,
+    "stage2_passed": 50,
+    "trend_passed": 50,
+    "vcp_found": 25,
+    "entry_ready": 1
+  },
+  "signals": [
+    {
+      "symbol": "067310",
+      "name": "하나마이크론",
+      "market": "KR",
+      "sector": "",
+      "price": 34850.0,
+      "composite": {
+        "composite_score": 74.0,
+        "rating": "Good VCP",
+        "rating_description": "양호한 VCP 패턴",
+        "guidance": "거래량 확인 후 피벗 매수",
+        "valid_vcp": true,
+        "entry_ready": false,
+        "weakest_component": "Pivot Proximity",
+        "strongest_component": "Trend Template (Stage 2)",
+        "component_breakdown": {
+          "trend_template": {
+            "score": 100.0,
+            "weight": 0.25,
+            "weighted": 25.0,
+            "label": "Trend Template (Stage 2)"
+          },
+          "contraction_quality": {
+            "score": 70,
+            "weight": 0.25,
+            "weighted": 17.5,
+            "label": "Contraction Quality"
+          },
+          "volume_pattern": {
+            "score": 60,
+            "weight": 0.2,
+            "weighted": 12.0,
+            "label": "Volume Pattern"
+          },
+          "pivot_proximity": {
+            "score": 35,
+            "weight": 0.15,
+            "weighted": 5.2,
+            "label": "Pivot Proximity"
+          },
+          "relative_strength": {
+            "score": 95,
+            "weight": 0.15,
+            "weighted": 14.2,
+            "label": "Relative Strength"
+          }
+        }
+      },
+      "trend_template": {
+        "score": 100.0,
+        "raw_score": 100,
+        "passed": true,
+        "criteria_passed": 7,
+        "criteria_total": 7,
+        "sma50": 32900.0,
+        "sma150": 27994.17,
+        "sma200": 24853.75,
+        "extended_penalty": 0.0,
+        "sma50_distance_pct": 5.93
+      },
+      "vcp_pattern": {
+        "score": 70,
+        "valid_vcp": true,
+        "num_contractions": 2,
+        "pivot_price": 29600.0,
+        "pattern_duration_days": 56,
+        "contractions": [
+          {
+            "label": "T1",
+            "high_idx": 15,
+            "high_price": 31100.0,
+            "high_date": "2025-10-30",
+            "low_idx": 31,
+            "low_price": 22400.0,
+            "low_date": "2025-11-21",
+            "depth_pct": 27.97,
+            "duration_days": 16
+          },
+          {
+            "label": "T2",
+            "high_idx": 61,
+            "high_price": 29600.0,
+            "high_date": "2026-01-07",
+            "low_idx": 71,
+            "low_price": 25000.0,
+            "low_date": "2026-01-21",
+            "depth_pct": 15.54,
+            "duration_days": 10
+          }
+        ],
+        "validation": {
+          "valid": true,
+          "issues": [],
+          "contraction_ratios": [
+            0.556
+          ],
+          "t1_depth": 27.97
+        }
+      },
+      "volume_pattern": {
+        "score": 60,
+        "dry_up_ratio": 0.695,
+        "breakout_volume_detected": false,
+        "avg_volume_50d": 1879042,
+        "net_accumulation": 0
+      },
+      "pivot_proximity": {
+        "score": 35,
+        "distance_from_pivot_pct": 17.74,
+        "pivot_price": 29600.0,
+        "stop_loss_price": 24750.0,
+        "risk_pct": 28.98,
+        "trade_status": "EXTENDED (very high risk)"
+      },
+      "relative_strength": {
+        "score": 95,
+        "rs_rank_estimate": 95,
+        "weighted_rs": 30.81
+      },
+      "stage": {
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing",
+        "confidence": 100
+      },
+      "market_gate": "YELLOW",
+      "gate_score": 25,
+      "position_modifier": 0.5,
+      "entry_price": 29600.0,
+      "stop_price": 24750.0,
+      "target_price": 39300.0,
+      "risk_reward_ratio": 2.0,
+      "foreign_5d": -338130,
+      "inst_5d": 343001,
+      "supply_demand_index": 84.3,
+      "generated_at": "2026-03-15T16:11:21.005594"
+    },
+    {
+      "symbol": "053700",
+      "name": "삼보모터스",
+      "market": "KR",
+      "sector": "",
+      "price": 8010.0,
+      "composite": {
+        "composite_score": 66.5,
+        "rating": "Developing VCP",
+        "rating_description": "VCP 형성 중 — 아직 비매수",
+        "guidance": "관찰 — 더 타이트한 수축 대기",
+        "valid_vcp": false,
+        "entry_ready": false,
+        "weakest_component": "Contraction Quality",
+        "strongest_component": "Trend Template (Stage 2)",
+        "component_breakdown": {
+          "trend_template": {
+            "score": 100.0,
+            "weight": 0.25,
+            "weighted": 25.0,
+            "label": "Trend Template (Stage 2)"
+          },
+          "contraction_quality": {
+            "score": 30,
+            "weight": 0.25,
+            "weighted": 7.5,
+            "label": "Contraction Quality"
+          },
+          "volume_pattern": {
+            "score": 65,
+            "weight": 0.2,
+            "weighted": 13.0,
+            "label": "Volume Pattern"
+          },
+          "pivot_proximity": {
+            "score": 45,
+            "weight": 0.15,
+            "weighted": 6.8,
+            "label": "Pivot Proximity"
+          },
+          "relative_strength": {
+            "score": 95,
+            "weight": 0.15,
+            "weighted": 14.2,
+            "label": "Relative Strength"
+          }
+        }
+      },
+      "trend_template": {
+        "score": 100.0,
+        "raw_score": 100,
+        "passed": true,
+        "criteria_passed": 7,
+        "criteria_total": 7,
+        "sma50": 7626.0,
+        "sma150": 5989.08,
+        "sma200": 5017.67,
+        "extended_penalty": 0.0,
+        "sma50_distance_pct": 5.04
+      },
+      "vcp_pattern": {
+        "score": 30,
+        "valid_vcp": false,
+        "num_contractions": 2,
+        "pivot_price": 8850.0,
+        "pattern_duration_days": 21,
+        "contractions": [
+          {
+            "label": "T1",
+            "high_idx": 65,
+            "high_price": 9040.0,
+            "high_date": "2026-01-13",
+            "low_idx": 74,
+            "low_price": 6760.0,
+            "low_date": "2026-01-26",
+            "depth_pct": 25.22,
+            "duration_days": 9
+          },
+          {
+            "label": "T2",
+            "high_idx": 80,
+            "high_price": 8850.0,
+            "high_date": "2026-02-03",
+            "low_idx": 86,
+            "low_price": 7050.0,
+            "low_date": "2026-02-11",
+            "depth_pct": 20.34,
+            "duration_days": 6
+          }
+        ],
+        "validation": {
+          "valid": false,
+          "issues": [
+            "T2 ratio 0.81 > 0.75"
+          ],
+          "contraction_ratios": [
+            0.807
+          ],
+          "t1_depth": 25.22
+        }
+      },
+      "volume_pattern": {
+        "score": 65,
+        "dry_up_ratio": 0.336,
+        "breakout_volume_detected": false,
+        "avg_volume_50d": 2223589,
+        "net_accumulation": -6
+      },
+      "pivot_proximity": {
+        "score": 45,
+        "distance_from_pivot_pct": -9.49,
+        "pivot_price": 8850.0,
+        "stop_loss_price": 6979.5,
+        "risk_pct": 12.87,
+        "trade_status": "DEVELOPING"
+      },
+      "relative_strength": {
+        "score": 95,
+        "rs_rank_estimate": 95,
+        "weighted_rs": 47.9
+      },
+      "stage": {
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing",
+        "confidence": 100
+      },
+      "market_gate": "YELLOW",
+      "gate_score": 25,
+      "position_modifier": 0.5,
+      "entry_price": 8850.0,
+      "stop_price": 6979.5,
+      "target_price": 12591.0,
+      "risk_reward_ratio": 2.0,
+      "foreign_5d": -200710,
+      "inst_5d": -19985,
+      "supply_demand_index": 70.8,
+      "generated_at": "2026-03-15T16:11:16.486473"
+    },
+    {
+      "symbol": "036810",
+      "name": "에프에스티",
+      "market": "KR",
+      "sector": "",
+      "price": 44000.0,
+      "composite": {
+        "composite_score": 66.0,
+        "rating": "Developing VCP",
+        "rating_description": "VCP 형성 중 — 아직 비매수",
+        "guidance": "관찰 — 더 타이트한 수축 대기",
+        "valid_vcp": true,
+        "entry_ready": false,
+        "weakest_component": "Pivot Proximity",
+        "strongest_component": "Trend Template (Stage 2)",
+        "component_breakdown": {
+          "trend_template": {
+            "score": 100.0,
+            "weight": 0.25,
+            "weighted": 25.0,
+            "label": "Trend Template (Stage 2)"
+          },
+          "contraction_quality": {
+            "score": 55,
+            "weight": 0.25,
+            "weighted": 13.8,
+            "label": "Contraction Quality"
+          },
+          "volume_pattern": {
+            "score": 50,
+            "weight": 0.2,
+            "weighted": 10.0,
+            "label": "Volume Pattern"
+          },
+          "pivot_proximity": {
+            "score": 35,
+            "weight": 0.15,
+            "weighted": 5.2,
+            "label": "Pivot Proximity"
+          },
+          "relative_strength": {
+            "score": 80,
+            "weight": 0.15,
+            "weighted": 12.0,
+            "label": "Relative Strength"
+          }
+        }
+      },
+      "trend_template": {
+        "score": 100.0,
+        "raw_score": 100,
+        "passed": true,
+        "criteria_passed": 7,
+        "criteria_total": 7,
+        "sma50": 41635.0,
+        "sma150": 33629.12,
+        "sma200": 32139.65,
+        "extended_penalty": 0.0,
+        "sma50_distance_pct": 5.68
+      },
+      "vcp_pattern": {
+        "score": 55,
+        "valid_vcp": true,
+        "num_contractions": 2,
+        "pivot_price": 36791.0,
+        "pattern_duration_days": 39,
+        "contractions": [
+          {
+            "label": "T1",
+            "high_idx": 24,
+            "high_price": 37436.0,
+            "high_date": "2025-11-12",
+            "low_idx": 48,
+            "low_price": 25932.0,
+            "low_date": "2025-12-16",
+            "depth_pct": 30.73,
+            "duration_days": 24
+          },
+          {
+            "label": "T2",
+            "high_idx": 55,
+            "high_price": 36791.0,
+            "high_date": "2025-12-26",
+            "low_idx": 63,
+            "low_price": 28700.0,
+            "low_date": "2026-01-09",
+            "depth_pct": 21.99,
+            "duration_days": 8
+          }
+        ],
+        "validation": {
+          "valid": true,
+          "issues": [],
+          "contraction_ratios": [
+            0.716
+          ],
+          "t1_depth": 30.73
+        }
+      },
+      "volume_pattern": {
+        "score": 50,
+        "dry_up_ratio": 0.654,
+        "breakout_volume_detected": false,
+        "avg_volume_50d": 399592,
+        "net_accumulation": -4
+      },
+      "pivot_proximity": {
+        "score": 35,
+        "distance_from_pivot_pct": 19.59,
+        "pivot_price": 36791.0,
+        "stop_loss_price": 28413.0,
+        "risk_pct": 35.43,
+        "trade_status": "EXTENDED (very high risk)"
+      },
+      "relative_strength": {
+        "score": 80,
+        "rs_rank_estimate": 80,
+        "weighted_rs": 17.09
+      },
+      "stage": {
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing",
+        "confidence": 100
+      },
+      "market_gate": "YELLOW",
+      "gate_score": 25,
+      "position_modifier": 0.5,
+      "entry_price": 36791.0,
+      "stop_price": 28413.0,
+      "target_price": 53547.0,
+      "risk_reward_ratio": 2.0,
+      "foreign_5d": 197495,
+      "inst_5d": -25031,
+      "supply_demand_index": 78.0,
+      "generated_at": "2026-03-15T16:11:08.382688"
+    },
+    {
+      "symbol": "119500",
+      "name": "포메탈",
+      "market": "KR",
+      "sector": "",
+      "price": 4980.0,
+      "composite": {
+        "composite_score": 62.0,
+        "rating": "Developing VCP",
+        "rating_description": "VCP 형성 중 — 아직 비매수",
+        "guidance": "관찰 — 더 타이트한 수축 대기",
+        "valid_vcp": false,
+        "entry_ready": false,
+        "weakest_component": "Contraction Quality",
+        "strongest_component": "Trend Template (Stage 2)",
+        "component_breakdown": {
+          "trend_template": {
+            "score": 85.8,
+            "weight": 0.25,
+            "weighted": 21.4,
+            "label": "Trend Template (Stage 2)"
+          },
+          "contraction_quality": {
+            "score": 30,
+            "weight": 0.25,
+            "weighted": 7.5,
+            "label": "Contraction Quality"
+          },
+          "volume_pattern": {
+            "score": 75,
+            "weight": 0.2,
+            "weighted": 15.0,
+            "label": "Volume Pattern"
+          },
+          "pivot_proximity": {
+            "score": 60,
+            "weight": 0.15,
+            "weighted": 9.0,
+            "label": "Pivot Proximity"
+          },
+          "relative_strength": {
+            "score": 60,
+            "weight": 0.15,
+            "weighted": 9.0,
+            "label": "Relative Strength"
+          }
+        }
+      },
+      "trend_template": {
+        "score": 85.8,
+        "raw_score": 85.8,
+        "passed": true,
+        "criteria_passed": 6,
+        "criteria_total": 7,
+        "sma50": 4852.5,
+        "sma150": 4065.67,
+        "sma200": 3566.0,
+        "extended_penalty": 0.0,
+        "sma50_distance_pct": 2.63
+      },
+      "vcp_pattern": {
+        "score": 30,
+        "valid_vcp": false,
+        "num_contractions": 2,
+        "pivot_price": 5400.0,
+        "pattern_duration_days": 13,
+        "contractions": [
+          {
+            "label": "T1",
+            "high_idx": 70,
+            "high_price": 5450.0,
+            "high_date": "2026-01-20",
+            "low_idx": 77,
+            "low_price": 4615.0,
+            "low_date": "2026-01-29",
+            "depth_pct": 15.32,
+            "duration_days": 7
+          },
+          {
+            "label": "T2",
+            "high_idx": 79,
+            "high_price": 5400.0,
+            "high_date": "2026-02-02",
+            "low_idx": 83,
+            "low_price": 4345.0,
+            "low_date": "2026-02-06",
+            "depth_pct": 19.54,
+            "duration_days": 4
+          }
+        ],
+        "validation": {
+          "valid": false,
+          "issues": [
+            "T2 ratio 1.28 > 0.75",
+            "Pattern too short (13d)"
+          ],
+          "contraction_ratios": [
+            1.275
+          ],
+          "t1_depth": 15.32
+        }
+      },
+      "volume_pattern": {
+        "score": 75,
+        "dry_up_ratio": 0.303,
+        "breakout_volume_detected": false,
+        "avg_volume_50d": 1213495,
+        "net_accumulation": -2
+      },
+      "pivot_proximity": {
+        "score": 60,
+        "distance_from_pivot_pct": -7.78,
+        "pivot_price": 5400.0,
+        "stop_loss_price": 4301.55,
+        "risk_pct": 13.62,
+        "trade_status": "APPROACHING"
+      },
+      "relative_strength": {
+        "score": 60,
+        "rs_rank_estimate": 60,
+        "weighted_rs": 3.42
+      },
+      "stage": {
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing",
+        "confidence": 100
+      },
+      "market_gate": "YELLOW",
+      "gate_score": 25,
+      "position_modifier": 0.5,
+      "entry_price": 5400.0,
+      "stop_price": 4301.55,
+      "target_price": 7596.9,
+      "risk_reward_ratio": 2.0,
+      "foreign_5d": 123015,
+      "inst_5d": 138,
+      "supply_demand_index": 74.3,
+      "generated_at": "2026-03-15T16:11:33.778485"
+    },
+    {
+      "symbol": "196700",
+      "name": "웹스",
+      "market": "KR",
+      "sector": "",
+      "price": 2800.0,
+      "composite": {
+        "composite_score": 62.0,
+        "rating": "Developing VCP",
+        "rating_description": "VCP 형성 중 — 아직 비매수",
+        "guidance": "관찰 — 더 타이트한 수축 대기",
+        "valid_vcp": true,
+        "entry_ready": false,
+        "weakest_component": "Volume Pattern",
+        "strongest_component": "Relative Strength",
+        "component_breakdown": {
+          "trend_template": {
+            "score": 90.0,
+            "weight": 0.25,
+            "weighted": 22.5,
+            "label": "Trend Template (Stage 2)"
+          },
+          "contraction_quality": {
+            "score": 55,
+            "weight": 0.25,
+            "weighted": 13.8,
+            "label": "Contraction Quality"
+          },
+          "volume_pattern": {
+            "score": 20,
+            "weight": 0.2,
+            "weighted": 4.0,
+            "label": "Volume Pattern"
+          },
+          "pivot_proximity": {
+            "score": 50,
+            "weight": 0.15,
+            "weighted": 7.5,
+            "label": "Pivot Proximity"
+          },
+          "relative_strength": {
+            "score": 95,
+            "weight": 0.15,
+            "weighted": 14.2,
+            "label": "Relative Strength"
+          }
+        }
+      },
+      "trend_template": {
+        "score": 90.0,
+        "raw_score": 100,
+        "passed": true,
+        "criteria_passed": 7,
+        "criteria_total": 7,
+        "sma50": 2441.75,
+        "sma150": 2046.55,
+        "sma200": 1724.83,
+        "extended_penalty": -10.0,
+        "sma50_distance_pct": 14.67
+      },
+      "vcp_pattern": {
+        "score": 55,
+        "valid_vcp": true,
+        "num_contractions": 2,
+        "pivot_price": 2630.0,
+        "pattern_duration_days": 22,
+        "contractions": [
+          {
+            "label": "T1",
+            "high_idx": 53,
+            "high_price": 2670.0,
+            "high_date": "2025-12-23",
+            "low_idx": 68,
+            "low_price": 1846.0,
+            "low_date": "2026-01-16",
+            "depth_pct": 30.86,
+            "duration_days": 15
+          },
+          {
+            "label": "T2",
+            "high_idx": 72,
+            "high_price": 2630.0,
+            "high_date": "2026-01-22",
+            "low_idx": 75,
+            "low_price": 2120.0,
+            "low_date": "2026-01-27",
+            "depth_pct": 19.39,
+            "duration_days": 3
+          }
+        ],
+        "validation": {
+          "valid": true,
+          "issues": [],
+          "contraction_ratios": [
+            0.628
+          ],
+          "t1_depth": 30.86
+        }
+      },
+      "volume_pattern": {
+        "score": 20,
+        "dry_up_ratio": 1.689,
+        "breakout_volume_detected": false,
+        "avg_volume_50d": 602517,
+        "net_accumulation": 2
+      },
+      "pivot_proximity": {
+        "score": 50,
+        "distance_from_pivot_pct": 6.46,
+        "pivot_price": 2630.0,
+        "stop_loss_price": 2098.8,
+        "risk_pct": 25.04,
+        "trade_status": "EXTENDED (high risk)"
+      },
+      "relative_strength": {
+        "score": 95,
+        "rs_rank_estimate": 95,
+        "weighted_rs": 39.92
+      },
+      "stage": {
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing",
+        "confidence": 100
+      },
+      "market_gate": "YELLOW",
+      "gate_score": 25,
+      "position_modifier": 0.5,
+      "entry_price": 2630.0,
+      "stop_price": 2098.8,
+      "target_price": 3692.4,
+      "risk_reward_ratio": 2.0,
+      "foreign_5d": -133384,
+      "inst_5d": 0,
+      "supply_demand_index": 73.2,
+      "generated_at": "2026-03-15T16:11:37.991329"
+    },
+    {
+      "symbol": "074430",
+      "name": "아미노로직스",
+      "market": "KR",
+      "sector": "",
+      "price": 1594.0,
+      "composite": {
+        "composite_score": 61.5,
+        "rating": "Developing VCP",
+        "rating_description": "VCP 형성 중 — 아직 비매수",
+        "guidance": "관찰 — 더 타이트한 수축 대기",
+        "valid_vcp": false,
+        "entry_ready": false,
+        "weakest_component": "Pivot Proximity",
+        "strongest_component": "Volume Pattern",
+        "component_breakdown": {
+          "trend_template": {
+            "score": 85.8,
+            "weight": 0.25,
+            "weighted": 21.4,
+            "label": "Trend Template (Stage 2)"
+          },
+          "contraction_quality": {
+            "score": 30,
+            "weight": 0.25,
+            "weighted": 7.5,
+            "label": "Contraction Quality"
+          },
+          "volume_pattern": {
+            "score": 95,
+            "weight": 0.2,
+            "weighted": 19.0,
+            "label": "Volume Pattern"
+          },
+          "pivot_proximity": {
+            "score": 10,
+            "weight": 0.15,
+            "weighted": 1.5,
+            "label": "Pivot Proximity"
+          },
+          "relative_strength": {
+            "score": 80,
+            "weight": 0.15,
+            "weighted": 12.0,
+            "label": "Relative Strength"
+          }
+        }
+      },
+      "trend_template": {
+        "score": 85.8,
+        "raw_score": 85.8,
+        "passed": true,
+        "criteria_passed": 6,
+        "criteria_total": 7,
+        "sma50": 1648.2,
+        "sma150": 1316.18,
+        "sma200": 1149.04,
+        "extended_penalty": 0.0,
+        "sma50_distance_pct": -3.29
+      },
+      "vcp_pattern": {
+        "score": 30,
+        "valid_vcp": false,
+        "num_contractions": 2,
+        "pivot_price": 1929.0,
+        "pattern_duration_days": 19,
+        "contractions": [
+          {
+            "label": "T1",
+            "high_idx": 60,
+            "high_price": 1940.0,
+            "high_date": "2026-01-06",
+            "low_idx": 67,
+            "low_price": 1550.0,
+            "low_date": "2026-01-15",
+            "depth_pct": 20.1,
+            "duration_days": 7
+          },
+          {
+            "label": "T2",
+            "high_idx": 72,
+            "high_price": 1929.0,
+            "high_date": "2026-01-22",
+            "low_idx": 79,
+            "low_price": 1494.0,
+            "low_date": "2026-02-02",
+            "depth_pct": 22.55,
+            "duration_days": 7
+          }
+        ],
+        "validation": {
+          "valid": false,
+          "issues": [
+            "T2 ratio 1.12 > 0.75"
+          ],
+          "contraction_ratios": [
+            1.122
+          ],
+          "t1_depth": 20.1
+        }
+      },
+      "volume_pattern": {
+        "score": 95,
+        "dry_up_ratio": 0.216,
+        "breakout_volume_detected": false,
+        "avg_volume_50d": 2386555,
+        "net_accumulation": -1
+      },
+      "pivot_proximity": {
+        "score": 10,
+        "distance_from_pivot_pct": -17.37,
+        "pivot_price": 1929.0,
+        "stop_loss_price": 1479.06,
+        "risk_pct": 7.21,
+        "trade_status": "FAR FROM PIVOT"
+      },
+      "relative_strength": {
+        "score": 80,
+        "rs_rank_estimate": 80,
+        "weighted_rs": 13.2
+      },
+      "stage": {
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing",
+        "confidence": 100
+      },
+      "market_gate": "YELLOW",
+      "gate_score": 25,
+      "position_modifier": 0.5,
+      "entry_price": 1929.0,
+      "stop_price": 1479.06,
+      "target_price": 2828.88,
+      "risk_reward_ratio": 2.0,
+      "foreign_5d": 43837,
+      "inst_5d": 0,
+      "supply_demand_index": 67.2,
+      "generated_at": "2026-03-15T16:11:22.251906"
+    },
+    {
+      "symbol": "006910",
+      "name": "보성파워텍",
+      "market": "KR",
+      "sector": "",
+      "price": 9850.0,
+      "composite": {
+        "composite_score": 61.0,
+        "rating": "Developing VCP",
+        "rating_description": "VCP 형성 중 — 아직 비매수",
+        "guidance": "관찰 — 더 타이트한 수축 대기",
+        "valid_vcp": false,
+        "entry_ready": false,
+        "weakest_component": "Contraction Quality",
+        "strongest_component": "Relative Strength",
+        "component_breakdown": {
+          "trend_template": {
+            "score": 85.0,
+            "weight": 0.25,
+            "weighted": 21.2,
+            "label": "Trend Template (Stage 2)"
+          },
+          "contraction_quality": {
+            "score": 30,
+            "weight": 0.25,
+            "weighted": 7.5,
+            "label": "Contraction Quality"
+          },
+          "volume_pattern": {
+            "score": 30,
+            "weight": 0.2,
+            "weighted": 6.0,
+            "label": "Volume Pattern"
+          },
+          "pivot_proximity": {
+            "score": 75,
+            "weight": 0.15,
+            "weighted": 11.2,
+            "label": "Pivot Proximity"
+          },
+          "relative_strength": {
+            "score": 100,
+            "weight": 0.15,
+            "weighted": 15.0,
+            "label": "Relative Strength"
+          }
+        }
+      },
+      "trend_template": {
+        "score": 85.0,
+        "raw_score": 100,
+        "passed": true,
+        "criteria_passed": 7,
+        "criteria_total": 7,
+        "sma50": 8219.5,
+        "sma150": 6277.17,
+        "sma200": 5538.92,
+        "extended_penalty": -15.0,
+        "sma50_distance_pct": 19.84
+      },
+      "vcp_pattern": {
+        "score": 30,
+        "valid_vcp": false,
+        "num_contractions": 2,
+        "pivot_price": 9400.0,
+        "pattern_duration_days": 12,
+        "contractions": [
+          {
+            "label": "T1",
+            "high_idx": 71,
+            "high_price": 9290.0,
+            "high_date": "2026-01-21",
+            "low_idx": 74,
+            "low_price": 7450.0,
+            "low_date": "2026-01-26",
+            "depth_pct": 19.81,
+            "duration_days": 3
+          },
+          {
+            "label": "T2",
+            "high_idx": 75,
+            "high_price": 9400.0,
+            "high_date": "2026-01-27",
+            "low_idx": 83,
+            "low_price": 7300.0,
+            "low_date": "2026-02-06",
+            "depth_pct": 22.34,
+            "duration_days": 8
+          }
+        ],
+        "validation": {
+          "valid": false,
+          "issues": [
+            "T2 ratio 1.13 > 0.75",
+            "Pattern too short (12d)"
+          ],
+          "contraction_ratios": [
+            1.128
+          ],
+          "t1_depth": 19.81
+        }
+      },
+      "volume_pattern": {
+        "score": 30,
+        "dry_up_ratio": 1.7,
+        "breakout_volume_detected": true,
+        "avg_volume_50d": 8011469,
+        "net_accumulation": 0
+      },
+      "pivot_proximity": {
+        "score": 75,
+        "distance_from_pivot_pct": 4.79,
+        "pivot_price": 9400.0,
+        "stop_loss_price": 7227.0,
+        "risk_pct": 26.63,
+        "trade_status": "EXTENDED (moderate) (vol confirmed)"
+      },
+      "relative_strength": {
+        "score": 100,
+        "rs_rank_estimate": 99,
+        "weighted_rs": 65.99
+      },
+      "stage": {
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing",
+        "confidence": 100
+      },
+      "market_gate": "YELLOW",
+      "gate_score": 25,
+      "position_modifier": 0.5,
+      "entry_price": 9400.0,
+      "stop_price": 7227.0,
+      "target_price": 13746.0,
+      "risk_reward_ratio": 2.0,
+      "foreign_5d": -3760879,
+      "inst_5d": -29187,
+      "supply_demand_index": 76.1,
+      "generated_at": "2026-03-15T16:10:43.252085"
+    },
+    {
+      "symbol": "031330",
+      "name": "에스에이엠티",
+      "market": "KR",
+      "sector": "",
+      "price": 4995.0,
+      "composite": {
+        "composite_score": 61.0,
+        "rating": "Developing VCP",
+        "rating_description": "VCP 형성 중 — 아직 비매수",
+        "guidance": "관찰 — 더 타이트한 수축 대기",
+        "valid_vcp": true,
+        "entry_ready": false,
+        "weakest_component": "Relative Strength",
+        "strongest_component": "Trend Template (Stage 2)",
+        "component_breakdown": {
+          "trend_template": {
+            "score": 80.8,
+            "weight": 0.25,
+            "weighted": 20.2,
+            "label": "Trend Template (Stage 2)"
+          },
+          "contraction_quality": {
+            "score": 65,
+            "weight": 0.25,
+            "weighted": 16.2,
+            "label": "Contraction Quality"
+          },
+          "volume_pattern": {
+            "score": 70,
+            "weight": 0.2,
+            "weighted": 14.0,
+            "label": "Volume Pattern"
+          },
+          "pivot_proximity": {
+            "score": 50,
+            "weight": 0.15,
+            "weighted": 7.5,
+            "label": "Pivot Proximity"
+          },
+          "relative_strength": {
+            "score": 20,
+            "weight": 0.15,
+            "weighted": 3.0,
+            "label": "Relative Strength"
+          }
+        }
+      },
+      "trend_template": {
+        "score": 80.8,
+        "raw_score": 85.8,
+        "passed": true,
+        "criteria_passed": 6,
+        "criteria_total": 7,
+        "sma50": 4598.25,
+        "sma150": 4105.58,
+        "sma200": 3737.88,
+        "extended_penalty": -5.0,
+        "sma50_distance_pct": 8.63
+      },
+      "vcp_pattern": {
+        "score": 65,
+        "valid_vcp": true,
+        "num_contractions": 2,
+        "pivot_price": 4680.0,
+        "pattern_duration_days": 16,
+        "contractions": [
+          {
+            "label": "T1",
+            "high_idx": 59,
+            "high_price": 4485.0,
+            "high_date": "2026-01-05",
+            "low_idx": 63,
+            "low_price": 3910.0,
+            "low_date": "2026-01-09",
+            "depth_pct": 12.82,
+            "duration_days": 4
+          },
+          {
+            "label": "T2",
+            "high_idx": 72,
+            "high_price": 4680.0,
+            "high_date": "2026-01-22",
+            "low_idx": 75,
+            "low_price": 4270.0,
+            "low_date": "2026-01-27",
+            "depth_pct": 8.76,
+            "duration_days": 3
+          }
+        ],
+        "validation": {
+          "valid": true,
+          "issues": [],
+          "contraction_ratios": [
+            0.683
+          ],
+          "t1_depth": 12.82
+        }
+      },
+      "volume_pattern": {
+        "score": 70,
+        "dry_up_ratio": 0.586,
+        "breakout_volume_detected": false,
+        "avg_volume_50d": 1342562,
+        "net_accumulation": 5
+      },
+      "pivot_proximity": {
+        "score": 50,
+        "distance_from_pivot_pct": 6.73,
+        "pivot_price": 4680.0,
+        "stop_loss_price": 4227.3,
+        "risk_pct": 15.37,
+        "trade_status": "EXTENDED (high risk)"
+      },
+      "relative_strength": {
+        "score": 20,
+        "rs_rank_estimate": 25,
+        "weighted_rs": -10.5
+      },
+      "stage": {
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing",
+        "confidence": 100
+      },
+      "market_gate": "YELLOW",
+      "gate_score": 25,
+      "position_modifier": 0.5,
+      "entry_price": 4680.0,
+      "stop_price": 4227.3,
+      "target_price": 5585.4,
+      "risk_reward_ratio": 2.0,
+      "foreign_5d": -868205,
+      "inst_5d": 347634,
+      "supply_demand_index": 74.3,
+      "generated_at": "2026-03-15T16:11:02.417646"
+    },
+    {
+      "symbol": "001390",
+      "name": "KG케미칼",
+      "market": "KR",
+      "sector": "",
+      "price": 5970.0,
+      "composite": {
+        "composite_score": 58.2,
+        "rating": "Weak VCP",
+        "rating_description": "VCP 일부 특성만 보유",
+        "guidance": "모니터링만 — 패턴 발전 필요",
+        "valid_vcp": true,
+        "entry_ready": true,
+        "weakest_component": "Relative Strength",
+        "strongest_component": "Trend Template (Stage 2)",
+        "component_breakdown": {
+          "trend_template": {
+            "score": 85.8,
+            "weight": 0.25,
+            "weighted": 21.4,
+            "label": "Trend Template (Stage 2)"
+          },
+          "contraction_quality": {
+            "score": 70,
+            "weight": 0.25,
+            "weighted": 17.5,
+            "label": "Contraction Quality"
+          },
+          "volume_pattern": {
+            "score": 40,
+            "weight": 0.2,
+            "weighted": 8.0,
+            "label": "Volume Pattern"
+          },
+          "pivot_proximity": {
+            "score": 75,
+            "weight": 0.15,
+            "weighted": 11.2,
+            "label": "Pivot Proximity"
+          },
+          "relative_strength": {
+            "score": 0,
+            "weight": 0.15,
+            "weighted": 0.0,
+            "label": "Relative Strength"
+          }
+        }
+      },
+      "trend_template": {
+        "score": 85.8,
+        "raw_score": 85.8,
+        "passed": true,
+        "criteria_passed": 6,
+        "criteria_total": 7,
+        "sma50": 5683.0,
+        "sma150": 5483.75,
+        "sma200": 5216.38,
+        "extended_penalty": 0.0,
+        "sma50_distance_pct": 5.05
+      },
+      "vcp_pattern": {
+        "score": 70,
+        "valid_vcp": true,
+        "num_contractions": 2,
+        "pivot_price": 6100.0,
+        "pattern_duration_days": 37,
+        "contractions": [
+          {
+            "label": "T1",
+            "high_idx": 46,
+            "high_price": 5970.0,
+            "high_date": "2025-12-12",
+            "low_idx": 69,
+            "low_price": 4730.0,
+            "low_date": "2026-01-19",
+            "depth_pct": 20.77,
+            "duration_days": 23
+          },
+          {
+            "label": "T2",
+            "high_idx": 76,
+            "high_price": 6100.0,
+            "high_date": "2026-01-28",
+            "low_idx": 83,
+            "low_price": 5500.0,
+            "low_date": "2026-02-06",
+            "depth_pct": 9.84,
+            "duration_days": 7
+          }
+        ],
+        "validation": {
+          "valid": true,
+          "issues": [],
+          "contraction_ratios": [
+            0.474
+          ],
+          "t1_depth": 20.77
+        }
+      },
+      "volume_pattern": {
+        "score": 40,
+        "dry_up_ratio": 0.907,
+        "breakout_volume_detected": false,
+        "avg_volume_50d": 372592,
+        "net_accumulation": 0
+      },
+      "pivot_proximity": {
+        "score": 75,
+        "distance_from_pivot_pct": -2.13,
+        "pivot_price": 6100.0,
+        "stop_loss_price": 5445.0,
+        "risk_pct": 8.79,
+        "trade_status": "NEAR PIVOT"
+      },
+      "relative_strength": {
+        "score": 0,
+        "rs_rank_estimate": 10,
+        "weighted_rs": -37.53
+      },
+      "stage": {
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing",
+        "confidence": 94.9
+      },
+      "market_gate": "YELLOW",
+      "gate_score": 25,
+      "position_modifier": 0.5,
+      "entry_price": 6100.0,
+      "stop_price": 5445.0,
+      "target_price": 7410.0,
+      "risk_reward_ratio": 2.0,
+      "foreign_5d": -90653,
+      "inst_5d": 4660,
+      "supply_demand_index": 80.1,
+      "generated_at": "2026-03-15T16:10:33.813322"
+    },
+    {
+      "symbol": "006340",
+      "name": "대원전선",
+      "market": "KR",
+      "sector": "",
+      "price": 3910.0,
+      "composite": {
+        "composite_score": 58.0,
+        "rating": "Weak VCP",
+        "rating_description": "VCP 일부 특성만 보유",
+        "guidance": "모니터링만 — 패턴 발전 필요",
+        "valid_vcp": false,
+        "entry_ready": false,
+        "weakest_component": "Relative Strength",
+        "strongest_component": "Trend Template (Stage 2)",
+        "component_breakdown": {
+          "trend_template": {
+            "score": 85.8,
+            "weight": 0.25,
+            "weighted": 21.4,
+            "label": "Trend Template (Stage 2)"
+          },
+          "contraction_quality": {
+            "score": 45,
+            "weight": 0.25,
+            "weighted": 11.2,
+            "label": "Contraction Quality"
+          },
+          "volume_pattern": {
+            "score": 70,
+            "weight": 0.2,
+            "weighted": 14.0,
+            "label": "Volume Pattern"
+          },
+          "pivot_proximity": {
+            "score": 75,
+            "weight": 0.15,
+            "weighted": 11.2,
+            "label": "Pivot Proximity"
+          },
+          "relative_strength": {
+            "score": 0,
+            "weight": 0.15,
+            "weighted": 0.0,
+            "label": "Relative Strength"
+          }
+        }
+      },
+      "trend_template": {
+        "score": 85.8,
+        "raw_score": 85.8,
+        "passed": true,
+        "criteria_passed": 6,
+        "criteria_total": 7,
+        "sma50": 3713.25,
+        "sma150": 3746.42,
+        "sma200": 3477.21,
+        "extended_penalty": 0.0,
+        "sma50_distance_pct": 5.3
+      },
+      "vcp_pattern": {
+        "score": 45,
+        "valid_vcp": false,
+        "num_contractions": 4,
+        "pivot_price": 4045.0,
+        "pattern_duration_days": 25,
+        "contractions": [
+          {
+            "label": "T1",
+            "high_idx": 30,
+            "high_price": 4190.0,
+            "high_date": "2025-11-20",
+            "low_idx": 33,
+            "low_price": 3620.0,
+            "low_date": "2025-11-25",
+            "depth_pct": 13.6,
+            "duration_days": 3
+          },
+          {
+            "label": "T2",
+            "high_idx": 36,
+            "high_price": 4085.0,
+            "high_date": "2025-11-28",
+            "low_idx": 45,
+            "low_price": 3535.0,
+            "low_date": "2025-12-11",
+            "depth_pct": 13.46,
+            "duration_days": 9
+          },
+          {
+            "label": "T3",
+            "high_idx": 48,
+            "high_price": 4320.0,
+            "high_date": "2025-12-16",
+            "low_idx": 51,
+            "low_price": 3700.0,
+            "low_date": "2025-12-19",
+            "depth_pct": 14.35,
+            "duration_days": 3
+          },
+          {
+            "label": "T4",
+            "high_idx": 52,
+            "high_price": 4045.0,
+            "high_date": "2025-12-22",
+            "low_idx": 55,
+            "low_price": 3625.0,
+            "low_date": "2025-12-26",
+            "depth_pct": 10.38,
+            "duration_days": 3
+          }
+        ],
+        "validation": {
+          "valid": false,
+          "issues": [
+            "T2 ratio 0.99 > 0.75",
+            "T3 ratio 1.07 > 0.75"
+          ],
+          "contraction_ratios": [
+            0.99,
+            1.066,
+            0.723
+          ],
+          "t1_depth": 13.6
+        }
+      },
+      "volume_pattern": {
+        "score": 70,
+        "dry_up_ratio": 0.669,
+        "breakout_volume_detected": false,
+        "avg_volume_50d": 3900811,
+        "net_accumulation": 4
+      },
+      "pivot_proximity": {
+        "score": 75,
+        "distance_from_pivot_pct": -3.34,
+        "pivot_price": 4045.0,
+        "stop_loss_price": 3588.75,
+        "risk_pct": 8.22,
+        "trade_status": "NEAR PIVOT"
+      },
+      "relative_strength": {
+        "score": 0,
+        "rs_rank_estimate": 10,
+        "weighted_rs": -42.48
+      },
+      "stage": {
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing",
+        "confidence": 87.7
+      },
+      "market_gate": "YELLOW",
+      "gate_score": 25,
+      "position_modifier": 0.5,
+      "entry_price": 4045.0,
+      "stop_price": 3588.75,
+      "target_price": 4957.5,
+      "risk_reward_ratio": 2.0,
+      "foreign_5d": -59370,
+      "inst_5d": 1116887,
+      "supply_demand_index": 86.754,
+      "generated_at": "2026-03-15T16:10:42.070831"
+    },
+    {
+      "symbol": "009070",
+      "name": "KCTC",
+      "market": "KR",
+      "sector": "",
+      "price": 7440.0,
+      "composite": {
+        "composite_score": 56.2,
+        "rating": "Weak VCP",
+        "rating_description": "VCP 일부 특성만 보유",
+        "guidance": "모니터링만 — 패턴 발전 필요",
+        "valid_vcp": true,
+        "entry_ready": false,
+        "weakest_component": "Relative Strength",
+        "strongest_component": "Pivot Proximity",
+        "component_breakdown": {
+          "trend_template": {
+            "score": 80.8,
+            "weight": 0.25,
+            "weighted": 20.2,
+            "label": "Trend Template (Stage 2)"
+          },
+          "contraction_quality": {
+            "score": 70,
+            "weight": 0.25,
+            "weighted": 17.5,
+            "label": "Contraction Quality"
+          },
+          "volume_pattern": {
+            "score": 25,
+            "weight": 0.2,
+            "weighted": 5.0,
+            "label": "Volume Pattern"
+          },
+          "pivot_proximity": {
+            "score": 90,
+            "weight": 0.15,
+            "weighted": 13.5,
+            "label": "Pivot Proximity"
+          },
+          "relative_strength": {
+            "score": 0,
+            "weight": 0.15,
+            "weighted": 0.0,
+            "label": "Relative Strength"
+          }
+        }
+      },
+      "trend_template": {
+        "score": 80.8,
+        "raw_score": 85.8,
+        "passed": true,
+        "criteria_passed": 6,
+        "criteria_total": 7,
+        "sma50": 6866.5,
+        "sma150": 6240.5,
+        "sma200": 5867.38,
+        "extended_penalty": -5.0,
+        "sma50_distance_pct": 8.35
+      },
+      "vcp_pattern": {
+        "score": 70,
+        "valid_vcp": true,
+        "num_contractions": 2,
+        "pivot_price": 7400.0,
+        "pattern_duration_days": 37,
+        "contractions": [
+          {
+            "label": "T1",
+            "high_idx": 46,
+            "high_price": 7390.0,
+            "high_date": "2025-12-12",
+            "low_idx": 54,
+            "low_price": 5900.0,
+            "low_date": "2025-12-24",
+            "depth_pct": 20.16,
+            "duration_days": 8
+          },
+          {
+            "label": "T2",
+            "high_idx": 78,
+            "high_price": 7400.0,
+            "high_date": "2026-01-30",
+            "low_idx": 83,
+            "low_price": 6700.0,
+            "low_date": "2026-02-06",
+            "depth_pct": 9.46,
+            "duration_days": 5
+          }
+        ],
+        "validation": {
+          "valid": true,
+          "issues": [],
+          "contraction_ratios": [
+            0.469
+          ],
+          "t1_depth": 20.16
+        }
+      },
+      "volume_pattern": {
+        "score": 25,
+        "dry_up_ratio": 1.646,
+        "breakout_volume_detected": false,
+        "avg_volume_50d": 2466112,
+        "net_accumulation": -1
+      },
+      "pivot_proximity": {
+        "score": 90,
+        "distance_from_pivot_pct": 0.54,
+        "pivot_price": 7400.0,
+        "stop_loss_price": 6633.0,
+        "risk_pct": 10.85,
+        "trade_status": "ABOVE PIVOT (within 3%)"
+      },
+      "relative_strength": {
+        "score": 0,
+        "rs_rank_estimate": 10,
+        "weighted_rs": -23.37
+      },
+      "stage": {
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing",
+        "confidence": 100
+      },
+      "market_gate": "YELLOW",
+      "gate_score": 25,
+      "position_modifier": 0.5,
+      "entry_price": 7400.0,
+      "stop_price": 6633.0,
+      "target_price": 8934.0,
+      "risk_reward_ratio": 2.0,
+      "foreign_5d": 350158,
+      "inst_5d": 3124,
+      "supply_demand_index": 75.3,
+      "generated_at": "2026-03-15T16:10:45.713323"
+    },
+    {
+      "symbol": "036620",
+      "name": "감성코퍼레이션",
+      "market": "KR",
+      "sector": "",
+      "price": 6960.0,
+      "composite": {
+        "composite_score": 56.0,
+        "rating": "Weak VCP",
+        "rating_description": "VCP 일부 특성만 보유",
+        "guidance": "모니터링만 — 패턴 발전 필요",
+        "valid_vcp": true,
+        "entry_ready": false,
+        "weakest_component": "Relative Strength",
+        "strongest_component": "Trend Template (Stage 2)",
+        "component_breakdown": {
+          "trend_template": {
+            "score": 80.8,
+            "weight": 0.25,
+            "weighted": 20.2,
+            "label": "Trend Template (Stage 2)"
+          },
+          "contraction_quality": {
+            "score": 70,
+            "weight": 0.25,
+            "weighted": 17.5,
+            "label": "Contraction Quality"
+          },
+          "volume_pattern": {
+            "score": 35,
+            "weight": 0.2,
+            "weighted": 7.0,
+            "label": "Volume Pattern"
+          },
+          "pivot_proximity": {
+            "score": 75,
+            "weight": 0.15,
+            "weighted": 11.2,
+            "label": "Pivot Proximity"
+          },
+          "relative_strength": {
+            "score": 0,
+            "weight": 0.15,
+            "weighted": 0.0,
+            "label": "Relative Strength"
+          }
+        }
+      },
+      "trend_template": {
+        "score": 80.8,
+        "raw_score": 85.8,
+        "passed": true,
+        "criteria_passed": 6,
+        "criteria_total": 7,
+        "sma50": 6440.0,
+        "sma150": 6138.67,
+        "sma200": 5903.08,
+        "extended_penalty": -5.0,
+        "sma50_distance_pct": 8.07
+      },
+      "vcp_pattern": {
+        "score": 70,
+        "valid_vcp": true,
+        "num_contractions": 2,
+        "pivot_price": 7150.0,
+        "pattern_duration_days": 41,
+        "contractions": [
+          {
+            "label": "T1",
+            "high_idx": 42,
+            "high_price": 7100.0,
+            "high_date": "2025-12-08",
+            "low_idx": 67,
+            "low_price": 5060.0,
+            "low_date": "2026-01-15",
+            "depth_pct": 28.73,
+            "duration_days": 25
+          },
+          {
+            "label": "T2",
+            "high_idx": 78,
+            "high_price": 7150.0,
+            "high_date": "2026-01-30",
+            "low_idx": 83,
+            "low_price": 6200.0,
+            "low_date": "2026-02-06",
+            "depth_pct": 13.29,
+            "duration_days": 5
+          }
+        ],
+        "validation": {
+          "valid": true,
+          "issues": [],
+          "contraction_ratios": [
+            0.463
+          ],
+          "t1_depth": 28.73
+        }
+      },
+      "volume_pattern": {
+        "score": 35,
+        "dry_up_ratio": 1.037,
+        "breakout_volume_detected": false,
+        "avg_volume_50d": 874590,
+        "net_accumulation": 7
+      },
+      "pivot_proximity": {
+        "score": 75,
+        "distance_from_pivot_pct": -2.66,
+        "pivot_price": 7150.0,
+        "stop_loss_price": 6138.0,
+        "risk_pct": 11.81,
+        "trade_status": "NEAR PIVOT"
+      },
+      "relative_strength": {
+        "score": 0,
+        "rs_rank_estimate": 10,
+        "weighted_rs": -34.88
+      },
+      "stage": {
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing",
+        "confidence": 95.2
+      },
+      "market_gate": "YELLOW",
+      "gate_score": 25,
+      "position_modifier": 0.5,
+      "entry_price": 7150.0,
+      "stop_price": 6138.0,
+      "target_price": 9174.0,
+      "risk_reward_ratio": 2.0,
+      "foreign_5d": 535669,
+      "inst_5d": -445455,
+      "supply_demand_index": 86.754,
+      "generated_at": "2026-03-15T16:11:08.145194"
+    },
+    {
+      "symbol": "001360",
+      "name": "삼성제약",
+      "market": "KR",
+      "sector": "",
+      "price": 2172.0,
+      "composite": {
+        "composite_score": 55.5,
+        "rating": "Weak VCP",
+        "rating_description": "VCP 일부 특성만 보유",
+        "guidance": "모니터링만 — 패턴 발전 필요",
+        "valid_vcp": true,
+        "entry_ready": false,
+        "weakest_component": "Relative Strength",
+        "strongest_component": "Trend Template (Stage 2)",
+        "component_breakdown": {
+          "trend_template": {
+            "score": 70.8,
+            "weight": 0.25,
+            "weighted": 17.7,
+            "label": "Trend Template (Stage 2)"
+          },
+          "contraction_quality": {
+            "score": 65,
+            "weight": 0.25,
+            "weighted": 16.2,
+            "label": "Contraction Quality"
+          },
+          "volume_pattern": {
+            "score": 55,
+            "weight": 0.2,
+            "weighted": 11.0,
+            "label": "Volume Pattern"
+          },
+          "pivot_proximity": {
+            "score": 50,
+            "weight": 0.15,
+            "weighted": 7.5,
+            "label": "Pivot Proximity"
+          },
+          "relative_strength": {
+            "score": 20,
+            "weight": 0.15,
+            "weighted": 3.0,
+            "label": "Relative Strength"
+          }
+        }
+      },
+      "trend_template": {
+        "score": 70.8,
+        "raw_score": 85.8,
+        "passed": true,
+        "criteria_passed": 6,
+        "criteria_total": 7,
+        "sma50": 1853.6,
+        "sma150": 1633.45,
+        "sma200": 1606.71,
+        "extended_penalty": -15.0,
+        "sma50_distance_pct": 17.18
+      },
+      "vcp_pattern": {
+        "score": 65,
+        "valid_vcp": true,
+        "num_contractions": 2,
+        "pivot_price": 2050.0,
+        "pattern_duration_days": 38,
+        "contractions": [
+          {
+            "label": "T1",
+            "high_idx": 45,
+            "high_price": 2090.0,
+            "high_date": "2025-12-11",
+            "low_idx": 67,
+            "low_price": 1406.0,
+            "low_date": "2026-01-15",
+            "depth_pct": 32.73,
+            "duration_days": 22
+          },
+          {
+            "label": "T2",
+            "high_idx": 78,
+            "high_price": 2050.0,
+            "high_date": "2026-01-30",
+            "low_idx": 83,
+            "low_price": 1853.0,
+            "low_date": "2026-02-06",
+            "depth_pct": 9.61,
+            "duration_days": 5
+          }
+        ],
+        "validation": {
+          "valid": true,
+          "issues": [],
+          "contraction_ratios": [
+            0.294
+          ],
+          "t1_depth": 32.73
+        }
+      },
+      "volume_pattern": {
+        "score": 55,
+        "dry_up_ratio": 0.874,
+        "breakout_volume_detected": false,
+        "avg_volume_50d": 4067479,
+        "net_accumulation": 6
+      },
+      "pivot_proximity": {
+        "score": 50,
+        "distance_from_pivot_pct": 5.95,
+        "pivot_price": 2050.0,
+        "stop_loss_price": 1834.47,
+        "risk_pct": 15.54,
+        "trade_status": "EXTENDED (high risk)"
+      },
+      "relative_strength": {
+        "score": 20,
+        "rs_rank_estimate": 25,
+        "weighted_rs": -15.33
+      },
+      "stage": {
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing",
+        "confidence": 100
+      },
+      "market_gate": "YELLOW",
+      "gate_score": 25,
+      "position_modifier": 0.5,
+      "entry_price": 2050.0,
+      "stop_price": 1834.47,
+      "target_price": 2481.06,
+      "risk_reward_ratio": 2.0,
+      "foreign_5d": -246282,
+      "inst_5d": 1044,
+      "supply_demand_index": 78.7,
+      "generated_at": "2026-03-15T16:10:33.649414"
+    },
+    {
+      "symbol": "019210",
+      "name": "와이지-원",
+      "market": "KR",
+      "sector": "",
+      "price": 8930.0,
+      "composite": {
+        "composite_score": 55.2,
+        "rating": "Weak VCP",
+        "rating_description": "VCP 일부 특성만 보유",
+        "guidance": "모니터링만 — 패턴 발전 필요",
+        "valid_vcp": false,
+        "entry_ready": false,
+        "weakest_component": "Pivot Proximity",
+        "strongest_component": "Trend Template (Stage 2)",
+        "component_breakdown": {
+          "trend_template": {
+            "score": 95.0,
+            "weight": 0.25,
+            "weighted": 23.8,
+            "label": "Trend Template (Stage 2)"
+          },
+          "contraction_quality": {
+            "score": 30,
+            "weight": 0.25,
+            "weighted": 7.5,
+            "label": "Contraction Quality"
+          },
+          "volume_pattern": {
+            "score": 45,
+            "weight": 0.2,
+            "weighted": 9.0,
+            "label": "Volume Pattern"
+          },
+          "pivot_proximity": {
+            "score": 20,
+            "weight": 0.15,
+            "weighted": 3.0,
+            "label": "Pivot Proximity"
+          },
+          "relative_strength": {
+            "score": 80,
+            "weight": 0.15,
+            "weighted": 12.0,
+            "label": "Relative Strength"
+          }
+        }
+      },
+      "trend_template": {
+        "score": 95.0,
+        "raw_score": 100,
+        "passed": true,
+        "criteria_passed": 7,
+        "criteria_total": 7,
+        "sma50": 8229.0,
+        "sma150": 6334.0,
+        "sma200": 5785.0,
+        "extended_penalty": -5.0,
+        "sma50_distance_pct": 8.52
+      },
+      "vcp_pattern": {
+        "score": 30,
+        "valid_vcp": false,
+        "num_contractions": 2,
+        "pivot_price": 5400.0,
+        "pattern_duration_days": 21,
+        "contractions": [
+          {
+            "label": "T1",
+            "high_idx": 13,
+            "high_price": 5310.0,
+            "high_date": "2025-10-28",
+            "low_idx": 21,
+            "low_price": 4940.0,
+            "low_date": "2025-11-07",
+            "depth_pct": 6.97,
+            "duration_days": 8
+          },
+          {
+            "label": "T2",
+            "high_idx": 26,
+            "high_price": 5400.0,
+            "high_date": "2025-11-14",
+            "low_idx": 34,
+            "low_price": 4900.0,
+            "low_date": "2025-11-26",
+            "depth_pct": 9.26,
+            "duration_days": 8
+          }
+        ],
+        "validation": {
+          "valid": false,
+          "issues": [
+            "T2 ratio 1.33 > 0.75"
+          ],
+          "contraction_ratios": [
+            1.329
+          ],
+          "t1_depth": 6.97
+        }
+      },
+      "volume_pattern": {
+        "score": 45,
+        "dry_up_ratio": 2.565,
+        "breakout_volume_detected": true,
+        "avg_volume_50d": 635225,
+        "net_accumulation": 4
+      },
+      "pivot_proximity": {
+        "score": 20,
+        "distance_from_pivot_pct": 65.37,
+        "pivot_price": 5400.0,
+        "stop_loss_price": 4851.0,
+        "risk_pct": 45.68,
+        "trade_status": "OVEREXTENDED"
+      },
+      "relative_strength": {
+        "score": 80,
+        "rs_rank_estimate": 80,
+        "weighted_rs": 10.35
+      },
+      "stage": {
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing",
+        "confidence": 100
+      },
+      "market_gate": "YELLOW",
+      "gate_score": 25,
+      "position_modifier": 0.5,
+      "entry_price": 5400.0,
+      "stop_price": 4851.0,
+      "target_price": 6498.0,
+      "risk_reward_ratio": 2.0,
+      "foreign_5d": -64074,
+      "inst_5d": 147895,
+      "supply_demand_index": 80.5,
+      "generated_at": "2026-03-15T16:10:55.909026"
+    },
+    {
+      "symbol": "032350",
+      "name": "롯데관광개발",
+      "market": "KR",
+      "sector": "",
+      "price": 24800.0,
+      "composite": {
+        "composite_score": 55.2,
+        "rating": "Weak VCP",
+        "rating_description": "VCP 일부 특성만 보유",
+        "guidance": "모니터링만 — 패턴 발전 필요",
+        "valid_vcp": true,
+        "entry_ready": false,
+        "weakest_component": "Relative Strength",
+        "strongest_component": "Pivot Proximity",
+        "component_breakdown": {
+          "trend_template": {
+            "score": 85.8,
+            "weight": 0.25,
+            "weighted": 21.4,
+            "label": "Trend Template (Stage 2)"
+          },
+          "contraction_quality": {
+            "score": 65,
+            "weight": 0.25,
+            "weighted": 16.2,
+            "label": "Contraction Quality"
+          },
+          "volume_pattern": {
+            "score": 20,
+            "weight": 0.2,
+            "weighted": 4.0,
+            "label": "Volume Pattern"
+          },
+          "pivot_proximity": {
+            "score": 90,
+            "weight": 0.15,
+            "weighted": 13.5,
+            "label": "Pivot Proximity"
+          },
+          "relative_strength": {
+            "score": 0,
+            "weight": 0.15,
+            "weighted": 0.0,
+            "label": "Relative Strength"
+          }
+        }
+      },
+      "trend_template": {
+        "score": 85.8,
+        "raw_score": 85.8,
+        "passed": true,
+        "criteria_passed": 6,
+        "criteria_total": 7,
+        "sma50": 24340.0,
+        "sma150": 22660.0,
+        "sma200": 20265.08,
+        "extended_penalty": 0.0,
+        "sma50_distance_pct": 1.89
+      },
+      "vcp_pattern": {
+        "score": 65,
+        "valid_vcp": true,
+        "num_contractions": 2,
+        "pivot_price": 24150.0,
+        "pattern_duration_days": 29,
+        "contractions": [
+          {
+            "label": "T1",
+            "high_idx": 47,
+            "high_price": 24300.0,
+            "high_date": "2025-12-15",
+            "low_idx": 59,
+            "low_price": 20250.0,
+            "low_date": "2026-01-05",
+            "depth_pct": 16.67,
+            "duration_days": 12
+          },
+          {
+            "label": "T2",
+            "high_idx": 73,
+            "high_price": 24150.0,
+            "high_date": "2026-01-23",
+            "low_idx": 76,
+            "low_price": 21350.0,
+            "low_date": "2026-01-28",
+            "depth_pct": 11.59,
+            "duration_days": 3
+          }
+        ],
+        "validation": {
+          "valid": true,
+          "issues": [],
+          "contraction_ratios": [
+            0.695
+          ],
+          "t1_depth": 16.67
+        }
+      },
+      "volume_pattern": {
+        "score": 20,
+        "dry_up_ratio": 1.177,
+        "breakout_volume_detected": false,
+        "avg_volume_50d": 860096,
+        "net_accumulation": -2
+      },
+      "pivot_proximity": {
+        "score": 90,
+        "distance_from_pivot_pct": 2.69,
+        "pivot_price": 24150.0,
+        "stop_loss_price": 21136.5,
+        "risk_pct": 14.77,
+        "trade_status": "ABOVE PIVOT (within 3%)"
+      },
+      "relative_strength": {
+        "score": 0,
+        "rs_rank_estimate": 10,
+        "weighted_rs": -26.19
+      },
+      "stage": {
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing",
+        "confidence": 100
+      },
+      "market_gate": "YELLOW",
+      "gate_score": 25,
+      "position_modifier": 0.5,
+      "entry_price": 24150.0,
+      "stop_price": 21136.5,
+      "target_price": 30177.0,
+      "risk_reward_ratio": 2.0,
+      "foreign_5d": 599242,
+      "inst_5d": -896671,
+      "supply_demand_index": 80.8,
+      "generated_at": "2026-03-15T16:11:02.814429"
+    },
+    {
+      "symbol": "024850",
+      "name": "HLB이노베이션",
+      "market": "KR",
+      "sector": "",
+      "price": 3130.0,
+      "composite": {
+        "composite_score": 54.8,
+        "rating": "Weak VCP",
+        "rating_description": "VCP 일부 특성만 보유",
+        "guidance": "모니터링만 — 패턴 발전 필요",
+        "valid_vcp": false,
+        "entry_ready": false,
+        "weakest_component": "Pivot Proximity",
+        "strongest_component": "Trend Template (Stage 2)",
+        "component_breakdown": {
+          "trend_template": {
+            "score": 95.0,
+            "weight": 0.25,
+            "weighted": 23.8,
+            "label": "Trend Template (Stage 2)"
+          },
+          "contraction_quality": {
+            "score": 30,
+            "weight": 0.25,
+            "weighted": 7.5,
+            "label": "Contraction Quality"
+          },
+          "volume_pattern": {
+            "score": 35,
+            "weight": 0.2,
+            "weighted": 7.0,
+            "label": "Volume Pattern"
+          },
+          "pivot_proximity": {
+            "score": 20,
+            "weight": 0.15,
+            "weighted": 3.0,
+            "label": "Pivot Proximity"
+          },
+          "relative_strength": {
+            "score": 90,
+            "weight": 0.15,
+            "weighted": 13.5,
+            "label": "Relative Strength"
+          }
+        }
+      },
+      "trend_template": {
+        "score": 95.0,
+        "raw_score": 100,
+        "passed": true,
+        "criteria_passed": 7,
+        "criteria_total": 7,
+        "sma50": 2934.75,
+        "sma150": 2265.6,
+        "sma200": 2020.02,
+        "extended_penalty": -5.0,
+        "sma50_distance_pct": 6.65
+      },
+      "vcp_pattern": {
+        "score": 30,
+        "valid_vcp": false,
+        "num_contractions": 2,
+        "pivot_price": 2200.0,
+        "pattern_duration_days": 19,
+        "contractions": [
+          {
+            "label": "T1",
+            "high_idx": 12,
+            "high_price": 2155.0,
+            "high_date": "2025-10-27",
+            "low_idx": 17,
+            "low_price": 1773.0,
+            "low_date": "2025-11-03",
+            "depth_pct": 17.73,
+            "duration_days": 5
+          },
+          {
+            "label": "T2",
+            "high_idx": 18,
+            "high_price": 2200.0,
+            "high_date": "2025-11-04",
+            "low_idx": 31,
+            "low_price": 1580.0,
+            "low_date": "2025-11-21",
+            "depth_pct": 28.18,
+            "duration_days": 13
+          }
+        ],
+        "validation": {
+          "valid": false,
+          "issues": [
+            "T2 ratio 1.59 > 0.75"
+          ],
+          "contraction_ratios": [
+            1.589
+          ],
+          "t1_depth": 17.73
+        }
+      },
+      "volume_pattern": {
+        "score": 35,
+        "dry_up_ratio": 1.096,
+        "breakout_volume_detected": false,
+        "avg_volume_50d": 1511569,
+        "net_accumulation": 4
+      },
+      "pivot_proximity": {
+        "score": 20,
+        "distance_from_pivot_pct": 42.27,
+        "pivot_price": 2200.0,
+        "stop_loss_price": 1564.2,
+        "risk_pct": 50.03,
+        "trade_status": "OVEREXTENDED"
+      },
+      "relative_strength": {
+        "score": 90,
+        "rs_rank_estimate": 90,
+        "weighted_rs": 25.36
+      },
+      "stage": {
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing",
+        "confidence": 100
+      },
+      "market_gate": "YELLOW",
+      "gate_score": 25,
+      "position_modifier": 0.5,
+      "entry_price": 2200.0,
+      "stop_price": 1564.2,
+      "target_price": 3471.6,
+      "risk_reward_ratio": 2.0,
+      "foreign_5d": 776194,
+      "inst_5d": -761647,
+      "supply_demand_index": 67.5,
+      "generated_at": "2026-03-15T16:10:59.452050"
+    },
+    {
+      "symbol": "123410",
+      "name": "코리아에프티",
+      "market": "KR",
+      "sector": "",
+      "price": 8690.0,
+      "composite": {
+        "composite_score": 54.7,
+        "rating": "Weak VCP",
+        "rating_description": "VCP 일부 특성만 보유",
+        "guidance": "모니터링만 — 패턴 발전 필요",
+        "valid_vcp": false,
+        "entry_ready": false,
+        "weakest_component": "Relative Strength",
+        "strongest_component": "Trend Template (Stage 2)",
+        "component_breakdown": {
+          "trend_template": {
+            "score": 80.8,
+            "weight": 0.25,
+            "weighted": 20.2,
+            "label": "Trend Template (Stage 2)"
+          },
+          "contraction_quality": {
+            "score": 45,
+            "weight": 0.25,
+            "weighted": 11.2,
+            "label": "Contraction Quality"
+          },
+          "volume_pattern": {
+            "score": 60,
+            "weight": 0.2,
+            "weighted": 12.0,
+            "label": "Volume Pattern"
+          },
+          "pivot_proximity": {
+            "score": 75,
+            "weight": 0.15,
+            "weighted": 11.2,
+            "label": "Pivot Proximity"
+          },
+          "relative_strength": {
+            "score": 0,
+            "weight": 0.15,
+            "weighted": 0.0,
+            "label": "Relative Strength"
+          }
+        }
+      },
+      "trend_template": {
+        "score": 80.8,
+        "raw_score": 85.8,
+        "passed": true,
+        "criteria_passed": 6,
+        "criteria_total": 7,
+        "sma50": 8057.5,
+        "sma150": 8035.67,
+        "sma200": 7133.17,
+        "extended_penalty": -5.0,
+        "sma50_distance_pct": 7.85
+      },
+      "vcp_pattern": {
+        "score": 45,
+        "valid_vcp": false,
+        "num_contractions": 4,
+        "pivot_price": 8970.0,
+        "pattern_duration_days": 31,
+        "contractions": [
+          {
+            "label": "T1",
+            "high_idx": 39,
+            "high_price": 8850.0,
+            "high_date": "2025-12-03",
+            "low_idx": 42,
+            "low_price": 8100.0,
+            "low_date": "2025-12-08",
+            "depth_pct": 8.47,
+            "duration_days": 3
+          },
+          {
+            "label": "T2",
+            "high_idx": 43,
+            "high_price": 8640.0,
+            "high_date": "2025-12-09",
+            "low_idx": 46,
+            "low_price": 8000.0,
+            "low_date": "2025-12-12",
+            "depth_pct": 7.41,
+            "duration_days": 3
+          },
+          {
+            "label": "T3",
+            "high_idx": 49,
+            "high_price": 8740.0,
+            "high_date": "2025-12-17",
+            "low_idx": 60,
+            "low_price": 7850.0,
+            "low_date": "2026-01-06",
+            "depth_pct": 10.18,
+            "duration_days": 11
+          },
+          {
+            "label": "T4",
+            "high_idx": 61,
+            "high_price": 8970.0,
+            "high_date": "2026-01-07",
+            "low_idx": 70,
+            "low_price": 7930.0,
+            "low_date": "2026-01-20",
+            "depth_pct": 11.59,
+            "duration_days": 9
+          }
+        ],
+        "validation": {
+          "valid": false,
+          "issues": [
+            "T2 ratio 0.87 > 0.75",
+            "T3 ratio 1.37 > 0.75",
+            "T4 ratio 1.14 > 0.75"
+          ],
+          "contraction_ratios": [
+            0.875,
+            1.374,
+            1.139
+          ],
+          "t1_depth": 8.47
+        }
+      },
+      "volume_pattern": {
+        "score": 60,
+        "dry_up_ratio": 0.51,
+        "breakout_volume_detected": false,
+        "avg_volume_50d": 566410,
+        "net_accumulation": 3
+      },
+      "pivot_proximity": {
+        "score": 75,
+        "distance_from_pivot_pct": -3.12,
+        "pivot_price": 8970.0,
+        "stop_loss_price": 7850.7,
+        "risk_pct": 9.66,
+        "trade_status": "NEAR PIVOT"
+      },
+      "relative_strength": {
+        "score": 0,
+        "rs_rank_estimate": 10,
+        "weighted_rs": -21.75
+      },
+      "stage": {
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing",
+        "confidence": 100
+      },
+      "market_gate": "YELLOW",
+      "gate_score": 25,
+      "position_modifier": 0.5,
+      "entry_price": 8970.0,
+      "stop_price": 7850.7,
+      "target_price": 11208.6,
+      "risk_reward_ratio": 2.0,
+      "foreign_5d": -29097,
+      "inst_5d": 135887,
+      "supply_demand_index": 79.0,
+      "generated_at": "2026-03-15T16:11:34.196812"
+    },
+    {
+      "symbol": "052690",
+      "name": "한전기술",
+      "market": "KR",
+      "sector": "",
+      "price": 151500.0,
+      "composite": {
+        "composite_score": 53.5,
+        "rating": "Weak VCP",
+        "rating_description": "VCP 일부 특성만 보유",
+        "guidance": "모니터링만 — 패턴 발전 필요",
+        "valid_vcp": false,
+        "entry_ready": false,
+        "weakest_component": "Volume Pattern",
+        "strongest_component": "Trend Template (Stage 2)",
+        "component_breakdown": {
+          "trend_template": {
+            "score": 80.8,
+            "weight": 0.25,
+            "weighted": 20.2,
+            "label": "Trend Template (Stage 2)"
+          },
+          "contraction_quality": {
+            "score": 30,
+            "weight": 0.25,
+            "weighted": 7.5,
+            "label": "Contraction Quality"
+          },
+          "volume_pattern": {
+            "score": 20,
+            "weight": 0.2,
+            "weighted": 4.0,
+            "label": "Volume Pattern"
+          },
+          "pivot_proximity": {
+            "score": 75,
+            "weight": 0.15,
+            "weighted": 11.2,
+            "label": "Pivot Proximity"
+          },
+          "relative_strength": {
+            "score": 70,
+            "weight": 0.15,
+            "weighted": 10.5,
+            "label": "Relative Strength"
+          }
+        }
+      },
+      "trend_template": {
+        "score": 80.8,
+        "raw_score": 85.8,
+        "passed": true,
+        "criteria_passed": 6,
+        "criteria_total": 7,
+        "sma50": 141090.0,
+        "sma150": 111403.33,
+        "sma200": 102744.17,
+        "extended_penalty": -5.0,
+        "sma50_distance_pct": 7.38
+      },
+      "vcp_pattern": {
+        "score": 30,
+        "valid_vcp": false,
+        "num_contractions": 2,
+        "pivot_price": 157000.0,
+        "pattern_duration_days": 12,
+        "contractions": [
+          {
+            "label": "T1",
+            "high_idx": 75,
+            "high_price": 159900.0,
+            "high_date": "2026-01-27",
+            "low_idx": 79,
+            "low_price": 125000.0,
+            "low_date": "2026-02-02",
+            "depth_pct": 21.83,
+            "duration_days": 4
+          },
+          {
+            "label": "T2",
+            "high_idx": 82,
+            "high_price": 157000.0,
+            "high_date": "2026-02-05",
+            "low_idx": 87,
+            "low_price": 138000.0,
+            "low_date": "2026-02-12",
+            "depth_pct": 12.1,
+            "duration_days": 5
+          }
+        ],
+        "validation": {
+          "valid": false,
+          "issues": [
+            "Pattern too short (12d)"
+          ],
+          "contraction_ratios": [
+            0.554
+          ],
+          "t1_depth": 21.83
+        }
+      },
+      "volume_pattern": {
+        "score": 20,
+        "dry_up_ratio": 1.572,
+        "breakout_volume_detected": false,
+        "avg_volume_50d": 481482,
+        "net_accumulation": 2
+      },
+      "pivot_proximity": {
+        "score": 75,
+        "distance_from_pivot_pct": -3.5,
+        "pivot_price": 157000.0,
+        "stop_loss_price": 136620.0,
+        "risk_pct": 9.82,
+        "trade_status": "NEAR PIVOT"
+      },
+      "relative_strength": {
+        "score": 70,
+        "rs_rank_estimate": 70,
+        "weighted_rs": 8.74
+      },
+      "stage": {
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing",
+        "confidence": 100
+      },
+      "market_gate": "YELLOW",
+      "gate_score": 25,
+      "position_modifier": 0.5,
+      "entry_price": 157000.0,
+      "stop_price": 136620.0,
+      "target_price": 197760.0,
+      "risk_reward_ratio": 2.0,
+      "foreign_5d": -186182,
+      "inst_5d": 40959,
+      "supply_demand_index": 77.7,
+      "generated_at": "2026-03-15T16:11:15.843193"
+    },
+    {
+      "symbol": "009520",
+      "name": "포스코엠텍",
+      "market": "KR",
+      "sector": "",
+      "price": 20300.0,
+      "composite": {
+        "composite_score": 53.0,
+        "rating": "Weak VCP",
+        "rating_description": "VCP 일부 특성만 보유",
+        "guidance": "모니터링만 — 패턴 발전 필요",
+        "valid_vcp": false,
+        "entry_ready": false,
+        "weakest_component": "Relative Strength",
+        "strongest_component": "Trend Template (Stage 2)",
+        "component_breakdown": {
+          "trend_template": {
+            "score": 85.8,
+            "weight": 0.25,
+            "weighted": 21.4,
+            "label": "Trend Template (Stage 2)"
+          },
+          "contraction_quality": {
+            "score": 30,
+            "weight": 0.25,
+            "weighted": 7.5,
+            "label": "Contraction Quality"
+          },
+          "volume_pattern": {
+            "score": 75,
+            "weight": 0.2,
+            "weighted": 15.0,
+            "label": "Volume Pattern"
+          },
+          "pivot_proximity": {
+            "score": 60,
+            "weight": 0.15,
+            "weighted": 9.0,
+            "label": "Pivot Proximity"
+          },
+          "relative_strength": {
+            "score": 0,
+            "weight": 0.15,
+            "weighted": 0.0,
+            "label": "Relative Strength"
+          }
+        }
+      },
+      "trend_template": {
+        "score": 85.8,
+        "raw_score": 85.8,
+        "passed": true,
+        "criteria_passed": 6,
+        "criteria_total": 7,
+        "sma50": 19602.25,
+        "sma150": 17246.25,
+        "sma200": 15791.88,
+        "extended_penalty": 0.0,
+        "sma50_distance_pct": 3.56
+      },
+      "vcp_pattern": {
+        "score": 30,
+        "valid_vcp": false,
+        "num_contractions": 2,
+        "pivot_price": 21450.0,
+        "pattern_duration_days": 16,
+        "contractions": [
+          {
+            "label": "T1",
+            "high_idx": 67,
+            "high_price": 20600.0,
+            "high_date": "2026-01-15",
+            "low_idx": 71,
+            "low_price": 17630.0,
+            "low_date": "2026-01-21",
+            "depth_pct": 14.42,
+            "duration_days": 4
+          },
+          {
+            "label": "T2",
+            "high_idx": 76,
+            "high_price": 21450.0,
+            "high_date": "2026-01-28",
+            "low_idx": 83,
+            "low_price": 18400.0,
+            "low_date": "2026-02-06",
+            "depth_pct": 14.22,
+            "duration_days": 7
+          }
+        ],
+        "validation": {
+          "valid": false,
+          "issues": [
+            "T2 ratio 0.99 > 0.75"
+          ],
+          "contraction_ratios": [
+            0.986
+          ],
+          "t1_depth": 14.42
+        }
+      },
+      "volume_pattern": {
+        "score": 75,
+        "dry_up_ratio": 0.427,
+        "breakout_volume_detected": false,
+        "avg_volume_50d": 850728,
+        "net_accumulation": 0
+      },
+      "pivot_proximity": {
+        "score": 60,
+        "distance_from_pivot_pct": -5.36,
+        "pivot_price": 21450.0,
+        "stop_loss_price": 18216.0,
+        "risk_pct": 10.27,
+        "trade_status": "APPROACHING"
+      },
+      "relative_strength": {
+        "score": 0,
+        "rs_rank_estimate": 10,
+        "weighted_rs": -20.8
+      },
+      "stage": {
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing",
+        "confidence": 100
+      },
+      "market_gate": "YELLOW",
+      "gate_score": 25,
+      "position_modifier": 0.5,
+      "entry_price": 21450.0,
+      "stop_price": 18216.0,
+      "target_price": 27918.0,
+      "risk_reward_ratio": 2.0,
+      "foreign_5d": 4487,
+      "inst_5d": 10917,
+      "supply_demand_index": 80.6,
+      "generated_at": "2026-03-15T16:10:46.835355"
+    },
+    {
+      "symbol": "082740",
+      "name": "한화엔진",
+      "market": "KR",
+      "sector": "",
+      "price": 54900.0,
+      "composite": {
+        "composite_score": 53.0,
+        "rating": "Weak VCP",
+        "rating_description": "VCP 일부 특성만 보유",
+        "guidance": "모니터링만 — 패턴 발전 필요",
+        "valid_vcp": false,
+        "entry_ready": false,
+        "weakest_component": "Relative Strength",
+        "strongest_component": "Trend Template (Stage 2)",
+        "component_breakdown": {
+          "trend_template": {
+            "score": 85.8,
+            "weight": 0.25,
+            "weighted": 21.4,
+            "label": "Trend Template (Stage 2)"
+          },
+          "contraction_quality": {
+            "score": 30,
+            "weight": 0.25,
+            "weighted": 7.5,
+            "label": "Contraction Quality"
+          },
+          "volume_pattern": {
+            "score": 60,
+            "weight": 0.2,
+            "weighted": 12.0,
+            "label": "Volume Pattern"
+          },
+          "pivot_proximity": {
+            "score": 60,
+            "weight": 0.15,
+            "weighted": 9.0,
+            "label": "Pivot Proximity"
+          },
+          "relative_strength": {
+            "score": 20,
+            "weight": 0.15,
+            "weighted": 3.0,
+            "label": "Relative Strength"
+          }
+        }
+      },
+      "trend_template": {
+        "score": 85.8,
+        "raw_score": 85.8,
+        "passed": true,
+        "criteria_passed": 6,
+        "criteria_total": 7,
+        "sma50": 54825.0,
+        "sma150": 48303.33,
+        "sma200": 46715.42,
+        "extended_penalty": 0.0,
+        "sma50_distance_pct": 0.14
+      },
+      "vcp_pattern": {
+        "score": 30,
+        "valid_vcp": false,
+        "num_contractions": 2,
+        "pivot_price": 59100.0,
+        "pattern_duration_days": 15,
+        "contractions": [
+          {
+            "label": "T1",
+            "high_idx": 64,
+            "high_price": 56800.0,
+            "high_date": "2026-01-12",
+            "low_idx": 72,
+            "low_price": 51200.0,
+            "low_date": "2026-01-22",
+            "depth_pct": 9.86,
+            "duration_days": 8
+          },
+          {
+            "label": "T2",
+            "high_idx": 76,
+            "high_price": 59100.0,
+            "high_date": "2026-01-28",
+            "low_idx": 79,
+            "low_price": 52700.0,
+            "low_date": "2026-02-02",
+            "depth_pct": 10.83,
+            "duration_days": 3
+          }
+        ],
+        "validation": {
+          "valid": false,
+          "issues": [
+            "T2 ratio 1.10 > 0.75"
+          ],
+          "contraction_ratios": [
+            1.098
+          ],
+          "t1_depth": 9.86
+        }
+      },
+      "volume_pattern": {
+        "score": 60,
+        "dry_up_ratio": 0.637,
+        "breakout_volume_detected": false,
+        "avg_volume_50d": 990351,
+        "net_accumulation": -2
+      },
+      "pivot_proximity": {
+        "score": 60,
+        "distance_from_pivot_pct": -7.11,
+        "pivot_price": 59100.0,
+        "stop_loss_price": 52173.0,
+        "risk_pct": 4.97,
+        "trade_status": "APPROACHING"
+      },
+      "relative_strength": {
+        "score": 20,
+        "rs_rank_estimate": 25,
+        "weighted_rs": -17.7
+      },
+      "stage": {
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing",
+        "confidence": 100
+      },
+      "market_gate": "YELLOW",
+      "gate_score": 25,
+      "position_modifier": 0.5,
+      "entry_price": 59100.0,
+      "stop_price": 52173.0,
+      "target_price": 72954.0,
+      "risk_reward_ratio": 2.0,
+      "foreign_5d": 187938,
+      "inst_5d": -262647,
+      "supply_demand_index": 76.8,
+      "generated_at": "2026-03-15T16:11:25.987461"
+    },
+    {
+      "symbol": "092870",
+      "name": "엑시콘",
+      "market": "KR",
+      "sector": "",
+      "price": 29950.0,
+      "composite": {
+        "composite_score": 52.8,
+        "rating": "Weak VCP",
+        "rating_description": "VCP 일부 특성만 보유",
+        "guidance": "모니터링만 — 패턴 발전 필요",
+        "valid_vcp": false,
+        "entry_ready": false,
+        "weakest_component": "Pivot Proximity",
+        "strongest_component": "Relative Strength",
+        "component_breakdown": {
+          "trend_template": {
+            "score": 85.0,
+            "weight": 0.25,
+            "weighted": 21.2,
+            "label": "Trend Template (Stage 2)"
+          },
+          "contraction_quality": {
+            "score": 30,
+            "weight": 0.25,
+            "weighted": 7.5,
+            "label": "Contraction Quality"
+          },
+          "volume_pattern": {
+            "score": 30,
+            "weight": 0.2,
+            "weighted": 6.0,
+            "label": "Volume Pattern"
+          },
+          "pivot_proximity": {
+            "score": 20,
+            "weight": 0.15,
+            "weighted": 3.0,
+            "label": "Pivot Proximity"
+          },
+          "relative_strength": {
+            "score": 100,
+            "weight": 0.15,
+            "weighted": 15.0,
+            "label": "Relative Strength"
+          }
+        }
+      },
+      "trend_template": {
+        "score": 85.0,
+        "raw_score": 100,
+        "passed": true,
+        "criteria_passed": 7,
+        "criteria_total": 7,
+        "sma50": 24447.0,
+        "sma150": 18420.83,
+        "sma200": 16170.67,
+        "extended_penalty": -15.0,
+        "sma50_distance_pct": 22.51
+      },
+      "vcp_pattern": {
+        "score": 30,
+        "valid_vcp": false,
+        "num_contractions": 2,
+        "pivot_price": 16980.0,
+        "pattern_duration_days": 16,
+        "contractions": [
+          {
+            "label": "T1",
+            "high_idx": 15,
+            "high_price": 17400.0,
+            "high_date": "2025-10-30",
+            "low_idx": 19,
+            "low_price": 13690.0,
+            "low_date": "2025-11-05",
+            "depth_pct": 21.32,
+            "duration_days": 4
+          },
+          {
+            "label": "T2",
+            "high_idx": 25,
+            "high_price": 16980.0,
+            "high_date": "2025-11-13",
+            "low_idx": 31,
+            "low_price": 13290.0,
+            "low_date": "2025-11-21",
+            "depth_pct": 21.73,
+            "duration_days": 6
+          }
+        ],
+        "validation": {
+          "valid": false,
+          "issues": [
+            "T2 ratio 1.02 > 0.75"
+          ],
+          "contraction_ratios": [
+            1.019
+          ],
+          "t1_depth": 21.32
+        }
+      },
+      "volume_pattern": {
+        "score": 30,
+        "dry_up_ratio": 1.451,
+        "breakout_volume_detected": false,
+        "avg_volume_50d": 540070,
+        "net_accumulation": 8
+      },
+      "pivot_proximity": {
+        "score": 20,
+        "distance_from_pivot_pct": 76.38,
+        "pivot_price": 16980.0,
+        "stop_loss_price": 13157.1,
+        "risk_pct": 56.07,
+        "trade_status": "OVEREXTENDED"
+      },
+      "relative_strength": {
+        "score": 100,
+        "rs_rank_estimate": 99,
+        "weighted_rs": 68.35
+      },
+      "stage": {
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing",
+        "confidence": 100
+      },
+      "market_gate": "YELLOW",
+      "gate_score": 25,
+      "position_modifier": 0.5,
+      "entry_price": 16980.0,
+      "stop_price": 13157.1,
+      "target_price": 24625.8,
+      "risk_reward_ratio": 2.0,
+      "foreign_5d": -112260,
+      "inst_5d": 19956,
+      "supply_demand_index": 75.0,
+      "generated_at": "2026-03-15T16:11:29.810301"
+    },
+    {
+      "symbol": "009150",
+      "name": "삼성전기",
+      "market": "KR",
+      "sector": "",
+      "price": 358500.0,
+      "composite": {
+        "composite_score": 52.0,
+        "rating": "Weak VCP",
+        "rating_description": "VCP 일부 특성만 보유",
+        "guidance": "모니터링만 — 패턴 발전 필요",
+        "valid_vcp": false,
+        "entry_ready": false,
+        "weakest_component": "Contraction Quality",
+        "strongest_component": "Trend Template (Stage 2)",
+        "component_breakdown": {
+          "trend_template": {
+            "score": 85.0,
+            "weight": 0.25,
+            "weighted": 21.2,
+            "label": "Trend Template (Stage 2)"
+          },
+          "contraction_quality": {
+            "score": 30,
+            "weight": 0.25,
+            "weighted": 7.5,
+            "label": "Contraction Quality"
+          },
+          "volume_pattern": {
+            "score": 30,
+            "weight": 0.2,
+            "weighted": 6.0,
+            "label": "Volume Pattern"
+          },
+          "pivot_proximity": {
+            "score": 35,
+            "weight": 0.15,
+            "weighted": 5.2,
+            "label": "Pivot Proximity"
+          },
+          "relative_strength": {
+            "score": 80,
+            "weight": 0.15,
+            "weighted": 12.0,
+            "label": "Relative Strength"
+          }
+        }
+      },
+      "trend_template": {
+        "score": 85.0,
+        "raw_score": 100,
+        "passed": true,
+        "criteria_passed": 7,
+        "criteria_total": 7,
+        "sma50": 294525.0,
+        "sma150": 272291.67,
+        "sma200": 236332.5,
+        "extended_penalty": -15.0,
+        "sma50_distance_pct": 21.72
+      },
+      "vcp_pattern": {
+        "score": 30,
+        "valid_vcp": false,
+        "num_contractions": 2,
+        "pivot_price": 309500.0,
+        "pattern_duration_days": 14,
+        "contractions": [
+          {
+            "label": "T1",
+            "high_idx": 69,
+            "high_price": 295500.0,
+            "high_date": "2026-01-19",
+            "low_idx": 75,
+            "low_price": 266000.0,
+            "low_date": "2026-01-27",
+            "depth_pct": 9.98,
+            "duration_days": 6
+          },
+          {
+            "label": "T2",
+            "high_idx": 80,
+            "high_price": 309500.0,
+            "high_date": "2026-02-03",
+            "low_idx": 83,
+            "low_price": 274000.0,
+            "low_date": "2026-02-06",
+            "depth_pct": 11.47,
+            "duration_days": 3
+          }
+        ],
+        "validation": {
+          "valid": false,
+          "issues": [
+            "T2 ratio 1.15 > 0.75",
+            "Pattern too short (14d)"
+          ],
+          "contraction_ratios": [
+            1.149
+          ],
+          "t1_depth": 9.98
+        }
+      },
+      "volume_pattern": {
+        "score": 30,
+        "dry_up_ratio": 1.065,
+        "breakout_volume_detected": true,
+        "avg_volume_50d": 619714,
+        "net_accumulation": 0
+      },
+      "pivot_proximity": {
+        "score": 35,
+        "distance_from_pivot_pct": 15.83,
+        "pivot_price": 309500.0,
+        "stop_loss_price": 271260.0,
+        "risk_pct": 24.33,
+        "trade_status": "EXTENDED (very high risk)"
+      },
+      "relative_strength": {
+        "score": 80,
+        "rs_rank_estimate": 80,
+        "weighted_rs": 17.6
+      },
+      "stage": {
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing",
+        "confidence": 100
+      },
+      "market_gate": "YELLOW",
+      "gate_score": 25,
+      "position_modifier": 0.5,
+      "entry_price": 309500.0,
+      "stop_price": 271260.0,
+      "target_price": 385980.0,
+      "risk_reward_ratio": 2.0,
+      "foreign_5d": -227153,
+      "inst_5d": -107471,
+      "supply_demand_index": 77.5,
+      "generated_at": "2026-03-15T16:10:45.949781"
+    },
+    {
+      "symbol": "008830",
+      "name": "대동기어",
+      "market": "KR",
+      "sector": "",
+      "price": 25475.0,
+      "composite": {
+        "composite_score": 51.7,
+        "rating": "Weak VCP",
+        "rating_description": "VCP 일부 특성만 보유",
+        "guidance": "모니터링만 — 패턴 발전 필요",
+        "valid_vcp": true,
+        "entry_ready": false,
+        "weakest_component": "Pivot Proximity",
+        "strongest_component": "Contraction Quality",
+        "component_breakdown": {
+          "trend_template": {
+            "score": 65.8,
+            "weight": 0.25,
+            "weighted": 16.4,
+            "label": "Trend Template (Stage 2)"
+          },
+          "contraction_quality": {
+            "score": 75,
+            "weight": 0.25,
+            "weighted": 18.8,
+            "label": "Contraction Quality"
+          },
+          "volume_pattern": {
+            "score": 30,
+            "weight": 0.2,
+            "weighted": 6.0,
+            "label": "Volume Pattern"
+          },
+          "pivot_proximity": {
+            "score": 20,
+            "weight": 0.15,
+            "weighted": 3.0,
+            "label": "Pivot Proximity"
+          },
+          "relative_strength": {
+            "score": 50,
+            "weight": 0.15,
+            "weighted": 7.5,
+            "label": "Relative Strength"
+          }
+        }
+      },
+      "trend_template": {
+        "score": 65.8,
+        "raw_score": 85.8,
+        "passed": true,
+        "criteria_passed": 6,
+        "criteria_total": 7,
+        "sma50": 20641.75,
+        "sma150": 18406.92,
+        "sma200": 17160.79,
+        "extended_penalty": -20.0,
+        "sma50_distance_pct": 23.41
+      },
+      "vcp_pattern": {
+        "score": 75,
+        "valid_vcp": true,
+        "num_contractions": 2,
+        "pivot_price": 18210.0,
+        "pattern_duration_days": 23,
+        "contractions": [
+          {
+            "label": "T1",
+            "high_idx": 56,
+            "high_price": 18440.0,
+            "high_date": "2025-12-29",
+            "low_idx": 62,
+            "low_price": 16200.0,
+            "low_date": "2026-01-08",
+            "depth_pct": 12.15,
+            "duration_days": 6
+          },
+          {
+            "label": "T2",
+            "high_idx": 64,
+            "high_price": 18210.0,
+            "high_date": "2026-01-12",
+            "low_idx": 79,
+            "low_price": 16960.0,
+            "low_date": "2026-02-02",
+            "depth_pct": 6.86,
+            "duration_days": 15
+          }
+        ],
+        "validation": {
+          "valid": true,
+          "issues": [],
+          "contraction_ratios": [
+            0.565
+          ],
+          "t1_depth": 12.15
+        }
+      },
+      "volume_pattern": {
+        "score": 30,
+        "dry_up_ratio": 4.521,
+        "breakout_volume_detected": true,
+        "avg_volume_50d": 1304043,
+        "net_accumulation": 2
+      },
+      "pivot_proximity": {
+        "score": 20,
+        "distance_from_pivot_pct": 39.9,
+        "pivot_price": 18210.0,
+        "stop_loss_price": 16790.4,
+        "risk_pct": 34.09,
+        "trade_status": "OVEREXTENDED"
+      },
+      "relative_strength": {
+        "score": 50,
+        "rs_rank_estimate": 50,
+        "weighted_rs": -1.45
+      },
+      "stage": {
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing",
+        "confidence": 100
+      },
+      "market_gate": "YELLOW",
+      "gate_score": 25,
+      "position_modifier": 0.5,
+      "entry_price": 18210.0,
+      "stop_price": 16790.4,
+      "target_price": 21049.2,
+      "risk_reward_ratio": 2.0,
+      "foreign_5d": 12822,
+      "inst_5d": -956,
+      "supply_demand_index": 74.9,
+      "generated_at": "2026-03-15T16:10:45.438454"
+    },
+    {
+      "symbol": "000370",
+      "name": "한화손해보험",
+      "market": "KR",
+      "sector": "",
+      "price": 7470.0,
+      "composite": {
+        "composite_score": 50.5,
+        "rating": "Weak VCP",
+        "rating_description": "VCP 일부 특성만 보유",
+        "guidance": "모니터링만 — 패턴 발전 필요",
+        "valid_vcp": true,
+        "entry_ready": false,
+        "weakest_component": "Relative Strength",
+        "strongest_component": "Trend Template (Stage 2)",
+        "component_breakdown": {
+          "trend_template": {
+            "score": 70.8,
+            "weight": 0.25,
+            "weighted": 17.7,
+            "label": "Trend Template (Stage 2)"
+          },
+          "contraction_quality": {
+            "score": 70,
+            "weight": 0.25,
+            "weighted": 17.5,
+            "label": "Contraction Quality"
+          },
+          "volume_pattern": {
+            "score": 35,
+            "weight": 0.2,
+            "weighted": 7.0,
+            "label": "Volume Pattern"
+          },
+          "pivot_proximity": {
+            "score": 35,
+            "weight": 0.15,
+            "weighted": 5.2,
+            "label": "Pivot Proximity"
+          },
+          "relative_strength": {
+            "score": 20,
+            "weight": 0.15,
+            "weighted": 3.0,
+            "label": "Relative Strength"
+          }
+        }
+      },
+      "trend_template": {
+        "score": 70.8,
+        "raw_score": 85.8,
+        "passed": true,
+        "criteria_passed": 6,
+        "criteria_total": 7,
+        "sma50": 6392.5,
+        "sma150": 5703.83,
+        "sma200": 5660.75,
+        "extended_penalty": -15.0,
+        "sma50_distance_pct": 16.86
+      },
+      "vcp_pattern": {
+        "score": 70,
+        "valid_vcp": true,
+        "num_contractions": 2,
+        "pivot_price": 6500.0,
+        "pattern_duration_days": 58,
+        "contractions": [
+          {
+            "label": "T1",
+            "high_idx": 25,
+            "high_price": 6310.0,
+            "high_date": "2025-11-13",
+            "low_idx": 32,
+            "low_price": 5090.0,
+            "low_date": "2025-11-24",
+            "depth_pct": 19.33,
+            "duration_days": 7
+          },
+          {
+            "label": "T2",
+            "high_idx": 74,
+            "high_price": 6500.0,
+            "high_date": "2026-01-26",
+            "low_idx": 83,
+            "low_price": 5940.0,
+            "low_date": "2026-02-06",
+            "depth_pct": 8.62,
+            "duration_days": 9
+          }
+        ],
+        "validation": {
+          "valid": true,
+          "issues": [],
+          "contraction_ratios": [
+            0.446
+          ],
+          "t1_depth": 19.33
+        }
+      },
+      "volume_pattern": {
+        "score": 35,
+        "dry_up_ratio": 2.995,
+        "breakout_volume_detected": true,
+        "avg_volume_50d": 876447,
+        "net_accumulation": 2
+      },
+      "pivot_proximity": {
+        "score": 35,
+        "distance_from_pivot_pct": 14.92,
+        "pivot_price": 6500.0,
+        "stop_loss_price": 5880.6,
+        "risk_pct": 21.28,
+        "trade_status": "EXTENDED (very high risk)"
+      },
+      "relative_strength": {
+        "score": 20,
+        "rs_rank_estimate": 25,
+        "weighted_rs": -14.57
+      },
+      "stage": {
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing",
+        "confidence": 100
+      },
+      "market_gate": "YELLOW",
+      "gate_score": 25,
+      "position_modifier": 0.5,
+      "entry_price": 6500.0,
+      "stop_price": 5880.6,
+      "target_price": 7738.8,
+      "risk_reward_ratio": 2.0,
+      "foreign_5d": -1326619,
+      "inst_5d": -74038,
+      "supply_demand_index": 77.4,
+      "generated_at": "2026-03-15T16:10:31.307237"
+    },
+    {
+      "symbol": "042370",
+      "name": "비츠로테크",
+      "market": "KR",
+      "sector": "",
+      "price": 11140.0,
+      "composite": {
+        "composite_score": 50.2,
+        "rating": "Weak VCP",
+        "rating_description": "VCP 일부 특성만 보유",
+        "guidance": "모니터링만 — 패턴 발전 필요",
+        "valid_vcp": false,
+        "entry_ready": false,
+        "weakest_component": "Relative Strength",
+        "strongest_component": "Trend Template (Stage 2)",
+        "component_breakdown": {
+          "trend_template": {
+            "score": 85.8,
+            "weight": 0.25,
+            "weighted": 21.4,
+            "label": "Trend Template (Stage 2)"
+          },
+          "contraction_quality": {
+            "score": 30,
+            "weight": 0.25,
+            "weighted": 7.5,
+            "label": "Contraction Quality"
+          },
+          "volume_pattern": {
+            "score": 50,
+            "weight": 0.2,
+            "weighted": 10.0,
+            "label": "Volume Pattern"
+          },
+          "pivot_proximity": {
+            "score": 75,
+            "weight": 0.15,
+            "weighted": 11.2,
+            "label": "Pivot Proximity"
+          },
+          "relative_strength": {
+            "score": 0,
+            "weight": 0.15,
+            "weighted": 0.0,
+            "label": "Relative Strength"
+          }
+        }
+      },
+      "trend_template": {
+        "score": 85.8,
+        "raw_score": 85.8,
+        "passed": true,
+        "criteria_passed": 6,
+        "criteria_total": 7,
+        "sma50": 10659.0,
+        "sma150": 9550.0,
+        "sma200": 9056.17,
+        "extended_penalty": 0.0,
+        "sma50_distance_pct": 4.51
+      },
+      "vcp_pattern": {
+        "score": 30,
+        "valid_vcp": false,
+        "num_contractions": 2,
+        "pivot_price": 11700.0,
+        "pattern_duration_days": 19,
+        "contractions": [
+          {
+            "label": "T1",
+            "high_idx": 64,
+            "high_price": 11640.0,
+            "high_date": "2026-01-12",
+            "low_idx": 67,
+            "low_price": 9860.0,
+            "low_date": "2026-01-15",
+            "depth_pct": 15.29,
+            "duration_days": 3
+          },
+          {
+            "label": "T2",
+            "high_idx": 70,
+            "high_price": 11700.0,
+            "high_date": "2026-01-20",
+            "low_idx": 83,
+            "low_price": 9150.0,
+            "low_date": "2026-02-06",
+            "depth_pct": 21.79,
+            "duration_days": 13
+          }
+        ],
+        "validation": {
+          "valid": false,
+          "issues": [
+            "T2 ratio 1.43 > 0.75"
+          ],
+          "contraction_ratios": [
+            1.425
+          ],
+          "t1_depth": 15.29
+        }
+      },
+      "volume_pattern": {
+        "score": 50,
+        "dry_up_ratio": 0.577,
+        "breakout_volume_detected": false,
+        "avg_volume_50d": 842535,
+        "net_accumulation": -4
+      },
+      "pivot_proximity": {
+        "score": 75,
+        "distance_from_pivot_pct": -4.79,
+        "pivot_price": 11700.0,
+        "stop_loss_price": 9058.5,
+        "risk_pct": 18.68,
+        "trade_status": "NEAR PIVOT"
+      },
+      "relative_strength": {
+        "score": 0,
+        "rs_rank_estimate": 10,
+        "weighted_rs": -28.56
+      },
+      "stage": {
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing",
+        "confidence": 100
+      },
+      "market_gate": "YELLOW",
+      "gate_score": 25,
+      "position_modifier": 0.5,
+      "entry_price": 11700.0,
+      "stop_price": 9058.5,
+      "target_price": 16983.0,
+      "risk_reward_ratio": 2.0,
+      "foreign_5d": -200978,
+      "inst_5d": -1781,
+      "supply_demand_index": 77.1,
+      "generated_at": "2026-03-15T16:11:12.080569"
+    }
+  ]
+}

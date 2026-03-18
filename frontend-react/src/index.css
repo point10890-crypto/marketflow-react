@@ -1,0 +1,96 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ========================================
+   Dashboard Design System
+   MarketFlow AI - React + Vite
+   ======================================== */
+
+:root {
+  /* Apple Dark Mode Palette */
+  --bg-page: #000000;
+  --bg-surface: #1c1c1e;
+  --bg-surface-hover: #2c2c2e;
+  --bg-glass: rgba(28, 28, 30, 0.75);
+  --border-color: rgba(255, 255, 255, 0.1);
+
+  /* Text Colors */
+  --text-primary: #f5f5f7;
+  --text-secondary: #86868b;
+  --text-tertiary: #6e6e73;
+
+  /* Accents */
+  --accent: #2997ff;
+  --status-success: #30d158;
+  --status-error: #ff453a;
+  --status-warning: #ff9f0a;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--bg-page);
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", "Inter", sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  margin: 0;
+}
+
+/* Scrollbars */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+
+/* Glassmorphism */
+.apple-glass {
+  background-color: rgba(28, 28, 30, 0.65);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-card {
+  background-color: var(--bg-surface);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 18px;
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.glass-card:hover {
+  background-color: var(--bg-surface-hover);
+  transform: scale(1.005);
+}
+
+/* Animations */
+@keyframes pulse-slow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+.animate-pulse-slow { animation: pulse-slow 2s ease-in-out infinite; }
+
+@keyframes spin-slow {
+  to { transform: rotate(360deg); }
+}
+.animate-spin-slow { animation: spin-slow 3s linear infinite; }
+
+/* Pull-to-refresh indicator */
+.ptr-indicator {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s ease;
+  z-index: 9999;
+}
+.ptr-indicator.active { transform: scaleX(1); }

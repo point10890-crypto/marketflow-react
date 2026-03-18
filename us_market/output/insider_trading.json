@@ -1,0 +1,5406 @@
+{
+  "timestamp": "2026-03-15T15:30:24.298942",
+  "total_count": 600,
+  "transactions": [
+    {
+      "ticker": "KELYA",
+      "name": "Brock-Kyle Angela",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 100,
+      "value": 1477,
+      "date": "2026-03-04"
+    },
+    {
+      "ticker": "CPNG",
+      "name": "MEHTA NEIL",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 2332863,
+      "value": 42923279,
+      "date": "2026-03-13"
+    },
+    {
+      "ticker": "CPNG",
+      "name": "MEHTA NEIL",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 3000000,
+      "value": 56036100,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "CPNG",
+      "name": "MEHTA NEIL",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 2017241,
+      "value": 37603591,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "AMR",
+      "name": "Courtis Kenneth S.",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 10000,
+      "value": 1868707,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "FOXA",
+      "name": "MURDOCH LACHLAN K",
+      "title": "Executive Chair, CEO",
+      "transaction_type": "Buy",
+      "shares": 175372,
+      "value": 10632804,
+      "date": "2026-03-13"
+    },
+    {
+      "ticker": "FOX",
+      "name": "MURDOCH LACHLAN K",
+      "title": "Executive Chair, CEO",
+      "transaction_type": "Buy",
+      "shares": 175372,
+      "value": 10632804,
+      "date": "2026-03-13"
+    },
+    {
+      "ticker": "STAA",
+      "name": "BROADWOOD PARTNERS, L.P.",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 316017,
+      "value": 5882656,
+      "date": "2026-03-13"
+    },
+    {
+      "ticker": "STAA",
+      "name": "BROADWOOD PARTNERS, L.P.",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 299432,
+      "value": 5424330,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "STAA",
+      "name": "BROADWOOD PARTNERS, L.P.",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 54764,
+      "value": 959558,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "SNDA",
+      "name": "Simanovsky Michael",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 3739716,
+      "value": 100000006,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "GWRS",
+      "name": "Cohn Andrew M.",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 18305,
+      "value": 131796,
+      "date": "2026-03-13"
+    },
+    {
+      "ticker": "ALKT",
+      "name": "Payne Joseph P.",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 5500,
+      "value": 100238,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "BETR",
+      "name": "Framework Ventures IV L.P.",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 29494,
+      "value": 1006335,
+      "date": "2026-03-13"
+    },
+    {
+      "ticker": "GOGO",
+      "name": "TOWNSEND CHARLES C",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 158591,
+      "value": 723984,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "GOGO",
+      "name": "TOWNSEND CHARLES C",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 91409,
+      "value": 414723,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "ACOG",
+      "name": "Opaleye Management Inc.",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 7358,
+      "value": 42286,
+      "date": "2026-03-13"
+    },
+    {
+      "ticker": "ACOG",
+      "name": "Opaleye Management Inc.",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 5708,
+      "value": 33416,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "PTLO",
+      "name": "LEE EUGENE I JR",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 286000,
+      "value": 1481480,
+      "date": "2026-03-13"
+    },
+    {
+      "ticker": "HGTY",
+      "name": "Kuczinski Anthony J",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 4000,
+      "value": 38000,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "NXRT",
+      "name": "McGraner Matt",
+      "title": "See Remarks",
+      "transaction_type": "Buy",
+      "shares": 1000,
+      "value": 26140,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "WULF",
+      "name": "Bucella Michael C.",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 1338,
+      "value": 19950,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "FG",
+      "name": "Doka Celina J. Wang",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 4760,
+      "value": 99865,
+      "date": "2026-03-13"
+    },
+    {
+      "ticker": "LOAR",
+      "name": "Carpenito Anthony",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 50,
+      "value": 3235,
+      "date": "2026-03-13"
+    },
+    {
+      "ticker": "LOAR",
+      "name": "Carpenito Anthony",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 4750,
+      "value": 308622,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "SWZ",
+      "name": "Dakos Andrew",
+      "title": "President and CEO",
+      "transaction_type": "Buy",
+      "shares": 3324,
+      "value": 19944,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "SWZ",
+      "name": "Dakos Andrew",
+      "title": "President and CEO",
+      "transaction_type": "Buy",
+      "shares": 1700,
+      "value": 10200,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "SRE",
+      "name": "Kirk Jennifer M",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 1000,
+      "value": 93440,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "JBHT",
+      "name": "Frazier Spencer",
+      "title": "EVP of Sales and Marketing",
+      "transaction_type": "Buy",
+      "shares": 13,
+      "value": 2086,
+      "date": "2025-11-21"
+    },
+    {
+      "ticker": "JBHT",
+      "name": "Frazier Spencer",
+      "title": "EVP of Sales and Marketing",
+      "transaction_type": "Buy",
+      "shares": 15,
+      "value": 2080,
+      "date": "2025-08-22"
+    },
+    {
+      "ticker": "JBHT",
+      "name": "Frazier Spencer",
+      "title": "EVP of Sales and Marketing",
+      "transaction_type": "Buy",
+      "shares": 15,
+      "value": 2073,
+      "date": "2025-05-23"
+    },
+    {
+      "ticker": "JBHT",
+      "name": "Frazier Spencer",
+      "title": "EVP of Sales and Marketing",
+      "transaction_type": "Buy",
+      "shares": 67,
+      "value": 8924,
+      "date": "2025-04-07"
+    },
+    {
+      "ticker": "JBHT",
+      "name": "Frazier Spencer",
+      "title": "EVP of Sales and Marketing",
+      "transaction_type": "Buy",
+      "shares": 12,
+      "value": 2068,
+      "date": "2025-02-21"
+    },
+    {
+      "ticker": "JBHT",
+      "name": "Frazier Spencer",
+      "title": "EVP of Sales and Marketing",
+      "transaction_type": "Buy",
+      "shares": 10,
+      "value": 1773,
+      "date": "2024-11-22"
+    },
+    {
+      "ticker": "JBHT",
+      "name": "Frazier Spencer",
+      "title": "EVP of Sales and Marketing",
+      "transaction_type": "Buy",
+      "shares": 12,
+      "value": 2095,
+      "date": "2024-08-16"
+    },
+    {
+      "ticker": "JBHT",
+      "name": "Frazier Spencer",
+      "title": "EVP of Sales and Marketing",
+      "transaction_type": "Buy",
+      "shares": 13,
+      "value": 2090,
+      "date": "2024-05-24"
+    },
+    {
+      "ticker": "JBHT",
+      "name": "Frazier Spencer",
+      "title": "EVP of Sales and Marketing",
+      "transaction_type": "Buy",
+      "shares": 1,
+      "value": 201,
+      "date": "2024-02-23"
+    },
+    {
+      "ticker": "JBHT",
+      "name": "Frazier Spencer",
+      "title": "EVP of Sales and Marketing",
+      "transaction_type": "Buy",
+      "shares": 14,
+      "value": 2554,
+      "date": "2023-11-24"
+    },
+    {
+      "ticker": "JBHT",
+      "name": "Frazier Spencer",
+      "title": "EVP of Sales and Marketing",
+      "transaction_type": "Buy",
+      "shares": 7,
+      "value": 1296,
+      "date": "2023-08-18"
+    },
+    {
+      "ticker": "JBHT",
+      "name": "Frazier Spencer",
+      "title": "EVP of Sales and Marketing",
+      "transaction_type": "Buy",
+      "shares": 8,
+      "value": 1292,
+      "date": "2023-05-26"
+    },
+    {
+      "ticker": "JBHT",
+      "name": "Frazier Spencer",
+      "title": "EVP of Sales and Marketing",
+      "transaction_type": "Buy",
+      "shares": 7,
+      "value": 1294,
+      "date": "2023-02-24"
+    },
+    {
+      "ticker": "JBHT",
+      "name": "Frazier Spencer",
+      "title": "EVP of Sales and Marketing",
+      "transaction_type": "Buy",
+      "shares": 3,
+      "value": 622,
+      "date": "2023-01-25"
+    },
+    {
+      "ticker": "JBHT",
+      "name": "Frazier Spencer",
+      "title": "EVP of Sales and Marketing",
+      "transaction_type": "Buy",
+      "shares": 8,
+      "value": 1424,
+      "date": "2022-11-18"
+    },
+    {
+      "ticker": "BH",
+      "name": "BIGLARI, SARDAR",
+      "title": "Chairman and CEO",
+      "transaction_type": "Buy",
+      "shares": 2810,
+      "value": 849182,
+      "date": "2026-03-13"
+    },
+    {
+      "ticker": "CPS",
+      "name": "Mastrocola David John",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 3391,
+      "value": 100950,
+      "date": "2026-03-13"
+    },
+    {
+      "ticker": "CPS",
+      "name": "Mastrocola David John",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 1494,
+      "value": 45194,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "CPS",
+      "name": "Mastrocola David John",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 2000,
+      "value": 62000,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "AVBC",
+      "name": "Murphy Bartholomew H JR",
+      "title": "EVP & Chief Operating Off",
+      "transaction_type": "Buy",
+      "shares": 440,
+      "value": 8193,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "VWAV",
+      "name": "VisionWave Holdings, Inc.",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 86875200,
+      "value": 230219280,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "VWAV",
+      "name": "VisionWave Holdings, Inc.",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 260884800,
+      "value": 688735872,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "SVRE",
+      "name": "VisionWave Holdings, Inc.",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 86875200,
+      "value": 230219280,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "SVRE",
+      "name": "VisionWave Holdings, Inc.",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 260884800,
+      "value": 688735872,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "VEEE",
+      "name": "SWETS LARRY G JR",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 50000,
+      "value": 21000,
+      "date": "2026-03-13"
+    },
+    {
+      "ticker": "CRH",
+      "name": "FEARON RICHARD H",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 3800,
+      "value": 397062,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "CRH",
+      "name": "Talbot Siobhan",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 2000,
+      "value": 204223,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "DYN",
+      "name": "Posner Brian S",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 2000,
+      "value": 38700,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "GAM",
+      "name": "Priest Jeffrey W",
+      "title": "President & CEO",
+      "transaction_type": "Buy",
+      "shares": 800,
+      "value": 19920,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "AXP",
+      "name": "Joabar Raymond",
+      "title": "Grp. Pres., Global Comm. Serv.",
+      "transaction_type": "Buy",
+      "shares": 2,
+      "value": 523,
+      "date": "2025-04-09"
+    },
+    {
+      "ticker": "AXP",
+      "name": "Joabar Raymond",
+      "title": "Grp. Pres., Global Comm. Serv.",
+      "transaction_type": "Buy",
+      "shares": 2,
+      "value": 429,
+      "date": "2024-02-23"
+    },
+    {
+      "ticker": "AXP",
+      "name": "Joabar Raymond",
+      "title": "Grp. Pres., Global Comm. Serv.",
+      "transaction_type": "Buy",
+      "shares": 2,
+      "value": 338,
+      "date": "2023-12-07"
+    },
+    {
+      "ticker": "AXP",
+      "name": "Joabar Raymond",
+      "title": "Grp. Pres., Global Comm. Serv.",
+      "transaction_type": "Buy",
+      "shares": 5,
+      "value": 843,
+      "date": "2023-12-06"
+    },
+    {
+      "ticker": "AXP",
+      "name": "Joabar Raymond",
+      "title": "Grp. Pres., Global Comm. Serv.",
+      "transaction_type": "Buy",
+      "shares": 1,
+      "value": 154,
+      "date": "2023-10-17"
+    },
+    {
+      "ticker": "AXP",
+      "name": "Joabar Raymond",
+      "title": "Grp. Pres., Global Comm. Serv.",
+      "transaction_type": "Buy",
+      "shares": 2,
+      "value": 300,
+      "date": "2023-09-27"
+    },
+    {
+      "ticker": "AXP",
+      "name": "Joabar Raymond",
+      "title": "Grp. Pres., Global Comm. Serv.",
+      "transaction_type": "Buy",
+      "shares": 9,
+      "value": 1466,
+      "date": "2023-09-15"
+    },
+    {
+      "ticker": "ADV",
+      "name": "KILTS JAMES M",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 16759,
+      "value": 11725,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "INDV",
+      "name": "Ryan Barbara",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 8,
+      "value": 249,
+      "date": "2026-03-13"
+    },
+    {
+      "ticker": "FSSL",
+      "name": "Ramos Pedro A",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 1000,
+      "value": 12400,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "MDRR",
+      "name": "KAVANAUGH FRANK",
+      "title": "CHAIRMAN, CEO & PRESIDENT",
+      "transaction_type": "Buy",
+      "shares": 40000,
+      "value": 600000,
+      "date": "2026-03-13"
+    },
+    {
+      "ticker": "ECC",
+      "name": "Onorio Kenneth P.",
+      "title": "CFO / COO",
+      "transaction_type": "Buy",
+      "shares": 110000,
+      "value": 411400,
+      "date": "2026-03-13"
+    },
+    {
+      "ticker": "GOF",
+      "name": "Barnes Randall C",
+      "title": "TRUSTEE",
+      "transaction_type": "Buy",
+      "shares": 220,
+      "value": 2506,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "FG",
+      "name": "Blunt Christopher O",
+      "title": "Chief Executive Officer",
+      "transaction_type": "Buy",
+      "shares": 10000,
+      "value": 209900,
+      "date": "2026-03-13"
+    },
+    {
+      "ticker": "LOAR",
+      "name": "Bobbili Raja",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 50000,
+      "value": 3180486,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "THRY",
+      "name": "Walsh Joe",
+      "title": "Chairman and CEO",
+      "transaction_type": "Buy",
+      "shares": 15000,
+      "value": 43650,
+      "date": "2026-03-13"
+    },
+    {
+      "ticker": "CSPI",
+      "name": "NERGES JOSEPH R",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 200,
+      "value": 1718,
+      "date": "2026-03-13"
+    },
+    {
+      "ticker": "CSPI",
+      "name": "NERGES JOSEPH R",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 907,
+      "value": 7729,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "CSPI",
+      "name": "NERGES JOSEPH R",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 1100,
+      "value": 9327,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "ALTG",
+      "name": "Mill Road Capital III, L.P.",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 18040,
+      "value": 114761,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "LEE",
+      "name": "Hoffmann David Henry",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 27800,
+      "value": 259930,
+      "date": "2026-03-13"
+    },
+    {
+      "ticker": "LEE",
+      "name": "Hoffmann David Henry",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 27800,
+      "value": 261320,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "LEE",
+      "name": "Hoffmann David Henry",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 27800,
+      "value": 259374,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "TFSL",
+      "name": "Asher Anthony J",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 5000,
+      "value": 66850,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "NP",
+      "name": "Burgess Trevor R",
+      "title": "CEO & Chairman of the Board",
+      "transaction_type": "Buy",
+      "shares": 50000,
+      "value": 935345,
+      "date": "2026-03-13"
+    },
+    {
+      "ticker": "FFIN",
+      "name": "Haney Geoff",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 1500,
+      "value": 43770,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "MPB",
+      "name": "De Soto Matthew G",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 972,
+      "value": 29985,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "MPB",
+      "name": "De Soto Matthew G",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 1618,
+      "value": 49946,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "FFIN",
+      "name": "TROTTER JOHNNY",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 1000,
+      "value": 29260,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "AVBC",
+      "name": "Girard Michael R",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 450,
+      "value": 8461,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "GF",
+      "name": "Saba Capital Management, L.P.",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 224,
+      "value": 2419,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "MXF",
+      "name": "Saba Capital Management, L.P.",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 456,
+      "value": 9280,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "FRST",
+      "name": "Biagas John Fitzgerald",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 1925,
+      "value": 24640,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "TPL",
+      "name": "HORIZON KINETICS ASSET MANAGEM",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 1,
+      "value": 532,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "RCG",
+      "name": "STAHL MURRAY",
+      "title": "President/Co-Portfolio Manager",
+      "transaction_type": "Buy",
+      "shares": 774,
+      "value": 2330,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "RCG",
+      "name": "STAHL MURRAY",
+      "title": "President/Co-Portfolio Manager",
+      "transaction_type": "Buy",
+      "shares": 360,
+      "value": 1084,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "AVBC",
+      "name": "Jensen Barry H",
+      "title": "EVP and Chief Admin Officer",
+      "transaction_type": "Buy",
+      "shares": 1000,
+      "value": 18690,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "OFLX",
+      "name": "Rivest Dean W.",
+      "title": "Chief Executive Officer",
+      "transaction_type": "Buy",
+      "shares": 1000,
+      "value": 29500,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "BWFG",
+      "name": "SEIDMAN LAWRENCE B",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 10000,
+      "value": 468753,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "TIPT",
+      "name": "McKinney Scott T.",
+      "title": "Chief Financial Officer",
+      "transaction_type": "Buy",
+      "shares": 1232,
+      "value": 19682,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "TIPT",
+      "name": "McKinney Scott T.",
+      "title": "Chief Financial Officer",
+      "transaction_type": "Buy",
+      "shares": 2600,
+      "value": 42000,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "ONCY",
+      "name": "Parsons James T.",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 10000,
+      "value": 10300,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "ONCY",
+      "name": "Kelly Jared",
+      "title": "Chief Executive Officer",
+      "transaction_type": "Buy",
+      "shares": 5050,
+      "value": 4848,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "AHCO",
+      "name": "CASHIN RICHARD M JR",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 689336,
+      "value": 6707170,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "AHCO",
+      "name": "CASHIN RICHARD M JR",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 536827,
+      "value": 5222307,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "AHCO",
+      "name": "CASHIN RICHARD M JR",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 820528,
+      "value": 7982671,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "LOAR",
+      "name": "Charles Dirkson R",
+      "title": "See Remarks",
+      "transaction_type": "Buy",
+      "shares": 36434,
+      "value": 2457473,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "LOAR",
+      "name": "Charles Dirkson R",
+      "title": "See Remarks",
+      "transaction_type": "Buy",
+      "shares": 4166,
+      "value": 281163,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "LOAR",
+      "name": "Charles Dirkson R",
+      "title": "See Remarks",
+      "transaction_type": "Buy",
+      "shares": 3400,
+      "value": 229194,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "PATK",
+      "name": "WELCH M SCOTT",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 10000,
+      "value": 1136821,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "BBBY",
+      "name": "TABACCO JOSEPH J JR",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 20000,
+      "value": 102200,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "KRRO",
+      "name": "Yang Rick",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 207100,
+      "value": 2300881,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "KRRO",
+      "name": "SANDELL SCOTT D",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 207100,
+      "value": 2300881,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "KRRO",
+      "name": "New Enterprise Associates 17,",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 207100,
+      "value": 2300881,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "KRRO",
+      "name": "Chang Carmen",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 207100,
+      "value": 2300881,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "KRRO",
+      "name": "BASKETT FOREST",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 207100,
+      "value": 2300881,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "KRRO",
+      "name": "Mathers Edward T",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 207100,
+      "value": 2300881,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "KRRO",
+      "name": "Makhzoumi Mohamad",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 207100,
+      "value": 2300881,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "KRRO",
+      "name": "Walker Paul Edward",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 207100,
+      "value": 2300881,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "KRRO",
+      "name": "Florence Anthony A. Jr.",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 207100,
+      "value": 2300881,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "DIN",
+      "name": "PASQUALE DOUGLAS M",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 2000,
+      "value": 56500,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "DIN",
+      "name": "PASQUALE DOUGLAS M",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 1000,
+      "value": 29000,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "AMR",
+      "name": "Courtis Kenneth S.",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 15000,
+      "value": 2727673,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "ENOV",
+      "name": "Engert Oliver",
+      "title": "Chief Administrative Officer",
+      "transaction_type": "Buy",
+      "shares": 1000,
+      "value": 23930,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "GO",
+      "name": "Ragatz Erik D.",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 125000,
+      "value": 750000,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "UUU",
+      "name": "AULT MILTON C III",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 15200,
+      "value": 89476,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "UUU",
+      "name": "AULT MILTON C III",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 100,
+      "value": 561,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "UUU",
+      "name": "AULT MILTON C III",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 200,
+      "value": 1116,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "UUU",
+      "name": "AULT MILTON C III",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 45000,
+      "value": 239496,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "SMRT",
+      "name": "Bohjalian Thomas N",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 150000,
+      "value": 260490,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "ALIT",
+      "name": "Verma Rohit",
+      "title": "Chief Executive Officer",
+      "transaction_type": "Buy",
+      "shares": 112000,
+      "value": 99680,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "BLMN",
+      "name": "Lal Rohit",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 10000,
+      "value": 56900,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "TCBI",
+      "name": "Arbour Paola M",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 1000,
+      "value": 91500,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "NMFC",
+      "name": "KLINSKY STEVEN B",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 276242,
+      "value": 2223748,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "NMFC",
+      "name": "KLINSKY STEVEN B",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 223758,
+      "value": 1801252,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "MYO",
+      "name": "Getz Heather C",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 70000,
+      "value": 50960,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "IP",
+      "name": "GUSTAFSSON ANDERS",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 13217,
+      "value": 500012,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "IP",
+      "name": "GUSTAFSSON ANDERS",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 12875,
+      "value": 500024,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "TRST",
+      "name": "CURLEY KEVIN M",
+      "title": "EXECUTIVE VICE PRESIDENT & COO",
+      "transaction_type": "Buy",
+      "shares": 588,
+      "value": 25019,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "NCDL",
+      "name": "Vichness Shaul",
+      "title": "Chief Financial Off./Treasurer",
+      "transaction_type": "Buy",
+      "shares": 5000,
+      "value": 65650,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "BJRI",
+      "name": "Richmond C Bradford",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 1000,
+      "value": 34050,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "KOS",
+      "name": "Ogunlesi Adebayo O.",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 3157895,
+      "value": 6000000,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "KOS",
+      "name": "STICE J MICHAEL",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 52631,
+      "value": 99999,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "KOS",
+      "name": "Shah Nealesh D.",
+      "title": "SVP and CFO",
+      "transaction_type": "Buy",
+      "shares": 157894,
+      "value": 299999,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "KOS",
+      "name": "INGLIS ANDREW G",
+      "title": "Chairman and CEO",
+      "transaction_type": "Buy",
+      "shares": 315790,
+      "value": 600001,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "AMT",
+      "name": "Kalathur Rajesh",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 2671,
+      "value": 494936,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "ANNX",
+      "name": "Carson William H.",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 8000,
+      "value": 45360,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "BXSL",
+      "name": "Clark James Frederic",
+      "title": "Trustee",
+      "transaction_type": "Buy",
+      "shares": 750,
+      "value": 17835,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "VENU",
+      "name": "ROTH JAY W",
+      "title": "CEO & Chairman",
+      "transaction_type": "Buy",
+      "shares": 62500,
+      "value": 250000,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "STC",
+      "name": "BRADLEY C ALLEN JR",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 700,
+      "value": 43813,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "STC",
+      "name": "BRADLEY C ALLEN JR",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 300,
+      "value": 18945,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "AEYE",
+      "name": "HAWKINS JAMES B",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 11000,
+      "value": 62031,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "AEYE",
+      "name": "HAWKINS JAMES B",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 13000,
+      "value": 75000,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "AEYE",
+      "name": "HAWKINS JAMES B",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 14000,
+      "value": 82713,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "AUBN",
+      "name": "Conn Walton T Jr.",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 200,
+      "value": 4820,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "LCTX",
+      "name": "Culley Brian M",
+      "title": "President and CEO",
+      "transaction_type": "Buy",
+      "shares": 15000,
+      "value": 24375,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "PFLT",
+      "name": "Allorto Richard T JR",
+      "title": "CFO and Treasurer",
+      "transaction_type": "Buy",
+      "shares": 15000,
+      "value": 122250,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "FISI",
+      "name": "Plants William Jack II",
+      "title": "Chief Financial Officer",
+      "transaction_type": "Buy",
+      "shares": 660,
+      "value": 19879,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "PNNT",
+      "name": "Allorto Richard T JR",
+      "title": "CFO and Treasurer",
+      "transaction_type": "Buy",
+      "shares": 15000,
+      "value": 73200,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "FSSL",
+      "name": "Goldstein Richard I",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 10000,
+      "value": 119200,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "WES",
+      "name": "PHILLIPS ROBERT G",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 1250,
+      "value": 50238,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "EFSI",
+      "name": "HAMBERGER SCOTT M",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 909,
+      "value": 29997,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "MGEE",
+      "name": "Berbee James G",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 373,
+      "value": 28985,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "LKFN",
+      "name": "WELCH M SCOTT",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 10000,
+      "value": 562314,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "COFS",
+      "name": "Burrough Eric E",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 5000,
+      "value": 137500,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "ALLE",
+      "name": "MAIN SUE",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 2000,
+      "value": 299215,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "GRNT",
+      "name": "MCCARTNEY JOHN",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 2000,
+      "value": 10240,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "GRNT",
+      "name": "Everard Michele J",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 5000,
+      "value": 25850,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "AMRZ",
+      "name": "Hill Jaime",
+      "title": "President, Building Materials",
+      "transaction_type": "Buy",
+      "shares": 1000,
+      "value": 56900,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "FRST",
+      "name": "Diaz Deborah",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 1050,
+      "value": 13408,
+      "date": "2026-03-06"
+    },
+    {
+      "ticker": "CMTV",
+      "name": "BONVECHIO LOUISE M",
+      "title": "Executive VP & CFO",
+      "transaction_type": "Buy",
+      "shares": 763,
+      "value": 24988,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "CMTV",
+      "name": "BONVECHIO LOUISE M",
+      "title": "Executive VP & CFO",
+      "transaction_type": "Buy",
+      "shares": 763,
+      "value": 24988,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "FRST",
+      "name": "Biagas John Fitzgerald",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 1550,
+      "value": 19768,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "TPL",
+      "name": "HORIZON KINETICS ASSET MANAGEM",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 1,
+      "value": 523,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "ROCK",
+      "name": "METCALF JAMES S",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 12444,
+      "value": 502165,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "RCG",
+      "name": "STAHL MURRAY",
+      "title": "President/Co-Portfolio Manager",
+      "transaction_type": "Buy",
+      "shares": 774,
+      "value": 2392,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "RCG",
+      "name": "STAHL MURRAY",
+      "title": "President/Co-Portfolio Manager",
+      "transaction_type": "Buy",
+      "shares": 360,
+      "value": 1112,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "CVSA",
+      "name": "MALAFRONTE MICHAEL W",
+      "title": "Lead Independent Director",
+      "transaction_type": "Buy",
+      "shares": 8890,
+      "value": 897341,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "CVSA",
+      "name": "MALAFRONTE MICHAEL W",
+      "title": "Lead Independent Director",
+      "transaction_type": "Buy",
+      "shares": 15305,
+      "value": 1543734,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "CVSA",
+      "name": "MALAFRONTE MICHAEL W",
+      "title": "Lead Independent Director",
+      "transaction_type": "Buy",
+      "shares": 11841,
+      "value": 1194339,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "BWFG",
+      "name": "SEIDMAN LAWRENCE B",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 10000,
+      "value": 466462,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "IMNM",
+      "name": "BIENAIME JEAN JACQUES",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 1000,
+      "value": 21550,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "IMNM",
+      "name": "BIENAIME JEAN JACQUES",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 1000,
+      "value": 22120,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "ORGO",
+      "name": "Leibowitz Arthur S",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 5000,
+      "value": 13405,
+      "date": "2026-03-09"
+    },
+    {
+      "ticker": "AMR",
+      "name": "Courtis Kenneth S.",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 25000,
+      "value": 4405651,
+      "date": "2026-03-09"
+    },
+    {
+      "ticker": "SONO",
+      "name": "Coliseum Capital Management, L",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 180000,
+      "value": 2559600,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "SONO",
+      "name": "Coliseum Capital Management, L",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 320000,
+      "value": 4540800,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "SONO",
+      "name": "Coliseum Capital Management, L",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 420000,
+      "value": 5859000,
+      "date": "2026-03-09"
+    },
+    {
+      "ticker": "BETR",
+      "name": "Framework Ventures IV L.P.",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 21598,
+      "value": 858089,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "BETR",
+      "name": "Framework Ventures IV L.P.",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 10000,
+      "value": 354600,
+      "date": "2026-03-09"
+    },
+    {
+      "ticker": "ALKT",
+      "name": "GENERAL ATLANTIC GENPAR (BERMU",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 900000,
+      "value": 16569000,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "ALKT",
+      "name": "GENERAL ATLANTIC GENPAR (BERMU",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 1103749,
+      "value": 19381832,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "ALKT",
+      "name": "GENERAL ATLANTIC GENPAR (BERMU",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 842266,
+      "value": 14613315,
+      "date": "2026-03-09"
+    },
+    {
+      "ticker": "CPRI",
+      "name": "IDOL JOHN D",
+      "title": "Chairman & CEO",
+      "transaction_type": "Buy",
+      "shares": 55000,
+      "value": 988900,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "ALKT",
+      "name": "GENERAL ATLANTIC, L.P.",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 900000,
+      "value": 16569000,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "ALKT",
+      "name": "GENERAL ATLANTIC, L.P.",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 1103749,
+      "value": 19381832,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "ALKT",
+      "name": "GENERAL ATLANTIC, L.P.",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 842266,
+      "value": 14613315,
+      "date": "2026-03-09"
+    },
+    {
+      "ticker": "SFM",
+      "name": "Blum Kristen E",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 1325,
+      "value": 100700,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "SRE",
+      "name": "MARK RICHARD J",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 2692,
+      "value": 251164,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "SRE",
+      "name": "WARNER CYNTHIA J",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 2500,
+      "value": 232375,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "AFCG",
+      "name": "TANNENBAUM LEONARD M",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 2000,
+      "value": 5140,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "AFCG",
+      "name": "TANNENBAUM LEONARD M",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 102213,
+      "value": 259621,
+      "date": "2026-03-09"
+    },
+    {
+      "ticker": "EML",
+      "name": "DiSanto Frederick D.",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 101,
+      "value": 1918,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "KELYA",
+      "name": "Brock-Kyle Angela",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 100,
+      "value": 1477,
+      "date": "2026-03-04"
+    },
+    {
+      "ticker": "CPNG",
+      "name": "MEHTA NEIL",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 2332863,
+      "value": 42923279,
+      "date": "2026-03-13"
+    },
+    {
+      "ticker": "CPNG",
+      "name": "MEHTA NEIL",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 3000000,
+      "value": 56036100,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "CPNG",
+      "name": "MEHTA NEIL",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 2017241,
+      "value": 37603591,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "AMR",
+      "name": "Courtis Kenneth S.",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 10000,
+      "value": 1868707,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "FOXA",
+      "name": "MURDOCH LACHLAN K",
+      "title": "Executive Chair, CEO",
+      "transaction_type": "Buy",
+      "shares": 175372,
+      "value": 10632804,
+      "date": "2026-03-13"
+    },
+    {
+      "ticker": "FOX",
+      "name": "MURDOCH LACHLAN K",
+      "title": "Executive Chair, CEO",
+      "transaction_type": "Buy",
+      "shares": 175372,
+      "value": 10632804,
+      "date": "2026-03-13"
+    },
+    {
+      "ticker": "STAA",
+      "name": "BROADWOOD PARTNERS, L.P.",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 316017,
+      "value": 5882656,
+      "date": "2026-03-13"
+    },
+    {
+      "ticker": "STAA",
+      "name": "BROADWOOD PARTNERS, L.P.",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 299432,
+      "value": 5424330,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "STAA",
+      "name": "BROADWOOD PARTNERS, L.P.",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 54764,
+      "value": 959558,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "SNDA",
+      "name": "Simanovsky Michael",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 3739716,
+      "value": 100000006,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "GWRS",
+      "name": "Cohn Andrew M.",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 18305,
+      "value": 131796,
+      "date": "2026-03-13"
+    },
+    {
+      "ticker": "ALKT",
+      "name": "Payne Joseph P.",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 5500,
+      "value": 100238,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "BETR",
+      "name": "Framework Ventures IV L.P.",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 29494,
+      "value": 1006335,
+      "date": "2026-03-13"
+    },
+    {
+      "ticker": "GOGO",
+      "name": "TOWNSEND CHARLES C",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 158591,
+      "value": 723984,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "GOGO",
+      "name": "TOWNSEND CHARLES C",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 91409,
+      "value": 414723,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "ACOG",
+      "name": "Opaleye Management Inc.",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 7358,
+      "value": 42286,
+      "date": "2026-03-13"
+    },
+    {
+      "ticker": "ACOG",
+      "name": "Opaleye Management Inc.",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 5708,
+      "value": 33416,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "PTLO",
+      "name": "LEE EUGENE I JR",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 286000,
+      "value": 1481480,
+      "date": "2026-03-13"
+    },
+    {
+      "ticker": "HGTY",
+      "name": "Kuczinski Anthony J",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 4000,
+      "value": 38000,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "NXRT",
+      "name": "McGraner Matt",
+      "title": "See Remarks",
+      "transaction_type": "Buy",
+      "shares": 1000,
+      "value": 26140,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "WULF",
+      "name": "Bucella Michael C.",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 1338,
+      "value": 19950,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "FG",
+      "name": "Doka Celina J. Wang",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 4760,
+      "value": 99865,
+      "date": "2026-03-13"
+    },
+    {
+      "ticker": "LOAR",
+      "name": "Carpenito Anthony",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 50,
+      "value": 3235,
+      "date": "2026-03-13"
+    },
+    {
+      "ticker": "LOAR",
+      "name": "Carpenito Anthony",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 4750,
+      "value": 308622,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "SWZ",
+      "name": "Dakos Andrew",
+      "title": "President and CEO",
+      "transaction_type": "Buy",
+      "shares": 3324,
+      "value": 19944,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "SWZ",
+      "name": "Dakos Andrew",
+      "title": "President and CEO",
+      "transaction_type": "Buy",
+      "shares": 1700,
+      "value": 10200,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "SRE",
+      "name": "Kirk Jennifer M",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 1000,
+      "value": 93440,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "JBHT",
+      "name": "Frazier Spencer",
+      "title": "EVP of Sales and Marketing",
+      "transaction_type": "Buy",
+      "shares": 13,
+      "value": 2086,
+      "date": "2025-11-21"
+    },
+    {
+      "ticker": "JBHT",
+      "name": "Frazier Spencer",
+      "title": "EVP of Sales and Marketing",
+      "transaction_type": "Buy",
+      "shares": 15,
+      "value": 2080,
+      "date": "2025-08-22"
+    },
+    {
+      "ticker": "JBHT",
+      "name": "Frazier Spencer",
+      "title": "EVP of Sales and Marketing",
+      "transaction_type": "Buy",
+      "shares": 15,
+      "value": 2073,
+      "date": "2025-05-23"
+    },
+    {
+      "ticker": "JBHT",
+      "name": "Frazier Spencer",
+      "title": "EVP of Sales and Marketing",
+      "transaction_type": "Buy",
+      "shares": 67,
+      "value": 8924,
+      "date": "2025-04-07"
+    },
+    {
+      "ticker": "JBHT",
+      "name": "Frazier Spencer",
+      "title": "EVP of Sales and Marketing",
+      "transaction_type": "Buy",
+      "shares": 12,
+      "value": 2068,
+      "date": "2025-02-21"
+    },
+    {
+      "ticker": "JBHT",
+      "name": "Frazier Spencer",
+      "title": "EVP of Sales and Marketing",
+      "transaction_type": "Buy",
+      "shares": 10,
+      "value": 1773,
+      "date": "2024-11-22"
+    },
+    {
+      "ticker": "JBHT",
+      "name": "Frazier Spencer",
+      "title": "EVP of Sales and Marketing",
+      "transaction_type": "Buy",
+      "shares": 12,
+      "value": 2095,
+      "date": "2024-08-16"
+    },
+    {
+      "ticker": "JBHT",
+      "name": "Frazier Spencer",
+      "title": "EVP of Sales and Marketing",
+      "transaction_type": "Buy",
+      "shares": 13,
+      "value": 2090,
+      "date": "2024-05-24"
+    },
+    {
+      "ticker": "JBHT",
+      "name": "Frazier Spencer",
+      "title": "EVP of Sales and Marketing",
+      "transaction_type": "Buy",
+      "shares": 1,
+      "value": 201,
+      "date": "2024-02-23"
+    },
+    {
+      "ticker": "JBHT",
+      "name": "Frazier Spencer",
+      "title": "EVP of Sales and Marketing",
+      "transaction_type": "Buy",
+      "shares": 14,
+      "value": 2554,
+      "date": "2023-11-24"
+    },
+    {
+      "ticker": "JBHT",
+      "name": "Frazier Spencer",
+      "title": "EVP of Sales and Marketing",
+      "transaction_type": "Buy",
+      "shares": 7,
+      "value": 1296,
+      "date": "2023-08-18"
+    },
+    {
+      "ticker": "JBHT",
+      "name": "Frazier Spencer",
+      "title": "EVP of Sales and Marketing",
+      "transaction_type": "Buy",
+      "shares": 8,
+      "value": 1292,
+      "date": "2023-05-26"
+    },
+    {
+      "ticker": "JBHT",
+      "name": "Frazier Spencer",
+      "title": "EVP of Sales and Marketing",
+      "transaction_type": "Buy",
+      "shares": 7,
+      "value": 1294,
+      "date": "2023-02-24"
+    },
+    {
+      "ticker": "JBHT",
+      "name": "Frazier Spencer",
+      "title": "EVP of Sales and Marketing",
+      "transaction_type": "Buy",
+      "shares": 3,
+      "value": 622,
+      "date": "2023-01-25"
+    },
+    {
+      "ticker": "JBHT",
+      "name": "Frazier Spencer",
+      "title": "EVP of Sales and Marketing",
+      "transaction_type": "Buy",
+      "shares": 8,
+      "value": 1424,
+      "date": "2022-11-18"
+    },
+    {
+      "ticker": "BH",
+      "name": "BIGLARI, SARDAR",
+      "title": "Chairman and CEO",
+      "transaction_type": "Buy",
+      "shares": 2810,
+      "value": 849182,
+      "date": "2026-03-13"
+    },
+    {
+      "ticker": "CPS",
+      "name": "Mastrocola David John",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 3391,
+      "value": 100950,
+      "date": "2026-03-13"
+    },
+    {
+      "ticker": "CPS",
+      "name": "Mastrocola David John",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 1494,
+      "value": 45194,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "CPS",
+      "name": "Mastrocola David John",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 2000,
+      "value": 62000,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "AVBC",
+      "name": "Murphy Bartholomew H JR",
+      "title": "EVP & Chief Operating Off",
+      "transaction_type": "Buy",
+      "shares": 440,
+      "value": 8193,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "VWAV",
+      "name": "VisionWave Holdings, Inc.",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 86875200,
+      "value": 230219280,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "VWAV",
+      "name": "VisionWave Holdings, Inc.",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 260884800,
+      "value": 688735872,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "SVRE",
+      "name": "VisionWave Holdings, Inc.",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 86875200,
+      "value": 230219280,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "SVRE",
+      "name": "VisionWave Holdings, Inc.",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 260884800,
+      "value": 688735872,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "VEEE",
+      "name": "SWETS LARRY G JR",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 50000,
+      "value": 21000,
+      "date": "2026-03-13"
+    },
+    {
+      "ticker": "CRH",
+      "name": "FEARON RICHARD H",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 3800,
+      "value": 397062,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "CRH",
+      "name": "Talbot Siobhan",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 2000,
+      "value": 204223,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "DYN",
+      "name": "Posner Brian S",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 2000,
+      "value": 38700,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "GAM",
+      "name": "Priest Jeffrey W",
+      "title": "President & CEO",
+      "transaction_type": "Buy",
+      "shares": 800,
+      "value": 19920,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "AXP",
+      "name": "Joabar Raymond",
+      "title": "Grp. Pres., Global Comm. Serv.",
+      "transaction_type": "Buy",
+      "shares": 2,
+      "value": 523,
+      "date": "2025-04-09"
+    },
+    {
+      "ticker": "AXP",
+      "name": "Joabar Raymond",
+      "title": "Grp. Pres., Global Comm. Serv.",
+      "transaction_type": "Buy",
+      "shares": 2,
+      "value": 429,
+      "date": "2024-02-23"
+    },
+    {
+      "ticker": "AXP",
+      "name": "Joabar Raymond",
+      "title": "Grp. Pres., Global Comm. Serv.",
+      "transaction_type": "Buy",
+      "shares": 2,
+      "value": 338,
+      "date": "2023-12-07"
+    },
+    {
+      "ticker": "AXP",
+      "name": "Joabar Raymond",
+      "title": "Grp. Pres., Global Comm. Serv.",
+      "transaction_type": "Buy",
+      "shares": 5,
+      "value": 843,
+      "date": "2023-12-06"
+    },
+    {
+      "ticker": "AXP",
+      "name": "Joabar Raymond",
+      "title": "Grp. Pres., Global Comm. Serv.",
+      "transaction_type": "Buy",
+      "shares": 1,
+      "value": 154,
+      "date": "2023-10-17"
+    },
+    {
+      "ticker": "AXP",
+      "name": "Joabar Raymond",
+      "title": "Grp. Pres., Global Comm. Serv.",
+      "transaction_type": "Buy",
+      "shares": 2,
+      "value": 300,
+      "date": "2023-09-27"
+    },
+    {
+      "ticker": "AXP",
+      "name": "Joabar Raymond",
+      "title": "Grp. Pres., Global Comm. Serv.",
+      "transaction_type": "Buy",
+      "shares": 9,
+      "value": 1466,
+      "date": "2023-09-15"
+    },
+    {
+      "ticker": "ADV",
+      "name": "KILTS JAMES M",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 16759,
+      "value": 11725,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "INDV",
+      "name": "Ryan Barbara",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 8,
+      "value": 249,
+      "date": "2026-03-13"
+    },
+    {
+      "ticker": "FSSL",
+      "name": "Ramos Pedro A",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 1000,
+      "value": 12400,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "MDRR",
+      "name": "KAVANAUGH FRANK",
+      "title": "CHAIRMAN, CEO & PRESIDENT",
+      "transaction_type": "Buy",
+      "shares": 40000,
+      "value": 600000,
+      "date": "2026-03-13"
+    },
+    {
+      "ticker": "ECC",
+      "name": "Onorio Kenneth P.",
+      "title": "CFO / COO",
+      "transaction_type": "Buy",
+      "shares": 110000,
+      "value": 411400,
+      "date": "2026-03-13"
+    },
+    {
+      "ticker": "GOF",
+      "name": "Barnes Randall C",
+      "title": "TRUSTEE",
+      "transaction_type": "Buy",
+      "shares": 220,
+      "value": 2506,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "FG",
+      "name": "Blunt Christopher O",
+      "title": "Chief Executive Officer",
+      "transaction_type": "Buy",
+      "shares": 10000,
+      "value": 209900,
+      "date": "2026-03-13"
+    },
+    {
+      "ticker": "LOAR",
+      "name": "Bobbili Raja",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 50000,
+      "value": 3180486,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "THRY",
+      "name": "Walsh Joe",
+      "title": "Chairman and CEO",
+      "transaction_type": "Buy",
+      "shares": 15000,
+      "value": 43650,
+      "date": "2026-03-13"
+    },
+    {
+      "ticker": "CSPI",
+      "name": "NERGES JOSEPH R",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 200,
+      "value": 1718,
+      "date": "2026-03-13"
+    },
+    {
+      "ticker": "CSPI",
+      "name": "NERGES JOSEPH R",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 907,
+      "value": 7729,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "CSPI",
+      "name": "NERGES JOSEPH R",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 1100,
+      "value": 9327,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "ALTG",
+      "name": "Mill Road Capital III, L.P.",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 18040,
+      "value": 114761,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "LEE",
+      "name": "Hoffmann David Henry",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 27800,
+      "value": 259930,
+      "date": "2026-03-13"
+    },
+    {
+      "ticker": "LEE",
+      "name": "Hoffmann David Henry",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 27800,
+      "value": 261320,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "LEE",
+      "name": "Hoffmann David Henry",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 27800,
+      "value": 259374,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "TFSL",
+      "name": "Asher Anthony J",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 5000,
+      "value": 66850,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "NP",
+      "name": "Burgess Trevor R",
+      "title": "CEO & Chairman of the Board",
+      "transaction_type": "Buy",
+      "shares": 50000,
+      "value": 935345,
+      "date": "2026-03-13"
+    },
+    {
+      "ticker": "FFIN",
+      "name": "Haney Geoff",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 1500,
+      "value": 43770,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "MPB",
+      "name": "De Soto Matthew G",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 972,
+      "value": 29985,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "MPB",
+      "name": "De Soto Matthew G",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 1618,
+      "value": 49946,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "FFIN",
+      "name": "TROTTER JOHNNY",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 1000,
+      "value": 29260,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "AVBC",
+      "name": "Girard Michael R",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 450,
+      "value": 8461,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "GF",
+      "name": "Saba Capital Management, L.P.",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 224,
+      "value": 2419,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "MXF",
+      "name": "Saba Capital Management, L.P.",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 456,
+      "value": 9280,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "FRST",
+      "name": "Biagas John Fitzgerald",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 1925,
+      "value": 24640,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "TPL",
+      "name": "HORIZON KINETICS ASSET MANAGEM",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 1,
+      "value": 532,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "RCG",
+      "name": "STAHL MURRAY",
+      "title": "President/Co-Portfolio Manager",
+      "transaction_type": "Buy",
+      "shares": 774,
+      "value": 2330,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "RCG",
+      "name": "STAHL MURRAY",
+      "title": "President/Co-Portfolio Manager",
+      "transaction_type": "Buy",
+      "shares": 360,
+      "value": 1084,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "AVBC",
+      "name": "Jensen Barry H",
+      "title": "EVP and Chief Admin Officer",
+      "transaction_type": "Buy",
+      "shares": 1000,
+      "value": 18690,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "OFLX",
+      "name": "Rivest Dean W.",
+      "title": "Chief Executive Officer",
+      "transaction_type": "Buy",
+      "shares": 1000,
+      "value": 29500,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "BWFG",
+      "name": "SEIDMAN LAWRENCE B",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 10000,
+      "value": 468753,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "TIPT",
+      "name": "McKinney Scott T.",
+      "title": "Chief Financial Officer",
+      "transaction_type": "Buy",
+      "shares": 1232,
+      "value": 19682,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "TIPT",
+      "name": "McKinney Scott T.",
+      "title": "Chief Financial Officer",
+      "transaction_type": "Buy",
+      "shares": 2600,
+      "value": 42000,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "ONCY",
+      "name": "Parsons James T.",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 10000,
+      "value": 10300,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "ONCY",
+      "name": "Kelly Jared",
+      "title": "Chief Executive Officer",
+      "transaction_type": "Buy",
+      "shares": 5050,
+      "value": 4848,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "AHCO",
+      "name": "CASHIN RICHARD M JR",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 689336,
+      "value": 6707170,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "AHCO",
+      "name": "CASHIN RICHARD M JR",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 536827,
+      "value": 5222307,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "AHCO",
+      "name": "CASHIN RICHARD M JR",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 820528,
+      "value": 7982671,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "LOAR",
+      "name": "Charles Dirkson R",
+      "title": "See Remarks",
+      "transaction_type": "Buy",
+      "shares": 36434,
+      "value": 2457473,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "LOAR",
+      "name": "Charles Dirkson R",
+      "title": "See Remarks",
+      "transaction_type": "Buy",
+      "shares": 4166,
+      "value": 281163,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "LOAR",
+      "name": "Charles Dirkson R",
+      "title": "See Remarks",
+      "transaction_type": "Buy",
+      "shares": 3400,
+      "value": 229194,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "PATK",
+      "name": "WELCH M SCOTT",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 10000,
+      "value": 1136821,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "BBBY",
+      "name": "TABACCO JOSEPH J JR",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 20000,
+      "value": 102200,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "KRRO",
+      "name": "Yang Rick",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 207100,
+      "value": 2300881,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "KRRO",
+      "name": "SANDELL SCOTT D",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 207100,
+      "value": 2300881,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "KRRO",
+      "name": "New Enterprise Associates 17,",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 207100,
+      "value": 2300881,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "KRRO",
+      "name": "Chang Carmen",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 207100,
+      "value": 2300881,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "KRRO",
+      "name": "BASKETT FOREST",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 207100,
+      "value": 2300881,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "KRRO",
+      "name": "Mathers Edward T",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 207100,
+      "value": 2300881,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "KRRO",
+      "name": "Makhzoumi Mohamad",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 207100,
+      "value": 2300881,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "KRRO",
+      "name": "Walker Paul Edward",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 207100,
+      "value": 2300881,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "KRRO",
+      "name": "Florence Anthony A. Jr.",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 207100,
+      "value": 2300881,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "DIN",
+      "name": "PASQUALE DOUGLAS M",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 2000,
+      "value": 56500,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "DIN",
+      "name": "PASQUALE DOUGLAS M",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 1000,
+      "value": 29000,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "AMR",
+      "name": "Courtis Kenneth S.",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 15000,
+      "value": 2727673,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "ENOV",
+      "name": "Engert Oliver",
+      "title": "Chief Administrative Officer",
+      "transaction_type": "Buy",
+      "shares": 1000,
+      "value": 23930,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "GO",
+      "name": "Ragatz Erik D.",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 125000,
+      "value": 750000,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "UUU",
+      "name": "AULT MILTON C III",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 15200,
+      "value": 89476,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "UUU",
+      "name": "AULT MILTON C III",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 100,
+      "value": 561,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "UUU",
+      "name": "AULT MILTON C III",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 200,
+      "value": 1116,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "UUU",
+      "name": "AULT MILTON C III",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 45000,
+      "value": 239496,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "SMRT",
+      "name": "Bohjalian Thomas N",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 150000,
+      "value": 260490,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "ALIT",
+      "name": "Verma Rohit",
+      "title": "Chief Executive Officer",
+      "transaction_type": "Buy",
+      "shares": 112000,
+      "value": 99680,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "BLMN",
+      "name": "Lal Rohit",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 10000,
+      "value": 56900,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "TCBI",
+      "name": "Arbour Paola M",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 1000,
+      "value": 91500,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "NMFC",
+      "name": "KLINSKY STEVEN B",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 276242,
+      "value": 2223748,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "NMFC",
+      "name": "KLINSKY STEVEN B",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 223758,
+      "value": 1801252,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "MYO",
+      "name": "Getz Heather C",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 70000,
+      "value": 50960,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "IP",
+      "name": "GUSTAFSSON ANDERS",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 13217,
+      "value": 500012,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "IP",
+      "name": "GUSTAFSSON ANDERS",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 12875,
+      "value": 500024,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "TRST",
+      "name": "CURLEY KEVIN M",
+      "title": "EXECUTIVE VICE PRESIDENT & COO",
+      "transaction_type": "Buy",
+      "shares": 588,
+      "value": 25019,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "NCDL",
+      "name": "Vichness Shaul",
+      "title": "Chief Financial Off./Treasurer",
+      "transaction_type": "Buy",
+      "shares": 5000,
+      "value": 65650,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "BJRI",
+      "name": "Richmond C Bradford",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 1000,
+      "value": 34050,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "KOS",
+      "name": "Ogunlesi Adebayo O.",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 3157895,
+      "value": 6000000,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "KOS",
+      "name": "STICE J MICHAEL",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 52631,
+      "value": 99999,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "KOS",
+      "name": "Shah Nealesh D.",
+      "title": "SVP and CFO",
+      "transaction_type": "Buy",
+      "shares": 157894,
+      "value": 299999,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "KOS",
+      "name": "INGLIS ANDREW G",
+      "title": "Chairman and CEO",
+      "transaction_type": "Buy",
+      "shares": 315790,
+      "value": 600001,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "AMT",
+      "name": "Kalathur Rajesh",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 2671,
+      "value": 494936,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "ANNX",
+      "name": "Carson William H.",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 8000,
+      "value": 45360,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "BXSL",
+      "name": "Clark James Frederic",
+      "title": "Trustee",
+      "transaction_type": "Buy",
+      "shares": 750,
+      "value": 17835,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "VENU",
+      "name": "ROTH JAY W",
+      "title": "CEO & Chairman",
+      "transaction_type": "Buy",
+      "shares": 62500,
+      "value": 250000,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "STC",
+      "name": "BRADLEY C ALLEN JR",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 700,
+      "value": 43813,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "STC",
+      "name": "BRADLEY C ALLEN JR",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 300,
+      "value": 18945,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "AEYE",
+      "name": "HAWKINS JAMES B",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 11000,
+      "value": 62031,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "AEYE",
+      "name": "HAWKINS JAMES B",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 13000,
+      "value": 75000,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "AEYE",
+      "name": "HAWKINS JAMES B",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 14000,
+      "value": 82713,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "AUBN",
+      "name": "Conn Walton T Jr.",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 200,
+      "value": 4820,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "LCTX",
+      "name": "Culley Brian M",
+      "title": "President and CEO",
+      "transaction_type": "Buy",
+      "shares": 15000,
+      "value": 24375,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "PFLT",
+      "name": "Allorto Richard T JR",
+      "title": "CFO and Treasurer",
+      "transaction_type": "Buy",
+      "shares": 15000,
+      "value": 122250,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "FISI",
+      "name": "Plants William Jack II",
+      "title": "Chief Financial Officer",
+      "transaction_type": "Buy",
+      "shares": 660,
+      "value": 19879,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "PNNT",
+      "name": "Allorto Richard T JR",
+      "title": "CFO and Treasurer",
+      "transaction_type": "Buy",
+      "shares": 15000,
+      "value": 73200,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "FSSL",
+      "name": "Goldstein Richard I",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 10000,
+      "value": 119200,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "WES",
+      "name": "PHILLIPS ROBERT G",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 1250,
+      "value": 50238,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "EFSI",
+      "name": "HAMBERGER SCOTT M",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 909,
+      "value": 29997,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "MGEE",
+      "name": "Berbee James G",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 373,
+      "value": 28985,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "LKFN",
+      "name": "WELCH M SCOTT",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 10000,
+      "value": 562314,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "COFS",
+      "name": "Burrough Eric E",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 5000,
+      "value": 137500,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "ALLE",
+      "name": "MAIN SUE",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 2000,
+      "value": 299215,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "GRNT",
+      "name": "MCCARTNEY JOHN",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 2000,
+      "value": 10240,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "GRNT",
+      "name": "Everard Michele J",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 5000,
+      "value": 25850,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "AMRZ",
+      "name": "Hill Jaime",
+      "title": "President, Building Materials",
+      "transaction_type": "Buy",
+      "shares": 1000,
+      "value": 56900,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "FRST",
+      "name": "Diaz Deborah",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 1050,
+      "value": 13408,
+      "date": "2026-03-06"
+    },
+    {
+      "ticker": "CMTV",
+      "name": "BONVECHIO LOUISE M",
+      "title": "Executive VP & CFO",
+      "transaction_type": "Buy",
+      "shares": 763,
+      "value": 24988,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "CMTV",
+      "name": "BONVECHIO LOUISE M",
+      "title": "Executive VP & CFO",
+      "transaction_type": "Buy",
+      "shares": 763,
+      "value": 24988,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "FRST",
+      "name": "Biagas John Fitzgerald",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 1550,
+      "value": 19768,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "TPL",
+      "name": "HORIZON KINETICS ASSET MANAGEM",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 1,
+      "value": 523,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "ROCK",
+      "name": "METCALF JAMES S",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 12444,
+      "value": 502165,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "RCG",
+      "name": "STAHL MURRAY",
+      "title": "President/Co-Portfolio Manager",
+      "transaction_type": "Buy",
+      "shares": 774,
+      "value": 2392,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "RCG",
+      "name": "STAHL MURRAY",
+      "title": "President/Co-Portfolio Manager",
+      "transaction_type": "Buy",
+      "shares": 360,
+      "value": 1112,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "CVSA",
+      "name": "MALAFRONTE MICHAEL W",
+      "title": "Lead Independent Director",
+      "transaction_type": "Buy",
+      "shares": 8890,
+      "value": 897341,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "CVSA",
+      "name": "MALAFRONTE MICHAEL W",
+      "title": "Lead Independent Director",
+      "transaction_type": "Buy",
+      "shares": 15305,
+      "value": 1543734,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "CVSA",
+      "name": "MALAFRONTE MICHAEL W",
+      "title": "Lead Independent Director",
+      "transaction_type": "Buy",
+      "shares": 11841,
+      "value": 1194339,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "BWFG",
+      "name": "SEIDMAN LAWRENCE B",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 10000,
+      "value": 466462,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "IMNM",
+      "name": "BIENAIME JEAN JACQUES",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 1000,
+      "value": 21550,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "IMNM",
+      "name": "BIENAIME JEAN JACQUES",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 1000,
+      "value": 22120,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "ORGO",
+      "name": "Leibowitz Arthur S",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 5000,
+      "value": 13405,
+      "date": "2026-03-09"
+    },
+    {
+      "ticker": "AMR",
+      "name": "Courtis Kenneth S.",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 25000,
+      "value": 4405651,
+      "date": "2026-03-09"
+    },
+    {
+      "ticker": "SONO",
+      "name": "Coliseum Capital Management, L",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 180000,
+      "value": 2559600,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "SONO",
+      "name": "Coliseum Capital Management, L",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 320000,
+      "value": 4540800,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "SONO",
+      "name": "Coliseum Capital Management, L",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 420000,
+      "value": 5859000,
+      "date": "2026-03-09"
+    },
+    {
+      "ticker": "BETR",
+      "name": "Framework Ventures IV L.P.",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 21598,
+      "value": 858089,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "BETR",
+      "name": "Framework Ventures IV L.P.",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 10000,
+      "value": 354600,
+      "date": "2026-03-09"
+    },
+    {
+      "ticker": "ALKT",
+      "name": "GENERAL ATLANTIC GENPAR (BERMU",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 900000,
+      "value": 16569000,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "ALKT",
+      "name": "GENERAL ATLANTIC GENPAR (BERMU",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 1103749,
+      "value": 19381832,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "ALKT",
+      "name": "GENERAL ATLANTIC GENPAR (BERMU",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 842266,
+      "value": 14613315,
+      "date": "2026-03-09"
+    },
+    {
+      "ticker": "CPRI",
+      "name": "IDOL JOHN D",
+      "title": "Chairman & CEO",
+      "transaction_type": "Buy",
+      "shares": 55000,
+      "value": 988900,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "ALKT",
+      "name": "GENERAL ATLANTIC, L.P.",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 900000,
+      "value": 16569000,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "ALKT",
+      "name": "GENERAL ATLANTIC, L.P.",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 1103749,
+      "value": 19381832,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "ALKT",
+      "name": "GENERAL ATLANTIC, L.P.",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 842266,
+      "value": 14613315,
+      "date": "2026-03-09"
+    },
+    {
+      "ticker": "SFM",
+      "name": "Blum Kristen E",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 1325,
+      "value": 100700,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "SRE",
+      "name": "MARK RICHARD J",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 2692,
+      "value": 251164,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "SRE",
+      "name": "WARNER CYNTHIA J",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 2500,
+      "value": 232375,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "AFCG",
+      "name": "TANNENBAUM LEONARD M",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 2000,
+      "value": 5140,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "AFCG",
+      "name": "TANNENBAUM LEONARD M",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 102213,
+      "value": 259621,
+      "date": "2026-03-09"
+    },
+    {
+      "ticker": "EML",
+      "name": "DiSanto Frederick D.",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 101,
+      "value": 1918,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "KELYA",
+      "name": "Brock-Kyle Angela",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 100,
+      "value": 1477,
+      "date": "2026-03-04"
+    },
+    {
+      "ticker": "CPNG",
+      "name": "MEHTA NEIL",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 2332863,
+      "value": 42923279,
+      "date": "2026-03-13"
+    },
+    {
+      "ticker": "CPNG",
+      "name": "MEHTA NEIL",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 3000000,
+      "value": 56036100,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "CPNG",
+      "name": "MEHTA NEIL",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 2017241,
+      "value": 37603591,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "AMR",
+      "name": "Courtis Kenneth S.",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 10000,
+      "value": 1868707,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "FOXA",
+      "name": "MURDOCH LACHLAN K",
+      "title": "Executive Chair, CEO",
+      "transaction_type": "Buy",
+      "shares": 175372,
+      "value": 10632804,
+      "date": "2026-03-13"
+    },
+    {
+      "ticker": "FOX",
+      "name": "MURDOCH LACHLAN K",
+      "title": "Executive Chair, CEO",
+      "transaction_type": "Buy",
+      "shares": 175372,
+      "value": 10632804,
+      "date": "2026-03-13"
+    },
+    {
+      "ticker": "STAA",
+      "name": "BROADWOOD PARTNERS, L.P.",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 316017,
+      "value": 5882656,
+      "date": "2026-03-13"
+    },
+    {
+      "ticker": "STAA",
+      "name": "BROADWOOD PARTNERS, L.P.",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 299432,
+      "value": 5424330,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "STAA",
+      "name": "BROADWOOD PARTNERS, L.P.",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 54764,
+      "value": 959558,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "SNDA",
+      "name": "Simanovsky Michael",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 3739716,
+      "value": 100000006,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "GWRS",
+      "name": "Cohn Andrew M.",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 18305,
+      "value": 131796,
+      "date": "2026-03-13"
+    },
+    {
+      "ticker": "ALKT",
+      "name": "Payne Joseph P.",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 5500,
+      "value": 100238,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "BETR",
+      "name": "Framework Ventures IV L.P.",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 29494,
+      "value": 1006335,
+      "date": "2026-03-13"
+    },
+    {
+      "ticker": "GOGO",
+      "name": "TOWNSEND CHARLES C",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 158591,
+      "value": 723984,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "GOGO",
+      "name": "TOWNSEND CHARLES C",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 91409,
+      "value": 414723,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "ACOG",
+      "name": "Opaleye Management Inc.",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 7358,
+      "value": 42286,
+      "date": "2026-03-13"
+    },
+    {
+      "ticker": "ACOG",
+      "name": "Opaleye Management Inc.",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 5708,
+      "value": 33416,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "PTLO",
+      "name": "LEE EUGENE I JR",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 286000,
+      "value": 1481480,
+      "date": "2026-03-13"
+    },
+    {
+      "ticker": "HGTY",
+      "name": "Kuczinski Anthony J",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 4000,
+      "value": 38000,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "NXRT",
+      "name": "McGraner Matt",
+      "title": "See Remarks",
+      "transaction_type": "Buy",
+      "shares": 1000,
+      "value": 26140,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "WULF",
+      "name": "Bucella Michael C.",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 1338,
+      "value": 19950,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "FG",
+      "name": "Doka Celina J. Wang",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 4760,
+      "value": 99865,
+      "date": "2026-03-13"
+    },
+    {
+      "ticker": "LOAR",
+      "name": "Carpenito Anthony",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 50,
+      "value": 3235,
+      "date": "2026-03-13"
+    },
+    {
+      "ticker": "LOAR",
+      "name": "Carpenito Anthony",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 4750,
+      "value": 308622,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "SWZ",
+      "name": "Dakos Andrew",
+      "title": "President and CEO",
+      "transaction_type": "Buy",
+      "shares": 3324,
+      "value": 19944,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "SWZ",
+      "name": "Dakos Andrew",
+      "title": "President and CEO",
+      "transaction_type": "Buy",
+      "shares": 1700,
+      "value": 10200,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "SRE",
+      "name": "Kirk Jennifer M",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 1000,
+      "value": 93440,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "JBHT",
+      "name": "Frazier Spencer",
+      "title": "EVP of Sales and Marketing",
+      "transaction_type": "Buy",
+      "shares": 13,
+      "value": 2086,
+      "date": "2025-11-21"
+    },
+    {
+      "ticker": "JBHT",
+      "name": "Frazier Spencer",
+      "title": "EVP of Sales and Marketing",
+      "transaction_type": "Buy",
+      "shares": 15,
+      "value": 2080,
+      "date": "2025-08-22"
+    },
+    {
+      "ticker": "JBHT",
+      "name": "Frazier Spencer",
+      "title": "EVP of Sales and Marketing",
+      "transaction_type": "Buy",
+      "shares": 15,
+      "value": 2073,
+      "date": "2025-05-23"
+    },
+    {
+      "ticker": "JBHT",
+      "name": "Frazier Spencer",
+      "title": "EVP of Sales and Marketing",
+      "transaction_type": "Buy",
+      "shares": 67,
+      "value": 8924,
+      "date": "2025-04-07"
+    },
+    {
+      "ticker": "JBHT",
+      "name": "Frazier Spencer",
+      "title": "EVP of Sales and Marketing",
+      "transaction_type": "Buy",
+      "shares": 12,
+      "value": 2068,
+      "date": "2025-02-21"
+    },
+    {
+      "ticker": "JBHT",
+      "name": "Frazier Spencer",
+      "title": "EVP of Sales and Marketing",
+      "transaction_type": "Buy",
+      "shares": 10,
+      "value": 1773,
+      "date": "2024-11-22"
+    },
+    {
+      "ticker": "JBHT",
+      "name": "Frazier Spencer",
+      "title": "EVP of Sales and Marketing",
+      "transaction_type": "Buy",
+      "shares": 12,
+      "value": 2095,
+      "date": "2024-08-16"
+    },
+    {
+      "ticker": "JBHT",
+      "name": "Frazier Spencer",
+      "title": "EVP of Sales and Marketing",
+      "transaction_type": "Buy",
+      "shares": 13,
+      "value": 2090,
+      "date": "2024-05-24"
+    },
+    {
+      "ticker": "JBHT",
+      "name": "Frazier Spencer",
+      "title": "EVP of Sales and Marketing",
+      "transaction_type": "Buy",
+      "shares": 1,
+      "value": 201,
+      "date": "2024-02-23"
+    },
+    {
+      "ticker": "JBHT",
+      "name": "Frazier Spencer",
+      "title": "EVP of Sales and Marketing",
+      "transaction_type": "Buy",
+      "shares": 14,
+      "value": 2554,
+      "date": "2023-11-24"
+    },
+    {
+      "ticker": "JBHT",
+      "name": "Frazier Spencer",
+      "title": "EVP of Sales and Marketing",
+      "transaction_type": "Buy",
+      "shares": 7,
+      "value": 1296,
+      "date": "2023-08-18"
+    },
+    {
+      "ticker": "JBHT",
+      "name": "Frazier Spencer",
+      "title": "EVP of Sales and Marketing",
+      "transaction_type": "Buy",
+      "shares": 8,
+      "value": 1292,
+      "date": "2023-05-26"
+    },
+    {
+      "ticker": "JBHT",
+      "name": "Frazier Spencer",
+      "title": "EVP of Sales and Marketing",
+      "transaction_type": "Buy",
+      "shares": 7,
+      "value": 1294,
+      "date": "2023-02-24"
+    },
+    {
+      "ticker": "JBHT",
+      "name": "Frazier Spencer",
+      "title": "EVP of Sales and Marketing",
+      "transaction_type": "Buy",
+      "shares": 3,
+      "value": 622,
+      "date": "2023-01-25"
+    },
+    {
+      "ticker": "JBHT",
+      "name": "Frazier Spencer",
+      "title": "EVP of Sales and Marketing",
+      "transaction_type": "Buy",
+      "shares": 8,
+      "value": 1424,
+      "date": "2022-11-18"
+    },
+    {
+      "ticker": "BH",
+      "name": "BIGLARI, SARDAR",
+      "title": "Chairman and CEO",
+      "transaction_type": "Buy",
+      "shares": 2810,
+      "value": 849182,
+      "date": "2026-03-13"
+    },
+    {
+      "ticker": "CPS",
+      "name": "Mastrocola David John",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 3391,
+      "value": 100950,
+      "date": "2026-03-13"
+    },
+    {
+      "ticker": "CPS",
+      "name": "Mastrocola David John",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 1494,
+      "value": 45194,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "CPS",
+      "name": "Mastrocola David John",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 2000,
+      "value": 62000,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "AVBC",
+      "name": "Murphy Bartholomew H JR",
+      "title": "EVP & Chief Operating Off",
+      "transaction_type": "Buy",
+      "shares": 440,
+      "value": 8193,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "VWAV",
+      "name": "VisionWave Holdings, Inc.",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 86875200,
+      "value": 230219280,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "VWAV",
+      "name": "VisionWave Holdings, Inc.",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 260884800,
+      "value": 688735872,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "SVRE",
+      "name": "VisionWave Holdings, Inc.",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 86875200,
+      "value": 230219280,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "SVRE",
+      "name": "VisionWave Holdings, Inc.",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 260884800,
+      "value": 688735872,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "VEEE",
+      "name": "SWETS LARRY G JR",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 50000,
+      "value": 21000,
+      "date": "2026-03-13"
+    },
+    {
+      "ticker": "CRH",
+      "name": "FEARON RICHARD H",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 3800,
+      "value": 397062,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "CRH",
+      "name": "Talbot Siobhan",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 2000,
+      "value": 204223,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "DYN",
+      "name": "Posner Brian S",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 2000,
+      "value": 38700,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "GAM",
+      "name": "Priest Jeffrey W",
+      "title": "President & CEO",
+      "transaction_type": "Buy",
+      "shares": 800,
+      "value": 19920,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "AXP",
+      "name": "Joabar Raymond",
+      "title": "Grp. Pres., Global Comm. Serv.",
+      "transaction_type": "Buy",
+      "shares": 2,
+      "value": 523,
+      "date": "2025-04-09"
+    },
+    {
+      "ticker": "AXP",
+      "name": "Joabar Raymond",
+      "title": "Grp. Pres., Global Comm. Serv.",
+      "transaction_type": "Buy",
+      "shares": 2,
+      "value": 429,
+      "date": "2024-02-23"
+    },
+    {
+      "ticker": "AXP",
+      "name": "Joabar Raymond",
+      "title": "Grp. Pres., Global Comm. Serv.",
+      "transaction_type": "Buy",
+      "shares": 2,
+      "value": 338,
+      "date": "2023-12-07"
+    },
+    {
+      "ticker": "AXP",
+      "name": "Joabar Raymond",
+      "title": "Grp. Pres., Global Comm. Serv.",
+      "transaction_type": "Buy",
+      "shares": 5,
+      "value": 843,
+      "date": "2023-12-06"
+    },
+    {
+      "ticker": "AXP",
+      "name": "Joabar Raymond",
+      "title": "Grp. Pres., Global Comm. Serv.",
+      "transaction_type": "Buy",
+      "shares": 1,
+      "value": 154,
+      "date": "2023-10-17"
+    },
+    {
+      "ticker": "AXP",
+      "name": "Joabar Raymond",
+      "title": "Grp. Pres., Global Comm. Serv.",
+      "transaction_type": "Buy",
+      "shares": 2,
+      "value": 300,
+      "date": "2023-09-27"
+    },
+    {
+      "ticker": "AXP",
+      "name": "Joabar Raymond",
+      "title": "Grp. Pres., Global Comm. Serv.",
+      "transaction_type": "Buy",
+      "shares": 9,
+      "value": 1466,
+      "date": "2023-09-15"
+    },
+    {
+      "ticker": "ADV",
+      "name": "KILTS JAMES M",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 16759,
+      "value": 11725,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "INDV",
+      "name": "Ryan Barbara",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 8,
+      "value": 249,
+      "date": "2026-03-13"
+    },
+    {
+      "ticker": "FSSL",
+      "name": "Ramos Pedro A",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 1000,
+      "value": 12400,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "MDRR",
+      "name": "KAVANAUGH FRANK",
+      "title": "CHAIRMAN, CEO & PRESIDENT",
+      "transaction_type": "Buy",
+      "shares": 40000,
+      "value": 600000,
+      "date": "2026-03-13"
+    },
+    {
+      "ticker": "ECC",
+      "name": "Onorio Kenneth P.",
+      "title": "CFO / COO",
+      "transaction_type": "Buy",
+      "shares": 110000,
+      "value": 411400,
+      "date": "2026-03-13"
+    },
+    {
+      "ticker": "GOF",
+      "name": "Barnes Randall C",
+      "title": "TRUSTEE",
+      "transaction_type": "Buy",
+      "shares": 220,
+      "value": 2506,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "FG",
+      "name": "Blunt Christopher O",
+      "title": "Chief Executive Officer",
+      "transaction_type": "Buy",
+      "shares": 10000,
+      "value": 209900,
+      "date": "2026-03-13"
+    },
+    {
+      "ticker": "LOAR",
+      "name": "Bobbili Raja",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 50000,
+      "value": 3180486,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "THRY",
+      "name": "Walsh Joe",
+      "title": "Chairman and CEO",
+      "transaction_type": "Buy",
+      "shares": 15000,
+      "value": 43650,
+      "date": "2026-03-13"
+    },
+    {
+      "ticker": "CSPI",
+      "name": "NERGES JOSEPH R",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 200,
+      "value": 1718,
+      "date": "2026-03-13"
+    },
+    {
+      "ticker": "CSPI",
+      "name": "NERGES JOSEPH R",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 907,
+      "value": 7729,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "CSPI",
+      "name": "NERGES JOSEPH R",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 1100,
+      "value": 9327,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "ALTG",
+      "name": "Mill Road Capital III, L.P.",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 18040,
+      "value": 114761,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "LEE",
+      "name": "Hoffmann David Henry",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 27800,
+      "value": 259930,
+      "date": "2026-03-13"
+    },
+    {
+      "ticker": "LEE",
+      "name": "Hoffmann David Henry",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 27800,
+      "value": 261320,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "LEE",
+      "name": "Hoffmann David Henry",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 27800,
+      "value": 259374,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "TFSL",
+      "name": "Asher Anthony J",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 5000,
+      "value": 66850,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "NP",
+      "name": "Burgess Trevor R",
+      "title": "CEO & Chairman of the Board",
+      "transaction_type": "Buy",
+      "shares": 50000,
+      "value": 935345,
+      "date": "2026-03-13"
+    },
+    {
+      "ticker": "FFIN",
+      "name": "Haney Geoff",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 1500,
+      "value": 43770,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "MPB",
+      "name": "De Soto Matthew G",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 972,
+      "value": 29985,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "MPB",
+      "name": "De Soto Matthew G",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 1618,
+      "value": 49946,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "FFIN",
+      "name": "TROTTER JOHNNY",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 1000,
+      "value": 29260,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "AVBC",
+      "name": "Girard Michael R",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 450,
+      "value": 8461,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "GF",
+      "name": "Saba Capital Management, L.P.",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 224,
+      "value": 2419,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "MXF",
+      "name": "Saba Capital Management, L.P.",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 456,
+      "value": 9280,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "FRST",
+      "name": "Biagas John Fitzgerald",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 1925,
+      "value": 24640,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "TPL",
+      "name": "HORIZON KINETICS ASSET MANAGEM",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 1,
+      "value": 532,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "RCG",
+      "name": "STAHL MURRAY",
+      "title": "President/Co-Portfolio Manager",
+      "transaction_type": "Buy",
+      "shares": 774,
+      "value": 2330,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "RCG",
+      "name": "STAHL MURRAY",
+      "title": "President/Co-Portfolio Manager",
+      "transaction_type": "Buy",
+      "shares": 360,
+      "value": 1084,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "AVBC",
+      "name": "Jensen Barry H",
+      "title": "EVP and Chief Admin Officer",
+      "transaction_type": "Buy",
+      "shares": 1000,
+      "value": 18690,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "OFLX",
+      "name": "Rivest Dean W.",
+      "title": "Chief Executive Officer",
+      "transaction_type": "Buy",
+      "shares": 1000,
+      "value": 29500,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "BWFG",
+      "name": "SEIDMAN LAWRENCE B",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 10000,
+      "value": 468753,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "TIPT",
+      "name": "McKinney Scott T.",
+      "title": "Chief Financial Officer",
+      "transaction_type": "Buy",
+      "shares": 1232,
+      "value": 19682,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "TIPT",
+      "name": "McKinney Scott T.",
+      "title": "Chief Financial Officer",
+      "transaction_type": "Buy",
+      "shares": 2600,
+      "value": 42000,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "ONCY",
+      "name": "Parsons James T.",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 10000,
+      "value": 10300,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "ONCY",
+      "name": "Kelly Jared",
+      "title": "Chief Executive Officer",
+      "transaction_type": "Buy",
+      "shares": 5050,
+      "value": 4848,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "AHCO",
+      "name": "CASHIN RICHARD M JR",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 689336,
+      "value": 6707170,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "AHCO",
+      "name": "CASHIN RICHARD M JR",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 536827,
+      "value": 5222307,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "AHCO",
+      "name": "CASHIN RICHARD M JR",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 820528,
+      "value": 7982671,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "LOAR",
+      "name": "Charles Dirkson R",
+      "title": "See Remarks",
+      "transaction_type": "Buy",
+      "shares": 36434,
+      "value": 2457473,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "LOAR",
+      "name": "Charles Dirkson R",
+      "title": "See Remarks",
+      "transaction_type": "Buy",
+      "shares": 4166,
+      "value": 281163,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "LOAR",
+      "name": "Charles Dirkson R",
+      "title": "See Remarks",
+      "transaction_type": "Buy",
+      "shares": 3400,
+      "value": 229194,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "PATK",
+      "name": "WELCH M SCOTT",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 10000,
+      "value": 1136821,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "BBBY",
+      "name": "TABACCO JOSEPH J JR",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 20000,
+      "value": 102200,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "KRRO",
+      "name": "Yang Rick",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 207100,
+      "value": 2300881,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "KRRO",
+      "name": "SANDELL SCOTT D",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 207100,
+      "value": 2300881,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "KRRO",
+      "name": "New Enterprise Associates 17,",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 207100,
+      "value": 2300881,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "KRRO",
+      "name": "Chang Carmen",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 207100,
+      "value": 2300881,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "KRRO",
+      "name": "BASKETT FOREST",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 207100,
+      "value": 2300881,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "KRRO",
+      "name": "Mathers Edward T",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 207100,
+      "value": 2300881,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "KRRO",
+      "name": "Makhzoumi Mohamad",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 207100,
+      "value": 2300881,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "KRRO",
+      "name": "Walker Paul Edward",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 207100,
+      "value": 2300881,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "KRRO",
+      "name": "Florence Anthony A. Jr.",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 207100,
+      "value": 2300881,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "DIN",
+      "name": "PASQUALE DOUGLAS M",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 2000,
+      "value": 56500,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "DIN",
+      "name": "PASQUALE DOUGLAS M",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 1000,
+      "value": 29000,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "AMR",
+      "name": "Courtis Kenneth S.",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 15000,
+      "value": 2727673,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "ENOV",
+      "name": "Engert Oliver",
+      "title": "Chief Administrative Officer",
+      "transaction_type": "Buy",
+      "shares": 1000,
+      "value": 23930,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "GO",
+      "name": "Ragatz Erik D.",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 125000,
+      "value": 750000,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "UUU",
+      "name": "AULT MILTON C III",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 15200,
+      "value": 89476,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "UUU",
+      "name": "AULT MILTON C III",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 100,
+      "value": 561,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "UUU",
+      "name": "AULT MILTON C III",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 200,
+      "value": 1116,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "UUU",
+      "name": "AULT MILTON C III",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 45000,
+      "value": 239496,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "SMRT",
+      "name": "Bohjalian Thomas N",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 150000,
+      "value": 260490,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "ALIT",
+      "name": "Verma Rohit",
+      "title": "Chief Executive Officer",
+      "transaction_type": "Buy",
+      "shares": 112000,
+      "value": 99680,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "BLMN",
+      "name": "Lal Rohit",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 10000,
+      "value": 56900,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "TCBI",
+      "name": "Arbour Paola M",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 1000,
+      "value": 91500,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "NMFC",
+      "name": "KLINSKY STEVEN B",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 276242,
+      "value": 2223748,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "NMFC",
+      "name": "KLINSKY STEVEN B",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 223758,
+      "value": 1801252,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "MYO",
+      "name": "Getz Heather C",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 70000,
+      "value": 50960,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "IP",
+      "name": "GUSTAFSSON ANDERS",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 13217,
+      "value": 500012,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "IP",
+      "name": "GUSTAFSSON ANDERS",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 12875,
+      "value": 500024,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "TRST",
+      "name": "CURLEY KEVIN M",
+      "title": "EXECUTIVE VICE PRESIDENT & COO",
+      "transaction_type": "Buy",
+      "shares": 588,
+      "value": 25019,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "NCDL",
+      "name": "Vichness Shaul",
+      "title": "Chief Financial Off./Treasurer",
+      "transaction_type": "Buy",
+      "shares": 5000,
+      "value": 65650,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "BJRI",
+      "name": "Richmond C Bradford",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 1000,
+      "value": 34050,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "KOS",
+      "name": "Ogunlesi Adebayo O.",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 3157895,
+      "value": 6000000,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "KOS",
+      "name": "STICE J MICHAEL",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 52631,
+      "value": 99999,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "KOS",
+      "name": "Shah Nealesh D.",
+      "title": "SVP and CFO",
+      "transaction_type": "Buy",
+      "shares": 157894,
+      "value": 299999,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "KOS",
+      "name": "INGLIS ANDREW G",
+      "title": "Chairman and CEO",
+      "transaction_type": "Buy",
+      "shares": 315790,
+      "value": 600001,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "AMT",
+      "name": "Kalathur Rajesh",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 2671,
+      "value": 494936,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "ANNX",
+      "name": "Carson William H.",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 8000,
+      "value": 45360,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "BXSL",
+      "name": "Clark James Frederic",
+      "title": "Trustee",
+      "transaction_type": "Buy",
+      "shares": 750,
+      "value": 17835,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "VENU",
+      "name": "ROTH JAY W",
+      "title": "CEO & Chairman",
+      "transaction_type": "Buy",
+      "shares": 62500,
+      "value": 250000,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "STC",
+      "name": "BRADLEY C ALLEN JR",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 700,
+      "value": 43813,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "STC",
+      "name": "BRADLEY C ALLEN JR",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 300,
+      "value": 18945,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "AEYE",
+      "name": "HAWKINS JAMES B",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 11000,
+      "value": 62031,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "AEYE",
+      "name": "HAWKINS JAMES B",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 13000,
+      "value": 75000,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "AEYE",
+      "name": "HAWKINS JAMES B",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 14000,
+      "value": 82713,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "AUBN",
+      "name": "Conn Walton T Jr.",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 200,
+      "value": 4820,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "LCTX",
+      "name": "Culley Brian M",
+      "title": "President and CEO",
+      "transaction_type": "Buy",
+      "shares": 15000,
+      "value": 24375,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "PFLT",
+      "name": "Allorto Richard T JR",
+      "title": "CFO and Treasurer",
+      "transaction_type": "Buy",
+      "shares": 15000,
+      "value": 122250,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "FISI",
+      "name": "Plants William Jack II",
+      "title": "Chief Financial Officer",
+      "transaction_type": "Buy",
+      "shares": 660,
+      "value": 19879,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "PNNT",
+      "name": "Allorto Richard T JR",
+      "title": "CFO and Treasurer",
+      "transaction_type": "Buy",
+      "shares": 15000,
+      "value": 73200,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "FSSL",
+      "name": "Goldstein Richard I",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 10000,
+      "value": 119200,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "WES",
+      "name": "PHILLIPS ROBERT G",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 1250,
+      "value": 50238,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "EFSI",
+      "name": "HAMBERGER SCOTT M",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 909,
+      "value": 29997,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "MGEE",
+      "name": "Berbee James G",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 373,
+      "value": 28985,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "LKFN",
+      "name": "WELCH M SCOTT",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 10000,
+      "value": 562314,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "COFS",
+      "name": "Burrough Eric E",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 5000,
+      "value": 137500,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "ALLE",
+      "name": "MAIN SUE",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 2000,
+      "value": 299215,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "GRNT",
+      "name": "MCCARTNEY JOHN",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 2000,
+      "value": 10240,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "GRNT",
+      "name": "Everard Michele J",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 5000,
+      "value": 25850,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "AMRZ",
+      "name": "Hill Jaime",
+      "title": "President, Building Materials",
+      "transaction_type": "Buy",
+      "shares": 1000,
+      "value": 56900,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "FRST",
+      "name": "Diaz Deborah",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 1050,
+      "value": 13408,
+      "date": "2026-03-06"
+    },
+    {
+      "ticker": "CMTV",
+      "name": "BONVECHIO LOUISE M",
+      "title": "Executive VP & CFO",
+      "transaction_type": "Buy",
+      "shares": 763,
+      "value": 24988,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "CMTV",
+      "name": "BONVECHIO LOUISE M",
+      "title": "Executive VP & CFO",
+      "transaction_type": "Buy",
+      "shares": 763,
+      "value": 24988,
+      "date": "2026-03-12"
+    },
+    {
+      "ticker": "FRST",
+      "name": "Biagas John Fitzgerald",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 1550,
+      "value": 19768,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "TPL",
+      "name": "HORIZON KINETICS ASSET MANAGEM",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 1,
+      "value": 523,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "ROCK",
+      "name": "METCALF JAMES S",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 12444,
+      "value": 502165,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "RCG",
+      "name": "STAHL MURRAY",
+      "title": "President/Co-Portfolio Manager",
+      "transaction_type": "Buy",
+      "shares": 774,
+      "value": 2392,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "RCG",
+      "name": "STAHL MURRAY",
+      "title": "President/Co-Portfolio Manager",
+      "transaction_type": "Buy",
+      "shares": 360,
+      "value": 1112,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "CVSA",
+      "name": "MALAFRONTE MICHAEL W",
+      "title": "Lead Independent Director",
+      "transaction_type": "Buy",
+      "shares": 8890,
+      "value": 897341,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "CVSA",
+      "name": "MALAFRONTE MICHAEL W",
+      "title": "Lead Independent Director",
+      "transaction_type": "Buy",
+      "shares": 15305,
+      "value": 1543734,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "CVSA",
+      "name": "MALAFRONTE MICHAEL W",
+      "title": "Lead Independent Director",
+      "transaction_type": "Buy",
+      "shares": 11841,
+      "value": 1194339,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "BWFG",
+      "name": "SEIDMAN LAWRENCE B",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 10000,
+      "value": 466462,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "IMNM",
+      "name": "BIENAIME JEAN JACQUES",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 1000,
+      "value": 21550,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "IMNM",
+      "name": "BIENAIME JEAN JACQUES",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 1000,
+      "value": 22120,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "ORGO",
+      "name": "Leibowitz Arthur S",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 5000,
+      "value": 13405,
+      "date": "2026-03-09"
+    },
+    {
+      "ticker": "AMR",
+      "name": "Courtis Kenneth S.",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 25000,
+      "value": 4405651,
+      "date": "2026-03-09"
+    },
+    {
+      "ticker": "SONO",
+      "name": "Coliseum Capital Management, L",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 180000,
+      "value": 2559600,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "SONO",
+      "name": "Coliseum Capital Management, L",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 320000,
+      "value": 4540800,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "SONO",
+      "name": "Coliseum Capital Management, L",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 420000,
+      "value": 5859000,
+      "date": "2026-03-09"
+    },
+    {
+      "ticker": "BETR",
+      "name": "Framework Ventures IV L.P.",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 21598,
+      "value": 858089,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "BETR",
+      "name": "Framework Ventures IV L.P.",
+      "title": "10% Owner",
+      "transaction_type": "Buy",
+      "shares": 10000,
+      "value": 354600,
+      "date": "2026-03-09"
+    },
+    {
+      "ticker": "ALKT",
+      "name": "GENERAL ATLANTIC GENPAR (BERMU",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 900000,
+      "value": 16569000,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "ALKT",
+      "name": "GENERAL ATLANTIC GENPAR (BERMU",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 1103749,
+      "value": 19381832,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "ALKT",
+      "name": "GENERAL ATLANTIC GENPAR (BERMU",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 842266,
+      "value": 14613315,
+      "date": "2026-03-09"
+    },
+    {
+      "ticker": "CPRI",
+      "name": "IDOL JOHN D",
+      "title": "Chairman & CEO",
+      "transaction_type": "Buy",
+      "shares": 55000,
+      "value": 988900,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "ALKT",
+      "name": "GENERAL ATLANTIC, L.P.",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 900000,
+      "value": 16569000,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "ALKT",
+      "name": "GENERAL ATLANTIC, L.P.",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 1103749,
+      "value": 19381832,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "ALKT",
+      "name": "GENERAL ATLANTIC, L.P.",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 842266,
+      "value": 14613315,
+      "date": "2026-03-09"
+    },
+    {
+      "ticker": "SFM",
+      "name": "Blum Kristen E",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 1325,
+      "value": 100700,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "SRE",
+      "name": "MARK RICHARD J",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 2692,
+      "value": 251164,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "SRE",
+      "name": "WARNER CYNTHIA J",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 2500,
+      "value": 232375,
+      "date": "2026-03-11"
+    },
+    {
+      "ticker": "AFCG",
+      "name": "TANNENBAUM LEONARD M",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 2000,
+      "value": 5140,
+      "date": "2026-03-10"
+    },
+    {
+      "ticker": "AFCG",
+      "name": "TANNENBAUM LEONARD M",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 102213,
+      "value": 259621,
+      "date": "2026-03-09"
+    },
+    {
+      "ticker": "EML",
+      "name": "DiSanto Frederick D.",
+      "title": "Director",
+      "transaction_type": "Buy",
+      "shares": 101,
+      "value": 1918,
+      "date": "2026-03-10"
+    }
+  ]
+}

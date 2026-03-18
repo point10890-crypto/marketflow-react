@@ -1,0 +1,146 @@
+{
+  "date": "2026-01-15",
+  "total_candidates": 2,
+  "filtered_count": 2,
+  "signals": [
+    {
+      "id": null,
+      "stock_code": "022100",
+      "stock_name": "포스코DX",
+      "market": "KOSPI",
+      "signal_date": "2026-01-15",
+      "grade": "B",
+      "score": {
+        "news": 2,
+        "volume": 2,
+        "chart": 2,
+        "candle": 1,
+        "consolidation": 0,
+        "supply": 0,
+        "llm_reason": "포스코 그룹이 일본 로봇 제조사와 협업하여 국내외 모터코어 공장에 로봇을 투입한다는 소식은 그룹 내 스마트 팩토리 및 자동화 솔루션을 전담하는 포스코DX의 직접적인 수혜와 성장 동력 확보로 이어질 수 있는 실질적 호재입니다. 국민연금의 수익 확대 등 긍정적인 시장 분위기 속에서 사업 확장 기대감이 더해진 상태입니다.",
+        "total": 7
+      },
+      "checklist": {
+        "mandatory": {
+          "news": true,
+          "volume": true
+        },
+        "optional": {
+          "chart": true,
+          "candle": true,
+          "consolidation": false,
+          "supply": false
+        },
+        "negative": {
+          "negative_news": false,
+          "upper_wick_long": false,
+          "volume_suspicious": false
+        }
+      },
+      "entry_price": 38350,
+      "stop_price": 37199,
+      "target_price": 40267,
+      "quantity": 108,
+      "position_size": 4141800,
+      "r_value": 250000.0,
+      "trading_value": 556260663125,
+      "change_pct": 28.91,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "반도체 훈풍에 국민연금 웃었다…주식가치 1년 새 118조 늘어",
+          "source": "연합뉴스",
+          "published_at": "2026-01-14T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0015845336&office_id=001&code=022100&page=1&sm="
+        },
+        {
+          "title": "포스코, 日로봇제조사와 맞손…국내외 모터코어공장에 로봇 투입",
+          "source": "연합뉴스",
+          "published_at": "2026-01-14T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0015845799&office_id=001&code=022100&page=1&sm="
+        },
+        {
+          "title": "“국민연금 돈 벌어준 삼전닉스가 애국자”…주식가치 118조 늘었다",
+          "source": "매일경제",
+          "published_at": "2026-01-14T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005621460&office_id=009&code=022100&page=1&sm="
+        }
+      ]
+    },
+    {
+      "id": null,
+      "stock_code": "452260",
+      "stock_name": "한화갤러리아",
+      "market": "KOSPI",
+      "signal_date": "2026-01-15",
+      "grade": "B",
+      "score": {
+        "news": 3,
+        "volume": 1,
+        "chart": 1,
+        "candle": 1,
+        "consolidation": 0,
+        "supply": 0,
+        "llm_reason": "한화그룹의 인적분할 결정이 지배구조 불확실성 해소 및 주주가치 제고에 대한 기대감을 높였으며, 이로 인해 상한가를 기록하는 등 시장에서 매우 강력한 호재로 인식되고 있습니다. 코스피 지수의 상승세와 맞물려 그룹주 전반에 대한 투자 심리가 극대화된 상태입니다.",
+        "total": 6
+      },
+      "checklist": {
+        "mandatory": {
+          "news": true,
+          "volume": true
+        },
+        "optional": {
+          "chart": true,
+          "candle": true,
+          "consolidation": false,
+          "supply": false
+        },
+        "negative": {
+          "negative_news": false,
+          "upper_wick_long": false,
+          "volume_suspicious": false
+        }
+      },
+      "entry_price": 2105,
+      "stop_price": 2041,
+      "target_price": 2210,
+      "quantity": 1979,
+      "position_size": 4165795,
+      "r_value": 250000.0,
+      "trading_value": 132436753901,
+      "change_pct": 29.78,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "코스피 사상 최고치 경신…'오천피' 가시권",
+          "source": "연합뉴스TV",
+          "published_at": "2026-01-15T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0000822971&office_id=422&code=452260&page=1&sm="
+        },
+        {
+          "title": "증권가, 한화 인적분할에 \"불확실성 완화·주주가치 개선 기대\"",
+          "source": "연합뉴스",
+          "published_at": "2026-01-15T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0015848253&office_id=001&code=452260&page=1&sm="
+        },
+        {
+          "title": "인적분할 효과 갤러리아 상한가…한화그룹주 연일 '불기둥'",
+          "source": "한국경제",
+          "published_at": "2026-01-15T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005237489&office_id=015&code=452260&page=1&sm="
+        }
+      ]
+    }
+  ],
+  "by_grade": {
+    "S": 0,
+    "A": 0,
+    "B": 2,
+    "C": 0
+  },
+  "by_market": {
+    "KOSPI": 2
+  },
+  "processing_time_ms": 159513.33498954773,
+  "updated_at": "2026-01-15T13:51:16.114944"
+}

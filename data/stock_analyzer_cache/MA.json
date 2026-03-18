@@ -1,0 +1,39 @@
+{
+  "name": "Mastercard",
+  "ticker": "MA",
+  "result": "매수",
+  "date": "2026-03-15 19:35:49",
+  "elapsed": 0,
+  "consensus_score": 3.9,
+  "analyst_count": 39,
+  "recommendation_detail": {
+    "strongBuy": 5,
+    "buy": 25,
+    "hold": 9,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "price_targets": {
+    "current": 497.99,
+    "high": 739.0,
+    "low": 550.0,
+    "mean": 662.58826,
+    "median": 667.0
+  },
+  "current_price": 497.99,
+  "upside_potential": 33.1,
+  "key_stats": {
+    "name": "Mastercard Incorporated",
+    "sector": "Financial Services",
+    "industry": "Credit Services",
+    "market_cap": 444425043968,
+    "pe_ratio": 30.126434,
+    "forward_pe": 22.006386,
+    "dividend_yield": 0.7,
+    "beta": 0.836,
+    "fifty_two_week_high": 601.77,
+    "fifty_two_week_low": 465.59,
+    "currency": "USD"
+  },
+  "source": "yfinance"
+}

@@ -1,0 +1,403 @@
+{
+  "date": "2026-01-16",
+  "total_candidates": 6,
+  "filtered_count": 6,
+  "signals": [
+    {
+      "id": null,
+      "stock_code": "056080",
+      "stock_name": "유진로봇",
+      "market": "KOSDAQ",
+      "signal_date": "2026-01-16",
+      "grade": "B",
+      "score": {
+        "news": 2,
+        "volume": 1,
+        "chart": 2,
+        "candle": 0,
+        "consolidation": 0,
+        "supply": 2,
+        "llm_reason": "ETF에서 로봇 관련 종목의 상승세가 두드러지고 있으며, 패션그룹 형지의 로봇 공장 및 R&D 센터 조성 계획은 유진로봇의 성장 가능성에 긍정적인 영향을 미칠 수 있습니다. 따라서 긍정적 호재로 판단됩니다.",
+        "total": 7
+      },
+      "checklist": {
+        "mandatory": {
+          "news": true,
+          "volume": true
+        },
+        "optional": {
+          "chart": true,
+          "candle": false,
+          "consolidation": false,
+          "supply": true
+        },
+        "negative": {
+          "negative_news": false,
+          "upper_wick_long": false,
+          "volume_suspicious": false
+        }
+      },
+      "entry_price": 26950,
+      "stop_price": 26141,
+      "target_price": 28297,
+      "quantity": 154,
+      "position_size": 4150300,
+      "r_value": 250000.0,
+      "trading_value": 179653308450,
+      "change_pct": 25.35,
+      "foreign_5d": 856763,
+      "inst_5d": 368784,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "피지컬AI ETF 수익 희비… AI보다 '로봇' 묶을수록↑",
+          "source": "머니투데이",
+          "published_at": "2026-01-16T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005305364&office_id=008&code=056080&page=1&sm="
+        },
+        {
+          "title": "국내 피지컬 AI ETF도 수익률 제각각…어떤 종목 담았길래",
+          "source": "머니투데이",
+          "published_at": "2026-01-15T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005305295&office_id=008&code=056080&page=1&sm="
+        },
+        {
+          "title": "패션그룹 형지, 인천 송도에 로봇 공장·R&D센터 조성",
+          "source": "헤럴드경제",
+          "published_at": "2026-01-16T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0002586702&office_id=016&code=056080&page=1&sm="
+        }
+      ]
+    },
+    {
+      "id": null,
+      "stock_code": "348340",
+      "stock_name": "뉴로메카",
+      "market": "KOSDAQ",
+      "signal_date": "2026-01-16",
+      "grade": "B",
+      "score": {
+        "news": 2,
+        "volume": 1,
+        "chart": 2,
+        "candle": 0,
+        "consolidation": 0,
+        "supply": 2,
+        "llm_reason": "현대차 로봇 관련 뉴스로 인해 로봇 관련주에 대한 전반적인 기대감이 상승하고 있어 뉴로메카에 긍정적인 영향을 줄 수 있다고 판단됨.",
+        "total": 7
+      },
+      "checklist": {
+        "mandatory": {
+          "news": true,
+          "volume": true
+        },
+        "optional": {
+          "chart": true,
+          "candle": false,
+          "consolidation": false,
+          "supply": true
+        },
+        "negative": {
+          "negative_news": false,
+          "upper_wick_long": false,
+          "volume_suspicious": false
+        }
+      },
+      "entry_price": 69900,
+      "stop_price": 67803,
+      "target_price": 73395,
+      "quantity": 59,
+      "position_size": 4124100,
+      "r_value": 250000.0,
+      "trading_value": 149728526100,
+      "change_pct": 24.16,
+      "foreign_5d": 304178,
+      "inst_5d": 218570,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "[집중진단] 현대차 로봇 '아틀라스' 훈풍…새해 대세는 로봇주?",
+          "source": "SBS Biz",
+          "published_at": "2026-01-15T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0000486727&office_id=374&code=348340&page=1&sm="
+        }
+      ]
+    },
+    {
+      "id": null,
+      "stock_code": "022100",
+      "stock_name": "포스코DX",
+      "market": "KOSPI",
+      "signal_date": "2026-01-16",
+      "grade": "B",
+      "score": {
+        "news": 1,
+        "volume": 1,
+        "chart": 2,
+        "candle": 0,
+        "consolidation": 0,
+        "supply": 2,
+        "llm_reason": "포스코 그룹주 강세 소식은 긍정적이지만, 개별 종목에 대한 구체적인 내용이 부족하고, 다른 뉴스들은 포스코DX와 직접적인 관련성이 낮아 중립적인 영향을 미칠 것으로 판단됨.",
+        "total": 6
+      },
+      "checklist": {
+        "mandatory": {
+          "news": true,
+          "volume": true
+        },
+        "optional": {
+          "chart": true,
+          "candle": false,
+          "consolidation": false,
+          "supply": true
+        },
+        "negative": {
+          "negative_news": false,
+          "upper_wick_long": false,
+          "volume_suspicious": false
+        }
+      },
+      "entry_price": 41900,
+      "stop_price": 40643,
+      "target_price": 43995,
+      "quantity": 99,
+      "position_size": 4148100,
+      "r_value": 250000.0,
+      "trading_value": 224691222100,
+      "change_pct": 8.41,
+      "foreign_5d": 343341,
+      "inst_5d": 121831,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "[특징주 & 리포트] '포스코그룹주 일제히 강세' 등",
+          "source": "한국경제",
+          "published_at": "2026-01-15T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005237757&office_id=015&code=022100&page=1&sm="
+        },
+        {
+          "title": "돌아온 외국인, 국장 '재점화'…삼성전자 \"러브콜\"",
+          "source": "한국경제TV",
+          "published_at": "2026-01-15T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0001238057&office_id=215&code=022100&page=1&sm="
+        },
+        {
+          "title": "독파모 발표에 피지컬AI 기대까지…LG씨엔에스, 애프터마켓서 18% 급...",
+          "source": "서울경제",
+          "published_at": "2026-01-15T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0004579304&office_id=011&code=022100&page=1&sm="
+        }
+      ]
+    },
+    {
+      "id": null,
+      "stock_code": "003490",
+      "stock_name": "대한항공",
+      "market": "KOSPI",
+      "signal_date": "2026-01-16",
+      "grade": "B",
+      "score": {
+        "news": 2,
+        "volume": 1,
+        "chart": 1,
+        "candle": 0,
+        "consolidation": 0,
+        "supply": 2,
+        "llm_reason": "대한항공 관련 뉴스들이 전반적으로 긍정적인 실적 기대감과 주가 상승을 나타내고 있습니다. 4분기 실적 기대치 상회, 호실적 발표 후 상승, 실적 개선 기대감에 따른 급등 등 긍정적인 내용들이 주를 이루고 있어 호재로 판단됩니다.",
+        "total": 6
+      },
+      "checklist": {
+        "mandatory": {
+          "news": true,
+          "volume": true
+        },
+        "optional": {
+          "chart": true,
+          "candle": false,
+          "consolidation": false,
+          "supply": true
+        },
+        "negative": {
+          "negative_news": false,
+          "upper_wick_long": false,
+          "volume_suspicious": false
+        }
+      },
+      "entry_price": 24800,
+      "stop_price": 24056,
+      "target_price": 26040,
+      "quantity": 168,
+      "position_size": 4166400,
+      "r_value": 250000.0,
+      "trading_value": 219502295200,
+      "change_pct": 7.83,
+      "foreign_5d": 1890516,
+      "inst_5d": 283937,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "[특징주] '4분기 기대치 상회' 대한항공, 올해 호실적 기대에 7%...",
+          "source": "연합뉴스",
+          "published_at": "2026-01-16T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0015850670&office_id=001&code=003490&page=1&sm="
+        },
+        {
+          "title": "호실적 발표 후 '훨훨'...장 초반 7% 상승",
+          "source": "한국경제TV",
+          "published_at": "2026-01-16T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0001238143&office_id=215&code=003490&page=1&sm="
+        },
+        {
+          "title": "대한항공, 올해 실적 개선 기대감에 장중 8%대 급등",
+          "source": "한국경제",
+          "published_at": "2026-01-16T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005238022&office_id=015&code=003490&page=1&sm="
+        }
+      ]
+    },
+    {
+      "id": null,
+      "stock_code": "052690",
+      "stock_name": "한전기술",
+      "market": "KOSPI",
+      "signal_date": "2026-01-16",
+      "grade": "B",
+      "score": {
+        "news": 2,
+        "volume": 1,
+        "chart": 1,
+        "candle": 0,
+        "consolidation": 0,
+        "supply": 2,
+        "llm_reason": "증권사들의 긍정적인 전망과 목표가 상향 조정으로 인해 실적 개선 기대감이 높아지고 있으며, 국내외 원전 시장 상황이 우호적으로 변화하고 있다는 점을 종합적으로 고려할 때 긍정적인 호재로 판단됩니다.",
+        "total": 6
+      },
+      "checklist": {
+        "mandatory": {
+          "news": true,
+          "volume": true
+        },
+        "optional": {
+          "chart": true,
+          "candle": false,
+          "consolidation": false,
+          "supply": true
+        },
+        "negative": {
+          "negative_news": false,
+          "upper_wick_long": false,
+          "volume_suspicious": false
+        }
+      },
+      "entry_price": 121900,
+      "stop_price": 118243,
+      "target_price": 127995,
+      "quantity": 34,
+      "position_size": 4144600,
+      "r_value": 250000.0,
+      "trading_value": 171871442200,
+      "change_pct": 7.5,
+      "foreign_5d": 739390,
+      "inst_5d": 254881,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "[특징주] “실적 급반등” 증권사 전망에… 한전기술 13%대 ‘쑥’",
+          "source": "조선비즈",
+          "published_at": "2026-01-16T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0001136579&office_id=366&code=052690&page=1&sm="
+        },
+        {
+          "title": "한전기술, 국내외 원전시장 매우 우호적…목표가 15%↑-LS",
+          "source": "머니투데이",
+          "published_at": "2026-01-16T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005305429&office_id=008&code=052690&page=1&sm="
+        },
+        {
+          "title": "LS證 “한전기술, 올해 원자력 실적 급반등 기대…목표가 15만원”",
+          "source": "조선비즈",
+          "published_at": "2026-01-16T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0001136551&office_id=366&code=052690&page=1&sm="
+        }
+      ]
+    },
+    {
+      "id": null,
+      "stock_code": "090710",
+      "stock_name": "휴림로봇",
+      "market": "KOSDAQ",
+      "signal_date": "2026-01-16",
+      "grade": "B",
+      "score": {
+        "news": 1,
+        "volume": 1,
+        "chart": 2,
+        "candle": 0,
+        "consolidation": 0,
+        "supply": 2,
+        "llm_reason": "코스피 상승과 일부 종목의 상한가 소식은 긍정적이지만, 휴림로봇에 대한 직접적인 호재는 부재합니다. 따라서 중립적인 영향을 줄 것으로 판단됩니다.",
+        "total": 6
+      },
+      "checklist": {
+        "mandatory": {
+          "news": true,
+          "volume": true
+        },
+        "optional": {
+          "chart": true,
+          "candle": false,
+          "consolidation": false,
+          "supply": true
+        },
+        "negative": {
+          "negative_news": false,
+          "upper_wick_long": false,
+          "volume_suspicious": false
+        }
+      },
+      "entry_price": 13420,
+      "stop_price": 13017,
+      "target_price": 14091,
+      "quantity": 310,
+      "position_size": 4160200,
+      "r_value": 250000.0,
+      "trading_value": 383079952420,
+      "change_pct": 20.14,
+      "foreign_5d": 3335456,
+      "inst_5d": 19262,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "[속보] '지붕킥' 코스피, 또 사상 최고치 마감…4800선 고지 눈앞",
+          "source": "한국경제",
+          "published_at": "2026-01-15T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005237671&office_id=015&code=090710&page=1&sm="
+        },
+        {
+          "title": "[서울데이터랩]개장 직후 인기 검색 종목 20選",
+          "source": "서울신문",
+          "published_at": "2026-01-16T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0003609309&office_id=081&code=090710&page=1&sm="
+        },
+        {
+          "title": "[서울데이터랩]‘애드바이오텍’ +29.95% 상한가…실시간 상승률 1위",
+          "source": "서울신문",
+          "published_at": "2026-01-16T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0003609310&office_id=081&code=090710&page=1&sm="
+        }
+      ]
+    }
+  ],
+  "by_grade": {
+    "S": 0,
+    "A": 0,
+    "B": 6,
+    "C": 0
+  },
+  "by_market": {
+    "KOSDAQ": 3,
+    "KOSPI": 3
+  },
+  "processing_time_ms": 53018.59712600708,
+  "updated_at": "2026-01-16T10:19:27.860270"
+}

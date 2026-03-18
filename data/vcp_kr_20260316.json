@@ -1,0 +1,17 @@
+{
+  "metadata": {
+    "generated_at": "2026-03-16T16:25:01.773505",
+    "market": "KR",
+    "gate": "RED",
+    "gate_score": 35,
+    "processing_time_sec": 51.9
+  },
+  "summary": {
+    "total_screened": 200,
+    "stage2_passed": 0,
+    "trend_passed": 0,
+    "vcp_found": 0,
+    "entry_ready": 0
+  },
+  "signals": []
+}

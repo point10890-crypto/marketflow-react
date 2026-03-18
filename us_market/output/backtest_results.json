@@ -1,0 +1,44 @@
+{
+  "period": {
+    "start": "2025-07-01",
+    "end": "2026-01-24",
+    "trading_days": 142,
+    "years": 0.56
+  },
+  "portfolio": {
+    "stocks": [
+      "LRCX",
+      "CRM",
+      "SCHW",
+      "NEM",
+      "C",
+      "GL",
+      "ADBE",
+      "EIX",
+      "SNDK",
+      "MRK"
+    ],
+    "num_stocks": 10,
+    "strategy": "Equal Weight"
+  },
+  "returns": {
+    "total_return": 63.45,
+    "annualized_return": 139.16,
+    "volatility": 19.58,
+    "sharpe_ratio": 6.9,
+    "max_drawdown": -8.52,
+    "win_rate": 58.45,
+    "best_day": 4.29,
+    "worst_day": -3.96
+  },
+  "benchmarks": {
+    "SPY": {
+      "total_return": 12.23,
+      "alpha": 51.22
+    },
+    "QQQ": {
+      "total_return": 14.12,
+      "alpha": 49.33
+    }
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "name": "Visa",
+  "ticker": "V",
+  "result": "매수",
+  "date": "2026-03-15 19:35:49",
+  "elapsed": 0,
+  "consensus_score": 3.98,
+  "analyst_count": 40,
+  "recommendation_detail": {
+    "strongBuy": 6,
+    "buy": 27,
+    "hold": 7,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "price_targets": {
+    "current": 307.14,
+    "high": 450.0,
+    "low": 323.0,
+    "mean": 400.2003,
+    "median": 400.6
+  },
+  "current_price": 307.14,
+  "upside_potential": 30.3,
+  "key_stats": {
+    "name": "Visa Inc.",
+    "sector": "Financial Services",
+    "industry": "Credit Services",
+    "market_cap": 592178118656,
+    "pe_ratio": 28.812384,
+    "forward_pe": 21.138292,
+    "dividend_yield": 0.87,
+    "beta": 0.791,
+    "fifty_two_week_high": 375.51,
+    "fifty_two_week_low": 299.0,
+    "currency": "USD"
+  },
+  "source": "yfinance"
+}

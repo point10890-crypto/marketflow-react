@@ -1,0 +1,39 @@
+{
+  "name": "Tesla",
+  "ticker": "TSLA",
+  "result": "중립",
+  "date": "2026-03-15 19:35:46",
+  "elapsed": 0,
+  "consensus_score": 3.23,
+  "analyst_count": 47,
+  "recommendation_detail": {
+    "strongBuy": 4,
+    "buy": 16,
+    "hold": 17,
+    "sell": 7,
+    "strongSell": 3
+  },
+  "price_targets": {
+    "current": 391.2,
+    "high": 600.0,
+    "low": 125.0,
+    "mean": 421.61365,
+    "median": 460.0
+  },
+  "current_price": 391.2,
+  "upside_potential": 7.8,
+  "key_stats": {
+    "name": "Tesla, Inc.",
+    "sector": "Consumer Cyclical",
+    "industry": "Auto Manufacturers",
+    "market_cap": 1467951349760,
+    "pe_ratio": 355.63635,
+    "forward_pe": 139.19579,
+    "dividend_yield": null,
+    "beta": 1.926,
+    "fifty_two_week_high": 498.83,
+    "fifty_two_week_low": 214.25,
+    "currency": "USD"
+  },
+  "source": "yfinance"
+}

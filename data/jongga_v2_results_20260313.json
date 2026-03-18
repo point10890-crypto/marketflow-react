@@ -1,0 +1,767 @@
+{
+  "date": "2026-03-13",
+  "total_candidates": 8,
+  "filtered_count": 8,
+  "signals": [
+    {
+      "id": null,
+      "stock_code": "278470",
+      "stock_name": "에이피알",
+      "market": "KOSPI",
+      "sector": "",
+      "signal_date": "2026-03-13",
+      "grade": "A",
+      "score": {
+        "news": 2,
+        "volume": 3,
+        "chart": 2,
+        "candle": 0,
+        "consolidation": 0,
+        "supply": 1,
+        "disclosure": 0,
+        "analyst": 3,
+        "llm_reason": "화장품주 전반에 긍정적인 기대감이 형성되고 있으며, 중동 사태의 영향은 제한적일 것으로 예상됨.",
+        "llm_source": "none+gemini",
+        "total": 11
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "연합뉴스",
+          "한국경제"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": true,
+        "is_breakout": false,
+        "ma_aligned": true,
+        "good_candle": false,
+        "has_consolidation": false,
+        "supply_positive": true,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": false,
+        "volume_suspicious": false
+      },
+      "current_price": 341500,
+      "entry_price": 341500,
+      "stop_price": 331255,
+      "target_price": 358575,
+      "quantity": 24,
+      "position_size": 8196000,
+      "r_value": 250000.0,
+      "r_multiplier": 1.0,
+      "trading_value": 127878090000,
+      "change_pct": 5.89,
+      "volume_ratio": 0.0,
+      "foreign_5d": 222026,
+      "inst_5d": -79627,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "봄 맞아 화색 도는 화장품株…\"중동 사태 악재지만 영향 제한적\"(종합...",
+          "source": "연합뉴스",
+          "published_at": "2026-03-12T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0015955485&office_id=001&code=278470&page=1&sm="
+        },
+        {
+          "title": "봄 맞아 다시 뛸 준비하는 화장품株…\"중동 사태 영향 제한적\"",
+          "source": "연합뉴스",
+          "published_at": "2026-03-12T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0015954451&office_id=001&code=278470&page=1&sm="
+        },
+        {
+          "title": "[특징주 & 리포트] '성우하이텍, 3거래일 연속 상승' 등",
+          "source": "한국경제",
+          "published_at": "2026-03-12T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005261625&office_id=015&code=278470&page=1&sm="
+        }
+      ],
+      "themes": [
+        "화장품",
+        "뷰티"
+      ]
+    },
+    {
+      "id": null,
+      "stock_code": "052690",
+      "stock_name": "한전기술",
+      "market": "KOSPI",
+      "sector": "",
+      "signal_date": "2026-03-13",
+      "grade": "A",
+      "score": {
+        "news": 2,
+        "volume": 3,
+        "chart": 1,
+        "candle": 0,
+        "consolidation": 0,
+        "supply": 1,
+        "disclosure": 0,
+        "analyst": 2,
+        "llm_reason": "미국 원전 시장 진출 기대감 및 설계 참여 가능성이 높아 목표가가 상향 조정되고 있어 긍정적이다.",
+        "llm_source": "none+gemini",
+        "total": 9
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "이데일리",
+          "머니투데이",
+          "한국경제"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": false,
+        "is_breakout": false,
+        "ma_aligned": true,
+        "good_candle": false,
+        "has_consolidation": false,
+        "supply_positive": true,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": false,
+        "volume_suspicious": false
+      },
+      "current_price": 176950,
+      "entry_price": 176950,
+      "stop_price": 171641,
+      "target_price": 185797,
+      "quantity": 47,
+      "position_size": 8316650,
+      "r_value": 250000.0,
+      "r_multiplier": 1.0,
+      "trading_value": 157229099450,
+      "change_pct": 5.96,
+      "volume_ratio": 0.0,
+      "foreign_5d": -34691,
+      "inst_5d": 32836,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "주도주가 회복도 더 빠르다…반도체·증권·원전 고속 반등",
+          "source": "한국경제",
+          "published_at": "2026-03-12T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005261631&office_id=015&code=052690&page=1&sm="
+        },
+        {
+          "title": "한전기술, 미국 원전 시장 진출 기대감 UP…목표가 11.6%↑-KB",
+          "source": "머니투데이",
+          "published_at": "2026-03-13T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005329456&office_id=008&code=052690&page=1&sm="
+        },
+        {
+          "title": "한전기술, 미국 원전 설계 참여 기대...목표가↑-KB",
+          "source": "이데일리",
+          "published_at": "2026-03-13T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0006234039&office_id=018&code=052690&page=1&sm="
+        }
+      ],
+      "themes": [
+        "원자력발전",
+        "미국"
+      ]
+    },
+    {
+      "id": null,
+      "stock_code": "001550",
+      "stock_name": "조비",
+      "market": "KOSPI",
+      "sector": "",
+      "signal_date": "2026-03-13",
+      "grade": "A",
+      "score": {
+        "news": 2,
+        "volume": 3,
+        "chart": 1,
+        "candle": 0,
+        "consolidation": 0,
+        "supply": 2,
+        "disclosure": 0,
+        "analyst": 0,
+        "llm_reason": "호르무즈 해협 봉쇄 장기화 조짐으로 비료 공급망 불안 심화에 따른 수혜 기대감이 있음",
+        "llm_source": "none+gemini",
+        "total": 8
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "조선비즈",
+          "연합뉴스",
+          "한국경제"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": false,
+        "is_breakout": false,
+        "ma_aligned": true,
+        "good_candle": false,
+        "has_consolidation": false,
+        "supply_positive": true,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": false,
+        "volume_suspicious": false
+      },
+      "current_price": 17220,
+      "entry_price": 17220,
+      "stop_price": 16703,
+      "target_price": 18081,
+      "quantity": 483,
+      "position_size": 8317260,
+      "r_value": 250000.0,
+      "r_multiplier": 1.0,
+      "trading_value": 73039181040,
+      "change_pct": 6.69,
+      "volume_ratio": 0.0,
+      "foreign_5d": 90337,
+      "inst_5d": 55,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "[특징주] 비료株, 호르무즈 해협 봉쇄로 공급망 불안해지자 강세",
+          "source": "연합뉴스",
+          "published_at": "2026-03-13T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0015956535&office_id=001&code=001550&page=1&sm="
+        },
+        {
+          "title": "호르무즈 봉쇄 장기화 조짐에…주가 20% 넘게 급등한 종목 [종목+]",
+          "source": "한국경제",
+          "published_at": "2026-03-13T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005261864&office_id=015&code=001550&page=1&sm="
+        },
+        {
+          "title": "[특징주] 호르무즈 봉쇄 장기화에 비료주 강세…조비 22% 급등",
+          "source": "조선비즈",
+          "published_at": "2026-03-13T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0001148130&office_id=366&code=001550&page=1&sm="
+        }
+      ],
+      "themes": [
+        "비료",
+        "호르무즈 해협"
+      ]
+    },
+    {
+      "id": null,
+      "stock_code": "138080",
+      "stock_name": "오이솔루션",
+      "market": "KOSDAQ",
+      "sector": "",
+      "signal_date": "2026-03-13",
+      "grade": "A",
+      "score": {
+        "news": 2,
+        "volume": 3,
+        "chart": 2,
+        "candle": 0,
+        "consolidation": 0,
+        "supply": 1,
+        "disclosure": 0,
+        "analyst": 0,
+        "llm_reason": "미국 통신장비 수주 기대감 및 하나증권의 목표가 상향으로 긍정적인 투자 심리가 예상됨",
+        "llm_source": "none+gemini",
+        "total": 8
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "연합뉴스"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": true,
+        "is_breakout": false,
+        "ma_aligned": true,
+        "good_candle": false,
+        "has_consolidation": false,
+        "supply_positive": true,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": false,
+        "volume_suspicious": false
+      },
+      "current_price": 36750,
+      "entry_price": 36750,
+      "stop_price": 35647,
+      "target_price": 38587,
+      "quantity": 226,
+      "position_size": 8305500,
+      "r_value": 250000.0,
+      "r_multiplier": 1.0,
+      "trading_value": 103571091750,
+      "change_pct": 14.66,
+      "volume_ratio": 0.0,
+      "foreign_5d": -79389,
+      "inst_5d": 167420,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "[특징주] 오이솔루션, 美통신장비 수주 기대에 장중 신고가(종합)",
+          "source": "연합뉴스",
+          "published_at": "2026-03-12T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0015955461&office_id=001&code=138080&page=1&sm="
+        },
+        {
+          "title": "[특징주] 오이솔루션, 美통신장비 수주 기대감에 장중 신고가",
+          "source": "연합뉴스",
+          "published_at": "2026-03-12T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0015954128&office_id=001&code=138080&page=1&sm="
+        },
+        {
+          "title": "하나증권 \"오이솔루션, 美 통신장비 투자 확대에 목표가 상향\"",
+          "source": "연합뉴스",
+          "published_at": "2026-03-12T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0015953639&office_id=001&code=138080&page=1&sm="
+        }
+      ],
+      "themes": [
+        "5G",
+        "통신장비",
+        "미국시장"
+      ]
+    },
+    {
+      "id": null,
+      "stock_code": "003280",
+      "stock_name": "흥아해운",
+      "market": "KOSPI",
+      "sector": "",
+      "signal_date": "2026-03-13",
+      "grade": "A",
+      "score": {
+        "news": 2,
+        "volume": 3,
+        "chart": 0,
+        "candle": 0,
+        "consolidation": 0,
+        "supply": 2,
+        "disclosure": 0,
+        "analyst": 0,
+        "llm_reason": "코로나 특수 재현 가능성에 따른 해상운임 상승 기대감 및 높은 거래량으로 투자자들의 관심이 높음.",
+        "llm_source": "none+gemini",
+        "total": 7
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "서울신문",
+          "데일리안"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": false,
+        "is_breakout": false,
+        "ma_aligned": false,
+        "good_candle": false,
+        "has_consolidation": false,
+        "supply_positive": true,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": false,
+        "volume_suspicious": false
+      },
+      "current_price": 2365,
+      "entry_price": 2365,
+      "stop_price": 2294,
+      "target_price": 2483,
+      "quantity": 3523,
+      "position_size": 8331895,
+      "r_value": 250000.0,
+      "r_multiplier": 1.0,
+      "trading_value": 304068750040,
+      "change_pct": 12.09,
+      "volume_ratio": 0.0,
+      "foreign_5d": 1076622,
+      "inst_5d": 49666,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "[서울데이터랩]금일 코스피 거래량 1위 흥아해운 거래대금 2250억 돌...",
+          "source": "서울신문",
+          "published_at": "2026-03-13T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0003625675&office_id=081&code=003280&page=1&sm="
+        },
+        {
+          "title": "[서울데이터랩]조비 26.70% 폭등…실시간 상승률 1위",
+          "source": "서울신문",
+          "published_at": "2026-03-13T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0003625612&office_id=081&code=003280&page=1&sm="
+        },
+        {
+          "title": "‘위기, 누군가엔 기회’…해상운임 ‘코로나 특수’ 재현 가능성[지...",
+          "source": "데일리안",
+          "published_at": "2026-03-12T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0003068074&office_id=119&code=003280&page=1&sm="
+        }
+      ],
+      "themes": [
+        "해상운송",
+        "코로나19",
+        "거래량 급증"
+      ]
+    },
+    {
+      "id": null,
+      "stock_code": "036570",
+      "stock_name": "엔씨소프트",
+      "market": "KOSPI",
+      "sector": "",
+      "signal_date": "2026-03-13",
+      "grade": "A",
+      "score": {
+        "news": 1,
+        "volume": 2,
+        "chart": 0,
+        "candle": 0,
+        "consolidation": 0,
+        "supply": 2,
+        "disclosure": 0,
+        "analyst": 2,
+        "llm_reason": "삼성증권의 긍정적 전망이 있지만, 불법 매크로 이슈와 전쟁 관련 주가 변동성도 존재하여 중립적 판단이 필요.",
+        "llm_source": "none+gemini",
+        "total": 7
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "연합뉴스",
+          "한국경제"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": false,
+        "is_breakout": false,
+        "ma_aligned": false,
+        "good_candle": false,
+        "has_consolidation": false,
+        "supply_positive": true,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": false,
+        "volume_suspicious": false
+      },
+      "current_price": 228500,
+      "entry_price": 228500,
+      "stop_price": 221645,
+      "target_price": 239925,
+      "quantity": 36,
+      "position_size": 8226000,
+      "r_value": 250000.0,
+      "r_multiplier": 1.0,
+      "trading_value": 45787287000,
+      "change_pct": 7.78,
+      "volume_ratio": 0.0,
+      "foreign_5d": 92586,
+      "inst_5d": 15749,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "삼성증권 \"엔씨, 2030년 매출 5조 달성 불가능하지 않아\"",
+          "source": "연합뉴스",
+          "published_at": "2026-03-13T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0015956437&office_id=001&code=036570&page=1&sm="
+        },
+        {
+          "title": "'불법 매크로'에 뿔난 린저씨들…\"우리가 직접 잡는다\" [이슈+]",
+          "source": "한국경제",
+          "published_at": "2026-03-13T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005262028&office_id=015&code=036570&page=1&sm="
+        },
+        {
+          "title": "\"여긴 안전하다\" 돈 몰리더니…전쟁 와중에 주가 폭등한 종목들",
+          "source": "한국경제",
+          "published_at": "2026-03-13T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005261951&office_id=015&code=036570&page=1&sm="
+        }
+      ],
+      "themes": [
+        "게임",
+        "증권사전망",
+        "매크로이슈"
+      ]
+    },
+    {
+      "id": null,
+      "stock_code": "259960",
+      "stock_name": "크래프톤",
+      "market": "KOSPI",
+      "sector": "",
+      "signal_date": "2026-03-13",
+      "grade": "A",
+      "score": {
+        "news": 1,
+        "volume": 3,
+        "chart": 0,
+        "candle": 0,
+        "consolidation": 0,
+        "supply": 1,
+        "disclosure": 0,
+        "analyst": 2,
+        "llm_reason": "한화에어로스페이스와 피지컬 AI 합작사 추진 기대감으로 주가에 긍정적 영향을 줄 수 있으나, 구체적인 사업 내용과 성과를 지켜봐야 함.",
+        "llm_source": "none+gemini",
+        "total": 7
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "연합뉴스TV",
+          "연합뉴스"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": false,
+        "is_breakout": false,
+        "ma_aligned": false,
+        "good_candle": false,
+        "has_consolidation": false,
+        "supply_positive": true,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": false,
+        "volume_suspicious": false
+      },
+      "current_price": 243500,
+      "entry_price": 243500,
+      "stop_price": 236195,
+      "target_price": 255675,
+      "quantity": 34,
+      "position_size": 8279000,
+      "r_value": 250000.0,
+      "r_multiplier": 1.0,
+      "trading_value": 55583501500,
+      "change_pct": 7.74,
+      "volume_ratio": 0.0,
+      "foreign_5d": 359,
+      "inst_5d": -116762,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "NH투자증권, 쿼타랩과 '주식보상제도 연계서비스' 강화한다",
+          "source": "연합뉴스TV",
+          "published_at": "2026-03-13T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0000843554&office_id=422&code=259960&page=1&sm="
+        },
+        {
+          "title": "NH투자증권, 쿼타랩과 '주식보상제도 연계서비스' 강화",
+          "source": "연합뉴스",
+          "published_at": "2026-03-13T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0015956830&office_id=001&code=259960&page=1&sm="
+        },
+        {
+          "title": "[특징주] 크래프톤, 한화에어로와 피지컬AI 합작사 추진에 강세",
+          "source": "연합뉴스",
+          "published_at": "2026-03-13T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0015956843&office_id=001&code=259960&page=1&sm="
+        }
+      ],
+      "themes": [
+        "AI",
+        "합작투자",
+        "게임"
+      ]
+    },
+    {
+      "id": null,
+      "stock_code": "0091P0",
+      "stock_name": "TIGER 코리아원자력",
+      "market": "KOSPI",
+      "sector": "",
+      "signal_date": "2026-03-13",
+      "grade": "A",
+      "score": {
+        "news": 2,
+        "volume": 3,
+        "chart": 2,
+        "candle": 0,
+        "consolidation": 0,
+        "supply": 0,
+        "disclosure": 0,
+        "analyst": 0,
+        "llm_reason": "중동 리스크로 인한 에너지 안보 부각 및 유가 급등으로 원자력 관련 ETF에 대한 관심이 높아지고 있으며, 대미 투자 기대감도 존재함",
+        "llm_source": "none+gemini",
+        "total": 7
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "SBS Biz",
+          "파이낸셜뉴스"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": true,
+        "is_breakout": false,
+        "ma_aligned": true,
+        "good_candle": false,
+        "has_consolidation": false,
+        "supply_positive": false,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": false,
+        "volume_suspicious": false
+      },
+      "current_price": 21175,
+      "entry_price": 21175,
+      "stop_price": 20539,
+      "target_price": 22233,
+      "quantity": 393,
+      "position_size": 8321775,
+      "r_value": 250000.0,
+      "r_multiplier": 1.0,
+      "trading_value": 256408837300,
+      "change_pct": 5.19,
+      "volume_ratio": 0.0,
+      "foreign_5d": 0,
+      "inst_5d": 0,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "‘중동 리스크’ 에너지 안보 ‘원전株’ 주목…대미투자 기대감까지",
+          "source": "파이낸셜뉴스",
+          "published_at": "2026-03-12T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005490152&office_id=014&code=0091P0&page=1&sm="
+        },
+        {
+          "title": "유가 급등…원자력·태양광·신재생에너지 ETF 각광",
+          "source": "SBS Biz",
+          "published_at": "2026-03-12T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0000497490&office_id=374&code=0091P0&page=1&sm="
+        }
+      ],
+      "themes": [
+        "원자력",
+        "에너지 안보",
+        "대미 투자"
+      ]
+    }
+  ],
+  "by_grade": {
+    "S": 0,
+    "A": 8,
+    "B": 0,
+    "C": 0
+  },
+  "by_market": {
+    "KOSPI": 7,
+    "KOSDAQ": 1
+  },
+  "processing_time_ms": 222752.1800994873,
+  "updated_at": "2026-03-13T15:04:40.208584+09:00",
+  "claude_picks": {
+    "picks": [
+      {
+        "stock_code": "052690",
+        "stock_name": "한전기술",
+        "rank": 1,
+        "confidence": "HIGH",
+        "reason": "[Gemini] 미국 원전 시장 진출 및 목표가 상향 조정 기대감이 높습니다. 기관 매수세 유입과 양호한 거래대금으로 상승 모멘텀이 강합니다. [GPT-4o] 미국 원전 시장 진출 기대감과 목표가 상향으로 긍정적인 전망이 있음.",
+        "risk": "과거 원전 테마의 단기 급등락 이력이 있어 투자 심리 변동성에 유의해야 합니다.",
+        "expected_return": "+4% ~ +8%",
+        "source": "consensus",
+        "gemini_rank": 1,
+        "openai_rank": 2
+      },
+      {
+        "stock_code": "138080",
+        "stock_name": "오이솔루션",
+        "rank": 2,
+        "confidence": "HIGH",
+        "reason": "[Gemini] 미국 통신장비 수주 기대감과 증권사 목표가 상향이 긍정적입니다. 기관의 강한 매수세와 높은 거래대금으로 단기 상승 여력이 충분합니다. [GPT-4o] 미국 통신장비 수주 기대감과 목표가 상향에 따른 긍정적 투자 심리로 높은 성장 가능성을 보임.",
+        "risk": "외국인 매도세가 기관 매수세를 상쇄할 수 있으며, 5G 산업의 전반적인 불확실성이 존재합니다.",
+        "expected_return": "+5% ~ +10%",
+        "source": "consensus",
+        "gemini_rank": 2,
+        "openai_rank": 1
+      },
+      {
+        "stock_code": "278470",
+        "stock_name": "에이피알",
+        "rank": 3,
+        "confidence": "HIGH",
+        "reason": "[Gemini] 화장품 업황 전반의 긍정적 기대감과 중동 리스크 제한적 영향 예측이 호재입니다. 높은 종합 점수와 외국인 매수세가 유입되어 안정적인 흐름이 예상됩니다. [GPT-4o] 화장품주 전반에 긍정적인 기대감이 형성되며 외인의 꾸준한 수급이 긍정적이다.",
+        "risk": "기관 매도세가 지속될 경우 수급에 부담을 줄 수 있으며, 단기적 수급 불균형에 주의해야 합니다.",
+        "expected_return": "+3% ~ +7%",
+        "source": "consensus",
+        "gemini_rank": 3,
+        "openai_rank": 3
+      },
+      {
+        "stock_code": "001550",
+        "stock_name": "조비",
+        "rank": 4,
+        "confidence": "HIGH",
+        "reason": "[Gemini] 호르무즈 해협 봉쇄 장기화 조짐에 따른 비료 공급망 불안 심화로 수혜 기대감이 높습니다. 외국인과 기관 동반 매수세가 긍정적이며, 테마성 단기 상승 가능성이 있습니다. [GPT-4o] 호르무즈 해협 봉쇄 장기화에 따른 비료 공급망 불안으로 수혜 기대.",
+        "risk": "테마에 따른 변동성이 커 지정학적 리스크 완화 시 빠르게 상승분을 반납할 수 있습니다.",
+        "expected_return": "+4% ~ +9%",
+        "source": "consensus",
+        "gemini_rank": 4,
+        "openai_rank": 5
+      },
+      {
+        "stock_code": "003280",
+        "stock_name": "흥아해운",
+        "rank": 5,
+        "confidence": "HIGH",
+        "reason": "[Gemini] 코로나 특수 재현 기대감으로 해상운임 상승 가능성이 부각되고 있습니다. 압도적인 거래대금과 외국인/기관 동반 순매수로 강력한 단기 모멘텀을 보유합니다. [GPT-4o] 해상운임 상승 기대감과 높은 거래량으로 투자자 관심이 증가함.",
+        "risk": "차트 기술적 위치 점수가 낮아 단기 과열에 따른 급락 가능성이 높으며, 해상운임 변동성에 민감합니다.",
+        "expected_return": "+6% ~ +12%",
+        "source": "consensus",
+        "gemini_rank": 5,
+        "openai_rank": 6
+      },
+      {
+        "stock_code": "259960",
+        "stock_name": "크래프톤",
+        "rank": 6,
+        "confidence": "HIGH",
+        "reason": "[Gemini] 한화에어로스페이스와의 피지컬 AI 합작사 추진 기대감이 있으나, 구체적인 사업 내용 확인이 필요합니다. 양호한 거래량 점수를 보유하고 있습니다. [GPT-4o] 한화에어로스페이스와의 AI 합작사 추진이 긍정적인 영향을 줄 수 있음.",
+        "risk": "기관의 매도세가 두드러지며, 합작 사업의 불확실성이 커 단기 투자 매력도가 낮습니다.",
+        "expected_return": "+1% ~ +5%",
+        "source": "consensus",
+        "gemini_rank": 8,
+        "openai_rank": 4
+      },
+      {
+        "stock_code": "0091P0",
+        "stock_name": "TIGER 코리아원자력",
+        "rank": 7,
+        "confidence": "HIGH",
+        "reason": "[Gemini] 중동 리스크에 따른 에너지 안보 부각과 유가 급등으로 원자력 관련 ETF에 대한 관심이 집중됩니다. 높은 거래대금과 양호한 차트 흐름이 긍정적입니다. [GPT-4o] 에너지 안보 부각 및 대미 투자 기대감이 높아지는 원자력 관련 ETF로 관심 집중.",
+        "risk": "개별 종목이 아닌 ETF로 지수 추종 성격이 강하며, 유가 및 지정학적 리스크 완화 시 투자 심리가 빠르게 위축될 수 있습니다.",
+        "expected_return": "+3% ~ +7%",
+        "source": "consensus",
+        "gemini_rank": 6,
+        "openai_rank": 7
+      },
+      {
+        "stock_code": "036570",
+        "stock_name": "엔씨소프트",
+        "rank": 8,
+        "confidence": "LOW",
+        "reason": "삼성증권의 긍정적 전망과 외국인/기관 동반 매수세는 긍정적입니다. 견조한 수급 흐름을 기반으로 단기 반등을 기대할 수 있습니다.",
+        "risk": "불법 매크로 이슈와 지정학적 리스크로 인한 변동성 존재하며, 상대적으로 낮은 거래대금과 차트 점수가 약점입니다.",
+        "expected_return": "+2% ~ +6%",
+        "source": "gemini_only"
+      }
+    ],
+    "consensus_count": 7,
+    "gemini_count": 8,
+    "openai_count": 7,
+    "market_view": "[Gemini] 중동 리스크와 에너지 안보 부각 속에서 원자력, 통신장비 등 개별 종목의 강한 모멘텀과 수급이 돋보이는 하루였습니다. | [GPT-4o] 오늘은 화장품 및 원자력 관련 테마의 강세가 두드러지고 있음.",
+    "top_themes": [
+      "원자력/에너지 안보",
+      "5G/통신장비",
+      "해상운송",
+      "화장품",
+      "원자력",
+      "통신장비"
+    ],
+    "generated_at": "2026-03-13T15:04:40.205814",
+    "models": [
+      "gemini-2.5-flash",
+      "gpt-4o"
+    ],
+    "consensus_method": "multi_ai"
+  }
+}

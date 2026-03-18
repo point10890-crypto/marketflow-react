@@ -1,0 +1,381 @@
+{
+  "date": "2026-03-04",
+  "total_candidates": 4,
+  "filtered_count": 4,
+  "signals": [
+    {
+      "id": null,
+      "stock_code": "402490",
+      "stock_name": "그린리소스",
+      "market": "KOSDAQ",
+      "sector": "",
+      "signal_date": "2026-03-04",
+      "grade": "A",
+      "score": {
+        "news": 3,
+        "volume": 3,
+        "chart": 1,
+        "candle": 0,
+        "consolidation": 0,
+        "supply": 1,
+        "disclosure": 0,
+        "analyst": 0,
+        "llm_reason": "자회사 지분 추가 취득을 통한 초전도선재 양산라인 구축 및 삼성전자 파운드리 투자 재개 수혜 기대",
+        "llm_source": "perplexity+gemini",
+        "total": 8
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "서울신문",
+          "아시아경제"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": false,
+        "is_breakout": false,
+        "ma_aligned": true,
+        "good_candle": false,
+        "has_consolidation": false,
+        "supply_positive": true,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": false,
+        "volume_suspicious": false
+      },
+      "current_price": 10810,
+      "entry_price": 10810,
+      "stop_price": 10485,
+      "target_price": 11350,
+      "quantity": 770,
+      "position_size": 8323700,
+      "r_value": 250000.0,
+      "r_multiplier": 1.0,
+      "trading_value": 130889533900,
+      "change_pct": 11.1,
+      "volume_ratio": 0.0,
+      "foreign_5d": 63347,
+      "inst_5d": -1,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "래티스, 40억 규모 유상증자 결정…초전도선재 공정 구축",
+          "source": "아시아경제",
+          "published_at": "2026-03-03T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005728521&office_id=277&code=402490&page=1&sm="
+        },
+        {
+          "title": "[서울데이터랩]흥구석유 29.98% 상한가…금일 증시 상승률 1위로 마...",
+          "source": "서울신문",
+          "published_at": "2026-03-04T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0003622880&office_id=081&code=402490&page=1&sm="
+        },
+        {
+          "title": "[서울데이터랩]금일 코스닥 거래량 1위 빅텍 거래대금 1982억 원 돌...",
+          "source": "서울신문",
+          "published_at": "2026-03-04T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0003622787&office_id=081&code=402490&page=1&sm="
+        }
+      ],
+      "themes": [
+        "초전도선재",
+        "반도체 파운드리",
+        "희토류"
+      ]
+    },
+    {
+      "id": null,
+      "stock_code": "465770",
+      "stock_name": "STX그린로지스",
+      "market": "KOSPI",
+      "sector": "",
+      "signal_date": "2026-03-04",
+      "grade": "A",
+      "score": {
+        "news": 2,
+        "volume": 3,
+        "chart": 1,
+        "candle": 0,
+        "consolidation": 0,
+        "supply": 1,
+        "disclosure": 0,
+        "analyst": 0,
+        "llm_reason": "중동 긴장 고조로 인한 해운·물류주 강세 및 용선료·해상 운임 상승 기대감에 따른 수혜.",
+        "llm_source": "perplexity+gemini",
+        "total": 7
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "머니투데이",
+          "이데일리"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": false,
+        "is_breakout": false,
+        "ma_aligned": true,
+        "good_candle": false,
+        "has_consolidation": false,
+        "supply_positive": true,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": false,
+        "volume_suspicious": false
+      },
+      "current_price": 8350,
+      "entry_price": 8350,
+      "stop_price": 8099,
+      "target_price": 8767,
+      "quantity": 998,
+      "position_size": 8333300,
+      "r_value": 250000.0,
+      "r_multiplier": 1.0,
+      "trading_value": 61445003050,
+      "change_pct": 8.58,
+      "volume_ratio": 0.0,
+      "foreign_5d": -37709,
+      "inst_5d": 27184,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "같은 해운주인데 왜…현대글로비스 8%대 급락 이유는[특징주]",
+          "source": "이데일리",
+          "published_at": "2026-03-03T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0006227571&office_id=018&code=465770&page=1&sm="
+        },
+        {
+          "title": "호르무즈 해협 봉쇄에 해운주 급등…흥아해운 상한가",
+          "source": "머니투데이",
+          "published_at": "2026-03-03T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005324325&office_id=008&code=465770&page=1&sm="
+        },
+        {
+          "title": "해운주, 호르무즈 해협 봉쇄에 동반 강세…흥아해운 상한가[특징주]",
+          "source": "이데일리",
+          "published_at": "2026-03-03T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0006227227&office_id=018&code=465770&page=1&sm="
+        }
+      ],
+      "themes": [
+        "중동 긴장 (지정학 리스크)",
+        "해운·물류",
+        "에너지"
+      ]
+    },
+    {
+      "id": null,
+      "stock_code": "002140",
+      "stock_name": "고려산업",
+      "market": "KOSPI",
+      "sector": "",
+      "signal_date": "2026-03-04",
+      "grade": "A",
+      "score": {
+        "news": 2,
+        "volume": 3,
+        "chart": 1,
+        "candle": 0,
+        "consolidation": 0,
+        "supply": 1,
+        "disclosure": 0,
+        "analyst": 0,
+        "llm_reason": "호르무즈 해협 봉쇄 위기 및 배합사료 테마 부각으로 52주 신고가 경신 및 주가 급등.",
+        "llm_source": "perplexity+gemini",
+        "total": 7
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "서울신문"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": false,
+        "is_breakout": false,
+        "ma_aligned": true,
+        "good_candle": false,
+        "has_consolidation": false,
+        "supply_positive": true,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": false,
+        "volume_suspicious": false
+      },
+      "current_price": 2870,
+      "entry_price": 2870,
+      "stop_price": 2783,
+      "target_price": 3013,
+      "quantity": 2903,
+      "position_size": 8331610,
+      "r_value": 250000.0,
+      "r_multiplier": 1.0,
+      "trading_value": 76019564110,
+      "change_pct": 7.29,
+      "volume_ratio": 0.0,
+      "foreign_5d": -92900,
+      "inst_5d": 291,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "[서울데이터랩]대성에너지 29.95% 폭등…금일 증시 상승률 1위로 마...",
+          "source": "서울신문",
+          "published_at": "2026-03-04T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0003622882&office_id=081&code=002140&page=1&sm="
+        }
+      ],
+      "themes": [
+        "배합사료",
+        "곡물",
+        "비료"
+      ]
+    },
+    {
+      "id": null,
+      "stock_code": "261220",
+      "stock_name": "KODEX WTI원유선물(H)",
+      "market": "KOSPI",
+      "sector": "",
+      "signal_date": "2026-03-04",
+      "grade": "A",
+      "score": {
+        "news": 2,
+        "volume": 3,
+        "chart": 2,
+        "candle": 0,
+        "consolidation": 0,
+        "supply": 0,
+        "disclosure": 0,
+        "analyst": 0,
+        "llm_reason": "KODEX WTI원유선물(H) ETF는 WTI 원유 가격 강세에 따라 24시간 내 11.1% 상승하며 긍정적인 모멘텀을 보이고 있음.",
+        "llm_source": "perplexity+gemini",
+        "total": 7
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "아이뉴스24"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": true,
+        "is_breakout": false,
+        "ma_aligned": true,
+        "good_candle": false,
+        "has_consolidation": false,
+        "supply_positive": false,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": false,
+        "volume_suspicious": false
+      },
+      "current_price": 17920,
+      "entry_price": 17920,
+      "stop_price": 17382,
+      "target_price": 18816,
+      "quantity": 465,
+      "position_size": 8332800,
+      "r_value": 250000.0,
+      "r_multiplier": 1.0,
+      "trading_value": 62882086400,
+      "change_pct": 5.16,
+      "volume_ratio": 0.0,
+      "foreign_5d": 0,
+      "inst_5d": 0,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "\"원유 투자 어떻게\"?이란 사태로 치솟은 유가, 더 오를까",
+          "source": "아이뉴스24",
+          "published_at": "2026-03-03T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0001009926&office_id=031&code=261220&page=1&sm="
+        }
+      ],
+      "themes": [
+        "원유 선물"
+      ]
+    }
+  ],
+  "by_grade": {
+    "S": 0,
+    "A": 4,
+    "B": 0,
+    "C": 0
+  },
+  "by_market": {
+    "KOSDAQ": 1,
+    "KOSPI": 3
+  },
+  "processing_time_ms": 253192.81363487244,
+  "updated_at": "2026-03-04T19:41:35.958675+09:00",
+  "claude_picks": {
+    "picks": [
+      {
+        "stock_code": "402490",
+        "stock_name": "그린리소스",
+        "rank": 1,
+        "confidence": "HIGH",
+        "reason": "[Gemini] 자회사 지분 취득을 통한 초전도선재 양산라인 확장 및 삼성전자 파운드리 투자 재개 기대라는 강력한 호재를 보유하고 있습니다. 외인 순매수가 유입되고 거래대금이 충분하여 추가 상승 여력이 높다고 판단됩니다. [GPT-4o] 자회사 지분 추가 취득을 통해 초전도선재 양산라인을 구축하여 삼성전자 파운드리 투자재개 수혜가 기대되며 외인 매수가 강력함.",
+        "risk": "전반적인 시장 조정 및 삼성전자 투자 계획 변경 가능성이 주요 리스크입니다.",
+        "expected_return": "7% ~ 15%",
+        "source": "consensus",
+        "gemini_rank": 1,
+        "openai_rank": 1
+      },
+      {
+        "stock_code": "465770",
+        "stock_name": "STX그린로지스",
+        "rank": 2,
+        "confidence": "HIGH",
+        "reason": "[Gemini] 중동 긴장 고조로 해상 운임 및 용선료 상승 기대감이 반영되어 강세를 보입니다. 기관 매수세 유입이 긍정적이나, 외인 매도세가 관찰되어 수급 흐름은 혼조세입니다. [GPT-4o] 중동 긴장 고조로 해운·물류주가 강세를 보이며, 기관 매수가 높은 편임.",
+        "risk": "지정학적 리스크 완화 시 주가 급락 가능성이 있으며, 외인 매도세가 지속될 경우 상승이 제한될 수 있습니다.",
+        "expected_return": "5% ~ 12%",
+        "source": "consensus",
+        "gemini_rank": 3,
+        "openai_rank": 2
+      },
+      {
+        "stock_code": "261220",
+        "stock_name": "KODEX WTI원유선물(H)",
+        "rank": 3,
+        "confidence": "HIGH",
+        "reason": "[Gemini] 중동 지정학적 리스크 고조로 인한 국제 유가 강세에 직접적으로 연동되는 ETF로, 뚜렷한 상승 모멘텀을 보입니다. 변동성이 크지만 현 시장 상황에서 가장 직관적인 투자처 중 하나입니다. [GPT-4o] WTI 원유 가격 강세에 따른 긍정적인 움직임을 보이나 외인 및 기관 수급이 부재함.",
+        "risk": "중동 정세 완화 또는 글로벌 경기 둔화로 인한 유가 하락 시 손실 위험이 있습니다.",
+        "expected_return": "5% ~ 10%",
+        "source": "consensus",
+        "gemini_rank": 2,
+        "openai_rank": 4
+      },
+      {
+        "stock_code": "002140",
+        "stock_name": "고려산업",
+        "rank": 4,
+        "confidence": "HIGH",
+        "reason": "[Gemini] 호르무즈 해협 봉쇄 위기 및 배합사료 테마 부각으로 52주 신고가를 경신하며 강한 상승세를 보였습니다. 하지만 외국인 순매도세가 두드러져 단기적인 수급 부담이 존재합니다. [GPT-4o] 호르무즈 해협 봉쇄 위기와 배합사료 테마 부각에 따른 주가 급등, 거래대금도 충분함.",
+        "risk": "외국인 대량 매도세가 지속될 경우 주가 조정이 예상되며, 테마 소멸 시 급격한 하락 위험이 있습니다.",
+        "expected_return": "3% ~ 8%",
+        "source": "consensus",
+        "gemini_rank": 4,
+        "openai_rank": 3
+      }
+    ],
+    "consensus_count": 4,
+    "gemini_count": 4,
+    "openai_count": 4,
+    "market_view": "[Gemini] 오늘 시장은 중동 지정학적 리스크 심화로 유가 및 해운/물류 관련 테마가 강세를 보였으며, 반도체 및 초전도체 섹터 또한 긍정적인 모멘텀을 유지하는 등 테마주 중심의 움직임이 뚜렷했습니다. | [GPT-4o] 오늘 시장은 지정학적 리스크와 산업 테마가 매우 주목받고 있는 중이며, 관련 종목들에 매수세가 집중됨.",
+    "top_themes": [
+      "중동 지정학 리스크",
+      "해운/물류/에너지",
+      "반도체/초전도체",
+      "초전도선재",
+      "해운·물류",
+      "배합사료"
+    ],
+    "generated_at": "2026-03-04T19:41:35.956425",
+    "models": [
+      "gemini-2.5-flash",
+      "gpt-4o"
+    ],
+    "consensus_method": "multi_ai"
+  }
+}

@@ -1,0 +1,565 @@
+{
+  "date": "2026-03-15",
+  "total_candidates": 6,
+  "filtered_count": 6,
+  "signals": [
+    {
+      "id": null,
+      "stock_code": "278470",
+      "stock_name": "에이피알",
+      "market": "KOSPI",
+      "sector": "",
+      "signal_date": "2026-03-15",
+      "grade": "A",
+      "score": {
+        "news": 2,
+        "volume": 3,
+        "chart": 2,
+        "candle": 0,
+        "consolidation": 0,
+        "supply": 1,
+        "disclosure": 0,
+        "analyst": 3,
+        "llm_reason": "에이피알이 화장품에서 의료기기로 사업을 확장하고 있으며, 글로벌 시장에서 K-뷰티의 가성비 제품으로 인기를 얻고 있어 긍정적인 성장 기대감이 있음.",
+        "llm_source": "none+gemini",
+        "total": 11
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "연합뉴스",
+          "서울경제",
+          "아시아경제"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": true,
+        "is_breakout": false,
+        "ma_aligned": true,
+        "good_candle": false,
+        "has_consolidation": false,
+        "supply_positive": true,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": false,
+        "volume_suspicious": false
+      },
+      "current_price": 342500,
+      "entry_price": 342500,
+      "stop_price": 332225,
+      "target_price": 359625,
+      "quantity": 24,
+      "position_size": 8220000,
+      "r_value": 250000.0,
+      "r_multiplier": 1.0,
+      "trading_value": 142756397500,
+      "change_pct": 6.2,
+      "volume_ratio": 0.0,
+      "foreign_5d": 233731,
+      "inst_5d": -36223,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "[마켓인사이트] 이란 '역린' 때린 트럼프…증시 변동성 또 치솟나",
+          "source": "연합뉴스",
+          "published_at": "2026-03-15T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0015959381&office_id=001&code=278470&page=1&sm="
+        },
+        {
+          "title": "화장품 넘어 의료기기로…진격의 에이피알",
+          "source": "서울경제",
+          "published_at": "2026-03-15T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0004599437&office_id=011&code=278470&page=1&sm="
+        },
+        {
+          "title": "글로벌 시장서 불티나게 팔리는 '가성비' K-뷰티[주末머니]",
+          "source": "아시아경제",
+          "published_at": "2026-03-15T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005734387&office_id=277&code=278470&page=1&sm="
+        }
+      ],
+      "themes": [
+        "화장품",
+        "의료기기",
+        "K-뷰티"
+      ]
+    },
+    {
+      "id": null,
+      "stock_code": "052690",
+      "stock_name": "한전기술",
+      "market": "KOSPI",
+      "sector": "",
+      "signal_date": "2026-03-15",
+      "grade": "A",
+      "score": {
+        "news": 1,
+        "volume": 3,
+        "chart": 1,
+        "candle": 0,
+        "consolidation": 0,
+        "supply": 1,
+        "disclosure": 0,
+        "analyst": 2,
+        "llm_reason": "채용 관련 뉴스는 주가에 미치는 영향이 미미하므로 중립적인 신호로 간주합니다.",
+        "llm_source": "none+gemini",
+        "total": 8
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "파이낸셜뉴스"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": false,
+        "is_breakout": false,
+        "ma_aligned": true,
+        "good_candle": false,
+        "has_consolidation": false,
+        "supply_positive": true,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": false,
+        "volume_suspicious": false
+      },
+      "current_price": 177700,
+      "entry_price": 177700,
+      "stop_price": 172369,
+      "target_price": 186585,
+      "quantity": 46,
+      "position_size": 8174200,
+      "r_value": 250000.0,
+      "r_multiplier": 1.0,
+      "trading_value": 165246606300,
+      "change_pct": 6.41,
+      "volume_ratio": 0.0,
+      "foreign_5d": -105006,
+      "inst_5d": 153556,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "[채용게시판] 삼성SDI·한국전력기술·한국산업단지공단 등",
+          "source": "파이낸셜뉴스",
+          "published_at": "2026-03-15T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005491438&office_id=014&code=052690&page=1&sm="
+        }
+      ],
+      "themes": [
+        "채용",
+        "취업"
+      ]
+    },
+    {
+      "id": null,
+      "stock_code": "000720",
+      "stock_name": "현대건설",
+      "market": "KOSPI",
+      "sector": "",
+      "signal_date": "2026-03-15",
+      "grade": "A",
+      "score": {
+        "news": 2,
+        "volume": 3,
+        "chart": 1,
+        "candle": 0,
+        "consolidation": 0,
+        "supply": 0,
+        "disclosure": 0,
+        "analyst": 2,
+        "llm_reason": "현대건설이 현대제철과 부유식 해상풍력 사업을 추진하며, 남양주 왕숙 국도 지하화 사업으로 인한 수혜가 예상됩니다.",
+        "llm_source": "none+gemini",
+        "total": 8
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "한국경제",
+          "연합뉴스",
+          "연합뉴스TV"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": false,
+        "is_breakout": false,
+        "ma_aligned": true,
+        "good_candle": false,
+        "has_consolidation": false,
+        "supply_positive": false,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": false,
+        "volume_suspicious": false
+      },
+      "current_price": 164400,
+      "entry_price": 164400,
+      "stop_price": 159468,
+      "target_price": 172620,
+      "quantity": 50,
+      "position_size": 8220000,
+      "r_value": 250000.0,
+      "r_multiplier": 1.0,
+      "trading_value": 445634148000,
+      "change_pct": 5.59,
+      "volume_ratio": 0.0,
+      "foreign_5d": -34636,
+      "inst_5d": -365208,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "100대 기업 사외이사 평균 급여 9천만원 돌파…삼성전자 1위",
+          "source": "연합뉴스TV",
+          "published_at": "2026-03-15T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0000844054&office_id=422&code=000720&page=1&sm="
+        },
+        {
+          "title": "남양주 왕숙 국도 47호선 지하화 2028년 10월 개통",
+          "source": "연합뉴스",
+          "published_at": "2026-03-15T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0015959441&office_id=001&code=000720&page=1&sm="
+        },
+        {
+          "title": "현대제철, 현대건설과 부유식 해상풍력 사업",
+          "source": "한국경제",
+          "published_at": "2026-03-15T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005262414&office_id=015&code=000720&page=1&sm="
+        }
+      ],
+      "themes": [
+        "건설",
+        "해상풍력",
+        "SOC"
+      ]
+    },
+    {
+      "id": null,
+      "stock_code": "036570",
+      "stock_name": "엔씨소프트",
+      "market": "KOSPI",
+      "sector": "",
+      "signal_date": "2026-03-15",
+      "grade": "A",
+      "score": {
+        "news": 2,
+        "volume": 2,
+        "chart": 0,
+        "candle": 0,
+        "consolidation": 0,
+        "supply": 1,
+        "disclosure": 0,
+        "analyst": 2,
+        "llm_reason": "구글 앱마켓 수수료 인하로 게임 업계 전반의 수익성 개선 기대감이 발생하고, 엔씨소프트도 수혜를 볼 것으로 예상됨",
+        "llm_source": "none+gemini",
+        "total": 7
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "파이낸셜뉴스",
+          "매일경제"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": false,
+        "is_breakout": false,
+        "ma_aligned": false,
+        "good_candle": false,
+        "has_consolidation": false,
+        "supply_positive": true,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": false,
+        "volume_suspicious": false
+      },
+      "current_price": 228500,
+      "entry_price": 228500,
+      "stop_price": 221645,
+      "target_price": 239925,
+      "quantity": 36,
+      "position_size": 8226000,
+      "r_value": 250000.0,
+      "r_multiplier": 1.0,
+      "trading_value": 49754961000,
+      "change_pct": 7.78,
+      "volume_ratio": 0.0,
+      "foreign_5d": 88080,
+      "inst_5d": -38815,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "“모바일게임 수수료 절반 인하? 1000억 아끼겠네”…넷마블 더 크게....",
+          "source": "매일경제",
+          "published_at": "2026-03-14T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005650204&office_id=009&code=036570&page=1&sm="
+        },
+        {
+          "title": "\"1000억 아낀다\"… 구글 앱마켓 수수료 인하에 K게임사 반색",
+          "source": "파이낸셜뉴스",
+          "published_at": "2026-03-15T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005491596&office_id=014&code=036570&page=1&sm="
+        },
+        {
+          "title": "인앱결제 통행세 인하하는 구글…게임업계 ‘훈풍’ 기대감",
+          "source": "파이낸셜뉴스",
+          "published_at": "2026-03-15T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005491423&office_id=014&code=036570&page=1&sm="
+        }
+      ],
+      "themes": [
+        "수수료인하",
+        "게임",
+        "앱마켓"
+      ]
+    },
+    {
+      "id": null,
+      "stock_code": "0091P0",
+      "stock_name": "TIGER 코리아원자력",
+      "market": "KOSPI",
+      "sector": "",
+      "signal_date": "2026-03-15",
+      "grade": "A",
+      "score": {
+        "news": 2,
+        "volume": 3,
+        "chart": 2,
+        "candle": 0,
+        "consolidation": 0,
+        "supply": 0,
+        "disclosure": 0,
+        "analyst": 0,
+        "llm_reason": "중동 리스크 심화로 원유 및 원자력 에너지 관련 ETF에 대한 긍정적 기대감이 형성되고 있음",
+        "llm_source": "none+gemini",
+        "total": 7
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "파이낸셜뉴스",
+          "한국경제"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": true,
+        "is_breakout": false,
+        "ma_aligned": true,
+        "good_candle": false,
+        "has_consolidation": false,
+        "supply_positive": false,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": false,
+        "volume_suspicious": false
+      },
+      "current_price": 21350,
+      "entry_price": 21350,
+      "stop_price": 20709,
+      "target_price": 22417,
+      "quantity": 390,
+      "position_size": 8326500,
+      "r_value": 250000.0,
+      "r_multiplier": 1.0,
+      "trading_value": 262867690400,
+      "change_pct": 6.06,
+      "volume_ratio": 0.0,
+      "foreign_5d": 0,
+      "inst_5d": 0,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "'천정부지' 유가에 원유·원전 ETF 날았다",
+          "source": "한국경제",
+          "published_at": "2026-03-15T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005262444&office_id=015&code=0091P0&page=1&sm="
+        },
+        {
+          "title": "깊어지는 ‘중동 리스크’… 원유·원전 등 에너지 종목 상위권[ETF 스...",
+          "source": "파이낸셜뉴스",
+          "published_at": "2026-03-15T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005491607&office_id=014&code=0091P0&page=1&sm="
+        },
+        {
+          "title": "‘중동 리스크’ 여전…원유·원전 오르고, 반도체·이차전지 내리고...",
+          "source": "파이낸셜뉴스",
+          "published_at": "2026-03-15T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005491476&office_id=014&code=0091P0&page=1&sm="
+        }
+      ],
+      "themes": [
+        "원자력",
+        "에너지",
+        "중동리스크"
+      ]
+    },
+    {
+      "id": null,
+      "stock_code": "475150",
+      "stock_name": "SK이터닉스",
+      "market": "KOSPI",
+      "sector": "",
+      "signal_date": "2026-03-15",
+      "grade": "A",
+      "score": {
+        "news": 2,
+        "volume": 3,
+        "chart": 1,
+        "candle": 0,
+        "consolidation": 0,
+        "supply": 1,
+        "disclosure": 0,
+        "analyst": 0,
+        "llm_reason": "원유 대안 기대감 및 주가 급등으로 긍정적 투자 심리 형성",
+        "llm_source": "none+gemini",
+        "total": 7
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "더팩트",
+          "한국경제",
+          "뉴스1"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": false,
+        "is_breakout": false,
+        "ma_aligned": true,
+        "good_candle": false,
+        "has_consolidation": false,
+        "supply_positive": true,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": false,
+        "volume_suspicious": false
+      },
+      "current_price": 39350,
+      "entry_price": 39350,
+      "stop_price": 38169,
+      "target_price": 41317,
+      "quantity": 211,
+      "position_size": 8302850,
+      "r_value": 250000.0,
+      "r_multiplier": 1.0,
+      "trading_value": 454335690250,
+      "change_pct": 5.35,
+      "volume_ratio": 0.0,
+      "foreign_5d": -187650,
+      "inst_5d": 625780,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "1주만에 44% 급등한 SK이터닉스",
+          "source": "한국경제",
+          "published_at": "2026-03-15T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005262440&office_id=015&code=475150&page=1&sm="
+        },
+        {
+          "title": "코스피 내릴 때 44% 오른 SK이터닉스…'원유 대안' 기대 빛났다[종...",
+          "source": "뉴스1",
+          "published_at": "2026-03-14T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0008825445&office_id=421&code=475150&page=1&sm="
+        },
+        {
+          "title": "[주간사모펀드] 한앤컴퍼니, 8년 만에 SK이터닉스 투자 '졸업'",
+          "source": "더팩트",
+          "published_at": "2026-03-14T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0000481323&office_id=629&code=475150&page=1&sm="
+        }
+      ],
+      "themes": [
+        "신재생에너지",
+        "원유 대체",
+        "ESG"
+      ]
+    }
+  ],
+  "by_grade": {
+    "S": 0,
+    "A": 6,
+    "B": 0,
+    "C": 0
+  },
+  "by_market": {
+    "KOSPI": 6
+  },
+  "processing_time_ms": 141499.88389015198,
+  "updated_at": "2026-03-15T22:07:11.381165+09:00",
+  "claude_picks": {
+    "picks": [
+      {
+        "stock_code": "278470",
+        "stock_name": "에이피알",
+        "rank": 1,
+        "confidence": "HIGH",
+        "reason": "[Gemini] 화장품에서 의료기기로의 사업 확장 및 K-뷰티의 글로벌 성장 기대감이 높습니다. 외인 수급이 강하게 유입되고 차트 흐름도 양호하여 추가 상승 여력이 충분합니다. [GPT-4o] K-뷰티 및 의료기기 확장 전략이 긍정적으로 평가받으며 글로벌 시장 성장 가능성이 큽니다.",
+        "risk": "글로벌 경기 둔화 시 소비 심리 위축에 따른 실적 영향 가능성이 있습니다.",
+        "expected_return": "3~7%",
+        "source": "consensus",
+        "gemini_rank": 1,
+        "openai_rank": 2
+      },
+      {
+        "stock_code": "475150",
+        "stock_name": "SK이터닉스",
+        "rank": 2,
+        "confidence": "HIGH",
+        "reason": "[Gemini] 신재생에너지 및 원유 대체 테마에 대한 강한 기대감과 함께 기관의 대규모 순매수가 인상적입니다. 충분한 거래대금도 동반되어 긍정적 모멘텀이 이어질 것으로 보입니다. [GPT-4o] 기관의 대규모 매수가 이루어졌으며 신재생에너지와 원유 대체 테마에 대한 시장의 기대감이 높습니다.",
+        "risk": "단기간 주가 급등에 따른 차익 실현 매물 출회 및 외국인 매도세 지속 가능성이 있습니다.",
+        "expected_return": "2~5%",
+        "source": "consensus",
+        "gemini_rank": 2,
+        "openai_rank": 1
+      },
+      {
+        "stock_code": "0091P0",
+        "stock_name": "TIGER 코리아원자력",
+        "rank": 3,
+        "confidence": "HIGH",
+        "reason": "[Gemini] 중동 리스크 심화로 원자력 에너지 관련 ETF에 대한 긍정적 기대감이 형성되었습니다. 안정적인 거래대금과 양호한 차트 흐름이 테마의 지속성을 뒷받침합니다. [GPT-4o] 중동 리스크 심화로 원자력 및 에너지 관련 ETF에 대한 투자 수요가 증가하고 있습니다.",
+        "risk": "테마의 변동성이 높으며, 지정학적 리스크 완화 시 단기 조정 가능성이 있습니다.",
+        "expected_return": "1~4%",
+        "source": "consensus",
+        "gemini_rank": 3,
+        "openai_rank": 5
+      },
+      {
+        "stock_code": "036570",
+        "stock_name": "엔씨소프트",
+        "rank": 4,
+        "confidence": "LOW",
+        "reason": "구글 앱마켓 수수료 인하에 따른 게임 업계 전반의 수익성 개선 기대감이 큽니다.",
+        "risk": "글로벌 게임 시장 수요 변동과 새로운 게임 출시 지연 가능성.",
+        "expected_return": "4-7%",
+        "source": "openai_only"
+      },
+      {
+        "stock_code": "052690",
+        "stock_name": "한전기술",
+        "rank": 5,
+        "confidence": "LOW",
+        "reason": "채용 관련 뉴스는 직접적인 이익 개선과 연결되지 않으나, 기관의 매수가 뒷받침됩니다.",
+        "risk": "채용 확장이 실적에 직접적으로 반영되지 않을 가능성.",
+        "expected_return": "3-5%",
+        "source": "openai_only"
+      }
+    ],
+    "consensus_count": 3,
+    "gemini_count": 3,
+    "openai_count": 5,
+    "market_view": "[Gemini] 오늘 시장은 K-뷰티/의료기기, 신재생에너지/원자력 등 특정 성장 및 테마 섹터에 대한 강한 기관 및 외인 수급 쏠림 현상이 두드러졌습니다. | [GPT-4o] 오늘 시장은 글로벌 경제 불확실성과 신재생에너지에 대한 기대감이 혼합된 양상을 보입니다.",
+    "top_themes": [
+      "신재생에너지/원자력",
+      "K-뷰티/의료기기",
+      "건설/SOC",
+      "신재생에너지",
+      "K-뷰티",
+      "게임"
+    ],
+    "generated_at": "2026-03-15T22:07:11.379892",
+    "models": [
+      "gemini-2.5-flash",
+      "gpt-4o"
+    ],
+    "consensus_method": "multi_ai"
+  }
+}

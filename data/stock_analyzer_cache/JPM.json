@@ -1,0 +1,39 @@
+{
+  "name": "JPMorgan",
+  "ticker": "JPM",
+  "result": "중립",
+  "date": "2026-03-15 19:35:48",
+  "elapsed": 0,
+  "consensus_score": 3.6,
+  "analyst_count": 25,
+  "recommendation_detail": {
+    "strongBuy": 5,
+    "buy": 9,
+    "hold": 8,
+    "sell": 2,
+    "strongSell": 1
+  },
+  "price_targets": {
+    "current": 283.44,
+    "high": 400.0,
+    "low": 289.0,
+    "mean": 344.78262,
+    "median": 345.0
+  },
+  "current_price": 283.44,
+  "upside_potential": 21.6,
+  "key_stats": {
+    "name": "JP Morgan Chase & Co.",
+    "sector": "Financial Services",
+    "industry": "Banks - Diversified",
+    "market_cap": 764446900224,
+    "pe_ratio": 14.164918,
+    "forward_pe": 12.06522,
+    "dividend_yield": 2.12,
+    "beta": 1.059,
+    "fifty_two_week_high": 337.25,
+    "fifty_two_week_low": 202.16,
+    "currency": "USD"
+  },
+  "source": "yfinance"
+}

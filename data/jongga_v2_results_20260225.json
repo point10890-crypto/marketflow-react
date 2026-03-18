@@ -1,0 +1,624 @@
+{
+  "date": "2026-02-25",
+  "total_candidates": 7,
+  "filtered_count": 7,
+  "signals": [
+    {
+      "id": null,
+      "stock_code": "047040",
+      "stock_name": "대우건설",
+      "market": "KOSPI",
+      "sector": "",
+      "signal_date": "2026-02-25",
+      "grade": "S",
+      "score": {
+        "news": 3,
+        "volume": 3,
+        "chart": 2,
+        "candle": 1,
+        "consolidation": 0,
+        "supply": 1,
+        "disclosure": 0,
+        "analyst": 2,
+        "llm_reason": "KB증권, 삼성증권 목표주가 상향 및 매수 의견 유지. 해외 원전 수주 기대감 반영.",
+        "llm_source": "perplexity+gemini",
+        "total": 12
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "연합뉴스"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": true,
+        "is_breakout": false,
+        "ma_aligned": true,
+        "good_candle": true,
+        "has_consolidation": false,
+        "supply_positive": true,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": false,
+        "volume_suspicious": false
+      },
+      "current_price": 9000,
+      "entry_price": 9000,
+      "stop_price": 8730,
+      "target_price": 9450,
+      "quantity": 1388,
+      "position_size": 12492000,
+      "r_value": 250000.0,
+      "r_multiplier": 1.5,
+      "trading_value": 61653974925,
+      "change_pct": 10.97,
+      "volume_ratio": 0.0,
+      "foreign_5d": -2856124,
+      "inst_5d": 1573013,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "가덕도신공항 부지조성공사, 대우건설 컨소시엄과 수의계약 추진",
+          "source": "연합뉴스",
+          "published_at": "2026-02-24T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0015922246&office_id=001&code=047040&page=1&sm="
+        },
+        {
+          "title": "성수4지구 갈등 재점화 봉합…조합 \"대우 해명 수용하고 사과\"(종합)",
+          "source": "연합뉴스",
+          "published_at": "2026-02-24T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0015922243&office_id=001&code=047040&page=1&sm="
+        },
+        {
+          "title": "성수4지구, '홍보 요원 철수' 문제로 조합·대우 갈등 재점화",
+          "source": "연합뉴스",
+          "published_at": "2026-02-24T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0015921351&office_id=001&code=047040&page=1&sm="
+        }
+      ],
+      "themes": [
+        "원전",
+        "건설",
+        "해외수주"
+      ]
+    },
+    {
+      "id": null,
+      "stock_code": "000270",
+      "stock_name": "기아",
+      "market": "KOSPI",
+      "sector": "",
+      "signal_date": "2026-02-25",
+      "grade": "A",
+      "score": {
+        "news": 2,
+        "volume": 3,
+        "chart": 1,
+        "candle": 1,
+        "consolidation": 0,
+        "supply": 2,
+        "disclosure": 0,
+        "analyst": 2,
+        "llm_reason": "로봇택시 상용화, 웨이모 공급 확대, 수출 호조 등 긍정적 요소와 관세 우려, 외국인 매도세 등 부정적 요소가 혼재되어 긍정적 기대감이 다소 높음.",
+        "llm_source": "perplexity+gemini",
+        "total": 11
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "연합뉴스"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": false,
+        "is_breakout": false,
+        "ma_aligned": true,
+        "good_candle": true,
+        "has_consolidation": false,
+        "supply_positive": true,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": false,
+        "volume_suspicious": false
+      },
+      "current_price": 187700,
+      "entry_price": 187700,
+      "stop_price": 182069,
+      "target_price": 197085,
+      "quantity": 44,
+      "position_size": 8258800,
+      "r_value": 250000.0,
+      "r_multiplier": 1.0,
+      "trading_value": 70584584700,
+      "change_pct": 7.87,
+      "volume_ratio": 0.0,
+      "foreign_5d": 684441,
+      "inst_5d": 419610,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "[특징주] 기아, 장 초반 급등해 52주 신고가…현대차도 상승",
+          "source": "연합뉴스",
+          "published_at": "2026-02-25T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0015922793&office_id=001&code=000270&page=1&sm="
+        },
+        {
+          "title": "기아 美조지아공장, 누적 생산 500만대…텔루라이드 HEV 개시",
+          "source": "연합뉴스",
+          "published_at": "2026-02-25T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0015922786&office_id=001&code=000270&page=1&sm="
+        },
+        {
+          "title": "코스피, '6천피 시대' 개막…장중 5,000 돌파 한달만 쾌거(종합...",
+          "source": "연합뉴스",
+          "published_at": "2026-02-25T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0015922761&office_id=001&code=000270&page=1&sm="
+        }
+      ],
+      "themes": [
+        "하이브리드·친환경차",
+        "자율주행·AI·로봇택시"
+      ]
+    },
+    {
+      "id": null,
+      "stock_code": "103590",
+      "stock_name": "일진전기",
+      "market": "KOSPI",
+      "sector": "",
+      "signal_date": "2026-02-25",
+      "grade": "A",
+      "score": {
+        "news": 3,
+        "volume": 2,
+        "chart": 1,
+        "candle": 0,
+        "consolidation": 0,
+        "supply": 1,
+        "disclosure": 0,
+        "analyst": 3,
+        "llm_reason": "2025년 실적 대폭 호조 및 SK증권 목표주가 상향으로 투자 매력도가 높아짐.",
+        "llm_source": "perplexity+gemini",
+        "total": 10
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "파이낸셜뉴스"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": false,
+        "is_breakout": false,
+        "ma_aligned": true,
+        "good_candle": false,
+        "has_consolidation": false,
+        "supply_positive": true,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": false,
+        "volume_suspicious": false
+      },
+      "current_price": 90500,
+      "entry_price": 90500,
+      "stop_price": 87785,
+      "target_price": 95025,
+      "quantity": 92,
+      "position_size": 8326000,
+      "r_value": 250000.0,
+      "r_multiplier": 1.0,
+      "trading_value": 19930763500,
+      "change_pct": 10.1,
+      "volume_ratio": 0.0,
+      "foreign_5d": 325180,
+      "inst_5d": -286426,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "역대급 실적낸 전력기기 업체들, 성과급도 사상최대",
+          "source": "파이낸셜뉴스",
+          "published_at": "2026-02-24T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005482200&office_id=014&code=103590&page=1&sm="
+        },
+        {
+          "title": "[단독] 반도체에 이어…AI 특수에 전력기기 업계 '역대급' 성과급 ...",
+          "source": "파이낸셜뉴스",
+          "published_at": "2026-02-24T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005482078&office_id=014&code=103590&page=1&sm="
+        }
+      ],
+      "themes": [
+        "AI 전력 수요",
+        "변압기",
+        "전선",
+        "전력설비"
+      ]
+    },
+    {
+      "id": null,
+      "stock_code": "452260",
+      "stock_name": "한화갤러리아",
+      "market": "KOSPI",
+      "sector": "",
+      "signal_date": "2026-02-25",
+      "grade": "A",
+      "score": {
+        "news": 3,
+        "volume": 2,
+        "chart": 1,
+        "candle": 1,
+        "consolidation": 0,
+        "supply": 2,
+        "disclosure": 0,
+        "analyst": 0,
+        "llm_reason": "2025년 영업이익이 전년 대비 177.7% 증가하고 당기순이익이 흑자 전환되는 등 긍정적인 실적 개선을 보임",
+        "llm_source": "perplexity+gemini",
+        "total": 9
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "서울경제",
+          "한국경제",
+          "매일경제"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": false,
+        "is_breakout": false,
+        "ma_aligned": true,
+        "good_candle": true,
+        "has_consolidation": false,
+        "supply_positive": true,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": false,
+        "volume_suspicious": false
+      },
+      "current_price": 3500,
+      "entry_price": 3500,
+      "stop_price": 3395,
+      "target_price": 3675,
+      "quantity": 2380,
+      "position_size": 8330000,
+      "r_value": 250000.0,
+      "r_multiplier": 1.0,
+      "trading_value": 27886894795,
+      "change_pct": 13.45,
+      "volume_ratio": 0.0,
+      "foreign_5d": 2560860,
+      "inst_5d": 110456,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "한화갤러리아, 호실적 발표에 17%대 급등",
+          "source": "한국경제",
+          "published_at": "2026-02-25T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005254865&office_id=015&code=452260&page=1&sm="
+        },
+        {
+          "title": "[MK시그널] 이란戰 가능성에 흥구석유 '쑥'",
+          "source": "매일경제",
+          "published_at": "2026-02-24T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005641304&office_id=009&code=452260&page=1&sm="
+        },
+        {
+          "title": "한화갤러리아, 지난해 영업익 94억…전년비 177%↑",
+          "source": "서울경제",
+          "published_at": "2026-02-24T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0004593036&office_id=011&code=452260&page=1&sm="
+        }
+      ],
+      "themes": [
+        "실적 개선",
+        "명품 수요 증가",
+        "외국인 관광"
+      ]
+    },
+    {
+      "id": null,
+      "stock_code": "476060",
+      "stock_name": "온코닉테라퓨틱스",
+      "market": "KOSDAQ",
+      "sector": "",
+      "signal_date": "2026-02-25",
+      "grade": "A",
+      "score": {
+        "news": 3,
+        "volume": 3,
+        "chart": 1,
+        "candle": 1,
+        "consolidation": 0,
+        "supply": 1,
+        "disclosure": 0,
+        "analyst": 0,
+        "llm_reason": "항암신약후보 네수파립이 미국 FDA로부터 소세포폐암 치료제로 희귀의약품지정(ODD)을 승인받아 주가가 급등했고, 2025년 흑자전환 및 2026년 큰 폭의 실적 성장이 예상됩니다.",
+        "llm_source": "perplexity+gemini",
+        "total": 9
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "한국경제TV",
+          "연합뉴스",
+          "매일경제"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": false,
+        "is_breakout": false,
+        "ma_aligned": true,
+        "good_candle": true,
+        "has_consolidation": false,
+        "supply_positive": true,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": false,
+        "volume_suspicious": false
+      },
+      "current_price": 27250,
+      "entry_price": 27250,
+      "stop_price": 26432,
+      "target_price": 28612,
+      "quantity": 305,
+      "position_size": 8311250,
+      "r_value": 250000.0,
+      "r_multiplier": 1.0,
+      "trading_value": 54684074300,
+      "change_pct": 7.07,
+      "volume_ratio": 0.0,
+      "foreign_5d": 349176,
+      "inst_5d": -17571,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "온코닉테라퓨틱스 네수파립, FDA 소세포폐암 희귀의약품 승인",
+          "source": "연합뉴스",
+          "published_at": "2026-02-24T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0015920194&office_id=001&code=476060&page=1&sm="
+        },
+        {
+          "title": "온코닉, 폐암도 FDA 희귀약 허가…\"미국 임상시 혜택\"",
+          "source": "한국경제TV",
+          "published_at": "2026-02-24T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0001242852&office_id=215&code=476060&page=1&sm="
+        },
+        {
+          "title": "온코닉테라퓨틱스 ‘네수파립’, 소세포폐암 美FDA 희귀의약품 승인",
+          "source": "매일경제",
+          "published_at": "2026-02-24T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005641093&office_id=009&code=476060&page=1&sm="
+        }
+      ],
+      "themes": [
+        "신약 개발",
+        "소세포폐암 치료제",
+        "글로벌 파트너십"
+      ]
+    },
+    {
+      "id": null,
+      "stock_code": "307950",
+      "stock_name": "현대오토에버",
+      "market": "KOSPI",
+      "sector": "",
+      "signal_date": "2026-02-25",
+      "grade": "A",
+      "score": {
+        "news": 0,
+        "volume": 2,
+        "chart": 1,
+        "candle": 1,
+        "consolidation": 0,
+        "supply": 1,
+        "disclosure": 0,
+        "analyst": 2,
+        "llm_reason": "",
+        "llm_source": "",
+        "total": 7
+      },
+      "checklist": {
+        "has_news": false,
+        "news_sources": [],
+        "volume_sufficient": true,
+        "is_new_high": false,
+        "is_breakout": false,
+        "ma_aligned": true,
+        "good_candle": true,
+        "has_consolidation": false,
+        "supply_positive": true,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": false,
+        "volume_suspicious": false
+      },
+      "current_price": 456500,
+      "entry_price": 456500,
+      "stop_price": 442805,
+      "target_price": 479325,
+      "quantity": 18,
+      "position_size": 8217000,
+      "r_value": 250000.0,
+      "r_multiplier": 1.0,
+      "trading_value": 23776575500,
+      "change_pct": 5.55,
+      "volume_ratio": 0.0,
+      "foreign_5d": 36471,
+      "inst_5d": -27382,
+      "status": "PENDING",
+      "news_items": [],
+      "themes": []
+    },
+    {
+      "id": null,
+      "stock_code": "242040",
+      "stock_name": "나무기술",
+      "market": "KOSDAQ",
+      "sector": "",
+      "signal_date": "2026-02-25",
+      "grade": "A",
+      "score": {
+        "news": 3,
+        "volume": 2,
+        "chart": 1,
+        "candle": 1,
+        "consolidation": 0,
+        "supply": 0,
+        "disclosure": 0,
+        "analyst": 0,
+        "llm_reason": "소버린 AI 인프라 수주 폭발 및 외인/기관 매집 지속으로 인한 강세, 재무 건전성 및 코스피 편입, 품절주 특성 보유",
+        "llm_source": "perplexity+gemini",
+        "total": 7
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "서울신문"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": false,
+        "is_breakout": false,
+        "ma_aligned": true,
+        "good_candle": true,
+        "has_consolidation": false,
+        "supply_positive": false,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": false,
+        "volume_suspicious": false
+      },
+      "current_price": 4235,
+      "entry_price": 4235,
+      "stop_price": 4107,
+      "target_price": 4446,
+      "quantity": 1967,
+      "position_size": 8330245,
+      "r_value": 250000.0,
+      "r_multiplier": 1.0,
+      "trading_value": 13613104916,
+      "change_pct": 11.45,
+      "volume_ratio": 0.0,
+      "foreign_5d": -850128,
+      "inst_5d": -148208,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "[서울데이터랩]‘젠큐릭스’ 29.96% 상한가…실시간 상승률 1위",
+          "source": "서울신문",
+          "published_at": "2026-02-25T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0003620638&office_id=081&code=242040&page=1&sm="
+        }
+      ],
+      "themes": [
+        "AI 인프라(소버린 AI)",
+        "클라우드 컴퓨팅"
+      ]
+    }
+  ],
+  "by_grade": {
+    "S": 1,
+    "A": 6,
+    "B": 0,
+    "C": 0
+  },
+  "by_market": {
+    "KOSPI": 5,
+    "KOSDAQ": 2
+  },
+  "processing_time_ms": 521129.9057006836,
+  "updated_at": "2026-02-25T09:47:19.099649+09:00",
+  "claude_picks": {
+    "picks": [
+      {
+        "stock_code": "452260",
+        "stock_name": "한화갤러리아",
+        "rank": 1,
+        "confidence": "HIGH",
+        "reason": "[Gemini] 2025년 영업이익의 대폭 개선 및 당기순이익 흑자 전환 기대감이 매우 크며, 외국인과 기관의 강력한 쌍끌이 매수가 돋보입니다. 단기 급등세 속에서도 탄탄한 실적 기반이 매력적입니다. [GPT-4o] 2025년 영업이익 증대 및 흑자전환으로 인한 긍정적 실적 개선이 기대됩니다. 외인과 기관이 모두 매수 포지션을 유지하고 있습니다.",
+        "risk": "단기간 급등에 따른 피로감과 차익실현 매물이 출회될 가능성이 있습니다.",
+        "expected_return": "5% - 15%",
+        "source": "consensus",
+        "gemini_rank": 1,
+        "openai_rank": 2
+      },
+      {
+        "stock_code": "047040",
+        "stock_name": "대우건설",
+        "rank": 2,
+        "confidence": "HIGH",
+        "reason": "[Gemini] KB증권 및 삼성증권의 목표주가 상향과 매수 의견 유지는 물론, 해외 원전 수주 기대감이라는 강력한 모멘텀을 보유하고 있습니다. 충분한 거래대금도 긍정적입니다. [GPT-4o] 해외 원전 수주 기대감과 증권사의 목표주가 상향이 주가 상승을 뒷받침하고 있습니다. 외국인 매도세가 다소 우려되나 기관의 순매수세가 긍정적입니다.",
+        "risk": "외국인의 5일 누적 매도세가 단기적인 수급 부담으로 작용할 수 있습니다.",
+        "expected_return": "4% - 10%",
+        "source": "consensus",
+        "gemini_rank": 2,
+        "openai_rank": 1
+      },
+      {
+        "stock_code": "476060",
+        "stock_name": "온코닉테라퓨틱스",
+        "rank": 3,
+        "confidence": "HIGH",
+        "reason": "[Gemini] 항암신약후보 네수파립이 미국 FDA로부터 희귀의약품지정(ODD)을 승인받은 강력한 신약 개발 호재가 있습니다. 2025년 흑자 전환 기대감도 주가에 긍정적인 영향을 미칩니다. [GPT-4o] 미국 FDA 희귀의약품 지정으로 주가가 급등하였으며 미래 흑자전환 예상이 긍정적입니다. 외국인의 매수세가 조금 부족하나 안정적입니다.",
+        "risk": "신약 개발주는 임상 과정의 불확실성이 존재하며, 단기 급등에 따른 차익실현 매물이 출회될 수 있습니다.",
+        "expected_return": "6% - 18%",
+        "source": "consensus",
+        "gemini_rank": 4,
+        "openai_rank": 4
+      },
+      {
+        "stock_code": "242040",
+        "stock_name": "나무기술",
+        "rank": 4,
+        "confidence": "HIGH",
+        "reason": "[Gemini] 소버린 AI 인프라 수주 폭발이라는 강력한 테마와 급등세를 보였으나, 외국인과 기관의 대규모 매도세 및 매우 낮은 거래대금이 포착되어 리스크가 높습니다. 품절주 특성으로 변동성이 클 수 있습니다. [GPT-4o] AI 인프라 수주 확대와 코스피 편입 기대감으로 인해 투자 매력이 높습니다. 하지만 외인과 기관의 동반 순매도 추세가 불안요인입니다.",
+        "risk": "매우 낮은 거래대금과 명확한 외인/기관의 매도세는 단기 변동성 확대 및 추가 하락 위험을 높입니다. 품절주 특성으로 예상치 못한 급등락에 주의해야 합니다.",
+        "expected_return": "-5% - 20%",
+        "source": "consensus",
+        "gemini_rank": 6,
+        "openai_rank": 3
+      },
+      {
+        "stock_code": "103590",
+        "stock_name": "일진전기",
+        "rank": 5,
+        "confidence": "HIGH",
+        "reason": "[Gemini] AI 전력 수요 증가라는 메가트렌드 수혜주로 2025년 실적 대폭 호조 및 증권사 목표주가 상향이라는 긍정적인 전망이 이어지고 있습니다. 시장의 관심이 높은 테마에 속해있습니다. [GPT-4o] 실적 호조 예상과 목표주가 상향이 매력적이나, 기관의 순매도세가 우려됩니다.",
+        "risk": "기관의 5일 누적 매도세가 포착되어 단기적인 수급 불균형이 발생할 수 있습니다.",
+        "expected_return": "5% - 12%",
+        "source": "consensus",
+        "gemini_rank": 5,
+        "openai_rank": 5
+      },
+      {
+        "stock_code": "000270",
+        "stock_name": "기아",
+        "rank": 6,
+        "confidence": "MEDIUM",
+        "reason": "로봇택시 상용화, 웨이모 공급 확대, 수출 호조 등 긍정적 기대감이 높고, 외국인과 기관의 견조한 매수세가 유입되며 시장 내 가장 높은 거래대금을 기록했습니다. 대형주로서 안정적인 접근이 가능합니다.",
+        "risk": "미국 관세 우려 등 대외적인 불확실성이 상존하며 주가에 영향을 줄 수 있습니다.",
+        "expected_return": "3% - 8%",
+        "source": "gemini_only"
+      }
+    ],
+    "consensus_count": 5,
+    "gemini_count": 6,
+    "openai_count": 5,
+    "market_view": "[Gemini] 오늘 시장은 실적 개선 및 강력한 성장 모멘텀을 가진 개별 종목들이 수급과 뉴스를 바탕으로 강세를 보였으며, 특히 AI 전력, 원전, 신약 개발 테마가 부각되었습니다. | [GPT-4o] 현재 시장은 긍정적 실적 기대와 수주 확대에 대한 낙관적 전망이 주도하는 모습입니다.",
+    "top_themes": [
+      "AI 전력/인프라",
+      "원전/해외수주",
+      "신약 개발/바이오",
+      "원전",
+      "AI 인프라",
+      "해외수주"
+    ],
+    "generated_at": "2026-02-25T09:47:19.098003",
+    "models": [
+      "gemini-2.5-flash",
+      "gpt-4o"
+    ],
+    "consensus_method": "multi_ai"
+  }
+}

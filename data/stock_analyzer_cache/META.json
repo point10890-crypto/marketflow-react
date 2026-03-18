@@ -1,0 +1,39 @@
+{
+  "name": "Meta",
+  "ticker": "META",
+  "result": "매수",
+  "date": "2026-03-15 19:35:46",
+  "elapsed": 0,
+  "consensus_score": 4.04,
+  "analyst_count": 67,
+  "recommendation_detail": {
+    "strongBuy": 10,
+    "buy": 50,
+    "hold": 7,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "price_targets": {
+    "current": 613.71,
+    "high": 1144.0,
+    "low": 676.0,
+    "mean": 862.2502,
+    "median": 856.0
+  },
+  "current_price": 613.71,
+  "upside_potential": 40.5,
+  "key_stats": {
+    "name": "Meta Platforms, Inc.",
+    "sector": "Communication Services",
+    "industry": "Internet Content & Information",
+    "market_cap": 1552413491200,
+    "pe_ratio": 26.104212,
+    "forward_pe": 17.104515,
+    "dividend_yield": 0.34,
+    "beta": 1.279,
+    "fifty_two_week_high": 796.25,
+    "fifty_two_week_low": 479.8,
+    "currency": "USD"
+  },
+  "source": "yfinance"
+}

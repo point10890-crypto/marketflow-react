@@ -1,0 +1,39 @@
+{
+  "name": "NVIDIA",
+  "ticker": "NVDA",
+  "result": "매수",
+  "date": "2026-03-15 19:35:45",
+  "elapsed": 0,
+  "consensus_score": 4.09,
+  "analyst_count": 64,
+  "recommendation_detail": {
+    "strongBuy": 11,
+    "buy": 49,
+    "hold": 3,
+    "sell": 1,
+    "strongSell": 0
+  },
+  "price_targets": {
+    "current": 180.25,
+    "high": 380.0,
+    "low": 140.0,
+    "mean": 267.5351,
+    "median": 265.0
+  },
+  "current_price": 180.25,
+  "upside_potential": 48.4,
+  "key_stats": {
+    "name": "NVIDIA Corporation",
+    "sector": "Technology",
+    "industry": "Semiconductors",
+    "market_cap": 4380976218112,
+    "pe_ratio": 36.785713,
+    "forward_pe": 16.68892,
+    "dividend_yield": 0.02,
+    "beta": 2.375,
+    "fifty_two_week_high": 212.19,
+    "fifty_two_week_low": 86.62,
+    "currency": "USD"
+  },
+  "source": "yfinance"
+}

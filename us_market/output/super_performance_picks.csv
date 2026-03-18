@@ -1,0 +1,31 @@
+ticker,name,sector,price,rs_rating,vcp_score,fund_score,setup_phase,pivot_tightness,vol_dry_up,contractions,base_depth,eps_growth,breakout,pivot_price,score
+EIX,Edison International,Utilities,71.73,99.0,65,55,⚡ Pivot,1.4%,No,7,5%,444%,No,71.73,175.8
+PEP,"Pepsico, Inc.",Consumer Defensive,159.88,73.7,85,35,⚡ Pivot,1.7%,Yes,5,9%,67%,No,161.53,169.7
+KEYS,Keysight Technologies Inc.,Technology,279.78,99.0,55,55,⚡ Pivot,2.0%,No,6,7%,66%,No,285.54,167.8
+NEE,"NextEra Energy, Inc.",Utilities,92.78,87.3,65,45,⚡ Pivot,1.4%,No,7,8%,28%,No,92.78,164.9
+WMB,"Williams Companies, Inc. (The)",Energy,73.34,99.0,65,40,⚡ Pivot,1.6%,No,6,8%,51%,No,73.87,163.8
+D,"Dominion Energy, Inc.",Utilities,63.21,76.9,65,45,⚡ Pivot,1.6%,No,5,8%,323%,No,63.21,162.5
+BMY,Bristol-Myers Squibb Company,Healthcare,59.08,90.7,65,40,⚡ Pivot,2.8%,No,4,10%,1410%,No,60.63,161.8
+NDSN,Nordson Corporation,Industrials,267.57,86.3,75,40,⚡ Pivot,2.3%,Yes,3,5%,41%,No,273.69,160.7
+LMT,Lockheed Martin Corporation,Industrials,646.0,99.0,65,35,⚡ Pivot,2.8%,No,3,14%,155%,No,664.15,159.8
+SPG,"Simon Property Group, Inc.",Real Estate,186.82,65.1,70,50,⚡ Pivot,2.8%,No,6,3%,356%,No,192.07,159.6
+ES,Eversource Energy (D/B/A),Utilities,73.1,78.6,65,40,⚡ Pivot,1.1%,No,6,6%,481%,No,73.94,158.9
+OKE,"ONEOK, Inc.",Energy,85.36,92.3,80,30,⚡ Pivot,1.5%,No,6,6%,6%,No,85.96,158.2
+MCK,McKesson Corporation,Healthcare,940.91,88.2,65,35,⚡ Pivot,1.7%,No,3,10%,35%,No,944.36,157.2
+TPR,"Tapestry, Inc.",Consumer Cyclical,142.1,88.0,55,45,⏳ Building,4.3%,No,4,6%,81%,No,148.27,157.1
+KMI,"Kinder Morgan, Inc.",Energy,33.39,99.0,55,40,⚡ Pivot,1.3%,No,5,3%,49%,No,33.39,155.8
+HII,"Huntington Ingalls Industries,",Industrials,415.71,99.0,60,35,⏳ Building,3.8%,Yes,4,14%,29%,No,429.58,155.8
+MU,"Micron Technology, Inc.",Technology,426.13,99.0,40,55,📈 Near Highs,9.0%,No,3,15%,180%,No,426.13,155.8
+FIX,"Comfort Systems USA, Inc.",Industrials,1365.34,99.0,40,55,⏳ Building,3.0%,No,3,14%,127%,No,1407.32,155.8
+GILD,"Gilead Sciences, Inc.",Healthcare,144.99,95.5,65,30,⚡ Pivot,2.3%,No,8,8%,22%,No,147.72,154.9
+CME,CME Group Inc.,Financial Services,311.4,92.4,65,30,⚡ Pivot,2.7%,No,7,6%,35%,No,311.64,154.2
+JNJ,Johnson & Johnson,Healthcare,241.52,88.5,55,40,⚡ Pivot,0.9%,No,5,5%,49%,No,243.71,153.2
+JBL,Jabil Inc.,Technology,250.65,71.3,55,45,⏳ Building,3.2%,No,4,7%,46%,No,255.46,153.1
+O,Realty Income Corporation,Real Estate,64.44,85.5,55,40,⚡ Pivot,0.9%,No,4,4%,48%,No,65.03,152.5
+CCEP,Coca-Cola Europacific Partners,Consumer Defensive,100.46,82.7,70,35,⚡ Pivot,1.2%,No,5,4%,66%,No,101.72,151.8
+XEL,Xcel Energy Inc.,Utilities,81.91,79.9,65,30,⚡ Pivot,2.1%,No,4,11%,22%,No,81.91,151.2
+WMT,Walmart Inc.,Consumer Defensive,126.52,76.7,85,10,⚡ Pivot,2.4%,Yes,7,8%,-19%,No,126.52,150.4
+MNST,Monster Beverage Corporation,Consumer Defensive,77.11,70.0,55,50,⚡ Pivot,2.3%,No,5,5%,66%,No,77.52,148.8
+TDY,Teledyne Technologies Incorpor,Technology,638.91,99.0,55,30,⚡ Pivot,2.5%,No,4,4%,39%,No,655.37,147.8
+IRM,Iron Mountain Incorporated (De,Real Estate,106.84,99.0,85,10,⚡ Pivot,0.9%,Yes,4,8%,-14%,No,107.77,147.8
+FDX,FedEx Corporation,Industrials,351.68,99.0,65,20,⚡ Pivot,2.7%,No,4,9%,-11%,No,361.39,147.8

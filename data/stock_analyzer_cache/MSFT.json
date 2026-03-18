@@ -1,0 +1,39 @@
+{
+  "name": "Microsoft",
+  "ticker": "MSFT",
+  "result": "매수",
+  "date": "2026-03-15 19:35:43",
+  "elapsed": 0,
+  "consensus_score": 4.19,
+  "analyst_count": 57,
+  "recommendation_detail": {
+    "strongBuy": 12,
+    "buy": 44,
+    "hold": 1,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "price_targets": {
+    "current": 395.55,
+    "high": 730.0,
+    "low": 392.0,
+    "mean": 594.6217,
+    "median": 600.0
+  },
+  "current_price": 395.55,
+  "upside_potential": 50.3,
+  "key_stats": {
+    "name": "Microsoft Corporation",
+    "sector": "Technology",
+    "industry": "Software - Infrastructure",
+    "market_cap": 2939877064704,
+    "pe_ratio": 24.752815,
+    "forward_pe": 20.990755,
+    "dividend_yield": 0.92,
+    "beta": 1.108,
+    "fifty_two_week_high": 555.45,
+    "fifty_two_week_low": 344.79,
+    "currency": "USD"
+  },
+  "source": "yfinance"
+}

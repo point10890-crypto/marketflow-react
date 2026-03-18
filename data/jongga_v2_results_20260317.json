@@ -1,0 +1,1211 @@
+{
+  "date": "2026-03-17",
+  "total_candidates": 14,
+  "filtered_count": 14,
+  "signals": [
+    {
+      "id": null,
+      "stock_code": "131970",
+      "stock_name": "두산테스나",
+      "market": "KOSDAQ",
+      "sector": "",
+      "signal_date": "2026-03-17",
+      "grade": "S",
+      "score": {
+        "news": 1,
+        "volume": 3,
+        "chart": 1,
+        "candle": 0,
+        "consolidation": 0,
+        "supply": 2,
+        "disclosure": 0,
+        "analyst": 2,
+        "llm_reason": "상위 1% 투자 고수들의 매수세가 포착되었으나, 구체적인 호재 정보는 부족합니다.",
+        "llm_source": "none+gemini",
+        "total": 9
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "한국경제"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": false,
+        "is_breakout": false,
+        "ma_aligned": true,
+        "good_candle": false,
+        "has_consolidation": false,
+        "supply_positive": true,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": false,
+        "volume_suspicious": false
+      },
+      "current_price": 83000,
+      "entry_price": 83000,
+      "stop_price": 80510,
+      "target_price": 87150,
+      "quantity": 150,
+      "position_size": 12450000,
+      "r_value": 250000.0,
+      "r_multiplier": 1.5,
+      "trading_value": 142790046000,
+      "change_pct": 14.01,
+      "volume_ratio": 0.0,
+      "foreign_5d": 60751,
+      "inst_5d": 10092,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "\"지금 담아야 해\"…'상위 1%' 투자 고수들이 사들이는 종목 [마켓P...",
+          "source": "한국경제",
+          "published_at": "2026-03-17T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005263287&office_id=015&code=131970&page=1&sm="
+        }
+      ],
+      "themes": [
+        "기관/외국인 수급"
+      ]
+    },
+    {
+      "id": null,
+      "stock_code": "278470",
+      "stock_name": "에이피알",
+      "market": "KOSPI",
+      "sector": "",
+      "signal_date": "2026-03-17",
+      "grade": "A",
+      "score": {
+        "news": 2,
+        "volume": 3,
+        "chart": 2,
+        "candle": 0,
+        "consolidation": 0,
+        "supply": 1,
+        "disclosure": 0,
+        "analyst": 3,
+        "llm_reason": "에이피알은 K뷰티 성장세에 따른 수혜와 FTSE 편입 기대감으로 긍정적인 투자 환경이 조성되고 있음",
+        "llm_source": "none+gemini",
+        "total": 11
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "서울경제",
+          "매일경제",
+          "조선비즈"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": true,
+        "is_breakout": false,
+        "ma_aligned": true,
+        "good_candle": false,
+        "has_consolidation": false,
+        "supply_positive": true,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": false,
+        "volume_suspicious": false
+      },
+      "current_price": 349000,
+      "entry_price": 349000,
+      "stop_price": 338530,
+      "target_price": 366450,
+      "quantity": 23,
+      "position_size": 8027000,
+      "r_value": 250000.0,
+      "r_multiplier": 1.0,
+      "trading_value": 115329493000,
+      "change_pct": 6.24,
+      "volume_ratio": 0.0,
+      "foreign_5d": 233731,
+      "inst_5d": -36223,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "“삼전닉스 이어갈 ‘텐배거’ 더 있다”…에이피알 찍었던 남자의 원...",
+          "source": "매일경제",
+          "published_at": "2026-03-17T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005651181&office_id=009&code=278470&page=1&sm="
+        },
+        {
+          "title": "K뷰티 성장세에 올라타는 기업들… 화장품 사업목적 잇달아 추가",
+          "source": "조선비즈",
+          "published_at": "2026-03-17T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0001149162&office_id=366&code=278470&page=1&sm="
+        },
+        {
+          "title": "FTSE 편입 기대감에 수혜株 들썩…‘이 종목’ 7% 뛰었다[코주부]",
+          "source": "서울경제",
+          "published_at": "2026-03-17T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0004600222&office_id=011&code=278470&page=1&sm="
+        }
+      ],
+      "themes": [
+        "K뷰티",
+        "FTSE 편입 기대감",
+        "성장주"
+      ]
+    },
+    {
+      "id": null,
+      "stock_code": "011780",
+      "stock_name": "금호석유화학",
+      "market": "KOSPI",
+      "sector": "",
+      "signal_date": "2026-03-17",
+      "grade": "A",
+      "score": {
+        "news": 3,
+        "volume": 2,
+        "chart": 0,
+        "candle": 0,
+        "consolidation": 0,
+        "supply": 1,
+        "disclosure": 2,
+        "analyst": 2,
+        "llm_reason": "자기주식 취득 신탁계약 체결 결정 공시로 주가 안정 및 주주가치 제고 기대감이 높음.",
+        "llm_source": "none+gemini",
+        "total": 10
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "아시아경제",
+          "머니투데이"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": false,
+        "is_breakout": false,
+        "ma_aligned": false,
+        "good_candle": false,
+        "has_consolidation": false,
+        "supply_positive": true,
+        "has_disclosure": true,
+        "disclosure_types": [
+          "자기주식"
+        ],
+        "negative_news": false,
+        "upper_wick_long": false,
+        "volume_suspicious": false
+      },
+      "current_price": 122200,
+      "entry_price": 122200,
+      "stop_price": 118534,
+      "target_price": 128310,
+      "quantity": 68,
+      "position_size": 8309600,
+      "r_value": 250000.0,
+      "r_multiplier": 1.0,
+      "trading_value": 14035769800,
+      "change_pct": 6.17,
+      "volume_ratio": 0.0,
+      "foreign_5d": 96287,
+      "inst_5d": -150042,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "자사주 소각 150개사 응답… 지난해보다 2배 늘어났다",
+          "source": "머니투데이",
+          "published_at": "2026-03-17T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005330727&office_id=008&code=011780&page=1&sm="
+        },
+        {
+          "title": "\"저걸 다 태워?\" SK 결단에 '깜짝'…주총 앞 자사주 소각 2배 '...",
+          "source": "머니투데이",
+          "published_at": "2026-03-16T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005330511&office_id=008&code=011780&page=1&sm="
+        },
+        {
+          "title": "고유가도 부담인데 환율마저 1500원…증시 악영향 커진다",
+          "source": "아시아경제",
+          "published_at": "2026-03-16T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005734793&office_id=277&code=011780&page=1&sm="
+        }
+      ],
+      "themes": [
+        "자사주",
+        "주주환원"
+      ]
+    },
+    {
+      "id": null,
+      "stock_code": "017960",
+      "stock_name": "한국카본",
+      "market": "KOSPI",
+      "sector": "",
+      "signal_date": "2026-03-17",
+      "grade": "A",
+      "score": {
+        "news": 2,
+        "volume": 2,
+        "chart": 2,
+        "candle": 0,
+        "consolidation": 0,
+        "supply": 1,
+        "disclosure": 0,
+        "analyst": 3,
+        "llm_reason": "글로벌 복합소재 기업 DIAB와의 해양 기술 공동 연구 협약 및 납품 확대 기대감으로 긍정적 전망",
+        "llm_source": "none+gemini",
+        "total": 10
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "뉴시스",
+          "연합뉴스",
+          "이데일리"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": true,
+        "is_breakout": false,
+        "ma_aligned": true,
+        "good_candle": false,
+        "has_consolidation": false,
+        "supply_positive": true,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": false,
+        "volume_suspicious": false
+      },
+      "current_price": 48600,
+      "entry_price": 48600,
+      "stop_price": 47142,
+      "target_price": 51030,
+      "quantity": 171,
+      "position_size": 8310600,
+      "r_value": 250000.0,
+      "r_multiplier": 1.0,
+      "trading_value": 33091011000,
+      "change_pct": 6.0,
+      "volume_ratio": 0.0,
+      "foreign_5d": -437206,
+      "inst_5d": 1248719,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "[특징주] 한국카본, 납품 확대 기대감에 장중 역대 최고가",
+          "source": "연합뉴스",
+          "published_at": "2026-03-17T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0015963815&office_id=001&code=017960&page=1&sm="
+        },
+        {
+          "title": "한국카본, 글로벌 복합소재 기업 DIAB와 '해양 기술 공동 연구' 협...",
+          "source": "이데일리",
+          "published_at": "2026-03-17T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0006236920&office_id=018&code=017960&page=1&sm="
+        },
+        {
+          "title": "한국카본, DIAB와 해양 기술 공동 연구 협약",
+          "source": "뉴시스",
+          "published_at": "2026-03-17T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0013826212&office_id=003&code=017960&page=1&sm="
+        }
+      ],
+      "themes": [
+        "탄소섬유",
+        "해양기술",
+        "복합소재"
+      ]
+    },
+    {
+      "id": null,
+      "stock_code": "047810",
+      "stock_name": "한국항공우주",
+      "market": "KOSPI",
+      "sector": "",
+      "signal_date": "2026-03-17",
+      "grade": "A",
+      "score": {
+        "news": 2,
+        "volume": 3,
+        "chart": 0,
+        "candle": 0,
+        "consolidation": 0,
+        "supply": 2,
+        "disclosure": 0,
+        "analyst": 2,
+        "llm_reason": "한화의 KAI 지분 확보로 '한국형 록히드마틴' 구상 가속화에 대한 기대감이 형성.",
+        "llm_source": "none+gemini",
+        "total": 9
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "연합뉴스",
+          "연합뉴스TV"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": false,
+        "is_breakout": false,
+        "ma_aligned": false,
+        "good_candle": false,
+        "has_consolidation": false,
+        "supply_positive": true,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": false,
+        "volume_suspicious": false
+      },
+      "current_price": 202500,
+      "entry_price": 202500,
+      "stop_price": 196425,
+      "target_price": 212625,
+      "quantity": 41,
+      "position_size": 8302500,
+      "r_value": 250000.0,
+      "r_multiplier": 1.0,
+      "trading_value": 215150175000,
+      "change_pct": 5.91,
+      "volume_ratio": 0.0,
+      "foreign_5d": 163692,
+      "inst_5d": 65433,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "한화, KAI 지분 재매입…'한국형 스페이스X' 추진",
+          "source": "연합뉴스TV",
+          "published_at": "2026-03-17T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0000844963&office_id=422&code=047810&page=1&sm="
+        },
+        {
+          "title": "한화, KAI 지분 4.99% 확보…'한국형 록히드마틴' 가속",
+          "source": "연합뉴스TV",
+          "published_at": "2026-03-16T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0000844576&office_id=422&code=047810&page=1&sm="
+        },
+        {
+          "title": "한화그룹, KAI 지분 4.99% 확보…한국형 록히드마틴 구상 가속",
+          "source": "연합뉴스",
+          "published_at": "2026-03-16T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0015962223&office_id=001&code=047810&page=1&sm="
+        }
+      ],
+      "themes": [
+        "방산",
+        "항공우주",
+        "M&A"
+      ]
+    },
+    {
+      "id": null,
+      "stock_code": "437730",
+      "stock_name": "삼현",
+      "market": "KOSDAQ",
+      "sector": "",
+      "signal_date": "2026-03-17",
+      "grade": "A",
+      "score": {
+        "news": 3,
+        "volume": 2,
+        "chart": 0,
+        "candle": 0,
+        "consolidation": 0,
+        "supply": 1,
+        "disclosure": 2,
+        "analyst": 0,
+        "llm_reason": "30억 규모 자사주 취득 결정 공시로 주가 안정 및 주주가치 제고 기대감이 높음",
+        "llm_source": "none+gemini",
+        "total": 8
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "이데일리"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": false,
+        "is_breakout": false,
+        "ma_aligned": false,
+        "good_candle": false,
+        "has_consolidation": false,
+        "supply_positive": true,
+        "has_disclosure": true,
+        "disclosure_types": [
+          "자기주식"
+        ],
+        "negative_news": false,
+        "upper_wick_long": false,
+        "volume_suspicious": false
+      },
+      "current_price": 53800,
+      "entry_price": 53800,
+      "stop_price": 52186,
+      "target_price": 56490,
+      "quantity": 154,
+      "position_size": 8285200,
+      "r_value": 250000.0,
+      "r_multiplier": 1.0,
+      "trading_value": 34471220200,
+      "change_pct": 11.97,
+      "volume_ratio": 0.0,
+      "foreign_5d": -90324,
+      "inst_5d": 21786,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "삼현, 30억 규모 자사주 취득 결정",
+          "source": "이데일리",
+          "published_at": "2026-03-17T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0006237116&office_id=018&code=437730&page=1&sm="
+        }
+      ],
+      "themes": [
+        "자사주",
+        "주주가치"
+      ]
+    },
+    {
+      "id": null,
+      "stock_code": "032500",
+      "stock_name": "케이엠더블유",
+      "market": "KOSDAQ",
+      "sector": "",
+      "signal_date": "2026-03-17",
+      "grade": "A",
+      "score": {
+        "news": 2,
+        "volume": 3,
+        "chart": 1,
+        "candle": 0,
+        "consolidation": 0,
+        "supply": 2,
+        "disclosure": 0,
+        "analyst": 0,
+        "llm_reason": "미국 통신망 투자 본격화 및 통신 장비 수요 급증 전망에 따른 수혜 기대감이 높음.",
+        "llm_source": "none+gemini",
+        "total": 8
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "머니투데이",
+          "이데일리"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": false,
+        "is_breakout": false,
+        "ma_aligned": true,
+        "good_candle": false,
+        "has_consolidation": false,
+        "supply_positive": true,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": false,
+        "volume_suspicious": false
+      },
+      "current_price": 28900,
+      "entry_price": 28900,
+      "stop_price": 28033,
+      "target_price": 30345,
+      "quantity": 288,
+      "position_size": 8323200,
+      "r_value": 250000.0,
+      "r_multiplier": 1.0,
+      "trading_value": 61547983200,
+      "change_pct": 11.15,
+      "volume_ratio": 0.0,
+      "foreign_5d": 697664,
+      "inst_5d": 496455,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "케이엠더블유, \"미국 통신망 투자 본격화 수혜 기대\" 증권가 호평에 ...",
+          "source": "이데일리",
+          "published_at": "2026-03-17T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0006236844&office_id=018&code=032500&page=1&sm="
+        },
+        {
+          "title": "케이엠더블유, 미국 통신 투자 확대 수혜…목표가↑-하나",
+          "source": "이데일리",
+          "published_at": "2026-03-17T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0006236757&office_id=018&code=032500&page=1&sm="
+        },
+        {
+          "title": "美 통신장비 수요급증 전망에…KMW 급등",
+          "source": "머니투데이",
+          "published_at": "2026-03-17T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005330899&office_id=008&code=032500&page=1&sm="
+        }
+      ],
+      "themes": [
+        "5G",
+        "미국 통신망 투자",
+        "통신 장비"
+      ]
+    },
+    {
+      "id": null,
+      "stock_code": "009150",
+      "stock_name": "삼성전기",
+      "market": "KOSPI",
+      "sector": "",
+      "signal_date": "2026-03-17",
+      "grade": "A",
+      "score": {
+        "news": 1,
+        "volume": 3,
+        "chart": 0,
+        "candle": 0,
+        "consolidation": 0,
+        "supply": 0,
+        "disclosure": 0,
+        "analyst": 3,
+        "llm_reason": "신한자산운용의 삼성전자, 하이닉스 투자 ETF 출시로 인해 삼성전기에 대한 간접적인 투자 수요가 발생할 수 있으나, 직접적인 호재로 보기 어렵습니다.",
+        "llm_source": "none+gemini",
+        "total": 7
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "연합뉴스",
+          "연합뉴스TV",
+          "매일경제"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": false,
+        "is_breakout": false,
+        "ma_aligned": false,
+        "good_candle": false,
+        "has_consolidation": false,
+        "supply_positive": false,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": false,
+        "volume_suspicious": false
+      },
+      "current_price": 445000,
+      "entry_price": 445000,
+      "stop_price": 431650,
+      "target_price": 467250,
+      "quantity": 18,
+      "position_size": 8010000,
+      "r_value": 250000.0,
+      "r_multiplier": 1.0,
+      "trading_value": 413666660000,
+      "change_pct": 7.75,
+      "volume_ratio": 0.0,
+      "foreign_5d": -207337,
+      "inst_5d": -110667,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "\"삼성전자·하이닉스 비중 65%\"…신한운용, ETF 신규 상장",
+          "source": "연합뉴스TV",
+          "published_at": "2026-03-17T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0000844840&office_id=422&code=009150&page=1&sm="
+        },
+        {
+          "title": "신한운용, '삼성전자·하이닉스 비중 65%' ETF 신규 상장",
+          "source": "연합뉴스",
+          "published_at": "2026-03-17T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0015963056&office_id=001&code=009150&page=1&sm="
+        },
+        {
+          "title": "반도체 ‘투톱’ 삼전닉스 투자 ETF로 한번에…신한자산운용 출시",
+          "source": "매일경제",
+          "published_at": "2026-03-17T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005651309&office_id=009&code=009150&page=1&sm="
+        }
+      ],
+      "themes": [
+        "ETF",
+        "반도체",
+        "부품"
+      ]
+    },
+    {
+      "id": null,
+      "stock_code": "007660",
+      "stock_name": "이수페타시스",
+      "market": "KOSPI",
+      "sector": "",
+      "signal_date": "2026-03-17",
+      "grade": "A",
+      "score": {
+        "news": 1,
+        "volume": 3,
+        "chart": 0,
+        "candle": 0,
+        "consolidation": 0,
+        "supply": 1,
+        "disclosure": 0,
+        "analyst": 2,
+        "llm_reason": "삼성전자, 하이닉스 관련 ETF 출시로 인한 간접적인 수혜 기대감이 있지만, 직접적인 호재는 아님.",
+        "llm_source": "none+gemini",
+        "total": 7
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "연합뉴스",
+          "연합뉴스TV",
+          "매일경제"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": false,
+        "is_breakout": false,
+        "ma_aligned": false,
+        "good_candle": false,
+        "has_consolidation": false,
+        "supply_positive": true,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": false,
+        "volume_suspicious": false
+      },
+      "current_price": 113800,
+      "entry_price": 113800,
+      "stop_price": 110386,
+      "target_price": 119490,
+      "quantity": 73,
+      "position_size": 8307400,
+      "r_value": 250000.0,
+      "r_multiplier": 1.0,
+      "trading_value": 155832599000,
+      "change_pct": 7.56,
+      "volume_ratio": 0.0,
+      "foreign_5d": -593692,
+      "inst_5d": 91788,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "\"삼성전자·하이닉스 비중 65%\"…신한운용, ETF 신규 상장",
+          "source": "연합뉴스TV",
+          "published_at": "2026-03-17T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0000844840&office_id=422&code=007660&page=1&sm="
+        },
+        {
+          "title": "신한운용, '삼성전자·하이닉스 비중 65%' ETF 신규 상장",
+          "source": "연합뉴스",
+          "published_at": "2026-03-17T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0015963056&office_id=001&code=007660&page=1&sm="
+        },
+        {
+          "title": "반도체 ‘투톱’ 삼전닉스 투자 ETF로 한번에…신한자산운용 출시",
+          "source": "매일경제",
+          "published_at": "2026-03-17T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005651309&office_id=009&code=007660&page=1&sm="
+        }
+      ],
+      "themes": [
+        "반도체",
+        "인쇄회로기판(PCB)",
+        "삼성전자",
+        "하이닉스"
+      ]
+    },
+    {
+      "id": null,
+      "stock_code": "322000",
+      "stock_name": "HD현대에너지솔루션",
+      "market": "KOSPI",
+      "sector": "",
+      "signal_date": "2026-03-17",
+      "grade": "A",
+      "score": {
+        "news": 2,
+        "volume": 3,
+        "chart": 1,
+        "candle": 0,
+        "consolidation": 0,
+        "supply": 1,
+        "disclosure": 0,
+        "analyst": 0,
+        "llm_reason": "원유 수급 불안정으로 인한 대체에너지 테마 부각 및 52주 신고가 기록으로 긍정적 기대감이 있음",
+        "llm_source": "none+gemini",
+        "total": 7
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "머니투데이",
+          "아시아경제",
+          "한국경제"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": false,
+        "is_breakout": false,
+        "ma_aligned": true,
+        "good_candle": false,
+        "has_consolidation": false,
+        "supply_positive": true,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": false,
+        "volume_suspicious": false
+      },
+      "current_price": 127700,
+      "entry_price": 127700,
+      "stop_price": 123869,
+      "target_price": 134085,
+      "quantity": 65,
+      "position_size": 8300500,
+      "r_value": 250000.0,
+      "r_multiplier": 1.0,
+      "trading_value": 555405737700,
+      "change_pct": 6.95,
+      "volume_ratio": 0.0,
+      "foreign_5d": -408024,
+      "inst_5d": 127733,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "\"지금 담아야 해\"…'상위 1%' 투자 고수들이 사들이는 종목 [마켓P...",
+          "source": "한국경제",
+          "published_at": "2026-03-17T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005263287&office_id=015&code=322000&page=1&sm="
+        },
+        {
+          "title": "원유 수급 위기에 '반짝'…HD현대에너지솔루션, 52주 신고가",
+          "source": "머니투데이",
+          "published_at": "2026-03-17T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005330925&office_id=008&code=322000&page=1&sm="
+        },
+        {
+          "title": "불안한 원유공급…대체에너지주 뜬다",
+          "source": "아시아경제",
+          "published_at": "2026-03-17T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005735232&office_id=277&code=322000&page=1&sm="
+        }
+      ],
+      "themes": [
+        "대체에너지",
+        "신고가"
+      ]
+    },
+    {
+      "id": null,
+      "stock_code": "475150",
+      "stock_name": "SK이터닉스",
+      "market": "KOSPI",
+      "sector": "",
+      "signal_date": "2026-03-17",
+      "grade": "A",
+      "score": {
+        "news": 2,
+        "volume": 3,
+        "chart": 1,
+        "candle": 0,
+        "consolidation": 0,
+        "supply": 1,
+        "disclosure": 0,
+        "analyst": 0,
+        "llm_reason": "국제 유가 불안으로 인한 대체에너지 수요 증가 기대감에 따른 긍정적 전망",
+        "llm_source": "none+gemini",
+        "total": 7
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "한국경제TV",
+          "서울경제",
+          "매일경제"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": false,
+        "is_breakout": false,
+        "ma_aligned": true,
+        "good_candle": false,
+        "has_consolidation": false,
+        "supply_positive": true,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": false,
+        "volume_suspicious": false
+      },
+      "current_price": 40900,
+      "entry_price": 40900,
+      "stop_price": 39673,
+      "target_price": 42945,
+      "quantity": 203,
+      "position_size": 8302700,
+      "r_value": 250000.0,
+      "r_multiplier": 1.0,
+      "trading_value": 200715154900,
+      "change_pct": 6.37,
+      "volume_ratio": 0.0,
+      "foreign_5d": -187650,
+      "inst_5d": 625780,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "SK이터닉스, 원유 대안처로 급부상…\"대체에너지 선두\"",
+          "source": "한국경제TV",
+          "published_at": "2026-03-16T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0001245350&office_id=215&code=475150&page=1&sm="
+        },
+        {
+          "title": "국제유가 불안에 대체에너지주 주목…SK이터닉스 4.8% 상승 출발",
+          "source": "매일경제",
+          "published_at": "2026-03-16T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005650637&office_id=009&code=475150&page=1&sm="
+        },
+        {
+          "title": "올해 2조…금리 불안에 사모사채 몰리는 기업들[시그널]",
+          "source": "서울경제",
+          "published_at": "2026-03-16T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0004599875&office_id=011&code=475150&page=1&sm="
+        }
+      ],
+      "themes": [
+        "대체에너지",
+        "신재생에너지",
+        "사모사채"
+      ]
+    },
+    {
+      "id": null,
+      "stock_code": "006650",
+      "stock_name": "대한유화",
+      "market": "KOSPI",
+      "sector": "",
+      "signal_date": "2026-03-17",
+      "grade": "A",
+      "score": {
+        "news": 1,
+        "volume": 2,
+        "chart": 0,
+        "candle": 0,
+        "consolidation": 0,
+        "supply": 1,
+        "disclosure": 0,
+        "analyst": 3,
+        "llm_reason": "나프타 수급 불안정으로 석유화학 업계 가동률 조정이 불가피하여 중립적인 영향을 줄 것으로 예상됩니다.",
+        "llm_source": "none+gemini",
+        "total": 7
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "아이뉴스24"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": false,
+        "is_breakout": false,
+        "ma_aligned": false,
+        "good_candle": false,
+        "has_consolidation": false,
+        "supply_positive": true,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": false,
+        "volume_suspicious": false
+      },
+      "current_price": 132400,
+      "entry_price": 132400,
+      "stop_price": 128428,
+      "target_price": 139020,
+      "quantity": 62,
+      "position_size": 8208800,
+      "r_value": 250000.0,
+      "r_multiplier": 1.0,
+      "trading_value": 10206583600,
+      "change_pct": 6.35,
+      "volume_ratio": 0.0,
+      "foreign_5d": 1439,
+      "inst_5d": -120773,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "나프타 수급 '비상등'…석화업계 가동률 낮추며 '버티기'",
+          "source": "아이뉴스24",
+          "published_at": "2026-03-16T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0001013749&office_id=031&code=006650&page=1&sm="
+        }
+      ],
+      "themes": [
+        "석유화학",
+        "나프타",
+        "수급불안"
+      ]
+    },
+    {
+      "id": null,
+      "stock_code": "032350",
+      "stock_name": "롯데관광개발",
+      "market": "KOSPI",
+      "sector": "",
+      "signal_date": "2026-03-17",
+      "grade": "A",
+      "score": {
+        "news": 1,
+        "volume": 2,
+        "chart": 0,
+        "candle": 0,
+        "consolidation": 0,
+        "supply": 1,
+        "disclosure": 0,
+        "analyst": 3,
+        "llm_reason": "롯데관광개발 관련 직접적인 호재 정보는 없으나, 관광 테마 자체는 긍정적 흐름을 기대할 수 있음.",
+        "llm_source": "none+gemini",
+        "total": 7
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "한국경제"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": false,
+        "is_breakout": false,
+        "ma_aligned": false,
+        "good_candle": false,
+        "has_consolidation": false,
+        "supply_positive": true,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": false,
+        "volume_suspicious": false
+      },
+      "current_price": 21600,
+      "entry_price": 21600,
+      "stop_price": 20952,
+      "target_price": 22680,
+      "quantity": 385,
+      "position_size": 8316000,
+      "r_value": 250000.0,
+      "r_multiplier": 1.0,
+      "trading_value": 17060068800,
+      "change_pct": 5.62,
+      "volume_ratio": 0.0,
+      "foreign_5d": -340355,
+      "inst_5d": 179201,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "씨씨지인베, '빅사이즈 여성복' 1위 공구우먼 경영권 인수",
+          "source": "한국경제",
+          "published_at": "2026-03-16T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005262672&office_id=015&code=032350&page=1&sm="
+        }
+      ],
+      "themes": [
+        "여행",
+        "관광",
+        "호텔/레저"
+      ]
+    },
+    {
+      "id": null,
+      "stock_code": "051910",
+      "stock_name": "LG화학",
+      "market": "KOSPI",
+      "sector": "",
+      "signal_date": "2026-03-17",
+      "grade": "A",
+      "score": {
+        "news": 2,
+        "volume": 3,
+        "chart": 0,
+        "candle": 0,
+        "consolidation": 0,
+        "supply": 0,
+        "disclosure": 0,
+        "analyst": 2,
+        "llm_reason": "헝가리 합작사 완전 자회사 편입은 LG화학의 사업 확장에 긍정적인 영향을 줄 수 있으며, 자사주 소각 증가는 주주가치 제고 기대로 이어질 수 있습니다.",
+        "llm_source": "none+gemini",
+        "total": 7
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "헤럴드경제",
+          "머니투데이",
+          "조선비즈"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": false,
+        "is_breakout": false,
+        "ma_aligned": false,
+        "good_candle": false,
+        "has_consolidation": false,
+        "supply_positive": false,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": false,
+        "volume_suspicious": false
+      },
+      "current_price": 307500,
+      "entry_price": 307500,
+      "stop_price": 298275,
+      "target_price": 322875,
+      "quantity": 27,
+      "position_size": 8302500,
+      "r_value": 250000.0,
+      "r_multiplier": 1.0,
+      "trading_value": 69373537500,
+      "change_pct": 5.31,
+      "volume_ratio": 0.0,
+      "foreign_5d": -137353,
+      "inst_5d": -243330,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "[단독] 헝가리 합작사 완전 자회사로 편입한 LG화학… 원단 분리막 사...",
+          "source": "조선비즈",
+          "published_at": "2026-03-17T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0001148949&office_id=366&code=051910&page=1&sm="
+        },
+        {
+          "title": "자사주 소각 150개사 응답… 지난해보다 2배 늘어났다",
+          "source": "머니투데이",
+          "published_at": "2026-03-17T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005330727&office_id=008&code=051910&page=1&sm="
+        },
+        {
+          "title": "플라스틱용 ‘납사값’ 한 달 새 50% 급등...암울한 업계",
+          "source": "헤럴드경제",
+          "published_at": "2026-03-17T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0002614973&office_id=016&code=051910&page=1&sm="
+        }
+      ],
+      "themes": [
+        "자회사 편입",
+        "주주가치 제고"
+      ]
+    }
+  ],
+  "by_grade": {
+    "S": 1,
+    "A": 13,
+    "B": 0,
+    "C": 0
+  },
+  "by_market": {
+    "KOSDAQ": 3,
+    "KOSPI": 11
+  },
+  "processing_time_ms": 239172.2276210785,
+  "updated_at": "2026-03-17T15:14:55.854057+09:00",
+  "claude_picks": {
+    "picks": [
+      {
+        "stock_code": "032500",
+        "stock_name": "케이엠더블유",
+        "rank": 1,
+        "confidence": "MEDIUM",
+        "reason": "미국 통신망 투자 본격화에 대한 기대감과 함께 외국인 및 기관의 강력한 동반 순매수세가 포착되어 수급과 재료 모두 긍정적입니다. 충분한 거래대금과 함께 단기적인 상승 모멘텀이 예상됩니다.",
+        "risk": "차트상 기술적 돌파 강도는 다소 부족할 수 있으며, 단기 급등에 따른 차익 실현 매물이 나올 수 있습니다.",
+        "expected_return": "+5% ~ +10%",
+        "source": "gemini_only"
+      },
+      {
+        "stock_code": "047810",
+        "stock_name": "한국항공우주",
+        "rank": 2,
+        "confidence": "MEDIUM",
+        "reason": "한화의 KAI 지분 확보를 통한 '한국형 록히드마틴' 구상 가속화 기대감이라는 강력한 M&A 관련 재료가 존재하며, 외국인과 기관의 견조한 동반 매수세가 확인됩니다. 풍부한 거래대금으로 유동성 또한 확보되어 있습니다.",
+        "risk": "차트상 기술적 위치가 약하다는 점이 단기 상승을 제한할 수 있습니다.",
+        "expected_return": "+4% ~ +8%",
+        "source": "gemini_only"
+      },
+      {
+        "stock_code": "131970",
+        "stock_name": "두산테스나",
+        "rank": 3,
+        "confidence": "LOW",
+        "reason": "외국인과 기관의 강력한 동반 순매수세가 포착되었으며, 특히 AI 분석에 따르면 상위 투자 고수들의 매수세가 유입되고 있습니다. 풍부한 거래대금으로 단기 수급 베팅에 적합합니다.",
+        "risk": "구체적인 호재성 뉴스가 부족하여 수급 이탈 시 급락 가능성이 있습니다.",
+        "expected_return": "+3% ~ +7%",
+        "source": "gemini_only"
+      },
+      {
+        "stock_code": "322000",
+        "stock_name": "HD현대에너지솔루션",
+        "rank": 4,
+        "confidence": "LOW",
+        "reason": "국제 유가 불안으로 인한 대체에너지 테마 부각 및 52주 신고가를 기록하며 강한 시장 관심을 받고 있습니다. 풍부한 거래대금과 기관의 매수세가 긍정적입니다.",
+        "risk": "외국인 순매도세가 강하여 단기적인 수급 불균형이 발생할 수 있습니다.",
+        "expected_return": "+3% ~ +6%",
+        "source": "gemini_only"
+      },
+      {
+        "stock_code": "475150",
+        "stock_name": "SK이터닉스",
+        "rank": 5,
+        "confidence": "LOW",
+        "reason": "HD현대에너지솔루션과 유사하게 국제 유가 불안에 따른 대체에너지 테마의 수혜가 기대됩니다. 기관의 강력한 매수세와 풍부한 거래대금이 돋보입니다.",
+        "risk": "외국인의 순매도세가 존재하며, 테마성이 강하여 시장 분위기 변화에 민감할 수 있습니다.",
+        "expected_return": "+3% ~ +6%",
+        "source": "gemini_only"
+      },
+      {
+        "stock_code": "278470",
+        "stock_name": "에이피알",
+        "rank": 6,
+        "confidence": "LOW",
+        "reason": "K뷰티 성장세 및 FTSE 편입 기대감이라는 구체적인 호재성 재료가 있으며, 외국인 매수세와 양호한 차트 흐름을 보입니다. 충분한 거래대금도 긍정적입니다.",
+        "risk": "기관의 순매도세가 지속되고 있어 단기적인 수급 부담이 존재합니다.",
+        "expected_return": "+2% ~ +5%",
+        "source": "gemini_only"
+      },
+      {
+        "stock_code": "017960",
+        "stock_name": "한국카본",
+        "rank": 7,
+        "confidence": "LOW",
+        "reason": "글로벌 기업과의 해양 기술 공동 연구 협약 및 납품 확대 기대감이라는 긍정적인 사업 재료가 있습니다. 기관의 강력한 순매수세가 유입되고 있으며 차트 위치도 양호합니다.",
+        "risk": "외국인의 순매도세와 상대적으로 부족한 거래대금(타 종목 대비)이 상승 탄력을 제한할 수 있습니다.",
+        "expected_return": "+2% ~ +5%",
+        "source": "gemini_only"
+      },
+      {
+        "stock_code": "437730",
+        "stock_name": "삼현",
+        "rank": 8,
+        "confidence": "LOW",
+        "reason": "30억 규모의 자사주 취득 결정 공시가 주주가치 제고 기대감을 높이며 긍정적인 재료로 작용하고 있습니다. 기관의 순매수세와 함께 단기적인 반등을 기대할 수 있습니다.",
+        "risk": "차트상 기술적 위치가 약하며, 외국인 순매도세가 나타나고 있습니다.",
+        "expected_return": "+2% ~ +5%",
+        "source": "gemini_only"
+      },
+      {
+        "stock_code": "051910",
+        "stock_name": "LG화학",
+        "rank": 9,
+        "confidence": "LOW",
+        "reason": "헝가리 합작사 완전 자회사 편입 및 자사주 소각 증가 결정은 중장기적으로 기업 가치 및 주주 가치를 크게 높일 강력한 호재입니다. 충분한 거래대금도 매력적입니다.",
+        "risk": "외국인과 기관 양쪽에서 모두 순매도가 나타나고 있어 단기적인 수급 부담이 매우 큽니다. 장기 재료가 단기 수급을 상쇄할지 불확실합니다.",
+        "expected_return": "+1% ~ +4%",
+        "source": "gemini_only"
+      },
+      {
+        "stock_code": "011780",
+        "stock_name": "금호석유화학",
+        "rank": 10,
+        "confidence": "LOW",
+        "reason": "자기주식 취득 신탁계약 체결 공시라는 명확한 주주가치 제고 재료를 보유하고 있습니다. 이는 긍정적인 시장 반응을 이끌어낼 수 있는 핵심 요인입니다.",
+        "risk": "거래대금이 매우 부족하여 단기 매매 시 유동성 확보에 어려움이 있을 수 있으며, 기관의 순매도세가 나타나고 있습니다.",
+        "expected_return": "+1% ~ +3%",
+        "source": "gemini_only"
+      }
+    ],
+    "consensus_count": 0,
+    "gemini_count": 10,
+    "openai_count": 0,
+    "market_view": "[Gemini] 오늘 시장은 자사주 매입, 주주환원 정책 발표와 국제 유가 불안에 따른 대체에너지 테마가 강세를 보였으며, 외국인과 기관의 수급이 뒷받침되는 종목들이 긍정적인 흐름을 주도했습니다.",
+    "top_themes": [
+      "자사주/주주환원",
+      "대체에너지/신재생에너지",
+      "5G/통신 장비"
+    ],
+    "generated_at": "2026-03-17T15:14:55.851148",
+    "models": [
+      "gemini-2.5-flash"
+    ],
+    "consensus_method": "multi_ai"
+  }
+}

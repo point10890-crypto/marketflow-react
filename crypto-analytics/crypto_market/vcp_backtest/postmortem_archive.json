@@ -1,0 +1,16 @@
+[
+  {
+    "symbol": "BTC/USDT",
+    "entry_time": "2024-12-25 10:00:00",
+    "entry_price": 98000,
+    "exit_time": "2024-12-26 10:00:00",
+    "exit_price": 100000,
+    "return_pct": 2.04,
+    "max_adverse_excursion": -1.5,
+    "signal_type": "BREAKOUT",
+    "market_regime": "BTC_UP",
+    "notes": "Test trade record",
+    "recorded_at": "2025-12-26T13:38:23.196165",
+    "outcome": "WIN"
+  }
+]

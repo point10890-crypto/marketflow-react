@@ -1,0 +1,506 @@
+{
+  "2020-01": {
+    "en_title": "Bitcoin Soars on Halving Anticipation",
+    "ko_title": "반감기 기대감 속 비트코인 급등",
+    "en_summary": "Bitcoin's impressive 30.71% surge in January 2020 was primarily driven by anticipation of the upcoming May halving event.",
+    "ko_summary": "2020년 1월 비트코인의 30.71% 급등은 다가오는 5월 반감기 이벤트에 대한 기대감이 주된 요인이었습니다.",
+    "type": "positive"
+  },
+  "2020-02": {
+    "en_title": "Altcoins Outshine Bitcoin in February",
+    "ko_title": "2월, 알트코인이 비트코인 능가",
+    "en_summary": "While Bitcoin saw moderate gains, altcoins, especially Ethereum and LINK, significantly outperformed it, signaling a potential 'alt season'.",
+    "ko_summary": "비트코인이 완만한 상승세를 보인 반면, 알트코인, 특히 이더리움과 링크가 눈에 띄게 좋은 성과를 거두며 '알트 시즌'의 가능성을 보였습니다.",
+    "type": "neutral"
+  },
+  "2020-03": {
+    "en_title": "Black Thursday Crushes Bitcoin Price",
+    "ko_title": "검은 목요일, 비트코인 가격 폭락",
+    "en_summary": "The COVID-19 pandemic and resulting global economic uncertainty triggered a massive sell-off, causing Bitcoin to plummet.",
+    "ko_summary": "코로나19 팬데믹과 그에 따른 세계 경제 불확실성으로 인해 대규모 매도세가 촉발되어 비트코인 가격이 급락했습니다.",
+    "type": "negative"
+  },
+  "2020-04": {
+    "en_title": "Bitcoin Halving Fuels April Rally",
+    "ko_title": "비트코인 반감기가 4월 랠리 촉발",
+    "en_summary": "Anticipation of the May 2020 Bitcoin halving likely drove BTC's price up significantly during April.",
+    "ko_summary": "2020년 5월 비트코인 반감기에 대한 기대감이 4월 동안 BTC 가격 상승을 크게 견인했을 가능성이 높습니다.",
+    "type": "positive"
+  },
+  "2020-05": {
+    "en_title": "Bitcoin Halving Fuels Price Surge",
+    "ko_title": "비트코인 반감기, 가격 급등 촉매",
+    "en_summary": "The Bitcoin halving event on May 11th significantly contributed to Bitcoin's price increase due to reduced supply and increased scarcity expectations.",
+    "ko_summary": "5월 11일 비트코인 반감기 이벤트는 공급 감소와 희소성 기대감 증가로 비트코인 가격 상승에 크게 기여했습니다.",
+    "type": "positive"
+  },
+  "2020-06": {
+    "en_title": "Post-Halving Consolidation for Bitcoin",
+    "ko_title": "반감기 이후 비트코인 안정화",
+    "en_summary": "Bitcoin experienced modest gains and consolidation in June 2020 following the May halving, as altcoins, particularly Ethereum, gained momentum.",
+    "ko_summary": "비트코인은 5월 반감기 이후 2020년 6월에 소폭 상승 및 안정화되었으며, 알트코인, 특히 이더리움이 모멘텀을 얻었습니다.",
+    "type": "neutral"
+  },
+  "2020-07": {
+    "en_title": "DeFi Summer Impact on Bitcoin",
+    "ko_title": "DeFi 여름, 비트코인에 영향",
+    "en_summary": "Bitcoin's growth slowed as DeFi summer fueled altcoin interest, impacting its market dominance despite overall positive returns.",
+    "ko_summary": "DeFi 여름으로 알트코인에 대한 관심이 높아지면서 비트코인의 성장이 둔화되었지만, 전반적인 수익률은 여전히 긍정적이었습니다.",
+    "type": "neutral"
+  },
+  "2020-08": {
+    "en_title": "DeFi Summer Boosts Bitcoin",
+    "ko_title": "DeFi 여름, 비트코인 상승",
+    "en_summary": "Bitcoin experienced a solid 21% gain in August 2020, influenced by the broader crypto market surge driven by the DeFi summer and Ethereum's growth.",
+    "ko_summary": "비트코인은 DeFi 여름과 이더리움 성장에 힘입어 암호화폐 시장 전반의 상승세에 영향을 받아 2020년 8월에 21%의 견조한 상승을 경험했습니다.",
+    "type": "positive"
+  },
+  "2020-09": {
+    "en_title": "DeFi Boom, Bitcoin Price Dip",
+    "ko_title": "디파이 붐, 비트코인 하락",
+    "en_summary": "Bitcoin's price dipped amidst the DeFi boom and general market correction during September 2020.",
+    "ko_summary": "2020년 9월, 디파이 붐과 전반적인 시장 조정 속에서 비트코인 가격이 하락했습니다.",
+    "type": "negative"
+  },
+  "2020-10": {
+    "en_title": "PayPal Boosts Bitcoin's Mainstream Adoption",
+    "ko_title": "페이팔, 비트코인 주류 채택 가속화",
+    "en_summary": "PayPal's announcement of cryptocurrency support triggered a significant Bitcoin rally and boosted mainstream adoption.",
+    "ko_summary": "페이팔의 암호화폐 지원 발표는 비트코인 랠리를 촉발하고 주류 채택을 가속화했습니다.",
+    "type": "positive"
+  },
+  "2020-11": {
+    "en_title": "PayPal Fuels Bitcoin Bull Run",
+    "ko_title": "페이팔, 비트코인 강세장 촉발",
+    "en_summary": "PayPal's launch of crypto buying and selling services significantly boosted Bitcoin's price in November 2020 amid growing institutional interest.",
+    "ko_summary": "페이팔의 암호화폐 매매 서비스 출시가 기관 투자자들의 관심 증가와 맞물려 2020년 11월 비트코인 가격 상승을 크게 견인했습니다.",
+    "type": "positive"
+  },
+  "2020-12": {
+    "en_title": "Institutional Adoption Ignites Bitcoin Rally",
+    "ko_title": "기관 도입, 비트코인 랠리 점화",
+    "en_summary": "Increased institutional adoption, highlighted by MicroStrategy and Square's Bitcoin investments, fueled Bitcoin's significant price surge in December 2020.",
+    "ko_summary": "MicroStrategy와 Square의 비트코인 투자로 두드러진 기관의 도입 증가는 2020년 12월 비트코인의 상당한 가격 상승을 촉진했습니다.",
+    "type": "positive"
+  },
+  "2021-01": {
+    "en_title": "Institutional Interest Fuels Bitcoin Rally",
+    "ko_title": "기관 관심, 비트코인 랠리 촉발",
+    "en_summary": "Increased institutional adoption of Bitcoin as a treasury asset significantly fueled its price surge in January 2021.",
+    "ko_summary": "기관들의 비트코인 자산 편입 증가가 2021년 1월 비트코인 가격 급등을 크게 촉진했습니다.",
+    "type": "positive"
+  },
+  "2021-02": {
+    "en_title": "Tesla's Bitcoin Buy: A Catalyst",
+    "ko_title": "테슬라의 비트코인 매수: 촉매제",
+    "en_summary": "Tesla's $1.5 billion Bitcoin purchase and acceptance plans significantly boosted Bitcoin's price and legitimacy.",
+    "ko_summary": "테슬라의 15억 달러 비트코인 매수 및 결제 허용 계획 발표는 비트코인 가격과 합법성을 크게 향상시켰습니다.",
+    "type": "positive"
+  },
+  "2021-03": {
+    "en_title": "Bitcoin Hits New All-Time High",
+    "ko_title": "비트코인, 사상 최고치 경신",
+    "en_summary": "Bitcoin's price surged to a new all-time high in March 2021, fueled by increased institutional adoption and mainstream awareness.",
+    "ko_summary": "비트코인은 기관 채택 증가와 주류 인식이 높아짐에 따라 2021년 3월에 사상 최고치를 기록했습니다.",
+    "type": "positive"
+  },
+  "2021-04": {
+    "en_title": "Bitcoin Stagnates in Altcoin Surge",
+    "ko_title": "비트코인, 알트코인 랠리 속 정체",
+    "en_summary": "Bitcoin, despite reaching a new all-time high, underperformed significantly compared to Ethereum and many altcoins as the market experienced a strong altcoin season.",
+    "ko_summary": "비트코인은 사상 최고치를 경신했음에도 불구하고, 강력한 알트코인 시즌 동안 이더리움 및 많은 알트코인에 비해 실적이 저조했습니다.",
+    "type": "neutral"
+  },
+  "2021-05": {
+    "en_title": "Bitcoin Plummets Amidst Regulatory Fears",
+    "ko_title": "규제 공포 속 비트코인 급락",
+    "en_summary": "Bitcoin's price plummeted nearly 29% in May due to a combination of environmental concerns sparked by Tesla's reversal, and increased regulatory scrutiny from China.",
+    "ko_summary": "5월에 비트코인 가격은 테슬라의 입장 철회로 인한 환경 문제 우려와 중국의 규제 강화로 인해 거의 29% 폭락했습니다.",
+    "type": "negative"
+  },
+  "2021-06": {
+    "en_title": "Musk & Mining Downturn Bitcoin",
+    "ko_title": "머스크 & 채굴 단속, 비트코인 하락",
+    "en_summary": "Elon Musk's energy concerns and China's mining crackdown significantly impacted Bitcoin's price negatively during June 2021.",
+    "ko_summary": "일론 머스크의 에너지 소비 우려와 중국의 채굴 단속 강화로 인해 2021년 6월 비트코인 가격이 크게 하락했습니다.",
+    "type": "negative"
+  },
+  "2021-07": {
+    "en_title": "Bitcoin Recovers After Bottoming Out",
+    "ko_title": "바닥 다진 비트코인, 회복세 전환",
+    "en_summary": "Bitcoin rebounded strongly in July after finding a bottom near $30,000 following prior months' regulatory concerns and environmental FUD.",
+    "ko_summary": "규제 우려와 환경 문제로 바닥을 다진 후 비트코인은 7월에 3만 달러 근처에서 바닥을 찾은 후 강하게 반등했습니다.",
+    "type": "positive"
+  },
+  "2021-08": {
+    "en_title": "Ethereum's London Fork Boosts Bitcoin",
+    "ko_title": "이더리움 런던 포크, 비트코인 상승 견인",
+    "en_summary": "Ethereum's London Hard Fork and overall altcoin surge contributed to Bitcoin's impressive 33% gain during August 2021.",
+    "ko_summary": "이더리움의 런던 하드 포크와 알트코인들의 전반적인 상승세는 2021년 8월 비트코인의 33% 상승에 기여했습니다.",
+    "type": "positive"
+  },
+  "2021-09": {
+    "en_title": "Evergrande Fears Sink Bitcoin",
+    "ko_title": "헝다 공포, 비트코인 하락",
+    "en_summary": "Concerns about Evergrande's potential default triggered risk-off sentiment, contributing to Bitcoin's -15.11% drop in September.",
+    "ko_summary": "헝다 그룹의 잠재적 채무 불이행 우려가 위험 회피 심리를 촉발하여 9월 비트코인 가격이 15.11% 하락하는 데 영향을 미쳤습니다.",
+    "type": "negative"
+  },
+  "2021-10": {
+    "en_title": "Bitcoin ETF Approval Ignites Rally",
+    "ko_title": "비트코인 ETF 승인 랠리 촉발",
+    "en_summary": "The approval of the first Bitcoin Futures ETF in the US triggered a significant rally, driving Bitcoin to new highs.",
+    "ko_summary": "미국 최초의 비트코인 선물 ETF 승인은 상당한 랠리를 촉발하여 비트코인을 사상 최고치로 끌어올렸습니다.",
+    "type": "positive"
+  },
+  "2021-11": {
+    "en_title": "Ethereum Dominates, Bitcoin Underperforms",
+    "ko_title": "이더리움 강세, 비트코인 부진",
+    "en_summary": "Bitcoin's negative return was overshadowed by Ethereum's strong performance and the rising ETH/BTC ratio, signaling a shift in market focus.",
+    "ko_summary": "비트코인의 하락세는 이더리움의 강력한 상승세와 ETH/BTC 비율 증가로 인해 가려졌으며, 이는 시장의 관심이 이동하고 있음을 시사합니다.",
+    "type": "negative"
+  },
+  "2021-12": {
+    "en_title": "Bitcoin Plunges Amid Market Correction",
+    "ko_title": "비트코인, 시장 조정 속 급락",
+    "en_summary": "Bitcoin experienced a significant price drop in December 2021 amid broader market correction and cooled ETF enthusiasm.",
+    "ko_summary": "비트코인은 2021년 12월, 광범위한 시장 조정과 식어버린 ETF 열기 속에서 상당한 가격 하락을 겪었습니다.",
+    "type": "negative"
+  },
+  "2022-01": {
+    "en_title": "Fed Fears Trigger Bitcoin Plunge",
+    "ko_title": "연준 우려, 비트코인 폭락 촉발",
+    "en_summary": "Bitcoin's steep decline in January 2022 was largely driven by fears of rising inflation and potential interest rate hikes by the Federal Reserve.",
+    "ko_summary": "2022년 1월 비트코인의 급격한 하락은 주로 인플레이션 상승과 연방준비제도의 잠재적인 금리 인상에 대한 우려에 기인했습니다.",
+    "type": "negative"
+  },
+  "2022-02": {
+    "en_title": "Ethereum Merge Anticipation Boosts ETH",
+    "ko_title": "이더리움 병합 기대감, ETH 상승",
+    "en_summary": "Ethereum's anticipation of the Merge significantly outperformed Bitcoin, driving positive momentum for ETH.",
+    "ko_summary": "이더리움 병합에 대한 기대감이 비트코인을 크게 앞지르며 ETH에 긍정적인 모멘텀을 제공했습니다.",
+    "type": "neutral"
+  },
+  "2022-03": {
+    "en_title": "Bitcoin Recovers Strongly in March",
+    "ko_title": "3월, 비트코인 강세 회복",
+    "en_summary": "Bitcoin experienced a significant recovery in March, gaining almost 23% amidst broader crypto market optimism and low correlation with traditional markets.",
+    "ko_summary": "비트코인은 3월에 상당한 회복세를 보이며, 광범위한 암호화폐 시장의 낙관론과 전통 시장과의 낮은 상관관계 속에서 약 23% 상승했습니다.",
+    "type": "positive"
+  },
+  "2022-04": {
+    "en_title": "Inflation Fears Hammer Bitcoin Price",
+    "ko_title": "인플레이션 공포, 비트코인 가격 강타",
+    "en_summary": "Bitcoin's price decline in April 2022 was significantly impacted by macroeconomic uncertainty due to rising inflation and anticipated interest rate hikes.",
+    "ko_summary": "2022년 4월 비트코인 가격 하락은 인플레이션 상승과 예상되는 금리 인상으로 인한 거시 경제 불확실성의 영향을 크게 받았습니다.",
+    "type": "negative"
+  },
+  "2022-05": {
+    "en_title": "Terra Collapse Crushes Bitcoin Price",
+    "ko_title": "테라 붕괴, 비트코인 가격 폭락",
+    "en_summary": "The collapse of Terra's UST stablecoin triggered widespread panic and liquidations, significantly impacting Bitcoin's price in May 2022.",
+    "ko_summary": "테라의 UST 스테이블 코인 붕괴는 광범위한 공황과 청산을 촉발하여 2022년 5월 비트코인 가격에 큰 영향을 미쳤습니다.",
+    "type": "negative"
+  },
+  "2022-06": {
+    "en_title": "Celsius Crisis Crushes Bitcoin Price",
+    "ko_title": "섭씨 사태, 비트코인 가격 폭락",
+    "en_summary": "The Celsius Network's liquidity crisis triggered a significant Bitcoin price drop in June 2022 due to market-wide panic and contagion fears.",
+    "ko_summary": "섭씨 네트워크의 유동성 위기는 시장 전반의 공포와 전염 우려로 인해 2022년 6월 비트코인 가격의 상당한 하락을 야기했습니다.",
+    "type": "negative"
+  },
+  "2022-07": {
+    "en_title": "Ethereum Merge Fuels Bitcoin Lift",
+    "ko_title": "이더리움 병합, 비트코인 상승 견인",
+    "en_summary": "Anticipation for Ethereum's Merge drove positive sentiment, contributing to Bitcoin's price increase in July.",
+    "ko_summary": "이더리움 병합에 대한 기대감이 긍정적인 분위기를 조성하며 7월 비트코인 가격 상승에 기여했습니다.",
+    "type": "positive"
+  },
+  "2022-08": {
+    "en_title": "Ethereum Merge Impacted Bitcoin Negatively",
+    "ko_title": "이더리움 병합, 비트코인에 부정적 영향",
+    "en_summary": "Bitcoin's negative return in August was likely influenced by Ethereum's strong performance and the anticipation surrounding the Merge, drawing investor attention and capital away from Bitcoin.",
+    "ko_summary": "8월 비트코인의 마이너스 수익률은 이더리움 병합에 대한 기대감과 강세로 인해 투자자들의 관심과 자본이 비트코인에서 이탈했기 때문일 가능성이 높습니다.",
+    "type": "negative"
+  },
+  "2022-09": {
+    "en_title": "Macro Factors Dragged Bitcoin Down",
+    "ko_title": "거시 경제 요인, 비트코인 하락세 견인",
+    "en_summary": "Bitcoin's September performance was primarily impacted by macroeconomic headwinds like inflation and interest rate hikes, leading to a nearly 10% decrease.",
+    "ko_summary": "비트코인의 9월 실적은 인플레이션 및 금리 인상과 같은 거시 경제 역풍의 영향을 받아 약 10% 하락했습니다.",
+    "type": "negative"
+  },
+  "2022-10": {
+    "en_title": "Altcoins Surge, Bitcoin Gains Mildly",
+    "ko_title": "알트코인 급등, 비트코인 소폭 상승",
+    "en_summary": "Bitcoin experienced moderate gains (+8.97%) in October 2022, overshadowed by a significant altcoin rally led by UNI and fueled by Ethereum's outperformance.",
+    "ko_summary": "2022년 10월, 비트코인은 소폭 상승(+8.97%)했지만, UNI가 주도하고 이더리움의 우수한 성과에 힘입은 알트코인 급등에 가려졌습니다.",
+    "type": "neutral"
+  },
+  "2022-11": {
+    "en_title": "FTX Collapse Crushes Bitcoin Price",
+    "ko_title": "FTX 붕괴, 비트코인 가격 강타",
+    "en_summary": "Bitcoin's price plummeted in November 2022 primarily due to the collapse of FTX, overshadowing any potential positive market movements.",
+    "ko_summary": "2022년 11월 비트코인 가격은 FTX 붕괴로 인해 급락했으며, 잠재적인 긍정적 시장 움직임을 압도했습니다.",
+    "type": "negative"
+  },
+  "2022-12": {
+    "en_title": "FTX Aftermath Stifles Bitcoin Growth",
+    "ko_title": "FTX 여파, 비트코인 성장 억제",
+    "en_summary": "The continuing fallout from the FTX collapse significantly impacted Bitcoin's price, overshadowing other market factors and leading to stagnation.",
+    "ko_summary": "FTX 붕괴의 지속적인 여파는 다른 시장 요인을 압도하고 침체로 이어지면서 비트코인 가격에 상당한 영향을 미쳤습니다.",
+    "type": "negative"
+  },
+  "2023-01": {
+    "en_title": "Fed Rate Hike Slowdown Boosts BTC",
+    "ko_title": "연준 금리인상 속도 조절, BTC 상승",
+    "en_summary": "Optimism surrounding a potential slowdown in Federal Reserve interest rate hikes reduced risk aversion and drove Bitcoin's price up significantly in January.",
+    "ko_summary": "연준의 금리 인상 속도 조절에 대한 낙관론이 위험 회피 심리를 완화시키고 1월 비트코인 가격을 크게 상승시켰습니다.",
+    "type": "positive"
+  },
+  "2023-02": {
+    "en_title": "Regulatory Scrutiny Dampens Bitcoin Gains",
+    "ko_title": "규제 강화, 비트코인 상승 억제",
+    "en_summary": "Increased regulatory scrutiny in February likely tempered Bitcoin's gains despite positive performance.",
+    "ko_summary": "2월의 규제 강화 움직임은 긍정적인 실적에도 불구하고 비트코인의 상승폭을 제한했을 가능성이 높습니다.",
+    "type": "negative"
+  },
+  "2023-03": {
+    "en_title": "Banking Crisis Boosts Bitcoin's Safe-Haven Appeal",
+    "ko_title": "은행 위기로 비트코인 안전자산 부각",
+    "en_summary": "The banking crisis in March 2023 led to a flight to safety, benefiting Bitcoin as investors sought decentralized alternatives amidst financial system instability.",
+    "ko_summary": "2023년 3월 은행 위기로 인해 안전 자산 선호 심리가 강화되면서 투자자들이 분산형 대안을 모색함에 따라 비트코인이 수혜를 입었습니다.",
+    "type": "positive"
+  },
+  "2023-04": {
+    "en_title": "Shapella Fuels Bitcoin's Mild Bull",
+    "ko_title": "샤펠라, 비트코인 약세장 촉진",
+    "en_summary": "Anticipation surrounding Ethereum's Shanghai upgrade (Shapella), allowing staked ETH withdrawals, likely boosted Bitcoin's positive performance in April.",
+    "ko_summary": "스테이킹된 ETH 인출을 허용하는 이더리움의 상하이 업그레이드(샤펠라)에 대한 기대감이 4월 비트코인의 긍정적인 성과를 촉진했을 가능성이 높습니다.",
+    "type": "positive"
+  },
+  "2023-05": {
+    "en_title": "Uncertainty Limits Bitcoin's May Gains",
+    "ko_title": "불확실성, 비트코인 5월 상승 제한",
+    "en_summary": "Bitcoin's minimal gains in May were likely capped by uncertainty surrounding US debt ceiling debates and rising inflation, despite positive developments like Hong Kong's crypto trading allowance.",
+    "ko_summary": "5월 비트코인의 소폭 상승은 홍콩의 암호화폐 거래 허용과 같은 긍정적인 발전에도 불구하고, 미국 부채 한도 논쟁과 인플레이션 상승에 대한 불확실성에 의해 제한되었을 가능성이 높습니다.",
+    "type": "neutral"
+  },
+  "2023-06": {
+    "en_title": "BlackRock ETF Fuels Bitcoin Surge",
+    "ko_title": "블랙록 ETF, 비트코인 급등 촉발",
+    "en_summary": "BlackRock's spot Bitcoin ETF filing injected optimism, driving Bitcoin's price up significantly in June.",
+    "ko_summary": "블랙록의 현물 비트코인 ETF 신청이 낙관론을 불어넣어 6월 비트코인 가격 상승을 크게 견인했습니다.",
+    "type": "positive"
+  },
+  "2023-07": {
+    "en_title": "XRP Ruling Impacts Bitcoin Negatively",
+    "ko_title": "XRP 판결, 비트코인에 부정적 영향",
+    "en_summary": "While altcoins like XRP surged due to specific catalysts, Bitcoin experienced a slight decline, suggesting capital rotation away from Bitcoin.",
+    "ko_summary": "XRP와 같은 알트코인들이 특정 촉매제로 급등하는 동안, 비트코인은 소폭 하락하여 비트코인으로부터 자본이 이동했음을 시사합니다.",
+    "type": "negative"
+  },
+  "2023-08": {
+    "en_title": "SEC ETF Delays Hurt Bitcoin",
+    "ko_title": "SEC ETF 지연, 비트코인 타격",
+    "en_summary": "Bitcoin's August decline was largely due to SEC delays and rejections of spot Bitcoin ETF applications, coupled with rising interest rate fears.",
+    "ko_summary": "비트코인의 8월 하락은 주로 SEC의 현물 비트코인 ETF 신청 지연 및 거부와 금리 인상 공포 때문이었습니다.",
+    "type": "negative"
+  },
+  "2023-09": {
+    "en_title": "Bitcoin Rises on ETF Hopes",
+    "ko_title": "비트코인, ETF 기대감에 상승",
+    "en_summary": "Bitcoin experienced a positive return in September, likely fueled by ongoing speculation surrounding potential ETF approvals despite regulatory uncertainty.",
+    "ko_summary": "비트코인은 9월에 긍정적인 수익률을 보였으며, 이는 규제 불확실성에도 불구하고 잠재적인 ETF 승인에 대한 지속적인 추측에 의해 촉발되었을 가능성이 높습니다.",
+    "type": "positive"
+  },
+  "2023-10": {
+    "en_title": "Bitcoin's ETF Hype Fueled October Surge",
+    "ko_title": "비트코인 ETF 기대감, 10월 급등 견인",
+    "en_summary": "Bitcoin's significant price increase in October was primarily driven by speculation and anticipation surrounding potential spot Bitcoin ETF approvals by the SEC.",
+    "ko_summary": "10월 비트코인의 상당한 가격 상승은 주로 SEC의 현물 비트코인 ETF 승인 가능성에 대한 추측과 기대감에 의해 주도되었습니다.",
+    "type": "positive"
+  },
+  "2023-11": {
+    "en_title": "Bitcoin ETF Approval Anticipation Surges",
+    "ko_title": "비트코인 ETF 승인 기대감 급증",
+    "en_summary": "Growing anticipation of spot Bitcoin ETF approval by the SEC fueled Bitcoin's price increase in November.",
+    "ko_summary": "미국 SEC의 현물 비트코인 ETF 승인 기대감 증가가 11월 비트코인 가격 상승을 견인했습니다.",
+    "type": "positive"
+  },
+  "2023-12": {
+    "en_title": "ETF Optimism Boosts Bitcoin Price",
+    "ko_title": "ETF 기대감, 비트코인 가격 상승 견인",
+    "en_summary": "Anticipation of spot Bitcoin ETF approval in the US significantly fueled Bitcoin's positive price movement during December.",
+    "ko_summary": "미국 내 비트코인 현물 ETF 승인에 대한 기대감이 12월 동안 비트코인의 가격 상승을 크게 견인했습니다.",
+    "type": "positive"
+  },
+  "2024-01": {
+    "en_title": "Bitcoin ETF Approval: Sell the News",
+    "ko_title": "비트코인 ETF 승인: 뉴스에 팔아라",
+    "en_summary": "Bitcoin experienced a price dip after the highly anticipated spot ETF approval due to a \"sell the news\" event, negating earlier gains.",
+    "ko_summary": "비트코인은 큰 기대를 모았던 현물 ETF 승인 후 '뉴스에 팔아라' 현상으로 인해 가격 하락을 경험하며 이전 상승분을 상쇄했습니다.",
+    "type": "negative"
+  },
+  "2024-02": {
+    "en_title": "Bitcoin ETF Approval Fuels Surge",
+    "ko_title": "비트코인 ETF 승인 급등 촉발",
+    "en_summary": "Bitcoin's price surge in February was primarily driven by the continued positive effects of spot Bitcoin ETF approvals coupled with anticipation of the upcoming halving.",
+    "ko_summary": "2월 비트코인 가격 급등은 현물 비트코인 ETF 승인의 지속적인 긍정적 효과와 다가오는 반감기에 대한 기대감에 주로 기인합니다.",
+    "type": "positive"
+  },
+  "2024-03": {
+    "en_title": "Bitcoin ETF Inflows Fuel Rally",
+    "ko_title": "비트코인 ETF 자금 유입 랠리 촉발",
+    "en_summary": "Strong Bitcoin ETF inflows drove significant price appreciation for Bitcoin in March 2024.",
+    "ko_summary": "2024년 3월, 강력한 비트코인 ETF 자금 유입이 비트코인 가격 상승을 이끌었습니다.",
+    "type": "positive"
+  },
+  "2024-04": {
+    "en_title": "Bitcoin Halving: Sell the News",
+    "ko_title": "비트코인 반감기: 뉴스에 팔아라",
+    "en_summary": "Despite the historically bullish Bitcoin halving event in late April, Bitcoin experienced a price decrease potentially due to profit-taking.",
+    "ko_summary": "역사적으로 강세였던 비트코인 반감기가 4월 말에 있었음에도 불구하고, 차익 실현으로 인해 비트코인 가격이 하락했습니다.",
+    "type": "negative"
+  },
+  "2024-05": {
+    "en_title": "Ethereum ETF Hype Boosts Market",
+    "ko_title": "이더리움 ETF 기대감, 시장 활황",
+    "en_summary": "Anticipation surrounding Ethereum ETF approval fueled bullish sentiment and boosted both Ethereum and select altcoins, overshadowing Bitcoin's gains.",
+    "ko_summary": "이더리움 ETF 승인 기대감은 강세 심리를 자극하여 이더리움과 일부 알트코인을 상승시켰고, 비트코인의 상승폭을 넘어섰습니다.",
+    "type": "neutral"
+  },
+  "2024-06": {
+    "en_title": "Bitcoin Hit by ETF Slowdown",
+    "ko_title": "비트코인, ETF 유입 둔화로 타격",
+    "en_summary": "Diminished Bitcoin ETF inflows and a hawkish Fed outlook pressured Bitcoin's price, resulting in a -12.10% return for the month.",
+    "ko_summary": "비트코인 ETF 유입 감소와 매파적인 연준 전망이 비트코인 가격에 압력을 가하며, 한 달 동안 -12.10%의 수익률을 기록했습니다.",
+    "type": "negative"
+  },
+  "2024-07": {
+    "en_title": "Bitcoin Dominates Amidst ETH Concerns",
+    "ko_title": "ETH 우려 속 비트코인 강세",
+    "en_summary": "Bitcoin outperformed Ethereum significantly in July due to ETH ETF regulatory concerns, demonstrating a shift in investor preference.",
+    "ko_summary": "7월, ETH ETF 규제 우려로 인해 비트코인이 이더리움을 크게 앞지르며 투자자 선호도 변화를 보였습니다.",
+    "type": "positive"
+  },
+  "2024-08": {
+    "en_title": "Smart Contract Hack Spooks Bitcoin",
+    "ko_title": "스마트 컨트랙트 해킹, 비트코인 불안",
+    "en_summary": "A major smart contract hack triggered a flight to Bitcoin's relative safety amidst broader crypto market uncertainty, despite Bitcoin itself experiencing a significant price drop.",
+    "ko_summary": "주요 스마트 컨트랙트 해킹으로 인해 암호화폐 시장 전반의 불확실성이 커지면서 비트코인 자체도 상당한 가격 하락을 겪었음에도 불구하고 상대적으로 안전한 비트코인으로의 자금 이동이 발생했습니다.",
+    "type": "negative"
+  },
+  "2024-09": {
+    "en_title": "ETF Delay Boosts Bitcoin Position",
+    "ko_title": "ETF 지연, 비트코인 입지 강화",
+    "en_summary": "The SEC's delay in approving spot Bitcoin ETFs reinforced Bitcoin's position as a leading crypto asset and a relatively safer investment in the digital asset space, contributing to its positive return for the month.",
+    "ko_summary": "SEC의 현물 비트코인 ETF 승인 지연으로 비트코인이 주요 암호화폐 자산으로서의 입지와 디지털 자산 공간에서 비교적 안전한 투자처로서의 입지를 강화하여 월간 수익률 증가에 기여했습니다.",
+    "type": "positive"
+  },
+  "2024-10": {
+    "en_title": "Bitcoin Rallies on ETF Speculation",
+    "ko_title": "비트코인, ETF 기대감에 상승",
+    "en_summary": "Bitcoin's 12.5% gain was primarily driven by increasing speculation surrounding potential spot Bitcoin ETF approvals in the US.",
+    "ko_summary": "비트코인의 12.5% 상승은 주로 미국 내 현물 비트코인 ETF 승인 가능성에 대한 기대감 증가에 기인합니다.",
+    "type": "positive"
+  },
+  "2024-11": {
+    "en_title": "Post-Halving Rally Fuels Bitcoin Surge",
+    "ko_title": "반감기 후 랠리, 비트코인 급등",
+    "en_summary": "Bitcoin's price was primarily impacted by the post-halving rally, driving substantial gains alongside positive sentiment from anticipated Ethereum ETF approval.",
+    "ko_summary": "비트코인 가격은 주로 반감기 후 랠리의 영향을 받아 이더리움 ETF 승인 기대감과 함께 큰 상승을 보였습니다.",
+    "type": "positive"
+  },
+  "2024-12": {
+    "en_title": "Bitcoin ETF Delay Hurts Price",
+    "ko_title": "비트코인 ETF 지연, 가격 하락",
+    "en_summary": "Delayed approval of a spot Bitcoin ETF tempered expectations and contributed to Bitcoin's price decline in December.",
+    "ko_summary": "현물 비트코인 ETF 승인 지연으로 기대감이 낮아져 12월 비트코인 가격 하락에 영향을 미쳤습니다.",
+    "type": "negative"
+  },
+  "2025-01": {
+    "en_title": "Bitcoin Gains Amidst Ethereum Decline",
+    "ko_title": "이더리움 하락 속 비트코인 상승",
+    "en_summary": "Bitcoin's positive return of 5.47% suggests it outperformed Ethereum, which experienced a decline, likely due to anticipation of its halving and ETH setbacks.",
+    "ko_summary": "비트코인의 5.47% 상승은 이더리움의 하락을 능가하며, 이는 다가오는 반감기 기대감과 이더리움의 차질 때문으로 추정됩니다.",
+    "type": "positive"
+  },
+  "2025-02": {
+    "en_title": "Exchange Hack Spiked Bitcoin Drop",
+    "ko_title": "거래소 해킹, 비트코인 급락 촉발",
+    "en_summary": "A major exchange hack triggered a flight to safety, exacerbating Bitcoin's price drop during February.",
+    "ko_summary": "대형 거래소 해킹 사태는 안전 자산 선호 심리를 자극하여 2월 비트코인 가격 하락을 심화시켰습니다.",
+    "type": "negative"
+  },
+  "2025-03": {
+    "en_title": "Bitcoin Plunges Amid Market Correction",
+    "ko_title": "시장 조정 속 비트코인 급락",
+    "en_summary": "Bitcoin's price significantly declined by 14.75% in March due to a broad market correction and profit-taking.",
+    "ko_summary": "3월, 광범위한 시장 조정과 차익 실현으로 인해 비트코인 가격이 14.75% 크게 하락했습니다.",
+    "type": "negative"
+  },
+  "2025-04": {
+    "en_title": "ETF Optimism Boosts Bitcoin",
+    "ko_title": "ETF 낙관론이 비트코인 상승 견인",
+    "en_summary": "Anticipation of further institutional adoption, potentially via ETF approvals or large inflows, fueled Bitcoin's price increase during April.",
+    "ko_summary": "ETF 승인 또는 대규모 자금 유입을 통한 기관 채택 증가 기대감이 4월 동안 비트코인 가격 상승을 이끌었습니다.",
+    "type": "positive"
+  },
+  "2025-05": {
+    "en_title": "Ethereum Dominance Impacts Bitcoin Growth",
+    "ko_title": "이더리움 우세, 비트코인 성장에 영향",
+    "en_summary": "Ethereum's sharding success and DeFi boom overshadowed Bitcoin's moderate post-halving growth.",
+    "ko_summary": "이더리움의 샤딩 성공과 DeFi 붐으로 인해 비트코인은 반감기 이후 완만한 성장에 그쳤습니다.",
+    "type": "neutral"
+  },
+  "2025-06": {
+    "en_title": "ETF Uncertainty Dips Bitcoin Slightly",
+    "ko_title": "ETF 불확실성, 비트코인 소폭 하락",
+    "en_summary": "Bitcoin's slight decline in June 2025 likely stemmed from post-halving consolidation and uncertainty surrounding the approval of new spot ETFs.",
+    "ko_summary": "2025년 6월 비트코인의 소폭 하락은 반감기 이후의 조정과 새로운 현물 ETF 승인에 대한 불확실성 때문일 가능성이 큽니다.",
+    "type": "negative"
+  },
+  "2025-07": {
+    "en_title": "Bitcoin Gains Amid Altcoin Surge",
+    "ko_title": "알트코인 강세 속 비트코인 상승",
+    "en_summary": "Despite a strong altcoin season, Bitcoin still posted a positive return of +11.11%, indicating continued upward momentum.",
+    "ko_summary": "강력한 알트코인 시즌에도 불구하고 비트코인은 +11.11%의 긍정적인 수익률을 기록하며 지속적인 상승세를 보였습니다.",
+    "type": "positive"
+  },
+  "2025-08": {
+    "en_title": "Bitcoin's Dip Fuels Altseason",
+    "ko_title": "비트코인 하락, 알트 시즌 촉발",
+    "en_summary": "Bitcoin's correction (-7.5%) facilitated capital rotation into altcoins, driving an altseason.",
+    "ko_summary": "비트코인의 조정(-7.5%)은 자본이 알트코인으로 이동하는 것을 촉진하여 알트 시즌을 주도했습니다.",
+    "type": "negative"
+  },
+  "2025-09": {
+    "en_title": "Bitcoin Gains on ETF Speculation",
+    "ko_title": "ETF 기대감 속 비트코인 상승",
+    "en_summary": "Bitcoin experienced moderate gains in September, likely fueled by renewed speculation regarding the potential approval of spot Bitcoin ETFs.",
+    "ko_summary": "9월, 비트코인은 현물 ETF 승인 가능성에 대한 기대감 재점화로 인해 소폭 상승세를 보였습니다.",
+    "type": "positive"
+  },
+  "2025-10": {
+    "en_title": "Regulatory FUD Hurts Bitcoin Price",
+    "ko_title": "규제 불확실성, 비트코인 가격 하락",
+    "en_summary": "Rumors of increased regulatory scrutiny and FUD surrounding DeFi and centralized exchanges led to a -4.43% decrease in Bitcoin's price during October 2025.",
+    "ko_summary": "2025년 10월, DeFi 및 중앙화 거래소에 대한 규제 강화 소문과 불확실성으로 인해 비트코인 가격이 -4.43% 하락했습니다.",
+    "type": "negative"
+  },
+  "2025-11": {
+    "en_title": "Bitcoin Plummets Amidst Market Correction",
+    "ko_title": "비트코인, 시장 조정 속 급락",
+    "en_summary": "Bitcoin's price significantly decreased by -18.62% in November 2025 due to a broad market correction driven by regulatory fears and a major Solana hack.",
+    "ko_summary": "2025년 11월, 규제 우려와 대규모 솔라나 해킹으로 인한 시장 조정으로 비트코인 가격이 -18.62% 급락했습니다.",
+    "type": "negative"
+  },
+  "2025-12": {
+    "en_title": "Stagnant Bitcoin Amid Altcoin Weakness",
+    "ko_title": "알트코인 약세 속 비트코인 정체",
+    "en_summary": "Bitcoin's slight negative return and dominance over declining altcoins suggests consolidation after the halving.",
+    "ko_summary": "비트코인의 소폭 하락과 하락하는 알트코인에 대한 지배력은 반감기 이후 통합을 시사합니다.",
+    "type": "negative"
+  }
+}

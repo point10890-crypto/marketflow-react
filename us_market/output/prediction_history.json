@@ -1,0 +1,1211 @@
+[
+  {
+    "date": "2026-02-07",
+    "predictions": {
+      "spy": {
+        "current_price": 690.62,
+        "bullish_probability": 81.2,
+        "bearish_probability": 18.8,
+        "predicted_return_pct": 0.31,
+        "target_range": {
+          "low": 680.21,
+          "mid": 692.75,
+          "high": 705.29
+        },
+        "confidence_level": "High",
+        "key_drivers": [
+          {
+            "feature": "yield_spread_proxy",
+            "impact": 0.1682,
+            "value": 0.23,
+            "direction": "bullish"
+          },
+          {
+            "feature": "gold_return_1w",
+            "impact": 0.1385,
+            "value": 1.34,
+            "direction": "bullish"
+          },
+          {
+            "feature": "xly_relative_1m",
+            "impact": 0.0829,
+            "value": -1.34,
+            "direction": "bearish"
+          },
+          {
+            "feature": "spy_return_1m",
+            "impact": 0.0823,
+            "value": -2.69,
+            "direction": "bearish"
+          },
+          {
+            "feature": "breadth_pct_above_50ma",
+            "impact": 0.067,
+            "value": 86.0,
+            "direction": "bullish"
+          }
+        ]
+      },
+      "qqq": {
+        "current_price": 609.65,
+        "bullish_probability": 81.2,
+        "bearish_probability": 18.8,
+        "predicted_return_pct": 0.31,
+        "target_range": {
+          "low": 600.46,
+          "mid": 611.53,
+          "high": 622.6
+        },
+        "confidence_level": "High",
+        "key_drivers": [
+          {
+            "feature": "yield_spread_proxy",
+            "impact": 0.1682,
+            "value": 0.23,
+            "direction": "bullish"
+          },
+          {
+            "feature": "gold_return_1w",
+            "impact": 0.1385,
+            "value": 1.34,
+            "direction": "bullish"
+          },
+          {
+            "feature": "xly_relative_1m",
+            "impact": 0.0829,
+            "value": -1.34,
+            "direction": "bearish"
+          },
+          {
+            "feature": "spy_return_1m",
+            "impact": 0.0823,
+            "value": -2.69,
+            "direction": "bearish"
+          },
+          {
+            "feature": "breadth_pct_above_50ma",
+            "impact": 0.067,
+            "value": 86.0,
+            "direction": "bullish"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "date": "2026-02-08",
+    "predictions": {
+      "spy": {
+        "current_price": 690.62,
+        "bullish_probability": 89.4,
+        "bearish_probability": 10.6,
+        "predicted_return_pct": 1.67,
+        "target_range": {
+          "low": 688.4,
+          "mid": 702.16,
+          "high": 715.92
+        },
+        "confidence_level": "High",
+        "key_drivers": [
+          {
+            "feature": "yield_spread_proxy",
+            "impact": 0.1569,
+            "value": 0.45,
+            "direction": "bullish"
+          },
+          {
+            "feature": "xlu_relative_1m",
+            "impact": 0.1041,
+            "value": 3.38,
+            "direction": "bearish"
+          },
+          {
+            "feature": "xly_relative_1m",
+            "impact": 0.0767,
+            "value": -2.56,
+            "direction": "bearish"
+          },
+          {
+            "feature": "spy_return_1m",
+            "impact": 0.0742,
+            "value": 0.15,
+            "direction": "bullish"
+          },
+          {
+            "feature": "gold_return_1w",
+            "impact": 0.0691,
+            "value": 5.03,
+            "direction": "bullish"
+          }
+        ]
+      },
+      "qqq": {
+        "current_price": 609.65,
+        "bullish_probability": 89.0,
+        "bearish_probability": 11.0,
+        "predicted_return_pct": 1.55,
+        "target_range": {
+          "low": 603.08,
+          "mid": 619.09,
+          "high": 635.1
+        },
+        "confidence_level": "High",
+        "key_drivers": [
+          {
+            "feature": "yield_spread_proxy",
+            "impact": 0.1343,
+            "value": 0.45,
+            "direction": "bullish"
+          },
+          {
+            "feature": "xlu_relative_1m",
+            "impact": 0.0945,
+            "value": 3.38,
+            "direction": "bearish"
+          },
+          {
+            "feature": "spy_return_1m",
+            "impact": 0.0906,
+            "value": 0.15,
+            "direction": "bullish"
+          },
+          {
+            "feature": "xly_relative_1m",
+            "impact": 0.0878,
+            "value": -2.56,
+            "direction": "bearish"
+          },
+          {
+            "feature": "vix_value",
+            "impact": 0.0859,
+            "value": 20.37,
+            "direction": "bearish"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "date": "2026-02-11",
+    "predictions": {
+      "spy": {
+        "current_price": 692.12,
+        "bullish_probability": 85.4,
+        "bearish_probability": 14.6,
+        "predicted_return_pct": 0.91,
+        "target_range": {
+          "low": 684.65,
+          "mid": 698.44,
+          "high": 712.23
+        },
+        "confidence_level": "High",
+        "key_drivers": [
+          {
+            "feature": "yield_spread_proxy",
+            "impact": 0.1569,
+            "value": 0.45,
+            "direction": "bullish"
+          },
+          {
+            "feature": "xlu_relative_1m",
+            "impact": 0.1041,
+            "value": 4.26,
+            "direction": "bearish"
+          },
+          {
+            "feature": "xly_relative_1m",
+            "impact": 0.0767,
+            "value": -4.61,
+            "direction": "bearish"
+          },
+          {
+            "feature": "spy_return_1m",
+            "impact": 0.0742,
+            "value": -0.28,
+            "direction": "bearish"
+          },
+          {
+            "feature": "gold_return_1w",
+            "impact": 0.0691,
+            "value": 2.92,
+            "direction": "bullish"
+          }
+        ]
+      },
+      "qqq": {
+        "current_price": 611.47,
+        "bullish_probability": 86.2,
+        "bearish_probability": 13.8,
+        "predicted_return_pct": 0.38,
+        "target_range": {
+          "low": 597.75,
+          "mid": 613.81,
+          "high": 629.87
+        },
+        "confidence_level": "High",
+        "key_drivers": [
+          {
+            "feature": "yield_spread_proxy",
+            "impact": 0.1343,
+            "value": 0.45,
+            "direction": "bullish"
+          },
+          {
+            "feature": "xlu_relative_1m",
+            "impact": 0.0945,
+            "value": 4.26,
+            "direction": "bearish"
+          },
+          {
+            "feature": "spy_return_1m",
+            "impact": 0.0906,
+            "value": -0.28,
+            "direction": "bearish"
+          },
+          {
+            "feature": "xly_relative_1m",
+            "impact": 0.0878,
+            "value": -4.61,
+            "direction": "bearish"
+          },
+          {
+            "feature": "vix_value",
+            "impact": 0.0859,
+            "value": 17.79,
+            "direction": "bearish"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "date": "2026-02-12",
+    "predictions": {
+      "spy": {
+        "current_price": 691.96,
+        "bullish_probability": 90.6,
+        "bearish_probability": 9.4,
+        "predicted_return_pct": 0.52,
+        "target_range": {
+          "low": 681.77,
+          "mid": 695.55,
+          "high": 709.34
+        },
+        "confidence_level": "High",
+        "key_drivers": [
+          {
+            "feature": "yield_spread_proxy",
+            "impact": 0.1569,
+            "value": 0.43,
+            "direction": "bullish"
+          },
+          {
+            "feature": "xlu_relative_1m",
+            "impact": 0.1041,
+            "value": 5.18,
+            "direction": "bearish"
+          },
+          {
+            "feature": "xly_relative_1m",
+            "impact": 0.0767,
+            "value": -4.97,
+            "direction": "bearish"
+          },
+          {
+            "feature": "spy_return_1m",
+            "impact": 0.0742,
+            "value": -0.46,
+            "direction": "bearish"
+          },
+          {
+            "feature": "gold_return_1w",
+            "impact": 0.0691,
+            "value": 3.67,
+            "direction": "bullish"
+          }
+        ]
+      },
+      "qqq": {
+        "current_price": 613.11,
+        "bullish_probability": 82.8,
+        "bearish_probability": 17.2,
+        "predicted_return_pct": -0.24,
+        "target_range": {
+          "low": 595.5,
+          "mid": 611.61,
+          "high": 627.71
+        },
+        "confidence_level": "High",
+        "key_drivers": [
+          {
+            "feature": "yield_spread_proxy",
+            "impact": 0.1343,
+            "value": 0.43,
+            "direction": "bullish"
+          },
+          {
+            "feature": "xlu_relative_1m",
+            "impact": 0.0945,
+            "value": 5.18,
+            "direction": "bearish"
+          },
+          {
+            "feature": "spy_return_1m",
+            "impact": 0.0906,
+            "value": -0.46,
+            "direction": "bearish"
+          },
+          {
+            "feature": "xly_relative_1m",
+            "impact": 0.0878,
+            "value": -4.97,
+            "direction": "bearish"
+          },
+          {
+            "feature": "vix_value",
+            "impact": 0.0859,
+            "value": 17.65,
+            "direction": "bearish"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "date": "2026-02-13",
+    "predictions": {
+      "spy": {
+        "current_price": 681.27,
+        "bullish_probability": 88.7,
+        "bearish_probability": 11.3,
+        "predicted_return_pct": 1.88,
+        "target_range": {
+          "low": 680.51,
+          "mid": 694.05,
+          "high": 707.58
+        },
+        "confidence_level": "High",
+        "key_drivers": [
+          {
+            "feature": "yield_spread_proxy",
+            "impact": 0.1777,
+            "value": 0.44,
+            "direction": "bullish"
+          },
+          {
+            "feature": "xlu_relative_1m",
+            "impact": 0.0946,
+            "value": 7.4,
+            "direction": "bearish"
+          },
+          {
+            "feature": "gold_return_1w",
+            "impact": 0.082,
+            "value": 1.73,
+            "direction": "bullish"
+          },
+          {
+            "feature": "spy_return_1m",
+            "impact": 0.0691,
+            "value": -1.8,
+            "direction": "bearish"
+          },
+          {
+            "feature": "qqq_rsi",
+            "impact": 0.0629,
+            "value": 39.88,
+            "direction": "bearish"
+          }
+        ]
+      },
+      "qqq": {
+        "current_price": 600.64,
+        "bullish_probability": 95.8,
+        "bearish_probability": 4.2,
+        "predicted_return_pct": 1.69,
+        "target_range": {
+          "low": 595.06,
+          "mid": 610.8,
+          "high": 626.54
+        },
+        "confidence_level": "High",
+        "key_drivers": [
+          {
+            "feature": "yield_spread_proxy",
+            "impact": 0.1377,
+            "value": 0.44,
+            "direction": "bullish"
+          },
+          {
+            "feature": "breadth_pct_above_50ma",
+            "impact": 0.0909,
+            "value": 92.0,
+            "direction": "bullish"
+          },
+          {
+            "feature": "xlu_relative_1m",
+            "impact": 0.0901,
+            "value": 7.4,
+            "direction": "bearish"
+          },
+          {
+            "feature": "vix_value",
+            "impact": 0.0807,
+            "value": 20.82,
+            "direction": "bearish"
+          },
+          {
+            "feature": "spy_rsi",
+            "impact": 0.0775,
+            "value": 43.43,
+            "direction": "bearish"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "date": "2026-02-14",
+    "predictions": {
+      "spy": {
+        "current_price": 681.75,
+        "bullish_probability": 93.5,
+        "bearish_probability": 6.5,
+        "predicted_return_pct": 2.12,
+        "target_range": {
+          "low": 682.69,
+          "mid": 696.23,
+          "high": 709.77
+        },
+        "confidence_level": "High",
+        "key_drivers": [
+          {
+            "feature": "yield_spread_proxy",
+            "impact": 0.1777,
+            "value": 0.45,
+            "direction": "bullish"
+          },
+          {
+            "feature": "xlu_relative_1m",
+            "impact": 0.0946,
+            "value": 8.96,
+            "direction": "bearish"
+          },
+          {
+            "feature": "gold_return_1w",
+            "impact": 0.082,
+            "value": 2.11,
+            "direction": "bullish"
+          },
+          {
+            "feature": "spy_return_1m",
+            "impact": 0.0691,
+            "value": -1.25,
+            "direction": "bearish"
+          },
+          {
+            "feature": "qqq_rsi",
+            "impact": 0.0629,
+            "value": 40.88,
+            "direction": "bearish"
+          }
+        ]
+      },
+      "qqq": {
+        "current_price": 601.92,
+        "bullish_probability": 94.8,
+        "bearish_probability": 5.2,
+        "predicted_return_pct": 1.99,
+        "target_range": {
+          "low": 598.12,
+          "mid": 613.9,
+          "high": 629.68
+        },
+        "confidence_level": "High",
+        "key_drivers": [
+          {
+            "feature": "yield_spread_proxy",
+            "impact": 0.1377,
+            "value": 0.45,
+            "direction": "bullish"
+          },
+          {
+            "feature": "breadth_pct_above_50ma",
+            "impact": 0.0909,
+            "value": 90.0,
+            "direction": "bullish"
+          },
+          {
+            "feature": "xlu_relative_1m",
+            "impact": 0.0901,
+            "value": 8.96,
+            "direction": "bearish"
+          },
+          {
+            "feature": "vix_value",
+            "impact": 0.0807,
+            "value": 20.6,
+            "direction": "bearish"
+          },
+          {
+            "feature": "spy_rsi",
+            "impact": 0.0775,
+            "value": 43.92,
+            "direction": "bearish"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "date": "2026-02-17",
+    "predictions": {
+      "spy": {
+        "current_price": 681.75,
+        "bullish_probability": 89.5,
+        "bearish_probability": 10.5,
+        "predicted_return_pct": 1.74,
+        "target_range": {
+          "low": 680.08,
+          "mid": 693.63,
+          "high": 707.17
+        },
+        "confidence_level": "High",
+        "key_drivers": [
+          {
+            "feature": "yield_spread_proxy",
+            "impact": 0.1777,
+            "value": 0.0,
+            "direction": "bearish"
+          },
+          {
+            "feature": "xlu_relative_1m",
+            "impact": 0.0946,
+            "value": 8.14,
+            "direction": "bearish"
+          },
+          {
+            "feature": "gold_return_1w",
+            "impact": 0.082,
+            "value": -1.28,
+            "direction": "bearish"
+          },
+          {
+            "feature": "spy_return_1m",
+            "impact": 0.0691,
+            "value": -1.52,
+            "direction": "bearish"
+          },
+          {
+            "feature": "qqq_rsi",
+            "impact": 0.0629,
+            "value": 40.88,
+            "direction": "bearish"
+          }
+        ]
+      },
+      "qqq": {
+        "current_price": 601.92,
+        "bullish_probability": 95.5,
+        "bearish_probability": 4.5,
+        "predicted_return_pct": 2.19,
+        "target_range": {
+          "low": 599.33,
+          "mid": 615.1,
+          "high": 630.88
+        },
+        "confidence_level": "High",
+        "key_drivers": [
+          {
+            "feature": "yield_spread_proxy",
+            "impact": 0.1377,
+            "value": 0.0,
+            "direction": "bearish"
+          },
+          {
+            "feature": "breadth_pct_above_50ma",
+            "impact": 0.0909,
+            "value": 88.0,
+            "direction": "bullish"
+          },
+          {
+            "feature": "xlu_relative_1m",
+            "impact": 0.0901,
+            "value": 8.14,
+            "direction": "bearish"
+          },
+          {
+            "feature": "vix_value",
+            "impact": 0.0807,
+            "value": 21.2,
+            "direction": "bearish"
+          },
+          {
+            "feature": "spy_rsi",
+            "impact": 0.0775,
+            "value": 43.92,
+            "direction": "bearish"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "date": "2026-02-18",
+    "predictions": {
+      "spy": {
+        "current_price": 682.85,
+        "bullish_probability": 92.9,
+        "bearish_probability": 7.1,
+        "predicted_return_pct": 2.8,
+        "target_range": {
+          "low": 688.39,
+          "mid": 701.95,
+          "high": 715.52
+        },
+        "confidence_level": "High",
+        "key_drivers": [
+          {
+            "feature": "yield_spread_proxy",
+            "impact": 0.1777,
+            "value": 0.43,
+            "direction": "bullish"
+          },
+          {
+            "feature": "xlu_relative_1m",
+            "impact": 0.0946,
+            "value": 7.71,
+            "direction": "bearish"
+          },
+          {
+            "feature": "gold_return_1w",
+            "impact": 0.082,
+            "value": -3.04,
+            "direction": "bearish"
+          },
+          {
+            "feature": "spy_return_1m",
+            "impact": 0.0691,
+            "value": -1.36,
+            "direction": "bearish"
+          },
+          {
+            "feature": "qqq_rsi",
+            "impact": 0.0629,
+            "value": 40.53,
+            "direction": "bearish"
+          }
+        ]
+      },
+      "qqq": {
+        "current_price": 601.3,
+        "bullish_probability": 93.9,
+        "bearish_probability": 6.1,
+        "predicted_return_pct": 2.92,
+        "target_range": {
+          "low": 603.11,
+          "mid": 618.87,
+          "high": 634.63
+        },
+        "confidence_level": "High",
+        "key_drivers": [
+          {
+            "feature": "yield_spread_proxy",
+            "impact": 0.1377,
+            "value": 0.43,
+            "direction": "bullish"
+          },
+          {
+            "feature": "breadth_pct_above_50ma",
+            "impact": 0.0909,
+            "value": 88.0,
+            "direction": "bullish"
+          },
+          {
+            "feature": "xlu_relative_1m",
+            "impact": 0.0901,
+            "value": 7.71,
+            "direction": "bearish"
+          },
+          {
+            "feature": "vix_value",
+            "impact": 0.0807,
+            "value": 20.29,
+            "direction": "bearish"
+          },
+          {
+            "feature": "spy_rsi",
+            "impact": 0.0775,
+            "value": 45.07,
+            "direction": "bearish"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "date": "2026-02-19",
+    "predictions": {
+      "spy": {
+        "current_price": 686.29,
+        "bullish_probability": 74.1,
+        "bearish_probability": 25.9,
+        "predicted_return_pct": 0.41,
+        "target_range": {
+          "low": 675.47,
+          "mid": 689.1,
+          "high": 702.73
+        },
+        "confidence_level": "High",
+        "key_drivers": [
+          {
+            "feature": "yield_spread_proxy",
+            "impact": 0.1777,
+            "value": 0.0,
+            "direction": "bearish"
+          },
+          {
+            "feature": "xlu_relative_1m",
+            "impact": 0.0946,
+            "value": 0.0,
+            "direction": "bullish"
+          },
+          {
+            "feature": "gold_return_1w",
+            "impact": 0.082,
+            "value": -1.08,
+            "direction": "bearish"
+          },
+          {
+            "feature": "spy_return_1m",
+            "impact": 0.0691,
+            "value": 0.0,
+            "direction": "bearish"
+          },
+          {
+            "feature": "qqq_rsi",
+            "impact": 0.0629,
+            "value": 44.25,
+            "direction": "bearish"
+          }
+        ]
+      },
+      "qqq": {
+        "current_price": 605.79,
+        "bullish_probability": 51.2,
+        "bearish_probability": 48.8,
+        "predicted_return_pct": 0.96,
+        "target_range": {
+          "low": 595.72,
+          "mid": 611.6,
+          "high": 627.48
+        },
+        "confidence_level": "Low",
+        "key_drivers": [
+          {
+            "feature": "yield_spread_proxy",
+            "impact": 0.1377,
+            "value": 0.0,
+            "direction": "bearish"
+          },
+          {
+            "feature": "breadth_pct_above_50ma",
+            "impact": 0.0909,
+            "value": 84.0,
+            "direction": "bullish"
+          },
+          {
+            "feature": "xlu_relative_1m",
+            "impact": 0.0901,
+            "value": 0.0,
+            "direction": "bullish"
+          },
+          {
+            "feature": "vix_value",
+            "impact": 0.0807,
+            "value": 0.0,
+            "direction": "bullish"
+          },
+          {
+            "feature": "spy_rsi",
+            "impact": 0.0775,
+            "value": 48.63,
+            "direction": "bearish"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "date": "2026-02-26",
+    "predictions": {
+      "spy": {
+        "current_price": 690.79,
+        "bullish_probability": 85.1,
+        "bearish_probability": 14.9,
+        "predicted_return_pct": 0.86,
+        "target_range": {
+          "low": 683.06,
+          "mid": 696.75,
+          "high": 710.45
+        },
+        "confidence_level": "High",
+        "key_drivers": [
+          {
+            "feature": "yield_spread_proxy",
+            "impact": 0.1515,
+            "value": 0.43,
+            "direction": "bullish"
+          },
+          {
+            "feature": "breadth_pct_above_50ma",
+            "impact": 0.101,
+            "value": 82.0,
+            "direction": "bullish"
+          },
+          {
+            "feature": "xlu_relative_1m",
+            "impact": 0.0777,
+            "value": 9.74,
+            "direction": "bearish"
+          },
+          {
+            "feature": "qqq_rsi",
+            "impact": 0.0757,
+            "value": 52.0,
+            "direction": "bullish"
+          },
+          {
+            "feature": "gold_return_1w",
+            "impact": 0.0754,
+            "value": 4.62,
+            "direction": "bullish"
+          }
+        ]
+      },
+      "qqq": {
+        "current_price": 614.3,
+        "bullish_probability": 85.4,
+        "bearish_probability": 14.6,
+        "predicted_return_pct": 1.56,
+        "target_range": {
+          "low": 607.82,
+          "mid": 623.9,
+          "high": 639.98
+        },
+        "confidence_level": "High",
+        "key_drivers": [
+          {
+            "feature": "xlu_relative_1m",
+            "impact": 0.1134,
+            "value": 9.74,
+            "direction": "bearish"
+          },
+          {
+            "feature": "yield_spread_proxy",
+            "impact": 0.1114,
+            "value": 0.43,
+            "direction": "bullish"
+          },
+          {
+            "feature": "breadth_pct_above_50ma",
+            "impact": 0.0923,
+            "value": 82.0,
+            "direction": "bullish"
+          },
+          {
+            "feature": "xly_relative_1m",
+            "impact": 0.0848,
+            "value": -4.34,
+            "direction": "bearish"
+          },
+          {
+            "feature": "spy_return_1m",
+            "impact": 0.0766,
+            "value": -0.28,
+            "direction": "bearish"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "date": "2026-02-27",
+    "predictions": {
+      "spy": {
+        "current_price": 689.3,
+        "bullish_probability": 58.2,
+        "bearish_probability": 41.8,
+        "predicted_return_pct": 0.05,
+        "target_range": {
+          "low": 675.97,
+          "mid": 689.64,
+          "high": 703.3
+        },
+        "confidence_level": "Low",
+        "key_drivers": [
+          {
+            "feature": "yield_spread_proxy",
+            "impact": 0.1515,
+            "value": 0.43,
+            "direction": "bullish"
+          },
+          {
+            "feature": "breadth_pct_above_50ma",
+            "impact": 0.101,
+            "value": 82.0,
+            "direction": "bullish"
+          },
+          {
+            "feature": "xlu_relative_1m",
+            "impact": 0.0777,
+            "value": 9.52,
+            "direction": "bearish"
+          },
+          {
+            "feature": "qqq_rsi",
+            "impact": 0.0757,
+            "value": 48.4,
+            "direction": "bearish"
+          },
+          {
+            "feature": "gold_return_1w",
+            "impact": 0.0754,
+            "value": 4.37,
+            "direction": "bullish"
+          }
+        ]
+      },
+      "qqq": {
+        "current_price": 609.24,
+        "bullish_probability": 79.0,
+        "bearish_probability": 21.0,
+        "predicted_return_pct": 0.6,
+        "target_range": {
+          "low": 596.98,
+          "mid": 612.92,
+          "high": 628.87
+        },
+        "confidence_level": "High",
+        "key_drivers": [
+          {
+            "feature": "xlu_relative_1m",
+            "impact": 0.1134,
+            "value": 9.52,
+            "direction": "bearish"
+          },
+          {
+            "feature": "yield_spread_proxy",
+            "impact": 0.1114,
+            "value": 0.43,
+            "direction": "bullish"
+          },
+          {
+            "feature": "breadth_pct_above_50ma",
+            "impact": 0.0923,
+            "value": 82.0,
+            "direction": "bullish"
+          },
+          {
+            "feature": "xly_relative_1m",
+            "impact": 0.0848,
+            "value": -3.71,
+            "direction": "bearish"
+          },
+          {
+            "feature": "spy_return_1m",
+            "impact": 0.0766,
+            "value": -0.89,
+            "direction": "bearish"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "date": "2026-03-13",
+    "predictions": {
+      "spy": {
+        "current_price": 666.06,
+        "bullish_probability": 77.1,
+        "bearish_probability": 22.9,
+        "predicted_return_pct": 0.82,
+        "target_range": {
+          "low": 658.34,
+          "mid": 671.5,
+          "high": 684.66
+        },
+        "confidence_level": "High",
+        "key_drivers": [
+          {
+            "feature": "yield_spread_proxy",
+            "impact": 0.1594,
+            "value": 0.0,
+            "direction": "bearish"
+          },
+          {
+            "feature": "xlu_relative_1m",
+            "impact": 0.0852,
+            "value": 0.0,
+            "direction": "bullish"
+          },
+          {
+            "feature": "gold_return_1w",
+            "impact": 0.0829,
+            "value": -0.96,
+            "direction": "bearish"
+          },
+          {
+            "feature": "xly_relative_1m",
+            "impact": 0.0784,
+            "value": 0.0,
+            "direction": "bearish"
+          },
+          {
+            "feature": "spy_return_1m",
+            "impact": 0.0662,
+            "value": 0.0,
+            "direction": "bearish"
+          }
+        ]
+      },
+      "qqq": {
+        "current_price": 597.26,
+        "bullish_probability": 95.5,
+        "bearish_probability": 4.5,
+        "predicted_return_pct": 2.49,
+        "target_range": {
+          "low": 596.6,
+          "mid": 612.14,
+          "high": 627.67
+        },
+        "confidence_level": "High",
+        "key_drivers": [
+          {
+            "feature": "yield_spread_proxy",
+            "impact": 0.1189,
+            "value": 0.0,
+            "direction": "bearish"
+          },
+          {
+            "feature": "xlu_relative_1m",
+            "impact": 0.0853,
+            "value": 0.0,
+            "direction": "bullish"
+          },
+          {
+            "feature": "vix_value",
+            "impact": 0.0848,
+            "value": 0.0,
+            "direction": "bullish"
+          },
+          {
+            "feature": "breadth_pct_above_50ma",
+            "impact": 0.0821,
+            "value": 62.0,
+            "direction": "bullish"
+          },
+          {
+            "feature": "xly_relative_1m",
+            "impact": 0.0813,
+            "value": 0.0,
+            "direction": "bearish"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "date": "2026-03-15",
+    "predictions": {
+      "spy": {
+        "current_price": 662.29,
+        "bullish_probability": 76.0,
+        "bearish_probability": 24.0,
+        "predicted_return_pct": 1.98,
+        "target_range": {
+          "low": 662.34,
+          "mid": 675.43,
+          "high": 688.52
+        },
+        "confidence_level": "High",
+        "key_drivers": [
+          {
+            "feature": "yield_spread_proxy",
+            "impact": 0.1594,
+            "value": 0.41,
+            "direction": "bullish"
+          },
+          {
+            "feature": "xlu_relative_1m",
+            "impact": 0.0852,
+            "value": 9.6,
+            "direction": "bearish"
+          },
+          {
+            "feature": "gold_return_1w",
+            "impact": 0.0829,
+            "value": -1.64,
+            "direction": "bearish"
+          },
+          {
+            "feature": "xly_relative_1m",
+            "impact": 0.0784,
+            "value": -1.57,
+            "direction": "bearish"
+          },
+          {
+            "feature": "spy_return_1m",
+            "impact": 0.0662,
+            "value": -4.29,
+            "direction": "bearish"
+          }
+        ]
+      },
+      "qqq": {
+        "current_price": 593.72,
+        "bullish_probability": 87.4,
+        "bearish_probability": 12.6,
+        "predicted_return_pct": 3.35,
+        "target_range": {
+          "low": 598.17,
+          "mid": 613.61,
+          "high": 629.05
+        },
+        "confidence_level": "High",
+        "key_drivers": [
+          {
+            "feature": "yield_spread_proxy",
+            "impact": 0.1189,
+            "value": 0.41,
+            "direction": "bullish"
+          },
+          {
+            "feature": "xlu_relative_1m",
+            "impact": 0.0853,
+            "value": 9.6,
+            "direction": "bearish"
+          },
+          {
+            "feature": "vix_value",
+            "impact": 0.0848,
+            "value": 27.19,
+            "direction": "bearish"
+          },
+          {
+            "feature": "breadth_pct_above_50ma",
+            "impact": 0.0821,
+            "value": 62.0,
+            "direction": "bullish"
+          },
+          {
+            "feature": "xly_relative_1m",
+            "impact": 0.0813,
+            "value": -1.57,
+            "direction": "bearish"
+          }
+        ]
+      }
+    }
+  }
+]

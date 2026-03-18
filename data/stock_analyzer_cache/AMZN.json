@@ -1,0 +1,39 @@
+{
+  "name": "Amazon",
+  "ticker": "AMZN",
+  "result": "매수",
+  "date": "2026-03-15 19:35:45",
+  "elapsed": 0,
+  "consensus_score": 4.19,
+  "analyst_count": 70,
+  "recommendation_detail": {
+    "strongBuy": 16,
+    "buy": 51,
+    "hold": 3,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "price_targets": {
+    "current": 207.67,
+    "high": 360.0,
+    "low": 175.0,
+    "mean": 280.5484,
+    "median": 285.0
+  },
+  "current_price": 207.67,
+  "upside_potential": 35.1,
+  "key_stats": {
+    "name": "Amazon.com, Inc.",
+    "sector": "Consumer Cyclical",
+    "industry": "Internet Retail",
+    "market_cap": 2229321072640,
+    "pe_ratio": 29.00419,
+    "forward_pe": 22.230072,
+    "dividend_yield": null,
+    "beta": 1.42,
+    "fifty_two_week_high": 258.6,
+    "fifty_two_week_low": 161.38,
+    "currency": "USD"
+  },
+  "source": "yfinance"
+}

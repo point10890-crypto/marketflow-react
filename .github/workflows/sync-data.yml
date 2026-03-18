@@ -1,0 +1,112 @@
+name: Sync Dashboard Data
+
+on:
+  schedule:
+    - cron: '30 22 * * *'      # 매일 07:30 KST
+    - cron: '30 19 * * 1-5'    # 평일 04:30 KST
+    - cron: '40 6 * * 1-5'     # 평일 15:40 KST
+    - cron: '30 7 * * 1-5'     # 평일 16:30 KST
+  workflow_dispatch:
+    inputs:
+      scope:
+        description: 'Sync scope'
+        required: false
+        default: 'all'
+        type: choice
+        options: [all, kr, us, crypto]
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Wake up Flask (Render)
+        run: |
+          echo "=== Flask 웨이크업 (closing-bet-api.onrender.com) ==="
+          for i in 1 2 3; do
+            CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 60 \
+              https://closing-bet-api.onrender.com/api/health 2>/dev/null || echo "000")
+            echo "  Ping $i: HTTP $CODE"
+            if [ "$CODE" = "200" ]; then echo "  Flask 활성화!"; break; fi
+            sleep 30
+          done
+
+      - name: Wake up Spring Boot (Render)
+        run: |
+          echo "=== Spring Boot 웨이크업 ==="
+          SPRING_URL="${{ secrets.RENDER_API_URL }}"
+          if [ -z "$SPRING_URL" ]; then
+            echo "  RENDER_API_URL 미설정 — 건너뜀"
+          else
+            for i in 1 2 3; do
+              CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 60 \
+                "$SPRING_URL/api/health" 2>/dev/null || echo "000")
+              echo "  Ping $i: HTTP $CODE"
+              if [ "$CODE" = "200" ]; then echo "  Spring Boot 활성화!"; break; fi
+              sleep 30
+            done
+          fi
+
+      - name: Fetch snapshots
+        run: |
+          SPRING_URL="${{ secrets.RENDER_API_URL }}"
+          FLASK_URL="https://closing-bet-api.onrender.com"
+          BASE_URL="${SPRING_URL:-$FLASK_URL}"
+          DIR="frontend-react/src/data"
+          mkdir -p "$DIR"
+          OK=0; FAIL=0
+
+          fetch() {
+            local CODE=$(curl -s -o "$DIR/$2" -w "%{http_code}" \
+              --max-time 30 "$BASE_URL$1" 2>/dev/null || echo "000")
+            if [ "$CODE" = "200" ] && [ -s "$DIR/$2" ]; then
+              echo "  [OK]   $2"; OK=$((OK+1))
+            else
+              rm -f "$DIR/$2"; echo "  [FAIL] $2 (HTTP $CODE)"; FAIL=$((FAIL+1))
+            fi
+          }
+
+          echo "=== KR ==="
+          fetch "/api/kr/market-gate"       "kr-market-gate.json"
+          fetch "/api/kr/jongga-v2/latest"  "kr-jongga-v2-latest.json"
+          fetch "/api/kr/jongga-v2/dates"   "kr-jongga-v2-dates.json"
+          fetch "/api/kr/vcp-dates"         "kr-vcp-dates.json"
+
+          echo "=== US ==="
+          fetch "/api/us/market-briefing"   "us-market-briefing.json"
+          fetch "/api/us/market-gate"       "us-market-gate.json"
+          fetch "/api/us/decision-signal"   "us-decision-signal.json"
+          fetch "/api/us/sector-rotation"   "us-sector-rotation.json"
+          fetch "/api/us/risk-alerts"       "us-risk-alerts.json"
+          fetch "/api/us/index-prediction"  "us-index-prediction.json"
+          fetch "/api/us/market-regime"     "us-market-regime.json"
+          fetch "/api/us/etf-flows"         "us-etf-flows.json"
+          fetch "/api/us/vcp-dates"         "us-vcp-dates.json"
+
+          echo "=== Crypto ==="
+          fetch "/api/crypto/dominance"     "crypto-dominance.json"
+          fetch "/api/crypto/market-gate"   "crypto-market-gate.json"
+          fetch "/api/crypto/briefing"      "crypto-briefing.json"
+          fetch "/api/crypto/vcp-dates"     "crypto-vcp-dates.json"
+
+          echo "{\"updated_at\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"ok\":$OK,\"fail\":$FAIL}" \
+            > "$DIR/_meta.json"
+          echo "=== 결과: $OK OK, $FAIL FAIL ==="
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add frontend-react/src/data/ || true
+          if git diff --cached --quiet; then
+            echo "변경사항 없음"
+          else
+            git commit -m "data: auto-sync ($(TZ=Asia/Seoul date +'%Y-%m-%d %H:%M KST'))"
+            git push
+          fi

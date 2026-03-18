@@ -1,0 +1,96 @@
+{
+  "metadata": {
+    "generated_at": "2026-03-18T20:00:29.735335",
+    "market": "CRYPTO",
+    "gate": "YELLOW",
+    "gate_score": 49,
+    "processing_time_sec": 18.5
+  },
+  "summary": {
+    "total_screened": 50,
+    "stage2_passed": 1,
+    "trend_passed": 1,
+    "vcp_found": 0,
+    "entry_ready": 0
+  },
+  "signals": [
+    {
+      "symbol": "MKR",
+      "name": "MKR",
+      "market": "CRYPTO",
+      "sector": "",
+      "price": 1806.36,
+      "composite": {
+        "composite_score": 51.9,
+        "rating": "Developing VCP",
+        "rating_description": "형성 중인 VCP 패턴",
+        "guidance": "거래량 확인 후 피벗 매수",
+        "valid_vcp": false,
+        "entry_ready": false,
+        "weakest_component": "VCP Pattern",
+        "strongest_component": "Relative Strength",
+        "component_breakdown": {
+          "trend_template": {
+            "score": 87.5,
+            "weight": 0.25,
+            "weighted": 21.9,
+            "label": "Trend Template (Stage 2)"
+          },
+          "contraction_quality": {
+            "score": 15,
+            "weight": 0.25,
+            "weighted": 3.8,
+            "label": "Contraction Quality"
+          },
+          "volume_pattern": {
+            "score": 30,
+            "weight": 0.2,
+            "weighted": 6.0,
+            "label": "Volume Pattern"
+          },
+          "pivot_proximity": {
+            "score": 40,
+            "weight": 0.15,
+            "weighted": 6.0,
+            "label": "Pivot Proximity"
+          },
+          "relative_strength": {
+            "score": 95,
+            "weight": 0.15,
+            "weighted": 14.2,
+            "label": "Relative Strength"
+          }
+        }
+      },
+      "trend_template": {
+        "score": 87.5,
+        "passed": "True",
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing"
+      },
+      "vcp_pattern": {
+        "score": 15,
+        "valid_vcp": false,
+        "num_contractions": 1,
+        "pivot_price": 1948.11
+      },
+      "volume_pattern": {
+        "score": 30,
+        "dry_up_ratio": 1.05
+      },
+      "pivot_proximity": {
+        "score": 40,
+        "distance_from_pivot_pct": 7.3,
+        "trade_status": "BUILDING"
+      },
+      "relative_strength": {
+        "score": 95,
+        "rs_rank_estimate": 95
+      },
+      "stage": {
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing"
+      }
+    }
+  ]
+}

@@ -1,0 +1,556 @@
+{
+  "date": "2026-03-03",
+  "total_candidates": 6,
+  "filtered_count": 6,
+  "signals": [
+    {
+      "id": null,
+      "stock_code": "064350",
+      "stock_name": "현대로템",
+      "market": "KOSPI",
+      "sector": "",
+      "signal_date": "2026-03-03",
+      "grade": "S",
+      "score": {
+        "news": 3,
+        "volume": 3,
+        "chart": 1,
+        "candle": 0,
+        "consolidation": 0,
+        "supply": 2,
+        "disclosure": 0,
+        "analyst": 3,
+        "llm_reason": "미국-이란 분쟁, 폴란드 K2 전차 수출, 루마니아 추가 수주 기대감 및 항공우주 생산기지 MOU 체결로 인한 사업 다각화 기대감이 반영되어 주가가 급등하고 있음",
+        "llm_source": "perplexity+gemini",
+        "total": 12
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "연합뉴스",
+          "연합뉴스TV"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": false,
+        "is_breakout": false,
+        "ma_aligned": true,
+        "good_candle": false,
+        "has_consolidation": false,
+        "supply_positive": true,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": false,
+        "volume_suspicious": false
+      },
+      "current_price": 249000,
+      "entry_price": 249000,
+      "stop_price": 241530,
+      "target_price": 261450,
+      "quantity": 50,
+      "position_size": 12450000,
+      "r_value": 250000.0,
+      "r_multiplier": 1.5,
+      "trading_value": 955440141000,
+      "change_pct": 8.03,
+      "volume_ratio": 0.0,
+      "foreign_5d": 1118554,
+      "inst_5d": 14309,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "무주에 '항공우주기지' 들어선다…전북도, 현대로템과 투자협약",
+          "source": "연합뉴스",
+          "published_at": "2026-03-03T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0015934124&office_id=001&code=064350&page=1&sm="
+        },
+        {
+          "title": "현대차그룹, 무인소방로봇 영상 공개…피지컬 AI 첨단기술 종합",
+          "source": "연합뉴스TV",
+          "published_at": "2026-03-03T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0000839744&office_id=422&code=064350&page=1&sm="
+        },
+        {
+          "title": "'검은 화요일' 코스피, 7% 급락 5,800선 내줘…낙폭 사상 최대(...",
+          "source": "연합뉴스",
+          "published_at": "2026-03-03T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0015935214&office_id=001&code=064350&page=1&sm="
+        }
+      ],
+      "themes": [
+        "방위산업",
+        "항공우주"
+      ]
+    },
+    {
+      "id": null,
+      "stock_code": "028670",
+      "stock_name": "팬오션",
+      "market": "KOSPI",
+      "sector": "",
+      "signal_date": "2026-03-03",
+      "grade": "S",
+      "score": {
+        "news": 2,
+        "volume": 3,
+        "chart": 1,
+        "candle": 0,
+        "consolidation": 0,
+        "supply": 2,
+        "disclosure": 0,
+        "analyst": 3,
+        "llm_reason": "미국-이란 긴장 고조에 따른 호르무즈 해협 봉쇄 가능성으로 VLCC 운임이 폭등하여 팬오션의 단기 실적 호재가 예상되고 SK해운으로부터 VLCC 10척 매입 계약 체결로 매출 익스포저가 본격화될 전망입니다.",
+        "llm_source": "perplexity+gemini",
+        "total": 11
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "연합뉴스"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": false,
+        "is_breakout": false,
+        "ma_aligned": true,
+        "good_candle": false,
+        "has_consolidation": false,
+        "supply_positive": true,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": false,
+        "volume_suspicious": false
+      },
+      "current_price": 6200,
+      "entry_price": 6200,
+      "stop_price": 6014,
+      "target_price": 6510,
+      "quantity": 2016,
+      "position_size": 12499200,
+      "r_value": 250000.0,
+      "r_multiplier": 1.5,
+      "trading_value": 435514281800,
+      "change_pct": 17.42,
+      "volume_ratio": 0.0,
+      "foreign_5d": 1126098,
+      "inst_5d": 3803,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "호르무즈 봉쇄에 정부·해운업계 긴장 고조…선박 30여척 대피(종합)",
+          "source": "연합뉴스",
+          "published_at": "2026-03-03T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0015934981&office_id=001&code=028670&page=1&sm="
+        },
+        {
+          "title": "호르무즈 봉쇄에 정부·해운업계 '초비상'…선박 30여척 대피",
+          "source": "연합뉴스",
+          "published_at": "2026-03-03T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0015934156&office_id=001&code=028670&page=1&sm="
+        },
+        {
+          "title": "美·이란 전쟁에 유가 들썩이자 항공주 '울상'·해운주 '기대'(종합)",
+          "source": "연합뉴스",
+          "published_at": "2026-03-03T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0015935131&office_id=001&code=028670&page=1&sm="
+        }
+      ],
+      "themes": [
+        "중동 지정학 리스크",
+        "해운",
+        "유가 상승"
+      ]
+    },
+    {
+      "id": null,
+      "stock_code": "218410",
+      "stock_name": "RFHIC",
+      "market": "KOSDAQ",
+      "sector": "",
+      "signal_date": "2026-03-03",
+      "grade": "S",
+      "score": {
+        "news": 3,
+        "volume": 3,
+        "chart": 1,
+        "candle": 0,
+        "consolidation": 0,
+        "supply": 1,
+        "disclosure": 0,
+        "analyst": 3,
+        "llm_reason": "RFHIC has secured a significant contract worth 506 billion won with Raytheon Canada, while also benefiting from the strong market movement in the defense sector due to geopolitical tensions.",
+        "llm_source": "perplexity+openai",
+        "total": 11
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "서울신문"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": false,
+        "is_breakout": false,
+        "ma_aligned": true,
+        "good_candle": false,
+        "has_consolidation": false,
+        "supply_positive": true,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": false,
+        "volume_suspicious": false
+      },
+      "current_price": 63800,
+      "entry_price": 63800,
+      "stop_price": 61886,
+      "target_price": 66990,
+      "quantity": 195,
+      "position_size": 12441000,
+      "r_value": 250000.0,
+      "r_multiplier": 1.5,
+      "trading_value": 81546927000,
+      "change_pct": 12.32,
+      "volume_ratio": 0.0,
+      "foreign_5d": 42691,
+      "inst_5d": -162923,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "[서울데이터랩]APS 30% 상한가 금일 증시 상승률 1위로 마감",
+          "source": "서울신문",
+          "published_at": "2026-03-03T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0003622425&office_id=081&code=218410&page=1&sm="
+        }
+      ],
+      "themes": [
+        "Defense Industry",
+        "RF and Communication",
+        "Geopolitical Risks"
+      ]
+    },
+    {
+      "id": null,
+      "stock_code": "018670",
+      "stock_name": "SK가스",
+      "market": "KOSPI",
+      "sector": "",
+      "signal_date": "2026-03-03",
+      "grade": "A",
+      "score": {
+        "news": 2,
+        "volume": 2,
+        "chart": 1,
+        "candle": 0,
+        "consolidation": 0,
+        "supply": 1,
+        "disclosure": 0,
+        "analyst": 3,
+        "llm_reason": "이란-이스라엘 군사적 긴장 고조로 인한 국제 유가 급등 및 호르무즈 해협 봉쇄 우려로 에너지 가격 상승 기대감이 높아짐.",
+        "llm_source": "perplexity+gemini",
+        "total": 9
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "머니투데이",
+          "이데일리",
+          "뉴시스"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": false,
+        "is_breakout": false,
+        "ma_aligned": true,
+        "good_candle": false,
+        "has_consolidation": false,
+        "supply_positive": true,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": false,
+        "volume_suspicious": false
+      },
+      "current_price": 262500,
+      "entry_price": 262500,
+      "stop_price": 254625,
+      "target_price": 275625,
+      "quantity": 31,
+      "position_size": 8137500,
+      "r_value": 250000.0,
+      "r_multiplier": 1.0,
+      "trading_value": 24941437500,
+      "change_pct": 12.66,
+      "volume_ratio": 0.0,
+      "foreign_5d": -13774,
+      "inst_5d": 5693,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "호르무즈 봉쇄에 LNG 공급 차질 우려...SK가스·한국가스공사 강세[...",
+          "source": "이데일리",
+          "published_at": "2026-03-03T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0006227231&office_id=018&code=018670&page=1&sm="
+        },
+        {
+          "title": "이란 전쟁에 국제유가 급등...흥구석유·중앙에너비스 '상한가'",
+          "source": "머니투데이",
+          "published_at": "2026-03-03T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005324285&office_id=008&code=018670&page=1&sm="
+        },
+        {
+          "title": "\"이란 공습 파장 확산\"…방산·에너지주↑ 항공·여행주↓(종합)",
+          "source": "뉴시스",
+          "published_at": "2026-03-03T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0013798698&office_id=003&code=018670&page=1&sm="
+        }
+      ],
+      "themes": [
+        "LPG(액화석유가스)",
+        "LNG 발전·유통",
+        "유가"
+      ]
+    },
+    {
+      "id": null,
+      "stock_code": "307750",
+      "stock_name": "국전약품",
+      "market": "KOSDAQ",
+      "sector": "",
+      "signal_date": "2026-03-03",
+      "grade": "A",
+      "score": {
+        "news": 3,
+        "volume": 3,
+        "chart": 1,
+        "candle": 0,
+        "consolidation": 0,
+        "supply": 0,
+        "disclosure": 0,
+        "analyst": 0,
+        "llm_reason": "국전약품이 HBM 공정 라인 평가 통과 및 초고순도 세정액 양산 소식을 통해 급등하며 확실한 호재가 작용하고 있다.",
+        "llm_source": "perplexity+openai",
+        "total": 7
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "서울신문"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": false,
+        "is_breakout": false,
+        "ma_aligned": true,
+        "good_candle": false,
+        "has_consolidation": false,
+        "supply_positive": false,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": false,
+        "volume_suspicious": false
+      },
+      "current_price": 4715,
+      "entry_price": 4715,
+      "stop_price": 4573,
+      "target_price": 4950,
+      "quantity": 1767,
+      "position_size": 8331405,
+      "r_value": 250000.0,
+      "r_multiplier": 1.0,
+      "trading_value": 88673882830,
+      "change_pct": 13.75,
+      "volume_ratio": 0.0,
+      "foreign_5d": -234880,
+      "inst_5d": -13873,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "[서울데이터랩]APS 30% 상한가 금일 증시 상승률 1위로 마감",
+          "source": "서울신문",
+          "published_at": "2026-03-03T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0003622425&office_id=081&code=307750&page=1&sm="
+        },
+        {
+          "title": "[서울데이터랩]금일 코스닥 거래량 1위 대한광통신 거래대금 무려 200...",
+          "source": "서울신문",
+          "published_at": "2026-03-03T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0003622366&office_id=081&code=307750&page=1&sm="
+        }
+      ],
+      "themes": [
+        "반도체 특수가스·세정액",
+        "CMO·원료의약품",
+        "바이오로직스"
+      ]
+    },
+    {
+      "id": null,
+      "stock_code": "043260",
+      "stock_name": "성호전자",
+      "market": "KOSDAQ",
+      "sector": "",
+      "signal_date": "2026-03-03",
+      "grade": "A",
+      "score": {
+        "news": 2,
+        "volume": 3,
+        "chart": 1,
+        "candle": 0,
+        "consolidation": 0,
+        "supply": 1,
+        "disclosure": 0,
+        "analyst": 0,
+        "llm_reason": "성호전자가 호실적 발표로 사상 최고가를 경신하며 긍정적인 시장 반응을 이끌어내고 있음.",
+        "llm_source": "perplexity+openai",
+        "total": 7
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "한국경제"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": false,
+        "is_breakout": false,
+        "ma_aligned": true,
+        "good_candle": false,
+        "has_consolidation": false,
+        "supply_positive": true,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": false,
+        "volume_suspicious": false
+      },
+      "current_price": 28350,
+      "entry_price": 28350,
+      "stop_price": 27499,
+      "target_price": 29767,
+      "quantity": 293,
+      "position_size": 8306550,
+      "r_value": 250000.0,
+      "r_multiplier": 1.0,
+      "trading_value": 125467234200,
+      "change_pct": 9.67,
+      "volume_ratio": 0.0,
+      "foreign_5d": 555708,
+      "inst_5d": -249813,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "코스닥, 장중 상승 반전 1200선 위로…코스피도 낙폭 줄여",
+          "source": "한국경제",
+          "published_at": "2026-03-03T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005257323&office_id=015&code=043260&page=1&sm="
+        }
+      ],
+      "themes": [
+        "반도체",
+        "전자부품",
+        "중동 지정학적 리스크"
+      ]
+    }
+  ],
+  "by_grade": {
+    "S": 3,
+    "A": 3,
+    "B": 0,
+    "C": 0
+  },
+  "by_market": {
+    "KOSPI": 3,
+    "KOSDAQ": 3
+  },
+  "processing_time_ms": 750102.1454334259,
+  "updated_at": "2026-03-03T17:17:25.139040+09:00",
+  "claude_picks": {
+    "picks": [
+      {
+        "stock_code": "064350",
+        "stock_name": "현대로템",
+        "rank": 1,
+        "confidence": "HIGH",
+        "reason": "[Gemini] 폴란드 K2 전차 수출 및 루마니아 추가 수주 기대감, 항공우주 사업 다각화 등 실질적인 사업 확장 모멘텀이 강합니다. 외인과 기관의 견고한 쌍끌이 매수세가 확인되어 수급 또한 매우 긍정적입니다. [GPT-4o] 미국-이란 분쟁 및 폴란드, 루마니아 등지에서의 계약 기대감이 방위산업 내 긍정적 전망을 제공하며, 항공우주 분야로의 진출이 사업 다변화에 기여.",
+        "risk": "글로벌 지정학적 리스크 완화 시 단기 변동성이 발생할 수 있으나, 견고한 수주 실적으로 방어력이 높습니다.",
+        "expected_return": "5% - 15%",
+        "source": "consensus",
+        "gemini_rank": 1,
+        "openai_rank": 1
+      },
+      {
+        "stock_code": "028670",
+        "stock_name": "팬오션",
+        "rank": 2,
+        "confidence": "HIGH",
+        "reason": "[Gemini] 중동 지정학적 리스크로 인한 해운 운임 폭등 기대감과 VLCC 추가 확보 소식으로 단기 실적 호재가 예상됩니다. 외인과 기관 모두 강한 매수세를 보이며 수급 상황도 매우 우수합니다. [GPT-4o] 호르무즈 해협 봉쇄 가능성에 따른 VLCC 운임 급등으로 인한 단기 실적 호재 예상.",
+        "risk": "중동 긴장 완화 시 운임 하락 및 단기 수익성 악화 가능성이 있습니다.",
+        "expected_return": "5% - 12%",
+        "source": "consensus",
+        "gemini_rank": 2,
+        "openai_rank": 2
+      },
+      {
+        "stock_code": "218410",
+        "stock_name": "RFHIC",
+        "rank": 3,
+        "confidence": "HIGH",
+        "reason": "[Gemini] 레이시온과의 5,060억 원 규모 대형 계약 수주라는 매우 구체적이고 강력한 호재가 있습니다. 이는 장기적인 성장 기반을 마련할 수 있는 중요한 이벤트로 판단됩니다. [GPT-4o] Raytheon와의 대규모 계약 체결로 실적 개선 기대감 증가.",
+        "risk": "기관의 대량 매도세가 관찰되어 차익실현 또는 다른 요인으로 인한 매물 부담이 존재합니다.",
+        "expected_return": "7% - 15%",
+        "source": "consensus",
+        "gemini_rank": 3,
+        "openai_rank": 3
+      },
+      {
+        "stock_code": "043260",
+        "stock_name": "성호전자",
+        "rank": 4,
+        "confidence": "HIGH",
+        "reason": "[Gemini] 호실적 발표로 사상 최고가를 경신하며 강력한 주가 모멘텀을 형성했습니다. 외인의 강한 매수세가 긍정적이며 차트 흐름도 매우 좋습니다. [GPT-4o] 호실적을 바탕으로 한 사상 최고가 경신, 긍정적 시장 반응.",
+        "risk": "기관의 대량 매도세가 관찰되어 차익실현 물량 출회 가능성이 있으며, 단기 과열 양상에 대한 주의가 필요합니다.",
+        "expected_return": "4% - 10%",
+        "source": "consensus",
+        "gemini_rank": 4,
+        "openai_rank": 5
+      },
+      {
+        "stock_code": "307750",
+        "stock_name": "국전약품",
+        "rank": 5,
+        "confidence": "HIGH",
+        "reason": "[Gemini] HBM 공정 라인 평가 통과 및 초고순도 세정액 양산 소식은 강력한 성장 동력이 될 수 있는 실질적인 호재입니다. 반도체 테마와 연결되어 시장의 관심이 높습니다. [GPT-4o] HBM 공정 라인 통과와 초고순도 세정액 양산 소식으로 인해 반도체 특수가스 분야 호재.",
+        "risk": "외인과 기관의 동반 대량 매도세가 확인되어 강력한 상승에 제동을 걸 수 있습니다. 수급 상황이 단기적인 약점으로 작용할 수 있습니다.",
+        "expected_return": "3% - 8%",
+        "source": "consensus",
+        "gemini_rank": 5,
+        "openai_rank": 4
+      },
+      {
+        "stock_code": "018670",
+        "stock_name": "SK가스",
+        "rank": 6,
+        "confidence": "LOW",
+        "reason": "중동 지정학적 리스크에 따른 에너지 가격 상승 기대감이 높으나, 거래대금이 상대적으로 낮아 유동성 위험이 있습니다. 테마성 움직임이 강합니다.",
+        "risk": "낮은 거래대금으로 인한 급격한 주가 변동성이 우려되며, 지정학적 리스크 완화 시 주가 하방 압력이 커질 수 있습니다.",
+        "expected_return": "3% - 7%",
+        "source": "gemini_only"
+      }
+    ],
+    "consensus_count": 5,
+    "gemini_count": 6,
+    "openai_count": 5,
+    "market_view": "[Gemini] 오늘 시장은 중동 지정학적 리스크 고조에 따른 방위산업, 해운, 에너지 관련주가 강세를 보였으며, 일부 종목은 HBM 및 실적 개선 등 개별 호재로 견조한 상승세를 이어가는 혼조세를 보였습니다. | [GPT-4o] 미국-이란 긴장 고조로 인해 방위산업 및 에너지 관련 종목이 주목받는 시장.",
+    "top_themes": [
+      "방위산업",
+      "중동 지정학 리스크 (해운, 유가)",
+      "반도체 (HBM)",
+      "지정학적 리스크",
+      "에너지 가격 상승"
+    ],
+    "generated_at": "2026-03-03T17:17:25.138744",
+    "models": [
+      "gemini-2.5-flash",
+      "gpt-4o"
+    ],
+    "consensus_method": "multi_ai"
+  }
+}

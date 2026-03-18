@@ -1,0 +1,15 @@
+{
+  "date": "2026-02-16",
+  "total_candidates": 0,
+  "filtered_count": 0,
+  "signals": [],
+  "by_grade": {
+    "S": 0,
+    "A": 0,
+    "B": 0,
+    "C": 0
+  },
+  "by_market": {},
+  "processing_time_ms": 31405.293703079224,
+  "updated_at": "2026-02-16T15:10:42.953986"
+}

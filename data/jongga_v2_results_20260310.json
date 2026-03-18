@@ -1,0 +1,648 @@
+{
+  "date": "2026-03-10",
+  "total_candidates": 7,
+  "filtered_count": 7,
+  "signals": [
+    {
+      "id": null,
+      "stock_code": "218410",
+      "stock_name": "RFHIC",
+      "market": "KOSDAQ",
+      "sector": "",
+      "signal_date": "2026-03-10",
+      "grade": "S",
+      "score": {
+        "news": 3,
+        "volume": 3,
+        "chart": 1,
+        "candle": 0,
+        "consolidation": 0,
+        "supply": 2,
+        "disclosure": 0,
+        "analyst": 3,
+        "llm_reason": "미국 방산기업과 500억 계약 체결 및 하나증권 목표가 상향으로 인한 어닝 서프라이즈 지속 기대감이 높음.",
+        "llm_source": "none+gemini",
+        "total": 12
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "조선비즈",
+          "연합뉴스",
+          "머니투데이"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": false,
+        "is_breakout": false,
+        "ma_aligned": true,
+        "good_candle": false,
+        "has_consolidation": false,
+        "supply_positive": true,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": false,
+        "volume_suspicious": false
+      },
+      "current_price": 75600,
+      "entry_price": 75600,
+      "stop_price": 73332,
+      "target_price": 79380,
+      "quantity": 165,
+      "position_size": 12474000,
+      "r_value": 250000.0,
+      "r_multiplier": 1.5,
+      "trading_value": 121783888800,
+      "change_pct": 19.62,
+      "volume_ratio": 0.0,
+      "foreign_5d": 427968,
+      "inst_5d": 164264,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "하나증권 \"RFHIC 목표가 10만원으로 상향…어닝서프라이즈 지속\"",
+          "source": "연합뉴스",
+          "published_at": "2026-03-10T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0015948814&office_id=001&code=218410&page=1&sm="
+        },
+        {
+          "title": "RFHIC, 미 방산기업과 500억 계약에 '불기둥'…\"목표가 10만원...",
+          "source": "머니투데이",
+          "published_at": "2026-03-10T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005327654&office_id=008&code=218410&page=1&sm="
+        },
+        {
+          "title": "[특징주] “‘텐베거’ 가능” 증권사 평가에…RFHIC ‘1년 중 최고...",
+          "source": "조선비즈",
+          "published_at": "2026-03-10T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0001147057&office_id=366&code=218410&page=1&sm="
+        }
+      ],
+      "themes": [
+        "5G",
+        "방산",
+        "통신장비"
+      ]
+    },
+    {
+      "id": null,
+      "stock_code": "003490",
+      "stock_name": "대한항공",
+      "market": "KOSPI",
+      "sector": "",
+      "signal_date": "2026-03-10",
+      "grade": "S",
+      "score": {
+        "news": 2,
+        "volume": 3,
+        "chart": 0,
+        "candle": 0,
+        "consolidation": 0,
+        "supply": 1,
+        "disclosure": 0,
+        "analyst": 3,
+        "llm_reason": "유가 하락 및 유가 진정으로 인한 항공주 상승 기대감",
+        "llm_source": "none+gemini",
+        "total": 9
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "조선일보",
+          "서울경제"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": false,
+        "is_breakout": false,
+        "ma_aligned": false,
+        "good_candle": false,
+        "has_consolidation": false,
+        "supply_positive": true,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": false,
+        "volume_suspicious": false
+      },
+      "current_price": 24250,
+      "entry_price": 24250,
+      "stop_price": 23522,
+      "target_price": 25462,
+      "quantity": 515,
+      "position_size": 12488750,
+      "r_value": 250000.0,
+      "r_multiplier": 1.5,
+      "trading_value": 87396878750,
+      "change_pct": 8.26,
+      "volume_ratio": 0.0,
+      "foreign_5d": 438746,
+      "inst_5d": -4285051,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "유가 떨어지자 현대차에 베팅...삼전닉스는 차익실현 [주식 초고수는.....",
+          "source": "서울경제",
+          "published_at": "2026-03-10T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0004597585&office_id=011&code=003490&page=1&sm="
+        },
+        {
+          "title": "중동 전쟁, 중동 노선 없는 저비용항공사에 불똥튄 이유는?",
+          "source": "조선일보",
+          "published_at": "2026-03-10T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0003963578&office_id=023&code=003490&page=1&sm="
+        },
+        {
+          "title": "유가 진정에 항공주 급등...대한항공 6%↑[이런국장 저런주식]",
+          "source": "서울경제",
+          "published_at": "2026-03-10T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0004597511&office_id=011&code=003490&page=1&sm="
+        }
+      ],
+      "themes": [
+        "항공",
+        "유가"
+      ]
+    },
+    {
+      "id": null,
+      "stock_code": "007660",
+      "stock_name": "이수페타시스",
+      "market": "KOSPI",
+      "sector": "",
+      "signal_date": "2026-03-10",
+      "grade": "A",
+      "score": {
+        "news": 2,
+        "volume": 3,
+        "chart": 0,
+        "candle": 0,
+        "consolidation": 0,
+        "supply": 1,
+        "disclosure": 0,
+        "analyst": 2,
+        "llm_reason": "상위 1% 고수들이 쓸어담은 종목으로 긍정적인 투자 기대감이 있음.",
+        "llm_source": "none+gemini",
+        "total": 8
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "한국경제"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": false,
+        "is_breakout": false,
+        "ma_aligned": false,
+        "good_candle": false,
+        "has_consolidation": false,
+        "supply_positive": true,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": false,
+        "volume_suspicious": false
+      },
+      "current_price": 113400,
+      "entry_price": 113400,
+      "stop_price": 109998,
+      "target_price": 119070,
+      "quantity": 73,
+      "position_size": 8278200,
+      "r_value": 250000.0,
+      "r_multiplier": 1.0,
+      "trading_value": 100756807200,
+      "change_pct": 9.46,
+      "volume_ratio": 0.0,
+      "foreign_5d": -649983,
+      "inst_5d": 158519,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "삼전·하이닉스 다 던졌다…상위 1% 고수들 쓸어담은 종목 [마켓PRO]",
+          "source": "한국경제",
+          "published_at": "2026-03-10T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005260311&office_id=015&code=007660&page=1&sm="
+        }
+      ],
+      "themes": [
+        "기관/외국인 수급",
+        "반도체"
+      ]
+    },
+    {
+      "id": null,
+      "stock_code": "006650",
+      "stock_name": "대한유화",
+      "market": "KOSPI",
+      "sector": "",
+      "signal_date": "2026-03-10",
+      "grade": "A",
+      "score": {
+        "news": 1,
+        "volume": 2,
+        "chart": 0,
+        "candle": 0,
+        "consolidation": 0,
+        "supply": 1,
+        "disclosure": 0,
+        "analyst": 3,
+        "llm_reason": "중동 전쟁으로 인한 나프타 가격 급등은 대한유화의 수익성에 부정적인 영향을 미칠 수 있음.",
+        "llm_source": "none+gemini",
+        "total": 7
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "매일경제"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": false,
+        "is_breakout": false,
+        "ma_aligned": false,
+        "good_candle": false,
+        "has_consolidation": false,
+        "supply_positive": true,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": false,
+        "volume_suspicious": false
+      },
+      "current_price": 138200,
+      "entry_price": 138200,
+      "stop_price": 134054,
+      "target_price": 145110,
+      "quantity": 60,
+      "position_size": 8292000,
+      "r_value": 250000.0,
+      "r_multiplier": 1.0,
+      "trading_value": 21814317200,
+      "change_pct": 13.74,
+      "volume_ratio": 0.0,
+      "foreign_5d": 30457,
+      "inst_5d": -264766,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "김종문 오션마린스 대표 제38회 울산상공대상(경영) 수상자 선정",
+          "source": "매일경제",
+          "published_at": "2026-03-10T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005647752&office_id=009&code=006650&page=1&sm="
+        },
+        {
+          "title": "“바닥인 줄 알았는데 전쟁까지”…치솟는 나프타값, 석화 구조조정 ...",
+          "source": "매일경제",
+          "published_at": "2026-03-09T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005647622&office_id=009&code=006650&page=1&sm="
+        },
+        {
+          "title": "중동전쟁에 나프타값 26% 껑충 … 석화산업 '3중 악재' 휩싸여",
+          "source": "매일경제",
+          "published_at": "2026-03-09T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005647564&office_id=009&code=006650&page=1&sm="
+        }
+      ],
+      "themes": [
+        "석유화학",
+        "원자재 가격 변동"
+      ]
+    },
+    {
+      "id": null,
+      "stock_code": "052690",
+      "stock_name": "한전기술",
+      "market": "KOSPI",
+      "sector": "",
+      "signal_date": "2026-03-10",
+      "grade": "A",
+      "score": {
+        "news": 2,
+        "volume": 3,
+        "chart": 0,
+        "candle": 0,
+        "consolidation": 0,
+        "supply": 0,
+        "disclosure": 0,
+        "analyst": 2,
+        "llm_reason": "원전 해체 시장 개방 및 SMR 기술 교류 확대로 긍정적 기대감이 존재함",
+        "llm_source": "none+gemini",
+        "total": 7
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "문화일보",
+          "한국경제"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": false,
+        "is_breakout": false,
+        "ma_aligned": false,
+        "good_candle": false,
+        "has_consolidation": false,
+        "supply_positive": false,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": false,
+        "volume_suspicious": false
+      },
+      "current_price": 160900,
+      "entry_price": 160900,
+      "stop_price": 156073,
+      "target_price": 168945,
+      "quantity": 51,
+      "position_size": 8205900,
+      "r_value": 250000.0,
+      "r_multiplier": 1.0,
+      "trading_value": 68377673000,
+      "change_pct": 8.94,
+      "volume_ratio": 0.0,
+      "foreign_5d": -25380,
+      "inst_5d": -56866,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "11兆 원전 해체시장 열린다…두산 - 한전KPS 격돌",
+          "source": "한국경제",
+          "published_at": "2026-03-09T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005260000&office_id=015&code=052690&page=1&sm="
+        },
+        {
+          "title": "태국·인도와 SMR 기술교류… 혁신형 에너지사업 ‘ON’",
+          "source": "문화일보",
+          "published_at": "2026-03-10T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0002775945&office_id=021&code=052690&page=1&sm="
+        }
+      ],
+      "themes": [
+        "원전해체",
+        "SMR",
+        "에너지"
+      ]
+    },
+    {
+      "id": null,
+      "stock_code": "047040",
+      "stock_name": "대우건설",
+      "market": "KOSPI",
+      "sector": "",
+      "signal_date": "2026-03-10",
+      "grade": "A",
+      "score": {
+        "news": 1,
+        "volume": 3,
+        "chart": 0,
+        "candle": 0,
+        "consolidation": 0,
+        "supply": 1,
+        "disclosure": 0,
+        "analyst": 2,
+        "llm_reason": "원자력 테마 ETF 수익률 1위와 수도권 분양 계획이 긍정적이지만, 대우건설에 직접적인 큰 호재로 보기 어렵습니다.",
+        "llm_source": "none+gemini",
+        "total": 7
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "한국경제TV",
+          "매일경제"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": false,
+        "is_breakout": false,
+        "ma_aligned": false,
+        "good_candle": false,
+        "has_consolidation": false,
+        "supply_positive": true,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": false,
+        "volume_suspicious": false
+      },
+      "current_price": 9590,
+      "entry_price": 9590,
+      "stop_price": 9302,
+      "target_price": 10069,
+      "quantity": 868,
+      "position_size": 8324120,
+      "r_value": 250000.0,
+      "r_multiplier": 1.0,
+      "trading_value": 149406656980,
+      "change_pct": 8.85,
+      "volume_ratio": 0.0,
+      "foreign_5d": 5408981,
+      "inst_5d": -2734416,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "한투운용 ‘ACE 원자력TOP10’, 원전 테마ETF 수익률 1위",
+          "source": "매일경제",
+          "published_at": "2026-03-10T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005647834&office_id=009&code=047040&page=1&sm="
+        },
+        {
+          "title": "한투운용 ACE 원자력TOP10 ETF, 원자력 ETF 중 6개월 수...",
+          "source": "한국경제TV",
+          "published_at": "2026-03-10T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0001244551&office_id=215&code=047040&page=1&sm="
+        },
+        {
+          "title": "3월까지 10대 건설사 컨소시엄, 수도권서 8000가구 분양",
+          "source": "매일경제",
+          "published_at": "2026-03-10T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005647763&office_id=009&code=047040&page=1&sm="
+        }
+      ],
+      "themes": [
+        "건설",
+        "원자력"
+      ]
+    },
+    {
+      "id": null,
+      "stock_code": "375500",
+      "stock_name": "DL이앤씨",
+      "market": "KOSPI",
+      "sector": "",
+      "signal_date": "2026-03-10",
+      "grade": "A",
+      "score": {
+        "news": 2,
+        "volume": 2,
+        "chart": 0,
+        "candle": 0,
+        "consolidation": 0,
+        "supply": 1,
+        "disclosure": 0,
+        "analyst": 2,
+        "llm_reason": "DL이앤씨가 참여하는 컨소시엄이 수도권 분양 예정이며, 목동 재건축 사업 시공사 입찰에 참여할 가능성이 있어 긍정적 기대감이 있음.",
+        "llm_source": "none+gemini",
+        "total": 7
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "매일경제",
+          "동아일보"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": false,
+        "is_breakout": false,
+        "ma_aligned": false,
+        "good_candle": false,
+        "has_consolidation": false,
+        "supply_positive": true,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": false,
+        "volume_suspicious": false
+      },
+      "current_price": 47000,
+      "entry_price": 47000,
+      "stop_price": 45590,
+      "target_price": 49350,
+      "quantity": 177,
+      "position_size": 8319000,
+      "r_value": 250000.0,
+      "r_multiplier": 1.0,
+      "trading_value": 14044822000,
+      "change_pct": 8.42,
+      "volume_ratio": 0.0,
+      "foreign_5d": 82989,
+      "inst_5d": -97047,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "3월까지 10대 건설사 컨소시엄, 수도권서 8000가구 분양",
+          "source": "매일경제",
+          "published_at": "2026-03-10T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005647763&office_id=009&code=375500&page=1&sm="
+        },
+        {
+          "title": "막오른 30조 ‘목동 재건축’… 첫 주자 6단지 내달 시공사 입찰 마감",
+          "source": "동아일보",
+          "published_at": "2026-03-10T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0003702623&office_id=020&code=375500&page=1&sm="
+        },
+        {
+          "title": "‘30조’ 목동 재건축 막올랐다…첫주자 6단지 내달 시공사 입찰 마감",
+          "source": "동아일보",
+          "published_at": "2026-03-09T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0003702550&office_id=020&code=375500&page=1&sm="
+        }
+      ],
+      "themes": [
+        "건설",
+        "수도권 분양",
+        "재건축"
+      ]
+    }
+  ],
+  "by_grade": {
+    "S": 2,
+    "A": 5,
+    "B": 0,
+    "C": 0
+  },
+  "by_market": {
+    "KOSDAQ": 1,
+    "KOSPI": 6
+  },
+  "processing_time_ms": 329255.55634498596,
+  "updated_at": "2026-03-10T15:06:11.377300+09:00",
+  "claude_picks": {
+    "picks": [
+      {
+        "stock_code": "218410",
+        "stock_name": "RFHIC",
+        "rank": 1,
+        "confidence": "HIGH",
+        "reason": "[Gemini] 미국 방산기업과의 대규모 계약 체결 및 증권사 목표가 상향으로 실적 기대감이 높으며, 외인과 기관의 동반 매수세가 돋보여 수급이 매우 긍정적입니다. [GPT-4o] 미국 방산기업과의 500억 계약 체결 및 목표가 상향은 실적 서프라이즈를 기대하게 합니다.",
+        "risk": "단기 급등에 따른 차익 실현 매물 출현 가능성이 있으며, 방산 계약 관련 추가 정보 부재 시 불확실성이 있을 수 있습니다.",
+        "expected_return": "5% ~ 15%",
+        "source": "consensus",
+        "gemini_rank": 1,
+        "openai_rank": 1
+      },
+      {
+        "stock_code": "007660",
+        "stock_name": "이수페타시스",
+        "rank": 2,
+        "confidence": "HIGH",
+        "reason": "[Gemini] 반도체 테마 강세 속에 상위 고수들의 매수세가 확인되며, 기관의 순매수가 유입되어 시장의 관심이 집중되고 있습니다. [GPT-4o] 상위 투자자들의 집중 매수는 긍정적이나 기관의 동일한 매수 흐름 부재.",
+        "risk": "외국인의 매도세가 지속될 경우 상승 모멘텀이 둔화될 수 있으며, 구체적인 실적 개선 뉴스보다는 센티멘탈에 의존하는 경향이 있습니다.",
+        "expected_return": "3% ~ 7%",
+        "source": "consensus",
+        "gemini_rank": 3,
+        "openai_rank": 2
+      },
+      {
+        "stock_code": "375500",
+        "stock_name": "DL이앤씨",
+        "rank": 3,
+        "confidence": "HIGH",
+        "reason": "[Gemini] 수도권 분양 및 목동 재건축 사업 참여 기대감 등 구체적인 호재가 존재하며, 외국인 순매수가 유입되고 있습니다. [GPT-4o] 수도권 재개발 참여가 긍정적이지만, 구체적 수익 개선 여부는 미확인.",
+        "risk": "기관의 매도세와 상대적으로 낮은 거래대금은 단기 상승에 제약을 줄 수 있으며, 재건축 사업 진행 불확실성이 존재합니다.",
+        "expected_return": "3% ~ 8%",
+        "source": "consensus",
+        "gemini_rank": 2,
+        "openai_rank": 4
+      },
+      {
+        "stock_code": "047040",
+        "stock_name": "대우건설",
+        "rank": 4,
+        "confidence": "HIGH",
+        "reason": "[Gemini] 높은 거래대금과 외국인 순매수가 돋보이며, 수도권 분양 계획 등 건설업황에 대한 긍정적 시그널이 있습니다. [GPT-4o] 원자력 테마의 인기 상승에도 불구하고 직접적 재무 영향은 제한적일 수 있음.",
+        "risk": "AI 분석에서도 언급되었듯이 직접적인 큰 호재로 보기 어렵다는 점과 기관의 매도세가 약점으로 작용합니다.",
+        "expected_return": "1% ~ 4%",
+        "source": "consensus",
+        "gemini_rank": 6,
+        "openai_rank": 3
+      },
+      {
+        "stock_code": "052690",
+        "stock_name": "한전기술",
+        "rank": 5,
+        "confidence": "MEDIUM",
+        "reason": "[Gemini] 원전 해체 및 SMR 기술 관련 긍정적 기대감이 존재하여 테마 매수세가 유입될 가능성이 있습니다. [GPT-4o] 긍정적인 SMR 기술 교류 소식이 있으나, 외인 및 기관의 적극적 매수 부재.",
+        "risk": "외인과 기관의 동반 매도세가 강하여 단기적인 주가 상승에 큰 부담으로 작용하며, 테마 기대감만으로는 한계가 있습니다.",
+        "expected_return": "1% ~ 5%",
+        "source": "consensus",
+        "gemini_rank": 5,
+        "openai_rank": 5
+      },
+      {
+        "stock_code": "003490",
+        "stock_name": "대한항공",
+        "rank": 6,
+        "confidence": "LOW",
+        "reason": "유가 하락으로 인한 항공운송 섹터의 긍정적 기대감이 존재하며 외국인의 매수세가 유입되고 있습니다.",
+        "risk": "기관의 대규모 매도세가 압박으로 작용하며, 유가 변동성에 따른 실적 불확실성이 상존합니다.",
+        "expected_return": "2% ~ 6%",
+        "source": "gemini_only"
+      }
+    ],
+    "consensus_count": 5,
+    "gemini_count": 6,
+    "openai_count": 5,
+    "market_view": "[Gemini] 오늘 시장은 방산, 건설, 반도체 등 특정 섹터의 개별 호재 및 테마에 따라 종목별 차별화된 움직임을 보였으며, 전반적으로 수급 불균형이 나타나는 하루였습니다. | [GPT-4o] 자원 가격 변동성과 외인과 기관의 매도세가 시장에 부담이 될 수 있습니다.",
+    "top_themes": [
+      "방산",
+      "건설/재건축",
+      "반도체",
+      "항공",
+      "원전",
+      "에너지"
+    ],
+    "generated_at": "2026-03-10T15:06:11.371232",
+    "models": [
+      "gemini-2.5-flash",
+      "gpt-4o"
+    ],
+    "consensus_method": "multi_ai"
+  }
+}

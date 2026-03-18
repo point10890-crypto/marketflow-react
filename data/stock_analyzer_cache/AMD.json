@@ -1,0 +1,39 @@
+{
+  "name": "AMD",
+  "ticker": "AMD",
+  "result": "매수",
+  "date": "2026-03-15 19:35:47",
+  "elapsed": 0,
+  "consensus_score": 3.9,
+  "analyst_count": 51,
+  "recommendation_detail": {
+    "strongBuy": 6,
+    "buy": 34,
+    "hold": 11,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "price_targets": {
+    "current": 193.39,
+    "high": 365.0,
+    "low": 220.0,
+    "mean": 289.71738,
+    "median": 290.5
+  },
+  "current_price": 193.39,
+  "upside_potential": 49.8,
+  "key_stats": {
+    "name": "Advanced Micro Devices, Inc.",
+    "sector": "Technology",
+    "industry": "Semiconductors",
+    "market_cap": 315305164800,
+    "pe_ratio": 74.09579,
+    "forward_pe": 17.76275,
+    "dividend_yield": null,
+    "beta": 2.022,
+    "fifty_two_week_high": 267.08,
+    "fifty_two_week_low": 76.48,
+    "currency": "USD"
+  },
+  "source": "yfinance"
+}
