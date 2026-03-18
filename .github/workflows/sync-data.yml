@@ -89,6 +89,6 @@ jobs:
           if git diff --cached --quiet; then
             echo "변경사항 없음"
           else
-            git commit -m "data: auto-sync ($(TZ=Asia/Seoul date +'%Y-%m-%d %H:%M KST'))"
+            git commit -m "data: auto-sync ($(TZ=Asia/Seoul date +'%Y-%m-%d %H:%M KST')) [skip ci]"
             git push
           fi

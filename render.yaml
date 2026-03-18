@@ -10,7 +10,7 @@ services:
       - key: FLASK_BASE_URL
         value: https://closing-bet-api.onrender.com
       - key: CORS_ALLOWED_ORIGINS
-        value: https://marketflow.pages.dev,https://localhost:5173,http://localhost:5173
+        value: https://marketflow-dashboard.point10890.workers.dev,https://marketflow.pages.dev,https://localhost:5173,http://localhost:5173
       - key: JWT_SECRET
         generateValue: true
       - key: SPRING_PROFILES_ACTIVE

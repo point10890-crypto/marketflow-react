@@ -28,12 +28,14 @@ jobs:
       - name: Wait and health check
         run: |
           echo "=== Waiting for Render deploy (max 5min) ==="
+          HEALTH_URL="${{ secrets.RENDER_API_URL }}"
+          HEALTH_URL="${HEALTH_URL:-https://marketflow-api-fzez.onrender.com}"
           for i in $(seq 1 10); do
             sleep 30
             CODE=$(curl -s -o /dev/null -w "%{http_code}" \
               --max-time 30 \
-              "${{ secrets.RENDER_API_URL }}/api/health" 2>/dev/null || echo "000")
-            echo "  Check $i/10: HTTP $CODE"
+              "${HEALTH_URL}/api/health" 2>/dev/null || echo "000")
+            echo "  Check $i/10: HTTP $CODE (${HEALTH_URL})"
             if [ "$CODE" = "200" ]; then
               echo "  Backend is live!"
               break
