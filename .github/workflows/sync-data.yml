@@ -26,38 +26,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Wake up Flask (Render)
+      - name: Wake up Render API
         run: |
-          echo "=== Flask 웨이크업 (closing-bet-api.onrender.com) ==="
+          echo "=== Render API 웨이크업 (marketflow-api-fzez.onrender.com) ==="
           for i in 1 2 3; do
             CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 60 \
-              https://closing-bet-api.onrender.com/api/health 2>/dev/null || echo "000")
+              https://marketflow-api-fzez.onrender.com/api/health 2>/dev/null || echo "000")
             echo "  Ping $i: HTTP $CODE"
-            if [ "$CODE" = "200" ]; then echo "  Flask 활성화!"; break; fi
+            if [ "$CODE" = "200" ]; then echo "  API 활성화!"; break; fi
             sleep 30
           done
 
-      - name: Wake up Spring Boot (Render)
-        run: |
-          echo "=== Spring Boot 웨이크업 ==="
-          SPRING_URL="${{ secrets.RENDER_API_URL }}"
-          if [ -z "$SPRING_URL" ]; then
-            echo "  RENDER_API_URL 미설정 — 건너뜀"
-          else
-            for i in 1 2 3; do
-              CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 60 \
-                "$SPRING_URL/api/health" 2>/dev/null || echo "000")
-              echo "  Ping $i: HTTP $CODE"
-              if [ "$CODE" = "200" ]; then echo "  Spring Boot 활성화!"; break; fi
-              sleep 30
-            done
-          fi
-
       - name: Fetch snapshots
         run: |
-          SPRING_URL="${{ secrets.RENDER_API_URL }}"
-          FLASK_URL="https://closing-bet-api.onrender.com"
-          BASE_URL="${SPRING_URL:-$FLASK_URL}"
+          BASE_URL="https://marketflow-api-fzez.onrender.com"
           DIR="frontend-react/src/data"
           mkdir -p "$DIR"
           OK=0; FAIL=0
