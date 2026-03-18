@@ -1,230 +1,221 @@
 {
-  "timestamp": "2026-03-15T15:38:49.987461",
+  "timestamp": "2026-03-19T00:28:48.753790",
   "version": "2.0",
   "market_data": {
-    "timestamp": "2026-03-15T15:38:49.987469",
+    "timestamp": "2026-03-19T00:28:48.753798",
     "indices": {
       "SPY": {
         "name": "S&P 500",
-        "price": 662.29,
-        "change": -0.57,
-        "prev_close": 666.06,
+        "price": 667.19,
+        "change": -0.54,
+        "prev_close": 670.79,
         "high_52w": 697.84,
         "low_52w": 477.64,
-        "pct_from_high": -5.09
+        "pct_from_high": -4.39
       },
       "QQQ": {
         "name": "NASDAQ 100",
-        "price": 593.72,
-        "change": -0.59,
-        "prev_close": 597.26,
+        "price": 600.72,
+        "change": -0.43,
+        "prev_close": 603.31,
         "high_52w": 636.6,
         "low_52w": 400.96,
-        "pct_from_high": -6.74
+        "pct_from_high": -5.64
       },
       "DIA": {
         "name": "Dow Jones",
-        "price": 466.41,
-        "change": -0.23,
-        "prev_close": 467.48,
+        "price": 466.93,
+        "change": -0.84,
+        "prev_close": 470.9,
         "high_52w": 504.67,
         "low_52w": 361.47,
-        "pct_from_high": -7.58
+        "pct_from_high": -7.48
       },
       "IWM": {
         "name": "Russell 2000",
-        "price": 246.59,
-        "change": -0.33,
-        "prev_close": 247.41,
-        "high_52w": 271.6,
-        "low_52w": 170.2,
-        "pct_from_high": -9.21
+        "price": 248.01,
+        "change": -0.81,
+        "prev_close": 250.05,
+        "high_52w": 271.12,
+        "low_52w": 169.9,
+        "pct_from_high": -8.52
       }
     },
     "futures": {
       "ES=F": {
         "name": "S&P 500 Futures",
-        "price": 6636.0,
-        "change": -0.62,
-        "prev_close": 6677.5,
+        "price": 6733.5,
+        "change": 0.17,
+        "prev_close": 6721.75,
         "high_52w": 7043.0,
         "low_52w": 4832.0,
-        "pct_from_high": -5.78
+        "pct_from_high": -4.39
       },
       "NQ=F": {
         "name": "NASDAQ Futures",
-        "price": 24394.25,
-        "change": -0.67,
-        "prev_close": 24560.0,
+        "price": 24886.25,
+        "change": 0.37,
+        "prev_close": 24795.5,
         "high_52w": 26399.0,
         "low_52w": 16460.0,
-        "pct_from_high": -7.59
+        "pct_from_high": -5.73
       },
       "YM=F": {
         "name": "Dow Futures",
-        "price": 46592.0,
-        "change": -0.28,
-        "prev_close": 46721.0,
+        "price": 46933.0,
+        "change": -0.23,
+        "prev_close": 47039.0,
         "high_52w": 50611.0,
         "low_52w": 36708.0,
-        "pct_from_high": -7.94
+        "pct_from_high": -7.27
       }
     },
     "bonds": {
       "^TNX": {
         "name": "10Y Treasury",
-        "price": 4.28,
-        "change": 0.28,
-        "prev_close": 4.27,
+        "price": 4.23,
+        "change": 0.57,
+        "prev_close": 4.2,
         "high_52w": 4.63,
-        "low_52w": null,
-        "pct_from_high": -7.43
+        "low_52w": 3.89,
+        "pct_from_high": -8.71
       },
       "^FVX": {
         "name": "5Y Treasury",
-        "price": 3.87,
-        "change": -0.26,
-        "prev_close": 3.88,
+        "price": 3.82,
+        "change": 0.79,
+        "prev_close": 3.79,
         "high_52w": 4.22,
-        "low_52w": null,
-        "pct_from_high": -8.26
+        "low_52w": 3.51,
+        "pct_from_high": -9.64
       },
       "^IRX": {
         "name": "3M T-Bill",
-        "price": 3.6,
-        "change": -0.06,
+        "price": 3.61,
+        "change": 0.14,
         "prev_close": 3.61,
         "high_52w": 4.3,
-        "low_52w": null,
-        "pct_from_high": -16.31
+        "low_52w": 3.51,
+        "pct_from_high": -16.14
       }
     },
     "currencies": {
-      "DX-Y.NYB": {
-        "name": "Dollar Index",
-        "price": 100.36,
-        "change": 0.62,
-        "prev_close": 99.74,
-        "high_52w": 104.68,
-        "low_52w": 95.55,
-        "pct_from_high": -4.13
-      },
       "USDKRW=X": {
         "name": "USD/KRW",
-        "price": 1494.4,
-        "change": 1.62,
-        "prev_close": 1470.58,
+        "price": 1500.48,
+        "change": 0.78,
+        "prev_close": 1488.91,
         "high_52w": 1506.25,
         "low_52w": 1322.42,
-        "pct_from_high": -0.79
+        "pct_from_high": -0.38
       },
       "USDJPY=X": {
         "name": "USD/JPY",
-        "price": 159.72,
-        "change": 0.32,
-        "prev_close": 159.21,
-        "high_52w": 159.72,
+        "price": 159.44,
+        "change": 0.21,
+        "prev_close": 159.1,
+        "high_52w": 159.63,
         "low_52w": 139.89,
-        "pct_from_high": null
+        "pct_from_high": -0.12
       },
       "EURUSD=X": {
         "name": "EUR/USD",
-        "price": 1.14,
-        "change": -1.04,
+        "price": 1.15,
+        "change": 0.21,
         "prev_close": 1.15,
         "high_52w": 1.2,
         "low_52w": 1.07,
-        "pct_from_high": -4.99
+        "pct_from_high": -4.16
       }
     },
     "commodities": {
       "GC=F": {
         "name": "Gold",
-        "price": 5061.7,
-        "change": -1.06,
-        "prev_close": 5115.8,
+        "price": 4879.2,
+        "change": -2.44,
+        "prev_close": 5001.0,
         "high_52w": 5586.2,
         "low_52w": 2949.7,
-        "pct_from_high": -9.39
+        "pct_from_high": -12.66
       },
       "CL=F": {
         "name": "Crude Oil",
-        "price": 98.71,
-        "change": 3.11,
-        "prev_close": 95.73,
+        "price": 98.04,
+        "change": 1.9,
+        "prev_close": 96.21,
         "high_52w": 119.48,
         "low_52w": 54.98,
-        "pct_from_high": -17.38
+        "pct_from_high": -17.94
       },
       "BTC-USD": {
         "name": "Bitcoin",
-        "price": 71447.44,
-        "change": 0.68,
-        "prev_close": 70968.27,
+        "price": 71315.1,
+        "change": -3.53,
+        "prev_close": 73922.48,
         "high_52w": 126198.07,
         "low_52w": 60074.2,
-        "pct_from_high": -43.38
+        "pct_from_high": -43.49
       }
     },
     "korean_indices": {
       "^KS11": {
         "name": "KOSPI",
-        "price": 5487.24,
-        "change": -1.72,
-        "prev_close": 5583.25,
+        "price": 5925.03,
+        "change": 5.04,
+        "prev_close": 5640.48,
         "high_52w": 6347.41,
         "low_52w": 2284.72,
-        "pct_from_high": -13.55
+        "pct_from_high": -6.65
       },
       "^KQ11": {
         "name": "KOSDAQ",
-        "price": 1152.96,
-        "change": 0.4,
-        "prev_close": 1148.4,
+        "price": 1164.38,
+        "change": 2.41,
+        "prev_close": 1136.94,
         "high_52w": 1215.67,
         "low_52w": 637.55,
-        "pct_from_high": -5.16
+        "pct_from_high": -4.22
       }
     },
     "vix": {
-      "value": 27.19,
-      "change": -0.37,
-      "level": "Fear",
-      "color": "#FF5722"
+      "value": 23.02,
+      "change": 2.91,
+      "level": "Neutral",
+      "color": "#FFC107"
     }
   },
   "vix": {
-    "value": 27.19,
-    "change": -0.37,
-    "level": "Fear",
-    "color": "#FF5722"
+    "value": 23.02,
+    "change": 2.91,
+    "level": "Neutral",
+    "color": "#FFC107"
   },
   "fear_greed": {
-    "score": 56,
-    "level": "Neutral",
-    "color": "#FFC107",
+    "score": 61,
+    "level": "Greed",
+    "color": "#4CAF50",
     "components": {
       "vix": {
-        "value": 27.19,
-        "score": 43
+        "value": 23.02,
+        "score": 57
       },
       "momentum": {
-        "pct_from_high": -5.09,
-        "score": 75
+        "pct_from_high": -4.39,
+        "score": 78
       },
       "breadth": {
-        "spy_chg": -0.57,
-        "iwm_chg": -0.33,
-        "score": 52
+        "spy_chg": -0.54,
+        "iwm_chg": -0.81,
+        "score": 47
       },
       "safe_haven": {
-        "stock_chg": -0.57,
-        "gold_chg": -1.06,
-        "score": 55
+        "stock_chg": -0.54,
+        "gold_chg": -2.44,
+        "score": 69
       },
       "junk_bond": {
-        "yield_change": 0.28,
-        "score": 51
+        "yield_change": 0.57,
+        "score": 53
       }
     }
   },
@@ -243,24 +234,24 @@
     },
     "risk": {
       "risk_level": "Elevated",
-      "var_95_5d": 2058.96,
-      "cvar_95_5d": 2403.41
+      "var_95_5d": 2434.13,
+      "cvar_95_5d": 2796.7
     },
     "top_picks": [
       {
         "ticker": "AKAM",
         "name": "Akamai Technologies, Inc.",
-        "final_score": 81.6,
-        "quant_score": 75.8,
+        "final_score": 79.9,
+        "quant_score": 73.6,
         "ai_bonus": 21,
         "ai_recommendation": "매수",
         "grade": "🌟 A급 (적극 매수)",
-        "current_price": 105.47,
-        "target_upside": 3.0,
+        "current_price": 107.67,
+        "target_upside": 1.7,
         "sd_stage": "Strong Accumulation",
-        "inst_pct": 102.51,
-        "rsi": 58.2,
-        "ai_summary": "```json\n{\n  \"thesis\": \"아카마이(AKAM)는 분산형 AI 플랫폼 확장을 통한 새로운 성장 동력을 확보하고 있으며, 강력한 기관 수급(102.5%)이 이를 뒷받침하고 있으나, 30배가 넘는 P/E와 최근 이익 전망치 하향 조정에 따른 단기 변동성 리스크가 상존합니다.\",\n  \"catalysts\": [\n    {\n      \"point\": \"AI 인프라 확장을 통한 신성장 동력 확보\",\n      \"evidence\": \"Blackwell GPU 구축을 통한 분산형 AI 플랫폼 야망 확대 [Insider Monkey, 2026-03-12]\"\n    },\n    {\n      \"point\": \"강력한 기관 수급 및 기술적 강세\",\n      \"evidence\": \"기관 보유 비중 102.5%, 수급 점수 85/100 (Strong Accumulation), MA Signal Bullish [수치 분석]\"\n    }\n  ],\n  \"bear_cases\": [\n    {\n   ",
+        "inst_pct": 102.52,
+        "rsi": 61.0,
+        "ai_summary": "```json\n{\n  \"thesis\": \"Akamai Technologies(AKAM)는 기관의 강력한 매수세와 클라우드 사업 확장을 바탕으로 안정적인 상승 모멘텀을 보이고 있으나, 다소 높은 밸류에이션과 거시경제 불확실성으로 인해 신중한 접근이 필요합니다.\",\n  \"catalysts\": [\n    {\n      \"point\": \"기관 투자자의 강력한 수급 및 매수세 유입\",\n      \"evidence\": \"수급 점수 85/100 및 기관 보유율 102.5% 기록, Interval Partners LP의 지분 확대 [MarketBeat, 2026-03-14]\"\n    },\n    {\n      \"point\": \"클라우드 사업 확장 및 타겟 시장 공략\",\n      \"evidence\": \"Akamai와 DCT가 미디어 및 헬스케어 클라우드 시장을 타겟으로 레거시 IT 개편 추진 [Stock Titan, 2026-03-13]\"\n    },\n    {\n      \"point\": \"경쟁사",
         "rank": 1
       },
       {
@@ -271,44 +262,44 @@
         "ai_bonus": 28,
         "ai_recommendation": "적극 매수",
         "grade": "📊 C급 (관망)",
-        "current_price": 255.76,
-        "target_upside": 15.5,
+        "current_price": 250.12,
+        "target_upside": 18.1,
         "sd_stage": "Neutral",
-        "inst_pct": 65.21,
-        "rsi": 39.8,
+        "inst_pct": 65.26,
+        "rsi": 34.6,
         "ai_summary": "```json\n{\n  \"thesis\": \"안정적인 수급(기관 보유 65.2%)과 기술적 상승 신호(MA Bullish)가 확인되나, P/E 34.73배의 밸류에이션 부담이 존재하여 신중한 매수(Accumulation) 관점이 유효함.\",\n  \"catalysts\": [\n    {\n      \"point\": \"거물급 투자자의 지분 확대에 따른 투자 심리 개선\",\n      \"evidence\": \"조지 소로스가 애플 주식 보유량을 두 배로 늘리며 강한 확신을 보임 [Barchart.com, 2026-02-26]\"\n    },\n    {\n      \"point\": \"압도적인 설치 기반(Installed Base)을 통한 서비스 수익화 잠재력\",\n      \"evidence\": \"전 세계적으로 25억 대의 활성 기기를 보유하여 생태계 락인(Lock-in) 효과 극대화 [Seeking Alpha, 2026-02-23]\"\n    },\n    {\n      \"point\": \"견조한 매출 성장세 지",
         "rank": 2
       },
       {
-        "ticker": "AEP",
-        "name": "American Electric Power Company, Inc.",
-        "final_score": 74.0,
-        "quant_score": 66.3,
-        "ai_bonus": 21,
+        "ticker": "AWK",
+        "name": "American Water Works Company, Inc.",
+        "final_score": 72.0,
+        "quant_score": 67.5,
+        "ai_bonus": 18,
         "ai_recommendation": "매수",
         "grade": "📈 B급 (매수 고려)",
-        "current_price": 132.22,
-        "target_upside": 3.8,
-        "sd_stage": "Accumulation",
-        "inst_pct": 84.89,
-        "rsi": 63.5,
-        "ai_summary": "```json\n{\n  \"thesis\": \"American Electric Power(AEP)는 13.2%의 견조한 매출 성장과 84.9%의 높은 기관 보유율을 바탕으로 안정적인 유틸리티 주식으로서의 매력을 지니고 있으나, VIX 27.29의 높은 시장 변동성과 4.27%의 국채 금리 환경 하에서 밸류에이션 부담이 존재합니다.\",\n  \"catalysts\": [\n    {\n      \"point\": \"기관 투자자의 지속적인 매수세\",\n      \"evidence\": \"Van ECK Associates Corp가 19,050주를 추가 매수하며 기관 보유율 84.9%를 유지 [MarketBeat, 2026-03-12]\"\n    },\n    {\n      \"point\": \"주주 환원 정책 강화\",\n      \"evidence\": \"AEP Plantations의 자사주 매입을 통한 Treasury Stock 확대 [TipRanks, 2026-03-12]\"\n    },\n    {\n      \"p",
+        "current_price": 139.69,
+        "target_upside": -1.4,
+        "sd_stage": "Strong Accumulation",
+        "inst_pct": 99.53,
+        "rsi": 63.3,
+        "ai_summary": "```json\n{\n  \"thesis\": \"AWK는 VIX 27.19의 높은 시장 변동성 속에서 기관 투자자의 압도적인 지지(99.5%)를 받는 방어주로, 최근 요금 인상 승인에 따른 규제 모멘텀이 주가 상승을 견인하고 있습니다.\",\n  \"catalysts\": [\n    {\n      \"point\": \"새로운 요금 인상 승인 및 규제 모멘텀에 따른 단기 주가 상승\",\n      \"evidence\": \"투자자들이 새로운 요금 승인과 규제 모멘텀에 반응하며 주가 4% 상승 [Quiver Quantitative, 2026-03-12]\"\n    },\n    {\n      \"point\": \"강력한 기관 수급 및 매집세\",\n      \"evidence\": \"기관 보유 비중 99.5%, 수급 점수 80/100 (Strong Accumulation) [수치 분석 데이터]\"\n    }\n  ],\n  \"bear_cases\": [\n    {\n      \"point\": \"낮은 성장성 대비 밸류에이션 부담\",",
         "rank": 3
       },
       {
-        "ticker": "APP",
-        "name": "AppLovin Corporation",
-        "final_score": 70.2,
-        "quant_score": 61.5,
+        "ticker": "AEE",
+        "name": "Ameren Corporation",
+        "final_score": 71.6,
+        "quant_score": 63.2,
         "ai_bonus": 21,
-        "ai_recommendation": "조정 시 매수",
+        "ai_recommendation": "매수",
         "grade": "📈 B급 (매수 고려)",
-        "current_price": 449.33,
-        "target_upside": 44.3,
-        "sd_stage": "Accumulation",
-        "inst_pct": 81.16,
-        "rsi": 46.9,
-        "ai_summary": "```json\n{\n  \"thesis\": \"AppLovin(APP)은 65.9%의 강력한 매출 성장률과 기관의 높은 보유 비중(81.2%)을 바탕으로 매수 고려 대상(B급)으로 평가되나, 높은 매크로 변동성(VIX 27.29)과 다소 높은 밸류에이션(P/E 44.84)으로 인해 리스크 관리가 필요합니다.\",\n  \"catalysts\": [\n    {\n      \"point\": \"강력한 매출 성장과 시장의 긍정적 평가\",\n      \"evidence\": \"매출 성장률 65.9% 달성 및 '3 Reasons We Love This Stock' 보도 [Yahoo Finance, 2026-03-11]\"\n    },\n    {\n      \"point\": \"기관 투자자의 높은 신뢰도 및 수급\",\n      \"evidence\": \"기관 보유 비중 81.2% 및 수급 점수 60/100 (Accumulation) [수치 분석]\"\n    },\n    {\n      \"point\": \"주가 조정 시 매수 기",
+        "current_price": 112.04,
+        "target_upside": 3.4,
+        "sd_stage": "Strong Accumulation",
+        "inst_pct": 85.57,
+        "rsi": 63.3,
+        "ai_summary": "```json\n{\n  \"thesis\": \"Ameren Corporation(AEE)은 높은 기관 보유율(85.6%)과 견조한 수급 흐름(수급 점수 70/100)을 바탕으로 안정적인 상승세를 보이고 있으나, 최근 주가 상승에 따른 밸류에이션 부담과 매출 역성장(-8.8%) 리스크가 혼재되어 있어 제한적인 매수(B급)를 권고합니다.\",\n  \"catalysts\": [\n    {\n      \"point\": \"안정적인 기관 수급 및 주가 모멘텀\",\n      \"evidence\": \"기관 보유 비중 85.6%, Legal & General Group Plc의 2억 2,134만 달러 규모 주식 보유 [MarketBeat, 2026-03-13] 및 최근 실적 발표 이후 주가 0.6% 상승 [Yahoo Finance, 2026-03-13]\"\n    },\n    {\n      \"point\": \"시장 대비 아웃퍼폼 및 긍정적 기술적 지표\",\n      \"evidence\": \"S&P 500 대비 +6.0",
         "rank": 4
       },
       {
@@ -319,11 +310,11 @@
         "ai_bonus": 21,
         "ai_recommendation": "매수",
         "grade": "📈 B급 (매수 고려)",
-        "current_price": 72.5,
-        "target_upside": -16.2,
+        "current_price": 71.98,
+        "target_upside": -15.0,
         "sd_stage": "Strong Accumulation",
-        "inst_pct": 87.97,
-        "rsi": 69.2,
+        "inst_pct": 87.98,
+        "rsi": 66.3,
         "ai_summary": "```json\n{\n  \"thesis\": \"ADM은 강력한 기관 수급(88.0%)과 기술적 강세(수급점수 95/100, Bullish MA)를 보이며 시장 대비 아웃퍼폼하고 있으나, 높은 밸류에이션(P/E 32.51)과 역성장(매출 -13.7%), 그리고 내부자 매도 등의 펀더멘털 리스크가 상존하여 신중한 매수 접근이 필요합니다.\",\n  \"catalysts\": [\n    {\n      \"point\": \"강력한 기관 수급 및 기술적 모멘텀\",\n      \"evidence\": \"기관 보유 비율 88.0%, 수급 점수 95/100 (Strong Accumulation), S&P 500 대비 +9.1% 초과 수익 [수치 분석]\"\n    },\n    {\n      \"point\": \"농가 지원을 통한 장기 공급망 안정화\",\n      \"evidence\": \"파산이 증가하는 가운데 중서부 수백 개 농장에 새로운 지원 제공 [Stock Titan, 2026-03-12]\"\n    }\n  ],\n  \"b",
         "rank": 5
       }
@@ -337,8 +328,8 @@
     },
     "track_record": {
       "total_picks": "N/A",
-      "win_rate": 33.3,
-      "avg_return": -3.13,
+      "win_rate": 26.7,
+      "avg_return": -1.41,
       "alpha": "N/A"
     },
     "decision_signal": {
@@ -375,15 +366,15 @@
   },
   "smart_money": {
     "top_picks": {
-      "timestamp": "2026-03-13T15:37:01.787979",
+      "timestamp": "2026-03-15T15:48:27.082889",
       "picks": [
         {
           "rank": 1,
           "ticker": "AKAM",
           "name": "Akamai Technologies, Inc.",
-          "final_score": 81.6,
+          "final_score": 79.9,
           "ai_recommendation": "매수",
-          "target_upside": 3.0,
+          "target_upside": 1.7,
           "sd_stage": "Strong Accumulation"
         },
         {
@@ -392,26 +383,26 @@
           "name": "Apple Inc.",
           "final_score": 75.3,
           "ai_recommendation": "적극 매수",
-          "target_upside": 15.5,
+          "target_upside": 18.1,
           "sd_stage": "Neutral"
         },
         {
           "rank": 3,
-          "ticker": "AEP",
-          "name": "American Electric Power Company, Inc.",
-          "final_score": 74.0,
+          "ticker": "AWK",
+          "name": "American Water Works Company, Inc.",
+          "final_score": 72.0,
           "ai_recommendation": "매수",
-          "target_upside": 3.8,
-          "sd_stage": "Accumulation"
+          "target_upside": -1.4,
+          "sd_stage": "Strong Accumulation"
         },
         {
           "rank": 4,
-          "ticker": "APP",
-          "name": "AppLovin Corporation",
-          "final_score": 70.2,
-          "ai_recommendation": "조정 시 매수",
-          "target_upside": 44.3,
-          "sd_stage": "Accumulation"
+          "ticker": "AEE",
+          "name": "Ameren Corporation",
+          "final_score": 71.6,
+          "ai_recommendation": "매수",
+          "target_upside": 3.4,
+          "sd_stage": "Strong Accumulation"
         },
         {
           "rank": 5,
@@ -419,7 +410,7 @@
           "name": "Archer-Daniels-Midland Company",
           "final_score": 70.0,
           "ai_recommendation": "매수",
-          "target_upside": -16.2,
+          "target_upside": -15.0,
           "sd_stage": "Strong Accumulation"
         }
       ]
@@ -427,23 +418,23 @@
     "performance": {
       "recent_dates": [
         {
-          "date": "2026-03-13",
-          "avg_return": 0.54,
-          "win_rate": 60.0
+          "date": "2026-03-15",
+          "avg_return": -0.24,
+          "win_rate": 30.0
         },
         {
-          "date": "2026-02-27",
-          "avg_return": -4.61,
+          "date": "2026-03-11",
+          "avg_return": -1.93,
           "win_rate": 20.0
         },
         {
-          "date": "2026-02-26",
-          "avg_return": -5.31,
-          "win_rate": 20.0
+          "date": "2026-03-10",
+          "avg_return": -2.06,
+          "win_rate": 30.0
         }
       ],
-      "overall_avg": -3.13,
-      "overall_win_rate": 33.3
+      "overall_avg": -1.41,
+      "overall_win_rate": 26.7
     }
   }
 }

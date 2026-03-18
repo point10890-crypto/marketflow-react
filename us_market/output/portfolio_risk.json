@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-03-15T15:31:01.706015",
+  "timestamp": "2026-03-19T00:21:36.247255",
   "tickers": [
     "AAPL",
     "NVDA",
@@ -13,70 +13,70 @@
     "correlation_matrix": {
       "AAPL": {
         "AAPL": 1.0,
-        "AMZN": 0.2,
-        "GOOGL": 0.28,
+        "AMZN": 0.21,
+        "GOOGL": 0.29,
         "META": 0.18,
-        "MSFT": 0.09,
-        "NVDA": 0.26,
+        "MSFT": 0.1,
+        "NVDA": 0.28,
         "TSLA": 0.16
       },
       "AMZN": {
-        "AAPL": 0.2,
+        "AAPL": 0.21,
         "AMZN": 1.0,
-        "GOOGL": 0.36,
+        "GOOGL": 0.37,
         "META": 0.36,
-        "MSFT": 0.28,
+        "MSFT": 0.3,
         "NVDA": 0.28,
         "TSLA": 0.4
       },
       "GOOGL": {
-        "AAPL": 0.28,
-        "AMZN": 0.36,
+        "AAPL": 0.29,
+        "AMZN": 0.37,
         "GOOGL": 1.0,
         "META": 0.21,
         "MSFT": 0.03,
-        "NVDA": 0.27,
-        "TSLA": 0.41
+        "NVDA": 0.26,
+        "TSLA": 0.43
       },
       "META": {
         "AAPL": 0.18,
         "AMZN": 0.36,
         "GOOGL": 0.21,
         "META": 1.0,
-        "MSFT": 0.1,
-        "NVDA": 0.29,
+        "MSFT": 0.11,
+        "NVDA": 0.3,
         "TSLA": 0.31
       },
       "MSFT": {
-        "AAPL": 0.09,
-        "AMZN": 0.28,
+        "AAPL": 0.1,
+        "AMZN": 0.3,
         "GOOGL": 0.03,
-        "META": 0.1,
+        "META": 0.11,
         "MSFT": 1.0,
-        "NVDA": 0.32,
-        "TSLA": 0.31
+        "NVDA": 0.33,
+        "TSLA": 0.32
       },
       "NVDA": {
-        "AAPL": 0.26,
+        "AAPL": 0.28,
         "AMZN": 0.28,
-        "GOOGL": 0.27,
-        "META": 0.29,
-        "MSFT": 0.32,
+        "GOOGL": 0.26,
+        "META": 0.3,
+        "MSFT": 0.33,
         "NVDA": 1.0,
-        "TSLA": 0.42
+        "TSLA": 0.45
       },
       "TSLA": {
         "AAPL": 0.16,
         "AMZN": 0.4,
-        "GOOGL": 0.41,
+        "GOOGL": 0.43,
         "META": 0.31,
-        "MSFT": 0.31,
-        "NVDA": 0.42,
+        "MSFT": 0.32,
+        "NVDA": 0.45,
         "TSLA": 1.0
       }
     },
     "high_correlation_pairs": [],
-    "portfolio_volatility_annualized": 19.35,
+    "portfolio_volatility_annualized": 19.46,
     "risk_level": "Moderate"
   }
 }
