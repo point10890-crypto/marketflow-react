@@ -1,16 +1,5 @@
 [
   {
-    "ticker": "ABNB",
-    "news_score": 0,
-    "sentiment": "neutral",
-    "reason": "뉴스 없음",
-    "action": "HOLD",
-    "catalysts": [],
-    "risk": "",
-    "citations": [],
-    "analyzed_at": "2026-03-19T00:28:42.679831"
-  },
-  {
     "ticker": "APO",
     "news_score": 0,
     "sentiment": "neutral",
@@ -19,10 +8,10 @@
     "catalysts": [],
     "risk": "",
     "citations": [],
-    "analyzed_at": "2026-03-19T00:28:43.693075"
+    "analyzed_at": "2026-03-20T08:05:02.551864"
   },
   {
-    "ticker": "LNT",
+    "ticker": "AKAM",
     "news_score": 0,
     "sentiment": "neutral",
     "reason": "뉴스 없음",
@@ -30,18 +19,7 @@
     "catalysts": [],
     "risk": "",
     "citations": [],
-    "analyzed_at": "2026-03-19T00:28:44.712781"
-  },
-  {
-    "ticker": "ALL",
-    "news_score": 0,
-    "sentiment": "neutral",
-    "reason": "뉴스 없음",
-    "action": "HOLD",
-    "catalysts": [],
-    "risk": "",
-    "citations": [],
-    "analyzed_at": "2026-03-19T00:28:45.727052"
+    "analyzed_at": "2026-03-20T08:05:03.573034"
   },
   {
     "ticker": "APP",
@@ -52,6 +30,28 @@
     "catalysts": [],
     "risk": "",
     "citations": [],
-    "analyzed_at": "2026-03-19T00:28:46.736186"
+    "analyzed_at": "2026-03-20T08:05:04.590916"
+  },
+  {
+    "ticker": "T",
+    "news_score": 0,
+    "sentiment": "neutral",
+    "reason": "뉴스 없음",
+    "action": "HOLD",
+    "catalysts": [],
+    "risk": "",
+    "citations": [],
+    "analyzed_at": "2026-03-20T08:05:05.612875"
+  },
+  {
+    "ticker": "AWK",
+    "news_score": 0,
+    "sentiment": "neutral",
+    "reason": "뉴스 없음",
+    "action": "HOLD",
+    "catalysts": [],
+    "risk": "",
+    "citations": [],
+    "analyzed_at": "2026-03-20T08:05:06.623888"
   }
 ]

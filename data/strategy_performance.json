@@ -1,8 +1,8 @@
 {
   "period": "2026-02-05 ~ 2026-03-19",
-  "total_signals": 1322,
+  "total_signals": 1363,
   "closed_signals": 1298,
-  "open_signals": 24,
+  "open_signals": 65,
   "wins": 321,
   "losses": 977,
   "win_rate": 24.7,

@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-03-19T00:21:36.247255",
+  "timestamp": "2026-03-20T07:58:13.994740",
   "tickers": [
     "AAPL",
     "NVDA",
@@ -13,70 +13,70 @@
     "correlation_matrix": {
       "AAPL": {
         "AAPL": 1.0,
-        "AMZN": 0.21,
-        "GOOGL": 0.29,
-        "META": 0.18,
-        "MSFT": 0.1,
-        "NVDA": 0.28,
-        "TSLA": 0.16
+        "AMZN": 0.25,
+        "GOOGL": 0.32,
+        "META": 0.22,
+        "MSFT": 0.09,
+        "NVDA": 0.26,
+        "TSLA": 0.14
       },
       "AMZN": {
-        "AAPL": 0.21,
+        "AAPL": 0.25,
         "AMZN": 1.0,
         "GOOGL": 0.37,
         "META": 0.36,
         "MSFT": 0.3,
-        "NVDA": 0.28,
-        "TSLA": 0.4
+        "NVDA": 0.3,
+        "TSLA": 0.41
       },
       "GOOGL": {
-        "AAPL": 0.29,
+        "AAPL": 0.32,
         "AMZN": 0.37,
         "GOOGL": 1.0,
         "META": 0.21,
         "MSFT": 0.03,
-        "NVDA": 0.26,
+        "NVDA": 0.28,
         "TSLA": 0.43
       },
       "META": {
-        "AAPL": 0.18,
+        "AAPL": 0.22,
         "AMZN": 0.36,
         "GOOGL": 0.21,
         "META": 1.0,
         "MSFT": 0.11,
-        "NVDA": 0.3,
-        "TSLA": 0.31
+        "NVDA": 0.32,
+        "TSLA": 0.32
       },
       "MSFT": {
-        "AAPL": 0.1,
+        "AAPL": 0.09,
         "AMZN": 0.3,
         "GOOGL": 0.03,
         "META": 0.11,
         "MSFT": 1.0,
-        "NVDA": 0.33,
+        "NVDA": 0.34,
         "TSLA": 0.32
       },
       "NVDA": {
-        "AAPL": 0.28,
-        "AMZN": 0.28,
-        "GOOGL": 0.26,
-        "META": 0.3,
-        "MSFT": 0.33,
+        "AAPL": 0.26,
+        "AMZN": 0.3,
+        "GOOGL": 0.28,
+        "META": 0.32,
+        "MSFT": 0.34,
         "NVDA": 1.0,
         "TSLA": 0.45
       },
       "TSLA": {
-        "AAPL": 0.16,
-        "AMZN": 0.4,
+        "AAPL": 0.14,
+        "AMZN": 0.41,
         "GOOGL": 0.43,
-        "META": 0.31,
+        "META": 0.32,
         "MSFT": 0.32,
         "NVDA": 0.45,
         "TSLA": 1.0
       }
     },
     "high_correlation_pairs": [],
-    "portfolio_volatility_annualized": 19.46,
+    "portfolio_volatility_annualized": 19.59,
     "risk_level": "Moderate"
   }
 }
