@@ -1,5 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { fetchAPI } from '../../../lib/api';
+import { useAutoRefresh, useSmartRefresh } from '../../../hooks/useAutoRefresh';
+import { usePullToRefreshRegister } from '../../../components/layout/PullToRefreshProvider';
 
 interface VCPSignal {
     symbol: string;
@@ -74,6 +76,14 @@ export default function UsVcpPage() {
     }, []);
 
     useEffect(() => { loadData(selectedDate); }, [selectedDate, loadData]);
+
+    const silentRefresh = useCallback(async () => {
+        if (selectedDate !== 'latest') return;
+        await loadData('latest');
+    }, [loadData, selectedDate]);
+    useAutoRefresh(silentRefresh, 60000, selectedDate === 'latest');
+    useSmartRefresh(silentRefresh, ['vcp_us_latest.json'], 15000, selectedDate === 'latest');
+    usePullToRefreshRegister(useCallback(async () => { await loadData(selectedDate); }, [loadData, selectedDate]));
 
     const signals = data?.signals || [];
     const meta = data?.metadata;

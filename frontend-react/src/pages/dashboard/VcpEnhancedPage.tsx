@@ -2,6 +2,8 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { fetchAPI } from '@/lib/api';
+import { useAutoRefresh, useSmartRefresh } from '@/hooks/useAutoRefresh';
+import { usePullToRefreshRegister } from '@/components/layout/PullToRefreshProvider';
 
 interface VCPSignal {
     symbol: string;
@@ -84,6 +86,13 @@ export default function VCPEnhancedPage() {
     useEffect(() => {
         loadData(activeTab);
     }, [activeTab, loadData]);
+
+    const silentRefresh = useCallback(async () => {
+        await loadData(activeTab);
+    }, [loadData, activeTab]);
+    useAutoRefresh(silentRefresh, 60000);
+    useSmartRefresh(silentRefresh, ['vcp_kr_latest.json', 'vcp_us_latest.json', 'vcp_crypto_latest.json'], 15000);
+    usePullToRefreshRegister(useCallback(async () => { await loadData(activeTab); }, [loadData, activeTab]));
 
     const current = data[activeTab];
     const signals = current?.signals || [];
