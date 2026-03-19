@@ -40,7 +40,10 @@ export async function fetchAPI<T>(endpoint: string): Promise<T> {
     const timeoutId = setTimeout(() => controller.abort(), 10000);
 
     try {
-        const response = await fetch(url, { signal: controller.signal });
+        const response = await fetch(url, {
+            signal: controller.signal,
+            headers: { 'ngrok-skip-browser-warning': 'true' },
+        });
         clearTimeout(timeoutId);
         if (!response.ok) {
             throw new Error(`API Error: ${endpoint} (${response.status})`);
