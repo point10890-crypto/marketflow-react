@@ -155,7 +155,10 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
             const addSignals = (data: any, market: string) => {
                 if (data?.signals) {
                     data.signals.slice(0, 3).forEach((s: any) => {
-                        allSignals.push({ name: s.name || s.ticker || '?', market, score: s.composite ?? s.score ?? 0 });
+                        const score = typeof s.composite === 'object'
+                            ? (s.composite?.composite_score ?? 0)
+                            : (s.composite ?? s.score ?? 0);
+                        allSignals.push({ name: s.name || s.ticker || '?', market, score });
                     });
                 }
             };
@@ -186,7 +189,10 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                 const addSignals = (data: any, market: string) => {
                     if (data?.signals) {
                         data.signals.slice(0, 3).forEach((s: any) => {
-                            allSignals.push({ name: s.name || s.ticker || '?', market, score: s.composite ?? s.score ?? 0 });
+                            const score = typeof s.composite === 'object'
+                                ? (s.composite?.composite_score ?? 0)
+                                : (s.composite ?? s.score ?? 0);
+                            allSignals.push({ name: s.name || s.ticker || '?', market, score });
                         });
                     }
                 };

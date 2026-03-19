@@ -28,7 +28,7 @@ jobs:
 
       - name: Wake up Render API
         run: |
-          echo "=== Render API 웨이크업 (marketflow-api-fzez.onrender.com) ==="
+          echo "=== Render API 웨이크업 ==="
           for i in 1 2 3; do
             CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 60 \
               https://marketflow-api-fzez.onrender.com/api/health 2>/dev/null || echo "000")
@@ -40,7 +40,7 @@ jobs:
       - name: Fetch snapshots
         run: |
           BASE_URL="https://marketflow-api-fzez.onrender.com"
-          DIR="frontend-react/src/data"
+          DIR="frontend-react/public/data"
           mkdir -p "$DIR"
           OK=0; FAIL=0
 
@@ -55,27 +55,33 @@ jobs:
           }
 
           echo "=== KR ==="
-          fetch "/api/kr/market-gate"       "kr-market-gate.json"
-          fetch "/api/kr/jongga-v2/latest"  "kr-jongga-v2-latest.json"
-          fetch "/api/kr/jongga-v2/dates"   "kr-jongga-v2-dates.json"
-          fetch "/api/kr/vcp-dates"         "kr-vcp-dates.json"
+          fetch "/api/kr/market-gate"        "kr-market-gate.json"
+          fetch "/api/kr/jongga-v2/latest"   "kr-jongga-v2-latest.json"
+          fetch "/api/kr/jongga-v2/dates"    "kr-jongga-v2-dates.json"
+          fetch "/api/kr/vcp-enhanced"       "kr-vcp-enhanced.json"
+          fetch "/api/kr/vcp-dates"          "kr-vcp-dates.json"
 
           echo "=== US ==="
-          fetch "/api/us/market-briefing"   "us-market-briefing.json"
-          fetch "/api/us/market-gate"       "us-market-gate.json"
-          fetch "/api/us/decision-signal"   "us-decision-signal.json"
-          fetch "/api/us/sector-rotation"   "us-sector-rotation.json"
-          fetch "/api/us/risk-alerts"       "us-risk-alerts.json"
-          fetch "/api/us/index-prediction"  "us-index-prediction.json"
-          fetch "/api/us/market-regime"     "us-market-regime.json"
-          fetch "/api/us/etf-flows"         "us-etf-flows.json"
-          fetch "/api/us/vcp-dates"         "us-vcp-dates.json"
+          fetch "/api/us/market-briefing"    "us-market-briefing.json"
+          fetch "/api/us/market-gate"        "us-market-gate.json"
+          fetch "/api/us/decision-signal"    "us-decision-signal.json"
+          fetch "/api/us/sector-rotation"    "us-sector-rotation.json"
+          fetch "/api/us/risk-alerts"        "us-risk-alerts.json"
+          fetch "/api/us/index-prediction"   "us-index-prediction.json"
+          fetch "/api/us/market-regime"      "us-market-regime.json"
+          fetch "/api/us/etf-flows"          "us-etf-flows.json"
+          fetch "/api/us/vcp-enhanced"       "us-vcp-enhanced.json"
+          fetch "/api/us/vcp-dates"          "us-vcp-dates.json"
+          fetch "/api/us/smart-money"        "us-smart-money.json"
+          fetch "/api/us/top-picks-report"   "us-top-picks-report.json"
 
           echo "=== Crypto ==="
-          fetch "/api/crypto/dominance"     "crypto-dominance.json"
-          fetch "/api/crypto/market-gate"   "crypto-market-gate.json"
-          fetch "/api/crypto/briefing"      "crypto-briefing.json"
-          fetch "/api/crypto/vcp-dates"     "crypto-vcp-dates.json"
+          fetch "/api/crypto/dominance"      "crypto-dominance.json"
+          fetch "/api/crypto/market-gate"    "crypto-market-gate.json"
+          fetch "/api/crypto/briefing"       "crypto-briefing.json"
+          fetch "/api/crypto/vcp-enhanced"   "crypto-vcp-enhanced.json"
+          fetch "/api/crypto/vcp-dates"      "crypto-vcp-dates.json"
+          fetch "/api/crypto/prediction"     "crypto-prediction.json"
 
           echo "{\"updated_at\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"ok\":$OK,\"fail\":$FAIL}" \
             > "$DIR/_meta.json"
@@ -85,7 +91,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add frontend-react/src/data/ || true
+          git add frontend-react/public/data/ || true
           if git diff --cached --quiet; then
             echo "변경사항 없음"
           else
