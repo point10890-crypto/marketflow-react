@@ -3,7 +3,7 @@ chcp 65001 >nul
 title MarketFlow Local Deploy
 
 set PROJECT=C:\bitman_marketfloww
-set PYTHON=%PROJECT%\.venv\Scripts\python.exe
+set PYTHON=python
 set PYTHONIOENCODING=utf-8
 set NGROK_DOMAIN=nonalliterated-sunshine-unaffiliated.ngrok-free.dev
 
@@ -24,7 +24,7 @@ timeout /t 2 /nobreak >nul
 :: [1/2] Flask 시작 (최소화 창)
 echo [1/2] Flask API 시작 중 (port 5001)...
 start "Flask-MarketFlow" /MIN cmd /c "cd /d %PROJECT% && %PYTHON% flask_app.py"
-timeout /t 5 /nobreak >nul
+timeout /t 10 /nobreak >nul
 
 :: Flask 헬스체크
 curl -s -o nul -w "%%{http_code}" http://localhost:5001/api/health > %TEMP%\flask_health.txt 2>nul

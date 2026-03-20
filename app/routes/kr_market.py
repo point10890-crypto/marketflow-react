@@ -915,3 +915,38 @@ def get_kr_vcp_enhanced():
         import traceback
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
+
+
+@kr_bp.route('/vcp-dates')
+def get_kr_vcp_dates():
+    """KR VCP 히스토리 날짜 목록 반환."""
+    try:
+        import re
+        dates = []
+        pattern = re.compile(r'vcp_kr_(\d{8})\.json')
+        for fname in os.listdir(DATA_DIR):
+            m = pattern.match(fname)
+            if m:
+                d = m.group(1)
+                dates.append(f"{d[:4]}-{d[4:6]}-{d[6:]}")
+        dates.sort(reverse=True)
+        return jsonify(dates)
+    except Exception as e:
+        return jsonify([]), 200
+
+
+@kr_bp.route('/vcp-report/<date>')
+def get_kr_vcp_report(date):
+    """KR VCP 특정 날짜 리포트 반환 (date: YYYY-MM-DD)."""
+    try:
+        date_str = date.replace('-', '')
+        path = os.path.join(DATA_DIR, f'vcp_kr_{date_str}.json')
+        if not os.path.exists(path):
+            return jsonify({"error": f"No report for {date}"}), 404
+        with open(path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        resp = jsonify(data)
+        resp.headers['Cache-Control'] = 'public, max-age=3600'
+        return resp
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
