@@ -1,26 +1,890 @@
 {
   "date": "2026-03-20",
-  "total_candidates": 0,
-  "filtered_count": 0,
-  "signals": [],
+  "total_candidates": 10,
+  "filtered_count": 10,
+  "signals": [
+    {
+      "id": null,
+      "stock_code": "008700",
+      "stock_name": "아남전자",
+      "market": "KOSPI",
+      "sector": "",
+      "signal_date": "2026-03-20",
+      "grade": "S",
+      "score": {
+        "news": 3,
+        "volume": 3,
+        "chart": 1,
+        "candle": 0,
+        "consolidation": 0,
+        "supply": 2,
+        "disclosure": 2,
+        "analyst": 0,
+        "llm_reason": "400억원 규모 자사주 공개매수 결정 및 전량 소각 예정 공시로 주주가치 제고 기대감이 높음",
+        "llm_source": "perplexity+gemini",
+        "total": 11
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "뉴시스",
+          "조선비즈",
+          "머니투데이"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": false,
+        "is_breakout": false,
+        "ma_aligned": true,
+        "good_candle": false,
+        "has_consolidation": false,
+        "supply_positive": true,
+        "has_disclosure": true,
+        "disclosure_types": [
+          "자기주식"
+        ],
+        "negative_news": false,
+        "upper_wick_long": false,
+        "volume_suspicious": false
+      },
+      "current_price": 1774,
+      "entry_price": 1774,
+      "stop_price": 1720,
+      "target_price": 1862,
+      "quantity": 7046,
+      "position_size": 12499604,
+      "r_value": 250000.0,
+      "r_multiplier": 1.5,
+      "trading_value": 69951949336,
+      "change_pct": 12.71,
+      "volume_ratio": 0.0,
+      "foreign_5d": 23902,
+      "inst_5d": 46119,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "[특징주] 아남전자, ‘자사주 공개매수’ 소식에…상한가",
+          "source": "조선비즈",
+          "published_at": "2026-03-19T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0001149694&office_id=366&code=008700&page=1&sm="
+        },
+        {
+          "title": "아남전자, 400억 규모 자사주 공개매수에 상한가",
+          "source": "머니투데이",
+          "published_at": "2026-03-19T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005332083&office_id=008&code=008700&page=1&sm="
+        },
+        {
+          "title": "아남전자, 19.57% 급등…400억 자사주 공개매수 효과",
+          "source": "뉴시스",
+          "published_at": "2026-03-20T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0013834195&office_id=003&code=008700&page=1&sm="
+        }
+      ],
+      "themes": [
+        "자사주 매입/소각",
+        "오디오/스피커 관련주",
+        "전자칠판/교육기기"
+      ]
+    },
+    {
+      "id": null,
+      "stock_code": "047040",
+      "stock_name": "대우건설",
+      "market": "KOSPI",
+      "sector": "",
+      "signal_date": "2026-03-20",
+      "grade": "S",
+      "score": {
+        "news": 2,
+        "volume": 3,
+        "chart": 2,
+        "candle": 0,
+        "consolidation": 0,
+        "supply": 1,
+        "disclosure": 0,
+        "analyst": 2,
+        "llm_reason": "원전·에너지 테마 부각 및 코스닥 시장 정책 기대감으로 수급 개선 전망이 제시됨.",
+        "llm_source": "perplexity+gemini",
+        "total": 10
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "연합뉴스",
+          "서울경제",
+          "한국경제TV"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": true,
+        "is_breakout": false,
+        "ma_aligned": true,
+        "good_candle": false,
+        "has_consolidation": false,
+        "supply_positive": true,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": false,
+        "volume_suspicious": false
+      },
+      "current_price": 19110,
+      "entry_price": 19110,
+      "stop_price": 18536,
+      "target_price": 20065,
+      "quantity": 654,
+      "position_size": 12497940,
+      "r_value": 250000.0,
+      "r_multiplier": 1.5,
+      "trading_value": 1839299012460,
+      "change_pct": 18.18,
+      "volume_ratio": 0.0,
+      "foreign_5d": 879474,
+      "inst_5d": -4512128,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "홍지선 국토차관, 대우건설 대표 면담…\"가덕도신공항 차질없게\"",
+          "source": "연합뉴스",
+          "published_at": "2026-03-20T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0015971383&office_id=001&code=047040&page=1&sm="
+        },
+        {
+          "title": "홍지선 국토부 2차관, 대우건설에 \"가덕도신공항 2035년 개항\" 당...",
+          "source": "한국경제TV",
+          "published_at": "2026-03-20T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0001246014&office_id=215&code=047040&page=1&sm="
+        },
+        {
+          "title": "홍지선 2차관, 대우건설 대표 만나 “가덕도신공항 2035년 개항 노...",
+          "source": "서울경제",
+          "published_at": "2026-03-20T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0004601591&office_id=011&code=047040&page=1&sm="
+        }
+      ],
+      "themes": [
+        "원전·에너지",
+        "건설",
+        "정책 수혜"
+      ]
+    },
+    {
+      "id": null,
+      "stock_code": "053690",
+      "stock_name": "한미글로벌",
+      "market": "KOSPI",
+      "sector": "",
+      "signal_date": "2026-03-20",
+      "grade": "S",
+      "score": {
+        "news": 2,
+        "volume": 3,
+        "chart": 2,
+        "candle": 0,
+        "consolidation": 0,
+        "supply": 2,
+        "disclosure": 0,
+        "analyst": 0,
+        "llm_reason": "건설 및 신재생에너지 테마 강세 속 주가 급등과 긍정적 시장 전망이 기대되나, 실적/수주 관련 구체적인 공시 정보는 부족함.",
+        "llm_source": "perplexity+gemini",
+        "total": 9
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "서울경제",
+          "이데일리",
+          "조선비즈"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": true,
+        "is_breakout": false,
+        "ma_aligned": true,
+        "good_candle": false,
+        "has_consolidation": false,
+        "supply_positive": true,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": false,
+        "volume_suspicious": false
+      },
+      "current_price": 27200,
+      "entry_price": 27200,
+      "stop_price": 26384,
+      "target_price": 28560,
+      "quantity": 459,
+      "position_size": 12484800,
+      "r_value": 250000.0,
+      "r_multiplier": 1.5,
+      "trading_value": 87260864000,
+      "change_pct": 17.49,
+      "volume_ratio": 0.0,
+      "foreign_5d": 117133,
+      "inst_5d": 98288,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "美 원전 건설·재건 기대까지…건설주 일제히 급등 [줍줍 리포트]",
+          "source": "서울경제",
+          "published_at": "2026-03-20T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0004601592&office_id=011&code=053690&page=1&sm="
+        },
+        {
+          "title": "현대차證 “한미글로벌, 국내외 법인 매출 증가 전망… 목표가 3만20...",
+          "source": "조선비즈",
+          "published_at": "2026-03-20T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0001150030&office_id=366&code=053690&page=1&sm="
+        },
+        {
+          "title": "한미글로벌, 국내 실적 반등 본격화·원전사업 기대…목표가↑-현대차",
+          "source": "이데일리",
+          "published_at": "2026-03-20T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0006239149&office_id=018&code=053690&page=1&sm="
+        }
+      ],
+      "themes": [
+        "건설",
+        "신재생에너지",
+        "전력"
+      ]
+    },
+    {
+      "id": null,
+      "stock_code": "036930",
+      "stock_name": "주성엔지니어링",
+      "market": "KOSDAQ",
+      "sector": "",
+      "signal_date": "2026-03-20",
+      "grade": "S",
+      "score": {
+        "news": 3,
+        "volume": 3,
+        "chart": 0,
+        "candle": 0,
+        "consolidation": 0,
+        "supply": 0,
+        "disclosure": 0,
+        "analyst": 3,
+        "llm_reason": "반도체 및 태양광 고객 확보, 차세대 태양전지 기술 개발 성공 및 반도체 산업 호황으로 인한 실적 개선 기대감이 높음.",
+        "llm_source": "perplexity+gemini",
+        "total": 9
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "한국경제",
+          "매일경제",
+          "헤럴드경제"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": false,
+        "is_breakout": false,
+        "ma_aligned": false,
+        "good_candle": false,
+        "has_consolidation": false,
+        "supply_positive": false,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": false,
+        "volume_suspicious": false
+      },
+      "current_price": 72800,
+      "entry_price": 72800,
+      "stop_price": 70616,
+      "target_price": 76440,
+      "quantity": 171,
+      "position_size": 12448800,
+      "r_value": 250000.0,
+      "r_multiplier": 1.5,
+      "trading_value": 448123166400,
+      "change_pct": 19.34,
+      "volume_ratio": 0.0,
+      "foreign_5d": -220759,
+      "inst_5d": -196953,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "삼성전자 110조 투자에 … 웃음짓는 장비주",
+          "source": "매일경제",
+          "published_at": "2026-03-20T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005653499&office_id=009&code=036930&page=1&sm="
+        },
+        {
+          "title": "\"기름값 무섭다더니\"…'상위 1%' 초고수들 쓸어 담은 종목 [마켓PR...",
+          "source": "한국경제",
+          "published_at": "2026-03-20T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005264884&office_id=015&code=036930&page=1&sm="
+        },
+        {
+          "title": "외인 ‘삼전·하닉’ 2.3조 던졌다…코스피 5780선 턱걸이 [투자36...",
+          "source": "헤럴드경제",
+          "published_at": "2026-03-20T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0002617060&office_id=016&code=036930&page=1&sm="
+        }
+      ],
+      "themes": [
+        "반도체",
+        "태양광에너지",
+        "밸류업"
+      ]
+    },
+    {
+      "id": null,
+      "stock_code": "012630",
+      "stock_name": "HDC",
+      "market": "KOSPI",
+      "sector": "",
+      "signal_date": "2026-03-20",
+      "grade": "A",
+      "score": {
+        "news": 2,
+        "volume": 2,
+        "chart": 2,
+        "candle": 0,
+        "consolidation": 0,
+        "supply": 2,
+        "disclosure": 0,
+        "analyst": 0,
+        "llm_reason": "면세점 테마 강세 및 베스트파트너스데이 개최로 협력사 상생 강화 기대되나, 국민연금 지분 축소 및 원전 테마 부진이 혼재.",
+        "llm_source": "perplexity+gemini",
+        "total": 8
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "서울경제",
+          "뉴시스",
+          "이데일리"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": true,
+        "is_breakout": false,
+        "ma_aligned": true,
+        "good_candle": false,
+        "has_consolidation": false,
+        "supply_positive": true,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": false,
+        "volume_suspicious": false
+      },
+      "current_price": 28050,
+      "entry_price": 28050,
+      "stop_price": 27208,
+      "target_price": 29452,
+      "quantity": 297,
+      "position_size": 8330850,
+      "r_value": 250000.0,
+      "r_multiplier": 1.0,
+      "trading_value": 13152308400,
+      "change_pct": 11.98,
+      "volume_ratio": 0.0,
+      "foreign_5d": 17201,
+      "inst_5d": 57152,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "“저PBR 더는 못 버틴다”…코리아 프리미엄 시대 열리나",
+          "source": "이데일리",
+          "published_at": "2026-03-19T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0006238281&office_id=018&code=012630&page=1&sm="
+        },
+        {
+          "title": "비거주 1주택자, 공시가 12억 넘으면 재산세·종부세·임대소득세 ‘.....",
+          "source": "서울경제",
+          "published_at": "2026-03-19T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0004600921&office_id=011&code=012630&page=1&sm="
+        },
+        {
+          "title": "李 지적한 저PBR 기업 어디?…증권가 \"재평가 시작될 것\"",
+          "source": "뉴시스",
+          "published_at": "2026-03-20T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0013833955&office_id=003&code=012630&page=1&sm="
+        }
+      ],
+      "themes": [
+        "면세점",
+        "건설 상생",
+        "스마트홈"
+      ]
+    },
+    {
+      "id": null,
+      "stock_code": "294870",
+      "stock_name": "HDC현대산업개발",
+      "market": "KOSPI",
+      "sector": "",
+      "signal_date": "2026-03-20",
+      "grade": "A",
+      "score": {
+        "news": 2,
+        "volume": 2,
+        "chart": 0,
+        "candle": 0,
+        "consolidation": 0,
+        "supply": 1,
+        "disclosure": 0,
+        "analyst": 3,
+        "llm_reason": "베스트파트너스데이 개최를 통해 협력사와의 동반성장 및 상생협력을 강화하고 주가가 급등했지만, 국민연금의 지분 축소와 원전 테마에서의 상대적 부진이 혼재.",
+        "llm_source": "perplexity+gemini",
+        "total": 8
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "매일경제",
+          "한국경제TV"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": false,
+        "is_breakout": false,
+        "ma_aligned": false,
+        "good_candle": false,
+        "has_consolidation": false,
+        "supply_positive": true,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": false,
+        "volume_suspicious": false
+      },
+      "current_price": 24100,
+      "entry_price": 24100,
+      "stop_price": 23377,
+      "target_price": 25305,
+      "quantity": 345,
+      "position_size": 8314500,
+      "r_value": 250000.0,
+      "r_multiplier": 1.0,
+      "trading_value": 22340410800,
+      "change_pct": 11.83,
+      "volume_ratio": 0.0,
+      "foreign_5d": 68801,
+      "inst_5d": -315154,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "인천 미추홀구 도시개발사업, 다양한 입지 누리는 압축도시 ‘시티오...",
+          "source": "한국경제TV",
+          "published_at": "2026-03-20T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0001245999&office_id=215&code=294870&page=1&sm="
+        },
+        {
+          "title": "HDC현산, 베스트파트너스데이 개최…협력회사와 동반성장 강화",
+          "source": "매일경제",
+          "published_at": "2026-03-20T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005653170&office_id=009&code=294870&page=1&sm="
+        },
+        {
+          "title": "HDC현대산업개발, 서울시와 아동 교육환경 개선 업무협약",
+          "source": "매일경제",
+          "published_at": "2026-03-19T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005652733&office_id=009&code=294870&page=1&sm="
+        }
+      ],
+      "themes": [
+        "동반성장",
+        "면세점",
+        "원전"
+      ]
+    },
+    {
+      "id": null,
+      "stock_code": "475150",
+      "stock_name": "SK이터닉스",
+      "market": "KOSPI",
+      "sector": "",
+      "signal_date": "2026-03-20",
+      "grade": "A",
+      "score": {
+        "news": 3,
+        "volume": 3,
+        "chart": 1,
+        "candle": 0,
+        "consolidation": 0,
+        "supply": 1,
+        "disclosure": 0,
+        "analyst": 0,
+        "llm_reason": "올해 매출 8조원, 영업이익 1조원 돌파 예상 및 신규 수주 목표 역대 최고치 전망으로 실적 기대감이 매우 높음",
+        "llm_source": "perplexity+gemini",
+        "total": 8
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "연합뉴스",
+          "서울경제"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": false,
+        "is_breakout": false,
+        "ma_aligned": true,
+        "good_candle": false,
+        "has_consolidation": false,
+        "supply_positive": true,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": false,
+        "volume_suspicious": false
+      },
+      "current_price": 59900,
+      "entry_price": 59900,
+      "stop_price": 58103,
+      "target_price": 62895,
+      "quantity": 139,
+      "position_size": 8326100,
+      "r_value": 250000.0,
+      "r_multiplier": 1.0,
+      "trading_value": 627431295400,
+      "change_pct": 11.55,
+      "volume_ratio": 0.0,
+      "foreign_5d": -88338,
+      "inst_5d": 182152,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "[특징주] 중동 에너지 인프라 잇단 피격에 신재생주 동반 상승(종합)",
+          "source": "연합뉴스",
+          "published_at": "2026-03-20T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0015971808&office_id=001&code=475150&page=1&sm="
+        },
+        {
+          "title": "[특징주] 중동 에너지 인프라 잇단 피격에 신재생주 동반 강세",
+          "source": "연합뉴스",
+          "published_at": "2026-03-20T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0015970584&office_id=001&code=475150&page=1&sm="
+        },
+        {
+          "title": "유가 불안에 신재생에너지주 잘나가네…SK이터닉스 등 신고가 [줍줍 리....",
+          "source": "서울경제",
+          "published_at": "2026-03-20T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0004601476&office_id=011&code=475150&page=1&sm="
+        }
+      ],
+      "themes": [
+        "대체에너지(태양광·ESS·원전)",
+        "전력망 투자",
+        "에너지 안보"
+      ]
+    },
+    {
+      "id": null,
+      "stock_code": "100130",
+      "stock_name": "동국S&C",
+      "market": "KOSDAQ",
+      "sector": "",
+      "signal_date": "2026-03-20",
+      "grade": "A",
+      "score": {
+        "news": 3,
+        "volume": 2,
+        "chart": 1,
+        "candle": 0,
+        "consolidation": 0,
+        "supply": 2,
+        "disclosure": 0,
+        "analyst": 0,
+        "llm_reason": "풍력 에너지 테마 강세 및 흑자전환으로 인한 실적 개선 기대감이 반영되어 주가가 급등하고 있으며, 외국인과 기관의 순매수세가 유입되고 있음",
+        "llm_source": "perplexity+gemini",
+        "total": 8
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "한국경제",
+          "한국경제TV",
+          "이데일리"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": false,
+        "is_breakout": false,
+        "ma_aligned": true,
+        "good_candle": false,
+        "has_consolidation": false,
+        "supply_positive": true,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": false,
+        "volume_suspicious": false
+      },
+      "current_price": 2545,
+      "entry_price": 2545,
+      "stop_price": 2468,
+      "target_price": 2672,
+      "quantity": 3274,
+      "position_size": 8332330,
+      "r_value": 250000.0,
+      "r_multiplier": 1.0,
+      "trading_value": 14737547825,
+      "change_pct": 14.38,
+      "volume_ratio": 0.0,
+      "foreign_5d": 3677,
+      "inst_5d": 19564,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "\"중동전쟁, 에너지 안보 패러다임 바꿔\" 신재생株 동반 급등",
+          "source": "한국경제",
+          "published_at": "2026-03-20T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005264735&office_id=015&code=100130&page=1&sm="
+        },
+        {
+          "title": "에너지주 줄줄이 '강세'…코스피, 종전·유가하락 모멘텀↑",
+          "source": "한국경제TV",
+          "published_at": "2026-03-20T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0001245920&office_id=215&code=100130&page=1&sm="
+        },
+        {
+          "title": "'에너지고속도로' 관련주 강세…SK오션플랜트 상한가[특징주]",
+          "source": "이데일리",
+          "published_at": "2026-03-20T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0006239222&office_id=018&code=100130&page=1&sm="
+        }
+      ],
+      "themes": [
+        "풍력에너지",
+        "신재생에너지"
+      ]
+    },
+    {
+      "id": null,
+      "stock_code": "005960",
+      "stock_name": "동부건설",
+      "market": "KOSPI",
+      "sector": "",
+      "signal_date": "2026-03-20",
+      "grade": "A",
+      "score": {
+        "news": 2,
+        "volume": 2,
+        "chart": 1,
+        "candle": 0,
+        "consolidation": 0,
+        "supply": 2,
+        "disclosure": 0,
+        "analyst": 0,
+        "llm_reason": "계양~강화 고속국도 공사 수주로 긍정적인 기대감이 발생.",
+        "llm_source": "perplexity+gemini",
+        "total": 7
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "한국경제TV",
+          "조선비즈",
+          "머니투데이"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": true,
+        "is_breakout": false,
+        "ma_aligned": false,
+        "good_candle": false,
+        "has_consolidation": false,
+        "supply_positive": true,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": false,
+        "volume_suspicious": false
+      },
+      "current_price": 10270,
+      "entry_price": 10270,
+      "stop_price": 9961,
+      "target_price": 10783,
+      "quantity": 811,
+      "position_size": 8328970,
+      "r_value": 250000.0,
+      "r_multiplier": 1.0,
+      "trading_value": 13997773790,
+      "change_pct": 12.0,
+      "volume_ratio": 0.0,
+      "foreign_5d": 51916,
+      "inst_5d": 49077,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "동부건설, 계양~강화 고속국도 공사 수주",
+          "source": "한국경제TV",
+          "published_at": "2026-03-20T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0001245988&office_id=215&code=005960&page=1&sm="
+        },
+        {
+          "title": "동부건설, 계양~강화 고속국도 수주…1548억 규모",
+          "source": "조선비즈",
+          "published_at": "2026-03-20T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0001150292&office_id=366&code=005960&page=1&sm="
+        },
+        {
+          "title": "동부건설, 1548억원 계양~강화 고속도로 수주…수도권 서북부 축 확...",
+          "source": "머니투데이",
+          "published_at": "2026-03-20T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005332706&office_id=008&code=005960&page=1&sm="
+        }
+      ],
+      "themes": [
+        "건설",
+        "SOC",
+        "고속도로"
+      ]
+    },
+    {
+      "id": null,
+      "stock_code": "090460",
+      "stock_name": "비에이치",
+      "market": "KOSPI",
+      "sector": "",
+      "signal_date": "2026-03-20",
+      "grade": "A",
+      "score": {
+        "news": 0,
+        "volume": 2,
+        "chart": 1,
+        "candle": 0,
+        "consolidation": 0,
+        "supply": 1,
+        "disclosure": 0,
+        "analyst": 3,
+        "llm_reason": "",
+        "llm_source": "",
+        "total": 7
+      },
+      "checklist": {
+        "has_news": false,
+        "news_sources": [],
+        "volume_sufficient": true,
+        "is_new_high": true,
+        "is_breakout": false,
+        "ma_aligned": false,
+        "good_candle": false,
+        "has_consolidation": false,
+        "supply_positive": true,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": false,
+        "volume_suspicious": false
+      },
+      "current_price": 22150,
+      "entry_price": 22150,
+      "stop_price": 21485,
+      "target_price": 23257,
+      "quantity": 376,
+      "position_size": 8328400,
+      "r_value": 250000.0,
+      "r_multiplier": 1.0,
+      "trading_value": 27407191750,
+      "change_pct": 11.42,
+      "volume_ratio": 0.0,
+      "foreign_5d": -320036,
+      "inst_5d": 651998,
+      "status": "PENDING",
+      "news_items": [],
+      "themes": []
+    }
+  ],
   "by_grade": {
-    "S": 0,
-    "A": 0,
+    "S": 4,
+    "A": 6,
     "B": 0,
     "C": 0
   },
-  "by_market": {},
-  "processing_time_ms": 2845.3595638275146,
-  "updated_at": "2026-03-20T08:13:13.546688+09:00",
+  "by_market": {
+    "KOSPI": 8,
+    "KOSDAQ": 2
+  },
+  "processing_time_ms": 646428.7662506104,
+  "updated_at": "2026-03-20T18:44:47.554161+09:00",
   "claude_picks": {
-    "picks": [],
-    "consensus_count": 0,
-    "gemini_count": 0,
-    "openai_count": 0,
-    "market_view": "",
-    "top_themes": [],
-    "generated_at": "2026-03-20T08:13:13.545170",
-    "models": [],
+    "picks": [
+      {
+        "stock_code": "008700",
+        "stock_name": "아남전자",
+        "rank": 1,
+        "confidence": "HIGH",
+        "reason": "[Gemini] 400억원 규모 자사주 공개매수 및 전량 소각 결정이라는 강력한 주주가치 제고 공시가 나왔으며, 외국인과 기관의 동시 순매수세가 유입되어 긍정적인 수급 흐름을 보입니다. [GPT-4o] 자사주 공개매수 및 소각 예정 공시는 주주가치 제고에 명확한 실적을 보일 수 있으며, 외인과 기관의 매수가 긍정적입니다.",
+        "risk": "단기 급등에 따른 차익실현 매물이 출회될 가능성이 있습니다.",
+        "expected_return": "5-10%",
+        "source": "consensus",
+        "gemini_rank": 1,
+        "openai_rank": 1
+      },
+      {
+        "stock_code": "475150",
+        "stock_name": "SK이터닉스",
+        "rank": 2,
+        "confidence": "HIGH",
+        "reason": "[Gemini] 올해 매출 8조원, 영업이익 1조원 돌파 및 신규 수주 목표 역대 최고치 전망 등 강력한 실적 개선 기대감이 높으며, 대규모 거래대금과 기관 순매수세가 이를 뒷받침합니다. [GPT-4o] 전력망 및 대체에너지 테마의 강세와 강력한 실적 전망이 있지만, 외인의 매도세가 주가 상승을 제한할 수 있습니다.",
+        "risk": "단기 과열 양상과 외국인 순매도세가 지속될 경우 조정이 나타날 수 있습니다.",
+        "expected_return": "4-8%",
+        "source": "consensus",
+        "gemini_rank": 2,
+        "openai_rank": 5
+      },
+      {
+        "stock_code": "053690",
+        "stock_name": "한미글로벌",
+        "rank": 3,
+        "confidence": "HIGH",
+        "reason": "[Gemini] 건설 및 신재생에너지 테마의 강세 속에서 주가 급등과 더불어 외국인과 기관의 동반 순매수세가 유입되며 긍정적인 수급 흐름을 보입니다. [GPT-4o] 신재생에너지 테마 강세 및 외인과 기관의 지속적인 매수가 긍정적이나, 실적 관련 정보 부족이 위험요소입니다.",
+        "risk": "구체적인 실적 또는 수주 공시가 부재하여 테마 소멸 시 변동성이 커질 수 있습니다.",
+        "expected_return": "3-7%",
+        "source": "consensus",
+        "gemini_rank": 3,
+        "openai_rank": 2
+      },
+      {
+        "stock_code": "100130",
+        "stock_name": "동국S&C",
+        "rank": 4,
+        "confidence": "HIGH",
+        "reason": "[Gemini] 풍력에너지 테마 강세와 함께 흑자전환을 통한 실적 개선 기대감이 반영되고 있으며, 외국인과 기관의 소규모 순매수세가 유입되고 있습니다. [GPT-4o] 풍력 에너지 테마 강세에 따른 주가 급등 및 긍정적인 수급 흐름이 돋보이지만, 거래대금이 다소 낮습니다.",
+        "risk": "거래대금이 다소 부족하여 급격한 시세 변화에 취약할 수 있습니다.",
+        "expected_return": "2-5%",
+        "source": "consensus",
+        "gemini_rank": 5,
+        "openai_rank": 3
+      },
+      {
+        "stock_code": "005960",
+        "stock_name": "동부건설",
+        "rank": 5,
+        "confidence": "LOW",
+        "reason": "계양~강화 고속국도 공사 수주라는 구체적인 호재성 공시가 있었고, 외국인과 기관의 양호한 순매수세가 확인되어 단기 상승 모멘텀을 기대할 수 있습니다.",
+        "risk": "비교적 낮은 거래대금으로 인해 유동성 리스크와 주가 변동성이 확대될 수 있습니다.",
+        "expected_return": "3-6%",
+        "source": "gemini_only"
+      },
+      {
+        "stock_code": "036930",
+        "stock_name": "주성엔지니어링",
+        "rank": 6,
+        "confidence": "LOW",
+        "reason": "반도체와 태양광에너지 테마의 강세로 인해 주가 상승 기대되나, 외인 및 기관의 매도세가 부담으로 작용할 수 있습니다.",
+        "risk": "기관 및 외인 매도세 지속 가능성.",
+        "expected_return": "10% ~ 15%",
+        "source": "openai_only"
+      }
+    ],
+    "consensus_count": 4,
+    "gemini_count": 5,
+    "openai_count": 5,
+    "market_view": "[Gemini] 오늘 시장은 원전, 에너지, 반도체 및 건설 관련 테마가 강세를 보였으나, 일부 종목에서는 기관 및 외국인의 수급 불균형이 심화되는 양상을 보였습니다. | [GPT-4o] 오늘 시장은 일부 강력한 테마와 팀적 거래에 힘입어 긍정적인 분위기를 형성하고 있습니다.",
+    "top_themes": [
+      "자사주 매입/소각",
+      "대체에너지/전력망",
+      "건설/인프라",
+      "신재생에너지",
+      "반도체"
+    ],
+    "generated_at": "2026-03-20T18:44:47.552546",
+    "models": [
+      "gemini-2.5-flash",
+      "gpt-4o"
+    ],
     "consensus_method": "multi_ai"
   }
 }
