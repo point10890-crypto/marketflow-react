@@ -38,8 +38,8 @@ if "%FLASK_STATUS%"=="200" (
 )
 echo.
 
-:: [2/2] ngrok 터널 시작 (최소화 창)
-echo [2/2] ngrok 터널 시작 중...
+:: [2/3] ngrok 터널 시작 (최소화 창)
+echo [2/3] ngrok 터널 시작 중...
 echo    https://%NGROK_DOMAIN%
 start "ngrok-MarketFlow" /MIN cmd /c "ngrok http 5001 --domain=%NGROK_DOMAIN%"
 timeout /t 5 /nobreak >nul
@@ -54,11 +54,26 @@ if %ERRORLEVEL%==0 (
 )
 echo.
 
+:: [3/3] 스케줄러 데몬 시작 (최소화 창)
+echo [3/3] 스케줄러 데몬 시작 중...
+start "Scheduler-MarketFlow" /MIN cmd /c "cd /d %PROJECT% && set PYTHONIOENCODING=utf-8 && %PYTHON% scheduler.py --daemon"
+timeout /t 5 /nobreak >nul
+
+:: 스케줄러 프로세스 확인
+tasklist /FI "WINDOWTITLE eq Scheduler-MarketFlow" 2>nul | findstr /i "cmd.exe" >nul 2>&1
+if %ERRORLEVEL%==0 (
+    echo    스케줄러 OK
+) else (
+    echo    스케줄러 시작됨 (백그라운드 실행 중)
+)
+echo.
+
 echo ========================================
 echo  실행 중:
-echo  Flask:     http://localhost:5001
-echo  터널:      https://%NGROK_DOMAIN%
-echo  대시보드:  https://marketflow-dashboard.point10890.workers.dev
+echo  Flask:      http://localhost:5001
+echo  터널:       https://%NGROK_DOMAIN%
+echo  스케줄러:   daemon mode (15:10 종가베팅 / 16:00 VCP / 04:00 US)
+echo  대시보드:   https://marketflow-dashboard.point10890.workers.dev
 echo ========================================
 echo.
 echo 아무 키나 누르면 대시보드 열림...
