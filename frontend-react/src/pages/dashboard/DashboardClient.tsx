@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
-import { usAPI, krAPI, cryptoAPI } from '@/lib/api';
+import { usAPI, krAPI, cryptoAPI, jonggaAPI } from '@/lib/api';
 import { usePullToRefreshRegister } from '@/components/layout/PullToRefreshProvider';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
@@ -116,6 +116,94 @@ function VCPMiniRow({ name, market, score, accent }: { name: string; market: str
     );
 }
 
+// ── Opportunity Score Card ────────────────────────────────────────────────────
+
+function OpportunityScoreCard({ score, krScore, usScore, cryptoScore }: {
+    score: number; krScore: number; usScore: number; cryptoScore: number;
+}) {
+    const color = score >= 70 ? '#10b981' : score >= 45 ? '#f59e0b' : '#ef4444';
+    const label = score >= 70 ? 'HIGH' : score >= 45 ? 'MODERATE' : 'LOW';
+    const arc = Math.min(score / 100, 1);
+    const r = 28, cx = 36, cy = 36, stroke = 6;
+    const circumference = 2 * Math.PI * r;
+    return (
+        <div className="flex items-center gap-4 rounded-2xl border border-white/[0.07] bg-[#13151f] p-4">
+            {/* Arc gauge */}
+            <div className="relative shrink-0" style={{ width: 72, height: 72 }}>
+                <svg width={72} height={72} viewBox="0 0 72 72">
+                    <circle cx={cx} cy={cy} r={r} fill="none" stroke="#1e2130" strokeWidth={stroke} />
+                    <circle cx={cx} cy={cy} r={r} fill="none" stroke={color} strokeWidth={stroke}
+                        strokeDasharray={`${arc * circumference} ${circumference}`}
+                        strokeLinecap="round"
+                        transform={`rotate(-90 ${cx} ${cy})`}
+                        style={{ transition: 'stroke-dasharray 0.6s ease' }}
+                    />
+                </svg>
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <span className="text-lg font-extrabold tabular-nums leading-none" style={{ color }}>{Math.round(score)}</span>
+                    <span className="text-[8px] text-gray-600 font-semibold">/100</span>
+                </div>
+            </div>
+            {/* Text */}
+            <div className="flex flex-col gap-1 flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-white">Opportunity Score</span>
+                    <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: `${color}20`, color }}>{label}</span>
+                </div>
+                <p className="text-[10px] text-gray-600">3개 시장 종합 진입 기회 지수</p>
+                <div className="flex items-center gap-3 mt-0.5">
+                    {[['KR', krScore, '#3b82f6'], ['US', usScore, '#10b981'], ['Crypto', cryptoScore, '#f59e0b']].map(([m, s, c]) => (
+                        <span key={m as string} className="text-[9px] font-semibold" style={{ color: c as string }}>
+                            {m} {Math.round(s as number)}
+                        </span>
+                    ))}
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// ── Top Signal Card ────────────────────────────────────────────────────────────
+
+function TopSignalCard({ summary }: { summary: any }) {
+    const top = summary?.top_signal;
+    const byGrade = summary?.by_grade ?? {};
+    const sCount = byGrade.S ?? 0;
+    const aCount = byGrade.A ?? 0;
+    const gradeColor = top?.grade === 'S' ? '#f59e0b' : top?.grade === 'A' ? '#60a5fa' : '#6b7280';
+    return (
+        <Link to="/dashboard/kr/closing-bet"
+            className="group flex flex-col gap-2 rounded-2xl border border-white/[0.07] bg-[#13151f] p-4 transition-all active:scale-[0.98] hover:border-white/15">
+            <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-violet-500/10 border border-violet-500/20">
+                        <i className="fas fa-chart-bar text-xs text-violet-400" />
+                    </div>
+                    <span className="text-xs font-bold text-white">오늘 종가베팅</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                    {sCount > 0 && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-yellow-500/20 text-yellow-400">S×{sCount}</span>}
+                    {aCount > 0 && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-400">A×{aCount}</span>}
+                    <i className="fas fa-chevron-right text-[9px] text-gray-600 group-hover:text-gray-400" />
+                </div>
+            </div>
+            {top ? (
+                <div className="flex items-center justify-between bg-white/[0.03] rounded-xl px-3 py-2">
+                    <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded" style={{ background: `${gradeColor}20`, color: gradeColor }}>{top.grade}</span>
+                        <span className="text-xs font-semibold text-white truncate">{top.stock_name}</span>
+                    </div>
+                    <span className={`text-xs font-bold tabular-nums ${top.change_pct > 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                        {top.change_pct > 0 ? '+' : ''}{Number(top.change_pct).toFixed(1)}%
+                    </span>
+                </div>
+            ) : (
+                <p className="text-[10px] text-gray-600 px-1">아직 시그널 없음</p>
+            )}
+        </Link>
+    );
+}
+
 // ── Live Dot ──────────────────────────────────────────────────────────────────
 
 function LiveDot() {
@@ -135,20 +223,23 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
     const [krGate, setKrGate] = useState<any>(initialData.krGate);
     const [cryptoDom, setCryptoDom] = useState<any>(initialData.cryptoDom);
     const [vcpData, setVcpData] = useState<VCPSummary>({ kr: 0, us: 0, crypto: 0, topSignals: [] });
+    const [todaySummary, setTodaySummary] = useState<any>(null);
 
     const loadData = useCallback(async () => {
         try {
-            const [b, kr, crypto, vcpKr, vcpUs, vcpCrypto] = await Promise.all([
+            const [b, kr, crypto, vcpKr, vcpUs, vcpCrypto, jongga] = await Promise.all([
                 usAPI.getMarketBriefing().catch(() => null),
                 krAPI.getMarketGate().catch(() => null),
                 cryptoAPI.getDominance().catch(() => null),
                 krAPI.getVCPEnhanced().catch(() => null),
                 usAPI.getVCPEnhanced().catch(() => null),
                 cryptoAPI.getVCPEnhanced().catch(() => null),
+                jonggaAPI.getTodaySummary().catch(() => null),
             ]);
             setBriefing(b);
             setKrGate(kr);
             setCryptoDom(crypto);
+            setTodaySummary(jongga);
 
             // VCP summary
             const allSignals: Array<{ name: string; market: string; score: number }> = [];
@@ -239,6 +330,20 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
 
     const totalVCP = vcpData.kr + vcpData.us + vcpData.crypto;
 
+    // ── Opportunity Score ───────────────────────────────────────────────────────
+    const krScore = krGate?.score ?? 0;
+    // US score: derived from VIX (lower = better) + F&G
+    const vixNum = briefing?.vix?.value != null ? Number(briefing.vix.value) : 20;
+    const fgNum = fgScore ?? 50;
+    const usScore = Math.max(0, Math.min(100, (100 - vixNum * 2.5) * 0.6 + (fgNum) * 0.4));
+    // Crypto score: derived from BTC RSI + sentiment
+    const btcRsi = cryptoDom?.btc_rsi != null ? Number(cryptoDom.btc_rsi) : 50;
+    const cryptoScore = Math.max(0, Math.min(100, btcRsi > 70 ? 40 : btcRsi < 30 ? 35 : btcRsi));
+    // Signal bonus: top jongga grade
+    const topGrade = todaySummary?.top_signal?.grade;
+    const signalBonus = topGrade === 'S' ? 100 : topGrade === 'A' ? 70 : 40;
+    const opportunityScore = krScore * 0.40 + usScore * 0.35 + cryptoScore * 0.15 + signalBonus * 0.10;
+
     // ── Render ────────────────────────────────────────────────────────────────
 
     return (
@@ -287,6 +392,17 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                 <StatPill label="BTC" value={btcPrice} sub={btcSub} color="text-amber-400" />
                 <div className="w-px h-8 bg-white/[0.06]" />
                 <StatPill label="KR" value={gateScore} sub={gateLabel} color={gateColor} />
+            </div>
+
+            {/* ── Opportunity Score + Top Signal ── */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <OpportunityScoreCard
+                    score={opportunityScore}
+                    krScore={krScore}
+                    usScore={usScore}
+                    cryptoScore={cryptoScore}
+                />
+                {todaySummary && <TopSignalCard summary={todaySummary} />}
             </div>
 
             {/* ── Market Cards Grid ── */}

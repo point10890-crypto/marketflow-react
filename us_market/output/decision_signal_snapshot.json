@@ -1,10 +1,10 @@
 {
   "action": "NEUTRAL",
-  "score": 42,
+  "score": 40,
   "components": {
     "market_gate": {
-      "score": 40,
-      "contribution": -3.0
+      "score": 35,
+      "contribution": -4.5
     },
     "regime": {
       "regime": "neutral",
@@ -24,12 +24,12 @@
     }
   },
   "top_picks": [],
-  "timing": "SELECTIVE",
+  "timing": "WAIT",
   "warnings": [
-    "ADBE is in critical drawdown: -30.3% from peak",
-    "AJG is in critical drawdown: -21.2% from peak",
-    "AME drawdown warning: -11.2% from peak",
-    "ALGN drawdown warning: -16.9% from peak",
-    "GOOG drawdown warning: -12.5% from peak"
+    "APO is in critical drawdown: -26.8% from peak",
+    "APP is in critical drawdown: -40.0% from peak",
+    "ALGN drawdown warning: -10.8% from peak",
+    "AIZ drawdown warning: -12.6% from peak",
+    "AMZN drawdown warning: -15.6% from peak"
   ]
 }

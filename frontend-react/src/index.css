@@ -94,3 +94,252 @@ body {
   z-index: 9999;
 }
 .ptr-indicator.active { transform: scaleX(1); }
+
+/* ========================================
+   Landing Page — Mobile Entry
+   ======================================== */
+
+/* Root layout */
+.landing-root {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+  overflow: hidden;
+  z-index: 100;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.landing-root.landing-in {
+  opacity: 1;
+  transform: translateY(0);
+}
+.landing-root.landing-exit {
+  animation: landing-slide-up 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.35s both;
+}
+@keyframes landing-slide-up {
+  to { opacity: 0; transform: translateY(-60px) scale(0.97); }
+}
+
+/* Grid background */
+.landing-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 40%, transparent 100%);
+}
+
+/* Glow orbs */
+.landing-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+  animation: orb-float 6s ease-in-out infinite;
+}
+.landing-orb-1 {
+  width: 320px; height: 320px;
+  background: radial-gradient(circle, rgba(41, 151, 255, 0.18) 0%, transparent 70%);
+  top: -80px; left: -80px;
+  animation-delay: 0s;
+}
+.landing-orb-2 {
+  width: 260px; height: 260px;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.15) 0%, transparent 70%);
+  bottom: -60px; right: -60px;
+  animation-delay: -3s;
+}
+@keyframes orb-float {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50%       { transform: translateY(-20px) scale(1.05); }
+}
+
+/* Content wrapper */
+.landing-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+  padding: 24px;
+  width: 100%;
+  max-width: 360px;
+  text-align: center;
+}
+
+/* Logo */
+.landing-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  animation: fade-up 0.6s ease 0.1s both;
+}
+.landing-logo-icon {
+  width: 44px; height: 44px;
+  background: linear-gradient(135deg, #2997ff, #8b5cf6);
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; font-weight: 900; color: white;
+  box-shadow: 0 0 24px rgba(41,151,255,0.4);
+}
+.landing-logo-text {
+  font-size: 22px;
+  font-weight: 700;
+  color: #f5f5f7;
+  letter-spacing: -0.5px;
+}
+
+/* Headline */
+.landing-headline {
+  animation: fade-up 0.6s ease 0.2s both;
+}
+.landing-headline h1 {
+  font-size: 42px;
+  font-weight: 800;
+  line-height: 1.1;
+  color: #f5f5f7;
+  letter-spacing: -1px;
+  margin: 0 0 12px;
+}
+.landing-headline-accent {
+  background: linear-gradient(90deg, #2997ff, #8b5cf6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.landing-subtitle {
+  font-size: 15px;
+  color: rgba(255,255,255,0.45);
+  line-height: 1.7;
+  margin: 0;
+}
+
+/* Stats row */
+.landing-stats {
+  display: flex;
+  gap: 20px;
+  animation: fade-up 0.6s ease 0.3s both;
+}
+.landing-stat {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.5);
+  letter-spacing: 0.5px;
+}
+.landing-stat-dot {
+  width: 6px; height: 6px;
+  background: #30d158;
+  border-radius: 50%;
+  box-shadow: 0 0 6px #30d158;
+  animation: dot-pulse 2s ease-in-out infinite;
+}
+@keyframes dot-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.6; transform: scale(0.8); }
+}
+
+/* CTA Button */
+.landing-cta {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 36px;
+  background: linear-gradient(135deg, #2997ff, #7c6cf8);
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  overflow: hidden;
+  width: 100%;
+  justify-content: center;
+  box-shadow: 0 0 32px rgba(41,151,255,0.35), 0 4px 20px rgba(0,0,0,0.4);
+  animation: fade-up 0.6s ease 0.4s both, cta-glow-pulse 3s ease-in-out 1.2s infinite;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.landing-cta:active {
+  transform: scale(0.97);
+  box-shadow: 0 0 16px rgba(41,151,255,0.25), 0 2px 10px rgba(0,0,0,0.3);
+}
+.landing-cta-text {
+  font-size: 17px;
+  font-weight: 700;
+  color: white;
+  letter-spacing: -0.3px;
+  position: relative; z-index: 1;
+}
+.landing-cta-arrow {
+  position: relative; z-index: 1;
+  color: rgba(255,255,255,0.85);
+  font-size: 15px;
+  transition: transform 0.2s ease;
+}
+.landing-cta:hover .landing-cta-arrow { transform: translateX(4px); }
+.landing-cta-ripple-bg {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(255,255,255,0.25) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.landing-cta.landing-cta-ripple .landing-cta-ripple-bg {
+  opacity: 1;
+  animation: ripple-expand 0.4s ease both;
+}
+@keyframes ripple-expand {
+  from { transform: scale(0.5); opacity: 0.5; }
+  to   { transform: scale(2);   opacity: 0; }
+}
+@keyframes cta-glow-pulse {
+  0%, 100% { box-shadow: 0 0 32px rgba(41,151,255,0.35), 0 4px 20px rgba(0,0,0,0.4); }
+  50%       { box-shadow: 0 0 48px rgba(41,151,255,0.55), 0 4px 24px rgba(0,0,0,0.4); }
+}
+
+/* Hint */
+.landing-hint {
+  font-size: 12px;
+  color: rgba(255,255,255,0.25);
+  letter-spacing: 0.5px;
+  margin: 0;
+  animation: fade-up 0.6s ease 0.5s both;
+}
+
+/* Shared fade-up */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Exit overlay (dark wipe) */
+.landing-exit-overlay {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  z-index: 200;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+.landing-exit-overlay.landing-exit-overlay-active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* Dashboard page entrance after landing */
+.page-enter {
+  animation: page-enter-anim 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes page-enter-anim {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

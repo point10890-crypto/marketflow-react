@@ -1,0 +1,89 @@
+{
+  "name": "삼화콘덴서",
+  "ticker": "001820.KS",
+  "result": "적극 매수",
+  "date": "2026-03-20 10:29:51",
+  "elapsed": 1.8,
+  "consensus_score": 4.67,
+  "analyst_count": 3,
+  "recommendation_detail": {
+    "strongBuy": 2,
+    "buy": 1,
+    "hold": 0,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 59400.0,
+    "high": 51000.0,
+    "low": 40000.0,
+    "mean": 43666.668,
+    "median": 40000.0
+  },
+  "current_price": 59400.0,
+  "upside_potential": -26.5,
+  "key_stats": {
+    "name": "SamwhaCapacitor",
+    "sector": "Technology",
+    "industry": "Electronic Components",
+    "market_cap": 609503412224,
+    "pe_ratio": null,
+    "forward_pe": 19.462648,
+    "dividend_yield": 0.83,
+    "beta": 1.373,
+    "fifty_two_week_high": 68400.0,
+    "fifty_two_week_low": 21500.0,
+    "revenue": 294050562048,
+    "profit_margin": 0.05183,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "삼화콘덴서에 대한 애널리스트 컨센서스는 3명 참여, 5점 만점에 4.67점으로 '적극 매수' 의견이 제시되었습니다. 하지만 목표가 평균은 43,667원으로 현재 주가 대비 -26.5% 하락 여력이 있는 것으로 분석됩니다. 투자 결정 시 컨센서스 의견과 목표가 간의 괴리를 고려해야 합니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 72506233390
+    },
+    {
+      "date": "2025-06",
+      "value": 78772584380
+    },
+    {
+      "date": "2025-03",
+      "value": 72425939420
+    },
+    {
+      "date": "2024-12",
+      "value": 70345797640
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 4044261680
+    },
+    {
+      "date": "2025-06",
+      "value": 2836731110
+    },
+    {
+      "date": "2025-03",
+      "value": 4034619540
+    },
+    {
+      "date": "2024-12",
+      "value": 4324126110
+    }
+  ],
+  "news": [
+    {
+      "title": "High Growth Tech Stocks in Asia for September 2025",
+      "summary": "As global markets react to the Federal Reserve's recent interest rate cuts, small-cap stocks have shown a notable rally, reflecting broader market optimism and potential growth opportunities in variou",
+      "url": "https://finance.yahoo.com/news/high-growth-tech-stocks-asia-043804512.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2025-09-23T04:38:04Z"
+    }
+  ]
+}

@@ -1,0 +1,75 @@
+{
+  "name": "쏘닉스",
+  "ticker": "088280.KQ",
+  "result": "데이터 없음",
+  "date": "2026-03-20 09:30:52",
+  "elapsed": 2.2,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 2600.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 2600.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "SAWNICS",
+    "sector": "Technology",
+    "industry": "Semiconductors",
+    "market_cap": 44996874240,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": null,
+    "beta": 0.958,
+    "fifty_two_week_high": 3065.0,
+    "fifty_two_week_low": 1605.0,
+    "revenue": 17078418432,
+    "profit_margin": -0.3101,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 4421350430
+    },
+    {
+      "date": "2025-06",
+      "value": 4488719090
+    },
+    {
+      "date": "2025-03",
+      "value": 4592356000
+    },
+    {
+      "date": "2024-12",
+      "value": 3575992850
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": -1194936730
+    },
+    {
+      "date": "2025-06",
+      "value": -2566869380
+    },
+    {
+      "date": "2025-03",
+      "value": -1634964150
+    },
+    {
+      "date": "2024-12",
+      "value": 100671280
+    }
+  ],
+  "news": []
+}

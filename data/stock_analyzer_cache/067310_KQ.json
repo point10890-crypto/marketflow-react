@@ -1,0 +1,90 @@
+{
+  "name": "하나마이크론",
+  "ticker": "067310.KQ",
+  "result": "데이터 없음",
+  "date": "2026-03-20 13:45:09",
+  "elapsed": 1.8,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 34600.0,
+    "high": 28000.0,
+    "low": 28000.0,
+    "mean": 28000.0,
+    "median": 28000.0
+  },
+  "current_price": 34550.0,
+  "upside_potential": -19.0,
+  "key_stats": {
+    "name": "Hana Micron",
+    "sector": "",
+    "industry": "",
+    "market_cap": 2289695719424,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": null,
+    "beta": null,
+    "fifty_two_week_high": 39500.0,
+    "fifty_two_week_low": 9970.0,
+    "revenue": null,
+    "profit_margin": null,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 432396038430
+    },
+    {
+      "date": "2025-06",
+      "value": 340178666800
+    },
+    {
+      "date": "2025-03",
+      "value": 311772740280
+    },
+    {
+      "date": "2024-12",
+      "value": 383683136120
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 15705583410
+    },
+    {
+      "date": "2025-06",
+      "value": 3212606230
+    },
+    {
+      "date": "2025-03",
+      "value": -3474345760
+    },
+    {
+      "date": "2024-12",
+      "value": 6165821740
+    }
+  ],
+  "news": [
+    {
+      "title": "3 High Growth Asian Stocks With Significant Insider Ownership",
+      "summary": "As global markets face ongoing volatility and geopolitical uncertainties, the Asian market continues to showcase a complex landscape of economic growth and challenges. In this environment, identifying",
+      "url": "https://finance.yahoo.com/news/3-high-growth-asian-stocks-223836987.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-01-27T22:38:36Z"
+    },
+    {
+      "title": "Asian Growth Companies With High Insider Ownership September 2025",
+      "summary": "As of September 2025, Asian markets have been navigating a complex landscape marked by strong domestic liquidity and evolving economic policies, contributing to steady gains despite broader global unc",
+      "url": "https://finance.yahoo.com/news/asian-growth-companies-high-insider-043537279.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2025-09-30T04:35:37Z"
+    }
+  ]
+}

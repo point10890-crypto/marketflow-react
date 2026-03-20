@@ -11,8 +11,10 @@ export const API_HEADERS: Record<string, string> = API_BASE ? { 'ngrok-skip-brow
 // 정적 스냅샷 폴백 맵 (prod에서 Render 슬립 시 사용)
 const STATIC_FALLBACK: Record<string, string> = {
     '/api/kr/market-gate':        '/data/kr-market-gate.json',
-    '/api/kr/jongga-v2/latest':   '/data/kr-jongga-v2-latest.json',
-    '/api/kr/jongga-v2/dates':    '/data/kr-jongga-v2-dates.json',
+    '/api/kr/jongga-v2/latest':      '/data/kr-jongga-v2-latest.json',
+    '/api/kr/jongga-v2/dates':       '/data/kr-jongga-v2-dates.json',
+    '/api/kr/jongga-v2/performance': '/data/kr-jongga-v2-performance.json',
+    '/api/kr/jongga-v2/today-summary': '/data/kr-jongga-v2-today.json',
     '/api/kr/vcp-enhanced':       '/data/kr-vcp-enhanced.json',
     '/api/kr/vcp-dates':          '/data/kr-vcp-dates.json',
     '/api/us/market-briefing':    '/data/us-market-briefing.json',
@@ -160,6 +162,118 @@ export interface ClosingBetTiming {
 
 export const closingBetAPI = {
     getTiming: () => fetchAPI<ClosingBetTiming>('/api/kr/closing-bet/timing'),
+};
+
+// ── Jongga V2 (종가베팅) Types ──────────────────────────────────────────────
+
+export interface JonggaV2ScoreDetail {
+    news: number;
+    volume: number;
+    chart: number;
+    candle: number;
+    consolidation: number;
+    supply: number;
+    disclosure: number;
+    analyst: number;
+    total: number;
+    llm_reason?: string;
+    llm_source?: string;
+}
+
+export interface JonggaV2Signal {
+    stock_code: string;
+    stock_name: string;
+    market: string;
+    sector?: string;
+    grade: 'S' | 'A' | 'B' | 'C';
+    change_pct: number;
+    trading_value: number;
+    current_price: number;
+    entry_price: number;
+    stop_price: number;
+    target_price: number;
+    quantity?: number;
+    position_size?: number;
+    r_value?: number;
+    r_multiplier?: number;
+    foreign_5d: number;
+    inst_5d: number;
+    volume_ratio?: number;
+    score: JonggaV2ScoreDetail;
+    news_items?: string[];
+    themes?: string[];
+}
+
+export interface JonggaV2AIPick {
+    stock_code: string;
+    stock_name: string;
+    rank: number;
+    confidence: 'HIGH' | 'MEDIUM' | 'LOW';
+    reason: string;
+    risk: string;
+    expected_return?: string;
+    source?: string;
+}
+
+export interface JonggaV2Result {
+    date: string;
+    total_candidates: number;
+    filtered_count: number;
+    signals: JonggaV2Signal[];
+    by_grade: { S: number; A: number; B: number; C: number };
+    by_market?: { KOSPI: number; KOSDAQ: number };
+    processing_time_ms?: number;
+    updated_at?: string;
+    claude_picks?: {
+        picks: JonggaV2AIPick[];
+        consensus_count?: number;
+        market_view?: string;
+        top_themes?: string[];
+        generated_at?: string;
+    };
+}
+
+export interface JonggaPerformanceSummary {
+    total_days: number;
+    total_s: number;
+    total_a: number;
+    total_b: number;
+    avg_s_per_day: number;
+    avg_a_per_day: number;
+    avg_signals_per_day: number;
+}
+
+export interface JonggaPerformanceHistory {
+    date: string;
+    by_grade: { S: number; A: number; B: number; C?: number };
+    filtered_count: number;
+    top_signal: { name: string; grade: string; change_pct: number; score: number } | null;
+    market_view: string;
+}
+
+export interface JonggaPerformanceData {
+    history: JonggaPerformanceHistory[];
+    summary: JonggaPerformanceSummary;
+}
+
+// Jongga V2 API
+export const jonggaAPI = {
+    getLatest: () => fetchAPI<JonggaV2Result>('/api/kr/jongga-v2/latest'),
+    getDates: () => fetchAPI<{ dates: string[] }>('/api/kr/jongga-v2/dates'),
+    getPerformance: () => fetchAPI<JonggaPerformanceData>('/api/kr/jongga-v2/performance'),
+    getTodaySummary: () => fetchAPI<{
+        date: string;
+        by_grade: { S: number; A: number; B: number };
+        filtered_count: number;
+        top_signal: {
+            stock_code: string; stock_name: string; grade: string;
+            change_pct: number; score_total: number;
+            entry_price: number; stop_price: number; target_price: number;
+            llm_reason: string;
+        } | null;
+        market_view: string;
+        top_themes: string[];
+    }>('/api/kr/jongga-v2/today-summary'),
 };
 
 // US Market API Types

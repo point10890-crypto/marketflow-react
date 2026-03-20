@@ -15,6 +15,7 @@ const PAGE_NAMES: Record<string, string> = {
     '/dashboard/kr/closing-bet': '종가베팅',
     '/dashboard/kr/closing-bet/history': '종가베팅 History',
     '/dashboard/kr/chatbot': 'KR Chatbot',
+    '/dashboard/kr/track-record': 'Track Record',
     '/dashboard/us': 'US Market',
     '/dashboard/us/etf': 'ETF Flows',
     '/dashboard/us/vcp': 'US VCP',

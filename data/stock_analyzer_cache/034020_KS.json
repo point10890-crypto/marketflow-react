@@ -1,0 +1,117 @@
+{
+  "name": "두산에너빌리티",
+  "ticker": "034020.KS",
+  "result": "적극 매수",
+  "date": "2026-03-20 09:15:17",
+  "elapsed": 2.0,
+  "consensus_score": 4.44,
+  "analyst_count": 18,
+  "recommendation_detail": {
+    "strongBuy": 8,
+    "buy": 10,
+    "hold": 0,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 106300.0,
+    "high": 157000.0,
+    "low": 92000.0,
+    "mean": 118833.336,
+    "median": 115500.0
+  },
+  "current_price": 106300.0,
+  "upside_potential": 11.8,
+  "key_stats": {
+    "name": "Doosan Enerbility",
+    "sector": "Industrials",
+    "industry": "Specialty Industrial Machinery",
+    "market_cap": 68081447600128,
+    "pe_ratio": null,
+    "forward_pe": 98.28274,
+    "dividend_yield": null,
+    "beta": 1.866,
+    "fifty_two_week_high": 110700.0,
+    "fifty_two_week_low": 19960.0,
+    "revenue": 16787076808704,
+    "profit_margin": -0.00607,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "두산에너빌리티(034020.KS)는 현재 106,300 KRW에 거래되고 있으며, 애널리스트 컨센서스는 18명의 참여자 기준 '적극 매수' 의견입니다. 평균 목표가는 118,833 KRW로, 현재 주가 대비 11.8% 상승 여력이 있는 것으로 분석됩니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 3880350000000
+    },
+    {
+      "date": "2025-06",
+      "value": 4569021000000
+    },
+    {
+      "date": "2025-03",
+      "value": 3748574000000
+    },
+    {
+      "date": "2024-12",
+      "value": 4589132030310
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": -50078000000
+    },
+    {
+      "date": "2025-06",
+      "value": 130927000000
+    },
+    {
+      "date": "2025-03",
+      "value": -68860000000
+    },
+    {
+      "date": "2024-12",
+      "value": -113940665370
+    }
+  ],
+  "news": [
+    {
+      "title": "NuScale Power Corporation Q4 2025 Earnings Call Summary",
+      "summary": "Moby summary of NuScale Power Corporation's Q4 2025 earnings call",
+      "url": "https://app.moby.co/home/research/tools/earningsCalendar/earnings-nuscale-power-corporation-q4-2025-earnings-call-summary?utm_source=yahoo_finance&utm_medium=rss",
+      "provider": "Moby",
+      "pub_time": "2026-02-27T13:30:00Z"
+    },
+    {
+      "title": "The AI Trade Is Alive and Living in Industrials, Small-Caps, and Asia",
+      "summary": "Nvidia and other chip stocks are still going strong, but don’t forget about those sizzling small-caps, industrials, and foreign markets.",
+      "url": "https://www.barrons.com/articles/nvidia-deere-hyundai-small-caps-ai-e362a88e?siteid=yhoof2&yptr=yahoo",
+      "provider": "Barrons.com",
+      "pub_time": "2026-02-26T20:37:00Z"
+    },
+    {
+      "title": "Doosan selects ANDRITZ as supplier for pumped storage power plant in South Korea",
+      "summary": "Doosan Enerbility has selected ANDRITZ to supply the pump turbine units for the new Yeongdong pumped storage plant in Chungcheong Province, South Korea.",
+      "url": "https://www.energyglobal.com/energy-storage/21012026/doosan-selects-andritz-as-supplier-for-pumped-storage-power-plant-in-south-korea/?yptr=yahoo",
+      "provider": "Energy Global",
+      "pub_time": "2026-01-21T12:00:00Z"
+    },
+    {
+      "title": "South Korea Stocks Cap Strongest Rally in 25 Years as Kospi Surges 76%",
+      "summary": "The Kospi outperformed global peers in 2025, led by chips, defense, nuclear power and K-beauty stocks.",
+      "url": "https://finance.yahoo.com/news/south-korea-stocks-cap-strongest-134753611.html",
+      "provider": "GuruFocus.com",
+      "pub_time": "2025-12-30T13:47:53Z"
+    },
+    {
+      "title": "Wall Street's $566 Billion Nuclear Frenzy: The Real AI Power Play No One's Talking About",
+      "summary": "As AI data centers devour electricity, fund managers are betting nuclear could be the ultimate infrastructure trade of the decade",
+      "url": "https://finance.yahoo.com/news/wall-streets-566-billion-nuclear-112327048.html",
+      "provider": "GuruFocus.com",
+      "pub_time": "2025-12-09T11:23:27Z"
+    }
+  ]
+}

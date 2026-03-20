@@ -1,0 +1,29 @@
+{
+  "date": "2026-03-19",
+  "by_grade": {
+    "S": 7,
+    "A": 6,
+    "B": 0,
+    "C": 0
+  },
+  "filtered_count": 13,
+  "top_signal": {
+    "stock_code": "010060",
+    "stock_name": "OCI홀딩스",
+    "grade": "S",
+    "change_pct": 17.33,
+    "score_total": 11,
+    "entry_price": 193600,
+    "stop_price": 187792,
+    "target_price": 203280,
+    "llm_reason": "국제 유가 하락에 따른 원가 수혜 기대감으로 화학주가 강세를 보이고 있어 OCI홀딩스에 긍정적인 영향을 줄 수 있음"
+  },
+  "market_view": "[Gemini] 오늘 시장은 AI 반도체, 화학, MLCC 등 특정 섹터로의 자금 집중과 주주환원 기대감에 힘입은 보험주 강세가 두드러지는 하루였습니다.",
+  "top_themes": [
+    "화학 (유가하락 수혜)",
+    "AI 반도체/PCB",
+    "MLCC/전자부품",
+    "주주환원 (보험)",
+    "반도체"
+  ]
+}

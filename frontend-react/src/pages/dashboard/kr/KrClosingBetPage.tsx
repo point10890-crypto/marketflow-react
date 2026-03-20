@@ -273,16 +273,27 @@ export default function JonggaV2Page() {
 
     // 1. Load Available Dates
     useEffect(() => {
-        fetch(`${API_BASE}/api/kr/jongga-v2/dates`, { headers: API_HEADERS })
-            .then((res) => res.json())
-            .then((data) => {
-                if (Array.isArray(data)) {
-                    setDates(data);
-                } else if (data?.dates && Array.isArray(data.dates)) {
-                    setDates(data.dates);
+        const fetchDates = async () => {
+            let data: any = null;
+            try {
+                const res = await fetch(`${API_BASE}/api/kr/jongga-v2/dates`, { headers: API_HEADERS });
+                data = await res.json();
+            } catch {
+                try {
+                    const res = await fetch('/data/kr-jongga-v2-dates.json');
+                    data = await res.json();
+                } catch (err) {
+                    console.error('Failed to fetch dates:', err);
                 }
-            })
-            .catch((err) => console.error('Failed to fetch dates:', err));
+            }
+            if (!data) return;
+            if (Array.isArray(data)) {
+                setDates(data);
+            } else if (data?.dates && Array.isArray(data.dates)) {
+                setDates(data.dates);
+            }
+        };
+        fetchDates();
     }, []);
 
     // 2. Load Data (Latest or Specific Date)
@@ -294,8 +305,18 @@ export default function JonggaV2Page() {
                 url = `${API_BASE}/api/kr/jongga-v2/history/${selectedDate}`;
             }
 
-            const res = await fetch(url, { headers: API_HEADERS });
-            const result = await res.json();
+            let result: any;
+            try {
+                const res = await fetch(url, { headers: API_HEADERS });
+                result = await res.json();
+            } catch {
+                const fallbackUrl = (isUserSelected && selectedDate !== 'latest')
+                    ? null
+                    : '/data/kr-jongga-v2-latest.json';
+                if (!fallbackUrl) throw new Error('no fallback for date-specific');
+                const res = await fetch(fallbackUrl);
+                result = await res.json();
+            }
 
             // Fallback: latest에 시그널이 없으면 과거 날짜에서 시그널 탐색
             if (!isUserSelected && (!result?.signals || result.signals.length === 0) && dates.length > 0) {

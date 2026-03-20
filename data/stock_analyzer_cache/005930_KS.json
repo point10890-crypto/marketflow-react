@@ -1,0 +1,117 @@
+{
+  "name": "삼성전자",
+  "ticker": "005930.KS",
+  "result": "매수",
+  "date": "2026-03-20 09:14:54",
+  "elapsed": 2.2,
+  "consensus_score": 4.22,
+  "analyst_count": 37,
+  "recommendation_detail": {
+    "strongBuy": 12,
+    "buy": 23,
+    "hold": 1,
+    "sell": 0,
+    "strongSell": 1
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 200500.0,
+    "high": 340000.0,
+    "low": 110000.0,
+    "mean": 239873.48,
+    "median": 250000.0
+  },
+  "current_price": 200500.0,
+  "upside_potential": 19.6,
+  "key_stats": {
+    "name": "SamsungElec",
+    "sector": "Technology",
+    "industry": "Consumer Electronics",
+    "market_cap": 1340559687942144,
+    "pe_ratio": null,
+    "forward_pe": 6.9793572,
+    "dividend_yield": 1.13,
+    "beta": 1.121,
+    "fifty_two_week_high": 223000.0,
+    "fifty_two_week_low": 52091.0,
+    "revenue": 333605947572224,
+    "profit_margin": 0.13267,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "삼성전자에 대해 37명의 애널리스트가 제시한 컨센서스는 '매수' 의견입니다. 목표가 평균은 239,873원으로, 현재가 대비 19.6% 상승 여력이 있는 것으로 분석됩니다. 이는 5점 만점에 4.22점에 해당하는 점수입니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 93837371000000
+    },
+    {
+      "date": "2025-09",
+      "value": 86061747000000
+    },
+    {
+      "date": "2025-06",
+      "value": 74566317000000
+    },
+    {
+      "date": "2025-03",
+      "value": 79140503000000
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 19292054000000
+    },
+    {
+      "date": "2025-09",
+      "value": 12006461000000
+    },
+    {
+      "date": "2025-06",
+      "value": 4934034000000
+    },
+    {
+      "date": "2025-03",
+      "value": 8028407000000
+    }
+  ],
+  "news": [
+    {
+      "title": "Samsung’s $73b AI Bet With AMD And What It Means For Valuation",
+      "summary": "Samsung Electronics announced a capital expenditure plan of more than $73 billion for 2026, focused on AI related semiconductor capacity and R&D. The company also entered into a new partnership with A",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/samsung-73b-ai-bet-amd-230739419.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-03-19T23:07:39Z"
+    },
+    {
+      "title": "Stock Market Today, March 19: Micron Falls Despite Record Revenue Amid Margin and Capex Concerns",
+      "summary": "On March 19, 2026, investors weighed record AI-fueled growth against looming margin peaks and an aggressive spending surge.",
+      "url": "https://www.fool.com/coverage/stock-market-today/2026/03/19/stock-market-today-march-19-micron-falls-despite-record-revenue-amid-margin-and-capex-concerns/",
+      "provider": "Motley Fool",
+      "pub_time": "2026-03-19T22:00:19Z"
+    },
+    {
+      "title": "KLA Rival Calibrates New Buy Zone As Top Funds Scoop Up Shares",
+      "summary": "The semiconductor equipment group ranks a stellar No. 3 among the 197 groups Investor's Business Daily tracks and features industry powerhouses like Advanced Energy Industries and ASML. Metrology lead",
+      "url": "https://www.investors.com/research/ibd-stock-analysis/nova-stock-nvmi-metrology-leader-klac-rival-etches-new-buy-zone/?src=A00220&yptr=yahoo",
+      "provider": "Investor's Business Daily",
+      "pub_time": "2026-03-19T20:10:17Z"
+    },
+    {
+      "title": "TSLA: Musk Teases Major Tesla Chip Milestone for December",
+      "summary": "Tesla's AI6 Chip Could Reach Tape-Out as Early as December",
+      "url": "https://finance.yahoo.com/sectors/technology/articles/tsla-musk-teases-major-tesla-195256584.html",
+      "provider": "GuruFocus.com",
+      "pub_time": "2026-03-19T19:52:56Z"
+    },
+    {
+      "title": "Tesla Targets December Tape-Out for AI6 Chip",
+      "summary": "Next-gen processor to power autonomy and robotics push",
+      "url": "https://finance.yahoo.com/sectors/technology/articles/tesla-targets-december-tape-ai6-191016667.html",
+      "provider": "GuruFocus.com",
+      "pub_time": "2026-03-19T19:10:16Z"
+    }
+  ]
+}

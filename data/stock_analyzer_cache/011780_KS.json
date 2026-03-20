@@ -1,0 +1,81 @@
+{
+  "name": "금호석유화학",
+  "ticker": "011780.KS",
+  "result": "매수",
+  "date": "2026-03-20 10:29:13",
+  "elapsed": 2.2,
+  "consensus_score": 4.21,
+  "analyst_count": 14,
+  "recommendation_detail": {
+    "strongBuy": 4,
+    "buy": 9,
+    "hold": 1,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 134800.0,
+    "high": 200000.0,
+    "low": 135000.0,
+    "mean": 165785.72,
+    "median": 160000.0
+  },
+  "current_price": 134800.0,
+  "upside_potential": 23.0,
+  "key_stats": {
+    "name": "KumhoPetrochem",
+    "sector": "Basic Materials",
+    "industry": "Specialty Chemicals",
+    "market_cap": 3502675591168,
+    "pe_ratio": null,
+    "forward_pe": 7.4283824,
+    "dividend_yield": 1.27,
+    "beta": 0.862,
+    "fifty_two_week_high": 162300.0,
+    "fifty_two_week_low": 102800.0,
+    "revenue": 6915145334784,
+    "profit_margin": 0.042069998,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "금호석유화학(011780.KS)에 대한 애널리스트 컨센서스는 14명 참여 기준 '매수' 의견(4.21/5.0)으로 나타났습니다. 평균 목표 주가는 165,786 KRW이며, 이는 현재가 134,800 KRW 대비 약 23.0% 상승 여력이 있는 것으로 분석됩니다. 투자 결정은 제시된 데이터를 참고하여 신중하게 판단하시기 바랍니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 1589735553170
+    },
+    {
+      "date": "2025-09",
+      "value": 1643813977910
+    },
+    {
+      "date": "2025-06",
+      "value": 1773366505910
+    },
+    {
+      "date": "2025-03",
+      "value": 1908229062930
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 1422568170
+    },
+    {
+      "date": "2025-09",
+      "value": 106888760940
+    },
+    {
+      "date": "2025-06",
+      "value": 57671013330
+    },
+    {
+      "date": "2025-03",
+      "value": 124954395780
+    }
+  ],
+  "news": []
+}

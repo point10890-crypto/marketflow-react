@@ -122,3 +122,9 @@ kill_zombies.ps1
 schtask_result.txt
 
 .vercel
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+!.env.example

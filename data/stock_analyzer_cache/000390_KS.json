@@ -1,0 +1,75 @@
+{
+  "name": "삼화페인트",
+  "ticker": "000390.KS",
+  "result": "데이터 없음",
+  "date": "2026-03-20 09:24:26",
+  "elapsed": 2.4,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 10690.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 10690.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "SamhwaPaint",
+    "sector": "Basic Materials",
+    "industry": "Specialty Chemicals",
+    "market_cap": 265270509568,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": 3.2,
+    "beta": 0.783,
+    "fifty_two_week_high": 14300.0,
+    "fifty_two_week_low": 5260.0,
+    "revenue": 621078511616,
+    "profit_margin": 0.01311,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 155501778050
+    },
+    {
+      "date": "2025-06",
+      "value": 177509100090
+    },
+    {
+      "date": "2025-03",
+      "value": 133269135310
+    },
+    {
+      "date": "2024-12",
+      "value": 154798521450
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 489814180
+    },
+    {
+      "date": "2025-06",
+      "value": 7907970290
+    },
+    {
+      "date": "2025-03",
+      "value": -1293391950
+    },
+    {
+      "date": "2024-12",
+      "value": 1035630000
+    }
+  ],
+  "news": []
+}

@@ -1,0 +1,75 @@
+{
+  "name": "보성파워텍",
+  "ticker": "006910.KQ",
+  "result": "데이터 없음",
+  "date": "2026-03-20 11:56:14",
+  "elapsed": 2.0,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 12890.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 12890.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "BOSUNG POWER",
+    "sector": "",
+    "industry": "",
+    "market_cap": 630705422336,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": null,
+    "beta": null,
+    "fifty_two_week_high": 13800.0,
+    "fifty_two_week_low": 2100.0,
+    "revenue": null,
+    "profit_margin": null,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 36811419930
+    },
+    {
+      "date": "2025-06",
+      "value": 55831806380
+    },
+    {
+      "date": "2025-03",
+      "value": 17454931370
+    },
+    {
+      "date": "2024-12",
+      "value": 34367405930
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 4365528720
+    },
+    {
+      "date": "2025-06",
+      "value": 11007422910
+    },
+    {
+      "date": "2025-03",
+      "value": 1120600890
+    },
+    {
+      "date": "2024-12",
+      "value": 4386872770
+    }
+  ],
+  "news": []
+}

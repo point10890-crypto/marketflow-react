@@ -4,6 +4,7 @@ import DashboardLayout from '@/components/layout/DashboardLayout';
 import LoginPage from '@/pages/auth/LoginPage';
 import SignupPage from '@/pages/auth/SignupPage';
 import PricingPage from '@/pages/static/PricingPage';
+import LandingPage from '@/pages/LandingPage';
 
 // Dashboard pages - lazy loaded
 import { lazy, Suspense } from 'react';
@@ -13,6 +14,7 @@ const KrOverviewPage = lazy(() => import('@/pages/dashboard/kr/KrOverviewPage'))
 const KrVcpPage = lazy(() => import('@/pages/dashboard/kr/KrVcpPage'));
 const KrClosingBetPage = lazy(() => import('@/pages/dashboard/kr/KrClosingBetPage'));
 const KrChatbotPage = lazy(() => import('@/pages/dashboard/kr/KrChatbotPage'));
+const KrTrackRecordPage = lazy(() => import('@/pages/dashboard/kr/TrackRecordPage'));
 const UsOverviewPage = lazy(() => import('@/pages/dashboard/us/UsOverviewPage'));
 const UsVcpPage = lazy(() => import('@/pages/dashboard/us/UsVcpPage'));
 const UsEtfPage = lazy(() => import('@/pages/dashboard/us/UsEtfPage'));
@@ -42,7 +44,7 @@ export default function App() {
             <AuthProvider>
                 <Routes>
                     {/* Public routes */}
-                    <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                    <Route path="/" element={<LandingPage />} />
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/signup" element={<SignupPage />} />
                     <Route path="/pricing" element={<PricingPage />} />
@@ -55,6 +57,7 @@ export default function App() {
                         <Route path="kr/vcp" element={<Suspense fallback={<LoadingFallback />}><KrVcpPage /></Suspense>} />
                         <Route path="kr/closing-bet" element={<Suspense fallback={<LoadingFallback />}><KrClosingBetPage /></Suspense>} />
                         <Route path="kr/chatbot" element={<Suspense fallback={<LoadingFallback />}><KrChatbotPage /></Suspense>} />
+                        <Route path="kr/track-record" element={<Suspense fallback={<LoadingFallback />}><KrTrackRecordPage /></Suspense>} />
                         <Route path="us" element={<Suspense fallback={<LoadingFallback />}><UsOverviewPage /></Suspense>} />
                         <Route path="us/vcp" element={<Suspense fallback={<LoadingFallback />}><UsVcpPage /></Suspense>} />
                         <Route path="us/etf" element={<Suspense fallback={<LoadingFallback />}><UsEtfPage /></Suspense>} />

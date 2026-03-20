@@ -27,7 +27,7 @@ echo.
 
 :: ── Cloudflare 배포 ──
 echo [2/2] Cloudflare Workers 배포 중...
-call npx wrangler deploy 2>&1
+call npx wrangler deploy --config "%FRONTEND%\wrangler.toml" 2>&1
 if %ERRORLEVEL% NEQ 0 (
     echo.
     echo [FAIL] Cloudflare 배포 실패

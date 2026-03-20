@@ -1,0 +1,103 @@
+{
+  "name": "두산밥캣",
+  "ticker": "241560.KS",
+  "result": "매수",
+  "date": "2026-03-20 09:15:49",
+  "elapsed": 2.3,
+  "consensus_score": 4.12,
+  "analyst_count": 8,
+  "recommendation_detail": {
+    "strongBuy": 1,
+    "buy": 7,
+    "hold": 0,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 61800.0,
+    "high": 87000.0,
+    "low": 71000.0,
+    "mean": 79250.0,
+    "median": 80000.0
+  },
+  "current_price": 61800.0,
+  "upside_potential": 28.2,
+  "key_stats": {
+    "name": "Doosan Bobcat",
+    "sector": "Industrials",
+    "industry": "Farm & Heavy Construction Machinery",
+    "market_cap": 5915112636416,
+    "pe_ratio": null,
+    "forward_pe": 9.848051,
+    "dividend_yield": 3.28,
+    "beta": 0.866,
+    "fifty_two_week_high": 73900.0,
+    "fifty_two_week_low": 39898.0,
+    "revenue": 6182000128,
+    "profit_margin": 0.04578,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "두산밥캣(241560.KS)에 대해 8명의 애널리스트가 제시한 컨센서스 의견은 '매수'입니다. 목표가 평균은 79,250원으로, 현재가 61,800원 대비 28.2% 상승 여력이 있습니다. 투자 판단은 제시된 분석 데이터를 참고하여 투자자 본인이 결정해야 합니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 2160802968000
+    },
+    {
+      "date": "2025-06",
+      "value": 2237096480000
+    },
+    {
+      "date": "2025-03",
+      "value": 2098158187000
+    },
+    {
+      "date": "2024-12",
+      "value": 2142285763000
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 84350627000
+    },
+    {
+      "date": "2025-06",
+      "value": 123692447000
+    },
+    {
+      "date": "2025-03",
+      "value": 113368492000
+    },
+    {
+      "date": "2024-12",
+      "value": 124372403000
+    }
+  ],
+  "news": [
+    {
+      "title": "Do Patent Suits And Automation Ambitions Shift CAT’s (CAT) Long-Term Services-Led Strategy?",
+      "summary": "Caterpillar recently closed two long-running shelf registrations tied to its employee stock ownership plan and affirmed a quarterly dividend of US$1.51 per share payable in February 2026, while facing",
+      "url": "https://finance.yahoo.com/news/patent-suits-automation-ambitions-shift-060721524.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2025-12-19T06:07:21Z"
+    },
+    {
+      "title": "Manitowoc (MTW) Stock Is Up, What You Need To Know",
+      "summary": "Shares of crane and lifting equipment company Manitowoc (NYSE:MTW) jumped 4.9% in the afternoon session after broader positive sentiment in the construction equipment sector improved, driven by news o",
+      "url": "https://finance.yahoo.com/news/manitowoc-mtw-stock-know-202650437.html",
+      "provider": "StockStory",
+      "pub_time": "2025-12-03T20:26:50Z"
+    },
+    {
+      "title": "Bobcat files patent lawsuits against Caterpillar over construction machinery tech",
+      "summary": "The lawsuit filed in the Texas Eastern District Court involves patents associated with equipment technology.",
+      "url": "https://www.worldconstructionnetwork.com/news/bobcat-caterpillar-patent-lawsuits/",
+      "provider": "World Construction Network",
+      "pub_time": "2025-12-03T12:02:25Z"
+    }
+  ]
+}

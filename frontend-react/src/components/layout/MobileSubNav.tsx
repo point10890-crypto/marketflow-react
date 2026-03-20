@@ -12,6 +12,7 @@ const sectionChildren: Record<string, SubNavItem[]> = {
         { name: 'Overview', href: '/dashboard/kr', color: 'bg-blue-500' },
         { name: 'VCP Signals', href: '/dashboard/kr/vcp', color: 'bg-rose-500' },
         { name: '종가베팅', href: '/dashboard/kr/closing-bet', color: 'bg-violet-500' },
+        { name: 'Track Record', href: '/dashboard/kr/track-record', color: 'bg-yellow-500' },
     ],
     '/dashboard/us': [
         { name: 'Overview', href: '/dashboard/us', color: 'bg-green-500' },

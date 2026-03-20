@@ -1,0 +1,75 @@
+{
+  "name": "폴라리스오피스",
+  "ticker": "041020.KQ",
+  "result": "데이터 없음",
+  "date": "2026-03-20 09:26:35",
+  "elapsed": 2.1,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 5410.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 5390.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "Polaris Office",
+    "sector": "",
+    "industry": "",
+    "market_cap": 268789317632,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": null,
+    "beta": null,
+    "fifty_two_week_high": 7030.0,
+    "fifty_two_week_low": 3245.0,
+    "revenue": null,
+    "profit_margin": null,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 84778104990
+    },
+    {
+      "date": "2025-06",
+      "value": 79848158750
+    },
+    {
+      "date": "2025-03",
+      "value": 74399265450
+    },
+    {
+      "date": "2024-12",
+      "value": 79652998340
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 1694051830
+    },
+    {
+      "date": "2025-06",
+      "value": 763332450
+    },
+    {
+      "date": "2025-03",
+      "value": 1030767600
+    },
+    {
+      "date": "2024-12",
+      "value": 1919181600
+    }
+  ],
+  "news": []
+}

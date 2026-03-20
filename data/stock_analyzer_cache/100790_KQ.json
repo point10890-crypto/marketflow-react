@@ -1,0 +1,75 @@
+{
+  "name": "미래에셋벤처투자",
+  "ticker": "100790.KQ",
+  "result": "데이터 없음",
+  "date": "2026-03-20 11:09:43",
+  "elapsed": 2.7,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 23000.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 23000.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "Mirae Asset Venture",
+    "sector": "",
+    "industry": "",
+    "market_cap": 1221773230080,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": null,
+    "beta": null,
+    "fifty_two_week_high": 27450.0,
+    "fifty_two_week_low": 4170.0,
+    "revenue": null,
+    "profit_margin": null,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 21773387180
+    },
+    {
+      "date": "2025-06",
+      "value": 85874675790
+    },
+    {
+      "date": "2025-03",
+      "value": 18427313680
+    },
+    {
+      "date": "2024-12",
+      "value": 102932246520
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 7239376690
+    },
+    {
+      "date": "2025-06",
+      "value": 5938984410
+    },
+    {
+      "date": "2025-03",
+      "value": -1453827000
+    },
+    {
+      "date": "2024-12",
+      "value": -7738899710
+    }
+  ],
+  "news": []
+}

@@ -543,6 +543,94 @@ def get_kr_performance():
         return jsonify({'error': str(e)}), 500
 
 
+@kr_bp.route('/jongga-v2/performance', methods=['GET'])
+def get_jongga_v2_performance():
+    """종가베팅 V2 히스토리 성과 — 전체 아카이브 집계"""
+    try:
+        import glob as glob_module
+        data_dir = DATA_DIR
+        files = sorted(glob_module.glob(os.path.join(data_dir, 'jongga_v2_results_*.json')))
+
+        history = []
+        total_signals = 0
+        grade_totals = {'S': 0, 'A': 0, 'B': 0, 'C': 0}
+
+        for fp in files:
+            try:
+                with open(fp, 'r', encoding='utf-8') as f:
+                    d = json.load(f)
+                signals = d.get('signals', [])
+                by_grade = d.get('by_grade', {})
+                top_signal = None
+                for sig in signals:
+                    if sig.get('grade') in ('S', 'A'):
+                        top_signal = {
+                            'stock_name': sig.get('stock_name', ''),
+                            'stock_code': sig.get('stock_code', ''),
+                            'grade': sig.get('grade', ''),
+                            'change_pct': sig.get('change_pct', 0),
+                            'score': sig.get('score', {}).get('total', 0),
+                        }
+                        break
+
+                day_entry = {
+                    'date': d.get('date', ''),
+                    'total_signals': d.get('filtered_count', len(signals)),
+                    'by_grade': by_grade,
+                    'top_signal': top_signal,
+                }
+                history.append(day_entry)
+                total_signals += d.get('filtered_count', len(signals))
+                for grade, cnt in by_grade.items():
+                    grade_totals[grade] = grade_totals.get(grade, 0) + cnt
+            except Exception:
+                continue
+
+        return jsonify({
+            'days_count': len(history),
+            'total_signals': total_signals,
+            'grade_totals': grade_totals,
+            'history': history,
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@kr_bp.route('/jongga-v2/today-summary', methods=['GET'])
+def get_jongga_v2_today_summary():
+    """오늘 종가베팅 요약 — 최신 파일 기반"""
+    try:
+        data_dir = DATA_DIR
+        latest_file = os.path.join(data_dir, 'jongga_v2_latest.json')
+        if not os.path.exists(latest_file):
+            return jsonify({'signals': 0, 'top_signal': None, 'by_grade': {}})
+        with open(latest_file, 'r', encoding='utf-8') as f:
+            d = json.load(f)
+        signals = d.get('signals', [])
+        by_grade = d.get('by_grade', {})
+        top_signal = None
+        for sig in signals:
+            if sig.get('grade') in ('S', 'A'):
+                top_signal = {
+                    'stock_name': sig.get('stock_name', ''),
+                    'stock_code': sig.get('stock_code', ''),
+                    'grade': sig.get('grade', ''),
+                    'change_pct': sig.get('change_pct', 0),
+                    'entry_price': sig.get('entry_price', 0),
+                    'target_price': sig.get('target_price', 0),
+                    'score': sig.get('score', {}).get('total', 0),
+                }
+                break
+        return jsonify({
+            'date': d.get('date', ''),
+            'total_signals': d.get('filtered_count', len(signals)),
+            'by_grade': by_grade,
+            'top_signal': top_signal,
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 @kr_bp.route('/vcp-scan', methods=['POST'])
 def kr_vcp_scan():
     """VCP 스캔 실행"""

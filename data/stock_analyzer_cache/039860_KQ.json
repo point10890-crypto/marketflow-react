@@ -1,0 +1,75 @@
+{
+  "name": "나노엔텍",
+  "ticker": "039860.KQ",
+  "result": "데이터 없음",
+  "date": "2026-03-20 13:32:43",
+  "elapsed": 2.3,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 6430.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 6420.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "NanoenTek",
+    "sector": "Technology",
+    "industry": "Scientific & Technical Instruments",
+    "market_cap": 206146732032,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": null,
+    "beta": 0.573,
+    "fifty_two_week_high": 9390.0,
+    "fifty_two_week_low": 2950.0,
+    "revenue": 34736623616,
+    "profit_margin": 0.07713,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 8551120280
+    },
+    {
+      "date": "2025-06",
+      "value": 8971079250
+    },
+    {
+      "date": "2025-03",
+      "value": 7963678290
+    },
+    {
+      "date": "2024-12",
+      "value": 9250743890
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 633250000
+    },
+    {
+      "date": "2025-06",
+      "value": -1091467920
+    },
+    {
+      "date": "2025-03",
+      "value": 373763050
+    },
+    {
+      "date": "2024-12",
+      "value": 2763787610
+    }
+  ],
+  "news": []
+}
