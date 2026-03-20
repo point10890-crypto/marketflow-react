@@ -170,6 +170,7 @@ class Config:
     VCP_UPDATE_TIME = os.environ.get('VCP_UPDATE_TIME', '16:00')         # 전 시장 VCP 시그널
     HISTORY_TIME = os.environ.get('KR_MARKET_HISTORY_TIME', '10:00')
     CRYPTO_TIMES = ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00']  # 매 4시간
+    MORNING_REPORT_TIME = os.environ.get('MORNING_REPORT_TIME', '09:00')   # 일별 상태 리포트
 
     # 타임아웃 (초)
     PRICE_TIMEOUT = int(os.environ.get('KR_MARKET_PRICE_TIMEOUT', '600'))
@@ -597,6 +598,105 @@ def generate_daily_report():
         logger.error(f"❌ 리포트 생성 실패: {e}")
         return False
 
+
+
+def send_morning_status_report():
+    """매일 09:00 KST — 전날/당일 시스템 상태 텔레그램 요약"""
+    logger.info("📋 아침 상태 리포트 전송 중...")
+    try:
+        from datetime import datetime, timedelta
+        today = datetime.now().strftime('%Y-%m-%d')
+        yesterday = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')
+
+        lines = [f"<b>📋 MarketFlow 일별 리포트</b>  ({today})"]
+        lines.append("")
+
+        # ── KR 종가베팅 ──
+        jongga_path = os.path.join(Config.DATA_DIR, 'jongga_v2_latest.json')
+        if os.path.exists(jongga_path):
+            with open(jongga_path, 'r', encoding='utf-8') as f:
+                d = json.load(f)
+            sig_date = d.get('date', '')[:10]
+            signals = d.get('signals', [])
+            by_grade = d.get('by_grade', {})
+            grade_str = ' '.join(f"{g}:{c}" for g, c in sorted(by_grade.items()) if c > 0) if by_grade else f"{len(signals)}종목"
+            freshness = "✅" if sig_date >= yesterday else "⚠️"
+            lines.append(f"{freshness} <b>KR 종가베팅</b>: {len(signals)}시그널 ({grade_str})")
+            lines.append(f"   └ 기준일: {sig_date}")
+        else:
+            lines.append("❌ <b>KR 종가베팅</b>: 데이터 없음")
+
+        # ── KR VCP ──
+        vcp_kr_path = os.path.join(Config.DATA_DIR, 'vcp_kr_latest.json')
+        if os.path.exists(vcp_kr_path):
+            with open(vcp_kr_path, 'r', encoding='utf-8') as f:
+                d = json.load(f)
+            meta = d.get('metadata', {})
+            gen_at = meta.get('generated_at', '')[:16].replace('T', ' ')
+            vcp_count = d.get('summary', {}).get('vcp_found', len(d.get('signals', [])))
+            entry_ready = d.get('summary', {}).get('entry_ready', 0)
+            freshness = "✅" if gen_at[:10] >= yesterday else "⚠️"
+            lines.append(f"{freshness} <b>KR VCP</b>: {vcp_count}종목 (진입대기 {entry_ready})")
+            lines.append(f"   └ 갱신: {gen_at}")
+        else:
+            lines.append("❌ <b>KR VCP</b>: 데이터 없음")
+
+        # ── US VCP ──
+        vcp_us_path = os.path.join(Config.DATA_DIR, 'vcp_us_latest.json')
+        if os.path.exists(vcp_us_path):
+            with open(vcp_us_path, 'r', encoding='utf-8') as f:
+                d = json.load(f)
+            vcp_count = d.get('summary', {}).get('vcp_found', len(d.get('signals', [])))
+            gen_at = d.get('metadata', {}).get('generated_at', '')[:16].replace('T', ' ')
+            freshness = "✅" if gen_at[:10] >= yesterday else "⚠️"
+            lines.append(f"{freshness} <b>US VCP</b>: {vcp_count}종목")
+        else:
+            lines.append("❌ <b>US VCP</b>: 데이터 없음")
+
+        # ── Crypto ──
+        vcp_crypto_path = os.path.join(Config.DATA_DIR, 'vcp_crypto_latest.json')
+        if os.path.exists(vcp_crypto_path):
+            with open(vcp_crypto_path, 'r', encoding='utf-8') as f:
+                d = json.load(f)
+            vcp_count = d.get('summary', {}).get('vcp_found', len(d.get('signals', [])))
+            gen_at = d.get('metadata', {}).get('generated_at', '')[:16].replace('T', ' ')
+            freshness = "✅" if gen_at[:10] >= yesterday else "⚠️"
+            lines.append(f"{freshness} <b>Crypto VCP</b>: {vcp_count}종목")
+        else:
+            lines.append("❌ <b>Crypto VCP</b>: 데이터 없음")
+
+        # ── US Briefing ──
+        us_briefing_path = os.path.join(Config.BASE_DIR, 'us_market', 'output', 'briefing.json')
+        if os.path.exists(us_briefing_path):
+            mtime = os.path.getmtime(us_briefing_path)
+            mtime_str = datetime.fromtimestamp(mtime).strftime('%Y-%m-%d %H:%M')
+            freshness = "✅" if mtime_str[:10] >= yesterday else "⚠️"
+            lines.append(f"{freshness} <b>US Briefing</b>: 갱신 {mtime_str}")
+        else:
+            lines.append("❌ <b>US Briefing</b>: 데이터 없음")
+
+        # ── Watchdog 로그 (재시작 여부) ──
+        watchdog_log = os.path.join(Config.BASE_DIR, 'logs', 'watchdog.log')
+        if os.path.exists(watchdog_log):
+            with open(watchdog_log, 'r', encoding='utf-8') as f:
+                entries = [l.strip() for l in f.readlines() if yesterday in l or today in l]
+            restarts = [l for l in entries if 'DOWN' in l or '재시작' in l]
+            if restarts:
+                lines.append(f"")
+                lines.append(f"⚠️ <b>Flask 재시작</b>: {len(restarts)}회")
+                for r in restarts[-2:]:
+                    lines.append(f"   └ {r[:60]}")
+            else:
+                lines.append(f"")
+                lines.append(f"✅ <b>Flask 안정</b>: 재시작 없음")
+
+        send_telegram('\n'.join(lines))
+        logger.info("✅ 아침 상태 리포트 전송 완료")
+        return True
+
+    except Exception as e:
+        logger.error(f"❌ 아침 리포트 실패: {e}")
+        return False
 
 
 def update_jongga_v2():
@@ -1383,6 +1483,8 @@ class Scheduler:
         for day in weekdays:
             # 04:00 — US Market 전체 데이터 갱신 + Smart Money Top 5 텔레그램
             getattr(schedule.every(), day).at(Config.US_UPDATE_TIME).do(run_us_market_update)
+            # 09:00 — 일별 상태 리포트 텔레그램
+            getattr(schedule.every(), day).at(Config.MORNING_REPORT_TIME).do(send_morning_status_report)
             # 09:30 — US Track Record 스냅샷 + 성과 추적
             getattr(schedule.every(), day).at(Config.US_TRACK_TIME).do(save_us_track_record_snapshot)
             # 15:00 — 종가베팅 V2 + 수급/AI/리포트 (VCP 제외)
@@ -1399,6 +1501,7 @@ class Scheduler:
 
         logger.info("📅 스케줄 등록 완료:")
         logger.info(f"   🇺🇸 평일 {Config.US_UPDATE_TIME}  US Market 전체 갱신 + Smart Money Top 5")
+        logger.info(f"   📋 평일 {Config.MORNING_REPORT_TIME}  일별 상태 리포트 → 텔레그램")
         logger.info(f"   🇺🇸 평일 {Config.US_TRACK_TIME}  US Track Record 스냅샷")
         logger.info(f"   🇰🇷 평일 {Config.KR_UPDATE_TIME}  종가베팅 V2 + 수급/AI/리포트 → 텔레그램")
         logger.info(f"   📈 평일 {Config.VCP_UPDATE_TIME}  전 시장 VCP 시그널 (KR+US+Crypto) → 텔레그램")

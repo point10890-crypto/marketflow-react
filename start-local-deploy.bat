@@ -76,6 +76,11 @@ echo  스케줄러:   daemon mode (15:10 종가베팅 / 16:00 VCP / 04:00 US)
 echo  대시보드:   https://marketflow-dashboard.point10890.workers.dev
 echo ========================================
 echo.
+:: 최신 데이터 스냅샷 트리거 (스냅샷이 오래됐으면 GitHub Actions 재실행)
+echo 최신 데이터 스냅샷 확인 중...
+%PYTHON% "%PROJECT%\trigger_sync.py" --check
+echo.
+
 echo 아무 키나 누르면 대시보드 열림...
 pause >nul
 start https://marketflow-dashboard.point10890.workers.dev

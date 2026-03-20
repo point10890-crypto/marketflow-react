@@ -51,6 +51,8 @@ if "%FLASK_STATUS2%"=="200" (
     echo [%TODAY% %NOW%] Flask 재시작 성공 [HTTP 200] >> "%LOG%"
     :: 텔레그램 알림 (재시작 성공)
     %PYTHON% -c "import os,requests; os.chdir(r'%PROJECT%'); from dotenv import load_dotenv; load_dotenv(); t=os.getenv('TELEGRAM_BOT_TOKEN'); c=os.getenv('TELEGRAM_CHAT_ID'); requests.post(f'https://api.telegram.org/bot{t}/sendMessage', json={'chat_id':c,'text':'⚠️ MarketFlow Flask 자동 재시작\n%TODAY% %NOW%\n✅ 재시작 성공 (HTTP 200)','parse_mode':'HTML'}, timeout=10) if t and c else None" >nul 2>&1
+    :: 재시작 후 스냅샷 오래됐으면 즉시 재동기화
+    %PYTHON% "%PROJECT%\trigger_sync.py" --check >nul 2>&1
 ) else (
     echo [%TODAY% %NOW%] Flask 재시작 실패! (status=%FLASK_STATUS2%) >> "%LOG%"
     :: 텔레그램 알림 (재시작 실패)
