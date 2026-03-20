@@ -175,6 +175,7 @@ export interface JonggaV2ScoreDetail {
     supply: number;
     disclosure: number;
     analyst: number;
+    financial: number;
     total: number;
     llm_reason?: string;
     llm_source?: string;

@@ -15,6 +15,7 @@ interface ScoreDetail {
     supply: number;
     disclosure: number;
     analyst: number;
+    financial: number;
     llm_reason: string;
     llm_source?: string;
     total: number;
@@ -770,7 +771,7 @@ function SignalCard({ signal, index, onOpenChart }: { signal: Signal, index: num
                     <div className="text-center mb-3 md:mb-6">
                         <div className="inline-flex items-baseline gap-1">
                             <span className="text-3xl md:text-4xl font-mono font-bold text-white">{signal.score.total}</span>
-                            <span className="text-sm text-gray-500">/ 17</span>
+                            <span className="text-sm text-gray-500">/ 20</span>
                         </div>
                         <div className="text-[10px] text-gray-500 mt-1 uppercase tracking-wider">Total Score</div>
                     </div>
@@ -787,6 +788,7 @@ function SignalCard({ signal, index, onOpenChart }: { signal: Signal, index: num
                                 { label: 'Consol', score: signal.score.consolidation, max: 1 },
                                 { label: 'DART', score: signal.score.disclosure || 0, max: 2 },
                                 { label: 'Analyst', score: signal.score.analyst || 0, max: 3 },
+                                { label: 'Finance', score: signal.score.financial || 0, max: 3 },
                             ].map((item) => (
                                 <div key={item.label} className="text-center p-1.5 rounded-lg bg-white/[0.03] border border-white/5">
                                     <div className="text-[9px] text-gray-500 leading-none mb-1">{item.label}</div>
@@ -808,6 +810,7 @@ function SignalCard({ signal, index, onOpenChart }: { signal: Signal, index: num
                         <ScoreBar label="Consol" score={signal.score.consolidation} max={1} />
                         <ScoreBar label="DART" score={signal.score.disclosure || 0} max={2} />
                         <ScoreBar label="Analyst" score={signal.score.analyst || 0} max={3} />
+                        <ScoreBar label="Finance" score={signal.score.financial || 0} max={3} />
                     </div>
                 </div>
 
