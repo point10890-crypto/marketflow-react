@@ -6,6 +6,7 @@
 //         Render 슬립 시 → /data/*.json 정적 스냅샷 폴백 (public/data/, sync-data.yml 갱신)
 
 export const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
+export const API_HEADERS: Record<string, string> = API_BASE ? { 'ngrok-skip-browser-warning': 'true' } : {};
 
 // 정적 스냅샷 폴백 맵 (prod에서 Render 슬립 시 사용)
 const STATIC_FALLBACK: Record<string, string> = {

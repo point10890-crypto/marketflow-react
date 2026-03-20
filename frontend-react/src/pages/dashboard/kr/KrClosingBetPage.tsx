@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAutoRefresh, useSmartRefresh } from '@/hooks/useAutoRefresh';
 import { usePullToRefreshRegister } from '@/components/layout/PullToRefreshProvider';
-import { API_BASE } from '@/lib/api';
+import { API_BASE, API_HEADERS } from '@/lib/api';
 
 // Interfaces (Based on backend models)
 interface ScoreDetail {
@@ -273,7 +273,7 @@ export default function JonggaV2Page() {
 
     // 1. Load Available Dates
     useEffect(() => {
-        fetch(`${API_BASE}/api/kr/jongga-v2/dates`)
+        fetch(`${API_BASE}/api/kr/jongga-v2/dates`, { headers: API_HEADERS })
             .then((res) => res.json())
             .then((data) => {
                 if (Array.isArray(data)) {
@@ -294,7 +294,7 @@ export default function JonggaV2Page() {
                 url = `${API_BASE}/api/kr/jongga-v2/history/${selectedDate}`;
             }
 
-            const res = await fetch(url);
+            const res = await fetch(url, { headers: API_HEADERS });
             const result = await res.json();
 
             // Fallback: latest에 시그널이 없으면 과거 날짜에서 시그널 탐색
@@ -303,7 +303,7 @@ export default function JonggaV2Page() {
                 for (const d of dates) {
                     if (d === latestDateStr) continue;
                     try {
-                        const histRes = await fetch(`${API_BASE}/api/kr/jongga-v2/history/${d}`);
+                        const histRes = await fetch(`${API_BASE}/api/kr/jongga-v2/history/${d}`, { headers: API_HEADERS });
                         const histData = await histRes.json();
                         if (histData?.signals && histData.signals.length > 0) {
                             setData(histData);
@@ -472,7 +472,7 @@ function DataStatusBox({ updatedAt }: { updatedAt?: string }) {
 
         setUpdating(true);
         try {
-            const res = await fetch(`${API_BASE}/api/kr/jongga-v2/run`, { method: 'POST' });
+            const res = await fetch(`${API_BASE}/api/kr/jongga-v2/run`, { method: 'POST', headers: API_HEADERS });
             if (res.ok) {
                 alert('전체 분석이 완료되었습니다!');
                 window.location.reload();
