@@ -1,20 +1,14 @@
 name: Keep Render Alive
+# ⛔ DISABLED — ngrok 로컬 배포로 전환 (2026-03-20)
+# Render 프리티어 슬립 방지 ping은 더 이상 필요 없음
 
 on:
-  schedule:
-    - cron: '*/14 * * * *'   # 14분마다 — Render 무료 플랜 슬립 방지 (15분 타임아웃 이전)
-  workflow_dispatch:
+  workflow_dispatch:   # 수동 실행만 허용 (스케줄 제거)
 
 jobs:
   ping:
     runs-on: ubuntu-latest
     timeout-minutes: 2
     steps:
-      - name: Ping Render API
-        run: |
-          CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 \
-            https://marketflow-api-fzez.onrender.com/api/health 2>/dev/null || echo "000")
-          echo "Render health: HTTP $CODE"
-          if [ "$CODE" != "200" ]; then
-            echo "Warning: Render API not responding (HTTP $CODE)"
-          fi
+      - name: Disabled
+        run: echo "keep-alive disabled — using ngrok local deploy"

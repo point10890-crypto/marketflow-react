@@ -522,6 +522,16 @@ def _save_result(data: Dict, filename: str):
         json.dump(data, f, ensure_ascii=False, indent=2, default=str)
     logger.info(f"  💾 저장: {path}")
 
+    # 날짜별 아카이브 저장 (*_latest.json → *_YYYYMMDD.json)
+    if filename.endswith('_latest.json'):
+        from datetime import datetime
+        date_str = datetime.now().strftime('%Y%m%d')
+        archive_name = filename.replace('_latest.json', f'_{date_str}.json')
+        archive_path = os.path.join(DATA_DIR, archive_name)
+        with open(archive_path, 'w', encoding='utf-8') as f:
+            json.dump(data, f, ensure_ascii=False, indent=2, default=str)
+        logger.info(f"  💾 아카이브: {archive_path}")
+
 
 def _get_benchmark_closes(ticker: str) -> Optional[np.ndarray]:
     import yfinance as yf

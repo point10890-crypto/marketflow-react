@@ -26,27 +26,36 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Wake up Render API
+      - name: Check ngrok tunnel (PC 온라인 여부 확인)
+        id: health
         run: |
-          echo "=== Render API 웨이크업 ==="
-          for i in 1 2 3; do
-            CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 60 \
-              https://marketflow-api-fzez.onrender.com/api/health 2>/dev/null || echo "000")
-            echo "  Ping $i: HTTP $CODE"
-            if [ "$CODE" = "200" ]; then echo "  API 활성화!"; break; fi
-            sleep 30
-          done
+          echo "=== ngrok 터널 헬스체크 ==="
+          CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 15 \
+            -H "ngrok-skip-browser-warning: true" \
+            https://nonalliterated-sunshine-unaffiliated.ngrok-free.dev/api/health \
+            2>/dev/null || echo "000")
+          echo "  Health: HTTP $CODE"
+          if [ "$CODE" = "200" ]; then
+            echo "  PC 온라인 → 스냅샷 갱신"
+            echo "online=true" >> $GITHUB_OUTPUT
+          else
+            echo "  PC 오프라인 (HTTP $CODE) → 기존 스냅샷 유지, 덮어쓰기 생략"
+            echo "online=false" >> $GITHUB_OUTPUT
+          fi
 
       - name: Fetch snapshots
+        if: steps.health.outputs.online == 'true'
         run: |
-          BASE_URL="https://marketflow-api-fzez.onrender.com"
+          BASE_URL="https://nonalliterated-sunshine-unaffiliated.ngrok-free.dev"
           DIR="frontend-react/public/data"
           mkdir -p "$DIR"
           OK=0; FAIL=0
 
           fetch() {
             local CODE=$(curl -s -o "$DIR/$2" -w "%{http_code}" \
-              --max-time 30 "$BASE_URL$1" 2>/dev/null || echo "000")
+              --max-time 30 \
+              -H "ngrok-skip-browser-warning: true" \
+              "$BASE_URL$1" 2>/dev/null || echo "000")
             if [ "$CODE" = "200" ] && [ -s "$DIR/$2" ]; then
               echo "  [OK]   $2"; OK=$((OK+1))
             else
@@ -88,6 +97,7 @@ jobs:
           echo "=== 결과: $OK OK, $FAIL FAIL ==="
 
       - name: Commit and push
+        if: steps.health.outputs.online == 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
