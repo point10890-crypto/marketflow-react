@@ -111,12 +111,37 @@ def auto_git_push(scope: str = 'all') -> bool:
             logger.info("📦 변경사항 없음, git push 스킵")
             return True
 
-        subprocess.run(['git', 'add', '-A'], cwd=project_dir, timeout=30, check=True)
+        # 데이터 디렉토리만 스테이징 (소스코드 제외 → GitHub Actions 충돌 방지)
+        data_dirs = [
+            'data/',
+            'us_market/output/',
+            'crypto-analytics/crypto_market/output/',
+            'us_market/sector_cache.json',
+        ]
+        for d in data_dirs:
+            subprocess.run(['git', 'add', d], cwd=project_dir, timeout=30,
+                           capture_output=True, text=True)
+
+        # 스테이징된 변경사항 확인
+        staged = subprocess.run(
+            ['git', 'diff', '--cached', '--quiet'],
+            cwd=project_dir, timeout=10, capture_output=True
+        )
+        if staged.returncode == 0:
+            logger.info("📦 데이터 변경사항 없음, git push 스킵")
+            return True
 
         msg = f"auto: {scope} data update ({now_str})"
         subprocess.run(
             ['git', 'commit', '-m', msg],
             cwd=project_dir, timeout=30, check=True,
+            capture_output=True, text=True
+        )
+
+        # pull --rebase 후 push (GitHub Actions 커밋과 충돌 방지)
+        subprocess.run(
+            ['git', 'pull', '--rebase', 'origin', 'main'],
+            cwd=project_dir, timeout=120,
             capture_output=True, text=True
         )
 
