@@ -50,10 +50,26 @@ export default defineConfig({
   server: {
     port: Number(process.env.PORT) || 4000,
     proxy: {
-      '/api': {
-        target: 'http://localhost:5001',
-        changeOrigin: true,
-      },
+      // LIVE_COMPUTE → Flask:5001 (yfinance, DART, LLM, subprocess)
+      '/api/kr/jongga-v2/analyze': { target: 'http://localhost:5001', changeOrigin: true },
+      '/api/kr/jongga-v2/run': { target: 'http://localhost:5001', changeOrigin: true },
+      '/api/kr/realtime-prices': { target: 'http://localhost:5001', changeOrigin: true },
+      '/api/kr/financial-health': { target: 'http://localhost:5001', changeOrigin: true },
+      '/api/kr/stock-chart': { target: 'http://localhost:5001', changeOrigin: true },
+      '/api/us/stock-chart': { target: 'http://localhost:5001', changeOrigin: true },
+      '/api/us/smart-money': { target: 'http://localhost:5001', changeOrigin: true },
+      '/api/us/ai-summary': { target: 'http://localhost:5001', changeOrigin: true },
+      '/api/crypto/chart': { target: 'http://localhost:5001', changeOrigin: true },
+      '/api/crypto/run-': { target: 'http://localhost:5001', changeOrigin: true },
+      '/api/crypto/signal-analysis': { target: 'http://localhost:5001', changeOrigin: true },
+      '/api/crypto/vcp-signals': { target: 'http://localhost:5001', changeOrigin: true },
+      '/api/stock-analyzer': { target: 'http://localhost:5001', changeOrigin: true },
+      '/api/econ': { target: 'http://localhost:5001', changeOrigin: true },
+      '/api/auth': { target: 'http://localhost:5001', changeOrigin: true },
+      '/api/admin': { target: 'http://localhost:5001', changeOrigin: true },
+      '/api/stripe': { target: 'http://localhost:5001', changeOrigin: true },
+      // 나머지 전부 → Spring Boot:8080
+      '/api': { target: 'http://localhost:8080', changeOrigin: true },
     },
   },
   build: {
