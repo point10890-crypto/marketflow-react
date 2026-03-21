@@ -139,11 +139,17 @@ def auto_git_push(scope: str = 'all') -> bool:
         )
 
         # pull --rebase 후 push (GitHub Actions 커밋과 충돌 방지)
-        subprocess.run(
+        rebase_result = subprocess.run(
             ['git', 'pull', '--rebase', 'origin', 'main'],
             cwd=project_dir, timeout=120,
             capture_output=True, text=True
         )
+        if rebase_result.returncode != 0:
+            logger.error(f"⚠️ Git rebase 실패, abort 후 merge 전략 시도: {rebase_result.stderr}")
+            subprocess.run(['git', 'rebase', '--abort'], cwd=project_dir, timeout=30,
+                           capture_output=True, text=True)
+            subprocess.run(['git', 'pull', '--no-rebase', 'origin', 'main'],
+                           cwd=project_dir, timeout=120, capture_output=True, text=True)
 
         push_result = subprocess.run(
             ['git', 'push', 'origin', 'main'],
@@ -154,7 +160,7 @@ def auto_git_push(scope: str = 'all') -> bool:
         if push_result.returncode == 0:
             logger.info(f"✅ Git push (origin) 완료 ({scope})")
         else:
-            logger.error(f"❌ Git push (origin) 실패: {push_result.stderr[:200]}")
+            logger.error(f"❌ Git push (origin) 실패: {push_result.stderr}")
 
         return push_result.returncode == 0
 

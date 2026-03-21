@@ -60,14 +60,14 @@ export default function KRVCPPage() {
     const [selectedDate, setSelectedDate] = useState<string>('latest');
 
     useEffect(() => {
-        fetchAPI<string[]>('/api/kr/vcp-dates').then(setDates).catch(() => {});
+        fetchAPI<string[]>('/api/kr/vcp-enhanced/dates').then(setDates).catch(() => {});
     }, []);
 
     const loadData = useCallback(async (date: string) => {
         setLoading(true);
         setError(null);
         try {
-            const url = date === 'latest' ? '/api/kr/vcp-enhanced' : `/api/kr/vcp-report/${date}`;
+            const url = date === 'latest' ? '/api/kr/vcp-enhanced' : `/api/kr/vcp-enhanced/history/${date}`;
             const result = await fetchAPI<VCPData>(url);
             setData(result);
         } catch (e: any) {

@@ -58,14 +58,14 @@ export default function CryptoSignalsPage() {
     const [selectedDate, setSelectedDate] = useState<string>('latest');
 
     useEffect(() => {
-        fetchAPI<string[]>('/api/crypto/vcp-dates').then(setDates).catch(() => {});
+        fetchAPI<string[]>('/api/crypto/vcp-enhanced/dates').then(setDates).catch(() => {});
     }, []);
 
     const loadData = useCallback(async (date: string) => {
         setLoading(true);
         setError(null);
         try {
-            const url = date === 'latest' ? '/api/crypto/vcp-enhanced' : `/api/crypto/vcp-report/${date}`;
+            const url = date === 'latest' ? '/api/crypto/vcp-enhanced' : `/api/crypto/vcp-enhanced/history/${date}`;
             const result = await fetchAPI<VCPData>(url);
             setData(result);
         } catch (e: any) {
