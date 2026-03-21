@@ -2,6 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Mobile: prevent body overflow, ensure full viewport height */
+html, body, #root {
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
 /* Mobile safe area for bottom tab bar */
 .mobile-safe-bottom {
   padding-bottom: env(safe-area-inset-bottom, 0px);
