@@ -592,6 +592,7 @@ function StockAnalyzerContent() {
                                         { label: '52주 최고', value: formatPrice(analyzeResult.key_stats.fifty_two_week_high, currency) },
                                         { label: '52주 최저', value: formatPrice(analyzeResult.key_stats.fifty_two_week_low, currency) },
                                         { label: '베타', value: analyzeResult.key_stats.beta?.toFixed(2) ?? '--' },
+                                        { label: 'PBR', value: (analyzeResult.key_stats as Record<string, unknown>).pbr != null ? `${Number((analyzeResult.key_stats as Record<string, unknown>).pbr).toFixed(2)}` : '--' },
                                         { label: '현재가', value: formatPrice(analyzeResult.current_price, currency) },
                                     ].map((stat) => (
                                         <div key={stat.label} className="p-3 bg-white/5 rounded-lg">
