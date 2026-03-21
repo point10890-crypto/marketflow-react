@@ -44,6 +44,16 @@ interface KeyStats {
     currency: string;
 }
 
+interface FinancialHealth {
+    has_data: boolean;
+    score: number;
+    roe: number;
+    debt_ratio: number;
+    revenue_growth: number;
+    op_margin: number;
+    detail: string;
+}
+
 interface AnalyzeResult {
     name: string;
     ticker: string;
@@ -57,6 +67,7 @@ interface AnalyzeResult {
     current_price: number | null;
     upside_potential: number | null;
     key_stats: KeyStats | null;
+    financial_health: FinancialHealth | null;
 }
 
 interface HistoryEntry {
@@ -588,6 +599,41 @@ function StockAnalyzerContent() {
                                             <div className="text-sm text-white font-bold truncate">{stat.value}</div>
                                         </div>
                                     ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Financial Health (DART) */}
+                        {analyzeResult.financial_health?.has_data && (
+                            <div className="p-4 md:p-5 rounded-2xl bg-[#1c1c1e] border border-white/10 md:col-span-2">
+                                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">
+                                    <i className="fas fa-shield-alt mr-2 text-cyan-400"></i>재무건전성
+                                    <span className={`ml-2 px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                                        analyzeResult.financial_health.score >= 3 ? 'bg-emerald-500/20 text-emerald-400' :
+                                        analyzeResult.financial_health.score >= 2 ? 'bg-blue-500/20 text-blue-400' :
+                                        analyzeResult.financial_health.score >= 1 ? 'bg-yellow-500/20 text-yellow-400' :
+                                        'bg-red-500/20 text-red-400'
+                                    }`}>
+                                        {analyzeResult.financial_health.score}/3
+                                    </span>
+                                </h4>
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                                    {[
+                                        { label: 'ROE', value: `${analyzeResult.financial_health.roe}%`, good: analyzeResult.financial_health.roe >= 10 },
+                                        { label: '부채비율', value: `${analyzeResult.financial_health.debt_ratio}%`, good: analyzeResult.financial_health.debt_ratio <= 100 },
+                                        { label: '매출성장률', value: `${analyzeResult.financial_health.revenue_growth > 0 ? '+' : ''}${analyzeResult.financial_health.revenue_growth}%`, good: analyzeResult.financial_health.revenue_growth >= 10 },
+                                        { label: '영업이익률', value: `${analyzeResult.financial_health.op_margin}%`, good: analyzeResult.financial_health.op_margin >= 10 },
+                                    ].map((item) => (
+                                        <div key={item.label} className="p-3 bg-white/5 rounded-lg">
+                                            <div className="text-[10px] text-gray-500 mb-1">{item.label}</div>
+                                            <div className={`text-sm font-bold ${item.good ? 'text-emerald-400' : 'text-gray-300'}`}>
+                                                {item.value}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="mt-3 text-[10px] text-gray-500">
+                                    <i className="fas fa-database mr-1"></i>DART 전자공시 재무제표 기준
                                 </div>
                             </div>
                         )}
