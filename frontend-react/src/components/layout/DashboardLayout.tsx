@@ -50,7 +50,7 @@ export default function DashboardLayout() {
                     <MobileSubNav />
                     <div
                         ref={scrollRef}
-                        className="flex-1 overflow-y-auto p-3 md:p-6 pb-20 md:pb-6 scroll-smooth overscroll-contain relative"
+                        className="flex-1 overflow-y-auto p-3 md:p-6 pb-24 md:pb-6 scroll-smooth overscroll-contain relative"
                         style={pullDistance > 0 ? { transform: `translateY(${pullDistance}px)`, transition: 'none' } : { transition: 'transform 0.3s ease' }}
                     >
                         <PullIndicator pullDistance={pullDistance} isRefreshing={isRefreshing} />
