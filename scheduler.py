@@ -1172,8 +1172,8 @@ def run_crypto_vcp_scan() -> bool:
     logger.info("🔍 Crypto VCP 스캔 시작...")
 
     if _crypto_gate == "RED":
-        logger.info("🔴 Gate RED — Crypto VCP 스캔 스킵")
-        return True
+        logger.info("🔴 Gate RED — 방어적 모드 스캔 (축소 유니버스)")
+        # RED에서도 top 50 스캔 실행 (축적 기회 탐색)
 
     try:
         crypto_dir = Config.CRYPTO_MARKET_DIR
