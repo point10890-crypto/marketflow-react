@@ -68,7 +68,7 @@ jobs:
           fetch "/api/kr/jongga-v2/latest"   "kr-jongga-v2-latest.json"
           fetch "/api/kr/jongga-v2/dates"    "kr-jongga-v2-dates.json"
           fetch "/api/kr/vcp-enhanced"       "kr-vcp-enhanced.json"
-          fetch "/api/kr/vcp-dates"          "kr-vcp-dates.json"
+          fetch "/api/kr/vcp-enhanced/dates"  "kr-vcp-dates.json"
 
           echo "=== US ==="
           fetch "/api/us/market-briefing"    "us-market-briefing.json"
@@ -80,7 +80,7 @@ jobs:
           fetch "/api/us/market-regime"      "us-market-regime.json"
           fetch "/api/us/etf-flows"          "us-etf-flows.json"
           fetch "/api/us/vcp-enhanced"       "us-vcp-enhanced.json"
-          fetch "/api/us/vcp-dates"          "us-vcp-dates.json"
+          fetch "/api/us/vcp-enhanced/dates"  "us-vcp-dates.json"
           fetch "/api/us/smart-money"        "us-smart-money.json"
           fetch "/api/us/top-picks-report"   "us-top-picks-report.json"
 
@@ -89,7 +89,7 @@ jobs:
           fetch "/api/crypto/market-gate"    "crypto-market-gate.json"
           fetch "/api/crypto/briefing"       "crypto-briefing.json"
           fetch "/api/crypto/vcp-enhanced"   "crypto-vcp-enhanced.json"
-          fetch "/api/crypto/vcp-dates"      "crypto-vcp-dates.json"
+          fetch "/api/crypto/vcp-enhanced/dates" "crypto-vcp-dates.json"
           fetch "/api/crypto/prediction"     "crypto-prediction.json"
 
           echo "{\"updated_at\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"ok\":$OK,\"fail\":$FAIL}" \
