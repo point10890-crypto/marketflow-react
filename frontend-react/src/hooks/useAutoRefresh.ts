@@ -1,4 +1,5 @@
 import { useEffect, useRef, useCallback } from 'react';
+import { API_BASE, API_HEADERS } from '@/lib/api';
 
 /**
  * 자동 데이터 갱신 훅 (Page Visibility API 기반)
@@ -91,8 +92,28 @@ export function useSmartRefresh(
 
     const checkVersion = useCallback(async () => {
         try {
-            const res = await fetch('/api/data-version');
-            if (!res.ok) return;
+            // API_BASE가 있으면 ngrok/Flask로, 없으면 로컬 proxy로
+            const versionUrl = `${API_BASE}/api/data-version`;
+            const res = await fetch(versionUrl, {
+                headers: API_HEADERS,
+                signal: AbortSignal.timeout(5000),
+            });
+            if (!res.ok) {
+                // ngrok 오프라인 시 _meta.json 폴백
+                const metaRes = await fetch('/data/_meta.json');
+                if (metaRes.ok) {
+                    const meta = await metaRes.json();
+                    const metaTime = new Date(meta.updated_at).getTime() / 1000;
+                    const oldMeta = versionsRef.current['_meta'] || 0;
+                    if (oldMeta > 0 && metaTime > oldMeta) {
+                        versionsRef.current['_meta'] = metaTime;
+                        fetchRef.current();
+                    } else {
+                        versionsRef.current['_meta'] = metaTime;
+                    }
+                }
+                return;
+            }
             const data = await res.json();
             const newVersions: Record<string, number> = data.versions || {};
 
