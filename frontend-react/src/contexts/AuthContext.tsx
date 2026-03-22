@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import { getToken, setToken, clearToken, getUser, saveUser, isAuthenticated, isAdmin as checkIsAdmin, type AuthUserData } from '@/lib/auth';
-import { postAPI } from '@/lib/api';
+import { postAPI, API_BASE, API_HEADERS } from '@/lib/api';
 
 interface AuthUser {
     id: number | string;
@@ -37,17 +37,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     useEffect(() => {
         if (isAuthenticated()) {
             const storedToken = getToken();
-            const storedUser = getUser();
-            if (storedToken && storedUser) {
+            if (storedToken) {
                 setTokenState(storedToken);
-                setUser({
-                    id: storedUser.id,
-                    email: storedUser.email,
-                    name: storedUser.name,
-                    tier: storedUser.tier,
-                    role: storedUser.role,
-                    status: storedUser.status || 'approved',
-                });
+                const storedUser = getUser();
+                if (storedUser) {
+                    setUser({
+                        id: storedUser.id,
+                        email: storedUser.email,
+                        name: storedUser.name,
+                        tier: storedUser.tier,
+                        role: storedUser.role,
+                        status: storedUser.status || 'approved',
+                    });
+                } else {
+                    // Token exists but no saved user — fetch from server
+                    fetch(`${API_BASE}/api/auth/me`, {
+                        headers: { ...API_HEADERS, 'Authorization': `Bearer ${storedToken}` },
+                    }).then(r => r.ok ? r.json() : null).then(data => {
+                        if (data?.user) {
+                            setUserFromData(data.user);
+                        }
+                    }).catch(() => {});
+                }
             }
         }
     }, []);
@@ -90,8 +101,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const currentToken = getToken();
         if (!currentToken) return;
         try {
-            const res = await fetch(`/api/auth/me`, {
-                headers: { 'Authorization': `Bearer ${currentToken}` },
+            const res = await fetch(`${API_BASE}/api/auth/me`, {
+                headers: { ...API_HEADERS, 'Authorization': `Bearer ${currentToken}` },
             });
             if (res.ok) {
                 const data = await res.json();

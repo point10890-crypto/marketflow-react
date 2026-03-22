@@ -1,5 +1,3 @@
-
-
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { adminAPI, AdminUser } from '@/lib/api';
@@ -9,12 +7,8 @@ export default function AdminUsersPage() {
     const apiToken = token ?? undefined;
     const [users, setUsers] = useState<AdminUser[]>([]);
     const [loading, setLoading] = useState(true);
-    const [search, setSearch] = useState('');
-    const [filterRole, setFilterRole] = useState<string>('all');
-    const [filterTier, setFilterTier] = useState<string>('all');
-    const [filterStatus, setFilterStatus] = useState<string>('all');
     const [actionMsg, setActionMsg] = useState('');
-
+    const [filterStatus, setFilterStatus] = useState<string>('all');
 
     useEffect(() => { loadUsers(); }, [apiToken]);
 
@@ -35,48 +29,48 @@ export default function AdminUsersPage() {
         setTimeout(() => setActionMsg(''), 3000);
     };
 
-    const handleRoleChange = async (userId: number, newRole: string) => {
+    const handleApprove = async (userId: number, userName: string) => {
         try {
-            await adminAPI.setUserRole(userId, newRole, apiToken);
-            setUsers(prev => prev.map(u => u.id === userId ? { ...u, role: newRole } : u));
-            showAction(`Role updated to ${newRole}`);
+            await adminAPI.setUserStatus(userId, 'approved', apiToken);
+            await adminAPI.setUserTier(userId, 'pro', apiToken);
+            setUsers(prev => prev.map(u => u.id === userId ? { ...u, subscription_status: 'approved', tier: 'pro' } : u));
+            showAction(`${userName} 승인 완료`);
         } catch (err: any) {
-            showAction(`Error: ${err.message}`);
+            showAction(`오류: ${err.message}`);
         }
     };
 
-    const handleTierChange = async (userId: number, newTier: string) => {
+    const handleSuspend = async (userId: number, userName: string) => {
         try {
-            await adminAPI.setUserTier(userId, newTier, apiToken);
-            setUsers(prev => prev.map(u => u.id === userId ? { ...u, tier: newTier } : u));
-            showAction(`Tier updated to ${newTier}`);
+            await adminAPI.setUserStatus(userId, 'suspended', apiToken);
+            setUsers(prev => prev.map(u => u.id === userId ? { ...u, subscription_status: 'suspended' } : u));
+            showAction(`${userName} 해제 완료`);
         } catch (err: any) {
-            showAction(`Error: ${err.message}`);
+            showAction(`오류: ${err.message}`);
         }
     };
 
-    const handleStatusChange = async (userId: number, newStatus: string) => {
-        try {
-            await adminAPI.setUserStatus(userId, newStatus, apiToken);
-            setUsers(prev => prev.map(u => u.id === userId ? { ...u, subscription_status: newStatus } : u));
-            showAction(`Status updated to ${newStatus}`);
-        } catch (err: any) {
-            showAction(`Error: ${err.message}`);
+    const getStatusBadge = (status: string) => {
+        switch (status) {
+            case 'approved': return { text: '승인됨', cls: 'bg-emerald-500/20 text-emerald-400' };
+            case 'pending': return { text: '대기중', cls: 'bg-amber-500/20 text-amber-400' };
+            case 'suspended': return { text: '해제됨', cls: 'bg-red-500/20 text-red-400' };
+            case 'rejected': return { text: '거부됨', cls: 'bg-gray-500/20 text-gray-400' };
+            default: return { text: status, cls: 'bg-gray-500/20 text-gray-400' };
         }
     };
 
     const filtered = users.filter(u => {
-        if (search && !u.email.toLowerCase().includes(search.toLowerCase()) && !u.name.toLowerCase().includes(search.toLowerCase())) return false;
-        if (filterRole !== 'all' && u.role !== filterRole) return false;
-        if (filterTier !== 'all' && u.tier !== filterTier) return false;
-        if (filterStatus !== 'all' && u.subscription_status !== filterStatus) return false;
-        return true;
+        if (filterStatus === 'all') return true;
+        return u.subscription_status === filterStatus;
     });
+
+    const pendingCount = users.filter(u => u.subscription_status === 'pending').length;
 
     if (loading) {
         return (
             <div className="flex items-center justify-center h-64">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-500"></div>
             </div>
         );
     }
@@ -88,136 +82,107 @@ export default function AdminUsersPage() {
                 <span className="text-sm text-gray-400">총 {users.length}명</span>
             </div>
 
-            {/* Action message */}
-            {actionMsg && (
-                <div className="p-3 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-400 text-sm animate-pulse">
-                    {actionMsg}
+            {pendingCount > 0 && (
+                <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center gap-3">
+                    <i className="fas fa-user-clock text-amber-400 text-lg"></i>
+                    <span className="text-amber-400 font-bold">{pendingCount}명의 승인 대기자가 있습니다</span>
                 </div>
             )}
 
-            {/* Filters */}
-            <div className="flex flex-wrap gap-3">
-                <div className="relative flex-1 min-w-[200px]">
-                    <i className="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm"></i>
-                    <input
-                        type="text"
-                        placeholder="Search by name or email..."
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-red-500/50"
-                    />
+            {actionMsg && (
+                <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm">
+                    <i className="fas fa-check-circle mr-2"></i>{actionMsg}
                 </div>
-                <select
-                    value={filterRole}
-                    onChange={(e) => setFilterRole(e.target.value)}
-                    className="px-3 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none"
-                >
-                    <option value="all">All Roles</option>
-                    <option value="admin">Admin</option>
-                    <option value="user">User</option>
-                </select>
-                <select
-                    value={filterTier}
-                    onChange={(e) => setFilterTier(e.target.value)}
-                    className="px-3 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none"
-                >
-                    <option value="all">All Tiers</option>
-                    <option value="pro">Pro</option>
-                    <option value="free">Free</option>
-                    <option value="premium">Premium</option>
-                </select>
-                <select
-                    value={filterStatus}
-                    onChange={(e) => setFilterStatus(e.target.value)}
-                    className="px-3 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none"
-                >
-                    <option value="all">All Status</option>
-                    <option value="pending">Pending</option>
-                    <option value="approved">Approved</option>
-                    <option value="rejected">Rejected</option>
-                    <option value="suspended">Suspended</option>
-                </select>
+            )}
+
+            {/* 필터 탭 */}
+            <div className="flex gap-2">
+                {[
+                    { key: 'all', label: '전체' },
+                    { key: 'pending', label: '대기중' },
+                    { key: 'approved', label: '승인됨' },
+                    { key: 'suspended', label: '해제됨' },
+                ].map(tab => (
+                    <button
+                        key={tab.key}
+                        onClick={() => setFilterStatus(tab.key)}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                            filterStatus === tab.key
+                                ? 'bg-white/10 text-white'
+                                : 'text-gray-500 hover:text-white hover:bg-white/5'
+                        }`}
+                    >
+                        {tab.label}
+                        {tab.key === 'pending' && pendingCount > 0 && (
+                            <span className="ml-1.5 px-1.5 py-0.5 text-[10px] bg-amber-500 text-black rounded-full font-bold">{pendingCount}</span>
+                        )}
+                    </button>
+                ))}
             </div>
 
-            {/* Users Table */}
-            <div className="apple-glass rounded-xl overflow-hidden">
-                <div className="overflow-x-auto">
-                    <table className="w-full">
-                        <thead>
-                            <tr className="border-b border-white/5">
-                                <th className="text-left text-xs font-semibold text-gray-400 uppercase px-4 py-3">User</th>
-                                <th className="text-left text-xs font-semibold text-gray-400 uppercase px-4 py-3">Role</th>
-                                <th className="text-left text-xs font-semibold text-gray-400 uppercase px-4 py-3">Tier</th>
-                                <th className="text-left text-xs font-semibold text-gray-400 uppercase px-4 py-3">Status</th>
-                                <th className="text-left text-xs font-semibold text-gray-400 uppercase px-4 py-3">Joined</th>
-                                <th className="text-left text-xs font-semibold text-gray-400 uppercase px-4 py-3">Last Login</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filtered.map((user) => (
-                                <tr key={user.id} className="border-b border-white/5 hover:bg-white/[0.02]">
-                                    <td className="px-4 py-3">
-                                        <div className="flex items-center gap-3">
-                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white ${user.role === 'admin' ? 'bg-red-500' : user.tier === 'pro' ? 'bg-purple-500' : 'bg-gray-600'}`}>
-                                                {user.name.charAt(0).toUpperCase()}
-                                            </div>
-                                            <div>
-                                                <div className="text-sm text-white font-medium">{user.name}</div>
-                                                <div className="text-xs text-gray-500">{user.email}</div>
-                                            </div>
+            {/* 사용자 목록 */}
+            <div className="space-y-3">
+                {filtered.map((user) => {
+                    const badge = getStatusBadge(user.subscription_status);
+                    const isAdmin = user.role === 'admin';
+                    const isPending = user.subscription_status === 'pending';
+                    const isApproved = user.subscription_status === 'approved';
+                    const isSuspended = user.subscription_status === 'suspended' || user.subscription_status === 'rejected';
+
+                    return (
+                        <div key={user.id} className={`p-4 rounded-xl border transition-colors ${
+                            isPending ? 'bg-amber-500/5 border-amber-500/20' : 'bg-[#1c1c1e] border-white/10'
+                        }`}>
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white ${
+                                        isAdmin ? 'bg-red-500' : isApproved ? 'bg-emerald-500' : isPending ? 'bg-amber-500' : 'bg-gray-600'
+                                    }`}>
+                                        {user.name.charAt(0).toUpperCase()}
+                                    </div>
+                                    <div>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-sm font-bold text-white">{user.name}</span>
+                                            {isAdmin && <span className="text-[10px] px-1.5 py-0.5 bg-red-500/20 text-red-400 rounded">관리자</span>}
+                                            <span className={`text-[10px] px-1.5 py-0.5 rounded ${badge.cls}`}>{badge.text}</span>
                                         </div>
-                                    </td>
-                                    <td className="px-4 py-3">
-                                        <select
-                                            value={user.role}
-                                            onChange={(e) => handleRoleChange(user.id, e.target.value)}
-                                            className={`text-xs px-2 py-1 rounded border-0 focus:outline-none cursor-pointer ${user.role === 'admin' ? 'bg-red-500/20 text-red-400' : 'bg-gray-500/20 text-gray-400'}`}
-                                        >
-                                            <option value="user">User</option>
-                                            <option value="admin">Admin</option>
-                                        </select>
-                                    </td>
-                                    <td className="px-4 py-3">
-                                        <select
-                                            value={user.tier}
-                                            onChange={(e) => handleTierChange(user.id, e.target.value)}
-                                            className={`text-xs px-2 py-1 rounded border-0 focus:outline-none cursor-pointer ${user.tier === 'pro' ? 'bg-purple-500/20 text-purple-400' : user.tier === 'premium' ? 'bg-yellow-500/20 text-yellow-400' : 'bg-gray-500/20 text-gray-400'}`}
-                                        >
-                                            <option value="free">Free</option>
-                                            <option value="pro">Pro</option>
-                                            <option value="premium">Premium</option>
-                                        </select>
-                                    </td>
-                                    <td className="px-4 py-3">
-                                        <select
-                                            value={user.subscription_status}
-                                            onChange={(e) => handleStatusChange(user.id, e.target.value)}
-                                            className={`text-xs px-2 py-1 rounded border-0 focus:outline-none cursor-pointer ${
-                                                user.subscription_status === 'approved' ? 'bg-green-500/20 text-green-400' :
-                                                user.subscription_status === 'pending' ? 'bg-yellow-500/20 text-yellow-400' :
-                                                user.subscription_status === 'suspended' ? 'bg-red-500/20 text-red-400' :
-                                                'bg-gray-500/20 text-gray-500'
-                                            }`}
-                                        >
-                                            <option value="pending">Pending</option>
-                                            <option value="approved">Approved</option>
-                                            <option value="rejected">Rejected</option>
-                                            <option value="suspended">Suspended</option>
-                                        </select>
-                                    </td>
-                                    <td className="px-4 py-3 text-xs text-gray-500">
-                                        {user.created_at ? new Date(user.created_at).toLocaleDateString() : '-'}
-                                    </td>
-                                    <td className="px-4 py-3 text-xs text-gray-500">
-                                        {(user as any).last_login_at ? new Date((user as any).last_login_at).toLocaleString() : 'Never'}
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                                        <div className="text-xs text-gray-500">{user.email}</div>
+                                        <div className="text-[10px] text-gray-600 mt-0.5">
+                                            가입: {user.created_at ? new Date(user.created_at).toLocaleDateString('ko-KR') : '-'}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* 승인/해제 버튼 */}
+                                {!isAdmin && (
+                                    <div className="flex gap-2">
+                                        {(isPending || isSuspended) && (
+                                            <button
+                                                onClick={() => handleApprove(user.id, user.name)}
+                                                className="px-4 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-white text-sm font-bold transition-colors active:scale-95"
+                                            >
+                                                승인
+                                            </button>
+                                        )}
+                                        {isApproved && (
+                                            <button
+                                                onClick={() => handleSuspend(user.id, user.name)}
+                                                className="px-4 py-2 rounded-lg bg-red-500/20 hover:bg-red-500/30 text-red-400 text-sm font-medium transition-colors active:scale-95"
+                                            >
+                                                해제
+                                            </button>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    );
+                })}
                 {filtered.length === 0 && (
-                    <div className="text-center py-8 text-gray-500 text-sm">No users found</div>
+                    <div className="text-center py-12 text-gray-500 text-sm">
+                        <i className="fas fa-users text-2xl mb-3 block"></i>
+                        해당하는 사용자가 없습니다
+                    </div>
                 )}
             </div>
         </div>
