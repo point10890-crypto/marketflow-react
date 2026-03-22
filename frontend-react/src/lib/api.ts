@@ -722,7 +722,7 @@ export interface SubscriptionRequest {
 // ── Authenticated API helpers (Bearer token 포함) ──
 
 export async function fetchAuthAPI<T>(endpoint: string, apiToken?: string): Promise<T> {
-    const headers: Record<string, string> = {};
+    const headers: Record<string, string> = { ...API_HEADERS };
     if (apiToken) headers['Authorization'] = `Bearer ${apiToken}`;
     const response = await fetch(`${API_BASE}${endpoint}`, { headers });
     if (!response.ok) {
@@ -733,7 +733,7 @@ export async function fetchAuthAPI<T>(endpoint: string, apiToken?: string): Prom
 }
 
 export async function putAuthAPI<T>(endpoint: string, body?: any, apiToken?: string): Promise<T> {
-    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    const headers: Record<string, string> = { ...API_HEADERS, 'Content-Type': 'application/json' };
     if (apiToken) headers['Authorization'] = `Bearer ${apiToken}`;
     const response = await fetch(`${API_BASE}${endpoint}`, {
         method: 'PUT', headers,
@@ -747,7 +747,7 @@ export async function putAuthAPI<T>(endpoint: string, body?: any, apiToken?: str
 }
 
 export async function postAuthAPI<T>(endpoint: string, body?: any, apiToken?: string): Promise<T> {
-    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    const headers: Record<string, string> = { ...API_HEADERS, 'Content-Type': 'application/json' };
     if (apiToken) headers['Authorization'] = `Bearer ${apiToken}`;
     const response = await fetch(`${API_BASE}${endpoint}`, {
         method: 'POST', headers,
@@ -761,7 +761,7 @@ export async function postAuthAPI<T>(endpoint: string, body?: any, apiToken?: st
 }
 
 export async function deleteAuthAPI<T>(endpoint: string, apiToken?: string): Promise<T> {
-    const headers: Record<string, string> = {};
+    const headers: Record<string, string> = { ...API_HEADERS };
     if (apiToken) headers['Authorization'] = `Bearer ${apiToken}`;
     const response = await fetch(`${API_BASE}${endpoint}`, { method: 'DELETE', headers });
     if (!response.ok) {
