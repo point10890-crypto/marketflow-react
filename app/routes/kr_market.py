@@ -4,17 +4,20 @@
 import os
 import sys
 import json
+import logging
 import traceback
 from datetime import datetime, date
 import pandas as pd
 from flask import Blueprint, jsonify, request, current_app
+
+logger = logging.getLogger(__name__)
 
 kr_bp = Blueprint('kr', __name__)
 
 # ── 고정 경로 ──────────────────────────────────────────────
 _ROUTES_DIR = os.path.dirname(os.path.abspath(__file__))  # app/routes/
 _APP_DIR = os.path.dirname(_ROUTES_DIR)                    # app/
-_BASE_DIR = os.path.dirname(_APP_DIR)                      # /c/bitman_service
+_BASE_DIR = os.path.dirname(_APP_DIR)                      # project root (bitman_marketfloww)
 DATA_DIR = os.path.join(_BASE_DIR, 'data')
 
 # market_gate 임포트를 위한 경로 등록
@@ -169,10 +172,10 @@ def get_kr_signals():
                                                 entry = float(s.get('entry_price', 0))
                                                 if entry > 0:
                                                     s['return_pct'] = round((float(val) - entry) / entry * 100, 2)
-                                    except:
-                                        pass
+                                    except Exception as exc:
+                                        logger.warning(f"Price lookup failed for {yf_t}: {exc}")
                 except Exception as e:
-                    print(f"Error fetching realtime signal prices: {e}")
+                    logger.warning(f"Error fetching realtime signal prices: {e}")
 
                 signals.sort(key=lambda x: x.get('score', 0), reverse=True)
 
@@ -767,9 +770,9 @@ def _compute_kr_market_gate_live():
                     'sectors': [],
                     'error': f"Enhanced failed: {str(e)}"
                 })
-        except:
-            pass
-            
+        except Exception as fallback_err:
+            logger.warning(f"Market gate fallback also failed: {fallback_err}")
+
         return jsonify({'error': str(e), 'sectors': []}), 500
 
 
@@ -801,8 +804,8 @@ def get_kr_realtime_prices():
             try:
                 map_df = pd.read_csv(ticker_map_path, dtype={'ticker': str})
                 yahoo_map = dict(zip(map_df['ticker'].str.zfill(6), map_df['yahoo_ticker']))
-            except:
-                pass
+            except Exception as e:
+                logger.warning(f"Failed to load ticker map from {ticker_map_path}: {e}")
         
         # 2. Prepare Yahoo Tickers
         yf_tickers = []
@@ -843,9 +846,9 @@ def get_kr_realtime_prices():
                             if pd.notna(val) and float(val) > 0:
                                 t = req_ticker_map[yf_t]
                                 result[t] = float(val)
-                    except:
-                        pass
-                        
+                    except Exception as exc:
+                        logger.warning(f"Realtime price lookup failed for {yf_t}: {exc}")
+
         return jsonify(result)
 
     except Exception as e:

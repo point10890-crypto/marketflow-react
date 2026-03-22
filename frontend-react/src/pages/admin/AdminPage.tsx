@@ -38,9 +38,9 @@ export default function AdminDashboardPage() {
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
-                <h1 className="text-2xl font-bold text-white">Admin Dashboard</h1>
+                <h1 className="text-2xl font-bold text-white">관리자 대시보드</h1>
                 <span className="text-xs text-red-400 bg-red-500/10 px-3 py-1 rounded-full font-semibold">
-                    <i className="fas fa-shield-alt mr-1"></i> Admin Only
+                    <i className="fas fa-shield-alt mr-1"></i> 관리자 전용
                 </span>
             </div>
 
@@ -63,8 +63,8 @@ export default function AdminDashboardPage() {
                     <div className="flex items-center gap-3">
                         <i className="fas fa-users-cog text-red-400 text-xl"></i>
                         <div>
-                            <div className="text-white font-semibold group-hover:text-red-400 transition-colors">User Management</div>
-                            <div className="text-xs text-gray-500">Manage roles, tiers, and permissions</div>
+                            <div className="text-white font-semibold group-hover:text-red-400 transition-colors">사용자 관리</div>
+                            <div className="text-xs text-gray-500">역할, 등급, 권한 관리</div>
                         </div>
                         <i className="fas fa-chevron-right text-gray-600 ml-auto"></i>
                     </div>
@@ -73,11 +73,11 @@ export default function AdminDashboardPage() {
                     <div className="flex items-center gap-3">
                         <i className="fas fa-credit-card text-red-400 text-xl"></i>
                         <div>
-                            <div className="text-white font-semibold group-hover:text-red-400 transition-colors">Subscriptions</div>
+                            <div className="text-white font-semibold group-hover:text-red-400 transition-colors">구독 관리</div>
                             <div className="text-xs text-gray-500">
                                 {(data?.pending_subscriptions || 0) > 0
-                                    ? `${data?.pending_subscriptions} pending approval`
-                                    : 'No pending requests'}
+                                    ? `${data?.pending_subscriptions}건 승인 대기`
+                                    : '대기 중인 요청 없음'}
                             </div>
                         </div>
                         <i className="fas fa-chevron-right text-gray-600 ml-auto"></i>
@@ -87,8 +87,8 @@ export default function AdminDashboardPage() {
                     <div className="flex items-center gap-3">
                         <i className="fas fa-server text-red-400 text-xl"></i>
                         <div>
-                            <div className="text-white font-semibold group-hover:text-red-400 transition-colors">System Monitor</div>
-                            <div className="text-xs text-gray-500">Server health, data status, scheduler</div>
+                            <div className="text-white font-semibold group-hover:text-red-400 transition-colors">시스템 모니터</div>
+                            <div className="text-xs text-gray-500">서버 상태, 데이터 현황, 스케줄러</div>
                         </div>
                         <i className="fas fa-chevron-right text-gray-600 ml-auto"></i>
                     </div>

@@ -1,7 +1,7 @@
 
 
 import { useEffect, useState, useCallback } from 'react';
-import { fetchAPI } from '../../../lib/api';
+import { fetchAPI } from '@/lib/api';
 
 interface VCPSignal {
     symbol: string;

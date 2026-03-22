@@ -1,7 +1,7 @@
 
 
 import { useEffect, useState, useRef } from 'react';
-import { usAPI, SmartMoneyDetail } from '../../lib/api';
+import { usAPI, SmartMoneyDetail } from '@/lib/api';
 import { createChart, IChartApi, CandlestickSeries, LineSeries, CandlestickData, LineData, Time } from 'lightweight-charts';
 
 interface StockDetailModalProps {

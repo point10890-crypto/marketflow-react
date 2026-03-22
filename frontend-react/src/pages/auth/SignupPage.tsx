@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { API_BASE } from '@/lib/api';
+import { API_BASE, API_HEADERS } from '@/lib/api';
 
 export default function SignupPage() {
     const [name, setName] = useState('');
@@ -20,7 +20,7 @@ export default function SignupPage() {
         try {
             const res = await fetch(`${API_BASE}/api/auth/register`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { ...API_HEADERS, 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name, email, password }),
             });
 
@@ -35,10 +35,16 @@ export default function SignupPage() {
             // Auto sign-in after registration
             try {
                 await login(email, password);
-                navigate('/dashboard');
+                // New users are 'pending' — redirect to approval page
+                const userStatus = data.user?.status || data.user?.subscription_status;
+                if (userStatus === 'approved') {
+                    navigate('/dashboard');
+                } else {
+                    navigate('/pending-approval');
+                }
             } catch {
-                setError('Registration succeeded but auto-login failed. Please sign in.');
-                setLoading(false);
+                // Login failed but registration succeeded
+                navigate('/pending-approval');
             }
         } catch {
             setError('Network error. Please try again.');

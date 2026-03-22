@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
-import { usAPI } from '../../../lib/api';
-import { useIsMobile } from '../../../hooks/useIsMobile';
-import { usePullToRefreshRegister } from '../../../components/layout/PullToRefreshProvider';
+import { usAPI } from '@/lib/api';
+import { useIsMobile } from '@/hooks/useIsMobile';
+import { usePullToRefreshRegister } from '@/components/layout/PullToRefreshProvider';
 
 interface ETFFlow {
     ticker: string;

@@ -4,10 +4,10 @@ import {
     usAPI, USMarketGate, CumulativePerformanceSummary,
     PortfolioIndex, DecisionSignalData,
     MarketRegimeData, IndexPredictionData, RiskAlertData, SectorRotationData,
-} from '../../../lib/api';
-import { useAutoRefresh } from '../../../hooks/useAutoRefresh';
-import StockDetailModal from '../../../components/us/StockDetailModal';
-import { usePullToRefreshRegister } from '../../../components/layout/PullToRefreshProvider';
+} from '@/lib/api';
+import { useAutoRefresh } from '@/hooks/useAutoRefresh';
+import StockDetailModal from '@/components/us/StockDetailModal';
+import { usePullToRefreshRegister } from '@/components/layout/PullToRefreshProvider';
 
 // ── Arc Gauge (half-arc 180°) ─────────────────────────────────────────────────
 function ArcGauge({ score, loading }: { score: number; loading: boolean }) {

@@ -182,6 +182,7 @@ class DARTCollector:
 
         corp_code = self._get_corp_code(stock_code)
         if not corp_code:
+            print(f"[DART] corp_code 조회 실패: {stock_code} — 매핑 없음, 빈 결과 반환")
             return result
 
         # 날짜 범위
@@ -316,6 +317,109 @@ class DARTCollector:
         return {"type": "기타", "sentiment": "neutral"}
 
     # ── 유틸리티 ─────────────────────────────────────────────
+
+    async def get_financial_health(self, stock_code: str) -> Dict:
+        """DART 재무제표 기반 재무건전성 점수 (0~3점)"""
+        result = {
+            "has_data": False, "score": 0,
+            "roe": 0, "debt_ratio": 0, "revenue_growth": 0, "op_margin": 0,
+            "detail": ""
+        }
+        if not self.api_key:
+            return result
+
+        await self._ensure_corp_codes()
+        corp_code = self._get_corp_code(stock_code)
+        if not corp_code:
+            print(f"[DART] corp_code 조회 실패: {stock_code} — 매핑 없음")
+            return result
+
+        try:
+            year = date.today().year
+            data = None
+            for y in [year, year - 1]:
+                for reprt in ["11011", "11012", "11013"]:
+                    data = await self._fetch_financial(corp_code, str(y), reprt)
+                    if data:
+                        break
+                if data:
+                    break
+
+            if not data:
+                return result
+
+            accounts = {}
+            for item in data:
+                nm = item.get("account_nm", "")
+                if item.get("fs_div") == "OFS" and accounts.get(nm):
+                    continue
+                amt = self._parse_amount(item.get("thstrm_amount", "0"))
+                prev = self._parse_amount(item.get("frmtrm_amount", "0"))
+                accounts[nm] = {"current": amt, "previous": prev}
+
+            revenue = accounts.get("매출액", accounts.get("수익(매출액)", {}))
+            op_profit = accounts.get("영업이익", accounts.get("영업이익(손실)", {}))
+            net_income = accounts.get("당기순이익", accounts.get("당기순이익(손실)", {}))
+            total_equity = accounts.get("자본총계", {})
+            total_liab = accounts.get("부채총계", {})
+
+            rev_cur, rev_prev = revenue.get("current", 0), revenue.get("previous", 0)
+            op_cur, ni_cur = op_profit.get("current", 0), net_income.get("current", 0)
+            eq_cur, liab_cur = total_equity.get("current", 0), total_liab.get("current", 0)
+
+            if eq_cur > 0:
+                result["roe"] = round(ni_cur / eq_cur * 100, 1)
+                result["debt_ratio"] = round(liab_cur / eq_cur * 100, 1)
+            if rev_prev > 0:
+                result["revenue_growth"] = round((rev_cur - rev_prev) / rev_prev * 100, 1)
+            if rev_cur > 0:
+                result["op_margin"] = round(op_cur / rev_cur * 100, 1)
+
+            result["has_data"] = True
+            score, details = 0, []
+
+            if result["roe"] >= 15:
+                score += 1; details.append(f"ROE {result['roe']}%↑")
+            elif result["roe"] >= 10:
+                score += 0.5; details.append(f"ROE {result['roe']}%")
+            if 0 < result["debt_ratio"] <= 100:
+                score += 1; details.append(f"부채{result['debt_ratio']}%↓")
+            elif 0 < result["debt_ratio"] <= 200:
+                score += 0.5; details.append(f"부채{result['debt_ratio']}%")
+            if result["revenue_growth"] >= 10:
+                score += 0.5; details.append(f"매출+{result['revenue_growth']}%")
+            if result["op_margin"] >= 10:
+                score += 0.5; details.append(f"영익률{result['op_margin']}%")
+
+            result["score"] = min(3, round(score))
+            result["detail"] = ", ".join(details) if details else "재무 보통"
+            return result
+        except Exception as e:
+            print(f"[DART] 재무제표 에러 ({stock_code}): {e}")
+            return result
+
+    async def _fetch_financial(self, corp_code: str, bsns_year: str, reprt_code: str):
+        """DART 단일회사 주요계정 API 호출"""
+        url = f"{self.BASE_URL}/fnlttSinglAcnt.json"
+        params = {"crtfc_key": self.api_key, "corp_code": corp_code,
+                  "bsns_year": bsns_year, "reprt_code": reprt_code}
+        try:
+            async with httpx.AsyncClient(timeout=10) as client:
+                resp = await client.get(url, params=params)
+                if resp.status_code != 200:
+                    return None
+                data = resp.json()
+                return data.get("list", []) if data.get("status") == "000" else None
+        except Exception:
+            return None
+
+    @staticmethod
+    def _parse_amount(s: str) -> float:
+        """금액 문자열 → float ('247,684,612,000' → float)"""
+        try:
+            return float(str(s).replace(",", "").strip() or "0")
+        except (ValueError, TypeError):
+            return 0
 
     def format_for_llm(self, dart_result: Dict) -> str:
         """DART 결과를 LLM 프롬프트용 텍스트로 변환"""

@@ -10,7 +10,8 @@
 - 수급: 0~2점
 - 공시: 0~2점
 - 애널리스트: 0~3점
-- 총점: 17점 만점
+- 재무건전성: 0~3점
+- 총점: 20점 만점
 """
 
 from typing import List, Optional, Tuple
@@ -38,6 +39,7 @@ class Scorer:
         llm_result: Optional[dict] = None,
         dart_result: Optional[dict] = None,
         analyst_result: Optional[dict] = None,
+        financial_result: Optional[dict] = None,
     ) -> Tuple[ScoreDetail, ChecklistDetail]:
         """
         전체 점수 계산
@@ -99,6 +101,10 @@ class Scorer:
         # 8. 애널리스트 컨센서스 점수 (0~3점)
         analyst_score = self._score_analyst(analyst_result)
         score.analyst = analyst_score
+
+        # 9. 재무건전성 점수 (0~3점) — DART 재무제표
+        if financial_result and financial_result.get("has_data"):
+            score.financial = financial_result.get("score", 0)
 
         return score, checklist
     

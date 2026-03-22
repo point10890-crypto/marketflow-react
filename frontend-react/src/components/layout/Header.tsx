@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import CommandPalette from './CommandPalette';
+import { useNotification } from '@/contexts/NotificationContext';
 
 interface HeaderProps {
     title?: string;
@@ -12,8 +13,8 @@ const PAGE_NAMES: Record<string, string> = {
     '/dashboard/vcp-enhanced': 'VCP Enhanced',
     '/dashboard/kr': 'KR Market',
     '/dashboard/kr/vcp': 'KR VCP Signals',
-    '/dashboard/kr/closing-bet': '종가베팅',
-    '/dashboard/kr/closing-bet/history': '종가베팅 History',
+    '/dashboard/kr/closing-bet': '\uc885\uac00\ubca0\ud305',
+    '/dashboard/kr/closing-bet/history': '\uc885\uac00\ubca0\ud305 History',
     '/dashboard/kr/chatbot': 'KR Chatbot',
     '/dashboard/kr/track-record': 'Track Record',
     '/dashboard/us': 'US Market',
@@ -32,12 +33,23 @@ function getPageTitle(pathname: string): string {
     return last.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 }
 
+function timeAgo(ts: number): string {
+    const diff = Math.floor((Date.now() - ts) / 1000);
+    if (diff < 60) return 'just now';
+    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+    return `${Math.floor(diff / 86400)}d ago`;
+}
+
 export default function Header({ onMenuClick }: HeaderProps) {
     const location = useLocation();
     const navigate = useNavigate();
     const pathname = location.pathname ?? '';
     const [paletteOpen, setPaletteOpen] = useState(false);
+    const [bellOpen, setBellOpen] = useState(false);
+    const bellRef = useRef<HTMLDivElement>(null);
     const pageTitle = getPageTitle(pathname);
+    const { notifications, unreadCount, markAllRead, clearAll, dismiss } = useNotification();
 
     useEffect(() => {
         const handleKey = (e: KeyboardEvent) => {
@@ -50,12 +62,34 @@ export default function Header({ onMenuClick }: HeaderProps) {
         return () => window.removeEventListener('keydown', handleKey);
     }, []);
 
+    // 외부 클릭 시 벨 닫기 (지연 등록으로 토글 클릭 충돌 방지)
+    useEffect(() => {
+        if (!bellOpen) return;
+        const handleClick = (e: MouseEvent) => {
+            if (bellRef.current && !bellRef.current.contains(e.target as Node)) {
+                setBellOpen(false);
+            }
+        };
+        const timer = setTimeout(() => document.addEventListener('mousedown', handleClick), 10);
+        return () => { clearTimeout(timer); document.removeEventListener('mousedown', handleClick); };
+    }, [bellOpen]);
+
+    const handleBellClick = () => {
+        setBellOpen(prev => !prev);
+        if (!bellOpen && unreadCount > 0) markAllRead();
+    };
+
+    const typeIcon: Record<string, string> = {
+        alert: 'fas fa-bolt text-amber-400',
+        success: 'fas fa-check-circle text-emerald-400',
+        info: 'fas fa-info-circle text-blue-400',
+    };
+
     return (
         <>
             <header className="h-14 md:h-16 flex items-center justify-between px-4 md:px-6 border-b border-white/10 md:border-white/5 bg-[#111113] md:bg-[#09090b]/80 backdrop-blur-md shrink-0 z-40">
                 {/* Left: Hamburger (mobile) + Page Title */}
                 <div className="flex items-center gap-3">
-                    {/* Hamburger - mobile only */}
                     <button
                         onClick={onMenuClick}
                         className="md:hidden w-10 h-10 flex items-center justify-center rounded-xl bg-white/10 text-white hover:bg-white/20 transition-colors active:scale-95"
@@ -63,12 +97,9 @@ export default function Header({ onMenuClick }: HeaderProps) {
                         <i className="fas fa-bars text-base"></i>
                     </button>
 
-                    {/* Brand - mobile only, clickable → Summary dashboard */}
                     <button
                         onClick={() => {
-                            if (pathname !== '/dashboard') {
-                                navigate('/dashboard');
-                            }
+                            if (pathname !== '/dashboard') navigate('/dashboard');
                         }}
                         className="md:hidden flex items-center gap-2 active:scale-95 transition-transform duration-150"
                     >
@@ -80,7 +111,6 @@ export default function Header({ onMenuClick }: HeaderProps) {
                         </span>
                     </button>
 
-                    {/* Page Title - desktop only */}
                     <div className="hidden md:block">
                         <h1 className="text-lg font-semibold text-white">{pageTitle}</h1>
                     </div>
@@ -106,17 +136,84 @@ export default function Header({ onMenuClick }: HeaderProps) {
 
                 {/* Actions */}
                 <div className="flex items-center gap-2">
-                    {/* Search - mobile only */}
                     <button
                         onClick={() => setPaletteOpen(true)}
                         className="md:hidden p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-full transition-colors active:scale-95"
                     >
                         <i className="fas fa-search text-sm"></i>
                     </button>
-                    <button className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-full transition-colors relative active:scale-95">
-                        <i className="far fa-bell text-sm"></i>
-                        <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-red-500 rounded-full border border-black"></span>
+
+                    {/* Refresh Button */}
+                    <button
+                        onClick={() => window.location.reload()}
+                        className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-full transition-colors active:scale-95"
+                        title="Refresh"
+                    >
+                        <i className="fas fa-sync-alt text-sm"></i>
                     </button>
+
+                    {/* Bell - Notification Center */}
+                    <div ref={bellRef} className="relative">
+                        <button
+                            onClick={handleBellClick}
+                            className={`p-2 hover:text-white hover:bg-white/10 rounded-full transition-colors relative active:scale-95 ${unreadCount > 0 ? 'text-amber-400 animate-[bell-ring_1s_ease-in-out_infinite]' : 'text-gray-400'}`}
+                        >
+                            <i className="far fa-bell text-sm"></i>
+                            {unreadCount > 0 && (
+                                <span className="absolute top-1 right-1 min-w-[14px] h-[14px] flex items-center justify-center px-0.5 text-[9px] font-bold bg-red-500 text-white rounded-full border border-black animate-pulse">
+                                    {unreadCount > 9 ? '9+' : unreadCount}
+                                </span>
+                            )}
+                        </button>
+
+                        {/* Dropdown */}
+                        {bellOpen && (
+                            <div className="absolute right-0 top-full mt-2 w-80 max-h-[400px] bg-[#1c1c1e] border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-50">
+                                <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
+                                    <span className="text-xs font-bold text-white">Notifications</span>
+                                    {notifications.length > 0 && (
+                                        <button onClick={clearAll} className="text-[10px] text-gray-500 hover:text-red-400 transition-colors">
+                                            Clear all
+                                        </button>
+                                    )}
+                                </div>
+                                <div className="overflow-y-auto max-h-[340px]">
+                                    {notifications.length === 0 ? (
+                                        <div className="p-6 text-center text-gray-500 text-xs">
+                                            <i className="far fa-bell-slash text-lg mb-2 block"></i>
+                                            No notifications yet
+                                        </div>
+                                    ) : (
+                                        notifications.slice(0, 15).map(n => (
+                                            <div
+                                                key={n.id}
+                                                className={`flex items-start gap-3 px-4 py-3 hover:bg-white/5 cursor-pointer transition-colors border-b border-white/5 ${!n.read ? 'bg-white/[0.02]' : ''}`}
+                                                onClick={() => {
+                                                    if (n.link) {
+                                                        navigate(n.link);
+                                                        setBellOpen(false);
+                                                    }
+                                                }}
+                                            >
+                                                <i className={`${typeIcon[n.type] || typeIcon.info} text-xs mt-1`}></i>
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="text-[11px] font-semibold text-white truncate">{n.title}</div>
+                                                    <div className="text-[10px] text-gray-500 mt-0.5 line-clamp-2">{n.message}</div>
+                                                    <div className="text-[9px] text-gray-600 mt-1">{timeAgo(n.timestamp)}</div>
+                                                </div>
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); dismiss(n.id); }}
+                                                    className="text-gray-600 hover:text-gray-400 text-[10px] p-1 shrink-0"
+                                                >
+                                                    <i className="fas fa-times"></i>
+                                                </button>
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </header>
 

@@ -258,15 +258,24 @@ class SignalGenerator:
             except Exception as e:
                 print(f"    ⚠ Analyst consensus error: {e}")
 
-            # 7. 점수 계산 (LLM 결과 + DART 공시 + 애널리스트 반영)
-            score, checklist = self.scorer.calculate(stock, charts, news_list, supply, llm_result, dart_result, analyst_result)
-            
+            # 6-2. 재무건전성 조회 (DART 재무제표)
+            financial_result = None
+            try:
+                financial_result = await self.dart_collector.get_financial_health(stock.code)
+                if financial_result and financial_result.get("has_data"):
+                    print(f"    -> 재무: {financial_result['detail']} ({financial_result['score']}점)")
+            except Exception as e:
+                print(f"    ⚠ Financial health error: {e}")
+
+            # 7. 점수 계산 (LLM 결과 + DART 공시 + 애널리스트 + 재무건전성 반영)
+            score, checklist = self.scorer.calculate(stock, charts, news_list, supply, llm_result, dart_result, analyst_result, financial_result)
+
             # 7. 등급 결정
             grade = self.scorer.determine_grade(stock, score)
-            
+
             # C등급은 제외
             if grade == Grade.C:
-                print(f"    ❌ 탈락 {stock.name}: 점수 {score.total}/17 (뉴스{score.news}, 수급{score.supply}, 거래대금{score.volume}, 차트{score.chart}, 애널{score.analyst})")
+                print(f"    ❌ 탈락 {stock.name}: 점수 {score.total}/20 (뉴스{score.news}, 수급{score.supply}, 거래대금{score.volume}, 차트{score.chart}, 애널{score.analyst}, 재무{score.financial})")
                 return None
             
             # 7. 포지션 계산
@@ -541,7 +550,7 @@ async def main():
     for i, signal in enumerate(result.signals, 1):
         print(f"\n[{i}] {signal.stock_name} ({signal.stock_code})")
         print(f"    등급: {signal.grade.value}")
-        print(f"    점수: {signal.score.total}/12 (뉴스:{signal.score.news}, 수급:{signal.score.supply}, 차트:{signal.score.chart})")
+        print(f"    점수: {signal.score.total}/20 (뉴스:{signal.score.news}, 수급:{signal.score.supply}, 차트:{signal.score.chart}, 재무:{signal.score.financial})")
         print(f"    등락률: {signal.change_pct:+.2f}%")
         print(f"    거래대금: {signal.trading_value / 100_000_000:,.0f}억")
         print(f"    진입가: {signal.entry_price:,}원")

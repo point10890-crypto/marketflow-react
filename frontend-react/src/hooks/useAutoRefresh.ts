@@ -80,15 +80,21 @@ export function useSmartRefresh(
     fetchFn: () => void | Promise<void>,
     watchFiles: string[] = ['jongga_v2_latest.json'],
     pollMs: number = 15000,
-    enabled: boolean = true
+    enabled: boolean = true,
+    onDataChanged?: (changedFiles: string[]) => void
 ) {
     const fetchRef = useRef(fetchFn);
+    const onDataChangedRef = useRef(onDataChanged);
     const versionsRef = useRef<Record<string, number>>({});
     const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
     useEffect(() => {
         fetchRef.current = fetchFn;
     }, [fetchFn]);
+
+    useEffect(() => {
+        onDataChangedRef.current = onDataChanged;
+    }, [onDataChanged]);
 
     const checkVersion = useCallback(async () => {
         try {
@@ -119,20 +125,23 @@ export function useSmartRefresh(
 
             // 감시 대상 파일 중 변경된 것이 있는지 체크
             let changed = false;
+            const changedFiles: string[] = [];
             for (const file of watchFiles) {
                 const oldMtime = versionsRef.current[file] || 0;
                 const newMtime = newVersions[file] || 0;
                 if (oldMtime > 0 && newMtime > oldMtime) {
                     changed = true;
+                    changedFiles.push(file);
                 }
             }
 
             // 버전 저장 (첫 호출 시에는 changed=false)
             versionsRef.current = newVersions;
 
-            // 변경 감지 → 실제 데이터 refetch
+            // 변경 감지 → 실제 데이터 refetch + 알림 콜백
             if (changed) {
                 fetchRef.current();
+                onDataChangedRef.current?.(changedFiles);
             }
         } catch {
             // 네트워크 오류 무시 (다음 polling에서 재시도)

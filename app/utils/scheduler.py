@@ -102,7 +102,7 @@ def _send_telegram(message: str) -> bool:
             if r.status_code == 200:
                 success = True
             else:
-                logger.error(f"텔레그램(개인) 응답: {r.status_code} {r.text[:200]}")
+                logger.error(f"텔레그램(개인) 응답: {r.status_code} {r.text[:500]}")
         except Exception as e:
             logger.error(f"텔레그램(개인) 전송 실패: {e}")
 
@@ -196,7 +196,7 @@ def _run_jongga_v2():
     except Exception as e:
         logger.error(f"❌ 종가베팅 V2 실패: {e}")
         traceback.print_exc()
-        _send_telegram(f"❌ 종가베팅 V2 실패: {str(e)[:200]}")
+        _send_telegram(f"❌ 종가베팅 V2 실패: {str(e)[:500]}")
         return False
 
 

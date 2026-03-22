@@ -171,7 +171,8 @@ def _compute_crypto_dominance_live():
 
         # 스냅샷 저장
         try:
-            os.makedirs(os.path.dirname(snap_path := os.path.join(_DATA_DIR, 'crypto_dominance_cache.json')), exist_ok=True)
+            snap_path = os.path.join(_DATA_DIR, 'crypto_dominance_cache.json')
+            os.makedirs(os.path.dirname(snap_path), exist_ok=True)
             with open(snap_path, 'w', encoding='utf-8') as f:
                 json.dump(result, f, ensure_ascii=False, indent=2)
         except Exception:

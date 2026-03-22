@@ -2,10 +2,10 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { cryptoAPI, CryptoAsset, CryptoDominance, CryptoMarketGate, CryptoBriefingData } from '../../../lib/api';
-import { useAutoRefresh } from '../../../hooks/useAutoRefresh';
-import { useIsMobile } from '../../../hooks/useIsMobile';
-import { usePullToRefreshRegister } from '../../../components/layout/PullToRefreshProvider';
+import { cryptoAPI, CryptoAsset, CryptoDominance, CryptoMarketGate, CryptoBriefingData } from '@/lib/api';
+import { useAutoRefresh } from '@/hooks/useAutoRefresh';
+import { useIsMobile } from '@/hooks/useIsMobile';
+import { usePullToRefreshRegister } from '@/components/layout/PullToRefreshProvider';
 
 interface GateHistoryEntry {
     date: string;

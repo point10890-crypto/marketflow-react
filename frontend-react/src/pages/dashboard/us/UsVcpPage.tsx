@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
-import { fetchAPI } from '../../../lib/api';
-import { useAutoRefresh, useSmartRefresh } from '../../../hooks/useAutoRefresh';
-import { usePullToRefreshRegister } from '../../../components/layout/PullToRefreshProvider';
+import { fetchAPI } from '@/lib/api';
+import { useAutoRefresh, useSmartRefresh } from '@/hooks/useAutoRefresh';
+import { usePullToRefreshRegister } from '@/components/layout/PullToRefreshProvider';
 
 interface VCPSignal {
     symbol: string;

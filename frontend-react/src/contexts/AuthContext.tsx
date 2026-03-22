@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
-import { getToken, setToken, clearToken, getUser, isAuthenticated, isAdmin as checkIsAdmin } from '@/lib/auth';
+import { getToken, setToken, clearToken, getUser, saveUser, isAuthenticated, isAdmin as checkIsAdmin, type AuthUserData } from '@/lib/auth';
 import { postAPI } from '@/lib/api';
 
 interface AuthUser {
@@ -8,6 +8,7 @@ interface AuthUser {
     name: string;
     tier: string;
     role: string;
+    status: string;
 }
 
 interface AuthContextType {
@@ -16,6 +17,7 @@ interface AuthContextType {
     login: (email: string, password: string) => Promise<void>;
     logout: () => void;
     isAdmin: () => boolean;
+    refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -24,6 +26,7 @@ const AuthContext = createContext<AuthContextType>({
     login: async () => {},
     logout: () => {},
     isAdmin: () => false,
+    refreshUser: async () => {},
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -43,13 +46,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     name: storedUser.name,
                     tier: storedUser.tier,
                     role: storedUser.role,
+                    status: storedUser.status || 'approved',
                 });
             }
         }
     }, []);
 
+    const setUserFromData = (data: AuthUserData) => {
+        const authUser: AuthUser = {
+            id: data.id,
+            email: data.email,
+            name: data.name,
+            tier: data.tier,
+            role: data.role,
+            status: data.status || 'approved',
+        };
+        setUser(authUser);
+        saveUser(data);
+    };
+
     const login = async (email: string, password: string): Promise<void> => {
-        const data = await postAPI<{ token: string; user?: AuthUser }>('/api/auth/login', { email, password });
+        const data = await postAPI<{ token: string; user?: AuthUserData }>('/api/auth/login', { email, password });
 
         if (!data.token) {
             throw new Error('No token received from server');
@@ -58,18 +75,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setToken(data.token);
         setTokenState(data.token);
 
-        // Decode user from token or use returned user object
-        const decoded = getUser();
-        if (decoded) {
-            setUser({
-                id: decoded.id,
-                email: decoded.email,
-                name: decoded.name,
-                tier: decoded.tier,
-                role: decoded.role,
-            });
-        } else if (data.user) {
-            setUser(data.user);
+        if (data.user) {
+            setUserFromData(data.user);
         }
     };
 
@@ -79,12 +86,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(null);
     };
 
+    const refreshUser = async () => {
+        const currentToken = getToken();
+        if (!currentToken) return;
+        try {
+            const res = await fetch(`/api/auth/me`, {
+                headers: { 'Authorization': `Bearer ${currentToken}` },
+            });
+            if (res.ok) {
+                const data = await res.json();
+                if (data.user) {
+                    setUserFromData(data.user);
+                }
+            }
+        } catch { /* ignore */ }
+    };
+
     const isAdminFn = () => {
         return checkIsAdmin() || user?.role === 'admin';
     };
 
     return (
-        <AuthContext.Provider value={{ user, token, login, logout, isAdmin: isAdminFn }}>
+        <AuthContext.Provider value={{ user, token, login, logout, isAdmin: isAdminFn, refreshUser }}>
             {children}
         </AuthContext.Provider>
     );

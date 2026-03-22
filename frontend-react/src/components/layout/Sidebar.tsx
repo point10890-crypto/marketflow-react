@@ -74,25 +74,25 @@ const navigation: NavItem[] = [
 
 const adminNavigation: NavItem[] = [
     {
-        name: 'Admin Dashboard',
+        name: '관리자 대시보드',
         href: '/admin',
         icon: 'fa-shield-alt',
         color: 'text-red-400',
     },
     {
-        name: 'Users',
+        name: '사용자 관리',
         href: '/admin/users',
         icon: 'fa-users-cog',
         color: 'text-red-400',
     },
     {
-        name: 'Subscriptions',
+        name: '구독 관리',
         href: '/admin/subscriptions',
         icon: 'fa-credit-card',
         color: 'text-red-400',
     },
     {
-        name: 'System',
+        name: '시스템 모니터',
         href: '/admin/system',
         icon: 'fa-server',
         color: 'text-red-400',
@@ -217,8 +217,8 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                 {/* Admin Section */}
                 {userRole === 'admin' && (
                     <>
-                        <div className="px-3 mt-6 mb-3 text-[11px] font-semibold text-red-500 uppercase tracking-wider">
-                            Admin
+                        <div className="px-3 mt-6 mb-3 text-[11px] font-semibold text-red-500 tracking-wider">
+                            관리자
                         </div>
                         {adminNavigation.map((item) => {
                             const isActive = pathname === item.href;
@@ -242,7 +242,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
             </nav>
 
             {/* Data Status - bottom pinned */}
-            <div className="px-3.5 pb-2">
+            <div className="px-3.5 pb-2 space-y-1">
                 <Link
                     to="/dashboard/data-status"
                     onClick={onNavigate}
@@ -255,6 +255,20 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                     <i className="fas fa-database w-5 text-center text-sm text-gray-500"></i>
                     <span>Data Status</span>
                 </Link>
+                {userRole === 'admin' && (
+                    <Link
+                        to="/admin"
+                        onClick={onNavigate}
+                        className={`flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-[13px] font-medium transition-all ${
+                            pathname.startsWith('/admin')
+                                ? 'text-red-400 bg-red-500/10 border border-red-500/20'
+                                : 'text-gray-500 hover:text-red-400 hover:bg-red-500/5 border border-transparent'
+                        }`}
+                    >
+                        <i className="fas fa-shield-alt w-5 text-center text-sm text-red-400/60"></i>
+                        <span>관리자</span>
+                    </Link>
+                )}
             </div>
 
             {/* Profile */}

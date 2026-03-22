@@ -84,8 +84,8 @@ export default function AdminUsersPage() {
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
-                <h1 className="text-2xl font-bold text-white">User Management</h1>
-                <span className="text-sm text-gray-400">{users.length} total users</span>
+                <h1 className="text-2xl font-bold text-white">사용자 관리</h1>
+                <span className="text-sm text-gray-400">총 {users.length}명</span>
             </div>
 
             {/* Action message */}

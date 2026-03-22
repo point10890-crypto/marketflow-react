@@ -1,8 +1,10 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from '@/contexts/AuthContext';
+import { AuthProvider, useAuth } from '@/contexts/AuthContext';
+import { NotificationProvider } from '@/contexts/NotificationContext';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import LoginPage from '@/pages/auth/LoginPage';
 import SignupPage from '@/pages/auth/SignupPage';
+import PendingApprovalPage from '@/pages/auth/PendingApprovalPage';
 import PricingPage from '@/pages/static/PricingPage';
 import LandingPage from '@/pages/LandingPage';
 
@@ -28,6 +30,35 @@ const AdminUsersPage = lazy(() => import('@/pages/admin/AdminUsersPage'));
 const AdminSubscriptionsPage = lazy(() => import('@/pages/admin/AdminSubscriptionsPage'));
 const AdminSystemPage = lazy(() => import('@/pages/admin/AdminSystemPage'));
 
+function ApprovedGuard({ children }: { children: React.ReactNode }) {
+    const { user } = useAuth();
+    // No user (not logged in) → allow access (auth may be disabled / public mode)
+    if (!user) return <>{children}</>;
+    // Admin always passes
+    if (user.role === 'admin') return <>{children}</>;
+    // Pending/rejected/suspended → redirect to approval page
+    if (user.status !== 'approved') return <Navigate to="/pending-approval" replace />;
+    return <>{children}</>;
+}
+
+function AdminGuard({ children }: { children: React.ReactNode }) {
+    const { user } = useAuth();
+    // Initial render: user state not yet hydrated from localStorage
+    // Check localStorage directly to avoid flash redirect
+    if (!user) {
+        try {
+            const stored = localStorage.getItem('auth_user');
+            if (stored) {
+                const parsed = JSON.parse(stored);
+                if (parsed.role === 'admin') return <>{children}</>;
+            }
+        } catch { /* ignore */ }
+        return <Navigate to="/dashboard" replace />;
+    }
+    if (user.role !== 'admin') return <Navigate to="/dashboard" replace />;
+    return <>{children}</>;
+}
+
 function LoadingFallback() {
     return (
         <div className="flex items-center justify-center h-full min-h-[400px]">
@@ -43,15 +74,17 @@ export default function App() {
     return (
         <BrowserRouter>
             <AuthProvider>
+            <NotificationProvider>
                 <Routes>
                     {/* Public routes */}
                     <Route path="/" element={<LandingPage />} />
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/signup" element={<SignupPage />} />
                     <Route path="/pricing" element={<PricingPage />} />
+                    <Route path="/pending-approval" element={<PendingApprovalPage />} />
 
-                    {/* Dashboard routes */}
-                    <Route path="/dashboard" element={<DashboardLayout />}>
+                    {/* Dashboard routes (ApprovedGuard blocks pending users) */}
+                    <Route path="/dashboard" element={<ApprovedGuard><DashboardLayout /></ApprovedGuard>}>
                         <Route index element={<Suspense fallback={<LoadingFallback />}><SummaryPage /></Suspense>} />
                         <Route path="vcp-enhanced" element={<Suspense fallback={<LoadingFallback />}><VcpEnhancedPage /></Suspense>} />
                         <Route path="kr" element={<Suspense fallback={<LoadingFallback />}><KrOverviewPage /></Suspense>} />
@@ -70,16 +103,28 @@ export default function App() {
                     </Route>
 
                     {/* Admin routes */}
-                    <Route path="/admin" element={<DashboardLayout />}>
+                    <Route path="/admin" element={<AdminGuard><DashboardLayout /></AdminGuard>}>
                         <Route index element={<Suspense fallback={<LoadingFallback />}><AdminPage /></Suspense>} />
                         <Route path="users" element={<Suspense fallback={<LoadingFallback />}><AdminUsersPage /></Suspense>} />
                         <Route path="subscriptions" element={<Suspense fallback={<LoadingFallback />}><AdminSubscriptionsPage /></Suspense>} />
                         <Route path="system" element={<Suspense fallback={<LoadingFallback />}><AdminSystemPage /></Suspense>} />
                     </Route>
 
-                    {/* Fallback */}
-                    <Route path="*" element={<Navigate to="/dashboard" replace />} />
+                    {/* 404 Not Found */}
+                    <Route path="*" element={
+                        <div className="flex items-center justify-center min-h-screen bg-[#09090b] text-white">
+                            <div className="text-center px-6">
+                                <div className="text-6xl font-black text-amber-500 mb-4">404</div>
+                                <h1 className="text-xl font-bold mb-2">페이지를 찾을 수 없습니다</h1>
+                                <p className="text-gray-500 text-sm mb-6">요청하신 페이지가 존재하지 않거나 이동되었습니다.</p>
+                                <a href="/dashboard" className="inline-block px-6 py-3 bg-amber-500 text-black font-bold rounded-xl hover:bg-amber-400 transition-colors">
+                                    대시보드로 이동
+                                </a>
+                            </div>
+                        </div>
+                    } />
                 </Routes>
+            </NotificationProvider>
             </AuthProvider>
         </BrowserRouter>
     );

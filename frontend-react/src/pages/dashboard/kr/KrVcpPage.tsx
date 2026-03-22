@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { fetchAPI } from '@/lib/api';
 import { useAutoRefresh, useSmartRefresh } from '@/hooks/useAutoRefresh';
 import { usePullToRefreshRegister } from '@/components/layout/PullToRefreshProvider';
+import { useNotification } from '@/contexts/NotificationContext';
 
 interface VCPSignal {
     symbol: string;
@@ -53,6 +54,7 @@ function getScoreColor(score: number): string {
 }
 
 export default function KRVCPPage() {
+    const { notify } = useNotification();
     const [data, setData] = useState<VCPData | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -84,7 +86,12 @@ export default function KRVCPPage() {
         await loadData('latest');
     }, [loadData, selectedDate]);
     useAutoRefresh(silentRefresh, 60000, selectedDate === 'latest');
-    useSmartRefresh(silentRefresh, ['vcp_kr_latest.json'], 15000, selectedDate === 'latest');
+    useSmartRefresh(silentRefresh, ['vcp_kr_latest.json'], 15000, selectedDate === 'latest', (changed) => {
+        if (changed.includes('vcp_kr_latest.json')) {
+            const count = data?.signals?.length || 0;
+            notify({ type: 'info', title: '\uD83C\uDDF0\uD83C\uDDF7 KR VCP \uC5C5\uB370\uC774\uD2B8', message: `${count}\uAC1C \uC2DC\uADF8\uB110 \uAC31\uC2E0\uB428`, link: '/dashboard/kr/vcp' });
+        }
+    });
     usePullToRefreshRegister(useCallback(async () => { await loadData(selectedDate); }, [loadData, selectedDate]));
 
     const signals = data?.signals || [];

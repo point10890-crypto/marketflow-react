@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAutoRefresh, useSmartRefresh } from '@/hooks/useAutoRefresh';
 import { usePullToRefreshRegister } from '@/components/layout/PullToRefreshProvider';
+import { useNotification } from '@/contexts/NotificationContext';
 import { API_BASE, API_HEADERS } from '@/lib/api';
 
 // Interfaces (Based on backend models)
@@ -261,6 +262,7 @@ function ThemeCloudWidget({ signals }: { signals: Signal[] }) {
 }
 
 export default function JonggaV2Page() {
+    const { notify } = useNotification();
     const [data, setData] = useState<ScreenerResult | null>(null);
     const [loading, setLoading] = useState(true);
     const [dates, setDates] = useState<string[]>([]);
@@ -356,7 +358,19 @@ export default function JonggaV2Page() {
     useAutoRefresh(silentRefresh, 60000, !isUserSelected);
 
     // 스마트 갱신 (15초 버전 체크) - 파일 변경 감지 시에만 refetch (로컬+모바일 동시 갱신)
-    useSmartRefresh(silentRefresh, ['jongga_v2_latest.json'], 15000, !isUserSelected);
+    useSmartRefresh(silentRefresh, ['jongga_v2_latest.json'], 15000, !isUserSelected, (changed) => {
+        if (changed.includes('jongga_v2_latest.json')) {
+            const sCount = data?.by_grade?.S || 0;
+            const aCount = data?.by_grade?.A || 0;
+            const total = data?.filtered_count || 0;
+            notify({
+                type: sCount > 0 ? 'alert' : 'success',
+                title: sCount > 0 ? `\uD83D\uDD25 \uC885\uAC00\uBCA0\uD305 S\uB4F1\uAE09 ${sCount}\uC885\uBAA9` : '\uD83D\uDCC8 \uC885\uAC00\uBCA0\uD305 \uC5C5\uB370\uC774\uD2B8',
+                message: `S:${sCount} A:${aCount} \uCD1D ${total}\uAC1C \uC2DC\uADF8\uB110`,
+                link: '/dashboard/kr/closing-bet',
+            });
+        }
+    });
     usePullToRefreshRegister(useCallback(async () => { await fetchData(false); }, [fetchData]));
 
     if (loading) {
