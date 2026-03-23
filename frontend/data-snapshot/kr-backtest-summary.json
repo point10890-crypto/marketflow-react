@@ -1,1 +1,0 @@
-{"closing_bet":{"avg_return":5.0,"count":346,"status":"OK","win_rate":100.0},"debug":{"jongga_files_count":16,"total_signals":346,"vcp_error":"stat: path should be string, bytes, os.PathLike or integer, not NoneType"},"vcp":{"avg_return":0,"count":0,"error":"stat: path should be string, bytes, os.PathLike or integer, not NoneType","status":"No Data","win_rate":0}}

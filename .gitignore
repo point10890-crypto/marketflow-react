@@ -128,3 +128,4 @@ schtask_result.txt
 .dev.vars*
 !.dev.vars.example
 !.env.example
+frontend/
