@@ -1,12 +1,13 @@
 name: Deploy Frontend to Cloudflare Workers
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'frontend-react/**'
-      - '.github/workflows/deploy-frontend.yml'
-  workflow_dispatch:
+  # 자동 배포 비활성화 — 로컬 wrangler deploy로 통일
+  # push:
+  #   branches: [main]
+  #   paths:
+  #     - 'frontend-react/**'
+  #     - '.github/workflows/deploy-frontend.yml'
+  workflow_dispatch:  # 수동 트리거만 허용
 
 jobs:
   deploy:
