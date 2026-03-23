@@ -1,0 +1,75 @@
+{
+  "name": "SK이터닉스",
+  "ticker": "475150.KS",
+  "result": "데이터 없음",
+  "date": "2026-03-22 19:22:02",
+  "elapsed": 2.0,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 59900.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 59900.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "SK eternix",
+    "sector": "Utilities",
+    "industry": "Utilities - Renewable",
+    "market_cap": 2039246356480,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": null,
+    "beta": null,
+    "fifty_two_week_high": 67000.0,
+    "fifty_two_week_low": 12500.0,
+    "revenue": 385640759296,
+    "profit_margin": 0.07966,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 46427564050
+    },
+    {
+      "date": "2025-06",
+      "value": 65324077460
+    },
+    {
+      "date": "2025-03",
+      "value": 25933149310
+    },
+    {
+      "date": "2024-12",
+      "value": 153049033330
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": -5052122120
+    },
+    {
+      "date": "2025-06",
+      "value": 14298600860
+    },
+    {
+      "date": "2025-03",
+      "value": 979357130
+    },
+    {
+      "date": "2024-12",
+      "value": 19773470150
+    }
+  ],
+  "news": []
+}

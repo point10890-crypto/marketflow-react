@@ -1,0 +1,117 @@
+{
+  "name": "LG전자",
+  "ticker": "066570.KS",
+  "result": "매수",
+  "date": "2026-03-22 19:17:17",
+  "elapsed": 2.2,
+  "consensus_score": 4.19,
+  "analyst_count": 27,
+  "recommendation_detail": {
+    "strongBuy": 10,
+    "buy": 12,
+    "hold": 5,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 117900.0,
+    "high": 170000.0,
+    "low": 77500.0,
+    "mean": 119425.93,
+    "median": 120000.0
+  },
+  "current_price": 117900.0,
+  "upside_potential": 1.3,
+  "key_stats": {
+    "name": "LGELECTRONICS",
+    "sector": "Technology",
+    "industry": "Consumer Electronics",
+    "market_cap": 21229773783040,
+    "pe_ratio": null,
+    "forward_pe": 9.684171,
+    "dividend_yield": 1.15,
+    "beta": 1.153,
+    "fifty_two_week_high": 151900.0,
+    "fifty_two_week_low": 64100.0,
+    "revenue": 89200883924992,
+    "profit_margin": 0.0107700005,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "LG전자에 대해 27명의 애널리스트가 제시한 컨센서스는 '매수' 의견(4.19/5.0)입니다. 목표가 평균은 119,426원으로 현재가 대비 소폭 상승 여력이 있습니다. 투자 판단은 제시된 데이터를 참고하여 신중하게 결정하시기 바랍니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 23852154000000
+    },
+    {
+      "date": "2025-09",
+      "value": 21873774000000
+    },
+    {
+      "date": "2025-06",
+      "value": 20735142000000
+    },
+    {
+      "date": "2025-03",
+      "value": 22739812000000
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": -828236000000
+    },
+    {
+      "date": "2025-09",
+      "value": 385190000000
+    },
+    {
+      "date": "2025-06",
+      "value": 604619000000
+    },
+    {
+      "date": "2025-03",
+      "value": 799006000000
+    }
+  ],
+  "news": [
+    {
+      "title": "Qualcomm leads new 6G coalition",
+      "summary": "An aim of the wide consortium - among its many objectives - is to address future connected mobility in vehicles.",
+      "url": "https://www.just-auto.com/news/qualcomm-leads-new-6g-coalition/",
+      "provider": "Just Auto",
+      "pub_time": "2026-03-04T11:43:22Z"
+    },
+    {
+      "title": "SWKS to Showcase 6G Power Amplifier: Will its Prospects Get a Boost?",
+      "summary": "Skyworks Solutions' 6G demo with MediaTek, the Qorvo deal and a new Q2 outlook could shape what is next for the chipmaker.",
+      "url": "https://finance.yahoo.com/news/swks-showcase-6g-power-amplifier-161000092.html",
+      "provider": "Zacks",
+      "pub_time": "2026-03-03T16:10:00Z"
+    },
+    {
+      "title": "Exclusive-Volvo Cars to recall 40,000 electric SUVs over battery fire risk",
+      "summary": "STOCKHOLM, Feb 23 (Reuters) - Volvo Cars will recall over 40,000 of its flagship electric EX30 SUVs because their battery packs risk overheating, it told Reuters on Monday, a move that could dent the ",
+      "url": "https://finance.yahoo.com/news/exclusive-volvo-cars-recall-40-153415347.html",
+      "provider": "Reuters",
+      "pub_time": "2026-02-23T15:34:15Z"
+    },
+    {
+      "title": "LG India quarterly profit drops as appliances, air unit slows",
+      "summary": "Feb 11 (Reuters) - LG Electronics India reported a near 62% drop in third-quarter profit on Wednesday, hit by weaker demand in its home appliances and air solutions business as cooler weather hurt",
+      "url": "https://sg.finance.yahoo.com/news/lg-electronics-indias-quarterly-profit-133024522.html",
+      "provider": "Reuters",
+      "pub_time": "2026-02-11T15:01:49Z"
+    },
+    {
+      "title": "Expanded LG Licensing Deal and 2026 Outlook Could Be A Game Changer For InterDigital (IDCC)",
+      "summary": "In January 2026, InterDigital, Inc. issued full-year 2026 guidance calling for revenue of US$675 million to US$775 million and diluted EPS of US$5.77 to US$8.51, alongside announcing a new patent lice",
+      "url": "https://finance.yahoo.com/news/expanded-lg-licensing-deal-2026-043544486.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-02-03T04:35:44Z"
+    }
+  ]
+}

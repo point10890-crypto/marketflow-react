@@ -1,0 +1,75 @@
+{
+  "name": "아남전자",
+  "ticker": "008700.KS",
+  "result": "데이터 없음",
+  "date": "2026-03-22 19:21:37",
+  "elapsed": 1.2,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 1774.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 1774.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "AnamElec",
+    "sector": "Technology",
+    "industry": "Consumer Electronics",
+    "market_cap": 136813232128,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": null,
+    "beta": 0.353,
+    "fifty_two_week_high": 1938.0,
+    "fifty_two_week_low": 1115.0,
+    "revenue": 215254663168,
+    "profit_margin": 0.02737,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 45540838000
+    },
+    {
+      "date": "2025-09",
+      "value": 63188145000
+    },
+    {
+      "date": "2025-06",
+      "value": 56979995000
+    },
+    {
+      "date": "2025-03",
+      "value": 51565498000
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 1177049000
+    },
+    {
+      "date": "2025-09",
+      "value": 938331000
+    },
+    {
+      "date": "2025-06",
+      "value": 1784475000
+    },
+    {
+      "date": "2025-03",
+      "value": 2066608000
+    }
+  ],
+  "news": []
+}

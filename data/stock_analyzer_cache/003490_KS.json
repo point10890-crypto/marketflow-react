@@ -1,0 +1,117 @@
+{
+  "name": "대한항공",
+  "ticker": "003490.KS",
+  "result": "적극 매수",
+  "date": "2026-03-22 19:18:57",
+  "elapsed": 2.5,
+  "consensus_score": 4.42,
+  "analyst_count": 12,
+  "recommendation_detail": {
+    "strongBuy": 5,
+    "buy": 7,
+    "hold": 0,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 26350.0,
+    "high": 39000.0,
+    "low": 26000.0,
+    "mean": 30916.666,
+    "median": 30000.0
+  },
+  "current_price": 26350.0,
+  "upside_potential": 17.3,
+  "key_stats": {
+    "name": "KAL",
+    "sector": "Industrials",
+    "industry": "Airlines",
+    "market_cap": 9731882090496,
+    "pe_ratio": null,
+    "forward_pe": 7.9525566,
+    "dividend_yield": 2.85,
+    "beta": 0.861,
+    "fifty_two_week_high": 29750.0,
+    "fifty_two_week_low": 19990.0,
+    "revenue": 25225542500352,
+    "profit_margin": 0.03091,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "대한항공(003490.KS)에 대해 12명의 애널리스트가 제시한 컨센서스는 '적극 매수' 의견입니다. 목표가 평균은 30,917원으로 현재가 26,350원 대비 17.3% 상승 여력이 있습니다. 이는 애널리스트들이 대한항공의 추가적인 주가 상승을 기대하고 있음을 시사합니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 6026889432500
+    },
+    {
+      "date": "2025-06",
+      "value": 6210705839440
+    },
+    {
+      "date": "2025-03",
+      "value": 6491861987200
+    },
+    {
+      "date": "2024-12",
+      "value": 4501764864970
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": -119343844950
+    },
+    {
+      "date": "2025-06",
+      "value": 484887153310
+    },
+    {
+      "date": "2025-03",
+      "value": 284714385360
+    },
+    {
+      "date": "2024-12",
+      "value": 297744346410
+    }
+  ],
+  "news": [
+    {
+      "title": "Airline shares battered, airfares surge as Iran war intensifies",
+      "summary": "<body><p>STORY: Airfares soared on Monday as the U.S.-Israeli war with Iran sent oil prices surging.</p><p>And airline stocks took a battering too as fears of a deep travel slump and a potential for t",
+      "url": "https://finance.yahoo.com/video/airline-shares-battered-airfares-surge-151213489.html",
+      "provider": "Reuters Videos",
+      "pub_time": "2026-03-09T15:12:13Z"
+    },
+    {
+      "title": "Airline stocks fall as Iran war drives up fuel prices",
+      "summary": "One analyst said he expects the war’s impact on the energy market to exceed that of the Russia-Ukraine war",
+      "url": "https://qz.com/airline-stock-war-iran-oil-jet-fuel",
+      "provider": "Quartz",
+      "pub_time": "2026-03-09T14:12:39Z"
+    },
+    {
+      "title": "Stocks are reeling after Asia chip-driven plunge",
+      "summary": "The S&P 500 fell nearly 1% on March 3 after South Korea's KOSPI Index tumbled 7.2%. The KOSPI drop is significant because the index comprises major chipmaker and consumer electronics giant Samsung, a ",
+      "url": "https://www.thestreet.com/investing/stocks-are-reeling-after-asia-chip-driven-plunge",
+      "provider": "TheStreet",
+      "pub_time": "2026-03-03T19:47:00Z"
+    },
+    {
+      "title": "Flying taxi maker Archer Aviation's stock pops on Anduril drone deal",
+      "summary": "Shares of Archer Aviation, the electric vertical takeoff and landing (eVTOL) maker, jumped on Tuesday after the company inked a deal with defense AI firm Anduril to power its drones.",
+      "url": "https://finance.yahoo.com/news/flying-taxi-maker-archer-aviations-stock-pops-on-anduril-drone-deal-153511213.html",
+      "provider": "Yahoo Finance",
+      "pub_time": "2025-11-18T17:40:19Z"
+    },
+    {
+      "title": "Archer Aviation Inc (ACHR) Q3 2025 Earnings Call Highlights: Strategic Moves and Global ...",
+      "summary": "Archer Aviation Inc (ACHR) strengthens its global presence with key partnerships and strategic acquisitions, while navigating certification delays and production limitations.",
+      "url": "https://finance.yahoo.com/news/archer-aviation-inc-achr-q3-051410338.html",
+      "provider": "GuruFocus.com",
+      "pub_time": "2025-11-07T05:14:10Z"
+    }
+  ]
+}

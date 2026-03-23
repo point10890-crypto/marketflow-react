@@ -1,0 +1,96 @@
+{
+  "name": "다날",
+  "ticker": "064260.KQ",
+  "result": "데이터 없음",
+  "date": "2026-03-22 19:18:20",
+  "elapsed": 2.4,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": {
+    "strongBuy": 0,
+    "buy": 0,
+    "hold": 0,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 7310.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 7310.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "DANAL",
+    "sector": "Technology",
+    "industry": "Software - Infrastructure",
+    "market_cap": 488256798720,
+    "pe_ratio": null,
+    "forward_pe": 348.09525,
+    "dividend_yield": null,
+    "beta": 1.031,
+    "fifty_two_week_high": 11450.0,
+    "fifty_two_week_low": 2420.0,
+    "revenue": 226003451904,
+    "profit_margin": -0.19365999,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 56298947930
+    },
+    {
+      "date": "2025-06",
+      "value": 56539413260
+    },
+    {
+      "date": "2025-03",
+      "value": 56667839930
+    },
+    {
+      "date": "2024-12",
+      "value": 56497257530
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": -35728680780
+    },
+    {
+      "date": "2025-06",
+      "value": -16767949350
+    },
+    {
+      "date": "2025-03",
+      "value": -1659260760
+    },
+    {
+      "date": "2024-12",
+      "value": 10387909630
+    }
+  ],
+  "news": [
+    {
+      "title": "South Korean stablecoin shares rise as stock market expects New Year breakthrough",
+      "summary": "Some shares up by 5% amid wider share index slump. Ruling party determined to push through won stablecoin regulation early next year. Regulators, finance chiefs say stablecoins are a ‘key topic’ for 2",
+      "url": "https://www.dlnews.com/articles/markets/south-korean-stablecoin-shares-rise/",
+      "provider": "DLNews",
+      "pub_time": "2025-12-18T16:15:51Z"
+    },
+    {
+      "title": "A Look at BTQ Technologies (NEOE:BTQ) Valuation After Launching Quantum-Secure Stablecoin Settlement with Danal",
+      "summary": "BTQ Technologies (NEOE:BTQ) has kicked off the world’s first large-scale field test of its Quantum Secure Stablecoin Settlement Network in partnership with Danal, a payment leader in Korea. This Proof",
+      "url": "https://finance.yahoo.com/news/look-btq-technologies-neoe-btq-135201356.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2025-10-04T13:52:01Z"
+    }
+  ]
+}

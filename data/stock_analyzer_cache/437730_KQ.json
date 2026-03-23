@@ -1,0 +1,75 @@
+{
+  "name": "삼현",
+  "ticker": "437730.KQ",
+  "result": "데이터 없음",
+  "date": "2026-03-22 19:16:52",
+  "elapsed": 2.1,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 55500.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 55500.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "SAMHYUN",
+    "sector": "Industrials",
+    "industry": "Electrical Equipment & Parts",
+    "market_cap": 1746397298688,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": 0.09,
+    "beta": null,
+    "fifty_two_week_high": 76900.0,
+    "fifty_two_week_low": 8110.0,
+    "revenue": 100077543424,
+    "profit_margin": 0.06906,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 22486764010
+    },
+    {
+      "date": "2025-06",
+      "value": 26859505070
+    },
+    {
+      "date": "2025-03",
+      "value": 24326626820
+    },
+    {
+      "date": "2024-12",
+      "value": 26404647600
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": -268131660
+    },
+    {
+      "date": "2025-06",
+      "value": 3263530100
+    },
+    {
+      "date": "2025-03",
+      "value": 2623359950
+    },
+    {
+      "date": "2024-12",
+      "value": 1292741270
+    }
+  ],
+  "news": []
+}
