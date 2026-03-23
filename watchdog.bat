@@ -59,4 +59,14 @@ if "%FLASK_STATUS2%"=="200" (
     %PYTHON% -c "import os,requests; os.chdir(r'%PROJECT%'); from dotenv import load_dotenv; load_dotenv(); t=os.getenv('TELEGRAM_BOT_TOKEN'); c=os.getenv('TELEGRAM_CHAT_ID'); requests.post(f'https://api.telegram.org/bot{t}/sendMessage', json={'chat_id':c,'text':'🚨 MarketFlow Flask 재시작 실패!\n%TODAY% %NOW%\n❌ HTTP %FLASK_STATUS2%\n수동 확인 필요','parse_mode':'HTML'}, timeout=10) if t and c else None" >nul 2>&1
 )
 
+:: ── 스케줄러 데몬 헬스체크 ──
+tasklist /FI "WINDOWTITLE eq Scheduler-MarketFlow" 2>nul | findstr /I "python" >nul
+if errorlevel 1 (
+    echo [%TODAY% %NOW%] Scheduler DOWN - 재시작 중... >> "%LOG%"
+    start "Scheduler-MarketFlow" /MIN cmd /c "cd /d %PROJECT% && set PYTHONIOENCODING=utf-8 && %PYTHON% scheduler.py --daemon"
+    echo [%TODAY% %NOW%] Scheduler 재시작 완료 >> "%LOG%"
+) else (
+    echo [%TODAY% %NOW%] Scheduler OK >> "%LOG%"
+)
+
 exit /b 0
