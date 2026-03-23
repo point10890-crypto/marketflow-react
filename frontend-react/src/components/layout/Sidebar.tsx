@@ -241,6 +241,22 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                 )}
             </nav>
 
+            {/* Community */}
+            <div className="mx-3.5 mb-2 p-3 rounded-xl bg-gradient-to-r from-yellow-500/10 to-amber-500/10 border border-yellow-500/20">
+                <a
+                    href="https://open.kakao.com/o/gcvExOmi"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2.5 text-[13px] font-bold text-yellow-400 hover:text-yellow-300 transition-colors"
+                >
+                    <i className="fas fa-comments w-5 text-center"></i>
+                    <span>커뮤니티 단톡방</span>
+                </a>
+                <div className="mt-1.5 text-[10px] text-gray-500 pl-7">
+                    참여코드: <span className="text-yellow-400/80 font-mono">bitman88</span>
+                </div>
+            </div>
+
             {/* Data Status - bottom pinned */}
             <div className="px-3.5 pb-2 space-y-1">
                 <Link
