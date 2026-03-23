@@ -16,6 +16,15 @@ export default function LoginPage() {
         setLoading(true);
         try {
             await login(email, password);
+            // pending 유저는 승인 대기 페이지로
+            const stored = localStorage.getItem('auth_user');
+            if (stored) {
+                const parsed = JSON.parse(stored);
+                if (parsed.status && parsed.status !== 'approved' && parsed.role !== 'admin') {
+                    navigate('/pending-approval');
+                    return;
+                }
+            }
             navigate('/dashboard');
         } catch (err) {
             setError((err as Error).message || 'Invalid email or password');
