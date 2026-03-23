@@ -71,19 +71,24 @@ export async function fetchAPI<T>(endpoint: string): Promise<T> {
 
 export async function postAPI<T>(endpoint: string, body?: any): Promise<T> {
     const url = `${API_BASE}${endpoint}`;
-    const options: RequestInit = {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: body ? JSON.stringify(body) : undefined,
-    };
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
 
     try {
-        const response = await fetch(url, options);
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: { ...API_HEADERS, 'Content-Type': 'application/json' },
+            body: body ? JSON.stringify(body) : undefined,
+            signal: controller.signal,
+        });
+        clearTimeout(timeoutId);
         if (!response.ok) {
-            throw new Error(`API Error: ${endpoint} (${response.status})`);
+            const err = await response.json().catch(() => ({ error: `HTTP ${response.status}` }));
+            throw new Error(err.error || `API Error: ${endpoint} (${response.status})`);
         }
         return await response.json();
     } catch (error) {
+        clearTimeout(timeoutId);
         console.error(`[postAPI Error] ${url}:`, error);
         throw error;
     }
@@ -674,11 +679,7 @@ export interface TaskTriggerResponse { status: 'started' | 'already_running' | '
 // Chatbot API
 export const chatbotAPI = {
     sendMessage: (message: string) =>
-        fetch(`${API_BASE}/api/kr/chatbot`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message }),
-        }).then(r => r.json()),
+        postAPI<any>('/api/kr/chatbot', { message }),
     getWelcome: () => fetchAPI<{ message: string }>('/api/kr/chatbot/welcome'),
     getStatus: () => fetchAPI<any>('/api/kr/chatbot/status'),
 };
@@ -721,64 +722,85 @@ export interface SubscriptionRequest {
 
 // ── Authenticated API helpers (Bearer token 포함) ──
 
+function _handle401(status: number) {
+    if (status === 401) {
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('auth_user');
+        if (window.location.pathname !== '/login') {
+            window.location.href = '/login';
+        }
+    }
+}
+
+async function _authFetch(url: string, options: RequestInit): Promise<Response> {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
+    try {
+        const response = await fetch(url, { ...options, signal: controller.signal });
+        clearTimeout(timeoutId);
+        if (!response.ok) {
+            _handle401(response.status);
+            const err = await response.json().catch(() => ({ error: `HTTP ${response.status}` }));
+            throw new Error(err.error || `API Error: ${response.status}`);
+        }
+        return response;
+    } catch (error) {
+        clearTimeout(timeoutId);
+        throw error;
+    }
+}
+
 export async function fetchAuthAPI<T>(endpoint: string, apiToken?: string): Promise<T> {
     const headers: Record<string, string> = { ...API_HEADERS };
     if (apiToken) headers['Authorization'] = `Bearer ${apiToken}`;
-    const response = await fetch(`${API_BASE}${endpoint}`, { headers });
-    if (!response.ok) {
-        const err = await response.json().catch(() => ({ error: `HTTP ${response.status}` }));
-        throw new Error(err.error || `API Error: ${response.status}`);
-    }
+    const response = await _authFetch(`${API_BASE}${endpoint}`, { headers });
     return response.json();
 }
 
 export async function putAuthAPI<T>(endpoint: string, body?: any, apiToken?: string): Promise<T> {
     const headers: Record<string, string> = { ...API_HEADERS, 'Content-Type': 'application/json' };
     if (apiToken) headers['Authorization'] = `Bearer ${apiToken}`;
-    const response = await fetch(`${API_BASE}${endpoint}`, {
+    const response = await _authFetch(`${API_BASE}${endpoint}`, {
         method: 'PUT', headers,
         body: body ? JSON.stringify(body) : undefined,
     });
-    if (!response.ok) {
-        const err = await response.json().catch(() => ({ error: `HTTP ${response.status}` }));
-        throw new Error(err.error || `API Error: ${response.status}`);
-    }
     return response.json();
 }
 
 export async function postAuthAPI<T>(endpoint: string, body?: any, apiToken?: string): Promise<T> {
     const headers: Record<string, string> = { ...API_HEADERS, 'Content-Type': 'application/json' };
     if (apiToken) headers['Authorization'] = `Bearer ${apiToken}`;
-    const response = await fetch(`${API_BASE}${endpoint}`, {
+    const response = await _authFetch(`${API_BASE}${endpoint}`, {
         method: 'POST', headers,
         body: body ? JSON.stringify(body) : undefined,
     });
-    if (!response.ok) {
-        const err = await response.json().catch(() => ({ error: `HTTP ${response.status}` }));
-        throw new Error(err.error || `API Error: ${response.status}`);
-    }
     return response.json();
 }
 
 export async function deleteAuthAPI<T>(endpoint: string, apiToken?: string): Promise<T> {
     const headers: Record<string, string> = { ...API_HEADERS };
     if (apiToken) headers['Authorization'] = `Bearer ${apiToken}`;
-    const response = await fetch(`${API_BASE}${endpoint}`, { method: 'DELETE', headers });
-    if (!response.ok) {
-        const err = await response.json().catch(() => ({ error: `HTTP ${response.status}` }));
-        throw new Error(err.error || `API Error: ${response.status}`);
-    }
+    const response = await _authFetch(`${API_BASE}${endpoint}`, { method: 'DELETE', headers });
     return response.json();
 }
 
 export async function putAPI<T>(endpoint: string, body?: any): Promise<T> {
-    const response = await fetch(`${API_BASE}${endpoint}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: body ? JSON.stringify(body) : undefined,
-    });
-    if (!response.ok) throw new Error(`API Error: ${response.status}`);
-    return response.json();
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
+    try {
+        const response = await fetch(`${API_BASE}${endpoint}`, {
+            method: 'PUT',
+            headers: { ...API_HEADERS, 'Content-Type': 'application/json' },
+            body: body ? JSON.stringify(body) : undefined,
+            signal: controller.signal,
+        });
+        clearTimeout(timeoutId);
+        if (!response.ok) throw new Error(`API Error: ${response.status}`);
+        return await response.json();
+    } catch (error) {
+        clearTimeout(timeoutId);
+        throw error;
+    }
 }
 
 // ── Admin API (Bearer token 기반) ──
@@ -804,14 +826,6 @@ export const subscriptionAPI = {
 
 // ── Stripe API (requires auth token) ──
 export const stripeAPI = {
-    createCheckout: (apiToken: string) =>
-        fetch(`${API_BASE}/api/stripe/create-checkout`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiToken}` },
-        }).then(r => r.json()),
-    getPortal: (apiToken: string) =>
-        fetch(`${API_BASE}/api/stripe/portal`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiToken}` },
-        }).then(r => r.json()),
+    createCheckout: (apiToken: string) => postAuthAPI<{ url: string }>('/api/stripe/create-checkout', undefined, apiToken),
+    getPortal: (apiToken: string) => postAuthAPI<{ url: string }>('/api/stripe/portal', undefined, apiToken),
 };

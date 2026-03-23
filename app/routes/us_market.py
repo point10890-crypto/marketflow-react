@@ -56,7 +56,7 @@ def _fetch_portfolio_live():
                 current_val = float(hist['Close'].iloc[-1])
                 prev_val = float(hist['Close'].iloc[-2])
                 change = current_val - prev_val
-                change_pct = (change / prev_val) * 100
+                change_pct = (change / prev_val) * 100 if prev_val else 0.0
                 market_indices.append({
                     'name': name, 'price': f"{current_val:,.2f}",
                     'change': f"{change:+,.2f}", 'change_pct': change_pct,
