@@ -1,198 +1,198 @@
 {
   "metadata": {
-    "as_of_date": "2026-03-20",
-    "fetch_time": "2026-03-20T18:24:44.660234",
+    "as_of_date": "2026-03-25",
+    "fetch_time": "2026-03-25T04:04:10.736426",
     "source": "yfinance_options",
     "data_quality": "actual",
     "row_count": 15
   },
-  "timestamp": "2026-03-20T18:24:44.660237",
+  "timestamp": "2026-03-25T04:04:10.736429",
   "total_analyzed": 15,
   "watchlist_source": "output/smart_money_picks_v2.csv",
   "options_flow": [
     {
-      "ticker": "APP",
-      "expiration": "2026-03-20",
-      "current_price": 439.92,
+      "ticker": "AMD",
+      "expiration": "2026-03-27",
+      "current_price": 205.57,
       "metrics": {
-        "pc_volume_ratio": 2.246,
-        "pc_oi_ratio": 0.106,
-        "total_call_volume": 17403,
-        "total_put_volume": 39093,
-        "total_call_oi": 576,
-        "total_put_oi": 61,
-        "call_iv": 165.9,
-        "put_iv": 26.2
+        "pc_volume_ratio": 0.907,
+        "pc_oi_ratio": 1.751,
+        "total_call_volume": 95268,
+        "total_put_volume": 86365,
+        "total_call_oi": 104126,
+        "total_put_oi": 182364,
+        "call_iv": 73.3,
+        "put_iv": 137.3
       },
       "key_levels": {
-        "max_call_strike": 175.0,
-        "max_call_oi": 85,
-        "max_put_strike": 920.0,
-        "max_put_oi": 18
+        "max_call_strike": 210.0,
+        "max_call_oi": 12770,
+        "max_put_strike": 160.0,
+        "max_put_oi": 35225
       },
       "unusual_activity": {
-        "unusual_call_count": 12,
-        "unusual_put_count": 11,
+        "unusual_call_count": 10,
+        "unusual_put_count": 10,
         "top_unusual_calls": [
           {
-            "strike": 450.0,
-            "volume": 2347.0,
-            "openInterest": 0
+            "strike": 205.0,
+            "volume": 12699.0,
+            "openInterest": 5679
           },
           {
-            "strike": 460.0,
-            "volume": 2281.0,
-            "openInterest": 0
+            "strike": 210.0,
+            "volume": 10831.0,
+            "openInterest": 12770
           },
           {
-            "strike": 500.0,
-            "volume": 1929.0,
-            "openInterest": 0
+            "strike": 215.0,
+            "volume": 8953.0,
+            "openInterest": 11904
           }
         ],
         "top_unusual_puts": [
           {
-            "strike": 550.0,
-            "volume": 7847.0,
-            "openInterest": 0
+            "strike": 200.0,
+            "volume": 12670.0,
+            "openInterest": 6965
           },
           {
-            "strike": 520.0,
-            "volume": 3722.0,
-            "openInterest": 0
+            "strike": 210.0,
+            "volume": 11456.0,
+            "openInterest": 966
           },
           {
-            "strike": 500.0,
-            "volume": 3510.0,
-            "openInterest": 0
+            "strike": 202.5,
+            "volume": 9006.0,
+            "openInterest": 1569
           }
         ]
       },
       "signal": {
-        "sentiment": "🔴 Very Bearish",
-        "sentiment_score": 10,
+        "sentiment": "🟡 Neutral",
+        "sentiment_score": 50,
         "activity": "⚡ High Unusual Activity"
       }
     },
     {
-      "ticker": "AMD",
-      "expiration": "2026-03-20",
-      "current_price": 205.27,
+      "ticker": "APP",
+      "expiration": "2026-03-27",
+      "current_price": 434.33,
       "metrics": {
-        "pc_volume_ratio": 1.545,
-        "pc_oi_ratio": 0,
-        "total_call_volume": 142298,
-        "total_put_volume": 219911,
-        "total_call_oi": 0,
-        "total_put_oi": 0,
-        "call_iv": 24.0,
-        "put_iv": 73.9
+        "pc_volume_ratio": 0.571,
+        "pc_oi_ratio": 0.559,
+        "total_call_volume": 13420,
+        "total_put_volume": 7659,
+        "total_call_oi": 20917,
+        "total_put_oi": 11702,
+        "call_iv": 127.9,
+        "put_iv": 132.7
       },
       "key_levels": {
-        "max_call_strike": 45.0,
-        "max_call_oi": 0,
-        "max_put_strike": 45.0,
-        "max_put_oi": 0
+        "max_call_strike": 500.0,
+        "max_call_oi": 4569,
+        "max_put_strike": 265.0,
+        "max_put_oi": 1000
       },
       "unusual_activity": {
         "unusual_call_count": 11,
-        "unusual_put_count": 10,
+        "unusual_put_count": 7,
         "top_unusual_calls": [
           {
-            "strike": 200.0,
-            "volume": 21799,
-            "openInterest": 0
+            "strike": 500.0,
+            "volume": 3699.0,
+            "openInterest": 4569
           },
           {
-            "strike": 205.0,
-            "volume": 18716,
-            "openInterest": 0
+            "strike": 490.0,
+            "volume": 1211.0,
+            "openInterest": 722
           },
           {
-            "strike": 210.0,
-            "volume": 15846,
-            "openInterest": 0
+            "strike": 470.0,
+            "volume": 964.0,
+            "openInterest": 1565
           }
         ],
         "top_unusual_puts": [
           {
-            "strike": 195.0,
-            "volume": 25756.0,
-            "openInterest": 0.0
+            "strike": 440.0,
+            "volume": 1838.0,
+            "openInterest": 160
           },
           {
-            "strike": 220.0,
-            "volume": 23765.0,
-            "openInterest": 0.0
+            "strike": 265.0,
+            "volume": 1000.0,
+            "openInterest": 1000
           },
           {
-            "strike": 230.0,
-            "volume": 18397.0,
-            "openInterest": 0.0
+            "strike": 400.0,
+            "volume": 717.0,
+            "openInterest": 667
           }
         ]
       },
       "signal": {
-        "sentiment": "🔴 Very Bearish",
-        "sentiment_score": 10,
+        "sentiment": "🟢 Bullish",
+        "sentiment_score": 70,
         "activity": "⚡ High Unusual Activity"
       }
     },
     {
       "ticker": "AMAT",
-      "expiration": "2026-03-20",
-      "current_price": 357.21,
+      "expiration": "2026-03-27",
+      "current_price": 375.97,
       "metrics": {
-        "pc_volume_ratio": 0.552,
-        "pc_oi_ratio": 0.0,
-        "total_call_volume": 6209,
-        "total_put_volume": 3426,
-        "total_call_oi": 81,
-        "total_put_oi": 0,
-        "call_iv": 69.1,
-        "put_iv": 37.4
+        "pc_volume_ratio": 0.618,
+        "pc_oi_ratio": 1.053,
+        "total_call_volume": 4576,
+        "total_put_volume": 2826,
+        "total_call_oi": 9428,
+        "total_put_oi": 9926,
+        "call_iv": 118.7,
+        "put_iv": 117.0
       },
       "key_levels": {
-        "max_call_strike": 100.0,
-        "max_call_oi": 45,
-        "max_put_strike": 65.0,
-        "max_put_oi": 0
+        "max_call_strike": 370.0,
+        "max_call_oi": 1142,
+        "max_put_strike": 325.0,
+        "max_put_oi": 864
       },
       "unusual_activity": {
-        "unusual_call_count": 8,
-        "unusual_put_count": 8,
+        "unusual_call_count": 6,
+        "unusual_put_count": 7,
         "top_unusual_calls": [
           {
-            "strike": 350.0,
-            "volume": 1072.0,
-            "openInterest": 0
+            "strike": 420.0,
+            "volume": 1008.0,
+            "openInterest": 56
           },
           {
-            "strike": 360.0,
-            "volume": 879.0,
-            "openInterest": 0
+            "strike": 392.5,
+            "volume": 761.0,
+            "openInterest": 89
           },
           {
             "strike": 380.0,
-            "volume": 607.0,
-            "openInterest": 0
+            "volume": 472.0,
+            "openInterest": 988
           }
         ],
         "top_unusual_puts": [
           {
-            "strike": 340.0,
-            "volume": 490.0,
-            "openInterest": 0.0
+            "strike": 365.0,
+            "volume": 390.0,
+            "openInterest": 104
           },
           {
-            "strike": 360.0,
-            "volume": 345.0,
-            "openInterest": 0.0
+            "strike": 350.0,
+            "volume": 231.0,
+            "openInterest": 820
           },
           {
-            "strike": 410.0,
-            "volume": 300.0,
-            "openInterest": 0.0
+            "strike": 355.0,
+            "volume": 161.0,
+            "openInterest": 435
           }
         ]
       },
@@ -204,560 +204,363 @@
     },
     {
       "ticker": "AMZN",
-      "expiration": "2026-03-20",
-      "current_price": 208.76,
+      "expiration": "2026-03-25",
+      "current_price": 207.79,
       "metrics": {
-        "pc_volume_ratio": 1.295,
-        "pc_oi_ratio": 0,
-        "total_call_volume": 137011,
-        "total_put_volume": 177429,
-        "total_call_oi": 0,
-        "total_put_oi": 0,
-        "call_iv": 24.6,
-        "put_iv": 62.4
+        "pc_volume_ratio": 0.884,
+        "pc_oi_ratio": 0.8,
+        "total_call_volume": 45099,
+        "total_put_volume": 39871,
+        "total_call_oi": 26032,
+        "total_put_oi": 20826,
+        "call_iv": 106.4,
+        "put_iv": 67.8
       },
       "key_levels": {
-        "max_call_strike": 85.0,
-        "max_call_oi": 0,
-        "max_put_strike": 85.0,
-        "max_put_oi": 0
-      },
-      "unusual_activity": {
-        "unusual_call_count": 7,
-        "unusual_put_count": 6,
-        "top_unusual_calls": [
-          {
-            "strike": 210.0,
-            "volume": 35096,
-            "openInterest": 0
-          },
-          {
-            "strike": 212.5,
-            "volume": 20933,
-            "openInterest": 0
-          },
-          {
-            "strike": 215.0,
-            "volume": 20065,
-            "openInterest": 0
-          }
-        ],
-        "top_unusual_puts": [
-          {
-            "strike": 235.0,
-            "volume": 44634.0,
-            "openInterest": 0
-          },
-          {
-            "strike": 230.0,
-            "volume": 35002.0,
-            "openInterest": 0
-          },
-          {
-            "strike": 205.0,
-            "volume": 16755.0,
-            "openInterest": 0
-          }
-        ]
-      },
-      "signal": {
-        "sentiment": "🔴 Bearish",
-        "sentiment_score": 30,
-        "activity": "⚡ High Unusual Activity"
-      }
-    },
-    {
-      "ticker": "APO",
-      "expiration": "2026-03-20",
-      "current_price": 111.37,
-      "metrics": {
-        "pc_volume_ratio": 49.522,
-        "pc_oi_ratio": 0.023,
-        "total_call_volume": 393,
-        "total_put_volume": 19462,
-        "total_call_oi": 433,
-        "total_put_oi": 10,
-        "call_iv": 168.1,
-        "put_iv": 22.2
-      },
-      "key_levels": {
-        "max_call_strike": 200.0,
-        "max_call_oi": 139,
-        "max_put_strike": 175.0,
-        "max_put_oi": 10
-      },
-      "unusual_activity": {
-        "unusual_call_count": 4,
-        "unusual_put_count": 4,
-        "top_unusual_calls": [
-          {
-            "strike": 120.0,
-            "volume": 58.0,
-            "openInterest": 0
-          },
-          {
-            "strike": 112.0,
-            "volume": 41.0,
-            "openInterest": 0
-          },
-          {
-            "strike": 110.0,
-            "volume": 40.0,
-            "openInterest": 0
-          }
-        ],
-        "top_unusual_puts": [
-          {
-            "strike": 120.0,
-            "volume": 8410.0,
-            "openInterest": 0
-          },
-          {
-            "strike": 125.0,
-            "volume": 2740.0,
-            "openInterest": 0
-          },
-          {
-            "strike": 135.0,
-            "volume": 2640.0,
-            "openInterest": 0
-          }
-        ]
-      },
-      "signal": {
-        "sentiment": "🔴 Very Bearish",
-        "sentiment_score": 10,
-        "activity": "⚡ High Unusual Activity"
-      }
-    },
-    {
-      "ticker": "T",
-      "expiration": "2026-03-20",
-      "current_price": 27.74,
-      "metrics": {
-        "pc_volume_ratio": 0.356,
-        "pc_oi_ratio": 0.0,
-        "total_call_volume": 8268,
-        "total_put_volume": 2942,
-        "total_call_oi": 108,
-        "total_put_oi": 0,
-        "call_iv": 33.9,
-        "put_iv": 23.5
-      },
-      "key_levels": {
-        "max_call_strike": 38.0,
-        "max_call_oi": 77,
-        "max_put_strike": 13.0,
-        "max_put_oi": 0
-      },
-      "unusual_activity": {
-        "unusual_call_count": 4,
-        "unusual_put_count": 3,
-        "top_unusual_calls": [
-          {
-            "strike": 28.0,
-            "volume": 2410,
-            "openInterest": 0
-          },
-          {
-            "strike": 27.5,
-            "volume": 1880,
-            "openInterest": 0
-          },
-          {
-            "strike": 27.0,
-            "volume": 1169,
-            "openInterest": 0
-          }
-        ],
-        "top_unusual_puts": [
-          {
-            "strike": 27.5,
-            "volume": 1028,
-            "openInterest": 0
-          },
-          {
-            "strike": 27.0,
-            "volume": 504,
-            "openInterest": 0
-          },
-          {
-            "strike": 28.0,
-            "volume": 240,
-            "openInterest": 0
-          }
-        ]
-      },
-      "signal": {
-        "sentiment": "🟢 Very Bullish",
-        "sentiment_score": 90,
-        "activity": "⚡ High Unusual Activity"
-      }
-    },
-    {
-      "ticker": "ALGN",
-      "expiration": "2026-03-20",
-      "current_price": 176.25,
-      "metrics": {
-        "pc_volume_ratio": 2.188,
-        "pc_oi_ratio": 0.505,
-        "total_call_volume": 346,
-        "total_put_volume": 757,
-        "total_call_oi": 325,
-        "total_put_oi": 164,
-        "call_iv": 107.3,
-        "put_iv": 238.6
-      },
-      "key_levels": {
-        "max_call_strike": 125.0,
-        "max_call_oi": 86,
-        "max_put_strike": 65.0,
-        "max_put_oi": 58
+        "max_call_strike": 215.0,
+        "max_call_oi": 6262,
+        "max_put_strike": 202.5,
+        "max_put_oi": 3966
       },
       "unusual_activity": {
         "unusual_call_count": 4,
         "unusual_put_count": 2,
         "top_unusual_calls": [
           {
-            "strike": 192.5,
-            "volume": 122.0,
-            "openInterest": 0
+            "strike": 210.0,
+            "volume": 16930.0,
+            "openInterest": 3572
           },
           {
-            "strike": 170.0,
-            "volume": 33.0,
-            "openInterest": 0
+            "strike": 212.5,
+            "volume": 9380.0,
+            "openInterest": 2741
+          },
+          {
+            "strike": 207.5,
+            "volume": 7595.0,
+            "openInterest": 1522
+          }
+        ],
+        "top_unusual_puts": [
+          {
+            "strike": 205.0,
+            "volume": 12231.0,
+            "openInterest": 1530
+          },
+          {
+            "strike": 207.5,
+            "volume": 10785.0,
+            "openInterest": 1289
+          }
+        ]
+      },
+      "signal": {
+        "sentiment": "🟡 Neutral",
+        "sentiment_score": 50,
+        "activity": "⚡ High Unusual Activity"
+      }
+    },
+    {
+      "ticker": "APO",
+      "expiration": "2026-03-27",
+      "current_price": 110.05,
+      "metrics": {
+        "pc_volume_ratio": 4.061,
+        "pc_oi_ratio": 7.859,
+        "total_call_volume": 960,
+        "total_put_volume": 3899,
+        "total_call_oi": 2082,
+        "total_put_oi": 16362,
+        "call_iv": 89.7,
+        "put_iv": 90.8
+      },
+      "key_levels": {
+        "max_call_strike": 120.0,
+        "max_call_oi": 394,
+        "max_put_strike": 105.0,
+        "max_put_oi": 9745
+      },
+      "unusual_activity": {
+        "unusual_call_count": 4,
+        "unusual_put_count": 1,
+        "top_unusual_calls": [
+          {
+            "strike": 110.0,
+            "volume": 276.0,
+            "openInterest": 44
+          },
+          {
+            "strike": 108.0,
+            "volume": 157.0,
+            "openInterest": 112
+          },
+          {
+            "strike": 111.0,
+            "volume": 156.0,
+            "openInterest": 29
+          }
+        ],
+        "top_unusual_puts": [
+          {
+            "strike": 105.0,
+            "volume": 2935.0,
+            "openInterest": 9745
+          }
+        ]
+      },
+      "signal": {
+        "sentiment": "🔴 Very Bearish",
+        "sentiment_score": 10,
+        "activity": "📈 Heavy Call Buying"
+      }
+    },
+    {
+      "ticker": "T",
+      "expiration": "2026-03-27",
+      "current_price": 28.98,
+      "metrics": {
+        "pc_volume_ratio": 0.638,
+        "pc_oi_ratio": 0.709,
+        "total_call_volume": 8019,
+        "total_put_volume": 5115,
+        "total_call_oi": 31613,
+        "total_put_oi": 22421,
+        "call_iv": 123.2,
+        "put_iv": 74.4
+      },
+      "key_levels": {
+        "max_call_strike": 29.0,
+        "max_call_oi": 14754,
+        "max_put_strike": 27.0,
+        "max_put_oi": 11020
+      },
+      "unusual_activity": {
+        "unusual_call_count": 3,
+        "unusual_put_count": 2,
+        "top_unusual_calls": [
+          {
+            "strike": 30.0,
+            "volume": 2875.0,
+            "openInterest": 2109
+          },
+          {
+            "strike": 29.5,
+            "volume": 2034.0,
+            "openInterest": 1715
+          },
+          {
+            "strike": 29.0,
+            "volume": 1149.0,
+            "openInterest": 14754
+          }
+        ],
+        "top_unusual_puts": [
+          {
+            "strike": 29.0,
+            "volume": 2605.0,
+            "openInterest": 1101
+          },
+          {
+            "strike": 28.5,
+            "volume": 1747.0,
+            "openInterest": 1812
+          }
+        ]
+      },
+      "signal": {
+        "sentiment": "🟢 Bullish",
+        "sentiment_score": 70,
+        "activity": "😴 Normal Activity"
+      }
+    },
+    {
+      "ticker": "AMT",
+      "expiration": "2026-04-17",
+      "current_price": 171.15,
+      "metrics": {
+        "pc_volume_ratio": 0.231,
+        "pc_oi_ratio": 1.593,
+        "total_call_volume": 506,
+        "total_put_volume": 117,
+        "total_call_oi": 4874,
+        "total_put_oi": 7762,
+        "call_iv": 65.8,
+        "put_iv": 56.7
+      },
+      "key_levels": {
+        "max_call_strike": 200.0,
+        "max_call_oi": 977,
+        "max_put_strike": 170.0,
+        "max_put_oi": 2355
+      },
+      "unusual_activity": {
+        "unusual_call_count": 2,
+        "unusual_put_count": 3,
+        "top_unusual_calls": [
+          {
+            "strike": 185.0,
+            "volume": 293.0,
+            "openInterest": 724
           },
           {
             "strike": 180.0,
-            "volume": 32.0,
-            "openInterest": 0
+            "volume": 135.0,
+            "openInterest": 252
           }
         ],
         "top_unusual_puts": [
           {
             "strike": 165.0,
-            "volume": 502.0,
-            "openInterest": 0
+            "volume": 27.0,
+            "openInterest": 525
           },
           {
-            "strike": 175.0,
-            "volume": 101.0,
-            "openInterest": 0
+            "strike": 170.0,
+            "volume": 22.0,
+            "openInterest": 2355
+          },
+          {
+            "strike": 160.0,
+            "volume": 21.0,
+            "openInterest": 342
           }
         ]
       },
       "signal": {
-        "sentiment": "🔴 Very Bearish",
-        "sentiment_score": 10,
-        "activity": "⚡ High Unusual Activity"
-      }
-    },
-    {
-      "ticker": "AMT",
-      "expiration": "2026-03-20",
-      "current_price": 182.76,
-      "metrics": {
-        "pc_volume_ratio": 4.979,
-        "pc_oi_ratio": 2.885,
-        "total_call_volume": 331,
-        "total_put_volume": 1648,
-        "total_call_oi": 52,
-        "total_put_oi": 150,
-        "call_iv": 104.5,
-        "put_iv": 164.7
-      },
-      "key_levels": {
-        "max_call_strike": 280.0,
-        "max_call_oi": 25,
-        "max_put_strike": 130.0,
-        "max_put_oi": 134
-      },
-      "unusual_activity": {
-        "unusual_call_count": 3,
-        "unusual_put_count": 3,
-        "top_unusual_calls": [
-          {
-            "strike": 190.0,
-            "volume": 122.0,
-            "openInterest": 0
-          },
-          {
-            "strike": 185.0,
-            "volume": 83.0,
-            "openInterest": 0
-          },
-          {
-            "strike": 195.0,
-            "volume": 42.0,
-            "openInterest": 0
-          }
-        ],
-        "top_unusual_puts": [
-          {
-            "strike": 195.0,
-            "volume": 710.0,
-            "openInterest": 0
-          },
-          {
-            "strike": 200.0,
-            "volume": 413.0,
-            "openInterest": 0
-          },
-          {
-            "strike": 210.0,
-            "volume": 306.0,
-            "openInterest": 0
-          }
-        ]
-      },
-      "signal": {
-        "sentiment": "🔴 Very Bearish",
-        "sentiment_score": 10,
+        "sentiment": "🟢 Very Bullish",
+        "sentiment_score": 90,
         "activity": "😴 Normal Activity"
       }
     },
     {
-      "ticker": "AKAM",
-      "expiration": "2026-03-20",
-      "current_price": 110.0,
+      "ticker": "ALGN",
+      "expiration": "2026-03-27",
+      "current_price": 181.36,
       "metrics": {
-        "pc_volume_ratio": 0.601,
-        "pc_oi_ratio": 3.417,
-        "total_call_volume": 599,
-        "total_put_volume": 360,
-        "total_call_oi": 12,
-        "total_put_oi": 41,
-        "call_iv": 19.0,
-        "put_iv": 201.0
+        "pc_volume_ratio": 0.884,
+        "pc_oi_ratio": 1.902,
+        "total_call_volume": 251,
+        "total_put_volume": 222,
+        "total_call_oi": 492,
+        "total_put_oi": 936,
+        "call_iv": 87.5,
+        "put_iv": 132.5
       },
       "key_levels": {
-        "max_call_strike": 60.0,
-        "max_call_oi": 7,
-        "max_put_strike": 50.0,
-        "max_put_oi": 28
-      },
-      "unusual_activity": {
-        "unusual_call_count": 2,
-        "unusual_put_count": 3,
-        "top_unusual_calls": [
-          {
-            "strike": 110.0,
-            "volume": 187.0,
-            "openInterest": 0
-          },
-          {
-            "strike": 140.0,
-            "volume": 120.0,
-            "openInterest": 0
-          }
-        ],
-        "top_unusual_puts": [
-          {
-            "strike": 100.0,
-            "volume": 106.0,
-            "openInterest": 0
-          },
-          {
-            "strike": 110.0,
-            "volume": 103.0,
-            "openInterest": 0
-          },
-          {
-            "strike": 105.0,
-            "volume": 79.0,
-            "openInterest": 0
-          }
-        ]
-      },
-      "signal": {
-        "sentiment": "🟢 Bullish",
-        "sentiment_score": 70,
-        "activity": "😴 Normal Activity"
-      }
-    },
-    {
-      "ticker": "APD",
-      "expiration": "2026-03-20",
-      "current_price": 284.15,
-      "metrics": {
-        "pc_volume_ratio": 1.155,
-        "pc_oi_ratio": 1.969,
-        "total_call_volume": 213,
-        "total_put_volume": 246,
-        "total_call_oi": 65,
-        "total_put_oi": 128,
-        "call_iv": 165.0,
-        "put_iv": 297.6
-      },
-      "key_levels": {
-        "max_call_strike": 390.0,
-        "max_call_oi": 13,
-        "max_put_strike": 320.0,
-        "max_put_oi": 42
-      },
-      "unusual_activity": {
-        "unusual_call_count": 2,
-        "unusual_put_count": 3,
-        "top_unusual_calls": [
-          {
-            "strike": 290.0,
-            "volume": 76.0,
-            "openInterest": 0
-          },
-          {
-            "strike": 300.0,
-            "volume": 52.0,
-            "openInterest": 0
-          }
-        ],
-        "top_unusual_puts": [
-          {
-            "strike": 175.0,
-            "volume": 116.0,
-            "openInterest": 0
-          },
-          {
-            "strike": 320.0,
-            "volume": 44.0,
-            "openInterest": 42
-          },
-          {
-            "strike": 280.0,
-            "volume": 36.0,
-            "openInterest": 0
-          }
-        ]
-      },
-      "signal": {
-        "sentiment": "🔴 Bearish",
-        "sentiment_score": 30,
-        "activity": "😴 Normal Activity"
-      }
-    },
-    {
-      "ticker": "AWK",
-      "expiration": "2026-03-20",
-      "current_price": 137.1,
-      "metrics": {
-        "pc_volume_ratio": 1.415,
-        "pc_oi_ratio": 0.327,
-        "total_call_volume": 195,
-        "total_put_volume": 276,
-        "total_call_oi": 110,
-        "total_put_oi": 36,
-        "call_iv": 73.5,
-        "put_iv": 149.6
-      },
-      "key_levels": {
-        "max_call_strike": 165.0,
-        "max_call_oi": 46,
-        "max_put_strike": 150.0,
-        "max_put_oi": 29
+        "max_call_strike": 182.5,
+        "max_call_oi": 71,
+        "max_put_strike": 170.0,
+        "max_put_oi": 257
       },
       "unusual_activity": {
         "unusual_call_count": 1,
-        "unusual_put_count": 1,
+        "unusual_put_count": 2,
         "top_unusual_calls": [
           {
-            "strike": 155.0,
-            "volume": 105.0,
-            "openInterest": 0
+            "strike": 185.0,
+            "volume": 122.0,
+            "openInterest": 59
           }
         ],
         "top_unusual_puts": [
           {
-            "strike": 130.0,
-            "volume": 214.0,
-            "openInterest": 0
+            "strike": 152.5,
+            "volume": 60.0,
+            "openInterest": 71
+          },
+          {
+            "strike": 162.5,
+            "volume": 60.0,
+            "openInterest": 28
           }
         ]
       },
       "signal": {
-        "sentiment": "🔴 Very Bearish",
-        "sentiment_score": 10,
+        "sentiment": "🟡 Neutral",
+        "sentiment_score": 50,
         "activity": "😴 Normal Activity"
       }
     },
     {
       "ticker": "ALL",
-      "expiration": "2026-03-20",
-      "current_price": 204.07,
+      "expiration": "2026-04-17",
+      "current_price": 210.02,
       "metrics": {
-        "pc_volume_ratio": 1.115,
-        "pc_oi_ratio": 8.71,
-        "total_call_volume": 243,
-        "total_put_volume": 271,
-        "total_call_oi": 31,
-        "total_put_oi": 270,
-        "call_iv": 136.9,
-        "put_iv": 224.9
+        "pc_volume_ratio": 0.449,
+        "pc_oi_ratio": 0.8,
+        "total_call_volume": 323,
+        "total_put_volume": 145,
+        "total_call_oi": 3542,
+        "total_put_oi": 2833,
+        "call_iv": 51.0,
+        "put_iv": 70.1
       },
       "key_levels": {
-        "max_call_strike": 270.0,
-        "max_call_oi": 19,
-        "max_put_strike": 155.0,
-        "max_put_oi": 136
+        "max_call_strike": 220.0,
+        "max_call_oi": 1306,
+        "max_put_strike": 200.0,
+        "max_put_oi": 957
       },
       "unusual_activity": {
         "unusual_call_count": 1,
         "unusual_put_count": 1,
         "top_unusual_calls": [
           {
-            "strike": 155.0,
-            "volume": 60.0,
-            "openInterest": 0
+            "strike": 220.0,
+            "volume": 175.0,
+            "openInterest": 1306
           }
         ],
         "top_unusual_puts": [
           {
-            "strike": 185.0,
-            "volume": 168.0,
-            "openInterest": 0
+            "strike": 210.0,
+            "volume": 76.0,
+            "openInterest": 153
           }
         ]
       },
       "signal": {
-        "sentiment": "🔴 Bearish",
-        "sentiment_score": 30,
+        "sentiment": "🟢 Very Bullish",
+        "sentiment_score": 90,
         "activity": "😴 Normal Activity"
       }
     },
     {
       "ticker": "AON",
-      "expiration": "2026-03-20",
-      "current_price": 316.99,
+      "expiration": "2026-04-17",
+      "current_price": 327.99,
       "metrics": {
-        "pc_volume_ratio": 0.239,
-        "pc_oi_ratio": 0.0,
-        "total_call_volume": 230,
-        "total_put_volume": 55,
-        "total_call_oi": 24,
-        "total_put_oi": 0,
-        "call_iv": 61.7,
-        "put_iv": 22.8
+        "pc_volume_ratio": 0.346,
+        "pc_oi_ratio": 1.231,
+        "total_call_volume": 107,
+        "total_put_volume": 37,
+        "total_call_oi": 978,
+        "total_put_oi": 1204,
+        "call_iv": 69.8,
+        "put_iv": 42.5
       },
       "key_levels": {
-        "max_call_strike": 400.0,
-        "max_call_oi": 23,
-        "max_put_strike": 185.0,
-        "max_put_oi": 0
+        "max_call_strike": 340.0,
+        "max_call_oi": 134,
+        "max_put_strike": 340.0,
+        "max_put_oi": 389
       },
       "unusual_activity": {
         "unusual_call_count": 1,
         "unusual_put_count": 1,
         "top_unusual_calls": [
           {
-            "strike": 320.0,
-            "volume": 101.0,
-            "openInterest": 0
+            "strike": 330.0,
+            "volume": 33.0,
+            "openInterest": 122
           }
         ],
         "top_unusual_puts": [
           {
-            "strike": 270.0,
-            "volume": 22.0,
-            "openInterest": 0
+            "strike": 310.0,
+            "volume": 7.0,
+            "openInterest": 77
           }
         ]
       },
@@ -768,79 +571,187 @@
       }
     },
     {
-      "ticker": "LNT",
-      "expiration": "2026-03-20",
-      "current_price": 71.32,
+      "ticker": "APD",
+      "expiration": "2026-04-17",
+      "current_price": 287.36,
       "metrics": {
-        "pc_volume_ratio": 0.529,
-        "pc_oi_ratio": 0.0,
-        "total_call_volume": 51,
-        "total_put_volume": 27,
-        "total_call_oi": 10,
-        "total_put_oi": 0,
-        "call_iv": 43.0,
-        "put_iv": 37.5
+        "pc_volume_ratio": 0.023,
+        "pc_oi_ratio": 0.271,
+        "total_call_volume": 3324,
+        "total_put_volume": 75,
+        "total_call_oi": 6297,
+        "total_put_oi": 1704,
+        "call_iv": 43.1,
+        "put_iv": 45.3
       },
       "key_levels": {
-        "max_call_strike": 80.0,
-        "max_call_oi": 10,
-        "max_put_strike": 60.0,
-        "max_put_oi": 0
+        "max_call_strike": 300.0,
+        "max_call_oi": 3317,
+        "max_put_strike": 200.0,
+        "max_put_oi": 771
       },
       "unusual_activity": {
         "unusual_call_count": 1,
-        "unusual_put_count": 0,
+        "unusual_put_count": 1,
         "top_unusual_calls": [
           {
-            "strike": 72.5,
-            "volume": 34.0,
-            "openInterest": 0
+            "strike": 300.0,
+            "volume": 3214.0,
+            "openInterest": 3317
           }
         ],
-        "top_unusual_puts": []
+        "top_unusual_puts": [
+          {
+            "strike": 250.0,
+            "volume": 24.0,
+            "openInterest": 72
+          }
+        ]
+      },
+      "signal": {
+        "sentiment": "🟢 Very Bullish",
+        "sentiment_score": 90,
+        "activity": "😴 Normal Activity"
+      }
+    },
+    {
+      "ticker": "AWK",
+      "expiration": "2026-04-17",
+      "current_price": 136.25,
+      "metrics": {
+        "pc_volume_ratio": 0.628,
+        "pc_oi_ratio": 0.174,
+        "total_call_volume": 145,
+        "total_put_volume": 91,
+        "total_call_oi": 7693,
+        "total_put_oi": 1338,
+        "call_iv": 29.0,
+        "put_iv": 37.0
+      },
+      "key_levels": {
+        "max_call_strike": 145.0,
+        "max_call_oi": 5313,
+        "max_put_strike": 135.0,
+        "max_put_oi": 556
+      },
+      "unusual_activity": {
+        "unusual_call_count": 0,
+        "unusual_put_count": 1,
+        "top_unusual_calls": [],
+        "top_unusual_puts": [
+          {
+            "strike": 140.0,
+            "volume": 41.0,
+            "openInterest": 88
+          }
+        ]
       },
       "signal": {
         "sentiment": "🟢 Bullish",
         "sentiment_score": 70,
-        "activity": "📈 Heavy Call Buying"
+        "activity": "📉 Heavy Put Buying"
+      }
+    },
+    {
+      "ticker": "LNT",
+      "expiration": "2026-04-17",
+      "current_price": 70.11,
+      "metrics": {
+        "pc_volume_ratio": 0.516,
+        "pc_oi_ratio": 0.303,
+        "total_call_volume": 64,
+        "total_put_volume": 33,
+        "total_call_oi": 624,
+        "total_put_oi": 189,
+        "call_iv": 36.0,
+        "put_iv": 59.0
+      },
+      "key_levels": {
+        "max_call_strike": 70.0,
+        "max_call_oi": 137,
+        "max_put_strike": 65.0,
+        "max_put_oi": 69
+      },
+      "unusual_activity": {
+        "unusual_call_count": 0,
+        "unusual_put_count": 1,
+        "top_unusual_calls": [],
+        "top_unusual_puts": [
+          {
+            "strike": 70.0,
+            "volume": 11.0,
+            "openInterest": 33
+          }
+        ]
+      },
+      "signal": {
+        "sentiment": "🟢 Bullish",
+        "sentiment_score": 70,
+        "activity": "📉 Heavy Put Buying"
+      }
+    },
+    {
+      "ticker": "AKAM",
+      "expiration": "2026-03-27",
+      "current_price": 115.29,
+      "metrics": {
+        "pc_volume_ratio": 0.704,
+        "pc_oi_ratio": 0.968,
+        "total_call_volume": 54,
+        "total_put_volume": 38,
+        "total_call_oi": 188,
+        "total_put_oi": 182,
+        "call_iv": 64.9,
+        "put_iv": 63.3
+      },
+      "key_levels": {
+        "max_call_strike": 115.0,
+        "max_call_oi": 59,
+        "max_put_strike": 113.0,
+        "max_put_oi": 154
+      },
+      "unusual_activity": {
+        "unusual_call_count": 0,
+        "unusual_put_count": 0,
+        "top_unusual_calls": [],
+        "top_unusual_puts": []
+      },
+      "signal": {
+        "sentiment": "🟡 Neutral",
+        "sentiment_score": 50,
+        "activity": "😴 Normal Activity"
       }
     },
     {
       "ticker": "AIZ",
-      "expiration": "2026-03-20",
-      "current_price": 211.86,
+      "expiration": "2026-04-17",
+      "current_price": 218.92,
       "metrics": {
-        "pc_volume_ratio": 0.308,
-        "pc_oi_ratio": 0.0,
-        "total_call_volume": 52,
-        "total_put_volume": 16,
-        "total_call_oi": 21,
-        "total_put_oi": 0,
-        "call_iv": 101.2,
-        "put_iv": 34.8
+        "pc_volume_ratio": 0.0,
+        "pc_oi_ratio": 0.06,
+        "total_call_volume": 5,
+        "total_put_volume": 0,
+        "total_call_oi": 116,
+        "total_put_oi": 7,
+        "call_iv": 46.3,
+        "put_iv": 47.8
       },
       "key_levels": {
-        "max_call_strike": 190.0,
-        "max_call_oi": 21,
-        "max_put_strike": 145.0,
-        "max_put_oi": 0
+        "max_call_strike": 230.0,
+        "max_call_oi": 114,
+        "max_put_strike": 210.0,
+        "max_put_oi": 5
       },
       "unusual_activity": {
-        "unusual_call_count": 1,
+        "unusual_call_count": 0,
         "unusual_put_count": 0,
-        "top_unusual_calls": [
-          {
-            "strike": 190.0,
-            "volume": 40.0,
-            "openInterest": 21
-          }
-        ],
+        "top_unusual_calls": [],
         "top_unusual_puts": []
       },
       "signal": {
         "sentiment": "🟢 Very Bullish",
         "sentiment_score": 90,
-        "activity": "📈 Heavy Call Buying"
+        "activity": "😴 Normal Activity"
       }
     }
   ]

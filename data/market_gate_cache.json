@@ -1,25 +1,26 @@
 {
   "status": "RED",
-  "score": 45,
+  "score": 35,
   "label": "BEARISH",
   "reasons": [
-    "⚠️ 환율 경계 (1495원)",
+    "⚠️ 환율 경계 (1498원)",
     "RSI(59.4), MACD: BEARISH",
-    "🔥 강세: 반도체 (75)",
+    "시장 하락추세. 보수적 접근 권장.",
+    "🔥 강세: 반도체 (65)",
     "❄️ 약세: 증권 (35)"
   ],
   "sectors": [
     {
       "name": "반도체",
-      "signal": "bullish",
+      "signal": "neutral",
       "change_pct": 2.69,
-      "score": 75
+      "score": 65
     },
     {
       "name": "KOSPI200",
       "signal": "neutral",
       "change_pct": 3.06,
-      "score": 55
+      "score": 45
     },
     {
       "name": "IT",
@@ -59,7 +60,7 @@
     }
   ],
   "metrics": {
-    "usd_krw": 1494.97998046875,
+    "usd_krw": 1497.8699951171875,
     "kospi": 5553.919921875,
     "kospi_change_pct": 2.74,
     "kosdaq": 1121.43994140625,
@@ -70,5 +71,5 @@
   "kospi_change_pct": 2.74,
   "kosdaq_close": 1121.43994140625,
   "kosdaq_change_pct": 2.24,
-  "updated_at": "2026-03-25T00:00:33.173843"
+  "updated_at": "2026-03-25T04:16:59.631317"
 }

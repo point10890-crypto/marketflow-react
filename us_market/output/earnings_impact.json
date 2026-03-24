@@ -1,11 +1,11 @@
 {
-  "timestamp": "2026-03-20T18:25:37.539969",
+  "timestamp": "2026-03-25T04:04:51.255643",
   "sector_profiles": {
     "Technology": {
       "avg_beat_reaction_1d": 6.48,
-      "avg_miss_reaction_1d": -6.7,
+      "avg_miss_reaction_1d": -6.57,
       "avg_beat_reaction_5d": 7.44,
-      "avg_miss_reaction_5d": -6.26,
+      "avg_miss_reaction_5d": -6.14,
       "beat_rate": 43.8,
       "sample_size": 48
     },

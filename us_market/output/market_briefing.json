@@ -1,230 +1,230 @@
 {
-  "timestamp": "2026-03-20T18:32:14.519457",
+  "timestamp": "2026-03-25T04:11:43.400561",
   "version": "2.0",
   "market_data": {
-    "timestamp": "2026-03-20T18:32:14.519463",
+    "timestamp": "2026-03-25T04:11:43.400567",
     "indices": {
       "SPY": {
         "name": "S&P 500",
-        "price": 659.8,
-        "change": -0.25,
-        "prev_close": 661.43,
-        "high_52w": 697.84,
-        "low_52w": 477.64,
-        "pct_from_high": -5.45
+        "price": 655.48,
+        "change": 0.02,
+        "prev_close": 655.38,
+        "high_52w": 695.94,
+        "low_52w": 476.34,
+        "pct_from_high": -5.81
       },
       "QQQ": {
         "name": "NASDAQ 100",
-        "price": 593.02,
-        "change": -0.32,
-        "prev_close": 594.9,
+        "price": 586.01,
+        "change": -0.34,
+        "prev_close": 588.0,
         "high_52w": 636.6,
         "low_52w": 400.96,
-        "pct_from_high": -6.85
+        "pct_from_high": -7.95
       },
       "DIA": {
         "name": "Dow Jones",
-        "price": 461.06,
-        "change": -0.42,
-        "prev_close": 463.0,
-        "high_52w": 504.67,
-        "low_52w": 361.47,
-        "pct_from_high": -8.64
+        "price": 463.0,
+        "change": 0.22,
+        "prev_close": 461.97,
+        "high_52w": 503.59,
+        "low_52w": 360.69,
+        "pct_from_high": -8.06
       },
       "IWM": {
         "name": "Russell 2000",
-        "price": 247.63,
-        "change": 0.65,
-        "prev_close": 246.02,
+        "price": 249.97,
+        "change": 1.02,
+        "prev_close": 247.45,
         "high_52w": 271.12,
         "low_52w": 169.9,
-        "pct_from_high": -8.66
+        "pct_from_high": -7.8
       }
     },
     "futures": {
       "ES=F": {
         "name": "S&P 500 Futures",
-        "price": 6649.5,
-        "change": 0.61,
-        "prev_close": 6609.25,
+        "price": 6630.75,
+        "change": -0.06,
+        "prev_close": 6634.75,
         "high_52w": 7043.0,
         "low_52w": 4832.0,
-        "pct_from_high": -5.59
+        "pct_from_high": -5.85
       },
       "NQ=F": {
         "name": "NASDAQ Futures",
-        "price": 24505.25,
-        "change": 0.58,
-        "prev_close": 24364.0,
+        "price": 24307.0,
+        "change": -0.41,
+        "prev_close": 24408.25,
         "high_52w": 26399.0,
         "low_52w": 16460.0,
-        "pct_from_high": -7.17
+        "pct_from_high": -7.92
       },
       "YM=F": {
         "name": "Dow Futures",
-        "price": 46288.0,
-        "change": 0.54,
-        "prev_close": 46041.0,
+        "price": 46590.0,
+        "change": 0.15,
+        "prev_close": 46522.0,
         "high_52w": 50611.0,
         "low_52w": 36708.0,
-        "pct_from_high": -8.54
+        "pct_from_high": -7.94
       }
     },
     "bonds": {
       "^TNX": {
         "name": "10Y Treasury",
-        "price": 4.28,
-        "change": 0.52,
-        "prev_close": 4.26,
+        "price": 4.39,
+        "change": 1.34,
+        "prev_close": 4.33,
         "high_52w": 4.63,
-        "low_52w": null,
-        "pct_from_high": -7.52
+        "low_52w": 3.89,
+        "pct_from_high": -5.12
       },
       "^FVX": {
         "name": "5Y Treasury",
-        "price": 3.92,
-        "change": 1.48,
-        "prev_close": 3.86,
+        "price": 4.03,
+        "change": 2.13,
+        "prev_close": 3.95,
         "high_52w": 4.22,
-        "low_52w": null,
-        "pct_from_high": -7.2
+        "low_52w": 3.51,
+        "pct_from_high": -4.48
       },
       "^IRX": {
         "name": "3M T-Bill",
-        "price": 3.61,
-        "change": 0.06,
+        "price": 3.62,
+        "change": 0.22,
         "prev_close": 3.61,
         "high_52w": 4.3,
-        "low_52w": null,
-        "pct_from_high": -16.1
+        "low_52w": 3.51,
+        "pct_from_high": -15.91
       }
     },
     "currencies": {
       "DX-Y.NYB": {
         "name": "Dollar Index",
         "price": 99.4,
-        "change": -0.69,
-        "prev_close": 100.09,
+        "change": 0.45,
+        "prev_close": 98.95,
         "high_52w": 104.68,
         "low_52w": 95.55,
-        "pct_from_high": -5.05
+        "pct_from_high": -5.04
       },
       "USDKRW=X": {
         "name": "USD/KRW",
-        "price": 1496.69,
-        "change": -0.57,
-        "prev_close": 1505.25,
-        "high_52w": 1506.25,
+        "price": 1497.31,
+        "change": -0.46,
+        "prev_close": 1504.21,
+        "high_52w": 1517.74,
         "low_52w": 1322.42,
-        "pct_from_high": -0.63
+        "pct_from_high": -1.35
       },
       "USDJPY=X": {
         "name": "USD/JPY",
-        "price": 158.66,
-        "change": -0.71,
-        "prev_close": 159.79,
+        "price": 158.86,
+        "change": -0.23,
+        "prev_close": 159.23,
         "high_52w": 159.82,
         "low_52w": 139.89,
-        "pct_from_high": -0.72
+        "pct_from_high": -0.6
       },
       "EURUSD=X": {
         "name": "EUR/USD",
         "price": 1.16,
-        "change": 0.91,
-        "prev_close": 1.15,
+        "change": 0.29,
+        "prev_close": 1.16,
         "high_52w": 1.2,
         "low_52w": 1.07,
-        "pct_from_high": -3.78
+        "pct_from_high": -3.57
       }
     },
     "commodities": {
       "GC=F": {
         "name": "Gold",
-        "price": 4686.9,
-        "change": 1.87,
-        "prev_close": 4600.7,
+        "price": 4395.6,
+        "change": -0.19,
+        "prev_close": 4404.1,
         "high_52w": 5586.2,
         "low_52w": 2949.7,
-        "pct_from_high": -16.1
+        "pct_from_high": -21.31
       },
       "CL=F": {
         "name": "Crude Oil",
-        "price": 95.63,
-        "change": -0.53,
-        "prev_close": 96.14,
+        "price": 91.36,
+        "change": 3.67,
+        "prev_close": 88.13,
         "high_52w": 119.48,
         "low_52w": 54.98,
-        "pct_from_high": -19.96
+        "pct_from_high": -23.54
       },
       "BTC-USD": {
         "name": "Bitcoin",
-        "price": 70509.62,
-        "change": 0.85,
-        "prev_close": 69912.79,
+        "price": 69528.64,
+        "change": -1.95,
+        "prev_close": 70914.86,
         "high_52w": 126198.07,
         "low_52w": 60074.2,
-        "pct_from_high": -44.13
+        "pct_from_high": -44.91
       }
     },
     "korean_indices": {
       "^KS11": {
         "name": "KOSPI",
-        "price": 5781.2,
-        "change": -2.43,
-        "prev_close": 5925.03,
+        "price": 5553.92,
+        "change": 2.74,
+        "prev_close": 5405.75,
         "high_52w": 6347.41,
-        "low_52w": 2284.72,
-        "pct_from_high": -8.92
+        "low_52w": null,
+        "pct_from_high": -12.5
       },
       "^KQ11": {
         "name": "KOSDAQ",
-        "price": 1161.52,
-        "change": -0.25,
-        "prev_close": 1164.38,
+        "price": 1121.44,
+        "change": 2.24,
+        "prev_close": 1096.89,
         "high_52w": 1215.67,
-        "low_52w": 637.55,
-        "pct_from_high": -4.45
+        "low_52w": null,
+        "pct_from_high": -7.75
       }
     },
     "vix": {
-      "value": 24.35,
-      "change": -2.95,
-      "level": "Neutral",
-      "color": "#FFC107"
+      "value": 26.71,
+      "change": 2.14,
+      "level": "Fear",
+      "color": "#FF5722"
     }
   },
   "vix": {
-    "value": 24.35,
-    "change": -2.95,
-    "level": "Neutral",
-    "color": "#FFC107"
+    "value": 26.71,
+    "change": 2.14,
+    "level": "Fear",
+    "color": "#FF5722"
   },
   "fear_greed": {
-    "score": 55,
+    "score": 57,
     "level": "Neutral",
     "color": "#FFC107",
     "components": {
       "vix": {
-        "value": 24.35,
-        "score": 52
+        "value": 26.71,
+        "score": 44
       },
       "momentum": {
-        "pct_from_high": -5.45,
-        "score": 73
+        "pct_from_high": -5.81,
+        "score": 71
       },
       "breadth": {
-        "spy_chg": -0.25,
-        "iwm_chg": 0.65,
-        "score": 59
+        "spy_chg": 0.02,
+        "iwm_chg": 1.02,
+        "score": 60
       },
       "safe_haven": {
-        "stock_chg": -0.25,
-        "gold_chg": 1.87,
-        "score": 29
+        "stock_chg": 0.02,
+        "gold_chg": -0.19,
+        "score": 52
       },
       "junk_bond": {
-        "yield_change": 0.52,
-        "score": 53
+        "yield_change": 1.34,
+        "score": 57
       }
     }
   },
@@ -243,8 +243,8 @@
     },
     "risk": {
       "risk_level": "High",
-      "var_95_5d": 2735.25,
-      "cvar_95_5d": 3488.37
+      "var_95_5d": 2719.91,
+      "cvar_95_5d": 3488.38
     },
     "top_picks": [
       {
@@ -337,8 +337,8 @@
     },
     "track_record": {
       "total_picks": "N/A",
-      "win_rate": 33.3,
-      "avg_return": -0.47,
+      "win_rate": 50.0,
+      "avg_return": 0.3,
       "alpha": "N/A"
     },
     "decision_signal": {
@@ -375,7 +375,7 @@
   },
   "smart_money": {
     "top_picks": {
-      "timestamp": "2026-03-20T08:12:58.928630",
+      "timestamp": "2026-03-20T18:33:15.039963",
       "picks": [
         {
           "rank": 1,
@@ -428,22 +428,22 @@
       "recent_dates": [
         {
           "date": "2026-03-20",
-          "avg_return": 0.0,
-          "win_rate": 40.0
+          "avg_return": 2.08,
+          "win_rate": 70.0
         },
         {
           "date": "2026-03-19",
-          "avg_return": -0.77,
-          "win_rate": 30.0
+          "avg_return": -0.65,
+          "win_rate": 40.0
         },
         {
           "date": "2026-03-15",
-          "avg_return": -0.64,
-          "win_rate": 30.0
+          "avg_return": -0.54,
+          "win_rate": 40.0
         }
       ],
-      "overall_avg": -0.47,
-      "overall_win_rate": 33.3
+      "overall_avg": 0.3,
+      "overall_win_rate": 50.0
     }
   }
 }

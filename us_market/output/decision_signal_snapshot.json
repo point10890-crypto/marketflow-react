@@ -67,10 +67,10 @@
   ],
   "timing": "WAIT",
   "warnings": [
-    "APO is in critical drawdown: -26.8% from peak",
-    "APP is in critical drawdown: -40.0% from peak",
+    "APO is in critical drawdown: -27.6% from peak",
+    "APP is in critical drawdown: -40.4% from peak",
     "AMD is in critical drawdown: -20.9% from peak",
-    "AMZN drawdown warning: -15.6% from peak",
-    "ALGN drawdown warning: -10.8% from peak"
+    "AMZN drawdown warning: -16.0% from peak",
+    "AMT drawdown warning: -11.4% from peak"
   ]
 }
