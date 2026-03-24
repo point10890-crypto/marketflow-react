@@ -1683,25 +1683,81 @@ class Scheduler:
         self.running = False
 
     @staticmethod
-    def _with_record(task_fn, task_key):
-        """작업 함수를 래핑하여 성공 시 last_run 기록"""
+    def _with_record(task_fn, task_key, max_retries=2, retry_delay=900, verify_fn=None):
+        """작업 함수를 래핑: 실행 → 검증 → 실패 시 재시도 → 텔레그램 알림
+
+        Args:
+            task_fn: 실행할 작업 함수
+            task_key: scheduler_last_run.json 키
+            max_retries: 최대 재시도 횟수 (기본 2회 = 총 3회 시도)
+            retry_delay: 재시도 간격 초 (기본 900초 = 15분)
+            verify_fn: 결과 검증 함수 (None이면 리턴값만 체크)
+        """
         def wrapper():
-            result = task_fn()
-            # result가 None이면 성공으로 간주 (일부 함수는 None 반환)
-            if result is None or result:
-                record_task_run(task_key)
-            return result
+            for attempt in range(1 + max_retries):
+                try:
+                    if attempt > 0:
+                        logger.info(f"🔄 {task_key} 재시도 {attempt}/{max_retries} ({retry_delay}초 후)")
+                        time.sleep(retry_delay)
+
+                    result = task_fn()
+
+                    # 1차: 리턴값 체크
+                    success = (result is None or result)
+
+                    # 2차: 검증 함수 체크 (파일 존재/데이터 유효성)
+                    if success and verify_fn:
+                        try:
+                            success = verify_fn()
+                        except Exception as ve:
+                            logger.warning(f"⚠️ {task_key} 검증 실패: {ve}")
+                            success = False
+
+                    if success:
+                        record_task_run(task_key)
+                        if attempt > 0:
+                            send_telegram(f"✅ {task_key} 재시도 {attempt}회 만에 성공")
+                        return result
+                    else:
+                        logger.warning(f"⚠️ {task_key} 실패 (시도 {attempt + 1}/{1 + max_retries})")
+
+                except Exception as e:
+                    logger.error(f"❌ {task_key} 예외 (시도 {attempt + 1}/{1 + max_retries}): {e}")
+
+            # 모든 재시도 실패
+            logger.error(f"🚨 {task_key} {1 + max_retries}회 시도 모두 실패!")
+            send_telegram(
+                f"🚨 <b>{task_key} 업데이트 실패</b>\n\n"
+                f"총 {1 + max_retries}회 시도 후 실패\n"
+                f"수동 확인 필요"
+            )
+            return False
+
         wrapper.__name__ = f"{task_fn.__name__}[{task_key}]"
         return wrapper
 
     def setup_schedules(self):
-        """스케줄 등록"""
+        """스케줄 등록 (실패 시 재시도 + 결과 검증 포함)"""
         weekdays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday']
+
+        # 검증 함수: 파일이 오늘 날짜로 갱신됐는지 확인
+        def _verify_file_today(filepath):
+            def check():
+                if not os.path.exists(filepath):
+                    return False
+                mtime = os.path.getmtime(filepath)
+                return datetime.fromtimestamp(mtime).date() == datetime.now().date()
+            return check
+
+        jongga_verify = _verify_file_today(os.path.join(Config.DATA_DIR, 'jongga_v2_latest.json'))
+        vcp_kr_verify = _verify_file_today(os.path.join(Config.DATA_DIR, 'vcp_kr_latest.json'))
+        us_verify = _verify_file_today(os.path.join(Config.BASE_DIR, 'us_market', 'output', 'briefing.json'))
 
         for day in weekdays:
             # 04:00 — US Market 전체 데이터 갱신 + Smart Money Top 5 텔레그램
             getattr(schedule.every(), day).at(Config.US_UPDATE_TIME).do(
-                self._with_record(run_us_market_update, 'us_market'))
+                self._with_record(run_us_market_update, 'us_market',
+                                  max_retries=2, retry_delay=900, verify_fn=us_verify))
             # 09:00 — 일별 상태 리포트 텔레그램
             getattr(schedule.every(), day).at(Config.MORNING_REPORT_TIME).do(
                 self._with_record(send_morning_status_report, 'morning_report'))
@@ -1710,10 +1766,12 @@ class Scheduler:
                 self._with_record(save_us_track_record_snapshot, 'us_track'))
             # 15:00 — 종가베팅 V2 + 수급/AI/리포트 (VCP 제외)
             getattr(schedule.every(), day).at(Config.KR_UPDATE_TIME).do(
-                self._with_record(run_kr_full_update, 'kr_jongga'))
+                self._with_record(run_kr_full_update, 'kr_jongga',
+                                  max_retries=2, retry_delay=600, verify_fn=jongga_verify))
             # 16:00 — 전 시장 VCP 시그널 (KR + US + Crypto)
             getattr(schedule.every(), day).at(Config.VCP_UPDATE_TIME).do(
-                self._with_record(run_vcp_all_markets, 'vcp_all'))
+                self._with_record(run_vcp_all_markets, 'vcp_all',
+                                  max_retries=1, retry_delay=600, verify_fn=vcp_kr_verify))
 
         # 토요일 히스토리 수집
         schedule.every().saturday.at(Config.HISTORY_TIME).do(collect_historical_institutional)
