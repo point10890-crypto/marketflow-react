@@ -832,6 +832,24 @@ def backtest_results():
 
 # ── VCP Enhanced ──────────────────────────────────────────────────────────────
 
+@crypto_bp.route('/vcp-enhanced/dates')
+def get_crypto_vcp_dates():
+    """Crypto VCP 히스토리 날짜 목록."""
+    try:
+        import re
+        dates = []
+        pattern = re.compile(r'vcp_crypto_(\d{8})\.json')
+        for fname in os.listdir(_DATA_DIR):
+            m = pattern.match(fname)
+            if m:
+                d = m.group(1)
+                dates.append(f"{d[:4]}-{d[4:6]}-{d[6:]}")
+        dates.sort(reverse=True)
+        return jsonify(dates)
+    except Exception:
+        return jsonify([]), 200
+
+
 @crypto_bp.route('/vcp-enhanced')
 def get_crypto_vcp_enhanced():
     """Crypto VCP 통합 분석 — 캐시 파일 기반 반환."""

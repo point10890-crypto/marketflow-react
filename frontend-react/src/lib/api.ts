@@ -154,6 +154,7 @@ export const krAPI = {
     getMarketGate: () => fetchAPI<KRMarketGate>('/api/kr/market-gate'),
     getAIAnalysis: () => fetchAPI<KRAIAnalysis>('/api/kr/ai-analysis'),
     getVCPEnhanced: () => fetchAPI<any>('/api/kr/vcp-enhanced'),
+    getLeadingStocks: () => fetchAPI<any>('/api/kr/screener/leading'),
 };
 
 // Closing Bet API

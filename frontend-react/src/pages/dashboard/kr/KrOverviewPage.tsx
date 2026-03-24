@@ -386,6 +386,22 @@ export default function KRMarketOverview() {
                         <i className="fas fa-chevron-right text-[10px] text-zinc-600 group-hover:text-amber-400 transition-colors"></i>
                     </Link>
 
+                    <Link
+                        to="/dashboard/kr/leading-stocks"
+                        className="group flex items-center justify-between p-3 rounded-xl bg-orange-500/5 border border-orange-500/20 hover:bg-orange-500/10 hover:border-orange-500/40 transition-all"
+                    >
+                        <div className="flex items-center gap-2.5">
+                            <div className="w-7 h-7 rounded-lg bg-orange-500/15 flex items-center justify-center">
+                                <i className="fas fa-fire text-orange-400 text-xs"></i>
+                            </div>
+                            <div>
+                                <div className="text-xs font-bold text-white flex items-center gap-1.5">주도주LIVE <span className="w-1.5 h-1.5 rounded-full bg-orange-400 animate-pulse"></span></div>
+                                <div className="text-[10px] text-zinc-500">Leading Stocks</div>
+                            </div>
+                        </div>
+                        <i className="fas fa-chevron-right text-[10px] text-zinc-600 group-hover:text-orange-400 transition-colors"></i>
+                    </Link>
+
                     {/* Mini stats */}
                     <div className="mt-auto grid grid-cols-2 gap-2 pt-2">
                         <div className="rounded-lg bg-zinc-900/60 border border-white/5 p-2 text-center">

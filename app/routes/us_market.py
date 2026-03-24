@@ -1882,6 +1882,25 @@ def get_smart_money_detail(ticker):
 
 # ── VCP Enhanced ──────────────────────────────────────────────────────────────
 
+@us_bp.route('/vcp-enhanced/dates')
+def get_us_vcp_dates():
+    """US VCP 히스토리 날짜 목록."""
+    try:
+        import re
+        dates = []
+        data_dir = os.path.join(_BASE_DIR, 'data')
+        pattern = re.compile(r'vcp_us_(\d{8})\.json')
+        for fname in os.listdir(data_dir):
+            m = pattern.match(fname)
+            if m:
+                d = m.group(1)
+                dates.append(f"{d[:4]}-{d[4:6]}-{d[6:]}")
+        dates.sort(reverse=True)
+        return jsonify(dates)
+    except Exception:
+        return jsonify([]), 200
+
+
 @us_bp.route('/vcp-enhanced')
 def get_us_vcp_enhanced():
     """US VCP 통합 분석 — 캐시 파일 기반 반환."""

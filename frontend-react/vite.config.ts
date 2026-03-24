@@ -53,6 +53,8 @@ export default defineConfig({
   server: {
     port: Number(process.env.PORT) || 4000,
     proxy: {
+      // KIS 주도주 스크리너 → Flask
+      '/api/kr/screener': { target: 'http://localhost:5001', changeOrigin: true },
       // LIVE_COMPUTE → Flask:5001 (yfinance, DART, LLM, subprocess)
       '/api/kr/jongga-v2/analyze': { target: 'http://localhost:5001', changeOrigin: true },
       '/api/kr/jongga-v2/run': { target: 'http://localhost:5001', changeOrigin: true },

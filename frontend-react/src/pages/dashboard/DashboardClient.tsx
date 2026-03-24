@@ -165,41 +165,125 @@ function OpportunityScoreCard({ score, krScore, usScore, cryptoScore }: {
 
 // ── Top Signal Card ────────────────────────────────────────────────────────────
 
-function TopSignalCard({ summary }: { summary: any }) {
+function TopSignalCard({ summary, leadingData }: { summary: any; leadingData: any }) {
     const top = summary?.top_signal;
     const byGrade = summary?.by_grade ?? {};
     const sCount = byGrade.S ?? 0;
     const aCount = byGrade.A ?? 0;
     const gradeColor = top?.grade === 'S' ? '#f59e0b' : top?.grade === 'A' ? '#60a5fa' : '#6b7280';
+
+    const leadTop = leadingData?.results?.[0];
+    const leadSCount = leadingData?.by_grade?.S ?? 0;
+    const leadACount = leadingData?.by_grade?.A ?? 0;
+    const leadGradeColor = leadTop?.grade === 'S' ? '#f97316' : leadTop?.grade === 'A' ? '#f59e0b' : '#3b82f6';
+
     return (
-        <Link to="/dashboard/kr/closing-bet"
+        <div className="flex flex-col gap-2 rounded-2xl border border-white/[0.07] bg-[#13151f] p-4">
+            {/* 종가베팅 */}
+            <Link to="/dashboard/kr/closing-bet" className="group flex flex-col gap-2 active:scale-[0.98] transition-transform">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-violet-500/10 border border-violet-500/20">
+                            <i className="fas fa-chart-bar text-xs text-violet-400" />
+                        </div>
+                        <span className="text-xs font-bold text-white">오늘 종가베팅</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                        {sCount > 0 && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-yellow-500/20 text-yellow-400">S×{sCount}</span>}
+                        {aCount > 0 && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-400">A×{aCount}</span>}
+                        <i className="fas fa-chevron-right text-[9px] text-gray-600 group-hover:text-gray-400" />
+                    </div>
+                </div>
+                {top ? (
+                    <div className="flex items-center justify-between bg-white/[0.03] rounded-xl px-3 py-2">
+                        <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded" style={{ background: `${gradeColor}20`, color: gradeColor }}>{top.grade}</span>
+                            <span className="text-xs font-semibold text-white truncate">{top.stock_name}</span>
+                        </div>
+                        <span className={`text-xs font-bold tabular-nums ${top.change_pct > 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                            {top.change_pct > 0 ? '+' : ''}{Number(top.change_pct).toFixed(1)}%
+                        </span>
+                    </div>
+                ) : (
+                    <p className="text-[10px] text-gray-600 px-1">아직 시그널 없음</p>
+                )}
+            </Link>
+
+            {/* 구분선 + 주도주LIVE */}
+            {leadTop && (
+                <>
+                    <div className="border-t border-white/5" />
+                    <Link to="/dashboard/kr/leading-stocks" className="group flex flex-col gap-2 active:scale-[0.98] transition-transform">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                                <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-orange-500/10 border border-orange-500/20">
+                                    <i className="fas fa-fire text-xs text-orange-400" />
+                                </div>
+                                <span className="text-xs font-bold text-white">주도주LIVE</span>
+                                <span className="w-1.5 h-1.5 rounded-full bg-orange-400 animate-pulse" />
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                                {leadSCount > 0 && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-400">S×{leadSCount}</span>}
+                                {leadACount > 0 && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400">A×{leadACount}</span>}
+                                <i className="fas fa-chevron-right text-[9px] text-gray-600 group-hover:text-gray-400" />
+                            </div>
+                        </div>
+                        <div className="flex items-center justify-between bg-white/[0.03] rounded-xl px-3 py-2">
+                            <div className="flex items-center gap-2">
+                                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded" style={{ background: `${leadGradeColor}20`, color: leadGradeColor }}>{leadTop.grade}</span>
+                                <span className="text-xs font-semibold text-white truncate">{leadTop.name}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <span className="text-[9px] text-gray-500 font-mono">{leadTop.score?.total}/100</span>
+                                <span className={`text-xs font-bold tabular-nums ${leadTop.change_pct > 0 ? 'text-rose-400' : 'text-blue-400'}`}>
+                                    {leadTop.change_pct > 0 ? '+' : ''}{Number(leadTop.change_pct).toFixed(1)}%
+                                </span>
+                            </div>
+                        </div>
+                    </Link>
+                </>
+            )}
+        </div>
+    );
+}
+
+// ── Leading Stock Card (주도주 대표종목) ─────────────────────────────────────
+
+function LeadingStockCard({ data }: { data: any }) {
+    if (!data?.results?.length) return null;
+    const top = data.results[0];
+    const sCount = data.by_grade?.S ?? 0;
+    const aCount = data.by_grade?.A ?? 0;
+    const gradeColor = top.grade === 'S' ? '#f97316' : top.grade === 'A' ? '#f59e0b' : '#3b82f6';
+    return (
+        <Link to="/dashboard/kr/leading-stocks"
             className="group flex flex-col gap-2 rounded-2xl border border-white/[0.07] bg-[#13151f] p-4 transition-all active:scale-[0.98] hover:border-white/15">
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                    <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-violet-500/10 border border-violet-500/20">
-                        <i className="fas fa-chart-bar text-xs text-violet-400" />
+                    <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-orange-500/10 border border-orange-500/20">
+                        <i className="fas fa-fire text-xs text-orange-400" />
                     </div>
-                    <span className="text-xs font-bold text-white">오늘 종가베팅</span>
+                    <span className="text-xs font-bold text-white">주도주LIVE</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-orange-400 animate-pulse" />
                 </div>
                 <div className="flex items-center gap-1.5">
-                    {sCount > 0 && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-yellow-500/20 text-yellow-400">S×{sCount}</span>}
-                    {aCount > 0 && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-400">A×{aCount}</span>}
+                    {sCount > 0 && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-400">S×{sCount}</span>}
+                    {aCount > 0 && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400">A×{aCount}</span>}
                     <i className="fas fa-chevron-right text-[9px] text-gray-600 group-hover:text-gray-400" />
                 </div>
             </div>
-            {top ? (
-                <div className="flex items-center justify-between bg-white/[0.03] rounded-xl px-3 py-2">
-                    <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded" style={{ background: `${gradeColor}20`, color: gradeColor }}>{top.grade}</span>
-                        <span className="text-xs font-semibold text-white truncate">{top.stock_name}</span>
-                    </div>
-                    <span className={`text-xs font-bold tabular-nums ${top.change_pct > 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+            <div className="flex items-center justify-between bg-white/[0.03] rounded-xl px-3 py-2">
+                <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded" style={{ background: `${gradeColor}20`, color: gradeColor }}>{top.grade}</span>
+                    <span className="text-xs font-semibold text-white truncate">{top.name}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                    <span className="text-[9px] text-gray-500 font-mono">{top.score?.total}/100</span>
+                    <span className={`text-xs font-bold tabular-nums ${top.change_pct > 0 ? 'text-rose-400' : 'text-blue-400'}`}>
                         {top.change_pct > 0 ? '+' : ''}{Number(top.change_pct).toFixed(1)}%
                     </span>
                 </div>
-            ) : (
-                <p className="text-[10px] text-gray-600 px-1">아직 시그널 없음</p>
-            )}
+            </div>
         </Link>
     );
 }
@@ -224,10 +308,11 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
     const [cryptoDom, setCryptoDom] = useState<any>(initialData.cryptoDom);
     const [vcpData, setVcpData] = useState<VCPSummary>({ kr: 0, us: 0, crypto: 0, topSignals: [] });
     const [todaySummary, setTodaySummary] = useState<any>(null);
+    const [leadingData, setLeadingData] = useState<any>(null);
 
     const loadData = useCallback(async () => {
         try {
-            const [b, kr, crypto, vcpKr, vcpUs, vcpCrypto, jongga] = await Promise.all([
+            const [b, kr, crypto, vcpKr, vcpUs, vcpCrypto, jongga, leading] = await Promise.all([
                 usAPI.getMarketBriefing().catch(() => null),
                 krAPI.getMarketGate().catch(() => null),
                 cryptoAPI.getDominance().catch(() => null),
@@ -235,11 +320,13 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                 usAPI.getVCPEnhanced().catch(() => null),
                 cryptoAPI.getVCPEnhanced().catch(() => null),
                 jonggaAPI.getTodaySummary().catch(() => null),
+                krAPI.getLeadingStocks().catch(() => null),
             ]);
             setBriefing(b);
             setKrGate(kr);
             setCryptoDom(crypto);
             setTodaySummary(jongga);
+            setLeadingData(leading);
 
             // VCP summary
             const allSignals: Array<{ name: string; market: string; score: number }> = [];
@@ -402,7 +489,7 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                     usScore={usScore}
                     cryptoScore={cryptoScore}
                 />
-                {todaySummary && <TopSignalCard summary={todaySummary} />}
+                {todaySummary && <TopSignalCard summary={todaySummary} leadingData={leadingData} />}
             </div>
 
             {/* ── Market Cards Grid ── */}

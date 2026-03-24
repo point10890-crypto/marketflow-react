@@ -1009,6 +1009,7 @@ def get_kr_vcp_enhanced():
 
 
 @kr_bp.route('/vcp-dates')
+@kr_bp.route('/vcp-enhanced/dates')
 def get_kr_vcp_dates():
     """KR VCP 히스토리 날짜 목록 반환."""
     try:
@@ -1039,5 +1040,71 @@ def get_kr_vcp_report(date):
         resp = jsonify(data)
         resp.headers['Cache-Control'] = 'public, max-age=3600'
         return resp
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# ═══ 주도주LIVE 스크리너 ═══
+
+@kr_bp.route('/screener/leading')
+def kr_screener_leading():
+    """주도주 실시간 스크리닝 — 캐시 우선, 없으면 라이브 실행"""
+    try:
+        from app.services.kis_screener import run_screening, load_latest, _result_cache
+        import time as _time
+        # 1. 메모리 캐시 (3초 TTL)
+        if _result_cache["data"] and (_time.time() - _result_cache["ts"]) < 3:
+            resp = jsonify(_result_cache["data"])
+            resp.headers['Cache-Control'] = 'no-cache, no-store'
+            return resp
+        # 2. 파일 캐시 (5분 이내면 즉시 반환)
+        latest = load_latest()
+        if latest:
+            resp = jsonify(latest)
+            resp.headers['Cache-Control'] = 'no-cache, no-store'
+            # 백그라운드로 새 스캔 트리거 (다음 요청에 반영)
+            import threading
+            threading.Thread(target=run_screening, daemon=True).start()
+            return resp
+        # 3. 캐시 없음 — 라이브 실행 (첫 호출)
+        result = run_screening()
+        resp = jsonify(result)
+        resp.headers['Cache-Control'] = 'no-cache, no-store'
+        return resp
+    except Exception as e:
+        logger.warning(f"스크리너 에러: {e}")
+        return jsonify({"error": str(e), "results": [], "timestamp": "", "market_status": "error",
+                        "by_grade": {}, "total_candidates": 0, "time_weight": 1.0,
+                        "api_calls": 0, "elapsed_ms": 0}), 500
+
+
+@kr_bp.route('/screener/leading/history')
+def kr_screener_history():
+    """주도주 히스토리 — ?date=20260324 또는 ?dates=true"""
+    from app.services.kis_screener import load_history, list_dates
+    date = request.args.get('date')
+    if request.args.get('dates'):
+        return jsonify({"dates": list_dates()})
+    if not date:
+        return jsonify({"error": "date 파라미터 필요"}), 400
+    result = load_history(date)
+    if not result:
+        return jsonify({"error": f"{date} 데이터 없음"}), 404
+    return jsonify(result)
+
+
+@kr_bp.route('/screener/leading/status')
+def kr_screener_status():
+    """스크리너 상태"""
+    try:
+        from app.services import kis_screener
+        cache = kis_screener._result_cache
+        return jsonify({
+            "market_open": kis_screener.is_market_open(),
+            "market_status": kis_screener.get_market_status(),
+            "token_valid": kis_screener.get_token() is not None,
+            "cache_age": round(time.time() - cache["ts"], 1) if cache.get("ts") else None,
+            "last_results": len(cache["data"]["results"]) if cache.get("data") else 0,
+        })
     except Exception as e:
         return jsonify({"error": str(e)}), 500

@@ -10,6 +10,7 @@ interface SubNavItem {
 const sectionChildren: Record<string, SubNavItem[]> = {
     '/dashboard/kr': [
         { name: 'Overview', href: '/dashboard/kr', color: 'bg-blue-500' },
+        { name: '주도주 LIVE', href: '/dashboard/kr/leading-stocks', color: 'bg-orange-500' },
         { name: 'VCP Signals', href: '/dashboard/kr/vcp', color: 'bg-rose-500' },
         { name: '종가베팅', href: '/dashboard/kr/closing-bet', color: 'bg-violet-500' },
         { name: 'Track Record', href: '/dashboard/kr/track-record', color: 'bg-yellow-500' },
@@ -76,7 +77,7 @@ export default function MobileSubNav() {
                                     : 'text-gray-500 border-transparent hover:text-gray-300 hover:bg-white/5'
                             }`}
                         >
-                            <span className={`inline-block w-1.5 h-1.5 rounded-full ${item.color} mr-1.5 align-middle`}></span>
+                            <span className={`inline-block w-1.5 h-1.5 rounded-full ${item.color} mr-1.5 align-middle ${item.name.includes('LIVE') ? 'animate-pulse' : ''}`}></span>
                             {item.name}
                         </Link>
                     );
