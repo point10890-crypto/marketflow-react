@@ -1,0 +1,75 @@
+{
+  "name": "빛샘전자",
+  "ticker": "072950.KQ",
+  "result": "데이터 없음",
+  "date": "2026-03-24 21:02:22",
+  "elapsed": 1.2,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 8250.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 8250.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "VISSEM",
+    "sector": "Industrials",
+    "industry": "Electrical Equipment & Parts",
+    "market_cap": 66087649280,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": 1.01,
+    "beta": 0.488,
+    "fifty_two_week_high": 9000.0,
+    "fifty_two_week_low": 3930.0,
+    "revenue": 120858533888,
+    "profit_margin": 0.06252,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 31922159560
+    },
+    {
+      "date": "2025-06",
+      "value": 29220245420
+    },
+    {
+      "date": "2025-03",
+      "value": 28066239470
+    },
+    {
+      "date": "2024-12",
+      "value": 30287852930
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 2378816550
+    },
+    {
+      "date": "2025-06",
+      "value": 1175659770
+    },
+    {
+      "date": "2025-03",
+      "value": 1322443620
+    },
+    {
+      "date": "2024-12",
+      "value": 2656285930
+    }
+  ],
+  "news": []
+}

@@ -1,0 +1,89 @@
+{
+  "name": "서진시스템",
+  "ticker": "178320.KQ",
+  "result": "적극 매수",
+  "date": "2026-03-24 22:58:32",
+  "elapsed": 1.7,
+  "consensus_score": 5.0,
+  "analyst_count": 3,
+  "recommendation_detail": {
+    "strongBuy": 3,
+    "buy": 0,
+    "hold": 0,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 49200.0,
+    "high": 70000.0,
+    "low": 30000.0,
+    "mean": 51666.668,
+    "median": 55000.0
+  },
+  "current_price": 49200.0,
+  "upside_potential": 5.0,
+  "key_stats": {
+    "name": "SEOJIN SYSTEM",
+    "sector": "Technology",
+    "industry": "Communication Equipment",
+    "market_cap": 2762479239168,
+    "pe_ratio": null,
+    "forward_pe": 12.145149,
+    "dividend_yield": null,
+    "beta": 0.883,
+    "fifty_two_week_high": 50800.0,
+    "fifty_two_week_low": 16490.0,
+    "revenue": 1019738849280,
+    "profit_margin": -0.116960004,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "서진시스템(178320.KQ)은 현재 49,200원에 거래되고 있으며, 애널리스트 컨센서스는 3명 참여 기준 '적극 매수' 의견입니다. 목표가 평균은 51,667원으로 현재 주가 대비 약 5.0% 상승 여력이 있습니다. 투자 판단은 제시된 정보를 참고하여 신중하게 결정하시기 바랍니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 215500668420
+    },
+    {
+      "date": "2025-06",
+      "value": 258576171800
+    },
+    {
+      "date": "2025-03",
+      "value": 281267404470
+    },
+    {
+      "date": "2024-12",
+      "value": 264394591100
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": -47827908510
+    },
+    {
+      "date": "2025-06",
+      "value": -80674143610
+    },
+    {
+      "date": "2025-03",
+      "value": 1230662970
+    },
+    {
+      "date": "2024-12",
+      "value": 8002720820
+    }
+  ],
+  "news": [
+    {
+      "title": "Global Growth Companies With High Insider Ownership Growing Earnings At 117%",
+      "summary": "As global markets navigate a landscape marked by geopolitical tensions and fluctuating economic indicators, investors are increasingly drawn to companies that demonstrate resilience and potential for ",
+      "url": "https://finance.yahoo.com/news/global-growth-companies-high-insider-093543364.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-01-30T09:35:43Z"
+    }
+  ]
+}

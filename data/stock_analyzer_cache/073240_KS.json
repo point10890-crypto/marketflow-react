@@ -1,0 +1,103 @@
+{
+  "name": "금호타이어",
+  "ticker": "073240.KS",
+  "result": "매수",
+  "date": "2026-03-24 21:01:26",
+  "elapsed": 2.2,
+  "consensus_score": 4.0,
+  "analyst_count": 8,
+  "recommendation_detail": {
+    "strongBuy": 0,
+    "buy": 8,
+    "hold": 0,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 6250.0,
+    "high": 10000.0,
+    "low": 6500.0,
+    "mean": 7975.0,
+    "median": 7650.0
+  },
+  "current_price": 6250.0,
+  "upside_potential": 27.6,
+  "key_stats": {
+    "name": "KUMHOTIRE",
+    "sector": "Consumer Cyclical",
+    "industry": "Auto Parts",
+    "market_cap": 1795376807936,
+    "pe_ratio": null,
+    "forward_pe": 4.285518,
+    "dividend_yield": null,
+    "beta": 0.549,
+    "fifty_two_week_high": 7650.0,
+    "fifty_two_week_low": 4060.0,
+    "revenue": 4701282107392,
+    "profit_margin": 0.07389,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "금호타이어(073240.KS)에 대해 8명의 애널리스트가 제시한 컨센서스는 매수 의견입니다. 목표가 평균은 7,975원으로 현재가 6,250원 대비 27.6% 상승 여력이 있습니다. 투자 판단은 개인의 책임 하에 신중하게 이루어져야 합니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 1113745691720
+    },
+    {
+      "date": "2025-06",
+      "value": 1221253035000
+    },
+    {
+      "date": "2025-03",
+      "value": 1206213100000
+    },
+    {
+      "date": "2024-12",
+      "value": 1240738298650
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 82816735750
+    },
+    {
+      "date": "2025-06",
+      "value": -974660890
+    },
+    {
+      "date": "2025-03",
+      "value": 96452861070
+    },
+    {
+      "date": "2024-12",
+      "value": 75880292340
+    }
+  ],
+  "news": [
+    {
+      "title": "Kumho, A2Z collaborate in autonomous vehicle segment",
+      "summary": "Kumho to develop next-generation autonomous vehicle tyres.",
+      "url": "https://www.just-auto.com/news/kumho-a2z-collaborate-in-autonomous-vehicle-segment/",
+      "provider": "Just Auto",
+      "pub_time": "2025-09-19T09:02:17Z"
+    },
+    {
+      "title": "Kumho tyre plant in Gwangju destroyed by fire",
+      "summary": "Deliveries to major automakers will be affected.",
+      "url": "https://www.just-auto.com/news/kumho-tyre-plant-in-gwangju-destroyed-by-fire/",
+      "provider": "Just Auto",
+      "pub_time": "2025-05-20T09:40:30Z"
+    },
+    {
+      "title": "Kumho to build European tyre plant by 2027",
+      "summary": "Company has shortlisted three countries for US$700m investment.",
+      "url": "https://www.just-auto.com/news/kumho-to-build-european-tyre-plant-by-2027/",
+      "provider": "Just Auto",
+      "pub_time": "2025-04-17T09:00:24Z"
+    }
+  ]
+}

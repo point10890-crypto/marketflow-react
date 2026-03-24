@@ -1,0 +1,75 @@
+{
+  "name": "라온피플",
+  "ticker": "300120.KQ",
+  "result": "데이터 없음",
+  "date": "2026-03-24 22:39:31",
+  "elapsed": 1.2,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 1082.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 1082.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "LaonPeople",
+    "sector": "Technology",
+    "industry": "Computer Hardware",
+    "market_cap": 37863936000,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": null,
+    "beta": 1.157,
+    "fifty_two_week_high": 3871.4285,
+    "fifty_two_week_low": 931.0,
+    "revenue": 223078367232,
+    "profit_margin": -0.0915,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 19892874570
+    },
+    {
+      "date": "2025-06",
+      "value": 63995907430
+    },
+    {
+      "date": "2025-03",
+      "value": 44926997410
+    },
+    {
+      "date": "2024-12",
+      "value": 94262587890
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": -5456849720
+    },
+    {
+      "date": "2025-06",
+      "value": -6454291860
+    },
+    {
+      "date": "2025-03",
+      "value": -6769256930
+    },
+    {
+      "date": "2024-12",
+      "value": -1730562940
+    }
+  ],
+  "news": []
+}

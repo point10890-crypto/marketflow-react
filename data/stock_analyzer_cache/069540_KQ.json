@@ -1,0 +1,75 @@
+{
+  "name": "빛과전자",
+  "ticker": "069540.KQ",
+  "result": "데이터 없음",
+  "date": "2026-03-24 20:59:43",
+  "elapsed": 2.1,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 2620.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 2620.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "LIGHTRON",
+    "sector": "Technology",
+    "industry": "Communication Equipment",
+    "market_cap": 155661697024,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": null,
+    "beta": 1.612,
+    "fifty_two_week_high": 3695.0,
+    "fifty_two_week_low": 592.0,
+    "revenue": 30013939712,
+    "profit_margin": -0.54181,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 7622659210
+    },
+    {
+      "date": "2025-06",
+      "value": 7977360000
+    },
+    {
+      "date": "2025-03",
+      "value": 8459555970
+    },
+    {
+      "date": "2024-12",
+      "value": 5954364460
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": -1859144520
+    },
+    {
+      "date": "2025-06",
+      "value": -6155955770
+    },
+    {
+      "date": "2025-03",
+      "value": -1987384830
+    },
+    {
+      "date": "2024-12",
+      "value": -6259353350
+    }
+  ],
+  "news": []
+}

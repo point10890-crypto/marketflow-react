@@ -1,0 +1,75 @@
+{
+  "name": "삼천당제약",
+  "ticker": "000250.KQ",
+  "result": "데이터 없음",
+  "date": "2026-03-24 22:58:01",
+  "elapsed": 1.7,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 936000.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 936000.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "SCD",
+    "sector": "",
+    "industry": "",
+    "market_cap": 21769373089792,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": null,
+    "beta": null,
+    "fifty_two_week_high": 1025000.0,
+    "fifty_two_week_low": 127600.0,
+    "revenue": null,
+    "profit_margin": null,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 58024413360
+    },
+    {
+      "date": "2025-06",
+      "value": 56900188950
+    },
+    {
+      "date": "2025-03",
+      "value": 50617981540
+    },
+    {
+      "date": "2024-12",
+      "value": 55194135610
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 2572814500
+    },
+    {
+      "date": "2025-06",
+      "value": -3336061860
+    },
+    {
+      "date": "2025-03",
+      "value": 478231630
+    },
+    {
+      "date": "2024-12",
+      "value": -11118666220
+    }
+  ],
+  "news": []
+}

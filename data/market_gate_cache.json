@@ -3,6 +3,7 @@
   "score": 45,
   "label": "BEARISH",
   "reasons": [
+    "⚠️ 환율 경계 (1495원)",
     "RSI(59.4), MACD: BEARISH",
     "🔥 강세: 반도체 (75)",
     "❄️ 약세: 증권 (35)"
@@ -18,7 +19,7 @@
       "name": "KOSPI200",
       "signal": "neutral",
       "change_pct": 3.06,
-      "score": 45
+      "score": 55
     },
     {
       "name": "IT",
@@ -58,7 +59,7 @@
     }
   ],
   "metrics": {
-    "usd_krw": null,
+    "usd_krw": 1494.97998046875,
     "kospi": 5553.919921875,
     "kospi_change_pct": 2.74,
     "kosdaq": 1121.43994140625,
@@ -69,5 +70,5 @@
   "kospi_change_pct": 2.74,
   "kosdaq_close": 1121.43994140625,
   "kosdaq_change_pct": 2.24,
-  "updated_at": "2026-03-24T19:58:56.580353"
+  "updated_at": "2026-03-25T00:00:33.173843"
 }

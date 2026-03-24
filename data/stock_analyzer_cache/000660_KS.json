@@ -1,0 +1,117 @@
+{
+  "name": "SK하이닉스",
+  "ticker": "000660.KS",
+  "result": "매수",
+  "date": "2026-03-24 22:57:36",
+  "elapsed": 2.2,
+  "consensus_score": 4.15,
+  "analyst_count": 39,
+  "recommendation_detail": {
+    "strongBuy": 11,
+    "buy": 25,
+    "hold": 2,
+    "sell": 0,
+    "strongSell": 1
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 986000.0,
+    "high": 1700000.0,
+    "low": 255245.0,
+    "mean": 1279381.0,
+    "median": 1375000.0
+  },
+  "current_price": 986000.0,
+  "upside_potential": 29.8,
+  "key_stats": {
+    "name": "SK hynix",
+    "sector": "Technology",
+    "industry": "Semiconductors",
+    "market_cap": 680788890746880,
+    "pe_ratio": null,
+    "forward_pe": 4.401899,
+    "dividend_yield": 0.32,
+    "beta": 1.715,
+    "fifty_two_week_high": 1099000.0,
+    "fifty_two_week_low": 162700.0,
+    "revenue": 97146674085888,
+    "profit_margin": 0.4418,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "SK하이닉스(000660.KS)에 대해 39명의 애널리스트가 제시한 컨센서스 의견은 '매수'입니다. 목표가 평균은 1,279,381 KRW로, 현재가 986,000 KRW 대비 29.8%의 상승 여력이 있는 것으로 분석됩니다. 투자 판단은 제시된 데이터를 참고하여 투자자 본인이 결정해야 합니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 32826653000000
+    },
+    {
+      "date": "2025-09",
+      "value": 24448929000000
+    },
+    {
+      "date": "2025-06",
+      "value": 22231952000000
+    },
+    {
+      "date": "2025-03",
+      "value": 17639141000000
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 15219783000000
+    },
+    {
+      "date": "2025-09",
+      "value": 12595195000000
+    },
+    {
+      "date": "2025-06",
+      "value": 6997228000000
+    },
+    {
+      "date": "2025-03",
+      "value": 8107081000000
+    }
+  ],
+  "news": [
+    {
+      "title": "Tech stocks today: Cisco launches security tools for AI agents, SK Hynix places $8 billion ASML order",
+      "summary": "Live coverage of \"Magnificent Seven\" stocks, and the latest technology news.",
+      "url": "https://finance.yahoo.com/news/live/tech-stocks-today-cisco-launches-security-tools-for-ai-agents-sk-hynix-places-8-billion-asml-order-144220180.html",
+      "provider": "Yahoo Finance",
+      "pub_time": "2026-03-13T14:42:20Z"
+    },
+    {
+      "title": "ASML Lands Massive EUV Deal Clearing Path to Double Revenue by 2030",
+      "summary": "In recent months, I’ve argued that ASML (NASDAQ:ASML) should sit on every investor’s radar because of its near-monopoly in extreme ultraviolet (EUV) lithography — the critical technology powering the ",
+      "url": "https://247wallst.com/investing/2026/03/24/asml-lands-massive-euv-deal-clearing-path-to-double-revenue-by-2030/",
+      "provider": "24/7 Wall St.",
+      "pub_time": "2026-03-24T13:45:46Z"
+    },
+    {
+      "title": "ASML Lands $7.97 Billion Record Order",
+      "summary": "The largest disclosed order strengthens demand visibility into future revenue",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/asml-lands-7-97-billion-115508072.html",
+      "provider": "GuruFocus.com",
+      "pub_time": "2026-03-24T11:55:08Z"
+    },
+    {
+      "title": "Trending tickers: ASML, Estée Lauder, Bellway, Kingfisher and Fevertree",
+      "summary": "The latest investor updates on stocks that are trending on Tuesday.",
+      "url": "https://uk.finance.yahoo.com/news/asml-estee-lauder-bellway-kingfisher-fevertree-trending-tickers-100926143.html",
+      "provider": "Yahoo Finance UK",
+      "pub_time": "2026-03-24T10:09:26Z"
+    },
+    {
+      "title": "SK Hynix to Buy $8 Billion of Top-End ASML Chipmaking Gear",
+      "summary": "(Bloomberg) -- SK Hynix Inc. plans to spend 11.9 trillion won ($7.9 billion) on cutting-edge extreme ultraviolet lithography chipmaking tools from ASML Holding NV, deepening a push into next-generatio",
+      "url": "https://finance.yahoo.com/sectors/technology/articles/sk-hynix-buy-8-billion-074136395.html",
+      "provider": "Bloomberg",
+      "pub_time": "2026-03-24T09:34:23Z"
+    }
+  ]
+}

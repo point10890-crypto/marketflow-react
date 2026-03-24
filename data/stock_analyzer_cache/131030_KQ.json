@@ -1,35 +1,35 @@
 {
-  "name": "삼양패키징",
-  "ticker": "272550.KS",
+  "name": "옵투스제약",
+  "ticker": "131030.KQ",
   "result": "데이터 없음",
-  "date": "2026-03-24 22:14:08",
-  "elapsed": 2.4,
+  "date": "2026-03-24 21:19:19",
+  "elapsed": 1.9,
   "consensus_score": null,
   "analyst_count": 0,
   "recommendation_detail": null,
   "recommendation_period": null,
   "price_targets": {
-    "current": 14040.0,
+    "current": 14180.0,
     "high": null,
     "low": null,
     "mean": null,
     "median": null
   },
-  "current_price": 14040.0,
+  "current_price": 14180.0,
   "upside_potential": null,
   "key_stats": {
-    "name": "SAMYANG PACKAGING",
-    "sector": "Consumer Cyclical",
-    "industry": "Packaging & Containers",
-    "market_cap": 215246831616,
+    "name": "OPTUS",
+    "sector": "Healthcare",
+    "industry": "Drug Manufacturers - Specialty & Generic",
+    "market_cap": 216882036736,
     "pe_ratio": null,
     "forward_pe": null,
-    "dividend_yield": 4.1,
-    "beta": 0.452,
-    "fifty_two_week_high": 15870.0,
-    "fifty_two_week_low": 11050.0,
-    "revenue": 420217978880,
-    "profit_margin": 0.04202,
+    "dividend_yield": null,
+    "beta": 0.656,
+    "fifty_two_week_high": 15570.0,
+    "fifty_two_week_low": 5610.0,
+    "revenue": 87161380864,
+    "profit_margin": 0.13031,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
@@ -38,37 +38,37 @@
   "revenue_quarters": [
     {
       "date": "2025-12",
-      "value": 82809124650
+      "value": 22564837010
     },
     {
       "date": "2025-09",
-      "value": 125269621990
+      "value": 24074872120
     },
     {
       "date": "2025-06",
-      "value": 120109842860
+      "value": 21792737640
     },
     {
       "date": "2025-03",
-      "value": 92029404090
+      "value": 18728931850
     }
   ],
   "net_income_quarters": [
     {
       "date": "2025-12",
-      "value": -4590305610
+      "value": 4136332890
     },
     {
       "date": "2025-09",
-      "value": 12867852440
+      "value": 3197131470
     },
     {
       "date": "2025-06",
-      "value": 13589835910
+      "value": 2849521000
     },
     {
       "date": "2025-03",
-      "value": -3741548380
+      "value": 1174825180
     }
   ],
   "news": []

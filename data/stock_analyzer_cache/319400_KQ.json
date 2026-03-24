@@ -1,0 +1,81 @@
+{
+  "name": "현대무벡스",
+  "ticker": "319400.KQ",
+  "result": "매수",
+  "date": "2026-03-24 23:02:21",
+  "elapsed": 2.2,
+  "consensus_score": 4.0,
+  "analyst_count": 1,
+  "recommendation_detail": {
+    "strongBuy": 0,
+    "buy": 1,
+    "hold": 0,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 28000.0,
+    "high": 7700.0,
+    "low": 7700.0,
+    "mean": 7700.0,
+    "median": 7700.0
+  },
+  "current_price": 28000.0,
+  "upside_potential": -72.5,
+  "key_stats": {
+    "name": "HYUNDAI MOVEX",
+    "sector": "Financial Services",
+    "industry": "Shell Companies",
+    "market_cap": 3071375048704,
+    "pe_ratio": null,
+    "forward_pe": 85.106384,
+    "dividend_yield": 0.18,
+    "beta": 2.484,
+    "fifty_two_week_high": 50400.0,
+    "fifty_two_week_low": 3170.0,
+    "revenue": 404002308096,
+    "profit_margin": 0.065019995,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "현재 현대무벡스에 대해 1명의 애널리스트가 매수 의견을 제시하고 있습니다. 목표가 평균은 7,700원으로 현재 주가 대비 72.5% 하락 여력이 있습니다. 투자 결정은 개인의 판단에 따라 신중하게 이루어져야 합니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 103477170520
+    },
+    {
+      "date": "2025-06",
+      "value": 98851089050
+    },
+    {
+      "date": "2025-03",
+      "value": 77712421020
+    },
+    {
+      "date": "2024-12",
+      "value": 123961621010
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 5006830730
+    },
+    {
+      "date": "2025-06",
+      "value": 4100240270
+    },
+    {
+      "date": "2025-03",
+      "value": 992880920
+    },
+    {
+      "date": "2024-12",
+      "value": 16169197500
+    }
+  ],
+  "news": []
+}

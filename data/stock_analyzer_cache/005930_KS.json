@@ -2,7 +2,7 @@
   "name": "삼성전자",
   "ticker": "005930.KS",
   "result": "매수",
-  "date": "2026-03-24 10:41:52",
+  "date": "2026-03-24 22:26:02",
   "elapsed": 2.4,
   "consensus_score": 4.22,
   "analyst_count": 37,
@@ -15,21 +15,21 @@
   },
   "recommendation_period": "0m",
   "price_targets": {
-    "current": 189100.0,
+    "current": 189700.0,
     "high": 340000.0,
     "low": 110000.0,
     "mean": 239873.48,
     "median": 250000.0
   },
-  "current_price": 189100.0,
-  "upside_potential": 26.9,
+  "current_price": 189700.0,
+  "upside_potential": 26.4,
   "key_stats": {
     "name": "SamsungElec",
     "sector": "Technology",
     "industry": "Consumer Electronics",
-    "market_cap": 1264338245517312,
+    "market_cap": 1268350013407232,
     "pe_ratio": null,
-    "forward_pe": 6.5825257,
+    "forward_pe": 6.6034117,
     "dividend_yield": 1.22,
     "beta": 1.121,
     "fifty_two_week_high": 223000.0,
@@ -40,7 +40,7 @@
   },
   "finnhub_supplement": null,
   "source": "yfinance",
-  "ai_analysis": "삼성전자는 현재 애널리스트 컨센서스 '매수' 의견을 받고 있으며, 37명의 애널리스트가 참여한 컨센서스 점수는 5점 만점에 4.22점입니다. 목표가 평균은 239,873원으로, 현재가 대비 26.9%의 상승 여력을 보입니다. 이는 애널리스트들이 삼성전자의 추가적인 성장 가능성을 전망하고 있음을 시사합니다.",
+  "ai_analysis": "삼성전자는 현재 애널리스트 컨센서스 '매수' 의견을 받고 있으며, 37명의 애널리스트가 참여한 컨센서스 점수는 5점 만점에 4.22점입니다. 평균 목표 주가는 239,873원으로, 현재 주가 대비 26.4% 상승 여력이 있는 것으로 분석됩니다. 제시된 분석 데이터는 투자 판단에 참고 자료로 활용될 수 있습니다.",
   "revenue_quarters": [
     {
       "date": "2025-12",
@@ -86,32 +86,32 @@
       "pub_time": "2026-03-23T20:53:18Z"
     },
     {
+      "title": "Why Micron’s AI Windfall Isn’t Convincing Investors",
+      "summary": "Micron (NASDAQ:MU) just tripled its revenue over its most recent quarter, delivered some of the highest margins in memory history, and guided for continued strength, projecting $33.5 billion in revenu",
+      "url": "https://www.trefis.com/articles/594545/why-microns-ai-windfall-isnt-convincing-investors/2026-03-24",
+      "provider": "Trefis",
+      "pub_time": "2026-03-24T12:34:40Z"
+    },
+    {
+      "title": "Samsung Medison to unify US medical imaging units",
+      "summary": "The unification marks a significant move by Samsung Medison to support continued investment in medical imaging development.",
+      "url": "https://www.hospitalmanagement.net/news/samsung-medison-unify-medical-imaging-units-2/",
+      "provider": "Hospital Management",
+      "pub_time": "2026-03-24T10:49:04Z"
+    },
+    {
+      "title": "Samsung Electronics, union to resume talks over bonus, union says",
+      "summary": "Samsung Electronics' ‌management and its ‌South Korean workers' union ​have agreed to resume talks on bonuses, the ‌union said ⁠in a statement on Tuesday. The ⁠union, representing nearly 90,000 worker",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/samsung-electronics-union-resume-talks-063318765.html",
+      "provider": "Reuters",
+      "pub_time": "2026-03-24T06:33:18Z"
+    },
+    {
       "title": "Chip Gear Stocks Jump On Tesla's Terafab Plans",
       "summary": "Semiconductor equipment stocks, including ASML, surged after Elon Musk outlined plans to build a massive chip factory called the Terafab.",
       "url": "https://www.investors.com/news/technology/asml-stock-chip-gear-peers-rise-tesla-terafab-plans/?src=A00220&yptr=yahoo",
       "provider": "Investor's Business Daily",
       "pub_time": "2026-03-23T20:19:42Z"
-    },
-    {
-      "title": "Tesla Stock Rises As Elon Musk Announces Terafab Project",
-      "summary": "Tesla and SpaceX will jointly build a semiconductor factory, but have no experience in chip manufacturing. It'll be expensive.",
-      "url": "https://www.investors.com/news/tesla-stock-elon-musk-tesla-spacex-terafab-project/?src=A00220&yptr=yahoo",
-      "provider": "Investor's Business Daily",
-      "pub_time": "2026-03-23T20:04:05Z"
-    },
-    {
-      "title": "Apple to Carry Out Staggered Launch of New iPhones, Including Foldable Device, BofA Says",
-      "summary": "Apple (AAPL) is expected to launch new models of its iPhone smartphone, including its first-ever fol",
-      "url": "https://finance.yahoo.com/markets/stocks/articles/apple-carry-staggered-launch-iphones-171917834.html",
-      "provider": "MT Newswires",
-      "pub_time": "2026-03-23T17:19:17Z"
-    },
-    {
-      "title": "Samsung just found a shocking new way into AMD’s AI push",
-      "summary": "Samsung’s new HBM4memory deal with AMD (AMD) is far more than just about components. It's an early sign. A warning shot that the chipmaker is looking to push its way into AMD’s lucrative artificial in",
-      "url": "https://www.thestreet.com/investing/samsung-just-found-a-shocking-new-way-into-amds-ai-push",
-      "provider": "TheStreet",
-      "pub_time": "2026-03-23T17:17:00Z"
     }
   ]
 }

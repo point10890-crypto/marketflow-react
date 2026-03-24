@@ -1,0 +1,81 @@
+{
+  "name": "원익IPS",
+  "ticker": "240810.KQ",
+  "result": "매수",
+  "date": "2026-03-24 22:58:17",
+  "elapsed": 1.4,
+  "consensus_score": 4.07,
+  "analyst_count": 14,
+  "recommendation_detail": {
+    "strongBuy": 7,
+    "buy": 3,
+    "hold": 3,
+    "sell": 0,
+    "strongSell": 1
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 134700.0,
+    "high": 170000.0,
+    "low": 39000.0,
+    "mean": 116500.0,
+    "median": 130500.0
+  },
+  "current_price": 134700.0,
+  "upside_potential": -13.5,
+  "key_stats": {
+    "name": "WONIK IPS",
+    "sector": "Technology",
+    "industry": "Semiconductor Equipment & Materials",
+    "market_cap": 6553921388544,
+    "pe_ratio": null,
+    "forward_pe": 35.298603,
+    "dividend_yield": 0.17,
+    "beta": 1.823,
+    "fifty_two_week_high": 143000.0,
+    "fifty_two_week_low": 20800.0,
+    "revenue": 909795721216,
+    "profit_margin": 0.09236,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "원익IPS는 애널리스트 컨센서스 '매수' 의견을 받고 있으며, 14명의 애널리스트가 참여했습니다. 목표가 평균은 116,500원으로 현재 주가 대비 -13.5% 하락 여력이 있습니다. 투자 판단은 개인의 분석과 판단에 따라 결정되어야 합니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 268438240600
+    },
+    {
+      "date": "2025-06",
+      "value": 242168631000
+    },
+    {
+      "date": "2025-03",
+      "value": 124198201770
+    },
+    {
+      "date": "2024-12",
+      "value": 294854886810
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 28281025990
+    },
+    {
+      "date": "2025-06",
+      "value": 27654473990
+    },
+    {
+      "date": "2025-03",
+      "value": -4714956860
+    },
+    {
+      "date": "2024-12",
+      "value": 27737559050
+    }
+  ],
+  "news": []
+}
