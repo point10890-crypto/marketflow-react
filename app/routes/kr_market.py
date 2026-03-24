@@ -4,6 +4,7 @@
 import os
 import sys
 import json
+import time
 import logging
 import traceback
 from datetime import datetime, date
@@ -1099,12 +1100,14 @@ def kr_screener_status():
     try:
         from app.services import kis_screener
         cache = kis_screener._result_cache
+        cache_ts = cache.get("ts", 0)
+        cache_data = cache.get("data")
         return jsonify({
             "market_open": kis_screener.is_market_open(),
             "market_status": kis_screener.get_market_status(),
             "token_valid": kis_screener.get_token() is not None,
-            "cache_age": round(time.time() - cache["ts"], 1) if cache.get("ts") else None,
-            "last_results": len(cache["data"]["results"]) if cache.get("data") else 0,
+            "cache_age": round(time.time() - cache_ts, 1) if cache_ts > 0 else None,
+            "last_results": len(cache_data.get("results", [])) if cache_data else 0,
         })
     except Exception as e:
         return jsonify({"error": str(e)}), 500

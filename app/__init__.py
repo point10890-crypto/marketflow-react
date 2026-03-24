@@ -178,8 +178,9 @@ def create_app(config=None):
     # ── 프리컴퓨팅 스냅샷 워커 (느린 엔드포인트 백그라운드 갱신) ──
     if not os.getenv('RENDER'):
         _start_precompute_worker(app)
+        _start_screener_worker(app)
     else:
-        print("[INFO] PreCompute worker disabled on Render (memory limit)")
+        print("[INFO] PreCompute/Screener workers disabled on Render (memory limit)")
 
     return app
 
@@ -208,6 +209,95 @@ def _start_precompute_worker(app):
     thread = threading.Thread(target=_precompute_loop, daemon=True, name='PreComputeWorker')
     thread.start()
     print("[OK] PreCompute worker started (5min interval)")
+
+
+def _start_screener_worker(app):
+    """장중(09:00~15:30) 주도주 스크리너 백그라운드 폴링.
+
+    - 장중: 5초 간격 스캔 → 캐시 항상 최신 유지
+    - 장외: 60초 간격 장 시작 대기
+    - S등급 발생 시 텔레그램 알림 (5분 쿨다운)
+    - 에러 3회 연속 시 30초 휴식 후 재시도
+    """
+    import threading
+    import time as _time
+
+    def _screener_loop():
+        _time.sleep(15)  # Flask 초기화 완료 대기
+        consecutive_errors = 0
+        alert_cooldown = {}  # {code: timestamp}
+
+        print("[Screener] Worker started — waiting for market hours")
+
+        while True:
+            try:
+                from app.services.kis_screener import is_market_open, run_screening
+
+                if not is_market_open():
+                    _time.sleep(60)
+                    continue
+
+                result = run_screening()
+                consecutive_errors = 0  # 성공 시 리셋
+
+                # S등급 텔레그램 알림
+                if result and result.get('results'):
+                    for stock in result['results']:
+                        if stock.get('grade') != 'S':
+                            continue
+                        code = stock.get('code', '')
+                        now = _time.time()
+                        if code in alert_cooldown and (now - alert_cooldown[code]) < 300:
+                            continue
+                        alert_cooldown[code] = now
+                        try:
+                            _send_screener_alert(stock)
+                        except Exception:
+                            pass
+
+                _time.sleep(5)  # 장중 5초 간격
+
+            except Exception as e:
+                consecutive_errors += 1
+                print(f"[Screener] Error #{consecutive_errors}: {e}")
+                if consecutive_errors >= 3:
+                    print("[Screener] 3회 연속 에러 — 30초 휴식")
+                    _time.sleep(30)
+                    consecutive_errors = 0
+                else:
+                    _time.sleep(5)
+
+    thread = threading.Thread(target=_screener_loop, daemon=True, name='ScreenerWorker')
+    thread.start()
+    print("[OK] Screener worker started (5s polling during market hours)")
+
+
+def _send_screener_alert(stock):
+    """S등급 주도주 텔레그램 알림"""
+    try:
+        import requests
+        bot_token = os.environ.get('TELEGRAM_BOT_TOKEN')
+        chat_id = os.environ.get('TELEGRAM_CHAT_ID')
+        if not bot_token or not chat_id:
+            return
+        score = stock.get('score', {})
+        msg = (
+            f"<b>🔥 주도주 S등급 발견</b>\n\n"
+            f"<b>{stock.get('name')}</b> ({stock.get('code')})\n"
+            f"현재가: {stock.get('price', 0):,}원 ({stock.get('change_pct', 0):+.1f}%)\n"
+            f"거래대금: {stock.get('trading_value_eok', 0):,}억\n"
+            f"점수: {score.get('total', 0)}/100 "
+            f"(거래{score.get('trading_value', 0)} 모멘{score.get('momentum', 0)} "
+            f"수급{score.get('smart_money', 0)} 급증{score.get('volume_surge', 0)} "
+            f"섹터{score.get('sector', 0)})"
+        )
+        requests.post(
+            f"https://api.telegram.org/bot{bot_token}/sendMessage",
+            json={"chat_id": chat_id, "text": msg, "parse_mode": "HTML"},
+            timeout=5
+        )
+    except Exception:
+        pass
 
 
 def _precompute_snapshots(base_dir):
