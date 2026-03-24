@@ -1,35 +1,35 @@
 {
-  "name": "삼화페인트",
-  "ticker": "000390.KS",
+  "name": "삼륭물산",
+  "ticker": "014970.KQ",
   "result": "데이터 없음",
-  "date": "2026-03-24 11:13:54",
-  "elapsed": 3.4,
+  "date": "2026-03-24 14:58:00",
+  "elapsed": 2.1,
   "consensus_score": null,
   "analyst_count": 0,
   "recommendation_detail": null,
   "recommendation_period": null,
   "price_targets": {
-    "current": 9660.0,
+    "current": 10280.0,
     "high": null,
     "low": null,
     "mean": null,
     "median": null
   },
-  "current_price": 9660.0,
+  "current_price": 10270.0,
   "upside_potential": null,
   "key_stats": {
-    "name": "SamhwaPaint",
-    "sector": "Basic Materials",
-    "industry": "Specialty Chemicals",
-    "market_cap": 239711240192,
+    "name": "Samryoong",
+    "sector": "Consumer Cyclical",
+    "industry": "Packaging & Containers",
+    "market_cap": 152401002496,
     "pe_ratio": null,
     "forward_pe": null,
-    "dividend_yield": 3.62,
-    "beta": 0.783,
-    "fifty_two_week_high": 14300.0,
-    "fifty_two_week_low": 5260.0,
-    "revenue": 617067577344,
-    "profit_margin": 0.01244,
+    "dividend_yield": 1.23,
+    "beta": 0.162,
+    "fifty_two_week_high": 13590.0,
+    "fifty_two_week_low": 2520.0,
+    "revenue": 93333676032,
+    "profit_margin": -0.037100002,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
@@ -38,37 +38,37 @@
   "revenue_quarters": [
     {
       "date": "2025-09",
-      "value": 155501778050
+      "value": 23191386800
     },
     {
       "date": "2025-06",
-      "value": 177509100090
+      "value": 24680825720
     },
     {
       "date": "2025-03",
-      "value": 133269135310
+      "value": 22145660690
     },
     {
       "date": "2024-12",
-      "value": 154798521450
+      "value": 23315806450
     }
   ],
   "net_income_quarters": [
     {
       "date": "2025-09",
-      "value": 489814180
+      "value": 1762132790
     },
     {
       "date": "2025-06",
-      "value": 7907970290
+      "value": 1147929440
     },
     {
       "date": "2025-03",
-      "value": -1293391950
+      "value": 1001529230
     },
     {
       "date": "2024-12",
-      "value": 1035630000
+      "value": -7717515210
     }
   ],
   "news": []

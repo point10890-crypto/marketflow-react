@@ -1,0 +1,103 @@
+{
+  "name": "에코프로비엠",
+  "ticker": "247540.KQ",
+  "result": "중립",
+  "date": "2026-03-24 12:36:14",
+  "elapsed": 2.1,
+  "consensus_score": 2.71,
+  "analyst_count": 24,
+  "recommendation_detail": {
+    "strongBuy": 3,
+    "buy": 3,
+    "hold": 7,
+    "sell": 6,
+    "strongSell": 5
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 192200.0,
+    "high": 270000.0,
+    "low": 76000.0,
+    "mean": 152977.27,
+    "median": 125000.0
+  },
+  "current_price": 192200.0,
+  "upside_potential": -20.4,
+  "key_stats": {
+    "name": "ECOPROBM",
+    "sector": "Industrials",
+    "industry": "Electrical Equipment & Parts",
+    "market_cap": 18783605358592,
+    "pe_ratio": null,
+    "forward_pe": 183.4114,
+    "dividend_yield": 0.06,
+    "beta": 1.01,
+    "fifty_two_week_high": 260000.0,
+    "fifty_two_week_low": 81100.0,
+    "revenue": 2499490611200,
+    "profit_margin": 0.00124,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "에코프로비엠에 대한 애널리스트 컨센서스는 중립적이며, 24명의 애널리스트가 참여했습니다. 평균 목표주가는 현재 주가 대비 약 20.4% 낮은 152,977원으로 제시되었습니다. 목표가 기준으로는 추가적인 주가 상승 여력이 제한적인 것으로 판단됩니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 625060142880
+    },
+    {
+      "date": "2025-06",
+      "value": 779716508200
+    },
+    {
+      "date": "2025-03",
+      "value": 629788701180
+    },
+    {
+      "date": "2024-12",
+      "value": 464925296500
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 22955569850
+    },
+    {
+      "date": "2025-06",
+      "value": 11458050610
+    },
+    {
+      "date": "2025-03",
+      "value": -13961596530
+    },
+    {
+      "date": "2024-12",
+      "value": -17340949640
+    }
+  ],
+  "news": [
+    {
+      "title": "EcoPro completes new cathode plant in Hungary",
+      "summary": "Production capacity to be expanded to 108,000 tons in 2026.",
+      "url": "https://www.just-auto.com/news/ecopro-completes-new-cathode-plant-in-hungary/",
+      "provider": "Just Auto",
+      "pub_time": "2025-12-04T09:52:59Z"
+    },
+    {
+      "title": "EcoPro completes initial battery materials investment in Indonesia",
+      "summary": "Four nickel smelters completed on the island of Sulawesi.",
+      "url": "https://www.just-auto.com/news/ecopro-completes-initial-battery-materials-investment-in-indonesia/",
+      "provider": "Just Auto",
+      "pub_time": "2025-09-19T09:00:27Z"
+    },
+    {
+      "title": "SK On signs domestic lithium deal with EcoPro",
+      "summary": "South Korean battery maker moves to reduce dependence on Chinese suppliers.",
+      "url": "https://www.just-auto.com/news/sk-on-signs-domestic-lithium-deal-with-ecopro/",
+      "provider": "Just Auto",
+      "pub_time": "2025-07-18T09:01:44Z"
+    }
+  ]
+}

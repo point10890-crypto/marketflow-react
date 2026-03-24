@@ -1,35 +1,35 @@
 {
-  "name": "폴라리스오피스",
-  "ticker": "041020.KQ",
+  "name": "삼양패키징",
+  "ticker": "272550.KS",
   "result": "데이터 없음",
-  "date": "2026-03-24 10:49:05",
+  "date": "2026-03-24 14:55:02",
   "elapsed": 2.2,
   "consensus_score": null,
   "analyst_count": 0,
   "recommendation_detail": null,
   "recommendation_period": null,
   "price_targets": {
-    "current": 4745.0,
+    "current": 15430.0,
     "high": null,
     "low": null,
     "mean": null,
     "median": null
   },
-  "current_price": 4745.0,
+  "current_price": 15430.0,
   "upside_potential": null,
   "key_stats": {
-    "name": "Polaris Office",
-    "sector": "",
-    "industry": "",
-    "market_cap": 235749588992,
+    "name": "SAMYANG PACKAGING",
+    "sector": "Consumer Cyclical",
+    "industry": "Packaging & Containers",
+    "market_cap": 236556877824,
     "pe_ratio": null,
     "forward_pe": null,
-    "dividend_yield": null,
-    "beta": null,
-    "fifty_two_week_high": 7030.0,
-    "fifty_two_week_low": 3245.0,
-    "revenue": null,
-    "profit_margin": null,
+    "dividend_yield": 4.1,
+    "beta": 0.452,
+    "fifty_two_week_high": 15870.0,
+    "fifty_two_week_low": 11050.0,
+    "revenue": 420217978880,
+    "profit_margin": 0.04202,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
@@ -37,38 +37,38 @@
   "ai_analysis": null,
   "revenue_quarters": [
     {
+      "date": "2025-12",
+      "value": 82809124650
+    },
+    {
       "date": "2025-09",
-      "value": 84778104990
+      "value": 125269621990
     },
     {
       "date": "2025-06",
-      "value": 79848158750
+      "value": 120109842860
     },
     {
       "date": "2025-03",
-      "value": 74399265450
-    },
-    {
-      "date": "2024-12",
-      "value": 79652998340
+      "value": 92029404090
     }
   ],
   "net_income_quarters": [
     {
+      "date": "2025-12",
+      "value": -4590305610
+    },
+    {
       "date": "2025-09",
-      "value": 1694051830
+      "value": 12867852440
     },
     {
       "date": "2025-06",
-      "value": 763332450
+      "value": 13589835910
     },
     {
       "date": "2025-03",
-      "value": 1030767600
-    },
-    {
-      "date": "2024-12",
-      "value": 1919181600
+      "value": -3741548380
     }
   ],
   "news": []

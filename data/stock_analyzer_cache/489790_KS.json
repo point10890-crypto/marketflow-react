@@ -1,0 +1,89 @@
+{
+  "name": "한화비전",
+  "ticker": "489790.KS",
+  "result": "매수",
+  "date": "2026-03-24 10:37:53",
+  "elapsed": 2.1,
+  "consensus_score": 4.0,
+  "analyst_count": 2,
+  "recommendation_detail": {
+    "strongBuy": 1,
+    "buy": 0,
+    "hold": 1,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 85200.0,
+    "high": 100000.0,
+    "low": 64000.0,
+    "mean": 82000.0,
+    "median": 82000.0
+  },
+  "current_price": 85200.0,
+  "upside_potential": -3.8,
+  "key_stats": {
+    "name": "Hanwha Vision",
+    "sector": "Industrials",
+    "industry": "Security & Protection Services",
+    "market_cap": 4292166811648,
+    "pe_ratio": null,
+    "forward_pe": 2311.5007,
+    "dividend_yield": null,
+    "beta": null,
+    "fifty_two_week_high": 94400.0,
+    "fifty_two_week_low": 35650.0,
+    "revenue": 1790921932800,
+    "profit_margin": 0.02546,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "한화비전에 대해 2명의 애널리스트가 매수 의견을 제시하고 있으며, 컨센서스 점수는 4.0/5.0입니다. 현재 주가는 85,200 KRW입니다. 목표가 평균은 82,000 KRW로, 현재 주가 대비 -3.8% 하락 여력이 있습니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 422742391620
+    },
+    {
+      "date": "2025-06",
+      "value": 457161852440
+    },
+    {
+      "date": "2025-03",
+      "value": 451805860290
+    },
+    {
+      "date": "2024-12",
+      "value": 353797096790
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": -5976021160
+    },
+    {
+      "date": "2025-06",
+      "value": -9722935440
+    },
+    {
+      "date": "2025-03",
+      "value": -2391827690
+    },
+    {
+      "date": "2024-12",
+      "value": 22373213190
+    }
+  ],
+  "news": [
+    {
+      "title": "The most popular stocks and funds investors bought in August",
+      "summary": "Economic events and data, as well as more company earnings, were the focus for investors in August.",
+      "url": "https://uk.finance.yahoo.com/news/popular-stocks-funds-investors-bought-august-114043112.html",
+      "provider": "Yahoo Finance UK",
+      "pub_time": "2025-09-10T11:40:43Z"
+    }
+  ]
+}

@@ -1,0 +1,81 @@
+{
+  "name": "성광벤드",
+  "ticker": "014620.KQ",
+  "result": "매수",
+  "date": "2026-03-24 16:30:15",
+  "elapsed": 2.5,
+  "consensus_score": 4.25,
+  "analyst_count": 4,
+  "recommendation_detail": {
+    "strongBuy": 1,
+    "buy": 3,
+    "hold": 0,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 34200.0,
+    "high": 49000.0,
+    "low": 29000.0,
+    "mean": 39500.0,
+    "median": 40000.0
+  },
+  "current_price": 34200.0,
+  "upside_potential": 15.5,
+  "key_stats": {
+    "name": "SKB",
+    "sector": "Industrials",
+    "industry": "Metal Fabrication",
+    "market_cap": 908261851136,
+    "pe_ratio": null,
+    "forward_pe": 15.05686,
+    "dividend_yield": 0.55,
+    "beta": 0.367,
+    "fifty_two_week_high": 41200.0,
+    "fifty_two_week_low": 22550.0,
+    "revenue": 244599406592,
+    "profit_margin": 0.13863,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "성광벤드는 현재 34,200원에 거래되고 있으며, 4명의 애널리스트 컨센서스는 '매수' 의견입니다. 목표가 평균은 39,500원으로, 현재 주가 대비 15.5% 상승 여력이 있습니다. 이는 애널리스트들이 성광벤드의 추가적인 성장 가능성을 긍정적으로 평가하고 있음을 시사합니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 64561382390
+    },
+    {
+      "date": "2025-06",
+      "value": 58108547980
+    },
+    {
+      "date": "2025-03",
+      "value": 63698885260
+    },
+    {
+      "date": "2024-12",
+      "value": 58230593840
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 10781483560
+    },
+    {
+      "date": "2025-06",
+      "value": 6455597360
+    },
+    {
+      "date": "2025-03",
+      "value": 9181808810
+    },
+    {
+      "date": "2024-12",
+      "value": 7489130370
+    }
+  ],
+  "news": []
+}

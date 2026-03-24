@@ -1,10 +1,10 @@
 {
   "action": "CAUTIOUS",
-  "score": 28,
+  "score": 30,
   "components": {
     "market_gate": {
-      "score": 25,
-      "contribution": -7.5
+      "score": 35,
+      "contribution": -4.5
     },
     "regime": {
       "regime": "neutral",

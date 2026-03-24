@@ -1,35 +1,35 @@
 {
-  "name": "삼화페인트",
-  "ticker": "000390.KS",
+  "name": "로킷헬스케어",
+  "ticker": "376900.KQ",
   "result": "데이터 없음",
-  "date": "2026-03-24 11:13:54",
-  "elapsed": 3.4,
+  "date": "2026-03-24 12:17:39",
+  "elapsed": 2.0,
   "consensus_score": null,
   "analyst_count": 0,
   "recommendation_detail": null,
   "recommendation_period": null,
   "price_targets": {
-    "current": 9660.0,
+    "current": 121700.0,
     "high": null,
     "low": null,
     "mean": null,
     "median": null
   },
-  "current_price": 9660.0,
+  "current_price": 121700.0,
   "upside_potential": null,
   "key_stats": {
-    "name": "SamhwaPaint",
-    "sector": "Basic Materials",
-    "industry": "Specialty Chemicals",
-    "market_cap": 239711240192,
+    "name": "ROKIT",
+    "sector": "Healthcare",
+    "industry": "Medical Care Facilities",
+    "market_cap": 1875985956864,
     "pe_ratio": null,
     "forward_pe": null,
-    "dividend_yield": 3.62,
-    "beta": 0.783,
-    "fifty_two_week_high": 14300.0,
-    "fifty_two_week_low": 5260.0,
-    "revenue": 617067577344,
-    "profit_margin": 0.01244,
+    "dividend_yield": null,
+    "beta": null,
+    "fifty_two_week_high": 135600.0,
+    "fifty_two_week_low": 13740.0,
+    "revenue": 20328015872,
+    "profit_margin": -0.36073002,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
@@ -38,37 +38,37 @@
   "revenue_quarters": [
     {
       "date": "2025-09",
-      "value": 155501778050
+      "value": 6954615620
     },
     {
       "date": "2025-06",
-      "value": 177509100090
+      "value": 6012600150
     },
     {
       "date": "2025-03",
-      "value": 133269135310
+      "value": 3695333820
     },
     {
       "date": "2024-12",
-      "value": 154798521450
+      "value": 3665466200
     }
   ],
   "net_income_quarters": [
     {
       "date": "2025-09",
-      "value": 489814180
+      "value": -1159874150
     },
     {
       "date": "2025-06",
-      "value": 7907970290
+      "value": -972006820
     },
     {
       "date": "2025-03",
-      "value": -1293391950
+      "value": -358090300
     },
     {
       "date": "2024-12",
-      "value": 1035630000
+      "value": -4843030720
     }
   ],
   "news": []

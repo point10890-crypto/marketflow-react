@@ -2,38 +2,116 @@
   "name": "Tesla",
   "ticker": "TSLA",
   "result": "중립",
-  "date": "2026-03-15 19:35:46",
-  "elapsed": 0,
-  "consensus_score": 3.23,
-  "analyst_count": 47,
+  "date": "2026-03-24 11:00:46",
+  "elapsed": 4.3,
+  "consensus_score": 3.38,
+  "analyst_count": 48,
   "recommendation_detail": {
-    "strongBuy": 4,
-    "buy": 16,
+    "strongBuy": 5,
+    "buy": 18,
     "hold": 17,
-    "sell": 7,
-    "strongSell": 3
+    "sell": 6,
+    "strongSell": 2
   },
+  "recommendation_period": "0m",
   "price_targets": {
-    "current": 391.2,
+    "current": 380.85,
     "high": 600.0,
-    "low": 125.0,
-    "mean": 421.61365,
+    "low": 119.0,
+    "mean": 421.2722,
     "median": 460.0
   },
-  "current_price": 391.2,
-  "upside_potential": 7.8,
+  "current_price": 380.85,
+  "upside_potential": 10.6,
   "key_stats": {
     "name": "Tesla, Inc.",
     "sector": "Consumer Cyclical",
     "industry": "Auto Manufacturers",
-    "market_cap": 1467951349760,
-    "pe_ratio": 355.63635,
-    "forward_pe": 139.19579,
+    "market_cap": 1429113667584,
+    "pe_ratio": 355.93457,
+    "forward_pe": 135.51308,
     "dividend_yield": null,
     "beta": 1.926,
     "fifty_two_week_high": 498.83,
     "fifty_two_week_low": 214.25,
+    "revenue": 94827003904,
+    "profit_margin": 0.040009998,
     "currency": "USD"
   },
-  "source": "yfinance"
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "Tesla(TSLA)에 대한 애널리스트 컨센서스는 48명 참여 기준 '중립' 의견입니다. 목표가 평균은 현재 주가 대비 10.6% 상승 여력이 있는 421 USD로 제시되었습니다. 현재 PER은 355.9배입니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 24901000000
+    },
+    {
+      "date": "2025-09",
+      "value": 28095000000
+    },
+    {
+      "date": "2025-06",
+      "value": 22496000000
+    },
+    {
+      "date": "2025-03",
+      "value": 19335000000
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 840000000
+    },
+    {
+      "date": "2025-09",
+      "value": 1373000000
+    },
+    {
+      "date": "2025-06",
+      "value": 1172000000
+    },
+    {
+      "date": "2025-03",
+      "value": 409000000
+    }
+  ],
+  "news": [
+    {
+      "title": "What is Tesla's 'Terafab' and how much will it actually cost?",
+      "summary": "Tematica Research CIO Chris Versace joins Yahoo Finance Senior Autos Reporter Pras Subramanian and Market Domination Host Josh Lipton to discuss Tesla (TSLA) and SpaceX's (SPAX.PVT) recently announced",
+      "url": "https://finance.yahoo.com/video/teslas-terafab-much-actually-cost-205318986.html",
+      "provider": "Yahoo Finance Video",
+      "pub_time": "2026-03-23T20:53:18Z"
+    },
+    {
+      "title": "Is Tesla's Robotaxi Future at Risk? (Hint: Yes, but It's Complicated)",
+      "summary": "Tesla faces an intensifying regulatory probe into its self-driving features.",
+      "url": "https://www.fool.com/investing/2026/03/23/is-teslas-robotaxi-future-at-risk/",
+      "provider": "Motley Fool",
+      "pub_time": "2026-03-24T01:25:00Z"
+    },
+    {
+      "title": "Dow Jones Futures: Trump's Iran Comments Spark Stock Market Rally; Micron, Nvidia, Palantir, Tesla Are Big Movers",
+      "summary": "Dow Jones Futures: Trump's Iran war comments sparked a stock market rally Monday. Nvidia, Palantir and Tesla were big winners.",
+      "url": "https://www.investors.com/market-trend/stock-market-today/dow-jones-sp500-nasdaq-trump-iran-stock-market-rally/?src=A00220&yptr=yahoo",
+      "provider": "Investor's Business Daily",
+      "pub_time": "2026-03-24T01:09:46Z"
+    },
+    {
+      "title": "Is Tesla (TSLA) Still Attractive After Recent Share Price Pullback?",
+      "summary": "If you are wondering whether Tesla's current share price still reflects a good deal or too much optimism, the key is to separate story from numbers. Over the last year Tesla has returned 36.8%, while ",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/tesla-tsla-still-attractive-recent-001726877.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-03-24T00:17:26Z"
+    },
+    {
+      "title": "Stock Market Today, March 23: Tesla Rises on Joint Venture Plans to Build a Semiconductor Plant for AI Chip Production",
+      "summary": "Today, March 23, 2026, investors rallied around Tesla's potential long-term AI roadmap.",
+      "url": "https://www.fool.com/coverage/stock-market-today/2026/03/23/stock-market-today-march-23-tesla-rises-on-joint-venture-plans-to-build-a-semiconductor-plant-for-ai-chip-production/",
+      "provider": "Motley Fool",
+      "pub_time": "2026-03-23T21:19:22Z"
+    }
+  ]
 }

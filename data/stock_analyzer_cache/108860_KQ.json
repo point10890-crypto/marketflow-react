@@ -1,0 +1,111 @@
+{
+  "name": "셀바스AI",
+  "ticker": "108860.KQ",
+  "result": "데이터 없음",
+  "date": "2026-03-24 14:56:29",
+  "elapsed": 2.5,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 12960.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 12980.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "SELVAS AI",
+    "sector": "Technology",
+    "industry": "Software - Application",
+    "market_cap": 349347315712,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": null,
+    "beta": 0.708,
+    "fifty_two_week_high": 16730.0,
+    "fifty_two_week_low": 9330.0,
+    "revenue": 110272749568,
+    "profit_margin": -0.06954,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 25829847600
+    },
+    {
+      "date": "2025-06",
+      "value": 28001327100
+    },
+    {
+      "date": "2025-03",
+      "value": 26431048030
+    },
+    {
+      "date": "2024-12",
+      "value": 30010525210
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 888642440
+    },
+    {
+      "date": "2025-06",
+      "value": -2498542040
+    },
+    {
+      "date": "2025-03",
+      "value": -680995330
+    },
+    {
+      "date": "2024-12",
+      "value": -5377801240
+    }
+  ],
+  "news": [
+    {
+      "title": "Asian Value Stocks Trading At A Potential Discount For Savvy Investors",
+      "summary": "As global markets navigate through volatility marked by concerns over artificial intelligence and geopolitical tensions, value-oriented stocks have begun to capture investor attention, particularly in",
+      "url": "https://finance.yahoo.com/news/asian-value-stocks-trading-potential-043805874.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-02-09T04:38:05Z"
+    },
+    {
+      "title": "Asian Market Value Picks With Estimated Discounts",
+      "summary": "As global markets navigate a complex landscape marked by technological shifts and geopolitical tensions, Asia's stock markets present intriguing opportunities for value-oriented investors. Amidst this",
+      "url": "https://finance.yahoo.com/news/asian-market-value-picks-estimated-223418007.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-02-08T22:34:18Z"
+    },
+    {
+      "title": "High Growth Tech Stocks in Asia to Watch This December 2025",
+      "summary": "As global markets remain focused on the potential for interest rate cuts and shifting economic indicators, Asian tech stocks have attracted attention amid a backdrop of mixed manufacturing data and ev",
+      "url": "https://finance.yahoo.com/news/high-growth-tech-stocks-asia-223600547.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2025-12-10T22:36:00Z"
+    },
+    {
+      "title": "Asian Market Stocks Estimated To Be Up To 49.9% Undervalued",
+      "summary": "As the global economy navigates a complex landscape marked by mixed performances across major indices and cautious monetary policies, the Asian markets present intriguing opportunities for investors. ",
+      "url": "https://finance.yahoo.com/news/asian-market-stocks-estimated-49-043747737.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2025-11-04T04:37:47Z"
+    },
+    {
+      "title": "Asian Market Stocks That May Be Trading Below Estimated Intrinsic Value",
+      "summary": "As global markets navigate a complex landscape marked by mixed economic signals and geopolitical developments, the Asian market remains a focal point for investors seeking opportunities amid shifting ",
+      "url": "https://finance.yahoo.com/news/asian-market-stocks-may-trading-223429746.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2025-11-03T22:34:29Z"
+    }
+  ]
+}

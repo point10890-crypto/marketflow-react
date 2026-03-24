@@ -1,0 +1,110 @@
+{
+  "name": "엘앤에프",
+  "ticker": "066970.KS",
+  "result": "매수",
+  "date": "2026-03-24 13:17:47",
+  "elapsed": 2.2,
+  "consensus_score": 3.78,
+  "analyst_count": 23,
+  "recommendation_detail": {
+    "strongBuy": 5,
+    "buy": 10,
+    "hold": 6,
+    "sell": 2,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 126500.0,
+    "high": 210000.0,
+    "low": 54000.0,
+    "mean": 139978.27,
+    "median": 142000.0
+  },
+  "current_price": 126400.0,
+  "upside_potential": 10.7,
+  "key_stats": {
+    "name": "L&F",
+    "sector": "Industrials",
+    "industry": "Electrical Equipment & Parts",
+    "market_cap": 4739098476544,
+    "pe_ratio": null,
+    "forward_pe": 44.274376,
+    "dividend_yield": null,
+    "beta": 1.051,
+    "fifty_two_week_high": 149000.0,
+    "fifty_two_week_low": 47000.0,
+    "revenue": 2154939023360,
+    "profit_margin": -0.24759,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "엘앤에프(066970.KS)에 대해 23명의 애널리스트가 제시한 컨센서스 의견은 '매수'입니다. 목표가 평균은 139,978 KRW으로, 현재가 126,400 KRW 대비 약 10.7%의 상승 여력이 있습니다. 투자 판단은 개인의 책임 하에 신중하게 이루어져야 합니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 652296034670
+    },
+    {
+      "date": "2025-06",
+      "value": 520075586210
+    },
+    {
+      "date": "2025-03",
+      "value": 364781970020
+    },
+    {
+      "date": "2024-12",
+      "value": 365349547030
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": -118221123250
+    },
+    {
+      "date": "2025-06",
+      "value": -111933625210
+    },
+    {
+      "date": "2025-03",
+      "value": -110917149090
+    },
+    {
+      "date": "2024-12",
+      "value": -116529774420
+    }
+  ],
+  "news": [
+    {
+      "title": "Tesla Made A Little-Known Family Insanely Rich With a $2.9B Deal—Then Cybertruck Delays Wiped Out More Than 99.9% of It",
+      "summary": "One South Korean family saw their fortune swell past $800 million on paper — not from an IPO, not from real estate, not from crypto — but from a battery deal with Tesla. Less than two years later, the",
+      "url": "https://finance.yahoo.com/news/tesla-made-little-known-family-133113593.html",
+      "provider": "Benzinga",
+      "pub_time": "2026-02-02T13:31:13Z"
+    },
+    {
+      "title": "Another Red Flag Is Waving for Tesla Stock. How Should You Play TSLA Heading Into 2026?",
+      "summary": "Tesla's Cybertruck is struggling to gain traction among consumers due to several factors that range from higher prices to quality issues.",
+      "url": "https://www.barchart.com/story/news/36831908/another-red-flag-is-waving-for-tesla-stock-how-should-you-play-tsla-heading-into-2026",
+      "provider": "Barchart",
+      "pub_time": "2025-12-30T19:35:13Z"
+    },
+    {
+      "title": "Tesla supplier sees 99% cut in battery material contract amid Cybertruck woes",
+      "summary": "Investing.com -- South Korean battery material supplier L&F Co’s contract with Tesla Inc has been reduced by 99%, from 3.83 trillion won ($2.67 billion) to just 9.73 million won, the company disclosed",
+      "url": "https://finance.yahoo.com/news/tesla-supplier-sees-99-cut-121442078.html",
+      "provider": "Investing.com",
+      "pub_time": "2025-12-29T12:14:42Z"
+    },
+    {
+      "title": "LLBS completes battery precursor plant in South Korea",
+      "summary": "The facility will have an initial capacity of 120,000 tons per year, rising to 120,000 by 2029.",
+      "url": "https://www.just-auto.com/news/llbs-completes-battery-precursor-plant-in-south-korea/",
+      "provider": "Just Auto",
+      "pub_time": "2025-10-06T09:05:04Z"
+    }
+  ]
+}

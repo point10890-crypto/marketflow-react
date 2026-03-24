@@ -1,0 +1,89 @@
+{
+  "name": "코오롱인더",
+  "ticker": "120110.KS",
+  "result": "적극 매수",
+  "date": "2026-03-24 13:44:41",
+  "elapsed": 2.1,
+  "consensus_score": 4.5,
+  "analyst_count": 2,
+  "recommendation_detail": {
+    "strongBuy": 1,
+    "buy": 1,
+    "hold": 0,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 72600.0,
+    "high": 88000.0,
+    "low": 83000.0,
+    "mean": 85500.0,
+    "median": 85500.0
+  },
+  "current_price": 72800.0,
+  "upside_potential": 17.4,
+  "key_stats": {
+    "name": "KOLON IND",
+    "sector": "Basic Materials",
+    "industry": "Chemicals",
+    "market_cap": 2198327394304,
+    "pe_ratio": null,
+    "forward_pe": 10.915361,
+    "dividend_yield": 1.95,
+    "beta": 1.059,
+    "fifty_two_week_high": 75300.0,
+    "fifty_two_week_low": 26250.0,
+    "revenue": 4969021833216,
+    "profit_margin": 0.019450001,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "코오롱인더에 대해 2명의 애널리스트가 제시한 컨센서스는 '적극 매수' 의견입니다. 목표가 평균은 85,500원으로 현재가 대비 17.4% 상승 여력이 있습니다. 투자 판단은 개인의 책임 하에 신중하게 이루어져야 합니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 1180606751570
+    },
+    {
+      "date": "2025-06",
+      "value": 1258513222000
+    },
+    {
+      "date": "2025-03",
+      "value": 1231582942450
+    },
+    {
+      "date": "2024-12",
+      "value": 1298319097190
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 6172375380
+    },
+    {
+      "date": "2025-06",
+      "value": 25335010220
+    },
+    {
+      "date": "2025-03",
+      "value": 16298279410
+    },
+    {
+      "date": "2024-12",
+      "value": 48831617680
+    }
+  ],
+  "news": [
+    {
+      "title": "Kolon to build new airbag plant in Vietnam",
+      "summary": "New integrated facility will help meet increased demand from Autoliv.",
+      "url": "https://www.just-auto.com/news/kolon-to-build-new-airbag-plant-in-vietnam/",
+      "provider": "Just Auto",
+      "pub_time": "2025-12-12T09:52:49Z"
+    }
+  ]
+}

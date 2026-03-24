@@ -1,0 +1,117 @@
+{
+  "name": "셀트리온",
+  "ticker": "068270.KS",
+  "result": "매수",
+  "date": "2026-03-24 10:28:41",
+  "elapsed": 2.0,
+  "consensus_score": 4.21,
+  "analyst_count": 24,
+  "recommendation_detail": {
+    "strongBuy": 9,
+    "buy": 13,
+    "hold": 1,
+    "sell": 0,
+    "strongSell": 1
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 192600.0,
+    "high": 290000.0,
+    "low": 170000.0,
+    "mean": 253958.33,
+    "median": 260000.0
+  },
+  "current_price": 192600.0,
+  "upside_potential": 31.9,
+  "key_stats": {
+    "name": "Celltrion",
+    "sector": "Healthcare",
+    "industry": "Biotechnology",
+    "market_cap": 42136128978944,
+    "pe_ratio": null,
+    "forward_pe": 27.776188,
+    "dividend_yield": 0.4,
+    "beta": 0.256,
+    "fifty_two_week_high": 251000.0,
+    "fifty_two_week_low": 144615.39,
+    "revenue": 4162495184896,
+    "profit_margin": 0.24735,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "셀트리온(068270.KS)에 대해 24명의 애널리스트가 제시한 컨센서스는 '매수' 의견입니다. 목표가 평균은 253,958 KRW로, 현재가 대비 31.9% 상승 여력이 있는 것으로 분석됩니다. 투자 판단은 제시된 분석 데이터를 참고하여 신중하게 결정하시기 바랍니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 1330157007700
+    },
+    {
+      "date": "2025-09",
+      "value": 1028969076480
+    },
+    {
+      "date": "2025-06",
+      "value": 961457364490
+    },
+    {
+      "date": "2025-03",
+      "value": 841911660220
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 528426583560
+    },
+    {
+      "date": "2025-09",
+      "value": 331350641650
+    },
+    {
+      "date": "2025-06",
+      "value": 61171139830
+    },
+    {
+      "date": "2025-03",
+      "value": 108665005380
+    }
+  ],
+  "news": [
+    {
+      "title": "Exploring Three High Growth Tech Stocks with Global Potential",
+      "summary": "As global markets navigate a complex landscape marked by a tech sell-off and concerns over elevated valuations, particularly in artificial intelligence spending, investor sentiment has been further da",
+      "url": "https://finance.yahoo.com/news/exploring-three-high-growth-tech-093813689.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2025-11-12T09:38:13Z"
+    },
+    {
+      "title": "High Growth Tech Stocks in Asia for October 2025",
+      "summary": "As trade tensions between the U.S. and China reignite, impacting global markets, Asian tech stocks continue to capture attention with their potential for high growth amid evolving economic landscapes.",
+      "url": "https://finance.yahoo.com/news/high-growth-tech-stocks-asia-224205331.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2025-10-13T22:42:05Z"
+    },
+    {
+      "title": "Exploring High Growth Tech Stocks in Asia for September 2025",
+      "summary": "As global markets face mixed signals, with the U.S. labor market showing signs of weakness and interest rate adjustments on the horizon, Asian tech stocks have captured investor attention due to their",
+      "url": "https://finance.yahoo.com/news/exploring-high-growth-tech-stocks-043758835.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2025-09-12T04:37:58Z"
+    },
+    {
+      "title": "High Growth Tech Stocks Including Celltrion and Two Others",
+      "summary": "As global markets experience a rebound with the Nasdaq Composite reaching an all-time high and U.S. equity indexes advancing, investors are paying close attention to high-growth tech stocks that have ",
+      "url": "https://finance.yahoo.com/news/high-growth-tech-stocks-including-093800419.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2025-08-14T09:38:00Z"
+    },
+    {
+      "title": "High Growth Tech Stocks In Asia For July 2025",
+      "summary": "Amidst a backdrop of global market fluctuations, Asian tech stocks have been capturing attention as the region's indices show resilience despite new U.S. tariffs on key trading partners like South Kor",
+      "url": "https://finance.yahoo.com/news/high-growth-tech-stocks-asia-044124707.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2025-07-16T04:41:24Z"
+    }
+  ]
+}

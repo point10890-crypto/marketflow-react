@@ -1,0 +1,81 @@
+{
+  "name": "주성엔지니어링",
+  "ticker": "036930.KQ",
+  "result": "적극 매수",
+  "date": "2026-03-24 10:35:25",
+  "elapsed": 2.8,
+  "consensus_score": 4.33,
+  "analyst_count": 6,
+  "recommendation_detail": {
+    "strongBuy": 2,
+    "buy": 4,
+    "hold": 0,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 77700.0,
+    "high": 60000.0,
+    "low": 38000.0,
+    "mean": 43833.332,
+    "median": 41500.0
+  },
+  "current_price": 77700.0,
+  "upside_potential": -43.6,
+  "key_stats": {
+    "name": "JEL",
+    "sector": "",
+    "industry": "",
+    "market_cap": 3550417518592,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": null,
+    "beta": null,
+    "fifty_two_week_high": 85700.0,
+    "fifty_two_week_low": 26050.0,
+    "revenue": null,
+    "profit_margin": null,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "주성엔지니어링(036930.KQ)에 대한 애널리스트 컨센서스는 6명 참여 기준 '적극 매수' 의견입니다. 목표가 평균은 43,833원으로 현재가 77,700원 대비 -43.6% 하락 여력이 있습니다. 투자 결정은 제시된 데이터를 참고하여 신중하게 판단하시기 바랍니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 58773454730
+    },
+    {
+      "date": "2025-06",
+      "value": 78792213480
+    },
+    {
+      "date": "2025-03",
+      "value": 120846474020
+    },
+    {
+      "date": "2024-12",
+      "value": 108284737800
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 7633537880
+    },
+    {
+      "date": "2025-06",
+      "value": 5039630590
+    },
+    {
+      "date": "2025-03",
+      "value": 27716219530
+    },
+    {
+      "date": "2024-12",
+      "value": 22056000200
+    }
+  ],
+  "news": []
+}

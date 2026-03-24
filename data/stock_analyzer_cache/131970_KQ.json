@@ -1,0 +1,81 @@
+{
+  "name": "두산테스나",
+  "ticker": "131970.KQ",
+  "result": "매수",
+  "date": "2026-03-24 10:37:03",
+  "elapsed": 2.0,
+  "consensus_score": 4.0,
+  "analyst_count": 4,
+  "recommendation_detail": {
+    "strongBuy": 0,
+    "buy": 4,
+    "hold": 0,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 103900.0,
+    "high": 100000.0,
+    "low": 32000.0,
+    "mean": 57000.0,
+    "median": 48000.0
+  },
+  "current_price": 103900.0,
+  "upside_potential": -45.1,
+  "key_stats": {
+    "name": "DOOSAN TESNA",
+    "sector": "",
+    "industry": "",
+    "market_cap": 1998883520512,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": null,
+    "beta": null,
+    "fifty_two_week_high": 110800.0,
+    "fifty_two_week_low": 22050.0,
+    "revenue": null,
+    "profit_margin": null,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "두산테스나(131970.KQ)에 대해 4명의 애널리스트가 제시한 컨센서스 의견은 '매수'입니다. 컨센서스 점수는 5점 만점 중 4.0점을 기록했습니다. 하지만 목표가 평균은 57,000원으로 현재가 103,900원 대비 -45.1% 하락 여력이 있는 것으로 분석됩니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 83214080000
+    },
+    {
+      "date": "2025-06",
+      "value": 75900772000
+    },
+    {
+      "date": "2025-03",
+      "value": 59295766000
+    },
+    {
+      "date": "2024-12",
+      "value": 82829393900
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 2880093000
+    },
+    {
+      "date": "2025-06",
+      "value": -845290000
+    },
+    {
+      "date": "2025-03",
+      "value": -16388250000
+    },
+    {
+      "date": "2024-12",
+      "value": 420246380
+    }
+  ],
+  "news": []
+}

@@ -1,35 +1,35 @@
 {
-  "name": "삼화페인트",
-  "ticker": "000390.KS",
+  "name": "삼일씨엔에스",
+  "ticker": "004440.KS",
   "result": "데이터 없음",
-  "date": "2026-03-24 11:13:54",
-  "elapsed": 3.4,
+  "date": "2026-03-24 13:43:51",
+  "elapsed": 2.3,
   "consensus_score": null,
   "analyst_count": 0,
   "recommendation_detail": null,
   "recommendation_period": null,
   "price_targets": {
-    "current": 9660.0,
+    "current": 6670.0,
     "high": null,
     "low": null,
     "mean": null,
     "median": null
   },
-  "current_price": 9660.0,
+  "current_price": 6670.0,
   "upside_potential": null,
   "key_stats": {
-    "name": "SamhwaPaint",
+    "name": "SAMIL C&S",
     "sector": "Basic Materials",
-    "industry": "Specialty Chemicals",
-    "market_cap": 239711240192,
+    "industry": "Building Materials",
+    "market_cap": 84922089472,
     "pe_ratio": null,
     "forward_pe": null,
-    "dividend_yield": 3.62,
-    "beta": 0.783,
-    "fifty_two_week_high": 14300.0,
-    "fifty_two_week_low": 5260.0,
-    "revenue": 617067577344,
-    "profit_margin": 0.01244,
+    "dividend_yield": null,
+    "beta": 0.553,
+    "fifty_two_week_high": 6980.0,
+    "fifty_two_week_low": 3490.0,
+    "revenue": 219026210816,
+    "profit_margin": -0.0029699998,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
@@ -38,37 +38,37 @@
   "revenue_quarters": [
     {
       "date": "2025-09",
-      "value": 155501778050
+      "value": 48355769460
     },
     {
       "date": "2025-06",
-      "value": 177509100090
+      "value": 58012355910
     },
     {
       "date": "2025-03",
-      "value": 133269135310
+      "value": 57426966380
     },
     {
-      "date": "2024-12",
-      "value": 154798521450
+      "date": "2024-09",
+      "value": 47856187700
     }
   ],
   "net_income_quarters": [
     {
       "date": "2025-09",
-      "value": 489814180
+      "value": -232972420
     },
     {
       "date": "2025-06",
-      "value": 7907970290
+      "value": 1224591360
     },
     {
       "date": "2025-03",
-      "value": -1293391950
+      "value": -1433839140
     },
     {
-      "date": "2024-12",
-      "value": 1035630000
+      "date": "2024-09",
+      "value": -1993301300
     }
   ],
   "news": []
