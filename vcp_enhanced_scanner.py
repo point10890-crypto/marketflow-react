@@ -624,19 +624,28 @@ def _get_crypto_watchlist() -> List[str]:
 
 
 def _get_kr_watchlist() -> List[str]:
-    """KR 스캔 대상 — daily_prices.csv에서 상위 종목 추출"""
+    """KR 스캔 대상 — daily_prices.csv에서 최근 날짜 기준 거래량 상위 200종목 추출"""
     import pandas as pd
 
     prices_path = os.path.join(DATA_DIR, 'daily_prices.csv')
     if os.path.exists(prices_path):
         try:
-            df = pd.read_csv(prices_path, encoding='utf-8-sig')
+            df = pd.read_csv(prices_path, encoding='utf-8-sig', low_memory=False)
             if 'ticker' in df.columns and 'name' in df.columns:
                 df['ticker'] = df['ticker'].astype(str).str.zfill(6)
-                # 거래대금 상위 또는 전체
-                if 'trading_value' in df.columns:
+                # 최근 날짜만 필터 (중복 제거 핵심)
+                if 'date' in df.columns:
+                    latest_date = df['date'].max()
+                    df = df[df['date'] == latest_date]
+                else:
+                    df = df.drop_duplicates(subset='ticker', keep='last')
+                # 거래량 상위 정렬
+                if 'volume' in df.columns:
+                    df = df.sort_values('volume', ascending=False)
+                elif 'trading_value' in df.columns:
                     df = df.sort_values('trading_value', ascending=False)
                 pairs = list(zip(df['ticker'].tolist(), df['name'].tolist()))
+                logger.info(f"  📋 KR watchlist: {len(pairs)}종목 (날짜: {df['date'].iloc[0] if 'date' in df.columns else '?'})")
                 return pairs[:200]  # 상위 200개
         except Exception as e:
             logger.warning(f"daily_prices.csv 읽기 실패: {e}")
