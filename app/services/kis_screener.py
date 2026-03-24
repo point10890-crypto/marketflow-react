@@ -15,8 +15,7 @@ from threading import Lock
 
 logger = logging.getLogger(__name__)
 
-_BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-DATA_DIR = os.path.join(_BASE_DIR, 'data')
+from app.utils.paths import DATA_DIR
 
 # ─── 설정 ───
 _paper = os.environ.get("KIS_PAPER", "true").lower() in ("true", "1")
@@ -279,13 +278,15 @@ def get_market_status():
 # ─── 메인 스크리닝 ───
 
 _result_cache = {"data": None, "ts": 0}
+_result_lock = Lock()
 _CACHE_TTL = 3
 
 
 def run_screening():
     now = time.time()
-    if _result_cache["data"] and (now - _result_cache["ts"]) < _CACHE_TTL:
-        return _result_cache["data"]
+    with _result_lock:
+        if _result_cache["data"] and (now - _result_cache["ts"]) < _CACHE_TTL:
+            return _result_cache["data"]
 
     t_start = time.time()
     token = get_token()
@@ -405,8 +406,9 @@ def run_screening():
         "elapsed_ms": round((time.time() - t_start) * 1000),
     }
 
-    _result_cache["data"] = output
-    _result_cache["ts"] = time.time()
+    with _result_lock:
+        _result_cache["data"] = output
+        _result_cache["ts"] = time.time()
 
     # 결과 저장
     _save_result(output)

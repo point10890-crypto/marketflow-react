@@ -10,33 +10,17 @@ import yfinance as yf
 from flask import Blueprint, jsonify, request
 
 from app.utils.cache import get_sector
+from app.utils.paths import BASE_DIR, US_MARKET_DIR, US_OUTPUT_DIR, US_DATA_DIR, US_HISTORY_DIR, US_PREVIEW_DIR
+from app.utils.safety import safe_float, safe_str
 
 us_bp = Blueprint('us', __name__)
 
-# 절대경로 고정 — C:\bitman_service 기준 (__file__ 기반)
-_BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-_US_MARKET_DIR = os.path.join(_BASE_DIR, 'us_market')
-_OUTPUT_DIR = os.path.join(_US_MARKET_DIR, 'output')
-_DATA_DIR = os.path.join(_US_MARKET_DIR, 'data')
-_HISTORY_DIR = os.path.join(_US_MARKET_DIR, 'history')
-_PREVIEW_DIR = os.path.join(_BASE_DIR, 'us_market_preview', 'output')
-
-
-def safe_float(val, default=0):
-    """Safely convert to float, handling NaN and None"""
-    if val is None or (isinstance(val, float) and pd.isna(val)):
-        return default
-    try:
-        return float(val)
-    except (ValueError, TypeError):
-        return default
-
-
-def safe_str(val, default=''):
-    """Safely convert to string, handling NaN and None"""
-    if val is None or (isinstance(val, float) and pd.isna(val)):
-        return default
-    return str(val)
+# 경로 별칭 (기존 코드 호환)
+_US_MARKET_DIR = US_MARKET_DIR
+_OUTPUT_DIR = US_OUTPUT_DIR
+_DATA_DIR = US_DATA_DIR
+_HISTORY_DIR = US_HISTORY_DIR
+_PREVIEW_DIR = US_PREVIEW_DIR
 
 
 def _fetch_portfolio_live():
@@ -1419,7 +1403,7 @@ def _compute_decision_signal_live():
         regime_path = os.path.join(_OUTPUT_DIR, 'regime_config.json')
         try:
             if os.path.exists(regime_path):
-                with open(regime_path, 'r') as f:
+                with open(regime_path, 'r', encoding='utf-8') as f:
                     regime_data = json.load(f)
                 regime_str = regime_data.get('regime', 'neutral')
                 regime_map = {'risk_on': 15, 'neutral': 0, 'risk_off': -15, 'crisis': -25}
@@ -1435,7 +1419,7 @@ def _compute_decision_signal_live():
         pred_path = os.path.join(_OUTPUT_DIR, 'index_prediction.json')
         try:
             if os.path.exists(pred_path):
-                with open(pred_path, 'r') as f:
+                with open(pred_path, 'r', encoding='utf-8') as f:
                     pred_data = json.load(f)
                 spy_pred = pred_data.get('predictions', {}).get('SPY', {})
                 spy_bullish = spy_pred.get('bullish_probability', 50)
@@ -1455,7 +1439,7 @@ def _compute_decision_signal_live():
         warnings = []
         try:
             if os.path.exists(risk_path):
-                with open(risk_path, 'r') as f:
+                with open(risk_path, 'r', encoding='utf-8') as f:
                     risk_data = json.load(f)
                 risk_level = risk_data.get('portfolio_summary', {}).get('risk_level', 'Moderate')
                 risk_map = {'Low': 5, 'Moderate': 0, 'High': -10, 'Critical': -20}
@@ -1474,7 +1458,7 @@ def _compute_decision_signal_live():
         rotation_path = os.path.join(_OUTPUT_DIR, 'sector_rotation.json')
         try:
             if os.path.exists(rotation_path):
-                with open(rotation_path, 'r') as f:
+                with open(rotation_path, 'r', encoding='utf-8') as f:
                     rotation_data = json.load(f)
                 phase = rotation_data.get('rotation_signals', {}).get('current_phase', 'Unknown')
                 phase_map = {'Early Cycle': 10, 'Mid Cycle': 5, 'Late Cycle': -5, 'Recession': -15}
@@ -1507,7 +1491,7 @@ def _compute_decision_signal_live():
         report_path = os.path.join(_OUTPUT_DIR, 'final_top10_report.json')
         try:
             if os.path.exists(report_path):
-                with open(report_path, 'r') as f:
+                with open(report_path, 'r', encoding='utf-8') as f:
                     report = json.load(f)
                 for pick in report.get('top_picks', [])[:5]:
                     top_picks.append({
@@ -1888,7 +1872,7 @@ def get_us_vcp_dates():
     try:
         import re
         dates = []
-        data_dir = os.path.join(_BASE_DIR, 'data')
+        data_dir = os.path.join(BASE_DIR, 'data')
         pattern = re.compile(r'vcp_us_(\d{8})\.json')
         for fname in os.listdir(data_dir):
             m = pattern.match(fname)
@@ -1905,7 +1889,7 @@ def get_us_vcp_dates():
 def get_us_vcp_enhanced():
     """US VCP 통합 분석 — 캐시 파일 기반 반환."""
     try:
-        cached_path = os.path.join(_BASE_DIR, 'data', 'vcp_us_latest.json')
+        cached_path = os.path.join(BASE_DIR, 'data', 'vcp_us_latest.json')
         if os.path.exists(cached_path):
             with open(cached_path, 'r', encoding='utf-8') as f:
                 data = json.load(f)

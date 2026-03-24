@@ -36,8 +36,8 @@ def create_checkout():
             customer=user.stripe_customer_id,
             line_items=[{'price': STRIPE_PRICE_ID, 'quantity': 1}],
             mode='subscription',
-            success_url=os.getenv('NEXTAUTH_URL', 'http://localhost:4000') + '/dashboard?upgraded=1',
-            cancel_url=os.getenv('NEXTAUTH_URL', 'http://localhost:4000') + '/pricing',
+            success_url=os.getenv('NEXTAUTH_URL', os.getenv('SITE_URL', '')) + '/dashboard?upgraded=1',
+            cancel_url=os.getenv('NEXTAUTH_URL', os.getenv('SITE_URL', '')) + '/pricing',
             metadata={'user_id': str(user.id)},
         )
         return jsonify({'url': session.url})
@@ -87,7 +87,7 @@ def portal():
     try:
         session = stripe.billing_portal.Session.create(
             customer=user.stripe_customer_id,
-            return_url=os.getenv('NEXTAUTH_URL', 'http://localhost:4000') + '/dashboard',
+            return_url=os.getenv('NEXTAUTH_URL', os.getenv('SITE_URL', '')) + '/dashboard',
         )
         return jsonify({'url': session.url})
     except Exception as e:
