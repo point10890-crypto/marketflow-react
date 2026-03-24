@@ -731,8 +731,9 @@ def send_morning_status_report():
         return False
 
 
-def update_jongga_v2():
-    """종가베팅 V2 데이터 업데이트 + S/A급 텔레그램 전송"""
+def update_jongga_v2(retry_count: int = 0):
+    """종가베팅 V2 데이터 업데이트 + S/A급 텔레그램 전송 + 실패 시 재시도"""
+    MAX_RETRIES = 2
     script = (
         "import asyncio; "
         "from datetime import datetime, timedelta, date; "
@@ -747,13 +748,28 @@ def update_jongga_v2():
     )
     success = run_command(
         [Config.PYTHON_PATH, '-c', script],
-        'KR 종가베팅 V2 분석 엔진',
+        f'KR 종가베팅 V2 분석 엔진 (시도 {retry_count+1}/{MAX_RETRIES+1})',
         timeout=600
     )
+
+    if not success:
+        if retry_count < MAX_RETRIES:
+            logger.warning(f"⚠️ 종가베팅 실패 → {15}분 후 재시도 ({retry_count+1}/{MAX_RETRIES})")
+            time.sleep(900)
+            return update_jongga_v2(retry_count + 1)
+        send_telegram(f"❌ 종가베팅 V2 {MAX_RETRIES+1}회 연속 실패")
+        return False
 
     if success:
         try:
             json_path = os.path.join(Config.DATA_DIR, "jongga_v2_latest.json")
+            # 결과 파일 검증
+            if not os.path.exists(json_path) or (time.time() - os.path.getmtime(json_path)) > 300:
+                logger.warning("⚠️ 종가베팅 결과 파일 없거나 오래됨")
+                if retry_count < MAX_RETRIES:
+                    time.sleep(900)
+                    return update_jongga_v2(retry_count + 1)
+                return False
             if os.path.exists(json_path):
                 with open(json_path, 'r', encoding='utf-8') as f:
                     data = json.load(f)
@@ -961,16 +977,54 @@ def run_vcp_all_markets(skip_sync: bool = False):
 
 
 def run_vcp_enhanced_scan(market: str) -> bool:
-    """US / Crypto VCP Enhanced Scanner 실행 (vcp_enhanced_scanner.py --market {market})"""
+    """US / Crypto / KR VCP Enhanced Scanner 실행 + 결과 검증 + 재시도"""
     script = os.path.join(Config.BASE_DIR, 'vcp_enhanced_scanner.py')
     if not os.path.exists(script):
         logger.warning(f"⚠️ vcp_enhanced_scanner.py 없음 — {market} VCP 스킵")
         return False
-    return run_command(
-        [Config.PYTHON_PATH, script, '--market', market],
-        f'{market} VCP Enhanced Scan',
-        timeout=Config.SIGNAL_TIMEOUT
-    )
+
+    market_upper = market.upper()
+    file_map = {'KR': 'vcp_kr_latest.json', 'US': 'vcp_us_latest.json', 'CRYPTO': 'vcp_crypto_latest.json'}
+    result_file = os.path.join(Config.DATA_DIR, file_map.get(market_upper, f'vcp_{market.lower()}_latest.json'))
+
+    max_retries = 2
+    for attempt in range(1, max_retries + 1):
+        success = run_command(
+            [Config.PYTHON_PATH, script, '--market', market],
+            f'{market_upper} VCP Enhanced Scan (시도 {attempt}/{max_retries})',
+            timeout=Config.SIGNAL_TIMEOUT
+        )
+        if not success:
+            logger.warning(f"⚠️ {market_upper} VCP 스캔 실패 (시도 {attempt}/{max_retries})")
+            if attempt < max_retries:
+                time.sleep(10)
+            continue
+
+        # 결과 검증
+        if os.path.exists(result_file):
+            try:
+                with open(result_file, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                signals = data.get('signals', [])
+                mtime = os.path.getmtime(result_file)
+                file_age = time.time() - mtime
+                if file_age > 300:  # 5분 이상 된 파일 = 갱신 안 됨
+                    logger.warning(f"⚠️ {market_upper} VCP 결과 파일이 오래됨 ({int(file_age)}초)")
+                    if attempt < max_retries:
+                        time.sleep(10)
+                    continue
+                logger.info(f"✅ {market_upper} VCP 검증 완료: {len(signals)}개 시그널")
+                return True
+            except Exception as e:
+                logger.warning(f"⚠️ {market_upper} VCP 결과 파일 읽기 실패: {e}")
+        else:
+            logger.warning(f"⚠️ {market_upper} VCP 결과 파일 없음: {result_file}")
+
+        if attempt < max_retries:
+            time.sleep(10)
+
+    send_telegram(f"❌ {market_upper} VCP 스캔 {max_retries}회 실패")
+    return False
 
 
 # ============================================================
