@@ -25,44 +25,44 @@
   },
   "top_picks": [
     {
-      "ticker": "AWK",
-      "name": "American Water Works Company, Inc.",
-      "final_score": 73.6,
-      "grade": "📈 B급 (매수 고려)",
+      "ticker": "T",
+      "name": "AT&T Inc.",
+      "final_score": 81.0,
+      "grade": "🌟 A급 (적극 매수)",
       "ai_recommendation": "매수",
-      "target_upside": 0.4
+      "target_upside": 3.8
     },
     {
       "ticker": "AKAM",
       "name": "Akamai Technologies, Inc.",
-      "final_score": 73.0,
-      "grade": "📈 B급 (매수 고려)",
-      "ai_recommendation": "매수",
-      "target_upside": -0.5
+      "final_score": 80.5,
+      "grade": "🌟 A급 (적극 매수)",
+      "ai_recommendation": "적극 매수",
+      "target_upside": -5.0
     },
     {
-      "ticker": "APO",
-      "name": "Apollo Global Management, Inc.",
-      "final_score": 71.4,
-      "grade": "📈 B급 (매수 고려)",
+      "ticker": "ALGN",
+      "name": "Align Technology, Inc.",
+      "final_score": 79.9,
+      "grade": "🌟 A급 (적극 매수)",
       "ai_recommendation": "매수",
-      "target_upside": 40.6
+      "target_upside": 11.5
     },
     {
-      "ticker": "APD",
-      "name": "Air Products and Chemicals, Inc.",
-      "final_score": 71.2,
+      "ticker": "ALL",
+      "name": "The Allstate Corporation",
+      "final_score": 76.2,
       "grade": "📈 B급 (매수 고려)",
       "ai_recommendation": "매수",
-      "target_upside": 8.0
+      "target_upside": 14.3
     },
     {
-      "ticker": "APP",
-      "name": "AppLovin Corporation",
-      "final_score": 70.6,
+      "ticker": "AMAT",
+      "name": "Applied Materials, Inc.",
+      "final_score": 73.6,
       "grade": "📈 B급 (매수 고려)",
       "ai_recommendation": "매수",
-      "target_upside": 47.4
+      "target_upside": 9.2
     }
   ],
   "timing": "WAIT",

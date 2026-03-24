@@ -60,7 +60,7 @@
     }
   ],
   "metrics": {
-    "usd_krw": 1497.8699951171875,
+    "usd_krw": 1498.3399658203125,
     "kospi": 5553.919921875,
     "kospi_change_pct": 2.74,
     "kosdaq": 1121.43994140625,
@@ -71,5 +71,5 @@
   "kospi_change_pct": 2.74,
   "kosdaq_close": 1121.43994140625,
   "kosdaq_change_pct": 2.24,
-  "updated_at": "2026-03-25T04:16:59.631317"
+  "updated_at": "2026-03-25T07:57:34.745835"
 }
