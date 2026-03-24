@@ -1493,6 +1493,137 @@ def run_full_update():
 
 
 # ============================================================
+# 마지막 실행 기록 (missed schedule recovery용)
+# ============================================================
+
+_LAST_RUN_FILE = os.path.join(Config.DATA_DIR, 'scheduler_last_run.json')
+
+
+def _load_last_run() -> dict:
+    """scheduler_last_run.json 로드 (없으면 빈 dict)"""
+    try:
+        if os.path.exists(_LAST_RUN_FILE):
+            with open(_LAST_RUN_FILE, 'r', encoding='utf-8') as f:
+                return json.load(f)
+    except Exception as e:
+        logger.warning(f"⚠️ scheduler_last_run.json 읽기 실패: {e}")
+    return {}
+
+
+def _save_last_run(data: dict):
+    """scheduler_last_run.json 저장"""
+    try:
+        with open(_LAST_RUN_FILE, 'w', encoding='utf-8') as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        logger.warning(f"⚠️ scheduler_last_run.json 저장 실패: {e}")
+
+
+def record_task_run(task_key: str):
+    """작업 완료 후 마지막 실행 시각 기록"""
+    data = _load_last_run()
+    data[task_key] = datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
+    _save_last_run(data)
+    logger.debug(f"📝 작업 기록 업데이트: {task_key}")
+
+
+def _was_run_today(task_key: str) -> bool:
+    """해당 task_key가 오늘 이미 실행되었는지 확인"""
+    data = _load_last_run()
+    last_run_str = data.get(task_key)
+    if not last_run_str:
+        return False
+    try:
+        last_run = datetime.strptime(last_run_str, '%Y-%m-%dT%H:%M:%S')
+        return last_run.date() == datetime.now().date()
+    except (ValueError, TypeError):
+        return False
+
+
+# ============================================================
+# 놓친 스케줄 복구 (Missed Schedule Recovery)
+# ============================================================
+
+def check_and_run_missed_tasks():
+    """스케줄러 시작 시 오늘 놓친 작업을 즉시 실행
+
+    PC 재부팅/슬립으로 스케줄러가 죽었다가 재시작될 때,
+    이미 지난 스케줄 시각의 작업이 오늘 실행되지 않았으면 즉시 실행한다.
+    """
+    now = datetime.now()
+    weekday = now.weekday()  # 0=Mon, 5=Sat, 6=Sun
+    hour_min = now.hour * 60 + now.minute
+
+    logger.info("🔍 놓친 스케줄 점검 시작...")
+
+    # ── 평일 전용 작업 ──
+    weekday_tasks = [
+        # (예정시각_분, task_key, 실행함수, 라벨, 마감시각_분)
+        # 마감시각: 이 시각 이후에는 실행하지 않음 (다음 작업과 충돌 방지)
+        (4 * 60,  'us_market',  run_us_market_update,        'US 마켓 전체 갱신',  8 * 60),
+        (9 * 60,  'morning_report', send_morning_status_report, '일별 상태 리포트', 12 * 60),
+        (9 * 60 + 30, 'us_track', save_us_track_record_snapshot, 'US Track Record', 12 * 60),
+        (15 * 60, 'kr_jongga',  run_kr_full_update,          'KR 종가베팅',        15 * 60 + 50),
+        (16 * 60, 'vcp_all',    run_vcp_all_markets,         'VCP 전시장',         17 * 60),
+    ]
+
+    # ── 매일 실행 작업 (Crypto - 주말 포함) ──
+    # Crypto는 4시간 간격이라 가장 최근 놓친 것만 복구
+    crypto_times_min = [0, 4*60, 8*60, 12*60, 16*60, 20*60]
+
+    recovered = []
+
+    # 평일 작업 복구
+    if weekday < 5:  # Mon-Fri
+        for sched_min, task_key, task_fn, label, deadline_min in weekday_tasks:
+            if hour_min <= sched_min:
+                continue  # 아직 예정 시각 전
+            if hour_min > deadline_min:
+                logger.info(f"  ⏭️ {label}: 마감 지남 ({deadline_min//60}:{deadline_min%60:02d}), 스킵")
+                continue
+            if _was_run_today(task_key):
+                logger.info(f"  ✅ {label}: 오늘 이미 실행됨, 스킵")
+                continue
+
+            logger.info(f"  ⚠️ 놓친 스케줄 감지: {label} (예정 {sched_min//60:02d}:{sched_min%60:02d}) → 즉시 실행")
+            try:
+                task_fn()
+                record_task_run(task_key)
+                recovered.append(label)
+                logger.info(f"  ✅ 복구 완료: {label}")
+            except Exception as e:
+                logger.error(f"  ❌ 복구 실패: {label} — {e}", exc_info=True)
+
+    # Crypto 복구 (주말 포함)
+    # 현재 시각 이전의 가장 최근 crypto 시각 찾기
+    past_crypto = [t for t in crypto_times_min if t < hour_min]
+    if past_crypto:
+        latest_crypto_min = max(past_crypto)
+        if not _was_run_today('crypto'):
+            # 마지막 실행이 오늘이 아니면 복구
+            logger.info(f"  ⚠️ 놓친 Crypto 파이프라인 감지 (최근 예정 {latest_crypto_min//60:02d}:00) → 즉시 실행")
+            try:
+                run_crypto_pipeline()
+                record_task_run('crypto')
+                recovered.append('Crypto 파이프라인')
+                logger.info(f"  ✅ 복구 완료: Crypto 파이프라인")
+            except Exception as e:
+                logger.error(f"  ❌ 복구 실패: Crypto 파이프라인 — {e}", exc_info=True)
+
+    if recovered:
+        msg = (
+            f"<b>🔄 놓친 스케줄 복구 완료</b>\n"
+            f"⏰ {now.strftime('%Y-%m-%d %H:%M')}\n"
+            f"복구: {len(recovered)}개\n\n"
+            + "\n".join(f"  ✅ {r}" for r in recovered)
+        )
+        send_telegram(msg)
+        logger.info(f"🔄 놓친 스케줄 복구: {len(recovered)}개 — {', '.join(recovered)}")
+    else:
+        logger.info("✅ 놓친 스케줄 없음 (모두 정상)")
+
+
+# ============================================================
 # 스케줄러
 # ============================================================
 
@@ -1508,28 +1639,46 @@ class Scheduler:
         logger.info(f"📛 종료 시그널 수신 (signal={signum})")
         self.running = False
 
+    @staticmethod
+    def _with_record(task_fn, task_key):
+        """작업 함수를 래핑하여 성공 시 last_run 기록"""
+        def wrapper():
+            result = task_fn()
+            # result가 None이면 성공으로 간주 (일부 함수는 None 반환)
+            if result is None or result:
+                record_task_run(task_key)
+            return result
+        wrapper.__name__ = f"{task_fn.__name__}[{task_key}]"
+        return wrapper
+
     def setup_schedules(self):
         """스케줄 등록"""
         weekdays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday']
 
         for day in weekdays:
             # 04:00 — US Market 전체 데이터 갱신 + Smart Money Top 5 텔레그램
-            getattr(schedule.every(), day).at(Config.US_UPDATE_TIME).do(run_us_market_update)
+            getattr(schedule.every(), day).at(Config.US_UPDATE_TIME).do(
+                self._with_record(run_us_market_update, 'us_market'))
             # 09:00 — 일별 상태 리포트 텔레그램
-            getattr(schedule.every(), day).at(Config.MORNING_REPORT_TIME).do(send_morning_status_report)
+            getattr(schedule.every(), day).at(Config.MORNING_REPORT_TIME).do(
+                self._with_record(send_morning_status_report, 'morning_report'))
             # 09:30 — US Track Record 스냅샷 + 성과 추적
-            getattr(schedule.every(), day).at(Config.US_TRACK_TIME).do(save_us_track_record_snapshot)
+            getattr(schedule.every(), day).at(Config.US_TRACK_TIME).do(
+                self._with_record(save_us_track_record_snapshot, 'us_track'))
             # 15:00 — 종가베팅 V2 + 수급/AI/리포트 (VCP 제외)
-            getattr(schedule.every(), day).at(Config.KR_UPDATE_TIME).do(run_kr_full_update)
+            getattr(schedule.every(), day).at(Config.KR_UPDATE_TIME).do(
+                self._with_record(run_kr_full_update, 'kr_jongga'))
             # 16:00 — 전 시장 VCP 시그널 (KR + US + Crypto)
-            getattr(schedule.every(), day).at(Config.VCP_UPDATE_TIME).do(run_vcp_all_markets)
+            getattr(schedule.every(), day).at(Config.VCP_UPDATE_TIME).do(
+                self._with_record(run_vcp_all_markets, 'vcp_all'))
 
         # 토요일 히스토리 수집
         schedule.every().saturday.at(Config.HISTORY_TIME).do(collect_historical_institutional)
 
         # Crypto — 매 4시간 24/7 (00/04/08/12/16/20 KST)
         for t in Config.CRYPTO_TIMES:
-            schedule.every().day.at(t).do(run_crypto_pipeline)
+            schedule.every().day.at(t).do(
+                self._with_record(run_crypto_pipeline, 'crypto'))
 
         logger.info("📅 스케줄 등록 완료:")
         logger.info(f"   🇺🇸 평일 {Config.US_UPDATE_TIME}  US Market 전체 갱신 + Smart Money Top 5")
@@ -1691,6 +1840,8 @@ def main():
     if Config.SCHEDULE_ENABLED:
         scheduler = Scheduler()
         scheduler.setup_schedules()
+        # 놓친 스케줄 복구 (스케줄 등록 후, 데몬 루프 시작 전)
+        check_and_run_missed_tasks()
         scheduler.run()
     else:
         if not ran_any:

@@ -59,12 +59,39 @@ if "%FLASK_STATUS2%"=="200" (
     %PYTHON% -c "import os,requests; os.chdir(r'%PROJECT%'); from dotenv import load_dotenv; load_dotenv(); t=os.getenv('TELEGRAM_BOT_TOKEN'); c=os.getenv('TELEGRAM_CHAT_ID'); requests.post(f'https://api.telegram.org/bot{t}/sendMessage', json={'chat_id':c,'text':'🚨 MarketFlow Flask 재시작 실패!\n%TODAY% %NOW%\n❌ HTTP %FLASK_STATUS2%\n수동 확인 필요','parse_mode':'HTML'}, timeout=10) if t and c else None" >nul 2>&1
 )
 
-:: ── 스케줄러 데몬 헬스체크 ──
+:: ── ngrok 독립 헬스체크 ──
+curl -s -o nul -w "%%{http_code}" -H "ngrok-skip-browser-warning: true" "https://%NGROK_DOMAIN%/api/health" > %TEMP%\wd_ngrok.txt 2>nul
+set /p NGROK_STATUS=<%TEMP%\wd_ngrok.txt
+
+if "%NGROK_STATUS%"=="200" (
+    echo [%TODAY% %NOW%] ngrok OK >> "%LOG%"
+) else (
+    echo [%TODAY% %NOW%] ngrok DOWN (status=%NGROK_STATUS%) - 재시작 중... >> "%LOG%"
+    taskkill /F /IM ngrok.exe >nul 2>&1
+    timeout /t 3 /nobreak >nul
+    start "ngrok-MarketFlow" /MIN cmd /c "ngrok http 5001 --domain=%NGROK_DOMAIN%"
+    timeout /t 6 /nobreak >nul
+    echo [%TODAY% %NOW%] ngrok 재시작 완료 >> "%LOG%"
+    %PYTHON% -c "import os,requests; os.chdir(r'%PROJECT%'); from dotenv import load_dotenv; load_dotenv(); t=os.getenv('TELEGRAM_BOT_TOKEN'); c=os.getenv('TELEGRAM_CHAT_ID'); requests.post(f'https://api.telegram.org/bot{t}/sendMessage', json={'chat_id':c,'text':'⚠️ ngrok 자동 재시작\n%TODAY% %NOW%\n터널: %NGROK_DOMAIN%','parse_mode':'HTML'}, timeout=10) if t and c else None" >nul 2>&1
+)
+
+:: ── 스케줄러 데몬 헬스체크 (강화) ──
+set SCHED_PYTHON=C:\bitman_marketfloww\.venv\Scripts\python.exe
 tasklist /FI "WINDOWTITLE eq Scheduler-MarketFlow" 2>nul | findstr /I "python" >nul
 if errorlevel 1 (
     echo [%TODAY% %NOW%] Scheduler DOWN - 재시작 중... >> "%LOG%"
-    start "Scheduler-MarketFlow" /MIN cmd /c "cd /d %PROJECT% && set PYTHONIOENCODING=utf-8 && %PYTHON% scheduler.py --daemon"
-    echo [%TODAY% %NOW%] Scheduler 재시작 완료 >> "%LOG%"
+    start "Scheduler-MarketFlow" /MIN cmd /c "cd /d %PROJECT% && set PYTHONIOENCODING=utf-8 && "%SCHED_PYTHON%" scheduler.py --daemon"
+    timeout /t 10 /nobreak >nul
+    :: 재시작 확인
+    tasklist /FI "WINDOWTITLE eq Scheduler-MarketFlow" 2>nul | findstr /I "python" >nul
+    if not errorlevel 1 (
+        echo [%TODAY% %NOW%] Scheduler 재시작 성공 (missed schedule recovery 자동 실행됨) >> "%LOG%"
+        :: 텔레그램 알림 (스케줄러 재시작)
+        %PYTHON% -c "import os,requests; os.chdir(r'%PROJECT%'); from dotenv import load_dotenv; load_dotenv(); t=os.getenv('TELEGRAM_BOT_TOKEN'); c=os.getenv('TELEGRAM_CHAT_ID'); requests.post(f'https://api.telegram.org/bot{t}/sendMessage', json={'chat_id':c,'text':'⚠️ Scheduler 자동 재시작\n%TODAY% %NOW%\n✅ 놓친 스케줄 자동 복구 포함','parse_mode':'HTML'}, timeout=10) if t and c else None" >nul 2>&1
+    ) else (
+        echo [%TODAY% %NOW%] Scheduler 재시작 실패! >> "%LOG%"
+        %PYTHON% -c "import os,requests; os.chdir(r'%PROJECT%'); from dotenv import load_dotenv; load_dotenv(); t=os.getenv('TELEGRAM_BOT_TOKEN'); c=os.getenv('TELEGRAM_CHAT_ID'); requests.post(f'https://api.telegram.org/bot{t}/sendMessage', json={'chat_id':c,'text':'🚨 Scheduler 재시작 실패!\n%TODAY% %NOW%\n수동 확인 필요','parse_mode':'HTML'}, timeout=10) if t and c else None" >nul 2>&1
+    )
 ) else (
     echo [%TODAY% %NOW%] Scheduler OK >> "%LOG%"
 )
