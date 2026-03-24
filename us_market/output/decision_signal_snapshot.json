@@ -11,7 +11,7 @@
       "contribution": 0
     },
     "prediction": {
-      "spy_bullish": 50.0,
+      "spy_bullish": 50,
       "contribution": 0
     },
     "risk": {
@@ -23,7 +23,48 @@
       "contribution": -5
     }
   },
-  "top_picks": [],
+  "top_picks": [
+    {
+      "ticker": "AWK",
+      "name": "American Water Works Company, Inc.",
+      "final_score": 73.6,
+      "grade": "📈 B급 (매수 고려)",
+      "ai_recommendation": "매수",
+      "target_upside": 0.4
+    },
+    {
+      "ticker": "AKAM",
+      "name": "Akamai Technologies, Inc.",
+      "final_score": 73.0,
+      "grade": "📈 B급 (매수 고려)",
+      "ai_recommendation": "매수",
+      "target_upside": -0.5
+    },
+    {
+      "ticker": "APO",
+      "name": "Apollo Global Management, Inc.",
+      "final_score": 71.4,
+      "grade": "📈 B급 (매수 고려)",
+      "ai_recommendation": "매수",
+      "target_upside": 40.6
+    },
+    {
+      "ticker": "APD",
+      "name": "Air Products and Chemicals, Inc.",
+      "final_score": 71.2,
+      "grade": "📈 B급 (매수 고려)",
+      "ai_recommendation": "매수",
+      "target_upside": 8.0
+    },
+    {
+      "ticker": "APP",
+      "name": "AppLovin Corporation",
+      "final_score": 70.6,
+      "grade": "📈 B급 (매수 고려)",
+      "ai_recommendation": "매수",
+      "target_upside": 47.4
+    }
+  ],
   "timing": "WAIT",
   "warnings": [
     "APO is in critical drawdown: -26.8% from peak",

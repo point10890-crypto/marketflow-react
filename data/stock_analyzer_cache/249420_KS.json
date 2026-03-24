@@ -1,0 +1,75 @@
+{
+  "name": "일동제약",
+  "ticker": "249420.KS",
+  "result": "데이터 없음",
+  "date": "2026-03-24 19:13:32",
+  "elapsed": 2.0,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 30150.0,
+    "high": 45000.0,
+    "low": 45000.0,
+    "mean": 45000.0,
+    "median": 45000.0
+  },
+  "current_price": 30150.0,
+  "upside_potential": 49.3,
+  "key_stats": {
+    "name": "ILDONG PHARM",
+    "sector": "Healthcare",
+    "industry": "Drug Manufacturers - Specialty & Generic",
+    "market_cap": 949969682432,
+    "pe_ratio": null,
+    "forward_pe": 21.367825,
+    "dividend_yield": 0.68,
+    "beta": 1.04,
+    "fifty_two_week_high": 45050.0,
+    "fifty_two_week_low": 10300.0,
+    "revenue": 575655903232,
+    "profit_margin": 0.04851,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 145455834990
+    },
+    {
+      "date": "2025-06",
+      "value": 138479788280
+    },
+    {
+      "date": "2025-03",
+      "value": 135977247980
+    },
+    {
+      "date": "2024-12",
+      "value": 155743040580
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 22405833500
+    },
+    {
+      "date": "2025-06",
+      "value": -3005303160
+    },
+    {
+      "date": "2025-03",
+      "value": 1027542190
+    },
+    {
+      "date": "2024-12",
+      "value": 7494600850
+    }
+  ],
+  "news": []
+}

@@ -1,0 +1,75 @@
+{
+  "name": "에이비온",
+  "ticker": "203400.KQ",
+  "result": "데이터 없음",
+  "date": "2026-03-24 19:09:11",
+  "elapsed": 1.2,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 2670.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 2670.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "ABN",
+    "sector": "Healthcare",
+    "industry": "Biotechnology",
+    "market_cap": 165862244352,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": null,
+    "beta": 1.049,
+    "fifty_two_week_high": 7277.778,
+    "fifty_two_week_low": 1911.1111,
+    "revenue": 880136000,
+    "profit_margin": 0.0,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-06",
+      "value": 212275670
+    },
+    {
+      "date": "2025-03",
+      "value": 439390430
+    },
+    {
+      "date": "2024-12",
+      "value": 217635110
+    },
+    {
+      "date": "2024-09",
+      "value": 151893890
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-06",
+      "value": -5859199740
+    },
+    {
+      "date": "2025-03",
+      "value": -10438009080
+    },
+    {
+      "date": "2024-12",
+      "value": -6426535330
+    },
+    {
+      "date": "2024-09",
+      "value": -8671163720
+    }
+  ],
+  "news": []
+}

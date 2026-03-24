@@ -2,8 +2,8 @@
   "name": "HD현대일렉트릭",
   "ticker": "267260.KS",
   "result": "적극 매수",
-  "date": "2026-03-20 10:31:05",
-  "elapsed": 2.4,
+  "date": "2026-03-24 19:09:31",
+  "elapsed": 1.6,
   "consensus_score": 4.3,
   "analyst_count": 20,
   "recommendation_detail": {
@@ -15,23 +15,23 @@
   },
   "recommendation_period": "0m",
   "price_targets": {
-    "current": 962000.0,
+    "current": 925000.0,
     "high": 1200000.0,
     "low": 373609.0,
     "mean": 1038680.44,
     "median": 1075000.0
   },
-  "current_price": 962000.0,
-  "upside_potential": 8.0,
+  "current_price": 925000.0,
+  "upside_potential": 12.3,
   "key_stats": {
     "name": "HD HYUNDAI ELECTRIC",
     "sector": "Industrials",
     "industry": "Electrical Equipment & Parts",
-    "market_cap": 34624981958656,
+    "market_cap": 33293250592768,
     "pe_ratio": null,
-    "forward_pe": 29.044588,
-    "dividend_yield": 0.74,
-    "beta": null,
+    "forward_pe": 27.927488,
+    "dividend_yield": 0.78,
+    "beta": 0.73,
     "fifty_two_week_high": 1116000.0,
     "fifty_two_week_low": 264500.0,
     "revenue": 4079497773056,
@@ -40,8 +40,12 @@
   },
   "finnhub_supplement": null,
   "source": "yfinance",
-  "ai_analysis": "HD현대일렉트릭(267260.KS)에 대해 20명의 애널리스트가 적극 매수 의견(4.3/5.0)을 제시했습니다. 목표가 평균은 1,038,680 KRW로 현재가 대비 8.0% 상승 여력이 있습니다. 이는 전반적으로 긍정적인 시장 전망을 반영합니다.",
+  "ai_analysis": "HD현대일렉트릭(267260.KS)에 대해 20명의 애널리스트가 제시한 컨센서스는 '적극 매수' (4.3/5.0)입니다. 평균 목표 주가는 1,038,680 KRW으로, 현재가 925,000 KRW 대비 12.3% 상승 여력이 있습니다. 이는 애널리스트들이 긍정적인 전망을 제시하고 있음을 시사합니다.",
   "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 1163178967000
+    },
     {
       "date": "2025-09",
       "value": 995431807620
@@ -53,13 +57,13 @@
     {
       "date": "2025-03",
       "value": 1014667829230
-    },
-    {
-      "date": "2024-12",
-      "value": 815713136780
     }
   ],
   "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 245020960520
+    },
     {
       "date": "2025-09",
       "value": 191086743060
@@ -71,10 +75,6 @@
     {
       "date": "2025-03",
       "value": 154072245820
-    },
-    {
-      "date": "2024-12",
-      "value": 129261975980
     }
   ],
   "news": [

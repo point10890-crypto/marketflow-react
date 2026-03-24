@@ -1,0 +1,75 @@
+{
+  "name": "프로티나",
+  "ticker": "468530.KQ",
+  "result": "데이터 없음",
+  "date": "2026-03-24 19:11:14",
+  "elapsed": 2.6,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 72200.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 72200.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "PROTEINA",
+    "sector": "Healthcare",
+    "industry": "Biotechnology",
+    "market_cap": 784957767680,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": null,
+    "beta": null,
+    "fifty_two_week_high": 120100.0,
+    "fifty_two_week_low": 13560.0,
+    "revenue": null,
+    "profit_margin": 0.0,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 582191360
+    },
+    {
+      "date": "2025-06",
+      "value": 963568300
+    },
+    {
+      "date": "2025-03",
+      "value": 1061852710
+    },
+    {
+      "date": "2024-12",
+      "value": 756587350
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": -2566210530
+    },
+    {
+      "date": "2025-06",
+      "value": -1957139110
+    },
+    {
+      "date": "2025-03",
+      "value": -1448792230
+    },
+    {
+      "date": "2024-12",
+      "value": -1815068630
+    }
+  ],
+  "news": []
+}
