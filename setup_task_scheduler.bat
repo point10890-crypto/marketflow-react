@@ -32,7 +32,7 @@ schtasks /Create ^
     /TN "MarketFlow-AutoStart" ^
     /TR "\"%PROJECT%\auto_start_scheduler.bat\"" ^
     /SC ONLOGON ^
-    /DELAY 0000:30 ^
+    /DELAY 0000:01 ^
     /RL HIGHEST ^
     /F
 

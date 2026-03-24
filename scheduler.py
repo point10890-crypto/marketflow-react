@@ -56,6 +56,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional
 import json
+import threading
 
 # Windows 환경에서 콘솔 출력 인코딩 강제 설정
 if sys.platform.startswith('win'):
@@ -1499,43 +1500,85 @@ def run_full_update():
 _LAST_RUN_FILE = os.path.join(Config.DATA_DIR, 'scheduler_last_run.json')
 
 
+_last_run_lock = threading.Lock()
+
+
 def _load_last_run() -> dict:
-    """scheduler_last_run.json 로드 (없으면 빈 dict)"""
+    """scheduler_last_run.json 로드 (원자적 읽기, 손상 시 리셋)"""
     try:
         if os.path.exists(_LAST_RUN_FILE):
             with open(_LAST_RUN_FILE, 'r', encoding='utf-8') as f:
-                return json.load(f)
-    except Exception as e:
-        logger.warning(f"⚠️ scheduler_last_run.json 읽기 실패: {e}")
+                data = json.load(f)
+            if not isinstance(data, dict):
+                logger.error("⚠️ scheduler_last_run.json 형식 오류, 리셋")
+                return {}
+            return data
+    except (json.JSONDecodeError, Exception) as e:
+        logger.warning(f"⚠️ scheduler_last_run.json 읽기 실패 (리셋): {e}")
+        # 손상된 파일 삭제
+        try:
+            os.remove(_LAST_RUN_FILE)
+        except OSError:
+            pass
     return {}
 
 
 def _save_last_run(data: dict):
-    """scheduler_last_run.json 저장"""
+    """scheduler_last_run.json 원자적 저장 (임시파일 → rename)"""
     try:
-        with open(_LAST_RUN_FILE, 'w', encoding='utf-8') as f:
+        import tempfile
+        dir_path = os.path.dirname(_LAST_RUN_FILE)
+        with tempfile.NamedTemporaryFile(mode='w', dir=dir_path,
+                                         suffix='.tmp', delete=False,
+                                         encoding='utf-8') as f:
+            temp_path = f.name
             json.dump(data, f, ensure_ascii=False, indent=2)
+        # 원자적 교체 (Windows: os.replace가 원자적)
+        os.replace(temp_path, _LAST_RUN_FILE)
     except Exception as e:
         logger.warning(f"⚠️ scheduler_last_run.json 저장 실패: {e}")
+        try:
+            os.remove(temp_path)
+        except OSError:
+            pass
 
 
 def record_task_run(task_key: str):
-    """작업 완료 후 마지막 실행 시각 기록"""
-    data = _load_last_run()
-    data[task_key] = datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
-    _save_last_run(data)
+    """작업 완료 후 마지막 실행 시각 기록 (스레드 안전)"""
+    with _last_run_lock:
+        data = _load_last_run()
+        data[task_key] = datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
+        _save_last_run(data)
     logger.debug(f"📝 작업 기록 업데이트: {task_key}")
 
 
-def _was_run_today(task_key: str) -> bool:
-    """해당 task_key가 오늘 이미 실행되었는지 확인"""
+def _was_run_recently(task_key: str, hours: int = 4) -> bool:
+    """해당 task_key가 최근 N시간 내 실행되었는지 확인 (자정 경계 안전)"""
     data = _load_last_run()
     last_run_str = data.get(task_key)
     if not last_run_str:
         return False
     try:
         last_run = datetime.strptime(last_run_str, '%Y-%m-%dT%H:%M:%S')
-        return last_run.date() == datetime.now().date()
+        elapsed = (datetime.now() - last_run).total_seconds()
+        return elapsed < hours * 3600
+    except (ValueError, TypeError):
+        return False
+
+
+def _was_run_today(task_key: str) -> bool:
+    """해당 task_key가 오늘 실행됐거나 최근 2시간 내 실행됐는지 (자정 경계 안전)"""
+    data = _load_last_run()
+    last_run_str = data.get(task_key)
+    if not last_run_str:
+        return False
+    try:
+        last_run = datetime.strptime(last_run_str, '%Y-%m-%dT%H:%M:%S')
+        # 오늘 날짜 OR 최근 2시간 이내 (자정 경계 보호)
+        if last_run.date() == datetime.now().date():
+            return True
+        elapsed = (datetime.now() - last_run).total_seconds()
+        return elapsed < 2 * 3600  # 2시간 이내면 "이미 실행됨"
     except (ValueError, TypeError):
         return False
 
