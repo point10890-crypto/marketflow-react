@@ -223,11 +223,22 @@ def _start_screener_worker(app):
     import time as _time
 
     def _screener_loop():
-        _time.sleep(15)  # Flask 초기화 완료 대기
+        _time.sleep(3)  # Flask 최소 대기
         consecutive_errors = 0
         alert_cooldown = {}  # {code: timestamp}
 
-        print("[Screener] Worker started — waiting for market hours")
+        # 파일 캐시 먼저 로드 (즉시 응답 가능하게)
+        try:
+            from app.services.kis_screener import load_latest, _result_cache
+            latest = load_latest()
+            if latest:
+                _result_cache["data"] = latest
+                _result_cache["ts"] = _time.time()
+                print(f"[Screener] File cache loaded ({len(latest.get('results', []))} results)")
+        except Exception:
+            pass
+
+        print("[Screener] Worker ready")
 
         while True:
             try:
