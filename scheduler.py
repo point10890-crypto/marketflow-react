@@ -1752,6 +1752,8 @@ class Scheduler:
         jongga_verify = _verify_file_today(os.path.join(Config.DATA_DIR, 'jongga_v2_latest.json'))
         vcp_kr_verify = _verify_file_today(os.path.join(Config.DATA_DIR, 'vcp_kr_latest.json'))
         us_verify = _verify_file_today(os.path.join(Config.BASE_DIR, 'us_market', 'output', 'briefing.json'))
+        us_track_verify = _verify_file_today(os.path.join(Config.BASE_DIR, 'us_market', 'output', 'performance_report.json'))
+        crypto_verify = _verify_file_today(os.path.join(Config.DATA_DIR, 'vcp_crypto_latest.json'))
 
         for day in weekdays:
             # 04:00 — US Market 전체 데이터 갱신 + Smart Money Top 5 텔레그램
@@ -1760,10 +1762,12 @@ class Scheduler:
                                   max_retries=2, retry_delay=900, verify_fn=us_verify))
             # 09:00 — 일별 상태 리포트 텔레그램
             getattr(schedule.every(), day).at(Config.MORNING_REPORT_TIME).do(
-                self._with_record(send_morning_status_report, 'morning_report'))
+                self._with_record(send_morning_status_report, 'morning_report',
+                                  max_retries=1, retry_delay=300))
             # 09:30 — US Track Record 스냅샷 + 성과 추적
             getattr(schedule.every(), day).at(Config.US_TRACK_TIME).do(
-                self._with_record(save_us_track_record_snapshot, 'us_track'))
+                self._with_record(save_us_track_record_snapshot, 'us_track',
+                                  max_retries=1, retry_delay=600, verify_fn=us_track_verify))
             # 15:00 — 종가베팅 V2 + 수급/AI/리포트 (VCP 제외)
             getattr(schedule.every(), day).at(Config.KR_UPDATE_TIME).do(
                 self._with_record(run_kr_full_update, 'kr_jongga',
@@ -1774,12 +1778,15 @@ class Scheduler:
                                   max_retries=1, retry_delay=600, verify_fn=vcp_kr_verify))
 
         # 토요일 히스토리 수집
-        schedule.every().saturday.at(Config.HISTORY_TIME).do(collect_historical_institutional)
+        schedule.every().saturday.at(Config.HISTORY_TIME).do(
+            self._with_record(collect_historical_institutional, 'history',
+                              max_retries=1, retry_delay=600))
 
         # Crypto — 매 4시간 24/7 (00/04/08/12/16/20 KST)
         for t in Config.CRYPTO_TIMES:
             schedule.every().day.at(t).do(
-                self._with_record(run_crypto_pipeline, 'crypto'))
+                self._with_record(run_crypto_pipeline, 'crypto',
+                                  max_retries=1, retry_delay=600, verify_fn=crypto_verify))
 
         logger.info("📅 스케줄 등록 완료:")
         logger.info(f"   🇺🇸 평일 {Config.US_UPDATE_TIME}  US Market 전체 갱신 + Smart Money Top 5")
