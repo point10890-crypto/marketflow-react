@@ -226,6 +226,8 @@ def _start_screener_worker(app):
         _time.sleep(3)  # Flask 최소 대기
         consecutive_errors = 0
         alert_cooldown = {}  # {code: timestamp}
+        last_hourly_send = 0  # 1시간 간격 텔레그램 마지막 전송 시각
+        first_scan_sent = False  # 첫 스캔 텔레그램 전송 여부
 
         # 파일 캐시 먼저 로드 (즉시 응답 가능하게)
         try:
@@ -243,21 +245,29 @@ def _start_screener_worker(app):
         while True:
             try:
                 from app.services.kis_screener import is_market_open, run_screening
+                from datetime import datetime as _dt
 
                 if not is_market_open():
                     _time.sleep(60)
+                    first_scan_sent = False  # 장 시작 시 리셋
+                    last_hourly_send = 0
                     continue
+
+                # 15:30 이후 텔레그램 전송 중단
+                now_dt = _dt.now()
+                past_cutoff = (now_dt.hour == 15 and now_dt.minute >= 30) or now_dt.hour > 15
 
                 result = run_screening()
                 consecutive_errors = 0  # 성공 시 리셋
 
-                # S등급 텔레그램 알림
-                if result and result.get('results'):
+                if result and result.get('results') and not past_cutoff:
+                    now = _time.time()
+
+                    # S등급 즉시 알림 (5분 쿨다운)
                     for stock in result['results']:
                         if stock.get('grade') != 'S':
                             continue
                         code = stock.get('code', '')
-                        now = _time.time()
                         if code in alert_cooldown and (now - alert_cooldown[code]) < 300:
                             continue
                         alert_cooldown[code] = now
@@ -265,6 +275,16 @@ def _start_screener_worker(app):
                             _send_screener_alert(stock)
                         except Exception:
                             pass
+
+                    # 1시간 간격 전체 요약 텔레그램 (첫 스캔 포함)
+                    should_send_hourly = (not first_scan_sent) or (now - last_hourly_send >= 3600)
+                    if should_send_hourly:
+                        try:
+                            _send_screener_hourly_summary(result)
+                            last_hourly_send = now
+                            first_scan_sent = True
+                        except Exception as e:
+                            print(f"[Screener] Hourly summary error: {e}")
 
                 _time.sleep(5)  # 장중 5초 간격
 
@@ -302,6 +322,55 @@ def _send_screener_alert(stock):
             f"수급{score.get('smart_money', 0)} 급증{score.get('volume_surge', 0)} "
             f"섹터{score.get('sector', 0)})"
         )
+        requests.post(
+            f"https://api.telegram.org/bot{bot_token}/sendMessage",
+            json={"chat_id": chat_id, "text": msg, "parse_mode": "HTML"},
+            timeout=5
+        )
+    except Exception:
+        pass
+
+
+def _send_screener_hourly_summary(result):
+    """주도주LIVE 1시간 간격 전체 종목 요약 텔레그램"""
+    try:
+        import requests
+        from datetime import datetime as _dt
+        bot_token = os.environ.get('TELEGRAM_BOT_TOKEN')
+        chat_id = os.environ.get('TELEGRAM_CHAT_ID')
+        if not bot_token or not chat_id:
+            return
+
+        stocks = result.get('results', [])
+        by_grade = result.get('by_grade', {})
+        now_str = _dt.now().strftime('%H:%M')
+
+        # 헤더
+        lines = [
+            f"<b>📊 주도주LIVE 현황 ({now_str})</b>",
+            f"S:{by_grade.get('S', 0)} A:{by_grade.get('A', 0)} B:{by_grade.get('B', 0)} | 총 {len(stocks)}종목",
+            "",
+        ]
+
+        # S/A등급 종목 리스트
+        for stock in stocks:
+            grade = stock.get('grade', '')
+            if grade not in ('S', 'A'):
+                continue
+            score = stock.get('score', {})
+            lines.append(
+                f"{'🔥' if grade == 'S' else '🟡'} <b>{stock.get('name')}</b> "
+                f"{stock.get('change_pct', 0):+.1f}% "
+                f"({score.get('total', 0)}점) "
+                f"{stock.get('trading_value_eok', 0):,}억"
+            )
+
+        # B등급은 종목명만
+        b_stocks = [s.get('name', '') for s in stocks if s.get('grade') == 'B']
+        if b_stocks:
+            lines.append(f"\nB등급: {', '.join(b_stocks[:5])}{'...' if len(b_stocks) > 5 else ''}")
+
+        msg = '\n'.join(lines)
         requests.post(
             f"https://api.telegram.org/bot{bot_token}/sendMessage",
             json={"chat_id": chat_id, "text": msg, "parse_mode": "HTML"},
