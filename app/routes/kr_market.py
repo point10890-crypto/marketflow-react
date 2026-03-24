@@ -16,14 +16,11 @@ logger = logging.getLogger(__name__)
 kr_bp = Blueprint('kr', __name__)
 
 # ── 고정 경로 ──────────────────────────────────────────────
-_ROUTES_DIR = os.path.dirname(os.path.abspath(__file__))  # app/routes/
-_APP_DIR = os.path.dirname(_ROUTES_DIR)                    # app/
-_BASE_DIR = os.path.dirname(_APP_DIR)                      # project root (bitman_marketfloww)
-DATA_DIR = os.path.join(_BASE_DIR, 'data')
+from app.utils.paths import BASE_DIR, DATA_DIR
 
 # market_gate 임포트를 위한 경로 등록
-if _BASE_DIR not in sys.path:
-    sys.path.insert(0, _BASE_DIR)
+if BASE_DIR not in sys.path:
+    sys.path.insert(0, BASE_DIR)
 
 
 @kr_bp.route('/market-status')
@@ -95,7 +92,7 @@ def _load_ticker_maps():
     market_map = {}
     yahoo_map = {}
     candidates = [
-        os.path.join(_BASE_DIR, 'ticker_to_yahoo_map.csv'),
+        os.path.join(BASE_DIR, 'ticker_to_yahoo_map.csv'),
         os.path.join(DATA_DIR, 'ticker_to_yahoo_map.csv'),
     ]
     for p in candidates:
@@ -792,7 +789,7 @@ def get_kr_realtime_prices():
         yahoo_map = {}
         # Flexible path resolution
         candidates = [
-            os.path.join(_BASE_DIR, 'ticker_to_yahoo_map.csv'),
+            os.path.join(BASE_DIR, 'ticker_to_yahoo_map.csv'),
             os.path.join(DATA_DIR, 'ticker_to_yahoo_map.csv'),
         ]
         ticker_map_path = 'ticker_to_yahoo_map.csv'
@@ -1029,6 +1026,7 @@ def get_kr_vcp_dates():
 
 
 @kr_bp.route('/vcp-report/<date>')
+@kr_bp.route('/vcp-enhanced/history/<date>')
 def get_kr_vcp_report(date):
     """KR VCP 특정 날짜 리포트 반환 (date: YYYY-MM-DD)."""
     try:

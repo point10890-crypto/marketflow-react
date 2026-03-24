@@ -930,8 +930,9 @@ def run_vcp_all_markets(skip_sync: bool = False):
     start_time = time.time()
     results = []
 
-    # KR VCP
-    results.append(('KR VCP', run_vcp_signal_scan(send_alert=True)))
+    # KR VCP (signal_tracker + vcp_enhanced_scanner 둘 다 실행)
+    results.append(('KR VCP (signal)', run_vcp_signal_scan(send_alert=True)))
+    results.append(('KR VCP (enhanced)', run_vcp_enhanced_scan('KR')))
 
     # US VCP
     results.append(('US VCP', run_vcp_enhanced_scan('US')))
