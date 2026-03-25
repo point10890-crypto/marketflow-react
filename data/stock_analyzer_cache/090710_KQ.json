@@ -1,35 +1,35 @@
 {
-  "name": "서전기전",
-  "ticker": "189860.KQ",
+  "name": "휴림로봇",
+  "ticker": "090710.KQ",
   "result": "데이터 없음",
-  "date": "2026-03-25 14:38:45",
-  "elapsed": 1.7,
+  "date": "2026-03-25 14:04:16",
+  "elapsed": 2.2,
   "consensus_score": null,
   "analyst_count": 0,
   "recommendation_detail": null,
   "recommendation_period": null,
   "price_targets": {
-    "current": 6530.0,
+    "current": 13790.0,
     "high": null,
     "low": null,
     "mean": null,
     "median": null
   },
-  "current_price": 6530.0,
+  "current_price": 13790.0,
   "upside_potential": null,
   "key_stats": {
-    "name": "SJEM",
-    "sector": "Industrials",
-    "industry": "Electrical Equipment & Parts",
-    "market_cap": 63333031936,
+    "name": "Hyulim ROBOT",
+    "sector": "",
+    "industry": "",
+    "market_cap": 1646669987840,
     "pe_ratio": null,
     "forward_pe": null,
     "dividend_yield": null,
-    "beta": 0.349,
-    "fifty_two_week_high": 7100.0,
-    "fifty_two_week_low": 2820.0,
-    "revenue": 50190069760,
-    "profit_margin": 0.02765,
+    "beta": null,
+    "fifty_two_week_high": 26600.0,
+    "fifty_two_week_low": 1650.0,
+    "revenue": null,
+    "profit_margin": null,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
@@ -38,37 +38,37 @@
   "revenue_quarters": [
     {
       "date": "2025-09",
-      "value": 20269435230
+      "value": 40467328650
     },
     {
       "date": "2025-06",
-      "value": 11152087680
+      "value": 52622002570
     },
     {
       "date": "2025-03",
-      "value": 4403456570
+      "value": 50627911790
     },
     {
       "date": "2024-12",
-      "value": 33000462770
+      "value": 67253121290
     }
   ],
   "net_income_quarters": [
     {
       "date": "2025-09",
-      "value": 18113581560
+      "value": -2664012550
     },
     {
       "date": "2025-06",
-      "value": -4032348150
+      "value": 1199962320
     },
     {
       "date": "2025-03",
-      "value": -4693233730
+      "value": -1793574300
     },
     {
       "date": "2024-12",
-      "value": 11831615750
+      "value": 6313250850
     }
   ],
   "news": []

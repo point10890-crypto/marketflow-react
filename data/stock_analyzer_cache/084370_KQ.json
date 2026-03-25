@@ -1,0 +1,96 @@
+{
+  "name": "유진테크",
+  "ticker": "084370.KQ",
+  "result": "매수",
+  "date": "2026-03-25 14:02:14",
+  "elapsed": 2.4,
+  "consensus_score": 4.29,
+  "analyst_count": 7,
+  "recommendation_detail": {
+    "strongBuy": 2,
+    "buy": 5,
+    "hold": 0,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 136200.0,
+    "high": 163000.0,
+    "low": 108000.0,
+    "mean": 129285.71,
+    "median": 124000.0
+  },
+  "current_price": 136200.0,
+  "upside_potential": -5.1,
+  "key_stats": {
+    "name": "Eugenetech",
+    "sector": "",
+    "industry": "",
+    "market_cap": 3032042176512,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": null,
+    "beta": null,
+    "fifty_two_week_high": 153200.0,
+    "fifty_two_week_low": 30850.0,
+    "revenue": null,
+    "profit_margin": null,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "유진테크는 애널리스트 컨센서스 '매수' 의견이 우세하며, 7명의 애널리스트가 참여했습니다. 목표가 평균은 현재가 대비 -5.1% 하락 여력이 있는 129,286원으로 제시되었습니다. 투자 결정은 제시된 정보를 바탕으로 신중하게 판단해야 합니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 62342721910
+    },
+    {
+      "date": "2025-06",
+      "value": 104924667100
+    },
+    {
+      "date": "2025-03",
+      "value": 83153710270
+    },
+    {
+      "date": "2024-12",
+      "value": 114505691600
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 7876829860
+    },
+    {
+      "date": "2025-06",
+      "value": 10681326340
+    },
+    {
+      "date": "2025-03",
+      "value": 7534235740
+    },
+    {
+      "date": "2024-12",
+      "value": 35246017860
+    }
+  ],
+  "news": [
+    {
+      "title": "3 Asian Growth Companies With Insider Ownership Up To 37%",
+      "summary": "Amidst a backdrop of fluctuating global markets and cautious economic forecasts, Asian equities have shown resilience, with some indices remaining relatively stable. In this environment, growth compan",
+      "url": "https://finance.yahoo.com/news/3-asian-growth-companies-insider-043545786.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-02-03T04:35:45Z"
+    },
+    {
+      "title": "Asian Growth Stocks Insiders Are Banking On January 2026",
+      "summary": "As we enter 2026, Asian markets are navigating a complex landscape with China's manufacturing sector showing signs of recovery and South Korea's export-driven economy continuing to thrive. In this env",
+      "url": "https://finance.yahoo.com/news/asian-growth-stocks-insiders-banking-043532830.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-01-05T04:35:32Z"
+    }
+  ]
+}

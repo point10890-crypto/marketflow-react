@@ -1,73 +1,74 @@
 {
   "status": "RED",
-  "score": 50,
+  "score": 35,
   "label": "BEARISH",
   "reasons": [
-    "RSI(52.5), MACD: BEARISH",
+    "RSI(51.4), MACD: BEARISH",
+    "시장 하락추세. 보수적 접근 권장.",
     "🔥 강세: 반도체 (65)",
-    "❄️ 약세: 증권 (25)"
+    "❄️ 약세: 철강 (25)"
   ],
   "sectors": [
     {
       "name": "반도체",
       "signal": "neutral",
-      "change_pct": 2.05,
+      "change_pct": 1.62,
       "score": 65
     },
     {
       "name": "KOSPI200",
       "signal": "neutral",
-      "change_pct": 1.65,
-      "score": 40
+      "change_pct": 1.34,
+      "score": 45
     },
     {
       "name": "은행",
       "signal": "neutral",
-      "change_pct": 1.95,
-      "score": 40
+      "change_pct": 2.67,
+      "score": 45
     },
     {
       "name": "IT",
-      "signal": "bearish",
-      "change_pct": 1.29,
-      "score": 35
+      "signal": "neutral",
+      "change_pct": 1.32,
+      "score": 40
     },
     {
       "name": "2차전지",
       "signal": "bearish",
-      "change_pct": 1.86,
-      "score": 25
+      "change_pct": 2.93,
+      "score": 35
+    },
+    {
+      "name": "증권",
+      "signal": "bearish",
+      "change_pct": 5.77,
+      "score": 35
     },
     {
       "name": "자동차",
       "signal": "bearish",
-      "change_pct": 1.88,
+      "change_pct": 2.36,
       "score": 25
     },
     {
       "name": "철강",
       "signal": "bearish",
-      "change_pct": 0.24,
-      "score": 25
-    },
-    {
-      "name": "증권",
-      "signal": "bearish",
-      "change_pct": 3.97,
+      "change_pct": 2.04,
       "score": 25
     }
   ],
   "metrics": {
     "usd_krw": null,
-    "kospi": 5690.1298828125,
-    "kospi_change_pct": 2.45,
-    "kosdaq": 1150.5,
-    "kosdaq_change_pct": 2.59,
-    "rsi": 52.53875185161934
+    "kospi": 5642.8798828125,
+    "kospi_change_pct": 1.6,
+    "kosdaq": 1156.989990234375,
+    "kosdaq_change_pct": 3.17,
+    "rsi": 51.442110126683545
   },
-  "kospi_close": 5690.1298828125,
-  "kospi_change_pct": 2.45,
-  "kosdaq_close": 1150.5,
-  "kosdaq_change_pct": 2.59,
-  "updated_at": "2026-03-25T11:58:47.455717"
+  "kospi_close": 5642.8798828125,
+  "kospi_change_pct": 1.6,
+  "kosdaq_close": 1156.989990234375,
+  "kosdaq_change_pct": 3.17,
+  "updated_at": "2026-03-25T15:16:03.660389"
 }

@@ -1,0 +1,117 @@
+{
+  "name": "LG에너지솔루션",
+  "ticker": "373220.KS",
+  "result": "매수",
+  "date": "2026-03-25 13:50:47",
+  "elapsed": 2.2,
+  "consensus_score": 3.9,
+  "analyst_count": 30,
+  "recommendation_detail": {
+    "strongBuy": 9,
+    "buy": 13,
+    "hold": 6,
+    "sell": 0,
+    "strongSell": 2
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 389000.0,
+    "high": 600000.0,
+    "low": 300000.0,
+    "mean": 484586.22,
+    "median": 500000.0
+  },
+  "current_price": 388500.0,
+  "upside_potential": 24.7,
+  "key_stats": {
+    "name": "LG Energy Solution",
+    "sector": "Industrials",
+    "industry": "Electrical Equipment & Parts",
+    "market_cap": 90908997451776,
+    "pe_ratio": null,
+    "forward_pe": 40.732815,
+    "dividend_yield": null,
+    "beta": 1.061,
+    "fifty_two_week_high": 527000.0,
+    "fifty_two_week_low": 266000.0,
+    "revenue": 23671758389248,
+    "profit_margin": -0.04532,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "LG에너지솔루션(373220.KS)에 대해 30명의 애널리스트가 제시한 컨센서스는 '매수' 의견입니다. 목표가 평균은 484,586 KRW으로, 현재가 388,500 KRW 대비 24.7% 상승 여력이 있습니다. 이는 애널리스트들이 긍정적인 전망을 제시하고 있음을 시사합니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 5699873000000
+    },
+    {
+      "date": "2025-06",
+      "value": 5565408000000
+    },
+    {
+      "date": "2025-03",
+      "value": 6264995000000
+    },
+    {
+      "date": "2024-12",
+      "value": 6451162000000
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 247180000000
+    },
+    {
+      "date": "2025-06",
+      "value": -297446000000
+    },
+    {
+      "date": "2025-03",
+      "value": -145740000000
+    },
+    {
+      "date": "2024-12",
+      "value": -679661000000
+    }
+  ],
+  "news": [
+    {
+      "title": "Livium CEO on recycling demand “Hockey Stick”",
+      "summary": "Livium Limited CEO & Managing Director Simon Linge talked with Kerry Stevenson from Proactive at the Small and Mid-Cap Conference about the company’s expanding role in battery recycling and its growth",
+      "url": "https://finance.yahoo.com/video/livium-ceo-recycling-demand-hockey-221016064.html",
+      "provider": "Proactive",
+      "pub_time": "2026-03-24T22:10:16Z"
+    },
+    {
+      "title": "US Government Confirms $4.3 Billion Battery Deal Between Tesla (TSLA) and LG Energy Solution, Reuters Reports",
+      "summary": "Tesla, Inc. (NASDAQ:TSLA) is one of the best long term stocks to invest in according to billionaires. Reuters reported on March 16 that the US government announced on Monday a supply agreement between",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/us-government-confirms-4-3-203701922.html",
+      "provider": "Insider Monkey",
+      "pub_time": "2026-03-20T20:37:01Z"
+    },
+    {
+      "title": "Trump Administration Confirms Tesla Will Build $4.3 Billion Battery Plant In Michigan With LG Energy",
+      "summary": "The President Donald Trump administration’s Department of the Interior (DOI) has revealed a series of deals totaling around $56 billion, including a deal between Tesla Inc. and South Korea’s LG Energy",
+      "url": "https://finance.yahoo.com/news/trump-administration-confirms-tesla-build-143035849.html",
+      "provider": "Benzinga",
+      "pub_time": "2026-03-18T14:30:35Z"
+    },
+    {
+      "title": "The Investment Case for Tesla After $4.3B Team-Up With LG Energy",
+      "summary": "TSLA's $4.3B LG Energy deal boosts domestic battery supply for Megapack, but EV weakness and rising spending cloud the stock's appeal.",
+      "url": "https://finance.yahoo.com/news/investment-case-tesla-4-3b-124300640.html",
+      "provider": "Zacks",
+      "pub_time": "2026-03-18T12:43:00Z"
+    },
+    {
+      "title": "LG, GM to make LFP ESS batteries in Tennessee, recall 700 laid off workers",
+      "summary": "The changeover is set to bring back about 700 employees who were temporarily laid off in January 2026, when demand for electric vehicles softened.",
+      "url": "https://www.just-auto.com/news/lg-gm-lfp-ess-batteries-tennessee/",
+      "provider": "Just Auto",
+      "pub_time": "2026-03-18T12:16:48Z"
+    }
+  ]
+}

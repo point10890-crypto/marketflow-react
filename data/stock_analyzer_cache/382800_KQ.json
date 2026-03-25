@@ -1,35 +1,35 @@
 {
-  "name": "서전기전",
-  "ticker": "189860.KQ",
+  "name": "지앤비에스 에코",
+  "ticker": "382800.KQ",
   "result": "데이터 없음",
-  "date": "2026-03-25 14:38:45",
-  "elapsed": 1.7,
+  "date": "2026-03-25 15:14:58",
+  "elapsed": 1.8,
   "consensus_score": null,
   "analyst_count": 0,
   "recommendation_detail": null,
   "recommendation_period": null,
   "price_targets": {
-    "current": 6530.0,
+    "current": 4955.0,
     "high": null,
     "low": null,
     "mean": null,
     "median": null
   },
-  "current_price": 6530.0,
+  "current_price": 4955.0,
   "upside_potential": null,
   "key_stats": {
-    "name": "SJEM",
+    "name": "GnBS eco",
     "sector": "Industrials",
-    "industry": "Electrical Equipment & Parts",
-    "market_cap": 63333031936,
+    "industry": "Pollution & Treatment Controls",
+    "market_cap": 157722804224,
     "pe_ratio": null,
     "forward_pe": null,
-    "dividend_yield": null,
-    "beta": 0.349,
-    "fifty_two_week_high": 7100.0,
-    "fifty_two_week_low": 2820.0,
-    "revenue": 50190069760,
-    "profit_margin": 0.02765,
+    "dividend_yield": 2.56,
+    "beta": 0.971,
+    "fifty_two_week_high": 5060.0,
+    "fifty_two_week_low": 2550.0,
+    "revenue": 91919433728,
+    "profit_margin": 0.06871,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
@@ -37,38 +37,38 @@
   "ai_analysis": null,
   "revenue_quarters": [
     {
-      "date": "2025-09",
-      "value": 20269435230
+      "date": "2025-12",
+      "value": 29631927310
     },
     {
       "date": "2025-06",
-      "value": 11152087680
+      "value": 25486544730
     },
     {
       "date": "2025-03",
-      "value": 4403456570
+      "value": 18699786520
     },
     {
       "date": "2024-12",
-      "value": 33000462770
+      "value": 19106210170
     }
   ],
   "net_income_quarters": [
     {
-      "date": "2025-09",
-      "value": 18113581560
+      "date": "2025-12",
+      "value": 4239864950
     },
     {
       "date": "2025-06",
-      "value": -4032348150
+      "value": -1265041990
     },
     {
       "date": "2025-03",
-      "value": -4693233730
+      "value": 1170324630
     },
     {
       "date": "2024-12",
-      "value": 11831615750
+      "value": 3307432110
     }
   ],
   "news": []

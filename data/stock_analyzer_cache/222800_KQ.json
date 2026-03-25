@@ -1,0 +1,81 @@
+{
+  "name": "심텍",
+  "ticker": "222800.KQ",
+  "result": "매수",
+  "date": "2026-03-25 14:12:36",
+  "elapsed": 2.7,
+  "consensus_score": 4.12,
+  "analyst_count": 8,
+  "recommendation_detail": {
+    "strongBuy": 2,
+    "buy": 5,
+    "hold": 1,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 63500.0,
+    "high": 73000.0,
+    "low": 60000.0,
+    "mean": 66714.29,
+    "median": 66000.0
+  },
+  "current_price": 63500.0,
+  "upside_potential": 5.1,
+  "key_stats": {
+    "name": "SIMMTECH",
+    "sector": "Technology",
+    "industry": "Semiconductors",
+    "market_cap": 2176455671808,
+    "pe_ratio": null,
+    "forward_pe": 15.102566,
+    "dividend_yield": 0.18,
+    "beta": 1.546,
+    "fifty_two_week_high": 67100.0,
+    "fifty_two_week_low": 15600.0,
+    "revenue": 1410559901696,
+    "profit_margin": -0.11638,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "심텍(222800.KQ)에 대해 8명의 애널리스트가 제시한 컨센서스는 '매수' 의견입니다 (5점 만점 중 4.12점). 목표가 평균은 66,714원으로, 현재가 63,500원 대비 약 5.1% 상승 여력이 있습니다. 투자 판단은 제시된 정보를 바탕으로 투자자 본인이 결정해야 합니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 372838724900
+    },
+    {
+      "date": "2025-06",
+      "value": 340767377720
+    },
+    {
+      "date": "2025-03",
+      "value": 303597471100
+    },
+    {
+      "date": "2024-12",
+      "value": 301112144600
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 6763415020
+    },
+    {
+      "date": "2025-06",
+      "value": -18688456060
+    },
+    {
+      "date": "2025-03",
+      "value": -35520115290
+    },
+    {
+      "date": "2024-12",
+      "value": -20573271890
+    }
+  ],
+  "news": []
+}
