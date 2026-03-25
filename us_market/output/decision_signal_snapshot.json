@@ -1,6 +1,6 @@
 {
   "action": "CAUTIOUS",
-  "score": 26,
+  "score": 36,
   "components": {
     "market_gate": {
       "score": 20,
@@ -15,8 +15,8 @@
       "contribution": 0
     },
     "risk": {
-      "level": "High",
-      "contribution": -10
+      "level": "Elevated",
+      "contribution": 0
     },
     "sector_phase": {
       "phase": "Late Cycle",
@@ -69,8 +69,8 @@
   "warnings": [
     "APO is in critical drawdown: -26.9% from peak",
     "APP is in critical drawdown: -39.0% from peak",
-    "AMD is in critical drawdown: -20.9% from peak",
     "AJG drawdown warning: -18.1% from peak",
+    "AMP drawdown warning: -17.6% from peak",
     "AMZN drawdown warning: -16.2% from peak"
   ]
 }
