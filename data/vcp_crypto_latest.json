@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "generated_at": "2026-03-25T11:58:28.102806",
+    "generated_at": "2026-03-25T16:03:18.602106",
     "market": "CRYPTO",
     "gate": "RED",
-    "gate_score": 21,
-    "processing_time_sec": 18.9
+    "gate_score": 27,
+    "processing_time_sec": 18.2
   },
   "summary": {
     "total_screened": 50,
@@ -19,11 +19,11 @@
       "name": "MKR",
       "market": "CRYPTO",
       "sector": "",
-      "price": 1751.98,
+      "price": 1750.15,
       "composite": {
-        "composite_score": 63.6,
-        "rating": "Good VCP",
-        "rating_description": "양호한 VCP 패턴",
+        "composite_score": 59.6,
+        "rating": "Developing VCP",
+        "rating_description": "형성 중인 VCP 패턴",
         "guidance": "거래량 확인 후 피벗 매수",
         "valid_vcp": "False",
         "entry_ready": "False",
@@ -43,9 +43,9 @@
             "label": "Contraction Quality"
           },
           "volume_pattern": {
-            "score": 70,
+            "score": 50,
             "weight": 0.2,
-            "weighted": 14.0,
+            "weighted": 10.0,
             "label": "Volume Pattern"
           },
           "pivot_proximity": {
@@ -75,12 +75,12 @@
         "pivot_price": 1948.11
       },
       "volume_pattern": {
-        "score": 70,
-        "dry_up_ratio": 0.65
+        "score": 50,
+        "dry_up_ratio": 0.7
       },
       "pivot_proximity": {
         "score": 40,
-        "distance_from_pivot_pct": 10.1,
+        "distance_from_pivot_pct": 10.2,
         "trade_status": "BUILDING"
       },
       "relative_strength": {
