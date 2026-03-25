@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-03-25T04:04:20.786490",
+  "timestamp": "2026-03-25T11:32:07.442130",
   "tickers": [
     "AAPL",
     "NVDA",
@@ -13,15 +13,15 @@
     "correlation_matrix": {
       "AAPL": {
         "AAPL": 1.0,
-        "AMZN": 0.25,
-        "GOOGL": 0.3,
-        "META": 0.23,
-        "MSFT": 0.09,
+        "AMZN": 0.26,
+        "GOOGL": 0.31,
+        "META": 0.24,
+        "MSFT": 0.1,
         "NVDA": 0.26,
-        "TSLA": 0.16
+        "TSLA": 0.18
       },
       "AMZN": {
-        "AAPL": 0.25,
+        "AAPL": 0.26,
         "AMZN": 1.0,
         "GOOGL": 0.38,
         "META": 0.37,
@@ -30,27 +30,27 @@
         "TSLA": 0.42
       },
       "GOOGL": {
-        "AAPL": 0.3,
+        "AAPL": 0.31,
         "AMZN": 0.38,
         "GOOGL": 1.0,
         "META": 0.23,
-        "MSFT": 0.06,
+        "MSFT": 0.07,
         "NVDA": 0.28,
         "TSLA": 0.44
       },
       "META": {
-        "AAPL": 0.23,
+        "AAPL": 0.24,
         "AMZN": 0.37,
         "GOOGL": 0.23,
         "META": 1.0,
         "MSFT": 0.12,
         "NVDA": 0.33,
-        "TSLA": 0.33
+        "TSLA": 0.32
       },
       "MSFT": {
-        "AAPL": 0.09,
+        "AAPL": 0.1,
         "AMZN": 0.31,
-        "GOOGL": 0.06,
+        "GOOGL": 0.07,
         "META": 0.12,
         "MSFT": 1.0,
         "NVDA": 0.35,
@@ -63,20 +63,20 @@
         "META": 0.33,
         "MSFT": 0.35,
         "NVDA": 1.0,
-        "TSLA": 0.46
+        "TSLA": 0.47
       },
       "TSLA": {
-        "AAPL": 0.16,
+        "AAPL": 0.18,
         "AMZN": 0.42,
         "GOOGL": 0.44,
-        "META": 0.33,
+        "META": 0.32,
         "MSFT": 0.32,
-        "NVDA": 0.46,
+        "NVDA": 0.47,
         "TSLA": 1.0
       }
     },
     "high_correlation_pairs": [],
-    "portfolio_volatility_annualized": 19.78,
+    "portfolio_volatility_annualized": 19.88,
     "risk_level": "Moderate"
   }
 }

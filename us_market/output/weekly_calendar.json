@@ -1,7 +1,7 @@
 {
   "week_start": "2026-03-23",
   "week_end": "2026-03-29",
-  "updated": "2026-03-25T04:12:39.076376",
+  "updated": "2026-03-25T11:40:04.794795",
   "events": [
     {
       "date": "2026-03-23",
@@ -178,8 +178,8 @@
       "impact": "medium",
       "type": "Economic",
       "forecast": "-1.3M",
-      "previous": "6.6M",
-      "actual": null,
+      "previous": "6.600M",
+      "actual": "2.300M",
       "ticker": null,
       "ai_outlook": null
     },
@@ -805,7 +805,7 @@
       "previous": null,
       "actual": null,
       "ticker": "NKE",
-      "ai_outlook": "Consumer Cyclical | 시가총액 $79.7B"
+      "ai_outlook": "Consumer Cyclical | 시가총액 $79.2B"
     }
   ]
 }

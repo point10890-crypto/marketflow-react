@@ -1,103 +1,25 @@
 {
   "metadata": {
-    "generated_at": "2026-03-25T00:12:59.911112",
+    "generated_at": "2026-03-25T11:58:08.355547",
     "market": "US",
     "gate": "GREEN",
     "gate_score": 75,
-    "processing_time_sec": 32.8
+    "processing_time_sec": 33.2
   },
   "summary": {
     "total_screened": 89,
-    "stage2_passed": 39,
-    "trend_passed": 39,
+    "stage2_passed": 37,
+    "trend_passed": 37,
     "vcp_found": 7,
     "entry_ready": 2
   },
   "signals": [
     {
-      "symbol": "COST",
-      "name": "Costco",
-      "market": "US",
-      "sector": "",
-      "price": 977.52,
-      "composite": {
-        "composite_score": 74.6,
-        "rating": "Strong VCP",
-        "rating_description": "강한 VCP 패턴",
-        "guidance": "거래량 확인 후 피벗 매수",
-        "valid_vcp": "True",
-        "entry_ready": false,
-        "weakest_component": "Pivot Proximity",
-        "strongest_component": "Trend Template",
-        "component_breakdown": {
-          "trend_template": {
-            "score": 87.5,
-            "weight": 0.25,
-            "weighted": 21.9,
-            "label": "Trend Template (Stage 2)"
-          },
-          "contraction_quality": {
-            "score": 71,
-            "weight": 0.25,
-            "weighted": 17.8,
-            "label": "Contraction Quality"
-          },
-          "volume_pattern": {
-            "score": 70,
-            "weight": 0.2,
-            "weighted": 14.0,
-            "label": "Volume Pattern"
-          },
-          "pivot_proximity": {
-            "score": 60,
-            "weight": 0.15,
-            "weighted": 9.0,
-            "label": "Pivot Proximity"
-          },
-          "relative_strength": {
-            "score": 80,
-            "weight": 0.15,
-            "weighted": 12.0,
-            "label": "Relative Strength"
-          }
-        }
-      },
-      "trend_template": {
-        "score": 87.5,
-        "passed": "True",
-        "stage": 2,
-        "stage_label": "Stage 2 - Advancing"
-      },
-      "vcp_pattern": {
-        "score": 71,
-        "valid_vcp": "True",
-        "num_contractions": 3,
-        "pivot_price": 1010.79
-      },
-      "volume_pattern": {
-        "score": 70,
-        "dry_up_ratio": 0.66
-      },
-      "pivot_proximity": {
-        "score": 60,
-        "distance_from_pivot_pct": 3.3,
-        "trade_status": "APPROACHING"
-      },
-      "relative_strength": {
-        "score": 80,
-        "rs_rank_estimate": 80
-      },
-      "stage": {
-        "stage": 2,
-        "stage_label": "Stage 2 - Advancing"
-      }
-    },
-    {
       "symbol": "CVX",
       "name": "Chevron",
       "market": "US",
       "sector": "",
-      "price": 208.56,
+      "price": 206.79,
       "composite": {
         "composite_score": 71.2,
         "rating": "Strong VCP",
@@ -150,11 +72,11 @@
         "score": 56,
         "valid_vcp": "True",
         "num_contractions": 2,
-        "pivot_price": 208.56
+        "pivot_price": 206.79
       },
       "volume_pattern": {
         "score": 30,
-        "dry_up_ratio": 1.32
+        "dry_up_ratio": 1.39
       },
       "pivot_proximity": {
         "score": 80,
@@ -171,89 +93,11 @@
       }
     },
     {
-      "symbol": "WMT",
-      "name": "Walmart",
-      "market": "US",
-      "sector": "",
-      "price": 123.18,
-      "composite": {
-        "composite_score": 69.0,
-        "rating": "Good VCP",
-        "rating_description": "양호한 VCP 패턴",
-        "guidance": "거래량 확인 후 피벗 매수",
-        "valid_vcp": "False",
-        "entry_ready": "False",
-        "weakest_component": "VCP Pattern",
-        "strongest_component": "Trend Template",
-        "component_breakdown": {
-          "trend_template": {
-            "score": 100.0,
-            "weight": 0.25,
-            "weighted": 25.0,
-            "label": "Trend Template (Stage 2)"
-          },
-          "contraction_quality": {
-            "score": 45,
-            "weight": 0.25,
-            "weighted": 11.2,
-            "label": "Contraction Quality"
-          },
-          "volume_pattern": {
-            "score": 70,
-            "weight": 0.2,
-            "weighted": 14.0,
-            "label": "Volume Pattern"
-          },
-          "pivot_proximity": {
-            "score": 60,
-            "weight": 0.15,
-            "weighted": 9.0,
-            "label": "Pivot Proximity"
-          },
-          "relative_strength": {
-            "score": 65,
-            "weight": 0.15,
-            "weighted": 9.8,
-            "label": "Relative Strength"
-          }
-        }
-      },
-      "trend_template": {
-        "score": 100.0,
-        "passed": "True",
-        "stage": 2,
-        "stage_label": "Stage 2 - Advancing"
-      },
-      "vcp_pattern": {
-        "score": 45,
-        "valid_vcp": "False",
-        "num_contractions": 3,
-        "pivot_price": 127.69
-      },
-      "volume_pattern": {
-        "score": 70,
-        "dry_up_ratio": 0.65
-      },
-      "pivot_proximity": {
-        "score": 60,
-        "distance_from_pivot_pct": 3.5,
-        "trade_status": "APPROACHING"
-      },
-      "relative_strength": {
-        "score": 65,
-        "rs_rank_estimate": 65
-      },
-      "stage": {
-        "stage": 2,
-        "stage_label": "Stage 2 - Advancing"
-      }
-    },
-    {
       "symbol": "XOM",
       "name": "Exxon",
       "market": "US",
       "sector": "",
-      "price": 166.21,
+      "price": 165.38,
       "composite": {
         "composite_score": 69.0,
         "rating": "Good VCP",
@@ -306,11 +150,11 @@
         "score": 41,
         "valid_vcp": "True",
         "num_contractions": 2,
-        "pivot_price": 166.21
+        "pivot_price": 165.38
       },
       "volume_pattern": {
         "score": 30,
-        "dry_up_ratio": 1.1
+        "dry_up_ratio": 1.16
       },
       "pivot_proximity": {
         "score": 90,
@@ -327,89 +171,11 @@
       }
     },
     {
-      "symbol": "NET",
-      "name": "Cloudflare",
-      "market": "US",
-      "sector": "",
-      "price": 219.52,
-      "composite": {
-        "composite_score": 68.2,
-        "rating": "Good VCP",
-        "rating_description": "양호한 VCP 패턴",
-        "guidance": "거래량 확인 후 피벗 매수",
-        "valid_vcp": "False",
-        "entry_ready": "False",
-        "weakest_component": "VCP Pattern",
-        "strongest_component": "Trend Template",
-        "component_breakdown": {
-          "trend_template": {
-            "score": 100.0,
-            "weight": 0.25,
-            "weighted": 25.0,
-            "label": "Trend Template (Stage 2)"
-          },
-          "contraction_quality": {
-            "score": 30,
-            "weight": 0.25,
-            "weighted": 7.5,
-            "label": "Contraction Quality"
-          },
-          "volume_pattern": {
-            "score": 70,
-            "weight": 0.2,
-            "weighted": 14.0,
-            "label": "Volume Pattern"
-          },
-          "pivot_proximity": {
-            "score": 80,
-            "weight": 0.15,
-            "weighted": 12.0,
-            "label": "Pivot Proximity"
-          },
-          "relative_strength": {
-            "score": 65,
-            "weight": 0.15,
-            "weighted": 9.8,
-            "label": "Relative Strength"
-          }
-        }
-      },
-      "trend_template": {
-        "score": 100.0,
-        "passed": "True",
-        "stage": 2,
-        "stage_label": "Stage 2 - Advancing"
-      },
-      "vcp_pattern": {
-        "score": 30,
-        "valid_vcp": "False",
-        "num_contractions": 2,
-        "pivot_price": 225.48
-      },
-      "volume_pattern": {
-        "score": 70,
-        "dry_up_ratio": 0.7
-      },
-      "pivot_proximity": {
-        "score": 80,
-        "distance_from_pivot_pct": 2.6,
-        "trade_status": "NEAR PIVOT"
-      },
-      "relative_strength": {
-        "score": 65,
-        "rs_rank_estimate": 65
-      },
-      "stage": {
-        "stage": 2,
-        "stage_label": "Stage 2 - Advancing"
-      }
-    },
-    {
       "symbol": "INTC",
       "name": "Intel",
       "market": "US",
       "sector": "",
-      "price": 43.9,
+      "price": 44.06,
       "composite": {
         "composite_score": 67.6,
         "rating": "Good VCP",
@@ -466,11 +232,11 @@
       },
       "volume_pattern": {
         "score": 50,
-        "dry_up_ratio": 0.79
+        "dry_up_ratio": 0.82
       },
       "pivot_proximity": {
         "score": 40,
-        "distance_from_pivot_pct": 8.5,
+        "distance_from_pivot_pct": 8.2,
         "trade_status": "BUILDING"
       },
       "relative_strength": {
@@ -483,11 +249,89 @@
       }
     },
     {
+      "symbol": "COST",
+      "name": "Costco",
+      "market": "US",
+      "sector": "",
+      "price": 973.82,
+      "composite": {
+        "composite_score": 67.5,
+        "rating": "Good VCP",
+        "rating_description": "양호한 VCP 패턴",
+        "guidance": "거래량 확인 후 피벗 매수",
+        "valid_vcp": "True",
+        "entry_ready": false,
+        "weakest_component": "Volume Pattern",
+        "strongest_component": "Relative Strength",
+        "component_breakdown": {
+          "trend_template": {
+            "score": 75.0,
+            "weight": 0.25,
+            "weighted": 18.8,
+            "label": "Trend Template (Stage 2)"
+          },
+          "contraction_quality": {
+            "score": 71,
+            "weight": 0.25,
+            "weighted": 17.8,
+            "label": "Contraction Quality"
+          },
+          "volume_pattern": {
+            "score": 50,
+            "weight": 0.2,
+            "weighted": 10.0,
+            "label": "Volume Pattern"
+          },
+          "pivot_proximity": {
+            "score": 60,
+            "weight": 0.15,
+            "weighted": 9.0,
+            "label": "Pivot Proximity"
+          },
+          "relative_strength": {
+            "score": 80,
+            "weight": 0.15,
+            "weighted": 12.0,
+            "label": "Relative Strength"
+          }
+        }
+      },
+      "trend_template": {
+        "score": 75.0,
+        "passed": "True",
+        "stage": 2,
+        "stage_label": "Stage 2 - Early"
+      },
+      "vcp_pattern": {
+        "score": 71,
+        "valid_vcp": "True",
+        "num_contractions": 3,
+        "pivot_price": 1010.79
+      },
+      "volume_pattern": {
+        "score": 50,
+        "dry_up_ratio": 0.7
+      },
+      "pivot_proximity": {
+        "score": 60,
+        "distance_from_pivot_pct": 3.7,
+        "trade_status": "APPROACHING"
+      },
+      "relative_strength": {
+        "score": 80,
+        "rs_rank_estimate": 80
+      },
+      "stage": {
+        "stage": 2,
+        "stage_label": "Stage 2 - Early"
+      }
+    },
+    {
       "symbol": "COP",
       "name": "ConocoPhillips",
       "market": "US",
       "sector": "",
-      "price": 129.96,
+      "price": 129.35,
       "composite": {
         "composite_score": 67.0,
         "rating": "Good VCP",
@@ -540,11 +384,11 @@
         "score": 33,
         "valid_vcp": "False",
         "num_contractions": 2,
-        "pivot_price": 129.96
+        "pivot_price": 129.35
       },
       "volume_pattern": {
         "score": 30,
-        "dry_up_ratio": 1.17
+        "dry_up_ratio": 1.22
       },
       "pivot_proximity": {
         "score": 90,
@@ -561,11 +405,167 @@
       }
     },
     {
+      "symbol": "DELL",
+      "name": "Dell",
+      "market": "US",
+      "sector": "",
+      "price": 176.91,
+      "composite": {
+        "composite_score": 66.2,
+        "rating": "Good VCP",
+        "rating_description": "양호한 VCP 패턴",
+        "guidance": "거래량 확인 후 피벗 매수",
+        "valid_vcp": "False",
+        "entry_ready": "False",
+        "weakest_component": "VCP Pattern",
+        "strongest_component": "Trend Template",
+        "component_breakdown": {
+          "trend_template": {
+            "score": 100.0,
+            "weight": 0.25,
+            "weighted": 25.0,
+            "label": "Trend Template (Stage 2)"
+          },
+          "contraction_quality": {
+            "score": 30,
+            "weight": 0.25,
+            "weighted": 7.5,
+            "label": "Contraction Quality"
+          },
+          "volume_pattern": {
+            "score": 30,
+            "weight": 0.2,
+            "weighted": 6.0,
+            "label": "Volume Pattern"
+          },
+          "pivot_proximity": {
+            "score": 90,
+            "weight": 0.15,
+            "weighted": 13.5,
+            "label": "Pivot Proximity"
+          },
+          "relative_strength": {
+            "score": 95,
+            "weight": 0.15,
+            "weighted": 14.2,
+            "label": "Relative Strength"
+          }
+        }
+      },
+      "trend_template": {
+        "score": 100.0,
+        "passed": "True",
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing"
+      },
+      "vcp_pattern": {
+        "score": 30,
+        "valid_vcp": "False",
+        "num_contractions": 2,
+        "pivot_price": 176.91
+      },
+      "volume_pattern": {
+        "score": 30,
+        "dry_up_ratio": 1.1
+      },
+      "pivot_proximity": {
+        "score": 90,
+        "distance_from_pivot_pct": -0.0,
+        "trade_status": "BREAKOUT"
+      },
+      "relative_strength": {
+        "score": 95,
+        "rs_rank_estimate": 95
+      },
+      "stage": {
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing"
+      }
+    },
+    {
+      "symbol": "WMT",
+      "name": "Walmart",
+      "market": "US",
+      "sector": "",
+      "price": 122.05,
+      "composite": {
+        "composite_score": 65.9,
+        "rating": "Good VCP",
+        "rating_description": "양호한 VCP 패턴",
+        "guidance": "거래량 확인 후 피벗 매수",
+        "valid_vcp": "False",
+        "entry_ready": "False",
+        "weakest_component": "VCP Pattern",
+        "strongest_component": "Trend Template",
+        "component_breakdown": {
+          "trend_template": {
+            "score": 87.5,
+            "weight": 0.25,
+            "weighted": 21.9,
+            "label": "Trend Template (Stage 2)"
+          },
+          "contraction_quality": {
+            "score": 45,
+            "weight": 0.25,
+            "weighted": 11.2,
+            "label": "Contraction Quality"
+          },
+          "volume_pattern": {
+            "score": 70,
+            "weight": 0.2,
+            "weighted": 14.0,
+            "label": "Volume Pattern"
+          },
+          "pivot_proximity": {
+            "score": 60,
+            "weight": 0.15,
+            "weighted": 9.0,
+            "label": "Pivot Proximity"
+          },
+          "relative_strength": {
+            "score": 65,
+            "weight": 0.15,
+            "weighted": 9.8,
+            "label": "Relative Strength"
+          }
+        }
+      },
+      "trend_template": {
+        "score": 87.5,
+        "passed": "True",
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing"
+      },
+      "vcp_pattern": {
+        "score": 45,
+        "valid_vcp": "False",
+        "num_contractions": 3,
+        "pivot_price": 127.69
+      },
+      "volume_pattern": {
+        "score": 70,
+        "dry_up_ratio": 0.68
+      },
+      "pivot_proximity": {
+        "score": 60,
+        "distance_from_pivot_pct": 4.4,
+        "trade_status": "APPROACHING"
+      },
+      "relative_strength": {
+        "score": 65,
+        "rs_rank_estimate": 65
+      },
+      "stage": {
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing"
+      }
+    },
+    {
       "symbol": "MU",
       "name": "Micron",
       "market": "US",
       "sector": "",
-      "price": 393.06,
+      "price": 395.53,
       "composite": {
         "composite_score": 65.0,
         "rating": "Good VCP",
@@ -622,90 +622,12 @@
       },
       "volume_pattern": {
         "score": 30,
-        "dry_up_ratio": 1.21
+        "dry_up_ratio": 1.26
       },
       "pivot_proximity": {
         "score": 40,
-        "distance_from_pivot_pct": 14.9,
+        "distance_from_pivot_pct": 14.3,
         "trade_status": "BUILDING"
-      },
-      "relative_strength": {
-        "score": 95,
-        "rs_rank_estimate": 95
-      },
-      "stage": {
-        "stage": 2,
-        "stage_label": "Stage 2 - Advancing"
-      }
-    },
-    {
-      "symbol": "DELL",
-      "name": "Dell",
-      "market": "US",
-      "sector": "",
-      "price": 171.29,
-      "composite": {
-        "composite_score": 64.8,
-        "rating": "Good VCP",
-        "rating_description": "양호한 VCP 패턴",
-        "guidance": "거래량 확인 후 피벗 매수",
-        "valid_vcp": "False",
-        "entry_ready": "False",
-        "weakest_component": "VCP Pattern",
-        "strongest_component": "Trend Template",
-        "component_breakdown": {
-          "trend_template": {
-            "score": 100.0,
-            "weight": 0.25,
-            "weighted": 25.0,
-            "label": "Trend Template (Stage 2)"
-          },
-          "contraction_quality": {
-            "score": 30,
-            "weight": 0.25,
-            "weighted": 7.5,
-            "label": "Contraction Quality"
-          },
-          "volume_pattern": {
-            "score": 30,
-            "weight": 0.2,
-            "weighted": 6.0,
-            "label": "Volume Pattern"
-          },
-          "pivot_proximity": {
-            "score": 80,
-            "weight": 0.15,
-            "weighted": 12.0,
-            "label": "Pivot Proximity"
-          },
-          "relative_strength": {
-            "score": 95,
-            "weight": 0.15,
-            "weighted": 14.2,
-            "label": "Relative Strength"
-          }
-        }
-      },
-      "trend_template": {
-        "score": 100.0,
-        "passed": "True",
-        "stage": 2,
-        "stage_label": "Stage 2 - Advancing"
-      },
-      "vcp_pattern": {
-        "score": 30,
-        "valid_vcp": "False",
-        "num_contractions": 2,
-        "pivot_price": 171.29
-      },
-      "volume_pattern": {
-        "score": 30,
-        "dry_up_ratio": 0.99
-      },
-      "pivot_proximity": {
-        "score": 80,
-        "distance_from_pivot_pct": 0.0,
-        "trade_status": "NEAR PIVOT"
       },
       "relative_strength": {
         "score": 95,
@@ -721,7 +643,7 @@
       "name": "Lockheed Martin",
       "market": "US",
       "sector": "",
-      "price": 612.21,
+      "price": 610.17,
       "composite": {
         "composite_score": 64.4,
         "rating": "Good VCP",
@@ -778,11 +700,11 @@
       },
       "volume_pattern": {
         "score": 30,
-        "dry_up_ratio": 0.95
+        "dry_up_ratio": 0.98
       },
       "pivot_proximity": {
         "score": 40,
-        "distance_from_pivot_pct": 9.5,
+        "distance_from_pivot_pct": 9.8,
         "trade_status": "BUILDING"
       },
       "relative_strength": {
@@ -795,167 +717,11 @@
       }
     },
     {
-      "symbol": "KLAC",
-      "name": "KLA",
-      "market": "US",
-      "sector": "",
-      "price": 1565.0,
-      "composite": {
-        "composite_score": 64.2,
-        "rating": "Good VCP",
-        "rating_description": "양호한 VCP 패턴",
-        "guidance": "거래량 확인 후 피벗 매수",
-        "valid_vcp": "False",
-        "entry_ready": "False",
-        "weakest_component": "Volume Pattern",
-        "strongest_component": "Trend Template",
-        "component_breakdown": {
-          "trend_template": {
-            "score": 100.0,
-            "weight": 0.25,
-            "weighted": 25.0,
-            "label": "Trend Template (Stage 2)"
-          },
-          "contraction_quality": {
-            "score": 31,
-            "weight": 0.25,
-            "weighted": 7.8,
-            "label": "Contraction Quality"
-          },
-          "volume_pattern": {
-            "score": 30,
-            "weight": 0.2,
-            "weighted": 6.0,
-            "label": "Volume Pattern"
-          },
-          "pivot_proximity": {
-            "score": 90,
-            "weight": 0.15,
-            "weighted": 13.5,
-            "label": "Pivot Proximity"
-          },
-          "relative_strength": {
-            "score": 80,
-            "weight": 0.15,
-            "weighted": 12.0,
-            "label": "Relative Strength"
-          }
-        }
-      },
-      "trend_template": {
-        "score": 100.0,
-        "passed": "True",
-        "stage": 2,
-        "stage_label": "Stage 2 - Advancing"
-      },
-      "vcp_pattern": {
-        "score": 31,
-        "valid_vcp": "False",
-        "num_contractions": 2,
-        "pivot_price": 1565.0
-      },
-      "volume_pattern": {
-        "score": 30,
-        "dry_up_ratio": 0.92
-      },
-      "pivot_proximity": {
-        "score": 90,
-        "distance_from_pivot_pct": 0.0,
-        "trade_status": "BREAKOUT"
-      },
-      "relative_strength": {
-        "score": 80,
-        "rs_rank_estimate": 80
-      },
-      "stage": {
-        "stage": 2,
-        "stage_label": "Stage 2 - Advancing"
-      }
-    },
-    {
-      "symbol": "MRVL",
-      "name": "Marvell",
-      "market": "US",
-      "sector": "",
-      "price": 92.57,
-      "composite": {
-        "composite_score": 64.2,
-        "rating": "Good VCP",
-        "rating_description": "양호한 VCP 패턴",
-        "guidance": "거래량 확인 후 피벗 매수",
-        "valid_vcp": "False",
-        "entry_ready": "False",
-        "weakest_component": "VCP Pattern",
-        "strongest_component": "Trend Template",
-        "component_breakdown": {
-          "trend_template": {
-            "score": 100.0,
-            "weight": 0.25,
-            "weighted": 25.0,
-            "label": "Trend Template (Stage 2)"
-          },
-          "contraction_quality": {
-            "score": 30,
-            "weight": 0.25,
-            "weighted": 7.5,
-            "label": "Contraction Quality"
-          },
-          "volume_pattern": {
-            "score": 50,
-            "weight": 0.2,
-            "weighted": 10.0,
-            "label": "Volume Pattern"
-          },
-          "pivot_proximity": {
-            "score": 80,
-            "weight": 0.15,
-            "weighted": 12.0,
-            "label": "Pivot Proximity"
-          },
-          "relative_strength": {
-            "score": 65,
-            "weight": 0.15,
-            "weighted": 9.8,
-            "label": "Relative Strength"
-          }
-        }
-      },
-      "trend_template": {
-        "score": 100.0,
-        "passed": "True",
-        "stage": 2,
-        "stage_label": "Stage 2 - Advancing"
-      },
-      "vcp_pattern": {
-        "score": 30,
-        "valid_vcp": "False",
-        "num_contractions": 2,
-        "pivot_price": 93.3
-      },
-      "volume_pattern": {
-        "score": 50,
-        "dry_up_ratio": 0.9
-      },
-      "pivot_proximity": {
-        "score": 80,
-        "distance_from_pivot_pct": 0.8,
-        "trade_status": "NEAR PIVOT"
-      },
-      "relative_strength": {
-        "score": 65,
-        "rs_rank_estimate": 65
-      },
-      "stage": {
-        "stage": 2,
-        "stage_label": "Stage 2 - Advancing"
-      }
-    },
-    {
       "symbol": "CAT",
       "name": "Caterpillar",
       "market": "US",
       "sector": "",
-      "price": 715.6,
+      "price": 716.63,
       "composite": {
         "composite_score": 63.5,
         "rating": "Good VCP",
@@ -1012,11 +778,11 @@
       },
       "volume_pattern": {
         "score": 50,
-        "dry_up_ratio": 0.82
+        "dry_up_ratio": 0.86
       },
       "pivot_proximity": {
         "score": 60,
-        "distance_from_pivot_pct": 6.7,
+        "distance_from_pivot_pct": 6.5,
         "trade_status": "APPROACHING"
       },
       "relative_strength": {
@@ -1033,7 +799,7 @@
       "name": "Merck",
       "market": "US",
       "sector": "",
-      "price": 115.85,
+      "price": 116.37,
       "composite": {
         "composite_score": 63.5,
         "rating": "Good VCP",
@@ -1090,11 +856,11 @@
       },
       "volume_pattern": {
         "score": 50,
-        "dry_up_ratio": 0.85
+        "dry_up_ratio": 0.87
       },
       "pivot_proximity": {
         "score": 60,
-        "distance_from_pivot_pct": 5.7,
+        "distance_from_pivot_pct": 5.3,
         "trade_status": "APPROACHING"
       },
       "relative_strength": {
@@ -1111,7 +877,7 @@
       "name": "J&J",
       "market": "US",
       "sector": "",
-      "price": 234.2,
+      "price": 235.27,
       "composite": {
         "composite_score": 63.5,
         "rating": "Good VCP",
@@ -1168,11 +934,11 @@
       },
       "volume_pattern": {
         "score": 50,
-        "dry_up_ratio": 0.83
+        "dry_up_ratio": 0.87
       },
       "pivot_proximity": {
         "score": 60,
-        "distance_from_pivot_pct": 5.8,
+        "distance_from_pivot_pct": 5.3,
         "trade_status": "APPROACHING"
       },
       "relative_strength": {
@@ -1189,7 +955,7 @@
       "name": "Lam Research",
       "market": "US",
       "sector": "",
-      "price": 238.45,
+      "price": 238.84,
       "composite": {
         "composite_score": 62.8,
         "rating": "Good VCP",
@@ -1246,12 +1012,168 @@
       },
       "volume_pattern": {
         "score": 30,
-        "dry_up_ratio": 0.91
+        "dry_up_ratio": 0.95
       },
       "pivot_proximity": {
         "score": 60,
-        "distance_from_pivot_pct": 4.3,
+        "distance_from_pivot_pct": 4.1,
         "trade_status": "APPROACHING"
+      },
+      "relative_strength": {
+        "score": 95,
+        "rs_rank_estimate": 95
+      },
+      "stage": {
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing"
+      }
+    },
+    {
+      "symbol": "KLAC",
+      "name": "KLA",
+      "market": "US",
+      "sector": "",
+      "price": 1566.19,
+      "composite": {
+        "composite_score": 62.8,
+        "rating": "Good VCP",
+        "rating_description": "양호한 VCP 패턴",
+        "guidance": "거래량 확인 후 피벗 매수",
+        "valid_vcp": "False",
+        "entry_ready": "False",
+        "weakest_component": "Volume Pattern",
+        "strongest_component": "Trend Template",
+        "component_breakdown": {
+          "trend_template": {
+            "score": 100.0,
+            "weight": 0.25,
+            "weighted": 25.0,
+            "label": "Trend Template (Stage 2)"
+          },
+          "contraction_quality": {
+            "score": 31,
+            "weight": 0.25,
+            "weighted": 7.8,
+            "label": "Contraction Quality"
+          },
+          "volume_pattern": {
+            "score": 30,
+            "weight": 0.2,
+            "weighted": 6.0,
+            "label": "Volume Pattern"
+          },
+          "pivot_proximity": {
+            "score": 80,
+            "weight": 0.15,
+            "weighted": 12.0,
+            "label": "Pivot Proximity"
+          },
+          "relative_strength": {
+            "score": 80,
+            "weight": 0.15,
+            "weighted": 12.0,
+            "label": "Relative Strength"
+          }
+        }
+      },
+      "trend_template": {
+        "score": 100.0,
+        "passed": "True",
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing"
+      },
+      "vcp_pattern": {
+        "score": 31,
+        "valid_vcp": "False",
+        "num_contractions": 2,
+        "pivot_price": 1566.19
+      },
+      "volume_pattern": {
+        "score": 30,
+        "dry_up_ratio": 0.96
+      },
+      "pivot_proximity": {
+        "score": 80,
+        "distance_from_pivot_pct": 0.0,
+        "trade_status": "NEAR PIVOT"
+      },
+      "relative_strength": {
+        "score": 80,
+        "rs_rank_estimate": 80
+      },
+      "stage": {
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing"
+      }
+    },
+    {
+      "symbol": "AKAM",
+      "name": "Akamai",
+      "market": "US",
+      "sector": "",
+      "price": 114.5,
+      "composite": {
+        "composite_score": 62.5,
+        "rating": "Good VCP",
+        "rating_description": "양호한 VCP 패턴",
+        "guidance": "거래량 확인 후 피벗 매수",
+        "valid_vcp": false,
+        "entry_ready": false,
+        "weakest_component": "VCP Pattern",
+        "strongest_component": "Trend Template",
+        "component_breakdown": {
+          "trend_template": {
+            "score": 100.0,
+            "weight": 0.25,
+            "weighted": 25.0,
+            "label": "Trend Template (Stage 2)"
+          },
+          "contraction_quality": {
+            "score": 15,
+            "weight": 0.25,
+            "weighted": 3.8,
+            "label": "Contraction Quality"
+          },
+          "volume_pattern": {
+            "score": 30,
+            "weight": 0.2,
+            "weighted": 6.0,
+            "label": "Volume Pattern"
+          },
+          "pivot_proximity": {
+            "score": 90,
+            "weight": 0.15,
+            "weighted": 13.5,
+            "label": "Pivot Proximity"
+          },
+          "relative_strength": {
+            "score": 95,
+            "weight": 0.15,
+            "weighted": 14.2,
+            "label": "Relative Strength"
+          }
+        }
+      },
+      "trend_template": {
+        "score": 100.0,
+        "passed": "True",
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing"
+      },
+      "vcp_pattern": {
+        "score": 15,
+        "valid_vcp": false,
+        "num_contractions": 1,
+        "pivot_price": 114.5
+      },
+      "volume_pattern": {
+        "score": 30,
+        "dry_up_ratio": 1.14
+      },
+      "pivot_proximity": {
+        "score": 90,
+        "distance_from_pivot_pct": 0.0,
+        "trade_status": "BREAKOUT"
       },
       "relative_strength": {
         "score": 95,
@@ -1267,7 +1189,7 @@
       "name": "Applied Materials",
       "market": "US",
       "sector": "",
-      "price": 374.68,
+      "price": 373.99,
       "composite": {
         "composite_score": 62.0,
         "rating": "Good VCP",
@@ -1324,11 +1246,11 @@
       },
       "volume_pattern": {
         "score": 50,
-        "dry_up_ratio": 0.8
+        "dry_up_ratio": 0.85
       },
       "pivot_proximity": {
         "score": 60,
-        "distance_from_pivot_pct": 5.1,
+        "distance_from_pivot_pct": 5.3,
         "trade_status": "APPROACHING"
       },
       "relative_strength": {
@@ -1345,7 +1267,7 @@
       "name": "Deere",
       "market": "US",
       "sector": "",
-      "price": 576.83,
+      "price": 583.02,
       "composite": {
         "composite_score": 61.5,
         "rating": "Good VCP",
@@ -1402,11 +1324,11 @@
       },
       "volume_pattern": {
         "score": 50,
-        "dry_up_ratio": 0.82
+        "dry_up_ratio": 0.86
       },
       "pivot_proximity": {
         "score": 40,
-        "distance_from_pivot_pct": 8.6,
+        "distance_from_pivot_pct": 7.6,
         "trade_status": "BUILDING"
       },
       "relative_strength": {
@@ -1419,18 +1341,18 @@
       }
     },
     {
-      "symbol": "AKAM",
-      "name": "Akamai",
+      "symbol": "NET",
+      "name": "Cloudflare",
       "market": "US",
       "sector": "",
-      "price": 113.6,
+      "price": 213.15,
       "composite": {
-        "composite_score": 61.0,
+        "composite_score": 61.2,
         "rating": "Good VCP",
         "rating_description": "양호한 VCP 패턴",
         "guidance": "거래량 확인 후 피벗 매수",
-        "valid_vcp": false,
-        "entry_ready": false,
+        "valid_vcp": "False",
+        "entry_ready": "False",
         "weakest_component": "VCP Pattern",
         "strongest_component": "Trend Template",
         "component_breakdown": {
@@ -1441,9 +1363,87 @@
             "label": "Trend Template (Stage 2)"
           },
           "contraction_quality": {
-            "score": 15,
+            "score": 30,
             "weight": 0.25,
-            "weighted": 3.8,
+            "weighted": 7.5,
+            "label": "Contraction Quality"
+          },
+          "volume_pattern": {
+            "score": 50,
+            "weight": 0.2,
+            "weighted": 10.0,
+            "label": "Volume Pattern"
+          },
+          "pivot_proximity": {
+            "score": 60,
+            "weight": 0.15,
+            "weighted": 9.0,
+            "label": "Pivot Proximity"
+          },
+          "relative_strength": {
+            "score": 65,
+            "weight": 0.15,
+            "weighted": 9.8,
+            "label": "Relative Strength"
+          }
+        }
+      },
+      "trend_template": {
+        "score": 100.0,
+        "passed": "True",
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing"
+      },
+      "vcp_pattern": {
+        "score": 30,
+        "valid_vcp": "False",
+        "num_contractions": 2,
+        "pivot_price": 225.48
+      },
+      "volume_pattern": {
+        "score": 50,
+        "dry_up_ratio": 0.73
+      },
+      "pivot_proximity": {
+        "score": 60,
+        "distance_from_pivot_pct": 5.5,
+        "trade_status": "APPROACHING"
+      },
+      "relative_strength": {
+        "score": 65,
+        "rs_rank_estimate": 65
+      },
+      "stage": {
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing"
+      }
+    },
+    {
+      "symbol": "MRVL",
+      "name": "Marvell",
+      "market": "US",
+      "sector": "",
+      "price": 92.36,
+      "composite": {
+        "composite_score": 60.2,
+        "rating": "Good VCP",
+        "rating_description": "양호한 VCP 패턴",
+        "guidance": "거래량 확인 후 피벗 매수",
+        "valid_vcp": "False",
+        "entry_ready": "False",
+        "weakest_component": "VCP Pattern",
+        "strongest_component": "Trend Template",
+        "component_breakdown": {
+          "trend_template": {
+            "score": 100.0,
+            "weight": 0.25,
+            "weighted": 25.0,
+            "label": "Trend Template (Stage 2)"
+          },
+          "contraction_quality": {
+            "score": 30,
+            "weight": 0.25,
+            "weighted": 7.5,
             "label": "Contraction Quality"
           },
           "volume_pattern": {
@@ -1459,9 +1459,9 @@
             "label": "Pivot Proximity"
           },
           "relative_strength": {
-            "score": 95,
+            "score": 65,
             "weight": 0.15,
-            "weighted": 14.2,
+            "weighted": 9.8,
             "label": "Relative Strength"
           }
         }
@@ -1473,96 +1473,18 @@
         "stage_label": "Stage 2 - Advancing"
       },
       "vcp_pattern": {
-        "score": 15,
-        "valid_vcp": false,
-        "num_contractions": 1,
-        "pivot_price": 114.43
+        "score": 30,
+        "valid_vcp": "False",
+        "num_contractions": 2,
+        "pivot_price": 93.3
       },
       "volume_pattern": {
         "score": 30,
-        "dry_up_ratio": 1.09
+        "dry_up_ratio": 0.95
       },
       "pivot_proximity": {
         "score": 80,
-        "distance_from_pivot_pct": 0.7,
-        "trade_status": "NEAR PIVOT"
-      },
-      "relative_strength": {
-        "score": 95,
-        "rs_rank_estimate": 95
-      },
-      "stage": {
-        "stage": 2,
-        "stage_label": "Stage 2 - Advancing"
-      }
-    },
-    {
-      "symbol": "PFE",
-      "name": "Pfizer",
-      "market": "US",
-      "sector": "",
-      "price": 26.86,
-      "composite": {
-        "composite_score": 60.5,
-        "rating": "Good VCP",
-        "rating_description": "양호한 VCP 패턴",
-        "guidance": "거래량 확인 후 피벗 매수",
-        "valid_vcp": false,
-        "entry_ready": false,
-        "weakest_component": "VCP Pattern",
-        "strongest_component": "Trend Template",
-        "component_breakdown": {
-          "trend_template": {
-            "score": 100.0,
-            "weight": 0.25,
-            "weighted": 25.0,
-            "label": "Trend Template (Stage 2)"
-          },
-          "contraction_quality": {
-            "score": 15,
-            "weight": 0.25,
-            "weighted": 3.8,
-            "label": "Contraction Quality"
-          },
-          "volume_pattern": {
-            "score": 50,
-            "weight": 0.2,
-            "weighted": 10.0,
-            "label": "Volume Pattern"
-          },
-          "pivot_proximity": {
-            "score": 80,
-            "weight": 0.15,
-            "weighted": 12.0,
-            "label": "Pivot Proximity"
-          },
-          "relative_strength": {
-            "score": 65,
-            "weight": 0.15,
-            "weighted": 9.8,
-            "label": "Relative Strength"
-          }
-        }
-      },
-      "trend_template": {
-        "score": 100.0,
-        "passed": "True",
-        "stage": 2,
-        "stage_label": "Stage 2 - Advancing"
-      },
-      "vcp_pattern": {
-        "score": 15,
-        "valid_vcp": false,
-        "num_contractions": 1,
-        "pivot_price": 27.65
-      },
-      "volume_pattern": {
-        "score": 50,
-        "dry_up_ratio": 0.89
-      },
-      "pivot_proximity": {
-        "score": 80,
-        "distance_from_pivot_pct": 2.8,
+        "distance_from_pivot_pct": 1.0,
         "trade_status": "NEAR PIVOT"
       },
       "relative_strength": {
@@ -1572,84 +1494,6 @@
       "stage": {
         "stage": 2,
         "stage_label": "Stage 2 - Advancing"
-      }
-    },
-    {
-      "symbol": "SBUX",
-      "name": "Starbucks",
-      "market": "US",
-      "sector": "",
-      "price": 93.09,
-      "composite": {
-        "composite_score": 59.2,
-        "rating": "Developing VCP",
-        "rating_description": "형성 중인 VCP 패턴",
-        "guidance": "거래량 확인 후 피벗 매수",
-        "valid_vcp": "True",
-        "entry_ready": false,
-        "weakest_component": "Pivot Proximity",
-        "strongest_component": "Trend Template",
-        "component_breakdown": {
-          "trend_template": {
-            "score": 75.0,
-            "weight": 0.25,
-            "weighted": 18.8,
-            "label": "Trend Template (Stage 2)"
-          },
-          "contraction_quality": {
-            "score": 59,
-            "weight": 0.25,
-            "weighted": 14.8,
-            "label": "Contraction Quality"
-          },
-          "volume_pattern": {
-            "score": 50,
-            "weight": 0.2,
-            "weighted": 10.0,
-            "label": "Volume Pattern"
-          },
-          "pivot_proximity": {
-            "score": 40,
-            "weight": 0.15,
-            "weighted": 6.0,
-            "label": "Pivot Proximity"
-          },
-          "relative_strength": {
-            "score": 65,
-            "weight": 0.15,
-            "weighted": 9.8,
-            "label": "Relative Strength"
-          }
-        }
-      },
-      "trend_template": {
-        "score": 75.0,
-        "passed": "True",
-        "stage": 2,
-        "stage_label": "Stage 2 - Early"
-      },
-      "vcp_pattern": {
-        "score": 59,
-        "valid_vcp": "True",
-        "num_contractions": 3,
-        "pivot_price": 101.44
-      },
-      "volume_pattern": {
-        "score": 50,
-        "dry_up_ratio": 0.9
-      },
-      "pivot_proximity": {
-        "score": 40,
-        "distance_from_pivot_pct": 8.2,
-        "trade_status": "BUILDING"
-      },
-      "relative_strength": {
-        "score": 65,
-        "rs_rank_estimate": 65
-      },
-      "stage": {
-        "stage": 2,
-        "stage_label": "Stage 2 - Early"
       }
     },
     {
@@ -1657,7 +1501,7 @@
       "name": "ON Semi",
       "market": "US",
       "sector": "",
-      "price": 62.26,
+      "price": 62.34,
       "composite": {
         "composite_score": 58.2,
         "rating": "Developing VCP",
@@ -1714,11 +1558,11 @@
       },
       "volume_pattern": {
         "score": 50,
-        "dry_up_ratio": 0.73
+        "dry_up_ratio": 0.78
       },
       "pivot_proximity": {
         "score": 40,
-        "distance_from_pivot_pct": 10.7,
+        "distance_from_pivot_pct": 10.5,
         "trade_status": "BUILDING"
       },
       "relative_strength": {
@@ -1731,77 +1575,77 @@
       }
     },
     {
-      "symbol": "GOOGL",
-      "name": "Alphabet",
+      "symbol": "PFE",
+      "name": "Pfizer",
       "market": "US",
       "sector": "",
-      "price": 295.92,
+      "price": 26.96,
       "composite": {
-        "composite_score": 57.1,
+        "composite_score": 56.5,
         "rating": "Developing VCP",
         "rating_description": "형성 중인 VCP 패턴",
         "guidance": "거래량 확인 후 피벗 매수",
-        "valid_vcp": "False",
-        "entry_ready": "False",
-        "weakest_component": "Relative Strength",
+        "valid_vcp": false,
+        "entry_ready": false,
+        "weakest_component": "VCP Pattern",
         "strongest_component": "Trend Template",
         "component_breakdown": {
           "trend_template": {
-            "score": 87.5,
+            "score": 100.0,
             "weight": 0.25,
-            "weighted": 21.9,
+            "weighted": 25.0,
             "label": "Trend Template (Stage 2)"
           },
           "contraction_quality": {
-            "score": 47,
+            "score": 15,
             "weight": 0.25,
-            "weighted": 11.8,
+            "weighted": 3.8,
             "label": "Contraction Quality"
           },
           "volume_pattern": {
-            "score": 50,
+            "score": 30,
             "weight": 0.2,
-            "weighted": 10.0,
+            "weighted": 6.0,
             "label": "Volume Pattern"
           },
           "pivot_proximity": {
-            "score": 60,
+            "score": 80,
             "weight": 0.15,
-            "weighted": 9.0,
+            "weighted": 12.0,
             "label": "Pivot Proximity"
           },
           "relative_strength": {
-            "score": 30,
+            "score": 65,
             "weight": 0.15,
-            "weighted": 4.5,
+            "weighted": 9.8,
             "label": "Relative Strength"
           }
         }
       },
       "trend_template": {
-        "score": 87.5,
+        "score": 100.0,
         "passed": "True",
         "stage": 2,
         "stage_label": "Stage 2 - Advancing"
       },
       "vcp_pattern": {
-        "score": 47,
-        "valid_vcp": "False",
-        "num_contractions": 3,
-        "pivot_price": 312.68
+        "score": 15,
+        "valid_vcp": false,
+        "num_contractions": 1,
+        "pivot_price": 27.65
       },
       "volume_pattern": {
-        "score": 50,
-        "dry_up_ratio": 0.72
+        "score": 30,
+        "dry_up_ratio": 0.94
       },
       "pivot_proximity": {
-        "score": 60,
-        "distance_from_pivot_pct": 5.4,
-        "trade_status": "APPROACHING"
+        "score": 80,
+        "distance_from_pivot_pct": 2.5,
+        "trade_status": "NEAR PIVOT"
       },
       "relative_strength": {
-        "score": 30,
-        "rs_rank_estimate": 30
+        "score": 65,
+        "rs_rank_estimate": 65
       },
       "stage": {
         "stage": 2,
@@ -1809,11 +1653,89 @@
       }
     },
     {
+      "symbol": "SBUX",
+      "name": "Starbucks",
+      "market": "US",
+      "sector": "",
+      "price": 91.98,
+      "composite": {
+        "composite_score": 55.2,
+        "rating": "Developing VCP",
+        "rating_description": "형성 중인 VCP 패턴",
+        "guidance": "거래량 확인 후 피벗 매수",
+        "valid_vcp": "True",
+        "entry_ready": false,
+        "weakest_component": "Volume Pattern",
+        "strongest_component": "Trend Template",
+        "component_breakdown": {
+          "trend_template": {
+            "score": 75.0,
+            "weight": 0.25,
+            "weighted": 18.8,
+            "label": "Trend Template (Stage 2)"
+          },
+          "contraction_quality": {
+            "score": 59,
+            "weight": 0.25,
+            "weighted": 14.8,
+            "label": "Contraction Quality"
+          },
+          "volume_pattern": {
+            "score": 30,
+            "weight": 0.2,
+            "weighted": 6.0,
+            "label": "Volume Pattern"
+          },
+          "pivot_proximity": {
+            "score": 40,
+            "weight": 0.15,
+            "weighted": 6.0,
+            "label": "Pivot Proximity"
+          },
+          "relative_strength": {
+            "score": 65,
+            "weight": 0.15,
+            "weighted": 9.8,
+            "label": "Relative Strength"
+          }
+        }
+      },
+      "trend_template": {
+        "score": 75.0,
+        "passed": "True",
+        "stage": 2,
+        "stage_label": "Stage 2 - Early"
+      },
+      "vcp_pattern": {
+        "score": 59,
+        "valid_vcp": "True",
+        "num_contractions": 3,
+        "pivot_price": 101.44
+      },
+      "volume_pattern": {
+        "score": 30,
+        "dry_up_ratio": 0.94
+      },
+      "pivot_proximity": {
+        "score": 40,
+        "distance_from_pivot_pct": 9.3,
+        "trade_status": "BUILDING"
+      },
+      "relative_strength": {
+        "score": 65,
+        "rs_rank_estimate": 65
+      },
+      "stage": {
+        "stage": 2,
+        "stage_label": "Stage 2 - Early"
+      }
+    },
+    {
       "symbol": "TXN",
       "name": "Texas Instruments",
       "market": "US",
       "sector": "",
-      "price": 195.54,
+      "price": 194.63,
       "composite": {
         "composite_score": 55.1,
         "rating": "Developing VCP",
@@ -1870,11 +1792,11 @@
       },
       "volume_pattern": {
         "score": 50,
-        "dry_up_ratio": 0.76
+        "dry_up_ratio": 0.82
       },
       "pivot_proximity": {
         "score": 40,
-        "distance_from_pivot_pct": 8.6,
+        "distance_from_pivot_pct": 9.0,
         "trade_status": "BUILDING"
       },
       "relative_strength": {
@@ -1891,7 +1813,7 @@
       "name": "Honeywell",
       "market": "US",
       "sector": "",
-      "price": 223.76,
+      "price": 221.57,
       "composite": {
         "composite_score": 55.1,
         "rating": "Developing VCP",
@@ -1948,11 +1870,11 @@
       },
       "volume_pattern": {
         "score": 50,
-        "dry_up_ratio": 0.85
+        "dry_up_ratio": 0.9
       },
       "pivot_proximity": {
         "score": 40,
-        "distance_from_pivot_pct": 9.8,
+        "distance_from_pivot_pct": 10.7,
         "trade_status": "BUILDING"
       },
       "relative_strength": {
@@ -1965,19 +1887,19 @@
       }
     },
     {
-      "symbol": "ABNB",
-      "name": "Airbnb",
+      "symbol": "GOOGL",
+      "name": "Alphabet",
       "market": "US",
       "sector": "",
-      "price": 130.4,
+      "price": 290.44,
       "composite": {
-        "composite_score": 55.1,
+        "composite_score": 54.1,
         "rating": "Developing VCP",
         "rating_description": "형성 중인 VCP 패턴",
         "guidance": "거래량 확인 후 피벗 매수",
-        "valid_vcp": false,
-        "entry_ready": false,
-        "weakest_component": "VCP Pattern",
+        "valid_vcp": "False",
+        "entry_ready": "False",
+        "weakest_component": "Relative Strength",
         "strongest_component": "Trend Template",
         "component_breakdown": {
           "trend_template": {
@@ -1987,21 +1909,21 @@
             "label": "Trend Template (Stage 2)"
           },
           "contraction_quality": {
-            "score": 23,
+            "score": 47,
             "weight": 0.25,
-            "weighted": 5.8,
+            "weighted": 11.8,
             "label": "Contraction Quality"
           },
           "volume_pattern": {
-            "score": 70,
+            "score": 50,
             "weight": 0.2,
-            "weighted": 14.0,
+            "weighted": 10.0,
             "label": "Volume Pattern"
           },
           "pivot_proximity": {
-            "score": 60,
+            "score": 40,
             "weight": 0.15,
-            "weighted": 9.0,
+            "weighted": 6.0,
             "label": "Pivot Proximity"
           },
           "relative_strength": {
@@ -2019,19 +1941,19 @@
         "stage_label": "Stage 2 - Advancing"
       },
       "vcp_pattern": {
-        "score": 23,
-        "valid_vcp": false,
-        "num_contractions": 1,
-        "pivot_price": 136.97
+        "score": 47,
+        "valid_vcp": "False",
+        "num_contractions": 3,
+        "pivot_price": 312.68
       },
       "volume_pattern": {
-        "score": 70,
-        "dry_up_ratio": 0.7
+        "score": 50,
+        "dry_up_ratio": 0.79
       },
       "pivot_proximity": {
-        "score": 60,
-        "distance_from_pivot_pct": 4.8,
-        "trade_status": "APPROACHING"
+        "score": 40,
+        "distance_from_pivot_pct": 7.1,
+        "trade_status": "BUILDING"
       },
       "relative_strength": {
         "score": 30,
@@ -2043,25 +1965,25 @@
       }
     },
     {
-      "symbol": "ARM",
-      "name": "Arm Holdings",
+      "symbol": "AMD",
+      "name": "AMD",
       "market": "US",
       "sector": "",
-      "price": 136.76,
+      "price": 205.37,
       "composite": {
-        "composite_score": 53.4,
+        "composite_score": 52.1,
         "rating": "Developing VCP",
         "rating_description": "형성 중인 VCP 패턴",
         "guidance": "거래량 확인 후 피벗 매수",
         "valid_vcp": false,
         "entry_ready": false,
         "weakest_component": "VCP Pattern",
-        "strongest_component": "Pivot Proximity",
+        "strongest_component": "Trend Template",
         "component_breakdown": {
           "trend_template": {
-            "score": 62.5,
+            "score": 87.5,
             "weight": 0.25,
-            "weighted": 15.6,
+            "weighted": 21.9,
             "label": "Trend Template (Stage 2)"
           },
           "contraction_quality": {
@@ -2083,41 +2005,41 @@
             "label": "Pivot Proximity"
           },
           "relative_strength": {
-            "score": 80,
+            "score": 30,
             "weight": 0.15,
-            "weighted": 12.0,
+            "weighted": 4.5,
             "label": "Relative Strength"
           }
         }
       },
       "trend_template": {
-        "score": 62.5,
+        "score": 87.5,
         "passed": "True",
         "stage": 2,
-        "stage_label": "Stage 2 - Early"
+        "stage_label": "Stage 2 - Advancing"
       },
       "vcp_pattern": {
         "score": 15,
         "valid_vcp": false,
         "num_contractions": 1,
-        "pivot_price": 136.89
+        "pivot_price": 210.86
       },
       "volume_pattern": {
         "score": 50,
-        "dry_up_ratio": 0.79
+        "dry_up_ratio": 0.75
       },
       "pivot_proximity": {
         "score": 80,
-        "distance_from_pivot_pct": 0.1,
+        "distance_from_pivot_pct": 2.6,
         "trade_status": "NEAR PIVOT"
       },
       "relative_strength": {
-        "score": 80,
-        "rs_rank_estimate": 80
+        "score": 30,
+        "rs_rank_estimate": 30
       },
       "stage": {
         "stage": 2,
-        "stage_label": "Stage 2 - Early"
+        "stage_label": "Stage 2 - Advancing"
       }
     },
     {
@@ -2125,7 +2047,7 @@
       "name": "RTX",
       "market": "US",
       "sector": "",
-      "price": 193.68,
+      "price": 194.0,
       "composite": {
         "composite_score": 51.4,
         "rating": "Developing VCP",
@@ -2182,16 +2104,94 @@
       },
       "volume_pattern": {
         "score": 50,
-        "dry_up_ratio": 0.75
+        "dry_up_ratio": 0.8
       },
       "pivot_proximity": {
         "score": 40,
-        "distance_from_pivot_pct": 8.7,
+        "distance_from_pivot_pct": 8.6,
         "trade_status": "BUILDING"
       },
       "relative_strength": {
         "score": 65,
         "rs_rank_estimate": 65
+      },
+      "stage": {
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing"
+      }
+    },
+    {
+      "symbol": "ABNB",
+      "name": "Airbnb",
+      "market": "US",
+      "sector": "",
+      "price": 130.0,
+      "composite": {
+        "composite_score": 51.1,
+        "rating": "Developing VCP",
+        "rating_description": "형성 중인 VCP 패턴",
+        "guidance": "거래량 확인 후 피벗 매수",
+        "valid_vcp": false,
+        "entry_ready": false,
+        "weakest_component": "VCP Pattern",
+        "strongest_component": "Trend Template",
+        "component_breakdown": {
+          "trend_template": {
+            "score": 87.5,
+            "weight": 0.25,
+            "weighted": 21.9,
+            "label": "Trend Template (Stage 2)"
+          },
+          "contraction_quality": {
+            "score": 23,
+            "weight": 0.25,
+            "weighted": 5.8,
+            "label": "Contraction Quality"
+          },
+          "volume_pattern": {
+            "score": 50,
+            "weight": 0.2,
+            "weighted": 10.0,
+            "label": "Volume Pattern"
+          },
+          "pivot_proximity": {
+            "score": 60,
+            "weight": 0.15,
+            "weighted": 9.0,
+            "label": "Pivot Proximity"
+          },
+          "relative_strength": {
+            "score": 30,
+            "weight": 0.15,
+            "weighted": 4.5,
+            "label": "Relative Strength"
+          }
+        }
+      },
+      "trend_template": {
+        "score": 87.5,
+        "passed": "True",
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing"
+      },
+      "vcp_pattern": {
+        "score": 23,
+        "valid_vcp": false,
+        "num_contractions": 1,
+        "pivot_price": 136.97
+      },
+      "volume_pattern": {
+        "score": 50,
+        "dry_up_ratio": 0.74
+      },
+      "pivot_proximity": {
+        "score": 60,
+        "distance_from_pivot_pct": 5.1,
+        "trade_status": "APPROACHING"
+      },
+      "relative_strength": {
+        "score": 30,
+        "rs_rank_estimate": 30
       },
       "stage": {
         "stage": 2,

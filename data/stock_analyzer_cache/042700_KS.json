@@ -1,0 +1,81 @@
+{
+  "name": "한미반도체",
+  "ticker": "042700.KS",
+  "result": "중립",
+  "date": "2026-03-25 08:48:36",
+  "elapsed": 2.3,
+  "consensus_score": 3.44,
+  "analyst_count": 9,
+  "recommendation_detail": {
+    "strongBuy": 3,
+    "buy": 2,
+    "hold": 1,
+    "sell": 2,
+    "strongSell": 1
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 296500.0,
+    "high": 300000.0,
+    "low": 100000.0,
+    "mean": 187000.0,
+    "median": 180000.0
+  },
+  "current_price": 296500.0,
+  "upside_potential": -36.9,
+  "key_stats": {
+    "name": "HANMISemi",
+    "sector": "Technology",
+    "industry": "Semiconductor Equipment & Materials",
+    "market_cap": 28123913519104,
+    "pe_ratio": null,
+    "forward_pe": 56.910233,
+    "dividend_yield": 0.27,
+    "beta": 2.239,
+    "fifty_two_week_high": 335500.0,
+    "fifty_two_week_low": 58020.0,
+    "revenue": 576684621824,
+    "profit_margin": 0.3711,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "한미반도체에 대한 애널리스트 컨센서스는 중립적이며, 9명의 애널리스트가 참여했습니다. 목표가 평균은 187,000원으로 현재 주가 대비 상당 폭 하락 여력이 있는 것으로 분석됩니다. 따라서 현재 주가는 목표가 대비 고평가된 것으로 판단됩니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 83014164850
+    },
+    {
+      "date": "2025-09",
+      "value": 166231357100
+    },
+    {
+      "date": "2025-06",
+      "value": 180047311090
+    },
+    {
+      "date": "2025-03",
+      "value": 147391786480
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 28858154030
+    },
+    {
+      "date": "2025-09",
+      "value": 65713248280
+    },
+    {
+      "date": "2025-06",
+      "value": 64687278710
+    },
+    {
+      "date": "2025-03",
+      "value": 54748867390
+    }
+  ],
+  "news": []
+}

@@ -1,0 +1,111 @@
+{
+  "name": "네오셈",
+  "ticker": "253590.KQ",
+  "result": "데이터 없음",
+  "date": "2026-03-25 11:08:42",
+  "elapsed": 1.9,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 18540.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 18540.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "Neosem",
+    "sector": "Technology",
+    "industry": "Semiconductors",
+    "market_cap": 787932643328,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": 0.57,
+    "beta": 1.788,
+    "fifty_two_week_high": 21300.0,
+    "fifty_two_week_low": 7610.0,
+    "revenue": 75009572864,
+    "profit_margin": 0.11535,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 10174598530
+    },
+    {
+      "date": "2025-06",
+      "value": 16326681890
+    },
+    {
+      "date": "2025-03",
+      "value": 14875063140
+    },
+    {
+      "date": "2024-12",
+      "value": 33633233320
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 719974000
+    },
+    {
+      "date": "2025-06",
+      "value": -1572372000
+    },
+    {
+      "date": "2025-03",
+      "value": 1760338000
+    },
+    {
+      "date": "2024-12",
+      "value": 7744056080
+    }
+  ],
+  "news": [
+    {
+      "title": "Exploring Three Undiscovered Gems In Asia For Potential Growth",
+      "summary": "As global markets navigate a mixed landscape with large-cap tech stocks driving U.S. indexes and smaller-cap indexes facing declines, attention is turning to Asia where unique opportunities may be eme",
+      "url": "https://finance.yahoo.com/news/exploring-three-undiscovered-gems-asia-043303391.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2025-11-05T04:33:03Z"
+    },
+    {
+      "title": "Exploring DigiPlus Interactive And 2 Other Undiscovered Gems In Global Markets",
+      "summary": "In the current landscape, global markets are experiencing a mixed performance with large-cap tech stocks driving gains, while smaller-cap indexes like the S&P MidCap 400 and Russell 2000 have faced de",
+      "url": "https://finance.yahoo.com/news/exploring-digiplus-interactive-2-other-093315063.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2025-11-03T09:33:15Z"
+    },
+    {
+      "title": "Discovering Asia's Undiscovered Gems in October 2025",
+      "summary": "As global markets navigate a complex landscape marked by economic uncertainties and shifting monetary policies, Asian small-cap stocks are capturing attention for their potential resilience and growth",
+      "url": "https://finance.yahoo.com/news/discovering-asias-undiscovered-gems-october-223301875.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2025-10-05T22:33:01Z"
+    },
+    {
+      "title": "Butong Group And 2 Other Undiscovered Gems In Asia To Enhance Your Portfolio",
+      "summary": "As global markets navigate the complexities of inflation and monetary policy, investors are increasingly looking toward Asia for opportunities, particularly as key indices show mixed results and econo",
+      "url": "https://finance.yahoo.com/news/butong-group-2-other-undiscovered-223253100.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2025-09-28T22:32:53Z"
+    },
+    {
+      "title": "Undiscovered Gems in Asia to Explore This September 2025",
+      "summary": "In recent weeks, the Asian markets have been navigating a complex landscape marked by global economic shifts and investor sentiment shaped by fluctuating interest rates and regional trade dynamics. As",
+      "url": "https://finance.yahoo.com/news/undiscovered-gems-asia-explore-september-043304052.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2025-09-12T04:33:04Z"
+    }
+  ]
+}

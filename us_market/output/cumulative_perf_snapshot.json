@@ -2,9 +2,9 @@
   "summary": {
     "total_picks": 360,
     "unique_tickers": 90,
-    "win_rate": 41.4,
-    "avg_return": 2.06,
-    "avg_alpha": 5.96,
+    "win_rate": 41.9,
+    "avg_return": 2.08,
+    "avg_alpha": 5.98,
     "max_gain": 193.9,
     "max_loss": -57.59,
     "best_ticker": "SNDK",
@@ -189,7 +189,7 @@
     },
     {
       "date": "2026-03-25",
-      "avg_return": 0.07,
+      "avg_return": 0.48,
       "spy_return": 0.0
     }
   ],
@@ -3695,113 +3695,113 @@
       "recommendation": "매수"
     },
     {
-      "ticker": "T",
-      "name": "AT&T Inc.",
-      "rec_date": "2026-03-25",
-      "entry_price": 28.96,
-      "current_price": 28.99,
-      "return_pct": 0.1,
-      "final_score": 81.0,
-      "recommendation": "매수"
-    },
-    {
       "ticker": "AKAM",
       "name": "Akamai Technologies, Inc.",
       "rec_date": "2026-03-25",
-      "entry_price": 115.27,
+      "entry_price": 114.5,
       "current_price": 115.26,
-      "return_pct": -0.01,
-      "final_score": 80.5,
+      "return_pct": 0.66,
+      "final_score": 83.0,
       "recommendation": "적극 매수"
+    },
+    {
+      "ticker": "T",
+      "name": "AT&T Inc.",
+      "rec_date": "2026-03-25",
+      "entry_price": 28.87,
+      "current_price": 28.99,
+      "return_pct": 0.42,
+      "final_score": 81.0,
+      "recommendation": "매수"
     },
     {
       "ticker": "ALGN",
       "name": "Align Technology, Inc.",
       "rec_date": "2026-03-25",
-      "entry_price": 180.87,
+      "entry_price": 179.34,
       "current_price": 181.22,
-      "return_pct": 0.19,
-      "final_score": 79.9,
+      "return_pct": 1.05,
+      "final_score": 80.1,
       "recommendation": "매수"
     },
     {
       "ticker": "ALL",
       "name": "The Allstate Corporation",
       "rec_date": "2026-03-25",
-      "entry_price": 209.56,
+      "entry_price": 207.31,
       "current_price": 210.08,
-      "return_pct": 0.25,
-      "final_score": 76.2,
+      "return_pct": 1.34,
+      "final_score": 74.1,
       "recommendation": "매수"
     },
     {
       "ticker": "AMAT",
       "name": "Applied Materials, Inc.",
       "rec_date": "2026-03-25",
-      "entry_price": 376.06,
+      "entry_price": 373.99,
       "current_price": 375.48,
-      "return_pct": -0.15,
-      "final_score": 73.6,
+      "return_pct": 0.4,
+      "final_score": 74.0,
       "recommendation": "매수"
     },
     {
       "ticker": "APD",
       "name": "Air Products and Chemicals, Inc.",
       "rec_date": "2026-03-25",
-      "entry_price": 287.08,
+      "entry_price": 286.25,
       "current_price": 287.49,
-      "return_pct": 0.14,
-      "final_score": 70.9,
+      "return_pct": 0.43,
+      "final_score": 71.9,
       "recommendation": "매수"
     },
     {
       "ticker": "AJG",
       "name": "Arthur J. Gallagher & Co.",
       "rec_date": "2026-03-25",
-      "entry_price": 217.28,
+      "entry_price": 216.28,
       "current_price": 217.36,
-      "return_pct": 0.04,
-      "final_score": 69.2,
-      "recommendation": "매수"
-    },
-    {
-      "ticker": "ALB",
-      "name": "Albemarle Corporation",
-      "rec_date": "2026-03-25",
-      "entry_price": 176.54,
-      "current_price": 176.57,
-      "return_pct": 0.02,
-      "final_score": 68.8,
+      "return_pct": 0.5,
+      "final_score": 71.0,
       "recommendation": "매수"
     },
     {
       "ticker": "ADM",
       "name": "Archer-Daniels-Midland Company",
       "rec_date": "2026-03-25",
-      "entry_price": 71.32,
+      "entry_price": 71.44,
       "current_price": 71.56,
-      "return_pct": 0.33,
+      "return_pct": 0.16,
       "final_score": 68.8,
       "recommendation": "매수"
     },
     {
-      "ticker": "APO",
-      "name": "Apollo Global Management, Inc.",
+      "ticker": "ALB",
+      "name": "Albemarle Corporation",
       "rec_date": "2026-03-25",
-      "entry_price": 110.05,
-      "current_price": 109.83,
-      "return_pct": -0.2,
-      "final_score": 68.2,
+      "entry_price": 177.06,
+      "current_price": 176.57,
+      "return_pct": -0.28,
+      "final_score": 68.1,
+      "recommendation": "매수"
+    },
+    {
+      "ticker": "ACGL",
+      "name": "Arch Capital Group Ltd.",
+      "rec_date": "2026-03-25",
+      "entry_price": 93.6,
+      "current_price": 93.76,
+      "return_pct": 0.17,
+      "final_score": 67.9,
       "recommendation": "매수"
     }
   ],
   "by_date": [
     {
       "date": "2026-03-25",
-      "avg_return": 0.07,
+      "avg_return": 0.48,
       "spy_return": 0.0,
-      "alpha": 0.07,
-      "win_rate": 70.0,
+      "alpha": 0.48,
+      "win_rate": 90.0,
       "num_picks": 10
     },
     {

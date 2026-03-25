@@ -1,0 +1,117 @@
+{
+  "name": "이수페타시스",
+  "ticker": "007660.KS",
+  "result": "매수",
+  "date": "2026-03-25 08:10:27",
+  "elapsed": 1.8,
+  "consensus_score": 4.29,
+  "analyst_count": 14,
+  "recommendation_detail": {
+    "strongBuy": 4,
+    "buy": 10,
+    "hold": 0,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 120200.0,
+    "high": 270000.0,
+    "low": 114000.0,
+    "mean": 174785.72,
+    "median": 168500.0
+  },
+  "current_price": 120200.0,
+  "upside_potential": 45.4,
+  "key_stats": {
+    "name": "ISUPETASYS",
+    "sector": "Technology",
+    "industry": "Electronic Components",
+    "market_cap": 8823788011520,
+    "pe_ratio": null,
+    "forward_pe": 22.98343,
+    "dividend_yield": 0.2,
+    "beta": 1.91,
+    "fifty_two_week_high": 156600.0,
+    "fifty_two_week_low": 28450.0,
+    "revenue": 1016146493440,
+    "profit_margin": 0.13461,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "이수페타시스(007660.KS)에 대한 애널리스트 컨센서스는 14명 참여 기준 '매수' 의견(4.29/5.0)으로 나타났습니다. 목표가 평균은 174,786 KRW이며, 이는 현재가 120,200 KRW 대비 45.4% 상승 여력을 시사합니다. 제시된 분석 데이터는 투자 판단에 참고 자료로 활용될 수 있습니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 296132768430
+    },
+    {
+      "date": "2025-06",
+      "value": 241419469660
+    },
+    {
+      "date": "2025-03",
+      "value": 252489862720
+    },
+    {
+      "date": "2024-12",
+      "value": 226104413180
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 47215160710
+    },
+    {
+      "date": "2025-06",
+      "value": 31365583590
+    },
+    {
+      "date": "2025-03",
+      "value": 38303838560
+    },
+    {
+      "date": "2024-12",
+      "value": 19899209770
+    }
+  ],
+  "news": [
+    {
+      "title": "High Growth Tech Stocks In Asia With Promising Potential",
+      "summary": "As Asian markets navigate a landscape marked by mixed performances in global indices and evolving economic indicators, the region's tech sector continues to draw attention due to its dynamic growth po",
+      "url": "https://finance.yahoo.com/news/high-growth-tech-stocks-asia-223607297.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-01-20T22:36:07Z"
+    },
+    {
+      "title": "High Growth Tech Stocks in Asia Featuring ISU Petasys and Two Others",
+      "summary": "In recent weeks, the Asian markets have experienced mixed performances, with Japan's stock indices declining due to concerns over tech valuations and China's economic indicators highlighting slow grow",
+      "url": "https://finance.yahoo.com/news/high-growth-tech-stocks-asia-223554023.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2025-12-22T22:35:54Z"
+    },
+    {
+      "title": "High Growth Tech Stocks In Asia To Watch November 2025",
+      "summary": "As global markets navigate a mixed landscape marked by the end of the longest U.S. government shutdown and cautious monetary policy signals, Asian tech stocks present intriguing opportunities amidst t",
+      "url": "https://finance.yahoo.com/news/high-growth-tech-stocks-asia-223537529.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2025-11-16T22:35:37Z"
+    },
+    {
+      "title": "Exploring Three High Growth Tech Stocks in Asia",
+      "summary": "As global markets face a mix of challenges, including concerns over elevated valuations and increased scrutiny around AI spending, the Asian tech sector has shown resilience with mainland Chinese stoc",
+      "url": "https://finance.yahoo.com/news/exploring-three-high-growth-tech-223558279.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2025-11-13T22:35:58Z"
+    },
+    {
+      "title": "High Growth Tech Stocks in Asia for November 2025",
+      "summary": "As global markets face volatility with U.S. consumer sentiment nearing record lows and tech stocks experiencing a sell-off, the Asian market presents an intriguing landscape for high-growth technology",
+      "url": "https://finance.yahoo.com/news/high-growth-tech-stocks-asia-223546991.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2025-11-12T22:35:46Z"
+    }
+  ]
+}

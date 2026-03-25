@@ -25,52 +25,52 @@
   },
   "top_picks": [
     {
+      "ticker": "AKAM",
+      "name": "Akamai Technologies, Inc.",
+      "final_score": 83.0,
+      "grade": "🌟 A급 (적극 매수)",
+      "ai_recommendation": "적극 매수",
+      "target_upside": -4.4
+    },
+    {
       "ticker": "T",
       "name": "AT&T Inc.",
       "final_score": 81.0,
       "grade": "🌟 A급 (적극 매수)",
       "ai_recommendation": "매수",
-      "target_upside": 3.8
-    },
-    {
-      "ticker": "AKAM",
-      "name": "Akamai Technologies, Inc.",
-      "final_score": 80.5,
-      "grade": "🌟 A급 (적극 매수)",
-      "ai_recommendation": "적극 매수",
-      "target_upside": -5.0
+      "target_upside": 4.1
     },
     {
       "ticker": "ALGN",
       "name": "Align Technology, Inc.",
-      "final_score": 79.9,
+      "final_score": 80.1,
       "grade": "🌟 A급 (적극 매수)",
       "ai_recommendation": "매수",
-      "target_upside": 11.5
+      "target_upside": 12.5
     },
     {
       "ticker": "ALL",
       "name": "The Allstate Corporation",
-      "final_score": 76.2,
+      "final_score": 74.1,
       "grade": "📈 B급 (매수 고려)",
       "ai_recommendation": "매수",
-      "target_upside": 14.3
+      "target_upside": 15.6
     },
     {
       "ticker": "AMAT",
       "name": "Applied Materials, Inc.",
-      "final_score": 73.6,
+      "final_score": 74.0,
       "grade": "📈 B급 (매수 고려)",
       "ai_recommendation": "매수",
-      "target_upside": 9.2
+      "target_upside": 9.8
     }
   ],
   "timing": "WAIT",
   "warnings": [
-    "APO is in critical drawdown: -27.6% from peak",
-    "APP is in critical drawdown: -40.4% from peak",
+    "APO is in critical drawdown: -26.9% from peak",
+    "APP is in critical drawdown: -39.0% from peak",
     "AMD is in critical drawdown: -20.9% from peak",
-    "AMZN drawdown warning: -16.0% from peak",
-    "AMT drawdown warning: -11.4% from peak"
+    "AJG drawdown warning: -18.1% from peak",
+    "AMZN drawdown warning: -16.2% from peak"
   ]
 }

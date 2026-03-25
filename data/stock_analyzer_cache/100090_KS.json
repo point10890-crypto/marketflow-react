@@ -1,0 +1,81 @@
+{
+  "name": "SK오션플랜트",
+  "ticker": "100090.KS",
+  "result": "적극 매수",
+  "date": "2026-03-25 10:32:30",
+  "elapsed": 2.4,
+  "consensus_score": 4.75,
+  "analyst_count": 4,
+  "recommendation_detail": {
+    "strongBuy": 3,
+    "buy": 1,
+    "hold": 0,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 24300.0,
+    "high": 27000.0,
+    "low": 24000.0,
+    "mean": 25250.0,
+    "median": 25000.0
+  },
+  "current_price": 24300.0,
+  "upside_potential": 3.9,
+  "key_stats": {
+    "name": "SKoceanplant",
+    "sector": "Industrials",
+    "industry": "Aerospace & Defense",
+    "market_cap": 1518218510336,
+    "pe_ratio": null,
+    "forward_pe": 19.518072,
+    "dividend_yield": null,
+    "beta": 0.887,
+    "fifty_two_week_high": 31500.0,
+    "fifty_two_week_low": 12070.0,
+    "revenue": 965388402688,
+    "profit_margin": 0.03915,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "SK오션플랜트는 현재 애널리스트 컨센서스 '적극 매수' 의견을 받고 있으며, 4명의 애널리스트가 참여했습니다. 목표가 평균은 25,250원으로, 현재 주가 대비 약 3.9%의 상승 여력이 존재합니다. 투자 판단은 제시된 정보를 바탕으로 투자자 본인이 결정해야 합니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 174472010530
+    },
+    {
+      "date": "2025-09",
+      "value": 293156089560
+    },
+    {
+      "date": "2025-06",
+      "value": 240624810040
+    },
+    {
+      "date": "2025-03",
+      "value": 257135520620
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 13670077790
+    },
+    {
+      "date": "2025-09",
+      "value": 11192801620
+    },
+    {
+      "date": "2025-06",
+      "value": 8540621430
+    },
+    {
+      "date": "2025-03",
+      "value": 4392604230
+    }
+  ],
+  "news": []
+}

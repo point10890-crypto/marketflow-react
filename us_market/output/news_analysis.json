@@ -1,5 +1,16 @@
 [
   {
+    "ticker": "AKAM",
+    "news_score": 0,
+    "sentiment": "neutral",
+    "reason": "뉴스 없음",
+    "action": "HOLD",
+    "catalysts": [],
+    "risk": "",
+    "citations": [],
+    "analyzed_at": "2026-03-25T11:39:02.091234"
+  },
+  {
     "ticker": "T",
     "news_score": 0,
     "sentiment": "neutral",
@@ -8,7 +19,7 @@
     "catalysts": [],
     "risk": "",
     "citations": [],
-    "analyzed_at": "2026-03-25T04:11:37.341718"
+    "analyzed_at": "2026-03-25T11:39:03.112953"
   },
   {
     "ticker": "ALGN",
@@ -19,10 +30,10 @@
     "catalysts": [],
     "risk": "",
     "citations": [],
-    "analyzed_at": "2026-03-25T04:11:38.362892"
+    "analyzed_at": "2026-03-25T11:39:04.124730"
   },
   {
-    "ticker": "AKAM",
+    "ticker": "AJG",
     "news_score": 0,
     "sentiment": "neutral",
     "reason": "뉴스 없음",
@@ -30,10 +41,10 @@
     "catalysts": [],
     "risk": "",
     "citations": [],
-    "analyzed_at": "2026-03-25T04:11:39.371987"
+    "analyzed_at": "2026-03-25T11:39:05.147563"
   },
   {
-    "ticker": "APO",
+    "ticker": "AON",
     "news_score": 0,
     "sentiment": "neutral",
     "reason": "뉴스 없음",
@@ -41,17 +52,6 @@
     "catalysts": [],
     "risk": "",
     "citations": [],
-    "analyzed_at": "2026-03-25T04:11:40.384725"
-  },
-  {
-    "ticker": "ALL",
-    "news_score": 0,
-    "sentiment": "neutral",
-    "reason": "뉴스 없음",
-    "action": "HOLD",
-    "catalysts": [],
-    "risk": "",
-    "citations": [],
-    "analyzed_at": "2026-03-25T04:11:41.401957"
+    "analyzed_at": "2026-03-25T11:39:06.168576"
   }
 ]

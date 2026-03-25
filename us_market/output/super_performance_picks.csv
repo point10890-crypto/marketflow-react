@@ -1,31 +1,31 @@
 ticker,name,sector,price,rs_rating,vcp_score,fund_score,setup_phase,pivot_tightness,vol_dry_up,contractions,base_depth,eps_growth,breakout,pivot_price,score
-TPR,"Tapestry, Inc.",Consumer Cyclical,143.96,82.0,80,45,⚡ Pivot,2.9%,No,4,6%,81%,No,144.42,175.7
-EQT,EQT Corporation,Energy,65.44,99.0,65,45,⚡ Pivot,3.0%,No,3,12%,62%,No,65.44,167.8
-KEYS,Keysight Technologies Inc.,Technology,298.82,99.0,55,55,📈 Near Highs,7.4%,No,6,7%,66%,No,298.82,167.8
-WMB,"Williams Companies, Inc. (The)",Energy,74.58,99.0,65,40,⚡ Pivot,3.0%,No,5,8%,51%,No,74.58,163.8
-NDSN,Nordson Corporation,Industrials,270.11,80.9,75,40,⚡ Pivot,2.8%,Yes,3,5%,41%,No,270.11,159.4
-FIX,"Comfort Systems USA, Inc.",Industrials,1465.99,99.0,40,55,📈 Near Highs,7.7%,No,4,13%,127%,No,1465.99,155.8
-EIX,Edison International,Utilities,71.61,97.9,40,55,📈 Near Highs,4.1%,No,6,5%,444%,No,72.66,155.5
-JNJ,Johnson & Johnson,Healthcare,235.39,86.5,55,40,⚡ Pivot,0.9%,No,4,5%,49%,No,237.6,152.8
-JBL,Jabil Inc.,Technology,278.15,99.0,40,50,📈 Near Highs,9.3%,No,5,13%,91%,No,278.15,151.8
-CBOE,"Cboe Global Markets, Inc.",Financial Services,281.77,82.5,55,40,⚡ Pivot,2.2%,No,6,5%,60%,No,286.97,151.8
-TPL,Texas Pacific Land Corporation,Energy,534.08,99.0,65,25,⚡ Pivot,2.8%,No,4,20%,4%,No,534.08,151.8
-MSI,"Motorola Solutions, Inc.",Technology,457.26,99.0,65,25,⚡ Pivot,3.0%,No,5,25%,6%,No,466.05,151.8
-CTRA,Coterra Energy Inc.,Energy,34.94,99.0,55,35,📈 Near Highs,4.3%,No,7,6%,24%,No,34.94,151.8
-GRMN,Garmin Ltd.,Technology,241.08,93.4,50,40,⏳ Building,4.0%,Yes,5,4%,21%,No,241.08,150.4
-D,"Dominion Energy, Inc.",Utilities,60.63,72.4,60,45,⏳ Building,4.7%,Yes,4,8%,323%,No,62.2,149.4
-AMGN,Amgen Inc.,Healthcare,350.19,71.0,65,40,⚡ Pivot,1.1%,No,4,9%,113%,No,351.48,149.0
-FDX,FedEx Corporation,Industrials,359.67,99.0,65,20,⚡ Pivot,2.8%,No,4,9%,-11%,No,359.67,147.8
-MRNA,"Moderna, Inc.",Healthcare,51.78,99.0,85,0,⚡ Pivot,2.2%,Yes,5,23%,0%,No,52.4,147.8
-EME,"EMCOR Group, Inc.",Industrials,761.75,99.0,40,45,⏳ Building,5.0%,No,5,13%,49%,No,761.75,147.8
-ALL,Allstate Corporation (The),Financial Services,209.42,60.3,65,40,⚡ Pivot,2.6%,No,5,9%,99%,No,209.42,146.5
-NEE,"NextEra Energy, Inc.",Utilities,92.29,90.4,40,45,📈 Near Highs,3.2%,No,6,8%,28%,No,92.41,145.7
-CME,CME Group Inc.,Financial Services,303.11,85.4,65,30,⚡ Pivot,2.5%,No,6,6%,35%,No,310.71,144.5
-HST,"Host Hotels & Resorts, Inc.",Real Estate,19.08,67.0,70,30,⚡ Pivot,2.8%,No,6,3%,25%,No,19.14,144.1
-AMAT,"Applied Materials, Inc.",Technology,376.4,99.0,40,40,📈 Near Highs,7.5%,No,6,18%,71%,No,376.4,143.8
-KLAC,KLA Corporation,Technology,1570.2,99.0,40,40,⏳ Building,5.8%,No,6,13%,39%,No,1570.2,143.8
-GEV,GE Vernova Inc.,Industrials,909.25,99.0,40,40,📈 Near Highs,6.6%,No,5,10%,657%,No,909.25,143.8
-TGT,Target Corporation,Consumer Defensive,115.9,99.0,80,10,⚡ Pivot,2.3%,No,5,9%,-5%,No,115.9,143.8
-VLO,Valero Energy Corporation,Energy,242.8,99.0,55,25,⚡ Pivot,2.3%,No,5,6%,304%,No,242.8,143.8
-TRGP,"Targa Resources, Inc.",Energy,245.41,99.0,40,40,📈 Near Highs,4.8%,No,5,6%,55%,No,245.41,143.8
-GILD,"Gilead Sciences, Inc.",Healthcare,138.21,82.1,65,30,⚡ Pivot,2.9%,No,7,8%,22%,No,141.29,143.7
+TPR,"Tapestry, Inc.",Consumer Cyclical,144.02,82.7,80,45,⚡ Pivot,2.9%,No,4,6%,81%,No,144.42,175.8
+EQT,EQT Corporation,Energy,65.33,99.0,65,45,⚡ Pivot,2.8%,No,3,12%,62%,No,65.33,167.8
+KEYS,Keysight Technologies Inc.,Technology,298.58,99.0,55,55,📈 Near Highs,7.3%,No,6,7%,66%,No,298.58,167.8
+WMB,"Williams Companies, Inc. (The)",Energy,74.46,99.0,65,40,⚡ Pivot,2.8%,No,5,8%,51%,No,74.46,163.8
+FIX,"Comfort Systems USA, Inc.",Industrials,1461.52,99.0,40,55,📈 Near Highs,7.4%,No,4,13%,127%,No,1461.52,155.8
+VRT,"Vertiv Holdings, LLC",Industrials,270.89,99.0,40,55,📈 Near Highs,5.7%,No,4,21%,203%,No,270.89,155.8
+EIX,Edison International,Utilities,71.28,97.3,40,55,⏳ Building,4.1%,No,6,5%,444%,No,72.66,155.4
+JNJ,Johnson & Johnson,Healthcare,235.27,86.9,55,40,⚡ Pivot,1.0%,No,4,5%,49%,No,237.6,152.9
+CBOE,"Cboe Global Markets, Inc.",Financial Services,283.09,84.1,55,40,⚡ Pivot,2.2%,No,6,5%,60%,No,286.97,152.2
+JBL,Jabil Inc.,Technology,277.38,99.0,40,50,📈 Near Highs,9.0%,No,5,13%,91%,No,277.38,151.8
+CTRA,Coterra Energy Inc.,Energy,35.02,99.0,55,35,📈 Near Highs,4.5%,No,7,6%,24%,No,35.02,151.8
+MSI,"Motorola Solutions, Inc.",Technology,454.75,99.0,65,25,⚡ Pivot,3.0%,No,5,25%,6%,No,466.05,151.8
+TPL,Texas Pacific Land Corporation,Energy,535.26,99.0,65,25,⚡ Pivot,3.0%,No,4,20%,4%,No,535.26,151.8
+GRMN,Garmin Ltd.,Technology,241.11,93.9,50,40,⏳ Building,4.0%,Yes,5,4%,21%,No,241.11,150.5
+AMGN,Amgen Inc.,Healthcare,348.43,70.5,65,40,⚡ Pivot,1.1%,No,4,9%,113%,No,351.48,148.9
+MRNA,"Moderna, Inc.",Healthcare,51.34,99.0,85,0,⚡ Pivot,2.2%,Yes,5,23%,0%,No,52.4,147.8
+EME,"EMCOR Group, Inc.",Industrials,761.27,99.0,40,45,⏳ Building,4.9%,No,5,13%,49%,No,761.27,147.8
+FDX,FedEx Corporation,Industrials,359.96,99.0,65,20,⚡ Pivot,2.9%,No,4,9%,-11%,No,359.96,147.8
+NEE,"NextEra Energy, Inc.",Utilities,91.62,89.2,40,45,📈 Near Highs,3.2%,No,6,8%,28%,No,92.41,145.4
+CME,CME Group Inc.,Financial Services,302.68,85.6,65,30,⚡ Pivot,2.6%,No,6,6%,35%,No,310.71,144.5
+HST,"Host Hotels & Resorts, Inc.",Real Estate,18.97,66.3,70,30,⚡ Pivot,2.9%,No,6,3%,25%,No,19.14,143.9
+AMAT,"Applied Materials, Inc.",Technology,373.99,99.0,40,40,⏳ Building,6.8%,No,6,18%,71%,No,373.99,143.8
+DELL,Dell Technologies Inc.,Technology,176.91,99.0,30,40,🔥 Breakout,17.2%,No,5,10%,47%,Yes,176.91,143.8
+GEV,GE Vernova Inc.,Industrials,909.41,99.0,40,40,📈 Near Highs,6.7%,No,5,10%,657%,No,909.41,143.8
+VLO,Valero Energy Corporation,Energy,241.75,99.0,55,25,⚡ Pivot,1.9%,No,5,6%,304%,No,242.07,143.8
+TRGP,"Targa Resources, Inc.",Energy,246.1,99.0,40,40,📈 Near Highs,5.1%,No,5,6%,55%,No,246.1,143.8
+KLAC,KLA Corporation,Technology,1566.19,99.0,40,40,⏳ Building,5.5%,No,6,13%,39%,No,1566.19,143.8
+TGT,Target Corporation,Consumer Defensive,115.92,99.0,80,10,⚡ Pivot,2.3%,No,5,9%,-5%,No,115.92,143.8
+GILD,"Gilead Sciences, Inc.",Healthcare,138.11,82.5,65,30,⚡ Pivot,2.9%,No,7,8%,22%,No,141.29,143.8
+YUM,"Yum! Brands, Inc.",Consumer Cyclical,159.43,65.0,70,30,⚡ Pivot,2.0%,No,6,3%,26%,No,159.43,143.6
