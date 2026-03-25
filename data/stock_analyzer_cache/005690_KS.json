@@ -1,0 +1,81 @@
+{
+  "name": "파미셀",
+  "ticker": "005690.KS",
+  "result": "적극 매수",
+  "date": "2026-03-25 20:08:23",
+  "elapsed": 1.9,
+  "consensus_score": 5.0,
+  "analyst_count": 1,
+  "recommendation_detail": {
+    "strongBuy": 1,
+    "buy": 0,
+    "hold": 0,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 16620.0,
+    "high": 24000.0,
+    "low": 24000.0,
+    "mean": 24000.0,
+    "median": 24000.0
+  },
+  "current_price": 16620.0,
+  "upside_potential": 44.4,
+  "key_stats": {
+    "name": "Pharmicell",
+    "sector": "Healthcare",
+    "industry": "Biotechnology",
+    "market_cap": 997266751488,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": 0.31,
+    "beta": 0.559,
+    "fifty_two_week_high": 20800.0,
+    "fifty_two_week_low": 8150.0,
+    "revenue": 23944798208,
+    "profit_margin": -1.11848,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "파미셀(005690.KS)은 헬스케어 섹터에 속하며 현재 16,620원에 거래되고 있습니다. 1명의 애널리스트가 제시한 컨센서스 의견은 '적극 매수'입니다. 목표가 평균은 24,000원으로, 현재 주가 대비 44.4%의 상승 여력이 있습니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 25647340060
+    },
+    {
+      "date": "2025-06",
+      "value": 26762784580
+    },
+    {
+      "date": "2025-03",
+      "value": 27029679930
+    },
+    {
+      "date": "2024-12",
+      "value": 21472820430
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 8776094020
+    },
+    {
+      "date": "2025-06",
+      "value": 7384548340
+    },
+    {
+      "date": "2025-03",
+      "value": 8456243330
+    },
+    {
+      "date": "2024-12",
+      "value": 4154043550
+    }
+  ],
+  "news": []
+}

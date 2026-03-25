@@ -1,0 +1,117 @@
+{
+  "name": "SK이노베이션",
+  "ticker": "096770.KS",
+  "result": "중립",
+  "date": "2026-03-25 20:08:03",
+  "elapsed": 2.5,
+  "consensus_score": 3.23,
+  "analyst_count": 22,
+  "recommendation_detail": {
+    "strongBuy": 4,
+    "buy": 3,
+    "hold": 10,
+    "sell": 4,
+    "strongSell": 1
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 114100.0,
+    "high": 156000.0,
+    "low": 60000.0,
+    "mean": 116428.57,
+    "median": 120000.0
+  },
+  "current_price": 114100.0,
+  "upside_potential": 2.0,
+  "key_stats": {
+    "name": "SK Innovation",
+    "sector": "Energy",
+    "industry": "Oil & Gas Refining & Marketing",
+    "market_cap": 19067408744448,
+    "pe_ratio": null,
+    "forward_pe": 19.546846,
+    "dividend_yield": 1.82,
+    "beta": 1.57,
+    "fifty_two_week_high": 141300.0,
+    "fifty_two_week_low": 80800.0,
+    "revenue": 80296057765888,
+    "profit_margin": -0.041690003,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "SK이노베이션(096770.KS)에 대한 애널리스트 컨센서스는 22명 참여 기준 '중립' 의견입니다(3.23/5.0). 목표가 평균은 116,429원으로 현재가 114,100원 대비 약 2.0% 상승 여력이 있습니다. 투자 판단은 제시된 정보를 바탕으로 투자자 본인이 결정해야 합니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 19309656113000
+    },
+    {
+      "date": "2025-09",
+      "value": 20533220238000
+    },
+    {
+      "date": "2025-06",
+      "value": 19306626093000
+    },
+    {
+      "date": "2025-03",
+      "value": 21146551799000
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": -2238835105000
+    },
+    {
+      "date": "2025-09",
+      "value": -107855698000
+    },
+    {
+      "date": "2025-06",
+      "value": -772205629000
+    },
+    {
+      "date": "2025-03",
+      "value": -228953594000
+    }
+  ],
+  "news": [
+    {
+      "title": "SK Innovation Co Ltd (XKRX:096770) Q4 2025 Earnings Call Highlights: Strategic Restructuring ...",
+      "summary": "Despite a decline in revenue, SK Innovation Co Ltd (XKRX:096770) focuses on electrification and global expansion to drive future growth.",
+      "url": "https://finance.yahoo.com/news/sk-innovation-co-ltd-xkrx-090041172.html",
+      "provider": "GuruFocus.com",
+      "pub_time": "2026-01-28T09:00:41Z"
+    },
+    {
+      "title": "Ford Just Torched a $6.5 Billion Battery Deal--Is the EV Dream Unraveling?",
+      "summary": "A surprise contract cancellation with LG Energy signals a major course correction in Ford's electric ambitions.",
+      "url": "https://finance.yahoo.com/news/ford-just-torched-6-5-163835724.html",
+      "provider": "GuruFocus.com",
+      "pub_time": "2025-12-17T16:38:35Z"
+    },
+    {
+      "title": "South Korea's SK On, Ford Motor to end US battery joint venture",
+      "summary": "The split marks a reset for one of the major U.S. electric vehicle battery partnerships.",
+      "url": "https://www.freep.com/story/money/cars/ford/2025/12/11/south-korea-ford-motor-end-battery-joint-venture/87719157007/",
+      "provider": "Detroit Free Press",
+      "pub_time": "2025-12-11T18:39:34Z"
+    },
+    {
+      "title": "Ford and SK On are ending their US battery joint venture",
+      "summary": "The factories live on; the joint venture will not. The two companies will divide the assets: Ford will take ownership and operation of the twin battery plants in Kentucky, while SK On will operate the",
+      "url": "https://finance.yahoo.com/news/ford-sk-ending-u-battery-161107193.html",
+      "provider": "TechCrunch",
+      "pub_time": "2025-12-11T16:11:07Z"
+    },
+    {
+      "title": "Ford and SK Innovation to dissolve battery joint venture",
+      "summary": "Investing.com -- Ford Motor Co. and South Korea’s SK Innovation Co. have agreed to dissolve their U.S. battery-making joint venture, with each company taking independent control of different productio",
+      "url": "https://finance.yahoo.com/news/ford-sk-innovation-dissolve-battery-121901847.html",
+      "provider": "Investing.com",
+      "pub_time": "2025-12-11T12:19:01Z"
+    }
+  ]
+}
