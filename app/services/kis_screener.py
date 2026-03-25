@@ -419,13 +419,25 @@ def run_screening():
 def _save_result(result):
     try:
         os.makedirs(DATA_DIR, exist_ok=True)
+        has_results = bool(result.get("results"))
         latest = os.path.join(DATA_DIR, "screener_leading_latest.json")
-        with open(latest, "w", encoding="utf-8") as f:
-            json.dump(result, f, ensure_ascii=False)
         date_str = datetime.now().strftime("%Y%m%d")
         archive = os.path.join(DATA_DIR, f"screener_leading_{date_str}.json")
-        with open(archive, "w", encoding="utf-8") as f:
-            json.dump(result, f, ensure_ascii=False)
+
+        if has_results:
+            # 결과 있음 → latest + archive 모두 저장
+            with open(latest, "w", encoding="utf-8") as f:
+                json.dump(result, f, ensure_ascii=False)
+            with open(archive, "w", encoding="utf-8") as f:
+                json.dump(result, f, ensure_ascii=False)
+        else:
+            # 결과 없음 (장 마감 등) → 기존 파일이 있으면 보존, 없으면 저장
+            if not os.path.exists(latest):
+                with open(latest, "w", encoding="utf-8") as f:
+                    json.dump(result, f, ensure_ascii=False)
+            if not os.path.exists(archive):
+                with open(archive, "w", encoding="utf-8") as f:
+                    json.dump(result, f, ensure_ascii=False)
     except Exception as e:
         logger.warning(f"스크리너 결과 저장 실패: {e}")
 

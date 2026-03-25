@@ -4,6 +4,9 @@ import { VitePWA } from 'vite-plugin-pwa';
 import { fileURLToPath, URL } from 'node:url';
 
 export default defineConfig({
+  define: {
+    __BUILD_TIME__: JSON.stringify(new Date().toISOString()),
+  },
   plugins: [
     react(),
     VitePWA({
@@ -17,20 +20,12 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
         runtimeCaching: [
           {
-            urlPattern: /^https:\/\/.*\.ngrok-free\.(dev|app)\/api\//,
+            urlPattern: /^https:\/\/.*\.trycloudflare\.com\/api\//,
             handler: 'NetworkFirst',
             options: {
               cacheName: 'api-cache',
               expiration: { maxEntries: 50, maxAgeSeconds: 300 },
               networkTimeoutSeconds: 10,
-            },
-          },
-          {
-            urlPattern: /\/data\/.*\.json$/,
-            handler: 'StaleWhileRevalidate',
-            options: {
-              cacheName: 'static-data',
-              expiration: { maxEntries: 30, maxAgeSeconds: 3600 },
             },
           },
           {

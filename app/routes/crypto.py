@@ -17,40 +17,13 @@ from datetime import datetime
 from flask import Blueprint, jsonify, request, send_from_directory
 from app.auth.decorators import pro_required
 
+from app.utils.paths import BASE_DIR, DATA_DIR, CRYPTO_MARKET_DIR, CRYPTO_OUTPUT_DIR
+from app.utils.safety import safe_float, load_json_file
+
 crypto_bp = Blueprint('crypto', __name__)
 
-# 절대경로 고정
-_BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-_DATA_DIR = os.path.join(_BASE_DIR, 'data')
-
-# crypto_market 모듈 경로 (crypto-analytics 프로젝트)
-CRYPTO_ANALYTICS_DIR = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
-    'crypto-analytics'
-)
-CRYPTO_MARKET_DIR = os.path.join(CRYPTO_ANALYTICS_DIR, 'crypto_market')
-CRYPTO_OUTPUT_DIR = os.path.join(CRYPTO_MARKET_DIR, 'output')
-
-
-def _safe_float(val, default=0):
-    if val is None:
-        return default
-    try:
-        f = float(val)
-        return default if math.isnan(f) else f
-    except (ValueError, TypeError):
-        return default
-
-
-def _load_json(path):
-    """JSON 파일 로드 헬퍼"""
-    if os.path.exists(path):
-        try:
-            with open(path, 'r', encoding='utf-8') as f:
-                return json.load(f)
-        except Exception:
-            pass
-    return None
+# 경로 별칭 (기존 코드 호환)
+_DATA_DIR = DATA_DIR
 
 
 # ═══════════════════════════════════════════════════════
@@ -73,11 +46,11 @@ def _fetch_crypto_overview_live():
             coin = yf.Ticker(ticker)
             hist = coin.history(period='5d')
             if not hist.empty and len(hist) >= 2:
-                price = _safe_float(hist['Close'].iloc[-1])
-                prev = _safe_float(hist['Close'].iloc[-2])
+                price = safe_float(hist['Close'].iloc[-1])
+                prev = safe_float(hist['Close'].iloc[-2])
                 change = price - prev
                 change_pct = (change / prev) * 100 if prev else 0
-                vol_24h = _safe_float(hist['Volume'].iloc[-1])
+                vol_24h = safe_float(hist['Volume'].iloc[-1])
                 result.append({
                     'name': name, 'ticker': ticker.replace('-USD', ''),
                     'price': round(price, 2), 'change': round(change, 2),
@@ -146,16 +119,16 @@ def _compute_crypto_dominance_live():
         if btc_hist.empty:
             return jsonify({'error': 'No BTC data'}), 500
 
-        btc_price = _safe_float(btc_hist['Close'].iloc[-1])
-        eth_price = _safe_float(eth_hist['Close'].iloc[-1]) if not eth_hist.empty else 0
-        btc_30d_start = _safe_float(btc_hist['Close'].iloc[0])
+        btc_price = safe_float(btc_hist['Close'].iloc[-1])
+        eth_price = safe_float(eth_hist['Close'].iloc[-1]) if not eth_hist.empty else 0
+        btc_30d_start = safe_float(btc_hist['Close'].iloc[0])
         btc_30d_change = ((btc_price / btc_30d_start) - 1) * 100 if btc_30d_start else 0
 
         delta = btc_hist['Close'].diff()
         gain = delta.where(delta > 0, 0).rolling(14).mean()
         loss = (-delta.where(delta < 0, 0)).rolling(14).mean()
         rs = gain / loss
-        rsi = _safe_float(100 - (100 / (1 + rs)).iloc[-1], 50)
+        rsi = safe_float(100 - (100 / (1 + rs)).iloc[-1], 50)
 
         if rsi > 70: sentiment = 'EXTREME_GREED'
         elif rsi > 60: sentiment = 'GREED'
@@ -197,11 +170,11 @@ def get_crypto_chart(ticker):
             return jsonify({'error': f'No data for {ticker}'}), 404
         chart_data = [{
             'date': date.strftime('%Y-%m-%d'),
-            'open': round(_safe_float(row['Open']), 2),
-            'high': round(_safe_float(row['High']), 2),
-            'low': round(_safe_float(row['Low']), 2),
-            'close': round(_safe_float(row['Close']), 2),
-            'volume': int(_safe_float(row['Volume'])),
+            'open': round(safe_float(row['Open']), 2),
+            'high': round(safe_float(row['High']), 2),
+            'low': round(safe_float(row['Low']), 2),
+            'close': round(safe_float(row['Close']), 2),
+            'volume': int(safe_float(row['Volume'])),
         } for date, row in hist.iterrows()]
         return jsonify({'ticker': ticker.upper(), 'data': chart_data, 'period': period})
     except Exception as e:
@@ -216,7 +189,7 @@ def get_crypto_chart(ticker):
 def crypto_market_gate():
     """Crypto Market Gate 상태 (JSON 캐시 → fallback 라이브)"""
     gate_path = os.path.join(CRYPTO_OUTPUT_DIR, 'market_gate.json')
-    data = _load_json(gate_path)
+    data = load_json_file(gate_path)
     if data:
         return jsonify(data)
 
@@ -248,7 +221,7 @@ def crypto_market_gate():
 def crypto_gate_history():
     """Gate 히스토리"""
     path = os.path.join(CRYPTO_OUTPUT_DIR, 'gate_history.json')
-    data = _load_json(path)
+    data = load_json_file(path)
     return jsonify({'history': data or []})
 
 
@@ -286,7 +259,7 @@ def crypto_vcp_signals():
 def crypto_briefing():
     """Crypto 일일 브리핑 (캐시 → 실시간 생성)"""
     path = os.path.join(CRYPTO_OUTPUT_DIR, 'crypto_briefing.json')
-    data = _load_json(path)
+    data = load_json_file(path)
     if data:
         return jsonify(data)
 
@@ -460,7 +433,7 @@ def _generate_live_briefing():
 def crypto_prediction():
     """BTC 방향 예측 (Pro only)"""
     path = os.path.join(CRYPTO_OUTPUT_DIR, 'btc_prediction.json')
-    data = _load_json(path)
+    data = load_json_file(path)
     if data:
         return jsonify(data)
     return jsonify({'error': 'No prediction data. Run crypto_prediction.py first.'}), 404
@@ -470,7 +443,7 @@ def crypto_prediction():
 def crypto_prediction_history():
     """BTC 예측 히스토리"""
     path = os.path.join(CRYPTO_OUTPUT_DIR, 'btc_prediction_history.json')
-    data = _load_json(path)
+    data = load_json_file(path)
     return jsonify({'history': data or []})
 
 
@@ -483,7 +456,7 @@ def crypto_prediction_history():
 def crypto_risk():
     """Crypto 포트폴리오 리스크 (Pro only)"""
     path = os.path.join(CRYPTO_OUTPUT_DIR, 'crypto_risk.json')
-    data = _load_json(path)
+    data = load_json_file(path)
     if data:
         return jsonify(data)
     return jsonify({'error': 'No risk data. Run crypto_risk.py first.'}), 404
@@ -498,7 +471,7 @@ def crypto_risk():
 def crypto_lead_lag():
     """Lead-Lag 분석 (Pro only)"""
     path = os.path.join(CRYPTO_MARKET_DIR, 'lead_lag', 'results.json')
-    data = _load_json(path)
+    data = load_json_file(path)
     if data:
         return jsonify(data)
     return jsonify({'lead_lag': [], 'granger': []})
@@ -569,7 +542,7 @@ def crypto_signal_analysis():
 def crypto_timeline():
     """Crypto 타임라인"""
     path = os.path.join(CRYPTO_MARKET_DIR, 'timeline_events.json')
-    data = _load_json(path)
+    data = load_json_file(path)
     return jsonify(data or {'events': []})
 
 
@@ -581,7 +554,7 @@ def crypto_monthly_report():
         return jsonify({'report': None})
     files = sorted([f for f in os.listdir(reports_dir) if f.endswith('.json')], reverse=True)
     if files:
-        data = _load_json(os.path.join(reports_dir, files[0]))
+        data = load_json_file(os.path.join(reports_dir, files[0]))
         return jsonify({'report': data})
     return jsonify({'report': None})
 
@@ -630,7 +603,7 @@ def _run_subprocess_task(task_id: str, script_path: str, cwd: str | None = None)
 def run_scan():
     """VCP 스캔 실행 (게이트가 RED이면 스킵 옵션)"""
     # Check gate
-    gate_data = _load_json(os.path.join(CRYPTO_OUTPUT_DIR, 'market_gate.json'))
+    gate_data = load_json_file(os.path.join(CRYPTO_OUTPUT_DIR, 'market_gate.json'))
     if gate_data and gate_data.get('gate') == 'RED':
         force = request.json.get('force', False) if request.is_json else False
         if not force:
@@ -660,7 +633,7 @@ def gate_scan():
             env={**os.environ, 'PYTHONIOENCODING': 'utf-8'}
         )
         # Reload fresh gate data
-        gate = _load_json(os.path.join(CRYPTO_OUTPUT_DIR, 'market_gate.json'))
+        gate = load_json_file(os.path.join(CRYPTO_OUTPUT_DIR, 'market_gate.json'))
         return jsonify({
             'status': 'completed' if result.returncode == 0 else 'failed',
             'gate': gate,
@@ -812,7 +785,7 @@ def crypto_data_status():
 @pro_required
 def backtest_summary():
     """백테스트 요약 (Pro only)"""
-    data = _load_json(os.path.join(CRYPTO_OUTPUT_DIR, 'backtest_result.json'))
+    data = load_json_file(os.path.join(CRYPTO_OUTPUT_DIR, 'backtest_result.json'))
     if not data:
         return jsonify({'error': 'No backtest data. Run backtest first.'}), 404
     # trades 배열 제외한 요약만
@@ -824,7 +797,7 @@ def backtest_summary():
 @pro_required
 def backtest_results():
     """백테스트 전체 결과 (Pro only)"""
-    data = _load_json(os.path.join(CRYPTO_OUTPUT_DIR, 'backtest_result.json'))
+    data = load_json_file(os.path.join(CRYPTO_OUTPUT_DIR, 'backtest_result.json'))
     if not data:
         return jsonify({'error': 'No backtest data. Run backtest first.'}), 404
     return jsonify(data)
@@ -854,7 +827,7 @@ def get_crypto_vcp_dates():
 def get_crypto_vcp_enhanced():
     """Crypto VCP 통합 분석 — 캐시 파일 기반 반환."""
     try:
-        cached_path = os.path.join(_BASE_DIR, 'data', 'vcp_crypto_latest.json')
+        cached_path = os.path.join(BASE_DIR, 'data', 'vcp_crypto_latest.json')
         if os.path.exists(cached_path):
             with open(cached_path, 'r', encoding='utf-8') as f:
                 data = json.load(f)

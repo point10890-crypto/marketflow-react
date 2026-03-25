@@ -5,7 +5,7 @@ import { API_BASE, API_HEADERS } from '@/lib/api';
  * 자동 데이터 갱신 훅 (Page Visibility API 기반)
  * - 탭이 보이는 상태에서만 polling
  * - 백그라운드에서 포그라운드로 돌아오면 즉시 1회 fetch
- * - 모바일(ngrok) 포함 전 플랫폼 지원
+ * - 모바일 포함 전 플랫폼 지원
  */
 export function useAutoRefresh(
     fetchFn: () => void | Promise<void>,
@@ -68,7 +68,7 @@ export function useAutoRefresh(
  * data-version 기반 스마트 갱신 훅
  * - /api/data-version 엔드포인트를 경량 polling (15초)
  * - 파일 수정 시간이 변경된 경우에만 실제 데이터 refetch
- * - 로컬 + 모바일(ngrok) 동시 실시간 갱신 보장
+ * - 로컬 + 모바일 동시 실시간 갱신 보장
  * - 불필요한 네트워크 트래픽 최소화
  *
  * @param fetchFn     데이터 변경 감지 시 호출할 함수
@@ -98,14 +98,14 @@ export function useSmartRefresh(
 
     const checkVersion = useCallback(async () => {
         try {
-            // API_BASE가 있으면 ngrok/Flask로, 없으면 로컬 proxy로
+            // API_BASE가 있으면 Tunnel/Flask로, 없으면 로컬 proxy로
             const versionUrl = `${API_BASE}/api/data-version`;
             const res = await fetch(versionUrl, {
                 headers: API_HEADERS,
                 signal: AbortSignal.timeout(5000),
             });
             if (!res.ok) {
-                // ngrok 오프라인 시 _meta.json 폴백
+                // API 오프라인 시 _meta.json 폴백
                 const metaRes = await fetch('/data/_meta.json');
                 if (metaRes.ok) {
                     const meta = await metaRes.json();

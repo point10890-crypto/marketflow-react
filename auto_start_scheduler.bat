@@ -1,15 +1,13 @@
 @echo off
 chcp 65001 >nul
 :: ============================================================
-:: MarketFlow 전체 서비스 자동 시작 (PC 로그인 시)
+:: MarketFlow 전체 서비스 자동 시작 (단일 경로: C:\bitman_marketfloww)
 :: ============================================================
 
 set PROJECT=C:\bitman_marketfloww
-set SERVICE=C:\bitman_service
-set PYTHON=%SERVICE%\.venv\Scripts\python.exe
+set PYTHON=%PROJECT%\.venv\Scripts\python.exe
 set PYTHONIOENCODING=utf-8
 set LOG=%PROJECT%\logs\auto_start.log
-set NGROK_DOMAIN=nonalliterated-sunshine-unaffiliated.ngrok-free.dev
 
 if not exist "%PROJECT%\logs" mkdir "%PROJECT%\logs"
 
@@ -22,7 +20,7 @@ echo [%TODAY% %NOW%] === AUTO START BEGIN === >> "%LOG%"
 netstat -ano | findstr ":5001.*LISTENING" >nul 2>&1
 if errorlevel 1 (
     echo [%TODAY% %NOW%] Starting Flask... >> "%LOG%"
-    cd /d %SERVICE%
+    cd /d %PROJECT%
     start /MIN "" cmd /c "set PYTHONIOENCODING=utf-8 && "%PYTHON%" flask_app.py"
     timeout /t 10 /nobreak >nul
     netstat -ano | findstr ":5001.*LISTENING" >nul 2>&1
@@ -35,15 +33,15 @@ if errorlevel 1 (
     echo [%TODAY% %NOW%] Flask already running >> "%LOG%"
 )
 
-:: 2. ngrok 터널
-tasklist /FI "IMAGENAME eq ngrok.exe" 2>nul | findstr /I "ngrok" >nul
+:: 2. Cloudflare Tunnel (localhost:5001 → 외부 접속)
+tasklist /FI "IMAGENAME eq cloudflared.exe" 2>nul | findstr /I "cloudflared" >nul
 if errorlevel 1 (
-    echo [%TODAY% %NOW%] Starting ngrok... >> "%LOG%"
-    start /MIN "" cmd /c "ngrok http 5001 --domain=%NGROK_DOMAIN%"
+    echo [%TODAY% %NOW%] Starting cloudflared tunnel... >> "%LOG%"
+    start /MIN "" cmd /c "cloudflared tunnel --url http://localhost:5001 2>>"%LOG%""
     timeout /t 5 /nobreak >nul
-    echo [%TODAY% %NOW%] ngrok started >> "%LOG%"
+    echo [%TODAY% %NOW%] cloudflared started >> "%LOG%"
 ) else (
-    echo [%TODAY% %NOW%] ngrok already running >> "%LOG%"
+    echo [%TODAY% %NOW%] cloudflared already running >> "%LOG%"
 )
 
 :: 3. 스케줄러

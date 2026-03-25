@@ -1,0 +1,21 @@
+# index.html — 절대 캐싱 금지 (새 배포 즉시 반영)
+/
+  Cache-Control: public, max-age=0, must-revalidate
+
+/index.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+# SW 파일도 캐싱 금지
+/sw.js
+  Cache-Control: public, max-age=0, must-revalidate
+
+/workbox-*.js
+  Cache-Control: public, max-age=0, must-revalidate
+
+# 해시된 정적 에셋은 장기 캐시 OK
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# 정적 데이터 파일은 5분 캐시
+/data/*
+  Cache-Control: public, max-age=300

@@ -1047,25 +1047,38 @@ def get_kr_vcp_report(date):
 
 @kr_bp.route('/screener/leading')
 def kr_screener_leading():
-    """주도주 실시간 스크리닝 — 캐시 우선, 없으면 라이브 실행"""
+    """주도주 실시간 스크리닝 — 장중: 라이브 스캔, 장 마감: 마지막 유효 결과"""
     try:
-        from app.services.kis_screener import run_screening, load_latest, _result_cache
+        from app.services.kis_screener import run_screening, load_latest, is_market_open, _result_cache
         import time as _time
+
+        market_open = is_market_open()
+
         # 1. 메모리 캐시 (3초 TTL)
         if _result_cache["data"] and (_time.time() - _result_cache["ts"]) < 3:
             resp = jsonify(_result_cache["data"])
             resp.headers['Cache-Control'] = 'no-cache, no-store'
             return resp
-        # 2. 파일 캐시 (5분 이내면 즉시 반환)
+
+        # 2. 장 마감 시 → 파일 캐시만 반환 (새 스캔 안 함)
+        if not market_open:
+            latest = load_latest()
+            if latest:
+                latest["market_status"] = "closed"
+                resp = jsonify(latest)
+                resp.headers['Cache-Control'] = 'no-cache, no-store'
+                return resp
+
+        # 3. 장중 — 파일 캐시 반환 + 백그라운드 스캔 트리거
         latest = load_latest()
         if latest:
             resp = jsonify(latest)
             resp.headers['Cache-Control'] = 'no-cache, no-store'
-            # 백그라운드로 새 스캔 트리거 (다음 요청에 반영)
             import threading
             threading.Thread(target=run_screening, daemon=True).start()
             return resp
-        # 3. 캐시 없음 — 라이브 실행 (첫 호출)
+
+        # 4. 캐시 없음 — 라이브 실행 (첫 호출)
         result = run_screening()
         resp = jsonify(result)
         resp.headers['Cache-Control'] = 'no-cache, no-store'

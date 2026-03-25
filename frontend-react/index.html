@@ -16,6 +16,36 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      // Capture beforeinstallprompt early before React mounts
+      window.__pwaInstallPrompt = null;
+      window.addEventListener('beforeinstallprompt', function(e) {
+        e.preventDefault();
+        window.__pwaInstallPrompt = e;
+      });
+
+      // v3.0.1 — 오래된 SW 캐시 강제 정리 (1회성)
+      (function() {
+        var CACHE_VER = 'v3.0.1';
+        if (localStorage.getItem('cache_ver') !== CACHE_VER) {
+          if ('caches' in window) {
+            caches.keys().then(function(names) {
+              names.forEach(function(name) { caches.delete(name); });
+            });
+          }
+          if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(function(regs) {
+              regs.forEach(function(r) { r.unregister(); });
+            }).then(function() {
+              localStorage.setItem('cache_ver', CACHE_VER);
+              window.location.reload();
+            });
+          } else {
+            localStorage.setItem('cache_ver', CACHE_VER);
+          }
+        }
+      })();
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

@@ -1,11 +1,11 @@
 @echo off
 chcp 65001 >nul
 :: ============================================================
-:: MarketFlow 스케줄러 데몬 시작
+:: MarketFlow 스케줄러 데몬 시작 (단일 경로: C:\bitman_marketfloww)
 :: ============================================================
 
 set PROJECT=C:\bitman_marketfloww
-set PYTHON=C:\bitman_service\.venv\Scripts\python.exe
+set PYTHON=%PROJECT%\.venv\Scripts\python.exe
 set PYTHONIOENCODING=utf-8
 set LOG=%PROJECT%\logs\scheduler_start.log
 

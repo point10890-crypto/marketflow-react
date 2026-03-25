@@ -2,40 +2,10 @@
 //
 // Architecture:
 //   Dev:  Vite proxy /api/* → Flask 5001 (vite.config.ts)
-//   Prod: VITE_API_BASE_URL → Flask on Render (https://marketflow-api-fzez.onrender.com)
-//         Render 슬립 시 → /data/*.json 정적 스냅샷 폴백 (public/data/, sync-data.yml 갱신)
+//   Prod: VITE_API_BASE_URL → Cloudflare Tunnel → Flask 5001
 
 export const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
-export const API_HEADERS: Record<string, string> = API_BASE ? { 'ngrok-skip-browser-warning': 'true' } : {};
-
-// 정적 스냅샷 폴백 맵 (prod에서 Render 슬립 시 사용)
-const STATIC_FALLBACK: Record<string, string> = {
-    '/api/kr/market-gate':        '/data/kr-market-gate.json',
-    '/api/kr/jongga-v2/latest':      '/data/kr-jongga-v2-latest.json',
-    '/api/kr/jongga-v2/dates':       '/data/kr-jongga-v2-dates.json',
-    '/api/kr/jongga-v2/performance': '/data/kr-jongga-v2-performance.json',
-    '/api/kr/jongga-v2/today-summary': '/data/kr-jongga-v2-today.json',
-    '/api/kr/vcp-enhanced':       '/data/kr-vcp-enhanced.json',
-    '/api/kr/vcp-enhanced/dates':  '/data/kr-vcp-dates.json',
-    '/api/us/market-briefing':    '/data/us-market-briefing.json',
-    '/api/us/market-gate':        '/data/us-market-gate.json',
-    '/api/us/decision-signal':    '/data/us-decision-signal.json',
-    '/api/us/sector-rotation':    '/data/us-sector-rotation.json',
-    '/api/us/risk-alerts':        '/data/us-risk-alerts.json',
-    '/api/us/index-prediction':   '/data/us-index-prediction.json',
-    '/api/us/market-regime':      '/data/us-market-regime.json',
-    '/api/us/etf-flows':          '/data/us-etf-flows.json',
-    '/api/us/vcp-enhanced':       '/data/us-vcp-enhanced.json',
-    '/api/us/vcp-enhanced/dates':  '/data/us-vcp-dates.json',
-    '/api/us/smart-money':        '/data/us-smart-money.json',
-    '/api/us/top-picks-report':   '/data/us-top-picks-report.json',
-    '/api/crypto/dominance':      '/data/crypto-dominance.json',
-    '/api/crypto/market-gate':    '/data/crypto-market-gate.json',
-    '/api/crypto/briefing':       '/data/crypto-briefing.json',
-    '/api/crypto/vcp-enhanced':   '/data/crypto-vcp-enhanced.json',
-    '/api/crypto/vcp-enhanced/dates': '/data/crypto-vcp-dates.json',
-    '/api/crypto/prediction':     '/data/crypto-prediction.json',
-};
+export const API_HEADERS: Record<string, string> = {};
 
 export async function fetchAPI<T>(endpoint: string): Promise<T> {
     const url = `${API_BASE}${endpoint}`;
@@ -45,7 +15,7 @@ export async function fetchAPI<T>(endpoint: string): Promise<T> {
     try {
         const response = await fetch(url, {
             signal: controller.signal,
-            headers: { 'ngrok-skip-browser-warning': 'true' },
+            headers: API_HEADERS,
         });
         clearTimeout(timeoutId);
         if (!response.ok) {
@@ -54,16 +24,6 @@ export async function fetchAPI<T>(endpoint: string): Promise<T> {
         return await response.json();
     } catch (error) {
         clearTimeout(timeoutId);
-        // prod 환경에서 Render 슬립/오류 시 정적 스냅샷으로 폴백
-        if (API_BASE && STATIC_FALLBACK[endpoint]) {
-            try {
-                const fallback = await fetch(STATIC_FALLBACK[endpoint]);
-                if (fallback.ok) {
-                    console.warn(`[fetchAPI] 폴백: ${endpoint} → ${STATIC_FALLBACK[endpoint]}`);
-                    return await fallback.json();
-                }
-            } catch { /* fallback도 실패하면 원래 에러 throw */ }
-        }
         console.error(`[fetchAPI Error] ${url}:`, error);
         throw error;
     }

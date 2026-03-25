@@ -30,8 +30,7 @@ jobs:
 
       - name: Build
         run: npm run build
-        # VITE_API_BASE_URL은 frontend-react/.env.production 파일에서 관리
-        # (https://marketflow-api-fzez.onrender.com)
+        # VITE_API_BASE_URL은 frontend-react/.env.production에서 관리
 
       - name: Deploy to Cloudflare Workers (marketflow-dashboard)
         uses: cloudflare/wrangler-action@v3

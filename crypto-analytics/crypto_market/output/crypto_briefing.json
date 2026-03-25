@@ -1,49 +1,49 @@
 {
-  "timestamp": "2026-03-25T16:03:32.198252",
+  "timestamp": "2026-03-25T20:00:19.273725",
   "version": "1.0",
   "market_summary": {
-    "total_market_cap": 2517340852965.0,
-    "total_volume_24h": 99829452264.0,
-    "btc_dominance": 56.55,
+    "total_market_cap": 2527938817924.0,
+    "total_volume_24h": 99169425404.0,
+    "btc_dominance": 56.61,
     "btc_dominance_change_24h": 0,
-    "total_market_cap_change_24h": 1.03,
-    "active_cryptocurrencies": 18028
+    "total_market_cap_change_24h": 0.61,
+    "active_cryptocurrencies": 18009
   },
   "major_coins": {
     "BTC": {
-      "price": 71001,
-      "change_24h": 0.71,
+      "price": 71493,
+      "change_24h": 0.66,
       "change_7d": 0,
-      "volume_24h": 40878452232,
-      "market_cap": 1419751202956
+      "volume_24h": 40814315412,
+      "market_cap": 1430972996279
     },
     "ETH": {
-      "price": 2164.04,
-      "change_24h": 0.96,
+      "price": 2184.8,
+      "change_24h": 1.44,
       "change_7d": 0,
-      "volume_24h": 17556344702,
-      "market_cap": 261062517249
+      "volume_24h": 18456140819,
+      "market_cap": 263763183966
     },
     "BNB": {
-      "price": 644.81,
-      "change_24h": 2.26,
+      "price": 646.85,
+      "change_24h": 1.58,
       "change_7d": 0,
-      "volume_24h": 961529922,
-      "market_cap": 87909200587
+      "volume_24h": 1058881302,
+      "market_cap": 88222394999
     },
     "XRP": {
       "price": 1.42,
-      "change_24h": 0.31,
+      "change_24h": 0.34,
       "change_7d": 0,
-      "volume_24h": 2114433564,
-      "market_cap": 87043607790
+      "volume_24h": 2100522040,
+      "market_cap": 87238221604
     },
     "SOL": {
-      "price": 92.43,
-      "change_24h": 2.26,
+      "price": 92.58,
+      "change_24h": 0.86,
       "change_7d": 0,
-      "volume_24h": 4338610066,
-      "market_cap": 52920506478
+      "volume_24h": 4276468369,
+      "market_cap": 52974681086
     }
   },
   "top_movers": {
@@ -51,64 +51,64 @@
       {
         "symbol": "SIREN",
         "name": "Siren",
-        "price": 2.13,
-        "change_24h": 111.67
+        "price": 2.28,
+        "change_24h": 122.35
       },
       {
         "symbol": "TAO",
         "name": "Bittensor",
-        "price": 340.3,
-        "change_24h": 8.9
+        "price": 359.03,
+        "change_24h": 16.07
       },
       {
         "symbol": "FET",
         "name": "Artificial Superintelligence Alliance",
-        "price": 0.249901,
-        "change_24h": 8.78
+        "price": 0.255033,
+        "change_24h": 8.48
+      },
+      {
+        "symbol": "RENDER",
+        "name": "Render",
+        "price": 1.9,
+        "change_24h": 8.29
       },
       {
         "symbol": "XLM",
         "name": "Stellar",
-        "price": 0.179049,
-        "change_24h": 8.64
-      },
-      {
-        "symbol": "QNT",
-        "name": "Quant",
-        "price": 75.05,
-        "change_24h": 6.04
+        "price": 0.179034,
+        "change_24h": 7.49
       }
     ],
     "losers": [
       {
         "symbol": "HASH",
         "name": "Provenance Blockchain",
-        "price": 0.01332308,
-        "change_24h": -10.97
+        "price": 0.01321592,
+        "change_24h": -11.62
+      },
+      {
+        "symbol": "NIGHT",
+        "name": "Midnight",
+        "price": 0.04358866,
+        "change_24h": -7.12
       },
       {
         "symbol": "CC",
         "name": "Canton",
-        "price": 0.139979,
-        "change_24h": -4.16
+        "price": 0.139897,
+        "change_24h": -3.66
       },
       {
         "symbol": "WLFI",
         "name": "World Liberty Financial",
-        "price": 0.101421,
-        "change_24h": -3.54
+        "price": 0.102114,
+        "change_24h": -3.3
       },
       {
-        "symbol": "XMR",
-        "name": "Monero",
-        "price": 338.87,
-        "change_24h": -2.79
-      },
-      {
-        "symbol": "JST",
-        "name": "JUST",
-        "price": 0.06012,
-        "change_24h": -2.42
+        "symbol": "RAIN",
+        "name": "Rain",
+        "price": 0.00857079,
+        "change_24h": -2.93
       }
     ]
   },
@@ -126,16 +126,16 @@
   "funding_rates": {
     "BTC": {
       "symbol": "BTCUSDT",
-      "rate": 8e-06,
-      "rate_pct": 0.0008,
-      "annualized_pct": 0.9,
+      "rate": 5e-06,
+      "rate_pct": 0.0005,
+      "annualized_pct": 0.56,
       "sentiment": "neutral"
     },
     "ETH": {
       "symbol": "ETHUSDT",
-      "rate": -3.6e-05,
-      "rate_pct": -0.0036,
-      "annualized_pct": -3.97,
+      "rate": -5.4e-05,
+      "rate_pct": -0.0054,
+      "annualized_pct": -5.86,
       "sentiment": "neutral"
     }
   },
@@ -537,7 +537,7 @@
     },
     {
       "date": "2026-03-25",
-      "price": 70975.765625
+      "price": 71531.125
     }
   ],
   "sentiment_summary": {

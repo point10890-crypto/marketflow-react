@@ -88,7 +88,7 @@ def _load_sector_cache() -> dict:
         if os.path.exists(SECTOR_CACHE_FILE):
             with open(SECTOR_CACHE_FILE, 'r', encoding='utf-8') as f:
                 return json.load(f)
-    except:
+    except Exception:
         pass
     return {}
 

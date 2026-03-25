@@ -37,10 +37,9 @@ def _consensus_label(score: float) -> str:
 
 
 # ── 경로 설정 ──
-_ROUTES_DIR = os.path.dirname(os.path.abspath(__file__))
-_BASE_DIR = os.path.dirname(os.path.dirname(_ROUTES_DIR))
-_DATA_DIR = os.path.join(_BASE_DIR, 'data')
-TICKER_MAP_PATH = os.path.join(_DATA_DIR, 'ticker_to_yahoo_map.csv')
+from app.utils.paths import BASE_DIR, DATA_DIR, TICKER_MAP_PATH
+
+_DATA_DIR = DATA_DIR
 
 # ── KR 종목 매핑 (lazy load) ──
 _kr_stocks = None
