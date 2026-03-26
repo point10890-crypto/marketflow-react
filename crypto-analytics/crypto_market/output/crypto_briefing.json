@@ -1,149 +1,149 @@
 {
-  "timestamp": "2026-03-25T20:11:31.557356",
+  "timestamp": "2026-03-26T17:21:14.104796",
   "version": "1.0",
   "market_summary": {
-    "total_market_cap": 2526255595356.0,
-    "total_volume_24h": 98730467806.0,
-    "btc_dominance": 56.59,
+    "total_market_cap": 2475860463060.0,
+    "total_volume_24h": 88495214127.0,
+    "btc_dominance": 56.48,
     "btc_dominance_change_24h": 0,
-    "total_market_cap_change_24h": 0.64,
-    "active_cryptocurrencies": 18009
+    "total_market_cap_change_24h": -1.74,
+    "active_cryptocurrencies": 18023
   },
   "major_coins": {
     "BTC": {
-      "price": 71505,
-      "change_24h": 0.61,
+      "price": 69874,
+      "change_24h": -1.63,
       "change_7d": 0,
-      "volume_24h": 40395431939,
-      "market_cap": 1430355491615
+      "volume_24h": 35770363896,
+      "market_cap": 1397876060695
     },
     "ETH": {
-      "price": 2184.32,
-      "change_24h": 1.21,
+      "price": 2116.43,
+      "change_24h": -2.47,
       "change_7d": 0,
-      "volume_24h": 18289051494,
-      "market_cap": 263628490927
+      "volume_24h": 15596146679,
+      "market_cap": 255506641007
     },
     "BNB": {
-      "price": 646.76,
-      "change_24h": 1.53,
+      "price": 633.35,
+      "change_24h": -1.88,
       "change_7d": 0,
-      "volume_24h": 1052013969,
-      "market_cap": 88190262617
+      "volume_24h": 980287810,
+      "market_cap": 86368799075
     },
     "XRP": {
-      "price": 1.42,
-      "change_24h": 0.37,
+      "price": 1.38,
+      "change_24h": -2.64,
       "change_7d": 0,
-      "volume_24h": 2253119955,
-      "market_cap": 87316103702
+      "volume_24h": 2013136519,
+      "market_cap": 84796318251
     },
     "SOL": {
-      "price": 92.55,
-      "change_24h": 0.76,
+      "price": 88.74,
+      "change_24h": -3.66,
       "change_7d": 0,
-      "volume_24h": 4256795846,
-      "market_cap": 52970814025
+      "volume_24h": 3549745136,
+      "market_cap": 50785314867
     }
   },
   "top_movers": {
     "gainers": [
       {
-        "symbol": "SIREN",
-        "name": "Siren",
-        "price": 2.24,
-        "change_24h": 117.7
+        "symbol": "M",
+        "name": "MemeCore",
+        "price": 2.39,
+        "change_24h": 39.21
       },
       {
-        "symbol": "TAO",
-        "name": "Bittensor",
-        "price": 357.97,
-        "change_24h": 16.7
+        "symbol": "ENA",
+        "name": "Ethena",
+        "price": 0.10136,
+        "change_24h": 6.02
       },
       {
-        "symbol": "FET",
-        "name": "Artificial Superintelligence Alliance",
-        "price": 0.257468,
-        "change_24h": 10.01
+        "symbol": "HASH",
+        "name": "Provenance Blockchain",
+        "price": 0.01410379,
+        "change_24h": 5.3
       },
       {
-        "symbol": "RENDER",
-        "name": "Render",
-        "price": 1.9,
-        "change_24h": 8.95
+        "symbol": "XDC",
+        "name": "XDC Network",
+        "price": 0.0328156,
+        "change_24h": 3.22
       },
       {
-        "symbol": "XLM",
-        "name": "Stellar",
-        "price": 0.178873,
-        "change_24h": 7.67
+        "symbol": "TRX",
+        "name": "TRON",
+        "price": 0.314791,
+        "change_24h": 2.27
       }
     ],
     "losers": [
       {
-        "symbol": "HASH",
-        "name": "Provenance Blockchain",
-        "price": 0.01322292,
-        "change_24h": -11.57
+        "symbol": "SIREN",
+        "name": "Siren",
+        "price": 1.93,
+        "change_24h": -11.49
       },
       {
-        "symbol": "NIGHT",
-        "name": "Midnight",
-        "price": 0.04322495,
-        "change_24h": -7.96
+        "symbol": "ZRO",
+        "name": "LayerZero",
+        "price": 2.06,
+        "change_24h": -7.11
       },
       {
-        "symbol": "CC",
-        "name": "Canton",
-        "price": 0.139628,
-        "change_24h": -3.97
+        "symbol": "TRUMP",
+        "name": "Official Trump",
+        "price": 3.14,
+        "change_24h": -5.84
       },
       {
-        "symbol": "WLFI",
-        "name": "World Liberty Financial",
-        "price": 0.101848,
-        "change_24h": -3.61
+        "symbol": "ZEC",
+        "name": "Zcash",
+        "price": 225.29,
+        "change_24h": -5.28
       },
       {
-        "symbol": "RAIN",
-        "name": "Rain",
-        "price": 0.00853032,
-        "change_24h": -3.42
+        "symbol": "BONK",
+        "name": "Bonk",
+        "price": 6.01e-06,
+        "change_24h": -5.01
       }
     ]
   },
   "fear_greed": {
-    "score": 14,
-    "current_score": 14,
+    "score": 10,
+    "current_score": 10,
     "current_label": "Extreme Fear",
     "level": "Extreme Fear",
-    "timestamp": "1774396800",
-    "previous": 11,
-    "previous_score": 11,
+    "timestamp": "1774483200",
+    "previous": 14,
+    "previous_score": 14,
     "previous_label": "Extreme Fear",
-    "change": 3
+    "change": -4
   },
   "funding_rates": {
     "BTC": {
       "symbol": "BTCUSDT",
-      "rate": 5e-06,
-      "rate_pct": 0.0005,
-      "annualized_pct": 0.51,
+      "rate": 1e-05,
+      "rate_pct": 0.001,
+      "annualized_pct": 1.1,
       "sentiment": "neutral"
     },
     "ETH": {
       "symbol": "ETHUSDT",
-      "rate": -5.5e-05,
-      "rate_pct": -0.0055,
-      "annualized_pct": -6.07,
+      "rate": -3e-06,
+      "rate_pct": -0.0003,
+      "annualized_pct": -0.29,
       "sentiment": "neutral"
     }
   },
   "macro_correlations": {
     "btc_pairs": {
-      "BTC_SPY": 0.5741,
-      "BTC_GLD": 0.2225,
-      "BTC_DXY": -0.1362
+      "BTC_SPY": 0.5753,
+      "BTC_GLD": 0.2286,
+      "BTC_DXY": -0.1338
     }
   },
   "market_gate": {
@@ -179,10 +179,6 @@
     "generated_at": "2026-03-25T16:03:25.711616"
   },
   "btc_price_history": [
-    {
-      "date": "2025-12-26",
-      "price": 87301.4296875
-    },
     {
       "date": "2025-12-27",
       "price": 87802.15625
@@ -537,7 +533,11 @@
     },
     {
       "date": "2026-03-25",
-      "price": 71510.96875
+      "price": 71309.8828125
+    },
+    {
+      "date": "2026-03-26",
+      "price": 69966.8203125
     }
   ],
   "sentiment_summary": {
