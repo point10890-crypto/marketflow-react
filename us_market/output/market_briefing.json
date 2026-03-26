@@ -1,99 +1,99 @@
 {
-  "timestamp": "2026-03-25T16:20:10.167843",
+  "timestamp": "2026-03-26T20:23:19.239098",
   "version": "2.0",
   "market_data": {
-    "timestamp": "2026-03-25T16:20:10.167852",
+    "timestamp": "2026-03-26T20:23:19.239107",
     "indices": {
       "SPY": {
         "name": "S&P 500",
-        "price": 653.18,
-        "change": -0.34,
-        "prev_close": 655.38,
+        "price": 656.82,
+        "change": 0.56,
+        "prev_close": 653.18,
         "high_52w": 695.94,
         "low_52w": 476.34,
-        "pct_from_high": -6.14
+        "pct_from_high": -5.62
       },
       "QQQ": {
         "name": "NASDAQ 100",
-        "price": 583.98,
-        "change": -0.68,
-        "prev_close": 588.0,
+        "price": 587.82,
+        "change": 0.66,
+        "prev_close": 583.98,
         "high_52w": 636.6,
         "low_52w": 400.96,
-        "pct_from_high": -8.27
+        "pct_from_high": -7.66
       },
       "DIA": {
         "name": "Dow Jones",
-        "price": 461.17,
-        "change": -0.17,
-        "prev_close": 461.97,
+        "price": 464.14,
+        "change": 0.64,
+        "prev_close": 461.17,
         "high_52w": 503.59,
         "low_52w": 360.69,
-        "pct_from_high": -8.42
+        "pct_from_high": -7.83
       },
       "IWM": {
         "name": "Russell 2000",
-        "price": 248.78,
-        "change": 0.54,
-        "prev_close": 247.45,
+        "price": 251.82,
+        "change": 1.22,
+        "prev_close": 248.78,
         "high_52w": 271.12,
         "low_52w": 169.9,
-        "pct_from_high": -8.24
+        "pct_from_high": -7.12
       }
     },
     "futures": {
       "ES=F": {
         "name": "S&P 500 Futures",
-        "price": 6645.5,
-        "change": 0.6,
-        "prev_close": 6606.0,
+        "price": 6594.5,
+        "change": -0.7,
+        "prev_close": 6640.75,
         "high_52w": 7043.0,
         "low_52w": 4832.0,
-        "pct_from_high": -5.64
+        "pct_from_high": -6.37
       },
       "NQ=F": {
         "name": "NASDAQ Futures",
-        "price": 24370.5,
-        "change": 0.65,
-        "prev_close": 24213.75,
+        "price": 24168.5,
+        "change": -0.82,
+        "prev_close": 24367.75,
         "high_52w": 26399.0,
         "low_52w": 16460.0,
-        "pct_from_high": -7.68
+        "pct_from_high": -8.45
       },
       "YM=F": {
         "name": "Dow Futures",
-        "price": 46732.0,
-        "change": 0.68,
-        "prev_close": 46415.0,
+        "price": 46412.0,
+        "change": -0.64,
+        "prev_close": 46711.0,
         "high_52w": 50611.0,
         "low_52w": 36708.0,
-        "pct_from_high": -7.66
+        "pct_from_high": -8.3
       }
     },
     "bonds": {
       "^TNX": {
         "name": "10Y Treasury",
-        "price": 4.39,
-        "change": 1.34,
-        "prev_close": 4.33,
+        "price": 4.33,
+        "change": -1.46,
+        "prev_close": 4.39,
         "high_52w": 4.63,
         "low_52w": null,
-        "pct_from_high": -5.12
+        "pct_from_high": -6.5
       },
       "^FVX": {
         "name": "5Y Treasury",
-        "price": 4.03,
-        "change": 2.03,
-        "prev_close": 3.95,
+        "price": 3.97,
+        "change": -1.49,
+        "prev_close": 4.03,
         "high_52w": 4.22,
         "low_52w": null,
-        "pct_from_high": -4.57
+        "pct_from_high": -5.99
       },
       "^IRX": {
         "name": "3M T-Bill",
         "price": 3.62,
-        "change": 0.22,
-        "prev_close": 3.61,
+        "change": 0.0,
+        "prev_close": 3.62,
         "high_52w": 4.3,
         "low_52w": null,
         "pct_from_high": -15.91
@@ -102,134 +102,134 @@
     "currencies": {
       "DX-Y.NYB": {
         "name": "Dollar Index",
-        "price": 99.35,
-        "change": -0.08,
-        "prev_close": 99.43,
+        "price": 99.7,
+        "change": 0.1,
+        "prev_close": 99.6,
         "high_52w": 104.68,
         "low_52w": 95.55,
-        "pct_from_high": -5.1
+        "pct_from_high": -4.76
       },
       "USDKRW=X": {
         "name": "USD/KRW",
-        "price": 1497.83,
-        "change": 0.84,
-        "prev_close": 1485.36,
+        "price": 1505.7,
+        "change": 0.56,
+        "prev_close": 1497.31,
         "high_52w": 1517.74,
         "low_52w": 1322.42,
-        "pct_from_high": -1.31
+        "pct_from_high": -0.79
       },
       "USDJPY=X": {
         "name": "USD/JPY",
-        "price": 158.96,
-        "change": 0.3,
-        "prev_close": 158.48,
+        "price": 159.54,
+        "change": 0.52,
+        "prev_close": 158.72,
         "high_52w": 159.82,
         "low_52w": 139.89,
-        "pct_from_high": -0.54
+        "pct_from_high": -0.17
       },
       "EURUSD=X": {
         "name": "EUR/USD",
         "price": 1.16,
-        "change": -0.01,
+        "change": -0.55,
         "prev_close": 1.16,
         "high_52w": 1.2,
         "low_52w": 1.07,
-        "pct_from_high": -3.47
+        "pct_from_high": -3.93
       }
     },
     "commodities": {
       "GC=F": {
         "name": "Gold",
-        "price": 4550.1,
-        "change": 3.43,
-        "prev_close": 4399.3,
+        "price": 4439.5,
+        "change": -2.42,
+        "prev_close": 4549.8,
         "high_52w": 5586.2,
         "low_52w": 2949.7,
-        "pct_from_high": -18.55
+        "pct_from_high": -20.53
       },
       "CL=F": {
         "name": "Crude Oil",
-        "price": 89.15,
-        "change": -3.47,
-        "prev_close": 92.35,
+        "price": 93.25,
+        "change": 3.24,
+        "prev_close": 90.32,
         "high_52w": 119.48,
         "low_52w": 54.98,
-        "pct_from_high": -25.39
+        "pct_from_high": -21.95
       },
       "BTC-USD": {
         "name": "Bitcoin",
-        "price": 71116.12,
-        "change": 0.85,
-        "prev_close": 70517.86,
+        "price": 69514.19,
+        "change": -2.52,
+        "prev_close": 71309.88,
         "high_52w": 126198.07,
         "low_52w": 60074.2,
-        "pct_from_high": -43.65
+        "pct_from_high": -44.92
       }
     },
     "korean_indices": {
       "^KS11": {
         "name": "KOSPI",
-        "price": 5642.21,
-        "change": 1.59,
-        "prev_close": 5553.92,
+        "price": 5460.46,
+        "change": -3.22,
+        "prev_close": 5642.21,
         "high_52w": 6347.41,
         "low_52w": 2284.72,
-        "pct_from_high": -11.11
+        "pct_from_high": -13.97
       },
       "^KQ11": {
         "name": "KOSDAQ",
-        "price": 1159.55,
-        "change": 3.4,
-        "prev_close": 1121.44,
+        "price": 1136.64,
+        "change": -1.98,
+        "prev_close": 1159.55,
         "high_52w": 1215.67,
         "low_52w": 637.55,
-        "pct_from_high": -4.62
+        "pct_from_high": -6.5
       }
     },
     "vix": {
-      "value": 26.95,
-      "change": 3.06,
+      "value": 27.16,
+      "change": 7.22,
       "level": "Fear",
       "color": "#FF5722"
     }
   },
   "vix": {
-    "value": 26.95,
-    "change": 3.06,
+    "value": 27.16,
+    "change": 7.22,
     "level": "Fear",
     "color": "#FF5722"
   },
   "fear_greed": {
-    "score": 50,
+    "score": 58,
     "level": "Neutral",
     "color": "#FFC107",
     "components": {
       "vix": {
-        "value": 26.95,
-        "score": 44
+        "value": 27.16,
+        "score": 43
       },
       "momentum": {
-        "pct_from_high": -6.14,
-        "score": 69
+        "pct_from_high": -5.62,
+        "score": 72
       },
       "breadth": {
-        "spy_chg": -0.34,
-        "iwm_chg": 0.54,
-        "score": 59
+        "spy_chg": 0.56,
+        "iwm_chg": 1.22,
+        "score": 57
       },
       "safe_haven": {
-        "stock_chg": -0.34,
-        "gold_chg": 3.43,
-        "score": 12
+        "stock_chg": 0.56,
+        "gold_chg": -2.42,
+        "score": 80
       },
       "junk_bond": {
-        "yield_change": 1.34,
-        "score": 57
+        "yield_change": -1.46,
+        "score": 43
       }
     }
   },
   "ai_analysis": {
-    "content": "### 1. 핵심 요약 (3문장)\n오늘 미국 주식시장은 S&P 500 -0.34%(653.18), NASDAQ -0.68%(583.98)로 하락하며 VIX 26.95(공포 수준) 상승으로 리스크 회피 심리가 지배적입니다. 우리 시스템의 Decision Signal은 HOLD(45점/100)로, Market Regime neutral(Confidence 50.0%)과 ML Prediction(SPY/QQQ 50% Bullish)이 혼조를 보이며 SELECTIVE 타이밍을 권고합니다. Late Cycle 위치와 Elevated Risk Level(VaR 95% 5d: $2,237)로 단기 변동성 확대 우려가 크며, 적극적 포지션 구축보다는 선택적 매수 기회를 모색할 전망입니다.\n\n### 2. 시장 동향 & 퀀트 신호 해석\nS&P 500과 NASDAQ의 0.34~0.68% 하락은 기술주 중심 약세와 VIX 26.95 상승으로 인한 공포 심리 확산 때문입니다. Market Gate 50점(기여 +0.0)과 Market Regime neutral(Confidence 50.0%, 기여 +0.0)이 시장 중립성을 확인하며, ML Prediction(SPY 50% Bullish, QQQ 50% Bullish, 기여 +0.0)이 단기 반등 가능성을 시사하나 Decision Signal HOLD(45점/100)로 보수적 접근을 강조합니다. Business Cycle Late Cycle(기여 -5.0) 위치는 방어적 섹터(통신, 보험) 선호를 유도하며, 기술/반도체 섹터는 변동성 확대 시 회피 전략이 적합합니다.\n\n### 3. 매크로 & 이벤트\n최근 발표된 경제지표(구체적 데이터 미확인)로 인한 불확실성과 Fed 금리 동결 기대가 시장 약세를 부추겼습니다. Fed 관련 뉴스에서 3월 FOMC 의사록(최근 공개 기준)에서 인플레이션 지속 우려가 언급되며, 추가 금리 인하 지연 가능성이 제기되었습니다. Risk Level Elevated와 VaR(95%,5d) $2,237이 5일 내 2,237달러 손실 위험을 경고하며, 포트폴리오 1-2% 초과 노출을 피할 필요가 있습니다.\n\n### 4. 채권/외환/원자재\n10년물 금리 4.39% 안정화는 주식 밸류에이션 압력을 완화하나, 추가 상승 시 성장주 약세를 가중할 전망입니다. 달러인덱스 99.35(-0.08%) 약세에도 원/달러 1497.83원 고공행진으로 한국 투자자 환손실 부담이 커집니다. 금 $4,550(+3.43%) 강세와 비트코인 $71,116(+0.85%)는 인플레이션 헤지 수요를 반영하며, 주식 약세 시 대안 자산으로 활용 가능합니다.\n\n### 5. 추천 종목 & 전략\nAI Top Picks는 AKAM(Score 83.0, 적극 매수, Upside -4.4%), T(81.0, 매수, +4.1%), ALGN(80.1, 매수, +12.5%), ALL(74.1, 매수, +15.6%), AMAT(74.0, 매수, +9.8%)로, Late Cycle에 강한 통신(T), 보험(ALL), 반도체 장비(AMAT) 중심의 안정적 성장주가 공통 특징입니다. Decision Signal HOLD(45점/100)에 맞춰 신규 진입은 Top Picks 1-2종목(예: T, ALL)으로 제한, 기존 포지션은 5% 트레일링 스탑 적용. Track Record 승률 66.7%, 평균 수익률 0.64%로 신뢰도가 높으나 백테스트 N/A로 장기 검증 필요; 리스크 관리는 VaR $2,237 기준 포지션 50% 이하 유지.\n\n### 6. 한국 투자자 액션 플랜\n오늘 실행: HOLD 신호 준수하며 AI Top Picks 중 T(AT&T, +4.1% Upside)와 ALL(Allstate, +15.6% Upside)에 1-2% 비중 선택적 매수, VIX 26.95 돌파 시 전량 현금화. 주목 섹터는 통신/보험(Late Cycle 강세), 종목은 T/ALL/AMAT. 원/달러 1497.83원 고려 시 환헤지 ETF(예: KODEX USD 선물) 병행, 1500원 돌파 시 매도 전환으로 환손실 2% 이내 관리.",
+    "content": "",
     "citations": []
   },
   "quant_signals": {
@@ -243,8 +243,8 @@
     },
     "risk": {
       "risk_level": "Elevated",
-      "var_95_5d": 2236.59,
-      "cvar_95_5d": 3016.58
+      "var_95_5d": 1527.71,
+      "cvar_95_5d": 2388.54
     },
     "top_picks": [
       {
@@ -337,7 +337,7 @@
     },
     "track_record": {
       "total_picks": "N/A",
-      "win_rate": 66.7,
+      "win_rate": 53.3,
       "avg_return": 0.64,
       "alpha": "N/A"
     },
@@ -370,12 +370,12 @@
     }
   },
   "sector_rotation": {
-    "content": "### 미국 주식시장 섹터 로테이션 분석 (3월 17-24일 기준)\n\n**주요 시장 동향 요약**: 이번 주 S&P 500 지수는 +1.2% 상승하며 5,850포인트 근처에서 마감. Fed의 3월 FOMC 의사록(3/20 발표)에서 금리 인하 속도 둔화 시사로 인해 방어적 섹터에서 성장 섹터로 자금 로테이션 가속. 에너지 섹터 급등 주도(+4.5%), 기술주 반등(+2.1%) vs. 금융(-1.8%) 약세. ETF 플로우 데이터(Epfr Global, 3/24 기준)에서 XLK 순유입 $2.8B, XLE $1.9B 기록.\n\n#### 강세 섹터 TOP 3\n1. **에너지 (XLE: +4.5%)**  \n   - **상승률 및 원인**: 유가(WTI $82/bbl, +6%) 반등과 OPEC+ 감산 연장 기대. 지정학적 긴장(중동 분쟁)으로 공급 우려 증폭.  \n   - **대표 종목**: ExxonMobil(XOM +5.2%), Chevron(CVX +4.8%), Occidental Petroleum(OXY +6.1%).  \n   - **지속 가능성**: 중간(★★★☆☆). 유가 $85 돌파 시 추가 상승 가능하나, 수요 둔화 리스크로 단기 조정 우려.\n\n2. **기술 (XLK: +2.1%)**  \n   - **상승률 및 원인**: AI 수요 지속(NVIDIA 실적 전망 호조)과 Fed 금리 인하 기대 회복. 반도체 지수(SOX +3.2%) 선도.  \n   - **대표 종목**: NVIDIA(NVDA +4.7%), Broadcom(AVGO +3.5%), Microsoft(MSFT +2.4%).  \n   - **지속 가능성**: 높음(★★★★☆). 1분기 실적 시즌(4월 초)에서 EPS 성장 25% 예상(Bloomberg)으로 모멘텀 유지.\n\n3. **헬스케어 (XLV: +1.8%)**  \n   - **상승률 및 원인**: 방어주 선호 속 비만치료제 수요 폭발(Eli Lilly 실적 +12% YoY). 고령화 테마 부각.  \n   - **대표 종목**: Eli Lilly(LLY +3.9%), UnitedHealth(UNH +2.1%), Johnson & Johnson(JNJ +1.7%).  \n   - **지속 가능성**: 높음(★★★★★). 경기 둔화 시 안정적 수익성으로 장기 강세 지속.\n\n#### 약세 섹터 TOP 3\n1. **금융 (XLF: -1.8%)**  \n   - **하락률 및 원인**: Fed 금리 인하 지연 우려로 순이자마진(NIM) 압박. 은행 대출 수요 감소(주택담보대출 -2.5% MoM, Fed 데이터).  \n   - **주의 리스크**: 크레딧 스프레드 확대(투자등급 Baa-Aaa +15bp).  \n   - **반등 가능성**: 낮음(★★☆☆☆). 4월 스트레스 테스트 결과 부정적 시 추가 하락.\n\n2. **소재 (XLB: -1.2%)**  \n   - **하락률 및 원인**: 중국 경기 둔화로 구리(-3%) 등 원자재 가격 하락. 산업 생산 지수(3월 ISM +0.5% 예상 하회).  \n   - **주의 리스크**: 무역 관세 재개(트럼프 정책 기대)로 수출 타격.  \n   - **반등 가능성**: 중간(★★★☆☆). 인프라 지출 법안 통과 시 회복.\n\n3. **유틸리티 (XLU: -0.9%)**  \n   - **하락률 및 원인**: 금리 민감도 높아 Fed 매파적 어조로 밸류에이션 압박(P/E 18x → 17.2x).  \n   - **주의 리스크**: 에너지 전환 비용 증가(재생에너지 투자 +20% YoY).  \n   - **반등 가능성**: 중간(★★★☆☆). 인플레 안정화 시 배당 매력 회복.\n\n#### 자금 흐름\n- **이동 경로**: 금융(XLF -$1.2B 유출) 및 유틸리티(XLU -$0.8B)에서 기술(XLK +$2.8B)과 에너지(XLE +$1.9B)로 대규모 로테이션. 전체 ETF 순유입 $15.6B 중 성장/사이클릭 섹터 65% 차지(Epfr Global).  \n- **ETF 순유입/유출 상위** (3월 17-24일, 단위: $B):  \n  | ETF | 순플로우 | 비고 |  \n  |-----|----------|------|  \n  | XLK | +2.8 | AI 테마 주도 |  \n  | XLE | +1.9 | 유가 랠리 |  \n  | XLV | +1.1 | 방어流入 |  \n  | XLF | -1.2 | NIM 우려 |  \n  | XLU | -0.8 | 금리 리스크 |\n\n#### 경기 사이클 관점\n- **현재 위치**: 중기 확장(Expansion Mid-Cycle). GDP 성장률 2.1%(Atlanta Fed 3월 추정), 실업률 4.1% 안정, PMI 51.2로 완만 성장. 그러나 Fed 정책 불확실성으로 후기 전환 신호(수익률 곡선 평평화).  \n- **섹터 전략**:  \n  - **추천**: 기술/에너지 overweight(성장 모멘텀). 헬스케어 underweight 유지(안정성).  \n  - **포트폴리오 조정**: 사이클릭 55% → 65% 비중 확대. XLE/XLK 콜옵션 활용(타겟 수익률 8-10%). 침체 리스크 대비 XLV 20% 헷지. 다음 주 실적 시즌 주시.  \n\n*데이터 출처: Bloomberg, Epfr Global, Fed H.15(3/24), S&P Dow Jones Indices. 투자 권고 아님.*",
+    "content": "",
     "citations": []
   },
   "smart_money": {
     "top_picks": {
-      "timestamp": "2026-03-25T11:40:09.422367",
+      "timestamp": "2026-03-25T16:21:20.162808",
       "picks": [
         {
           "rank": 1,
@@ -428,22 +428,22 @@
       "recent_dates": [
         {
           "date": "2026-03-25",
-          "avg_return": 0.48,
-          "win_rate": 90.0
+          "avg_return": 0.44,
+          "win_rate": 50.0
         },
         {
           "date": "2026-03-20",
-          "avg_return": 2.08,
+          "avg_return": 1.87,
           "win_rate": 70.0
         },
         {
           "date": "2026-03-19",
-          "avg_return": -0.65,
+          "avg_return": -0.38,
           "win_rate": 40.0
         }
       ],
       "overall_avg": 0.64,
-      "overall_win_rate": 66.7
+      "overall_win_rate": 53.3
     }
   }
 }

@@ -1,0 +1,75 @@
+{
+  "name": "에코플라스틱",
+  "ticker": "038110.KQ",
+  "result": "데이터 없음",
+  "date": "2026-03-26 20:06:11",
+  "elapsed": 2.4,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 4230.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 4230.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "ECOPLASTIC",
+    "sector": "",
+    "industry": "",
+    "market_cap": 169956048896,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": null,
+    "beta": null,
+    "fifty_two_week_high": 4500.0,
+    "fifty_two_week_low": 2305.0,
+    "revenue": null,
+    "profit_margin": null,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 612140343000
+    },
+    {
+      "date": "2025-06",
+      "value": 697706576000
+    },
+    {
+      "date": "2025-03",
+      "value": 605937334360
+    },
+    {
+      "date": "2024-12",
+      "value": 574846743250
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 352690000
+    },
+    {
+      "date": "2025-06",
+      "value": -5448536000
+    },
+    {
+      "date": "2025-03",
+      "value": 12616819270
+    },
+    {
+      "date": "2024-12",
+      "value": 1368240180
+    }
+  ],
+  "news": []
+}

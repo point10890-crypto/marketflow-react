@@ -1,12 +1,12 @@
 {
-  "date": "2026-03-25",
-  "open_signals": 85,
-  "closed_signals": 1401,
-  "today_new_signals": 85,
-  "total_signals": 1486,
-  "generated_at": "2026-03-25T16:55:24.122335",
+  "date": "2026-03-26",
+  "open_signals": 130,
+  "closed_signals": 0,
+  "today_new_signals": 130,
+  "total_signals": 130,
+  "generated_at": "2026-03-26T20:42:17.520239",
   "env": {
     "base_dir": "C:\\bitman_marketfloww",
-    "python": "C:\\Users\\dynas\\AppData\\Local\\Microsoft\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\\python.exe"
+    "python": "C:\\bitman_marketfloww\\.venv\\Scripts\\python.exe"
   }
 }

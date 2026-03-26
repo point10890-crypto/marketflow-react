@@ -1,115 +1,57 @@
 [
   {
     "ticker": "AKAM",
-    "news_score": 2,
+    "news_score": 0,
     "sentiment": "neutral",
-    "reason": "AI/보안 분야 투자 및 실적 개선, 애널리스트 긍정 평가 등 호재가 많으나, 공정가치 대비 주가 상승 및 경쟁 심화 리스크 존재",
+    "reason": "뉴스 없음",
     "action": "HOLD",
-    "catalysts": [
-      "Guardicore Segmentation AI 기능 추가",
-      "NVIDIA AI Grid 글로벌 구현 및 계약",
-      "보안 수요 증가 및 AI 통합"
-    ],
-    "risk": "클라우드 경쟁 압력, CapEx 리스크, 고객 집중",
-    "citations": [
-      "https://simplywall.st/stocks/us/software/nasdaq-akam/akamai-technologies/news/akamai-technologies-akam-is-up-81-after-unveiling-global-nvi",
-      "https://www.ad-hoc-news.de/boerse/news/ueberblick/akamai-technologies-inc-stock-faces-pressure-amid-cloud-security-shifts/68979314",
-      "https://www.quiverquant.com/news/Akamai+Unveils+AI-Powered+Enhancements+for+Guardicore+Segmentation+to+Strengthen+Security+Policy+Enforcement",
-      "https://www.stocktitan.net/news/AKAM/akamai-guardicore-segmentation-transforms-zero-trust-with-new-ai-h5fit2rpb4rb.html",
-      "https://www.gurufocus.com/news/8738929/invesco-sp-500-index-fund-sells-461-shares-of-akamai-technologies-inc-akam",
-      "https://www.barchart.com/story/news/914392/akamai-guardicore-segmentation-transforms-zero-trust-with-new-ai-powered-capabilities",
-      "https://www.nasdaq.com/press-release/akamai-guardicore-segmentation-transforms-zero-trust-new-ai-powered-capabilities-2026"
-    ],
-    "analyzed_at": "2026-03-25T16:20:08.766708"
+    "catalysts": [],
+    "risk": "",
+    "citations": [],
+    "analyzed_at": "2026-03-26T20:23:12.571622"
   },
   {
     "ticker": "T",
-    "news_score": 2,
-    "sentiment": "bullish",
-    "reason": "실적 서프라이즈 및 긍정적 가이던스 제시, 애널리스트 목표가 상향 등으로 단기 호재 예상되나 Starlink 경쟁 우려 존재",
+    "news_score": 0,
+    "sentiment": "neutral",
+    "reason": "뉴스 없음",
     "action": "HOLD",
-    "catalysts": [
-      "실적 서프라이즈 및 긍정적 가이던스",
-      "애널리스트 목표가 상향"
-    ],
-    "risk": "Starlink IPO 가능성으로 인한 무선/브로드밴드 경쟁 심화",
-    "citations": [
-      "https://www.stocktitan.net/sec-filings/NAVN/form-4-navan-inc-insider-trading-activity-d99028156ffd.html",
-      "https://www.stocktitan.net/sec-filings/2026-03-25/",
-      "https://www.marketbeat.com/instant-alerts/filing-sg-americas-securities-llc-purchases-4725382-shares-of-att-inc-t-2026-03-24/",
-      "https://www.marketbeat.com/instant-alerts/filing-att-inc-t-shares-sold-by-dynamic-advisor-solutions-llc-2026-03-24/",
-      "https://www.stocktitan.net/sec-filings/UFCS/form-4-united-fire-group-inc-insider-trading-activity-d4d66ff09a9c.html",
-      "https://www.stocktitan.net/sec-filings/GDOT/form-4-green-dot-corp-insider-trading-activity-c339dd57ec48.html",
-      "https://www.quiverquant.com/news/Insider+Sale:+Chief+Financial+Officer+of+$ARX+Sells+50,000+Shares"
-    ],
-    "analyzed_at": "2026-03-25T16:20:19.030236"
+    "catalysts": [],
+    "risk": "",
+    "citations": [],
+    "analyzed_at": "2026-03-26T20:23:13.590970"
   },
   {
     "ticker": "ALGN",
-    "news_score": 2,
+    "news_score": 0,
     "sentiment": "neutral",
-    "reason": "단기 주가 상승 추세와 목표가 상향 전망이 긍정적이나, 기관 매도세 존재하여 제한적인 호재로 판단",
-    "action": "BUY",
-    "catalysts": [
-      "최근 주가 상승 및 거래량 증가",
-      "3개월 목표가 상향"
-    ],
-    "risk": "기관 투자자 매도 지속 가능성",
-    "citations": [
-      "https://stockinvest.us/stock/ALGN",
-      "https://nationaltoday.com/us/az/tempe/news/2026/03/24/nordea-investment-management-ab-reduces-align-technology-stake/",
-      "https://www.marketbeat.com/instant-alerts/filing-align-technology-inc-algn-shares-sold-by-swiss-life-asset-management-ltd-2026-03-24/",
-      "https://www.gurufocus.com/news/8738869/invesco-sp-500-index-fund-sells-162-shares-of-align-technology-inc-algn?r=4bf001661e6fdd88d0cd7a5659ff9748&mod=mw_quote_news",
-      "https://www.gurufocus.com/news/8738869/invesco-sp-500-index-fund-sells-162-shares-of-align-technology-inc-algn",
-      "https://www.marketbeat.com/instant-alerts/filing-nordea-investment-management-ab-lowers-stock-position-in-align-technology-inc-algn-2026-03-24/"
-    ],
-    "analyzed_at": "2026-03-25T16:20:27.496890"
+    "reason": "뉴스 없음",
+    "action": "HOLD",
+    "catalysts": [],
+    "risk": "",
+    "citations": [],
+    "analyzed_at": "2026-03-26T20:23:14.609471"
   },
   {
-    "ticker": "AJG",
-    "news_score": 2,
-    "sentiment": "bullish",
-    "reason": "BMO Capital 상향 및 AI 생산성 기대감, 동종업계 대비 강세 보이며 단기 반등 가능성이 존재",
-    "action": "BUY",
-    "catalysts": [
-      "BMO Capital의 Outperform 상향 및 목표가 상향",
-      "AI 생산성 향상으로 인한 수익성 개선 기대",
-      "동종업계 대비 상대적 강세"
-    ],
-    "risk": "최근 주가 하락 및 변동성 확대",
-    "citations": [
-      "https://www.gurufocus.com/news/8739147/bmo-capital-upgrades-ajg-price-target-raised-to-278-ajg-stock-news?r=4bf001661e6fdd88d0cd7a5659ff9748&mod=mw_quote_news",
-      "https://www.investing.com/news/analyst-ratings/bmo-upgrades-arthur-j-gallagher-stock-rating-on-ai-productivity-outlook-93CH-4576852",
-      "https://www.marketbeat.com/instant-alerts/arthur-j-gallagher-co-nyseajg-raised-to-outperform-at-bmo-capital-markets-2026-03-24/",
-      "https://simplywall.st/stocks/us/insurance/nyse-ajg/arthur-j-gallagher/news/arthur-j-gallagher-ajg-valuation-in-focus-after-steep-one-ye",
-      "https://www.benzinga.com/news/26/03/51428054/bmo-capital-upgrades-arthur-j-gallagher-to-outperform-raises-price-target-to-278",
-      "https://www.tipranks.com/news/the-fly/arthur-j-gallagher-upgraded-to-outperform-from-market-perform-at-bmo-capital-thefly-news",
-      "https://investor.ajg.com/news/news-details/2026/Two-thirds-of-organizations-invest-in-AI-training-as-adoption-accelerates---but-governance-gaps-remain/default.aspx",
-      "https://www.stocktitan.net/news/AJG/two-thirds-of-organizations-invest-in-ai-training-as-adoption-x21dzxmta17k.html",
-      "https://www.stocktitan.net/sec-filings/AJG/form-4-arthur-j-gallagher-co-insider-trading-activity-9d2f87a53577.html"
-    ],
-    "analyzed_at": "2026-03-25T16:20:42.536766"
+    "ticker": "AIZ",
+    "news_score": 0,
+    "sentiment": "neutral",
+    "reason": "뉴스 없음",
+    "action": "HOLD",
+    "catalysts": [],
+    "risk": "",
+    "citations": [],
+    "analyzed_at": "2026-03-26T20:23:15.624535"
   },
   {
     "ticker": "AON",
-    "news_score": 2,
+    "news_score": 0,
     "sentiment": "neutral",
-    "reason": "애널리스트 전망이 긍정적이고 목표가가 현재 주가보다 상당히 높으며, AI 활용에 유리한 위치를 선점하고 있어 긍정적인 신호가 보이지만, 부채 리스크와 매크로 변동성도 존재함",
-    "action": "BUY",
-    "catalysts": [
-      "애널리스트들의 긍정적인 전망 및 높은 목표가",
-      "AI 활용에 유리한 위치",
-      "과소평가된 밸류에이션"
-    ],
-    "risk": "NFP 인수 후 부채 리스크 및 매크로 변동성",
-    "citations": [
-      "https://www.marketbeat.com/instant-alerts/filing-murphy-middleton-hinkle-parker-inc-invests-431-million-in-aon-plc-aon-2026-03-24/",
-      "https://www.sahmcapital.com/news/content/aons-stablecoin-pilot-and-new-leadership-might-change-the-case-for-investing-in-aon-aon-2026-03-23",
-      "https://simplywall.st/stocks/us/insurance/nyse-aon/aon/news/is-aon-aon-offering-value-after-a-164-one-year-share-price-d",
-      "https://www.tradingview.com/news/reuters.com,2026:newsml_L6N40C127:0-td-cowen-aon-best-positioned-among-broking-peers-to-capitalize-on-ai/",
-      "https://www.gurufocus.com/news/8738265/ls-opportunity-fund-sells-191-shares-of-aon-plc-aon?r=4bf001661e6fdd88d0cd7a5659ff9748&mod=mw_quote_news",
-      "https://www.investing.com/equities/aon-corp-historical-data"
-    ],
-    "analyzed_at": "2026-03-25T16:20:51.408093"
+    "reason": "뉴스 없음",
+    "action": "HOLD",
+    "catalysts": [],
+    "risk": "",
+    "citations": [],
+    "analyzed_at": "2026-03-26T20:23:16.641152"
   }
 ]

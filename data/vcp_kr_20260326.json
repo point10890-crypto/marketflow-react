@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "generated_at": "2026-03-26T17:16:52.563329",
+    "generated_at": "2026-03-26T20:44:06.809258",
     "market": "KR",
     "gate": "RED",
     "gate_score": 25,
-    "processing_time_sec": 71.4
+    "processing_time_sec": 69.8
   },
   "summary": {
     "total_screened": 200,
@@ -6628,7 +6628,7 @@
       },
       "volume_pattern": {
         "score": 30,
-        "dry_up_ratio": 1.01
+        "dry_up_ratio": 1.0
       },
       "pivot_proximity": {
         "score": 60,
@@ -6940,7 +6940,7 @@
       },
       "volume_pattern": {
         "score": 50,
-        "dry_up_ratio": 0.85
+        "dry_up_ratio": 0.86
       },
       "pivot_proximity": {
         "score": 40,
@@ -7642,7 +7642,7 @@
       },
       "volume_pattern": {
         "score": 30,
-        "dry_up_ratio": 1.56
+        "dry_up_ratio": 1.55
       },
       "pivot_proximity": {
         "score": 60,

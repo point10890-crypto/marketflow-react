@@ -1486,5 +1486,98 @@
         ]
       }
     }
+  },
+  {
+    "date": "2026-03-26",
+    "predictions": {
+      "spy": {
+        "current_price": 656.82,
+        "bullish_probability": 75.9,
+        "bearish_probability": 24.1,
+        "predicted_return_pct": 1.62,
+        "target_range": {
+          "low": 654.52,
+          "mid": 667.49,
+          "high": 680.46
+        },
+        "confidence_level": "High",
+        "key_drivers": [
+          {
+            "feature": "yield_spread_proxy",
+            "impact": 0.1581,
+            "value": 0.0,
+            "direction": "bearish"
+          },
+          {
+            "feature": "xlu_relative_1m",
+            "impact": 0.0913,
+            "value": 0.0,
+            "direction": "bullish"
+          },
+          {
+            "feature": "xly_relative_1m",
+            "impact": 0.0804,
+            "value": 0.0,
+            "direction": "bearish"
+          },
+          {
+            "feature": "breadth_pct_above_50ma",
+            "impact": 0.0731,
+            "value": 44.0,
+            "direction": "bullish"
+          },
+          {
+            "feature": "gold_return_1w",
+            "impact": 0.0724,
+            "value": -3.37,
+            "direction": "bearish"
+          }
+        ]
+      },
+      "qqq": {
+        "current_price": 587.82,
+        "bullish_probability": 78.9,
+        "bearish_probability": 21.1,
+        "predicted_return_pct": 1.96,
+        "target_range": {
+          "low": 584.06,
+          "mid": 599.32,
+          "high": 614.58
+        },
+        "confidence_level": "High",
+        "key_drivers": [
+          {
+            "feature": "yield_spread_proxy",
+            "impact": 0.1187,
+            "value": 0.0,
+            "direction": "bearish"
+          },
+          {
+            "feature": "spy_rsi",
+            "impact": 0.0936,
+            "value": 39.53,
+            "direction": "bearish"
+          },
+          {
+            "feature": "xlu_relative_1m",
+            "impact": 0.0916,
+            "value": 0.0,
+            "direction": "bullish"
+          },
+          {
+            "feature": "spy_return_1m",
+            "impact": 0.09,
+            "value": 0.0,
+            "direction": "bearish"
+          },
+          {
+            "feature": "breadth_pct_above_50ma",
+            "impact": 0.0792,
+            "value": 44.0,
+            "direction": "bullish"
+          }
+        ]
+      }
+    }
   }
 ]

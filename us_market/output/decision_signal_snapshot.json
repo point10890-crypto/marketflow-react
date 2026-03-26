@@ -25,52 +25,52 @@
   },
   "top_picks": [
     {
-      "ticker": "AKAM",
-      "name": "Akamai Technologies, Inc.",
-      "final_score": 83.0,
-      "grade": "🌟 A급 (적극 매수)",
-      "ai_recommendation": "적극 매수",
-      "target_upside": -4.4
-    },
-    {
       "ticker": "T",
       "name": "AT&T Inc.",
-      "final_score": 81.0,
+      "final_score": 85.2,
       "grade": "🌟 A급 (적극 매수)",
-      "ai_recommendation": "매수",
-      "target_upside": 4.1
+      "ai_recommendation": "적극 매수",
+      "target_upside": 4.4
     },
     {
       "ticker": "ALGN",
       "name": "Align Technology, Inc.",
-      "final_score": 80.1,
+      "final_score": 84.6,
       "grade": "🌟 A급 (적극 매수)",
-      "ai_recommendation": "매수",
-      "target_upside": 12.5
+      "ai_recommendation": "적극 매수",
+      "target_upside": 11.9
     },
     {
-      "ticker": "ALL",
-      "name": "The Allstate Corporation",
-      "final_score": 74.1,
+      "ticker": "AON",
+      "name": "Aon plc",
+      "final_score": 74.7,
       "grade": "📈 B급 (매수 고려)",
       "ai_recommendation": "매수",
-      "target_upside": 15.6
+      "target_upside": 23.6
     },
     {
       "ticker": "AMAT",
       "name": "Applied Materials, Inc.",
-      "final_score": 74.0,
+      "final_score": 70.9,
       "grade": "📈 B급 (매수 고려)",
       "ai_recommendation": "매수",
-      "target_upside": 9.8
+      "target_upside": 11.2
+    },
+    {
+      "ticker": "APD",
+      "name": "Air Products and Chemicals, Inc.",
+      "final_score": 70.2,
+      "grade": "📈 B급 (매수 고려)",
+      "ai_recommendation": "매수",
+      "target_upside": 6.2
     }
   ],
   "timing": "WAIT",
   "warnings": [
     "APO is in critical drawdown: -27.8% from peak",
-    "APP is in critical drawdown: -38.9% from peak",
-    "AJG drawdown warning: -19.1% from peak",
+    "AIZ drawdown warning: -10.4% from peak",
+    "AMZN drawdown warning: -14.4% from peak",
     "AMP drawdown warning: -16.9% from peak",
-    "AMZN drawdown warning: -14.4% from peak"
+    "AMD drawdown warning: -15.2% from peak"
   ]
 }

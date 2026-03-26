@@ -1,7 +1,7 @@
 {
   "metadata": {
     "as_of_date": "2026-03-26",
-    "fetch_time": "2026-03-26T15:35:07.833483",
+    "fetch_time": "2026-03-26T20:15:43.529877",
     "source": "sec_edgar_api",
     "ticker_count": 20
   },
@@ -17,7 +17,7 @@
         "fiscal_year_end": "1231"
       },
       "filings": [],
-      "fetch_time": "2026-03-26T15:34:53.495272"
+      "fetch_time": "2026-03-26T20:15:29.737331"
     },
     "T": {
       "ticker": "T",
@@ -55,7 +55,7 @@
           "url": "https://www.sec.gov/Archives/edgar/data/732717/000119312526039407/d104980d8k.htm"
         }
       ],
-      "fetch_time": "2026-03-26T15:34:54.278369"
+      "fetch_time": "2026-03-26T20:15:30.431005"
     },
     "ALGN": {
       "ticker": "ALGN",
@@ -109,783 +109,7 @@
           "url": "https://www.sec.gov/Archives/edgar/data/1097149/000109714925000075/algn-20251029.htm"
         }
       ],
-      "fetch_time": "2026-03-26T15:34:55.001246"
-    },
-    "AJG": {
-      "ticker": "AJG",
-      "company": {
-        "name": "Arthur J. Gallagher & Co.",
-        "cik": "0000354190",
-        "sic": "6411",
-        "sic_description": "Insurance Agents, Brokers & Service",
-        "state": "DE",
-        "fiscal_year_end": "1231"
-      },
-      "filings": [
-        {
-          "form": "8-K",
-          "filing_date": "2026-03-17",
-          "accession_number": "0000354190-26-000073",
-          "document": "ajg-20260317.htm",
-          "description": "8-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/354190/000035419026000073/ajg-20260317.htm"
-        },
-        {
-          "form": "8-K",
-          "filing_date": "2026-03-12",
-          "accession_number": "0000354190-26-000069",
-          "document": "ajg-20260306.htm",
-          "description": "8-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/354190/000035419026000069/ajg-20260306.htm"
-        }
-      ],
-      "fetch_time": "2026-03-26T15:34:55.759967"
-    },
-    "AON": {
-      "ticker": "AON",
-      "company": {
-        "name": "Aon plc",
-        "cik": "0000315293",
-        "sic": "6411",
-        "sic_description": "Insurance Agents, Brokers & Service",
-        "state": "L2",
-        "fiscal_year_end": "1231"
-      },
-      "filings": [
-        {
-          "form": "10-K",
-          "filing_date": "2026-02-13",
-          "accession_number": "0001628280-26-008116",
-          "document": "aon-20251231.htm",
-          "description": "10-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/315293/000162828026008116/aon-20251231.htm"
-        },
-        {
-          "form": "8-K",
-          "filing_date": "2026-01-30",
-          "accession_number": "0001628280-26-004273",
-          "document": "aon-20260130.htm",
-          "description": "8-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/315293/000162828026004273/aon-20260130.htm"
-        },
-        {
-          "form": "8-K",
-          "filing_date": "2026-01-07",
-          "accession_number": "0001193125-26-005392",
-          "document": "d816540d8k.htm",
-          "description": "8-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/315293/000119312526005392/d816540d8k.htm"
-        },
-        {
-          "form": "8-K",
-          "filing_date": "2026-01-02",
-          "accession_number": "0001193125-26-000263",
-          "document": "d44673d8k.htm",
-          "description": "8-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/315293/000119312526000263/d44673d8k.htm"
-        },
-        {
-          "form": "10-Q",
-          "filing_date": "2025-10-31",
-          "accession_number": "0001628280-25-047805",
-          "document": "aon-20250930.htm",
-          "description": "10-Q",
-          "url": "https://www.sec.gov/Archives/edgar/data/315293/000162828025047805/aon-20250930.htm"
-        }
-      ],
-      "fetch_time": "2026-03-26T15:34:56.534200"
-    },
-    "ALL": {
-      "ticker": "ALL",
-      "company": {
-        "name": "ALLSTATE CORP",
-        "cik": "0000899051",
-        "sic": "6331",
-        "sic_description": "Fire, Marine & Casualty Insurance",
-        "state": "DE",
-        "fiscal_year_end": "1231"
-      },
-      "filings": [
-        {
-          "form": "8-K",
-          "filing_date": "2026-03-19",
-          "accession_number": "0000899051-26-000055",
-          "document": "all-20260319.htm",
-          "description": "8-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/899051/000089905126000055/all-20260319.htm"
-        },
-        {
-          "form": "10-K",
-          "filing_date": "2026-02-20",
-          "accession_number": "0000899051-26-000031",
-          "document": "all-20251231.htm",
-          "description": "10-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/899051/000089905126000031/all-20251231.htm"
-        },
-        {
-          "form": "8-K",
-          "filing_date": "2026-02-19",
-          "accession_number": "0000899051-26-000029",
-          "document": "all-20260219.htm",
-          "description": "8-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/899051/000089905126000029/all-20260219.htm"
-        },
-        {
-          "form": "8-K",
-          "filing_date": "2026-02-04",
-          "accession_number": "0000899051-26-000013",
-          "document": "all-20260204.htm",
-          "description": "8-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/899051/000089905126000013/all-20260204.htm"
-        },
-        {
-          "form": "8-K",
-          "filing_date": "2026-01-15",
-          "accession_number": "0000899051-26-000009",
-          "document": "all-20260115.htm",
-          "description": "8-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/899051/000089905126000009/all-20260115.htm"
-        }
-      ],
-      "fetch_time": "2026-03-26T15:34:57.257376"
-    },
-    "AMAT": {
-      "ticker": "AMAT",
-      "company": {
-        "name": "APPLIED MATERIALS INC /DE",
-        "cik": "0000006951",
-        "sic": "3674",
-        "sic_description": "Semiconductors & Related Devices",
-        "state": "DC",
-        "fiscal_year_end": "1026"
-      },
-      "filings": [
-        {
-          "form": "8-K",
-          "filing_date": "2026-03-13",
-          "accession_number": "0001193125-26-106339",
-          "document": "d114932d8k.htm",
-          "description": "8-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/6951/000119312526106339/d114932d8k.htm"
-        },
-        {
-          "form": "10-Q",
-          "filing_date": "2026-02-19",
-          "accession_number": "0001628280-26-009694",
-          "document": "amat-20260125.htm",
-          "description": "10-Q",
-          "url": "https://www.sec.gov/Archives/edgar/data/6951/000162828026009694/amat-20260125.htm"
-        },
-        {
-          "form": "8-K",
-          "filing_date": "2026-02-12",
-          "accession_number": "0001628280-26-007661",
-          "document": "amat-20260212.htm",
-          "description": "8-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/6951/000162828026007661/amat-20260212.htm"
-        },
-        {
-          "form": "8-K",
-          "filing_date": "2026-02-12",
-          "accession_number": "0001628280-26-007444",
-          "document": "amat-20260211.htm",
-          "description": "8-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/6951/000162828026007444/amat-20260211.htm"
-        },
-        {
-          "form": "10-K",
-          "filing_date": "2025-12-12",
-          "accession_number": "0001628280-25-056742",
-          "document": "amat-20251026.htm",
-          "description": "10-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/6951/000162828025056742/amat-20251026.htm"
-        }
-      ],
-      "fetch_time": "2026-03-26T15:34:58.029121"
-    },
-    "AMP": {
-      "ticker": "AMP",
-      "company": {
-        "name": "AMERIPRISE FINANCIAL INC",
-        "cik": "0000820027",
-        "sic": "6282",
-        "sic_description": "Investment Advice",
-        "state": "DE",
-        "fiscal_year_end": "1231"
-      },
-      "filings": [
-        {
-          "form": "10-K/A",
-          "filing_date": "2026-03-12",
-          "accession_number": "0000820027-26-000016",
-          "document": "amp-20251231.htm",
-          "description": "10-K/A",
-          "url": "https://www.sec.gov/Archives/edgar/data/820027/000082002726000016/amp-20251231.htm"
-        },
-        {
-          "form": "10-K",
-          "filing_date": "2026-02-19",
-          "accession_number": "0000820027-26-000011",
-          "document": "amp-20251231.htm",
-          "description": "10-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/820027/000082002726000011/amp-20251231.htm"
-        },
-        {
-          "form": "8-K",
-          "filing_date": "2026-02-12",
-          "accession_number": "0001104659-26-014312",
-          "document": "tm266105d1_8k.htm",
-          "description": "FORM 8-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/820027/000110465926014312/tm266105d1_8k.htm"
-        }
-      ],
-      "fetch_time": "2026-03-26T15:34:58.735465"
-    },
-    "ALB": {
-      "ticker": "ALB",
-      "company": {
-        "name": "ALBEMARLE CORP",
-        "cik": "0000915913",
-        "sic": "2821",
-        "sic_description": "Plastic Materials, Synth Resins & Nonvulcan Elastomers",
-        "state": "VA",
-        "fiscal_year_end": "1231"
-      },
-      "filings": [
-        {
-          "form": "8-K",
-          "filing_date": "2026-03-25",
-          "accession_number": "0000915913-26-000057",
-          "document": "alb-20260319.htm",
-          "description": "8-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/915913/000091591326000057/alb-20260319.htm"
-        },
-        {
-          "form": "8-K",
-          "filing_date": "2026-03-06",
-          "accession_number": "0000915913-26-000032",
-          "document": "alb-20260302.htm",
-          "description": "8-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/915913/000091591326000032/alb-20260302.htm"
-        },
-        {
-          "form": "8-K",
-          "filing_date": "2026-03-04",
-          "accession_number": "0000915913-26-000029",
-          "document": "alb-20260226.htm",
-          "description": "8-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/915913/000091591326000029/alb-20260226.htm"
-        },
-        {
-          "form": "10-K",
-          "filing_date": "2026-02-11",
-          "accession_number": "0000915913-26-000018",
-          "document": "alb-20251231.htm",
-          "description": "10-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/915913/000091591326000018/alb-20251231.htm"
-        },
-        {
-          "form": "8-K",
-          "filing_date": "2026-02-11",
-          "accession_number": "0000915913-26-000016",
-          "document": "alb-20260211.htm",
-          "description": "8-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/915913/000091591326000016/alb-20260211.htm"
-        }
-      ],
-      "fetch_time": "2026-03-26T15:34:59.434256"
-    },
-    "APO": {
-      "ticker": "APO",
-      "company": {
-        "name": "Apollo Global Management, Inc.",
-        "cik": "0001858681",
-        "sic": "6282",
-        "sic_description": "Investment Advice",
-        "state": "DE",
-        "fiscal_year_end": "1231"
-      },
-      "filings": [
-        {
-          "form": "8-K",
-          "filing_date": "2026-03-24",
-          "accession_number": "0000950142-26-000810",
-          "document": "eh260755910_8k.htm",
-          "description": "FORM 8-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/1858681/000095014226000810/eh260755910_8k.htm"
-        },
-        {
-          "form": "10-K",
-          "filing_date": "2026-02-25",
-          "accession_number": "0001858681-26-000013",
-          "document": "apo-20251231.htm",
-          "description": "10-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/1858681/000185868126000013/apo-20251231.htm"
-        },
-        {
-          "form": "8-K",
-          "filing_date": "2026-02-19",
-          "accession_number": "0001858681-26-000010",
-          "document": "apo-20260219.htm",
-          "description": "8-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/1858681/000185868126000010/apo-20260219.htm"
-        },
-        {
-          "form": "8-K",
-          "filing_date": "2026-02-09",
-          "accession_number": "0001858681-26-000007",
-          "document": "apo-20260209.htm",
-          "description": "8-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/1858681/000185868126000007/apo-20260209.htm"
-        },
-        {
-          "form": "8-K",
-          "filing_date": "2026-01-02",
-          "accession_number": "0001858681-26-000004",
-          "document": "apo-20260102.htm",
-          "description": "8-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/1858681/000185868126000004/apo-20260102.htm"
-        }
-      ],
-      "fetch_time": "2026-03-26T15:35:00.179717"
-    },
-    "AEP": {
-      "ticker": "AEP",
-      "company": {
-        "name": "AMERICAN ELECTRIC POWER CO INC",
-        "cik": "0000004904",
-        "sic": "4911",
-        "sic_description": "Electric Services",
-        "state": "NY",
-        "fiscal_year_end": "1231"
-      },
-      "filings": [
-        {
-          "form": "8-K",
-          "filing_date": "2026-02-17",
-          "accession_number": "0000004904-26-000015",
-          "document": "aep-20260213.htm",
-          "description": "8-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/4904/000000490426000015/aep-20260213.htm"
-        },
-        {
-          "form": "10-K",
-          "filing_date": "2026-02-12",
-          "accession_number": "0000004904-26-000013",
-          "document": "aep-20251231.htm",
-          "description": "10-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/4904/000000490426000013/aep-20251231.htm"
-        },
-        {
-          "form": "8-K",
-          "filing_date": "2026-02-12",
-          "accession_number": "0000004904-26-000011",
-          "document": "aep-20260212.htm",
-          "description": "8-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/4904/000000490426000011/aep-20260212.htm"
-        },
-        {
-          "form": "8-K",
-          "filing_date": "2026-01-08",
-          "accession_number": "0000004904-26-000003",
-          "document": "aep-20260104.htm",
-          "description": "8-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/4904/000000490426000003/aep-20260104.htm"
-        }
-      ],
-      "fetch_time": "2026-03-26T15:35:00.908386"
-    },
-    "AMZN": {
-      "ticker": "AMZN",
-      "company": {
-        "name": "AMAZON COM INC",
-        "cik": "0001018724",
-        "sic": "5961",
-        "sic_description": "Retail-Catalog & Mail-Order Houses",
-        "state": "DE",
-        "fiscal_year_end": "1231"
-      },
-      "filings": [
-        {
-          "form": "8-K",
-          "filing_date": "2026-03-16",
-          "accession_number": "0001104659-26-028556",
-          "document": "tm266670d9_8k.htm",
-          "description": "FORM 8-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/1018724/000110465926028556/tm266670d9_8k.htm"
-        },
-        {
-          "form": "8-K",
-          "filing_date": "2026-03-13",
-          "accession_number": "0001104659-26-027729",
-          "document": "tm266670d8_8k.htm",
-          "description": "FORM 8-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/1018724/000110465926027729/tm266670d8_8k.htm"
-        },
-        {
-          "form": "8-K",
-          "filing_date": "2026-02-27",
-          "accession_number": "0001104659-26-021050",
-          "document": "tm267374d1_8k.htm",
-          "description": "FORM 8-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/1018724/000110465926021050/tm267374d1_8k.htm"
-        },
-        {
-          "form": "10-K",
-          "filing_date": "2026-02-06",
-          "accession_number": "0001018724-26-000004",
-          "document": "amzn-20251231.htm",
-          "description": "10-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/1018724/000101872426000004/amzn-20251231.htm"
-        },
-        {
-          "form": "8-K",
-          "filing_date": "2026-02-05",
-          "accession_number": "0001018724-26-000002",
-          "document": "amzn-20260205.htm",
-          "description": "8-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/1018724/000101872426000002/amzn-20260205.htm"
-        }
-      ],
-      "fetch_time": "2026-03-26T15:35:01.616043"
-    },
-    "LNT": {
-      "ticker": "LNT",
-      "company": {
-        "name": "ALLIANT ENERGY CORP",
-        "cik": "0000352541",
-        "sic": "4931",
-        "sic_description": "Electric & Other Services Combined",
-        "state": "WI",
-        "fiscal_year_end": "1231"
-      },
-      "filings": [
-        {
-          "form": "8-K",
-          "filing_date": "2026-03-19",
-          "accession_number": "0001193125-26-116244",
-          "document": "d131241d8k.htm",
-          "description": "8-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/352541/000119312526116244/d131241d8k.htm"
-        },
-        {
-          "form": "8-K",
-          "filing_date": "2026-03-04",
-          "accession_number": "0000352541-26-000009",
-          "document": "lnt-20260302.htm",
-          "description": "8-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/352541/000035254126000009/lnt-20260302.htm"
-        },
-        {
-          "form": "10-K",
-          "filing_date": "2026-02-20",
-          "accession_number": "0000352541-26-000007",
-          "document": "lnt-20251231.htm",
-          "description": "10-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/352541/000035254126000007/lnt-20251231.htm"
-        },
-        {
-          "form": "8-K",
-          "filing_date": "2026-02-20",
-          "accession_number": "0000352541-26-000005",
-          "document": "lnt-20260219.htm",
-          "description": "8-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/352541/000035254126000005/lnt-20260219.htm"
-        },
-        {
-          "form": "8-K",
-          "filing_date": "2026-01-08",
-          "accession_number": "0000352541-26-000003",
-          "document": "lnt-20260105.htm",
-          "description": "8-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/352541/000035254126000003/lnt-20260105.htm"
-        }
-      ],
-      "fetch_time": "2026-03-26T15:35:02.344018"
-    },
-    "APD": {
-      "ticker": "APD",
-      "company": {
-        "name": "Air Products & Chemicals, Inc.",
-        "cik": "0000002969",
-        "sic": "2810",
-        "sic_description": "Industrial Inorganic Chemicals",
-        "state": "DE",
-        "fiscal_year_end": "0930"
-      },
-      "filings": [
-        {
-          "form": "10-Q",
-          "filing_date": "2026-01-30",
-          "accession_number": "0000002969-26-000008",
-          "document": "apd-20251231.htm",
-          "description": "10-Q",
-          "url": "https://www.sec.gov/Archives/edgar/data/2969/000000296926000008/apd-20251231.htm"
-        },
-        {
-          "form": "8-K",
-          "filing_date": "2026-01-30",
-          "accession_number": "0000002969-26-000006",
-          "document": "apd-20260130.htm",
-          "description": "FORM 8-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/2969/000000296926000006/apd-20260130.htm"
-        },
-        {
-          "form": "8-K",
-          "filing_date": "2026-01-29",
-          "accession_number": "0001193125-26-029381",
-          "document": "d884680d8k.htm",
-          "description": "8-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/2969/000119312526029381/d884680d8k.htm"
-        },
-        {
-          "form": "8-K",
-          "filing_date": "2025-11-25",
-          "accession_number": "0001193125-25-297255",
-          "document": "d42847d8k.htm",
-          "description": "8-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/2969/000119312525297255/d42847d8k.htm"
-        },
-        {
-          "form": "10-K",
-          "filing_date": "2025-11-20",
-          "accession_number": "0000002969-25-000055",
-          "document": "apd-20250930.htm",
-          "description": "FORM 10-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/2969/000000296925000055/apd-20250930.htm"
-        }
-      ],
-      "fetch_time": "2026-03-26T15:35:03.107475"
-    },
-    "APP": {
-      "ticker": "APP",
-      "company": {
-        "name": "AppLovin Corp",
-        "cik": "0001751008",
-        "sic": "7370",
-        "sic_description": "Services-Computer Programming, Data Processing, Etc.",
-        "state": "DE",
-        "fiscal_year_end": "1231"
-      },
-      "filings": [
-        {
-          "form": "10-K",
-          "filing_date": "2026-02-19",
-          "accession_number": "0001751008-26-000010",
-          "document": "app-20251231.htm",
-          "description": "10-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/1751008/000175100826000010/app-20251231.htm"
-        },
-        {
-          "form": "8-K",
-          "filing_date": "2026-02-11",
-          "accession_number": "0001751008-26-000005",
-          "document": "app-20260211.htm",
-          "description": "8-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/1751008/000175100826000005/app-20260211.htm"
-        }
-      ],
-      "fetch_time": "2026-03-26T15:35:03.822535"
-    },
-    "ACGL": {
-      "ticker": "ACGL",
-      "company": {
-        "name": "ARCH CAPITAL GROUP LTD.",
-        "cik": "0000947484",
-        "sic": "6331",
-        "sic_description": "Fire, Marine & Casualty Insurance",
-        "state": "",
-        "fiscal_year_end": "1231"
-      },
-      "filings": [
-        {
-          "form": "8-K",
-          "filing_date": "2026-02-26",
-          "accession_number": "0000947484-26-000019",
-          "document": "acgl-20260226.htm",
-          "description": "8-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/947484/000094748426000019/acgl-20260226.htm"
-        },
-        {
-          "form": "10-K",
-          "filing_date": "2026-02-26",
-          "accession_number": "0000947484-26-000017",
-          "document": "acgl-20251231.htm",
-          "description": "10-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/947484/000094748426000017/acgl-20251231.htm"
-        },
-        {
-          "form": "8-K",
-          "filing_date": "2026-02-09",
-          "accession_number": "0000947484-26-000010",
-          "document": "acgl-20260209.htm",
-          "description": "8-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/947484/000094748426000010/acgl-20260209.htm"
-        },
-        {
-          "form": "8-K",
-          "filing_date": "2026-01-22",
-          "accession_number": "0000947484-26-000004",
-          "document": "acgl-20260115.htm",
-          "description": "8-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/947484/000094748426000004/acgl-20260115.htm"
-        },
-        {
-          "form": "8-K",
-          "filing_date": "2025-11-07",
-          "accession_number": "0000947484-25-000089",
-          "document": "acgl-20251107.htm",
-          "description": "8-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/947484/000094748425000089/acgl-20251107.htm"
-        }
-      ],
-      "fetch_time": "2026-03-26T15:35:04.637688"
-    },
-    "AWK": {
-      "ticker": "AWK",
-      "company": {
-        "name": "American Water Works Company, Inc.",
-        "cik": "0001410636",
-        "sic": "4941",
-        "sic_description": "Water Supply",
-        "state": "DE",
-        "fiscal_year_end": "1231"
-      },
-      "filings": [
-        {
-          "form": "8-K",
-          "filing_date": "2026-03-10",
-          "accession_number": "0001410636-26-000056",
-          "document": "awk-20260305.htm",
-          "description": "FORM 8-K - WEST VIRGINIA-AMERICAN WATER RATE CASE ORDER",
-          "url": "https://www.sec.gov/Archives/edgar/data/1410636/000141063626000056/awk-20260305.htm"
-        },
-        {
-          "form": "8-K",
-          "filing_date": "2026-03-02",
-          "accession_number": "0001410636-26-000053",
-          "document": "awk-20260226.htm",
-          "description": "FORM 8-K - MARYLAND-AMERICAN RATE CASE ORDER",
-          "url": "https://www.sec.gov/Archives/edgar/data/1410636/000141063626000053/awk-20260226.htm"
-        },
-        {
-          "form": "8-K",
-          "filing_date": "2026-02-18",
-          "accession_number": "0001410636-26-000035",
-          "document": "awk-20260218.htm",
-          "description": "8-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/1410636/000141063626000035/awk-20260218.htm"
-        },
-        {
-          "form": "10-K",
-          "filing_date": "2026-02-18",
-          "accession_number": "0001410636-26-000034",
-          "document": "awk-20251231.htm",
-          "description": "10-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/1410636/000141063626000034/awk-20251231.htm"
-        },
-        {
-          "form": "8-K",
-          "filing_date": "2026-02-10",
-          "accession_number": "0001410636-26-000029",
-          "document": "awk-20260210.htm",
-          "description": "FORM 8-K - SPECIAL MEETING - FINAL RESULTS",
-          "url": "https://www.sec.gov/Archives/edgar/data/1410636/000141063626000029/awk-20260210.htm"
-        }
-      ],
-      "fetch_time": "2026-03-26T15:35:05.403086"
-    },
-    "APA": {
-      "ticker": "APA",
-      "company": {
-        "name": "APA Corp",
-        "cik": "0001841666",
-        "sic": "1311",
-        "sic_description": "Crude Petroleum & Natural Gas",
-        "state": "DE",
-        "fiscal_year_end": "1231"
-      },
-      "filings": [
-        {
-          "form": "10-K",
-          "filing_date": "2026-02-26",
-          "accession_number": "0001841666-26-000015",
-          "document": "apa-20251231.htm",
-          "description": "10-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/1841666/000184166626000015/apa-20251231.htm"
-        },
-        {
-          "form": "8-K",
-          "filing_date": "2026-02-25",
-          "accession_number": "0001841666-26-000012",
-          "document": "apa8k-20260225.htm",
-          "description": "8-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/1841666/000184166626000012/apa8k-20260225.htm"
-        },
-        {
-          "form": "8-K",
-          "filing_date": "2026-01-20",
-          "accession_number": "0001841666-26-000003",
-          "document": "apa8k-20260120.htm",
-          "description": "8-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/1841666/000184166626000003/apa8k-20260120.htm"
-        }
-      ],
-      "fetch_time": "2026-03-26T15:35:06.156937"
-    },
-    "AMD": {
-      "ticker": "AMD",
-      "company": {
-        "name": "ADVANCED MICRO DEVICES INC",
-        "cik": "0000002488",
-        "sic": "3674",
-        "sic_description": "Semiconductors & Related Devices",
-        "state": "DE",
-        "fiscal_year_end": "1226"
-      },
-      "filings": [
-        {
-          "form": "8-K",
-          "filing_date": "2026-02-24",
-          "accession_number": "0000002488-26-000045",
-          "document": "amd-20260223.htm",
-          "description": "8-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/2488/000000248826000045/amd-20260223.htm"
-        },
-        {
-          "form": "8-K",
-          "filing_date": "2026-02-17",
-          "accession_number": "0000002488-26-000029",
-          "document": "amd-20260210.htm",
-          "description": "8-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/2488/000000248826000029/amd-20260210.htm"
-        },
-        {
-          "form": "10-K/A",
-          "filing_date": "2026-02-04",
-          "accession_number": "0000002488-26-000021",
-          "document": "amd-20251227.htm",
-          "description": "10-K/A",
-          "url": "https://www.sec.gov/Archives/edgar/data/2488/000000248826000021/amd-20251227.htm"
-        },
-        {
-          "form": "10-K",
-          "filing_date": "2026-02-04",
-          "accession_number": "0000002488-26-000018",
-          "document": "amd-20251227.htm",
-          "description": "10-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/2488/000000248826000018/amd-20251227.htm"
-        },
-        {
-          "form": "8-K",
-          "filing_date": "2026-02-03",
-          "accession_number": "0000002488-26-000014",
-          "document": "amd-20260203.htm",
-          "description": "8-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/2488/000000248826000014/amd-20260203.htm"
-        }
-      ],
-      "fetch_time": "2026-03-26T15:35:06.878447"
+      "fetch_time": "2026-03-26T20:15:31.157648"
     },
     "AIZ": {
       "ticker": "AIZ",
@@ -939,7 +163,783 @@
           "url": "https://www.sec.gov/Archives/edgar/data/1267238/000126723825000049/aiz-20251104.htm"
         }
       ],
-      "fetch_time": "2026-03-26T15:35:07.632464"
+      "fetch_time": "2026-03-26T20:15:31.876514"
+    },
+    "AON": {
+      "ticker": "AON",
+      "company": {
+        "name": "Aon plc",
+        "cik": "0000315293",
+        "sic": "6411",
+        "sic_description": "Insurance Agents, Brokers & Service",
+        "state": "L2",
+        "fiscal_year_end": "1231"
+      },
+      "filings": [
+        {
+          "form": "10-K",
+          "filing_date": "2026-02-13",
+          "accession_number": "0001628280-26-008116",
+          "document": "aon-20251231.htm",
+          "description": "10-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/315293/000162828026008116/aon-20251231.htm"
+        },
+        {
+          "form": "8-K",
+          "filing_date": "2026-01-30",
+          "accession_number": "0001628280-26-004273",
+          "document": "aon-20260130.htm",
+          "description": "8-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/315293/000162828026004273/aon-20260130.htm"
+        },
+        {
+          "form": "8-K",
+          "filing_date": "2026-01-07",
+          "accession_number": "0001193125-26-005392",
+          "document": "d816540d8k.htm",
+          "description": "8-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/315293/000119312526005392/d816540d8k.htm"
+        },
+        {
+          "form": "8-K",
+          "filing_date": "2026-01-02",
+          "accession_number": "0001193125-26-000263",
+          "document": "d44673d8k.htm",
+          "description": "8-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/315293/000119312526000263/d44673d8k.htm"
+        },
+        {
+          "form": "10-Q",
+          "filing_date": "2025-10-31",
+          "accession_number": "0001628280-25-047805",
+          "document": "aon-20250930.htm",
+          "description": "10-Q",
+          "url": "https://www.sec.gov/Archives/edgar/data/315293/000162828025047805/aon-20250930.htm"
+        }
+      ],
+      "fetch_time": "2026-03-26T20:15:32.589019"
+    },
+    "AMZN": {
+      "ticker": "AMZN",
+      "company": {
+        "name": "AMAZON COM INC",
+        "cik": "0001018724",
+        "sic": "5961",
+        "sic_description": "Retail-Catalog & Mail-Order Houses",
+        "state": "DE",
+        "fiscal_year_end": "1231"
+      },
+      "filings": [
+        {
+          "form": "8-K",
+          "filing_date": "2026-03-16",
+          "accession_number": "0001104659-26-028556",
+          "document": "tm266670d9_8k.htm",
+          "description": "FORM 8-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/1018724/000110465926028556/tm266670d9_8k.htm"
+        },
+        {
+          "form": "8-K",
+          "filing_date": "2026-03-13",
+          "accession_number": "0001104659-26-027729",
+          "document": "tm266670d8_8k.htm",
+          "description": "FORM 8-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/1018724/000110465926027729/tm266670d8_8k.htm"
+        },
+        {
+          "form": "8-K",
+          "filing_date": "2026-02-27",
+          "accession_number": "0001104659-26-021050",
+          "document": "tm267374d1_8k.htm",
+          "description": "FORM 8-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/1018724/000110465926021050/tm267374d1_8k.htm"
+        },
+        {
+          "form": "10-K",
+          "filing_date": "2026-02-06",
+          "accession_number": "0001018724-26-000004",
+          "document": "amzn-20251231.htm",
+          "description": "10-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/1018724/000101872426000004/amzn-20251231.htm"
+        },
+        {
+          "form": "8-K",
+          "filing_date": "2026-02-05",
+          "accession_number": "0001018724-26-000002",
+          "document": "amzn-20260205.htm",
+          "description": "8-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/1018724/000101872426000002/amzn-20260205.htm"
+        }
+      ],
+      "fetch_time": "2026-03-26T20:15:33.309828"
+    },
+    "AMAT": {
+      "ticker": "AMAT",
+      "company": {
+        "name": "APPLIED MATERIALS INC /DE",
+        "cik": "0000006951",
+        "sic": "3674",
+        "sic_description": "Semiconductors & Related Devices",
+        "state": "DC",
+        "fiscal_year_end": "1026"
+      },
+      "filings": [
+        {
+          "form": "8-K",
+          "filing_date": "2026-03-13",
+          "accession_number": "0001193125-26-106339",
+          "document": "d114932d8k.htm",
+          "description": "8-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/6951/000119312526106339/d114932d8k.htm"
+        },
+        {
+          "form": "10-Q",
+          "filing_date": "2026-02-19",
+          "accession_number": "0001628280-26-009694",
+          "document": "amat-20260125.htm",
+          "description": "10-Q",
+          "url": "https://www.sec.gov/Archives/edgar/data/6951/000162828026009694/amat-20260125.htm"
+        },
+        {
+          "form": "8-K",
+          "filing_date": "2026-02-12",
+          "accession_number": "0001628280-26-007661",
+          "document": "amat-20260212.htm",
+          "description": "8-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/6951/000162828026007661/amat-20260212.htm"
+        },
+        {
+          "form": "8-K",
+          "filing_date": "2026-02-12",
+          "accession_number": "0001628280-26-007444",
+          "document": "amat-20260211.htm",
+          "description": "8-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/6951/000162828026007444/amat-20260211.htm"
+        },
+        {
+          "form": "10-K",
+          "filing_date": "2025-12-12",
+          "accession_number": "0001628280-25-056742",
+          "document": "amat-20251026.htm",
+          "description": "10-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/6951/000162828025056742/amat-20251026.htm"
+        }
+      ],
+      "fetch_time": "2026-03-26T20:15:34.010399"
+    },
+    "APD": {
+      "ticker": "APD",
+      "company": {
+        "name": "Air Products & Chemicals, Inc.",
+        "cik": "0000002969",
+        "sic": "2810",
+        "sic_description": "Industrial Inorganic Chemicals",
+        "state": "DE",
+        "fiscal_year_end": "0930"
+      },
+      "filings": [
+        {
+          "form": "10-Q",
+          "filing_date": "2026-01-30",
+          "accession_number": "0000002969-26-000008",
+          "document": "apd-20251231.htm",
+          "description": "10-Q",
+          "url": "https://www.sec.gov/Archives/edgar/data/2969/000000296926000008/apd-20251231.htm"
+        },
+        {
+          "form": "8-K",
+          "filing_date": "2026-01-30",
+          "accession_number": "0000002969-26-000006",
+          "document": "apd-20260130.htm",
+          "description": "FORM 8-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/2969/000000296926000006/apd-20260130.htm"
+        },
+        {
+          "form": "8-K",
+          "filing_date": "2026-01-29",
+          "accession_number": "0001193125-26-029381",
+          "document": "d884680d8k.htm",
+          "description": "8-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/2969/000119312526029381/d884680d8k.htm"
+        },
+        {
+          "form": "8-K",
+          "filing_date": "2025-11-25",
+          "accession_number": "0001193125-25-297255",
+          "document": "d42847d8k.htm",
+          "description": "8-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/2969/000119312525297255/d42847d8k.htm"
+        },
+        {
+          "form": "10-K",
+          "filing_date": "2025-11-20",
+          "accession_number": "0000002969-25-000055",
+          "document": "apd-20250930.htm",
+          "description": "FORM 10-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/2969/000000296925000055/apd-20250930.htm"
+        }
+      ],
+      "fetch_time": "2026-03-26T20:15:34.727299"
+    },
+    "APO": {
+      "ticker": "APO",
+      "company": {
+        "name": "Apollo Global Management, Inc.",
+        "cik": "0001858681",
+        "sic": "6282",
+        "sic_description": "Investment Advice",
+        "state": "DE",
+        "fiscal_year_end": "1231"
+      },
+      "filings": [
+        {
+          "form": "8-K",
+          "filing_date": "2026-03-24",
+          "accession_number": "0000950142-26-000810",
+          "document": "eh260755910_8k.htm",
+          "description": "FORM 8-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/1858681/000095014226000810/eh260755910_8k.htm"
+        },
+        {
+          "form": "10-K",
+          "filing_date": "2026-02-25",
+          "accession_number": "0001858681-26-000013",
+          "document": "apo-20251231.htm",
+          "description": "10-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/1858681/000185868126000013/apo-20251231.htm"
+        },
+        {
+          "form": "8-K",
+          "filing_date": "2026-02-19",
+          "accession_number": "0001858681-26-000010",
+          "document": "apo-20260219.htm",
+          "description": "8-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/1858681/000185868126000010/apo-20260219.htm"
+        },
+        {
+          "form": "8-K",
+          "filing_date": "2026-02-09",
+          "accession_number": "0001858681-26-000007",
+          "document": "apo-20260209.htm",
+          "description": "8-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/1858681/000185868126000007/apo-20260209.htm"
+        },
+        {
+          "form": "8-K",
+          "filing_date": "2026-01-02",
+          "accession_number": "0001858681-26-000004",
+          "document": "apo-20260102.htm",
+          "description": "8-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/1858681/000185868126000004/apo-20260102.htm"
+        }
+      ],
+      "fetch_time": "2026-03-26T20:15:35.425886"
+    },
+    "AWK": {
+      "ticker": "AWK",
+      "company": {
+        "name": "American Water Works Company, Inc.",
+        "cik": "0001410636",
+        "sic": "4941",
+        "sic_description": "Water Supply",
+        "state": "DE",
+        "fiscal_year_end": "1231"
+      },
+      "filings": [
+        {
+          "form": "8-K",
+          "filing_date": "2026-03-10",
+          "accession_number": "0001410636-26-000056",
+          "document": "awk-20260305.htm",
+          "description": "FORM 8-K - WEST VIRGINIA-AMERICAN WATER RATE CASE ORDER",
+          "url": "https://www.sec.gov/Archives/edgar/data/1410636/000141063626000056/awk-20260305.htm"
+        },
+        {
+          "form": "8-K",
+          "filing_date": "2026-03-02",
+          "accession_number": "0001410636-26-000053",
+          "document": "awk-20260226.htm",
+          "description": "FORM 8-K - MARYLAND-AMERICAN RATE CASE ORDER",
+          "url": "https://www.sec.gov/Archives/edgar/data/1410636/000141063626000053/awk-20260226.htm"
+        },
+        {
+          "form": "8-K",
+          "filing_date": "2026-02-18",
+          "accession_number": "0001410636-26-000035",
+          "document": "awk-20260218.htm",
+          "description": "8-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/1410636/000141063626000035/awk-20260218.htm"
+        },
+        {
+          "form": "10-K",
+          "filing_date": "2026-02-18",
+          "accession_number": "0001410636-26-000034",
+          "document": "awk-20251231.htm",
+          "description": "10-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/1410636/000141063626000034/awk-20251231.htm"
+        },
+        {
+          "form": "8-K",
+          "filing_date": "2026-02-10",
+          "accession_number": "0001410636-26-000029",
+          "document": "awk-20260210.htm",
+          "description": "FORM 8-K - SPECIAL MEETING - FINAL RESULTS",
+          "url": "https://www.sec.gov/Archives/edgar/data/1410636/000141063626000029/awk-20260210.htm"
+        }
+      ],
+      "fetch_time": "2026-03-26T20:15:36.124458"
+    },
+    "ALL": {
+      "ticker": "ALL",
+      "company": {
+        "name": "ALLSTATE CORP",
+        "cik": "0000899051",
+        "sic": "6331",
+        "sic_description": "Fire, Marine & Casualty Insurance",
+        "state": "DE",
+        "fiscal_year_end": "1231"
+      },
+      "filings": [
+        {
+          "form": "8-K",
+          "filing_date": "2026-03-19",
+          "accession_number": "0000899051-26-000055",
+          "document": "all-20260319.htm",
+          "description": "8-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/899051/000089905126000055/all-20260319.htm"
+        },
+        {
+          "form": "10-K",
+          "filing_date": "2026-02-20",
+          "accession_number": "0000899051-26-000031",
+          "document": "all-20251231.htm",
+          "description": "10-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/899051/000089905126000031/all-20251231.htm"
+        },
+        {
+          "form": "8-K",
+          "filing_date": "2026-02-19",
+          "accession_number": "0000899051-26-000029",
+          "document": "all-20260219.htm",
+          "description": "8-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/899051/000089905126000029/all-20260219.htm"
+        },
+        {
+          "form": "8-K",
+          "filing_date": "2026-02-04",
+          "accession_number": "0000899051-26-000013",
+          "document": "all-20260204.htm",
+          "description": "8-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/899051/000089905126000013/all-20260204.htm"
+        },
+        {
+          "form": "8-K",
+          "filing_date": "2026-01-15",
+          "accession_number": "0000899051-26-000009",
+          "document": "all-20260115.htm",
+          "description": "8-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/899051/000089905126000009/all-20260115.htm"
+        }
+      ],
+      "fetch_time": "2026-03-26T20:15:36.838598"
+    },
+    "ALB": {
+      "ticker": "ALB",
+      "company": {
+        "name": "ALBEMARLE CORP",
+        "cik": "0000915913",
+        "sic": "2821",
+        "sic_description": "Plastic Materials, Synth Resins & Nonvulcan Elastomers",
+        "state": "VA",
+        "fiscal_year_end": "1231"
+      },
+      "filings": [
+        {
+          "form": "8-K",
+          "filing_date": "2026-03-25",
+          "accession_number": "0000915913-26-000057",
+          "document": "alb-20260319.htm",
+          "description": "8-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/915913/000091591326000057/alb-20260319.htm"
+        },
+        {
+          "form": "8-K",
+          "filing_date": "2026-03-06",
+          "accession_number": "0000915913-26-000032",
+          "document": "alb-20260302.htm",
+          "description": "8-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/915913/000091591326000032/alb-20260302.htm"
+        },
+        {
+          "form": "8-K",
+          "filing_date": "2026-03-04",
+          "accession_number": "0000915913-26-000029",
+          "document": "alb-20260226.htm",
+          "description": "8-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/915913/000091591326000029/alb-20260226.htm"
+        },
+        {
+          "form": "10-K",
+          "filing_date": "2026-02-11",
+          "accession_number": "0000915913-26-000018",
+          "document": "alb-20251231.htm",
+          "description": "10-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/915913/000091591326000018/alb-20251231.htm"
+        },
+        {
+          "form": "8-K",
+          "filing_date": "2026-02-11",
+          "accession_number": "0000915913-26-000016",
+          "document": "alb-20260211.htm",
+          "description": "8-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/915913/000091591326000016/alb-20260211.htm"
+        }
+      ],
+      "fetch_time": "2026-03-26T20:15:37.590218"
+    },
+    "AMP": {
+      "ticker": "AMP",
+      "company": {
+        "name": "AMERIPRISE FINANCIAL INC",
+        "cik": "0000820027",
+        "sic": "6282",
+        "sic_description": "Investment Advice",
+        "state": "DE",
+        "fiscal_year_end": "1231"
+      },
+      "filings": [
+        {
+          "form": "10-K/A",
+          "filing_date": "2026-03-12",
+          "accession_number": "0000820027-26-000016",
+          "document": "amp-20251231.htm",
+          "description": "10-K/A",
+          "url": "https://www.sec.gov/Archives/edgar/data/820027/000082002726000016/amp-20251231.htm"
+        },
+        {
+          "form": "10-K",
+          "filing_date": "2026-02-19",
+          "accession_number": "0000820027-26-000011",
+          "document": "amp-20251231.htm",
+          "description": "10-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/820027/000082002726000011/amp-20251231.htm"
+        },
+        {
+          "form": "8-K",
+          "filing_date": "2026-02-12",
+          "accession_number": "0001104659-26-014312",
+          "document": "tm266105d1_8k.htm",
+          "description": "FORM 8-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/820027/000110465926014312/tm266105d1_8k.htm"
+        }
+      ],
+      "fetch_time": "2026-03-26T20:15:38.315305"
+    },
+    "AMD": {
+      "ticker": "AMD",
+      "company": {
+        "name": "ADVANCED MICRO DEVICES INC",
+        "cik": "0000002488",
+        "sic": "3674",
+        "sic_description": "Semiconductors & Related Devices",
+        "state": "DE",
+        "fiscal_year_end": "1226"
+      },
+      "filings": [
+        {
+          "form": "8-K",
+          "filing_date": "2026-02-24",
+          "accession_number": "0000002488-26-000045",
+          "document": "amd-20260223.htm",
+          "description": "8-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/2488/000000248826000045/amd-20260223.htm"
+        },
+        {
+          "form": "8-K",
+          "filing_date": "2026-02-17",
+          "accession_number": "0000002488-26-000029",
+          "document": "amd-20260210.htm",
+          "description": "8-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/2488/000000248826000029/amd-20260210.htm"
+        },
+        {
+          "form": "10-K/A",
+          "filing_date": "2026-02-04",
+          "accession_number": "0000002488-26-000021",
+          "document": "amd-20251227.htm",
+          "description": "10-K/A",
+          "url": "https://www.sec.gov/Archives/edgar/data/2488/000000248826000021/amd-20251227.htm"
+        },
+        {
+          "form": "10-K",
+          "filing_date": "2026-02-04",
+          "accession_number": "0000002488-26-000018",
+          "document": "amd-20251227.htm",
+          "description": "10-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/2488/000000248826000018/amd-20251227.htm"
+        },
+        {
+          "form": "8-K",
+          "filing_date": "2026-02-03",
+          "accession_number": "0000002488-26-000014",
+          "document": "amd-20260203.htm",
+          "description": "8-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/2488/000000248826000014/amd-20260203.htm"
+        }
+      ],
+      "fetch_time": "2026-03-26T20:15:39.031030"
+    },
+    "APA": {
+      "ticker": "APA",
+      "company": {
+        "name": "APA Corp",
+        "cik": "0001841666",
+        "sic": "1311",
+        "sic_description": "Crude Petroleum & Natural Gas",
+        "state": "DE",
+        "fiscal_year_end": "1231"
+      },
+      "filings": [
+        {
+          "form": "10-K",
+          "filing_date": "2026-02-26",
+          "accession_number": "0001841666-26-000015",
+          "document": "apa-20251231.htm",
+          "description": "10-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/1841666/000184166626000015/apa-20251231.htm"
+        },
+        {
+          "form": "8-K",
+          "filing_date": "2026-02-25",
+          "accession_number": "0001841666-26-000012",
+          "document": "apa8k-20260225.htm",
+          "description": "8-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/1841666/000184166626000012/apa8k-20260225.htm"
+        },
+        {
+          "form": "8-K",
+          "filing_date": "2026-01-20",
+          "accession_number": "0001841666-26-000003",
+          "document": "apa8k-20260120.htm",
+          "description": "8-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/1841666/000184166626000003/apa8k-20260120.htm"
+        }
+      ],
+      "fetch_time": "2026-03-26T20:15:39.721417"
+    },
+    "LNT": {
+      "ticker": "LNT",
+      "company": {
+        "name": "ALLIANT ENERGY CORP",
+        "cik": "0000352541",
+        "sic": "4931",
+        "sic_description": "Electric & Other Services Combined",
+        "state": "WI",
+        "fiscal_year_end": "1231"
+      },
+      "filings": [
+        {
+          "form": "8-K",
+          "filing_date": "2026-03-19",
+          "accession_number": "0001193125-26-116244",
+          "document": "d131241d8k.htm",
+          "description": "8-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/352541/000119312526116244/d131241d8k.htm"
+        },
+        {
+          "form": "8-K",
+          "filing_date": "2026-03-04",
+          "accession_number": "0000352541-26-000009",
+          "document": "lnt-20260302.htm",
+          "description": "8-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/352541/000035254126000009/lnt-20260302.htm"
+        },
+        {
+          "form": "10-K",
+          "filing_date": "2026-02-20",
+          "accession_number": "0000352541-26-000007",
+          "document": "lnt-20251231.htm",
+          "description": "10-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/352541/000035254126000007/lnt-20251231.htm"
+        },
+        {
+          "form": "8-K",
+          "filing_date": "2026-02-20",
+          "accession_number": "0000352541-26-000005",
+          "document": "lnt-20260219.htm",
+          "description": "8-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/352541/000035254126000005/lnt-20260219.htm"
+        },
+        {
+          "form": "8-K",
+          "filing_date": "2026-01-08",
+          "accession_number": "0000352541-26-000003",
+          "document": "lnt-20260105.htm",
+          "description": "8-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/352541/000035254126000003/lnt-20260105.htm"
+        }
+      ],
+      "fetch_time": "2026-03-26T20:15:40.487177"
+    },
+    "ACGL": {
+      "ticker": "ACGL",
+      "company": {
+        "name": "ARCH CAPITAL GROUP LTD.",
+        "cik": "0000947484",
+        "sic": "6331",
+        "sic_description": "Fire, Marine & Casualty Insurance",
+        "state": "",
+        "fiscal_year_end": "1231"
+      },
+      "filings": [
+        {
+          "form": "8-K",
+          "filing_date": "2026-02-26",
+          "accession_number": "0000947484-26-000019",
+          "document": "acgl-20260226.htm",
+          "description": "8-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/947484/000094748426000019/acgl-20260226.htm"
+        },
+        {
+          "form": "10-K",
+          "filing_date": "2026-02-26",
+          "accession_number": "0000947484-26-000017",
+          "document": "acgl-20251231.htm",
+          "description": "10-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/947484/000094748426000017/acgl-20251231.htm"
+        },
+        {
+          "form": "8-K",
+          "filing_date": "2026-02-09",
+          "accession_number": "0000947484-26-000010",
+          "document": "acgl-20260209.htm",
+          "description": "8-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/947484/000094748426000010/acgl-20260209.htm"
+        },
+        {
+          "form": "8-K",
+          "filing_date": "2026-01-22",
+          "accession_number": "0000947484-26-000004",
+          "document": "acgl-20260115.htm",
+          "description": "8-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/947484/000094748426000004/acgl-20260115.htm"
+        },
+        {
+          "form": "8-K",
+          "filing_date": "2025-11-07",
+          "accession_number": "0000947484-25-000089",
+          "document": "acgl-20251107.htm",
+          "description": "8-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/947484/000094748425000089/acgl-20251107.htm"
+        }
+      ],
+      "fetch_time": "2026-03-26T20:15:41.187690"
+    },
+    "AJG": {
+      "ticker": "AJG",
+      "company": {
+        "name": "Arthur J. Gallagher & Co.",
+        "cik": "0000354190",
+        "sic": "6411",
+        "sic_description": "Insurance Agents, Brokers & Service",
+        "state": "DE",
+        "fiscal_year_end": "1231"
+      },
+      "filings": [
+        {
+          "form": "8-K",
+          "filing_date": "2026-03-17",
+          "accession_number": "0000354190-26-000073",
+          "document": "ajg-20260317.htm",
+          "description": "8-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/354190/000035419026000073/ajg-20260317.htm"
+        },
+        {
+          "form": "8-K",
+          "filing_date": "2026-03-12",
+          "accession_number": "0000354190-26-000069",
+          "document": "ajg-20260306.htm",
+          "description": "8-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/354190/000035419026000069/ajg-20260306.htm"
+        }
+      ],
+      "fetch_time": "2026-03-26T20:15:41.940061"
+    },
+    "ADM": {
+      "ticker": "ADM",
+      "company": {
+        "name": "Archer-Daniels-Midland Co",
+        "cik": "0000007084",
+        "sic": "2070",
+        "sic_description": "Fats & Oils",
+        "state": "DE",
+        "fiscal_year_end": "1231"
+      },
+      "filings": [
+        {
+          "form": "8-K",
+          "filing_date": "2026-03-10",
+          "accession_number": "0001193125-26-100440",
+          "document": "d119393d8k.htm",
+          "description": "8-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/7084/000119312526100440/d119393d8k.htm"
+        },
+        {
+          "form": "10-K",
+          "filing_date": "2026-02-17",
+          "accession_number": "0000007084-26-000011",
+          "document": "adm-20251231.htm",
+          "description": "10-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/7084/000000708426000011/adm-20251231.htm"
+        },
+        {
+          "form": "8-K",
+          "filing_date": "2026-02-03",
+          "accession_number": "0000007084-26-000005",
+          "document": "adm-20260203.htm",
+          "description": "8-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/7084/000000708426000005/adm-20260203.htm"
+        },
+        {
+          "form": "8-K",
+          "filing_date": "2026-01-28",
+          "accession_number": "0001193125-26-025560",
+          "document": "d884185d8k.htm",
+          "description": "8-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/7084/000119312526025560/d884185d8k.htm"
+        }
+      ],
+      "fetch_time": "2026-03-26T20:15:42.632993"
+    },
+    "ANET": {
+      "ticker": "ANET",
+      "company": {
+        "name": "Arista Networks, Inc.",
+        "cik": "0001596532",
+        "sic": "3576",
+        "sic_description": "Computer Communications Equipment",
+        "state": "DE",
+        "fiscal_year_end": "1231"
+      },
+      "filings": [
+        {
+          "form": "10-K",
+          "filing_date": "2026-02-17",
+          "accession_number": "0001596532-26-000013",
+          "document": "anet-20251231.htm",
+          "description": "10-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/1596532/000159653226000013/anet-20251231.htm"
+        },
+        {
+          "form": "8-K",
+          "filing_date": "2026-02-12",
+          "accession_number": "0001596532-26-000010",
+          "document": "anet-20260212.htm",
+          "description": "8-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/1596532/000159653226000010/anet-20260212.htm"
+        }
+      ],
+      "fetch_time": "2026-03-26T20:15:43.328820"
     }
   }
 }

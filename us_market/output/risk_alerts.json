@@ -1,19 +1,19 @@
 {
-  "timestamp": "2026-03-26T15:35:32.965533",
+  "timestamp": "2026-03-26T20:16:11.162058",
   "portfolio_summary": {
     "total_picks": 15,
-    "portfolio_var_95_5d": -2236.59,
-    "portfolio_cvar_95_5d": -3016.58,
+    "portfolio_var_95_5d": -1527.71,
+    "portfolio_cvar_95_5d": -2388.54,
     "risk_level": "Elevated",
     "var_details": {
-      "var_pct": -2.24,
-      "var_dollar": -2236.59,
-      "cvar_pct": -3.02,
-      "cvar_dollar": -3016.58,
-      "t_var_dollar": -2406.62,
+      "var_pct": -1.53,
+      "var_dollar": -1527.71,
+      "cvar_pct": -2.39,
+      "cvar_dollar": -2388.54,
+      "t_var_dollar": -2002.04,
       "confidence": 0.95,
       "horizon_days": 5,
-      "degrees_of_freedom": 10.55
+      "degrees_of_freedom": 35.21
     }
   },
   "drawdowns": {
@@ -38,12 +38,12 @@
       "max_dd": -16.85,
       "from_peak_days": 42
     },
-    "AJG": {
-      "current_price": 213.56,
-      "peak_price": 264.03,
-      "current_dd": -19.12,
-      "max_dd": -22.67,
-      "from_peak_days": 72
+    "AIZ": {
+      "current_price": 217.02,
+      "peak_price": 242.33,
+      "current_dd": -10.44,
+      "max_dd": -12.57,
+      "from_peak_days": 47
     },
     "AON": {
       "current_price": 321.45,
@@ -52,6 +52,41 @@
       "max_dd": -13.11,
       "from_peak_days": 86
     },
+    "AMZN": {
+      "current_price": 211.71,
+      "peak_price": 247.38,
+      "current_dd": -14.42,
+      "max_dd": -19.64,
+      "from_peak_days": 75
+    },
+    "AMAT": {
+      "current_price": 369.34,
+      "peak_price": 394.95,
+      "current_dd": -6.48,
+      "max_dd": -17.78,
+      "from_peak_days": 28
+    },
+    "APD": {
+      "current_price": 290.09,
+      "peak_price": 293.14,
+      "current_dd": -1.04,
+      "max_dd": -7.15,
+      "from_peak_days": 42
+    },
+    "APO": {
+      "current_price": 109.8,
+      "peak_price": 152.08,
+      "current_dd": -27.8,
+      "max_dd": -34.05,
+      "from_peak_days": 78
+    },
+    "AWK": {
+      "current_price": 134.59,
+      "peak_price": 139.69,
+      "current_dd": -3.65,
+      "max_dd": -7.8,
+      "from_peak_days": 12
+    },
     "ALL": {
       "current_price": 204.71,
       "peak_price": 214.18,
@@ -59,11 +94,11 @@
       "max_dd": -9.39,
       "from_peak_days": 21
     },
-    "AMAT": {
-      "current_price": 369.34,
-      "peak_price": 394.95,
-      "current_dd": -6.48,
-      "max_dd": -17.78,
+    "ALB": {
+      "current_price": 181.39,
+      "peak_price": 195.39,
+      "current_dd": -7.16,
+      "max_dd": -19.8,
       "from_peak_days": 28
     },
     "AMP": {
@@ -73,54 +108,19 @@
       "max_dd": -20.47,
       "from_peak_days": 49
     },
-    "ALB": {
-      "current_price": 181.39,
-      "peak_price": 195.39,
-      "current_dd": -7.16,
-      "max_dd": -19.8,
-      "from_peak_days": 28
+    "AMD": {
+      "current_price": 220.27,
+      "peak_price": 259.68,
+      "current_dd": -15.18,
+      "max_dd": -26.47,
+      "from_peak_days": 61
     },
-    "APO": {
-      "current_price": 109.8,
-      "peak_price": 152.08,
-      "current_dd": -27.8,
-      "max_dd": -34.05,
-      "from_peak_days": 78
-    },
-    "AEP": {
-      "current_price": 128.3,
-      "peak_price": 134.15,
-      "current_dd": -4.36,
-      "max_dd": -6.33,
-      "from_peak_days": 9
-    },
-    "AMZN": {
-      "current_price": 211.71,
-      "peak_price": 247.38,
-      "current_dd": -14.42,
-      "max_dd": -19.64,
-      "from_peak_days": 75
-    },
-    "LNT": {
-      "current_price": 69.77,
-      "peak_price": 73.03,
-      "current_dd": -4.46,
-      "max_dd": -5.92,
-      "from_peak_days": 9
-    },
-    "APD": {
-      "current_price": 290.09,
-      "peak_price": 293.14,
-      "current_dd": -1.04,
-      "max_dd": -7.15,
-      "from_peak_days": 42
-    },
-    "APP": {
-      "current_price": 436.69,
-      "peak_price": 714.23,
-      "current_dd": -38.86,
-      "max_dd": -48.63,
-      "from_peak_days": 89
+    "APA": {
+      "current_price": 41.32,
+      "peak_price": 41.32,
+      "current_dd": 0.0,
+      "max_dd": -7.77,
+      "from_peak_days": 0
     }
   },
   "concentration": {
@@ -137,10 +137,6 @@
         "count": 2,
         "weight_pct": 13.3
       },
-      "Utilities": {
-        "count": 2,
-        "weight_pct": 13.3
-      },
       "Communication Services": {
         "count": 1,
         "weight_pct": 6.7
@@ -152,25 +148,18 @@
       "Consumer Discretionary": {
         "count": 1,
         "weight_pct": 6.7
+      },
+      "Utilities": {
+        "count": 1,
+        "weight_pct": 6.7
+      },
+      "Energy": {
+        "count": 1,
+        "weight_pct": 6.7
       }
     },
     "concentration_warnings": [],
-    "high_correlation_pairs": [
-      {
-        "pair": [
-          "AEP",
-          "LNT"
-        ],
-        "correlation": 0.82
-      },
-      {
-        "pair": [
-          "AJG",
-          "AON"
-        ],
-        "correlation": 0.81
-      }
-    ]
+    "high_correlation_pairs": []
   },
   "alerts": [
     {
@@ -183,18 +172,18 @@
     },
     {
       "alert_type": "drawdown",
-      "severity": "critical",
-      "ticker": "APP",
-      "message": "APP is in critical drawdown: -38.9% from peak",
-      "value": -38.86,
-      "threshold": -20.0
+      "severity": "warning",
+      "ticker": "AIZ",
+      "message": "AIZ drawdown warning: -10.4% from peak",
+      "value": -10.44,
+      "threshold": -10.0
     },
     {
       "alert_type": "drawdown",
       "severity": "warning",
-      "ticker": "AJG",
-      "message": "AJG drawdown warning: -19.1% from peak",
-      "value": -19.12,
+      "ticker": "AMZN",
+      "message": "AMZN drawdown warning: -14.4% from peak",
+      "value": -14.42,
       "threshold": -10.0
     },
     {
@@ -208,26 +197,10 @@
     {
       "alert_type": "drawdown",
       "severity": "warning",
-      "ticker": "AMZN",
-      "message": "AMZN drawdown warning: -14.4% from peak",
-      "value": -14.42,
+      "ticker": "AMD",
+      "message": "AMD drawdown warning: -15.2% from peak",
+      "value": -15.18,
       "threshold": -10.0
-    },
-    {
-      "alert_type": "correlation",
-      "severity": "info",
-      "ticker": "AEP/LNT",
-      "message": "High correlation (0.82) between AEP and LNT",
-      "value": 0.82,
-      "threshold": 0.8
-    },
-    {
-      "alert_type": "correlation",
-      "severity": "info",
-      "ticker": "AJG/AON",
-      "message": "High correlation (0.81) between AJG and AON",
-      "value": 0.81,
-      "threshold": 0.8
     }
   ]
 }

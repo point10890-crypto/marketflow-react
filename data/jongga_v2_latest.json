@@ -5,6 +5,88 @@
   "signals": [
     {
       "id": null,
+      "stock_code": "100090",
+      "stock_name": "SK오션플랜트",
+      "market": "KOSPI",
+      "sector": "",
+      "signal_date": "2026-03-26",
+      "grade": "S",
+      "score": {
+        "news": 3,
+        "volume": 3,
+        "chart": 1,
+        "candle": 1,
+        "consolidation": 0,
+        "supply": 1,
+        "disclosure": 0,
+        "analyst": 3,
+        "financial": 2,
+        "llm_reason": "해상풍력특별법 시행으로 SK오션플랜트의 사업 기회 확대 및 주가 급등이 예상되며, 하부구조물 제작 역량을 바탕으로 글로벌 시장 선도 기대.",
+        "llm_source": "perplexity+gemini",
+        "total": 14
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "뉴시스",
+          "파이낸셜뉴스",
+          "한국경제"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": false,
+        "is_breakout": false,
+        "ma_aligned": true,
+        "good_candle": true,
+        "has_consolidation": false,
+        "supply_positive": true,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": false,
+        "volume_suspicious": false
+      },
+      "current_price": 28700,
+      "entry_price": 28700,
+      "stop_price": 27839,
+      "target_price": 30135,
+      "quantity": 435,
+      "position_size": 12484500,
+      "r_value": 250000.0,
+      "r_multiplier": 1.5,
+      "trading_value": 411873277200,
+      "change_pct": 14.57,
+      "volume_ratio": 0.0,
+      "foreign_5d": -1049331,
+      "inst_5d": 574199,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "SK오션플랜트, 해상풍력특별법 시행에 '기대감'",
+          "source": "한국경제",
+          "published_at": "2026-03-26T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005267320&office_id=015&code=100090&page=1&sm="
+        },
+        {
+          "title": "SK오션플랜트, 세계 최고 하부구조물 제작 역량 주목",
+          "source": "뉴시스",
+          "published_at": "2026-03-26T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0013847432&office_id=003&code=100090&page=1&sm="
+        },
+        {
+          "title": "SK오션플랜트, 해풍법 시행 '수혜'..하부구조물 역량에 주목",
+          "source": "파이낸셜뉴스",
+          "published_at": "2026-03-26T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005497728&office_id=014&code=100090&page=1&sm="
+        }
+      ],
+      "themes": [
+        "해상풍력",
+        "신재생에너지",
+        "ESG"
+      ]
+    },
+    {
+      "id": null,
       "stock_code": "009420",
       "stock_name": "한올바이오파마",
       "market": "KOSPI",
@@ -21,16 +103,16 @@
         "disclosure": 0,
         "analyst": 3,
         "financial": 2,
-        "llm_reason": "바토클리맙 임상 3상 결과에 따른 상업화 기대감 및 2026년 가치 재평가 전망으로 긍정적 기대감이 높음.",
+        "llm_reason": "갑상선안병증 임상 3상 및 안구건조증 임상 2상 결과 발표 기대감과 52주 신고가 경신으로 긍정적인 투자 심리가 형성.",
         "llm_source": "perplexity+gemini",
         "total": 14
       },
       "checklist": {
         "has_news": true,
         "news_sources": [
-          "SBS Biz",
           "뉴스1",
-          "디지털타임스"
+          "디지털타임스",
+          "SBS Biz"
         ],
         "volume_sufficient": true,
         "is_new_high": true,
@@ -81,88 +163,8 @@
       ],
       "themes": [
         "2026년 임상 예정 제약·바이오",
-        "바이오시밀러",
-        "면역항암제"
-      ]
-    },
-    {
-      "id": null,
-      "stock_code": "100090",
-      "stock_name": "SK오션플랜트",
-      "market": "KOSPI",
-      "sector": "",
-      "signal_date": "2026-03-26",
-      "grade": "S",
-      "score": {
-        "news": 2,
-        "volume": 3,
-        "chart": 1,
-        "candle": 1,
-        "consolidation": 0,
-        "supply": 1,
-        "disclosure": 0,
-        "analyst": 3,
-        "financial": 2,
-        "llm_reason": "해상풍력특별법 시행과 세계 최고 수준의 하부구조물 제작 역량으로 긍정적인 기대감이 형성되고 있으며, 최근 주가 급등과 기관 매수세가 이를 뒷받침함.",
-        "llm_source": "perplexity+gemini",
-        "total": 13
-      },
-      "checklist": {
-        "has_news": true,
-        "news_sources": [
-          "한국경제",
-          "뉴시스",
-          "파이낸셜뉴스"
-        ],
-        "volume_sufficient": true,
-        "is_new_high": false,
-        "is_breakout": false,
-        "ma_aligned": true,
-        "good_candle": true,
-        "has_consolidation": false,
-        "supply_positive": true,
-        "has_disclosure": false,
-        "disclosure_types": [],
-        "negative_news": false,
-        "upper_wick_long": false,
-        "volume_suspicious": false
-      },
-      "current_price": 28700,
-      "entry_price": 28700,
-      "stop_price": 27839,
-      "target_price": 30135,
-      "quantity": 435,
-      "position_size": 12484500,
-      "r_value": 250000.0,
-      "r_multiplier": 1.5,
-      "trading_value": 411873277200,
-      "change_pct": 14.57,
-      "volume_ratio": 0.0,
-      "foreign_5d": -1049331,
-      "inst_5d": 574199,
-      "status": "PENDING",
-      "news_items": [
-        {
-          "title": "SK오션플랜트, 해상풍력특별법 시행에 '기대감'",
-          "source": "한국경제",
-          "published_at": "2026-03-26T00:00:00",
-          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005267320&office_id=015&code=100090&page=1&sm="
-        },
-        {
-          "title": "SK오션플랜트, 세계 최고 하부구조물 제작 역량 주목",
-          "source": "뉴시스",
-          "published_at": "2026-03-26T00:00:00",
-          "url": "https://finance.naver.com/item/news_read.naver?article_id=0013847432&office_id=003&code=100090&page=1&sm="
-        },
-        {
-          "title": "SK오션플랜트, 해풍법 시행 '수혜'..하부구조물 역량에 주목",
-          "source": "파이낸셜뉴스",
-          "published_at": "2026-03-26T00:00:00",
-          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005497728&office_id=014&code=100090&page=1&sm="
-        }
-      ],
-      "themes": [
-        "풍력(해상풍력)"
+        "바토클리맙",
+        "자율신경계질환 치료제"
       ]
     },
     {
@@ -183,7 +185,7 @@
         "disclosure": 1,
         "analyst": 0,
         "financial": 2,
-        "llm_reason": "미국 우주항공 발사업체와 대규모 특수합금 공급계약 체결 (매출액 대비 1097.67%)",
+        "llm_reason": "미국 우주항공 발사업체와 대규모 특수합금 원소재 공급계약 체결 및 자기 전환사채 매각 결정 공시로 재무구조 개선 기대.",
         "llm_source": "perplexity+gemini",
         "total": 10
       },
@@ -243,8 +245,8 @@
         }
       ],
       "themes": [
-        "우주항공",
-        "스페이스X"
+        "우주항공·방산 특수합금",
+        "스페이스X 공급망"
       ]
     },
     {
@@ -265,15 +267,15 @@
         "disclosure": 0,
         "analyst": 0,
         "financial": 2,
-        "llm_reason": "큐렉소, 인공관절 수술로봇 '큐비스-조인트' 미국 FDA 승인 획득으로 북미 시장 진출 기반 마련 및 실적 개선 기대.",
+        "llm_reason": "인공관절 수술로봇 '큐비스-조인트'의 미국 FDA 승인 획득 및 2025년 흑자전환으로 인한 실적 개선 기대감이 높음",
         "llm_source": "perplexity+gemini",
         "total": 9
       },
       "checklist": {
         "has_news": true,
         "news_sources": [
-          "한국경제",
-          "서울경제"
+          "서울경제",
+          "한국경제"
         ],
         "volume_sufficient": true,
         "is_new_high": false,
@@ -296,7 +298,7 @@
       "position_size": 12496240,
       "r_value": 250000.0,
       "r_multiplier": 1.5,
-      "trading_value": 179504798785,
+      "trading_value": 180184012615,
       "change_pct": 15.07,
       "volume_ratio": 0.0,
       "foreign_5d": -38836,
@@ -325,7 +327,7 @@
       "themes": [
         "수술용 로봇",
         "의료기기",
-        "로봇"
+        "글로벌 시장 진출"
       ]
     },
     {
@@ -346,15 +348,15 @@
         "disclosure": 0,
         "analyst": 3,
         "financial": 2,
-        "llm_reason": "프리마켓에서 배터리 소재 테마로 급등하며 긍정적인 기대감이 형성되었으나, 실적 정보는 부족합니다.",
+        "llm_reason": "프리마켓에서 OLED 소재·부품 테마로 급등했으며, 2026년 영업이익 증가 기대감으로 긍정적인 시장 반응을 보이고 있음",
         "llm_source": "perplexity+gemini",
         "total": 11
       },
       "checklist": {
         "has_news": true,
         "news_sources": [
-          "한국경제",
-          "서울신문"
+          "서울신문",
+          "한국경제"
         ],
         "volume_sufficient": true,
         "is_new_high": false,
@@ -398,8 +400,9 @@
         }
       ],
       "themes": [
-        "2차전지",
-        "배터리 소재"
+        "OLED",
+        "첨단소재",
+        "부품"
       ]
     },
     {
@@ -420,15 +423,15 @@
         "disclosure": 0,
         "analyst": 0,
         "financial": 2,
-        "llm_reason": "지배구조 개선 기대감 및 52주 신고가 경신으로 긍정적 흐름이 예상되나, 자회사 중복상장 이슈는 잠재적 리스크로 작용할 수 있음.",
+        "llm_reason": "선제적 이사회 개편으로 인한 지배구조 개선 기대감이 주가 상승에 긍정적 영향을 미치고 있음",
         "llm_source": "perplexity+gemini",
         "total": 10
       },
       "checklist": {
         "has_news": true,
         "news_sources": [
-          "머니투데이",
-          "비즈워치"
+          "비즈워치",
+          "머니투데이"
         ],
         "volume_sufficient": true,
         "is_new_high": true,
@@ -480,7 +483,88 @@
       "themes": [
         "지배구조 개선",
         "자동차 부품",
-        "공작기계"
+        "배터리"
+      ]
+    },
+    {
+      "id": null,
+      "stock_code": "004440",
+      "stock_name": "삼일씨엔에스",
+      "market": "KOSPI",
+      "sector": "",
+      "signal_date": "2026-03-26",
+      "grade": "A",
+      "score": {
+        "news": 3,
+        "volume": 2,
+        "chart": 1,
+        "candle": 0,
+        "consolidation": 0,
+        "supply": 1,
+        "disclosure": 0,
+        "analyst": 0,
+        "financial": 1,
+        "llm_reason": "두산에너빌리티와 585.55억원 규모의 공급계약 체결로 인한 확실한 호재 발생 및 주가 급등, 52주 신고가 경신.",
+        "llm_source": "perplexity+gemini",
+        "total": 8
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "이데일리",
+          "머니투데이",
+          "아시아경제"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": false,
+        "is_breakout": false,
+        "ma_aligned": true,
+        "good_candle": false,
+        "has_consolidation": false,
+        "supply_positive": true,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": true,
+        "volume_suspicious": false
+      },
+      "current_price": 9950,
+      "entry_price": 9950,
+      "stop_price": 9651,
+      "target_price": 10447,
+      "quantity": 837,
+      "position_size": 8328150,
+      "r_value": 250000.0,
+      "r_multiplier": 1.0,
+      "trading_value": 24404881335,
+      "change_pct": 10.8,
+      "volume_ratio": 0.0,
+      "foreign_5d": -72440,
+      "inst_5d": 16,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "삼일씨엔에스, 885억원대 해상풍력발전 공급계약에 상한가",
+          "source": "머니투데이",
+          "published_at": "2026-03-25T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005334727&office_id=008&code=004440&page=1&sm="
+        },
+        {
+          "title": "삼일씨엔에스, 해상풍력 자켓 수주 소식에 10%대 강세[특징주]",
+          "source": "이데일리",
+          "published_at": "2026-03-25T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0006242267&office_id=018&code=004440&page=1&sm="
+        },
+        {
+          "title": "[특징주]‘해상풍력발전사업 공급계약’ 삼일씨엔에스 15%↑",
+          "source": "아시아경제",
+          "published_at": "2026-03-25T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005739675&office_id=277&code=004440&page=1&sm="
+        }
+      ],
+      "themes": [
+        "건자재(시멘트·레미콘·콘크리트)",
+        "지진"
       ]
     },
     {
@@ -492,7 +576,7 @@
       "signal_date": "2026-03-26",
       "grade": "A",
       "score": {
-        "news": 2,
+        "news": 1,
         "volume": 2,
         "chart": 2,
         "candle": 1,
@@ -501,9 +585,9 @@
         "disclosure": 0,
         "analyst": 0,
         "financial": 0,
-        "llm_reason": "HDC현대산업개발이 삼성전자와 함께 글로벌 시장 턴어라운드 기대감으로 언급되었고, 건설 및 부동산 부문 안정화 기대감이 있음.",
+        "llm_reason": "최근 24시간 이내 HDC현대산업개발 관련 뚜렷한 호재/악재 뉴스는 없으나, 2차전지, ESS, AI 테마와 간접 연계 가능성이 존재함",
         "llm_source": "perplexity+gemini",
-        "total": 9
+        "total": 8
       },
       "checklist": {
         "has_news": true,
@@ -560,173 +644,9 @@
         }
       ],
       "themes": [
-        "건설",
-        "AI",
-        "ESS"
-      ]
-    },
-    {
-      "id": null,
-      "stock_code": "004440",
-      "stock_name": "삼일씨엔에스",
-      "market": "KOSPI",
-      "sector": "",
-      "signal_date": "2026-03-26",
-      "grade": "A",
-      "score": {
-        "news": 3,
-        "volume": 2,
-        "chart": 1,
-        "candle": 0,
-        "consolidation": 0,
-        "supply": 1,
-        "disclosure": 0,
-        "analyst": 0,
-        "financial": 1,
-        "llm_reason": "두산에너빌리티와의 대규모 해상풍력발전 공급계약 체결 및 흑자전환 기대감으로 강한 상승세 시현 중",
-        "llm_source": "perplexity+gemini",
-        "total": 8
-      },
-      "checklist": {
-        "has_news": true,
-        "news_sources": [
-          "이데일리",
-          "머니투데이",
-          "아시아경제"
-        ],
-        "volume_sufficient": true,
-        "is_new_high": false,
-        "is_breakout": false,
-        "ma_aligned": true,
-        "good_candle": false,
-        "has_consolidation": false,
-        "supply_positive": true,
-        "has_disclosure": false,
-        "disclosure_types": [],
-        "negative_news": false,
-        "upper_wick_long": true,
-        "volume_suspicious": false
-      },
-      "current_price": 9950,
-      "entry_price": 9950,
-      "stop_price": 9651,
-      "target_price": 10447,
-      "quantity": 837,
-      "position_size": 8328150,
-      "r_value": 250000.0,
-      "r_multiplier": 1.0,
-      "trading_value": 24387605355,
-      "change_pct": 10.8,
-      "volume_ratio": 0.0,
-      "foreign_5d": -72440,
-      "inst_5d": 16,
-      "status": "PENDING",
-      "news_items": [
-        {
-          "title": "삼일씨엔에스, 885억원대 해상풍력발전 공급계약에 상한가",
-          "source": "머니투데이",
-          "published_at": "2026-03-25T00:00:00",
-          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005334727&office_id=008&code=004440&page=1&sm="
-        },
-        {
-          "title": "삼일씨엔에스, 해상풍력 자켓 수주 소식에 10%대 강세[특징주]",
-          "source": "이데일리",
-          "published_at": "2026-03-25T00:00:00",
-          "url": "https://finance.naver.com/item/news_read.naver?article_id=0006242267&office_id=018&code=004440&page=1&sm="
-        },
-        {
-          "title": "[특징주]‘해상풍력발전사업 공급계약’ 삼일씨엔에스 15%↑",
-          "source": "아시아경제",
-          "published_at": "2026-03-25T00:00:00",
-          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005739675&office_id=277&code=004440&page=1&sm="
-        }
-      ],
-      "themes": [
-        "해상풍력",
-        "건자재",
-        "지진"
-      ]
-    },
-    {
-      "id": null,
-      "stock_code": "009580",
-      "stock_name": "무림P&P",
-      "market": "KOSPI",
-      "sector": "",
-      "signal_date": "2026-03-26",
-      "grade": "A",
-      "score": {
-        "news": 3,
-        "volume": 2,
-        "chart": 1,
-        "candle": 0,
-        "consolidation": 0,
-        "supply": 2,
-        "disclosure": 0,
-        "analyst": 0,
-        "financial": 0,
-        "llm_reason": "제지 테마 강세 및 52주 신고가 경신, 기관 순매수와 친환경 설비 가동으로 긍정적 흐름.",
-        "llm_source": "perplexity+gemini",
-        "total": 8
-      },
-      "checklist": {
-        "has_news": true,
-        "news_sources": [
-          "뉴스1",
-          "조선비즈",
-          "비즈워치"
-        ],
-        "volume_sufficient": true,
-        "is_new_high": false,
-        "is_breakout": false,
-        "ma_aligned": true,
-        "good_candle": false,
-        "has_consolidation": false,
-        "supply_positive": true,
-        "has_disclosure": false,
-        "disclosure_types": [],
-        "negative_news": false,
-        "upper_wick_long": true,
-        "volume_suspicious": false
-      },
-      "current_price": 3005,
-      "entry_price": 3005,
-      "stop_price": 2914,
-      "target_price": 3155,
-      "quantity": 2773,
-      "position_size": 8332865,
-      "r_value": 250000.0,
-      "r_multiplier": 1.0,
-      "trading_value": 34016851866,
-      "change_pct": 10.28,
-      "volume_ratio": 0.0,
-      "foreign_5d": 143768,
-      "inst_5d": 20043,
-      "status": "PENDING",
-      "news_items": [
-        {
-          "title": "제지업계 ‘연봉 1위’ 조동길 한솔 회장 56억…2위 이동욱 무림 회장",
-          "source": "조선비즈",
-          "published_at": "2026-03-25T00:00:00",
-          "url": "https://finance.naver.com/item/news_read.naver?article_id=0001151322&office_id=366&code=009580&page=1&sm="
-        },
-        {
-          "title": "제지업계 '연봉킹' 조동길 한솔 회장…2위 이동욱 무림 회장",
-          "source": "뉴스1",
-          "published_at": "2026-03-25T00:00:00",
-          "url": "https://finance.naver.com/item/news_read.naver?article_id=0008846916&office_id=421&code=009580&page=1&sm="
-        },
-        {
-          "title": "[중동 리스크]\"펄프값보다 무서운 배삯\"…제지업계 이중고 '비명'",
-          "source": "비즈워치",
-          "published_at": "2026-03-26T00:00:00",
-          "url": "https://finance.naver.com/item/news_read.naver?article_id=0000045691&office_id=648&code=009580&page=1&sm="
-        }
-      ],
-      "themes": [
-        "제지",
-        "친환경",
-        "바이오매스"
+        "2차전지",
+        "ESS",
+        "AI"
       ]
     },
     {
@@ -775,7 +695,7 @@
       "position_size": 8327000,
       "r_value": 250000.0,
       "r_multiplier": 1.0,
-      "trading_value": 80752840200,
+      "trading_value": 80973497400,
       "change_pct": 13.15,
       "volume_ratio": 0.0,
       "foreign_5d": 41083,
@@ -802,16 +722,16 @@
         "disclosure": 0,
         "analyst": 0,
         "financial": 3,
-        "llm_reason": "매출 급증 및 흑자 전환 성공, 환자 모니터링 및 원격의료 테마 주도하며 긍정적 흐름을 보이고 있음",
+        "llm_reason": "사명 변경 및 코스닥 액티브 ETF 편입으로 긍정적 기대감이 발생, 원격의료/의료 AI 테마 부각.",
         "llm_source": "perplexity+gemini",
         "total": 8
       },
       "checklist": {
         "has_news": true,
         "news_sources": [
-          "매일경제",
           "조선비즈",
-          "서울경제"
+          "서울경제",
+          "매일경제"
         ],
         "volume_sufficient": true,
         "is_new_high": false,
@@ -861,9 +781,8 @@
         }
       ],
       "themes": [
-        "환자 모니터링",
         "원격의료",
-        "디지털 헬스케어"
+        "의료 AI"
       ]
     },
     {
@@ -912,7 +831,7 @@
       "position_size": 8308750,
       "r_value": 250000.0,
       "r_multiplier": 1.0,
-      "trading_value": 19803056250,
+      "trading_value": 19855190400,
       "change_pct": 8.49,
       "volume_ratio": 0.0,
       "foreign_5d": 54347,
@@ -920,6 +839,88 @@
       "status": "PENDING",
       "news_items": [],
       "themes": []
+    },
+    {
+      "id": null,
+      "stock_code": "009580",
+      "stock_name": "무림P&P",
+      "market": "KOSPI",
+      "sector": "",
+      "signal_date": "2026-03-26",
+      "grade": "A",
+      "score": {
+        "news": 2,
+        "volume": 2,
+        "chart": 1,
+        "candle": 0,
+        "consolidation": 0,
+        "supply": 2,
+        "disclosure": 0,
+        "analyst": 0,
+        "financial": 0,
+        "llm_reason": "제지 테마 강세 속 급등 및 기관 순매수 유입, 펄프-종이 일관화 공장으로 원가 경쟁력 확보 기대",
+        "llm_source": "perplexity+gemini",
+        "total": 7
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "뉴스1",
+          "조선비즈",
+          "비즈워치"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": false,
+        "is_breakout": false,
+        "ma_aligned": true,
+        "good_candle": false,
+        "has_consolidation": false,
+        "supply_positive": true,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": true,
+        "volume_suspicious": false
+      },
+      "current_price": 3005,
+      "entry_price": 3005,
+      "stop_price": 2914,
+      "target_price": 3155,
+      "quantity": 2773,
+      "position_size": 8332865,
+      "r_value": 250000.0,
+      "r_multiplier": 1.0,
+      "trading_value": 34089785086,
+      "change_pct": 10.28,
+      "volume_ratio": 0.0,
+      "foreign_5d": 143768,
+      "inst_5d": 20043,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "제지업계 ‘연봉 1위’ 조동길 한솔 회장 56억…2위 이동욱 무림 회장",
+          "source": "조선비즈",
+          "published_at": "2026-03-25T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0001151322&office_id=366&code=009580&page=1&sm="
+        },
+        {
+          "title": "제지업계 '연봉킹' 조동길 한솔 회장…2위 이동욱 무림 회장",
+          "source": "뉴스1",
+          "published_at": "2026-03-25T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0008846916&office_id=421&code=009580&page=1&sm="
+        },
+        {
+          "title": "[중동 리스크]\"펄프값보다 무서운 배삯\"…제지업계 이중고 '비명'",
+          "source": "비즈워치",
+          "published_at": "2026-03-26T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0000045691&office_id=648&code=009580&page=1&sm="
+        }
+      ],
+      "themes": [
+        "제지",
+        "기관 순매수",
+        "원가 경쟁력"
+      ]
     },
     {
       "id": null,
@@ -939,7 +940,7 @@
         "disclosure": 0,
         "analyst": 0,
         "financial": 1,
-        "llm_reason": "호르무즈 해협 봉쇄 우려로 인한 나프타 수급 차질 가능성에 탈 플라스틱 테마가 강세를 보이며 삼양패키징 주가가 급등하고 있음.",
+        "llm_reason": "탈 플라스틱 테마 강세 및 호르무즈 해협 봉쇄로 인한 나프타 수급 차질 우려로 주가가 급등하고 있으며, 개인 투자자 순매수가 두드러짐.",
         "llm_source": "perplexity+gemini",
         "total": 7
       },
@@ -971,7 +972,7 @@
       "position_size": 8327600,
       "r_value": 250000.0,
       "r_multiplier": 1.0,
-      "trading_value": 83622477055,
+      "trading_value": 84869239815,
       "change_pct": 7.15,
       "volume_ratio": 0.0,
       "foreign_5d": -66638,
@@ -1021,7 +1022,7 @@
         "disclosure": 0,
         "analyst": 0,
         "financial": 1,
-        "llm_reason": "나프타 수급 불안에 따른 페인트 가격 인상과 SP삼화로의 사명 변경을 통한 사업 확장이 기대감으로 작용.",
+        "llm_reason": "나프타 공급 차질 우려에 따른 페인트 가격 인상으로 단기 실적 방어 기대감이 형성되고 있음",
         "llm_source": "perplexity+gemini",
         "total": 7
       },
@@ -1029,7 +1030,7 @@
         "has_news": true,
         "news_sources": [
           "연합뉴스",
-          "연합뉴스TV"
+          "한국경제"
         ],
         "volume_sufficient": true,
         "is_new_high": false,
@@ -1052,7 +1053,7 @@
       "position_size": 8329230,
       "r_value": 250000.0,
       "r_multiplier": 1.0,
-      "trading_value": 143190405045,
+      "trading_value": 143972803775,
       "change_pct": 5.83,
       "volume_ratio": 0.0,
       "foreign_5d": 114472,
@@ -1072,16 +1073,15 @@
           "url": "https://finance.naver.com/item/news_read.naver?article_id=0015982233&office_id=001&code=000390&page=1&sm="
         },
         {
-          "title": "석유화학 공급망 비상에…페인트업계도 가격 줄인상",
-          "source": "연합뉴스TV",
-          "published_at": "2026-03-25T00:00:00",
-          "url": "https://finance.naver.com/item/news_read.naver?article_id=0000847945&office_id=422&code=000390&page=1&sm="
+          "title": "창립 80주년 삼화페인트 SP삼화로 사명 변경",
+          "source": "한국경제",
+          "published_at": "2026-03-26T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005267491&office_id=015&code=000390&page=1&sm="
         }
       ],
       "themes": [
-        "가격 인상",
-        "사명 변경",
-        "첨단 소재"
+        "페인트",
+        "가격 인상"
       ]
     },
     {
@@ -1102,7 +1102,7 @@
         "disclosure": 0,
         "analyst": 0,
         "financial": 1,
-        "llm_reason": "제대혈 테마 상승 및 면역세포치료제 테마 강세로 주가 급등 모멘텀이 발생했으나, 적자 지속 및 낮은 성장성·안정성은 투자 매력을 제한함.",
+        "llm_reason": "제대혈 테마 강세 및 면역세포치료제 테마 부각으로 긍정적인 기대감이 형성되었으나, 재무적 매력도가 상대적으로 낮은 점이 고려됨.",
         "llm_source": "perplexity+gemini",
         "total": 7
       },
@@ -1170,15 +1170,16 @@
         "disclosure": 0,
         "analyst": 0,
         "financial": 2,
-        "llm_reason": "이한국 대표이사 체제 출범으로 바이오 사업 강화 및 TG-C 미국 임상 3상 결과 발표 기대감과 2025년 흑자 전환 전망",
+        "llm_reason": "이한국 대표이사 체제 출범 및 골관절염 유전자치료제 'TG-C' 미국 임상 3상 결과 발표 기대감으로 주가 상승, 2025년 흑자 전환 기대.",
         "llm_source": "perplexity+gemini",
         "total": 7
       },
       "checklist": {
         "has_news": true,
         "news_sources": [
-          "헤럴드경제",
-          "조선비즈"
+          "이데일리",
+          "조선비즈",
+          "헤럴드경제"
         ],
         "volume_sufficient": true,
         "is_new_high": false,
@@ -1209,6 +1210,12 @@
       "status": "PENDING",
       "news_items": [
         {
+          "title": "코오롱생명과학, 이한국 대표이사로 변경",
+          "source": "이데일리",
+          "published_at": "2026-03-26T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0006243704&office_id=018&code=102940&page=1&sm="
+        },
+        {
           "title": "코오롱생명과학, 이한국 대표 체제 출범…바이오 매출 확대 승부수",
           "source": "조선비즈",
           "published_at": "2026-03-26T00:00:00",
@@ -1222,9 +1229,9 @@
         }
       ],
       "themes": [
-        "바이오",
-        "유전자치료제",
-        "실적개선"
+        "CMO·원료의약품",
+        "면역세포치료제",
+        "유전자치료"
       ]
     }
   ],
@@ -1238,8 +1245,8 @@
     "KOSPI": 9,
     "KOSDAQ": 7
   },
-  "processing_time_ms": 157485.56995391846,
-  "updated_at": "2026-03-26T17:06:29.202383+09:00",
+  "processing_time_ms": 168557.51943588257,
+  "updated_at": "2026-03-26T20:38:23.330347+09:00",
   "claude_picks": {
     "picks": [
       {
@@ -1247,137 +1254,137 @@
         "stock_name": "SK오션플랜트",
         "rank": 1,
         "confidence": "HIGH",
-        "reason": "[Gemini] 해상풍력특별법 시행 기대감과 세계 최고 수준의 하부구조물 제작 역량이 부각되며 산업 성장의 직접적인 수혜가 예상됩니다. 대규모 거래대금과 기관의 연속적인 순매수 또한 긍정적입니다. [GPT-4o] 해상풍력특별법 시행과 함께 기관 매수세의 뒷받침이 강력한 상승동인을 제공합니다.",
-        "risk": "최근 주가 급등에 따른 차익 실현 매물 출현 및 외국인 순매도 전환 가능성이 있습니다.",
-        "expected_return": "10-15%",
+        "reason": "[Gemini] 해상풍력 특별법 시행 기대와 글로벌 시장 선도 잠재력에 더해 대규모 거래대금 및 기관 순매수가 긍정적입니다. 견조한 모멘텀이 예상됩니다. [GPT-4o] 해상풍력특별법 시행으로 인한 사업 기회 확대와 주가 급등이 확인되며, 외부 환경과 맞물려 글로벌 시장 선도 가능성이 큽니다.",
+        "risk": "단기 급등에 따른 차익실현 매물 출현 가능성 및 외국인 순매도 지속.",
+        "expected_return": "+5% ~ +15%",
         "source": "consensus",
-        "gemini_rank": 2,
-        "openai_rank": 2
+        "gemini_rank": 1,
+        "openai_rank": 1
       },
       {
         "stock_code": "347700",
         "stock_name": "스피어",
         "rank": 2,
         "confidence": "HIGH",
-        "reason": "[Gemini] 매출액 대비 1097.67%에 달하는 대규모 우주항공 특수합금 공급계약 공시로 기업 가치 재평가 기대감이 매우 높습니다. 강력한 공시 재료가 단기 상승 모멘텀을 제공합니다. [GPT-4o] 미국 우주항공 발사업체와 대규모 계약 체결로 긍정적인 전망이 제기됩니다.",
-        "risk": "기관 매도세가 지속되고 있어 단기적인 수급 불안정성이 존재할 수 있습니다.",
-        "expected_return": "15-20%",
+        "reason": "[Gemini] 미국 우주항공 발사업체와의 대규모 특수합금 공급 계약 체결 공시는 매우 강력한 호재이며, 자기 전환사채 매각을 통한 재무구조 개선 기대감도 큽니다. [GPT-4o] 미국 우주항공 발사업체와의 대규모 계약 체결 및 자기 전환사채 매각으로 재무구조 개선이 기대됩니다.",
+        "risk": "기관의 순매도 포지션 지속 여부 및 단기 급등에 따른 변동성 확대.",
+        "expected_return": "+5% ~ +15%",
         "source": "consensus",
-        "gemini_rank": 1,
-        "openai_rank": 4
+        "gemini_rank": 2,
+        "openai_rank": 3
       },
       {
         "stock_code": "009420",
         "stock_name": "한올바이오파마",
         "rank": 3,
         "confidence": "HIGH",
-        "reason": "[Gemini] 핵심 파이프라인 바토클리맙의 임상 3상 결과에 따른 상업화 기대감과 2026년 기업 가치 재평가 전망이 긍정적입니다. 기관의 꾸준한 매수세와 양호한 차트 흐름도 지지력을 더합니다. [GPT-4o] 바토클리맙 임상 3상 성공 기대감과 2026년 가치 재평가 전망이 긍정적입니다.",
-        "risk": "임상 결과에 대한 기대감은 높지만 실제 상업화까지는 시간이 소요되며 외국인 매도세가 지속될 수 있습니다.",
-        "expected_return": "10-15%",
+        "reason": "[Gemini] 갑상선안병증 임상 3상 및 안구건조증 임상 2상 결과 발표 기대감이 높은 가운데, 52주 신고가 경신으로 기술적 강세가 뚜렷합니다. 기관의 순매수도 긍정적입니다. [GPT-4o] 갑상선안병증 및 안구건조증 임상 결과 발표 기대감이 높아, 52주 신고가 경신과 함께 긍정적인 투자 심리가 형성되었습니다.",
+        "risk": "임상 결과에 대한 불확실성 및 바이오 섹터 전반의 변동성.",
+        "expected_return": "+5% ~ +12%",
         "source": "consensus",
-        "gemini_rank": 4,
-        "openai_rank": 1
+        "gemini_rank": 3,
+        "openai_rank": 2
       },
       {
         "stock_code": "060280",
         "stock_name": "큐렉소",
         "rank": 4,
         "confidence": "HIGH",
-        "reason": "[Gemini] 인공관절 수술로봇 '큐비스-조인트'의 미국 FDA 승인 획득으로 북미 시장 진출 기반을 마련하며 실적 개선 기대감이 증폭되고 있습니다. 이는 명확한 성장 동력으로 작용할 것입니다. [GPT-4o] 미국 FDA 승인으로 북미 시장 진출 기대감과 관련된 강한 상승 모멘텀이 있습니다.",
-        "risk": "외국인 매도세가 나타나고 있으며, FDA 승인 재료가 이미 주가에 일부 반영되었을 수 있습니다.",
-        "expected_return": "10-15%",
+        "reason": "[Gemini] 인공관절 수술로봇의 미국 FDA 승인 획득과 2025년 흑자전환 기대감은 실적 개선에 대한 강력한 신호입니다. 대규모 거래대금과 기관 순매수가 이를 뒷받침합니다. [GPT-4o] 미국 FDA 승인 및 실적 개선 기대감이 지속되며, 향후 글로벌 시장 진출 가능성이 높습니다.",
+        "risk": "흑자전환 시점 지연 가능성 및 의료기기 산업 경쟁 심화.",
+        "expected_return": "+5% ~ +12%",
         "source": "consensus",
-        "gemini_rank": 3,
-        "openai_rank": 3
+        "gemini_rank": 4,
+        "openai_rank": 4
       },
       {
-        "stock_code": "009580",
-        "stock_name": "무림P&P",
+        "stock_code": "004440",
+        "stock_name": "삼일씨엔에스",
         "rank": 5,
         "confidence": "HIGH",
-        "reason": "[Gemini] 제지 테마 강세 속에 52주 신고가를 경신하며 강한 추세 전환을 보여주고 있으며, 외국인과 기관의 동반 순매수가 이어져 수급적 안정성이 높습니다. 친환경 설비 가동도 긍정적입니다. [GPT-4o] 제지 테마의 강세와 친환경 설비 가동이 긍정적 흐름입니다.",
-        "risk": "52주 신고가 경신 이후 단기적인 차익 실현 매물이 출회될 가능성이 있습니다.",
-        "expected_return": "8-12%",
+        "reason": "[Gemini] 두산에너빌리티와의 대규모 공급계약 체결은 확실한 실적 기반 호재이며, 52주 신고가 경신은 기술적 강세를 나타냅니다. [GPT-4o] 두산에너빌리티와 대규모 공급계약 체결로 인해 안정적인 수익원이 확보되었습니다.",
+        "risk": "상대적으로 낮은 거래대금으로 인한 유동성 한계 및 외국인 순매도.",
+        "expected_return": "+3% ~ +10%",
         "source": "consensus",
-        "gemini_rank": 6,
-        "openai_rank": 7
+        "gemini_rank": 5,
+        "openai_rank": 6
       },
       {
         "stock_code": "178920",
         "stock_name": "PI첨단소재",
         "rank": 6,
         "confidence": "HIGH",
-        "reason": "[Gemini] 프리마켓에서 배터리 소재 테마의 강한 움직임으로 급등세를 보였으며, 2차전지 섹터의 시장 관심이 여전히 높습니다. 기관의 순매수 유입도 긍정적입니다. [GPT-4o] 배터리 소재 테마의 급등세에 긍정적 기대감이 있으나, 실적 정보는 부족합니다.",
-        "risk": "외국인 매도세가 지속되고 있고, 현재 실적에 대한 구체적인 정보가 부족하여 테마성 움직임에 그칠 수 있습니다.",
-        "expected_return": "7-10%",
+        "reason": "[Gemini] OLED 소재·부품 테마의 부각과 2026년 영업이익 증가 기대감으로 시장의 긍정적 반응을 얻고 있습니다. 기관 순매수도 유입되고 있습니다. [GPT-4o] OLED 소재·부품의 급등과 2026년 영업이익 증가 기대가 긍정적인 시장 반응을 가져왔습니다.",
+        "risk": "신소재 산업의 경쟁 심화 및 전방 산업의 투자 지연.",
+        "expected_return": "+3% ~ +8%",
         "source": "consensus",
-        "gemini_rank": 8,
+        "gemini_rank": 7,
         "openai_rank": 5
       },
       {
-        "stock_code": "007340",
-        "stock_name": "DN오토모티브",
+        "stock_code": "009580",
+        "stock_name": "무림P&P",
         "rank": 7,
         "confidence": "HIGH",
-        "reason": "[Gemini] 지배구조 개선 기대감과 52주 신고가 경신이라는 기술적 강점이 결합되어 상승 모멘텀이 형성되고 있습니다. 기관의 순매수도 유입되고 있습니다. [GPT-4o] 지배구조 개선과 52주 신고가 경신이 긍정적입니다.",
-        "risk": "자회사 중복상장 이슈가 잠재적인 리스크로 작용할 수 있으며, 거래대금이 상대적으로 낮아 단기 변동성이 클 수 있습니다.",
-        "expected_return": "6-9%",
+        "reason": "[Gemini] 제지 테마 강세와 펄프-종이 일관화 공장을 통한 원가 경쟁력 확보 기대감이 높은 가운데, 외인과 기관의 동반 순매수가 긍정적입니다. [GPT-4o] 제지 강세 속 급등 및 펄프-종이 일관화 공장으로 원가 경쟁력 확보가 예상됩니다.",
+        "risk": "원자재 가격 변동성 및 시장 전체의 테마 소멸 가능성.",
+        "expected_return": "+3% ~ +10%",
         "source": "consensus",
-        "gemini_rank": 9,
-        "openai_rank": 6
-      },
-      {
-        "stock_code": "458870",
-        "stock_name": "씨어스테크놀로지",
-        "rank": 8,
-        "confidence": "HIGH",
-        "reason": "[Gemini] 매출 급증과 흑자 전환에 성공하며 펀더멘탈 개선이 뚜렷하며, 환자 모니터링 및 원격의료 테마를 주도하며 시장의 관심을 받고 있습니다. [GPT-4o] 환자 모니터링과 원격의료 테마 주도로 매출 급증 및 흑자 전환이 기대됩니다.",
-        "risk": "외국인과 기관의 동반 매도세가 나타나고 있어 단기적인 수급 불안정성이 높습니다.",
-        "expected_return": "5-8%",
-        "source": "consensus",
-        "gemini_rank": 10,
-        "openai_rank": 8
+        "gemini_rank": 6,
+        "openai_rank": 7
       },
       {
         "stock_code": "102940",
         "stock_name": "코오롱생명과학",
-        "rank": 9,
+        "rank": 8,
         "confidence": "HIGH",
-        "reason": "[Gemini] 새로운 대표이사 체제 출범으로 바이오 사업 강화 기대감이 있으며, 핵심 파이프라인 TG-C의 미국 임상 3상 결과 발표 기대감과 2025년 흑자 전환 전망이 긍정적입니다. [GPT-4o] 바이오 사업 강화와 임상 3상 결과 발표에 대한 긍정적 기대가 있습니다.",
-        "risk": "외국인 매도세가 지속되고 거래대금이 낮아 단기 변동성이 클 수 있으며, 흑자 전환까지 시간이 소요됩니다.",
-        "expected_return": "4-7%",
+        "reason": "[Gemini] 유전자치료제 'TG-C'의 미국 임상 3상 결과 발표와 2025년 흑자 전환 기대감은 주가 상승의 강력한 모멘텀입니다. 기관 순매수도 포착됩니다. [GPT-4o] 골관절염 유전자치료제 임상 결과 발표 기대감이 있으며, 2025년 흑자 전환 가능성이 있습니다.",
+        "risk": "낮은 거래대금으로 인한 높은 변동성 및 임상 결과 불확실성.",
+        "expected_return": "+3% ~ +8%",
         "source": "consensus",
-        "gemini_rank": 12,
-        "openai_rank": 9
+        "gemini_rank": 8,
+        "openai_rank": 8
       },
       {
-        "stock_code": "004440",
-        "stock_name": "삼일씨엔에스",
-        "rank": 10,
-        "confidence": "LOW",
-        "reason": "두산에너빌리티와의 대규모 해상풍력발전 공급계약 체결 소식은 직접적인 실적 개선과 흑자전환에 대한 기대감을 높이며 강한 상승 모멘텀을 제공합니다.",
-        "risk": "기관의 매수세가 미미하고 외국인 매도가 지속되고 있어 단기 수급 불균형이 발생할 수 있습니다.",
-        "expected_return": "8-12%",
-        "source": "gemini_only"
+        "stock_code": "174900",
+        "stock_name": "앱클론",
+        "rank": 9,
+        "confidence": "HIGH",
+        "reason": "[Gemini] 외인과 기관의 동반 순매수가 강하게 유입되며 수급적으로 매우 긍정적이며, 충분한 거래대금을 동반하고 있습니다. [GPT-4o] 기관과 외인의 순매수 유입을 통해 긍정적인 흐름이 보이고 있습니다.",
+        "risk": "개별 종목에 대한 뚜렷한 뉴스나 AI 분석이 부족하여 수급 이외의 상승 동력이 불명확합니다.",
+        "expected_return": "+2% ~ +7%",
+        "source": "consensus",
+        "gemini_rank": 10,
+        "openai_rank": 9
       },
       {
         "stock_code": "012630",
         "stock_name": "HDC",
-        "rank": 11,
+        "rank": 10,
         "confidence": "LOW",
-        "reason": "삼성전자와의 협력 가능성 및 글로벌 시장 턴어라운드 기대감과 함께 건설 및 부동산 부문의 안정화 기대감이 형성되고 있습니다. 외국인과 기관의 동반 순매수가 수급을 뒷받침합니다.",
-        "risk": "상대적으로 낮은 거래대금으로 인해 단기 변동성이 커질 수 있으며, 건설업의 전반적인 불확실성은 여전합니다.",
-        "expected_return": "7-10%",
+        "reason": "외인과 기관의 강력한 동반 순매수가 이틀 연속 확인되며 수급적으로 매우 유리한 위치에 있습니다. 시장의 관심 테마(2차전지, ESS, AI)와의 간접 연관성도 긍정적입니다.",
+        "risk": "뚜렷한 개별 호재 부재로 인한 단기성 수급 이탈 가능성 및 낮은 거래대금.",
+        "expected_return": "+2% ~ +7%",
         "source": "gemini_only"
       },
       {
-        "stock_code": "000390",
-        "stock_name": "삼화페인트",
+        "stock_code": "007340",
+        "stock_name": "DN오토모티브",
+        "rank": 11,
+        "confidence": "LOW",
+        "reason": "선제적 이사회 개편을 통한 지배구조 개선 기대감과 기관의 꾸준한 순매수가 주가에 긍정적인 영향을 미치고 있습니다.",
+        "risk": "상대적으로 낮은 거래대금과 지배구조 개선이라는 정성적 뉴스의 파급력 한계.",
+        "expected_return": "+2% ~ +6%",
+        "source": "gemini_only"
+      },
+      {
+        "stock_code": "123330",
+        "stock_name": "제닉",
         "rank": 12,
         "confidence": "LOW",
-        "reason": "나프타 수급 불안에 따른 페인트 가격 인상 가능성이 실적 개선 기대감을 높이며, 사명 변경을 통한 사업 확장 전략도 긍정적으로 평가됩니다. 높은 거래대금은 유동성을 보장합니다.",
-        "risk": "기관의 매도세가 지속되고 있어 수급 불균형이 존재하며, 원자재 가격 변동성이 실적에 영향을 줄 수 있습니다.",
-        "expected_return": "5-8%",
+        "reason": "외인과 기관의 동반 순매수 흐름이 긍정적이며, 차트상 기술적 위치도 나쁘지 않습니다.",
+        "risk": "뚜렷한 개별 호재나 AI 분석이 부재하며 낮은 거래대금으로 유동성 리스크가 존재합니다.",
+        "expected_return": "+2% ~ +5%",
         "source": "gemini_only"
       },
       {
@@ -1385,24 +1392,25 @@
         "stock_name": "메디포스트",
         "rank": 13,
         "confidence": "LOW",
-        "reason": "면역세포치료제 테마와 제대혈 관련 상승 모멘텀이 있지만 적자가 지속됩니다.",
-        "risk": "낮은 성장성과 안정성으로 인한 위험이 있습니다.",
-        "expected_return": "5~10%",
+        "reason": "면역세포치료제 테마와 제대혈의 강세 덕분에 긍정적인 기대감이 있습니다.",
+        "risk": "재무 구조가 취약하여 변동성이 큽니다.",
+        "expected_return": "6%~9%",
         "source": "openai_only"
       }
     ],
     "consensus_count": 9,
     "gemini_count": 12,
     "openai_count": 10,
-    "market_view": "[Gemini] 오늘 시장은 해상풍력, 제약·바이오 섹터의 강세와 함께 개별 기업의 대규모 수주 및 FDA 승인, 펀더멘탈 개선 소식들이 투자 심리를 견인했습니다. | [GPT-4o] 오늘의 주식 시장은 특정 테마 주도 종목의 상승세에 따른 강세 흐름을 보이고 있습니다.",
+    "market_view": "[Gemini] 오늘 시장은 해상풍력 특별법 기대, 주요 바이오 기업 임상 결과 및 FDA 승인, 우주항공 대규모 계약 등 개별 기업의 뚜렷한 모멘텀과 수급 강세 종목들이 주도하는 양상을 보였습니다. | [GPT-4o] 오늘은 신재생에너지 및 헬스케어 관련 종목들이 시장의 주목을 받고 있어 긍정적인 방향으로 흐름을 이어가고 있습니다.",
     "top_themes": [
+      "해상풍력/신재생에너지",
+      "제약·바이오/의료기기",
+      "우주항공·방산 특수합금",
       "해상풍력",
-      "제약·바이오 / 의료기기",
-      "우주항공",
-      "배터리 소재",
-      "제약·바이오"
+      "신재생에너지",
+      "의료기기"
     ],
-    "generated_at": "2026-03-26T17:06:29.202232",
+    "generated_at": "2026-03-26T20:38:23.328806",
     "models": [
       "gemini-2.5-flash",
       "gpt-4o"
