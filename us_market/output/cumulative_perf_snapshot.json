@@ -4,7 +4,7 @@
     "unique_tickers": 90,
     "win_rate": 35.9,
     "avg_return": 1.85,
-    "avg_alpha": 5.14,
+    "avg_alpha": NaN,
     "max_gain": 185.56,
     "max_loss": -59.01,
     "best_ticker": "SNDK",
@@ -15,187 +15,187 @@
     {
       "date": "2025-12-06",
       "avg_return": 8.0,
-      "spy_return": -3.37
+      "spy_return": NaN
     },
     {
       "date": "2025-12-09",
       "avg_return": 4.78,
-      "spy_return": -3.29
+      "spy_return": NaN
     },
     {
       "date": "2025-12-12",
       "avg_return": -4.77,
-      "spy_return": -3.11
+      "spy_return": NaN
     },
     {
       "date": "2025-12-13",
       "avg_return": -1.06,
-      "spy_return": -2.96
+      "spy_return": NaN
     },
     {
       "date": "2025-12-15",
       "avg_return": -3.99,
-      "spy_return": -2.96
+      "spy_return": NaN
     },
     {
       "date": "2025-12-17",
       "avg_return": 10.3,
-      "spy_return": -1.61
+      "spy_return": NaN
     },
     {
       "date": "2025-12-18",
       "avg_return": 5.9,
-      "spy_return": -2.35
+      "spy_return": NaN
     },
     {
       "date": "2025-12-19",
       "avg_return": 5.83,
-      "spy_return": -3.23
+      "spy_return": NaN
     },
     {
       "date": "2025-12-22",
       "avg_return": 7.15,
-      "spy_return": -3.83
+      "spy_return": NaN
     },
     {
       "date": "2025-12-25",
       "avg_return": -8.09,
-      "spy_return": -4.59
+      "spy_return": NaN
     },
     {
       "date": "2025-12-29",
       "avg_return": 12.96,
-      "spy_return": -4.25
+      "spy_return": NaN
     },
     {
       "date": "2025-12-31",
       "avg_return": -0.92,
-      "spy_return": -3.42
+      "spy_return": NaN
     },
     {
       "date": "2026-01-02",
       "avg_return": 18.45,
-      "spy_return": -3.59
+      "spy_return": NaN
     },
     {
       "date": "2026-01-21",
       "avg_return": 9.52,
-      "spy_return": -3.91
+      "spy_return": NaN
     },
     {
       "date": "2026-01-25",
       "avg_return": 1.99,
-      "spy_return": -4.92
+      "spy_return": NaN
     },
     {
       "date": "2026-01-26",
       "avg_return": 1.99,
-      "spy_return": -4.92
+      "spy_return": NaN
     },
     {
       "date": "2026-01-27",
       "avg_return": 4.42,
-      "spy_return": -5.3
+      "spy_return": NaN
     },
     {
       "date": "2026-01-31",
       "avg_return": -1.0,
-      "spy_return": -5.29
+      "spy_return": NaN
     },
     {
       "date": "2026-02-07",
       "avg_return": 6.81,
-      "spy_return": -5.09
+      "spy_return": NaN
     },
     {
       "date": "2026-02-08",
       "avg_return": 7.33,
-      "spy_return": -5.09
+      "spy_return": NaN
     },
     {
       "date": "2026-02-11",
       "avg_return": -0.23,
-      "spy_return": -4.82
+      "spy_return": NaN
     },
     {
       "date": "2026-02-12",
       "avg_return": -3.76,
-      "spy_return": -3.33
+      "spy_return": NaN
     },
     {
       "date": "2026-02-13",
       "avg_return": -3.06,
-      "spy_return": -3.39
+      "spy_return": NaN
     },
     {
       "date": "2026-02-14",
       "avg_return": -3.43,
-      "spy_return": -3.55
+      "spy_return": NaN
     },
     {
       "date": "2026-02-17",
       "avg_return": 0.35,
-      "spy_return": -3.55
+      "spy_return": NaN
     },
     {
       "date": "2026-02-18",
       "avg_return": 0.59,
-      "spy_return": -4.03
+      "spy_return": NaN
     },
     {
       "date": "2026-02-19",
       "avg_return": 0.59,
-      "spy_return": -3.78
+      "spy_return": NaN
     },
     {
       "date": "2026-02-26",
       "avg_return": -1.76,
-      "spy_return": -4.45
+      "spy_return": NaN
     },
     {
       "date": "2026-02-27",
       "avg_return": -2.51,
-      "spy_return": -3.99
+      "spy_return": NaN
     },
     {
       "date": "2026-03-04",
       "avg_return": 0.68,
-      "spy_return": -3.87
+      "spy_return": NaN
     },
     {
       "date": "2026-03-10",
       "avg_return": -3.2,
-      "spy_return": -2.74
+      "spy_return": NaN
     },
     {
       "date": "2026-03-11",
       "avg_return": -2.38,
-      "spy_return": -2.62
+      "spy_return": NaN
     },
     {
       "date": "2026-03-15",
       "avg_return": -0.87,
-      "spy_return": -1.56
+      "spy_return": NaN
     },
     {
       "date": "2026-03-19",
       "avg_return": -0.38,
-      "spy_return": -0.18
+      "spy_return": NaN
     },
     {
       "date": "2026-03-20",
       "avg_return": 1.87,
-      "spy_return": 1.27
+      "spy_return": NaN
     },
     {
       "date": "2026-03-25",
       "avg_return": 0.44,
-      "spy_return": 0.0
+      "spy_return": NaN
     },
     {
       "date": "2026-03-26",
       "avg_return": 0.0,
-      "spy_return": 0.0
+      "spy_return": NaN
     }
   ],
   "picks": [
@@ -3904,296 +3904,296 @@
     {
       "date": "2026-03-26",
       "avg_return": 0.0,
-      "spy_return": 0.0,
-      "alpha": 0.0,
+      "spy_return": NaN,
+      "alpha": NaN,
       "win_rate": 60.0,
       "num_picks": 10
     },
     {
       "date": "2026-03-25",
       "avg_return": 0.44,
-      "spy_return": 0.0,
-      "alpha": 0.44,
+      "spy_return": NaN,
+      "alpha": NaN,
       "win_rate": 50.0,
       "num_picks": 10
     },
     {
       "date": "2026-03-20",
       "avg_return": 1.87,
-      "spy_return": 1.27,
-      "alpha": 0.6,
+      "spy_return": NaN,
+      "alpha": NaN,
       "win_rate": 70.0,
       "num_picks": 10
     },
     {
       "date": "2026-03-19",
       "avg_return": -0.38,
-      "spy_return": -0.18,
-      "alpha": -0.2,
+      "spy_return": NaN,
+      "alpha": NaN,
       "win_rate": 40.0,
       "num_picks": 10
     },
     {
       "date": "2026-03-15",
       "avg_return": -0.87,
-      "spy_return": -1.56,
-      "alpha": 0.68,
+      "spy_return": NaN,
+      "alpha": NaN,
       "win_rate": 40.0,
       "num_picks": 10
     },
     {
       "date": "2026-03-11",
       "avg_return": -2.38,
-      "spy_return": -2.62,
-      "alpha": 0.24,
+      "spy_return": NaN,
+      "alpha": NaN,
       "win_rate": 30.0,
       "num_picks": 10
     },
     {
       "date": "2026-03-10",
       "avg_return": -3.2,
-      "spy_return": -2.74,
-      "alpha": -0.46,
+      "spy_return": NaN,
+      "alpha": NaN,
       "win_rate": 20.0,
       "num_picks": 10
     },
     {
       "date": "2026-03-04",
       "avg_return": 0.68,
-      "spy_return": -3.87,
-      "alpha": 4.55,
+      "spy_return": NaN,
+      "alpha": NaN,
       "win_rate": 20.0,
       "num_picks": 10
     },
     {
       "date": "2026-02-27",
       "avg_return": -2.51,
-      "spy_return": -3.99,
-      "alpha": 1.48,
+      "spy_return": NaN,
+      "alpha": NaN,
       "win_rate": 10.0,
       "num_picks": 10
     },
     {
       "date": "2026-02-26",
       "avg_return": -1.76,
-      "spy_return": -4.45,
-      "alpha": 2.69,
+      "spy_return": NaN,
+      "alpha": NaN,
       "win_rate": 10.0,
       "num_picks": 10
     },
     {
       "date": "2026-02-19",
       "avg_return": 0.59,
-      "spy_return": -3.78,
-      "alpha": 4.37,
+      "spy_return": NaN,
+      "alpha": NaN,
       "win_rate": 30.0,
       "num_picks": 10
     },
     {
       "date": "2026-02-18",
       "avg_return": 0.59,
-      "spy_return": -4.03,
-      "alpha": 4.62,
+      "spy_return": NaN,
+      "alpha": NaN,
       "win_rate": 30.0,
       "num_picks": 10
     },
     {
       "date": "2026-02-17",
       "avg_return": 0.35,
-      "spy_return": -3.55,
-      "alpha": 3.9,
+      "spy_return": NaN,
+      "alpha": NaN,
       "win_rate": 30.0,
       "num_picks": 10
     },
     {
       "date": "2026-02-14",
       "avg_return": -3.43,
-      "spy_return": -3.55,
-      "alpha": 0.12,
+      "spy_return": NaN,
+      "alpha": NaN,
       "win_rate": 30.0,
       "num_picks": 10
     },
     {
       "date": "2026-02-13",
       "avg_return": -3.06,
-      "spy_return": -3.39,
-      "alpha": 0.33,
+      "spy_return": NaN,
+      "alpha": NaN,
       "win_rate": 40.0,
       "num_picks": 10
     },
     {
       "date": "2026-02-12",
       "avg_return": -3.76,
-      "spy_return": -3.33,
-      "alpha": -0.43,
+      "spy_return": NaN,
+      "alpha": NaN,
       "win_rate": 20.0,
       "num_picks": 10
     },
     {
       "date": "2026-02-11",
       "avg_return": -0.23,
-      "spy_return": -4.82,
-      "alpha": 4.59,
+      "spy_return": NaN,
+      "alpha": NaN,
       "win_rate": 20.0,
       "num_picks": 10
     },
     {
       "date": "2026-02-08",
       "avg_return": 7.33,
-      "spy_return": -5.09,
-      "alpha": 12.42,
+      "spy_return": NaN,
+      "alpha": NaN,
       "win_rate": 60.0,
       "num_picks": 10
     },
     {
       "date": "2026-02-07",
       "avg_return": 6.81,
-      "spy_return": -5.09,
-      "alpha": 11.91,
+      "spy_return": NaN,
+      "alpha": NaN,
       "win_rate": 50.0,
       "num_picks": 10
     },
     {
       "date": "2026-01-31",
       "avg_return": -1.0,
-      "spy_return": -5.29,
-      "alpha": 4.29,
+      "spy_return": NaN,
+      "alpha": NaN,
       "win_rate": 50.0,
       "num_picks": 10
     },
     {
       "date": "2026-01-27",
       "avg_return": 4.42,
-      "spy_return": -5.3,
-      "alpha": 9.72,
+      "spy_return": NaN,
+      "alpha": NaN,
       "win_rate": 50.0,
       "num_picks": 10
     },
     {
       "date": "2026-01-26",
       "avg_return": 1.99,
-      "spy_return": -4.92,
-      "alpha": 6.92,
+      "spy_return": NaN,
+      "alpha": NaN,
       "win_rate": 40.0,
       "num_picks": 10
     },
     {
       "date": "2026-01-25",
       "avg_return": 1.99,
-      "spy_return": -4.92,
-      "alpha": 6.92,
+      "spy_return": NaN,
+      "alpha": NaN,
       "win_rate": 40.0,
       "num_picks": 10
     },
     {
       "date": "2026-01-21",
       "avg_return": 9.52,
-      "spy_return": -3.91,
-      "alpha": 13.43,
+      "spy_return": NaN,
+      "alpha": NaN,
       "win_rate": 20.0,
       "num_picks": 10
     },
     {
       "date": "2026-01-02",
       "avg_return": 18.45,
-      "spy_return": -3.59,
-      "alpha": 22.04,
+      "spy_return": NaN,
+      "alpha": NaN,
       "win_rate": 50.0,
       "num_picks": 10
     },
     {
       "date": "2025-12-31",
       "avg_return": -0.92,
-      "spy_return": -3.42,
-      "alpha": 2.5,
+      "spy_return": NaN,
+      "alpha": NaN,
       "win_rate": 30.0,
       "num_picks": 10
     },
     {
       "date": "2025-12-29",
       "avg_return": 12.96,
-      "spy_return": -4.25,
-      "alpha": 17.21,
+      "spy_return": NaN,
+      "alpha": NaN,
       "win_rate": 30.0,
       "num_picks": 10
     },
     {
       "date": "2025-12-25",
       "avg_return": -8.09,
-      "spy_return": -4.59,
-      "alpha": -3.5,
+      "spy_return": NaN,
+      "alpha": NaN,
       "win_rate": 20.0,
       "num_picks": 10
     },
     {
       "date": "2025-12-22",
       "avg_return": 7.15,
-      "spy_return": -3.83,
-      "alpha": 10.98,
+      "spy_return": NaN,
+      "alpha": NaN,
       "win_rate": 40.0,
       "num_picks": 10
     },
     {
       "date": "2025-12-19",
       "avg_return": 5.83,
-      "spy_return": -3.23,
-      "alpha": 9.06,
+      "spy_return": NaN,
+      "alpha": NaN,
       "win_rate": 50.0,
       "num_picks": 10
     },
     {
       "date": "2025-12-18",
       "avg_return": 5.9,
-      "spy_return": -2.35,
-      "alpha": 8.25,
+      "spy_return": NaN,
+      "alpha": NaN,
       "win_rate": 50.0,
       "num_picks": 10
     },
     {
       "date": "2025-12-17",
       "avg_return": 10.3,
-      "spy_return": -1.61,
-      "alpha": 11.92,
+      "spy_return": NaN,
+      "alpha": NaN,
       "win_rate": 60.0,
       "num_picks": 10
     },
     {
       "date": "2025-12-15",
       "avg_return": -3.99,
-      "spy_return": -2.96,
-      "alpha": -1.03,
+      "spy_return": NaN,
+      "alpha": NaN,
       "win_rate": 40.0,
       "num_picks": 10
     },
     {
       "date": "2025-12-13",
       "avg_return": -1.06,
-      "spy_return": -2.96,
-      "alpha": 1.9,
+      "spy_return": NaN,
+      "alpha": NaN,
       "win_rate": 30.0,
       "num_picks": 10
     },
     {
       "date": "2025-12-12",
       "avg_return": -4.77,
-      "spy_return": -3.11,
-      "alpha": -1.66,
+      "spy_return": NaN,
+      "alpha": NaN,
       "win_rate": 20.0,
       "num_picks": 10
     },
     {
       "date": "2025-12-09",
       "avg_return": 4.78,
-      "spy_return": -3.29,
-      "alpha": 8.07,
+      "spy_return": NaN,
+      "alpha": NaN,
       "win_rate": 50.0,
       "num_picks": 10
     },
     {
       "date": "2025-12-06",
       "avg_return": 8.0,
-      "spy_return": -3.37,
-      "alpha": 11.37,
+      "spy_return": NaN,
+      "alpha": NaN,
       "win_rate": 60.0,
       "num_picks": 10
     }
