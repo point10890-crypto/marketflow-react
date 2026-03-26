@@ -1,0 +1,81 @@
+{
+  "name": "한국타이어앤테크놀로지",
+  "ticker": "161390.KS",
+  "result": "매수",
+  "date": "2026-03-26 19:52:39",
+  "elapsed": 2.1,
+  "consensus_score": 4.0,
+  "analyst_count": 17,
+  "recommendation_detail": {
+    "strongBuy": 2,
+    "buy": 13,
+    "hold": 2,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 57400.0,
+    "high": 89000.0,
+    "low": 40000.0,
+    "mean": 75411.766,
+    "median": 79000.0
+  },
+  "current_price": 57400.0,
+  "upside_potential": 31.4,
+  "key_stats": {
+    "name": "HANKOOK TIRE & TECHNOLOGY",
+    "sector": "Consumer Cyclical",
+    "industry": "Auto Parts",
+    "market_cap": 7002154598400,
+    "pe_ratio": null,
+    "forward_pe": 4.4577436,
+    "dividend_yield": 3.96,
+    "beta": 0.29,
+    "fifty_two_week_high": 78400.0,
+    "fifty_two_week_low": 35950.0,
+    "revenue": 21202298994688,
+    "profit_margin": 0.05138,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "한국타이어앤테크놀로지에 대해 17명의 애널리스트가 제시한 컨센서스는 '매수' 의견입니다. 목표가 평균은 75,412원으로, 현재가 57,400원 대비 31.4%의 상승 여력이 있는 것으로 분석됩니다. 이는 5점 만점 기준 4.0점에 해당합니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 5412726880900
+    },
+    {
+      "date": "2025-06",
+      "value": 5369659666940
+    },
+    {
+      "date": "2025-03",
+      "value": 4963667180880
+    },
+    {
+      "date": "2024-12",
+      "value": 2531528706120
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 390269020520
+    },
+    {
+      "date": "2025-06",
+      "value": 182070455920
+    },
+    {
+      "date": "2025-03",
+      "value": 319693689300
+    },
+    {
+      "date": "2024-12",
+      "value": 58947277330
+    }
+  ],
+  "news": []
+}

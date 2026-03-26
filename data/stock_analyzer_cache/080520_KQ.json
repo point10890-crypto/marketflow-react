@@ -1,0 +1,75 @@
+{
+  "name": "오디텍",
+  "ticker": "080520.KQ",
+  "result": "데이터 없음",
+  "date": "2026-03-26 17:55:11",
+  "elapsed": 1.3,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 3855.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 3855.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "ODTech",
+    "sector": "",
+    "industry": "",
+    "market_cap": 39799324672,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": null,
+    "beta": null,
+    "fifty_two_week_high": 4155.0,
+    "fifty_two_week_low": 2700.0,
+    "revenue": null,
+    "profit_margin": null,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 9068795160
+    },
+    {
+      "date": "2025-06",
+      "value": 8972384830
+    },
+    {
+      "date": "2025-03",
+      "value": 10026500150
+    },
+    {
+      "date": "2024-12",
+      "value": 8416037420
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 435355610
+    },
+    {
+      "date": "2025-06",
+      "value": -798011730
+    },
+    {
+      "date": "2025-03",
+      "value": 390825080
+    },
+    {
+      "date": "2024-12",
+      "value": -7253050510
+    }
+  ],
+  "news": []
+}

@@ -1,49 +1,49 @@
 {
-  "timestamp": "2026-03-26T17:34:03.974942",
+  "timestamp": "2026-03-26T20:00:14.771317",
   "version": "1.0",
   "market_summary": {
-    "total_market_cap": 2472605039844.0,
-    "total_volume_24h": 88429583581.0,
-    "btc_dominance": 56.48,
+    "total_market_cap": 2457046051310.0,
+    "total_volume_24h": 89995640962.0,
+    "btc_dominance": 56.56,
     "btc_dominance_change_24h": 0,
-    "total_market_cap_change_24h": -1.87,
-    "active_cryptocurrencies": 18023
+    "total_market_cap_change_24h": -2.76,
+    "active_cryptocurrencies": 18002
   },
   "major_coins": {
     "BTC": {
-      "price": 69829,
-      "change_24h": -2.18,
+      "price": 69464,
+      "change_24h": -2.8,
       "change_7d": 0,
-      "volume_24h": 35496537680,
-      "market_cap": 1396372245458
+      "volume_24h": 36439887814,
+      "market_cap": 1389694922666
     },
     "ETH": {
-      "price": 2115.24,
-      "change_24h": -3.26,
+      "price": 2077.28,
+      "change_24h": -4.89,
       "change_7d": 0,
-      "volume_24h": 15665507459,
-      "market_cap": 255265862808
+      "volume_24h": 16466155064,
+      "market_cap": 250687699467
     },
     "BNB": {
-      "price": 632.72,
-      "change_24h": -2.3,
+      "price": 630.5,
+      "change_24h": -2.52,
       "change_7d": 0,
-      "volume_24h": 954718376,
-      "market_cap": 86277585807
+      "volume_24h": 915993028,
+      "market_cap": 85984109355
     },
     "XRP": {
-      "price": 1.38,
-      "change_24h": -2.68,
+      "price": 1.37,
+      "change_24h": -3.5,
       "change_7d": 0,
-      "volume_24h": 2002411571,
-      "market_cap": 84778397928
+      "volume_24h": 2080684754,
+      "market_cap": 84249469693
     },
     "SOL": {
-      "price": 88.68,
-      "change_24h": -3.93,
+      "price": 87.89,
+      "change_24h": -5.07,
       "change_7d": 0,
-      "volume_24h": 3537958428,
-      "market_cap": 50745833897
+      "volume_24h": 3617215475,
+      "market_cap": 50296426666
     }
   },
   "top_movers": {
@@ -51,64 +51,64 @@
       {
         "symbol": "M",
         "name": "MemeCore",
-        "price": 2.39,
-        "change_24h": 38.27
+        "price": 2.25,
+        "change_24h": 31.35
       },
       {
         "symbol": "HASH",
         "name": "Provenance Blockchain",
-        "price": 0.01410309,
-        "change_24h": 5.29
+        "price": 0.01418637,
+        "change_24h": 7.34
       },
       {
         "symbol": "ENA",
         "name": "Ethena",
-        "price": 0.10103,
-        "change_24h": 4.71
+        "price": 0.099294,
+        "change_24h": 3.16
       },
       {
-        "symbol": "XDC",
-        "name": "XDC Network",
-        "price": 0.03279597,
-        "change_24h": 3.04
+        "symbol": "NIGHT",
+        "name": "Midnight",
+        "price": 0.04455471,
+        "change_24h": 2.22
       },
       {
-        "symbol": "TRX",
-        "name": "TRON",
-        "price": 0.314682,
-        "change_24h": 2.16
+        "symbol": "JST",
+        "name": "JUST",
+        "price": 0.058937,
+        "change_24h": 1.51
       }
     ],
     "losers": [
       {
         "symbol": "SIREN",
         "name": "Siren",
-        "price": 1.92,
-        "change_24h": -13.48
+        "price": 2.02,
+        "change_24h": -10.64
       },
       {
         "symbol": "ZRO",
         "name": "LayerZero",
-        "price": 2.04,
-        "change_24h": -8.43
+        "price": 2.03,
+        "change_24h": -10.31
       },
       {
-        "symbol": "TRUMP",
-        "name": "Official Trump",
-        "price": 3.14,
-        "change_24h": -6.49
+        "symbol": "RENDER",
+        "name": "Render",
+        "price": 1.75,
+        "change_24h": -7.76
       },
       {
-        "symbol": "ZEC",
-        "name": "Zcash",
-        "price": 224.72,
-        "change_24h": -6.19
+        "symbol": "FET",
+        "name": "Artificial Superintelligence Alliance",
+        "price": 0.236091,
+        "change_24h": -7.73
       },
       {
-        "symbol": "BONK",
-        "name": "Bonk",
-        "price": 6e-06,
-        "change_24h": -5.62
+        "symbol": "TAO",
+        "name": "Bittensor",
+        "price": 332.86,
+        "change_24h": -7.33
       }
     ]
   },
@@ -126,16 +126,16 @@
   "funding_rates": {
     "BTC": {
       "symbol": "BTCUSDT",
-      "rate": 1e-05,
-      "rate_pct": 0.001,
-      "annualized_pct": 1.06,
+      "rate": -2.2e-05,
+      "rate_pct": -0.0022,
+      "annualized_pct": -2.45,
       "sentiment": "neutral"
     },
     "ETH": {
       "symbol": "ETHUSDT",
-      "rate": -7e-06,
-      "rate_pct": -0.0007,
-      "annualized_pct": -0.77,
+      "rate": -6.7e-05,
+      "rate_pct": -0.0067,
+      "annualized_pct": -7.33,
       "sentiment": "neutral"
     }
   },
@@ -158,14 +158,14 @@
       "알트 breadth 붕괴 (10% > EMA50)"
     ],
     "metrics": {
-      "btc_price": 69794.609375,
-      "btc_ema50": 72051.29431098276,
-      "btc_ema200": 86077.26848803114,
-      "btc_ema200_slope_pct_20": -3.883344881545556,
-      "btc_volume_z_50": -0.5484225736910192,
-      "btc_atrp_14_pct": 3.619827117097568,
+      "btc_price": 69451.046875,
+      "btc_ema50": 72037.82127176708,
+      "btc_ema200": 86073.84995569283,
+      "btc_ema200_slope_pct_20": -3.8871621250471735,
+      "btc_volume_z_50": -0.5035876449075198,
+      "btc_atrp_14_pct": 3.6800289605322916,
       "alt_breadth_above_ema50": 0.1,
-      "funding_rate": 9.15e-06,
+      "funding_rate": -2.238e-05,
       "open_interest_delta_z": null,
       "gate_score_components": {
         "trend": 0.0,
@@ -177,7 +177,7 @@
       "fear_greed_index": 10,
       "fear_greed_class": "Extreme Fear"
     },
-    "generated_at": "2026-03-26T17:33:54.877666"
+    "generated_at": "2026-03-26T20:00:04.995507"
   },
   "btc_price_history": [
     {
@@ -538,14 +538,14 @@
     },
     {
       "date": "2026-03-26",
-      "price": 69794.609375
+      "price": 69451.046875
     }
   ],
   "sentiment_summary": {
     "overall": "Neutral",
     "factors": [
       "fear_greed: extreme_fear (bullish)",
-      "funding: positive (neutral)",
+      "funding: neutral (neutral)",
       "dominance: btc_high (neutral)"
     ]
   }
