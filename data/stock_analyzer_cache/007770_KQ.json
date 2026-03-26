@@ -1,35 +1,35 @@
 {
-  "name": "폴라리스오피스",
-  "ticker": "041020.KQ",
+  "name": "한일화학",
+  "ticker": "007770.KQ",
   "result": "데이터 없음",
-  "date": "2026-03-26 01:01:44",
-  "elapsed": 2.0,
+  "date": "2026-03-25 22:21:29",
+  "elapsed": 2.3,
   "consensus_score": null,
   "analyst_count": 0,
   "recommendation_detail": null,
   "recommendation_period": null,
   "price_targets": {
-    "current": 4775.0,
+    "current": 7850.0,
     "high": null,
     "low": null,
     "mean": null,
     "median": null
   },
-  "current_price": 4775.0,
+  "current_price": 7850.0,
   "upside_potential": null,
   "key_stats": {
-    "name": "Polaris Office",
-    "sector": "",
-    "industry": "",
-    "market_cap": 237240107008,
+    "name": "HANILCHEMIC",
+    "sector": "Basic Materials",
+    "industry": "Specialty Chemicals",
+    "market_cap": 27553499136,
     "pe_ratio": null,
     "forward_pe": null,
-    "dividend_yield": null,
-    "beta": null,
-    "fifty_two_week_high": 7030.0,
-    "fifty_two_week_low": 3245.0,
-    "revenue": null,
-    "profit_margin": null,
+    "dividend_yield": 0.62,
+    "beta": 0.166,
+    "fifty_two_week_high": 11450.0,
+    "fifty_two_week_low": 7200.0,
+    "revenue": 126896013312,
+    "profit_margin": -0.0462,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
@@ -38,37 +38,37 @@
   "revenue_quarters": [
     {
       "date": "2025-09",
-      "value": 84778104990
+      "value": 30153212450
     },
     {
       "date": "2025-06",
-      "value": 79848158750
+      "value": 31275707580
     },
     {
       "date": "2025-03",
-      "value": 74399265450
+      "value": 32119577610
     },
     {
       "date": "2024-12",
-      "value": 79652998340
+      "value": 33347515900
     }
   ],
   "net_income_quarters": [
     {
       "date": "2025-09",
-      "value": 1694051830
+      "value": -3763608680
     },
     {
       "date": "2025-06",
-      "value": 763332450
+      "value": -3730352150
     },
     {
       "date": "2025-03",
-      "value": 1030767600
+      "value": -1449613640
     },
     {
       "date": "2024-12",
-      "value": 1919181600
+      "value": 3081125300
     }
   ],
   "news": []

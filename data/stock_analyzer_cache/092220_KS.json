@@ -1,35 +1,35 @@
 {
-  "name": "폴라리스오피스",
-  "ticker": "041020.KQ",
+  "name": "KEC",
+  "ticker": "092220.KS",
   "result": "데이터 없음",
-  "date": "2026-03-26 01:01:44",
+  "date": "2026-03-25 22:23:16",
   "elapsed": 2.0,
   "consensus_score": null,
   "analyst_count": 0,
   "recommendation_detail": null,
   "recommendation_period": null,
   "price_targets": {
-    "current": 4775.0,
+    "current": 1755.0,
     "high": null,
     "low": null,
     "mean": null,
     "median": null
   },
-  "current_price": 4775.0,
+  "current_price": 1755.0,
   "upside_potential": null,
   "key_stats": {
-    "name": "Polaris Office",
-    "sector": "",
-    "industry": "",
-    "market_cap": 237240107008,
+    "name": "KEC",
+    "sector": "Technology",
+    "industry": "Semiconductor Equipment & Materials",
+    "market_cap": 352339296256,
     "pe_ratio": null,
     "forward_pe": null,
     "dividend_yield": null,
-    "beta": null,
-    "fifty_two_week_high": 7030.0,
-    "fifty_two_week_low": 3245.0,
-    "revenue": null,
-    "profit_margin": null,
+    "beta": 0.867,
+    "fifty_two_week_high": 1946.0,
+    "fifty_two_week_low": 627.0,
+    "revenue": 229636980736,
+    "profit_margin": -0.085,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
@@ -38,37 +38,37 @@
   "revenue_quarters": [
     {
       "date": "2025-09",
-      "value": 84778104990
+      "value": 52476421820
     },
     {
       "date": "2025-06",
-      "value": 79848158750
+      "value": 59781486120
     },
     {
       "date": "2025-03",
-      "value": 74399265450
+      "value": 63625929720
     },
     {
       "date": "2024-12",
-      "value": 79652998340
+      "value": 53753138170
     }
   ],
   "net_income_quarters": [
     {
       "date": "2025-09",
-      "value": 1694051830
+      "value": -7383608780
     },
     {
       "date": "2025-06",
-      "value": 763332450
+      "value": -3715165590
     },
     {
       "date": "2025-03",
-      "value": 1030767600
+      "value": -2279878320
     },
     {
       "date": "2024-12",
-      "value": 1919181600
+      "value": -6140523830
     }
   ],
   "news": []

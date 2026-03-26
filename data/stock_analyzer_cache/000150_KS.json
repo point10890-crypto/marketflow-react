@@ -1,0 +1,117 @@
+{
+  "name": "두산",
+  "ticker": "000150.KS",
+  "result": "적극 매수",
+  "date": "2026-03-26 08:40:15",
+  "elapsed": 3.2,
+  "consensus_score": 4.44,
+  "analyst_count": 9,
+  "recommendation_detail": {
+    "strongBuy": 4,
+    "buy": 5,
+    "hold": 0,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 1250000.0,
+    "high": 1580000.0,
+    "low": 810000.0,
+    "mean": 1301111.1,
+    "median": 1300000.0
+  },
+  "current_price": 1250000.0,
+  "upside_potential": 4.1,
+  "key_stats": {
+    "name": "DOOSAN",
+    "sector": "Industrials",
+    "industry": "Conglomerates",
+    "market_cap": 21296414982144,
+    "pe_ratio": null,
+    "forward_pe": 41.197212,
+    "dividend_yield": 0.32,
+    "beta": 1.72,
+    "fifty_two_week_high": 1295000.0,
+    "fifty_two_week_low": 236500.0,
+    "revenue": 19297283866624,
+    "profit_margin": 0.0031,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "두산(000150.KS)에 대해 9명의 애널리스트가 적극 매수 의견(4.44/5.0)을 제시했습니다. 목표가 평균은 1,301,111 KRW으로 현재가 대비 4.1% 상승 여력이 있습니다. 이는 애널리스트들이 두산의 추가적인 주가 상승을 기대하고 있음을 나타냅니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 4452365000000
+    },
+    {
+      "date": "2025-06",
+      "value": 5346439000000
+    },
+    {
+      "date": "2025-03",
+      "value": 4298676000000
+    },
+    {
+      "date": "2024-12",
+      "value": 5199803250950
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 121120000000
+    },
+    {
+      "date": "2025-06",
+      "value": 78588000000
+    },
+    {
+      "date": "2025-03",
+      "value": 23645000000
+    },
+    {
+      "date": "2024-12",
+      "value": -163451738850
+    }
+  ],
+  "news": [
+    {
+      "title": "NuScale Power Q4 Earnings Call Highlights",
+      "summary": "NuScale Power (NYSE:SMR) used its fourth-quarter and full-year 2025 earnings call to highlight regulatory progress, commercialization efforts tied to its partner ENTRA1 Energy, and next steps for the ",
+      "url": "https://www.marketbeat.com/instant-alerts/nuscale-power-q4-earnings-call-highlights-2026-02-28/?utm_source=yahoofinance&utm_medium=yahoofinance",
+      "provider": "MarketBeat",
+      "pub_time": "2026-03-01T01:05:39Z"
+    },
+    {
+      "title": "Doosan selects ANDRITZ as supplier for pumped storage power plant in South Korea",
+      "summary": "Doosan Enerbility has selected ANDRITZ to supply the pump turbine units for the new Yeongdong pumped storage plant in Chungcheong Province, South Korea.",
+      "url": "https://www.energyglobal.com/energy-storage/21012026/doosan-selects-andritz-as-supplier-for-pumped-storage-power-plant-in-south-korea/?yptr=yahoo",
+      "provider": "Energy Global",
+      "pub_time": "2026-01-21T12:00:00Z"
+    },
+    {
+      "title": "Baird downgrades GEV on competition and power overcapacity fears",
+      "summary": "Investing.com -- Baird analysts downgraded GE Vernova LLC (NYSE:GEV) to Neutral, citing rising concerns around potential overcapacity in the power equipment market.",
+      "url": "https://finance.yahoo.com/news/baird-downgrades-gev-competition-power-145348279.html",
+      "provider": "Investing.com",
+      "pub_time": "2026-01-09T14:53:48Z"
+    },
+    {
+      "title": "Manitowoc (MTW) Stock Is Up, What You Need To Know",
+      "summary": "Shares of crane and lifting equipment company Manitowoc (NYSE:MTW) jumped 4.9% in the afternoon session after broader positive sentiment in the construction equipment sector improved, driven by news o",
+      "url": "https://finance.yahoo.com/news/manitowoc-mtw-stock-know-202650437.html",
+      "provider": "StockStory",
+      "pub_time": "2025-12-03T20:26:50Z"
+    },
+    {
+      "title": "Bobcat files patent lawsuits against Caterpillar over construction machinery tech",
+      "summary": "The lawsuit filed in the Texas Eastern District Court involves patents associated with equipment technology.",
+      "url": "https://www.worldconstructionnetwork.com/news/bobcat-caterpillar-patent-lawsuits/",
+      "provider": "World Construction Network",
+      "pub_time": "2025-12-03T12:02:25Z"
+    }
+  ]
+}

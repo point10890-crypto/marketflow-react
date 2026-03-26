@@ -1,33 +1,39 @@
 {
-  "name": "폴라리스오피스",
-  "ticker": "041020.KQ",
+  "name": "누보",
+  "ticker": "332290.KQ",
   "result": "데이터 없음",
-  "date": "2026-03-26 01:01:44",
-  "elapsed": 2.0,
+  "date": "2026-03-25 22:08:18",
+  "elapsed": 2.2,
   "consensus_score": null,
   "analyst_count": 0,
-  "recommendation_detail": null,
-  "recommendation_period": null,
+  "recommendation_detail": {
+    "strongBuy": 0,
+    "buy": 0,
+    "hold": 0,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
   "price_targets": {
-    "current": 4775.0,
+    "current": 1326.0,
     "high": null,
     "low": null,
     "mean": null,
     "median": null
   },
-  "current_price": 4775.0,
+  "current_price": 1326.0,
   "upside_potential": null,
   "key_stats": {
-    "name": "Polaris Office",
+    "name": "NOUSBO",
     "sector": "",
     "industry": "",
-    "market_cap": 237240107008,
+    "market_cap": 50165039104,
     "pe_ratio": null,
     "forward_pe": null,
     "dividend_yield": null,
     "beta": null,
-    "fifty_two_week_high": 7030.0,
-    "fifty_two_week_low": 3245.0,
+    "fifty_two_week_high": 1905.0,
+    "fifty_two_week_low": 996.0,
     "revenue": null,
     "profit_margin": null,
     "currency": "KRW"
@@ -38,37 +44,37 @@
   "revenue_quarters": [
     {
       "date": "2025-09",
-      "value": 84778104990
+      "value": 25059646630
     },
     {
       "date": "2025-06",
-      "value": 79848158750
+      "value": 35367655880
     },
     {
       "date": "2025-03",
-      "value": 74399265450
+      "value": 20201591410
     },
     {
       "date": "2024-12",
-      "value": 79652998340
+      "value": 24038566070
     }
   ],
   "net_income_quarters": [
     {
       "date": "2025-09",
-      "value": 1694051830
+      "value": 1168935490
     },
     {
       "date": "2025-06",
-      "value": 763332450
+      "value": 765146150
     },
     {
       "date": "2025-03",
-      "value": 1030767600
+      "value": -340184050
     },
     {
       "date": "2024-12",
-      "value": 1919181600
+      "value": 1939634080
     }
   ],
   "news": []

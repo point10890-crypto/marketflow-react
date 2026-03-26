@@ -1,0 +1,81 @@
+{
+  "name": "PI첨단소재",
+  "ticker": "178920.KS",
+  "result": "적극 매수",
+  "date": "2026-03-26 11:15:23",
+  "elapsed": 3.0,
+  "consensus_score": 4.5,
+  "analyst_count": 4,
+  "recommendation_detail": {
+    "strongBuy": 2,
+    "buy": 2,
+    "hold": 0,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 25450.0,
+    "high": 26000.0,
+    "low": 22000.0,
+    "mean": 23750.0,
+    "median": 23500.0
+  },
+  "current_price": 25450.0,
+  "upside_potential": -6.7,
+  "key_stats": {
+    "name": "PIAM",
+    "sector": "Basic Materials",
+    "industry": "Specialty Chemicals",
+    "market_cap": 747372871680,
+    "pe_ratio": null,
+    "forward_pe": 15.083716,
+    "dividend_yield": 1.57,
+    "beta": 1.033,
+    "fifty_two_week_high": 27900.0,
+    "fifty_two_week_low": 14880.0,
+    "revenue": 263421083648,
+    "profit_margin": 0.11535,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "PI첨단소재(178920.KS)에 대해 4명의 애널리스트가 적극 매수 의견(4.5/5.0)을 제시했습니다. 현재 주가는 25,450 KRW입니다. 목표가 평균은 23,750 KRW로, 현재 주가 대비 -6.7% 하락 여력이 있습니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 58439150520
+    },
+    {
+      "date": "2025-09",
+      "value": 68417644850
+    },
+    {
+      "date": "2025-06",
+      "value": 72468633990
+    },
+    {
+      "date": "2025-03",
+      "value": 64095662060
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 4401808190
+    },
+    {
+      "date": "2025-09",
+      "value": 8426629670
+    },
+    {
+      "date": "2025-06",
+      "value": 11711104100
+    },
+    {
+      "date": "2025-03",
+      "value": 6054922950
+    }
+  ],
+  "news": []
+}

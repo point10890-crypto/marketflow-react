@@ -1,0 +1,117 @@
+{
+  "name": "Coinbase",
+  "ticker": "COIN",
+  "result": "중립",
+  "date": "2026-03-26 12:37:25",
+  "elapsed": 2.9,
+  "consensus_score": 3.61,
+  "analyst_count": 33,
+  "recommendation_detail": {
+    "strongBuy": 3,
+    "buy": 18,
+    "hold": 9,
+    "sell": 2,
+    "strongSell": 1
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 181.1,
+    "high": 440.0,
+    "low": 120.0,
+    "mean": 252.24277,
+    "median": 240.0
+  },
+  "current_price": 181.1,
+  "upside_potential": 39.3,
+  "key_stats": {
+    "name": "Coinbase Global, Inc.",
+    "sector": "Financial Services",
+    "industry": "Financial Data & Stock Exchanges",
+    "market_cap": 48834994176,
+    "pe_ratio": 40.60538,
+    "forward_pe": 30.764214,
+    "dividend_yield": null,
+    "beta": 3.709,
+    "fifty_two_week_high": 444.65,
+    "fifty_two_week_low": 139.36,
+    "revenue": 6883438080,
+    "profit_margin": 0.1831,
+    "currency": "USD"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "코인베이스(COIN)에 대한 애널리스트 컨센서스는 33명의 참여자 기준 '중립' 의견입니다. 평균 목표 주가는 252 USD로 현재 주가 대비 39.3% 상승 여력이 있습니다. 현재 PER은 40.6배입니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 1781129000
+    },
+    {
+      "date": "2025-09",
+      "value": 1868693000
+    },
+    {
+      "date": "2025-06",
+      "value": 1497208000
+    },
+    {
+      "date": "2025-03",
+      "value": 2034295000
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": -666733000
+    },
+    {
+      "date": "2025-09",
+      "value": 432552000
+    },
+    {
+      "date": "2025-06",
+      "value": 1428900000
+    },
+    {
+      "date": "2025-03",
+      "value": 65608000
+    }
+  ],
+  "news": [
+    {
+      "title": "Circle stock rebounds after biggest 1-day drop ever",
+      "summary": "Circle stock recovered on Wednesday after its biggest one-day drop ever.",
+      "url": "https://finance.yahoo.com/news/circle-stock-rebounds-after-biggest-1-day-drop-ever-145020310.html",
+      "provider": "Yahoo Finance",
+      "pub_time": "2026-03-25T14:50:20Z"
+    },
+    {
+      "title": "Interactive Brokers Makes It Easier To Move Crypto Onto Its Platform",
+      "summary": "Interactive Brokers (NASDAQ: $IBKR) now allows clients to transfer supported cryptocurrencies from external wallets...",
+      "url": "https://www.cryptoprowl.com/releases/interactive-brokers-makes-it-easier-to-move-crypto-onto-its-platform-3968",
+      "provider": "CryptoProwl",
+      "pub_time": "2026-03-25T19:13:00Z"
+    },
+    {
+      "title": "Coinbase Leans Into DeFi Infrastructure With Chainlink DataLink Integration",
+      "summary": "Coinbase Global (NasdaqGS:COIN) is integrating its onchain exchange data directly with Chainlink’s DataLink oracle infrastructure. The move brings institutional-grade pricing and market data from Coin",
+      "url": "https://finance.yahoo.com/markets/crypto/articles/coinbase-leans-defi-infrastructure-chainlink-190603377.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-03-25T19:06:03Z"
+    },
+    {
+      "title": "Coinbase Integrates Chainlink to Deliver Institutional Trading Data Onchain",
+      "summary": "Crypto exchange giant Coinbase (NASDAQ: $COIN) said Wednesday that its working with Chainlink (CRYPTO: $LINK) ...",
+      "url": "https://www.cryptoprowl.com/releases/coinbase-integrates-chainlink-to-deliver-institutional-trading-data-onchain-3966",
+      "provider": "CryptoProwl",
+      "pub_time": "2026-03-25T15:37:00Z"
+    },
+    {
+      "title": "Circle Moves Beyond Stablecoins: Is Diversification Paying Off?",
+      "summary": "CRCL expands beyond stablecoins as payments, FX and tokenized assets gain traction, but reserve income still dominates its evolving model.",
+      "url": "https://finance.yahoo.com/markets/crypto/articles/circle-moves-beyond-stablecoins-diversification-153600924.html",
+      "provider": "Zacks",
+      "pub_time": "2026-03-25T15:36:00Z"
+    }
+  ]
+}

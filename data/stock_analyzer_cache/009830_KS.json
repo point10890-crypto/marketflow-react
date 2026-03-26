@@ -1,0 +1,117 @@
+{
+  "name": "한화솔루션",
+  "ticker": "009830.KS",
+  "result": "매수",
+  "date": "2026-03-26 14:41:30",
+  "elapsed": 5.1,
+  "consensus_score": 3.75,
+  "analyst_count": 16,
+  "recommendation_detail": {
+    "strongBuy": 3,
+    "buy": 9,
+    "hold": 2,
+    "sell": 1,
+    "strongSell": 1
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 43600.0,
+    "high": 67000.0,
+    "low": 17000.0,
+    "mean": 42406.25,
+    "median": 44500.0
+  },
+  "current_price": 43550.0,
+  "upside_potential": -2.6,
+  "key_stats": {
+    "name": "HANWHA SOLUTIONS",
+    "sector": "Technology",
+    "industry": "Solar",
+    "market_cap": 7494530236416,
+    "pe_ratio": null,
+    "forward_pe": 11.365062,
+    "dividend_yield": 1.13,
+    "beta": 1.277,
+    "fifty_two_week_high": 59300.0,
+    "fifty_two_week_low": 18220.0,
+    "revenue": 13333054881792,
+    "profit_margin": -0.06565,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "한화솔루션(009830.KS)에 대한 애널리스트 컨센서스는 매수 의견(3.75/5.0)으로 나타났습니다. 16명의 애널리스트가 참여한 목표가 평균은 42,406원으로, 현재가 43,550원 대비 소폭 하락 여력이 있습니다. 따라서 현재 주가는 목표가 컨센서스 대비 다소 높은 수준으로 평가됩니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 3756998000000
+    },
+    {
+      "date": "2025-09",
+      "value": 3364316000000
+    },
+    {
+      "date": "2025-06",
+      "value": 3117265000000
+    },
+    {
+      "date": "2025-03",
+      "value": 3094476000000
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": -392322000000
+    },
+    {
+      "date": "2025-09",
+      "value": -12057000000
+    },
+    {
+      "date": "2025-06",
+      "value": -201596000000
+    },
+    {
+      "date": "2025-03",
+      "value": -44467000000
+    }
+  ],
+  "news": [
+    {
+      "title": "Hanwha Solutions Corp (XKRX:009830) Q4 2025 Earnings Call Highlights: Record Sales Amidst ...",
+      "summary": "Despite a challenging quarter for the renewable division, Hanwha Solutions Corp (XKRX:009830) achieved record sales and anticipates a return to profitability in early 2026.",
+      "url": "https://finance.yahoo.com/news/hanwha-solutions-corp-xkrx-009830-150105223.html",
+      "provider": "GuruFocus.com",
+      "pub_time": "2026-02-05T15:01:05Z"
+    },
+    {
+      "title": "Qcells furloughs 1,000 workers at US solar factories due to stalled shipments",
+      "summary": "The announcement comes months after the company said some of its shipments of solar cells had been detained at U.S. ports under a 2021 law banning imports from China's Xinjiang ⁠region due to concerns",
+      "url": "https://finance.yahoo.com/news/qcells-furloughs-1-000-workers-005349572.html",
+      "provider": "Reuters",
+      "pub_time": "2025-11-08T00:53:49Z"
+    },
+    {
+      "title": "South Korean solar firm cuts pay and hours for Georgia workers as US officials detain imports",
+      "summary": "A South Korean solar company says it will temporarily reduce pay and working hours for about 1,000 of its 3,000 employees in Georgia because U.S. customs officials have been detaining imported compone",
+      "url": "https://finance.yahoo.com/news/south-korean-solar-firm-cuts-232054093.html",
+      "provider": "Associated Press Finance",
+      "pub_time": "2025-11-07T23:20:54Z"
+    },
+    {
+      "title": "Hanwha Solutions Corp (XKRX:009830) Q3 2025 Earnings Call Highlights: Navigating Challenges in ...",
+      "summary": "Despite a rise in consolidated sales, Hanwha Solutions Corp faces profitability challenges and increased liabilities, with strategic plans to address market pressures.",
+      "url": "https://finance.yahoo.com/news/hanwha-solutions-corp-xkrx-009830-110041607.html",
+      "provider": "GuruFocus.com",
+      "pub_time": "2025-11-05T11:00:41Z"
+    },
+    {
+      "title": "What To Expect From Hanwha Solutions Corp (XKRX:009830) Q3 2025 Earnings",
+      "summary": "Hanwha Solutions Corp (XKRX:009830) is set to release its Q3 2025 earnings on Nov 5, 2025.  The consensus estimate for Q3 2025 revenue is $3.42 billion, and the earnings are expected to come in at -$1",
+      "url": "https://finance.yahoo.com/news/expect-hanwha-solutions-corp-xkrx-121617046.html",
+      "provider": "GuruFocus.com",
+      "pub_time": "2025-11-04T12:16:17Z"
+    }
+  ]
+}

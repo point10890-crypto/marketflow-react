@@ -1,0 +1,117 @@
+{
+  "name": "LG이노텍",
+  "ticker": "011070.KS",
+  "result": "매수",
+  "date": "2026-03-26 08:47:13",
+  "elapsed": 2.2,
+  "consensus_score": 4.0,
+  "analyst_count": 27,
+  "recommendation_detail": {
+    "strongBuy": 8,
+    "buy": 14,
+    "hold": 3,
+    "sell": 1,
+    "strongSell": 1
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 313000.0,
+    "high": 380000.0,
+    "low": 190000.0,
+    "mean": 313185.2,
+    "median": 330000.0
+  },
+  "current_price": 313000.0,
+  "upside_potential": 0.1,
+  "key_stats": {
+    "name": "LG Innotek",
+    "sector": "Technology",
+    "industry": "Electronic Components",
+    "market_cap": 7406990917632,
+    "pe_ratio": null,
+    "forward_pe": 10.892888,
+    "dividend_yield": 0.6,
+    "beta": 0.584,
+    "fifty_two_week_high": 353500.0,
+    "fifty_two_week_low": 121000.0,
+    "revenue": 21896603107328,
+    "profit_margin": 0.01559,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "LG이노텍(011070.KS)에 대한 애널리스트 컨센서스는 27명 참여 기준 '매수' 의견(4.0/5.0)입니다. 목표가 평균은 313,185원으로 현재가 313,000원 대비 소폭 상승 여력이 존재합니다. 투자 판단은 제시된 데이터를 참고하여 신중하게 결정하시기 바랍니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 7609756000000
+    },
+    {
+      "date": "2025-09",
+      "value": 5369431000000
+    },
+    {
+      "date": "2025-06",
+      "value": 3934575006460
+    },
+    {
+      "date": "2025-03",
+      "value": 4982840285150
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 135937000000
+    },
+    {
+      "date": "2025-09",
+      "value": 128389000000
+    },
+    {
+      "date": "2025-06",
+      "value": -8676988140
+    },
+    {
+      "date": "2025-03",
+      "value": 85613325580
+    }
+  ],
+  "news": [
+    {
+      "title": "Aeva Technologies, Inc. Q4 2025 Earnings Call Summary",
+      "summary": "Moby summary of Aeva Technologies, Inc.'s Q4 2025 earnings call",
+      "url": "https://app.moby.co/home/research/tools/earningsCalendar/earnings-aeva-technologies-inc-q4-2025-earnings-call-summary?utm_source=yahoo_finance&utm_medium=rss",
+      "provider": "Moby",
+      "pub_time": "2026-02-27T13:30:00Z"
+    },
+    {
+      "title": "A Look At Aeva Technologies (AEVA) Valuation After NVIDIA And LG Innotek LiDAR Milestones",
+      "summary": "Aeva Technologies (AEVA) has drawn fresh attention after its 4D LiDAR was selected for NVIDIA’s DRIVE Hyperion autonomous vehicle platform, followed immediately by the launch of the Aeva Omni short ra",
+      "url": "https://finance.yahoo.com/news/look-aeva-technologies-aeva-valuation-031507811.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-01-07T03:15:07Z"
+    },
+    {
+      "title": "What AEVA's New Auto Contract Means for Its Growth Outlook",
+      "summary": "AEVA secures a Tier-1 deal with a major European automaker, positioning its 4D LiDAR as a global standard across models.",
+      "url": "https://finance.yahoo.com/news/aevas-auto-contract-means-growth-142500168.html",
+      "provider": "Zacks",
+      "pub_time": "2025-12-10T14:25:00Z"
+    },
+    {
+      "title": "Will AEVA's $50M LG Alliance Fast-Track Multi-Sector Growth?",
+      "summary": "Aeva Technologies teams with LG Innotek in a $50M deal to scale LiDAR into cars, automation, robotics, and consumer tech.",
+      "url": "https://finance.yahoo.com/news/aevas-50m-lg-alliance-fast-123600205.html",
+      "provider": "Zacks",
+      "pub_time": "2025-08-11T12:36:00Z"
+    },
+    {
+      "title": "TechCrunch Mobility: Tesla’s ride-hailing gambit",
+      "summary": "Welcome back to TechCrunch Mobility — your central hub for news and insights on the future of transportation.",
+      "url": "https://finance.yahoo.com/news/techcrunch-mobility-tesla-ride-hailing-160500167.html",
+      "provider": "TechCrunch",
+      "pub_time": "2025-08-04T16:05:00Z"
+    }
+  ]
+}

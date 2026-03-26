@@ -1,33 +1,39 @@
 {
-  "name": "폴라리스오피스",
-  "ticker": "041020.KQ",
+  "name": "큐렉소",
+  "ticker": "060280.KQ",
   "result": "데이터 없음",
-  "date": "2026-03-26 01:01:44",
-  "elapsed": 2.0,
+  "date": "2026-03-26 10:00:35",
+  "elapsed": 5.3,
   "consensus_score": null,
   "analyst_count": 0,
-  "recommendation_detail": null,
-  "recommendation_period": null,
+  "recommendation_detail": {
+    "strongBuy": 0,
+    "buy": 0,
+    "hold": 0,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
   "price_targets": {
-    "current": 4775.0,
+    "current": 16910.0,
     "high": null,
     "low": null,
     "mean": null,
     "median": null
   },
-  "current_price": 4775.0,
+  "current_price": 16910.0,
   "upside_potential": null,
   "key_stats": {
-    "name": "Polaris Office",
+    "name": "CUREXO",
     "sector": "",
     "industry": "",
-    "market_cap": 237240107008,
+    "market_cap": 694831742976,
     "pe_ratio": null,
     "forward_pe": null,
     "dividend_yield": null,
     "beta": null,
-    "fifty_two_week_high": 7030.0,
-    "fifty_two_week_low": 3245.0,
+    "fifty_two_week_high": 22550.0,
+    "fifty_two_week_low": 6900.0,
     "revenue": null,
     "profit_margin": null,
     "currency": "KRW"
@@ -38,37 +44,37 @@
   "revenue_quarters": [
     {
       "date": "2025-09",
-      "value": 84778104990
+      "value": 17227825500
     },
     {
       "date": "2025-06",
-      "value": 79848158750
+      "value": 16794769260
     },
     {
       "date": "2025-03",
-      "value": 74399265450
+      "value": 19709338790
     },
     {
       "date": "2024-12",
-      "value": 79652998340
+      "value": 14836646790
     }
   ],
   "net_income_quarters": [
     {
       "date": "2025-09",
-      "value": 1694051830
+      "value": 823302250
     },
     {
       "date": "2025-06",
-      "value": 763332450
+      "value": -890041330
     },
     {
       "date": "2025-03",
-      "value": 1030767600
+      "value": 1092717460
     },
     {
       "date": "2024-12",
-      "value": 1919181600
+      "value": -5380833460
     }
   ],
   "news": []

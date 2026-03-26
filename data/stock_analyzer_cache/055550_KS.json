@@ -1,0 +1,117 @@
+{
+  "name": "신한지주",
+  "ticker": "055550.KS",
+  "result": "매수",
+  "date": "2026-03-25 22:20:48",
+  "elapsed": 2.3,
+  "consensus_score": 4.29,
+  "analyst_count": 21,
+  "recommendation_detail": {
+    "strongBuy": 7,
+    "buy": 13,
+    "hold": 1,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 92100.0,
+    "high": 131000.0,
+    "low": 73900.0,
+    "mean": 110804.766,
+    "median": 110000.0
+  },
+  "current_price": 92100.0,
+  "upside_potential": 20.3,
+  "key_stats": {
+    "name": "ShinhanGroup",
+    "sector": "Financial Services",
+    "industry": "Banks - Regional",
+    "market_cap": 43715666116608,
+    "pe_ratio": null,
+    "forward_pe": 7.3782887,
+    "dividend_yield": 3.91,
+    "beta": 0.712,
+    "fifty_two_week_high": 107200.0,
+    "fifty_two_week_low": 42500.0,
+    "revenue": 15721434185728,
+    "profit_margin": 0.31623,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "신한지주(055550.KS)에 대해 21명의 애널리스트가 제시한 컨센서스는 매수 의견(4.29/5.0)입니다. 목표가 평균은 110,805 KRW로, 현재가 92,100 KRW 대비 20.3%의 상승 여력이 있습니다. 이는 애널리스트들이 신한지주의 추가적인 주가 상승을 기대하고 있음을 시사합니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 4834329000000
+    },
+    {
+      "date": "2025-06",
+      "value": 5108107000000
+    },
+    {
+      "date": "2025-03",
+      "value": 4421900000000
+    },
+    {
+      "date": "2024-12",
+      "value": 4630056000000
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-06",
+      "value": 1549053000000
+    },
+    {
+      "date": "2025-03",
+      "value": 1488346000000
+    },
+    {
+      "date": "2024-12",
+      "value": 406098000000
+    },
+    {
+      "date": "2024-09",
+      "value": 1297068000000
+    }
+  ],
+  "news": [
+    {
+      "title": "UBS Group to Expand U.S. Wealth Operations After Securing OCC Approval",
+      "summary": "UBS secures OCC approval for a national bank charter, paving the way to expand U.S. wealth operations by adding traditional banking services.",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/ubs-group-expand-u-wealth-164700471.html",
+      "provider": "Zacks",
+      "pub_time": "2026-03-23T16:47:00Z"
+    },
+    {
+      "title": "Shinhan Financial Group (SHG) Builds Momentum With Robust FY2025 Results",
+      "summary": "Shinhan Financial Group Co., Ltd. (NYSE:SHG) is one of the best Korean stocks to buy. On March 3, Shinhan Financial Group Co., Ltd. (NYSE:SHG) filed audit reports for Shinhan Bank, its wholly-owned ba",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/shinhan-financial-group-shg-builds-193633240.html",
+      "provider": "Insider Monkey",
+      "pub_time": "2026-03-20T19:36:33Z"
+    },
+    {
+      "title": "SHG or EBKDY: Which Is the Better Value Stock Right Now?",
+      "summary": "SHG vs. EBKDY: Which Stock Is the Better Value Option?",
+      "url": "https://finance.yahoo.com/news/shg-ebkdy-better-value-stock-154002627.html",
+      "provider": "Zacks",
+      "pub_time": "2026-03-11T15:40:02Z"
+    },
+    {
+      "title": "Asian Equities Traded in the US as American Depositary Receipts Fall Again in Friday Trading; Down Nearly 6% for Week",
+      "summary": "Asian equities traded in the US as American depositary receipts are set to end a rough week on a dow",
+      "url": "https://finance.yahoo.com/news/asian-equities-traded-us-american-154440930.html",
+      "provider": "MT Newswires",
+      "pub_time": "2026-03-06T15:44:40Z"
+    },
+    {
+      "title": "Best Momentum Stock to Buy for March 6th",
+      "summary": "ALTO, SHG and ESCA made it to the Zacks Rank #1 (Strong Buy) momentum stocks list on March 6, 2026.",
+      "url": "https://finance.yahoo.com/news/best-momentum-stock-buy-march-150000258.html",
+      "provider": "Zacks",
+      "pub_time": "2026-03-06T15:00:00Z"
+    }
+  ]
+}

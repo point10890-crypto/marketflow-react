@@ -1,0 +1,81 @@
+{
+  "name": "디아이",
+  "ticker": "003160.KS",
+  "result": "매수",
+  "date": "2026-03-26 00:48:44",
+  "elapsed": 2.1,
+  "consensus_score": 4.0,
+  "analyst_count": 2,
+  "recommendation_detail": {
+    "strongBuy": 0,
+    "buy": 2,
+    "hold": 0,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 37900.0,
+    "high": 45000.0,
+    "low": 20000.0,
+    "mean": 32500.0,
+    "median": 32500.0
+  },
+  "current_price": 37900.0,
+  "upside_potential": -14.2,
+  "key_stats": {
+    "name": "DI",
+    "sector": "Technology",
+    "industry": "Semiconductor Equipment & Materials",
+    "market_cap": 986035519488,
+    "pe_ratio": null,
+    "forward_pe": 19.295532,
+    "dividend_yield": 0.7,
+    "beta": 1.83,
+    "fifty_two_week_high": 41700.0,
+    "fifty_two_week_low": 12040.0,
+    "revenue": 432293576704,
+    "profit_margin": 0.01179,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "디아이(003160.KS)에 대해 2명의 애널리스트가 매수 의견을 제시했습니다. 컨센서스 점수는 5점 만점에 4.0점입니다. 목표가 평균은 32,500원으로 현재 주가 대비 14.2% 하락 여력이 있습니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 93914996670
+    },
+    {
+      "date": "2025-09",
+      "value": 109063765750
+    },
+    {
+      "date": "2025-06",
+      "value": 119269899030
+    },
+    {
+      "date": "2025-03",
+      "value": 110044899080
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": -11174701080
+    },
+    {
+      "date": "2025-09",
+      "value": 5460986700
+    },
+    {
+      "date": "2025-06",
+      "value": 5503289100
+    },
+    {
+      "date": "2025-03",
+      "value": 5306067600
+    }
+  ],
+  "news": []
+}

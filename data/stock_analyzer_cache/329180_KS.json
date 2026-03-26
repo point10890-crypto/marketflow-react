@@ -1,0 +1,117 @@
+{
+  "name": "HD현대중공업",
+  "ticker": "329180.KS",
+  "result": "매수",
+  "date": "2026-03-26 10:50:38",
+  "elapsed": 6.5,
+  "consensus_score": 4.17,
+  "analyst_count": 23,
+  "recommendation_detail": {
+    "strongBuy": 7,
+    "buy": 15,
+    "hold": 0,
+    "sell": 0,
+    "strongSell": 1
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 523000.0,
+    "high": 910000.0,
+    "low": 350000.0,
+    "mean": 772391.3,
+    "median": 800000.0
+  },
+  "current_price": 523000.0,
+  "upside_potential": 47.7,
+  "key_stats": {
+    "name": "HD HYUNDAI HEAVY INDUSTRIES",
+    "sector": "Industrials",
+    "industry": "Aerospace & Defense",
+    "market_cap": 54894719401984,
+    "pe_ratio": null,
+    "forward_pe": 16.783583,
+    "dividend_yield": 1.48,
+    "beta": null,
+    "fifty_two_week_high": 652000.0,
+    "fifty_two_week_low": 271500.0,
+    "revenue": 17580632834048,
+    "profit_margin": 0.08051,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "HD현대중공업(329180.KS)에 대해 23명의 애널리스트가 제시한 컨센서스 의견은 '매수'입니다. 목표가 평균은 772,391원으로, 현재가 523,000원 대비 47.7%의 상승 여력이 있는 것으로 분석됩니다. 투자 결정은 개인의 판단에 따라 신중하게 이루어져야 합니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 4417898203000
+    },
+    {
+      "date": "2025-06",
+      "value": 4147124837000
+    },
+    {
+      "date": "2025-03",
+      "value": 3822515741000
+    },
+    {
+      "date": "2024-12",
+      "value": 4005550308000
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 430790601000
+    },
+    {
+      "date": "2025-06",
+      "value": 210911294000
+    },
+    {
+      "date": "2025-03",
+      "value": 284230404000
+    },
+    {
+      "date": "2024-12",
+      "value": 366577813000
+    }
+  ],
+  "news": [
+    {
+      "title": "South Korean Groups Backing New 1.25-GW Coal-Fired Power Plant in Alaska",
+      "summary": "A fact sheet published by the U.S. Dept. of the Interior notes a $1-billion agreement between Hyundai Heavy Industries Power Systems and developers of the proposed 1.25-GW Terra Energy Center, a new 1",
+      "url": "https://www.powermag.com/terra-power-south-korean-company-backing-new-1-25-gw-coal-fired-power-plant-in-alaska/",
+      "provider": "POWER Magazine",
+      "pub_time": "2026-03-19T16:15:14Z"
+    },
+    {
+      "title": "U.S. Locks In $56 Billion of Asian Energy Deals Amid Gulf Disruptions",
+      "summary": "Agreements span LNG, coal, and major projects like Delfin LNG, reflecting stronger U.S.-Asia energy ties driven by security concerns and shorter shipping routes.",
+      "url": "https://finance.yahoo.com/news/u-locks-56-billion-asian-220000004.html",
+      "provider": "Oilprice.com",
+      "pub_time": "2026-03-17T22:00:00Z"
+    },
+    {
+      "title": "South Korea delegation heads to Canada to lobby for submarine project",
+      "summary": "SEOUL, Jan 26 (Reuters) - South Korean Presidential Chief of Staff Kang Hoon-sik said on Monday he was heading to Canada, with executives from Hyundai Motor, alongside shipbuilders Hanwha and HD",
+      "url": "https://ca.finance.yahoo.com/news/south-korea-delegation-heads-canada-004617901.html",
+      "provider": "Reuters",
+      "pub_time": "2026-01-26T00:46:17Z"
+    },
+    {
+      "title": "Auto & Transport Roundup: Market Talk",
+      "summary": "Find insight on HD Hyundai Heavy Industries, Uber and more in the latest Market Talks covering the auto and transport sector..",
+      "url": "https://www.wsj.com/business/auto-transport-roundup-market-talk-3e165e4d?siteid=yhoof2&yptr=yahoo",
+      "provider": "The Wall Street Journal",
+      "pub_time": "2026-01-23T22:07:00Z"
+    },
+    {
+      "title": "Analysis-Silicon Valley-backed defense firms face growing pains after hot streak",
+      "summary": "By David Jeans, Mike Stone and Joe Brock SIMI VALLEY, California, Dec 8 (Reuters) - U.S. defense technology companies have roughly doubled their share of Pentagon contracts over the past year, but",
+      "url": "https://finance.yahoo.com/news/analysis-silicon-valley-backed-defense-111256151.html",
+      "provider": "Reuters",
+      "pub_time": "2025-12-08T22:52:26Z"
+    }
+  ]
+}

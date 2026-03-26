@@ -1,0 +1,96 @@
+{
+  "name": "삼성에스디에스",
+  "ticker": "018260.KS",
+  "result": "매수",
+  "date": "2026-03-26 14:08:11",
+  "elapsed": 4.3,
+  "consensus_score": 4.12,
+  "analyst_count": 17,
+  "recommendation_detail": {
+    "strongBuy": 5,
+    "buy": 9,
+    "hold": 3,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 157500.0,
+    "high": 250000.0,
+    "low": 170000.0,
+    "mean": 213133.33,
+    "median": 220000.0
+  },
+  "current_price": 157400.0,
+  "upside_potential": 35.4,
+  "key_stats": {
+    "name": "SAMSUNG SDS",
+    "sector": "Technology",
+    "industry": "Information Technology Services",
+    "market_cap": 12174919467008,
+    "pe_ratio": null,
+    "forward_pe": 13.199089,
+    "dividend_yield": 2.0,
+    "beta": 0.682,
+    "fifty_two_week_high": 198800.0,
+    "fifty_two_week_low": 109000.0,
+    "revenue": 13929868689408,
+    "profit_margin": 0.054530002,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "삼성에스디에스(018260.KS)에 대해 17명의 애널리스트가 제시한 컨센서스는 '매수' 의견입니다 (5점 만점 중 4.12점). 평균 목표 주가는 213,133 KRW으로, 현재 주가 157,400 KRW 대비 35.4%의 상승 여력이 있습니다. 제시된 데이터는 투자 판단의 참고 자료로 활용될 수 있습니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 3536802718430
+    },
+    {
+      "date": "2025-09",
+      "value": 3391317620510
+    },
+    {
+      "date": "2025-06",
+      "value": 3511984578640
+    },
+    {
+      "date": "2025-03",
+      "value": 3489763580130
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 182284851630
+    },
+    {
+      "date": "2025-09",
+      "value": 195155746300
+    },
+    {
+      "date": "2025-06",
+      "value": 170602268730
+    },
+    {
+      "date": "2025-03",
+      "value": 211495939290
+    }
+  ],
+  "news": [
+    {
+      "title": "OpenAI, Samsung SDS and SK Telecom set to start building data centres in Korea in March, minister says",
+      "summary": "OpenAI, Samsung SDS and SK ‌Telecom are preparing to ‌start construction of data centres ​in South Korea in March, Science Minister Bae Kyung-hoon said at a parliamentary hearing ‌on Wednesday ⁠in Seo",
+      "url": "https://finance.yahoo.com/news/openai-samsung-sk-set-start-015417919.html",
+      "provider": "Reuters",
+      "pub_time": "2026-02-11T01:54:17Z"
+    },
+    {
+      "title": "Jeff Bezos Touts Data Centers In Space As Samsung And OpenAI Plan Floating Data Centers In The Ocean",
+      "summary": "As the artificial intelligence (AI) boom strains global power grids, tech giants are looking to the sea and stars for solutions. In a significant move, Samsung Electronics (OTC:SSNLF) and OpenAI are c",
+      "url": "https://finance.yahoo.com/news/jeff-bezos-touts-data-centers-013131234.html",
+      "provider": "Benzinga",
+      "pub_time": "2025-10-17T01:31:31Z"
+    }
+  ]
+}

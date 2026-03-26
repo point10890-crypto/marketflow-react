@@ -1,0 +1,89 @@
+{
+  "name": "한올바이오파마",
+  "ticker": "009420.KS",
+  "result": "적극 매수",
+  "date": "2026-03-26 11:14:17",
+  "elapsed": 4.0,
+  "consensus_score": 4.4,
+  "analyst_count": 5,
+  "recommendation_detail": {
+    "strongBuy": 2,
+    "buy": 3,
+    "hold": 0,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 64700.0,
+    "high": 76000.0,
+    "low": 42000.0,
+    "mean": 60200.0,
+    "median": 64000.0
+  },
+  "current_price": 64700.0,
+  "upside_potential": -7.0,
+  "key_stats": {
+    "name": "HANALL BIOPHARMA",
+    "sector": "Healthcare",
+    "industry": "Drug Manufacturers - Specialty & Generic",
+    "market_cap": 3283839090688,
+    "pe_ratio": null,
+    "forward_pe": 154.29742,
+    "dividend_yield": null,
+    "beta": 0.896,
+    "fifty_two_week_high": 66600.0,
+    "fifty_two_week_low": 24000.0,
+    "revenue": 155184529408,
+    "profit_margin": -0.03582,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "한올바이오파마(009420.KS)에 대해 5명의 애널리스트가 적극 매수 의견(4.4/5.0)을 제시했습니다. 현재 주가는 64,700 KRW입니다. 목표가 평균은 60,200 KRW로, 현재 주가 대비 -7.0% 하락 여력이 있습니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 37548994440
+    },
+    {
+      "date": "2025-09",
+      "value": 40803569350
+    },
+    {
+      "date": "2025-06",
+      "value": 40681535260
+    },
+    {
+      "date": "2025-03",
+      "value": 36150425040
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": -6249378550
+    },
+    {
+      "date": "2025-09",
+      "value": 298958020
+    },
+    {
+      "date": "2025-06",
+      "value": 598772440
+    },
+    {
+      "date": "2025-03",
+      "value": -207514540
+    }
+  ],
+  "news": [
+    {
+      "title": "Discovering Hanall Biopharma And Two Other Asian Stocks Estimated Below Intrinsic Value",
+      "summary": "As global markets navigate a period of cautious investor sentiment and mixed economic signals, Asian stock markets have shown resilience, with some indices recording gains despite broader uncertaintie",
+      "url": "https://finance.yahoo.com/news/discovering-hanall-biopharma-two-other-043755473.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2025-10-03T04:37:55Z"
+    }
+  ]
+}
