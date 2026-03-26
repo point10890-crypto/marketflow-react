@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-03-27T00:10:41.700666",
+  "timestamp": "2026-03-27T00:11:11.617711",
   "version": "1.0",
   "market_summary": {
     "total_market_cap": 2452841656636.0,
@@ -51,20 +51,20 @@
       {
         "symbol": "NIGHT",
         "name": "Midnight",
-        "price": 0.04672327,
-        "change_24h": 5.6
-      },
-      {
-        "symbol": "NEXO",
-        "name": "NEXO",
-        "price": 0.897168,
-        "change_24h": 1.15
+        "price": 0.04671603,
+        "change_24h": 5.59
       },
       {
         "symbol": "ONDO",
         "name": "Ondo",
-        "price": 0.263774,
-        "change_24h": 0.99
+        "price": 0.263605,
+        "change_24h": 1.36
+      },
+      {
+        "symbol": "NEXO",
+        "name": "NEXO",
+        "price": 0.896463,
+        "change_24h": 1.07
       },
       {
         "symbol": "USDY",
@@ -84,31 +84,31 @@
         "symbol": "SIREN",
         "name": "Siren",
         "price": 1.93,
-        "change_24h": -19.27
+        "change_24h": -18.82
       },
       {
         "symbol": "M",
         "name": "MemeCore",
         "price": 2.08,
-        "change_24h": -13.53
+        "change_24h": -13.74
       },
       {
         "symbol": "AAVE",
         "name": "Aave",
-        "price": 106.27,
-        "change_24h": -7.61
-      },
-      {
-        "symbol": "WLD",
-        "name": "Worldcoin",
-        "price": 0.29948,
-        "change_24h": -7.38
+        "price": 106.17,
+        "change_24h": -7.69
       },
       {
         "symbol": "HASH",
         "name": "Provenance Blockchain",
         "price": 0.01282502,
         "change_24h": -7.24
+      },
+      {
+        "symbol": "WLD",
+        "name": "Worldcoin",
+        "price": 0.299475,
+        "change_24h": -7.14
       }
     ]
   },
@@ -128,22 +128,22 @@
       "symbol": "BTCUSDT",
       "rate": -3.7e-05,
       "rate_pct": -0.0037,
-      "annualized_pct": -4.08,
+      "annualized_pct": -4.09,
       "sentiment": "neutral"
     },
     "ETH": {
       "symbol": "ETHUSDT",
-      "rate": -0.000115,
-      "rate_pct": -0.0115,
-      "annualized_pct": -12.58,
+      "rate": -0.000114,
+      "rate_pct": -0.0114,
+      "annualized_pct": -12.48,
       "sentiment": "bearish"
     }
   },
   "macro_correlations": {
     "btc_pairs": {
-      "BTC_SPY": 0.5799,
-      "BTC_GLD": 0.236,
-      "BTC_DXY": -0.1358
+      "BTC_SPY": 0.5798,
+      "BTC_GLD": 0.2357,
+      "BTC_DXY": -0.1355
     }
   },
   "market_gate": {
@@ -165,7 +165,7 @@
       "btc_volume_z_50": -0.5389820692192396,
       "btc_atrp_14_pct": 3.7048507312067573,
       "alt_breadth_above_ema50": 0.1,
-      "funding_rate": -3.724e-05,
+      "funding_rate": -3.737e-05,
       "open_interest_delta_z": null,
       "gate_score_components": {
         "trend": 0.0,
@@ -177,7 +177,7 @@
       "fear_greed_index": 10,
       "fear_greed_class": "Extreme Fear"
     },
-    "generated_at": "2026-03-27T00:10:35.496712"
+    "generated_at": "2026-03-27T00:11:05.668341"
   },
   "btc_price_history": [
     {
