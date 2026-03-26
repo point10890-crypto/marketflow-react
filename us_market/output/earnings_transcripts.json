@@ -1,7 +1,7 @@
 {
   "metadata": {
-    "as_of_date": "2026-03-26",
-    "fetch_time": "2026-03-26T20:16:09.494017",
+    "as_of_date": "2026-03-27",
+    "fetch_time": "2026-03-27T08:22:57.932975",
     "source": "fmp_api + yfinance",
     "ticker_count": 15,
     "transcripts_found": 0
@@ -9,7 +9,7 @@
   "analyses": {
     "AKAM": {
       "ticker": "AKAM",
-      "fetch_time": "2026-03-26T20:15:44.171922",
+      "fetch_time": "2026-03-27T08:22:34.775487",
       "has_transcript": false,
       "error": "API error: 403",
       "earnings_info": {
@@ -46,7 +46,7 @@
     },
     "T": {
       "ticker": "T",
-      "fetch_time": "2026-03-26T20:15:46.605624",
+      "fetch_time": "2026-03-27T08:22:37.093457",
       "has_transcript": false,
       "error": "API error: 403",
       "earnings_info": {
@@ -83,7 +83,7 @@
     },
     "ALGN": {
       "ticker": "ALGN",
-      "fetch_time": "2026-03-26T20:15:48.280261",
+      "fetch_time": "2026-03-27T08:22:38.584948",
       "has_transcript": false,
       "error": "API error: 403",
       "earnings_info": {
@@ -120,7 +120,7 @@
     },
     "AIZ": {
       "ticker": "AIZ",
-      "fetch_time": "2026-03-26T20:15:49.947166",
+      "fetch_time": "2026-03-27T08:22:40.099990",
       "has_transcript": false,
       "error": "API error: 403",
       "earnings_info": {
@@ -157,7 +157,7 @@
     },
     "AON": {
       "ticker": "AON",
-      "fetch_time": "2026-03-26T20:15:51.627546",
+      "fetch_time": "2026-03-27T08:22:41.662900",
       "has_transcript": false,
       "error": "API error: 403",
       "earnings_info": {
@@ -194,7 +194,7 @@
     },
     "AMZN": {
       "ticker": "AMZN",
-      "fetch_time": "2026-03-26T20:15:53.059638",
+      "fetch_time": "2026-03-27T08:22:43.066099",
       "has_transcript": false,
       "error": "API error: 403",
       "earnings_info": {
@@ -231,7 +231,7 @@
     },
     "AMAT": {
       "ticker": "AMAT",
-      "fetch_time": "2026-03-26T20:15:54.743917",
+      "fetch_time": "2026-03-27T08:22:44.591545",
       "has_transcript": false,
       "error": "API error: 403",
       "earnings_info": {
@@ -268,7 +268,7 @@
     },
     "APD": {
       "ticker": "APD",
-      "fetch_time": "2026-03-26T20:15:56.513737",
+      "fetch_time": "2026-03-27T08:22:46.119097",
       "has_transcript": false,
       "error": "API error: 403",
       "earnings_info": {
@@ -305,7 +305,7 @@
     },
     "APO": {
       "ticker": "APO",
-      "fetch_time": "2026-03-26T20:15:58.176133",
+      "fetch_time": "2026-03-27T08:22:47.631591",
       "has_transcript": false,
       "error": "API error: 403",
       "earnings_info": {
@@ -342,7 +342,7 @@
     },
     "AWK": {
       "ticker": "AWK",
-      "fetch_time": "2026-03-26T20:15:59.660709",
+      "fetch_time": "2026-03-27T08:22:49.015394",
       "has_transcript": false,
       "error": "API error: 403",
       "earnings_info": {
@@ -379,7 +379,7 @@
     },
     "ALL": {
       "ticker": "ALL",
-      "fetch_time": "2026-03-26T20:16:01.171693",
+      "fetch_time": "2026-03-27T08:22:50.388711",
       "has_transcript": false,
       "error": "API error: 403",
       "earnings_info": {
@@ -416,7 +416,7 @@
     },
     "ALB": {
       "ticker": "ALB",
-      "fetch_time": "2026-03-26T20:16:02.865169",
+      "fetch_time": "2026-03-27T08:22:51.898554",
       "has_transcript": false,
       "error": "API error: 403",
       "earnings_info": {
@@ -453,7 +453,7 @@
     },
     "AMP": {
       "ticker": "AMP",
-      "fetch_time": "2026-03-26T20:16:04.348033",
+      "fetch_time": "2026-03-27T08:22:53.285739",
       "has_transcript": false,
       "error": "API error: 403",
       "earnings_info": {
@@ -490,7 +490,7 @@
     },
     "AMD": {
       "ticker": "AMD",
-      "fetch_time": "2026-03-26T20:16:06.034486",
+      "fetch_time": "2026-03-27T08:22:54.837134",
       "has_transcript": false,
       "error": "API error: 403",
       "earnings_info": {
@@ -527,7 +527,7 @@
     },
     "APA": {
       "ticker": "APA",
-      "fetch_time": "2026-03-26T20:16:07.785022",
+      "fetch_time": "2026-03-27T08:22:56.375292",
       "has_transcript": false,
       "error": "API error: 403",
       "earnings_info": {

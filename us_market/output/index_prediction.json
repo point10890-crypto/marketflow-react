@@ -1,104 +1,104 @@
 {
-  "timestamp": "2026-03-26T20:34:45.146438",
+  "timestamp": "2026-03-27T08:31:12.313526",
   "predictions": {
     "spy": {
-      "current_price": 656.82,
-      "bullish_probability": 75.9,
-      "bearish_probability": 24.1,
-      "predicted_return_pct": 1.62,
+      "current_price": 645.09,
+      "bullish_probability": 85.3,
+      "bearish_probability": 14.7,
+      "predicted_return_pct": 2.13,
       "target_range": {
-        "low": 654.52,
-        "mid": 667.49,
-        "high": 680.46
+        "low": 646.11,
+        "mid": 658.86,
+        "high": 671.61
       },
       "confidence_level": "High",
       "key_drivers": [
         {
           "feature": "yield_spread_proxy",
-          "impact": 0.1581,
-          "value": 0.0,
+          "impact": 0.1444,
+          "value": 0.32,
+          "direction": "bullish"
+        },
+        {
+          "feature": "qqq_rsi",
+          "impact": 0.0785,
+          "value": 34.29,
+          "direction": "bearish"
+        },
+        {
+          "feature": "gold_return_1w",
+          "impact": 0.0784,
+          "value": -4.5,
           "direction": "bearish"
         },
         {
           "feature": "xlu_relative_1m",
-          "impact": 0.0913,
-          "value": 0.0,
-          "direction": "bullish"
-        },
-        {
-          "feature": "xly_relative_1m",
-          "impact": 0.0804,
-          "value": 0.0,
+          "impact": 0.0772,
+          "value": 2.39,
           "direction": "bearish"
         },
         {
-          "feature": "breadth_pct_above_50ma",
-          "impact": 0.0731,
-          "value": 44.0,
-          "direction": "bullish"
-        },
-        {
-          "feature": "gold_return_1w",
-          "impact": 0.0724,
-          "value": -3.37,
+          "feature": "spy_return_1m",
+          "impact": 0.0744,
+          "value": -6.68,
           "direction": "bearish"
         }
       ]
     },
     "qqq": {
-      "current_price": 587.82,
-      "bullish_probability": 78.9,
-      "bearish_probability": 21.1,
-      "predicted_return_pct": 1.96,
+      "current_price": 573.79,
+      "bullish_probability": 75.5,
+      "bearish_probability": 24.5,
+      "predicted_return_pct": 1.48,
       "target_range": {
-        "low": 584.06,
-        "mid": 599.32,
-        "high": 614.58
+        "low": 567.39,
+        "mid": 582.3,
+        "high": 597.2
       },
       "confidence_level": "High",
       "key_drivers": [
         {
-          "feature": "yield_spread_proxy",
-          "impact": 0.1187,
-          "value": 0.0,
+          "feature": "spy_return_1m",
+          "impact": 0.114,
+          "value": -6.68,
           "direction": "bearish"
         },
         {
+          "feature": "yield_spread_proxy",
+          "impact": 0.1112,
+          "value": 0.32,
+          "direction": "bullish"
+        },
+        {
           "feature": "spy_rsi",
-          "impact": 0.0936,
-          "value": 39.53,
+          "impact": 0.096,
+          "value": 33.17,
           "direction": "bearish"
         },
         {
           "feature": "xlu_relative_1m",
-          "impact": 0.0916,
-          "value": 0.0,
-          "direction": "bullish"
-        },
-        {
-          "feature": "spy_return_1m",
-          "impact": 0.09,
-          "value": 0.0,
+          "impact": 0.0781,
+          "value": 2.39,
           "direction": "bearish"
         },
         {
-          "feature": "breadth_pct_above_50ma",
-          "impact": 0.0792,
-          "value": 44.0,
-          "direction": "bullish"
+          "feature": "vix_value",
+          "impact": 0.0747,
+          "value": 27.44,
+          "direction": "bearish"
         }
       ]
     }
   },
   "model_info": {
     "algorithm": "GradientBoosting Ensemble (per-ticker)",
-    "training_accuracy": 53.2,
-    "training_samples": 693,
-    "last_trained": "2026-03-19T00:39:13.703684",
+    "training_accuracy": 53.4,
+    "training_samples": 699,
+    "last_trained": "2026-03-27T08:31:10.811101",
     "features_used": 20
   },
   "historical_performance": {
-    "total_predictions": 17,
+    "total_predictions": 18,
     "evaluated": 0,
     "direction_accuracy": 0.0
   },

@@ -1,135 +1,135 @@
 {
-  "timestamp": "2026-03-26T20:16:05.086853",
+  "timestamp": "2026-03-27T08:22:52.850169",
   "performance_matrix": {
     "XLK": {
-      "1w": -1.99,
-      "1m": -4.34,
-      "3m": -4.42,
-      "6m": 6.38,
-      "12m": 28.7,
-      "current_price": 136.76,
+      "1w": -3.96,
+      "1m": -4.82,
+      "3m": -7.89,
+      "6m": 3.41,
+      "12m": 25.85,
+      "current_price": 132.5,
       "name": "Technology"
     },
     "XLF": {
-      "1w": -0.44,
-      "1m": -6.45,
-      "3m": -6.55,
-      "6m": -5.2,
-      "12m": -0.86,
-      "current_price": 49.34,
+      "1w": 0.16,
+      "1m": -5.11,
+      "3m": -6.16,
+      "6m": -6.31,
+      "12m": -1.25,
+      "current_price": 49.05,
       "name": "Financials"
     },
     "XLV": {
-      "1w": -2.27,
-      "1m": -6.41,
-      "3m": -3.85,
-      "6m": 8.89,
-      "12m": 2.42,
-      "current_price": 146.24,
+      "1w": -0.95,
+      "1m": -6.58,
+      "3m": -3.6,
+      "6m": 7.86,
+      "12m": 1.91,
+      "current_price": 145.74,
       "name": "Healthcare"
     },
     "XLY": {
-      "1w": -2.16,
-      "1m": -5.97,
-      "3m": -4.35,
-      "6m": 1.53,
-      "12m": 9.61,
-      "current_price": 110.73,
+      "1w": -1.57,
+      "1m": -6.29,
+      "3m": -5.54,
+      "6m": -1.31,
+      "12m": 7.66,
+      "current_price": 108.83,
       "name": "Consumer Disc."
     },
     "XLP": {
-      "1w": -3.77,
-      "1m": -7.79,
-      "3m": 6.26,
-      "6m": 2.36,
-      "12m": 4.25,
-      "current_price": 81.51,
+      "1w": -1.82,
+      "1m": -9.05,
+      "3m": 5.86,
+      "6m": 1.53,
+      "12m": 2.61,
+      "current_price": 81.14,
       "name": "Consumer Staples"
     },
     "XLE": {
-      "1w": 3.52,
-      "1m": 10.17,
-      "3m": 35.03,
-      "6m": 39.92,
-      "12m": 32.46,
-      "current_price": 60.57,
+      "1w": 5.29,
+      "1m": 13.97,
+      "3m": 34.85,
+      "6m": 41.04,
+      "12m": 35.85,
+      "current_price": 61.52,
       "name": "Energy"
     },
     "XLI": {
-      "1w": -0.84,
-      "1m": -5.57,
-      "3m": 8.99,
-      "6m": 10.97,
-      "12m": 24.89,
-      "current_price": 165.1,
+      "1w": -2.37,
+      "1m": -6.65,
+      "3m": 6.46,
+      "6m": 7.8,
+      "12m": 22.65,
+      "current_price": 161.27,
       "name": "Industrials"
     },
     "XLB": {
-      "1w": -0.22,
-      "1m": -7.85,
-      "3m": 13.43,
-      "6m": 8.74,
-      "12m": 15.72,
-      "current_price": 49.41,
+      "1w": 1.26,
+      "1m": -7.08,
+      "3m": 13.73,
+      "6m": 7.46,
+      "12m": 15.03,
+      "current_price": 49.09,
       "name": "Materials"
     },
     "XLRE": {
-      "1w": -5.74,
-      "1m": -5.91,
-      "3m": -0.29,
-      "6m": -0.92,
-      "12m": -0.33,
-      "current_price": 40.27,
+      "1w": -4.12,
+      "1m": -6.02,
+      "3m": -0.54,
+      "6m": -1.37,
+      "12m": -0.04,
+      "current_price": 40.29,
       "name": "Real Estate"
     },
     "XLU": {
-      "1w": -3.99,
-      "1m": 1.48,
-      "3m": 2.82,
-      "6m": 12.08,
-      "12m": 19.37,
-      "current_price": 45.25,
+      "1w": -3.0,
+      "1m": 0.18,
+      "3m": 2.91,
+      "6m": 11.36,
+      "12m": 19.61,
+      "current_price": 45.33,
       "name": "Utilities"
     },
     "XLC": {
-      "1w": -3.41,
-      "1m": -4.54,
-      "3m": -0.12,
-      "6m": 4.79,
-      "12m": 13.5,
-      "current_price": 111.44,
+      "1w": -4.27,
+      "1m": -5.09,
+      "3m": -1.95,
+      "6m": 2.66,
+      "12m": 11.31,
+      "current_price": 108.81,
       "name": "Comm. Services"
     },
     "SPY": {
-      "1w": -1.82,
-      "1m": -4.82,
-      "3m": -1.71,
-      "6m": 6.14,
-      "12m": 16.84,
-      "current_price": 656.82,
+      "1w": -2.2,
+      "1m": -5.05,
+      "3m": -3.45,
+      "6m": 3.95,
+      "12m": 15.06,
+      "current_price": 645.09,
       "name": "SPY"
     }
   },
   "rotation_signals": {
     "current_phase": "Late Cycle",
-    "phase_confidence": 91,
+    "phase_confidence": 98,
     "phase_scores": {
-      "Early Cycle": 0.07,
-      "Mid Cycle": 1.32,
-      "Late Cycle": 9.64,
-      "Recession": 1.06
+      "Early Cycle": 0.44,
+      "Mid Cycle": 1.39,
+      "Late Cycle": 11.52,
+      "Recession": 1.84
     },
     "leading_sectors": [
       "XLE",
       "XLU",
-      "XLK"
+      "XLF"
     ],
     "lagging_sectors": [
-      "XLV",
-      "XLP",
-      "XLRE"
+      "XLC",
+      "XLRE",
+      "XLP"
     ],
-    "rotation_velocity": 3.85
+    "rotation_velocity": 4.49
   },
   "relative_strength_history": {
     "dates": [
@@ -159,7 +159,7 @@
         0.92,
         1.14,
         0.7,
-        -0.19
+        -1.53
       ],
       "XLF": [
         -0.14,
@@ -173,7 +173,7 @@
         0.31,
         -1.82,
         2.19,
-        -0.74
+        0.48
       ],
       "XLV": [
         -0.44,
@@ -187,7 +187,7 @@
         -2.7,
         -0.41,
         -1.17,
-        -0.65
+        0.82
       ],
       "XLY": [
         3.52,
@@ -201,7 +201,7 @@
         -0.09,
         -1.63,
         -1.01,
-        1.5
+        1.55
       ],
       "XLP": [
         0.41,
@@ -215,7 +215,7 @@
         -2.72,
         0.29,
         -2.27,
-        -1.0
+        0.35
       ],
       "XLE": [
         0.64,
@@ -229,7 +229,7 @@
         3.15,
         3.5,
         4.59,
-        0.85
+        4.26
       ],
       "XLI": [
         0.9,
@@ -243,7 +243,7 @@
         -2.08,
         -1.61,
         -0.01,
-        0.85
+        0.29
       ],
       "XLB": [
         3.04,
@@ -257,7 +257,7 @@
         -4.66,
         0.16,
         -2.69,
-        3.9
+        5.03
       ],
       "XLRE": [
         -1.3,
@@ -271,7 +271,7 @@
         -0.18,
         0.01,
         -2.12,
-        -2.06
+        -0.2
       ],
       "XLU": [
         -3.15,
@@ -285,7 +285,7 @@
         -0.09,
         1.97,
         -3.11,
-        0.07
+        2.06
       ],
       "XLC": [
         -0.73,
@@ -299,73 +299,67 @@
         1.48,
         -1.06,
         -0.14,
-        -1.98
+        -2.51
       ]
     }
   },
   "money_flow": {
     "inflows": [
       {
-        "ticker": "XLK",
-        "name": "Technology",
-        "rs_change": 1.03,
-        "recent_rs": 0.64
+        "ticker": "XLE",
+        "name": "Energy",
+        "rs_change": 1.36,
+        "recent_rs": 3.88
       },
       {
         "ticker": "XLF",
         "name": "Financials",
-        "rs_change": 0.98,
-        "recent_rs": -0.02
+        "rs_change": 1.28,
+        "recent_rs": 0.29
       },
       {
-        "ticker": "XLE",
-        "name": "Energy",
-        "rs_change": 0.51,
-        "recent_rs": 3.02
+        "ticker": "XLK",
+        "name": "Technology",
+        "rs_change": 0.7,
+        "recent_rs": 0.31
       }
     ],
     "outflows": [
       {
         "ticker": "XLP",
         "name": "Consumer Staples",
-        "rs_change": -2.93,
-        "recent_rs": -1.42
+        "rs_change": -2.6,
+        "recent_rs": -1.09
       },
       {
         "ticker": "XLB",
         "name": "Materials",
-        "rs_change": -2.19,
-        "recent_rs": -0.82
+        "rs_change": -1.9,
+        "recent_rs": -0.54
       },
       {
         "ticker": "XLI",
         "name": "Industrials",
-        "rs_change": -1.57,
-        "recent_rs": -0.71
+        "rs_change": -1.71,
+        "recent_rs": -0.85
       },
       {
         "ticker": "XLRE",
         "name": "Real Estate",
-        "rs_change": -1.44,
-        "recent_rs": -1.09
-      },
-      {
-        "ticker": "XLV",
-        "name": "Healthcare",
-        "rs_change": -0.79,
-        "recent_rs": -1.23
+        "rs_change": -0.97,
+        "recent_rs": -0.62
       },
       {
         "ticker": "XLC",
         "name": "Comm. Services",
-        "rs_change": -0.79,
-        "recent_rs": -0.43
+        "rs_change": -0.92,
+        "recent_rs": -0.56
       },
       {
         "ticker": "XLY",
         "name": "Consumer Disc.",
-        "rs_change": -0.61,
-        "recent_rs": -0.31
+        "rs_change": -0.6,
+        "recent_rs": -0.3
       }
     ],
     "regime_change_alert": false
@@ -383,20 +377,20 @@
           {
             "ticker": "XLF",
             "name": "Financials",
-            "return_1m": -6.45
+            "return_1m": -5.11
           },
           {
             "ticker": "XLY",
             "name": "Consumer Disc.",
-            "return_1m": -5.97
+            "return_1m": -6.29
           },
           {
             "ticker": "XLI",
             "name": "Industrials",
-            "return_1m": -5.57
+            "return_1m": -6.65
           }
         ],
-        "score": 0.07
+        "score": 0.44
       },
       "Mid Cycle": {
         "angle": 135,
@@ -404,20 +398,20 @@
           {
             "ticker": "XLK",
             "name": "Technology",
-            "return_1m": -4.34
+            "return_1m": -4.82
           },
           {
             "ticker": "XLC",
             "name": "Comm. Services",
-            "return_1m": -4.54
+            "return_1m": -5.09
           },
           {
             "ticker": "XLB",
             "name": "Materials",
-            "return_1m": -7.85
+            "return_1m": -7.08
           }
         ],
-        "score": 1.32
+        "score": 1.39
       },
       "Late Cycle": {
         "angle": 225,
@@ -425,15 +419,15 @@
           {
             "ticker": "XLE",
             "name": "Energy",
-            "return_1m": 10.17
+            "return_1m": 13.97
           },
           {
             "ticker": "XLRE",
             "name": "Real Estate",
-            "return_1m": -5.91
+            "return_1m": -6.02
           }
         ],
-        "score": 9.64
+        "score": 11.52
       },
       "Recession": {
         "angle": 315,
@@ -441,20 +435,20 @@
           {
             "ticker": "XLU",
             "name": "Utilities",
-            "return_1m": 1.48
+            "return_1m": 0.18
           },
           {
             "ticker": "XLP",
             "name": "Consumer Staples",
-            "return_1m": -7.79
+            "return_1m": -9.05
           },
           {
             "ticker": "XLV",
             "name": "Healthcare",
-            "return_1m": -6.41
+            "return_1m": -6.58
           }
         ],
-        "score": 1.06
+        "score": 1.84
       }
     },
     "current_angle": 225

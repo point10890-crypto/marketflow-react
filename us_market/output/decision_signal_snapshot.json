@@ -1,10 +1,10 @@
 {
   "action": "CAUTIOUS",
-  "score": 36,
+  "score": 29,
   "components": {
     "market_gate": {
-      "score": 20,
-      "contribution": -9.0
+      "score": 30,
+      "contribution": -6.0
     },
     "regime": {
       "regime": "neutral",
@@ -15,8 +15,8 @@
       "contribution": 0
     },
     "risk": {
-      "level": "Elevated",
-      "contribution": 0
+      "level": "High",
+      "contribution": -10
     },
     "sector_phase": {
       "phase": "Late Cycle",
@@ -67,10 +67,10 @@
   ],
   "timing": "WAIT",
   "warnings": [
-    "APO is in critical drawdown: -27.8% from peak",
-    "AIZ drawdown warning: -10.4% from peak",
-    "AMZN drawdown warning: -14.4% from peak",
-    "AMP drawdown warning: -16.9% from peak",
-    "AMD drawdown warning: -15.2% from peak"
+    "APO is in critical drawdown: -27.7% from peak",
+    "AMD is in critical drawdown: -21.5% from peak",
+    "AMAT breached stop-loss: -8.3% from entry",
+    "ALGN drawdown warning: -10.2% from peak",
+    "AIZ drawdown warning: -10.3% from peak"
   ]
 }

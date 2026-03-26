@@ -1,7 +1,7 @@
 {
   "week_start": "2026-03-23",
   "week_end": "2026-03-29",
-  "updated": "2026-03-26T20:24:20.503573",
+  "updated": "2026-03-27T08:30:42.763557",
   "events": [
     {
       "date": "2026-03-23",
@@ -478,8 +478,8 @@
       "impact": "low",
       "type": "Economic",
       "forecast": "1850K",
-      "previous": "1857K",
-      "actual": null,
+      "previous": "1,851K",
+      "actual": "1,819K",
       "ticker": null,
       "ai_outlook": null
     },
@@ -491,7 +491,7 @@
       "type": "Economic",
       "forecast": "210K",
       "previous": "205K",
-      "actual": null,
+      "actual": "210K",
       "ticker": null,
       "ai_outlook": null
     },
@@ -503,7 +503,7 @@
       "type": "Economic",
       "forecast": null,
       "previous": "210.75K",
-      "actual": null,
+      "actual": "210.50K",
       "ticker": null,
       "ai_outlook": null
     },
@@ -526,8 +526,8 @@
       "impact": "low",
       "type": "Economic",
       "forecast": "-44Bcf",
-      "previous": "35Bcf",
-      "actual": null,
+      "previous": "35B",
+      "actual": "-54B",
       "ticker": null,
       "ai_outlook": null
     },
@@ -539,7 +539,7 @@
       "type": "Economic",
       "forecast": null,
       "previous": "5",
-      "actual": null,
+      "actual": "11",
       "ticker": null,
       "ai_outlook": null
     },
@@ -551,7 +551,7 @@
       "type": "Economic",
       "forecast": null,
       "previous": "10",
-      "actual": null,
+      "actual": "11",
       "ticker": null,
       "ai_outlook": null
     },
@@ -563,7 +563,7 @@
       "type": "Economic",
       "forecast": null,
       "previous": "3.615%",
-      "actual": null,
+      "actual": "3.620%",
       "ticker": null,
       "ai_outlook": null
     },
@@ -575,7 +575,7 @@
       "type": "Economic",
       "forecast": null,
       "previous": "3.635%",
-      "actual": null,
+      "actual": "3.630%",
       "ticker": null,
       "ai_outlook": null
     },
@@ -587,7 +587,7 @@
       "type": "Economic",
       "forecast": null,
       "previous": "5.54%",
-      "actual": null,
+      "actual": "5.75%",
       "ticker": null,
       "ai_outlook": null
     },
@@ -599,7 +599,7 @@
       "type": "Economic",
       "forecast": null,
       "previous": "6.22%",
-      "actual": null,
+      "actual": "6.38%",
       "ticker": null,
       "ai_outlook": null
     },
@@ -611,7 +611,7 @@
       "type": "Economic",
       "forecast": null,
       "previous": "3.790%",
-      "actual": null,
+      "actual": "4.255%",
       "ticker": null,
       "ai_outlook": null
     },
@@ -635,7 +635,7 @@
       "type": "Economic",
       "forecast": null,
       "previous": "$6.66T",
-      "actual": null,
+      "actual": "$6.66T",
       "ticker": null,
       "ai_outlook": null
     },
@@ -805,7 +805,7 @@
       "previous": null,
       "actual": null,
       "ticker": "NKE",
-      "ai_outlook": "Consumer Cyclical | 시가총액 $78.4B"
+      "ai_outlook": "Consumer Cyclical | 시가총액 $77.1B"
     }
   ]
 }
