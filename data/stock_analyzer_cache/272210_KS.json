@@ -1,0 +1,103 @@
+{
+  "name": "한화시스템",
+  "ticker": "272210.KS",
+  "result": "중립",
+  "date": "2026-03-26 20:54:40",
+  "elapsed": 2.0,
+  "consensus_score": 3.5,
+  "analyst_count": 12,
+  "recommendation_detail": {
+    "strongBuy": 2,
+    "buy": 5,
+    "hold": 3,
+    "sell": 1,
+    "strongSell": 1
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 129700.0,
+    "high": 94500.0,
+    "low": 48000.0,
+    "mean": 65708.336,
+    "median": 65000.0
+  },
+  "current_price": 129700.0,
+  "upside_potential": -49.3,
+  "key_stats": {
+    "name": "HANWHA SYSTEMS",
+    "sector": "Industrials",
+    "industry": "Aerospace & Defense",
+    "market_cap": 24253026009088,
+    "pe_ratio": null,
+    "forward_pe": 69.544235,
+    "dividend_yield": 0.37,
+    "beta": 1.905,
+    "fifty_two_week_high": 184000.0,
+    "fifty_two_week_low": 30100.0,
+    "revenue": 3664150528000,
+    "profit_margin": 0.06611,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "한화시스템(272210.KS)에 대한 애널리스트 컨센서스는 12명 참여 기준 중립 의견입니다. 목표가 평균은 65,708원으로 현재가 129,700원 대비 49.3% 하락 여력이 있습니다. 투자 결정은 제시된 분석 데이터를 참고하여 신중하게 판단하시기 바랍니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 1398122729200
+    },
+    {
+      "date": "2025-09",
+      "value": 807736584420
+    },
+    {
+      "date": "2025-06",
+      "value": 768190548880
+    },
+    {
+      "date": "2025-03",
+      "value": 690100705520
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 11814061950
+    },
+    {
+      "date": "2025-09",
+      "value": 151677306090
+    },
+    {
+      "date": "2025-06",
+      "value": 40905504000
+    },
+    {
+      "date": "2025-03",
+      "value": 37834899050
+    }
+  ],
+  "news": [
+    {
+      "title": "How MDA Space’s Hanwha K-LEO MoU (TSX:MDA) Has Changed Its Investment Story",
+      "summary": "MDA Space Ltd. recently signed a Memorandum of Understanding with South Korea’s Hanwha Systems to explore collaboration on Korea’s sovereign K-LEO Low Earth Orbit defence satellite constellation, usin",
+      "url": "https://finance.yahoo.com/news/mda-space-hanwha-k-leo-200740794.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-01-27T20:07:40Z"
+    },
+    {
+      "title": "Hanwha, HMM, KR to jointly develop carbon‑free ship propulsion systems",
+      "summary": "The companies will design and co-develop the systems and analyse whether the technologies are commercially viable.",
+      "url": "https://www.ship-technology.com/news/hanwha-hmm-kr-to-jointly-develop-carbon%e2%80%91free-ship-propulsion-systems/",
+      "provider": "Ship Technology",
+      "pub_time": "2025-10-31T17:10:03Z"
+    },
+    {
+      "title": "South Korea's Hanwha offloads Eutelsat stake as Starlink rival seeks new investors",
+      "summary": "(Reuters) -South Korea's Hanwha Systems said on Thursday it was selling its entire 5.4% stake in Eutelsat for 77.6 million euros ($88.5 million), as the Franco-British satellite operator seeks new inv",
+      "url": "https://finance.yahoo.com/news/south-koreas-hanwha-offload-eutelsat-060016550.html",
+      "provider": "Reuters",
+      "pub_time": "2025-06-05T06:00:16Z"
+    }
+  ]
+}

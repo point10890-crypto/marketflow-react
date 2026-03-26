@@ -1,0 +1,75 @@
+{
+  "name": "애경케미칼",
+  "ticker": "161000.KS",
+  "result": "데이터 없음",
+  "date": "2026-03-26 20:48:24",
+  "elapsed": 2.7,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 9300.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 9300.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "AK CHEMICAL",
+    "sector": "Basic Materials",
+    "industry": "Specialty Chemicals",
+    "market_cap": 448976322560,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": 1.49,
+    "beta": 0.664,
+    "fifty_two_week_high": 13950.0,
+    "fifty_two_week_low": 5960.0,
+    "revenue": 1452334776320,
+    "profit_margin": -0.0020299999,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 357758257000
+    },
+    {
+      "date": "2025-06",
+      "value": 376154138000
+    },
+    {
+      "date": "2025-03",
+      "value": 370014875000
+    },
+    {
+      "date": "2024-12",
+      "value": 359018881420
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 14520647000
+    },
+    {
+      "date": "2025-06",
+      "value": -6678288000
+    },
+    {
+      "date": "2025-03",
+      "value": -1100965000
+    },
+    {
+      "date": "2024-12",
+      "value": 4072364360
+    }
+  ],
+  "news": []
+}
