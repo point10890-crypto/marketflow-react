@@ -1,32 +1,33 @@
 {
   "gate": "RED",
-  "score": 31,
+  "score": 21,
   "status": "RISK_OFF",
   "reasons": [
     "BTC가 EMA50 아래 (하락 추세)",
     "EMA200 하락 중 (장기 약세)",
-    "거래량 평범 (유동성 유입 약함)",
+    "변동성 다소 높음 (휩쏘 주의)",
+    "거래량 부족 (관심 저조)",
     "알트 breadth 붕괴 (10% > EMA50)"
   ],
   "metrics": {
-    "btc_price": 70982.921875,
-    "btc_ema50": 72130.58190265752,
-    "btc_ema200": 86237.64035531104,
-    "btc_ema200_slope_pct_20": -3.9351517409410635,
-    "btc_volume_z_50": -0.24153522536554312,
-    "btc_atrp_14_pct": 3.4762008429530122,
+    "btc_price": 69794.609375,
+    "btc_ema50": 72051.29431098276,
+    "btc_ema200": 86077.26848803114,
+    "btc_ema200_slope_pct_20": -3.883344881545556,
+    "btc_volume_z_50": -0.5484225736910192,
+    "btc_atrp_14_pct": 3.619827117097568,
     "alt_breadth_above_ema50": 0.1,
-    "funding_rate": 8.24e-06,
+    "funding_rate": 9.15e-06,
     "open_interest_delta_z": null,
     "gate_score_components": {
       "trend": 0.0,
-      "volatility": 14.0,
-      "participation": 6.0,
+      "volatility": 8.0,
+      "participation": 2.0,
       "breadth": 2.0,
       "leverage": 9.0
     },
-    "fear_greed_index": 14,
+    "fear_greed_index": 10,
     "fear_greed_class": "Extreme Fear"
   },
-  "generated_at": "2026-03-25T16:03:25.711616"
+  "generated_at": "2026-03-26T17:33:54.877666"
 }
