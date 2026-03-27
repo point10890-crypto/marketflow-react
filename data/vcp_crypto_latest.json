@@ -1,17 +1,16 @@
 {
   "metadata": {
-    "generated_at": "2026-03-26T22:32:28.552511",
+    "generated_at": "2026-03-27T12:00:23.131843",
     "market": "CRYPTO",
     "gate": "RED",
-    "gate_score": 21,
-    "processing_time_sec": 18.4
+    "universe_size": 50
   },
+  "signals": [],
   "summary": {
-    "total_screened": 50,
-    "stage2_passed": 0,
-    "trend_passed": 0,
-    "vcp_found": 0,
-    "entry_ready": 0
-  },
-  "signals": []
+    "setups_4h": 0,
+    "setups_1d": 0,
+    "signals_4h": 0,
+    "signals_1d": 0,
+    "published": 0
+  }
 }

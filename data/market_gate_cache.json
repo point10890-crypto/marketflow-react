@@ -3,72 +3,72 @@
   "score": 35,
   "label": "BEARISH",
   "reasons": [
-    "RSI(50.1), MACD: BEARISH",
+    "RSI(51.1), MACD: BEARISH",
     "시장 하락추세. 보수적 접근 권장.",
-    "🔥 강세: 자동차 (50)",
+    "🔥 강세: 2차전지 (80)",
     "❄️ 약세: 철강 (15)"
   ],
   "sectors": [
     {
+      "name": "2차전지",
+      "signal": "bullish",
+      "change_pct": 0.39,
+      "score": 80
+    },
+    {
       "name": "자동차",
       "signal": "neutral",
-      "change_pct": -1.59,
+      "change_pct": -0.5,
       "score": 50
     },
     {
       "name": "증권",
       "signal": "neutral",
-      "change_pct": -1.73,
+      "change_pct": 0.58,
       "score": 50
     },
     {
       "name": "KOSPI200",
       "signal": "neutral",
-      "change_pct": -3.33,
+      "change_pct": -2.8,
       "score": 40
     },
     {
       "name": "반도체",
       "signal": "neutral",
-      "change_pct": -3.24,
+      "change_pct": -3.25,
       "score": 40
     },
     {
       "name": "IT",
       "signal": "neutral",
-      "change_pct": -3.05,
+      "change_pct": -2.61,
       "score": 40
     },
     {
       "name": "은행",
       "signal": "bearish",
-      "change_pct": -4.33,
+      "change_pct": -3.18,
       "score": 30
-    },
-    {
-      "name": "2차전지",
-      "signal": "bearish",
-      "change_pct": -3.6,
-      "score": 20
     },
     {
       "name": "철강",
       "signal": "bearish",
-      "change_pct": -4.03,
+      "change_pct": -2.97,
       "score": 15
     }
   ],
   "metrics": {
     "usd_krw": null,
-    "kospi": 5256.1,
-    "kospi_change_pct": -3.74,
-    "kosdaq": 1109.93,
-    "kosdaq_change_pct": -2.35,
-    "rsi": 50.100887716503145
+    "kospi": 5298.54,
+    "kospi_change_pct": -2.97,
+    "kosdaq": 1115.74,
+    "kosdaq_change_pct": -1.84,
+    "rsi": 51.13610360524842
   },
-  "kospi_close": 5256.1,
-  "kospi_change_pct": -3.74,
-  "kosdaq_close": 1109.93,
-  "kosdaq_change_pct": -2.35,
-  "updated_at": "2026-03-27T10:20:41.034169"
+  "kospi_close": 5298.54,
+  "kospi_change_pct": -2.97,
+  "kosdaq_close": 1115.74,
+  "kosdaq_change_pct": -1.84,
+  "updated_at": "2026-03-27T11:58:22.326246"
 }

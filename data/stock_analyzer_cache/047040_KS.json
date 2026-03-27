@@ -2,8 +2,8 @@
   "name": "대우건설",
   "ticker": "047040.KS",
   "result": "매수",
-  "date": "2026-03-24 10:58:55",
-  "elapsed": 2.5,
+  "date": "2026-03-27 10:24:57",
+  "elapsed": 2.4,
   "consensus_score": 4.21,
   "analyst_count": 14,
   "recommendation_detail": {
@@ -15,21 +15,21 @@
   },
   "recommendation_period": "0m",
   "price_targets": {
-    "current": 15660.0,
+    "current": 16410.0,
     "high": 14000.0,
     "low": 5500.0,
     "mean": 7714.2856,
     "median": 7150.0
   },
-  "current_price": 15670.0,
-  "upside_potential": -50.8,
+  "current_price": 16410.0,
+  "upside_potential": -53.0,
   "key_stats": {
     "name": "DWEC",
     "sector": "Industrials",
     "industry": "Engineering & Construction",
-    "market_cap": 6434470756352,
+    "market_cap": 6742634659840,
     "pe_ratio": null,
-    "forward_pe": 17.437607,
+    "forward_pe": 18.261082,
     "dividend_yield": null,
     "beta": 1.624,
     "fifty_two_week_high": 19430.0,
@@ -40,7 +40,7 @@
   },
   "finnhub_supplement": null,
   "source": "yfinance",
-  "ai_analysis": "대우건설(047040.KS)에 대한 애널리스트 컨센서스는 14명 참여 기준 '매수' 의견(4.21/5.0)으로 긍정적입니다. 하지만 목표가 평균은 7,714원으로 현재가 대비 -50.8% 하락 여력이 있는 것으로 분석됩니다. 투자 결정 시 컨센서스 의견과 목표가 간의 괴리를 고려해야 합니다.",
+  "ai_analysis": "대우건설(047040.KS)에 대한 애널리스트 컨센서스는 14명 참여 기준 '매수' 의견(4.21/5.0)으로 나타났습니다. 하지만 목표가 평균은 7,714원으로 현재가 대비 -53.0% 하락 여력이 있습니다. 따라서 현재 주가는 애널리스트 목표가 컨센서스를 크게 상회하는 수준입니다.",
   "revenue_quarters": [
     {
       "date": "2025-12",
