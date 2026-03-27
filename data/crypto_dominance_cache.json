@@ -1,8 +1,8 @@
 {
-  "btc_price": 68620.21,
-  "eth_price": 2061.33,
-  "btc_rsi": 43.8,
-  "btc_30d_change": 1.73,
-  "sentiment": "NEUTRAL",
-  "timestamp": "2026-03-27T16:03:00.325451"
+  "btc_price": 66593.99,
+  "eth_price": 1989.55,
+  "btc_rsi": 39.6,
+  "btc_30d_change": -1.27,
+  "sentiment": "FEAR",
+  "timestamp": "2026-03-27T19:58:09.811962"
 }

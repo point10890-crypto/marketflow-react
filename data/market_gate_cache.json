@@ -62,13 +62,13 @@
     "usd_krw": null,
     "kospi": 5438.87,
     "kospi_change_pct": -0.4,
-    "kosdaq": 1138.15,
-    "kosdaq_change_pct": 0.13,
+    "kosdaq": 1141.51,
+    "kosdaq_change_pct": 0.43,
     "rsi": 54.886027528976506
   },
   "kospi_close": 5438.87,
   "kospi_change_pct": -0.4,
-  "kosdaq_close": 1138.15,
-  "kosdaq_change_pct": 0.13,
-  "updated_at": "2026-03-27T16:02:59.918158"
+  "kosdaq_close": 1141.51,
+  "kosdaq_change_pct": 0.43,
+  "updated_at": "2026-03-27T19:58:09.405734"
 }
