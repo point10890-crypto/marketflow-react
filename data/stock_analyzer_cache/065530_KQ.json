@@ -1,0 +1,75 @@
+{
+  "name": "와이어블",
+  "ticker": "065530.KQ",
+  "result": "데이터 없음",
+  "date": "2026-03-27 21:33:46",
+  "elapsed": 1.6,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 2085.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 2085.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "Wiable",
+    "sector": "Communication Services",
+    "industry": "Telecom Services",
+    "market_cap": 99743817728,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": 2.61,
+    "beta": 0.712,
+    "fifty_two_week_high": 2390.0,
+    "fifty_two_week_low": 1115.0,
+    "revenue": 70334332928,
+    "profit_margin": 0.040359996,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 15561644100
+    },
+    {
+      "date": "2025-06",
+      "value": 16713117140
+    },
+    {
+      "date": "2025-03",
+      "value": 12435490360
+    },
+    {
+      "date": "2024-12",
+      "value": 25624077780
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 725403130
+    },
+    {
+      "date": "2025-06",
+      "value": 615018020
+    },
+    {
+      "date": "2025-03",
+      "value": 54389210
+    },
+    {
+      "date": "2024-12",
+      "value": 1444087420
+    }
+  ],
+  "news": []
+}

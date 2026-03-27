@@ -117,19 +117,6 @@ export const krAPI = {
     getLeadingStocks: () => fetchAPI<any>('/api/kr/screener/leading'),
 };
 
-// Closing Bet API
-export interface ClosingBetTiming {
-    phase: string;
-    time_remaining: string;
-    urgency_score: number;
-    is_entry_allowed: boolean;
-    recommended_action: string;
-}
-
-export const closingBetAPI = {
-    getTiming: () => fetchAPI<ClosingBetTiming>('/api/kr/closing-bet/timing'),
-};
-
 // ── Jongga V2 (종가베팅) Types ──────────────────────────────────────────────
 
 export interface JonggaV2ScoreDetail {
@@ -637,14 +624,6 @@ export interface CryptoDataStatusFile {
 export interface CryptoDataStatus { files: CryptoDataStatusFile[]; timestamp: string }
 export interface TaskTriggerResponse { status: 'started' | 'already_running' | 'completed' | 'error'; task: string; message?: string }
 
-// Chatbot API
-export const chatbotAPI = {
-    sendMessage: (message: string) =>
-        postAPI<any>('/api/kr/chatbot', { message }),
-    getWelcome: () => fetchAPI<{ message: string }>('/api/kr/chatbot/welcome'),
-    getStatus: () => fetchAPI<any>('/api/kr/chatbot/status'),
-};
-
 // Admin API Types
 export interface AdminUser {
     id: number;
@@ -656,6 +635,7 @@ export interface AdminUser {
     stripe_customer_id: string | null;
     created_at: string;
     approved_at: string | null;
+    last_login_at: string | null;
 }
 
 export interface AdminDashboard {
@@ -702,11 +682,12 @@ async function _authFetch(url: string, options: RequestInit): Promise<Response> 
         if (!response.ok) {
             _handle401(response.status);
             const err = await response.json().catch(() => ({ error: `HTTP ${response.status}` }));
-            throw new Error(err.error || `API Error: ${response.status}`);
+            throw new Error(err.error || `API Error: ${url} (${response.status})`);
         }
         return response;
     } catch (error) {
         clearTimeout(timeoutId);
+        console.error(`[authFetch Error] ${url}:`, error);
         throw error;
     }
 }
@@ -772,10 +753,46 @@ export const adminAPI = {
     setUserRole: (id: number, role: string, token?: string) => putAuthAPI<{ user: AdminUser }>(`/api/admin/users/${id}/role`, { role }, token),
     setUserTier: (id: number, tier: string, token?: string) => putAuthAPI<{ user: AdminUser }>(`/api/admin/users/${id}/tier`, { tier }, token),
     setUserStatus: (id: number, status: string, token?: string) => putAuthAPI<{ user: AdminUser }>(`/api/admin/users/${id}/status`, { status }, token),
+    resetPassword: (id: number, password: string, token?: string) => putAuthAPI<{ message: string; user: AdminUser }>(`/api/admin/users/${id}/reset-password`, { password }, token),
     deleteUser: (id: number, token?: string) => deleteAuthAPI<{ message: string }>(`/api/admin/users/${id}`, token),
     getSubscriptions: (token?: string) => fetchAuthAPI<{ requests: SubscriptionRequest[] }>('/api/admin/subscriptions', token),
     approveSubscription: (id: number, token?: string) => putAuthAPI<{ request: SubscriptionRequest }>(`/api/admin/subscriptions/${id}/approve`, undefined, token),
     rejectSubscription: (id: number, note?: string, token?: string) => putAuthAPI<{ request: SubscriptionRequest }>(`/api/admin/subscriptions/${id}/reject`, { note }, token),
+};
+
+// ── Wave Pattern API ──
+export interface WaveDashboardData {
+    summary: {
+        total_signals: number;
+        active: number;
+        wins: number;
+        losses: number;
+        win_rate: number;
+    };
+    active_signals: Array<{
+        id: number;
+        ticker: string;
+        name: string;
+        pattern_class: string;
+        wave_type: string;
+        wave_label: string;
+        confidence: number;
+        signal_price: number;
+        neckline_price: number;
+        status: string;
+        signal_date: string;
+    }>;
+    recent_closed: Array<any>;
+    pattern_stats: Array<any>;
+}
+
+export const waveAPI = {
+    getDashboard: () => fetchAPI<WaveDashboardData>('/api/wave/dashboard'),
+    getScreenerLatest: () => fetchAPI<any>('/api/wave/screener/latest'),
+    getDetect: (ticker: string, market = 'KR') => fetchAPI<any>(`/api/wave/detect/${ticker}?market=${market}`),
+    getPatternTypes: () => fetchAPI<any>('/api/wave/pattern-types'),
+    getSignals: (params?: string) => fetchAPI<any>(`/api/wave/signals${params ? `?${params}` : ''}`),
+    getStats: () => fetchAPI<any>('/api/wave/stats'),
 };
 
 // ── User Subscription API (Bearer token 기반) ──

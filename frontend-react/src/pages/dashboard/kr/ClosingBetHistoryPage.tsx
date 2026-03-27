@@ -84,7 +84,7 @@ export default function ClosingBetHistoryPage() {
     const loadData = async () => {
         setLoading(true);
         try {
-            const data = await fetchAPI<CumulativeData>('/api/kr/jongga-v2/cumulative');
+            const data = await fetchAPI<CumulativeData>('/api/kr/cumulative-return');
             setSignals(data.signals || []);
             setStats(data.stats || null);
         } catch { /* empty */ } finally {

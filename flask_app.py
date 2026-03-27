@@ -37,7 +37,7 @@ if BASE_DIR not in sys.path:
     sys.path.insert(0, BASE_DIR)
 
 # Ensure output directories exist (cloud: ephemeral filesystem)
-for d in ['data', 'logs', 'us_market_preview/output', 'us_market/output']:
+for d in ['data', 'logs', 'us_market/output']:
     os.makedirs(os.path.join(BASE_DIR, d), exist_ok=True)
 
 from app import create_app

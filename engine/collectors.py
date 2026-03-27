@@ -5,6 +5,8 @@
 """
 
 import asyncio
+import json
+import logging
 import os
 from datetime import date, datetime, timedelta
 from typing import List, Optional
@@ -16,6 +18,8 @@ import FinanceDataReader as fdr
 
 from .models import StockData, SupplyData, ChartData, NewsData
 from .config import SignalConfig
+
+logger = logging.getLogger(__name__)
 
 
 class KRXCollector:
@@ -104,8 +108,8 @@ class KRXCollector:
                     df = pykrx_stock.get_market_ohlcv(target_date, market=market)
                     if not df.empty:
                         break
-                except:
-                    pass
+                except (requests.RequestException, ConnectionError, TimeoutError, ValueError) as e:
+                    logger.warning(f"pykrx fetch failed for {target_date}: {e}")
                 # 하루 전으로
                 curr = datetime.strptime(target_date, "%Y%m%d")
                 target_date = (curr - timedelta(days=1)).strftime("%Y%m%d")
@@ -201,8 +205,9 @@ class KRXCollector:
                     volume = int(volume_txt)
                     
                     # 거래대금 추정 (volume * price)
-                    trading_value = volume * price 
-                except:
+                    trading_value = volume * price
+                except (ValueError, KeyError, TypeError) as e:
+                    logger.warning(f"Naver ranking data parse error: {e}")
                     continue
                 
                 # 필터링
@@ -265,7 +270,8 @@ class KRXCollector:
                 change=int(last_row['Change']), # fdr Close diff
                 change_pct=float(last_row['Comp'] if 'Comp' in last_row else 0) # fdr 컬럼 확인 필요
             )
-        except:
+        except (ValueError, KeyError, TypeError) as e:
+            logger.warning(f"Stock detail fetch failed for {code}: {e}")
             return None
 
     async def get_chart_data(self, code: str, days: int = 60) -> List[ChartData]:
@@ -307,13 +313,8 @@ class KRXCollector:
         try:
             # CSV가 로드되어 있지 않으면 로드
             if not hasattr(self, 'supply_df') or self.supply_df is None:
-                # 경로 수정: data/all_institutional_trend_data.csv
-                # Flask 실행 위치(루트) 기준
-                csv_path = 'data/all_institutional_trend_data.csv'
-                
-                # 만약 파일이 없으면 절대 경로로 한 번 더 시도
-                if not os.path.exists(csv_path):
-                    csv_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data', 'all_institutional_trend_data.csv')
+                # 절대 경로: engine/ → project root → data/
+                csv_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data', 'all_institutional_trend_data.csv')
                 
                 if os.path.exists(csv_path):
                     self.supply_df = pd.read_csv(csv_path, dtype={'ticker': str})
@@ -469,7 +470,8 @@ class EnhancedNewsCollector:
                 content = await resp.read()
                 try:
                     html = content.decode('cp949')
-                except:
+                except (UnicodeDecodeError, LookupError) as e:
+                    logger.warning(f"cp949 decode failed, falling back to utf-8: {e}")
                     html = content.decode('utf-8', errors='ignore')
             
             soup = BeautifulSoup(html, "html.parser")
@@ -565,10 +567,11 @@ class EnhancedNewsCollector:
                 html = ""
                 try:
                     html = content.decode('cp949')
-                except:
+                except (UnicodeDecodeError, LookupError):
                     try:
                         html = content.decode('utf-8')
-                    except:
+                    except (UnicodeDecodeError, LookupError) as e:
+                        logger.warning(f"Content decode failed for {news.url}: {e}")
                         html = str(content)
                         
             soup = BeautifulSoup(html, 'html.parser')
@@ -594,7 +597,8 @@ class EnhancedNewsCollector:
             if re.match(r"\d{4}\.\d{2}\.\d{2}", text):
                 return datetime.strptime(text[:10], "%Y.%m.%d")
             return self._parse_relative_date(text)
-        except:
+        except (ValueError, TypeError) as e:
+            logger.warning(f"Naver date parse failed for '{text}': {e}")
             return None
 
     def _parse_relative_date(self, text: str) -> Optional[datetime]:
@@ -611,8 +615,8 @@ class EnhancedNewsCollector:
                 return now - timedelta(days=val)
             elif "어제" in text:
                 return now - timedelta(days=1)
-        except:
-            pass
+        except (ValueError, TypeError, AttributeError) as e:
+            logger.warning(f"Relative date parse failed for '{text}': {e}")
         return None
         
     def _get_source_info(self, source: str) -> NewsSource:

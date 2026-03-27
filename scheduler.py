@@ -52,6 +52,7 @@ import logging
 import subprocess
 import signal as signal_module
 import argparse
+import atexit
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
@@ -83,6 +84,7 @@ except ImportError:
 # ============================================================
 # Git 자동 커밋 + 푸시 (→ Render 자동 배포)
 # ============================================================
+_git_lock = threading.Lock()
 
 def auto_git_push(scope: str = 'all') -> bool:
     """데이터 업데이트 후 자동 git commit + push (origin만)
@@ -95,82 +97,88 @@ def auto_git_push(scope: str = 'all') -> bool:
     import subprocess
     from datetime import datetime
 
-    project_dir = os.path.dirname(os.path.abspath(__file__))
-    now_str = datetime.now().strftime('%Y-%m-%d %H:%M')
-
+    if not _git_lock.acquire(timeout=120):
+        logger.warning("⚠️ Git push 잠금 대기 초과 (다른 push 진행 중)")
+        return False
     try:
-        result = subprocess.run(
-            ['git', 'status', '--porcelain'],
-            capture_output=True, text=True, cwd=project_dir, timeout=30
-        )
-        if result.returncode != 0:
-            logger.warning("⚠️ Git 저장소가 아닙니다. auto_git_push 스킵.")
+        project_dir = os.path.dirname(os.path.abspath(__file__))
+        now_str = datetime.now().strftime('%Y-%m-%d %H:%M')
+
+        try:
+            result = subprocess.run(
+                ['git', 'status', '--porcelain'],
+                capture_output=True, text=True, cwd=project_dir, timeout=30
+            )
+            if result.returncode != 0:
+                logger.warning("⚠️ Git 저장소가 아닙니다. auto_git_push 스킵.")
+                return False
+
+            changes = result.stdout.strip()
+            if not changes:
+                logger.info("📦 변경사항 없음, git push 스킵")
+                return True
+
+            # 데이터 디렉토리만 스테이징 (소스코드 제외 → GitHub Actions 충돌 방지)
+            data_dirs = [
+                'data/',
+                'us_market/output/',
+                'crypto-analytics/crypto_market/output/',
+                'us_market/sector_cache.json',
+            ]
+            for d in data_dirs:
+                subprocess.run(['git', 'add', d], cwd=project_dir, timeout=30,
+                               capture_output=True, text=True)
+
+            # 스테이징된 변경사항 확인
+            staged = subprocess.run(
+                ['git', 'diff', '--cached', '--quiet'],
+                cwd=project_dir, timeout=10, capture_output=True
+            )
+            if staged.returncode == 0:
+                logger.info("📦 데이터 변경사항 없음, git push 스킵")
+                return True
+
+            msg = f"auto: {scope} data update ({now_str})"
+            subprocess.run(
+                ['git', 'commit', '-m', msg],
+                cwd=project_dir, timeout=30, check=True,
+                capture_output=True, text=True
+            )
+
+            # pull --rebase 후 push (GitHub Actions 커밋과 충돌 방지)
+            rebase_result = subprocess.run(
+                ['git', 'pull', '--rebase', 'origin', 'main'],
+                cwd=project_dir, timeout=120,
+                capture_output=True, text=True
+            )
+            if rebase_result.returncode != 0:
+                logger.error(f"⚠️ Git rebase 실패, abort 후 merge 전략 시도: {rebase_result.stderr}")
+                subprocess.run(['git', 'rebase', '--abort'], cwd=project_dir, timeout=30,
+                               capture_output=True, text=True)
+                subprocess.run(['git', 'pull', '--no-rebase', 'origin', 'main'],
+                               cwd=project_dir, timeout=120, capture_output=True, text=True)
+
+            push_result = subprocess.run(
+                ['git', 'push', 'origin', 'main'],
+                cwd=project_dir, timeout=120,
+                capture_output=True, text=True
+            )
+
+            if push_result.returncode == 0:
+                logger.info(f"✅ Git push (origin) 완료 ({scope})")
+            else:
+                logger.error(f"❌ Git push (origin) 실패: {push_result.stderr}")
+
+            return push_result.returncode == 0
+
+        except subprocess.TimeoutExpired:
+            logger.error("❌ Git 명령 타임아웃")
             return False
-
-        changes = result.stdout.strip()
-        if not changes:
-            logger.info("📦 변경사항 없음, git push 스킵")
-            return True
-
-        # 데이터 디렉토리만 스테이징 (소스코드 제외 → GitHub Actions 충돌 방지)
-        data_dirs = [
-            'data/',
-            'us_market/output/',
-            'crypto-analytics/crypto_market/output/',
-            'us_market/sector_cache.json',
-        ]
-        for d in data_dirs:
-            subprocess.run(['git', 'add', d], cwd=project_dir, timeout=30,
-                           capture_output=True, text=True)
-
-        # 스테이징된 변경사항 확인
-        staged = subprocess.run(
-            ['git', 'diff', '--cached', '--quiet'],
-            cwd=project_dir, timeout=10, capture_output=True
-        )
-        if staged.returncode == 0:
-            logger.info("📦 데이터 변경사항 없음, git push 스킵")
-            return True
-
-        msg = f"auto: {scope} data update ({now_str})"
-        subprocess.run(
-            ['git', 'commit', '-m', msg],
-            cwd=project_dir, timeout=30, check=True,
-            capture_output=True, text=True
-        )
-
-        # pull --rebase 후 push (GitHub Actions 커밋과 충돌 방지)
-        rebase_result = subprocess.run(
-            ['git', 'pull', '--rebase', 'origin', 'main'],
-            cwd=project_dir, timeout=120,
-            capture_output=True, text=True
-        )
-        if rebase_result.returncode != 0:
-            logger.error(f"⚠️ Git rebase 실패, abort 후 merge 전략 시도: {rebase_result.stderr}")
-            subprocess.run(['git', 'rebase', '--abort'], cwd=project_dir, timeout=30,
-                           capture_output=True, text=True)
-            subprocess.run(['git', 'pull', '--no-rebase', 'origin', 'main'],
-                           cwd=project_dir, timeout=120, capture_output=True, text=True)
-
-        push_result = subprocess.run(
-            ['git', 'push', 'origin', 'main'],
-            cwd=project_dir, timeout=120,
-            capture_output=True, text=True
-        )
-
-        if push_result.returncode == 0:
-            logger.info(f"✅ Git push (origin) 완료 ({scope})")
-        else:
-            logger.error(f"❌ Git push (origin) 실패: {push_result.stderr}")
-
-        return push_result.returncode == 0
-
-    except subprocess.TimeoutExpired:
-        logger.error("❌ Git 명령 타임아웃")
-        return False
-    except Exception as e:
-        logger.error(f"❌ auto_git_push 오류: {e}")
-        return False
+        except Exception as e:
+            logger.error(f"❌ auto_git_push 오류: {e}")
+            return False
+    finally:
+        _git_lock.release()
 
 
 # ============================================================
@@ -200,6 +208,7 @@ class Config:
     US_TRACK_TIME = os.environ.get('US_MARKET_TRACK_TIME', '09:30')
     KR_UPDATE_TIME = os.environ.get('KR_MARKET_UPDATE_TIME', '15:00')   # 종가베팅 V2
     VCP_UPDATE_TIME = os.environ.get('VCP_UPDATE_TIME', '16:00')         # 전 시장 VCP 시그널
+    WAVE_SCAN_TIME = os.environ.get('WAVE_SCAN_TIME', '16:30')           # Wave 패턴 스캔
     HISTORY_TIME = os.environ.get('KR_MARKET_HISTORY_TIME', '10:00')
     CRYPTO_TIMES = ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00']  # 매 4시간
     MORNING_REPORT_TIME = os.environ.get('MORNING_REPORT_TIME', '09:00')   # 일별 상태 리포트
@@ -392,8 +401,122 @@ def send_telegram_long(message: str) -> bool:
 # ============================================================
 
 def update_daily_prices():
-    """일별 가격 데이터 업데이트 — legacy script 제거됨, V2 엔진에서 자동 처리"""
-    logger.info("⏭️ update_daily_prices: V2 엔진이 자체 수집하므로 skip")
+    """일별 가격 데이터 업데이트 — FDR listing + pykrx OHLCV 수집"""
+    import pandas as pd
+    from datetime import timedelta
+    csv_path = os.path.join(Config.DATA_DIR, 'daily_prices.csv')
+
+    # 기존 CSV에서 마지막 날짜 확인
+    last_date = None
+    if os.path.exists(csv_path):
+        try:
+            existing = pd.read_csv(csv_path, usecols=['date'], dtype={'date': str})
+            if len(existing) > 0:
+                last_date = existing['date'].max()
+                logger.info(f"📊 daily_prices.csv 마지막 날짜: {last_date}")
+        except Exception as e:
+            logger.warning(f"기존 CSV 읽기 실패: {e}")
+
+    # 시작일 결정
+    if last_date:
+        try:
+            start_dt = datetime.strptime(last_date, '%Y-%m-%d') + timedelta(days=1)
+        except ValueError:
+            start_dt = datetime.now() - timedelta(days=60)
+    else:
+        start_dt = datetime.now() - timedelta(days=60)
+
+    end_dt = datetime.now()
+    if start_dt.date() > end_dt.date():
+        logger.info("📊 daily_prices.csv 이미 최신")
+        return True
+
+    start_str = start_dt.strftime('%Y%m%d')
+    end_str = end_dt.strftime('%Y%m%d')
+    logger.info(f"📊 KR 가격 수집 시작: {start_str} → {end_str}")
+    now_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    all_rows = []
+
+    # FDR로 종목 목록 가져오기 (pykrx ticker_list가 불안정)
+    try:
+        import FinanceDataReader as fdr
+        listing = fdr.StockListing('KRX')
+        tickers = listing['Code'].tolist()
+        names_map = dict(zip(listing['Code'], listing['Name']))
+        logger.info(f"📊 FDR 종목 목록: {len(tickers)}개")
+    except Exception as e:
+        logger.error(f"FDR 종목 목록 실패: {e}")
+        return False
+
+    # pykrx로 OHLCV 수집 (per-ticker, 안정적)
+    use_pykrx = True
+    try:
+        from pykrx import stock as pykrx_stock
+    except ImportError:
+        use_pykrx = False
+        logger.warning("pykrx 미설치, FDR DataReader 폴백")
+
+    failed = 0
+    for i, ticker in enumerate(tickers):
+        try:
+            if use_pykrx:
+                ohlcv = pykrx_stock.get_market_ohlcv(start_str, end_str, ticker)
+                if ohlcv is None or ohlcv.empty:
+                    continue
+                for date_idx, row in ohlcv.iterrows():
+                    all_rows.append({
+                        'ticker': ticker,
+                        'date': date_idx.strftime('%Y-%m-%d'),
+                        'name': names_map.get(ticker, ''),
+                        'current_price': float(row.get('종가', 0)),
+                        'change': float(row.get('등락률', 0)),
+                        'change_rate': float(row.get('등락률', 0)),
+                        'high': float(row.get('고가', 0)),
+                        'low': float(row.get('저가', 0)),
+                        'open': float(row.get('시가', 0)),
+                        'volume': int(row.get('거래량', 0)),
+                        'update_time': now_str,
+                    })
+            else:
+                df = fdr.DataReader(ticker, start_dt.strftime('%Y-%m-%d'), end_dt.strftime('%Y-%m-%d'))
+                if df is None or df.empty:
+                    continue
+                for date_idx, row in df.iterrows():
+                    chg = row.get('Change', 0) or 0
+                    all_rows.append({
+                        'ticker': ticker,
+                        'date': date_idx.strftime('%Y-%m-%d'),
+                        'name': names_map.get(ticker, ''),
+                        'current_price': float(row.get('Close', 0)),
+                        'change': float(chg),
+                        'change_rate': float(chg) * 100,
+                        'high': float(row.get('High', 0)),
+                        'low': float(row.get('Low', 0)),
+                        'open': float(row.get('Open', 0)),
+                        'volume': int(row.get('Volume', 0)),
+                        'update_time': now_str,
+                    })
+        except Exception:
+            failed += 1
+            continue
+        if (i + 1) % 500 == 0:
+            logger.info(f"  진행: {i+1}/{len(tickers)} ({len(all_rows)} rows, {failed} failed)")
+
+    logger.info(f"📊 수집 완료: {len(all_rows)} rows ({failed} 실패)")
+
+    if not all_rows:
+        logger.warning("📊 수집된 데이터 없음")
+        return False
+
+    # CSV에 추가 (append) 또는 생성
+    new_df = pd.DataFrame(all_rows)
+    if os.path.exists(csv_path) and last_date:
+        new_df.to_csv(csv_path, mode='a', header=False, index=False, encoding='utf-8-sig')
+        logger.info(f"✅ daily_prices.csv 추가: {len(all_rows)} rows")
+    else:
+        new_df.to_csv(csv_path, index=False, encoding='utf-8-sig')
+        logger.info(f"✅ daily_prices.csv 생성: {len(all_rows)} rows")
+
     return True
 
 
@@ -424,73 +547,74 @@ def run_vcp_signal_scan(send_alert: bool = False):
 
 
 def send_vcp_telegram_summary():
-    """VCP 시그널 상위 10개 텔레그램 전송 (종목 중복 제거)"""
-    import pandas as pd
+    """VCP 시그널 상위 10개 텔레그램 전송 (vcp_kr_latest.json 기반)"""
 
-    signals_path = os.path.join(Config.DATA_DIR, 'signals_log.csv')
-    if not os.path.exists(signals_path):
-        logger.warning("⚠️ signals_log.csv가 없어 VCP 알림을 건너뜁니다.")
+    json_path = os.path.join(Config.DATA_DIR, 'vcp_kr_latest.json')
+    if not os.path.exists(json_path):
+        logger.warning("⚠️ vcp_kr_latest.json이 없어 VCP 알림을 건너뜁니다.")
         return
 
-    with safe_read(signals_path):
-        df = pd.read_csv(signals_path, encoding='utf-8-sig')
-    df['ticker'] = df['ticker'].astype(str).str.zfill(6)
-
-    if 'status' in df.columns:
-        df = df[df['status'] == 'OPEN']
-    if df.empty:
-        logger.info("📭 열린 VCP 시그널이 없습니다.")
+    try:
+        with open(json_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+    except Exception as e:
+        logger.error(f"❌ VCP JSON 로드 실패: {e}")
         return
 
-    ticker_name_map = {}
-    prices_path = os.path.join(Config.DATA_DIR, 'daily_prices.csv')
-    if os.path.exists(prices_path):
-        try:
-            prices_df = pd.read_csv(prices_path, encoding='utf-8-sig')
-            if 'ticker' in prices_df.columns and 'name' in prices_df.columns:
-                ticker_name_map = dict(zip(
-                    prices_df['ticker'].astype(str).str.zfill(6), prices_df['name']))
-        except Exception as e:
-            logger.warning(f"종목명 매핑 실패: {e}")
+    signals = data.get('signals', [])
+    if not signals:
+        logger.info("📭 VCP 시그널이 없습니다.")
+        return
 
-    if 'score' in df.columns:
-        df = df.sort_values('score', ascending=False)
-    df = df.drop_duplicates(subset='ticker', keep='first')
+    # composite score 기준 정��
+    signals.sort(key=lambda s: s.get('composite', {}).get('score', 0)
+                 if isinstance(s.get('composite'), dict)
+                 else 0, reverse=True)
 
-    unique_count = len(df)
-    top_10 = df.head(10)
+    total = len(signals)
+    top_10 = signals[:10]
+    gate = data.get('metadata', {}).get('gate', '?')
+    gate_score = data.get('metadata', {}).get('gate_score', '?')
 
     today = datetime.now().strftime('%m/%d')
     msg = f"<b>📈 VCP 시그널 Top 10 ({today})</b>\n"
-    msg += f"총 {unique_count}개 종목 중 상위 10개\n"
+    msg += f"총 {total}개 종목 | Gate: {gate} ({gate_score})\n"
     msg += "────────────────────\n"
 
-    for i, (_, row) in enumerate(top_10.iterrows(), 1):
-        ticker = str(row.get('ticker', '')).zfill(6)
-        name = row.get('name', '') or ticker_name_map.get(ticker, ticker)
-        score = row.get('score', 0)
-        entry = row.get('entry_price', 0)
-        foreign = row.get('foreign_5d', 0)
-        inst = row.get('inst_5d', 0)
+    for i, s in enumerate(top_10, 1):
+        symbol = s.get('symbol', '?')
+        name = s.get('name', symbol)
+        comp = s.get('composite', {})
+        score = comp.get('score', 0) if isinstance(comp, dict) else 0
+        price = s.get('price', {})
+        close = price.get('close', 0) if isinstance(price, dict) else 0
+        change = price.get('change_pct', 0) if isinstance(price, dict) else 0
 
-        supply_icon = ""
-        if foreign > 0 and inst > 0:
-            supply_icon = "🔥"
-        elif foreign > 0:
-            supply_icon = "🌍"
-        elif inst > 0:
-            supply_icon = "🏛"
+        # 패턴 정보
+        trend = s.get('trend_template', {})
+        tt_pass = trend.get('passed', False) if isinstance(trend, dict) else False
+        vcp = s.get('vcp_pattern', {})
+        vcp_pass = vcp.get('detected', False) if isinstance(vcp, dict) else False
 
-        msg += f"\n{i}. <b>{name}</b> ({ticker}) {supply_icon}\n"
-        msg += f"   점수: {score:.1f} | 진입: {entry:,.0f}원\n"
-        if foreign != 0 or inst != 0:
-            msg += f"   외인: {foreign:+,} | 기관: {inst:+,}\n"
+        icons = []
+        if tt_pass:
+            icons.append("📊")
+        if vcp_pass:
+            icons.append("🔺")
+        icon_str = ' '.join(icons)
+
+        msg += f"\n{i}. <b>{name}</b> ({symbol}) {icon_str}\n"
+        msg += f"   점수: {score:.1f} | {close:,.0f}원 ({change:+.1f}%)\n"
 
     send_telegram(msg)
 
 
 def collect_historical_institutional():
     """과거 수급 데이터 수집 (히스토리 축적용)"""
+    module_path = os.path.join(Config.BASE_DIR, 'collect_historical_data.py')
+    if not os.path.exists(module_path):
+        logger.warning("⚠️ collect_historical_data.py 없음 — 히스토리 수집 스킵")
+        return True
     script = (
         "from collect_historical_data import HistoricalInstitutionalCollector; "
         "import os; "
@@ -508,58 +632,51 @@ def collect_historical_institutional():
 
 
 def run_ai_analysis_scan():
-    """AI 분석 JSON 생성 (kr_ai_analysis.json) — signals_log.csv OPEN 시그널 기반"""
-    logger.info("🤖 AI 분석 JSON 생성 중 (signals_log.csv → kr_ai_analysis.json)...")
+    """AI 분석 JSON 생성 (kr_ai_analysis.json) — vcp_kr_latest.json 기반"""
+    logger.info("🤖 AI 분석 JSON 생성 중 (vcp_kr_latest.json → kr_ai_analysis.json)...")
     try:
-        import pandas as pd
-
-        signals_path = os.path.join(Config.DATA_DIR, 'signals_log.csv')
-        if not os.path.exists(signals_path):
-            logger.warning("⚠️ 시그널 로그가 없어 AI 분석을 건너뜁니다.")
+        vcp_path = os.path.join(Config.DATA_DIR, 'vcp_kr_latest.json')
+        if not os.path.exists(vcp_path):
+            logger.warning("⚠️ vcp_kr_latest.json이 없어 AI 분석을 건너뜁니다.")
             return True
 
-        with safe_read(signals_path):
-            df = pd.read_csv(signals_path, dtype={'ticker': str})
-        df['ticker'] = df['ticker'].str.zfill(6)
+        with open(vcp_path, 'r', encoding='utf-8') as f:
+            vcp_data = json.load(f)
 
-        if 'status' not in df.columns:
+        vcp_signals = vcp_data.get('signals', [])
+        if not vcp_signals:
+            logger.info("분석할 VCP 시그널이 없습니다.")
             return True
 
-        df = df[df['status'] == 'OPEN']
-        if df.empty:
-            logger.info("분석할 OPEN 시그널이 없습니다.")
-            return True
+        # 점수 상위 정렬 + 상위 20개
+        vcp_signals.sort(
+            key=lambda s: s.get('composite', {}).get('score', 0)
+            if isinstance(s.get('composite'), dict) else 0,
+            reverse=True
+        )
 
-        # 종목명 매핑
-        name_map, market_map = {}, {}
-        try:
-            stocks_path = os.path.join(Config.DATA_DIR, 'korean_stocks_list.csv')
-            if os.path.exists(stocks_path):
-                stocks = pd.read_csv(stocks_path, dtype={'ticker': str})
-                stocks['ticker'] = stocks['ticker'].str.zfill(6)
-                name_map = dict(zip(stocks['ticker'], stocks['name']))
-                if 'market' in stocks.columns:
-                    market_map = dict(zip(stocks['ticker'], stocks['market']))
-        except Exception:
-            pass
-
-        # 점수 상위 + 중복 제거
-        df = df.sort_values('score', ascending=False).drop_duplicates('ticker')
         signals = []
-        for _, row in df.iterrows():
-            t = row['ticker']
+        seen_tickers = set()
+        for s in vcp_signals:
+            ticker = str(s.get('symbol', '')).zfill(6)
+            if ticker in seen_tickers:
+                continue
+            seen_tickers.add(ticker)
+
+            comp = s.get('composite', {}) if isinstance(s.get('composite'), dict) else {}
+            price = s.get('price', {}) if isinstance(s.get('price'), dict) else {}
             signals.append({
-                'ticker': t,
-                'name': name_map.get(t, t),
-                'score': float(row.get('score', 0)),
-                'contraction_ratio': float(row.get('contraction_ratio', 0)),
-                'foreign_5d': int(row.get('foreign_5d', 0)),
-                'inst_5d': int(row.get('inst_5d', 0)),
-                'entry_price': float(row.get('entry_price', 0)),
-                'current_price': float(row.get('entry_price', 0)),
+                'ticker': ticker,
+                'name': s.get('name', ticker),
+                'score': float(comp.get('score', 0)),
+                'contraction_ratio': 0,
+                'foreign_5d': 0,
+                'inst_5d': 0,
+                'entry_price': float(price.get('close', 0)),
+                'current_price': float(price.get('close', 0)),
                 'return_pct': 0,
-                'signal_date': str(row.get('signal_date', '')),
-                'market': market_map.get(t, ''),
+                'signal_date': vcp_data.get('metadata', {}).get('generated_at', '')[:10],
+                'market': '',
                 'status': 'OPEN'
             })
 
@@ -594,37 +711,34 @@ def run_ai_analysis_scan():
 
 
 def generate_daily_report():
-    """일일 리포트 생성"""
+    """일일 리포트 생성 (vcp_kr_latest.json 기반)"""
     logger.info("📊 일일 리포트 생성 중...")
     try:
-        import pandas as pd
-        signals_path = os.path.join(Config.DATA_DIR, 'signals_log.csv')
+        vcp_path = os.path.join(Config.DATA_DIR, 'vcp_kr_latest.json')
+        today = datetime.now().strftime('%Y-%m-%d')
 
-        if os.path.exists(signals_path):
-            with safe_read(signals_path):
-                df = pd.read_csv(signals_path, encoding='utf-8-sig')
+        total_signals = 0
+        if os.path.exists(vcp_path):
+            with open(vcp_path, 'r', encoding='utf-8') as f:
+                vcp_data = json.load(f)
+            total_signals = len(vcp_data.get('signals', []))
 
-            open_signals = len(df[df['status'] == 'OPEN'])
-            closed_signals = len(df[df['status'] == 'CLOSED'])
-            today = datetime.now().strftime('%Y-%m-%d')
-            today_signals = len(df[df['signal_date'] == today])
+        report = {
+            'date': today,
+            'open_signals': total_signals,
+            'closed_signals': 0,
+            'today_new_signals': total_signals,
+            'total_signals': total_signals,
+            'generated_at': datetime.now().isoformat(),
+            'env': {'base_dir': Config.BASE_DIR, 'python': Config.PYTHON_PATH}
+        }
 
-            report = {
-                'date': today,
-                'open_signals': open_signals,
-                'closed_signals': closed_signals,
-                'today_new_signals': today_signals,
-                'total_signals': len(df),
-                'generated_at': datetime.now().isoformat(),
-                'env': {'base_dir': Config.BASE_DIR, 'python': Config.PYTHON_PATH}
-            }
+        report_path = os.path.join(Config.DATA_DIR, 'daily_report.json')
+        with open(report_path, 'w', encoding='utf-8') as f:
+            json.dump(report, f, ensure_ascii=False, indent=2)
 
-            report_path = os.path.join(Config.DATA_DIR, 'daily_report.json')
-            with open(report_path, 'w', encoding='utf-8') as f:
-                json.dump(report, f, ensure_ascii=False, indent=2)
-
-            logger.info(f"✅ 일일 리포트: 열림 {open_signals}개, 청산 {closed_signals}개, 신규 {today_signals}개")
-            return True
+        logger.info(f"✅ 일일 리포트: VCP 시그널 {total_signals}개")
+        return True
 
     except Exception as e:
         logger.error(f"❌ 리포트 생성 실패: {e}")
@@ -712,7 +826,7 @@ def send_morning_status_report():
         if os.path.exists(watchdog_log):
             with open(watchdog_log, 'r', encoding='utf-8') as f:
                 entries = [l.strip() for l in f.readlines() if yesterday in l or today in l]
-            restarts = [l for l in entries if 'DOWN' in l or '재시작' in l]
+            restarts = [l for l in entries if '🔴' in l or '재시작' in l or '❌' in l]
             if restarts:
                 lines.append(f"")
                 lines.append(f"⚠️ <b>Flask 재시작</b>: {len(restarts)}회")
@@ -731,9 +845,8 @@ def send_morning_status_report():
         return False
 
 
-def update_jongga_v2(retry_count: int = 0):
-    """종가베팅 V2 데이터 업데이트 + S/A급 텔레그램 전송 + 실패 시 재시도"""
-    MAX_RETRIES = 2
+def update_jongga_v2():
+    """종가베팅 V2 데이터 업데이트 + S/A급 텔레그램 전송 (재시도는 _with_record 위임)"""
     script = (
         "import asyncio; "
         "from datetime import datetime, timedelta, date; "
@@ -748,16 +861,11 @@ def update_jongga_v2(retry_count: int = 0):
     )
     success = run_command(
         [Config.PYTHON_PATH, '-c', script],
-        f'KR 종가베팅 V2 분석 엔진 (시도 {retry_count+1}/{MAX_RETRIES+1})',
+        'KR 종가베팅 V2 분석 엔진',
         timeout=600
     )
 
     if not success:
-        if retry_count < MAX_RETRIES:
-            logger.warning(f"⚠️ 종가베팅 실패 → {15}분 후 재시도 ({retry_count+1}/{MAX_RETRIES})")
-            time.sleep(900)
-            return update_jongga_v2(retry_count + 1)
-        send_telegram(f"❌ 종가베팅 V2 {MAX_RETRIES+1}회 연속 실패")
         return False
 
     if success:
@@ -766,9 +874,6 @@ def update_jongga_v2(retry_count: int = 0):
             # 결과 파일 검증
             if not os.path.exists(json_path) or (time.time() - os.path.getmtime(json_path)) > 300:
                 logger.warning("⚠️ 종가베팅 결과 파일 없거나 오래됨")
-                if retry_count < MAX_RETRIES:
-                    time.sleep(900)
-                    return update_jongga_v2(retry_count + 1)
                 return False
             if os.path.exists(json_path):
                 with open(json_path, 'r', encoding='utf-8') as f:
@@ -839,61 +944,38 @@ def update_jongga_v2(retry_count: int = 0):
 
 
 def _build_vcp_top10_text() -> str:
-    """VCP Top10 텍스트 생성 (텔레그램 전송 없이 텍스트만)"""
-    try:
-        import pandas as pd
-        signals_path = os.path.join(Config.DATA_DIR, 'signals_log.csv')
-        if not os.path.exists(signals_path):
-            return ""
-
-        with safe_read(signals_path):
-            df = pd.read_csv(signals_path, encoding='utf-8-sig')
-        df['ticker'] = df['ticker'].astype(str).str.zfill(6)
-        if 'status' in df.columns:
-            df = df[df['status'] == 'OPEN']
-        if df.empty:
-            return ""
-
-        ticker_name_map = {}
-        prices_path = os.path.join(Config.DATA_DIR, 'daily_prices.csv')
-        if os.path.exists(prices_path):
-            try:
-                prices_df = pd.read_csv(prices_path, encoding='utf-8-sig')
-                if 'ticker' in prices_df.columns and 'name' in prices_df.columns:
-                    ticker_name_map = dict(zip(
-                        prices_df['ticker'].astype(str).str.zfill(6), prices_df['name']))
-            except Exception:
-                pass
-
-        if 'score' in df.columns:
-            df = df.sort_values('score', ascending=False)
-        df = df.drop_duplicates(subset='ticker', keep='first')
-
-        top_10 = df.head(10)
-        today = datetime.now().strftime('%m/%d')
-        text = f"<b>📈 VCP Top 10 ({today})</b>\n"
-
-        for i, (_, row) in enumerate(top_10.iterrows(), 1):
-            ticker = str(row.get('ticker', '')).zfill(6)
-            name = row.get('name', '') or ticker_name_map.get(ticker, ticker)
-            score = row.get('score', 0)
-            foreign = row.get('foreign_5d', 0)
-            inst = row.get('inst_5d', 0)
-
-            icon = ""
-            if foreign > 0 and inst > 0:
-                icon = "🔥"
-            elif foreign > 0:
-                icon = "🌍"
-            elif inst > 0:
-                icon = "🏛"
-
-            text += f"{i}. <b>{name}</b> {score:.0f}점 {icon}\n"
-
-        return text
-    except Exception as e:
-        logger.error(f"VCP Top10 텍스트 생성 실패: {e}")
+    """VCP 시그널 Top 10 텍스트 생성 (vcp_kr_latest.json 기반)"""
+    json_path = os.path.join(Config.DATA_DIR, 'vcp_kr_latest.json')
+    if not os.path.exists(json_path):
         return ""
+    try:
+        with open(json_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+    except Exception:
+        return ""
+
+    signals = data.get('signals', [])
+    if not signals:
+        return ""
+
+    signals.sort(key=lambda s: s.get('composite', {}).get('score', 0)
+                 if isinstance(s.get('composite'), dict) else 0, reverse=True)
+
+    top_10 = signals[:10]
+    today = datetime.now().strftime('%m/%d')
+    text = f"<b>📈 VCP Top 10 ({today})</b>\n"
+
+    for i, s in enumerate(top_10, 1):
+        name = s.get('name', s.get('symbol', '?'))
+        symbol = s.get('symbol', '?')
+        comp = s.get('composite', {})
+        score = comp.get('score', 0) if isinstance(comp, dict) else 0
+        price = s.get('price', {})
+        close = price.get('close', 0) if isinstance(price, dict) else 0
+        change = price.get('change_pct', 0) if isinstance(price, dict) else 0
+        text += f"{i}. <b>{name}({symbol})</b> {score:.1f}점 {close:,.0f}원 ({change:+.1f}%)\n"
+
+    return text
 
 
 # ── KR 올업데이트 (15:00 통합) ──
@@ -961,12 +1043,12 @@ def run_vcp_all_markets(skip_sync: bool = False):
     success_count = sum(1 for _, s in results if s)
     summary_lines = [f"  {'✅' if s else '❌'} {n}" for n, s in results]
 
-    logger.info(f"📋 전 시장 VCP 업데이트 완료: {success_count}/3 ({elapsed}초)")
+    logger.info(f"📋 전 시장 VCP 업데이트 완료: {success_count}/{len(results)} ({elapsed}초)")
 
     send_telegram(
         f"<b>📈 16시 전 시장 VCP 업데이트 완료</b>\n"
         f"⏰ {datetime.now().strftime('%Y-%m-%d %H:%M')} ({elapsed}초)\n"
-        f"결과: {success_count}/3\n\n"
+        f"결과: {success_count}/{len(results)}\n\n"
         + "\n".join(summary_lines)
     )
 
@@ -1075,7 +1157,7 @@ def build_us_smart_money_top5_msg() -> str:
     today = datetime.now().strftime('%m/%d')
 
     # top_picks.json 로드 (screener.py 출력)
-    picks_path = os.path.join(Config.BASE_DIR, 'us_market_preview', 'output', 'top_picks.json')
+    picks_path = os.path.join(Config.BASE_DIR, 'us_market', 'output', 'top_picks.json')
     if not os.path.exists(picks_path):
         logger.warning("⚠️ top_picks.json 없음 — Smart Money Top 5 전송 불가")
         return ""
@@ -1126,7 +1208,7 @@ def save_us_track_record_snapshot():
         except Exception as e:
             logger.warning(f"⚠️ US 스냅샷 API 실패: {e}")
 
-        tracker_path = os.path.join(Config.BASE_DIR, 'us_market_preview', 'performance_tracker.py')
+        tracker_path = os.path.join(Config.BASE_DIR, 'us_market', 'performance_tracker.py')
         if os.path.exists(tracker_path):
             return run_command(
                 [Config.PYTHON_PATH, tracker_path],
@@ -1228,14 +1310,15 @@ def run_crypto_gate_check() -> bool:
 
 
 def run_crypto_vcp_scan() -> bool:
-    """Crypto VCP 스캔 (in-process, gate-aware)"""
+    """Crypto VCP 스캔 (in-process, gate-aware) — 결과 JSON 저장 + 텔레그램"""
     global _crypto_gate
 
     logger.info("🔍 Crypto VCP 스캔 시작...")
 
-    if _crypto_gate == "RED":
-        logger.info("🔴 Gate RED — 방어적 모드 스캔 (축소 유니버스)")
-        # RED에서도 top 50 스캔 실행 (축적 기회 탐색)
+    gate = _crypto_gate or "UNKNOWN"
+    top_n = 50 if gate == "RED" else 200
+    if gate == "RED":
+        logger.info("🔴 Gate RED — 방어적 모드 스캔 (축소 유니버스 top 50)")
 
     try:
         crypto_dir = Config.CRYPTO_MARKET_DIR
@@ -1243,10 +1326,32 @@ def run_crypto_vcp_scan() -> bool:
             sys.path.insert(0, crypto_dir)
 
         from run_scan import run_scan_sync
-        result = run_scan_sync()
+        result = run_scan_sync(top_n=top_n)
 
         published = result.get('published', 0) if isinstance(result, dict) else 0
         logger.info(f"🔍 Crypto VCP: {published}개 시그널 발행")
+
+        # 결과를 vcp_crypto_latest.json에 저장
+        out = {
+            'metadata': {
+                'generated_at': datetime.now().isoformat(),
+                'market': 'CRYPTO',
+                'gate': gate,
+                'universe_size': result.get('universe_size', 0),
+            },
+            'signals': result.get('top_signals', []),
+            'summary': {
+                'setups_4h': result.get('setups_4h', 0),
+                'setups_1d': result.get('setups_1d', 0),
+                'signals_4h': result.get('signals_4h', 0),
+                'signals_1d': result.get('signals_1d', 0),
+                'published': published,
+            },
+        }
+        out_path = os.path.join(Config.DATA_DIR, 'vcp_crypto_latest.json')
+        with open(out_path, 'w', encoding='utf-8') as f:
+            json.dump(out, f, ensure_ascii=False, indent=2)
+        logger.info(f"💾 Crypto VCP 결과 저장: {out_path}")
 
         if published > 0:
             _notify_crypto_signals(published)
@@ -1474,6 +1579,16 @@ def run_crypto_pipeline(skip_sync: bool = False):
 
     logger.info(f"🪙 Crypto 파이프라인 완료: {success_count}/{total_count} ({elapsed:.0f}초)")
 
+    # 개별 실패 알림
+    failed = [name for name, ok in results if not ok]
+    if failed:
+        send_telegram(
+            f"⚠️ <b>Crypto 파이프라인 부분 실패</b>\n\n"
+            f"성공: {success_count}/{len(results)}\n"
+            f"실패: {', '.join(failed)}\n"
+            f"시간: {datetime.now().strftime('%H:%M')}"
+        )
+
     # Git 자동 커밋 + 푸시 (→ Render 자동 배포)
     if not skip_sync:
         auto_git_push('crypto')
@@ -1641,83 +1756,146 @@ def _was_run_today(task_key: str) -> bool:
 # 놓친 스케줄 복구 (Missed Schedule Recovery)
 # ============================================================
 
+_missed_check_lock = threading.Lock()
+
 def check_and_run_missed_tasks():
     """스케줄러 시작 시 오늘 놓친 작업을 즉시 실행
 
     PC 재부팅/슬립으로 스케줄러가 죽었다가 재시작될 때,
     이미 지난 스케줄 시각의 작업이 오늘 실행되지 않았으면 즉시 실행한다.
     """
-    now = datetime.now()
-    weekday = now.weekday()  # 0=Mon, 5=Sat, 6=Sun
-    hour_min = now.hour * 60 + now.minute
+    if not _missed_check_lock.acquire(blocking=False):
+        logger.info("⏭️ 놓친 스케줄 점검 건너뜀 (이전 복구 작업 진행 중)")
+        return
+    try:
+        now = datetime.now()
+        weekday = now.weekday()  # 0=Mon, 5=Sat, 6=Sun
+        hour_min = now.hour * 60 + now.minute
 
-    logger.info("🔍 놓친 스케줄 점검 시작...")
+        logger.info("🔍 놓친 스케줄 점검 시작...")
 
-    # ── 평일 전용 작업 ──
-    weekday_tasks = [
-        # (예정시각_분, task_key, 실행함수, 라벨, 마감시각_분)
-        # 마감시각: 이 시각 이후에는 실행하지 않음 (다음 작업과 충돌 방지)
-        (4 * 60,  'us_market',  run_us_market_update,        'US 마켓 전체 갱신',  8 * 60),
-        (9 * 60,  'morning_report', send_morning_status_report, '일별 상태 리포트', 12 * 60),
-        (9 * 60 + 30, 'us_track', save_us_track_record_snapshot, 'US Track Record', 12 * 60),
-        (15 * 60, 'kr_jongga',  run_kr_full_update,          'KR 종가베팅',        15 * 60 + 50),
-        (16 * 60, 'vcp_all',    run_vcp_all_markets,         'VCP 전시장',         17 * 60),
-    ]
+        # ── 평일 전용 작업 ──
+        weekday_tasks = [
+            # (예정시각_분, task_key, 실행함수, 라벨, 마감시각_분)
+            # 마감시각: 이 시각 이후에는 실행하지 않음 (다음 작업과 충돌 방지)
+            (4 * 60,  'us_market',  run_us_market_update,        'US 마켓 전체 갱신',  8 * 60),
+            (9 * 60,  'morning_report', send_morning_status_report, '일별 상태 리포트', 12 * 60),
+            (9 * 60 + 30, 'us_track', save_us_track_record_snapshot, 'US Track Record', 12 * 60),
+            (15 * 60, 'kr_jongga',  run_kr_full_update,          'KR 종가베팅',        15 * 60 + 50),
+            (16 * 60, 'vcp_all',    run_vcp_all_markets,         'VCP 전시장',         17 * 60),
+        ]
 
-    # ── 매일 실행 작업 (Crypto - 주말 포함) ──
-    # Crypto는 4시간 간격이라 가장 최근 놓친 것만 복구
-    crypto_times_min = [0, 4*60, 8*60, 12*60, 16*60, 20*60]
+        # ── 매일 실행 작업 (Crypto - 주말 포함) ──
+        # Crypto는 4시간 간격이라 가장 최근 놓친 것만 복구
+        crypto_times_min = [0, 4*60, 8*60, 12*60, 16*60, 20*60]
 
-    recovered = []
+        recovered = []
 
-    # 평일 작업 복구
-    if weekday < 5:  # Mon-Fri
-        for sched_min, task_key, task_fn, label, deadline_min in weekday_tasks:
-            if hour_min <= sched_min:
-                continue  # 아직 예정 시각 전
-            if hour_min > deadline_min:
-                logger.info(f"  ⏭️ {label}: 마감 지남 ({deadline_min//60}:{deadline_min%60:02d}), 스킵")
-                continue
-            if _was_run_today(task_key):
-                logger.info(f"  ✅ {label}: 오늘 이미 실행됨, 스킵")
-                continue
+        # 평일 작업 복구
+        if weekday < 5:  # Mon-Fri
+            for sched_min, task_key, task_fn, label, deadline_min in weekday_tasks:
+                if hour_min <= sched_min:
+                    continue  # 아직 예정 시각 전
+                if hour_min > deadline_min:
+                    logger.info(f"  ⏭️ {label}: 마감 지남 ({deadline_min//60}:{deadline_min%60:02d}), 스킵")
+                    continue
+                if _was_run_today(task_key):
+                    logger.info(f"  ✅ {label}: 오늘 이미 실행됨, 스킵")
+                    continue
 
-            logger.info(f"  ⚠️ 놓친 스케줄 감지: {label} (예정 {sched_min//60:02d}:{sched_min%60:02d}) → 즉시 실행")
-            try:
-                task_fn()
-                record_task_run(task_key)
-                recovered.append(label)
-                logger.info(f"  ✅ 복구 완료: {label}")
-            except Exception as e:
-                logger.error(f"  ❌ 복구 실패: {label} — {e}", exc_info=True)
+                logger.info(f"  ⚠️ 놓친 스케줄 감지: {label} (예정 {sched_min//60:02d}:{sched_min%60:02d}) → 즉시 실행")
+                try:
+                    task_fn()
+                    record_task_run(task_key)
+                    recovered.append(label)
+                    logger.info(f"  ✅ 복구 완료: {label}")
+                except Exception as e:
+                    logger.error(f"  ❌ 복구 실패: {label} — {e}", exc_info=True)
 
-    # Crypto 복구 (주말 포함)
-    # 현재 시각 이전의 가장 최근 crypto 시각 찾기
-    past_crypto = [t for t in crypto_times_min if t < hour_min]
-    if past_crypto:
-        latest_crypto_min = max(past_crypto)
-        if not _was_run_today('crypto'):
-            # 마지막 실행이 오늘이 아니면 복구
-            logger.info(f"  ⚠️ 놓친 Crypto 파이프라인 감지 (최근 예정 {latest_crypto_min//60:02d}:00) → 즉시 실행")
-            try:
-                run_crypto_pipeline()
-                record_task_run('crypto')
-                recovered.append('Crypto 파이프라인')
-                logger.info(f"  ✅ 복구 완료: Crypto 파이프라인")
-            except Exception as e:
-                logger.error(f"  ❌ 복구 실패: Crypto 파이프라인 — {e}", exc_info=True)
+        # Crypto 복구 (주말 포함)
+        # 현재 시각 이전의 가장 최근 crypto 시각 찾기
+        past_crypto = [t for t in crypto_times_min if t < hour_min]
+        if past_crypto:
+            latest_crypto_min = max(past_crypto)
+            if not _was_run_recently('crypto', hours=4):
+                # 마지막 실행이 오늘이 아니면 복구
+                logger.info(f"  ⚠️ 놓친 Crypto 파이프라인 감지 (최근 예정 {latest_crypto_min//60:02d}:00) → 즉시 실행")
+                try:
+                    run_crypto_pipeline()
+                    record_task_run('crypto')
+                    recovered.append('Crypto 파이프라인')
+                    logger.info(f"  ✅ 복구 완료: Crypto 파이프라인")
+                except Exception as e:
+                    logger.error(f"  ❌ 복구 실패: Crypto 파이프라인 — {e}", exc_info=True)
 
-    if recovered:
-        msg = (
-            f"<b>🔄 놓친 스케줄 복구 완료</b>\n"
-            f"⏰ {now.strftime('%Y-%m-%d %H:%M')}\n"
-            f"복구: {len(recovered)}개\n\n"
-            + "\n".join(f"  ✅ {r}" for r in recovered)
-        )
-        send_telegram(msg)
-        logger.info(f"🔄 놓친 스케줄 복구: {len(recovered)}개 — {', '.join(recovered)}")
-    else:
-        logger.info("✅ 놓친 스케줄 없음 (모두 정상)")
+        if recovered:
+            msg = (
+                f"<b>🔄 놓친 스케줄 복구 완료</b>\n"
+                f"⏰ {now.strftime('%Y-%m-%d %H:%M')}\n"
+                f"복구: {len(recovered)}개\n\n"
+                + "\n".join(f"  ✅ {r}" for r in recovered)
+            )
+            send_telegram(msg)
+            logger.info(f"🔄 놓친 스케줄 복구: {len(recovered)}개 — {', '.join(recovered)}")
+        else:
+            logger.info("✅ 놓친 스케줄 없음 (모두 정상)")
+    finally:
+        _missed_check_lock.release()
+
+
+# ============================================================
+# Wave 패턴 스캔
+# ============================================================
+
+def _run_wave_scan() -> bool:
+    """Wave 패턴 전 종목 스캔 (KR)"""
+    logger.info("=" * 60)
+    logger.info("🌊 Wave 패턴 스캔 시작 (KR)")
+    logger.info("=" * 60)
+
+    try:
+        from engine.wave.screener import run_wave_scan
+        result = run_wave_scan()
+        count = result.get('signal_count', 0)
+        elapsed = result.get('processing_time_sec', 0)
+        logger.info(f"🌊 Wave 스캔 완료: {count}개 패턴 ({elapsed}초)")
+
+        # DB 적재 + 시그널 추적 + 통계 갱신
+        try:
+            from app import create_app
+            app = create_app()
+            with app.app_context():
+                from app.services.wave_tracker import (
+                    save_screener_to_db, update_active_signals, refresh_pattern_stats
+                )
+                saved = save_screener_to_db(result)
+                logger.info(f"🌊 DB 적재: {saved}건 신규 시그널")
+                track_result = update_active_signals()
+                logger.info(f"🌊 시그널 추적: {track_result}")
+                refresh_pattern_stats()
+                logger.info("🌊 패턴 통계 갱신 완료")
+        except Exception as db_err:
+            logger.warning(f"⚠️ Wave DB 처리 실패 (스캔은 성공): {db_err}")
+
+        # S/A급 패턴 텔레그램 알림 (신뢰도 70 이상)
+        top_signals = [s for s in result.get('signals', [])
+                       if s['best_pattern']['confidence'] >= 70]
+        if top_signals:
+            lines = [f"<b>🌊 Wave 패턴 감지 ({len(top_signals)}개)</b>\n"]
+            for s in top_signals[:10]:
+                bp = s['best_pattern']
+                emoji = '🟢' if bp['bullish_bias'] > 0 else '🔴'
+                lines.append(
+                    f"{emoji} <b>{s['name']}</b> ({s['ticker']}) "
+                    f"| {bp['wave_label']} | 신뢰도 {bp['confidence']}점 "
+                    f"| 넥라인 {bp['neckline_distance_pct']:+.1f}%"
+                )
+            send_telegram('\n'.join(lines))
+
+        return True
+    except Exception as e:
+        logger.error(f"❌ Wave 스캔 실패: {e}", exc_info=True)
+        return False
 
 
 # ============================================================
@@ -1830,6 +2008,10 @@ class Scheduler:
             getattr(schedule.every(), day).at(Config.VCP_UPDATE_TIME).do(
                 self._with_record(run_vcp_all_markets, 'vcp_all',
                                   max_retries=1, retry_delay=600, verify_fn=vcp_kr_verify))
+            # 16:30 — Wave 패턴 스캔 (KR)
+            getattr(schedule.every(), day).at(Config.WAVE_SCAN_TIME).do(
+                self._with_record(_run_wave_scan, 'wave_scan',
+                                  max_retries=1, retry_delay=600))
 
         # 토요일 히스토리 수집
         schedule.every().saturday.at(Config.HISTORY_TIME).do(
@@ -1848,6 +2030,7 @@ class Scheduler:
         logger.info(f"   🇺🇸 평일 {Config.US_TRACK_TIME}  US Track Record 스냅샷")
         logger.info(f"   🇰🇷 평일 {Config.KR_UPDATE_TIME}  종가베팅 V2 + 수급/AI/리포트 → 텔레그램")
         logger.info(f"   📈 평일 {Config.VCP_UPDATE_TIME}  전 시장 VCP 시그널 (KR+US+Crypto) → 텔레그램")
+        logger.info(f"   🌊 평일 {Config.WAVE_SCAN_TIME}  Wave 패턴 스캔 (KR)")
         logger.info(f"   🇰🇷 토요일 {Config.HISTORY_TIME}  히스토리 수집")
         logger.info(f"   🪙 매 4시간 {', '.join(Config.CRYPTO_TIMES)}  Crypto 전체 파이프라인")
 
@@ -1865,9 +2048,23 @@ class Scheduler:
             f"📍 {Config.BASE_DIR}"
         )
 
+        last_missed_check = time.time()
+        MISSED_CHECK_INTERVAL = 300  # 5분마다 놓친 스케줄 점검
+
         while self.running:
             try:
                 schedule.run_pending()
+
+                # 주기적 놓친 스케줄 복구 (Windows sleep/hibernate 대응)
+                now = time.time()
+                if now - last_missed_check > MISSED_CHECK_INTERVAL:
+                    threading.Thread(
+                        target=check_and_run_missed_tasks,
+                        name="missed-task-recovery",
+                        daemon=True
+                    ).start()
+                    last_missed_check = now
+
             except Exception as e:
                 logger.error(f"❌ 스케줄 실행 중 예외 (데몬 유지): {e}", exc_info=True)
             time.sleep(30)
@@ -1904,10 +2101,49 @@ def main():
     parser.add_argument('--crypto-gate', action='store_true', help='Crypto Gate Check만')
     parser.add_argument('--crypto-scan', action='store_true', help='Crypto VCP Scan만')
 
+    # Wave Pattern
+    parser.add_argument('--wave-scan', action='store_true', help='Wave 패턴 스캔 (KR 전 종목)')
+
     args = parser.parse_args()
 
+    # ── PID 파일 기반 단일 인스턴스 (--daemon 모드) ──
+    if args.daemon:
+        pid_file = os.path.join(Config.LOG_DIR, 'scheduler.pid')
+        if os.path.exists(pid_file):
+            try:
+                with open(pid_file, 'r') as f:
+                    old_pid = int(f.read().strip())
+                # PID 생존 확인
+                result = subprocess.run(
+                    ['tasklist', '/FI', f'PID eq {old_pid}', '/NH', '/FO', 'CSV'],
+                    capture_output=True, text=True, timeout=10
+                )
+                if str(old_pid) in result.stdout:
+                    logger.warning(f"⚠️ Scheduler 이미 실행 중 (PID {old_pid}). 종료.")
+                    print(f"[SCHEDULER] 이미 실행 중 (PID {old_pid}). 종료.")
+                    sys.exit(0)
+            except (ValueError, IOError, subprocess.TimeoutExpired):
+                pass
+
+        # PID 기록
+        os.makedirs(Config.LOG_DIR, exist_ok=True)
+        with open(pid_file, 'w') as f:
+            f.write(str(os.getpid()))
+        logger.info(f"🔒 Scheduler PID 파일 생성 (PID {os.getpid()})")
+
+        def _cleanup_pid():
+            try:
+                if os.path.exists(pid_file):
+                    with open(pid_file, 'r') as f:
+                        pid = int(f.read().strip())
+                    if pid == os.getpid():
+                        os.remove(pid_file)
+            except Exception:
+                pass
+        atexit.register(_cleanup_pid)
+
     logger.info("=" * 60)
-    logger.info("🚀 MarketFlow 통합 스케줄러")
+    logger.info("🚀 MarketFlow 통합 스케줄러 (PID %d)", os.getpid())
     logger.info("=" * 60)
     logger.info(f"   BASE_DIR: {Config.BASE_DIR}")
     logger.info(f"   LOG_DIR:  {Config.LOG_DIR}")
@@ -1994,6 +2230,12 @@ def main():
 
     if args.crypto_scan:
         run_crypto_vcp_scan()
+        ran_any = True
+        if not args.daemon:
+            return
+
+    if args.wave_scan:
+        _run_wave_scan()
         ran_any = True
         if not args.daemon:
             return

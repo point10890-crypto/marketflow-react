@@ -1,0 +1,75 @@
+{
+  "name": "깨끗한나라",
+  "ticker": "004540.KS",
+  "result": "데이터 없음",
+  "date": "2026-03-27 21:35:50",
+  "elapsed": 2.0,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 2115.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 2115.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "KleanNara",
+    "sector": "Basic Materials",
+    "industry": "Paper & Paper Products",
+    "market_cap": 78761009152,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": null,
+    "beta": 0.315,
+    "fifty_two_week_high": 3065.0,
+    "fifty_two_week_low": 1780.0,
+    "revenue": 508201402368,
+    "profit_margin": -0.09349,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 131349733080
+    },
+    {
+      "date": "2025-06",
+      "value": 123536957210
+    },
+    {
+      "date": "2025-03",
+      "value": 130758852860
+    },
+    {
+      "date": "2024-12",
+      "value": 135149907170
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": -7516343380
+    },
+    {
+      "date": "2025-06",
+      "value": -11309770580
+    },
+    {
+      "date": "2025-03",
+      "value": -8316214580
+    },
+    {
+      "date": "2024-12",
+      "value": -2738083210
+    }
+  ],
+  "news": []
+}

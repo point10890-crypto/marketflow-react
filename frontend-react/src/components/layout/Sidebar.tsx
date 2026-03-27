@@ -7,6 +7,7 @@ interface NavItem {
     href: string;
     icon: string;
     color: string;
+    glow?: boolean;
     children?: { name: string; href: string; color: string }[];
 }
 
@@ -64,6 +65,13 @@ const navigation: NavItem[] = [
             { name: 'VCP Signals', href: '/dashboard/crypto/signals', color: 'bg-orange-500' },
         ],
 
+    },
+    {
+        name: 'W Pattern',
+        href: '/dashboard/wave',
+        icon: 'fa-wave-square',
+        color: 'text-pink-400',
+        glow: true,
     },
     {
         name: 'ProPicks',
@@ -149,8 +157,21 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                                     : 'text-gray-400 hover:text-white hover:bg-white/5 border border-transparent'
                                     }`}
                             >
-                                <i className={`fas ${item.icon} w-5 text-center text-base ${item.color}`}></i>
+                                {item.glow ? (
+                                    <span className="relative w-5 flex items-center justify-center">
+                                        <span className="absolute inset-0 w-5 h-5 rounded-md bg-pink-500/20 animate-pulse" />
+                                        <span className="absolute inset-0 w-5 h-5 rounded-md bg-pink-400/10 animate-ping" style={{ animationDuration: '2.5s' }} />
+                                        <i className={`fas ${item.icon} text-center text-base ${item.color} relative z-10 drop-shadow-[0_0_6px_rgba(236,72,153,0.6)]`}></i>
+                                    </span>
+                                ) : (
+                                    <i className={`fas ${item.icon} w-5 text-center text-base ${item.color}`}></i>
+                                )}
                                 <span>{item.name}</span>
+                                {item.glow && (
+                                    <span className="ml-auto text-[8px] font-bold tracking-wider px-1.5 py-0.5 rounded-full bg-pink-500/15 text-pink-400 border border-pink-500/20 animate-pulse" style={{ animationDuration: '2s' }}>
+                                        AI
+                                    </span>
+                                )}
                                 {hasChildren && (
                                     <i
                                         className={`fas fa-chevron-down text-xs ml-auto transition-transform ${isExpanded ? 'rotate-180' : ''
@@ -258,20 +279,22 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                 </div>
             </div>
 
-            {/* Data Status - bottom pinned */}
+            {/* Admin tools - bottom pinned */}
             <div className="px-3.5 pb-2 space-y-1">
-                <Link
-                    to="/dashboard/data-status"
-                    onClick={onNavigate}
-                    className={`flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-[13px] font-medium transition-all ${
-                        pathname === '/dashboard/data-status'
-                            ? 'text-white bg-white/5 border border-white/5'
-                            : 'text-gray-500 hover:text-gray-300 hover:bg-white/5 border border-transparent'
-                    }`}
-                >
-                    <i className="fas fa-database w-5 text-center text-sm text-gray-500"></i>
-                    <span>Data Status</span>
-                </Link>
+                {userRole === 'admin' && (
+                    <Link
+                        to="/admin/data-status"
+                        onClick={onNavigate}
+                        className={`flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-[13px] font-medium transition-all ${
+                            pathname === '/admin/data-status'
+                                ? 'text-white bg-white/5 border border-white/5'
+                                : 'text-gray-500 hover:text-gray-300 hover:bg-white/5 border border-transparent'
+                        }`}
+                    >
+                        <i className="fas fa-database w-5 text-center text-sm text-gray-500"></i>
+                        <span>Data Status</span>
+                    </Link>
+                )}
                 {userRole === 'admin' && (
                     <Link
                         to="/admin"

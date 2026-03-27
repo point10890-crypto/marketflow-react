@@ -1049,14 +1049,17 @@ def get_kr_vcp_report(date):
 def kr_screener_leading():
     """주도주 실시간 스크리닝 — 장중: 라이브 스캔, 장 마감: 마지막 유효 결과"""
     try:
-        from app.services.kis_screener import run_screening, load_latest, is_market_open, _result_cache
+        from app.services.kis_screener import run_screening, load_latest, is_market_open, _result_cache, _result_lock
         import time as _time
 
         market_open = is_market_open()
 
         # 1. 메모리 캐시 (3초 TTL)
-        if _result_cache["data"] and (_time.time() - _result_cache["ts"]) < 3:
-            resp = jsonify(_result_cache["data"])
+        with _result_lock:
+            cached_data = _result_cache["data"]
+            cached_ts = _result_cache["ts"]
+        if cached_data and (_time.time() - cached_ts) < 3:
+            resp = jsonify(cached_data)
             resp.headers['Cache-Control'] = 'no-cache, no-store'
             return resp
 
@@ -1110,9 +1113,9 @@ def kr_screener_status():
     """스크리너 상태"""
     try:
         from app.services import kis_screener
-        cache = kis_screener._result_cache
-        cache_ts = cache.get("ts", 0)
-        cache_data = cache.get("data")
+        with kis_screener._result_lock:
+            cache_ts = kis_screener._result_cache.get("ts", 0)
+            cache_data = kis_screener._result_cache.get("data")
         return jsonify({
             "market_open": kis_screener.is_market_open(),
             "market_status": kis_screener.get_market_status(),

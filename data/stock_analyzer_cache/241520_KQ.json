@@ -1,0 +1,83 @@
+{
+  "name": "DSC인베스트먼트",
+  "ticker": "241520.KQ",
+  "result": "데이터 없음",
+  "date": "2026-03-27 21:34:59",
+  "elapsed": 2.1,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 14960.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 14960.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "DSC Investment",
+    "sector": "Financial Services",
+    "industry": "Asset Management",
+    "market_cap": 385982496768,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": 0.3,
+    "beta": 1.31,
+    "fifty_two_week_high": 19700.0,
+    "fifty_two_week_low": 4065.0,
+    "revenue": 33759762432,
+    "profit_margin": 0.24716,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 8165554730
+    },
+    {
+      "date": "2025-06",
+      "value": 11473627040
+    },
+    {
+      "date": "2025-03",
+      "value": 6530122700
+    },
+    {
+      "date": "2024-12",
+      "value": 10839873950
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 741395070
+    },
+    {
+      "date": "2025-06",
+      "value": 4390817070
+    },
+    {
+      "date": "2025-03",
+      "value": -329553060
+    },
+    {
+      "date": "2024-12",
+      "value": 3541397530
+    }
+  ],
+  "news": [
+    {
+      "title": "Illimis secures funding for GAIA-based Alzheimer’s therapeutics",
+      "summary": "The company plans to utilise the funds to extend its research into immune disorders.",
+      "url": "https://www.pharmaceutical-technology.com/news/illimis-funding-alzheimers-therapeutics/",
+      "provider": "Pharmaceutical Technology",
+      "pub_time": "2025-07-14T15:22:58Z"
+    }
+  ]
+}

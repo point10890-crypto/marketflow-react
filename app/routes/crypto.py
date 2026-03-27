@@ -9,6 +9,7 @@
 import os
 import sys
 import json
+import logging
 import math
 import threading
 import subprocess
@@ -19,6 +20,8 @@ from app.auth.decorators import pro_required
 
 from app.utils.paths import BASE_DIR, DATA_DIR, CRYPTO_MARKET_DIR, CRYPTO_OUTPUT_DIR
 from app.utils.safety import safe_float, load_json_file
+
+logger = logging.getLogger(__name__)
 
 crypto_bp = Blueprint('crypto', __name__)
 
@@ -65,8 +68,8 @@ def _fetch_crypto_overview_live():
         os.makedirs(CRYPTO_OUTPUT_DIR, exist_ok=True)
         with open(snap_path, 'w', encoding='utf-8') as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning(f"[Crypto] Overview snapshot save failed: {e}")
     return data
 
 
@@ -148,8 +151,8 @@ def _compute_crypto_dominance_live():
             os.makedirs(os.path.dirname(snap_path), exist_ok=True)
             with open(snap_path, 'w', encoding='utf-8') as f:
                 json.dump(result, f, ensure_ascii=False, indent=2)
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning(f"[Crypto] Dominance snapshot save failed: {e}")
 
         return jsonify(result)
     except Exception as e:
@@ -308,8 +311,8 @@ def _generate_live_briefing():
                 'total_volume_24h': g.get('total_volume', {}).get('usd', 0),
                 'active_cryptocurrencies': g.get('active_cryptocurrencies', 0),
             }
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning(f"[CryptoBriefing] CoinGecko global failed: {e}")
 
     # 2. Major Coins
     try:
@@ -328,8 +331,8 @@ def _generate_live_briefing():
                     'volume_24h': coin.get('total_volume', 0),
                     'market_cap': coin.get('market_cap', 0),
                 }
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning(f"[CryptoBriefing] Major coins failed: {e}")
 
     # 3. Top Movers
     try:
@@ -349,8 +352,8 @@ def _generate_live_briefing():
             briefing['top_movers']['losers'] = [{'symbol': c['symbol'].upper(), 'name': c['name'],
                 'change_24h': c.get('price_change_percentage_24h', 0), 'price': c.get('current_price', 0)
             } for c in down[:5]]
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning(f"[CryptoBriefing] Top movers failed: {e}")
 
     # 4. Fear & Greed
     try:
@@ -363,8 +366,8 @@ def _generate_live_briefing():
             if len(fg) >= 2:
                 briefing['fear_greed']['previous'] = int(fg[1]['value'])
                 briefing['fear_greed']['change'] = briefing['fear_greed']['score'] - briefing['fear_greed']['previous']
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning(f"[CryptoBriefing] Fear & Greed failed: {e}")
 
     # 5. Funding Rates
     try:
@@ -380,8 +383,8 @@ def _generate_live_briefing():
                     'annualized_pct': round(ann, 1),
                     'sentiment': 'Bullish' if rate > 0.0001 else ('Bearish' if rate < -0.0001 else 'Neutral'),
                 }
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning(f"[CryptoBriefing] Funding rates failed: {e}")
 
     # 6. Cross-asset correlations
     try:
@@ -396,8 +399,8 @@ def _generate_live_briefing():
                     if t in returns.columns:
                         corr = returns['BTC-USD'].corr(returns[t])
                         briefing['macro_correlations']['btc_pairs'][labels[i]] = round(corr, 3) if not math.isnan(corr) else 0
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning(f"[CryptoBriefing] Cross-asset correlations failed: {e}")
 
     # 7. BTC price history (90d)
     try:
@@ -405,8 +408,8 @@ def _generate_live_briefing():
         hist = btc.history(period='90d')
         if not hist.empty:
             briefing['btc_price_history'] = [{'date': d.strftime('%Y-%m-%d'), 'price': round(float(r['Close']), 2)} for d, r in hist.iterrows()]
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning(f"[CryptoBriefing] BTC price history failed: {e}")
 
     # 8. Sentiment
     fg = briefing['fear_greed']['score']
@@ -821,6 +824,23 @@ def get_crypto_vcp_dates():
         return jsonify(dates)
     except Exception:
         return jsonify([]), 200
+
+
+@crypto_bp.route('/vcp-enhanced/history/<date>')
+def get_crypto_vcp_report(date):
+    """Crypto VCP 특정 날짜 리포트 반환 (date: YYYY-MM-DD)."""
+    try:
+        date_str = date.replace('-', '')
+        path = os.path.join(_DATA_DIR, f'vcp_crypto_{date_str}.json')
+        if not os.path.exists(path):
+            return jsonify({"error": f"No report for {date}"}), 404
+        with open(path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        resp = jsonify(data)
+        resp.headers['Cache-Control'] = 'public, max-age=3600'
+        return resp
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 @crypto_bp.route('/vcp-enhanced')

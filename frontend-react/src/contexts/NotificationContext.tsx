@@ -34,6 +34,7 @@ function loadFromStorage(): AppNotification[] {
         const cutoff = Date.now() - 24 * 60 * 60 * 1000;
         return parsed.filter(n => n.timestamp > cutoff).slice(0, MAX_NOTIFICATIONS);
     } catch {
+        localStorage.removeItem(STORAGE_KEY);
         return [];
     }
 }
@@ -77,7 +78,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
             });
             notification.onclick = () => {
                 window.focus();
-                if (link) window.location.hash = '';  // will navigate via React
+                if (link) window.location.href = link;
                 notification.close();
             };
         } catch { /* mobile may not support */ }

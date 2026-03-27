@@ -49,6 +49,7 @@ const UsEtfPage = lazy(() => import('@/pages/dashboard/us/UsEtfPage'));
 const CryptoOverviewPage = lazy(() => import('@/pages/dashboard/crypto/CryptoOverviewPage'));
 const CryptoSignalsPage = lazy(() => import('@/pages/dashboard/crypto/CryptoSignalsPage'));
 const StockAnalyzerPage = lazy(() => import('@/pages/dashboard/StockAnalyzerPage'));
+const WaveOverviewPage = lazy(() => import('@/pages/dashboard/wave/WaveOverviewPage'));
 const DataStatusPage = lazy(() => import('@/pages/dashboard/DataStatusPage'));
 const AdminPage = lazy(() => import('@/pages/admin/AdminPage'));
 const AdminUsersPage = lazy(() => import('@/pages/admin/AdminUsersPage'));
@@ -125,12 +126,13 @@ export default function App() {
                         <Route path="crypto" element={<Suspense fallback={<LoadingFallback />}><CryptoOverviewPage /></Suspense>} />
                         <Route path="crypto/signals" element={<Suspense fallback={<LoadingFallback />}><CryptoSignalsPage /></Suspense>} />
                         <Route path="stock-analyzer" element={<Suspense fallback={<LoadingFallback />}><StockAnalyzerPage /></Suspense>} />
-                        <Route path="data-status" element={<Suspense fallback={<LoadingFallback />}><DataStatusPage /></Suspense>} />
+                        <Route path="wave" element={<Suspense fallback={<LoadingFallback />}><WaveOverviewPage /></Suspense>} />
                     </Route>
 
                     {/* Admin routes */}
                     <Route path="/admin" element={<AdminGuard><DashboardLayout /></AdminGuard>}>
                         <Route index element={<Suspense fallback={<LoadingFallback />}><AdminPage /></Suspense>} />
+                        <Route path="data-status" element={<Suspense fallback={<LoadingFallback />}><DataStatusPage /></Suspense>} />
                         <Route path="users" element={<Suspense fallback={<LoadingFallback />}><AdminUsersPage /></Suspense>} />
                         <Route path="subscriptions" element={<Suspense fallback={<LoadingFallback />}><AdminSubscriptionsPage /></Suspense>} />
                         <Route path="system" element={<Suspense fallback={<LoadingFallback />}><AdminSystemPage /></Suspense>} />

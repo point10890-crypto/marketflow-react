@@ -1,0 +1,110 @@
+{
+  "name": "에이피알",
+  "ticker": "278470.KS",
+  "result": "적극 매수",
+  "date": "2026-03-27 21:32:28",
+  "elapsed": 1.9,
+  "consensus_score": 4.35,
+  "analyst_count": 26,
+  "recommendation_detail": {
+    "strongBuy": 9,
+    "buy": 17,
+    "hold": 0,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 327000.0,
+    "high": 450000.0,
+    "low": 275000.0,
+    "mean": 368961.53,
+    "median": 360000.0
+  },
+  "current_price": 327000.0,
+  "upside_potential": 12.8,
+  "key_stats": {
+    "name": "APR",
+    "sector": "Consumer Defensive",
+    "industry": "Household & Personal Products",
+    "market_cap": 12242276843520,
+    "pe_ratio": null,
+    "forward_pe": 21.860647,
+    "dividend_yield": 1.64,
+    "beta": 1.708,
+    "fifty_two_week_high": 377000.0,
+    "fifty_two_week_low": 60000.0,
+    "revenue": 1527344922624,
+    "profit_margin": 0.18965,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "에이피알(278470.KS)은 애널리스트 컨센서스 '적극 매수' 의견을 받고 있습니다. 26명의 애널리스트가 참여한 컨센서스 점수는 5점 만점에 4.35점입니다. 목표가 평균은 368,962원으로, 현재가 대비 12.8% 상승 여력이 있습니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 385942757340
+    },
+    {
+      "date": "2025-06",
+      "value": 327734894610
+    },
+    {
+      "date": "2025-03",
+      "value": 266032725960
+    },
+    {
+      "date": "2024-12",
+      "value": 244214607580
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 74634440010
+    },
+    {
+      "date": "2025-06",
+      "value": 66309082290
+    },
+    {
+      "date": "2025-03",
+      "value": 49941244110
+    },
+    {
+      "date": "2024-12",
+      "value": 43390899350
+    }
+  ],
+  "news": [
+    {
+      "title": "Insider-Owned Growth Companies In Global For December 2025",
+      "summary": "As global markets navigate the anticipation of potential interest rate cuts and mixed economic signals, investors are closely watching growth companies with significant insider ownership. Such compani",
+      "url": "https://finance.yahoo.com/news/insider-owned-growth-companies-global-093551615.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2025-12-08T09:35:51Z"
+    },
+    {
+      "title": "APR Co Ltd (XKRX:278470) Q3 2025 Earnings Call Highlights: Record Revenue and Strategic Growth ...",
+      "summary": "APR Co Ltd (XKRX:278470) reports a 122% revenue surge and strategic expansion in the US market, while addressing challenges in non-core divisions and European market penetration.",
+      "url": "https://finance.yahoo.com/news/apr-co-ltd-xkrx-278470-070047632.html",
+      "provider": "GuruFocus.com",
+      "pub_time": "2025-11-06T07:00:47Z"
+    },
+    {
+      "title": "3 Asian Growth Companies With Insider Ownership Up To 36%",
+      "summary": "As global markets navigate a complex landscape marked by rate cuts and trade truces, Asian economies are also feeling the ripple effects of these developments. Amidst this backdrop, growth companies w",
+      "url": "https://finance.yahoo.com/news/3-asian-growth-companies-insider-043541934.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2025-11-06T04:35:41Z"
+    },
+    {
+      "title": "Top Asian Growth Companies With Significant Insider Ownership",
+      "summary": "As Asian markets navigate a landscape marked by mixed economic signals and evolving monetary policies, investors are increasingly focusing on growth opportunities within the region. In this context, c",
+      "url": "https://finance.yahoo.com/news/top-asian-growth-companies-significant-043538591.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2025-10-08T04:35:38Z"
+    }
+  ]
+}

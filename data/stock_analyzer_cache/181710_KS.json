@@ -1,0 +1,110 @@
+{
+  "name": "NHN",
+  "ticker": "181710.KS",
+  "result": "매수",
+  "date": "2026-03-27 21:34:10",
+  "elapsed": 1.7,
+  "consensus_score": 4.1,
+  "analyst_count": 10,
+  "recommendation_detail": {
+    "strongBuy": 3,
+    "buy": 5,
+    "hold": 2,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 41850.0,
+    "high": 48000.0,
+    "low": 24800.0,
+    "mean": 37780.0,
+    "median": 40000.0
+  },
+  "current_price": 41850.0,
+  "upside_potential": -9.7,
+  "key_stats": {
+    "name": "NHN",
+    "sector": "Communication Services",
+    "industry": "Electronic Gaming & Multimedia",
+    "market_cap": 1307589869568,
+    "pe_ratio": null,
+    "forward_pe": 12.104997,
+    "dividend_yield": 1.35,
+    "beta": 0.725,
+    "fifty_two_week_high": 44150.0,
+    "fifty_two_week_low": 17420.0,
+    "revenue": 2474560454656,
+    "profit_margin": -0.01849,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "NHN(181710.KS)에 대해 10명의 애널리스트가 제시한 컨센서스 의견은 '매수'입니다. 목표가 평균은 37,780원으로 현재가 41,850원 대비 -9.7% 하락 여력이 있습니다. 따라서 현재 주가는 애널리스트들이 제시한 목표가 평균을 상회하고 있습니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 625602175660
+    },
+    {
+      "date": "2025-06",
+      "value": 604887356990
+    },
+    {
+      "date": "2025-03",
+      "value": 600129016160
+    },
+    {
+      "date": "2024-12",
+      "value": 643941812460
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 12087721840
+    },
+    {
+      "date": "2025-06",
+      "value": 9050182080
+    },
+    {
+      "date": "2025-03",
+      "value": -3751502420
+    },
+    {
+      "date": "2024-12",
+      "value": -63137504030
+    }
+  ],
+  "news": [
+    {
+      "title": "NHN Entertainment Corp (XKRX:181710) Q4 2025 Earnings Call Highlights: Record Growth and ...",
+      "summary": "NHN Entertainment Corp (XKRX:181710) reports robust Q4 and full-year 2025 results, driven by strategic business streamlining and regulatory tailwinds.",
+      "url": "https://finance.yahoo.com/news/nhn-entertainment-corp-xkrx-181710-010730694.html",
+      "provider": "GuruFocus.com",
+      "pub_time": "2026-02-13T01:07:30Z"
+    },
+    {
+      "title": "NHN Entertainment Corp (XKRX:181710) Q4 2025 Earnings Call Highlights: Record Performance and ...",
+      "summary": "NHN Entertainment Corp (XKRX:181710) reports robust Q4 2025 results with significant revenue and profit growth, driven by strategic business optimization and regulatory impacts.",
+      "url": "https://finance.yahoo.com/news/nhn-entertainment-corp-xkrx-181710-010540374.html",
+      "provider": "GuruFocus.com",
+      "pub_time": "2026-02-13T01:05:40Z"
+    },
+    {
+      "title": "NHN Entertainment Corp (XKRX:181710) Q3 2025 Earnings Call Highlights: Strong Revenue Growth ...",
+      "summary": "NHN Entertainment Corp reports robust financial performance with significant gains in mobile gaming and payment services, while navigating challenges in PC gaming and other business sectors.",
+      "url": "https://finance.yahoo.com/news/nhn-entertainment-corp-xkrx-181710-070037368.html",
+      "provider": "GuruFocus.com",
+      "pub_time": "2025-11-10T07:00:37Z"
+    },
+    {
+      "title": "NHN Entertainment Corp (XKRX:181710) Q2 2025 Earnings Call Highlights: Strategic Growth Amidst ...",
+      "summary": "NHN Entertainment Corp (XKRX:181710) outlines robust growth in gaming and cloud sectors, despite facing profit margin pressures and commerce revenue declines.",
+      "url": "https://finance.yahoo.com/news/nhn-entertainment-corp-xkrx-181710-070825253.html",
+      "provider": "GuruFocus.com",
+      "pub_time": "2025-08-12T07:08:25Z"
+    }
+  ]
+}

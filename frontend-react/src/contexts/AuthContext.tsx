@@ -57,7 +57,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                         if (data?.user) {
                             setUserFromData(data.user);
                         }
-                    }).catch(() => {});
+                    }).catch((err) => {
+                        console.warn('[Auth] Session check failed:', err.message || err);
+                    });
                 }
             }
         }

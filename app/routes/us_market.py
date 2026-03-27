@@ -3,7 +3,9 @@
 
 import os
 import json
+import logging
 import traceback
+from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
 from datetime import datetime
 import pandas as pd
 import yfinance as yf
@@ -12,6 +14,23 @@ from flask import Blueprint, jsonify, request
 from app.utils.cache import get_sector
 from app.utils.paths import BASE_DIR, US_MARKET_DIR, US_OUTPUT_DIR, US_DATA_DIR, US_HISTORY_DIR, US_PREVIEW_DIR
 from app.utils.safety import safe_float, safe_str
+
+logger = logging.getLogger(__name__)
+
+_yf_executor = ThreadPoolExecutor(max_workers=2, thread_name_prefix='yfinance')
+
+
+def _yf_history_with_timeout(ticker_str, timeout=15, **kwargs):
+    """yf.Ticker().history() with timeout via ThreadPoolExecutor."""
+    def _fetch():
+        return yf.Ticker(ticker_str).history(**kwargs)
+    future = _yf_executor.submit(_fetch)
+    try:
+        return future.result(timeout=timeout)
+    except FuturesTimeoutError:
+        logger.warning(f"[yfinance] Timeout fetching {ticker_str} history (>{timeout}s)")
+        future.cancel()
+        return pd.DataFrame()
 
 us_bp = Blueprint('us', __name__)
 
@@ -34,8 +53,7 @@ def _fetch_portfolio_live():
     }
     for ticker, name in indices_map.items():
         try:
-            stock = yf.Ticker(ticker)
-            hist = stock.history(period='5d')
+            hist = _yf_history_with_timeout(ticker, timeout=10, period='5d')
             if not hist.empty and len(hist) >= 2:
                 current_val = float(hist['Close'].iloc[-1])
                 prev_val = float(hist['Close'].iloc[-2])
@@ -54,8 +72,8 @@ def _fetch_portfolio_live():
         snap_path = os.path.join(_OUTPUT_DIR, 'portfolio_snapshot.json')
         with open(snap_path, 'w', encoding='utf-8') as f:
             json.dump(result, f, ensure_ascii=False, indent=2)
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning(f"[Portfolio] Snapshot save failed: {e}")
     return result
 
 
@@ -145,7 +163,7 @@ def _compute_smart_money_live(sort_by='composite', lang='ko'):
         
         try:
             if tickers:
-                data = yf.download(tickers, period='1d', interval='1m', progress=False, threads=True)
+                data = yf.download(tickers, period='1d', interval='1m', progress=False, threads=True, timeout=10)
                 if hasattr(data, 'columns') and isinstance(data.columns, pd.MultiIndex):
                     closes = data['Close'].iloc[-1]
                     for t in tickers:
@@ -199,8 +217,8 @@ def _compute_smart_money_live(sort_by='composite', lang='ko'):
             snap_path = os.path.join(_OUTPUT_DIR, 'smart_money_snapshot.json')
             with open(snap_path, 'w', encoding='utf-8') as f:
                 json.dump(result, f, ensure_ascii=False, indent=2)
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning(f"[SmartMoney] Snapshot save failed: {e}")
         return jsonify(result)
     except Exception as e:
         traceback.print_exc()
@@ -260,12 +278,11 @@ def get_us_stock_chart(ticker):
         period = request.args.get('period', '1y')
         interval = request.args.get('interval', '1d')
         
-        stock = yf.Ticker(ticker)
-        hist = stock.history(period=period, interval=interval)
-        
+        hist = _yf_history_with_timeout(ticker, timeout=15, period=period, interval=interval)
+
         if hist.empty:
             return jsonify({'error': 'No data found'}), 404
-        
+
         chart_data = []
         for date, row in hist.iterrows():
             chart_data.append({
@@ -276,7 +293,7 @@ def get_us_stock_chart(ticker):
                 'close': round(row['Close'], 2),
                 'volume': int(row['Volume'])
             })
-        
+
         return jsonify({
             'ticker': ticker,
             'data': chart_data,
@@ -532,7 +549,7 @@ def _compute_cumulative_performance_live():
         earliest_date = snap_files[0][6:-5]  # picks_YYYY-MM-DD.json
 
         # Fetch SPY via yfinance for benchmark
-        spy_hist = yf.Ticker('SPY').history(start=earliest_date, auto_adjust=True)
+        spy_hist = _yf_history_with_timeout('SPY', timeout=15, start=earliest_date, auto_adjust=True)
         spy_prices = {}
         if not spy_hist.empty:
             for idx, row in spy_hist.iterrows():
@@ -631,8 +648,8 @@ def _compute_cumulative_performance_live():
             snap_path = os.path.join(_OUTPUT_DIR, 'cumulative_perf_snapshot.json')
             with open(snap_path, 'w', encoding='utf-8') as f:
                 json.dump(result, f, ensure_ascii=False, indent=2)
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning(f"[CumulativePerf] Snapshot save failed: {e}")
         return jsonify(result)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -781,12 +798,11 @@ def get_technical_indicators(ticker):
     try:
         from app.utils.helpers import calculate_rsi
         
-        stock = yf.Ticker(ticker)
-        hist = stock.history(period='1y')
-        
+        hist = _yf_history_with_timeout(ticker, timeout=15, period='1y')
+
         if hist.empty:
             return jsonify({'error': 'No data found'}), 404
-        
+
         # Calculate indicators
         hist['MA20'] = hist['Close'].rolling(20).mean()
         hist['MA50'] = hist['Close'].rolling(50).mean()
@@ -930,8 +946,7 @@ def us_market_gate():
         except ImportError as e:
             # Fallback to simple logic
             print(f"Enhanced market_gate not available: {e}")
-            spy = yf.Ticker('SPY')
-            hist = spy.history(period='200d')
+            hist = _yf_history_with_timeout('SPY', timeout=15, period='200d')
 
             if len(hist) < 200:
                 return jsonify({'status': 'NEUTRAL', 'score': 50, 'gate': 'YELLOW', 'metrics': {'rsi': None, 'vix': None, 'spy_price': None}})
@@ -949,7 +964,7 @@ def us_market_gate():
 
             # Get VIX
             try:
-                vix_data = yf.Ticker('^VIX').history(period='5d')
+                vix_data = _yf_history_with_timeout('^VIX', timeout=10, period='5d')
                 vix = float(vix_data['Close'].iloc[-1]) if not vix_data.empty else None
             except Exception:
                 vix = None
@@ -1391,8 +1406,8 @@ def _compute_decision_signal_live():
             from us_market.market_gate import run_us_market_gate
             gate_result = run_us_market_gate()
             gate_score = gate_result.score
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning(f"[DecisionSignal] Market Gate failed: {e}")
         gate_contribution = round((gate_score - 50) / 50 * 15, 1)
         score += gate_contribution
         components['market_gate'] = {'score': gate_score, 'contribution': gate_contribution}
@@ -1409,8 +1424,8 @@ def _compute_decision_signal_live():
                 regime_map = {'risk_on': 15, 'neutral': 0, 'risk_off': -15, 'crisis': -25}
                 regime_contribution = regime_map.get(regime_str, 0)
                 score += regime_contribution
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning(f"[DecisionSignal] Regime load failed: {e}")
         components['regime'] = {'regime': regime_str, 'contribution': regime_contribution}
 
         # 3. Index Prediction (SPY bullish probability)
@@ -1428,8 +1443,8 @@ def _compute_decision_signal_live():
                 elif spy_bullish <= 40:
                     pred_contribution = -10
                 score += pred_contribution
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning(f"[DecisionSignal] Prediction load failed: {e}")
         components['prediction'] = {'spy_bullish': round(spy_bullish, 1), 'contribution': pred_contribution}
 
         # 4. Risk Level
@@ -1448,8 +1463,8 @@ def _compute_decision_signal_live():
                 for alert in risk_data.get('alerts', []):
                     if alert.get('severity') in ('critical', 'warning'):
                         warnings.append(alert.get('message', ''))
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning(f"[DecisionSignal] Risk load failed: {e}")
         components['risk'] = {'level': risk_level, 'contribution': risk_contribution}
 
         # 5. Sector Phase
@@ -1464,8 +1479,8 @@ def _compute_decision_signal_live():
                 phase_map = {'Early Cycle': 10, 'Mid Cycle': 5, 'Late Cycle': -5, 'Recession': -15}
                 phase_contribution = phase_map.get(phase, 0)
                 score += phase_contribution
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning(f"[DecisionSignal] Sector rotation load failed: {e}")
         components['sector_phase'] = {'phase': phase, 'contribution': phase_contribution}
 
         # Clamp score
@@ -1502,8 +1517,8 @@ def _compute_decision_signal_live():
                         'ai_recommendation': pick.get('ai_recommendation', ''),
                         'target_upside': pick.get('target_upside', 0),
                     })
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning(f"[DecisionSignal] Top picks load failed: {e}")
 
         result = {
             'action': action,
@@ -1518,8 +1533,8 @@ def _compute_decision_signal_live():
             snap_path = os.path.join(_OUTPUT_DIR, 'decision_signal_snapshot.json')
             with open(snap_path, 'w', encoding='utf-8') as f:
                 json.dump(result, f, ensure_ascii=False, indent=2)
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning(f"[DecisionSignal] Snapshot save failed: {e}")
         return jsonify(result)
     except Exception as e:
         traceback.print_exc()
@@ -1637,8 +1652,7 @@ def get_smart_money_detail(ticker):
 
         # 2. Get Chart Data (6 months daily)
         try:
-            stock = yf.Ticker(ticker)
-            hist = stock.history(period='6mo', interval='1d')
+            hist = _yf_history_with_timeout(ticker, timeout=15, period='6mo', interval='1d')
 
             if not hist.empty:
                 # Current price & change
@@ -1883,6 +1897,23 @@ def get_us_vcp_dates():
         return jsonify(dates)
     except Exception:
         return jsonify([]), 200
+
+
+@us_bp.route('/vcp-enhanced/history/<date>')
+def get_us_vcp_report(date):
+    """US VCP 특정 날짜 리포트 반환 (date: YYYY-MM-DD)."""
+    try:
+        date_str = date.replace('-', '')
+        path = os.path.join(BASE_DIR, 'data', f'vcp_us_{date_str}.json')
+        if not os.path.exists(path):
+            return jsonify({"error": f"No report for {date}"}), 404
+        with open(path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        resp = jsonify(data)
+        resp.headers['Cache-Control'] = 'public, max-age=3600'
+        return resp
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 @us_bp.route('/vcp-enhanced')

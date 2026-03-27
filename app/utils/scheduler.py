@@ -36,12 +36,8 @@ _blocked = ['kr_market_package', 'OneDrive', '바탕 화면', 'desktop',
             'closing_bet', 'us-market-pro', 'korean market']
 sys.path = [p for p in sys.path if not any(b.lower() in p.lower() for b in _blocked)]
 
-# ── 고정 경로 ──────────────────────────────────────────────
-_APP_DIR = os.path.dirname(os.path.abspath(__file__))       # app/utils/
-_APP_ROOT = os.path.dirname(_APP_DIR)                        # app/
-BASE_DIR = os.path.dirname(_APP_ROOT)                        # project root
-DATA_DIR = os.path.join(BASE_DIR, 'data')
-LOG_DIR = os.path.join(BASE_DIR, 'logs')
+# ── 고정 경로 (중앙 paths.py에서 임포트) ──────────────────
+from app.utils.paths import BASE_DIR, DATA_DIR, LOGS_DIR as LOG_DIR
 
 logger = logging.getLogger('cloud_scheduler')
 
@@ -354,7 +350,7 @@ def _run_us_market_update():
 def _send_us_smart_money_telegram():
     """US Smart Money Top 5 텔레그램"""
     try:
-        picks_path = os.path.join(BASE_DIR, 'us_market_preview', 'output', 'top_picks.json')
+        picks_path = os.path.join(BASE_DIR, 'us_market', 'output', 'top_picks.json')
         if not os.path.exists(picks_path):
             return
 

@@ -35,6 +35,7 @@ export function getUser(): AuthUserData | null {
         if (!raw) return null;
         return JSON.parse(raw) as AuthUserData;
     } catch {
+        localStorage.removeItem(USER_KEY);
         return null;
     }
 }

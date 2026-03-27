@@ -80,7 +80,10 @@ def login():
 @auth_bp.route('/me')
 @login_required
 def me():
-    return jsonify({'user': request.current_user.to_dict()})
+    user = request.current_user
+    if user is None:
+        return jsonify({'error': 'Authentication required'}), 401
+    return jsonify({'user': user.to_dict()})
 
 
 # ═══════════════════════════════════════════════════════

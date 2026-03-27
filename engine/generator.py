@@ -44,9 +44,12 @@ def _get_kst_now():
         return datetime.now(kst)
 
 
+_api_semaphore = asyncio.Semaphore(5)  # Max 5 concurrent stock analyses
+
+
 class SignalGenerator:
     """종가베팅 시그널 생성기 (v2)"""
-    
+
     def __init__(
         self,
         config: SignalConfig = None,
@@ -133,6 +136,11 @@ class SignalGenerator:
             print(f"    ⚠ Analyst fetch failed for {stock.name}: {e}")
             return None
 
+    async def _analyze_with_limit(self, stock: StockData, target_date: date) -> Optional[Signal]:
+        """Semaphore-based concurrency control for stock analysis"""
+        async with _api_semaphore:
+            return await self._analyze_stock(stock, target_date)
+
     async def generate(
         self,
         target_date: date = None,
@@ -141,49 +149,48 @@ class SignalGenerator:
     ) -> List[Signal]:
         """
         시그널 생성
-        
+
         Args:
             target_date: 대상 날짜 (기본: 오늘)
             markets: 대상 시장 (기본: KOSPI, KOSDAQ)
             top_n: 상승률 상위 N개 종목
-        
+
         Returns:
             Signal 리스트 (등급순 정렬)
         """
         target_date = target_date or date.today()
-        # markets = markets or ["KOSPI", "KOSDAQ"]
-        markets = markets or ["KOSPI", "KOSDAQ"] 
-        
+        markets = markets or ["KOSPI", "KOSDAQ"]
+
         all_signals = []
-        
+
         for market in markets:
             print(f"\n[{market}] 상승률 상위 종목 스크리닝...")
-            
+
             # 1. 상승률 상위 종목 조회
             candidates = await self._collector.get_top_gainers(market, top_n)
             print(f"  - 1차 필터 통과: {len(candidates)}개")
-            
-            # 2. 각 종목 분석
-            for i, stock in enumerate(candidates):
-                print(f"  [{i+1}/{len(candidates)}] {stock.name}({stock.code}) 분석 중...", end='\r')
-                
-                signal = await self._analyze_stock(stock, target_date)
-                
+
+            # 2. 각 종목 분석 (semaphore로 최대 5개 동시 실행)
+            tasks = [self._analyze_with_limit(stock, target_date) for stock in candidates]
+            results = await asyncio.gather(*tasks, return_exceptions=True)
+
+            for i, result in enumerate(results):
+                if isinstance(result, Exception):
+                    print(f"  [{i+1}/{len(candidates)}] {candidates[i].name} 분석 실패: {result}")
+                    continue
+                signal = result
                 if signal and signal.grade in (Grade.S, Grade.A):
                     all_signals.append(signal)
-                    print(f"\n    ✅ {stock.name}: {signal.grade.value}급 시그널 생성! (점수: {signal.score.total})")
-                
-                # Rate limiting
-                # await asyncio.sleep(0.1) # 너무 느려지면 제거
-        
+                    print(f"    ✅ {candidates[i].name}: {signal.grade.value}급 시그널 생성! (점수: {signal.score.total})")
+
         # 3. 등급순 정렬 (S > A > B)
         grade_order = {Grade.S: 0, Grade.A: 1, Grade.B: 2, Grade.C: 3}
         all_signals.sort(key=lambda s: (grade_order[s.grade], -s.score.total))
-        
+
         # 4. 최대 포지션 수 제한
         if len(all_signals) > self.config.max_positions:
             all_signals = all_signals[:self.config.max_positions]
-        
+
         print(f"\n총 {len(all_signals)}개 시그널 생성 완료")
         return all_signals
     
@@ -233,9 +240,6 @@ class SignalGenerator:
             llm_result = None
             dart_text = self.dart_collector.format_for_llm(dart_result) if dart_result else ""
             if (news_list or dart_text) and self.llm_analyzer.model:
-                # Gemini Rate Limit 방지 (3.0 유료 모델 테스트: 2초)
-                await asyncio.sleep(2)
-
                 print(f"    [LLM] Analyzing {stock.name} news...")
                 news_dicts = [{"title": n.title, "summary": n.summary} for n in news_list]
                 llm_result = await self.llm_analyzer.analyze_news_sentiment(stock.name, news_dicts, dart_text)

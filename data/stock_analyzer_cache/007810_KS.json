@@ -1,0 +1,89 @@
+{
+  "name": "코리아써키트",
+  "ticker": "007810.KS",
+  "result": "적극 매수",
+  "date": "2026-03-27 21:29:55",
+  "elapsed": 1.6,
+  "consensus_score": 4.33,
+  "analyst_count": 3,
+  "recommendation_detail": {
+    "strongBuy": 1,
+    "buy": 2,
+    "hold": 0,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 84000.0,
+    "high": 93000.0,
+    "low": 82000.0,
+    "mean": 89000.0,
+    "median": 92000.0
+  },
+  "current_price": 84000.0,
+  "upside_potential": 6.0,
+  "key_stats": {
+    "name": "KorCirc",
+    "sector": "Technology",
+    "industry": "Electronic Components",
+    "market_cap": 2329405030400,
+    "pe_ratio": null,
+    "forward_pe": 15.57671,
+    "dividend_yield": 0.12,
+    "beta": 1.405,
+    "fifty_two_week_high": 87400.0,
+    "fifty_two_week_low": 8790.0,
+    "revenue": 1396882014208,
+    "profit_margin": -0.06063,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "코리아써키트는 현재 84,000원에 거래되고 있으며, 애널리스트 컨센서스는 5점 만점 중 4.33점으로 '적극 매수' 의견을 보이고 있습니다. 제시된 목표가 평균은 89,000원으로, 현재 주가 대비 약 6%의 상승 여력이 존재합니다. 총 3명의 애널리스트가 분석에 참여했습니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 375651814660
+    },
+    {
+      "date": "2025-06",
+      "value": 331347811710
+    },
+    {
+      "date": "2025-03",
+      "value": 354587792750
+    },
+    {
+      "date": "2024-12",
+      "value": 335294573580
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 11637141480
+    },
+    {
+      "date": "2025-06",
+      "value": 6990891880
+    },
+    {
+      "date": "2025-03",
+      "value": 1117572590
+    },
+    {
+      "date": "2024-12",
+      "value": -104431661550
+    }
+  ],
+  "news": [
+    {
+      "title": "Discover 3 Asian Growth Companies With High Insider Ownership",
+      "summary": "As global markets navigate a complex landscape marked by interest rate expectations and economic shifts, Asian markets continue to capture investor attention with their unique growth opportunities. In",
+      "url": "https://finance.yahoo.com/news/discover-3-asian-growth-companies-223802994.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2025-12-07T22:38:02Z"
+    }
+  ]
+}

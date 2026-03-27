@@ -12,7 +12,7 @@ import subprocess
 from flask import Blueprint, jsonify, request, Response, stream_with_context
 
 from app.utils.cache import get_sector, SECTOR_MAP
-from app.utils.paths import BASE_DIR, DATA_DIR
+from app.utils.paths import BASE_DIR, DATA_DIR, US_OUTPUT_DIR, CRYPTO_OUTPUT_DIR
 
 logger = logging.getLogger(__name__)
 
@@ -465,76 +465,152 @@ def get_data_status():
     
     # Check these data files
     data_files_to_check = [
+        # ── KR Market ──
         {
             'name': 'Daily Prices',
             'path': os.path.join(DATA_DIR, 'daily_prices.csv'),
-            'link': '/dashboard/kr/closing-bet',
-            'menu': 'Closing Bet'
-        },
-        {
-            'name': 'Institutional Trend',
-            'path': os.path.join(DATA_DIR, 'all_institutional_trend_data.csv'),
-            'link': '/dashboard/kr/vcp',
-            'menu': 'VCP Signals'
-        },
-        {
-            'name': 'AI Analysis',
-            'path': os.path.join(DATA_DIR, 'kr_ai_analysis.json'),
-            'link': '/dashboard/kr/vcp',
-            'menu': 'VCP Signals'
-        },
-        {
-            'name': 'VCP Signals',
-            'path': os.path.join(DATA_DIR, 'signals_log.csv'),
-            'link': '/dashboard/kr/vcp',
-            'menu': 'VCP Signals'
+            'link': '/dashboard/kr/vcp-enhanced',
+            'menu': 'VCP Enhanced',
+            'updateType': 'prices'
         },
         {
             'name': 'AI Jongga V2',
             'path': os.path.join(DATA_DIR, 'jongga_v2_latest.json'),
             'link': '/dashboard/kr/closing-bet',
-            'menu': 'Closing Bet'
+            'menu': 'Closing Bet',
+            'updateType': 'jongga_v2'
+        },
+        {
+            'name': 'Leading LIVE',
+            'path': os.path.join(DATA_DIR, 'screener_leading_latest.json'),
+            'link': '/dashboard/kr/leading-stocks',
+            'menu': 'Leading LIVE',
+            'updateType': 'leading'
+        },
+        {
+            'name': 'Market Gate',
+            'path': os.path.join(DATA_DIR, 'market_gate_cache.json'),
+            'link': '/dashboard/kr',
+            'menu': 'KR Summary',
+            'updateType': 'vcp_full'
+        },
+        {
+            'name': 'Institutional Trend',
+            'path': os.path.join(DATA_DIR, 'all_institutional_trend_data.csv'),
+            'link': '/dashboard/kr/vcp',
+            'menu': 'VCP Signals',
+            'updateType': 'institutional'
+        },
+        {
+            'name': 'VCP Signals',
+            'path': os.path.join(DATA_DIR, 'signals_log.csv'),
+            'link': '/dashboard/kr/vcp',
+            'menu': 'VCP Signals',
+            'updateType': 'vcp_signals'
+        },
+        {
+            'name': 'KR VCP Enhanced',
+            'path': os.path.join(DATA_DIR, 'vcp_kr_latest.json'),
+            'link': '/dashboard/kr/vcp-enhanced',
+            'menu': 'VCP Enhanced',
+            'updateType': 'vcp_kr'
+        },
+        {
+            'name': 'US VCP Enhanced',
+            'path': os.path.join(DATA_DIR, 'vcp_us_latest.json'),
+            'link': '/dashboard/us/vcp',
+            'menu': 'VCP Enhanced',
+            'updateType': 'vcp_us'
+        },
+        # ── US Market ──
+        {
+            'name': 'US Smart Money',
+            'path': os.path.join(US_OUTPUT_DIR, 'smart_money_snapshot.json'),
+            'link': '/dashboard/us',
+            'menu': 'US Dashboard',
+            'updateType': 'us_market'
+        },
+        {
+            'name': 'US Decision Signal',
+            'path': os.path.join(US_OUTPUT_DIR, 'decision_signal_snapshot.json'),
+            'link': '/dashboard/us',
+            'menu': 'US Dashboard',
+            'updateType': 'us_market'
+        },
+        {
+            'name': 'US Sector Heatmap',
+            'path': os.path.join(US_OUTPUT_DIR, 'sector_heatmap.json'),
+            'link': '/dashboard/us/heatmap',
+            'menu': 'US Heatmap',
+            'updateType': 'us_market'
+        },
+        {
+            'name': 'US Earnings',
+            'path': os.path.join(US_OUTPUT_DIR, 'earnings_impact.json'),
+            'link': '/dashboard/us/earnings',
+            'menu': 'US Earnings',
+            'updateType': 'us_market'
+        },
+        {
+            'name': 'US Portfolio',
+            'path': os.path.join(US_OUTPUT_DIR, 'portfolio_snapshot.json'),
+            'link': '/dashboard/us/portfolio',
+            'menu': 'US Portfolio',
+            'updateType': 'us_market'
         },
         # ── Crypto Analytics ──
         {
-            'name': 'Crypto Market Gate',
-            'path': os.path.join(BASE_DIR, 'crypto-analytics', 'crypto_market', 'output', 'market_gate.json'),
+            'name': 'Crypto Overview',
+            'path': os.path.join(CRYPTO_OUTPUT_DIR, 'overview_snapshot.json'),
             'link': '/dashboard/crypto',
-            'menu': 'Crypto Overview'
+            'menu': 'Crypto Overview',
+            'updateType': 'crypto_all'
+        },
+        {
+            'name': 'Crypto Market Gate',
+            'path': os.path.join(CRYPTO_OUTPUT_DIR, 'market_gate.json'),
+            'link': '/dashboard/crypto',
+            'menu': 'Crypto Overview',
+            'updateType': 'crypto_gate'
         },
         {
             'name': 'Crypto Briefing',
-            'path': os.path.join(BASE_DIR, 'crypto-analytics', 'crypto_market', 'output', 'crypto_briefing.json'),
+            'path': os.path.join(CRYPTO_OUTPUT_DIR, 'crypto_briefing.json'),
             'link': '/dashboard/crypto/briefing',
-            'menu': 'Crypto Briefing'
+            'menu': 'Crypto Briefing',
+            'updateType': 'crypto_briefing'
         },
         {
             'name': 'BTC Prediction',
-            'path': os.path.join(BASE_DIR, 'crypto-analytics', 'crypto_market', 'output', 'btc_prediction.json'),
+            'path': os.path.join(CRYPTO_OUTPUT_DIR, 'btc_prediction.json'),
             'link': '/dashboard/crypto/prediction',
-            'menu': 'Crypto Prediction'
+            'menu': 'Crypto Prediction',
+            'updateType': 'crypto_prediction'
         },
         {
             'name': 'Crypto Risk',
-            'path': os.path.join(BASE_DIR, 'crypto-analytics', 'crypto_market', 'output', 'crypto_risk.json'),
+            'path': os.path.join(CRYPTO_OUTPUT_DIR, 'crypto_risk.json'),
             'link': '/dashboard/crypto/risk',
-            'menu': 'Crypto Risk'
+            'menu': 'Crypto Risk',
+            'updateType': 'crypto_risk'
         },
         {
             'name': 'Lead-Lag Analysis',
             'path': os.path.join(BASE_DIR, 'crypto-analytics', 'crypto_market', 'lead_lag', 'results.json'),
             'link': '/dashboard/crypto/leadlag',
-            'menu': 'Crypto Lead-Lag'
+            'menu': 'Crypto Lead-Lag',
+            'updateType': 'crypto_leadlag'
         },
         {
             'name': 'Crypto VCP Signals',
-            'path': os.path.join(BASE_DIR, 'crypto-analytics', 'crypto_market', 'signals.sqlite3'),
+            'path': os.path.join(DATA_DIR, 'vcp_crypto_latest.json'),
             'link': '/dashboard/crypto/signals',
-            'menu': 'Crypto Signals'
+            'menu': 'Crypto Signals',
+            'updateType': 'crypto_scan'
         },
         {
             'name': 'Crypto Backtest',
-            'path': os.path.join(BASE_DIR, 'crypto-analytics', 'crypto_market', 'output', 'backtest_result.json'),
+            'path': os.path.join(CRYPTO_OUTPUT_DIR, 'backtest_result.json'),
             'link': '/dashboard/crypto/backtest',
             'menu': 'Crypto Backtest'
         },
@@ -573,6 +649,8 @@ def get_data_status():
                         data = json.load(f)
                     if 'signals' in data:
                         row_count = len(data['signals'])
+                    elif 'results' in data:
+                        row_count = len(data['results'])
                 except Exception:
                     logger.debug("Failed to read JSON signals count: %s", path)
             
@@ -584,7 +662,8 @@ def get_data_status():
                 'size': size_str,
                 'rowCount': row_count,
                 'link': file_info.get('link', ''),
-                'menu': file_info.get('menu', '')
+                'menu': file_info.get('menu', ''),
+                'updateType': file_info.get('updateType', '')
             })
         else:
             files_status.append({
@@ -595,7 +674,8 @@ def get_data_status():
                 'size': '-',
                 'rowCount': None,
                 'link': file_info.get('link', ''),
-                'menu': file_info.get('menu', '')
+                'menu': file_info.get('menu', ''),
+                'updateType': file_info.get('updateType', '')
             })
     
     # Check update status (simple implementation)
@@ -625,32 +705,59 @@ def update_single_data():
     
     # 지원하는 업데이트 타입과 실행할 명령 매핑
     update_commands = {
-        'daily_prices': {
-            'name': 'Daily Prices',
+        # ── KR Market ──
+        'prices': {
+            'name': 'KR Daily Prices',
             'script': 'scheduler.py',
             'args': ['--prices']
         },
-        'institutional': {
-            'name': 'Institutional Trend',
+        'vcp_full': {
+            'name': 'VCP Full Scan',
             'script': 'scheduler.py',
-            'args': ['--inst']
-        },
-        'ai_analysis': {
-            'name': 'AI Analysis',
-            'script': 'kr_ai_analyzer.py',
-            'args': []
-        },
-        'vcp_signals': {
-            'name': 'VCP Signals',
-            'script': 'scheduler.py',
-            'args': ['--signals']
+            'args': ['--vcp']
         },
         'jongga_v2': {
             'name': 'Jongga V2 (Closing Bet)',
             'module': 'engine.generator',
             'function': 'run_screener'
         },
+        'leading': {
+            'name': 'Leading Stocks LIVE',
+            'module': 'app.services.kis_screener',
+            'function': 'run_screening'
+        },
+        'institutional': {
+            'name': 'Institutional Trend',
+            'script': 'scheduler.py',
+            'args': ['--inst']
+        },
+        'vcp_signals': {
+            'name': 'VCP Signals',
+            'script': 'scheduler.py',
+            'args': ['--signals']
+        },
+        'vcp_kr': {
+            'name': 'KR VCP Enhanced Scan',
+            'script': 'vcp_enhanced_scanner.py',
+            'args': ['--market', 'KR']
+        },
+        'vcp_us': {
+            'name': 'US VCP Enhanced Scan',
+            'script': 'vcp_enhanced_scanner.py',
+            'args': ['--market', 'US']
+        },
+        # ── US Market ──
+        'us_market': {
+            'name': 'US Market (Full)',
+            'script': 'scheduler.py',
+            'args': ['--us-pro']
+        },
         # ── Crypto Analytics ──
+        'crypto_all': {
+            'name': 'Crypto (Full)',
+            'script': 'scheduler.py',
+            'args': ['--crypto']
+        },
         'crypto_gate': {
             'name': 'Crypto Market Gate',
             'script': os.path.join(BASE_DIR, 'crypto-analytics', 'crypto_market', 'market_gate.py'),
@@ -695,14 +802,31 @@ def update_single_data():
         yield f"data: [SYSTEM] Starting {config['name']} update...\n\n"
         
         try:
-            # For jongga_v2, use inline script to call run_screener
-            if data_type == 'jongga_v2':
-                script_code = '''
-import asyncio
+            # module 타입: inline Python 실행
+            if 'module' in config:
+                mod = config['module']
+                func = config['function']
+                if data_type == 'jongga_v2':
+                    script_code = f'''
+import asyncio, sys
+sys.path.insert(0, '.')
+from {mod} import {func}
+asyncio.run({func}(capital=50_000_000))
+'''
+                elif data_type == 'leading':
+                    script_code = f'''
 import sys
 sys.path.insert(0, '.')
-from engine.generator import run_screener
-asyncio.run(run_screener(capital=50_000_000))
+from {mod} import {func}
+result = {func}()
+print(f"[OK] {{len(result.get('results', []))}} stocks scanned")
+'''
+                else:
+                    script_code = f'''
+import sys
+sys.path.insert(0, '.')
+from {mod} import {func}
+{func}()
 '''
                 cmd = [sys.executable, '-u', '-c', script_code]
             else:

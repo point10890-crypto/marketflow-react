@@ -1,0 +1,96 @@
+{
+  "name": "한미약품",
+  "ticker": "128940.KS",
+  "result": "적극 매수",
+  "date": "2026-03-27 22:55:42",
+  "elapsed": 2.0,
+  "consensus_score": 4.5,
+  "analyst_count": 16,
+  "recommendation_detail": {
+    "strongBuy": 8,
+    "buy": 8,
+    "hold": 0,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 549000.0,
+    "high": 720000.0,
+    "low": 370000.0,
+    "mean": 558750.0,
+    "median": 550000.0
+  },
+  "current_price": 549000.0,
+  "upside_potential": 1.8,
+  "key_stats": {
+    "name": "HanmiPharm",
+    "sector": "Healthcare",
+    "industry": "Drug Manufacturers - Specialty & Generic",
+    "market_cap": 6961437343744,
+    "pe_ratio": null,
+    "forward_pe": 31.04409,
+    "dividend_yield": 0.36,
+    "beta": 0.564,
+    "fifty_two_week_high": 647000.0,
+    "fifty_two_week_low": 214500.0,
+    "revenue": 1466177683456,
+    "profit_margin": 0.079450004,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "한미약품(128940.KS)에 대해 16명의 애널리스트가 적극 매수 의견을 제시했습니다. 컨센서스 점수는 5.0 만점에 4.5점입니다. 목표가 평균은 558,750원으로 현재가 대비 약 1.8% 상승 여력이 있습니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 362345363920
+    },
+    {
+      "date": "2025-06",
+      "value": 361277145260
+    },
+    {
+      "date": "2025-03",
+      "value": 390948100810
+    },
+    {
+      "date": "2024-12",
+      "value": 351607089690
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 40128494130
+    },
+    {
+      "date": "2025-06",
+      "value": 38704447000
+    },
+    {
+      "date": "2025-03",
+      "value": 42605659850
+    },
+    {
+      "date": "2024-12",
+      "value": -4954576640
+    }
+  ],
+  "news": [
+    {
+      "title": "Aptose Secures US$11.9M Loan Extension to Advance Tuspetinib AML Trial",
+      "summary": "Aptose Biosciences (APS.TO) Monday said it has entered into a US$11.9 million loan amended facility",
+      "url": "https://finance.yahoo.com/news/aptose-secures-us-11-9m-120950817.html",
+      "provider": "MT Newswires",
+      "pub_time": "2025-09-22T12:09:50Z"
+    },
+    {
+      "title": "Aptose Biosciences Moves to Higher Dose in Phase 1/2 Cancer Study After Positive Safety Review",
+      "summary": "Aptose Biosciences (APS.TO) said Wednesday afternoon the cohort safety review committee overseeing i",
+      "url": "https://finance.yahoo.com/news/aptose-biosciences-moves-higher-dose-205239316.html",
+      "provider": "MT Newswires",
+      "pub_time": "2025-08-06T20:52:39Z"
+    }
+  ]
+}

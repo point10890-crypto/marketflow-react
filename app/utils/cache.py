@@ -4,6 +4,7 @@
 import os
 import json
 import yfinance as yf
+from app.utils.paths import BASE_DIR
 
 # Sector mapping for major US stocks (S&P 500 + popular stocks)
 SECTOR_MAP = {
@@ -76,7 +77,7 @@ SECTOR_MAP = {
 }
 
 # Persistent sector cache file
-SECTOR_CACHE_FILE = os.path.join('us_market', 'sector_cache.json')
+SECTOR_CACHE_FILE = os.path.join(BASE_DIR, 'us_market', 'sector_cache.json')
 
 # In-memory cache
 _sector_cache = {}

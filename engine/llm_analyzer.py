@@ -25,6 +25,16 @@ API_STATUS = {
     'openai': {'available': True, 'last_error': None, 'error_count': 0}
 }
 
+# Lock to protect API_STATUS mutations from async coroutines
+_api_status_lock = asyncio.Lock()
+
+async def _mark_unavailable(api_name: str, error_type: str = 'Rate Limit'):
+    """Mark an API as unavailable with lock protection"""
+    async with _api_status_lock:
+        API_STATUS[api_name]['available'] = False
+        API_STATUS[api_name]['last_error'] = error_type
+        API_STATUS[api_name]['error_count'] += 1
+
 def reset_api_status():
     """API 상태 초기화 (세션 시작 시 호출)"""
     global API_STATUS
@@ -41,8 +51,6 @@ class PerplexityClient:
         
     async def search_stock_news(self, stock_name: str) -> Dict:
         """최근 24시간 이내의 종목 관련 뉴스 검색 및 요약"""
-        global API_STATUS
-
         if not self.api_key:
             return {"news_summary": "", "citations": [], "error": "No API Key"}
 
@@ -85,9 +93,7 @@ class PerplexityClient:
 
             # Rate Limit 감지
             if 'rate' in error_msg or 'limit' in error_msg or '429' in error_msg or 'quota' in error_msg:
-                API_STATUS['perplexity']['available'] = False
-                API_STATUS['perplexity']['last_error'] = 'Rate Limit'
-                API_STATUS['perplexity']['error_count'] += 1
+                await _mark_unavailable('perplexity', 'Rate Limit')
                 print("[WARN] Perplexity Rate Limit - 임시 비활성화")
 
             return {"news_summary": "", "citations": [], "error": str(e)}
@@ -105,8 +111,6 @@ class OpenAIAnalyzer:
             self.client = None
             
     async def analyze_news(self, stock_name: str, perplexity_news: str, traditional_news: List[Dict] = None, dart_text: str = "") -> Dict:
-        global API_STATUS
-
         if not self.client:
             return {"score": 0, "reason": "No OpenAI Client", "themes": []}
 
@@ -160,9 +164,7 @@ class OpenAIAnalyzer:
 
             # Rate Limit 감지
             if 'rate' in error_msg or 'limit' in error_msg or '429' in error_msg or 'quota' in error_msg:
-                API_STATUS['openai']['available'] = False
-                API_STATUS['openai']['last_error'] = 'Rate Limit'
-                API_STATUS['openai']['error_count'] += 1
+                await _mark_unavailable('openai', 'Rate Limit')
                 print("[WARN] OpenAI Rate Limit - 임시 비활성화")
 
             return {"score": 0, "reason": f"OpenAI Error: {e}", "themes": []}
@@ -181,8 +183,6 @@ class GeminiAnalyzer:
             
     async def analyze_news(self, stock_name: str, perplexity_news: str, traditional_news: List[Dict] = None, dart_text: str = "") -> Dict:
         """Perplexity 결과와 네이버 뉴스를 통합 분석하여 점수화"""
-        global API_STATUS
-
         if not self.model:
             return {"score": 0, "reason": "No Gemini Model", "themes": []}
 
@@ -244,9 +244,7 @@ class GeminiAnalyzer:
 
             # Rate Limit 감지
             if 'rate' in error_msg or 'limit' in error_msg or '429' in error_msg or 'quota' in error_msg or 'resource' in error_msg:
-                API_STATUS['gemini']['available'] = False
-                API_STATUS['gemini']['last_error'] = 'Rate Limit'
-                API_STATUS['gemini']['error_count'] += 1
+                await _mark_unavailable('gemini', 'Rate Limit')
                 print("[WARN] Gemini Rate Limit - 임시 비활성화")
 
             return {"score": 0, "reason": f"Analysis Error: {e}", "themes": []}
@@ -265,8 +263,6 @@ class ClaudeAnalyzer:
 
     async def analyze_news(self, stock_name: str, perplexity_news: str, traditional_news: List[Dict] = None, dart_text: str = "") -> Dict:
         """Perplexity 결과와 네이버 뉴스를 통합 분석하여 점수화"""
-        global API_STATUS
-
         if not self.client:
             return {"score": 0, "reason": "No Claude Client", "themes": []}
 
@@ -323,9 +319,7 @@ JSON Format: {{"score": 2, "reason": "...", "themes": ["...", "..."]}}"""
             print(f"[ERROR] Claude Analysis Failed: {e}")
 
             if 'rate' in error_msg or 'limit' in error_msg or '429' in error_msg or 'quota' in error_msg or 'overloaded' in error_msg:
-                API_STATUS['claude']['available'] = False
-                API_STATUS['claude']['last_error'] = 'Rate Limit'
-                API_STATUS['claude']['error_count'] += 1
+                await _mark_unavailable('claude', 'Rate Limit')
                 print("[WARN] Claude Rate Limit - 임시 비활성화")
 
             return {"score": 0, "reason": f"Claude Error: {e}", "themes": []}

@@ -14,14 +14,13 @@ import time
 import logging
 import traceback
 from datetime import datetime, timezone, timedelta
+from app.utils.paths import BASE_DIR, DATA_DIR, US_OUTPUT_DIR, CRYPTO_OUTPUT_DIR
 
-# ── 고정 경로 ──
-_UTILS_DIR = os.path.dirname(os.path.abspath(__file__))
-_APP_DIR = os.path.dirname(_UTILS_DIR)
-_BASE_DIR = os.path.dirname(_APP_DIR)
-_DATA_DIR = os.path.join(_BASE_DIR, 'data')
-_US_OUTPUT = os.path.join(_BASE_DIR, 'us_market_preview', 'output')  # 서비스 실행경로와 동일
-_CRYPTO_OUTPUT = os.path.join(_BASE_DIR, 'crypto-analytics', 'crypto_market', 'output')
+# ── 경로 별칭 (기존 참조 호환) ──
+_BASE_DIR = BASE_DIR
+_DATA_DIR = DATA_DIR
+_US_OUTPUT = US_OUTPUT_DIR
+_CRYPTO_OUTPUT = CRYPTO_OUTPUT_DIR
 
 logger = logging.getLogger('diagnostics')
 
@@ -103,9 +102,12 @@ def run_diagnostics_and_alert():
 # 개별 진단 함수
 # ============================================================
 
-def _check_endpoints(port=5001):
+def _check_endpoints(port=None):
     """핵심 API 엔드포인트 셀프 테스트"""
     import requests
+
+    if port is None:
+        port = int(os.environ.get('PORT', os.environ.get('FLASK_PORT', 5001)))
 
     endpoints = [
         '/api/health',

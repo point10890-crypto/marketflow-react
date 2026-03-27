@@ -1,0 +1,89 @@
+{
+  "name": "효성티앤씨",
+  "ticker": "298020.KS",
+  "result": "적극 매수",
+  "date": "2026-03-27 21:31:51",
+  "elapsed": 2.3,
+  "consensus_score": 4.33,
+  "analyst_count": 3,
+  "recommendation_detail": {
+    "strongBuy": 1,
+    "buy": 2,
+    "hold": 0,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 401500.0,
+    "high": 600000.0,
+    "low": 460000.0,
+    "mean": 523333.34,
+    "median": 510000.0
+  },
+  "current_price": 401500.0,
+  "upside_potential": 30.3,
+  "key_stats": {
+    "name": "HYOSUNG TNC",
+    "sector": "Consumer Cyclical",
+    "industry": "Textile Manufacturing",
+    "market_cap": 1723184578560,
+    "pe_ratio": null,
+    "forward_pe": 9.001535,
+    "dividend_yield": 2.59,
+    "beta": 1.561,
+    "fifty_two_week_high": 440000.0,
+    "fifty_two_week_low": 186500.0,
+    "revenue": 7694843904000,
+    "profit_margin": 0.00141,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "효성티앤씨(298020.KS)는 애널리스트 컨센서스 '적극 매수' 의견을 받고 있으며, 3명의 애널리스트가 참여했습니다. 평균 목표 주가는 523,333원으로, 현재가 대비 30.3%의 상승 여력이 있는 것으로 분석됩니다. 투자 판단은 제시된 정보를 바탕으로 투자자 본인이 결정해야 합니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 1843169522070
+    },
+    {
+      "date": "2025-09",
+      "value": 2009801485990
+    },
+    {
+      "date": "2025-06",
+      "value": 1889169023450
+    },
+    {
+      "date": "2025-03",
+      "value": 1952703689350
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": -29987437520
+    },
+    {
+      "date": "2025-09",
+      "value": 8062354900
+    },
+    {
+      "date": "2025-06",
+      "value": 12209984620
+    },
+    {
+      "date": "2025-03",
+      "value": 20529751790
+    }
+  ],
+  "news": [
+    {
+      "title": "Vietnam Verticals: Simon Whitmarsh-Knight on How Hyosung TNC and Geno Are Rewiring Stretch Fibers for a Smaller Footprint",
+      "summary": "Hyosung TNC’s Global Sustainability Director–Textiles, Simon Whitmarsh-Knight, details how a $1bn sugarcane-to-bio-BDO investment in Vietnam, in partnership with Geno, is taking regen™ BIO elastane fr",
+      "url": "https://www.just-style.com/excellence-awards/excellence-in-focus/simon-whitmarsh-knight-hyosung-geno-bio-elastane/",
+      "provider": "Just Style",
+      "pub_time": "2026-01-05T08:00:00Z"
+    }
+  ]
+}

@@ -1,0 +1,81 @@
+{
+  "name": "아모레퍼시픽",
+  "ticker": "090430.KS",
+  "result": "매수",
+  "date": "2026-03-27 21:36:15",
+  "elapsed": 2.2,
+  "consensus_score": 4.25,
+  "analyst_count": 28,
+  "recommendation_detail": {
+    "strongBuy": 8,
+    "buy": 19,
+    "hold": 1,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 144400.0,
+    "high": 220000.0,
+    "low": 138000.0,
+    "mean": 169703.7,
+    "median": 170000.0
+  },
+  "current_price": 144400.0,
+  "upside_potential": 17.5,
+  "key_stats": {
+    "name": "AMOREPACIFIC",
+    "sector": "Consumer Defensive",
+    "industry": "Household & Personal Products",
+    "market_cap": 9961562177536,
+    "pe_ratio": null,
+    "forward_pe": 22.044985,
+    "dividend_yield": 0.91,
+    "beta": 1.443,
+    "fifty_two_week_high": 169000.0,
+    "fifty_two_week_low": 99700.0,
+    "revenue": 4252820307968,
+    "profit_margin": 0.055419996,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "아모레퍼시픽(090430.KS)에 대한 애널리스트 컨센서스는 28명 참여 기준 '매수' 의견으로 5점 만점에 4.25점을 기록했습니다. 목표가 평균은 169,704원으로 현재가 144,400원 대비 17.5% 상승 여력이 있는 것으로 분석됩니다. 해당 데이터는 투자 판단의 참고 자료로 활용될 수 있습니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 1016903549810
+    },
+    {
+      "date": "2025-06",
+      "value": 1005023630790
+    },
+    {
+      "date": "2025-03",
+      "value": 1067512073120
+    },
+    {
+      "date": "2024-12",
+      "value": 1091698980320
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 66005305420
+    },
+    {
+      "date": "2025-06",
+      "value": 35776187490
+    },
+    {
+      "date": "2025-03",
+      "value": 110798771420
+    },
+    {
+      "date": "2024-12",
+      "value": -54515246130
+    }
+  ],
+  "news": []
+}

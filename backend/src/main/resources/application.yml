@@ -25,7 +25,7 @@ app:
     base-dir: ${APP_BASE_DIR:C:/bitman_marketfloww}
     us-output-dir: ${app.data.base-dir}/us_market/output
     kr-data-dir: ${app.data.base-dir}/data
-    service-dir: ${SERVICE_DIR:C:/bitman_marketfloww}
+    service-dir: ${app.data.base-dir}/data
   cache:
     ttl-seconds: 30
   cors:

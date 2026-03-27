@@ -31,10 +31,10 @@ interface VCPData {
 
 type MarketTab = 'KR' | 'US' | 'CRYPTO';
 
-const MARKET_CONFIG: Record<MarketTab, { endpoint: string; label: string; color: string; accent: string }> = {
-    KR: { endpoint: '/api/kr/vcp-enhanced', label: 'KR Market', color: 'text-blue-400', accent: 'border-blue-500' },
-    US: { endpoint: '/api/us/vcp-enhanced', label: 'US Market', color: 'text-emerald-400', accent: 'border-emerald-500' },
-    CRYPTO: { endpoint: '/api/crypto/vcp-enhanced', label: 'Crypto', color: 'text-amber-400', accent: 'border-amber-500' },
+const MARKET_CONFIG: Record<MarketTab, { endpoint: string; datesEndpoint: string; historyEndpoint: string; label: string; color: string; accent: string }> = {
+    KR: { endpoint: '/api/kr/vcp-enhanced', datesEndpoint: '/api/kr/vcp-enhanced/dates', historyEndpoint: '/api/kr/vcp-enhanced/history', label: 'KR Market', color: 'text-blue-400', accent: 'border-blue-500' },
+    US: { endpoint: '/api/us/vcp-enhanced', datesEndpoint: '/api/us/vcp-enhanced/dates', historyEndpoint: '/api/us/vcp-enhanced/history', label: 'US Market', color: 'text-emerald-400', accent: 'border-emerald-500' },
+    CRYPTO: { endpoint: '/api/crypto/vcp-enhanced', datesEndpoint: '/api/crypto/vcp-enhanced/dates', historyEndpoint: '/api/crypto/vcp-enhanced/history', label: 'Crypto', color: 'text-amber-400', accent: 'border-amber-500' },
 };
 
 function ScoreBar({ score, label, color }: { score: number; label: string; color: string }) {
@@ -69,12 +69,24 @@ export default function VCPEnhancedPage() {
     const [data, setData] = useState<Record<MarketTab, VCPData | null>>({ KR: null, US: null, CRYPTO: null });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [dates, setDates] = useState<Record<MarketTab, string[]>>({ KR: [], US: [], CRYPTO: [] });
+    const [selectedDate, setSelectedDate] = useState<string>('latest');
 
-    const loadData = useCallback(async (market: MarketTab) => {
+    const loadDates = useCallback(async (market: MarketTab) => {
+        try {
+            const result = await fetchAPI<string[]>(MARKET_CONFIG[market].datesEndpoint);
+            setDates(prev => ({ ...prev, [market]: result }));
+        } catch { /* ignore */ }
+    }, []);
+
+    const loadData = useCallback(async (market: MarketTab, date: string = 'latest') => {
         setLoading(true);
         setError(null);
         try {
-            const result = await fetchAPI<VCPData>(MARKET_CONFIG[market].endpoint);
+            const url = date === 'latest'
+                ? MARKET_CONFIG[market].endpoint
+                : `${MARKET_CONFIG[market].historyEndpoint}/${date}`;
+            const result = await fetchAPI<VCPData>(url);
             setData(prev => ({ ...prev, [market]: result }));
         } catch (e: any) {
             setError(e.message || 'Failed to load data');
@@ -84,15 +96,22 @@ export default function VCPEnhancedPage() {
     }, []);
 
     useEffect(() => {
-        loadData(activeTab);
-    }, [activeTab, loadData]);
+        setSelectedDate('latest');
+        loadDates(activeTab);
+        loadData(activeTab, 'latest');
+    }, [activeTab, loadData, loadDates]);
+
+    useEffect(() => {
+        loadData(activeTab, selectedDate);
+    }, [selectedDate, activeTab, loadData]);
 
     const silentRefresh = useCallback(async () => {
-        await loadData(activeTab);
-    }, [loadData, activeTab]);
-    useAutoRefresh(silentRefresh, 60000);
-    useSmartRefresh(silentRefresh, ['vcp_kr_latest.json', 'vcp_us_latest.json', 'vcp_crypto_latest.json'], 15000);
-    usePullToRefreshRegister(useCallback(async () => { await loadData(activeTab); }, [loadData, activeTab]));
+        if (selectedDate !== 'latest') return;
+        await loadData(activeTab, 'latest');
+    }, [loadData, activeTab, selectedDate]);
+    useAutoRefresh(silentRefresh, 60000, selectedDate === 'latest');
+    useSmartRefresh(silentRefresh, ['vcp_kr_latest.json', 'vcp_us_latest.json', 'vcp_crypto_latest.json'], 15000, selectedDate === 'latest');
+    usePullToRefreshRegister(useCallback(async () => { await loadData(activeTab, selectedDate); }, [loadData, activeTab, selectedDate]));
 
     const current = data[activeTab];
     const signals = current?.signals || [];
@@ -121,11 +140,23 @@ export default function VCPEnhancedPage() {
                     </p>
                 </div>
 
-                {meta?.generated_at && (
-                    <span className="text-[10px] text-gray-600">
-                        Updated: {new Date(meta.generated_at).toLocaleString()}
-                    </span>
-                )}
+                <div className="flex items-center gap-3">
+                    {meta?.generated_at && (
+                        <span className="text-[10px] text-gray-600">
+                            Updated: {new Date(meta.generated_at).toLocaleString()}
+                        </span>
+                    )}
+                    <select
+                        value={selectedDate}
+                        onChange={e => setSelectedDate(e.target.value)}
+                        className="text-[11px] bg-[#13151f] border border-white/10 rounded-lg px-3 py-1.5 text-gray-300 focus:outline-none focus:border-yellow-500/50"
+                    >
+                        <option value="latest">Latest Report</option>
+                        {dates[activeTab].map(d => (
+                            <option key={d} value={d}>{d}</option>
+                        ))}
+                    </select>
+                </div>
             </div>
 
             {/* Market Tabs */}

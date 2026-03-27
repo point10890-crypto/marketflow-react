@@ -1,0 +1,75 @@
+{
+  "name": "이뮨온시아",
+  "ticker": "424870.KQ",
+  "result": "데이터 없음",
+  "date": "2026-03-27 21:34:46",
+  "elapsed": 2.2,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 9760.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 9760.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "ImmuneOncia",
+    "sector": "Healthcare",
+    "industry": "Biotechnology",
+    "market_cap": 721323294720,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": null,
+    "beta": null,
+    "fifty_two_week_high": 16110.0,
+    "fifty_two_week_low": 4455.0,
+    "revenue": 111208736,
+    "profit_margin": 0.0,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 0
+    },
+    {
+      "date": "2025-06",
+      "value": 59444700
+    },
+    {
+      "date": "2024-12",
+      "value": 604539170
+    },
+    {
+      "date": "2024-09",
+      "value": 50000000
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": -9414726900
+    },
+    {
+      "date": "2025-09",
+      "value": -10371408220
+    },
+    {
+      "date": "2025-06",
+      "value": -3071600440
+    },
+    {
+      "date": "2024-12",
+      "value": -2571928030
+    }
+  ],
+  "news": []
+}

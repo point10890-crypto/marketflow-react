@@ -100,10 +100,13 @@ export function useSmartRefresh(
         try {
             // API_BASE가 있으면 Tunnel/Flask로, 없으면 로컬 proxy로
             const versionUrl = `${API_BASE}/api/data-version`;
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 5000);
             const res = await fetch(versionUrl, {
                 headers: API_HEADERS,
-                signal: AbortSignal.timeout(5000),
+                signal: controller.signal,
             });
+            clearTimeout(timeoutId);
             if (!res.ok) {
                 // API 오프라인 시 _meta.json 폴백
                 const metaRes = await fetch('/data/_meta.json');

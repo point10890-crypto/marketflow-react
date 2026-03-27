@@ -2,8 +2,8 @@
   "name": "엘앤에프",
   "ticker": "066970.KS",
   "result": "매수",
-  "date": "2026-03-25 08:10:52",
-  "elapsed": 2.2,
+  "date": "2026-03-27 21:37:22",
+  "elapsed": 1.6,
   "consensus_score": 3.78,
   "analyst_count": 23,
   "recommendation_detail": {
@@ -15,24 +15,24 @@
   },
   "recommendation_period": "0m",
   "price_targets": {
-    "current": 125000.0,
+    "current": 155300.0,
     "high": 210000.0,
     "low": 54000.0,
-    "mean": 139978.27,
-    "median": 142000.0
+    "mean": 141854.17,
+    "median": 146000.0
   },
-  "current_price": 125000.0,
-  "upside_potential": 12.0,
+  "current_price": 155300.0,
+  "upside_potential": -8.7,
   "key_stats": {
     "name": "L&F",
     "sector": "Industrials",
     "industry": "Electrical Equipment & Parts",
-    "market_cap": 4686608334848,
+    "market_cap": 5822642388992,
     "pe_ratio": null,
-    "forward_pe": 43.783993,
+    "forward_pe": 56.82254,
     "dividend_yield": null,
     "beta": 1.051,
-    "fifty_two_week_high": 149000.0,
+    "fifty_two_week_high": 158400.0,
     "fifty_two_week_low": 47000.0,
     "revenue": 2154939023360,
     "profit_margin": -0.24759,
@@ -40,7 +40,7 @@
   },
   "finnhub_supplement": null,
   "source": "yfinance",
-  "ai_analysis": "엘앤에프(066970.KS)에 대해 23명의 애널리스트가 제시한 컨센서스는 '매수' 의견입니다 (5점 만점 중 3.78점). 평균 목표 주가는 139,978원으로, 현재가 125,000원 대비 약 12.0%의 상승 여력이 있습니다. 이는 애널리스트들이 엘앤에프의 추가적인 주가 상승 가능성을 전망하고 있음을 시사합니다.",
+  "ai_analysis": "엘앤에프(066970.KS)에 대한 애널리스트 컨센서스는 23명 참여 기준 '매수' 의견이 우세합니다. 목표가 평균은 141,854 KRW로 현재가 155,300 KRW 대비 -8.7% 하락 여력이 있습니다. 투자 판단은 제시된 데이터를 참고하여 신중하게 결정하시기 바랍니다.",
   "revenue_quarters": [
     {
       "date": "2025-09",

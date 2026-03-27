@@ -122,6 +122,28 @@ def set_status(user_id):
     })
 
 
+@admin_bp.route('/users/<int:user_id>/reset-password', methods=['PUT'])
+@admin_required
+def reset_password(user_id):
+    """유저 비밀번호 리셋 → 임시 비밀번호 발급"""
+    user = db.session.get(User, user_id)
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+
+    data = request.get_json() or {}
+    new_password = data.get('password', '').strip()
+    if not new_password or len(new_password) < 6:
+        return jsonify({'error': 'Password must be at least 6 characters'}), 400
+
+    user.set_password(new_password)
+    db.session.commit()
+
+    return jsonify({
+        'message': f'{user.email} 비밀번호 리셋 완료',
+        'user': user.to_dict(),
+    })
+
+
 @admin_bp.route('/users/<int:user_id>', methods=['DELETE'])
 @admin_required
 def delete_user(user_id):

@@ -1,0 +1,117 @@
+{
+  "name": "WMT",
+  "ticker": "WMT",
+  "result": "매수",
+  "date": "2026-03-27 22:32:18",
+  "elapsed": 2.6,
+  "consensus_score": 4.09,
+  "analyst_count": 43,
+  "recommendation_detail": {
+    "strongBuy": 9,
+    "buy": 30,
+    "hold": 3,
+    "sell": 1,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 121.96,
+    "high": 150.0,
+    "low": 62.0,
+    "mean": 136.02438,
+    "median": 138.0
+  },
+  "current_price": 121.96,
+  "upside_potential": 11.5,
+  "key_stats": {
+    "name": "Walmart Inc.",
+    "sector": "Consumer Defensive",
+    "industry": "Discount Stores",
+    "market_cap": 972314247168,
+    "pe_ratio": 44.838234,
+    "forward_pe": 37.13526,
+    "dividend_yield": 0.81,
+    "beta": 0.657,
+    "fifty_two_week_high": 134.69,
+    "fifty_two_week_low": 79.81,
+    "revenue": 713163014144,
+    "profit_margin": 0.0307,
+    "currency": "USD"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "WMT는 43명의 애널리스트 컨센서스가 '매수' 의견으로, 5점 만점에 4.09점을 기록했습니다. 목표가 평균은 현재가 대비 11.5% 상승 여력이 있는 136 USD입니다. 현재 PER은 44.8배입니다.",
+  "revenue_quarters": [
+    {
+      "date": "2026-01",
+      "value": 190656000000
+    },
+    {
+      "date": "2025-10",
+      "value": 179496000000
+    },
+    {
+      "date": "2025-07",
+      "value": 177402000000
+    },
+    {
+      "date": "2025-04",
+      "value": 165609000000
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2026-01",
+      "value": 4237000000
+    },
+    {
+      "date": "2025-10",
+      "value": 6143000000
+    },
+    {
+      "date": "2025-07",
+      "value": 7026000000
+    },
+    {
+      "date": "2025-04",
+      "value": 4487000000
+    }
+  ],
+  "news": [
+    {
+      "title": "How Goode Foods went from family biz to viral brand",
+      "summary": "Andrew Johnson, CEO of Goode Foods, sits down with Host Elizabeth Gore for a candid conversation about second-generation entrepreneurship, resilience, and innovation in a legacy industry. Now at the h",
+      "url": "https://finance.yahoo.com/video/goode-foods-went-family-biz-190028009.html",
+      "provider": "Yahoo Finance Video",
+      "pub_time": "2026-03-26T19:00:28Z"
+    },
+    {
+      "title": "BofA Maintains a Neutral Rating on Freshpet (FRPT) with an $80 Price Target",
+      "summary": "Freshpet, Inc. (NASDAQ:FRPT) is one of the 7 Heavily-Battered Consumer Stocks That Could Triple by 2027. On March 24, 2026, BofA noted that shares of Freshpet, Inc. (NASDAQ:FRPT) were down intraday fo",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/bofa-maintains-neutral-rating-freshpet-113052867.html",
+      "provider": "Insider Monkey",
+      "pub_time": "2026-03-27T11:30:52Z"
+    },
+    {
+      "title": "Amazon Refrigerant Fine Raises Questions On Compliance And Long Term Risks",
+      "summary": "Washington State has fined Amazon.com more than $800,000 for illegally selling climate polluting refrigerants. The Washington Department of Ecology cited repeated non compliance with state rules on hi",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/amazon-refrigerant-fine-raises-questions-230620254.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-03-26T23:06:20Z"
+    },
+    {
+      "title": "SKYX Platforms Q4 Earnings Call Highlights",
+      "summary": "SKYX Platforms (NASDAQ:SKYX) executives highlighted record quarterly and annual revenue in 2025 and outlined several product and commercialization initiatives they believe can support continued growth",
+      "url": "https://www.marketbeat.com/instant-alerts/skyx-platforms-q4-earnings-call-highlights-2026-03-26/?utm_source=yahoofinance&utm_medium=yahoofinance",
+      "provider": "MarketBeat",
+      "pub_time": "2026-03-26T21:48:59Z"
+    },
+    {
+      "title": "VDC Is Up Nearly 6% While the S&P 500 Sinks, and That Gap Is No Accident",
+      "summary": "When the broader market has lost ground year-to-date and the VIX is hovering near 27, the question investors are quietly asking is: what in my portfolio is actually holding up? Vanguard Consumer Stapl",
+      "url": "https://247wallst.com/investing/2026/03/26/vdc-is-up-nearly-6-while-the-sp-500-sinks-and-that-gap-is-no-accident/",
+      "provider": "24/7 Wall St.",
+      "pub_time": "2026-03-26T18:32:18Z"
+    }
+  ]
+}

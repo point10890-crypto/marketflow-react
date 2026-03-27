@@ -85,10 +85,10 @@ def login_required(f):
     """인증 필수 — 로그인한 유저만 접근 가능"""
     @wraps(f)
     def decorated(*args, **kwargs):
-        if _auth_disabled():
-            request.current_user = None
-            return f(*args, **kwargs)
         user = _get_current_user()
+        if _auth_disabled():
+            request.current_user = user  # 토큰 있으면 유저 설정, 없으면 None (통과)
+            return f(*args, **kwargs)
         if user is None:
             return jsonify({'error': 'Authentication required'}), 401
         request.current_user = user

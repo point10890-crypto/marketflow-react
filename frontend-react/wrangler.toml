@@ -1,5 +1,9 @@
 name = "marketflow-dashboard"
 compatibility_date = "2024-12-01"
+routes = [
+  { pattern = "bit-man.net", custom_domain = true },
+  { pattern = "www.bit-man.net", custom_domain = true }
+]
 
 [assets]
 directory = "./dist"

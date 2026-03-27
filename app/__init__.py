@@ -58,6 +58,7 @@ def create_app(config=None):
     db.init_app(app)
     with app.app_context():
         from app.models.user import User  # noqa: F401
+        from app.models.wave import WaveSignal, WaveTracking, WavePatternStats  # noqa: F401
         db.create_all()
 
     # Blueprint 등록
@@ -134,9 +135,9 @@ def create_app(config=None):
         base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         files_to_check = {
             'kr_jongga': os.path.join(base, 'data', 'jongga_v2_latest.json'),
-            'us_briefing': os.path.join(base, 'us_market_preview', 'output', 'briefing.json'),
-            'us_market_data': os.path.join(base, 'us_market_preview', 'output', 'market_data.json'),
-            'us_top_picks': os.path.join(base, 'us_market_preview', 'output', 'top_picks.json'),
+            'us_briefing': os.path.join(base, 'us_market', 'output', 'briefing.json'),
+            'us_market_data': os.path.join(base, 'us_market', 'output', 'market_data.json'),
+            'us_top_picks': os.path.join(base, 'us_market', 'output', 'top_picks.json'),
         }
         result = {}
         for key, path in files_to_check.items():
@@ -167,7 +168,7 @@ def create_app(config=None):
             )
 
     # ── 클라우드 스케줄러 자동 시작 (Render 또는 SCHEDULER_ENABLED) ──
-    if os.getenv('RENDER') or os.getenv('SCHEDULER_ENABLED', '').lower() in ('true', '1'):
+    if os.getenv('RENDER'):  # 로컬: scheduler.py --daemon 사용. 이중 스케줄러 방지
         try:
             from app.utils.scheduler import start_cloud_scheduler
             start_cloud_scheduler()
@@ -231,11 +232,12 @@ def _start_screener_worker(app):
 
         # 파일 캐시 먼저 로드 (즉시 응답 가능하게)
         try:
-            from app.services.kis_screener import load_latest, _result_cache
+            from app.services.kis_screener import load_latest, _result_cache, _result_lock
             latest = load_latest()
             if latest:
-                _result_cache["data"] = latest
-                _result_cache["ts"] = _time.time()
+                with _result_lock:
+                    _result_cache["data"] = latest
+                    _result_cache["ts"] = _time.time()
                 print(f"[Screener] File cache loaded ({len(latest.get('results', []))} results)")
         except Exception:
             pass
@@ -259,6 +261,17 @@ def _start_screener_worker(app):
 
                 result = run_screening()
                 consecutive_errors = 0  # 성공 시 리셋
+
+                # Layer 2 보강 (15분 주기)
+                try:
+                    from app.services.leading_enricher import should_enrich, enrich_stocks
+                    from app.services.kis_screener import _price_details_cache, _price_details_lock
+                    if should_enrich() and result and result.get('results'):
+                        with _price_details_lock:
+                            pd_snapshot = dict(_price_details_cache)
+                        enrich_stocks(result['results'], pd_snapshot)
+                except Exception as e:
+                    print(f"[Enricher] Error: {e}")
 
                 if result and result.get('results') and not past_cutoff:
                     now = _time.time()
@@ -312,6 +325,12 @@ def _send_screener_alert(stock):
         if not bot_token or not chat_id:
             return
         score = stock.get('score', {})
+        enrich = stock.get('enrichment', {})
+        ai_reason = enrich.get('ai_reason', '')
+        themes = enrich.get('themes', [])
+        consecutive = enrich.get('consecutive_days', 0)
+        cap_tier = enrich.get('market_cap_tier', '')
+
         msg = (
             f"<b>🔥 주도주 S등급 발견</b>\n\n"
             f"<b>{stock.get('name')}</b> ({stock.get('code')})\n"
@@ -320,7 +339,13 @@ def _send_screener_alert(stock):
             f"점수: {score.get('total', 0)}/100 "
             f"(거래{score.get('trading_value', 0)} 모멘{score.get('momentum', 0)} "
             f"수급{score.get('smart_money', 0)} 급증{score.get('volume_surge', 0)} "
-            f"섹터{score.get('sector', 0)})"
+            f"섹터{score.get('sector', 0)} 신고{score.get('new_high', 0)})"
+            + (f"\n👑 52주 신고가 근접 ({stock.get('high_52w', {}).get('distance_pct', 0)}%)"
+               if score.get('new_high', 0) >= 10 else "")
+            + (f"\n🤖 AI: {ai_reason}" if ai_reason else "")
+            + (f"\n🏷️ {' '.join(f'#{t}' for t in themes)}" if themes else "")
+            + (f"\n🔥 {consecutive}일 연속 주도주!" if consecutive >= 2 else "")
+            + (f"\n📊 {cap_tier}주" if cap_tier and cap_tier != "미분류" else "")
         )
         requests.post(
             f"https://api.telegram.org/bot{bot_token}/sendMessage",
@@ -358,12 +383,26 @@ def _send_screener_hourly_summary(result):
             if grade not in ('S', 'A'):
                 continue
             score = stock.get('score', {})
-            lines.append(
+            enrich = stock.get('enrichment', {})
+            ai_reason = enrich.get('ai_reason', '')
+            consecutive = enrich.get('consecutive_days', 0)
+            cap_tier = enrich.get('market_cap_tier', '')
+            line = (
                 f"{'🔥' if grade == 'S' else '🟡'} <b>{stock.get('name')}</b> "
                 f"{stock.get('change_pct', 0):+.1f}% "
                 f"({score.get('total', 0)}점) "
                 f"{stock.get('trading_value_eok', 0):,}억"
             )
+            extras = []
+            if ai_reason:
+                extras.append(f"💡{ai_reason}")
+            if consecutive >= 2:
+                extras.append(f"🔥{consecutive}연속")
+            if cap_tier and cap_tier != "미분류":
+                extras.append(cap_tier)
+            if extras:
+                line += f"\n   └ {' · '.join(extras)}"
+            lines.append(line)
 
         # B등급은 종목명만
         b_stocks = [s.get('name', '') for s in stocks if s.get('grade') == 'B']

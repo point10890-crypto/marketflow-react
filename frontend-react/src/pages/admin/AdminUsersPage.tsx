@@ -10,6 +10,13 @@ export default function AdminUsersPage() {
     const [actionMsg, setActionMsg] = useState('');
     const [filterStatus, setFilterStatus] = useState<string>('all');
 
+    // 비밀번호 리셋 모달
+    const [resetTarget, setResetTarget] = useState<AdminUser | null>(null);
+    const [newPassword, setNewPassword] = useState('');
+
+    // 삭제 확인 모달
+    const [deleteTarget, setDeleteTarget] = useState<AdminUser | null>(null);
+
     useEffect(() => { loadUsers(); }, [apiToken]);
 
     const loadUsers = async () => {
@@ -45,6 +52,30 @@ export default function AdminUsersPage() {
             await adminAPI.setUserStatus(userId, 'suspended', apiToken);
             setUsers(prev => prev.map(u => u.id === userId ? { ...u, subscription_status: 'suspended' } : u));
             showAction(`${userName} 해제 완료`);
+        } catch (err: any) {
+            showAction(`오류: ${err.message}`);
+        }
+    };
+
+    const handleResetPassword = async () => {
+        if (!resetTarget || !newPassword || newPassword.length < 6) return;
+        try {
+            await adminAPI.resetPassword(resetTarget.id, newPassword, apiToken);
+            showAction(`${resetTarget.name} 비밀번호 리셋 완료`);
+            setResetTarget(null);
+            setNewPassword('');
+        } catch (err: any) {
+            showAction(`오류: ${err.message}`);
+        }
+    };
+
+    const handleDelete = async () => {
+        if (!deleteTarget) return;
+        try {
+            await adminAPI.deleteUser(deleteTarget.id, apiToken);
+            setUsers(prev => prev.filter(u => u.id !== deleteTarget.id));
+            showAction(`${deleteTarget.name} 삭제 완료`);
+            setDeleteTarget(null);
         } catch (err: any) {
             showAction(`오류: ${err.message}`);
         }
@@ -145,35 +176,55 @@ export default function AdminUsersPage() {
                                             <span className="text-sm font-bold text-white">{user.name}</span>
                                             {isAdmin && <span className="text-[10px] px-1.5 py-0.5 bg-red-500/20 text-red-400 rounded">관리자</span>}
                                             <span className={`text-[10px] px-1.5 py-0.5 rounded ${badge.cls}`}>{badge.text}</span>
+                                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-400">{user.tier}</span>
                                         </div>
                                         <div className="text-xs text-gray-500">{user.email}</div>
                                         <div className="text-[10px] text-gray-600 mt-0.5">
                                             가입: {user.created_at ? new Date(user.created_at).toLocaleDateString('ko-KR') : '-'}
+                                            {user.last_login_at && <> · 최근 로그인: {new Date(user.last_login_at).toLocaleDateString('ko-KR')}</>}
                                         </div>
                                     </div>
                                 </div>
 
-                                {/* 승인/해제 버튼 */}
-                                {!isAdmin && (
-                                    <div className="flex gap-2">
-                                        {(isPending || isSuspended) && (
-                                            <button
-                                                onClick={() => handleApprove(user.id, user.name)}
-                                                className="px-4 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-white text-sm font-bold transition-colors active:scale-95"
-                                            >
-                                                승인
-                                            </button>
-                                        )}
-                                        {isApproved && (
-                                            <button
-                                                onClick={() => handleSuspend(user.id, user.name)}
-                                                className="px-4 py-2 rounded-lg bg-red-500/20 hover:bg-red-500/30 text-red-400 text-sm font-medium transition-colors active:scale-95"
-                                            >
-                                                해제
-                                            </button>
-                                        )}
-                                    </div>
-                                )}
+                                {/* 액션 버튼 */}
+                                <div className="flex items-center gap-2">
+                                    {!isAdmin && (
+                                        <>
+                                            {(isPending || isSuspended) && (
+                                                <button
+                                                    onClick={() => handleApprove(user.id, user.name)}
+                                                    className="px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-white text-xs font-bold transition-colors active:scale-95"
+                                                >
+                                                    승인
+                                                </button>
+                                            )}
+                                            {isApproved && (
+                                                <button
+                                                    onClick={() => handleSuspend(user.id, user.name)}
+                                                    className="px-3 py-1.5 rounded-lg bg-red-500/20 hover:bg-red-500/30 text-red-400 text-xs font-medium transition-colors active:scale-95"
+                                                >
+                                                    해제
+                                                </button>
+                                            )}
+                                        </>
+                                    )}
+                                    <button
+                                        onClick={() => { setResetTarget(user); setNewPassword(''); }}
+                                        className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white text-xs font-medium transition-colors active:scale-95"
+                                        title="비밀번호 리셋"
+                                    >
+                                        <i className="fas fa-key mr-1"></i>비번 리셋
+                                    </button>
+                                    {!isAdmin && (
+                                        <button
+                                            onClick={() => setDeleteTarget(user)}
+                                            className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-red-500/20 text-gray-500 hover:text-red-400 text-xs font-medium transition-colors active:scale-95"
+                                            title="사용자 삭제"
+                                        >
+                                            <i className="fas fa-trash-alt"></i>
+                                        </button>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     );
@@ -185,6 +236,66 @@ export default function AdminUsersPage() {
                     </div>
                 )}
             </div>
+
+            {/* 비밀번호 리셋 모달 */}
+            {resetTarget && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setResetTarget(null)}>
+                    <div className="bg-[#1c1c1e] border border-white/10 rounded-2xl p-6 w-full max-w-sm" onClick={e => e.stopPropagation()}>
+                        <h3 className="text-lg font-bold text-white mb-1">비밀번호 리셋</h3>
+                        <p className="text-sm text-gray-400 mb-4">{resetTarget.name} ({resetTarget.email})</p>
+                        <input
+                            type="text"
+                            value={newPassword}
+                            onChange={e => setNewPassword(e.target.value)}
+                            placeholder="새 비밀번호 (6자 이상)"
+                            className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-amber-500/50 mb-4"
+                            autoFocus
+                        />
+                        <div className="flex gap-2">
+                            <button
+                                onClick={() => setResetTarget(null)}
+                                className="flex-1 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-400 text-sm font-medium transition-colors"
+                            >
+                                취소
+                            </button>
+                            <button
+                                onClick={handleResetPassword}
+                                disabled={!newPassword || newPassword.length < 6}
+                                className="flex-1 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black text-sm font-bold transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                            >
+                                리셋
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* 삭제 확인 모달 */}
+            {deleteTarget && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setDeleteTarget(null)}>
+                    <div className="bg-[#1c1c1e] border border-white/10 rounded-2xl p-6 w-full max-w-sm" onClick={e => e.stopPropagation()}>
+                        <h3 className="text-lg font-bold text-white mb-1">사용자 삭제</h3>
+                        <p className="text-sm text-gray-400 mb-2">
+                            <span className="text-white font-bold">{deleteTarget.name}</span> ({deleteTarget.email})
+                        </p>
+                        <p className="text-sm text-red-400 mb-4">삭제하면 복구할 수 없습니다.</p>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={() => setDeleteTarget(null)}
+                                className="flex-1 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-400 text-sm font-medium transition-colors"
+                            >
+                                취소
+                            </button>
+                            <button
+                                onClick={handleDelete}
+                                className="flex-1 py-2.5 rounded-xl bg-red-500 hover:bg-red-400 text-white text-sm font-bold transition-colors"
+                            >
+                                삭제
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

@@ -25,27 +25,23 @@ public class SystemController {
     @Value("${app.data.us-output-dir}")
     private String usOutputDir;
 
-    @Value("${app.data.service-dir:C:/bitman_service}")
-    private String serviceDir;
-
     @Value("${app.flask.base-url:http://localhost:5001}")
     private String flaskBaseUrl;
 
     private static final DateTimeFormatter FMT =
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.of("Asia/Seoul"));
 
-    // ── 파일 목록 정의 ──────────────────────────────────────────────────────────
+    // ── 파일 목록 정의 — 단일 경로: kr=data/, us=us_market/output/ ────────────────
 
-    // dir: "kr" = krDataDir(bitman_marketfloww/data), "svc" = serviceDir(bitman_service/data), "us" = usOutputDir
     private static final List<Map<String, String>> FILE_DEFS = List.of(
         Map.of("name", "AI Jongga V2",          "dir", "kr",  "file", "jongga_v2_latest.json",             "menu", "/dashboard/kr/closing-bet"),
-        Map.of("name", "KR Market Gate",         "dir", "svc", "file", "market_gate_cache.json",            "menu", "/dashboard/kr"),
-        Map.of("name", "KR VCP Enhanced",        "dir", "svc", "file", "vcp_kr_latest.json",               "menu", "/dashboard/vcp-enhanced"),
-        Map.of("name", "KR AI Analysis",         "dir", "svc", "file", "kr_ai_analysis.json",              "menu", "/dashboard/kr"),
-        Map.of("name", "Daily Prices",           "dir", "svc", "file", "daily_prices.csv",                 "menu", "/dashboard/kr"),
-        Map.of("name", "Institutional Trend",    "dir", "svc", "file", "all_institutional_trend_data.csv", "menu", "/dashboard/kr"),
-        Map.of("name", "VCP US",                 "dir", "svc", "file", "vcp_us_latest.json",               "menu", "/dashboard/vcp-enhanced"),
-        Map.of("name", "VCP Crypto",             "dir", "svc", "file", "vcp_crypto_latest.json",           "menu", "/dashboard/vcp-enhanced"),
+        Map.of("name", "KR Market Gate",         "dir", "kr",  "file", "market_gate_cache.json",            "menu", "/dashboard/kr"),
+        Map.of("name", "KR VCP Enhanced",        "dir", "kr",  "file", "vcp_kr_latest.json",               "menu", "/dashboard/vcp-enhanced"),
+        Map.of("name", "KR AI Analysis",         "dir", "kr",  "file", "kr_ai_analysis.json",              "menu", "/dashboard/kr"),
+        Map.of("name", "Daily Prices",           "dir", "kr",  "file", "daily_prices.csv",                 "menu", "/dashboard/kr"),
+        Map.of("name", "Institutional Trend",    "dir", "kr",  "file", "all_institutional_trend_data.csv", "menu", "/dashboard/kr"),
+        Map.of("name", "VCP US",                 "dir", "kr",  "file", "vcp_us_latest.json",               "menu", "/dashboard/vcp-enhanced"),
+        Map.of("name", "VCP Crypto",             "dir", "kr",  "file", "vcp_crypto_latest.json",           "menu", "/dashboard/vcp-enhanced"),
         Map.of("name", "AI Briefing",            "dir", "us",  "file", "briefing.json",                    "menu", "/dashboard/us"),
         Map.of("name", "Market Data",            "dir", "us",  "file", "market_data.json",                 "menu", "/dashboard/us"),
         Map.of("name", "Top Picks",              "dir", "us",  "file", "top_picks.json",                   "menu", "/dashboard/us"),
@@ -54,8 +50,8 @@ public class SystemController {
         Map.of("name", "Earnings Impact",        "dir", "us",  "file", "earnings_impact.json",             "menu", "/dashboard/us"),
         Map.of("name", "Decision Signal",        "dir", "us",  "file", "decision_signal_snapshot.json",    "menu", "/dashboard/us"),
         Map.of("name", "Cumulative Perf",        "dir", "us",  "file", "cumulative_perf_snapshot.json",    "menu", "/dashboard/us"),
-        Map.of("name", "Crypto Dominance",       "dir", "svc", "file", "crypto_dominance_cache.json",      "menu", "/dashboard/crypto"),
-        Map.of("name", "Historical Signals",     "dir", "svc", "file", "historical_signals.csv",           "menu", "/dashboard/vcp-enhanced")
+        Map.of("name", "Crypto Dominance",       "dir", "kr",  "file", "crypto_dominance_cache.json",      "menu", "/dashboard/crypto"),
+        Map.of("name", "Historical Signals",     "dir", "kr",  "file", "historical_signals.csv",           "menu", "/dashboard/vcp-enhanced")
     );
 
     // ── GET /api/system/data-status ─────────────────────────────────────────────
@@ -67,7 +63,6 @@ public class SystemController {
         for (Map<String, String> def : FILE_DEFS) {
             String dirKey = def.get("dir");
             String dir = switch (dirKey) {
-                case "svc" -> serviceDir + "/data";
                 case "us"  -> usOutputDir;
                 default    -> krDataDir;  // "kr"
             };

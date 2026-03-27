@@ -1,0 +1,96 @@
+{
+  "name": "DB하이텍",
+  "ticker": "000990.KS",
+  "result": "적극 매수",
+  "date": "2026-03-27 21:33:08",
+  "elapsed": 1.6,
+  "consensus_score": 4.33,
+  "analyst_count": 3,
+  "recommendation_detail": {
+    "strongBuy": 1,
+    "buy": 2,
+    "hold": 0,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 83800.0,
+    "high": 130000.0,
+    "low": 92000.0,
+    "mean": 106666.664,
+    "median": 98000.0
+  },
+  "current_price": 83800.0,
+  "upside_potential": 27.3,
+  "key_stats": {
+    "name": "DB HiTek",
+    "sector": "Technology",
+    "industry": "Semiconductors",
+    "market_cap": 3372748636160,
+    "pe_ratio": null,
+    "forward_pe": 9.386902,
+    "dividend_yield": 1.04,
+    "beta": 1.507,
+    "fifty_two_week_high": 113500.0,
+    "fifty_two_week_low": 36450.0,
+    "revenue": 1397233287168,
+    "profit_margin": 0.18326999,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 374649575920
+    },
+    {
+      "date": "2025-06",
+      "value": 337406491430
+    },
+    {
+      "date": "2025-03",
+      "value": 297380601930
+    },
+    {
+      "date": "2024-12",
+      "value": 283488686990
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 90250707970
+    },
+    {
+      "date": "2025-06",
+      "value": 59527788790
+    },
+    {
+      "date": "2025-03",
+      "value": 46125013010
+    },
+    {
+      "date": "2024-12",
+      "value": 50355549130
+    }
+  ],
+  "news": [
+    {
+      "title": "Weebit Nano (ASX:WBT) Is Up 22.2% After Tier‑1 Licensing And Foundry Qualification Milestones – What's Changed",
+      "summary": "Weebit Nano recently advanced its commercial rollout by signing licensing agreements for its ReRAM technology with Tier‑1 chipmakers onsemi and Texas Instruments, while also achieving technology quali",
+      "url": "https://finance.yahoo.com/news/weebit-nano-asx-wbt-22-191036333.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-01-23T19:10:36Z"
+    },
+    {
+      "title": "Our members knew it first: 2 AI-picked Korean Value Stocks are up 40%+ in January",
+      "summary": "Investing.com — After a remarkable rally in 2025, South Korean stocks are carrying that momentum straight into 2026. While many global investors are still targeting modest annual gains, those who know",
+      "url": "https://finance.yahoo.com/news/members-knew-first-2-ai-111914593.html",
+      "provider": "Investing.com",
+      "pub_time": "2026-01-21T11:19:14Z"
+    }
+  ]
+}

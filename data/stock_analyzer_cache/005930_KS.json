@@ -2,8 +2,8 @@
   "name": "삼성전자",
   "ticker": "005930.KS",
   "result": "매수",
-  "date": "2026-03-26 21:03:06",
-  "elapsed": 2.5,
+  "date": "2026-03-27 22:25:54",
+  "elapsed": 2.0,
   "consensus_score": 4.22,
   "analyst_count": 37,
   "recommendation_detail": {
@@ -15,22 +15,22 @@
   },
   "recommendation_period": "0m",
   "price_targets": {
-    "current": 180100.0,
+    "current": 179700.0,
     "high": 340000.0,
     "low": 110000.0,
     "mean": 239873.48,
     "median": 250000.0
   },
-  "current_price": 180100.0,
-  "upside_potential": 33.2,
+  "current_price": 179700.0,
+  "upside_potential": 33.5,
   "key_stats": {
     "name": "SamsungElec",
     "sector": "Technology",
     "industry": "Consumer Electronics",
-    "market_cap": 1204163606216704,
+    "market_cap": 1201489183768576,
     "pe_ratio": null,
-    "forward_pe": 6.269238,
-    "dividend_yield": 1.2,
+    "forward_pe": 6.255314,
+    "dividend_yield": 1.26,
     "beta": 1.121,
     "fifty_two_week_high": 223000.0,
     "fifty_two_week_low": 52900.0,
@@ -40,7 +40,7 @@
   },
   "finnhub_supplement": null,
   "source": "yfinance",
-  "ai_analysis": "삼성전자에 대해 37명의 애널리스트가 제시한 컨센서스 의견은 '매수'로, 5점 만점에 4.22점을 기록했습니다. 평균 목표 주가는 239,873원으로, 현재 주가 대비 33.2% 상승 여력이 있는 것으로 분석됩니다. 이는 애널리스트들이 삼성전자의 추가적인 주가 상승을 기대하고 있음을 시사합니다.",
+  "ai_analysis": "삼성전자에 대해 37명의 애널리스트가 제시한 컨센서스는 '매수' 의견입니다. 목표가 평균은 239,873 KRW로, 현재가 대비 33.5% 상승 여력이 있는 것으로 분석됩니다. 이는 5점 만점 기준 4.22점에 해당합니다.",
   "revenue_quarters": [
     {
       "date": "2025-12",
@@ -79,39 +79,39 @@
   ],
   "news": [
     {
+      "title": "Normal Computing aims to solve AI's energy efficiency issues",
+      "summary": "Normal Computing CEO Faris Sbahi joins Market Domination's Josh Lipton and Yahoo Finance Tech Editor Dan Howley to discuss the software company's place in the AI infrastructure buildout, especially af",
+      "url": "https://finance.yahoo.com/video/normal-computing-aims-to-solve-ais-energy-efficiency-issues-194956177.html",
+      "provider": "Yahoo Finance Video",
+      "pub_time": "2026-03-26T19:49:56Z"
+    },
+    {
+      "title": "Assessing Samsung Electronics (KOSE:A005930) Valuation After A Mixed Run In Share Price Momentum",
+      "summary": "Samsung Electronics (KOSE:A005930) has drawn fresh attention after recent performance data showed a mixed return profile, with short term share price pressure contrasted against stronger gains over th",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/assessing-samsung-electronics-kose-a005930-110527447.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-03-27T11:05:27Z"
+    },
+    {
+      "title": "Arlo Technologies Touts AI Cloud Pivot, Partner Growth and Privacy Edge at Conference",
+      "summary": "Executives at Arlo Technologies (NYSE:ARLO) outlined the company’s evolution from a hardware-centric, do-it-yourself (DIY) security brand into what they described as a cloud and AI-driven services pla",
+      "url": "https://www.marketbeat.com/instant-alerts/arlo-technologies-touts-ai-cloud-pivot-partner-growth-and-privacy-edge-at-conference-2026-03-26/?utm_source=yahoofinance&utm_medium=yahoofinance",
+      "provider": "MarketBeat",
+      "pub_time": "2026-03-27T03:33:21Z"
+    },
+    {
       "title": "Chip Selloff Deepens After Google Touts Memory Breakthrough",
-      "summary": "(Bloomberg) -- Memory chip stocks extended their losses on Thursday after Alphabet Inc.’s Google publicized research that could allow more efficient use of the storage needed for artificial intelligen",
+      "summary": "(Bloomberg) -- Memory chip stocks extended their losses on Thursday after Alphabet Inc.’s Google publicized research on a new algorithm that could allow more efficient use of the storage needed for ar",
       "url": "https://finance.yahoo.com/news/google-breakthrough-spurs-chip-selloff-022926567.html",
       "provider": "Bloomberg",
-      "pub_time": "2026-03-26T11:40:53Z"
+      "pub_time": "2026-03-26T20:21:39Z"
     },
     {
-      "title": "Arm’s Timing Is Good, but Big Chip Move Now Has to Go Perfectly",
-      "summary": "The chip designer’s roots in power-friendly CPUs are a major asset, though the stock’s high valuation assumes a lot of success.",
-      "url": "https://www.wsj.com/tech/ai/arms-timing-is-good-but-big-chip-move-now-has-to-go-perfectly-328c52a5?siteid=yhoof2&yptr=yahoo",
+      "title": "Micron Stock Slumps After Google Unveils New Technology",
+      "summary": "Shares in Micron Technology, the largest American maker of memory chips, fell sharply for a second day on Thursday after Google unveiled technology this week that could reduce the amount of memory nee",
+      "url": "https://www.wsj.com/livecoverage/stock-market-today-dow-sp-500-nasdaq-03-26-2026/card/micron-other-chip-stocks-slump-after-google-unveils-new-memory-technology-e9AcL0KjBrvR0tL8D34J?siteid=yhoof2&yptr=yahoo",
       "provider": "The Wall Street Journal",
-      "pub_time": "2026-03-26T09:30:00Z"
-    },
-    {
-      "title": "Got $2,000? 2 Semiconductor Stocks to Buy Before the Memory Supercycle Peaks.",
-      "summary": "Micron and Sandisk are two of the best ways to play the memory supercycle.",
-      "url": "https://www.fool.com/investing/2026/03/26/got-2000-2-semiconductor-stocks-to-buy-before-the/",
-      "provider": "Motley Fool",
-      "pub_time": "2026-03-26T08:05:00Z"
-    },
-    {
-      "title": "Strength Seen in Corning (GLW): Can Its 8.4% Jump Turn into More Strength?",
-      "summary": "Corning (GLW) was a big mover last session on higher-than-average trading volume. The latest trend in earnings estimate revisions might help the stock continue moving higher in the near term.",
-      "url": "https://finance.yahoo.com/markets/stocks/articles/strength-seen-corning-glw-8-063000161.html",
-      "provider": "Zacks",
-      "pub_time": "2026-03-26T06:30:00Z"
-    },
-    {
-      "title": "Zacks Investment Ideas feature highlights: SK Telecom, AT&T and NVIDIA",
-      "summary": "SK Telecom emerges as an AI contender, leveraging data centers, Agentic AI, and a surging Anthropic stake to fuel growth and investor interest.",
-      "url": "https://finance.yahoo.com/markets/stocks/articles/zacks-investment-ideas-feature-highlights-063100115.html",
-      "provider": "Zacks",
-      "pub_time": "2026-03-25T06:31:00Z"
+      "pub_time": "2026-03-26T19:45:45Z"
     }
   ]
 }

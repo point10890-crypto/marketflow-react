@@ -14,25 +14,55 @@ interface DataStatus {
     rowCount?: number;
     link?: string;
     menu?: string;
-    updateType?: string; // Added for individual updates
+    updateType?: string;
 }
+
+// Category grouping for section headers
+const CATEGORY_ORDER = ['KR', 'US', 'Crypto'] as const;
+const CATEGORY_MAP: Record<string, string> = {
+    'Daily Prices': 'KR', 'AI Jongga V2': 'KR', 'Leading LIVE': 'KR',
+    'Market Gate': 'KR', 'Institutional Trend': 'KR', 'VCP Signals': 'KR',
+    'KR VCP Enhanced': 'KR',
+    'US Smart Money': 'US', 'US Decision Signal': 'US', 'US Sector Heatmap': 'US',
+    'US VCP Enhanced': 'US',
+    'US Earnings': 'US', 'US Portfolio': 'US',
+    'Crypto Overview': 'Crypto', 'Crypto Market Gate': 'Crypto', 'Crypto Briefing': 'Crypto',
+    'BTC Prediction': 'Crypto', 'Crypto Risk': 'Crypto', 'Lead-Lag Analysis': 'Crypto',
+    'Crypto VCP Signals': 'Crypto', 'Crypto Backtest': 'Crypto',
+};
+
+const CATEGORY_LABELS: Record<string, { label: string; icon: string; color: string }> = {
+    'KR': { label: 'KR Market', icon: 'fa-won-sign', color: 'text-blue-400' },
+    'US': { label: 'US Market', icon: 'fa-dollar-sign', color: 'text-green-400' },
+    'Crypto': { label: 'Crypto', icon: 'fa-bitcoin-sign', color: 'text-amber-400' },
+};
 
 
 
 // Map data names to update types
 const UPDATE_TYPE_MAP: Record<string, string> = {
-    'Daily Prices': 'daily_prices',
-    'Institutional Trend': 'institutional',
-    'AI Analysis': 'ai_analysis',
-    'VCP Signals': 'vcp_signals',
+    // KR Market
+    'Daily Prices': 'prices',
     'AI Jongga V2': 'jongga_v2',
+    'Leading LIVE': 'leading',
+    'Institutional Trend': 'institutional',
+    'VCP Signals': 'vcp_signals',
+    'KR VCP Enhanced': 'vcp_kr',
+    // US Market (batch update)
+    'US Smart Money': 'us_market',
+    'US Decision Signal': 'us_market',
+    'US Sector Heatmap': 'us_market',
+    'US Earnings': 'us_market',
+    'US Portfolio': 'us_market',
+    'US VCP Enhanced': 'vcp_us',
     // Crypto Analytics
+    'Crypto Overview': 'crypto_all',
     'Crypto Market Gate': 'crypto_gate',
-    'Crypto VCP Signals': 'crypto_scan',
     'Crypto Briefing': 'crypto_briefing',
     'BTC Prediction': 'crypto_prediction',
     'Crypto Risk': 'crypto_risk',
     'Lead-Lag Analysis': 'crypto_leadlag',
+    'Crypto VCP Signals': 'crypto_scan',
 };
 
 export default function DataStatusPage() {
@@ -188,6 +218,125 @@ export default function DataStatusPage() {
         return updatingItem === updateType;
     };
 
+    const STALE_DAYS = 7;
+
+    const isStale = (file: DataStatus) => {
+        if (!file.exists || !file.lastModified) return true;
+        const diffMs = Date.now() - new Date(file.lastModified).getTime();
+        return diffMs > STALE_DAYS * 24 * 60 * 60 * 1000;
+    };
+
+    const activeFiles = dataFiles.filter(f => !isStale(f));
+    const inactiveFiles = dataFiles.filter(f => isStale(f));
+    const activeCount = activeFiles.length;
+    const totalCount = dataFiles.length;
+
+    const renderSection = (files: DataStatus[], sectionType: 'active' | 'inactive') => {
+        return CATEGORY_ORDER.map((cat) => {
+            const catFiles = files.filter(f => CATEGORY_MAP[f.name] === cat);
+            if (catFiles.length === 0) return null;
+            const info = CATEGORY_LABELS[cat];
+            return (
+                <div key={cat} className="space-y-3">
+                    <div className="flex items-center gap-2 px-1">
+                        <i className={`fas ${info.icon} ${sectionType === 'inactive' ? 'text-gray-600' : info.color} text-sm`}></i>
+                        <h3 className={`text-sm font-bold ${sectionType === 'inactive' ? 'text-gray-600' : info.color}`}>{info.label}</h3>
+                        <span className="text-[10px] text-gray-600 font-mono">{catFiles.length}</span>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 md:gap-4">
+                        {renderCards(catFiles)}
+                    </div>
+                </div>
+            );
+        });
+    };
+
+    const renderMobileCard = (file: DataStatus) => (
+        <div key={file.path} className="p-3 rounded-xl bg-[#1c1c1e] border border-white/10 flex flex-col gap-2">
+            <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 min-w-0">
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${file.exists ? 'bg-cyan-500/10 text-cyan-400' : 'bg-red-500/10 text-red-400'}`}>
+                        <i className={`fas ${file.exists ? 'fa-file-alt' : 'fa-file-excel'} text-xs`}></i>
+                    </div>
+                    <div className="min-w-0">
+                        <h3 className="text-sm text-white font-bold truncate">{file.name}</h3>
+                        {file.menu && <div className="text-[10px] text-gray-600 truncate">{file.menu}</div>}
+                    </div>
+                </div>
+                <span className={`px-2 py-0.5 rounded text-[10px] font-bold border shrink-0 ${getStatusColor(file.exists, file.lastModified)}`}>
+                    {file.exists ? 'OK' : 'MISSING'}
+                </span>
+            </div>
+            {file.exists && (
+                <div className="flex items-center gap-3 text-[11px] text-gray-500">
+                    <span className="text-white font-medium">{formatTime(file.lastModified)}</span>
+                    <span className="text-gray-700">|</span>
+                    <span className="font-mono">{file.size}</span>
+                    {file.rowCount != null && (<><span className="text-gray-700">|</span><span className="font-mono">{file.rowCount.toLocaleString()} rows</span></>)}
+                </div>
+            )}
+            {(file.updateType || file.link) && (
+                <div className="flex gap-2">
+                    {file.updateType && (
+                        <button onClick={() => triggerSingleUpdate(file.updateType!, file.name)} disabled={updating || !!updatingItem}
+                            className={`flex-1 py-1.5 flex items-center justify-center gap-1.5 rounded-lg text-[11px] font-bold transition-all border ${isUpdatingThis(file.updateType) ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' : 'bg-white/5 text-gray-400 border-white/5'} disabled:opacity-50 disabled:cursor-not-allowed`}>
+                            <i className={`fas fa-sync-alt ${isUpdatingThis(file.updateType) ? 'animate-spin' : ''}`}></i>
+                            {isUpdatingThis(file.updateType) ? 'Updating...' : 'Update'}
+                        </button>
+                    )}
+                    {file.link && (
+                        <a href={file.link} className="flex-1 py-1.5 flex items-center justify-center gap-1.5 rounded-lg bg-white/5 text-gray-400 text-[11px] font-bold transition-all border border-white/5">
+                            View <i className="fas fa-arrow-right text-[9px]"></i>
+                        </a>
+                    )}
+                </div>
+            )}
+        </div>
+    );
+
+    const renderDesktopCard = (file: DataStatus) => (
+        <div key={file.path} className="p-5 rounded-2xl bg-[#1c1c1e] border border-white/10 hover:border-white/20 transition-all group flex flex-col">
+            <div className="flex items-start justify-between mb-3">
+                <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${file.exists ? 'bg-cyan-500/10 text-cyan-400' : 'bg-red-500/10 text-red-400'}`}>
+                        <i className={`fas ${file.exists ? 'fa-file-alt' : 'fa-file-excel'}`}></i>
+                    </div>
+                    <div>
+                        <h3 className="text-white font-bold">{file.name}</h3>
+                        {file.menu && <div className="text-[10px] text-gray-500 mt-0.5 flex items-center gap-1"><i className="fas fa-link text-gray-600"></i> {file.menu}</div>}
+                        <p className="text-[10px] text-gray-700 font-mono truncate max-w-[150px] mt-0.5">{file.path}</p>
+                    </div>
+                </div>
+                <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${getStatusColor(file.exists, file.lastModified)}`}>
+                    {file.exists ? 'OK' : 'MISSING'}
+                </span>
+            </div>
+            {file.exists && (
+                <div className="space-y-2 text-sm flex-1">
+                    <div className="flex justify-between text-gray-400"><span>Last Updated</span><span className="text-white font-medium">{formatTime(file.lastModified)}</span></div>
+                    <div className="flex justify-between text-gray-400"><span>File Size</span><span className="text-white font-mono text-xs">{file.size}</span></div>
+                    {file.rowCount != null && <div className="flex justify-between text-gray-400"><span>Records</span><span className="text-white font-mono text-xs">{file.rowCount.toLocaleString()}</span></div>}
+                </div>
+            )}
+            <div className="mt-4 flex gap-2">
+                {file.updateType && (
+                    <button onClick={() => triggerSingleUpdate(file.updateType!, file.name)} disabled={updating || !!updatingItem}
+                        className={`flex-1 py-2 flex items-center justify-center gap-2 rounded-lg text-xs font-bold transition-all border ${isUpdatingThis(file.updateType) ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' : 'bg-white/5 hover:bg-cyan-500/20 text-gray-400 hover:text-cyan-400 border-white/5 hover:border-cyan-500/30'} disabled:opacity-50 disabled:cursor-not-allowed`}>
+                        <i className={`fas fa-sync-alt ${isUpdatingThis(file.updateType) ? 'animate-spin' : ''}`}></i>
+                        {isUpdatingThis(file.updateType) ? 'Updating...' : 'Update'}
+                    </button>
+                )}
+                {file.link && (
+                    <a href={file.link} className="flex-1 py-2 flex items-center justify-center gap-2 rounded-lg bg-white/5 hover:bg-cyan-500/20 text-gray-400 hover:text-cyan-400 text-xs font-bold transition-all border border-white/5 hover:border-cyan-500/30">
+                        View <i className="fas fa-arrow-right"></i>
+                    </a>
+                )}
+            </div>
+        </div>
+    );
+
+    const renderCards = (files: DataStatus[]) => files.map((file) => isMobile ? renderMobileCard(file) : renderDesktopCard(file));
+
     return (
         <div className="space-y-4 md:space-y-8">
             <div className="mb-4 md:mb-8">
@@ -200,7 +349,13 @@ export default function DataStatusPage() {
                         <h2 className="text-2xl md:text-5xl font-bold tracking-tighter text-white leading-tight mb-1 md:mb-2">
                             Data <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400">Status</span>
                         </h2>
-                        <p className="text-gray-400 text-sm md:text-lg">데이터 파일 상태 및 업데이트 현황</p>
+                        <p className="text-gray-400 text-sm md:text-lg">
+                            <span className="text-emerald-400 font-bold">{activeCount}</span>
+                            <span className="text-gray-600">/{totalCount}</span> 서비스 운영 중
+                            {inactiveFiles.length > 0 && (
+                                <span className="ml-2 text-gray-600">· <span className="text-red-400/60">{inactiveFiles.length}</span> 비활성</span>
+                            )}
+                        </p>
                     </div>
                     <button
                         onClick={triggerUpdate}
@@ -240,153 +395,47 @@ export default function DataStatusPage() {
                 </div>
             )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 md:gap-4">
-                {loading && dataFiles.length === 0 ? (
-                    Array.from({ length: 6 }).map((_, i) => (
+            {loading && dataFiles.length === 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 md:gap-4">
+                    {Array.from({ length: 6 }).map((_, i) => (
                         <div key={i} className="p-4 md:p-5 rounded-2xl bg-[#1c1c1e] border border-white/10 animate-pulse">
                             <div className="h-4 bg-white/10 rounded w-1/2 mb-3"></div>
                             <div className="h-3 bg-white/10 rounded w-3/4 mb-2"></div>
                             <div className="h-3 bg-white/10 rounded w-1/3"></div>
                         </div>
-                    ))
-                ) : dataFiles.length === 0 ? (
-                    <div className="col-span-full text-center py-20 text-gray-500">
-                        <i className="fas fa-database text-4xl mb-4 opacity-30"></i>
-                        <p>No data files found</p>
+                    ))}
+                </div>
+            ) : dataFiles.length === 0 ? (
+                <div className="text-center py-20 text-gray-500">
+                    <i className="fas fa-database text-4xl mb-4 opacity-30"></i>
+                    <p>No data files found</p>
+                </div>
+            ) : (
+                <>
+                {/* ── Active Services ── */}
+                <div className="space-y-6">
+                    <div className="flex items-center gap-3">
+                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <h3 className="text-base font-bold text-white">Active Services</h3>
+                        <span className="text-xs text-emerald-400/60 font-mono">{activeCount}</span>
                     </div>
-                ) : (
-                    dataFiles.map((file) => isMobile ? (
-                        /* Mobile: Compact card view */
-                        <div key={file.path} className="p-3 rounded-xl bg-[#1c1c1e] border border-white/10 flex flex-col gap-2">
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2 min-w-0">
-                                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${file.exists ? 'bg-cyan-500/10 text-cyan-400' : 'bg-red-500/10 text-red-400'}`}>
-                                        <i className={`fas ${file.exists ? 'fa-file-alt' : 'fa-file-excel'} text-xs`}></i>
-                                    </div>
-                                    <div className="min-w-0">
-                                        <h3 className="text-sm text-white font-bold truncate">{file.name}</h3>
-                                        {file.menu && (
-                                            <div className="text-[10px] text-gray-600 truncate">{file.menu}</div>
-                                        )}
-                                    </div>
-                                </div>
-                                <span className={`px-2 py-0.5 rounded text-[10px] font-bold border shrink-0 ${getStatusColor(file.exists, file.lastModified)}`}>
-                                    {file.exists ? 'OK' : 'MISSING'}
-                                </span>
-                            </div>
-                            {file.exists && (
-                                <div className="flex items-center gap-3 text-[11px] text-gray-500">
-                                    <span className="text-white font-medium">{formatTime(file.lastModified)}</span>
-                                    <span className="text-gray-700">|</span>
-                                    <span className="font-mono">{file.size}</span>
-                                    {file.rowCount != null && (
-                                        <>
-                                            <span className="text-gray-700">|</span>
-                                            <span className="font-mono">{file.rowCount.toLocaleString()} rows</span>
-                                        </>
-                                    )}
-                                </div>
-                            )}
-                            {(file.updateType || file.link) && (
-                                <div className="flex gap-2">
-                                    {file.updateType && (
-                                        <button
-                                            onClick={() => triggerSingleUpdate(file.updateType!, file.name)}
-                                            disabled={updating || !!updatingItem}
-                                            className={`flex-1 py-1.5 flex items-center justify-center gap-1.5 rounded-lg text-[11px] font-bold transition-all border ${isUpdatingThis(file.updateType)
-                                                ? 'bg-amber-500/20 text-amber-400 border-amber-500/30'
-                                                : 'bg-white/5 text-gray-400 border-white/5'
-                                                } disabled:opacity-50 disabled:cursor-not-allowed`}
-                                        >
-                                            <i className={`fas fa-sync-alt ${isUpdatingThis(file.updateType) ? 'animate-spin' : ''}`}></i>
-                                            {isUpdatingThis(file.updateType) ? 'Updating...' : 'Update'}
-                                        </button>
-                                    )}
-                                    {file.link && (
-                                        <a href={file.link}
-                                            className="flex-1 py-1.5 flex items-center justify-center gap-1.5 rounded-lg bg-white/5 text-gray-400 text-[11px] font-bold transition-all border border-white/5">
-                                            View <i className="fas fa-arrow-right text-[9px]"></i>
-                                        </a>
-                                    )}
-                                </div>
-                            )}
-                        </div>
-                    ) : (
-                        /* Desktop: Full card view */
-                        <div
-                            key={file.path}
-                            className="p-5 rounded-2xl bg-[#1c1c1e] border border-white/10 hover:border-white/20 transition-all group flex flex-col"
-                        >
-                            <div className="flex items-start justify-between mb-3">
-                                <div className="flex items-center gap-3">
-                                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${file.exists ? 'bg-cyan-500/10 text-cyan-400' : 'bg-red-500/10 text-red-400'}`}>
-                                        <i className={`fas ${file.exists ? 'fa-file-alt' : 'fa-file-excel'}`}></i>
-                                    </div>
-                                    <div>
-                                        <h3 className="text-white font-bold flex items-center gap-2">
-                                            {file.name}
-                                        </h3>
-                                        {file.menu && (
-                                            <div className="text-[10px] text-gray-500 mt-0.5 flex items-center gap-1">
-                                                <i className="fas fa-link text-gray-600"></i> {file.menu}
-                                            </div>
-                                        )}
-                                        <p className="text-[10px] text-gray-700 font-mono truncate max-w-[150px] mt-0.5">{file.path}</p>
-                                    </div>
-                                </div>
-                                <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${getStatusColor(file.exists, file.lastModified)}`}>
-                                    {file.exists ? 'OK' : 'MISSING'}
-                                </span>
-                            </div>
+                    {renderSection(activeFiles, 'active')}
+                </div>
 
-                            {file.exists && (
-                                <div className="space-y-2 text-sm flex-1">
-                                    <div className="flex justify-between text-gray-400">
-                                        <span>Last Updated</span>
-                                        <span className="text-white font-medium">{formatTime(file.lastModified)}</span>
-                                    </div>
-                                    <div className="flex justify-between text-gray-400">
-                                        <span>File Size</span>
-                                        <span className="text-white font-mono text-xs">{file.size}</span>
-                                    </div>
-                                    {file.rowCount != null && (
-                                        <div className="flex justify-between text-gray-400">
-                                            <span>Records</span>
-                                            <span className="text-white font-mono text-xs">{file.rowCount.toLocaleString()}</span>
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-
-                            <div className="mt-4 flex gap-2">
-                                {file.updateType && (
-                                    <button
-                                        onClick={() => triggerSingleUpdate(file.updateType!, file.name)}
-                                        disabled={updating || !!updatingItem}
-                                        className={`flex-1 py-2 flex items-center justify-center gap-2 rounded-lg text-xs font-bold transition-all border ${isUpdatingThis(file.updateType)
-                                            ? 'bg-amber-500/20 text-amber-400 border-amber-500/30'
-                                            : 'bg-white/5 hover:bg-cyan-500/20 text-gray-400 hover:text-cyan-400 border-white/5 hover:border-cyan-500/30'
-                                            } disabled:opacity-50 disabled:cursor-not-allowed`}
-                                    >
-                                        <i className={`fas fa-sync-alt ${isUpdatingThis(file.updateType) ? 'animate-spin' : ''}`}></i>
-                                        {isUpdatingThis(file.updateType) ? 'Updating...' : 'Update'}
-                                    </button>
-                                )}
-                                {file.link && (
-                                    <a
-                                        href={file.link}
-                                        className="flex-1 py-2 flex items-center justify-center gap-2 rounded-lg bg-white/5 hover:bg-cyan-500/20 text-gray-400 hover:text-cyan-400 text-xs font-bold transition-all border border-white/5 hover:border-cyan-500/30"
-                                    >
-                                        View <i className="fas fa-arrow-right"></i>
-                                    </a>
-                                )}
-                            </div>
+                {/* ── Inactive Services ── */}
+                {inactiveFiles.length > 0 && (
+                    <div className="space-y-6 mt-8 pt-6 border-t border-white/5">
+                        <div className="flex items-center gap-3">
+                            <span className="w-2 h-2 rounded-full bg-gray-600"></span>
+                            <h3 className="text-base font-bold text-gray-500">Inactive / Stale</h3>
+                            <span className="text-xs text-gray-600 font-mono">{inactiveFiles.length}</span>
+                            <span className="text-[10px] text-gray-700">7일 이상 미갱신</span>
                         </div>
-                    ))
+                        {renderSection(inactiveFiles, 'inactive')}
+                    </div>
                 )}
-            </div>
-
-            {/* Update Schedule Section Removed */}
+                </>
+            )}
 
             <div className="flex justify-center">
                 <button

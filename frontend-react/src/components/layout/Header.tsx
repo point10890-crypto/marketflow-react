@@ -15,7 +15,6 @@ const PAGE_NAMES: Record<string, string> = {
     '/dashboard/kr/vcp': 'KR VCP Signals',
     '/dashboard/kr/closing-bet': '\uc885\uac00\ubca0\ud305',
     '/dashboard/kr/closing-bet/history': '\uc885\uac00\ubca0\ud305 History',
-    '/dashboard/kr/chatbot': 'KR Chatbot',
     '/dashboard/kr/track-record': 'Track Record',
     '/dashboard/us': 'US Market',
     '/dashboard/us/etf': 'ETF Flows',
@@ -23,7 +22,8 @@ const PAGE_NAMES: Record<string, string> = {
     '/dashboard/crypto': 'Crypto',
     '/dashboard/crypto/signals': 'Crypto VCP Signals',
     '/dashboard/stock-analyzer': 'ProPicks Analyzer',
-    '/dashboard/data-status': 'Data Status',
+    '/dashboard/wave': 'W Pattern',
+    '/admin/data-status': 'Data Status',
 };
 
 function getPageTitle(pathname: string): string {

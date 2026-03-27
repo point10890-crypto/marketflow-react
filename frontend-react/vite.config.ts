@@ -20,7 +20,7 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
         runtimeCaching: [
           {
-            urlPattern: /^https:\/\/.*\.trycloudflare\.com\/api\//,
+            urlPattern: /^https:\/\/api\.bit-man\.net\/api\//,
             handler: 'NetworkFirst',
             options: {
               cacheName: 'api-cache',
@@ -47,30 +47,32 @@ export default defineConfig({
   },
   server: {
     port: Number(process.env.PORT) || 4000,
-    proxy: {
-      // KIS 주도주 스크리너 → Flask
-      '/api/kr/screener': { target: 'http://localhost:5001', changeOrigin: true },
-      // LIVE_COMPUTE → Flask:5001 (yfinance, DART, LLM, subprocess)
-      '/api/kr/jongga-v2/analyze': { target: 'http://localhost:5001', changeOrigin: true },
-      '/api/kr/jongga-v2/run': { target: 'http://localhost:5001', changeOrigin: true },
-      '/api/kr/realtime-prices': { target: 'http://localhost:5001', changeOrigin: true },
-      '/api/kr/financial-health': { target: 'http://localhost:5001', changeOrigin: true },
-      '/api/kr/stock-chart': { target: 'http://localhost:5001', changeOrigin: true },
-      '/api/us/stock-chart': { target: 'http://localhost:5001', changeOrigin: true },
-      '/api/us/smart-money': { target: 'http://localhost:5001', changeOrigin: true },
-      '/api/us/ai-summary': { target: 'http://localhost:5001', changeOrigin: true },
-      '/api/crypto/chart': { target: 'http://localhost:5001', changeOrigin: true },
-      '/api/crypto/run-': { target: 'http://localhost:5001', changeOrigin: true },
-      '/api/crypto/signal-analysis': { target: 'http://localhost:5001', changeOrigin: true },
-      '/api/crypto/vcp-signals': { target: 'http://localhost:5001', changeOrigin: true },
-      '/api/stock-analyzer': { target: 'http://localhost:5001', changeOrigin: true },
-      '/api/econ': { target: 'http://localhost:5001', changeOrigin: true },
-      '/api/auth': { target: 'http://localhost:5001', changeOrigin: true },
-      '/api/admin': { target: 'http://localhost:5001', changeOrigin: true },
-      '/api/stripe': { target: 'http://localhost:5001', changeOrigin: true },
-      // 나머지 전부 → Spring Boot:8080
-      '/api': { target: 'http://localhost:8080', changeOrigin: true },
-    },
+    proxy: (() => {
+      // 워크트리별 Flask 포트 지원: VITE_FLASK_PORT 또는 FLASK_PORT 환경변수
+      const flaskPort = process.env.VITE_FLASK_PORT || process.env.FLASK_PORT || '5001';
+      const flask = `http://localhost:${flaskPort}`;
+      return {
+        '/api/kr/screener': { target: flask, changeOrigin: true },
+        '/api/kr/jongga-v2/analyze': { target: flask, changeOrigin: true },
+        '/api/kr/jongga-v2/run': { target: flask, changeOrigin: true },
+        '/api/kr/realtime-prices': { target: flask, changeOrigin: true },
+        '/api/kr/financial-health': { target: flask, changeOrigin: true },
+        '/api/kr/stock-chart': { target: flask, changeOrigin: true },
+        '/api/us/stock-chart': { target: flask, changeOrigin: true },
+        '/api/us/smart-money': { target: flask, changeOrigin: true },
+        '/api/us/ai-summary': { target: flask, changeOrigin: true },
+        '/api/crypto/chart': { target: flask, changeOrigin: true },
+        '/api/crypto/run-': { target: flask, changeOrigin: true },
+        '/api/crypto/signal-analysis': { target: flask, changeOrigin: true },
+        '/api/crypto/vcp-signals': { target: flask, changeOrigin: true },
+        '/api/stock-analyzer': { target: flask, changeOrigin: true },
+        '/api/econ': { target: flask, changeOrigin: true },
+        '/api/auth': { target: flask, changeOrigin: true },
+        '/api/admin': { target: flask, changeOrigin: true },
+        '/api/stripe': { target: flask, changeOrigin: true },
+        '/api': { target: flask, changeOrigin: true },
+      };
+    })(),
   },
   build: {
     outDir: 'dist',

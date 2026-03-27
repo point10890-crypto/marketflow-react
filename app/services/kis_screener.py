@@ -172,6 +172,24 @@ def fetch_investor(token, stock_code):
                     })
 
 
+def fetch_price_detail(token, stock_code):
+    """현재가 시세 조회 — 52주 최고가/최저가, 최고가 일자 포함"""
+    try:
+        res = requests.get(f"{BASE_URL}/uapi/domestic-stock/v1/quotations/inquire-price",
+                           headers=_headers(token, "FHKST01010100"),
+                           params={
+                               "FID_COND_MRKT_DIV_CODE": "J",
+                               "FID_INPUT_ISCD": stock_code,
+                           }, timeout=10)
+        if res.status_code == 401:
+            return {}
+        data = res.json().get("output", {})
+        return data if isinstance(data, dict) else {}
+    except Exception as e:
+        logger.warning(f"현재가 시세 조회 실패 {stock_code}: {e}")
+        return {}
+
+
 # ─── 채점 ───
 
 def _is_etf(name):
@@ -239,6 +257,54 @@ def _score_sector(sector_map, sector):
     return 0, cnt
 
 
+def _score_new_high(price_detail, current_price):
+    """52주 신고가 근접도 채점 (15점 만점)
+    - stck_dryy_hgpr: 연중(52주) 최고가
+    - dryy_hgpr_date: 연중 최고가 일자 (YYYYMMDD)
+    """
+    if not price_detail or not current_price:
+        return 0, {}
+    high_52w = _safe_int(price_detail.get("stck_dryy_hgpr"))
+    high_date_str = price_detail.get("dryy_hgpr_date", "")
+    low_52w = _safe_int(price_detail.get("stck_dryy_lwpr"))
+    if not high_52w or high_52w <= 0:
+        return 0, {}
+
+    # 신고가 일자가 최근 20 거래일(약 28 캘린더일) 이내인지
+    recent = False
+    days_since = None
+    if high_date_str and len(high_date_str) == 8:
+        try:
+            high_date = datetime.strptime(high_date_str, "%Y%m%d")
+            days_since = (datetime.now() - high_date).days
+            recent = days_since <= 28  # 20 거래일 ≈ 28 캘린더일
+        except ValueError:
+            pass
+
+    distance_pct = ((high_52w - current_price) / high_52w) * 100 if high_52w else 0
+    info = {
+        "high_52w": high_52w,
+        "low_52w": low_52w,
+        "high_date": high_date_str,
+        "days_since": days_since,
+        "distance_pct": round(distance_pct, 1),
+    }
+
+    # 당일 신고가 갱신 (현재가 >= 52주고가)
+    if current_price >= high_52w:
+        return 15, info
+    # 20일내 신고가 + 현재가 3% 이내
+    if recent and distance_pct <= 3:
+        return 12, info
+    # 20일내 신고가 + 현재가 5% 이내
+    if recent and distance_pct <= 5:
+        return 10, info
+    # 20일내 신고가 + 현재가 10% 이내
+    if recent and distance_pct <= 10:
+        return 5, info
+    return 0, info
+
+
 def _time_weight():
     h, m = datetime.now().hour, datetime.now().minute
     t = h + m / 60
@@ -278,7 +344,9 @@ def get_market_status():
 # ─── 메인 스크리닝 ───
 
 _result_cache = {"data": None, "ts": 0}
+_price_details_cache = {}  # 마지막 스크리닝의 price_details (enricher용)
 _result_lock = Lock()
+_price_details_lock = Lock()
 _CACHE_TTL = 3
 
 
@@ -352,11 +420,21 @@ def run_screening():
     )[:15]
 
     investor_results = {}
+    price_details = {}
+    market_caps = {}  # {code: 시가총액(억)}
     for c in pre_scored:
         try:
             inv = fetch_investor(token, c["code"])
             investor_results[c["code"]] = inv
-            time.sleep(0.08)
+            time.sleep(0.05)
+            pd = fetch_price_detail(token, c["code"])
+            price_details[c["code"]] = pd
+            # 시가총액 추출 (hts_avls: 억원)
+            if pd:
+                cap = _safe_int(pd.get("hts_avls"))
+                if cap > 0:
+                    market_caps[c["code"]] = cap
+            time.sleep(0.05)
         except Exception:
             pass
 
@@ -368,24 +446,32 @@ def run_screening():
         s3, foreign, inst = _score_investor(investor_results.get(c["code"], []))
         s4, vol_ratio = _score_volume_surge(surge_map.get(c["code"], c["raw"]))
         s5, sector_count = _score_sector(sector_rising, c["sector"])
+        s6, high_info = _score_new_high(price_details.get(c["code"], {}), c["price"])
 
-        raw_total = s1 + s2 + s3 + s4 + s5
+        raw_total = s1 + s2 + s3 + s4 + s5 + s6
         total = min(100, round(raw_total * tw))
         grade = _grade(total)
         if grade == "C":
             continue
 
-        results.append({
+        result_item = {
             "rank": 0, "grade": grade, "code": c["code"], "name": c["name"],
             "price": c["price"], "change_pct": c["change_pct"],
             "trading_value": c["tr_amt"],
             "trading_value_eok": round(c["tr_amt"] / 1_0000_0000),
             "volume": c["volume"],
             "score": {"total": total, "trading_value": s1, "momentum": s2,
-                      "smart_money": s3, "volume_surge": s4, "sector": s5},
+                      "smart_money": s3, "volume_surge": s4, "sector": s5,
+                      "new_high": s6},
             "investor": {"foreign_net": foreign, "inst_net": inst},
             "volume_ratio": vol_ratio, "sector_rising_count": sector_count,
-        })
+        }
+        if high_info:
+            result_item["high_52w"] = high_info
+        # 시가총액 추가
+        if c["code"] in market_caps:
+            result_item["market_cap_eok"] = market_caps[c["code"]]
+        results.append(result_item)
 
     results.sort(key=lambda x: x["score"]["total"], reverse=True)
     for i, r in enumerate(results):
@@ -395,6 +481,57 @@ def run_screening():
     for r in results:
         by_grade[r["grade"]] = by_grade.get(r["grade"], 0) + 1
 
+    # Layer 2 보강 데이터 머지 → 점수에 직접 반영
+    try:
+        from app.services.leading_enricher import get_cached_enrichment
+        enrichments = get_cached_enrichment()
+        for r in results:
+            enrich = enrichments.get(r["code"])
+            if enrich:
+                r["enrichment"] = enrich
+                # ─── AI 뉴스 점수 (0-10) ───
+                ai_raw = enrich.get("ai_score", 0)
+                ai_pts = {0: 0, 1: 3, 2: 7, 3: 10}.get(ai_raw, 0)
+                # ─── 연속 주도주 점수 (0-8) ───
+                consec = enrich.get("consecutive_days", 0)
+                if consec >= 3:
+                    consec_pts = 8
+                elif consec >= 2:
+                    consec_pts = 5
+                elif consec >= 1:
+                    consec_pts = 2
+                else:
+                    consec_pts = 0
+                # score 객체에 추가
+                r["score"]["ai_news"] = ai_pts
+                r["score"]["consecutive"] = consec_pts
+                # 보강 총점 = 기존 total + AI + 연속
+                r["score"]["total_enriched"] = min(
+                    120, r["score"]["total"] + ai_pts + consec_pts
+                )
+            else:
+                # 보강 미완료 시
+                r["score"]["ai_news"] = None
+                r["score"]["consecutive"] = None
+                r["score"]["total_enriched"] = None
+    except Exception:
+        pass
+
+    # 보강 점수가 있으면 재정렬 + 등급 재평가
+    try:
+        for r in results:
+            enriched_total = r["score"].get("total_enriched")
+            if enriched_total is not None:
+                r["grade"] = _grade(enriched_total)
+        results.sort(key=lambda x: (x["score"].get("total_enriched") or x["score"]["total"]), reverse=True)
+        for i, r in enumerate(results):
+            r["rank"] = i + 1
+        by_grade = {}
+        for r in results:
+            by_grade[r["grade"]] = by_grade.get(r["grade"], 0) + 1
+    except Exception:
+        pass
+
     output = {
         "timestamp": datetime.now().isoformat(),
         "market_status": get_market_status(),
@@ -402,13 +539,18 @@ def run_screening():
         "total_candidates": len(candidates),
         "results": results,
         "by_grade": by_grade,
-        "api_calls": 3 + len(pre_scored),
+        "api_calls": 3 + len(pre_scored) * 2,
         "elapsed_ms": round((time.time() - t_start) * 1000),
     }
 
     with _result_lock:
         _result_cache["data"] = output
         _result_cache["ts"] = time.time()
+
+    # price_details 캐시 (enricher에서 시가총액 참조용)
+    with _price_details_lock:
+        _price_details_cache.clear()
+        _price_details_cache.update(price_details)
 
     # 결과 저장
     _save_result(output)

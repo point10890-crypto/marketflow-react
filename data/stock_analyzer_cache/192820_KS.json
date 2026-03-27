@@ -1,0 +1,81 @@
+{
+  "name": "코스맥스",
+  "ticker": "192820.KS",
+  "result": "매수",
+  "date": "2026-03-27 21:32:43",
+  "elapsed": 1.7,
+  "consensus_score": 4.04,
+  "analyst_count": 24,
+  "recommendation_detail": {
+    "strongBuy": 5,
+    "buy": 15,
+    "hold": 4,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 205000.0,
+    "high": 300000.0,
+    "low": 170000.0,
+    "mean": 232166.67,
+    "median": 232500.0
+  },
+  "current_price": 205000.0,
+  "upside_potential": 13.3,
+  "key_stats": {
+    "name": "COSMAX",
+    "sector": "Consumer Defensive",
+    "industry": "Household & Personal Products",
+    "market_cap": 2325860581376,
+    "pe_ratio": null,
+    "forward_pe": 14.528097,
+    "dividend_yield": 1.75,
+    "beta": 1.096,
+    "fifty_two_week_high": 287000.0,
+    "fifty_two_week_low": 149100.0,
+    "revenue": 2398757847040,
+    "profit_margin": 0.0513,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "코스맥스(192820.KS)는 24명의 애널리스트 컨센서스 기준 '매수' 의견을 받고 있습니다. 목표가 평균은 232,167원으로, 현재가 205,000원 대비 13.3% 상승 여력이 있습니다. 이는 애널리스트들이 코스맥스의 추가적인 성장 가능성을 긍정적으로 평가하고 있음을 시사합니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 585616672950
+    },
+    {
+      "date": "2025-06",
+      "value": 623560619450
+    },
+    {
+      "date": "2025-03",
+      "value": 588574135740
+    },
+    {
+      "date": "2024-12",
+      "value": 558002333340
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 8955258210
+    },
+    {
+      "date": "2025-06",
+      "value": 20926993080
+    },
+    {
+      "date": "2025-03",
+      "value": 8130802130
+    },
+    {
+      "date": "2024-12",
+      "value": 11865261290
+    }
+  ],
+  "news": []
+}

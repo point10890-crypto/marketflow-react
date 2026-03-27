@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
-import { usAPI, krAPI, cryptoAPI, jonggaAPI } from '@/lib/api';
+import { usAPI, krAPI, cryptoAPI, jonggaAPI, waveAPI } from '@/lib/api';
 import { usePullToRefreshRegister } from '@/components/layout/PullToRefreshProvider';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
@@ -213,7 +213,10 @@ function TopSignalCard({ summary, leadingData }: { summary: any; leadingData: an
             {leadTop && (
                 <>
                     <div className="border-t border-white/5" />
-                    <Link to="/dashboard/kr/leading-stocks" className="group flex flex-col gap-2 active:scale-[0.98] transition-transform">
+                    <Link to="/dashboard/kr/leading-stocks"
+                        className="group flex flex-col gap-2 active:scale-[0.98] transition-transform"
+                        style={{ animation: 'breathe 3s ease-in-out infinite' }}
+                    >
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                                 <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-orange-500/10 border border-orange-500/20">
@@ -240,6 +243,12 @@ function TopSignalCard({ summary, leadingData }: { summary: any; leadingData: an
                                 </span>
                             </div>
                         </div>
+                        <style>{`
+                            @keyframes breathe {
+                                0%, 100% { transform: scale(1); }
+                                50% { transform: scale(1.03); }
+                            }
+                        `}</style>
                     </Link>
                 </>
             )}
@@ -309,10 +318,11 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
     const [vcpData, setVcpData] = useState<VCPSummary>({ kr: 0, us: 0, crypto: 0, topSignals: [] });
     const [todaySummary, setTodaySummary] = useState<any>(null);
     const [leadingData, setLeadingData] = useState<any>(null);
+    const [waveData, setWaveData] = useState<any>(null);
 
     const loadData = useCallback(async () => {
         try {
-            const [b, kr, crypto, vcpKr, vcpUs, vcpCrypto, jongga, leading] = await Promise.all([
+            const [b, kr, crypto, vcpKr, vcpUs, vcpCrypto, jongga, leading, wave] = await Promise.all([
                 usAPI.getMarketBriefing().catch(() => null),
                 krAPI.getMarketGate().catch(() => null),
                 cryptoAPI.getDominance().catch(() => null),
@@ -321,12 +331,14 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                 cryptoAPI.getVCPEnhanced().catch(() => null),
                 jonggaAPI.getTodaySummary().catch(() => null),
                 krAPI.getLeadingStocks().catch(() => null),
+                waveAPI.getDashboard().catch(() => null),
             ]);
             setBriefing(b);
             setKrGate(kr);
             setCryptoDom(crypto);
             setTodaySummary(jongga);
             setLeadingData(leading);
+            setWaveData(wave);
 
             // VCP summary
             const allSignals: Array<{ name: string; market: string; score: number }> = [];
@@ -599,12 +611,144 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                 )}
             </Link>
 
+            {/* ── Wave Pattern Section ── */}
+            {waveData && (waveData.summary?.active > 0 || waveData.active_signals?.length > 0) && (
+                <Link
+                    to="/dashboard/wave"
+                    className="group relative rounded-2xl border border-white/[0.07] bg-[#13151f] p-4 overflow-hidden transition-all duration-200 active:scale-[0.98] hover:border-pink-500/20"
+                >
+                    {/* Animated gradient blobs */}
+                    <div className="absolute -top-10 -right-10 w-36 h-36 rounded-full blur-3xl opacity-[0.08] group-hover:opacity-[0.15] transition-opacity duration-700 bg-gradient-to-br from-pink-500 to-rose-600 animate-pulse" />
+                    <div className="absolute -bottom-12 -left-12 w-28 h-28 rounded-full blur-3xl opacity-[0.05] group-hover:opacity-[0.1] transition-opacity duration-700 bg-gradient-to-tr from-fuchsia-500 to-pink-400"
+                        style={{ animation: 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite 1.5s' }}
+                    />
+
+                    {/* Animated wave SVG background */}
+                    <div className="absolute inset-0 opacity-[0.03] group-hover:opacity-[0.06] transition-opacity duration-500 overflow-hidden pointer-events-none">
+                        <svg viewBox="0 0 400 80" className="absolute bottom-0 left-0 w-full h-16" preserveAspectRatio="none">
+                            <path d="M0,40 C50,20 100,60 150,40 C200,20 250,60 300,40 C350,20 400,50 400,40 L400,80 L0,80 Z"
+                                fill="url(#waveGrad)" className="animate-[waveShift_4s_ease-in-out_infinite]" />
+                            <path d="M0,50 C60,30 120,65 180,45 C240,25 300,60 400,45 L400,80 L0,80 Z"
+                                fill="url(#waveGrad2)" className="animate-[waveShift_5s_ease-in-out_infinite_reverse]" />
+                            <defs>
+                                <linearGradient id="waveGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" stopColor="#ec4899" />
+                                    <stop offset="100%" stopColor="#f43f5e" />
+                                </linearGradient>
+                                <linearGradient id="waveGrad2" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" stopColor="#a855f7" />
+                                    <stop offset="100%" stopColor="#ec4899" />
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                    </div>
+
+                    {/* Header */}
+                    <div className="relative flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2.5">
+                            <div className="relative w-10 h-10 rounded-xl flex items-center justify-center bg-pink-500/10 border border-pink-500/20 group-hover:bg-pink-500/20 transition-colors duration-300">
+                                {/* Glow ring */}
+                                <div className="absolute inset-0 rounded-xl border border-pink-400/30 animate-ping opacity-0 group-hover:opacity-30" style={{ animationDuration: '2s' }} />
+                                <i className="fas fa-wave-square text-lg text-pink-400 group-hover:scale-110 transition-transform duration-300" />
+                            </div>
+                            <div>
+                                <div className="flex items-center gap-2">
+                                    <h3 className="text-base font-bold text-white">W Pattern</h3>
+                                    <span className="relative flex items-center">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-pink-400 animate-ping absolute opacity-75" />
+                                        <span className="w-1.5 h-1.5 rounded-full bg-pink-400 relative" />
+                                    </span>
+                                </div>
+                                <p className="text-[10px] text-gray-500">M&W Chart Pattern AI Detection</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-pink-500/10 text-pink-400 tabular-nums group-hover:bg-pink-500/20 transition-colors duration-300">
+                                {waveData.summary?.active ?? 0}
+                            </span>
+                            <i className="fas fa-chevron-right text-[10px] text-gray-600 group-hover:text-pink-400 group-hover:translate-x-0.5 transition-all duration-300" />
+                        </div>
+                    </div>
+
+                    {/* Stats breakdown with stagger animation */}
+                    <div className="relative flex items-center gap-4 mb-3">
+                        {[
+                            { label: 'Active', value: waveData.summary?.active ?? 0, color: 'pink', dot: 'bg-pink-400', text: 'text-pink-400' },
+                            { label: 'Wins', value: waveData.summary?.wins ?? 0, color: 'emerald', dot: 'bg-emerald-400', text: 'text-emerald-400' },
+                            { label: 'Losses', value: waveData.summary?.losses ?? 0, color: 'red', dot: 'bg-red-400', text: 'text-red-400' },
+                        ].map((stat, i) => (
+                            <span key={stat.label} className="flex items-center gap-1.5 text-[10px] font-semibold"
+                                style={{ animation: `fadeInUp 0.4s ease-out ${i * 0.1}s both` }}>
+                                <span className={`w-2 h-2 rounded-full ${stat.dot}`} />
+                                <span className="text-gray-400">{stat.label}</span>
+                                <span className={`${stat.text} tabular-nums`}>{stat.value}</span>
+                            </span>
+                        ))}
+                        {waveData.summary?.win_rate > 0 && (
+                            <span className="text-[10px] font-bold text-amber-400 ml-auto animate-pulse" style={{ animationDuration: '2.5s' }}>
+                                WR {waveData.summary.win_rate}%
+                            </span>
+                        )}
+                    </div>
+
+                    {/* Top active signals with stagger slide-in */}
+                    {waveData.active_signals?.length > 0 && (
+                        <div className="relative border-t border-white/[0.06] pt-2">
+                            {waveData.active_signals.slice(0, 5).map((sig: any, i: number) => {
+                                const isW = sig.pattern_class === 'W';
+                                const accent = isW ? '#ec4899' : '#f43f5e';
+                                return (
+                                    <div key={i}
+                                        className="flex items-center justify-between py-1.5 hover:bg-white/[0.02] rounded-lg px-1 -mx-1 transition-colors duration-200"
+                                        style={{ animation: `fadeInUp 0.3s ease-out ${0.3 + i * 0.08}s both` }}
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded transition-all duration-200 group-hover:scale-105" style={{ background: `${accent}20`, color: accent }}>
+                                                {sig.pattern_class}
+                                            </span>
+                                            <span className="text-xs font-semibold text-white truncate max-w-[120px]">{sig.name || sig.ticker}</span>
+                                            <span className="text-[9px] text-gray-600">{sig.wave_label}</span>
+                                        </div>
+                                        <div className="flex items-center gap-1.5">
+                                            {/* Confidence bar */}
+                                            <div className="w-12 h-1 rounded-full bg-white/[0.06] overflow-hidden hidden sm:block">
+                                                <div className="h-full rounded-full transition-all duration-700"
+                                                    style={{
+                                                        width: `${sig.confidence}%`,
+                                                        background: `linear-gradient(90deg, ${accent}80, ${accent})`,
+                                                        animation: `growWidth 0.8s ease-out ${0.5 + i * 0.1}s both`,
+                                                    }}
+                                                />
+                                            </div>
+                                            <span className="text-xs font-bold tabular-nums" style={{ color: accent }}>{sig.confidence}</span>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
+
+                    {/* Inline keyframes */}
+                    <style>{`
+                        @keyframes fadeInUp {
+                            from { opacity: 0; transform: translateY(8px); }
+                            to { opacity: 1; transform: translateY(0); }
+                        }
+                        @keyframes waveShift {
+                            0%, 100% { transform: translateX(0); }
+                            50% { transform: translateX(-20px); }
+                        }
+                        @keyframes growWidth {
+                            from { width: 0%; }
+                        }
+                    `}</style>
+                </Link>
+            )}
+
             {/* ── Bottom utility ── */}
             <div className="flex items-center justify-between pt-1">
                 <div className="flex items-center gap-3">
-                    <Link to="/dashboard/data-status" className="flex items-center gap-1.5 text-[11px] text-gray-600 hover:text-gray-400 transition-colors">
-                        <i className="fas fa-database text-[9px]" /> Data Status
-                    </Link>
+                    <span className="text-[11px] text-gray-700">MarketFlow</span>
                 </div>
                 <span className="text-[10px] text-gray-700 font-mono">v2.7.0</span>
             </div>

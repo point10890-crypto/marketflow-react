@@ -16,12 +16,15 @@ US_MARKET_DIR = os.path.join(BASE_DIR, 'us_market')
 US_OUTPUT_DIR = os.path.join(US_MARKET_DIR, 'output')
 US_DATA_DIR = os.path.join(US_MARKET_DIR, 'data')
 US_HISTORY_DIR = os.path.join(US_MARKET_DIR, 'history')
-US_PREVIEW_DIR = os.path.join(BASE_DIR, 'us_market_preview', 'output')
+US_PREVIEW_DIR = US_OUTPUT_DIR  # us_market_preview 심링크 제거 — 단일 경로
 
 # Crypto
 CRYPTO_ANALYTICS_DIR = os.path.join(BASE_DIR, 'crypto-analytics')
 CRYPTO_MARKET_DIR = os.path.join(CRYPTO_ANALYTICS_DIR, 'crypto_market')
 CRYPTO_OUTPUT_DIR = os.path.join(CRYPTO_MARKET_DIR, 'output')
+
+# Wave Pattern
+WAVE_DATA_DIR = os.path.join(DATA_DIR, 'wave')
 
 # 기타
 LOGS_DIR = os.path.join(BASE_DIR, 'logs')

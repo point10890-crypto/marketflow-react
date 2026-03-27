@@ -1,0 +1,75 @@
+{
+  "name": "모나리자",
+  "ticker": "012690.KS",
+  "result": "데이터 없음",
+  "date": "2026-03-27 21:35:37",
+  "elapsed": 1.6,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 2465.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 2465.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "Monalisa",
+    "sector": "Consumer Defensive",
+    "industry": "Household & Personal Products",
+    "market_cap": 90122313728,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": 2.36,
+    "beta": 0.39,
+    "fifty_two_week_high": 3165.0,
+    "fifty_two_week_low": 1938.0,
+    "revenue": 140890603520,
+    "profit_margin": 0.026889998,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 31560630720
+    },
+    {
+      "date": "2025-09",
+      "value": 30979794390
+    },
+    {
+      "date": "2025-06",
+      "value": 29822247560
+    },
+    {
+      "date": "2025-03",
+      "value": 31658542660
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 1081920590
+    },
+    {
+      "date": "2025-09",
+      "value": 118079210
+    },
+    {
+      "date": "2025-06",
+      "value": 458429770
+    },
+    {
+      "date": "2025-03",
+      "value": -161016640
+    }
+  ],
+  "news": []
+}

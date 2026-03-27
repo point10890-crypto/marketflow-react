@@ -1,0 +1,75 @@
+{
+  "name": "한컴위드",
+  "ticker": "054920.KQ",
+  "result": "데이터 없음",
+  "date": "2026-03-27 21:33:32",
+  "elapsed": 1.5,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 5230.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 5230.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "Hancom WITH",
+    "sector": "",
+    "industry": "",
+    "market_cap": 131402825728,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": null,
+    "beta": null,
+    "fifty_two_week_high": 6980.0,
+    "fifty_two_week_low": 2415.0,
+    "revenue": null,
+    "profit_margin": null,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 150526835310
+    },
+    {
+      "date": "2025-06",
+      "value": 186939091780
+    },
+    {
+      "date": "2025-03",
+      "value": 159736350890
+    },
+    {
+      "date": "2024-12",
+      "value": 116846671920
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 3356983860
+    },
+    {
+      "date": "2025-06",
+      "value": 4168967180
+    },
+    {
+      "date": "2025-03",
+      "value": 3135522960
+    },
+    {
+      "date": "2024-12",
+      "value": -8913158700
+    }
+  ],
+  "news": []
+}

@@ -18,13 +18,7 @@ echo [정리] 구 Watchdog 작업 삭제 완료
 echo [1/1] 로그인 자동 시작 등록...
 schtasks /delete /tn "%TASK_NAME%" /f >nul 2>&1
 
-schtasks /create /tn "%TASK_NAME%" ^
-  /tr "cmd /c \"cd /d %PROJECT% && auto_start_scheduler.bat\"" ^
-  /sc ONLOGON ^
-  /ru "%USERNAME%" ^
-  /rl HIGHEST ^
-  /delay 0000:30 ^
-  /f >nul 2>&1
+schtasks /create /tn "%TASK_NAME%" /tr "%PROJECT%\auto_start_scheduler.bat" /sc ONLOGON /f
 
 if %ERRORLEVEL%==0 (
     echo    [OK] 로그인 자동 시작 등록 완료

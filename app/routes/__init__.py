@@ -41,4 +41,8 @@ def register_blueprints(app):
     from app.routes.stock_analyzer import stock_analyzer_bp
     app.register_blueprint(stock_analyzer_bp, url_prefix='/api/stock-analyzer')
 
-    print("[OK] Blueprints registered (KR + US + Crypto + Econ + Auth + Admin + Stripe + StockAnalyzer)")
+    # Wave Pattern Detection routes
+    from app.routes.wave import wave_bp
+    app.register_blueprint(wave_bp, url_prefix='/api/wave')
+
+    print("[OK] Blueprints registered (KR + US + Crypto + Econ + Auth + Admin + Stripe + StockAnalyzer + Wave)")
