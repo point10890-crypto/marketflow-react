@@ -1,8 +1,8 @@
 {
-  "timestamp": "2026-03-27T08:29:49.403347",
+  "timestamp": "2026-03-27T09:01:41.013342",
   "version": "2.0",
   "market_data": {
-    "timestamp": "2026-03-27T08:29:49.403352",
+    "timestamp": "2026-03-27T09:01:41.013347",
     "indices": {
       "SPY": {
         "name": "S&P 500",
@@ -44,30 +44,30 @@
     "futures": {
       "ES=F": {
         "name": "S&P 500 Futures",
-        "price": 6547.5,
-        "change": -1.4,
+        "price": 6551.75,
+        "change": -1.34,
         "prev_close": 6640.75,
         "high_52w": 7043.0,
         "low_52w": 4832.0,
-        "pct_from_high": -7.04
+        "pct_from_high": -6.98
       },
       "NQ=F": {
         "name": "NASDAQ Futures",
-        "price": 23868.5,
-        "change": -2.05,
+        "price": 23883.75,
+        "change": -1.99,
         "prev_close": 24367.75,
         "high_52w": 26399.0,
         "low_52w": 16460.0,
-        "pct_from_high": -9.59
+        "pct_from_high": -9.53
       },
       "YM=F": {
         "name": "Dow Futures",
-        "price": 46403.0,
-        "change": -0.66,
+        "price": 46440.0,
+        "change": -0.58,
         "prev_close": 46711.0,
         "high_52w": 50611.0,
         "low_52w": 36708.0,
-        "pct_from_high": -8.31
+        "pct_from_high": -8.24
       }
     },
     "bonds": {
@@ -102,88 +102,88 @@
     "currencies": {
       "DX-Y.NYB": {
         "name": "Dollar Index",
-        "price": 99.86,
+        "price": 99.87,
         "change": 0.27,
         "prev_close": 99.6,
         "high_52w": 104.68,
         "low_52w": 95.55,
-        "pct_from_high": -4.6
+        "pct_from_high": -4.59
       },
       "USDKRW=X": {
         "name": "USD/KRW",
-        "price": 1509.16,
-        "change": 0.79,
-        "prev_close": 1497.31,
+        "price": 1508.41,
+        "change": 0.5,
+        "prev_close": 1500.97,
         "high_52w": 1517.74,
         "low_52w": 1322.42,
-        "pct_from_high": -0.57
+        "pct_from_high": -0.61
       },
       "USDJPY=X": {
         "name": "USD/JPY",
-        "price": 159.66,
-        "change": 0.59,
-        "prev_close": 158.72,
+        "price": 159.69,
+        "change": 0.19,
+        "prev_close": 159.38,
         "high_52w": 159.82,
         "low_52w": 139.89,
-        "pct_from_high": -0.1
+        "pct_from_high": -0.08
       },
       "EURUSD=X": {
         "name": "EUR/USD",
         "price": 1.15,
-        "change": -0.64,
+        "change": -0.2,
         "prev_close": 1.16,
         "high_52w": 1.2,
         "low_52w": 1.07,
-        "pct_from_high": -4.02
+        "pct_from_high": -4.04
       }
     },
     "commodities": {
       "GC=F": {
         "name": "Gold",
-        "price": 4392.7,
-        "change": -3.45,
+        "price": 4396.6,
+        "change": -3.37,
         "prev_close": 4549.8,
         "high_52w": 5586.2,
         "low_52w": 2949.7,
-        "pct_from_high": -21.37
+        "pct_from_high": -21.3
       },
       "CL=F": {
         "name": "Crude Oil",
-        "price": 93.31,
-        "change": 3.31,
+        "price": 93.18,
+        "change": 3.17,
         "prev_close": 90.32,
         "high_52w": 119.48,
         "low_52w": 54.98,
-        "pct_from_high": -21.9
+        "pct_from_high": -22.01
       },
       "BTC-USD": {
         "name": "Bitcoin",
-        "price": 68626.22,
-        "change": -3.76,
-        "prev_close": 71309.88,
+        "price": 71309.88,
+        "change": 1.12,
+        "prev_close": 70517.86,
         "high_52w": 126198.07,
         "low_52w": 60074.2,
-        "pct_from_high": -45.62
+        "pct_from_high": -43.49
       }
     },
     "korean_indices": {
       "^KS11": {
         "name": "KOSPI",
-        "price": 5460.46,
-        "change": -3.22,
-        "prev_close": 5642.21,
+        "price": 5642.21,
+        "change": 1.59,
+        "prev_close": 5553.92,
         "high_52w": 6347.41,
-        "low_52w": null,
-        "pct_from_high": -13.97
+        "low_52w": 2284.72,
+        "pct_from_high": -11.11
       },
       "^KQ11": {
         "name": "KOSDAQ",
-        "price": 1136.64,
-        "change": -1.98,
-        "prev_close": 1159.55,
+        "price": 1159.55,
+        "change": 3.4,
+        "prev_close": 1121.44,
         "high_52w": 1215.67,
-        "low_52w": null,
-        "pct_from_high": -6.5
+        "low_52w": 637.55,
+        "pct_from_high": -4.62
       }
     },
     "vix": {
@@ -219,8 +219,8 @@
       },
       "safe_haven": {
         "stock_chg": -1.79,
-        "gold_chg": -3.45,
-        "score": 67
+        "gold_chg": -3.37,
+        "score": 66
       },
       "junk_bond": {
         "yield_change": 2.03,
@@ -242,89 +242,89 @@
       "qqq_bullish": 50
     },
     "risk": {
-      "risk_level": "High",
-      "var_95_5d": 1527.71,
-      "cvar_95_5d": 2388.54
+      "risk_level": "Elevated",
+      "var_95_5d": 1629.65,
+      "cvar_95_5d": 2193.61
     },
     "top_picks": [
       {
         "ticker": "T",
         "name": "AT&T Inc.",
-        "final_score": 85.2,
-        "quant_score": 71.5,
+        "final_score": 86.1,
+        "quant_score": 72.6,
         "ai_bonus": 28,
         "ai_recommendation": "적극 매수",
         "grade": "🌟 A급 (적극 매수)",
-        "current_price": 28.81,
-        "target_upside": 4.4,
+        "current_price": 28.92,
+        "target_upside": 5.3,
         "sd_stage": "Strong Accumulation",
         "inst_pct": 68.01,
-        "rsi": 61.7,
+        "rsi": 62.6,
         "ai_summary": "```json\n{\n  \"thesis\": \"AT&T는 P/E 9.48의 저평가 매력과 강력한 기관 수급(85/100)을 바탕으로, VIX 27.19의 높은 시장 변동성 속에서 안정적인 방어주 역할을 할 수 있는 적극 매수(A급) 종목입니다.\",\n  \"catalysts\": [\n    {\n      \"point\": \"월가 투자은행의 목표가 상향 조정으로 인한 투심 개선\",\n      \"evidence\": \"Keybanc의 AT&T 목표가 상향 리포트 발표 [GuruFocus, 2026-03-25]\"\n    },\n    {\n      \"point\": \"강력한 기관 매수세 및 수급 모멘텀\",\n      \"evidence\": \"수급 점수 85/100 (Strong Accumulation) 및 기관 보유율 68.0% [수치 분석 데이터]\"\n    }\n  ],\n  \"bear_cases\": [\n    {\n      \"point\": \"거시경제 불안정 및 고금리 장기화 리스크\",\n      \"evide",
         "rank": 1
       },
       {
-        "ticker": "ALGN",
-        "name": "Align Technology, Inc.",
-        "final_score": 84.6,
-        "quant_score": 70.8,
-        "ai_bonus": 28,
-        "ai_recommendation": "적극 매수",
-        "grade": "🌟 A급 (적극 매수)",
-        "current_price": 180.27,
-        "target_upside": 11.9,
-        "sd_stage": "Neutral",
-        "inst_pct": 96.16,
-        "rsi": 53.4,
-        "ai_summary": "```json\n{\n  \"thesis\": \"행동주의 펀드 엘리엇의 지분 확보 소식과 96.2%에 달하는 압도적인 기관 보유율을 바탕으로, 높은 시장 변동성 속에서도 견고한 하방 지지와 주가 상승 모멘텀을 기대할 수 있는 적극 매수(A급) 종목입니다.\",\n  \"catalysts\": [\n    {\n      \"point\": \"행동주의 펀드의 지분 확보로 인한 주주가치 제고 기대감\",\n      \"evidence\": \"엘리엇(Elliott) 매니지먼트의 상당한 지분 확보 소식으로 인한 프리마켓 주가 상승 [MSN, 2026-03-24]\"\n    },\n    {\n      \"point\": \"경쟁사 대비 우수한 주가 상대수익률\",\n      \"evidence\": \"강력한 거래일 기준 경쟁사 대비 아웃퍼폼 및 S&P 500 대비 +0.8% 초과 수익 달성 [MarketWatch, 2026-03-23 및 수치 분석]\"\n    }\n  ],\n  \"bear_cases\": [\n    {\n      \"po",
+        "ticker": "APD",
+        "name": "Air Products and Chemicals, Inc.",
+        "final_score": 71.7,
+        "quant_score": 67.1,
+        "ai_bonus": 18,
+        "ai_recommendation": "매수",
+        "grade": "📈 B급 (매수 고려)",
+        "current_price": 293.17,
+        "target_upside": 5.1,
+        "sd_stage": "Strong Accumulation",
+        "inst_pct": 93.62,
+        "rsi": 62.8,
+        "ai_summary": "```json\n{\n  \"thesis\": \"APD는 헬륨 가격 상승 등 우호적인 제품 가격 모멘텀과 높은 기관 보유율(93.6%)을 바탕으로 견조한 상승세를 보이고 있으나, 높은 VIX 지수와 금리 환경을 고려해 분할 매수 접근이 유효합니다.\",\n  \"catalysts\": [\n    {\n      \"point\": \"핵심 제품(헬륨) 가격 상승에 따른 주요 IB의 투자 의견 상향\",\n      \"evidence\": \"JPMorgan이 헬륨 가격 상승을 이유로 APD의 투자 등급을 상향 조정함 [Insider Monkey, 2026-03-26]\"\n    },\n    {\n      \"point\": \"시장 대비 우수한 주가 모멘텀 및 기술적 강세\",\n      \"evidence\": \"주가 3.25% 상승 및 S&P 500 대비 +8.5% 초과 수익률 달성, MA Signal Bullish [GuruFocus, 2026-03-24 및 수치 분석 데이터]\"\n    }\n  ],\n  \"bear_ca",
         "rank": 2
       },
       {
         "ticker": "AON",
         "name": "Aon plc",
-        "final_score": 74.7,
-        "quant_score": 67.1,
+        "final_score": 70.8,
+        "quant_score": 62.3,
         "ai_bonus": 21,
         "ai_recommendation": "매수",
         "grade": "📈 B급 (매수 고려)",
-        "current_price": 321.45,
-        "target_upside": 23.6,
-        "sd_stage": "Accumulation",
+        "current_price": 323.77,
+        "target_upside": 22.7,
+        "sd_stage": "Neutral",
         "inst_pct": 88.78,
-        "rsi": 45.3,
+        "rsi": 47.5,
         "ai_summary": "```json\n{\n  \"thesis\": \"AON은 18.91배의 합리적인 PER과 88.8%의 압도적인 기관 보유율을 바탕으로 하방 경직성을 확보하고 있으나, 3.7%의 저조한 매출 성장률과 불안정한 매크로 환경(VIX 27.19)을 고려할 때 단기적인 강한 상승 추세를 기대하기는 어렵습니다.\",\n  \"catalysts\": [\n    {\n      \"point\": \"기관 투자자의 지속적인 매수세 및 견고한 수급\",\n      \"evidence\": \"SG Americas Securities LLC의 주식 포지션 확대 및 전체 기관 보유율 88.8% [MarketBeat, 2026-03-25 및 수치 분석]\"\n    },\n    {\n      \"point\": \"목표가 대비 높은 상승 여력\",\n      \"evidence\": \"현재가($321.45) 기준 목표가 대비 +23.6%의 상승 여력 보유 [수치 분석]\"\n    }\n  ],\n  \"bear_cases\": [\n    {\n      \"",
         "rank": 3
       },
       {
-        "ticker": "AMAT",
-        "name": "Applied Materials, Inc.",
-        "final_score": 70.9,
-        "quant_score": 66.1,
-        "ai_bonus": 18,
+        "ticker": "APO",
+        "name": "Apollo Global Management, Inc.",
+        "final_score": 70.7,
+        "quant_score": 72.1,
+        "ai_bonus": 13,
         "ai_recommendation": "매수",
-        "grade": "📈 B급 (매수 고려)",
-        "current_price": 369.34,
-        "target_upside": 11.2,
+        "grade": "🌟 A급 (적극 매수)",
+        "current_price": 109.98,
+        "target_upside": 40.3,
         "sd_stage": "Accumulation",
-        "inst_pct": 85.55,
-        "rsi": 58.7,
-        "ai_summary": "```json\n{\n  \"thesis\": \"AMAT는 DRAM 수요 회복과 웨이퍼 팹 지출 가시성 개선으로 기관 투자자들의 강한 지지(85.5%)를 받고 있으나, 역성장(-2.1%) 중인 매출 대비 높은 밸류에이션(P/E 37.88)과 거시경제의 높은 변동성(VIX 27.19)을 고려할 때 신중한 접근이 필요합니다.\",\n  \"catalysts\": [\n    {\n      \"point\": \"웨이퍼 팹(Wafer-Fab) 지출 가시성 개선에 따른 센티먼트 호전\",\n      \"evidence\": \"Wafer-Fab Spending Visibility 개선으로 주가 상승 [Yahoo Finance, 2026-03-25]\"\n    },\n    {\n      \"point\": \"DRAM 시장 강세에 따른 월가의 투자 의견 상향\",\n      \"evidence\": \"BofA가 DRAM 강세를 근거로 투자의견을 'Buy'로 상향 [MSN, 2026-03-23]\"\n    }\n  ],\n  \"bear_c",
+        "inst_pct": 67.99,
+        "rsi": 44.8,
+        "ai_summary": "```json\n{\n  \"thesis\": \"Apollo Global Management(APO)는 87.7%의 폭발적인 매출 성장률과 19.82배의 합리적인 밸류에이션을 바탕으로 장기적인 성장성이 기대되나, 최근 이사 사망 등 거버넌스 이슈와 거시경제의 불확실성(VIX 27.19)으로 인해 단기 변동성이 예상됩니다.\",\n  \"catalysts\": [\n    {\n      \"point\": \"강력한 매출 성장 및 밸류에이션 매력\",\n      \"evidence\": \"매출 성장률 87.7% 및 P/E 19.82 [종목 정보 수치 분석]\"\n    },\n    {\n      \"point\": \"대규모 글로벌 투자 확대\",\n      \"evidence\": \"일본에서 37억 달러 규모의 글라스 딜 성사로 아폴로의 최대 일본 투자 기록 [Stock Titan, 2026-03-24]\"\n    },\n    {\n      \"point\": \"높은 기관 투자자 신뢰도\",\n      \"evidence\": \"기관",
         "rank": 4
       },
       {
-        "ticker": "APD",
-        "name": "Air Products and Chemicals, Inc.",
-        "final_score": 70.2,
-        "quant_score": 65.3,
-        "ai_bonus": 18,
+        "ticker": "AMP",
+        "name": "Ameriprise Financial, Inc.",
+        "final_score": 68.2,
+        "quant_score": 65.2,
+        "ai_bonus": 16,
         "ai_recommendation": "매수",
         "grade": "📈 B급 (매수 고려)",
-        "current_price": 290.09,
-        "target_upside": 6.2,
-        "sd_stage": "Neutral",
-        "inst_pct": 93.62,
-        "rsi": 60.3,
-        "ai_summary": "```json\n{\n  \"thesis\": \"APD는 헬륨 가격 상승 등 우호적인 제품 가격 모멘텀과 높은 기관 보유율(93.6%)을 바탕으로 견조한 상승세를 보이고 있으나, 높은 VIX 지수와 금리 환경을 고려해 분할 매수 접근이 유효합니다.\",\n  \"catalysts\": [\n    {\n      \"point\": \"핵심 제품(헬륨) 가격 상승에 따른 주요 IB의 투자 의견 상향\",\n      \"evidence\": \"JPMorgan이 헬륨 가격 상승을 이유로 APD의 투자 등급을 상향 조정함 [Insider Monkey, 2026-03-26]\"\n    },\n    {\n      \"point\": \"시장 대비 우수한 주가 모멘텀 및 기술적 강세\",\n      \"evidence\": \"주가 3.25% 상승 및 S&P 500 대비 +8.5% 초과 수익률 달성, MA Signal Bullish [GuruFocus, 2026-03-24 및 수치 분석 데이터]\"\n    }\n  ],\n  \"bear_ca",
+        "current_price": 448.15,
+        "target_upside": 27.2,
+        "sd_stage": "Accumulation",
+        "inst_pct": 90.43,
+        "rsi": 43.5,
+        "ai_summary": "```json\n{\n  \"thesis\": \"Ameriprise Financial(AMP)은 12.45배의 낮은 P/E와 90.4%에 달하는 압도적인 기관 보유율을 바탕으로 안정적인 펀더멘털을 보이고 있으며, 목표가 대비 26.1%의 상승 여력을 보유한 매력적인 가치주입니다 [수치 분석].\",\n  \"catalysts\": [\n    {\n      \"point\": \"경쟁사 대비 상대적 강세 및 저평가 매력 부각\",\n      \"evidence\": \"최근 강세장에서 경쟁사들을 상회하는 수익률을 기록했으며, 시장에서 저평가 여부에 대한 긍정적 논의가 진행 중 [MarketWatch, 2026-03-24 / Yahoo Finance, 2026-03-25]\"\n    },\n    {\n      \"point\": \"다가오는 1분기 실적 발표를 통한 모멘텀 형성 기대\",\n      \"evidence\": \"4월 23일 장 마감 후 1분기 실적 발표가 예정되어 있어 단기 촉매제로 작용 가능 [Stock Ti",
         "rank": 5
       }
     ],
@@ -337,13 +337,13 @@
     },
     "track_record": {
       "total_picks": "N/A",
-      "win_rate": 53.3,
-      "avg_return": -0.67,
+      "win_rate": 40.0,
+      "avg_return": -1.05,
       "alpha": "N/A"
     },
     "decision_signal": {
-      "score": 35,
-      "action": "DEFENSIVE",
+      "score": 45,
+      "action": "HOLD",
       "timing": "SELECTIVE",
       "components": {
         "market_gate": {
@@ -359,8 +359,8 @@
           "contribution": 0
         },
         "risk": {
-          "level": "High",
-          "contribution": -10
+          "level": "Elevated",
+          "contribution": 0
         },
         "sector_phase": {
           "phase": "Late Cycle",
@@ -375,57 +375,62 @@
   },
   "smart_money": {
     "top_picks": {
-      "timestamp": "2026-03-26T20:34:41.470997",
+      "timestamp": "2026-03-27T08:31:07.111472",
       "picks": [
         {
           "rank": 1,
           "ticker": "T",
           "name": "AT&T Inc.",
-          "final_score": 85.2,
+          "final_score": 86.1,
           "ai_recommendation": "적극 매수",
-          "target_upside": 4.4,
+          "target_upside": 5.3,
           "sd_stage": "Strong Accumulation"
         },
         {
           "rank": 2,
-          "ticker": "ALGN",
-          "name": "Align Technology, Inc.",
-          "final_score": 84.6,
-          "ai_recommendation": "적극 매수",
-          "target_upside": 11.9,
-          "sd_stage": "Neutral"
+          "ticker": "APD",
+          "name": "Air Products and Chemicals, Inc.",
+          "final_score": 71.7,
+          "ai_recommendation": "매수",
+          "target_upside": 5.1,
+          "sd_stage": "Strong Accumulation"
         },
         {
           "rank": 3,
           "ticker": "AON",
           "name": "Aon plc",
-          "final_score": 74.7,
+          "final_score": 70.8,
           "ai_recommendation": "매수",
-          "target_upside": 23.6,
-          "sd_stage": "Accumulation"
+          "target_upside": 22.7,
+          "sd_stage": "Neutral"
         },
         {
           "rank": 4,
-          "ticker": "AMAT",
-          "name": "Applied Materials, Inc.",
-          "final_score": 70.9,
+          "ticker": "APO",
+          "name": "Apollo Global Management, Inc.",
+          "final_score": 70.7,
           "ai_recommendation": "매수",
-          "target_upside": 11.2,
+          "target_upside": 40.3,
           "sd_stage": "Accumulation"
         },
         {
           "rank": 5,
-          "ticker": "APD",
-          "name": "Air Products and Chemicals, Inc.",
-          "final_score": 70.2,
+          "ticker": "AMP",
+          "name": "Ameriprise Financial, Inc.",
+          "final_score": 68.2,
           "ai_recommendation": "매수",
-          "target_upside": 6.2,
-          "sd_stage": "Neutral"
+          "target_upside": 27.2,
+          "sd_stage": "Accumulation"
         }
       ]
     },
     "performance": {
       "recent_dates": [
+        {
+          "date": "2026-03-27",
+          "avg_return": -0.0,
+          "win_rate": 40.0
+        },
         {
           "date": "2026-03-26",
           "avg_return": -2.35,
@@ -435,15 +440,10 @@
           "date": "2026-03-25",
           "avg_return": -0.81,
           "win_rate": 50.0
-        },
-        {
-          "date": "2026-03-20",
-          "avg_return": 1.16,
-          "win_rate": 80.0
         }
       ],
-      "overall_avg": -0.67,
-      "overall_win_rate": 53.3
+      "overall_avg": -1.05,
+      "overall_win_rate": 40.0
     }
   }
 }

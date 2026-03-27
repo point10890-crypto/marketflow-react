@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-03-27T08:31:12.313526",
+  "timestamp": "2026-03-27T09:02:50.249072",
   "predictions": {
     "spy": {
       "current_price": 645.09,
@@ -28,7 +28,7 @@
         {
           "feature": "gold_return_1w",
           "impact": 0.0784,
-          "value": -4.5,
+          "value": -4.43,
           "direction": "bearish"
         },
         {

@@ -1,15 +1,15 @@
 {
   "summary": {
-    "total_picks": 370,
+    "total_picks": 380,
     "unique_tickers": 90,
-    "win_rate": 37.8,
-    "avg_return": 0.66,
-    "avg_alpha": 5.62,
+    "win_rate": 36.8,
+    "avg_return": 0.64,
+    "avg_alpha": 5.48,
     "max_gain": 154.09,
     "max_loss": -57.98,
     "best_ticker": "SNDK",
     "worst_ticker": "TEAM",
-    "num_snapshots": 37
+    "num_snapshots": 38
   },
   "chart_data": [
     {
@@ -195,6 +195,11 @@
     {
       "date": "2026-03-26",
       "avg_return": -2.35,
+      "spy_return": 0.0
+    },
+    {
+      "date": "2026-03-27",
+      "avg_return": -0.0,
       "spy_return": 0.0
     }
   ],
@@ -3898,9 +3903,117 @@
       "return_pct": -7.49,
       "final_score": 65.9,
       "recommendation": "매수"
+    },
+    {
+      "ticker": "T",
+      "name": "AT&T Inc.",
+      "rec_date": "2026-03-27",
+      "entry_price": 28.92,
+      "current_price": 28.92,
+      "return_pct": 0.0,
+      "final_score": 86.1,
+      "recommendation": "적극 매수"
+    },
+    {
+      "ticker": "APD",
+      "name": "Air Products and Chemicals, Inc.",
+      "rec_date": "2026-03-27",
+      "entry_price": 293.17,
+      "current_price": 293.17,
+      "return_pct": 0.0,
+      "final_score": 71.7,
+      "recommendation": "매수"
+    },
+    {
+      "ticker": "AON",
+      "name": "Aon plc",
+      "rec_date": "2026-03-27",
+      "entry_price": 323.77,
+      "current_price": 323.77,
+      "return_pct": -0.0,
+      "final_score": 70.8,
+      "recommendation": "매수"
+    },
+    {
+      "ticker": "APO",
+      "name": "Apollo Global Management, Inc.",
+      "rec_date": "2026-03-27",
+      "entry_price": 109.98,
+      "current_price": 109.98,
+      "return_pct": 0.0,
+      "final_score": 70.7,
+      "recommendation": "매수"
+    },
+    {
+      "ticker": "AMP",
+      "name": "Ameriprise Financial, Inc.",
+      "rec_date": "2026-03-27",
+      "entry_price": 448.15,
+      "current_price": 448.15,
+      "return_pct": -0.0,
+      "final_score": 68.2,
+      "recommendation": "매수"
+    },
+    {
+      "ticker": "AKAM",
+      "name": "Akamai Technologies, Inc.",
+      "rec_date": "2026-03-27",
+      "entry_price": 117.25,
+      "current_price": 117.25,
+      "return_pct": 0.0,
+      "final_score": 67.7,
+      "recommendation": "매수"
+    },
+    {
+      "ticker": "AMD",
+      "name": "Advanced Micro Devices, Inc.",
+      "rec_date": "2026-03-27",
+      "entry_price": 203.77,
+      "current_price": 203.77,
+      "return_pct": 0.0,
+      "final_score": 67.1,
+      "recommendation": "매수"
+    },
+    {
+      "ticker": "AMAT",
+      "name": "Applied Materials, Inc.",
+      "rec_date": "2026-03-27",
+      "entry_price": 338.55,
+      "current_price": 338.55,
+      "return_pct": -0.0,
+      "final_score": 66.9,
+      "recommendation": "매수"
+    },
+    {
+      "ticker": "ALB",
+      "name": "Albemarle Corporation",
+      "rec_date": "2026-03-27",
+      "entry_price": 174.5,
+      "current_price": 174.5,
+      "return_pct": 0.0,
+      "final_score": 66.8,
+      "recommendation": "매수"
+    },
+    {
+      "ticker": "AWK",
+      "name": "American Water Works Company, Inc.",
+      "rec_date": "2026-03-27",
+      "entry_price": 137.51,
+      "current_price": 137.51,
+      "return_pct": -0.0,
+      "final_score": 66.4,
+      "recommendation": "매수"
     }
   ],
   "by_date": [
+    {
+      "date": "2026-03-27",
+      "avg_return": -0.0,
+      "spy_return": 0.0,
+      "alpha": -0.0,
+      "win_rate": 40.0,
+      "num_picks": 10
+    },
     {
       "date": "2026-03-26",
       "avg_return": -2.35,

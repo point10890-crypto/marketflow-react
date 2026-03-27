@@ -1,6 +1,6 @@
 {
   "action": "CAUTIOUS",
-  "score": 29,
+  "score": 39,
   "components": {
     "market_gate": {
       "score": 30,
@@ -15,8 +15,8 @@
       "contribution": 0
     },
     "risk": {
-      "level": "High",
-      "contribution": -10
+      "level": "Elevated",
+      "contribution": 0
     },
     "sector_phase": {
       "phase": "Late Cycle",
@@ -27,50 +27,50 @@
     {
       "ticker": "T",
       "name": "AT&T Inc.",
-      "final_score": 85.2,
+      "final_score": 86.1,
       "grade": "🌟 A급 (적극 매수)",
       "ai_recommendation": "적극 매수",
-      "target_upside": 4.4
-    },
-    {
-      "ticker": "ALGN",
-      "name": "Align Technology, Inc.",
-      "final_score": 84.6,
-      "grade": "🌟 A급 (적극 매수)",
-      "ai_recommendation": "적극 매수",
-      "target_upside": 11.9
-    },
-    {
-      "ticker": "AON",
-      "name": "Aon plc",
-      "final_score": 74.7,
-      "grade": "📈 B급 (매수 고려)",
-      "ai_recommendation": "매수",
-      "target_upside": 23.6
-    },
-    {
-      "ticker": "AMAT",
-      "name": "Applied Materials, Inc.",
-      "final_score": 70.9,
-      "grade": "📈 B급 (매수 고려)",
-      "ai_recommendation": "매수",
-      "target_upside": 11.2
+      "target_upside": 5.3
     },
     {
       "ticker": "APD",
       "name": "Air Products and Chemicals, Inc.",
-      "final_score": 70.2,
+      "final_score": 71.7,
       "grade": "📈 B급 (매수 고려)",
       "ai_recommendation": "매수",
-      "target_upside": 6.2
+      "target_upside": 5.1
+    },
+    {
+      "ticker": "AON",
+      "name": "Aon plc",
+      "final_score": 70.8,
+      "grade": "📈 B급 (매수 고려)",
+      "ai_recommendation": "매수",
+      "target_upside": 22.7
+    },
+    {
+      "ticker": "APO",
+      "name": "Apollo Global Management, Inc.",
+      "final_score": 70.7,
+      "grade": "🌟 A급 (적극 매수)",
+      "ai_recommendation": "매수",
+      "target_upside": 40.3
+    },
+    {
+      "ticker": "AMP",
+      "name": "Ameriprise Financial, Inc.",
+      "final_score": 68.2,
+      "grade": "📈 B급 (매수 고려)",
+      "ai_recommendation": "매수",
+      "target_upside": 27.2
     }
   ],
   "timing": "WAIT",
   "warnings": [
     "APO is in critical drawdown: -27.7% from peak",
     "AMD is in critical drawdown: -21.5% from peak",
-    "AMAT breached stop-loss: -8.3% from entry",
-    "ALGN drawdown warning: -10.2% from peak",
-    "AIZ drawdown warning: -10.3% from peak"
+    "AMZN drawdown warning: -16.1% from peak",
+    "AMP drawdown warning: -17.6% from peak",
+    "ALB drawdown warning: -10.7% from peak"
   ]
 }
