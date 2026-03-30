@@ -1,96 +1,16 @@
 {
   "metadata": {
-    "generated_at": "2026-03-30T16:14:16.862838",
+    "generated_at": "2026-03-30T19:01:31.039859",
     "market": "CRYPTO",
     "gate": "RED",
-    "gate_score": 21,
-    "processing_time_sec": 17.7
+    "universe_size": 50
   },
+  "signals": [],
   "summary": {
-    "total_screened": 50,
-    "stage2_passed": 1,
-    "trend_passed": 1,
-    "vcp_found": 1,
-    "entry_ready": 0
-  },
-  "signals": [
-    {
-      "symbol": "MKR",
-      "name": "MKR",
-      "market": "CRYPTO",
-      "sector": "",
-      "price": 1712.26,
-      "composite": {
-        "composite_score": 56.8,
-        "rating": "Developing VCP",
-        "rating_description": "형성 중인 VCP 패턴",
-        "guidance": "거래량 확인 후 피벗 매수",
-        "valid_vcp": "True",
-        "entry_ready": false,
-        "weakest_component": "Volume Pattern",
-        "strongest_component": "Relative Strength",
-        "component_breakdown": {
-          "trend_template": {
-            "score": 75.0,
-            "weight": 0.25,
-            "weighted": 18.8,
-            "label": "Trend Template (Stage 2)"
-          },
-          "contraction_quality": {
-            "score": 47,
-            "weight": 0.25,
-            "weighted": 11.8,
-            "label": "Contraction Quality"
-          },
-          "volume_pattern": {
-            "score": 30,
-            "weight": 0.2,
-            "weighted": 6.0,
-            "label": "Volume Pattern"
-          },
-          "pivot_proximity": {
-            "score": 40,
-            "weight": 0.15,
-            "weighted": 6.0,
-            "label": "Pivot Proximity"
-          },
-          "relative_strength": {
-            "score": 95,
-            "weight": 0.15,
-            "weighted": 14.2,
-            "label": "Relative Strength"
-          }
-        }
-      },
-      "trend_template": {
-        "score": 75.0,
-        "passed": "True",
-        "stage": 2,
-        "stage_label": "Stage 2 - Early"
-      },
-      "vcp_pattern": {
-        "score": 47,
-        "valid_vcp": "True",
-        "num_contractions": 2,
-        "pivot_price": 1948.11
-      },
-      "volume_pattern": {
-        "score": 30,
-        "dry_up_ratio": 1.06
-      },
-      "pivot_proximity": {
-        "score": 40,
-        "distance_from_pivot_pct": 12.1,
-        "trade_status": "BUILDING"
-      },
-      "relative_strength": {
-        "score": 95,
-        "rs_rank_estimate": 95
-      },
-      "stage": {
-        "stage": 2,
-        "stage_label": "Stage 2 - Early"
-      }
-    }
-  ]
+    "setups_4h": 0,
+    "setups_1d": 0,
+    "signals_4h": 0,
+    "signals_1d": 0,
+    "published": 0
+  }
 }
