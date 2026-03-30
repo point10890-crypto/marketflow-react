@@ -199,7 +199,11 @@ export default function WaveOverviewPage() {
                     <input
                         type="text"
                         value={searchTicker}
-                        onChange={e => setSearchTicker(e.target.value.toUpperCase())}
+                        onChange={e => {
+                            const v = e.target.value;
+                            // 영문만 대문자 변환, 한글은 그대로
+                            setSearchTicker(/^[a-zA-Z0-9]*$/.test(v) ? v.toUpperCase() : v);
+                        }}
                         onKeyDown={handleKeyDown}
                         placeholder={MARKET_TABS.find(t => t.key === market)?.placeholder}
                         className="flex-1 bg-black/40 border border-white/10 rounded-lg px-3 py-1.5 text-white text-sm placeholder:text-gray-600 focus:outline-none focus:border-cyan-500/50"

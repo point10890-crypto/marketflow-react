@@ -8,11 +8,53 @@ import logging
 import time
 from flask import Blueprint, request, jsonify
 
+import pandas as pd
+
 from engine.wave.data_adapter import load_ohlcv, ohlcv_to_chart_data
 from engine.wave.zigzag import zigzag, extract_five_point_groups
 from engine.wave.classifier import classify_pattern
 from engine.wave.pattern_scorer import score_pattern
 from engine.wave.models import WAVE_META, WaveDetectResult
+
+# 종목명 → 종목코드 매핑 캐시
+_name_to_ticker: dict = {}
+_name_map_loaded = False
+
+
+def _load_name_map():
+    global _name_to_ticker, _name_map_loaded
+    if _name_map_loaded:
+        return
+    _base = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    for path in [os.path.join(_base, 'ticker_to_yahoo_map.csv'), os.path.join(_base, 'data', 'ticker_to_yahoo_map.csv')]:
+        if os.path.exists(path):
+            try:
+                df = pd.read_csv(path, dtype={'ticker': str})
+                df['ticker'] = df['ticker'].str.zfill(6)
+                _name_to_ticker = {row['name']: row['ticker'] for _, row in df.iterrows() if pd.notna(row.get('name'))}
+            except Exception:
+                pass
+            break
+    _name_map_loaded = True
+
+
+def _resolve_ticker(raw: str) -> str:
+    """종목명이면 코드로 변환, 코드면 그대로 반환"""
+    # 숫자 6자리면 이미 코드
+    if raw.isdigit() and len(raw) == 6:
+        return raw
+    # 영문 대문자면 US ticker
+    if raw.isascii() and raw.isalpha():
+        return raw
+    # 한글 종목명 → 코드 변환
+    _load_name_map()
+    if raw in _name_to_ticker:
+        return _name_to_ticker[raw]
+    # 부분 매치 (삼성 → 삼성전자)
+    for name, code in _name_to_ticker.items():
+        if raw in name:
+            return code
+    return raw
 
 logger = logging.getLogger(__name__)
 
@@ -94,8 +136,12 @@ def detect_patterns(ticker: str):
     """
     단일 종목 패턴 감지.
     GET /api/wave/detect/005930?market=KR&lookback=200
+    GET /api/wave/detect/삼성전자?market=KR  (종목명도 지원)
     """
     market = request.args.get('market', 'KR').upper()
+    # 종목명 → 코드 자동 변환
+    if market == 'KR':
+        ticker = _resolve_ticker(ticker)
     lookback = int(request.args.get('lookback', '200'))
     reversal_pct = request.args.get('reversal_pct', None)
     if reversal_pct is not None:
