@@ -14,7 +14,7 @@ Set objWMI = GetObject("winmgmts:\\.\root\cimv2")
 
 PROJECT = "C:\bitman_marketfloww"
 PYTHON = PROJECT & "\.venv\Scripts\python.exe"
-FRONTEND = PROJECT & "\frontend"
+FRONTEND = PROJECT & "\frontend-react"
 
 ' 환경변수 설정
 objShell.Environment("Process")("PYTHONIOENCODING") = "utf-8"
@@ -75,7 +75,7 @@ If IsPortOpen(4000) Then
 Else
     Log "Next.js: starting..."
     objShell.CurrentDirectory = FRONTEND
-    objShell.Run "cmd /c ""cd /d " & FRONTEND & " && npm start""", 0, False
+    objShell.Run "cmd /c ""cd /d " & FRONTEND & " && npm run dev""", 0, False
     Dim j
     For j = 1 To 10
         WScript.Sleep 3000
@@ -148,7 +148,7 @@ Do While True
     If Not IsPortOpen(4000) Then
         Log "WATCHDOG: Next.js DOWN — restarting..."
         objShell.CurrentDirectory = FRONTEND
-        objShell.Run "cmd /c ""cd /d " & FRONTEND & " && npm start""", 0, False
+        objShell.Run "cmd /c ""cd /d " & FRONTEND & " && npm run dev""", 0, False
         WScript.Sleep 15000
         If IsPortOpen(4000) Then
             Log "WATCHDOG: Next.js restarted OK"
