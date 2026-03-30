@@ -26,8 +26,8 @@ def _load_name_map():
     global _name_to_ticker, _name_map_loaded
     if _name_map_loaded:
         return
-    _base = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    for path in [os.path.join(_base, 'ticker_to_yahoo_map.csv'), os.path.join(_base, 'data', 'ticker_to_yahoo_map.csv')]:
+    from app.utils.paths import BASE_DIR, TICKER_MAP_PATH
+    for path in [os.path.join(BASE_DIR, 'ticker_to_yahoo_map.csv'), TICKER_MAP_PATH]:
         if os.path.exists(path):
             try:
                 df = pd.read_csv(path, dtype={'ticker': str})
@@ -71,8 +71,8 @@ logger = logging.getLogger(__name__)
 
 wave_bp = Blueprint('wave', __name__)
 
-_BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-_WAVE_DIR = os.path.join(_BASE_DIR, 'data', 'wave')
+from app.utils.paths import WAVE_DATA_DIR
+_WAVE_DIR = WAVE_DATA_DIR
 
 # 스크리너 결과 캐시 (30초 TTL)
 _screener_cache: dict = {}

@@ -1176,8 +1176,8 @@ def data_version():
     모바일·로컬 동시 갱신의 핵심: 프론트엔드가 이 엔드포인트를 polling하여
     파일 변경을 감지하면 실제 데이터를 refetch한다.
     """
-    _base = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    _data_dir = os.path.join(_base, 'data')
+    from app.utils.paths import DATA_DIR
+    _data_dir = DATA_DIR
 
     target_files = [
         'jongga_v2_latest.json',

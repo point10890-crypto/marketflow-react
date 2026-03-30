@@ -7,11 +7,11 @@ import json
 import time
 import re
 from flask import Blueprint, jsonify
+from app.utils.paths import BRIEFING_DIR
 
 briefing_bp = Blueprint('briefing', __name__)
 
-_BASE = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-_BRIEFING_DIR = os.path.join(_BASE, 'data', 'briefing')
+_BRIEFING_DIR = BRIEFING_DIR
 
 # TTL cache (60s — briefings change at most twice daily)
 _cache: dict = {}

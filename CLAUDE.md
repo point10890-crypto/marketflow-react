@@ -7,7 +7,7 @@
 ```bash
 PROJECT="/c/bitman_marketfloww"
 PYTHON="$PROJECT/.venv/Scripts/python.exe"
-FRONTEND="$PROJECT/frontend"
+FRONTEND="$PROJECT/frontend-react"
 ```
 
 ### 절대 규칙
@@ -23,7 +23,7 @@ FRONTEND="$PROJECT/frontend"
 |--------|------|----------|
 | Flask API | 5001 | `cd "$PROJECT" && "$PYTHON" flask_app.py &` |
 | Spring Boot | 8080 | `cd "$PROJECT/backend" && ./gradlew bootRun &` |
-| Next.js | 4000 | `cd "$FRONTEND" && npm start &` |
+| Vite React | 4000 | `cd "$FRONTEND" && npm run dev &` |
 | Scheduler | - | `cd "$PROJECT" && PYTHONIOENCODING=utf-8 "$PYTHON" scheduler.py --daemon &` |
 
 ```bash
@@ -35,7 +35,7 @@ netstat -ano | grep 8080 | awk '{print $5}' | sort -u | xargs -I{} taskkill //F 
 netstat -ano | grep 4000 | awk '{print $5}' | sort -u | xargs -I{} taskkill //F //PID {} 2>/dev/null
 ```
 
-### 프론트엔드 환경변수 (`frontend/.env.local`)
+### 프론트엔드 환경변수 (`frontend-react/.env`)
 ```
 NEXTAUTH_URL=http://localhost:4000
 NEXTAUTH_SECRET=marketflow-nextauth-secret-change-in-production
@@ -61,12 +61,9 @@ NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_placeholder
 ├── scheduler.py              # 통합 스케줄러 (US/KR/Crypto, 고정경로)
 ├── market_gate.py            # KR 시장 레짐 감지 (RISK_ON/OFF/NEUTRAL)
 ├── config.py                 # 루트 설정 (MarketGateConfig, BacktestConfig)
-├── models.py                 # 루트 모델 (Signal, Trade - backtest용)
 ├── all_institutional_trend_data.py  # 기관 수급 데이터 수집 (scheduler 호출)
 ├── signal_tracker.py         # VCP 시그널 추적 (scheduler 호출)
-├── sync_dashboard.py         # Vercel 데이터 동기화 (scheduler 호출)
-├── sync-vercel.sh            # Vercel 배포 스크립트 (수동)
-├── start.sh / start_all.bat  # 서버 시작 스크립트
+├── briefing_generator.py     # AI 브리핑 생성 (Gemini 기반)
 ├── .env                      # API 키 관리
 │
 ├── backend/                  # === Spring Boot API (Java 21, Gradle) ===
@@ -114,22 +111,10 @@ NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_placeholder
 │
 ├── us_market_preview/output/ # → us_market/output/ 심링크 (하위호환)
 │
-├── frontend/                 # Next.js 14 대시보드
-│   ├── .env.local            # 환경변수 (포트 4000/5001)
+├── frontend-react/           # Vite + React 대시보드 (Cloudflare Pages 배포)
 │   └── src/
-│       ├── lib/api.ts        # API 유틸 (USE_DATA_PREFIX 로직)
-│       ├── app/dashboard/
-│       │   ├── us/
-│       │   │   ├── page.tsx           # US 대시보드 메인
-│       │   │   ├── briefing/page.tsx  # AI Macro Briefing
-│       │   │   ├── heatmap/page.tsx   # Sector Heatmap
-│       │   │   └── earnings/page.tsx  # Earnings Impact
-│       │   ├── kr/closing-bet/page.tsx    # 종가베팅 대시보드
-│       │   └── stock-analyzer/page.tsx    # ProPicks 분석 전용 페이지
-│       └── components/layout/
-│           ├── Header.tsx         # ⌘K 단축키 + CommandPalette
-│           ├── Sidebar.tsx        # 사이드바 (ProPicks 포함)
-│           └── CommandPalette.tsx  # 종목 검색 → 리다이렉트
+│       ├── lib/api.ts        # API 유틸
+│       └── pages/dashboard/  # 대시보드 페이지
 │
 ├── data/                     # 데이터 저장소 (실시간)
 │   ├── jongga_v2_latest.json      # 최신 종가베팅 결과
@@ -149,7 +134,7 @@ NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_placeholder
     └── prompts.py
 ```
 
-### 삭제된 파일 (v2.6.0 정리)
+### 삭제된 파일 (v3.0.1 정리)
 | 파일/디렉토리 | 이유 |
 |-------------|------|
 | `app.py` (root) | stock_analyzer Blueprint로 대체됨 |
@@ -166,15 +151,21 @@ NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_placeholder
 | `backups/` | 139MB tar.gz, git 이력으로 대체 |
 | `us_market_preview/*.py` | us_market/과 동일 중복. output/만 심링크로 유지 |
 | `kr_market_package/` | 123MB 복사본 (v2.5에서 삭제) |
+| `frontend/` | 744MB 죽은 Next.js 프로젝트 (frontend-react/로 대체) |
+| `models.py` (root) | backtest용 모델, 미사용 |
+| `scheduler.py.bak` | 스케줄러 백업 |
+| `watchdog.py` | autostart.vbs 워치독으로 대체 |
+| `check_tunnel.sh` | 1회성 터널 확인 |
+| `guardian.bat` | 죽은 워치독 배치 |
+| `start_scheduler.bat` | autostart.vbs로 대체 |
+| `auto_start_scheduler.bat` | autostart.vbs로 대체 |
+| `register-startup.bat` | Task Scheduler로 대체 |
+| `nssm.exe` | NSSM 접근 실패로 폐기 |
 
-### 경로 고정 원칙 (모든 파일에 적용 완료)
-| 파일 | 경로 방식 | 기준점 |
-|------|----------|--------|
-| `kr_market.py` | `DATA_DIR = _BASE_DIR + '/data'` | `__file__` 기반 절대경로 |
-| `us_market.py` | `_OUTPUT_DIR + _PREVIEW_DIR` (심링크 통일) | `__file__` 기반 절대경로 |
-| `app/utils/scheduler.py` | `BASE_DIR` / `DATA_DIR` | `__file__` 기반 절대경로 |
-| `scheduler.py` | `Config.BASE_DIR` / `Config.DATA_DIR` | `__file__` 기반 + env 오버라이드 |
-| `engine/generator.py` | `os.path.dirname(os.path.abspath(__file__))` | 엔진 패키지 기준 |
+### 경로 고정 원칙
+- **Flask 라우트**: `app/utils/paths.py`에서 중앙 상수 import (`BASE_DIR`, `DATA_DIR`, `WAVE_DATA_DIR` 등)
+- **scheduler.py**: `Config.BASE_DIR` / `Config.DATA_DIR` (`__file__` 기반 + env 오버라이드)
+- **engine/**: `os.path.dirname(os.path.abspath(__file__))` 엔진 패키지 기준
 
 ---
 
@@ -461,7 +452,7 @@ asyncio.run(run_screener(capital=50_000_000))
 ```bash
 PROJECT="/c/bitman_marketfloww"
 PYTHON="$PROJECT/.venv/Scripts/python.exe"
-FRONTEND="$PROJECT/frontend"
+FRONTEND="$PROJECT/frontend-react"
 netstat -ano | grep 5001 | awk '{print $5}' | sort -u | xargs -I{} taskkill //F //PID {} 2>/dev/null
 netstat -ano | grep 4000 | awk '{print $5}' | sort -u | xargs -I{} taskkill //F //PID {} 2>/dev/null
 sleep 2

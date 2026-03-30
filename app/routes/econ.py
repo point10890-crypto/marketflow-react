@@ -318,8 +318,8 @@ def get_econ_summary():
 def get_econ_forecast_saved():
     """Saved Forecast Data"""
     try:
-        base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-        forecast_path = os.path.join(base_dir, 'data', 'ai_forecast.json')
+        from app.utils.paths import DATA_DIR
+        forecast_path = os.path.join(DATA_DIR, 'ai_forecast.json')
         if os.path.exists(forecast_path):
             with open(forecast_path, 'r', encoding='utf-8') as f:
                 data = json.load(f)
