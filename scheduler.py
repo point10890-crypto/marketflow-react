@@ -1490,14 +1490,37 @@ def _notify_gate_change(gate: str, score: int) -> bool:
 
 
 def _notify_crypto_signals(count: int) -> bool:
-    """Crypto VCP 시그널 발견 알림"""
+    """Crypto VCP 시그널 발견 알림 (종목 상세 포함)"""
     if count <= 0:
         return False
     now_str = datetime.now().strftime('%m/%d %H:%M')
-    return send_telegram(
-        f"🔍 <b>Crypto VCP Signal Alert</b> ({now_str})\n\n"
-        f"새로운 VCP 시그널 {count}개 발견!"
-    )
+    msg = f"🔍 <b>Crypto VCP Signal Alert</b> ({now_str})\n\n"
+
+    # 시그널 상세 정보 로드
+    data = _load_json(os.path.join(Config.DATA_DIR, 'vcp_crypto_latest.json'))
+    signals = (data or {}).get('signals', [])
+    gate = (data or {}).get('metadata', {}).get('gate', '?')
+    msg += f"🚦 Gate: <b>{gate}</b> | 시그널: {len(signals)}개\n\n"
+
+    for s in signals:
+        symbol = s.get('symbol', '?')
+        tf = s.get('timeframe', '?')
+        sig_type = s.get('signal_type', '?')
+        score = s.get('score', 0)
+        ml_prob = s.get('ml_win_prob', 0)
+        pivot = s.get('pivot_high', 0)
+        vol_ratio = s.get('vol_ratio', 0)
+        bp_pct = s.get('breakout_close_pct', 0)
+
+        # 시그널 타입 이모지
+        type_emoji = '🚀' if sig_type == 'BREAKOUT' else '⏳' if sig_type == 'APPROACHING' else '🔄'
+
+        msg += f"{type_emoji} <b>{symbol}</b> ({tf})\n"
+        msg += f"   유형: {sig_type} | 점수: {score}\n"
+        msg += f"   피봇: ${pivot:,.2f} | 돌파: {bp_pct:+.1f}%\n"
+        msg += f"   거래량비: {vol_ratio:.2f}x | ML승률: {ml_prob:.1f}%\n\n"
+
+    return send_telegram_long(msg.strip())
 
 
 def notify_crypto_briefing() -> bool:
