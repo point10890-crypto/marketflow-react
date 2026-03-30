@@ -1,0 +1,117 @@
+{
+  "name": "현대모비스",
+  "ticker": "012330.KS",
+  "result": "매수",
+  "date": "2026-03-30 14:30:11",
+  "elapsed": 2.0,
+  "consensus_score": 4.27,
+  "analyst_count": 30,
+  "recommendation_detail": {
+    "strongBuy": 10,
+    "buy": 18,
+    "hold": 2,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 396000.0,
+    "high": 750000.0,
+    "low": 370000.0,
+    "mean": 555633.3,
+    "median": 567500.0
+  },
+  "current_price": 396000.0,
+  "upside_potential": 40.3,
+  "key_stats": {
+    "name": "Mobis",
+    "sector": "Consumer Cyclical",
+    "industry": "Auto Parts",
+    "market_cap": 35359094210560,
+    "pe_ratio": null,
+    "forward_pe": 7.3503127,
+    "dividend_yield": 1.63,
+    "beta": 0.802,
+    "fifty_two_week_high": 531000.0,
+    "fifty_two_week_low": 232000.0,
+    "revenue": 61118127013888,
+    "profit_margin": 0.05982,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "현대모비스(012330.KS)에 대해 30명의 애널리스트가 제시한 컨센서스 의견은 '매수'로, 5점 만점에 4.27점을 기록했습니다. 목표가 평균은 현재가 대비 40.3% 상승 여력이 있는 555,633 KRW로 제시되었습니다. 이는 애널리스트들이 현대모비스의 추가적인 주가 상승 가능성을 전망하고 있음을 시사합니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 15397920000000
+    },
+    {
+      "date": "2025-09",
+      "value": 15031932000000
+    },
+    {
+      "date": "2025-06",
+      "value": 15936241000000
+    },
+    {
+      "date": "2025-03",
+      "value": 14752034000000
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 762881000000
+    },
+    {
+      "date": "2025-09",
+      "value": 929449000000
+    },
+    {
+      "date": "2025-06",
+      "value": 932458000000
+    },
+    {
+      "date": "2025-03",
+      "value": 1031002000000
+    }
+  ],
+  "news": [
+    {
+      "title": "Will Strength in the Automotive Business Drive Revenues for Qualcomm?",
+      "summary": "QCOM's automotive unit gains momentum with 15% revenue growth and rising adoption, but can this segment offset broader stock and estimate pressures?",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/strength-automotive-business-drive-revenues-160700299.html",
+      "provider": "Zacks",
+      "pub_time": "2026-03-23T16:07:00Z"
+    },
+    {
+      "title": "Hyundai Mobis completes new chassis modules plant in Hungary",
+      "summary": "The new facility will supply chassis modules to Mercedes-Benz.",
+      "url": "https://www.just-auto.com/news/hyundai-mobis-completes-new-chassis-modules-plant-in-hungary/",
+      "provider": "Just Auto",
+      "pub_time": "2026-03-10T10:11:40Z"
+    },
+    {
+      "title": "Shares in South Korean automakers slide after Trump post on raising tariffs",
+      "summary": "SEOUL, Jan 27 () - Hyundai Motor ​shares fell ‌4% at the ‌opening on Tuesday, after U. President Donald ⁠Trump ‌said in a social ‍media post that he will raise ​tariffs on ‌South Korean goods includin",
+      "url": "https://finance.yahoo.com/news/shares-south-korean-automakers-slide-001456137.html",
+      "provider": "Reuters",
+      "pub_time": "2026-01-27T00:14:56Z"
+    },
+    {
+      "title": "Hyundai Motor Shares Hit Records as Robotics Drive $24 Billion Rally",
+      "summary": "Hyundai Motor group stocks surge after Atlas robot debut and Nvidia partnership lifts robotics optimism.",
+      "url": "https://finance.yahoo.com/news/hyundai-motor-shares-hit-records-175641807.html",
+      "provider": "GuruFocus.com",
+      "pub_time": "2026-01-13T17:56:41Z"
+    },
+    {
+      "title": "Can Qualcomm's Snapdragon Ride Flex for Hyundai Work Wonders?",
+      "summary": "QCOM partners with Hyundai Mobis to co-develop SDVs and ADAS, leveraging Snapdragon Ride Flex for smarter, more efficient vehicles.",
+      "url": "https://finance.yahoo.com/news/qualcomms-snapdragon-ride-flex-hyundai-162300906.html",
+      "provider": "Zacks",
+      "pub_time": "2026-01-09T16:23:00Z"
+    }
+  ]
+}

@@ -1,0 +1,81 @@
+{
+  "name": "비츠로셀",
+  "ticker": "082920.KQ",
+  "result": "적극 매수",
+  "date": "2026-03-30 13:16:20",
+  "elapsed": 5.1,
+  "consensus_score": 4.5,
+  "analyst_count": 2,
+  "recommendation_detail": {
+    "strongBuy": 1,
+    "buy": 1,
+    "hold": 0,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 37550.0,
+    "high": 26000.0,
+    "low": 25500.0,
+    "mean": 25750.0,
+    "median": 25750.0
+  },
+  "current_price": 37550.0,
+  "upside_potential": -31.4,
+  "key_stats": {
+    "name": "VITCELL",
+    "sector": "",
+    "industry": "",
+    "market_cap": 1687291559936,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": null,
+    "beta": null,
+    "fifty_two_week_high": 38100.0,
+    "fifty_two_week_low": 10750.0,
+    "revenue": null,
+    "profit_margin": null,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "비츠로셀(082920.KQ)에 대해 2명의 애널리스트가 적극 매수 의견을 제시하고 있습니다. 하지만 목표가 평균은 25,750원으로, 현재가 37,550원 대비 31.4% 하락 여력이 있는 것으로 분석됩니다. 투자 시 컨센서스 의견과 목표가의 괴리를 고려해야 합니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 55346055770
+    },
+    {
+      "date": "2025-06",
+      "value": 56513426790
+    },
+    {
+      "date": "2025-03",
+      "value": 53941375430
+    },
+    {
+      "date": "2024-12",
+      "value": 70246159050
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 15819417000
+    },
+    {
+      "date": "2025-06",
+      "value": 10162824000
+    },
+    {
+      "date": "2025-03",
+      "value": 12995328000
+    },
+    {
+      "date": "2024-12",
+      "value": 18575590090
+    }
+  ],
+  "news": []
+}

@@ -2,8 +2,8 @@
   "name": "한화에어로스페이스",
   "ticker": "012450.KS",
   "result": "적극 매수",
-  "date": "2026-03-29 08:07:11",
-  "elapsed": 1.8,
+  "date": "2026-03-30 13:23:59",
+  "elapsed": 2.4,
   "consensus_score": 4.38,
   "analyst_count": 21,
   "recommendation_detail": {
@@ -15,21 +15,21 @@
   },
   "recommendation_period": "0m",
   "price_targets": {
-    "current": 1335000.0,
+    "current": 1316000.0,
     "high": 1900000.0,
     "low": 1280000.0,
     "mean": 1557857.1,
     "median": 1520000.0
   },
-  "current_price": 1335000.0,
-  "upside_potential": 16.7,
+  "current_price": 1316000.0,
+  "upside_potential": 18.4,
   "key_stats": {
     "name": "HANWHA AEROSPACE",
     "sector": "Industrials",
     "industry": "Aerospace & Defense",
-    "market_cap": 68684131336192,
+    "market_cap": 67706606845952,
     "pe_ratio": null,
-    "forward_pe": 22.995829,
+    "forward_pe": 22.668547,
     "dividend_yield": 0.51,
     "beta": 1.034,
     "fifty_two_week_high": 1655000.0,
@@ -40,7 +40,7 @@
   },
   "finnhub_supplement": null,
   "source": "yfinance",
-  "ai_analysis": "한화에어로스페이스(012450.KS)는 현재 1,335,000 KRW에 거래되고 있습니다. 애널리스트 컨센서스는 21명 참여, 5점 만점에 4.38점으로 '적극 매수' 의견을 보이고 있습니다. 평균 목표가는 1,557,857 KRW로 현재 주가 대비 16.7% 상승 여력이 있습니다.",
+  "ai_analysis": "한화에어로스페이스(012450.KS)는 21명의 애널리스트 컨센서스 기준 '적극 매수' 의견을 받고 있습니다. 목표가 평균은 1,557,857 KRW로, 현재가 1,316,000 KRW 대비 18.4% 상승 여력이 있습니다. 이는 애널리스트들이 긍정적인 전망을 제시하고 있음을 시사합니다.",
   "revenue_quarters": [
     {
       "date": "2025-12",
