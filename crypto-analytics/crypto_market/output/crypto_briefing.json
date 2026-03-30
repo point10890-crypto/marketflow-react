@@ -1,49 +1,49 @@
 {
-  "timestamp": "2026-03-30T20:00:28.303064",
+  "timestamp": "2026-03-31T08:42:37.608587",
   "version": "1.0",
   "market_summary": {
-    "total_market_cap": 2405602950881.0,
-    "total_volume_24h": 77003132178.0,
-    "btc_dominance": 56.1,
+    "total_market_cap": 2378254316792.0,
+    "total_volume_24h": 91459304970.0,
+    "btc_dominance": 56.08,
     "btc_dominance_change_24h": 0,
-    "total_market_cap_change_24h": 1.38,
-    "active_cryptocurrencies": 17935
+    "total_market_cap_change_24h": 0.89,
+    "active_cryptocurrencies": 17942
   },
   "major_coins": {
     "BTC": {
-      "price": 67434,
-      "change_24h": 1.37,
+      "price": 66635,
+      "change_24h": 1.05,
       "change_7d": 0,
-      "volume_24h": 31875006133,
-      "market_cap": 1349319432642
+      "volume_24h": 39078198784,
+      "market_cap": 1334416356422
     },
     "ETH": {
-      "price": 2055.45,
-      "change_24h": 2.96,
+      "price": 2022.85,
+      "change_24h": 2.0,
       "change_7d": 0,
-      "volume_24h": 14526275982,
-      "market_cap": 247988263025
+      "volume_24h": 17666107865,
+      "market_cap": 244359701608
     },
     "BNB": {
-      "price": 617.56,
-      "change_24h": 0.89,
+      "price": 608.03,
+      "change_24h": 0.48,
       "change_7d": 0,
-      "volume_24h": 864898472,
-      "market_cap": 84227326815
+      "volume_24h": 945073311,
+      "market_cap": 82953636006
     },
     "XRP": {
-      "price": 1.35,
-      "change_24h": 1.03,
+      "price": 1.32,
+      "change_24h": -0.14,
       "change_7d": 0,
-      "volume_24h": 1818119668,
-      "market_cap": 82588040322
+      "volume_24h": 2014544110,
+      "market_cap": 81195381430
     },
     "SOL": {
-      "price": 83.83,
-      "change_24h": 2.06,
+      "price": 82.44,
+      "change_24h": 1.42,
       "change_7d": 0,
-      "volume_24h": 2965109011,
-      "market_cap": 47993727248
+      "volume_24h": 3542113113,
+      "market_cap": 47207315495
     }
   },
   "top_movers": {
@@ -51,64 +51,64 @@
       {
         "symbol": "JUP",
         "name": "Jupiter",
-        "price": 0.151542,
-        "change_24h": 6.17
+        "price": 0.150927,
+        "change_24h": 6.83
       },
       {
         "symbol": "ZEC",
         "name": "Zcash",
-        "price": 227.0,
-        "change_24h": 5.57
+        "price": 225.61,
+        "change_24h": 5.61
       },
       {
-        "symbol": "WLD",
-        "name": "Worldcoin",
-        "price": 0.28637,
-        "change_24h": 5.38
+        "symbol": "M",
+        "name": "MemeCore",
+        "price": 2.3,
+        "change_24h": 4.13
       },
       {
-        "symbol": "SKY",
-        "name": "Sky",
-        "price": 0.074,
-        "change_24h": 5.28
+        "symbol": "UNI",
+        "name": "Uniswap",
+        "price": 3.48,
+        "change_24h": 3.66
       },
       {
-        "symbol": "RENDER",
-        "name": "Render",
-        "price": 1.75,
-        "change_24h": 4.76
+        "symbol": "ARB",
+        "name": "Arbitrum",
+        "price": 0.090885,
+        "change_24h": 3.42
       }
     ],
     "losers": [
       {
-        "symbol": "SIREN",
-        "name": "Siren",
-        "price": 1.7,
-        "change_24h": -6.07
-      },
-      {
-        "symbol": "BCH",
-        "name": "Bitcoin Cash",
-        "price": 453.9,
-        "change_24h": -5.67
-      },
-      {
-        "symbol": "KAS",
-        "name": "Kaspa",
-        "price": 0.0328965,
-        "change_24h": -5.11
+        "symbol": "HASH",
+        "name": "Provenance Blockchain",
+        "price": 0.00942294,
+        "change_24h": -13.04
       },
       {
         "symbol": "NIGHT",
         "name": "Midnight",
-        "price": 0.04669661,
-        "change_24h": -5.04
+        "price": 0.0435595,
+        "change_24h": -11.11
       },
       {
-        "symbol": "JST",
-        "name": "JUST",
-        "price": 0.058709,
-        "change_24h": -3.58
+        "symbol": "RAIN",
+        "name": "Rain",
+        "price": 0.00770345,
+        "change_24h": -7.47
+      },
+      {
+        "symbol": "SIREN",
+        "name": "Siren",
+        "price": 1.69,
+        "change_24h": -4.78
+      },
+      {
+        "symbol": "HYPE",
+        "name": "Hyperliquid",
+        "price": 36.78,
+        "change_24h": -3.26
       }
     ]
   },
@@ -126,58 +126,58 @@
   "funding_rates": {
     "BTC": {
       "symbol": "BTCUSDT",
-      "rate": 1.5e-05,
-      "rate_pct": 0.0015,
-      "annualized_pct": 1.61,
+      "rate": 1e-06,
+      "rate_pct": 0.0001,
+      "annualized_pct": 0.15,
       "sentiment": "neutral"
     },
     "ETH": {
       "symbol": "ETHUSDT",
-      "rate": 3.7e-05,
-      "rate_pct": 0.0037,
-      "annualized_pct": 4.05,
+      "rate": -1e-06,
+      "rate_pct": -0.0001,
+      "annualized_pct": -0.13,
       "sentiment": "neutral"
     }
   },
   "macro_correlations": {
     "btc_pairs": {
-      "BTC_SPY": 0.591,
-      "BTC_GLD": 0.2171,
-      "BTC_DXY": -0.1546
+      "BTC_SPY": 0.5916,
+      "BTC_GLD": 0.2164,
+      "BTC_DXY": -0.1551
     }
   },
   "market_gate": {
     "gate": "RED",
-    "score": 21,
+    "score": 25,
     "status": "RISK_OFF",
     "reasons": [
       "BTC가 EMA50 아래 (하락 추세)",
       "EMA200 하락 중 (장기 약세)",
       "변동성 다소 높음 (휩쏘 주의)",
-      "거래량 부족 (관심 저조)",
+      "거래량 평범 (유동성 유입 약함)",
       "알트 breadth 붕괴 (10% > EMA50)"
     ],
     "metrics": {
-      "btc_price": 67443.203125,
-      "btc_ema50": 71201.18611730853,
-      "btc_ema200": 85300.50413946137,
-      "btc_ema200_slope_pct_20": -3.838906979849351,
-      "btc_volume_z_50": -0.8017595074384394,
-      "btc_atrp_14_pct": 3.8928841579828,
+      "btc_price": 66674.7890625,
+      "btc_ema50": 71171.0522325046,
+      "btc_ema200": 85292.8582283917,
+      "btc_ema200_slope_pct_20": -3.847526379851856,
+      "btc_volume_z_50": -0.25977857825006934,
+      "btc_atrp_14_pct": 3.9558027787830956,
       "alt_breadth_above_ema50": 0.1,
-      "funding_rate": 1.466e-05,
+      "funding_rate": 1.34e-06,
       "open_interest_delta_z": null,
       "gate_score_components": {
         "trend": 0.0,
         "volatility": 8.0,
-        "participation": 2.0,
+        "participation": 6.0,
         "breadth": 2.0,
         "leverage": 9.0
       },
       "fear_greed_index": 8,
       "fear_greed_class": "Extreme Fear"
     },
-    "generated_at": "2026-03-30T20:00:22.651810"
+    "generated_at": "2026-03-31T08:42:11.671491"
   },
   "btc_price_history": [
     {
@@ -538,7 +538,7 @@
     },
     {
       "date": "2026-03-30",
-      "price": 67458.0625
+      "price": 66659.5390625
     }
   ],
   "sentiment_summary": {

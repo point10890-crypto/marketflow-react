@@ -1,47 +1,32 @@
 {
   "metadata": {
-    "generated_at": "2026-03-31T00:54:59.180463",
+    "generated_at": "2026-03-31T08:42:33.384813",
     "market": "CRYPTO",
-    "gate": "YELLOW",
-    "universe_size": 56
+    "gate": "RED",
+    "universe_size": 50
   },
   "signals": [
     {
-      "symbol": "USD1/USDT",
-      "timeframe": "1d",
+      "symbol": "PAXG/USDT",
+      "timeframe": "4h",
       "signal_type": "APPROACHING",
       "score": 46,
-      "pivot_high": 1.0001,
-      "breakout_close_pct": 0.0,
-      "vol_ratio": 0.53,
+      "pivot_high": 4581.02,
+      "breakout_close_pct": -1.48,
+      "vol_ratio": 1.09,
       "liquidity_bucket": "A",
-      "market_regime": "BTC_DOWN|B",
-      "c1": 2.0,
-      "c2": 0.1,
-      "c3": 0.1,
-      "ml_win_prob": 72.9
-    },
-    {
-      "symbol": "ZEC/USDT",
-      "timeframe": "4h",
-      "signal_type": "BREAKOUT",
-      "score": 30,
-      "pivot_high": 223.85,
-      "breakout_close_pct": 0.53,
-      "vol_ratio": 1.55,
-      "liquidity_bucket": "B",
       "market_regime": "BTC_DOWN|D",
-      "c1": 11.7,
-      "c2": 7.6,
-      "c3": 7.1,
-      "ml_win_prob": 41.2
+      "c1": 5.2,
+      "c2": 2.8,
+      "c3": 1.9,
+      "ml_win_prob": 42.6
     }
   ],
   "summary": {
-    "setups_4h": 2,
-    "setups_1d": 7,
+    "setups_4h": 21,
+    "setups_1d": 6,
     "signals_4h": 1,
-    "signals_1d": 1,
+    "signals_1d": 0,
     "published": 1
   }
 }
