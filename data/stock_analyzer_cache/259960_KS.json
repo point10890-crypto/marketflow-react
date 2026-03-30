@@ -1,0 +1,110 @@
+{
+  "name": "크래프톤",
+  "ticker": "259960.KS",
+  "result": "매수",
+  "date": "2026-03-30 21:56:11",
+  "elapsed": 2.0,
+  "consensus_score": 4.16,
+  "analyst_count": 25,
+  "recommendation_detail": {
+    "strongBuy": 8,
+    "buy": 13,
+    "hold": 4,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 250500.0,
+    "high": 500000.0,
+    "low": 250000.0,
+    "mean": 354916.66,
+    "median": 355000.0
+  },
+  "current_price": 250500.0,
+  "upside_potential": 41.7,
+  "key_stats": {
+    "name": "KRAFTON",
+    "sector": "Communication Services",
+    "industry": "Electronic Gaming & Multimedia",
+    "market_cap": 11182261927936,
+    "pe_ratio": null,
+    "forward_pe": 10.211843,
+    "dividend_yield": 0.88,
+    "beta": 1.017,
+    "fifty_two_week_high": 393000.0,
+    "fifty_two_week_low": 208500.0,
+    "revenue": 3326553620480,
+    "profit_margin": 0.22087999,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "크래프톤(259960.KS)에 대해 25명의 애널리스트가 제시한 컨센서스 의견은 '매수'입니다. 목표가 평균은 354,917 KRW으로, 현재가 250,500 KRW 대비 41.7% 상승 여력이 있습니다. 이는 애널리스트들이 크래프톤의 추가적인 성장 가능성을 긍정적으로 평가하고 있음을 시사합니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 919697549140
+    },
+    {
+      "date": "2025-09",
+      "value": 870623522830
+    },
+    {
+      "date": "2025-06",
+      "value": 662048249150
+    },
+    {
+      "date": "2025-03",
+      "value": 874184373850
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": -19978225970
+    },
+    {
+      "date": "2025-09",
+      "value": 367535766740
+    },
+    {
+      "date": "2025-06",
+      "value": 15163293670
+    },
+    {
+      "date": "2025-03",
+      "value": 372049111010
+    }
+  ],
+  "news": [
+    {
+      "title": "Krafton hikes India bet with new $670M fund",
+      "summary": "Called the Unicorn Growth Fund, the investment vehicle is a collaboration between Krafton and South Korean internet conglomerate Naver and investor Mirae Asset. It aims to deploy around $669.3 million",
+      "url": "https://finance.yahoo.com/news/krafton-hikes-india-bet-670m-143719754.html",
+      "provider": "TechCrunch",
+      "pub_time": "2025-12-19T14:37:19Z"
+    },
+    {
+      "title": "PUBG maker Krafton leads South Korean trio in $666 million India tech bet",
+      "summary": "Gaming giant Krafton will lead a new $666 million investment fund in Asia, ​partnering with South Korean peers Naver and Mirae Asset ‌to diversify beyond gaming into a wider pool of tech startups, ‌pr",
+      "url": "https://finance.yahoo.com/news/pubg-maker-krafton-leads-south-071712632.html",
+      "provider": "Reuters",
+      "pub_time": "2025-12-19T07:17:12Z"
+    },
+    {
+      "title": "India’s Kuku snags $85M as mobile content wars intensify",
+      "summary": "Kuku plans to expand beyond India with a U.S. launch slated for next year.",
+      "url": "https://finance.yahoo.com/news/india-kuku-snags-85m-mobile-064319528.html",
+      "provider": "TechCrunch",
+      "pub_time": "2025-10-16T06:43:19Z"
+    },
+    {
+      "title": "Google bets on STAN, an Indian social gaming platform",
+      "summary": "STAN, headquartered in Singapore, is trying to position itself as a gaming community platform to rival Discord, but its approach to the market is quite different.",
+      "url": "https://finance.yahoo.com/news/google-bets-stan-indian-social-170545192.html",
+      "provider": "TechCrunch",
+      "pub_time": "2025-08-01T17:05:45Z"
+    }
+  ]
+}

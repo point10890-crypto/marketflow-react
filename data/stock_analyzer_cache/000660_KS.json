@@ -2,8 +2,8 @@
   "name": "SK하이닉스",
   "ticker": "000660.KS",
   "result": "매수",
-  "date": "2026-03-29 08:12:35",
-  "elapsed": 1.8,
+  "date": "2026-03-30 22:53:44",
+  "elapsed": 3.2,
   "consensus_score": 4.15,
   "analyst_count": 39,
   "recommendation_detail": {
@@ -15,21 +15,21 @@
   },
   "recommendation_period": "0m",
   "price_targets": {
-    "current": 922000.0,
+    "current": 873000.0,
     "high": 1930000.0,
     "low": 255245.0,
     "mean": 1289117.8,
     "median": 1375000.0
   },
-  "current_price": 922000.0,
-  "upside_potential": 39.8,
+  "current_price": 873000.0,
+  "upside_potential": 47.7,
   "key_stats": {
     "name": "SK hynix",
     "sector": "Technology",
     "industry": "Semiconductors",
-    "market_cap": 636599784177664,
+    "market_cap": 602767454371840,
     "pe_ratio": null,
-    "forward_pe": 4.004243,
+    "forward_pe": 3.791436,
     "dividend_yield": 0.32,
     "beta": 1.715,
     "fifty_two_week_high": 1099000.0,
@@ -40,7 +40,7 @@
   },
   "finnhub_supplement": null,
   "source": "yfinance",
-  "ai_analysis": "SK하이닉스(000660.KS)에 대해 39명의 애널리스트가 제시한 컨센서스는 '매수' 의견입니다. 목표가 평균은 1,289,118 KRW로, 현재가 922,000 KRW 대비 39.8% 상승 여력이 있습니다. 이는 전반적으로 긍정적인 시장 전망을 반영합니다.",
+  "ai_analysis": "SK하이닉스(000660.KS)에 대한 애널리스트 컨센서스는 39명 참여 기준 '매수' 의견(4.15/5.0)으로 나타났습니다. 목표가 평균은 1,289,118 KRW이며, 이는 현재가(873,000 KRW) 대비 47.7% 상승 여력을 시사합니다. 따라서, 애널리스트들은 SK하이닉스의 추가적인 주가 상승 가능성을 염두에 두고 있는 것으로 해석됩니다.",
   "revenue_quarters": [
     {
       "date": "2025-12",
@@ -79,39 +79,39 @@
   ],
   "news": [
     {
+      "title": "Zacks Investment Ideas feature highlights Alphabet's, Sandisk and Micron",
+      "summary": "Alphabet's, Sandisk and Micron have been highlighted in this Investment Ideas article.",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/zacks-investment-ideas-feature-highlights-081600500.html",
+      "provider": "Zacks",
+      "pub_time": "2026-03-30T08:16:00Z"
+    },
+    {
+      "title": "SK Telecom and DraftKings have been highlighted as Zacks Bull and Bear of the Day",
+      "summary": "SK Telecom and DraftKings have been highlighted as Zacks Bull and Bear of the Day",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/sk-telecom-draftkings-highlighted-zacks-080500127.html",
+      "provider": "Zacks",
+      "pub_time": "2026-03-30T08:05:00Z"
+    },
+    {
+      "title": "Bull of the Day: SK Telecom (SKM)",
+      "summary": "While the world watches the tug-of-war between Silicon Valley and Beijing, a new contender is quietly assembling the perfect AI ecosystem.",
+      "url": "https://finance.yahoo.com/sectors/technology/articles/bull-day-sk-telecom-skm-080000676.html",
+      "provider": "Zacks",
+      "pub_time": "2026-03-30T08:00:00Z"
+    },
+    {
+      "title": "TurboQuant Panic: Why Market Is Wrong About Google's Newest AI Breakthrough",
+      "summary": "Alphabet Inc. Google rattled global memory stocks after unveiling its TurboQuant AI algorithm, triggering a sharp sell-off amid fears that improved efficiency could dampen demand for memory chips. How",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/turboquant-panic-why-market-wrong-143113296.html",
+      "provider": "Benzinga",
+      "pub_time": "2026-03-29T14:31:13Z"
+    },
+    {
       "title": "Memory chip giant SK hynix could help end ‘RAMmageddon’ with blockbuster US IPO",
       "summary": "SK hynix’s potential U.S. listing could raise $10-$14 billion to help it build more capacity, encourage others to follow, and end the 'RAMmageddon' memory shortage.",
       "url": "https://finance.yahoo.com/markets/stocks/articles/memory-chip-giant-sk-hynix-191128085.html",
       "provider": "TechCrunch",
       "pub_time": "2026-03-27T19:11:28Z"
-    },
-    {
-      "title": "Micron Just Started Mass-Producing HBM4 for Nvidia's Vera Rubin. Here's Why This Stock Could Soar in 2026.",
-      "summary": "Micron Technology is at the center of a major memory shortage driven by AI, and it's one of the best ways to play that shortage.",
-      "url": "https://www.fool.com/investing/2026/03/27/micron-just-started-mass-producing-hbm4-for-nvidia/",
-      "provider": "Motley Fool",
-      "pub_time": "2026-03-27T18:25:00Z"
-    },
-    {
-      "title": "Did Alphabet Just End the AI Memory Boom?",
-      "summary": "Memory stocks, Micron Technology, Sandisk Corporation and peers have been hammered this week following new research from Alphabet reducing memory needs. Is this memory's DeepSeek moment?",
-      "url": "https://finance.yahoo.com/markets/stocks/articles/did-alphabet-just-end-ai-164000117.html",
-      "provider": "Zacks",
-      "pub_time": "2026-03-27T16:40:00Z"
-    },
-    {
-      "title": "Google Unveils AI Breakthrough Cutting Memory Use by 6x, Pressuring Flash Stocks",
-      "summary": "TurboQuant may reduce storage demand while leaving high-bandwidth memory and DRAM largely unaffected, driving divergence across memory-chip stocks.",
-      "url": "https://finance.yahoo.com/sectors/technology/articles/google-unveils-ai-breakthrough-cutting-161231704.html",
-      "provider": "GuruFocus.com",
-      "pub_time": "2026-03-27T16:12:31Z"
-    },
-    {
-      "title": "Micron Reassesses AI Memory Outlook As TurboQuant And SK Hynix Reshape Sector",
-      "summary": "Google released its TurboQuant AI memory compression algorithm, which is designed to reduce the memory requirements of large AI models. The announcement has raised new questions about long term AI mem",
-      "url": "https://finance.yahoo.com/markets/stocks/articles/micron-reassesses-ai-memory-outlook-130515391.html",
-      "provider": "Simply Wall St.",
-      "pub_time": "2026-03-27T13:05:15Z"
     }
   ]
 }

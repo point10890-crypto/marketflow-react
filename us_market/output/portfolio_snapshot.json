@@ -2,81 +2,81 @@
   "market_indices": [
     {
       "name": "Dow Jones",
-      "price": "45,166.64",
-      "change": "-793.47",
-      "change_pct": -1.7264292030419042,
-      "color": "red"
+      "price": "45,216.14",
+      "change": "+49.50",
+      "change_pct": 0.10959415912947368,
+      "color": "green"
     },
     {
       "name": "S&P 500",
-      "price": "6,368.85",
-      "change": "-108.31",
-      "change_pct": -1.672184352107435,
+      "price": "6,343.72",
+      "change": "-25.13",
+      "change_pct": -0.3945748828622587,
       "color": "red"
     },
     {
       "name": "NASDAQ",
-      "price": "20,948.36",
-      "change": "-459.72",
-      "change_pct": -2.147416776503688,
+      "price": "20,794.64",
+      "change": "-153.72",
+      "change_pct": -0.7337985149493359,
       "color": "red"
     },
     {
       "name": "Russell 2000",
-      "price": "2,449.70",
-      "change": "-43.62",
-      "change_pct": -1.7494792482139043,
+      "price": "2,414.01",
+      "change": "-35.69",
+      "change_pct": -1.4570801530122022,
       "color": "red"
     },
     {
       "name": "VIX",
-      "price": "31.25",
-      "change": "+0.20",
-      "change_pct": 0.6441248562117095,
-      "color": "green"
+      "price": "30.61",
+      "change": "-0.44",
+      "change_pct": -1.4170648551379428,
+      "color": "red"
     },
     {
       "name": "Gold",
-      "price": "4,560.80",
-      "change": "+68.80",
-      "change_pct": 1.5316074062221727,
+      "price": "4,532.50",
+      "change": "+40.50",
+      "change_pct": 0.9016028495102404,
       "color": "green"
     },
     {
       "name": "Crude Oil",
-      "price": "101.72",
-      "change": "+2.08",
-      "change_pct": 2.0875169046526287,
+      "price": "106.12",
+      "change": "+6.48",
+      "change_pct": 6.503415693122534,
       "color": "green"
     },
     {
       "name": "Bitcoin",
-      "price": "67,416.63",
-      "change": "+1,461.71",
-      "change_pct": 2.216227229061516,
+      "price": "66,681.31",
+      "change": "+726.39",
+      "change_pct": 1.1013440761504958,
       "color": "green"
     },
     {
       "name": "10Y Treasury",
-      "price": "4.44",
-      "change": "+0.02",
-      "change_pct": 0.5434820753603571,
-      "color": "green"
+      "price": "4.34",
+      "change": "-0.10",
+      "change_pct": -2.2072082956776966,
+      "color": "red"
     },
     {
       "name": "Dollar Index",
-      "price": "100.25",
-      "change": "+0.10",
-      "change_pct": 0.1018446070237203,
+      "price": "100.49",
+      "change": "+0.34",
+      "change_pct": 0.3404850557951364,
       "color": "green"
     },
     {
       "name": "USD/KRW",
-      "price": "1,515.90",
-      "change": "+7.54",
-      "change_pct": 0.49988325968105013,
-      "color": "green"
+      "price": "1,507.02",
+      "change": "-1.34",
+      "change_pct": -0.08883594323142868,
+      "color": "red"
     }
   ],
-  "timestamp": "2026-03-30T19:57:01.377314"
+  "timestamp": "2026-03-31T08:40:29.678885"
 }

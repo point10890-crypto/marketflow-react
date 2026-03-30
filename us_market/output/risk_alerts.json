@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-03-28T10:31:39.207728",
+  "timestamp": "2026-03-31T08:24:02.490690",
   "portfolio_summary": {
     "total_picks": 15,
     "portfolio_var_95_5d": -1683.04,
@@ -10,117 +10,117 @@
       "var_dollar": -1683.04,
       "cvar_pct": -2.19,
       "cvar_dollar": -2185.72,
-      "t_var_dollar": -1961.21,
+      "t_var_dollar": -1955.89,
       "confidence": 0.95,
       "horizon_days": 5,
-      "degrees_of_freedom": 7.2
+      "degrees_of_freedom": 6.58
     }
   },
   "drawdowns": {
     "AKAM": {
-      "current_price": 114.5,
+      "current_price": 110.22,
       "peak_price": 119.15,
-      "current_dd": -3.9,
+      "current_dd": -7.49,
       "max_dd": -15.74,
-      "from_peak_days": 2
+      "from_peak_days": 5
     },
     "APO": {
-      "current_price": 108.42,
+      "current_price": 109.95,
       "peak_price": 152.08,
-      "current_dd": -28.71,
+      "current_dd": -27.7,
       "max_dd": -34.05,
-      "from_peak_days": 80
+      "from_peak_days": 83
     },
     "T": {
-      "current_price": 29.1,
+      "current_price": 28.78,
       "peak_price": 29.1,
-      "current_dd": 0.0,
+      "current_dd": -1.1,
       "max_dd": -6.32,
-      "from_peak_days": 0
+      "from_peak_days": 3
     },
     "AWK": {
-      "current_price": 136.86,
+      "current_price": 138.82,
       "peak_price": 139.69,
-      "current_dd": -2.03,
+      "current_dd": -0.62,
       "max_dd": -7.8,
-      "from_peak_days": 14
+      "from_peak_days": 17
     },
     "AMP": {
-      "current_price": 436.81,
+      "current_price": 438.43,
       "peak_price": 543.89,
-      "current_dd": -19.69,
+      "current_dd": -19.39,
       "max_dd": -20.47,
-      "from_peak_days": 51
+      "from_peak_days": 54
     },
     "ALB": {
-      "current_price": 179.45,
+      "current_price": 177.22,
       "peak_price": 195.39,
-      "current_dd": -8.16,
+      "current_dd": -9.3,
       "max_dd": -19.8,
-      "from_peak_days": 30
+      "from_peak_days": 33
     },
     "APD": {
-      "current_price": 292.19,
+      "current_price": 291.56,
       "peak_price": 293.17,
-      "current_dd": -0.33,
+      "current_dd": -0.55,
       "max_dd": -7.15,
-      "from_peak_days": 1
+      "from_peak_days": 4
     },
     "AEP": {
-      "current_price": 130.1,
+      "current_price": 131.12,
       "peak_price": 134.15,
-      "current_dd": -3.02,
+      "current_dd": -2.26,
       "max_dd": -6.33,
-      "from_peak_days": 11
+      "from_peak_days": 14
     },
     "AIZ": {
-      "current_price": 213.28,
+      "current_price": 216.11,
       "peak_price": 242.33,
-      "current_dd": -11.99,
+      "current_dd": -10.82,
       "max_dd": -12.57,
-      "from_peak_days": 49
+      "from_peak_days": 52
     },
     "AMD": {
-      "current_price": 201.99,
+      "current_price": 196.04,
       "peak_price": 259.68,
-      "current_dd": -22.22,
+      "current_dd": -24.51,
       "max_dd": -26.47,
-      "from_peak_days": 63
+      "from_peak_days": 66
     },
     "LNT": {
-      "current_price": 70.52,
+      "current_price": 71.49,
       "peak_price": 73.03,
-      "current_dd": -3.44,
+      "current_dd": -2.11,
       "max_dd": -5.92,
-      "from_peak_days": 11
+      "from_peak_days": 14
     },
     "AON": {
-      "current_price": 313.66,
-      "peak_price": 356.73,
-      "current_dd": -12.07,
-      "max_dd": -13.11,
-      "from_peak_days": 88
+      "current_price": 324.06,
+      "peak_price": 352.88,
+      "current_dd": -8.17,
+      "max_dd": -12.16,
+      "from_peak_days": 89
     },
     "ACGL": {
-      "current_price": 93.42,
+      "current_price": 95.62,
       "peak_price": 101.98,
-      "current_dd": -8.39,
+      "current_dd": -6.24,
       "max_dd": -9.62,
-      "from_peak_days": 50
+      "from_peak_days": 53
     },
     "APA": {
-      "current_price": 44.39,
+      "current_price": 43.74,
       "peak_price": 44.39,
-      "current_dd": 0.0,
+      "current_dd": -1.46,
       "max_dd": -7.77,
-      "from_peak_days": 0
+      "from_peak_days": 3
     },
     "AMZN": {
-      "current_price": 199.34,
+      "current_price": 200.95,
       "peak_price": 247.38,
-      "current_dd": -19.42,
+      "current_dd": -18.77,
       "max_dd": -19.64,
-      "from_peak_days": 77
+      "from_peak_days": 80
     }
   },
   "concentration": {
@@ -170,64 +170,64 @@
       "alert_type": "drawdown",
       "severity": "critical",
       "ticker": "APO",
-      "message": "APO is in critical drawdown: -28.7% from peak",
-      "value": -28.71,
+      "message": "APO is in critical drawdown: -27.7% from peak",
+      "value": -27.7,
       "threshold": -15.0
     },
     {
       "alert_type": "drawdown",
       "severity": "critical",
       "ticker": "AMP",
-      "message": "AMP is in critical drawdown: -19.7% from peak",
-      "value": -19.69,
+      "message": "AMP is in critical drawdown: -19.4% from peak",
+      "value": -19.39,
       "threshold": -15.0
     },
     {
       "alert_type": "drawdown",
       "severity": "critical",
       "ticker": "AMD",
-      "message": "AMD is in critical drawdown: -22.2% from peak",
-      "value": -22.22,
+      "message": "AMD is in critical drawdown: -24.5% from peak",
+      "value": -24.51,
       "threshold": -15.0
     },
     {
       "alert_type": "drawdown",
       "severity": "critical",
       "ticker": "AMZN",
-      "message": "AMZN is in critical drawdown: -19.4% from peak",
-      "value": -19.42,
+      "message": "AMZN is in critical drawdown: -18.8% from peak",
+      "value": -18.77,
       "threshold": -15.0
     },
     {
       "alert_type": "drawdown",
       "severity": "warning",
+      "ticker": "AKAM",
+      "message": "AKAM drawdown warning: -7.5% from peak",
+      "value": -7.49,
+      "threshold": -7.0
+    },
+    {
+      "alert_type": "drawdown",
+      "severity": "warning",
       "ticker": "ALB",
-      "message": "ALB drawdown warning: -8.2% from peak",
-      "value": -8.16,
+      "message": "ALB drawdown warning: -9.3% from peak",
+      "value": -9.3,
       "threshold": -7.0
     },
     {
       "alert_type": "drawdown",
       "severity": "warning",
       "ticker": "AIZ",
-      "message": "AIZ drawdown warning: -12.0% from peak",
-      "value": -11.99,
+      "message": "AIZ drawdown warning: -10.8% from peak",
+      "value": -10.82,
       "threshold": -7.0
     },
     {
       "alert_type": "drawdown",
       "severity": "warning",
       "ticker": "AON",
-      "message": "AON drawdown warning: -12.1% from peak",
-      "value": -12.07,
-      "threshold": -7.0
-    },
-    {
-      "alert_type": "drawdown",
-      "severity": "warning",
-      "ticker": "ACGL",
-      "message": "ACGL drawdown warning: -8.4% from peak",
-      "value": -8.39,
+      "message": "AON drawdown warning: -8.2% from peak",
+      "value": -8.17,
       "threshold": -7.0
     },
     {

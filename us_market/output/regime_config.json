@@ -1,12 +1,12 @@
 {
-  "timestamp": "2026-03-28T10:30:47.840435",
+  "timestamp": "2026-03-31T08:19:37.515604",
   "regime": "risk_off",
   "confidence": 50.0,
   "weighted_score": 1.55,
   "signals": {
     "vix": {
-      "vix_current": 31.05,
-      "vix_ma20": 25.36,
+      "vix_current": 30.61,
+      "vix_ma20": 25.82,
       "vix_trend": "rising",
       "vix_regime": "crisis"
     },
@@ -14,14 +14,14 @@
       "trend_regime": "neutral",
       "spy_above_50": false,
       "spy_above_200": false,
-      "sma200_slope": 7.4703
+      "sma200_slope": 7.1697
     },
     "breadth": {
       "breadth_pct": null,
       "breadth_regime": "neutral"
     },
     "yield_curve": {
-      "yield_spread": 0.83,
+      "yield_spread": 0.74,
       "yield_regime": "risk_on"
     }
   },

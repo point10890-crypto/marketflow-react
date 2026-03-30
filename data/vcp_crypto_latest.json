@@ -1,16 +1,47 @@
 {
   "metadata": {
-    "generated_at": "2026-03-30T20:00:27.507872",
+    "generated_at": "2026-03-31T00:54:59.180463",
     "market": "CRYPTO",
-    "gate": "RED",
-    "universe_size": 50
+    "gate": "YELLOW",
+    "universe_size": 56
   },
-  "signals": [],
+  "signals": [
+    {
+      "symbol": "USD1/USDT",
+      "timeframe": "1d",
+      "signal_type": "APPROACHING",
+      "score": 46,
+      "pivot_high": 1.0001,
+      "breakout_close_pct": 0.0,
+      "vol_ratio": 0.53,
+      "liquidity_bucket": "A",
+      "market_regime": "BTC_DOWN|B",
+      "c1": 2.0,
+      "c2": 0.1,
+      "c3": 0.1,
+      "ml_win_prob": 72.9
+    },
+    {
+      "symbol": "ZEC/USDT",
+      "timeframe": "4h",
+      "signal_type": "BREAKOUT",
+      "score": 30,
+      "pivot_high": 223.85,
+      "breakout_close_pct": 0.53,
+      "vol_ratio": 1.55,
+      "liquidity_bucket": "B",
+      "market_regime": "BTC_DOWN|D",
+      "c1": 11.7,
+      "c2": 7.6,
+      "c3": 7.1,
+      "ml_win_prob": 41.2
+    }
+  ],
   "summary": {
-    "setups_4h": 0,
-    "setups_1d": 0,
-    "signals_4h": 0,
-    "signals_1d": 0,
-    "published": 0
+    "setups_4h": 2,
+    "setups_1d": 7,
+    "signals_4h": 1,
+    "signals_1d": 1,
+    "published": 1
   }
 }
