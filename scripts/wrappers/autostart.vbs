@@ -1,12 +1,12 @@
 ' MarketFlow Auto-Start (단일 스크립트)
-' 로그인 시 Flask + Cloudflared + Scheduler 자동 시작
+' 로그인 시 Flask + Next.js + Cloudflared + Scheduler 자동 시작
 ' 이미 실행 중이면 스킵 (중복 방지)
 '
 ' 설치: 이 파일의 바로가기를 시작프로그램 폴더에 배치
 ' C:\Users\dynas\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup
 
 Option Explicit
-Dim objShell, objFSO, objWMI, logFile, PROJECT, PYTHON
+Dim objShell, objFSO, objWMI, logFile, PROJECT, PYTHON, FRONTEND
 
 Set objShell = CreateObject("WScript.Shell")
 Set objFSO = CreateObject("Scripting.FileSystemObject")
@@ -14,6 +14,7 @@ Set objWMI = GetObject("winmgmts:\\.\root\cimv2")
 
 PROJECT = "C:\bitman_marketfloww"
 PYTHON = PROJECT & "\.venv\Scripts\python.exe"
+FRONTEND = PROJECT & "\frontend"
 
 ' 환경변수 설정
 objShell.Environment("Process")("PYTHONIOENCODING") = "utf-8"
@@ -68,7 +69,25 @@ Else
     If Not IsPortOpen(5001) Then Log "Flask: FAILED to start"
 End If
 
-' ── 2. Cloudflared Tunnel ──
+' ── 2. Next.js Frontend (port 4000) ──
+If IsPortOpen(4000) Then
+    Log "Next.js: already running (port 4000 open)"
+Else
+    Log "Next.js: starting..."
+    objShell.CurrentDirectory = FRONTEND
+    objShell.Run "cmd /c ""cd /d " & FRONTEND & " && npm start""", 0, False
+    Dim j
+    For j = 1 To 10
+        WScript.Sleep 3000
+        If IsPortOpen(4000) Then
+            Log "Next.js: OK (port 4000)"
+            Exit For
+        End If
+    Next
+    If Not IsPortOpen(4000) Then Log "Next.js: FAILED to start"
+End If
+
+' ── 3. Cloudflared Tunnel ──
 If IsProcessRunning("cloudflared") Then
     Log "Cloudflared: already running"
 Else
@@ -83,7 +102,7 @@ Else
     End If
 End If
 
-' ── 3. Scheduler Daemon ──
+' ── 4. Scheduler Daemon ──
 If IsProcessRunning("scheduler.py") Then
     Log "Scheduler: already running"
 Else
@@ -101,7 +120,7 @@ End If
 Log "========== AUTO START END =========="
 logFile.Close
 
-' ── 4. Watchdog 루프 (5분 간격 헬스체크 + 자동 재시작) ──
+' ── 5. Watchdog 루프 (5분 간격 헬스체크 + 자동 재시작) ──
 ' VBS는 종료되지 않고 계속 실행 — 이게 watchdog 역할
 Dim restartCount
 restartCount = 0
@@ -121,6 +140,20 @@ Do While True
             Log "WATCHDOG: Flask restarted OK"
         Else
             Log "WATCHDOG: Flask restart FAILED"
+        End If
+        restartCount = restartCount + 1
+    End If
+
+    ' Next.js 체크
+    If Not IsPortOpen(4000) Then
+        Log "WATCHDOG: Next.js DOWN — restarting..."
+        objShell.CurrentDirectory = FRONTEND
+        objShell.Run "cmd /c ""cd /d " & FRONTEND & " && npm start""", 0, False
+        WScript.Sleep 15000
+        If IsPortOpen(4000) Then
+            Log "WATCHDOG: Next.js restarted OK"
+        Else
+            Log "WATCHDOG: Next.js restart FAILED"
         End If
         restartCount = restartCount + 1
     End If
