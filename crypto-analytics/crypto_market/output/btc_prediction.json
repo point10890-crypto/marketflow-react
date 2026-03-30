@@ -1,16 +1,16 @@
 {
-  "timestamp": "2026-03-30T19:01:41.650416",
+  "timestamp": "2026-03-30T20:00:37.488285",
   "predictions": {
     "BTC": {
-      "current_price": 67453.98,
-      "bullish_probability": 18.9,
-      "bearish_probability": 81.1,
+      "current_price": 67458.06,
+      "bullish_probability": 18.8,
+      "bearish_probability": 81.2,
       "confidence_level": "High",
       "key_drivers": [
         {
           "feature": "btc_return_20d",
           "impact": 0.1592,
-          "value": -3.54,
+          "value": -3.53,
           "direction": "bearish"
         },
         {
@@ -22,19 +22,19 @@
         {
           "feature": "eth_btc_relative_5d",
           "impact": 0.1245,
-          "value": 0.13,
+          "value": 0.22,
           "direction": "bullish"
         },
         {
           "feature": "btc_rsi_14",
           "impact": 0.1107,
-          "value": 44.78,
+          "value": 44.79,
           "direction": "bearish"
         },
         {
           "feature": "btc_return_5d",
           "impact": 0.1098,
-          "value": -5.41,
+          "value": -5.4,
           "direction": "bearish"
         }
       ]
@@ -46,7 +46,7 @@
       {
         "name": "GradientBoosting",
         "accuracy": 67.3,
-        "bullish": 15.8
+        "bullish": 15.3
       },
       {
         "name": "RandomForest",
@@ -61,7 +61,7 @@
       {
         "name": "LogisticRegression",
         "accuracy": 62.0,
-        "bullish": 20.9
+        "bullish": 20.8
       }
     ],
     "training_accuracy": 68.6,
