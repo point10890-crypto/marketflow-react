@@ -1,10 +1,10 @@
 {
   "date": "2026-03-30",
-  "updated_at": "2026-03-30 14:37:18",
+  "updated_at": "2026-03-30 16:30:44",
   "market": "KR",
   "scan_count": 545,
   "signal_count": 512,
-  "processing_time_sec": 30.8,
+  "processing_time_sec": 27.5,
   "min_confidence": 40,
   "signals": [
     {
@@ -3100,7 +3100,7 @@
         "neckline_price": 50700.0,
         "confidence": 77,
         "completion_pct": 100.0,
-        "neckline_distance_pct": -0.59,
+        "neckline_distance_pct": -0.99,
         "bullish_bias": -0.8,
         "volume_confirmed": true
       },
@@ -3145,7 +3145,7 @@
           "neckline_price": 50700.0,
           "confidence": 77,
           "completion_pct": 100.0,
-          "neckline_distance_pct": -0.59,
+          "neckline_distance_pct": -0.99,
           "bullish_bias": -0.8,
           "volume_confirmed": true
         },
@@ -3187,8 +3187,8 @@
           "wave_label": "헤드앤숄더",
           "neckline_price": 49500.0,
           "confidence": 74,
-          "completion_pct": 99.4,
-          "neckline_distance_pct": 1.82,
+          "completion_pct": 99.5,
+          "neckline_distance_pct": 1.41,
           "bullish_bias": -0.9,
           "volume_confirmed": true
         },
@@ -3230,8 +3230,8 @@
           "wave_label": "우상향 쌍봉",
           "neckline_price": 49500.0,
           "confidence": 68,
-          "completion_pct": 99.2,
-          "neckline_distance_pct": 1.82,
+          "completion_pct": 99.4,
+          "neckline_distance_pct": 1.41,
           "bullish_bias": -0.5,
           "volume_confirmed": true
         }
@@ -5830,7 +5830,7 @@
         "neckline_price": 14190.0,
         "confidence": 76,
         "completion_pct": 100.0,
-        "neckline_distance_pct": 0.35,
+        "neckline_distance_pct": 0.78,
         "bullish_bias": 0.9,
         "volume_confirmed": true
       },
@@ -5875,8 +5875,51 @@
           "neckline_price": 14190.0,
           "confidence": 76,
           "completion_pct": 100.0,
-          "neckline_distance_pct": 0.35,
+          "neckline_distance_pct": 0.78,
           "bullish_bias": 0.9,
+          "volume_confirmed": true
+        },
+        {
+          "points": [
+            {
+              "index": 76,
+              "date": "2025-12-11",
+              "price": 17100.0,
+              "type": "LOW"
+            },
+            {
+              "index": 79,
+              "date": "2025-12-16",
+              "price": 20700.0,
+              "type": "HIGH"
+            },
+            {
+              "index": 81,
+              "date": "2025-12-18",
+              "price": 15850.0,
+              "type": "LOW"
+            },
+            {
+              "index": 87,
+              "date": "2025-12-29",
+              "price": 21650.0,
+              "type": "HIGH"
+            },
+            {
+              "index": 95,
+              "date": "2026-01-12",
+              "price": 16810.0,
+              "type": "LOW"
+            }
+          ],
+          "pattern_class": "M",
+          "wave_type": "M_DESCENDING_NECKLINE",
+          "wave_label": "하강 넥라인 M",
+          "neckline_price": 15850.0,
+          "confidence": 59,
+          "completion_pct": 100.0,
+          "neckline_distance_pct": -9.78,
+          "bullish_bias": -0.8,
           "volume_confirmed": true
         },
         {
@@ -5917,58 +5960,197 @@
           "wave_label": "헤드앤숄더",
           "neckline_price": 12890.0,
           "confidence": 59,
-          "completion_pct": 97.8,
-          "neckline_distance_pct": 10.47,
+          "completion_pct": 97.7,
+          "neckline_distance_pct": 10.94,
           "bullish_bias": -0.9,
-          "volume_confirmed": true
-        },
-        {
-          "points": [
-            {
-              "index": 20,
-              "date": "2025-09-17",
-              "price": 8480.0,
-              "type": "HIGH"
-            },
-            {
-              "index": 23,
-              "date": "2025-09-22",
-              "price": 6530.0,
-              "type": "LOW"
-            },
-            {
-              "index": 26,
-              "date": "2025-09-25",
-              "price": 9430.0,
-              "type": "HIGH"
-            },
-            {
-              "index": 32,
-              "date": "2025-10-10",
-              "price": 7680.0,
-              "type": "LOW"
-            },
-            {
-              "index": 41,
-              "date": "2025-10-23",
-              "price": 14190.0,
-              "type": "HIGH"
-            }
-          ],
-          "pattern_class": "W",
-          "wave_type": "INV_HEAD_SHOULDERS",
-          "wave_label": "역헤드앤숄더",
-          "neckline_price": 9430.0,
-          "confidence": 56,
-          "completion_pct": 100.0,
-          "neckline_distance_pct": 51.01,
-          "bullish_bias": 0.9,
           "volume_confirmed": true
         }
       ],
       "name": "한라캐스트",
       "price": 15590.0,
       "avg_volume": 1123623.7272727273
+    },
+    {
+      "ticker": "490470",
+      "market": "KR",
+      "best_pattern": {
+        "points": [
+          {
+            "index": 15,
+            "date": "2026-01-21",
+            "price": 23000.0,
+            "type": "LOW"
+          },
+          {
+            "index": 21,
+            "date": "2026-01-29",
+            "price": 31350.0,
+            "type": "HIGH"
+          },
+          {
+            "index": 27,
+            "date": "2026-02-06",
+            "price": 24650.0,
+            "type": "LOW"
+          },
+          {
+            "index": 33,
+            "date": "2026-02-19",
+            "price": 30450.0,
+            "type": "HIGH"
+          },
+          {
+            "index": 41,
+            "date": "2026-03-04",
+            "price": 20400.0,
+            "type": "LOW"
+          }
+        ],
+        "pattern_class": "M",
+        "wave_type": "M_ASCENDING_NECKLINE",
+        "wave_label": "상승 넥라인 M",
+        "neckline_price": 24650.0,
+        "confidence": 76,
+        "completion_pct": 100.0,
+        "neckline_distance_pct": -0.2,
+        "bullish_bias": -0.4,
+        "volume_confirmed": true
+      },
+      "pattern_count": 6,
+      "all_patterns": [
+        {
+          "points": [
+            {
+              "index": 15,
+              "date": "2026-01-21",
+              "price": 23000.0,
+              "type": "LOW"
+            },
+            {
+              "index": 21,
+              "date": "2026-01-29",
+              "price": 31350.0,
+              "type": "HIGH"
+            },
+            {
+              "index": 27,
+              "date": "2026-02-06",
+              "price": 24650.0,
+              "type": "LOW"
+            },
+            {
+              "index": 33,
+              "date": "2026-02-19",
+              "price": 30450.0,
+              "type": "HIGH"
+            },
+            {
+              "index": 41,
+              "date": "2026-03-04",
+              "price": 20400.0,
+              "type": "LOW"
+            }
+          ],
+          "pattern_class": "M",
+          "wave_type": "M_ASCENDING_NECKLINE",
+          "wave_label": "상승 넥라인 M",
+          "neckline_price": 24650.0,
+          "confidence": 76,
+          "completion_pct": 100.0,
+          "neckline_distance_pct": -0.2,
+          "bullish_bias": -0.4,
+          "volume_confirmed": true
+        },
+        {
+          "points": [
+            {
+              "index": 1,
+              "date": "2025-12-30",
+              "price": 25500.0,
+              "type": "LOW"
+            },
+            {
+              "index": 3,
+              "date": "2026-01-05",
+              "price": 32450.0,
+              "type": "HIGH"
+            },
+            {
+              "index": 15,
+              "date": "2026-01-21",
+              "price": 23000.0,
+              "type": "LOW"
+            },
+            {
+              "index": 21,
+              "date": "2026-01-29",
+              "price": 31350.0,
+              "type": "HIGH"
+            },
+            {
+              "index": 27,
+              "date": "2026-02-06",
+              "price": 24650.0,
+              "type": "LOW"
+            }
+          ],
+          "pattern_class": "M",
+          "wave_type": "HEAD_SHOULDERS",
+          "wave_label": "헤드앤숄더",
+          "neckline_price": 23000.0,
+          "confidence": 64,
+          "completion_pct": 96.6,
+          "neckline_distance_pct": 6.96,
+          "bullish_bias": -0.9,
+          "volume_confirmed": true
+        },
+        {
+          "points": [
+            {
+              "index": 27,
+              "date": "2026-02-06",
+              "price": 24650.0,
+              "type": "LOW"
+            },
+            {
+              "index": 33,
+              "date": "2026-02-19",
+              "price": 30450.0,
+              "type": "HIGH"
+            },
+            {
+              "index": 41,
+              "date": "2026-03-04",
+              "price": 20400.0,
+              "type": "LOW"
+            },
+            {
+              "index": 55,
+              "date": "2026-03-24",
+              "price": 32900.0,
+              "type": "HIGH"
+            },
+            {
+              "index": 59,
+              "date": "2026-03-30",
+              "price": 23700.0,
+              "type": "LOW"
+            }
+          ],
+          "pattern_class": "M",
+          "wave_type": "M_DESCENDING_NECKLINE",
+          "wave_label": "하강 넥라인 M",
+          "neckline_price": 20400.0,
+          "confidence": 56,
+          "completion_pct": 93.3,
+          "neckline_distance_pct": 20.59,
+          "bullish_bias": -0.8,
+          "volume_confirmed": true
+        }
+      ],
+      "name": "세미파이브",
+      "price": 27000.0,
+      "avg_volume": 958396.9545454546
     },
     {
       "ticker": "462860",
@@ -7789,188 +7971,6 @@
       "name": "셀루메드",
       "price": 1009.0,
       "avg_volume": 1345511.1818181819
-    },
-    {
-      "ticker": "490470",
-      "market": "KR",
-      "best_pattern": {
-        "points": [
-          {
-            "index": 15,
-            "date": "2026-01-21",
-            "price": 23000.0,
-            "type": "LOW"
-          },
-          {
-            "index": 21,
-            "date": "2026-01-29",
-            "price": 31350.0,
-            "type": "HIGH"
-          },
-          {
-            "index": 27,
-            "date": "2026-02-06",
-            "price": 24650.0,
-            "type": "LOW"
-          },
-          {
-            "index": 33,
-            "date": "2026-02-19",
-            "price": 30450.0,
-            "type": "HIGH"
-          },
-          {
-            "index": 41,
-            "date": "2026-03-04",
-            "price": 20400.0,
-            "type": "LOW"
-          }
-        ],
-        "pattern_class": "M",
-        "wave_type": "M_ASCENDING_NECKLINE",
-        "wave_label": "상승 넥라인 M",
-        "neckline_price": 24650.0,
-        "confidence": 75,
-        "completion_pct": 99.4,
-        "neckline_distance_pct": 0.81,
-        "bullish_bias": -0.4,
-        "volume_confirmed": true
-      },
-      "pattern_count": 6,
-      "all_patterns": [
-        {
-          "points": [
-            {
-              "index": 15,
-              "date": "2026-01-21",
-              "price": 23000.0,
-              "type": "LOW"
-            },
-            {
-              "index": 21,
-              "date": "2026-01-29",
-              "price": 31350.0,
-              "type": "HIGH"
-            },
-            {
-              "index": 27,
-              "date": "2026-02-06",
-              "price": 24650.0,
-              "type": "LOW"
-            },
-            {
-              "index": 33,
-              "date": "2026-02-19",
-              "price": 30450.0,
-              "type": "HIGH"
-            },
-            {
-              "index": 41,
-              "date": "2026-03-04",
-              "price": 20400.0,
-              "type": "LOW"
-            }
-          ],
-          "pattern_class": "M",
-          "wave_type": "M_ASCENDING_NECKLINE",
-          "wave_label": "상승 넥라인 M",
-          "neckline_price": 24650.0,
-          "confidence": 75,
-          "completion_pct": 99.4,
-          "neckline_distance_pct": 0.81,
-          "bullish_bias": -0.4,
-          "volume_confirmed": true
-        },
-        {
-          "points": [
-            {
-              "index": 1,
-              "date": "2025-12-30",
-              "price": 25500.0,
-              "type": "LOW"
-            },
-            {
-              "index": 3,
-              "date": "2026-01-05",
-              "price": 32450.0,
-              "type": "HIGH"
-            },
-            {
-              "index": 15,
-              "date": "2026-01-21",
-              "price": 23000.0,
-              "type": "LOW"
-            },
-            {
-              "index": 21,
-              "date": "2026-01-29",
-              "price": 31350.0,
-              "type": "HIGH"
-            },
-            {
-              "index": 27,
-              "date": "2026-02-06",
-              "price": 24650.0,
-              "type": "LOW"
-            }
-          ],
-          "pattern_class": "M",
-          "wave_type": "HEAD_SHOULDERS",
-          "wave_label": "헤드앤숄더",
-          "neckline_price": 23000.0,
-          "confidence": 64,
-          "completion_pct": 96.1,
-          "neckline_distance_pct": 8.04,
-          "bullish_bias": -0.9,
-          "volume_confirmed": true
-        },
-        {
-          "points": [
-            {
-              "index": 27,
-              "date": "2026-02-06",
-              "price": 24650.0,
-              "type": "LOW"
-            },
-            {
-              "index": 33,
-              "date": "2026-02-19",
-              "price": 30450.0,
-              "type": "HIGH"
-            },
-            {
-              "index": 41,
-              "date": "2026-03-04",
-              "price": 20400.0,
-              "type": "LOW"
-            },
-            {
-              "index": 55,
-              "date": "2026-03-24",
-              "price": 32900.0,
-              "type": "HIGH"
-            },
-            {
-              "index": 59,
-              "date": "2026-03-30",
-              "price": 23700.0,
-              "type": "LOW"
-            }
-          ],
-          "pattern_class": "M",
-          "wave_type": "M_DESCENDING_NECKLINE",
-          "wave_label": "하강 넥라인 M",
-          "neckline_price": 20400.0,
-          "confidence": 56,
-          "completion_pct": 92.9,
-          "neckline_distance_pct": 21.81,
-          "bullish_bias": -0.8,
-          "volume_confirmed": true
-        }
-      ],
-      "name": "세미파이브",
-      "price": 27000.0,
-      "avg_volume": 958396.9545454546
     },
     {
       "ticker": "124560",
@@ -10519,7 +10519,7 @@
         "neckline_price": 11850.0,
         "confidence": 74,
         "completion_pct": 100.0,
-        "neckline_distance_pct": -2.03,
+        "neckline_distance_pct": -1.35,
         "bullish_bias": -0.9,
         "volume_confirmed": true
       },
@@ -10564,7 +10564,7 @@
           "neckline_price": 11850.0,
           "confidence": 74,
           "completion_pct": 100.0,
-          "neckline_distance_pct": -2.03,
+          "neckline_distance_pct": -1.35,
           "bullish_bias": -0.9,
           "volume_confirmed": true
         },
@@ -10607,7 +10607,7 @@
           "neckline_price": 11240.0,
           "confidence": 68,
           "completion_pct": 100.0,
-          "neckline_distance_pct": 3.29,
+          "neckline_distance_pct": 4.0,
           "bullish_bias": 0.9,
           "volume_confirmed": true
         },
@@ -10649,8 +10649,8 @@
           "wave_label": "역헤드앤숄더",
           "neckline_price": 13120.0,
           "confidence": 60,
-          "completion_pct": 94.6,
-          "neckline_distance_pct": -11.51,
+          "completion_pct": 94.8,
+          "neckline_distance_pct": -10.9,
           "bullish_bias": 0.9,
           "volume_confirmed": true
         }
@@ -14032,6 +14032,188 @@
       "avg_volume": 662402.2272727273
     },
     {
+      "ticker": "486990",
+      "market": "KR",
+      "best_pattern": {
+        "points": [
+          {
+            "index": 33,
+            "date": "2025-12-18",
+            "price": 36700.0,
+            "type": "LOW"
+          },
+          {
+            "index": 42,
+            "date": "2026-01-05",
+            "price": 59900.0,
+            "type": "HIGH"
+          },
+          {
+            "index": 75,
+            "date": "2026-02-24",
+            "price": 33850.0,
+            "type": "LOW"
+          },
+          {
+            "index": 76,
+            "date": "2026-02-25",
+            "price": 41150.0,
+            "type": "HIGH"
+          },
+          {
+            "index": 80,
+            "date": "2026-03-04",
+            "price": 28400.0,
+            "type": "LOW"
+          }
+        ],
+        "pattern_class": "M",
+        "wave_type": "HEAD_SHOULDERS",
+        "wave_label": "헤드앤숄더",
+        "neckline_price": 33850.0,
+        "confidence": 73,
+        "completion_pct": 100.0,
+        "neckline_distance_pct": -0.44,
+        "bullish_bias": -0.9,
+        "volume_confirmed": true
+      },
+      "pattern_count": 8,
+      "all_patterns": [
+        {
+          "points": [
+            {
+              "index": 33,
+              "date": "2025-12-18",
+              "price": 36700.0,
+              "type": "LOW"
+            },
+            {
+              "index": 42,
+              "date": "2026-01-05",
+              "price": 59900.0,
+              "type": "HIGH"
+            },
+            {
+              "index": 75,
+              "date": "2026-02-24",
+              "price": 33850.0,
+              "type": "LOW"
+            },
+            {
+              "index": 76,
+              "date": "2026-02-25",
+              "price": 41150.0,
+              "type": "HIGH"
+            },
+            {
+              "index": 80,
+              "date": "2026-03-04",
+              "price": 28400.0,
+              "type": "LOW"
+            }
+          ],
+          "pattern_class": "M",
+          "wave_type": "HEAD_SHOULDERS",
+          "wave_label": "헤드앤숄더",
+          "neckline_price": 33850.0,
+          "confidence": 73,
+          "completion_pct": 100.0,
+          "neckline_distance_pct": -0.44,
+          "bullish_bias": -0.9,
+          "volume_confirmed": true
+        },
+        {
+          "points": [
+            {
+              "index": 11,
+              "date": "2025-11-18",
+              "price": 29600.0,
+              "type": "LOW"
+            },
+            {
+              "index": 18,
+              "date": "2025-11-27",
+              "price": 54600.0,
+              "type": "HIGH"
+            },
+            {
+              "index": 22,
+              "date": "2025-12-03",
+              "price": 37400.0,
+              "type": "LOW"
+            },
+            {
+              "index": 25,
+              "date": "2025-12-08",
+              "price": 48450.0,
+              "type": "HIGH"
+            },
+            {
+              "index": 33,
+              "date": "2025-12-18",
+              "price": 36700.0,
+              "type": "LOW"
+            }
+          ],
+          "pattern_class": "M",
+          "wave_type": "HEAD_SHOULDERS",
+          "wave_label": "헤드앤숄더",
+          "neckline_price": 37400.0,
+          "confidence": 67,
+          "completion_pct": 100.0,
+          "neckline_distance_pct": -9.89,
+          "bullish_bias": -0.9,
+          "volume_confirmed": true
+        },
+        {
+          "points": [
+            {
+              "index": 22,
+              "date": "2025-12-03",
+              "price": 37400.0,
+              "type": "LOW"
+            },
+            {
+              "index": 25,
+              "date": "2025-12-08",
+              "price": 48450.0,
+              "type": "HIGH"
+            },
+            {
+              "index": 33,
+              "date": "2025-12-18",
+              "price": 36700.0,
+              "type": "LOW"
+            },
+            {
+              "index": 42,
+              "date": "2026-01-05",
+              "price": 59900.0,
+              "type": "HIGH"
+            },
+            {
+              "index": 75,
+              "date": "2026-02-24",
+              "price": 33850.0,
+              "type": "LOW"
+            }
+          ],
+          "pattern_class": "M",
+          "wave_type": "M_RIGHT_HIGHER",
+          "wave_label": "우상향 쌍봉",
+          "neckline_price": 36700.0,
+          "confidence": 56,
+          "completion_pct": 100.0,
+          "neckline_distance_pct": -8.17,
+          "bullish_bias": -0.5,
+          "volume_confirmed": true
+        }
+      ],
+      "name": "노타",
+      "price": 39600.0,
+      "avg_volume": 653635.6363636364
+    },
+    {
       "ticker": "079160",
       "market": "KR",
       "best_pattern": {
@@ -14576,6 +14758,188 @@
       "name": "이미지스",
       "price": 1355.0,
       "avg_volume": 514896.54545454547
+    },
+    {
+      "ticker": "478340",
+      "market": "KR",
+      "best_pattern": {
+        "points": [
+          {
+            "index": 25,
+            "date": "2026-01-26",
+            "price": 44150.0,
+            "type": "LOW"
+          },
+          {
+            "index": 31,
+            "date": "2026-02-03",
+            "price": 64600.0,
+            "type": "HIGH"
+          },
+          {
+            "index": 34,
+            "date": "2026-02-06",
+            "price": 47150.0,
+            "type": "LOW"
+          },
+          {
+            "index": 38,
+            "date": "2026-02-12",
+            "price": 58900.0,
+            "type": "HIGH"
+          },
+          {
+            "index": 48,
+            "date": "2026-03-04",
+            "price": 34000.0,
+            "type": "LOW"
+          }
+        ],
+        "pattern_class": "M",
+        "wave_type": "HEAD_SHOULDERS",
+        "wave_label": "헤드앤숄더",
+        "neckline_price": 47150.0,
+        "confidence": 73,
+        "completion_pct": 100.0,
+        "neckline_distance_pct": -2.01,
+        "bullish_bias": -0.9,
+        "volume_confirmed": true
+      },
+      "pattern_count": 7,
+      "all_patterns": [
+        {
+          "points": [
+            {
+              "index": 25,
+              "date": "2026-01-26",
+              "price": 44150.0,
+              "type": "LOW"
+            },
+            {
+              "index": 31,
+              "date": "2026-02-03",
+              "price": 64600.0,
+              "type": "HIGH"
+            },
+            {
+              "index": 34,
+              "date": "2026-02-06",
+              "price": 47150.0,
+              "type": "LOW"
+            },
+            {
+              "index": 38,
+              "date": "2026-02-12",
+              "price": 58900.0,
+              "type": "HIGH"
+            },
+            {
+              "index": 48,
+              "date": "2026-03-04",
+              "price": 34000.0,
+              "type": "LOW"
+            }
+          ],
+          "pattern_class": "M",
+          "wave_type": "HEAD_SHOULDERS",
+          "wave_label": "헤드앤숄더",
+          "neckline_price": 47150.0,
+          "confidence": 73,
+          "completion_pct": 100.0,
+          "neckline_distance_pct": -2.01,
+          "bullish_bias": -0.9,
+          "volume_confirmed": true
+        },
+        {
+          "points": [
+            {
+              "index": 0,
+              "date": "2025-12-17",
+              "price": 49700.0,
+              "type": "HIGH"
+            },
+            {
+              "index": 1,
+              "date": "2025-12-18",
+              "price": 28300.0,
+              "type": "LOW"
+            },
+            {
+              "index": 4,
+              "date": "2025-12-23",
+              "price": 47250.0,
+              "type": "HIGH"
+            },
+            {
+              "index": 9,
+              "date": "2026-01-02",
+              "price": 25150.0,
+              "type": "LOW"
+            },
+            {
+              "index": 22,
+              "date": "2026-01-21",
+              "price": 57900.0,
+              "type": "HIGH"
+            }
+          ],
+          "pattern_class": "W",
+          "wave_type": "W_DESCENDING_NECKLINE",
+          "wave_label": "하강 넥라인 W",
+          "neckline_price": 47250.0,
+          "confidence": 64,
+          "completion_pct": 99.0,
+          "neckline_distance_pct": -2.22,
+          "bullish_bias": 0.4,
+          "volume_confirmed": true
+        },
+        {
+          "points": [
+            {
+              "index": 9,
+              "date": "2026-01-02",
+              "price": 25150.0,
+              "type": "LOW"
+            },
+            {
+              "index": 22,
+              "date": "2026-01-21",
+              "price": 57900.0,
+              "type": "HIGH"
+            },
+            {
+              "index": 25,
+              "date": "2026-01-26",
+              "price": 44150.0,
+              "type": "LOW"
+            },
+            {
+              "index": 31,
+              "date": "2026-02-03",
+              "price": 64600.0,
+              "type": "HIGH"
+            },
+            {
+              "index": 34,
+              "date": "2026-02-06",
+              "price": 47150.0,
+              "type": "LOW"
+            }
+          ],
+          "pattern_class": "M",
+          "wave_type": "M_ASCENDING_NECKLINE",
+          "wave_label": "상승 넥라인 M",
+          "neckline_price": 44150.0,
+          "confidence": 62,
+          "completion_pct": 98.0,
+          "neckline_distance_pct": 4.64,
+          "bullish_bias": -0.4,
+          "volume_confirmed": true
+        }
+      ],
+      "name": "나라스페이스테크놀로지",
+      "price": 45200.0,
+      "avg_volume": 512624.4090909091
     },
     {
       "ticker": "007390",
@@ -20046,7 +20410,7 @@
         "neckline_price": 73500.0,
         "confidence": 71,
         "completion_pct": 100.0,
-        "neckline_distance_pct": -1.9,
+        "neckline_distance_pct": -2.18,
         "bullish_bias": -0.9,
         "volume_confirmed": true
       },
@@ -20091,7 +20455,7 @@
           "neckline_price": 73500.0,
           "confidence": 71,
           "completion_pct": 100.0,
-          "neckline_distance_pct": -1.9,
+          "neckline_distance_pct": -2.18,
           "bullish_bias": -0.9,
           "volume_confirmed": true
         },
@@ -20133,8 +20497,8 @@
           "wave_label": "헤드앤숄더",
           "neckline_price": 71000.0,
           "confidence": 71,
-          "completion_pct": 98.9,
-          "neckline_distance_pct": 1.55,
+          "completion_pct": 99.1,
+          "neckline_distance_pct": 1.27,
           "bullish_bias": -0.9,
           "volume_confirmed": true
         },
@@ -20177,7 +20541,7 @@
           "neckline_price": 73900.0,
           "confidence": 70,
           "completion_pct": 100.0,
-          "neckline_distance_pct": -2.44,
+          "neckline_distance_pct": -2.71,
           "bullish_bias": -0.7,
           "volume_confirmed": true
         }
@@ -21277,188 +21641,6 @@
       "name": "가온그룹",
       "price": 5830.0,
       "avg_volume": 651430.6818181818
-    },
-    {
-      "ticker": "491000",
-      "market": "KR",
-      "best_pattern": {
-        "points": [
-          {
-            "index": 25,
-            "date": "2026-02-02",
-            "price": 69000.0,
-            "type": "LOW"
-          },
-          {
-            "index": 27,
-            "date": "2026-02-04",
-            "price": 90800.0,
-            "type": "HIGH"
-          },
-          {
-            "index": 33,
-            "date": "2026-02-12",
-            "price": 73500.0,
-            "type": "LOW"
-          },
-          {
-            "index": 38,
-            "date": "2026-02-24",
-            "price": 95900.0,
-            "type": "HIGH"
-          },
-          {
-            "index": 43,
-            "date": "2026-03-04",
-            "price": 66000.0,
-            "type": "LOW"
-          }
-        ],
-        "pattern_class": "M",
-        "wave_type": "M_ASCENDING_NECKLINE",
-        "wave_label": "상승 넥라인 M",
-        "neckline_price": 73500.0,
-        "confidence": 71,
-        "completion_pct": 100.0,
-        "neckline_distance_pct": -2.86,
-        "bullish_bias": -0.4,
-        "volume_confirmed": true
-      },
-      "pattern_count": 8,
-      "all_patterns": [
-        {
-          "points": [
-            {
-              "index": 25,
-              "date": "2026-02-02",
-              "price": 69000.0,
-              "type": "LOW"
-            },
-            {
-              "index": 27,
-              "date": "2026-02-04",
-              "price": 90800.0,
-              "type": "HIGH"
-            },
-            {
-              "index": 33,
-              "date": "2026-02-12",
-              "price": 73500.0,
-              "type": "LOW"
-            },
-            {
-              "index": 38,
-              "date": "2026-02-24",
-              "price": 95900.0,
-              "type": "HIGH"
-            },
-            {
-              "index": 43,
-              "date": "2026-03-04",
-              "price": 66000.0,
-              "type": "LOW"
-            }
-          ],
-          "pattern_class": "M",
-          "wave_type": "M_ASCENDING_NECKLINE",
-          "wave_label": "상승 넥라인 M",
-          "neckline_price": 73500.0,
-          "confidence": 71,
-          "completion_pct": 100.0,
-          "neckline_distance_pct": -2.86,
-          "bullish_bias": -0.4,
-          "volume_confirmed": true
-        },
-        {
-          "points": [
-            {
-              "index": 8,
-              "date": "2026-01-08",
-              "price": 50000.0,
-              "type": "LOW"
-            },
-            {
-              "index": 21,
-              "date": "2026-01-27",
-              "price": 86400.0,
-              "type": "HIGH"
-            },
-            {
-              "index": 25,
-              "date": "2026-02-02",
-              "price": 69000.0,
-              "type": "LOW"
-            },
-            {
-              "index": 27,
-              "date": "2026-02-04",
-              "price": 90800.0,
-              "type": "HIGH"
-            },
-            {
-              "index": 33,
-              "date": "2026-02-12",
-              "price": 73500.0,
-              "type": "LOW"
-            }
-          ],
-          "pattern_class": "M",
-          "wave_type": "M_ASCENDING_NECKLINE",
-          "wave_label": "상승 넥라인 M",
-          "neckline_price": 69000.0,
-          "confidence": 61,
-          "completion_pct": 97.8,
-          "neckline_distance_pct": 3.48,
-          "bullish_bias": -0.4,
-          "volume_confirmed": true
-        },
-        {
-          "points": [
-            {
-              "index": 33,
-              "date": "2026-02-12",
-              "price": 73500.0,
-              "type": "LOW"
-            },
-            {
-              "index": 38,
-              "date": "2026-02-24",
-              "price": 95900.0,
-              "type": "HIGH"
-            },
-            {
-              "index": 43,
-              "date": "2026-03-04",
-              "price": 66000.0,
-              "type": "LOW"
-            },
-            {
-              "index": 48,
-              "date": "2026-03-11",
-              "price": 92500.0,
-              "type": "HIGH"
-            },
-            {
-              "index": 61,
-              "date": "2026-03-30",
-              "price": 70500.0,
-              "type": "LOW"
-            }
-          ],
-          "pattern_class": "M",
-          "wave_type": "HEAD_SHOULDERS",
-          "wave_label": "헤드앤숄더",
-          "neckline_price": 66000.0,
-          "confidence": 61,
-          "completion_pct": 96.4,
-          "neckline_distance_pct": 8.18,
-          "bullish_bias": -0.9,
-          "volume_confirmed": true
-        }
-      ],
-      "name": "리브스메드",
-      "price": 76500.0,
-      "avg_volume": 574462.4090909091
     },
     {
       "ticker": "317770",
@@ -23097,188 +23279,6 @@
       "name": "리메드",
       "price": 3110.0,
       "avg_volume": 1309563.0909090908
-    },
-    {
-      "ticker": "0015G0",
-      "market": "KR",
-      "best_pattern": {
-        "points": [
-          {
-            "index": 47,
-            "date": "2026-01-26",
-            "price": 28000.0,
-            "type": "LOW"
-          },
-          {
-            "index": 57,
-            "date": "2026-02-09",
-            "price": 45400.0,
-            "type": "HIGH"
-          },
-          {
-            "index": 65,
-            "date": "2026-02-24",
-            "price": 31950.0,
-            "type": "LOW"
-          },
-          {
-            "index": 69,
-            "date": "2026-03-03",
-            "price": 49600.0,
-            "type": "HIGH"
-          },
-          {
-            "index": 70,
-            "date": "2026-03-04",
-            "price": 33250.0,
-            "type": "LOW"
-          }
-        ],
-        "pattern_class": "M",
-        "wave_type": "M_ASCENDING_NECKLINE",
-        "wave_label": "상승 넥라인 M",
-        "neckline_price": 31950.0,
-        "confidence": 70,
-        "completion_pct": 100.0,
-        "neckline_distance_pct": -0.16,
-        "bullish_bias": -0.4,
-        "volume_confirmed": true
-      },
-      "pattern_count": 13,
-      "all_patterns": [
-        {
-          "points": [
-            {
-              "index": 47,
-              "date": "2026-01-26",
-              "price": 28000.0,
-              "type": "LOW"
-            },
-            {
-              "index": 57,
-              "date": "2026-02-09",
-              "price": 45400.0,
-              "type": "HIGH"
-            },
-            {
-              "index": 65,
-              "date": "2026-02-24",
-              "price": 31950.0,
-              "type": "LOW"
-            },
-            {
-              "index": 69,
-              "date": "2026-03-03",
-              "price": 49600.0,
-              "type": "HIGH"
-            },
-            {
-              "index": 70,
-              "date": "2026-03-04",
-              "price": 33250.0,
-              "type": "LOW"
-            }
-          ],
-          "pattern_class": "M",
-          "wave_type": "M_ASCENDING_NECKLINE",
-          "wave_label": "상승 넥라인 M",
-          "neckline_price": 31950.0,
-          "confidence": 70,
-          "completion_pct": 100.0,
-          "neckline_distance_pct": -0.16,
-          "bullish_bias": -0.4,
-          "volume_confirmed": true
-        },
-        {
-          "points": [
-            {
-              "index": 65,
-              "date": "2026-02-24",
-              "price": 31950.0,
-              "type": "LOW"
-            },
-            {
-              "index": 69,
-              "date": "2026-03-03",
-              "price": 49600.0,
-              "type": "HIGH"
-            },
-            {
-              "index": 70,
-              "date": "2026-03-04",
-              "price": 33250.0,
-              "type": "LOW"
-            },
-            {
-              "index": 72,
-              "date": "2026-03-06",
-              "price": 44250.0,
-              "type": "HIGH"
-            },
-            {
-              "index": 83,
-              "date": "2026-03-23",
-              "price": 31000.0,
-              "type": "LOW"
-            }
-          ],
-          "pattern_class": "M",
-          "wave_type": "HEAD_SHOULDERS",
-          "wave_label": "헤드앤숄더",
-          "neckline_price": 33250.0,
-          "confidence": 65,
-          "completion_pct": 100.0,
-          "neckline_distance_pct": -4.06,
-          "bullish_bias": -0.9,
-          "volume_confirmed": true
-        },
-        {
-          "points": [
-            {
-              "index": 0,
-              "date": "2025-11-17",
-              "price": 55000.0,
-              "type": "HIGH"
-            },
-            {
-              "index": 1,
-              "date": "2025-11-18",
-              "price": 18900.0,
-              "type": "LOW"
-            },
-            {
-              "index": 3,
-              "date": "2025-11-20",
-              "price": 27600.0,
-              "type": "HIGH"
-            },
-            {
-              "index": 5,
-              "date": "2025-11-24",
-              "price": 19640.0,
-              "type": "LOW"
-            },
-            {
-              "index": 7,
-              "date": "2025-11-26",
-              "price": 24900.0,
-              "type": "HIGH"
-            }
-          ],
-          "pattern_class": "W",
-          "wave_type": "INV_HEAD_SHOULDERS",
-          "wave_label": "역헤드앤숄더",
-          "neckline_price": 27600.0,
-          "confidence": 59,
-          "completion_pct": 100.0,
-          "neckline_distance_pct": 15.58,
-          "bullish_bias": 0.9,
-          "volume_confirmed": true
-        }
-      ],
-      "name": "그린광학",
-      "price": 33100.0,
-      "avg_volume": 1098788.4090909092
     },
     {
       "ticker": "060250",
@@ -29661,188 +29661,6 @@
       "avg_volume": 680144.4545454546
     },
     {
-      "ticker": "486990",
-      "market": "KR",
-      "best_pattern": {
-        "points": [
-          {
-            "index": 33,
-            "date": "2025-12-18",
-            "price": 36700.0,
-            "type": "LOW"
-          },
-          {
-            "index": 42,
-            "date": "2026-01-05",
-            "price": 59900.0,
-            "type": "HIGH"
-          },
-          {
-            "index": 75,
-            "date": "2026-02-24",
-            "price": 33850.0,
-            "type": "LOW"
-          },
-          {
-            "index": 76,
-            "date": "2026-02-25",
-            "price": 41150.0,
-            "type": "HIGH"
-          },
-          {
-            "index": 80,
-            "date": "2026-03-04",
-            "price": 28400.0,
-            "type": "LOW"
-          }
-        ],
-        "pattern_class": "M",
-        "wave_type": "HEAD_SHOULDERS",
-        "wave_label": "헤드앤숄더",
-        "neckline_price": 33850.0,
-        "confidence": 68,
-        "completion_pct": 100.0,
-        "neckline_distance_pct": -1.18,
-        "bullish_bias": -0.9,
-        "volume_confirmed": true
-      },
-      "pattern_count": 8,
-      "all_patterns": [
-        {
-          "points": [
-            {
-              "index": 33,
-              "date": "2025-12-18",
-              "price": 36700.0,
-              "type": "LOW"
-            },
-            {
-              "index": 42,
-              "date": "2026-01-05",
-              "price": 59900.0,
-              "type": "HIGH"
-            },
-            {
-              "index": 75,
-              "date": "2026-02-24",
-              "price": 33850.0,
-              "type": "LOW"
-            },
-            {
-              "index": 76,
-              "date": "2026-02-25",
-              "price": 41150.0,
-              "type": "HIGH"
-            },
-            {
-              "index": 80,
-              "date": "2026-03-04",
-              "price": 28400.0,
-              "type": "LOW"
-            }
-          ],
-          "pattern_class": "M",
-          "wave_type": "HEAD_SHOULDERS",
-          "wave_label": "헤드앤숄더",
-          "neckline_price": 33850.0,
-          "confidence": 68,
-          "completion_pct": 100.0,
-          "neckline_distance_pct": -1.18,
-          "bullish_bias": -0.9,
-          "volume_confirmed": true
-        },
-        {
-          "points": [
-            {
-              "index": 11,
-              "date": "2025-11-18",
-              "price": 29600.0,
-              "type": "LOW"
-            },
-            {
-              "index": 18,
-              "date": "2025-11-27",
-              "price": 54600.0,
-              "type": "HIGH"
-            },
-            {
-              "index": 22,
-              "date": "2025-12-03",
-              "price": 37400.0,
-              "type": "LOW"
-            },
-            {
-              "index": 25,
-              "date": "2025-12-08",
-              "price": 48450.0,
-              "type": "HIGH"
-            },
-            {
-              "index": 33,
-              "date": "2025-12-18",
-              "price": 36700.0,
-              "type": "LOW"
-            }
-          ],
-          "pattern_class": "M",
-          "wave_type": "HEAD_SHOULDERS",
-          "wave_label": "헤드앤숄더",
-          "neckline_price": 37400.0,
-          "confidence": 62,
-          "completion_pct": 100.0,
-          "neckline_distance_pct": -10.56,
-          "bullish_bias": -0.9,
-          "volume_confirmed": true
-        },
-        {
-          "points": [
-            {
-              "index": 22,
-              "date": "2025-12-03",
-              "price": 37400.0,
-              "type": "LOW"
-            },
-            {
-              "index": 25,
-              "date": "2025-12-08",
-              "price": 48450.0,
-              "type": "HIGH"
-            },
-            {
-              "index": 33,
-              "date": "2025-12-18",
-              "price": 36700.0,
-              "type": "LOW"
-            },
-            {
-              "index": 42,
-              "date": "2026-01-05",
-              "price": 59900.0,
-              "type": "HIGH"
-            },
-            {
-              "index": 75,
-              "date": "2026-02-24",
-              "price": 33850.0,
-              "type": "LOW"
-            }
-          ],
-          "pattern_class": "M",
-          "wave_type": "M_RIGHT_HIGHER",
-          "wave_label": "우상향 쌍봉",
-          "neckline_price": 36700.0,
-          "confidence": 56,
-          "completion_pct": 100.0,
-          "neckline_distance_pct": -8.86,
-          "bullish_bias": -0.5,
-          "volume_confirmed": true
-        }
-      ],
-      "name": "노타",
-      "price": 39600.0,
-      "avg_volume": 653635.6363636364
-    },
-    {
       "ticker": "021240",
       "market": "KR",
       "best_pattern": {
@@ -30205,188 +30023,6 @@
       "name": "앱클론",
       "price": 73000.0,
       "avg_volume": 513371.0909090909
-    },
-    {
-      "ticker": "478340",
-      "market": "KR",
-      "best_pattern": {
-        "points": [
-          {
-            "index": 25,
-            "date": "2026-01-26",
-            "price": 44150.0,
-            "type": "LOW"
-          },
-          {
-            "index": 31,
-            "date": "2026-02-03",
-            "price": 64600.0,
-            "type": "HIGH"
-          },
-          {
-            "index": 34,
-            "date": "2026-02-06",
-            "price": 47150.0,
-            "type": "LOW"
-          },
-          {
-            "index": 38,
-            "date": "2026-02-12",
-            "price": 58900.0,
-            "type": "HIGH"
-          },
-          {
-            "index": 48,
-            "date": "2026-03-04",
-            "price": 34000.0,
-            "type": "LOW"
-          }
-        ],
-        "pattern_class": "M",
-        "wave_type": "HEAD_SHOULDERS",
-        "wave_label": "헤드앤숄더",
-        "neckline_price": 47150.0,
-        "confidence": 68,
-        "completion_pct": 100.0,
-        "neckline_distance_pct": -4.14,
-        "bullish_bias": -0.9,
-        "volume_confirmed": true
-      },
-      "pattern_count": 7,
-      "all_patterns": [
-        {
-          "points": [
-            {
-              "index": 25,
-              "date": "2026-01-26",
-              "price": 44150.0,
-              "type": "LOW"
-            },
-            {
-              "index": 31,
-              "date": "2026-02-03",
-              "price": 64600.0,
-              "type": "HIGH"
-            },
-            {
-              "index": 34,
-              "date": "2026-02-06",
-              "price": 47150.0,
-              "type": "LOW"
-            },
-            {
-              "index": 38,
-              "date": "2026-02-12",
-              "price": 58900.0,
-              "type": "HIGH"
-            },
-            {
-              "index": 48,
-              "date": "2026-03-04",
-              "price": 34000.0,
-              "type": "LOW"
-            }
-          ],
-          "pattern_class": "M",
-          "wave_type": "HEAD_SHOULDERS",
-          "wave_label": "헤드앤숄더",
-          "neckline_price": 47150.0,
-          "confidence": 68,
-          "completion_pct": 100.0,
-          "neckline_distance_pct": -4.14,
-          "bullish_bias": -0.9,
-          "volume_confirmed": true
-        },
-        {
-          "points": [
-            {
-              "index": 9,
-              "date": "2026-01-02",
-              "price": 25150.0,
-              "type": "LOW"
-            },
-            {
-              "index": 22,
-              "date": "2026-01-21",
-              "price": 57900.0,
-              "type": "HIGH"
-            },
-            {
-              "index": 25,
-              "date": "2026-01-26",
-              "price": 44150.0,
-              "type": "LOW"
-            },
-            {
-              "index": 31,
-              "date": "2026-02-03",
-              "price": 64600.0,
-              "type": "HIGH"
-            },
-            {
-              "index": 34,
-              "date": "2026-02-06",
-              "price": 47150.0,
-              "type": "LOW"
-            }
-          ],
-          "pattern_class": "M",
-          "wave_type": "M_ASCENDING_NECKLINE",
-          "wave_label": "상승 넥라인 M",
-          "neckline_price": 44150.0,
-          "confidence": 67,
-          "completion_pct": 99.0,
-          "neckline_distance_pct": 2.38,
-          "bullish_bias": -0.4,
-          "volume_confirmed": true
-        },
-        {
-          "points": [
-            {
-              "index": 0,
-              "date": "2025-12-17",
-              "price": 49700.0,
-              "type": "HIGH"
-            },
-            {
-              "index": 1,
-              "date": "2025-12-18",
-              "price": 28300.0,
-              "type": "LOW"
-            },
-            {
-              "index": 4,
-              "date": "2025-12-23",
-              "price": 47250.0,
-              "type": "HIGH"
-            },
-            {
-              "index": 9,
-              "date": "2026-01-02",
-              "price": 25150.0,
-              "type": "LOW"
-            },
-            {
-              "index": 22,
-              "date": "2026-01-21",
-              "price": 57900.0,
-              "type": "HIGH"
-            }
-          ],
-          "pattern_class": "W",
-          "wave_type": "W_DESCENDING_NECKLINE",
-          "wave_label": "하강 넥라인 W",
-          "neckline_price": 47250.0,
-          "confidence": 59,
-          "completion_pct": 98.1,
-          "neckline_distance_pct": -4.34,
-          "bullish_bias": 0.4,
-          "volume_confirmed": true
-        }
-      ],
-      "name": "나라스페이스테크놀로지",
-      "price": 45200.0,
-      "avg_volume": 512624.4090909091
     },
     {
       "ticker": "003280",
@@ -35440,7 +35076,7 @@
         "neckline_price": 12450.0,
         "confidence": 66,
         "completion_pct": 100.0,
-        "neckline_distance_pct": -3.61,
+        "neckline_distance_pct": -3.21,
         "bullish_bias": -0.4,
         "volume_confirmed": true
       },
@@ -35485,7 +35121,7 @@
           "neckline_price": 12450.0,
           "confidence": 66,
           "completion_pct": 100.0,
-          "neckline_distance_pct": -3.61,
+          "neckline_distance_pct": -3.21,
           "bullish_bias": -0.4,
           "volume_confirmed": true
         },
@@ -35528,7 +35164,7 @@
           "neckline_price": 12900.0,
           "confidence": 62,
           "completion_pct": 100.0,
-          "neckline_distance_pct": -6.98,
+          "neckline_distance_pct": -6.59,
           "bullish_bias": -0.9,
           "volume_confirmed": true
         },
@@ -35570,8 +35206,8 @@
           "wave_label": "헤드앤숄더",
           "neckline_price": 10960.0,
           "confidence": 59,
-          "completion_pct": 98.2,
-          "neckline_distance_pct": 9.49,
+          "completion_pct": 98.1,
+          "neckline_distance_pct": 9.95,
           "bullish_bias": -0.9,
           "volume_confirmed": true
         }
@@ -37035,6 +36671,188 @@
       "name": "나노팀",
       "price": 11000.0,
       "avg_volume": 596889.9090909091
+    },
+    {
+      "ticker": "491000",
+      "market": "KR",
+      "best_pattern": {
+        "points": [
+          {
+            "index": 25,
+            "date": "2026-02-02",
+            "price": 69000.0,
+            "type": "LOW"
+          },
+          {
+            "index": 27,
+            "date": "2026-02-04",
+            "price": 90800.0,
+            "type": "HIGH"
+          },
+          {
+            "index": 33,
+            "date": "2026-02-12",
+            "price": 73500.0,
+            "type": "LOW"
+          },
+          {
+            "index": 38,
+            "date": "2026-02-24",
+            "price": 95900.0,
+            "type": "HIGH"
+          },
+          {
+            "index": 43,
+            "date": "2026-03-04",
+            "price": 66000.0,
+            "type": "LOW"
+          }
+        ],
+        "pattern_class": "M",
+        "wave_type": "M_ASCENDING_NECKLINE",
+        "wave_label": "상승 넥라인 M",
+        "neckline_price": 73500.0,
+        "confidence": 66,
+        "completion_pct": 100.0,
+        "neckline_distance_pct": -3.27,
+        "bullish_bias": -0.4,
+        "volume_confirmed": true
+      },
+      "pattern_count": 8,
+      "all_patterns": [
+        {
+          "points": [
+            {
+              "index": 25,
+              "date": "2026-02-02",
+              "price": 69000.0,
+              "type": "LOW"
+            },
+            {
+              "index": 27,
+              "date": "2026-02-04",
+              "price": 90800.0,
+              "type": "HIGH"
+            },
+            {
+              "index": 33,
+              "date": "2026-02-12",
+              "price": 73500.0,
+              "type": "LOW"
+            },
+            {
+              "index": 38,
+              "date": "2026-02-24",
+              "price": 95900.0,
+              "type": "HIGH"
+            },
+            {
+              "index": 43,
+              "date": "2026-03-04",
+              "price": 66000.0,
+              "type": "LOW"
+            }
+          ],
+          "pattern_class": "M",
+          "wave_type": "M_ASCENDING_NECKLINE",
+          "wave_label": "상승 넥라인 M",
+          "neckline_price": 73500.0,
+          "confidence": 66,
+          "completion_pct": 100.0,
+          "neckline_distance_pct": -3.27,
+          "bullish_bias": -0.4,
+          "volume_confirmed": true
+        },
+        {
+          "points": [
+            {
+              "index": 8,
+              "date": "2026-01-08",
+              "price": 50000.0,
+              "type": "LOW"
+            },
+            {
+              "index": 21,
+              "date": "2026-01-27",
+              "price": 86400.0,
+              "type": "HIGH"
+            },
+            {
+              "index": 25,
+              "date": "2026-02-02",
+              "price": 69000.0,
+              "type": "LOW"
+            },
+            {
+              "index": 27,
+              "date": "2026-02-04",
+              "price": 90800.0,
+              "type": "HIGH"
+            },
+            {
+              "index": 33,
+              "date": "2026-02-12",
+              "price": 73500.0,
+              "type": "LOW"
+            }
+          ],
+          "pattern_class": "M",
+          "wave_type": "M_ASCENDING_NECKLINE",
+          "wave_label": "상승 넥라인 M",
+          "neckline_price": 69000.0,
+          "confidence": 61,
+          "completion_pct": 98.1,
+          "neckline_distance_pct": 3.04,
+          "bullish_bias": -0.4,
+          "volume_confirmed": true
+        },
+        {
+          "points": [
+            {
+              "index": 33,
+              "date": "2026-02-12",
+              "price": 73500.0,
+              "type": "LOW"
+            },
+            {
+              "index": 38,
+              "date": "2026-02-24",
+              "price": 95900.0,
+              "type": "HIGH"
+            },
+            {
+              "index": 43,
+              "date": "2026-03-04",
+              "price": 66000.0,
+              "type": "LOW"
+            },
+            {
+              "index": 48,
+              "date": "2026-03-11",
+              "price": 92500.0,
+              "type": "HIGH"
+            },
+            {
+              "index": 61,
+              "date": "2026-03-30",
+              "price": 70500.0,
+              "type": "LOW"
+            }
+          ],
+          "pattern_class": "M",
+          "wave_type": "HEAD_SHOULDERS",
+          "wave_label": "헤드앤숄더",
+          "neckline_price": 66000.0,
+          "confidence": 61,
+          "completion_pct": 96.6,
+          "neckline_distance_pct": 7.73,
+          "bullish_bias": -0.9,
+          "volume_confirmed": true
+        }
+      ],
+      "name": "리브스메드",
+      "price": 76500.0,
+      "avg_volume": 574462.4090909091
     },
     {
       "ticker": "010100",
@@ -39176,6 +38994,188 @@
       "name": "리노공업",
       "price": 103800.0,
       "avg_volume": 1171068.1818181819
+    },
+    {
+      "ticker": "0015G0",
+      "market": "KR",
+      "best_pattern": {
+        "points": [
+          {
+            "index": 47,
+            "date": "2026-01-26",
+            "price": 28000.0,
+            "type": "LOW"
+          },
+          {
+            "index": 57,
+            "date": "2026-02-09",
+            "price": 45400.0,
+            "type": "HIGH"
+          },
+          {
+            "index": 65,
+            "date": "2026-02-24",
+            "price": 31950.0,
+            "type": "LOW"
+          },
+          {
+            "index": 69,
+            "date": "2026-03-03",
+            "price": 49600.0,
+            "type": "HIGH"
+          },
+          {
+            "index": 70,
+            "date": "2026-03-04",
+            "price": 33250.0,
+            "type": "LOW"
+          }
+        ],
+        "pattern_class": "M",
+        "wave_type": "M_ASCENDING_NECKLINE",
+        "wave_label": "상승 넥라인 M",
+        "neckline_price": 31950.0,
+        "confidence": 65,
+        "completion_pct": 100.0,
+        "neckline_distance_pct": -1.41,
+        "bullish_bias": -0.4,
+        "volume_confirmed": true
+      },
+      "pattern_count": 13,
+      "all_patterns": [
+        {
+          "points": [
+            {
+              "index": 47,
+              "date": "2026-01-26",
+              "price": 28000.0,
+              "type": "LOW"
+            },
+            {
+              "index": 57,
+              "date": "2026-02-09",
+              "price": 45400.0,
+              "type": "HIGH"
+            },
+            {
+              "index": 65,
+              "date": "2026-02-24",
+              "price": 31950.0,
+              "type": "LOW"
+            },
+            {
+              "index": 69,
+              "date": "2026-03-03",
+              "price": 49600.0,
+              "type": "HIGH"
+            },
+            {
+              "index": 70,
+              "date": "2026-03-04",
+              "price": 33250.0,
+              "type": "LOW"
+            }
+          ],
+          "pattern_class": "M",
+          "wave_type": "M_ASCENDING_NECKLINE",
+          "wave_label": "상승 넥라인 M",
+          "neckline_price": 31950.0,
+          "confidence": 65,
+          "completion_pct": 100.0,
+          "neckline_distance_pct": -1.41,
+          "bullish_bias": -0.4,
+          "volume_confirmed": true
+        },
+        {
+          "points": [
+            {
+              "index": 65,
+              "date": "2026-02-24",
+              "price": 31950.0,
+              "type": "LOW"
+            },
+            {
+              "index": 69,
+              "date": "2026-03-03",
+              "price": 49600.0,
+              "type": "HIGH"
+            },
+            {
+              "index": 70,
+              "date": "2026-03-04",
+              "price": 33250.0,
+              "type": "LOW"
+            },
+            {
+              "index": 72,
+              "date": "2026-03-06",
+              "price": 44250.0,
+              "type": "HIGH"
+            },
+            {
+              "index": 83,
+              "date": "2026-03-23",
+              "price": 31000.0,
+              "type": "LOW"
+            }
+          ],
+          "pattern_class": "M",
+          "wave_type": "HEAD_SHOULDERS",
+          "wave_label": "헤드앤숄더",
+          "neckline_price": 33250.0,
+          "confidence": 60,
+          "completion_pct": 100.0,
+          "neckline_distance_pct": -5.26,
+          "bullish_bias": -0.9,
+          "volume_confirmed": true
+        },
+        {
+          "points": [
+            {
+              "index": 0,
+              "date": "2025-11-17",
+              "price": 55000.0,
+              "type": "HIGH"
+            },
+            {
+              "index": 1,
+              "date": "2025-11-18",
+              "price": 18900.0,
+              "type": "LOW"
+            },
+            {
+              "index": 3,
+              "date": "2025-11-20",
+              "price": 27600.0,
+              "type": "HIGH"
+            },
+            {
+              "index": 5,
+              "date": "2025-11-24",
+              "price": 19640.0,
+              "type": "LOW"
+            },
+            {
+              "index": 7,
+              "date": "2025-11-26",
+              "price": 24900.0,
+              "type": "HIGH"
+            }
+          ],
+          "pattern_class": "W",
+          "wave_type": "INV_HEAD_SHOULDERS",
+          "wave_label": "역헤드앤숄더",
+          "neckline_price": 27600.0,
+          "confidence": 59,
+          "completion_pct": 100.0,
+          "neckline_distance_pct": 14.13,
+          "bullish_bias": 0.9,
+          "volume_confirmed": true
+        }
+      ],
+      "name": "그린광학",
+      "price": 33100.0,
+      "avg_volume": 1098788.4090909092
     },
     {
       "ticker": "086790",
@@ -46604,8 +46604,8 @@
         "wave_label": "헤드앤숄더",
         "neckline_price": 29500.0,
         "confidence": 63,
-        "completion_pct": 98.4,
-        "neckline_distance_pct": 7.46,
+        "completion_pct": 98.6,
+        "neckline_distance_pct": 6.78,
         "bullish_bias": -0.9,
         "volume_confirmed": true
       },
@@ -46649,8 +46649,8 @@
           "wave_label": "헤드앤숄더",
           "neckline_price": 29500.0,
           "confidence": 63,
-          "completion_pct": 98.4,
-          "neckline_distance_pct": 7.46,
+          "completion_pct": 98.6,
+          "neckline_distance_pct": 6.78,
           "bullish_bias": -0.9,
           "volume_confirmed": true
         },
@@ -46693,7 +46693,7 @@
           "neckline_price": 34850.0,
           "confidence": 62,
           "completion_pct": 100.0,
-          "neckline_distance_pct": -9.04,
+          "neckline_distance_pct": -9.61,
           "bullish_bias": -0.4,
           "volume_confirmed": true
         },
@@ -46735,8 +46735,8 @@
           "wave_label": "하강 넥라인 M",
           "neckline_price": 24750.0,
           "confidence": 59,
-          "completion_pct": 94.8,
-          "neckline_distance_pct": 28.08,
+          "completion_pct": 95.0,
+          "neckline_distance_pct": 27.27,
           "bullish_bias": -0.8,
           "volume_confirmed": true
         }
@@ -58809,7 +58809,7 @@
         "neckline_price": 17980.0,
         "confidence": 60,
         "completion_pct": 100.0,
-        "neckline_distance_pct": 12.35,
+        "neckline_distance_pct": 12.63,
         "bullish_bias": 0.9,
         "volume_confirmed": true
       },
@@ -58854,7 +58854,7 @@
           "neckline_price": 17980.0,
           "confidence": 60,
           "completion_pct": 100.0,
-          "neckline_distance_pct": 12.35,
+          "neckline_distance_pct": 12.63,
           "bullish_bias": 0.9,
           "volume_confirmed": true
         },
@@ -58896,8 +58896,8 @@
           "wave_label": "헤드앤숄더",
           "neckline_price": 12650.0,
           "confidence": 58,
-          "completion_pct": 88.6,
-          "neckline_distance_pct": 59.68,
+          "completion_pct": 88.5,
+          "neckline_distance_pct": 60.08,
           "bullish_bias": -0.9,
           "volume_confirmed": true
         },
@@ -58940,7 +58940,7 @@
           "neckline_price": 17180.0,
           "confidence": 58,
           "completion_pct": 100.0,
-          "neckline_distance_pct": 17.58,
+          "neckline_distance_pct": 17.87,
           "bullish_bias": 0.8,
           "volume_confirmed": true
         }
@@ -58991,7 +58991,7 @@
         "neckline_price": 17560.0,
         "confidence": 60,
         "completion_pct": 95.4,
-        "neckline_distance_pct": 10.99,
+        "neckline_distance_pct": 11.05,
         "bullish_bias": -0.9,
         "volume_confirmed": true
       },
@@ -59036,7 +59036,7 @@
           "neckline_price": 17560.0,
           "confidence": 60,
           "completion_pct": 95.4,
-          "neckline_distance_pct": 10.99,
+          "neckline_distance_pct": 11.05,
           "bullish_bias": -0.9,
           "volume_confirmed": true
         },
@@ -59079,7 +59079,7 @@
           "neckline_price": 18710.0,
           "confidence": 58,
           "completion_pct": 96.7,
-          "neckline_distance_pct": 4.17,
+          "neckline_distance_pct": 4.22,
           "bullish_bias": -0.4,
           "volume_confirmed": true
         },
@@ -59122,7 +59122,7 @@
           "neckline_price": 22700.0,
           "confidence": 56,
           "completion_pct": 91.4,
-          "neckline_distance_pct": -14.14,
+          "neckline_distance_pct": -14.1,
           "bullish_bias": 0.9,
           "volume_confirmed": true
         }
@@ -60404,7 +60404,7 @@
         "neckline_price": 157800.0,
         "confidence": 60,
         "completion_pct": 100.0,
-        "neckline_distance_pct": 53.04,
+        "neckline_distance_pct": 49.56,
         "bullish_bias": 0.8,
         "volume_confirmed": true
       },
@@ -60449,7 +60449,7 @@
           "neckline_price": 157800.0,
           "confidence": 60,
           "completion_pct": 100.0,
-          "neckline_distance_pct": 53.04,
+          "neckline_distance_pct": 49.56,
           "bullish_bias": 0.8,
           "volume_confirmed": true
         },
@@ -60492,7 +60492,7 @@
           "neckline_price": 134200.0,
           "confidence": 55,
           "completion_pct": 80.0,
-          "neckline_distance_pct": 79.96,
+          "neckline_distance_pct": 75.86,
           "bullish_bias": -0.9,
           "volume_confirmed": true
         },
@@ -60535,7 +60535,7 @@
           "neckline_price": 166500.0,
           "confidence": 55,
           "completion_pct": 100.0,
-          "neckline_distance_pct": 45.05,
+          "neckline_distance_pct": 41.74,
           "bullish_bias": 0.4,
           "volume_confirmed": true
         }
