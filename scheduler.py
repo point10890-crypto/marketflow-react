@@ -1502,6 +1502,14 @@ def _notify_crypto_signals(count: int) -> bool:
 
 def notify_crypto_briefing() -> bool:
     """Crypto Briefing 텔레그램 알림"""
+    try:
+        return _notify_crypto_briefing_impl()
+    except Exception as e:
+        logger.error(f"❌ Crypto Briefing 알림 실패: {e}")
+        return False
+
+
+def _notify_crypto_briefing_impl() -> bool:
     data = _load_json(os.path.join(Config.CRYPTO_OUTPUT_DIR, 'crypto_briefing.json'))
     if not data:
         return False
@@ -1510,7 +1518,7 @@ def notify_crypto_briefing() -> bool:
     msg = f"<b>🪙 Crypto Market Briefing ({today_str})</b>\n\n"
 
     # 시가총액 & BTC 도미넌스
-    market = data.get('market_summary', {})
+    market = data.get('market_summary') or {}
     total_mcap = market.get('total_market_cap')
     btc_dom = market.get('btc_dominance')
 
@@ -1525,7 +1533,7 @@ def notify_crypto_briefing() -> bool:
 
     # 주요 코인
     msg += "<b>📊 주요 코인</b>\n"
-    coins = data.get('major_coins', {})
+    coins = data.get('major_coins') or {}
     if isinstance(coins, list):
         coins_dict = {c.get('symbol', ''): c for c in coins}
     else:
@@ -1542,7 +1550,7 @@ def notify_crypto_briefing() -> bool:
     msg += "\n"
 
     # Fear & Greed
-    fg = data.get('fear_greed', {})
+    fg = data.get('fear_greed') or {}
     fg_score = fg.get('current_score') or fg.get('score') or fg.get('value')
     fg_level = fg.get('level', fg.get('classification', 'N/A'))
     if fg_score is not None:
@@ -1550,7 +1558,7 @@ def notify_crypto_briefing() -> bool:
         msg += f"🧭 Fear &amp; Greed: {fg_score} ({fg_level}) {fg_em}\n"
 
     # Gate 상태
-    gate_data = data.get('market_gate', data.get('gate', {}))
+    gate_data = data.get('market_gate') or data.get('gate') or {}
     if not gate_data:
         gate_data = _load_json(os.path.join(Config.CRYPTO_OUTPUT_DIR, 'market_gate.json')) or {}
 

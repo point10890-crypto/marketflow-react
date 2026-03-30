@@ -2,6 +2,8 @@ from __future__ import annotations
 import asyncio
 from typing import Dict, Tuple, List
 import ccxt.async_support as ccxt
+import aiohttp
+from aiohttp.resolver import ThreadedResolver
 from models import Candle
 
 def ohlcv_to_candles(ohlcv) -> List[Candle]:
@@ -30,7 +32,14 @@ async def fetch_all_candles(
     limit: int,
     max_concurrency: int = 10,
 ) -> Dict[Tuple[str, str], List[Candle]]:
-    ex = ccxt.binance({"enableRateLimit": True, "options": {"defaultType": "spot"}})
+    # Windows에서 aiodns AsyncResolver가 DNS 실패 → ThreadedResolver(시스템 DNS) 사용
+    connector = aiohttp.TCPConnector(resolver=ThreadedResolver())
+    session = aiohttp.ClientSession(connector=connector)
+    ex = ccxt.binance({
+        "enableRateLimit": True,
+        "options": {"defaultType": "spot"},
+        "session": session,
+    })
     sem = asyncio.Semaphore(max_concurrency)
     tasks = [fetch_ohlcv_safe(ex, sym, tf, limit, sem) for sym in symbols for tf in timeframes]
 
@@ -42,5 +51,6 @@ async def fetch_all_candles(
                 out[(sym, tf)] = candles
     finally:
         await ex.close()
+        await session.close()
 
     return out
