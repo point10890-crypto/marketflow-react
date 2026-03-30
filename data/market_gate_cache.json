@@ -3,7 +3,7 @@
   "score": 25,
   "label": "BEARISH",
   "reasons": [
-    "RSI(43.0), MACD: BEARISH",
+    "RSI(42.9), MACD: BEARISH",
     "시장 하락추세. 보수적 접근 권장.",
     "🔥 강세: 2차전지 (95)",
     "❄️ 약세: 철강 (15)"
@@ -12,63 +12,63 @@
     {
       "name": "2차전지",
       "signal": "bullish",
-      "change_pct": 1.07,
+      "change_pct": 1.13,
       "score": 95
     },
     {
       "name": "반도체",
       "signal": "neutral",
-      "change_pct": -4.14,
+      "change_pct": -4.2,
       "score": 45
+    },
+    {
+      "name": "자동차",
+      "signal": "neutral",
+      "change_pct": -2.88,
+      "score": 40
     },
     {
       "name": "증권",
       "signal": "neutral",
-      "change_pct": -5.55,
+      "change_pct": -5.42,
       "score": 40
-    },
-    {
-      "name": "자동차",
-      "signal": "bearish",
-      "change_pct": -3.64,
-      "score": 35
     },
     {
       "name": "IT",
       "signal": "bearish",
-      "change_pct": -2.55,
+      "change_pct": -1.88,
       "score": 35
     },
     {
       "name": "KOSPI200",
       "signal": "bearish",
-      "change_pct": -3.39,
+      "change_pct": -3.13,
       "score": 30
     },
     {
       "name": "은행",
       "signal": "bearish",
-      "change_pct": -2.85,
+      "change_pct": -2.66,
       "score": 25
     },
     {
       "name": "철강",
       "signal": "bearish",
-      "change_pct": -1.53,
+      "change_pct": -0.42,
       "score": 15
     }
   ],
   "metrics": {
     "usd_krw": null,
-    "kospi": 5281.45,
-    "kospi_change_pct": -2.89,
-    "kosdaq": 1111.43,
-    "kosdaq_change_pct": -2.64,
-    "rsi": 42.98617007015505
+    "kospi": 5277.3,
+    "kospi_change_pct": -2.97,
+    "kosdaq": 1107.05,
+    "kosdaq_change_pct": -3.02,
+    "rsi": 42.88675764989105
   },
-  "kospi_close": 5281.45,
-  "kospi_change_pct": -2.89,
-  "kosdaq_close": 1111.43,
-  "kosdaq_change_pct": -2.64,
-  "updated_at": "2026-03-30T14:59:21.132834"
+  "kospi_close": 5277.3,
+  "kospi_change_pct": -2.97,
+  "kosdaq_close": 1107.05,
+  "kosdaq_change_pct": -3.02,
+  "updated_at": "2026-03-30T16:11:32.747133"
 }

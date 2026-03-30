@@ -2,8 +2,8 @@
   "name": "금양그린파워",
   "ticker": "282720.KQ",
   "result": "적극 매수",
-  "date": "2026-03-25 15:13:59",
-  "elapsed": 2.1,
+  "date": "2026-03-30 15:00:32",
+  "elapsed": 2.0,
   "consensus_score": 5.0,
   "analyst_count": 1,
   "recommendation_detail": {
@@ -15,19 +15,19 @@
   },
   "recommendation_period": "0m",
   "price_targets": {
-    "current": 15285.0,
+    "current": 16920.0,
     "high": 20000.0,
     "low": 20000.0,
     "mean": 20000.0,
     "median": 20000.0
   },
-  "current_price": 15285.0,
-  "upside_potential": 30.8,
+  "current_price": 16920.0,
+  "upside_potential": 18.2,
   "key_stats": {
     "name": "KYGP",
     "sector": "",
     "industry": "",
-    "market_cap": 184442568704,
+    "market_cap": 204171952128,
     "pe_ratio": null,
     "forward_pe": null,
     "dividend_yield": null,
@@ -40,7 +40,7 @@
   },
   "finnhub_supplement": null,
   "source": "yfinance",
-  "ai_analysis": "금양그린파워(282720.KQ)에 대해 1명의 애널리스트가 적극 매수 의견을 제시했습니다. 목표가 평균은 20,000원으로, 현재가 대비 30.8% 상승 여력이 있습니다. 투자 판단은 제시된 분석 데이터를 참고하여 신중하게 결정하시기 바랍니다.",
+  "ai_analysis": "금양그린파워(282720.KQ)에 대해 1명의 애널리스트가 적극 매수 의견을 제시했습니다. 목표가 평균은 20,000원으로 현재가 대비 18.2% 상승 여력이 있습니다. 투자 판단은 제시된 정보를 바탕으로 투자자 본인이 결정해야 합니다.",
   "revenue_quarters": [
     {
       "date": "2025-09",
