@@ -14,6 +14,31 @@ logger = logging.getLogger(__name__)
 _BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 _DAILY_PRICES_PATH = os.path.join(_BASE_DIR, 'data', 'daily_prices.csv')
 
+# CSV 캐시 — 파일 mtime 기반 자동 갱신
+_csv_cache: Dict = {}  # {'df': DataFrame, 'mtime': float}
+
+
+def _get_cached_csv() -> Optional[pd.DataFrame]:
+    """daily_prices.csv를 캐시하여 반복 읽기 방지 (16초 → <0.1초)"""
+    if not os.path.exists(_DAILY_PRICES_PATH):
+        return None
+    mtime = os.path.getmtime(_DAILY_PRICES_PATH)
+    if _csv_cache.get('mtime') == mtime and 'df' in _csv_cache:
+        return _csv_cache['df']
+    try:
+        df = pd.read_csv(
+            _DAILY_PRICES_PATH,
+            dtype={'ticker': str},
+            parse_dates=['date'],
+            low_memory=False,
+        )
+        _csv_cache['df'] = df
+        _csv_cache['mtime'] = mtime
+        return df
+    except Exception as e:
+        logger.error("Failed to read daily_prices.csv: %s", e)
+        return None
+
 
 def load_ohlcv_from_csv(
     ticker: str,
@@ -23,19 +48,8 @@ def load_ohlcv_from_csv(
     daily_prices.csv에서 종목 데이터 로드.
     Returns: {dates, opens, highs, lows, closes, volumes} or None
     """
-    if not os.path.exists(_DAILY_PRICES_PATH):
-        logger.warning("daily_prices.csv not found: %s", _DAILY_PRICES_PATH)
-        return None
-
-    try:
-        df = pd.read_csv(
-            _DAILY_PRICES_PATH,
-            dtype={'ticker': str},
-            parse_dates=['date'],
-            low_memory=False,
-        )
-    except Exception as e:
-        logger.error("Failed to read daily_prices.csv: %s", e)
+    df = _get_cached_csv()
+    if df is None:
         return None
 
     # 종목 필터
