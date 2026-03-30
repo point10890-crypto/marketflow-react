@@ -1,0 +1,75 @@
+{
+  "name": "오비고",
+  "ticker": "352910.KQ",
+  "result": "데이터 없음",
+  "date": "2026-03-30 17:28:04",
+  "elapsed": 2.0,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 4470.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 4470.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "Obigo",
+    "sector": "Technology",
+    "industry": "Software - Infrastructure",
+    "market_cap": 56490975232,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": null,
+    "beta": 0.941,
+    "fifty_two_week_high": 7300.0,
+    "fifty_two_week_low": 3965.0,
+    "revenue": 33534744576,
+    "profit_margin": -0.05775,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 12954648990
+    },
+    {
+      "date": "2025-06",
+      "value": 8240371640
+    },
+    {
+      "date": "2025-03",
+      "value": 3714462880
+    },
+    {
+      "date": "2024-12",
+      "value": 3995880520
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 17874740
+    },
+    {
+      "date": "2025-06",
+      "value": -1109183060
+    },
+    {
+      "date": "2025-03",
+      "value": -130708190
+    },
+    {
+      "date": "2024-12",
+      "value": 97372040
+    }
+  ],
+  "news": []
+}

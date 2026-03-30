@@ -40,6 +40,7 @@ interface ScreenerResult {
 interface WaveDetectResult {
     ticker: string;
     market: string;
+    name: string;
     patterns: PatternOverlay[];
     chart_data: ChartDataPoint[];
     turning_points: PatternPoint[];
@@ -235,7 +236,8 @@ export default function WaveOverviewPage() {
                 <div className="bg-[#1c1c1e] rounded-2xl border border-cyan-500/20 p-4 space-y-3">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                            <span className="text-lg font-black text-white">{detailResult.ticker}</span>
+                            <span className="text-lg font-black text-white">{detailResult.name || detailResult.ticker}</span>
+                            <span className="text-xs text-gray-400">{detailResult.ticker}</span>
                             <span className="text-xs text-gray-500">{detailResult.market}</span>
                             {pat && (
                                 <span className={`px-2 py-0.5 rounded text-xs font-bold ${

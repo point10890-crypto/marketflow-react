@@ -124,6 +124,8 @@ def auto_git_push(scope: str = 'all') -> bool:
                 'us_market/output/',
                 'crypto-analytics/crypto_market/output/',
                 'us_market/sector_cache.json',
+                'data/wave/',
+                'data/briefing/',
             ]
             for d in data_dirs:
                 subprocess.run(['git', 'add', d], cwd=project_dir, timeout=30,
@@ -1943,6 +1945,9 @@ def _run_wave_scan() -> bool:
                     f"| 넥라인 {bp['neckline_distance_pct']:+.1f}%"
                 )
             send_telegram('\n'.join(lines))
+
+        # Git 자동 커밋 + 푸시
+        auto_git_push('wave')
 
         return True
     except Exception as e:

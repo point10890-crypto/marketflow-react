@@ -18,6 +18,7 @@ from engine.wave.models import WAVE_META, WaveDetectResult
 
 # 종목명 → 종목코드 매핑 캐시
 _name_to_ticker: dict = {}
+_ticker_to_name: dict = {}
 _name_map_loaded = False
 
 
@@ -32,6 +33,7 @@ def _load_name_map():
                 df = pd.read_csv(path, dtype={'ticker': str})
                 df['ticker'] = df['ticker'].str.zfill(6)
                 _name_to_ticker = {row['name']: row['ticker'] for _, row in df.iterrows() if pd.notna(row.get('name'))}
+                _ticker_to_name.update({row['ticker']: row['name'] for _, row in df.iterrows() if pd.notna(row.get('name'))})
             except Exception:
                 pass
             break
@@ -55,6 +57,15 @@ def _resolve_ticker(raw: str) -> str:
         if raw in name:
             return code
     return raw
+
+
+def _resolve_name(ticker: str, market: str) -> str:
+    """종목코드 → 종목명 변환"""
+    if market == 'KR':
+        _load_name_map()
+        return _ticker_to_name.get(ticker, '')
+    return ''
+
 
 logger = logging.getLogger(__name__)
 
@@ -189,6 +200,7 @@ def detect_patterns(ticker: str):
     result = WaveDetectResult(
         ticker=ticker,
         market=market,
+        name=_resolve_name(ticker, market),
         patterns=patterns,
         chart_data=chart_data,
         turning_points=turning_points,

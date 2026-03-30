@@ -168,6 +168,7 @@ class WaveDetectResult:
     """단일 종목 패턴 감지 결과"""
     ticker: str
     market: str
+    name: str = ""
     patterns: List[FivePointPattern] = field(default_factory=list)
     chart_data: list = field(default_factory=list)   # OHLCV dicts
     turning_points: List[TurningPoint] = field(default_factory=list)
@@ -176,6 +177,7 @@ class WaveDetectResult:
         return {
             "ticker": self.ticker,
             "market": self.market,
+            "name": self.name,
             "patterns": [p.to_dict() for p in self.patterns],
             "chart_data": self.chart_data,
             "turning_points": [tp.to_dict() for tp in self.turning_points],

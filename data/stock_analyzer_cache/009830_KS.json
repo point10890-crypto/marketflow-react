@@ -2,8 +2,8 @@
   "name": "한화솔루션",
   "ticker": "009830.KS",
   "result": "중립",
-  "date": "2026-03-28 08:25:51",
-  "elapsed": 1.7,
+  "date": "2026-03-30 17:26:47",
+  "elapsed": 1.6,
   "consensus_score": 3.19,
   "analyst_count": 16,
   "recommendation_detail": {
@@ -15,21 +15,21 @@
   },
   "recommendation_period": "0m",
   "price_targets": {
-    "current": 35650.0,
+    "current": 36600.0,
     "high": 67000.0,
     "low": 17000.0,
     "mean": 41625.0,
     "median": 43000.0
   },
-  "current_price": 35650.0,
-  "upside_potential": 16.8,
+  "current_price": 36600.0,
+  "upside_potential": 13.7,
   "key_stats": {
     "name": "HANWHA SOLUTIONS",
     "sector": "Technology",
     "industry": "Solar",
-    "market_cap": 6127981953024,
+    "market_cap": 6291279839232,
     "pe_ratio": null,
-    "forward_pe": 9.673253,
+    "forward_pe": 9.9310255,
     "dividend_yield": 1.13,
     "beta": 1.277,
     "fifty_two_week_high": 59300.0,
@@ -40,7 +40,7 @@
   },
   "finnhub_supplement": null,
   "source": "yfinance",
-  "ai_analysis": "한화솔루션(009830.KS)에 대한 애널리스트 컨센서스는 16명 참여 기준 중립(3.19/5.0) 의견입니다. 목표가 평균은 41,625 KRW로 현재가 대비 16.8% 상승 여력이 있습니다. 투자 판단은 제시된 데이터를 바탕으로 투자자 본인이 결정해야 합니다.",
+  "ai_analysis": "한화솔루션(009830.KS)에 대한 애널리스트 컨센서스는 중립(3.19/5.0)으로 나타났습니다. 16명의 애널리스트가 참여한 목표가 평균은 41,625 KRW입니다. 이는 현재가 36,600 KRW 대비 13.7% 상승 여력이 있는 것으로 분석됩니다.",
   "revenue_quarters": [
     {
       "date": "2025-12",

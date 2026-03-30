@@ -2,8 +2,8 @@
   "name": "삼성전자",
   "ticker": "005930.KS",
   "result": "매수",
-  "date": "2026-03-29 21:05:42",
-  "elapsed": 2.3,
+  "date": "2026-03-30 17:26:24",
+  "elapsed": 2.4,
   "consensus_score": 4.22,
   "analyst_count": 37,
   "recommendation_detail": {
@@ -15,21 +15,21 @@
   },
   "recommendation_period": "0m",
   "price_targets": {
-    "current": 179700.0,
+    "current": 176300.0,
     "high": 340000.0,
     "low": 110000.0,
     "mean": 239873.48,
     "median": 250000.0
   },
-  "current_price": 179700.0,
-  "upside_potential": 33.5,
+  "current_price": 176300.0,
+  "upside_potential": 36.1,
   "key_stats": {
     "name": "SamsungElec",
     "sector": "Technology",
     "industry": "Consumer Electronics",
-    "market_cap": 1201489183768576,
+    "market_cap": 1178756458741760,
     "pe_ratio": null,
-    "forward_pe": 6.255314,
+    "forward_pe": 6.136961,
     "dividend_yield": 1.26,
     "beta": 1.121,
     "fifty_two_week_high": 223000.0,
@@ -40,7 +40,7 @@
   },
   "finnhub_supplement": null,
   "source": "yfinance",
-  "ai_analysis": "삼성전자는 현재 애널리스트 컨센서스 '매수' 의견을 받고 있으며, 37명의 애널리스트가 참여하여 5점 만점에 4.22점을 기록했습니다. 평균 목표 주가는 239,873원으로, 현재 주가 대비 33.5% 상승 여력이 있는 것으로 분석됩니다. 이는 시장 전문가들이 삼성전자의 성장 가능성을 긍정적으로 평가하고 있음을 시사합니다.",
+  "ai_analysis": "삼성전자에 대해 37명의 애널리스트가 제시한 컨센서스는 '매수' 의견입니다. 목표가 평균은 현재 주가 대비 36.1% 상승 여력이 있는 239,873 KRW로 제시되었습니다. 이는 애널리스트들이 삼성전자의 추가적인 주가 상승을 기대하고 있음을 시사합니다.",
   "revenue_quarters": [
     {
       "date": "2025-12",
@@ -79,6 +79,27 @@
   ],
   "news": [
     {
+      "title": "AMD And Samsung Partnership Adds New Piece To AI Supply Story",
+      "summary": "AMD (NasdaqGS:AMD) and Samsung signed a new memorandum of understanding to supply next generation HBM4 memory for AMD Instinct AI GPUs. The agreement expands their existing partnership around advanced",
+      "url": "https://finance.yahoo.com/sectors/technology/articles/amd-samsung-partnership-adds-piece-050556677.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-03-30T05:05:56Z"
+    },
+    {
+      "title": "Advanced Micro Devices (AMD) and Samsung Expand Their Partnership for Memory Chip Supplies",
+      "summary": "Advanced Micro Devices, Inc. (NASDAQ:AMD) is one of the High Growth Semiconductor Stocks to Buy. On March 18, Reuters reported that Advanced Micro Devices, Inc. (NASDAQ:AMD) and Samsung Electronics si",
+      "url": "https://finance.yahoo.com/sectors/technology/articles/advanced-micro-devices-amd-samsung-202236957.html",
+      "provider": "Insider Monkey",
+      "pub_time": "2026-03-29T20:22:36Z"
+    },
+    {
+      "title": "TurboQuant Panic: Why Market Is Wrong About Google's Newest AI Breakthrough",
+      "summary": "Alphabet Inc. Google rattled global memory stocks after unveiling its TurboQuant AI algorithm, triggering a sharp sell-off amid fears that improved efficiency could dampen demand for memory chips. How",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/turboquant-panic-why-market-wrong-143113296.html",
+      "provider": "Benzinga",
+      "pub_time": "2026-03-29T14:31:13Z"
+    },
+    {
       "title": "What Digital Realty Trust (DLR)'s Milan and Samsung Colocation Moves Mean For Shareholders",
       "summary": "Digital Realty announced it had entered the Milan market with plans for a new data center campus of up to 84 MW, while also supplying Samsung Electronics with enterprise-grade colocation infrastructur",
       "url": "https://finance.yahoo.com/markets/stocks/articles/digital-realty-trust-dlr-milan-160735897.html",
@@ -91,27 +112,6 @@
       "url": "https://finance.yahoo.com/sectors/technology/articles/musk-terafab-plans-seen-having-151754710.html",
       "provider": "Investing.com",
       "pub_time": "2026-03-28T15:17:54Z"
-    },
-    {
-      "title": "Digital Realty Milan Move And Samsung Deal Put Valuation In Focus",
-      "summary": "Digital Realty Trust (NYSE:DLR) is expanding into Milan by acquiring land for a large-scale data center campus serving Southern Europe. The Milan development adds to the company’s presence in Rome, ma",
-      "url": "https://finance.yahoo.com/markets/stocks/articles/digital-realty-milan-move-samsung-220836583.html",
-      "provider": "Simply Wall St.",
-      "pub_time": "2026-03-27T22:08:36Z"
-    },
-    {
-      "title": "Did Alphabet Just End the AI Memory Boom?",
-      "summary": "Memory stocks, Micron Technology, Sandisk Corporation and peers have been hammered this week following new research from Alphabet reducing memory needs. Is this memory's DeepSeek moment?",
-      "url": "https://finance.yahoo.com/markets/stocks/articles/did-alphabet-just-end-ai-164000117.html",
-      "provider": "Zacks",
-      "pub_time": "2026-03-27T16:40:00Z"
-    },
-    {
-      "title": "Google Unveils AI Breakthrough Cutting Memory Use by 6x, Pressuring Flash Stocks",
-      "summary": "TurboQuant may reduce storage demand while leaving high-bandwidth memory and DRAM largely unaffected, driving divergence across memory-chip stocks.",
-      "url": "https://finance.yahoo.com/sectors/technology/articles/google-unveils-ai-breakthrough-cutting-161231704.html",
-      "provider": "GuruFocus.com",
-      "pub_time": "2026-03-27T16:12:31Z"
     }
   ]
 }
