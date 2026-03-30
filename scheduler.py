@@ -1832,11 +1832,11 @@ def check_and_run_missed_tasks():
         weekday_tasks = [
             # (예정시각_분, task_key, 실행함수, 라벨, 마감시각_분)
             # 마감시각: 이 시각 이후에는 실행하지 않음 (다음 작업과 충돌 방지)
-            (4 * 60,  'us_market',  run_us_market_update,        'US 마켓 전체 갱신',  8 * 60),
-            (9 * 60,  'morning_report', send_morning_status_report, '일별 상태 리포트', 12 * 60),
-            (9 * 60 + 30, 'us_track', save_us_track_record_snapshot, 'US Track Record', 12 * 60),
-            (15 * 60, 'kr_jongga',  run_kr_full_update,          'KR 종가베팅',        15 * 60 + 50),
-            (16 * 60, 'vcp_all',    run_vcp_all_markets,         'VCP 전시장',         17 * 60),
+            (4 * 60,  'us_market',  run_us_market_update,        'US 마켓 전체 갱신',  14 * 60),
+            (9 * 60,  'morning_report', send_morning_status_report, '일별 상태 리포트', 14 * 60),
+            (9 * 60 + 30, 'us_track', save_us_track_record_snapshot, 'US Track Record', 14 * 60),
+            (15 * 60, 'kr_jongga',  run_kr_full_update,          'KR 종가베팅',        23 * 60),
+            (16 * 60, 'vcp_all',    run_vcp_all_markets,         'VCP 전시장',         23 * 60),
         ]
 
         # ── 매일 실행 작업 (Crypto - 주말 포함) ──
