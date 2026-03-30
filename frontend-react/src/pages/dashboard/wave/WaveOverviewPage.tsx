@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { fetchAPI } from '@/lib/api';
 import PatternChart, { ChartDataPoint, PatternOverlay, PatternPoint } from '@/components/wave/PatternChart';
 
@@ -75,6 +76,9 @@ export default function WaveOverviewPage() {
     const [searchTicker, setSearchTicker] = useState('');
     const [searchError, setSearchError] = useState('');
 
+    // URL query params (from dashboard click)
+    const [searchParams, setSearchParams] = useSearchParams();
+
     // Load screener on mount
     useEffect(() => {
         loadScreener();
@@ -110,6 +114,18 @@ export default function WaveOverviewPage() {
             setDetailLoading(false);
         }
     }, []);
+
+    // Auto-load ticker from query params (?ticker=005930&market=KR)
+    useEffect(() => {
+        const qTicker = searchParams.get('ticker');
+        const qMarket = searchParams.get('market') || 'KR';
+        if (qTicker) {
+            setMarket(qMarket);
+            setSearchTicker(qTicker);
+            loadDetail(qTicker, qMarket);
+            setSearchParams({}, { replace: true });
+        }
+    }, [searchParams, loadDetail, setSearchParams]);
 
     const handleSearch = () => {
         if (!searchTicker.trim()) return;

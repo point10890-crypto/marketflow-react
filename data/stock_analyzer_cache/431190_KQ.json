@@ -1,0 +1,75 @@
+{
+  "name": "케이쓰리아이",
+  "ticker": "431190.KQ",
+  "result": "데이터 없음",
+  "date": "2026-03-28 16:18:13",
+  "elapsed": 2.0,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 4170.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 4170.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "K3I",
+    "sector": "Technology",
+    "industry": "Software - Infrastructure",
+    "market_cap": 31218462720,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": null,
+    "beta": null,
+    "fifty_two_week_high": 7450.0,
+    "fifty_two_week_low": 3740.0,
+    "revenue": 16245495808,
+    "profit_margin": -0.18563,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 4625715550
+    },
+    {
+      "date": "2025-06",
+      "value": 2508120880
+    },
+    {
+      "date": "2025-03",
+      "value": 3590345090
+    },
+    {
+      "date": "2024-09",
+      "value": 2163489990
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": -572499870
+    },
+    {
+      "date": "2025-06",
+      "value": -1408740070
+    },
+    {
+      "date": "2025-03",
+      "value": -1042896360
+    },
+    {
+      "date": "2024-09",
+      "value": -2325414350
+    }
+  ],
+  "news": []
+}

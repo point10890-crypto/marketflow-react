@@ -45,4 +45,8 @@ def register_blueprints(app):
     from app.routes.wave import wave_bp
     app.register_blueprint(wave_bp, url_prefix='/api/wave')
 
-    print("[OK] Blueprints registered (KR + US + Crypto + Econ + Auth + Admin + Stripe + StockAnalyzer + Wave)")
+    # AI Briefing routes (조간/마감 브리핑)
+    from app.routes.briefing import briefing_bp
+    app.register_blueprint(briefing_bp, url_prefix='/api/briefing')
+
+    print("[OK] Blueprints registered (KR + US + Crypto + Econ + Auth + Admin + Stripe + StockAnalyzer + Wave + Briefing)")

@@ -1,0 +1,117 @@
+{
+  "name": "파마리서치",
+  "ticker": "214450.KQ",
+  "result": "적극 매수",
+  "date": "2026-03-28 23:56:04",
+  "elapsed": 1.7,
+  "consensus_score": 4.36,
+  "analyst_count": 14,
+  "recommendation_detail": {
+    "strongBuy": 6,
+    "buy": 7,
+    "hold": 1,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 313500.0,
+    "high": 803000.0,
+    "low": 370000.0,
+    "mean": 585214.3,
+    "median": 575000.0
+  },
+  "current_price": 313500.0,
+  "upside_potential": 86.7,
+  "key_stats": {
+    "name": "PharmaResearch",
+    "sector": "Healthcare",
+    "industry": "Biotechnology",
+    "market_cap": 3257154666496,
+    "pe_ratio": null,
+    "forward_pe": 12.732309,
+    "dividend_yield": 1.18,
+    "beta": 0.489,
+    "fifty_two_week_high": 713000.0,
+    "fifty_two_week_low": 287000.0,
+    "revenue": 536289116160,
+    "profit_margin": 0.3079,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "파마리서치는 14명의 애널리스트 컨센서스 기준 '적극 매수' 의견을 받고 있습니다. 목표가 평균은 585,214원으로 현재가 대비 86.7% 상승 여력이 있습니다. 이는 긍정적인 시장 전망을 시사합니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 135426411000
+    },
+    {
+      "date": "2025-06",
+      "value": 140607447470
+    },
+    {
+      "date": "2025-03",
+      "value": 116909970310
+    },
+    {
+      "date": "2024-12",
+      "value": 103083159530
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 48971947200
+    },
+    {
+      "date": "2025-06",
+      "value": 47404397950
+    },
+    {
+      "date": "2025-03",
+      "value": 36173690380
+    },
+    {
+      "date": "2024-12",
+      "value": 18692746310
+    }
+  ],
+  "news": [
+    {
+      "title": "Asian Market Stocks That May Be Priced Below Intrinsic Value Estimates",
+      "summary": "As Asian markets navigate a complex landscape of regulatory changes and economic shifts, investors are increasingly focused on identifying stocks that may be priced below their intrinsic value. In thi",
+      "url": "https://finance.yahoo.com/news/asian-market-stocks-may-priced-223436699.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-01-21T22:34:36Z"
+    },
+    {
+      "title": "Global Stocks Trading Below Estimated Intrinsic Values",
+      "summary": "As global markets navigate a mixed landscape, with U.S. small-cap and value stocks leading the charge while large-cap indexes retreat from recent highs, investors are keenly observing economic indicat",
+      "url": "https://finance.yahoo.com/news/global-stocks-trading-below-estimated-093806496.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-01-21T09:38:06Z"
+    },
+    {
+      "title": "Three Asian Companies That Might Be Priced Below Their Estimated Value",
+      "summary": "As Asian markets navigate a landscape of mixed economic signals, with Japan's indices reaching record highs and China's regulatory changes impacting investor sentiment, opportunities may arise for dis",
+      "url": "https://finance.yahoo.com/news/three-asian-companies-might-priced-223426791.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-01-20T22:34:26Z"
+    },
+    {
+      "title": "Global Value Stocks Trading At Estimated Discounts Up To 49.3%",
+      "summary": "As global markets navigate a period of mixed economic signals, with U.S. core consumer prices rising at their slowest pace since 2021 and value stocks outperforming growth counterparts, investors are ",
+      "url": "https://finance.yahoo.com/news/global-value-stocks-trading-estimated-093816174.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-01-20T09:38:16Z"
+    },
+    {
+      "title": "Asian Market's January 2026 Stock Picks With Estimated Value Opportunities",
+      "summary": "As the Asian markets continue to show resilience amid global economic shifts, investors are increasingly seeking opportunities in undervalued stocks that could offer potential value. In this environme",
+      "url": "https://finance.yahoo.com/news/asian-markets-january-2026-stock-043800956.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-01-16T04:38:00Z"
+    }
+  ]
+}

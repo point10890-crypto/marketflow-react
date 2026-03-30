@@ -1,0 +1,83 @@
+{
+  "name": "나인테크",
+  "ticker": "267320.KQ",
+  "result": "데이터 없음",
+  "date": "2026-03-28 08:28:05",
+  "elapsed": 1.6,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 3130.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 3130.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "Naintech",
+    "sector": "Industrials",
+    "industry": "Specialty Industrial Machinery",
+    "market_cap": 177915789312,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": null,
+    "beta": 0.942,
+    "fifty_two_week_high": 5300.0,
+    "fifty_two_week_low": 2740.0,
+    "revenue": 161079787520,
+    "profit_margin": -0.091129996,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 22111927710
+    },
+    {
+      "date": "2025-06",
+      "value": 27750797280
+    },
+    {
+      "date": "2025-03",
+      "value": 15891560300
+    },
+    {
+      "date": "2024-12",
+      "value": 95325506540
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 2505650920
+    },
+    {
+      "date": "2025-06",
+      "value": -8323166790
+    },
+    {
+      "date": "2025-03",
+      "value": -2467404080
+    },
+    {
+      "date": "2024-12",
+      "value": -6394369780
+    }
+  ],
+  "news": [
+    {
+      "title": "NEO Battery Materials and NainTech to Co-Develop Drone & Stationary Energy Storage Batteries",
+      "summary": "NEO Battery Materials (NBM.V) on Thursday rose 3.4% after it entered into a joint development agreem",
+      "url": "https://finance.yahoo.com/news/neo-battery-materials-naintech-co-154743391.html",
+      "provider": "MT Newswires",
+      "pub_time": "2025-08-21T15:47:43Z"
+    }
+  ]
+}

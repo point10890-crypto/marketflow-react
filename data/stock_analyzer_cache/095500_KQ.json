@@ -1,0 +1,111 @@
+{
+  "name": "미래나노텍",
+  "ticker": "095500.KQ",
+  "result": "데이터 없음",
+  "date": "2026-03-28 08:27:52",
+  "elapsed": 1.9,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 9040.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 9040.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "MNtech",
+    "sector": "",
+    "industry": "",
+    "market_cap": 256486359040,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": null,
+    "beta": null,
+    "fifty_two_week_high": 14160.0,
+    "fifty_two_week_low": 6950.0,
+    "revenue": null,
+    "profit_margin": null,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 126724387870
+    },
+    {
+      "date": "2025-06",
+      "value": 122681767020
+    },
+    {
+      "date": "2025-03",
+      "value": 168430636670
+    },
+    {
+      "date": "2024-12",
+      "value": 144504361670
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 4712521400
+    },
+    {
+      "date": "2025-06",
+      "value": -4988589690
+    },
+    {
+      "date": "2025-03",
+      "value": 8945645880
+    },
+    {
+      "date": "2024-12",
+      "value": 11258281290
+    }
+  ],
+  "news": [
+    {
+      "title": "Undiscovered Gems in Global Stocks for March 2026",
+      "summary": "Amid a backdrop of heightened geopolitical tensions, persistent inflation concerns, and volatile oil prices, global markets have experienced significant fluctuations, with major indices like the Dow J",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/undiscovered-gems-global-stocks-march-093335252.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-03-25T09:33:35Z"
+    },
+    {
+      "title": "Discovering Asia's Undiscovered Gems in February 2026",
+      "summary": "As we move into February 2026, the Asian markets are experiencing a dynamic phase, with small-cap stocks capturing attention amid global shifts in investor sentiment. While major indices like the S&P ",
+      "url": "https://finance.yahoo.com/news/discovering-asias-undiscovered-gems-february-043305737.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-02-13T04:33:05Z"
+    },
+    {
+      "title": "Undiscovered Gems in Asia to Explore This February 2026",
+      "summary": "As global markets navigate a mix of economic signals, with small-cap and value-oriented stocks gaining traction amidst concerns over artificial intelligence investments, Asia's market landscape presen",
+      "url": "https://finance.yahoo.com/news/undiscovered-gems-asia-explore-february-223313342.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-02-12T22:33:13Z"
+    },
+    {
+      "title": "Three Undiscovered Gems In Asia To Enhance Your Investment Portfolio",
+      "summary": "As global markets experience mixed performances, with small-cap and value-oriented stocks gaining traction amid volatility in large-cap technology sectors, investors are increasingly turning their att",
+      "url": "https://finance.yahoo.com/news/three-undiscovered-gems-asia-enhance-043339711.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-02-09T04:33:39Z"
+    },
+    {
+      "title": "Undiscovered Gems In Asia 3 Small Caps With Promising Potential",
+      "summary": "As global markets experience varied performances, with small- and mid-cap stocks facing challenges in the U.S., investors are increasingly looking to Asia for opportunities amidst a backdrop of modest",
+      "url": "https://finance.yahoo.com/news/undiscovered-gems-asia-3-small-223335494.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-02-05T22:33:35Z"
+    }
+  ]
+}

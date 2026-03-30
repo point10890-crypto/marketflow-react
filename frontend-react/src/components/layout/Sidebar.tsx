@@ -25,10 +25,23 @@ const navigation: NavItem[] = [
         color: 'text-purple-400',
     },
     {
+        name: 'Briefing',
+        href: '/dashboard/briefing',
+        icon: 'fa-newspaper',
+        color: 'text-amber-400',
+    },
+    {
         name: 'VCP Enhanced',
         href: '/dashboard/vcp-enhanced',
         icon: 'fa-bolt',
         color: 'text-yellow-400',
+    },
+    {
+        name: 'W Pattern',
+        href: '/dashboard/wave',
+        icon: 'fa-wave-square',
+        color: 'text-pink-400',
+        glow: true,
     },
     {
         name: 'KR Market',
@@ -65,13 +78,6 @@ const navigation: NavItem[] = [
             { name: 'VCP Signals', href: '/dashboard/crypto/signals', color: 'bg-orange-500' },
         ],
 
-    },
-    {
-        name: 'W Pattern',
-        href: '/dashboard/wave',
-        icon: 'fa-wave-square',
-        color: 'text-pink-400',
-        glow: true,
     },
     {
         name: 'ProPicks',

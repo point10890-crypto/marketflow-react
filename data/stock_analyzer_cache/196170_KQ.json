@@ -1,0 +1,117 @@
+{
+  "name": "알테오젠",
+  "ticker": "196170.KQ",
+  "result": "매수",
+  "date": "2026-03-28 23:53:42",
+  "elapsed": 1.9,
+  "consensus_score": 3.75,
+  "analyst_count": 4,
+  "recommendation_detail": {
+    "strongBuy": 1,
+    "buy": 2,
+    "hold": 0,
+    "sell": 1,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 381000.0,
+    "high": 570000.0,
+    "low": 250000.0,
+    "mean": 435000.0,
+    "median": 460000.0
+  },
+  "current_price": 381000.0,
+  "upside_potential": 14.2,
+  "key_stats": {
+    "name": "Alteogen",
+    "sector": "Healthcare",
+    "industry": "Biotechnology",
+    "market_cap": 20376673320960,
+    "pe_ratio": null,
+    "forward_pe": 37.568188,
+    "dividend_yield": 0.1,
+    "beta": 1.0,
+    "fifty_two_week_high": 569000.0,
+    "fifty_two_week_low": 315500.0,
+    "revenue": 202182082560,
+    "profit_margin": 0.62285,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "알테오젠(196170.KQ)에 대해 4명의 애널리스트가 제시한 컨센서스 의견은 매수입니다. 목표가 평균은 435,000원으로 현재가 381,000원 대비 14.2% 상승 여력이 있습니다. 투자 결정은 제시된 분석 데이터를 참고하여 신중하게 판단하시기 바랍니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 49012996870
+    },
+    {
+      "date": "2025-06",
+      "value": 18643000120
+    },
+    {
+      "date": "2025-03",
+      "value": 83696077910
+    },
+    {
+      "date": "2024-12",
+      "value": 50830005310
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 22344857000
+    },
+    {
+      "date": "2025-06",
+      "value": -33094055000
+    },
+    {
+      "date": "2025-03",
+      "value": 83176892000
+    },
+    {
+      "date": "2024-12",
+      "value": 53500701990
+    }
+  ],
+  "news": [
+    {
+      "title": "Exploring High Growth Tech Stocks In March 2026",
+      "summary": "Amidst a backdrop of heightened geopolitical tensions, persistent inflation concerns, and volatile oil prices, global markets have experienced significant fluctuations with U.S. equity indexes finishi",
+      "url": "https://finance.yahoo.com/sectors/technology/articles/exploring-high-growth-tech-stocks-093830413.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-03-26T09:38:30Z"
+    },
+    {
+      "title": "Asian Growth Companies With High Insider Ownership February 2026",
+      "summary": "As global markets grapple with concerns over AI disruptions and economic shifts, Asian markets present a unique landscape for investors seeking growth opportunities. In this environment, companies wit",
+      "url": "https://finance.yahoo.com/news/asian-growth-companies-high-insider-043546411.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-02-16T04:35:46Z"
+    },
+    {
+      "title": "High Growth Tech Stocks to Watch in Asia February 2026",
+      "summary": "As global markets grapple with concerns over AI disruption and mixed economic indicators, Asian tech stocks are drawing attention for their potential resilience and growth prospects. In this dynamic e",
+      "url": "https://finance.yahoo.com/news/high-growth-tech-stocks-watch-223528954.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-02-15T22:35:28Z"
+    },
+    {
+      "title": "3 Asian Growth Stocks With Strong Insider Ownership",
+      "summary": "As Asian markets navigate a landscape marked by regulatory changes and geopolitical tensions, investors are increasingly focused on sectors like artificial intelligence and technology that show resili",
+      "url": "https://finance.yahoo.com/news/3-asian-growth-stocks-strong-223833303.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-01-18T22:38:33Z"
+    },
+    {
+      "title": "High Growth Tech Stocks Including ALTEOGEN With Promising Potential",
+      "summary": "As global markets kicked off the year with a rally, small-cap and value shares have notably outpaced large-cap growth stocks, driven by investor optimism despite signs of weakness in the U.S. labor ma",
+      "url": "https://finance.yahoo.com/news/high-growth-tech-stocks-including-093810164.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-01-16T09:38:10Z"
+    }
+  ]
+}

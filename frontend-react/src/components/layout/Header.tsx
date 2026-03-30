@@ -23,6 +23,7 @@ const PAGE_NAMES: Record<string, string> = {
     '/dashboard/crypto/signals': 'Crypto VCP Signals',
     '/dashboard/stock-analyzer': 'ProPicks Analyzer',
     '/dashboard/wave': 'W Pattern',
+    '/dashboard/briefing': 'Market Briefing',
     '/admin/data-status': 'Data Status',
 };
 

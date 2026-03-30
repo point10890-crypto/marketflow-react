@@ -1,4 +1,4 @@
-name = "marketflow-dashboard"
+name = "bitman-marketflow"
 compatibility_date = "2024-12-01"
 routes = [
   { pattern = "bit-man.net", custom_domain = true },

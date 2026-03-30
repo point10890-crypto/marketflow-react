@@ -1,0 +1,81 @@
+{
+  "name": "LIG넥스원",
+  "ticker": "079550.KS",
+  "result": "매수",
+  "date": "2026-03-28 10:14:15",
+  "elapsed": 2.3,
+  "consensus_score": 4.16,
+  "analyst_count": 19,
+  "recommendation_detail": {
+    "strongBuy": 6,
+    "buy": 10,
+    "hold": 3,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 735000.0,
+    "high": 930000.0,
+    "low": 480000.0,
+    "mean": 629333.3,
+    "median": 611500.0
+  },
+  "current_price": 735000.0,
+  "upside_potential": -14.4,
+  "key_stats": {
+    "name": "LIG Nex1",
+    "sector": "Industrials",
+    "industry": "Aerospace & Defense",
+    "market_cap": 16056259182592,
+    "pe_ratio": null,
+    "forward_pe": 31.845404,
+    "dividend_yield": 0.4,
+    "beta": null,
+    "fifty_two_week_high": 899000.0,
+    "fifty_two_week_low": 235000.0,
+    "revenue": 4306936004608,
+    "profit_margin": 0.05883,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "LIG넥스원에 대해 19명의 애널리스트가 매수 의견(4.16/5.0)을 제시했습니다. 현재 주가는 735,000 KRW이며, 목표가 평균은 629,333 KRW로 현재가 대비 -14.4% 하락 여력이 있습니다. 애널리스트들은 전반적으로 긍정적인 전망을 유지하고 있으나, 목표 주가는 현재 주가보다 낮게 설정되어 있습니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 1049197515920
+    },
+    {
+      "date": "2025-06",
+      "value": 945351323740
+    },
+    {
+      "date": "2025-03",
+      "value": 907622648220
+    },
+    {
+      "date": "2024-12",
+      "value": 1167822559060
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 59312961330
+    },
+    {
+      "date": "2025-06",
+      "value": 105184670690
+    },
+    {
+      "date": "2025-03",
+      "value": 84223792040
+    },
+    {
+      "date": "2024-12",
+      "value": 72487461730
+    }
+  ],
+  "news": []
+}

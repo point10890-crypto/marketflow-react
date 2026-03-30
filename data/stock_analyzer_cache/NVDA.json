@@ -2,38 +2,116 @@
   "name": "NVIDIA",
   "ticker": "NVDA",
   "result": "매수",
-  "date": "2026-03-15 19:35:45",
-  "elapsed": 0,
-  "consensus_score": 4.09,
-  "analyst_count": 64,
+  "date": "2026-03-29 08:20:20",
+  "elapsed": 2.2,
+  "consensus_score": 4.08,
+  "analyst_count": 60,
   "recommendation_detail": {
-    "strongBuy": 11,
-    "buy": 49,
-    "hold": 3,
+    "strongBuy": 9,
+    "buy": 48,
+    "hold": 2,
     "sell": 1,
     "strongSell": 0
   },
+  "recommendation_period": "0m",
   "price_targets": {
-    "current": 180.25,
+    "current": 167.52,
     "high": 380.0,
     "low": 140.0,
-    "mean": 267.5351,
+    "mean": 268.22195,
     "median": 265.0
   },
-  "current_price": 180.25,
-  "upside_potential": 48.4,
+  "current_price": 167.52,
+  "upside_potential": 60.1,
   "key_stats": {
     "name": "NVIDIA Corporation",
     "sector": "Technology",
     "industry": "Semiconductors",
-    "market_cap": 4380976218112,
-    "pe_ratio": 36.785713,
-    "forward_pe": 16.68892,
+    "market_cap": 4071573684224,
+    "pe_ratio": 34.11813,
+    "forward_pe": 15.0696945,
     "dividend_yield": 0.02,
     "beta": 2.375,
     "fifty_two_week_high": 212.19,
     "fifty_two_week_low": 86.62,
+    "revenue": 215938007040,
+    "profit_margin": 0.55603004,
     "currency": "USD"
   },
-  "source": "yfinance"
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "NVIDIA(NVDA)에 대한 애널리스트 컨센서스는 60명의 참여자 기준 '매수' 의견(4.08/5.0)으로 나타났습니다. 목표가 평균은 현재가 대비 60.1% 상승 여력이 있는 268 USD로 제시되었습니다. 현재 PER은 34.1배입니다.",
+  "revenue_quarters": [
+    {
+      "date": "2026-01",
+      "value": 68127000000
+    },
+    {
+      "date": "2025-10",
+      "value": 57006000000
+    },
+    {
+      "date": "2025-07",
+      "value": 46743000000
+    },
+    {
+      "date": "2025-04",
+      "value": 44062000000
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2026-01",
+      "value": 42960000000
+    },
+    {
+      "date": "2025-10",
+      "value": 31910000000
+    },
+    {
+      "date": "2025-07",
+      "value": 26422000000
+    },
+    {
+      "date": "2025-04",
+      "value": 18775000000
+    }
+  ],
+  "news": [
+    {
+      "title": "'Magnificent 7' stocks wipe more than $850 billion in value as stock market sell-off hits AI winners hard",
+      "summary": "\"Magnificent Seven\" stocks got hit this week as inflation fears rose and headwinds surfaced for the sector.",
+      "url": "https://finance.yahoo.com/news/magnificent-7-stocks-wipe-more-than-850-billion-in-value-as-stock-market-sell-off-hits-ai-winners-hard-213921360.html",
+      "provider": "Yahoo Finance",
+      "pub_time": "2026-03-27T21:39:21Z"
+    },
+    {
+      "title": "Here's What Investors Need to Know About AST SpaceMobile Stock's Recent Pullback",
+      "summary": "The stock has been experiencing some turbulence: Is this the right time to climb on board?",
+      "url": "https://www.fool.com/investing/2026/03/28/heres-what-investors-need-to-know-about-ast-spacem/",
+      "provider": "Motley Fool",
+      "pub_time": "2026-03-28T18:45:00Z"
+    },
+    {
+      "title": "MercadoLibre Stock Is on Sale. Here's What $5,000 Invested Today Could Do for Your Portfolio.",
+      "summary": "The Latin American e-commerce leader has pulled back lately. Is it a buying opportunity?",
+      "url": "https://www.fool.com/investing/2026/03/28/hot-ticker-is-on-sale-heres-what-x-invested-today/",
+      "provider": "Motley Fool",
+      "pub_time": "2026-03-28T18:05:00Z"
+    },
+    {
+      "title": "1 No-Brainer Semiconductor Stock to Buy With $1,000 Right Now",
+      "summary": "Taiwan Semiconductor Manufacturing is one of the best ways to invest in the chip space.",
+      "url": "https://www.fool.com/investing/2026/03/28/1-no-brainer-semiconductor-stock-to-buy-with-1000/",
+      "provider": "Motley Fool",
+      "pub_time": "2026-03-28T17:05:00Z"
+    },
+    {
+      "title": "Progressive Had a Remarkable Run. Now Comes the Hard Part.",
+      "summary": "Progressive still runs a tight underwriting ship, but the outlook for its earnings power is less certain.",
+      "url": "https://www.fool.com/investing/2026/03/28/progressive-had-a-remarkable-run-now-comes-the-har/",
+      "provider": "Motley Fool",
+      "pub_time": "2026-03-28T16:25:00Z"
+    }
+  ]
 }

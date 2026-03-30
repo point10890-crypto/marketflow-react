@@ -1,0 +1,75 @@
+{
+  "name": "유아이엘",
+  "ticker": "049520.KQ",
+  "result": "데이터 없음",
+  "date": "2026-03-28 19:10:04",
+  "elapsed": 2.2,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 3820.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 3820.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "UIL",
+    "sector": "",
+    "industry": "",
+    "market_cap": 119897071616,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": null,
+    "beta": null,
+    "fifty_two_week_high": 4295.0,
+    "fifty_two_week_low": 2905.0,
+    "revenue": null,
+    "profit_margin": null,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 95898673110
+    },
+    {
+      "date": "2025-06",
+      "value": 102897713560
+    },
+    {
+      "date": "2025-03",
+      "value": 115577091790
+    },
+    {
+      "date": "2024-12",
+      "value": 93378770060
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 5162288080
+    },
+    {
+      "date": "2025-06",
+      "value": 2106724240
+    },
+    {
+      "date": "2025-03",
+      "value": 7418989570
+    },
+    {
+      "date": "2024-12",
+      "value": 5605949330
+    }
+  ],
+  "news": []
+}

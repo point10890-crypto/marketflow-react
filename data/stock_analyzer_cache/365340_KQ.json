@@ -1,0 +1,117 @@
+{
+  "name": "성일하이텍",
+  "ticker": "365340.KQ",
+  "result": "중립",
+  "date": "2026-03-28 08:27:29",
+  "elapsed": 1.8,
+  "consensus_score": 3.5,
+  "analyst_count": 4,
+  "recommendation_detail": {
+    "strongBuy": 1,
+    "buy": 1,
+    "hold": 1,
+    "sell": 1,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 59900.0,
+    "high": 73000.0,
+    "low": 30000.0,
+    "mean": 47500.0,
+    "median": 43500.0
+  },
+  "current_price": 59900.0,
+  "upside_potential": -20.7,
+  "key_stats": {
+    "name": "SungEel HiTech",
+    "sector": "Industrials",
+    "industry": "Electrical Equipment & Parts",
+    "market_cap": 732178808832,
+    "pe_ratio": null,
+    "forward_pe": 76.834984,
+    "dividend_yield": null,
+    "beta": 0.896,
+    "fifty_two_week_high": 74000.0,
+    "fifty_two_week_low": 29450.0,
+    "revenue": 175383543808,
+    "profit_margin": -0.71695,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "성일하이텍에 대한 애널리스트 컨센서스는 중립적인 의견이며, 4명의 애널리스트가 참여했습니다. 목표가 평균은 47,500원으로, 현재 주가 대비 약 20% 하락 여력이 있는 것으로 분석됩니다. 투자 결정은 제시된 분석 데이터를 참고하여 신중하게 판단하시기 바랍니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 43800218420
+    },
+    {
+      "date": "2025-06",
+      "value": 64012244560
+    },
+    {
+      "date": "2025-03",
+      "value": 33370566800
+    },
+    {
+      "date": "2024-12",
+      "value": 34200518950
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": -15172336660
+    },
+    {
+      "date": "2025-06",
+      "value": -32838077430
+    },
+    {
+      "date": "2025-03",
+      "value": -16650048900
+    },
+    {
+      "date": "2024-12",
+      "value": -61080609750
+    }
+  ],
+  "news": [
+    {
+      "title": "Asian Growth Stocks With Strong Insider Ownership In December 2025",
+      "summary": "As of December 2025, Asian markets are witnessing a resurgence in investor enthusiasm, particularly in technology and artificial intelligence sectors, despite broader concerns over economic slowdowns.",
+      "url": "https://finance.yahoo.com/news/asian-growth-stocks-strong-insider-043525383.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2025-12-03T04:35:25Z"
+    },
+    {
+      "title": "3 Asian Growth Companies With High Insider Ownership Expecting Up To 40% Revenue Growth",
+      "summary": "As Asian markets show resilience amid global economic shifts, investor enthusiasm for technology and AI-related sectors is on the rise, particularly in China where domestic trades have been robust des",
+      "url": "https://finance.yahoo.com/news/3-asian-growth-companies-high-223804019.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2025-12-02T22:38:04Z"
+    },
+    {
+      "title": "Asian Growth Stocks With High Insider Ownership December 2025",
+      "summary": "As Asian markets navigate a complex landscape marked by technological enthusiasm and economic uncertainties, investor interest in growth companies with high insider ownership has intensified. In this ",
+      "url": "https://finance.yahoo.com/news/asian-growth-stocks-high-insider-043552370.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2025-12-02T04:35:52Z"
+    },
+    {
+      "title": "Asian Growth Companies With High Insider Ownership To Watch",
+      "summary": "As global markets navigate a complex landscape of economic indicators and policy shifts, Asian equities have been drawing attention, particularly in sectors like technology and artificial intelligence",
+      "url": "https://finance.yahoo.com/news/asian-growth-companies-high-insider-223806513.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2025-12-01T22:38:06Z"
+    },
+    {
+      "title": "Asian Growth Companies With High Insider Ownership",
+      "summary": "As global markets navigate a complex landscape of economic indicators and policy shifts, Asian markets have shown resilience, with particular strength in technology and AI sectors. In this environment",
+      "url": "https://finance.yahoo.com/news/asian-growth-companies-high-insider-043531782.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2025-12-01T04:35:31Z"
+    }
+  ]
+}

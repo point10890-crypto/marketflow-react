@@ -1,0 +1,117 @@
+{
+  "name": "현대건설",
+  "ticker": "000720.KS",
+  "result": "매수",
+  "date": "2026-03-29 08:07:41",
+  "elapsed": 2.0,
+  "consensus_score": 4.25,
+  "analyst_count": 20,
+  "recommendation_detail": {
+    "strongBuy": 7,
+    "buy": 11,
+    "hold": 2,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 149800.0,
+    "high": 240000.0,
+    "low": 86000.0,
+    "mean": 153789.47,
+    "median": 148000.0
+  },
+  "current_price": 149800.0,
+  "upside_potential": 2.7,
+  "key_stats": {
+    "name": "HyundaiEng&Const",
+    "sector": "Industrials",
+    "industry": "Engineering & Construction",
+    "market_cap": 16839086178304,
+    "pe_ratio": null,
+    "forward_pe": 22.42535,
+    "dividend_yield": 0.52,
+    "beta": 1.636,
+    "fifty_two_week_high": 176900.0,
+    "fifty_two_week_low": 33200.0,
+    "revenue": 31062912663552,
+    "profit_margin": 0.01201,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "현대건설(000720.KS)에 대해 20명의 애널리스트가 제시한 컨센서스는 매수 의견(4.25/5.0)입니다. 목표가 평균은 153,789 KRW으로, 현재가 149,800 KRW 대비 약 2.7% 상승 여력이 있습니다. 투자 판단은 제시된 정보를 바탕으로 투자자 본인이 결정해야 합니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 7826469000000
+    },
+    {
+      "date": "2025-06",
+      "value": 7720720000000
+    },
+    {
+      "date": "2025-03",
+      "value": 7455579000000
+    },
+    {
+      "date": "2024-12",
+      "value": 7246868000000
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 43598000000
+    },
+    {
+      "date": "2025-06",
+      "value": 94477000000
+    },
+    {
+      "date": "2025-03",
+      "value": 120440000000
+    },
+    {
+      "date": "2024-12",
+      "value": -525053000000
+    }
+  ],
+  "news": [
+    {
+      "title": "Fermi Weighs Project Matador Lawsuits Against New Nuclear Funding Momentum",
+      "summary": "Fermi's Project Matador faces multiple class action lawsuits alleging misrepresentation of tenant demand and dependence on a single anchor tenant. A key tenant has exited, and a major construction agr",
+      "url": "https://finance.yahoo.com/news/fermi-weighs-project-matador-lawsuits-051044868.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-02-26T05:10:44Z"
+    },
+    {
+      "title": "Fermi Inc. (FRMI) Highlights Progress in its Strategic Partnership with Hyundai Engineering & Construction Co., Ltd.",
+      "summary": "Fermi Inc. (NASDAQ:FRMI) is among the 11 Newly-Listed NASDAQ Stocks to Buy Now. On February 11, 2026, Fermi Inc. (NASDAQ:FRMI), operating as Fermi America, highlighted progress in its strategic partne",
+      "url": "https://finance.yahoo.com/news/fermi-inc-frmi-highlights-progress-014119634.html",
+      "provider": "Insider Monkey",
+      "pub_time": "2026-02-26T01:41:19Z"
+    },
+    {
+      "title": "Fermi (FRMI) Soars 11% as 11-GW Project Moves Forward",
+      "summary": "We recently published 10 Market Beasts Leaving Wall Street in the Dust. Fermi Inc. (NASDAQ:FRMI) was one of the best performers on Friday. Fermi saw its share prices jump by 11.12 percent on Friday to",
+      "url": "https://finance.yahoo.com/news/fermi-frmi-soars-11-11-040713341.html",
+      "provider": "Insider Monkey",
+      "pub_time": "2026-02-14T04:07:13Z"
+    },
+    {
+      "title": "Construction begins on $524m Lucy Solar Project in Texas, US",
+      "summary": "Construction is expected to create around 500 jobs and provide nearly $5m a year in local property tax revenue.",
+      "url": "https://www.power-technology.com/news/construction-begins-lucy-solar-project/",
+      "provider": "Power Technology",
+      "pub_time": "2026-01-29T09:51:38Z"
+    },
+    {
+      "title": "Vestas gets 390MW wind turbine order in South Korea",
+      "summary": "The company will supply 26 of its V236-15.0MW offshore wind turbines.",
+      "url": "https://www.power-technology.com/news/vestas-wind-turbine-south-korea/",
+      "provider": "Power Technology",
+      "pub_time": "2025-12-30T11:46:05Z"
+    }
+  ]
+}

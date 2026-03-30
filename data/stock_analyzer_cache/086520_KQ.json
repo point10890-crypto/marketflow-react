@@ -1,0 +1,89 @@
+{
+  "name": "에코프로",
+  "ticker": "086520.KQ",
+  "result": "매도",
+  "date": "2026-03-28 23:51:47",
+  "elapsed": 2.3,
+  "consensus_score": 2.0,
+  "analyst_count": 1,
+  "recommendation_detail": {
+    "strongBuy": 0,
+    "buy": 0,
+    "hold": 0,
+    "sell": 1,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 149000.0,
+    "high": 37000.0,
+    "low": 37000.0,
+    "mean": 37000.0,
+    "median": 37000.0
+  },
+  "current_price": 149000.0,
+  "upside_potential": -75.2,
+  "key_stats": {
+    "name": "ECOPRO",
+    "sector": "",
+    "industry": "",
+    "market_cap": 20023080910848,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": null,
+    "beta": null,
+    "fifty_two_week_high": 190000.0,
+    "fifty_two_week_low": 37750.0,
+    "revenue": null,
+    "profit_margin": null,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "에코프로(086520.KQ)에 대한 현재 애널리스트 컨센서스는 '매도' 의견입니다. 목표가 평균은 37,000원으로, 현재가 149,000원 대비 75.2% 하락 여력이 있는 것으로 분석됩니다. 해당 분석에는 1명의 애널리스트가 참여했습니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 959384246720
+    },
+    {
+      "date": "2025-06",
+      "value": 931704760250
+    },
+    {
+      "date": "2025-03",
+      "value": 806827475330
+    },
+    {
+      "date": "2024-12",
+      "value": 648890505880
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 69678955870
+    },
+    {
+      "date": "2025-06",
+      "value": -28596862080
+    },
+    {
+      "date": "2025-03",
+      "value": -727951520
+    },
+    {
+      "date": "2024-12",
+      "value": -60428815720
+    }
+  ],
+  "news": [
+    {
+      "title": "EcoPro completes initial battery materials investment in Indonesia",
+      "summary": "Four nickel smelters completed on the island of Sulawesi.",
+      "url": "https://www.just-auto.com/news/ecopro-completes-initial-battery-materials-investment-in-indonesia/",
+      "provider": "Just Auto",
+      "pub_time": "2025-09-19T09:00:27Z"
+    }
+  ]
+}

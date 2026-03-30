@@ -1,0 +1,81 @@
+{
+  "name": "와이씨",
+  "ticker": "232140.KQ",
+  "result": "매수",
+  "date": "2026-03-29 08:10:01",
+  "elapsed": 1.4,
+  "consensus_score": 4.0,
+  "analyst_count": 2,
+  "recommendation_detail": {
+    "strongBuy": 0,
+    "buy": 2,
+    "hold": 0,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 18740.0,
+    "high": 25000.0,
+    "low": 24000.0,
+    "mean": 24500.0,
+    "median": 24500.0
+  },
+  "current_price": 18740.0,
+  "upside_potential": 30.7,
+  "key_stats": {
+    "name": "YCC",
+    "sector": "Technology",
+    "industry": "Semiconductor Equipment & Materials",
+    "market_cap": 1535655936000,
+    "pe_ratio": null,
+    "forward_pe": 21.421503,
+    "dividend_yield": null,
+    "beta": 1.308,
+    "fifty_two_week_high": 23750.0,
+    "fifty_two_week_low": 9220.0,
+    "revenue": 272629972992,
+    "profit_margin": 0.07075,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "와이씨(232140.KQ)에 대해 2명의 애널리스트가 제시한 컨센서스 의견은 매수(4.0/5.0)입니다. 목표가 평균은 24,500원으로 현재가 18,740원 대비 30.7% 상승 여력이 있습니다. 이는 애널리스트들이 와이씨의 추가적인 성장 가능성을 긍정적으로 평가하고 있음을 시사합니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 66565956330
+    },
+    {
+      "date": "2025-06",
+      "value": 80403850100
+    },
+    {
+      "date": "2025-03",
+      "value": 38961048040
+    },
+    {
+      "date": "2024-12",
+      "value": 63927219010
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 2598031240
+    },
+    {
+      "date": "2025-06",
+      "value": 1514071650
+    },
+    {
+      "date": "2025-03",
+      "value": -1636414730
+    },
+    {
+      "date": "2024-12",
+      "value": 5713049060
+    }
+  ],
+  "news": []
+}

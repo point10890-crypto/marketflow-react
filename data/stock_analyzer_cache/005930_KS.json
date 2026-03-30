@@ -2,8 +2,8 @@
   "name": "삼성전자",
   "ticker": "005930.KS",
   "result": "매수",
-  "date": "2026-03-27 22:25:54",
-  "elapsed": 2.0,
+  "date": "2026-03-29 21:05:42",
+  "elapsed": 2.3,
   "consensus_score": 4.22,
   "analyst_count": 37,
   "recommendation_detail": {
@@ -40,7 +40,7 @@
   },
   "finnhub_supplement": null,
   "source": "yfinance",
-  "ai_analysis": "삼성전자에 대해 37명의 애널리스트가 제시한 컨센서스는 '매수' 의견입니다. 목표가 평균은 239,873 KRW로, 현재가 대비 33.5% 상승 여력이 있는 것으로 분석됩니다. 이는 5점 만점 기준 4.22점에 해당합니다.",
+  "ai_analysis": "삼성전자는 현재 애널리스트 컨센서스 '매수' 의견을 받고 있으며, 37명의 애널리스트가 참여하여 5점 만점에 4.22점을 기록했습니다. 평균 목표 주가는 239,873원으로, 현재 주가 대비 33.5% 상승 여력이 있는 것으로 분석됩니다. 이는 시장 전문가들이 삼성전자의 성장 가능성을 긍정적으로 평가하고 있음을 시사합니다.",
   "revenue_quarters": [
     {
       "date": "2025-12",
@@ -79,39 +79,39 @@
   ],
   "news": [
     {
-      "title": "Normal Computing aims to solve AI's energy efficiency issues",
-      "summary": "Normal Computing CEO Faris Sbahi joins Market Domination's Josh Lipton and Yahoo Finance Tech Editor Dan Howley to discuss the software company's place in the AI infrastructure buildout, especially af",
-      "url": "https://finance.yahoo.com/video/normal-computing-aims-to-solve-ais-energy-efficiency-issues-194956177.html",
-      "provider": "Yahoo Finance Video",
-      "pub_time": "2026-03-26T19:49:56Z"
-    },
-    {
-      "title": "Assessing Samsung Electronics (KOSE:A005930) Valuation After A Mixed Run In Share Price Momentum",
-      "summary": "Samsung Electronics (KOSE:A005930) has drawn fresh attention after recent performance data showed a mixed return profile, with short term share price pressure contrasted against stronger gains over th",
-      "url": "https://finance.yahoo.com/markets/stocks/articles/assessing-samsung-electronics-kose-a005930-110527447.html",
+      "title": "What Digital Realty Trust (DLR)'s Milan and Samsung Colocation Moves Mean For Shareholders",
+      "summary": "Digital Realty announced it had entered the Milan market with plans for a new data center campus of up to 84 MW, while also supplying Samsung Electronics with enterprise-grade colocation infrastructur",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/digital-realty-trust-dlr-milan-160735897.html",
       "provider": "Simply Wall St.",
-      "pub_time": "2026-03-27T11:05:27Z"
+      "pub_time": "2026-03-28T16:07:35Z"
     },
     {
-      "title": "Arlo Technologies Touts AI Cloud Pivot, Partner Growth and Privacy Edge at Conference",
-      "summary": "Executives at Arlo Technologies (NYSE:ARLO) outlined the company’s evolution from a hardware-centric, do-it-yourself (DIY) security brand into what they described as a cloud and AI-driven services pla",
-      "url": "https://www.marketbeat.com/instant-alerts/arlo-technologies-touts-ai-cloud-pivot-partner-growth-and-privacy-edge-at-conference-2026-03-26/?utm_source=yahoofinance&utm_medium=yahoofinance",
-      "provider": "MarketBeat",
-      "pub_time": "2026-03-27T03:33:21Z"
+      "title": "Musk’s Terafab plans seen having limited impact on TSMC",
+      "summary": "Investing.com – Elon Musk’s proposed “Terafab” semiconductor project is unlikely to significantly disrupt Taiwan Semiconductor Manufacturing Co. (TSMC), with execution risks, high costs and long timel",
+      "url": "https://finance.yahoo.com/sectors/technology/articles/musk-terafab-plans-seen-having-151754710.html",
+      "provider": "Investing.com",
+      "pub_time": "2026-03-28T15:17:54Z"
     },
     {
-      "title": "Chip Selloff Deepens After Google Touts Memory Breakthrough",
-      "summary": "(Bloomberg) -- Memory chip stocks extended their losses on Thursday after Alphabet Inc.’s Google publicized research on a new algorithm that could allow more efficient use of the storage needed for ar",
-      "url": "https://finance.yahoo.com/news/google-breakthrough-spurs-chip-selloff-022926567.html",
-      "provider": "Bloomberg",
-      "pub_time": "2026-03-26T20:21:39Z"
+      "title": "Digital Realty Milan Move And Samsung Deal Put Valuation In Focus",
+      "summary": "Digital Realty Trust (NYSE:DLR) is expanding into Milan by acquiring land for a large-scale data center campus serving Southern Europe. The Milan development adds to the company’s presence in Rome, ma",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/digital-realty-milan-move-samsung-220836583.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-03-27T22:08:36Z"
     },
     {
-      "title": "Micron Stock Slumps After Google Unveils New Technology",
-      "summary": "Shares in Micron Technology, the largest American maker of memory chips, fell sharply for a second day on Thursday after Google unveiled technology this week that could reduce the amount of memory nee",
-      "url": "https://www.wsj.com/livecoverage/stock-market-today-dow-sp-500-nasdaq-03-26-2026/card/micron-other-chip-stocks-slump-after-google-unveils-new-memory-technology-e9AcL0KjBrvR0tL8D34J?siteid=yhoof2&yptr=yahoo",
-      "provider": "The Wall Street Journal",
-      "pub_time": "2026-03-26T19:45:45Z"
+      "title": "Did Alphabet Just End the AI Memory Boom?",
+      "summary": "Memory stocks, Micron Technology, Sandisk Corporation and peers have been hammered this week following new research from Alphabet reducing memory needs. Is this memory's DeepSeek moment?",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/did-alphabet-just-end-ai-164000117.html",
+      "provider": "Zacks",
+      "pub_time": "2026-03-27T16:40:00Z"
+    },
+    {
+      "title": "Google Unveils AI Breakthrough Cutting Memory Use by 6x, Pressuring Flash Stocks",
+      "summary": "TurboQuant may reduce storage demand while leaving high-bandwidth memory and DRAM largely unaffected, driving divergence across memory-chip stocks.",
+      "url": "https://finance.yahoo.com/sectors/technology/articles/google-unveils-ai-breakthrough-cutting-161231704.html",
+      "provider": "GuruFocus.com",
+      "pub_time": "2026-03-27T16:12:31Z"
     }
   ]
 }

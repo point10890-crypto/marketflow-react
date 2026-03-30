@@ -1,0 +1,117 @@
+{
+  "name": "현대차",
+  "ticker": "005380.KS",
+  "result": "매수",
+  "date": "2026-03-28 19:03:34",
+  "elapsed": 2.3,
+  "consensus_score": 4.22,
+  "analyst_count": 32,
+  "recommendation_detail": {
+    "strongBuy": 11,
+    "buy": 17,
+    "hold": 4,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 495000.0,
+    "high": 900000.0,
+    "low": 315789.0,
+    "mean": 630118.4,
+    "median": 635000.0
+  },
+  "current_price": 495000.0,
+  "upside_potential": 27.3,
+  "key_stats": {
+    "name": "HyundaiMtr",
+    "sector": "Consumer Cyclical",
+    "industry": "Auto Manufacturers",
+    "market_cap": 128846829453312,
+    "pe_ratio": null,
+    "forward_pe": 9.642018,
+    "dividend_yield": 2.02,
+    "beta": 1.413,
+    "fifty_two_week_high": 687000.0,
+    "fifty_two_week_low": 175800.0,
+    "revenue": 186254478016512,
+    "profit_margin": 0.05072,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "현대차(005380.KS)에 대해 32명의 애널리스트가 제시한 컨센서스는 '매수' 의견입니다. 목표가 평균은 630,118 KRW으로, 현재가 495,000 KRW 대비 27.3%의 상승 여력을 보입니다. 투자 판단은 제시된 분석 데이터를 참고하여 투자자 본인이 결정해야 합니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 46838586000000
+    },
+    {
+      "date": "2025-09",
+      "value": 46721448000000
+    },
+    {
+      "date": "2025-06",
+      "value": 48286677000000
+    },
+    {
+      "date": "2025-03",
+      "value": 44407761000000
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 1029037000000
+    },
+    {
+      "date": "2025-09",
+      "value": 2261353000000
+    },
+    {
+      "date": "2025-06",
+      "value": 2998299000000
+    },
+    {
+      "date": "2025-03",
+      "value": 3157298000000
+    }
+  ],
+  "news": [
+    {
+      "title": "Hyundai plans to launch 36 ‘new and enhanced’ vehicles in North America through 2030",
+      "summary": "The plans are part of a $26 billion investment commitment in U.S. manufacturing the company announced last year.",
+      "url": "https://www.wardsauto.com/news/hyundai-launching-36-new-or-enhanced-models-north-america-2026-2030-26B-investment/815882/",
+      "provider": "Wards Auto",
+      "pub_time": "2026-03-27T11:30:00Z"
+    },
+    {
+      "title": "Hyundai to increase global capacity by 1.2 million vehicles by 2030",
+      "summary": "The South Korean automaker targeting strong growth in India, China and the US.",
+      "url": "https://www.just-auto.com/news/hyundai-to-increase-global-capacity-by-1-2-million-vehicles-by-2030/",
+      "provider": "Just Auto",
+      "pub_time": "2026-03-27T09:48:44Z"
+    },
+    {
+      "title": "Hyundai Motor aims to double China sales, launch 36 new models in North America",
+      "summary": "SEOUL, March 26 (Reuters) - Hyundai Motor on ‌Thursday said it would seek to ‌more than double its China sales in the medium ​term and it planned to launch 36 new models in the North American market b",
+      "url": "https://finance.yahoo.com/news/hyundai-motor-aims-double-china-030802632.html",
+      "provider": "Reuters",
+      "pub_time": "2026-03-26T03:08:02Z"
+    },
+    {
+      "title": "Auto demand seems strained. Could EVs make a comeback?",
+      "summary": "Cox Automotive anticipates slower 2026 auto sales due to pressures from gas (RB=F) prices and interest rates.Yahoo Finance Senior Autos Reporter Pras Subramanian outlines the details, highlighting how",
+      "url": "https://finance.yahoo.com/video/auto-demand-seems-strained-could-evs-make-a-comeback-203508967.html",
+      "provider": "Yahoo Finance Video",
+      "pub_time": "2026-03-25T20:35:08Z"
+    },
+    {
+      "title": "Livium CEO on recycling demand “Hockey Stick” - ASX SMIDcaps Conference",
+      "summary": "Livium Limited CEO & Managing Director Simon Linge talked with Kerry Stevenson from Proactive at the Small and Mid-Cap Conference about the company’s expanding role in battery recycling and its growth",
+      "url": "https://finance.yahoo.com/video/livium-ceo-recycling-demand-hockey-221016064.html",
+      "provider": "Proactive",
+      "pub_time": "2026-03-24T22:10:16Z"
+    }
+  ]
+}

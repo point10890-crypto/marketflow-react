@@ -1,0 +1,117 @@
+{
+  "name": "LG화학",
+  "ticker": "051910.KS",
+  "result": "매수",
+  "date": "2026-03-28 08:28:29",
+  "elapsed": 1.6,
+  "consensus_score": 4.08,
+  "analyst_count": 26,
+  "recommendation_detail": {
+    "strongBuy": 7,
+    "buy": 14,
+    "hold": 5,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 313000.0,
+    "high": 540000.0,
+    "low": 298000.0,
+    "mean": 428423.06,
+    "median": 420000.0
+  },
+  "current_price": 313000.0,
+  "upside_potential": 36.9,
+  "key_stats": {
+    "name": "LGCHEM",
+    "sector": "Basic Materials",
+    "industry": "Chemicals",
+    "market_cap": 24500108263424,
+    "pe_ratio": null,
+    "forward_pe": 13.070867,
+    "dividend_yield": 0.64,
+    "beta": 1.247,
+    "fifty_two_week_high": 428500.0,
+    "fifty_two_week_low": 181500.0,
+    "revenue": 45932167036928,
+    "profit_margin": -0.03961,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "LG화학(051910.KS)에 대해 26명의 애널리스트가 제시한 컨센서스는 '매수' 의견입니다 (5점 만점 중 4.08점). 평균 목표 주가는 428,423원으로, 현재 주가 313,000원 대비 36.9%의 상승 여력이 있는 것으로 분석됩니다. 이는 애널리스트들이 LG화학의 추가적인 주가 상승 가능성을 전망하고 있음을 시사합니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 11197134000000
+    },
+    {
+      "date": "2025-09",
+      "value": 11196170000000
+    },
+    {
+      "date": "2025-06",
+      "value": 11417711000000
+    },
+    {
+      "date": "2025-03",
+      "value": 12171015000000
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": -1396938000000
+    },
+    {
+      "date": "2025-09",
+      "value": 119394000000
+    },
+    {
+      "date": "2025-06",
+      "value": -434336000000
+    },
+    {
+      "date": "2025-03",
+      "value": -107568000000
+    }
+  ],
+  "news": [
+    {
+      "title": "South Korea Naphtha Prices Jump 60% as LG Chem Halts Facility",
+      "summary": "Middle East supply disruptions tighten petrochemical feedstocks, pushing costs higher and forcing production cuts across South Korea's chemical sector.",
+      "url": "https://finance.yahoo.com/sectors/energy/articles/south-korea-naphtha-prices-jump-214806275.html",
+      "provider": "GuruFocus.com",
+      "pub_time": "2026-03-24T21:48:06Z"
+    },
+    {
+      "title": "Pacira BioSciences, Inc. Q4 2025 Earnings Call Summary",
+      "summary": "Moby summary of Pacira BioSciences, Inc.'s Q4 2025 earnings call",
+      "url": "https://app.moby.co/home/research/tools/earningsCalendar/earnings-pacira-biosciences-inc-q4-2025-earnings-call-summary?utm_source=yahoo_finance&utm_medium=rss",
+      "provider": "Moby",
+      "pub_time": "2026-02-27T13:30:00Z"
+    },
+    {
+      "title": "Pacira BioSciences Q4 Earnings Call Highlights",
+      "summary": "Pacira BioSciences (NASDAQ:PCRX) executives used the company’s fourth-quarter and full-year 2025 earnings call to highlight what CEO Frank Lee described as a “transformative year,” pointing to renewed",
+      "url": "https://www.marketbeat.com/instant-alerts/pacira-biosciences-q4-earnings-call-highlights-2026-02-27/?utm_source=yahoofinance&utm_medium=yahoofinance",
+      "provider": "MarketBeat",
+      "pub_time": "2026-02-27T06:12:58Z"
+    },
+    {
+      "title": "PCRX, LG Chem Partner to Expand Exparel Reach Across the Asia-Pacific",
+      "summary": "Pacira BioSciences teams up with LG Chem to expand Exparel across Asia-Pacific, unlocking royalties and new revenue channels to support international growth.",
+      "url": "https://finance.yahoo.com/news/pcrx-lg-chem-partner-expand-151800901.html",
+      "provider": "Zacks",
+      "pub_time": "2026-01-14T15:18:00Z"
+    },
+    {
+      "title": "LG Chem’s new technology improves ASSB performance",
+      "summary": "New process precisely controls particle size of solid electrolytes.",
+      "url": "https://www.just-auto.com/news/lg-chems-new-technology-improves-assb-performance/",
+      "provider": "Just Auto",
+      "pub_time": "2025-11-26T10:23:40Z"
+    }
+  ]
+}

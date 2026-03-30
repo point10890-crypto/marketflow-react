@@ -2,8 +2,8 @@
   "name": "한화시스템",
   "ticker": "272210.KS",
   "result": "중립",
-  "date": "2026-03-26 20:54:40",
-  "elapsed": 2.0,
+  "date": "2026-03-29 08:06:43",
+  "elapsed": 2.3,
   "consensus_score": 3.5,
   "analyst_count": 12,
   "recommendation_detail": {
@@ -15,22 +15,22 @@
   },
   "recommendation_period": "0m",
   "price_targets": {
-    "current": 129700.0,
+    "current": 124100.0,
     "high": 94500.0,
     "low": 48000.0,
     "mean": 65708.336,
     "median": 65000.0
   },
-  "current_price": 129700.0,
-  "upside_potential": -49.3,
+  "current_price": 124100.0,
+  "upside_potential": -47.1,
   "key_stats": {
     "name": "HANWHA SYSTEMS",
     "sector": "Industrials",
     "industry": "Aerospace & Defense",
-    "market_cap": 24253026009088,
+    "market_cap": 23205863489536,
     "pe_ratio": null,
-    "forward_pe": 69.544235,
-    "dividend_yield": 0.37,
+    "forward_pe": 66.54156,
+    "dividend_yield": 0.4,
     "beta": 1.905,
     "fifty_two_week_high": 184000.0,
     "fifty_two_week_low": 30100.0,
@@ -40,7 +40,7 @@
   },
   "finnhub_supplement": null,
   "source": "yfinance",
-  "ai_analysis": "한화시스템(272210.KS)에 대한 애널리스트 컨센서스는 12명 참여 기준 중립 의견입니다. 목표가 평균은 65,708원으로 현재가 129,700원 대비 49.3% 하락 여력이 있습니다. 투자 결정은 제시된 분석 데이터를 참고하여 신중하게 판단하시기 바랍니다.",
+  "ai_analysis": "한화시스템(272210.KS)에 대한 애널리스트 컨센서스는 12명 참여 기준 '중립' 의견입니다. 목표가 평균은 65,708원으로, 현재가 124,100원 대비 47.1% 하락 여력이 있는 것으로 분석됩니다. 투자 판단은 제시된 정보를 바탕으로 신중하게 결정하시기 바랍니다.",
   "revenue_quarters": [
     {
       "date": "2025-12",

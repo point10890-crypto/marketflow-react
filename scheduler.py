@@ -212,6 +212,8 @@ class Config:
     HISTORY_TIME = os.environ.get('KR_MARKET_HISTORY_TIME', '10:00')
     CRYPTO_TIMES = ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00']  # 매 4시간
     MORNING_REPORT_TIME = os.environ.get('MORNING_REPORT_TIME', '09:00')   # 일별 상태 리포트
+    MORNING_BRIEFING_TIME = os.environ.get('MORNING_BRIEFING_TIME', '09:05')  # AI 조간 브리핑
+    CLOSING_BRIEFING_TIME = os.environ.get('CLOSING_BRIEFING_TIME', '16:05')  # AI 마감 브리핑
 
     # 타임아웃 (초)
     PRICE_TIMEOUT = int(os.environ.get('KR_MARKET_PRICE_TIMEOUT', '600'))
@@ -842,6 +844,56 @@ def send_morning_status_report():
 
     except Exception as e:
         logger.error(f"❌ 아침 리포트 실패: {e}")
+        return False
+
+
+def run_morning_briefing():
+    """09:05 KST - AI 조간 브리핑 생성 (Gemini 2.5 Flash + Google Search)"""
+    logger.info("📰 AI 조간 브리핑 생성 중...")
+    try:
+        from briefing_generator import generate_morning_briefing
+        result = generate_morning_briefing()
+        if result:
+            title = result.get('title', '조간 브리핑')
+            summary = result.get('summary', '')
+            sentiment = result.get('market_sentiment', 'N/A')
+            send_telegram(
+                f"📰 <b>조간 브리핑 발행</b>\n\n"
+                f"<b>{title}</b>\n\n"
+                f"{summary}\n\n"
+                f"감정: {sentiment}"
+            )
+            logger.info(f"✅ 조간 브리핑 완료: {title}")
+            return True
+        logger.warning("⚠️ 조간 브리핑 생성 실패 (None 반환)")
+        return False
+    except Exception as e:
+        logger.error(f"❌ 조간 브리핑 실패: {e}")
+        return False
+
+
+def run_closing_briefing():
+    """16:05 KST - AI 마감 브리핑 생성 (Gemini 2.5 Flash + Google Search)"""
+    logger.info("📰 AI 마감 브리핑 생성 중...")
+    try:
+        from briefing_generator import generate_closing_briefing
+        result = generate_closing_briefing()
+        if result:
+            title = result.get('title', '마감 브리핑')
+            summary = result.get('summary', '')
+            sentiment = result.get('market_sentiment', 'N/A')
+            send_telegram(
+                f"📰 <b>마감 브리핑 발행</b>\n\n"
+                f"<b>{title}</b>\n\n"
+                f"{summary}\n\n"
+                f"감정: {sentiment}"
+            )
+            logger.info(f"✅ 마감 브리핑 완료: {title}")
+            return True
+        logger.warning("⚠️ 마감 브리핑 생성 실패 (None 반환)")
+        return False
+    except Exception as e:
+        logger.error(f"❌ 마감 브리핑 실패: {e}")
         return False
 
 
@@ -2012,6 +2064,14 @@ class Scheduler:
             getattr(schedule.every(), day).at(Config.WAVE_SCAN_TIME).do(
                 self._with_record(_run_wave_scan, 'wave_scan',
                                   max_retries=1, retry_delay=600))
+            # 09:05 — AI 조간 브리핑 (US 시장 중심)
+            getattr(schedule.every(), day).at(Config.MORNING_BRIEFING_TIME).do(
+                self._with_record(run_morning_briefing, 'morning_briefing',
+                                  max_retries=1, retry_delay=300))
+            # 16:05 — AI 마감 브리핑 (KR 시장 중심)
+            getattr(schedule.every(), day).at(Config.CLOSING_BRIEFING_TIME).do(
+                self._with_record(run_closing_briefing, 'closing_briefing',
+                                  max_retries=1, retry_delay=300))
 
         # 토요일 히스토리 수집
         schedule.every().saturday.at(Config.HISTORY_TIME).do(
@@ -2031,6 +2091,8 @@ class Scheduler:
         logger.info(f"   🇰🇷 평일 {Config.KR_UPDATE_TIME}  종가베팅 V2 + 수급/AI/리포트 → 텔레그램")
         logger.info(f"   📈 평일 {Config.VCP_UPDATE_TIME}  전 시장 VCP 시그널 (KR+US+Crypto) → 텔레그램")
         logger.info(f"   🌊 평일 {Config.WAVE_SCAN_TIME}  Wave 패턴 스캔 (KR)")
+        logger.info(f"   📰 평일 {Config.MORNING_BRIEFING_TIME}  AI 조간 브리핑 (Gemini)")
+        logger.info(f"   📰 평일 {Config.CLOSING_BRIEFING_TIME}  AI 마감 브리핑 (Gemini)")
         logger.info(f"   🇰🇷 토요일 {Config.HISTORY_TIME}  히스토리 수집")
         logger.info(f"   🪙 매 4시간 {', '.join(Config.CRYPTO_TIMES)}  Crypto 전체 파이프라인")
 

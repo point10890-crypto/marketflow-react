@@ -541,6 +541,19 @@ export interface CryptoDominance {
     sentiment: string;
 }
 
+// ── Market Indices ──
+export interface MarketIndexItem {
+    name: string;
+    price: string;
+    change: string;
+    change_pct: number;
+    color: string;
+}
+
+export const commonAPI = {
+    getMarketIndices: () => fetchAPI<{ indices: MarketIndexItem[]; updated_at: number }>('/api/market-indices'),
+};
+
 export const cryptoAPI = {
     getOverview: () => fetchAPI<{ cryptos: CryptoAsset[]; timestamp: string }>('/api/crypto/overview'),
     getDominance: () => fetchAPI<CryptoDominance>('/api/crypto/dominance'),
@@ -800,6 +813,36 @@ export const subscriptionAPI = {
     requestUpgrade: (toTier: string, token?: string) => postAuthAPI<{ request: SubscriptionRequest }>('/api/auth/subscription/request', { to_tier: toTier }, token),
     getStatus: (token?: string) => fetchAuthAPI<{ user: AdminUser; requests: SubscriptionRequest[] }>('/api/auth/subscription/status', token),
     updateProfile: (name: string, token?: string) => putAuthAPI<{ user: AdminUser }>('/api/auth/profile', { name }, token),
+};
+
+// ── AI Briefing API (조간/마감 브리핑) ──
+export interface AIBriefingSection {
+    heading: string;
+    content: string;
+}
+
+export interface AIBriefing {
+    type: 'morning' | 'closing';
+    date: string;
+    title: string;
+    summary: string;
+    sections: AIBriefingSection[];
+    market_sentiment: 'BULLISH' | 'NEUTRAL' | 'BEARISH';
+    confidence: number;
+    key_events: string[];
+    sources: string[];
+    generated_at: string;
+}
+
+export interface BriefingDatesResponse {
+    dates: Array<{ date: string; types: string[] }>;
+}
+
+export const briefingAPI = {
+    getLatest: () => fetchAPI<AIBriefing>('/api/briefing/latest'),
+    getMorning: (date?: string) => fetchAPI<AIBriefing>(`/api/briefing/morning${date ? `/${date}` : ''}`),
+    getClosing: (date?: string) => fetchAPI<AIBriefing>(`/api/briefing/closing${date ? `/${date}` : ''}`),
+    getDates: () => fetchAPI<BriefingDatesResponse>('/api/briefing/dates'),
 };
 
 // ── Stripe API (requires auth token) ──

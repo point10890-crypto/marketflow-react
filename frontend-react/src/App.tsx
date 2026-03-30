@@ -50,6 +50,7 @@ const CryptoOverviewPage = lazy(() => import('@/pages/dashboard/crypto/CryptoOve
 const CryptoSignalsPage = lazy(() => import('@/pages/dashboard/crypto/CryptoSignalsPage'));
 const StockAnalyzerPage = lazy(() => import('@/pages/dashboard/StockAnalyzerPage'));
 const WaveOverviewPage = lazy(() => import('@/pages/dashboard/wave/WaveOverviewPage'));
+const BriefingPortalPage = lazy(() => import('@/pages/dashboard/BriefingPortalPage'));
 const DataStatusPage = lazy(() => import('@/pages/dashboard/DataStatusPage'));
 const AdminPage = lazy(() => import('@/pages/admin/AdminPage'));
 const AdminUsersPage = lazy(() => import('@/pages/admin/AdminUsersPage'));
@@ -127,6 +128,7 @@ export default function App() {
                         <Route path="crypto/signals" element={<Suspense fallback={<LoadingFallback />}><CryptoSignalsPage /></Suspense>} />
                         <Route path="stock-analyzer" element={<Suspense fallback={<LoadingFallback />}><StockAnalyzerPage /></Suspense>} />
                         <Route path="wave" element={<Suspense fallback={<LoadingFallback />}><WaveOverviewPage /></Suspense>} />
+                        <Route path="briefing" element={<Suspense fallback={<LoadingFallback />}><BriefingPortalPage /></Suspense>} />
                     </Route>
 
                     {/* Admin routes */}

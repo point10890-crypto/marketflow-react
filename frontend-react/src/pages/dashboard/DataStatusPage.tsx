@@ -18,44 +18,52 @@ interface DataStatus {
 }
 
 // Category grouping for section headers
-const CATEGORY_ORDER = ['KR', 'US', 'Crypto'] as const;
+// 서비스 워크플로우 순서: 데이터 수집 → 분석 엔진 → US → Crypto
+const CATEGORY_ORDER = ['Pipeline', 'Screener', 'US', 'Crypto'] as const;
 const CATEGORY_MAP: Record<string, string> = {
-    'Daily Prices': 'KR', 'AI Jongga V2': 'KR', 'Leading LIVE': 'KR',
-    'Market Gate': 'KR', 'Institutional Trend': 'KR', 'VCP Signals': 'KR',
-    'KR VCP Enhanced': 'KR',
+    // 1. Data Pipeline (원천 데이터)
+    'Daily Prices': 'Pipeline', 'Market Gate': 'Pipeline', 'Institutional Trend': 'Pipeline',
+    // 2. AI Screener (분석 엔진)
+    'AI Jongga V2': 'Screener', 'Leading LIVE': 'Screener', 'VCP Signals': 'Screener',
+    'KR VCP Enhanced': 'Screener', 'US VCP Enhanced': 'Screener', 'Wave Screener': 'Screener',
+    // 3. US Market
     'US Smart Money': 'US', 'US Decision Signal': 'US', 'US Sector Heatmap': 'US',
-    'US VCP Enhanced': 'US',
     'US Earnings': 'US', 'US Portfolio': 'US',
+    // 4. Crypto
     'Crypto Overview': 'Crypto', 'Crypto Market Gate': 'Crypto', 'Crypto Briefing': 'Crypto',
     'BTC Prediction': 'Crypto', 'Crypto Risk': 'Crypto', 'Lead-Lag Analysis': 'Crypto',
     'Crypto VCP Signals': 'Crypto', 'Crypto Backtest': 'Crypto',
 };
 
-const CATEGORY_LABELS: Record<string, { label: string; icon: string; color: string }> = {
-    'KR': { label: 'KR Market', icon: 'fa-won-sign', color: 'text-blue-400' },
-    'US': { label: 'US Market', icon: 'fa-dollar-sign', color: 'text-green-400' },
-    'Crypto': { label: 'Crypto', icon: 'fa-bitcoin-sign', color: 'text-amber-400' },
+const CATEGORY_LABELS: Record<string, { label: string; icon: string; color: string; desc: string }> = {
+    'Pipeline': { label: 'Data Pipeline', icon: 'fa-database', color: 'text-cyan-400', desc: '원천 데이터 수집 · 가격/수급/레짐' },
+    'Screener': { label: 'AI Screener', icon: 'fa-brain', color: 'text-pink-400', desc: '종가베팅 · 주도주 · VCP · W Pattern' },
+    'US': { label: 'US Market', icon: 'fa-dollar-sign', color: 'text-green-400', desc: 'Smart Money · 섹터 · 어닝' },
+    'Crypto': { label: 'Crypto', icon: 'fa-bitcoin-sign', color: 'text-amber-400', desc: 'BTC · 리스크 · VCP · 백테스트' },
 };
 
 
 
 // Map data names to update types
 const UPDATE_TYPE_MAP: Record<string, string> = {
-    // KR Market
+    // Pipeline
     'Daily Prices': 'prices',
+    'Market Gate': 'vcp_full',
+    'Institutional Trend': 'institutional',
+    // Screener
     'AI Jongga V2': 'jongga_v2',
     'Leading LIVE': 'leading',
-    'Institutional Trend': 'institutional',
     'VCP Signals': 'vcp_signals',
     'KR VCP Enhanced': 'vcp_kr',
-    // US Market (batch update)
+    'US VCP Enhanced': 'vcp_us',
+    'Wave Screener': 'wave_scan',
+    // US Market
     'US Smart Money': 'us_market',
     'US Decision Signal': 'us_market',
     'US Sector Heatmap': 'us_market',
     'US Earnings': 'us_market',
     'US Portfolio': 'us_market',
-    'US VCP Enhanced': 'vcp_us',
-    // Crypto Analytics
+    // Crypto
     'Crypto Overview': 'crypto_all',
     'Crypto Market Gate': 'crypto_gate',
     'Crypto Briefing': 'crypto_briefing',
@@ -236,12 +244,21 @@ export default function DataStatusPage() {
             const catFiles = files.filter(f => CATEGORY_MAP[f.name] === cat);
             if (catFiles.length === 0) return null;
             const info = CATEGORY_LABELS[cat];
+            const isInactive = sectionType === 'inactive';
             return (
                 <div key={cat} className="space-y-3">
-                    <div className="flex items-center gap-2 px-1">
-                        <i className={`fas ${info.icon} ${sectionType === 'inactive' ? 'text-gray-600' : info.color} text-sm`}></i>
-                        <h3 className={`text-sm font-bold ${sectionType === 'inactive' ? 'text-gray-600' : info.color}`}>{info.label}</h3>
-                        <span className="text-[10px] text-gray-600 font-mono">{catFiles.length}</span>
+                    <div className="flex items-center gap-3 px-1">
+                        <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${isInactive ? 'bg-gray-800 text-gray-600' : `bg-${info.color.replace('text-', '')}/10`}`}
+                            style={!isInactive ? { background: `color-mix(in srgb, currentColor 10%, transparent)` } : undefined}>
+                            <i className={`fas ${info.icon} text-xs ${isInactive ? 'text-gray-600' : info.color}`}></i>
+                        </div>
+                        <div className="flex flex-col">
+                            <div className="flex items-center gap-2">
+                                <h3 className={`text-sm font-bold ${isInactive ? 'text-gray-600' : info.color}`}>{info.label}</h3>
+                                <span className="text-[10px] text-gray-600 font-mono">{catFiles.length}</span>
+                            </div>
+                            {info.desc && <p className="text-[10px] text-gray-600">{info.desc}</p>}
+                        </div>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 md:gap-4">
                         {renderCards(catFiles)}

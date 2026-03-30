@@ -1,0 +1,81 @@
+{
+  "name": "나노신소재",
+  "ticker": "121600.KQ",
+  "result": "적극 매수",
+  "date": "2026-03-28 08:26:43",
+  "elapsed": 1.7,
+  "consensus_score": 4.33,
+  "analyst_count": 3,
+  "recommendation_detail": {
+    "strongBuy": 1,
+    "buy": 2,
+    "hold": 0,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 67900.0,
+    "high": 95000.0,
+    "low": 65000.0,
+    "mean": 82666.664,
+    "median": 88000.0
+  },
+  "current_price": 67900.0,
+  "upside_potential": 21.7,
+  "key_stats": {
+    "name": "ANP",
+    "sector": "Basic Materials",
+    "industry": "Specialty Chemicals",
+    "market_cap": 813556432896,
+    "pe_ratio": null,
+    "forward_pe": 36.50843,
+    "dividend_yield": 0.37,
+    "beta": 0.502,
+    "fifty_two_week_high": 77000.0,
+    "fifty_two_week_low": 44150.0,
+    "revenue": 111745368064,
+    "profit_margin": 0.014630001,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "나노신소재(121600.KQ)는 애널리스트 컨센서스 '적극 매수' 의견을 받고 있으며, 3명의 애널리스트가 참여했습니다. 평균 목표가는 82,667원으로 현재가 대비 21.7% 상승 여력이 있습니다. 이는 긍정적인 시장 전망을 반영하는 것으로 해석될 수 있습니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 31249388630
+    },
+    {
+      "date": "2025-06",
+      "value": 29360181180
+    },
+    {
+      "date": "2025-03",
+      "value": 22344734610
+    },
+    {
+      "date": "2024-12",
+      "value": 22642392730
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 1615148930
+    },
+    {
+      "date": "2025-06",
+      "value": -1953118870
+    },
+    {
+      "date": "2025-03",
+      "value": 759697730
+    },
+    {
+      "date": "2024-12",
+      "value": -5685702780
+    }
+  ],
+  "news": []
+}

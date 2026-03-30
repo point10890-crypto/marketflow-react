@@ -1,0 +1,75 @@
+{
+  "name": "한화투자증권",
+  "ticker": "003530.KS",
+  "result": "데이터 없음",
+  "date": "2026-03-28 14:15:04",
+  "elapsed": 1.8,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 7190.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 7190.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "H.I.S.C",
+    "sector": "Financial Services",
+    "industry": "Capital Markets",
+    "market_cap": 1572171415552,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": null,
+    "beta": 1.68,
+    "fifty_two_week_high": 10300.0,
+    "fifty_two_week_low": 2910.0,
+    "revenue": 2571797004288,
+    "profit_margin": 0.025710002,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 118452000000
+    },
+    {
+      "date": "2025-06",
+      "value": 117071000000
+    },
+    {
+      "date": "2025-03",
+      "value": 122923211650
+    },
+    {
+      "date": "2024-12",
+      "value": 74145138180
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 21453000000
+    },
+    {
+      "date": "2025-06",
+      "value": 29323000000
+    },
+    {
+      "date": "2025-03",
+      "value": 37156073680
+    },
+    {
+      "date": "2024-12",
+      "value": -21815382630
+    }
+  ],
+  "news": []
+}

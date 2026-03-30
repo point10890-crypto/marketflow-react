@@ -2,8 +2,8 @@
   "name": "SK하이닉스",
   "ticker": "000660.KS",
   "result": "매수",
-  "date": "2026-03-24 22:57:36",
-  "elapsed": 2.2,
+  "date": "2026-03-29 08:12:35",
+  "elapsed": 1.8,
   "consensus_score": 4.15,
   "analyst_count": 39,
   "recommendation_detail": {
@@ -15,21 +15,21 @@
   },
   "recommendation_period": "0m",
   "price_targets": {
-    "current": 986000.0,
-    "high": 1700000.0,
+    "current": 922000.0,
+    "high": 1930000.0,
     "low": 255245.0,
-    "mean": 1279381.0,
+    "mean": 1289117.8,
     "median": 1375000.0
   },
-  "current_price": 986000.0,
-  "upside_potential": 29.8,
+  "current_price": 922000.0,
+  "upside_potential": 39.8,
   "key_stats": {
     "name": "SK hynix",
     "sector": "Technology",
     "industry": "Semiconductors",
-    "market_cap": 680788890746880,
+    "market_cap": 636599784177664,
     "pe_ratio": null,
-    "forward_pe": 4.401899,
+    "forward_pe": 4.004243,
     "dividend_yield": 0.32,
     "beta": 1.715,
     "fifty_two_week_high": 1099000.0,
@@ -40,7 +40,7 @@
   },
   "finnhub_supplement": null,
   "source": "yfinance",
-  "ai_analysis": "SK하이닉스(000660.KS)에 대해 39명의 애널리스트가 제시한 컨센서스 의견은 '매수'입니다. 목표가 평균은 1,279,381 KRW로, 현재가 986,000 KRW 대비 29.8%의 상승 여력이 있는 것으로 분석됩니다. 투자 판단은 제시된 데이터를 참고하여 투자자 본인이 결정해야 합니다.",
+  "ai_analysis": "SK하이닉스(000660.KS)에 대해 39명의 애널리스트가 제시한 컨센서스는 '매수' 의견입니다. 목표가 평균은 1,289,118 KRW로, 현재가 922,000 KRW 대비 39.8% 상승 여력이 있습니다. 이는 전반적으로 긍정적인 시장 전망을 반영합니다.",
   "revenue_quarters": [
     {
       "date": "2025-12",
@@ -79,39 +79,39 @@
   ],
   "news": [
     {
-      "title": "Tech stocks today: Cisco launches security tools for AI agents, SK Hynix places $8 billion ASML order",
-      "summary": "Live coverage of \"Magnificent Seven\" stocks, and the latest technology news.",
-      "url": "https://finance.yahoo.com/news/live/tech-stocks-today-cisco-launches-security-tools-for-ai-agents-sk-hynix-places-8-billion-asml-order-144220180.html",
-      "provider": "Yahoo Finance",
-      "pub_time": "2026-03-13T14:42:20Z"
+      "title": "Memory chip giant SK hynix could help end ‘RAMmageddon’ with blockbuster US IPO",
+      "summary": "SK hynix’s potential U.S. listing could raise $10-$14 billion to help it build more capacity, encourage others to follow, and end the 'RAMmageddon' memory shortage.",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/memory-chip-giant-sk-hynix-191128085.html",
+      "provider": "TechCrunch",
+      "pub_time": "2026-03-27T19:11:28Z"
     },
     {
-      "title": "ASML Lands Massive EUV Deal Clearing Path to Double Revenue by 2030",
-      "summary": "In recent months, I’ve argued that ASML (NASDAQ:ASML) should sit on every investor’s radar because of its near-monopoly in extreme ultraviolet (EUV) lithography — the critical technology powering the ",
-      "url": "https://247wallst.com/investing/2026/03/24/asml-lands-massive-euv-deal-clearing-path-to-double-revenue-by-2030/",
-      "provider": "24/7 Wall St.",
-      "pub_time": "2026-03-24T13:45:46Z"
+      "title": "Micron Just Started Mass-Producing HBM4 for Nvidia's Vera Rubin. Here's Why This Stock Could Soar in 2026.",
+      "summary": "Micron Technology is at the center of a major memory shortage driven by AI, and it's one of the best ways to play that shortage.",
+      "url": "https://www.fool.com/investing/2026/03/27/micron-just-started-mass-producing-hbm4-for-nvidia/",
+      "provider": "Motley Fool",
+      "pub_time": "2026-03-27T18:25:00Z"
     },
     {
-      "title": "ASML Lands $7.97 Billion Record Order",
-      "summary": "The largest disclosed order strengthens demand visibility into future revenue",
-      "url": "https://finance.yahoo.com/markets/stocks/articles/asml-lands-7-97-billion-115508072.html",
+      "title": "Did Alphabet Just End the AI Memory Boom?",
+      "summary": "Memory stocks, Micron Technology, Sandisk Corporation and peers have been hammered this week following new research from Alphabet reducing memory needs. Is this memory's DeepSeek moment?",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/did-alphabet-just-end-ai-164000117.html",
+      "provider": "Zacks",
+      "pub_time": "2026-03-27T16:40:00Z"
+    },
+    {
+      "title": "Google Unveils AI Breakthrough Cutting Memory Use by 6x, Pressuring Flash Stocks",
+      "summary": "TurboQuant may reduce storage demand while leaving high-bandwidth memory and DRAM largely unaffected, driving divergence across memory-chip stocks.",
+      "url": "https://finance.yahoo.com/sectors/technology/articles/google-unveils-ai-breakthrough-cutting-161231704.html",
       "provider": "GuruFocus.com",
-      "pub_time": "2026-03-24T11:55:08Z"
+      "pub_time": "2026-03-27T16:12:31Z"
     },
     {
-      "title": "Trending tickers: ASML, Estée Lauder, Bellway, Kingfisher and Fevertree",
-      "summary": "The latest investor updates on stocks that are trending on Tuesday.",
-      "url": "https://uk.finance.yahoo.com/news/asml-estee-lauder-bellway-kingfisher-fevertree-trending-tickers-100926143.html",
-      "provider": "Yahoo Finance UK",
-      "pub_time": "2026-03-24T10:09:26Z"
-    },
-    {
-      "title": "SK Hynix to Buy $8 Billion of Top-End ASML Chipmaking Gear",
-      "summary": "(Bloomberg) -- SK Hynix Inc. plans to spend 11.9 trillion won ($7.9 billion) on cutting-edge extreme ultraviolet lithography chipmaking tools from ASML Holding NV, deepening a push into next-generatio",
-      "url": "https://finance.yahoo.com/sectors/technology/articles/sk-hynix-buy-8-billion-074136395.html",
-      "provider": "Bloomberg",
-      "pub_time": "2026-03-24T09:34:23Z"
+      "title": "Micron Reassesses AI Memory Outlook As TurboQuant And SK Hynix Reshape Sector",
+      "summary": "Google released its TurboQuant AI memory compression algorithm, which is designed to reduce the memory requirements of large AI models. The announcement has raised new questions about long term AI mem",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/micron-reassesses-ai-memory-outlook-130515391.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-03-27T13:05:15Z"
     }
   ]
 }

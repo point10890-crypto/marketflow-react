@@ -1,0 +1,117 @@
+{
+  "name": "한화에어로스페이스",
+  "ticker": "012450.KS",
+  "result": "적극 매수",
+  "date": "2026-03-29 08:07:11",
+  "elapsed": 1.8,
+  "consensus_score": 4.38,
+  "analyst_count": 21,
+  "recommendation_detail": {
+    "strongBuy": 8,
+    "buy": 13,
+    "hold": 0,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 1335000.0,
+    "high": 1900000.0,
+    "low": 1280000.0,
+    "mean": 1557857.1,
+    "median": 1520000.0
+  },
+  "current_price": 1335000.0,
+  "upside_potential": 16.7,
+  "key_stats": {
+    "name": "HANWHA AEROSPACE",
+    "sector": "Industrials",
+    "industry": "Aerospace & Defense",
+    "market_cap": 68684131336192,
+    "pe_ratio": null,
+    "forward_pe": 22.995829,
+    "dividend_yield": 0.51,
+    "beta": 1.034,
+    "fifty_two_week_high": 1655000.0,
+    "fifty_two_week_low": 603000.0,
+    "revenue": 26702902198272,
+    "profit_margin": 0.052610002,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "한화에어로스페이스(012450.KS)는 현재 1,335,000 KRW에 거래되고 있습니다. 애널리스트 컨센서스는 21명 참여, 5점 만점에 4.38점으로 '적극 매수' 의견을 보이고 있습니다. 평균 목표가는 1,557,857 KRW로 현재 주가 대비 16.7% 상승 여력이 있습니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 8421235187000
+    },
+    {
+      "date": "2025-09",
+      "value": 6486486380000
+    },
+    {
+      "date": "2025-06",
+      "value": 6310959074000
+    },
+    {
+      "date": "2025-03",
+      "value": 5484220608000
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 632477445000
+    },
+    {
+      "date": "2025-09",
+      "value": 486539807000
+    },
+    {
+      "date": "2025-06",
+      "value": 199385887000
+    },
+    {
+      "date": "2025-03",
+      "value": 86559164000
+    }
+  ],
+  "news": [
+    {
+      "title": "Asia’s LNG scramble gives Venture Global a fresh opening",
+      "summary": "Venture Global (VG) entered the middle of March with a timely new talking point for investors. On Feb. 26, the company unveiled a 20-year sales and purchase agreement with South Korea’s Hanwha Aerospa",
+      "url": "https://www.thestreet.com/investing/asias-lng-scramble-gives-venture-global-a-fresh-opening",
+      "provider": "TheStreet",
+      "pub_time": "2026-03-21T15:33:00Z"
+    },
+    {
+      "title": "U.S. Locks In $56 Billion of Asian Energy Deals Amid Gulf Disruptions",
+      "summary": "Agreements span LNG, coal, and major projects like Delfin LNG, reflecting stronger U.S.-Asia energy ties driven by security concerns and shorter shipping routes.",
+      "url": "https://finance.yahoo.com/news/u-locks-56-billion-asian-220000004.html",
+      "provider": "Oilprice.com",
+      "pub_time": "2026-03-17T22:00:00Z"
+    },
+    {
+      "title": "Venture Global LNG Court Win And New Deals Raise Valuation Questions",
+      "summary": "Venture Global (NYSE:VG) secured a legal win in its LNG dispute with Shell as a court rejected Shell's appeal. The company signed a long term LNG supply agreement with Hanwha Aerospace, adding new con",
+      "url": "https://finance.yahoo.com/news/venture-global-lng-court-win-041910229.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-03-07T04:19:10Z"
+    },
+    {
+      "title": "Venture Global (VG) Reports $13.8B FY2025 Revenue and $6.3B Consolidated Adjusted EBITDA",
+      "summary": "Venture Global Inc. (NYSE:VG) is one of the best up and coming energy stocks to buy. On March 2, Venture Global reported earnings for 2025, with full-year revenue soaring 177% to $13.8 billion. This s",
+      "url": "https://finance.yahoo.com/news/venture-global-vg-reports-13-083552536.html",
+      "provider": "Insider Monkey",
+      "pub_time": "2026-03-06T08:35:52Z"
+    },
+    {
+      "title": "Venture Global (VG) Is Up 19.9% After Dividend Debut And Major LNG Deals With Hanwha, Trafigura – Has The Bull Case Changed?",
+      "summary": "In early March 2026, Venture Global, Inc. reported fourth-quarter and full-year 2025 results showing higher sales and net income, announced new long-term LNG supply agreements with Hanwha Aerospace an",
+      "url": "https://finance.yahoo.com/news/venture-global-vg-19-9-061404242.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-03-05T06:14:04Z"
+    }
+  ]
+}

@@ -1,0 +1,71 @@
+{
+  "name": "PPLT",
+  "ticker": "PPLT",
+  "result": "데이터 없음",
+  "date": "2026-03-29 17:06:52",
+  "elapsed": 3.3,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": null,
+  "current_price": 169.4,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "abrdn Physical Platinum Shares ",
+    "sector": "",
+    "industry": "",
+    "market_cap": null,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": 0.0,
+    "beta": null,
+    "fifty_two_week_high": 261.62,
+    "fifty_two_week_low": 82.79,
+    "revenue": null,
+    "profit_margin": null,
+    "currency": "USD"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": null,
+  "net_income_quarters": null,
+  "news": [
+    {
+      "title": "Top 10 Precious Metals ETFs: Silver and Platinum Shine",
+      "summary": "<p>Gold is no longer the only precious metal gaining traction in portfolios these days. After the recent silver price boom, investors are looking beyond gold to opportunities in silver and platinum, b",
+      "url": "http://www.etf.com/sections/etf-education-series/top-10-precious-metals-etfs-silver-and-platinum-shine?utm_source=yahoo-finance&utm_medium=rss&utm_campaign=yahoo-finance-rss",
+      "provider": "etf.com",
+      "pub_time": "2026-03-13T10:57:20Z"
+    },
+    {
+      "title": "Platinum Rally Faces Critical Test After Mining Giant Posts $3.6 Billion Loss",
+      "summary": "The abrdn Platinum ETF Trust (NYSEARCA:PPLT) has surged 185% over the past year, transforming platinum from an overlooked industrial metal into a standout commodity performer. The rally reflects a fun",
+      "url": "https://247wallst.com/investing/2026/01/25/platinum-rally-faces-critical-test-after-mining-giant-posts-3-6-billion-loss/",
+      "provider": "24/7 Wall St.",
+      "pub_time": "2026-01-25T12:37:57Z"
+    },
+    {
+      "title": "Market Minute 1-6-26- Metals Mania Spreads as Markets Tighten",
+      "summary": "After a broad-based rally yesterday, equities are mixed this morning. Metals continue to power ahead, while oil is up modestly, too. The dollar and Treasuries aren’t moving much.",
+      "url": "https://finance.yahoo.com/news/market-minute-1-6-26-142000985.html",
+      "provider": "MoneyShow",
+      "pub_time": "2026-01-06T14:20:00Z"
+    },
+    {
+      "title": "Top & Flop ETF Areas of 2025 (Revised)",
+      "summary": "Silver, gold & platinum ETFs (SLVP, SILJ, GOEX) crushed it in 2025, while MEME & VIXY lagged.",
+      "url": "https://finance.yahoo.com/news/top-flop-etf-areas-2025-160000661.html",
+      "provider": "Zacks",
+      "pub_time": "2026-01-04T16:00:00Z"
+    },
+    {
+      "title": "Santa Rally Falls Short: Top ETF Performers of December",
+      "summary": "Santa Rally fizzled as markets stumbled, but ETFs tied to cannabis (MSOS, WEED), metals (SLV, PPLT) and space (UFO) surged.",
+      "url": "https://finance.yahoo.com/news/santa-rally-falls-short-top-130000378.html",
+      "provider": "Zacks",
+      "pub_time": "2026-01-02T13:00:00Z"
+    }
+  ]
+}

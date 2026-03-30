@@ -1,0 +1,75 @@
+{
+  "name": "TCC스틸",
+  "ticker": "002710.KS",
+  "result": "데이터 없음",
+  "date": "2026-03-28 23:53:13",
+  "elapsed": 2.2,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 13560.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 13560.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "TCC STEEL",
+    "sector": "Basic Materials",
+    "industry": "Steel",
+    "market_cap": 355457728512,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": 0.52,
+    "beta": 1.383,
+    "fifty_two_week_high": 27700.0,
+    "fifty_two_week_low": 11910.0,
+    "revenue": 611513925632,
+    "profit_margin": -0.01217,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 151840802580
+    },
+    {
+      "date": "2025-09",
+      "value": 148606416040
+    },
+    {
+      "date": "2025-06",
+      "value": 155416669310
+    },
+    {
+      "date": "2025-03",
+      "value": 155650020710
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": -5801702580
+    },
+    {
+      "date": "2025-09",
+      "value": -4127768460
+    },
+    {
+      "date": "2025-06",
+      "value": 2389648540
+    },
+    {
+      "date": "2025-03",
+      "value": 96220150
+    }
+  ],
+  "news": []
+}

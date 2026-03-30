@@ -1,0 +1,117 @@
+{
+  "name": "삼양식품",
+  "ticker": "003230.KS",
+  "result": "매수",
+  "date": "2026-03-28 18:00:48",
+  "elapsed": 2.5,
+  "consensus_score": 4.25,
+  "analyst_count": 20,
+  "recommendation_detail": {
+    "strongBuy": 5,
+    "buy": 15,
+    "hold": 0,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 1183000.0,
+    "high": 2100000.0,
+    "low": 1670000.0,
+    "mean": 1833650.0,
+    "median": 1800000.0
+  },
+  "current_price": 1183000.0,
+  "upside_potential": 55.0,
+  "key_stats": {
+    "name": "SamyangFood",
+    "sector": "Consumer Defensive",
+    "industry": "Packaged Foods",
+    "market_cap": 8822965927936,
+    "pe_ratio": null,
+    "forward_pe": 13.220798,
+    "dividend_yield": 0.44,
+    "beta": null,
+    "fifty_two_week_high": 1665000.0,
+    "fifty_two_week_low": 748000.0,
+    "revenue": 2351785050112,
+    "profit_margin": 0.16559,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "삼양식품(003230.KS)에 대해 20명의 애널리스트가 제시한 컨센서스는 '매수' 의견입니다. 목표가 평균은 1,833,650 KRW으로, 현재가 1,183,000 KRW 대비 55.0% 상승 여력이 있는 것으로 분석됩니다. 이는 애널리스트들이 삼양식품의 향후 주가 상승 가능성을 높게 보고 있음을 시사합니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 632015696590
+    },
+    {
+      "date": "2025-06",
+      "value": 553077609230
+    },
+    {
+      "date": "2025-03",
+      "value": 529013206880
+    },
+    {
+      "date": "2024-12",
+      "value": 478853216770
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 110176190760
+    },
+    {
+      "date": "2025-06",
+      "value": 84537618060
+    },
+    {
+      "date": "2025-03",
+      "value": 99134278430
+    },
+    {
+      "date": "2024-12",
+      "value": 76069385410
+    }
+  ],
+  "news": [
+    {
+      "title": "Asian Companies That Might Be Priced Below Their Intrinsic Value",
+      "summary": "Amidst geopolitical tensions and rising energy prices impacting global markets, Asian equities have experienced fluctuations as investors navigate these uncertainties. In this environment, identifying",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/asian-companies-might-priced-below-043752853.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-03-27T04:37:52Z"
+    },
+    {
+      "title": "3 Asian Stocks Estimated To Be Up To 44.5% Below Intrinsic Value",
+      "summary": "In the current landscape, Asian markets are navigating through heightened geopolitical tensions and fluctuating energy prices, contributing to a complex economic environment. Amidst these challenges, ",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/3-asian-stocks-estimated-44-223439390.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-03-26T22:34:39Z"
+    },
+    {
+      "title": "Asian Market Insights: 3 Stocks Possibly Trading Below Estimated Value",
+      "summary": "As Asian markets navigate a complex landscape of economic data and investor sentiment, opportunities may arise for discerning investors to identify stocks potentially trading below their estimated val",
+      "url": "https://finance.yahoo.com/news/asian-market-insights-3-stocks-044048346.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2025-12-01T04:40:48Z"
+    },
+    {
+      "title": "3 Asian Stocks Trading At Estimated Discounts Of Up To 49.3%",
+      "summary": "As Asian markets continue to navigate a landscape marked by global economic uncertainties and evolving trade dynamics, investors are increasingly on the lookout for opportunities that may offer value ",
+      "url": "https://finance.yahoo.com/news/3-asian-stocks-trading-estimated-223412127.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2025-11-30T22:34:12Z"
+    },
+    {
+      "title": "Asian Market Gems: Uncovering 3 Stocks Estimated Below Intrinsic Value",
+      "summary": "Amidst global concerns over AI valuations and fluctuating market sentiments, Asian markets have also experienced volatility, with notable declines in key indices like Japan's Nikkei 225 and China's CS",
+      "url": "https://finance.yahoo.com/news/asian-market-gems-uncovering-3-223414846.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2025-11-23T22:34:14Z"
+    }
+  ]
+}

@@ -1,0 +1,117 @@
+{
+  "name": "루닛",
+  "ticker": "328130.KQ",
+  "result": "매도",
+  "date": "2026-03-28 23:13:33",
+  "elapsed": 2.2,
+  "consensus_score": 2.0,
+  "analyst_count": 1,
+  "recommendation_detail": {
+    "strongBuy": 0,
+    "buy": 0,
+    "hold": 0,
+    "sell": 1,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 34600.0,
+    "high": 30000.0,
+    "low": 30000.0,
+    "mean": 30000.0,
+    "median": 30000.0
+  },
+  "current_price": 34600.0,
+  "upside_potential": -13.3,
+  "key_stats": {
+    "name": "Lunit",
+    "sector": "Healthcare",
+    "industry": "Health Information Services",
+    "market_cap": 1080591843328,
+    "pe_ratio": null,
+    "forward_pe": -10.3052225,
+    "dividend_yield": null,
+    "beta": 1.162,
+    "fifty_two_week_high": 60700.0,
+    "fifty_two_week_low": 32750.0,
+    "revenue": 83128999936,
+    "profit_margin": -0.56091,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "루닛(328130.KQ)에 대한 현재 애널리스트 컨센서스는 '매도' 의견입니다. 목표가 평균은 30,000원으로, 현재가 34,600원 대비 13.3% 하락 여력이 있는 것으로 분석됩니다. 해당 분석은 1명의 애널리스트 의견을 종합한 결과입니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 19575722790
+    },
+    {
+      "date": "2025-06",
+      "value": 17874628420
+    },
+    {
+      "date": "2025-03",
+      "value": 19202522020
+    },
+    {
+      "date": "2024-12",
+      "value": 20039444280
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 18124554300
+    },
+    {
+      "date": "2025-06",
+      "value": -34959577690
+    },
+    {
+      "date": "2025-03",
+      "value": 2027293400
+    },
+    {
+      "date": "2024-12",
+      "value": -73434050620
+    }
+  ],
+  "news": [
+    {
+      "title": "Labcorp (LH): Evaluating Valuation After Breakthroughs in Cancer Diagnostics and AI-Powered Pathology",
+      "summary": "Labcorp Holdings (LH) is drawing attention after its Plasma Detect assay was featured in two respected medical journals. The company’s digital pathology joint initiative with Lunit also made headlines",
+      "url": "https://finance.yahoo.com/news/labcorp-lh-evaluating-valuation-breakthroughs-031222222.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2025-11-24T03:12:22Z"
+    },
+    {
+      "title": "AI-Powered Digital Pathology Collaboration Could Be a Game Changer for Labcorp (LH)",
+      "summary": "Lunit and Labcorp recently announced a collaboration to advance innovation in digital pathology and artificial intelligence for oncology research, leveraging Labcorp's clinical and pathology expertise",
+      "url": "https://finance.yahoo.com/news/ai-powered-digital-pathology-collaboration-221053525.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2025-11-18T22:10:53Z"
+    },
+    {
+      "title": "Can Agilent (A) Turn AI-Driven Diagnostics Into a Lasting Competitive Edge?",
+      "summary": "In recent days, Agilent Technologies unveiled significant developments, including the launch of its Insight Series Alarm Resolution Systems for airport security, the introduction of Altura Ultra Inert",
+      "url": "https://finance.yahoo.com/news/agilent-turn-ai-driven-diagnostics-160352220.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2025-10-02T16:03:52Z"
+    },
+    {
+      "title": "Agilent Technologies, Inc. (A) Partners With AI Firm Lunit to Advance Cancer Diagnostics",
+      "summary": "We recently compiled a list of the 12 Best Healthcare Stocks to Buy and Hold for 5 Years. Agilent Technologies, Inc. is one of them. Agilent Technologies, Inc. (NYSE:A) is a global leader in life scie",
+      "url": "https://finance.yahoo.com/news/agilent-technologies-inc-partners-ai-175644295.html",
+      "provider": "Insider Monkey",
+      "pub_time": "2025-10-01T17:56:44Z"
+    },
+    {
+      "title": "Lunit and CellCarta to integrate AI pathology in clinical trials",
+      "summary": "The collaboration aims to integrate Lunit's AI pathology solutions into CellCarta’s clinical trial services.",
+      "url": "https://www.medicaldevice-network.com/news/lunit-cellcarta-integrate-ai-pathology-trials/",
+      "provider": "Medical Device Network",
+      "pub_time": "2025-09-25T08:57:11Z"
+    }
+  ]
+}

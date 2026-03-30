@@ -1,0 +1,75 @@
+{
+  "name": "젬백스",
+  "ticker": "082270.KQ",
+  "result": "데이터 없음",
+  "date": "2026-03-30 07:42:28",
+  "elapsed": 2.0,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 41050.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 41050.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "GemVax",
+    "sector": "",
+    "industry": "",
+    "market_cap": 1727225397248,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": null,
+    "beta": null,
+    "fifty_two_week_high": 72700.0,
+    "fifty_two_week_low": 22500.0,
+    "revenue": null,
+    "profit_margin": null,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 17977932810
+    },
+    {
+      "date": "2025-06",
+      "value": 25016538370
+    },
+    {
+      "date": "2025-03",
+      "value": 12372752080
+    },
+    {
+      "date": "2024-12",
+      "value": 18273203860
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": -2519840760
+    },
+    {
+      "date": "2025-06",
+      "value": -1583048380
+    },
+    {
+      "date": "2025-03",
+      "value": -8883114360
+    },
+    {
+      "date": "2024-12",
+      "value": -46729432350
+    }
+  ],
+  "news": []
+}

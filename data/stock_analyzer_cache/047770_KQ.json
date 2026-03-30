@@ -1,0 +1,75 @@
+{
+  "name": "코데즈컴바인",
+  "ticker": "047770.KQ",
+  "result": "데이터 없음",
+  "date": "2026-03-28 14:12:26",
+  "elapsed": 2.0,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 4260.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 4260.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "Codes Combine",
+    "sector": "",
+    "industry": "",
+    "market_cap": 160811843584,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": null,
+    "beta": null,
+    "fifty_two_week_high": 5960.0,
+    "fifty_two_week_low": 1250.0,
+    "revenue": null,
+    "profit_margin": null,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 9563625010
+    },
+    {
+      "date": "2025-06",
+      "value": 9465418090
+    },
+    {
+      "date": "2025-03",
+      "value": 8338499490
+    },
+    {
+      "date": "2024-12",
+      "value": 11344569790
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 1278507330
+    },
+    {
+      "date": "2025-06",
+      "value": 609457970
+    },
+    {
+      "date": "2025-03",
+      "value": 1442258930
+    },
+    {
+      "date": "2024-12",
+      "value": -157128400
+    }
+  ],
+  "news": []
+}

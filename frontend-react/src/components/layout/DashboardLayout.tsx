@@ -14,11 +14,13 @@ import { useNotification } from '@/contexts/NotificationContext';
 
 const SWIPE_TABS = [
     { href: '/dashboard' },
+    { href: '/dashboard/vcp-enhanced' },
     { href: '/dashboard/kr' },
     { href: '/dashboard/us' },
     { href: '/dashboard/crypto' },
     { href: '/dashboard/stock-analyzer' },
 ];
+
 
 const FILE_LABELS: Record<string, { title: string; message: string; link: string }> = {
     'jongga_v2_latest.json': { title: '종가베팅 업데이트', message: '새로운 종가베팅 시그널이 도착했습니다', link: '/dashboard/kr/closing-bet' },
@@ -58,7 +60,8 @@ export default function DashboardLayout() {
     );
 
     const { pullDistance, isRefreshing } = usePullToRefresh(scrollRef, refreshFnRef.current);
-    useSwipeNavigation(scrollRef, SWIPE_TABS);
+    const isWavePage = location.pathname.startsWith('/dashboard/wave');
+    useSwipeNavigation(scrollRef, SWIPE_TABS, isWavePage);
 
     return (
         <PullToRefreshProvider onRefreshRef={refreshFnRef}>

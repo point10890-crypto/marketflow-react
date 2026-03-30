@@ -453,6 +453,27 @@ def _fetch_performance_data():
     return performance_data
 
 
+# ── Market Indices lightweight endpoint (5min TTL cache) ──
+
+_market_indices_cache: dict = {}  # {data, ts}
+_MARKET_INDICES_TTL = 300  # 5 minutes
+
+@common_bp.route('/market-indices')
+def get_market_indices():
+    """시장 지수 데이터 (가벼운 캐시 엔드포인트)"""
+    import time
+    now = time.time()
+    if _market_indices_cache and now - _market_indices_cache.get('ts', 0) < _MARKET_INDICES_TTL:
+        return jsonify(_market_indices_cache['data'])
+
+    indices = _fetch_market_indices()
+    result = {'indices': indices, 'updated_at': now}
+    _market_indices_cache.update({'data': result, 'ts': now})
+    resp = jsonify(result)
+    resp.headers['Cache-Control'] = 'public, max-age=300'
+    return resp
+
+
 # common.py loaded successfully
 
 
@@ -463,29 +484,15 @@ def get_data_status():
     
 
     
-    # Check these data files
+    # Check these data files — 서비스 워크플로우 순서
     data_files_to_check = [
-        # ── KR Market ──
+        # ── 1. Data Pipeline (원천 데이터 수집) ──
         {
             'name': 'Daily Prices',
             'path': os.path.join(DATA_DIR, 'daily_prices.csv'),
             'link': '/dashboard/kr/vcp-enhanced',
             'menu': 'VCP Enhanced',
             'updateType': 'prices'
-        },
-        {
-            'name': 'AI Jongga V2',
-            'path': os.path.join(DATA_DIR, 'jongga_v2_latest.json'),
-            'link': '/dashboard/kr/closing-bet',
-            'menu': 'Closing Bet',
-            'updateType': 'jongga_v2'
-        },
-        {
-            'name': 'Leading LIVE',
-            'path': os.path.join(DATA_DIR, 'screener_leading_latest.json'),
-            'link': '/dashboard/kr/leading-stocks',
-            'menu': 'Leading LIVE',
-            'updateType': 'leading'
         },
         {
             'name': 'Market Gate',
@@ -501,6 +508,21 @@ def get_data_status():
             'menu': 'VCP Signals',
             'updateType': 'institutional'
         },
+        # ── 2. AI Screener (분석 엔진 출력) ──
+        {
+            'name': 'AI Jongga V2',
+            'path': os.path.join(DATA_DIR, 'jongga_v2_latest.json'),
+            'link': '/dashboard/kr/closing-bet',
+            'menu': '종가베팅',
+            'updateType': 'jongga_v2'
+        },
+        {
+            'name': 'Leading LIVE',
+            'path': os.path.join(DATA_DIR, 'screener_leading_latest.json'),
+            'link': '/dashboard/kr/leading-stocks',
+            'menu': '주도주LIVE',
+            'updateType': 'leading'
+        },
         {
             'name': 'VCP Signals',
             'path': os.path.join(DATA_DIR, 'signals_log.csv'),
@@ -511,18 +533,25 @@ def get_data_status():
         {
             'name': 'KR VCP Enhanced',
             'path': os.path.join(DATA_DIR, 'vcp_kr_latest.json'),
-            'link': '/dashboard/kr/vcp-enhanced',
+            'link': '/dashboard/vcp-enhanced',
             'menu': 'VCP Enhanced',
             'updateType': 'vcp_kr'
         },
         {
             'name': 'US VCP Enhanced',
             'path': os.path.join(DATA_DIR, 'vcp_us_latest.json'),
-            'link': '/dashboard/us/vcp',
+            'link': '/dashboard/vcp-enhanced',
             'menu': 'VCP Enhanced',
             'updateType': 'vcp_us'
         },
-        # ── US Market ──
+        {
+            'name': 'Wave Screener',
+            'path': os.path.join(DATA_DIR, 'wave', 'wave_screener_latest.json'),
+            'link': '/dashboard/wave',
+            'menu': 'W Pattern',
+            'updateType': 'wave_scan'
+        },
+        # ── 3. US Market ──
         {
             'name': 'US Smart Money',
             'path': os.path.join(US_OUTPUT_DIR, 'smart_money_snapshot.json'),
@@ -558,7 +587,7 @@ def get_data_status():
             'menu': 'US Portfolio',
             'updateType': 'us_market'
         },
-        # ── Crypto Analytics ──
+        # ── 4. Crypto Analytics ──
         {
             'name': 'Crypto Overview',
             'path': os.path.join(CRYPTO_OUTPUT_DIR, 'overview_snapshot.json'),
@@ -788,6 +817,12 @@ def update_single_data():
             'script': os.path.join(BASE_DIR, 'crypto-analytics', 'crypto_market', 'lead_lag', 'lead_lag_analysis.py'),
             'args': []
         },
+        # ── Wave Pattern ──
+        'wave_scan': {
+            'name': 'Wave Pattern Scan',
+            'module': 'engine.wave.screener',
+            'function': 'run_screener'
+        },
     }
     
     if data_type not in update_commands:
@@ -820,6 +855,14 @@ sys.path.insert(0, '.')
 from {mod} import {func}
 result = {func}()
 print(f"[OK] {{len(result.get('results', []))}} stocks scanned")
+'''
+                elif data_type == 'wave_scan':
+                    script_code = f'''
+import sys
+sys.path.insert(0, '.')
+from {mod} import {func}
+result = {func}(market='KR')
+print(f"[OK] Wave scan: {{result.get('signal_count', 0)}} signals from {{result.get('scan_count', 0)}} stocks")
 '''
                 else:
                     script_code = f'''
@@ -1142,6 +1185,7 @@ def data_version():
         'daily_prices.csv',
         'kr_ai_analysis.json',
         'daily_report.json',
+        'briefing/latest.json',
     ]
     versions = {}
     for fname in target_files:

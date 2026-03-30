@@ -1,0 +1,90 @@
+{
+  "name": "에스피지",
+  "ticker": "058610.KQ",
+  "result": "데이터 없음",
+  "date": "2026-03-28 00:43:11",
+  "elapsed": 2.1,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 111300.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 111300.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "SPG",
+    "sector": "",
+    "industry": "",
+    "market_cap": 2468340039680,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": null,
+    "beta": null,
+    "fifty_two_week_high": 165700.0,
+    "fifty_two_week_low": 19130.0,
+    "revenue": null,
+    "profit_margin": null,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 84082160610
+    },
+    {
+      "date": "2025-06",
+      "value": 80467181960
+    },
+    {
+      "date": "2025-03",
+      "value": 93295288620
+    },
+    {
+      "date": "2024-12",
+      "value": 98078290500
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 3645966110
+    },
+    {
+      "date": "2025-06",
+      "value": 2408250930
+    },
+    {
+      "date": "2025-03",
+      "value": 3117701390
+    },
+    {
+      "date": "2024-12",
+      "value": 3954193400
+    }
+  ],
+  "news": [
+    {
+      "title": "A Look At PTC (PTC) Valuation After Earnings Beat, Guidance Upgrade And New FlexPLM Client Win",
+      "summary": "Why PTC Stock Is Back in Focus After Earnings and New Client Win PTC (PTC) is back on many investors radar after a combination of better than expected quarterly results, higher full year guidance, and",
+      "url": "https://finance.yahoo.com/news/look-ptc-ptc-valuation-earnings-171026827.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-02-14T17:10:26Z"
+    },
+    {
+      "title": "PTC FlexPLM Win With SPG Highlights Cloud Growth And Valuation Gap",
+      "summary": "PTC (NasdaqGS:PTC) has been selected by SPG Company to provide its FlexPLM solution. SPG Company is replacing its legacy product lifecycle management system with PTC's cloud based FlexPLM platform. Th",
+      "url": "https://finance.yahoo.com/news/ptc-flexplm-win-spg-highlights-121147158.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-02-14T12:11:47Z"
+    }
+  ]
+}

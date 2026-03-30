@@ -1,0 +1,83 @@
+{
+  "name": "뉴로메카",
+  "ticker": "348340.KQ",
+  "result": "데이터 없음",
+  "date": "2026-03-28 23:55:33",
+  "elapsed": 2.0,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 66300.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 66300.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "NEUROMEKA",
+    "sector": "Industrials",
+    "industry": "Specialty Industrial Machinery",
+    "market_cap": 752444440576,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": null,
+    "beta": 3.071,
+    "fifty_two_week_high": 139000.0,
+    "fifty_two_week_low": 19990.0,
+    "revenue": 19139850240,
+    "profit_margin": -1.05848,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 4473538560
+    },
+    {
+      "date": "2025-06",
+      "value": 3439506790
+    },
+    {
+      "date": "2025-03",
+      "value": 3172459790
+    },
+    {
+      "date": "2024-12",
+      "value": 8054344100
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": -4280750080
+    },
+    {
+      "date": "2025-06",
+      "value": -4623573830
+    },
+    {
+      "date": "2025-03",
+      "value": -7312957020
+    },
+    {
+      "date": "2024-12",
+      "value": -4029901670
+    }
+  ],
+  "news": [
+    {
+      "title": "Jensen Huang Eats Fried Chicken--Triggers Stock Frenzy in South Korea",
+      "summary": "Nvidia CEO's viral Seoul dinner with Samsung and Hyundai chiefs sends chicken and AI stocks into speculative overdrive",
+      "url": "https://finance.yahoo.com/news/jensen-huang-eats-fried-chicken-140850061.html",
+      "provider": "GuruFocus.com",
+      "pub_time": "2025-10-31T14:08:50Z"
+    }
+  ]
+}

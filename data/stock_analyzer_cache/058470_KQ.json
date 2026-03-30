@@ -1,0 +1,81 @@
+{
+  "name": "리노공업",
+  "ticker": "058470.KQ",
+  "result": "매수",
+  "date": "2026-03-29 08:10:25",
+  "elapsed": 1.2,
+  "consensus_score": 4.21,
+  "analyst_count": 14,
+  "recommendation_detail": {
+    "strongBuy": 5,
+    "buy": 7,
+    "hold": 2,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 104900.0,
+    "high": 150000.0,
+    "low": 70000.0,
+    "mean": 104857.14,
+    "median": 105000.0
+  },
+  "current_price": 104900.0,
+  "upside_potential": -0.0,
+  "key_stats": {
+    "name": "LEENO",
+    "sector": "Technology",
+    "industry": "Semiconductor Equipment & Materials",
+    "market_cap": 7961448546304,
+    "pe_ratio": null,
+    "forward_pe": 34.088425,
+    "dividend_yield": 0.78,
+    "beta": 1.728,
+    "fifty_two_week_high": 128200.0,
+    "fifty_two_week_low": 34280.0,
+    "revenue": 80720150528,
+    "profit_margin": 0.32968,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "리노공업은 현재 애널리스트 컨센서스가 '매수' 의견으로, 14명의 애널리스트가 참여하여 5점 만점에 4.21점을 기록했습니다. 평균 목표주가는 104,857원으로 현재 주가와 거의 차이가 없어 추가적인 상승 여력은 제한적인 것으로 분석됩니다. 따라서 현재 주가는 애널리스트들의 평균 목표가 수준에 근접한 것으로 판단됩니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 96841827640
+    },
+    {
+      "date": "2025-06",
+      "value": 112522064120
+    },
+    {
+      "date": "2025-03",
+      "value": 78410243550
+    },
+    {
+      "date": "2024-12",
+      "value": 83418844880
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 41914466280
+    },
+    {
+      "date": "2025-06",
+      "value": 41110227660
+    },
+    {
+      "date": "2025-03",
+      "value": 29344420540
+    },
+    {
+      "date": "2024-12",
+      "value": 38299684520
+    }
+  ],
+  "news": []
+}

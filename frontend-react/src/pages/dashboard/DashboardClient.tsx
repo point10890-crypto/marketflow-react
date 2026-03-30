@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
-import { usAPI, krAPI, cryptoAPI, jonggaAPI, waveAPI } from '@/lib/api';
+import { usAPI, krAPI, cryptoAPI, jonggaAPI, waveAPI, briefingAPI, commonAPI, type AIBriefing, type MarketIndexItem } from '@/lib/api';
 import { usePullToRefreshRegister } from '@/components/layout/PullToRefreshProvider';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
@@ -319,10 +319,12 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
     const [todaySummary, setTodaySummary] = useState<any>(null);
     const [leadingData, setLeadingData] = useState<any>(null);
     const [waveData, setWaveData] = useState<any>(null);
+    const [aiBriefing, setAiBriefing] = useState<AIBriefing | null>(null);
+    const [marketIndices, setMarketIndices] = useState<MarketIndexItem[]>([]);
 
     const loadData = useCallback(async () => {
         try {
-            const [b, kr, crypto, vcpKr, vcpUs, vcpCrypto, jongga, leading, wave] = await Promise.all([
+            const [b, kr, crypto, vcpKr, vcpUs, vcpCrypto, jongga, leading, wave, aiBrf, indices] = await Promise.all([
                 usAPI.getMarketBriefing().catch(() => null),
                 krAPI.getMarketGate().catch(() => null),
                 cryptoAPI.getDominance().catch(() => null),
@@ -332,6 +334,8 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                 jonggaAPI.getTodaySummary().catch(() => null),
                 krAPI.getLeadingStocks().catch(() => null),
                 waveAPI.getDashboard().catch(() => null),
+                briefingAPI.getLatest().catch(() => null),
+                commonAPI.getMarketIndices().catch(() => null),
             ]);
             setBriefing(b);
             setKrGate(kr);
@@ -339,6 +343,8 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
             setTodaySummary(jongga);
             setLeadingData(leading);
             setWaveData(wave);
+            setAiBriefing(aiBrf);
+            if (indices?.indices) setMarketIndices(indices.indices);
 
             // VCP summary
             const allSignals: Array<{ name: string; market: string; score: number }> = [];
@@ -448,50 +454,102 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
     return (
         <div className="flex flex-col gap-3 md:gap-4 pb-4">
 
-            {/* ── Header with animated title ── */}
-            <div className="flex items-end justify-between">
-                <div>
-                    <div className="flex items-center gap-2 mb-1.5">
-                        <LiveDot />
-                        <span className="text-[10px] font-semibold text-emerald-400 uppercase tracking-widest">Live Markets</span>
-                        <span className="text-[10px] text-gray-600 ml-1">
-                            {new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false })}
-                        </span>
+            {/* ── Header + Scrolling Market Ticker ── */}
+            <div className="flex items-center gap-2">
+                <LiveDot />
+                <h2 className="text-lg md:text-xl font-extrabold tracking-tight text-white leading-none shrink-0">
+                    Market{' '}
+                    <span className="text-transparent bg-clip-text" style={{ backgroundImage: 'linear-gradient(135deg, #f59e0b 0%, #fbbf24 40%, #f97316 100%)' }}>
+                        Overview
+                    </span>
+                </h2>
+                {/* Scrolling ticker */}
+                {marketIndices.length > 0 && (
+                    <div className="flex-1 overflow-hidden relative min-w-0 ml-2">
+                        <div className="absolute left-0 top-0 bottom-0 w-4 z-10 bg-gradient-to-r from-[#0d0f17] to-transparent" />
+                        <div className="absolute right-0 top-0 bottom-0 w-4 z-10 bg-gradient-to-l from-[#0d0f17] to-transparent" />
+                        <div className="flex gap-3 animate-[tickerScroll_60s_linear_infinite] w-max">
+                            {[...marketIndices, ...marketIndices].map((idx, i) => (
+                                <span key={`${idx.name}-${i}`} className="flex items-center gap-1 text-[10px] whitespace-nowrap shrink-0">
+                                    <span className="text-gray-500 font-medium">{idx.name}</span>
+                                    <span className="text-white font-bold tabular-nums">{idx.price}</span>
+                                    <span className={`font-bold tabular-nums ${idx.change_pct >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                        {idx.change_pct >= 0 ? '▲' : '▼'} {idx.change_pct >= 0 ? '+' : ''}{idx.change_pct.toFixed(2)}%
+                                    </span>
+                                </span>
+                            ))}
+                        </div>
                     </div>
-                    <h2 className="text-2xl md:text-3xl font-extrabold tracking-tighter text-white leading-none">
-                        Market{' '}
-                        <span className="text-transparent bg-clip-text" style={{ backgroundImage: 'linear-gradient(135deg, #f59e0b 0%, #fbbf24 40%, #f97316 100%)' }}>
-                            Overview
+                )}
+            </div>
+
+            {/* ── AI Briefing Highlight Widget ── */}
+            <Link to={`/dashboard/briefing?tab=${aiBriefing?.type || 'morning'}`}
+                className="group block rounded-2xl border border-amber-500/20 bg-gradient-to-br from-[#1a1520] via-[#161320] to-[#13151f] overflow-hidden hover:border-amber-500/40 transition-all duration-300 active:scale-[0.995] relative"
+            >
+                {/* Glow effect */}
+                <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full blur-3xl opacity-[0.08] group-hover:opacity-[0.15] transition-opacity duration-500 bg-gradient-to-br from-amber-400 to-orange-500" />
+                <div className="absolute -bottom-6 -left-6 w-24 h-24 rounded-full blur-3xl opacity-[0.05] group-hover:opacity-[0.1] transition-opacity duration-500 bg-gradient-to-tr from-amber-500 to-yellow-400" />
+
+                {/* Top bar: type badge + sentiment + time */}
+                <div className="flex items-center justify-between px-4 pt-3 pb-1 relative z-10">
+                    <div className="flex items-center gap-2">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-400 border border-amber-500/20">
+                            <i className={`fas ${aiBriefing?.type === 'closing' ? 'fa-moon' : 'fa-sun'} text-[8px]`} />
+                            {aiBriefing?.type === 'closing' ? '마감 브리핑' : '조간 브리핑'}
                         </span>
-                    </h2>
-                    <p className="text-[11px] text-gray-500 mt-0.5">AI-Powered Multi-Market Intelligence</p>
+                        {aiBriefing?.market_sentiment && (
+                            <span className={`px-1.5 py-0.5 rounded text-[9px] font-extrabold ${
+                                aiBriefing.market_sentiment === 'BULLISH' ? 'bg-emerald-500/15 text-emerald-400' :
+                                aiBriefing.market_sentiment === 'BEARISH' ? 'bg-red-500/15 text-red-400' :
+                                'bg-gray-500/15 text-gray-400'
+                            }`}>
+                                {aiBriefing.market_sentiment}
+                            </span>
+                        )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                        {aiBriefing?.generated_at && (
+                            <span className="text-[9px] text-gray-600">
+                                {new Date(aiBriefing.generated_at).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                        )}
+                        <i className="fas fa-chevron-right text-[10px] text-gray-600 group-hover:text-amber-400 transition-colors" />
+                    </div>
                 </div>
 
-                {/* Desktop quick links */}
-                <div className="hidden md:flex items-center gap-1">
-                    {[
-                        { label: 'Briefing', to: '/dashboard/us' },
-                        { label: 'VCP', to: '/dashboard/vcp-enhanced' },
-                        { label: '종가베팅', to: '/dashboard/kr/closing-bet' },
-                    ].map(link => (
-                        <Link key={link.to} to={link.to}
-                            className="px-3 py-1.5 text-[11px] font-medium text-gray-500 hover:text-white hover:bg-white/[0.06] rounded-lg transition-all border border-transparent hover:border-white/10">
-                            {link.label}
-                        </Link>
-                    ))}
+                {/* Title */}
+                <div className="px-4 pb-2 relative z-10">
+                    <h3 className="text-[13px] sm:text-sm font-bold text-white leading-snug line-clamp-2 group-hover:text-amber-50 transition-colors">
+                        {aiBriefing?.title || 'AI 브리핑을 불러오는 중...'}
+                    </h3>
                 </div>
-            </div>
 
-            {/* ── Compact Stats Row ── */}
-            <div className="flex items-center justify-between rounded-xl border border-white/[0.06] bg-[#13151f] overflow-x-auto scrollbar-none">
-                <StatPill label="VIX" value={vixVal} sub={vixSub} color={vixColor} />
-                <div className="w-px h-8 bg-white/[0.06]" />
-                <StatPill label="F&G" value={fgScore != null ? String(fgScore) : '—'} sub={fgLabel} color={fgColor} />
-                <div className="w-px h-8 bg-white/[0.06]" />
-                <StatPill label="BTC" value={btcPrice} sub={btcSub} color="text-amber-400" />
-                <div className="w-px h-8 bg-white/[0.06]" />
-                <StatPill label="KR" value={gateScore} sub={gateLabel} color={gateColor} />
-            </div>
+                {/* Summary */}
+                {aiBriefing?.summary && (
+                    <div className="px-4 pb-2 relative z-10">
+                        <p className="text-[11px] text-gray-400 leading-relaxed line-clamp-2">
+                            {aiBriefing.summary}
+                        </p>
+                    </div>
+                )}
+
+                {/* Key events tags + market indicators */}
+                <div className="px-4 pb-3 flex items-center justify-between gap-2 relative z-10">
+                    <div className="flex items-center gap-1.5 overflow-hidden flex-1 min-w-0">
+                        {(aiBriefing?.key_events || []).slice(0, 3).map((evt, i) => (
+                            <span key={i} className="inline-block px-1.5 py-0.5 rounded bg-white/[0.04] text-[9px] text-gray-500 truncate max-w-[120px] shrink-0">
+                                {evt}
+                            </span>
+                        ))}
+                    </div>
+                    {/* Mini market indicators */}
+                    <div className="flex items-center gap-2 shrink-0">
+                        <span className={`text-[10px] font-bold tabular-nums ${vixColor}`}>{vixVal !== '—' ? `VIX ${vixVal}` : ''}</span>
+                        <span className={`text-[10px] font-bold tabular-nums ${fgColor}`}>{fgScore != null ? `F&G ${fgScore}` : ''}</span>
+                    </div>
+                </div>
+            </Link>
 
             {/* ── Opportunity Score + Top Signal ── */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -504,56 +562,138 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                 {todaySummary && <TopSignalCard summary={todaySummary} leadingData={leadingData} />}
             </div>
 
-            {/* ── Market Cards Grid ── */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <CompactCard
-                    to="/dashboard/kr"
-                    icon="fas fa-chart-line"
-                    label="KR Market"
-                    sublabel="KOSPI · KOSDAQ · 종가베팅 V2 · 기관 수급"
-                    accent="#3b82f6"
-                    status={krSignalLabel}
-                    statusColor={gateColor}
-                    metric={gateScore}
-                    metricLabel="Gate Score"
-                    metricSuffix="/ 100"
-                />
-                <CompactCard
-                    to="/dashboard/us"
-                    icon="fas fa-globe-americas"
-                    label="US Market"
-                    sublabel="SPY · Nasdaq · Smart Money · Sector Rotation"
-                    accent="#10b981"
-                    status={usGateLabel || 'Live'}
-                    statusColor={usVixOk ? 'text-emerald-400' : 'text-yellow-400'}
-                    metric={vixVal}
-                    metricLabel="VIX"
-                    badge={fgScore != null ? `F&G ${fgScore}` : undefined}
-                />
-                <CompactCard
-                    to="/dashboard/crypto"
-                    icon="fab fa-bitcoin"
-                    label="Crypto"
-                    sublabel="BTC · ETH · On-chain · VCP Signals"
-                    accent="#f59e0b"
-                    status={btcSentiment}
-                    statusColor="text-amber-400"
-                    metric={btcPrice}
-                    metricLabel="BTC Price"
-                    badge={cryptoDom?.btc_rsi != null ? `RSI ${Number(cryptoDom.btc_rsi).toFixed(0)}` : undefined}
-                />
-                <CompactCard
-                    to="/dashboard/stock-analyzer"
-                    icon="fas fa-crosshairs"
-                    label="ProPicks"
-                    sublabel="Investing.com · AI Analysis · Stock Screener"
-                    accent="#a855f7"
-                    status="AI Powered"
-                    statusColor="text-purple-400"
-                    metric={briefing?.smart_money?.top_picks?.picks?.[0]?.ticker ?? '—'}
-                    metricLabel="Top Pick"
-                />
-            </div>
+            {/* ── Wave Pattern Section ── */}
+            {waveData && (waveData.summary?.active > 0 || waveData.active_signals?.length > 0) && (
+                <div
+                    className="group relative rounded-2xl border border-white/[0.07] bg-[#13151f] p-4 overflow-hidden transition-all duration-200 hover:border-pink-500/20"
+                >
+                    {/* Animated gradient blobs */}
+                    <div className="absolute -top-10 -right-10 w-36 h-36 rounded-full blur-3xl opacity-[0.08] group-hover:opacity-[0.15] transition-opacity duration-700 bg-gradient-to-br from-pink-500 to-rose-600 animate-pulse" />
+                    <div className="absolute -bottom-12 -left-12 w-28 h-28 rounded-full blur-3xl opacity-[0.05] group-hover:opacity-[0.1] transition-opacity duration-700 bg-gradient-to-tr from-fuchsia-500 to-pink-400"
+                        style={{ animation: 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite 1.5s' }}
+                    />
+
+                    {/* Animated wave SVG background */}
+                    <div className="absolute inset-0 opacity-[0.03] group-hover:opacity-[0.06] transition-opacity duration-500 overflow-hidden pointer-events-none">
+                        <svg viewBox="0 0 400 80" className="absolute bottom-0 left-0 w-full h-16" preserveAspectRatio="none">
+                            <path d="M0,40 C50,20 100,60 150,40 C200,20 250,60 300,40 C350,20 400,50 400,40 L400,80 L0,80 Z"
+                                fill="url(#waveGrad)" className="animate-[waveShift_4s_ease-in-out_infinite]" />
+                            <path d="M0,50 C60,30 120,65 180,45 C240,25 300,60 400,45 L400,80 L0,80 Z"
+                                fill="url(#waveGrad2)" className="animate-[waveShift_5s_ease-in-out_infinite_reverse]" />
+                            <defs>
+                                <linearGradient id="waveGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" stopColor="#ec4899" />
+                                    <stop offset="100%" stopColor="#f43f5e" />
+                                </linearGradient>
+                                <linearGradient id="waveGrad2" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" stopColor="#a855f7" />
+                                    <stop offset="100%" stopColor="#ec4899" />
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                    </div>
+
+                    {/* Header — 클릭 시 Wave Overview 페이지 이동 */}
+                    <Link to="/dashboard/wave" className="relative flex items-center justify-between mb-3 active:scale-[0.98] transition-transform">
+                        <div className="flex items-center gap-2.5">
+                            <div className="relative w-10 h-10 rounded-xl flex items-center justify-center bg-pink-500/10 border border-pink-500/20 group-hover:bg-pink-500/20 transition-colors duration-300">
+                                <div className="absolute inset-0 rounded-xl border border-pink-400/30 animate-ping opacity-0 group-hover:opacity-30" style={{ animationDuration: '2s' }} />
+                                <i className="fas fa-wave-square text-lg text-pink-400 group-hover:scale-110 transition-transform duration-300" />
+                            </div>
+                            <div>
+                                <div className="flex items-center gap-2">
+                                    <h3 className="text-base font-bold text-white">W Pattern</h3>
+                                    <span className="relative flex items-center">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-pink-400 animate-ping absolute opacity-75" />
+                                        <span className="w-1.5 h-1.5 rounded-full bg-pink-400 relative" />
+                                    </span>
+                                </div>
+                                <p className="text-[10px] text-gray-500">M&W Chart Pattern AI Detection</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-pink-500/10 text-pink-400 tabular-nums group-hover:bg-pink-500/20 transition-colors duration-300">
+                                {waveData.summary?.active ?? 0}
+                            </span>
+                            <i className="fas fa-chevron-right text-[10px] text-gray-600 group-hover:text-pink-400 group-hover:translate-x-0.5 transition-all duration-300" />
+                        </div>
+                    </Link>
+
+                    {/* Stats breakdown with stagger animation */}
+                    <div className="relative flex items-center gap-4 mb-3">
+                        {[
+                            { label: 'Active', value: waveData.summary?.active ?? 0, color: 'pink', dot: 'bg-pink-400', text: 'text-pink-400' },
+                            { label: 'Wins', value: waveData.summary?.wins ?? 0, color: 'emerald', dot: 'bg-emerald-400', text: 'text-emerald-400' },
+                            { label: 'Losses', value: waveData.summary?.losses ?? 0, color: 'red', dot: 'bg-red-400', text: 'text-red-400' },
+                        ].map((stat, i) => (
+                            <span key={stat.label} className="flex items-center gap-1.5 text-[10px] font-semibold"
+                                style={{ animation: `fadeInUp 0.4s ease-out ${i * 0.1}s both` }}>
+                                <span className={`w-2 h-2 rounded-full ${stat.dot}`} />
+                                <span className="text-gray-400">{stat.label}</span>
+                                <span className={`${stat.text} tabular-nums`}>{stat.value}</span>
+                            </span>
+                        ))}
+                        {waveData.summary?.win_rate > 0 && (
+                            <span className="text-[10px] font-bold text-amber-400 ml-auto animate-pulse" style={{ animationDuration: '2.5s' }}>
+                                WR {waveData.summary.win_rate}%
+                            </span>
+                        )}
+                    </div>
+
+                    {/* Top active signals — 종목 클릭 시 차트 페이지 이동 */}
+                    {waveData.active_signals?.length > 0 && (
+                        <div className="relative border-t border-white/[0.06] pt-2">
+                            {waveData.active_signals.slice(0, 5).map((sig: any, i: number) => {
+                                const isW = sig.pattern_class === 'W';
+                                const accent = isW ? '#ec4899' : '#f43f5e';
+                                return (
+                                    <div key={i}
+                                        className="flex items-center justify-between py-1.5 hover:bg-white/[0.04] rounded-lg px-1 -mx-1 transition-colors duration-200 cursor-pointer active:scale-[0.98]"
+                                        style={{ animation: `fadeInUp 0.3s ease-out ${0.3 + i * 0.08}s both` }}
+                                        onClick={() => navigate(`/dashboard/wave?ticker=${sig.ticker}&market=KR`)}
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded" style={{ background: `${accent}20`, color: accent }}>
+                                                {sig.pattern_class}
+                                            </span>
+                                            <span className="text-xs font-semibold text-white truncate max-w-[120px]">{sig.name || sig.ticker}</span>
+                                            <span className="text-[9px] text-gray-600 hidden sm:inline">{sig.wave_label}</span>
+                                        </div>
+                                        <div className="flex items-center gap-1.5">
+                                            <div className="w-12 h-1 rounded-full bg-white/[0.06] overflow-hidden hidden sm:block">
+                                                <div className="h-full rounded-full transition-all duration-700"
+                                                    style={{
+                                                        width: `${sig.confidence}%`,
+                                                        background: `linear-gradient(90deg, ${accent}80, ${accent})`,
+                                                        animation: `growWidth 0.8s ease-out ${0.5 + i * 0.1}s both`,
+                                                    }}
+                                                />
+                                            </div>
+                                            <span className="text-xs font-bold tabular-nums" style={{ color: accent }}>{sig.confidence}</span>
+                                            <i className="fas fa-chart-line text-[9px] text-gray-700 hover:text-pink-400 transition-colors" />
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
+
+                    {/* Inline keyframes */}
+                    <style>{`
+                        @keyframes fadeInUp {
+                            from { opacity: 0; transform: translateY(8px); }
+                            to { opacity: 1; transform: translateY(0); }
+                        }
+                        @keyframes waveShift {
+                            0%, 100% { transform: translateX(0); }
+                            50% { transform: translateX(-20px); }
+                        }
+                        @keyframes growWidth {
+                            from { width: 0%; }
+                        }
+                    `}</style>
+                </div>
+            )}
 
             {/* ── VCP Enhanced Section ── */}
             <Link
@@ -611,139 +751,56 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                 )}
             </Link>
 
-            {/* ── Wave Pattern Section ── */}
-            {waveData && (waveData.summary?.active > 0 || waveData.active_signals?.length > 0) && (
-                <Link
-                    to="/dashboard/wave"
-                    className="group relative rounded-2xl border border-white/[0.07] bg-[#13151f] p-4 overflow-hidden transition-all duration-200 active:scale-[0.98] hover:border-pink-500/20"
-                >
-                    {/* Animated gradient blobs */}
-                    <div className="absolute -top-10 -right-10 w-36 h-36 rounded-full blur-3xl opacity-[0.08] group-hover:opacity-[0.15] transition-opacity duration-700 bg-gradient-to-br from-pink-500 to-rose-600 animate-pulse" />
-                    <div className="absolute -bottom-12 -left-12 w-28 h-28 rounded-full blur-3xl opacity-[0.05] group-hover:opacity-[0.1] transition-opacity duration-700 bg-gradient-to-tr from-fuchsia-500 to-pink-400"
-                        style={{ animation: 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite 1.5s' }}
-                    />
-
-                    {/* Animated wave SVG background */}
-                    <div className="absolute inset-0 opacity-[0.03] group-hover:opacity-[0.06] transition-opacity duration-500 overflow-hidden pointer-events-none">
-                        <svg viewBox="0 0 400 80" className="absolute bottom-0 left-0 w-full h-16" preserveAspectRatio="none">
-                            <path d="M0,40 C50,20 100,60 150,40 C200,20 250,60 300,40 C350,20 400,50 400,40 L400,80 L0,80 Z"
-                                fill="url(#waveGrad)" className="animate-[waveShift_4s_ease-in-out_infinite]" />
-                            <path d="M0,50 C60,30 120,65 180,45 C240,25 300,60 400,45 L400,80 L0,80 Z"
-                                fill="url(#waveGrad2)" className="animate-[waveShift_5s_ease-in-out_infinite_reverse]" />
-                            <defs>
-                                <linearGradient id="waveGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                                    <stop offset="0%" stopColor="#ec4899" />
-                                    <stop offset="100%" stopColor="#f43f5e" />
-                                </linearGradient>
-                                <linearGradient id="waveGrad2" x1="0%" y1="0%" x2="100%" y2="0%">
-                                    <stop offset="0%" stopColor="#a855f7" />
-                                    <stop offset="100%" stopColor="#ec4899" />
-                                </linearGradient>
-                            </defs>
-                        </svg>
-                    </div>
-
-                    {/* Header */}
-                    <div className="relative flex items-center justify-between mb-3">
-                        <div className="flex items-center gap-2.5">
-                            <div className="relative w-10 h-10 rounded-xl flex items-center justify-center bg-pink-500/10 border border-pink-500/20 group-hover:bg-pink-500/20 transition-colors duration-300">
-                                {/* Glow ring */}
-                                <div className="absolute inset-0 rounded-xl border border-pink-400/30 animate-ping opacity-0 group-hover:opacity-30" style={{ animationDuration: '2s' }} />
-                                <i className="fas fa-wave-square text-lg text-pink-400 group-hover:scale-110 transition-transform duration-300" />
-                            </div>
-                            <div>
-                                <div className="flex items-center gap-2">
-                                    <h3 className="text-base font-bold text-white">W Pattern</h3>
-                                    <span className="relative flex items-center">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-pink-400 animate-ping absolute opacity-75" />
-                                        <span className="w-1.5 h-1.5 rounded-full bg-pink-400 relative" />
-                                    </span>
-                                </div>
-                                <p className="text-[10px] text-gray-500">M&W Chart Pattern AI Detection</p>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-pink-500/10 text-pink-400 tabular-nums group-hover:bg-pink-500/20 transition-colors duration-300">
-                                {waveData.summary?.active ?? 0}
-                            </span>
-                            <i className="fas fa-chevron-right text-[10px] text-gray-600 group-hover:text-pink-400 group-hover:translate-x-0.5 transition-all duration-300" />
-                        </div>
-                    </div>
-
-                    {/* Stats breakdown with stagger animation */}
-                    <div className="relative flex items-center gap-4 mb-3">
-                        {[
-                            { label: 'Active', value: waveData.summary?.active ?? 0, color: 'pink', dot: 'bg-pink-400', text: 'text-pink-400' },
-                            { label: 'Wins', value: waveData.summary?.wins ?? 0, color: 'emerald', dot: 'bg-emerald-400', text: 'text-emerald-400' },
-                            { label: 'Losses', value: waveData.summary?.losses ?? 0, color: 'red', dot: 'bg-red-400', text: 'text-red-400' },
-                        ].map((stat, i) => (
-                            <span key={stat.label} className="flex items-center gap-1.5 text-[10px] font-semibold"
-                                style={{ animation: `fadeInUp 0.4s ease-out ${i * 0.1}s both` }}>
-                                <span className={`w-2 h-2 rounded-full ${stat.dot}`} />
-                                <span className="text-gray-400">{stat.label}</span>
-                                <span className={`${stat.text} tabular-nums`}>{stat.value}</span>
-                            </span>
-                        ))}
-                        {waveData.summary?.win_rate > 0 && (
-                            <span className="text-[10px] font-bold text-amber-400 ml-auto animate-pulse" style={{ animationDuration: '2.5s' }}>
-                                WR {waveData.summary.win_rate}%
-                            </span>
-                        )}
-                    </div>
-
-                    {/* Top active signals with stagger slide-in */}
-                    {waveData.active_signals?.length > 0 && (
-                        <div className="relative border-t border-white/[0.06] pt-2">
-                            {waveData.active_signals.slice(0, 5).map((sig: any, i: number) => {
-                                const isW = sig.pattern_class === 'W';
-                                const accent = isW ? '#ec4899' : '#f43f5e';
-                                return (
-                                    <div key={i}
-                                        className="flex items-center justify-between py-1.5 hover:bg-white/[0.02] rounded-lg px-1 -mx-1 transition-colors duration-200"
-                                        style={{ animation: `fadeInUp 0.3s ease-out ${0.3 + i * 0.08}s both` }}
-                                    >
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded transition-all duration-200 group-hover:scale-105" style={{ background: `${accent}20`, color: accent }}>
-                                                {sig.pattern_class}
-                                            </span>
-                                            <span className="text-xs font-semibold text-white truncate max-w-[120px]">{sig.name || sig.ticker}</span>
-                                            <span className="text-[9px] text-gray-600">{sig.wave_label}</span>
-                                        </div>
-                                        <div className="flex items-center gap-1.5">
-                                            {/* Confidence bar */}
-                                            <div className="w-12 h-1 rounded-full bg-white/[0.06] overflow-hidden hidden sm:block">
-                                                <div className="h-full rounded-full transition-all duration-700"
-                                                    style={{
-                                                        width: `${sig.confidence}%`,
-                                                        background: `linear-gradient(90deg, ${accent}80, ${accent})`,
-                                                        animation: `growWidth 0.8s ease-out ${0.5 + i * 0.1}s both`,
-                                                    }}
-                                                />
-                                            </div>
-                                            <span className="text-xs font-bold tabular-nums" style={{ color: accent }}>{sig.confidence}</span>
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    )}
-
-                    {/* Inline keyframes */}
-                    <style>{`
-                        @keyframes fadeInUp {
-                            from { opacity: 0; transform: translateY(8px); }
-                            to { opacity: 1; transform: translateY(0); }
-                        }
-                        @keyframes waveShift {
-                            0%, 100% { transform: translateX(0); }
-                            50% { transform: translateX(-20px); }
-                        }
-                        @keyframes growWidth {
-                            from { width: 0%; }
-                        }
-                    `}</style>
-                </Link>
-            )}
+            {/* ── Market Cards Grid ── */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <CompactCard
+                    to="/dashboard/kr"
+                    icon="fas fa-chart-line"
+                    label="KR Market"
+                    sublabel="KOSPI · KOSDAQ · 종가베팅 V2 · 기관 수급"
+                    accent="#3b82f6"
+                    status={krSignalLabel}
+                    statusColor={gateColor}
+                    metric={gateScore}
+                    metricLabel="Gate Score"
+                    metricSuffix="/ 100"
+                />
+                <CompactCard
+                    to="/dashboard/us"
+                    icon="fas fa-globe-americas"
+                    label="US Market"
+                    sublabel="SPY · Nasdaq · Smart Money · Sector Rotation"
+                    accent="#10b981"
+                    status={usGateLabel || 'Live'}
+                    statusColor={usVixOk ? 'text-emerald-400' : 'text-yellow-400'}
+                    metric={vixVal}
+                    metricLabel="VIX"
+                    badge={fgScore != null ? `F&G ${fgScore}` : undefined}
+                />
+                <CompactCard
+                    to="/dashboard/crypto"
+                    icon="fab fa-bitcoin"
+                    label="Crypto"
+                    sublabel="BTC · ETH · On-chain · VCP Signals"
+                    accent="#f59e0b"
+                    status={btcSentiment}
+                    statusColor="text-amber-400"
+                    metric={btcPrice}
+                    metricLabel="BTC Price"
+                    badge={cryptoDom?.btc_rsi != null ? `RSI ${Number(cryptoDom.btc_rsi).toFixed(0)}` : undefined}
+                />
+                <CompactCard
+                    to="/dashboard/stock-analyzer"
+                    icon="fas fa-crosshairs"
+                    label="ProPicks"
+                    sublabel="Investing.com · AI Analysis · Stock Screener"
+                    accent="#a855f7"
+                    status="AI Powered"
+                    statusColor="text-purple-400"
+                    metric={briefing?.smart_money?.top_picks?.picks?.[0]?.ticker ?? '—'}
+                    metricLabel="Top Pick"
+                />
+            </div>
 
             {/* ── Bottom utility ── */}
             <div className="flex items-center justify-between pt-1">

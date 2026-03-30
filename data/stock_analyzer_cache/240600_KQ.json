@@ -1,0 +1,75 @@
+{
+  "name": "유진테크놀로지",
+  "ticker": "240600.KQ",
+  "result": "데이터 없음",
+  "date": "2026-03-28 23:52:25",
+  "elapsed": 1.6,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 3175.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 3175.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "YUJIN TECHNOLOGY",
+    "sector": "Industrials",
+    "industry": "Specialty Industrial Machinery",
+    "market_cap": 21768736768,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": null,
+    "beta": null,
+    "fifty_two_week_high": 6000.0,
+    "fifty_two_week_low": 2640.0,
+    "revenue": 28679626752,
+    "profit_margin": -0.27076,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 7617519910
+    },
+    {
+      "date": "2025-06",
+      "value": 6957820660
+    },
+    {
+      "date": "2025-03",
+      "value": 4563344480
+    },
+    {
+      "date": "2024-12",
+      "value": 8678829270
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": -1055746110
+    },
+    {
+      "date": "2025-06",
+      "value": -1890353400
+    },
+    {
+      "date": "2025-03",
+      "value": -2081431130
+    },
+    {
+      "date": "2024-12",
+      "value": -897632180
+    }
+  ],
+  "news": []
+}

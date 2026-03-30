@@ -1,0 +1,75 @@
+{
+  "name": "아이엘",
+  "ticker": "307180.KQ",
+  "result": "데이터 없음",
+  "date": "2026-03-28 19:34:51",
+  "elapsed": 1.8,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 5080.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 5080.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "IL",
+    "sector": "Technology",
+    "industry": "Electronic Components",
+    "market_cap": 145244274688,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": null,
+    "beta": 1.756,
+    "fifty_two_week_high": 9800.0,
+    "fifty_two_week_low": 2400.0,
+    "revenue": 105062752256,
+    "profit_margin": -0.030280001,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 29179455620
+    },
+    {
+      "date": "2025-06",
+      "value": 28904021000
+    },
+    {
+      "date": "2025-03",
+      "value": 25486449270
+    },
+    {
+      "date": "2024-12",
+      "value": 21273294850
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": -45377000
+    },
+    {
+      "date": "2025-06",
+      "value": -1420064000
+    },
+    {
+      "date": "2025-03",
+      "value": 26063240
+    },
+    {
+      "date": "2024-12",
+      "value": -1741530640
+    }
+  ],
+  "news": []
+}

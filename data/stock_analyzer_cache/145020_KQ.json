@@ -1,0 +1,117 @@
+{
+  "name": "휴젤",
+  "ticker": "145020.KQ",
+  "result": "매수",
+  "date": "2026-03-28 22:49:34",
+  "elapsed": 2.2,
+  "consensus_score": 4.13,
+  "analyst_count": 15,
+  "recommendation_detail": {
+    "strongBuy": 3,
+    "buy": 11,
+    "hold": 1,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 259500.0,
+    "high": 450000.0,
+    "low": 279000.0,
+    "mean": 359933.34,
+    "median": 350000.0
+  },
+  "current_price": 259500.0,
+  "upside_potential": 38.7,
+  "key_stats": {
+    "name": "Hugel",
+    "sector": "Healthcare",
+    "industry": "Biotechnology",
+    "market_cap": 2802935398400,
+    "pe_ratio": null,
+    "forward_pe": 15.060336,
+    "dividend_yield": null,
+    "beta": 0.532,
+    "fifty_two_week_high": 392000.0,
+    "fifty_two_week_low": 208500.0,
+    "revenue": 425109979136,
+    "profit_margin": 0.33138,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "휴젤(145020.KQ)에 대해 15명의 애널리스트가 제시한 컨센서스 의견은 '매수'입니다. 목표가 평균은 359,933원으로, 현재가 259,500원 대비 38.7%의 상승 여력이 있습니다. 애널리스트들은 휴젤의 긍정적인 성장 가능성을 전망하고 있는 것으로 판단됩니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 105898058050
+    },
+    {
+      "date": "2025-06",
+      "value": 110260417920
+    },
+    {
+      "date": "2025-03",
+      "value": 89820459820
+    },
+    {
+      "date": "2024-12",
+      "value": 98208568050
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 36812610730
+    },
+    {
+      "date": "2025-06",
+      "value": 36427747730
+    },
+    {
+      "date": "2025-03",
+      "value": 29061819260
+    },
+    {
+      "date": "2024-12",
+      "value": 39967468720
+    }
+  ],
+  "news": [
+    {
+      "title": "High Growth Tech Stocks In Asia With Promising Potential",
+      "summary": "As global markets experience volatility with mixed results across major indices, the focus has shifted towards small-cap and value-oriented stocks, which have shown resilience amidst concerns over art",
+      "url": "https://finance.yahoo.com/news/high-growth-tech-stocks-asia-043803959.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-02-13T04:38:03Z"
+    },
+    {
+      "title": "High Growth Tech Stocks In Asia For September 2025",
+      "summary": "As Asian markets continue to navigate a complex landscape marked by China's recent stock market rally and Japan's mixed economic signals, investors are keenly watching the tech sector for opportunitie",
+      "url": "https://finance.yahoo.com/news/high-growth-tech-stocks-asia-043805502.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2025-09-04T04:38:05Z"
+    },
+    {
+      "title": "3 Asian Stocks Estimated To Be Up To 40.9% Below Intrinsic Value",
+      "summary": "As Asian markets navigate a complex landscape marked by economic slowdowns and evolving trade dynamics, investors are increasingly on the lookout for opportunities that may be undervalued amidst the v",
+      "url": "https://finance.yahoo.com/news/3-asian-stocks-estimated-40-043747241.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2025-09-01T04:37:47Z"
+    },
+    {
+      "title": "3 Asian Stocks Estimated To Be 14.1% To 40.3% Below Intrinsic Value",
+      "summary": "As global markets navigate a complex landscape of economic indicators and geopolitical tensions, Asian stock markets have shown mixed performance, with China's recent rally standing out amid broader u",
+      "url": "https://finance.yahoo.com/news/3-asian-stocks-estimated-14-223411879.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2025-08-31T22:34:11Z"
+    },
+    {
+      "title": "Asian Stocks Estimated To Be Trading At Discounts Of 23% To 46.7%",
+      "summary": "As Asian markets navigate a complex landscape marked by evolving trade relations and economic shifts, investors are increasingly seeking opportunities in stocks that appear undervalued relative to the",
+      "url": "https://finance.yahoo.com/news/asian-stocks-estimated-trading-discounts-043750290.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2025-08-29T04:37:50Z"
+    }
+  ]
+}

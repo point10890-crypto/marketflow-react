@@ -1,22 +1,22 @@
 {
-  "action": "CAUTIOUS",
-  "score": 33,
+  "action": "DEFENSIVE",
+  "score": 11,
   "components": {
     "market_gate": {
-      "score": 10,
-      "contribution": -12.0
+      "score": 20,
+      "contribution": -9.0
     },
     "regime": {
-      "regime": "neutral",
-      "contribution": 0
+      "regime": "risk_off",
+      "contribution": -15
     },
     "prediction": {
       "spy_bullish": 50,
       "contribution": 0
     },
     "risk": {
-      "level": "Elevated",
-      "contribution": 0
+      "level": "High",
+      "contribution": -10
     },
     "sector_phase": {
       "phase": "Late Cycle",
@@ -27,50 +27,50 @@
     {
       "ticker": "T",
       "name": "AT&T Inc.",
-      "final_score": 86.1,
+      "final_score": 89.0,
       "grade": "🌟 A급 (적극 매수)",
       "ai_recommendation": "적극 매수",
-      "target_upside": 5.3
+      "target_upside": 4.7
     },
     {
-      "ticker": "APD",
-      "name": "Air Products and Chemicals, Inc.",
-      "final_score": 71.7,
-      "grade": "📈 B급 (매수 고려)",
+      "ticker": "AKAM",
+      "name": "Akamai Technologies, Inc.",
+      "final_score": 75.3,
+      "grade": "🌟 A급 (적극 매수)",
       "ai_recommendation": "매수",
-      "target_upside": 5.1
+      "target_upside": -4.4
     },
     {
-      "ticker": "AON",
-      "name": "Aon plc",
-      "final_score": 70.8,
+      "ticker": "AWK",
+      "name": "American Water Works Company, Inc.",
+      "final_score": 74.4,
       "grade": "📈 B급 (매수 고려)",
       "ai_recommendation": "매수",
-      "target_upside": 22.7
+      "target_upside": 0.6
+    },
+    {
+      "ticker": "ALB",
+      "name": "Albemarle Corporation",
+      "final_score": 73.6,
+      "grade": "📈 B급 (매수 고려)",
+      "ai_recommendation": "매수",
+      "target_upside": 5.2
     },
     {
       "ticker": "APO",
       "name": "Apollo Global Management, Inc.",
-      "final_score": 70.7,
+      "final_score": 71.5,
       "grade": "🌟 A급 (적극 매수)",
       "ai_recommendation": "매수",
-      "target_upside": 40.3
-    },
-    {
-      "ticker": "AMP",
-      "name": "Ameriprise Financial, Inc.",
-      "final_score": 68.2,
-      "grade": "📈 B급 (매수 고려)",
-      "ai_recommendation": "매수",
-      "target_upside": 27.2
+      "target_upside": 42.3
     }
   ],
   "timing": "WAIT",
   "warnings": [
-    "APO is in critical drawdown: -27.7% from peak",
-    "AMD is in critical drawdown: -21.5% from peak",
-    "AMZN drawdown warning: -16.1% from peak",
-    "AMP drawdown warning: -17.6% from peak",
-    "ALB drawdown warning: -10.7% from peak"
+    "APO is in critical drawdown: -28.7% from peak",
+    "AMP is in critical drawdown: -19.7% from peak",
+    "AMD is in critical drawdown: -22.2% from peak",
+    "AMZN is in critical drawdown: -19.4% from peak",
+    "ALB drawdown warning: -8.2% from peak"
   ]
 }

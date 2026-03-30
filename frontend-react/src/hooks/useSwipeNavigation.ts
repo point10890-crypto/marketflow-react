@@ -8,6 +8,7 @@ interface SwipeTab {
 export function useSwipeNavigation(
     scrollRef: React.RefObject<HTMLDivElement | null>,
     tabs: SwipeTab[],
+    disabled: boolean = false,
     minSwipeDistance: number = 80,
     maxVerticalOffset: number = 50
 ) {
@@ -19,7 +20,7 @@ export function useSwipeNavigation(
 
     useEffect(() => {
         const el = scrollRef.current;
-        if (!el) return;
+        if (!el || disabled) return;
 
         // Only enable on mobile
         if (window.innerWidth >= 768) return;
@@ -28,9 +29,17 @@ export function useSwipeNavigation(
             const touch = e.touches[0];
             startX.current = touch.clientX;
             startY.current = touch.clientY;
+
+            // Mark if swipe started inside a chart (lightweight-charts canvas or [data-no-swipe])
+            const target = e.target as HTMLElement;
+            const inChart = target.tagName === 'CANVAS' || target.closest('[data-no-swipe]') !== null;
+            (el as any).__swipeInChart = inChart;
         };
 
         const onTouchEnd = (e: TouchEvent) => {
+            // Skip if swipe started inside a chart area
+            if ((el as any).__swipeInChart) return;
+
             const touch = e.changedTouches[0];
             const deltaX = touch.clientX - startX.current;
             const deltaY = Math.abs(touch.clientY - startY.current);
@@ -66,5 +75,5 @@ export function useSwipeNavigation(
             el.removeEventListener('touchstart', onTouchStart);
             el.removeEventListener('touchend', onTouchEnd);
         };
-    }, [scrollRef, tabs, pathname, navigate, minSwipeDistance, maxVerticalOffset]);
+    }, [scrollRef, tabs, pathname, navigate, disabled, minSwipeDistance, maxVerticalOffset]);
 }

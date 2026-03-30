@@ -1,0 +1,110 @@
+{
+  "name": "펄어비스",
+  "ticker": "263750.KQ",
+  "result": "매도",
+  "date": "2026-03-29 17:07:33",
+  "elapsed": 1.8,
+  "consensus_score": 2.65,
+  "analyst_count": 17,
+  "recommendation_detail": {
+    "strongBuy": 0,
+    "buy": 3,
+    "hold": 6,
+    "sell": 7,
+    "strongSell": 1
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 58800.0,
+    "high": 59000.0,
+    "low": 20000.0,
+    "mean": 37512.5,
+    "median": 36600.0
+  },
+  "current_price": 58800.0,
+  "upside_potential": -36.2,
+  "key_stats": {
+    "name": "PearlAbyss",
+    "sector": "Communication Services",
+    "industry": "Electronic Gaming & Multimedia",
+    "market_cap": 3611461156864,
+    "pe_ratio": null,
+    "forward_pe": 42.5733,
+    "dividend_yield": null,
+    "beta": null,
+    "fifty_two_week_high": 71500.0,
+    "fifty_two_week_low": 28750.0,
+    "revenue": 365564952576,
+    "profit_margin": -0.023020001,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "펄어비스(263750.KQ)에 대한 애널리스트 컨센서스는 매도 의견으로 나타났습니다. 17명의 애널리스트가 참여한 컨센서스 점수는 2.65/5.0입니다. 목표가 평균은 37,512 KRW로, 현재가 58,800 KRW 대비 -36.2% 하락 여력이 있는 것으로 분석됩니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 106818121270
+    },
+    {
+      "date": "2025-06",
+      "value": 79561794980
+    },
+    {
+      "date": "2025-03",
+      "value": 83685012710
+    },
+    {
+      "date": "2024-12",
+      "value": 95729802140
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 28994752590
+    },
+    {
+      "date": "2025-06",
+      "value": -22700189090
+    },
+    {
+      "date": "2025-03",
+      "value": 499252430
+    },
+    {
+      "date": "2024-12",
+      "value": 46220791630
+    }
+  ],
+  "news": [
+    {
+      "title": "PearlAbyss Corp (XKRX:263750) Q4 2025 Earnings Call Highlights: Navigating Challenges and ...",
+      "summary": "Despite a dip in quarterly revenue, PearlAbyss Corp (XKRX:263750) focuses on future growth with new titles and strategic marketing plans.",
+      "url": "https://finance.yahoo.com/news/pearlabyss-corp-xkrx-263750-q4-050256143.html",
+      "provider": "GuruFocus.com",
+      "pub_time": "2026-02-12T05:02:56Z"
+    },
+    {
+      "title": "PearlAbyss Corp (XKRX:263750) Q3 2025 Earnings Call Highlights: Record Revenue Surge and ...",
+      "summary": "PearlAbyss Corp (XKRX:263750) reports a 34% revenue increase, driven by Black Desert's stellar performance and strategic global expansions.",
+      "url": "https://finance.yahoo.com/news/pearlabyss-corp-xkrx-263750-q3-050159255.html",
+      "provider": "GuruFocus.com",
+      "pub_time": "2025-11-12T05:01:59Z"
+    },
+    {
+      "title": "PearlAbyss Corp (XKRX:263750) Q2 2025 Earnings Call Highlights: Navigating Losses and Strategic ...",
+      "summary": "Despite a challenging quarter with decreased revenue and strategic delays, PearlAbyss Corp (XKRX:263750) remains focused on future growth through new content and platform expansions.",
+      "url": "https://finance.yahoo.com/news/pearlabyss-corp-xkrx-263750-q2-071621235.html",
+      "provider": "GuruFocus.com",
+      "pub_time": "2025-08-13T07:16:21Z"
+    },
+    {
+      "title": "PearlAbyss Corp (XKRX:263750) Q1 2025 Earnings Call Highlights: Navigating Challenges and ...",
+      "summary": "Despite a dip in revenue, PearlAbyss Corp focuses on new launches and global marketing to drive future growth.",
+      "url": "https://finance.yahoo.com/news/pearlabyss-corp-xkrx-263750-q1-071903179.html",
+      "provider": "GuruFocus.com",
+      "pub_time": "2025-05-14T07:19:03Z"
+    }
+  ]
+}

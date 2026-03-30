@@ -18,7 +18,17 @@ export default defineConfig({
         clientsClaim: true,
         cleanupOutdatedCaches: true,
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
+        navigateFallbackDenylist: [], // 모든 navigation을 SW가 처리
         runtimeCaching: [
+          {
+            // index.html은 항상 네트워크 우선 → 캐시된 구버전 방지
+            urlPattern: ({ request }) => request.mode === 'navigate',
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'pages-cache',
+              networkTimeoutSeconds: 3,
+            },
+          },
           {
             urlPattern: /^https:\/\/api\.bit-man\.net\/api\//,
             handler: 'NetworkFirst',

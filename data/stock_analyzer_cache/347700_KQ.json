@@ -1,0 +1,75 @@
+{
+  "name": "스피어",
+  "ticker": "347700.KQ",
+  "result": "데이터 없음",
+  "date": "2026-03-28 23:49:18",
+  "elapsed": 2.9,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 50900.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 50900.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "Sphere",
+    "sector": "Healthcare",
+    "industry": "Health Information Services",
+    "market_cap": 1803542724608,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": null,
+    "beta": null,
+    "fifty_two_week_high": 57300.0,
+    "fifty_two_week_low": 5970.0,
+    "revenue": 95638568960,
+    "profit_margin": 0.00178,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 21096473740
+    },
+    {
+      "date": "2025-06",
+      "value": 18861302760
+    },
+    {
+      "date": "2025-03",
+      "value": 21852554170
+    },
+    {
+      "date": "2024-12",
+      "value": -3445067270
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": -3313111950
+    },
+    {
+      "date": "2025-06",
+      "value": 21188098050
+    },
+    {
+      "date": "2025-03",
+      "value": 3164290830
+    },
+    {
+      "date": "2024-12",
+      "value": -9243799510
+    }
+  ],
+  "news": []
+}

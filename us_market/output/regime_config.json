@@ -1,63 +1,63 @@
 {
-  "timestamp": "2026-03-27T09:18:57.149227",
-  "regime": "neutral",
+  "timestamp": "2026-03-28T10:30:47.840435",
+  "regime": "risk_off",
   "confidence": 50.0,
-  "weighted_score": 1.2,
+  "weighted_score": 1.55,
   "signals": {
     "vix": {
-      "vix_current": 27.44,
-      "vix_ma20": 24.8,
+      "vix_current": 31.05,
+      "vix_ma20": 25.36,
       "vix_trend": "rising",
-      "vix_regime": "risk_off"
+      "vix_regime": "crisis"
     },
     "trend": {
       "trend_regime": "neutral",
       "spy_above_50": false,
       "spy_above_200": false,
-      "sma200_slope": 7.8027
+      "sma200_slope": 7.4703
     },
     "breadth": {
       "breadth_pct": null,
       "breadth_regime": "neutral"
     },
     "yield_curve": {
-      "yield_spread": 0.8,
+      "yield_spread": 0.83,
       "yield_regime": "risk_on"
     }
   },
   "risk_alert": {
-    "max_drawdown_warning": -10.0,
-    "max_drawdown_critical": -20.0,
-    "stop_loss_default": -8.0,
-    "var_confidence": 0.95
+    "max_drawdown_warning": -7.0,
+    "max_drawdown_critical": -15.0,
+    "stop_loss_default": -5.0,
+    "var_confidence": 0.99
   },
   "index_predictor": {
-    "rsi_overbought": 70,
-    "rsi_oversold": 30,
-    "vix_high": 20,
-    "momentum_lookback": 20
+    "rsi_overbought": 65,
+    "rsi_oversold": 35,
+    "vix_high": 18,
+    "momentum_lookback": 10
   },
   "backtest": {
     "risk_free_rate": 0.04
   },
   "smart_money": {
-    "min_composite_score": 60,
-    "volume_weight": 0.25,
-    "institutional_weight": 0.2
+    "min_composite_score": 65,
+    "volume_weight": 0.2,
+    "institutional_weight": 0.25
   },
   "sector_rotation": {
-    "phase_weight_1w": 0.25,
+    "phase_weight_1w": 0.35,
     "phase_weight_1m": 0.4,
-    "phase_weight_3m": 0.35
+    "phase_weight_3m": 0.25
   },
   "vcp_scanner": {
     "min_trend_score": 6,
-    "min_rs_rating": 60,
-    "max_base_depth": 0.3
+    "min_rs_rating": 65,
+    "max_base_depth": 0.25
   },
   "earnings_impact": {
-    "lookback_quarters": 4,
-    "min_beat_rate_bullish": 70,
-    "max_beat_rate_bearish": 40
+    "lookback_quarters": 6,
+    "min_beat_rate_bullish": 75,
+    "max_beat_rate_bearish": 35
   }
 }

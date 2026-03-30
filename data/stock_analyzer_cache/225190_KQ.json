@@ -1,0 +1,75 @@
+{
+  "name": "LK삼양",
+  "ticker": "225190.KQ",
+  "result": "데이터 없음",
+  "date": "2026-03-28 10:08:00",
+  "elapsed": 1.2,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 2020.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 2020.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "LK SAMYANG",
+    "sector": "Consumer Cyclical",
+    "industry": "Leisure",
+    "market_cap": 102511845376,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": null,
+    "beta": 0.35,
+    "fifty_two_week_high": 3250.0,
+    "fifty_two_week_low": 1148.0,
+    "revenue": 21623189504,
+    "profit_margin": -0.38251,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 4749021860
+    },
+    {
+      "date": "2025-06",
+      "value": 7305589900
+    },
+    {
+      "date": "2025-03",
+      "value": 4291257280
+    },
+    {
+      "date": "2024-12",
+      "value": 5277320890
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": -2054152210
+    },
+    {
+      "date": "2025-06",
+      "value": -481043440
+    },
+    {
+      "date": "2025-03",
+      "value": -3444475160
+    },
+    {
+      "date": "2024-12",
+      "value": -2291409350
+    }
+  ],
+  "news": []
+}

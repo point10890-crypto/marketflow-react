@@ -1,0 +1,75 @@
+{
+  "name": "원익홀딩스",
+  "ticker": "030530.KQ",
+  "result": "데이터 없음",
+  "date": "2026-03-28 23:56:37",
+  "elapsed": 2.2,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 29450.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 29450.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "WONIK HOLDINGS",
+    "sector": "Industrials",
+    "industry": "Specialty Industrial Machinery",
+    "market_cap": 2249479684096,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": null,
+    "beta": 1.484,
+    "fifty_two_week_high": 50600.0,
+    "fifty_two_week_low": 3175.0,
+    "revenue": 679146553344,
+    "profit_margin": -0.01852,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 143396174630
+    },
+    {
+      "date": "2025-06",
+      "value": 157556525050
+    },
+    {
+      "date": "2025-03",
+      "value": 171018857040
+    },
+    {
+      "date": "2024-12",
+      "value": 207175006470
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 24232626420
+    },
+    {
+      "date": "2025-06",
+      "value": -7629765750
+    },
+    {
+      "date": "2025-03",
+      "value": 5547031820
+    },
+    {
+      "date": "2024-12",
+      "value": -34724549040
+    }
+  ],
+  "news": []
+}

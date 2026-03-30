@@ -1,0 +1,81 @@
+{
+  "name": "미래에셋생명",
+  "ticker": "085620.KS",
+  "result": "중립",
+  "date": "2026-03-28 11:23:40",
+  "elapsed": 2.1,
+  "consensus_score": 3.0,
+  "analyst_count": 1,
+  "recommendation_detail": {
+    "strongBuy": 0,
+    "buy": 0,
+    "hold": 1,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 17910.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 17910.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "MIRAE ASSET LIFE",
+    "sector": "Financial Services",
+    "industry": "Insurance - Life",
+    "market_cap": 2157796786176,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": null,
+    "beta": 0.389,
+    "fifty_two_week_high": 20900.0,
+    "fifty_two_week_low": 4310.0,
+    "revenue": 5161384148992,
+    "profit_margin": 0.03997,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "미래에셋생명(085620.KS)은 현재 17,910원에 거래되고 있으며, Financial Services 섹터에 속합니다. 애널리스트 컨센서스는 1명의 참여로 '중립' 의견(3.0/5.0)을 제시하고 있습니다. 목표가 정보가 없어 상승 여력은 판단하기 어렵습니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 1432676044440
+    },
+    {
+      "date": "2025-06",
+      "value": 1106333202640
+    },
+    {
+      "date": "2025-03",
+      "value": 599909922190
+    },
+    {
+      "date": "2024-12",
+      "value": 952514653490
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 49755992340
+    },
+    {
+      "date": "2025-06",
+      "value": 50692164960
+    },
+    {
+      "date": "2025-03",
+      "value": 24783078080
+    },
+    {
+      "date": "2024-12",
+      "value": 66257029960
+    }
+  ],
+  "news": []
+}

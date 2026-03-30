@@ -1,0 +1,75 @@
+{
+  "name": "한화갤러리아",
+  "ticker": "452260.KS",
+  "result": "데이터 없음",
+  "date": "2026-03-28 06:07:28",
+  "elapsed": 2.0,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 2490.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 2490.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "HANWHA GALLERIA",
+    "sector": "Consumer Cyclical",
+    "industry": "Department Stores",
+    "market_cap": 482505293824,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": null,
+    "beta": 1.72,
+    "fifty_two_week_high": 3795.0,
+    "fifty_two_week_low": 999.0,
+    "revenue": 575165693952,
+    "profit_margin": 0.0057599996,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 125551894390
+    },
+    {
+      "date": "2025-06",
+      "value": 126944312080
+    },
+    {
+      "date": "2025-03",
+      "value": 129253028910
+    },
+    {
+      "date": "2024-12",
+      "value": 175165219990
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": -2982580780
+    },
+    {
+      "date": "2025-06",
+      "value": -14259724430
+    },
+    {
+      "date": "2025-03",
+      "value": -4452723110
+    },
+    {
+      "date": "2024-12",
+      "value": -13799643650
+    }
+  ],
+  "news": []
+}

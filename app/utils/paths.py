@@ -26,6 +26,9 @@ CRYPTO_OUTPUT_DIR = os.path.join(CRYPTO_MARKET_DIR, 'output')
 # Wave Pattern
 WAVE_DATA_DIR = os.path.join(DATA_DIR, 'wave')
 
+# AI Briefing
+BRIEFING_DIR = os.path.join(DATA_DIR, 'briefing')
+
 # 기타
 LOGS_DIR = os.path.join(BASE_DIR, 'logs')
 TICKER_MAP_PATH = os.path.join(DATA_DIR, 'ticker_to_yahoo_map.csv')

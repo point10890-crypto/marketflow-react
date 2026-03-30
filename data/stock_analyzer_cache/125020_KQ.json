@@ -1,0 +1,75 @@
+{
+  "name": "티씨머티리얼즈",
+  "ticker": "125020.KQ",
+  "result": "데이터 없음",
+  "date": "2026-03-28 23:48:16",
+  "elapsed": 1.5,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 4815.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 4815.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "TC Materials",
+    "sector": "Basic Materials",
+    "industry": "Copper",
+    "market_cap": 164799627264,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": null,
+    "beta": 0.589,
+    "fifty_two_week_high": 7850.0,
+    "fifty_two_week_low": 2990.0,
+    "revenue": 299118624768,
+    "profit_margin": 0.0056,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 78072253810
+    },
+    {
+      "date": "2025-06",
+      "value": 76922479200
+    },
+    {
+      "date": "2025-03",
+      "value": 67942311940
+    },
+    {
+      "date": "2024-12",
+      "value": 73953374130
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 1649155100
+    },
+    {
+      "date": "2025-06",
+      "value": -3243454230
+    },
+    {
+      "date": "2025-03",
+      "value": 1852599040
+    },
+    {
+      "date": "2024-12",
+      "value": 919357790
+    }
+  ],
+  "news": []
+}

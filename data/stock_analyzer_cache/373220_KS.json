@@ -2,34 +2,34 @@
   "name": "LG에너지솔루션",
   "ticker": "373220.KS",
   "result": "매수",
-  "date": "2026-03-25 13:50:47",
+  "date": "2026-03-28 13:36:04",
   "elapsed": 2.2,
-  "consensus_score": 3.9,
+  "consensus_score": 3.93,
   "analyst_count": 30,
   "recommendation_detail": {
     "strongBuy": 9,
-    "buy": 13,
-    "hold": 6,
+    "buy": 14,
+    "hold": 5,
     "sell": 0,
     "strongSell": 2
   },
   "recommendation_period": "0m",
   "price_targets": {
-    "current": 389000.0,
+    "current": 394500.0,
     "high": 600000.0,
     "low": 300000.0,
-    "mean": 484586.22,
+    "mean": 484241.38,
     "median": 500000.0
   },
-  "current_price": 388500.0,
-  "upside_potential": 24.7,
+  "current_price": 394500.0,
+  "upside_potential": 22.7,
   "key_stats": {
     "name": "LG Energy Solution",
     "sector": "Industrials",
     "industry": "Electrical Equipment & Parts",
-    "market_cap": 90908997451776,
+    "market_cap": 92312998772736,
     "pe_ratio": null,
-    "forward_pe": 40.732815,
+    "forward_pe": 41.30408,
     "dividend_yield": null,
     "beta": 1.061,
     "fifty_two_week_high": 527000.0,
@@ -40,7 +40,7 @@
   },
   "finnhub_supplement": null,
   "source": "yfinance",
-  "ai_analysis": "LG에너지솔루션(373220.KS)에 대해 30명의 애널리스트가 제시한 컨센서스는 '매수' 의견입니다. 목표가 평균은 484,586 KRW으로, 현재가 388,500 KRW 대비 24.7% 상승 여력이 있습니다. 이는 애널리스트들이 긍정적인 전망을 제시하고 있음을 시사합니다.",
+  "ai_analysis": "LG에너지솔루션(373220.KS)에 대해 30명의 애널리스트가 제시한 컨센서스 의견은 '매수'입니다. 목표가 평균은 484,241 KRW로, 현재가 394,500 KRW 대비 22.7%의 상승 여력이 있는 것으로 분석됩니다. 투자 결정은 개인의 판단에 따라 신중하게 이루어져야 합니다.",
   "revenue_quarters": [
     {
       "date": "2025-09",
@@ -79,7 +79,7 @@
   ],
   "news": [
     {
-      "title": "Livium CEO on recycling demand “Hockey Stick”",
+      "title": "Livium CEO on recycling demand “Hockey Stick” - ASX SMIDcaps Conference",
       "summary": "Livium Limited CEO & Managing Director Simon Linge talked with Kerry Stevenson from Proactive at the Small and Mid-Cap Conference about the company’s expanding role in battery recycling and its growth",
       "url": "https://finance.yahoo.com/video/livium-ceo-recycling-demand-hockey-221016064.html",
       "provider": "Proactive",
