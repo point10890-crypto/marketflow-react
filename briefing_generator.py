@@ -10,6 +10,9 @@ import asyncio
 import logging
 import re
 from datetime import datetime
+from dotenv import load_dotenv
+
+load_dotenv()
 
 logger = logging.getLogger(__name__)
 
