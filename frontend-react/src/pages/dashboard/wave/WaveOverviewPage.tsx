@@ -234,33 +234,41 @@ export default function WaveOverviewPage() {
             {/* Detail Chart (when a ticker is selected) */}
             {(selectedTicker && detailResult) && (
                 <div className="bg-[#1c1c1e] rounded-2xl border border-cyan-500/20 p-4 space-y-3">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                            <span className="text-lg font-black text-white">{detailResult.name || detailResult.ticker}</span>
-                            <span className="text-xs text-gray-400">{detailResult.ticker}</span>
-                            <span className="text-xs text-gray-500">{detailResult.market}</span>
-                            {pat && (
-                                <span className={`px-2 py-0.5 rounded text-xs font-bold ${
-                                    pat.pattern_class === 'W'
-                                        ? 'bg-cyan-500/20 text-cyan-400'
-                                        : 'bg-pink-500/20 text-pink-400'
-                                }`}>
-                                    {pat.wave_label}
-                                </span>
-                            )}
-                            {pat && (
-                                <span className={`text-xs font-bold ${
-                                    pat.confidence >= 70 ? 'text-green-400' :
-                                    pat.confidence >= 50 ? 'text-yellow-400' : 'text-gray-400'
-                                }`}>{pat.confidence}점</span>
-                            )}
+                    <div className="space-y-1">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                                <span className="text-base font-black text-white">{detailResult.name || detailResult.ticker}</span>
+                                <span className="text-[10px] text-gray-400">{detailResult.ticker}</span>
+                                <span className="text-[10px] text-gray-500">{detailResult.market}</span>
+                                {pat && (
+                                    <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                                        pat.pattern_class === 'W'
+                                            ? 'bg-cyan-500/20 text-cyan-400'
+                                            : 'bg-pink-500/20 text-pink-400'
+                                    }`}>{pat.wave_label}</span>
+                                )}
+                                {pat && (
+                                    <span className={`text-xs font-bold ${
+                                        pat.confidence >= 70 ? 'text-green-400' :
+                                        pat.confidence >= 50 ? 'text-yellow-400' : 'text-gray-400'
+                                    }`}>{pat.confidence}점</span>
+                                )}
+                            </div>
+                            <div className="flex items-center gap-2 shrink-0 ml-2">
+                                {(() => {
+                                    const sig = screener?.signals?.find(s => s.ticker === detailResult.ticker);
+                                    return sig ? (
+                                        <span className="text-yellow-400 font-mono font-bold text-lg">{sig.price.toLocaleString()}<span className="text-sm">원</span></span>
+                                    ) : null;
+                                })()}
+                                <button
+                                    onClick={closeDetail}
+                                    className="text-gray-500 hover:text-white text-xs px-1.5 py-1 rounded-lg hover:bg-white/10 transition-colors"
+                                >
+                                    <i className="fas fa-times" />
+                                </button>
+                            </div>
                         </div>
-                        <button
-                            onClick={closeDetail}
-                            className="text-gray-500 hover:text-white text-xs px-2 py-1 rounded-lg hover:bg-white/10 transition-colors"
-                        >
-                            <i className="fas fa-times mr-1" />닫기
-                        </button>
                     </div>
                     <PatternChart
                         chartData={detailResult.chart_data}
@@ -475,18 +483,20 @@ export default function WaveOverviewPage() {
                                         <div className="flex items-center gap-2">
                                             <span className="text-white font-bold text-sm">{s.name}</span>
                                             <span className="text-gray-600 text-[10px]">{s.ticker}</span>
+                                            <span className="text-gray-500 text-[10px]">{s.market}</span>
+                                            <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                                                bp.pattern_class === 'W'
+                                                    ? 'bg-cyan-500/20 text-cyan-400'
+                                                    : 'bg-pink-500/20 text-pink-400'
+                                            }`}>{bp.wave_label}</span>
+                                            <span className={`text-xs font-black ${
+                                                bp.confidence >= 70 ? 'text-green-400' :
+                                                bp.confidence >= 50 ? 'text-yellow-400' : 'text-gray-400'
+                                            }`}>{bp.confidence}점</span>
                                         </div>
-                                        <span className={`text-sm font-black ${
-                                            bp.confidence >= 70 ? 'text-green-400' :
-                                            bp.confidence >= 50 ? 'text-yellow-400' : 'text-gray-400'
-                                        }`}>{bp.confidence}점</span>
+                                        <span className="text-white font-mono font-bold text-sm">{s.price.toLocaleString()}원</span>
                                     </div>
                                     <div className="flex items-center gap-2 mb-1">
-                                        <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
-                                            bp.pattern_class === 'W'
-                                                ? 'bg-cyan-500/20 text-cyan-400'
-                                                : 'bg-pink-500/20 text-pink-400'
-                                        }`}>{bp.wave_label}</span>
                                         <span className={`text-[10px] font-bold ${
                                             bp.bullish_bias > 0 ? 'text-green-400' : 'text-red-400'
                                         }`}>{bp.bullish_bias > 0 ? 'Bullish' : 'Bearish'}</span>
@@ -497,7 +507,6 @@ export default function WaveOverviewPage() {
                                         )}
                                     </div>
                                     <div className="flex items-center gap-3 text-[10px] text-gray-500">
-                                        <span>{s.price.toLocaleString()}원</span>
                                         <span>완성도 {bp.completion_pct}%</span>
                                         <span>넥라인 {bp.neckline_price.toLocaleString()}</span>
                                         <span className={bp.neckline_distance_pct > 0 ? 'text-green-400' : 'text-red-400'}>

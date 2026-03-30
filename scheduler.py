@@ -452,54 +452,28 @@ def update_daily_prices():
         logger.error(f"FDR 종목 목록 실패: {e}")
         return False
 
-    # pykrx로 OHLCV 수집 (per-ticker, 안정적)
-    use_pykrx = True
-    try:
-        from pykrx import stock as pykrx_stock
-    except ImportError:
-        use_pykrx = False
-        logger.warning("pykrx 미설치, FDR DataReader 폴백")
-
+    # FDR로 OHLCV 수집 (pykrx는 pandas 3.x 호환 문제로 폴백만)
     failed = 0
     for i, ticker in enumerate(tickers):
         try:
-            if use_pykrx:
-                ohlcv = pykrx_stock.get_market_ohlcv(start_str, end_str, ticker)
-                if ohlcv is None or ohlcv.empty:
-                    continue
-                for date_idx, row in ohlcv.iterrows():
-                    all_rows.append({
-                        'ticker': ticker,
-                        'date': date_idx.strftime('%Y-%m-%d'),
-                        'name': names_map.get(ticker, ''),
-                        'current_price': float(row.get('종가', 0)),
-                        'change': float(row.get('등락률', 0)),
-                        'change_rate': float(row.get('등락률', 0)),
-                        'high': float(row.get('고가', 0)),
-                        'low': float(row.get('저가', 0)),
-                        'open': float(row.get('시가', 0)),
-                        'volume': int(row.get('거래량', 0)),
-                        'update_time': now_str,
-                    })
-            else:
-                df = fdr.DataReader(ticker, start_dt.strftime('%Y-%m-%d'), end_dt.strftime('%Y-%m-%d'))
-                if df is None or df.empty:
-                    continue
-                for date_idx, row in df.iterrows():
-                    chg = row.get('Change', 0) or 0
-                    all_rows.append({
-                        'ticker': ticker,
-                        'date': date_idx.strftime('%Y-%m-%d'),
-                        'name': names_map.get(ticker, ''),
-                        'current_price': float(row.get('Close', 0)),
-                        'change': float(chg),
-                        'change_rate': float(chg) * 100,
-                        'high': float(row.get('High', 0)),
-                        'low': float(row.get('Low', 0)),
-                        'open': float(row.get('Open', 0)),
-                        'volume': int(row.get('Volume', 0)),
-                        'update_time': now_str,
-                    })
+            df = fdr.DataReader(ticker, start_dt.strftime('%Y-%m-%d'), end_dt.strftime('%Y-%m-%d'))
+            if df is None or df.empty:
+                continue
+            for date_idx, row in df.iterrows():
+                chg = row.get('Change', 0) or 0
+                all_rows.append({
+                    'ticker': ticker,
+                    'date': date_idx.strftime('%Y-%m-%d'),
+                    'name': names_map.get(ticker, ''),
+                    'current_price': float(row.get('Close', 0)),
+                    'change': float(chg),
+                    'change_rate': float(chg) * 100,
+                    'high': float(row.get('High', 0)),
+                    'low': float(row.get('Low', 0)),
+                    'open': float(row.get('Open', 0)),
+                    'volume': int(row.get('Volume', 0)),
+                    'update_time': now_str,
+                })
         except Exception:
             failed += 1
             continue
