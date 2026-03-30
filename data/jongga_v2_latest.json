@@ -1,40 +1,41 @@
 {
   "date": "2026-03-30",
-  "total_candidates": 1,
-  "filtered_count": 1,
+  "total_candidates": 2,
+  "filtered_count": 2,
   "signals": [
     {
       "id": null,
-      "stock_code": "003280",
-      "stock_name": "흥아해운",
+      "stock_code": "053690",
+      "stock_name": "한미글로벌",
       "market": "KOSPI",
       "sector": "",
       "signal_date": "2026-03-30",
-      "grade": "A",
+      "grade": "S",
       "score": {
-        "news": 2,
+        "news": 3,
         "volume": 3,
-        "chart": 0,
-        "candle": 0,
+        "chart": 1,
+        "candle": 1,
         "consolidation": 0,
         "supply": 1,
         "disclosure": 0,
         "analyst": 0,
-        "financial": 2,
-        "llm_reason": "해상운임비 폭등 및 지정학적 리스크로 인한 해상운수 테마 강세, 세계 1위 MSC의 장금마리타임 지분 인수 관련 상승 기대감이 존재함.",
+        "financial": 1,
+        "llm_reason": "한미글로벌은 원전용 케이블 수주 잔고가 1,800억원을 돌파하며 2026년 영업이익률 12% 달성의 견인차가 될 것으로 예상되고, 한화투자증권에서 목표가를 4만6000원으로 상향 제시함.",
         "llm_source": "perplexity+gemini",
-        "total": 8
+        "total": 10
       },
       "checklist": {
         "has_news": true,
         "news_sources": [
-          "한국경제"
+          "아시아경제",
+          "파이낸셜뉴스"
         ],
         "volume_sufficient": true,
         "is_new_high": false,
         "is_breakout": false,
-        "ma_aligned": false,
-        "good_candle": false,
+        "ma_aligned": true,
+        "good_candle": true,
         "has_consolidation": false,
         "supply_positive": true,
         "has_disclosure": false,
@@ -43,71 +44,142 @@
         "upper_wick_long": false,
         "volume_suspicious": false
       },
-      "current_price": 3215,
-      "entry_price": 3215,
-      "stop_price": 3118,
-      "target_price": 3375,
-      "quantity": 2592,
-      "position_size": 8333280,
+      "current_price": 30750,
+      "entry_price": 30750,
+      "stop_price": 29827,
+      "target_price": 32287,
+      "quantity": 406,
+      "position_size": 12484500,
       "r_value": 250000.0,
-      "r_multiplier": 1.0,
-      "trading_value": 214491254516,
-      "change_pct": 8.98,
+      "r_multiplier": 1.5,
+      "trading_value": 56616881950,
+      "change_pct": 17.82,
       "volume_ratio": 0.0,
-      "foreign_5d": -2341285,
-      "inst_5d": 141906,
+      "foreign_5d": -267380,
+      "inst_5d": 362182,
       "status": "PENDING",
       "news_items": [
         {
-          "title": "후티반군 참전에 수에즈도 막히나…해운 테마주 또 '급등'",
-          "source": "한국경제",
+          "title": "삼성SDI, 실적 바닥인데 목표가 42만→58만원…성일하이텍, 12개 ...",
+          "source": "파이낸셜뉴스",
           "published_at": "2026-03-30T00:00:00",
-          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005268462&office_id=015&code=003280&page=1&sm="
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005499307&office_id=014&code=053690&page=1&sm="
+        },
+        {
+          "title": "[클릭 e종목]\"한미글로벌, 원전주로 탈바꿈하는 중…목표가↑\"",
+          "source": "아시아경제",
+          "published_at": "2026-03-30T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005741703&office_id=277&code=053690&page=1&sm="
         }
       ],
       "themes": [
-        "해상운수",
-        "지정학적 리스크",
-        "M&A"
+        "원전",
+        "건설",
+        "해외투자"
       ]
+    },
+    {
+      "id": null,
+      "stock_code": "027410",
+      "stock_name": "BGF",
+      "market": "KOSPI",
+      "sector": "",
+      "signal_date": "2026-03-30",
+      "grade": "A",
+      "score": {
+        "news": 0,
+        "volume": 2,
+        "chart": 1,
+        "candle": 0,
+        "consolidation": 0,
+        "supply": 2,
+        "disclosure": 0,
+        "analyst": 0,
+        "financial": 2,
+        "llm_reason": "",
+        "llm_source": "",
+        "total": 7
+      },
+      "checklist": {
+        "has_news": false,
+        "news_sources": [],
+        "volume_sufficient": true,
+        "is_new_high": false,
+        "is_breakout": false,
+        "ma_aligned": true,
+        "good_candle": false,
+        "has_consolidation": false,
+        "supply_positive": true,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": true,
+        "volume_suspicious": false
+      },
+      "current_price": 4950,
+      "entry_price": 4950,
+      "stop_price": 4801,
+      "target_price": 5197,
+      "quantity": 1683,
+      "position_size": 8330850,
+      "r_value": 250000.0,
+      "r_multiplier": 1.0,
+      "trading_value": 20345202441,
+      "change_pct": 10.49,
+      "volume_ratio": 0.0,
+      "foreign_5d": 69696,
+      "inst_5d": 203399,
+      "status": "PENDING",
+      "news_items": [],
+      "themes": []
     }
   ],
   "by_grade": {
-    "S": 0,
+    "S": 1,
     "A": 1,
     "B": 0,
     "C": 0
   },
   "by_market": {
-    "KOSPI": 1
+    "KOSPI": 2
   },
-  "processing_time_ms": 58653.27525138855,
-  "updated_at": "2026-03-30T13:31:37.469200+09:00",
+  "processing_time_ms": 42710.474491119385,
+  "updated_at": "2026-03-30T14:46:20.788025+09:00",
   "claude_picks": {
     "picks": [
       {
-        "stock_code": "003280",
-        "stock_name": "흥아해운",
+        "stock_code": "053690",
+        "stock_name": "한미글로벌",
         "rank": 1,
         "confidence": "HIGH",
-        "reason": "[Gemini] 해상운임비 폭등 및 지정학적 리스크로 인한 해상운수 테마 강세가 돋보이며, 세계 1위 MSC의 M&A 관련 이슈가 섹터 전반의 기대감을 높이고 있습니다. 충분한 거래대금과 기관 매수세는 단기 상승 모멘텀을 지지할 것으로 판단됩니다. [GPT-4o] 해상운임비 폭등과 지정학적 리스크로 인해 해상운수 테마가 강세를 보이고 있으며, 세계 1위 MSC의 장금마리타임 지분 인수 관련 기대감이 상승 요인으로 작용함.",
-        "risk": "외국인 5일 순매도세와 차트 상의 기술적 돌파 부재는 단기 변동성을 확대할 수 있으며, 해상운임 및 지정학적 리스크의 급변동 시 하방 압력이 커질 수 있습니다.",
+        "reason": "[Gemini] 원전용 케이블 대규모 수주 잔고 확보 소식으로 향후 실적 성장 기대감이 높습니다. 높은 거래대금과 기관 순매수도 긍정적이며, 명확한 성장 재료를 보유하고 있습니다. [GPT-4o] 원전용 케이블 수주의 기대감을 바탕으로 2026년까지 사업 성장성과 높은 영업이익률이 전망되는 점에서 긍정적입니다. 또한 기관의 수급이 유입되고 있는 점도 긍정적입니다.",
+        "risk": "단기 급등에 따른 차익 실현 매물 출회 가능성이 있으며, 외국인 매도세는 부담 요인으로 작용할 수 있습니다.",
         "expected_return": "3% ~ 8%",
         "source": "consensus",
         "gemini_rank": 1,
         "openai_rank": 1
+      },
+      {
+        "stock_code": "027410",
+        "stock_name": "BGF",
+        "rank": 2,
+        "confidence": "LOW",
+        "reason": "기관과 외국인의 동반 순매수 움직임이 포착되고 있으나, 뉴스 재료가 부족하여 주가 동력이 미흡할 수 있습니다.",
+        "risk": "신뢰할 만한 뉴스나 재료의 부재로 인해 주가 상승 지속성이 약할 수 있습니다.",
+        "expected_return": "5%-10%",
+        "source": "openai_only"
       }
     ],
     "consensus_count": 1,
     "gemini_count": 1,
-    "openai_count": 1,
-    "market_view": "[Gemini] 오늘 시장은 해상운수 테마를 중심으로 지정학적 리스크 및 M&A 관련 기대감이 강하게 작용한 하루였습니다. | [GPT-4o] 오늘은 지정학적 리스크와 관련된 테마가 전체 시장에서 강세를 보이고 있습니다.",
+    "openai_count": 2,
+    "market_view": "[Gemini] 오늘 시장은 원전, 건설 테마와 같은 실적 모멘텀이 부각된 개별 종목을 중심으로 강한 매수세가 유입되는 흐름을 보였습니다. | [GPT-4o] 오늘 시장은 특정 테마에 따른 등락이 두드러지며, 기관의 수급이 중요한 변수로 작용할 것입니다.",
     "top_themes": [
-      "해상운수",
-      "지정학적 리스크",
-      "M&A"
+      "원전",
+      "건설",
+      "해외투자"
     ],
-    "generated_at": "2026-03-30T13:31:37.469132",
+    "generated_at": "2026-03-30T14:46:20.787925",
     "models": [
       "gemini-2.5-flash",
       "gpt-4o"
