@@ -247,9 +247,9 @@ def _load_latest_prices() -> dict:
     """daily_prices.csv에서 최신 종가 로드."""
     import os
     import pandas as pd
+    from app.utils.paths import DATA_DIR
 
-    base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    csv_path = os.path.join(base_dir, 'data', 'daily_prices.csv')
+    csv_path = os.path.join(DATA_DIR, 'daily_prices.csv')
 
     if not os.path.exists(csv_path):
         return {}
