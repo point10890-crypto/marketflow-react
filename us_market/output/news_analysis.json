@@ -8,7 +8,7 @@
     "catalysts": [],
     "risk": "",
     "citations": [],
-    "analyzed_at": "2026-04-01T04:12:08.837763"
+    "analyzed_at": "2026-04-01T04:37:12.148644"
   },
   {
     "ticker": "T",
@@ -19,7 +19,7 @@
     "catalysts": [],
     "risk": "",
     "citations": [],
-    "analyzed_at": "2026-04-01T04:12:09.849725"
+    "analyzed_at": "2026-04-01T04:37:13.157684"
   },
   {
     "ticker": "APO",
@@ -30,7 +30,18 @@
     "catalysts": [],
     "risk": "",
     "citations": [],
-    "analyzed_at": "2026-04-01T04:12:10.884171"
+    "analyzed_at": "2026-04-01T04:37:14.190172"
+  },
+  {
+    "ticker": "AEP",
+    "news_score": 0,
+    "sentiment": "neutral",
+    "reason": "뉴스 없음",
+    "action": "HOLD",
+    "catalysts": [],
+    "risk": "",
+    "citations": [],
+    "analyzed_at": "2026-04-01T04:37:15.213842"
   },
   {
     "ticker": "LNT",
@@ -41,17 +52,6 @@
     "catalysts": [],
     "risk": "",
     "citations": [],
-    "analyzed_at": "2026-04-01T04:12:11.924469"
-  },
-  {
-    "ticker": "ALB",
-    "news_score": 0,
-    "sentiment": "neutral",
-    "reason": "뉴스 없음",
-    "action": "HOLD",
-    "catalysts": [],
-    "risk": "",
-    "citations": [],
-    "analyzed_at": "2026-04-01T04:12:12.964813"
+    "analyzed_at": "2026-04-01T04:37:16.247595"
   }
 ]

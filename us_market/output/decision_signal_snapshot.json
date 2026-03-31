@@ -27,18 +27,10 @@
     {
       "ticker": "T",
       "name": "AT&T Inc.",
-      "final_score": 80.0,
+      "final_score": 78.5,
       "grade": "🌟 A급 (적극 매수)",
       "ai_recommendation": "매수",
-      "target_upside": 5.8
-    },
-    {
-      "ticker": "APO",
-      "name": "Apollo Global Management, Inc.",
-      "final_score": 79.8,
-      "grade": "🌟 A급 (적극 매수)",
-      "ai_recommendation": "매수",
-      "target_upside": 40.3
+      "target_upside": 6.1
     },
     {
       "ticker": "AKAM",
@@ -46,31 +38,39 @@
       "final_score": 77.7,
       "grade": "🌟 A급 (적극 매수)",
       "ai_recommendation": "매수",
-      "target_upside": -0.7
+      "target_upside": -4.1
     },
     {
-      "ticker": "AEP",
-      "name": "American Electric Power Company, Inc.",
-      "final_score": 74.5,
+      "ticker": "APO",
+      "name": "Apollo Global Management, Inc.",
+      "final_score": 76.5,
       "grade": "📈 B급 (매수 고려)",
       "ai_recommendation": "매수",
-      "target_upside": 4.8
+      "target_upside": 39.1
     },
     {
       "ticker": "LNT",
       "name": "Alliant Energy Corporation",
-      "final_score": 73.9,
+      "final_score": 74.9,
       "grade": "📈 B급 (매수 고려)",
       "ai_recommendation": "매수",
-      "target_upside": 5.5
+      "target_upside": 5.9
+    },
+    {
+      "ticker": "AEP",
+      "name": "American Electric Power Company, Inc.",
+      "final_score": 73.1,
+      "grade": "📈 B급 (매수 고려)",
+      "ai_recommendation": "매수",
+      "target_upside": 5.4
     }
   ],
   "timing": "WAIT",
   "warnings": [
-    "APO is in critical drawdown: -26.8% from peak",
+    "APO is in critical drawdown: -26.9% from peak",
     "AMD is in critical drawdown: -21.6% from peak",
-    "APP is in critical drawdown: -41.4% from peak",
-    "AMZN drawdown warning: -15.5% from peak",
-    "AMAT drawdown warning: -13.9% from peak"
+    "APP is in critical drawdown: -41.2% from peak",
+    "AJG drawdown warning: -18.1% from peak",
+    "AMAT drawdown warning: -13.8% from peak"
   ]
 }
