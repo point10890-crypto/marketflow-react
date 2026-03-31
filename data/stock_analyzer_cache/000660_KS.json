@@ -2,8 +2,8 @@
   "name": "SK하이닉스",
   "ticker": "000660.KS",
   "result": "매수",
-  "date": "2026-03-30 22:53:44",
-  "elapsed": 3.2,
+  "date": "2026-03-31 20:02:28",
+  "elapsed": 2.1,
   "consensus_score": 4.15,
   "analyst_count": 39,
   "recommendation_detail": {
@@ -15,22 +15,22 @@
   },
   "recommendation_period": "0m",
   "price_targets": {
-    "current": 873000.0,
-    "high": 1930000.0,
+    "current": 807000.0,
+    "high": 2500000.0,
     "low": 255245.0,
-    "mean": 1289117.8,
-    "median": 1375000.0
+    "mean": 1320166.0,
+    "median": 1400000.0
   },
-  "current_price": 873000.0,
-  "upside_potential": 47.7,
+  "current_price": 807000.0,
+  "upside_potential": 63.6,
   "key_stats": {
     "name": "SK hynix",
     "sector": "Technology",
     "industry": "Semiconductors",
-    "market_cap": 602767454371840,
+    "market_cap": 557197415153664,
     "pe_ratio": null,
-    "forward_pe": 3.791436,
-    "dividend_yield": 0.32,
+    "forward_pe": 3.5047982,
+    "dividend_yield": 0.34,
     "beta": 1.715,
     "fifty_two_week_high": 1099000.0,
     "fifty_two_week_low": 162700.0,
@@ -40,7 +40,7 @@
   },
   "finnhub_supplement": null,
   "source": "yfinance",
-  "ai_analysis": "SK하이닉스(000660.KS)에 대한 애널리스트 컨센서스는 39명 참여 기준 '매수' 의견(4.15/5.0)으로 나타났습니다. 목표가 평균은 1,289,118 KRW이며, 이는 현재가(873,000 KRW) 대비 47.7% 상승 여력을 시사합니다. 따라서, 애널리스트들은 SK하이닉스의 추가적인 주가 상승 가능성을 염두에 두고 있는 것으로 해석됩니다.",
+  "ai_analysis": "SK하이닉스(000660.KS)에 대해 39명의 애널리스트가 제시한 컨센서스는 '매수' 의견입니다 (5점 만점 중 4.15점). 목표가 평균은 1,320,166 KRW로, 현재가 807,000 KRW 대비 63.6% 상승 여력이 있는 것으로 분석됩니다. 이는 긍정적인 시장 전망을 시사합니다.",
   "revenue_quarters": [
     {
       "date": "2025-12",
@@ -79,39 +79,39 @@
   ],
   "news": [
     {
-      "title": "Zacks Investment Ideas feature highlights Alphabet's, Sandisk and Micron",
-      "summary": "Alphabet's, Sandisk and Micron have been highlighted in this Investment Ideas article.",
-      "url": "https://finance.yahoo.com/markets/stocks/articles/zacks-investment-ideas-feature-highlights-081600500.html",
-      "provider": "Zacks",
-      "pub_time": "2026-03-30T08:16:00Z"
+      "title": "Helium stocks of South Korea's chipmakers to last until June, sources say",
+      "summary": "South Korea has sufficient helium stocks until at least June, two sources said, while the industry minister ruled ‌out any first-half supply disruptions, allaying worries over the Iran war's impact on",
+      "url": "https://finance.yahoo.com/sectors/technology/articles/helium-stocks-south-koreas-chipmakers-071507806.html",
+      "provider": "Reuters",
+      "pub_time": "2026-03-31T07:15:07Z"
     },
     {
-      "title": "SK Telecom and DraftKings have been highlighted as Zacks Bull and Bear of the Day",
-      "summary": "SK Telecom and DraftKings have been highlighted as Zacks Bull and Bear of the Day",
-      "url": "https://finance.yahoo.com/markets/stocks/articles/sk-telecom-draftkings-highlighted-zacks-080500127.html",
-      "provider": "Zacks",
-      "pub_time": "2026-03-30T08:05:00Z"
+      "title": "Western Digital, Photronics, Nova, FormFactor, and Amkor Stocks Trade Down, What You Need To Know",
+      "summary": "A number of stocks fell in the afternoon session after rising geopolitical tensions from the Iran war, threatened to disrupt critical supply chains.",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/western-digital-photronics-nova-formfactor-234218302.html",
+      "provider": "StockStory",
+      "pub_time": "2026-03-30T23:42:18Z"
     },
     {
-      "title": "Bull of the Day: SK Telecom (SKM)",
-      "summary": "While the world watches the tug-of-war between Silicon Valley and Beijing, a new contender is quietly assembling the perfect AI ecosystem.",
-      "url": "https://finance.yahoo.com/sectors/technology/articles/bull-day-sk-telecom-skm-080000676.html",
-      "provider": "Zacks",
-      "pub_time": "2026-03-30T08:00:00Z"
+      "title": "Amtech, Magnachip, Monolithic Power Systems, Allegro MicroSystems, and Kulicke and Soffa Shares Are Falling, What You Need To Know",
+      "summary": "A number of stocks fell in the afternoon session after rising geopolitical tensions from the Iran war, threatened to disrupt critical supply chains.",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/amtech-magnachip-monolithic-power-systems-233418078.html",
+      "provider": "StockStory",
+      "pub_time": "2026-03-30T23:34:18Z"
     },
     {
-      "title": "TurboQuant Panic: Why Market Is Wrong About Google's Newest AI Breakthrough",
-      "summary": "Alphabet Inc. Google rattled global memory stocks after unveiling its TurboQuant AI algorithm, triggering a sharp sell-off amid fears that improved efficiency could dampen demand for memory chips. How",
-      "url": "https://finance.yahoo.com/markets/stocks/articles/turboquant-panic-why-market-wrong-143113296.html",
-      "provider": "Benzinga",
-      "pub_time": "2026-03-29T14:31:13Z"
+      "title": "Himax, Teradyne, Entegris, IPG Photonics, and Universal Display Shares Plummet, What You Need To Know",
+      "summary": "A number of stocks fell in the afternoon session after rising geopolitical tensions from the Iran war, threatened to disrupt critical supply chains.",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/himax-teradyne-entegris-ipg-photonics-232618792.html",
+      "provider": "StockStory",
+      "pub_time": "2026-03-30T23:26:18Z"
     },
     {
-      "title": "Memory chip giant SK hynix could help end ‘RAMmageddon’ with blockbuster US IPO",
-      "summary": "SK hynix’s potential U.S. listing could raise $10-$14 billion to help it build more capacity, encourage others to follow, and end the 'RAMmageddon' memory shortage.",
-      "url": "https://finance.yahoo.com/markets/stocks/articles/memory-chip-giant-sk-hynix-191128085.html",
-      "provider": "TechCrunch",
-      "pub_time": "2026-03-27T19:11:28Z"
+      "title": "Seagate, Applied Materials, KLA Corporation, Lam Research, and MACOM Stocks Trade Down, What You Need To Know",
+      "summary": "A number of stocks fell in the afternoon session after rising geopolitical tensions from the Iran war, threatened to disrupt critical supply chains.",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/seagate-applied-materials-kla-corporation-231818997.html",
+      "provider": "StockStory",
+      "pub_time": "2026-03-30T23:18:18Z"
     }
   ]
 }

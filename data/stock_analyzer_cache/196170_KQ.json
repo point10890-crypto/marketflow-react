@@ -2,8 +2,8 @@
   "name": "알테오젠",
   "ticker": "196170.KQ",
   "result": "매수",
-  "date": "2026-03-28 23:53:42",
-  "elapsed": 1.9,
+  "date": "2026-03-31 20:47:50",
+  "elapsed": 2.4,
   "consensus_score": 3.75,
   "analyst_count": 4,
   "recommendation_detail": {
@@ -15,21 +15,21 @@
   },
   "recommendation_period": "0m",
   "price_targets": {
-    "current": 381000.0,
+    "current": 341500.0,
     "high": 570000.0,
     "low": 250000.0,
     "mean": 435000.0,
     "median": 460000.0
   },
-  "current_price": 381000.0,
-  "upside_potential": 14.2,
+  "current_price": 341500.0,
+  "upside_potential": 27.4,
   "key_stats": {
     "name": "Alteogen",
     "sector": "Healthcare",
     "industry": "Biotechnology",
-    "market_cap": 20376673320960,
+    "market_cap": 18264130322432,
     "pe_ratio": null,
-    "forward_pe": 37.568188,
+    "forward_pe": 36.865875,
     "dividend_yield": 0.1,
     "beta": 1.0,
     "fifty_two_week_high": 569000.0,
@@ -40,7 +40,7 @@
   },
   "finnhub_supplement": null,
   "source": "yfinance",
-  "ai_analysis": "알테오젠(196170.KQ)에 대해 4명의 애널리스트가 제시한 컨센서스 의견은 매수입니다. 목표가 평균은 435,000원으로 현재가 381,000원 대비 14.2% 상승 여력이 있습니다. 투자 결정은 제시된 분석 데이터를 참고하여 신중하게 판단하시기 바랍니다.",
+  "ai_analysis": "알테오젠(196170.KQ)에 대해 4명의 애널리스트가 제시한 컨센서스 의견은 매수(3.75/5.0)입니다. 목표가 평균은 435,000원으로, 현재가 341,500원 대비 27.4%의 상승 여력이 있습니다. 해당 분석은 Healthcare 섹터에 대한 투자 판단에 참고 자료로 활용될 수 있습니다.",
   "revenue_quarters": [
     {
       "date": "2025-09",

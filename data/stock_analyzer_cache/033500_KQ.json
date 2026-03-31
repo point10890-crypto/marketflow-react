@@ -1,0 +1,81 @@
+{
+  "name": "동성화인텍",
+  "ticker": "033500.KQ",
+  "result": "적극 매수",
+  "date": "2026-03-31 23:02:22",
+  "elapsed": 2.3,
+  "consensus_score": 4.5,
+  "analyst_count": 2,
+  "recommendation_detail": {
+    "strongBuy": 1,
+    "buy": 1,
+    "hold": 0,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 23150.0,
+    "high": 43000.0,
+    "low": 41000.0,
+    "mean": 42000.0,
+    "median": 42000.0
+  },
+  "current_price": 23150.0,
+  "upside_potential": 81.4,
+  "key_stats": {
+    "name": "DONGSUNG FINETEC",
+    "sector": "",
+    "industry": "",
+    "market_cap": 692951908352,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": null,
+    "beta": null,
+    "fifty_two_week_high": 34300.0,
+    "fifty_two_week_low": 20900.0,
+    "revenue": null,
+    "profit_margin": null,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "동성화인텍(033500.KQ)에 대해 2명의 애널리스트가 적극 매수 의견을 제시했습니다. 컨센서스 점수는 5점 만점에 4.5점입니다. 목표가 평균은 42,000원으로 현재가 대비 81.4%의 상승 여력이 있습니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 201106300030
+    },
+    {
+      "date": "2025-06",
+      "value": 193322131280
+    },
+    {
+      "date": "2025-03",
+      "value": 172366177700
+    },
+    {
+      "date": "2024-12",
+      "value": 185746936730
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 20487887390
+    },
+    {
+      "date": "2025-06",
+      "value": 11028113940
+    },
+    {
+      "date": "2025-03",
+      "value": 9024528720
+    },
+    {
+      "date": "2024-12",
+      "value": 18680382130
+    }
+  ],
+  "news": []
+}

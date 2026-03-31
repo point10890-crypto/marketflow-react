@@ -1,33 +1,33 @@
 {
-  "name": "삼천당제약",
-  "ticker": "000250.KQ",
+  "name": "펩트론",
+  "ticker": "087010.KQ",
   "result": "데이터 없음",
-  "date": "2026-03-31 22:23:17",
-  "elapsed": 2.6,
+  "date": "2026-03-31 22:22:28",
+  "elapsed": 2.3,
   "consensus_score": null,
   "analyst_count": 0,
   "recommendation_detail": null,
   "recommendation_period": null,
   "price_targets": {
-    "current": 829000.0,
+    "current": 293500.0,
     "high": null,
     "low": null,
     "mean": null,
     "median": null
   },
-  "current_price": 829000.0,
+  "current_price": 293500.0,
   "upside_potential": null,
   "key_stats": {
-    "name": "SCD",
+    "name": "PEPTRON",
     "sector": "",
     "industry": "",
-    "market_cap": 19280781377536,
+    "market_cap": 6821934268416,
     "pe_ratio": null,
     "forward_pe": null,
     "dividend_yield": null,
     "beta": null,
-    "fifty_two_week_high": 1195000.0,
-    "fifty_two_week_low": 127600.0,
+    "fifty_two_week_high": 392500.0,
+    "fifty_two_week_low": 89800.0,
     "revenue": null,
     "profit_margin": null,
     "currency": "KRW"
@@ -37,38 +37,38 @@
   "ai_analysis": null,
   "revenue_quarters": [
     {
+      "date": "2025-12",
+      "value": 987282450
+    },
+    {
       "date": "2025-09",
-      "value": 58024413360
+      "value": 1601680920
     },
     {
       "date": "2025-06",
-      "value": 56900188950
+      "value": 1425607750
     },
     {
       "date": "2025-03",
-      "value": 50617981540
-    },
-    {
-      "date": "2024-12",
-      "value": 55194135610
+      "value": 1620246560
     }
   ],
   "net_income_quarters": [
     {
+      "date": "2025-12",
+      "value": -4680156280
+    },
+    {
       "date": "2025-09",
-      "value": 2572814500
+      "value": -2024196630
     },
     {
       "date": "2025-06",
-      "value": -3336061860
+      "value": -3797726290
     },
     {
       "date": "2025-03",
-      "value": 478231630
-    },
-    {
-      "date": "2024-12",
-      "value": -11118666220
+      "value": -3321703000
     }
   ],
   "news": []

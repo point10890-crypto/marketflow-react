@@ -2,8 +2,8 @@
   "name": "현대차",
   "ticker": "005380.KS",
   "result": "매수",
-  "date": "2026-03-28 19:03:34",
-  "elapsed": 2.3,
+  "date": "2026-03-31 20:45:48",
+  "elapsed": 1.9,
   "consensus_score": 4.22,
   "analyst_count": 32,
   "recommendation_detail": {
@@ -15,22 +15,22 @@
   },
   "recommendation_period": "0m",
   "price_targets": {
-    "current": 495000.0,
+    "current": 445500.0,
     "high": 900000.0,
     "low": 315789.0,
     "mean": 630118.4,
     "median": 635000.0
   },
-  "current_price": 495000.0,
-  "upside_potential": 27.3,
+  "current_price": 445500.0,
+  "upside_potential": 41.4,
   "key_stats": {
     "name": "HyundaiMtr",
     "sector": "Consumer Cyclical",
     "industry": "Auto Manufacturers",
-    "market_cap": 128846829453312,
+    "market_cap": 115962145669120,
     "pe_ratio": null,
-    "forward_pe": 9.642018,
-    "dividend_yield": 2.02,
+    "forward_pe": 8.570585,
+    "dividend_yield": 2.13,
     "beta": 1.413,
     "fifty_two_week_high": 687000.0,
     "fifty_two_week_low": 175800.0,
@@ -40,7 +40,7 @@
   },
   "finnhub_supplement": null,
   "source": "yfinance",
-  "ai_analysis": "현대차(005380.KS)에 대해 32명의 애널리스트가 제시한 컨센서스는 '매수' 의견입니다. 목표가 평균은 630,118 KRW으로, 현재가 495,000 KRW 대비 27.3%의 상승 여력을 보입니다. 투자 판단은 제시된 분석 데이터를 참고하여 투자자 본인이 결정해야 합니다.",
+  "ai_analysis": "현대차(005380.KS)에 대해 32명의 애널리스트가 제시한 컨센서스 의견은 '매수'입니다. 목표가 평균은 630,118 KRW로, 현재가 445,500 KRW 대비 41.4%의 상승 여력이 있는 것으로 분석됩니다. 투자 판단은 제시된 분석 데이터를 참고하여 투자자 본인이 결정해야 합니다.",
   "revenue_quarters": [
     {
       "date": "2025-12",
@@ -79,6 +79,13 @@
   ],
   "news": [
     {
+      "title": "GM makes drastic decision pickup lovers will enjoy",
+      "summary": "Truck lovers showed a lot of resilience in 2025, buying up pickups despite tariffs, supply chain issues, and even a couple of giant fires at an aluminum supplier plant that disrupted production, deple",
+      "url": "https://www.thestreet.com/automotive/gm-makes-drastic-decision-pickup-lovers-will-enjoy",
+      "provider": "TheStreet",
+      "pub_time": "2026-03-30T23:00:00Z"
+    },
+    {
       "title": "Hyundai plans to launch 36 ‘new and enhanced’ vehicles in North America through 2030",
       "summary": "The plans are part of a $26 billion investment commitment in U.S. manufacturing the company announced last year.",
       "url": "https://www.wardsauto.com/news/hyundai-launching-36-new-or-enhanced-models-north-america-2026-2030-26B-investment/815882/",
@@ -105,13 +112,6 @@
       "url": "https://finance.yahoo.com/video/auto-demand-seems-strained-could-evs-make-a-comeback-203508967.html",
       "provider": "Yahoo Finance Video",
       "pub_time": "2026-03-25T20:35:08Z"
-    },
-    {
-      "title": "Livium CEO on recycling demand “Hockey Stick” - ASX SMIDcaps Conference",
-      "summary": "Livium Limited CEO & Managing Director Simon Linge talked with Kerry Stevenson from Proactive at the Small and Mid-Cap Conference about the company’s expanding role in battery recycling and its growth",
-      "url": "https://finance.yahoo.com/video/livium-ceo-recycling-demand-hockey-221016064.html",
-      "provider": "Proactive",
-      "pub_time": "2026-03-24T22:10:16Z"
     }
   ]
 }
