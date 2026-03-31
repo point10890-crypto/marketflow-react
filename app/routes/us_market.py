@@ -554,7 +554,10 @@ def _compute_cumulative_performance_live():
         if not spy_hist.empty:
             for idx, row in spy_hist.iterrows():
                 spy_prices[idx.strftime('%Y-%m-%d')] = float(row['Close'])
-        spy_latest = spy_prices.get(max(spy_prices)) if spy_prices else None
+        try:
+            spy_latest = spy_prices[max(spy_prices)] if spy_prices else None
+        except (ValueError, KeyError):
+            spy_latest = None
 
         all_picks = []
         by_date = []

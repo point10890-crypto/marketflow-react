@@ -317,12 +317,25 @@ def run_command(cmd: list, description: str, timeout: int = 600,
             bufsize=1
         )
 
-        for line in iter(process.stdout.readline, ''):
-            clean = line.strip()
-            if clean:
-                logger.info(f"   > {clean}")
+        # 별도 스레드로 stdout 읽기 (hang 방지 — readline이 무한 대기해도 타임아웃 가능)
+        import threading
+
+        def _drain_stdout():
+            try:
+                for line in iter(process.stdout.readline, ''):
+                    clean = line.strip()
+                    if clean:
+                        logger.info(f"   > {clean}")
+            except Exception:
+                pass
+            finally:
+                process.stdout.close()
+
+        reader = threading.Thread(target=_drain_stdout, daemon=True)
+        reader.start()
 
         process.wait(timeout=timeout)
+        reader.join(timeout=5)  # stdout 스레드 정리 대기
 
         elapsed = time.time() - start
 
@@ -337,6 +350,7 @@ def run_command(cmd: list, description: str, timeout: int = 600,
 
     except subprocess.TimeoutExpired:
         process.kill()
+        process.wait(timeout=5)
         logger.error(f"⏰ 타임아웃: {description}")
         if notify:
             send_telegram(f"⏰ 타임아웃 발생: {description}")
