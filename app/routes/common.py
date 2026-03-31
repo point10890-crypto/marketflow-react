@@ -646,50 +646,59 @@ def get_data_status():
     ]
     
     files_status = []
-    
+
+    def _rel_path(p):
+        """BASE_DIR 기준 상대경로 (슬래시 통일)"""
+        norm_p = os.path.normpath(p)
+        norm_b = os.path.normpath(BASE_DIR)
+        if norm_p.startswith(norm_b):
+            return norm_p[len(norm_b):].lstrip(os.sep).replace('\\', '/')
+        return os.path.basename(p)
+
+    def _human_size(size_bytes):
+        if size_bytes > 1024 * 1024:
+            return f"{size_bytes / (1024 * 1024):.1f} MB"
+        elif size_bytes > 1024:
+            return f"{size_bytes / 1024:.1f} KB"
+        return f"{size_bytes} B"
+
+    def _count_rows(path, size_bytes):
+        """행 수 계산 (대형 파일은 스킵)"""
+        try:
+            if path.endswith('.csv'):
+                if size_bytes > 10 * 1024 * 1024:
+                    return None
+                with open(path, 'r', encoding='utf-8') as f:
+                    return sum(1 for _ in f) - 1
+            elif path.endswith('.json'):
+                with open(path, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                if isinstance(data, list):
+                    return len(data)
+                if isinstance(data, dict):
+                    for key in ('signals', 'picks', 'data', 'results', 'items',
+                                'upcoming_earnings', 'top_signals', 'sections'):
+                        if key in data and isinstance(data[key], list):
+                            return len(data[key])
+        except Exception:
+            pass
+        return None
+
     for file_info in data_files_to_check:
         path = file_info['path']
         exists = os.path.exists(path)
-        
+
         if exists:
             stat = os.stat(path)
-            size_bytes = stat.st_size
             mtime = datetime.fromtimestamp(stat.st_mtime)
-            
-            # Format size
-            if size_bytes > 1024 * 1024:
-                size_str = f"{size_bytes / (1024 * 1024):.1f} MB"
-            elif size_bytes > 1024:
-                size_str = f"{size_bytes / 1024:.1f} KB"
-            else:
-                size_str = f"{size_bytes} B"
-            
-            # Count rows if CSV
-            row_count = None
-            if path.endswith('.csv'):
-                try:
-                    df = pd.read_csv(path, nrows=0)
-                    row_count = sum(1 for _ in open(path)) - 1  # -1 for header
-                except Exception:
-                    logger.debug("Failed to read CSV row count: %s", path)
-            elif path.endswith('.json'):
-                try:
-                    with open(path, 'r', encoding='utf-8') as f:
-                        data = json.load(f)
-                    if 'signals' in data:
-                        row_count = len(data['signals'])
-                    elif 'results' in data:
-                        row_count = len(data['results'])
-                except Exception:
-                    logger.debug("Failed to read JSON signals count: %s", path)
-            
+
             files_status.append({
                 'name': file_info['name'],
-                'path': path,
+                'path': _rel_path(path),
                 'exists': True,
                 'lastModified': mtime.isoformat(),
-                'size': size_str,
-                'rowCount': row_count,
+                'size': _human_size(stat.st_size),
+                'rowCount': _count_rows(path, stat.st_size),
                 'link': file_info.get('link', ''),
                 'menu': file_info.get('menu', ''),
                 'updateType': file_info.get('updateType', '')
@@ -697,7 +706,7 @@ def get_data_status():
         else:
             files_status.append({
                 'name': file_info['name'],
-                'path': path,
+                'path': _rel_path(path),
                 'exists': False,
                 'lastModified': '',
                 'size': '-',

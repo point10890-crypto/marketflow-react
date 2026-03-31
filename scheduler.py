@@ -147,7 +147,17 @@ def auto_git_push(scope: str = 'all') -> bool:
                 capture_output=True, text=True
             )
 
-            # pull --rebase 후 push (GitHub Actions 커밋과 충돌 방지)
+            # unstaged changes를 stash → rebase → stash pop (rebase 실패 방지)
+            stashed = False
+            stash_check = subprocess.run(
+                ['git', 'diff', '--quiet'],
+                cwd=project_dir, timeout=10, capture_output=True
+            )
+            if stash_check.returncode != 0:
+                subprocess.run(['git', 'stash', '--keep-index'],
+                               cwd=project_dir, timeout=30, capture_output=True, text=True)
+                stashed = True
+
             rebase_result = subprocess.run(
                 ['git', 'pull', '--rebase', 'origin', 'main'],
                 cwd=project_dir, timeout=120,
@@ -159,6 +169,10 @@ def auto_git_push(scope: str = 'all') -> bool:
                                capture_output=True, text=True)
                 subprocess.run(['git', 'pull', '--no-rebase', 'origin', 'main'],
                                cwd=project_dir, timeout=120, capture_output=True, text=True)
+
+            if stashed:
+                subprocess.run(['git', 'stash', 'pop'],
+                               cwd=project_dir, timeout=30, capture_output=True, text=True)
 
             push_result = subprocess.run(
                 ['git', 'push', 'origin', 'main'],
@@ -334,28 +348,42 @@ def run_command(cmd: list, description: str, timeout: int = 600,
         return False
 
 
-def _telegram_post(bot_token: str, chat_id: str, message: str, retries: int = 3) -> bool:
-    """텔레그램 단건 전송 (SSL 에러 대비 재시도)"""
+def _telegram_post(bot_token: str, chat_id: str, message: str, retries: int = 5) -> bool:
+    """텔레그램 단건 전송 (SSL EOF 대비 — 새 세션 + 지수 백오프 재시도)"""
     import requests
+    from requests.adapters import HTTPAdapter
     for attempt in range(retries):
         try:
-            r = requests.post(
+            # 매 시도마다 새 세션 (SSL 세션 캐시 오염 방지)
+            session = requests.Session()
+            adapter = HTTPAdapter(max_retries=0)
+            session.mount('https://', adapter)
+            r = session.post(
                 f"https://api.telegram.org/bot{bot_token}/sendMessage",
                 json={"chat_id": chat_id, "text": message, "parse_mode": "HTML"},
-                timeout=15
+                timeout=20
             )
+            session.close()
             if r.status_code == 200:
                 return True
+            logger.warning(f"⚠️ 텔레그램 HTTP {r.status_code}: {r.text[:100]}")
         except Exception as e:
             if attempt < retries - 1:
-                time.sleep(2)
+                wait = 3 * (2 ** attempt)  # 3, 6, 12, 24초
+                logger.debug(f"텔레그램 재시도 {attempt+1}/{retries} ({wait}초 후): {e}")
+                time.sleep(wait)
             else:
                 logger.error(f"❌ 텔레그램 전송 실패 ({retries}회 시도): {e}")
     return False
 
 
-def send_telegram(message: str) -> bool:
-    """텔레그램 메시지 전송 (개인 + 채널 동시, SSL 재시도 포함)"""
+# ── 텔레그램 실패 큐 (1시간 내 재전송) ──
+_telegram_queue: list = []  # [(message, timestamp)]
+_TELEGRAM_QUEUE_TTL = 3600  # 1시간 후 폐기
+
+
+def _try_send_telegram(message: str) -> bool:
+    """실제 전송 시도 (개인 + 채널)"""
     success = False
 
     # 1) 개인 봇
@@ -372,8 +400,39 @@ def send_telegram(message: str) -> bool:
         if _telegram_post(ch_token, ch_chat_id, message):
             success = True
 
+    return success
+
+
+def _flush_telegram_queue():
+    """큐에 쌓인 실패 메시지 재전송 시도"""
+    if not _telegram_queue:
+        return
+    now = time.time()
+    sent_indices = []
+    for i, (msg, ts) in enumerate(_telegram_queue):
+        if now - ts > _TELEGRAM_QUEUE_TTL:
+            sent_indices.append(i)  # 만료 — 폐기
+            logger.warning(f"⚠️ 텔레그램 큐 메시지 만료 (1h): {msg[:50]}...")
+            continue
+        if _try_send_telegram(msg):
+            sent_indices.append(i)
+            logger.info(f"✅ 텔레그램 큐 재전송 성공: {msg[:50]}...")
+        else:
+            break  # 네트워크 아직 안됨 — 나머지 스킵
+    for i in reversed(sent_indices):
+        _telegram_queue.pop(i)
+
+
+def send_telegram(message: str) -> bool:
+    """텔레그램 메시지 전송 (실패 시 큐 저장 + 이전 실패 재전송)"""
+    # 먼저 큐에 쌓인 이전 메시지 재전송 시도
+    _flush_telegram_queue()
+
+    success = _try_send_telegram(message)
+
     if not success:
-        logger.warning("⚠️ 텔레그램 전송 실패 또는 설정 미완료")
+        _telegram_queue.append((message, time.time()))
+        logger.warning(f"⚠️ 텔레그램 전송 실패 → 큐 저장 (대기: {len(_telegram_queue)}건)")
     return success
 
 
@@ -1769,7 +1828,8 @@ def _save_last_run(data: dict):
     except Exception as e:
         logger.warning(f"⚠️ scheduler_last_run.json 저장 실패: {e}")
         try:
-            os.remove(temp_path)
+            if 'temp_path' in locals():
+                os.remove(temp_path)
         except OSError:
             pass
 

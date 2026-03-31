@@ -40,6 +40,11 @@ data/backtest/
 data/ai/
 data/institutional/
 
+# Runtime cache (scheduler/Flask 생성, git 추적 불필요)
+data/market_gate_cache.json
+data/crypto_dominance_cache.json
+crypto-analytics/crypto_market/signals.sqlite3
+
 # VCP data: allow latest files for cloud deployment
 !data/vcp_*_latest.json
 
