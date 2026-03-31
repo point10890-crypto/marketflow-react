@@ -3,7 +3,7 @@
   "score": 30,
   "label": "BEARISH",
   "reasons": [
-    "RSI(35.8), MACD: BEARISH",
+    "RSI(35.6), MACD: BEARISH",
     "시장 하락추세. 보수적 접근 권장.",
     "🔥 강세: 2차전지 (85)",
     "❄️ 약세: 철강 (25)"
@@ -47,9 +47,9 @@
     },
     {
       "name": "KOSPI200",
-      "signal": "bearish",
+      "signal": "neutral",
       "change_pct": -4.13,
-      "score": 35
+      "score": 40
     },
     {
       "name": "철강",
@@ -60,15 +60,15 @@
   ],
   "metrics": {
     "usd_krw": null,
-    "kospi": 5063.25,
-    "kospi_change_pct": -4.06,
-    "kosdaq": 1052.68,
-    "kosdaq_change_pct": -4.91,
-    "rsi": 35.84529505582137
+    "kospi": 5052.46,
+    "kospi_change_pct": -4.26,
+    "kosdaq": 1052.39,
+    "kosdaq_change_pct": -4.94,
+    "rsi": 35.6461288910631
   },
-  "kospi_close": 5063.25,
-  "kospi_change_pct": -4.06,
-  "kosdaq_close": 1052.68,
-  "kosdaq_change_pct": -4.91,
-  "updated_at": "2026-03-31T16:06:08.796088"
+  "kospi_close": 5052.46,
+  "kospi_change_pct": -4.26,
+  "kosdaq_close": 1052.39,
+  "kosdaq_change_pct": -4.94,
+  "updated_at": "2026-03-31T16:11:15.341906"
 }
