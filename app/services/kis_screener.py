@@ -20,8 +20,11 @@ from app.utils.paths import DATA_DIR
 # ─── 설정 ───
 _paper = os.environ.get("KIS_PAPER", "true").lower() in ("true", "1")
 BASE_URL = "https://openapivts.koreainvestment.com:29443" if _paper else "https://openapi.koreainvestment.com:9443"
-APP_KEY = os.environ.get("KIS_APP_KEY", "")
-APP_SECRET = os.environ.get("KIS_APP_SECRET", "")
+def _app_key():
+    return os.environ.get("KIS_APP_KEY", "")
+
+def _app_secret():
+    return os.environ.get("KIS_APP_SECRET", "")
 
 ETF_KEYWORDS = [
     "KODEX", "TIGER", "KBSTAR", "KOSEF", "ARIRANG", "HANARO",
@@ -65,13 +68,13 @@ def get_token():
             _token_cache["token"] = cached
             _token_cache["expires_at"] = time.time() + 23 * 3600
             return cached
-        if not APP_KEY or not APP_SECRET:
+        if not _app_key() or not _app_secret():
             logger.error("KIS_APP_KEY / KIS_APP_SECRET 환경변수 없음")
             return None
         try:
             res = requests.post(f"{BASE_URL}/oauth2/tokenP", json={
                 "grant_type": "client_credentials",
-                "appkey": APP_KEY, "appsecret": APP_SECRET,
+                "appkey": _app_key(), "appsecret": _app_secret(),
             }, timeout=10)
             if res.status_code != 200:
                 logger.error(f"KIS 토큰 발급 실패: {res.status_code}")
@@ -101,7 +104,7 @@ def _headers(token, tr_id):
     return {
         "content-type": "application/json; charset=utf-8",
         "authorization": f"Bearer {token}",
-        "appkey": APP_KEY, "appsecret": APP_SECRET,
+        "appkey": _app_key(), "appsecret": _app_secret(),
         "tr_id": tr_id, "custtype": "P",
     }
 

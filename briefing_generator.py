@@ -412,6 +412,7 @@ class BriefingGenerator:
                 config=types.GenerateContentConfig(
                     tools=[types.Tool(google_search=types.GoogleSearch())],
                     temperature=0.7,
+                    max_output_tokens=8192,
                 )
             )
 

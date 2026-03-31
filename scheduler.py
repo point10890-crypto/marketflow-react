@@ -334,40 +334,43 @@ def run_command(cmd: list, description: str, timeout: int = 600,
         return False
 
 
-def send_telegram(message: str) -> bool:
-    """텔레그램 메시지 전송 (개인 + 채널 동시)"""
+def _telegram_post(bot_token: str, chat_id: str, message: str, retries: int = 3) -> bool:
+    """텔레그램 단건 전송 (SSL 에러 대비 재시도)"""
     import requests
+    for attempt in range(retries):
+        try:
+            r = requests.post(
+                f"https://api.telegram.org/bot{bot_token}/sendMessage",
+                json={"chat_id": chat_id, "text": message, "parse_mode": "HTML"},
+                timeout=15
+            )
+            if r.status_code == 200:
+                return True
+        except Exception as e:
+            if attempt < retries - 1:
+                time.sleep(2)
+            else:
+                logger.error(f"❌ 텔레그램 전송 실패 ({retries}회 시도): {e}")
+    return False
+
+
+def send_telegram(message: str) -> bool:
+    """텔레그램 메시지 전송 (개인 + 채널 동시, SSL 재시도 포함)"""
     success = False
 
     # 1) 개인 봇
     token = os.getenv("TELEGRAM_BOT_TOKEN")
     chat_id = os.getenv("TELEGRAM_CHAT_ID")
     if token and chat_id and "your_bot_token" not in token:
-        try:
-            r = requests.post(
-                f"https://api.telegram.org/bot{token}/sendMessage",
-                json={"chat_id": chat_id, "text": message, "parse_mode": "HTML"},
-                timeout=10
-            )
-            if r.status_code == 200:
-                success = True
-        except Exception as e:
-            logger.error(f"❌ 텔레그램(개인) 전송 실패: {e}")
+        if _telegram_post(token, chat_id, message):
+            success = True
 
     # 2) 채널 봇 (style_종가매매)
     ch_token = os.getenv("TELEGRAM_CHANNEL_BOT_TOKEN")
     ch_chat_id = os.getenv("TELEGRAM_CHANNEL_CHAT_ID")
     if ch_token and ch_chat_id:
-        try:
-            r = requests.post(
-                f"https://api.telegram.org/bot{ch_token}/sendMessage",
-                json={"chat_id": ch_chat_id, "text": message, "parse_mode": "HTML"},
-                timeout=10
-            )
-            if r.status_code == 200:
-                success = True
-        except Exception as e:
-            logger.error(f"❌ 텔레그램(채널) 전송 실패: {e}")
+        if _telegram_post(ch_token, ch_chat_id, message):
+            success = True
 
     if not success:
         logger.warning("⚠️ 텔레그램 전송 실패 또는 설정 미완료")
