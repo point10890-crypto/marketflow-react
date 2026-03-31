@@ -1,10 +1,10 @@
 {
   "action": "CAUTIOUS",
-  "score": 26,
+  "score": 29,
   "components": {
     "market_gate": {
-      "score": 20,
-      "contribution": -9.0
+      "score": 30,
+      "contribution": -6.0
     },
     "regime": {
       "regime": "neutral",
@@ -67,10 +67,10 @@
   ],
   "timing": "WAIT",
   "warnings": [
-    "APO is in critical drawdown: -27.7% from peak",
-    "AMD is in critical drawdown: -24.5% from peak",
-    "APP is in critical drawdown: -44.8% from peak",
-    "AMZN drawdown warning: -18.8% from peak",
-    "AMAT drawdown warning: -18.2% from peak"
+    "APO is in critical drawdown: -26.8% from peak",
+    "AMD is in critical drawdown: -21.6% from peak",
+    "APP is in critical drawdown: -41.4% from peak",
+    "AMZN drawdown warning: -15.5% from peak",
+    "AMAT drawdown warning: -13.9% from peak"
   ]
 }

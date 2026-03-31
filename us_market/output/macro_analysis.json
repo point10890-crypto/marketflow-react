@@ -1,17 +1,17 @@
 {
-  "timestamp": "2026-03-31T18:00:37.788873",
+  "timestamp": "2026-04-01T04:12:20.444854",
   "lang": "ko",
   "model": "gemini",
   "macro_indicators": {
     "VIX": {
-      "value": 28.97,
-      "change_1d": -5.36,
+      "value": 25.84,
+      "change_1d": -15.58,
       "high_52w": 60.13,
       "low_52w": 13.38,
-      "pct_from_high": -51.82,
-      "pct_from_low": 116.52,
+      "pct_from_high": -57.03,
+      "pct_from_low": 93.12,
       "data_quality": "actual",
-      "last_updated": "2026-03-31T18:00:27.665021"
+      "last_updated": "2026-04-01T04:12:09.373838"
     },
     "SKEW": {
       "value": 142.23,
@@ -21,344 +21,344 @@
       "pct_from_high": -12.13,
       "pct_from_low": 13.09,
       "data_quality": "actual",
-      "last_updated": "2026-03-31T18:00:27.826722"
+      "last_updated": "2026-04-01T04:12:09.505772"
     },
     "DXY": {
-      "value": 100.4,
-      "change_1d": -0.11,
+      "value": 99.96,
+      "change_1d": -0.54,
       "high_52w": 104.39,
       "low_52w": 95.55,
-      "pct_from_high": -3.82,
-      "pct_from_low": 5.08,
+      "pct_from_high": -4.24,
+      "pct_from_low": 4.62,
       "data_quality": "actual",
-      "last_updated": "2026-03-31T18:00:28.083431"
+      "last_updated": "2026-04-01T04:12:09.637237"
     },
     "EUR/USD": {
       "value": 1.15,
-      "change_1d": -0.19,
+      "change_1d": 0.46,
       "high_52w": 1.2,
       "low_52w": 1.08,
-      "pct_from_high": -4.6,
-      "pct_from_low": 6.41,
+      "pct_from_high": -3.98,
+      "pct_from_low": 7.1,
       "data_quality": "actual",
-      "last_updated": "2026-03-31T18:00:28.242488"
+      "last_updated": "2026-04-01T04:12:09.767990"
     },
     "USD/JPY": {
-      "value": 159.56,
-      "change_1d": -0.42,
+      "value": 158.95,
+      "change_1d": -0.8,
       "high_52w": 160.23,
       "low_52w": 139.89,
-      "pct_from_high": -0.42,
-      "pct_from_low": 14.06,
+      "pct_from_high": -0.8,
+      "pct_from_low": 13.63,
       "data_quality": "actual",
-      "last_updated": "2026-03-31T18:00:28.402851"
+      "last_updated": "2026-04-01T04:12:09.900765"
     },
     "2Y_Yield": {
       "value": 3.6,
-      "change_1d": -0.25,
+      "change_1d": 0.06,
       "high_52w": 4.3,
       "low_52w": 3.51,
-      "pct_from_high": -16.42,
-      "pct_from_low": 2.59,
+      "pct_from_high": -16.38,
+      "pct_from_low": 2.65,
       "data_quality": "actual",
-      "last_updated": "2026-03-31T18:00:28.562199"
+      "last_updated": "2026-04-01T04:12:10.032040"
     },
     "10Y_Yield": {
-      "value": 4.34,
-      "change_1d": -2.21,
+      "value": 4.31,
+      "change_1d": -0.76,
       "high_52w": 4.63,
       "low_52w": 3.89,
-      "pct_from_high": -6.2,
-      "pct_from_low": 11.73,
+      "pct_from_high": -6.91,
+      "pct_from_low": 10.89,
       "data_quality": "actual",
-      "last_updated": "2026-03-31T18:00:28.726265"
+      "last_updated": "2026-04-01T04:12:10.164864"
     },
     "30Y_Yield": {
-      "value": 4.91,
-      "change_1d": -1.55,
+      "value": 4.89,
+      "change_1d": -0.31,
       "high_52w": 5.15,
       "low_52w": 4.34,
-      "pct_from_high": -4.81,
-      "pct_from_low": 12.99,
+      "pct_from_high": -5.1,
+      "pct_from_low": 12.65,
       "data_quality": "actual",
-      "last_updated": "2026-03-31T18:00:28.883870"
+      "last_updated": "2026-04-01T04:12:10.296119"
     },
     "HY_Credit": {
-      "value": 78.81,
-      "change_1d": 0.11,
+      "value": 79.53,
+      "change_1d": 0.91,
       "high_52w": 80.61,
       "low_52w": 71.18,
-      "pct_from_high": -2.24,
-      "pct_from_low": 10.72,
+      "pct_from_high": -1.35,
+      "pct_from_low": 11.72,
       "data_quality": "actual",
-      "last_updated": "2026-03-31T18:00:29.071414"
+      "last_updated": "2026-04-01T04:12:10.449836"
     },
     "IG_Credit": {
-      "value": 108.31,
-      "change_1d": 0.64,
+      "value": 108.97,
+      "change_1d": 0.61,
       "high_52w": 111.55,
       "low_52w": 99.3,
-      "pct_from_high": -2.9,
-      "pct_from_low": 9.08,
+      "pct_from_high": -2.31,
+      "pct_from_low": 9.75,
       "data_quality": "actual",
-      "last_updated": "2026-03-31T18:00:29.276738"
+      "last_updated": "2026-04-01T04:12:10.630466"
     },
     "GOLD": {
-      "value": 4601.7,
-      "change_1d": 1.67,
+      "value": 4703.5,
+      "change_1d": 3.92,
       "high_52w": 5586.2,
       "low_52w": 2949.7,
-      "pct_from_high": -17.62,
-      "pct_from_low": 56.01,
+      "pct_from_high": -15.8,
+      "pct_from_low": 59.46,
       "data_quality": "actual",
-      "last_updated": "2026-03-31T18:00:29.446169"
+      "last_updated": "2026-04-01T04:12:10.760577"
     },
     "SILVER": {
-      "value": 73.38,
-      "change_1d": 4.35,
+      "value": 75.29,
+      "change_1d": 7.06,
       "high_52w": 121.3,
       "low_52w": 28.31,
-      "pct_from_high": -39.51,
-      "pct_from_low": 159.2,
+      "pct_from_high": -37.93,
+      "pct_from_low": 165.95,
       "data_quality": "actual",
-      "last_updated": "2026-03-31T18:00:29.604589"
+      "last_updated": "2026-04-01T04:12:10.894933"
     },
     "OIL": {
-      "value": 102.46,
-      "change_1d": -0.41,
+      "value": 102.25,
+      "change_1d": -0.61,
       "high_52w": 119.48,
       "low_52w": 54.98,
-      "pct_from_high": -14.25,
-      "pct_from_low": 86.36,
+      "pct_from_high": -14.42,
+      "pct_from_low": 85.98,
       "data_quality": "actual",
-      "last_updated": "2026-03-31T18:00:29.765756"
+      "last_updated": "2026-04-01T04:12:11.026906"
     },
     "COPPER": {
-      "value": 5.52,
-      "change_1d": 0.79,
+      "value": 5.62,
+      "change_1d": 2.71,
       "high_52w": 6.51,
       "low_52w": 4.1,
-      "pct_from_high": -15.2,
-      "pct_from_low": 34.66,
+      "pct_from_high": -13.58,
+      "pct_from_low": 37.23,
       "data_quality": "actual",
-      "last_updated": "2026-03-31T18:00:29.929377"
+      "last_updated": "2026-04-01T04:12:11.160861"
     },
     "NAT_GAS": {
-      "value": 2.83,
-      "change_1d": -2.15,
+      "value": 2.89,
+      "change_1d": 0.14,
       "high_52w": 7.83,
       "low_52w": 2.62,
-      "pct_from_high": -63.91,
-      "pct_from_low": 7.74,
+      "pct_from_high": -63.06,
+      "pct_from_low": 10.26,
       "data_quality": "actual",
-      "last_updated": "2026-03-31T18:00:30.102344"
+      "last_updated": "2026-04-01T04:12:11.292151"
     },
     "SPY": {
-      "value": 631.97,
-      "change_1d": -0.33,
+      "value": 648.98,
+      "change_1d": 2.69,
       "high_52w": 695.94,
       "low_52w": 476.34,
-      "pct_from_high": -9.19,
-      "pct_from_low": 32.67,
+      "pct_from_high": -6.75,
+      "pct_from_low": 36.24,
       "data_quality": "actual",
-      "last_updated": "2026-03-31T18:00:30.394773"
+      "last_updated": "2026-04-01T04:12:11.464636"
     },
     "QQQ": {
-      "value": 558.28,
-      "change_1d": -0.76,
+      "value": 576.31,
+      "change_1d": 3.23,
       "high_52w": 635.8,
       "low_52w": 400.45,
-      "pct_from_high": -12.19,
-      "pct_from_low": 39.41,
+      "pct_from_high": -9.36,
+      "pct_from_low": 43.92,
       "data_quality": "actual",
-      "last_updated": "2026-03-31T18:00:30.588523"
+      "last_updated": "2026-04-01T04:12:11.629049"
     },
     "IWM": {
-      "value": 239.61,
-      "change_1d": -1.44,
+      "value": 247.59,
+      "change_1d": 3.33,
       "high_52w": 271.12,
       "low_52w": 169.9,
-      "pct_from_high": -11.62,
-      "pct_from_low": 41.03,
+      "pct_from_high": -8.68,
+      "pct_from_low": 45.73,
       "data_quality": "actual",
-      "last_updated": "2026-03-31T18:00:30.791737"
+      "last_updated": "2026-04-01T04:12:11.798129"
     },
     "DIA": {
-      "value": 452.06,
-      "change_1d": 0.15,
+      "value": 462.27,
+      "change_1d": 2.26,
       "high_52w": 503.59,
       "low_52w": 360.69,
-      "pct_from_high": -10.23,
-      "pct_from_low": 25.33,
+      "pct_from_high": -8.2,
+      "pct_from_low": 28.16,
       "data_quality": "actual",
-      "last_updated": "2026-03-31T18:00:31.017747"
+      "last_updated": "2026-04-01T04:12:11.978351"
     },
     "BTC": {
-      "value": 66748.42,
-      "change_1d": 0.09,
+      "value": 67865.43,
+      "change_1d": 1.76,
       "high_52w": 126198.07,
       "low_52w": 60074.2,
-      "pct_from_high": -47.11,
-      "pct_from_low": 11.11,
+      "pct_from_high": -46.22,
+      "pct_from_low": 12.97,
       "data_quality": "actual",
-      "last_updated": "2026-03-31T18:00:31.177038"
+      "last_updated": "2026-04-01T04:12:12.111394"
     },
     "ETH": {
-      "value": 2039.16,
-      "change_1d": 0.77,
+      "value": 2098.51,
+      "change_1d": 3.71,
       "high_52w": 4953.73,
       "low_52w": 1386.8,
-      "pct_from_high": -58.84,
-      "pct_from_low": 47.04,
+      "pct_from_high": -57.64,
+      "pct_from_low": 51.32,
       "data_quality": "actual",
-      "last_updated": "2026-03-31T18:00:31.340297"
+      "last_updated": "2026-04-01T04:12:12.377447"
     },
     "CSI300": {
-      "value": 4450.05,
-      "change_1d": -0.93,
+      "value": 4491.95,
+      "change_1d": -0.24,
       "high_52w": 4836.96,
       "low_52w": 3514.12,
-      "pct_from_high": -8.0,
-      "pct_from_low": 26.63,
+      "pct_from_high": -7.13,
+      "pct_from_low": 27.83,
       "data_quality": "actual",
-      "last_updated": "2026-03-31T18:00:31.500651"
+      "last_updated": "2026-04-01T04:12:12.509160"
     },
     "NIKKEI": {
-      "value": 51063.72,
-      "change_1d": -1.58,
+      "value": 51885.85,
+      "change_1d": -2.79,
       "high_52w": 59332.43,
       "low_52w": 30792.74,
-      "pct_from_high": -13.94,
-      "pct_from_low": 65.83,
+      "pct_from_high": -12.55,
+      "pct_from_low": 68.5,
       "data_quality": "actual",
-      "last_updated": "2026-03-31T18:00:31.660621"
+      "last_updated": "2026-04-01T04:12:12.643096"
     },
     "DAX": {
-      "value": 22680.69,
+      "value": 22680.04,
       "change_1d": 0.52,
       "high_52w": 25507.79,
       "low_52w": 18489.91,
-      "pct_from_high": -11.08,
-      "pct_from_low": 22.67,
+      "pct_from_high": -11.09,
+      "pct_from_low": 22.66,
       "data_quality": "actual",
-      "last_updated": "2026-03-31T18:00:31.823790"
+      "last_updated": "2026-04-01T04:12:12.777623"
     },
     "FTSE": {
-      "value": 10188.61,
-      "change_1d": 0.6,
+      "value": 10176.45,
+      "change_1d": 0.48,
       "high_52w": 10934.9,
       "low_52w": 7544.8,
-      "pct_from_high": -6.82,
-      "pct_from_low": 35.04,
+      "pct_from_high": -6.94,
+      "pct_from_low": 34.88,
       "data_quality": "actual",
-      "last_updated": "2026-03-31T18:00:31.986364"
+      "last_updated": "2026-04-01T04:12:12.914722"
     },
     "KOSPI": {
-      "value": 5052.46,
-      "change_1d": -4.26,
+      "value": 5277.3,
+      "change_1d": -2.97,
       "high_52w": 6347.41,
       "low_52w": 2284.72,
-      "pct_from_high": -20.4,
-      "pct_from_low": 121.14,
+      "pct_from_high": -16.86,
+      "pct_from_low": 130.98,
       "data_quality": "actual",
-      "last_updated": "2026-03-31T18:00:32.154384"
+      "last_updated": "2026-04-01T04:12:13.049892"
     },
     "RSP": {
-      "value": 188.07,
-      "change_1d": -0.21,
+      "value": 191.48,
+      "change_1d": 1.81,
       "high_52w": 204.37,
       "low_52w": 147.87,
-      "pct_from_high": -7.97,
-      "pct_from_low": 27.19,
+      "pct_from_high": -6.31,
+      "pct_from_low": 29.49,
       "data_quality": "actual",
-      "last_updated": "2026-03-31T18:00:32.341204"
+      "last_updated": "2026-04-01T04:12:13.211669"
     },
     "IEF": {
-      "value": 95.27,
-      "change_1d": 0.71,
+      "value": 95.5,
+      "change_1d": 0.25,
       "high_52w": 97.77,
       "low_52w": 89.62,
-      "pct_from_high": -2.55,
-      "pct_from_low": 6.31,
+      "pct_from_high": -2.31,
+      "pct_from_low": 6.57,
       "data_quality": "actual",
-      "last_updated": "2026-03-31T18:00:32.544608"
+      "last_updated": "2026-04-01T04:12:13.385556"
     },
     "XLF": {
-      "value": 48.36,
-      "change_1d": 1.15,
+      "value": 49.31,
+      "change_1d": 1.95,
       "high_52w": 56.23,
       "low_52w": 41.57,
-      "pct_from_high": -14.0,
-      "pct_from_low": 16.34,
+      "pct_from_high": -12.32,
+      "pct_from_low": 18.61,
       "data_quality": "actual",
-      "last_updated": "2026-03-31T18:00:32.738760"
+      "last_updated": "2026-04-01T04:12:13.557763"
     },
     "XLE": {
-      "value": 61.96,
-      "change_1d": -0.96,
+      "value": 60.87,
+      "change_1d": -1.76,
       "high_52w": 63.46,
       "low_52w": 36.09,
-      "pct_from_high": -2.36,
-      "pct_from_low": 71.7,
+      "pct_from_high": -4.08,
+      "pct_from_low": 68.68,
       "data_quality": "actual",
-      "last_updated": "2026-03-31T18:00:32.932585"
+      "last_updated": "2026-04-01T04:12:13.733559"
     },
     "XLK": {
-      "value": 127.5,
-      "change_1d": -1.86,
+      "value": 132.67,
+      "change_1d": 4.05,
       "high_52w": 152.57,
       "low_52w": 85.74,
-      "pct_from_high": -16.43,
-      "pct_from_low": 48.71,
+      "pct_from_high": -13.05,
+      "pct_from_low": 54.74,
       "data_quality": "actual",
-      "last_updated": "2026-03-31T18:00:33.237470"
+      "last_updated": "2026-04-01T04:12:13.911727"
     },
     "XLU": {
-      "value": 45.92,
-      "change_1d": 0.72,
+      "value": 45.63,
+      "change_1d": -0.62,
       "high_52w": 47.47,
       "low_52w": 34.53,
-      "pct_from_high": -3.26,
-      "pct_from_low": 33.0,
+      "pct_from_high": -3.86,
+      "pct_from_low": 32.17,
       "data_quality": "actual",
-      "last_updated": "2026-03-31T18:00:33.442190"
+      "last_updated": "2026-04-01T04:12:14.084969"
     },
     "XHB": {
-      "value": 95.56,
-      "change_1d": -0.97,
+      "value": 98.55,
+      "change_1d": 3.13,
       "high_52w": 122.76,
       "low_52w": 83.83,
-      "pct_from_high": -22.16,
-      "pct_from_low": 13.99,
+      "pct_from_high": -19.72,
+      "pct_from_low": 17.56,
       "data_quality": "actual",
-      "last_updated": "2026-03-31T18:00:33.631272"
+      "last_updated": "2026-04-01T04:12:14.238043"
     },
     "VNQ": {
-      "value": 87.33,
-      "change_1d": 0.38,
+      "value": 88.69,
+      "change_1d": 1.56,
       "high_52w": 95.21,
       "low_52w": 73.98,
-      "pct_from_high": -8.28,
-      "pct_from_low": 18.05,
+      "pct_from_high": -6.84,
+      "pct_from_low": 19.89,
       "data_quality": "actual",
-      "last_updated": "2026-03-31T18:00:33.814431"
+      "last_updated": "2026-04-01T04:12:14.399113"
     },
     "YieldSpread": {
-      "value": 0.74,
+      "value": 0.71,
       "change_1d": 0,
       "pct_from_high": 0,
       "signal": "Normal",
       "desc": "10Y - 2Y Yield"
     },
     "Breadth": {
-      "value": 0.2976,
+      "value": 0.295,
       "change_1d": 0,
       "pct_from_high": 0,
       "signal": "Check Trend",
       "desc": "RSP/SPY Ratio (Rising = Healthy)"
     },
     "CreditRisk": {
-      "value": 0.8272,
+      "value": 0.8328,
       "change_1d": 0,
       "pct_from_high": 0,
       "signal": "Check Trend",
@@ -388,27 +388,27 @@
       "category": "Federal"
     },
     {
-      "title": "3 reasons the Federal Reserve's interest rate pause is worrying investors - CBS News",
-      "source": "CBS News",
-      "date": "Thu, 19 Mar 2026 07:00:00 GMT",
+      "title": "Top Fed Official, Wary of Inflation, Calls for Extended Rate Pause - The New York Times",
+      "source": "The New York Times",
+      "date": "Wed, 04 Mar 2026 08:00:00 GMT",
       "category": "Federal"
     },
     {
-      "title": "Fed's Williams says monetary policy well positioned for unusual circumstances - Reuters",
+      "title": "Treasury yields fall as traders weigh odds of Iran war ending, future Fed policy moves - CNBC",
+      "source": "CNBC",
+      "date": "Tue, 31 Mar 2026 08:58:41 GMT",
+      "category": "Fed"
+    },
+    {
+      "title": "Powell says Fed can 'wait and see' how war affects inflation - Reuters",
       "source": "Reuters",
-      "date": "Mon, 30 Mar 2026 22:17:44 GMT",
+      "date": "Mon, 30 Mar 2026 10:03:00 GMT",
       "category": "Fed"
     },
     {
-      "title": "Here Are the Takeaways From Powell’s Remarks at Harvard - Bloomberg",
-      "source": "Bloomberg",
-      "date": "Mon, 30 Mar 2026 15:48:58 GMT",
-      "category": "Fed"
-    },
-    {
-      "title": "Fed’s Powell says policy in good place to ’wait and see’ effects of Iran conflict - Investing.com",
-      "source": "Investing.com",
-      "date": "Mon, 30 Mar 2026 15:10:02 GMT",
+      "title": "Fed's Jerome Powell says another supply shock is coming - MSN",
+      "source": "MSN",
+      "date": "Tue, 31 Mar 2026 13:27:02 GMT",
       "category": "Fed"
     },
     {
@@ -418,15 +418,15 @@
       "category": "US"
     },
     {
-      "title": "U.S. Quarterly Economic Forecast - TD Economics",
-      "source": "TD Economics",
-      "date": "Tue, 17 Mar 2026 07:00:00 GMT",
+      "title": "Economic outlook 2026-27: The Fog of War - Allianz Trade",
+      "source": "Allianz Trade",
+      "date": "Tue, 31 Mar 2026 15:45:50 GMT",
       "category": "US"
     },
     {
-      "title": "Our economic outlook for the United States - corporate.vanguard.com",
-      "source": "corporate.vanguard.com",
-      "date": "Mon, 09 Mar 2026 07:00:00 GMT",
+      "title": "The 2026 Economic Outlook for Latin America - International Banker",
+      "source": "International Banker",
+      "date": "Tue, 17 Mar 2026 11:58:38 GMT",
       "category": "US"
     }
   ],

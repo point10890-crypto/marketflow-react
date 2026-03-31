@@ -1858,5 +1858,98 @@
         ]
       }
     }
+  },
+  {
+    "date": "2026-04-01",
+    "predictions": {
+      "spy": {
+        "current_price": 648.85,
+        "bullish_probability": 63.5,
+        "bearish_probability": 36.5,
+        "predicted_return_pct": -0.1,
+        "target_range": {
+          "low": 635.35,
+          "mid": 648.18,
+          "high": 661.0
+        },
+        "confidence_level": "Moderate",
+        "key_drivers": [
+          {
+            "feature": "yield_spread_proxy",
+            "impact": 0.1444,
+            "value": 0.37,
+            "direction": "bullish"
+          },
+          {
+            "feature": "qqq_rsi",
+            "impact": 0.0785,
+            "value": 41.8,
+            "direction": "bearish"
+          },
+          {
+            "feature": "gold_return_1w",
+            "impact": 0.0784,
+            "value": 6.95,
+            "direction": "bullish"
+          },
+          {
+            "feature": "xlu_relative_1m",
+            "impact": 0.0772,
+            "value": 2.21,
+            "direction": "bearish"
+          },
+          {
+            "feature": "spy_return_1m",
+            "impact": 0.0744,
+            "value": -5.21,
+            "direction": "bearish"
+          }
+        ]
+      },
+      "qqq": {
+        "current_price": 576.19,
+        "bullish_probability": 45.4,
+        "bearish_probability": 54.6,
+        "predicted_return_pct": -1.07,
+        "target_range": {
+          "low": 555.08,
+          "mid": 570.04,
+          "high": 585.01
+        },
+        "confidence_level": "Low",
+        "key_drivers": [
+          {
+            "feature": "spy_return_1m",
+            "impact": 0.114,
+            "value": -5.21,
+            "direction": "bearish"
+          },
+          {
+            "feature": "yield_spread_proxy",
+            "impact": 0.1112,
+            "value": 0.37,
+            "direction": "bullish"
+          },
+          {
+            "feature": "spy_rsi",
+            "impact": 0.096,
+            "value": 41.8,
+            "direction": "bearish"
+          },
+          {
+            "feature": "xlu_relative_1m",
+            "impact": 0.0781,
+            "value": 2.21,
+            "direction": "bearish"
+          },
+          {
+            "feature": "vix_value",
+            "impact": 0.0747,
+            "value": 25.84,
+            "direction": "bearish"
+          }
+        ]
+      }
+    }
   }
 ]

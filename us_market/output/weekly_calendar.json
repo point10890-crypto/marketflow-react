@@ -1,7 +1,7 @@
 {
   "week_start": "2026-03-30",
   "week_end": "2026-04-05",
-  "updated": "2026-03-31T18:01:26.834122",
+  "updated": "2026-04-01T04:13:27.442813",
   "events": [
     {
       "date": "2026-03-30",
@@ -83,7 +83,7 @@
       "type": "Economic",
       "forecast": null,
       "previous": "6.7%",
-      "actual": null,
+      "actual": "6.9%",
       "ticker": null,
       "ai_outlook": null
     },
@@ -94,8 +94,8 @@
       "impact": "low",
       "type": "Economic",
       "forecast": null,
-      "previous": "440.4",
-      "actual": null,
+      "previous": "440.7",
+      "actual": "441.0",
       "ticker": null,
       "ai_outlook": null
     },
@@ -106,8 +106,8 @@
       "impact": "low",
       "type": "Economic",
       "forecast": "0.1%",
-      "previous": "0.1%",
-      "actual": null,
+      "previous": "0.3%",
+      "actual": "0.1%",
       "ticker": null,
       "ai_outlook": null
     },
@@ -118,8 +118,8 @@
       "impact": "low",
       "type": "Economic",
       "forecast": null,
-      "previous": "1.8%",
-      "actual": null,
+      "previous": "1.9%",
+      "actual": "1.6%",
       "ticker": null,
       "ai_outlook": null
     },
@@ -131,7 +131,7 @@
       "type": "Economic",
       "forecast": null,
       "previous": "-0.1%",
-      "actual": null,
+      "actual": "-0.1%",
       "ticker": null,
       "ai_outlook": null
     },
@@ -143,7 +143,7 @@
       "type": "Economic",
       "forecast": "1.3%",
       "previous": "1.4%",
-      "actual": null,
+      "actual": "1.2%",
       "ticker": null,
       "ai_outlook": null
     },
@@ -153,9 +153,9 @@
       "event": "Chicago PMI [Mar]",
       "impact": "medium",
       "type": "Economic",
-      "forecast": "55.8",
+      "forecast": "55",
       "previous": "57.7",
-      "actual": null,
+      "actual": "52.8",
       "ticker": null,
       "ai_outlook": null
     },
@@ -167,7 +167,7 @@
       "type": "Economic",
       "forecast": "88",
       "previous": "91.2",
-      "actual": null,
+      "actual": "91.8",
       "ticker": null,
       "ai_outlook": null
     },
@@ -177,9 +177,9 @@
       "event": "JOLTs 구인보고서 (JOLTs Job Openings) [Feb]",
       "impact": "high",
       "type": "Economic",
-      "forecast": "6.87M",
-      "previous": "6.946M",
-      "actual": null,
+      "forecast": "6.92M",
+      "previous": "7.240M",
+      "actual": "6.882M",
       "ticker": null,
       "ai_outlook": null
     },
@@ -191,7 +191,7 @@
       "type": "Economic",
       "forecast": null,
       "previous": "3.1M",
-      "actual": null,
+      "actual": "2.974M",
       "ticker": null,
       "ai_outlook": null
     },
@@ -203,7 +203,7 @@
       "type": "Economic",
       "forecast": null,
       "previous": "-3.2",
-      "actual": null,
+      "actual": "-13.3",
       "ticker": null,
       "ai_outlook": null
     },
@@ -215,7 +215,7 @@
       "type": "Economic",
       "forecast": null,
       "previous": "4.1",
-      "actual": null,
+      "actual": "1.3",
       "ticker": null,
       "ai_outlook": null
     },
@@ -251,7 +251,7 @@
       "type": "Economic",
       "forecast": "94.50M",
       "previous": "95.326M",
-      "actual": null,
+      "actual": "95.3M",
       "ticker": null,
       "ai_outlook": null
     },
@@ -263,7 +263,7 @@
       "type": "Economic",
       "forecast": "9.11M",
       "previous": "9.867M",
-      "actual": null,
+      "actual": "9.64M",
       "ticker": null,
       "ai_outlook": null
     },
@@ -275,7 +275,7 @@
       "type": "Economic",
       "forecast": "85.57M",
       "previous": "83.495M",
-      "actual": null,
+      "actual": "84.7M",
       "ticker": null,
       "ai_outlook": null
     },
@@ -287,7 +287,7 @@
       "type": "Economic",
       "forecast": "44.60M",
       "previous": "45.35M",
-      "actual": null,
+      "actual": "43.8M",
       "ticker": null,
       "ai_outlook": null
     },
@@ -299,7 +299,7 @@
       "type": "Economic",
       "forecast": "9.14B",
       "previous": "13.28B",
-      "actual": null,
+      "actual": "9.02B",
       "ticker": null,
       "ai_outlook": null
     },
@@ -311,7 +311,7 @@
       "type": "Economic",
       "forecast": "2.10B",
       "previous": "3.29B",
-      "actual": null,
+      "actual": "2.10B",
       "ticker": null,
       "ai_outlook": null
     },
@@ -323,7 +323,7 @@
       "type": "Economic",
       "forecast": "1.31B",
       "previous": "1.68B",
-      "actual": null,
+      "actual": "1.30B",
       "ticker": null,
       "ai_outlook": null
     },
@@ -345,7 +345,7 @@
       "event": "API Crude Oil Stock Change [03/28]",
       "impact": "medium",
       "type": "Economic",
-      "forecast": null,
+      "forecast": "-1.3M",
       "previous": "2.3M",
       "actual": null,
       "ticker": null,
@@ -361,7 +361,7 @@
       "previous": null,
       "actual": null,
       "ticker": "NKE",
-      "ai_outlook": "Consumer Cyclical | 시가총액 $75.9B"
+      "ai_outlook": "Consumer Cyclical | 시가총액 $78.2B"
     },
     {
       "date": "2026-04-01",
@@ -621,7 +621,7 @@
       "event": "EIA Crude Oil Stocks Change [03/28]",
       "impact": "medium",
       "type": "Economic",
-      "forecast": null,
+      "forecast": "-1.3M",
       "previous": "6.926M",
       "actual": null,
       "ticker": null,
