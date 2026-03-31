@@ -30,7 +30,7 @@
       "final_score": 78.1,
       "grade": "🌟 A급 (적극 매수)",
       "ai_recommendation": "매수",
-      "target_upside": 5.4
+      "target_upside": 5.1
     },
     {
       "ticker": "AKAM",
@@ -38,7 +38,7 @@
       "final_score": 76.7,
       "grade": "🌟 A급 (적극 매수)",
       "ai_recommendation": "매수",
-      "target_upside": -4.6
+      "target_upside": -4.7
     },
     {
       "ticker": "APO",
@@ -46,7 +46,7 @@
       "final_score": 76.5,
       "grade": "📈 B급 (매수 고려)",
       "ai_recommendation": "매수",
-      "target_upside": 38.9
+      "target_upside": 38.5
     },
     {
       "ticker": "AEP",
@@ -59,7 +59,7 @@
     {
       "ticker": "LNT",
       "name": "Alliant Energy Corporation",
-      "final_score": 74.9,
+      "final_score": 74.4,
       "grade": "📈 B급 (매수 고려)",
       "ai_recommendation": "매수",
       "target_upside": 5.1

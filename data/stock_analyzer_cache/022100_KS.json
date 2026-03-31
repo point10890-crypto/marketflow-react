@@ -1,0 +1,89 @@
+{
+  "name": "포스코DX",
+  "ticker": "022100.KS",
+  "result": "적극 매도",
+  "date": "2026-04-01 07:45:20",
+  "elapsed": 2.5,
+  "consensus_score": 1.0,
+  "analyst_count": 1,
+  "recommendation_detail": {
+    "strongBuy": 0,
+    "buy": 0,
+    "hold": 0,
+    "sell": 0,
+    "strongSell": 1
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 29450.0,
+    "high": 34700.0,
+    "low": 34700.0,
+    "mean": 34700.0,
+    "median": 34700.0
+  },
+  "current_price": 29450.0,
+  "upside_potential": 17.8,
+  "key_stats": {
+    "name": "POSCO DX",
+    "sector": "Technology",
+    "industry": "Information Technology Services",
+    "market_cap": 4471173152768,
+    "pe_ratio": null,
+    "forward_pe": 53.063065,
+    "dividend_yield": 0.42,
+    "beta": 1.799,
+    "fifty_two_week_high": 45600.0,
+    "fifty_two_week_low": 19918.0,
+    "revenue": 1075175358464,
+    "profit_margin": 0.04844,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "포스코DX에 대해 1명의 애널리스트가 적극 매도 의견을 제시했습니다. 목표가 평균은 현재가 대비 17.8% 상승 여력이 있는 34,700원으로 제시되었습니다. 투자 판단은 제시된 분석 데이터를 참고하여 신중하게 결정해야 합니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 260814542790
+    },
+    {
+      "date": "2025-09",
+      "value": 244723536290
+    },
+    {
+      "date": "2025-06",
+      "value": 272857095030
+    },
+    {
+      "date": "2025-03",
+      "value": 296780188930
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": -1116193310
+    },
+    {
+      "date": "2025-09",
+      "value": 17440262210
+    },
+    {
+      "date": "2025-06",
+      "value": 14221025660
+    },
+    {
+      "date": "2025-03",
+      "value": 21536170410
+    }
+  ],
+  "news": [
+    {
+      "title": "POSCO Advances Automation With Yaskawa Industrial Robots Deal",
+      "summary": "PKX deepens its Yaskawa Electric alliance to roll out advanced robotics across global EV motor-core plants, boosting safety, speed and smart manufacturing.",
+      "url": "https://finance.yahoo.com/news/posco-advances-automation-yaskawa-industrial-124100306.html",
+      "provider": "Zacks",
+      "pub_time": "2026-01-19T12:41:00Z"
+    }
+  ]
+}

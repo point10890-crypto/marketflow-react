@@ -1,0 +1,111 @@
+{
+  "name": "유비쿼스홀딩스",
+  "ticker": "078070.KQ",
+  "result": "데이터 없음",
+  "date": "2026-04-01 07:48:56",
+  "elapsed": 2.5,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 14530.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 14530.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "Ubiquoss Holdings",
+    "sector": "",
+    "industry": "",
+    "market_cap": 239932637184,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": null,
+    "beta": null,
+    "fifty_two_week_high": 17780.0,
+    "fifty_two_week_low": 9138.0,
+    "revenue": null,
+    "profit_margin": null,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 43531667130
+    },
+    {
+      "date": "2025-09",
+      "value": 39625682860
+    },
+    {
+      "date": "2025-06",
+      "value": 43528950650
+    },
+    {
+      "date": "2025-03",
+      "value": 28976003950
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 5417758150
+    },
+    {
+      "date": "2025-09",
+      "value": 6270253180
+    },
+    {
+      "date": "2025-06",
+      "value": 4989376110
+    },
+    {
+      "date": "2025-03",
+      "value": 3693910510
+    }
+  ],
+  "news": [
+    {
+      "title": "Undiscovered Gems in Global Markets to Explore January 2026",
+      "summary": "As global markets navigate a mixed landscape, with small-cap and value stocks leading the charge over their larger counterparts, investors are keenly observing economic indicators that suggest a cooli",
+      "url": "https://finance.yahoo.com/news/undiscovered-gems-global-markets-explore-093318926.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-01-22T09:33:18Z"
+    },
+    {
+      "title": "Uncovering Asia's Undiscovered Gems In January 2026",
+      "summary": "As we step into January 2026, the Asian markets are buzzing with activity, particularly in the small-cap segment, as global indices like the Russell 2000 and S&P MidCap 400 reach unprecedented highs. ",
+      "url": "https://finance.yahoo.com/news/uncovering-asias-undiscovered-gems-january-043255981.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-01-22T04:32:55Z"
+    },
+    {
+      "title": "Unveiling Three Undiscovered Gems in Asia with Solid Foundations",
+      "summary": "As the Asian markets navigate a landscape marked by regulatory shifts and evolving trade dynamics, small-cap stocks have emerged as resilient performers, capturing attention with their potential for g",
+      "url": "https://finance.yahoo.com/news/unveiling-three-undiscovered-gems-asia-223324219.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-01-21T22:33:24Z"
+    },
+    {
+      "title": "Exploring 3 Undiscovered Gems in Asia with Strong Fundamentals",
+      "summary": "As global markets navigate a complex landscape marked by mixed performances in major indices and evolving economic conditions, Asia presents intriguing opportunities for investors seeking to uncover p",
+      "url": "https://finance.yahoo.com/news/exploring-3-undiscovered-gems-asia-043308699.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-01-06T04:33:08Z"
+    },
+    {
+      "title": "Exploring 3 Undiscovered Gems In Asia With Promising Potential",
+      "summary": "As global markets navigate a complex landscape of economic shifts, Asia's small-cap stocks are capturing attention amid mixed performances across major indices. With China's manufacturing sector showi",
+      "url": "https://finance.yahoo.com/news/exploring-3-undiscovered-gems-asia-223317769.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-01-05T22:33:17Z"
+    }
+  ]
+}
