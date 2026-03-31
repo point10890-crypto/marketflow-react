@@ -1,15 +1,15 @@
 {
-  "timestamp": "2026-04-01T04:38:30.539981",
+  "timestamp": "2026-04-01T05:03:21.962455",
   "predictions": {
     "spy": {
-      "current_price": 650.39,
-      "bullish_probability": 56.1,
-      "bearish_probability": 43.9,
-      "predicted_return_pct": -0.09,
+      "current_price": 650.35,
+      "bullish_probability": 47.9,
+      "bearish_probability": 52.1,
+      "predicted_return_pct": -0.28,
       "target_range": {
-        "low": 636.93,
-        "mid": 649.78,
-        "high": 662.63
+        "low": 635.67,
+        "mid": 648.52,
+        "high": 661.37
       },
       "confidence_level": "Low",
       "key_drivers": [
@@ -22,45 +22,45 @@
         {
           "feature": "qqq_rsi",
           "impact": 0.0785,
-          "value": 42.33,
+          "value": 42.44,
           "direction": "bearish"
         },
         {
           "feature": "gold_return_1w",
           "impact": 0.0784,
-          "value": 6.9,
+          "value": 7.14,
           "direction": "bullish"
         },
         {
           "feature": "xlu_relative_1m",
           "impact": 0.0772,
-          "value": 2.45,
+          "value": 2.5,
           "direction": "bearish"
         },
         {
           "feature": "spy_return_1m",
           "impact": 0.0744,
-          "value": -4.98,
+          "value": -4.99,
           "direction": "bearish"
         }
       ]
     },
     "qqq": {
-      "current_price": 577.08,
+      "current_price": 577.29,
       "bullish_probability": 39.5,
       "bearish_probability": 60.5,
       "predicted_return_pct": -1.23,
       "target_range": {
-        "low": 554.97,
-        "mid": 569.96,
-        "high": 584.95
+        "low": 555.17,
+        "mid": 570.16,
+        "high": 585.16
       },
       "confidence_level": "Moderate",
       "key_drivers": [
         {
           "feature": "spy_return_1m",
           "impact": 0.114,
-          "value": -4.98,
+          "value": -4.99,
           "direction": "bearish"
         },
         {
@@ -72,19 +72,19 @@
         {
           "feature": "spy_rsi",
           "impact": 0.096,
-          "value": 42.82,
+          "value": 42.79,
           "direction": "bearish"
         },
         {
           "feature": "xlu_relative_1m",
           "impact": 0.0781,
-          "value": 2.45,
+          "value": 2.5,
           "direction": "bearish"
         },
         {
           "feature": "vix_value",
           "impact": 0.0747,
-          "value": 25.5,
+          "value": 25.11,
           "direction": "bearish"
         }
       ]

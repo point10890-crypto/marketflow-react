@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-04-01T04:29:40.894236",
+  "timestamp": "2026-04-01T04:54:41.813176",
   "portfolio_summary": {
     "total_picks": 15,
     "portfolio_var_95_5d": -2045.39,
@@ -18,16 +18,16 @@
   },
   "drawdowns": {
     "AKAM": {
-      "current_price": 114.11,
+      "current_price": 114.3,
       "peak_price": 119.15,
-      "current_dd": -4.23,
+      "current_dd": -4.07,
       "max_dd": -15.74,
       "from_peak_days": 6
     },
     "T": {
-      "current_price": 28.67,
+      "current_price": 28.88,
       "peak_price": 29.1,
-      "current_dd": -1.48,
+      "current_dd": -0.77,
       "max_dd": -6.32,
       "from_peak_days": 4
     },
@@ -38,87 +38,87 @@
       "max_dd": -34.05,
       "from_peak_days": 84
     },
+    "AEP": {
+      "current_price": 130.79,
+      "peak_price": 134.15,
+      "current_dd": -2.5,
+      "max_dd": -6.33,
+      "from_peak_days": 15
+    },
     "LNT": {
-      "current_price": 71.6,
+      "current_price": 71.53,
       "peak_price": 73.03,
-      "current_dd": -1.96,
+      "current_dd": -2.05,
       "max_dd": -5.92,
       "from_peak_days": 15
     },
     "ALB": {
-      "current_price": 181.46,
+      "current_price": 179.21,
       "peak_price": 195.39,
-      "current_dd": -7.13,
+      "current_dd": -8.28,
       "max_dd": -19.8,
       "from_peak_days": 34
     },
     "ACGL": {
-      "current_price": 96.03,
+      "current_price": 96.12,
       "peak_price": 101.98,
-      "current_dd": -5.83,
+      "current_dd": -5.75,
       "max_dd": -9.62,
       "from_peak_days": 54
     },
     "APD": {
-      "current_price": 290.9,
+      "current_price": 290.35,
       "peak_price": 293.17,
-      "current_dd": -0.77,
+      "current_dd": -0.96,
       "max_dd": -7.15,
       "from_peak_days": 5
     },
     "AJG": {
-      "current_price": 216.24,
+      "current_price": 216.71,
       "peak_price": 264.03,
-      "current_dd": -18.1,
+      "current_dd": -17.92,
       "max_dd": -22.67,
       "from_peak_days": 78
     },
     "AMD": {
-      "current_price": 203.68,
+      "current_price": 203.43,
       "peak_price": 259.68,
-      "current_dd": -21.57,
+      "current_dd": -21.66,
       "max_dd": -26.47,
       "from_peak_days": 67
     },
-    "AEP": {
-      "current_price": 130.91,
-      "peak_price": 134.15,
-      "current_dd": -2.42,
-      "max_dd": -6.33,
-      "from_peak_days": 15
-    },
     "AON": {
-      "current_price": 323.16,
+      "current_price": 322.78,
       "peak_price": 352.88,
-      "current_dd": -8.42,
+      "current_dd": -8.53,
       "max_dd": -12.16,
       "from_peak_days": 90
     },
+    "AEE": {
+      "current_price": 109.65,
+      "peak_price": 112.86,
+      "current_dd": -2.84,
+      "max_dd": -6.03,
+      "from_peak_days": 15
+    },
     "APA": {
-      "current_price": 42.31,
+      "current_price": 42.33,
       "peak_price": 44.39,
-      "current_dd": -4.69,
+      "current_dd": -4.65,
       "max_dd": -7.77,
       "from_peak_days": 4
     },
     "AMAT": {
-      "current_price": 340.33,
+      "current_price": 339.62,
       "peak_price": 394.95,
-      "current_dd": -13.83,
+      "current_dd": -14.01,
       "max_dd": -18.19,
       "from_peak_days": 34
     },
-    "AEE": {
-      "current_price": 109.62,
-      "peak_price": 112.86,
-      "current_dd": -2.87,
-      "max_dd": -6.03,
-      "from_peak_days": 15
-    },
     "APP": {
-      "current_price": 395.99,
+      "current_price": 398.48,
       "peak_price": 673.82,
-      "current_dd": -41.23,
+      "current_dd": -40.86,
       "max_dd": -45.55,
       "from_peak_days": 90
     }
@@ -195,32 +195,32 @@
       "alert_type": "drawdown",
       "severity": "critical",
       "ticker": "AMD",
-      "message": "AMD is in critical drawdown: -21.6% from peak",
-      "value": -21.57,
+      "message": "AMD is in critical drawdown: -21.7% from peak",
+      "value": -21.66,
       "threshold": -20.0
     },
     {
       "alert_type": "drawdown",
       "severity": "critical",
       "ticker": "APP",
-      "message": "APP is in critical drawdown: -41.2% from peak",
-      "value": -41.23,
+      "message": "APP is in critical drawdown: -40.9% from peak",
+      "value": -40.86,
       "threshold": -20.0
     },
     {
       "alert_type": "drawdown",
       "severity": "warning",
       "ticker": "AJG",
-      "message": "AJG drawdown warning: -18.1% from peak",
-      "value": -18.1,
+      "message": "AJG drawdown warning: -17.9% from peak",
+      "value": -17.92,
       "threshold": -10.0
     },
     {
       "alert_type": "drawdown",
       "severity": "warning",
       "ticker": "AMAT",
-      "message": "AMAT drawdown warning: -13.8% from peak",
-      "value": -13.83,
+      "message": "AMAT drawdown warning: -14.0% from peak",
+      "value": -14.01,
       "threshold": -10.0
     },
     {

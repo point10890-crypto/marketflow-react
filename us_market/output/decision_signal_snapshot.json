@@ -1,10 +1,10 @@
 {
   "action": "CAUTIOUS",
-  "score": 29,
+  "score": 30,
   "components": {
     "market_gate": {
-      "score": 30,
-      "contribution": -6.0
+      "score": 35,
+      "contribution": -4.5
     },
     "regime": {
       "regime": "neutral",
@@ -30,7 +30,7 @@
       "final_score": 78.5,
       "grade": "🌟 A급 (적극 매수)",
       "ai_recommendation": "매수",
-      "target_upside": 6.1
+      "target_upside": 6.3
     },
     {
       "ticker": "AKAM",
@@ -38,7 +38,7 @@
       "final_score": 77.7,
       "grade": "🌟 A급 (적극 매수)",
       "ai_recommendation": "매수",
-      "target_upside": -4.1
+      "target_upside": -4.0
     },
     {
       "ticker": "APO",
@@ -46,7 +46,15 @@
       "final_score": 76.5,
       "grade": "📈 B급 (매수 고려)",
       "ai_recommendation": "매수",
-      "target_upside": 39.1
+      "target_upside": 38.5
+    },
+    {
+      "ticker": "AEP",
+      "name": "American Electric Power Company, Inc.",
+      "final_score": 75.5,
+      "grade": "📈 B급 (매수 고려)",
+      "ai_recommendation": "매수",
+      "target_upside": 5.0
     },
     {
       "ticker": "LNT",
@@ -54,23 +62,15 @@
       "final_score": 74.9,
       "grade": "📈 B급 (매수 고려)",
       "ai_recommendation": "매수",
-      "target_upside": 5.9
-    },
-    {
-      "ticker": "AEP",
-      "name": "American Electric Power Company, Inc.",
-      "final_score": 73.1,
-      "grade": "📈 B급 (매수 고려)",
-      "ai_recommendation": "매수",
-      "target_upside": 5.4
+      "target_upside": 5.3
     }
   ],
   "timing": "WAIT",
   "warnings": [
     "APO is in critical drawdown: -26.9% from peak",
-    "AMD is in critical drawdown: -21.6% from peak",
-    "APP is in critical drawdown: -41.2% from peak",
-    "AJG drawdown warning: -18.1% from peak",
-    "AMAT drawdown warning: -13.8% from peak"
+    "AMD is in critical drawdown: -21.7% from peak",
+    "APP is in critical drawdown: -40.9% from peak",
+    "AJG drawdown warning: -17.9% from peak",
+    "AMAT drawdown warning: -14.0% from peak"
   ]
 }
