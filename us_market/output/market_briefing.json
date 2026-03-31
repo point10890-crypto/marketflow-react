@@ -1,8 +1,8 @@
 {
-  "timestamp": "2026-03-31T08:31:34.637294",
+  "timestamp": "2026-03-31T18:00:33.781128",
   "version": "2.0",
   "market_data": {
-    "timestamp": "2026-03-31T08:31:34.637300",
+    "timestamp": "2026-03-31T18:00:33.781139",
     "indices": {
       "SPY": {
         "name": "S&P 500",
@@ -18,9 +18,9 @@
         "price": 558.28,
         "change": -0.76,
         "prev_close": 562.58,
-        "high_52w": 636.6,
-        "low_52w": 400.96,
-        "pct_from_high": -12.3
+        "high_52w": 635.8,
+        "low_52w": 400.45,
+        "pct_from_high": -12.19
       },
       "DIA": {
         "name": "Dow Jones",
@@ -44,30 +44,30 @@
     "futures": {
       "ES=F": {
         "name": "S&P 500 Futures",
-        "price": 6376.0,
-        "change": -0.57,
-        "prev_close": 6412.25,
+        "price": 6443.0,
+        "change": 0.86,
+        "prev_close": 6388.25,
         "high_52w": 7043.0,
         "low_52w": 4832.0,
-        "pct_from_high": -9.47
+        "pct_from_high": -8.52
       },
       "NQ=F": {
         "name": "NASDAQ Futures",
-        "price": 23063.0,
-        "change": -1.14,
-        "prev_close": 23328.5,
+        "price": 23330.25,
+        "change": 0.82,
+        "prev_close": 23139.75,
         "high_52w": 26399.0,
         "low_52w": 16460.0,
-        "pct_from_high": -12.64
+        "pct_from_high": -11.62
       },
       "YM=F": {
         "name": "Dow Futures",
-        "price": 45409.0,
-        "change": -0.03,
-        "prev_close": 45424.0,
+        "price": 45874.0,
+        "change": 0.9,
+        "prev_close": 45465.0,
         "high_52w": 50611.0,
         "low_52w": 36708.0,
-        "pct_from_high": -10.28
+        "pct_from_high": -9.36
       }
     },
     "bonds": {
@@ -102,111 +102,111 @@
     "currencies": {
       "DX-Y.NYB": {
         "name": "Dollar Index",
-        "price": 100.49,
-        "change": 0.34,
-        "prev_close": 100.15,
+        "price": 100.4,
+        "change": -0.11,
+        "prev_close": 100.51,
         "high_52w": 104.39,
         "low_52w": 95.55,
-        "pct_from_high": -3.74
+        "pct_from_high": -3.82
       },
       "USDKRW=X": {
         "name": "USD/KRW",
-        "price": 1507.02,
-        "change": -0.09,
-        "prev_close": 1508.36,
-        "high_52w": 1521.63,
+        "price": 1530.58,
+        "change": 1.56,
+        "prev_close": 1507.02,
+        "high_52w": 1536.78,
         "low_52w": 1322.42,
-        "pct_from_high": -0.96
+        "pct_from_high": -0.4
       },
       "USDJPY=X": {
         "name": "USD/JPY",
-        "price": 159.81,
-        "change": -0.27,
+        "price": 159.57,
+        "change": -0.42,
         "prev_close": 160.23,
         "high_52w": 160.23,
         "low_52w": 139.89,
-        "pct_from_high": -0.26
+        "pct_from_high": -0.41
       },
       "EURUSD=X": {
         "name": "EUR/USD",
         "price": 1.15,
-        "change": -0.3,
+        "change": -0.19,
         "prev_close": 1.15,
         "high_52w": 1.2,
         "low_52w": 1.08,
-        "pct_from_high": -4.71
+        "pct_from_high": -4.6
       }
     },
     "commodities": {
       "GC=F": {
         "name": "Gold",
-        "price": 4538.0,
-        "change": 1.02,
-        "prev_close": 4492.0,
+        "price": 4601.4,
+        "change": 1.67,
+        "prev_close": 4526.0,
         "high_52w": 5586.2,
         "low_52w": 2949.7,
-        "pct_from_high": -18.76
+        "pct_from_high": -17.63
       },
       "CL=F": {
         "name": "Crude Oil",
-        "price": 106.09,
-        "change": 6.47,
-        "prev_close": 99.64,
+        "price": 102.46,
+        "change": -0.41,
+        "prev_close": 102.88,
         "high_52w": 119.48,
         "low_52w": 54.98,
-        "pct_from_high": -11.21
+        "pct_from_high": -14.25
       },
       "BTC-USD": {
         "name": "Bitcoin",
-        "price": 66653.17,
-        "change": 1.06,
-        "prev_close": 65954.92,
+        "price": 66740.78,
+        "change": 0.07,
+        "prev_close": 66691.45,
         "high_52w": 126198.07,
         "low_52w": 60074.2,
-        "pct_from_high": -47.18
+        "pct_from_high": -47.11
       }
     },
     "korean_indices": {
       "^KS11": {
         "name": "KOSPI",
-        "price": 5438.87,
-        "change": -0.4,
-        "prev_close": 5460.46,
+        "price": 5052.46,
+        "change": -4.26,
+        "prev_close": 5277.3,
         "high_52w": 6347.41,
         "low_52w": 2284.72,
-        "pct_from_high": -14.31
+        "pct_from_high": -20.4
       },
       "^KQ11": {
         "name": "KOSDAQ",
-        "price": 1141.51,
-        "change": 0.43,
-        "prev_close": 1136.64,
+        "price": 1052.39,
+        "change": -4.94,
+        "prev_close": 1107.05,
         "high_52w": 1215.67,
         "low_52w": 637.55,
-        "pct_from_high": -6.1
+        "pct_from_high": -13.43
       }
     },
     "vix": {
-      "value": 30.61,
-      "change": -1.42,
+      "value": 28.97,
+      "change": -5.36,
       "level": "Fear",
       "color": "#FF5722"
     }
   },
   "vix": {
-    "value": 30.61,
-    "change": -1.42,
+    "value": 28.97,
+    "change": -5.36,
     "level": "Fear",
     "color": "#FF5722"
   },
   "fear_greed": {
-    "score": 40,
+    "score": 41,
     "level": "Neutral",
     "color": "#FFC107",
     "components": {
       "vix": {
-        "value": 30.61,
-        "score": 31
+        "value": 28.97,
+        "score": 37
       },
       "momentum": {
         "pct_from_high": -9.19,
@@ -219,8 +219,8 @@
       },
       "safe_haven": {
         "stock_chg": -0.33,
-        "gold_chg": 1.02,
-        "score": 36
+        "gold_chg": 1.67,
+        "score": 30
       },
       "junk_bond": {
         "yield_change": -2.21,
@@ -234,7 +234,7 @@
   },
   "quant_signals": {
     "regime": {
-      "regime": "risk_off",
+      "regime": "neutral",
       "confidence": 50.0
     },
     "prediction": {
@@ -243,88 +243,88 @@
     },
     "risk": {
       "risk_level": "High",
-      "var_95_5d": 1683.04,
-      "cvar_95_5d": 2185.72
+      "var_95_5d": 1918.13,
+      "cvar_95_5d": 3081.05
     },
     "top_picks": [
       {
         "ticker": "T",
         "name": "AT&T Inc.",
-        "final_score": 89.0,
-        "quant_score": 72.5,
-        "ai_bonus": 31,
-        "ai_recommendation": "적극 매수",
+        "final_score": 80.0,
+        "quant_score": 73.8,
+        "ai_bonus": 21,
+        "ai_recommendation": "매수",
         "grade": "🌟 A급 (적극 매수)",
-        "current_price": 29.1,
-        "target_upside": 4.7,
+        "current_price": 28.78,
+        "target_upside": 5.8,
         "sd_stage": "Strong Accumulation",
         "inst_pct": 68.01,
-        "rsi": 64.3,
-        "ai_summary": "```json\n{\n  \"thesis\": \"AT&T(T)는 VIX 31.05에 달하는 극심한 시장 공포 속에서도 P/E 9.57의 저평가 매력과 68%의 탄탄한 기관 보유율을 바탕으로 강력한 방어주 역할을 수행하고 있으며, 시장 대비 11.2% 아웃퍼폼 중인 적극 매수(A급) 종목입니다.\",\n  \"catalysts\": [\n    {\n      \"point\": \"시장 조정기 속 피난처(방어주) 역할 부각\",\n      \"evidence\": \"VIX 31.05 및 주식 시장 공식 조정 진입 뉴스 [2026-03-27 Fortune] 상황에서 저PER(9.57) 배당주로서의 매력 부각\"\n    },\n    {\n      \"point\": \"강력한 기관 수급 및 아웃퍼폼\",\n      \"evidence\": \"수급 점수 80/100 (Strong Accumulation) 및 S&P 500 대비 +11.2% 초과 수익 달성 [종목 수치 분석]\"\n    },\n    {\n      \"point\": \"",
+        "rsi": 59.3,
+        "ai_summary": "```json\n{\n  \"thesis\": \"AT&T는 P/E 9.47배의 저평가 매력과 함께 광통신망(Fiber) 확장에 따른 구조적 성장 모멘텀을 보유하고 있으며, VIX 30 이상의 공포 장세 속에서도 S&P 500 대비 10.4% 초과 수익을 달성하는 강력한 방어주 겸 가치주입니다.\",\n  \"catalysts\": [\n    {\n      \"point\": \"월가의 목표가 상향 및 광통신망(Fiber) 확장 모멘텀\",\n      \"evidence\": \"Citi가 광통신망 구축 성과를 반영하여 목표가를 $31.50으로 상향 조정 [2026-03-30, tikr.com]\"\n    },\n    {\n      \"point\": \"강력한 기관 수급 및 시장 대비 초과 수익\",\n      \"evidence\": \"수급 점수 80/100(Strong Accumulation) 및 S&P 500 대비 +10.4% 아웃퍼폼 [수치 분석 데이터]\"\n    }\n  ],\n  \"bear_cases\": [\n   ",
         "rank": 1
-      },
-      {
-        "ticker": "AKAM",
-        "name": "Akamai Technologies, Inc.",
-        "final_score": 75.3,
-        "quant_score": 74.1,
-        "ai_bonus": 16,
-        "ai_recommendation": "매수",
-        "grade": "🌟 A급 (적극 매수)",
-        "current_price": 114.5,
-        "target_upside": -4.4,
-        "sd_stage": "Strong Accumulation",
-        "inst_pct": 102.55,
-        "rsi": 62.6,
-        "ai_summary": "{\n  \"thesis\": \"AKAM은 거시경제의 높은 공포 심리(VIX 27.44)에도 불구하고 기관의 강력한 매집(수급 점수 90/100)과 시장 대비 압도적인 수익률(S&P 500 대비 +23.7%)을 바탕으로 단기 상승 모멘텀을 유지하고 있는 강력한 매수 후보입니다.\",\n  \"catalysts\": [\n    {\n      \"point\": \"강력한 단기 주가 모멘텀 및 경쟁사 대비 아웃퍼폼\",\n      \"evidence\": \"최근 7일 연속 상승하며 주가가 13% 급등하였고, 강세장에서 경쟁사들의 수익률을 상회함 [2026-03-26 trefis.com, 2026-03-25 MarketWatch]\"\n    },\n    {\n      \"point\": \"압도적인 기관 수급 및 기술적 강세\",\n      \"evidence\": \"기관 보유 비중이 102.5%에 달하며 수급 점수 90/100의 강한 매집(Strong Accumulation) 상태를 보여줌 [종목 정보 수치 분석]\"\n  ",
-        "rank": 2
-      },
-      {
-        "ticker": "AWK",
-        "name": "American Water Works Company, Inc.",
-        "final_score": 74.4,
-        "quant_score": 66.7,
-        "ai_bonus": 21,
-        "ai_recommendation": "매수",
-        "grade": "📈 B급 (매수 고려)",
-        "current_price": 136.86,
-        "target_upside": 0.6,
-        "sd_stage": "Accumulation",
-        "inst_pct": 99.43,
-        "rsi": 54.8,
-        "ai_summary": "```json\n{\n  \"thesis\": \"American Water Works(AWK)는 높은 기관 보유율(99.4%)과 안정적인 매출 성장(5.8%)을 바탕으로 한 방어적 유틸리티 주식으로, 현재 VIX 31.05의 높은 시장 변동성 속에서 가치 투자 기회로 부각되고 있습니다. 다만, 4.44%의 높은 국채 금리 환경과 목표가 대비 상승 여력(+0.6%)이 제한적이라는 점은 밸류에이션 부담으로 작용합니다.\",\n  \"catalysts\": [\n    {\n      \"point\": \"방어적 가치주로서의 매력 부각\",\n      \"evidence\": \"AWK가 조용히 가치 투자 기회가 되었는지에 대한 분석 보도 [Has American Water Works Stock Quietly Become a Value Opportunity?, 2026-02-21]\"\n    },\n    {\n      \"point\": \"지속적인 인프라 투자 및 사업 영위\",\n      \"evidence\": \"헌팅턴 지",
-        "rank": 3
-      },
-      {
-        "ticker": "ALB",
-        "name": "Albemarle Corporation",
-        "final_score": 73.6,
-        "quant_score": 65.7,
-        "ai_bonus": 21,
-        "ai_recommendation": "매수",
-        "grade": "📈 B급 (매수 고려)",
-        "current_price": 179.45,
-        "target_upside": 5.2,
-        "sd_stage": "Accumulation",
-        "inst_pct": 94.79,
-        "rsi": 56.9,
-        "ai_summary": "```json\n{\n  \"thesis\": \"Albemarle(ALB)은 리튬 시장의 긍정적인 트렌드와 칠레 DLE 프로젝트를 통한 자본 유연성 확보 기대감으로 상승 동력을 갖추고 있으나, 높은 VIX 지수와 국채 금리로 인한 매크로 불확실성을 고려하여 제한적인 매수 접근이 필요합니다.\",\n  \"catalysts\": [\n    {\n      \"point\": \"강력한 리튬 시장 트렌드 및 투자의견 유지\",\n      \"evidence\": \"Truist가 강력한 리튬 시장 트렌드를 바탕으로 Buy 등급을 유지 [MSN, 2026-03-27]\"\n    },\n    {\n      \"point\": \"칠레 DLE 프로젝트를 통한 자본 유연성 개선 기대감\",\n      \"evidence\": \"칠레 DLE(Direct Lithium Extraction) 추진이 자본 유연성 내러티브를 재편할 가능성 제기 [simplywall.st, 2026-03-27]\"\n    },\n    {\n      \"point\"",
-        "rank": 4
       },
       {
         "ticker": "APO",
         "name": "Apollo Global Management, Inc.",
-        "final_score": 71.5,
-        "quant_score": 73.1,
-        "ai_bonus": 13,
+        "final_score": 79.8,
+        "quant_score": 73.5,
+        "ai_bonus": 21,
         "ai_recommendation": "매수",
         "grade": "🌟 A급 (적극 매수)",
-        "current_price": 108.42,
-        "target_upside": 42.3,
+        "current_price": 109.95,
+        "target_upside": 40.3,
         "sd_stage": "Accumulation",
         "inst_pct": 67.99,
-        "rsi": 42.3,
-        "ai_summary": "```json\n{\n  \"thesis\": \"Apollo Global Management(APO)는 87.7%의 압도적인 매출 성장률과 기관의 안정적인 수급(68.0%)을 바탕으로 장기적인 상승 잠재력을 보유하고 있으나, 단기적인 소송 이슈와 시장의 높은 변동성(VIX 31.05)으로 인해 변동성 관리가 필요한 상황입니다.\",\n  \"catalysts\": [\n    {\n      \"point\": \"압도적인 매출 성장 및 밸류에이션 매력\",\n      \"evidence\": \"매출 성장률 87.7% 달성 및 목표가 대비 42.3%의 상승 여력 보유 [수치 분석 데이터]\"\n    },\n    {\n      \"point\": \"안정적인 기관 수급\",\n      \"evidence\": \"기관 보유 비율 68.0% 및 수급 점수 65/100 (Accumulation) [수치 분석 데이터]\"\n    }\n  ],\n  \"bear_cases\": [\n    {\n      \"point\": \"주주 집단 소송 리스크",
+        "rsi": 45.5,
+        "ai_summary": "```json\n{\n  \"thesis\": \"Apollo Global Management(APO)는 87.7%에 달하는 압도적인 매출 성장률과 기관의 지속적인 매수세(65/100)를 바탕으로, 현재의 높은 거시경제 변동성 속에서도 내재가치 대비 저평가되어 있어 강력한 매수 기회를 제공합니다.\",\n  \"catalysts\": [\n    {\n      \"point\": \"내재가치 대비 저평가 및 비즈니스 확장\",\n      \"evidence\": \"주가가 추정 가치 아래에서 거래되고 있으며 뉴욕을 넘어 비즈니스를 확장 중임 [simplywall.st, 2026-03-30]\"\n    },\n    {\n      \"point\": \"견고한 기관 투자자 수급\",\n      \"evidence\": \"SG Americas Securities LLC의 1,960만 달러 규모 지분 보유 [MarketBeat, 2026-03-28] 및 전체 기관 보유율 68.0% [수치 분석 데이터]\"\n    },\n    {\n  ",
+        "rank": 2
+      },
+      {
+        "ticker": "AKAM",
+        "name": "Akamai Technologies, Inc.",
+        "final_score": 77.7,
+        "quant_score": 74.6,
+        "ai_bonus": 18,
+        "ai_recommendation": "매수",
+        "grade": "🌟 A급 (적극 매수)",
+        "current_price": 110.22,
+        "target_upside": -0.7,
+        "sd_stage": "Strong Accumulation",
+        "inst_pct": 102.55,
+        "rsi": 54.5,
+        "ai_summary": "```json\n{\n  \"thesis\": \"아카마이(AKAM)는 높은 VIX(31.05)로 대변되는 불안정한 거시경제 환경 속에서도 기관 투자자들의 강력한 매수세(102.5%)와 S&P 500 대비 20.6% 아웃퍼폼을 기록하며 방어적 성장주로서의 매력을 입증하고 있습니다 [수치 분석].\",\n  \"catalysts\": [\n    {\n      \"point\": \"경쟁사 대비 우수한 주가 퍼포먼스 및 모멘텀\",\n      \"evidence\": \"강한 거래일 기준 경쟁사 대비 아웃퍼폼 기록 [MarketWatch, 2026-03-25]\"\n    },\n    {\n      \"point\": \"기술적 지지선 도달에 따른 매수 진입 기회\",\n      \"evidence\": \"주가가 지지선으로 풀백하여 스마트 엔트리 구간 형성 [Trefis, 2026-03-21]\"\n    },\n    {\n      \"point\": \"강력한 기관 수급 및 스마트머니 유입\",\n      \"evidence\": \"기관 보",
+        "rank": 3
+      },
+      {
+        "ticker": "AEP",
+        "name": "American Electric Power Company, Inc.",
+        "final_score": 74.5,
+        "quant_score": 66.9,
+        "ai_bonus": 21,
+        "ai_recommendation": "매수",
+        "grade": "📈 B급 (매수 고려)",
+        "current_price": 131.12,
+        "target_upside": 4.8,
+        "sd_stage": "Neutral",
+        "inst_pct": 84.66,
+        "rsi": 55.5,
+        "ai_summary": "```json\n{\n  \"thesis\": \"American Electric Power (AEP)는 기관 보유율이 84.7%로 높고 매출 성장률 13.2%를 기록하며 안정적인 펀더멘털을 보이고 있으나, VIX 30.61의 높은 시장 변동성과 규제 및 데이터 센터 비용 관련 불확실성이 상존하여 분할 매수 접근이 필요함.\",\n  \"catalysts\": [\n    {\n      \"point\": \"기술적 돌파 패턴 형성\",\n      \"evidence\": \"American Electric Power (NASDAQ:AEP)가 높은 확률의 기술적 브레이크아웃 셋업을 보임 [ChartMill, 2026-03-30]\"\n    },\n    {\n      \"point\": \"주주 환원 정책 강화\",\n      \"evidence\": \"AEP Plantations가 최근 자사주 매입을 통해 자사주를 추가 확보함 [TipRanks, 2026-03-30]\"\n    },\n    {\n      \"point\": \"시장",
+        "rank": 4
+      },
+      {
+        "ticker": "LNT",
+        "name": "Alliant Energy Corporation",
+        "final_score": 73.9,
+        "quant_score": 66.1,
+        "ai_bonus": 21,
+        "ai_recommendation": "매수",
+        "grade": "📈 B급 (매수 고려)",
+        "current_price": 71.49,
+        "target_upside": 5.5,
+        "sd_stage": "Neutral",
+        "inst_pct": 91.45,
+        "rsi": 56.0,
+        "ai_summary": "```json\n{\n  \"thesis\": \"Alliant Energy(LNT)는 높은 기관 보유율(91.5%)과 안정적인 매출 성장(9.0%)을 보이며, S&P 500 대비 아웃퍼폼(+6.5%)하고 있으나, 최근 대규모 유상증자 소식과 높은 VIX 지수(30.61)로 인한 거시적 불확실성이 혼재되어 있어 방어적 매수 접근이 필요합니다.\",\n  \"catalysts\": [\n    {\n      \"point\": \"기관 투자자의 지속적인 관심 및 매수세\",\n      \"evidence\": \"Assenagon Asset Management S.A.가 150,663주를 신규 매수함 [MarketBeat, 2026-03-27]\"\n    },\n    {\n      \"point\": \"안정적인 펀더멘털 및 시장 대비 우위\",\n      \"evidence\": \"매출 성장률 9.0%, S&P 500 대비 +6.5% 수익률 기록 [수치 분석]\"\n    }\n  ],\n  \"bear_cases\": [\n    {\n",
         "rank": 5
       }
     ],
@@ -337,12 +337,12 @@
     },
     "track_record": {
       "total_picks": "N/A",
-      "win_rate": 33.3,
-      "avg_return": -2.31,
+      "win_rate": 40.0,
+      "avg_return": -0.71,
       "alpha": "N/A"
     },
     "decision_signal": {
-      "score": 25,
+      "score": 35,
       "action": "DEFENSIVE",
       "timing": "SELECTIVE",
       "components": {
@@ -351,8 +351,8 @@
           "contribution": 0
         },
         "regime": {
-          "regime": "risk_off",
-          "contribution": -10
+          "regime": "neutral",
+          "contribution": 0
         },
         "prediction": {
           "spy_bullish": 50,
@@ -375,57 +375,62 @@
   },
   "smart_money": {
     "top_picks": {
-      "timestamp": "2026-03-28T10:39:16.645636",
+      "timestamp": "2026-03-31T08:41:47.866307",
       "picks": [
         {
           "rank": 1,
           "ticker": "T",
           "name": "AT&T Inc.",
-          "final_score": 89.0,
-          "ai_recommendation": "적극 매수",
-          "target_upside": 4.7,
+          "final_score": 80.0,
+          "ai_recommendation": "매수",
+          "target_upside": 5.8,
           "sd_stage": "Strong Accumulation"
         },
         {
           "rank": 2,
-          "ticker": "AKAM",
-          "name": "Akamai Technologies, Inc.",
-          "final_score": 75.3,
+          "ticker": "APO",
+          "name": "Apollo Global Management, Inc.",
+          "final_score": 79.8,
           "ai_recommendation": "매수",
-          "target_upside": -4.4,
-          "sd_stage": "Strong Accumulation"
+          "target_upside": 40.3,
+          "sd_stage": "Accumulation"
         },
         {
           "rank": 3,
-          "ticker": "AWK",
-          "name": "American Water Works Company, Inc.",
-          "final_score": 74.4,
+          "ticker": "AKAM",
+          "name": "Akamai Technologies, Inc.",
+          "final_score": 77.7,
           "ai_recommendation": "매수",
-          "target_upside": 0.6,
-          "sd_stage": "Accumulation"
+          "target_upside": -0.7,
+          "sd_stage": "Strong Accumulation"
         },
         {
           "rank": 4,
-          "ticker": "ALB",
-          "name": "Albemarle Corporation",
-          "final_score": 73.6,
+          "ticker": "AEP",
+          "name": "American Electric Power Company, Inc.",
+          "final_score": 74.5,
           "ai_recommendation": "매수",
-          "target_upside": 5.2,
-          "sd_stage": "Accumulation"
+          "target_upside": 4.8,
+          "sd_stage": "Neutral"
         },
         {
           "rank": 5,
-          "ticker": "APO",
-          "name": "Apollo Global Management, Inc.",
-          "final_score": 71.5,
+          "ticker": "LNT",
+          "name": "Alliant Energy Corporation",
+          "final_score": 73.9,
           "ai_recommendation": "매수",
-          "target_upside": 42.3,
-          "sd_stage": "Accumulation"
+          "target_upside": 5.5,
+          "sd_stage": "Neutral"
         }
       ]
     },
     "performance": {
       "recent_dates": [
+        {
+          "date": "2026-03-31",
+          "avg_return": -0.0,
+          "win_rate": 40.0
+        },
         {
           "date": "2026-03-28",
           "avg_return": -0.63,
@@ -435,15 +440,10 @@
           "date": "2026-03-27",
           "avg_return": -1.5,
           "win_rate": 30.0
-        },
-        {
-          "date": "2026-03-26",
-          "avg_return": -4.79,
-          "win_rate": 20.0
         }
       ],
-      "overall_avg": -2.31,
-      "overall_win_rate": 33.3
+      "overall_avg": -0.71,
+      "overall_win_rate": 40.0
     }
   }
 }

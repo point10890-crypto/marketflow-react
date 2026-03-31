@@ -1,7 +1,7 @@
 {
   "metadata": {
     "as_of_date": "2026-03-31",
-    "fetch_time": "2026-03-31T08:24:18.150753",
+    "fetch_time": "2026-03-31T17:53:43.873270",
     "source": "fmp_api + yfinance",
     "ticker_count": 15,
     "transcripts_found": 0
@@ -9,7 +9,7 @@
   "analyses": {
     "AKAM": {
       "ticker": "AKAM",
-      "fetch_time": "2026-03-31T08:23:45.028382",
+      "fetch_time": "2026-03-31T17:53:20.203931",
       "has_transcript": false,
       "error": "API error: 403",
       "earnings_info": {
@@ -44,46 +44,9 @@
         "source": "yfinance"
       }
     },
-    "APO": {
-      "ticker": "APO",
-      "fetch_time": "2026-03-31T08:23:47.433846",
-      "has_transcript": false,
-      "error": "API error: 403",
-      "earnings_info": {
-        "ticker": "APO",
-        "next_earnings_date": "2026-05-01",
-        "earnings_history": [
-          {
-            "date": "2025-03-31 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2025-06-30 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2025-09-30 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2025-12-31 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          }
-        ],
-        "source": "yfinance"
-      }
-    },
     "T": {
       "ticker": "T",
-      "fetch_time": "2026-03-31T08:23:49.462860",
+      "fetch_time": "2026-03-31T17:53:22.447082",
       "has_transcript": false,
       "error": "API error: 403",
       "earnings_info": {
@@ -118,309 +81,13 @@
         "source": "yfinance"
       }
     },
-    "AWK": {
-      "ticker": "AWK",
-      "fetch_time": "2026-03-31T08:23:51.701819",
+    "APO": {
+      "ticker": "APO",
+      "fetch_time": "2026-03-31T17:53:23.969529",
       "has_transcript": false,
       "error": "API error: 403",
       "earnings_info": {
-        "ticker": "AWK",
-        "next_earnings_date": "2026-04-30",
-        "earnings_history": [
-          {
-            "date": "2025-03-31 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2025-06-30 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2025-09-30 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2025-12-31 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          }
-        ],
-        "source": "yfinance"
-      }
-    },
-    "AMP": {
-      "ticker": "AMP",
-      "fetch_time": "2026-03-31T08:23:53.739964",
-      "has_transcript": false,
-      "error": "API error: 403",
-      "earnings_info": {
-        "ticker": "AMP",
-        "next_earnings_date": "2026-04-24",
-        "earnings_history": [
-          {
-            "date": "2025-03-31 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2025-06-30 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2025-09-30 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2025-12-31 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          }
-        ],
-        "source": "yfinance"
-      }
-    },
-    "ALB": {
-      "ticker": "ALB",
-      "fetch_time": "2026-03-31T08:23:55.994980",
-      "has_transcript": false,
-      "error": "API error: 403",
-      "earnings_info": {
-        "ticker": "ALB",
-        "next_earnings_date": "2026-04-30",
-        "earnings_history": [
-          {
-            "date": "2025-03-31 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2025-06-30 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2025-09-30 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2025-12-31 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          }
-        ],
-        "source": "yfinance"
-      }
-    },
-    "APD": {
-      "ticker": "APD",
-      "fetch_time": "2026-03-31T08:23:58.066838",
-      "has_transcript": false,
-      "error": "API error: 403",
-      "earnings_info": {
-        "ticker": "APD",
-        "next_earnings_date": "2026-04-30",
-        "earnings_history": [
-          {
-            "date": "2025-03-31 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2025-06-30 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2025-09-30 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2025-12-31 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          }
-        ],
-        "source": "yfinance"
-      }
-    },
-    "AEP": {
-      "ticker": "AEP",
-      "fetch_time": "2026-03-31T08:24:00.304789",
-      "has_transcript": false,
-      "error": "API error: 403",
-      "earnings_info": {
-        "ticker": "AEP",
-        "next_earnings_date": "2026-05-05",
-        "earnings_history": [
-          {
-            "date": "2025-03-31 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2025-06-30 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2025-09-30 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2025-12-31 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          }
-        ],
-        "source": "yfinance"
-      }
-    },
-    "AIZ": {
-      "ticker": "AIZ",
-      "fetch_time": "2026-03-31T08:24:02.528621",
-      "has_transcript": false,
-      "error": "API error: 403",
-      "earnings_info": {
-        "ticker": "AIZ",
-        "next_earnings_date": "2026-05-06",
-        "earnings_history": [
-          {
-            "date": "2025-03-31 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2025-06-30 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2025-09-30 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2025-12-31 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          }
-        ],
-        "source": "yfinance"
-      }
-    },
-    "AMD": {
-      "ticker": "AMD",
-      "fetch_time": "2026-03-31T08:24:04.768222",
-      "has_transcript": false,
-      "error": "API error: 403",
-      "earnings_info": {
-        "ticker": "AMD",
-        "next_earnings_date": "2026-05-06",
-        "earnings_history": [
-          {
-            "date": "2025-03-31 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2025-06-30 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2025-09-30 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2025-12-31 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          }
-        ],
-        "source": "yfinance"
-      }
-    },
-    "LNT": {
-      "ticker": "LNT",
-      "fetch_time": "2026-03-31T08:24:07.039295",
-      "has_transcript": false,
-      "error": "API error: 403",
-      "earnings_info": {
-        "ticker": "LNT",
-        "next_earnings_date": "2026-05-08",
-        "earnings_history": [
-          {
-            "date": "2025-03-31 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2025-06-30 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2025-09-30 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2025-12-31 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          }
-        ],
-        "source": "yfinance"
-      }
-    },
-    "AON": {
-      "ticker": "AON",
-      "fetch_time": "2026-03-31T08:24:09.243075",
-      "has_transcript": false,
-      "error": "API error: 403",
-      "earnings_info": {
-        "ticker": "AON",
+        "ticker": "APO",
         "next_earnings_date": "2026-05-01",
         "earnings_history": [
           {
@@ -453,7 +120,7 @@
     },
     "ACGL": {
       "ticker": "ACGL",
-      "fetch_time": "2026-03-31T08:24:11.384488",
+      "fetch_time": "2026-03-31T17:53:25.379736",
       "has_transcript": false,
       "error": "API error: 403",
       "earnings_info": {
@@ -488,9 +155,268 @@
         "source": "yfinance"
       }
     },
+    "APD": {
+      "ticker": "APD",
+      "fetch_time": "2026-03-31T17:53:26.756179",
+      "has_transcript": false,
+      "error": "API error: 403",
+      "earnings_info": {
+        "ticker": "APD",
+        "next_earnings_date": "2026-04-30",
+        "earnings_history": [
+          {
+            "date": "2025-03-31 00:00:00",
+            "eps_estimate": 0,
+            "eps_actual": 0,
+            "surprise_pct": 0
+          },
+          {
+            "date": "2025-06-30 00:00:00",
+            "eps_estimate": 0,
+            "eps_actual": 0,
+            "surprise_pct": 0
+          },
+          {
+            "date": "2025-09-30 00:00:00",
+            "eps_estimate": 0,
+            "eps_actual": 0,
+            "surprise_pct": 0
+          },
+          {
+            "date": "2025-12-31 00:00:00",
+            "eps_estimate": 0,
+            "eps_actual": 0,
+            "surprise_pct": 0
+          }
+        ],
+        "source": "yfinance"
+      }
+    },
+    "AON": {
+      "ticker": "AON",
+      "fetch_time": "2026-03-31T17:53:28.320509",
+      "has_transcript": false,
+      "error": "API error: 403",
+      "earnings_info": {
+        "ticker": "AON",
+        "next_earnings_date": "2026-05-01",
+        "earnings_history": [
+          {
+            "date": "2025-03-31 00:00:00",
+            "eps_estimate": 0,
+            "eps_actual": 0,
+            "surprise_pct": 0
+          },
+          {
+            "date": "2025-06-30 00:00:00",
+            "eps_estimate": 0,
+            "eps_actual": 0,
+            "surprise_pct": 0
+          },
+          {
+            "date": "2025-09-30 00:00:00",
+            "eps_estimate": 0,
+            "eps_actual": 0,
+            "surprise_pct": 0
+          },
+          {
+            "date": "2025-12-31 00:00:00",
+            "eps_estimate": 0,
+            "eps_actual": 0,
+            "surprise_pct": 0
+          }
+        ],
+        "source": "yfinance"
+      }
+    },
+    "AEP": {
+      "ticker": "AEP",
+      "fetch_time": "2026-03-31T17:53:29.824690",
+      "has_transcript": false,
+      "error": "API error: 403",
+      "earnings_info": {
+        "ticker": "AEP",
+        "next_earnings_date": "2026-05-05",
+        "earnings_history": [
+          {
+            "date": "2025-03-31 00:00:00",
+            "eps_estimate": 0,
+            "eps_actual": 0,
+            "surprise_pct": 0
+          },
+          {
+            "date": "2025-06-30 00:00:00",
+            "eps_estimate": 0,
+            "eps_actual": 0,
+            "surprise_pct": 0
+          },
+          {
+            "date": "2025-09-30 00:00:00",
+            "eps_estimate": 0,
+            "eps_actual": 0,
+            "surprise_pct": 0
+          },
+          {
+            "date": "2025-12-31 00:00:00",
+            "eps_estimate": 0,
+            "eps_actual": 0,
+            "surprise_pct": 0
+          }
+        ],
+        "source": "yfinance"
+      }
+    },
+    "AWK": {
+      "ticker": "AWK",
+      "fetch_time": "2026-03-31T17:53:31.455246",
+      "has_transcript": false,
+      "error": "API error: 403",
+      "earnings_info": {
+        "ticker": "AWK",
+        "next_earnings_date": "2026-04-30",
+        "earnings_history": [
+          {
+            "date": "2025-03-31 00:00:00",
+            "eps_estimate": 0,
+            "eps_actual": 0,
+            "surprise_pct": 0
+          },
+          {
+            "date": "2025-06-30 00:00:00",
+            "eps_estimate": 0,
+            "eps_actual": 0,
+            "surprise_pct": 0
+          },
+          {
+            "date": "2025-09-30 00:00:00",
+            "eps_estimate": 0,
+            "eps_actual": 0,
+            "surprise_pct": 0
+          },
+          {
+            "date": "2025-12-31 00:00:00",
+            "eps_estimate": 0,
+            "eps_actual": 0,
+            "surprise_pct": 0
+          }
+        ],
+        "source": "yfinance"
+      }
+    },
+    "LNT": {
+      "ticker": "LNT",
+      "fetch_time": "2026-03-31T17:53:32.840932",
+      "has_transcript": false,
+      "error": "API error: 403",
+      "earnings_info": {
+        "ticker": "LNT",
+        "next_earnings_date": "2026-05-08",
+        "earnings_history": [
+          {
+            "date": "2025-03-31 00:00:00",
+            "eps_estimate": 0,
+            "eps_actual": 0,
+            "surprise_pct": 0
+          },
+          {
+            "date": "2025-06-30 00:00:00",
+            "eps_estimate": 0,
+            "eps_actual": 0,
+            "surprise_pct": 0
+          },
+          {
+            "date": "2025-09-30 00:00:00",
+            "eps_estimate": 0,
+            "eps_actual": 0,
+            "surprise_pct": 0
+          },
+          {
+            "date": "2025-12-31 00:00:00",
+            "eps_estimate": 0,
+            "eps_actual": 0,
+            "surprise_pct": 0
+          }
+        ],
+        "source": "yfinance"
+      }
+    },
+    "AEE": {
+      "ticker": "AEE",
+      "fetch_time": "2026-03-31T17:53:34.359043",
+      "has_transcript": false,
+      "error": "API error: 403",
+      "earnings_info": {
+        "ticker": "AEE",
+        "next_earnings_date": "2026-05-01",
+        "earnings_history": [
+          {
+            "date": "2025-03-31 00:00:00",
+            "eps_estimate": 0,
+            "eps_actual": 0,
+            "surprise_pct": 0
+          },
+          {
+            "date": "2025-06-30 00:00:00",
+            "eps_estimate": 0,
+            "eps_actual": 0,
+            "surprise_pct": 0
+          },
+          {
+            "date": "2025-09-30 00:00:00",
+            "eps_estimate": 0,
+            "eps_actual": 0,
+            "surprise_pct": 0
+          },
+          {
+            "date": "2025-12-31 00:00:00",
+            "eps_estimate": 0,
+            "eps_actual": 0,
+            "surprise_pct": 0
+          }
+        ],
+        "source": "yfinance"
+      }
+    },
+    "AMD": {
+      "ticker": "AMD",
+      "fetch_time": "2026-03-31T17:53:35.889707",
+      "has_transcript": false,
+      "error": "API error: 403",
+      "earnings_info": {
+        "ticker": "AMD",
+        "next_earnings_date": "2026-05-06",
+        "earnings_history": [
+          {
+            "date": "2025-03-31 00:00:00",
+            "eps_estimate": 0,
+            "eps_actual": 0,
+            "surprise_pct": 0
+          },
+          {
+            "date": "2025-06-30 00:00:00",
+            "eps_estimate": 0,
+            "eps_actual": 0,
+            "surprise_pct": 0
+          },
+          {
+            "date": "2025-09-30 00:00:00",
+            "eps_estimate": 0,
+            "eps_actual": 0,
+            "surprise_pct": 0
+          },
+          {
+            "date": "2025-12-31 00:00:00",
+            "eps_estimate": 0,
+            "eps_actual": 0,
+            "surprise_pct": 0
+          }
+        ],
+        "source": "yfinance"
+      }
+    },
     "APA": {
       "ticker": "APA",
-      "fetch_time": "2026-03-31T08:24:13.528064",
+      "fetch_time": "2026-03-31T17:53:37.516386",
       "has_transcript": false,
       "error": "API error: 403",
       "earnings_info": {
@@ -527,12 +453,86 @@
     },
     "AMZN": {
       "ticker": "AMZN",
-      "fetch_time": "2026-03-31T08:24:15.956810",
+      "fetch_time": "2026-03-31T17:53:39.134982",
       "has_transcript": false,
       "error": "API error: 403",
       "earnings_info": {
         "ticker": "AMZN",
         "next_earnings_date": "2026-05-01",
+        "earnings_history": [
+          {
+            "date": "2025-03-31 00:00:00",
+            "eps_estimate": 0,
+            "eps_actual": 0,
+            "surprise_pct": 0
+          },
+          {
+            "date": "2025-06-30 00:00:00",
+            "eps_estimate": 0,
+            "eps_actual": 0,
+            "surprise_pct": 0
+          },
+          {
+            "date": "2025-09-30 00:00:00",
+            "eps_estimate": 0,
+            "eps_actual": 0,
+            "surprise_pct": 0
+          },
+          {
+            "date": "2025-12-31 00:00:00",
+            "eps_estimate": 0,
+            "eps_actual": 0,
+            "surprise_pct": 0
+          }
+        ],
+        "source": "yfinance"
+      }
+    },
+    "AMAT": {
+      "ticker": "AMAT",
+      "fetch_time": "2026-03-31T17:53:40.709386",
+      "has_transcript": false,
+      "error": "API error: 403",
+      "earnings_info": {
+        "ticker": "AMAT",
+        "next_earnings_date": "2026-05-15",
+        "earnings_history": [
+          {
+            "date": "2025-04-30 00:00:00",
+            "eps_estimate": 0,
+            "eps_actual": 0,
+            "surprise_pct": 0
+          },
+          {
+            "date": "2025-07-31 00:00:00",
+            "eps_estimate": 0,
+            "eps_actual": 0,
+            "surprise_pct": 0
+          },
+          {
+            "date": "2025-10-31 00:00:00",
+            "eps_estimate": 0,
+            "eps_actual": 0,
+            "surprise_pct": 0
+          },
+          {
+            "date": "2026-01-31 00:00:00",
+            "eps_estimate": 0,
+            "eps_actual": 0,
+            "surprise_pct": 0
+          }
+        ],
+        "source": "yfinance"
+      }
+    },
+    "APP": {
+      "ticker": "APP",
+      "fetch_time": "2026-03-31T17:53:42.296674",
+      "has_transcript": false,
+      "error": "API error: 403",
+      "earnings_info": {
+        "ticker": "APP",
+        "next_earnings_date": "2026-05-07",
         "earnings_history": [
           {
             "date": "2025-03-31 00:00:00",

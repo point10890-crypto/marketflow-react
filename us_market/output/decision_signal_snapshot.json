@@ -1,14 +1,14 @@
 {
-  "action": "DEFENSIVE",
-  "score": 11,
+  "action": "CAUTIOUS",
+  "score": 26,
   "components": {
     "market_gate": {
       "score": 20,
       "contribution": -9.0
     },
     "regime": {
-      "regime": "risk_off",
-      "contribution": -15
+      "regime": "neutral",
+      "contribution": 0
     },
     "prediction": {
       "spy_bullish": 50,
@@ -68,9 +68,9 @@
   "timing": "WAIT",
   "warnings": [
     "APO is in critical drawdown: -27.7% from peak",
-    "AMP is in critical drawdown: -19.4% from peak",
     "AMD is in critical drawdown: -24.5% from peak",
-    "AMZN is in critical drawdown: -18.8% from peak",
-    "AKAM drawdown warning: -7.5% from peak"
+    "APP is in critical drawdown: -44.8% from peak",
+    "AMZN drawdown warning: -18.8% from peak",
+    "AMAT drawdown warning: -18.2% from peak"
   ]
 }

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-03-31T08:41:47.866307",
+  "generated_at": "2026-03-31T18:01:27.454635",
   "total_analyzed": 18,
   "top_picks": [
     {
@@ -13,7 +13,7 @@
       "current_price": 28.78,
       "target_upside": 5.8,
       "sd_stage": "Strong Accumulation",
-      "inst_pct": 68.01,
+      "inst_pct": 67.98,
       "rsi": 59.3,
       "ai_summary": "```json\n{\n  \"thesis\": \"AT&T는 P/E 9.47배의 저평가 매력과 함께 광통신망(Fiber) 확장에 따른 구조적 성장 모멘텀을 보유하고 있으며, VIX 30 이상의 공포 장세 속에서도 S&P 500 대비 10.4% 초과 수익을 달성하는 강력한 방어주 겸 가치주입니다.\",\n  \"catalysts\": [\n    {\n      \"point\": \"월가의 목표가 상향 및 광통신망(Fiber) 확장 모멘텀\",\n      \"evidence\": \"Citi가 광통신망 구축 성과를 반영하여 목표가를 $31.50으로 상향 조정 [2026-03-30, tikr.com]\"\n    },\n    {\n      \"point\": \"강력한 기관 수급 및 시장 대비 초과 수익\",\n      \"evidence\": \"수급 점수 80/100(Strong Accumulation) 및 S&P 500 대비 +10.4% 아웃퍼폼 [수치 분석 데이터]\"\n    }\n  ],\n  \"bear_cases\": [\n   ",
       "rank": 1
@@ -45,7 +45,7 @@
       "current_price": 110.22,
       "target_upside": -0.7,
       "sd_stage": "Strong Accumulation",
-      "inst_pct": 102.55,
+      "inst_pct": 102.26,
       "rsi": 54.5,
       "ai_summary": "```json\n{\n  \"thesis\": \"아카마이(AKAM)는 높은 VIX(31.05)로 대변되는 불안정한 거시경제 환경 속에서도 기관 투자자들의 강력한 매수세(102.5%)와 S&P 500 대비 20.6% 아웃퍼폼을 기록하며 방어적 성장주로서의 매력을 입증하고 있습니다 [수치 분석].\",\n  \"catalysts\": [\n    {\n      \"point\": \"경쟁사 대비 우수한 주가 퍼포먼스 및 모멘텀\",\n      \"evidence\": \"강한 거래일 기준 경쟁사 대비 아웃퍼폼 기록 [MarketWatch, 2026-03-25]\"\n    },\n    {\n      \"point\": \"기술적 지지선 도달에 따른 매수 진입 기회\",\n      \"evidence\": \"주가가 지지선으로 풀백하여 스마트 엔트리 구간 형성 [Trefis, 2026-03-21]\"\n    },\n    {\n      \"point\": \"강력한 기관 수급 및 스마트머니 유입\",\n      \"evidence\": \"기관 보",
       "rank": 3
@@ -61,7 +61,7 @@
       "current_price": 131.12,
       "target_upside": 4.8,
       "sd_stage": "Neutral",
-      "inst_pct": 84.66,
+      "inst_pct": 84.61,
       "rsi": 55.5,
       "ai_summary": "```json\n{\n  \"thesis\": \"American Electric Power (AEP)는 기관 보유율이 84.7%로 높고 매출 성장률 13.2%를 기록하며 안정적인 펀더멘털을 보이고 있으나, VIX 30.61의 높은 시장 변동성과 규제 및 데이터 센터 비용 관련 불확실성이 상존하여 분할 매수 접근이 필요함.\",\n  \"catalysts\": [\n    {\n      \"point\": \"기술적 돌파 패턴 형성\",\n      \"evidence\": \"American Electric Power (NASDAQ:AEP)가 높은 확률의 기술적 브레이크아웃 셋업을 보임 [ChartMill, 2026-03-30]\"\n    },\n    {\n      \"point\": \"주주 환원 정책 강화\",\n      \"evidence\": \"AEP Plantations가 최근 자사주 매입을 통해 자사주를 추가 확보함 [TipRanks, 2026-03-30]\"\n    },\n    {\n      \"point\": \"시장",
       "rank": 4
@@ -93,7 +93,7 @@
       "current_price": 291.56,
       "target_upside": 5.2,
       "sd_stage": "Neutral",
-      "inst_pct": 93.62,
+      "inst_pct": 93.59,
       "rsi": 60.6,
       "ai_summary": "```json\n{\n  \"thesis\": \"Air Products and Chemicals (APD)는 최근 헬륨 가격 반등과 견고한 매출 성장(5.8%)을 바탕으로 기관 투자자들의 높은 지지(93.6%)를 받고 있으며, 기술적 브레이크아웃이 기대되는 B급(매수 고려) 종목입니다.\",\n  \"catalysts\": [\n    {\n      \"point\": \"헬륨 가격 반등에 따른 긍정적 실적 전망 및 투자의견 상향\",\n      \"evidence\": \"JPMorgan이 헬륨 가격 상승을 근거로 APD의 투자의견을 상향 조정함 [MSN, 2026-03-29]\"\n    },\n    {\n      \"point\": \"기술적 브레이크아웃 및 강세 신호\",\n      \"evidence\": \"기술적 브레이크아웃 셋업 포착 및 MA Signal 'Bullish' 상태 [ChartMill, 2026-03-26 / 수치 분석 데이터]\"\n    },\n    {\n      \"point\": \"성장주로서의 시장 ",
       "rank": 6
