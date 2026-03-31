@@ -27,18 +27,18 @@
     {
       "ticker": "T",
       "name": "AT&T Inc.",
-      "final_score": 78.5,
+      "final_score": 78.1,
       "grade": "🌟 A급 (적극 매수)",
       "ai_recommendation": "매수",
-      "target_upside": 6.3
+      "target_upside": 5.4
     },
     {
       "ticker": "AKAM",
       "name": "Akamai Technologies, Inc.",
-      "final_score": 77.7,
+      "final_score": 76.7,
       "grade": "🌟 A급 (적극 매수)",
       "ai_recommendation": "매수",
-      "target_upside": -4.0
+      "target_upside": -4.6
     },
     {
       "ticker": "APO",
@@ -46,7 +46,7 @@
       "final_score": 76.5,
       "grade": "📈 B급 (매수 고려)",
       "ai_recommendation": "매수",
-      "target_upside": 38.5
+      "target_upside": 38.9
     },
     {
       "ticker": "AEP",
@@ -54,7 +54,7 @@
       "final_score": 75.5,
       "grade": "📈 B급 (매수 고려)",
       "ai_recommendation": "매수",
-      "target_upside": 5.0
+      "target_upside": 4.9
     },
     {
       "ticker": "LNT",
@@ -62,15 +62,15 @@
       "final_score": 74.9,
       "grade": "📈 B급 (매수 고려)",
       "ai_recommendation": "매수",
-      "target_upside": 5.3
+      "target_upside": 5.1
     }
   ],
   "timing": "WAIT",
   "warnings": [
-    "APO is in critical drawdown: -26.9% from peak",
+    "APO is in critical drawdown: -26.7% from peak",
     "AMD is in critical drawdown: -21.7% from peak",
-    "APP is in critical drawdown: -40.9% from peak",
-    "AJG drawdown warning: -17.9% from peak",
-    "AMAT drawdown warning: -14.0% from peak"
+    "APP is in critical drawdown: -40.5% from peak",
+    "AJG drawdown warning: -18.0% from peak",
+    "AMAT drawdown warning: -13.5% from peak"
   ]
 }

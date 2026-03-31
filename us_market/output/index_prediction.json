@@ -1,15 +1,15 @@
 {
-  "timestamp": "2026-04-01T05:03:21.962455",
+  "timestamp": "2026-04-01T05:13:55.905206",
   "predictions": {
     "spy": {
       "current_price": 650.35,
       "bullish_probability": 47.9,
       "bearish_probability": 52.1,
-      "predicted_return_pct": -0.28,
+      "predicted_return_pct": -0.3,
       "target_range": {
-        "low": 635.67,
-        "mid": 648.52,
-        "high": 661.37
+        "low": 635.55,
+        "mid": 648.4,
+        "high": 661.25
       },
       "confidence_level": "Low",
       "key_drivers": [
@@ -28,7 +28,7 @@
         {
           "feature": "gold_return_1w",
           "impact": 0.0784,
-          "value": 7.14,
+          "value": 7.12,
           "direction": "bullish"
         },
         {
@@ -84,7 +84,7 @@
         {
           "feature": "vix_value",
           "impact": 0.0747,
-          "value": 25.11,
+          "value": 25.48,
           "direction": "bearish"
         }
       ]
