@@ -1,0 +1,75 @@
+{
+  "name": "유니슨",
+  "ticker": "018000.KQ",
+  "result": "데이터 없음",
+  "date": "2026-03-31 11:36:32",
+  "elapsed": 10.6,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 1519.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 1519.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "UNISON",
+    "sector": "Industrials",
+    "industry": "Specialty Industrial Machinery",
+    "market_cap": 336783835136,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": null,
+    "beta": 1.054,
+    "fifty_two_week_high": 2085.0,
+    "fifty_two_week_low": 755.0,
+    "revenue": 42272063488,
+    "profit_margin": -0.47993,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 16322287510
+    },
+    {
+      "date": "2025-06",
+      "value": 13285012690
+    },
+    {
+      "date": "2025-03",
+      "value": 6104661610
+    },
+    {
+      "date": "2024-12",
+      "value": 6560102190
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": -5107498360
+    },
+    {
+      "date": "2025-06",
+      "value": -7704295730
+    },
+    {
+      "date": "2025-03",
+      "value": -3416583970
+    },
+    {
+      "date": "2024-12",
+      "value": -4059244350
+    }
+  ],
+  "news": []
+}

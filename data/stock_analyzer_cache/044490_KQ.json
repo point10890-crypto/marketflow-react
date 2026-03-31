@@ -1,0 +1,89 @@
+{
+  "name": "태웅",
+  "ticker": "044490.KQ",
+  "result": "매수",
+  "date": "2026-03-31 11:37:18",
+  "elapsed": 9.9,
+  "consensus_score": 4.0,
+  "analyst_count": 2,
+  "recommendation_detail": {
+    "strongBuy": 0,
+    "buy": 2,
+    "hold": 0,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 51500.0,
+    "high": 51000.0,
+    "low": 38000.0,
+    "mean": 44500.0,
+    "median": 44500.0
+  },
+  "current_price": 51400.0,
+  "upside_potential": -13.4,
+  "key_stats": {
+    "name": "TAEWOONG",
+    "sector": "Industrials",
+    "industry": "Metal Fabrication",
+    "market_cap": 1028379312128,
+    "pe_ratio": null,
+    "forward_pe": 22.529037,
+    "dividend_yield": null,
+    "beta": 0.754,
+    "fifty_two_week_high": 58800.0,
+    "fifty_two_week_low": 13370.0,
+    "revenue": 349653598208,
+    "profit_margin": 0.01549,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "태웅(044490.KQ)에 대해 2명의 애널리스트가 매수 의견을 제시했습니다. 현재 주가는 51,400원이며, 목표가 평균은 44,500원으로 산정되었습니다. 이는 현재 주가 대비 -13.4% 하락 여력이 있음을 의미합니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 86435823690
+    },
+    {
+      "date": "2025-06",
+      "value": 87022462160
+    },
+    {
+      "date": "2025-03",
+      "value": 85649442140
+    },
+    {
+      "date": "2024-12",
+      "value": 107866097660
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 1993444700
+    },
+    {
+      "date": "2025-06",
+      "value": 2295200300
+    },
+    {
+      "date": "2025-03",
+      "value": 1501111230
+    },
+    {
+      "date": "2024-12",
+      "value": 8227394410
+    }
+  ],
+  "news": [
+    {
+      "title": "3 Asian Companies With High Insider Ownership Growing Earnings At 70%",
+      "summary": "As global markets grapple with renewed U.S.-China trade tensions and economic uncertainties, investors are increasingly focused on companies that demonstrate resilience and growth potential. In Asia, ",
+      "url": "https://finance.yahoo.com/news/3-asian-companies-high-insider-223805487.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2025-10-16T22:38:05Z"
+    }
+  ]
+}

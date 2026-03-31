@@ -1,0 +1,75 @@
+{
+  "name": "인바이오젠",
+  "ticker": "101140.KS",
+  "result": "데이터 없음",
+  "date": "2026-03-31 09:52:31",
+  "elapsed": 2.7,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 11300.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 11300.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "INBIOGEN",
+    "sector": "Consumer Cyclical",
+    "industry": "Footwear & Accessories",
+    "market_cap": 112827924480,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": null,
+    "beta": 1.102,
+    "fifty_two_week_high": 16570.0,
+    "fifty_two_week_low": 5220.0,
+    "revenue": 7803538432,
+    "profit_margin": 3.35111,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 2146908640
+    },
+    {
+      "date": "2025-06",
+      "value": 1849918420
+    },
+    {
+      "date": "2025-03",
+      "value": 1639316920
+    },
+    {
+      "date": "2024-12",
+      "value": 2167394390
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 8170956060
+    },
+    {
+      "date": "2025-06",
+      "value": 1123567130
+    },
+    {
+      "date": "2025-03",
+      "value": 2031509160
+    },
+    {
+      "date": "2024-12",
+      "value": 14799573020
+    }
+  ],
+  "news": []
+}

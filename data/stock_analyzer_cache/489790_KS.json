@@ -2,8 +2,8 @@
   "name": "한화비전",
   "ticker": "489790.KS",
   "result": "매수",
-  "date": "2026-03-28 17:53:46",
-  "elapsed": 2.0,
+  "date": "2026-03-31 08:57:25",
+  "elapsed": 2.1,
   "consensus_score": 4.0,
   "analyst_count": 2,
   "recommendation_detail": {
@@ -15,21 +15,21 @@
   },
   "recommendation_period": "0m",
   "price_targets": {
-    "current": 80500.0,
+    "current": 75700.0,
     "high": 100000.0,
     "low": 64000.0,
     "mean": 82000.0,
     "median": 82000.0
   },
-  "current_price": 80500.0,
-  "upside_potential": 1.9,
+  "current_price": 75700.0,
+  "upside_potential": 8.3,
   "key_stats": {
     "name": "Hanwha Vision",
     "sector": "Industrials",
     "industry": "Security & Protection Services",
-    "market_cap": 4055392321536,
+    "market_cap": 3813580210176,
     "pe_ratio": null,
-    "forward_pe": 2183.9885,
+    "forward_pe": 2053.7632,
     "dividend_yield": null,
     "beta": null,
     "fifty_two_week_high": 94400.0,
@@ -40,7 +40,7 @@
   },
   "finnhub_supplement": null,
   "source": "yfinance",
-  "ai_analysis": "한화비전에 대해 2명의 애널리스트가 매수 의견을 제시하고 있으며, 컨센서스 점수는 4.0/5.0입니다. 목표가 평균은 82,000원으로 현재가 대비 1.9% 상승 여력이 있습니다. 현재 애널리스트들은 한화비전에 대해 긍정적인 전망을 유지하고 있습니다.",
+  "ai_analysis": "한화비전에 대해 2명의 애널리스트가 매수 의견을 제시하고 있으며, 컨센서스 점수는 4.0/5.0입니다. 평균 목표 주가는 82,000원으로 현재 주가 대비 8.3% 상승 여력이 있습니다. 투자 판단은 개인의 분석과 판단에 따라 결정해야 합니다.",
   "revenue_quarters": [
     {
       "date": "2025-09",

@@ -3,83 +3,83 @@
     {
       "name": "Bitcoin",
       "ticker": "BTC",
-      "price": 67630.91,
-      "change": 1675.99,
-      "change_pct": 2.54,
-      "volume_24h": 35600658432
+      "price": 66818.96,
+      "change": 864.04,
+      "change_pct": 1.31,
+      "volume_24h": 36329398272
     },
     {
       "name": "Ethereum",
       "ticker": "ETH",
-      "price": 2066.3,
-      "change": 83.74,
-      "change_pct": 4.22,
-      "volume_24h": 16742717440
+      "price": 2025.88,
+      "change": 43.32,
+      "change_pct": 2.18,
+      "volume_24h": 17053724672
     },
     {
       "name": "BNB",
       "ticker": "BNB",
-      "price": 614.83,
-      "change": 9.16,
-      "change_pct": 1.51,
-      "volume_24h": 1704581632
+      "price": 609.34,
+      "change": 3.67,
+      "change_pct": 0.61,
+      "volume_24h": 1667563648
     },
     {
       "name": "Solana",
       "ticker": "SOL",
-      "price": 84.07,
-      "change": 2.65,
-      "change_pct": 3.25,
-      "volume_24h": 3798760192
+      "price": 82.3,
+      "change": 0.88,
+      "change_pct": 1.08,
+      "volume_24h": 3871846144
     },
     {
       "name": "XRP",
       "ticker": "XRP",
-      "price": 1.34,
-      "change": 0.01,
-      "change_pct": 0.89,
-      "volume_24h": 1917292416
+      "price": 1.32,
+      "change": -0.01,
+      "change_pct": -0.4,
+      "volume_24h": 1806867200
     },
     {
       "name": "Cardano",
       "ticker": "ADA",
-      "price": 0.25,
-      "change": 0.01,
-      "change_pct": 3.81,
-      "volume_24h": 477767712
+      "price": 0.24,
+      "change": 0.0,
+      "change_pct": 1.87,
+      "volume_24h": 414941216
     },
     {
       "name": "Dogecoin",
       "ticker": "DOGE",
       "price": 0.09,
       "change": 0.0,
-      "change_pct": 2.52,
-      "volume_24h": 1210949120
+      "change_pct": 0.45,
+      "volume_24h": 1135659264
     },
     {
       "name": "Avalanche",
       "ticker": "AVAX",
-      "price": 8.92,
-      "change": 0.32,
-      "change_pct": 3.76,
-      "volume_24h": 206731856
+      "price": 8.81,
+      "change": 0.22,
+      "change_pct": 2.55,
+      "volume_24h": 193350352
     },
     {
       "name": "Polkadot",
       "ticker": "DOT",
-      "price": 1.27,
-      "change": 0.01,
-      "change_pct": 0.83,
-      "volume_24h": 109618336
+      "price": 1.24,
+      "change": -0.02,
+      "change_pct": -1.47,
+      "volume_24h": 111779704
     },
     {
       "name": "Chainlink",
       "ticker": "LINK",
-      "price": 8.84,
-      "change": 0.44,
-      "change_pct": 5.22,
-      "volume_24h": 340695488
+      "price": 8.61,
+      "change": 0.21,
+      "change_pct": 2.49,
+      "volume_24h": 336573824
     }
   ],
-  "timestamp": "2026-03-31T00:00:06.236620"
+  "timestamp": "2026-03-31T09:40:16.469667"
 }

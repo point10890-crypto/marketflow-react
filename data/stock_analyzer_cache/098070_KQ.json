@@ -1,0 +1,81 @@
+{
+  "name": "한텍",
+  "ticker": "098070.KQ",
+  "result": "매수",
+  "date": "2026-03-31 10:16:38",
+  "elapsed": 2.7,
+  "consensus_score": 4.0,
+  "analyst_count": 1,
+  "recommendation_detail": {
+    "strongBuy": 0,
+    "buy": 1,
+    "hold": 0,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 51700.0,
+    "high": 50000.0,
+    "low": 50000.0,
+    "mean": 50000.0,
+    "median": 50000.0
+  },
+  "current_price": 51700.0,
+  "upside_potential": -3.3,
+  "key_stats": {
+    "name": "HANTECH",
+    "sector": "Industrials",
+    "industry": "Specialty Industrial Machinery",
+    "market_cap": 574962991104,
+    "pe_ratio": null,
+    "forward_pe": 13.085295,
+    "dividend_yield": 0.79,
+    "beta": null,
+    "fifty_two_week_high": 55000.0,
+    "fifty_two_week_low": 23650.0,
+    "revenue": 171902910464,
+    "profit_margin": 0.17899,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "한텍(098070.KQ)에 대해 1명의 애널리스트가 매수 의견을 제시했습니다. 컨센서스 점수는 4.0/5.0입니다. 목표가 평균은 50,000원으로 현재가 51,700원 대비 -3.3% 하락 여력이 있습니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 41085633510
+    },
+    {
+      "date": "2025-06",
+      "value": 49313953660
+    },
+    {
+      "date": "2025-03",
+      "value": 33741036660
+    },
+    {
+      "date": "2024-12",
+      "value": 40676480190
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 10711774000
+    },
+    {
+      "date": "2025-06",
+      "value": 13840496000
+    },
+    {
+      "date": "2025-03",
+      "value": 1825168880
+    },
+    {
+      "date": "2024-12",
+      "value": 9910422270
+    }
+  ],
+  "news": []
+}
