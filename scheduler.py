@@ -1044,6 +1044,15 @@ def update_jongga_v2():
         except Exception as e:
             logger.error(f"❌ 종가베팅 결과 전송 실패: {e}")
 
+        # 누적 성과 캐시 무효화 → 다음 API 호출 시 새 시그널 포함하여 재계산
+        try:
+            perf_cache = os.path.join(Config.DATA_DIR, "cumulative_performance.json")
+            if os.path.exists(perf_cache):
+                os.remove(perf_cache)
+                logger.info("🗑️ 누적 성과 캐시 삭제 (새 시그널 반영 대기)")
+        except Exception:
+            pass
+
     return success
 
 
