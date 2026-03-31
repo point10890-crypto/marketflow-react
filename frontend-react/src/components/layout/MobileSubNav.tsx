@@ -13,6 +13,7 @@ const sectionChildren: Record<string, SubNavItem[]> = {
         { name: '주도주 LIVE', href: '/dashboard/kr/leading-stocks', color: 'bg-orange-500' },
         { name: 'VCP Signals', href: '/dashboard/kr/vcp', color: 'bg-rose-500' },
         { name: '종가베팅', href: '/dashboard/kr/closing-bet', color: 'bg-violet-500' },
+        { name: '성과 History', href: '/dashboard/kr/closing-bet/history', color: 'bg-indigo-500' },
         { name: 'Track Record', href: '/dashboard/kr/track-record', color: 'bg-yellow-500' },
     ],
     '/dashboard/us': [
