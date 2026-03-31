@@ -1,11 +1,144 @@
 {
-  "timestamp": "2026-03-31T12:07:15.617761",
+  "timestamp": "2026-03-31T12:48:24.437561",
   "version": "1.0",
-  "market_summary": null,
-  "major_coins": {},
-  "top_movers": null,
-  "fear_greed": null,
-  "funding_rates": null,
+  "market_summary": {
+    "total_market_cap": 2407200609807.0,
+    "total_volume_24h": 91801313182.0,
+    "btc_dominance": 56.25,
+    "btc_dominance_change_24h": 0,
+    "total_market_cap_change_24h": 0.47,
+    "active_cryptocurrencies": 17943
+  },
+  "major_coins": {
+    "BTC": {
+      "price": 67671,
+      "change_24h": 0.87,
+      "change_7d": 0,
+      "volume_24h": 40280757249,
+      "market_cap": 1354068620019
+    },
+    "ETH": {
+      "price": 2064.03,
+      "change_24h": 1.47,
+      "change_7d": 0,
+      "volume_24h": 17447995894,
+      "market_cap": 249142070878
+    },
+    "BNB": {
+      "price": 612.64,
+      "change_24h": -0.42,
+      "change_7d": 0,
+      "volume_24h": 913767379,
+      "market_cap": 83540006565
+    },
+    "XRP": {
+      "price": 1.33,
+      "change_24h": -1.91,
+      "change_7d": 0,
+      "volume_24h": 1803263357,
+      "market_cap": 81328444084
+    },
+    "SOL": {
+      "price": 83.36,
+      "change_24h": 0.23,
+      "change_7d": 0,
+      "volume_24h": 3350667536,
+      "market_cap": 47731759576
+    }
+  },
+  "top_movers": {
+    "gainers": [
+      {
+        "symbol": "SKY",
+        "name": "Sky",
+        "price": 0.077508,
+        "change_24h": 6.11
+      },
+      {
+        "symbol": "JUP",
+        "name": "Jupiter",
+        "price": 0.153769,
+        "change_24h": 4.88
+      },
+      {
+        "symbol": "M",
+        "name": "MemeCore",
+        "price": 2.31,
+        "change_24h": 4.87
+      },
+      {
+        "symbol": "ZEC",
+        "name": "Zcash",
+        "price": 229.78,
+        "change_24h": 3.76
+      },
+      {
+        "symbol": "JST",
+        "name": "JUST",
+        "price": 0.05953,
+        "change_24h": 3.02
+      }
+    ],
+    "losers": [
+      {
+        "symbol": "RAIN",
+        "name": "Rain",
+        "price": 0.00758387,
+        "change_24h": -9.08
+      },
+      {
+        "symbol": "NIGHT",
+        "name": "Midnight",
+        "price": 0.04631988,
+        "change_24h": -4.96
+      },
+      {
+        "symbol": "APT",
+        "name": "Aptos",
+        "price": 0.898931,
+        "change_24h": -4.68
+      },
+      {
+        "symbol": "TAO",
+        "name": "Bittensor",
+        "price": 312.78,
+        "change_24h": -4.54
+      },
+      {
+        "symbol": "STABLE",
+        "name": "​​Stable",
+        "price": 0.0241058,
+        "change_24h": -3.5
+      }
+    ]
+  },
+  "fear_greed": {
+    "score": 11,
+    "current_score": 11,
+    "current_label": "Extreme Fear",
+    "level": "Extreme Fear",
+    "timestamp": "1774915200",
+    "previous": 8,
+    "previous_score": 8,
+    "previous_label": "Extreme Fear",
+    "change": 3
+  },
+  "funding_rates": {
+    "BTC": {
+      "symbol": "BTCUSDT",
+      "rate": -4e-05,
+      "rate_pct": -0.004,
+      "annualized_pct": -4.41,
+      "sentiment": "neutral"
+    },
+    "ETH": {
+      "symbol": "ETHUSDT",
+      "rate": 4.9e-05,
+      "rate_pct": 0.0049,
+      "annualized_pct": 5.36,
+      "sentiment": "neutral"
+    }
+  },
   "macro_correlations": {
     "btc_pairs": {
       "BTC_SPY": 0.5916,
@@ -25,12 +158,12 @@
       "알트 breadth 붕괴 (10% > EMA50)"
     ],
     "metrics": {
-      "btc_price": 67914.578125,
-      "btc_ema50": 71219.67141142655,
-      "btc_ema200": 85306.33491025594,
-      "btc_ema200_slope_pct_20": -3.8338439567688862,
-      "btc_volume_z_50": -0.3119947186758581,
-      "btc_atrp_14_pct": 3.8994580771124285,
+      "btc_price": 67635.1015625,
+      "btc_ema50": 71208.71154623046,
+      "btc_ema200": 85303.55404893754,
+      "btc_ema200_slope_pct_20": -3.836978832317829,
+      "btc_volume_z_50": -0.35005224409994695,
+      "btc_atrp_14_pct": 3.9155711177352353,
       "alt_breadth_above_ema50": 0.1,
       "funding_rate": 0.0001,
       "open_interest_delta_z": null,
@@ -44,7 +177,7 @@
       "fear_greed_index": 50,
       "fear_greed_class": "Neutral"
     },
-    "generated_at": "2026-03-31T12:03:37.187413"
+    "generated_at": "2026-03-31T12:45:54.271944"
   },
   "btc_price_history": [
     {
@@ -401,11 +534,15 @@
     },
     {
       "date": "2026-03-31",
-      "price": 67864.328125
+      "price": 67684.9140625
     }
   ],
   "sentiment_summary": {
     "overall": "Neutral",
-    "factors": []
+    "factors": [
+      "fear_greed: extreme_fear (bullish)",
+      "funding: neutral (neutral)",
+      "dominance: btc_high (neutral)"
+    ]
   }
 }

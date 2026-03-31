@@ -5,56 +5,56 @@
   "reasons": [
     "RSI(37.8), MACD: BEARISH",
     "시장 하락추세. 보수적 접근 권장.",
-    "🔥 강세: 2차전지 (85)",
+    "🔥 강세: 2차전지 (75)",
     "❄️ 약세: 철강 (25)"
   ],
   "sectors": [
     {
       "name": "2차전지",
       "signal": "bullish",
-      "change_pct": -0.73,
-      "score": 85
+      "change_pct": -1.58,
+      "score": 75
     },
     {
       "name": "반도체",
       "signal": "neutral",
-      "change_pct": -1.9,
+      "change_pct": -3.23,
       "score": 45
     },
     {
       "name": "자동차",
       "signal": "neutral",
-      "change_pct": -1.05,
+      "change_pct": -1.74,
       "score": 45
     },
     {
       "name": "은행",
       "signal": "neutral",
-      "change_pct": -0.29,
+      "change_pct": -1.24,
       "score": 45
     },
     {
       "name": "증권",
       "signal": "neutral",
-      "change_pct": -0.3,
+      "change_pct": -0.93,
       "score": 45
     },
     {
       "name": "IT",
-      "signal": "bearish",
-      "change_pct": -1.23,
-      "score": 35
+      "signal": "neutral",
+      "change_pct": -2.03,
+      "score": 40
     },
     {
       "name": "KOSPI200",
       "signal": "bearish",
-      "change_pct": -2.08,
-      "score": 30
+      "change_pct": -3.28,
+      "score": 25
     },
     {
       "name": "철강",
       "signal": "bearish",
-      "change_pct": -1.32,
+      "change_pct": -2.09,
       "score": 25
     }
   ],
@@ -70,5 +70,5 @@
   "kospi_change_pct": -2.18,
   "kosdaq_close": 1080.42,
   "kosdaq_change_pct": -2.41,
-  "updated_at": "2026-03-31T12:27:22.521839"
+  "updated_at": "2026-03-31T12:47:34.670756"
 }
