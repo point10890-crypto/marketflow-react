@@ -551,6 +551,13 @@ def get_data_status():
             'menu': 'W Pattern',
             'updateType': 'wave_scan'
         },
+        {
+            'name': 'Cumulative Performance',
+            'path': os.path.join(DATA_DIR, 'cumulative_performance.json'),
+            'link': '/dashboard/kr/closing-bet/history',
+            'menu': '종가베팅 History',
+            'updateType': 'cumulative_perf'
+        },
         # ── 3. US Market ──
         {
             'name': 'US Smart Money',
@@ -832,6 +839,12 @@ def update_single_data():
             'module': 'engine.wave.screener',
             'function': 'run_screener'
         },
+        # ── Cumulative Performance ──
+        'cumulative_perf': {
+            'name': 'Cumulative Performance (종가베팅 History)',
+            'module': 'app.routes.kr_market',
+            'function': '_rebuild_cumulative'
+        },
     }
     
     if data_type not in update_commands:
@@ -872,6 +885,66 @@ sys.path.insert(0, '.')
 from {mod} import {func}
 result = {func}(market='KR')
 print(f"[OK] Wave scan: {{result.get('signal_count', 0)}} signals from {{result.get('scan_count', 0)}} stocks")
+'''
+                elif data_type == 'cumulative_perf':
+                    script_code = '''
+import sys, os, json, time, glob, logging
+sys.path.insert(0, '.')
+os.environ['PYTHONIOENCODING'] = 'utf-8'
+
+print("[1/4] Loading jongga_v2 archives...")
+from app.utils.paths import DATA_DIR
+files = sorted(glob.glob(os.path.join(DATA_DIR, 'jongga_v2_results_*.json')))
+print(f"  Found {len(files)} archive files")
+
+all_signals = []
+for fp in files:
+    with open(fp, 'r', encoding='utf-8') as f:
+        d = json.load(f)
+    for sig in d.get('signals', []):
+        if sig.get('grade') in ('S', 'A', 'B'):
+            all_signals.append(sig)
+print(f"  Total signals: {len(all_signals)}")
+
+if not all_signals:
+    print("[ERROR] No signals found")
+    sys.exit(1)
+
+print("[2/4] Collecting unique tickers...")
+import pandas as pd
+ticker_set = set()
+earliest = None
+for sig in all_signals:
+    code = sig['stock_code']
+    market = sig.get('market', 'KOSPI')
+    suffix = '.KS' if market.upper() == 'KOSPI' else '.KQ'
+    ticker_set.add(f"{code}{suffix}")
+    sd = sig.get('signal_date', '')
+    if sd and (earliest is None or sd < earliest):
+        earliest = sd
+print(f"  {len(ticker_set)} unique tickers, from {earliest}")
+
+print("[3/4] Fetching prices from yfinance...")
+from app.routes.kr_market import _batch_fetch_prices, _evaluate_signal, _calculate_cumulative_stats
+prices = _batch_fetch_prices(list(ticker_set), earliest)
+print(f"  Got prices for {len(prices)} tickers")
+
+print("[4/4] Processing signals...")
+from datetime import datetime
+today_str = datetime.now().strftime('%Y-%m-%d')
+processed = []
+for sig in all_signals:
+    processed.append(_evaluate_signal(sig, prices, today_str))
+processed.sort(key=lambda x: x['signal_date'], reverse=True)
+stats = _calculate_cumulative_stats(processed, today_str)
+
+result = {'signals': processed, 'stats': stats}
+cache_path = os.path.join(DATA_DIR, 'cumulative_performance.json')
+with open(cache_path, 'w', encoding='utf-8') as f:
+    json.dump(result, f, ensure_ascii=False, indent=2)
+
+print(f"[OK] {stats['total']} signals | WR={stats['win_rate']}% | Hold Avg={stats.get('hold_avg_roi')}%")
+print(f"  Saved to {cache_path}")
 '''
                 else:
                     script_code = f'''
