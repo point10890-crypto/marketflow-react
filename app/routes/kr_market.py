@@ -516,17 +516,384 @@ def get_kr_ai_history(date):
         return jsonify({'error': str(e)}), 500
 
 
+
+# ── 누적 성과 캐시 ───────────────────────────────────────────
+_cumulative_cache: dict = {}       # {'data': ..., 'ts': 0}
+_CUMULATIVE_TTL = 1800             # 30분 캐시
+
+_TARGET_PCT = 9.0   # 목표 수익률 %
+_STOP_PCT = 5.0     # 손절 %
+
+
+def _build_yf_ticker(code: str, market: str) -> str:
+    """KRX 종목코드 → yfinance 티커"""
+    suffix = '.KS' if market.upper() == 'KOSPI' else '.KQ'
+    return f"{code}{suffix}"
+
+
+def _batch_fetch_prices(tickers: list, start_date: str) -> dict:
+    """yfinance로 가격 일괄 다운로드 → {ticker: DataFrame}"""
+    import yfinance as yf
+
+    result = {}
+    chunk_size = 30
+    for i in range(0, len(tickers), chunk_size):
+        chunk = tickers[i:i + chunk_size]
+        try:
+            df = yf.download(
+                chunk,
+                start=start_date,
+                auto_adjust=True,
+                progress=False,
+                threads=True,
+            )
+            if df.empty:
+                continue
+
+            # 단일 티커일 때 columns가 1-level
+            if len(chunk) == 1:
+                t = chunk[0]
+                if 'High' in df.columns:
+                    result[t] = df[['High', 'Low', 'Close']].dropna()
+            else:
+                # multi-ticker: MultiIndex columns (Price, Ticker)
+                for t in chunk:
+                    try:
+                        sub = df.xs(t, level='Ticker', axis=1) if 'Ticker' in df.columns.names else None
+                        if sub is None:
+                            # 최신 yfinance: columns = [('Close', ticker), ('High', ticker), ...]
+                            cols_h = ('High', t) if ('High', t) in df.columns else None
+                            cols_l = ('Low', t) if ('Low', t) in df.columns else None
+                            cols_c = ('Close', t) if ('Close', t) in df.columns else None
+                            if cols_h and cols_l and cols_c:
+                                sub = pd.DataFrame({
+                                    'High': df[cols_h],
+                                    'Low': df[cols_l],
+                                    'Close': df[cols_c],
+                                }).dropna()
+                                result[t] = sub
+                        else:
+                            if 'High' in sub.columns:
+                                result[t] = sub[['High', 'Low', 'Close']].dropna()
+                    except Exception:
+                        continue
+        except Exception as e:
+            logger.warning(f"yfinance batch fetch failed (chunk {i}): {e}")
+            continue
+
+    return result
+
+
+def _evaluate_signal(sig: dict, prices: dict, today_str: str) -> dict:
+    """개별 시그널의 승/패/오픈 판정 + ROI 계산"""
+    code = sig['stock_code']
+    market = sig.get('market', 'KOSPI')
+    yf_ticker = _build_yf_ticker(code, market)
+    entry = sig.get('entry_price', 0) or sig.get('current_price', 0)
+    target = sig.get('target_price', 0)
+    stop = sig.get('stop_price', 0)
+    sig_date = sig.get('signal_date', '')
+    score = sig.get('score', {})
+
+    # 기본값
+    outcome = 'OPEN'
+    outcome_date = None
+    outcome_price = entry
+    roi_pct = 0.0
+    days_held = 0
+    current_price = entry
+    max_high = entry
+    max_high_pct = 0.0
+    price_trail = []
+
+    if not entry or not sig_date:
+        return _format_signal(sig, outcome, outcome_date, outcome_price,
+                              roi_pct, days_held, current_price,
+                              max_high, max_high_pct, price_trail, score)
+
+    # target/stop이 없으면 고정 비율 사용
+    if not target:
+        target = entry * (1 + _TARGET_PCT / 100)
+    if not stop:
+        stop = entry * (1 - _STOP_PCT / 100)
+
+    df = prices.get(yf_ticker)
+    if df is None or df.empty:
+        return _format_signal(sig, outcome, outcome_date, outcome_price,
+                              roi_pct, days_held, current_price,
+                              max_high, max_high_pct, price_trail, score)
+
+    # 시그널 다음날부터의 가격 데이터
+    try:
+        mask = df.index > pd.Timestamp(sig_date)
+        post_df = df.loc[mask]
+    except Exception:
+        post_df = pd.DataFrame()
+
+    if post_df.empty:
+        return _format_signal(sig, outcome, outcome_date, outcome_price,
+                              roi_pct, days_held, current_price,
+                              max_high, max_high_pct, price_trail, score)
+
+    # 일별 판정
+    for i, (dt, row) in enumerate(post_df.iterrows()):
+        day_high = float(row.get('High', 0) or 0)
+        day_low = float(row.get('Low', 0) or 0)
+        day_close = float(row.get('Close', 0) or 0)
+        day_str = dt.strftime('%Y-%m-%d')
+
+        if day_high > 0:
+            max_high = max(max_high, day_high)
+
+        # price trail 생성
+        if entry > 0:
+            hp = round((day_high - entry) / entry * 100, 2) if day_high else 0
+            cp = round((day_close - entry) / entry * 100, 2) if day_close else 0
+            price_trail.append({
+                'd': day_str,
+                'h': round(day_high),
+                'c': round(day_close),
+                'hp': hp,
+                'cp': cp,
+            })
+
+        # 목표/손절 판정 (먼저 발생한 쪽)
+        if outcome == 'OPEN':
+            hit_target = day_high >= target
+            hit_stop = day_low <= stop
+
+            if hit_target and hit_stop:
+                # 당일 둘 다 → 시가 기준 판정
+                # 보수적: STOP_HIT (실전에서 손절이 먼저 걸릴 확률 높음)
+                outcome = 'STOP_HIT'
+                outcome_date = day_str
+                outcome_price = round(stop)
+            elif hit_target:
+                outcome = 'TARGET_HIT'
+                outcome_date = day_str
+                outcome_price = round(target)
+            elif hit_stop:
+                outcome = 'STOP_HIT'
+                outcome_date = day_str
+                outcome_price = round(stop)
+
+    # 현재가 / ROI / days 계산
+    last_row = post_df.iloc[-1]
+    current_price = round(float(last_row.get('Close', 0) or 0))
+    last_date = post_df.index[-1]
+
+    if outcome == 'OPEN':
+        outcome_price = current_price
+        roi_pct = round((current_price - entry) / entry * 100, 2) if entry else 0
+        days_held = (last_date - pd.Timestamp(sig_date)).days
+    else:
+        roi_pct = round((outcome_price - entry) / entry * 100, 2) if entry else 0
+        try:
+            days_held = (pd.Timestamp(outcome_date) - pd.Timestamp(sig_date)).days
+        except Exception:
+            days_held = 0
+
+    max_high_pct = round((max_high - entry) / entry * 100, 2) if entry and max_high > entry else 0
+
+    return _format_signal(sig, outcome, outcome_date, outcome_price,
+                          roi_pct, days_held, current_price,
+                          max_high, max_high_pct, price_trail, score)
+
+
+def _format_signal(sig, outcome, outcome_date, outcome_price,
+                   roi_pct, days_held, current_price,
+                   max_high, max_high_pct, price_trail, score) -> dict:
+    """프론트엔드 CumulativeSignal 인터페이스에 맞게 포맷"""
+    entry = sig.get('entry_price', 0) or sig.get('current_price', 0)
+    # hold_roi_pct: 손절/익절 없이 현시점까지 보유했을 때의 수익률
+    hold_roi_pct = round((current_price - entry) / entry * 100, 2) if entry and current_price else 0.0
+    return {
+        'stock_code': sig.get('stock_code', ''),
+        'stock_name': sig.get('stock_name', ''),
+        'market': sig.get('market', ''),
+        'signal_date': sig.get('signal_date', ''),
+        'grade': sig.get('grade', ''),
+        'score_total': score.get('total', 0) if isinstance(score, dict) else 0,
+        'entry_price': entry,
+        'target_price': sig.get('target_price', 0),
+        'stop_price': sig.get('stop_price', 0),
+        'outcome': outcome,
+        'outcome_date': outcome_date,
+        'outcome_price': round(outcome_price) if outcome_price else 0,
+        'roi_pct': roi_pct,
+        'hold_roi_pct': hold_roi_pct,
+        'days_held': days_held,
+        'current_price': current_price,
+        'max_high': round(max_high) if max_high else 0,
+        'max_high_pct': max_high_pct,
+        'price_trail': price_trail,
+        'themes': sig.get('themes', []) or [],
+        'llm_reason': (score.get('llm_reason', '') if isinstance(score, dict) else ''),
+        'change_pct': sig.get('change_pct', 0),
+    }
+
+
+def _calculate_cumulative_stats(signals: list, today_str: str) -> dict:
+    """전체 누적 통계 계산"""
+    total = len(signals)
+    wins = sum(1 for s in signals if s['outcome'] == 'TARGET_HIT')
+    losses = sum(1 for s in signals if s['outcome'] == 'STOP_HIT')
+    opens = sum(1 for s in signals if s['outcome'] == 'OPEN')
+
+    closed = [s for s in signals if s['outcome'] != 'OPEN']
+    all_roi = [s['roi_pct'] for s in closed]
+    avg_roi = round(sum(all_roi) / len(all_roi), 2) if all_roi else 0
+    total_roi = round(sum(all_roi), 2)
+
+    days_list = [s['days_held'] for s in closed if s['days_held'] > 0]
+    avg_days = round(sum(days_list) / len(days_list), 1) if days_list else 0
+
+    win_rate = round(wins / (wins + losses) * 100, 1) if (wins + losses) > 0 else 0
+
+    # ── Hold 전략 통계 (손절/익절 없이 현시점까지 보유) ──
+    # 가격 데이터가 있는 시그널만 (hold_roi_pct != 0 또는 current_price != entry)
+    hold_signals = [s for s in signals if s.get('current_price', 0) and s.get('entry_price', 0)]
+    hold_rois = [s['hold_roi_pct'] for s in hold_signals]
+    hold_avg_roi = round(sum(hold_rois) / len(hold_rois), 2) if hold_rois else 0
+    hold_total_roi = round(sum(hold_rois), 2)
+    hold_wins = sum(1 for r in hold_rois if r > 0)
+    hold_losses = sum(1 for r in hold_rois if r <= 0)
+    hold_win_rate = round(hold_wins / len(hold_rois) * 100, 1) if hold_rois else 0
+    # 중앙값 (평균보다 극단치에 강건)
+    sorted_rois = sorted(hold_rois)
+    hold_median_roi = sorted_rois[len(sorted_rois) // 2] if sorted_rois else 0
+
+    # 등급별 ROI
+    grade_roi = {}
+    for grade in ('S', 'A', 'B'):
+        grade_sigs = [s for s in signals if s['grade'] == grade]
+        grade_closed = [s for s in grade_sigs if s['outcome'] != 'OPEN']
+        g_wins = sum(1 for s in grade_sigs if s['outcome'] == 'TARGET_HIT')
+        g_losses = sum(1 for s in grade_sigs if s['outcome'] == 'STOP_HIT')
+        g_roi = [s['roi_pct'] for s in grade_closed]
+
+        # 등급별 hold 전략
+        g_hold = [s['hold_roi_pct'] for s in grade_sigs if s.get('current_price') and s.get('entry_price')]
+        g_hold_avg = round(sum(g_hold) / len(g_hold), 2) if g_hold else 0
+        g_hold_wins = sum(1 for r in g_hold if r > 0)
+        g_hold_wr = round(g_hold_wins / len(g_hold) * 100, 1) if g_hold else 0
+
+        grade_roi[grade] = {
+            'count': len(grade_sigs),
+            'wins': g_wins,
+            'losses': g_losses,
+            'avg_roi': round(sum(g_roi) / len(g_roi), 2) if g_roi else 0,
+            'total_roi': round(sum(g_roi), 2),
+            'win_rate': round(g_wins / (g_wins + g_losses) * 100, 1) if (g_wins + g_losses) > 0 else 0,
+            'hold_avg_roi': g_hold_avg,
+            'hold_win_rate': g_hold_wr,
+        }
+
+    return {
+        'total': total,
+        'wins': wins,
+        'losses': losses,
+        'open': opens,
+        'win_rate': win_rate,
+        'avg_roi': avg_roi,
+        'total_roi': total_roi,
+        'avg_days_held': avg_days,
+        'latest_price_date': today_str,
+        'target_pct': _TARGET_PCT,
+        'stop_pct': _STOP_PCT,
+        'grade_roi': grade_roi,
+        # Hold 전략 (현시점까지 보유 시)
+        'hold_avg_roi': hold_avg_roi,
+        'hold_total_roi': hold_total_roi,
+        'hold_median_roi': hold_median_roi,
+        'hold_win_rate': hold_win_rate,
+        'hold_wins': hold_wins,
+        'hold_losses': hold_losses,
+    }
+
+
 @kr_bp.route('/cumulative-return')
 def get_kr_cumulative_return():
-    """누적 수익률"""
+    """종가베팅 V2 누적 성과 — 아카이브 + yfinance 가격 추적"""
     try:
-        perf_path = os.path.join(DATA_DIR, 'performance.json')
-        if os.path.exists(perf_path):
-            with open(perf_path, 'r', encoding='utf-8') as f:
-                data = json.load(f)
-            return jsonify(data)
-        return jsonify({'cumulative_return': 0, 'trades': []})
+        import glob as glob_module
+
+        now = time.time()
+        # 캐시 확인
+        if _cumulative_cache.get('data') and now - _cumulative_cache.get('ts', 0) < _CUMULATIVE_TTL:
+            return jsonify(_cumulative_cache['data'])
+
+        # 파일 캐시 확인 (30분 이내 생성된 파일이면 재사용)
+        cache_path = os.path.join(DATA_DIR, 'cumulative_performance.json')
+        if os.path.exists(cache_path):
+            file_age = now - os.path.getmtime(cache_path)
+            if file_age < _CUMULATIVE_TTL:
+                with open(cache_path, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                _cumulative_cache['data'] = data
+                _cumulative_cache['ts'] = now
+                return jsonify(data)
+
+        # 1. 전체 아카이브 로드
+        files = sorted(glob_module.glob(os.path.join(DATA_DIR, 'jongga_v2_results_*.json')))
+        all_signals = []
+        for fp in files:
+            try:
+                with open(fp, 'r', encoding='utf-8') as f:
+                    d = json.load(f)
+                for sig in d.get('signals', []):
+                    if sig.get('grade') in ('S', 'A', 'B'):
+                        all_signals.append(sig)
+            except Exception:
+                continue
+
+        if not all_signals:
+            empty = {'signals': [], 'stats': _calculate_cumulative_stats([], datetime.now().strftime('%Y-%m-%d'))}
+            return jsonify(empty)
+
+        # 2. 고유 티커 수집 + 최초 날짜
+        ticker_set = set()
+        earliest = None
+        for sig in all_signals:
+            code = sig['stock_code']
+            market = sig.get('market', 'KOSPI')
+            ticker_set.add(_build_yf_ticker(code, market))
+            sd = sig.get('signal_date', '')
+            if sd and (earliest is None or sd < earliest):
+                earliest = sd
+
+        # 3. yfinance 일괄 가격 다운로드
+        logger.info(f"[cumulative] Fetching prices for {len(ticker_set)} tickers from {earliest}")
+        prices = _batch_fetch_prices(list(ticker_set), earliest)
+        logger.info(f"[cumulative] Got prices for {len(prices)} tickers")
+
+        # 4. 시그널별 판정
+        today_str = datetime.now().strftime('%Y-%m-%d')
+        processed = []
+        for sig in all_signals:
+            processed.append(_evaluate_signal(sig, prices, today_str))
+
+        # 날짜 내림차순 정렬
+        processed.sort(key=lambda x: x['signal_date'], reverse=True)
+
+        # 5. 통계 계산
+        stats = _calculate_cumulative_stats(processed, today_str)
+
+        result = {'signals': processed, 'stats': stats}
+
+        # 파일 캐시 저장
+        try:
+            with open(cache_path, 'w', encoding='utf-8') as f:
+                json.dump(result, f, ensure_ascii=False, indent=2)
+        except Exception as e:
+            logger.warning(f"[cumulative] Cache save failed: {e}")
+
+        _cumulative_cache['data'] = result
+        _cumulative_cache['ts'] = now
+        return jsonify(result)
+
     except Exception as e:
+        logger.error(f"[cumulative-return] Error: {e}\n{traceback.format_exc()}")
         return jsonify({'error': str(e)}), 500
 
 

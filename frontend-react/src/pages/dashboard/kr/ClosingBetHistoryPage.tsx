@@ -26,6 +26,7 @@ interface CumulativeSignal {
     outcome_date: string | null;
     outcome_price: number;
     roi_pct: number;
+    hold_roi_pct: number;
     days_held: number;
     current_price: number;
     max_high: number;
@@ -43,6 +44,8 @@ interface GradeROI {
     avg_roi: number;
     total_roi: number;
     win_rate: number;
+    hold_avg_roi?: number;
+    hold_win_rate?: number;
 }
 
 interface CumulativeStats {
@@ -58,6 +61,12 @@ interface CumulativeStats {
     target_pct: number;
     stop_pct: number;
     grade_roi: Record<string, GradeROI>;
+    hold_avg_roi?: number;
+    hold_total_roi?: number;
+    hold_median_roi?: number;
+    hold_win_rate?: number;
+    hold_wins?: number;
+    hold_losses?: number;
 }
 
 interface CumulativeData {
@@ -65,7 +74,7 @@ interface CumulativeData {
     stats: CumulativeStats;
 }
 
-type SortKey = 'signal_date' | 'roi_pct' | 'score_total' | 'days_held' | 'stock_name' | 'grade' | 'max_high_pct';
+type SortKey = 'signal_date' | 'roi_pct' | 'hold_roi_pct' | 'score_total' | 'days_held' | 'stock_name' | 'grade' | 'max_high_pct';
 type OutcomeFilter = 'ALL' | 'TARGET_HIT' | 'STOP_HIT' | 'OPEN';
 
 export default function ClosingBetHistoryPage() {
@@ -187,9 +196,58 @@ export default function ClosingBetHistoryPage() {
                                     <div><div className="text-[10px] text-gray-500 uppercase">Avg ROI</div><div className={`text-sm font-bold ${gr.avg_roi >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{gr.avg_roi > 0 ? '+' : ''}{gr.avg_roi}%</div></div>
                                     <div><div className="text-[10px] text-gray-500 uppercase">W/L</div><div className="text-sm font-bold text-white">{gr.wins}/{gr.losses}</div></div>
                                 </div>
+                                {gr.hold_avg_roi !== undefined && (
+                                    <div className="mt-3 pt-3 border-t border-white/10 grid grid-cols-2 gap-2 text-center">
+                                        <div><div className="text-[10px] text-gray-500 uppercase">Hold Avg</div><div className={`text-sm font-bold ${(gr.hold_avg_roi ?? 0) >= 0 ? 'text-amber-400' : 'text-red-400'}`}>{(gr.hold_avg_roi ?? 0) > 0 ? '+' : ''}{gr.hold_avg_roi}%</div></div>
+                                        <div><div className="text-[10px] text-gray-500 uppercase">Hold WR</div><div className={`text-sm font-bold ${(gr.hold_win_rate ?? 0) >= 50 ? 'text-amber-400' : 'text-red-400'}`}>{gr.hold_win_rate}%</div></div>
+                                    </div>
+                                )}
                             </div>
                         );
                     })}
+                </div>
+            )}
+
+            {stats && stats.hold_avg_roi !== undefined && !loading && (
+                <div className="rounded-xl bg-gradient-to-br from-amber-500/10 to-orange-500/10 border border-amber-500/20 p-5">
+                    <div className="flex items-center gap-2 mb-4">
+                        <span className="text-amber-400 font-black text-base">Buy & Hold</span>
+                        <span className="text-[10px] text-gray-500 px-2 py-0.5 rounded bg-white/5 border border-white/10">현시점까지 보유 시 수익률</span>
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+                        <div className="text-center">
+                            <div className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Avg ROI</div>
+                            <div className={`text-xl font-black font-mono ${(stats.hold_avg_roi ?? 0) >= 0 ? 'text-amber-400' : 'text-red-400'}`}>{(stats.hold_avg_roi ?? 0) > 0 ? '+' : ''}{stats.hold_avg_roi}%</div>
+                        </div>
+                        <div className="text-center">
+                            <div className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Median ROI</div>
+                            <div className={`text-xl font-black font-mono ${(stats.hold_median_roi ?? 0) >= 0 ? 'text-amber-400' : 'text-red-400'}`}>{(stats.hold_median_roi ?? 0) > 0 ? '+' : ''}{stats.hold_median_roi}%</div>
+                        </div>
+                        <div className="text-center">
+                            <div className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Total ROI</div>
+                            <div className={`text-xl font-black font-mono ${(stats.hold_total_roi ?? 0) >= 0 ? 'text-amber-400' : 'text-red-400'}`}>{(stats.hold_total_roi ?? 0) > 0 ? '+' : ''}{stats.hold_total_roi}%</div>
+                        </div>
+                        <div className="text-center">
+                            <div className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Win Rate</div>
+                            <div className={`text-xl font-black font-mono ${(stats.hold_win_rate ?? 0) >= 50 ? 'text-amber-400' : 'text-red-400'}`}>{stats.hold_win_rate}%</div>
+                        </div>
+                        <div className="text-center">
+                            <div className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Wins</div>
+                            <div className="text-xl font-black font-mono text-emerald-400">{stats.hold_wins}</div>
+                        </div>
+                        <div className="text-center">
+                            <div className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Losses</div>
+                            <div className="text-xl font-black font-mono text-red-400">{stats.hold_losses}</div>
+                        </div>
+                    </div>
+                    <div className="mt-4 flex items-center gap-4 text-xs text-gray-500">
+                        <span>Strategy: {stats.avg_roi > 0 ? '+' : ''}{stats.avg_roi}% avg</span>
+                        <span className="text-gray-600">vs</span>
+                        <span className="text-amber-400">Hold: {(stats.hold_avg_roi ?? 0) > 0 ? '+' : ''}{stats.hold_avg_roi}% avg</span>
+                        <span className={`font-bold ${(stats.hold_avg_roi ?? 0) > stats.avg_roi ? 'text-amber-400' : 'text-emerald-400'}`}>
+                            {(stats.hold_avg_roi ?? 0) > stats.avg_roi ? 'Hold wins' : 'Strategy wins'} by {Math.abs((stats.hold_avg_roi ?? 0) - stats.avg_roi).toFixed(2)}%
+                        </span>
+                    </div>
                 </div>
             )}
 
@@ -239,6 +297,7 @@ export default function ClosingBetHistoryPage() {
                                     <th className="px-3 py-3 text-[10px] text-gray-500 uppercase tracking-wider font-bold text-right">Entry</th>
                                     <th className="px-3 py-3 text-[10px] text-gray-500 uppercase tracking-wider font-bold text-center">Outcome</th>
                                     <ThBtn column="roi_pct" label="ROI" align="right" />
+                                    <ThBtn column="hold_roi_pct" label="Hold" align="right" />
                                     <ThBtn column="max_high_pct" label="Max High" align="right" />
                                     <th className="px-3 py-3 text-[10px] text-gray-500 uppercase tracking-wider font-bold text-left whitespace-nowrap">Price Trail</th>
                                     <ThBtn column="days_held" label="Days" align="right" />
@@ -263,6 +322,7 @@ export default function ClosingBetHistoryPage() {
                                             <td className="px-3 py-2.5 text-xs text-gray-400 text-right font-mono">{s.entry_price.toLocaleString()}</td>
                                             <td className="px-3 py-2.5 text-center"><span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${outcomeStyle(s.outcome)}`}>{outcomeLabel(s.outcome)}</span></td>
                                             <td className={`px-3 py-2.5 text-sm font-bold text-right font-mono ${s.roi_pct > 0 ? 'text-emerald-400' : s.roi_pct < 0 ? 'text-red-400' : 'text-gray-400'}`}>{s.roi_pct > 0 ? '+' : ''}{s.roi_pct}%</td>
+                                            <td className={`px-3 py-2.5 text-xs font-bold text-right font-mono ${s.hold_roi_pct > 0 ? 'text-amber-400' : s.hold_roi_pct < 0 ? 'text-red-400' : 'text-gray-500'}`}>{s.hold_roi_pct > 0 ? '+' : ''}{s.hold_roi_pct}%</td>
                                             <td className={`px-3 py-2.5 text-xs font-bold text-right font-mono ${s.max_high_pct >= targetPct ? 'text-emerald-400' : s.max_high_pct > 0 ? 'text-yellow-400' : 'text-gray-500'}`}>{s.max_high_pct > 0 ? `+${s.max_high_pct.toFixed(1)}%` : '-'}</td>
                                             <td className="px-3 py-2.5"><MiniTrail trail={s.price_trail} targetPct={targetPct} stopPct={stopPct} /></td>
                                             <td className="px-3 py-2.5 text-xs text-gray-400 text-right font-mono">{s.days_held}d</td>
