@@ -1,174 +1,137 @@
 {
   "metadata": {
-    "generated_at": "2026-03-31T16:14:50.424588",
+    "generated_at": "2026-03-31T16:15:13.341869",
     "market": "CRYPTO",
     "gate": "RED",
-    "gate_score": 21,
-    "processing_time_sec": 18.3
-  },
-  "summary": {
-    "total_screened": 50,
-    "stage2_passed": 2,
-    "trend_passed": 2,
-    "vcp_found": 2,
-    "entry_ready": 1
+    "universe_size": 50
   },
   "signals": [
     {
-      "symbol": "MKR",
-      "name": "MKR",
-      "market": "CRYPTO",
-      "sector": "",
-      "price": 1718.19,
-      "composite": {
-        "composite_score": 57.8,
-        "rating": "Developing VCP",
-        "rating_description": "형성 중인 VCP 패턴",
-        "guidance": "거래량 확인 후 피벗 매수",
-        "valid_vcp": "True",
-        "entry_ready": false,
-        "weakest_component": "Volume Pattern",
-        "strongest_component": "Relative Strength",
-        "component_breakdown": {
-          "trend_template": {
-            "score": 75.0,
-            "weight": 0.25,
-            "weighted": 18.8,
-            "label": "Trend Template (Stage 2)"
-          },
-          "contraction_quality": {
-            "score": 51,
-            "weight": 0.25,
-            "weighted": 12.8,
-            "label": "Contraction Quality"
-          },
-          "volume_pattern": {
-            "score": 30,
-            "weight": 0.2,
-            "weighted": 6.0,
-            "label": "Volume Pattern"
-          },
-          "pivot_proximity": {
-            "score": 40,
-            "weight": 0.15,
-            "weighted": 6.0,
-            "label": "Pivot Proximity"
-          },
-          "relative_strength": {
-            "score": 95,
-            "weight": 0.15,
-            "weighted": 14.2,
-            "label": "Relative Strength"
-          }
-        }
-      },
-      "trend_template": {
-        "score": 75.0,
-        "passed": "True",
-        "stage": 2,
-        "stage_label": "Stage 2 - Early"
-      },
-      "vcp_pattern": {
-        "score": 51,
-        "valid_vcp": "True",
-        "num_contractions": 2,
-        "pivot_price": 1948.11
-      },
-      "volume_pattern": {
-        "score": 30,
-        "dry_up_ratio": 1.25
-      },
-      "pivot_proximity": {
-        "score": 40,
-        "distance_from_pivot_pct": 11.8,
-        "trade_status": "BUILDING"
-      },
-      "relative_strength": {
-        "score": 95,
-        "rs_rank_estimate": 95
-      },
-      "stage": {
-        "stage": 2,
-        "stage_label": "Stage 2 - Early"
-      }
+      "symbol": "TRUMP/USDT",
+      "timeframe": "4h",
+      "signal_type": "BREAKOUT",
+      "score": 56,
+      "pivot_high": 3.011,
+      "breakout_close_pct": 0.76,
+      "vol_ratio": 3.24,
+      "liquidity_bucket": "C",
+      "market_regime": "BTC_DOWN|D",
+      "c1": 15.6,
+      "c2": 7.6,
+      "c3": 3.4,
+      "ml_win_prob": 51.2
     },
     {
-      "symbol": "CHZ",
-      "name": "CHZ",
-      "market": "CRYPTO",
-      "sector": "",
-      "price": 0.04,
-      "composite": {
-        "composite_score": 53.1,
-        "rating": "Developing VCP",
-        "rating_description": "형성 중인 VCP 패턴",
-        "guidance": "피벗 돌파 매수",
-        "valid_vcp": "True",
-        "entry_ready": "True",
-        "weakest_component": "Volume Pattern",
-        "strongest_component": "Pivot Proximity",
-        "component_breakdown": {
-          "trend_template": {
-            "score": 62.5,
-            "weight": 0.25,
-            "weighted": 15.6,
-            "label": "Trend Template (Stage 2)"
-          },
-          "contraction_quality": {
-            "score": 42,
-            "weight": 0.25,
-            "weighted": 10.5,
-            "label": "Contraction Quality"
-          },
-          "volume_pattern": {
-            "score": 30,
-            "weight": 0.2,
-            "weighted": 6.0,
-            "label": "Volume Pattern"
-          },
-          "pivot_proximity": {
-            "score": 90,
-            "weight": 0.15,
-            "weighted": 13.5,
-            "label": "Pivot Proximity"
-          },
-          "relative_strength": {
-            "score": 50,
-            "weight": 0.15,
-            "weighted": 7.5,
-            "label": "Relative Strength"
-          }
-        }
-      },
-      "trend_template": {
-        "score": 62.5,
-        "passed": "True",
-        "stage": 2,
-        "stage_label": "Stage 2 - Early"
-      },
-      "vcp_pattern": {
-        "score": 42,
-        "valid_vcp": "True",
-        "num_contractions": 2,
-        "pivot_price": 0.04
-      },
-      "volume_pattern": {
-        "score": 30,
-        "dry_up_ratio": 1.21
-      },
-      "pivot_proximity": {
-        "score": 90,
-        "distance_from_pivot_pct": -8.7,
-        "trade_status": "BREAKOUT"
-      },
-      "relative_strength": {
-        "score": 50,
-        "rs_rank_estimate": 50
-      },
-      "stage": {
-        "stage": 2,
-        "stage_label": "Stage 2 - Early"
-      }
+      "symbol": "BNB/USDT",
+      "timeframe": "4h",
+      "signal_type": "APPROACHING",
+      "score": 44,
+      "pivot_high": 621.4,
+      "breakout_close_pct": -1.77,
+      "vol_ratio": 0.76,
+      "liquidity_bucket": "A",
+      "market_regime": "BTC_DOWN|D",
+      "c1": 7.2,
+      "c2": 3.6,
+      "c3": 2.3,
+      "ml_win_prob": 23.6
+    },
+    {
+      "symbol": "PAXG/USDT",
+      "timeframe": "4h",
+      "signal_type": "APPROACHING",
+      "score": 38,
+      "pivot_high": 4581.02,
+      "breakout_close_pct": -0.62,
+      "vol_ratio": 0.54,
+      "liquidity_bucket": "B",
+      "market_regime": "BTC_DOWN|B",
+      "c1": 5.2,
+      "c2": 2.8,
+      "c3": 2.2,
+      "ml_win_prob": 47.7
+    },
+    {
+      "symbol": "LTC/USDT",
+      "timeframe": "4h",
+      "signal_type": "APPROACHING",
+      "score": 38,
+      "pivot_high": 54.41,
+      "breakout_close_pct": -1.14,
+      "vol_ratio": 0.43,
+      "liquidity_bucket": "B",
+      "market_regime": "BTC_DOWN|D",
+      "c1": 6.2,
+      "c2": 4.9,
+      "c3": 2.5,
+      "ml_win_prob": 42.9
+    },
+    {
+      "symbol": "PEPE/USDT",
+      "timeframe": "4h",
+      "signal_type": "APPROACHING",
+      "score": 34,
+      "pivot_high": 3.42e-06,
+      "breakout_close_pct": -1.46,
+      "vol_ratio": 0.81,
+      "liquidity_bucket": "B",
+      "market_regime": "BTC_DOWN|D",
+      "c1": 7.2,
+      "c2": 7.0,
+      "c3": 4.1,
+      "ml_win_prob": 27.1
+    },
+    {
+      "symbol": "AVAX/USDT",
+      "timeframe": "4h",
+      "signal_type": "APPROACHING",
+      "score": 33,
+      "pivot_high": 9.08,
+      "breakout_close_pct": -1.76,
+      "vol_ratio": 0.43,
+      "liquidity_bucket": "B",
+      "market_regime": "BTC_DOWN|D",
+      "c1": 8.3,
+      "c2": 6.9,
+      "c3": 3.7,
+      "ml_win_prob": 21.2
+    },
+    {
+      "symbol": "TON/USDT",
+      "timeframe": "4h",
+      "signal_type": "APPROACHING",
+      "score": 30,
+      "pivot_high": 1.248,
+      "breakout_close_pct": -1.52,
+      "vol_ratio": 0.5,
+      "liquidity_bucket": "C",
+      "market_regime": "BTC_DOWN|D",
+      "c1": 10.8,
+      "c2": 4.1,
+      "c3": 3.9,
+      "ml_win_prob": 26.7
+    },
+    {
+      "symbol": "ZEC/USDT",
+      "timeframe": "4h",
+      "signal_type": "APPROACHING",
+      "score": 29,
+      "pivot_high": 231.77,
+      "breakout_close_pct": -0.98,
+      "vol_ratio": 0.79,
+      "liquidity_bucket": "B",
+      "market_regime": "BTC_DOWN|D",
+      "c1": 7.6,
+      "c2": 7.1,
+      "c3": 4.5,
+      "ml_win_prob": 38.4
     }
-  ]
+  ],
+  "summary": {
+    "setups_4h": 22,
+    "setups_1d": 6,
+    "signals_4h": 8,
+    "signals_1d": 0,
+    "published": 1
+  }
 }
