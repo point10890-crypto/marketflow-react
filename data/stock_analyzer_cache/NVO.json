@@ -1,0 +1,117 @@
+{
+  "name": "NVO",
+  "ticker": "NVO",
+  "result": "중립",
+  "date": "2026-03-31 18:08:59",
+  "elapsed": 2.4,
+  "consensus_score": 3.43,
+  "analyst_count": 14,
+  "recommendation_detail": {
+    "strongBuy": 1,
+    "buy": 4,
+    "hold": 9,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 35.29,
+    "high": 63.189022,
+    "low": 39.59193,
+    "mean": 46.711483,
+    "median": 44.378857
+  },
+  "current_price": 35.29,
+  "upside_potential": 32.4,
+  "key_stats": {
+    "name": "Novo Nordisk A/S",
+    "sector": "Healthcare",
+    "industry": "Drug Manufacturers - General",
+    "market_cap": 157858086912,
+    "pe_ratio": 9.9408455,
+    "forward_pe": 10.410536,
+    "dividend_yield": 5.27,
+    "beta": 0.265,
+    "fifty_two_week_high": 81.44,
+    "fifty_two_week_low": 35.125,
+    "revenue": 309064007680,
+    "profit_margin": 0.33143002,
+    "currency": "USD"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "NVO는 헬스케어 섹터에 속하며 현재 주가는 35달러입니다. 애널리스트 컨센서스는 14명 참여 기준 '중립' 의견(3.43/5.0)을 보이고 있습니다. 목표가 평균은 47달러로, 현재 주가 대비 32.4% 상승 여력이 있습니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 79144000000
+    },
+    {
+      "date": "2025-09",
+      "value": 74976000000
+    },
+    {
+      "date": "2025-06",
+      "value": 76857000000
+    },
+    {
+      "date": "2025-03",
+      "value": 78087000000
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 26891000000
+    },
+    {
+      "date": "2025-09",
+      "value": 20006000000
+    },
+    {
+      "date": "2025-06",
+      "value": 26503000000
+    },
+    {
+      "date": "2025-03",
+      "value": 29034000000
+    }
+  ],
+  "news": [
+    {
+      "title": "Stocks, sectors, and charts this strategist is watching",
+      "summary": "Marketgauge.com chief strategist Michele Schneider chats with Yahoo Finance Executive Editor Brian Sozzi about stocks and sectors she's keeping a close eye on.",
+      "url": "https://finance.yahoo.com/video/stocks-sectors-and-charts-this-strategist-is-watching-100000240.html",
+      "provider": "Yahoo Finance Video",
+      "pub_time": "2026-03-30T10:00:00Z"
+    },
+    {
+      "title": "Assessing Novo Nordisk (NYSE:NVO) Valuation After Recent Weak Share Performance",
+      "summary": "Event context and recent share performance Novo Nordisk (NYSE:NVO) has come back into focus for investors after a period of weaker share performance, with the stock showing negative returns over the p",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/assessing-novo-nordisk-nyse-nvo-170654202.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-03-30T17:06:54Z"
+    },
+    {
+      "title": "European Equities Traded in the US as American Depositary Receipts Rise in Monday Trading",
+      "summary": "European equities traded in the US as American depositary kicked off the week higher late Monday mor",
+      "url": "https://finance.yahoo.com/markets/world-indices/articles/european-equities-traded-us-american-150742641.html",
+      "provider": "MT Newswires",
+      "pub_time": "2026-03-30T15:07:42Z"
+    },
+    {
+      "title": "United rises on IPF data; Biogen scores positive lupus data and an approval",
+      "summary": "Tyvaso, a marketed PAH therapy from United Therapeutics, continued to show potential in another lung condition. Elsewhere, Aurinia inked an acquisition and Lilly built its case for Ebglyss.",
+      "url": "https://www.biopharmadive.com/news/united-biogen-lilly-novo-aurinia-biotech-news-roundup-aad/815876/",
+      "provider": "BioPharma Dive",
+      "pub_time": "2026-03-30T15:00:00Z"
+    },
+    {
+      "title": "Pharma Stocks Pfizer, GSK Offer Defensive Plays in an Uncertain Market: Charts",
+      "summary": "A doji and spinning top appeared at the depth of the base in September-October 2023.  Pfizer  is up 9% so far this year as it recovers from a significant drawdown that dates to the Covid era.  Pfizer ",
+      "url": "https://www.barrons.com/articles/pharma-stocks-pfizer-gsk-offer-defensive-plays-uncertain-market-charts-7503dcf2?siteid=yhoof2&yptr=yahoo",
+      "provider": "Barrons.com",
+      "pub_time": "2026-03-30T14:44:00Z"
+    }
+  ]
+}
