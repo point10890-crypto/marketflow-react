@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
-import { usAPI, krAPI, cryptoAPI, jonggaAPI, waveAPI, briefingAPI, commonAPI, type AIBriefing, type MarketIndexItem } from '@/lib/api';
+import { usAPI, krAPI, cryptoAPI, jonggaAPI, waveAPI, briefingAPI, commonAPI, type AIBriefing, type MarketIndexItem, type KRAIChartAnalysisResponse } from '@/lib/api';
 import { usePullToRefreshRegister } from '@/components/layout/PullToRefreshProvider';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
@@ -321,10 +321,11 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
     const [waveData, setWaveData] = useState<any>(null);
     const [aiBriefing, setAiBriefing] = useState<AIBriefing | null>(null);
     const [marketIndices, setMarketIndices] = useState<MarketIndexItem[]>([]);
+    const [aiChart, setAiChart] = useState<KRAIChartAnalysisResponse | null>(null);
 
     const loadData = useCallback(async () => {
         try {
-            const [b, kr, crypto, vcpKr, vcpUs, vcpCrypto, jongga, leading, wave, aiBrf, indices] = await Promise.all([
+            const [b, kr, crypto, vcpKr, vcpUs, vcpCrypto, jongga, leading, wave, aiBrf, indices, aiChartRes] = await Promise.all([
                 usAPI.getMarketBriefing().catch(() => null),
                 krAPI.getMarketGate().catch(() => null),
                 cryptoAPI.getDominance().catch(() => null),
@@ -336,6 +337,7 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                 waveAPI.getDashboard().catch(() => null),
                 briefingAPI.getLatest().catch(() => null),
                 commonAPI.getMarketIndices().catch(() => null),
+                krAPI.getAIChartAnalysis().catch(() => null),
             ]);
             setBriefing(b);
             setKrGate(kr);
@@ -345,6 +347,7 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
             setWaveData(wave);
             setAiBriefing(aiBrf);
             if (indices?.indices) setMarketIndices(indices.indices);
+            if (aiChartRes) setAiChart(aiChartRes);
 
             // VCP summary
             const allSignals: Array<{ name: string; market: string; score: number }> = [];
@@ -750,6 +753,78 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                     </div>
                 )}
             </Link>
+
+            {/* ── AI Chart Analysis Section ── */}
+            {aiChart && aiChart.signals.length > 0 && (
+                <Link
+                    to="/dashboard/kr/ai-chart"
+                    className="group relative rounded-2xl border border-white/[0.07] bg-[#13151f] p-4 overflow-hidden transition-all duration-200 active:scale-[0.98] hover:border-violet-500/20"
+                >
+                    <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full blur-3xl opacity-[0.06] group-hover:opacity-[0.1] transition-opacity bg-gradient-to-br from-violet-400 to-purple-500" />
+
+                    {/* Header */}
+                    <div className="relative flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2.5">
+                            <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-violet-500/10 border border-violet-500/20">
+                                <i className="fas fa-robot text-lg text-violet-400" />
+                            </div>
+                            <div>
+                                <h3 className="text-base font-bold text-white">AI Chart Analysis</h3>
+                                <p className="text-[10px] text-gray-500">Gemini Vision · KR 100 종목 기술적 분석</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-violet-500/10 text-violet-400 tabular-nums">
+                                {aiChart.summary.total}
+                            </span>
+                            <i className="fas fa-chevron-right text-[10px] text-gray-600 group-hover:text-violet-400 transition-colors" />
+                        </div>
+                    </div>
+
+                    {/* Signal breakdown */}
+                    <div className="relative flex items-center gap-3 mb-3">
+                        <span className="flex items-center gap-1.5 text-[10px] font-semibold">
+                            <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                            <span className="text-gray-400">BUY</span>
+                            <span className="text-emerald-400 tabular-nums">{aiChart.summary.by_signal?.BUY ?? 0}</span>
+                        </span>
+                        <span className="flex items-center gap-1.5 text-[10px] font-semibold">
+                            <span className="w-2 h-2 rounded-full bg-yellow-400" />
+                            <span className="text-gray-400">HOLD</span>
+                            <span className="text-yellow-400 tabular-nums">{aiChart.summary.by_signal?.HOLD ?? 0}</span>
+                        </span>
+                        <span className="flex items-center gap-1.5 text-[10px] font-semibold">
+                            <span className="w-2 h-2 rounded-full bg-red-400" />
+                            <span className="text-gray-400">SELL</span>
+                            <span className="text-red-400 tabular-nums">{aiChart.summary.by_signal?.SELL ?? 0}</span>
+                        </span>
+                        <span className="ml-auto text-[9px] text-gray-600">avg conf. {aiChart.summary.avg_confidence}%</span>
+                    </div>
+
+                    {/* Top BUY signals */}
+                    {(() => {
+                        const buys = aiChart.signals
+                            .filter(s => s.signal === 'BUY')
+                            .sort((a, b) => b.confidence - a.confidence)
+                            .slice(0, 5);
+                        if (buys.length === 0) return null;
+                        return (
+                            <div className="relative border-t border-white/[0.06] pt-2">
+                                {buys.map((s, i) => (
+                                    <div key={i} className="flex items-center justify-between py-1.5">
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400">BUY</span>
+                                            <span className="text-xs font-semibold text-white truncate max-w-[120px]">{s.stock_name}</span>
+                                            <span className="text-[9px] text-gray-600">{s.ma_status}</span>
+                                        </div>
+                                        <span className="text-xs font-bold tabular-nums text-emerald-400">{s.confidence}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        );
+                    })()}
+                </Link>
+            )}
 
             {/* ── Market Cards Grid ── */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

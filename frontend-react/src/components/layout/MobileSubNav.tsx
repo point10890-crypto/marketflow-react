@@ -15,6 +15,7 @@ const sectionChildren: Record<string, SubNavItem[]> = {
         { name: '종가베팅', href: '/dashboard/kr/closing-bet', color: 'bg-violet-500' },
         { name: '성과 History', href: '/dashboard/kr/closing-bet/history', color: 'bg-indigo-500' },
         { name: 'Track Record', href: '/dashboard/kr/track-record', color: 'bg-yellow-500' },
+        { name: 'AI Chart', href: '/dashboard/kr/ai-chart', color: 'bg-cyan-500' },
     ],
     '/dashboard/us': [
         { name: 'Overview', href: '/dashboard/us', color: 'bg-green-500' },

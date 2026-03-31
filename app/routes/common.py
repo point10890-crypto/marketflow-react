@@ -558,6 +558,13 @@ def get_data_status():
             'menu': '종가베팅 History',
             'updateType': 'cumulative_perf'
         },
+        {
+            'name': 'AI Chart Analysis',
+            'path': os.path.join(BASE_DIR, 'gemini_chart_analysis_kr.csv'),
+            'link': '/dashboard/kr/ai-chart',
+            'menu': 'AI Chart',
+            'updateType': 'ai_chart'
+        },
         # ── 3. US Market ──
         {
             'name': 'US Smart Money',
@@ -844,6 +851,12 @@ def update_single_data():
             'name': 'Cumulative Performance (종가베팅 History)',
             'module': 'app.routes.kr_market',
             'function': '_rebuild_cumulative'
+        },
+        # ── AI Chart Analysis ──
+        'ai_chart': {
+            'name': 'AI Chart Analysis (Gemini Vision)',
+            'script': 'main_kr.py',
+            'args': []
         },
     }
     

@@ -115,7 +115,31 @@ export const krAPI = {
     getAIAnalysis: () => fetchAPI<KRAIAnalysis>('/api/kr/ai-analysis'),
     getVCPEnhanced: () => fetchAPI<any>('/api/kr/vcp-enhanced'),
     getLeadingStocks: () => fetchAPI<any>('/api/kr/screener/leading'),
+    getAIChartAnalysis: () => fetchAPI<KRAIChartAnalysisResponse>('/api/kr/ai-chart-analysis'),
 };
+
+export interface KRAIChartSignal {
+    stock_code: string;
+    stock_name: string;
+    market: string;
+    signal: 'BUY' | 'HOLD' | 'SELL';
+    confidence: number;
+    ma_status: string;
+    rsi_zone: string;
+    volume_trend: string;
+    reasons: string[];
+}
+
+export interface KRAIChartAnalysisResponse {
+    signals: KRAIChartSignal[];
+    summary: {
+        total: number;
+        by_signal: Record<string, number>;
+        by_market: Record<string, number>;
+        avg_confidence: number;
+    };
+    updated_at: string | null;
+}
 
 // ── Jongga V2 (종가베팅) Types ──────────────────────────────────────────────
 

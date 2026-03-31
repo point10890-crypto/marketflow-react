@@ -27,6 +27,7 @@ const CATEGORY_MAP: Record<string, string> = {
     'AI Jongga V2': 'Screener', 'Leading LIVE': 'Screener', 'VCP Signals': 'Screener',
     'KR VCP Enhanced': 'Screener', 'US VCP Enhanced': 'Screener', 'Wave Screener': 'Screener',
     'Cumulative Performance': 'Screener',
+    'AI Chart Analysis': 'Screener',
     // 3. US Market
     'US Smart Money': 'US', 'US Decision Signal': 'US', 'US Sector Heatmap': 'US',
     'US Earnings': 'US', 'US Portfolio': 'US',
@@ -59,6 +60,7 @@ const UPDATE_TYPE_MAP: Record<string, string> = {
     'US VCP Enhanced': 'vcp_us',
     'Wave Screener': 'wave_scan',
     'Cumulative Performance': 'cumulative_perf',
+    'AI Chart Analysis': 'ai_chart',
     // US Market
     'US Smart Money': 'us_market',
     'US Decision Signal': 'us_market',

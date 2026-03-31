@@ -1492,3 +1492,119 @@ def kr_screener_status():
         })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+# ════════════════════════════════════════════════════════════
+# AI Chart Analysis (Gemini Vision)
+# ════════════════════════════════════════════════════════════
+
+@kr_bp.route('/ai-chart-analysis')
+def get_ai_chart_analysis():
+    """Gemini Vision 차트 분석 결과 CSV → JSON"""
+    csv_path = os.path.join(BASE_DIR, 'gemini_chart_analysis_kr.csv')
+    if not os.path.exists(csv_path):
+        return jsonify({"error": "분석 결과 파일이 없습니다", "signals": [], "summary": {}}), 404
+
+    try:
+        df = pd.read_csv(csv_path, encoding='utf-8-sig')
+        if df.empty:
+            return jsonify({"signals": [], "summary": {}, "updated_at": None})
+
+        # CSV → list[dict]
+        signals = []
+        for _, row in df.iterrows():
+            reasons_raw = row.get('reasons', '')
+            reasons = [r.strip() for r in str(reasons_raw).split('|') if r.strip()] if reasons_raw else []
+            signals.append({
+                "stock_code": str(row.get('종목코드', '')).zfill(6),
+                "stock_name": row.get('종목명', ''),
+                "market": row.get('시장', ''),
+                "signal": row.get('signal', ''),
+                "confidence": int(row.get('confidence', 0)),
+                "ma_status": row.get('ma_status', ''),
+                "rsi_zone": row.get('rsi_zone', ''),
+                "volume_trend": row.get('volume_trend', ''),
+                "reasons": reasons,
+            })
+
+        # Summary stats
+        signal_counts = {}
+        for s in signals:
+            sig = s['signal']
+            signal_counts[sig] = signal_counts.get(sig, 0) + 1
+
+        market_counts = {}
+        for s in signals:
+            m = s['market']
+            market_counts[m] = market_counts.get(m, 0) + 1
+
+        avg_confidence = round(sum(s['confidence'] for s in signals) / len(signals), 1) if signals else 0
+
+        # File mod time
+        mtime = os.path.getmtime(csv_path)
+        updated_at = datetime.fromtimestamp(mtime).strftime('%Y-%m-%d %H:%M')
+
+        return jsonify({
+            "signals": signals,
+            "summary": {
+                "total": len(signals),
+                "by_signal": signal_counts,
+                "by_market": market_counts,
+                "avg_confidence": avg_confidence,
+            },
+            "updated_at": updated_at,
+        })
+    except Exception as e:
+        logger.error(f"AI Chart Analysis 로드 실패: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+@kr_bp.route('/ai-chart-analysis/download')
+def download_ai_chart_analysis():
+    """AI 차트 분석 결과 Excel 다운로드"""
+    import io
+    from flask import send_file
+    csv_path = os.path.join(BASE_DIR, 'gemini_chart_analysis_kr.csv')
+    if not os.path.exists(csv_path):
+        return jsonify({"error": "분석 결과 파일이 없습니다"}), 404
+
+    try:
+        df = pd.read_csv(csv_path, encoding='utf-8-sig')
+        df.rename(columns={
+            '종목코드': 'Code', '종목명': 'Name', '시장': 'Market',
+            'signal': 'Signal', 'confidence': 'Confidence',
+            'ma_status': 'MA Status', 'rsi_zone': 'RSI Zone',
+            'volume_trend': 'Volume Trend', 'reasons': 'Reasons',
+        }, inplace=True)
+
+        buf = io.BytesIO()
+        with pd.ExcelWriter(buf, engine='openpyxl') as writer:
+            df.to_excel(writer, index=False, sheet_name='AI Chart Analysis')
+        buf.seek(0)
+
+        today = datetime.now().strftime('%Y%m%d')
+        return send_file(
+            buf,
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            as_attachment=True,
+            download_name=f'ai_chart_analysis_kr_{today}.xlsx',
+        )
+    except Exception as e:
+        logger.error(f"AI Chart Excel 생성 실패: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+@kr_bp.route('/ai-chart-image/<stock_code>')
+def get_ai_chart_image(stock_code: str):
+    """차트 이미지 PNG 서빙"""
+    from flask import send_from_directory
+    charts_dir = os.path.join(BASE_DIR, 'charts_kr')
+    if not os.path.isdir(charts_dir):
+        return jsonify({"error": "charts_kr 디렉토리 없음"}), 404
+
+    # stock_code로 시작하는 파일 찾기 (예: 005930_삼성전자.png)
+    for fname in os.listdir(charts_dir):
+        if fname.startswith(stock_code) and fname.endswith('.png'):
+            return send_from_directory(charts_dir, fname, mimetype='image/png')
+
+    return jsonify({"error": f"차트 이미지 없음: {stock_code}"}), 404
