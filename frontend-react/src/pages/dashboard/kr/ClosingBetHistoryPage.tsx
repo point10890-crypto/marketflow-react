@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { fetchAPI } from '@/lib/api';
 import { usePullToRefreshRegister } from '@/components/layout/PullToRefreshProvider';
+import { useIsMobile } from '@/hooks/useIsMobile';
 
 interface PricePoint {
     d: string;
@@ -78,6 +79,7 @@ type SortKey = 'signal_date' | 'roi_pct' | 'hold_roi_pct' | 'score_total' | 'day
 type OutcomeFilter = 'ALL' | 'TARGET_HIT' | 'STOP_HIT' | 'OPEN';
 
 export default function ClosingBetHistoryPage() {
+    const isMobile = useIsMobile();
     const [loading, setLoading] = useState(true);
     const [signals, setSignals] = useState<CumulativeSignal[]>([]);
     const [stats, setStats] = useState<CumulativeStats | null>(null);
@@ -123,6 +125,12 @@ export default function ClosingBetHistoryPage() {
     const outcomeStyle = (o: string) => o === 'TARGET_HIT' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : o === 'STOP_HIT' ? 'bg-red-500/20 text-red-400 border-red-500/30' : 'bg-gray-500/20 text-gray-400 border-gray-500/30';
     const gradeStyle = (g: string) => g === 'S' ? 'bg-indigo-500/20 text-indigo-400' : g === 'A' ? 'bg-rose-500/20 text-rose-400' : g === 'B' ? 'bg-blue-500/20 text-blue-400' : 'bg-gray-500/20 text-gray-400';
 
+    const grades = ['S', 'A', 'B', 'C'];
+    const gradeCounts = grades.reduce((acc, g) => { acc[g] = signals.filter(s => s.grade === g).length; return acc; }, {} as Record<string, number>);
+    const targetPct = stats?.target_pct || 9;
+    const stopPct = stats?.stop_pct || 5;
+
+    /* ─── Sort helpers (desktop table) ─── */
     const SortIcon = ({ column }: { column: SortKey }) => {
         if (sortBy !== column) return <span className="text-gray-600 ml-1">↕</span>;
         return <span className="text-indigo-400 ml-1">{sortAsc ? '↑' : '↓'}</span>;
@@ -134,157 +142,248 @@ export default function ClosingBetHistoryPage() {
         </th>
     );
 
-    const grades = ['S', 'A', 'B', 'C'];
-    const gradeCounts = grades.reduce((acc, g) => { acc[g] = signals.filter(s => s.grade === g).length; return acc; }, {} as Record<string, number>);
-    const targetPct = stats?.target_pct || 9;
-    const stopPct = stats?.stop_pct || 5;
-
     return (
-        <div className="space-y-6">
+        <div className="space-y-4 md:space-y-6">
+            {/* ─── Header ─── */}
             <div>
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-indigo-500/20 bg-indigo-500/5 text-xs text-indigo-400 font-medium mb-4">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-indigo-500/20 bg-indigo-500/5 text-xs text-indigo-400 font-medium mb-3">
                     <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-ping"></span>
                     Performance Tracker
                 </div>
                 <div className="flex items-center justify-between">
                     <div>
-                        <h2 className="text-3xl md:text-4xl font-bold tracking-tighter text-white leading-tight mb-2">
+                        <h2 className="text-2xl md:text-4xl font-bold tracking-tighter text-white leading-tight mb-1">
                             Cumulative <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-400">Results</span>
                         </h2>
-                        <p className="text-gray-400">
-                            2026년 1월~ 종가베팅 V2 누적 성과
-                            <span className="ml-2 text-xs px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold">Target +{targetPct}%</span>
-                            <span className="ml-1 text-xs px-2 py-0.5 rounded bg-red-500/10 text-red-400 border border-red-500/20 font-bold">Stop -{stopPct}%</span>
+                        <p className="text-gray-400 text-xs md:text-sm flex flex-wrap items-center gap-1">
+                            <span>2026.01~ V2 누적 성과</span>
+                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold">+{targetPct}%</span>
+                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-red-500/10 text-red-400 border border-red-500/20 font-bold">-{stopPct}%</span>
                         </p>
                     </div>
-                    <button onClick={loadData} disabled={loading} className="px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-sm text-white hover:bg-white/10 transition-all disabled:opacity-50">
-                        {loading ? '...' : '↻'} Refresh
+                    <button onClick={loadData} disabled={loading} className="px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm text-white hover:bg-white/10 transition-all disabled:opacity-50 shrink-0">
+                        {loading ? '...' : '↻'}
                     </button>
                 </div>
             </div>
 
+            {/* ─── Stats Cards ─── */}
             {stats && !loading && (
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
-                    <StatCard label="Total Signals" value={stats.total} />
+                <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-2 md:gap-3">
+                    <StatCard label="Total" value={stats.total} />
                     <StatCard label="Win Rate" value={`${stats.win_rate}%`} color={stats.win_rate >= 50 ? 'text-emerald-400' : stats.win_rate >= 35 ? 'text-yellow-400' : 'text-red-400'} />
-                    <StatCard label="Wins" value={stats.wins} color="text-emerald-400" />
-                    <StatCard label="Losses" value={stats.losses} color="text-red-400" />
-                    <StatCard label="Open" value={stats.open} color="text-yellow-400" />
+                    <StatCard label="W / L / O" value={`${stats.wins}/${stats.losses}/${stats.open}`} />
                     <StatCard label="Avg ROI" value={`${stats.avg_roi > 0 ? '+' : ''}${stats.avg_roi}%`} color={stats.avg_roi >= 0 ? 'text-emerald-400' : 'text-red-400'} />
-                    <StatCard label="Total ROI" value={`${stats.total_roi > 0 ? '+' : ''}${stats.total_roi}%`} color={stats.total_roi >= 0 ? 'text-emerald-400' : 'text-red-400'} />
                     <StatCard label="Avg Days" value={stats.avg_days_held} />
-                    <StatCard label="Price Date" value={stats.latest_price_date} small />
-                    <StatCard label="Profit Factor" value={stats.losses > 0 ? ((stats.wins * targetPct) / (stats.losses * stopPct)).toFixed(2) : '---'} color="text-cyan-400" />
+                    <StatCard label="PF" value={stats.losses > 0 ? ((stats.wins * targetPct) / (stats.losses * stopPct)).toFixed(2) : '-'} color="text-cyan-400" />
                 </div>
             )}
 
+            {/* ─── Grade ROI Cards ─── */}
             {stats && stats.grade_roi && !loading && (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className="grid grid-cols-3 gap-2 md:gap-3">
                     {['S', 'A', 'B'].map(grade => {
                         const gr = stats.grade_roi[grade];
                         if (!gr || gr.count === 0) return null;
                         const colors: Record<string, string> = { S: 'from-indigo-500/20 to-purple-500/20 border-indigo-500/30', A: 'from-rose-500/20 to-orange-500/20 border-rose-500/30', B: 'from-blue-500/20 to-cyan-500/20 border-blue-500/30' };
                         const textCol: Record<string, string> = { S: 'text-indigo-400', A: 'text-rose-400', B: 'text-blue-400' };
                         return (
-                            <div key={grade} className={`p-4 rounded-xl bg-gradient-to-br ${colors[grade]} border`}>
-                                <div className="flex items-center justify-between mb-3">
-                                    <span className={`text-lg font-black ${textCol[grade]}`}>{grade} Grade</span>
-                                    <span className="text-xs text-gray-500">{gr.count} trades</span>
+                            <div key={grade} className={`p-3 rounded-xl bg-gradient-to-br ${colors[grade]} border`}>
+                                <div className="flex items-center justify-between mb-2">
+                                    <span className={`text-sm md:text-lg font-black ${textCol[grade]}`}>{grade}</span>
+                                    <span className="text-[10px] text-gray-500">{gr.count}</span>
                                 </div>
-                                <div className="grid grid-cols-3 gap-2 text-center">
-                                    <div><div className="text-[10px] text-gray-500 uppercase">Win Rate</div><div className={`text-sm font-bold ${gr.win_rate >= 50 ? 'text-emerald-400' : gr.win_rate >= 35 ? 'text-yellow-400' : 'text-red-400'}`}>{gr.win_rate}%</div></div>
-                                    <div><div className="text-[10px] text-gray-500 uppercase">Avg ROI</div><div className={`text-sm font-bold ${gr.avg_roi >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{gr.avg_roi > 0 ? '+' : ''}{gr.avg_roi}%</div></div>
-                                    <div><div className="text-[10px] text-gray-500 uppercase">W/L</div><div className="text-sm font-bold text-white">{gr.wins}/{gr.losses}</div></div>
-                                </div>
-                                {gr.hold_avg_roi !== undefined && (
-                                    <div className="mt-3 pt-3 border-t border-white/10 grid grid-cols-2 gap-2 text-center">
-                                        <div><div className="text-[10px] text-gray-500 uppercase">Hold Avg</div><div className={`text-sm font-bold ${(gr.hold_avg_roi ?? 0) >= 0 ? 'text-amber-400' : 'text-red-400'}`}>{(gr.hold_avg_roi ?? 0) > 0 ? '+' : ''}{gr.hold_avg_roi}%</div></div>
-                                        <div><div className="text-[10px] text-gray-500 uppercase">Hold WR</div><div className={`text-sm font-bold ${(gr.hold_win_rate ?? 0) >= 50 ? 'text-amber-400' : 'text-red-400'}`}>{gr.hold_win_rate}%</div></div>
+                                <div className="space-y-1 text-center">
+                                    <div className="flex justify-between text-[10px]">
+                                        <span className="text-gray-500">WR</span>
+                                        <span className={`font-bold ${gr.win_rate >= 50 ? 'text-emerald-400' : gr.win_rate >= 35 ? 'text-yellow-400' : 'text-red-400'}`}>{gr.win_rate}%</span>
                                     </div>
-                                )}
+                                    <div className="flex justify-between text-[10px]">
+                                        <span className="text-gray-500">ROI</span>
+                                        <span className={`font-bold ${gr.avg_roi >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{gr.avg_roi > 0 ? '+' : ''}{gr.avg_roi}%</span>
+                                    </div>
+                                    <div className="flex justify-between text-[10px]">
+                                        <span className="text-gray-500">W/L</span>
+                                        <span className="font-bold text-white">{gr.wins}/{gr.losses}</span>
+                                    </div>
+                                    {gr.hold_avg_roi !== undefined && (
+                                        <div className="flex justify-between text-[10px] pt-1 border-t border-white/10">
+                                            <span className="text-gray-500">Hold</span>
+                                            <span className={`font-bold ${(gr.hold_avg_roi ?? 0) >= 0 ? 'text-amber-400' : 'text-red-400'}`}>{(gr.hold_avg_roi ?? 0) > 0 ? '+' : ''}{gr.hold_avg_roi}%</span>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         );
                     })}
                 </div>
             )}
 
+            {/* ─── Buy & Hold Comparison ─── */}
             {stats && stats.hold_avg_roi !== undefined && !loading && (
-                <div className="rounded-xl bg-gradient-to-br from-amber-500/10 to-orange-500/10 border border-amber-500/20 p-5">
-                    <div className="flex items-center gap-2 mb-4">
-                        <span className="text-amber-400 font-black text-base">Buy & Hold</span>
-                        <span className="text-[10px] text-gray-500 px-2 py-0.5 rounded bg-white/5 border border-white/10">현시점까지 보유 시 수익률</span>
+                <div className="rounded-xl bg-gradient-to-br from-amber-500/10 to-orange-500/10 border border-amber-500/20 p-3 md:p-5">
+                    <div className="flex items-center gap-2 mb-3">
+                        <span className="text-amber-400 font-black text-sm">Buy & Hold</span>
+                        <span className="text-[9px] text-gray-500 px-1.5 py-0.5 rounded bg-white/5 border border-white/10">보유 시</span>
                     </div>
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+                    <div className="grid grid-cols-3 md:grid-cols-6 gap-2 md:gap-3">
                         <div className="text-center">
-                            <div className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Avg ROI</div>
-                            <div className={`text-xl font-black font-mono ${(stats.hold_avg_roi ?? 0) >= 0 ? 'text-amber-400' : 'text-red-400'}`}>{(stats.hold_avg_roi ?? 0) > 0 ? '+' : ''}{stats.hold_avg_roi}%</div>
+                            <div className="text-[9px] text-gray-500 uppercase font-bold">Avg</div>
+                            <div className={`text-base md:text-xl font-black font-mono ${(stats.hold_avg_roi ?? 0) >= 0 ? 'text-amber-400' : 'text-red-400'}`}>{(stats.hold_avg_roi ?? 0) > 0 ? '+' : ''}{stats.hold_avg_roi}%</div>
                         </div>
                         <div className="text-center">
-                            <div className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Median ROI</div>
-                            <div className={`text-xl font-black font-mono ${(stats.hold_median_roi ?? 0) >= 0 ? 'text-amber-400' : 'text-red-400'}`}>{(stats.hold_median_roi ?? 0) > 0 ? '+' : ''}{stats.hold_median_roi}%</div>
+                            <div className="text-[9px] text-gray-500 uppercase font-bold">Median</div>
+                            <div className={`text-base md:text-xl font-black font-mono ${(stats.hold_median_roi ?? 0) >= 0 ? 'text-amber-400' : 'text-red-400'}`}>{(stats.hold_median_roi ?? 0) > 0 ? '+' : ''}{stats.hold_median_roi}%</div>
                         </div>
                         <div className="text-center">
-                            <div className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Total ROI</div>
-                            <div className={`text-xl font-black font-mono ${(stats.hold_total_roi ?? 0) >= 0 ? 'text-amber-400' : 'text-red-400'}`}>{(stats.hold_total_roi ?? 0) > 0 ? '+' : ''}{stats.hold_total_roi}%</div>
+                            <div className="text-[9px] text-gray-500 uppercase font-bold">WR</div>
+                            <div className={`text-base md:text-xl font-black font-mono ${(stats.hold_win_rate ?? 0) >= 50 ? 'text-amber-400' : 'text-red-400'}`}>{stats.hold_win_rate}%</div>
                         </div>
-                        <div className="text-center">
-                            <div className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Win Rate</div>
-                            <div className={`text-xl font-black font-mono ${(stats.hold_win_rate ?? 0) >= 50 ? 'text-amber-400' : 'text-red-400'}`}>{stats.hold_win_rate}%</div>
-                        </div>
-                        <div className="text-center">
-                            <div className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Wins</div>
-                            <div className="text-xl font-black font-mono text-emerald-400">{stats.hold_wins}</div>
-                        </div>
-                        <div className="text-center">
-                            <div className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Losses</div>
-                            <div className="text-xl font-black font-mono text-red-400">{stats.hold_losses}</div>
-                        </div>
+                        {!isMobile && <>
+                            <div className="text-center">
+                                <div className="text-[9px] text-gray-500 uppercase font-bold">Total</div>
+                                <div className={`text-xl font-black font-mono ${(stats.hold_total_roi ?? 0) >= 0 ? 'text-amber-400' : 'text-red-400'}`}>{(stats.hold_total_roi ?? 0) > 0 ? '+' : ''}{stats.hold_total_roi}%</div>
+                            </div>
+                            <div className="text-center">
+                                <div className="text-[9px] text-gray-500 uppercase font-bold">Wins</div>
+                                <div className="text-xl font-black font-mono text-emerald-400">{stats.hold_wins}</div>
+                            </div>
+                            <div className="text-center">
+                                <div className="text-[9px] text-gray-500 uppercase font-bold">Losses</div>
+                                <div className="text-xl font-black font-mono text-red-400">{stats.hold_losses}</div>
+                            </div>
+                        </>}
                     </div>
-                    <div className="mt-4 flex items-center gap-4 text-xs text-gray-500">
-                        <span>Strategy: {stats.avg_roi > 0 ? '+' : ''}{stats.avg_roi}% avg</span>
+                    <div className="mt-2 flex flex-wrap items-center gap-2 text-[10px] text-gray-500">
+                        <span>Strategy {stats.avg_roi > 0 ? '+' : ''}{stats.avg_roi}%</span>
                         <span className="text-gray-600">vs</span>
-                        <span className="text-amber-400">Hold: {(stats.hold_avg_roi ?? 0) > 0 ? '+' : ''}{stats.hold_avg_roi}% avg</span>
+                        <span className="text-amber-400">Hold {(stats.hold_avg_roi ?? 0) > 0 ? '+' : ''}{stats.hold_avg_roi}%</span>
                         <span className={`font-bold ${(stats.hold_avg_roi ?? 0) > stats.avg_roi ? 'text-amber-400' : 'text-emerald-400'}`}>
-                            {(stats.hold_avg_roi ?? 0) > stats.avg_roi ? 'Hold wins' : 'Strategy wins'} by {Math.abs((stats.hold_avg_roi ?? 0) - stats.avg_roi).toFixed(2)}%
+                            {(stats.hold_avg_roi ?? 0) > stats.avg_roi ? 'Hold' : 'Strategy'} +{Math.abs((stats.hold_avg_roi ?? 0) - stats.avg_roi).toFixed(1)}%
                         </span>
                     </div>
                 </div>
             )}
 
+            {/* ─── Win/Loss Bar ─── */}
             {stats && stats.total > 0 && !loading && (
-                <div className="rounded-xl bg-[#1c1c1e] border border-white/10 p-4">
-                    <span className="text-xs text-gray-500 font-bold uppercase tracking-widest">Win/Loss Distribution</span>
-                    <div className="flex h-6 rounded-full overflow-hidden bg-white/5 mt-3">
-                        {stats.wins > 0 && <div className="bg-emerald-500 flex items-center justify-center text-[10px] font-bold text-white" style={{ width: `${(stats.wins / stats.total) * 100}%` }}>{stats.wins}W</div>}
-                        {stats.open > 0 && <div className="bg-gray-600 flex items-center justify-center text-[10px] font-bold text-white" style={{ width: `${(stats.open / stats.total) * 100}%` }}>{stats.open}</div>}
-                        {stats.losses > 0 && <div className="bg-red-500 flex items-center justify-center text-[10px] font-bold text-white" style={{ width: `${(stats.losses / stats.total) * 100}%` }}>{stats.losses}L</div>}
+                <div className="rounded-xl bg-[#1c1c1e] border border-white/10 p-3">
+                    <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Win/Loss</span>
+                    <div className="flex h-5 rounded-full overflow-hidden bg-white/5 mt-2">
+                        {stats.wins > 0 && <div className="bg-emerald-500 flex items-center justify-center text-[9px] font-bold text-white" style={{ width: `${(stats.wins / stats.total) * 100}%` }}>{stats.wins}W</div>}
+                        {stats.open > 0 && <div className="bg-gray-600 flex items-center justify-center text-[9px] font-bold text-white" style={{ width: `${(stats.open / stats.total) * 100}%` }}>{stats.open}</div>}
+                        {stats.losses > 0 && <div className="bg-red-500 flex items-center justify-center text-[9px] font-bold text-white" style={{ width: `${(stats.losses / stats.total) * 100}%` }}>{stats.losses}L</div>}
                     </div>
                 </div>
             )}
 
-            <div className="flex flex-wrap items-center gap-3">
-                <span className="text-xs text-gray-500 font-bold">Outcome:</span>
+            {/* ─── Filters ─── */}
+            <div className="flex flex-wrap items-center gap-1.5 md:gap-3">
                 {(['ALL', 'TARGET_HIT', 'STOP_HIT', 'OPEN'] as OutcomeFilter[]).map(f => (
-                    <button key={f} onClick={() => setFilter(f)} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${filter === f ? 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30' : 'bg-white/5 text-gray-400 border border-white/10 hover:bg-white/10'}`}>
-                        {f === 'ALL' ? `All (${signals.length})` : f === 'TARGET_HIT' ? `Win (${signals.filter(s => s.outcome === f).length})` : f === 'STOP_HIT' ? `Loss (${signals.filter(s => s.outcome === f).length})` : `Open (${signals.filter(s => s.outcome === f).length})`}
+                    <button key={f} onClick={() => setFilter(f)} className={`px-2.5 py-1 rounded-lg text-[10px] md:text-xs font-bold transition-all ${filter === f ? 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30' : 'bg-white/5 text-gray-400 border border-white/10'}`}>
+                        {f === 'ALL' ? `All ${signals.length}` : f === 'TARGET_HIT' ? `W ${signals.filter(s => s.outcome === f).length}` : f === 'STOP_HIT' ? `L ${signals.filter(s => s.outcome === f).length}` : `O ${signals.filter(s => s.outcome === f).length}`}
                     </button>
                 ))}
-                <span className="text-xs text-gray-500 font-bold ml-4">Grade:</span>
-                <button onClick={() => setGradeFilter('ALL')} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${gradeFilter === 'ALL' ? 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30' : 'bg-white/5 text-gray-400 border border-white/10 hover:bg-white/10'}`}>All</button>
+                <span className="text-gray-600">|</span>
+                <button onClick={() => setGradeFilter('ALL')} className={`px-2.5 py-1 rounded-lg text-[10px] md:text-xs font-bold transition-all ${gradeFilter === 'ALL' ? 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30' : 'bg-white/5 text-gray-400 border border-white/10'}`}>All</button>
                 {grades.map(g => gradeCounts[g] > 0 && (
-                    <button key={g} onClick={() => setGradeFilter(g)} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${gradeFilter === g ? 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30' : 'bg-white/5 text-gray-400 border border-white/10 hover:bg-white/10'}`}>{g} ({gradeCounts[g]})</button>
+                    <button key={g} onClick={() => setGradeFilter(g)} className={`px-2.5 py-1 rounded-lg text-[10px] md:text-xs font-bold transition-all ${gradeFilter === g ? 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30' : 'bg-white/5 text-gray-400 border border-white/10'}`}>{g}</button>
                 ))}
             </div>
 
-            {loading ? (
-                <div className="rounded-2xl bg-[#1c1c1e] border border-white/10 p-8">
-                    <div className="space-y-3">{Array.from({ length: 10 }).map((_, i) => <div key={i} className="h-10 rounded bg-white/5 animate-pulse" />)}</div>
+            {/* ─── Mobile Sort Selector ─── */}
+            {isMobile && !loading && sorted.length > 0 && (
+                <div className="flex items-center gap-2 text-[10px]">
+                    <span className="text-gray-500 font-bold">Sort:</span>
+                    {([['signal_date', 'Date'], ['roi_pct', 'ROI'], ['hold_roi_pct', 'Hold'], ['grade', 'Grade'], ['score_total', 'Score']] as [SortKey, string][]).map(([key, label]) => (
+                        <button key={key} onClick={() => handleSort(key)} className={`px-2 py-0.5 rounded ${sortBy === key ? 'bg-indigo-500/20 text-indigo-400' : 'text-gray-500 bg-white/5'} font-bold`}>
+                            {label}{sortBy === key && (sortAsc ? '↑' : '↓')}
+                        </button>
+                    ))}
                 </div>
+            )}
+
+            {/* ─── Signal List ─── */}
+            {loading ? (
+                <div className="space-y-3">{Array.from({ length: 8 }).map((_, i) => <div key={i} className="h-20 rounded-xl bg-white/5 animate-pulse" />)}</div>
             ) : sorted.length === 0 ? (
                 <div className="p-12 rounded-2xl bg-[#1c1c1e] border border-white/10 text-center">
                     <div className="text-gray-500 text-lg">No signals found</div>
                 </div>
+            ) : isMobile ? (
+                /* ═══ Mobile Card Layout ═══ */
+                <div className="space-y-2">
+                    {sorted.map((s, idx) => {
+                        const rowKey = `${s.stock_code}-${s.signal_date}`;
+                        const isExpanded = expandedRow === rowKey;
+                        const outcomeBg = s.outcome === 'TARGET_HIT' ? 'border-emerald-500/20' : s.outcome === 'STOP_HIT' ? 'border-red-500/20' : 'border-white/10';
+                        return (
+                            <div key={rowKey}
+                                onClick={() => setExpandedRow(isExpanded ? null : rowKey)}
+                                className={`rounded-xl bg-[#1c1c1e] border ${outcomeBg} p-3 transition-all active:scale-[0.99] ${isExpanded ? 'ring-1 ring-indigo-500/30' : ''}`}>
+                                {/* Row 1: Header */}
+                                <div className="flex items-center justify-between mb-2">
+                                    <div className="flex items-center gap-2 min-w-0">
+                                        <span className="text-[10px] text-gray-600 font-mono w-5 shrink-0">{idx + 1}</span>
+                                        <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold shrink-0 ${gradeStyle(s.grade)}`}>{s.grade}</span>
+                                        <div className="min-w-0">
+                                            <span className="text-sm font-bold text-white truncate block">{s.stock_name}</span>
+                                            <span className="text-[10px] text-gray-500 font-mono">{s.stock_code} <span className={s.market === 'KOSPI' ? 'text-blue-400' : 'text-rose-400'}>{s.market}</span></span>
+                                        </div>
+                                    </div>
+                                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold border shrink-0 ${outcomeStyle(s.outcome)}`}>{outcomeLabel(s.outcome)}</span>
+                                </div>
+                                {/* Row 2: Key Metrics */}
+                                <div className="grid grid-cols-4 gap-1 text-center">
+                                    <div>
+                                        <div className="text-[9px] text-gray-600 uppercase">ROI</div>
+                                        <div className={`text-xs font-bold font-mono ${s.roi_pct > 0 ? 'text-emerald-400' : s.roi_pct < 0 ? 'text-red-400' : 'text-gray-400'}`}>{s.roi_pct > 0 ? '+' : ''}{s.roi_pct}%</div>
+                                    </div>
+                                    <div>
+                                        <div className="text-[9px] text-gray-600 uppercase">Hold</div>
+                                        <div className={`text-xs font-bold font-mono ${s.hold_roi_pct > 0 ? 'text-amber-400' : s.hold_roi_pct < 0 ? 'text-red-400' : 'text-gray-500'}`}>{s.hold_roi_pct > 0 ? '+' : ''}{s.hold_roi_pct}%</div>
+                                    </div>
+                                    <div>
+                                        <div className="text-[9px] text-gray-600 uppercase">Max</div>
+                                        <div className={`text-xs font-bold font-mono ${s.max_high_pct >= targetPct ? 'text-emerald-400' : s.max_high_pct > 0 ? 'text-yellow-400' : 'text-gray-500'}`}>{s.max_high_pct > 0 ? `+${s.max_high_pct.toFixed(1)}%` : '-'}</div>
+                                    </div>
+                                    <div>
+                                        <div className="text-[9px] text-gray-600 uppercase">Score</div>
+                                        <div className="text-xs font-bold font-mono text-indigo-400">{s.score_total}</div>
+                                    </div>
+                                </div>
+                                {/* Row 3: Sub info */}
+                                <div className="flex items-center justify-between mt-2 text-[10px] text-gray-500">
+                                    <span className="font-mono">{s.signal_date.slice(5)}</span>
+                                    <span className="font-mono">{s.entry_price.toLocaleString()} → {s.current_price.toLocaleString()}</span>
+                                    <span>{s.days_held}d</span>
+                                    <MiniTrail trail={s.price_trail} targetPct={targetPct} stopPct={stopPct} />
+                                </div>
+                                {/* Expanded: themes + llm_reason */}
+                                {isExpanded && (
+                                    <div className="mt-2 pt-2 border-t border-white/5 space-y-1.5">
+                                        {s.themes.length > 0 && (
+                                            <div className="flex flex-wrap gap-1">
+                                                {s.themes.map((t, i) => <span key={i} className="px-1.5 py-0.5 rounded bg-violet-500/10 text-violet-400 text-[9px]">{t}</span>)}
+                                            </div>
+                                        )}
+                                        {s.llm_reason && <p className="text-[10px] text-gray-400 leading-relaxed">{s.llm_reason}</p>}
+                                        <div className="grid grid-cols-3 gap-2 text-[10px] text-gray-500">
+                                            <div>Target: <span className="text-emerald-400">{s.target_price.toLocaleString()}</span></div>
+                                            <div>Stop: <span className="text-red-400">{s.stop_price.toLocaleString()}</span></div>
+                                            {s.outcome_date && <div>Hit: <span className="text-white">{s.outcome_date.slice(5)}</span></div>}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })}
+                    <div className="text-center text-[10px] text-gray-600 py-2">
+                        {sorted.length} / {signals.length} signals | {stats?.latest_price_date}
+                    </div>
+                </div>
             ) : (
+                /* ═══ Desktop Table Layout ═══ */
                 <div className="rounded-2xl bg-[#1c1c1e] border border-white/10 overflow-hidden">
                     <div className="overflow-x-auto">
                         <table className="w-full">
@@ -364,11 +463,11 @@ function MiniTrail({ trail, targetPct, stopPct }: { trail: PricePoint[]; targetP
     );
 }
 
-function StatCard({ label, value, color = 'text-white', small = false }: { label: string; value: string | number; color?: string; small?: boolean }) {
+function StatCard({ label, value, color = 'text-white' }: { label: string; value: string | number; color?: string }) {
     return (
-        <div className="p-3 rounded-xl bg-[#1c1c1e] border border-white/10">
-            <div className="text-[10px] text-gray-500 uppercase tracking-widest mb-1 font-bold">{label}</div>
-            <div className={`${small ? 'text-sm' : 'text-xl'} font-black ${color} font-mono`}>{value}</div>
+        <div className="p-2.5 md:p-3 rounded-xl bg-[#1c1c1e] border border-white/10">
+            <div className="text-[9px] md:text-[10px] text-gray-500 uppercase tracking-widest mb-0.5 font-bold truncate">{label}</div>
+            <div className={`text-base md:text-xl font-black ${color} font-mono`}>{value}</div>
         </div>
     );
 }
