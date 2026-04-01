@@ -226,7 +226,7 @@ class Config:
     VCP_UPDATE_TIME = os.environ.get('VCP_UPDATE_TIME', '16:00')         # 전 시장 VCP 시그널
     WAVE_SCAN_TIME = os.environ.get('WAVE_SCAN_TIME', '16:30')           # Wave 패턴 스캔
     AI_CHART_TIME = os.environ.get('AI_CHART_TIME', '14:00')             # AI Chart Analysis KR (Gemini Vision)
-    US_AI_CHART_TIME = os.environ.get('US_AI_CHART_TIME', '05:30')       # AI Chart Analysis US (Gemini Vision)
+    US_AI_CHART_TIME = os.environ.get('US_AI_CHART_TIME', '04:00')       # AI Chart Analysis US (Gemini Vision)
     HISTORY_TIME = os.environ.get('KR_MARKET_HISTORY_TIME', '10:00')
     CRYPTO_TIMES = ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00']  # 매 4시간
     MORNING_REPORT_TIME = os.environ.get('MORNING_REPORT_TIME', '09:00')   # 일별 상태 리포트
@@ -2274,7 +2274,7 @@ class Scheduler:
             getattr(schedule.every(), day).at(Config.AI_CHART_TIME).do(
                 self._with_record(_run_ai_chart_analysis, 'ai_chart',
                                   max_retries=1, retry_delay=600))
-            # 05:30 — US AI Chart Analysis (Gemini Vision S&P 500)
+            # 04:00 — US AI Chart Analysis (Gemini Vision S&P 500)
             getattr(schedule.every(), day).at(Config.US_AI_CHART_TIME).do(
                 self._with_record(_run_us_ai_chart_analysis, 'us_ai_chart',
                                   max_retries=1, retry_delay=600))
