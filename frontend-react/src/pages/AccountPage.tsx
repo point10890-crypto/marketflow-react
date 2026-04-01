@@ -9,6 +9,7 @@ export default function AccountPage() {
     const [loading, setLoading] = useState(true);
     const [requesting, setRequesting] = useState(false);
     const [showBank, setShowBank] = useState(false);
+    const [depositorName, setDepositorName] = useState('');
 
     const isPro = user?.tier === 'pro' || user?.tier === 'premium';
     const hasPending = requests.some(r => r.status === 'pending');
@@ -30,7 +31,6 @@ export default function AccountPage() {
         try {
             await subscriptionAPI.requestUpgrade('pro', token);
             setShowBank(true);
-            // Refresh status
             const data = await subscriptionAPI.getStatus(token);
             setRequests(data.requests || []);
         } catch {
@@ -44,6 +44,13 @@ export default function AccountPage() {
         await refreshUser();
         const data = await subscriptionAPI.getStatus(token);
         setRequests(data.requests || []);
+    };
+
+    // 구독 만료일 자동 산출
+    const getExpiryDate = () => {
+        const now = new Date();
+        now.setDate(now.getDate() + 30);
+        return now.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' });
     };
 
     const statusBadge = (status: string) => {
@@ -118,6 +125,35 @@ export default function AccountPage() {
                 </div>
             </div>
 
+            {/* Subscription Period (Pro users) */}
+            {isPro && (
+                <div className="p-6 rounded-2xl border border-white/[0.07] bg-[#13151f]">
+                    <div className="flex items-center gap-3 mb-4">
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${user.tier === 'premium' ? 'bg-purple-500/10' : 'bg-amber-500/10'}`}>
+                            <i className={`fas fa-calendar-alt ${user.tier === 'premium' ? 'text-purple-400' : 'text-amber-400'}`} />
+                        </div>
+                        <div>
+                            <h3 className="text-white font-bold">구독 기간</h3>
+                            {user.tier === 'premium' ? (
+                                <p className="text-purple-400 text-sm font-semibold">무기한 (평생 이용)</p>
+                            ) : (
+                                <p className="text-amber-400 text-sm font-semibold">만료일: {getExpiryDate()}</p>
+                            )}
+                        </div>
+                    </div>
+
+                    {user.tier === 'pro' && (
+                        <Link
+                            to="/pricing"
+                            className="w-full py-3 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 font-bold text-center text-sm transition-all flex items-center justify-center gap-2"
+                        >
+                            <i className="fas fa-redo text-xs" />
+                            구독 연장 신청
+                        </Link>
+                    )}
+                </div>
+            )}
+
             {/* Subscription Action */}
             {!isPro && (
                 <div className="p-6 rounded-2xl border border-amber-500/20 bg-[#13151f]">
@@ -171,25 +207,60 @@ export default function AccountPage() {
                     <div className="grid grid-cols-2 gap-3">
                         <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]">
                             <span className="text-[10px] text-gray-500 uppercase tracking-wider">은행</span>
-                            <p className="text-white font-bold mt-1 text-sm">카카오뱅크</p>
+                            <p className="text-white font-bold mt-1 text-sm">국민은행</p>
                         </div>
                         <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]">
                             <span className="text-[10px] text-gray-500 uppercase tracking-wider">계좌번호</span>
-                            <p className="text-white font-bold mt-1 text-sm font-mono">3333-00-1234567</p>
+                            <p className="text-white font-bold mt-1 text-sm font-mono">2259-02-04-057670</p>
                         </div>
                         <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]">
                             <span className="text-[10px] text-gray-500 uppercase tracking-wider">예금주</span>
-                            <p className="text-white font-bold mt-1 text-sm">BitMan</p>
+                            <p className="text-white font-bold mt-1 text-sm">이종민</p>
                         </div>
                         <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]">
                             <span className="text-[10px] text-gray-500 uppercase tracking-wider">금액</span>
-                            <p className="text-amber-400 font-bold mt-1 text-sm">50,000원 / 월</p>
+                            <p className="text-amber-400 font-bold mt-1 text-sm">50,000원 / 30일</p>
                         </div>
                     </div>
+
+                    {/* 입금자명 입력 */}
+                    <div className="mt-3">
+                        <label className="text-[10px] text-gray-500 uppercase tracking-wider block mb-1.5">입금자명</label>
+                        <input
+                            type="text"
+                            value={depositorName}
+                            onChange={(e) => setDepositorName(e.target.value)}
+                            placeholder="입금자명을 입력하세요"
+                            className="w-full px-4 py-3 rounded-xl bg-white/[0.03] border border-white/[0.06] text-white placeholder-gray-600 text-sm focus:outline-none focus:border-amber-500/50 transition-colors"
+                        />
+                    </div>
+
+                    {/* 구독 기간 안내 */}
+                    <div className="mt-3 p-3 rounded-xl bg-amber-500/5 border border-amber-500/10">
+                        <div className="flex items-center gap-2 text-sm">
+                            <i className="fas fa-calendar-alt text-amber-400 text-xs" />
+                            <span className="text-gray-400">구독 기간:</span>
+                            <span className="text-amber-400 font-bold">
+                                {new Date().toLocaleDateString('ko-KR')} ~ {getExpiryDate()} (30일)
+                            </span>
+                        </div>
+                    </div>
+
                     <p className="text-gray-500 text-xs mt-3">
                         <i className="fas fa-info-circle mr-1" />
                         입금자명을 가입 시 이름과 동일하게 입력해 주세요. 확인 후 24시간 내 Pro 플랜이 활성화됩니다.
                     </p>
+
+                    {/* 카카오톡 문의 */}
+                    <a
+                        href="https://open.kakao.com/o/sJVLbWUe"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-3 flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-[#FEE500]/10 hover:bg-[#FEE500]/20 text-[#FEE500] font-bold text-sm transition-all border border-[#FEE500]/20"
+                    >
+                        <i className="fas fa-comment" />
+                        카카오톡 문의하기
+                    </a>
                 </div>
             )}
 
@@ -229,6 +300,17 @@ export default function AccountPage() {
                             </p>
                         </div>
                     </div>
+
+                    {/* 카카오톡 문의 */}
+                    <a
+                        href="https://open.kakao.com/o/sJVLbWUe"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-4 flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-[#FEE500]/10 hover:bg-[#FEE500]/20 text-[#FEE500] font-bold text-sm transition-all border border-[#FEE500]/20"
+                    >
+                        <i className="fas fa-comment" />
+                        카카오톡 문의하기
+                    </a>
                 </div>
             )}
 
