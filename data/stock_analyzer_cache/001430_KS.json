@@ -1,0 +1,81 @@
+{
+  "name": "세아베스틸지주",
+  "ticker": "001430.KS",
+  "result": "매수",
+  "date": "2026-04-01 19:52:40",
+  "elapsed": 1.9,
+  "consensus_score": 4.22,
+  "analyst_count": 9,
+  "recommendation_detail": {
+    "strongBuy": 2,
+    "buy": 7,
+    "hold": 0,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 71000.0,
+    "high": 97000.0,
+    "low": 33000.0,
+    "mean": 63000.0,
+    "median": 74000.0
+  },
+  "current_price": 71000.0,
+  "upside_potential": -11.3,
+  "key_stats": {
+    "name": "SBHC",
+    "sector": "Basic Materials",
+    "industry": "Steel",
+    "market_cap": 2546210439168,
+    "pe_ratio": null,
+    "forward_pe": 19.826864,
+    "dividend_yield": 1.86,
+    "beta": 1.263,
+    "fifty_two_week_high": 92500.0,
+    "fifty_two_week_low": 14750.0,
+    "revenue": 3651585179648,
+    "profit_margin": 0.01539,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "세아베스틸지주에 대해 9명의 애널리스트가 제시한 컨센서스 의견은 '매수'로 긍정적입니다. 하지만 목표가 평균은 63,000원으로 현재가 대비 약 11.3% 하락 여력이 있습니다. 투자 결정 시 컨센서스 의견과 목표가 간의 괴리를 고려해야 합니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 861265398470
+    },
+    {
+      "date": "2025-09",
+      "value": 925909360480
+    },
+    {
+      "date": "2025-06",
+      "value": 964508023160
+    },
+    {
+      "date": "2025-03",
+      "value": 899902494840
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": -1477060990
+    },
+    {
+      "date": "2025-09",
+      "value": 33693201700
+    },
+    {
+      "date": "2025-06",
+      "value": 17885633340
+    },
+    {
+      "date": "2025-03",
+      "value": 6094423960
+    }
+  ],
+  "news": []
+}

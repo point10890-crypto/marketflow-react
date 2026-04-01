@@ -1,0 +1,75 @@
+{
+  "name": "티이엠씨",
+  "ticker": "425040.KQ",
+  "result": "데이터 없음",
+  "date": "2026-04-01 19:36:43",
+  "elapsed": 2.1,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 13170.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 13170.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "TEMC",
+    "sector": "Basic Materials",
+    "industry": "Specialty Chemicals",
+    "market_cap": 276152549376,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": 1.14,
+    "beta": 2.068,
+    "fifty_two_week_high": 14210.0,
+    "fifty_two_week_low": 5920.0,
+    "revenue": 279708401664,
+    "profit_margin": 0.05704,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 82387980730
+    },
+    {
+      "date": "2025-09",
+      "value": 57961729710
+    },
+    {
+      "date": "2025-06",
+      "value": 76331747360
+    },
+    {
+      "date": "2025-03",
+      "value": 63026952310
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 6693578040
+    },
+    {
+      "date": "2025-09",
+      "value": 3816979170
+    },
+    {
+      "date": "2025-06",
+      "value": 1855301160
+    },
+    {
+      "date": "2025-03",
+      "value": 3588244770
+    }
+  ],
+  "news": []
+}

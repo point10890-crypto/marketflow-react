@@ -2,8 +2,8 @@
   "name": "삼성전자",
   "ticker": "005930.KS",
   "result": "매수",
-  "date": "2026-03-30 17:26:24",
-  "elapsed": 2.4,
+  "date": "2026-04-01 19:37:56",
+  "elapsed": 1.7,
   "consensus_score": 4.22,
   "analyst_count": 37,
   "recommendation_detail": {
@@ -15,22 +15,22 @@
   },
   "recommendation_period": "0m",
   "price_targets": {
-    "current": 176300.0,
+    "current": 189600.0,
     "high": 340000.0,
     "low": 110000.0,
     "mean": 239873.48,
     "median": 250000.0
   },
-  "current_price": 176300.0,
-  "upside_potential": 36.1,
+  "current_price": 189600.0,
+  "upside_potential": 26.5,
   "key_stats": {
     "name": "SamsungElec",
     "sector": "Technology",
     "industry": "Consumer Electronics",
-    "market_cap": 1178756458741760,
+    "market_cap": 1267681340686336,
     "pe_ratio": null,
-    "forward_pe": 6.136961,
-    "dividend_yield": 1.26,
+    "forward_pe": 6.599931,
+    "dividend_yield": 1.35,
     "beta": 1.121,
     "fifty_two_week_high": 223000.0,
     "fifty_two_week_low": 52900.0,
@@ -40,7 +40,7 @@
   },
   "finnhub_supplement": null,
   "source": "yfinance",
-  "ai_analysis": "삼성전자에 대해 37명의 애널리스트가 제시한 컨센서스는 '매수' 의견입니다. 목표가 평균은 현재 주가 대비 36.1% 상승 여력이 있는 239,873 KRW로 제시되었습니다. 이는 애널리스트들이 삼성전자의 추가적인 주가 상승을 기대하고 있음을 시사합니다.",
+  "ai_analysis": "삼성전자는 현재 애널리스트 컨센서스가 '매수' 의견으로, 37명의 애널리스트가 참여하여 5점 만점에 4.22점을 기록했습니다. 평균 목표 주가는 239,873원으로, 현재 주가 대비 26.5%의 상승 여력이 있는 것으로 분석됩니다. 이는 시장 전문가들이 삼성전자의 성장 가능성을 긍정적으로 평가하고 있음을 시사합니다.",
   "revenue_quarters": [
     {
       "date": "2025-12",
@@ -79,39 +79,39 @@
   ],
   "news": [
     {
-      "title": "AMD And Samsung Partnership Adds New Piece To AI Supply Story",
-      "summary": "AMD (NasdaqGS:AMD) and Samsung signed a new memorandum of understanding to supply next generation HBM4 memory for AMD Instinct AI GPUs. The agreement expands their existing partnership around advanced",
-      "url": "https://finance.yahoo.com/sectors/technology/articles/amd-samsung-partnership-adds-piece-050556677.html",
+      "title": "Amazon partners up with Delta to provide high-speed internet",
+      "summary": "Yahoo Finance Tech Editor Dan Howley talks to Market Domination Host Josh Lipton about a recently announced partnership between Delta Air Lines (DAL) and Amazon (AMZN) to use Amazon's Low Earth Orbit ",
+      "url": "https://finance.yahoo.com/video/amazon-partners-up-with-delta-to-provide-high-speed-internet-213346771.html",
+      "provider": "Yahoo Finance Video",
+      "pub_time": "2026-03-31T21:33:46Z"
+    },
+    {
+      "title": "Exploring Samsung Electronics And Two Other High Growth Tech Stocks",
+      "summary": "As global markets navigate the complexities of geopolitical tensions and fluctuating energy prices, investors are witnessing a mixed performance across major indices, with small-cap stocks like those ",
+      "url": "https://finance.yahoo.com/sectors/technology/articles/exploring-samsung-electronics-two-other-093844720.html",
       "provider": "Simply Wall St.",
-      "pub_time": "2026-03-30T05:05:56Z"
+      "pub_time": "2026-04-01T09:38:44Z"
     },
     {
-      "title": "Advanced Micro Devices (AMD) and Samsung Expand Their Partnership for Memory Chip Supplies",
-      "summary": "Advanced Micro Devices, Inc. (NASDAQ:AMD) is one of the High Growth Semiconductor Stocks to Buy. On March 18, Reuters reported that Advanced Micro Devices, Inc. (NASDAQ:AMD) and Samsung Electronics si",
-      "url": "https://finance.yahoo.com/sectors/technology/articles/advanced-micro-devices-amd-samsung-202236957.html",
-      "provider": "Insider Monkey",
-      "pub_time": "2026-03-29T20:22:36Z"
+      "title": "Samsung’s Best Day Since 2001 Drives Rebound in Korean Stocks",
+      "summary": "(Bloomberg) -- Chipmakers drove a rebound in South Korean stocks, as hopes that the Iran war may be nearing an end revived risk appetite. The Kospi Index closed 8.4% higher on Wednesday, driven by Sam",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/samsung-sk-hynix-jump-more-054032911.html",
+      "provider": "Bloomberg",
+      "pub_time": "2026-04-01T07:24:23Z"
     },
     {
-      "title": "TurboQuant Panic: Why Market Is Wrong About Google's Newest AI Breakthrough",
-      "summary": "Alphabet Inc. Google rattled global memory stocks after unveiling its TurboQuant AI algorithm, triggering a sharp sell-off amid fears that improved efficiency could dampen demand for memory chips. How",
-      "url": "https://finance.yahoo.com/markets/stocks/articles/turboquant-panic-why-market-wrong-143113296.html",
-      "provider": "Benzinga",
-      "pub_time": "2026-03-29T14:31:13Z"
-    },
-    {
-      "title": "What Digital Realty Trust (DLR)'s Milan and Samsung Colocation Moves Mean For Shareholders",
-      "summary": "Digital Realty announced it had entered the Milan market with plans for a new data center campus of up to 84 MW, while also supplying Samsung Electronics with enterprise-grade colocation infrastructur",
-      "url": "https://finance.yahoo.com/markets/stocks/articles/digital-realty-trust-dlr-milan-160735897.html",
+      "title": "Is It Too Late To Reassess Samsung Electronics (KOSE:A005930) After Its 189.4% 1-Year Surge?",
+      "summary": "If you are wondering whether Samsung Electronics at ₩167,200 still offers value after a strong run, this article walks through what the numbers are saying about the current price. The stock has record",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/too-reassess-samsung-electronics-kose-211248297.html",
       "provider": "Simply Wall St.",
-      "pub_time": "2026-03-28T16:07:35Z"
+      "pub_time": "2026-03-31T21:12:48Z"
     },
     {
-      "title": "Musk’s Terafab plans seen having limited impact on TSMC",
-      "summary": "Investing.com – Elon Musk’s proposed “Terafab” semiconductor project is unlikely to significantly disrupt Taiwan Semiconductor Manufacturing Co. (TSMC), with execution risks, high costs and long timel",
-      "url": "https://finance.yahoo.com/sectors/technology/articles/musk-terafab-plans-seen-having-151754710.html",
-      "provider": "Investing.com",
-      "pub_time": "2026-03-28T15:17:54Z"
+      "title": "Chip Stocks Jump as Trump Signals End to Iran War Within Weeks",
+      "summary": "Chipmakers Soar on Report U.S. to Wind Down Iran Campaign",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/chip-stocks-jump-trump-signals-185450749.html",
+      "provider": "GuruFocus.com",
+      "pub_time": "2026-03-31T18:54:50Z"
     }
   ]
 }

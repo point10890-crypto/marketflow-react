@@ -1,0 +1,75 @@
+{
+  "name": "와이제이링크",
+  "ticker": "209640.KQ",
+  "result": "데이터 없음",
+  "date": "2026-04-01 19:52:25",
+  "elapsed": 1.3,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 4615.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 4615.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "YJ LINK",
+    "sector": "Technology",
+    "industry": "Semiconductors",
+    "market_cap": 131265118208,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": null,
+    "beta": null,
+    "fifty_two_week_high": 9950.0,
+    "fifty_two_week_low": 2390.0,
+    "revenue": 46072766464,
+    "profit_margin": -0.06731,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 17717379190
+    },
+    {
+      "date": "2025-09",
+      "value": 10474345300
+    },
+    {
+      "date": "2025-06",
+      "value": 10322054420
+    },
+    {
+      "date": "2025-03",
+      "value": 7558987990
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 2044627000
+    },
+    {
+      "date": "2025-09",
+      "value": 189728400
+    },
+    {
+      "date": "2025-06",
+      "value": -3544637610
+    },
+    {
+      "date": "2025-03",
+      "value": -1790961280
+    }
+  ],
+  "news": []
+}
