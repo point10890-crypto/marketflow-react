@@ -55,7 +55,7 @@ export default function PricingPage() {
     ];
 
     return (
-        <div className="min-h-screen bg-[#09090b] flex flex-col items-center p-6 sm:p-8">
+        <div className="fixed inset-0 bg-[#09090b] flex flex-col items-center overflow-y-auto p-6 sm:p-8">
             {/* Header */}
             <div className="text-center mt-8 sm:mt-16 mb-10 sm:mb-14">
                 <Link to="/" className="inline-flex items-center gap-2 mb-6 text-gray-500 hover:text-white transition-colors text-sm">
