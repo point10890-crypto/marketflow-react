@@ -1,0 +1,103 @@
+{
+  "name": "한국항공우주",
+  "ticker": "047810.KS",
+  "result": "매수",
+  "date": "2026-04-01 15:11:23",
+  "elapsed": 2.4,
+  "consensus_score": 4.04,
+  "analyst_count": 23,
+  "recommendation_detail": {
+    "strongBuy": 6,
+    "buy": 12,
+    "hold": 5,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 188300.0,
+    "high": 210000.0,
+    "low": 104000.0,
+    "mean": 167043.48,
+    "median": 168000.0
+  },
+  "current_price": 188300.0,
+  "upside_potential": -11.3,
+  "key_stats": {
+    "name": "KOREA AEROSPACE",
+    "sector": "Industrials",
+    "industry": "Aerospace & Defense",
+    "market_cap": 18354561613824,
+    "pe_ratio": null,
+    "forward_pe": 35.782543,
+    "dividend_yield": 0.3,
+    "beta": 0.613,
+    "fifty_two_week_high": 215500.0,
+    "fifty_two_week_low": 70600.0,
+    "revenue": 3696379297792,
+    "profit_margin": 0.05029,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "한국항공우주(047810.KS)에 대한 애널리스트 컨센서스는 23명 참여 기준 '매수' 의견(4.04/5.0)으로 나타났습니다. 목표가 평균은 167,043원으로 현재가 188,300원 대비 -11.3% 하락 여력이 있습니다. 투자 판단은 제시된 데이터를 참고하여 신중하게 결정하시기 바랍니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 1466670112290
+    },
+    {
+      "date": "2025-09",
+      "value": 702116311020
+    },
+    {
+      "date": "2025-06",
+      "value": 828336336030
+    },
+    {
+      "date": "2025-03",
+      "value": 699256592260
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 60628677900
+    },
+    {
+      "date": "2025-09",
+      "value": 38835240170
+    },
+    {
+      "date": "2025-06",
+      "value": 56359210490
+    },
+    {
+      "date": "2025-03",
+      "value": 30064693940
+    }
+  ],
+  "news": [
+    {
+      "title": "Global Defense Stocks Gain After Trump Ousts Venezuela’s Maduro",
+      "summary": "President Trump’s intervention in Venezuela has spurred concerns about mounting global insecurity—and given weapon makers a boost.    In the U.S., shares in Northrop Grumman and Lockheed Martin rose, ",
+      "url": "https://www.wsj.com/livecoverage/stock-market-today-dow-sp-500-nasdaq-01-05-2026/card/global-defense-stocks-gain-after-trump-ousts-venezuela-s-maduro-DdTOiEmxEOe4xc3kw9kh?siteid=yhoof2&yptr=yahoo",
+      "provider": "The Wall Street Journal",
+      "pub_time": "2026-01-05T18:16:31Z"
+    },
+    {
+      "title": "Trump Jr.-Linked Firm Rallies On Pentagon Wins, Unmanned Carrier Efforts",
+      "summary": "Donald Trump Jr.-linked Unusual Machines jumps on Pentagon drone contract, unmanned aircraft carrier efforts.",
+      "url": "https://www.investors.com/news/unusual-machines-drones-donald-trump-jr-red-cat-unmanned-carriers-umac-stock-kratos/?src=A00220&yptr=yahoo",
+      "provider": "Investor's Business Daily",
+      "pub_time": "2025-10-27T20:37:18Z"
+    },
+    {
+      "title": "Why Lockheed Martin Stock Zoomed Higher Today",
+      "summary": "The defense sector mainstay signed a new agreement with a business partner in Asia.  News of a strengthened business tie-up with an important partner overseas gave some lift to Lockheed Martin (NYSE: ",
+      "url": "https://www.fool.com/investing/2025/06/17/why-lockheed-martin-stock-zoomed-higher-today/",
+      "provider": "Motley Fool",
+      "pub_time": "2025-06-17T21:51:22Z"
+    }
+  ]
+}
