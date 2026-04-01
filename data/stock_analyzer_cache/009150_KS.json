@@ -1,0 +1,117 @@
+{
+  "name": "삼성전기",
+  "ticker": "009150.KS",
+  "result": "적극 매수",
+  "date": "2026-04-01 10:01:07",
+  "elapsed": 2.2,
+  "consensus_score": 4.32,
+  "analyst_count": 28,
+  "recommendation_detail": {
+    "strongBuy": 10,
+    "buy": 17,
+    "hold": 1,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 442000.0,
+    "high": 620000.0,
+    "low": 310000.0,
+    "mean": 471607.16,
+    "median": 475000.0
+  },
+  "current_price": 442500.0,
+  "upside_potential": 6.6,
+  "key_stats": {
+    "name": "SamsungElecMech",
+    "sector": "Technology",
+    "industry": "Electronic Components",
+    "market_cap": 33391883845632,
+    "pe_ratio": null,
+    "forward_pe": 21.992073,
+    "dividend_yield": 0.58,
+    "beta": 1.316,
+    "fifty_two_week_high": 488500.0,
+    "fifty_two_week_low": 108800.0,
+    "revenue": 11314459049984,
+    "profit_margin": 0.06241,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "삼성전기는 애널리스트 컨센서스 '적극 매수' 의견을 받고 있으며, 28명의 애널리스트가 참여했습니다. 평균 목표 주가는 471,607원으로, 현재 주가 대비 약 6.6%의 상승 여력이 있습니다. 이는 긍정적인 시장 전망을 반영하는 데이터입니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 2902145249470
+    },
+    {
+      "date": "2025-09",
+      "value": 2889035756680
+    },
+    {
+      "date": "2025-06",
+      "value": 2784629132130
+    },
+    {
+      "date": "2025-03",
+      "value": 2738649099830
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 222810585890
+    },
+    {
+      "date": "2025-09",
+      "value": 219848521440
+    },
+    {
+      "date": "2025-06",
+      "value": 129722699980
+    },
+    {
+      "date": "2025-03",
+      "value": 133731358140
+    }
+  ],
+  "news": [
+    {
+      "title": "Samsung Electro-Mechanics Co Ltd (XKRX:009150) Q4 2025 Earnings Call Highlights: Strong ...",
+      "summary": "Despite a slight quarterly dip in operating profit, Samsung Electro-Mechanics Co Ltd (XKRX:009150) reports robust annual growth driven by high demand in AI and automotive sectors.",
+      "url": "https://finance.yahoo.com/news/samsung-electro-mechanics-co-ltd-110035889.html",
+      "provider": "GuruFocus.com",
+      "pub_time": "2026-01-23T11:00:35Z"
+    },
+    {
+      "title": "Samsung Electro-Mechanics Co Ltd (XKRX:009150) Q3 2025 Earnings Call Highlights: Strong Revenue ...",
+      "summary": "Samsung Electro-Mechanics Co Ltd (XKRX:009150) reports robust Q3 performance with significant gains in operating profit and strategic expansions in high-growth sectors.",
+      "url": "https://finance.yahoo.com/news/samsung-electro-mechanics-co-ltd-192954575.html",
+      "provider": "GuruFocus.com",
+      "pub_time": "2025-10-30T19:29:54Z"
+    },
+    {
+      "title": "Samsung Electro-Mechanics Co Ltd (XKRX:009150) Q2 2025 Earnings Call Highlights: Strong Revenue ...",
+      "summary": "Samsung Electro-Mechanics Co Ltd (XKRX:009150) reports robust Q2 revenue growth, driven by component and package solutions, despite optics division challenges and external uncertainties.",
+      "url": "https://finance.yahoo.com/news/samsung-electro-mechanics-co-ltd-070058860.html",
+      "provider": "GuruFocus.com",
+      "pub_time": "2025-08-01T07:00:58Z"
+    },
+    {
+      "title": "High-bandwidth memory demand set to surge in 2026 as AI powers up: UBS",
+      "summary": "Investing.com -- High-bandwidth memory, or HBM, is poised for a breakthrough year in 2026 as AI’s compute-hungry needs continues to reshape the memory landscape, UBS analysts said in a recent note.",
+      "url": "https://finance.yahoo.com/news/high-bandwidth-memory-demand-set-213150512.html",
+      "provider": "Investing.com",
+      "pub_time": "2025-07-17T21:31:50Z"
+    },
+    {
+      "title": "Samsung cancels Mexican auto parts plant",
+      "summary": "Project abandoned due to uncertainty over US trade policies.",
+      "url": "https://www.just-auto.com/news/samsung-cancels-mexican-auto-parts-plant/",
+      "provider": "Just Auto",
+      "pub_time": "2025-07-07T11:28:43Z"
+    }
+  ]
+}

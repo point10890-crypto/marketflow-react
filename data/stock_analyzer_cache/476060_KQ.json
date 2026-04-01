@@ -1,35 +1,35 @@
 {
-  "name": "스피어",
-  "ticker": "347700.KQ",
+  "name": "온코닉테라퓨틱스",
+  "ticker": "476060.KQ",
   "result": "데이터 없음",
-  "date": "2026-04-01 10:00:38",
-  "elapsed": 2.2,
+  "date": "2026-04-01 10:53:23",
+  "elapsed": 1.3,
   "consensus_score": null,
   "analyst_count": 0,
   "recommendation_detail": null,
   "recommendation_period": null,
   "price_targets": {
-    "current": 46950.0,
-    "high": null,
-    "low": null,
-    "mean": null,
-    "median": null
+    "current": 22500.0,
+    "high": 12500.0,
+    "low": 12500.0,
+    "mean": 12500.0,
+    "median": 12500.0
   },
-  "current_price": 46950.0,
-  "upside_potential": null,
+  "current_price": 22500.0,
+  "upside_potential": -44.4,
   "key_stats": {
-    "name": "Sphere",
+    "name": "Onconic Therapeutics",
     "sector": "Healthcare",
-    "industry": "Health Information Services",
-    "market_cap": 1663582208000,
+    "industry": "Drug Manufacturers - Specialty & Generic",
+    "market_cap": 1000058388480,
     "pe_ratio": null,
     "forward_pe": null,
     "dividend_yield": null,
-    "beta": 1.055,
-    "fifty_two_week_high": 57300.0,
-    "fifty_two_week_low": 5970.0,
-    "revenue": 95638568960,
-    "profit_margin": 0.00178,
+    "beta": null,
+    "fifty_two_week_high": 28900.0,
+    "fifty_two_week_low": 4992.5,
+    "revenue": 53391847424,
+    "profit_margin": 0.29563,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
@@ -38,37 +38,37 @@
   "revenue_quarters": [
     {
       "date": "2025-12",
-      "value": 33828235720
+      "value": 15577020280
     },
     {
       "date": "2025-09",
-      "value": 21096473740
+      "value": 19213092480
     },
     {
       "date": "2025-06",
-      "value": 18861302760
+      "value": 9432339220
     },
     {
       "date": "2025-03",
-      "value": 21852554170
+      "value": 9169393920
     }
   ],
   "net_income_quarters": [
     {
       "date": "2025-12",
-      "value": -20869015900
+      "value": 4659077420
     },
     {
       "date": "2025-09",
-      "value": -3313111950
+      "value": 9402326170
     },
     {
       "date": "2025-06",
-      "value": 21188098050
+      "value": -155739770
     },
     {
       "date": "2025-03",
-      "value": 3164290830
+      "value": 1878327640
     }
   ],
   "news": []

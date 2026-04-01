@@ -1,0 +1,110 @@
+{
+  "name": "삼성E&A",
+  "ticker": "028050.KS",
+  "result": "매수",
+  "date": "2026-04-01 08:29:41",
+  "elapsed": 2.8,
+  "consensus_score": 4.29,
+  "analyst_count": 21,
+  "recommendation_detail": {
+    "strongBuy": 7,
+    "buy": 13,
+    "hold": 1,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 35700.0,
+    "high": 48000.0,
+    "low": 28000.0,
+    "mean": 37428.57,
+    "median": 37000.0
+  },
+  "current_price": 35700.0,
+  "upside_potential": 4.8,
+  "key_stats": {
+    "name": "SamsungE&A",
+    "sector": "Industrials",
+    "industry": "Engineering & Construction",
+    "market_cap": 6997200076800,
+    "pe_ratio": null,
+    "forward_pe": 9.145949,
+    "dividend_yield": 2.21,
+    "beta": 1.065,
+    "fifty_two_week_high": 40700.0,
+    "fifty_two_week_low": 17224.0,
+    "revenue": 9028768890880,
+    "profit_margin": 0.068390004,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "삼성E&A(028050.KS)에 대해 21명의 애널리스트가 제시한 컨센서스는 '매수' 의견입니다 (5점 만점 중 4.29점). 평균 목표 주가는 37,429원으로, 현재 주가 대비 약 4.8%의 상승 여력이 있습니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 2757182099520
+    },
+    {
+      "date": "2025-09",
+      "value": 1995609066760
+    },
+    {
+      "date": "2025-06",
+      "value": 2178022750180
+    },
+    {
+      "date": "2025-03",
+      "value": 2097955167200
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 184325078150
+    },
+    {
+      "date": "2025-09",
+      "value": 141897148220
+    },
+    {
+      "date": "2025-06",
+      "value": 140664185650
+    },
+    {
+      "date": "2025-03",
+      "value": 150594586580
+    }
+  ],
+  "news": [
+    {
+      "title": "Carbon Clean, Samsung E&A to deliver modular carbon capture systems",
+      "summary": "The collaboration will combine Carbon Clean’s CycloneCC technology with Samsung E&A’s EPC expertise and AHEAD model.",
+      "url": "https://www.offshore-technology.com/news/carbon-clean-samsung-ea-partnership/",
+      "provider": "Offshore Technology",
+      "pub_time": "2025-11-05T15:38:14Z"
+    },
+    {
+      "title": "Petrofac Reaches Agreement in Principle with Thai Project Partners",
+      "summary": "With the agreement, the energy engineering company expects to complete its restructuring plan by November.",
+      "url": "https://finance.yahoo.com/news/petrofac-reaches-agreement-principle-thai-095232917.html",
+      "provider": "Rigzone.com",
+      "pub_time": "2025-09-12T09:52:32Z"
+    },
+    {
+      "title": "KBR Wins FEED Contract for Indonesia's Abadi LNG Project",
+      "summary": "The Abadi LNG project is expected to have peak production capacity targets of 9.5 million tons per annum of LNG and 150 million standard cubic feet per day of pipeline gas.",
+      "url": "https://finance.yahoo.com/news/kbr-wins-feed-contract-indonesias-150000542.html",
+      "provider": "Rigzone.com",
+      "pub_time": "2025-08-13T15:00:00Z"
+    },
+    {
+      "title": "Abadi LNG project advances with FEED work",
+      "summary": "The project extends until 15 November 2055 under a PSC.",
+      "url": "https://www.offshore-technology.com/news/abadi-lng-project-feed/",
+      "provider": "Offshore Technology",
+      "pub_time": "2025-08-06T15:15:51Z"
+    }
+  ]
+}

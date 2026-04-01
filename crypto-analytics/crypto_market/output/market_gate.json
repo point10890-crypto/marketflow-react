@@ -10,14 +10,14 @@
     "알트 breadth 붕괴 (10% > EMA50)"
   ],
   "metrics": {
-    "btc_price": 68123.0859375,
-    "btc_ema50": 71052.15171363128,
-    "btc_ema200": 85123.30793205187,
-    "btc_ema200_slope_pct_20": -3.8406017662896916,
-    "btc_volume_z_50": 0.2108467722244494,
-    "btc_atrp_14_pct": 3.865615244596076,
+    "btc_price": 67565.3984375,
+    "btc_ema50": 71030.2816155917,
+    "btc_ema200": 85116.65672823285,
+    "btc_ema200_slope_pct_20": -3.8466531834156354,
+    "btc_volume_z_50": 0.12049172511044191,
+    "btc_atrp_14_pct": 3.815125993091647,
     "alt_breadth_above_ema50": 0.1,
-    "funding_rate": -2.645e-05,
+    "funding_rate": -6.412e-05,
     "open_interest_delta_z": null,
     "gate_score_components": {
       "trend": 0.0,
@@ -26,8 +26,8 @@
       "breadth": 2.0,
       "leverage": 9.0
     },
-    "fear_greed_index": 11,
+    "fear_greed_index": 8,
     "fear_greed_class": "Extreme Fear"
   },
-  "generated_at": "2026-04-01T08:00:25.174271"
+  "generated_at": "2026-04-01T12:00:16.041227"
 }

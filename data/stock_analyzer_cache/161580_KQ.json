@@ -1,35 +1,35 @@
 {
-  "name": "스피어",
-  "ticker": "347700.KQ",
+  "name": "필옵틱스",
+  "ticker": "161580.KQ",
   "result": "데이터 없음",
-  "date": "2026-04-01 10:00:38",
+  "date": "2026-04-01 09:59:58",
   "elapsed": 2.2,
   "consensus_score": null,
   "analyst_count": 0,
   "recommendation_detail": null,
   "recommendation_period": null,
   "price_targets": {
-    "current": 46950.0,
+    "current": 39100.0,
     "high": null,
     "low": null,
     "mean": null,
     "median": null
   },
-  "current_price": 46950.0,
+  "current_price": 39100.0,
   "upside_potential": null,
   "key_stats": {
-    "name": "Sphere",
-    "sector": "Healthcare",
-    "industry": "Health Information Services",
-    "market_cap": 1663582208000,
+    "name": "PHILOPTICS",
+    "sector": "Industrials",
+    "industry": "Specialty Industrial Machinery",
+    "market_cap": 915047448576,
     "pe_ratio": null,
     "forward_pe": null,
     "dividend_yield": null,
-    "beta": 1.055,
-    "fifty_two_week_high": 57300.0,
-    "fifty_two_week_low": 5970.0,
-    "revenue": 95638568960,
-    "profit_margin": 0.00178,
+    "beta": 1.266,
+    "fifty_two_week_high": 60300.0,
+    "fifty_two_week_low": 27850.0,
+    "revenue": 226235547648,
+    "profit_margin": 0.041929998,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
@@ -37,38 +37,38 @@
   "ai_analysis": null,
   "revenue_quarters": [
     {
-      "date": "2025-12",
-      "value": 33828235720
-    },
-    {
       "date": "2025-09",
-      "value": 21096473740
+      "value": 10517940550
     },
     {
       "date": "2025-06",
-      "value": 18861302760
+      "value": 33807602040
     },
     {
       "date": "2025-03",
-      "value": 21852554170
+      "value": 32674424790
+    },
+    {
+      "date": "2024-12",
+      "value": 149235577300
     }
   ],
   "net_income_quarters": [
     {
-      "date": "2025-12",
-      "value": -20869015900
-    },
-    {
       "date": "2025-09",
-      "value": -3313111950
+      "value": -5388408130
     },
     {
       "date": "2025-06",
-      "value": 21188098050
+      "value": -6770699450
     },
     {
       "date": "2025-03",
-      "value": 3164290830
+      "value": -2240098330
+    },
+    {
+      "date": "2024-12",
+      "value": 23886227660
     }
   ],
   "news": []

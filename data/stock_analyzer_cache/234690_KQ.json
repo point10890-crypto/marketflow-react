@@ -2,31 +2,31 @@
   "name": "녹십자웰빙",
   "ticker": "234690.KQ",
   "result": "데이터 없음",
-  "date": "2026-03-24 13:46:36",
+  "date": "2026-04-01 09:21:10",
   "elapsed": 2.0,
   "consensus_score": null,
   "analyst_count": 0,
   "recommendation_detail": null,
   "recommendation_period": null,
   "price_targets": {
-    "current": 11610.0,
+    "current": 13980.0,
     "high": null,
     "low": null,
     "mean": null,
     "median": null
   },
-  "current_price": 11610.0,
+  "current_price": 13980.0,
   "upside_potential": null,
   "key_stats": {
     "name": "GCWB",
     "sector": "Healthcare",
     "industry": "Biotechnology",
-    "market_cap": 206021378048,
+    "market_cap": 248077418496,
     "pe_ratio": null,
     "forward_pe": null,
-    "dividend_yield": 1.19,
+    "dividend_yield": 1.09,
     "beta": 0.923,
-    "fifty_two_week_high": 13250.0,
+    "fifty_two_week_high": 15200.0,
     "fifty_two_week_low": 7220.0,
     "revenue": 164680040448,
     "profit_margin": 0.06079,
@@ -36,6 +36,10 @@
   "source": "yfinance",
   "ai_analysis": null,
   "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 48729717140
+    },
     {
       "date": "2025-09",
       "value": 42272798100
@@ -47,13 +51,13 @@
     {
       "date": "2025-03",
       "value": 34756030920
-    },
-    {
-      "date": "2024-12",
-      "value": 35109930430
     }
   ],
   "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 848876630
+    },
     {
       "date": "2025-09",
       "value": 3721955000
@@ -65,10 +69,6 @@
     {
       "date": "2025-03",
       "value": 5098257000
-    },
-    {
-      "date": "2024-12",
-      "value": 588864840
     }
   ],
   "news": []

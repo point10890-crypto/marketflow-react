@@ -2,8 +2,8 @@
   "name": "DB하이텍",
   "ticker": "000990.KS",
   "result": "적극 매수",
-  "date": "2026-03-27 21:33:08",
-  "elapsed": 1.6,
+  "date": "2026-04-01 11:32:17",
+  "elapsed": 3.0,
   "consensus_score": 4.33,
   "analyst_count": 3,
   "recommendation_detail": {
@@ -15,22 +15,22 @@
   },
   "recommendation_period": "0m",
   "price_targets": {
-    "current": 83800.0,
+    "current": 82500.0,
     "high": 130000.0,
     "low": 92000.0,
     "mean": 106666.664,
     "median": 98000.0
   },
-  "current_price": 83800.0,
-  "upside_potential": 27.3,
+  "current_price": 82500.0,
+  "upside_potential": 29.3,
   "key_stats": {
     "name": "DB HiTek",
     "sector": "Technology",
     "industry": "Semiconductors",
-    "market_cap": 3372748636160,
+    "market_cap": 3320426790912,
     "pe_ratio": null,
-    "forward_pe": 9.386902,
-    "dividend_yield": 1.04,
+    "forward_pe": 9.2412815,
+    "dividend_yield": 1.03,
     "beta": 1.507,
     "fifty_two_week_high": 113500.0,
     "fifty_two_week_low": 36450.0,
@@ -40,8 +40,12 @@
   },
   "finnhub_supplement": null,
   "source": "yfinance",
-  "ai_analysis": null,
+  "ai_analysis": "DB하이텍(000990.KS)에 대해 3명의 애널리스트가 제시한 컨센서스 의견은 '적극 매수'입니다. 목표가 평균은 106,667 KRW로, 현재가 82,500 KRW 대비 29.3% 상승 여력이 있습니다. 투자 판단은 개인의 책임 하에 신중하게 이루어져야 합니다.",
   "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 387796637750
+    },
     {
       "date": "2025-09",
       "value": 374649575920
@@ -53,13 +57,13 @@
     {
       "date": "2025-03",
       "value": 297380601930
-    },
-    {
-      "date": "2024-12",
-      "value": 283488686990
     }
   ],
   "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 60168390820
+    },
     {
       "date": "2025-09",
       "value": 90250707970
@@ -71,10 +75,6 @@
     {
       "date": "2025-03",
       "value": 46125013010
-    },
-    {
-      "date": "2024-12",
-      "value": 50355549130
     }
   ],
   "news": [
