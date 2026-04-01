@@ -225,7 +225,8 @@ class Config:
     KR_UPDATE_TIME = os.environ.get('KR_MARKET_UPDATE_TIME', '15:00')   # 종가베팅 V2
     VCP_UPDATE_TIME = os.environ.get('VCP_UPDATE_TIME', '16:00')         # 전 시장 VCP 시그널
     WAVE_SCAN_TIME = os.environ.get('WAVE_SCAN_TIME', '16:30')           # Wave 패턴 스캔
-    AI_CHART_TIME = os.environ.get('AI_CHART_TIME', '14:00')             # AI Chart Analysis (Gemini Vision)
+    AI_CHART_TIME = os.environ.get('AI_CHART_TIME', '14:00')             # AI Chart Analysis KR (Gemini Vision)
+    US_AI_CHART_TIME = os.environ.get('US_AI_CHART_TIME', '05:30')       # AI Chart Analysis US (Gemini Vision)
     HISTORY_TIME = os.environ.get('KR_MARKET_HISTORY_TIME', '10:00')
     CRYPTO_TIMES = ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00']  # 매 4시간
     MORNING_REPORT_TIME = os.environ.get('MORNING_REPORT_TIME', '09:00')   # 일별 상태 리포트
@@ -2098,6 +2099,55 @@ def _run_ai_chart_analysis() -> bool:
         return False
 
 
+def _run_us_ai_chart_analysis() -> bool:
+    """US AI Chart Analysis — Gemini Vision S&P 500 Top 100"""
+    logger.info("=" * 60)
+    logger.info("🤖 US AI Chart Analysis 시작 (Gemini Vision · S&P 500 Top 100)")
+    logger.info("=" * 60)
+
+    try:
+        script = os.path.join(Config.BASE_DIR, 'main_us.py')
+        result = subprocess.run(
+            [Config.PYTHON_PATH, script],
+            capture_output=True, text=True, timeout=1800,
+            cwd=Config.BASE_DIR,
+            env={**os.environ, 'PYTHONIOENCODING': 'utf-8'},
+        )
+        if result.returncode == 0:
+            csv_path = os.path.join(Config.BASE_DIR, 'gemini_chart_analysis_us.csv')
+            if os.path.exists(csv_path):
+                import pandas as pd
+                df = pd.read_csv(csv_path, encoding='utf-8-sig')
+                buy_count = len(df[df['signal'] == 'BUY'])
+                logger.info(f"🤖 US AI Chart 분석 완료: {len(df)}개 종목 (BUY: {buy_count})")
+
+                if buy_count > 0:
+                    buy_df = df[df['signal'] == 'BUY'].sort_values('confidence', ascending=False)
+                    lines = [f"<b>🤖 US AI Chart Analysis ({len(df)} stocks)</b>\n"]
+                    lines.append(f"🟢 BUY: {buy_count} | 🟡 HOLD: {len(df[df['signal'] == 'HOLD'])} | 🔴 SELL: {len(df[df['signal'] == 'SELL'])}\n")
+                    for _, row in buy_df.head(10).iterrows():
+                        lines.append(f"  🟢 <b>{row['name']}</b> ({row['ticker']}) conf={row['confidence']}")
+                    try:
+                        send_telegram('\n'.join(lines))
+                    except Exception:
+                        pass
+
+                auto_git_push('us_ai_chart')
+                return True
+            else:
+                logger.error("❌ US AI Chart CSV 파일 미생성")
+                return False
+        else:
+            logger.error(f"❌ US AI Chart 스크립트 실패:\n{result.stderr[-500:]}")
+            return False
+    except subprocess.TimeoutExpired:
+        logger.error("❌ US AI Chart 타임아웃 (30분)")
+        return False
+    except Exception as e:
+        logger.error(f"❌ US AI Chart 실패: {e}", exc_info=True)
+        return False
+
+
 # ============================================================
 # 스케줄러
 # ============================================================
@@ -2220,9 +2270,13 @@ class Scheduler:
             getattr(schedule.every(), day).at(Config.CLOSING_BRIEFING_TIME).do(
                 self._with_record(run_closing_briefing, 'closing_briefing',
                                   max_retries=1, retry_delay=300))
-            # 14:00 — AI Chart Analysis (Gemini Vision 100종목)
+            # 14:00 — AI Chart Analysis KR (Gemini Vision 100종목)
             getattr(schedule.every(), day).at(Config.AI_CHART_TIME).do(
                 self._with_record(_run_ai_chart_analysis, 'ai_chart',
+                                  max_retries=1, retry_delay=600))
+            # 05:30 — US AI Chart Analysis (Gemini Vision S&P 500)
+            getattr(schedule.every(), day).at(Config.US_AI_CHART_TIME).do(
+                self._with_record(_run_us_ai_chart_analysis, 'us_ai_chart',
                                   max_retries=1, retry_delay=600))
 
         # 토요일 히스토리 수집
@@ -2243,7 +2297,8 @@ class Scheduler:
         logger.info(f"   🇰🇷 평일 {Config.KR_UPDATE_TIME}  종가베팅 V2 + 수급/AI/리포트 → 텔레그램")
         logger.info(f"   📈 평일 {Config.VCP_UPDATE_TIME}  전 시장 VCP 시그널 (KR+US+Crypto) → 텔레그램")
         logger.info(f"   🌊 평일 {Config.WAVE_SCAN_TIME}  Wave 패턴 스캔 (KR)")
-        logger.info(f"   🤖 평일 {Config.AI_CHART_TIME}  AI Chart Analysis (Gemini Vision)")
+        logger.info(f"   🤖 평일 {Config.AI_CHART_TIME}  AI Chart Analysis KR (Gemini Vision)")
+        logger.info(f"   🤖 평일 {Config.US_AI_CHART_TIME}  US AI Chart Analysis (Gemini Vision)")
         logger.info(f"   📰 평일 {Config.MORNING_BRIEFING_TIME}  AI 조간 브리핑 (Gemini)")
         logger.info(f"   📰 평일 {Config.CLOSING_BRIEFING_TIME}  AI 마감 브리핑 (Gemini)")
         logger.info(f"   🇰🇷 토요일 {Config.HISTORY_TIME}  히스토리 수집")
@@ -2319,7 +2374,8 @@ def main():
     # Wave Pattern
     parser.add_argument('--wave-scan', action='store_true', help='Wave 패턴 스캔 (KR 전 종목)')
     # AI Chart Analysis
-    parser.add_argument('--ai-chart', action='store_true', help='AI Chart Analysis (Gemini Vision 100종목)')
+    parser.add_argument('--ai-chart', action='store_true', help='AI Chart Analysis KR (Gemini Vision 100종목)')
+    parser.add_argument('--us-ai-chart', action='store_true', help='US AI Chart Analysis (Gemini Vision S&P 500)')
 
     args = parser.parse_args()
 
@@ -2459,6 +2515,12 @@ def main():
 
     if args.ai_chart:
         _run_ai_chart_analysis()
+        ran_any = True
+        if not args.daemon:
+            return
+
+    if args.us_ai_chart:
+        _run_us_ai_chart_analysis()
         ran_any = True
         if not args.daemon:
             return

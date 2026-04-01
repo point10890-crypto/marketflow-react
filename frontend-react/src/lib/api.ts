@@ -545,7 +545,31 @@ export const usAPI = {
     getEtfFlowAnalysis: () => fetchAPI<any>('/api/us/etf-flows'),
     getSuperPerformance: () => fetchAPI<any>('/api/us/super-performance'),
     getVCPEnhanced: () => fetchAPI<any>('/api/us/vcp-enhanced'),
+    getAIChartAnalysis: () => fetchAPI<USAIChartAnalysisResponse>('/api/us/ai-chart-analysis'),
 };
+
+export interface USAIChartSignal {
+    ticker: string;
+    name: string;
+    sector: string;
+    signal: 'BUY' | 'HOLD' | 'SELL';
+    confidence: number;
+    ma_status: string;
+    rsi_zone: string;
+    volume_trend: string;
+    reasons: string[];
+}
+
+export interface USAIChartAnalysisResponse {
+    signals: USAIChartSignal[];
+    summary: {
+        total: number;
+        by_signal: Record<string, number>;
+        by_sector: Record<string, number>;
+        avg_confidence: number;
+    };
+    updated_at: string | null;
+}
 
 // Crypto API Types
 export interface CryptoAsset {

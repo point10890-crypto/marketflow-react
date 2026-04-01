@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
-import { usAPI, krAPI, cryptoAPI, jonggaAPI, waveAPI, briefingAPI, commonAPI, type AIBriefing, type MarketIndexItem, type KRAIChartAnalysisResponse } from '@/lib/api';
+import { usAPI, krAPI, cryptoAPI, jonggaAPI, waveAPI, briefingAPI, commonAPI, type AIBriefing, type MarketIndexItem, type KRAIChartAnalysisResponse, type USAIChartAnalysisResponse } from '@/lib/api';
 import { usePullToRefreshRegister } from '@/components/layout/PullToRefreshProvider';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
@@ -322,10 +322,11 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
     const [aiBriefing, setAiBriefing] = useState<AIBriefing | null>(null);
     const [marketIndices, setMarketIndices] = useState<MarketIndexItem[]>([]);
     const [aiChart, setAiChart] = useState<KRAIChartAnalysisResponse | null>(null);
+    const [usAiChart, setUsAiChart] = useState<USAIChartAnalysisResponse | null>(null);
 
     const loadData = useCallback(async () => {
         try {
-            const [b, kr, crypto, vcpKr, vcpUs, vcpCrypto, jongga, leading, wave, aiBrf, indices, aiChartRes] = await Promise.all([
+            const [b, kr, crypto, vcpKr, vcpUs, vcpCrypto, jongga, leading, wave, aiBrf, indices, aiChartRes, usAiChartRes] = await Promise.all([
                 usAPI.getMarketBriefing().catch(() => null),
                 krAPI.getMarketGate().catch(() => null),
                 cryptoAPI.getDominance().catch(() => null),
@@ -338,6 +339,7 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                 briefingAPI.getLatest().catch(() => null),
                 commonAPI.getMarketIndices().catch(() => null),
                 krAPI.getAIChartAnalysis().catch(() => null),
+                usAPI.getAIChartAnalysis().catch(() => null),
             ]);
             setBriefing(b);
             setKrGate(kr);
@@ -348,6 +350,7 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
             setAiBriefing(aiBrf);
             if (indices?.indices) setMarketIndices(indices.indices);
             if (aiChartRes) setAiChart(aiChartRes);
+            if (usAiChartRes) setUsAiChart(usAiChartRes);
 
             // VCP summary
             const allSignals: Array<{ name: string; market: string; score: number }> = [];
@@ -646,7 +649,11 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                     {/* Top active signals — 종목 클릭 시 차트 페이지 이동 */}
                     {waveData.active_signals?.length > 0 && (
                         <div className="relative border-t border-white/[0.06] pt-2">
-                            {waveData.active_signals.slice(0, 5).map((sig: any, i: number) => {
+                            {waveData.active_signals
+                                .filter((sig: any, idx: number, arr: any[]) =>
+                                    arr.findIndex((s: any) => s.ticker === sig.ticker && s.pattern_class === sig.pattern_class) === idx
+                                )
+                                .slice(0, 5).map((sig: any, i: number) => {
                                 const isW = sig.pattern_class === 'W';
                                 const accent = isW ? '#ec4899' : '#f43f5e';
                                 return (
@@ -816,6 +823,75 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                                             <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400">BUY</span>
                                             <span className="text-xs font-semibold text-white truncate max-w-[120px]">{s.stock_name}</span>
                                             <span className="text-[9px] text-gray-600">{s.ma_status}</span>
+                                        </div>
+                                        <span className="text-xs font-bold tabular-nums text-emerald-400">{s.confidence}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        );
+                    })()}
+                </Link>
+            )}
+
+            {/* ── US AI Chart Analysis Section ── */}
+            {usAiChart && usAiChart.signals.length > 0 && (
+                <Link
+                    to="/dashboard/us/ai-chart"
+                    className="group relative rounded-2xl border border-white/[0.07] bg-[#13151f] p-4 overflow-hidden transition-all duration-200 active:scale-[0.98] hover:border-green-500/20"
+                >
+                    <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full blur-3xl opacity-[0.06] group-hover:opacity-[0.1] transition-opacity bg-gradient-to-br from-green-400 to-emerald-500" />
+
+                    <div className="relative flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2.5">
+                            <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-green-500/10 border border-green-500/20">
+                                <i className="fas fa-robot text-lg text-green-400" />
+                            </div>
+                            <div>
+                                <h3 className="text-base font-bold text-white">US AI Chart</h3>
+                                <p className="text-[10px] text-gray-500">Gemini Vision · S&P 500 Top 100</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-green-500/10 text-green-400 tabular-nums">
+                                {usAiChart.summary.total}
+                            </span>
+                            <i className="fas fa-chevron-right text-[10px] text-gray-600 group-hover:text-green-400 transition-colors" />
+                        </div>
+                    </div>
+
+                    <div className="relative flex items-center gap-3 mb-3">
+                        <span className="flex items-center gap-1.5 text-[10px] font-semibold">
+                            <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                            <span className="text-gray-400">BUY</span>
+                            <span className="text-emerald-400 tabular-nums">{usAiChart.summary.by_signal?.BUY ?? 0}</span>
+                        </span>
+                        <span className="flex items-center gap-1.5 text-[10px] font-semibold">
+                            <span className="w-2 h-2 rounded-full bg-yellow-400" />
+                            <span className="text-gray-400">HOLD</span>
+                            <span className="text-yellow-400 tabular-nums">{usAiChart.summary.by_signal?.HOLD ?? 0}</span>
+                        </span>
+                        <span className="flex items-center gap-1.5 text-[10px] font-semibold">
+                            <span className="w-2 h-2 rounded-full bg-red-400" />
+                            <span className="text-gray-400">SELL</span>
+                            <span className="text-red-400 tabular-nums">{usAiChart.summary.by_signal?.SELL ?? 0}</span>
+                        </span>
+                        <span className="ml-auto text-[9px] text-gray-600">avg conf. {usAiChart.summary.avg_confidence}%</span>
+                    </div>
+
+                    {(() => {
+                        const buys = usAiChart.signals
+                            .filter(s => s.signal === 'BUY')
+                            .sort((a, b) => b.confidence - a.confidence)
+                            .slice(0, 5);
+                        if (buys.length === 0) return null;
+                        return (
+                            <div className="relative border-t border-white/[0.06] pt-2">
+                                {buys.map((s, i) => (
+                                    <div key={i} className="flex items-center justify-between py-1.5">
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400">BUY</span>
+                                            <span className="text-xs font-semibold text-white truncate max-w-[120px]">{s.name}</span>
+                                            <span className="text-[9px] text-gray-600">{s.ticker}</span>
                                         </div>
                                         <span className="text-xs font-bold tabular-nums text-emerald-400">{s.confidence}</span>
                                     </div>

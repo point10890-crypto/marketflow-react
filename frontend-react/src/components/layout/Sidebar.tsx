@@ -67,6 +67,7 @@ const navigation: NavItem[] = [
             { name: 'Overview', href: '/dashboard/us', color: 'bg-green-500' },
             { name: 'VCP Signals', href: '/dashboard/us/vcp', color: 'bg-rose-500' },
             { name: 'ETF Flows', href: '/dashboard/us/etf', color: 'bg-blue-600' },
+            { name: 'AI Chart', href: '/dashboard/us/ai-chart', color: 'bg-cyan-500' },
         ],
     },
     {

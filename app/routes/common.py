@@ -601,6 +601,13 @@ def get_data_status():
             'menu': 'US Portfolio',
             'updateType': 'us_market'
         },
+        {
+            'name': 'US AI Chart Analysis',
+            'path': os.path.join(BASE_DIR, 'gemini_chart_analysis_us.csv'),
+            'link': '/dashboard/us/ai-chart',
+            'menu': 'US AI Chart',
+            'updateType': 'us_ai_chart'
+        },
         # ── 4. Crypto Analytics ──
         {
             'name': 'Crypto Overview',
@@ -856,6 +863,11 @@ def update_single_data():
         'ai_chart': {
             'name': 'AI Chart Analysis (Gemini Vision)',
             'script': 'main_kr.py',
+            'args': []
+        },
+        'us_ai_chart': {
+            'name': 'US AI Chart Analysis (Gemini Vision)',
+            'script': 'main_us.py',
             'args': []
         },
     }

@@ -1934,3 +1934,116 @@ def get_us_vcp_enhanced():
     except Exception as e:
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
+
+
+# ════════════════════════════════════════════════════════════
+# AI Chart Analysis (Gemini Vision) — US
+# ════════════════════════════════════════════════════════════
+
+@us_bp.route('/ai-chart-analysis')
+def get_us_ai_chart_analysis():
+    """Gemini Vision US 차트 분석 결과 CSV → JSON"""
+    csv_path = os.path.join(BASE_DIR, 'gemini_chart_analysis_us.csv')
+    if not os.path.exists(csv_path):
+        return jsonify({"error": "US AI Chart analysis file not found", "signals": [], "summary": {}}), 404
+
+    try:
+        df = pd.read_csv(csv_path, encoding='utf-8-sig')
+        if df.empty:
+            return jsonify({"signals": [], "summary": {}, "updated_at": None})
+
+        signals = []
+        for _, row in df.iterrows():
+            reasons_raw = row.get('reasons', '')
+            reasons = [r.strip() for r in str(reasons_raw).split('|') if r.strip()] if reasons_raw else []
+            signals.append({
+                "ticker": str(row.get('ticker', '')),
+                "name": row.get('name', ''),
+                "sector": row.get('sector', ''),
+                "signal": row.get('signal', ''),
+                "confidence": int(row.get('confidence', 0)),
+                "ma_status": row.get('ma_status', ''),
+                "rsi_zone": row.get('rsi_zone', ''),
+                "volume_trend": row.get('volume_trend', ''),
+                "reasons": reasons,
+            })
+
+        signal_counts = {}
+        for s in signals:
+            sig = s['signal']
+            signal_counts[sig] = signal_counts.get(sig, 0) + 1
+
+        sector_counts = {}
+        for s in signals:
+            sec = s['sector']
+            sector_counts[sec] = sector_counts.get(sec, 0) + 1
+
+        avg_confidence = round(sum(s['confidence'] for s in signals) / len(signals), 1) if signals else 0
+
+        mtime = os.path.getmtime(csv_path)
+        updated_at = datetime.fromtimestamp(mtime).strftime('%Y-%m-%d %H:%M')
+
+        return jsonify({
+            "signals": signals,
+            "summary": {
+                "total": len(signals),
+                "by_signal": signal_counts,
+                "by_sector": sector_counts,
+                "avg_confidence": avg_confidence,
+            },
+            "updated_at": updated_at,
+        })
+    except Exception as e:
+        logger.error(f"US AI Chart Analysis load failed: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+@us_bp.route('/ai-chart-analysis/download')
+def download_us_ai_chart_analysis():
+    """US AI 차트 분석 결과 Excel 다운로드"""
+    import io
+    from flask import send_file
+    csv_path = os.path.join(BASE_DIR, 'gemini_chart_analysis_us.csv')
+    if not os.path.exists(csv_path):
+        return jsonify({"error": "US AI Chart analysis file not found"}), 404
+
+    try:
+        df = pd.read_csv(csv_path, encoding='utf-8-sig')
+        df.rename(columns={
+            'ticker': 'Ticker', 'name': 'Name', 'sector': 'Sector',
+            'signal': 'Signal', 'confidence': 'Confidence',
+            'ma_status': 'MA Status', 'rsi_zone': 'RSI Zone',
+            'volume_trend': 'Volume Trend', 'reasons': 'Reasons',
+        }, inplace=True)
+
+        buf = io.BytesIO()
+        with pd.ExcelWriter(buf, engine='openpyxl') as writer:
+            df.to_excel(writer, index=False, sheet_name='US AI Chart Analysis')
+        buf.seek(0)
+
+        today = datetime.now().strftime('%Y%m%d')
+        return send_file(
+            buf,
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            as_attachment=True,
+            download_name=f'ai_chart_analysis_us_{today}.xlsx',
+        )
+    except Exception as e:
+        logger.error(f"US AI Chart Excel generation failed: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+@us_bp.route('/ai-chart-image/<ticker>')
+def get_us_ai_chart_image(ticker: str):
+    """US 차트 이미지 PNG 서빙"""
+    from flask import send_from_directory
+    charts_dir = os.path.join(BASE_DIR, 'charts_us')
+    if not os.path.isdir(charts_dir):
+        return jsonify({"error": "charts_us directory not found"}), 404
+
+    fname = f"{ticker}.png"
+    fpath = os.path.join(charts_dir, fname)
+    if os.path.exists(fpath):
+        return send_from_directory(charts_dir, fname, mimetype='image/png')
+
+    return jsonify({"error": f"Chart image not found: {ticker}"}), 404

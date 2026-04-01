@@ -47,6 +47,7 @@ const KrAIChartAnalysisPage = lazy(() => import('@/pages/dashboard/kr/AIChartAna
 const UsOverviewPage = lazy(() => import('@/pages/dashboard/us/UsOverviewPage'));
 const UsVcpPage = lazy(() => import('@/pages/dashboard/us/UsVcpPage'));
 const UsEtfPage = lazy(() => import('@/pages/dashboard/us/UsEtfPage'));
+const UsAIChartPage = lazy(() => import('@/pages/dashboard/us/UsAIChartPage'));
 const CryptoOverviewPage = lazy(() => import('@/pages/dashboard/crypto/CryptoOverviewPage'));
 const CryptoSignalsPage = lazy(() => import('@/pages/dashboard/crypto/CryptoSignalsPage'));
 const StockAnalyzerPage = lazy(() => import('@/pages/dashboard/StockAnalyzerPage'));
@@ -126,6 +127,7 @@ export default function App() {
                         <Route path="us" element={<Suspense fallback={<LoadingFallback />}><UsOverviewPage /></Suspense>} />
                         <Route path="us/vcp" element={<Suspense fallback={<LoadingFallback />}><UsVcpPage /></Suspense>} />
                         <Route path="us/etf" element={<Suspense fallback={<LoadingFallback />}><UsEtfPage /></Suspense>} />
+                        <Route path="us/ai-chart" element={<Suspense fallback={<LoadingFallback />}><UsAIChartPage /></Suspense>} />
                         <Route path="crypto" element={<Suspense fallback={<LoadingFallback />}><CryptoOverviewPage /></Suspense>} />
                         <Route path="crypto/signals" element={<Suspense fallback={<LoadingFallback />}><CryptoSignalsPage /></Suspense>} />
                         <Route path="stock-analyzer" element={<Suspense fallback={<LoadingFallback />}><StockAnalyzerPage /></Suspense>} />

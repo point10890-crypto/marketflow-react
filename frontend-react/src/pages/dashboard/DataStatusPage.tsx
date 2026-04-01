@@ -30,7 +30,7 @@ const CATEGORY_MAP: Record<string, string> = {
     'AI Chart Analysis': 'Screener',
     // 3. US Market
     'US Smart Money': 'US', 'US Decision Signal': 'US', 'US Sector Heatmap': 'US',
-    'US Earnings': 'US', 'US Portfolio': 'US',
+    'US Earnings': 'US', 'US Portfolio': 'US', 'US AI Chart Analysis': 'US',
     // 4. Crypto
     'Crypto Overview': 'Crypto', 'Crypto Market Gate': 'Crypto', 'Crypto Briefing': 'Crypto',
     'BTC Prediction': 'Crypto', 'Crypto Risk': 'Crypto', 'Lead-Lag Analysis': 'Crypto',
@@ -62,6 +62,7 @@ const UPDATE_TYPE_MAP: Record<string, string> = {
     'Cumulative Performance': 'cumulative_perf',
     'AI Chart Analysis': 'ai_chart',
     // US Market
+    'US AI Chart Analysis': 'us_ai_chart',
     'US Smart Money': 'us_market',
     'US Decision Signal': 'us_market',
     'US Sector Heatmap': 'us_market',
