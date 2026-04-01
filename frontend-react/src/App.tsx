@@ -76,6 +76,8 @@ function ProGuard({ children }: { children: React.ReactNode }) {
     if (!user) return <>{children}</>;
     if (user.role === 'admin') return <>{children}</>;
     if (user.tier === 'pro' || user.tier === 'premium') return <>{children}</>;
+    // tier가 아직 서버에서 로드되지 않은 경우 (이전 버전 localStorage) → 차단하지 않고 로딩 표시
+    if (!user.tier) return <LoadingFallback />;
     return <Navigate to="/pricing" replace />;
 }
 

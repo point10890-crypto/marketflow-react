@@ -33,14 +33,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<AuthUser | null>(null);
     const [token, setTokenState] = useState<string | null>(null);
 
-    // Initialize from localStorage on mount
+    // Initialize from localStorage on mount, then always refresh from server
     useEffect(() => {
         if (isAuthenticated()) {
             const storedToken = getToken();
             if (storedToken) {
                 setTokenState(storedToken);
                 const storedUser = getUser();
-                if (storedUser) {
+                if (storedUser && storedUser.tier) {
                     setUser({
                         id: storedUser.id,
                         email: storedUser.email,
@@ -49,18 +49,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                         role: storedUser.role,
                         status: storedUser.status || 'approved',
                     });
-                } else {
-                    // Token exists but no saved user — fetch from server
-                    fetch(`${API_BASE}/api/auth/me`, {
-                        headers: { ...API_HEADERS, 'Authorization': `Bearer ${storedToken}` },
-                    }).then(r => r.ok ? r.json() : null).then(data => {
-                        if (data?.user) {
-                            setUserFromData(data.user);
-                        }
-                    }).catch((err) => {
-                        console.warn('[Auth] Session check failed:', err.message || err);
-                    });
                 }
+                // Always refresh from server to get latest tier/status
+                fetch(`${API_BASE}/api/auth/me`, {
+                    headers: { ...API_HEADERS, 'Authorization': `Bearer ${storedToken}` },
+                }).then(r => r.ok ? r.json() : null).then(data => {
+                    if (data?.user) {
+                        setUserFromData(data.user);
+                    }
+                }).catch((err) => {
+                    console.warn('[Auth] Session check failed:', err.message || err);
+                });
             }
         }
     }, []);
