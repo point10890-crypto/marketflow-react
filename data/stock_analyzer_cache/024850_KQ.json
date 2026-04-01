@@ -1,35 +1,35 @@
 {
-  "name": "삼천당제약",
-  "ticker": "000250.KQ",
+  "name": "HLB이노베이션",
+  "ticker": "024850.KQ",
   "result": "데이터 없음",
-  "date": "2026-04-01 23:15:13",
+  "date": "2026-04-01 23:16:06",
   "elapsed": 2.0,
   "consensus_score": null,
   "analyst_count": 0,
   "recommendation_detail": null,
   "recommendation_period": null,
   "price_targets": {
-    "current": 744000.0,
+    "current": 4650.0,
     "high": null,
     "low": null,
     "mean": null,
     "median": null
   },
-  "current_price": 744000.0,
+  "current_price": 4650.0,
   "upside_potential": null,
   "key_stats": {
-    "name": "SCD",
-    "sector": "",
-    "industry": "",
-    "market_cap": 17303861198848,
+    "name": "HLB innoVation",
+    "sector": "Technology",
+    "industry": "Semiconductor Equipment & Materials",
+    "market_cap": 671150243840,
     "pe_ratio": null,
     "forward_pe": null,
     "dividend_yield": null,
-    "beta": null,
-    "fifty_two_week_high": 1233000.0,
-    "fifty_two_week_low": 127600.0,
-    "revenue": null,
-    "profit_margin": null,
+    "beta": -0.335,
+    "fifty_two_week_high": 5820.0,
+    "fifty_two_week_low": 1460.0,
+    "revenue": 32263952384,
+    "profit_margin": -1.03418,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
@@ -38,37 +38,37 @@
   "revenue_quarters": [
     {
       "date": "2025-12",
-      "value": 66262693890
+      "value": 8160749190
     },
     {
       "date": "2025-09",
-      "value": 58024413360
+      "value": 7563507270
     },
     {
       "date": "2025-06",
-      "value": 56900188950
+      "value": 8990097230
     },
     {
       "date": "2025-03",
-      "value": 50617981540
+      "value": 7549598040
     }
   ],
   "net_income_quarters": [
     {
       "date": "2025-12",
-      "value": 5546838470
+      "value": -4392627120
     },
     {
       "date": "2025-09",
-      "value": 2572814500
+      "value": -9637368440
     },
     {
       "date": "2025-06",
-      "value": -3336061860
+      "value": -9969366460
     },
     {
       "date": "2025-03",
-      "value": 478231630
+      "value": -9367526720
     }
   ],
   "news": []

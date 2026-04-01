@@ -143,5 +143,10 @@
     "date": "2026-04-01",
     "bullish_probability": 17.4,
     "btc_price": 68475.25
+  },
+  {
+    "date": "2026-04-02",
+    "bullish_probability": 22.5,
+    "btc_price": 68536.46
   }
 ]

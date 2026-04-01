@@ -1,35 +1,35 @@
 {
-  "name": "삼천당제약",
-  "ticker": "000250.KQ",
+  "name": "와이엠티",
+  "ticker": "251370.KQ",
   "result": "데이터 없음",
-  "date": "2026-04-01 23:15:13",
+  "date": "2026-04-01 23:15:55",
   "elapsed": 2.0,
   "consensus_score": null,
   "analyst_count": 0,
   "recommendation_detail": null,
   "recommendation_period": null,
   "price_targets": {
-    "current": 744000.0,
+    "current": 16810.0,
     "high": null,
     "low": null,
     "mean": null,
     "median": null
   },
-  "current_price": 744000.0,
+  "current_price": 16810.0,
   "upside_potential": null,
   "key_stats": {
-    "name": "SCD",
-    "sector": "",
-    "industry": "",
-    "market_cap": 17303861198848,
+    "name": "YMT",
+    "sector": "Basic Materials",
+    "industry": "Chemicals",
+    "market_cap": 290358591488,
     "pe_ratio": null,
     "forward_pe": null,
     "dividend_yield": null,
-    "beta": null,
-    "fifty_two_week_high": 1233000.0,
-    "fifty_two_week_low": 127600.0,
-    "revenue": null,
-    "profit_margin": null,
+    "beta": 1.137,
+    "fifty_two_week_high": 18990.0,
+    "fifty_two_week_low": 7790.0,
+    "revenue": 142731853824,
+    "profit_margin": 0.01622,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
@@ -37,38 +37,38 @@
   "ai_analysis": null,
   "revenue_quarters": [
     {
-      "date": "2025-12",
-      "value": 66262693890
-    },
-    {
       "date": "2025-09",
-      "value": 58024413360
+      "value": 36139243970
     },
     {
       "date": "2025-06",
-      "value": 56900188950
+      "value": 35101321410
     },
     {
       "date": "2025-03",
-      "value": 50617981540
+      "value": 34960444540
+    },
+    {
+      "date": "2024-12",
+      "value": 36530836770
     }
   ],
   "net_income_quarters": [
     {
-      "date": "2025-12",
-      "value": 5546838470
-    },
-    {
       "date": "2025-09",
-      "value": 2572814500
+      "value": 882438410
     },
     {
       "date": "2025-06",
-      "value": -3336061860
+      "value": 1252045870
     },
     {
       "date": "2025-03",
-      "value": 478231630
+      "value": 620632670
+    },
+    {
+      "date": "2024-12",
+      "value": -439769010
     }
   ],
   "news": []

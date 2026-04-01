@@ -1,0 +1,117 @@
+{
+  "name": "현대제철",
+  "ticker": "004020.KS",
+  "result": "적극 매수",
+  "date": "2026-04-01 20:48:19",
+  "elapsed": 2.7,
+  "consensus_score": 4.31,
+  "analyst_count": 16,
+  "recommendation_detail": {
+    "strongBuy": 6,
+    "buy": 9,
+    "hold": 1,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 35700.0,
+    "high": 62000.0,
+    "low": 36000.0,
+    "mean": 44875.0,
+    "median": 43000.0
+  },
+  "current_price": 35700.0,
+  "upside_potential": 25.7,
+  "key_stats": {
+    "name": "HYUNDAI STEEL",
+    "sector": "Basic Materials",
+    "industry": "Steel",
+    "market_cap": 4696182882304,
+    "pe_ratio": null,
+    "forward_pe": 8.442446,
+    "dividend_yield": 1.49,
+    "beta": null,
+    "fifty_two_week_high": 50400.0,
+    "fifty_two_week_low": 21400.0,
+    "revenue": 22733236731904,
+    "profit_margin": -0.00029999999,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "현대제철(004020.KS)에 대해 16명의 애널리스트가 제시한 컨센서스 의견은 '적극 매수'입니다. 목표가 평균은 44,875원으로 현재가 35,700원 대비 25.7% 상승 여력이 있는 것으로 분석됩니다. 이는 애널리스트들이 현대제철의 향후 주가 상승 가능성을 높게 보고 있음을 시사합니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 5734389046540
+    },
+    {
+      "date": "2025-06",
+      "value": 5945554952400
+    },
+    {
+      "date": "2025-03",
+      "value": 5563465036920
+    },
+    {
+      "date": "2024-12",
+      "value": 5612679547970
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 17050273940
+    },
+    {
+      "date": "2025-06",
+      "value": 33837258070
+    },
+    {
+      "date": "2025-03",
+      "value": -55125149620
+    },
+    {
+      "date": "2024-12",
+      "value": -18147435910
+    }
+  ],
+  "news": [
+    {
+      "title": "Hyundai Steel brings in $582M Posco investment for Louisiana mill",
+      "summary": "As global automakers in the U.S. seek domestic supply, steel manufacturers are moving in. The electric arc furnace project will supply steel plates for automakers such as Hyundai and Kia.",
+      "url": "https://www.manufacturingdive.com/news/hyundai-steel-582m-posco-investment-louisiana-mill/808280/",
+      "provider": "Manufacturing Dive",
+      "pub_time": "2025-12-18T12:29:00Z"
+    },
+    {
+      "title": "BHP Group Limited (BHP) Part of Industry Consortium Assessing Development of CCUS Hubs Across Asia",
+      "summary": "BHP Group Limited (NYSE:BHP) is among the 12 Best Australian Stocks to Buy Right Now. On August 11, the company announced that it would be part of an industry consortium to assess the development of C",
+      "url": "https://finance.yahoo.com/news/bhp-group-limited-bhp-part-054922264.html",
+      "provider": "Insider Monkey",
+      "pub_time": "2025-08-17T05:49:22Z"
+    },
+    {
+      "title": "US first-quarter foreign direct investment falls sharply amid tariff uncertainty",
+      "summary": "WASHINGTON (Reuters) -Foreign direct investment into the U.S. fell sharply in the first quarter to $52.8 billion from a downwardly revised $79.9 billion in the fourth quarter of 2024, the Commerce Dep",
+      "url": "https://finance.yahoo.com/news/us-first-quarter-foreign-direct-202101962.html",
+      "provider": "Reuters",
+      "pub_time": "2025-06-24T20:21:01Z"
+    },
+    {
+      "title": "GM Korea to buy steel from Hyundai Steel, displacing Baoshan",
+      "summary": "Automaker looks to decouple its supply chain from China.",
+      "url": "https://www.just-auto.com/news/gm-korea-to-buy-steel-from-hyundai-steel-displacing-baoshan/",
+      "provider": "Just Auto",
+      "pub_time": "2025-06-17T10:57:54Z"
+    },
+    {
+      "title": "US aluminium, steel prices jump, shares drop on Trump's new tariffs",
+      "summary": "LONDON/SEOUL/SINGAPORE (Reuters) -U.S. prices of steel and aluminium spiked on Monday while shares of foreign steelmakers slumped after U.S. President Donald Trump said he would double tariffs on impo",
+      "url": "https://finance.yahoo.com/news/south-korea-minimise-impact-50-011546628.html",
+      "provider": "Reuters",
+      "pub_time": "2025-06-02T01:15:46Z"
+    }
+  ]
+}

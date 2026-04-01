@@ -2,8 +2,8 @@
   "name": "두산에너빌리티",
   "ticker": "034020.KS",
   "result": "적극 매수",
-  "date": "2026-03-24 10:53:06",
-  "elapsed": 2.3,
+  "date": "2026-04-01 23:14:54",
+  "elapsed": 2.1,
   "consensus_score": 4.44,
   "analyst_count": 18,
   "recommendation_detail": {
@@ -15,33 +15,37 @@
   },
   "recommendation_period": "0m",
   "price_targets": {
-    "current": 99800.0,
+    "current": 99600.0,
     "high": 157000.0,
     "low": 92000.0,
     "mean": 118833.336,
     "median": 115500.0
   },
-  "current_price": 99800.0,
-  "upside_potential": 19.1,
+  "current_price": 99600.0,
+  "upside_potential": 19.3,
   "key_stats": {
     "name": "Doosan Enerbility",
     "sector": "Industrials",
     "industry": "Specialty Industrial Machinery",
-    "market_cap": 63918420525056,
+    "market_cap": 63790330675200,
     "pe_ratio": null,
-    "forward_pe": 92.27297,
+    "forward_pe": 92.08806,
     "dividend_yield": null,
     "beta": 1.866,
     "fifty_two_week_high": 112100.0,
     "fifty_two_week_low": 19960.0,
-    "revenue": 16787076808704,
-    "profit_margin": -0.00607,
+    "revenue": 17057875755008,
+    "profit_margin": 0.00497,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
   "source": "yfinance",
-  "ai_analysis": "두산에너빌리티(034020.KS)는 현재 애널리스트 컨센서스가 '적극 매수' 의견으로 긍정적입니다. 18명의 애널리스트가 참여한 컨센서스 점수는 5.0 만점에 4.44점을 기록했습니다. 목표가 평균은 118,833 KRW로, 현재 주가 대비 19.1%의 상승 여력이 있는 것으로 분석됩니다.",
+  "ai_analysis": "두산에너빌리티(034020.KS)는 현재 99,600 KRW에 거래되고 있으며, 애널리스트 컨센서스는 18명 참여 기준 '적극 매수' 의견입니다. 목표가 평균은 118,833 KRW으로, 현재 주가 대비 약 19.3%의 상승 여력이 있는 것으로 분석됩니다. 이는 애널리스트들이 긍정적인 전망을 제시하고 있음을 시사합니다.",
   "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 4859931000000
+    },
     {
       "date": "2025-09",
       "value": 3880350000000
@@ -53,13 +57,13 @@
     {
       "date": "2025-03",
       "value": 3748574000000
-    },
-    {
-      "date": "2024-12",
-      "value": 4589132030310
     }
   ],
   "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 72773000000
+    },
     {
       "date": "2025-09",
       "value": -50078000000
@@ -71,10 +75,6 @@
     {
       "date": "2025-03",
       "value": -68860000000
-    },
-    {
-      "date": "2024-12",
-      "value": -113940665370
     }
   ],
   "news": [
