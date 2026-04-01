@@ -175,6 +175,9 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                                     <i className={`fas ${item.icon} w-5 text-center text-base ${item.color}`}></i>
                                 )}
                                 <span>{item.name}</span>
+                                {userTier === 'free' && item.href !== '/dashboard' && !item.glow && (
+                                    <i className="fas fa-lock text-[10px] text-gray-600 ml-auto" />
+                                )}
                                 {item.glow && (
                                     <span className="ml-auto text-[8px] font-bold tracking-wider px-1.5 py-0.5 rounded-full bg-pink-500/15 text-pink-400 border border-pink-500/20 animate-pulse" style={{ animationDuration: '2s' }}>
                                         AI
@@ -221,15 +224,15 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                             Account
                         </div>
                         <Link
-                            to="/account"
+                            to="/dashboard/account"
                             onClick={onNavigate}
-                            className={`flex items-center gap-3.5 px-3.5 py-3 rounded-xl text-[15px] font-medium transition-all ${pathname === '/account'
+                            className={`flex items-center gap-3.5 px-3.5 py-3 rounded-xl text-[15px] font-medium transition-all ${pathname === '/dashboard/account'
                                 ? 'text-white bg-white/5 border border-white/5'
                                 : 'text-gray-400 hover:text-white hover:bg-white/5 border border-transparent'
                                 }`}
                         >
                             <i className="fas fa-user-circle w-5 text-center text-base text-blue-400"></i>
-                            <span>My Account</span>
+                            <span>내 계정</span>
                         </Link>
                         {userTier === 'free' && (
                             <Link

@@ -53,6 +53,7 @@ const CryptoSignalsPage = lazy(() => import('@/pages/dashboard/crypto/CryptoSign
 const StockAnalyzerPage = lazy(() => import('@/pages/dashboard/StockAnalyzerPage'));
 const WaveOverviewPage = lazy(() => import('@/pages/dashboard/wave/WaveOverviewPage'));
 const BriefingPortalPage = lazy(() => import('@/pages/dashboard/BriefingPortalPage'));
+const AccountPage = lazy(() => import('@/pages/AccountPage'));
 const DataStatusPage = lazy(() => import('@/pages/dashboard/DataStatusPage'));
 const AdminPage = lazy(() => import('@/pages/admin/AdminPage'));
 const AdminUsersPage = lazy(() => import('@/pages/admin/AdminUsersPage'));
@@ -68,6 +69,14 @@ function ApprovedGuard({ children }: { children: React.ReactNode }) {
     // Pending/rejected/suspended → redirect to approval page
     if (user.status !== 'approved') return <Navigate to="/pending-approval" replace />;
     return <>{children}</>;
+}
+
+function ProGuard({ children }: { children: React.ReactNode }) {
+    const { user } = useAuth();
+    if (!user) return <>{children}</>;
+    if (user.role === 'admin') return <>{children}</>;
+    if (user.tier === 'pro' || user.tier === 'premium') return <>{children}</>;
+    return <Navigate to="/pricing" replace />;
 }
 
 function AdminGuard({ children }: { children: React.ReactNode }) {
@@ -115,24 +124,25 @@ export default function App() {
                     {/* Dashboard routes (ApprovedGuard blocks pending users) */}
                     <Route path="/dashboard" element={<ErrorBoundary><ApprovedGuard><DashboardLayout /></ApprovedGuard></ErrorBoundary>}>
                         <Route index element={<Suspense fallback={<LoadingFallback />}><SummaryPage /></Suspense>} />
-                        <Route path="vcp-enhanced" element={<Suspense fallback={<LoadingFallback />}><VcpEnhancedPage /></Suspense>} />
-                        <Route path="kr" element={<Suspense fallback={<LoadingFallback />}><KrOverviewPage /></Suspense>} />
-                        <Route path="kr/vcp" element={<Suspense fallback={<LoadingFallback />}><KrVcpPage /></Suspense>} />
-                        <Route path="kr/closing-bet" element={<Suspense fallback={<LoadingFallback />}><KrClosingBetPage /></Suspense>} />
-                        <Route path="kr/closing-bet/history" element={<Suspense fallback={<LoadingFallback />}><KrClosingBetHistoryPage /></Suspense>} />
-                        <Route path="kr/leading-stocks" element={<Suspense fallback={<LoadingFallback />}><KrLeadingStocksPage /></Suspense>} />
-                        <Route path="kr/chatbot" element={<Suspense fallback={<LoadingFallback />}><KrChatbotPage /></Suspense>} />
-                        <Route path="kr/track-record" element={<Suspense fallback={<LoadingFallback />}><KrTrackRecordPage /></Suspense>} />
-                        <Route path="kr/ai-chart" element={<Suspense fallback={<LoadingFallback />}><KrAIChartAnalysisPage /></Suspense>} />
-                        <Route path="us" element={<Suspense fallback={<LoadingFallback />}><UsOverviewPage /></Suspense>} />
-                        <Route path="us/vcp" element={<Suspense fallback={<LoadingFallback />}><UsVcpPage /></Suspense>} />
-                        <Route path="us/etf" element={<Suspense fallback={<LoadingFallback />}><UsEtfPage /></Suspense>} />
-                        <Route path="us/ai-chart" element={<Suspense fallback={<LoadingFallback />}><UsAIChartPage /></Suspense>} />
-                        <Route path="crypto" element={<Suspense fallback={<LoadingFallback />}><CryptoOverviewPage /></Suspense>} />
-                        <Route path="crypto/signals" element={<Suspense fallback={<LoadingFallback />}><CryptoSignalsPage /></Suspense>} />
-                        <Route path="stock-analyzer" element={<Suspense fallback={<LoadingFallback />}><StockAnalyzerPage /></Suspense>} />
-                        <Route path="wave" element={<Suspense fallback={<LoadingFallback />}><WaveOverviewPage /></Suspense>} />
-                        <Route path="briefing" element={<Suspense fallback={<LoadingFallback />}><BriefingPortalPage /></Suspense>} />
+                        <Route path="account" element={<Suspense fallback={<LoadingFallback />}><AccountPage /></Suspense>} />
+                        <Route path="vcp-enhanced" element={<ProGuard><Suspense fallback={<LoadingFallback />}><VcpEnhancedPage /></Suspense></ProGuard>} />
+                        <Route path="kr" element={<ProGuard><Suspense fallback={<LoadingFallback />}><KrOverviewPage /></Suspense></ProGuard>} />
+                        <Route path="kr/vcp" element={<ProGuard><Suspense fallback={<LoadingFallback />}><KrVcpPage /></Suspense></ProGuard>} />
+                        <Route path="kr/closing-bet" element={<ProGuard><Suspense fallback={<LoadingFallback />}><KrClosingBetPage /></Suspense></ProGuard>} />
+                        <Route path="kr/closing-bet/history" element={<ProGuard><Suspense fallback={<LoadingFallback />}><KrClosingBetHistoryPage /></Suspense></ProGuard>} />
+                        <Route path="kr/leading-stocks" element={<ProGuard><Suspense fallback={<LoadingFallback />}><KrLeadingStocksPage /></Suspense></ProGuard>} />
+                        <Route path="kr/chatbot" element={<ProGuard><Suspense fallback={<LoadingFallback />}><KrChatbotPage /></Suspense></ProGuard>} />
+                        <Route path="kr/track-record" element={<ProGuard><Suspense fallback={<LoadingFallback />}><KrTrackRecordPage /></Suspense></ProGuard>} />
+                        <Route path="kr/ai-chart" element={<ProGuard><Suspense fallback={<LoadingFallback />}><KrAIChartAnalysisPage /></Suspense></ProGuard>} />
+                        <Route path="us" element={<ProGuard><Suspense fallback={<LoadingFallback />}><UsOverviewPage /></Suspense></ProGuard>} />
+                        <Route path="us/vcp" element={<ProGuard><Suspense fallback={<LoadingFallback />}><UsVcpPage /></Suspense></ProGuard>} />
+                        <Route path="us/etf" element={<ProGuard><Suspense fallback={<LoadingFallback />}><UsEtfPage /></Suspense></ProGuard>} />
+                        <Route path="us/ai-chart" element={<ProGuard><Suspense fallback={<LoadingFallback />}><UsAIChartPage /></Suspense></ProGuard>} />
+                        <Route path="crypto" element={<ProGuard><Suspense fallback={<LoadingFallback />}><CryptoOverviewPage /></Suspense></ProGuard>} />
+                        <Route path="crypto/signals" element={<ProGuard><Suspense fallback={<LoadingFallback />}><CryptoSignalsPage /></Suspense></ProGuard>} />
+                        <Route path="stock-analyzer" element={<ProGuard><Suspense fallback={<LoadingFallback />}><StockAnalyzerPage /></Suspense></ProGuard>} />
+                        <Route path="wave" element={<ProGuard><Suspense fallback={<LoadingFallback />}><WaveOverviewPage /></Suspense></ProGuard>} />
+                        <Route path="briefing" element={<ProGuard><Suspense fallback={<LoadingFallback />}><BriefingPortalPage /></Suspense></ProGuard>} />
                     </Route>
 
                     {/* Admin routes */}

@@ -1,4 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 
 const tabs = [
     { name: 'Summary', href: '/dashboard', icon: 'fa-tachometer-alt', color: 'purple' },
@@ -29,6 +30,8 @@ const activeDots: Record<string, string> = {
 export default function BottomTabBar() {
     const location = useLocation();
     const pathname = location.pathname ?? '';
+    const { user } = useAuth();
+    const isFree = !!user && user.tier !== 'pro' && user.tier !== 'premium' && user.role !== 'admin';
 
     return (
         <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 mobile-safe-bottom">
@@ -49,7 +52,12 @@ export default function BottomTabBar() {
                                         : 'text-zinc-600'
                                 }`}
                             >
-                                <i className={`fas ${tab.icon} text-base`}></i>
+                                <span className="relative">
+                                    <i className={`fas ${tab.icon} text-base`}></i>
+                                    {isFree && tab.href !== '/dashboard' && (
+                                        <i className="fas fa-lock absolute -top-1 -right-2 text-[7px] text-gray-600" />
+                                    )}
+                                </span>
                                 <span className="text-[9px] font-bold tracking-wide">{tab.name}</span>
                                 {isActive && (
                                     <span className={`w-1 h-1 rounded-full ${activeDots[tab.color]} mt-0.5`}></span>
