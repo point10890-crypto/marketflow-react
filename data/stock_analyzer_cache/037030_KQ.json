@@ -1,0 +1,75 @@
+{
+  "name": "파워넷",
+  "ticker": "037030.KQ",
+  "result": "데이터 없음",
+  "date": "2026-04-01 13:44:07",
+  "elapsed": 2.6,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 6020.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 6030.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "POWERNET",
+    "sector": "Technology",
+    "industry": "Electronic Components",
+    "market_cap": 151669587968,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": null,
+    "beta": 0.957,
+    "fifty_two_week_high": 6780.0,
+    "fifty_two_week_low": 1927.0,
+    "revenue": 447036915712,
+    "profit_margin": 0.03398,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 100518382040
+    },
+    {
+      "date": "2025-06",
+      "value": 116611557000
+    },
+    {
+      "date": "2025-03",
+      "value": 105993135270
+    },
+    {
+      "date": "2024-12",
+      "value": 96334191250
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 4972269470
+    },
+    {
+      "date": "2025-06",
+      "value": 5616092070
+    },
+    {
+      "date": "2025-03",
+      "value": 3832553270
+    },
+    {
+      "date": "2024-12",
+      "value": -5652624330
+    }
+  ],
+  "news": []
+}

@@ -1,0 +1,75 @@
+{
+  "name": "세아제강지주",
+  "ticker": "003030.KS",
+  "result": "데이터 없음",
+  "date": "2026-04-01 14:36:06",
+  "elapsed": 2.3,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 214500.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 214500.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "SeAH Steel Holdings",
+    "sector": "Basic Materials",
+    "industry": "Steel",
+    "market_cap": 866678865920,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": 0.94,
+    "beta": 0.707,
+    "fifty_two_week_high": 247000.0,
+    "fifty_two_week_low": 112000.0,
+    "revenue": 3759574876160,
+    "profit_margin": 0.01683,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 868554388320
+    },
+    {
+      "date": "2025-09",
+      "value": 923121767070
+    },
+    {
+      "date": "2025-06",
+      "value": 1020890959670
+    },
+    {
+      "date": "2025-03",
+      "value": 947007867710
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": -32095050490
+    },
+    {
+      "date": "2025-09",
+      "value": 13634021440
+    },
+    {
+      "date": "2025-06",
+      "value": 35345363770
+    },
+    {
+      "date": "2025-03",
+      "value": 46374751820
+    }
+  ],
+  "news": []
+}

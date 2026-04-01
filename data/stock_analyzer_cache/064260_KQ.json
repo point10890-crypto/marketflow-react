@@ -2,8 +2,8 @@
   "name": "다날",
   "ticker": "064260.KQ",
   "result": "데이터 없음",
-  "date": "2026-03-31 19:14:33",
-  "elapsed": 2.3,
+  "date": "2026-04-01 14:13:45",
+  "elapsed": 9.6,
   "consensus_score": null,
   "analyst_count": 0,
   "recommendation_detail": {
@@ -15,21 +15,21 @@
   },
   "recommendation_period": "0m",
   "price_targets": {
-    "current": 5960.0,
+    "current": 6210.0,
     "high": null,
     "low": null,
     "mean": null,
     "median": null
   },
-  "current_price": 5960.0,
+  "current_price": 6210.0,
   "upside_potential": null,
   "key_stats": {
     "name": "DANAL",
     "sector": "Technology",
     "industry": "Software - Infrastructure",
-    "market_cap": 398086242304,
+    "market_cap": 414784520192,
     "pe_ratio": null,
-    "forward_pe": 283.8095,
+    "forward_pe": 295.7143,
     "dividend_yield": null,
     "beta": 1.031,
     "fifty_two_week_high": 11450.0,
@@ -43,6 +43,10 @@
   "ai_analysis": null,
   "revenue_quarters": [
     {
+      "date": "2025-12",
+      "value": 55870953100
+    },
+    {
       "date": "2025-09",
       "value": 56298947930
     },
@@ -53,13 +57,13 @@
     {
       "date": "2025-03",
       "value": 56667839930
-    },
-    {
-      "date": "2024-12",
-      "value": 56497257530
     }
   ],
   "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": -9542830570
+    },
     {
       "date": "2025-09",
       "value": -35728680780
@@ -71,10 +75,6 @@
     {
       "date": "2025-03",
       "value": -1659260760
-    },
-    {
-      "date": "2024-12",
-      "value": 10387909630
     }
   ],
   "news": [

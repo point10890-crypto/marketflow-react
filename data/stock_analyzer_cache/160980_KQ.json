@@ -1,0 +1,75 @@
+{
+  "name": "싸이맥스",
+  "ticker": "160980.KQ",
+  "result": "데이터 없음",
+  "date": "2026-04-01 14:35:39",
+  "elapsed": 2.1,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 27100.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 27100.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "CYMECHS",
+    "sector": "Technology",
+    "industry": "Semiconductor Equipment & Materials",
+    "market_cap": 296046985216,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": 1.73,
+    "beta": 1.313,
+    "fifty_two_week_high": 27400.0,
+    "fifty_two_week_low": 9510.0,
+    "revenue": 180269498368,
+    "profit_margin": 0.1514,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 41194582880
+    },
+    {
+      "date": "2025-06",
+      "value": 48303379670
+    },
+    {
+      "date": "2025-03",
+      "value": 45817748440
+    },
+    {
+      "date": "2024-12",
+      "value": 44953791750
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 4212011700
+    },
+    {
+      "date": "2025-06",
+      "value": 5605735030
+    },
+    {
+      "date": "2025-03",
+      "value": 5557553140
+    },
+    {
+      "date": "2024-12",
+      "value": 11917429820
+    }
+  ],
+  "news": []
+}

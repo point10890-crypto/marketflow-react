@@ -2,8 +2,8 @@
   "name": "HD현대중공업",
   "ticker": "329180.KS",
   "result": "매수",
-  "date": "2026-03-26 10:50:38",
-  "elapsed": 6.5,
+  "date": "2026-04-01 12:37:25",
+  "elapsed": 2.3,
   "consensus_score": 4.17,
   "analyst_count": 23,
   "recommendation_detail": {
@@ -15,33 +15,37 @@
   },
   "recommendation_period": "0m",
   "price_targets": {
-    "current": 523000.0,
+    "current": 443000.0,
     "high": 910000.0,
     "low": 350000.0,
     "mean": 772391.3,
     "median": 800000.0
   },
-  "current_price": 523000.0,
-  "upside_potential": 47.7,
+  "current_price": 443000.0,
+  "upside_potential": 74.4,
   "key_stats": {
     "name": "HD HYUNDAI HEAVY INDUSTRIES",
     "sector": "Industrials",
     "industry": "Aerospace & Defense",
-    "market_cap": 54894719401984,
+    "market_cap": 46497823457280,
     "pe_ratio": null,
-    "forward_pe": 16.783583,
-    "dividend_yield": 1.48,
-    "beta": null,
+    "forward_pe": 14.216304,
+    "dividend_yield": 1.67,
+    "beta": 0.592,
     "fifty_two_week_high": 652000.0,
-    "fifty_two_week_low": 271500.0,
+    "fifty_two_week_low": 275500.0,
     "revenue": 17580632834048,
     "profit_margin": 0.08051,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
   "source": "yfinance",
-  "ai_analysis": "HD현대중공업(329180.KS)에 대해 23명의 애널리스트가 제시한 컨센서스 의견은 '매수'입니다. 목표가 평균은 772,391원으로, 현재가 523,000원 대비 47.7%의 상승 여력이 있는 것으로 분석됩니다. 투자 결정은 개인의 판단에 따라 신중하게 이루어져야 합니다.",
+  "ai_analysis": "HD현대중공업(329180.KS)에 대해 23명의 애널리스트가 제시한 컨센서스는 '매수' 의견입니다. 목표가 평균은 772,391원으로, 현재가 443,000원 대비 74.4% 상승 여력이 있는 것으로 분석됩니다. 이는 전반적으로 긍정적인 시장 전망을 반영합니다.",
   "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 5193094476000
+    },
     {
       "date": "2025-09",
       "value": 4417898203000
@@ -53,13 +57,13 @@
     {
       "date": "2025-03",
       "value": 3822515741000
-    },
-    {
-      "date": "2024-12",
-      "value": 4005550308000
     }
   ],
   "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 489552474000
+    },
     {
       "date": "2025-09",
       "value": 430790601000
@@ -71,10 +75,6 @@
     {
       "date": "2025-03",
       "value": 284230404000
-    },
-    {
-      "date": "2024-12",
-      "value": 366577813000
     }
   ],
   "news": [
