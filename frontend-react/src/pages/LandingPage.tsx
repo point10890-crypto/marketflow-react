@@ -97,7 +97,7 @@ export default function LandingPage() {
 
                     {/* Pricing Preview */}
                     <div className="mt-14 text-center">
-                        <div className="inline-flex flex-col sm:flex-row items-center gap-4 sm:gap-8 p-6 sm:p-8 rounded-2xl border border-amber-500/20 bg-[#13151f]">
+                        <div className="inline-flex flex-col sm:flex-row items-center gap-4 sm:gap-6 p-6 sm:p-8 rounded-2xl border border-amber-500/20 bg-[#13151f]">
                             <div>
                                 <div className="text-gray-500 text-xs mb-1">Free</div>
                                 <div className="text-2xl font-black text-white">무료</div>
@@ -109,6 +109,13 @@ export default function LandingPage() {
                                 <div className="text-amber-400 text-xs mb-1 font-bold">Pro <i className="fas fa-crown text-[10px]" /></div>
                                 <div className="text-2xl font-black text-white">50,000<span className="text-base text-gray-400">원/월</span></div>
                                 <div className="text-gray-600 text-xs mt-1">전체 기능 이용</div>
+                            </div>
+                            <div className="hidden sm:block w-px h-16 bg-white/10" />
+                            <div className="sm:hidden w-24 h-px bg-white/10" />
+                            <div>
+                                <div className="text-purple-400 text-xs mb-1 font-bold">Ultra Pro <i className="fas fa-gem text-[10px]" /></div>
+                                <div className="text-2xl font-black text-white">1,200,000<span className="text-base text-gray-400">원</span></div>
+                                <div className="text-gray-600 text-xs mt-1">평생 무기한 이용</div>
                             </div>
                         </div>
 

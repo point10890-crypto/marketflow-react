@@ -95,7 +95,11 @@ export default function AccountPage() {
                     <div className="p-4 rounded-xl bg-white/[0.03] border border-white/[0.06]">
                         <span className="text-[10px] text-gray-500 uppercase tracking-wider">플랜</span>
                         <div className="flex items-center gap-2 mt-1">
-                            {isPro ? (
+                            {user.tier === 'premium' ? (
+                                <span className="text-purple-400 font-bold flex items-center gap-1.5">
+                                    <i className="fas fa-gem text-xs" /> Ultra Pro
+                                </span>
+                            ) : isPro ? (
                                 <span className="text-amber-400 font-bold flex items-center gap-1.5">
                                     <i className="fas fa-crown text-xs" /> Pro
                                 </span>
@@ -213,14 +217,16 @@ export default function AccountPage() {
 
             {/* Pro Status */}
             {isPro && (
-                <div className="p-6 rounded-2xl border border-green-500/20 bg-[#13151f]">
+                <div className={`p-6 rounded-2xl border bg-[#13151f] ${user.tier === 'premium' ? 'border-purple-500/20' : 'border-green-500/20'}`}>
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center">
-                            <i className="fas fa-check-circle text-green-400" />
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${user.tier === 'premium' ? 'bg-purple-500/10' : 'bg-green-500/10'}`}>
+                            <i className={`fas ${user.tier === 'premium' ? 'fa-gem text-purple-400' : 'fa-check-circle text-green-400'}`} />
                         </div>
                         <div>
-                            <h3 className="text-white font-bold">Pro 플랜 이용 중</h3>
-                            <p className="text-gray-500 text-xs">모든 대시보드 기능을 이용하실 수 있습니다</p>
+                            <h3 className="text-white font-bold">{user.tier === 'premium' ? 'Ultra Pro 플랜 이용 중' : 'Pro 플랜 이용 중'}</h3>
+                            <p className="text-gray-500 text-xs">
+                                {user.tier === 'premium' ? '평생 무기한 이용 · 모든 기능 + 우선 지원' : '모든 대시보드 기능을 이용하실 수 있습니다'}
+                            </p>
                         </div>
                     </div>
                 </div>

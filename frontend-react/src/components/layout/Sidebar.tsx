@@ -332,13 +332,13 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                         <div className="flex flex-col flex-1 min-w-0">
                             <span className="text-sm font-bold text-white truncate">{userName}</span>
                             <span className={`text-[11px] ${userTier === 'pro' || userTier === 'premium' ? 'text-purple-400' : 'text-gray-500'}`}>
-                                {userTier === 'pro' ? 'Pro Plan' : userTier === 'premium' ? 'Premium' : 'Free Plan'}
+                                {userTier === 'pro' ? 'Pro Plan' : userTier === 'premium' ? 'Ultra Pro' : 'Free Plan'}
                             </span>
                         </div>
                         <div className="flex items-center gap-1.5">
                             {userTier !== 'free' && (
                                 <span className="text-[11px] px-2.5 py-1 rounded-md bg-purple-500/10 text-purple-400 font-bold">
-                                    {userTier === 'pro' ? 'Pro' : 'Premium'}
+                                    {userTier === 'pro' ? 'Pro' : 'Ultra Pro'}
                                 </span>
                             )}
                             <button

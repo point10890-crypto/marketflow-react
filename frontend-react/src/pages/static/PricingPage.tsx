@@ -7,31 +7,32 @@ export default function PricingPage() {
     const { user, token } = useAuth();
     const navigate = useNavigate();
     const userTier = user?.tier || 'free';
-    const [requesting, setRequesting] = useState(false);
+    const [requesting, setRequesting] = useState<string | null>(null);
     const [showBank, setShowBank] = useState(false);
-    const [requestSent, setRequestSent] = useState(false);
+    const [selectedPlan, setSelectedPlan] = useState<'pro' | 'premium' | null>(null);
 
-    const handleUpgrade = async () => {
+    const handleUpgrade = async (tier: 'pro' | 'premium') => {
         if (!user || !token) {
             navigate('/signup');
             return;
         }
-        if (userTier === 'pro' || userTier === 'premium') return;
+        if (userTier === tier || userTier === 'premium') return;
 
-        setRequesting(true);
+        setRequesting(tier);
         try {
-            await subscriptionAPI.requestUpgrade('pro', token);
-            setRequestSent(true);
+            await subscriptionAPI.requestUpgrade(tier, token);
+            setSelectedPlan(tier);
             setShowBank(true);
         } catch (err: any) {
             const msg = err?.message || '';
             if (msg.includes('pending')) {
+                setSelectedPlan(tier);
                 setShowBank(true);
             } else {
                 alert('구독 신청 중 오류가 발생했습니다.');
             }
         } finally {
-            setRequesting(false);
+            setRequesting(null);
         }
     };
 
@@ -54,6 +55,12 @@ export default function PricingPage() {
         '관심종목 분석 챗봇',
     ];
 
+    const isPro = userTier === 'pro';
+    const isPremium = userTier === 'premium';
+    const isProOrAbove = isPro || isPremium;
+
+    const bankAmount = selectedPlan === 'premium' ? '1,200,000원 (1회)' : '50,000원 / 월';
+
     return (
         <div className="fixed inset-0 bg-[#09090b] flex flex-col items-center overflow-y-auto p-6 sm:p-8">
             {/* Header */}
@@ -70,22 +77,22 @@ export default function PricingPage() {
                 </p>
             </div>
 
-            {/* Plans Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl w-full">
+            {/* Plans Grid — 3 columns */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-5xl w-full">
                 {/* Free Plan */}
-                <div className="p-6 sm:p-8 rounded-2xl border border-white/10 bg-[#1c1c1e]">
-                    <h3 className="text-2xl font-bold text-white mb-1">Free</h3>
-                    <div className="flex items-baseline gap-1 mb-6">
-                        <span className="text-4xl font-black text-white">무료</span>
+                <div className="p-6 rounded-2xl border border-white/10 bg-[#1c1c1e]">
+                    <h3 className="text-xl font-bold text-white mb-1">Free</h3>
+                    <div className="flex items-baseline gap-1 mb-5">
+                        <span className="text-3xl font-black text-white">무료</span>
                     </div>
-                    <ul className="space-y-3 mb-8">
+                    <ul className="space-y-2.5 mb-6">
                         {freeFeatures.map((f) => (
                             <li key={f} className="flex items-start gap-2 text-sm text-gray-300">
                                 <i className="fas fa-check text-green-400 text-xs mt-1 shrink-0" />
                                 {f}
                             </li>
                         ))}
-                        {proFeatures.slice(1).map((m) => (
+                        {proFeatures.slice(1, 5).map((m) => (
                             <li key={m} className="flex items-start gap-2 text-sm text-gray-600">
                                 <i className="fas fa-lock text-gray-700 text-xs mt-1 shrink-0" />
                                 {m}
@@ -98,16 +105,16 @@ export default function PricingPage() {
                 </div>
 
                 {/* Pro Plan */}
-                <div className="p-6 sm:p-8 rounded-2xl border border-amber-500/30 bg-[#1c1c1e] ring-1 ring-amber-500/20 relative">
-                    <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-amber-500/10 text-amber-400 text-xs font-bold mb-4">
+                <div className="p-6 rounded-2xl border border-amber-500/30 bg-[#1c1c1e] ring-1 ring-amber-500/20 relative">
+                    <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-amber-500/10 text-amber-400 text-xs font-bold mb-3">
                         <i className="fas fa-crown" /> 추천
                     </div>
-                    <h3 className="text-2xl font-bold text-white mb-1">Pro</h3>
-                    <div className="flex items-baseline gap-1 mb-6">
-                        <span className="text-4xl font-black text-white">50,000</span>
-                        <span className="text-gray-400 text-lg">원/월</span>
+                    <h3 className="text-xl font-bold text-white mb-1">Pro</h3>
+                    <div className="flex items-baseline gap-1 mb-5">
+                        <span className="text-3xl font-black text-white">50,000</span>
+                        <span className="text-gray-400">원/월</span>
                     </div>
-                    <ul className="space-y-3 mb-8">
+                    <ul className="space-y-2.5 mb-6">
                         {proFeatures.map((f) => (
                             <li key={f} className="flex items-start gap-2 text-sm text-gray-300">
                                 <i className="fas fa-check text-amber-400 text-xs mt-1 shrink-0" />
@@ -116,17 +123,61 @@ export default function PricingPage() {
                         ))}
                     </ul>
 
-                    {userTier === 'pro' || userTier === 'premium' ? (
+                    {isProOrAbove ? (
                         <div className="w-full py-3 rounded-xl bg-amber-500/10 text-amber-400 font-bold text-center text-sm">
-                            <i className="fas fa-check-circle mr-2" />현재 플랜
+                            <i className="fas fa-check-circle mr-2" />{isPremium ? '포함됨' : '현재 플랜'}
                         </div>
                     ) : (
                         <button
-                            onClick={handleUpgrade}
-                            disabled={requesting}
+                            onClick={() => handleUpgrade('pro')}
+                            disabled={requesting !== null}
                             className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-black font-bold transition-all text-sm disabled:opacity-50"
                         >
-                            {requesting ? '처리 중...' : requestSent ? '신청 완료!' : 'Pro 구독 신청'}
+                            {requesting === 'pro' ? '처리 중...' : 'Pro 구독 신청'}
+                        </button>
+                    )}
+                </div>
+
+                {/* Ultra Pro Plan */}
+                <div className="p-6 rounded-2xl border border-purple-500/30 bg-[#1c1c1e] ring-1 ring-purple-500/20 relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-purple-500/10 to-transparent rounded-bl-full" />
+                    <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-purple-500/10 text-purple-400 text-xs font-bold mb-3">
+                        <i className="fas fa-gem" /> 평생 이용
+                    </div>
+                    <h3 className="text-xl font-bold text-white mb-1">Ultra Pro</h3>
+                    <div className="flex items-baseline gap-1 mb-1">
+                        <span className="text-3xl font-black text-white">1,200,000</span>
+                        <span className="text-gray-400">원</span>
+                    </div>
+                    <p className="text-purple-400/70 text-xs font-semibold mb-5">1회 결제 · 무기한 이용</p>
+                    <ul className="space-y-2.5 mb-6">
+                        {proFeatures.map((f) => (
+                            <li key={f} className="flex items-start gap-2 text-sm text-gray-300">
+                                <i className="fas fa-check text-purple-400 text-xs mt-1 shrink-0" />
+                                {f}
+                            </li>
+                        ))}
+                        <li className="flex items-start gap-2 text-sm text-purple-300 font-semibold">
+                            <i className="fas fa-infinity text-purple-400 text-xs mt-1 shrink-0" />
+                            평생 무료 업데이트
+                        </li>
+                        <li className="flex items-start gap-2 text-sm text-purple-300 font-semibold">
+                            <i className="fas fa-headset text-purple-400 text-xs mt-1 shrink-0" />
+                            우선 고객 지원
+                        </li>
+                    </ul>
+
+                    {isPremium ? (
+                        <div className="w-full py-3 rounded-xl bg-purple-500/10 text-purple-400 font-bold text-center text-sm">
+                            <i className="fas fa-gem mr-2" />현재 플랜
+                        </div>
+                    ) : (
+                        <button
+                            onClick={() => handleUpgrade('premium')}
+                            disabled={requesting !== null}
+                            className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-500 to-fuchsia-500 hover:from-purple-400 hover:to-fuchsia-400 text-white font-bold transition-all text-sm disabled:opacity-50"
+                        >
+                            {requesting === 'premium' ? '처리 중...' : 'Ultra Pro 구매'}
                         </button>
                     )}
                 </div>
@@ -134,7 +185,7 @@ export default function PricingPage() {
 
             {/* Bank Transfer Info */}
             {showBank && (
-                <div className="mt-8 max-w-4xl w-full p-6 rounded-2xl border border-amber-500/20 bg-[#1c1c1e] animate-in fade-in duration-300">
+                <div className="mt-8 max-w-5xl w-full p-6 rounded-2xl border border-amber-500/20 bg-[#1c1c1e]">
                     <div className="flex items-center gap-3 mb-4">
                         <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center">
                             <i className="fas fa-university text-amber-400" />
@@ -159,12 +210,12 @@ export default function PricingPage() {
                         </div>
                         <div className="p-4 rounded-xl bg-white/[0.03] border border-white/[0.06]">
                             <span className="text-[10px] text-gray-500 uppercase tracking-wider">금액</span>
-                            <p className="text-amber-400 font-bold mt-1">50,000원 / 월</p>
+                            <p className={`font-bold mt-1 ${selectedPlan === 'premium' ? 'text-purple-400' : 'text-amber-400'}`}>{bankAmount}</p>
                         </div>
                     </div>
                     <p className="text-gray-500 text-xs mt-4">
                         <i className="fas fa-info-circle mr-1" />
-                        입금자명을 가입 시 사용한 이름과 동일하게 입력해 주세요. 확인 후 관리자가 Pro 플랜을 활성화합니다.
+                        입금자명을 가입 시 사용한 이름과 동일하게 입력해 주세요. 확인 후 관리자가 플랜을 활성화합니다.
                     </p>
                 </div>
             )}
@@ -179,7 +230,7 @@ export default function PricingPage() {
             )}
 
             {/* Footer */}
-            <div className="mt-12 flex items-center gap-6">
+            <div className="mt-12 mb-8 flex items-center gap-6">
                 <Link to="/dashboard" className="text-gray-500 hover:text-white transition-colors text-sm">
                     <i className="fas fa-arrow-left mr-2" />대시보드
                 </Link>
