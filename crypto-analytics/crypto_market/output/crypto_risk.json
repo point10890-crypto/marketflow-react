@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-04-03T08:00:38.800414",
+  "timestamp": "2026-04-03T08:00:46.294982",
   "portfolio_summary": {
     "total_coins": 13,
     "portfolio_var_95_1d": -4.34,
@@ -301,17 +301,13 @@
     }
   },
   "concentration": {
-    "btc_weight_pct": 56.09,
-    "eth_weight_pct": 10.4,
-    "top3_weight_pct": 74.2,
-    "top3_coins": [
-      "BTC",
-      "ETH",
-      "USDT"
-    ],
-    "total_market_cap_usd": 2390991820621.0,
+    "btc_weight_pct": 0,
+    "eth_weight_pct": 0,
+    "top3_weight_pct": 0,
+    "top3_coins": [],
+    "total_market_cap_usd": 0,
     "warnings": [
-      "BTC dominance very high at 56.1% - market heavily concentrated"
+      "Could not fetch market cap data from CoinGecko"
     ]
   },
   "alerts": [
