@@ -2,8 +2,8 @@
   "name": "삼성전자",
   "ticker": "005930.KS",
   "result": "매수",
-  "date": "2026-04-02 22:14:26",
-  "elapsed": 1.3,
+  "date": "2026-04-03 07:39:04",
+  "elapsed": 1.8,
   "consensus_score": 4.22,
   "analyst_count": 37,
   "recommendation_detail": {
@@ -30,10 +30,10 @@
     "market_cap": 1192797243703296,
     "pe_ratio": null,
     "forward_pe": 6.2100616,
-    "dividend_yield": 1.19,
+    "dividend_yield": 1.27,
     "beta": 1.121,
     "fifty_two_week_high": 223000.0,
-    "fifty_two_week_low": 52900.0,
+    "fifty_two_week_low": 52091.0,
     "revenue": 333605947572224,
     "profit_margin": 0.13267,
     "currency": "KRW"
@@ -79,11 +79,32 @@
   ],
   "news": [
     {
-      "title": "Have smartphones finally gotten too large for consumers?",
-      "summary": "Yahoo Finance Senior Reporters Brooke DiPalma and Ines Ferré speak with Market Domination Host Josh Lipton about possible consumer pushback to the ever-increasing size of smartphones, including Samsun",
-      "url": "https://finance.yahoo.com/video/have-smartphones-finally-gotten-too-large-for-consumers-213000109.html",
-      "provider": "Yahoo Finance Video",
-      "pub_time": "2026-04-01T21:30:00Z"
+      "title": "Samsung Privacy Display Puts Visual Security At Heart Of Galaxy S26 Ultra",
+      "summary": "Samsung Electronics (KOSE:A005930) has introduced a hardware based Privacy Display on the new Galaxy S26 Ultra. The feature is built into the screen and is designed to limit viewing angles to reduce s",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/samsung-privacy-display-puts-visual-161230000.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-04-02T16:12:30Z"
+    },
+    {
+      "title": "Amazon.com (AMZN) Planning a Smartphone Comeback, Here’s What You Should Know",
+      "summary": "Amazon.com, Inc. (NASDAQ:AMZN) is one of the Stocks That Can Make You Richer in 2026. According to a report by Reuters on March 20, Amazon.com, Inc. (NASDAQ:AMZN) is planning a smartphone comeback aft",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/amazon-com-amzn-planning-smartphone-134257305.html",
+      "provider": "Insider Monkey",
+      "pub_time": "2026-04-02T13:42:57Z"
+    },
+    {
+      "title": "South Korean Chip Stocks Drop Up to 24% as Fund Sees Buying Opportunity",
+      "summary": "Top-performing fund highlights Samsung and SK Hynix valuations as compelling amid geopolitical-driven selloff and potential rebound.",
+      "url": "https://finance.yahoo.com/sectors/technology/articles/south-korean-chip-stocks-drop-134005599.html",
+      "provider": "GuruFocus.com",
+      "pub_time": "2026-04-02T13:40:05Z"
+    },
+    {
+      "title": "Can Global Memory Chip Shortage Drive Applied Materials' Growth?",
+      "summary": "AMAT rides on AI-driven chip demand and memory shortages into 2026, but can high-margin innovations offset consumer electronics weakness?",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/global-memory-chip-shortage-drive-133500157.html",
+      "provider": "Zacks",
+      "pub_time": "2026-04-02T13:35:00Z"
     },
     {
       "title": "AMD And Samsung Deepen AI Memory Ties In Bid For Supply Strength",
@@ -91,27 +112,6 @@
       "url": "https://finance.yahoo.com/markets/stocks/articles/amd-samsung-deepen-ai-memory-221128883.html",
       "provider": "Simply Wall St.",
       "pub_time": "2026-04-01T22:11:28Z"
-    },
-    {
-      "title": "Micron, Sandisk Soar on Strong Day for Chipmakers",
-      "summary": "The S&P 500’s performance on Wednesday has been led by some of the biggest makers of the infrastructure needed for artificial intelligence. Shares of the largest U.S. memory-chip maker, Micron Technol",
-      "url": "https://www.wsj.com/livecoverage/stock-market-today-dow-sp-500-nasdaq-04-01-2026/card/micron-sandisk-soar-on-strong-day-for-chipmakers-Arc4P5jC5IwTdrP7cdiW?siteid=yhoof2&yptr=yahoo",
-      "provider": "The Wall Street Journal",
-      "pub_time": "2026-04-01T19:52:10Z"
-    },
-    {
-      "title": "Advanced Micro Devices, Inc. (AMD) and Samsung Deepen Ties to Power Next Generation AI Infrastructure",
-      "summary": "Advanced Micro Devices Inc. (NASDAQ:AMD) is one of Motley Fool’s high-growth stock picks. On March 18, Advanced Micro Devices Inc. (NASDAQ:AMD) entered into a memorandum of understanding with Samsung ",
-      "url": "https://finance.yahoo.com/sectors/technology/articles/advanced-micro-devices-inc-amd-194253901.html",
-      "provider": "Insider Monkey",
-      "pub_time": "2026-04-01T19:42:53Z"
-    },
-    {
-      "title": "Exploring Samsung Electronics And Two Other High Growth Tech Stocks",
-      "summary": "As global markets navigate the complexities of geopolitical tensions and fluctuating energy prices, investors are witnessing a mixed performance across major indices, with small-cap stocks like those ",
-      "url": "https://finance.yahoo.com/sectors/technology/articles/exploring-samsung-electronics-two-other-093844720.html",
-      "provider": "Simply Wall St.",
-      "pub_time": "2026-04-01T09:38:44Z"
     }
   ]
 }

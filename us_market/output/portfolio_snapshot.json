@@ -2,16 +2,16 @@
   "market_indices": [
     {
       "name": "Dow Jones",
-      "price": "46,504.73",
-      "change": "-61.01",
-      "change_pct": -0.13101437827855764,
+      "price": "46,504.67",
+      "change": "-61.07",
+      "change_pct": -0.13114020845362348,
       "color": "red"
     },
     {
       "name": "S&P 500",
-      "price": "6,582.68",
-      "change": "+7.36",
-      "change_pct": 0.11193906546400614,
+      "price": "6,582.69",
+      "change": "+7.37",
+      "change_pct": 0.11208758485562616,
       "color": "green"
     },
     {
@@ -23,37 +23,37 @@
     },
     {
       "name": "Russell 2000",
-      "price": "2,525.13",
-      "change": "+12.76",
-      "change_pct": 0.5076929894152644,
+      "price": "2,530.04",
+      "change": "+17.67",
+      "change_pct": 0.7034042882347386,
       "color": "green"
     },
     {
       "name": "VIX",
-      "price": "24.77",
-      "change": "+0.23",
-      "change_pct": 0.9372434134295371,
-      "color": "green"
+      "price": "23.87",
+      "change": "-0.67",
+      "change_pct": -2.7302365578560845,
+      "color": "red"
     },
     {
       "name": "Gold",
-      "price": "4,697.00",
-      "change": "-86.20",
-      "change_pct": -1.8021448359400793,
+      "price": "4,702.70",
+      "change": "-80.50",
+      "change_pct": -1.6829736727074354,
       "color": "red"
     },
     {
       "name": "Crude Oil",
-      "price": "111.54",
-      "change": "+11.42",
-      "change_pct": 11.406310283321657,
+      "price": "112.06",
+      "change": "+11.94",
+      "change_pct": 11.925683664066154,
       "color": "green"
     },
     {
       "name": "Bitcoin",
-      "price": "67,024.75",
-      "change": "-1,053.80",
-      "change_pct": -1.5479245884952526,
+      "price": "67,020.51",
+      "change": "-1,058.05",
+      "change_pct": -1.5541559010127892,
       "color": "red"
     },
     {
@@ -65,18 +65,18 @@
     },
     {
       "name": "Dollar Index",
-      "price": "100.03",
-      "change": "+0.38",
-      "change_pct": 0.38032894824989044,
+      "price": "100.02",
+      "change": "+0.37",
+      "change_pct": 0.36828575967599003,
       "color": "green"
     },
     {
       "name": "USD/KRW",
-      "price": "1,509.86",
-      "change": "+6.53",
-      "change_pct": 0.4343709955738721,
+      "price": "1,512.09",
+      "change": "+8.76",
+      "change_pct": 0.5827070584434181,
       "color": "green"
     }
   ],
-  "timestamp": "2026-04-03T05:00:55.039390"
+  "timestamp": "2026-04-03T08:00:39.524095"
 }

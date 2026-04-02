@@ -2,12 +2,12 @@
   "name": "엘앤에프",
   "ticker": "066970.KS",
   "result": "매수",
-  "date": "2026-03-27 21:37:22",
-  "elapsed": 1.6,
-  "consensus_score": 3.78,
-  "analyst_count": 23,
+  "date": "2026-04-03 07:42:48",
+  "elapsed": 1.4,
+  "consensus_score": 3.83,
+  "analyst_count": 24,
   "recommendation_detail": {
-    "strongBuy": 5,
+    "strongBuy": 6,
     "buy": 10,
     "hold": 6,
     "sell": 2,
@@ -15,24 +15,24 @@
   },
   "recommendation_period": "0m",
   "price_targets": {
-    "current": 155300.0,
+    "current": 161600.0,
     "high": 210000.0,
     "low": 54000.0,
-    "mean": 141854.17,
-    "median": 146000.0
+    "mean": 147780.0,
+    "median": 150000.0
   },
-  "current_price": 155300.0,
-  "upside_potential": -8.7,
+  "current_price": 161600.0,
+  "upside_potential": -8.6,
   "key_stats": {
     "name": "L&F",
     "sector": "Industrials",
     "industry": "Electrical Equipment & Parts",
-    "market_cap": 5822642388992,
+    "market_cap": 6058847240192,
     "pe_ratio": null,
-    "forward_pe": 56.82254,
+    "forward_pe": 59.304844,
     "dividend_yield": null,
     "beta": 1.051,
-    "fifty_two_week_high": 158400.0,
+    "fifty_two_week_high": 162600.0,
     "fifty_two_week_low": 47000.0,
     "revenue": 2154939023360,
     "profit_margin": -0.24759,
@@ -40,8 +40,12 @@
   },
   "finnhub_supplement": null,
   "source": "yfinance",
-  "ai_analysis": "엘앤에프(066970.KS)에 대한 애널리스트 컨센서스는 23명 참여 기준 '매수' 의견이 우세합니다. 목표가 평균은 141,854 KRW로 현재가 155,300 KRW 대비 -8.7% 하락 여력이 있습니다. 투자 판단은 제시된 데이터를 참고하여 신중하게 결정하시기 바랍니다.",
+  "ai_analysis": null,
   "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 617785374200
+    },
     {
       "date": "2025-09",
       "value": 652296034670
@@ -53,13 +57,13 @@
     {
       "date": "2025-03",
       "value": 364781970020
-    },
-    {
-      "date": "2024-12",
-      "value": 365349547030
     }
   ],
   "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": -192473382130
+    },
     {
       "date": "2025-09",
       "value": -118221123250
@@ -71,10 +75,6 @@
     {
       "date": "2025-03",
       "value": -110917149090
-    },
-    {
-      "date": "2024-12",
-      "value": -116529774420
     }
   ],
   "news": [

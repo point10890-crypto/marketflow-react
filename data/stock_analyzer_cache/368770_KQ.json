@@ -1,35 +1,35 @@
 {
-  "name": "우리로",
-  "ticker": "046970.KQ",
+  "name": "파이버프로",
+  "ticker": "368770.KQ",
   "result": "데이터 없음",
-  "date": "2026-04-03 07:08:37",
-  "elapsed": 2.6,
+  "date": "2026-04-03 07:38:28",
+  "elapsed": 2.1,
   "consensus_score": null,
   "analyst_count": 0,
   "recommendation_detail": null,
   "recommendation_period": null,
   "price_targets": {
-    "current": 7400.0,
+    "current": 23550.0,
     "high": null,
     "low": null,
     "mean": null,
     "median": null
   },
-  "current_price": 7400.0,
+  "current_price": 23550.0,
   "upside_potential": null,
   "key_stats": {
-    "name": "WOORIRO",
+    "name": "FIBERPRO",
     "sector": "Technology",
-    "industry": "Communication Equipment",
-    "market_cap": 321153761280,
+    "industry": "Scientific & Technical Instruments",
+    "market_cap": 771503292416,
     "pe_ratio": null,
     "forward_pe": null,
-    "dividend_yield": null,
-    "beta": -4.16,
-    "fifty_two_week_high": 10150.0,
-    "fifty_two_week_low": 1068.0,
-    "revenue": 42474835968,
-    "profit_margin": -0.01857,
+    "dividend_yield": 0.37,
+    "beta": 0.713,
+    "fifty_two_week_high": 23950.0,
+    "fifty_two_week_low": 5245.0,
+    "revenue": 43472322560,
+    "profit_margin": 0.21414,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
@@ -38,37 +38,37 @@
   "revenue_quarters": [
     {
       "date": "2025-12",
-      "value": 11449502630
+      "value": 12227863010
     },
     {
       "date": "2025-09",
-      "value": 12061552980
+      "value": 13758942680
     },
     {
       "date": "2025-06",
-      "value": 10077603300
+      "value": 10369767110
     },
     {
       "date": "2025-03",
-      "value": 8886178870
+      "value": 7115748500
     }
   ],
   "net_income_quarters": [
     {
       "date": "2025-12",
-      "value": -415582810
+      "value": 2836422620
     },
     {
       "date": "2025-09",
-      "value": 1250339040
+      "value": 3543723020
     },
     {
       "date": "2025-06",
-      "value": 218257350
+      "value": 1568084490
     },
     {
       "date": "2025-03",
-      "value": -1841687340
+      "value": 1360866130
     }
   ],
   "news": []
