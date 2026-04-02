@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generated_at": "2026-04-03T00:00:38.337103",
+    "generated_at": "2026-04-03T04:54:10.196281",
     "market": "CRYPTO",
     "gate": "RED",
     "universe_size": 50
@@ -13,13 +13,13 @@
       "score": 51,
       "pivot_high": 1.0001,
       "breakout_close_pct": -0.03,
-      "vol_ratio": 0.85,
+      "vol_ratio": 0.94,
       "liquidity_bucket": "A",
       "market_regime": "BTC_DOWN|D",
       "c1": 2.0,
       "c2": 0.1,
       "c3": 0.1,
-      "ml_win_prob": 66.2
+      "ml_win_prob": 66.0
     },
     {
       "symbol": "USD1/USDT",
@@ -27,51 +27,36 @@
       "signal_type": "APPROACHING",
       "score": 43,
       "pivot_high": 0.9998,
-      "breakout_close_pct": -0.01,
-      "vol_ratio": 1.37,
+      "breakout_close_pct": 0.0,
+      "vol_ratio": 0.51,
       "liquidity_bucket": "A",
-      "market_regime": "BTC_DOWN|D",
+      "market_regime": "BTC_DOWN|C",
       "c1": 0.1,
       "c2": 0.1,
       "c3": 0.0,
-      "ml_win_prob": 73.7
+      "ml_win_prob": 73.5
     },
     {
-      "symbol": "0G/USDT",
+      "symbol": "HEMI/USDT",
       "timeframe": "4h",
       "signal_type": "BREAKOUT",
-      "score": 40,
-      "pivot_high": 0.494,
-      "breakout_close_pct": 5.06,
-      "vol_ratio": 0.57,
-      "liquidity_bucket": "C",
-      "market_regime": "BTC_DOWN|D",
-      "c1": 13.5,
-      "c2": 12.0,
-      "c3": 3.2,
-      "ml_win_prob": 48.8
-    },
-    {
-      "symbol": "FIDA/USDT",
-      "timeframe": "1d",
-      "signal_type": "BREAKOUT",
-      "score": 28,
-      "pivot_high": 0.01543,
-      "breakout_close_pct": 3.05,
-      "vol_ratio": 5.41,
+      "score": 27,
+      "pivot_high": 0.00659,
+      "breakout_close_pct": 13.66,
+      "vol_ratio": 1.76,
       "liquidity_bucket": "B",
-      "market_regime": "BTC_DOWN|D",
-      "c1": 33.8,
-      "c2": 22.8,
-      "c3": 21.4,
-      "ml_win_prob": 24.9
+      "market_regime": "BTC_DOWN|B",
+      "c1": 22.6,
+      "c2": 15.3,
+      "c3": 12.7,
+      "ml_win_prob": 47.1
     }
   ],
   "summary": {
-    "setups_4h": 6,
+    "setups_4h": 5,
     "setups_1d": 7,
     "signals_4h": 2,
-    "signals_1d": 2,
+    "signals_1d": 1,
     "published": 0
   }
 }
