@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "generated_at": "2026-04-02T16:02:47.598108",
+    "generated_at": "2026-04-02T16:18:39.598740",
     "market": "CRYPTO",
     "gate": "RED",
     "gate_score": 25,
-    "processing_time_sec": 17.4
+    "processing_time_sec": 17.7
   },
   "summary": {
     "total_screened": 50,
@@ -80,7 +80,7 @@
       },
       "pivot_proximity": {
         "score": 90,
-        "distance_from_pivot_pct": -0.7,
+        "distance_from_pivot_pct": -1.1,
         "trade_status": "BREAKOUT"
       },
       "relative_strength": {
@@ -97,7 +97,7 @@
       "name": "MKR",
       "market": "CRYPTO",
       "sector": "",
-      "price": 1725.74,
+      "price": 1725.31,
       "composite": {
         "composite_score": 55.4,
         "rating": "Developing VCP",

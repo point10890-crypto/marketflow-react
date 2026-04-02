@@ -1,17 +1,17 @@
 {
   "metadata": {
-    "generated_at": "2026-04-02T16:01:55.851773",
+    "generated_at": "2026-04-02T16:17:47.618609",
     "market": "KR",
     "gate": "RED",
     "gate_score": 30,
-    "processing_time_sec": 71.1
+    "processing_time_sec": 74.3
   },
   "summary": {
     "total_screened": 200,
-    "stage2_passed": 148,
-    "trend_passed": 148,
-    "vcp_found": 22,
-    "entry_ready": 2
+    "stage2_passed": 152,
+    "trend_passed": 152,
+    "vcp_found": 25,
+    "entry_ready": 3
   },
   "signals": [
     {
@@ -171,31 +171,31 @@
       }
     },
     {
-      "symbol": "006800",
-      "name": "미래에셋증권",
+      "symbol": "012860",
+      "name": "모베이스전자",
       "market": "KR",
       "sector": "",
-      "price": 61600.0,
+      "price": 3675.0,
       "composite": {
-        "composite_score": 75.2,
-        "rating": "Strong VCP",
-        "rating_description": "강한 VCP 패턴",
+        "composite_score": 80.6,
+        "rating": "Textbook VCP",
+        "rating_description": "교과서적 VCP 패턴",
         "guidance": "거래량 확인 후 피벗 매수",
         "valid_vcp": "True",
         "entry_ready": false,
         "weakest_component": "Pivot Proximity",
-        "strongest_component": "Trend Template",
+        "strongest_component": "Relative Strength",
         "component_breakdown": {
           "trend_template": {
-            "score": 100.0,
+            "score": 87.5,
             "weight": 0.25,
-            "weighted": 25.0,
+            "weighted": 21.9,
             "label": "Trend Template (Stage 2)"
           },
           "contraction_quality": {
-            "score": 48,
+            "score": 82,
             "weight": 0.25,
-            "weighted": 12.0,
+            "weighted": 20.5,
             "label": "Contraction Quality"
           },
           "volume_pattern": {
@@ -219,24 +219,24 @@
         }
       },
       "trend_template": {
-        "score": 100.0,
+        "score": 87.5,
         "passed": "True",
         "stage": 2,
         "stage_label": "Stage 2 - Advancing"
       },
       "vcp_pattern": {
-        "score": 48,
+        "score": 82,
         "valid_vcp": "True",
-        "num_contractions": 2,
-        "pivot_price": 70900.0
+        "num_contractions": 3,
+        "pivot_price": 4070.0
       },
       "volume_pattern": {
         "score": 90,
-        "dry_up_ratio": 0.49
+        "dry_up_ratio": 0.35
       },
       "pivot_proximity": {
         "score": 40,
-        "distance_from_pivot_pct": 13.1,
+        "distance_from_pivot_pct": 9.7,
         "trade_status": "BUILDING"
       },
       "relative_strength": {
@@ -249,19 +249,19 @@
       }
     },
     {
-      "symbol": "006800",
-      "name": "미래에셋증권",
+      "symbol": "126600",
+      "name": "BGF에코머티리얼즈",
       "market": "KR",
       "sector": "",
-      "price": 61600.0,
+      "price": 4780.0,
       "composite": {
-        "composite_score": 75.2,
+        "composite_score": 70.8,
         "rating": "Strong VCP",
         "rating_description": "강한 VCP 패턴",
         "guidance": "거래량 확인 후 피벗 매수",
         "valid_vcp": "True",
         "entry_ready": false,
-        "weakest_component": "Pivot Proximity",
+        "weakest_component": "Volume Pattern",
         "strongest_component": "Trend Template",
         "component_breakdown": {
           "trend_template": {
@@ -271,21 +271,21 @@
             "label": "Trend Template (Stage 2)"
           },
           "contraction_quality": {
-            "score": 48,
+            "score": 66,
             "weight": 0.25,
-            "weighted": 12.0,
+            "weighted": 16.5,
             "label": "Contraction Quality"
           },
           "volume_pattern": {
-            "score": 90,
+            "score": 30,
             "weight": 0.2,
-            "weighted": 18.0,
+            "weighted": 6.0,
             "label": "Volume Pattern"
           },
           "pivot_proximity": {
-            "score": 40,
+            "score": 60,
             "weight": 0.15,
-            "weighted": 6.0,
+            "weighted": 9.0,
             "label": "Pivot Proximity"
           },
           "relative_strength": {
@@ -303,19 +303,19 @@
         "stage_label": "Stage 2 - Advancing"
       },
       "vcp_pattern": {
-        "score": 48,
+        "score": 66,
         "valid_vcp": "True",
-        "num_contractions": 2,
-        "pivot_price": 70900.0
+        "num_contractions": 3,
+        "pivot_price": 5020.0
       },
       "volume_pattern": {
-        "score": 90,
-        "dry_up_ratio": 0.49
+        "score": 30,
+        "dry_up_ratio": 4.4
       },
       "pivot_proximity": {
-        "score": 40,
-        "distance_from_pivot_pct": 13.1,
-        "trade_status": "BUILDING"
+        "score": 60,
+        "distance_from_pivot_pct": 4.8,
+        "trade_status": "APPROACHING"
       },
       "relative_strength": {
         "score": 95,
@@ -623,6 +623,162 @@
       "volume_pattern": {
         "score": 30,
         "dry_up_ratio": 4.29
+      },
+      "pivot_proximity": {
+        "score": 90,
+        "distance_from_pivot_pct": 0.0,
+        "trade_status": "BREAKOUT"
+      },
+      "relative_strength": {
+        "score": 95,
+        "rs_rank_estimate": 95
+      },
+      "stage": {
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing"
+      }
+    },
+    {
+      "symbol": "049080",
+      "name": "기가레인",
+      "market": "KR",
+      "sector": "",
+      "price": 1574.0,
+      "composite": {
+        "composite_score": 70.0,
+        "rating": "Strong VCP",
+        "rating_description": "강한 VCP 패턴",
+        "guidance": "거래량 확인 후 피벗 매수",
+        "valid_vcp": "False",
+        "entry_ready": "False",
+        "weakest_component": "Volume Pattern",
+        "strongest_component": "Trend Template",
+        "component_breakdown": {
+          "trend_template": {
+            "score": 100.0,
+            "weight": 0.25,
+            "weighted": 25.0,
+            "label": "Trend Template (Stage 2)"
+          },
+          "contraction_quality": {
+            "score": 45,
+            "weight": 0.25,
+            "weighted": 11.2,
+            "label": "Contraction Quality"
+          },
+          "volume_pattern": {
+            "score": 30,
+            "weight": 0.2,
+            "weighted": 6.0,
+            "label": "Volume Pattern"
+          },
+          "pivot_proximity": {
+            "score": 90,
+            "weight": 0.15,
+            "weighted": 13.5,
+            "label": "Pivot Proximity"
+          },
+          "relative_strength": {
+            "score": 95,
+            "weight": 0.15,
+            "weighted": 14.2,
+            "label": "Relative Strength"
+          }
+        }
+      },
+      "trend_template": {
+        "score": 100.0,
+        "passed": "True",
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing"
+      },
+      "vcp_pattern": {
+        "score": 45,
+        "valid_vcp": "False",
+        "num_contractions": 3,
+        "pivot_price": 1574.0
+      },
+      "volume_pattern": {
+        "score": 30,
+        "dry_up_ratio": 4.29
+      },
+      "pivot_proximity": {
+        "score": 90,
+        "distance_from_pivot_pct": 0.0,
+        "trade_status": "BREAKOUT"
+      },
+      "relative_strength": {
+        "score": 95,
+        "rs_rank_estimate": 95
+      },
+      "stage": {
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing"
+      }
+    },
+    {
+      "symbol": "017900",
+      "name": "광전자",
+      "market": "KR",
+      "sector": "",
+      "price": 3430.0,
+      "composite": {
+        "composite_score": 70.0,
+        "rating": "Strong VCP",
+        "rating_description": "강한 VCP 패턴",
+        "guidance": "거래량 확인 후 피벗 매수",
+        "valid_vcp": "False",
+        "entry_ready": "False",
+        "weakest_component": "Volume Pattern",
+        "strongest_component": "Trend Template",
+        "component_breakdown": {
+          "trend_template": {
+            "score": 100.0,
+            "weight": 0.25,
+            "weighted": 25.0,
+            "label": "Trend Template (Stage 2)"
+          },
+          "contraction_quality": {
+            "score": 45,
+            "weight": 0.25,
+            "weighted": 11.2,
+            "label": "Contraction Quality"
+          },
+          "volume_pattern": {
+            "score": 30,
+            "weight": 0.2,
+            "weighted": 6.0,
+            "label": "Volume Pattern"
+          },
+          "pivot_proximity": {
+            "score": 90,
+            "weight": 0.15,
+            "weighted": 13.5,
+            "label": "Pivot Proximity"
+          },
+          "relative_strength": {
+            "score": 95,
+            "weight": 0.15,
+            "weighted": 14.2,
+            "label": "Relative Strength"
+          }
+        }
+      },
+      "trend_template": {
+        "score": 100.0,
+        "passed": "True",
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing"
+      },
+      "vcp_pattern": {
+        "score": 45,
+        "valid_vcp": "False",
+        "num_contractions": 3,
+        "pivot_price": 3430.0
+      },
+      "volume_pattern": {
+        "score": 30,
+        "dry_up_ratio": 4.77
       },
       "pivot_proximity": {
         "score": 90,
@@ -951,6 +1107,162 @@
       }
     },
     {
+      "symbol": "069540",
+      "name": "빛과전자",
+      "market": "KR",
+      "sector": "",
+      "price": 3115.0,
+      "composite": {
+        "composite_score": 69.8,
+        "rating": "Good VCP",
+        "rating_description": "양호한 VCP 패턴",
+        "guidance": "피벗 돌파 매수",
+        "valid_vcp": "True",
+        "entry_ready": "True",
+        "weakest_component": "Volume Pattern",
+        "strongest_component": "Trend Template",
+        "component_breakdown": {
+          "trend_template": {
+            "score": 100.0,
+            "weight": 0.25,
+            "weighted": 25.0,
+            "label": "Trend Template (Stage 2)"
+          },
+          "contraction_quality": {
+            "score": 44,
+            "weight": 0.25,
+            "weighted": 11.0,
+            "label": "Contraction Quality"
+          },
+          "volume_pattern": {
+            "score": 30,
+            "weight": 0.2,
+            "weighted": 6.0,
+            "label": "Volume Pattern"
+          },
+          "pivot_proximity": {
+            "score": 90,
+            "weight": 0.15,
+            "weighted": 13.5,
+            "label": "Pivot Proximity"
+          },
+          "relative_strength": {
+            "score": 95,
+            "weight": 0.15,
+            "weighted": 14.2,
+            "label": "Relative Strength"
+          }
+        }
+      },
+      "trend_template": {
+        "score": 100.0,
+        "passed": "True",
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing"
+      },
+      "vcp_pattern": {
+        "score": 44,
+        "valid_vcp": "True",
+        "num_contractions": 2,
+        "pivot_price": 3115.0
+      },
+      "volume_pattern": {
+        "score": 30,
+        "dry_up_ratio": 2.46
+      },
+      "pivot_proximity": {
+        "score": 90,
+        "distance_from_pivot_pct": 0.0,
+        "trade_status": "BREAKOUT"
+      },
+      "relative_strength": {
+        "score": 95,
+        "rs_rank_estimate": 95
+      },
+      "stage": {
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing"
+      }
+    },
+    {
+      "symbol": "065450",
+      "name": "빅텍",
+      "market": "KR",
+      "sector": "",
+      "price": 4830.0,
+      "composite": {
+        "composite_score": 67.8,
+        "rating": "Good VCP",
+        "rating_description": "양호한 VCP 패턴",
+        "guidance": "거래량 확인 후 피벗 매수",
+        "valid_vcp": "False",
+        "entry_ready": "False",
+        "weakest_component": "Pivot Proximity",
+        "strongest_component": "Trend Template",
+        "component_breakdown": {
+          "trend_template": {
+            "score": 100.0,
+            "weight": 0.25,
+            "weighted": 25.0,
+            "label": "Trend Template (Stage 2)"
+          },
+          "contraction_quality": {
+            "score": 30,
+            "weight": 0.25,
+            "weighted": 7.5,
+            "label": "Contraction Quality"
+          },
+          "volume_pattern": {
+            "score": 90,
+            "weight": 0.2,
+            "weighted": 18.0,
+            "label": "Volume Pattern"
+          },
+          "pivot_proximity": {
+            "score": 20,
+            "weight": 0.15,
+            "weighted": 3.0,
+            "label": "Pivot Proximity"
+          },
+          "relative_strength": {
+            "score": 95,
+            "weight": 0.15,
+            "weighted": 14.2,
+            "label": "Relative Strength"
+          }
+        }
+      },
+      "trend_template": {
+        "score": 100.0,
+        "passed": "True",
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing"
+      },
+      "vcp_pattern": {
+        "score": 30,
+        "valid_vcp": "False",
+        "num_contractions": 2,
+        "pivot_price": 5880.0
+      },
+      "volume_pattern": {
+        "score": 90,
+        "dry_up_ratio": 0.3
+      },
+      "pivot_proximity": {
+        "score": 20,
+        "distance_from_pivot_pct": 17.9,
+        "trade_status": "FAR"
+      },
+      "relative_strength": {
+        "score": 95,
+        "rs_rank_estimate": 95
+      },
+      "stage": {
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing"
+      }
+    },
+    {
       "symbol": "065450",
       "name": "빅텍",
       "market": "KR",
@@ -1263,11 +1575,11 @@
       }
     },
     {
-      "symbol": "006910",
-      "name": "보성파워텍",
+      "symbol": "006340",
+      "name": "대원전선",
       "market": "KR",
       "sector": "",
-      "price": 10160.0,
+      "price": 5220.0,
       "composite": {
         "composite_score": 67.8,
         "rating": "Good VCP",
@@ -1320,15 +1632,15 @@
         "score": 30,
         "valid_vcp": "False",
         "num_contractions": 2,
-        "pivot_price": 12850.0
+        "pivot_price": 6520.0
       },
       "volume_pattern": {
         "score": 90,
-        "dry_up_ratio": 0.39
+        "dry_up_ratio": 0.36
       },
       "pivot_proximity": {
         "score": 20,
-        "distance_from_pivot_pct": 20.9,
+        "distance_from_pivot_pct": 19.9,
         "trade_status": "FAR"
       },
       "relative_strength": {
@@ -1341,19 +1653,19 @@
       }
     },
     {
-      "symbol": "006910",
-      "name": "보성파워텍",
+      "symbol": "100790",
+      "name": "미래에셋벤처투자",
       "market": "KR",
       "sector": "",
-      "price": 10160.0,
+      "price": 28400.0,
       "composite": {
-        "composite_score": 67.8,
+        "composite_score": 67.5,
         "rating": "Good VCP",
         "rating_description": "양호한 VCP 패턴",
         "guidance": "거래량 확인 후 피벗 매수",
-        "valid_vcp": "False",
-        "entry_ready": "False",
-        "weakest_component": "Pivot Proximity",
+        "valid_vcp": "True",
+        "entry_ready": false,
+        "weakest_component": "Volume Pattern",
         "strongest_component": "Trend Template",
         "component_breakdown": {
           "trend_template": {
@@ -1363,21 +1675,21 @@
             "label": "Trend Template (Stage 2)"
           },
           "contraction_quality": {
-            "score": 30,
+            "score": 53,
             "weight": 0.25,
-            "weighted": 7.5,
+            "weighted": 13.2,
             "label": "Contraction Quality"
           },
           "volume_pattern": {
-            "score": 90,
+            "score": 30,
             "weight": 0.2,
-            "weighted": 18.0,
+            "weighted": 6.0,
             "label": "Volume Pattern"
           },
           "pivot_proximity": {
-            "score": 20,
+            "score": 60,
             "weight": 0.15,
-            "weighted": 3.0,
+            "weighted": 9.0,
             "label": "Pivot Proximity"
           },
           "relative_strength": {
@@ -1395,19 +1707,19 @@
         "stage_label": "Stage 2 - Advancing"
       },
       "vcp_pattern": {
-        "score": 30,
-        "valid_vcp": "False",
-        "num_contractions": 2,
-        "pivot_price": 12850.0
+        "score": 53,
+        "valid_vcp": "True",
+        "num_contractions": 3,
+        "pivot_price": 29900.0
       },
       "volume_pattern": {
-        "score": 90,
-        "dry_up_ratio": 0.39
+        "score": 30,
+        "dry_up_ratio": 1.76
       },
       "pivot_proximity": {
-        "score": 20,
-        "distance_from_pivot_pct": 20.9,
-        "trade_status": "FAR"
+        "score": 60,
+        "distance_from_pivot_pct": 5.0,
+        "trade_status": "APPROACHING"
       },
       "relative_strength": {
         "score": 95,
@@ -1731,20 +2043,20 @@
       }
     },
     {
-      "symbol": "319400",
-      "name": "현대무벡스",
+      "symbol": "018880",
+      "name": "한온시스템",
       "market": "KR",
       "sector": "",
-      "price": 25750.0,
+      "price": 3760.0,
       "composite": {
-        "composite_score": 67.2,
+        "composite_score": 67.5,
         "rating": "Good VCP",
         "rating_description": "양호한 VCP 패턴",
         "guidance": "거래량 확인 후 피벗 매수",
-        "valid_vcp": "True",
-        "entry_ready": false,
+        "valid_vcp": "False",
+        "entry_ready": "False",
         "weakest_component": "Pivot Proximity",
-        "strongest_component": "Relative Strength",
+        "strongest_component": "Volume Pattern",
         "component_breakdown": {
           "trend_template": {
             "score": 75.0,
@@ -1753,9 +2065,9 @@
             "label": "Trend Template (Stage 2)"
           },
           "contraction_quality": {
-            "score": 53,
+            "score": 51,
             "weight": 0.25,
-            "weighted": 13.2,
+            "weighted": 12.8,
             "label": "Contraction Quality"
           },
           "volume_pattern": {
@@ -1765,15 +2077,15 @@
             "label": "Volume Pattern"
           },
           "pivot_proximity": {
-            "score": 20,
+            "score": 40,
             "weight": 0.15,
-            "weighted": 3.0,
+            "weighted": 6.0,
             "label": "Pivot Proximity"
           },
           "relative_strength": {
-            "score": 95,
+            "score": 80,
             "weight": 0.15,
-            "weighted": 14.2,
+            "weighted": 12.0,
             "label": "Relative Strength"
           }
         }
@@ -1785,101 +2097,23 @@
         "stage_label": "Stage 2 - Early"
       },
       "vcp_pattern": {
-        "score": 53,
-        "valid_vcp": "True",
-        "num_contractions": 2,
-        "pivot_price": 32550.0
+        "score": 51,
+        "valid_vcp": "False",
+        "num_contractions": 3,
+        "pivot_price": 4400.0
       },
       "volume_pattern": {
         "score": 90,
-        "dry_up_ratio": 0.19
+        "dry_up_ratio": 0.29
       },
       "pivot_proximity": {
-        "score": 20,
-        "distance_from_pivot_pct": 20.9,
-        "trade_status": "FAR"
+        "score": 40,
+        "distance_from_pivot_pct": 14.5,
+        "trade_status": "BUILDING"
       },
       "relative_strength": {
-        "score": 95,
-        "rs_rank_estimate": 95
-      },
-      "stage": {
-        "stage": 2,
-        "stage_label": "Stage 2 - Early"
-      }
-    },
-    {
-      "symbol": "319400",
-      "name": "현대무벡스",
-      "market": "KR",
-      "sector": "",
-      "price": 25750.0,
-      "composite": {
-        "composite_score": 67.2,
-        "rating": "Good VCP",
-        "rating_description": "양호한 VCP 패턴",
-        "guidance": "거래량 확인 후 피벗 매수",
-        "valid_vcp": "True",
-        "entry_ready": false,
-        "weakest_component": "Pivot Proximity",
-        "strongest_component": "Relative Strength",
-        "component_breakdown": {
-          "trend_template": {
-            "score": 75.0,
-            "weight": 0.25,
-            "weighted": 18.8,
-            "label": "Trend Template (Stage 2)"
-          },
-          "contraction_quality": {
-            "score": 53,
-            "weight": 0.25,
-            "weighted": 13.2,
-            "label": "Contraction Quality"
-          },
-          "volume_pattern": {
-            "score": 90,
-            "weight": 0.2,
-            "weighted": 18.0,
-            "label": "Volume Pattern"
-          },
-          "pivot_proximity": {
-            "score": 20,
-            "weight": 0.15,
-            "weighted": 3.0,
-            "label": "Pivot Proximity"
-          },
-          "relative_strength": {
-            "score": 95,
-            "weight": 0.15,
-            "weighted": 14.2,
-            "label": "Relative Strength"
-          }
-        }
-      },
-      "trend_template": {
-        "score": 75.0,
-        "passed": "True",
-        "stage": 2,
-        "stage_label": "Stage 2 - Early"
-      },
-      "vcp_pattern": {
-        "score": 53,
-        "valid_vcp": "True",
-        "num_contractions": 2,
-        "pivot_price": 32550.0
-      },
-      "volume_pattern": {
-        "score": 90,
-        "dry_up_ratio": 0.19
-      },
-      "pivot_proximity": {
-        "score": 20,
-        "distance_from_pivot_pct": 20.9,
-        "trade_status": "FAR"
-      },
-      "relative_strength": {
-        "score": 95,
-        "rs_rank_estimate": 95
+        "score": 80,
+        "rs_rank_estimate": 80
       },
       "stage": {
         "stage": 2,
@@ -2043,11 +2277,11 @@
       }
     },
     {
-      "symbol": "161000",
-      "name": "애경케미칼",
+      "symbol": "003280",
+      "name": "흥아해운",
       "market": "KR",
       "sector": "",
-      "price": 15200.0,
+      "price": 4470.0,
       "composite": {
         "composite_score": 66.2,
         "rating": "Good VCP",
@@ -2100,11 +2334,11 @@
         "score": 30,
         "valid_vcp": "False",
         "num_contractions": 2,
-        "pivot_price": 15200.0
+        "pivot_price": 4470.0
       },
       "volume_pattern": {
         "score": 30,
-        "dry_up_ratio": 3.23
+        "dry_up_ratio": 2.39
       },
       "pivot_proximity": {
         "score": 90,
@@ -2121,43 +2355,43 @@
       }
     },
     {
-      "symbol": "161000",
-      "name": "애경케미칼",
+      "symbol": "090710",
+      "name": "휴림로봇",
       "market": "KR",
       "sector": "",
-      "price": 15200.0,
+      "price": 11120.0,
       "composite": {
-        "composite_score": 66.2,
+        "composite_score": 65.5,
         "rating": "Good VCP",
         "rating_description": "양호한 VCP 패턴",
         "guidance": "거래량 확인 후 피벗 매수",
-        "valid_vcp": "False",
-        "entry_ready": "False",
-        "weakest_component": "VCP Pattern",
-        "strongest_component": "Trend Template",
+        "valid_vcp": "True",
+        "entry_ready": false,
+        "weakest_component": "Pivot Proximity",
+        "strongest_component": "Relative Strength",
         "component_breakdown": {
           "trend_template": {
-            "score": 100.0,
+            "score": 75.0,
             "weight": 0.25,
-            "weighted": 25.0,
+            "weighted": 18.8,
             "label": "Trend Template (Stage 2)"
           },
           "contraction_quality": {
-            "score": 30,
+            "score": 46,
             "weight": 0.25,
-            "weighted": 7.5,
+            "weighted": 11.5,
             "label": "Contraction Quality"
           },
           "volume_pattern": {
-            "score": 30,
+            "score": 90,
             "weight": 0.2,
-            "weighted": 6.0,
+            "weighted": 18.0,
             "label": "Volume Pattern"
           },
           "pivot_proximity": {
-            "score": 90,
+            "score": 20,
             "weight": 0.15,
-            "weighted": 13.5,
+            "weighted": 3.0,
             "label": "Pivot Proximity"
           },
           "relative_strength": {
@@ -2169,25 +2403,25 @@
         }
       },
       "trend_template": {
-        "score": 100.0,
+        "score": 75.0,
         "passed": "True",
         "stage": 2,
-        "stage_label": "Stage 2 - Advancing"
+        "stage_label": "Stage 2 - Early"
       },
       "vcp_pattern": {
-        "score": 30,
-        "valid_vcp": "False",
+        "score": 46,
+        "valid_vcp": "True",
         "num_contractions": 2,
-        "pivot_price": 15200.0
+        "pivot_price": 14890.0
       },
       "volume_pattern": {
-        "score": 30,
-        "dry_up_ratio": 3.23
+        "score": 90,
+        "dry_up_ratio": 0.48
       },
       "pivot_proximity": {
-        "score": 90,
-        "distance_from_pivot_pct": 0.0,
-        "trade_status": "BREAKOUT"
+        "score": 20,
+        "distance_from_pivot_pct": 25.3,
+        "trade_status": "FAR"
       },
       "relative_strength": {
         "score": 95,
@@ -2195,163 +2429,7 @@
       },
       "stage": {
         "stage": 2,
-        "stage_label": "Stage 2 - Advancing"
-      }
-    },
-    {
-      "symbol": "425040",
-      "name": "티이엠씨",
-      "market": "KR",
-      "sector": "",
-      "price": 13200.0,
-      "composite": {
-        "composite_score": 66.2,
-        "rating": "Good VCP",
-        "rating_description": "양호한 VCP 패턴",
-        "guidance": "거래량 확인 후 피벗 매수",
-        "valid_vcp": "False",
-        "entry_ready": "False",
-        "weakest_component": "VCP Pattern",
-        "strongest_component": "Trend Template",
-        "component_breakdown": {
-          "trend_template": {
-            "score": 100.0,
-            "weight": 0.25,
-            "weighted": 25.0,
-            "label": "Trend Template (Stage 2)"
-          },
-          "contraction_quality": {
-            "score": 30,
-            "weight": 0.25,
-            "weighted": 7.5,
-            "label": "Contraction Quality"
-          },
-          "volume_pattern": {
-            "score": 30,
-            "weight": 0.2,
-            "weighted": 6.0,
-            "label": "Volume Pattern"
-          },
-          "pivot_proximity": {
-            "score": 90,
-            "weight": 0.15,
-            "weighted": 13.5,
-            "label": "Pivot Proximity"
-          },
-          "relative_strength": {
-            "score": 95,
-            "weight": 0.15,
-            "weighted": 14.2,
-            "label": "Relative Strength"
-          }
-        }
-      },
-      "trend_template": {
-        "score": 100.0,
-        "passed": "True",
-        "stage": 2,
-        "stage_label": "Stage 2 - Advancing"
-      },
-      "vcp_pattern": {
-        "score": 30,
-        "valid_vcp": "False",
-        "num_contractions": 2,
-        "pivot_price": 13200.0
-      },
-      "volume_pattern": {
-        "score": 30,
-        "dry_up_ratio": 3.42
-      },
-      "pivot_proximity": {
-        "score": 90,
-        "distance_from_pivot_pct": 0.0,
-        "trade_status": "BREAKOUT"
-      },
-      "relative_strength": {
-        "score": 95,
-        "rs_rank_estimate": 95
-      },
-      "stage": {
-        "stage": 2,
-        "stage_label": "Stage 2 - Advancing"
-      }
-    },
-    {
-      "symbol": "425040",
-      "name": "티이엠씨",
-      "market": "KR",
-      "sector": "",
-      "price": 13200.0,
-      "composite": {
-        "composite_score": 66.2,
-        "rating": "Good VCP",
-        "rating_description": "양호한 VCP 패턴",
-        "guidance": "거래량 확인 후 피벗 매수",
-        "valid_vcp": "False",
-        "entry_ready": "False",
-        "weakest_component": "VCP Pattern",
-        "strongest_component": "Trend Template",
-        "component_breakdown": {
-          "trend_template": {
-            "score": 100.0,
-            "weight": 0.25,
-            "weighted": 25.0,
-            "label": "Trend Template (Stage 2)"
-          },
-          "contraction_quality": {
-            "score": 30,
-            "weight": 0.25,
-            "weighted": 7.5,
-            "label": "Contraction Quality"
-          },
-          "volume_pattern": {
-            "score": 30,
-            "weight": 0.2,
-            "weighted": 6.0,
-            "label": "Volume Pattern"
-          },
-          "pivot_proximity": {
-            "score": 90,
-            "weight": 0.15,
-            "weighted": 13.5,
-            "label": "Pivot Proximity"
-          },
-          "relative_strength": {
-            "score": 95,
-            "weight": 0.15,
-            "weighted": 14.2,
-            "label": "Relative Strength"
-          }
-        }
-      },
-      "trend_template": {
-        "score": 100.0,
-        "passed": "True",
-        "stage": 2,
-        "stage_label": "Stage 2 - Advancing"
-      },
-      "vcp_pattern": {
-        "score": 30,
-        "valid_vcp": "False",
-        "num_contractions": 2,
-        "pivot_price": 13200.0
-      },
-      "volume_pattern": {
-        "score": 30,
-        "dry_up_ratio": 3.42
-      },
-      "pivot_proximity": {
-        "score": 90,
-        "distance_from_pivot_pct": 0.0,
-        "trade_status": "BREAKOUT"
-      },
-      "relative_strength": {
-        "score": 95,
-        "rs_rank_estimate": 95
-      },
-      "stage": {
-        "stage": 2,
-        "stage_label": "Stage 2 - Advancing"
+        "stage_label": "Stage 2 - Early"
       }
     },
     {
@@ -2667,6 +2745,84 @@
       }
     },
     {
+      "symbol": "215790",
+      "name": "이노인스트루먼트",
+      "market": "KR",
+      "sector": "",
+      "price": 932.0,
+      "composite": {
+        "composite_score": 64.8,
+        "rating": "Good VCP",
+        "rating_description": "양호한 VCP 패턴",
+        "guidance": "거래량 확인 후 피벗 매수",
+        "valid_vcp": "False",
+        "entry_ready": "False",
+        "weakest_component": "VCP Pattern",
+        "strongest_component": "Trend Template",
+        "component_breakdown": {
+          "trend_template": {
+            "score": 100.0,
+            "weight": 0.25,
+            "weighted": 25.0,
+            "label": "Trend Template (Stage 2)"
+          },
+          "contraction_quality": {
+            "score": 30,
+            "weight": 0.25,
+            "weighted": 7.5,
+            "label": "Contraction Quality"
+          },
+          "volume_pattern": {
+            "score": 30,
+            "weight": 0.2,
+            "weighted": 6.0,
+            "label": "Volume Pattern"
+          },
+          "pivot_proximity": {
+            "score": 80,
+            "weight": 0.15,
+            "weighted": 12.0,
+            "label": "Pivot Proximity"
+          },
+          "relative_strength": {
+            "score": 95,
+            "weight": 0.15,
+            "weighted": 14.2,
+            "label": "Relative Strength"
+          }
+        }
+      },
+      "trend_template": {
+        "score": 100.0,
+        "passed": "True",
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing"
+      },
+      "vcp_pattern": {
+        "score": 30,
+        "valid_vcp": "False",
+        "num_contractions": 2,
+        "pivot_price": 941.0
+      },
+      "volume_pattern": {
+        "score": 30,
+        "dry_up_ratio": 3.41
+      },
+      "pivot_proximity": {
+        "score": 80,
+        "distance_from_pivot_pct": 1.0,
+        "trade_status": "NEAR PIVOT"
+      },
+      "relative_strength": {
+        "score": 95,
+        "rs_rank_estimate": 95
+      },
+      "stage": {
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing"
+      }
+    },
+    {
       "symbol": "012200",
       "name": "계양전기",
       "market": "KR",
@@ -2728,7 +2884,7 @@
       },
       "volume_pattern": {
         "score": 70,
-        "dry_up_ratio": 0.62
+        "dry_up_ratio": 0.61
       },
       "pivot_proximity": {
         "score": 40,
@@ -2806,7 +2962,85 @@
       },
       "volume_pattern": {
         "score": 70,
-        "dry_up_ratio": 0.62
+        "dry_up_ratio": 0.61
+      },
+      "pivot_proximity": {
+        "score": 40,
+        "distance_from_pivot_pct": 12.9,
+        "trade_status": "BUILDING"
+      },
+      "relative_strength": {
+        "score": 50,
+        "rs_rank_estimate": 50
+      },
+      "stage": {
+        "stage": 2,
+        "stage_label": "Stage 2 - Early"
+      }
+    },
+    {
+      "symbol": "012200",
+      "name": "계양전기",
+      "market": "KR",
+      "sector": "",
+      "price": 6680.0,
+      "composite": {
+        "composite_score": 64.8,
+        "rating": "Good VCP",
+        "rating_description": "양호한 VCP 패턴",
+        "guidance": "거래량 확인 후 피벗 매수",
+        "valid_vcp": "True",
+        "entry_ready": false,
+        "weakest_component": "Pivot Proximity",
+        "strongest_component": "Trend Template",
+        "component_breakdown": {
+          "trend_template": {
+            "score": 75.0,
+            "weight": 0.25,
+            "weighted": 18.8,
+            "label": "Trend Template (Stage 2)"
+          },
+          "contraction_quality": {
+            "score": 74,
+            "weight": 0.25,
+            "weighted": 18.5,
+            "label": "Contraction Quality"
+          },
+          "volume_pattern": {
+            "score": 70,
+            "weight": 0.2,
+            "weighted": 14.0,
+            "label": "Volume Pattern"
+          },
+          "pivot_proximity": {
+            "score": 40,
+            "weight": 0.15,
+            "weighted": 6.0,
+            "label": "Pivot Proximity"
+          },
+          "relative_strength": {
+            "score": 50,
+            "weight": 0.15,
+            "weighted": 7.5,
+            "label": "Relative Strength"
+          }
+        }
+      },
+      "trend_template": {
+        "score": 75.0,
+        "passed": "True",
+        "stage": 2,
+        "stage_label": "Stage 2 - Early"
+      },
+      "vcp_pattern": {
+        "score": 74,
+        "valid_vcp": "True",
+        "num_contractions": 3,
+        "pivot_price": 7670.0
+      },
+      "volume_pattern": {
+        "score": 70,
+        "dry_up_ratio": 0.61
       },
       "pivot_proximity": {
         "score": 40,
@@ -2979,20 +3213,20 @@
       }
     },
     {
-      "symbol": "001440",
-      "name": "대한전선",
+      "symbol": "024740",
+      "name": "한일단조",
       "market": "KR",
       "sector": "",
-      "price": 28650.0,
+      "price": 2825.0,
       "composite": {
         "composite_score": 64.6,
         "rating": "Good VCP",
         "rating_description": "양호한 VCP 패턴",
         "guidance": "거래량 확인 후 피벗 매수",
-        "valid_vcp": false,
-        "entry_ready": false,
-        "weakest_component": "VCP Pattern",
-        "strongest_component": "Volume Pattern",
+        "valid_vcp": "False",
+        "entry_ready": "False",
+        "weakest_component": "Pivot Proximity",
+        "strongest_component": "Relative Strength",
         "component_breakdown": {
           "trend_template": {
             "score": 87.5,
@@ -3001,165 +3235,9 @@
             "label": "Trend Template (Stage 2)"
           },
           "contraction_quality": {
-            "score": 15,
+            "score": 30,
             "weight": 0.25,
-            "weighted": 3.8,
-            "label": "Contraction Quality"
-          },
-          "volume_pattern": {
-            "score": 90,
-            "weight": 0.2,
-            "weighted": 18.0,
-            "label": "Volume Pattern"
-          },
-          "pivot_proximity": {
-            "score": 60,
-            "weight": 0.15,
-            "weighted": 9.0,
-            "label": "Pivot Proximity"
-          },
-          "relative_strength": {
-            "score": 80,
-            "weight": 0.15,
-            "weighted": 12.0,
-            "label": "Relative Strength"
-          }
-        }
-      },
-      "trend_template": {
-        "score": 87.5,
-        "passed": "True",
-        "stage": 2,
-        "stage_label": "Stage 2 - Advancing"
-      },
-      "vcp_pattern": {
-        "score": 15,
-        "valid_vcp": false,
-        "num_contractions": 1,
-        "pivot_price": 30800.0
-      },
-      "volume_pattern": {
-        "score": 90,
-        "dry_up_ratio": 0.45
-      },
-      "pivot_proximity": {
-        "score": 60,
-        "distance_from_pivot_pct": 7.0,
-        "trade_status": "APPROACHING"
-      },
-      "relative_strength": {
-        "score": 80,
-        "rs_rank_estimate": 80
-      },
-      "stage": {
-        "stage": 2,
-        "stage_label": "Stage 2 - Advancing"
-      }
-    },
-    {
-      "symbol": "001440",
-      "name": "대한전선",
-      "market": "KR",
-      "sector": "",
-      "price": 28650.0,
-      "composite": {
-        "composite_score": 64.6,
-        "rating": "Good VCP",
-        "rating_description": "양호한 VCP 패턴",
-        "guidance": "거래량 확인 후 피벗 매수",
-        "valid_vcp": false,
-        "entry_ready": false,
-        "weakest_component": "VCP Pattern",
-        "strongest_component": "Volume Pattern",
-        "component_breakdown": {
-          "trend_template": {
-            "score": 87.5,
-            "weight": 0.25,
-            "weighted": 21.9,
-            "label": "Trend Template (Stage 2)"
-          },
-          "contraction_quality": {
-            "score": 15,
-            "weight": 0.25,
-            "weighted": 3.8,
-            "label": "Contraction Quality"
-          },
-          "volume_pattern": {
-            "score": 90,
-            "weight": 0.2,
-            "weighted": 18.0,
-            "label": "Volume Pattern"
-          },
-          "pivot_proximity": {
-            "score": 60,
-            "weight": 0.15,
-            "weighted": 9.0,
-            "label": "Pivot Proximity"
-          },
-          "relative_strength": {
-            "score": 80,
-            "weight": 0.15,
-            "weighted": 12.0,
-            "label": "Relative Strength"
-          }
-        }
-      },
-      "trend_template": {
-        "score": 87.5,
-        "passed": "True",
-        "stage": 2,
-        "stage_label": "Stage 2 - Advancing"
-      },
-      "vcp_pattern": {
-        "score": 15,
-        "valid_vcp": false,
-        "num_contractions": 1,
-        "pivot_price": 30800.0
-      },
-      "volume_pattern": {
-        "score": 90,
-        "dry_up_ratio": 0.45
-      },
-      "pivot_proximity": {
-        "score": 60,
-        "distance_from_pivot_pct": 7.0,
-        "trade_status": "APPROACHING"
-      },
-      "relative_strength": {
-        "score": 80,
-        "rs_rank_estimate": 80
-      },
-      "stage": {
-        "stage": 2,
-        "stage_label": "Stage 2 - Advancing"
-      }
-    },
-    {
-      "symbol": "010820",
-      "name": "퍼스텍",
-      "market": "KR",
-      "sector": "",
-      "price": 7310.0,
-      "composite": {
-        "composite_score": 64.0,
-        "rating": "Good VCP",
-        "rating_description": "양호한 VCP 패턴",
-        "guidance": "거래량 확인 후 피벗 매수",
-        "valid_vcp": false,
-        "entry_ready": false,
-        "weakest_component": "VCP Pattern",
-        "strongest_component": "Trend Template",
-        "component_breakdown": {
-          "trend_template": {
-            "score": 100.0,
-            "weight": 0.25,
-            "weighted": 25.0,
-            "label": "Trend Template (Stage 2)"
-          },
-          "contraction_quality": {
-            "score": 15,
-            "weight": 0.25,
-            "weighted": 3.8,
+            "weighted": 7.5,
             "label": "Contraction Quality"
           },
           "volume_pattern": {
@@ -3183,24 +3261,24 @@
         }
       },
       "trend_template": {
-        "score": 100.0,
+        "score": 87.5,
         "passed": "True",
         "stage": 2,
         "stage_label": "Stage 2 - Advancing"
       },
       "vcp_pattern": {
-        "score": 15,
-        "valid_vcp": false,
-        "num_contractions": 1,
-        "pivot_price": 9020.0
+        "score": 30,
+        "valid_vcp": "False",
+        "num_contractions": 2,
+        "pivot_price": 3945.0
       },
       "volume_pattern": {
         "score": 90,
-        "dry_up_ratio": 0.37
+        "dry_up_ratio": 0.46
       },
       "pivot_proximity": {
         "score": 20,
-        "distance_from_pivot_pct": 19.0,
+        "distance_from_pivot_pct": 28.4,
         "trade_status": "FAR"
       },
       "relative_strength": {
@@ -3213,19 +3291,19 @@
       }
     },
     {
-      "symbol": "010820",
-      "name": "퍼스텍",
+      "symbol": "032820",
+      "name": "우리기술",
       "market": "KR",
       "sector": "",
-      "price": 7310.0,
+      "price": 22050.0,
       "composite": {
-        "composite_score": 64.0,
+        "composite_score": 63.8,
         "rating": "Good VCP",
         "rating_description": "양호한 VCP 패턴",
         "guidance": "거래량 확인 후 피벗 매수",
-        "valid_vcp": false,
-        "entry_ready": false,
-        "weakest_component": "VCP Pattern",
+        "valid_vcp": "False",
+        "entry_ready": "False",
+        "weakest_component": "Pivot Proximity",
         "strongest_component": "Trend Template",
         "component_breakdown": {
           "trend_template": {
@@ -3235,15 +3313,15 @@
             "label": "Trend Template (Stage 2)"
           },
           "contraction_quality": {
-            "score": 15,
+            "score": 30,
             "weight": 0.25,
-            "weighted": 3.8,
+            "weighted": 7.5,
             "label": "Contraction Quality"
           },
           "volume_pattern": {
-            "score": 90,
+            "score": 70,
             "weight": 0.2,
-            "weighted": 18.0,
+            "weighted": 14.0,
             "label": "Volume Pattern"
           },
           "pivot_proximity": {
@@ -3267,18 +3345,18 @@
         "stage_label": "Stage 2 - Advancing"
       },
       "vcp_pattern": {
-        "score": 15,
-        "valid_vcp": false,
-        "num_contractions": 1,
-        "pivot_price": 9020.0
+        "score": 30,
+        "valid_vcp": "False",
+        "num_contractions": 2,
+        "pivot_price": 29300.0
       },
       "volume_pattern": {
-        "score": 90,
-        "dry_up_ratio": 0.37
+        "score": 70,
+        "dry_up_ratio": 0.61
       },
       "pivot_proximity": {
         "score": 20,
-        "distance_from_pivot_pct": 19.0,
+        "distance_from_pivot_pct": 24.7,
         "trade_status": "FAR"
       },
       "relative_strength": {
@@ -3525,121 +3603,43 @@
       }
     },
     {
-      "symbol": "034020",
-      "name": "두산에너빌리티",
+      "symbol": "010170",
+      "name": "대한광통신",
       "market": "KR",
       "sector": "",
-      "price": 93600.0,
+      "price": 9410.0,
       "composite": {
-        "composite_score": 63.6,
+        "composite_score": 62.5,
         "rating": "Good VCP",
         "rating_description": "양호한 VCP 패턴",
         "guidance": "거래량 확인 후 피벗 매수",
-        "valid_vcp": "True",
+        "valid_vcp": false,
         "entry_ready": false,
         "weakest_component": "VCP Pattern",
         "strongest_component": "Trend Template",
         "component_breakdown": {
           "trend_template": {
-            "score": 87.5,
-            "weight": 0.25,
-            "weighted": 21.9,
-            "label": "Trend Template (Stage 2)"
-          },
-          "contraction_quality": {
-            "score": 39,
-            "weight": 0.25,
-            "weighted": 9.8,
-            "label": "Contraction Quality"
-          },
-          "volume_pattern": {
-            "score": 70,
-            "weight": 0.2,
-            "weighted": 14.0,
-            "label": "Volume Pattern"
-          },
-          "pivot_proximity": {
-            "score": 40,
-            "weight": 0.15,
-            "weighted": 6.0,
-            "label": "Pivot Proximity"
-          },
-          "relative_strength": {
-            "score": 80,
-            "weight": 0.15,
-            "weighted": 12.0,
-            "label": "Relative Strength"
-          }
-        }
-      },
-      "trend_template": {
-        "score": 87.5,
-        "passed": "True",
-        "stage": 2,
-        "stage_label": "Stage 2 - Advancing"
-      },
-      "vcp_pattern": {
-        "score": 39,
-        "valid_vcp": "True",
-        "num_contractions": 2,
-        "pivot_price": 109600.0
-      },
-      "volume_pattern": {
-        "score": 70,
-        "dry_up_ratio": 0.65
-      },
-      "pivot_proximity": {
-        "score": 40,
-        "distance_from_pivot_pct": 14.6,
-        "trade_status": "BUILDING"
-      },
-      "relative_strength": {
-        "score": 80,
-        "rs_rank_estimate": 80
-      },
-      "stage": {
-        "stage": 2,
-        "stage_label": "Stage 2 - Advancing"
-      }
-    },
-    {
-      "symbol": "019210",
-      "name": "와이지-원",
-      "market": "KR",
-      "sector": "",
-      "price": 12650.0,
-      "composite": {
-        "composite_score": 62.8,
-        "rating": "Good VCP",
-        "rating_description": "양호한 VCP 패턴",
-        "guidance": "거래량 확인 후 피벗 매수",
-        "valid_vcp": "False",
-        "entry_ready": "False",
-        "weakest_component": "VCP Pattern",
-        "strongest_component": "Trend Template",
-        "component_breakdown": {
-          "trend_template": {
             "score": 100.0,
             "weight": 0.25,
             "weighted": 25.0,
             "label": "Trend Template (Stage 2)"
           },
           "contraction_quality": {
-            "score": 30,
+            "score": 15,
             "weight": 0.25,
-            "weighted": 7.5,
+            "weighted": 3.8,
             "label": "Contraction Quality"
           },
           "volume_pattern": {
-            "score": 50,
+            "score": 30,
             "weight": 0.2,
-            "weighted": 10.0,
+            "weighted": 6.0,
             "label": "Volume Pattern"
           },
           "pivot_proximity": {
-            "score": 40,
+            "score": 90,
             "weight": 0.15,
-            "weighted": 6.0,
+            "weighted": 13.5,
             "label": "Pivot Proximity"
           },
           "relative_strength": {
@@ -3657,97 +3657,19 @@
         "stage_label": "Stage 2 - Advancing"
       },
       "vcp_pattern": {
-        "score": 30,
-        "valid_vcp": "False",
-        "num_contractions": 2,
-        "pivot_price": 13790.0
+        "score": 15,
+        "valid_vcp": false,
+        "num_contractions": 1,
+        "pivot_price": 9410.0
       },
       "volume_pattern": {
-        "score": 50,
-        "dry_up_ratio": 0.8
-      },
-      "pivot_proximity": {
-        "score": 40,
-        "distance_from_pivot_pct": 8.3,
-        "trade_status": "BUILDING"
-      },
-      "relative_strength": {
-        "score": 95,
-        "rs_rank_estimate": 95
-      },
-      "stage": {
-        "stage": 2,
-        "stage_label": "Stage 2 - Advancing"
-      }
-    },
-    {
-      "symbol": "019210",
-      "name": "와이지-원",
-      "market": "KR",
-      "sector": "",
-      "price": 12650.0,
-      "composite": {
-        "composite_score": 62.8,
-        "rating": "Good VCP",
-        "rating_description": "양호한 VCP 패턴",
-        "guidance": "거래량 확인 후 피벗 매수",
-        "valid_vcp": "False",
-        "entry_ready": "False",
-        "weakest_component": "VCP Pattern",
-        "strongest_component": "Trend Template",
-        "component_breakdown": {
-          "trend_template": {
-            "score": 100.0,
-            "weight": 0.25,
-            "weighted": 25.0,
-            "label": "Trend Template (Stage 2)"
-          },
-          "contraction_quality": {
-            "score": 30,
-            "weight": 0.25,
-            "weighted": 7.5,
-            "label": "Contraction Quality"
-          },
-          "volume_pattern": {
-            "score": 50,
-            "weight": 0.2,
-            "weighted": 10.0,
-            "label": "Volume Pattern"
-          },
-          "pivot_proximity": {
-            "score": 40,
-            "weight": 0.15,
-            "weighted": 6.0,
-            "label": "Pivot Proximity"
-          },
-          "relative_strength": {
-            "score": 95,
-            "weight": 0.15,
-            "weighted": 14.2,
-            "label": "Relative Strength"
-          }
-        }
-      },
-      "trend_template": {
-        "score": 100.0,
-        "passed": "True",
-        "stage": 2,
-        "stage_label": "Stage 2 - Advancing"
-      },
-      "vcp_pattern": {
         "score": 30,
-        "valid_vcp": "False",
-        "num_contractions": 2,
-        "pivot_price": 13790.0
-      },
-      "volume_pattern": {
-        "score": 50,
-        "dry_up_ratio": 0.8
+        "dry_up_ratio": 1.07
       },
       "pivot_proximity": {
-        "score": 40,
-        "distance_from_pivot_pct": 8.3,
-        "trade_status": "BUILDING"
+        "score": 90,
+        "distance_from_pivot_pct": 0.0,
+        "trade_status": "BREAKOUT"
       },
       "relative_strength": {
         "score": 95,
@@ -3899,6 +3821,84 @@
       "volume_pattern": {
         "score": 30,
         "dry_up_ratio": 1.07
+      },
+      "pivot_proximity": {
+        "score": 90,
+        "distance_from_pivot_pct": 0.0,
+        "trade_status": "BREAKOUT"
+      },
+      "relative_strength": {
+        "score": 95,
+        "rs_rank_estimate": 95
+      },
+      "stage": {
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing"
+      }
+    },
+    {
+      "symbol": "046970",
+      "name": "우리로",
+      "market": "KR",
+      "sector": "",
+      "price": 8530.0,
+      "composite": {
+        "composite_score": 62.5,
+        "rating": "Good VCP",
+        "rating_description": "양호한 VCP 패턴",
+        "guidance": "거래량 확인 후 피벗 매수",
+        "valid_vcp": false,
+        "entry_ready": false,
+        "weakest_component": "VCP Pattern",
+        "strongest_component": "Trend Template",
+        "component_breakdown": {
+          "trend_template": {
+            "score": 100.0,
+            "weight": 0.25,
+            "weighted": 25.0,
+            "label": "Trend Template (Stage 2)"
+          },
+          "contraction_quality": {
+            "score": 15,
+            "weight": 0.25,
+            "weighted": 3.8,
+            "label": "Contraction Quality"
+          },
+          "volume_pattern": {
+            "score": 30,
+            "weight": 0.2,
+            "weighted": 6.0,
+            "label": "Volume Pattern"
+          },
+          "pivot_proximity": {
+            "score": 90,
+            "weight": 0.15,
+            "weighted": 13.5,
+            "label": "Pivot Proximity"
+          },
+          "relative_strength": {
+            "score": 95,
+            "weight": 0.15,
+            "weighted": 14.2,
+            "label": "Relative Strength"
+          }
+        }
+      },
+      "trend_template": {
+        "score": 100.0,
+        "passed": "True",
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing"
+      },
+      "vcp_pattern": {
+        "score": 15,
+        "valid_vcp": false,
+        "num_contractions": 1,
+        "pivot_price": 8530.0
+      },
+      "volume_pattern": {
+        "score": 30,
+        "dry_up_ratio": 3.98
       },
       "pivot_proximity": {
         "score": 90,
@@ -4227,6 +4227,162 @@
       }
     },
     {
+      "symbol": "065440",
+      "name": "이루온",
+      "market": "KR",
+      "sector": "",
+      "price": 2730.0,
+      "composite": {
+        "composite_score": 62.5,
+        "rating": "Good VCP",
+        "rating_description": "양호한 VCP 패턴",
+        "guidance": "거래량 확인 후 피벗 매수",
+        "valid_vcp": false,
+        "entry_ready": false,
+        "weakest_component": "VCP Pattern",
+        "strongest_component": "Trend Template",
+        "component_breakdown": {
+          "trend_template": {
+            "score": 100.0,
+            "weight": 0.25,
+            "weighted": 25.0,
+            "label": "Trend Template (Stage 2)"
+          },
+          "contraction_quality": {
+            "score": 15,
+            "weight": 0.25,
+            "weighted": 3.8,
+            "label": "Contraction Quality"
+          },
+          "volume_pattern": {
+            "score": 30,
+            "weight": 0.2,
+            "weighted": 6.0,
+            "label": "Volume Pattern"
+          },
+          "pivot_proximity": {
+            "score": 90,
+            "weight": 0.15,
+            "weighted": 13.5,
+            "label": "Pivot Proximity"
+          },
+          "relative_strength": {
+            "score": 95,
+            "weight": 0.15,
+            "weighted": 14.2,
+            "label": "Relative Strength"
+          }
+        }
+      },
+      "trend_template": {
+        "score": 100.0,
+        "passed": "True",
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing"
+      },
+      "vcp_pattern": {
+        "score": 15,
+        "valid_vcp": false,
+        "num_contractions": 1,
+        "pivot_price": 2730.0
+      },
+      "volume_pattern": {
+        "score": 30,
+        "dry_up_ratio": 1.57
+      },
+      "pivot_proximity": {
+        "score": 90,
+        "distance_from_pivot_pct": 0.0,
+        "trade_status": "BREAKOUT"
+      },
+      "relative_strength": {
+        "score": 95,
+        "rs_rank_estimate": 95
+      },
+      "stage": {
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing"
+      }
+    },
+    {
+      "symbol": "027360",
+      "name": "아주IB투자",
+      "market": "KR",
+      "sector": "",
+      "price": 9370.0,
+      "composite": {
+        "composite_score": 62.5,
+        "rating": "Good VCP",
+        "rating_description": "양호한 VCP 패턴",
+        "guidance": "거래량 확인 후 피벗 매수",
+        "valid_vcp": false,
+        "entry_ready": false,
+        "weakest_component": "VCP Pattern",
+        "strongest_component": "Trend Template",
+        "component_breakdown": {
+          "trend_template": {
+            "score": 100.0,
+            "weight": 0.25,
+            "weighted": 25.0,
+            "label": "Trend Template (Stage 2)"
+          },
+          "contraction_quality": {
+            "score": 15,
+            "weight": 0.25,
+            "weighted": 3.8,
+            "label": "Contraction Quality"
+          },
+          "volume_pattern": {
+            "score": 30,
+            "weight": 0.2,
+            "weighted": 6.0,
+            "label": "Volume Pattern"
+          },
+          "pivot_proximity": {
+            "score": 90,
+            "weight": 0.15,
+            "weighted": 13.5,
+            "label": "Pivot Proximity"
+          },
+          "relative_strength": {
+            "score": 95,
+            "weight": 0.15,
+            "weighted": 14.2,
+            "label": "Relative Strength"
+          }
+        }
+      },
+      "trend_template": {
+        "score": 100.0,
+        "passed": "True",
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing"
+      },
+      "vcp_pattern": {
+        "score": 15,
+        "valid_vcp": false,
+        "num_contractions": 1,
+        "pivot_price": 9370.0
+      },
+      "volume_pattern": {
+        "score": 30,
+        "dry_up_ratio": 1.44
+      },
+      "pivot_proximity": {
+        "score": 90,
+        "distance_from_pivot_pct": 0.0,
+        "trade_status": "BREAKOUT"
+      },
+      "relative_strength": {
+        "score": 95,
+        "rs_rank_estimate": 95
+      },
+      "stage": {
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing"
+      }
+    },
+    {
       "symbol": "027360",
       "name": "아주IB투자",
       "market": "KR",
@@ -4372,162 +4528,6 @@
         "score": 90,
         "distance_from_pivot_pct": 0.0,
         "trade_status": "BREAKOUT"
-      },
-      "relative_strength": {
-        "score": 95,
-        "rs_rank_estimate": 95
-      },
-      "stage": {
-        "stage": 2,
-        "stage_label": "Stage 2 - Advancing"
-      }
-    },
-    {
-      "symbol": "100090",
-      "name": "SK오션플랜트",
-      "market": "KR",
-      "sector": "",
-      "price": 28350.0,
-      "composite": {
-        "composite_score": 61.8,
-        "rating": "Good VCP",
-        "rating_description": "양호한 VCP 패턴",
-        "guidance": "거래량 확인 후 피벗 매수",
-        "valid_vcp": "False",
-        "entry_ready": "False",
-        "weakest_component": "VCP Pattern",
-        "strongest_component": "Trend Template",
-        "component_breakdown": {
-          "trend_template": {
-            "score": 100.0,
-            "weight": 0.25,
-            "weighted": 25.0,
-            "label": "Trend Template (Stage 2)"
-          },
-          "contraction_quality": {
-            "score": 30,
-            "weight": 0.25,
-            "weighted": 7.5,
-            "label": "Contraction Quality"
-          },
-          "volume_pattern": {
-            "score": 30,
-            "weight": 0.2,
-            "weighted": 6.0,
-            "label": "Volume Pattern"
-          },
-          "pivot_proximity": {
-            "score": 60,
-            "weight": 0.15,
-            "weighted": 9.0,
-            "label": "Pivot Proximity"
-          },
-          "relative_strength": {
-            "score": 95,
-            "weight": 0.15,
-            "weighted": 14.2,
-            "label": "Relative Strength"
-          }
-        }
-      },
-      "trend_template": {
-        "score": 100.0,
-        "passed": "True",
-        "stage": 2,
-        "stage_label": "Stage 2 - Advancing"
-      },
-      "vcp_pattern": {
-        "score": 30,
-        "valid_vcp": "False",
-        "num_contractions": 2,
-        "pivot_price": 29350.0
-      },
-      "volume_pattern": {
-        "score": 30,
-        "dry_up_ratio": 3.86
-      },
-      "pivot_proximity": {
-        "score": 60,
-        "distance_from_pivot_pct": 3.4,
-        "trade_status": "APPROACHING"
-      },
-      "relative_strength": {
-        "score": 95,
-        "rs_rank_estimate": 95
-      },
-      "stage": {
-        "stage": 2,
-        "stage_label": "Stage 2 - Advancing"
-      }
-    },
-    {
-      "symbol": "100090",
-      "name": "SK오션플랜트",
-      "market": "KR",
-      "sector": "",
-      "price": 28350.0,
-      "composite": {
-        "composite_score": 61.8,
-        "rating": "Good VCP",
-        "rating_description": "양호한 VCP 패턴",
-        "guidance": "거래량 확인 후 피벗 매수",
-        "valid_vcp": "False",
-        "entry_ready": "False",
-        "weakest_component": "VCP Pattern",
-        "strongest_component": "Trend Template",
-        "component_breakdown": {
-          "trend_template": {
-            "score": 100.0,
-            "weight": 0.25,
-            "weighted": 25.0,
-            "label": "Trend Template (Stage 2)"
-          },
-          "contraction_quality": {
-            "score": 30,
-            "weight": 0.25,
-            "weighted": 7.5,
-            "label": "Contraction Quality"
-          },
-          "volume_pattern": {
-            "score": 30,
-            "weight": 0.2,
-            "weighted": 6.0,
-            "label": "Volume Pattern"
-          },
-          "pivot_proximity": {
-            "score": 60,
-            "weight": 0.15,
-            "weighted": 9.0,
-            "label": "Pivot Proximity"
-          },
-          "relative_strength": {
-            "score": 95,
-            "weight": 0.15,
-            "weighted": 14.2,
-            "label": "Relative Strength"
-          }
-        }
-      },
-      "trend_template": {
-        "score": 100.0,
-        "passed": "True",
-        "stage": 2,
-        "stage_label": "Stage 2 - Advancing"
-      },
-      "vcp_pattern": {
-        "score": 30,
-        "valid_vcp": "False",
-        "num_contractions": 2,
-        "pivot_price": 29350.0
-      },
-      "volume_pattern": {
-        "score": 30,
-        "dry_up_ratio": 3.86
-      },
-      "pivot_proximity": {
-        "score": 60,
-        "distance_from_pivot_pct": 3.4,
-        "trade_status": "APPROACHING"
       },
       "relative_strength": {
         "score": 95,
@@ -4695,11 +4695,11 @@
       }
     },
     {
-      "symbol": "003530",
-      "name": "한화투자증권",
+      "symbol": "138360",
+      "name": "앤로보틱스",
       "market": "KR",
       "sector": "",
-      "price": 6510.0,
+      "price": 1825.0,
       "composite": {
         "composite_score": 61.5,
         "rating": "Good VCP",
@@ -4752,15 +4752,15 @@
         "score": 30,
         "valid_vcp": "False",
         "num_contractions": 2,
-        "pivot_price": 7920.0
+        "pivot_price": 2210.0
       },
       "volume_pattern": {
         "score": 90,
-        "dry_up_ratio": 0.43
+        "dry_up_ratio": 0.4
       },
       "pivot_proximity": {
         "score": 20,
-        "distance_from_pivot_pct": 17.8,
+        "distance_from_pivot_pct": 17.4,
         "trade_status": "FAR"
       },
       "relative_strength": {
@@ -4773,43 +4773,43 @@
       }
     },
     {
-      "symbol": "003530",
-      "name": "한화투자증권",
+      "symbol": "008350",
+      "name": "남선알미늄",
       "market": "KR",
       "sector": "",
-      "price": 6510.0,
+      "price": 1780.0,
       "composite": {
-        "composite_score": 61.5,
+        "composite_score": 61.0,
         "rating": "Good VCP",
         "rating_description": "양호한 VCP 패턴",
         "guidance": "거래량 확인 후 피벗 매수",
-        "valid_vcp": "False",
-        "entry_ready": "False",
-        "weakest_component": "Pivot Proximity",
-        "strongest_component": "Relative Strength",
+        "valid_vcp": false,
+        "entry_ready": false,
+        "weakest_component": "VCP Pattern",
+        "strongest_component": "Trend Template",
         "component_breakdown": {
           "trend_template": {
-            "score": 75.0,
+            "score": 100.0,
             "weight": 0.25,
-            "weighted": 18.8,
+            "weighted": 25.0,
             "label": "Trend Template (Stage 2)"
           },
           "contraction_quality": {
-            "score": 30,
+            "score": 15,
             "weight": 0.25,
-            "weighted": 7.5,
+            "weighted": 3.8,
             "label": "Contraction Quality"
           },
           "volume_pattern": {
-            "score": 90,
+            "score": 30,
             "weight": 0.2,
-            "weighted": 18.0,
+            "weighted": 6.0,
             "label": "Volume Pattern"
           },
           "pivot_proximity": {
-            "score": 20,
+            "score": 80,
             "weight": 0.15,
-            "weighted": 3.0,
+            "weighted": 12.0,
             "label": "Pivot Proximity"
           },
           "relative_strength": {
@@ -4821,25 +4821,25 @@
         }
       },
       "trend_template": {
-        "score": 75.0,
+        "score": 100.0,
         "passed": "True",
         "stage": 2,
-        "stage_label": "Stage 2 - Early"
+        "stage_label": "Stage 2 - Advancing"
       },
       "vcp_pattern": {
-        "score": 30,
-        "valid_vcp": "False",
-        "num_contractions": 2,
-        "pivot_price": 7920.0
+        "score": 15,
+        "valid_vcp": false,
+        "num_contractions": 1,
+        "pivot_price": 1800.0
       },
       "volume_pattern": {
-        "score": 90,
-        "dry_up_ratio": 0.43
+        "score": 30,
+        "dry_up_ratio": 1.87
       },
       "pivot_proximity": {
-        "score": 20,
-        "distance_from_pivot_pct": 17.8,
-        "trade_status": "FAR"
+        "score": 80,
+        "distance_from_pivot_pct": 1.1,
+        "trade_status": "NEAR PIVOT"
       },
       "relative_strength": {
         "score": 95,
@@ -4847,7 +4847,7 @@
       },
       "stage": {
         "stage": 2,
-        "stage_label": "Stage 2 - Early"
+        "stage_label": "Stage 2 - Advancing"
       }
     },
     {
@@ -5163,31 +5163,31 @@
       }
     },
     {
-      "symbol": "028050",
-      "name": "삼성E&A",
+      "symbol": "062970",
+      "name": "한국첨단소재",
       "market": "KR",
       "sector": "",
-      "price": 35100.0,
+      "price": 2995.0,
       "composite": {
-        "composite_score": 59.8,
-        "rating": "Developing VCP",
-        "rating_description": "형성 중인 VCP 패턴",
+        "composite_score": 60.4,
+        "rating": "Good VCP",
+        "rating_description": "양호한 VCP 패턴",
         "guidance": "거래량 확인 후 피벗 매수",
         "valid_vcp": "False",
         "entry_ready": "False",
         "weakest_component": "Volume Pattern",
-        "strongest_component": "Trend Template",
+        "strongest_component": "Relative Strength",
         "component_breakdown": {
           "trend_template": {
-            "score": 100.0,
+            "score": 87.5,
             "weight": 0.25,
-            "weighted": 25.0,
+            "weighted": 21.9,
             "label": "Trend Template (Stage 2)"
           },
           "contraction_quality": {
-            "score": 34,
+            "score": 37,
             "weight": 0.25,
-            "weighted": 8.5,
+            "weighted": 9.2,
             "label": "Contraction Quality"
           },
           "volume_pattern": {
@@ -5197,9 +5197,9 @@
             "label": "Volume Pattern"
           },
           "pivot_proximity": {
-            "score": 40,
+            "score": 60,
             "weight": 0.15,
-            "weighted": 6.0,
+            "weighted": 9.0,
             "label": "Pivot Proximity"
           },
           "relative_strength": {
@@ -5211,103 +5211,25 @@
         }
       },
       "trend_template": {
-        "score": 100.0,
+        "score": 87.5,
         "passed": "True",
         "stage": 2,
         "stage_label": "Stage 2 - Advancing"
       },
       "vcp_pattern": {
-        "score": 34,
+        "score": 37,
         "valid_vcp": "False",
         "num_contractions": 2,
-        "pivot_price": 37900.0
+        "pivot_price": 3190.0
       },
       "volume_pattern": {
         "score": 30,
-        "dry_up_ratio": 2.08
+        "dry_up_ratio": 2.11
       },
       "pivot_proximity": {
-        "score": 40,
-        "distance_from_pivot_pct": 7.4,
-        "trade_status": "BUILDING"
-      },
-      "relative_strength": {
-        "score": 95,
-        "rs_rank_estimate": 95
-      },
-      "stage": {
-        "stage": 2,
-        "stage_label": "Stage 2 - Advancing"
-      }
-    },
-    {
-      "symbol": "028050",
-      "name": "삼성E&A",
-      "market": "KR",
-      "sector": "",
-      "price": 35100.0,
-      "composite": {
-        "composite_score": 59.8,
-        "rating": "Developing VCP",
-        "rating_description": "형성 중인 VCP 패턴",
-        "guidance": "거래량 확인 후 피벗 매수",
-        "valid_vcp": "False",
-        "entry_ready": "False",
-        "weakest_component": "Volume Pattern",
-        "strongest_component": "Trend Template",
-        "component_breakdown": {
-          "trend_template": {
-            "score": 100.0,
-            "weight": 0.25,
-            "weighted": 25.0,
-            "label": "Trend Template (Stage 2)"
-          },
-          "contraction_quality": {
-            "score": 34,
-            "weight": 0.25,
-            "weighted": 8.5,
-            "label": "Contraction Quality"
-          },
-          "volume_pattern": {
-            "score": 30,
-            "weight": 0.2,
-            "weighted": 6.0,
-            "label": "Volume Pattern"
-          },
-          "pivot_proximity": {
-            "score": 40,
-            "weight": 0.15,
-            "weighted": 6.0,
-            "label": "Pivot Proximity"
-          },
-          "relative_strength": {
-            "score": 95,
-            "weight": 0.15,
-            "weighted": 14.2,
-            "label": "Relative Strength"
-          }
-        }
-      },
-      "trend_template": {
-        "score": 100.0,
-        "passed": "True",
-        "stage": 2,
-        "stage_label": "Stage 2 - Advancing"
-      },
-      "vcp_pattern": {
-        "score": 34,
-        "valid_vcp": "False",
-        "num_contractions": 2,
-        "pivot_price": 37900.0
-      },
-      "volume_pattern": {
-        "score": 30,
-        "dry_up_ratio": 2.08
-      },
-      "pivot_proximity": {
-        "score": 40,
-        "distance_from_pivot_pct": 7.4,
-        "trade_status": "BUILDING"
+        "score": 60,
+        "distance_from_pivot_pct": 6.1,
+        "trade_status": "APPROACHING"
       },
       "relative_strength": {
         "score": 95,
@@ -5475,11 +5397,11 @@
       }
     },
     {
-      "symbol": "450080",
-      "name": "에코프로머티",
+      "symbol": "001740",
+      "name": "SK네트웍스",
       "market": "KR",
       "sector": "",
-      "price": 70700.0,
+      "price": 5420.0,
       "composite": {
         "composite_score": 59.5,
         "rating": "Developing VCP",
@@ -5532,15 +5454,15 @@
         "score": 30,
         "valid_vcp": "False",
         "num_contractions": 2,
-        "pivot_price": 73400.0
+        "pivot_price": 5610.0
       },
       "volume_pattern": {
         "score": 30,
-        "dry_up_ratio": 1.25
+        "dry_up_ratio": 0.93
       },
       "pivot_proximity": {
         "score": 60,
-        "distance_from_pivot_pct": 3.7,
+        "distance_from_pivot_pct": 3.4,
         "trade_status": "APPROACHING"
       },
       "relative_strength": {
@@ -5553,31 +5475,31 @@
       }
     },
     {
-      "symbol": "450080",
-      "name": "에코프로머티",
+      "symbol": "005010",
+      "name": "휴스틸",
       "market": "KR",
       "sector": "",
-      "price": 70700.0,
+      "price": 5690.0,
       "composite": {
-        "composite_score": 59.5,
+        "composite_score": 59.4,
         "rating": "Developing VCP",
         "rating_description": "형성 중인 VCP 패턴",
         "guidance": "거래량 확인 후 피벗 매수",
-        "valid_vcp": "False",
-        "entry_ready": "False",
+        "valid_vcp": false,
+        "entry_ready": false,
         "weakest_component": "VCP Pattern",
-        "strongest_component": "Trend Template",
+        "strongest_component": "Relative Strength",
         "component_breakdown": {
           "trend_template": {
-            "score": 100.0,
+            "score": 87.5,
             "weight": 0.25,
-            "weighted": 25.0,
+            "weighted": 21.9,
             "label": "Trend Template (Stage 2)"
           },
           "contraction_quality": {
-            "score": 30,
+            "score": 15,
             "weight": 0.25,
-            "weighted": 7.5,
+            "weighted": 3.8,
             "label": "Contraction Quality"
           },
           "volume_pattern": {
@@ -5587,43 +5509,43 @@
             "label": "Volume Pattern"
           },
           "pivot_proximity": {
-            "score": 60,
+            "score": 90,
             "weight": 0.15,
-            "weighted": 9.0,
+            "weighted": 13.5,
             "label": "Pivot Proximity"
           },
           "relative_strength": {
-            "score": 80,
+            "score": 95,
             "weight": 0.15,
-            "weighted": 12.0,
+            "weighted": 14.2,
             "label": "Relative Strength"
           }
         }
       },
       "trend_template": {
-        "score": 100.0,
+        "score": 87.5,
         "passed": "True",
         "stage": 2,
         "stage_label": "Stage 2 - Advancing"
       },
       "vcp_pattern": {
-        "score": 30,
-        "valid_vcp": "False",
-        "num_contractions": 2,
-        "pivot_price": 73400.0
+        "score": 15,
+        "valid_vcp": false,
+        "num_contractions": 1,
+        "pivot_price": 5690.0
       },
       "volume_pattern": {
         "score": 30,
-        "dry_up_ratio": 1.25
+        "dry_up_ratio": 1.94
       },
       "pivot_proximity": {
-        "score": 60,
-        "distance_from_pivot_pct": 3.7,
-        "trade_status": "APPROACHING"
+        "score": 90,
+        "distance_from_pivot_pct": 0.0,
+        "trade_status": "BREAKOUT"
       },
       "relative_strength": {
-        "score": 80,
-        "rs_rank_estimate": 80
+        "score": 95,
+        "rs_rank_estimate": 95
       },
       "stage": {
         "stage": 2,
@@ -5943,37 +5865,37 @@
       }
     },
     {
-      "symbol": "013810",
-      "name": "스페코",
+      "symbol": "010140",
+      "name": "삼성중공업",
       "market": "KR",
       "sector": "",
-      "price": 2775.0,
+      "price": 26900.0,
       "composite": {
-        "composite_score": 59.1,
+        "composite_score": 59.4,
         "rating": "Developing VCP",
         "rating_description": "형성 중인 VCP 패턴",
         "guidance": "거래량 확인 후 피벗 매수",
-        "valid_vcp": "False",
-        "entry_ready": "False",
-        "weakest_component": "VCP Pattern",
-        "strongest_component": "Volume Pattern",
+        "valid_vcp": "True",
+        "entry_ready": false,
+        "weakest_component": "Volume Pattern",
+        "strongest_component": "Trend Template",
         "component_breakdown": {
           "trend_template": {
-            "score": 62.5,
+            "score": 87.5,
             "weight": 0.25,
-            "weighted": 15.6,
+            "weighted": 21.9,
             "label": "Trend Template (Stage 2)"
           },
           "contraction_quality": {
-            "score": 30,
+            "score": 63,
             "weight": 0.25,
-            "weighted": 7.5,
+            "weighted": 15.8,
             "label": "Contraction Quality"
           },
           "volume_pattern": {
-            "score": 90,
+            "score": 30,
             "weight": 0.2,
-            "weighted": 18.0,
+            "weighted": 6.0,
             "label": "Volume Pattern"
           },
           "pivot_proximity": {
@@ -5983,119 +5905,41 @@
             "label": "Pivot Proximity"
           },
           "relative_strength": {
-            "score": 80,
+            "score": 65,
             "weight": 0.15,
-            "weighted": 12.0,
+            "weighted": 9.8,
             "label": "Relative Strength"
           }
         }
       },
       "trend_template": {
-        "score": 62.5,
+        "score": 87.5,
         "passed": "True",
         "stage": 2,
-        "stage_label": "Stage 2 - Early"
+        "stage_label": "Stage 2 - Advancing"
       },
       "vcp_pattern": {
-        "score": 30,
-        "valid_vcp": "False",
-        "num_contractions": 2,
-        "pivot_price": 2995.0
+        "score": 63,
+        "valid_vcp": "True",
+        "num_contractions": 3,
+        "pivot_price": 30850.0
       },
       "volume_pattern": {
-        "score": 90,
-        "dry_up_ratio": 0.27
+        "score": 30,
+        "dry_up_ratio": 0.94
       },
       "pivot_proximity": {
         "score": 40,
-        "distance_from_pivot_pct": 7.3,
+        "distance_from_pivot_pct": 12.8,
         "trade_status": "BUILDING"
       },
       "relative_strength": {
-        "score": 80,
-        "rs_rank_estimate": 80
+        "score": 65,
+        "rs_rank_estimate": 65
       },
       "stage": {
         "stage": 2,
-        "stage_label": "Stage 2 - Early"
-      }
-    },
-    {
-      "symbol": "013810",
-      "name": "스페코",
-      "market": "KR",
-      "sector": "",
-      "price": 2775.0,
-      "composite": {
-        "composite_score": 59.1,
-        "rating": "Developing VCP",
-        "rating_description": "형성 중인 VCP 패턴",
-        "guidance": "거래량 확인 후 피벗 매수",
-        "valid_vcp": "False",
-        "entry_ready": "False",
-        "weakest_component": "VCP Pattern",
-        "strongest_component": "Volume Pattern",
-        "component_breakdown": {
-          "trend_template": {
-            "score": 62.5,
-            "weight": 0.25,
-            "weighted": 15.6,
-            "label": "Trend Template (Stage 2)"
-          },
-          "contraction_quality": {
-            "score": 30,
-            "weight": 0.25,
-            "weighted": 7.5,
-            "label": "Contraction Quality"
-          },
-          "volume_pattern": {
-            "score": 90,
-            "weight": 0.2,
-            "weighted": 18.0,
-            "label": "Volume Pattern"
-          },
-          "pivot_proximity": {
-            "score": 40,
-            "weight": 0.15,
-            "weighted": 6.0,
-            "label": "Pivot Proximity"
-          },
-          "relative_strength": {
-            "score": 80,
-            "weight": 0.15,
-            "weighted": 12.0,
-            "label": "Relative Strength"
-          }
-        }
-      },
-      "trend_template": {
-        "score": 62.5,
-        "passed": "True",
-        "stage": 2,
-        "stage_label": "Stage 2 - Early"
-      },
-      "vcp_pattern": {
-        "score": 30,
-        "valid_vcp": "False",
-        "num_contractions": 2,
-        "pivot_price": 2995.0
-      },
-      "volume_pattern": {
-        "score": 90,
-        "dry_up_ratio": 0.27
-      },
-      "pivot_proximity": {
-        "score": 40,
-        "distance_from_pivot_pct": 7.3,
-        "trade_status": "BUILDING"
-      },
-      "relative_strength": {
-        "score": 80,
-        "rs_rank_estimate": 80
-      },
-      "stage": {
-        "stage": 2,
-        "stage_label": "Stage 2 - Early"
+        "stage_label": "Stage 2 - Advancing"
       }
     },
     {
@@ -6248,6 +6092,162 @@
       "relative_strength": {
         "score": 95,
         "rs_rank_estimate": 95
+      },
+      "stage": {
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing"
+      }
+    },
+    {
+      "symbol": "011930",
+      "name": "신성이엔지",
+      "market": "KR",
+      "sector": "",
+      "price": 2750.0,
+      "composite": {
+        "composite_score": 59.0,
+        "rating": "Developing VCP",
+        "rating_description": "형성 중인 VCP 패턴",
+        "guidance": "거래량 확인 후 피벗 매수",
+        "valid_vcp": false,
+        "entry_ready": false,
+        "weakest_component": "VCP Pattern",
+        "strongest_component": "Trend Template",
+        "component_breakdown": {
+          "trend_template": {
+            "score": 100.0,
+            "weight": 0.25,
+            "weighted": 25.0,
+            "label": "Trend Template (Stage 2)"
+          },
+          "contraction_quality": {
+            "score": 15,
+            "weight": 0.25,
+            "weighted": 3.8,
+            "label": "Contraction Quality"
+          },
+          "volume_pattern": {
+            "score": 50,
+            "weight": 0.2,
+            "weighted": 10.0,
+            "label": "Volume Pattern"
+          },
+          "pivot_proximity": {
+            "score": 40,
+            "weight": 0.15,
+            "weighted": 6.0,
+            "label": "Pivot Proximity"
+          },
+          "relative_strength": {
+            "score": 95,
+            "weight": 0.15,
+            "weighted": 14.2,
+            "label": "Relative Strength"
+          }
+        }
+      },
+      "trend_template": {
+        "score": 100.0,
+        "passed": "True",
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing"
+      },
+      "vcp_pattern": {
+        "score": 15,
+        "valid_vcp": false,
+        "num_contractions": 1,
+        "pivot_price": 3080.0
+      },
+      "volume_pattern": {
+        "score": 50,
+        "dry_up_ratio": 0.83
+      },
+      "pivot_proximity": {
+        "score": 40,
+        "distance_from_pivot_pct": 10.7,
+        "trade_status": "BUILDING"
+      },
+      "relative_strength": {
+        "score": 95,
+        "rs_rank_estimate": 95
+      },
+      "stage": {
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing"
+      }
+    },
+    {
+      "symbol": "038110",
+      "name": "에코플라스틱",
+      "market": "KR",
+      "sector": "",
+      "price": 3695.0,
+      "composite": {
+        "composite_score": 58.8,
+        "rating": "Developing VCP",
+        "rating_description": "형성 중인 VCP 패턴",
+        "guidance": "거래량 확인 후 피벗 매수",
+        "valid_vcp": "True",
+        "entry_ready": false,
+        "weakest_component": "Volume Pattern",
+        "strongest_component": "Trend Template",
+        "component_breakdown": {
+          "trend_template": {
+            "score": 100.0,
+            "weight": 0.25,
+            "weighted": 25.0,
+            "label": "Trend Template (Stage 2)"
+          },
+          "contraction_quality": {
+            "score": 39,
+            "weight": 0.25,
+            "weighted": 9.8,
+            "label": "Contraction Quality"
+          },
+          "volume_pattern": {
+            "score": 30,
+            "weight": 0.2,
+            "weighted": 6.0,
+            "label": "Volume Pattern"
+          },
+          "pivot_proximity": {
+            "score": 40,
+            "weight": 0.15,
+            "weighted": 6.0,
+            "label": "Pivot Proximity"
+          },
+          "relative_strength": {
+            "score": 80,
+            "weight": 0.15,
+            "weighted": 12.0,
+            "label": "Relative Strength"
+          }
+        }
+      },
+      "trend_template": {
+        "score": 100.0,
+        "passed": "True",
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing"
+      },
+      "vcp_pattern": {
+        "score": 39,
+        "valid_vcp": "True",
+        "num_contractions": 2,
+        "pivot_price": 4300.0
+      },
+      "volume_pattern": {
+        "score": 30,
+        "dry_up_ratio": 4.52
+      },
+      "pivot_proximity": {
+        "score": 40,
+        "distance_from_pivot_pct": 14.1,
+        "trade_status": "BUILDING"
+      },
+      "relative_strength": {
+        "score": 80,
+        "rs_rank_estimate": 80
       },
       "stage": {
         "stage": 2,
@@ -6567,18 +6567,18 @@
       }
     },
     {
-      "symbol": "289080",
-      "name": "SV인베스트먼트",
+      "symbol": "137950",
+      "name": "제이씨케미칼",
       "market": "KR",
       "sector": "",
-      "price": 4160.0,
+      "price": 4705.0,
       "composite": {
         "composite_score": 58.8,
         "rating": "Developing VCP",
         "rating_description": "형성 중인 VCP 패턴",
         "guidance": "거래량 확인 후 피벗 매수",
-        "valid_vcp": false,
-        "entry_ready": false,
+        "valid_vcp": "False",
+        "entry_ready": "False",
         "weakest_component": "VCP Pattern",
         "strongest_component": "Trend Template",
         "component_breakdown": {
@@ -6622,95 +6622,17 @@
       },
       "vcp_pattern": {
         "score": 30,
-        "valid_vcp": false,
-        "num_contractions": 1,
-        "pivot_price": 4550.0
+        "valid_vcp": "False",
+        "num_contractions": 2,
+        "pivot_price": 5350.0
       },
       "volume_pattern": {
         "score": 30,
-        "dry_up_ratio": 2.04
+        "dry_up_ratio": 2.81
       },
       "pivot_proximity": {
         "score": 40,
-        "distance_from_pivot_pct": 8.6,
-        "trade_status": "BUILDING"
-      },
-      "relative_strength": {
-        "score": 95,
-        "rs_rank_estimate": 95
-      },
-      "stage": {
-        "stage": 2,
-        "stage_label": "Stage 2 - Advancing"
-      }
-    },
-    {
-      "symbol": "289080",
-      "name": "SV인베스트먼트",
-      "market": "KR",
-      "sector": "",
-      "price": 4160.0,
-      "composite": {
-        "composite_score": 58.8,
-        "rating": "Developing VCP",
-        "rating_description": "형성 중인 VCP 패턴",
-        "guidance": "거래량 확인 후 피벗 매수",
-        "valid_vcp": false,
-        "entry_ready": false,
-        "weakest_component": "VCP Pattern",
-        "strongest_component": "Trend Template",
-        "component_breakdown": {
-          "trend_template": {
-            "score": 100.0,
-            "weight": 0.25,
-            "weighted": 25.0,
-            "label": "Trend Template (Stage 2)"
-          },
-          "contraction_quality": {
-            "score": 30,
-            "weight": 0.25,
-            "weighted": 7.5,
-            "label": "Contraction Quality"
-          },
-          "volume_pattern": {
-            "score": 30,
-            "weight": 0.2,
-            "weighted": 6.0,
-            "label": "Volume Pattern"
-          },
-          "pivot_proximity": {
-            "score": 40,
-            "weight": 0.15,
-            "weighted": 6.0,
-            "label": "Pivot Proximity"
-          },
-          "relative_strength": {
-            "score": 95,
-            "weight": 0.15,
-            "weighted": 14.2,
-            "label": "Relative Strength"
-          }
-        }
-      },
-      "trend_template": {
-        "score": 100.0,
-        "passed": "True",
-        "stage": 2,
-        "stage_label": "Stage 2 - Advancing"
-      },
-      "vcp_pattern": {
-        "score": 30,
-        "valid_vcp": false,
-        "num_contractions": 1,
-        "pivot_price": 4550.0
-      },
-      "volume_pattern": {
-        "score": 30,
-        "dry_up_ratio": 2.04
-      },
-      "pivot_proximity": {
-        "score": 40,
-        "distance_from_pivot_pct": 8.6,
+        "distance_from_pivot_pct": 12.1,
         "trade_status": "BUILDING"
       },
       "relative_strength": {
@@ -6867,6 +6789,162 @@
       "pivot_proximity": {
         "score": 60,
         "distance_from_pivot_pct": 6.7,
+        "trade_status": "APPROACHING"
+      },
+      "relative_strength": {
+        "score": 95,
+        "rs_rank_estimate": 95
+      },
+      "stage": {
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing"
+      }
+    },
+    {
+      "symbol": "033790",
+      "name": "피노",
+      "market": "KR",
+      "sector": "",
+      "price": 7770.0,
+      "composite": {
+        "composite_score": 58.0,
+        "rating": "Developing VCP",
+        "rating_description": "형성 중인 VCP 패턴",
+        "guidance": "거래량 확인 후 피벗 매수",
+        "valid_vcp": false,
+        "entry_ready": false,
+        "weakest_component": "VCP Pattern",
+        "strongest_component": "Trend Template",
+        "component_breakdown": {
+          "trend_template": {
+            "score": 100.0,
+            "weight": 0.25,
+            "weighted": 25.0,
+            "label": "Trend Template (Stage 2)"
+          },
+          "contraction_quality": {
+            "score": 15,
+            "weight": 0.25,
+            "weighted": 3.8,
+            "label": "Contraction Quality"
+          },
+          "volume_pattern": {
+            "score": 30,
+            "weight": 0.2,
+            "weighted": 6.0,
+            "label": "Volume Pattern"
+          },
+          "pivot_proximity": {
+            "score": 60,
+            "weight": 0.15,
+            "weighted": 9.0,
+            "label": "Pivot Proximity"
+          },
+          "relative_strength": {
+            "score": 95,
+            "weight": 0.15,
+            "weighted": 14.2,
+            "label": "Relative Strength"
+          }
+        }
+      },
+      "trend_template": {
+        "score": 100.0,
+        "passed": "True",
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing"
+      },
+      "vcp_pattern": {
+        "score": 15,
+        "valid_vcp": false,
+        "num_contractions": 1,
+        "pivot_price": 8330.0
+      },
+      "volume_pattern": {
+        "score": 30,
+        "dry_up_ratio": 3.7
+      },
+      "pivot_proximity": {
+        "score": 60,
+        "distance_from_pivot_pct": 6.7,
+        "trade_status": "APPROACHING"
+      },
+      "relative_strength": {
+        "score": 95,
+        "rs_rank_estimate": 95
+      },
+      "stage": {
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing"
+      }
+    },
+    {
+      "symbol": "368770",
+      "name": "파이버프로",
+      "market": "KR",
+      "sector": "",
+      "price": 21950.0,
+      "composite": {
+        "composite_score": 58.0,
+        "rating": "Developing VCP",
+        "rating_description": "형성 중인 VCP 패턴",
+        "guidance": "거래량 확인 후 피벗 매수",
+        "valid_vcp": false,
+        "entry_ready": false,
+        "weakest_component": "VCP Pattern",
+        "strongest_component": "Trend Template",
+        "component_breakdown": {
+          "trend_template": {
+            "score": 100.0,
+            "weight": 0.25,
+            "weighted": 25.0,
+            "label": "Trend Template (Stage 2)"
+          },
+          "contraction_quality": {
+            "score": 15,
+            "weight": 0.25,
+            "weighted": 3.8,
+            "label": "Contraction Quality"
+          },
+          "volume_pattern": {
+            "score": 30,
+            "weight": 0.2,
+            "weighted": 6.0,
+            "label": "Volume Pattern"
+          },
+          "pivot_proximity": {
+            "score": 60,
+            "weight": 0.15,
+            "weighted": 9.0,
+            "label": "Pivot Proximity"
+          },
+          "relative_strength": {
+            "score": 95,
+            "weight": 0.15,
+            "weighted": 14.2,
+            "label": "Relative Strength"
+          }
+        }
+      },
+      "trend_template": {
+        "score": 100.0,
+        "passed": "True",
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing"
+      },
+      "vcp_pattern": {
+        "score": 15,
+        "valid_vcp": false,
+        "num_contractions": 1,
+        "pivot_price": 23050.0
+      },
+      "volume_pattern": {
+        "score": 30,
+        "dry_up_ratio": 1.8
+      },
+      "pivot_proximity": {
+        "score": 60,
+        "distance_from_pivot_pct": 4.8,
         "trade_status": "APPROACHING"
       },
       "relative_strength": {
@@ -7191,6 +7269,84 @@
       }
     },
     {
+      "symbol": "005860",
+      "name": "한일사료",
+      "market": "KR",
+      "sector": "",
+      "price": 3860.0,
+      "composite": {
+        "composite_score": 57.8,
+        "rating": "Developing VCP",
+        "rating_description": "형성 중인 VCP 패턴",
+        "guidance": "거래량 확인 후 피벗 매수",
+        "valid_vcp": false,
+        "entry_ready": false,
+        "weakest_component": "VCP Pattern",
+        "strongest_component": "Trend Template",
+        "component_breakdown": {
+          "trend_template": {
+            "score": 100.0,
+            "weight": 0.25,
+            "weighted": 25.0,
+            "label": "Trend Template (Stage 2)"
+          },
+          "contraction_quality": {
+            "score": 15,
+            "weight": 0.25,
+            "weighted": 3.8,
+            "label": "Contraction Quality"
+          },
+          "volume_pattern": {
+            "score": 70,
+            "weight": 0.2,
+            "weighted": 14.0,
+            "label": "Volume Pattern"
+          },
+          "pivot_proximity": {
+            "score": 20,
+            "weight": 0.15,
+            "weighted": 3.0,
+            "label": "Pivot Proximity"
+          },
+          "relative_strength": {
+            "score": 80,
+            "weight": 0.15,
+            "weighted": 12.0,
+            "label": "Relative Strength"
+          }
+        }
+      },
+      "trend_template": {
+        "score": 100.0,
+        "passed": "True",
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing"
+      },
+      "vcp_pattern": {
+        "score": 15,
+        "valid_vcp": false,
+        "num_contractions": 1,
+        "pivot_price": 4570.0
+      },
+      "volume_pattern": {
+        "score": 70,
+        "dry_up_ratio": 0.67
+      },
+      "pivot_proximity": {
+        "score": 20,
+        "distance_from_pivot_pct": 15.5,
+        "trade_status": "FAR"
+      },
+      "relative_strength": {
+        "score": 80,
+        "rs_rank_estimate": 80
+      },
+      "stage": {
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing"
+      }
+    },
+    {
       "symbol": "088350",
       "name": "한화생명",
       "market": "KR",
@@ -7347,19 +7503,19 @@
       }
     },
     {
-      "symbol": "009830",
-      "name": "한화솔루션",
+      "symbol": "088350",
+      "name": "한화생명",
       "market": "KR",
       "sector": "",
-      "price": 35600.0,
+      "price": 4420.0,
       "composite": {
-        "composite_score": 57.2,
+        "composite_score": 57.8,
         "rating": "Developing VCP",
         "rating_description": "형성 중인 VCP 패턴",
         "guidance": "거래량 확인 후 피벗 매수",
-        "valid_vcp": "False",
-        "entry_ready": "False",
-        "weakest_component": "Pivot Proximity",
+        "valid_vcp": false,
+        "entry_ready": false,
+        "weakest_component": "VCP Pattern",
         "strongest_component": "Relative Strength",
         "component_breakdown": {
           "trend_template": {
@@ -7369,15 +7525,15 @@
             "label": "Trend Template (Stage 2)"
           },
           "contraction_quality": {
-            "score": 45,
+            "score": 15,
             "weight": 0.25,
-            "weighted": 11.2,
+            "weighted": 3.8,
             "label": "Contraction Quality"
           },
           "volume_pattern": {
-            "score": 50,
+            "score": 90,
             "weight": 0.2,
-            "weighted": 10.0,
+            "weighted": 18.0,
             "label": "Volume Pattern"
           },
           "pivot_proximity": {
@@ -7401,18 +7557,18 @@
         "stage_label": "Stage 2 - Early"
       },
       "vcp_pattern": {
-        "score": 45,
-        "valid_vcp": "False",
-        "num_contractions": 3,
-        "pivot_price": 53000.0
+        "score": 15,
+        "valid_vcp": false,
+        "num_contractions": 1,
+        "pivot_price": 5250.0
       },
       "volume_pattern": {
-        "score": 50,
-        "dry_up_ratio": 0.78
+        "score": 90,
+        "dry_up_ratio": 0.39
       },
       "pivot_proximity": {
         "score": 20,
-        "distance_from_pivot_pct": 32.8,
+        "distance_from_pivot_pct": 15.8,
         "trade_status": "FAR"
       },
       "relative_strength": {
@@ -7425,109 +7581,31 @@
       }
     },
     {
-      "symbol": "009830",
-      "name": "한화솔루션",
+      "symbol": "321370",
+      "name": "센서뷰",
       "market": "KR",
       "sector": "",
-      "price": 35600.0,
+      "price": 3655.0,
       "composite": {
-        "composite_score": 57.2,
-        "rating": "Developing VCP",
-        "rating_description": "형성 중인 VCP 패턴",
-        "guidance": "거래량 확인 후 피벗 매수",
-        "valid_vcp": "False",
-        "entry_ready": "False",
-        "weakest_component": "Pivot Proximity",
-        "strongest_component": "Relative Strength",
-        "component_breakdown": {
-          "trend_template": {
-            "score": 75.0,
-            "weight": 0.25,
-            "weighted": 18.8,
-            "label": "Trend Template (Stage 2)"
-          },
-          "contraction_quality": {
-            "score": 45,
-            "weight": 0.25,
-            "weighted": 11.2,
-            "label": "Contraction Quality"
-          },
-          "volume_pattern": {
-            "score": 50,
-            "weight": 0.2,
-            "weighted": 10.0,
-            "label": "Volume Pattern"
-          },
-          "pivot_proximity": {
-            "score": 20,
-            "weight": 0.15,
-            "weighted": 3.0,
-            "label": "Pivot Proximity"
-          },
-          "relative_strength": {
-            "score": 95,
-            "weight": 0.15,
-            "weighted": 14.2,
-            "label": "Relative Strength"
-          }
-        }
-      },
-      "trend_template": {
-        "score": 75.0,
-        "passed": "True",
-        "stage": 2,
-        "stage_label": "Stage 2 - Early"
-      },
-      "vcp_pattern": {
-        "score": 45,
-        "valid_vcp": "False",
-        "num_contractions": 3,
-        "pivot_price": 53000.0
-      },
-      "volume_pattern": {
-        "score": 50,
-        "dry_up_ratio": 0.78
-      },
-      "pivot_proximity": {
-        "score": 20,
-        "distance_from_pivot_pct": 32.8,
-        "trade_status": "FAR"
-      },
-      "relative_strength": {
-        "score": 95,
-        "rs_rank_estimate": 95
-      },
-      "stage": {
-        "stage": 2,
-        "stage_label": "Stage 2 - Early"
-      }
-    },
-    {
-      "symbol": "036170",
-      "name": "에이치엠넥스",
-      "market": "KR",
-      "sector": "",
-      "price": 4810.0,
-      "composite": {
-        "composite_score": 56.1,
+        "composite_score": 56.0,
         "rating": "Developing VCP",
         "rating_description": "형성 중인 VCP 패턴",
         "guidance": "거래량 확인 후 피벗 매수",
         "valid_vcp": false,
         "entry_ready": false,
-        "weakest_component": "Pivot Proximity",
-        "strongest_component": "Relative Strength",
+        "weakest_component": "VCP Pattern",
+        "strongest_component": "Trend Template",
         "component_breakdown": {
           "trend_template": {
-            "score": 87.5,
+            "score": 100.0,
             "weight": 0.25,
-            "weighted": 21.9,
+            "weighted": 25.0,
             "label": "Trend Template (Stage 2)"
           },
           "contraction_quality": {
-            "score": 28,
+            "score": 15,
             "weight": 0.25,
-            "weighted": 7.0,
+            "weighted": 3.8,
             "label": "Contraction Quality"
           },
           "volume_pattern": {
@@ -7551,102 +7629,24 @@
         }
       },
       "trend_template": {
-        "score": 87.5,
+        "score": 100.0,
         "passed": "True",
         "stage": 2,
         "stage_label": "Stage 2 - Advancing"
       },
       "vcp_pattern": {
-        "score": 28,
+        "score": 15,
         "valid_vcp": false,
         "num_contractions": 1,
-        "pivot_price": 6500.0
+        "pivot_price": 4565.0
       },
       "volume_pattern": {
         "score": 50,
-        "dry_up_ratio": 0.75
+        "dry_up_ratio": 0.76
       },
       "pivot_proximity": {
         "score": 20,
-        "distance_from_pivot_pct": 26.0,
-        "trade_status": "FAR"
-      },
-      "relative_strength": {
-        "score": 95,
-        "rs_rank_estimate": 95
-      },
-      "stage": {
-        "stage": 2,
-        "stage_label": "Stage 2 - Advancing"
-      }
-    },
-    {
-      "symbol": "036170",
-      "name": "에이치엠넥스",
-      "market": "KR",
-      "sector": "",
-      "price": 4810.0,
-      "composite": {
-        "composite_score": 56.1,
-        "rating": "Developing VCP",
-        "rating_description": "형성 중인 VCP 패턴",
-        "guidance": "거래량 확인 후 피벗 매수",
-        "valid_vcp": false,
-        "entry_ready": false,
-        "weakest_component": "Pivot Proximity",
-        "strongest_component": "Relative Strength",
-        "component_breakdown": {
-          "trend_template": {
-            "score": 87.5,
-            "weight": 0.25,
-            "weighted": 21.9,
-            "label": "Trend Template (Stage 2)"
-          },
-          "contraction_quality": {
-            "score": 28,
-            "weight": 0.25,
-            "weighted": 7.0,
-            "label": "Contraction Quality"
-          },
-          "volume_pattern": {
-            "score": 50,
-            "weight": 0.2,
-            "weighted": 10.0,
-            "label": "Volume Pattern"
-          },
-          "pivot_proximity": {
-            "score": 20,
-            "weight": 0.15,
-            "weighted": 3.0,
-            "label": "Pivot Proximity"
-          },
-          "relative_strength": {
-            "score": 95,
-            "weight": 0.15,
-            "weighted": 14.2,
-            "label": "Relative Strength"
-          }
-        }
-      },
-      "trend_template": {
-        "score": 87.5,
-        "passed": "True",
-        "stage": 2,
-        "stage_label": "Stage 2 - Advancing"
-      },
-      "vcp_pattern": {
-        "score": 28,
-        "valid_vcp": false,
-        "num_contractions": 1,
-        "pivot_price": 6500.0
-      },
-      "volume_pattern": {
-        "score": 50,
-        "dry_up_ratio": 0.75
-      },
-      "pivot_proximity": {
-        "score": 20,
-        "distance_from_pivot_pct": 26.0,
+        "distance_from_pivot_pct": 19.9,
         "trade_status": "FAR"
       },
       "relative_strength": {
@@ -7971,6 +7971,84 @@
       }
     },
     {
+      "symbol": "047040",
+      "name": "대우건설",
+      "market": "KR",
+      "sector": "",
+      "price": 16440.0,
+      "composite": {
+        "composite_score": 55.8,
+        "rating": "Developing VCP",
+        "rating_description": "형성 중인 VCP 패턴",
+        "guidance": "거래량 확인 후 피벗 매수",
+        "valid_vcp": "False",
+        "entry_ready": "False",
+        "weakest_component": "Pivot Proximity",
+        "strongest_component": "Trend Template",
+        "component_breakdown": {
+          "trend_template": {
+            "score": 100.0,
+            "weight": 0.25,
+            "weighted": 25.0,
+            "label": "Trend Template (Stage 2)"
+          },
+          "contraction_quality": {
+            "score": 30,
+            "weight": 0.25,
+            "weighted": 7.5,
+            "label": "Contraction Quality"
+          },
+          "volume_pattern": {
+            "score": 30,
+            "weight": 0.2,
+            "weighted": 6.0,
+            "label": "Volume Pattern"
+          },
+          "pivot_proximity": {
+            "score": 20,
+            "weight": 0.15,
+            "weighted": 3.0,
+            "label": "Pivot Proximity"
+          },
+          "relative_strength": {
+            "score": 95,
+            "weight": 0.15,
+            "weighted": 14.2,
+            "label": "Relative Strength"
+          }
+        }
+      },
+      "trend_template": {
+        "score": 100.0,
+        "passed": "True",
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing"
+      },
+      "vcp_pattern": {
+        "score": 30,
+        "valid_vcp": "False",
+        "num_contractions": 2,
+        "pivot_price": 19370.0
+      },
+      "volume_pattern": {
+        "score": 30,
+        "dry_up_ratio": 1.68
+      },
+      "pivot_proximity": {
+        "score": 20,
+        "distance_from_pivot_pct": 15.1,
+        "trade_status": "FAR"
+      },
+      "relative_strength": {
+        "score": 95,
+        "rs_rank_estimate": 95
+      },
+      "stage": {
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing"
+      }
+    },
+    {
       "symbol": "037230",
       "name": "한국팩키지",
       "market": "KR",
@@ -8115,6 +8193,162 @@
       "pivot_proximity": {
         "score": 20,
         "distance_from_pivot_pct": 22.4,
+        "trade_status": "FAR"
+      },
+      "relative_strength": {
+        "score": 95,
+        "rs_rank_estimate": 95
+      },
+      "stage": {
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing"
+      }
+    },
+    {
+      "symbol": "037230",
+      "name": "한국팩키지",
+      "market": "KR",
+      "sector": "",
+      "price": 2645.0,
+      "composite": {
+        "composite_score": 55.8,
+        "rating": "Developing VCP",
+        "rating_description": "형성 중인 VCP 패턴",
+        "guidance": "거래량 확인 후 피벗 매수",
+        "valid_vcp": "False",
+        "entry_ready": "False",
+        "weakest_component": "Pivot Proximity",
+        "strongest_component": "Trend Template",
+        "component_breakdown": {
+          "trend_template": {
+            "score": 100.0,
+            "weight": 0.25,
+            "weighted": 25.0,
+            "label": "Trend Template (Stage 2)"
+          },
+          "contraction_quality": {
+            "score": 30,
+            "weight": 0.25,
+            "weighted": 7.5,
+            "label": "Contraction Quality"
+          },
+          "volume_pattern": {
+            "score": 30,
+            "weight": 0.2,
+            "weighted": 6.0,
+            "label": "Volume Pattern"
+          },
+          "pivot_proximity": {
+            "score": 20,
+            "weight": 0.15,
+            "weighted": 3.0,
+            "label": "Pivot Proximity"
+          },
+          "relative_strength": {
+            "score": 95,
+            "weight": 0.15,
+            "weighted": 14.2,
+            "label": "Relative Strength"
+          }
+        }
+      },
+      "trend_template": {
+        "score": 100.0,
+        "passed": "True",
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing"
+      },
+      "vcp_pattern": {
+        "score": 30,
+        "valid_vcp": "False",
+        "num_contractions": 2,
+        "pivot_price": 3410.0
+      },
+      "volume_pattern": {
+        "score": 30,
+        "dry_up_ratio": 4.83
+      },
+      "pivot_proximity": {
+        "score": 20,
+        "distance_from_pivot_pct": 22.4,
+        "trade_status": "FAR"
+      },
+      "relative_strength": {
+        "score": 95,
+        "rs_rank_estimate": 95
+      },
+      "stage": {
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing"
+      }
+    },
+    {
+      "symbol": "092220",
+      "name": "KEC",
+      "market": "KR",
+      "sector": "",
+      "price": 1565.0,
+      "composite": {
+        "composite_score": 55.8,
+        "rating": "Developing VCP",
+        "rating_description": "형성 중인 VCP 패턴",
+        "guidance": "거래량 확인 후 피벗 매수",
+        "valid_vcp": "False",
+        "entry_ready": "False",
+        "weakest_component": "Pivot Proximity",
+        "strongest_component": "Trend Template",
+        "component_breakdown": {
+          "trend_template": {
+            "score": 100.0,
+            "weight": 0.25,
+            "weighted": 25.0,
+            "label": "Trend Template (Stage 2)"
+          },
+          "contraction_quality": {
+            "score": 30,
+            "weight": 0.25,
+            "weighted": 7.5,
+            "label": "Contraction Quality"
+          },
+          "volume_pattern": {
+            "score": 30,
+            "weight": 0.2,
+            "weighted": 6.0,
+            "label": "Volume Pattern"
+          },
+          "pivot_proximity": {
+            "score": 20,
+            "weight": 0.15,
+            "weighted": 3.0,
+            "label": "Pivot Proximity"
+          },
+          "relative_strength": {
+            "score": 95,
+            "weight": 0.15,
+            "weighted": 14.2,
+            "label": "Relative Strength"
+          }
+        }
+      },
+      "trend_template": {
+        "score": 100.0,
+        "passed": "True",
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing"
+      },
+      "vcp_pattern": {
+        "score": 30,
+        "valid_vcp": "False",
+        "num_contractions": 2,
+        "pivot_price": 1917.0
+      },
+      "volume_pattern": {
+        "score": 30,
+        "dry_up_ratio": 2.27
+      },
+      "pivot_proximity": {
+        "score": 20,
+        "distance_from_pivot_pct": 18.4,
         "trade_status": "FAR"
       },
       "relative_strength": {
@@ -8439,6 +8673,162 @@
       }
     },
     {
+      "symbol": "005880",
+      "name": "대한해운",
+      "market": "KR",
+      "sector": "",
+      "price": 2330.0,
+      "composite": {
+        "composite_score": 55.0,
+        "rating": "Developing VCP",
+        "rating_description": "형성 중인 VCP 패턴",
+        "guidance": "거래량 확인 후 피벗 매수",
+        "valid_vcp": false,
+        "entry_ready": false,
+        "weakest_component": "VCP Pattern",
+        "strongest_component": "Trend Template",
+        "component_breakdown": {
+          "trend_template": {
+            "score": 100.0,
+            "weight": 0.25,
+            "weighted": 25.0,
+            "label": "Trend Template (Stage 2)"
+          },
+          "contraction_quality": {
+            "score": 15,
+            "weight": 0.25,
+            "weighted": 3.8,
+            "label": "Contraction Quality"
+          },
+          "volume_pattern": {
+            "score": 30,
+            "weight": 0.2,
+            "weighted": 6.0,
+            "label": "Volume Pattern"
+          },
+          "pivot_proximity": {
+            "score": 40,
+            "weight": 0.15,
+            "weighted": 6.0,
+            "label": "Pivot Proximity"
+          },
+          "relative_strength": {
+            "score": 95,
+            "weight": 0.15,
+            "weighted": 14.2,
+            "label": "Relative Strength"
+          }
+        }
+      },
+      "trend_template": {
+        "score": 100.0,
+        "passed": "True",
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing"
+      },
+      "vcp_pattern": {
+        "score": 15,
+        "valid_vcp": false,
+        "num_contractions": 1,
+        "pivot_price": 2515.0
+      },
+      "volume_pattern": {
+        "score": 30,
+        "dry_up_ratio": 1.27
+      },
+      "pivot_proximity": {
+        "score": 40,
+        "distance_from_pivot_pct": 7.4,
+        "trade_status": "BUILDING"
+      },
+      "relative_strength": {
+        "score": 95,
+        "rs_rank_estimate": 95
+      },
+      "stage": {
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing"
+      }
+    },
+    {
+      "symbol": "005930",
+      "name": "삼성전자",
+      "market": "KR",
+      "sector": "",
+      "price": 178400.0,
+      "composite": {
+        "composite_score": 55.0,
+        "rating": "Developing VCP",
+        "rating_description": "형성 중인 VCP 패턴",
+        "guidance": "거래량 확인 후 피벗 매수",
+        "valid_vcp": false,
+        "entry_ready": false,
+        "weakest_component": "VCP Pattern",
+        "strongest_component": "Trend Template",
+        "component_breakdown": {
+          "trend_template": {
+            "score": 100.0,
+            "weight": 0.25,
+            "weighted": 25.0,
+            "label": "Trend Template (Stage 2)"
+          },
+          "contraction_quality": {
+            "score": 15,
+            "weight": 0.25,
+            "weighted": 3.8,
+            "label": "Contraction Quality"
+          },
+          "volume_pattern": {
+            "score": 30,
+            "weight": 0.2,
+            "weighted": 6.0,
+            "label": "Volume Pattern"
+          },
+          "pivot_proximity": {
+            "score": 40,
+            "weight": 0.15,
+            "weighted": 6.0,
+            "label": "Pivot Proximity"
+          },
+          "relative_strength": {
+            "score": 95,
+            "weight": 0.15,
+            "weighted": 14.2,
+            "label": "Relative Strength"
+          }
+        }
+      },
+      "trend_template": {
+        "score": 100.0,
+        "passed": "True",
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing"
+      },
+      "vcp_pattern": {
+        "score": 15,
+        "valid_vcp": false,
+        "num_contractions": 1,
+        "pivot_price": 208500.0
+      },
+      "volume_pattern": {
+        "score": 30,
+        "dry_up_ratio": 0.97
+      },
+      "pivot_proximity": {
+        "score": 40,
+        "distance_from_pivot_pct": 14.4,
+        "trade_status": "BUILDING"
+      },
+      "relative_strength": {
+        "score": 95,
+        "rs_rank_estimate": 95
+      },
+      "stage": {
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing"
+      }
+    },
+    {
       "symbol": "005930",
       "name": "삼성전자",
       "market": "KR",
@@ -8751,11 +9141,11 @@
       }
     },
     {
-      "symbol": "037030",
-      "name": "파워넷",
+      "symbol": "050890",
+      "name": "쏠리드",
       "market": "KR",
       "sector": "",
-      "price": 5730.0,
+      "price": 14570.0,
       "composite": {
         "composite_score": 55.0,
         "rating": "Developing VCP",
@@ -8808,93 +9198,15 @@
         "score": 15,
         "valid_vcp": false,
         "num_contractions": 1,
-        "pivot_price": 6200.0
+        "pivot_price": 15854.53
       },
       "volume_pattern": {
         "score": 30,
-        "dry_up_ratio": 4.05
+        "dry_up_ratio": 2.5
       },
       "pivot_proximity": {
         "score": 40,
-        "distance_from_pivot_pct": 7.6,
-        "trade_status": "BUILDING"
-      },
-      "relative_strength": {
-        "score": 95,
-        "rs_rank_estimate": 95
-      },
-      "stage": {
-        "stage": 2,
-        "stage_label": "Stage 2 - Advancing"
-      }
-    },
-    {
-      "symbol": "037030",
-      "name": "파워넷",
-      "market": "KR",
-      "sector": "",
-      "price": 5730.0,
-      "composite": {
-        "composite_score": 55.0,
-        "rating": "Developing VCP",
-        "rating_description": "형성 중인 VCP 패턴",
-        "guidance": "거래량 확인 후 피벗 매수",
-        "valid_vcp": false,
-        "entry_ready": false,
-        "weakest_component": "VCP Pattern",
-        "strongest_component": "Trend Template",
-        "component_breakdown": {
-          "trend_template": {
-            "score": 100.0,
-            "weight": 0.25,
-            "weighted": 25.0,
-            "label": "Trend Template (Stage 2)"
-          },
-          "contraction_quality": {
-            "score": 15,
-            "weight": 0.25,
-            "weighted": 3.8,
-            "label": "Contraction Quality"
-          },
-          "volume_pattern": {
-            "score": 30,
-            "weight": 0.2,
-            "weighted": 6.0,
-            "label": "Volume Pattern"
-          },
-          "pivot_proximity": {
-            "score": 40,
-            "weight": 0.15,
-            "weighted": 6.0,
-            "label": "Pivot Proximity"
-          },
-          "relative_strength": {
-            "score": 95,
-            "weight": 0.15,
-            "weighted": 14.2,
-            "label": "Relative Strength"
-          }
-        }
-      },
-      "trend_template": {
-        "score": 100.0,
-        "passed": "True",
-        "stage": 2,
-        "stage_label": "Stage 2 - Advancing"
-      },
-      "vcp_pattern": {
-        "score": 15,
-        "valid_vcp": false,
-        "num_contractions": 1,
-        "pivot_price": 6200.0
-      },
-      "volume_pattern": {
-        "score": 30,
-        "dry_up_ratio": 4.05
-      },
-      "pivot_proximity": {
-        "score": 40,
-        "distance_from_pivot_pct": 7.6,
+        "distance_from_pivot_pct": 8.1,
         "trade_status": "BUILDING"
       },
       "relative_strength": {
@@ -9063,31 +9375,31 @@
       }
     },
     {
-      "symbol": "005935",
-      "name": "삼성전자우",
+      "symbol": "024060",
+      "name": "흥구석유",
       "market": "KR",
       "sector": "",
-      "price": 118600.0,
+      "price": 18400.0,
       "composite": {
-        "composite_score": 52.9,
+        "composite_score": 53.5,
         "rating": "Developing VCP",
         "rating_description": "형성 중인 VCP 패턴",
         "guidance": "거래량 확인 후 피벗 매수",
-        "valid_vcp": false,
-        "entry_ready": false,
-        "weakest_component": "VCP Pattern",
+        "valid_vcp": "False",
+        "entry_ready": "False",
+        "weakest_component": "Pivot Proximity",
         "strongest_component": "Relative Strength",
         "component_breakdown": {
           "trend_template": {
-            "score": 87.5,
+            "score": 75.0,
             "weight": 0.25,
-            "weighted": 21.9,
+            "weighted": 18.8,
             "label": "Trend Template (Stage 2)"
           },
           "contraction_quality": {
-            "score": 15,
+            "score": 30,
             "weight": 0.25,
-            "weighted": 3.8,
+            "weighted": 7.5,
             "label": "Contraction Quality"
           },
           "volume_pattern": {
@@ -9111,24 +9423,24 @@
         }
       },
       "trend_template": {
-        "score": 87.5,
+        "score": 75.0,
         "passed": "True",
         "stage": 2,
-        "stage_label": "Stage 2 - Advancing"
+        "stage_label": "Stage 2 - Early"
       },
       "vcp_pattern": {
-        "score": 15,
-        "valid_vcp": false,
-        "num_contractions": 1,
-        "pivot_price": 149100.0
+        "score": 30,
+        "valid_vcp": "False",
+        "num_contractions": 2,
+        "pivot_price": 32700.0
       },
       "volume_pattern": {
         "score": 50,
-        "dry_up_ratio": 0.88
+        "dry_up_ratio": 0.72
       },
       "pivot_proximity": {
         "score": 20,
-        "distance_from_pivot_pct": 20.5,
+        "distance_from_pivot_pct": 43.7,
         "trade_status": "FAR"
       },
       "relative_strength": {
@@ -9137,85 +9449,7 @@
       },
       "stage": {
         "stage": 2,
-        "stage_label": "Stage 2 - Advancing"
-      }
-    },
-    {
-      "symbol": "005935",
-      "name": "삼성전자우",
-      "market": "KR",
-      "sector": "",
-      "price": 118600.0,
-      "composite": {
-        "composite_score": 52.9,
-        "rating": "Developing VCP",
-        "rating_description": "형성 중인 VCP 패턴",
-        "guidance": "거래량 확인 후 피벗 매수",
-        "valid_vcp": false,
-        "entry_ready": false,
-        "weakest_component": "VCP Pattern",
-        "strongest_component": "Relative Strength",
-        "component_breakdown": {
-          "trend_template": {
-            "score": 87.5,
-            "weight": 0.25,
-            "weighted": 21.9,
-            "label": "Trend Template (Stage 2)"
-          },
-          "contraction_quality": {
-            "score": 15,
-            "weight": 0.25,
-            "weighted": 3.8,
-            "label": "Contraction Quality"
-          },
-          "volume_pattern": {
-            "score": 50,
-            "weight": 0.2,
-            "weighted": 10.0,
-            "label": "Volume Pattern"
-          },
-          "pivot_proximity": {
-            "score": 20,
-            "weight": 0.15,
-            "weighted": 3.0,
-            "label": "Pivot Proximity"
-          },
-          "relative_strength": {
-            "score": 95,
-            "weight": 0.15,
-            "weighted": 14.2,
-            "label": "Relative Strength"
-          }
-        }
-      },
-      "trend_template": {
-        "score": 87.5,
-        "passed": "True",
-        "stage": 2,
-        "stage_label": "Stage 2 - Advancing"
-      },
-      "vcp_pattern": {
-        "score": 15,
-        "valid_vcp": false,
-        "num_contractions": 1,
-        "pivot_price": 149100.0
-      },
-      "volume_pattern": {
-        "score": 50,
-        "dry_up_ratio": 0.88
-      },
-      "pivot_proximity": {
-        "score": 20,
-        "distance_from_pivot_pct": 20.5,
-        "trade_status": "FAR"
-      },
-      "relative_strength": {
-        "score": 95,
-        "rs_rank_estimate": 95
-      },
-      "stage": {
-        "stage": 2,
-        "stage_label": "Stage 2 - Advancing"
+        "stage_label": "Stage 2 - Early"
       }
     },
     {
@@ -9375,11 +9609,11 @@
       }
     },
     {
-      "symbol": "076610",
-      "name": "해성옵틱스",
+      "symbol": "001510",
+      "name": "SK증권",
       "market": "KR",
       "sector": "",
-      "price": 1475.0,
+      "price": 1912.0,
       "composite": {
         "composite_score": 52.6,
         "rating": "Developing VCP",
@@ -9432,93 +9666,15 @@
         "score": 30,
         "valid_vcp": "False",
         "num_contractions": 2,
-        "pivot_price": 1930.0
+        "pivot_price": 2585.0
       },
       "volume_pattern": {
         "score": 30,
-        "dry_up_ratio": 1.23
+        "dry_up_ratio": 1.43
       },
       "pivot_proximity": {
         "score": 20,
-        "distance_from_pivot_pct": 23.6,
-        "trade_status": "FAR"
-      },
-      "relative_strength": {
-        "score": 95,
-        "rs_rank_estimate": 95
-      },
-      "stage": {
-        "stage": 2,
-        "stage_label": "Stage 2 - Advancing"
-      }
-    },
-    {
-      "symbol": "076610",
-      "name": "해성옵틱스",
-      "market": "KR",
-      "sector": "",
-      "price": 1475.0,
-      "composite": {
-        "composite_score": 52.6,
-        "rating": "Developing VCP",
-        "rating_description": "형성 중인 VCP 패턴",
-        "guidance": "거래량 확인 후 피벗 매수",
-        "valid_vcp": "False",
-        "entry_ready": "False",
-        "weakest_component": "Pivot Proximity",
-        "strongest_component": "Relative Strength",
-        "component_breakdown": {
-          "trend_template": {
-            "score": 87.5,
-            "weight": 0.25,
-            "weighted": 21.9,
-            "label": "Trend Template (Stage 2)"
-          },
-          "contraction_quality": {
-            "score": 30,
-            "weight": 0.25,
-            "weighted": 7.5,
-            "label": "Contraction Quality"
-          },
-          "volume_pattern": {
-            "score": 30,
-            "weight": 0.2,
-            "weighted": 6.0,
-            "label": "Volume Pattern"
-          },
-          "pivot_proximity": {
-            "score": 20,
-            "weight": 0.15,
-            "weighted": 3.0,
-            "label": "Pivot Proximity"
-          },
-          "relative_strength": {
-            "score": 95,
-            "weight": 0.15,
-            "weighted": 14.2,
-            "label": "Relative Strength"
-          }
-        }
-      },
-      "trend_template": {
-        "score": 87.5,
-        "passed": "True",
-        "stage": 2,
-        "stage_label": "Stage 2 - Advancing"
-      },
-      "vcp_pattern": {
-        "score": 30,
-        "valid_vcp": "False",
-        "num_contractions": 2,
-        "pivot_price": 1930.0
-      },
-      "volume_pattern": {
-        "score": 30,
-        "dry_up_ratio": 1.23
-      },
-      "pivot_proximity": {
-        "score": 20,
-        "distance_from_pivot_pct": 23.6,
+        "distance_from_pivot_pct": 26.0,
         "trade_status": "FAR"
       },
       "relative_strength": {
@@ -9680,6 +9836,162 @@
       "relative_strength": {
         "score": 80,
         "rs_rank_estimate": 80
+      },
+      "stage": {
+        "stage": 2,
+        "stage_label": "Stage 2 - Early"
+      }
+    },
+    {
+      "symbol": "004410",
+      "name": "서울식품",
+      "market": "KR",
+      "sector": "",
+      "price": 172.0,
+      "composite": {
+        "composite_score": 52.4,
+        "rating": "Developing VCP",
+        "rating_description": "형성 중인 VCP 패턴",
+        "guidance": "거래량 확인 후 피벗 매수",
+        "valid_vcp": false,
+        "entry_ready": false,
+        "weakest_component": "VCP Pattern",
+        "strongest_component": "Volume Pattern",
+        "component_breakdown": {
+          "trend_template": {
+            "score": 62.5,
+            "weight": 0.25,
+            "weighted": 15.6,
+            "label": "Trend Template (Stage 2)"
+          },
+          "contraction_quality": {
+            "score": 15,
+            "weight": 0.25,
+            "weighted": 3.8,
+            "label": "Contraction Quality"
+          },
+          "volume_pattern": {
+            "score": 90,
+            "weight": 0.2,
+            "weighted": 18.0,
+            "label": "Volume Pattern"
+          },
+          "pivot_proximity": {
+            "score": 20,
+            "weight": 0.15,
+            "weighted": 3.0,
+            "label": "Pivot Proximity"
+          },
+          "relative_strength": {
+            "score": 80,
+            "weight": 0.15,
+            "weighted": 12.0,
+            "label": "Relative Strength"
+          }
+        }
+      },
+      "trend_template": {
+        "score": 62.5,
+        "passed": "True",
+        "stage": 2,
+        "stage_label": "Stage 2 - Early"
+      },
+      "vcp_pattern": {
+        "score": 15,
+        "valid_vcp": false,
+        "num_contractions": 1,
+        "pivot_price": 247.0
+      },
+      "volume_pattern": {
+        "score": 90,
+        "dry_up_ratio": 0.45
+      },
+      "pivot_proximity": {
+        "score": 20,
+        "distance_from_pivot_pct": 30.4,
+        "trade_status": "FAR"
+      },
+      "relative_strength": {
+        "score": 80,
+        "rs_rank_estimate": 80
+      },
+      "stage": {
+        "stage": 2,
+        "stage_label": "Stage 2 - Early"
+      }
+    },
+    {
+      "symbol": "002360",
+      "name": "SH에너지화학",
+      "market": "KR",
+      "sector": "",
+      "price": 418.0,
+      "composite": {
+        "composite_score": 51.9,
+        "rating": "Developing VCP",
+        "rating_description": "형성 중인 VCP 패턴",
+        "guidance": "거래량 확인 후 피벗 매수",
+        "valid_vcp": "False",
+        "entry_ready": "False",
+        "weakest_component": "VCP Pattern",
+        "strongest_component": "Relative Strength",
+        "component_breakdown": {
+          "trend_template": {
+            "score": 62.5,
+            "weight": 0.25,
+            "weighted": 15.6,
+            "label": "Trend Template (Stage 2)"
+          },
+          "contraction_quality": {
+            "score": 30,
+            "weight": 0.25,
+            "weighted": 7.5,
+            "label": "Contraction Quality"
+          },
+          "volume_pattern": {
+            "score": 50,
+            "weight": 0.2,
+            "weighted": 10.0,
+            "label": "Volume Pattern"
+          },
+          "pivot_proximity": {
+            "score": 60,
+            "weight": 0.15,
+            "weighted": 9.0,
+            "label": "Pivot Proximity"
+          },
+          "relative_strength": {
+            "score": 65,
+            "weight": 0.15,
+            "weighted": 9.8,
+            "label": "Relative Strength"
+          }
+        }
+      },
+      "trend_template": {
+        "score": 62.5,
+        "passed": "True",
+        "stage": 2,
+        "stage_label": "Stage 2 - Early"
+      },
+      "vcp_pattern": {
+        "score": 30,
+        "valid_vcp": "False",
+        "num_contractions": 2,
+        "pivot_price": 446.0
+      },
+      "volume_pattern": {
+        "score": 50,
+        "dry_up_ratio": 0.86
+      },
+      "pivot_proximity": {
+        "score": 60,
+        "distance_from_pivot_pct": 6.3,
+        "trade_status": "APPROACHING"
+      },
+      "relative_strength": {
+        "score": 65,
+        "rs_rank_estimate": 65
       },
       "stage": {
         "stage": 2,
@@ -9999,6 +10311,162 @@
       }
     },
     {
+      "symbol": "340440",
+      "name": "세림B&G",
+      "market": "KR",
+      "sector": "",
+      "price": 1693.0,
+      "composite": {
+        "composite_score": 51.2,
+        "rating": "Developing VCP",
+        "rating_description": "형성 중인 VCP 패턴",
+        "guidance": "거래량 확인 후 피벗 매수",
+        "valid_vcp": "False",
+        "entry_ready": "False",
+        "weakest_component": "Pivot Proximity",
+        "strongest_component": "Trend Template",
+        "component_breakdown": {
+          "trend_template": {
+            "score": 100.0,
+            "weight": 0.25,
+            "weighted": 25.0,
+            "label": "Trend Template (Stage 2)"
+          },
+          "contraction_quality": {
+            "score": 30,
+            "weight": 0.25,
+            "weighted": 7.5,
+            "label": "Contraction Quality"
+          },
+          "volume_pattern": {
+            "score": 30,
+            "weight": 0.2,
+            "weighted": 6.0,
+            "label": "Volume Pattern"
+          },
+          "pivot_proximity": {
+            "score": 20,
+            "weight": 0.15,
+            "weighted": 3.0,
+            "label": "Pivot Proximity"
+          },
+          "relative_strength": {
+            "score": 65,
+            "weight": 0.15,
+            "weighted": 9.8,
+            "label": "Relative Strength"
+          }
+        }
+      },
+      "trend_template": {
+        "score": 100.0,
+        "passed": "True",
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing"
+      },
+      "vcp_pattern": {
+        "score": 30,
+        "valid_vcp": "False",
+        "num_contractions": 2,
+        "pivot_price": 2175.0
+      },
+      "volume_pattern": {
+        "score": 30,
+        "dry_up_ratio": 4.37
+      },
+      "pivot_proximity": {
+        "score": 20,
+        "distance_from_pivot_pct": 22.2,
+        "trade_status": "FAR"
+      },
+      "relative_strength": {
+        "score": 65,
+        "rs_rank_estimate": 65
+      },
+      "stage": {
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing"
+      }
+    },
+    {
+      "symbol": "004090",
+      "name": "한국석유",
+      "market": "KR",
+      "sector": "",
+      "price": 17320.0,
+      "composite": {
+        "composite_score": 51.2,
+        "rating": "Developing VCP",
+        "rating_description": "형성 중인 VCP 패턴",
+        "guidance": "거래량 확인 후 피벗 매수",
+        "valid_vcp": "False",
+        "entry_ready": "False",
+        "weakest_component": "Pivot Proximity",
+        "strongest_component": "Relative Strength",
+        "component_breakdown": {
+          "trend_template": {
+            "score": 75.0,
+            "weight": 0.25,
+            "weighted": 18.8,
+            "label": "Trend Template (Stage 2)"
+          },
+          "contraction_quality": {
+            "score": 30,
+            "weight": 0.25,
+            "weighted": 7.5,
+            "label": "Contraction Quality"
+          },
+          "volume_pattern": {
+            "score": 50,
+            "weight": 0.2,
+            "weighted": 10.0,
+            "label": "Volume Pattern"
+          },
+          "pivot_proximity": {
+            "score": 20,
+            "weight": 0.15,
+            "weighted": 3.0,
+            "label": "Pivot Proximity"
+          },
+          "relative_strength": {
+            "score": 80,
+            "weight": 0.15,
+            "weighted": 12.0,
+            "label": "Relative Strength"
+          }
+        }
+      },
+      "trend_template": {
+        "score": 75.0,
+        "passed": "True",
+        "stage": 2,
+        "stage_label": "Stage 2 - Early"
+      },
+      "vcp_pattern": {
+        "score": 30,
+        "valid_vcp": "False",
+        "num_contractions": 2,
+        "pivot_price": 23250.0
+      },
+      "volume_pattern": {
+        "score": 50,
+        "dry_up_ratio": 0.79
+      },
+      "pivot_proximity": {
+        "score": 20,
+        "distance_from_pivot_pct": 25.5,
+        "trade_status": "FAR"
+      },
+      "relative_strength": {
+        "score": 80,
+        "rs_rank_estimate": 80
+      },
+      "stage": {
+        "stage": 2,
+        "stage_label": "Stage 2 - Early"
+      }
+    },
+    {
       "symbol": "004090",
       "name": "한국석유",
       "market": "KR",
@@ -10304,6 +10772,162 @@
       "relative_strength": {
         "score": 65,
         "rs_rank_estimate": 65
+      },
+      "stage": {
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing"
+      }
+    },
+    {
+      "symbol": "001780",
+      "name": "알루코",
+      "market": "KR",
+      "sector": "",
+      "price": 2385.0,
+      "composite": {
+        "composite_score": 51.1,
+        "rating": "Developing VCP",
+        "rating_description": "형성 중인 VCP 패턴",
+        "guidance": "거래량 확인 후 피벗 매수",
+        "valid_vcp": "False",
+        "entry_ready": "False",
+        "weakest_component": "VCP Pattern",
+        "strongest_component": "Trend Template",
+        "component_breakdown": {
+          "trend_template": {
+            "score": 87.5,
+            "weight": 0.25,
+            "weighted": 21.9,
+            "label": "Trend Template (Stage 2)"
+          },
+          "contraction_quality": {
+            "score": 30,
+            "weight": 0.25,
+            "weighted": 7.5,
+            "label": "Contraction Quality"
+          },
+          "volume_pattern": {
+            "score": 30,
+            "weight": 0.2,
+            "weighted": 6.0,
+            "label": "Volume Pattern"
+          },
+          "pivot_proximity": {
+            "score": 40,
+            "weight": 0.15,
+            "weighted": 6.0,
+            "label": "Pivot Proximity"
+          },
+          "relative_strength": {
+            "score": 65,
+            "weight": 0.15,
+            "weighted": 9.8,
+            "label": "Relative Strength"
+          }
+        }
+      },
+      "trend_template": {
+        "score": 87.5,
+        "passed": "True",
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing"
+      },
+      "vcp_pattern": {
+        "score": 30,
+        "valid_vcp": "False",
+        "num_contractions": 2,
+        "pivot_price": 2655.0
+      },
+      "volume_pattern": {
+        "score": 30,
+        "dry_up_ratio": 3.04
+      },
+      "pivot_proximity": {
+        "score": 40,
+        "distance_from_pivot_pct": 10.2,
+        "trade_status": "BUILDING"
+      },
+      "relative_strength": {
+        "score": 65,
+        "rs_rank_estimate": 65
+      },
+      "stage": {
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing"
+      }
+    },
+    {
+      "symbol": "000660",
+      "name": "SK하이닉스",
+      "market": "KR",
+      "sector": "",
+      "price": 830000.0,
+      "composite": {
+        "composite_score": 50.4,
+        "rating": "Developing VCP",
+        "rating_description": "형성 중인 VCP 패턴",
+        "guidance": "거래량 확인 후 피벗 매수",
+        "valid_vcp": "False",
+        "entry_ready": "False",
+        "weakest_component": "Pivot Proximity",
+        "strongest_component": "Trend Template",
+        "component_breakdown": {
+          "trend_template": {
+            "score": 87.5,
+            "weight": 0.25,
+            "weighted": 21.9,
+            "label": "Trend Template (Stage 2)"
+          },
+          "contraction_quality": {
+            "score": 30,
+            "weight": 0.25,
+            "weighted": 7.5,
+            "label": "Contraction Quality"
+          },
+          "volume_pattern": {
+            "score": 30,
+            "weight": 0.2,
+            "weighted": 6.0,
+            "label": "Volume Pattern"
+          },
+          "pivot_proximity": {
+            "score": 20,
+            "weight": 0.15,
+            "weighted": 3.0,
+            "label": "Pivot Proximity"
+          },
+          "relative_strength": {
+            "score": 80,
+            "weight": 0.15,
+            "weighted": 12.0,
+            "label": "Relative Strength"
+          }
+        }
+      },
+      "trend_template": {
+        "score": 87.5,
+        "passed": "True",
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing"
+      },
+      "vcp_pattern": {
+        "score": 30,
+        "valid_vcp": "False",
+        "num_contractions": 2,
+        "pivot_price": 1056000.0
+      },
+      "volume_pattern": {
+        "score": 30,
+        "dry_up_ratio": 1.03
+      },
+      "pivot_proximity": {
+        "score": 20,
+        "distance_from_pivot_pct": 21.4,
+        "trade_status": "FAR"
+      },
+      "relative_strength": {
+        "score": 80,
+        "rs_rank_estimate": 80
       },
       "stage": {
         "stage": 2,
