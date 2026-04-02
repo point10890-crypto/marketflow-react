@@ -8,7 +8,7 @@
     "catalysts": [],
     "risk": "",
     "citations": [],
-    "analyzed_at": "2026-04-03T04:51:48.995474"
+    "analyzed_at": "2026-04-03T04:53:31.715066"
   },
   {
     "ticker": "LNT",
@@ -19,7 +19,7 @@
     "catalysts": [],
     "risk": "",
     "citations": [],
-    "analyzed_at": "2026-04-03T04:51:50.016684"
+    "analyzed_at": "2026-04-03T04:53:32.732428"
   },
   {
     "ticker": "T",
@@ -30,7 +30,7 @@
     "catalysts": [],
     "risk": "",
     "citations": [],
-    "analyzed_at": "2026-04-03T04:51:51.033308"
+    "analyzed_at": "2026-04-03T04:53:33.754384"
   },
   {
     "ticker": "ACGL",
@@ -41,10 +41,10 @@
     "catalysts": [],
     "risk": "",
     "citations": [],
-    "analyzed_at": "2026-04-03T04:51:52.042674"
+    "analyzed_at": "2026-04-03T04:53:34.774881"
   },
   {
-    "ticker": "AEE",
+    "ticker": "AXP",
     "news_score": 0,
     "sentiment": "neutral",
     "reason": "뉴스 없음",
@@ -52,6 +52,6 @@
     "catalysts": [],
     "risk": "",
     "citations": [],
-    "analyzed_at": "2026-04-03T04:51:53.061523"
+    "analyzed_at": "2026-04-03T04:53:35.795503"
   }
 ]
