@@ -31,7 +31,14 @@ def create_app(config=None):
     # CORS 설정 (옵셔널)
     try:
         from flask_cors import CORS
-        CORS(app, resources={r"/api/*": {"origins": "*"}})
+        allowed_origins = [
+            "http://localhost:5173",
+            "http://localhost:4000",
+            "https://bitman-marketflow.pages.dev",
+            "https://www.bit-man.net",
+            "https://bit-man.net",
+        ]
+        CORS(app, resources={r"/api/*": {"origins": allowed_origins}})
     except ImportError:
         print("flask-cors not installed, CORS disabled")
 
@@ -60,6 +67,19 @@ def create_app(config=None):
         from app.models.user import User  # noqa: F401
         from app.models.wave import WaveSignal, WaveTracking, WavePatternStats  # noqa: F401
         db.create_all()
+
+        # Idempotent migration: add depositor_name, amount to subscription_requests
+        try:
+            from sqlalchemy import text, inspect
+            inspector = inspect(db.engine)
+            existing = [c['name'] for c in inspector.get_columns('subscription_requests')]
+            with db.engine.begin() as conn:
+                if 'depositor_name' not in existing:
+                    conn.execute(text('ALTER TABLE subscription_requests ADD COLUMN depositor_name VARCHAR(100)'))
+                if 'amount' not in existing:
+                    conn.execute(text('ALTER TABLE subscription_requests ADD COLUMN amount VARCHAR(50)'))
+        except Exception:
+            pass  # table may not exist yet (create_all handles it)
 
     # Blueprint 등록
     from app.routes import register_blueprints
@@ -103,7 +123,9 @@ def create_app(config=None):
         return _jsonify(get_scheduler_status())
 
     # ── 스케줄러 수동 트리거 API ──
+    from app.auth.decorators import admin_required as _admin_required
     @app.route('/api/scheduler/trigger/<task>', methods=['POST'])
+    @_admin_required
     def scheduler_trigger(task):
         from flask import jsonify as _jsonify
         import threading

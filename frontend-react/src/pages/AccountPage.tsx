@@ -29,7 +29,7 @@ export default function AccountPage() {
         if (!token || isPro || hasPending) return;
         setRequesting(true);
         try {
-            await subscriptionAPI.requestUpgrade('pro', token);
+            await subscriptionAPI.requestUpgrade('pro', token, depositorName || undefined);
             setShowBank(true);
             const data = await subscriptionAPI.getStatus(token);
             setRequests(data.requests || []);

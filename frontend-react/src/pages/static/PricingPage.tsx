@@ -21,7 +21,7 @@ export default function PricingPage() {
 
         setRequesting(tier);
         try {
-            await subscriptionAPI.requestUpgrade(tier, token);
+            await subscriptionAPI.requestUpgrade(tier, token, depositorName || undefined);
             setSelectedPlan(tier);
             setShowBank(true);
         } catch (err: any) {

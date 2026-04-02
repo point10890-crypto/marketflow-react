@@ -692,8 +692,7 @@ export interface AdminUser {
     name: string;
     role: string;
     tier: string;
-    subscription_status: string;
-    stripe_customer_id: string | null;
+    status: string;
     created_at: string;
     approved_at: string | null;
     last_login_at: string | null;
@@ -718,6 +717,8 @@ export interface SubscriptionRequest {
     status: string;
     payment_id: string | null;
     admin_note: string | null;
+    depositor_name: string | null;
+    amount: string | null;
     created_at: string;
     processed_at: string | null;
 }
@@ -858,7 +859,7 @@ export const waveAPI = {
 
 // ── User Subscription API (Bearer token 기반) ──
 export const subscriptionAPI = {
-    requestUpgrade: (toTier: string, token?: string) => postAuthAPI<{ request: SubscriptionRequest }>('/api/auth/subscription/request', { to_tier: toTier }, token),
+    requestUpgrade: (toTier: string, token?: string, depositorName?: string) => postAuthAPI<{ request: SubscriptionRequest }>('/api/auth/subscription/request', { to_tier: toTier, depositor_name: depositorName }, token),
     getStatus: (token?: string) => fetchAuthAPI<{ user: AdminUser; requests: SubscriptionRequest[] }>('/api/auth/subscription/status', token),
     updateProfile: (name: string, token?: string) => putAuthAPI<{ user: AdminUser }>('/api/auth/profile', { name }, token),
 };

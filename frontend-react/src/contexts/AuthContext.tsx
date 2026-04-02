@@ -14,6 +14,7 @@ interface AuthUser {
 interface AuthContextType {
     user: AuthUser | null;
     token: string | null;
+    loading: boolean;
     login: (email: string, password: string) => Promise<void>;
     logout: () => void;
     isAdmin: () => boolean;
@@ -23,6 +24,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType>({
     user: null,
     token: null,
+    loading: true,
     login: async () => {},
     logout: () => {},
     isAdmin: () => false,
@@ -32,6 +34,7 @@ const AuthContext = createContext<AuthContextType>({
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<AuthUser | null>(null);
     const [token, setTokenState] = useState<string | null>(null);
+    const [loading, setLoading] = useState(true);
 
     // Initialize from localStorage on mount, then always refresh from server
     useEffect(() => {
@@ -59,8 +62,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     }
                 }).catch((err) => {
                     console.warn('[Auth] Session check failed:', err.message || err);
+                }).finally(() => {
+                    setLoading(false);
                 });
+            } else {
+                setLoading(false);
             }
+        } else {
+            setLoading(false);
         }
     }, []);
 
@@ -119,7 +128,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     return (
-        <AuthContext.Provider value={{ user, token, login, logout, isAdmin: isAdminFn, refreshUser }}>
+        <AuthContext.Provider value={{ user, token, loading, login, logout, isAdmin: isAdminFn, refreshUser }}>
             {children}
         </AuthContext.Provider>
     );

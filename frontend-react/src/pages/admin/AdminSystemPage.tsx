@@ -1,7 +1,8 @@
 
 
 import { useEffect, useState } from 'react';
-import { fetchAPI } from '@/lib/api';
+import { fetchAuthAPI, API_BASE } from '@/lib/api';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface DataFileStatus {
     exists: boolean;
@@ -10,6 +11,7 @@ interface DataFileStatus {
 }
 
 export default function AdminSystemPage() {
+    const { token } = useAuth();
     const [health, setHealth] = useState<any>(null);
     const [dataStatus, setDataStatus] = useState<Record<string, DataFileStatus>>({});
     const [loading, setLoading] = useState(true);
@@ -21,8 +23,8 @@ export default function AdminSystemPage() {
         setLoading(true);
         try {
             const [healthRes, statusRes] = await Promise.allSettled([
-                fetchAPI<any>('/api/health'),
-                fetchAPI<Record<string, DataFileStatus>>('/api/system/data-status'),
+                fetchAuthAPI<any>('/api/health', token || undefined),
+                fetchAuthAPI<Record<string, DataFileStatus>>('/api/system/data-status', token || undefined),
             ]);
             if (healthRes.status === 'fulfilled') setHealth(healthRes.value);
             if (statusRes.status === 'fulfilled') setDataStatus(statusRes.value);
@@ -36,7 +38,8 @@ export default function AdminSystemPage() {
     const handleUpdate = async (type: string) => {
         setUpdating(type);
         try {
-            const eventSource = new EventSource(`/api/system/update-single?type=${type}`);
+            const tokenParam = token ? `&token=${encodeURIComponent(token)}` : '';
+            const eventSource = new EventSource(`${API_BASE}/api/system/update-single?type=${encodeURIComponent(type)}${tokenParam}`);
             eventSource.addEventListener('status', (e) => {
                 const data = JSON.parse(e.data);
                 if (data.status === 'completed') {

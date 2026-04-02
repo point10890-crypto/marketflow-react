@@ -61,40 +61,27 @@ const AdminSubscriptionsPage = lazy(() => import('@/pages/admin/AdminSubscriptio
 const AdminSystemPage = lazy(() => import('@/pages/admin/AdminSystemPage'));
 
 function ApprovedGuard({ children }: { children: React.ReactNode }) {
-    const { user } = useAuth();
-    // No user (not logged in) → allow access (auth may be disabled / public mode)
-    if (!user) return <>{children}</>;
-    // Admin always passes
+    const { user, loading } = useAuth();
+    if (loading) return <LoadingFallback />;
+    if (!user) return <Navigate to="/login" replace />;
     if (user.role === 'admin') return <>{children}</>;
-    // Pending/rejected/suspended → redirect to approval page
     if (user.status !== 'approved') return <Navigate to="/pending-approval" replace />;
     return <>{children}</>;
 }
 
 function ProGuard({ children }: { children: React.ReactNode }) {
-    const { user } = useAuth();
-    if (!user) return <>{children}</>;
+    const { user, loading } = useAuth();
+    if (loading) return <LoadingFallback />;
+    if (!user) return <Navigate to="/login" replace />;
     if (user.role === 'admin') return <>{children}</>;
     if (user.tier === 'pro' || user.tier === 'premium') return <>{children}</>;
-    // tier가 아직 서버에서 로드되지 않은 경우 (이전 버전 localStorage) → 차단하지 않고 로딩 표시
-    if (!user.tier) return <LoadingFallback />;
     return <Navigate to="/pricing" replace />;
 }
 
 function AdminGuard({ children }: { children: React.ReactNode }) {
-    const { user } = useAuth();
-    // Initial render: user state not yet hydrated from localStorage
-    // Check localStorage directly to avoid flash redirect
-    if (!user) {
-        try {
-            const stored = localStorage.getItem('auth_user');
-            if (stored) {
-                const parsed = JSON.parse(stored);
-                if (parsed.role === 'admin') return <>{children}</>;
-            }
-        } catch { /* ignore */ }
-        return <Navigate to="/dashboard" replace />;
-    }
+    const { user, loading } = useAuth();
+    if (loading) return <LoadingFallback />;
+    if (!user) return <Navigate to="/login" replace />;
     if (user.role !== 'admin') return <Navigate to="/dashboard" replace />;
     return <>{children}</>;
 }

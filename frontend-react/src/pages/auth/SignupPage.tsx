@@ -32,19 +32,13 @@ export default function SignupPage() {
                 return;
             }
 
-            // Auto sign-in after registration
+            // Auto sign-in after registration → pricing page
             try {
                 await login(email, password);
-                // New users are 'pending' — redirect to approval page
-                const userStatus = data.user?.status || data.user?.subscription_status;
-                if (userStatus === 'approved') {
-                    navigate('/dashboard');
-                } else {
-                    navigate('/pending-approval');
-                }
+                navigate('/pricing');
             } catch {
                 // Login failed but registration succeeded
-                navigate('/pending-approval');
+                navigate('/login');
             }
         } catch {
             setError('Network error. Please try again.');

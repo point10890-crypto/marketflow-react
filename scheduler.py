@@ -261,18 +261,23 @@ class Config:
 # ============================================================
 
 def setup_logging():
-    """로깅 설정"""
+    """로깅 설정 (RotatingFileHandler: 10MB × 5개 파일)"""
+    from logging.handlers import RotatingFileHandler
     Config.ensure_dirs()
 
     log_file = os.path.join(Config.LOG_DIR, 'scheduler.log')
 
+    file_handler = RotatingFileHandler(
+        log_file, maxBytes=10*1024*1024, backupCount=5, encoding='utf-8'
+    )
+    file_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+
+    stream_handler = logging.StreamHandler()
+    stream_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+
     logging.basicConfig(
         level=logging.INFO,
-        format='%(asctime)s - %(levelname)s - %(message)s',
-        handlers=[
-            logging.FileHandler(log_file, encoding='utf-8'),
-            logging.StreamHandler()
-        ]
+        handlers=[file_handler, stream_handler]
     )
     return logging.getLogger(__name__)
 

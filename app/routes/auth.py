@@ -44,7 +44,8 @@ def register():
         user.status = 'approved'
         user.tier = 'pro'
     else:
-        user.status = 'pending'
+        user.status = 'approved'
+        user.tier = 'free'
 
     db.session.add(user)
     db.session.commit()
@@ -136,11 +137,17 @@ def request_subscription():
         (user.tier == 'pro' and to_tier == 'premium')
     ) else 'downgrade'
 
+    depositor_name = (data.get('depositor_name') or '').strip() or None
+    amount_map = {'pro': '50,000원', 'premium': '1,200,000원'}
+    amount = amount_map.get(to_tier)
+
     sub_request = SubscriptionRequest(
         user_id=user.id,
         request_type=req_type,
         from_tier=user.tier,
         to_tier=to_tier,
+        depositor_name=depositor_name,
+        amount=amount,
     )
     db.session.add(sub_request)
     db.session.commit()

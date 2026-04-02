@@ -53,8 +53,6 @@ class User(db.Model):
             'role': self.role,
             'tier': self.tier,
             'status': self.status,
-            'subscription_status': self.status,  # 프론트엔드 호환
-            'stripe_customer_id': self.stripe_customer_id,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'approved_at': self.approved_at.isoformat() if self.approved_at else None,
             'last_login_at': self.last_login_at.isoformat() if self.last_login_at else None,
@@ -73,6 +71,8 @@ class SubscriptionRequest(db.Model):
     status = db.Column(db.String(20), default='pending')  # 'pending', 'approved', 'rejected'
     payment_id = db.Column(db.String(255), nullable=True)
     admin_note = db.Column(db.Text, nullable=True)
+    depositor_name = db.Column(db.String(100), nullable=True)
+    amount = db.Column(db.String(50), nullable=True)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     processed_at = db.Column(db.DateTime, nullable=True)
     processed_by = db.Column(db.Integer, nullable=True)  # admin user id
@@ -92,6 +92,8 @@ class SubscriptionRequest(db.Model):
             'status': self.status,
             'payment_id': self.payment_id,
             'admin_note': self.admin_note,
+            'depositor_name': self.depositor_name,
+            'amount': self.amount,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'processed_at': self.processed_at.isoformat() if self.processed_at else None,
         }
