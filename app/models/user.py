@@ -20,6 +20,9 @@ class User(db.Model):
     # Subscription status: 'pending' | 'approved' | 'rejected' | 'suspended'
     status = db.Column(db.String(20), default='pending', nullable=False)
 
+    # Pro 구독 만료일 (premium은 NULL = 무기한)
+    pro_expires_at = db.Column(db.DateTime, nullable=True)
+
     stripe_customer_id = db.Column(db.String(255), nullable=True)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     approved_at = db.Column(db.DateTime, nullable=True)
@@ -45,6 +48,15 @@ class User(db.Model):
     def is_approved(self) -> bool:
         return self.status == 'approved'
 
+    @property
+    def is_pro_expired(self) -> bool:
+        """Pro 구독 만료 여부 (premium은 만료 없음)"""
+        if self.tier != 'pro':
+            return False
+        if self.pro_expires_at is None:
+            return False
+        return datetime.now(timezone.utc) > self.pro_expires_at
+
     def to_dict(self):
         return {
             'id': self.id,
@@ -53,6 +65,7 @@ class User(db.Model):
             'role': self.role,
             'tier': self.tier,
             'status': self.status,
+            'pro_expires_at': self.pro_expires_at.isoformat() if self.pro_expires_at else None,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'approved_at': self.approved_at.isoformat() if self.approved_at else None,
             'last_login_at': self.last_login_at.isoformat() if self.last_login_at else None,

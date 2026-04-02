@@ -23,6 +23,7 @@ export interface AuthUserData {
     tier: string;
     role: string;
     status: string;
+    pro_expires_at?: string | null;
 }
 
 export function saveUser(user: AuthUserData): void {

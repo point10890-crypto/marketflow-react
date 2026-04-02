@@ -9,6 +9,7 @@ interface AuthUser {
     tier: string;
     role: string;
     status: string;
+    pro_expires_at?: string | null;
 }
 
 interface AuthContextType {
@@ -84,6 +85,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             tier: data.tier,
             role: data.role,
             status: data.status || 'approved',
+            pro_expires_at: data.pro_expires_at || null,
         };
         setUser(authUser);
         saveUser(data);

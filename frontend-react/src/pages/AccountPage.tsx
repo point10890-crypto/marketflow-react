@@ -50,12 +50,24 @@ export default function AccountPage() {
         }
     };
 
-    // 구독 만료일 자동 산출
+    // 구독 만료일 (서버에서 받은 실제 값)
     const getExpiryDate = () => {
+        if (user?.pro_expires_at) {
+            return new Date(user.pro_expires_at).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' });
+        }
+        // 폴백: 30일 후
         const now = new Date();
         now.setDate(now.getDate() + 30);
         return now.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' });
     };
+
+    // Pro 만료 남은 일수
+    const getDaysLeft = () => {
+        if (!user?.pro_expires_at) return null;
+        const diff = new Date(user.pro_expires_at).getTime() - Date.now();
+        return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
+    };
+    const daysLeft = getDaysLeft();
 
     const statusBadge = (status: string) => {
         const styles: Record<string, string> = {
@@ -141,7 +153,14 @@ export default function AccountPage() {
                             {user.tier === 'premium' ? (
                                 <p className="text-purple-400 text-sm font-semibold">무기한 (평생 이용)</p>
                             ) : (
-                                <p className="text-amber-400 text-sm font-semibold">만료일: {getExpiryDate()}</p>
+                                <p className="text-amber-400 text-sm font-semibold">
+                                    만료일: {getExpiryDate()}
+                                    {daysLeft !== null && (
+                                        <span className={`ml-2 ${daysLeft <= 7 ? 'text-red-400' : daysLeft <= 14 ? 'text-yellow-400' : ''}`}>
+                                            (D-{daysLeft})
+                                        </span>
+                                    )}
+                                </p>
                             )}
                         </div>
                     </div>

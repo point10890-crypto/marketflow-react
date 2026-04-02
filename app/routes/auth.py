@@ -195,8 +195,8 @@ def admin_set_tier_legacy():
     email = (data.get('email') or '').strip().lower()
     tier = (data.get('tier') or '').strip().lower()
 
-    if not email or tier not in ('free', 'pro'):
-        return jsonify({'error': 'email and tier (free/pro) are required'}), 400
+    if not email or tier not in ('free', 'pro', 'premium'):
+        return jsonify({'error': 'email and tier (free/pro/premium) are required'}), 400
 
     user = User.query.filter_by(email=email).first()
     if not user:

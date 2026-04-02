@@ -127,6 +127,9 @@ def pro_required(f):
             return jsonify({'error': 'Account not approved'}), 403
         if user.tier not in ('pro', 'premium') and not user.is_admin:
             return jsonify({'error': 'Pro subscription required'}), 403
+        # Pro 만료 체크 (premium은 무기한)
+        if user.is_pro_expired:
+            return jsonify({'error': 'Pro subscription expired', 'expired': True}), 403
         request.current_user = user
         return f(*args, **kwargs)
     return decorated

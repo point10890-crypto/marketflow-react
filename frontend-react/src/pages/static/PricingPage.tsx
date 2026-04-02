@@ -61,8 +61,11 @@ export default function PricingPage() {
 
     const bankAmount = selectedPlan === 'premium' ? '1,200,000원 (1회)' : '50,000원 / 30일';
 
-    // 구독 만료일 자동 산출
+    // 구독 만료일 (서버에서 받은 실제 값 또는 신규 30일)
     const getExpiryDate = () => {
+        if (user?.pro_expires_at) {
+            return new Date(user.pro_expires_at).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' });
+        }
         const now = new Date();
         now.setDate(now.getDate() + 30);
         return now.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' });

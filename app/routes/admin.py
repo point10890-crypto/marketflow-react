@@ -1,7 +1,7 @@
 """Admin API routes — 관리자 전용 엔드포인트"""
 
 import os
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from flask import Blueprint, request, jsonify
 from app.models import db
 from app.models.user import User, SubscriptionRequest
@@ -194,10 +194,16 @@ def approve_subscription(req_id):
     sub_req.processed_at = datetime.now(timezone.utc)
     sub_req.processed_by = admin_user.id if admin_user else None
 
-    # 유저 tier 변경 적용
+    # 유저 tier 변경 적용 + 만료일 설정
     user = db.session.get(User, sub_req.user_id)
     if user:
         user.tier = sub_req.to_tier
+        if sub_req.to_tier == 'pro':
+            # Pro: 승인일로부터 30일
+            user.pro_expires_at = datetime.now(timezone.utc) + timedelta(days=30)
+        elif sub_req.to_tier == 'premium':
+            # Ultra Pro: 무기한
+            user.pro_expires_at = None
         if user.status == 'pending':
             user.status = 'approved'
 

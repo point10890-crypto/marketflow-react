@@ -68,16 +68,24 @@ def create_app(config=None):
         from app.models.wave import WaveSignal, WaveTracking, WavePatternStats  # noqa: F401
         db.create_all()
 
-        # Idempotent migration: add depositor_name, amount to subscription_requests
+        # Idempotent migration: add columns if missing
         try:
             from sqlalchemy import text, inspect
             inspector = inspect(db.engine)
-            existing = [c['name'] for c in inspector.get_columns('subscription_requests')]
+
+            # subscription_requests 테이블
+            sr_cols = [c['name'] for c in inspector.get_columns('subscription_requests')]
             with db.engine.begin() as conn:
-                if 'depositor_name' not in existing:
+                if 'depositor_name' not in sr_cols:
                     conn.execute(text('ALTER TABLE subscription_requests ADD COLUMN depositor_name VARCHAR(100)'))
-                if 'amount' not in existing:
+                if 'amount' not in sr_cols:
                     conn.execute(text('ALTER TABLE subscription_requests ADD COLUMN amount VARCHAR(50)'))
+
+            # users 테이블 — pro_expires_at 컬럼 추가
+            user_cols = [c['name'] for c in inspector.get_columns('users')]
+            with db.engine.begin() as conn:
+                if 'pro_expires_at' not in user_cols:
+                    conn.execute(text('ALTER TABLE users ADD COLUMN pro_expires_at DATETIME'))
         except Exception:
             pass  # table may not exist yet (create_all handles it)
 
@@ -189,6 +197,9 @@ def create_app(config=None):
                 f"  Registered ({len(registered)}): {sorted(list(registered))[:15]}..."
             )
 
+    # ── Pro 구독 만료 자동 다운그레이드 (1시간 간격) ──
+    _start_expiry_checker(app)
+
     # ── 클라우드 스케줄러 자동 시작 (Render 또는 SCHEDULER_ENABLED) ──
     if os.getenv('RENDER'):  # 로컬: scheduler.py --daemon 사용. 이중 스케줄러 방지
         try:
@@ -206,6 +217,39 @@ def create_app(config=None):
         print("[INFO] PreCompute/Screener workers disabled on Render (memory limit)")
 
     return app
+
+
+def _start_expiry_checker(app):
+    """Pro 구독 만료 유저 자동 다운그레이드 (1시간 간격)"""
+    import threading
+    import time
+
+    def _expiry_loop():
+        time.sleep(30)  # Flask 초기화 대기
+        while True:
+            try:
+                with app.app_context():
+                    from app.models.user import User
+                    from app.models import db
+                    from datetime import datetime, timezone
+                    expired = User.query.filter(
+                        User.tier == 'pro',
+                        User.pro_expires_at.isnot(None),
+                        User.pro_expires_at < datetime.now(timezone.utc),
+                    ).all()
+                    for user in expired:
+                        print(f"[Expiry] {user.email}: pro → free (expired {user.pro_expires_at})")
+                        user.tier = 'free'
+                        user.pro_expires_at = None
+                    if expired:
+                        db.session.commit()
+            except Exception as e:
+                print(f"[Expiry] Error: {e}")
+            time.sleep(3600)  # 1시간 간격
+
+    thread = threading.Thread(target=_expiry_loop, daemon=True, name='ExpiryChecker')
+    thread.start()
+    print("[OK] Pro expiry checker started (1h interval)")
 
 
 def _start_precompute_worker(app):
