@@ -1,7 +1,7 @@
 {
   "metadata": {
     "as_of_date": "2026-04-03",
-    "fetch_time": "2026-04-03T04:50:59.788344",
+    "fetch_time": "2026-04-03T04:55:10.258799",
     "source": "fmp_api + yfinance",
     "ticker_count": 15,
     "transcripts_found": 0
@@ -9,7 +9,7 @@
   "analyses": {
     "AKAM": {
       "ticker": "AKAM",
-      "fetch_time": "2026-04-03T04:50:28.030012",
+      "fetch_time": "2026-04-03T04:54:52.654618",
       "has_transcript": false,
       "error": "API error: 403",
       "earnings_info": {
@@ -19,7 +19,7 @@
     },
     "LNT": {
       "ticker": "LNT",
-      "fetch_time": "2026-04-03T04:50:29.848325",
+      "fetch_time": "2026-04-03T04:54:54.062287",
       "has_transcript": false,
       "error": "API error: 403",
       "earnings_info": {
@@ -29,7 +29,7 @@
     },
     "T": {
       "ticker": "T",
-      "fetch_time": "2026-04-03T04:50:31.255575",
+      "fetch_time": "2026-04-03T04:54:55.395693",
       "has_transcript": false,
       "error": "API error: 403",
       "earnings_info": {
@@ -39,7 +39,7 @@
     },
     "ACGL": {
       "ticker": "ACGL",
-      "fetch_time": "2026-04-03T04:50:33.310789",
+      "fetch_time": "2026-04-03T04:54:56.548591",
       "has_transcript": false,
       "error": "API error: 403",
       "earnings_info": {
@@ -47,29 +47,9 @@
         "error": "Too Many Requests. Rate limited. Try after a while."
       }
     },
-    "AEE": {
-      "ticker": "AEE",
-      "fetch_time": "2026-04-03T04:50:35.986210",
-      "has_transcript": false,
-      "error": "API error: 403",
-      "earnings_info": {
-        "ticker": "AEE",
-        "error": "Too Many Requests. Rate limited. Try after a while."
-      }
-    },
-    "AEP": {
-      "ticker": "AEP",
-      "fetch_time": "2026-04-03T04:50:38.175034",
-      "has_transcript": false,
-      "error": "API error: 403",
-      "earnings_info": {
-        "ticker": "AEP",
-        "error": "Too Many Requests. Rate limited. Try after a while."
-      }
-    },
     "AXP": {
       "ticker": "AXP",
-      "fetch_time": "2026-04-03T04:50:40.593758",
+      "fetch_time": "2026-04-03T04:54:57.673302",
       "has_transcript": false,
       "error": "API error: 403",
       "earnings_info": {
@@ -77,9 +57,29 @@
         "error": "Too Many Requests. Rate limited. Try after a while."
       }
     },
+    "AEP": {
+      "ticker": "AEP",
+      "fetch_time": "2026-04-03T04:54:58.842345",
+      "has_transcript": false,
+      "error": "API error: 403",
+      "earnings_info": {
+        "ticker": "AEP",
+        "error": "Too Many Requests. Rate limited. Try after a while."
+      }
+    },
+    "AEE": {
+      "ticker": "AEE",
+      "fetch_time": "2026-04-03T04:55:00.178127",
+      "has_transcript": false,
+      "error": "API error: 403",
+      "earnings_info": {
+        "ticker": "AEE",
+        "error": "Too Many Requests. Rate limited. Try after a while."
+      }
+    },
     "AIZ": {
       "ticker": "AIZ",
-      "fetch_time": "2026-04-03T04:50:42.492875",
+      "fetch_time": "2026-04-03T04:55:01.277930",
       "has_transcript": false,
       "error": "API error: 403",
       "earnings_info": {
@@ -89,7 +89,7 @@
     },
     "APD": {
       "ticker": "APD",
-      "fetch_time": "2026-04-03T04:50:44.922928",
+      "fetch_time": "2026-04-03T04:55:02.385724",
       "has_transcript": false,
       "error": "API error: 403",
       "earnings_info": {
@@ -97,19 +97,19 @@
         "error": "Too Many Requests. Rate limited. Try after a while."
       }
     },
-    "ALB": {
-      "ticker": "ALB",
-      "fetch_time": "2026-04-03T04:50:46.966210",
+    "AMZN": {
+      "ticker": "AMZN",
+      "fetch_time": "2026-04-03T04:55:03.476183",
       "has_transcript": false,
       "error": "API error: 403",
       "earnings_info": {
-        "ticker": "ALB",
+        "ticker": "AMZN",
         "error": "Too Many Requests. Rate limited. Try after a while."
       }
     },
     "APO": {
       "ticker": "APO",
-      "fetch_time": "2026-04-03T04:50:49.405284",
+      "fetch_time": "2026-04-03T04:55:04.608019",
       "has_transcript": false,
       "error": "API error: 403",
       "earnings_info": {
@@ -117,9 +117,19 @@
         "error": "Too Many Requests. Rate limited. Try after a while."
       }
     },
+    "ALB": {
+      "ticker": "ALB",
+      "fetch_time": "2026-04-03T04:55:05.779389",
+      "has_transcript": false,
+      "error": "API error: 403",
+      "earnings_info": {
+        "ticker": "ALB",
+        "error": "Too Many Requests. Rate limited. Try after a while."
+      }
+    },
     "AMD": {
       "ticker": "AMD",
-      "fetch_time": "2026-04-03T04:50:51.414409",
+      "fetch_time": "2026-04-03T04:55:06.892890",
       "has_transcript": false,
       "error": "API error: 403",
       "earnings_info": {
@@ -129,7 +139,7 @@
     },
     "AAPL": {
       "ticker": "AAPL",
-      "fetch_time": "2026-04-03T04:50:53.833546",
+      "fetch_time": "2026-04-03T04:55:08.006623",
       "has_transcript": false,
       "error": "API error: 403",
       "earnings_info": {
@@ -139,21 +149,11 @@
     },
     "AMAT": {
       "ticker": "AMAT",
-      "fetch_time": "2026-04-03T04:50:55.761986",
+      "fetch_time": "2026-04-03T04:55:09.146774",
       "has_transcript": false,
       "error": "API error: 403",
       "earnings_info": {
         "ticker": "AMAT",
-        "error": "Too Many Requests. Rate limited. Try after a while."
-      }
-    },
-    "AMZN": {
-      "ticker": "AMZN",
-      "fetch_time": "2026-04-03T04:50:57.942034",
-      "has_transcript": false,
-      "error": "API error: 403",
-      "earnings_info": {
-        "ticker": "AMZN",
         "error": "Too Many Requests. Rate limited. Try after a while."
       }
     }

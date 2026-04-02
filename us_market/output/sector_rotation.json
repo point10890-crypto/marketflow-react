@@ -1,22 +1,31 @@
 {
-  "timestamp": "2026-04-03T04:50:58.988772",
+  "timestamp": "2026-04-03T04:55:05.317811",
   "performance_matrix": {
+    "XLF": {
+      "1w": 0.43,
+      "1m": -5.12,
+      "3m": -3.27,
+      "6m": -4.51,
+      "12m": 0.31,
+      "current_price": 49.55,
+      "name": "Financials"
+    },
     "XLE": {
-      "1w": -2.34,
-      "1m": 8.48,
-      "3m": 34.3,
-      "6m": 39.76,
-      "12m": 29.71,
-      "current_price": 59.15,
+      "1w": -2.25,
+      "1m": 8.6,
+      "3m": 34.43,
+      "6m": 39.9,
+      "12m": 29.84,
+      "current_price": 59.21,
       "name": "Energy"
     },
     "SPY": {
-      "1w": -0.23,
-      "1m": -4.69,
+      "1w": -0.22,
+      "1m": -4.68,
       "3m": 0.01,
-      "6m": 5.23,
+      "6m": 5.24,
       "12m": 17.42,
-      "current_price": 655.34,
+      "current_price": 655.36,
       "name": "SPY"
     }
   },
@@ -24,20 +33,22 @@
     "current_phase": "Late Cycle",
     "phase_confidence": 100,
     "phase_scores": {
-      "Early Cycle": 0,
+      "Early Cycle": -1.16,
       "Mid Cycle": 0,
-      "Late Cycle": 16.74,
+      "Late Cycle": 16.85,
       "Recession": 0
     },
     "leading_sectors": [
       "XLE",
+      "XLF",
       "SPY"
     ],
     "lagging_sectors": [
       "XLE",
+      "XLF",
       "SPY"
     ],
-    "rotation_velocity": 7.25
+    "rotation_velocity": 7.48
   },
   "relative_strength_history": {
     "dates": [
@@ -95,7 +106,7 @@
         -0.41,
         -1.17,
         1.21,
-        -0.96
+        -0.98
       ],
       "XLY": [
         -1.35,
@@ -109,7 +120,7 @@
         -1.63,
         -1.01,
         0.52,
-        -0.97
+        -0.99
       ],
       "XLP": [
         3.96,
@@ -123,7 +134,7 @@
         0.29,
         -2.27,
         3.4,
-        -3.3
+        -3.25
       ],
       "XLE": [
         2.53,
@@ -137,7 +148,7 @@
         3.5,
         4.59,
         8.4,
-        -8.8
+        -8.71
       ],
       "XLI": [
         3.42,
@@ -151,7 +162,7 @@
         -1.61,
         -0.01,
         0.98,
-        -0.41
+        -0.52
       ],
       "XLB": [
         1.22,
@@ -165,7 +176,7 @@
         0.16,
         -2.69,
         6.8,
-        -0.3
+        -0.34
       ],
       "XLRE": [
         4.57,
@@ -179,7 +190,7 @@
         0.01,
         -2.12,
         1.47,
-        0.77
+        0.74
       ],
       "XLU": [
         2.42,
@@ -193,7 +204,7 @@
         1.97,
         -3.11,
         5.05,
-        -1.85
+        -1.7
       ],
       "XLC": [
         -1.98,
@@ -207,7 +218,7 @@
         -1.06,
         -0.14,
         -2.09,
-        0.92
+        0.89
       ]
     }
   },
@@ -230,53 +241,59 @@
       {
         "ticker": "XLP",
         "name": "Consumer Staples",
-        "rs_change": -3.25,
-        "recent_rs": -0.47
+        "rs_change": -3.24,
+        "recent_rs": -0.46
       },
       {
         "ticker": "XLI",
         "name": "Industrials",
-        "rs_change": -2.11,
-        "recent_rs": -0.26
+        "rs_change": -2.14,
+        "recent_rs": -0.29
       },
       {
         "ticker": "XLE",
         "name": "Energy",
-        "rs_change": -1.55,
-        "recent_rs": 1.92
+        "rs_change": -1.53,
+        "recent_rs": 1.95
       },
       {
         "ticker": "XLRE",
         "name": "Real Estate",
-        "rs_change": -1.03,
-        "recent_rs": 0.03
+        "rs_change": -1.04,
+        "recent_rs": 0.02
       },
       {
         "ticker": "XLB",
         "name": "Materials",
-        "rs_change": -0.8,
-        "recent_rs": 0.99
+        "rs_change": -0.81,
+        "recent_rs": 0.98
       },
       {
         "ticker": "XLV",
         "name": "Healthcare",
         "rs_change": -0.53,
-        "recent_rs": -0.33
+        "recent_rs": -0.34
       }
     ],
-    "regime_change_alert": true
+    "regime_change_alert": false
   },
   "regime_change": {
-    "regime_change_alert": true,
-    "previous_phase": "Mid Cycle",
+    "regime_change_alert": false,
+    "previous_phase": "Late Cycle",
     "current_phase": "Late Cycle"
   },
   "rotation_clock": {
     "phases": {
       "Early Cycle": {
         "angle": 45,
-        "sectors": [],
-        "score": 0
+        "sectors": [
+          {
+            "ticker": "XLF",
+            "name": "Financials",
+            "return_1m": -5.12
+          }
+        ],
+        "score": -1.16
       },
       "Mid Cycle": {
         "angle": 135,
@@ -289,10 +306,10 @@
           {
             "ticker": "XLE",
             "name": "Energy",
-            "return_1m": 8.48
+            "return_1m": 8.6
           }
         ],
-        "score": 16.74
+        "score": 16.85
       },
       "Recession": {
         "angle": 315,
