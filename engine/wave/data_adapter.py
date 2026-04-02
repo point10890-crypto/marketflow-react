@@ -52,9 +52,9 @@ def load_ohlcv_from_csv(
     if df is None:
         return None
 
-    # 종목 필터
+    # 종목 필터 + 날짜 중복 제거 (마지막 값 유지)
     mask = df['ticker'] == ticker
-    stock_df = df[mask].sort_values('date').tail(lookback)
+    stock_df = df[mask].sort_values('date').drop_duplicates(subset='date', keep='last').tail(lookback)
 
     if len(stock_df) < 30:
         logger.info("Not enough data for %s: %d rows", ticker, len(stock_df))

@@ -105,7 +105,15 @@ export default function PatternChart({
             wickUpColor: '#22c55e',
         });
 
-        const candleData: CandlestickData<Time>[] = chartData.map(c => ({
+        // 날짜 중복 제거 (lightweight-charts는 동일 time 허용 안 함)
+        const seen = new Set<string>();
+        const uniqueData = chartData.filter(c => {
+            if (seen.has(c.date)) return false;
+            seen.add(c.date);
+            return true;
+        });
+
+        const candleData: CandlestickData<Time>[] = uniqueData.map(c => ({
             time: c.date as Time,
             open: c.open,
             high: c.high,
@@ -122,7 +130,7 @@ export default function PatternChart({
         chart.priceScale('volume').applyOptions({
             scaleMargins: { top: 0.85, bottom: 0 },
         });
-        const volData: HistogramData<Time>[] = chartData.map(c => ({
+        const volData: HistogramData<Time>[] = uniqueData.map(c => ({
             time: c.date as Time,
             value: c.volume,
             color: c.close >= c.open ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.2)',

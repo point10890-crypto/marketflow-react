@@ -125,6 +125,10 @@ def request_subscription():
     if to_tier == user.tier:
         return jsonify({'error': f'Already on {to_tier} tier'}), 400
 
+    # premium(Ultra Pro)은 최상위 — 다운그레이드 불가
+    if user.tier == 'premium':
+        return jsonify({'error': 'Ultra Pro는 최상위 플랜입니다. 다운그레이드할 수 없습니다.'}), 400
+
     # 이미 pending 요청이 있는지 확인
     existing = SubscriptionRequest.query.filter_by(
         user_id=user.id, status='pending'
