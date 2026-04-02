@@ -1,8 +1,107 @@
 {
-  "timestamp": "2026-04-03T04:35:01.214648",
-  "predictions": {},
-  "model_info": {},
-  "historical_performance": {},
-  "disclaimer_ko": "본 예측은 통계 모델 기반이며 투자 조언이 아닙니다.",
-  "disclaimer_en": "Statistical model prediction. Not investment advice."
+  "timestamp": "2026-04-03T04:52:48.259676",
+  "predictions": {
+    "spy": {
+      "current_price": 655.4,
+      "bullish_probability": 5.9,
+      "bearish_probability": 94.1,
+      "predicted_return_pct": -0.73,
+      "target_range": {
+        "low": 637.69,
+        "mid": 650.64,
+        "high": 663.59
+      },
+      "confidence_level": "High",
+      "key_drivers": [
+        {
+          "feature": "yield_spread_proxy",
+          "impact": 0.1444,
+          "value": 0.37,
+          "direction": "bullish"
+        },
+        {
+          "feature": "qqq_rsi",
+          "impact": 0.0785,
+          "value": 46.53,
+          "direction": "bearish"
+        },
+        {
+          "feature": "gold_return_1w",
+          "impact": 0.0784,
+          "value": 7.28,
+          "direction": "bullish"
+        },
+        {
+          "feature": "xlu_relative_1m",
+          "impact": 0.0772,
+          "value": 2.79,
+          "direction": "bearish"
+        },
+        {
+          "feature": "spy_return_1m",
+          "impact": 0.0744,
+          "value": -4.08,
+          "direction": "bearish"
+        }
+      ]
+    },
+    "qqq": {
+      "current_price": 584.39,
+      "bullish_probability": 6.3,
+      "bearish_probability": 93.7,
+      "predicted_return_pct": -1.98,
+      "target_range": {
+        "low": 557.64,
+        "mid": 572.82,
+        "high": 588.0
+      },
+      "confidence_level": "High",
+      "key_drivers": [
+        {
+          "feature": "spy_return_1m",
+          "impact": 0.114,
+          "value": -4.08,
+          "direction": "bearish"
+        },
+        {
+          "feature": "yield_spread_proxy",
+          "impact": 0.1112,
+          "value": 0.37,
+          "direction": "bullish"
+        },
+        {
+          "feature": "spy_rsi",
+          "impact": 0.096,
+          "value": 46.12,
+          "direction": "bearish"
+        },
+        {
+          "feature": "xlu_relative_1m",
+          "impact": 0.0781,
+          "value": 2.79,
+          "direction": "bearish"
+        },
+        {
+          "feature": "vix_value",
+          "impact": 0.0747,
+          "value": 24.75,
+          "direction": "bearish"
+        }
+      ]
+    }
+  },
+  "model_info": {
+    "algorithm": "GradientBoosting Ensemble (per-ticker)",
+    "training_accuracy": 53.4,
+    "training_samples": 699,
+    "last_trained": "2026-03-27T08:31:10.811101",
+    "features_used": 20
+  },
+  "historical_performance": {
+    "total_predictions": 23,
+    "evaluated": 0,
+    "direction_accuracy": 0.0
+  },
+  "disclaimer_ko": "본 예측은 통계 모델 기반이며 투자 조언이 아닙니다. 실제 투자 판단은 본인 책임하에 이루어져야 합니다.",
+  "disclaimer_en": "Statistical model prediction. Not investment advice. Investment decisions are your own responsibility."
 }

@@ -1,7 +1,7 @@
 {
   "metadata": {
     "as_of_date": "2026-04-03",
-    "fetch_time": "2026-04-03T04:27:35.505126",
+    "fetch_time": "2026-04-03T04:50:59.788344",
     "source": "fmp_api + yfinance",
     "ticker_count": 15,
     "transcripts_found": 0
@@ -9,557 +9,152 @@
   "analyses": {
     "AKAM": {
       "ticker": "AKAM",
-      "fetch_time": "2026-04-03T04:27:02.237619",
+      "fetch_time": "2026-04-03T04:50:28.030012",
       "has_transcript": false,
       "error": "API error: 403",
       "earnings_info": {
         "ticker": "AKAM",
-        "next_earnings_date": "2026-05-08",
-        "earnings_history": [
-          {
-            "date": "2025-03-31 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2025-06-30 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2025-09-30 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2025-12-31 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          }
-        ],
-        "source": "yfinance"
+        "error": "Too Many Requests. Rate limited. Try after a while."
       }
     },
     "LNT": {
       "ticker": "LNT",
-      "fetch_time": "2026-04-03T04:27:04.589845",
+      "fetch_time": "2026-04-03T04:50:29.848325",
       "has_transcript": false,
       "error": "API error: 403",
       "earnings_info": {
         "ticker": "LNT",
-        "next_earnings_date": "2026-05-08",
-        "earnings_history": [
-          {
-            "date": "2025-03-31 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2025-06-30 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2025-09-30 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2025-12-31 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          }
-        ],
-        "source": "yfinance"
+        "error": "Too Many Requests. Rate limited. Try after a while."
       }
     },
     "T": {
       "ticker": "T",
-      "fetch_time": "2026-04-03T04:27:06.584170",
+      "fetch_time": "2026-04-03T04:50:31.255575",
       "has_transcript": false,
       "error": "API error: 403",
       "earnings_info": {
         "ticker": "T",
-        "next_earnings_date": "2026-04-22",
-        "earnings_history": [
-          {
-            "date": "2025-03-31 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2025-06-30 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2025-09-30 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2025-12-31 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          }
-        ],
-        "source": "yfinance"
+        "error": "Too Many Requests. Rate limited. Try after a while."
       }
     },
     "ACGL": {
       "ticker": "ACGL",
-      "fetch_time": "2026-04-03T04:27:08.834668",
+      "fetch_time": "2026-04-03T04:50:33.310789",
       "has_transcript": false,
       "error": "API error: 403",
       "earnings_info": {
         "ticker": "ACGL",
-        "next_earnings_date": "2026-04-29",
-        "earnings_history": [
-          {
-            "date": "2025-03-31 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2025-06-30 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2025-09-30 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2025-12-31 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          }
-        ],
-        "source": "yfinance"
-      }
-    },
-    "AEP": {
-      "ticker": "AEP",
-      "fetch_time": "2026-04-03T04:27:10.860157",
-      "has_transcript": false,
-      "error": "API error: 403",
-      "earnings_info": {
-        "ticker": "AEP",
-        "next_earnings_date": "2026-05-05",
-        "earnings_history": [
-          {
-            "date": "2025-03-31 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2025-06-30 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2025-09-30 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2025-12-31 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          }
-        ],
-        "source": "yfinance"
+        "error": "Too Many Requests. Rate limited. Try after a while."
       }
     },
     "AEE": {
       "ticker": "AEE",
-      "fetch_time": "2026-04-03T04:27:13.080987",
+      "fetch_time": "2026-04-03T04:50:35.986210",
       "has_transcript": false,
       "error": "API error: 403",
       "earnings_info": {
         "ticker": "AEE",
-        "next_earnings_date": "2026-05-06",
-        "earnings_history": [
-          {
-            "date": "2025-03-31 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2025-06-30 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2025-09-30 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2025-12-31 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          }
-        ],
-        "source": "yfinance"
+        "error": "Too Many Requests. Rate limited. Try after a while."
+      }
+    },
+    "AEP": {
+      "ticker": "AEP",
+      "fetch_time": "2026-04-03T04:50:38.175034",
+      "has_transcript": false,
+      "error": "API error: 403",
+      "earnings_info": {
+        "ticker": "AEP",
+        "error": "Too Many Requests. Rate limited. Try after a while."
       }
     },
     "AXP": {
       "ticker": "AXP",
-      "fetch_time": "2026-04-03T04:27:15.290797",
+      "fetch_time": "2026-04-03T04:50:40.593758",
       "has_transcript": false,
       "error": "API error: 403",
       "earnings_info": {
         "ticker": "AXP",
-        "next_earnings_date": "2026-04-23",
-        "earnings_history": [
-          {
-            "date": "2025-03-31 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2025-06-30 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2025-09-30 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2025-12-31 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          }
-        ],
-        "source": "yfinance"
+        "error": "Too Many Requests. Rate limited. Try after a while."
       }
     },
     "AIZ": {
       "ticker": "AIZ",
-      "fetch_time": "2026-04-03T04:27:17.424303",
+      "fetch_time": "2026-04-03T04:50:42.492875",
       "has_transcript": false,
       "error": "API error: 403",
       "earnings_info": {
         "ticker": "AIZ",
-        "next_earnings_date": "2026-05-06",
-        "earnings_history": [
-          {
-            "date": "2025-03-31 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2025-06-30 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2025-09-30 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2025-12-31 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          }
-        ],
-        "source": "yfinance"
+        "error": "Too Many Requests. Rate limited. Try after a while."
       }
     },
     "APD": {
       "ticker": "APD",
-      "fetch_time": "2026-04-03T04:27:19.573154",
+      "fetch_time": "2026-04-03T04:50:44.922928",
       "has_transcript": false,
       "error": "API error: 403",
       "earnings_info": {
         "ticker": "APD",
-        "next_earnings_date": "2026-04-30",
-        "earnings_history": [
-          {
-            "date": "2025-03-31 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2025-06-30 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2025-09-30 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2025-12-31 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          }
-        ],
-        "source": "yfinance"
-      }
-    },
-    "APO": {
-      "ticker": "APO",
-      "fetch_time": "2026-04-03T04:27:22.276115",
-      "has_transcript": false,
-      "error": "API error: 403",
-      "earnings_info": {
-        "ticker": "APO",
-        "next_earnings_date": "2026-05-06",
-        "earnings_history": [
-          {
-            "date": "2025-03-31 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2025-06-30 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2025-09-30 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2025-12-31 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          }
-        ],
-        "source": "yfinance"
+        "error": "Too Many Requests. Rate limited. Try after a while."
       }
     },
     "ALB": {
       "ticker": "ALB",
-      "fetch_time": "2026-04-03T04:27:24.494160",
+      "fetch_time": "2026-04-03T04:50:46.966210",
       "has_transcript": false,
       "error": "API error: 403",
       "earnings_info": {
         "ticker": "ALB",
-        "next_earnings_date": "2026-04-30",
-        "earnings_history": [
-          {
-            "date": "2025-03-31 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2025-06-30 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2025-09-30 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2025-12-31 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          }
-        ],
-        "source": "yfinance"
+        "error": "Too Many Requests. Rate limited. Try after a while."
+      }
+    },
+    "APO": {
+      "ticker": "APO",
+      "fetch_time": "2026-04-03T04:50:49.405284",
+      "has_transcript": false,
+      "error": "API error: 403",
+      "earnings_info": {
+        "ticker": "APO",
+        "error": "Too Many Requests. Rate limited. Try after a while."
       }
     },
     "AMD": {
       "ticker": "AMD",
-      "fetch_time": "2026-04-03T04:27:26.556414",
+      "fetch_time": "2026-04-03T04:50:51.414409",
       "has_transcript": false,
       "error": "API error: 403",
       "earnings_info": {
         "ticker": "AMD",
-        "next_earnings_date": "2026-05-06",
-        "earnings_history": [
-          {
-            "date": "2025-03-31 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2025-06-30 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2025-09-30 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2025-12-31 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          }
-        ],
-        "source": "yfinance"
+        "error": "Too Many Requests. Rate limited. Try after a while."
       }
     },
     "AAPL": {
       "ticker": "AAPL",
-      "fetch_time": "2026-04-03T04:27:28.781573",
+      "fetch_time": "2026-04-03T04:50:53.833546",
       "has_transcript": false,
       "error": "API error: 403",
       "earnings_info": {
         "ticker": "AAPL",
-        "next_earnings_date": "2026-05-01",
-        "earnings_history": [
-          {
-            "date": "2025-03-31 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2025-06-30 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2025-09-30 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2025-12-31 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          }
-        ],
-        "source": "yfinance"
+        "error": "Too Many Requests. Rate limited. Try after a while."
       }
     },
     "AMAT": {
       "ticker": "AMAT",
-      "fetch_time": "2026-04-03T04:27:30.985411",
+      "fetch_time": "2026-04-03T04:50:55.761986",
       "has_transcript": false,
       "error": "API error: 403",
       "earnings_info": {
         "ticker": "AMAT",
-        "next_earnings_date": "2026-05-15",
-        "earnings_history": [
-          {
-            "date": "2025-04-30 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2025-07-31 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2025-10-31 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2026-01-31 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          }
-        ],
-        "source": "yfinance"
+        "error": "Too Many Requests. Rate limited. Try after a while."
       }
     },
     "AMZN": {
       "ticker": "AMZN",
-      "fetch_time": "2026-04-03T04:27:33.280103",
+      "fetch_time": "2026-04-03T04:50:57.942034",
       "has_transcript": false,
       "error": "API error: 403",
       "earnings_info": {
         "ticker": "AMZN",
-        "next_earnings_date": "2026-05-01",
-        "earnings_history": [
-          {
-            "date": "2025-03-31 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2025-06-30 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2025-09-30 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          },
-          {
-            "date": "2025-12-31 00:00:00",
-            "eps_estimate": 0,
-            "eps_actual": 0,
-            "surprise_pct": 0
-          }
-        ],
-        "source": "yfinance"
+        "error": "Too Many Requests. Rate limited. Try after a while."
       }
     }
   }

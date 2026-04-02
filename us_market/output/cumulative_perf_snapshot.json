@@ -4,7 +4,7 @@
     "unique_tickers": 91,
     "win_rate": 45.3,
     "avg_return": 1.51,
-    "avg_alpha": 4.44,
+    "avg_alpha": 4.29,
     "max_gain": 192.59,
     "max_loss": -58.26,
     "best_ticker": "SNDK",
@@ -15,207 +15,207 @@
     {
       "date": "2025-12-06",
       "avg_return": 7.64,
-      "spy_return": -3.74
+      "spy_return": -3.58
     },
     {
       "date": "2025-12-09",
       "avg_return": 3.11,
-      "spy_return": -3.66
+      "spy_return": -3.5
     },
     {
       "date": "2025-12-12",
       "avg_return": -4.9,
-      "spy_return": -3.48
+      "spy_return": -3.32
     },
     {
       "date": "2025-12-13",
       "avg_return": -1.03,
-      "spy_return": -3.33
+      "spy_return": -3.17
     },
     {
       "date": "2025-12-15",
       "avg_return": -4.11,
-      "spy_return": -3.33
+      "spy_return": -3.17
     },
     {
       "date": "2025-12-17",
       "avg_return": 9.49,
-      "spy_return": -1.99
+      "spy_return": -1.83
     },
     {
       "date": "2025-12-18",
       "avg_return": 5.53,
-      "spy_return": -2.72
+      "spy_return": -2.56
     },
     {
       "date": "2025-12-19",
       "avg_return": 5.89,
-      "spy_return": -3.6
+      "spy_return": -3.44
     },
     {
       "date": "2025-12-22",
       "avg_return": 7.65,
-      "spy_return": -4.19
+      "spy_return": -4.04
     },
     {
       "date": "2025-12-25",
       "avg_return": -8.31,
-      "spy_return": -4.95
+      "spy_return": -4.8
     },
     {
       "date": "2025-12-29",
       "avg_return": 13.56,
-      "spy_return": -4.61
+      "spy_return": -4.46
     },
     {
       "date": "2025-12-31",
       "avg_return": -1.31,
-      "spy_return": -3.78
+      "spy_return": -3.63
     },
     {
       "date": "2026-01-02",
       "avg_return": 19.89,
-      "spy_return": -3.96
+      "spy_return": -3.8
     },
     {
       "date": "2026-01-21",
       "avg_return": 10.83,
-      "spy_return": -4.27
+      "spy_return": -4.12
     },
     {
       "date": "2026-01-25",
       "avg_return": 1.28,
-      "spy_return": -5.29
+      "spy_return": -5.13
     },
     {
       "date": "2026-01-26",
       "avg_return": 1.28,
-      "spy_return": -5.29
+      "spy_return": -5.13
     },
     {
       "date": "2026-01-27",
       "avg_return": 4.88,
-      "spy_return": -5.66
+      "spy_return": -5.51
     },
     {
       "date": "2026-01-31",
       "avg_return": -2.47,
-      "spy_return": -5.65
+      "spy_return": -5.5
     },
     {
       "date": "2026-02-07",
       "avg_return": 7.15,
-      "spy_return": -5.45
+      "spy_return": -5.3
     },
     {
       "date": "2026-02-08",
       "avg_return": 7.14,
-      "spy_return": -5.45
+      "spy_return": -5.3
     },
     {
       "date": "2026-02-11",
       "avg_return": 0.24,
-      "spy_return": -5.18
+      "spy_return": -5.03
     },
     {
       "date": "2026-02-12",
       "avg_return": -3.44,
-      "spy_return": -3.69
+      "spy_return": -3.54
     },
     {
       "date": "2026-02-13",
       "avg_return": -2.69,
-      "spy_return": -3.76
+      "spy_return": -3.6
     },
     {
       "date": "2026-02-14",
       "avg_return": -3.82,
-      "spy_return": -3.91
+      "spy_return": -3.76
     },
     {
       "date": "2026-02-17",
       "avg_return": -1.93,
-      "spy_return": -3.91
+      "spy_return": -3.76
     },
     {
       "date": "2026-02-18",
       "avg_return": -1.27,
-      "spy_return": -4.4
+      "spy_return": -4.24
     },
     {
       "date": "2026-02-19",
       "avg_return": -1.27,
-      "spy_return": -4.14
+      "spy_return": -3.99
     },
     {
       "date": "2026-02-26",
       "avg_return": -1.81,
-      "spy_return": -4.81
+      "spy_return": -4.66
     },
     {
       "date": "2026-02-27",
       "avg_return": -2.22,
-      "spy_return": -4.35
+      "spy_return": -4.2
     },
     {
       "date": "2026-03-04",
       "avg_return": 1.58,
-      "spy_return": -4.23
+      "spy_return": -4.08
     },
     {
       "date": "2026-03-10",
       "avg_return": -1.59,
-      "spy_return": -3.11
+      "spy_return": -2.95
     },
     {
       "date": "2026-03-11",
       "avg_return": -1.83,
-      "spy_return": -2.99
+      "spy_return": -2.83
     },
     {
       "date": "2026-03-15",
       "avg_return": 0.14,
-      "spy_return": -1.93
+      "spy_return": -1.77
     },
     {
       "date": "2026-03-19",
       "avg_return": -1.36,
-      "spy_return": -0.56
+      "spy_return": -0.4
     },
     {
       "date": "2026-03-20",
       "avg_return": 0.41,
-      "spy_return": 0.89
+      "spy_return": 1.05
     },
     {
       "date": "2026-03-25",
       "avg_return": -0.2,
-      "spy_return": -0.38
+      "spy_return": -0.22
     },
     {
       "date": "2026-03-26",
       "avg_return": -2.24,
-      "spy_return": 1.43
+      "spy_return": 1.6
     },
     {
       "date": "2026-03-27",
       "avg_return": 0.3,
-      "spy_return": 3.19
+      "spy_return": 3.36
     },
     {
       "date": "2026-03-28",
       "avg_return": 1.25,
-      "spy_return": 3.54
+      "spy_return": 3.71
     },
     {
       "date": "2026-03-31",
       "avg_return": 2.18,
-      "spy_return": 0.61
+      "spy_return": 0.78
     },
     {
       "date": "2026-04-01",
       "avg_return": 0.79,
-      "spy_return": -0.14
+      "spy_return": 0.02
     },
     {
       "date": "2026-04-02",
@@ -224,7 +224,7 @@
     },
     {
       "date": "2026-04-03",
-      "avg_return": 0.06,
+      "avg_return": 0.1,
       "spy_return": 0.0
     }
   ],
@@ -4433,9 +4433,9 @@
       "ticker": "AKAM",
       "name": "Akamai Technologies, Inc.",
       "rec_date": "2026-04-03",
-      "entry_price": 116.25,
+      "entry_price": 116.52,
       "current_price": 116.09,
-      "return_pct": -0.14,
+      "return_pct": -0.37,
       "final_score": 58.8,
       "recommendation": "관망"
     },
@@ -4443,9 +4443,9 @@
       "ticker": "LNT",
       "name": "Alliant Energy Corporation",
       "rec_date": "2026-04-03",
-      "entry_price": 72.7,
+      "entry_price": 72.64,
       "current_price": 72.73,
-      "return_pct": 0.04,
+      "return_pct": 0.12,
       "final_score": 56.5,
       "recommendation": "관망"
     },
@@ -4453,9 +4453,9 @@
       "ticker": "T",
       "name": "AT&T Inc.",
       "rec_date": "2026-04-03",
-      "entry_price": 28.2,
+      "entry_price": 28.21,
       "current_price": 28.27,
-      "return_pct": 0.25,
+      "return_pct": 0.21,
       "final_score": 55.6,
       "recommendation": "관망"
     },
@@ -4463,9 +4463,19 @@
       "ticker": "ACGL",
       "name": "Arch Capital Group Ltd.",
       "rec_date": "2026-04-03",
-      "entry_price": 96.58,
+      "entry_price": 96.4,
       "current_price": 96.7,
-      "return_pct": 0.12,
+      "return_pct": 0.31,
+      "final_score": 55.0,
+      "recommendation": "관망"
+    },
+    {
+      "ticker": "AEE",
+      "name": "Ameren Corporation",
+      "rec_date": "2026-04-03",
+      "entry_price": 111.41,
+      "current_price": 111.67,
+      "return_pct": 0.23,
       "final_score": 55.0,
       "recommendation": "관망"
     },
@@ -4473,29 +4483,19 @@
       "ticker": "AEP",
       "name": "American Electric Power Company, Inc.",
       "rec_date": "2026-04-03",
-      "entry_price": 132.4,
+      "entry_price": 132.28,
       "current_price": 132.49,
-      "return_pct": 0.07,
+      "return_pct": 0.16,
       "final_score": 54.2,
-      "recommendation": "관망"
-    },
-    {
-      "ticker": "AEE",
-      "name": "Ameren Corporation",
-      "rec_date": "2026-04-03",
-      "entry_price": 111.61,
-      "current_price": 111.67,
-      "return_pct": 0.05,
-      "final_score": 54.1,
       "recommendation": "관망"
     },
     {
       "ticker": "AXP",
       "name": "American Express Company",
       "rec_date": "2026-04-03",
-      "entry_price": 300.06,
+      "entry_price": 300.09,
       "current_price": 300.2,
-      "return_pct": 0.05,
+      "return_pct": 0.04,
       "final_score": 53.9,
       "recommendation": "관망"
     },
@@ -4503,39 +4503,39 @@
       "ticker": "AIZ",
       "name": "Assurant, Inc.",
       "rec_date": "2026-04-03",
-      "entry_price": 218.18,
+      "entry_price": 217.62,
       "current_price": 218.53,
-      "return_pct": 0.16,
-      "final_score": 53.5,
+      "return_pct": 0.42,
+      "final_score": 53.9,
       "recommendation": "관망"
     },
     {
       "ticker": "APD",
       "name": "Air Products and Chemicals, Inc.",
       "rec_date": "2026-04-03",
-      "entry_price": 294.12,
+      "entry_price": 293.79,
       "current_price": 294.24,
-      "return_pct": 0.04,
+      "return_pct": 0.15,
       "final_score": 53.4,
       "recommendation": "관망"
     },
     {
-      "ticker": "APO",
-      "name": "Apollo Global Management, Inc.",
+      "ticker": "ALB",
+      "name": "Albemarle Corporation",
       "rec_date": "2026-04-03",
-      "entry_price": 107.2,
-      "current_price": 107.2,
-      "return_pct": -0.0,
-      "final_score": 52.6,
+      "entry_price": 178.54,
+      "current_price": 178.03,
+      "return_pct": -0.29,
+      "final_score": 52.5,
       "recommendation": "관망"
     }
   ],
   "by_date": [
     {
       "date": "2026-04-03",
-      "avg_return": 0.06,
+      "avg_return": 0.1,
       "spy_return": 0.0,
-      "alpha": 0.06,
+      "alpha": 0.1,
       "win_rate": 80.0,
       "num_picks": 10
     },
@@ -4550,328 +4550,328 @@
     {
       "date": "2026-04-01",
       "avg_return": 0.79,
-      "spy_return": -0.14,
-      "alpha": 0.92,
+      "spy_return": 0.02,
+      "alpha": 0.76,
       "win_rate": 80.0,
       "num_picks": 10
     },
     {
       "date": "2026-03-31",
       "avg_return": 2.18,
-      "spy_return": 0.61,
-      "alpha": 1.57,
+      "spy_return": 0.78,
+      "alpha": 1.41,
       "win_rate": 80.0,
       "num_picks": 10
     },
     {
       "date": "2026-03-28",
       "avg_return": 1.25,
-      "spy_return": 3.54,
-      "alpha": -2.28,
+      "spy_return": 3.71,
+      "alpha": -2.45,
       "win_rate": 60.0,
       "num_picks": 10
     },
     {
       "date": "2026-03-27",
       "avg_return": 0.3,
-      "spy_return": 3.19,
-      "alpha": -2.89,
+      "spy_return": 3.36,
+      "alpha": -3.06,
       "win_rate": 60.0,
       "num_picks": 10
     },
     {
       "date": "2026-03-26",
       "avg_return": -2.24,
-      "spy_return": 1.43,
-      "alpha": -3.67,
+      "spy_return": 1.6,
+      "alpha": -3.84,
       "win_rate": 20.0,
       "num_picks": 10
     },
     {
       "date": "2026-03-25",
       "avg_return": -0.2,
-      "spy_return": -0.38,
-      "alpha": 0.18,
+      "spy_return": -0.22,
+      "alpha": 0.02,
       "win_rate": 60.0,
       "num_picks": 10
     },
     {
       "date": "2026-03-20",
       "avg_return": 0.41,
-      "spy_return": 0.89,
-      "alpha": -0.48,
+      "spy_return": 1.05,
+      "alpha": -0.65,
       "win_rate": 70.0,
       "num_picks": 10
     },
     {
       "date": "2026-03-19",
       "avg_return": -1.36,
-      "spy_return": -0.56,
-      "alpha": -0.8,
+      "spy_return": -0.4,
+      "alpha": -0.96,
       "win_rate": 50.0,
       "num_picks": 10
     },
     {
       "date": "2026-03-15",
       "avg_return": 0.14,
-      "spy_return": -1.93,
-      "alpha": 2.07,
+      "spy_return": -1.77,
+      "alpha": 1.91,
       "win_rate": 50.0,
       "num_picks": 10
     },
     {
       "date": "2026-03-11",
       "avg_return": -1.83,
-      "spy_return": -2.99,
-      "alpha": 1.15,
+      "spy_return": -2.83,
+      "alpha": 1.0,
       "win_rate": 50.0,
       "num_picks": 10
     },
     {
       "date": "2026-03-10",
       "avg_return": -1.59,
-      "spy_return": -3.11,
-      "alpha": 1.52,
+      "spy_return": -2.95,
+      "alpha": 1.36,
       "win_rate": 60.0,
       "num_picks": 10
     },
     {
       "date": "2026-03-04",
       "avg_return": 1.58,
-      "spy_return": -4.23,
-      "alpha": 5.82,
+      "spy_return": -4.08,
+      "alpha": 5.66,
       "win_rate": 40.0,
       "num_picks": 10
     },
     {
       "date": "2026-02-27",
       "avg_return": -2.22,
-      "spy_return": -4.35,
-      "alpha": 2.13,
+      "spy_return": -4.2,
+      "alpha": 1.98,
       "win_rate": 20.0,
       "num_picks": 10
     },
     {
       "date": "2026-02-26",
       "avg_return": -1.81,
-      "spy_return": -4.81,
-      "alpha": 3.0,
+      "spy_return": -4.66,
+      "alpha": 2.85,
       "win_rate": 10.0,
       "num_picks": 10
     },
     {
       "date": "2026-02-19",
       "avg_return": -1.27,
-      "spy_return": -4.14,
-      "alpha": 2.87,
+      "spy_return": -3.99,
+      "alpha": 2.72,
       "win_rate": 10.0,
       "num_picks": 10
     },
     {
       "date": "2026-02-18",
       "avg_return": -1.27,
-      "spy_return": -4.4,
-      "alpha": 3.12,
+      "spy_return": -4.24,
+      "alpha": 2.97,
       "win_rate": 10.0,
       "num_picks": 10
     },
     {
       "date": "2026-02-17",
       "avg_return": -1.93,
-      "spy_return": -3.91,
-      "alpha": 1.99,
+      "spy_return": -3.76,
+      "alpha": 1.83,
       "win_rate": 20.0,
       "num_picks": 10
     },
     {
       "date": "2026-02-14",
       "avg_return": -3.82,
-      "spy_return": -3.91,
-      "alpha": 0.1,
+      "spy_return": -3.76,
+      "alpha": -0.06,
       "win_rate": 40.0,
       "num_picks": 10
     },
     {
       "date": "2026-02-13",
       "avg_return": -2.69,
-      "spy_return": -3.76,
-      "alpha": 1.07,
+      "spy_return": -3.6,
+      "alpha": 0.92,
       "win_rate": 40.0,
       "num_picks": 10
     },
     {
       "date": "2026-02-12",
       "avg_return": -3.44,
-      "spy_return": -3.69,
-      "alpha": 0.25,
+      "spy_return": -3.54,
+      "alpha": 0.1,
       "win_rate": 30.0,
       "num_picks": 10
     },
     {
       "date": "2026-02-11",
       "avg_return": 0.24,
-      "spy_return": -5.18,
-      "alpha": 5.42,
+      "spy_return": -5.03,
+      "alpha": 5.27,
       "win_rate": 30.0,
       "num_picks": 10
     },
     {
       "date": "2026-02-08",
       "avg_return": 7.14,
-      "spy_return": -5.45,
-      "alpha": 12.59,
+      "spy_return": -5.3,
+      "alpha": 12.44,
       "win_rate": 60.0,
       "num_picks": 10
     },
     {
       "date": "2026-02-07",
       "avg_return": 7.15,
-      "spy_return": -5.45,
-      "alpha": 12.6,
+      "spy_return": -5.3,
+      "alpha": 12.45,
       "win_rate": 60.0,
       "num_picks": 10
     },
     {
       "date": "2026-01-31",
       "avg_return": -2.47,
-      "spy_return": -5.65,
-      "alpha": 3.19,
+      "spy_return": -5.5,
+      "alpha": 3.03,
       "win_rate": 50.0,
       "num_picks": 10
     },
     {
       "date": "2026-01-27",
       "avg_return": 4.88,
-      "spy_return": -5.66,
-      "alpha": 10.55,
+      "spy_return": -5.51,
+      "alpha": 10.39,
       "win_rate": 60.0,
       "num_picks": 10
     },
     {
       "date": "2026-01-26",
       "avg_return": 1.28,
-      "spy_return": -5.29,
-      "alpha": 6.57,
+      "spy_return": -5.13,
+      "alpha": 6.41,
       "win_rate": 40.0,
       "num_picks": 10
     },
     {
       "date": "2026-01-25",
       "avg_return": 1.28,
-      "spy_return": -5.29,
-      "alpha": 6.57,
+      "spy_return": -5.13,
+      "alpha": 6.41,
       "win_rate": 40.0,
       "num_picks": 10
     },
     {
       "date": "2026-01-21",
       "avg_return": 10.83,
-      "spy_return": -4.27,
-      "alpha": 15.1,
+      "spy_return": -4.12,
+      "alpha": 14.94,
       "win_rate": 40.0,
       "num_picks": 10
     },
     {
       "date": "2026-01-02",
       "avg_return": 19.89,
-      "spy_return": -3.96,
-      "alpha": 23.85,
+      "spy_return": -3.8,
+      "alpha": 23.7,
       "win_rate": 50.0,
       "num_picks": 10
     },
     {
       "date": "2025-12-31",
       "avg_return": -1.31,
-      "spy_return": -3.78,
-      "alpha": 2.48,
+      "spy_return": -3.63,
+      "alpha": 2.32,
       "win_rate": 40.0,
       "num_picks": 10
     },
     {
       "date": "2025-12-29",
       "avg_return": 13.56,
-      "spy_return": -4.61,
-      "alpha": 18.17,
+      "spy_return": -4.46,
+      "alpha": 18.01,
       "win_rate": 30.0,
       "num_picks": 10
     },
     {
       "date": "2025-12-25",
       "avg_return": -8.31,
-      "spy_return": -4.95,
-      "alpha": -3.36,
+      "spy_return": -4.8,
+      "alpha": -3.51,
       "win_rate": 20.0,
       "num_picks": 10
     },
     {
       "date": "2025-12-22",
       "avg_return": 7.65,
-      "spy_return": -4.19,
-      "alpha": 11.84,
+      "spy_return": -4.04,
+      "alpha": 11.69,
       "win_rate": 40.0,
       "num_picks": 10
     },
     {
       "date": "2025-12-19",
       "avg_return": 5.89,
-      "spy_return": -3.6,
-      "alpha": 9.49,
+      "spy_return": -3.44,
+      "alpha": 9.33,
       "win_rate": 50.0,
       "num_picks": 10
     },
     {
       "date": "2025-12-18",
       "avg_return": 5.53,
-      "spy_return": -2.72,
-      "alpha": 8.25,
+      "spy_return": -2.56,
+      "alpha": 8.1,
       "win_rate": 50.0,
       "num_picks": 10
     },
     {
       "date": "2025-12-17",
       "avg_return": 9.49,
-      "spy_return": -1.99,
-      "alpha": 11.48,
+      "spy_return": -1.83,
+      "alpha": 11.32,
       "win_rate": 60.0,
       "num_picks": 10
     },
     {
       "date": "2025-12-15",
       "avg_return": -4.11,
-      "spy_return": -3.33,
-      "alpha": -0.78,
+      "spy_return": -3.17,
+      "alpha": -0.94,
       "win_rate": 40.0,
       "num_picks": 10
     },
     {
       "date": "2025-12-13",
       "avg_return": -1.03,
-      "spy_return": -3.33,
-      "alpha": 2.3,
+      "spy_return": -3.17,
+      "alpha": 2.14,
       "win_rate": 40.0,
       "num_picks": 10
     },
     {
       "date": "2025-12-12",
       "avg_return": -4.9,
-      "spy_return": -3.48,
-      "alpha": -1.42,
+      "spy_return": -3.32,
+      "alpha": -1.58,
       "win_rate": 30.0,
       "num_picks": 10
     },
     {
       "date": "2025-12-09",
       "avg_return": 3.11,
-      "spy_return": -3.66,
-      "alpha": 6.76,
+      "spy_return": -3.5,
+      "alpha": 6.61,
       "win_rate": 50.0,
       "num_picks": 10
     },
     {
       "date": "2025-12-06",
       "avg_return": 7.64,
-      "spy_return": -3.74,
-      "alpha": 11.38,
+      "spy_return": -3.58,
+      "alpha": 11.23,
       "win_rate": 60.0,
       "num_picks": 10
     }

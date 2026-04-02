@@ -1,7 +1,7 @@
 {
   "metadata": {
     "as_of_date": "2026-04-03",
-    "fetch_time": "2026-04-03T04:27:01.507309",
+    "fetch_time": "2026-04-03T04:50:54.133430",
     "source": "sec_edgar_api",
     "ticker_count": 20
   },
@@ -17,7 +17,7 @@
         "fiscal_year_end": "1231"
       },
       "filings": [],
-      "fetch_time": "2026-04-03T04:26:31.948281"
+      "fetch_time": "2026-04-03T04:50:21.635983"
     },
     "LNT": {
       "ticker": "LNT",
@@ -71,7 +71,7 @@
           "url": "https://www.sec.gov/Archives/edgar/data/352541/000035254126000003/lnt-20260105.htm"
         }
       ],
-      "fetch_time": "2026-04-03T04:26:32.716155"
+      "fetch_time": "2026-04-03T04:50:22.334580"
     },
     "T": {
       "ticker": "T",
@@ -109,7 +109,7 @@
           "url": "https://www.sec.gov/Archives/edgar/data/732717/000119312526039407/d104980d8k.htm"
         }
       ],
-      "fetch_time": "2026-04-03T04:26:33.505694"
+      "fetch_time": "2026-04-03T04:50:23.053405"
     },
     "ACGL": {
       "ticker": "ACGL",
@@ -163,37 +163,7 @@
           "url": "https://www.sec.gov/Archives/edgar/data/947484/000094748425000089/acgl-20251107.htm"
         }
       ],
-      "fetch_time": "2026-04-03T04:26:34.777395"
-    },
-    "AEP": {
-      "ticker": "AEP",
-      "company": {
-        "name": "AMERICAN ELECTRIC POWER CO INC",
-        "cik": "0000004904",
-        "sic": "4911",
-        "sic_description": "Electric Services",
-        "state": "NY",
-        "fiscal_year_end": "1231"
-      },
-      "filings": [
-        {
-          "form": "8-K",
-          "filing_date": "2026-02-17",
-          "accession_number": "0000004904-26-000015",
-          "document": "aep-20260213.htm",
-          "description": "8-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/4904/000000490426000015/aep-20260213.htm"
-        },
-        {
-          "form": "10-K",
-          "filing_date": "2026-02-12",
-          "accession_number": "0000004904-26-000013",
-          "document": "aep-20251231.htm",
-          "description": "10-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/4904/000000490426000013/aep-20251231.htm"
-        }
-      ],
-      "fetch_time": "2026-04-03T04:26:36.393329"
+      "fetch_time": "2026-04-03T04:50:25.075913"
     },
     "AEE": {
       "ticker": "AEE",
@@ -247,7 +217,37 @@
           "url": "https://www.sec.gov/Archives/edgar/data/1002910/000110465926012085/tm265625d1_8k.htm"
         }
       ],
-      "fetch_time": "2026-04-03T04:26:38.040602"
+      "fetch_time": "2026-04-03T04:50:26.871322"
+    },
+    "AEP": {
+      "ticker": "AEP",
+      "company": {
+        "name": "AMERICAN ELECTRIC POWER CO INC",
+        "cik": "0000004904",
+        "sic": "4911",
+        "sic_description": "Electric Services",
+        "state": "NY",
+        "fiscal_year_end": "1231"
+      },
+      "filings": [
+        {
+          "form": "8-K",
+          "filing_date": "2026-02-17",
+          "accession_number": "0000004904-26-000015",
+          "document": "aep-20260213.htm",
+          "description": "8-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/4904/000000490426000015/aep-20260213.htm"
+        },
+        {
+          "form": "10-K",
+          "filing_date": "2026-02-12",
+          "accession_number": "0000004904-26-000013",
+          "document": "aep-20251231.htm",
+          "description": "10-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/4904/000000490426000013/aep-20251231.htm"
+        }
+      ],
+      "fetch_time": "2026-04-03T04:50:28.647977"
     },
     "AXP": {
       "ticker": "AXP",
@@ -301,7 +301,7 @@
           "url": "https://www.sec.gov/Archives/edgar/data/4962/000000496226000094/axp-20260210.htm"
         }
       ],
-      "fetch_time": "2026-04-03T04:26:39.693450"
+      "fetch_time": "2026-04-03T04:50:30.285461"
     },
     "AIZ": {
       "ticker": "AIZ",
@@ -355,7 +355,7 @@
           "url": "https://www.sec.gov/Archives/edgar/data/1267238/000126723825000049/aiz-20251104.htm"
         }
       ],
-      "fetch_time": "2026-04-03T04:26:41.387777"
+      "fetch_time": "2026-04-03T04:50:31.999461"
     },
     "APD": {
       "ticker": "APD",
@@ -409,61 +409,7 @@
           "url": "https://www.sec.gov/Archives/edgar/data/2969/000000296925000055/apd-20250930.htm"
         }
       ],
-      "fetch_time": "2026-04-03T04:26:43.042387"
-    },
-    "APO": {
-      "ticker": "APO",
-      "company": {
-        "name": "Apollo Global Management, Inc.",
-        "cik": "0001858681",
-        "sic": "6282",
-        "sic_description": "Investment Advice",
-        "state": "DE",
-        "fiscal_year_end": "1231"
-      },
-      "filings": [
-        {
-          "form": "8-K",
-          "filing_date": "2026-04-01",
-          "accession_number": "0001858681-26-000016",
-          "document": "apo-20260401.htm",
-          "description": "8-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/1858681/000185868126000016/apo-20260401.htm"
-        },
-        {
-          "form": "8-K",
-          "filing_date": "2026-03-30",
-          "accession_number": "0001193125-26-131833",
-          "document": "d38252d8k.htm",
-          "description": "8-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/1858681/000119312526131833/d38252d8k.htm"
-        },
-        {
-          "form": "8-K",
-          "filing_date": "2026-03-24",
-          "accession_number": "0000950142-26-000810",
-          "document": "eh260755910_8k.htm",
-          "description": "FORM 8-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/1858681/000095014226000810/eh260755910_8k.htm"
-        },
-        {
-          "form": "10-K",
-          "filing_date": "2026-02-25",
-          "accession_number": "0001858681-26-000013",
-          "document": "apo-20251231.htm",
-          "description": "10-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/1858681/000185868126000013/apo-20251231.htm"
-        },
-        {
-          "form": "8-K",
-          "filing_date": "2026-02-19",
-          "accession_number": "0001858681-26-000010",
-          "document": "apo-20260219.htm",
-          "description": "8-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/1858681/000185868126000010/apo-20260219.htm"
-        }
-      ],
-      "fetch_time": "2026-04-03T04:26:44.593555"
+      "fetch_time": "2026-04-03T04:50:33.730079"
     },
     "ALB": {
       "ticker": "ALB",
@@ -517,7 +463,61 @@
           "url": "https://www.sec.gov/Archives/edgar/data/915913/000091591326000018/alb-20251231.htm"
         }
       ],
-      "fetch_time": "2026-04-03T04:26:46.070070"
+      "fetch_time": "2026-04-03T04:50:35.738904"
+    },
+    "APO": {
+      "ticker": "APO",
+      "company": {
+        "name": "Apollo Global Management, Inc.",
+        "cik": "0001858681",
+        "sic": "6282",
+        "sic_description": "Investment Advice",
+        "state": "DE",
+        "fiscal_year_end": "1231"
+      },
+      "filings": [
+        {
+          "form": "8-K",
+          "filing_date": "2026-04-01",
+          "accession_number": "0001858681-26-000016",
+          "document": "apo-20260401.htm",
+          "description": "8-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/1858681/000185868126000016/apo-20260401.htm"
+        },
+        {
+          "form": "8-K",
+          "filing_date": "2026-03-30",
+          "accession_number": "0001193125-26-131833",
+          "document": "d38252d8k.htm",
+          "description": "8-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/1858681/000119312526131833/d38252d8k.htm"
+        },
+        {
+          "form": "8-K",
+          "filing_date": "2026-03-24",
+          "accession_number": "0000950142-26-000810",
+          "document": "eh260755910_8k.htm",
+          "description": "FORM 8-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/1858681/000095014226000810/eh260755910_8k.htm"
+        },
+        {
+          "form": "10-K",
+          "filing_date": "2026-02-25",
+          "accession_number": "0001858681-26-000013",
+          "document": "apo-20251231.htm",
+          "description": "10-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/1858681/000185868126000013/apo-20251231.htm"
+        },
+        {
+          "form": "8-K",
+          "filing_date": "2026-02-19",
+          "accession_number": "0001858681-26-000010",
+          "document": "apo-20260219.htm",
+          "description": "8-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/1858681/000185868126000010/apo-20260219.htm"
+        }
+      ],
+      "fetch_time": "2026-04-03T04:50:37.719168"
     },
     "AMD": {
       "ticker": "AMD",
@@ -571,7 +571,7 @@
           "url": "https://www.sec.gov/Archives/edgar/data/2488/000000248826000014/amd-20260203.htm"
         }
       ],
-      "fetch_time": "2026-04-03T04:26:47.776780"
+      "fetch_time": "2026-04-03T04:50:39.617478"
     },
     "AAPL": {
       "ticker": "AAPL",
@@ -625,7 +625,7 @@
           "url": "https://www.sec.gov/Archives/edgar/data/320193/000114036125044561/ef20060722_8k.htm"
         }
       ],
-      "fetch_time": "2026-04-03T04:26:49.244850"
+      "fetch_time": "2026-04-03T04:50:41.507537"
     },
     "AMAT": {
       "ticker": "AMAT",
@@ -679,7 +679,7 @@
           "url": "https://www.sec.gov/Archives/edgar/data/6951/000162828025056742/amat-20251026.htm"
         }
       ],
-      "fetch_time": "2026-04-03T04:26:50.939219"
+      "fetch_time": "2026-04-03T04:50:43.078088"
     },
     "AMZN": {
       "ticker": "AMZN",
@@ -733,7 +733,7 @@
           "url": "https://www.sec.gov/Archives/edgar/data/1018724/000101872426000002/amzn-20260205.htm"
         }
       ],
-      "fetch_time": "2026-04-03T04:26:52.648199"
+      "fetch_time": "2026-04-03T04:50:44.866358"
     },
     "APA": {
       "ticker": "APA",
@@ -771,7 +771,7 @@
           "url": "https://www.sec.gov/Archives/edgar/data/1841666/000184166626000003/apa8k-20260120.htm"
         }
       ],
-      "fetch_time": "2026-04-03T04:26:54.317004"
+      "fetch_time": "2026-04-03T04:50:46.643421"
     },
     "GOOGL": {
       "ticker": "GOOGL",
@@ -793,7 +793,7 @@
           "url": "https://www.sec.gov/Archives/edgar/data/1652044/000165204426000026/goog-20260304.htm"
         }
       ],
-      "fetch_time": "2026-04-03T04:26:56.060701"
+      "fetch_time": "2026-04-03T04:50:48.692318"
     },
     "APP": {
       "ticker": "APP",
@@ -823,7 +823,7 @@
           "url": "https://www.sec.gov/Archives/edgar/data/1751008/000175100826000005/app-20260211.htm"
         }
       ],
-      "fetch_time": "2026-04-03T04:26:57.872056"
+      "fetch_time": "2026-04-03T04:50:50.531227"
     },
     "GOOG": {
       "ticker": "GOOG",
@@ -845,7 +845,7 @@
           "url": "https://www.sec.gov/Archives/edgar/data/1652044/000165204426000026/goog-20260304.htm"
         }
       ],
-      "fetch_time": "2026-04-03T04:26:59.522975"
+      "fetch_time": "2026-04-03T04:50:52.182675"
     },
     "ANET": {
       "ticker": "ANET",
@@ -875,7 +875,7 @@
           "url": "https://www.sec.gov/Archives/edgar/data/1596532/000159653226000010/anet-20260212.htm"
         }
       ],
-      "fetch_time": "2026-04-03T04:27:01.305405"
+      "fetch_time": "2026-04-03T04:50:53.932449"
     }
   }
 }
