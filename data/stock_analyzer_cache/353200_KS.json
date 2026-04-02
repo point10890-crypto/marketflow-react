@@ -2,8 +2,8 @@
   "name": "대덕전자",
   "ticker": "353200.KS",
   "result": "적극 매수",
-  "date": "2026-04-02 06:56:31",
-  "elapsed": 1.8,
+  "date": "2026-04-02 21:50:44",
+  "elapsed": 2.3,
   "consensus_score": 4.5,
   "analyst_count": 8,
   "recommendation_detail": {
@@ -15,22 +15,22 @@
   },
   "recommendation_period": "0m",
   "price_targets": {
-    "current": 88000.0,
+    "current": 80300.0,
     "high": 105000.0,
     "low": 49000.0,
     "mean": 81125.0,
     "median": 85000.0
   },
-  "current_price": 88000.0,
-  "upside_potential": -7.8,
+  "current_price": 80300.0,
+  "upside_potential": 1.0,
   "key_stats": {
     "name": "DaeduckElectronics",
     "sector": "Technology",
     "industry": "Electronic Components",
-    "market_cap": 4533095235584,
+    "market_cap": 4136449343488,
     "pe_ratio": null,
-    "forward_pe": 20.575169,
-    "dividend_yield": 0.65,
+    "forward_pe": 18.774841,
+    "dividend_yield": 0.57,
     "beta": 1.476,
     "fifty_two_week_high": 91300.0,
     "fifty_two_week_low": 12900.0,
@@ -40,7 +40,7 @@
   },
   "finnhub_supplement": null,
   "source": "yfinance",
-  "ai_analysis": "대덕전자에 대해 8명의 애널리스트가 적극 매수 의견을 제시하고 있습니다. 컨센서스 점수는 5점 만점에 4.5점입니다. 그러나 목표가 평균은 81,125원으로 현재 주가 대비 -7.8% 하락 여력이 있습니다.",
+  "ai_analysis": null,
   "revenue_quarters": [
     {
       "date": "2025-12",

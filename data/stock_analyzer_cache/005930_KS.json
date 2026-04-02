@@ -2,8 +2,8 @@
   "name": "삼성전자",
   "ticker": "005930.KS",
   "result": "매수",
-  "date": "2026-04-01 19:37:56",
-  "elapsed": 1.7,
+  "date": "2026-04-02 22:14:26",
+  "elapsed": 1.3,
   "consensus_score": 4.22,
   "analyst_count": 37,
   "recommendation_detail": {
@@ -15,22 +15,22 @@
   },
   "recommendation_period": "0m",
   "price_targets": {
-    "current": 189600.0,
+    "current": 178400.0,
     "high": 340000.0,
     "low": 110000.0,
     "mean": 239873.48,
     "median": 250000.0
   },
-  "current_price": 189600.0,
-  "upside_potential": 26.5,
+  "current_price": 178400.0,
+  "upside_potential": 34.5,
   "key_stats": {
     "name": "SamsungElec",
     "sector": "Technology",
     "industry": "Consumer Electronics",
-    "market_cap": 1267681340686336,
+    "market_cap": 1192797243703296,
     "pe_ratio": null,
-    "forward_pe": 6.599931,
-    "dividend_yield": 1.35,
+    "forward_pe": 6.2100616,
+    "dividend_yield": 1.19,
     "beta": 1.121,
     "fifty_two_week_high": 223000.0,
     "fifty_two_week_low": 52900.0,
@@ -40,7 +40,7 @@
   },
   "finnhub_supplement": null,
   "source": "yfinance",
-  "ai_analysis": "삼성전자는 현재 애널리스트 컨센서스가 '매수' 의견으로, 37명의 애널리스트가 참여하여 5점 만점에 4.22점을 기록했습니다. 평균 목표 주가는 239,873원으로, 현재 주가 대비 26.5%의 상승 여력이 있는 것으로 분석됩니다. 이는 시장 전문가들이 삼성전자의 성장 가능성을 긍정적으로 평가하고 있음을 시사합니다.",
+  "ai_analysis": null,
   "revenue_quarters": [
     {
       "date": "2025-12",
@@ -79,11 +79,32 @@
   ],
   "news": [
     {
-      "title": "Amazon partners up with Delta to provide high-speed internet",
-      "summary": "Yahoo Finance Tech Editor Dan Howley talks to Market Domination Host Josh Lipton about a recently announced partnership between Delta Air Lines (DAL) and Amazon (AMZN) to use Amazon's Low Earth Orbit ",
-      "url": "https://finance.yahoo.com/video/amazon-partners-up-with-delta-to-provide-high-speed-internet-213346771.html",
+      "title": "Have smartphones finally gotten too large for consumers?",
+      "summary": "Yahoo Finance Senior Reporters Brooke DiPalma and Ines Ferré speak with Market Domination Host Josh Lipton about possible consumer pushback to the ever-increasing size of smartphones, including Samsun",
+      "url": "https://finance.yahoo.com/video/have-smartphones-finally-gotten-too-large-for-consumers-213000109.html",
       "provider": "Yahoo Finance Video",
-      "pub_time": "2026-03-31T21:33:46Z"
+      "pub_time": "2026-04-01T21:30:00Z"
+    },
+    {
+      "title": "AMD And Samsung Deepen AI Memory Ties In Bid For Supply Strength",
+      "summary": "Advanced Micro Devices (NasdaqGS:AMD) and Samsung have expanded their collaboration in AI memory and computing. The agreement secures HBM4 supply for AMD's next generation Instinct accelerators and ad",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/amd-samsung-deepen-ai-memory-221128883.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-04-01T22:11:28Z"
+    },
+    {
+      "title": "Micron, Sandisk Soar on Strong Day for Chipmakers",
+      "summary": "The S&P 500’s performance on Wednesday has been led by some of the biggest makers of the infrastructure needed for artificial intelligence. Shares of the largest U.S. memory-chip maker, Micron Technol",
+      "url": "https://www.wsj.com/livecoverage/stock-market-today-dow-sp-500-nasdaq-04-01-2026/card/micron-sandisk-soar-on-strong-day-for-chipmakers-Arc4P5jC5IwTdrP7cdiW?siteid=yhoof2&yptr=yahoo",
+      "provider": "The Wall Street Journal",
+      "pub_time": "2026-04-01T19:52:10Z"
+    },
+    {
+      "title": "Advanced Micro Devices, Inc. (AMD) and Samsung Deepen Ties to Power Next Generation AI Infrastructure",
+      "summary": "Advanced Micro Devices Inc. (NASDAQ:AMD) is one of Motley Fool’s high-growth stock picks. On March 18, Advanced Micro Devices Inc. (NASDAQ:AMD) entered into a memorandum of understanding with Samsung ",
+      "url": "https://finance.yahoo.com/sectors/technology/articles/advanced-micro-devices-inc-amd-194253901.html",
+      "provider": "Insider Monkey",
+      "pub_time": "2026-04-01T19:42:53Z"
     },
     {
       "title": "Exploring Samsung Electronics And Two Other High Growth Tech Stocks",
@@ -91,27 +112,6 @@
       "url": "https://finance.yahoo.com/sectors/technology/articles/exploring-samsung-electronics-two-other-093844720.html",
       "provider": "Simply Wall St.",
       "pub_time": "2026-04-01T09:38:44Z"
-    },
-    {
-      "title": "Samsung’s Best Day Since 2001 Drives Rebound in Korean Stocks",
-      "summary": "(Bloomberg) -- Chipmakers drove a rebound in South Korean stocks, as hopes that the Iran war may be nearing an end revived risk appetite. The Kospi Index closed 8.4% higher on Wednesday, driven by Sam",
-      "url": "https://finance.yahoo.com/markets/stocks/articles/samsung-sk-hynix-jump-more-054032911.html",
-      "provider": "Bloomberg",
-      "pub_time": "2026-04-01T07:24:23Z"
-    },
-    {
-      "title": "Is It Too Late To Reassess Samsung Electronics (KOSE:A005930) After Its 189.4% 1-Year Surge?",
-      "summary": "If you are wondering whether Samsung Electronics at ₩167,200 still offers value after a strong run, this article walks through what the numbers are saying about the current price. The stock has record",
-      "url": "https://finance.yahoo.com/markets/stocks/articles/too-reassess-samsung-electronics-kose-211248297.html",
-      "provider": "Simply Wall St.",
-      "pub_time": "2026-03-31T21:12:48Z"
-    },
-    {
-      "title": "Chip Stocks Jump as Trump Signals End to Iran War Within Weeks",
-      "summary": "Chipmakers Soar on Report U.S. to Wind Down Iran Campaign",
-      "url": "https://finance.yahoo.com/markets/stocks/articles/chip-stocks-jump-trump-signals-185450749.html",
-      "provider": "GuruFocus.com",
-      "pub_time": "2026-03-31T18:54:50Z"
     }
   ]
 }

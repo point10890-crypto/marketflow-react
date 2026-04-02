@@ -1,0 +1,117 @@
+{
+  "name": "포스코인터내셔널",
+  "ticker": "047050.KS",
+  "result": "적극 매수",
+  "date": "2026-04-02 22:09:42",
+  "elapsed": 2.3,
+  "consensus_score": 4.5,
+  "analyst_count": 10,
+  "recommendation_detail": {
+    "strongBuy": 5,
+    "buy": 5,
+    "hold": 0,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 79500.0,
+    "high": 91000.0,
+    "low": 66000.0,
+    "mean": 81600.0,
+    "median": 81500.0
+  },
+  "current_price": 79500.0,
+  "upside_potential": 2.6,
+  "key_stats": {
+    "name": "POSCO INTERNATIONAL",
+    "sector": "Industrials",
+    "industry": "Conglomerates",
+    "market_cap": 13550336606208,
+    "pe_ratio": null,
+    "forward_pe": 16.104855,
+    "dividend_yield": 2.43,
+    "beta": 1.916,
+    "fifty_two_week_high": 85900.0,
+    "fifty_two_week_low": 43350.0,
+    "revenue": 32373603303424,
+    "profit_margin": 0.01897,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 7827528711000
+    },
+    {
+      "date": "2025-09",
+      "value": 8248268133000
+    },
+    {
+      "date": "2025-06",
+      "value": 8144101621000
+    },
+    {
+      "date": "2025-03",
+      "value": 8153705443000
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 120687853000
+    },
+    {
+      "date": "2025-09",
+      "value": 203857950000
+    },
+    {
+      "date": "2025-06",
+      "value": 89793525000
+    },
+    {
+      "date": "2025-03",
+      "value": 199745692000
+    }
+  ],
+  "news": [
+    {
+      "title": "POSCO Strengthens Rare Earth Supply Chain With Global Expansion",
+      "summary": "PKX builds a vertically integrated rare earth supply chain, targeting EV growth with global sourcing, refining and magnet production expansion.",
+      "url": "https://finance.yahoo.com/sectors/energy/articles/posco-strengthens-rare-earth-supply-121300975.html",
+      "provider": "Zacks",
+      "pub_time": "2026-03-24T12:13:00Z"
+    },
+    {
+      "title": "POSCO Partners With Glenfarne to Progress Alaska LNG Project",
+      "summary": "PKX's pact with Glenfarne advances Alaska LNG with steel supply, 20-year LNG agreement and pre-FID investment fueling project momentum.",
+      "url": "https://finance.yahoo.com/news/posco-partners-glenfarne-progress-alaska-160100374.html",
+      "provider": "Zacks",
+      "pub_time": "2025-12-05T16:01:00Z"
+    },
+    {
+      "title": "POSCO Secures Control of Sampoerna Agro in KRW 1.3T Deal",
+      "summary": "POSCO expands its palm oil empire with a major acquisition and new refinery, creating a fully integrated value chain from seeds to biofuel feedstock.",
+      "url": "https://finance.yahoo.com/news/posco-secures-control-sampoerna-agro-125400159.html",
+      "provider": "Zacks",
+      "pub_time": "2025-11-25T12:54:00Z"
+    },
+    {
+      "title": "Assessing American Resources (AREC) Valuation After Funding, ReElement Expansion, and POSCO Offtake Deal",
+      "summary": "American Resources has drawn renewed investor interest after securing about $40 million in private placements, which is fueling its rare earth extraction strategy. The company’s portfolio firm, ReElem",
+      "url": "https://finance.yahoo.com/news/assessing-american-resources-arec-valuation-101026892.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2025-10-24T10:10:26Z"
+    },
+    {
+      "title": "Posco completes EV drive motor plant in Poland",
+      "summary": "South Korean group aims to become key player in European EV supply chain.",
+      "url": "https://www.just-auto.com/news/posco-completes-ev-drive-motor-plant-in-poland/",
+      "provider": "Just Auto",
+      "pub_time": "2025-10-03T09:10:55Z"
+    }
+  ]
+}

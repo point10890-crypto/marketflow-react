@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generated_at": "2026-04-02T20:00:32.160796",
+    "generated_at": "2026-04-03T00:00:38.337103",
     "market": "CRYPTO",
     "gate": "RED",
     "universe_size": 50
@@ -13,63 +13,63 @@
       "score": 51,
       "pivot_high": 1.0001,
       "breakout_close_pct": -0.03,
-      "vol_ratio": 0.64,
+      "vol_ratio": 0.85,
       "liquidity_bucket": "A",
       "market_regime": "BTC_DOWN|D",
       "c1": 2.0,
       "c2": 0.1,
       "c3": 0.1,
-      "ml_win_prob": 66.1
+      "ml_win_prob": 66.2
     },
     {
       "symbol": "USD1/USDT",
       "timeframe": "4h",
       "signal_type": "APPROACHING",
-      "score": 50,
+      "score": 43,
       "pivot_high": 0.9998,
-      "breakout_close_pct": 0.0,
-      "vol_ratio": 1.18,
+      "breakout_close_pct": -0.01,
+      "vol_ratio": 1.37,
       "liquidity_bucket": "A",
-      "market_regime": "BTC_DOWN|C",
+      "market_regime": "BTC_DOWN|D",
       "c1": 0.1,
       "c2": 0.1,
       "c3": 0.0,
-      "ml_win_prob": 73.1
+      "ml_win_prob": 73.7
     },
     {
       "symbol": "0G/USDT",
       "timeframe": "4h",
       "signal_type": "BREAKOUT",
-      "score": 49,
+      "score": 40,
       "pivot_high": 0.494,
-      "breakout_close_pct": 4.45,
-      "vol_ratio": 3.0,
-      "liquidity_bucket": "B",
+      "breakout_close_pct": 5.06,
+      "vol_ratio": 0.57,
+      "liquidity_bucket": "C",
       "market_regime": "BTC_DOWN|D",
       "c1": 13.5,
       "c2": 12.0,
       "c3": 3.2,
-      "ml_win_prob": 47.5
+      "ml_win_prob": 48.8
     },
     {
       "symbol": "FIDA/USDT",
       "timeframe": "1d",
-      "signal_type": "APPROACHING",
-      "score": 9,
+      "signal_type": "BREAKOUT",
+      "score": 28,
       "pivot_high": 0.01543,
-      "breakout_close_pct": -0.19,
-      "vol_ratio": 4.51,
-      "liquidity_bucket": "C",
+      "breakout_close_pct": 3.05,
+      "vol_ratio": 5.41,
+      "liquidity_bucket": "B",
       "market_regime": "BTC_DOWN|D",
       "c1": 33.8,
       "c2": 22.8,
       "c3": 21.4,
-      "ml_win_prob": 15.7
+      "ml_win_prob": 24.9
     }
   ],
   "summary": {
     "setups_4h": 6,
-    "setups_1d": 8,
+    "setups_1d": 7,
     "signals_4h": 2,
     "signals_1d": 2,
     "published": 0

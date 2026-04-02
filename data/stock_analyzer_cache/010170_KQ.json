@@ -1,35 +1,35 @@
 {
-  "name": "삼천당제약",
-  "ticker": "000250.KQ",
+  "name": "대한광통신",
+  "ticker": "010170.KQ",
   "result": "데이터 없음",
-  "date": "2026-04-02 21:56:19",
+  "date": "2026-04-02 22:16:18",
   "elapsed": 2.0,
   "consensus_score": null,
   "analyst_count": 0,
   "recommendation_detail": null,
   "recommendation_period": null,
   "price_targets": {
-    "current": 609000.0,
-    "high": null,
-    "low": null,
-    "mean": null,
-    "median": null
+    "current": 10120.0,
+    "high": 2150.0,
+    "low": 2150.0,
+    "mean": 2150.0,
+    "median": 2150.0
   },
-  "current_price": 609000.0,
-  "upside_potential": null,
+  "current_price": 10120.0,
+  "upside_potential": -78.8,
   "key_stats": {
-    "name": "SCD",
-    "sector": "",
-    "industry": "",
-    "market_cap": 14164048216064,
+    "name": "TaihanFiberoptics",
+    "sector": "Technology",
+    "industry": "Communication Equipment",
+    "market_cap": 1393952817152,
     "pe_ratio": null,
     "forward_pe": null,
     "dividend_yield": null,
-    "beta": null,
-    "fifty_two_week_high": 1233000.0,
-    "fifty_two_week_low": 127600.0,
-    "revenue": null,
-    "profit_margin": null,
+    "beta": 0.732,
+    "fifty_two_week_high": 11290.0,
+    "fifty_two_week_low": 457.0,
+    "revenue": 139446730752,
+    "profit_margin": -0.2006,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
@@ -38,37 +38,37 @@
   "revenue_quarters": [
     {
       "date": "2025-12",
-      "value": 66262693890
+      "value": 29116470020
     },
     {
       "date": "2025-09",
-      "value": 58024413360
+      "value": 43298471110
     },
     {
       "date": "2025-06",
-      "value": 56900188950
+      "value": 41638182680
     },
     {
       "date": "2025-03",
-      "value": 50617981540
+      "value": 25393611150
     }
   ],
   "net_income_quarters": [
     {
       "date": "2025-12",
-      "value": 5546838470
+      "value": -11670439120
     },
     {
       "date": "2025-09",
-      "value": 2572814500
+      "value": -8186690760
     },
     {
       "date": "2025-06",
-      "value": -3336061860
+      "value": -1081437140
     },
     {
       "date": "2025-03",
-      "value": 478231630
+      "value": -7034360750
     }
   ],
   "news": []

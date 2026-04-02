@@ -1,0 +1,117 @@
+{
+  "name": "에이비엘바이오",
+  "ticker": "298380.KQ",
+  "result": "적극 매수",
+  "date": "2026-04-02 20:39:11",
+  "elapsed": 1.7,
+  "consensus_score": 4.6,
+  "analyst_count": 5,
+  "recommendation_detail": {
+    "strongBuy": 3,
+    "buy": 2,
+    "hold": 0,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 159800.0,
+    "high": 280000.0,
+    "low": 86000.0,
+    "mean": 209200.0,
+    "median": 230000.0
+  },
+  "current_price": 159800.0,
+  "upside_potential": 30.9,
+  "key_stats": {
+    "name": "ABL Bio",
+    "sector": "Healthcare",
+    "industry": "Biotechnology",
+    "market_cap": 8809000992768,
+    "pe_ratio": null,
+    "forward_pe": -1429.9777,
+    "dividend_yield": null,
+    "beta": 0.468,
+    "fifty_two_week_high": 257500.0,
+    "fifty_two_week_low": 31300.0,
+    "revenue": 79349850112,
+    "profit_margin": -0.47645,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 0
+    },
+    {
+      "date": "2025-09",
+      "value": 1443128350
+    },
+    {
+      "date": "2025-06",
+      "value": 75742027510
+    },
+    {
+      "date": "2025-03",
+      "value": 2164692510
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": -28163091090
+    },
+    {
+      "date": "2025-09",
+      "value": -21270988850
+    },
+    {
+      "date": "2025-06",
+      "value": 39775814740
+    },
+    {
+      "date": "2025-03",
+      "value": -28148234080
+    }
+  ],
+  "news": [
+    {
+      "title": "Sector Update: Health Care Stocks Edge Higher Late Afternoon",
+      "summary": "Health care stocks were edging up late Friday afternoon with the NYSE Health Care Index and the Stat",
+      "url": "https://finance.yahoo.com/news/sector-health-care-stocks-edge-210646077.html",
+      "provider": "MT Newswires",
+      "pub_time": "2025-12-26T21:06:46Z"
+    },
+    {
+      "title": "Sector Update: Health Care Stocks Lower in Friday Afternoon Trading",
+      "summary": "Health care stocks declined Friday afternoon, with the NYSE Health Care Index and the State Street H",
+      "url": "https://finance.yahoo.com/news/sector-health-care-stocks-lower-185916985.html",
+      "provider": "MT Newswires",
+      "pub_time": "2025-12-26T18:59:16Z"
+    },
+    {
+      "title": "Global Growth Companies With High Insider Ownership In December 2025",
+      "summary": "As global markets navigate a complex landscape marked by dovish Federal Reserve signals and mixed economic data, investors are keenly observing growth companies with high insider ownership as potentia",
+      "url": "https://finance.yahoo.com/news/global-growth-companies-high-insider-093616212.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2025-12-01T09:36:16Z"
+    },
+    {
+      "title": "Neok Bio launches with $75M to make dual-targeting ADCs",
+      "summary": "The startup claims its medicines may be able to overcome the limitations of conventional antibody-drug conjugates by simultaneously homing in on “unique pairs” of cancer targets.",
+      "url": "https://www.biopharmadive.com/news/neok-bio-bispecific-adc-biotech-startup-launch-abl/804378/",
+      "provider": "BioPharma Dive",
+      "pub_time": "2025-11-04T07:00:00Z"
+    },
+    {
+      "title": "Asian Growth Stocks With High Insider Ownership To Watch",
+      "summary": "As global markets navigate a period of economic uncertainty, with mixed signals from major economies like the U.S. and China, investors are increasingly turning their attention to Asia for growth oppo",
+      "url": "https://finance.yahoo.com/news/asian-growth-stocks-high-insider-043545750.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2025-09-11T04:35:45Z"
+    }
+  ]
+}
