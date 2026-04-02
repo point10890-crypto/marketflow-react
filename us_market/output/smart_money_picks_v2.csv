@@ -1,21 +1,21 @@
 ticker,name,composite_score,grade,strategy_type,swing_score,trend_score,setup_type,sd_score,sd_stage,inst_score,inst_pct,insider,tech_score,rsi,macd_hist,ma_signal,fund_score,pe,revenue_growth,size,analyst_score,target_upside,recommendation,rs_score,rs_vs_spy_20d,current_price,sector,next_earnings,days_to_earnings,rank
-AKAM,"Akamai Technologies, Inc.",68.5,📈 B급 (매수 고려),Swing 🚀,82.6,55.8,🚀 Breakout / Momentum,80,Strong Accumulation,40,0,Neutral,75,62.5,0.167,Bullish,55,37.98,7.4,Large Cap,75,-6.1,buy,90,19.0,116.59,Information Technology,2026-05-08,,1
-LNT,Alliant Energy Corporation,65.6,📈 B급 (매수 고려),Swing 🚀,72.4,63.1,🚀 Breakout / Momentum,50,Neutral,40,0,Neutral,82,63.2,0.076,Bullish,70,23.2,9.0,Large Cap,78,3.6,buy,80,5.7,72.85,Utilities,2026-05-08,,2
-T,AT&T Inc.,65.5,📈 B급 (매수 고려),Swing 🚀,70.0,60.6,📉 Pullback (Buy Dip),75,Strong Accumulation,40,0,Neutral,68,51.5,-0.046,Bullish,75,9.3,3.6,Large Cap,80,7.8,buy,73,1.1,28.27,Communication Services,2026-04-22,,3
-ACGL,Arch Capital Group Ltd.,63.8,📈 B급 (매수 고려),Swing 🚀,66.0,60.0,⚖️ Base / Neutral,50,Neutral,40,0,Neutral,66,56.2,0.401,Neutral,75,8.33,8.5,Large Cap,83,13.1,buy,66,3.2,96.68,Financials,2026-04-29,,4
-AXP,American Express Company,63.4,📈 B급 (매수 고려),Trend 📈,59.7,62.4,⚖️ Base / Neutral,50,Neutral,40,0,Neutral,68,42.3,2.146,Neutral,80,19.54,10.6,Mega Cap,90,23.7,buy,43,1.3,300.39,Financials,2026-04-23,,5
-AEP,"American Electric Power Company, Inc.",62.8,📈 B급 (매수 고려),Swing 🚀,66.1,60.6,📉 Pullback (Buy Dip),50,Neutral,40,0,Neutral,68,59.6,-0.071,Bullish,75,19.9,13.2,Large Cap,78,3.7,buy,73,3.9,132.56,Utilities,2026-05-05,,6
-AEE,Ameren Corporation,62.6,📈 B급 (매수 고려),Swing 🚀,70.3,57.8,🚀 Breakout / Momentum,50,Neutral,40,0,Neutral,82,60.2,0.045,Bullish,55,20.87,-8.8,Large Cap,78,4.8,buy,73,4.4,111.64,Utilities,2026-05-06,,7
-AIZ,"Assurant, Inc.",61.9,📈 B급 (매수 고려),Swing 🚀,61.2,60.0,⚖️ Base / Neutral,50,Neutral,40,0,Neutral,66,48.0,0.608,Neutral,75,12.88,7.9,Large Cap,80,19.7,buy,50,-0.4,218.27,Financials,2026-05-06,,8
-APD,"Air Products and Chemicals, Inc.",61.7,📈 B급 (매수 고려),Swing 🚀,73.3,52.2,🚀 Breakout / Momentum,50,Neutral,40,0,Neutral,75,63.7,0.639,Bullish,45,N/A,5.8,Large Cap,80,4.5,buy,90,10.4,293.31,Materials,2026-04-30,,9
-AMZN,"Amazon.com, Inc.",60.9,📈 B급 (매수 고려),Swing 🚀,61.5,58.3,⚖️ Base / Neutral,50,Neutral,40,0,Neutral,66,49.2,0.406,Neutral,70,29.16,13.6,Mega Cap,75,34.3,strong_buy,50,-0.8,209.4,Consumer Discretionary,2026-05-01,,10
-APO,"Apollo Global Management, Inc.",60.9,📈 B급 (매수 고려),Trend 📈,54.3,59.4,🐻 Downtrend,50,Neutral,40,0,Neutral,58,40.7,0.75,Bearish,80,19.33,87.7,Large Cap,93,43.0,buy,35,-0.4,106.87,Financials,2026-05-06,,11
-ALB,Albemarle Corporation,60.6,📈 B급 (매수 고려),Swing 🚀,70.6,51.3,⚖️ Base / Neutral,50,Neutral,40,0,Neutral,66,55.6,1.322,Neutral,50,N/A,15.9,Large Cap,80,5.8,buy,90,12.6,178.39,Materials,2026-04-30,,12
-AMD,"Advanced Micro Devices, Inc.",60.2,📈 B급 (매수 고려),Swing 🚀,64.3,53.0,⚖️ Base / Neutral,50,Neutral,40,0,Neutral,66,57.4,1.796,Neutral,55,83.23,34.1,Mega Cap,95,33.3,buy,75,12.5,217.23,Information Technology,2026-05-06,,13
-AAPL,Apple Inc.,59.8,📊 C급 (관망),Swing 🚀,59.2,58.3,⚖️ Base / Neutral,50,Neutral,40,0,Neutral,66,49.8,0.763,Neutral,70,32.34,15.7,Mega Cap,85,15.5,buy,58,1.7,255.5,Information Technology,2026-05-01,,14
-AMAT,"Applied Materials, Inc.",58.7,📊 C급 (관망),Swing 🚀,64.3,51.9,📉 Pullback (Buy Dip),50,Neutral,40,0,Neutral,68,50.7,-1.505,Bullish,50,35.84,-2.1,Mega Cap,85,17.7,buy,73,4.5,349.75,Information Technology,2026-05-15,,15
-APA,APA Corporation,56.9,📊 C급 (관망),Swing 🚀,67.4,57.1,🚀 Breakout / Momentum,80,Strong Accumulation,40,0,Neutral,68,70.9,0.12,Bullish,65,10.51,-28.0,Large Cap,40,-12.9,hold,90,33.0,41.94,Energy,2026-05-07,,16
-GOOGL,Alphabet Inc.,54.0,📊 C급 (관망),Trend 📈,52.5,57.4,🐻 Downtrend,50,Neutral,40,0,Neutral,63,47.7,0.048,Bearish,70,27.38,18.0,Mega Cap,70,27.5,strong_buy,58,1.9,295.67,Communication Services,2026-04-24,,17
-GOOG,Alphabet Inc.,53.8,📊 C급 (관망),Trend 📈,52.5,57.4,🐻 Downtrend,50,Neutral,40,0,Neutral,63,46.9,0.061,Bearish,70,27.19,18.0,Mega Cap,68,22.2,strong_buy,58,1.4,294.23,Communication Services,2026-04-24,,18
-APP,AppLovin Corporation,53.0,📊 C급 (관망),Trend 📈,40.0,53.8,🐻 Downtrend,50,Neutral,40,0,Neutral,45,38.9,-5.467,Bearish,75,38.41,65.9,Large Cap,95,67.3,buy,15,-20.5,386.02,Information Technology,2026-05-07,,19
-ANET,"Arista Networks, Inc.",51.6,📊 C급 (관망),Trend 📈,46.9,49.6,🐻 Downtrend,50,Neutral,40,0,Neutral,43,46.3,-0.908,Bearish,65,45.96,28.9,Large Cap,75,39.6,strong_buy,40,-5.8,126.4,Information Technology,2026-05-06,,20
+AKAM,AKAM,56.2,📊 C급 (관망),Swing 🚀,63.1,46.5,⚖️ Base / Neutral,80,Strong Accumulation,40,0,Neutral,50,50,0,Unknown,50,N/A,0,Micro Cap,50,0,none,50,0,0,Information Technology,,,1
+T,T,52.8,📊 C급 (관망),Swing 🚀,57.7,46.5,⚖️ Base / Neutral,75,Strong Accumulation,40,0,Neutral,50,50,0,Unknown,50,N/A,0,Micro Cap,50,0,none,50,0,0,Communication Services,,,2
+AMZN,AMZN,52.2,📊 C급 (관망),Swing 🚀,56.7,46.5,⚖️ Base / Neutral,50,Neutral,40,0,Neutral,50,50,0,Unknown,50,N/A,0,Micro Cap,50,0,none,50,0,0,Consumer Discretionary,,,3
+ACGL,ACGL,52.0,📊 C급 (관망),Swing 🚀,56.4,46.5,⚖️ Base / Neutral,50,Neutral,40,0,Neutral,50,50,0,Unknown,50,N/A,0,Micro Cap,50,0,none,50,0,0,Financials,,,4
+APO,APO,52.0,📊 C급 (관망),Swing 🚀,56.4,46.5,⚖️ Base / Neutral,50,Neutral,40,0,Neutral,50,50,0,Unknown,50,N/A,0,Micro Cap,50,0,none,50,0,0,Financials,,,5
+AXP,AXP,52.0,📊 C급 (관망),Swing 🚀,56.4,46.5,⚖️ Base / Neutral,50,Neutral,40,0,Neutral,50,50,0,Unknown,50,N/A,0,Micro Cap,50,0,none,50,0,0,Financials,,,6
+AIZ,AIZ,52.0,📊 C급 (관망),Swing 🚀,56.4,46.5,⚖️ Base / Neutral,50,Neutral,40,0,Neutral,50,50,0,Unknown,50,N/A,0,Micro Cap,50,0,none,50,0,0,Financials,,,7
+AEE,AEE,50.4,📊 C급 (관망),Swing 🚀,53.8,46.5,⚖️ Base / Neutral,50,Neutral,40,0,Neutral,50,50,0,Unknown,50,N/A,0,Micro Cap,50,0,none,50,0,0,Utilities,,,8
+LNT,LNT,50.4,📊 C급 (관망),Swing 🚀,53.8,46.5,⚖️ Base / Neutral,50,Neutral,40,0,Neutral,50,50,0,Unknown,50,N/A,0,Micro Cap,50,0,none,50,0,0,Utilities,,,9
+AEP,AEP,50.4,📊 C급 (관망),Swing 🚀,53.8,46.5,⚖️ Base / Neutral,50,Neutral,40,0,Neutral,50,50,0,Unknown,50,N/A,0,Micro Cap,50,0,none,50,0,0,Utilities,,,10
+APD,APD,50.4,📊 C급 (관망),Swing 🚀,53.8,46.5,⚖️ Base / Neutral,50,Neutral,40,0,Neutral,50,50,0,Unknown,50,N/A,0,Micro Cap,50,0,none,50,0,0,Materials,,,11
+ALB,ALB,50.4,📊 C급 (관망),Swing 🚀,53.8,46.5,⚖️ Base / Neutral,50,Neutral,40,0,Neutral,50,50,0,Unknown,50,N/A,0,Micro Cap,50,0,none,50,0,0,Materials,,,12
+AAPL,AAPL,49.3,⚠️ D급 (주의),Swing 🚀,52.0,46.5,⚖️ Base / Neutral,50,Neutral,40,0,Neutral,50,50,0,Unknown,50,N/A,0,Micro Cap,50,0,none,50,0,0,Information Technology,,,13
+ANET,ANET,49.3,⚠️ D급 (주의),Swing 🚀,52.0,46.5,⚖️ Base / Neutral,50,Neutral,40,0,Neutral,50,50,0,Unknown,50,N/A,0,Micro Cap,50,0,none,50,0,0,Information Technology,,,14
+AMD,AMD,49.3,⚠️ D급 (주의),Swing 🚀,52.0,46.5,⚖️ Base / Neutral,50,Neutral,40,0,Neutral,50,50,0,Unknown,50,N/A,0,Micro Cap,50,0,none,50,0,0,Information Technology,,,15
+AMAT,AMAT,49.3,⚠️ D급 (주의),Swing 🚀,52.0,46.5,⚖️ Base / Neutral,50,Neutral,40,0,Neutral,50,50,0,Unknown,50,N/A,0,Micro Cap,50,0,none,50,0,0,Information Technology,,,16
+APP,APP,49.3,⚠️ D급 (주의),Swing 🚀,52.0,46.5,⚖️ Base / Neutral,50,Neutral,40,0,Neutral,50,50,0,Unknown,50,N/A,0,Micro Cap,50,0,none,50,0,0,Information Technology,,,17
+APA,APA,48.0,⚠️ D급 (주의),Swing 🚀,50.0,46.5,⚖️ Base / Neutral,80,Strong Accumulation,40,0,Neutral,50,50,0,Unknown,50,N/A,0,Micro Cap,50,0,none,50,0,0,Energy,,,18
+GOOGL,GOOGL,45.6,⚠️ D급 (주의),Trend 📈,46.2,46.5,⚖️ Base / Neutral,50,Neutral,40,0,Neutral,50,50,0,Unknown,50,N/A,0,Micro Cap,50,0,none,50,0,0,Communication Services,,,19
+GOOG,GOOG,45.6,⚠️ D급 (주의),Trend 📈,46.2,46.5,⚖️ Base / Neutral,50,Neutral,40,0,Neutral,50,50,0,Unknown,50,N/A,0,Micro Cap,50,0,none,50,0,0,Communication Services,,,20

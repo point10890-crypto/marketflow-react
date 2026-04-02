@@ -1,39 +1,53 @@
 {
-  "timestamp": "2026-04-03T04:54:19.532956",
+  "timestamp": "2026-04-03T04:56:12.050588",
   "portfolio_summary": {
-    "total_coins": 2,
-    "portfolio_var_95_1d": -5.18,
-    "portfolio_cvar_95_1d": -8.43,
+    "total_coins": 3,
+    "portfolio_var_95_1d": -4.86,
+    "portfolio_cvar_95_1d": -8.16,
     "risk_level": "HIGH"
   },
   "correlation_matrix": {
     "coins": [
-      "ADA",
-      "ETH"
+      "BNB",
+      "ETH",
+      "SOL"
     ],
     "values": [
       [
         1.0,
-        0.8661
+        0.8942,
+        0.895
       ],
       [
-        0.8661,
+        0.8942,
+        1.0,
+        0.9258
+      ],
+      [
+        0.895,
+        0.9258,
         1.0
       ]
     ]
   },
   "individual_risk": {
-    "ADA": {
-      "var_95_1d": -5.33,
-      "cvar_95_1d": -8.14,
-      "max_dd_30d": -17.5,
-      "volatility_30d": 59.08
+    "BNB": {
+      "var_95_1d": -3.83,
+      "cvar_95_1d": -7.64,
+      "max_dd_30d": -14.33,
+      "volatility_30d": 37.89
     },
     "ETH": {
       "var_95_1d": -5.8,
       "cvar_95_1d": -9.18,
       "max_dd_30d": -15.68,
       "volatility_30d": 63.31
+    },
+    "SOL": {
+      "var_95_1d": -6.01,
+      "cvar_95_1d": -8.88,
+      "max_dd_30d": -17.89,
+      "volatility_30d": 56.59
     }
   },
   "concentration": {
@@ -54,9 +68,9 @@
     {
       "severity": "warning",
       "alert_type": "drawdown",
-      "coin": "ADA",
-      "message": "ADA 30d max drawdown: -17.5%",
-      "value": -17.5
+      "coin": "BNB",
+      "message": "BNB 30d max drawdown: -14.3%",
+      "value": -14.33
     },
     {
       "severity": "warning",
@@ -67,10 +81,17 @@
     },
     {
       "severity": "warning",
-      "alert_type": "portfolio_var",
-      "coin": "PORTFOLIO",
-      "message": "Portfolio 1-day VaR(95%): -5.2% - elevated risk",
-      "value": -5.18
+      "alert_type": "drawdown",
+      "coin": "SOL",
+      "message": "SOL 30d max drawdown: -17.9%",
+      "value": -17.89
+    },
+    {
+      "severity": "info",
+      "alert_type": "correlation",
+      "coin": "ETH/SOL",
+      "message": "High correlation (0.93) between ETH and SOL - limited diversification",
+      "value": 0.9258
     }
   ]
 }
