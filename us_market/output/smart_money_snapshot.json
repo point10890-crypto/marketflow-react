@@ -178,7 +178,7 @@
       "composite_score": 64.0,
       "swing_score": 64.9,
       "trend_score": 60.6,
-      "ai_summary": "```json\n{\n  \"thesis\": \"AMAT는 85.5%의 높은 기관 보유율과 목표가 대비 27.4%의 상승 여력을 보유하고 있으나, VIX 30 이상의 거시경제적 공포와 -2.1%의 역성장, 최근의 주가 상대적 열위로 인해 단기적인 변동성 확대가 예상됩니다.\",\n  \"catalysts\": [\n    {\n      \"point\": \"높은 기관 투자자 신뢰 및 밸류에이션 상승 여력\",\n      \"evidence\": \"기관 보유율 85.5% 및 애널리스트 목표가 대비 +27.4% 상승 여력 존재 [수치 분석 데이터]\"\n    }\n  ],\n  \"bear_cases\": [\n    {\n      \"point\": \"거시경제적 역풍 및 투자 심리 악화\",\n      \"evidence\": \"VIX 30.61 (극단적 공포 구간) 및 10년물 국채 금리 4.34%로 인해 기술/성장주에 대한 밸류에이션 할인 압력 증가 [Macro Context]\"\n    },\n    {\n      \"point\": \"펀더멘털 성장 둔화 및 밸류에이션 부담\",\n      \"evidence\": \"매출 성장률이 -2.1%로 역성장 중이나 P/E는 33.17배로 다소 높은 수준 유지 [수치 분석 데이터]\"\n    },\n    {\n      \"point\": \"최근 주가 모멘텀 약화 및 경쟁사 대비 열위\",\n      \"evidence\": \"3월 30일 주가 3.54% 하락 및 3월 26일 경쟁사 대비 주가 수익률 하회 [TradingKey 2026-03-30, MarketWatch 2026-03-26]\"\n    }\n  ],\n  \"data_conflicts\": [\n    \"애널리스트 목표가 대비 상승 여력(+27.4%)이 높고 RSI가 39.7로 과매도 구간에 진입하고 있으나, 최근 뉴스 센티먼트(경쟁사 대비 열위, 단기 급락)와 역성장(-2.1%) 펀더멘털이 강하게 충돌하고 있음\"\n  ],\n  \"key_metrics\": {\n    \"pe\": 33.17,\n    \"growth\": -2.1,\n    \"rsi\": 39.7,\n    \"inst_pct\": 85.5\n  },\n  \"recommendation\": \"HOLD\",\n  \"confidence\": 60\n}\n```",
+      "ai_summary": "{\"thesis\": \"AI Analaysis Failed: Connection Error: HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Max retries exceeded with url: /v1beta/models/gemini-3-pro-preview:generateContent?key=AIzaSyBGHSWUJrKAyfn5wPGYHRWJ5VD0B4VXKqY (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1032)')))\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
       "recommendation": "buy",
       "grade": "📈 B급 (매수 고려)"
     },
@@ -213,5 +213,5 @@
   ],
   "count": 15,
   "sort_by": "composite",
-  "timestamp": "2026-04-02T12:50:32.954611"
+  "timestamp": "2026-04-02T14:00:27.802838"
 }

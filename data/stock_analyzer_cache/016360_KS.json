@@ -2,8 +2,8 @@
   "name": "삼성증권",
   "ticker": "016360.KS",
   "result": "적극 매수",
-  "date": "2026-04-02 12:31:00",
-  "elapsed": 18.8,
+  "date": "2026-04-02 13:03:03",
+  "elapsed": 2.8,
   "consensus_score": 4.33,
   "analyst_count": 12,
   "recommendation_detail": {
@@ -15,21 +15,21 @@
   },
   "recommendation_period": "0m",
   "price_targets": {
-    "current": 93300.0,
+    "current": 93100.0,
     "high": 154000.0,
     "low": 91000.0,
     "mean": 118250.0,
     "median": 110500.0
   },
-  "current_price": 93300.0,
-  "upside_potential": 26.7,
+  "current_price": 93100.0,
+  "upside_potential": 27.0,
   "key_stats": {
     "name": "SamsungSecu",
     "sector": "Financial Services",
     "industry": "Capital Markets",
-    "market_cap": 8331690246144,
+    "market_cap": 8313829851136,
     "pe_ratio": null,
-    "forward_pe": 6.972625,
+    "forward_pe": 6.9576783,
     "dividend_yield": 4.07,
     "beta": 0.874,
     "fifty_two_week_high": 119400.0,
@@ -40,7 +40,7 @@
   },
   "finnhub_supplement": null,
   "source": "yfinance",
-  "ai_analysis": "삼성증권(016360.KS)은 12명의 애널리스트 컨센서스 기준 '적극 매수' 의견을 받고 있습니다. 목표가 평균은 118,250원으로 현재가 대비 26.7% 상승 여력이 존재합니다. 이는 애널리스트들이 삼성증권의 추가적인 주가 상승을 기대하고 있음을 시사합니다.",
+  "ai_analysis": null,
   "revenue_quarters": [
     {
       "date": "2025-09",
@@ -112,9 +112,6 @@
       "url": "https://finance.yahoo.com/news/15-5m-salesforce-ventures-sbi-160124823.html",
       "provider": "Benzinga",
       "pub_time": "2025-08-16T16:01:24Z"
-    }
-  ]
-}-08-16T16:01:24Z"
     }
   ]
 }
