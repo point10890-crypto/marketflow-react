@@ -1,0 +1,117 @@
+{
+  "name": "삼성중공업",
+  "ticker": "010140.KS",
+  "result": "매수",
+  "date": "2026-04-02 17:23:59",
+  "elapsed": 2.4,
+  "consensus_score": 4.08,
+  "analyst_count": 24,
+  "recommendation_detail": {
+    "strongBuy": 7,
+    "buy": 14,
+    "hold": 2,
+    "sell": 0,
+    "strongSell": 1
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 26900.0,
+    "high": 43000.0,
+    "low": 23000.0,
+    "mean": 35583.332,
+    "median": 36500.0
+  },
+  "current_price": 26900.0,
+  "upside_potential": 32.3,
+  "key_stats": {
+    "name": "SamsungHvyInd",
+    "sector": "Industrials",
+    "industry": "Aerospace & Defense",
+    "market_cap": 22976644775936,
+    "pe_ratio": null,
+    "forward_pe": 14.76174,
+    "dividend_yield": null,
+    "beta": 0.89,
+    "fifty_two_week_high": 32500.0,
+    "fifty_two_week_low": 12650.0,
+    "revenue": 10650011041792,
+    "profit_margin": 0.051220004,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 2837928632550
+    },
+    {
+      "date": "2025-09",
+      "value": 2634818809910
+    },
+    {
+      "date": "2025-06",
+      "value": 2682977392290
+    },
+    {
+      "date": "2025-03",
+      "value": 2494285868060
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 97320755970
+    },
+    {
+      "date": "2025-09",
+      "value": 142013479800
+    },
+    {
+      "date": "2025-06",
+      "value": 214109640710
+    },
+    {
+      "date": "2025-03",
+      "value": 92095725300
+    }
+  ],
+  "news": [
+    {
+      "title": "Technip and partners win contract for Coral Norte FLNG project",
+      "summary": "Coral Norte aims to build on proven design methods, incorporating previous operational lessons to improve efficiency and reliability.",
+      "url": "https://www.offshore-technology.com/news/technip-partners-coral-norte-flng/",
+      "provider": "Offshore Technology",
+      "pub_time": "2026-02-24T16:14:31Z"
+    },
+    {
+      "title": "Delfin extends LoA with Samsung Heavy Industries for first FLNG vessel",
+      "summary": "The extension is crucial for reaching the anticipated FID, which is expected to be made next month.",
+      "url": "https://www.offshore-technology.com/news/delfin-extends-loa-with-samsung-heavy-industries/",
+      "provider": "Offshore Technology",
+      "pub_time": "2026-01-13T11:46:24Z"
+    },
+    {
+      "title": "Transocean secures Mykonos contract, Enabler extension worth $168m backlog",
+      "summary": "BP awarded the Mykonos a contract in Brazil, while the Enabler won a Norway extension after three one-well options were exercised.",
+      "url": "https://www.offshore-technology.com/news/transocean-secures-mykonos-contract-enabler-extension/",
+      "provider": "Offshore Technology",
+      "pub_time": "2026-01-06T10:07:08Z"
+    },
+    {
+      "title": "US Navy Taps Palantir to Speed Up Shipbuilding With AI ‘Ship OS’",
+      "summary": "The multi-year contract aims to cut delays, ease bottlenecks and modernize an industry struggling with labor shortages and aging infrastructure.",
+      "url": "https://sourcingjournal.com/topics/logistics/shipbuilding-us-navy-ai-palantir-448-million-ship-os-maritime-china-container-shipping-ocean-carriers-newbuildings-1234793426/",
+      "provider": "Sourcing Journal",
+      "pub_time": "2025-12-12T19:05:53Z"
+    },
+    {
+      "title": "Amogy, Samsung Heavy Industries Partner on Ammonia-to-Power Systems",
+      "summary": "Ammonia-to-power solutions provider Amogy will join with South Korea’s Samsung Heavy Industries in a multi-year strategic contract manufacturing partnership. The companies on November 12 said SHI plan",
+      "url": "https://www.powermag.com/amogy-samsung-heavy-industries-partner-on-ammonia-to-power-systems/",
+      "provider": "POWER Magazine",
+      "pub_time": "2025-11-13T21:28:16Z"
+    }
+  ]
+}

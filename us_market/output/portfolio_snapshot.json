@@ -30,30 +30,30 @@
     },
     {
       "name": "VIX",
-      "price": "26.69",
-      "change": "+2.15",
-      "change_pct": 8.761204312628575,
+      "price": "26.44",
+      "change": "+1.90",
+      "change_pct": 7.742459444359984,
       "color": "green"
     },
     {
       "name": "Gold",
-      "price": "4,645.90",
-      "change": "-137.30",
-      "change_pct": -2.870469295918311,
+      "price": "4,663.60",
+      "change": "-119.60",
+      "change_pct": -2.5004200696733787,
       "color": "red"
     },
     {
       "name": "Crude Oil",
-      "price": "106.34",
-      "change": "+6.22",
-      "change_pct": 6.212538374626579,
+      "price": "107.07",
+      "change": "+6.95",
+      "change_pct": 6.941666757474646,
       "color": "green"
     },
     {
       "name": "Bitcoin",
-      "price": "66,654.28",
-      "change": "-1,424.27",
-      "change_pct": -2.0921029302661047,
+      "price": "66,501.11",
+      "change": "-1,577.45",
+      "change_pct": -2.3170957722897088,
       "color": "red"
     },
     {
@@ -65,18 +65,18 @@
     },
     {
       "name": "Dollar Index",
-      "price": "100.08",
-      "change": "+0.43",
-      "change_pct": 0.43050762460929504,
+      "price": "100.15",
+      "change": "+0.50",
+      "change_pct": 0.5007531777978115,
       "color": "green"
     },
     {
       "name": "USD/KRW",
-      "price": "1,515.14",
-      "change": "+11.81",
-      "change_pct": 0.7855932455935428,
+      "price": "1,515.22",
+      "change": "+11.89",
+      "change_pct": 0.7909118421109258,
       "color": "green"
     }
   ],
-  "timestamp": "2026-04-02T16:32:27.789017"
+  "timestamp": "2026-04-02T17:52:22.047780"
 }

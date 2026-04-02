@@ -16,20 +16,6 @@
       "status": "OPEN"
     },
     {
-      "ticker": "006800",
-      "name": "미래에셋증권",
-      "score": 0.0,
-      "contraction_ratio": 0,
-      "foreign_5d": 0,
-      "inst_5d": 0,
-      "entry_price": 0.0,
-      "current_price": 0.0,
-      "return_pct": 0,
-      "signal_date": "2026-04-02",
-      "market": "",
-      "status": "OPEN"
-    },
-    {
       "ticker": "126600",
       "name": "BGF에코머티리얼즈",
       "score": 0.0,
@@ -114,20 +100,6 @@
       "status": "OPEN"
     },
     {
-      "ticker": "006910",
-      "name": "보성파워텍",
-      "score": 0.0,
-      "contraction_ratio": 0,
-      "foreign_5d": 0,
-      "inst_5d": 0,
-      "entry_price": 0.0,
-      "current_price": 0.0,
-      "return_pct": 0,
-      "signal_date": "2026-04-02",
-      "market": "",
-      "status": "OPEN"
-    },
-    {
       "ticker": "100790",
       "name": "미래에셋벤처투자",
       "score": 0.0,
@@ -156,50 +128,8 @@
       "status": "OPEN"
     },
     {
-      "ticker": "319400",
-      "name": "현대무벡스",
-      "score": 0.0,
-      "contraction_ratio": 0,
-      "foreign_5d": 0,
-      "inst_5d": 0,
-      "entry_price": 0.0,
-      "current_price": 0.0,
-      "return_pct": 0,
-      "signal_date": "2026-04-02",
-      "market": "",
-      "status": "OPEN"
-    },
-    {
       "ticker": "003280",
       "name": "흥아해운",
-      "score": 0.0,
-      "contraction_ratio": 0,
-      "foreign_5d": 0,
-      "inst_5d": 0,
-      "entry_price": 0.0,
-      "current_price": 0.0,
-      "return_pct": 0,
-      "signal_date": "2026-04-02",
-      "market": "",
-      "status": "OPEN"
-    },
-    {
-      "ticker": "161000",
-      "name": "애경케미칼",
-      "score": 0.0,
-      "contraction_ratio": 0,
-      "foreign_5d": 0,
-      "inst_5d": 0,
-      "entry_price": 0.0,
-      "current_price": 0.0,
-      "return_pct": 0,
-      "signal_date": "2026-04-02",
-      "market": "",
-      "status": "OPEN"
-    },
-    {
-      "ticker": "425040",
-      "name": "티이엠씨",
       "score": 0.0,
       "contraction_ratio": 0,
       "foreign_5d": 0,
@@ -268,8 +198,78 @@
       "status": "OPEN"
     },
     {
-      "ticker": "001440",
-      "name": "대한전선",
+      "ticker": "032820",
+      "name": "우리기술",
+      "score": 0.0,
+      "contraction_ratio": 0,
+      "foreign_5d": 0,
+      "inst_5d": 0,
+      "entry_price": 0.0,
+      "current_price": 0.0,
+      "return_pct": 0,
+      "signal_date": "2026-04-02",
+      "market": "",
+      "status": "OPEN"
+    },
+    {
+      "ticker": "034020",
+      "name": "두산에너빌리티",
+      "score": 0.0,
+      "contraction_ratio": 0,
+      "foreign_5d": 0,
+      "inst_5d": 0,
+      "entry_price": 0.0,
+      "current_price": 0.0,
+      "return_pct": 0,
+      "signal_date": "2026-04-02",
+      "market": "",
+      "status": "OPEN"
+    },
+    {
+      "ticker": "010170",
+      "name": "대한광통신",
+      "score": 0.0,
+      "contraction_ratio": 0,
+      "foreign_5d": 0,
+      "inst_5d": 0,
+      "entry_price": 0.0,
+      "current_price": 0.0,
+      "return_pct": 0,
+      "signal_date": "2026-04-02",
+      "market": "",
+      "status": "OPEN"
+    },
+    {
+      "ticker": "046970",
+      "name": "우리로",
+      "score": 0.0,
+      "contraction_ratio": 0,
+      "foreign_5d": 0,
+      "inst_5d": 0,
+      "entry_price": 0.0,
+      "current_price": 0.0,
+      "return_pct": 0,
+      "signal_date": "2026-04-02",
+      "market": "",
+      "status": "OPEN"
+    },
+    {
+      "ticker": "065440",
+      "name": "이루온",
+      "score": 0.0,
+      "contraction_ratio": 0,
+      "foreign_5d": 0,
+      "inst_5d": 0,
+      "entry_price": 0.0,
+      "current_price": 0.0,
+      "return_pct": 0,
+      "signal_date": "2026-04-02",
+      "market": "",
+      "status": "OPEN"
+    },
+    {
+      "ticker": "027360",
+      "name": "아주IB투자",
       "score": 0.0,
       "contraction_ratio": 0,
       "foreign_5d": 0,
@@ -283,6 +283,6 @@
     }
   ],
   "api_status": "ok",
-  "generated_at": "2026-04-02T16:13:39.431567",
+  "generated_at": "2026-04-02T17:49:34.311536",
   "signal_date": "2026-04-02"
 }

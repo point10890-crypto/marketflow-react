@@ -1,135 +1,10 @@
 {
-  "timestamp": "2026-04-02T14:27:24.803873",
-  "performance_matrix": {
-    "XLK": {
-      "1w": -0.91,
-      "1m": -3.66,
-      "3m": -0.58,
-      "6m": 4.72,
-      "12m": 29.51,
-      "current_price": 134.91,
-      "name": "Technology"
-    },
-    "XLF": {
-      "1w": 0.32,
-      "1m": -4.71,
-      "3m": -2.43,
-      "6m": -3.8,
-      "12m": 0.09,
-      "current_price": 49.44,
-      "name": "Financials"
-    },
-    "XLV": {
-      "1w": 2.03,
-      "1m": -5.67,
-      "3m": -1.62,
-      "6m": 11.47,
-      "12m": 4.2,
-      "current_price": 147.73,
-      "name": "Healthcare"
-    },
-    "XLY": {
-      "1w": 0.11,
-      "1m": -5.35,
-      "3m": -0.31,
-      "6m": 0.64,
-      "12m": 8.87,
-      "current_price": 109.8,
-      "name": "Consumer Disc."
-    },
-    "XLP": {
-      "1w": 0.43,
-      "1m": -6.56,
-      "3m": 7.16,
-      "6m": 3.48,
-      "12m": 2.65,
-      "current_price": 81.46,
-      "name": "Consumer Staples"
-    },
-    "XLE": {
-      "1w": -3.07,
-      "1m": 7.57,
-      "3m": 34.73,
-      "6m": 40.19,
-      "12m": 29.32,
-      "current_price": 58.97,
-      "name": "Energy"
-    },
-    "XLI": {
-      "1w": 0.26,
-      "1m": -6.49,
-      "3m": 11.92,
-      "6m": 10.46,
-      "12m": 25.25,
-      "current_price": 164.43,
-      "name": "Industrials"
-    },
-    "XLB": {
-      "1w": 4.15,
-      "1m": -4.06,
-      "3m": 20.64,
-      "6m": 14.54,
-      "12m": 18.26,
-      "current_price": 50.46,
-      "name": "Materials"
-    },
-    "XLRE": {
-      "1w": 1.64,
-      "1m": -4.57,
-      "3m": 3.23,
-      "6m": 0.56,
-      "12m": 0.7,
-      "current_price": 40.95,
-      "name": "Real Estate"
-    },
-    "XLU": {
-      "1w": 2.26,
-      "1m": 0.7,
-      "3m": 6.29,
-      "6m": 14.82,
-      "12m": 19.42,
-      "current_price": 46.11,
-      "name": "Utilities"
-    },
-    "XLC": {
-      "1w": 0.1,
-      "1m": -3.08,
-      "3m": 1.81,
-      "6m": 5.68,
-      "12m": 16.28,
-      "current_price": 111.24,
-      "name": "Comm. Services"
-    },
-    "SPY": {
-      "1w": 0.32,
-      "1m": -4.01,
-      "3m": 0.99,
-      "6m": 5.86,
-      "12m": 17.4,
-      "current_price": 655.24,
-      "name": "SPY"
-    }
-  },
+  "timestamp": "2026-04-02T17:38:04.812275",
+  "performance_matrix": {},
   "rotation_signals": {
-    "current_phase": "Late Cycle",
-    "phase_confidence": 78,
-    "phase_scores": {
-      "Early Cycle": 0.1,
-      "Mid Cycle": 2.57,
-      "Late Cycle": 8.24,
-      "Recession": 1.41
-    },
-    "leading_sectors": [
-      "XLE",
-      "XLU",
-      "XLB"
-    ],
-    "lagging_sectors": [
-      "XLY",
-      "XLP",
-      "XLI"
-    ],
-    "rotation_velocity": 3.1
+    "current_phase": "Unknown",
+    "phase_confidence": 0,
+    "phase_scores": {}
   },
   "relative_strength_history": {
     "dates": [
@@ -360,91 +235,32 @@
   },
   "regime_change": {
     "regime_change_alert": false,
-    "previous_phase": "Late Cycle",
-    "current_phase": "Late Cycle"
+    "previous_phase": "Unknown",
+    "current_phase": "Unknown"
   },
   "rotation_clock": {
     "phases": {
       "Early Cycle": {
         "angle": 45,
-        "sectors": [
-          {
-            "ticker": "XLF",
-            "name": "Financials",
-            "return_1m": -4.71
-          },
-          {
-            "ticker": "XLY",
-            "name": "Consumer Disc.",
-            "return_1m": -5.35
-          },
-          {
-            "ticker": "XLI",
-            "name": "Industrials",
-            "return_1m": -6.49
-          }
-        ],
-        "score": 0.1
+        "sectors": [],
+        "score": 0
       },
       "Mid Cycle": {
         "angle": 135,
-        "sectors": [
-          {
-            "ticker": "XLK",
-            "name": "Technology",
-            "return_1m": -3.66
-          },
-          {
-            "ticker": "XLC",
-            "name": "Comm. Services",
-            "return_1m": -3.08
-          },
-          {
-            "ticker": "XLB",
-            "name": "Materials",
-            "return_1m": -4.06
-          }
-        ],
-        "score": 2.57
+        "sectors": [],
+        "score": 0
       },
       "Late Cycle": {
         "angle": 225,
-        "sectors": [
-          {
-            "ticker": "XLE",
-            "name": "Energy",
-            "return_1m": 7.57
-          },
-          {
-            "ticker": "XLRE",
-            "name": "Real Estate",
-            "return_1m": -4.57
-          }
-        ],
-        "score": 8.24
+        "sectors": [],
+        "score": 0
       },
       "Recession": {
         "angle": 315,
-        "sectors": [
-          {
-            "ticker": "XLU",
-            "name": "Utilities",
-            "return_1m": 0.7
-          },
-          {
-            "ticker": "XLP",
-            "name": "Consumer Staples",
-            "return_1m": -6.56
-          },
-          {
-            "ticker": "XLV",
-            "name": "Healthcare",
-            "return_1m": -5.67
-          }
-        ],
-        "score": 1.41
+        "sectors": [],
+        "score": 0
       }
     },
-    "current_angle": 225
+    "current_angle": 135
   }
 }

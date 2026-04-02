@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "generated_at": "2026-04-02T16:17:47.618609",
+    "generated_at": "2026-04-02T17:51:26.487462",
     "market": "KR",
     "gate": "RED",
     "gate_score": 30,
-    "processing_time_sec": 74.3
+    "processing_time_sec": 73.3
   },
   "summary": {
     "total_screened": 200,
@@ -2884,7 +2884,7 @@
       },
       "volume_pattern": {
         "score": 70,
-        "dry_up_ratio": 0.61
+        "dry_up_ratio": 0.62
       },
       "pivot_proximity": {
         "score": 40,
@@ -2962,7 +2962,7 @@
       },
       "volume_pattern": {
         "score": 70,
-        "dry_up_ratio": 0.61
+        "dry_up_ratio": 0.62
       },
       "pivot_proximity": {
         "score": 40,
@@ -3040,7 +3040,7 @@
       },
       "volume_pattern": {
         "score": 70,
-        "dry_up_ratio": 0.61
+        "dry_up_ratio": 0.62
       },
       "pivot_proximity": {
         "score": 40,
@@ -5536,7 +5536,7 @@
       },
       "volume_pattern": {
         "score": 30,
-        "dry_up_ratio": 1.94
+        "dry_up_ratio": 1.95
       },
       "pivot_proximity": {
         "score": 90,
@@ -5614,7 +5614,7 @@
       },
       "volume_pattern": {
         "score": 30,
-        "dry_up_ratio": 1.94
+        "dry_up_ratio": 1.95
       },
       "pivot_proximity": {
         "score": 90,
@@ -5692,7 +5692,7 @@
       },
       "volume_pattern": {
         "score": 30,
-        "dry_up_ratio": 1.94
+        "dry_up_ratio": 1.95
       },
       "pivot_proximity": {
         "score": 90,
@@ -8812,7 +8812,7 @@
       },
       "volume_pattern": {
         "score": 30,
-        "dry_up_ratio": 0.97
+        "dry_up_ratio": 0.96
       },
       "pivot_proximity": {
         "score": 40,
@@ -8890,7 +8890,7 @@
       },
       "volume_pattern": {
         "score": 30,
-        "dry_up_ratio": 0.97
+        "dry_up_ratio": 0.96
       },
       "pivot_proximity": {
         "score": 40,
@@ -8968,7 +8968,7 @@
       },
       "volume_pattern": {
         "score": 30,
-        "dry_up_ratio": 0.97
+        "dry_up_ratio": 0.96
       },
       "pivot_proximity": {
         "score": 40,
@@ -10450,7 +10450,7 @@
       },
       "volume_pattern": {
         "score": 50,
-        "dry_up_ratio": 0.79
+        "dry_up_ratio": 0.8
       },
       "pivot_proximity": {
         "score": 20,
@@ -10528,7 +10528,7 @@
       },
       "volume_pattern": {
         "score": 50,
-        "dry_up_ratio": 0.79
+        "dry_up_ratio": 0.8
       },
       "pivot_proximity": {
         "score": 20,
@@ -10606,7 +10606,7 @@
       },
       "volume_pattern": {
         "score": 50,
-        "dry_up_ratio": 0.79
+        "dry_up_ratio": 0.8
       },
       "pivot_proximity": {
         "score": 20,

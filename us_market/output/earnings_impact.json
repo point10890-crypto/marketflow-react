@@ -1,22 +1,5 @@
 {
-  "timestamp": "2026-04-02T14:27:55.584013",
-  "sector_profiles": {
-    "Technology": {
-      "avg_beat_reaction_1d": 6.48,
-      "avg_miss_reaction_1d": -6.57,
-      "avg_beat_reaction_5d": 7.44,
-      "avg_miss_reaction_5d": -6.14,
-      "beat_rate": 43.8,
-      "sample_size": 48
-    },
-    "Financials": {
-      "avg_beat_reaction_1d": 1.06,
-      "avg_miss_reaction_1d": -0.59,
-      "avg_beat_reaction_5d": 2.76,
-      "avg_miss_reaction_5d": 0.02,
-      "beat_rate": 41.7,
-      "sample_size": 12
-    }
-  },
+  "timestamp": "2026-04-02T17:38:34.725860",
+  "sector_profiles": {},
   "upcoming_earnings": []
 }
