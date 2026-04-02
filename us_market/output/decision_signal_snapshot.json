@@ -1,6 +1,6 @@
 {
-  "action": "NEUTRAL",
-  "score": 48,
+  "action": "CAUTIOUS",
+  "score": 38,
   "components": {
     "market_gate": {
       "score": 25,
@@ -15,12 +15,12 @@
       "contribution": 0
     },
     "risk": {
-      "level": "Low",
-      "contribution": 5
+      "level": "Elevated",
+      "contribution": 0
     },
     "sector_phase": {
-      "phase": "Unknown",
-      "contribution": 0
+      "phase": "Late Cycle",
+      "contribution": -5
     }
   },
   "top_picks": [
@@ -66,5 +66,10 @@
     }
   ],
   "timing": "WAIT",
-  "warnings": []
+  "warnings": [
+    "APO is in critical drawdown: -27.5% from peak",
+    "AIZ drawdown warning: -10.7% from peak",
+    "AMD drawdown warning: -19.1% from peak",
+    "AMAT drawdown warning: -10.4% from peak"
+  ]
 }

@@ -1,8 +1,379 @@
 {
-  "timestamp": "2026-04-02T17:40:05.864837",
+  "timestamp": "2026-04-02T18:54:05.098460",
   "lang": "ko",
   "model": "gemini",
-  "macro_indicators": {},
+  "macro_indicators": {
+    "VIX": {
+      "value": 26.61,
+      "change_1d": 8.44,
+      "high_52w": 60.13,
+      "low_52w": 13.38,
+      "pct_from_high": -55.75,
+      "pct_from_low": 98.88,
+      "data_quality": "actual",
+      "last_updated": "2026-04-02T18:53:58.128936"
+    },
+    "SKEW": {
+      "value": 143.77,
+      "change_1d": -1.16,
+      "high_52w": 161.86,
+      "low_52w": 125.77,
+      "pct_from_high": -11.18,
+      "pct_from_low": 14.31,
+      "data_quality": "actual",
+      "last_updated": "2026-04-02T18:53:58.268478"
+    },
+    "DXY": {
+      "value": 100.13,
+      "change_1d": 0.48,
+      "high_52w": 104.31,
+      "low_52w": 95.55,
+      "pct_from_high": -4.01,
+      "pct_from_low": 4.79,
+      "data_quality": "actual",
+      "last_updated": "2026-04-02T18:53:58.404348"
+    },
+    "EUR/USD": {
+      "value": 1.15,
+      "change_1d": -0.39,
+      "high_52w": 1.2,
+      "low_52w": 1.08,
+      "pct_from_high": -4.12,
+      "pct_from_low": 6.93,
+      "data_quality": "actual",
+      "last_updated": "2026-04-02T18:53:58.545441"
+    },
+    "USD/JPY": {
+      "value": 159.6,
+      "change_1d": 0.65,
+      "high_52w": 160.23,
+      "low_52w": 139.89,
+      "pct_from_high": -0.39,
+      "pct_from_low": 14.09,
+      "data_quality": "actual",
+      "last_updated": "2026-04-02T18:53:58.682057"
+    },
+    "2Y_Yield": {
+      "value": 3.61,
+      "change_1d": 0.14,
+      "high_52w": 4.3,
+      "low_52w": 3.51,
+      "pct_from_high": -16.26,
+      "pct_from_low": 2.79,
+      "data_quality": "actual",
+      "last_updated": "2026-04-02T18:53:58.821946"
+    },
+    "10Y_Yield": {
+      "value": 4.32,
+      "change_1d": 0.19,
+      "high_52w": 4.63,
+      "low_52w": 3.89,
+      "pct_from_high": -6.7,
+      "pct_from_low": 11.14,
+      "data_quality": "actual",
+      "last_updated": "2026-04-02T18:53:59.055473"
+    },
+    "30Y_Yield": {
+      "value": 4.9,
+      "change_1d": 0.18,
+      "high_52w": 5.15,
+      "low_52w": 4.34,
+      "pct_from_high": -4.91,
+      "pct_from_low": 12.88,
+      "data_quality": "actual",
+      "last_updated": "2026-04-02T18:53:59.200796"
+    },
+    "HY_Credit": {
+      "value": 79.37,
+      "change_1d": 0.25,
+      "high_52w": 80.23,
+      "low_52w": 70.84,
+      "pct_from_high": -1.07,
+      "pct_from_low": 12.05,
+      "data_quality": "actual",
+      "last_updated": "2026-04-02T18:53:59.378537"
+    },
+    "IG_Credit": {
+      "value": 108.66,
+      "change_1d": -0.3,
+      "high_52w": 111.55,
+      "low_52w": 99.3,
+      "pct_from_high": -2.59,
+      "pct_from_low": 9.43,
+      "data_quality": "actual",
+      "last_updated": "2026-04-02T18:53:59.546187"
+    },
+    "GOLD": {
+      "value": 4647.1,
+      "change_1d": -2.85,
+      "high_52w": 5586.2,
+      "low_52w": 2949.7,
+      "pct_from_high": -16.81,
+      "pct_from_low": 57.54,
+      "data_quality": "actual",
+      "last_updated": "2026-04-02T18:53:59.695368"
+    },
+    "SILVER": {
+      "value": 71.3,
+      "change_1d": -6.02,
+      "high_52w": 121.3,
+      "low_52w": 28.31,
+      "pct_from_high": -41.22,
+      "pct_from_low": 151.85,
+      "data_quality": "actual",
+      "last_updated": "2026-04-02T18:53:59.830469"
+    },
+    "OIL": {
+      "value": 107.97,
+      "change_1d": 7.84,
+      "high_52w": 119.48,
+      "low_52w": 54.98,
+      "pct_from_high": -9.63,
+      "pct_from_low": 96.38,
+      "data_quality": "actual",
+      "last_updated": "2026-04-02T18:53:59.967589"
+    },
+    "COPPER": {
+      "value": 5.56,
+      "change_1d": -1.19,
+      "high_52w": 6.51,
+      "low_52w": 4.1,
+      "pct_from_high": -14.61,
+      "pct_from_low": 35.59,
+      "data_quality": "actual",
+      "last_updated": "2026-04-02T18:54:00.106485"
+    },
+    "NAT_GAS": {
+      "value": 2.85,
+      "change_1d": 1.06,
+      "high_52w": 7.83,
+      "low_52w": 2.62,
+      "pct_from_high": -63.6,
+      "pct_from_low": 8.66,
+      "data_quality": "actual",
+      "last_updated": "2026-04-02T18:54:00.248888"
+    },
+    "SPY": {
+      "value": 655.24,
+      "change_1d": 0.75,
+      "high_52w": 695.94,
+      "low_52w": 476.34,
+      "pct_from_high": -5.85,
+      "pct_from_low": 37.56,
+      "data_quality": "actual",
+      "last_updated": "2026-04-02T18:54:00.433789"
+    },
+    "QQQ": {
+      "value": 584.31,
+      "change_1d": 1.24,
+      "high_52w": 635.8,
+      "low_52w": 400.45,
+      "pct_from_high": -8.1,
+      "pct_from_low": 45.91,
+      "data_quality": "actual",
+      "last_updated": "2026-04-02T18:54:00.605260"
+    },
+    "IWM": {
+      "value": 249.56,
+      "change_1d": 0.63,
+      "high_52w": 271.12,
+      "low_52w": 169.9,
+      "pct_from_high": -7.95,
+      "pct_from_low": 46.89,
+      "data_quality": "actual",
+      "last_updated": "2026-04-02T18:54:00.780425"
+    },
+    "DIA": {
+      "value": 465.48,
+      "change_1d": 0.49,
+      "high_52w": 503.59,
+      "low_52w": 360.69,
+      "pct_from_high": -7.57,
+      "pct_from_low": 29.05,
+      "data_quality": "actual",
+      "last_updated": "2026-04-02T18:54:00.993433"
+    },
+    "BTC": {
+      "value": 66380.12,
+      "change_1d": -2.49,
+      "high_52w": 126198.07,
+      "low_52w": 60074.2,
+      "pct_from_high": -47.4,
+      "pct_from_low": 10.5,
+      "data_quality": "actual",
+      "last_updated": "2026-04-02T18:54:01.133323"
+    },
+    "ETH": {
+      "value": 2043.1,
+      "change_1d": -4.47,
+      "high_52w": 4953.73,
+      "low_52w": 1386.8,
+      "pct_from_high": -58.76,
+      "pct_from_low": 47.33,
+      "data_quality": "actual",
+      "last_updated": "2026-04-02T18:54:01.272266"
+    },
+    "CSI300": {
+      "value": 4478.91,
+      "change_1d": -1.04,
+      "high_52w": 4836.96,
+      "low_52w": 3514.12,
+      "pct_from_high": -7.4,
+      "pct_from_low": 27.45,
+      "data_quality": "actual",
+      "last_updated": "2026-04-02T18:54:01.412673"
+    },
+    "NIKKEI": {
+      "value": 52463.27,
+      "change_1d": -2.38,
+      "high_52w": 59332.43,
+      "low_52w": 30792.74,
+      "pct_from_high": -11.58,
+      "pct_from_low": 70.38,
+      "data_quality": "actual",
+      "last_updated": "2026-04-02T18:54:01.550753"
+    },
+    "DAX": {
+      "value": 22887.22,
+      "change_1d": -1.77,
+      "high_52w": 25507.79,
+      "low_52w": 18489.91,
+      "pct_from_high": -10.27,
+      "pct_from_low": 23.78,
+      "data_quality": "actual",
+      "last_updated": "2026-04-02T18:54:01.713307"
+    },
+    "FTSE": {
+      "value": 10341.81,
+      "change_1d": -0.22,
+      "high_52w": 10934.9,
+      "low_52w": 7544.8,
+      "pct_from_high": -5.42,
+      "pct_from_low": 37.07,
+      "data_quality": "actual",
+      "last_updated": "2026-04-02T18:54:01.852022"
+    },
+    "KOSPI": {
+      "value": 5234.05,
+      "change_1d": -4.47,
+      "high_52w": 6347.41,
+      "low_52w": 2284.72,
+      "pct_from_high": -17.54,
+      "pct_from_low": 129.09,
+      "data_quality": "actual",
+      "last_updated": "2026-04-02T18:54:02.092332"
+    },
+    "RSP": {
+      "value": 192.54,
+      "change_1d": 0.32,
+      "high_52w": 204.37,
+      "low_52w": 147.87,
+      "pct_from_high": -5.79,
+      "pct_from_low": 30.21,
+      "data_quality": "actual",
+      "last_updated": "2026-04-02T18:54:02.265823"
+    },
+    "IEF": {
+      "value": 95.04,
+      "change_1d": -0.42,
+      "high_52w": 97.77,
+      "low_52w": 89.62,
+      "pct_from_high": -2.79,
+      "pct_from_low": 6.05,
+      "data_quality": "actual",
+      "last_updated": "2026-04-02T18:54:02.447260"
+    },
+    "XLF": {
+      "value": 49.44,
+      "change_1d": 0.14,
+      "high_52w": 56.23,
+      "low_52w": 41.57,
+      "pct_from_high": -12.08,
+      "pct_from_low": 18.94,
+      "data_quality": "actual",
+      "last_updated": "2026-04-02T18:54:02.624528"
+    },
+    "XLE": {
+      "value": 58.97,
+      "change_1d": -3.74,
+      "high_52w": 63.46,
+      "low_52w": 36.09,
+      "pct_from_high": -7.08,
+      "pct_from_low": 63.41,
+      "data_quality": "actual",
+      "last_updated": "2026-04-02T18:54:02.800380"
+    },
+    "XLK": {
+      "value": 134.91,
+      "change_1d": 1.51,
+      "high_52w": 152.57,
+      "low_52w": 85.74,
+      "pct_from_high": -11.58,
+      "pct_from_low": 57.36,
+      "data_quality": "actual",
+      "last_updated": "2026-04-02T18:54:02.987228"
+    },
+    "XLU": {
+      "value": 46.11,
+      "change_1d": 0.48,
+      "high_52w": 47.47,
+      "low_52w": 34.53,
+      "pct_from_high": -2.86,
+      "pct_from_low": 33.55,
+      "data_quality": "actual",
+      "last_updated": "2026-04-02T18:54:03.184043"
+    },
+    "XHB": {
+      "value": 99.21,
+      "change_1d": 0.5,
+      "high_52w": 122.76,
+      "low_52w": 83.83,
+      "pct_from_high": -19.18,
+      "pct_from_low": 18.35,
+      "data_quality": "actual",
+      "last_updated": "2026-04-02T18:54:03.358723"
+    },
+    "VNQ": {
+      "value": 89.02,
+      "change_1d": 0.36,
+      "high_52w": 95.21,
+      "low_52w": 73.98,
+      "pct_from_high": -6.5,
+      "pct_from_low": 20.33,
+      "data_quality": "actual",
+      "last_updated": "2026-04-02T18:54:03.517734"
+    },
+    "YieldSpread": {
+      "value": 0.71,
+      "change_1d": 0,
+      "pct_from_high": 0,
+      "signal": "Normal",
+      "desc": "10Y - 2Y Yield"
+    },
+    "Breadth": {
+      "value": 0.2938,
+      "change_1d": 0,
+      "pct_from_high": 0,
+      "signal": "Check Trend",
+      "desc": "RSP/SPY Ratio (Rising = Healthy)"
+    },
+    "CreditRisk": {
+      "value": 0.8351,
+      "change_1d": 0,
+      "pct_from_high": 0,
+      "signal": "Check Trend",
+      "desc": "HYG/IEF Ratio (Falling = Stress)"
+    },
+    "FearGreed": {
+      "value": 50,
+      "change_1d": 0,
+      "signal": "Neutral (unavailable)",
+      "pct_from_high": 0,
+      "pct_from_low": 0,
+      "data_quality": "simulated",
+      "note": "CNN API unavailable - using neutral placeholder"
+    }
+  },
   "news": [
     {
       "title": "Fed Governor Miran still backs cuts, says interest rates could be 'about a point' lower this year - CNBC",
@@ -29,8 +400,8 @@
       "category": "Fed"
     },
     {
-      "title": "Will Jerome Powell remain at the Federal Reserve after his term as chair ends? - Chase Bank",
-      "source": "Chase Bank",
+      "title": "Will Jerome Powell remain at the Federal Reserve after his term as chair ends? - chase.com",
+      "source": "chase.com",
       "date": "Tue, 31 Mar 2026 16:29:42 GMT",
       "category": "Fed"
     },
@@ -41,8 +412,8 @@
       "category": "Fed"
     },
     {
-      "title": "US Economic Forecast Q1 2026 - Deloitte",
-      "source": "Deloitte",
+      "title": "US Economic Forecast Q1 2026 - deloitte.com",
+      "source": "deloitte.com",
       "date": "Fri, 27 Mar 2026 07:00:00 GMT",
       "category": "US"
     },

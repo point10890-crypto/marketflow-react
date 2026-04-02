@@ -1,11 +1,11 @@
 {
-  "timestamp": "2026-04-02T17:34:19.493924",
+  "timestamp": "2026-04-02T18:43:31.707926",
   "regime": "neutral",
   "confidence": 50.0,
   "weighted_score": 1.2,
   "signals": {
     "vix": {
-      "vix_current": 26.44,
+      "vix_current": 26.45,
       "vix_ma20": 26.21,
       "vix_trend": "rising",
       "vix_regime": "risk_off"

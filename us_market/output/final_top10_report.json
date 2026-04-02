@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-02T17:41:07.054826",
+  "generated_at": "2026-04-02T18:54:56.942424",
   "total_analyzed": 19,
   "top_picks": [
     {
@@ -13,7 +13,7 @@
       "current_price": 115.75,
       "target_upside": -5.4,
       "sd_stage": "Strong Accumulation",
-      "inst_pct": 102.19,
+      "inst_pct": 102.2,
       "rsi": 61.5,
       "ai_summary": "{\"thesis\": \"AI Analaysis Failed: Connection Error: HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Max retries exceeded with url: /v1beta/models/gemini-3-pro-preview:generateContent?key=AIzaSyBGHSWUJrKAyfn5wPGYHRWJ5VD0B4VXKqY (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1032)')))\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOL",
       "rank": 1
@@ -61,7 +61,7 @@
       "current_price": 178.47,
       "target_upside": 5.8,
       "sd_stage": "Accumulation",
-      "inst_pct": 94.78,
+      "inst_pct": 94.76,
       "rsi": 55.7,
       "ai_summary": "{\"thesis\": \"AI Analaysis Failed: Connection Error: HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Max retries exceeded with url: /v1beta/models/gemini-3-pro-preview:generateContent?key=AIzaSyBGHSWUJrKAyfn5wPGYHRWJ5VD0B4VXKqY (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1032)')))\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOL",
       "rank": 4
@@ -93,7 +93,7 @@
       "current_price": 110.25,
       "target_upside": 38.6,
       "sd_stage": "Neutral",
-      "inst_pct": 67.93,
+      "inst_pct": 67.92,
       "rsi": 46.3,
       "ai_summary": "{\"thesis\": \"AI Analaysis Failed: Connection Error: HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Max retries exceeded with url: /v1beta/models/gemini-3-pro-preview:generateContent?key=AIzaSyBGHSWUJrKAyfn5wPGYHRWJ5VD0B4VXKqY (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1032)')))\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOL",
       "rank": 6
@@ -141,7 +141,7 @@
       "current_price": 216.33,
       "target_upside": 20.8,
       "sd_stage": "Neutral",
-      "inst_pct": 97.47,
+      "inst_pct": 97.46,
       "rsi": 44.8,
       "ai_summary": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
       "rank": 9
@@ -157,7 +157,7 @@
       "current_price": 71.94,
       "target_upside": 4.9,
       "sd_stage": "Neutral",
-      "inst_pct": 91.44,
+      "inst_pct": 91.45,
       "rsi": 58.5,
       "ai_summary": "{\"thesis\": \"AI Analaysis Failed: Connection Error: HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Max retries exceeded with url: /v1beta/models/gemini-3-pro-preview:generateContent?key=AIzaSyBGHSWUJrKAyfn5wPGYHRWJ5VD0B4VXKqY (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1032)')))\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOL",
       "rank": 10

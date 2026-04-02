@@ -1,6 +1,6 @@
 {
   "analysis_date": "2026-04-02",
-  "analysis_timestamp": "2026-04-02T17:41:09.897730",
+  "analysis_timestamp": "2026-04-02T18:55:01.777101",
   "picks": [
     {
       "ticker": "AKAM",
@@ -13,7 +13,7 @@
       "price_at_analysis": 115.75,
       "target_upside": -5.4,
       "sd_stage": "Strong Accumulation",
-      "inst_pct": 102.19,
+      "inst_pct": 102.2,
       "rsi": 61.5,
       "ai_summary": "{\"thesis\": \"AI Analaysis Failed: Connection Error: HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Max retries exceeded with url: /v1beta/models/gemini-3-pro-preview:generateContent?key=AIzaSyBGHSWUJrKAyfn5wPGYHRWJ5VD0B4VXKqY (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPEC"
     },
@@ -58,7 +58,7 @@
       "price_at_analysis": 178.47,
       "target_upside": 5.8,
       "sd_stage": "Accumulation",
-      "inst_pct": 94.78,
+      "inst_pct": 94.76,
       "rsi": 55.7,
       "ai_summary": "{\"thesis\": \"AI Analaysis Failed: Connection Error: HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Max retries exceeded with url: /v1beta/models/gemini-3-pro-preview:generateContent?key=AIzaSyBGHSWUJrKAyfn5wPGYHRWJ5VD0B4VXKqY (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPEC"
     },
@@ -88,7 +88,7 @@
       "price_at_analysis": 110.25,
       "target_upside": 38.6,
       "sd_stage": "Neutral",
-      "inst_pct": 67.93,
+      "inst_pct": 67.92,
       "rsi": 46.3,
       "ai_summary": "{\"thesis\": \"AI Analaysis Failed: Connection Error: HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Max retries exceeded with url: /v1beta/models/gemini-3-pro-preview:generateContent?key=AIzaSyBGHSWUJrKAyfn5wPGYHRWJ5VD0B4VXKqY (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPEC"
     },
@@ -133,7 +133,7 @@
       "price_at_analysis": 216.33,
       "target_upside": 20.8,
       "sd_stage": "Neutral",
-      "inst_pct": 97.47,
+      "inst_pct": 97.46,
       "rsi": 44.8,
       "ai_summary": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}"
     },
@@ -148,7 +148,7 @@
       "price_at_analysis": 71.94,
       "target_upside": 4.9,
       "sd_stage": "Neutral",
-      "inst_pct": 91.44,
+      "inst_pct": 91.45,
       "rsi": 58.5,
       "ai_summary": "{\"thesis\": \"AI Analaysis Failed: Connection Error: HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Max retries exceeded with url: /v1beta/models/gemini-3-pro-preview:generateContent?key=AIzaSyBGHSWUJrKAyfn5wPGYHRWJ5VD0B4VXKqY (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPEC"
     }

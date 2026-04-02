@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generated_at": "2026-04-02T17:52:30.415472",
+    "generated_at": "2026-04-02T19:04:58.136525",
     "market": "CRYPTO",
     "gate": "RED",
     "universe_size": 50
@@ -10,52 +10,67 @@
       "symbol": "USD1/USDT",
       "timeframe": "1d",
       "signal_type": "APPROACHING",
-      "score": 53,
+      "score": 49,
       "pivot_high": 1.0001,
-      "breakout_close_pct": -0.02,
-      "vol_ratio": 0.55,
+      "breakout_close_pct": -0.04,
+      "vol_ratio": 0.62,
       "liquidity_bucket": "A",
-      "market_regime": "BTC_DOWN|B",
+      "market_regime": "BTC_DOWN|D",
       "c1": 2.0,
       "c2": 0.1,
       "c3": 0.1,
-      "ml_win_prob": 71.1
+      "ml_win_prob": 71.2
     },
     {
-      "symbol": "FIDA/USDT",
-      "timeframe": "1d",
-      "signal_type": "BREAKOUT",
-      "score": 35,
-      "pivot_high": 0.01543,
-      "breakout_close_pct": 6.35,
-      "vol_ratio": 3.74,
-      "liquidity_bucket": "C",
+      "symbol": "USD1/USDT",
+      "timeframe": "4h",
+      "signal_type": "APPROACHING",
+      "score": 46,
+      "pivot_high": 0.9998,
+      "breakout_close_pct": -0.01,
+      "vol_ratio": 1.02,
+      "liquidity_bucket": "A",
       "market_regime": "BTC_DOWN|D",
-      "c1": 33.8,
-      "c2": 22.8,
-      "c3": 21.4,
-      "ml_win_prob": 30.7
+      "c1": 0.1,
+      "c2": 0.1,
+      "c3": 0.0,
+      "ml_win_prob": 74.1
     },
     {
       "symbol": "0G/USDT",
       "timeframe": "4h",
       "signal_type": "BREAKOUT",
-      "score": 33,
+      "score": 32,
       "pivot_high": 0.494,
-      "breakout_close_pct": 1.82,
-      "vol_ratio": 0.1,
+      "breakout_close_pct": 1.01,
+      "vol_ratio": 0.27,
       "liquidity_bucket": "C",
       "market_regime": "BTC_DOWN|D",
       "c1": 13.5,
       "c2": 12.0,
       "c3": 3.2,
-      "ml_win_prob": 47.0
+      "ml_win_prob": 49.6
+    },
+    {
+      "symbol": "FIDA/USDT",
+      "timeframe": "1d",
+      "signal_type": "APPROACHING",
+      "score": 9,
+      "pivot_high": 0.01543,
+      "breakout_close_pct": -0.45,
+      "vol_ratio": 4.29,
+      "liquidity_bucket": "C",
+      "market_regime": "BTC_DOWN|D",
+      "c1": 33.8,
+      "c2": 22.8,
+      "c3": 21.4,
+      "ml_win_prob": 14.6
     }
   ],
   "summary": {
-    "setups_4h": 6,
+    "setups_4h": 7,
     "setups_1d": 8,
-    "signals_4h": 1,
+    "signals_4h": 2,
     "signals_1d": 2,
     "published": 0
   }

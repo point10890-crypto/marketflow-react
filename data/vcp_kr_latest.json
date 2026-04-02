@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "generated_at": "2026-04-02T17:51:26.487462",
+    "generated_at": "2026-04-02T19:03:53.347842",
     "market": "KR",
     "gate": "RED",
     "gate_score": 30,
-    "processing_time_sec": 73.3
+    "processing_time_sec": 72.8
   },
   "summary": {
     "total_screened": 200,
@@ -5536,7 +5536,7 @@
       },
       "volume_pattern": {
         "score": 30,
-        "dry_up_ratio": 1.95
+        "dry_up_ratio": 1.97
       },
       "pivot_proximity": {
         "score": 90,
@@ -5614,7 +5614,7 @@
       },
       "volume_pattern": {
         "score": 30,
-        "dry_up_ratio": 1.95
+        "dry_up_ratio": 1.97
       },
       "pivot_proximity": {
         "score": 90,
@@ -5692,7 +5692,7 @@
       },
       "volume_pattern": {
         "score": 30,
-        "dry_up_ratio": 1.95
+        "dry_up_ratio": 1.97
       },
       "pivot_proximity": {
         "score": 90,
@@ -8578,7 +8578,7 @@
       },
       "volume_pattern": {
         "score": 30,
-        "dry_up_ratio": 1.27
+        "dry_up_ratio": 1.28
       },
       "pivot_proximity": {
         "score": 40,
@@ -8656,7 +8656,7 @@
       },
       "volume_pattern": {
         "score": 30,
-        "dry_up_ratio": 1.27
+        "dry_up_ratio": 1.28
       },
       "pivot_proximity": {
         "score": 40,
@@ -8734,7 +8734,7 @@
       },
       "volume_pattern": {
         "score": 30,
-        "dry_up_ratio": 1.27
+        "dry_up_ratio": 1.28
       },
       "pivot_proximity": {
         "score": 40,
@@ -8812,7 +8812,7 @@
       },
       "volume_pattern": {
         "score": 30,
-        "dry_up_ratio": 0.96
+        "dry_up_ratio": 0.97
       },
       "pivot_proximity": {
         "score": 40,
@@ -8890,7 +8890,7 @@
       },
       "volume_pattern": {
         "score": 30,
-        "dry_up_ratio": 0.96
+        "dry_up_ratio": 0.97
       },
       "pivot_proximity": {
         "score": 40,
@@ -8968,7 +8968,7 @@
       },
       "volume_pattern": {
         "score": 30,
-        "dry_up_ratio": 0.96
+        "dry_up_ratio": 0.97
       },
       "pivot_proximity": {
         "score": 40,

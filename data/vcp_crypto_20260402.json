@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "generated_at": "2026-04-02T17:52:13.531640",
+    "generated_at": "2026-04-02T19:04:42.574980",
     "market": "CRYPTO",
     "gate": "RED",
-    "gate_score": 25,
-    "processing_time_sec": 16.8
+    "gate_score": 21,
+    "processing_time_sec": 17.0
   },
   "summary": {
     "total_screened": 50,
@@ -15,11 +15,89 @@
   },
   "signals": [
     {
+      "symbol": "CHZ",
+      "name": "CHZ",
+      "market": "CRYPTO",
+      "sector": "",
+      "price": 0.04,
+      "composite": {
+        "composite_score": 56.6,
+        "rating": "Developing VCP",
+        "rating_description": "형성 중인 VCP 패턴",
+        "guidance": "피벗 돌파 매수",
+        "valid_vcp": "True",
+        "entry_ready": "True",
+        "weakest_component": "Volume Pattern",
+        "strongest_component": "Pivot Proximity",
+        "component_breakdown": {
+          "trend_template": {
+            "score": 62.5,
+            "weight": 0.25,
+            "weighted": 15.6,
+            "label": "Trend Template (Stage 2)"
+          },
+          "contraction_quality": {
+            "score": 56,
+            "weight": 0.25,
+            "weighted": 14.0,
+            "label": "Contraction Quality"
+          },
+          "volume_pattern": {
+            "score": 30,
+            "weight": 0.2,
+            "weighted": 6.0,
+            "label": "Volume Pattern"
+          },
+          "pivot_proximity": {
+            "score": 90,
+            "weight": 0.15,
+            "weighted": 13.5,
+            "label": "Pivot Proximity"
+          },
+          "relative_strength": {
+            "score": 50,
+            "weight": 0.15,
+            "weighted": 7.5,
+            "label": "Relative Strength"
+          }
+        }
+      },
+      "trend_template": {
+        "score": 62.5,
+        "passed": "True",
+        "stage": 2,
+        "stage_label": "Stage 2 - Early"
+      },
+      "vcp_pattern": {
+        "score": 56,
+        "valid_vcp": "True",
+        "num_contractions": 3,
+        "pivot_price": 0.04
+      },
+      "volume_pattern": {
+        "score": 30,
+        "dry_up_ratio": 1.2
+      },
+      "pivot_proximity": {
+        "score": 90,
+        "distance_from_pivot_pct": -0.2,
+        "trade_status": "BREAKOUT"
+      },
+      "relative_strength": {
+        "score": 50,
+        "rs_rank_estimate": 50
+      },
+      "stage": {
+        "stage": 2,
+        "stage_label": "Stage 2 - Early"
+      }
+    },
+    {
       "symbol": "MKR",
       "name": "MKR",
       "market": "CRYPTO",
       "sector": "",
-      "price": 1724.95,
+      "price": 1723.62,
       "composite": {
         "composite_score": 55.4,
         "rating": "Developing VCP",
@@ -76,7 +154,7 @@
       },
       "volume_pattern": {
         "score": 30,
-        "dry_up_ratio": 1.51
+        "dry_up_ratio": 1.5
       },
       "pivot_proximity": {
         "score": 40,
@@ -90,84 +168,6 @@
       "stage": {
         "stage": 2,
         "stage_label": "Stage 2 - Advancing"
-      }
-    },
-    {
-      "symbol": "CHZ",
-      "name": "CHZ",
-      "market": "CRYPTO",
-      "sector": "",
-      "price": 0.04,
-      "composite": {
-        "composite_score": 55.1,
-        "rating": "Developing VCP",
-        "rating_description": "형성 중인 VCP 패턴",
-        "guidance": "피벗 돌파 매수",
-        "valid_vcp": "True",
-        "entry_ready": "True",
-        "weakest_component": "Volume Pattern",
-        "strongest_component": "Pivot Proximity",
-        "component_breakdown": {
-          "trend_template": {
-            "score": 62.5,
-            "weight": 0.25,
-            "weighted": 15.6,
-            "label": "Trend Template (Stage 2)"
-          },
-          "contraction_quality": {
-            "score": 56,
-            "weight": 0.25,
-            "weighted": 14.0,
-            "label": "Contraction Quality"
-          },
-          "volume_pattern": {
-            "score": 30,
-            "weight": 0.2,
-            "weighted": 6.0,
-            "label": "Volume Pattern"
-          },
-          "pivot_proximity": {
-            "score": 80,
-            "weight": 0.15,
-            "weighted": 12.0,
-            "label": "Pivot Proximity"
-          },
-          "relative_strength": {
-            "score": 50,
-            "weight": 0.15,
-            "weighted": 7.5,
-            "label": "Relative Strength"
-          }
-        }
-      },
-      "trend_template": {
-        "score": 62.5,
-        "passed": "True",
-        "stage": 2,
-        "stage_label": "Stage 2 - Early"
-      },
-      "vcp_pattern": {
-        "score": 56,
-        "valid_vcp": "True",
-        "num_contractions": 3,
-        "pivot_price": 0.04
-      },
-      "volume_pattern": {
-        "score": 30,
-        "dry_up_ratio": 1.2
-      },
-      "pivot_proximity": {
-        "score": 80,
-        "distance_from_pivot_pct": 0.1,
-        "trade_status": "NEAR PIVOT"
-      },
-      "relative_strength": {
-        "score": 50,
-        "rs_rank_estimate": 50
-      },
-      "stage": {
-        "stage": 2,
-        "stage_label": "Stage 2 - Early"
       }
     }
   ]
