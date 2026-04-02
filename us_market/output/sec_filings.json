@@ -1,7 +1,7 @@
 {
   "metadata": {
-    "as_of_date": "2026-04-02",
-    "fetch_time": "2026-04-02T18:47:09.712985",
+    "as_of_date": "2026-04-03",
+    "fetch_time": "2026-04-03T04:04:09.555813",
     "source": "sec_edgar_api",
     "ticker_count": 19
   },
@@ -17,7 +17,7 @@
         "fiscal_year_end": "1231"
       },
       "filings": [],
-      "fetch_time": "2026-04-02T18:46:56.324583"
+      "fetch_time": "2026-04-03T04:03:40.819443"
     },
     "T": {
       "ticker": "T",
@@ -55,7 +55,7 @@
           "url": "https://www.sec.gov/Archives/edgar/data/732717/000119312526039407/d104980d8k.htm"
         }
       ],
-      "fetch_time": "2026-04-02T18:46:57.066436"
+      "fetch_time": "2026-04-03T04:03:41.627439"
     },
     "ACGL": {
       "ticker": "ACGL",
@@ -109,7 +109,7 @@
           "url": "https://www.sec.gov/Archives/edgar/data/947484/000094748425000089/acgl-20251107.htm"
         }
       ],
-      "fetch_time": "2026-04-02T18:46:57.825299"
+      "fetch_time": "2026-04-03T04:03:42.463143"
     },
     "ALB": {
       "ticker": "ALB",
@@ -163,7 +163,7 @@
           "url": "https://www.sec.gov/Archives/edgar/data/915913/000091591326000018/alb-20251231.htm"
         }
       ],
-      "fetch_time": "2026-04-02T18:46:58.547319"
+      "fetch_time": "2026-04-03T04:03:44.129627"
     },
     "AON": {
       "ticker": "AON",
@@ -217,7 +217,7 @@
           "url": "https://www.sec.gov/Archives/edgar/data/315293/000162828025047805/aon-20250930.htm"
         }
       ],
-      "fetch_time": "2026-04-02T18:46:59.248873"
+      "fetch_time": "2026-04-03T04:03:45.891970"
     },
     "APO": {
       "ticker": "APO",
@@ -271,7 +271,7 @@
           "url": "https://www.sec.gov/Archives/edgar/data/1858681/000185868126000010/apo-20260219.htm"
         }
       ],
-      "fetch_time": "2026-04-02T18:46:59.976774"
+      "fetch_time": "2026-04-03T04:03:47.532974"
     },
     "AEP": {
       "ticker": "AEP",
@@ -299,25 +299,9 @@
           "document": "aep-20251231.htm",
           "description": "10-K",
           "url": "https://www.sec.gov/Archives/edgar/data/4904/000000490426000013/aep-20251231.htm"
-        },
-        {
-          "form": "8-K",
-          "filing_date": "2026-02-12",
-          "accession_number": "0000004904-26-000011",
-          "document": "aep-20260212.htm",
-          "description": "8-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/4904/000000490426000011/aep-20260212.htm"
-        },
-        {
-          "form": "8-K",
-          "filing_date": "2026-01-08",
-          "accession_number": "0000004904-26-000003",
-          "document": "aep-20260104.htm",
-          "description": "8-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/4904/000000490426000003/aep-20260104.htm"
         }
       ],
-      "fetch_time": "2026-04-02T18:47:00.639308"
+      "fetch_time": "2026-04-03T04:03:49.254468"
     },
     "AEE": {
       "ticker": "AEE",
@@ -371,7 +355,7 @@
           "url": "https://www.sec.gov/Archives/edgar/data/1002910/000110465926012085/tm265625d1_8k.htm"
         }
       ],
-      "fetch_time": "2026-04-02T18:47:01.337698"
+      "fetch_time": "2026-04-03T04:03:50.966330"
     },
     "AIZ": {
       "ticker": "AIZ",
@@ -425,7 +409,7 @@
           "url": "https://www.sec.gov/Archives/edgar/data/1267238/000126723825000049/aiz-20251104.htm"
         }
       ],
-      "fetch_time": "2026-04-02T18:47:02.035749"
+      "fetch_time": "2026-04-03T04:03:52.654676"
     },
     "LNT": {
       "ticker": "LNT",
@@ -479,7 +463,7 @@
           "url": "https://www.sec.gov/Archives/edgar/data/352541/000035254126000003/lnt-20260105.htm"
         }
       ],
-      "fetch_time": "2026-04-02T18:47:02.855350"
+      "fetch_time": "2026-04-03T04:03:54.303154"
     },
     "AMD": {
       "ticker": "AMD",
@@ -533,7 +517,7 @@
           "url": "https://www.sec.gov/Archives/edgar/data/2488/000000248826000014/amd-20260203.htm"
         }
       ],
-      "fetch_time": "2026-04-02T18:47:03.584692"
+      "fetch_time": "2026-04-03T04:03:56.021377"
     },
     "AWK": {
       "ticker": "AWK",
@@ -587,7 +571,7 @@
           "url": "https://www.sec.gov/Archives/edgar/data/1410636/000141063626000034/awk-20251231.htm"
         }
       ],
-      "fetch_time": "2026-04-02T18:47:04.335850"
+      "fetch_time": "2026-04-03T04:03:57.753931"
     },
     "AAPL": {
       "ticker": "AAPL",
@@ -641,7 +625,7 @@
           "url": "https://www.sec.gov/Archives/edgar/data/320193/000114036125044561/ef20060722_8k.htm"
         }
       ],
-      "fetch_time": "2026-04-02T18:47:05.096783"
+      "fetch_time": "2026-04-03T04:03:59.444328"
     },
     "AMAT": {
       "ticker": "AMAT",
@@ -695,7 +679,7 @@
           "url": "https://www.sec.gov/Archives/edgar/data/6951/000162828025056742/amat-20251026.htm"
         }
       ],
-      "fetch_time": "2026-04-02T18:47:05.823902"
+      "fetch_time": "2026-04-03T04:04:01.078462"
     },
     "APA": {
       "ticker": "APA",
@@ -733,7 +717,7 @@
           "url": "https://www.sec.gov/Archives/edgar/data/1841666/000184166626000003/apa8k-20260120.htm"
         }
       ],
-      "fetch_time": "2026-04-02T18:47:06.592731"
+      "fetch_time": "2026-04-03T04:04:02.708529"
     },
     "APP": {
       "ticker": "APP",
@@ -763,7 +747,7 @@
           "url": "https://www.sec.gov/Archives/edgar/data/1751008/000175100826000005/app-20260211.htm"
         }
       ],
-      "fetch_time": "2026-04-02T18:47:07.361844"
+      "fetch_time": "2026-04-03T04:04:04.281927"
     },
     "ANET": {
       "ticker": "ANET",
@@ -793,7 +777,7 @@
           "url": "https://www.sec.gov/Archives/edgar/data/1596532/000159653226000010/anet-20260212.htm"
         }
       ],
-      "fetch_time": "2026-04-02T18:47:08.094297"
+      "fetch_time": "2026-04-03T04:04:05.966129"
     },
     "GOOGL": {
       "ticker": "GOOGL",
@@ -815,7 +799,7 @@
           "url": "https://www.sec.gov/Archives/edgar/data/1652044/000165204426000026/goog-20260304.htm"
         }
       ],
-      "fetch_time": "2026-04-02T18:47:08.783513"
+      "fetch_time": "2026-04-03T04:04:07.699669"
     },
     "GOOG": {
       "ticker": "GOOG",
@@ -837,7 +821,7 @@
           "url": "https://www.sec.gov/Archives/edgar/data/1652044/000165204426000026/goog-20260304.htm"
         }
       ],
-      "fetch_time": "2026-04-02T18:47:09.512026"
+      "fetch_time": "2026-04-03T04:04:09.354787"
     }
   }
 }

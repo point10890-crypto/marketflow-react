@@ -1,31 +1,31 @@
 ticker,name,sector,price,rs_rating,vcp_score,fund_score,setup_phase,pivot_tightness,vol_dry_up,contractions,base_depth,eps_growth,breakout,pivot_price,score
-KEYS,Keysight Technologies Inc.,Technology,289.84,99.0,55,55,⏳ Building,7.3%,No,6,7%,66%,No,289.84,167.8
-NEE,"NextEra Energy, Inc.",Utilities,92.85,90.2,65,45,⚡ Pivot,1.9%,No,6,8%,28%,No,92.88,165.6
-TRGP,"Targa Resources, Inc.",Energy,244.79,99.0,65,40,⚡ Pivot,2.4%,No,5,6%,55%,No,250.73,163.8
-PPL,PPL Corporation,Utilities,38.37,78.1,85,30,⚡ Pivot,2.2%,Yes,5,6%,50%,No,38.37,158.7
-TPR,"Tapestry, Inc.",Consumer Cyclical,144.35,83.9,55,45,⏳ Building,5.3%,No,4,6%,81%,No,144.35,156.1
-EIX,Edison International,Utilities,73.58,99.0,40,55,📈 Near Highs,4.6%,No,6,5%,444%,No,73.58,155.8
-FIX,"Comfort Systems USA, Inc.",Industrials,1428.52,99.0,40,55,📈 Near Highs,11.4%,No,4,13%,127%,No,1428.52,155.8
-VRT,"Vertiv Holdings, LLC",Industrials,259.37,99.0,40,55,⏳ Building,10.1%,No,4,21%,203%,No,259.37,155.8
-MU,"Micron Technology, Inc.",Technology,367.85,99.0,30,55,🔥 Breakout,13.2%,No,4,14%,771%,Yes,367.85,155.8
-TER,"Teradyne, Inc.",Technology,312.2,99.0,40,55,⏳ Building,12.1%,No,7,20%,76%,No,312.2,155.8
-JNJ,Johnson & Johnson,Healthcare,244.12,94.5,55,40,⚡ Pivot,2.1%,No,4,5%,49%,No,244.44,154.7
-D,"Dominion Energy, Inc.",Utilities,62.05,71.4,65,45,⚡ Pivot,1.9%,No,4,8%,323%,No,62.05,153.1
-JBL,Jabil Inc.,Technology,271.96,95.9,40,50,📈 Near Highs,9.3%,No,5,13%,91%,No,271.96,151.0
-AMGN,Amgen Inc.,Healthcare,353.28,74.7,65,40,⚡ Pivot,1.3%,No,4,9%,113%,No,353.28,149.9
-EME,"EMCOR Group, Inc.",Industrials,759.55,99.0,40,45,⏳ Building,8.0%,No,5,13%,49%,No,759.55,147.8
-GLW,Corning Incorporated,Technology,142.38,99.0,40,45,⏳ Building,10.2%,No,3,23%,74%,No,142.38,147.8
-DTE,DTE Energy Company,Utilities,147.12,87.2,55,40,⚡ Pivot,1.9%,No,4,3%,26%,No,147.12,144.9
-MCK,McKesson Corporation,Healthcare,872.32,70.2,65,35,⚡ Pivot,1.4%,No,2,10%,35%,No,872.32,144.8
-EQT,EQT Corporation,Energy,61.09,85.9,40,45,⏳ Building,10.0%,No,3,12%,62%,No,67.55,144.6
-GEV,GE Vernova Inc.,Industrials,894.78,99.0,40,40,📈 Near Highs,9.0%,No,5,10%,657%,No,894.78,143.8
-KLAC,KLA Corporation,Technology,1519.84,99.0,40,40,⏳ Building,9.4%,No,6,13%,39%,No,1519.84,143.8
-AMAT,"Applied Materials, Inc.",Technology,353.8,99.0,40,40,⏳ Building,9.1%,No,6,18%,71%,No,353.8,143.8
-BG,Bunge Limited,Consumer Defensive,128.32,99.0,65,15,⚡ Pivot,2.3%,No,6,8%,-84%,No,128.72,143.8
-VLO,Valero Energy Corporation,Energy,241.46,99.0,55,25,⏳ Building,5.2%,No,5,6%,304%,No,254.32,143.8
-WMB,"Williams Companies, Inc. (The)",Energy,71.83,98.0,40,40,⏳ Building,3.1%,No,5,8%,51%,No,74.06,143.5
-REG,Regency Centers Corporation,Real Estate,76.11,80.0,65,30,⚡ Pivot,2.4%,No,6,6%,134%,No,76.11,143.2
-XEL,Xcel Energy Inc.,Utilities,79.71,74.7,65,30,⚡ Pivot,2.3%,No,3,11%,22%,No,79.71,141.9
-BMY,Bristol-Myers Squibb Company,Healthcare,61.73,88.9,40,40,📈 Near Highs,5.3%,No,4,10%,1410%,No,61.73,141.3
-MRK,"Merck & Company, Inc.",Healthcare,120.84,88.6,65,15,⚡ Pivot,2.3%,No,5,8%,-21%,No,120.84,141.3
-AEP,American Electric Power Compan,Utilities,131.67,87.5,65,15,⚡ Pivot,2.2%,No,3,8%,-12%,No,131.67,141.0
+D,"Dominion Energy, Inc.",Utilities,62.37,70.6,65,45,⚡ Pivot,2.4%,No,4,8%,323%,No,62.37,160.9
+DTE,DTE Energy Company,Utilities,147.88,86.4,75,40,⚡ Pivot,2.3%,Yes,4,3%,26%,No,147.88,160.7
+EIX,Edison International,Utilities,73.61,99.0,40,55,📈 Near Highs,4.6%,No,6,5%,444%,No,73.61,155.8
+AMGN,Amgen Inc.,Healthcare,348.52,72.0,65,40,⚡ Pivot,1.4%,No,4,9%,113%,No,353.28,149.3
+GLW,Corning Incorporated,Technology,147.57,99.0,40,45,⏳ Building,13.8%,No,3,23%,74%,No,147.57,147.8
+ATO,Atmos Energy Corporation,Utilities,188.38,81.5,75,15,⚡ Pivot,2.8%,Yes,4,3%,14%,No,188.38,147.6
+ES,Eversource Energy (D/B/A),Utilities,69.39,63.9,65,40,⚡ Pivot,3.0%,No,5,6%,481%,No,69.65,147.3
+EME,"EMCOR Group, Inc.",Industrials,756.63,94.9,40,45,⏳ Building,7.9%,No,5,13%,49%,No,759.55,146.8
+ALL,Allstate Corporation (The),Financial Services,206.35,61.3,65,40,⚡ Pivot,2.2%,No,5,9%,99%,No,207.34,146.7
+BG,Bunge Limited,Consumer Defensive,129.01,99.0,65,15,⚡ Pivot,2.1%,No,6,8%,-84%,No,129.01,143.8
+FIX,"Comfort Systems USA, Inc.",Industrials,1420.77,99.0,40,40,📈 Near Highs,11.3%,No,4,13%,38%,No,1428.52,143.8
+AMAT,"Applied Materials, Inc.",Technology,349.18,99.0,40,40,⏳ Building,9.0%,No,6,18%,71%,No,353.8,143.8
+GEV,GE Vernova Inc.,Industrials,894.31,99.0,40,40,📈 Near Highs,8.9%,No,5,10%,657%,No,894.78,143.8
+AEP,American Electric Power Compan,Utilities,132.44,88.3,65,15,⚡ Pivot,1.8%,No,3,8%,-12%,No,132.44,141.2
+FE,FirstEnergy Corp.,Utilities,51.26,86.4,65,15,⚡ Pivot,2.4%,No,3,8%,0%,No,51.26,140.7
+CNP,"CenterPoint Energy, Inc (Holdi",Utilities,43.56,84.0,65,15,⚡ Pivot,2.8%,No,4,7%,6%,No,43.56,140.2
+ALB,Albemarle Corporation,Basic Materials,178.09,99.0,65,10,⚡ Pivot,1.3%,No,5,19%,0%,No,179.53,139.8
+BMY,Bristol-Myers Squibb Company,Healthcare,59.53,80.5,40,40,📈 Near Highs,5.3%,No,4,10%,1410%,No,61.73,139.3
+ADI,"Analog Devices, Inc.",Technology,316.96,90.1,40,45,⏳ Building,5.6%,No,5,15%,112%,No,320.58,137.6
+EQT,EQT Corporation,Energy,60.04,83.0,40,45,⏳ Building,11.8%,No,3,12%,62%,No,67.55,135.9
+DELL,Dell Technologies Inc.,Technology,173.09,99.0,30,40,⏳ Building,5.3%,No,5,10%,47%,No,173.09,135.8
+AEE,Ameren Corporation,Utilities,111.61,80.6,65,20,⚡ Pivot,2.6%,No,4,8%,22%,No,111.61,135.3
+GRMN,Garmin Ltd.,Technology,238.79,94.6,30,40,⏳ Building,5.5%,No,5,4%,21%,No,238.79,134.7
+APD,"Air Products and Chemicals, In",Basic Materials,294.15,94.1,80,0,⚡ Pivot,1.9%,No,5,7%,10%,No,294.15,134.6
+MO,"Altria Group, Inc.",Consumer Defensive,65.83,91.4,65,5,⚡ Pivot,2.3%,No,5,6%,-63%,No,67.02,133.9
+CBOE,"Cboe Global Markets, Inc.",Financial Services,288.02,90.5,30,40,⏳ Building,5.3%,No,6,5%,60%,No,288.02,133.7
+CME,CME Group Inc.,Financial Services,304.26,88.8,40,30,📈 Near Highs,3.5%,No,6,6%,35%,No,304.26,133.3
+EVRG,"Evergy, Inc.",Utilities,82.73,86.1,65,5,⚡ Pivot,2.3%,No,4,7%,8%,No,82.73,132.7
+CSX,CSX Corporation,Industrials,41.13,85.4,55,15,📈 Near Highs,4.4%,No,3,6%,-2%,No,41.44,132.5
+CTRA,Coterra Energy Inc.,Energy,34.42,99.0,30,35,⏳ Building,6.8%,No,7,6%,24%,No,36.31,131.8

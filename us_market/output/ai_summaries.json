@@ -3531,27 +3531,27 @@
     "updated": "2026-03-28T09:16:26.678149"
   },
   "AMZN": {
-    "summary": "{\n  \"thesis\": \"높은 시장 변동성(VIX 30.61) 속에서도 아마존(AMZN)은 13.6%의 견조한 매출 성장률과 목표가 대비 40.0%의 상승 여력을 보유하고 있어, 매크로 충격으로 인한 단기 주가 하락을 매수 기회로 활용할 수 있는 우량 성장주입니다.\",\n  \"catalysts\": [\n    {\n      \"point\": \"시장 충격 속 저가 매수(Buy the Dip) 기회 및 월가 긍정적 시각\",\n      \"evidence\": \"Jefferies 등 기관의 저가 매수 추천 의견 및 상승 잠재력 부각 [TipRanks, 2026-03-30]\"\n    },\n    {\n      \"point\": \"장기 성장성 기반의 강력한 매수 심리\",\n      \"evidence\": \"현재 시점에서 강력히 매수해야 하는 3가지 이유 제시 [The Motley Fool, 2026-03-30]\"\n    }\n  ],\n  \"bear_cases\": [\n    {\n      \"point\": \"거시경제 역풍 및 시장 공포 극대화\",\n      \"evidence\": \"VIX 지수가 30.61로 극심한 공포 구간에 있으며, 10년물 국채 금리가 4.34%로 높아 성장주인 아마존의 밸류에이션(할인율)에 부담으로 작용 [Macro Context]\"\n    },\n    {\n      \"point\": \"단기 기술적 추세 하락\",\n      \"evidence\": \"목표가 대비 40%의 상승 여력이 있음에도 불구하고, 현재 MA Signal이 Bearish(약세) 상태로 단기 추가 하락 가능성 상존 [수치 분석 데이터]\"\n    },\n    {\n      \"point\": \"중립적인 수급 모멘텀\",\n      \"evidence\": \"수급 점수가 50/100으로 중립(Neutral) 수준에 머물러 있어, 강한 반등을 이끌어낼 단기 매수세가 부족할 수 있음 [수치 분석 데이터]\"\n    }\n  ],\n  \"data_conflicts\": [\n    \"목표가 대비 상승 여력(+40.0%)과 견조한 매출 성장률(13.6%), 그리고 긍정적인 뉴스 센티먼트(저가 매수 추천)는 펀더멘털적 매력을 지시하나, 기술적 지표인 MA Signal은 Bearish를 가리키고 있어 단기 차트 추세와 장기 펀더멘털 전망 간의 충돌이 발생함.\"\n  ],\n  \"key_metrics\": {\n    \"pe\": 27.99,\n    \"growth\": 13.6,\n    \"rsi\": 39.8,\n    \"inst_pct\": 67.3\n  },\n  \"recommendation\": \"BUY\",\n  \"confidence\": 75\n}",
-    "summary_ko": "{\n  \"thesis\": \"높은 시장 변동성(VIX 30.61) 속에서도 아마존(AMZN)은 13.6%의 견조한 매출 성장률과 목표가 대비 40.0%의 상승 여력을 보유하고 있어, 매크로 충격으로 인한 단기 주가 하락을 매수 기회로 활용할 수 있는 우량 성장주입니다.\",\n  \"catalysts\": [\n    {\n      \"point\": \"시장 충격 속 저가 매수(Buy the Dip) 기회 및 월가 긍정적 시각\",\n      \"evidence\": \"Jefferies 등 기관의 저가 매수 추천 의견 및 상승 잠재력 부각 [TipRanks, 2026-03-30]\"\n    },\n    {\n      \"point\": \"장기 성장성 기반의 강력한 매수 심리\",\n      \"evidence\": \"현재 시점에서 강력히 매수해야 하는 3가지 이유 제시 [The Motley Fool, 2026-03-30]\"\n    }\n  ],\n  \"bear_cases\": [\n    {\n      \"point\": \"거시경제 역풍 및 시장 공포 극대화\",\n      \"evidence\": \"VIX 지수가 30.61로 극심한 공포 구간에 있으며, 10년물 국채 금리가 4.34%로 높아 성장주인 아마존의 밸류에이션(할인율)에 부담으로 작용 [Macro Context]\"\n    },\n    {\n      \"point\": \"단기 기술적 추세 하락\",\n      \"evidence\": \"목표가 대비 40%의 상승 여력이 있음에도 불구하고, 현재 MA Signal이 Bearish(약세) 상태로 단기 추가 하락 가능성 상존 [수치 분석 데이터]\"\n    },\n    {\n      \"point\": \"중립적인 수급 모멘텀\",\n      \"evidence\": \"수급 점수가 50/100으로 중립(Neutral) 수준에 머물러 있어, 강한 반등을 이끌어낼 단기 매수세가 부족할 수 있음 [수치 분석 데이터]\"\n    }\n  ],\n  \"data_conflicts\": [\n    \"목표가 대비 상승 여력(+40.0%)과 견조한 매출 성장률(13.6%), 그리고 긍정적인 뉴스 센티먼트(저가 매수 추천)는 펀더멘털적 매력을 지시하나, 기술적 지표인 MA Signal은 Bearish를 가리키고 있어 단기 차트 추세와 장기 펀더멘털 전망 간의 충돌이 발생함.\"\n  ],\n  \"key_metrics\": {\n    \"pe\": 27.99,\n    \"growth\": 13.6,\n    \"rsi\": 39.8,\n    \"inst_pct\": 67.3\n  },\n  \"recommendation\": \"BUY\",\n  \"confidence\": 75\n}",
-    "summary_en": "{\n  \"thesis\": \"Amazon offers a compelling 'buy-the-dip' opportunity driven by a strong 40% target upside and solid 13.6% revenue growth, despite prevailing bearish technical trends and a high-fear macro environment.\",\n  \"catalysts\": [\n    {\n      \"point\": \"Favorable entry point on recent dip\",\n      \"evidence\": \"Analysts are highlighting the current dip as a buying opportunity, with Jefferies weighing in positively and others buying 'hand over fist' [TipRanks & The Motley Fool, 2026-03-30]\"\n    },\n    {\n      \"point\": \"Significant fundamental upside\",\n      \"evidence\": \"Stock shows a +40.0% target upside with a healthy 13.6% revenue growth rate [Technical Analysis]\"\n    }\n  ],\n  \"bear_cases\": [\n    {\n      \"point\": \"High market volatility and fear\",\n      \"evidence\": \"The VIX is currently at 30.61, indicating a high level of market fear and potential for market shocks [Macro Context & Trefis, 2026-03-30]\"\n    },\n    {\n      \"point\": \"Negative technical momentum\",\n      \"evidence\": \"The Moving Average (MA) signal is currently Bearish, indicating ongoing downward price pressure [Technical Analysis]\"\n    },\n    {\n      \"point\": \"Elevated interest rates pressuring valuations\",\n      \"evidence\": \"The 10-Year Treasury Yield is at 4.34%, which can act as a headwind for growth stocks trading at a 27.99 P/E [Macro Context]\"\n    }\n  ],\n  \"data_conflicts\": [\n    \"News sentiment is highly bullish ('buying hand over fist', 'jump on the dip') and fundamental upside is high (+40%), but technical indicators are weak (Bearish MA Signal, Neutral Supply/Demand) and macro fear is elevated (VIX > 30).\"\n  ],\n  \"key_metrics\": {\n    \"pe\": 27.99,\n    \"growth\": 13.6,\n    \"rsi\": 39.8,\n    \"inst_pct\": 67.3\n  },\n  \"recommendation\": \"BUY\",\n  \"confidence\": 70\n}",
+    "summary": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
+    "summary_ko": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
+    "summary_en": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
     "sources": [
       {
-        "title": "3 Reasons I'm Buying Amazon Stock Hand Over Fist Right Now - The Motley Fool",
-        "url": "https://news.google.com/rss/articles/CBMimAFBVV95cUxNSjktakdOS1VnZnlLeGEwaGxhbWNRaFNyazhkS0dOMVhfSlFSbXR2VHZoNHFTSWNoTXhiUGM4bnNWdjVNeGZfSmRveTdUWkRxYWxfcUYyRlIzRTJtV1dYc3lBcTBCQ1hwTEsxZDJMZENFZTJRMVlvUW54cHZtcFQydnhiWnlKY2RKQmdEZ1ZMZkNOZ1ZZVUJrYQ?oc=5",
-        "date": "2026-03-30",
-        "source": "The Motley Fool"
-      },
-      {
-        "title": "How Amazon Stock Behaves During Market Shocks - Trefis",
-        "url": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxNWGNGd2p6ZVEyUk5VYUNCVWNUQ05mZlI2UEdQYzFYaVNURVpOZjRJd3BSdVMyZEdSVURHUmd2SFA1TzV3SVdrcDdacE1WZkNma2dYOGNZbzB5Tk90SWVLUUI0RTFmYmZHalEtNVJqcE1uelZxR2pLT2hrbzloNHVGeXc4WFdwWkNIOXo3X3k5c1ZhZ3o1LUo0dmdEZ3dCd2pTWFdSbWZfRGZEQQ?oc=5",
-        "date": "2026-03-30",
+        "title": "How Amazon (AMZN) Stock Could Fall to $155 - Trefis",
+        "url": "https://news.google.com/rss/articles/CBMiogFBVV95cUxPQ2ItNWRWMDhkanJsRjBNLVc5NjhaOFNMZ1dHb3Q4R3dmT2s4ZzVld2tHTkJHM3E2QVRkVUJ4aklLUjY0d1pobnBJa215Tzh5Q0VsYVJCVE1wUk5ONGZ1NzNjaDRiSlpIdFRhd3ZTb2txTU9OWEVaTDhERTJIeUVvNWtyN1doZWFvV1lGM0hqdzlVQ2lyakZpMXpzSlRxUi1nRnc?oc=5",
+        "date": "2026-04-02",
         "source": "Trefis"
       },
       {
-        "title": "Jump on the Dip or Get Out Now? Jefferies Weighs in on Amazon Stock (AMZN) - TipRanks",
-        "url": "https://news.google.com/rss/articles/CBMiowFBVV95cUxPUTBnNzc4RGdUaU9XWkdiQkFJZFlBQnE0U2txdVZiSjZGUG4xbk5pbEJyV0JxMktxQ3c4OHBldmJ5TlNfSW9OUFljckRpRjJOQXYzNjBqZVd0VTVBWDlkc1ZYNERZTVBYdGozY3Zrc25WanhUc0hqS3ctbjgtRHlhMDVuYnRzM090WlJRRWtiM1JJSEQ4endVY3NjM1JLSTJVclV3?oc=5",
+        "title": "Amazon.com, Inc. $AMZN Stock Position Raised by Cordant Inc. - marketbeat.com",
+        "url": "https://news.google.com/rss/articles/CBMitwFBVV95cUxQUFJkOFAzT2NOQ1dwdy16NXJzWlQyMkduWi1SaXRvRzRPZjF5WDFBZUtVTWU0OGtTNnFWRmtMblRXNEdYR1Nsc2V2SWZGbzJBTW1PY2ZyUTJEUVNqUFFKeFVZQ3JVbDhFMlhqMUMwSmhBZnQ4Sno0aTBBSkNDaHlPcUt4bTR4d3VBbHE3QUxlb1d0TTVpZmRuTzRxZV9nelI5c3NYZ3JTMlFmYW5ydnVRbjE2aHBIeUk?oc=5",
+        "date": "2026-04-01",
+        "source": "marketbeat.com"
+      },
+      {
+        "title": "Amazon: This Is Worse Than You Think (NASDAQ:AMZN) - Seeking Alpha",
+        "url": "https://news.google.com/rss/articles/CBMiggFBVV95cUxNSjV3aTlXYk1sQ0RnV09PcXR5TmkzNVNOdUZVdUJtNWR1aTFfdlplb0tmbXlvSHFYbjluM0Y1UnJKYkNrOGZVdjRHNVhSQkNaYUR6QXlfVnNkZmpKRDlOd2VaTm01UERRZENUeUN1RmVtN1hCNkxmaHdtdFJrb0RDNWdB?oc=5",
         "date": "2026-03-30",
-        "source": "TipRanks"
+        "source": "Seeking Alpha"
       },
       {
         "title": "",
@@ -3561,7 +3561,7 @@
       }
     ],
     "news_count": 4,
-    "updated": "2026-03-31T08:38:55.443850"
+    "updated": "2026-04-03T04:10:04.545131"
   },
   "MO": {
     "summary": "```json\n{\n  \"thesis\": \"강력한 수급(기관 보유 63.4%, 수급점수 75)과 안정적인 배당 매력이 확인되나, RSI 71.6의 과매수 구간 진입과 매출 역성장(-0.5%)은 단기 조정 가능성을 시사하므로 신중한 접근이 필요합니다.\",\n  \"catalysts\": [\n    {\n      \"point\": \"강력한 배당 매력 및 소득주 이상의 성장 잠재력 부각\",\n      \"evidence\": \"단순 배당주를 넘어선 성장 가능성에 대한 시장의 재평가 논의 [Yahoo Finance, 2026-02-01], 최고의 배당주 중 하나로 선정 [The Motley Fool, 2026-01-30]\"\n    },\n    {\n      \"point\": \"기관 투자자의 강력한 매집세\",\n      \"evidence\": \"수급 점수 75/100(Strong Accumulation) 및 기관 보유 비중 63.4% 기록 [수치 분석 데이터]\"\n    },\n    {\n      \"point\": \"시장 대비 우수한 주가 성과 (Relative Strength)\",\n      \"evidence\": \"S&P 500 대비 +9.3% 초과 수익 달성 및 이동평균선(MA) 강세 신호 유지 [수치 분석 데이터]\"\n    }\n  ],\n  \"bear_cases\": [\n    {\n      \"point\": \"기술적 과열 신호에 따른 단기 차익실현 리스크\",\n      \"evidence\": \"RSI가 71.6으로 통상적인 과매수 기준인 70을 초과하여 단기 조정 가능성 높음 [수치 분석 데이터]\"\n    },\n    {\n      \"point\": \"펀더멘털 성장 정체 (Top-line Growth 부진)\",\n      \"evidence\": \"매출 성장률이 -0.5%로 역성장 기록, 구조적 담배 수요 감소 우려 지속 [수치 분석 데이터]\"\n    },\n    {\n      \"point\": \"기관 투자자의 일부 차익 실현 포착\",\n      \"evidence\": \"Stevens Capital Management LP가 최근 보유 지분을 매도함 [MarketBeat, 2026-02-22]\"\n    }\n  ],\n  \"data_conflicts\": [\n    \"기술적 지표인 RSI(71.6)는 과매수 상태를 가리키며 매도 압력을 시사하지만, 수급 점수(75/100)와 이동평균선(Bullish)은 여전히 강력한 매수세를 보여주는 모순 발생\",\n    \"시장 평가는 '매수 고려(B급)'이나 목표가 대비 현재가가 -6.8%로 괴리가 있어 추가 상승 여력에 대한 해석이 엇갈림\"\n  ],\n  \"key_metrics\": {\n    \"pe\": 16.77,\n    \"growth\": -0.5,\n    \"rsi\": 71.6,\n    \"inst_pct\": 63.4\n  },\n  \"recommendation\": \"HOLD\",\n  \"confidence\": 65\n}\n```",
@@ -4006,5 +4006,32 @@
     ],
     "news_count": 4,
     "updated": "2026-03-27T08:31:05.574325"
+  },
+  "AXP": {
+    "summary": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
+    "summary_ko": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
+    "summary_en": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
+    "sources": [
+      {
+        "title": "Chef’s Table goes live with dinners, a festival and Las Vegas awards - Stock Titan",
+        "url": "https://news.google.com/rss/articles/CBMisAFBVV95cUxPVTQ4dk9Ia0VSbkV3Unpwc3pIdnFMWmFUUi15elI4UnluOXdhT3JrVl9EeDRRWTVjMTZ4NkhVZnFTTUtLdjh5QXZVOGxWQjR3ZzBZeGhycHgwcXdOT2ZZbnhoWklLMmptZ19md294WURqMkFMNUxIclN2V252U0FaOEMtYmotaHNLUjBMVjg3MHV3bnJuQTVfY3dxeWptcG9NS3hXRWRvYUFXVjFaZU84Wg?oc=5",
+        "date": "2026-04-02",
+        "source": "Stock Titan"
+      },
+      {
+        "title": "8,138 Shares in American Express Company $AXP Bought by Triad Investment Management - marketbeat.com",
+        "url": "https://news.google.com/rss/articles/CBMi2gFBVV95cUxPOERZXzBMbXl1SjN6VWpRY2FDNURGd1NKRWVBR3pCVmthaVlnUUI4bXdULUFiQTZVdl9heVVQODVGb0oxWVpvRDBGYWFZdkJFelFhZ2pnVUpwRWVfUFdJMDlMREFpeE5BU0tlUTVFdGFRMzFIZDc5blJidWliN2pYYzhQNHdKYUh3M0FTUHZpN1JyRkN3SWVybjFpdUJyYTRrXzJ3bjNaYlI2UGRsbXRkV0xkYVR4RVd0cDhmaHZ6elYyci1Jd3dzdWFxSktOV0NTSUVES2JkZmwzZw?oc=5",
+        "date": "2026-04-02",
+        "source": "marketbeat.com"
+      },
+      {
+        "title": "AXP Stock Quote Price and Forecast - CNN",
+        "url": "https://news.google.com/rss/articles/CBMiT0FVX3lxTE5PSEJ6cVBnMHFieTZGUjNaQV95SWxSOWJRaGNrRGdMcjM2WEJ5b21NcjJBMDg4TVc4MTlFMVNZMVRuRTJsUGpkcHYxdXNzRzA?oc=5",
+        "date": "2026-03-31",
+        "source": "CNN"
+      }
+    ],
+    "news_count": 3,
+    "updated": "2026-04-03T04:09:55.942817"
   }
 }

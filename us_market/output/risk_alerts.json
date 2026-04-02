@@ -1,126 +1,126 @@
 {
-  "timestamp": "2026-04-02T18:47:33.109349",
+  "timestamp": "2026-04-03T04:04:20.968732",
   "portfolio_summary": {
     "total_picks": 15,
-    "portfolio_var_95_5d": -1285.0,
-    "portfolio_cvar_95_5d": -1833.33,
+    "portfolio_var_95_5d": -1282.55,
+    "portfolio_cvar_95_5d": -1754.64,
     "risk_level": "Elevated",
     "var_details": {
-      "var_pct": -1.29,
-      "var_dollar": -1285.0,
-      "cvar_pct": -1.83,
-      "cvar_dollar": -1833.33,
-      "t_var_dollar": -1674.41,
+      "var_pct": -1.28,
+      "var_dollar": -1282.55,
+      "cvar_pct": -1.75,
+      "cvar_dollar": -1754.64,
+      "t_var_dollar": -1660.81,
       "confidence": 0.95,
       "horizon_days": 5,
-      "degrees_of_freedom": 12.27
+      "degrees_of_freedom": 11.84
     }
   },
   "drawdowns": {
     "AKAM": {
-      "current_price": 115.75,
+      "current_price": 116.17,
       "peak_price": 119.15,
-      "current_dd": -2.85,
+      "current_dd": -2.5,
       "max_dd": -15.74,
-      "from_peak_days": 7
+      "from_peak_days": 8
     },
     "T": {
-      "current_price": 28.31,
+      "current_price": 28.22,
       "peak_price": 29.1,
-      "current_dd": -2.71,
+      "current_dd": -3.04,
       "max_dd": -6.28,
-      "from_peak_days": 5
+      "from_peak_days": 6
     },
     "ACGL": {
-      "current_price": 95.49,
+      "current_price": 96.54,
       "peak_price": 101.98,
-      "current_dd": -6.36,
+      "current_dd": -5.33,
       "max_dd": -9.62,
-      "from_peak_days": 55
+      "from_peak_days": 56
     },
     "ALB": {
-      "current_price": 178.47,
+      "current_price": 177.93,
       "peak_price": 195.39,
-      "current_dd": -8.66,
+      "current_dd": -8.93,
       "max_dd": -19.8,
-      "from_peak_days": 35
+      "from_peak_days": 36
     },
     "AON": {
-      "current_price": 321.34,
+      "current_price": 324.45,
       "peak_price": 351.97,
-      "current_dd": -8.7,
+      "current_dd": -7.82,
       "max_dd": -11.93,
-      "from_peak_days": 83
+      "from_peak_days": 84
     },
     "APO": {
-      "current_price": 110.25,
+      "current_price": 107.3,
       "peak_price": 152.08,
-      "current_dd": -27.5,
+      "current_dd": -29.44,
       "max_dd": -34.05,
-      "from_peak_days": 85
+      "from_peak_days": 86
     },
     "AEP": {
-      "current_price": 131.67,
+      "current_price": 132.51,
       "peak_price": 134.15,
-      "current_dd": -1.85,
+      "current_dd": -1.22,
       "max_dd": -6.33,
-      "from_peak_days": 16
+      "from_peak_days": 17
     },
     "AEE": {
-      "current_price": 110.79,
+      "current_price": 111.67,
       "peak_price": 112.86,
-      "current_dd": -1.83,
+      "current_dd": -1.05,
       "max_dd": -6.03,
-      "from_peak_days": 16
+      "from_peak_days": 17
     },
     "AIZ": {
-      "current_price": 216.33,
+      "current_price": 218.52,
       "peak_price": 242.33,
-      "current_dd": -10.73,
+      "current_dd": -9.82,
       "max_dd": -12.57,
-      "from_peak_days": 54
+      "from_peak_days": 55
     },
     "LNT": {
-      "current_price": 71.94,
+      "current_price": 72.73,
       "peak_price": 73.03,
-      "current_dd": -1.49,
+      "current_dd": -0.41,
       "max_dd": -5.92,
-      "from_peak_days": 16
+      "from_peak_days": 17
     },
     "AMD": {
-      "current_price": 210.21,
+      "current_price": 216.13,
       "peak_price": 259.68,
-      "current_dd": -19.05,
+      "current_dd": -16.77,
       "max_dd": -26.47,
-      "from_peak_days": 68
+      "from_peak_days": 69
     },
     "AWK": {
-      "current_price": 136.79,
+      "current_price": 137.88,
       "peak_price": 139.69,
-      "current_dd": -2.08,
+      "current_dd": -1.3,
       "max_dd": -7.8,
-      "from_peak_days": 19
+      "from_peak_days": 20
     },
     "AAPL": {
-      "current_price": 255.63,
+      "current_price": 255.34,
       "peak_price": 277.86,
-      "current_dd": -8.0,
+      "current_dd": -8.11,
       "max_dd": -11.24,
-      "from_peak_days": 54
+      "from_peak_days": 55
     },
     "AMAT": {
-      "current_price": 353.8,
+      "current_price": 348.59,
       "peak_price": 394.95,
-      "current_dd": -10.42,
+      "current_dd": -11.74,
       "max_dd": -18.19,
-      "from_peak_days": 35
+      "from_peak_days": 36
     },
     "APA": {
-      "current_price": 41.35,
+      "current_price": 41.9,
       "peak_price": 44.39,
-      "current_dd": -6.85,
+      "current_dd": -5.6,
       "max_dd": -7.77,
-      "from_peak_days": 5
+      "from_peak_days": 6
     }
   },
   "concentration": {
@@ -164,7 +164,7 @@
           "AEE",
           "LNT"
         ],
-        "correlation": 0.87
+        "correlation": 0.88
       },
       {
         "pair": [
@@ -180,32 +180,24 @@
       "alert_type": "drawdown",
       "severity": "critical",
       "ticker": "APO",
-      "message": "APO is in critical drawdown: -27.5% from peak",
-      "value": -27.5,
+      "message": "APO is in critical drawdown: -29.4% from peak",
+      "value": -29.44,
       "threshold": -20.0
     },
     {
       "alert_type": "drawdown",
       "severity": "warning",
-      "ticker": "AIZ",
-      "message": "AIZ drawdown warning: -10.7% from peak",
-      "value": -10.73,
-      "threshold": -10.0
-    },
-    {
-      "alert_type": "drawdown",
-      "severity": "warning",
       "ticker": "AMD",
-      "message": "AMD drawdown warning: -19.1% from peak",
-      "value": -19.05,
+      "message": "AMD drawdown warning: -16.8% from peak",
+      "value": -16.77,
       "threshold": -10.0
     },
     {
       "alert_type": "drawdown",
       "severity": "warning",
       "ticker": "AMAT",
-      "message": "AMAT drawdown warning: -10.4% from peak",
-      "value": -10.42,
+      "message": "AMAT drawdown warning: -11.7% from peak",
+      "value": -11.74,
       "threshold": -10.0
     },
     {
@@ -220,8 +212,8 @@
       "alert_type": "correlation",
       "severity": "info",
       "ticker": "AEE/LNT",
-      "message": "High correlation (0.87) between AEE and LNT",
-      "value": 0.87,
+      "message": "High correlation (0.88) between AEE and LNT",
+      "value": 0.88,
       "threshold": 0.8
     },
     {

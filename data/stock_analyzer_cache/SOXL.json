@@ -1,0 +1,71 @@
+{
+  "name": "SOXL",
+  "ticker": "SOXL",
+  "result": "데이터 없음",
+  "date": "2026-04-03 00:26:20",
+  "elapsed": 2.9,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": null,
+  "current_price": 51.76,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "Direxion Daily Semiconductor Bu",
+    "sector": "",
+    "industry": "",
+    "market_cap": null,
+    "pe_ratio": 33.07548,
+    "forward_pe": null,
+    "dividend_yield": 0.23,
+    "beta": null,
+    "fifty_two_week_high": 72.36,
+    "fifty_two_week_low": 7.23,
+    "revenue": null,
+    "profit_margin": null,
+    "currency": "USD"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": null,
+  "net_income_quarters": null,
+  "news": [
+    {
+      "title": "SOXL vs. SSO: What Type of Investor Should Consider These Leveraged ETFs?",
+      "summary": "Explore how leverage and sector focus shape the risk, volatility, and income potential of these two popular trading ETFs.",
+      "url": "https://www.fool.com/coverage/etfs/2026/03/13/soxl-vs-sso-what-type-of-investor-should-consider-these-leveraged-etfs/",
+      "provider": "Motley Fool",
+      "pub_time": "2026-03-13T14:23:09Z"
+    },
+    {
+      "title": "With $100 Oil Expected, The S&P 500 Turns Positive Pre-Market | GSPC",
+      "summary": "S&P 500 futures are pointing +0.37% higher ahead of Friday’s open, a modest recovery attempt after the index shed 1.52% on Thursday flirts with $100 a barrel pricing. The session’s tentative optimism ",
+      "url": "https://247wallst.com/investing/2026/03/13/with-100-oil-expected-the-sp-500-turns-positive-pre-market-gspc/",
+      "provider": "24/7 Wall St.",
+      "pub_time": "2026-03-13T13:07:10Z"
+    },
+    {
+      "title": "Semiconductor ETFs Rally with Bull 3X ETF up 11.6% on Monday",
+      "summary": "SOXL, the Direxion Daily Semiconductor Bull 3X ETF, surged an astonishing 11.6% on Monday. It was a good day for most stocks with the Dow closing up .5% and the S&P 500 closing up .83%. Yet, it was a ",
+      "url": "https://247wallst.com/investing/2026/03/09/semiconductor-etfs-rally-with-bull-3x-etf-up-11-6-on-monday/",
+      "provider": "24/7 Wall St.",
+      "pub_time": "2026-03-09T23:38:40Z"
+    },
+    {
+      "title": "Daily ETF Flows: SOXL On Top",
+      "summary": "<p>Here are the daily ETF fund flows for March 4, 2026.</p>",
+      "url": "http://www.etf.com/sections/daily-etf-flows/daily-etf-flows-soxl-top?utm_source=yahoo-finance&utm_medium=rss&utm_campaign=yahoo-finance-rss",
+      "provider": "etf.com",
+      "pub_time": "2026-03-05T23:00:05Z"
+    },
+    {
+      "title": "QLD Offers Broader Tech Exposure Than SOXL",
+      "summary": "Explore how differences in sector focus, risk, and diversification set these leveraged ETFs apart for tech-focused investors.",
+      "url": "https://www.fool.com/coverage/etfs/2026/02/09/qld-offers-broader-tech-exposure-than-soxl/",
+      "provider": "Motley Fool",
+      "pub_time": "2026-02-09T18:03:56Z"
+    }
+  ]
+}

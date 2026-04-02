@@ -2,7 +2,7 @@
   "name": "Tesla",
   "ticker": "TSLA",
   "result": "중립",
-  "date": "2026-04-01 08:05:59",
+  "date": "2026-04-03 00:25:47",
   "elapsed": 2.5,
   "consensus_score": 3.38,
   "analyst_count": 48,
@@ -15,21 +15,21 @@
   },
   "recommendation_period": "0m",
   "price_targets": {
-    "current": 371.75,
+    "current": 365.7899,
     "high": 600.0,
     "low": 119.0,
-    "mean": 421.2722,
-    "median": 460.0
+    "mean": 418.83316,
+    "median": 441.0
   },
-  "current_price": 371.75,
-  "upside_potential": 13.3,
+  "current_price": 365.75,
+  "upside_potential": 14.5,
   "key_stats": {
     "name": "Tesla, Inc.",
     "sector": "Consumer Cyclical",
     "industry": "Auto Manufacturers",
-    "market_cap": 1394966528000,
-    "pe_ratio": 347.4299,
-    "forward_pe": 132.27513,
+    "market_cap": 1372451897344,
+    "pe_ratio": 341.82242,
+    "forward_pe": 130.14023,
     "dividend_yield": null,
     "beta": 1.926,
     "fifty_two_week_high": 498.83,
@@ -40,7 +40,7 @@
   },
   "finnhub_supplement": null,
   "source": "yfinance",
-  "ai_analysis": "Tesla(TSLA)에 대한 애널리스트 컨센서스는 48명 참여 기준 '중립' 의견입니다. 평균 목표 주가는 421 USD로 현재 주가 대비 약 13.3% 상승 여력이 있습니다. 현재 PER은 347.4배입니다.",
+  "ai_analysis": null,
   "revenue_quarters": [
     {
       "date": "2025-12",
@@ -79,39 +79,39 @@
   ],
   "news": [
     {
-      "title": "Tesla Q1 deliveries rise 9% amid Robotaxi focus",
-      "summary": "Yahoo Finance senior autos reporter Pras Subramanian joins Asking for a Trend host Josh Lipton to discuss expectations for Tesla's ((TSLA) Q1 global deliveries.",
-      "url": "https://finance.yahoo.com/video/tesla-q1-deliveries-rise-9-amid-robotaxi-focus-222534059.html",
-      "provider": "Yahoo Finance Video",
-      "pub_time": "2026-03-31T22:25:34Z"
+      "title": "Tech stocks today: Tesla stock falls as tech stocks rebound, AI industry leaks highlight cybersecurity risks",
+      "summary": "Live coverage of \"Magnificent Seven\" stocks, and the latest technology news.",
+      "url": "https://finance.yahoo.com/sectors/technology/article/tech-stocks-today-tesla-stock-falls-as-tech-stocks-rebound-ai-industry-leaks-highlight-cybersecurity-risks-144220928.html",
+      "provider": "Yahoo Finance",
+      "pub_time": "2026-03-13T14:42:20Z"
     },
     {
-      "title": "Stock Market Today, March 31: Nio Jumps on Optimism for Strong Q1 Sales After First-Ever Quarterly Profit",
-      "summary": "Investors are weighing fresh profit milestones, surging volume, and global expansion as they reassess this EV maker, today, March 31, 2026.",
-      "url": "https://www.fool.com/coverage/stock-market-today/2026/03/31/stock-market-today-march-31-nio-jumps-on-optimism-for-strong-q1-sales-after-first-ever-quarterly-profit/",
-      "provider": "Motley Fool",
-      "pub_time": "2026-03-31T22:06:25Z"
+      "title": "Tesla misses Q1 2026 delivery estimates by a wide margin",
+      "summary": "Production outpaced deliveries by more than 50,000 vehicles, and energy storage deployments fell sharply from a record quarter",
+      "url": "https://qz.com/tesla-q1-2026-delivery-estimates-miss",
+      "provider": "Quartz",
+      "pub_time": "2026-04-02T15:15:13Z"
     },
     {
-      "title": "When Will Elon Musk's Tesla And SpaceX Merge? Here's What Prediction Market Is Saying",
-      "summary": "Elon Musk's xAI and SpaceX merged in February, valuing the company at over $1.25 trillion. SpaceX is now preparing for an initial public offering (IPO). SpaceX IPO SpaceX reportedly plans to raise $75",
-      "url": "https://finance.yahoo.com/markets/stocks/articles/elon-musks-tesla-spacex-merge-220130176.html",
-      "provider": "Benzinga",
-      "pub_time": "2026-03-31T22:01:30Z"
+      "title": "These Stocks Are Today’s Movers: Tesla, Micron, United Airlines, Norwegian Cruise Line, Blue Owl, and More",
+      "summary": "Cruise line and airline stocks broadly slid after President Donald Trump’s speech failed to assuage concerns over a drawn-out war in Iran.",
+      "url": "https://www.barrons.com/articles/stock-movers-cc1f9498?siteid=yhoof2&yptr=yahoo",
+      "provider": "Barrons.com",
+      "pub_time": "2026-04-02T15:01:00Z"
     },
     {
-      "title": "Stock Market Today, March 31: Tesla Rises Ahead of Delivery Report as Rally Eases Demand Concerns",
-      "summary": "Tesla rose as the market rallied, with focus turning to its delivery report and whether weaker vehicle demand will test the stock’s recent rebound.",
-      "url": "https://www.fool.com/coverage/stock-market-today/2026/03/31/stock-market-today-march-31-tesla-rises-ahead-of-delivery-report-as-rally-eases-demand-concerns/",
-      "provider": "Motley Fool",
-      "pub_time": "2026-03-31T21:45:47Z"
+      "title": "Tesla's Q1 Delivery Numbers 'Underwhelming,' But Not Surprising Given Current Global EV Backdrop, Wedbush Says",
+      "summary": "Tesla's (TSLA) Q1 delivery numbers were quite \"underwhelming,\" but this was not a surprise given the",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/tesla-apos-q1-delivery-numbers-145316576.html",
+      "provider": "MT Newswires",
+      "pub_time": "2026-04-02T14:53:16Z"
     },
     {
-      "title": "Gary Black Says TSLA Has Underperformed Nasdaq For 5 Years Because It Has Never Lived Up To Unsupervised FSD Hype: 'TSLA Still Has Only 9 Robotaxis'",
-      "summary": "Investor Gary Black of The Future Fund LLC has criticized Tesla Inc. for underperforming the Nasdaq 100 index for the last five years, which he thinks happened due to the brand not living up to the Fu",
-      "url": "https://finance.yahoo.com/markets/stocks/articles/gary-black-says-tsla-underperformed-213051620.html",
-      "provider": "Benzinga",
-      "pub_time": "2026-03-31T21:30:51Z"
+      "title": "Tesla Rival Rivian Tops Delivery Estimates With New Model Still Due",
+      "summary": "Rivian deliveries in the first quarter totaled 10,365 cars. Meanwhile, Tesla's were 358,023. Both stocks fell on Thursday.",
+      "url": "https://www.investors.com/news/rivian-deliveries-tesla-electric-vehicles-cars-auto-sales-byd-nio-xpeng-li/?src=A00220&yptr=yahoo",
+      "provider": "Investor's Business Daily",
+      "pub_time": "2026-04-02T14:50:05Z"
     }
   ]
 }
