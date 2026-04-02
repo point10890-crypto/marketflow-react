@@ -1,97 +1,145 @@
 {
-  "timestamp": "2026-04-03T04:56:12.050588",
+  "timestamp": "2026-04-03T05:00:55.289677",
   "portfolio_summary": {
-    "total_coins": 3,
-    "portfolio_var_95_1d": -4.86,
-    "portfolio_cvar_95_1d": -8.16,
+    "total_coins": 5,
+    "portfolio_var_95_1d": -4.06,
+    "portfolio_cvar_95_1d": -7.33,
     "risk_level": "HIGH"
   },
   "correlation_matrix": {
     "coins": [
+      "ATOM",
       "BNB",
-      "ETH",
-      "SOL"
+      "BTC",
+      "DOT",
+      "NEAR"
     ],
     "values": [
       [
         1.0,
-        0.8942,
-        0.895
+        0.615,
+        0.6397,
+        0.5085,
+        0.612
       ],
       [
-        0.8942,
+        0.615,
         1.0,
-        0.9258
+        0.9065,
+        0.6911,
+        0.7585
       ],
       [
-        0.895,
-        0.9258,
+        0.6397,
+        0.9065,
+        1.0,
+        0.6539,
+        0.7658
+      ],
+      [
+        0.5085,
+        0.6911,
+        0.6539,
+        1.0,
+        0.8251
+      ],
+      [
+        0.612,
+        0.7585,
+        0.7658,
+        0.8251,
         1.0
       ]
     ]
   },
   "individual_risk": {
+    "ATOM": {
+      "var_95_1d": -5.42,
+      "cvar_95_1d": -6.75,
+      "max_dd_30d": -16.89,
+      "volatility_30d": 44.56
+    },
     "BNB": {
       "var_95_1d": -3.83,
-      "cvar_95_1d": -7.64,
-      "max_dd_30d": -14.33,
-      "volatility_30d": 37.89
+      "cvar_95_1d": -7.63,
+      "max_dd_30d": -14.28,
+      "volatility_30d": 37.8
     },
-    "ETH": {
-      "var_95_1d": -5.8,
-      "cvar_95_1d": -9.18,
-      "max_dd_30d": -15.68,
-      "volatility_30d": 63.31
+    "BTC": {
+      "var_95_1d": -3.94,
+      "cvar_95_1d": -6.99,
+      "max_dd_30d": -11.9,
+      "volatility_30d": 48.19
     },
-    "SOL": {
-      "var_95_1d": -6.01,
-      "cvar_95_1d": -8.88,
-      "max_dd_30d": -17.89,
-      "volatility_30d": 56.59
+    "DOT": {
+      "var_95_1d": -5.55,
+      "cvar_95_1d": -9.0,
+      "max_dd_30d": -25.3,
+      "volatility_30d": 63.4
+    },
+    "NEAR": {
+      "var_95_1d": -4.99,
+      "cvar_95_1d": -8.87,
+      "max_dd_30d": -22.34,
+      "volatility_30d": 62.17
     }
   },
   "concentration": {
-    "btc_weight_pct": 56.02,
-    "eth_weight_pct": 10.39,
-    "top3_weight_pct": 74.11,
+    "btc_weight_pct": 55.99,
+    "eth_weight_pct": 10.4,
+    "top3_weight_pct": 74.07,
     "top3_coins": [
       "BTC",
       "ETH",
       "USDT"
     ],
-    "total_market_cap_usd": 2391896358156.0,
+    "total_market_cap_usd": 2395577661452.0,
     "warnings": [
       "BTC dominance very high at 56.0% - market heavily concentrated"
     ]
   },
   "alerts": [
     {
+      "severity": "critical",
+      "alert_type": "drawdown",
+      "coin": "DOT",
+      "message": "DOT 30d max drawdown: -25.3%",
+      "value": -25.3
+    },
+    {
+      "severity": "critical",
+      "alert_type": "drawdown",
+      "coin": "NEAR",
+      "message": "NEAR 30d max drawdown: -22.3%",
+      "value": -22.34
+    },
+    {
+      "severity": "warning",
+      "alert_type": "drawdown",
+      "coin": "ATOM",
+      "message": "ATOM 30d max drawdown: -16.9%",
+      "value": -16.89
+    },
+    {
       "severity": "warning",
       "alert_type": "drawdown",
       "coin": "BNB",
       "message": "BNB 30d max drawdown: -14.3%",
-      "value": -14.33
+      "value": -14.28
     },
     {
       "severity": "warning",
       "alert_type": "drawdown",
-      "coin": "ETH",
-      "message": "ETH 30d max drawdown: -15.7%",
-      "value": -15.68
-    },
-    {
-      "severity": "warning",
-      "alert_type": "drawdown",
-      "coin": "SOL",
-      "message": "SOL 30d max drawdown: -17.9%",
-      "value": -17.89
+      "coin": "BTC",
+      "message": "BTC 30d max drawdown: -11.9%",
+      "value": -11.9
     },
     {
       "severity": "info",
       "alert_type": "correlation",
-      "coin": "ETH/SOL",
-      "message": "High correlation (0.93) between ETH and SOL - limited diversification",
-      "value": 0.9258
+      "coin": "BNB/BTC",
+      "message": "High correlation (0.91) between BNB and BTC - limited diversification",
+      "value": 0.9065
     }
   ]
 }

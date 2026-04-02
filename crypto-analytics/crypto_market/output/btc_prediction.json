@@ -1,10 +1,10 @@
 {
-  "timestamp": "2026-04-03T04:56:10.007424",
+  "timestamp": "2026-04-03T05:00:53.281444",
   "predictions": {
     "BTC": {
-      "current_price": 0,
-      "bullish_probability": 23.4,
-      "bearish_probability": 76.6,
+      "current_price": 67024.75,
+      "bullish_probability": 22.9,
+      "bearish_probability": 77.1,
       "confidence_level": "High",
       "key_drivers": [
         {
@@ -51,17 +51,17 @@
       {
         "name": "RandomForest",
         "accuracy": 73.0,
-        "bullish": 25.0
+        "bullish": 24.5
       },
       {
         "name": "HistGradientBoosting",
         "accuracy": 67.4,
-        "bullish": 25.2
+        "bullish": 26.4
       },
       {
         "name": "LogisticRegression",
         "accuracy": 64.5,
-        "bullish": 21.6
+        "bullish": 18.9
       }
     ],
     "training_accuracy": 69.5,

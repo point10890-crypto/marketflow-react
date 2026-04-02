@@ -2,58 +2,58 @@
   "market_indices": [
     {
       "name": "Dow Jones",
-      "price": "46,509.58",
-      "change": "-56.16",
-      "change_pct": -0.1206040284614434,
+      "price": "46,504.73",
+      "change": "-61.01",
+      "change_pct": -0.13101437827855764,
       "color": "red"
     },
     {
       "name": "S&P 500",
-      "price": "6,582.24",
-      "change": "+6.92",
-      "change_pct": 0.10524826687152442,
+      "price": "6,582.68",
+      "change": "+7.36",
+      "change_pct": 0.11193906546400614,
       "color": "green"
     },
     {
       "name": "NASDAQ",
-      "price": "21,872.85",
-      "change": "+31.90",
-      "change_pct": 0.1460755966027833,
+      "price": "21,879.18",
+      "change": "+38.23",
+      "change_pct": 0.1750492686562279,
       "color": "green"
     },
     {
       "name": "Russell 2000",
-      "price": "2,526.01",
-      "change": "+13.64",
-      "change_pct": 0.5430065375736541,
+      "price": "2,525.13",
+      "change": "+12.76",
+      "change_pct": 0.5076929894152644,
       "color": "green"
     },
     {
       "name": "VIX",
-      "price": "24.72",
-      "change": "+0.18",
-      "change_pct": 0.7334897763319028,
+      "price": "24.77",
+      "change": "+0.23",
+      "change_pct": 0.9372434134295371,
       "color": "green"
     },
     {
       "name": "Gold",
-      "price": "4,695.00",
-      "change": "-88.20",
-      "change_pct": -1.8439578464421273,
+      "price": "4,697.00",
+      "change": "-86.20",
+      "change_pct": -1.8021448359400793,
       "color": "red"
     },
     {
       "name": "Crude Oil",
-      "price": "111.39",
-      "change": "+11.27",
-      "change_pct": 11.256488547640545,
+      "price": "111.54",
+      "change": "+11.42",
+      "change_pct": 11.406310283321657,
       "color": "green"
     },
     {
       "name": "Bitcoin",
-      "price": "67,041.61",
-      "change": "-1,036.95",
-      "change_pct": -1.5231599984163515,
+      "price": "67,024.75",
+      "change": "-1,053.80",
+      "change_pct": -1.5479245884952526,
       "color": "red"
     },
     {
@@ -67,7 +67,7 @@
       "name": "Dollar Index",
       "price": "100.03",
       "change": "+0.38",
-      "change_pct": 0.38133190928179184,
+      "change_pct": 0.38032894824989044,
       "color": "green"
     },
     {
@@ -78,5 +78,5 @@
       "color": "green"
     }
   ],
-  "timestamp": "2026-04-03T04:59:10.179550"
+  "timestamp": "2026-04-03T05:00:55.039390"
 }
