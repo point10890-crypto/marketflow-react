@@ -1,59 +1,59 @@
 {
-  "timestamp": "2026-04-03T04:57:07.384482",
+  "timestamp": "2026-04-03T04:59:24.027990",
   "version": "2.0",
   "market_data": {
-    "timestamp": "2026-04-03T04:57:07.384489",
+    "timestamp": "2026-04-03T04:59:24.027996",
     "indices": {
       "QQQ": {
         "name": "NASDAQ 100",
-        "price": 584.57,
-        "change": 0.04,
+        "price": 584.9,
+        "change": 0.1,
         "prev_close": 584.31,
         "high_52w": 635.8,
         "low_52w": 400.45,
-        "pct_from_high": -8.06
+        "pct_from_high": -8.01
       },
       "DIA": {
         "name": "Dow Jones",
-        "price": 464.94,
-        "change": -0.12,
+        "price": 465.06,
+        "change": -0.09,
         "prev_close": 465.48,
         "high_52w": 503.59,
         "low_52w": 360.69,
-        "pct_from_high": -7.67
+        "pct_from_high": -7.65
       },
       "IWM": {
         "name": "Russell 2000",
-        "price": 251.16,
-        "change": 0.64,
+        "price": 251.35,
+        "change": 0.72,
         "prev_close": 249.56,
         "high_52w": 271.12,
         "low_52w": 169.9,
-        "pct_from_high": -7.36
+        "pct_from_high": -7.29
       }
     },
     "futures": {
       "ES=F": {
         "name": "S&P 500 Futures",
-        "price": 6608.25,
-        "change": -0.14,
+        "price": 6610.0,
+        "change": -0.12,
         "prev_close": 6617.75,
         "high_52w": 7043.0,
         "low_52w": 4832.0,
-        "pct_from_high": -6.17
+        "pct_from_high": -6.15
       },
       "NQ=F": {
         "name": "NASDAQ Futures",
-        "price": 24146.0,
-        "change": -0.2,
+        "price": 24151.25,
+        "change": -0.18,
         "prev_close": 24194.75,
         "high_52w": 26399.0,
         "low_52w": 16460.0,
-        "pct_from_high": -8.53
+        "pct_from_high": -8.51
       },
       "YM=F": {
         "name": "Dow Futures",
-        "price": 46679.0,
+        "price": 46680.0,
         "change": -0.27,
         "prev_close": 46806.0,
         "high_52w": 50611.0,
@@ -93,50 +93,50 @@
     "currencies": {
       "DX-Y.NYB": {
         "name": "Dollar Index",
-        "price": 100.02,
-        "change": 0.37,
+        "price": 100.03,
+        "change": 0.38,
         "prev_close": 99.65,
         "high_52w": 104.31,
         "low_52w": 95.55,
-        "pct_from_high": -4.11
+        "pct_from_high": -4.1
       },
       "USDKRW=X": {
         "name": "USD/KRW",
-        "price": 1510.38,
-        "change": 0.47,
+        "price": 1509.86,
+        "change": 0.43,
         "prev_close": 1503.33,
         "high_52w": 1536.82,
         "low_52w": 1322.42,
-        "pct_from_high": -1.72
+        "pct_from_high": -1.75
       },
       "USDJPY=X": {
         "name": "USD/JPY",
-        "price": 159.64,
-        "change": 0.67,
+        "price": 159.67,
+        "change": 0.69,
         "prev_close": 158.58,
         "high_52w": 160.23,
         "low_52w": 139.89,
-        "pct_from_high": -0.37
+        "pct_from_high": -0.35
       },
       "EURUSD=X": {
         "name": "EUR/USD",
         "price": 1.15,
-        "change": -0.3,
+        "change": -0.31,
         "prev_close": 1.16,
         "high_52w": 1.2,
         "low_52w": 1.08,
-        "pct_from_high": -4.03
+        "pct_from_high": -4.04
       }
     },
     "commodities": {
       "GC=F": {
         "name": "Gold",
-        "price": 4694.8,
-        "change": -1.85,
+        "price": 4695.0,
+        "change": -1.84,
         "prev_close": 4783.2,
         "high_52w": 5586.2,
         "low_52w": 2949.7,
-        "pct_from_high": -15.96
+        "pct_from_high": -15.95
       },
       "CL=F": {
         "name": "Crude Oil",
@@ -149,12 +149,12 @@
       },
       "BTC-USD": {
         "name": "Bitcoin",
-        "price": 66997.62,
-        "change": -1.59,
+        "price": 67024.75,
+        "change": -1.55,
         "prev_close": 68078.55,
         "high_52w": 126198.07,
         "low_52w": 60074.2,
-        "pct_from_high": -46.91
+        "pct_from_high": -46.89
       }
     },
     "korean_indices": {
@@ -178,15 +178,15 @@
       }
     },
     "vix": {
-      "value": 24.72,
-      "change": 0.73,
+      "value": 24.73,
+      "change": 0.77,
       "level": "Neutral",
       "color": "#FFC107"
     }
   },
   "vix": {
-    "value": 24.72,
-    "change": 0.73,
+    "value": 24.73,
+    "change": 0.77,
     "level": "Neutral",
     "color": "#FFC107"
   },
@@ -196,7 +196,7 @@
     "color": "#FFC107",
     "components": {
       "vix": {
-        "value": 24.72,
+        "value": 24.73,
         "score": 51
       },
       "junk_bond": {
@@ -226,82 +226,82 @@
     "top_picks": [
       {
         "ticker": "AKAM",
-        "name": "Akamai Technologies, Inc.",
-        "final_score": 54.8,
-        "quant_score": 68.5,
+        "name": "AKAM",
+        "final_score": 45.0,
+        "quant_score": 56.2,
         "ai_bonus": 0,
         "ai_recommendation": "관망",
-        "grade": "📈 B급 (매수 고려)",
-        "current_price": 116.59,
-        "target_upside": -6.1,
+        "grade": "📊 C급 (관망)",
+        "current_price": 0,
+        "target_upside": 0,
         "sd_stage": "Strong Accumulation",
         "inst_pct": 0,
-        "rsi": 62.5,
+        "rsi": 50,
         "ai_summary": "{\"thesis\": \"AI Analaysis Failed: Connection Error: HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Max retries exceeded with url: /v1beta/models/gemini-3-pro-preview:generateContent?key=AIzaSyBGHSWUJrKAyfn5wPGYHRWJ5VD0B4VXKqY (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1032)')))\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOL",
         "rank": 1
       },
       {
-        "ticker": "LNT",
-        "name": "Alliant Energy Corporation",
-        "final_score": 52.5,
-        "quant_score": 65.6,
+        "ticker": "T",
+        "name": "T",
+        "final_score": 42.2,
+        "quant_score": 52.8,
         "ai_bonus": 0,
         "ai_recommendation": "관망",
-        "grade": "📈 B급 (매수 고려)",
-        "current_price": 72.85,
-        "target_upside": 3.6,
-        "sd_stage": "Neutral",
+        "grade": "📊 C급 (관망)",
+        "current_price": 0,
+        "target_upside": 0,
+        "sd_stage": "Strong Accumulation",
         "inst_pct": 0,
-        "rsi": 63.2,
+        "rsi": 50,
         "ai_summary": "{\"thesis\": \"AI Analaysis Failed: Connection Error: HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Max retries exceeded with url: /v1beta/models/gemini-3-pro-preview:generateContent?key=AIzaSyBGHSWUJrKAyfn5wPGYHRWJ5VD0B4VXKqY (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1032)')))\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOL",
         "rank": 2
       },
       {
-        "ticker": "T",
-        "name": "AT&T Inc.",
-        "final_score": 52.4,
-        "quant_score": 65.5,
+        "ticker": "AMZN",
+        "name": "AMZN",
+        "final_score": 41.8,
+        "quant_score": 52.2,
         "ai_bonus": 0,
         "ai_recommendation": "관망",
-        "grade": "📈 B급 (매수 고려)",
-        "current_price": 28.27,
-        "target_upside": 7.8,
-        "sd_stage": "Strong Accumulation",
+        "grade": "📊 C급 (관망)",
+        "current_price": 0,
+        "target_upside": 0,
+        "sd_stage": "Neutral",
         "inst_pct": 0,
-        "rsi": 51.5,
-        "ai_summary": "{\"thesis\": \"AI Analaysis Failed: Connection Error: HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Max retries exceeded with url: /v1beta/models/gemini-3-pro-preview:generateContent?key=AIzaSyBGHSWUJrKAyfn5wPGYHRWJ5VD0B4VXKqY (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1032)')))\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOL",
+        "rsi": 50,
+        "ai_summary": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
         "rank": 3
       },
       {
         "ticker": "ACGL",
-        "name": "Arch Capital Group Ltd.",
-        "final_score": 51.0,
-        "quant_score": 63.8,
+        "name": "ACGL",
+        "final_score": 41.6,
+        "quant_score": 52.0,
         "ai_bonus": 0,
         "ai_recommendation": "관망",
-        "grade": "📈 B급 (매수 고려)",
-        "current_price": 96.68,
-        "target_upside": 13.1,
+        "grade": "📊 C급 (관망)",
+        "current_price": 0,
+        "target_upside": 0,
         "sd_stage": "Neutral",
         "inst_pct": 0,
-        "rsi": 56.2,
+        "rsi": 50,
         "ai_summary": "{\"thesis\": \"AI Analaysis Failed: Connection Error: HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Max retries exceeded with url: /v1beta/models/gemini-3-pro-preview:generateContent?key=AIzaSyBGHSWUJrKAyfn5wPGYHRWJ5VD0B4VXKqY (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1032)')))\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOL",
         "rank": 4
       },
       {
-        "ticker": "AXP",
-        "name": "American Express Company",
-        "final_score": 50.7,
-        "quant_score": 63.4,
+        "ticker": "APO",
+        "name": "APO",
+        "final_score": 41.6,
+        "quant_score": 52.0,
         "ai_bonus": 0,
         "ai_recommendation": "관망",
-        "grade": "📈 B급 (매수 고려)",
-        "current_price": 300.39,
-        "target_upside": 23.7,
+        "grade": "📊 C급 (관망)",
+        "current_price": 0,
+        "target_upside": 0,
         "sd_stage": "Neutral",
         "inst_pct": 0,
-        "rsi": 42.3,
-        "ai_summary": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
+        "rsi": 50,
+        "ai_summary": "{\"thesis\": \"AI Analaysis Failed: Connection Error: HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Max retries exceeded with url: /v1beta/models/gemini-3-pro-preview:generateContent?key=AIzaSyBGHSWUJrKAyfn5wPGYHRWJ5VD0B4VXKqY (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1032)')))\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOL",
         "rank": 5
       }
     ],
@@ -314,8 +314,8 @@
     },
     "track_record": {
       "total_picks": "N/A",
-      "win_rate": 66.7,
-      "avg_return": 0.35,
+      "win_rate": 75.0,
+      "avg_return": 0.55,
       "alpha": "N/A"
     },
     "decision_signal": {
@@ -352,62 +352,57 @@
   },
   "smart_money": {
     "top_picks": {
-      "timestamp": "2026-04-03T04:54:30.242139",
+      "timestamp": "2026-04-03T04:58:05.548935",
       "picks": [
         {
           "rank": 1,
           "ticker": "AKAM",
-          "name": "Akamai Technologies, Inc.",
-          "final_score": 54.8,
+          "name": "AKAM",
+          "final_score": 45.0,
           "ai_recommendation": "관망",
-          "target_upside": -6.1,
+          "target_upside": 0,
           "sd_stage": "Strong Accumulation"
         },
         {
           "rank": 2,
-          "ticker": "LNT",
-          "name": "Alliant Energy Corporation",
-          "final_score": 52.5,
+          "ticker": "T",
+          "name": "T",
+          "final_score": 42.2,
           "ai_recommendation": "관망",
-          "target_upside": 3.6,
-          "sd_stage": "Neutral"
+          "target_upside": 0,
+          "sd_stage": "Strong Accumulation"
         },
         {
           "rank": 3,
-          "ticker": "T",
-          "name": "AT&T Inc.",
-          "final_score": 52.4,
+          "ticker": "AMZN",
+          "name": "AMZN",
+          "final_score": 41.8,
           "ai_recommendation": "관망",
-          "target_upside": 7.8,
-          "sd_stage": "Strong Accumulation"
+          "target_upside": 0,
+          "sd_stage": "Neutral"
         },
         {
           "rank": 4,
           "ticker": "ACGL",
-          "name": "Arch Capital Group Ltd.",
-          "final_score": 51.0,
+          "name": "ACGL",
+          "final_score": 41.6,
           "ai_recommendation": "관망",
-          "target_upside": 13.1,
+          "target_upside": 0,
           "sd_stage": "Neutral"
         },
         {
           "rank": 5,
-          "ticker": "AXP",
-          "name": "American Express Company",
-          "final_score": 50.7,
+          "ticker": "APO",
+          "name": "APO",
+          "final_score": 41.6,
           "ai_recommendation": "관망",
-          "target_upside": 23.7,
+          "target_upside": 0,
           "sd_stage": "Neutral"
         }
       ]
     },
     "performance": {
       "recent_dates": [
-        {
-          "date": "2026-04-03",
-          "avg_return": -0.04,
-          "win_rate": 50.0
-        },
         {
           "date": "2026-04-02",
           "avg_return": 0.3,
@@ -419,8 +414,8 @@
           "win_rate": 80.0
         }
       ],
-      "overall_avg": 0.35,
-      "overall_win_rate": 66.7
+      "overall_avg": 0.55,
+      "overall_win_rate": 75.0
     }
   }
 }

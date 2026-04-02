@@ -2,44 +2,44 @@
   "market_indices": [
     {
       "name": "Dow Jones",
-      "price": "46,512.21",
-      "change": "-53.53",
-      "change_pct": -0.11495005926181812,
+      "price": "46,509.58",
+      "change": "-56.16",
+      "change_pct": -0.1206040284614434,
       "color": "red"
     },
     {
       "name": "S&P 500",
-      "price": "6,582.06",
-      "change": "+6.74",
-      "change_pct": 0.10250808409613511,
+      "price": "6,582.24",
+      "change": "+6.92",
+      "change_pct": 0.10524826687152442,
       "color": "green"
     },
     {
       "name": "NASDAQ",
-      "price": "21,871.27",
-      "change": "+30.32",
-      "change_pct": 0.13883217858942212,
+      "price": "21,872.85",
+      "change": "+31.90",
+      "change_pct": 0.1460755966027833,
       "color": "green"
     },
     {
       "name": "Russell 2000",
-      "price": "2,525.79",
-      "change": "+13.42",
-      "change_pct": 0.5341344215943999,
+      "price": "2,526.01",
+      "change": "+13.64",
+      "change_pct": 0.5430065375736541,
       "color": "green"
     },
     {
       "name": "VIX",
-      "price": "24.70",
-      "change": "+0.16",
-      "change_pct": 0.651996093899376,
+      "price": "24.72",
+      "change": "+0.18",
+      "change_pct": 0.7334897763319028,
       "color": "green"
     },
     {
       "name": "Gold",
-      "price": "4,695.10",
-      "change": "-88.10",
-      "change_pct": -1.8418651542661215,
+      "price": "4,695.00",
+      "change": "-88.20",
+      "change_pct": -1.8439578464421273,
       "color": "red"
     },
     {
@@ -51,9 +51,9 @@
     },
     {
       "name": "Bitcoin",
-      "price": "67,008.01",
-      "change": "-1,070.55",
-      "change_pct": -1.5725170428692499,
+      "price": "67,041.61",
+      "change": "-1,036.95",
+      "change_pct": -1.5231599984163515,
       "color": "red"
     },
     {
@@ -67,7 +67,7 @@
       "name": "Dollar Index",
       "price": "100.03",
       "change": "+0.38",
-      "change_pct": 0.379325987217989,
+      "change_pct": 0.38133190928179184,
       "color": "green"
     },
     {
@@ -78,5 +78,5 @@
       "color": "green"
     }
   ],
-  "timestamp": "2026-04-03T04:57:44.145272"
+  "timestamp": "2026-04-03T04:59:10.179550"
 }
