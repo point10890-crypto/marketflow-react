@@ -1,0 +1,117 @@
+{
+  "name": "CRCL",
+  "ticker": "CRCL",
+  "result": "중립",
+  "date": "2026-04-02 15:37:13",
+  "elapsed": 2.1,
+  "consensus_score": 3.52,
+  "analyst_count": 23,
+  "recommendation_detail": {
+    "strongBuy": 2,
+    "buy": 9,
+    "hold": 11,
+    "sell": 1,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 90.74,
+    "high": 280.0,
+    "low": 50.0,
+    "mean": 127.56,
+    "median": 112.0
+  },
+  "current_price": 90.74,
+  "upside_potential": 40.6,
+  "key_stats": {
+    "name": "Circle Internet Group, Inc.",
+    "sector": "Financial Services",
+    "industry": "Capital Markets",
+    "market_cap": 24089710592,
+    "pe_ratio": null,
+    "forward_pe": 36.82764,
+    "dividend_yield": null,
+    "beta": null,
+    "fifty_two_week_high": 298.99,
+    "fifty_two_week_low": 49.9,
+    "revenue": 2746641920,
+    "profit_margin": -0.025309999,
+    "currency": "USD"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 770232000
+    },
+    {
+      "date": "2025-09",
+      "value": 739759000
+    },
+    {
+      "date": "2025-06",
+      "value": 658078000
+    },
+    {
+      "date": "2025-03",
+      "value": 578573000
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 133416000
+    },
+    {
+      "date": "2025-09",
+      "value": 214385000
+    },
+    {
+      "date": "2025-06",
+      "value": -482100000
+    },
+    {
+      "date": "2025-03",
+      "value": 64791000
+    }
+  ],
+  "news": [
+    {
+      "title": "Bitcoin rises above $68K, sparking hope for crypto at Q2 start",
+      "summary": "Bitcoin (BTC-USD) rises above $68,000 per token to start off the second quarter of 2026. The cryptocurrency has struggled to break through and hold above the $70,000 benchmark this year so far.Market ",
+      "url": "https://finance.yahoo.com/video/bitcoin-rises-above-68k-sparking-hope-for-crypto-at-q2-start-145602694.html",
+      "provider": "Yahoo Finance Video",
+      "pub_time": "2026-04-01T14:56:02Z"
+    },
+    {
+      "title": "ZachXBT Slams Circle for Letting Millions in Stolen USDC Flow Freely After Drift Hack",
+      "summary": "ZachXBT accused Circle of failing to freeze stolen USDC during the $285M Drift Protocol exploit on Solana.",
+      "url": "https://beincrypto.com/zachxbt-circle-usdc-drift-hack-criticism/",
+      "provider": "BeInCrypto",
+      "pub_time": "2026-04-02T05:28:47Z"
+    },
+    {
+      "title": "Solana DEX Drift Protocol Reportedly Hacked, Token Drops Nearly 20%",
+      "summary": "Drift Protocol reportedly hacked as exploit fears spread. DRIFT token falls 17% with no official confirmation yet.",
+      "url": "https://beincrypto.com/solana-drift-protocol-exploit-token-crash/",
+      "provider": "BeInCrypto",
+      "pub_time": "2026-04-01T18:36:59Z"
+    },
+    {
+      "title": "Circle's USDC Growth Fuels Reserve Income: Is It Sustainable?",
+      "summary": "CRCL's USDC surge drives reserve income and margins higher, but interest rate sensitivity and rising costs raise questions about sustainability.",
+      "url": "https://finance.yahoo.com/markets/crypto/articles/circles-usdc-growth-fuels-income-152300803.html",
+      "provider": "Zacks",
+      "pub_time": "2026-04-01T15:23:00Z"
+    },
+    {
+      "title": "Amidst a Major Selloff, Cathie Wood Was Buying Circle Stock. Why?",
+      "summary": "Circle was one of those rare tech names bought by the maverick investor last week.",
+      "url": "https://www.barchart.com/story/news/1093420/amidst-a-major-selloff-cathie-wood-was-buying-circle-stock-why",
+      "provider": "Barchart",
+      "pub_time": "2026-04-01T15:07:44Z"
+    }
+  ]
+}
