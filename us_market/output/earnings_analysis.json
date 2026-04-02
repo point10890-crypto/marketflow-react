@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-04-02T12:30:54.189977",
+  "timestamp": "2026-04-02T14:27:21.947249",
   "upcoming_earnings": [],
   "strong_momentum": [],
   "details": {
@@ -99,38 +99,6 @@
       ],
       "revenue_growth": 0.877
     },
-    "AEP": {
-      "ticker": "AEP",
-      "next_earnings_date": "2026-05-05",
-      "avg_surprise_pct": 0.0,
-      "surprises": [
-        {
-          "date": "2025-12-31",
-          "estimate": 0,
-          "actual": 0,
-          "surprise_pct": 0
-        },
-        {
-          "date": "2025-09-30",
-          "estimate": 0,
-          "actual": 0,
-          "surprise_pct": 0
-        },
-        {
-          "date": "2025-06-30",
-          "estimate": 0,
-          "actual": 0,
-          "surprise_pct": 0
-        },
-        {
-          "date": "2025-03-31",
-          "estimate": 0,
-          "actual": 0,
-          "surprise_pct": 0
-        }
-      ],
-      "revenue_growth": 0.132
-    },
     "ACGL": {
       "ticker": "ACGL",
       "next_earnings_date": "2026-04-29",
@@ -162,6 +130,38 @@
         }
       ],
       "revenue_growth": 0.085
+    },
+    "AEP": {
+      "ticker": "AEP",
+      "next_earnings_date": "2026-05-05",
+      "avg_surprise_pct": 0.0,
+      "surprises": [
+        {
+          "date": "2025-12-31",
+          "estimate": 0,
+          "actual": 0,
+          "surprise_pct": 0
+        },
+        {
+          "date": "2025-09-30",
+          "estimate": 0,
+          "actual": 0,
+          "surprise_pct": 0
+        },
+        {
+          "date": "2025-06-30",
+          "estimate": 0,
+          "actual": 0,
+          "surprise_pct": 0
+        },
+        {
+          "date": "2025-03-31",
+          "estimate": 0,
+          "actual": 0,
+          "surprise_pct": 0
+        }
+      ],
+      "revenue_growth": 0.132
     },
     "ALB": {
       "ticker": "ALB",
@@ -227,38 +227,6 @@
       ],
       "revenue_growth": 0.09
     },
-    "APD": {
-      "ticker": "APD",
-      "next_earnings_date": "2026-04-30",
-      "avg_surprise_pct": 0.0,
-      "surprises": [
-        {
-          "date": "2025-12-31",
-          "estimate": 0,
-          "actual": 0,
-          "surprise_pct": 0
-        },
-        {
-          "date": "2025-09-30",
-          "estimate": 0,
-          "actual": 0,
-          "surprise_pct": 0
-        },
-        {
-          "date": "2025-06-30",
-          "estimate": 0,
-          "actual": 0,
-          "surprise_pct": 0
-        },
-        {
-          "date": "2025-03-31",
-          "estimate": 0,
-          "actual": 0,
-          "surprise_pct": 0
-        }
-      ],
-      "revenue_growth": 0.058
-    },
     "AJG": {
       "ticker": "AJG",
       "next_earnings_date": "2026-05-01",
@@ -291,9 +259,9 @@
       ],
       "revenue_growth": 0.367
     },
-    "AMD": {
-      "ticker": "AMD",
-      "next_earnings_date": "2026-05-06",
+    "APD": {
+      "ticker": "APD",
+      "next_earnings_date": "2026-04-30",
       "avg_surprise_pct": 0.0,
       "surprises": [
         {
@@ -321,7 +289,7 @@
           "surprise_pct": 0
         }
       ],
-      "revenue_growth": 0.341
+      "revenue_growth": 0.058
     },
     "AON": {
       "ticker": "AON",
@@ -355,6 +323,38 @@
       ],
       "revenue_growth": 0.037
     },
+    "AMD": {
+      "ticker": "AMD",
+      "next_earnings_date": "2026-05-06",
+      "avg_surprise_pct": 0.0,
+      "surprises": [
+        {
+          "date": "2025-12-31",
+          "estimate": 0,
+          "actual": 0,
+          "surprise_pct": 0
+        },
+        {
+          "date": "2025-09-30",
+          "estimate": 0,
+          "actual": 0,
+          "surprise_pct": 0
+        },
+        {
+          "date": "2025-06-30",
+          "estimate": 0,
+          "actual": 0,
+          "surprise_pct": 0
+        },
+        {
+          "date": "2025-03-31",
+          "estimate": 0,
+          "actual": 0,
+          "surprise_pct": 0
+        }
+      ],
+      "revenue_growth": 0.341
+    },
     "AEE": {
       "ticker": "AEE",
       "next_earnings_date": "2026-05-06",
@@ -387,38 +387,6 @@
       ],
       "revenue_growth": -0.088
     },
-    "APA": {
-      "ticker": "APA",
-      "next_earnings_date": "2026-05-07",
-      "avg_surprise_pct": 0.0,
-      "surprises": [
-        {
-          "date": "2025-12-31",
-          "estimate": 0,
-          "actual": 0,
-          "surprise_pct": 0
-        },
-        {
-          "date": "2025-09-30",
-          "estimate": 0,
-          "actual": 0,
-          "surprise_pct": 0
-        },
-        {
-          "date": "2025-06-30",
-          "estimate": 0,
-          "actual": 0,
-          "surprise_pct": 0
-        },
-        {
-          "date": "2025-03-31",
-          "estimate": 0,
-          "actual": 0,
-          "surprise_pct": 0
-        }
-      ],
-      "revenue_growth": -0.28
-    },
     "AMAT": {
       "ticker": "AMAT",
       "next_earnings_date": "2026-05-15",
@@ -450,6 +418,38 @@
         }
       ],
       "revenue_growth": -0.021
+    },
+    "APA": {
+      "ticker": "APA",
+      "next_earnings_date": "2026-05-07",
+      "avg_surprise_pct": 0.0,
+      "surprises": [
+        {
+          "date": "2025-12-31",
+          "estimate": 0,
+          "actual": 0,
+          "surprise_pct": 0
+        },
+        {
+          "date": "2025-09-30",
+          "estimate": 0,
+          "actual": 0,
+          "surprise_pct": 0
+        },
+        {
+          "date": "2025-06-30",
+          "estimate": 0,
+          "actual": 0,
+          "surprise_pct": 0
+        },
+        {
+          "date": "2025-03-31",
+          "estimate": 0,
+          "actual": 0,
+          "surprise_pct": 0
+        }
+      ],
+      "revenue_growth": -0.28
     },
     "APP": {
       "ticker": "APP",

@@ -1,15 +1,15 @@
 {
   "summary": {
-    "total_picks": 410,
+    "total_picks": 420,
     "unique_tickers": 90,
-    "win_rate": 38.3,
-    "avg_return": 1.35,
-    "avg_alpha": 4.29,
+    "win_rate": 37.4,
+    "avg_return": 1.32,
+    "avg_alpha": 4.19,
     "max_gain": 191.82,
     "max_loss": -57.22,
     "best_ticker": "SNDK",
     "worst_ticker": "TEAM",
-    "num_snapshots": 41
+    "num_snapshots": 42
   },
   "chart_data": [
     {
@@ -215,6 +215,11 @@
     {
       "date": "2026-04-01",
       "avg_return": 0.13,
+      "spy_return": 0.0
+    },
+    {
+      "date": "2026-04-02",
+      "avg_return": -0.0,
       "spy_return": 0.0
     }
   ],
@@ -4318,9 +4323,117 @@
       "return_pct": -0.52,
       "final_score": 66.8,
       "recommendation": "매수"
+    },
+    {
+      "ticker": "AKAM",
+      "name": "Akamai Technologies, Inc.",
+      "rec_date": "2026-04-02",
+      "entry_price": 115.75,
+      "current_price": 115.75,
+      "return_pct": 0.0,
+      "final_score": 58.4,
+      "recommendation": "관망"
+    },
+    {
+      "ticker": "T",
+      "name": "AT&T Inc.",
+      "rec_date": "2026-04-02",
+      "entry_price": 28.31,
+      "current_price": 28.31,
+      "return_pct": -0.0,
+      "final_score": 55.6,
+      "recommendation": "관망"
+    },
+    {
+      "ticker": "ACGL",
+      "name": "Arch Capital Group Ltd.",
+      "rec_date": "2026-04-02",
+      "entry_price": 95.49,
+      "current_price": 95.49,
+      "return_pct": -0.0,
+      "final_score": 54.5,
+      "recommendation": "관망"
+    },
+    {
+      "ticker": "ALB",
+      "name": "Albemarle Corporation",
+      "rec_date": "2026-04-02",
+      "entry_price": 178.47,
+      "current_price": 178.47,
+      "return_pct": 0.0,
+      "final_score": 53.7,
+      "recommendation": "관망"
+    },
+    {
+      "ticker": "AON",
+      "name": "Aon plc",
+      "rec_date": "2026-04-02",
+      "entry_price": 321.34,
+      "current_price": 321.34,
+      "return_pct": -0.0,
+      "final_score": 53.5,
+      "recommendation": "관망"
+    },
+    {
+      "ticker": "APO",
+      "name": "Apollo Global Management, Inc.",
+      "rec_date": "2026-04-02",
+      "entry_price": 110.25,
+      "current_price": 110.25,
+      "return_pct": 0.0,
+      "final_score": 53.3,
+      "recommendation": "관망"
+    },
+    {
+      "ticker": "AEP",
+      "name": "American Electric Power Company, Inc.",
+      "rec_date": "2026-04-02",
+      "entry_price": 131.67,
+      "current_price": 131.67,
+      "return_pct": -0.0,
+      "final_score": 53.1,
+      "recommendation": "관망"
+    },
+    {
+      "ticker": "AEE",
+      "name": "Ameren Corporation",
+      "rec_date": "2026-04-02",
+      "entry_price": 110.79,
+      "current_price": 110.79,
+      "return_pct": 0.0,
+      "final_score": 52.6,
+      "recommendation": "관망"
+    },
+    {
+      "ticker": "AIZ",
+      "name": "Assurant, Inc.",
+      "rec_date": "2026-04-02",
+      "entry_price": 216.33,
+      "current_price": 216.33,
+      "return_pct": 0.0,
+      "final_score": 52.1,
+      "recommendation": "관망"
+    },
+    {
+      "ticker": "LNT",
+      "name": "Alliant Energy Corporation",
+      "rec_date": "2026-04-02",
+      "entry_price": 71.94,
+      "current_price": 71.94,
+      "return_pct": 0.0,
+      "final_score": 52.0,
+      "recommendation": "관망"
     }
   ],
   "by_date": [
+    {
+      "date": "2026-04-02",
+      "avg_return": -0.0,
+      "spy_return": 0.0,
+      "alpha": -0.0,
+      "win_rate": 40.0,
+      "num_picks": 10
+    },
     {
       "date": "2026-04-01",
       "avg_return": 0.13,

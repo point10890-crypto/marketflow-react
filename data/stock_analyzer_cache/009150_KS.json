@@ -2,8 +2,8 @@
   "name": "삼성전기",
   "ticker": "009150.KS",
   "result": "적극 매수",
-  "date": "2026-04-01 10:01:07",
-  "elapsed": 2.2,
+  "date": "2026-04-02 15:30:13",
+  "elapsed": 2.1,
   "consensus_score": 4.32,
   "analyst_count": 28,
   "recommendation_detail": {
@@ -15,22 +15,22 @@
   },
   "recommendation_period": "0m",
   "price_targets": {
-    "current": 442000.0,
+    "current": 415000.0,
     "high": 620000.0,
     "low": 310000.0,
     "mean": 471607.16,
     "median": 475000.0
   },
-  "current_price": 442500.0,
-  "upside_potential": 6.6,
+  "current_price": 415000.0,
+  "upside_potential": 13.6,
   "key_stats": {
     "name": "SamsungElecMech",
     "sector": "Technology",
     "industry": "Electronic Components",
-    "market_cap": 33391883845632,
+    "market_cap": 31352107827200,
     "pe_ratio": null,
-    "forward_pe": 21.992073,
-    "dividend_yield": 0.58,
+    "forward_pe": 20.625334,
+    "dividend_yield": 0.53,
     "beta": 1.316,
     "fifty_two_week_high": 488500.0,
     "fifty_two_week_low": 108800.0,
@@ -40,7 +40,7 @@
   },
   "finnhub_supplement": null,
   "source": "yfinance",
-  "ai_analysis": "삼성전기는 애널리스트 컨센서스 '적극 매수' 의견을 받고 있으며, 28명의 애널리스트가 참여했습니다. 평균 목표 주가는 471,607원으로, 현재 주가 대비 약 6.6%의 상승 여력이 있습니다. 이는 긍정적인 시장 전망을 반영하는 데이터입니다.",
+  "ai_analysis": null,
   "revenue_quarters": [
     {
       "date": "2025-12",

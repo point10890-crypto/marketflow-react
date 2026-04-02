@@ -288,27 +288,27 @@
     "updated": "2025-12-15T16:18:13.496612"
   },
   "AAPL": {
-    "summary": "```json\n{\n  \"thesis\": \"안정적인 수급(기관 보유 65.2%)과 기술적 상승 신호(MA Bullish)가 확인되나, P/E 34.73배의 밸류에이션 부담이 존재하여 신중한 매수(Accumulation) 관점이 유효함.\",\n  \"catalysts\": [\n    {\n      \"point\": \"거물급 투자자의 지분 확대에 따른 투자 심리 개선\",\n      \"evidence\": \"조지 소로스가 애플 주식 보유량을 두 배로 늘리며 강한 확신을 보임 [Barchart.com, 2026-02-26]\"\n    },\n    {\n      \"point\": \"압도적인 설치 기반(Installed Base)을 통한 서비스 수익화 잠재력\",\n      \"evidence\": \"전 세계적으로 25억 대의 활성 기기를 보유하여 생태계 락인(Lock-in) 효과 극대화 [Seeking Alpha, 2026-02-23]\"\n    },\n    {\n      \"point\": \"견조한 매출 성장세 지속\",\n      \"evidence\": \"매출 성장률 15.7%를 기록하며 대형 기술주로서 견고한 펀더멘털 입증 [수치 분석 데이터]\"\n    }\n  ],\n  \"bear_cases\": [\n    {\n      \"point\": \"높은 밸류에이션에 따른 조정 가능성\",\n      \"evidence\": \"현재 P/E가 34.73배로 역사적 평균 및 시장 대비 높은 수준을 유지하고 있어 밸류에이션 부담 가중 [수치 분석 데이터]\"\n    },\n    {\n      \"point\": \"국채 금리 상승에 따른 성장주 할인율 압박\",\n      \"evidence\": \"10년물 국채 금리가 4.02%로 4%대를 상회하며, 고밸류 기술주의 미래 현금흐름 할인율을 높이는 요인으로 작용 [Macro Context]\"\n    },\n    {\n      \"point\": \"수급 점수의 상대적 약세\",\n      \"evidence\": \"수급 점수가 55/100으로 'Accumulation' 단계이나, 강력한 매수세(Strong Buy)를 확신하기에는 다소 중립적인 수준 [수치 분석 데이터]\"\n    }\n  ],\n  \"data_conflicts\": [\n    \"기술적 지표인 MA Signal은 'Bullish'를 가리키고 뉴스 센티먼트(소로스 매수 등)도 긍정적이나, 수급 점수는 55점으로 다소 미온적이며 P/E 34.73배의 고평가 부담이 상충함.\"\n  ],\n  \"key_metrics\": {\n    \"pe\": 34.73,\n    \"growth\": 15.7,\n    \"rsi\": 57.2,\n    \"inst_pct\": 65.2\n  },\n  \"recommendation\": \"BUY\",\n  \"confidence\": 75\n}\n```",
-    "summary_ko": "```json\n{\n  \"thesis\": \"안정적인 수급(기관 보유 65.2%)과 기술적 상승 신호(MA Bullish)가 확인되나, P/E 34.73배의 밸류에이션 부담이 존재하여 신중한 매수(Accumulation) 관점이 유효함.\",\n  \"catalysts\": [\n    {\n      \"point\": \"거물급 투자자의 지분 확대에 따른 투자 심리 개선\",\n      \"evidence\": \"조지 소로스가 애플 주식 보유량을 두 배로 늘리며 강한 확신을 보임 [Barchart.com, 2026-02-26]\"\n    },\n    {\n      \"point\": \"압도적인 설치 기반(Installed Base)을 통한 서비스 수익화 잠재력\",\n      \"evidence\": \"전 세계적으로 25억 대의 활성 기기를 보유하여 생태계 락인(Lock-in) 효과 극대화 [Seeking Alpha, 2026-02-23]\"\n    },\n    {\n      \"point\": \"견조한 매출 성장세 지속\",\n      \"evidence\": \"매출 성장률 15.7%를 기록하며 대형 기술주로서 견고한 펀더멘털 입증 [수치 분석 데이터]\"\n    }\n  ],\n  \"bear_cases\": [\n    {\n      \"point\": \"높은 밸류에이션에 따른 조정 가능성\",\n      \"evidence\": \"현재 P/E가 34.73배로 역사적 평균 및 시장 대비 높은 수준을 유지하고 있어 밸류에이션 부담 가중 [수치 분석 데이터]\"\n    },\n    {\n      \"point\": \"국채 금리 상승에 따른 성장주 할인율 압박\",\n      \"evidence\": \"10년물 국채 금리가 4.02%로 4%대를 상회하며, 고밸류 기술주의 미래 현금흐름 할인율을 높이는 요인으로 작용 [Macro Context]\"\n    },\n    {\n      \"point\": \"수급 점수의 상대적 약세\",\n      \"evidence\": \"수급 점수가 55/100으로 'Accumulation' 단계이나, 강력한 매수세(Strong Buy)를 확신하기에는 다소 중립적인 수준 [수치 분석 데이터]\"\n    }\n  ],\n  \"data_conflicts\": [\n    \"기술적 지표인 MA Signal은 'Bullish'를 가리키고 뉴스 센티먼트(소로스 매수 등)도 긍정적이나, 수급 점수는 55점으로 다소 미온적이며 P/E 34.73배의 고평가 부담이 상충함.\"\n  ],\n  \"key_metrics\": {\n    \"pe\": 34.73,\n    \"growth\": 15.7,\n    \"rsi\": 57.2,\n    \"inst_pct\": 65.2\n  },\n  \"recommendation\": \"BUY\",\n  \"confidence\": 75\n}\n```",
-    "summary_en": "```json\n{\n  \"thesis\": \"Apple presents a moderate 'Buy' opportunity driven by strong institutional accumulation and a robust ecosystem of 2.5 billion active devices, though upside is tempered by valuation premiums and macro headwinds.\",\n  \"catalysts\": [\n    {\n      \"point\": \"Institutional Confidence & 'Smart Money' Accumulation\",\n      \"evidence\": \"George Soros is doubling down on Apple stock, signaling high-conviction institutional support [Barchart.com, 2026-02-26].\"\n    },\n    {\n      \"point\": \"Massive Installed Base Monetization\",\n      \"evidence\": \"The ecosystem has reached a critical mass of 2.5 billion active devices, providing a stable foundation for services revenue growth [Seeking Alpha, 2026-02-23].\"\n    },\n    {\n      \"point\": \"Solid Technical Momentum\",\n      \"evidence\": \"Supply/Demand score of 55 indicates accumulation, supported by a Bullish MA signal and a healthy RSI of 57.2 [Technical Analysis Data].\"\n    }\n  ],\n  \"bear_cases\": [\n    {\n      \"point\": \"Valuation Premium vs. Historical Averages\",\n      \"evidence\": \"Current P/E ratio of 34.73 is elevated compared to historical tech hardware norms, leaving little margin for earnings misses [Stock Information Data].\"\n    },\n    {\n      \"point\": \"Macroeconomic Pressure from Yields\",\n      \"evidence\": \"The 10Y Treasury Yield at 4.02% provides a risk-free alternative that compresses equity risk premiums for high-multiple stocks like AAPL [Macro Context].\"\n    },\n    {\n      \"point\": \"Limited Short-Term Upside Potential\",\n      \"evidence\": \"Analyst consensus suggests a target upside of only +7.4%, which may not justify the risk at current valuation levels [Technical Analysis Data].\"\n    }\n  ],\n  \"data_conflicts\": [\n    \"Valuation vs. Growth Mismatch: The high P/E of 34.73 implies aggressive growth expectations, yet revenue growth is a moderate 15.7%, suggesting the stock is priced for perfection.\",\n    \"Sentiment vs. Yields: Institutional accumulation (Soros buying) contradicts the theoretical headwind of a 4.02% 10Y Yield, indicating investors are prioritizing quality/safety over valuation sensitivity.\"\n  ],\n  \"key_metrics\": {\n    \"pe\": 34.73,\n    \"growth\": 15.7,\n    \"rsi\": 57.2,\n    \"inst_pct\": 65.2\n  },\n  \"recommendation\": \"BUY\",\n  \"confidence\": 70\n}\n```",
+    "summary": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
+    "summary_ko": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
+    "summary_en": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
     "sources": [
       {
-        "title": "George Soros Is Doubling Down on Apple Stock. Should You Also Load Up on AAPL in 2026? - Barchart.com",
-        "url": "https://news.google.com/rss/articles/CBMixgFBVV95cUxPVDVpSGRsRzI0dE04dVVJTXJSMDZlSEllZ0JaU3ZZVkhGZEs4WDkxdEZnV0c2ek15WVZxamxLV081engtX2tPdnlYSGNSUmY3RlROSkN2YWZvMVRLRENKZDJ1SWlBYXNhbE1pVllUNjdCZGRQTVRCZUV0VXNTazdrZjNmZVhxSzc1bWJvdXBTaHFIRzR6OWZmNVlJYWkwVTJraUJvaFZDUm9QMHo2STFBRHByTExHREhIclJ5YU5Qa0l4ejlwYXc?oc=5",
-        "date": "2026-02-26",
-        "source": "Barchart.com"
+        "title": "What's Going On With Apple Stock Wednesday? - Apple (NASDAQ:AAPL), Fidelity Blue Chip Growth ETF (BATS:FB - Benzinga",
+        "url": "https://news.google.com/rss/articles/CBMitwFBVV95cUxQSzFBSHFBSDRoSlJmeUh3YkJ2UDl4Ui1lTFAybUJNU0xhc25tcTF4dGFUQzZUTUhpMVJRZEsydG02UGV6TGZsMGloUlo4OTJxX2lkNHpaZF95aGdCSTlacmhOUWUwU1J0Q0NqNVRJSUhFd2hYSm9iWlFHTUdGcW4zWG1HQzlFdTAyeWJDNmZFeTNzSkN6QnhrSmRRSzYzLTk3WVBweFJUbTB3dDJmNHFFWnNRNnNBNDg?oc=5",
+        "date": "2026-04-01",
+        "source": "Benzinga"
       },
       {
-        "title": "AAPL Stock Quote Price and Forecast - CNN",
-        "url": "https://news.google.com/rss/articles/CBMiUEFVX3lxTE00U3JoRzhkckt5aVFxb1NVNnBndWhrcDM5N0NqUzZGUk8xQk04OF9jVWRULXh2RmlJaGpTS1FJWEREaUlNUnhfSHk2cm53NllX?oc=5",
-        "date": "2026-02-24",
-        "source": "CNN"
+        "title": "Apple Inc. $AAPL Stock Holdings Raised by Professional Advisory Services Inc. - MarketBeat",
+        "url": "https://news.google.com/rss/articles/CBMi0AFBVV95cUxNNzg1ZThGX3NOVVV1OGZrcVV6Q3NtR0l5NllVVXBiZ0FuUWJaWVkzYnVud01laTJ3MlJJTC03Vi1CeHU3bXREY0lqMHdfbDFWQk9ZdW8wUk5Xc0tvVFI3TDMxb3dUekRHd09hTHhKUHE1a1duV2tyTFhqVkd3WmNBa2JlS0FibUZlYWFtcGpYelEwQ3lVNzllb2tFYTdnVmlMdzRjMm8wWE1VS3NXSF9zcHZpTXdtT0dabFNmMTR2NXZhNUlfTTA0YzZaZ0ZmZVJl?oc=5",
+        "date": "2026-04-01",
+        "source": "MarketBeat"
       },
       {
-        "title": "Apple: The 2.5 Billion Device Machine - Seeking Alpha",
-        "url": "https://news.google.com/rss/articles/CBMigwFBVV95cUxQcXB0LWxMUlA4MnFkNFlzTXBjRnJNUU9TajNpYlZpWmhtUS1WZVRqN1dwTXVzV2MxUHYzb2dNZmY1YXFWdUxXVEVqVmxjaTdVY1JXN3p0ME1ua2xCVVNkQmhkaFNjM3ZHNHhpZ1g4UFd1OURCdzdSNVI3UUlFcUJXa2V5Zw?oc=5",
-        "date": "2026-02-23",
-        "source": "Seeking Alpha"
+        "title": "Prediction: Apple Will Be the Worst \"Magnificent Seven\" Stock to Own Between Now and 2030 - Yahoo Finance",
+        "url": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxOWHpZODM0V2RCd1hyMm1BSDZuaGZwcU9jdVdZam5RdnRXNWl1dXB2V0huel83eDJIMlBkbGRzcjItYW5EMVViMWo5MndLN3ZkeGdMMEE3blZVcXZUNmQwUENudzdVZ0JrUkN5RWgtMGhqNkVvTFpNVzc0MlJHWE1RdTN4dnhNM0M0QlpuSG5TMm5ZMDQwTHNoUERNSWlKVHhpMi1UZEtoNk4?oc=5",
+        "date": "2026-03-30",
+        "source": "Yahoo Finance"
       },
       {
         "title": "",
@@ -318,7 +318,7 @@
       }
     ],
     "news_count": 4,
-    "updated": "2026-02-27T10:19:16.512868"
+    "updated": "2026-04-02T14:33:41.154469"
   },
   "SOLV": {
     "summary": "```json\n{\n  \"thesis\": \"Solventum은 9.53배의 매력적인 P/E 밸류에이션과 85점의 강력한 수급 점수를 바탕으로 기관들의 집중적인 매집이 이루어지고 있으며, 최근 Acera Surgical 인수 등을 통한 구조적 개선 노력이 시장 기대보다 빠르게 진행되고 있어 추가 상승 여력이 충분합니다.\",\n  \"catalysts\": [\n    {\n      \"point\": \"강력한 기관 수급 및 기술적 매수 신호\",\n      \"evidence\": \"수급 점수 85점(Strong Accumulation)과 기관 보유율 72.4%는 스마트 머니의 유입을 시사하며, 이동평균선(MA Signal)이 Bullish 상태를 유지하고 있음\",\n      \"source\": \"수치 분석 데이터\"\n    },\n    {\n      \"point\": \"자체 구조 개선(Self-Help) 가속화 및 M&A 모멘텀\",\n      \"evidence\": \"Acera Surgical 인수 발표(11월 20일)와 더불어 'Self-Help' 전략이 예정보다 빠르게 진행되고 있다는 평가가 존재함\",\n      \"source\": \"PR Newswire / 뉴스 2번, 5번 항목\"\n    },\n    {\n      \"point\": \"저평가 매력 및 S&P 500 대비 초과 수익\",\n      \"evidence\": \"현재 P/E는 9.53배로 업계 평균 대비 낮으며, S&P 500 대비 +8.9%의 상대 수익률을 기록하며 시장 수익률을 상회하는 퍼포먼스를 보임\",\n      \"source\": \"수치 분석 데이터 / 뉴스 4번 항목\"\n    }\n  ],\n  \"risks\": [\n    {\n      \"point\": \"제한적인 매출 성장세\",\n      \"evidence\": \"매출 성장률이 0.7%에 불과하여, 비용 절감이나 M&A 외의 유기적 성장(Organic Growth) 동력에 대한 시장의 의구심이 남을 수 있음\",\n      \"source\": \"수치 분석 데이터\"\n    },\n    {\n      \"point\": \"목표가와의 괴리율 축소\",\n      \"evidence\": \"현재 주가($82.98)가 목표가 대비 상승 여력이 +1.7%에 불과하여, 단기적으로 밸류에이션 리레이팅 없이는 상승폭이 제한될 수 있음\",\n      \"source\": \"수치 분석 데이터 / 뉴스 4번 항목\"\n    },\n    {\n      \"point\": \"시장 센티먼트와 펀더멘털의 괴리\",\n      \"evidence\": \"구조 개선 노력은 앞서가고 있으나 시장의 심리(Sentiment)는 이를 아직 완전히 반영하지 못하고 있다는 분석이 존재함\",\n      \"source\": \"뉴스 2번 항목\"\n    }\n  ],\n  \"data_conflicts\": [\n    \"기관 수급 점수는 85점으로 매우 강력한 매수세를 보이나, 목표가 대비 상승 여력은 +1.7%로 매우 제한적으로 나타나 밸류에이션 재평가가 시급함\",\n    \"RSI는 50.3으로 중립적이나 MA Signal은 Bullish로 기술적 지표 간의 강도 차이가 존재함\"\n  ],\n  \"key_metrics\": {\n    \"pe\": 9.53,\n    \"growth\": 0.7,\n    \"rsi\": 50.3,\n    \"inst_pct\": 72.4\n  },\n  \"recommendation\": \"BUY\",\n  \"confidence\": 85\n}\n```",
@@ -2352,21 +2352,21 @@
     "updated": "2025-12-22T10:31:57.034070"
   },
   "APP": {
-    "summary": "```json\n{\n  \"thesis\": \"AppLovin(APP)은 65.9%의 압도적인 매출 성장률과 높은 기관 보유율(81.1%)을 자랑하지만, VIX 30 이상의 극단적 공포 장세와 4.34%의 높은 국채 금리 환경에서 기술적 하락 추세(MA Bearish)가 겹쳐 단기적인 관망(HOLD)이 필요합니다.\",\n  \"catalysts\": [\n    {\n      \"point\": \"강력한 탑라인 성장 및 기관 투자자들의 높은 신뢰도\",\n      \"evidence\": \"매출 성장률 65.9% 및 기관 보유율 81.1% 기록 [수치 분석 데이터]\"\n    },\n    {\n      \"point\": \"애널리스트들의 긍정적 전망 및 목표가 대비 높은 상승 여력\",\n      \"evidence\": \"목표가 대비 +74.3%의 괴리율 [수치 분석 데이터] 및 애널리스트들의 지속적인 관심 [Yahoo Finance, 2026-03-28]\"\n    }\n  ],\n  \"bear_cases\": [\n    {\n      \"point\": \"거시경제 불안정성 및 투자 심리 위축\",\n      \"evidence\": \"VIX 30.61(공포 단계) 및 10년물 국채 금리 4.34%로 인해 성장주에 대한 전반적인 투자 심리 악화 [Macro Context]\"\n    },\n    {\n      \"point\": \"기술적 지표의 뚜렷한 하락세 및 시장 대비 언더퍼폼\",\n      \"evidence\": \"이동평균선(MA) 시그널 Bearish 및 S&P 500 대비 -6.4% 수익률 하회 [수치 분석 데이터]\"\n    },\n    {\n      \"point\": \"고금리 환경에서의 밸류에이션 부담\",\n      \"evidence\": \"P/E 37.1배로, 4.34%의 높은 무위험 수익률(국채 금리) 환경에서는 멀티플 축소(Derating) 리스크 존재 [수치 분석 및 Macro Context]\"\n    }\n  ],\n  \"data_conflicts\": [\n    \"펀더멘털(매출 성장률 65.9%)과 기관 수급(81.1%)은 매우 긍정적이나, 기술적 지표(MA Bearish, 시장 대비 -6.4% 언더퍼폼) 및 거시경제(VIX 30.61)는 강한 매도 우위를 시사하여 펀더멘털과 센티먼트 간의 극심한 충돌이 발생하고 있음. RSI(33.9)는 과매도 구간에 근접해 기술적 반등 가능성과 추세 하락 지속의 기로에 있음.\"\n  ],\n  \"key_metrics\": {\n    \"pe\": 37.1,\n    \"growth\": 65.9,\n    \"rsi\": 33.9,\n    \"inst_pct\": 81.1\n  },\n  \"recommendation\": \"HOLD\",\n  \"confidence\": 60\n}\n```",
-    "summary_ko": "```json\n{\n  \"thesis\": \"AppLovin(APP)은 65.9%의 압도적인 매출 성장률과 높은 기관 보유율(81.1%)을 자랑하지만, VIX 30 이상의 극단적 공포 장세와 4.34%의 높은 국채 금리 환경에서 기술적 하락 추세(MA Bearish)가 겹쳐 단기적인 관망(HOLD)이 필요합니다.\",\n  \"catalysts\": [\n    {\n      \"point\": \"강력한 탑라인 성장 및 기관 투자자들의 높은 신뢰도\",\n      \"evidence\": \"매출 성장률 65.9% 및 기관 보유율 81.1% 기록 [수치 분석 데이터]\"\n    },\n    {\n      \"point\": \"애널리스트들의 긍정적 전망 및 목표가 대비 높은 상승 여력\",\n      \"evidence\": \"목표가 대비 +74.3%의 괴리율 [수치 분석 데이터] 및 애널리스트들의 지속적인 관심 [Yahoo Finance, 2026-03-28]\"\n    }\n  ],\n  \"bear_cases\": [\n    {\n      \"point\": \"거시경제 불안정성 및 투자 심리 위축\",\n      \"evidence\": \"VIX 30.61(공포 단계) 및 10년물 국채 금리 4.34%로 인해 성장주에 대한 전반적인 투자 심리 악화 [Macro Context]\"\n    },\n    {\n      \"point\": \"기술적 지표의 뚜렷한 하락세 및 시장 대비 언더퍼폼\",\n      \"evidence\": \"이동평균선(MA) 시그널 Bearish 및 S&P 500 대비 -6.4% 수익률 하회 [수치 분석 데이터]\"\n    },\n    {\n      \"point\": \"고금리 환경에서의 밸류에이션 부담\",\n      \"evidence\": \"P/E 37.1배로, 4.34%의 높은 무위험 수익률(국채 금리) 환경에서는 멀티플 축소(Derating) 리스크 존재 [수치 분석 및 Macro Context]\"\n    }\n  ],\n  \"data_conflicts\": [\n    \"펀더멘털(매출 성장률 65.9%)과 기관 수급(81.1%)은 매우 긍정적이나, 기술적 지표(MA Bearish, 시장 대비 -6.4% 언더퍼폼) 및 거시경제(VIX 30.61)는 강한 매도 우위를 시사하여 펀더멘털과 센티먼트 간의 극심한 충돌이 발생하고 있음. RSI(33.9)는 과매도 구간에 근접해 기술적 반등 가능성과 추세 하락 지속의 기로에 있음.\"\n  ],\n  \"key_metrics\": {\n    \"pe\": 37.1,\n    \"growth\": 65.9,\n    \"rsi\": 33.9,\n    \"inst_pct\": 81.1\n  },\n  \"recommendation\": \"HOLD\",\n  \"confidence\": 60\n}\n```",
-    "summary_en": "{\n  \"thesis\": \"AppLovin (APP) demonstrates exceptional fundamental growth (65.9% revenue growth) and significant analyst upside (+74.3%), but a bearish technical setup and a fearful macro environment (VIX > 30) justify a neutral 'Hold' stance.\",\n  \"catalysts\": [\n    {\n      \"point\": \"Strong Revenue Expansion and Price Targets\",\n      \"evidence\": \"Revenue growth is at 65.9% with a Target Upside of +74.3% [Technical Analysis Data]\"\n    },\n    {\n      \"point\": \"Active Analyst Coverage and Forecasting\",\n      \"evidence\": \"Analysts are actively updating forecasts and commentary for APP stock [Yahoo Finance / CNN, 2026-03-28]\"\n    }\n  ],\n  \"bear_cases\": [\n    {\n      \"point\": \"Bearish Technical Momentum\",\n      \"evidence\": \"MA Signal is Bearish and the stock is underperforming the S&P 500 by -6.4% [Technical Analysis Data]\"\n    },\n    {\n      \"point\": \"Macro Volatility and Rate Headwinds\",\n      \"evidence\": \"VIX at 30.61 indicates extreme market fear, and a 4.34% 10Y Yield pressures the stock's 37.1 P/E multiple [Macro Context]\"\n    },\n    {\n      \"point\": \"Irrelevant/Noisy Sector News\",\n      \"evidence\": \"Recent positive app-related news is actually driving 'Clear's App' rather than AppLovin directly, showing a lack of idiosyncratic catalysts [Investopedia, 2026-03-30]\"\n    }\n  ],\n  \"data_conflicts\": [\n    \"Fundamental strength (65.9% revenue growth and +74.3% target upside) conflicts sharply with the bearish moving average signal and a low overall quantitative grade (59.6/100).\",\n    \"RSI is approaching oversold levels (33.9), yet institutional ownership remains extremely high at 81.1%, suggesting institutions are holding despite negative price momentum.\"\n  ],\n  \"key_metrics\": {\n    \"pe\": 37.1,\n    \"growth\": 65.9,\n    \"rsi\": 33.9,\n    \"inst_pct\": 81.1\n  },\n  \"recommendation\": \"HOLD\",\n  \"confidence\": 65\n}",
+    "summary": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
+    "summary_ko": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
+    "summary_en": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
     "sources": [
       {
-        "title": "Long Lines at Airports Send Demand for Clear's App—and Stock—Soaring - Investopedia",
-        "url": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxQZnNiV1htcTVDZmdGMlZUeGQ0ODhsRDBBRTlmWVExSTN5TXd2UEVTbEhaSVNsSTdFUERlVXVTTjhRRjI1ekQycTlZdy1OZ0h6MEVtQ0lrdnU0czAxWjA2VUdwYlo2WS1iUWwxNFl0a0pjd09EMDNuU3YzSGo2d0F5UlcweGdiRUc5emZsaUdhbWIydkR1bjJSSFdJdGpyNUJtdTBWOE43VVpMdw?oc=5",
-        "date": "2026-03-30",
-        "source": "Investopedia"
+        "title": "AppLovin investors get Q1 results and management webcast May 6 - Stock Titan",
+        "url": "https://news.google.com/rss/articles/CBMimgFBVV95cUxOOHNPUjFnMFF5M3l2OVc4aU51MC1KLWlwYjFfNUx6Y24zQWpGODM5UmZWRXA4VVpwLWFRWUJWRTA1YUpTRko4cmxFMEQtSU9PT19yRTJ6RDhKTHdqUFZpQ0gyX0Q3ZmNNS3hSbjVxLUcxMGxCSHBHRm81cS1MNTdJcVVRa0hPS1pNeWpLQklTQnhiOFdqZGhpRFVn?oc=5",
+        "date": "2026-04-01",
+        "source": "Stock Titan"
       },
       {
-        "title": "APP Stock Quote Price and Forecast - CNN",
-        "url": "https://news.google.com/rss/articles/CBMiT0FVX3lxTE1iU3VMcG9rX0FDREw3LW9RUG5iU1J4MkZPM1ZaOUFOZGpBUEYyWFFBWTdVTjhZcnB3aWRiRXJ2YnFDZlE1SXdvSXlqX1ZYVTA?oc=5",
-        "date": "2026-03-28",
-        "source": "CNN"
+        "title": "AppLovin Stock's 40% Slide Called 'Out Of Step' With Fundamentals - Investor's Business Daily",
+        "url": "https://news.google.com/rss/articles/CBMif0FVX3lxTE0tV1pjWUxCakoxTThjN3pLSjdwYU1nbTljR1dtMU54d3daaTBJbmxJZHcwVEdWZk44RXdXNG1XWUJ5Zm16cjYyVndWWnFKVjY4X2ptcXlrZllmRmZrVDVwbFk5LXBJSHVBbHZuUTF1dlZBTmUwRzhkalN0dmN4ekk?oc=5",
+        "date": "2026-03-31",
+        "source": "Investor's Business Daily"
       },
       {
         "title": "Here’s What Analysts Are Saying About AppLovin Corporation (APP) Stock - Yahoo Finance",
@@ -2382,7 +2382,7 @@
       }
     ],
     "news_count": 4,
-    "updated": "2026-03-31T08:40:20.845960"
+    "updated": "2026-04-02T14:33:48.437994"
   },
   "APH": {
     "summary": "```json\n{\n  \"thesis\": \"APH는 49.1%의 압도적인 매출 성장률과 98.0%의 높은 기관 보유율을 바탕으로 펀더멘털이 견고하나, 현재 VIX 31.05의 극단적인 시장 공포와 기술적 하락 추세(Bearish MA)를 고려할 때 분할 매수 접근이 필요합니다.\",\n  \"catalysts\": [\n    {\n      \"point\": \"월가의 강력한 매수 추천 및 긍정적 전망\",\n      \"evidence\": \"Evercore가 APH를 매수해야 할 5가지 이유를 제시하며 'Top Pick'으로 유지 [2026-03-27, Seeking Alpha]\"\n    },\n    {\n      \"point\": \"높은 목표가 괴리율을 통한 상승 여력\",\n      \"evidence\": \"현재가 대비 목표가까지 +37.1%의 상승 여력 존재 [수치 분석 데이터]\"\n    }\n  ],\n  \"bear_cases\": [\n    {\n      \"point\": \"높은 밸류에이션 및 매크로 금리 부담\",\n      \"evidence\": \"P/E가 37.01배로 높은 수준이며, 10년물 국채 금리가 4.44%인 고금리 환경에서 밸류에이션 할인 압박이 커질 수 있음 [수치 분석 및 Macro Context]\"\n    },\n    {\n      \"point\": \"일부 기관 투자자의 비중 축소 움직임\",\n      \"evidence\": \"Stonehage Fleming Financial Services Holdings Ltd가 APH 주식 보유량을 축소함 [2026-03-27, MarketBeat]\"\n    },\n    {\n      \"point\": \"극심한 시장 공포에 따른 단기 하방 리스크\",\n      \"evidence\": \"VIX 지수가 31.05로 시장 전체의 공포 심리가 극에 달해 있으며, 이는 개별 종목의 펀더멘털과 무관한 투매를 유발할 수 있음 [Macro Context]\"\n    }\n  ],\n  \"data_conflicts\": [\n    \"펀더멘털과 기술적 지표의 충돌: 매출 성장률은 49.1%로 매우 훌륭하고 목표가 대비 +37.1%의 상승 여력이 있으나, 이동평균선 신호(MA Signal)는 Bearish이며 최근 S&P 500 대비 -8.1% 언더퍼폼 중임 [수치 분석]\",\n    \"기관 투자의견 충돌: Evercore는 'Top Pick'으로 매수를 추천했으나, 같은 날 Stonehage Fleming은 보유 비중을 축소(Trimmed)함 [2026-03-27, Seeking Alpha / MarketBeat]\"\n  ],\n  \"key_metrics\": {\n    \"pe\": 37.01,\n    \"growth\": 49.1,\n    \"rsi\": 38.0,\n    \"inst_pct\": 98.0\n  },\n  \"recommendation\": \"BUY\",\n  \"confidence\": 65\n}\n```",
@@ -3069,21 +3069,21 @@
     "updated": "2026-01-21T13:55:29.710853"
   },
   "AIZ": {
-    "summary": "```json\n{\n  \"thesis\": \"AIZ는 12.59배의 낮은 P/E와 97.8%의 압도적인 기관 보유율을 바탕으로 안정적인 펀더멘털을 보이고 있으며, 목표가 대비 22.5%의 상승 여력을 보유한 저평가 가치주입니다.\",\n  \"catalysts\": [\n    {\n      \"point\": \"섹터 대비 밸류에이션 매력도 및 저평가 상태\",\n      \"evidence\": \"산업 평균 대비 할인된 가격에 거래 중이라는 분석 보도 [Yahoo Finance, 2026-03-09]\"\n    },\n    {\n      \"point\": \"강력한 기관 수급 및 포트폴리오 재편 수혜\",\n      \"evidence\": \"Vanguard 자회사들의 AIZ 비중 보고 및 97.8%에 달하는 높은 기관 보유율 [Stock Titan, 2026-03-26 / 종목 데이터]\"\n    },\n    {\n      \"point\": \"경쟁사 대비 상대적 주가 강세\",\n      \"evidence\": \"강세장에서 경쟁사들을 상회하는 주가 수익률 기록 [MarketWatch, 2026-03-23]\"\n    }\n  ],\n  \"bear_cases\": [\n    {\n      \"point\": \"거시경제 극단적 공포 심리\",\n      \"evidence\": \"VIX 지수가 31.05로 20을 크게 상회하여 시장 전체의 투매 리스크 존재 [Macro Context]\"\n    },\n    {\n      \"point\": \"단기 기술적 지표 악화\",\n      \"evidence\": \"이동평균선(MA) 시그널이 Bearish이며, RSI가 39.3으로 하락 모멘텀 지속 중 [수치 분석]\"\n    },\n    {\n      \"point\": \"고금리 장기화 우려\",\n      \"evidence\": \"10년물 국채 금리가 4.44%로 높은 수준을 유지하여, 금융/보험업 특성상 보유 자산 가치 변동성 및 자본 비용 증가 리스크 [Macro Context]\"\n    }\n  ],\n  \"data_conflicts\": [\n    \"펀더멘털(P/E 12.59, 목표가 대비 +22.5%)과 기관 수급(97.8%)은 매우 긍정적이나, 기술적 지표(MA Bearish, RSI 39.3)는 하락 추세를 가리키며 엇갈리고 있음.\"\n  ],\n  \"key_metrics\": {\n    \"pe\": 12.59,\n    \"growth\": 7.9,\n    \"rsi\": 39.3,\n    \"inst_pct\": 97.8\n  },\n  \"recommendation\": \"BUY\",\n  \"confidence\": 70\n}\n```",
-    "summary_ko": "```json\n{\n  \"thesis\": \"AIZ는 12.59배의 낮은 P/E와 97.8%의 압도적인 기관 보유율을 바탕으로 안정적인 펀더멘털을 보이고 있으며, 목표가 대비 22.5%의 상승 여력을 보유한 저평가 가치주입니다.\",\n  \"catalysts\": [\n    {\n      \"point\": \"섹터 대비 밸류에이션 매력도 및 저평가 상태\",\n      \"evidence\": \"산업 평균 대비 할인된 가격에 거래 중이라는 분석 보도 [Yahoo Finance, 2026-03-09]\"\n    },\n    {\n      \"point\": \"강력한 기관 수급 및 포트폴리오 재편 수혜\",\n      \"evidence\": \"Vanguard 자회사들의 AIZ 비중 보고 및 97.8%에 달하는 높은 기관 보유율 [Stock Titan, 2026-03-26 / 종목 데이터]\"\n    },\n    {\n      \"point\": \"경쟁사 대비 상대적 주가 강세\",\n      \"evidence\": \"강세장에서 경쟁사들을 상회하는 주가 수익률 기록 [MarketWatch, 2026-03-23]\"\n    }\n  ],\n  \"bear_cases\": [\n    {\n      \"point\": \"거시경제 극단적 공포 심리\",\n      \"evidence\": \"VIX 지수가 31.05로 20을 크게 상회하여 시장 전체의 투매 리스크 존재 [Macro Context]\"\n    },\n    {\n      \"point\": \"단기 기술적 지표 악화\",\n      \"evidence\": \"이동평균선(MA) 시그널이 Bearish이며, RSI가 39.3으로 하락 모멘텀 지속 중 [수치 분석]\"\n    },\n    {\n      \"point\": \"고금리 장기화 우려\",\n      \"evidence\": \"10년물 국채 금리가 4.44%로 높은 수준을 유지하여, 금융/보험업 특성상 보유 자산 가치 변동성 및 자본 비용 증가 리스크 [Macro Context]\"\n    }\n  ],\n  \"data_conflicts\": [\n    \"펀더멘털(P/E 12.59, 목표가 대비 +22.5%)과 기관 수급(97.8%)은 매우 긍정적이나, 기술적 지표(MA Bearish, RSI 39.3)는 하락 추세를 가리키며 엇갈리고 있음.\"\n  ],\n  \"key_metrics\": {\n    \"pe\": 12.59,\n    \"growth\": 7.9,\n    \"rsi\": 39.3,\n    \"inst_pct\": 97.8\n  },\n  \"recommendation\": \"BUY\",\n  \"confidence\": 70\n}\n```",
-    "summary_en": "{\n  \"thesis\": \"Assurant (AIZ) presents a compelling value-oriented buy opportunity, trading at an attractive 12.59 P/E with a 22.5% target upside and massive institutional backing, which provides a defensive anchor in a highly volatile macro environment.\",\n  \"catalysts\": [\n    {\n      \"point\": \"Discounted Valuation\",\n      \"evidence\": \"AIZ Stock Trading at a Discount to Industry at 1.9X [Yahoo Finance, 2026-03-09]\"\n    },\n    {\n      \"point\": \"Relative Strength vs Peers\",\n      \"evidence\": \"Assurant Inc. stock outperforms competitors on strong trading day [MarketWatch, 2026-03-23]\"\n    },\n    {\n      \"point\": \"Strong Institutional Backing\",\n      \"evidence\": \"Vanguard realignment: subsidiaries report Assurant holdings, aligning with the massive 97.8% institutional ownership [Stock Titan, 2026-03-26]\"\n    }\n  ],\n  \"bear_cases\": [\n    {\n      \"point\": \"Severe Macro Volatility\",\n      \"evidence\": \"VIX is elevated at 31.05, indicating extreme market fear that could trigger broad equity selloffs regardless of AIZ's fundamentals [Macro Context]\"\n    },\n    {\n      \"point\": \"Negative Technical Trend\",\n      \"evidence\": \"Moving Average (MA) Signal is currently Bearish, suggesting near-term downward momentum [Technical Analysis]\"\n    },\n    {\n      \"point\": \"Yield Pressure on Equities\",\n      \"evidence\": \"10Y Treasury Yield is high at 4.44%, which can compress equity multiples and increase cost of capital [Macro Context]\"\n    }\n  ],\n  \"data_conflicts\": [\n    \"The MA Signal is Bearish, yet recent news highlights the stock outperforming competitors and analysts project a +22.5% upside.\",\n    \"RSI is weak/approaching oversold (39.3) despite overwhelming institutional ownership (97.8%) and positive recent accumulation news from Vanguard.\"\n  ],\n  \"key_metrics\": {\n    \"pe\": 12.59,\n    \"growth\": 7.9,\n    \"rsi\": 39.3,\n    \"inst_pct\": 97.8\n  },\n  \"recommendation\": \"BUY\",\n  \"confidence\": 75\n}",
+    "summary": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
+    "summary_ko": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
+    "summary_en": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
     "sources": [
       {
-        "title": "Vanguard realignment: subsidiaries report Assurant holdings (AIZ) - Stock Titan",
-        "url": "https://news.google.com/rss/articles/CBMixAFBVV95cUxNUTRNdmY2RjFFdzZWTi02dGdfRVc2X01Hb1dZalkwd0p2dUFhX0o3c0hFX2hUT2VFRUxEUUxnbHdabXI5VzBrUGhFN0xDV3RhV2pJYm1ybzNQQkowTjhvTjVraGo5QUNiSjdSMHZ6NXZRLVlZbngzTWx6eXB4ZVQyTW9OUE1BcVlFbXFOcE1BbloyQnllVUgweFljcjFZOWpvS2kzU29fVVNsTEx4ZzhVZ2l1cFZmUm1fd3JyVjdwTGhtU3A1?oc=5",
-        "date": "2026-03-26",
-        "source": "Stock Titan"
+        "title": "Assurant Inc. stock outperforms competitors on strong trading day - MarketWatch",
+        "url": "https://news.google.com/rss/articles/CBMixwNBVV95cUxOQV9ycXlNT3RObERQWm1yZjcxMW1SX3dMeDAxUldPdF9XcGpNbHZTbU5hdmpnWDhLblVtQzJna29OOGlOc1VhbXNnMG5BVi1UZXh1dnlTOUZpOW1HSlBvQ29vTVVfVHk4MVFnSjVOLW5HT2ZEblZYUjVreFdhenFrRm1GcFNLSVBFaDRmZ2J0TzltckZaUEpFX1pNQXNyN29uZ1RXWXpkVjVtSFFBM3ZmUXBGTGtyUnVEQlZVMlNaamt2UUc5OFl1VUxDU2ZydzljalJ5bzVZSjNKRVh5dEpSX0Q4aDZoV1I5VXp0MERBM3h6azl4bUNScTV5ZFB3T2dBbmVNcGR6TlhFWVdqVFBvVEk1SHhwWDhRRS1PYUpWWTJndTR6UjRybG5RM2NPNFp3OElBM2lPcUF2c20yMlR5M0lqbmJENkxLX2dodVhVUkZsVmEwbklBT3UxSXFIVDNmYktfaDJpQkVRSzBsN1V2LWE2TmxMNEtkYlFkRmtyWW5BelBTWUxLRWZNUl8tcmwyUUt1Unp0ZXBFeXNhYkUydDlERHVmdGVfeEFhX1RpMTlES3I1eElmdWtULVFnZ241UW00NjVTOA?oc=5",
+        "date": "2026-03-30",
+        "source": "MarketWatch"
       },
       {
-        "title": "Assurant Inc. stock outperforms competitors on strong trading day - MarketWatch",
-        "url": "https://news.google.com/rss/articles/CBMixwNBVV95cUxNMzhlSWw5UzNIdXhoMjk3d2RZUk9OS1BVaHdpNHlHUGNLbkMxWGxQaldYUWROVU9FdjMxZEFkWmprM3VfUVhLd2R5MXpFMzd4YWNQTHQ0YWE5WHM3MGpNX2ozZjNFLU1xMEg4NVZyY29Ya1dORmx0M19CZEo1eGtmNVNQU1E0T0pPclFMd1RIN2ZCWTNvU0dhWFV3Y3JpeTVmUU8tZE1EWmdiLUtsaXNKc1hvdWRzVWV6b25LanhwN0YwUUxlc2hqWC14emVUb0o2Q3QxTEV5d3oxOXA3V2lDRzZKQzhmRXdSQmE3QnExbmQyellDcjR2Tl9NMWJCaTBsZkY4V1h0TWtlZ2Z4aUM5YU9nZ2xaYjZjejdNTWpqSzg0LTlwYkZRaHVvaXB5SXJuU283UHJVc0hxVHFNdncwSEdaX2p6TzdGazIwNHJUbDI5T1RfRHRSaFhYejI0UGJENUl4UUdhMTVSM1NnNnFSUGhpbm5qZWRyOE1yUzE3SzVBR3BUMWgtNk9VM0kxZXE1ZVJrWHNwaDdLejhHWkJIRWltTU9rVzhOZ0RyTXFfRFZ4SWlzNUxnYnprSmVuYW5TV2ZTWG8xRQ?oc=5",
-        "date": "2026-03-23",
-        "source": "MarketWatch"
+        "title": "Responsive Playbooks and the AIZ Inflection - Stock Traders Daily",
+        "url": "https://news.google.com/rss/articles/CBMiwgFBVV95cUxQVDdJa0F1NFVtMjNnNXplaFVtU29nYU1qRzExeXUxaFJqMzVpTWlGY0dPOUU5eERKMFJaYXhlZXgtRVZpNlRJbFVGaXlfbGEyd1JRRWE3djdlVHkwWmFmX29OTFRxb2pqYmpaTzdQSko4bXptdTlRcnN0dUxodXZfZDQ1SkhQWDlpamUwN2pxYWxaM0Yyc09FbWVZZFZHaEhCa0c0cFJZQUNKbUhTbnJ6V3htWUxxZ2xET19OX0Vja3gtZw?oc=5",
+        "date": "2026-03-28",
+        "source": "Stock Traders Daily"
       },
       {
         "title": "AIZ Stock Trading at a Discount to Industry at 1.9X: Time to Hold? - Yahoo Finance",
@@ -3099,7 +3099,7 @@
       }
     ],
     "news_count": 4,
-    "updated": "2026-03-28T09:18:05.833523"
+    "updated": "2026-04-02T14:33:32.776770"
   },
   "AMCR": {
     "summary": "```json\n{\n  \"thesis\": \"Amcor(AMCR)는 68.1%의 강력한 매출 성장률과 지속 가능한 포장재 수요 증가라는 구조적 순풍에 힘입어 펀더멘털 개선세가 뚜렷하며, 기술적으로도 강한 매집세(수급점수 75점)와 Bullish MA 신호가 동반된 상승 모멘텀을 보유하고 있습니다.\",\n  \"catalysts\": [\n    {\n      \"point\": \"지속 가능한 포장재 및 건강기능식품(Nutraceutical) 수요 급증에 따른 구조적 성장\",\n      \"evidence\": \"지속 가능한 연포장(flexibles) 및 건강기능식품 수요가 투자 내러티브를 변화시키고 있음 [Simplywall.st, 2026-02-25]\"\n    },\n    {\n      \"point\": \"기술적 브레이크아웃 및 고성장 모멘텀 확인\",\n      \"evidence\": \"고성장 모멘텀과 기술적 브레이크아웃 셋업이 관찰됨 [ChartMill, 2026-02-24]\"\n    },\n    {\n      \"point\": \"강력한 기관 수급 및 시장 대비 초과 수익률\",\n      \"evidence\": \"수급 점수 75점(Strong Accumulation) 및 S&P 500 대비 +11.5% 아웃퍼폼 [수치 분석 데이터]\"\n    }\n  ],\n  \"bear_cases\": [\n    {\n      \"point\": \"높은 밸류에이션 부담 (섹터 대비 고평가 가능성)\",\n      \"evidence\": \"현재 P/E는 36.27배로, 통상적인 포장재 산업 평균 대비 높은 프리미엄이 형성되어 있어 이익 성장 둔화 시 주가 조정 가능성 상존 [수치 분석 데이터]\"\n    },\n    {\n      \"point\": \"단기 주가 급등에 따른 차익 실현 매물 출회 가능성\",\n      \"evidence\": \"최근 주가 강세(Recent Share Price Strength) 이후 재평가 필요성이 제기됨 [Yahoo Finance, 2026-02-24]\"\n    },\n    {\n      \"point\": \"고금리 환경 지속에 따른 자본 비용 부담\",\n      \"evidence\": \"10년물 국채 금리가 4.02% 수준으로 유지되고 있어, 자본 집약적인 제조업 특성상 부채 비용 증가가 순이익률을 압박할 수 있음 [Macro Context]\"\n    }\n  ],\n  \"data_conflicts\": [\n    \"매출 성장률(68.1%)과 수급 점수(75점)는 매우 강력한 매수 신호를 보내지만, P/E(36.27)는 전통적인 가치 투자 관점에서는 다소 비싼 수준으로 펀더멘털과 밸류에이션 지표 간의 괴리가 존재함\"\n  ],\n  \"key_metrics\": {\n    \"pe\": 36.27,\n    \"growth\": 68.1,\n    \"rsi\": 57.9,\n    \"inst_pct\": 70.0\n  },\n  \"recommendation\": \"BUY\",\n  \"confidence\": 80\n}\n```",
@@ -3135,27 +3135,27 @@
     "updated": "2026-02-27T10:20:36.803169"
   },
   "APA": {
-    "summary": "```json\n{\n  \"thesis\": \"APA는 99.3%의 압도적인 기관 보유율과 강력한 수급(85/100)을 바탕으로 단기적 강세를 보이고 있으나, -28.0%의 역성장과 84.7에 달하는 RSI(과매수)를 고려할 때 신규 진입보다는 관망이 적절합니다.\",\n  \"catalysts\": [\n    {\n      \"point\": \"월가의 목표가 상향 조정\",\n      \"evidence\": \"Citigroup 애널리스트가 목표가를 상향 조정함 [GuruFocus, 2026-03-30]\"\n    },\n    {\n      \"point\": \"압도적인 기관 수급 및 기술적 강세\",\n      \"evidence\": \"기관 보유율 99.3% 및 수급 점수 85/100 (Strong Accumulation) [수치 분석 데이터]\"\n    }\n  ],\n  \"bear_cases\": [\n    {\n      \"point\": \"심각한 펀더멘털 악화 (매출 역성장)\",\n      \"evidence\": \"매출 성장률이 -28.0%로 심각한 역성장을 기록 중임 [수치 분석 데이터]\"\n    },\n    {\n      \"point\": \"단기 과열로 인한 기술적 조정 리스크\",\n      \"evidence\": \"RSI가 84.7로 극심한 과매수 구간에 진입해 있음 [수치 분석 데이터]\"\n    },\n    {\n      \"point\": \"거시경제 불안정성 및 공포 심리 확산\",\n      \"evidence\": \"VIX 지수가 30.61로 시장 전체의 극단적 공포 및 변동성 장세를 시사함 [Macro Context]\"\n    }\n  ],\n  \"data_conflicts\": [\n    \"수급 점수(85/100)와 MA Signal은 강세(Bullish)를 가리키나, RSI(84.7)는 극단적 과매수를 지시하여 단기 조정 가능성과 충돌함\",\n    \"P/E는 10.96으로 가치주 매력이 있으나, 매출 성장률이 -28.0%로 펀더멘털 훼손(Value Trap 가능성)과 충돌함\",\n    \"Citigroup은 목표가를 상향했으나 투자의견은 여전히 'Neutral(중립)'을 유지함 [GuruFocus, 2026-03-30]\"\n  ],\n  \"key_metrics\": {\n    \"pe\": 10.96,\n    \"growth\": -28.0,\n    \"rsi\": 84.7,\n    \"inst_pct\": 99.3\n  },\n  \"recommendation\": \"HOLD\",\n  \"confidence\": 65\n}\n```",
-    "summary_ko": "```json\n{\n  \"thesis\": \"APA는 99.3%의 압도적인 기관 보유율과 강력한 수급(85/100)을 바탕으로 단기적 강세를 보이고 있으나, -28.0%의 역성장과 84.7에 달하는 RSI(과매수)를 고려할 때 신규 진입보다는 관망이 적절합니다.\",\n  \"catalysts\": [\n    {\n      \"point\": \"월가의 목표가 상향 조정\",\n      \"evidence\": \"Citigroup 애널리스트가 목표가를 상향 조정함 [GuruFocus, 2026-03-30]\"\n    },\n    {\n      \"point\": \"압도적인 기관 수급 및 기술적 강세\",\n      \"evidence\": \"기관 보유율 99.3% 및 수급 점수 85/100 (Strong Accumulation) [수치 분석 데이터]\"\n    }\n  ],\n  \"bear_cases\": [\n    {\n      \"point\": \"심각한 펀더멘털 악화 (매출 역성장)\",\n      \"evidence\": \"매출 성장률이 -28.0%로 심각한 역성장을 기록 중임 [수치 분석 데이터]\"\n    },\n    {\n      \"point\": \"단기 과열로 인한 기술적 조정 리스크\",\n      \"evidence\": \"RSI가 84.7로 극심한 과매수 구간에 진입해 있음 [수치 분석 데이터]\"\n    },\n    {\n      \"point\": \"거시경제 불안정성 및 공포 심리 확산\",\n      \"evidence\": \"VIX 지수가 30.61로 시장 전체의 극단적 공포 및 변동성 장세를 시사함 [Macro Context]\"\n    }\n  ],\n  \"data_conflicts\": [\n    \"수급 점수(85/100)와 MA Signal은 강세(Bullish)를 가리키나, RSI(84.7)는 극단적 과매수를 지시하여 단기 조정 가능성과 충돌함\",\n    \"P/E는 10.96으로 가치주 매력이 있으나, 매출 성장률이 -28.0%로 펀더멘털 훼손(Value Trap 가능성)과 충돌함\",\n    \"Citigroup은 목표가를 상향했으나 투자의견은 여전히 'Neutral(중립)'을 유지함 [GuruFocus, 2026-03-30]\"\n  ],\n  \"key_metrics\": {\n    \"pe\": 10.96,\n    \"growth\": -28.0,\n    \"rsi\": 84.7,\n    \"inst_pct\": 99.3\n  },\n  \"recommendation\": \"HOLD\",\n  \"confidence\": 65\n}\n```",
-    "summary_en": "{\n  \"thesis\": \"APA Corporation exhibits strong technical momentum and massive institutional backing, but extremely overbought conditions, severe revenue contraction, and a high-fear macro environment suggest limited near-term upside.\",\n  \"catalysts\": [\n    {\n      \"point\": \"Analyst Price Target Upgrades\",\n      \"evidence\": \"Citigroup raised its price target, expecting the stock price to rise [MarketBeat/GuruFocus, 2026-03-30]\"\n    },\n    {\n      \"point\": \"Strong Institutional Accumulation\",\n      \"evidence\": \"Institutional Ownership sits at a massive 99.3% alongside a Supply/Demand Score of 85/100 indicating strong accumulation [Technical Analysis]\"\n    }\n  ],\n  \"bear_cases\": [\n    {\n      \"point\": \"Severe Revenue Contraction\",\n      \"evidence\": \"Revenue Growth is currently at -28.0% [Technical Analysis]\"\n    },\n    {\n      \"point\": \"Overextended Technicals\",\n      \"evidence\": \"RSI is 84.7, indicating the stock is heavily overbought and susceptible to a pullback [Technical Analysis]\"\n    },\n    {\n      \"point\": \"Negative Implied Upside & Macro Fear\",\n      \"evidence\": \"Target Upside is deeply negative at -19.1%, coupled with a high VIX of 30.61 indicating broader market fear [Technical Analysis / Macro Context]\"\n    }\n  ],\n  \"data_conflicts\": [\n    \"Technical indicators are highly bullish (MA Signal: Bullish, Supply/Demand: 85) despite deeply negative fundamental revenue growth (-28.0%) and a negative target upside (-19.1%).\",\n    \"Citigroup raised the price target and expects the price to rise, yet explicitly maintains a 'Neutral' rating [GuruFocus, 2026-03-30].\"\n  ],\n  \"key_metrics\": {\n    \"pe\": 10.96,\n    \"growth\": -28.0,\n    \"rsi\": 84.7,\n    \"inst_pct\": 99.3\n  },\n  \"recommendation\": \"HOLD\",\n  \"confidence\": 65\n}",
+    "summary": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
+    "summary_ko": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
+    "summary_en": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
     "sources": [
       {
-        "title": "APA (NASDAQ:APA) Stock Price Expected to Rise, Citigroup Analyst Says - MarketBeat",
-        "url": "https://news.google.com/rss/articles/CBMiuwFBVV95cUxQdUx3anNuYnI0V19xX2RVTThyUFVRLWhSR09CcmNCZVJmdTN3QUFoTV9sa3RkMGEwenFLbk1nTmR5SFdSOUxKWGFVWHpqNlE0V01pX05vdWhYS1R3V3JiWExsZjNhRDVlNXpEUDRTUTE5bVlnam5PcThONFM3LTlDcWhYcVdMdXR1TmRZTjRiaGMwSkRsZkE3RFZMekVMS25ZUExWcHN3Nm9GV0dnVW1uZmkyTlBBSHREUHVJ?oc=5",
-        "date": "2026-03-30",
-        "source": "MarketBeat"
+        "title": "APA slides as crude oil pulls back on hopes the Iran war may wind down - Quiver Quantitative",
+        "url": "https://news.google.com/rss/articles/CBMipgFBVV95cUxQa3NuNm0wcURLMDhKSEVnZkhOOF9ITGZKOGV2dDFJenVOOVpuQy1PQzlzRE1Kb3QtRF8zXzFraWcyR01SQTFlMkFGOGVQSi1nLW1TQ3ZrcUh4N3gwb0psZ0p6WDhwbEdYMjBRdFFKUGlLN1hWdDY1a3k5TDN0ZEYtdVJqSW16UDdXS0o4QUM2WFVERWhJd19HVzlhUGIzb1lidklaeXJR?oc=5",
+        "date": "2026-04-01",
+        "source": "Quiver Quantitative"
       },
       {
-        "title": "Is APA Corporation (APA) A Good Stock To Buy Now? - Yahoo Finance",
-        "url": "https://news.google.com/rss/articles/CBMimwFBVV95cUxPRjZjQWRXZHZqbGYtSkJjT2swN0tCbTkxczBuUWN5R0hsZUFtYzRmUGtKNWdTcmxBNUpKZGFZVDl1cVZhWXJzaDFCU1hyZ1dpS1NVcmJLRnRDcHhHX2VvdVZjdENzeDQwUjE3UFphRXFuUTV0YWdJNndCTUtlbzlHUm1hRFp2dzJFRjJRbjh2Z1JnRGFDa1JtLVZYSQ?oc=5",
-        "date": "2026-03-30",
-        "source": "Yahoo Finance"
+        "title": "BKV, Permian Resources, Range Resources, APA Corporation, and Viper Energy Shares Plummet, What You Need To Know - TradingView",
+        "url": "https://news.google.com/rss/articles/CBMi_AFBVV95cUxQZ04zV1dmNFlfNkpPbmM0RWVkTDlmRzg4YzlBSDljck1EWDN4TE5TMGhoV3hoNURtUC16R25SNnNEUU1mTnhJeFRaS1lqWlNGczFQMS1vbkhmTWVCcDVhU3F3RWtuUnJYbHhrZEJzQmZkSWJnTjRrVjlRelBISzc0RDZiczhiYzF1Um1zdnJUMllyZVY4S3ZZRVlxR3R4c1ltUzJmWUpnVkdSVnZ5UnRGZWpOWUtackFlRGhYaUl6aWVpV09paXo4cUdYMHhQdFpnTGFPaUZLZDc1WFd5OWVGZXc5a3NsVEs5ODVWRFluczdGakxVM3NHY3dMalI?oc=5",
+        "date": "2026-04-01",
+        "source": "TradingView"
       },
       {
-        "title": "APA Sees Price Target Raised by Citigroup, Maintains Neutral Rat - GuruFocus",
-        "url": "https://news.google.com/rss/articles/CBMivAFBVV95cUxNSjhDb1NhTG5fVzRoakRWcU1BR1NPNG1zbzNYVEtHV3VEXzh4dURuWTlvQ0pKU2tsUDVKRFFFZ0htcEtJODZxMHhmQlU0YVIzeFV0MEtHdllJRnR6TkJoeW5BU2NESnFkdWRpVUQxSWNaNHhLc1pPQ3dBRGJjcTVkM1dqMGl2M0F3ck1iaGxEdG5ZQkFtcV9faVMtQmhWWU5OVE1tVXZUallzZUJDMW0ydWIyUjRGenZvOWZWMQ?oc=5",
-        "date": "2026-03-30",
-        "source": "GuruFocus"
+        "title": "APA Corporation (APA) Research Report - StockStory",
+        "url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxNUTJaVmdHenhsV01JYW5kMzNZNENzWkhzQlVBVFB2QmtTcHZWLXRmQ3FYSGJhcHFwT0lha25RNC1jYlE1THhiVUdnNWdxRG1WUHk0X213Ulp5NThIb0ZLeW1sclI0MW9KeWFpa2xQYzU3UXRCZmp3cldUNVlzWnlfdnZFdUh6eXAxUVpVZ3VFSVhUVEw0WmpYNDFDaFJhaFZaU1ZQSEFoWQ?oc=5",
+        "date": "2026-04-01",
+        "source": "StockStory"
       },
       {
         "title": "",
@@ -3165,7 +3165,7 @@
       }
     ],
     "news_count": 4,
-    "updated": "2026-03-31T08:38:00.351838"
+    "updated": "2026-04-02T14:33:44.797298"
   },
   "AKAM": {
     "summary": "{\"thesis\": \"AI Analaysis Failed: Connection Error: HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Max retries exceeded with url: /v1beta/models/gemini-3-pro-preview:generateContent?key=AIzaSyBGHSWUJrKAyfn5wPGYHRWJ5VD0B4VXKqY (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1032)')))\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
@@ -3261,27 +3261,27 @@
     "updated": "2026-02-27T10:22:59.231808"
   },
   "ANET": {
-    "summary": "```json\n{\n  \"thesis\": \"Arista Networks(ANET)는 28.9%의 높은 매출 성장률과 70.8%의 견고한 기관 보유율을 바탕으로 펀더멘털이 양호하나, 현재 VIX 30.61의 높은 시장 변동성과 기술적 하락 추세(Bearish MA, RSI 35.6)로 인해 단기적인 하방 압력이 존재합니다. 높은 P/E(42.23)는 거시경제적 역풍 속에서 밸류에이션 부담으로 작용할 수 있어 관망(HOLD)을 권고합니다.\",\n  \"catalysts\": [\n    {\n      \"point\": \"강력한 펀더멘털과 목표가 상승 여력\",\n      \"evidence\": \"매출 성장률 28.9% 및 목표가 대비 +53.1%의 상승 여력 [수치 분석]\"\n    },\n    {\n      \"point\": \"안정적인 기관 투자자 기반\",\n      \"evidence\": \"기관 보유 비중 70.8%로 중장기적 수급 안정성 확보 [수치 분석]\"\n    }\n  ],\n  \"bear_cases\": [\n    {\n      \"point\": \"단기 주가 하락 모멘텀 및 부정적 투자 심리\",\n      \"evidence\": \"3월 30일 주가 3.82% 하락 마감 [TradingKey, 2026-03-30]\"\n    },\n    {\n      \"point\": \"높은 밸류에이션 부담\",\n      \"evidence\": \"P/E 42.23으로 금리 4.34% 환경 하에서 성장주 할인율 상승 시 밸류에이션 리스크 존재 [수치 분석, Macro Context]\"\n    },\n    {\n      \"point\": \"거시경제적 불안정성\",\n      \"evidence\": \"VIX 30.61로 시장 전반의 공포 심리가 극대화되어 성장주에 불리한 매크로 환경 [Macro Context]\"\n    }\n  ],\n  \"data_conflicts\": [\n    \"매출 성장률이 28.9%로 강력하고 목표가 대비 53.1%의 상승 여력이 있으나, 기술적 지표(MA Signal Bearish, 단기 주가 3.82% 하락)와 매크로 환경(VIX 30.61)은 뚜렷한 하방 압력을 시사함.\"\n  ],\n  \"key_metrics\": {\n    \"pe\": 42.23,\n    \"growth\": 28.9,\n    \"rsi\": 35.6,\n    \"inst_pct\": 70.8\n  },\n  \"recommendation\": \"HOLD\",\n  \"confidence\": 65\n}\n```",
-    "summary_ko": "```json\n{\n  \"thesis\": \"Arista Networks(ANET)는 28.9%의 높은 매출 성장률과 70.8%의 견고한 기관 보유율을 바탕으로 펀더멘털이 양호하나, 현재 VIX 30.61의 높은 시장 변동성과 기술적 하락 추세(Bearish MA, RSI 35.6)로 인해 단기적인 하방 압력이 존재합니다. 높은 P/E(42.23)는 거시경제적 역풍 속에서 밸류에이션 부담으로 작용할 수 있어 관망(HOLD)을 권고합니다.\",\n  \"catalysts\": [\n    {\n      \"point\": \"강력한 펀더멘털과 목표가 상승 여력\",\n      \"evidence\": \"매출 성장률 28.9% 및 목표가 대비 +53.1%의 상승 여력 [수치 분석]\"\n    },\n    {\n      \"point\": \"안정적인 기관 투자자 기반\",\n      \"evidence\": \"기관 보유 비중 70.8%로 중장기적 수급 안정성 확보 [수치 분석]\"\n    }\n  ],\n  \"bear_cases\": [\n    {\n      \"point\": \"단기 주가 하락 모멘텀 및 부정적 투자 심리\",\n      \"evidence\": \"3월 30일 주가 3.82% 하락 마감 [TradingKey, 2026-03-30]\"\n    },\n    {\n      \"point\": \"높은 밸류에이션 부담\",\n      \"evidence\": \"P/E 42.23으로 금리 4.34% 환경 하에서 성장주 할인율 상승 시 밸류에이션 리스크 존재 [수치 분석, Macro Context]\"\n    },\n    {\n      \"point\": \"거시경제적 불안정성\",\n      \"evidence\": \"VIX 30.61로 시장 전반의 공포 심리가 극대화되어 성장주에 불리한 매크로 환경 [Macro Context]\"\n    }\n  ],\n  \"data_conflicts\": [\n    \"매출 성장률이 28.9%로 강력하고 목표가 대비 53.1%의 상승 여력이 있으나, 기술적 지표(MA Signal Bearish, 단기 주가 3.82% 하락)와 매크로 환경(VIX 30.61)은 뚜렷한 하방 압력을 시사함.\"\n  ],\n  \"key_metrics\": {\n    \"pe\": 42.23,\n    \"growth\": 28.9,\n    \"rsi\": 35.6,\n    \"inst_pct\": 70.8\n  },\n  \"recommendation\": \"HOLD\",\n  \"confidence\": 65\n}\n```",
-    "summary_en": "{\n  \"thesis\": \"Arista Networks (ANET) demonstrates robust fundamental top-line growth and significant analyst upside, but a hostile macro environment characterized by high volatility and elevated treasury yields, combined with bearish technical signals, warrants a cautious neutral stance.\",\n  \"catalysts\": [\n    {\n      \"point\": \"Strong fundamental growth and high analyst price targets\",\n      \"evidence\": \"Revenue Growth is 28.9% with a Target Upside of +53.1% [Stock Information]\"\n    }\n  ],\n  \"bear_cases\": [\n    {\n      \"point\": \"Hostile Macroeconomic Environment\",\n      \"evidence\": \"VIX is elevated at 30.61 indicating high market fear, and the 10Y Treasury Yield is high at 4.34%, which pressures high-growth tech valuations [Market Context]\"\n    },\n    {\n      \"point\": \"Negative Price Action and Bearish Technicals\",\n      \"evidence\": \"Stock closed down 3.82% recently [TradingKey, 2026-03-30] and the Moving Average (MA) Signal is currently Bearish [Technical Analysis]\"\n    },\n    {\n      \"point\": \"Elevated Valuation Multiples\",\n      \"evidence\": \"P/E ratio stands at a premium 42.23, making it vulnerable to multiple compression in a high-yield environment [Technical Analysis]\"\n    }\n  ],\n  \"data_conflicts\": [\n    \"Fundamental growth is exceptionally strong (28.9% revenue growth) with massive target upside (+53.1%), yet technical indicators are bearish (MA Signal) and the stock is underperforming the S&P 500 (-2.5%).\"\n  ],\n  \"key_metrics\": {\n    \"pe\": 42.23,\n    \"growth\": 28.9,\n    \"rsi\": 35.6,\n    \"inst_pct\": 70.8\n  },\n  \"recommendation\": \"HOLD\",\n  \"confidence\": 70\n}",
+    "summary": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
+    "summary_ko": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
+    "summary_en": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
     "sources": [
       {
-        "title": "Arista Networks Inc Stock (ANET) Closed Down by 3.82% on Mar 30: What Investors Need To Know - TradingKey",
-        "url": "https://news.google.com/rss/articles/CBMiiwFBVV95cUxOel9aVVlEWGhtaXRRWFJNemJKSE9uNzlrOG5uLVE5eWdETmM0YWgtQXZfX1RpRG9nUU1xSXE1WG9CZGJZbEwyTTY3Y2tXNFF6Ykc2bzRlbDNULVFWWkhGRXc2R1NNQnVuSEk0Y0hDbHNJbk45QXRyMjkzTlFvSF81OVN1V3ZhVU1LMk5j?oc=5",
-        "date": "2026-03-30",
-        "source": "TradingKey"
+        "title": "Arista Networks Stock Has Rallied 58% in the Past Year. Here’s Why the Valuation Still Matters - TIKR.com",
+        "url": "https://news.google.com/rss/articles/CBMiugFBVV95cUxNdExjZ01GbnZxcnFiNFhCaS1GRHZPbUVEYzN5RHVqMmZqN0ZOYzdkaW83VVRSSE9zTllsa3NCWlBtWTZ2WWJWYXNSVnQyMWZRMldYbjdPb0JXdk1yaFI2U3FvZGtDWXR6bTRuNjZyOE1LVDI3UUpDNWFWUGhRRF9pa2tad0p2SFlNUUoxcWUzQ2pzeE9pU01ZWWJueTh3UjNPSjNEc1doWWtRRXZVMVVXNVdHRGZ4dWtzcGc?oc=5",
+        "date": "2026-04-01",
+        "source": "TIKR.com"
       },
       {
-        "title": "Ciena vs. Arista: Which Networking Stock Is the Better Buy? - TradingView",
-        "url": "https://news.google.com/rss/articles/CBMisgFBVV95cUxNek5aYzA0Zmtvei04UW8weEZOSzZhUFlVeEh3SllSQ3dHbUlRam9INmNhN3RVMFRETGsybHVxTXY0U2RickdTYXBtTTBfYUhSUXNOdFhNa1FtcHpPNEtkS19yTkFtaHBUdXZpRy05WnhUVkxaTWJxSldhRzRXN2lJbUMtRWxhRDluX0RydDlHblhDZGh4SmduV2dKZ0Zmc0JISG1xb09qakZoOTROZTBXRWdB?oc=5",
-        "date": "2026-03-30",
-        "source": "TradingView"
+        "title": "Nisa Investment Advisors LLC Decreases Stock Holdings in Arista Networks, Inc. $ANET - MarketBeat",
+        "url": "https://news.google.com/rss/articles/CBMi2gFBVV95cUxNV04ta1NiRFBFUFlLaWswNFFwSXY1QXd6bDdpREJrdVlsR2J2ZndLOS1DYlJrSFJMY0ZON3hXUlRSZHdXdnV1MUJxdDJ2R1cySHlhSjZGQUtpQ3FPN0FoaW1TWDBJSi1nd3dHZmtLQWE5WVc4QVZveXFWX29mTDlrNzZTN2FxcXI3OTVoMzU5WExXYlFEekt6Q3FaWFFJODI4YzhkWWk3ZzdfMmZhbFk0TnZ2eHpNWWltNkNYRUNDdU50MDNlRnlEeVZPY3ZyT1B5OWZneDJRNGFEZw?oc=5",
+        "date": "2026-04-01",
+        "source": "MarketBeat"
       },
       {
-        "title": "ANET Stock Price, Quote & Chart | ARISTA NETWORKS INC (NYSE:ANET) - ChartMill",
-        "url": "https://news.google.com/rss/articles/CBMiX0FVX3lxTE8ybWZ5cW5VR1NGU1BaRWRmenppV0NmUUhEaTF0Ymh5SEVVdV95enZfQTlGME5mNTV6QTRuMkZYY2ZhVTl4a01MeWJsZXRVdWJXbjh6TWdlZjJfZ3BhQUNZ?oc=5",
-        "date": "2026-03-27",
-        "source": "ChartMill"
+        "title": "Jim Cramer Was Bullish On Arista (ANET) In February 2025 – Stock Is Up By 37%+ Since Then - Yahoo Finance",
+        "url": "https://news.google.com/rss/articles/CBMiggFBVV95cUxPZHhrY29mUjI4NE9vMTRrN0lpOWxscVFRT3FsLVN4YjZaaDJUb0lDYVhkQVdPT2VoVGxNMlhIdjdpODBqdEVvdF9kQVlnbW5ybmZoejdSaFo2MzVHYVhfTnJtOWpaRFR2a2ZHblNUY3ZsVjJXNjNod05kZVVCRzZvSzRB?oc=5",
+        "date": "2026-03-18",
+        "source": "Yahoo Finance"
       },
       {
         "title": "",
@@ -3291,7 +3291,7 @@
       }
     ],
     "news_count": 4,
-    "updated": "2026-03-31T08:40:44.354974"
+    "updated": "2026-04-02T14:33:51.554055"
   },
   "ALLE": {
     "summary": "```json\n{\n  \"thesis\": \"주택 경기 회복에 대한 기대와 강력한 주주 환원 정책이 맞물려 견고한 상승 추세를 보이고 있으나, 단기 과열 신호(RSI 72.2)와 목표가 도달 임박으로 인한 밸류에이션 부담이 공존하는 상태입니다.\",\n  \"catalysts\": [\n    {\n      \"point\": \"주주 환원 정책 강화 (배당 인상)\",\n      \"evidence\": \"분기 배당금을 $0.55로 인상한다고 발표, 안정적인 현금 흐름 입증 [simplywall.st, 2026-02-16]\"\n    },\n    {\n      \"point\": \"주택 건설 경기 회복 기대감\",\n      \"evidence\": \"10년물 국채 금리 4.06%로 하락 및 주택 건설 ETF(XHB) +1.89% 상승 등 매크로 환경이 보안/도어락 수요에 긍정적 [Macro Context]\"\n    },\n    {\n      \"point\": \"신제품 출시를 통한 매출 모멘텀\",\n      \"evidence\": \"Schlage 브랜드의 새로운 'Aspect Collection' 출시로 디자인 및 기능성 강화 제품 라인업 확대 [2026-02-16 뉴스]\"\n    },\n    {\n      \"point\": \"강력한 기관 수급\",\n      \"evidence\": \"기관 보유 비중 97.0% 및 Assetmark Inc. 등의 추가 매수 포착 [MarketBeat, 2026-02-15]\"\n    }\n  ],\n  \"bear_cases\": [\n    {\n      \"point\": \"기술적 과매수 진입에 따른 단기 조정 가능성\",\n      \"evidence\": \"RSI가 72.2로 통상적인 과매수 기준인 70을 초과하여 차익 실현 매물 출회 위험 존재 [수치 분석]\"\n    },\n    {\n      \"point\": \"제한적인 추가 상승 여력 (밸류에이션 부담)\",\n      \"evidence\": \"현재 주가가 목표가 대비 불과 +1.0% 차이로, 애널리스트들의 적정 주가 수준에 이미 도달함 [수치 분석]\"\n    },\n    {\n      \"point\": \"실적 발표 전후 변동성 확대 위험\",\n      \"evidence\": \"Q4 실적 발표가 임박한 상황에서 VIX(21.2)가 높아져 있어, 가이던스가 기대에 못 미칠 경우 변동성 확대 우려 [2026-02-16 뉴스 및 Macro Context]\"\n    }\n  ],\n  \"data_conflicts\": [\n    \"수급 점수(75점)와 기관 보유 비중(97%)은 강력한 매수세를 시사하지만, RSI(72.2)는 기술적 과열을 가리키고 있어 단기 진입 시점 포착에 주의가 필요함\",\n    \"매출 성장률(10.7%)은 견조하나 목표가 대비 상승 여력(+1.0%)이 거의 없어 펀더멘털 개선 대비 주가 상승이 선반영되었을 가능성\"\n  ],\n  \"key_metrics\": {\n    \"pe\": 24.26,\n    \"growth\": 10.7,\n    \"rsi\": 72.2,\n    \"inst_pct\": 97.0\n  },\n  \"recommendation\": \"HOLD\",\n  \"confidence\": 70\n}\n```",
@@ -3366,27 +3366,27 @@
     "updated": "2026-03-25T04:18:46.575525"
   },
   "GOOGL": {
-    "summary": "```json\n{\n  \"thesis\": \"현재 GOOGL은 18.0%의 견조한 매출 성장과 목표가 대비 37.8%의 높은 상승 여력을 보유하고 있으나, VIX 30.61에 달하는 거시경제 공포 심리와 기술적 하락 추세(MA Bearish)로 인해 단기 변동성 확대가 예상되는 관망(Hold) 구간입니다.\",\n  \"catalysts\": [\n    {\n      \"point\": \"신규 AI 제품 출시를 통한 장기 성장 모멘텀 확보\",\n      \"evidence\": \"AI Product Launches에 대한 시장 의견 및 기대감 반영 [2026-03-30 Quiver Quantitative]\"\n    },\n    {\n      \"point\": \"과매도 구간 진입 및 높은 월가 목표가 괴리율\",\n      \"evidence\": \"RSI 24.9로 극심한 과매도 상태이며, 월가 목표가 대비 +37.8%의 상승 여력 존재 [수치 분석 데이터, 2026-03-28 CNN]\"\n    }\n  ],\n  \"bear_cases\": [\n    {\n      \"point\": \"거시경제 불확실성 및 높은 금리 부담\",\n      \"evidence\": \"VIX 지수가 30.61로 극도의 공포 상태이며, 10년물 국채 금리가 4.34%로 높아 기술주 밸류에이션에 하방 압력 작용 [Macro Context]\"\n    },\n    {\n      \"point\": \"기술적 하락 모멘텀 지속\",\n      \"evidence\": \"이동평균선(MA) 시그널이 Bearish를 기록 중이며 수급 점수도 50/100으로 중립 수준에 머물러 추가 하락 리스크 존재 [수치 분석 데이터]\"\n    },\n    {\n      \"point\": \"시장 벤치마크 대비 상대적 수익률 부진\",\n      \"evidence\": \"최근 S&P 500 지수 대비 -3.0% 언더퍼폼하며 주도주로서의 탄력 둔화 [수치 분석 데이터]\"\n    }\n  ],\n  \"data_conflicts\": [\n    \"기술적 지표인 RSI는 24.9로 강력한 단기 과매도(반등 임박)를 시사하나, 이동평균선(MA) 시그널은 여전히 Bearish이며 VIX(30.61)가 높아 저가 매수세와 매크로발 투매 물량이 강하게 충돌하는 구간임.\"\n  ],\n  \"key_metrics\": {\n    \"pe\": 25.3,\n    \"growth\": 18.0,\n    \"rsi\": 24.9,\n    \"inst_pct\": 80.8\n  },\n  \"recommendation\": \"HOLD\",\n  \"confidence\": 65\n}\n```",
-    "summary_ko": "```json\n{\n  \"thesis\": \"현재 GOOGL은 18.0%의 견조한 매출 성장과 목표가 대비 37.8%의 높은 상승 여력을 보유하고 있으나, VIX 30.61에 달하는 거시경제 공포 심리와 기술적 하락 추세(MA Bearish)로 인해 단기 변동성 확대가 예상되는 관망(Hold) 구간입니다.\",\n  \"catalysts\": [\n    {\n      \"point\": \"신규 AI 제품 출시를 통한 장기 성장 모멘텀 확보\",\n      \"evidence\": \"AI Product Launches에 대한 시장 의견 및 기대감 반영 [2026-03-30 Quiver Quantitative]\"\n    },\n    {\n      \"point\": \"과매도 구간 진입 및 높은 월가 목표가 괴리율\",\n      \"evidence\": \"RSI 24.9로 극심한 과매도 상태이며, 월가 목표가 대비 +37.8%의 상승 여력 존재 [수치 분석 데이터, 2026-03-28 CNN]\"\n    }\n  ],\n  \"bear_cases\": [\n    {\n      \"point\": \"거시경제 불확실성 및 높은 금리 부담\",\n      \"evidence\": \"VIX 지수가 30.61로 극도의 공포 상태이며, 10년물 국채 금리가 4.34%로 높아 기술주 밸류에이션에 하방 압력 작용 [Macro Context]\"\n    },\n    {\n      \"point\": \"기술적 하락 모멘텀 지속\",\n      \"evidence\": \"이동평균선(MA) 시그널이 Bearish를 기록 중이며 수급 점수도 50/100으로 중립 수준에 머물러 추가 하락 리스크 존재 [수치 분석 데이터]\"\n    },\n    {\n      \"point\": \"시장 벤치마크 대비 상대적 수익률 부진\",\n      \"evidence\": \"최근 S&P 500 지수 대비 -3.0% 언더퍼폼하며 주도주로서의 탄력 둔화 [수치 분석 데이터]\"\n    }\n  ],\n  \"data_conflicts\": [\n    \"기술적 지표인 RSI는 24.9로 강력한 단기 과매도(반등 임박)를 시사하나, 이동평균선(MA) 시그널은 여전히 Bearish이며 VIX(30.61)가 높아 저가 매수세와 매크로발 투매 물량이 강하게 충돌하는 구간임.\"\n  ],\n  \"key_metrics\": {\n    \"pe\": 25.3,\n    \"growth\": 18.0,\n    \"rsi\": 24.9,\n    \"inst_pct\": 80.8\n  },\n  \"recommendation\": \"HOLD\",\n  \"confidence\": 65\n}\n```",
-    "summary_en": "{\n  \"thesis\": \"Despite solid fundamental growth and a deeply oversold RSI, the elevated macro volatility (VIX > 30) and bearish technical momentum justify a cautious Hold rating.\",\n  \"catalysts\": [\n    {\n      \"point\": \"Significant analyst upside and deeply oversold technicals present a potential value opportunity.\",\n      \"evidence\": \"Target Upside is +37.8% and RSI is deeply oversold at 24.9 [Technical Analysis]\"\n    },\n    {\n      \"point\": \"Continued focus on AI initiatives could serve as a future growth engine.\",\n      \"evidence\": \"Market attention on 'Alphabet Stock (GOOGL) Opinions on AI Product Launches' [Quiver Quantitative, 2026-03-30]\"\n    }\n  ],\n  \"bear_cases\": [\n    {\n      \"point\": \"Severe macro headwinds and market fear are pressuring the broader tech sector.\",\n      \"evidence\": \"VIX is elevated at 30.61 (High Fear) and 10Y Treasury Yield is 4.34% [Market Context]\"\n    },\n    {\n      \"point\": \"Negative trend momentum and relative underperformance.\",\n      \"evidence\": \"MA Signal is Bearish and the stock is lagging the S&P 500 by -3.0% [Technical Analysis]\"\n    },\n    {\n      \"point\": \"Mediocre quantitative scoring limits near-term conviction.\",\n      \"evidence\": \"Overall Grade is 'C급 (관망)' with a total score of 55.1/100 [Stock Information]\"\n    }\n  ],\n  \"data_conflicts\": [\n    \"RSI is deeply oversold (24.9) and Target Upside is highly positive (+37.8%), conflicting with the Bearish MA Signal and the mediocre 'C' overall grade.\",\n    \"Strong revenue growth (18.0%) contrasts with the stock's relative underperformance vs the S&P 500 (-3.0%).\"\n  ],\n  \"key_metrics\": {\n    \"pe\": 25.3,\n    \"growth\": 18.0,\n    \"rsi\": 24.9,\n    \"inst_pct\": 80.8\n  },\n  \"recommendation\": \"HOLD\",\n  \"confidence\": 70\n}",
+    "summary": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
+    "summary_ko": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
+    "summary_en": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
     "sources": [
       {
-        "title": "Alphabet (GOOGL) Stock Quotes, Company News And Chart Analysis - investors.com",
+        "title": "Why Alphabet Inc. (GOOG) Outpaced the Stock Market Today - sg.finance.yahoo.com",
+        "url": "https://news.google.com/rss/articles/CBMihgFBVV95cUxNVm5pSjdqTE1fY3BfMEhlRkFzbmlWWDRjaGx3aGRWMGJ3QVlncGlPaEVjSGFVWlJGNTlUVzVjTEk4WlRtQnRRZUtKWExWR1h6cTZlUFc5QURHVFV1WFNBbWIwUm1keVRRMGhUR3M5R2J2OGE2VjZFaTN0NUtqTkgwdFdSTFcyZw?oc=5",
+        "date": "2026-04-01",
+        "source": "sg.finance.yahoo.com"
+      },
+      {
+        "title": "Wells Fargo raises PT on Alphabet (GOOGL) $397 amid growing opportunities for Google Cloud monetization - MSN",
+        "url": "https://news.google.com/rss/articles/CBMi6gFBVV95cUxNc25XbXd3ODNFaGd4UHUxcWJaWHhRVkU2dzdJblhFUE9xendjWkRMQTZJaVBrcGdVVUVwMWx1QWZMTlZ4MW5FQUttR21wTXdKZDNFSzN2MDh0MElFMG9Fa0w1dHNIQXFjZndDXzBWelQwS281VU9BRE5FQnloNlNTVFdPcWVVa0ZOb0kzVnJrZHl6WF9CSnBPYjRZUXc1aEVxNThCVnRCeG9laTF1bVNwX3VKVE1aanprZ3Y2ZGktX05ScEo2R0N3cHJ5b1hQZVZBc2RLNnBaTklpVFBMWmhVSUNLUzdlVjdEX1E?oc=5",
+        "date": "2026-04-01",
+        "source": "MSN"
+      },
+      {
+        "title": "Alphabet (GOOGL) Stock Quotes, Company News And Chart Analysis - Investor's Business Daily",
         "url": "https://news.google.com/rss/articles/CBMisAFBVV95cUxQZ3RHcWtkOUszb3lIUjQ3ZndGU05XWDlWeU5IQVJJMEJsUjh6NnFUaFdwVGR0QjVadkFOcm9IbkVsejNxUlJieEdzekQ4TXRsQmQ0ejVZMkpHRkw4TnQwWnB5MnJDLTBrSXBzTTVzdlpOc1ZnNEZpcDdBVWhDNG5wcF9NTVZHYVcxR3hCMVpvVU9OeVJhMko0Ym1qMDNiM1R2Wk9qREoyeUVOdGcwNjh2Qg?oc=5",
-        "date": "2026-03-30",
-        "source": "investors.com"
-      },
-      {
-        "title": "Alphabet Stock (GOOGL) Opinions on AI Product Launches - Quiver Quantitative",
-        "url": "https://news.google.com/rss/articles/CBMilgFBVV95cUxPYkRPOHF2OXdJMnJPcUtSUFlnbkhBLTJ1R0VWSUNpU1pHRzk2YkZEdGFBTUtmRzVCOU5XSmQ3Ty0yRkNGRWtvMjhOcnA3NmpxT2lRWEhVSXh3eUU4dDRPU09zdlBLTUZiRlFtZnpVZU53ZUJWUDg3VjJTX3ZwTXFsV1lBNGhWTXdMYU9vVFJjb2Y4T0pkeXc?oc=5",
-        "date": "2026-03-30",
-        "source": "Quiver Quantitative"
-      },
-      {
-        "title": "GOOGL Stock Quote Price and Forecast - CNN",
-        "url": "https://news.google.com/rss/articles/CBMiUkFVX3lxTE5UbkhMMngyaG5RbUxmS1ZGOGtMZGpWMi1GZWM4TGdVUV9kT0wwRjhITEVWVERVZnY4ekZhU0lFbWtMNWhjZGpJdm1iek5wS0lrZUE?oc=5",
-        "date": "2026-03-28",
-        "source": "CNN"
+        "date": "2026-03-31",
+        "source": "Investor's Business Daily"
       },
       {
         "title": "",
@@ -3396,7 +3396,7 @@
       }
     ],
     "news_count": 4,
-    "updated": "2026-03-31T08:41:17.460767"
+    "updated": "2026-04-02T14:34:04.254552"
   },
   "AMD": {
     "summary": "{\"thesis\": \"AI Analaysis Failed: Connection Error: HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Max retries exceeded with url: /v1beta/models/gemini-3-pro-preview:generateContent?key=AIzaSyBGHSWUJrKAyfn5wPGYHRWJ5VD0B4VXKqY (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1032)')))\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
@@ -3432,26 +3432,26 @@
     "updated": "2026-04-02T12:49:27.697951"
   },
   "GOOG": {
-    "summary": "```json\n{\n  \"thesis\": \"알파벳(GOOG)은 18.0%의 견조한 매출 성장과 RSI 24.0의 과매도 구간에 진입했으나, VIX 30.61의 높은 거시경제 불확실성과 기술적 하락 추세(Bearish MA)로 인해 당분간 관망(Hold)이 권장됩니다.\",\n  \"catalysts\": [\n    {\n      \"point\": \"기관 투자자의 지속적인 매수세 유입\",\n      \"evidence\": \"Ferguson Wellman Capital Management의 지분 확대 [MarketBeat, 2026-03-30]\"\n    },\n    {\n      \"point\": \"견조한 펀더멘털과 밸류에이션 매력\",\n      \"evidence\": \"매출 성장률 18.0% 및 목표가 대비 31.6%의 상승 여력 보유 [종목 수치 분석 데이터]\"\n    }\n  ],\n  \"bear_cases\": [\n    {\n      \"point\": \"거시경제 역풍 및 투자 심리 위축\",\n      \"evidence\": \"VIX 30.61(공포 국면) 및 10년물 국채 금리 4.34%로 인해 빅테크 등 성장주 전반의 밸류에이션 하방 압력 심화 [Macro Context]\"\n    },\n    {\n      \"point\": \"기술적 하락 추세 및 섹터 동반 약세\",\n      \"evidence\": \"이동평균선(MA) 시그널 Bearish 상태이며, 마이크로소프트, 메타와 함께 주가가 큰 폭으로 하락 중임 [The Motley Fool, 2026-03-27]\"\n    },\n    {\n      \"point\": \"시장 대비 상대적 수익률 부진\",\n      \"evidence\": \"S&P 500 대비 -3.1% 언더퍼폼하며 시장 주도력을 상실한 상태 [종목 수치 분석 데이터]\"\n    }\n  ],\n  \"data_conflicts\": [\n    \"RSI는 24.0으로 극심한 과매도 상태를 가리켜 단기 반등 가능성을 시사하나, 이동평균선(MA) 시그널은 여전히 하락세(Bearish)를 굳히고 있으며 VIX(30.61) 공포지수가 높아 기술적 지표 간 충돌이 발생함.\"\n  ],\n  \"key_metrics\": {\n    \"pe\": 25.27,\n    \"growth\": 18.0,\n    \"rsi\": 24.0,\n    \"inst_pct\": 61.0\n  },\n  \"recommendation\": \"HOLD\",\n  \"confidence\": 65\n}\n```",
-    "summary_ko": "```json\n{\n  \"thesis\": \"알파벳(GOOG)은 18.0%의 견조한 매출 성장과 RSI 24.0의 과매도 구간에 진입했으나, VIX 30.61의 높은 거시경제 불확실성과 기술적 하락 추세(Bearish MA)로 인해 당분간 관망(Hold)이 권장됩니다.\",\n  \"catalysts\": [\n    {\n      \"point\": \"기관 투자자의 지속적인 매수세 유입\",\n      \"evidence\": \"Ferguson Wellman Capital Management의 지분 확대 [MarketBeat, 2026-03-30]\"\n    },\n    {\n      \"point\": \"견조한 펀더멘털과 밸류에이션 매력\",\n      \"evidence\": \"매출 성장률 18.0% 및 목표가 대비 31.6%의 상승 여력 보유 [종목 수치 분석 데이터]\"\n    }\n  ],\n  \"bear_cases\": [\n    {\n      \"point\": \"거시경제 역풍 및 투자 심리 위축\",\n      \"evidence\": \"VIX 30.61(공포 국면) 및 10년물 국채 금리 4.34%로 인해 빅테크 등 성장주 전반의 밸류에이션 하방 압력 심화 [Macro Context]\"\n    },\n    {\n      \"point\": \"기술적 하락 추세 및 섹터 동반 약세\",\n      \"evidence\": \"이동평균선(MA) 시그널 Bearish 상태이며, 마이크로소프트, 메타와 함께 주가가 큰 폭으로 하락 중임 [The Motley Fool, 2026-03-27]\"\n    },\n    {\n      \"point\": \"시장 대비 상대적 수익률 부진\",\n      \"evidence\": \"S&P 500 대비 -3.1% 언더퍼폼하며 시장 주도력을 상실한 상태 [종목 수치 분석 데이터]\"\n    }\n  ],\n  \"data_conflicts\": [\n    \"RSI는 24.0으로 극심한 과매도 상태를 가리켜 단기 반등 가능성을 시사하나, 이동평균선(MA) 시그널은 여전히 하락세(Bearish)를 굳히고 있으며 VIX(30.61) 공포지수가 높아 기술적 지표 간 충돌이 발생함.\"\n  ],\n  \"key_metrics\": {\n    \"pe\": 25.27,\n    \"growth\": 18.0,\n    \"rsi\": 24.0,\n    \"inst_pct\": 61.0\n  },\n  \"recommendation\": \"HOLD\",\n  \"confidence\": 65\n}\n```",
-    "summary_en": "{\n  \"thesis\": \"Alphabet presents a compelling valuation with a 25.27 P/E and 18.0% revenue growth, but extreme macro volatility (VIX 30.61) and bearish technical momentum warrant a cautious wait-and-see approach.\",\n  \"catalysts\": [\n    {\n      \"point\": \"Institutional Accumulation\",\n      \"evidence\": \"Ferguson Wellman Capital Management Inc. grew its stock position in Alphabet [MarketBeat, 2026-03-30]\"\n    },\n    {\n      \"point\": \"Deeply Oversold Technicals with High Upside\",\n      \"evidence\": \"RSI is currently 24.0 (oversold) with analysts projecting a +31.6% target upside [Technical Analysis]\"\n    }\n  ],\n  \"bear_cases\": [\n    {\n      \"point\": \"Extreme Macro Volatility\",\n      \"evidence\": \"VIX is elevated at 30.61 indicating high market fear, coupled with a 4.34% 10Y Treasury Yield [Macro Context]\"\n    },\n    {\n      \"point\": \"Negative Price Momentum and Sentiment\",\n      \"evidence\": \"MA Signal is Bearish and news reports indicate Alphabet stocks are 'Getting Hammered' [The Motley Fool, 2026-03-27]\"\n    },\n    {\n      \"point\": \"Market Underperformance\",\n      \"evidence\": \"The stock is currently underperforming the broader market by -3.1% vs the S&P 500 [Technical Analysis]\"\n    }\n  ],\n  \"data_conflicts\": [\n    \"RSI indicates deeply oversold conditions (24.0) signaling a potential bounce, yet the Moving Average signal remains Bearish and news headlines highlight severe selling pressure.\"\n  ],\n  \"key_metrics\": {\n    \"pe\": 25.27,\n    \"growth\": 18.0,\n    \"rsi\": 24.0,\n    \"inst_pct\": 61.0\n  },\n  \"recommendation\": \"HOLD\",\n  \"confidence\": 70\n}",
+    "summary": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
+    "summary_ko": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
+    "summary_en": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
     "sources": [
       {
-        "title": "Ferguson Wellman Capital Management Inc. Grows Stock Position in Alphabet Inc. $GOOG - MarketBeat",
-        "url": "https://news.google.com/rss/articles/CBMi2gFBVV95cUxOREFpeEZOeUxzbzZ0enM1Y2JpYl9xUGN5YkRLS0k3Tk5HMEZtXzFjZ0N4S3hqemY1U2szczJ4WXFDRmhTRXNlXzJZVE1aaFpHeG5EMl9Ldk9jMEhkY3JHbWtxcGg0SW94OWhOV21mZ3VKbDhoYW9WMXlSNXZzSGMxU3gwS1EtY21tTlJMVnRwVF9qUHlMY3g2Y3h6cGhrUXhVOHQtTVJsZi1iQ0w1MWUzcWwtNkJWeXJUdFA4bEUyaWJ4REJkUkR1VFdYNm1OQ2lBSW1EZ2JoNHRMUQ?oc=5",
-        "date": "2026-03-30",
-        "source": "MarketBeat"
+        "title": "What's Going On With Alphabet Stock? - Benzinga",
+        "url": "https://news.google.com/rss/articles/CBMingFBVV95cUxQRW9meXY3S0gyRlo5WTIwVmwwT2I5ZW84MTc3WDlMTHVpcmo4TWExQ3RqZHMyZ2NyS0FvekNZNGQ2SjZzeUFzOXhtMFNpb2RGeFM2RDhQU2tta1Zya2h3WUZkT0Q3dFpHbXJFYWpCZ2pTeHJUMTNkOWNKaktPZ1J4LVdDTklFckJkZEJPRWVsUkswaDM0NVlyNDl4ZWQzdw?oc=5",
+        "date": "2026-04-01",
+        "source": "Benzinga"
       },
       {
-        "title": "GOOGL Stock Quote Price and Forecast - CNN",
-        "url": "https://news.google.com/rss/articles/CBMiUkFVX3lxTE5UbkhMMngyaG5RbUxmS1ZGOGtMZGpWMi1GZWM4TGdVUV9kT0wwRjhITEVWVERVZnY4ekZhU0lFbWtMNWhjZGpJdm1iek5wS0lrZUE?oc=5",
-        "date": "2026-03-28",
-        "source": "CNN"
+        "title": "Why Alphabet Inc. (GOOG) Outpaced the Stock Market Today - Yahoo Finance",
+        "url": "https://news.google.com/rss/articles/CBMimwFBVV95cUxOX1haVUs0NDBmYWU1VkwzQVNJU0QxVDM3YjBNaXZPUEo2WGw2ZWNySUdnVV9ROFduUm01WEZ1eDU0Ym0yRTYxc1hLU0szelJDSXpISHJtRzgydkVtTHJVTVJBQ1VqNXRBY3hFNWhkb211d1RCRE5tRlpFLUVFR2taSUVEakpzZktnOWV5aVR4R2JmeGRfbzJodXFWZw?oc=5",
+        "date": "2026-04-01",
+        "source": "Yahoo Finance"
       },
       {
-        "title": "Microsoft, Meta, and Alphabet Stocks Are All Getting Hammered. But I Think Only 1 Is Worth Buying - The Motley Fool",
-        "url": "https://news.google.com/rss/articles/CBMimAFBVV95cUxNWnlKUi1WLU1Pdkd2dXVMUTN5U3ZzR2VHUnhrdE0tVFZvdF9OZVpiLUhhLWJTU0RNQjVMckJmYnZrcGI1WEtGa0U3bVkwT0hxNkk5Y3RKdE4tRzNoUUhpVXlFZDYzM2tQN3VrMjgxdnlvVEc2cDU3eW5KMUNORDQ2ZlpmbkEyYkM3Wk9qTDZnMXBiZEZYa1RYRA?oc=5",
-        "date": "2026-03-27",
+        "title": "Why Alphabet Stock Popped Today - The Motley Fool",
+        "url": "https://news.google.com/rss/articles/CBMif0FVX3lxTE1uUkFnUU5jR0FtT2N3UTZ6QmZaQ0xldnZNOEY5d1F6aVlxa25YWTYxdUp0ZzQwdnhsTFhIcWFoTkpvWjhzcnluWXc1ZnN3TDJSZ0daVEp3ZWVVTlp1cXZYZTZfM3E0d2p6Q0psei1OS2NabGJfQlA5WC1FX0N1YzA?oc=5",
+        "date": "2026-03-31",
         "source": "The Motley Fool"
       },
       {
@@ -3462,7 +3462,7 @@
       }
     ],
     "news_count": 4,
-    "updated": "2026-03-31T08:41:46.541404"
+    "updated": "2026-04-02T14:34:06.818228"
   },
   "AES": {
     "summary": "```json\n{\n  \"thesis\": \"AES는 구글과의 20년 장기 전력 공급 계약 체결로 안정적인 장기 현금 흐름을 확보했으며, 강력한 기관 수급(88.1%)과 저평가된 밸류에이션(P/E 10.76)이 매력적인 진입 기회를 제공합니다.\",\n  \"catalysts\": [\n    {\n      \"point\": \"구글 데이터 센터와의 20년 장기 계약 체결\",\n      \"evidence\": \"구글 데이터 센터 전력 공급을 위한 20년 계약 체결로 투자 내러티브의 구조적 변화 발생 [simplywall.st, 2026-02-26]\"\n    },\n    {\n      \"point\": \"강력한 기관 수급 및 긍정적 모멘텀\",\n      \"evidence\": \"기관 보유 비중 88.1% 및 수급 점수 80/100(Strong Accumulation) 기록, S&P 500 대비 +9.1% 초과 수익 달성 [수치 분석]\"\n    },\n    {\n      \"point\": \"섹터 대비 매력적인 밸류에이션\",\n      \"evidence\": \"현재 P/E 10.76배로 유틸리티 섹터 평균 대비 저평가 상태이며 B급(매수 고려) 등급 부여 [종목 정보]\"\n    }\n  ],\n  \"bear_cases\": [\n    {\n      \"point\": \"제한적인 매출 성장률과 성장 정체 우려\",\n      \"evidence\": \"매출 성장률이 1.9%에 불과하여 고성장 기술주나 성장형 유틸리티 대비 매력도 저하 [수치 분석]\"\n    },\n    {\n      \"point\": \"고금리 환경에 따른 자본 조달 비용 부담\",\n      \"evidence\": \"10년물 국채 금리가 4.02%로 여전히 높은 수준이며, 이는 부채가 많은 유틸리티 기업의 이자 비용 부담을 가중시킴 [Macro Context]\"\n    },\n    {\n      \"point\": \"단기 목표가 대비 하락 여력 존재\",\n      \"evidence\": \"현재 주가($16.25)가 애널리스트 목표가 대비 -4.4% 괴리를 보이며 단기적인 밸류에이션 부담 신호일 수 있음 [수치 분석]\"\n    }\n  ],\n  \"data_conflicts\": [\n    \"기술적 지표(MA Signal: Bullish, RSI 61.0)와 수급(80점)은 강력한 매수를 가리키나, 목표가 대비 괴리율(-4.4%)은 현재 주가가 이미 적정 가치에 도달했거나 소폭 고평가되었음을 시사함\"\n  ],\n  \"key_metrics\": {\n    \"pe\": 10.76,\n    \"growth\": 1.9,\n    \"rsi\": 61.0,\n    \"inst_pct\": 88.1\n  },\n  \"recommendation\": \"BUY\",\n  \"confidence\": 80\n}\n```",
@@ -3864,21 +3864,21 @@
     "updated": "2026-04-02T12:44:09.102333"
   },
   "AWK": {
-    "summary": "```json\n{\n  \"thesis\": \"American Water Works(AWK)는 높은 기관 보유율(99.4%)과 S&P 500 대비 우수한 성과(+10.2%)를 바탕으로 방어주로서의 매력을 보이나, 높은 VIX 지수와 10년물 국채 금리(4.34%) 환경 하에서 유틸리티 섹터 특유의 밸류에이션 부담이 존재합니다.\",\n  \"catalysts\": [\n    {\n      \"point\": \"방어적 성격과 안정적인 장기 수요\",\n      \"evidence\": \"1,400만 명에게 서비스를 제공하며 2026년에 창립 140주년을 맞이하는 안정적인 사업 구조 [2026-03-30 Stock Titan]\"\n    },\n    {\n      \"point\": \"가치 투자 기회 부각\",\n      \"evidence\": \"최근 조용히 가치 투자 기회로 부상하고 있다는 시장의 평가 [2026-02-21 Trefis]\"\n    },\n    {\n      \"point\": \"강력한 기관 수급 및 기술적 모멘텀\",\n      \"evidence\": \"기관 보유율 99.4%, MA Signal Bullish 및 수급 점수 60/100 (Accumulation) [수치 분석]\"\n    }\n  ],\n  \"bear_cases\": [\n    {\n      \"point\": \"고금리 환경으로 인한 배당주/유틸리티주 매력도 하락\",\n      \"evidence\": \"10년물 국채 금리가 4.34%로 높은 수준을 유지하여 대체 투자처 대비 상대적 매력 감소 [Macro Context]\"\n    },\n    {\n      \"point\": \"거시경제 불안정성에 따른 시장 전반의 하방 압력\",\n      \"evidence\": \"VIX 지수가 30.61로 공포 국면에 진입하여 시장 전체의 변동성 확대 리스크 존재 [Macro Context]\"\n    },\n    {\n      \"point\": \"목표가 도달 및 밸류에이션 부담\",\n      \"evidence\": \"현재 P/E 24.4배로 유틸리티 섹터 치고 다소 높을 수 있으며, 목표가 대비 이미 -0.8% 초과 달성 상태 [수치 분석]\"\n    }\n  ],\n  \"data_conflicts\": [\n    \"기술적 지표(MA Bullish, RSI 59.0) 및 수급(기관 99.4%)은 긍정적이나, VIX 30.61의 극심한 공포 장세와 4.34%의 고금리 환경은 유틸리티 주식의 펀더멘털에 부정적으로 작용할 수 있음.\"\n  ],\n  \"key_metrics\": {\n    \"pe\": 24.4,\n    \"growth\": 5.8,\n    \"rsi\": 59.0,\n    \"inst_pct\": 99.4\n  },\n  \"recommendation\": \"HOLD\",\n  \"confidence\": 70\n}\n```",
-    "summary_ko": "```json\n{\n  \"thesis\": \"American Water Works(AWK)는 높은 기관 보유율(99.4%)과 S&P 500 대비 우수한 성과(+10.2%)를 바탕으로 방어주로서의 매력을 보이나, 높은 VIX 지수와 10년물 국채 금리(4.34%) 환경 하에서 유틸리티 섹터 특유의 밸류에이션 부담이 존재합니다.\",\n  \"catalysts\": [\n    {\n      \"point\": \"방어적 성격과 안정적인 장기 수요\",\n      \"evidence\": \"1,400만 명에게 서비스를 제공하며 2026년에 창립 140주년을 맞이하는 안정적인 사업 구조 [2026-03-30 Stock Titan]\"\n    },\n    {\n      \"point\": \"가치 투자 기회 부각\",\n      \"evidence\": \"최근 조용히 가치 투자 기회로 부상하고 있다는 시장의 평가 [2026-02-21 Trefis]\"\n    },\n    {\n      \"point\": \"강력한 기관 수급 및 기술적 모멘텀\",\n      \"evidence\": \"기관 보유율 99.4%, MA Signal Bullish 및 수급 점수 60/100 (Accumulation) [수치 분석]\"\n    }\n  ],\n  \"bear_cases\": [\n    {\n      \"point\": \"고금리 환경으로 인한 배당주/유틸리티주 매력도 하락\",\n      \"evidence\": \"10년물 국채 금리가 4.34%로 높은 수준을 유지하여 대체 투자처 대비 상대적 매력 감소 [Macro Context]\"\n    },\n    {\n      \"point\": \"거시경제 불안정성에 따른 시장 전반의 하방 압력\",\n      \"evidence\": \"VIX 지수가 30.61로 공포 국면에 진입하여 시장 전체의 변동성 확대 리스크 존재 [Macro Context]\"\n    },\n    {\n      \"point\": \"목표가 도달 및 밸류에이션 부담\",\n      \"evidence\": \"현재 P/E 24.4배로 유틸리티 섹터 치고 다소 높을 수 있으며, 목표가 대비 이미 -0.8% 초과 달성 상태 [수치 분석]\"\n    }\n  ],\n  \"data_conflicts\": [\n    \"기술적 지표(MA Bullish, RSI 59.0) 및 수급(기관 99.4%)은 긍정적이나, VIX 30.61의 극심한 공포 장세와 4.34%의 고금리 환경은 유틸리티 주식의 펀더멘털에 부정적으로 작용할 수 있음.\"\n  ],\n  \"key_metrics\": {\n    \"pe\": 24.4,\n    \"growth\": 5.8,\n    \"rsi\": 59.0,\n    \"inst_pct\": 99.4\n  },\n  \"recommendation\": \"HOLD\",\n  \"confidence\": 70\n}\n```",
-    "summary_en": "{\n  \"thesis\": \"American Water Works (AWK) offers a defensive safe-haven asset in a high-volatility macro environment, backed by massive institutional ownership, though its current valuation leaves limited room for near-term upside.\",\n  \"catalysts\": [\n    {\n      \"point\": \"Defensive rotation appeal in a high-fear market\",\n      \"evidence\": \"VIX is elevated at 30.61, driving capital toward stable utilities [Macro Context]\"\n    },\n    {\n      \"point\": \"Emerging value and stability narrative\",\n      \"evidence\": \"Media highlighting scale and value: 'Serving 14 million people, American Water turns 140 in 2026' [Stock Titan, 2026-03-30] and 'Quietly Become a Value Opportunity?' [Trefis, 2026-02-21]\"\n    },\n    {\n      \"point\": \"Strong institutional backing\",\n      \"evidence\": \"Institutional ownership is exceptionally high at 99.4% with an accumulation score of 60/100 [Technical Analysis]\"\n    }\n  ],\n  \"bear_cases\": [\n    {\n      \"point\": \"Limited to negative target upside\",\n      \"evidence\": \"Despite a bullish MA signal, the Target Upside is currently -0.8%, indicating the stock may be fully priced [Technical Analysis]\"\n    },\n    {\n      \"point\": \"Macro headwinds from high interest rates\",\n      \"evidence\": \"The 10Y Treasury Yield is elevated at 4.34%, creating yield competition for utility stocks [Macro Context]\"\n    },\n    {\n      \"point\": \"Valuation premium relative to growth\",\n      \"evidence\": \"Trading at a P/E of 24.4x while generating only 5.8% revenue growth [Technical Analysis]\"\n    }\n  ],\n  \"data_conflicts\": [\n    \"The stock has a 'Buy' rating (Grade B) and is outperforming the S&P 500 by +10.2%, yet the analyst Target Upside is negative (-0.8%).\"\n  ],\n  \"key_metrics\": {\n    \"pe\": 24.4,\n    \"growth\": 5.8,\n    \"rsi\": 59.0,\n    \"inst_pct\": 99.4\n  },\n  \"recommendation\": \"HOLD\",\n  \"confidence\": 70\n}",
+    "summary": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
+    "summary_ko": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
+    "summary_en": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
     "sources": [
       {
-        "title": "Serving 14 million people, American Water turns 140 in 2026 - Stock Titan",
-        "url": "https://news.google.com/rss/articles/CBMivwFBVV95cUxOQXhxeEpMNHhJYnJiZm1mMm95Xy1WTHBaT0ZiUkpRZ3QtdWljS1d5RkJWa0J6WnZXSzFxN005eHFqQ01YSU1OSWF2dlluZEhjTU9xU3lyOXludTdKT1lHSk45RXRWLW1ncTlIZE42MnNLSHBlcnhjWDdOTmVrZ2FWNlF4MFUwRjBxY1NyZHcyVVEtcXVaRk9WblBYTVYydHFWLW9lbUtzcGo5cTVyTkFXOTJJX3k2d1NWbzNrY2h2OA?oc=5",
-        "date": "2026-03-30",
+        "title": "American Water (NYSE: AWK) raises $700M with 5.200% notes due 2036 - Stock Titan",
+        "url": "https://news.google.com/rss/articles/CBMivAFBVV95cUxPMmxyR0d6NDlraEUxcVdaLUV6dFFmQnpSbFhVZHNGNGs2RXlHbmpVZFd4SktySFZXNVB0MlhzN2s1S1ZRMTZ4X0t1THk2c2U1akJQRDZSdUtRLXctTjBybXBCeXNkREVCdGVkX1NUdkZOSFItWHo1MmlDMTVwV01KcW1Pclhfc3ZuRFNyRFZPRmhJVXdfb2pybHlvRzlORFZBdHZncXpYdUI2bnhTRFdpOE43NkQ5aWlnUlJtdg?oc=5",
+        "date": "2026-04-01",
         "source": "Stock Titan"
       },
       {
-        "title": "Is American Water Works Company, Inc. (AWK) a good stock to buy now? - MSN",
-        "url": "https://news.google.com/rss/articles/CBMi2wFBVV95cUxNd3ZNS3k5TmVPNzBHUWV1cjVyX2RTdUEyZnVmZVpMaXVQa1pxTmNNbmNVZE1FMUQwbTFZbTVrT1ZlcnJzRkhOVzJZNmtSbEl3X3A1RG9DeVRUdUx6Sk9kSGNlR1FHcm9yTWtHSnQtcjJHcG9iZHRydnRqRkM1TVhnSmhpbE5xYTJhb0JWeElUQUpvVEplUzZmTlBvVmhja1VZTUp3OEF6STAyWHFrX3Q5YWNkdnpWNW9sSXdlaXB3UVFaVFhTNGVVQk01emNMaGlFNlRnbWJmT2V3Yms?oc=5",
+        "title": "Is American Water Works Company, Inc. (AWK) A Good Stock To Buy Now? - Yahoo Finance",
+        "url": "https://news.google.com/rss/articles/CBMingFBVV95cUxPRmhBUjRiN19KOTdudkVGWlVrRHdQaGp4UUJvNE1zLW4xNjI0OHpSZS02eUFxalZvY3dTTjYwSzd4ZFdtd3FqS29ESldObjdqMHY4RG5nS1dkSE16MHptUThnbEdZdkhOWVhOQmllSkNYd3E2em84VXVLTkJXdDBjaWRHUDUyM1E1aFBvSURDVS1CVXBfNF9KbFlLeTJBQQ?oc=5",
         "date": "2026-03-30",
-        "source": "MSN"
+        "source": "Yahoo Finance"
       },
       {
         "title": "Has American Water Works Stock Quietly Become a Value Opportunity? - Trefis",
@@ -3894,7 +3894,7 @@
       }
     ],
     "news_count": 4,
-    "updated": "2026-03-31T08:35:38.873256"
+    "updated": "2026-04-02T14:33:37.371039"
   },
   "AJG": {
     "summary": "{\"thesis\": \"AI Analaysis Failed: Connection Error: HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Max retries exceeded with url: /v1beta/models/gemini-3-pro-preview:generateContent?key=AIzaSyBGHSWUJrKAyfn5wPGYHRWJ5VD0B4VXKqY (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1032)')))\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",

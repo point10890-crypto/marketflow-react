@@ -25,44 +25,44 @@
   },
   "top_picks": [
     {
-      "ticker": "T",
-      "name": "AT&T Inc.",
-      "final_score": 78.1,
-      "grade": "🌟 A급 (적극 매수)",
-      "ai_recommendation": "매수",
-      "target_upside": 5.1
-    },
-    {
       "ticker": "AKAM",
       "name": "Akamai Technologies, Inc.",
-      "final_score": 76.7,
+      "final_score": 58.4,
       "grade": "🌟 A급 (적극 매수)",
-      "ai_recommendation": "매수",
-      "target_upside": -4.7
+      "ai_recommendation": "관망",
+      "target_upside": -5.4
     },
     {
-      "ticker": "APO",
-      "name": "Apollo Global Management, Inc.",
-      "final_score": 76.5,
+      "ticker": "T",
+      "name": "AT&T Inc.",
+      "final_score": 55.6,
       "grade": "📈 B급 (매수 고려)",
-      "ai_recommendation": "매수",
-      "target_upside": 38.5
+      "ai_recommendation": "관망",
+      "target_upside": 7.6
     },
     {
-      "ticker": "AEP",
-      "name": "American Electric Power Company, Inc.",
-      "final_score": 75.5,
+      "ticker": "ACGL",
+      "name": "Arch Capital Group Ltd.",
+      "final_score": 54.5,
       "grade": "📈 B급 (매수 고려)",
-      "ai_recommendation": "매수",
-      "target_upside": 4.9
+      "ai_recommendation": "관망",
+      "target_upside": 14.5
     },
     {
-      "ticker": "LNT",
-      "name": "Alliant Energy Corporation",
-      "final_score": 74.4,
+      "ticker": "ALB",
+      "name": "Albemarle Corporation",
+      "final_score": 53.7,
       "grade": "📈 B급 (매수 고려)",
-      "ai_recommendation": "매수",
-      "target_upside": 5.1
+      "ai_recommendation": "관망",
+      "target_upside": 5.8
+    },
+    {
+      "ticker": "AON",
+      "name": "Aon plc",
+      "final_score": 53.5,
+      "grade": "📈 B급 (매수 고려)",
+      "ai_recommendation": "관망",
+      "target_upside": 23.1
     }
   ],
   "timing": "WAIT",

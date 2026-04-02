@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-04-02T12:35:07.039892",
+  "timestamp": "2026-04-02T14:27:28.409951",
   "portfolio_summary": {
     "total_picks": 15,
     "portfolio_var_95_5d": -2046.06,
@@ -10,10 +10,10 @@
       "var_dollar": -2046.06,
       "cvar_pct": -2.84,
       "cvar_dollar": -2840.85,
-      "t_var_dollar": -2135.14,
+      "t_var_dollar": -2134.23,
       "confidence": 0.95,
       "horizon_days": 5,
-      "degrees_of_freedom": 9.92
+      "degrees_of_freedom": 9.89
     }
   },
   "drawdowns": {
@@ -75,8 +75,8 @@
     },
     "APD": {
       "current_price": 289.43,
-      "peak_price": 293.17,
-      "current_dd": -1.28,
+      "peak_price": 291.34,
+      "current_dd": -0.66,
       "max_dd": -7.15,
       "from_peak_days": 6
     },

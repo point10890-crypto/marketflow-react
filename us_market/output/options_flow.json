@@ -1,12 +1,12 @@
 {
   "metadata": {
     "as_of_date": "2026-04-02",
-    "fetch_time": "2026-04-02T12:26:50.749494",
+    "fetch_time": "2026-04-02T14:27:05.081662",
     "source": "yfinance_options",
     "data_quality": "actual",
     "row_count": 15
   },
-  "timestamp": "2026-04-02T12:26:50.749498",
+  "timestamp": "2026-04-02T14:27:05.081665",
   "total_analyzed": 15,
   "watchlist_source": "output/smart_money_picks_v2.csv",
   "options_flow": [
@@ -16,19 +16,19 @@
       "current_price": 387.84,
       "metrics": {
         "pc_volume_ratio": 0.999,
-        "pc_oi_ratio": 0.617,
+        "pc_oi_ratio": 0,
         "total_call_volume": 7390,
         "total_put_volume": 7385,
-        "total_call_oi": 20896,
-        "total_put_oi": 12887,
-        "call_iv": 223.0,
-        "put_iv": 243.6
+        "total_call_oi": 0,
+        "total_put_oi": 0,
+        "call_iv": 33.6,
+        "put_iv": 14.0
       },
       "key_levels": {
-        "max_call_strike": 525.0,
-        "max_call_oi": 1822,
-        "max_put_strike": 300.0,
-        "max_put_oi": 1927
+        "max_call_strike": 240.0,
+        "max_call_oi": 0,
+        "max_put_strike": 240.0,
+        "max_put_oi": 0
       },
       "unusual_activity": {
         "unusual_call_count": 10,
@@ -37,34 +37,34 @@
           {
             "strike": 400.0,
             "volume": 1253.0,
-            "openInterest": 1086
+            "openInterest": 0
           },
           {
             "strike": 410.0,
             "volume": 743.0,
-            "openInterest": 627
+            "openInterest": 0
           },
           {
             "strike": 420.0,
             "volume": 488.0,
-            "openInterest": 877
+            "openInterest": 0
           }
         ],
         "top_unusual_puts": [
           {
             "strike": 387.5,
             "volume": 851.0,
-            "openInterest": 68
+            "openInterest": 0
           },
           {
             "strike": 375.0,
             "volume": 666.0,
-            "openInterest": 164
+            "openInterest": 0
           },
           {
             "strike": 385.0,
             "volume": 536.0,
-            "openInterest": 177
+            "openInterest": 0
           }
         ]
       },
@@ -80,19 +80,19 @@
       "current_price": 210.21,
       "metrics": {
         "pc_volume_ratio": 0.575,
-        "pc_oi_ratio": 1.537,
+        "pc_oi_ratio": 0,
         "total_call_volume": 195623,
         "total_put_volume": 112422,
-        "total_call_oi": 112916,
-        "total_put_oi": 173579,
-        "call_iv": 290.9,
-        "put_iv": 269.7
+        "total_call_oi": 0,
+        "total_put_oi": 0,
+        "call_iv": 22.1,
+        "put_iv": 28.6
       },
       "key_levels": {
-        "max_call_strike": 210.0,
-        "max_call_oi": 11955,
-        "max_put_strike": 165.0,
-        "max_put_oi": 30602
+        "max_call_strike": 40.0,
+        "max_call_oi": 0,
+        "max_put_strike": 40.0,
+        "max_put_oi": 0
       },
       "unusual_activity": {
         "unusual_call_count": 7,
@@ -101,34 +101,34 @@
           {
             "strike": 210.0,
             "volume": 45116,
-            "openInterest": 11955
+            "openInterest": 0
           },
           {
             "strike": 215.0,
             "volume": 32111,
-            "openInterest": 10803
+            "openInterest": 0
           },
           {
             "strike": 212.5,
             "volume": 25485,
-            "openInterest": 5730
+            "openInterest": 0
           }
         ],
         "top_unusual_puts": [
           {
             "strike": 210.0,
             "volume": 16207.0,
-            "openInterest": 4852
+            "openInterest": 0
           },
           {
             "strike": 200.0,
             "volume": 13445.0,
-            "openInterest": 7104
+            "openInterest": 0
           },
           {
             "strike": 205.0,
             "volume": 12926.0,
-            "openInterest": 5070
+            "openInterest": 0
           }
         ]
       },
@@ -144,19 +144,19 @@
       "current_price": 353.8,
       "metrics": {
         "pc_volume_ratio": 1.889,
-        "pc_oi_ratio": 0.988,
+        "pc_oi_ratio": 0,
         "total_call_volume": 3236,
         "total_put_volume": 6113,
-        "total_call_oi": 9372,
-        "total_put_oi": 9264,
-        "call_iv": 161.5,
-        "put_iv": 218.6
+        "total_call_oi": 0,
+        "total_put_oi": 0,
+        "call_iv": 21.6,
+        "put_iv": 26.5
       },
       "key_levels": {
-        "max_call_strike": 385.0,
-        "max_call_oi": 868,
-        "max_put_strike": 300.0,
-        "max_put_oi": 1117
+        "max_call_strike": 175.0,
+        "max_call_oi": 0,
+        "max_put_strike": 170.0,
+        "max_put_oi": 0
       },
       "unusual_activity": {
         "unusual_call_count": 6,
@@ -165,34 +165,34 @@
           {
             "strike": 345.0,
             "volume": 371.0,
-            "openInterest": 474
+            "openInterest": 0
           },
           {
             "strike": 270.0,
             "volume": 312.0,
-            "openInterest": 242
+            "openInterest": 0
           },
           {
             "strike": 375.0,
             "volume": 271.0,
-            "openInterest": 176
+            "openInterest": 0
           }
         ],
         "top_unusual_puts": [
           {
             "strike": 345.0,
             "volume": 1829.0,
-            "openInterest": 103
+            "openInterest": 0
           },
           {
             "strike": 360.0,
             "volume": 1099.0,
-            "openInterest": 140
+            "openInterest": 0
           },
           {
             "strike": 330.0,
             "volume": 520.0,
-            "openInterest": 553
+            "openInterest": 0
           }
         ]
       },
@@ -208,19 +208,19 @@
       "current_price": 41.35,
       "metrics": {
         "pc_volume_ratio": 0.997,
-        "pc_oi_ratio": 0.748,
+        "pc_oi_ratio": 0,
         "total_call_volume": 1428,
         "total_put_volume": 1424,
-        "total_call_oi": 4314,
-        "total_put_oi": 3229,
-        "call_iv": 174.4,
-        "put_iv": 299.8
+        "total_call_oi": 0,
+        "total_put_oi": 0,
+        "call_iv": 13.0,
+        "put_iv": 34.7
       },
       "key_levels": {
-        "max_call_strike": 45.0,
-        "max_call_oi": 582,
-        "max_put_strike": 42.0,
-        "max_put_oi": 908
+        "max_call_strike": 15.0,
+        "max_call_oi": 0,
+        "max_put_strike": 20.0,
+        "max_put_oi": 0
       },
       "unusual_activity": {
         "unusual_call_count": 3,
@@ -229,34 +229,34 @@
           {
             "strike": 41.0,
             "volume": 513,
-            "openInterest": 96
+            "openInterest": 0
           },
           {
             "strike": 42.0,
             "volume": 163,
-            "openInterest": 117
+            "openInterest": 0
           },
           {
             "strike": 41.5,
             "volume": 158,
-            "openInterest": 96
+            "openInterest": 0
           }
         ],
         "top_unusual_puts": [
           {
             "strike": 40.5,
             "volume": 262.0,
-            "openInterest": 78
+            "openInterest": 0
           },
           {
             "strike": 42.0,
             "volume": 214.0,
-            "openInterest": 908
+            "openInterest": 0
           },
           {
             "strike": 41.0,
             "volume": 170.0,
-            "openInterest": 174
+            "openInterest": 0
           }
         ]
       },
@@ -272,19 +272,19 @@
       "current_price": 110.25,
       "metrics": {
         "pc_volume_ratio": 2.278,
-        "pc_oi_ratio": 2.02,
+        "pc_oi_ratio": 0,
         "total_call_volume": 475,
         "total_put_volume": 1082,
-        "total_call_oi": 2443,
-        "total_put_oi": 4936,
-        "call_iv": 130.2,
-        "put_iv": 165.5
+        "total_call_oi": 0,
+        "total_put_oi": 0,
+        "call_iv": 23.8,
+        "put_iv": 22.1
       },
       "key_levels": {
-        "max_call_strike": 115.0,
-        "max_call_oi": 616,
-        "max_put_strike": 110.0,
-        "max_put_oi": 1010
+        "max_call_strike": 94.0,
+        "max_call_oi": 0,
+        "max_put_strike": 70.0,
+        "max_put_oi": 0
       },
       "unusual_activity": {
         "unusual_call_count": 4,
@@ -293,29 +293,29 @@
           {
             "strike": 114.0,
             "volume": 114.0,
-            "openInterest": 142
+            "openInterest": 0
           },
           {
             "strike": 110.0,
             "volume": 101.0,
-            "openInterest": 197
+            "openInterest": 0
           },
           {
             "strike": 115.0,
             "volume": 52.0,
-            "openInterest": 616
+            "openInterest": 0
           }
         ],
         "top_unusual_puts": [
           {
             "strike": 107.0,
             "volume": 441.0,
-            "openInterest": 173
+            "openInterest": 0
           },
           {
             "strike": 105.0,
             "volume": 438.0,
-            "openInterest": 772
+            "openInterest": 0
           }
         ]
       },
@@ -331,19 +331,19 @@
       "current_price": 28.31,
       "metrics": {
         "pc_volume_ratio": 1.187,
-        "pc_oi_ratio": 0.931,
+        "pc_oi_ratio": 0,
         "total_call_volume": 5943,
         "total_put_volume": 7052,
-        "total_call_oi": 20676,
-        "total_put_oi": 19247,
-        "call_iv": 216.5,
-        "put_iv": 123.7
+        "total_call_oi": 0,
+        "total_put_oi": 0,
+        "call_iv": 15.6,
+        "put_iv": 20.4
       },
       "key_levels": {
-        "max_call_strike": 29.5,
-        "max_call_oi": 6790,
-        "max_put_strike": 29.0,
-        "max_put_oi": 5342
+        "max_call_strike": 15.0,
+        "max_call_oi": 0,
+        "max_put_strike": 15.0,
+        "max_put_oi": 0
       },
       "unusual_activity": {
         "unusual_call_count": 2,
@@ -352,29 +352,29 @@
           {
             "strike": 29.0,
             "volume": 3301.0,
-            "openInterest": 5801
+            "openInterest": 0
           },
           {
             "strike": 28.5,
             "volume": 1363.0,
-            "openInterest": 1155
+            "openInterest": 0
           }
         ],
         "top_unusual_puts": [
           {
             "strike": 29.0,
             "volume": 2193,
-            "openInterest": 5342
+            "openInterest": 0
           },
           {
             "strike": 28.5,
             "volume": 2080,
-            "openInterest": 3786
+            "openInterest": 0
           },
           {
             "strike": 28.0,
             "volume": 1337,
-            "openInterest": 1095
+            "openInterest": 0
           }
         ]
       },
@@ -390,19 +390,19 @@
       "current_price": 178.47,
       "metrics": {
         "pc_volume_ratio": 0.594,
-        "pc_oi_ratio": 1.537,
+        "pc_oi_ratio": 0,
         "total_call_volume": 716,
         "total_put_volume": 425,
-        "total_call_oi": 2255,
-        "total_put_oi": 3466,
-        "call_iv": 243.6,
-        "put_iv": 244.1
+        "total_call_oi": 0,
+        "total_put_oi": 0,
+        "call_iv": 20.1,
+        "put_iv": 34.1
       },
       "key_levels": {
-        "max_call_strike": 200.0,
-        "max_call_oi": 362,
-        "max_put_strike": 170.0,
-        "max_put_oi": 962
+        "max_call_strike": 95.0,
+        "max_call_oi": 0,
+        "max_put_strike": 95.0,
+        "max_put_oi": 0
       },
       "unusual_activity": {
         "unusual_call_count": 3,
@@ -411,29 +411,29 @@
           {
             "strike": 200.0,
             "volume": 167.0,
-            "openInterest": 362
+            "openInterest": 0
           },
           {
             "strike": 187.5,
             "volume": 110.0,
-            "openInterest": 76
+            "openInterest": 0
           },
           {
             "strike": 160.0,
             "volume": 80.0,
-            "openInterest": 107
+            "openInterest": 0
           }
         ],
         "top_unusual_puts": [
           {
             "strike": 110.0,
             "volume": 74.0,
-            "openInterest": 89
+            "openInterest": 0
           },
           {
             "strike": 152.5,
             "volume": 51.0,
-            "openInterest": 54
+            "openInterest": 0
           }
         ]
       },
@@ -449,19 +449,19 @@
       "current_price": 115.75,
       "metrics": {
         "pc_volume_ratio": 2.243,
-        "pc_oi_ratio": 1.155,
+        "pc_oi_ratio": 0,
         "total_call_volume": 313,
         "total_put_volume": 702,
-        "total_call_oi": 599,
-        "total_put_oi": 692,
-        "call_iv": 82.9,
-        "put_iv": 106.7
+        "total_call_oi": 0,
+        "total_put_oi": 0,
+        "call_iv": 15.3,
+        "put_iv": 21.5
       },
       "key_levels": {
-        "max_call_strike": 117.0,
-        "max_call_oi": 177,
-        "max_put_strike": 111.0,
-        "max_put_oi": 460
+        "max_call_strike": 105.0,
+        "max_call_oi": 0,
+        "max_put_strike": 100.0,
+        "max_put_oi": 0
       },
       "unusual_activity": {
         "unusual_call_count": 1,
@@ -470,14 +470,14 @@
           {
             "strike": 125.0,
             "volume": 111.0,
-            "openInterest": 112
+            "openInterest": 0
           }
         ],
         "top_unusual_puts": [
           {
             "strike": 111.0,
             "volume": 622.0,
-            "openInterest": 460
+            "openInterest": 0
           }
         ]
       },
@@ -493,19 +493,19 @@
       "current_price": 131.67,
       "metrics": {
         "pc_volume_ratio": 0.311,
-        "pc_oi_ratio": 0.603,
+        "pc_oi_ratio": 0,
         "total_call_volume": 322,
         "total_put_volume": 100,
-        "total_call_oi": 4998,
-        "total_put_oi": 3012,
-        "call_iv": 57.2,
-        "put_iv": 50.2
+        "total_call_oi": 0,
+        "total_put_oi": 0,
+        "call_iv": 8.4,
+        "put_iv": 13.3
       },
       "key_levels": {
-        "max_call_strike": 135.0,
-        "max_call_oi": 2536,
-        "max_put_strike": 125.0,
-        "max_put_oi": 1106
+        "max_call_strike": 90.0,
+        "max_call_oi": 0,
+        "max_put_strike": 95.0,
+        "max_put_oi": 0
       },
       "unusual_activity": {
         "unusual_call_count": 1,
@@ -514,14 +514,14 @@
           {
             "strike": 135.0,
             "volume": 286.0,
-            "openInterest": 2536
+            "openInterest": 0
           }
         ],
         "top_unusual_puts": [
           {
             "strike": 115.0,
             "volume": 38,
-            "openInterest": 109
+            "openInterest": 0
           }
         ]
       },
@@ -537,19 +537,19 @@
       "current_price": 71.94,
       "metrics": {
         "pc_volume_ratio": 0.855,
-        "pc_oi_ratio": 0.31,
+        "pc_oi_ratio": 1.125,
         "total_call_volume": 62,
         "total_put_volume": 53,
-        "total_call_oi": 842,
-        "total_put_oi": 261,
-        "call_iv": 46.1,
-        "put_iv": 83.5
+        "total_call_oi": 8,
+        "total_put_oi": 9,
+        "call_iv": 2.2,
+        "put_iv": 45.7
       },
       "key_levels": {
-        "max_call_strike": 72.5,
-        "max_call_oi": 236,
-        "max_put_strike": 67.5,
-        "max_put_oi": 80
+        "max_call_strike": 37.5,
+        "max_call_oi": 4,
+        "max_put_strike": 50.0,
+        "max_put_oi": 6
       },
       "unusual_activity": {
         "unusual_call_count": 0,
@@ -559,12 +559,12 @@
           {
             "strike": 67.5,
             "volume": 25,
-            "openInterest": 80
+            "openInterest": 0
           },
           {
             "strike": 60.0,
             "volume": 14,
-            "openInterest": 19
+            "openInterest": 0
           }
         ]
       },
@@ -575,68 +575,24 @@
       }
     },
     {
-      "ticker": "APD",
-      "expiration": "2026-04-17",
-      "current_price": 289.43,
-      "metrics": {
-        "pc_volume_ratio": 0.547,
-        "pc_oi_ratio": 0.252,
-        "total_call_volume": 172,
-        "total_put_volume": 94,
-        "total_call_oi": 7828,
-        "total_put_oi": 1971,
-        "call_iv": 51.6,
-        "put_iv": 52.8
-      },
-      "key_levels": {
-        "max_call_strike": 300.0,
-        "max_call_oi": 3378,
-        "max_put_strike": 200.0,
-        "max_put_oi": 771
-      },
-      "unusual_activity": {
-        "unusual_call_count": 1,
-        "unusual_put_count": 1,
-        "top_unusual_calls": [
-          {
-            "strike": 290.0,
-            "volume": 74.0,
-            "openInterest": 951
-          }
-        ],
-        "top_unusual_puts": [
-          {
-            "strike": 290.0,
-            "volume": 73.0,
-            "openInterest": 208
-          }
-        ]
-      },
-      "signal": {
-        "sentiment": "🟢 Bullish",
-        "sentiment_score": 70,
-        "activity": "😴 Normal Activity"
-      }
-    },
-    {
       "ticker": "AJG",
       "expiration": "2026-04-17",
       "current_price": 216.34,
       "metrics": {
         "pc_volume_ratio": 0.351,
-        "pc_oi_ratio": 0.545,
+        "pc_oi_ratio": 0.0,
         "total_call_volume": 316,
         "total_put_volume": 111,
-        "total_call_oi": 3056,
-        "total_put_oi": 1664,
-        "call_iv": 88.1,
-        "put_iv": 59.5
+        "total_call_oi": 8,
+        "total_put_oi": 0,
+        "call_iv": 45.2,
+        "put_iv": 18.1
       },
       "key_levels": {
-        "max_call_strike": 240.0,
-        "max_call_oi": 677,
-        "max_put_strike": 165.0,
-        "max_put_oi": 703
+        "max_call_strike": 350.0,
+        "max_call_oi": 6,
+        "max_put_strike": 145.0,
+        "max_put_oi": 0
       },
       "unusual_activity": {
         "unusual_call_count": 1,
@@ -645,7 +601,7 @@
           {
             "strike": 240.0,
             "volume": 212.0,
-            "openInterest": 677
+            "openInterest": 0
           }
         ],
         "top_unusual_puts": [
@@ -663,24 +619,68 @@
       }
     },
     {
+      "ticker": "APD",
+      "expiration": "2026-04-17",
+      "current_price": 289.43,
+      "metrics": {
+        "pc_volume_ratio": 0.547,
+        "pc_oi_ratio": 0,
+        "total_call_volume": 172,
+        "total_put_volume": 94,
+        "total_call_oi": 0,
+        "total_put_oi": 0,
+        "call_iv": 8.7,
+        "put_iv": 13.3
+      },
+      "key_levels": {
+        "max_call_strike": 220.0,
+        "max_call_oi": 0,
+        "max_put_strike": 200.0,
+        "max_put_oi": 0
+      },
+      "unusual_activity": {
+        "unusual_call_count": 1,
+        "unusual_put_count": 1,
+        "top_unusual_calls": [
+          {
+            "strike": 290.0,
+            "volume": 74.0,
+            "openInterest": 0
+          }
+        ],
+        "top_unusual_puts": [
+          {
+            "strike": 290.0,
+            "volume": 73.0,
+            "openInterest": 0
+          }
+        ]
+      },
+      "signal": {
+        "sentiment": "🟢 Bullish",
+        "sentiment_score": 70,
+        "activity": "😴 Normal Activity"
+      }
+    },
+    {
       "ticker": "ACGL",
       "expiration": "2026-04-17",
       "current_price": 95.49,
       "metrics": {
         "pc_volume_ratio": 0.198,
-        "pc_oi_ratio": 0.202,
+        "pc_oi_ratio": 0,
         "total_call_volume": 131,
         "total_put_volume": 26,
-        "total_call_oi": 1599,
-        "total_put_oi": 323,
-        "call_iv": 69.9,
-        "put_iv": 61.3
+        "total_call_oi": 0,
+        "total_put_oi": 0,
+        "call_iv": 19.7,
+        "put_iv": 13.5
       },
       "key_levels": {
-        "max_call_strike": 105.0,
-        "max_call_oi": 1154,
-        "max_put_strike": 90.0,
-        "max_put_oi": 155
+        "max_call_strike": 85.0,
+        "max_call_oi": 0,
+        "max_put_strike": 70.0,
+        "max_put_oi": 0
       },
       "unusual_activity": {
         "unusual_call_count": 1,
@@ -689,7 +689,7 @@
           {
             "strike": 105.0,
             "volume": 91.0,
-            "openInterest": 1154
+            "openInterest": 0
           }
         ],
         "top_unusual_puts": []
@@ -706,19 +706,19 @@
       "current_price": 321.34,
       "metrics": {
         "pc_volume_ratio": 0.326,
-        "pc_oi_ratio": 0.635,
+        "pc_oi_ratio": 0.0,
         "total_call_volume": 89,
         "total_put_volume": 29,
-        "total_call_oi": 1016,
-        "total_put_oi": 645,
-        "call_iv": 89.4,
-        "put_iv": 49.0
+        "total_call_oi": 61,
+        "total_put_oi": 0,
+        "call_iv": 67.5,
+        "put_iv": 8.2
       },
       "key_levels": {
-        "max_call_strike": 340.0,
-        "max_call_oi": 136,
-        "max_put_strike": 340.0,
-        "max_put_oi": 109
+        "max_call_strike": 410.0,
+        "max_call_oi": 30,
+        "max_put_strike": 230.0,
+        "max_put_oi": 0
       },
       "unusual_activity": {
         "unusual_call_count": 0,
@@ -738,19 +738,19 @@
       "current_price": 110.79,
       "metrics": {
         "pc_volume_ratio": 0.091,
-        "pc_oi_ratio": 0.029,
+        "pc_oi_ratio": 0,
         "total_call_volume": 88,
         "total_put_volume": 8,
-        "total_call_oi": 556,
-        "total_put_oi": 16,
-        "call_iv": 36.3,
-        "put_iv": 49.2
+        "total_call_oi": 0,
+        "total_put_oi": 0,
+        "call_iv": 4.7,
+        "put_iv": 9.5
       },
       "key_levels": {
-        "max_call_strike": 110.0,
-        "max_call_oi": 302,
-        "max_put_strike": 105.0,
-        "max_put_oi": 6
+        "max_call_strike": 105.0,
+        "max_call_oi": 0,
+        "max_put_strike": 90.0,
+        "max_put_oi": 0
       },
       "unusual_activity": {
         "unusual_call_count": 0,
