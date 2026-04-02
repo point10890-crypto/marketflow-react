@@ -8,7 +8,7 @@
     "catalysts": [],
     "risk": "",
     "citations": [],
-    "analyzed_at": "2026-04-01T05:12:33.249394"
+    "analyzed_at": "2026-04-02T12:37:20.060269"
   },
   {
     "ticker": "T",
@@ -19,7 +19,7 @@
     "catalysts": [],
     "risk": "",
     "citations": [],
-    "analyzed_at": "2026-04-01T05:12:34.259627"
+    "analyzed_at": "2026-04-02T12:37:21.125855"
   },
   {
     "ticker": "APO",
@@ -30,18 +30,7 @@
     "catalysts": [],
     "risk": "",
     "citations": [],
-    "analyzed_at": "2026-04-01T05:12:35.296559"
-  },
-  {
-    "ticker": "AEP",
-    "news_score": 0,
-    "sentiment": "neutral",
-    "reason": "뉴스 없음",
-    "action": "HOLD",
-    "catalysts": [],
-    "risk": "",
-    "citations": [],
-    "analyzed_at": "2026-04-01T05:12:36.340166"
+    "analyzed_at": "2026-04-02T12:37:22.393880"
   },
   {
     "ticker": "ACGL",
@@ -52,6 +41,17 @@
     "catalysts": [],
     "risk": "",
     "citations": [],
-    "analyzed_at": "2026-04-01T05:12:37.373485"
+    "analyzed_at": "2026-04-02T12:37:23.591255"
+  },
+  {
+    "ticker": "AEP",
+    "news_score": 0,
+    "sentiment": "neutral",
+    "reason": "뉴스 없음",
+    "action": "HOLD",
+    "catalysts": [],
+    "risk": "",
+    "citations": [],
+    "analyzed_at": "2026-04-02T12:37:24.960614"
   }
 ]

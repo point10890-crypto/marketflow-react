@@ -1,9 +1,9 @@
 {
-  "name": "에코프로머티",
-  "ticker": "450080.KS",
+  "name": "코메론",
+  "ticker": "049430.KQ",
   "result": "데이터 없음",
-  "date": "2026-04-02 08:34:37",
-  "elapsed": 1.7,
+  "date": "2026-04-02 06:56:42",
+  "elapsed": 2.0,
   "consensus_score": null,
   "analyst_count": 0,
   "recommendation_detail": {
@@ -15,27 +15,27 @@
   },
   "recommendation_period": "0m",
   "price_targets": {
-    "current": 72600.0,
+    "current": 23150.0,
     "high": null,
     "low": null,
     "mean": null,
     "median": null
   },
-  "current_price": 72600.0,
+  "current_price": 23150.0,
   "upside_potential": null,
   "key_stats": {
-    "name": "ECOPRO MAT",
-    "sector": "Industrials",
-    "industry": "Electrical Equipment & Parts",
-    "market_cap": 5122565341184,
+    "name": "KOMELON",
+    "sector": "",
+    "industry": "",
+    "market_cap": 207988162560,
     "pe_ratio": null,
-    "forward_pe": 71.95243,
+    "forward_pe": null,
     "dividend_yield": null,
-    "beta": 3.932,
-    "fifty_two_week_high": 78900.0,
-    "fifty_two_week_low": 40600.0,
-    "revenue": 392506179584,
-    "profit_margin": 0.06141,
+    "beta": null,
+    "fifty_two_week_high": 21350.0,
+    "fifty_two_week_low": 8841.0,
+    "revenue": null,
+    "profit_margin": null,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
@@ -44,37 +44,37 @@
   "revenue_quarters": [
     {
       "date": "2025-12",
-      "value": 115202955950
+      "value": 15496423420
     },
     {
       "date": "2025-09",
-      "value": 63153785110
+      "value": 20678073900
     },
     {
       "date": "2025-06",
-      "value": 78068573060
+      "value": 18255669150
     },
     {
       "date": "2025-03",
-      "value": 136080858580
+      "value": 17844175200
     }
   ],
   "net_income_quarters": [
     {
       "date": "2025-12",
-      "value": -96656822650
+      "value": 4966312200
     },
     {
       "date": "2025-09",
-      "value": 161587947810
+      "value": 6212516950
     },
     {
       "date": "2025-06",
-      "value": -33501838340
+      "value": 6807818240
     },
     {
       "date": "2025-03",
-      "value": -7325548460
+      "value": 4567964030
     }
   ],
   "news": []

@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-04-01T05:05:04.923167",
+  "timestamp": "2026-04-02T12:30:54.189977",
   "upcoming_earnings": [],
   "strong_momentum": [],
   "details": {
@@ -69,7 +69,7 @@
     },
     "APO": {
       "ticker": "APO",
-      "next_earnings_date": "2026-05-01",
+      "next_earnings_date": "2026-05-06",
       "avg_surprise_pct": 0.0,
       "surprises": [
         {
@@ -131,9 +131,9 @@
       ],
       "revenue_growth": 0.132
     },
-    "LNT": {
-      "ticker": "LNT",
-      "next_earnings_date": "2026-05-08",
+    "ACGL": {
+      "ticker": "ACGL",
+      "next_earnings_date": "2026-04-29",
       "avg_surprise_pct": 0.0,
       "surprises": [
         {
@@ -161,7 +161,7 @@
           "surprise_pct": 0
         }
       ],
-      "revenue_growth": 0.09
+      "revenue_growth": 0.085
     },
     "ALB": {
       "ticker": "ALB",
@@ -195,9 +195,9 @@
       ],
       "revenue_growth": 0.159
     },
-    "ACGL": {
-      "ticker": "ACGL",
-      "next_earnings_date": "2026-04-29",
+    "LNT": {
+      "ticker": "LNT",
+      "next_earnings_date": "2026-05-08",
       "avg_surprise_pct": 0.0,
       "surprises": [
         {
@@ -225,7 +225,7 @@
           "surprise_pct": 0
         }
       ],
-      "revenue_growth": 0.085
+      "revenue_growth": 0.09
     },
     "APD": {
       "ticker": "APD",

@@ -1,10 +1,10 @@
 {
-  "action": "DEFENSIVE",
-  "score": 24,
+  "action": "CAUTIOUS",
+  "score": 38,
   "components": {
     "market_gate": {
-      "score": 15,
-      "contribution": -10.5
+      "score": 25,
+      "contribution": -7.5
     },
     "regime": {
       "regime": "neutral",
@@ -15,8 +15,8 @@
       "contribution": 0
     },
     "risk": {
-      "level": "High",
-      "contribution": -10
+      "level": "Elevated",
+      "contribution": 0
     },
     "sector_phase": {
       "phase": "Late Cycle",
@@ -67,10 +67,10 @@
   ],
   "timing": "WAIT",
   "warnings": [
-    "APO is in critical drawdown: -26.7% from peak",
-    "AMD is in critical drawdown: -21.7% from peak",
-    "APP is in critical drawdown: -40.5% from peak",
-    "AJG drawdown warning: -18.0% from peak",
-    "AMAT drawdown warning: -13.5% from peak"
+    "APO is in critical drawdown: -27.5% from peak",
+    "APP is in critical drawdown: -42.0% from peak",
+    "AJG drawdown warning: -18.1% from peak",
+    "AMD drawdown warning: -19.1% from peak",
+    "AMAT drawdown warning: -10.4% from peak"
   ]
 }

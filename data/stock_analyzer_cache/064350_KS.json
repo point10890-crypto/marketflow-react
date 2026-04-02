@@ -1,0 +1,103 @@
+{
+  "name": "현대로템",
+  "ticker": "064350.KS",
+  "result": "적극 매수",
+  "date": "2026-04-02 12:12:12",
+  "elapsed": 2.2,
+  "consensus_score": 4.39,
+  "analyst_count": 18,
+  "recommendation_detail": {
+    "strongBuy": 7,
+    "buy": 11,
+    "hold": 0,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 203500.0,
+    "high": 350000.0,
+    "low": 270000.0,
+    "mean": 300000.0,
+    "median": 300000.0
+  },
+  "current_price": 203500.0,
+  "upside_potential": 47.4,
+  "key_stats": {
+    "name": "HYUNDAI ROTEM",
+    "sector": "Industrials",
+    "industry": "Railroads",
+    "market_cap": 22210456584192,
+    "pe_ratio": null,
+    "forward_pe": 15.294024,
+    "dividend_yield": 0.32,
+    "beta": 1.392,
+    "fifty_two_week_high": 274000.0,
+    "fifty_two_week_low": 88700.0,
+    "revenue": 5839031631872,
+    "profit_margin": 0.13186,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "현대로템(064350.KS)은 18명의 애널리스트 컨센서스 기준 '적극 매수' 의견을 받고 있습니다. 목표가 평균은 300,000 KRW으로, 현재가 203,500 KRW 대비 47.4%의 상승 여력이 존재합니다. 이는 애널리스트들이 현 주가보다 높은 잠재 가치를 예상하고 있음을 시사합니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 1625621371000
+    },
+    {
+      "date": "2025-09",
+      "value": 1619634717000
+    },
+    {
+      "date": "2025-06",
+      "value": 1417634367000
+    },
+    {
+      "date": "2025-03",
+      "value": 1176141098000
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 222447016000
+    },
+    {
+      "date": "2025-09",
+      "value": 198492930000
+    },
+    {
+      "date": "2025-06",
+      "value": 190622115000
+    },
+    {
+      "date": "2025-03",
+      "value": 158385453000
+    }
+  ],
+  "news": [
+    {
+      "title": "Asian Market Insights: 3 Stocks That May Be Trading Below Their Estimated Value",
+      "summary": "As the Asian markets navigate a landscape marked by technological shifts and geopolitical tensions, investors are increasingly attentive to segments that may offer value opportunities amidst broader v",
+      "url": "https://finance.yahoo.com/news/asian-market-insights-3-stocks-043833400.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-02-10T04:38:33Z"
+    },
+    {
+      "title": "3 Global Stocks Estimated To Be Up To 29.5% Below Intrinsic Value",
+      "summary": "In the current global market landscape, investors are witnessing a mixed performance across major indices, with value-oriented stocks showing resilience amid volatility driven by concerns over AI inve",
+      "url": "https://finance.yahoo.com/news/3-global-stocks-estimated-29-093820531.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-02-09T09:38:20Z"
+    },
+    {
+      "title": "Hyundai Rotem secures $298m contract for Taichung subway project in Taiwan",
+      "summary": "Each trainset can hold up to 530 passengers and operates at a maximum speed of 80km/h.",
+      "url": "https://www.railway-technology.com/news/hyundai-rotem-taichung-subway-taiwan/",
+      "provider": "Railway Technology",
+      "pub_time": "2025-05-15T16:35:39Z"
+    }
+  ]
+}

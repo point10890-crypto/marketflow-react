@@ -1,35 +1,35 @@
 {
-  "name": "엔켐",
-  "ticker": "348370.KQ",
+  "name": "우리로",
+  "ticker": "046970.KQ",
   "result": "데이터 없음",
-  "date": "2026-04-02 08:34:23",
-  "elapsed": 1.6,
+  "date": "2026-04-02 08:57:47",
+  "elapsed": 2.3,
   "consensus_score": null,
   "analyst_count": 0,
   "recommendation_detail": null,
   "recommendation_period": null,
   "price_targets": {
-    "current": 39350.0,
+    "current": 8580.0,
     "high": null,
     "low": null,
     "mean": null,
     "median": null
   },
-  "current_price": 39350.0,
+  "current_price": 8580.0,
   "upside_potential": null,
   "key_stats": {
-    "name": "Enchem",
-    "sector": "Industrials",
-    "industry": "Electrical Equipment & Parts",
-    "market_cap": 856548900864,
+    "name": "WOORIRO",
+    "sector": "Technology",
+    "industry": "Communication Equipment",
+    "market_cap": 372364771328,
     "pe_ratio": null,
     "forward_pe": null,
     "dividend_yield": null,
-    "beta": 0.436,
-    "fifty_two_week_high": 105000.0,
-    "fifty_two_week_low": 29950.0,
-    "revenue": 300378226688,
-    "profit_margin": -0.66893995,
+    "beta": 0.329,
+    "fifty_two_week_high": 10030.0,
+    "fifty_two_week_low": 1068.0,
+    "revenue": 42474835968,
+    "profit_margin": -0.01857,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
@@ -37,38 +37,38 @@
   "ai_analysis": null,
   "revenue_quarters": [
     {
+      "date": "2025-12",
+      "value": 11449502630
+    },
+    {
       "date": "2025-09",
-      "value": 90252308080
+      "value": 12061552980
     },
     {
       "date": "2025-06",
-      "value": 64072848150
+      "value": 10077603300
     },
     {
       "date": "2025-03",
-      "value": 68223627670
-    },
-    {
-      "date": "2024-12",
-      "value": 77829437460
+      "value": 8886178870
     }
   ],
   "net_income_quarters": [
     {
+      "date": "2025-12",
+      "value": -415582810
+    },
+    {
       "date": "2025-09",
-      "value": -35932981830
+      "value": 1250339040
     },
     {
       "date": "2025-06",
-      "value": -19715447620
+      "value": 218257350
     },
     {
       "date": "2025-03",
-      "value": 58223820130
-    },
-    {
-      "date": "2024-12",
-      "value": -203511044010
+      "value": -1841687340
     }
   ],
   "news": []

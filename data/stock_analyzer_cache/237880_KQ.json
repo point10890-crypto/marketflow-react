@@ -1,0 +1,81 @@
+{
+  "name": "클리오",
+  "ticker": "237880.KQ",
+  "result": "매도",
+  "date": "2026-04-02 00:53:34",
+  "elapsed": 2.1,
+  "consensus_score": 2.5,
+  "analyst_count": 2,
+  "recommendation_detail": {
+    "strongBuy": 0,
+    "buy": 1,
+    "hold": 0,
+    "sell": 0,
+    "strongSell": 1
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 11970.0,
+    "high": 16000.0,
+    "low": 12000.0,
+    "mean": 14000.0,
+    "median": 14000.0
+  },
+  "current_price": 11970.0,
+  "upside_potential": 17.0,
+  "key_stats": {
+    "name": "CLIO Cosmetics",
+    "sector": "Consumer Defensive",
+    "industry": "Household & Personal Products",
+    "market_cap": 209769742336,
+    "pe_ratio": null,
+    "forward_pe": 10.417754,
+    "dividend_yield": 2.15,
+    "beta": 0.503,
+    "fifty_two_week_high": 20350.0,
+    "fifty_two_week_low": 11000.0,
+    "revenue": 326531252224,
+    "profit_margin": 0.03884,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "클리오(237880.KQ)에 대한 애널리스트 컨센서스는 매도 의견이며, 2명의 애널리스트가 참여했습니다. 평균 목표 주가는 14,000원으로 현재 주가 대비 17.0% 상승 여력이 있습니다. 투자 판단은 제시된 정보를 바탕으로 투자자 본인이 결정해야 합니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 83815552800
+    },
+    {
+      "date": "2025-06",
+      "value": 82129745420
+    },
+    {
+      "date": "2025-03",
+      "value": 82335790610
+    },
+    {
+      "date": "2024-12",
+      "value": 78250174680
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 5529123110
+    },
+    {
+      "date": "2025-06",
+      "value": 2037203390
+    },
+    {
+      "date": "2025-03",
+      "value": 2735130520
+    },
+    {
+      "date": "2024-12",
+      "value": 2380624830
+    }
+  ],
+  "news": []
+}

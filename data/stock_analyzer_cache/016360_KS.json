@@ -1,0 +1,120 @@
+{
+  "name": "삼성증권",
+  "ticker": "016360.KS",
+  "result": "적극 매수",
+  "date": "2026-04-02 12:31:00",
+  "elapsed": 18.8,
+  "consensus_score": 4.33,
+  "analyst_count": 12,
+  "recommendation_detail": {
+    "strongBuy": 4,
+    "buy": 8,
+    "hold": 0,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 93300.0,
+    "high": 154000.0,
+    "low": 91000.0,
+    "mean": 118250.0,
+    "median": 110500.0
+  },
+  "current_price": 93300.0,
+  "upside_potential": 26.7,
+  "key_stats": {
+    "name": "SamsungSecu",
+    "sector": "Financial Services",
+    "industry": "Capital Markets",
+    "market_cap": 8331690246144,
+    "pe_ratio": null,
+    "forward_pe": 6.972625,
+    "dividend_yield": 4.07,
+    "beta": 0.874,
+    "fifty_two_week_high": 119400.0,
+    "fifty_two_week_low": 41550.0,
+    "revenue": 2599602094080,
+    "profit_margin": 0.38791,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "삼성증권(016360.KS)은 12명의 애널리스트 컨센서스 기준 '적극 매수' 의견을 받고 있습니다. 목표가 평균은 118,250원으로 현재가 대비 26.7% 상승 여력이 존재합니다. 이는 애널리스트들이 삼성증권의 추가적인 주가 상승을 기대하고 있음을 시사합니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 663579974370
+    },
+    {
+      "date": "2025-06",
+      "value": 616601259340
+    },
+    {
+      "date": "2025-03",
+      "value": 604744351110
+    },
+    {
+      "date": "2024-12",
+      "value": 489421827570
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 309174366330
+    },
+    {
+      "date": "2025-06",
+      "value": 234644016510
+    },
+    {
+      "date": "2025-03",
+      "value": 248413515870
+    },
+    {
+      "date": "2024-12",
+      "value": 147712967850
+    }
+  ],
+  "news": [
+    {
+      "title": "Asian Dividend Stocks To Enhance Your Investment Portfolio",
+      "summary": "As global markets grapple with AI disruption concerns and economic shifts, Asian markets present a unique opportunity for investors seeking stability and growth. In this environment, dividend stocks c",
+      "url": "https://finance.yahoo.com/news/asian-dividend-stocks-enhance-investment-043146238.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-02-16T04:31:46Z"
+    },
+    {
+      "title": "Asian Dividend Stocks To Enhance Your Portfolio",
+      "summary": "Amidst a backdrop of mixed performances in global markets and regulatory shifts in China, the Asian stock landscape is capturing attention with its dynamic economic activities and evolving trade relat",
+      "url": "https://finance.yahoo.com/news/asian-dividend-stocks-enhance-portfolio-223916871.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-01-18T22:39:16Z"
+    },
+    {
+      "title": "Asian Dividend Stocks Yielding Up To 4.4% For Your Portfolio",
+      "summary": "As Asian markets navigate a complex landscape marked by U.S.-China trade tensions and domestic economic challenges, investors are increasingly looking towards stable income sources like dividend stock",
+      "url": "https://finance.yahoo.com/news/asian-dividend-stocks-yielding-4-224026503.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2025-10-20T22:40:26Z"
+    },
+    {
+      "title": "3 Global Dividend Stocks Offering Up To 5.3% Yield",
+      "summary": "As global markets navigate a landscape marked by mixed economic signals, including a weakening U.S. labor market and fluctuating interest rate expectations, investors are increasingly attentive to str",
+      "url": "https://finance.yahoo.com/news/3-global-dividend-stocks-offering-093154294.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2025-09-10T09:31:54Z"
+    },
+    {
+      "title": "With $15.5M From Salesforce Ventures And SBI, Datumo Accelerates AI Evaluation Tools—Samsung, LG May Be Watching",
+      "summary": "Salesforce Ventures announced on Aug. 11 that it has made its first investment in a South Korean AI startup, leading a $15.5 million Series B funding round for Seoul-based Datumo, a company focused on",
+      "url": "https://finance.yahoo.com/news/15-5m-salesforce-ventures-sbi-160124823.html",
+      "provider": "Benzinga",
+      "pub_time": "2025-08-16T16:01:24Z"
+    }
+  ]
+}-08-16T16:01:24Z"
+    }
+  ]
+}

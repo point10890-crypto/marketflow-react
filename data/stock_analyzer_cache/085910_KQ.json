@@ -1,0 +1,81 @@
+{
+  "name": "네오티스",
+  "ticker": "085910.KQ",
+  "result": "매수",
+  "date": "2026-04-02 06:56:11",
+  "elapsed": 2.2,
+  "consensus_score": 4.0,
+  "analyst_count": 1,
+  "recommendation_detail": {
+    "strongBuy": 0,
+    "buy": 1,
+    "hold": 0,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 23800.0,
+    "high": 25500.0,
+    "low": 25500.0,
+    "mean": 25500.0,
+    "median": 25500.0
+  },
+  "current_price": 23800.0,
+  "upside_potential": 7.1,
+  "key_stats": {
+    "name": "NEOTIS",
+    "sector": "",
+    "industry": "",
+    "market_cap": 318394368000,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": null,
+    "beta": null,
+    "fifty_two_week_high": 22300.0,
+    "fifty_two_week_low": 2837.0,
+    "revenue": null,
+    "profit_margin": null,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "네오티스(085910.KQ)에 대해 1명의 애널리스트가 매수 의견(4.0/5.0)을 제시했습니다. 목표가 평균은 25,500원으로 현재가 23,800원 대비 7.1% 상승 여력이 있습니다. 투자 판단은 제시된 분석 데이터를 참고하여 신중하게 결정하시기 바랍니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 17639588650
+    },
+    {
+      "date": "2025-09",
+      "value": 17993693470
+    },
+    {
+      "date": "2025-06",
+      "value": 15736511390
+    },
+    {
+      "date": "2025-03",
+      "value": 17307065070
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 2002975060
+    },
+    {
+      "date": "2025-09",
+      "value": 1640815300
+    },
+    {
+      "date": "2025-06",
+      "value": -394349270
+    },
+    {
+      "date": "2025-03",
+      "value": 996939980
+    }
+  ],
+  "news": []
+}

@@ -1,7 +1,7 @@
 {
   "metadata": {
-    "as_of_date": "2026-04-01",
-    "fetch_time": "2026-04-01T05:04:59.599061",
+    "as_of_date": "2026-04-02",
+    "fetch_time": "2026-04-02T12:26:53.386862",
     "source": "sec_edgar_api",
     "ticker_count": 17
   },
@@ -17,7 +17,7 @@
         "fiscal_year_end": "1231"
       },
       "filings": [],
-      "fetch_time": "2026-04-01T05:04:36.831838"
+      "fetch_time": "2026-04-02T12:23:26.980709"
     },
     "T": {
       "ticker": "T",
@@ -55,7 +55,7 @@
           "url": "https://www.sec.gov/Archives/edgar/data/732717/000119312526039407/d104980d8k.htm"
         }
       ],
-      "fetch_time": "2026-04-01T05:04:37.526216"
+      "fetch_time": "2026-04-02T12:23:37.355863"
     },
     "APO": {
       "ticker": "APO",
@@ -68,6 +68,14 @@
         "fiscal_year_end": "1231"
       },
       "filings": [
+        {
+          "form": "8-K",
+          "filing_date": "2026-04-01",
+          "accession_number": "0001858681-26-000016",
+          "document": "apo-20260401.htm",
+          "description": "8-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/1858681/000185868126000016/apo-20260401.htm"
+        },
         {
           "form": "8-K",
           "filing_date": "2026-03-30",
@@ -99,17 +107,9 @@
           "document": "apo-20260219.htm",
           "description": "8-K",
           "url": "https://www.sec.gov/Archives/edgar/data/1858681/000185868126000010/apo-20260219.htm"
-        },
-        {
-          "form": "8-K",
-          "filing_date": "2026-02-09",
-          "accession_number": "0001858681-26-000007",
-          "document": "apo-20260209.htm",
-          "description": "8-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/1858681/000185868126000007/apo-20260209.htm"
         }
       ],
-      "fetch_time": "2026-04-01T05:04:38.234523"
+      "fetch_time": "2026-04-02T12:23:47.031106"
     },
     "AEP": {
       "ticker": "AEP",
@@ -155,115 +155,7 @@
           "url": "https://www.sec.gov/Archives/edgar/data/4904/000000490426000003/aep-20260104.htm"
         }
       ],
-      "fetch_time": "2026-04-01T05:04:38.950026"
-    },
-    "LNT": {
-      "ticker": "LNT",
-      "company": {
-        "name": "ALLIANT ENERGY CORP",
-        "cik": "0000352541",
-        "sic": "4931",
-        "sic_description": "Electric & Other Services Combined",
-        "state": "WI",
-        "fiscal_year_end": "1231"
-      },
-      "filings": [
-        {
-          "form": "8-K",
-          "filing_date": "2026-03-19",
-          "accession_number": "0001193125-26-116244",
-          "document": "d131241d8k.htm",
-          "description": "8-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/352541/000119312526116244/d131241d8k.htm"
-        },
-        {
-          "form": "8-K",
-          "filing_date": "2026-03-04",
-          "accession_number": "0000352541-26-000009",
-          "document": "lnt-20260302.htm",
-          "description": "8-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/352541/000035254126000009/lnt-20260302.htm"
-        },
-        {
-          "form": "10-K",
-          "filing_date": "2026-02-20",
-          "accession_number": "0000352541-26-000007",
-          "document": "lnt-20251231.htm",
-          "description": "10-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/352541/000035254126000007/lnt-20251231.htm"
-        },
-        {
-          "form": "8-K",
-          "filing_date": "2026-02-20",
-          "accession_number": "0000352541-26-000005",
-          "document": "lnt-20260219.htm",
-          "description": "8-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/352541/000035254126000005/lnt-20260219.htm"
-        },
-        {
-          "form": "8-K",
-          "filing_date": "2026-01-08",
-          "accession_number": "0000352541-26-000003",
-          "document": "lnt-20260105.htm",
-          "description": "8-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/352541/000035254126000003/lnt-20260105.htm"
-        }
-      ],
-      "fetch_time": "2026-04-01T05:04:40.492450"
-    },
-    "ALB": {
-      "ticker": "ALB",
-      "company": {
-        "name": "ALBEMARLE CORP",
-        "cik": "0000915913",
-        "sic": "2821",
-        "sic_description": "Plastic Materials, Synth Resins & Nonvulcan Elastomers",
-        "state": "VA",
-        "fiscal_year_end": "1231"
-      },
-      "filings": [
-        {
-          "form": "8-K",
-          "filing_date": "2026-03-25",
-          "accession_number": "0000915913-26-000057",
-          "document": "alb-20260319.htm",
-          "description": "8-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/915913/000091591326000057/alb-20260319.htm"
-        },
-        {
-          "form": "8-K",
-          "filing_date": "2026-03-06",
-          "accession_number": "0000915913-26-000032",
-          "document": "alb-20260302.htm",
-          "description": "8-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/915913/000091591326000032/alb-20260302.htm"
-        },
-        {
-          "form": "8-K",
-          "filing_date": "2026-03-04",
-          "accession_number": "0000915913-26-000029",
-          "document": "alb-20260226.htm",
-          "description": "8-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/915913/000091591326000029/alb-20260226.htm"
-        },
-        {
-          "form": "10-K",
-          "filing_date": "2026-02-11",
-          "accession_number": "0000915913-26-000018",
-          "document": "alb-20251231.htm",
-          "description": "10-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/915913/000091591326000018/alb-20251231.htm"
-        },
-        {
-          "form": "8-K",
-          "filing_date": "2026-02-11",
-          "accession_number": "0000915913-26-000016",
-          "document": "alb-20260211.htm",
-          "description": "8-K",
-          "url": "https://www.sec.gov/Archives/edgar/data/915913/000091591326000016/alb-20260211.htm"
-        }
-      ],
-      "fetch_time": "2026-04-01T05:04:42.151758"
+      "fetch_time": "2026-04-02T12:23:57.446908"
     },
     "ACGL": {
       "ticker": "ACGL",
@@ -317,7 +209,115 @@
           "url": "https://www.sec.gov/Archives/edgar/data/947484/000094748425000089/acgl-20251107.htm"
         }
       ],
-      "fetch_time": "2026-04-01T05:04:43.710865"
+      "fetch_time": "2026-04-02T12:24:12.719761"
+    },
+    "ALB": {
+      "ticker": "ALB",
+      "company": {
+        "name": "ALBEMARLE CORP",
+        "cik": "0000915913",
+        "sic": "2821",
+        "sic_description": "Plastic Materials, Synth Resins & Nonvulcan Elastomers",
+        "state": "VA",
+        "fiscal_year_end": "1231"
+      },
+      "filings": [
+        {
+          "form": "10-K/A",
+          "filing_date": "2026-03-31",
+          "accession_number": "0000915913-26-000060",
+          "document": "alb-20251231.htm",
+          "description": "10-K/A",
+          "url": "https://www.sec.gov/Archives/edgar/data/915913/000091591326000060/alb-20251231.htm"
+        },
+        {
+          "form": "8-K",
+          "filing_date": "2026-03-25",
+          "accession_number": "0000915913-26-000057",
+          "document": "alb-20260319.htm",
+          "description": "8-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/915913/000091591326000057/alb-20260319.htm"
+        },
+        {
+          "form": "8-K",
+          "filing_date": "2026-03-06",
+          "accession_number": "0000915913-26-000032",
+          "document": "alb-20260302.htm",
+          "description": "8-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/915913/000091591326000032/alb-20260302.htm"
+        },
+        {
+          "form": "8-K",
+          "filing_date": "2026-03-04",
+          "accession_number": "0000915913-26-000029",
+          "document": "alb-20260226.htm",
+          "description": "8-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/915913/000091591326000029/alb-20260226.htm"
+        },
+        {
+          "form": "10-K",
+          "filing_date": "2026-02-11",
+          "accession_number": "0000915913-26-000018",
+          "document": "alb-20251231.htm",
+          "description": "10-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/915913/000091591326000018/alb-20251231.htm"
+        }
+      ],
+      "fetch_time": "2026-04-02T12:24:23.122923"
+    },
+    "LNT": {
+      "ticker": "LNT",
+      "company": {
+        "name": "ALLIANT ENERGY CORP",
+        "cik": "0000352541",
+        "sic": "4931",
+        "sic_description": "Electric & Other Services Combined",
+        "state": "WI",
+        "fiscal_year_end": "1231"
+      },
+      "filings": [
+        {
+          "form": "8-K",
+          "filing_date": "2026-03-19",
+          "accession_number": "0001193125-26-116244",
+          "document": "d131241d8k.htm",
+          "description": "8-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/352541/000119312526116244/d131241d8k.htm"
+        },
+        {
+          "form": "8-K",
+          "filing_date": "2026-03-04",
+          "accession_number": "0000352541-26-000009",
+          "document": "lnt-20260302.htm",
+          "description": "8-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/352541/000035254126000009/lnt-20260302.htm"
+        },
+        {
+          "form": "10-K",
+          "filing_date": "2026-02-20",
+          "accession_number": "0000352541-26-000007",
+          "document": "lnt-20251231.htm",
+          "description": "10-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/352541/000035254126000007/lnt-20251231.htm"
+        },
+        {
+          "form": "8-K",
+          "filing_date": "2026-02-20",
+          "accession_number": "0000352541-26-000005",
+          "document": "lnt-20260219.htm",
+          "description": "8-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/352541/000035254126000005/lnt-20260219.htm"
+        },
+        {
+          "form": "8-K",
+          "filing_date": "2026-01-08",
+          "accession_number": "0000352541-26-000003",
+          "document": "lnt-20260105.htm",
+          "description": "8-K",
+          "url": "https://www.sec.gov/Archives/edgar/data/352541/000035254126000003/lnt-20260105.htm"
+        }
+      ],
+      "fetch_time": "2026-04-02T12:24:36.624295"
     },
     "APD": {
       "ticker": "APD",
@@ -371,7 +371,7 @@
           "url": "https://www.sec.gov/Archives/edgar/data/2969/000000296925000055/apd-20250930.htm"
         }
       ],
-      "fetch_time": "2026-04-01T05:04:45.267360"
+      "fetch_time": "2026-04-02T12:24:48.299867"
     },
     "AJG": {
       "ticker": "AJG",
@@ -401,7 +401,7 @@
           "url": "https://www.sec.gov/Archives/edgar/data/354190/000035419026000069/ajg-20260306.htm"
         }
       ],
-      "fetch_time": "2026-04-01T05:04:46.821809"
+      "fetch_time": "2026-04-02T12:24:58.279189"
     },
     "AMD": {
       "ticker": "AMD",
@@ -455,7 +455,7 @@
           "url": "https://www.sec.gov/Archives/edgar/data/2488/000000248826000014/amd-20260203.htm"
         }
       ],
-      "fetch_time": "2026-04-01T05:04:48.392249"
+      "fetch_time": "2026-04-02T12:25:07.979915"
     },
     "AON": {
       "ticker": "AON",
@@ -509,7 +509,7 @@
           "url": "https://www.sec.gov/Archives/edgar/data/315293/000162828025047805/aon-20250930.htm"
         }
       ],
-      "fetch_time": "2026-04-01T05:04:49.983414"
+      "fetch_time": "2026-04-02T12:25:23.223894"
     },
     "AEE": {
       "ticker": "AEE",
@@ -563,7 +563,7 @@
           "url": "https://www.sec.gov/Archives/edgar/data/1002910/000110465926012085/tm265625d1_8k.htm"
         }
       ],
-      "fetch_time": "2026-04-01T05:04:51.546683"
+      "fetch_time": "2026-04-02T12:25:38.715341"
     },
     "APA": {
       "ticker": "APA",
@@ -601,7 +601,7 @@
           "url": "https://www.sec.gov/Archives/edgar/data/1841666/000184166626000003/apa8k-20260120.htm"
         }
       ],
-      "fetch_time": "2026-04-01T05:04:53.113927"
+      "fetch_time": "2026-04-02T12:25:51.145082"
     },
     "AMAT": {
       "ticker": "AMAT",
@@ -655,7 +655,7 @@
           "url": "https://www.sec.gov/Archives/edgar/data/6951/000162828025056742/amat-20251026.htm"
         }
       ],
-      "fetch_time": "2026-04-01T05:04:54.683832"
+      "fetch_time": "2026-04-02T12:26:04.181988"
     },
     "APP": {
       "ticker": "APP",
@@ -685,7 +685,7 @@
           "url": "https://www.sec.gov/Archives/edgar/data/1751008/000175100826000005/app-20260211.htm"
         }
       ],
-      "fetch_time": "2026-04-01T05:04:56.250457"
+      "fetch_time": "2026-04-02T12:26:22.877313"
     },
     "ANET": {
       "ticker": "ANET",
@@ -715,7 +715,7 @@
           "url": "https://www.sec.gov/Archives/edgar/data/1596532/000159653226000010/anet-20260212.htm"
         }
       ],
-      "fetch_time": "2026-04-01T05:04:57.837265"
+      "fetch_time": "2026-04-02T12:26:36.004659"
     },
     "GOOG": {
       "ticker": "GOOG",
@@ -737,7 +737,7 @@
           "url": "https://www.sec.gov/Archives/edgar/data/1652044/000165204426000026/goog-20260304.htm"
         }
       ],
-      "fetch_time": "2026-04-01T05:04:59.397838"
+      "fetch_time": "2026-04-02T12:26:53.185462"
     }
   }
 }

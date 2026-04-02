@@ -1,0 +1,81 @@
+{
+  "name": "HPSP",
+  "ticker": "403870.KQ",
+  "result": "매수",
+  "date": "2026-04-02 00:03:59",
+  "elapsed": 2.1,
+  "consensus_score": 4.25,
+  "analyst_count": 8,
+  "recommendation_detail": {
+    "strongBuy": 2,
+    "buy": 6,
+    "hold": 0,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 44500.0,
+    "high": 65000.0,
+    "low": 35000.0,
+    "mean": 46875.0,
+    "median": 43500.0
+  },
+  "current_price": 44500.0,
+  "upside_potential": 5.3,
+  "key_stats": {
+    "name": "HPSP",
+    "sector": "Industrials",
+    "industry": "Specialty Industrial Machinery",
+    "market_cap": 3593878634496,
+    "pe_ratio": null,
+    "forward_pe": 35.90071,
+    "dividend_yield": 1.22,
+    "beta": 1.707,
+    "fifty_two_week_high": 53900.0,
+    "fifty_two_week_low": 21150.0,
+    "revenue": 172964577280,
+    "profit_margin": 0.42009997,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "HPSP(403870.KQ)에 대해 8명의 애널리스트가 제시한 컨센서스는 '매수' 의견(4.25/5.0)입니다. 목표가 평균은 46,875원으로 현재가 44,500원 대비 5.3% 상승 여력이 있습니다. 투자 판단은 제시된 데이터를 참고하여 투자자 본인이 결정해야 합니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 52675711300
+    },
+    {
+      "date": "2025-09",
+      "value": 32046764310
+    },
+    {
+      "date": "2025-06",
+      "value": 51346984520
+    },
+    {
+      "date": "2025-03",
+      "value": 36895112050
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 23270877180
+    },
+    {
+      "date": "2025-09",
+      "value": 13486774960
+    },
+    {
+      "date": "2025-06",
+      "value": 20703226970
+    },
+    {
+      "date": "2025-03",
+      "value": 15201346430
+    }
+  ],
+  "news": []
+}

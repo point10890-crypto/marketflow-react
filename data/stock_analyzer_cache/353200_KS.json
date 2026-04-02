@@ -1,0 +1,81 @@
+{
+  "name": "대덕전자",
+  "ticker": "353200.KS",
+  "result": "적극 매수",
+  "date": "2026-04-02 06:56:31",
+  "elapsed": 1.8,
+  "consensus_score": 4.5,
+  "analyst_count": 8,
+  "recommendation_detail": {
+    "strongBuy": 4,
+    "buy": 4,
+    "hold": 0,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 88000.0,
+    "high": 105000.0,
+    "low": 49000.0,
+    "mean": 81125.0,
+    "median": 85000.0
+  },
+  "current_price": 88000.0,
+  "upside_potential": -7.8,
+  "key_stats": {
+    "name": "DaeduckElectronics",
+    "sector": "Technology",
+    "industry": "Electronic Components",
+    "market_cap": 4533095235584,
+    "pe_ratio": null,
+    "forward_pe": 20.575169,
+    "dividend_yield": 0.65,
+    "beta": 1.476,
+    "fifty_two_week_high": 91300.0,
+    "fifty_two_week_low": 12900.0,
+    "revenue": 1065294561280,
+    "profit_margin": 0.044689998,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "대덕전자에 대해 8명의 애널리스트가 적극 매수 의견을 제시하고 있습니다. 컨센서스 점수는 5점 만점에 4.5점입니다. 그러나 목표가 평균은 81,125원으로 현재 주가 대비 -7.8% 하락 여력이 있습니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 317887737500
+    },
+    {
+      "date": "2025-09",
+      "value": 286173331100
+    },
+    {
+      "date": "2025-06",
+      "value": 245857719980
+    },
+    {
+      "date": "2025-03",
+      "value": 215375771240
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 25618077780
+    },
+    {
+      "date": "2025-09",
+      "value": 23278950590
+    },
+    {
+      "date": "2025-06",
+      "value": 4408899620
+    },
+    {
+      "date": "2025-03",
+      "value": -5700600300
+    }
+  ],
+  "news": []
+}

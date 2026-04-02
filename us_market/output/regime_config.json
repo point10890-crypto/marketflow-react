@@ -1,12 +1,12 @@
 {
-  "timestamp": "2026-04-01T05:04:26.612344",
+  "timestamp": "2026-04-02T12:18:32.542130",
   "regime": "neutral",
   "confidence": 50.0,
   "weighted_score": 1.2,
   "signals": {
     "vix": {
-      "vix_current": 25.1,
-      "vix_ma20": 25.9,
+      "vix_current": 24.54,
+      "vix_ma20": 26.08,
       "vix_trend": "falling",
       "vix_regime": "risk_off"
     },
@@ -14,7 +14,7 @@
       "trend_regime": "neutral",
       "spy_above_50": false,
       "spy_above_200": false,
-      "sma200_slope": 6.9395
+      "sma200_slope": 6.8045
     },
     "breadth": {
       "breadth_pct": null,

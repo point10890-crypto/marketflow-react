@@ -1,0 +1,81 @@
+{
+  "name": "대한전선",
+  "ticker": "001440.KS",
+  "result": "적극 매수",
+  "date": "2026-04-02 10:39:44",
+  "elapsed": 1.8,
+  "consensus_score": 4.4,
+  "analyst_count": 5,
+  "recommendation_detail": {
+    "strongBuy": 2,
+    "buy": 3,
+    "hold": 0,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 29800.0,
+    "high": 39000.0,
+    "low": 19000.0,
+    "mean": 32200.0,
+    "median": 35000.0
+  },
+  "current_price": 29800.0,
+  "upside_potential": 8.1,
+  "key_stats": {
+    "name": "Taihan Cable & Solution",
+    "sector": "Industrials",
+    "industry": "Electrical Equipment & Parts",
+    "market_cap": 5536023052288,
+    "pe_ratio": null,
+    "forward_pe": 37.437187,
+    "dividend_yield": null,
+    "beta": 1.521,
+    "fifty_two_week_high": 37350.0,
+    "fifty_two_week_low": 10020.0,
+    "revenue": 3636018282496,
+    "profit_margin": 0.02316,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "대한전선(001440.KS)에 대해 5명의 애널리스트가 적극 매수 의견(4.4/5.0)을 제시했습니다. 목표가 평균은 32,200원으로 현재가 대비 8.1% 상승 여력이 있습니다. 이는 애널리스트들이 긍정적인 전망을 가지고 있음을 시사합니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 1009231803810
+    },
+    {
+      "date": "2025-09",
+      "value": 854974427730
+    },
+    {
+      "date": "2025-06",
+      "value": 916356132630
+    },
+    {
+      "date": "2025-03",
+      "value": 855455851530
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 40805750040
+    },
+    {
+      "date": "2025-09",
+      "value": 39579468360
+    },
+    {
+      "date": "2025-06",
+      "value": -24151255320
+    },
+    {
+      "date": "2025-03",
+      "value": 27986704210
+    }
+  ],
+  "news": []
+}
