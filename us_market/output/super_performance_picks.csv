@@ -1,31 +1,31 @@
 ticker,name,sector,price,rs_rating,vcp_score,fund_score,setup_phase,pivot_tightness,vol_dry_up,contractions,base_depth,eps_growth,breakout,pivot_price,score
-D,"Dominion Energy, Inc.",Utilities,62.37,70.6,65,45,⚡ Pivot,2.4%,No,4,8%,323%,No,62.37,160.9
-DTE,DTE Energy Company,Utilities,147.88,86.4,75,40,⚡ Pivot,2.3%,Yes,4,3%,26%,No,147.88,160.7
-EIX,Edison International,Utilities,73.61,99.0,40,55,📈 Near Highs,4.6%,No,6,5%,444%,No,73.61,155.8
-AMGN,Amgen Inc.,Healthcare,348.52,72.0,65,40,⚡ Pivot,1.4%,No,4,9%,113%,No,353.28,149.3
-GLW,Corning Incorporated,Technology,147.57,99.0,40,45,⏳ Building,13.8%,No,3,23%,74%,No,147.57,147.8
-ATO,Atmos Energy Corporation,Utilities,188.38,81.5,75,15,⚡ Pivot,2.8%,Yes,4,3%,14%,No,188.38,147.6
-ES,Eversource Energy (D/B/A),Utilities,69.39,63.9,65,40,⚡ Pivot,3.0%,No,5,6%,481%,No,69.65,147.3
-EME,"EMCOR Group, Inc.",Industrials,756.63,94.9,40,45,⏳ Building,7.9%,No,5,13%,49%,No,759.55,146.8
-ALL,Allstate Corporation (The),Financial Services,206.35,61.3,65,40,⚡ Pivot,2.2%,No,5,9%,99%,No,207.34,146.7
-BG,Bunge Limited,Consumer Defensive,129.01,99.0,65,15,⚡ Pivot,2.1%,No,6,8%,-84%,No,129.01,143.8
-FIX,"Comfort Systems USA, Inc.",Industrials,1420.77,99.0,40,40,📈 Near Highs,11.3%,No,4,13%,38%,No,1428.52,143.8
-AMAT,"Applied Materials, Inc.",Technology,349.18,99.0,40,40,⏳ Building,9.0%,No,6,18%,71%,No,353.8,143.8
-GEV,GE Vernova Inc.,Industrials,894.31,99.0,40,40,📈 Near Highs,8.9%,No,5,10%,657%,No,894.78,143.8
-AEP,American Electric Power Compan,Utilities,132.44,88.3,65,15,⚡ Pivot,1.8%,No,3,8%,-12%,No,132.44,141.2
-FE,FirstEnergy Corp.,Utilities,51.26,86.4,65,15,⚡ Pivot,2.4%,No,3,8%,0%,No,51.26,140.7
-CNP,"CenterPoint Energy, Inc (Holdi",Utilities,43.56,84.0,65,15,⚡ Pivot,2.8%,No,4,7%,6%,No,43.56,140.2
-ALB,Albemarle Corporation,Basic Materials,178.09,99.0,65,10,⚡ Pivot,1.3%,No,5,19%,0%,No,179.53,139.8
-BMY,Bristol-Myers Squibb Company,Healthcare,59.53,80.5,40,40,📈 Near Highs,5.3%,No,4,10%,1410%,No,61.73,139.3
-ADI,"Analog Devices, Inc.",Technology,316.96,90.1,40,45,⏳ Building,5.6%,No,5,15%,112%,No,320.58,137.6
-EQT,EQT Corporation,Energy,60.04,83.0,40,45,⏳ Building,11.8%,No,3,12%,62%,No,67.55,135.9
-DELL,Dell Technologies Inc.,Technology,173.09,99.0,30,40,⏳ Building,5.3%,No,5,10%,47%,No,173.09,135.8
-AEE,Ameren Corporation,Utilities,111.61,80.6,65,20,⚡ Pivot,2.6%,No,4,8%,22%,No,111.61,135.3
-GRMN,Garmin Ltd.,Technology,238.79,94.6,30,40,⏳ Building,5.5%,No,5,4%,21%,No,238.79,134.7
-APD,"Air Products and Chemicals, In",Basic Materials,294.15,94.1,80,0,⚡ Pivot,1.9%,No,5,7%,10%,No,294.15,134.6
-MO,"Altria Group, Inc.",Consumer Defensive,65.83,91.4,65,5,⚡ Pivot,2.3%,No,5,6%,-63%,No,67.02,133.9
-CBOE,"Cboe Global Markets, Inc.",Financial Services,288.02,90.5,30,40,⏳ Building,5.3%,No,6,5%,60%,No,288.02,133.7
-CME,CME Group Inc.,Financial Services,304.26,88.8,40,30,📈 Near Highs,3.5%,No,6,6%,35%,No,304.26,133.3
-EVRG,"Evergy, Inc.",Utilities,82.73,86.1,65,5,⚡ Pivot,2.3%,No,4,7%,8%,No,82.73,132.7
-CSX,CSX Corporation,Industrials,41.13,85.4,55,15,📈 Near Highs,4.4%,No,3,6%,-2%,No,41.44,132.5
-CTRA,Coterra Energy Inc.,Energy,34.42,99.0,30,35,⏳ Building,6.8%,No,7,6%,24%,No,36.31,131.8
+AMGN,Amgen Inc.,Healthcare,347.72,71.6,65,40,⚡ Pivot,1.6%,No,4,9%,113%,No,353.28,149.2
+GLW,Corning Incorporated,Technology,147.05,99.0,40,45,⏳ Building,13.4%,No,3,23%,74%,No,147.05,147.8
+ATO,Atmos Energy Corporation,Utilities,188.37,81.5,75,15,⚡ Pivot,2.8%,Yes,4,3%,14%,No,188.37,147.6
+ALL,Allstate Corporation (The),Financial Services,206.13,61.2,65,40,⚡ Pivot,2.2%,No,5,9%,99%,No,207.34,146.7
+AMAT,"Applied Materials, Inc.",Technology,348.76,99.0,40,40,⏳ Building,9.0%,No,6,18%,71%,No,353.8,143.8
+BG,Bunge Limited,Consumer Defensive,129.04,99.0,65,15,⚡ Pivot,2.2%,No,6,8%,-84%,No,129.04,143.8
+FIX,"Comfort Systems USA, Inc.",Industrials,1418.89,99.0,40,40,📈 Near Highs,11.3%,No,4,13%,38%,No,1428.52,143.8
+AEP,American Electric Power Compan,Utilities,132.3,88.2,65,15,⚡ Pivot,1.7%,No,3,8%,-12%,No,132.3,141.2
+CNP,"CenterPoint Energy, Inc (Holdi",Utilities,43.6,84.3,65,15,⚡ Pivot,2.8%,No,4,7%,6%,No,43.6,140.2
+ALB,Albemarle Corporation,Basic Materials,178.54,99.0,65,10,⚡ Pivot,1.3%,No,5,19%,0%,No,179.53,139.8
+BMY,Bristol-Myers Squibb Company,Healthcare,59.35,79.9,40,40,📈 Near Highs,5.3%,No,4,10%,1410%,No,61.73,139.2
+ADI,"Analog Devices, Inc.",Technology,318.23,91.1,40,45,⏳ Building,5.6%,No,5,15%,112%,No,320.58,137.9
+ED,"Consolidated Edison, Inc.",Utilities,115.05,89.8,80,5,⚡ Pivot,3.0%,No,3,6%,-4%,No,115.05,137.6
+AEE,Ameren Corporation,Utilities,111.5,80.5,65,20,⚡ Pivot,2.5%,No,4,8%,22%,No,111.5,135.3
+APD,"Air Products and Chemicals, In",Basic Materials,293.75,93.9,80,0,⚡ Pivot,1.8%,No,5,7%,10%,No,293.75,134.5
+MO,"Altria Group, Inc.",Consumer Defensive,65.6,90.6,65,5,⚡ Pivot,2.3%,No,5,6%,-63%,No,67.02,133.8
+CBOE,"Cboe Global Markets, Inc.",Financial Services,287.7,90.4,30,40,⏳ Building,5.2%,No,6,5%,60%,No,287.7,133.7
+CME,CME Group Inc.,Financial Services,303.88,88.6,40,30,📈 Near Highs,3.4%,No,6,6%,35%,No,303.88,133.3
+CB,Chubb Limited,Financial Services,328.64,70.5,65,20,⚡ Pivot,2.9%,No,6,6%,25%,No,328.64,132.9
+CTRA,Coterra Energy Inc.,Energy,34.41,99.0,30,35,⏳ Building,6.8%,No,7,6%,24%,No,36.31,131.8
+ADM,Archer-Daniels-Midland Company,Consumer Defensive,73.84,99.0,65,0,⚡ Pivot,2.9%,No,4,5%,-20%,No,73.84,131.8
+CAT,"Caterpillar, Inc.",Industrials,719.79,99.0,40,25,⏳ Building,8.9%,No,3,10%,-14%,No,730.32,131.8
+CMS,CMS Energy Corporation,Utilities,78.33,82.0,65,15,⚡ Pivot,2.7%,No,4,8%,9%,No,78.33,131.7
+LNT,Alliant Energy Corporation,Utilities,72.67,81.3,65,5,⚡ Pivot,3.0%,No,3,7%,-5%,No,72.67,131.5
+BK,The Bank of New York Mellon Co,Financial Services,122.04,67.3,40,30,📈 Near Highs,6.2%,No,4,10%,26%,No,122.04,128.2
+CF,"CF Industries Holdings, Inc.",Basic Materials,129.95,99.0,15,45,⏳ Building,7.3%,No,3,10%,23%,No,137.6,127.8
+CSCO,"Cisco Systems, Inc.",Technology,78.6,64.6,40,40,⏳ Building,3.7%,No,5,6%,31%,No,79.92,127.5
+CFG,"Citizens Financial Group, Inc.",Financial Services,60.73,63.8,40,40,⏳ Building,5.5%,No,3,18%,32%,No,60.73,127.3
+CIEN,Ciena Corporation,Technology,448.56,99.0,15,40,📈 Near Highs,20.7%,No,4,7%,237%,No,448.56,123.8
+COHR,Coherent Corp.,Technology,257.42,99.0,15,35,⏳ Building,15.7%,No,4,21%,42%,No,257.42,119.8
