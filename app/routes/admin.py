@@ -156,12 +156,15 @@ def delete_user(user_id):
     if admin_user and admin_user.id == user_id:
         return jsonify({'error': 'Cannot delete yourself'}), 400
 
+    # 삭제 전 정보 보존 (세션 분리 후 접근 불가)
+    email = user.email
+
     # 연관 구독 요청도 삭제
     SubscriptionRequest.query.filter_by(user_id=user_id).delete()
     db.session.delete(user)
     db.session.commit()
 
-    return jsonify({'message': f'User {user.email} deleted'})
+    return jsonify({'message': f'User {email} deleted'})
 
 
 @admin_bp.route('/subscriptions')

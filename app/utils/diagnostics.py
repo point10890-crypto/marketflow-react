@@ -27,16 +27,24 @@ logger = logging.getLogger('diagnostics')
 # ── 캐시 ──
 _last_result = None
 _last_run_time = 0
+_diag_running = False
 
 
 def get_cached_or_run(max_age=120):
     """캐시된 결과 반환 (max_age초 이내), 없으면 새로 실행"""
-    global _last_result, _last_run_time
+    global _last_result, _last_run_time, _diag_running
     if _last_result and (time.time() - _last_run_time) < max_age:
         return _last_result
-    _last_result = run_diagnostics()
-    _last_run_time = time.time()
-    return _last_result
+    # 동시 요청 방어 — 이미 진단 중이면 캐시 반환
+    if _diag_running:
+        return _last_result or {}
+    _diag_running = True
+    try:
+        _last_result = run_diagnostics()
+        _last_run_time = time.time()
+        return _last_result
+    finally:
+        _diag_running = False
 
 
 def run_diagnostics(flask_port=None):

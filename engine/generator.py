@@ -453,7 +453,7 @@ async def analyze_single_stock_by_code(
             change_pct=target_signal_data.get("change_pct", 0),
             trading_value=target_signal_data.get("trading_value", 0),
             volume=0, 
-            marcap=0  
+            market_cap=0
         )
         
         # 2. 재분석 실행

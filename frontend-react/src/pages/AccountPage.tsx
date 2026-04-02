@@ -41,9 +41,13 @@ export default function AccountPage() {
 
     const handleRefresh = async () => {
         if (!token) return;
-        await refreshUser();
-        const data = await subscriptionAPI.getStatus(token);
-        setRequests(data.requests || []);
+        try {
+            await refreshUser();
+            const data = await subscriptionAPI.getStatus(token);
+            setRequests(data.requests || []);
+        } catch {
+            console.error('Failed to refresh account status');
+        }
     };
 
     // 구독 만료일 자동 산출

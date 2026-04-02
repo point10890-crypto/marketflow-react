@@ -53,7 +53,7 @@ def create_app(config=None):
     app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'marketflow-secret-key-change-in-production')
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(
         os.path.abspath(os.path.dirname(os.path.dirname(__file__))), 'data', 'users.db'
-    )
+    ).replace('\\', '/')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     # 설정 적용

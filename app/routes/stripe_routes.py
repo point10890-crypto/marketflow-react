@@ -11,7 +11,7 @@ stripe_bp = Blueprint('stripe', __name__)
 
 # Stripe 설정 (키가 없으면 결제 기능 비활성화)
 _stripe_key = os.getenv('STRIPE_SECRET_KEY', '')
-if _stripe_key and not _stripe_key.startswith('pk_'):
+if _stripe_key and _stripe_key.startswith('sk_'):
     stripe.api_key = _stripe_key
 STRIPE_WEBHOOK_SECRET = os.getenv('STRIPE_WEBHOOK_SECRET', '')
 STRIPE_PRICE_ID = os.getenv('STRIPE_PRICE_ID', '')

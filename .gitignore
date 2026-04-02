@@ -111,6 +111,11 @@ backend/bin/
 *.jar
 !backend/gradle/wrapper/gradle-wrapper.jar
 
+# Generated chart images
+archive/
+charts_kr/
+charts_us/
+
 # Misc
 .claude/
 *.bak

@@ -41,11 +41,16 @@ export default function AdminSystemPage() {
             const tokenParam = token ? `&token=${encodeURIComponent(token)}` : '';
             const eventSource = new EventSource(`${API_BASE}/api/system/update-single?type=${encodeURIComponent(type)}${tokenParam}`);
             eventSource.addEventListener('status', (e) => {
-                const data = JSON.parse(e.data);
-                if (data.status === 'completed') {
+                try {
+                    const data = JSON.parse(e.data);
+                    if (data.status === 'completed') {
+                        eventSource.close();
+                        setUpdating(null);
+                        loadData();
+                    }
+                } catch {
                     eventSource.close();
                     setUpdating(null);
-                    loadData();
                 }
             });
             eventSource.onerror = () => {

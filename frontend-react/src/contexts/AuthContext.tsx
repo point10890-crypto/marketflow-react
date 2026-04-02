@@ -54,9 +54,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     });
                 }
                 // Always refresh from server to get latest tier/status
+                const controller = new AbortController();
+                const timeout = setTimeout(() => controller.abort(), 10000);
                 fetch(`${API_BASE}/api/auth/me`, {
                     headers: { ...API_HEADERS, 'Authorization': `Bearer ${storedToken}` },
-                }).then(r => r.ok ? r.json() : null).then(data => {
+                    signal: controller.signal,
+                }).then(r => { clearTimeout(timeout); return r.ok ? r.json() : null; }).then(data => {
                     if (data?.user) {
                         setUserFromData(data.user);
                     }
