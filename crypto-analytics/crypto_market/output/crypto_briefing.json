@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-04-02T19:04:45.135799",
+  "timestamp": "2026-04-02T19:04:58.753673",
   "version": "1.0",
   "market_summary": {
     "total_market_cap": 2369459789900.0,
@@ -46,72 +46,7 @@
       "market_cap": 45366649871
     }
   },
-  "top_movers": {
-    "gainers": [
-      {
-        "symbol": "STABLE",
-        "name": "​​Stable",
-        "price": 0.03742479,
-        "change_24h": 27.93
-      },
-      {
-        "symbol": "NIGHT",
-        "name": "Midnight",
-        "price": 0.04890527,
-        "change_24h": 5.82
-      },
-      {
-        "symbol": "M",
-        "name": "MemeCore",
-        "price": 2.45,
-        "change_24h": 1.51
-      },
-      {
-        "symbol": "JST",
-        "name": "JUST",
-        "price": 0.063001,
-        "change_24h": 1.37
-      },
-      {
-        "symbol": "HTX",
-        "name": "HTX DAO",
-        "price": 1.72e-06,
-        "change_24h": 1.05
-      }
-    ],
-    "losers": [
-      {
-        "symbol": "ENA",
-        "name": "Ethena",
-        "price": 0.081103,
-        "change_24h": -11.74
-      },
-      {
-        "symbol": "HASH",
-        "name": "Provenance Blockchain",
-        "price": 0.0103864,
-        "change_24h": -8.92
-      },
-      {
-        "symbol": "MORPHO",
-        "name": "Morpho",
-        "price": 1.49,
-        "change_24h": -7.58
-      },
-      {
-        "symbol": "UNI",
-        "name": "Uniswap",
-        "price": 3.33,
-        "change_24h": -7.24
-      },
-      {
-        "symbol": "JUP",
-        "name": "Jupiter",
-        "price": 0.155228,
-        "change_24h": -6.37
-      }
-    ]
-  },
+  "top_movers": null,
   "fear_greed": {
     "score": 12,
     "current_score": 12,
@@ -126,16 +61,16 @@
   "funding_rates": {
     "BTC": {
       "symbol": "BTCUSDT",
-      "rate": -5e-06,
-      "rate_pct": -0.0005,
-      "annualized_pct": -0.55,
+      "rate": -4e-06,
+      "rate_pct": -0.0004,
+      "annualized_pct": -0.49,
       "sentiment": "neutral"
     },
     "ETH": {
       "symbol": "ETHUSDT",
-      "rate": -0.000145,
-      "rate_pct": -0.0145,
-      "annualized_pct": -15.83,
+      "rate": -0.000144,
+      "rate_pct": -0.0144,
+      "annualized_pct": -15.75,
       "sentiment": "bearish"
     }
   },
