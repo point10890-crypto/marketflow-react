@@ -1,15 +1,15 @@
 {
-  "timestamp": "2026-04-03T04:57:31.487520",
+  "timestamp": "2026-04-03T04:58:08.656686",
   "predictions": {
     "spy": {
-      "current_price": 655.73,
+      "current_price": 655.86,
       "bullish_probability": 7.1,
       "bearish_probability": 92.9,
-      "predicted_return_pct": -1.08,
+      "predicted_return_pct": -0.73,
       "target_range": {
-        "low": 635.69,
-        "mid": 648.64,
-        "high": 661.6
+        "low": 638.14,
+        "mid": 651.1,
+        "high": 664.06
       },
       "confidence_level": "High",
       "key_drivers": [
@@ -22,7 +22,7 @@
         {
           "feature": "qqq_rsi",
           "impact": 0.0785,
-          "value": 46.7,
+          "value": 46.82,
           "direction": "bearish"
         },
         {
@@ -34,33 +34,33 @@
         {
           "feature": "xlu_relative_1m",
           "impact": 0.0772,
-          "value": 2.83,
+          "value": 2.78,
           "direction": "bearish"
         },
         {
           "feature": "spy_return_1m",
           "impact": 0.0744,
-          "value": -4.03,
+          "value": -4.01,
           "direction": "bearish"
         }
       ]
     },
     "qqq": {
-      "current_price": 584.65,
+      "current_price": 584.84,
       "bullish_probability": 6.3,
       "bearish_probability": 93.7,
       "predicted_return_pct": -1.98,
       "target_range": {
-        "low": 557.89,
-        "mid": 573.07,
-        "high": 588.26
+        "low": 558.06,
+        "mid": 573.26,
+        "high": 588.45
       },
       "confidence_level": "High",
       "key_drivers": [
         {
           "feature": "spy_return_1m",
           "impact": 0.114,
-          "value": -4.03,
+          "value": -4.01,
           "direction": "bearish"
         },
         {
@@ -72,19 +72,19 @@
         {
           "feature": "spy_rsi",
           "impact": 0.096,
-          "value": 46.33,
+          "value": 46.44,
           "direction": "bearish"
         },
         {
           "feature": "xlu_relative_1m",
           "impact": 0.0781,
-          "value": 2.83,
+          "value": 2.78,
           "direction": "bearish"
         },
         {
           "feature": "vix_value",
           "impact": 0.0747,
-          "value": 24.72,
+          "value": 24.74,
           "direction": "bearish"
         }
       ]

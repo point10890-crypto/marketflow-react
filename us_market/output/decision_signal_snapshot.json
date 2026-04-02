@@ -1,6 +1,6 @@
 {
   "action": "NEUTRAL",
-  "score": 40,
+  "score": 50,
   "components": {
     "market_gate": {
       "score": 35,
@@ -19,56 +19,54 @@
       "contribution": 0
     },
     "sector_phase": {
-      "phase": "Late Cycle",
-      "contribution": -5
+      "phase": "Mid Cycle",
+      "contribution": 5
     }
   },
   "top_picks": [
     {
       "ticker": "AKAM",
-      "name": "Akamai Technologies, Inc.",
-      "final_score": 54.8,
-      "grade": "📈 B급 (매수 고려)",
+      "name": "AKAM",
+      "final_score": 45.0,
+      "grade": "📊 C급 (관망)",
       "ai_recommendation": "관망",
-      "target_upside": -6.1
-    },
-    {
-      "ticker": "LNT",
-      "name": "Alliant Energy Corporation",
-      "final_score": 52.5,
-      "grade": "📈 B급 (매수 고려)",
-      "ai_recommendation": "관망",
-      "target_upside": 3.6
+      "target_upside": 0
     },
     {
       "ticker": "T",
-      "name": "AT&T Inc.",
-      "final_score": 52.4,
-      "grade": "📈 B급 (매수 고려)",
+      "name": "T",
+      "final_score": 42.2,
+      "grade": "📊 C급 (관망)",
       "ai_recommendation": "관망",
-      "target_upside": 7.8
+      "target_upside": 0
+    },
+    {
+      "ticker": "AMZN",
+      "name": "AMZN",
+      "final_score": 41.8,
+      "grade": "📊 C급 (관망)",
+      "ai_recommendation": "관망",
+      "target_upside": 0
     },
     {
       "ticker": "ACGL",
-      "name": "Arch Capital Group Ltd.",
-      "final_score": 51.0,
-      "grade": "📈 B급 (매수 고려)",
+      "name": "ACGL",
+      "final_score": 41.6,
+      "grade": "📊 C급 (관망)",
       "ai_recommendation": "관망",
-      "target_upside": 13.1
+      "target_upside": 0
     },
     {
-      "ticker": "AXP",
-      "name": "American Express Company",
-      "final_score": 50.7,
-      "grade": "📈 B급 (매수 고려)",
+      "ticker": "APO",
+      "name": "APO",
+      "final_score": 41.6,
+      "grade": "📊 C급 (관망)",
       "ai_recommendation": "관망",
-      "target_upside": 23.7
+      "target_upside": 0
     }
   ],
   "timing": "WAIT",
   "warnings": [
-    "AIZ drawdown warning: -10.0% from peak",
-    "AMD drawdown warning: -16.3% from peak",
-    "AMAT drawdown warning: -11.8% from peak"
+    "AXP is in critical drawdown: -21.8% from peak"
   ]
 }
