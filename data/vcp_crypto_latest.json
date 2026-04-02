@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generated_at": "2026-04-02T17:52:22.500090",
+    "generated_at": "2026-04-02T17:52:30.415472",
     "market": "CRYPTO",
     "gate": "RED",
     "universe_size": 50
@@ -25,16 +25,16 @@
       "symbol": "FIDA/USDT",
       "timeframe": "1d",
       "signal_type": "BREAKOUT",
-      "score": 34,
+      "score": 35,
       "pivot_high": 0.01543,
-      "breakout_close_pct": 6.09,
-      "vol_ratio": 3.73,
+      "breakout_close_pct": 6.35,
+      "vol_ratio": 3.74,
       "liquidity_bucket": "C",
       "market_regime": "BTC_DOWN|D",
       "c1": 33.8,
       "c2": 22.8,
       "c3": 21.4,
-      "ml_win_prob": 29.4
+      "ml_win_prob": 30.7
     },
     {
       "symbol": "0G/USDT",

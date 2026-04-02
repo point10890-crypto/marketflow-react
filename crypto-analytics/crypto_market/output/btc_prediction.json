@@ -1,8 +1,8 @@
 {
-  "timestamp": "2026-04-02T17:52:19.038785",
+  "timestamp": "2026-04-02T17:52:40.577301",
   "predictions": {
     "BTC": {
-      "current_price": 66501.11,
+      "current_price": 66495.07,
       "bullish_probability": 21.5,
       "bearish_probability": 78.5,
       "confidence_level": "High",
@@ -10,7 +10,7 @@
         {
           "feature": "btc_return_20d",
           "impact": 0.1426,
-          "value": -6.29,
+          "value": -6.3,
           "direction": "bearish"
         },
         {
@@ -22,19 +22,19 @@
         {
           "feature": "eth_btc_relative_5d",
           "impact": 0.1211,
-          "value": 2.45,
+          "value": 2.46,
           "direction": "bullish"
         },
         {
           "feature": "btc_rsi_14",
           "impact": 0.1204,
-          "value": 42.69,
+          "value": 42.67,
           "direction": "bearish"
         },
         {
           "feature": "btc_return_5d",
           "impact": 0.1089,
-          "value": 0.27,
+          "value": 0.26,
           "direction": "bullish"
         }
       ]
@@ -51,7 +51,7 @@
       {
         "name": "RandomForest",
         "accuracy": 73.0,
-        "bullish": 22.0
+        "bullish": 21.9
       },
       {
         "name": "HistGradientBoosting",
