@@ -1,0 +1,75 @@
+{
+  "name": "모베이스전자",
+  "ticker": "012860.KQ",
+  "result": "데이터 없음",
+  "date": "2026-04-03 18:35:09",
+  "elapsed": 7.6,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 3605.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 3605.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "MOBASE ELECTRONICS",
+    "sector": "Consumer Cyclical",
+    "industry": "Auto Parts",
+    "market_cap": 262011912192,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": 1.12,
+    "beta": 2.254,
+    "fifty_two_week_high": 6500.0,
+    "fifty_two_week_low": 1262.0,
+    "revenue": 1044088684544,
+    "profit_margin": 0.01908,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 279907733550
+    },
+    {
+      "date": "2025-09",
+      "value": 236690085540
+    },
+    {
+      "date": "2025-06",
+      "value": 263113606960
+    },
+    {
+      "date": "2025-03",
+      "value": 264377290490
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 8079019740
+    },
+    {
+      "date": "2025-09",
+      "value": 8359333840
+    },
+    {
+      "date": "2025-06",
+      "value": -1629042190
+    },
+    {
+      "date": "2025-03",
+      "value": 5108812060
+    }
+  ],
+  "news": []
+}
