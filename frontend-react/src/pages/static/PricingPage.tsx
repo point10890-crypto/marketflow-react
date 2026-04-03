@@ -12,23 +12,34 @@ export default function PricingPage() {
     const [selectedPlan, setSelectedPlan] = useState<'pro' | 'premium' | null>(null);
     const [depositorName, setDepositorName] = useState('');
 
-    const handleUpgrade = async (tier: 'pro' | 'premium') => {
+    const [requestSent, setRequestSent] = useState(false);
+
+    const handleSelectPlan = (tier: 'pro' | 'premium') => {
         if (!user || !token) {
             navigate('/signup');
             return;
         }
         if (userTier === tier || userTier === 'premium') return;
+        setSelectedPlan(tier);
+        setShowBank(true);
+        setRequestSent(false);
+    };
 
-        setRequesting(tier);
+    const handleSubmitRequest = async () => {
+        if (!user || !token || !selectedPlan) return;
+        if (!depositorName.trim()) {
+            alert('입금자명을 입력해 주세요.');
+            return;
+        }
+
+        setRequesting(selectedPlan);
         try {
-            await subscriptionAPI.requestUpgrade(tier, token, depositorName || undefined);
-            setSelectedPlan(tier);
-            setShowBank(true);
+            await subscriptionAPI.requestUpgrade(selectedPlan, token, depositorName.trim());
+            setRequestSent(true);
         } catch (err: any) {
             const msg = err?.message || '';
             if (msg.includes('pending')) {
-                setSelectedPlan(tier);
-                setShowBank(true);
+                setRequestSent(true);
             } else {
                 alert('구독 신청 중 오류가 발생했습니다.');
             }
@@ -142,7 +153,7 @@ export default function PricingPage() {
                         </div>
                     ) : (
                         <button
-                            onClick={() => handleUpgrade('pro')}
+                            onClick={() => handleSelectPlan('pro')}
                             disabled={requesting !== null}
                             className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-black font-bold transition-all text-sm disabled:opacity-50"
                         >
@@ -186,7 +197,7 @@ export default function PricingPage() {
                         </div>
                     ) : (
                         <button
-                            onClick={() => handleUpgrade('premium')}
+                            onClick={() => handleSelectPlan('premium')}
                             disabled={requesting !== null}
                             className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-500 to-fuchsia-500 hover:from-purple-400 hover:to-fuchsia-400 text-white font-bold transition-all text-sm disabled:opacity-50"
                         >
@@ -259,12 +270,43 @@ export default function PricingPage() {
                         입금자명을 가입 시 사용한 이름과 동일하게 입력해 주세요. 확인 후 관리자가 플랜을 활성화합니다.
                     </p>
 
+                    {/* 승인요청 버튼 */}
+                    {requestSent ? (
+                        <div className="mt-4 w-full py-4 rounded-xl bg-green-500/10 border border-green-500/20 text-center">
+                            <i className="fas fa-check-circle text-green-400 text-lg" />
+                            <p className="text-green-400 font-bold mt-1">승인 요청이 완료되었습니다</p>
+                            <p className="text-gray-500 text-xs mt-1">관리자 확인 후 플랜이 활성화됩니다 (최대 24시간)</p>
+                        </div>
+                    ) : (
+                        <button
+                            onClick={handleSubmitRequest}
+                            disabled={requesting !== null || !depositorName.trim()}
+                            className={`mt-4 w-full py-4 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 ${
+                                selectedPlan === 'premium'
+                                    ? 'bg-gradient-to-r from-purple-500 to-fuchsia-500 hover:from-purple-400 hover:to-fuchsia-400 text-white'
+                                    : 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-black'
+                            } disabled:opacity-40 disabled:cursor-not-allowed`}
+                        >
+                            {requesting ? (
+                                <>
+                                    <i className="fas fa-spinner fa-spin" />
+                                    처리 중...
+                                </>
+                            ) : (
+                                <>
+                                    <i className="fas fa-paper-plane" />
+                                    {selectedPlan === 'premium' ? 'Ultra Pro' : 'Pro'} 승인 요청
+                                </>
+                            )}
+                        </button>
+                    )}
+
                     {/* 카카오톡 문의 */}
                     <a
                         href="https://open.kakao.com/o/sJVLbWUe"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="mt-4 flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-[#FEE500]/10 hover:bg-[#FEE500]/20 text-[#FEE500] font-bold text-sm transition-all border border-[#FEE500]/20"
+                        className="mt-3 flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-[#FEE500]/10 hover:bg-[#FEE500]/20 text-[#FEE500] font-bold text-sm transition-all border border-[#FEE500]/20"
                     >
                         <i className="fas fa-comment" />
                         카카오톡 문의하기

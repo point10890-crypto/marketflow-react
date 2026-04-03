@@ -26,7 +26,7 @@ export default defineConfig({
             handler: 'NetworkFirst',
             options: {
               cacheName: 'pages-cache',
-              networkTimeoutSeconds: 3,
+              networkTimeoutSeconds: 5,
             },
           },
           {

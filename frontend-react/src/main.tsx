@@ -22,11 +22,11 @@ const updateSW = registerSW({
     console.log('[PWA] Offline ready');
   },
   onRegisteredSW(swUrl, registration) {
-    // 60초마다 SW 업데이트 체크
+    // 15초마다 SW 업데이트 체크 (배포 후 빠른 반영)
     if (registration) {
       setInterval(() => {
         registration.update().catch(() => {});
-      }, 60_000);
+      }, 15_000);
     }
   },
 });
