@@ -1,22 +1,14 @@
 ticker,name,sector,price,rs_rating,vcp_score,fund_score,setup_phase,pivot_tightness,vol_dry_up,contractions,base_depth,eps_growth,breakout,pivot_price,score
 KEYS,Keysight Technologies Inc.,Technology,291.24,99.0,55,55,⏳ Building,7.7%,No,6,7%,66%,No,291.24,167.8
 NEE,"NextEra Energy, Inc.",Utilities,93.15,89.2,65,45,⚡ Pivot,1.9%,No,6,8%,28%,No,93.15,165.4
-TRGP,"Targa Resources, Inc.",Energy,244.39,99.0,65,40,⚡ Pivot,2.6%,No,5,6%,55%,No,250.73,163.8
-WMB,"Williams Companies, Inc. (The)",Energy,72.0,95.8,65,40,⚡ Pivot,2.4%,No,5,8%,51%,No,73.58,163.0
-PPL,PPL Corporation,Utilities,38.64,79.2,85,30,⚡ Pivot,2.6%,Yes,5,6%,50%,No,38.64,159.0
-TER,"Teradyne, Inc.",Technology,309.61,99.0,40,55,⏳ Building,12.0%,No,7,20%,76%,No,312.2,155.8
 EIX,Edison International,Utilities,73.46,99.0,40,55,📈 Near Highs,4.5%,No,6,5%,444%,No,73.58,155.8
-VRT,"Vertiv Holdings, LLC",Industrials,261.29,99.0,40,55,⏳ Building,10.8%,No,4,21%,203%,No,261.29,155.8
 JNJ,Johnson & Johnson,Healthcare,243.04,93.2,55,40,⚡ Pivot,1.6%,No,4,5%,49%,No,244.44,154.4
-TGT,Target Corporation,Consumer Defensive,120.45,99.0,80,10,⚡ Pivot,2.0%,No,5,9%,-5%,No,121.2,151.8
 AMGN,Amgen Inc.,Healthcare,347.94,71.3,65,40,⚡ Pivot,1.5%,No,4,9%,113%,No,353.28,149.1
 HST,"Host Hotels & Resorts, Inc.",Real Estate,19.14,70.5,65,30,⚡ Pivot,2.7%,No,7,9%,25%,No,19.16,148.9
 JBL,Jabil Inc.,Technology,268.55,81.0,40,50,⏳ Building,9.3%,No,5,13%,91%,No,271.96,147.4
-PEP,"Pepsico, Inc.",Consumer Defensive,157.01,80.2,65,35,⚡ Pivot,2.6%,No,4,9%,67%,No,157.01,147.3
 ES,Eversource Energy (D/B/A),Utilities,69.47,63.8,65,40,⚡ Pivot,3.0%,No,5,6%,481%,No,69.65,147.3
 ALL,Allstate Corporation (The),Financial Services,207.03,61.7,65,40,⚡ Pivot,2.2%,No,5,9%,99%,No,207.34,146.8
 EME,"EMCOR Group, Inc.",Industrials,756.3,94.5,40,45,⏳ Building,7.9%,No,5,13%,49%,No,759.55,146.7
-TPR,"Tapestry, Inc.",Consumer Cyclical,141.2,76.9,55,45,⏳ Building,5.3%,No,4,6%,81%,No,144.35,146.4
 LHX,"L3Harris Technologies, Inc.",Industrials,356.0,92.1,40,45,⏳ Building,4.6%,No,3,6%,75%,No,356.0,146.1
 MCK,McKesson Corporation,Healthcare,884.28,72.4,65,35,⚡ Pivot,2.8%,No,2,10%,35%,No,884.28,145.4
 DTE,DTE Energy Company,Utilities,148.04,86.4,55,40,⚡ Pivot,2.4%,No,4,3%,26%,No,148.04,144.7
@@ -24,8 +16,16 @@ AMAT,"Applied Materials, Inc.",Technology,348.47,99.0,40,40,⏳ Building,9.0%,No
 FIX,"Comfort Systems USA, Inc.",Industrials,1417.19,99.0,40,40,📈 Near Highs,11.3%,No,4,13%,38%,No,1428.52,143.8
 BG,Bunge Limited,Consumer Defensive,129.42,99.0,65,15,⚡ Pivot,2.5%,No,6,8%,-84%,No,129.42,143.8
 GEV,GE Vernova Inc.,Industrials,898.57,99.0,40,40,📈 Near Highs,9.4%,No,5,10%,657%,No,898.57,143.8
-VLO,Valero Energy Corporation,Energy,244.09,99.0,55,25,📈 Near Highs,5.2%,No,5,6%,304%,No,254.32,143.8
 KLAC,KLA Corporation,Technology,1516.84,95.8,40,40,⏳ Building,9.4%,No,6,13%,39%,No,1519.84,143.0
-O,Realty Income Corporation,Real Estate,62.21,77.4,55,40,⚡ Pivot,2.9%,No,4,4%,48%,No,62.21,142.6
-VTR,"Ventas, Inc.",Real Estate,83.27,74.2,55,30,⚡ Pivot,2.6%,No,4,3%,24%,No,83.27,141.8
 AEP,American Electric Power Compan,Utilities,132.68,88.4,65,15,⚡ Pivot,2.0%,No,3,8%,-12%,No,132.68,141.2
+D,"Dominion Energy, Inc.",Utilities,62.77,71.7,40,45,📈 Near Highs,3.0%,No,4,8%,323%,No,62.77,141.2
+MRK,"Merck & Company, Inc.",Healthcare,120.87,86.3,65,15,⚡ Pivot,2.3%,No,5,8%,-21%,No,120.87,140.7
+FE,FirstEnergy Corp.,Utilities,51.31,86.4,65,15,⚡ Pivot,2.5%,No,3,8%,0%,No,51.31,140.7
+BMY,Bristol-Myers Squibb Company,Healthcare,59.6,82.7,40,40,📈 Near Highs,5.3%,No,4,10%,1410%,No,61.1,139.9
+ALB,Albemarle Corporation,Basic Materials,178.09,99.0,65,10,⚡ Pivot,1.3%,No,5,19%,0%,No,179.53,139.8
+MPC,Marathon Petroleum Corporation,Energy,241.73,99.0,40,35,📈 Near Highs,5.6%,No,5,7%,314%,No,251.91,139.8
+HON,Honeywell International Inc.,Industrials,229.45,92.9,80,15,⚡ Pivot,2.8%,No,4,6%,-77%,No,229.45,138.3
+ADI,"Analog Devices, Inc.",Technology,318.34,90.8,40,45,⏳ Building,5.6%,No,5,15%,112%,No,320.58,137.8
+T,AT&T Inc.,Communication Services,28.33,90.9,80,15,⚡ Pivot,2.8%,No,6,6%,-7%,No,29.1,137.8
+MU,"Micron Technology, Inc.",Technology,366.24,89.8,30,55,⏳ Building,13.2%,No,4,14%,771%,No,367.85,137.6
+CSCO,"Cisco Systems, Inc.",Technology,79.02,66.4,40,40,⏳ Building,3.7%,No,5,6%,31%,No,79.49,135.9
