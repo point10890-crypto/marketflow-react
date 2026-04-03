@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generated_at": "2026-04-04T00:00:21.149398",
+    "generated_at": "2026-04-04T04:00:35.167126",
     "market": "CRYPTO",
     "gate": "RED",
     "universe_size": 50
@@ -10,16 +10,16 @@
       "symbol": "USD1/USDT",
       "timeframe": "1d",
       "signal_type": "APPROACHING",
-      "score": 44,
+      "score": 46,
       "pivot_high": 1.0005,
-      "breakout_close_pct": -0.06,
-      "vol_ratio": 0.44,
+      "breakout_close_pct": -0.05,
+      "vol_ratio": 0.52,
       "liquidity_bucket": "A",
       "market_regime": "BTC_DOWN|B",
       "c1": 2.0,
       "c2": 0.1,
       "c3": 0.1,
-      "ml_win_prob": 73.5
+      "ml_win_prob": 74.1
     }
   ],
   "summary": {
