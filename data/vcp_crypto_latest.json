@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generated_at": "2026-04-03T12:00:36.871244",
+    "generated_at": "2026-04-03T16:09:41.560012",
     "market": "CRYPTO",
     "gate": "RED",
     "universe_size": 50
@@ -10,22 +10,37 @@
       "symbol": "USD1/USDT",
       "timeframe": "1d",
       "signal_type": "APPROACHING",
-      "score": 48,
+      "score": 40,
       "pivot_high": 1.0005,
-      "breakout_close_pct": -0.06,
-      "vol_ratio": 0.06,
+      "breakout_close_pct": -0.08,
+      "vol_ratio": 0.11,
       "liquidity_bucket": "A",
-      "market_regime": "BTC_DOWN|B",
+      "market_regime": "BTC_DOWN|D",
       "c1": 2.0,
       "c2": 0.1,
       "c3": 0.1,
-      "ml_win_prob": 69.2
+      "ml_win_prob": 73.8
+    },
+    {
+      "symbol": "USD1/USDT",
+      "timeframe": "4h",
+      "signal_type": "APPROACHING",
+      "score": 38,
+      "pivot_high": 0.9998,
+      "breakout_close_pct": -0.01,
+      "vol_ratio": 0.33,
+      "liquidity_bucket": "A",
+      "market_regime": "BTC_DOWN|D",
+      "c1": 0.1,
+      "c2": 0.1,
+      "c3": 0.0,
+      "ml_win_prob": 76.8
     }
   ],
   "summary": {
     "setups_4h": 3,
-    "setups_1d": 8,
-    "signals_4h": 0,
+    "setups_1d": 7,
+    "signals_4h": 1,
     "signals_1d": 1,
     "published": 0
   }

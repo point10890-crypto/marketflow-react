@@ -51,9 +51,9 @@
     },
     {
       "name": "Bitcoin",
-      "price": "66,782.86",
-      "change": "-105.71",
-      "change_pct": -0.1580403602680157,
+      "price": "66,785.35",
+      "change": "-103.22",
+      "change_pct": -0.1543144808115456,
       "color": "red"
     },
     {
@@ -67,16 +67,16 @@
       "name": "Dollar Index",
       "price": "100.00",
       "change": "-0.03",
-      "change_pct": -0.02799148082713224,
+      "change_pct": -0.029989782728142775,
       "color": "red"
     },
     {
       "name": "USD/KRW",
-      "price": "1,506.64",
-      "change": "-5.45",
-      "change_pct": -0.3604250603513785,
+      "price": "1,507.24",
+      "change": "-4.85",
+      "change_pct": -0.3207464962778439,
       "color": "red"
     }
   ],
-  "timestamp": "2026-04-03T16:06:09.315040"
+  "timestamp": "2026-04-03T16:09:30.836312"
 }
