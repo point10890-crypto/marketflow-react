@@ -1,0 +1,75 @@
+{
+  "name": "퍼스텍",
+  "ticker": "010820.KS",
+  "result": "데이터 없음",
+  "date": "2026-04-03 17:16:46",
+  "elapsed": 2.0,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 9130.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 9130.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "FIRSTEC",
+    "sector": "Industrials",
+    "industry": "Aerospace & Defense",
+    "market_cap": 443670855680,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": null,
+    "beta": 0.681,
+    "fifty_two_week_high": 9940.0,
+    "fifty_two_week_low": 3090.0,
+    "revenue": 136406712320,
+    "profit_margin": -0.15784,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 108451305280
+    },
+    {
+      "date": "2025-09",
+      "value": 70939699360
+    },
+    {
+      "date": "2025-06",
+      "value": 61861083040
+    },
+    {
+      "date": "2025-03",
+      "value": 53590339120
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 8042773600
+    },
+    {
+      "date": "2025-09",
+      "value": 2124721150
+    },
+    {
+      "date": "2025-06",
+      "value": 2373268930
+    },
+    {
+      "date": "2025-03",
+      "value": 2186064850
+    }
+  ],
+  "news": []
+}

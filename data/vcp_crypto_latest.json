@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generated_at": "2026-04-03T17:15:34.101969",
+    "generated_at": "2026-04-03T17:32:08.595826",
     "market": "CRYPTO",
     "gate": "RED",
     "universe_size": 50
@@ -10,52 +10,37 @@
       "symbol": "USD1/USDT",
       "timeframe": "1d",
       "signal_type": "APPROACHING",
-      "score": 40,
+      "score": 48,
       "pivot_high": 1.0005,
-      "breakout_close_pct": -0.08,
-      "vol_ratio": 0.16,
+      "breakout_close_pct": -0.05,
+      "vol_ratio": 0.19,
       "liquidity_bucket": "A",
-      "market_regime": "BTC_DOWN|D",
+      "market_regime": "BTC_DOWN|B",
       "c1": 2.0,
       "c2": 0.1,
       "c3": 0.1,
-      "ml_win_prob": 77.3
-    },
-    {
-      "symbol": "USD1/USDT",
-      "timeframe": "4h",
-      "signal_type": "APPROACHING",
-      "score": 38,
-      "pivot_high": 0.9998,
-      "breakout_close_pct": -0.01,
-      "vol_ratio": 0.15,
-      "liquidity_bucket": "A",
-      "market_regime": "BTC_DOWN|D",
-      "c1": 0.1,
-      "c2": 0.1,
-      "c3": 0.0,
-      "ml_win_prob": 75.9
+      "ml_win_prob": 73.4
     },
     {
       "symbol": "FIDA/USDT",
       "timeframe": "1d",
       "signal_type": "BREAKOUT",
-      "score": 14,
+      "score": 15,
       "pivot_high": 0.01543,
-      "breakout_close_pct": 14.91,
-      "vol_ratio": 1.36,
+      "breakout_close_pct": 13.87,
+      "vol_ratio": 1.39,
       "liquidity_bucket": "B",
       "market_regime": "BTC_DOWN|D",
       "c1": 33.8,
       "c2": 22.8,
       "c3": 21.4,
-      "ml_win_prob": 40.4
+      "ml_win_prob": 41.1
     }
   ],
   "summary": {
     "setups_4h": 2,
     "setups_1d": 7,
-    "signals_4h": 1,
+    "signals_4h": 0,
     "signals_1d": 2,
     "published": 0
   }
