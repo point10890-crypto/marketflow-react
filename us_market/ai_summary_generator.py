@@ -210,14 +210,20 @@ class NewsCollector:
         return unique
 
 
+def _sanitize_error(msg: str) -> str:
+    """Strip API keys from error messages to prevent leaking secrets into logs/JSON."""
+    import re
+    return re.sub(r'[?&]key=[A-Za-z0-9_-]+', '?key=***REDACTED***', str(msg))
+
+
 class GeminiSummaryGenerator:
     """Generate stock summaries using Gemini AI"""
-    
+
     def __init__(self, api_key: str = None):
         self.api_key = api_key or os.getenv('GOOGLE_API_KEY') or os.getenv('GEMINI_API_KEY')
         if not self.api_key:
             raise ValueError("GOOGLE_API_KEY or GEMINI_API_KEY not found in environment")
-        
+
         # Gemini 3.0 Pro Preview (User Requested)
         self.base_url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-preview:generateContent"
     
@@ -249,38 +255,38 @@ class GeminiSummaryGenerator:
             
             if response.status_code == 200:
                 result = response.json()
-                
+
                 # Robust extraction
                 try:
                     candidates = result.get('candidates', [])
                     if not candidates:
                         logger.warning(f"No candidates returned for {ticker}. Result: {result}")
                         return self._get_fallback_json(ticker, "AI Analysis Unavailable (No Candidates)")
-                        
+
                     candidate = candidates[0]
                     # Check for safety blocks
                     if candidate.get('finishReason') == 'SAFETY':
                         logger.warning(f"Safety filter triggered for {ticker}")
                         return self._get_fallback_json(ticker, "AI Analysis Blocked by Safety Filter")
-                        
+
                     parts = candidate.get('content', {}).get('parts', [])
                     if not parts:
                         logger.warning(f"No content parts for {ticker}. Result: {result}")
                         return self._get_fallback_json(ticker, "AI Analysis Unavailable (Empty Content)")
-                        
+
                     text = parts[0]['text']
                     return text.strip()
-                    
+
                 except Exception as e:
-                    logger.error(f"Error parsing Gemini response for {ticker}: {e} -> {result}")
-                    return self._get_fallback_json(ticker, f"Error parsing AI response: {str(e)}")
+                    logger.error(f"Error parsing Gemini response for {ticker}: {_sanitize_error(e)}")
+                    return self._get_fallback_json(ticker, f"Error parsing AI response: {_sanitize_error(e)}")
             else:
-                logger.error(f"Gemini API error: {response.status_code} - {response.text}")
+                logger.error(f"Gemini API error: {response.status_code} - {_sanitize_error(response.text)}")
                 return self._get_fallback_json(ticker, f"API Error: {response.status_code}")
-                
+
         except Exception as e:
-            logger.error(f"Error generating summary for {ticker}: {e}")
-            return self._get_fallback_json(ticker, f"Connection Error: {str(e)}")
+            logger.error(f"Error generating summary for {ticker}: {_sanitize_error(e)}")
+            return self._get_fallback_json(ticker, f"Connection Error: {_sanitize_error(e)}")
 
     def _get_fallback_json(self, ticker: str, reason: str) -> str:
         """Return a valid JSON string for error cases"""
@@ -507,12 +513,12 @@ class OpenAISummaryGenerator:
                 result = response.json()
                 return result['choices'][0]['message']['content'].strip()
             else:
-                logger.error(f"OpenAI API error: {response.status_code} - {response.text}")
+                logger.error(f"OpenAI API error: {response.status_code} - {_sanitize_error(response.text)}")
                 return self._get_fallback_json(ticker, f"API Error: {response.status_code}")
 
         except Exception as e:
-            logger.error(f"Error generating summary for {ticker}: {e}")
-            return self._get_fallback_json(ticker, str(e))
+            logger.error(f"Error generating summary for {ticker}: {_sanitize_error(e)}")
+            return self._get_fallback_json(ticker, _sanitize_error(e))
 
     def _get_fallback_json(self, ticker: str, reason: str) -> str:
         fallback = {
@@ -570,12 +576,12 @@ class PerplexitySummaryGenerator:
                 result = response.json()
                 return result['choices'][0]['message']['content'].strip()
             else:
-                logger.error(f"Perplexity API error: {response.status_code} - {response.text}")
+                logger.error(f"Perplexity API error: {response.status_code} - {_sanitize_error(response.text)}")
                 return self._get_fallback_json(ticker, f"API Error: {response.status_code}")
 
         except Exception as e:
-            logger.error(f"Error generating summary for {ticker}: {e}")
-            return self._get_fallback_json(ticker, str(e))
+            logger.error(f"Error generating summary for {ticker}: {_sanitize_error(e)}")
+            return self._get_fallback_json(ticker, _sanitize_error(e))
 
     def _get_fallback_json(self, ticker: str, reason: str) -> str:
         fallback = {

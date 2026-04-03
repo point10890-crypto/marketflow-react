@@ -31,8 +31,15 @@ def create_app(config=None):
     if config:
         app.config.update(config)
 
-    # CORS
-    CORS(app, resources={r"/api/*": {"origins": "*"}})
+    # CORS — restrict to known origins (match main app pattern)
+    allowed_origins = [
+        "http://localhost:5173",
+        "http://localhost:4000",
+        "https://bitman-marketflow.pages.dev",
+        "https://www.bit-man.net",
+        "https://bit-man.net",
+    ]
+    CORS(app, resources={r"/api/*": {"origins": allowed_origins}})
 
     # Database
     db.init_app(app)

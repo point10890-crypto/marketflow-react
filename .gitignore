@@ -35,28 +35,22 @@ data/*.csv
 !data/signals_log.csv
 !data/ticker_to_yahoo_map.csv
 data/*.db
+data/*.json
 data/history/
 data/backtest/
 data/ai/
 data/institutional/
-
-# Runtime cache (scheduler/Flask 생성, git 추적 불필요)
-data/market_gate_cache.json
-data/crypto_dominance_cache.json
-data/cumulative_performance.json
 crypto-analytics/crypto_market/signals.sqlite3
 
 # VCP data: allow latest files for cloud deployment
 !data/vcp_*_latest.json
 
-# US Market output: allow for cloud deployment (Render needs data files)
-# us_market/output/ is NOT gitignored — tracked for deployment
+# US Market output: generated data files (may contain sensitive error messages)
+us_market/output/
 us_market/data/
 us_market/history/
 us_market_preview/output/
 
-# Allow CSV in us_market/output specifically
-!us_market/output/*.csv
 
 # Crypto analytics: allow output for cloud deployment
 !crypto-analytics/crypto_market/output/
