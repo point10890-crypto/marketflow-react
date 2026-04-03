@@ -1,35 +1,35 @@
 {
-  "name": "삼천당제약",
-  "ticker": "000250.KQ",
+  "name": "루미르",
+  "ticker": "474170.KQ",
   "result": "데이터 없음",
-  "date": "2026-04-03 08:08:13",
-  "elapsed": 1.8,
+  "date": "2026-04-03 10:21:14",
+  "elapsed": 2.0,
   "consensus_score": null,
   "analyst_count": 0,
   "recommendation_detail": null,
   "recommendation_period": null,
   "price_targets": {
-    "current": 609000.0,
+    "current": 13930.0,
     "high": null,
     "low": null,
     "mean": null,
     "median": null
   },
-  "current_price": 609000.0,
+  "current_price": 13930.0,
   "upside_potential": null,
   "key_stats": {
-    "name": "SCD",
-    "sector": "",
-    "industry": "",
-    "market_cap": 14164048216064,
+    "name": "Lumir",
+    "sector": "Industrials",
+    "industry": "Aerospace & Defense",
+    "market_cap": 246946807808,
     "pe_ratio": null,
     "forward_pe": null,
     "dividend_yield": null,
     "beta": null,
-    "fifty_two_week_high": 1233000.0,
-    "fifty_two_week_low": 127600.0,
-    "revenue": null,
-    "profit_margin": null,
+    "fifty_two_week_high": 22650.0,
+    "fifty_two_week_low": 7110.0,
+    "revenue": 10568518656,
+    "profit_margin": 0.0043200003,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
@@ -38,37 +38,37 @@
   "revenue_quarters": [
     {
       "date": "2025-12",
-      "value": 66262693890
+      "value": 3717497980
     },
     {
       "date": "2025-09",
-      "value": 58024413360
+      "value": 3426980660
     },
     {
       "date": "2025-06",
-      "value": 56900188950
+      "value": 2011360360
     },
     {
       "date": "2025-03",
-      "value": 50617981540
+      "value": 1412679210
     }
   ],
   "net_income_quarters": [
     {
       "date": "2025-12",
-      "value": 5546838470
+      "value": 331384980
     },
     {
       "date": "2025-09",
-      "value": 2572814500
+      "value": -217075770
     },
     {
       "date": "2025-06",
-      "value": -3336061860
+      "value": 493673420
     },
     {
       "date": "2025-03",
-      "value": 478231630
+      "value": -562319890
     }
   ],
   "news": []

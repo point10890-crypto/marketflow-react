@@ -1,88 +1,84 @@
 {
-  "timestamp": "2026-04-03T08:00:34.462215",
+  "timestamp": "2026-04-03T12:00:30.237654",
   "version": "1.0",
   "market_summary": {
-    "total_market_cap": 2388433546865.0,
-    "total_volume_24h": 108156867837.0,
-    "btc_dominance": 56.07,
+    "total_market_cap": 2372037523077.0,
+    "total_volume_24h": 93858307660.0,
+    "btc_dominance": 56.09,
     "btc_dominance_change_24h": 0,
-    "total_market_cap_change_24h": -1.57,
-    "active_cryptocurrencies": 17887
+    "total_market_cap_change_24h": -0.55,
+    "active_cryptocurrencies": 17886
   },
   "major_coins": {},
   "top_movers": null,
   "fear_greed": {
-    "score": 12,
-    "current_score": 12,
+    "score": 9,
+    "current_score": 9,
     "current_label": "Extreme Fear",
     "level": "Extreme Fear",
-    "timestamp": "1775088000",
-    "previous": 8,
-    "previous_score": 8,
+    "timestamp": "1775174400",
+    "previous": 12,
+    "previous_score": 12,
     "previous_label": "Extreme Fear",
-    "change": 4
+    "change": -3
   },
   "funding_rates": {
     "BTC": {
       "symbol": "BTCUSDT",
-      "rate": -1.9e-05,
-      "rate_pct": -0.0019,
-      "annualized_pct": -2.04,
+      "rate": 1.5e-05,
+      "rate_pct": 0.0015,
+      "annualized_pct": 1.6,
       "sentiment": "neutral"
     },
     "ETH": {
       "symbol": "ETHUSDT",
-      "rate": -3.6e-05,
-      "rate_pct": -0.0036,
-      "annualized_pct": -3.96,
+      "rate": -1.3e-05,
+      "rate_pct": -0.0013,
+      "annualized_pct": -1.45,
       "sentiment": "neutral"
     }
   },
   "macro_correlations": {
     "btc_pairs": {
-      "BTC_SPY": 0.5566,
-      "BTC_GLD": 0.2353,
-      "BTC_DXY": -0.1785
+      "BTC_SPY": 0.5591,
+      "BTC_GLD": 0.2319,
+      "BTC_DXY": -0.1744
     }
   },
   "market_gate": {
     "gate": "RED",
-    "score": 25,
+    "score": 21,
     "status": "RISK_OFF",
     "reasons": [
       "BTC가 EMA50 아래 (하락 추세)",
       "EMA200 하락 중 (장기 약세)",
       "변동성 다소 높음 (휩쏘 주의)",
-      "거래량 평범 (유동성 유입 약함)",
+      "거래량 부족 (관심 저조)",
       "알트 breadth 붕괴 (10% > EMA50)"
     ],
     "metrics": {
-      "btc_price": 67019.9375,
-      "btc_ema50": 70785.97725340903,
-      "btc_ema200": 84772.41196701032,
-      "btc_ema200_slope_pct_20": -3.849136875263395,
-      "btc_volume_z_50": -0.0953391389292375,
-      "btc_atrp_14_pct": 3.6868364098210114,
+      "btc_price": 66488.78125,
+      "btc_ema50": 70765.14759654638,
+      "btc_ema200": 84767.48743777057,
+      "btc_ema200_slope_pct_20": -3.855202699115038,
+      "btc_volume_z_50": -0.41942931508058917,
+      "btc_atrp_14_pct": 3.6069059079314334,
       "alt_breadth_above_ema50": 0.1,
-      "funding_rate": -1.865e-05,
+      "funding_rate": 1.46e-05,
       "open_interest_delta_z": null,
       "gate_score_components": {
         "trend": 0.0,
         "volatility": 8.0,
-        "participation": 6.0,
+        "participation": 2.0,
         "breadth": 2.0,
         "leverage": 9.0
       },
-      "fear_greed_index": 12,
+      "fear_greed_index": 9,
       "fear_greed_class": "Extreme Fear"
     },
-    "generated_at": "2026-04-03T08:00:28.031962"
+    "generated_at": "2026-04-03T12:00:28.941939"
   },
   "btc_price_history": [
-    {
-      "date": "2026-01-03",
-      "price": 90603.1875
-    },
     {
       "date": "2026-01-04",
       "price": 91413.4921875
@@ -436,15 +432,15 @@
       "price": 68078.5546875
     },
     {
-      "date": "2026-04-02",
-      "price": 67020.5078125
+      "date": "2026-04-03",
+      "price": 66470.015625
     }
   ],
   "sentiment_summary": {
     "overall": "Neutral",
     "factors": [
       "fear_greed: extreme_fear (bullish)",
-      "funding: neutral (neutral)",
+      "funding: positive (neutral)",
       "dominance: btc_high (neutral)"
     ]
   }

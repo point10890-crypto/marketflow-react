@@ -1,35 +1,35 @@
 {
-  "name": "삼천당제약",
-  "ticker": "000250.KQ",
+  "name": "한일사료",
+  "ticker": "005860.KQ",
   "result": "데이터 없음",
-  "date": "2026-04-03 08:08:13",
-  "elapsed": 1.8,
+  "date": "2026-04-03 09:43:09",
+  "elapsed": 2.5,
   "consensus_score": null,
   "analyst_count": 0,
   "recommendation_detail": null,
   "recommendation_period": null,
   "price_targets": {
-    "current": 609000.0,
+    "current": 3990.0,
     "high": null,
     "low": null,
     "mean": null,
     "median": null
   },
-  "current_price": 609000.0,
+  "current_price": 3990.0,
   "upside_potential": null,
   "key_stats": {
-    "name": "SCD",
-    "sector": "",
-    "industry": "",
-    "market_cap": 14164048216064,
+    "name": "HanilFeed",
+    "sector": "Consumer Defensive",
+    "industry": "Packaged Foods",
+    "market_cap": 157220700160,
     "pe_ratio": null,
     "forward_pe": null,
-    "dividend_yield": null,
-    "beta": null,
-    "fifty_two_week_high": 1233000.0,
-    "fifty_two_week_low": 127600.0,
-    "revenue": null,
-    "profit_margin": null,
+    "dividend_yield": 1.9,
+    "beta": -0.777,
+    "fifty_two_week_high": 5340.0,
+    "fifty_two_week_low": 2895.0,
+    "revenue": 454852182016,
+    "profit_margin": 0.01402,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
@@ -38,37 +38,37 @@
   "revenue_quarters": [
     {
       "date": "2025-12",
-      "value": 66262693890
+      "value": 114051287780
     },
     {
       "date": "2025-09",
-      "value": 58024413360
+      "value": 124541291050
     },
     {
       "date": "2025-06",
-      "value": 56900188950
+      "value": 107899181160
     },
     {
       "date": "2025-03",
-      "value": 50617981540
+      "value": 108360406670
     }
   ],
   "net_income_quarters": [
     {
       "date": "2025-12",
-      "value": 5546838470
+      "value": 1698026270
     },
     {
       "date": "2025-09",
-      "value": 2572814500
+      "value": 2187775690
     },
     {
       "date": "2025-06",
-      "value": -3336061860
+      "value": 1787125680
     },
     {
       "date": "2025-03",
-      "value": 478231630
+      "value": 703940810
     }
   ],
   "news": []

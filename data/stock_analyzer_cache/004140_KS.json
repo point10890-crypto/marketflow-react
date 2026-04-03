@@ -1,0 +1,75 @@
+{
+  "name": "동방",
+  "ticker": "004140.KS",
+  "result": "데이터 없음",
+  "date": "2026-04-03 11:49:47",
+  "elapsed": 2.2,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 2795.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 2795.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "DongbangTrnspt&Log",
+    "sector": "Industrials",
+    "industry": "Integrated Freight & Logistics",
+    "market_cap": 133586485248,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": 1.12,
+    "beta": 1.337,
+    "fifty_two_week_high": 4120.0,
+    "fifty_two_week_low": 2010.0,
+    "revenue": 888534401024,
+    "profit_margin": 0.0172,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 237821685490
+    },
+    {
+      "date": "2025-06",
+      "value": 220500527580
+    },
+    {
+      "date": "2025-03",
+      "value": 205077553520
+    },
+    {
+      "date": "2024-12",
+      "value": 225134621470
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 4140440230
+    },
+    {
+      "date": "2025-06",
+      "value": 7555267310
+    },
+    {
+      "date": "2025-03",
+      "value": 6156571980
+    },
+    {
+      "date": "2024-12",
+      "value": -2568446350
+    }
+  ],
+  "news": []
+}

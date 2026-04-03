@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generated_at": "2026-04-03T08:00:33.802236",
+    "generated_at": "2026-04-03T12:00:36.871244",
     "market": "CRYPTO",
     "gate": "RED",
     "universe_size": 50
@@ -10,52 +10,22 @@
       "symbol": "USD1/USDT",
       "timeframe": "1d",
       "signal_type": "APPROACHING",
-      "score": 51,
-      "pivot_high": 1.0001,
-      "breakout_close_pct": -0.03,
-      "vol_ratio": 0.96,
+      "score": 48,
+      "pivot_high": 1.0005,
+      "breakout_close_pct": -0.06,
+      "vol_ratio": 0.06,
       "liquidity_bucket": "A",
-      "market_regime": "BTC_DOWN|D",
+      "market_regime": "BTC_DOWN|B",
       "c1": 2.0,
       "c2": 0.1,
       "c3": 0.1,
-      "ml_win_prob": 66.0
-    },
-    {
-      "symbol": "USD1/USDT",
-      "timeframe": "4h",
-      "signal_type": "APPROACHING",
-      "score": 38,
-      "pivot_high": 0.9998,
-      "breakout_close_pct": 0.0,
-      "vol_ratio": 0.13,
-      "liquidity_bucket": "A",
-      "market_regime": "BTC_DOWN|C",
-      "c1": 0.1,
-      "c2": 0.1,
-      "c3": 0.0,
-      "ml_win_prob": 75.3
-    },
-    {
-      "symbol": "HEMI/USDT",
-      "timeframe": "4h",
-      "signal_type": "BREAKOUT",
-      "score": 25,
-      "pivot_high": 0.00659,
-      "breakout_close_pct": 9.41,
-      "vol_ratio": 0.4,
-      "liquidity_bucket": "B",
-      "market_regime": "BTC_DOWN|B",
-      "c1": 22.6,
-      "c2": 15.3,
-      "c3": 12.7,
-      "ml_win_prob": 58.5
+      "ml_win_prob": 69.2
     }
   ],
   "summary": {
-    "setups_4h": 5,
-    "setups_1d": 7,
-    "signals_4h": 2,
+    "setups_4h": 3,
+    "setups_1d": 8,
+    "signals_4h": 0,
     "signals_1d": 1,
     "published": 0
   }
