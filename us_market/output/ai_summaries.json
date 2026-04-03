@@ -293,22 +293,22 @@
     "summary_en": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
     "sources": [
       {
-        "title": "What's Going On With Apple Stock Wednesday? - Apple (NASDAQ:AAPL), Fidelity Blue Chip Growth ETF (BATS:FB - Benzinga",
-        "url": "https://news.google.com/rss/articles/CBMitwFBVV95cUxQSzFBSHFBSDRoSlJmeUh3YkJ2UDl4Ui1lTFAybUJNU0xhc25tcTF4dGFUQzZUTUhpMVJRZEsydG02UGV6TGZsMGloUlo4OTJxX2lkNHpaZF95aGdCSTlacmhOUWUwU1J0Q0NqNVRJSUhFd2hYSm9iWlFHTUdGcW4zWG1HQzlFdTAyeWJDNmZFeTNzSkN6QnhrSmRRSzYzLTk3WVBweFJUbTB3dDJmNHFFWnNRNnNBNDg?oc=5",
-        "date": "2026-04-01",
-        "source": "Benzinga"
-      },
-      {
-        "title": "Apple Inc. $AAPL Stock Holdings Raised by Professional Advisory Services Inc. - MarketBeat",
-        "url": "https://news.google.com/rss/articles/CBMi0AFBVV95cUxNNzg1ZThGX3NOVVV1OGZrcVV6Q3NtR0l5NllVVXBiZ0FuUWJaWVkzYnVud01laTJ3MlJJTC03Vi1CeHU3bXREY0lqMHdfbDFWQk9ZdW8wUk5Xc0tvVFI3TDMxb3dUekRHd09hTHhKUHE1a1duV2tyTFhqVkd3WmNBa2JlS0FibUZlYWFtcGpYelEwQ3lVNzllb2tFYTdnVmlMdzRjMm8wWE1VS3NXSF9zcHZpTXdtT0dabFNmMTR2NXZhNUlfTTA0YzZaZ0ZmZVJl?oc=5",
-        "date": "2026-04-01",
+        "title": "Apple (NASDAQ:AAPL) Shares Unloaded Rep. Mark Alford - MarketBeat",
+        "url": "https://news.google.com/rss/articles/CBMipAFBVV95cUxQd2FZWVktUnBfd1BkQUt2eUJaaUk0bzh4MmhOcUFBWGdOZmRBRzRNOHJrUTF5N05HMXY4bEJ2Yjd4Q1BWUEgxVkZBZUxGNjhPSTMyRUdlZ2hNRmRmTXNfX1V0blh1Z0NnNUNHYzVsdVR5azNSY3N0OFRRR1dVdFZhQ0wyT2psVlVpT2tYRUJtQk50SDZ4WTVhTXBoRVJlX0l3eTMwRA?oc=5",
+        "date": "2026-04-03",
         "source": "MarketBeat"
       },
       {
-        "title": "Prediction: Apple Will Be the Worst \"Magnificent Seven\" Stock to Own Between Now and 2030 - Yahoo Finance",
-        "url": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxOWHpZODM0V2RCd1hyMm1BSDZuaGZwcU9jdVdZam5RdnRXNWl1dXB2V0huel83eDJIMlBkbGRzcjItYW5EMVViMWo5MndLN3ZkeGdMMEE3blZVcXZUNmQwUENudzdVZ0JrUkN5RWgtMGhqNkVvTFpNVzc0MlJHWE1RdTN4dnhNM0M0QlpuSG5TMm5ZMDQwTHNoUERNSWlKVHhpMi1UZEtoNk4?oc=5",
-        "date": "2026-03-30",
-        "source": "Yahoo Finance"
+        "title": "Early Apple stock investors now earn a 5.2 percent dividend yield - thestreet.com",
+        "url": "https://news.google.com/rss/articles/CBMiswFBVV95cUxNWHozbXVrUjc2WVNqSEc4VG9HRndXVk5xSmVCV0FKUEY4NkJwX1o4ZHpmTUdIdmpzbjVBNWtvNUdrUmo0MTF0YmtTRzV2OE1Hcml0NnVqSEw3bXhnVmVFR0JjdWRoWnc4OWg5a241ci1ObmpuZHlLSVhvaXB5RTdDdlZzZTFHOHJZaFQ2dzZpcHFDc2lUMllaYkUxWGotX3BldnJpSlJaREhqdGJfUUtncDVuVQ?oc=5",
+        "date": "2026-04-02",
+        "source": "thestreet.com"
+      },
+      {
+        "title": "$AAPL stock is up 2% today. Here's what we see in our data. - Quiver Quantitative",
+        "url": "https://news.google.com/rss/articles/CBMinwFBVV95cUxNNzdjSjR2bFkwLVNzXzRod19BOGxIQ2FNSVl1Y1hOeFVlOTJNUWVLcGdOcEpFWFVGZElLNUJzZlpQNWdvTVBET0VlbFlrOWN4WU1yVXlLemRZYjgwVlVzNTVkRjl6TFUzbFRBY3BtZUctc1lveXZzZ0FQalR2TTFEVDd4Vm55Zl9JQnVFekQ3NEdHUkIzRHZCUmVwYXo0aWs?oc=5",
+        "date": "2026-03-31",
+        "source": "Quiver Quantitative"
       },
       {
         "title": "",
@@ -318,7 +318,7 @@
       }
     ],
     "news_count": 4,
-    "updated": "2026-04-02T14:33:41.154469"
+    "updated": "2026-04-03T15:49:35.264998"
   },
   "SOLV": {
     "summary": "```json\n{\n  \"thesis\": \"Solventum은 9.53배의 매력적인 P/E 밸류에이션과 85점의 강력한 수급 점수를 바탕으로 기관들의 집중적인 매집이 이루어지고 있으며, 최근 Acera Surgical 인수 등을 통한 구조적 개선 노력이 시장 기대보다 빠르게 진행되고 있어 추가 상승 여력이 충분합니다.\",\n  \"catalysts\": [\n    {\n      \"point\": \"강력한 기관 수급 및 기술적 매수 신호\",\n      \"evidence\": \"수급 점수 85점(Strong Accumulation)과 기관 보유율 72.4%는 스마트 머니의 유입을 시사하며, 이동평균선(MA Signal)이 Bullish 상태를 유지하고 있음\",\n      \"source\": \"수치 분석 데이터\"\n    },\n    {\n      \"point\": \"자체 구조 개선(Self-Help) 가속화 및 M&A 모멘텀\",\n      \"evidence\": \"Acera Surgical 인수 발표(11월 20일)와 더불어 'Self-Help' 전략이 예정보다 빠르게 진행되고 있다는 평가가 존재함\",\n      \"source\": \"PR Newswire / 뉴스 2번, 5번 항목\"\n    },\n    {\n      \"point\": \"저평가 매력 및 S&P 500 대비 초과 수익\",\n      \"evidence\": \"현재 P/E는 9.53배로 업계 평균 대비 낮으며, S&P 500 대비 +8.9%의 상대 수익률을 기록하며 시장 수익률을 상회하는 퍼포먼스를 보임\",\n      \"source\": \"수치 분석 데이터 / 뉴스 4번 항목\"\n    }\n  ],\n  \"risks\": [\n    {\n      \"point\": \"제한적인 매출 성장세\",\n      \"evidence\": \"매출 성장률이 0.7%에 불과하여, 비용 절감이나 M&A 외의 유기적 성장(Organic Growth) 동력에 대한 시장의 의구심이 남을 수 있음\",\n      \"source\": \"수치 분석 데이터\"\n    },\n    {\n      \"point\": \"목표가와의 괴리율 축소\",\n      \"evidence\": \"현재 주가($82.98)가 목표가 대비 상승 여력이 +1.7%에 불과하여, 단기적으로 밸류에이션 리레이팅 없이는 상승폭이 제한될 수 있음\",\n      \"source\": \"수치 분석 데이터 / 뉴스 4번 항목\"\n    },\n    {\n      \"point\": \"시장 센티먼트와 펀더멘털의 괴리\",\n      \"evidence\": \"구조 개선 노력은 앞서가고 있으나 시장의 심리(Sentiment)는 이를 아직 완전히 반영하지 못하고 있다는 분석이 존재함\",\n      \"source\": \"뉴스 2번 항목\"\n    }\n  ],\n  \"data_conflicts\": [\n    \"기관 수급 점수는 85점으로 매우 강력한 매수세를 보이나, 목표가 대비 상승 여력은 +1.7%로 매우 제한적으로 나타나 밸류에이션 재평가가 시급함\",\n    \"RSI는 50.3으로 중립적이나 MA Signal은 Bullish로 기술적 지표 간의 강도 차이가 존재함\"\n  ],\n  \"key_metrics\": {\n    \"pe\": 9.53,\n    \"growth\": 0.7,\n    \"rsi\": 50.3,\n    \"inst_pct\": 72.4\n  },\n  \"recommendation\": \"BUY\",\n  \"confidence\": 85\n}\n```",
@@ -504,10 +504,28 @@
     "updated": "2025-12-15T17:42:50.175553"
   },
   "AMAT": {
-    "summary": "{\"thesis\": \"AI Analaysis Failed: Connection Error: HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Max retries exceeded with url: /v1beta/models/gemini-3-pro-preview:generateContent?key=AIzaSyBGHSWUJrKAyfn5wPGYHRWJ5VD0B4VXKqY (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1032)')))\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
-    "summary_ko": "{\"thesis\": \"AI Analaysis Failed: Connection Error: HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Max retries exceeded with url: /v1beta/models/gemini-3-pro-preview:generateContent?key=AIzaSyBGHSWUJrKAyfn5wPGYHRWJ5VD0B4VXKqY (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1032)')))\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
-    "summary_en": "{\"thesis\": \"AI Analaysis Failed: Connection Error: HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Max retries exceeded with url: /v1beta/models/gemini-3-pro-preview:generateContent?key=AIzaSyBGHSWUJrKAyfn5wPGYHRWJ5VD0B4VXKqY (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1032)')))\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
+    "summary": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
+    "summary_ko": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
+    "summary_en": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
     "sources": [
+      {
+        "title": "AMAT (AMAT) CAO reports 125-share tax withholding, holds 4,548 units - Stock Titan",
+        "url": "https://news.google.com/rss/articles/CBMiugFBVV95cUxQVi00Q2pRSDJ2dUZ1V1AwN2RISDZ3dG1rLUstcVNPd1gtaEZrTGZGWTJ1NzVKNUQ5cnVSOUdLY2txWjhsbDlwZzhxb05ndG81aW1rdjdLaVhiWFhzaGdvNm5KeWhTOG1LdTZlNGdBYksxQmZ3eFVqR0NYdFdxTDZwVWNpYXpydnJMTWJPbUcyZUdSNlVsUmNlcXVXUE5rQldyTUpnRE53MkZtYW1tQXlKXzFSaDlnbkNjOXc?oc=5",
+        "date": "2026-04-02",
+        "source": "Stock Titan"
+      },
+      {
+        "title": "Applied Materials, Inc. $AMAT Stock Holdings Increased by Tema Etfs LLC - MarketBeat",
+        "url": "https://news.google.com/rss/articles/CBMiyAFBVV95cUxNeXFhSVV1RDJMVmVyay1MdnJzN3kwcnQxS01BTE5LSTJEdzJsSldaQ1ZPTHA2WkdmLUZiN0VHbTZjNGl3TWRPdnM5Z0xxSlh4Yl9qb3MtOE84YU5VazJ0aWpRdG1VbGdHVjNGZlVhUlBrNXdGRWhVXy1GZTFWbVVxMEdyQ3JpcjMySFMzOEx1MjV4RGRqOWZReXpkZzV3OVM3U1ltUzNUcjJqRWozekdGZnNRbmNpRTc5NGhyTGpKY2hTbnRWTG8yVg?oc=5",
+        "date": "2026-04-02",
+        "source": "MarketBeat"
+      },
+      {
+        "title": "Applied Materials Stock Climbs 33% YTD: Time to Buy, Sell or Hold? - TradingView",
+        "url": "https://news.google.com/rss/articles/CBMiugFBVV95cUxNczZTNnZFbnNsZnJRSGhhQUx3VnlRYUtNNk5vWnhpWHFCRGhOcUg0Mmg4TGVoS25NTzV5UnY0eEJuQ3VaUVBmWEx0WTZEVGV3MFRabWJLR3lqN1czUXVkX1FsdVRuUHJpRDdtSXRURXFDMU9kX1NhcnZDdDBnemwyMjJadTJ5T0JaeURKOXg4andVSzlxSi1iaTJfZDI0bF91ZFRzbml2LVNFSkhRek9raEo1U2RWaU1JNEE?oc=5",
+        "date": "2026-04-01",
+        "source": "TradingView"
+      },
       {
         "title": "",
         "url": "",
@@ -515,8 +533,8 @@
         "source": "Yahoo Finance"
       }
     ],
-    "news_count": 1,
-    "updated": "2026-04-02T12:51:21.177377"
+    "news_count": 4,
+    "updated": "2026-04-03T15:49:38.783750"
   },
   "JNJ": {
     "summary": "```json\n{\n  \"thesis\": \"현재 시장의 '방어적 성장(Defensive Growth)' 로테이션 기조와 강력한 기관 수급(85점)이 맞물려, 불확실한 거시경제 환경(VIX 17.09 상승) 속에서 안정적인 피난처로서의 매력이 부각되고 있습니다.\",\n  \"catalysts\": [\n    {\n      \"point\": \"방어주로의 자금 이동 (Sector Rotation)\",\n      \"evidence\": \"시장 불확실성 확대로 유틸리티 및 필수소비재 등 방어적 섹터 강세 전망, JNJ는 대표적인 방어주 [Macro Context]\"\n    },\n    {\n      \"point\": \"제약 바이오 M&A 시장 활성화\",\n      \"evidence\": \"초대형 거래의 귀환으로 연초 대비 제약 M&A 거래 규모 31% 증가, JNJ의 파이프라인 확장 기대감 [2025-12-17 Pharma M&A deal value up]\"\n    },\n    {\n      \"point\": \"경쟁사 대비 상대적 우위\",\n      \"evidence\": \"경쟁사 Pfizer가 2025년 매출 전망을 하향하며 주가 하락한 반면, JNJ는 S&P 500 대비 +3.6% 아웃퍼폼 [2025-12-17 Stock Market Today]\"\n    }\n  ],\n  \"bear_cases\": [\n    {\n      \"point\": \"제한적인 추가 상승 여력 (Valuation Cap)\",\n      \"evidence\": \"현재 주가($209.30)가 애널리스트 목표가 대비 0.7% 높아 고평가 논란 가능성 [수치 분석 데이터]\"\n    },\n    {\n      \"point\": \"섹터 전반의 성장 둔화 우려\",\n      \"evidence\": \"주요 경쟁사인 Pfizer의 매출 전망 하향 조정은 제약 업계 전반의 가격 압박이나 수요 둔화를 암시할 수 있음 [2025-12-17 Stock Market Today]\"\n    },\n    {\n      \"point\": \"시장 꼬리 위험(Tail Risk)에 따른 동반 하락\",\n      \"evidence\": \"SKEW 지수 급등(161.86)과 VIX 상승은 시스템 리스크 발생 시 방어주를 포함한 전체 자산군의 투매를 유발할 수 있음 [Macro Context]\"\n    }\n  ],\n  \"data_conflicts\": [\n    \"기관 수급 점수는 85점으로 매우 강력한 매수세를 보이나, 목표 주가 괴리율은 -0.7%로 펀더멘털 분석상으로는 추가 상승 여력이 제한적임\",\n    \"기술적 지표(MA)는 Bullish하나 RSI는 54.7로 중립 구간에 머물러 있어 강한 모멘텀과는 거리가 있음\"\n  ],\n  \"key_metrics\": {\n    \"pe\": 20.2,\n    \"growth\": 6.8,\n    \"rsi\": 54.7,\n    \"inst_pct\": 75.2\n  },\n  \"recommendation\": \"BUY\",\n  \"confidence\": 80\n}\n```",
@@ -1296,10 +1314,28 @@
     "updated": "2025-12-16T20:56:08.962724"
   },
   "ACGL": {
-    "summary": "{\"thesis\": \"AI Analaysis Failed: Connection Error: HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Max retries exceeded with url: /v1beta/models/gemini-3-pro-preview:generateContent?key=AIzaSyBGHSWUJrKAyfn5wPGYHRWJ5VD0B4VXKqY (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1032)')))\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
-    "summary_ko": "{\"thesis\": \"AI Analaysis Failed: Connection Error: HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Max retries exceeded with url: /v1beta/models/gemini-3-pro-preview:generateContent?key=AIzaSyBGHSWUJrKAyfn5wPGYHRWJ5VD0B4VXKqY (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1032)')))\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
-    "summary_en": "{\"thesis\": \"AI Analaysis Failed: Connection Error: HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Max retries exceeded with url: /v1beta/models/gemini-3-pro-preview:generateContent?key=AIzaSyBGHSWUJrKAyfn5wPGYHRWJ5VD0B4VXKqY (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1032)')))\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
+    "summary": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
+    "summary_ko": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
+    "summary_en": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
     "sources": [
+      {
+        "title": "A Look At Arch Capital Group (ACGL) Valuation After Recent Share Price Swings - finance.yahoo.com",
+        "url": "https://news.google.com/rss/articles/CBMimAFBVV95cUxQQ014QkVoQTQ2dm9WY3ByLXJXN01nNHRwdnlWcXVZdk01Q25HQ1pwb0JhUkN5Q3V6emxXOHgwTl9KalhuRmhOR1hGX1JZb1dQZUNrOExVaTRiQ3NndTFRN0Z2Q08wM2J6dzRzYk02Sll5RVduRm5RejZPMHRDVFluV1pTcTByU2YtdlQxUHNxdnRKM3QydHRWQw?oc=5",
+        "date": "2026-04-03",
+        "source": "finance.yahoo.com"
+      },
+      {
+        "title": "As cyber attacks rise, Arch brings primary coverage to Canada - Stock Titan",
+        "url": "https://news.google.com/rss/articles/CBMitgFBVV95cUxOQjBwX0RxTElkemxkNWNPQ0RHUFBqQU93b2dBMUFBRVhaWFUyOE1Xc0RHWGRhVkJPRlpjTXRNYlJDSmJHV1o4alRualhyV0VqeGsxWldXUGxvdVEzLTBXM3RHZ3JpUWtxVXhCUUJFeExzSHBoZDFqSWloUVRMUXFmSm1VVWhta09mNldEN3pRS0I2V29TWnFwYzBma2JrSkJnLXRyeU5KZnJJMXQ0RUhMdkJGWW11Zw?oc=5",
+        "date": "2026-03-31",
+        "source": "Stock Titan"
+      },
+      {
+        "title": "Arch Capital Group Ltd. stock outperforms competitors on strong trading day - MarketWatch",
+        "url": "https://news.google.com/rss/articles/CBMi1ANBVV95cUxPQ1pSMFBMTm5fRWMyTlpkNHpPS1R5dUN1bEtwY1Q0a1ZKU09NbVlxRGxXVHZIVXpEYzl3ekRqLUU4aTRNRzE4NDZ6SGNsQVE2VkdIQTNWdmxIVkZuaFVDNkRyYXNwUEkzZXVJTGJMVFhFTVRZUVg2Z3d5ZzkxUjdqWDNkd2NkTDB6WkU1aDc2SWpxQ3ZKYWZBRzFJWnhHbXhZdWNIRE93czNra0liNklsUmlUWXhBT2t6anAwWHVJb2MwdVBXM0pJVWMzcHJkcVJ1dlBqTWktVGVpeDVQcl9najVITmJQSFphdGc2YnF6dU4xdHprZTBuR3poelRibDItajR0aENzMFpLbXZ1ZXV1ekpZU1B1NWd1QnVoRmlRMDNjTjZaUDA1bUl5X1FXNEVpSDBHUDRrN2xkVTZfdVJ4Q0dYSnFkOW96QzNxVjlYR2VnSVFGR2RZTTY5X21NekY4UEtmUjhKMXlqdzZtcndSVWtmOWZUVjlJWVkzaWIwbW9KUWJxSUZUMng2Z2ZxNXpXdWl5RUF2N24wM1pYc3ZETUxYWHhsSkFtWjVkeDFOY056bkM2LVI1UFBncmgxM2Z6a1BiNTg0OEt3TWl1dDJZVnJyRmY?oc=5",
+        "date": "2026-03-30",
+        "source": "MarketWatch"
+      },
       {
         "title": "",
         "url": "",
@@ -1307,8 +1343,8 @@
         "source": "Yahoo Finance"
       }
     ],
-    "news_count": 1,
-    "updated": "2026-04-02T12:42:04.053312"
+    "news_count": 4,
+    "updated": "2026-04-03T15:49:08.055935"
   },
   "WM": {
     "summary": "```json\n{\n  \"thesis\": \"현재 불확실한 매크로 환경(VIX 상승, SKEW 급등)에서 강력한 주주 환원 정책과 방어적 성격을 겸비한 WM은 '방패를 든 전진' 전략에 부합하는 최적의 피난처입니다. 30억 달러 규모의 자사주 매입과 두 자릿수 배당 인상은 밸류에이션 부담을 상쇄할 강력한 하방 지지력을 제공합니다.\",\n  \"catalysts\": [\n    {\n      \"point\": \"강력한 주주 환원 정책 발표 (자사주 매입 및 배당 인상)\",\n      \"evidence\": \"30억 달러 규모의 자사주 매입 승인 및 배당금 14.5% 인상 발표, 2026년 지급액 확대 전망 [2025-12-17 News]\"\n    },\n    {\n      \"point\": \"방어적 섹터로의 자금 순환매 (Sector Rotation)\",\n      \"evidence\": \"경기 둔화 우려와 금리 인하 기조 속 유틸리티(XLU +0.91%) 등 방어주 강세 흐름에 편승 [Macro Context]\"\n    },\n    {\n      \"point\": \"지속적인 기관 자금 유입\",\n      \"evidence\": \"Thrivent Financial이 1,439만 달러 규모의 WM 주식 보유 확인 [2025-12-17 News], 기관 보유 비중 83.7%의 높은 신뢰도 [수치 분석]\"\n    }\n  ],\n  \"bear_cases\": [\n    {\n      \"point\": \"역사적 고점 수준의 밸류에이션 부담\",\n      \"evidence\": \"현재 P/E 34.47배는 산업재 및 유틸리티 섹터 평균을 크게 상회하며, 주가 상승폭이 실제 이익 성장폭을 앞지르고 있음 [2025-12-16 Yahoo Finance]\"\n    },\n    {\n      \"point\": \"국채 금리와의 수익률 경쟁 리스크\",\n      \"evidence\": \"10년물 국채 금리가 4.18%로 여전히 높은 수준을 유지하고 있어, 배당주의 매력이 상대적으로 반감될 가능성 존재 [Macro Context]\"\n    },\n    {\n      \"point\": \"시장 꼬리 위험(Tail Risk)에 따른 동반 하락 가능성\",\n      \"evidence\": \"SKEW 지수(161.86) 급등은 블랙 스완 발생 가능성을 시사하며, 시장 전체 급락 시 고평가된 방어주도 차익 실현 매물 출회 불가피 [Macro Context]\"\n    }\n  ],\n  \"data_conflicts\": [\n    \"펀더멘털 상 P/E 34.47배로 고평가 영역이나, 기술적 지표인 RSI는 57.6으로 과매수 구간이 아니며 추가 상승 여력을 시사함\",\n    \"이익 성장률(14.9%) 대비 주가 상승폭이 과도하다는 뉴스 지적과 달리 기관 수급 점수는 60점(Accumulation)으로 매수 우위를 보임\"\n  ],\n  \"key_metrics\": {\n    \"pe\": 34.47,\n    \"growth\": 14.9,\n    \"rsi\": 57.6,\n    \"inst_pct\": 83.7\n  },\n  \"recommendation\": \"BUY\",\n  \"confidence\": 80\n}\n```",
@@ -2352,15 +2388,15 @@
     "updated": "2025-12-22T10:31:57.034070"
   },
   "APP": {
-    "summary": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
-    "summary_ko": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
-    "summary_en": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
+    "summary": "{\"thesis\": \"AI Analaysis Failed: API Error: 429\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
+    "summary_ko": "{\"thesis\": \"AI Analaysis Failed: API Error: 429\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
+    "summary_en": "{\"thesis\": \"AI Analaysis Failed: API Error: 429\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
     "sources": [
       {
-        "title": "AppLovin investors get Q1 results and management webcast May 6 - Stock Titan",
-        "url": "https://news.google.com/rss/articles/CBMimgFBVV95cUxOOHNPUjFnMFF5M3l2OVc4aU51MC1KLWlwYjFfNUx6Y24zQWpGODM5UmZWRXA4VVpwLWFRWUJWRTA1YUpTRko4cmxFMEQtSU9PT19yRTJ6RDhKTHdqUFZpQ0gyX0Q3ZmNNS3hSbjVxLUcxMGxCSHBHRm81cS1MNTdJcVVRa0hPS1pNeWpLQklTQnhiOFdqZGhpRFVn?oc=5",
-        "date": "2026-04-01",
-        "source": "Stock Titan"
+        "title": "APP Looks Smarter Buy Than Synopsys Stock - Trefis",
+        "url": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxQSkU4ckVUbnp1eDFLT3poUmxpQ3Zobmx3LVI4MkNwNTUtRHV3MzNSM3V1RnRJcHJVQVg4TWNVUkJkZmVKdEw2WVl1RExTa2pyd2swNzlLYzhBVTh4cjVEanE5T0lWUzJ3dThnYlBxTVNIQzllMnc4MVJFcEg4bU9YQmd5b1FIcXRTU0txc0V2NHpsZVc3cjhIa2h3LXpDVVpwRGhvTndqUUk?oc=5",
+        "date": "2026-04-02",
+        "source": "Trefis"
       },
       {
         "title": "AppLovin Stock's 40% Slide Called 'Out Of Step' With Fundamentals - Investor's Business Daily",
@@ -2369,10 +2405,10 @@
         "source": "Investor's Business Daily"
       },
       {
-        "title": "Here’s What Analysts Are Saying About AppLovin Corporation (APP) Stock - Yahoo Finance",
+        "title": "Here’s What Analysts Are Saying About AppLovin Corporation (APP) Stock - finance.yahoo.com",
         "url": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxOSWdjSVpnNC1yTUpQQjBxb1VzNTFELWdBRXFmcE9ZQmloaW1yMV9vcFJXYjhfM3pHQU9uajl1eEk5YkFOUzRHSjdKODA5V1R5cnpUbk55LURnUG51NkNQOHczTk9ETThnUHdHYnRwWWJoWms5dkt4NDJMT0oxUndJMnI0R0l2S2FRVmZraWg0eWJZdWhsbkoxVTRLdmotbXJ3Q2htOTVsVGM?oc=5",
         "date": "2026-03-28",
-        "source": "Yahoo Finance"
+        "source": "finance.yahoo.com"
       },
       {
         "title": "",
@@ -2382,7 +2418,7 @@
       }
     ],
     "news_count": 4,
-    "updated": "2026-04-02T14:33:48.437994"
+    "updated": "2026-04-03T15:49:48.094374"
   },
   "APH": {
     "summary": "```json\n{\n  \"thesis\": \"APH는 49.1%의 압도적인 매출 성장률과 98.0%의 높은 기관 보유율을 바탕으로 펀더멘털이 견고하나, 현재 VIX 31.05의 극단적인 시장 공포와 기술적 하락 추세(Bearish MA)를 고려할 때 분할 매수 접근이 필요합니다.\",\n  \"catalysts\": [\n    {\n      \"point\": \"월가의 강력한 매수 추천 및 긍정적 전망\",\n      \"evidence\": \"Evercore가 APH를 매수해야 할 5가지 이유를 제시하며 'Top Pick'으로 유지 [2026-03-27, Seeking Alpha]\"\n    },\n    {\n      \"point\": \"높은 목표가 괴리율을 통한 상승 여력\",\n      \"evidence\": \"현재가 대비 목표가까지 +37.1%의 상승 여력 존재 [수치 분석 데이터]\"\n    }\n  ],\n  \"bear_cases\": [\n    {\n      \"point\": \"높은 밸류에이션 및 매크로 금리 부담\",\n      \"evidence\": \"P/E가 37.01배로 높은 수준이며, 10년물 국채 금리가 4.44%인 고금리 환경에서 밸류에이션 할인 압박이 커질 수 있음 [수치 분석 및 Macro Context]\"\n    },\n    {\n      \"point\": \"일부 기관 투자자의 비중 축소 움직임\",\n      \"evidence\": \"Stonehage Fleming Financial Services Holdings Ltd가 APH 주식 보유량을 축소함 [2026-03-27, MarketBeat]\"\n    },\n    {\n      \"point\": \"극심한 시장 공포에 따른 단기 하방 리스크\",\n      \"evidence\": \"VIX 지수가 31.05로 시장 전체의 공포 심리가 극에 달해 있으며, 이는 개별 종목의 펀더멘털과 무관한 투매를 유발할 수 있음 [Macro Context]\"\n    }\n  ],\n  \"data_conflicts\": [\n    \"펀더멘털과 기술적 지표의 충돌: 매출 성장률은 49.1%로 매우 훌륭하고 목표가 대비 +37.1%의 상승 여력이 있으나, 이동평균선 신호(MA Signal)는 Bearish이며 최근 S&P 500 대비 -8.1% 언더퍼폼 중임 [수치 분석]\",\n    \"기관 투자의견 충돌: Evercore는 'Top Pick'으로 매수를 추천했으나, 같은 날 Stonehage Fleming은 보유 비중을 축소(Trimmed)함 [2026-03-27, Seeking Alpha / MarketBeat]\"\n  ],\n  \"key_metrics\": {\n    \"pe\": 37.01,\n    \"growth\": 49.1,\n    \"rsi\": 38.0,\n    \"inst_pct\": 98.0\n  },\n  \"recommendation\": \"BUY\",\n  \"confidence\": 65\n}\n```",
@@ -3075,21 +3111,21 @@
     "sources": [
       {
         "title": "Assurant Inc. stock outperforms competitors on strong trading day - MarketWatch",
-        "url": "https://news.google.com/rss/articles/CBMixwNBVV95cUxOQV9ycXlNT3RObERQWm1yZjcxMW1SX3dMeDAxUldPdF9XcGpNbHZTbU5hdmpnWDhLblVtQzJna29OOGlOc1VhbXNnMG5BVi1UZXh1dnlTOUZpOW1HSlBvQ29vTVVfVHk4MVFnSjVOLW5HT2ZEblZYUjVreFdhenFrRm1GcFNLSVBFaDRmZ2J0TzltckZaUEpFX1pNQXNyN29uZ1RXWXpkVjVtSFFBM3ZmUXBGTGtyUnVEQlZVMlNaamt2UUc5OFl1VUxDU2ZydzljalJ5bzVZSjNKRVh5dEpSX0Q4aDZoV1I5VXp0MERBM3h6azl4bUNScTV5ZFB3T2dBbmVNcGR6TlhFWVdqVFBvVEk1SHhwWDhRRS1PYUpWWTJndTR6UjRybG5RM2NPNFp3OElBM2lPcUF2c20yMlR5M0lqbmJENkxLX2dodVhVUkZsVmEwbklBT3UxSXFIVDNmYktfaDJpQkVRSzBsN1V2LWE2TmxMNEtkYlFkRmtyWW5BelBTWUxLRWZNUl8tcmwyUUt1Unp0ZXBFeXNhYkUydDlERHVmdGVfeEFhX1RpMTlES3I1eElmdWtULVFnZ241UW00NjVTOA?oc=5",
+        "url": "https://news.google.com/rss/articles/CBMixwNBVV95cUxPWnY2VDU1UEtubzBDS0Q5NVVPekVFeUVoeW1yOFVXTlJ3NDFVZ2RVV0VIZmJGbG5oc0s1OGxpbVFCT2Z0YnN1ZTBvQkFxb3k1SlJqZDJORnE0UkFseEYycTVkbmtUU2s3QXZUNTBVX1NBeWFUaWdDVkRqeW90amJ3SWVIY2phblNIbDA5Rk5RZTIzWkdwUmtyUS10RU9vZ0dOd2Z6UWlGVUk5TnJWU2p6eU5pM2pyV3JscFNDVl9VSkdrdzk3eHBkMkhhdnR0U2Y0dUw4MnBFdFB0c3QzSHZvbW43cC1CQUxFQmZaWFFjZTFBN3hNZTIya2RQZUpSeU9WaFQzY0V5QWl4ZzJFVWVqcjVVMGNORUIzWW1IOVlvVlR1Vk1rUWNvYWFrRmFSNlJ6bzJ6T1JTdXNPVTBRbTBsS1NOMGdISHhHcVM1d0N6Sk9BR1IzRDFlck9ST1pqRUsyNm1faVZVRjZtSUlNU1hNaUlVZ0dIX0tOa28weW5tanpaR3hTX1NLTUtHLWFLSkVQRVNfRzdyMDRYOS15aEJneUQ0a0FQdXlnTVplTDVOV1IxUFNfUWkwOUctXzhWSlFMbUhMU3dvTQ?oc=5",
         "date": "2026-03-30",
         "source": "MarketWatch"
       },
       {
-        "title": "Responsive Playbooks and the AIZ Inflection - Stock Traders Daily",
-        "url": "https://news.google.com/rss/articles/CBMiwgFBVV95cUxQVDdJa0F1NFVtMjNnNXplaFVtU29nYU1qRzExeXUxaFJqMzVpTWlGY0dPOUU5eERKMFJaYXhlZXgtRVZpNlRJbFVGaXlfbGEyd1JRRWE3djdlVHkwWmFmX29OTFRxb2pqYmpaTzdQSko4bXptdTlRcnN0dUxodXZfZDQ1SkhQWDlpamUwN2pxYWxaM0Yyc09FbWVZZFZHaEhCa0c0cFJZQUNKbUhTbnJ6V3htWUxxZ2xET19OX0Vja3gtZw?oc=5",
-        "date": "2026-03-28",
-        "source": "Stock Traders Daily"
+        "title": "Assurant (NYSE: AIZ) SVP trims stake with 750-share sale - Stock Titan",
+        "url": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxNaTlyTG4xWHhnX0dDcmVmNkE0ZFY3YjhZOFRiLVU1RXF3MzRjeGRlUWVOX09JOVQ1UHVKb25MSkZ1Q0tpUGpOa190M2NIWXBkYjZ0bTdLblg2NlFZTmVlc09mNHd1dk1kSmQ4M1lUbVFkQS0yZUVYcjR1UXk3NHUwRUt5ZnB6S1lvUHNjYWJtT2dLX3c5RkVLQUNyLVJUNEk3eU9GVmllejQ?oc=5",
+        "date": "2026-03-23",
+        "source": "Stock Titan"
       },
       {
-        "title": "AIZ Stock Trading at a Discount to Industry at 1.9X: Time to Hold? - Yahoo Finance",
+        "title": "AIZ Stock Trading at a Discount to Industry at 1.9X: Time to Hold? - finance.yahoo.com",
         "url": "https://news.google.com/rss/articles/CBMiiAFBVV95cUxOaTJQX2V1MVQ3Um10dGhVcEc0ZThNSUYxb0kyV1h1TmJfYzdndnFySXB3QzcxUEpOSEpsQWs0V1VWUGFVVGlaYWJRTFlQSHdoY2lNX1dmMjhlS0VKeHhoMWd6ejRONkdvTk51QVRKZDg4RGhablBDVWM0T3QtcUhhVDZQZE9kSDdZ?oc=5",
         "date": "2026-03-09",
-        "source": "Yahoo Finance"
+        "source": "finance.yahoo.com"
       },
       {
         "title": "",
@@ -3099,7 +3135,7 @@
       }
     ],
     "news_count": 4,
-    "updated": "2026-04-02T14:33:32.776770"
+    "updated": "2026-04-03T15:49:17.819154"
   },
   "AMCR": {
     "summary": "```json\n{\n  \"thesis\": \"Amcor(AMCR)는 68.1%의 강력한 매출 성장률과 지속 가능한 포장재 수요 증가라는 구조적 순풍에 힘입어 펀더멘털 개선세가 뚜렷하며, 기술적으로도 강한 매집세(수급점수 75점)와 Bullish MA 신호가 동반된 상승 모멘텀을 보유하고 있습니다.\",\n  \"catalysts\": [\n    {\n      \"point\": \"지속 가능한 포장재 및 건강기능식품(Nutraceutical) 수요 급증에 따른 구조적 성장\",\n      \"evidence\": \"지속 가능한 연포장(flexibles) 및 건강기능식품 수요가 투자 내러티브를 변화시키고 있음 [Simplywall.st, 2026-02-25]\"\n    },\n    {\n      \"point\": \"기술적 브레이크아웃 및 고성장 모멘텀 확인\",\n      \"evidence\": \"고성장 모멘텀과 기술적 브레이크아웃 셋업이 관찰됨 [ChartMill, 2026-02-24]\"\n    },\n    {\n      \"point\": \"강력한 기관 수급 및 시장 대비 초과 수익률\",\n      \"evidence\": \"수급 점수 75점(Strong Accumulation) 및 S&P 500 대비 +11.5% 아웃퍼폼 [수치 분석 데이터]\"\n    }\n  ],\n  \"bear_cases\": [\n    {\n      \"point\": \"높은 밸류에이션 부담 (섹터 대비 고평가 가능성)\",\n      \"evidence\": \"현재 P/E는 36.27배로, 통상적인 포장재 산업 평균 대비 높은 프리미엄이 형성되어 있어 이익 성장 둔화 시 주가 조정 가능성 상존 [수치 분석 데이터]\"\n    },\n    {\n      \"point\": \"단기 주가 급등에 따른 차익 실현 매물 출회 가능성\",\n      \"evidence\": \"최근 주가 강세(Recent Share Price Strength) 이후 재평가 필요성이 제기됨 [Yahoo Finance, 2026-02-24]\"\n    },\n    {\n      \"point\": \"고금리 환경 지속에 따른 자본 비용 부담\",\n      \"evidence\": \"10년물 국채 금리가 4.02% 수준으로 유지되고 있어, 자본 집약적인 제조업 특성상 부채 비용 증가가 순이익률을 압박할 수 있음 [Macro Context]\"\n    }\n  ],\n  \"data_conflicts\": [\n    \"매출 성장률(68.1%)과 수급 점수(75점)는 매우 강력한 매수 신호를 보내지만, P/E(36.27)는 전통적인 가치 투자 관점에서는 다소 비싼 수준으로 펀더멘털과 밸류에이션 지표 간의 괴리가 존재함\"\n  ],\n  \"key_metrics\": {\n    \"pe\": 36.27,\n    \"growth\": 68.1,\n    \"rsi\": 57.9,\n    \"inst_pct\": 70.0\n  },\n  \"recommendation\": \"BUY\",\n  \"confidence\": 80\n}\n```",
@@ -3135,27 +3171,27 @@
     "updated": "2026-02-27T10:20:36.803169"
   },
   "APA": {
-    "summary": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
-    "summary_ko": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
-    "summary_en": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
+    "summary": "{\"thesis\": \"AI Analaysis Failed: API Error: 429\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
+    "summary_ko": "{\"thesis\": \"AI Analaysis Failed: API Error: 429\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
+    "summary_en": "{\"thesis\": \"AI Analaysis Failed: API Error: 429\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
     "sources": [
       {
-        "title": "APA slides as crude oil pulls back on hopes the Iran war may wind down - Quiver Quantitative",
-        "url": "https://news.google.com/rss/articles/CBMipgFBVV95cUxQa3NuNm0wcURLMDhKSEVnZkhOOF9ITGZKOGV2dDFJenVOOVpuQy1PQzlzRE1Kb3QtRF8zXzFraWcyR01SQTFlMkFGOGVQSi1nLW1TQ3ZrcUh4N3gwb0psZ0p6WDhwbEdYMjBRdFFKUGlLN1hWdDY1a3k5TDN0ZEYtdVJqSW16UDdXS0o4QUM2WFVERWhJd19HVzlhUGIzb1lidklaeXJR?oc=5",
-        "date": "2026-04-01",
-        "source": "Quiver Quantitative"
+        "title": "APA Corporation (NASDAQ:APA) Receives Average Recommendation of \"Hold\" from Brokerages - MarketBeat",
+        "url": "https://news.google.com/rss/articles/CBMi0AFBVV95cUxNSnFWN2JoTjktWHJTYkUzZ2hrWlpoWkx2Wm1pSHg0MEU4UV8wRGU4c1J6T193WEdnckd6ejJ3WVlVaTk2VDQtUnZtYUJibHp2LWVlZmVobjdZSjFqZDM0aDBnSURVUk14NzhaWjA1ZlRZSVlqQm5JSVpieEk3TmtQVEZ5a3NWZmN1clJEZGlFNWpESmtHa19OZF94THRzWndmV3llbW5MenBBUVhKWERFQ2cwRXFiTUstZmhTZW5jZ1g3VU10NFh1MHdEV3hjMnVq?oc=5",
+        "date": "2026-04-03",
+        "source": "MarketBeat"
       },
       {
-        "title": "BKV, Permian Resources, Range Resources, APA Corporation, and Viper Energy Shares Plummet, What You Need To Know - TradingView",
-        "url": "https://news.google.com/rss/articles/CBMi_AFBVV95cUxQZ04zV1dmNFlfNkpPbmM0RWVkTDlmRzg4YzlBSDljck1EWDN4TE5TMGhoV3hoNURtUC16R25SNnNEUU1mTnhJeFRaS1lqWlNGczFQMS1vbkhmTWVCcDVhU3F3RWtuUnJYbHhrZEJzQmZkSWJnTjRrVjlRelBISzc0RDZiczhiYzF1Um1zdnJUMllyZVY4S3ZZRVlxR3R4c1ltUzJmWUpnVkdSVnZ5UnRGZWpOWUtackFlRGhYaUl6aWVpV09paXo4cUdYMHhQdFpnTGFPaUZLZDc1WFd5OWVGZXc5a3NsVEs5ODVWRFluczdGakxVM3NHY3dMalI?oc=5",
-        "date": "2026-04-01",
-        "source": "TradingView"
+        "title": "APA Corp (APA) director receives 1,178 deferred restricted stock units - Stock Titan",
+        "url": "https://news.google.com/rss/articles/CBMiowFBVV95cUxPaGpNUy0wYWhWM2QxZWd3VDkwZzRacEpFZlJ3eUZ4ODI2ZkJfMWFnYjVHTHBxSGdNX1VPT0hDZXFLR0FEZGdUS0NScFVWYnc2VXVMek5teXUzejJhak5MaS1RekhlQlZOWFhyelIzNkFlYnpkVTI0VktCNlJwaUVYRzN6S01lelI3Y1MxZjgtaTBlcUh4NUpXUzBUT293R0FKMnh3?oc=5",
+        "date": "2026-04-02",
+        "source": "Stock Titan"
       },
       {
-        "title": "APA Corporation (APA) Research Report - StockStory",
-        "url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxNUTJaVmdHenhsV01JYW5kMzNZNENzWkhzQlVBVFB2QmtTcHZWLXRmQ3FYSGJhcHFwT0lha25RNC1jYlE1THhiVUdnNWdxRG1WUHk0X213Ulp5NThIb0ZLeW1sclI0MW9KeWFpa2xQYzU3UXRCZmp3cldUNVlzWnlfdnZFdUh6eXAxUVpVZ3VFSVhUVEw0WmpYNDFDaFJhaFZaU1ZQSEFoWQ?oc=5",
-        "date": "2026-04-01",
-        "source": "StockStory"
+        "title": "A Look At APA Corp (APA) Valuation After Energy Sector Sell Off And Cautious Analyst Sentiment - simplywall.st",
+        "url": "https://news.google.com/rss/articles/CBMiuwFBVV95cUxQZ1duaWsxWmRpRUdSV1F6X3lXcGNtTXhrSG1QdUxhcXFGOGI2bVQ3a3UzalJ5RkRlN0thTUNCWXBFYnBYLU03MmVsN090dDBDSW9oek94Y2MwcEtSb0Y4ajJfNXVvMzVoZDNKbl9QMjhyRHRoanJKbGpLaHUxYm1uN0s2eEpNd1p3QUxIVHBCYW5Rc2FxdDZLX0VjOFZyOU5acVpMSERZbkhVM2o2N2JMX2laVFRVSXhWRW5N0gHAAUFVX3lxTE9oRm5mS2tmZ3NrTE9PLTdrY2NFckQxT1ZLaGdIYkMxVjltaTJ5RkhNQWJrMU1Qc2x1YmJEaGhRUERfNWs5THBjLVV1OEdYWTNodklwWWJSM0NLcDllVlpScFB1eFlHdk03OUgzMmpfand4cFIwcWJZYng0SGd3aDd5SlNtYWw0VVg4VVpmYWs0MzVtLXh6RE1jMmRTVmRHdzZ3UFRCWEZtR3BGSVVHYjJKQ0tqcTduWFVWSjdPbElsOQ?oc=5",
+        "date": "2026-04-02",
+        "source": "simplywall.st"
       },
       {
         "title": "",
@@ -3165,13 +3201,31 @@
       }
     ],
     "news_count": 4,
-    "updated": "2026-04-02T14:33:44.797298"
+    "updated": "2026-04-03T15:49:41.777234"
   },
   "AKAM": {
-    "summary": "{\"thesis\": \"AI Analaysis Failed: Connection Error: HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Max retries exceeded with url: /v1beta/models/gemini-3-pro-preview:generateContent?key=AIzaSyBGHSWUJrKAyfn5wPGYHRWJ5VD0B4VXKqY (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1032)')))\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
-    "summary_ko": "{\"thesis\": \"AI Analaysis Failed: Connection Error: HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Max retries exceeded with url: /v1beta/models/gemini-3-pro-preview:generateContent?key=AIzaSyBGHSWUJrKAyfn5wPGYHRWJ5VD0B4VXKqY (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1032)')))\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
-    "summary_en": "{\"thesis\": \"AI Analaysis Failed: Connection Error: HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Max retries exceeded with url: /v1beta/models/gemini-3-pro-preview:generateContent?key=AIzaSyBGHSWUJrKAyfn5wPGYHRWJ5VD0B4VXKqY (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1032)')))\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
+    "summary": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
+    "summary_ko": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
+    "summary_en": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
     "sources": [
+      {
+        "title": "Why Akamai Technologies (AKAM) Outpaced the Stock Market Today - Yahoo! Finance Canada",
+        "url": "https://news.google.com/rss/articles/CBMijwFBVV95cUxPdHRyeHhVVFdIUklrNlo4WkpIVVFfeEhRY1d0bGFvb2czR0F1WTh0aEpka0V0Q3psakVCWnJ2U3F4d1p1LU1fU1k1cGdCdmhCVVE5Yk9mel9vclVPT0FpR0lBN1BURjQ0NjVxMUdMWE1ZcXlVczg2Zk5ISF9VcVNxMHRGNkdNUUk1bzlVbUdVdw?oc=5",
+        "date": "2026-04-02",
+        "source": "Yahoo! Finance Canada"
+      },
+      {
+        "title": "Why Akamai Technologies (AKAM) Surpassed the Stock Market Performance Today - bitget.com",
+        "url": "https://news.google.com/rss/articles/CBMiY0FVX3lxTE9qVm1Fd0N4VzdsSlFkNW4tVERXTS01OEhOXzlwYjdyUTE0dm0zMVVUTWtRMEtnczNiNVp3Ti1mUjd0NVZHRkxaV0U3d041QjlTR3RWN09kNHk4YllZSHliUVhud9IBY0FVX3lxTE9qVm1Fd0N4VzdsSlFkNW4tVERXTS01OEhOXzlwYjdyUTE0dm0zMVVUTWtRMEtnczNiNVp3Ti1mUjd0NVZHRkxaV0U3d041QjlTR3RWN09kNHk4YllZSHliUVhudw?oc=5",
+        "date": "2026-04-02",
+        "source": "bitget.com"
+      },
+      {
+        "title": "Akamai downgraded to Neutral at Baird on 'more balanced' risk-reward (AKAM:NASDAQ) - Seeking Alpha",
+        "url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxQY0VZSXJyLUpBbFJqNVV1ekwwcjZ2dGJ5R0dmQW9JOXRZNDBUVGctZVhaUzJKaGdkaXZqV2RBdkRqNmRZVllSR3FLVk5SaVA5N3Qya2N0ald6aGhLQk9kbU5VRmdBR3pHckc2MzBLS0pXNUJQV2lzNnRkV2owRjl6M2ZGZUw0bERINHpxS0lJRzZxOFpVMnNSNGdvRTUyc29SZFhlWUVQNA?oc=5",
+        "date": "2026-04-02",
+        "source": "Seeking Alpha"
+      },
       {
         "title": "",
         "url": "",
@@ -3179,14 +3233,32 @@
         "source": "Yahoo Finance"
       }
     ],
-    "news_count": 1,
-    "updated": "2026-04-02T12:38:37.110754"
+    "news_count": 4,
+    "updated": "2026-04-03T15:48:57.181921"
   },
   "AEE": {
-    "summary": "{\"thesis\": \"AI Analaysis Failed: Connection Error: HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Max retries exceeded with url: /v1beta/models/gemini-3-pro-preview:generateContent?key=AIzaSyBGHSWUJrKAyfn5wPGYHRWJ5VD0B4VXKqY (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1032)')))\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
-    "summary_ko": "{\"thesis\": \"AI Analaysis Failed: Connection Error: HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Max retries exceeded with url: /v1beta/models/gemini-3-pro-preview:generateContent?key=AIzaSyBGHSWUJrKAyfn5wPGYHRWJ5VD0B4VXKqY (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1032)')))\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
-    "summary_en": "{\"thesis\": \"AI Analaysis Failed: Connection Error: HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Max retries exceeded with url: /v1beta/models/gemini-3-pro-preview:generateContent?key=AIzaSyBGHSWUJrKAyfn5wPGYHRWJ5VD0B4VXKqY (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1032)')))\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
+    "summary": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
+    "summary_ko": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
+    "summary_en": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
     "sources": [
+      {
+        "title": "Is Ameren (AEE) Pricing Look Stretched After Recent Share Price Moves? - simplywall.st",
+        "url": "https://news.google.com/rss/articles/CBMiwAFBVV95cUxOT0tnaVRrM21SOXdQazdNQmF0Smo4Z2Q4LXczcUhNb1ZqUmtvWXVVR0J5VE1OSkpqTnZnRzJVQ01kRlBLdmJmZDg1Qm5NQlo4X05sOHFLck9udFlqRGNZbzQ5WFpPRWFJTHVTbkIwdWdfMmVGel9TTTFYTzRxWmhwSWJKNklyYzUyMEdqZk9vY2UwZ3pJTTdKdjZrUVloMUJSZV80VmlJdTg0MGNlNjdjSExEUVhoSmFnQ1lTNHJGSEvSAcYBQVVfeXFMTnlLRVYyWjhUelVPRTVRakx3ak8tc25KQ3ljVkt2R1FDSVlSN3NCYTJQTDQtQkxEZVNCVHVnRVdjZnotMkQ4Zm8yQlZ1ZEhzOG9nZ21kV0dkbUV2Q1Yyb2pnaGxmREl3UlIzWXVvbU9JSDJiZ1JlckpRZkc2elEwZE9jWTdOb2JHTUhKWGJJUVRrclVHeXBsNTJGTjUxMjZoMlEtQVl6aU9uVk9MWkkteEJrMnBlOXVNQkFfM3IySnJCZ1JfS1R3?oc=5",
+        "date": "2026-04-01",
+        "source": "simplywall.st"
+      },
+      {
+        "title": "Ameren: A Good Safe Haven Play, But Valuation Looks Questionable (NYSE:AEE) - Seeking Alpha",
+        "url": "https://news.google.com/rss/articles/CBMipgFBVV95cUxNRDRNNUVqWEM0MVY2cXhyMHZTZmJmM2xNbElOcjlMcWJYQUpucWtuc3NQRkQtekx0aVZRMlBVbEkwOTRxX093UXRKR0ZSX215WnF0amJ5Z0FQOXV1a1ZCdm5OT25rWGhFdkpQTnRJVWZiTnk2NzZaaDdQNGE3Slg1THhLaW53M0pGVklGc2xpYzNvSGhRTGhqR25NbUZhSDhuVHE3eXNn?oc=5",
+        "date": "2026-03-31",
+        "source": "Seeking Alpha"
+      },
+      {
+        "title": "Does Ameren’s 2025 Earnings Beat And Reaffirmed 2026 Guidance Change The Bull Case For AEE? - finance.yahoo.com",
+        "url": "https://news.google.com/rss/articles/CBMiggFBVV95cUxOcFdkMU0tVkdHQ1RRZDRqcXlwY0JFZzA1U0VkVGFRWTFjSzA3LXV4NGRkUFU2QkltYWoxTlhoN05nbUh4d013Ml9IZlBoZ3hEU3BvV05mWVc1S21YNTVBNXE0Y0lwVlZlNnZJRXFSbjk2SlNXSlBjZFBCN3VidExXXzBB?oc=5",
+        "date": "2026-03-16",
+        "source": "finance.yahoo.com"
+      },
       {
         "title": "",
         "url": "",
@@ -3194,14 +3266,32 @@
         "source": "Yahoo Finance"
       }
     ],
-    "news_count": 1,
-    "updated": "2026-04-02T12:50:20.300024"
+    "news_count": 4,
+    "updated": "2026-04-03T15:49:14.606480"
   },
   "AEP": {
-    "summary": "{\"thesis\": \"AI Analaysis Failed: Connection Error: HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Max retries exceeded with url: /v1beta/models/gemini-3-pro-preview:generateContent?key=AIzaSyBGHSWUJrKAyfn5wPGYHRWJ5VD0B4VXKqY (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1032)')))\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
-    "summary_ko": "{\"thesis\": \"AI Analaysis Failed: Connection Error: HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Max retries exceeded with url: /v1beta/models/gemini-3-pro-preview:generateContent?key=AIzaSyBGHSWUJrKAyfn5wPGYHRWJ5VD0B4VXKqY (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1032)')))\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
-    "summary_en": "{\"thesis\": \"AI Analaysis Failed: Connection Error: HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Max retries exceeded with url: /v1beta/models/gemini-3-pro-preview:generateContent?key=AIzaSyBGHSWUJrKAyfn5wPGYHRWJ5VD0B4VXKqY (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1032)')))\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
+    "summary": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
+    "summary_ko": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
+    "summary_en": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
     "sources": [
+      {
+        "title": "American Electric Power (AEP) director receives phantom stock grant - Stock Titan",
+        "url": "https://news.google.com/rss/articles/CBMiwAFBVV95cUxPNkUxSzZFY0tUY2MtSHREVTVWbnNMMG9WSGJscjkySzNtYzdtT3MtSWtWdlkyOHZjbEIxb3BYNXRWMXFaOG1vdGRtejR6OXlOSE4td0hQSnRDbjdnYW5VR1pmemtsdTJWaWoxbGJwQWFuV2dkUmdVdlB6dllBTmNqRHRxR0ZSZmliT25qYTVPbW1zU255QndyY1lOb0RzUFllVXR6a2ZkQzNKWWk2TXd0WE5XSi1vS2dTQk9VaHhVTDA?oc=5",
+        "date": "2026-04-02",
+        "source": "Stock Titan"
+      },
+      {
+        "title": "American Electric Power Company, Inc. $AEP Shares Bought by Exchange Traded Concepts LLC - MarketBeat",
+        "url": "https://news.google.com/rss/articles/CBMi3wFBVV95cUxPMjkwaTBrTFk5V1FqZThQUnBacW1FT25wcnltei1OWVN6OWZ1V2xNaGJaX1lKM25Qa0tCb2xCTjFNM29xT1pOTDZwVllucXFKSXhveV9OZER3eDVlMEUwWmFVdFlBaG11d3BMSXJtZjdYLU9ZRUdhNDlrUnFQbkc4TWRWdVlESlVQLVRNUFMtQzdYTHlhMDBxRXpXUUc5RmhKeEQ2VC16TVlVbjBla0JEWlA0U3JrWWlqRS1vVVNENDkyWmNvWW1NdkdkZDJzMUVMZDY5TEJPYk9tMHFoMXln?oc=5",
+        "date": "2026-04-01",
+        "source": "MarketBeat"
+      },
+      {
+        "title": "A Look At American Electric Power (AEP) Valuation As Ohio Data Center Grid Plan Faces Regulatory Scrutiny - simplywall.st",
+        "url": "https://news.google.com/rss/articles/CBMi2gFBVV95cUxPenVKU0htTV91MjZWZ2RSQWUwQW82dklWQzFqdjRFSUlhLWJSU0gwSGZ1MXl6d2FsYzk3aS14eDdGbXlBa2VlR2pvU0JNakhPRDVxdjdiSlV6bVNtT0tENlpCa0lVME9SSEFTd3N3bDZEaEo5YVM5QnhaRl96TDR5WEFwLXVEdGxUaFVib3kxd1lhRWNndUNSQVc0TzdvajVVREc1WXBWazA3RGNBajlhdnVUbFczWXZGV2J0clhTT3FBX0xKVDYyTGU2RHYzd2pOMGpmRUxYWEdXd9IB3wFBVV95cUxPRGVrZy1DbTFRYUUzUVFfekJRLWxrUTVGYy1ob183TUVtd2VFOGFESUNNV2ZaZm9nRi03WXdXUjd3T2JyTVJ2MEoxRnlRVUJWQ2dsUG5jd19rR1RJWjBkT1NucFJ1X2Foa2VtTElOSTVjUko4SE5POUlFQnhfWG42ek5oYXJkMVZlcllVekdUc21ZSUdEdjRueGtPZ0w5Qjl6cE5mOGl1TTdYNEN5NWRBMW9uaTFoc1daSEhUTjZGWXNaUkptTjY4eHpvYVRjYnBMZk9qWTIteHNzTEI5LWVB?oc=5",
+        "date": "2026-04-01",
+        "source": "simplywall.st"
+      },
       {
         "title": "",
         "url": "",
@@ -3209,14 +3299,32 @@
         "source": "Yahoo Finance"
       }
     ],
-    "news_count": 1,
-    "updated": "2026-04-02T12:43:10.888997"
+    "news_count": 4,
+    "updated": "2026-04-03T15:49:11.307480"
   },
   "LNT": {
-    "summary": "{\"thesis\": \"AI Analaysis Failed: Connection Error: HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Max retries exceeded with url: /v1beta/models/gemini-3-pro-preview:generateContent?key=AIzaSyBGHSWUJrKAyfn5wPGYHRWJ5VD0B4VXKqY (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1032)')))\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
-    "summary_ko": "{\"thesis\": \"AI Analaysis Failed: Connection Error: HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Max retries exceeded with url: /v1beta/models/gemini-3-pro-preview:generateContent?key=AIzaSyBGHSWUJrKAyfn5wPGYHRWJ5VD0B4VXKqY (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1032)')))\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
-    "summary_en": "{\"thesis\": \"AI Analaysis Failed: Connection Error: HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Max retries exceeded with url: /v1beta/models/gemini-3-pro-preview:generateContent?key=AIzaSyBGHSWUJrKAyfn5wPGYHRWJ5VD0B4VXKqY (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1032)')))\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
+    "summary": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
+    "summary_ko": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
+    "summary_en": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
     "sources": [
+      {
+        "title": "Alliant Energy Stock Rockets 6.0% With 9-Day Winning Streak - Trefis",
+        "url": "https://news.google.com/rss/articles/CBMixgFBVV95cUxOR3gyOG0wRmZtanJkbFllbGRjbVVHXy1TNnUycEttclJ6c211a0dkWklRZEJGb1dNdkRZQ0p4SEtST0U0endCYXVqcV9GTUJDakJlVzFfRi0wbmxfRVRwSFRhM2hhcHBXeUx0NGpnSUZnVW1Kc2JJUUMtU3l6ZUFMaF8xcDhMcklKc1dXc01uWHN6dU5tSk91emthelkzTkh2WVdTMzdPakRtekhQa3FBa2RNSHR4UUQ0VVNSVWNwSHBfYWJhaVE?oc=5",
+        "date": "2026-04-03",
+        "source": "Trefis"
+      },
+      {
+        "title": "Vaughan Nelson Investment Management L.P. Acquires 163,165 Shares of Alliant Energy Corporation $LNT - MarketBeat",
+        "url": "https://news.google.com/rss/articles/CBMi7gFBVV95cUxNUldwVnNQMVlXRS1iU05qdDlHWGxacVlyLU04ZkZtSXA5clVDRUg5bV9nb1dweFd2NW52QjFVWWc5dmd0cndXSVlYYlNGOGZvdHVqeUtvdFAxS05TcFdiMTJYRnZsajYwNlN3RVdadjEzTTBvWEU5MG1RUUFfeEhycG9nSC1oc0E5NEhRV3ZHTkoyWjZWVlM2UWZwNElKazRLcDhzVkQ2U0F3SFVwZDFkaWhnM04yU0ZGeG9PTGs2TGk5NUxhTmFwQkRBQU9qUUNEWm5EWHFSb2w2clVDSHp5QWtRVVNMVlBwd19sWk9R?oc=5",
+        "date": "2026-03-31",
+        "source": "MarketBeat"
+      },
+      {
+        "title": "What Alliant Energy (LNT)'s US$1 Billion At‑The‑Market Stock Offering Means For Shareholders - simplywall.st",
+        "url": "https://news.google.com/rss/articles/CBMizgFBVV95cUxNSVppUFRRWm9rYVFQZkFRYllFUE1qOHdkNkctR2J5WUJ0WnFWbDVUTXQ5SGxoeGxVUlRCV3JjX2p0RnhadjMtM1B4N3NxcmpTZDEyQ2dQN3lKNTljWjhsbG5SM1MxZFh5VkNUcHk1RzFMT3hpVjd1bHpRNFcwT1RwMk5XcnpvZHdranYxb3JaMU1jNnNSRVBzeE1hbk9nV0ltVGdFLXg5YTNkR1laOVVudG1PWEM0dUg0TnZZUVcyOEhnTXp2TmpSb1NqVDgyUdIB0wFBVV95cUxPU1FCZ3g0RWxTbjA5cHRUY2ludUhaN1htMXNLUGs3Y092dXJxVGZpTElIeElQZ1FmWUxzVGhDVmNtaUpEWXMxdnhZZVN5eEc2cmIzMDRPUndQQjdvYWRxS29fMFk5Y2RiYXYtSTB0TGtoTGczRW40aTQybGthbm56OXgwZGFMNEFXeWdqM2I5OGpQQVVEcTRZNlB0WDhjeHY4MHN5dlRUdVpjX3lmc3hHWGwxNkhzVW81N1hKbFVvOTQ0Y1NHMW1rNWVHVG5OTldiVG1N?oc=5",
+        "date": "2026-03-29",
+        "source": "simplywall.st"
+      },
       {
         "title": "",
         "url": "",
@@ -3224,8 +3332,8 @@
         "source": "Yahoo Finance"
       }
     ],
-    "news_count": 1,
-    "updated": "2026-04-02T12:45:07.002230"
+    "news_count": 4,
+    "updated": "2026-04-03T15:49:00.491233"
   },
   "AOS": {
     "summary": "```json\n{\n  \"thesis\": \"강력한 기관 수급(107.7%)과 S&P 500 대비 우수한 상대 강도(+12.5%)를 보이고 있으나, 제로 수준의 매출 성장률(0.0%)로 인해 추가 상승 여력은 제한적인 '방어적 매수' 관점이 필요합니다.\",\n  \"catalysts\": [\n    {\n      \"point\": \"강력한 기관 매수세 유입\",\n      \"evidence\": \"기관 보유 비중이 107.7%에 달하며, 최근 Vanguard Group Inc.가 지분을 추가 매수함 [MarketBeat, 2026-02-22]\"\n    },\n    {\n      \"point\": \"시장 대비 우수한 상대 수익률\",\n      \"evidence\": \"S&P 500 대비 +12.5%의 초과 수익을 기록 중이며, 수급 점수가 75/100으로 강한 매집 신호를 보임 [수치 분석]\"\n    },\n    {\n      \"point\": \"장기 투자자 관점에서의 안정성 부각\",\n      \"evidence\": \"Finviz 분석에서 장기 투자자를 위한 S&P 500 종목 중 하나로 선정됨 [Finviz, 2026-02-25]\"\n    }\n  ],\n  \"bear_cases\": [\n    {\n      \"point\": \"성장 정체 리스크\",\n      \"evidence\": \"매출 성장률이 0.0%로 정체되어 있어, P/E 19.78배의 밸류에이션을 정당화하기 위한 이익 모멘텀이 부족함 [수치 분석]\"\n    },\n    {\n      \"point\": \"제한적인 목표가 상승 여력\",\n      \"evidence\": \"현재가($77.15) 대비 목표가 상승 여력이 +3.6%에 불과하여 밸류에이션 상단에 근접했을 가능성 [수치 분석]\"\n    },\n    {\n      \"point\": \"주택 경기 및 금리 민감도\",\n      \"evidence\": \"10년물 국채 금리가 4.02% 수준으로 유지되고 있어, 주택 관련 소비재인 온수기 수요 회복이 지연될 수 있음 [Macro Context]\"\n    }\n  ],\n  \"data_conflicts\": [\n    \"수급 점수는 75/100으로 '강한 매집(Strong Accumulation)'을 가리키고 있으나, MA Signal은 '중립(Neutral)'으로 기술적 추세가 완전히 확립되지 않음\",\n    \"기관 보유 비중이 100%를 초과(107.7%)하는 비정상적 수치는 공매도 대차 잔고나 데이터 집계 시차에 따른 오류 가능성을 내포하여 해석에 주의가 필요함\"\n  ],\n  \"key_metrics\": {\n    \"pe\": 19.78,\n    \"growth\": 0.0,\n    \"rsi\": 55.2,\n    \"inst_pct\": 107.7\n  },\n  \"recommendation\": \"HOLD\",\n  \"confidence\": 65\n}\n```",
@@ -3261,27 +3369,21 @@
     "updated": "2026-02-27T10:22:59.231808"
   },
   "ANET": {
-    "summary": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
-    "summary_ko": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
-    "summary_en": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
+    "summary": "{\"thesis\": \"AI Analaysis Failed: API Error: 429\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
+    "summary_ko": "{\"thesis\": \"AI Analaysis Failed: API Error: 429\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
+    "summary_en": "{\"thesis\": \"AI Analaysis Failed: API Error: 429\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
     "sources": [
       {
+        "title": "Here's Why Arista Networks (ANET) is the First Stock I've Purchased in 2026 - The Motley Fool",
+        "url": "https://news.google.com/rss/articles/CBMilwFBVV95cUxOUDQyWWpYYnAxbURSWTEzMm1PVEw5YUQ5MVZKVU82YnlqOUpTTDhORU5OUWdtU3JlQnJpUjlJWDIwU0JOcVR5OTRDaVBNblFKUndKYUZFc0U5TlRPeUI2ckZ4aXBfdjBzdHJDbm8yMzUyZ19EYXViNUNzUVY1dW9DYVFNZ0RucXlJTEdLTkVya0F4VEJMUmZv?oc=5",
+        "date": "2026-04-02",
+        "source": "The Motley Fool"
+      },
+      {
         "title": "Arista Networks Stock Has Rallied 58% in the Past Year. Here’s Why the Valuation Still Matters - TIKR.com",
-        "url": "https://news.google.com/rss/articles/CBMiugFBVV95cUxNdExjZ01GbnZxcnFiNFhCaS1GRHZPbUVEYzN5RHVqMmZqN0ZOYzdkaW83VVRSSE9zTllsa3NCWlBtWTZ2WWJWYXNSVnQyMWZRMldYbjdPb0JXdk1yaFI2U3FvZGtDWXR6bTRuNjZyOE1LVDI3UUpDNWFWUGhRRF9pa2tad0p2SFlNUUoxcWUzQ2pzeE9pU01ZWWJueTh3UjNPSjNEc1doWWtRRXZVMVVXNVdHRGZ4dWtzcGc?oc=5",
+        "url": "https://news.google.com/rss/articles/CBMiuAFBVV95cUxNcUNRZVFKSGxvV0hRWERXbExBZkh6YXlncFVtM0pxQkZCNDQ3SEJkWHUyWUM5SVNWNExLTmU1TmJRTXpYN2dLaGRMWVZwOFNaQzRBUE91aFNwMzZoZ0l3R3J2R0w4Yk5zWWo5WUpJRmhEY1lYTlk1OEtxUDJzVVpLckdZd3F2a3VrVHZUVUlBaG53OHdrLVNxVDF5LWN4UjdlUDZodlo1NUVJQTBIYXN5bHJicWFIV0VV?oc=5",
         "date": "2026-04-01",
         "source": "TIKR.com"
-      },
-      {
-        "title": "Nisa Investment Advisors LLC Decreases Stock Holdings in Arista Networks, Inc. $ANET - MarketBeat",
-        "url": "https://news.google.com/rss/articles/CBMi2gFBVV95cUxNV04ta1NiRFBFUFlLaWswNFFwSXY1QXd6bDdpREJrdVlsR2J2ZndLOS1DYlJrSFJMY0ZON3hXUlRSZHdXdnV1MUJxdDJ2R1cySHlhSjZGQUtpQ3FPN0FoaW1TWDBJSi1nd3dHZmtLQWE5WVc4QVZveXFWX29mTDlrNzZTN2FxcXI3OTVoMzU5WExXYlFEekt6Q3FaWFFJODI4YzhkWWk3ZzdfMmZhbFk0TnZ2eHpNWWltNkNYRUNDdU50MDNlRnlEeVZPY3ZyT1B5OWZneDJRNGFEZw?oc=5",
-        "date": "2026-04-01",
-        "source": "MarketBeat"
-      },
-      {
-        "title": "Jim Cramer Was Bullish On Arista (ANET) In February 2025 – Stock Is Up By 37%+ Since Then - Yahoo Finance",
-        "url": "https://news.google.com/rss/articles/CBMiggFBVV95cUxPZHhrY29mUjI4NE9vMTRrN0lpOWxscVFRT3FsLVN4YjZaaDJUb0lDYVhkQVdPT2VoVGxNMlhIdjdpODBqdEVvdF9kQVlnbW5ybmZoejdSaFo2MzVHYVhfTnJtOWpaRFR2a2ZHblNUY3ZsVjJXNjNod05kZVVCRzZvSzRB?oc=5",
-        "date": "2026-03-18",
-        "source": "Yahoo Finance"
       },
       {
         "title": "",
@@ -3290,8 +3392,8 @@
         "source": "Yahoo Finance"
       }
     ],
-    "news_count": 4,
-    "updated": "2026-04-02T14:33:51.554055"
+    "news_count": 3,
+    "updated": "2026-04-03T15:49:54.016047"
   },
   "ALLE": {
     "summary": "```json\n{\n  \"thesis\": \"주택 경기 회복에 대한 기대와 강력한 주주 환원 정책이 맞물려 견고한 상승 추세를 보이고 있으나, 단기 과열 신호(RSI 72.2)와 목표가 도달 임박으로 인한 밸류에이션 부담이 공존하는 상태입니다.\",\n  \"catalysts\": [\n    {\n      \"point\": \"주주 환원 정책 강화 (배당 인상)\",\n      \"evidence\": \"분기 배당금을 $0.55로 인상한다고 발표, 안정적인 현금 흐름 입증 [simplywall.st, 2026-02-16]\"\n    },\n    {\n      \"point\": \"주택 건설 경기 회복 기대감\",\n      \"evidence\": \"10년물 국채 금리 4.06%로 하락 및 주택 건설 ETF(XHB) +1.89% 상승 등 매크로 환경이 보안/도어락 수요에 긍정적 [Macro Context]\"\n    },\n    {\n      \"point\": \"신제품 출시를 통한 매출 모멘텀\",\n      \"evidence\": \"Schlage 브랜드의 새로운 'Aspect Collection' 출시로 디자인 및 기능성 강화 제품 라인업 확대 [2026-02-16 뉴스]\"\n    },\n    {\n      \"point\": \"강력한 기관 수급\",\n      \"evidence\": \"기관 보유 비중 97.0% 및 Assetmark Inc. 등의 추가 매수 포착 [MarketBeat, 2026-02-15]\"\n    }\n  ],\n  \"bear_cases\": [\n    {\n      \"point\": \"기술적 과매수 진입에 따른 단기 조정 가능성\",\n      \"evidence\": \"RSI가 72.2로 통상적인 과매수 기준인 70을 초과하여 차익 실현 매물 출회 위험 존재 [수치 분석]\"\n    },\n    {\n      \"point\": \"제한적인 추가 상승 여력 (밸류에이션 부담)\",\n      \"evidence\": \"현재 주가가 목표가 대비 불과 +1.0% 차이로, 애널리스트들의 적정 주가 수준에 이미 도달함 [수치 분석]\"\n    },\n    {\n      \"point\": \"실적 발표 전후 변동성 확대 위험\",\n      \"evidence\": \"Q4 실적 발표가 임박한 상황에서 VIX(21.2)가 높아져 있어, 가이던스가 기대에 못 미칠 경우 변동성 확대 우려 [2026-02-16 뉴스 및 Macro Context]\"\n    }\n  ],\n  \"data_conflicts\": [\n    \"수급 점수(75점)와 기관 보유 비중(97%)은 강력한 매수세를 시사하지만, RSI(72.2)는 기술적 과열을 가리키고 있어 단기 진입 시점 포착에 주의가 필요함\",\n    \"매출 성장률(10.7%)은 견조하나 목표가 대비 상승 여력(+1.0%)이 거의 없어 펀더멘털 개선 대비 주가 상승이 선반영되었을 가능성\"\n  ],\n  \"key_metrics\": {\n    \"pe\": 24.26,\n    \"growth\": 10.7,\n    \"rsi\": 72.2,\n    \"inst_pct\": 97.0\n  },\n  \"recommendation\": \"HOLD\",\n  \"confidence\": 70\n}\n```",
@@ -3366,21 +3468,21 @@
     "updated": "2026-03-25T04:18:46.575525"
   },
   "GOOGL": {
-    "summary": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
-    "summary_ko": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
-    "summary_en": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
+    "summary": "{\"thesis\": \"AI Analaysis Failed: API Error: 429\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
+    "summary_ko": "{\"thesis\": \"AI Analaysis Failed: API Error: 429\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
+    "summary_en": "{\"thesis\": \"AI Analaysis Failed: API Error: 429\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
     "sources": [
       {
-        "title": "Why Alphabet Inc. (GOOG) Outpaced the Stock Market Today - sg.finance.yahoo.com",
-        "url": "https://news.google.com/rss/articles/CBMihgFBVV95cUxNVm5pSjdqTE1fY3BfMEhlRkFzbmlWWDRjaGx3aGRWMGJ3QVlncGlPaEVjSGFVWlJGNTlUVzVjTEk4WlRtQnRRZUtKWExWR1h6cTZlUFc5QURHVFV1WFNBbWIwUm1keVRRMGhUR3M5R2J2OGE2VjZFaTN0NUtqTkgwdFdSTFcyZw?oc=5",
-        "date": "2026-04-01",
-        "source": "sg.finance.yahoo.com"
+        "title": "GOOGL Stock Shrugs Off Iran Bombing Threats and Climbs 3% - TipRanks",
+        "url": "https://news.google.com/rss/articles/CBMijwFBVV95cUxNaWFjLWJ2a1JNZk91U1BpQ3RSTEMycFZNU1ZvN3RMZnNjUTdYbDU5Q0QyOWVWUDJUUUw5UVE3OTBEUmpCUFNtSDVPc2dJYjUzMHM2OU94bGdyYktUNnJ4WnlyVE9rZUpGaTR4XzE2ZFB2VERwYnN1T0l3amRBUUdpcWQtMVlHclJsWW1LSkNaWQ?oc=5",
+        "date": "2026-04-02",
+        "source": "TipRanks"
       },
       {
-        "title": "Wells Fargo raises PT on Alphabet (GOOGL) $397 amid growing opportunities for Google Cloud monetization - MSN",
-        "url": "https://news.google.com/rss/articles/CBMi6gFBVV95cUxNc25XbXd3ODNFaGd4UHUxcWJaWHhRVkU2dzdJblhFUE9xendjWkRMQTZJaVBrcGdVVUVwMWx1QWZMTlZ4MW5FQUttR21wTXdKZDNFSzN2MDh0MElFMG9Fa0w1dHNIQXFjZndDXzBWelQwS281VU9BRE5FQnloNlNTVFdPcWVVa0ZOb0kzVnJrZHl6WF9CSnBPYjRZUXc1aEVxNThCVnRCeG9laTF1bVNwX3VKVE1aanprZ3Y2ZGktX05ScEo2R0N3cHJ5b1hQZVZBc2RLNnBaTklpVFBMWmhVSUNLUzdlVjdEX1E?oc=5",
-        "date": "2026-04-01",
-        "source": "MSN"
+        "title": "Alphabet (GOOGL) Stock Trades Up, Here Is Why - finance.yahoo.com",
+        "url": "https://news.google.com/rss/articles/CBMinAFBVV95cUxQdDNuMmQzeHhCUFpUMDV0OTQ1UFZKR1VlZ2ZUVzdON19qMDFra1RiNS1qS18zNzJNSHBaUWk2VVRKSEhqMkhQVjUxLW8xOXZsS2xzZ2hoZ3RJRnZyT09PUlhMSG1hZ1dMRTVIMWZ4Nl96SW93NklKbUFGelNXYlhuaGFtbHRWLTVSOXpWVUpzU0tFWjJfZjNRMjBkSU0?oc=5",
+        "date": "2026-03-31",
+        "source": "finance.yahoo.com"
       },
       {
         "title": "Alphabet (GOOGL) Stock Quotes, Company News And Chart Analysis - Investor's Business Daily",
@@ -3396,24 +3498,24 @@
       }
     ],
     "news_count": 4,
-    "updated": "2026-04-02T14:34:04.254552"
+    "updated": "2026-04-03T15:49:44.967332"
   },
   "AMD": {
-    "summary": "{\"thesis\": \"AI Analaysis Failed: Connection Error: HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Max retries exceeded with url: /v1beta/models/gemini-3-pro-preview:generateContent?key=AIzaSyBGHSWUJrKAyfn5wPGYHRWJ5VD0B4VXKqY (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1032)')))\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
-    "summary_ko": "{\"thesis\": \"AI Analaysis Failed: Connection Error: HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Max retries exceeded with url: /v1beta/models/gemini-3-pro-preview:generateContent?key=AIzaSyBGHSWUJrKAyfn5wPGYHRWJ5VD0B4VXKqY (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1032)')))\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
-    "summary_en": "{\"thesis\": \"AI Analaysis Failed: Connection Error: HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Max retries exceeded with url: /v1beta/models/gemini-3-pro-preview:generateContent?key=AIzaSyBGHSWUJrKAyfn5wPGYHRWJ5VD0B4VXKqY (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1032)')))\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
+    "summary": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
+    "summary_ko": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
+    "summary_en": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
     "sources": [
       {
-        "title": "AMD Stock Rallies as Wells Fargo Heaps Praise on the Chipmaker - TipRanks",
-        "url": "https://news.google.com/rss/articles/CBMilwFBVV95cUxQVy1TZW5SUTZTMlZCMlRZTUxydnQtclhKZ0RYczRlMHVuWDRYU1FObzR4YWRjVHluVHNlRjZ6dE5Xa3VaWDlhTHR2R2NsTG85OE9DUGNnR1RIOHVTczdNczZJVDdwel9FM2Mzb3I2bXdkcGNvWlAyWlJrZEY1NVZQYkY0N2k3ZWtrblViQVdmWllqcGduX0V3?oc=5",
-        "date": "2026-04-01",
-        "source": "TipRanks"
+        "title": "AMD stock price forecast: Key support in focus as AMD eyes $220 resistance - Traders Union",
+        "url": "https://news.google.com/rss/articles/CBMimAFBVV95cUxOeG02R3I2Q3dCRUhzS3JjUE1mbkM0TVFOQ2JIS25pREFSUmNIdFpJek1RZDZfTGl2MEJMb1pDRkY5VUNSOWFTWGw4SDE2OThHMUZGWnBSUzBjc2M0cTNVZHM4NjNQZ3NLUXkyUmd6Vzk0SzhIUUE5OFpHRXJxQWNOX2oyM3JaY1FLN281UktJR1FIaXRXZUNIZQ?oc=5",
+        "date": "2026-04-02",
+        "source": "Traders Union"
       },
       {
-        "title": "Advanced Micro Devices (NASDAQ:AMD) Stock Price Up 3.3% - Here's Why - MarketBeat",
-        "url": "https://news.google.com/rss/articles/CBMitAFBVV95cUxORUZPOExOaFprTkVTVTlGZEcwVGdyOWlzTUJYNk1LUnozUXpmOTJoa19oM1NZYW9qMVlnWEgyQnZJRmpFQkxublBaUUhZV3lnQ2w4SkQ0M1MtQ1NRNmhiNklRNThPTG5ja1lBbjBscXpWOUdrMERacXN4SFplSjRwQmJfN0N2MUxQdFJVblV0RFVpdWpaYjlTNWZGc2VJdThmVFlqRmVCanRvd0E5bVZyQ3dQVlg?oc=5",
-        "date": "2026-04-01",
-        "source": "MarketBeat"
+        "title": "Nvidia, AMD Stocks Recover Early Losses. Why War Is Still Top of Mind. - Barron's",
+        "url": "https://news.google.com/rss/articles/CBMihANBVV95cUxNTXpyWm1vUVFuWVRiWENYcmxiZmtENTJNZmR2V1dKaWljdS1JSThxSkV4Vk1Ic2xqZjJkWE9aN01SaklJWlRfNzc2cWxySks2QWdXSGRHMkVFcEhCMEYwbGo5b0lCUmVhMzMtd2pMYkhnMTRUZThVWGg5Q1FyQ2JtSzc2Uk04UlRFaDBJaEhCMjZrNG5pUllFTnl3V0p5eHFVNlBjZWhDQzU2Z0ZTdVRvNlZCOElhWkluZjhuU2I3djZyMHpsNnNDVG1ZTkdISmRPSUpyVUVZXzFYU2Y4eHdSYTVqODJHcmdYZHRqNUZ6YWMtcE9NXzY1RHA5aUR4Ukc4aVhhY2t2MURHSURVRy1TSzNzOWZCMkNrSFRJdjNzRV9weXVMY1h3WmpnajN6aDF4MWxSbnJaMjJ0SXJMU3N2dTNNUmdmRlVsUGkxdnAtaGZLYk9qcFRQV1d4NFNpNzMyNDNlRklTMUcwZFpTdVR2bl9DcjRyaUprRktFXzFCVFJHUTFk?oc=5",
+        "date": "2026-04-02",
+        "source": "Barron's"
       },
       {
         "title": "Why the Second Half of 2026 Could Be Huge for AMD Stock - The Motley Fool",
@@ -3429,12 +3531,12 @@
       }
     ],
     "news_count": 4,
-    "updated": "2026-04-02T12:49:27.697951"
+    "updated": "2026-04-03T15:49:31.844551"
   },
   "GOOG": {
-    "summary": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
-    "summary_ko": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
-    "summary_en": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
+    "summary": "{\"thesis\": \"AI Analaysis Failed: API Error: 429\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
+    "summary_ko": "{\"thesis\": \"AI Analaysis Failed: API Error: 429\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
+    "summary_en": "{\"thesis\": \"AI Analaysis Failed: API Error: 429\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
     "sources": [
       {
         "title": "What's Going On With Alphabet Stock? - Benzinga",
@@ -3443,16 +3545,16 @@
         "source": "Benzinga"
       },
       {
-        "title": "Why Alphabet Inc. (GOOG) Outpaced the Stock Market Today - Yahoo Finance",
-        "url": "https://news.google.com/rss/articles/CBMimwFBVV95cUxOX1haVUs0NDBmYWU1VkwzQVNJU0QxVDM3YjBNaXZPUEo2WGw2ZWNySUdnVV9ROFduUm01WEZ1eDU0Ym0yRTYxc1hLU0szelJDSXpISHJtRzgydkVtTHJVTVJBQ1VqNXRBY3hFNWhkb211d1RCRE5tRlpFLUVFR2taSUVEakpzZktnOWV5aVR4R2JmeGRfbzJodXFWZw?oc=5",
-        "date": "2026-04-01",
-        "source": "Yahoo Finance"
-      },
-      {
         "title": "Why Alphabet Stock Popped Today - The Motley Fool",
         "url": "https://news.google.com/rss/articles/CBMif0FVX3lxTE1uUkFnUU5jR0FtT2N3UTZ6QmZaQ0xldnZNOEY5d1F6aVlxa25YWTYxdUp0ZzQwdnhsTFhIcWFoTkpvWjhzcnluWXc1ZnN3TDJSZ0daVEp3ZWVVTlp1cXZYZTZfM3E0d2p6Q0psei1OS2NabGJfQlA5WC1FX0N1YzA?oc=5",
         "date": "2026-03-31",
         "source": "The Motley Fool"
+      },
+      {
+        "title": "Prediction: This Will Be Alphabet's Stock Price in 5 Years - finance.yahoo.com",
+        "url": "https://news.google.com/rss/articles/CBMioAFBVV95cUxPaDUzRU4zSUZIdlF6MkhTdlRqTG1aMGtrRmtRSkY5dXlMdjFqYndDTjgyV0h0LVlRdkw1bkhNY0JTWkdXU3JTSzl4TG1rTkN3ZVRqd2VnVllxR1ZOazMxUW53Q1VhNm10c2phQW05Ymx4NU54X3ZITWFhN1NCZTh5MmdnUENiZ3A5VGJfZGRsSUt0b1FnYnRabmNFQWxzMWtD?oc=5",
+        "date": "2026-03-31",
+        "source": "finance.yahoo.com"
       },
       {
         "title": "",
@@ -3462,7 +3564,7 @@
       }
     ],
     "news_count": 4,
-    "updated": "2026-04-02T14:34:06.818228"
+    "updated": "2026-04-03T15:49:50.947102"
   },
   "AES": {
     "summary": "```json\n{\n  \"thesis\": \"AES는 구글과의 20년 장기 전력 공급 계약 체결로 안정적인 장기 현금 흐름을 확보했으며, 강력한 기관 수급(88.1%)과 저평가된 밸류에이션(P/E 10.76)이 매력적인 진입 기회를 제공합니다.\",\n  \"catalysts\": [\n    {\n      \"point\": \"구글 데이터 센터와의 20년 장기 계약 체결\",\n      \"evidence\": \"구글 데이터 센터 전력 공급을 위한 20년 계약 체결로 투자 내러티브의 구조적 변화 발생 [simplywall.st, 2026-02-26]\"\n    },\n    {\n      \"point\": \"강력한 기관 수급 및 긍정적 모멘텀\",\n      \"evidence\": \"기관 보유 비중 88.1% 및 수급 점수 80/100(Strong Accumulation) 기록, S&P 500 대비 +9.1% 초과 수익 달성 [수치 분석]\"\n    },\n    {\n      \"point\": \"섹터 대비 매력적인 밸류에이션\",\n      \"evidence\": \"현재 P/E 10.76배로 유틸리티 섹터 평균 대비 저평가 상태이며 B급(매수 고려) 등급 부여 [종목 정보]\"\n    }\n  ],\n  \"bear_cases\": [\n    {\n      \"point\": \"제한적인 매출 성장률과 성장 정체 우려\",\n      \"evidence\": \"매출 성장률이 1.9%에 불과하여 고성장 기술주나 성장형 유틸리티 대비 매력도 저하 [수치 분석]\"\n    },\n    {\n      \"point\": \"고금리 환경에 따른 자본 조달 비용 부담\",\n      \"evidence\": \"10년물 국채 금리가 4.02%로 여전히 높은 수준이며, 이는 부채가 많은 유틸리티 기업의 이자 비용 부담을 가중시킴 [Macro Context]\"\n    },\n    {\n      \"point\": \"단기 목표가 대비 하락 여력 존재\",\n      \"evidence\": \"현재 주가($16.25)가 애널리스트 목표가 대비 -4.4% 괴리를 보이며 단기적인 밸류에이션 부담 신호일 수 있음 [수치 분석]\"\n    }\n  ],\n  \"data_conflicts\": [\n    \"기술적 지표(MA Signal: Bullish, RSI 61.0)와 수급(80점)은 강력한 매수를 가리키나, 목표가 대비 괴리율(-4.4%)은 현재 주가가 이미 적정 가치에 도달했거나 소폭 고평가되었음을 시사함\"\n  ],\n  \"key_metrics\": {\n    \"pe\": 10.76,\n    \"growth\": 1.9,\n    \"rsi\": 61.0,\n    \"inst_pct\": 88.1\n  },\n  \"recommendation\": \"BUY\",\n  \"confidence\": 80\n}\n```",
@@ -3597,10 +3699,28 @@
     "updated": "2026-02-26T01:14:47.325099"
   },
   "T": {
-    "summary": "{\"thesis\": \"AI Analaysis Failed: Connection Error: HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Max retries exceeded with url: /v1beta/models/gemini-3-pro-preview:generateContent?key=AIzaSyBGHSWUJrKAyfn5wPGYHRWJ5VD0B4VXKqY (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1032)')))\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
-    "summary_ko": "{\"thesis\": \"AI Analaysis Failed: Connection Error: HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Max retries exceeded with url: /v1beta/models/gemini-3-pro-preview:generateContent?key=AIzaSyBGHSWUJrKAyfn5wPGYHRWJ5VD0B4VXKqY (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1032)')))\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
-    "summary_en": "{\"thesis\": \"AI Analaysis Failed: Connection Error: HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Max retries exceeded with url: /v1beta/models/gemini-3-pro-preview:generateContent?key=AIzaSyBGHSWUJrKAyfn5wPGYHRWJ5VD0B4VXKqY (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1032)')))\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
+    "summary": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
+    "summary_ko": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
+    "summary_en": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
     "sources": [
+      {
+        "title": "Dow Jones Futures Fall With Jobs Report Due; Stock Market Hasn't Done This Yet - Investor's Business Daily",
+        "url": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxNaDFJZmUwcDdvX2lPSnpaUVJTQ3hoR0xsTGZPNkhRVEc2ZGQ3TUZDLXdYZEJrdUJycU5fRExxS0xQMm1JWTE5UmxNVlQ3blFGZmF5QUdRekV3V1JDQjRveWJ4bFdiOUpnUkVqQ1oxRUt3bjZHRG92TXhUd3NWUjlhMjNQNEYycTdDbWZ1UGt2UW0zWElxRHEwRDd2LVNDMXYzRVVDQnYycE4?oc=5",
+        "date": "2026-04-03",
+        "source": "Investor's Business Daily"
+      },
+      {
+        "title": "This Oil Surge Won’t Last. The Stock Market’s Bargains Won’t Either. - Barron's",
+        "url": "https://news.google.com/rss/articles/CBMi9wJBVV95cUxOYUpHTll5Q2M2dkFsaEhfallxejlpU05iTUhJQmxXSHViUVo1NUlzSVJWRjUyRktoVF9aQzJNcWJXVFNod3p0Y0NBYXhha3dvZlR1ZnlMdzRPZDhsN3llUTZCRDhYRmo0WTl0OFVra3J3U0ZkUEdmQTgzTE9UWFpUVjNTTnhUczFIc0pkWEc2bV9hU1RJSXRHZ21OMVVMZUtmRVZvRE8xTlRwVW9xTkIyRjdhOW9nM0V3Z3VKdkk5MHZncXcwY2U5b1NXTDNscTdVTlNJclNaM2tLTkcwR2l6UWlSR2dGeE1iaUJHVF9FR2h3T1Z1b2hEZnRBbTdOcFl5TUhWekwxSnNXQW44S2xnV1JjZlR2d2xxcXlMenhaS3R3VjdTb1hBUEYxZkJveEZxdVUzVWJtT2M2c0JucXBVRjVLaWxfYkVudGhrSFZiYzRNaWUxUmxZUFpyREpydXN4bVJnU1lSd1EwTm5IQXBJS2tVYTMyajQ?oc=5",
+        "date": "2026-04-02",
+        "source": "Barron's"
+      },
+      {
+        "title": "Oracle Stock Hasn't Been This Cheap in 3 Years -- But Is It a Buy Right Now? - The Motley Fool",
+        "url": "https://news.google.com/rss/articles/CBMilwFBVV95cUxNd3VGeGpUWTFKWVFJYk5mTkRfUE9ieHFqSGpiV3VvN3B6cFc4VjFESlZ1clZMOWp2Z0dKQTZqbzcwR2dZRlVDWUl4bDhaOWdiSGF6OHV2QW5JWHNSeVlOSjlHNmtaeXRMV1RQYkJES1ZIcG5HZGNpSE1PcnpjRzFvMWgzZEhBOTBjSXRvcTBTZW1mSEJ2a0JZ?oc=5",
+        "date": "2026-04-02",
+        "source": "The Motley Fool"
+      },
       {
         "title": "",
         "url": "",
@@ -3608,8 +3728,8 @@
         "source": "Yahoo Finance"
       }
     ],
-    "news_count": 1,
-    "updated": "2026-04-02T12:40:03.952248"
+    "news_count": 4,
+    "updated": "2026-04-03T15:49:04.082945"
   },
   "ALL": {
     "summary": "```json\n{\n  \"thesis\": \"올스테이트(ALL)는 극단적으로 낮은 P/E(5.38배)와 높은 기관 보유율(82.7%)을 바탕으로 한 딥밸류(Deep Value) 종목으로, 높은 거시경제 변동성 속에서도 목표가 대비 17.0%의 상승 여력을 보유하고 있습니다.\",\n  \"catalysts\": [\n    {\n      \"point\": \"극단적 저평가와 높은 상승 여력\",\n      \"evidence\": \"P/E 5.38배의 밸류에이션 매력 및 애널리스트 목표가 대비 +17.0% 상승 가능성 [수치 분석 데이터]\"\n    },\n    {\n      \"point\": \"보험/금융 섹터 내 대형 M&A로 인한 산업 재평가 기대\",\n      \"evidence\": \"경쟁사인 Corebridge와 Equitable의 220억 달러 규모 합병 소식으로 인해 보험 및 자산관리 섹터 전반의 밸류에이션 리레이팅 가능성 [2026-03-26 InvestmentNews]\"\n    }\n  ],\n  \"bear_cases\": [\n    {\n      \"point\": \"거시경제 불안정성 및 공포 심리 극대화\",\n      \"evidence\": \"VIX 지수가 27.19를 기록하여 시장 전반의 투매 리스크가 높은 상태 [Macro Context]\"\n    },\n    {\n      \"point\": \"성장 모멘텀 둔화 우려\",\n      \"evidence\": \"매출 성장률이 5.1%에 불과하여 인플레이션 및 금리 환경 대비 실질 성장 동력이 부족함 [수치 분석 데이터]\"\n    },\n    {\n      \"point\": \"시장 유동성 및 레버리지 축소\",\n      \"evidence\": \"2월 신용융자잔고(Margin Debt)가 10개월 만에 처음으로 2.0% 감소하여 주식 시장 전반의 수급 악화 리스크 [2026-03-26 Advisor Perspectives]\"\n    }\n  ],\n  \"data_conflicts\": [\n    \"P/E 5.38의 극단적 저평가 및 82.7%의 견조한 기관 보유율(펀더멘털 강세)에도 불구하고, RSI(45.9)와 MA Signal은 중립(Neutral)에 머물러 있어 가치 평가와 기술적 매수세 간의 괴리가 존재함.\"\n  ],\n  \"key_metrics\": {\n    \"pe\": 5.38,\n    \"growth\": 5.1,\n    \"rsi\": 45.9,\n    \"inst_pct\": 82.7\n  },\n  \"recommendation\": \"BUY\",\n  \"confidence\": 70\n}\n```",
@@ -3849,10 +3969,28 @@
     "updated": "2026-02-27T10:21:38.662633"
   },
   "ALB": {
-    "summary": "{\"thesis\": \"AI Analaysis Failed: Connection Error: HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Max retries exceeded with url: /v1beta/models/gemini-3-pro-preview:generateContent?key=AIzaSyBGHSWUJrKAyfn5wPGYHRWJ5VD0B4VXKqY (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1032)')))\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
-    "summary_ko": "{\"thesis\": \"AI Analaysis Failed: Connection Error: HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Max retries exceeded with url: /v1beta/models/gemini-3-pro-preview:generateContent?key=AIzaSyBGHSWUJrKAyfn5wPGYHRWJ5VD0B4VXKqY (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1032)')))\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
-    "summary_en": "{\"thesis\": \"AI Analaysis Failed: Connection Error: HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Max retries exceeded with url: /v1beta/models/gemini-3-pro-preview:generateContent?key=AIzaSyBGHSWUJrKAyfn5wPGYHRWJ5VD0B4VXKqY (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1032)')))\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
+    "summary": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
+    "summary_ko": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
+    "summary_en": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
     "sources": [
+      {
+        "title": "Albemarle (NYSE: ALB) director boosts stake with dividend reinvestment - Stock Titan",
+        "url": "https://news.google.com/rss/articles/CBMiqwFBVV95cUxQTEUzUmNxYjdZMlV5UmFmbUJVZy1GMldhb1NXaTFlX2d5UGVIYm5xcldUN0RJeDhYM1k4RUlJZHMtd0lsVENHRWlFYnBBMzNZQXRiQnAzVnhKTVVzRnIzSXpXT1JuWlJ4dTZuVVR0VFdVWlhVelNoYzU0cms3RDg1a2dTd3JzOE1ZTFIwekNKQXZYYVdHVFYxclJockxqLVd3SE5EcG1WUTlZR0E?oc=5",
+        "date": "2026-04-02",
+        "source": "Stock Titan"
+      },
+      {
+        "title": "Brokers Suggest Investing in Albemarle (ALB): Read This Before Placing a Bet - qz.com",
+        "url": "https://news.google.com/rss/articles/CBMikgFBVV95cUxQSldqb0drX3BjLTVDU0pwUmsyUEtIVVAxTmVLSHRTS0ZZanZpSndla3JiU1VUdFZNX2ZSRXlJc0FSMEJrdWtJSHRpM0dkX1BKakExc0cwRzFKWUdxbXhhdVdwcG1nOGpSRFA3QXc1dVFxcncwZF9IbUVxeHZGdmpBUENrbWdCQTlxX3Y3SW90ZTJOQQ?oc=5",
+        "date": "2026-03-30",
+        "source": "qz.com"
+      },
+      {
+        "title": "Albemarle Announces Quarterly Common Stock Dividend - PR Newswire",
+        "url": "https://news.google.com/rss/articles/CBMiqwFBVV95cUxOUUhWX1ZLOTlDX0R1WVFCOGttOC0zUUdyVm1zQ1l1TVl1ajZIWE5FVGdnR19RYms4b3p5WGJiNXNhZThhU0pKOThmRUNWYVJZUjE3VnNlYjBfN1VGUGxrb05VNkF2YmNYWmdLdkJqTW9MUFRfbWRjQzFLVmdqeEpoRGNmZlpJRmZqeVpZWU9WTXgxV0V2UHI2ZGhfbDNJOGNVMy1QcV80WElncGs?oc=5",
+        "date": "2026-02-26",
+        "source": "PR Newswire"
+      },
       {
         "title": "",
         "url": "",
@@ -3860,8 +3998,8 @@
         "source": "Yahoo Finance"
       }
     ],
-    "news_count": 1,
-    "updated": "2026-04-02T12:44:09.102333"
+    "news_count": 4,
+    "updated": "2026-04-03T15:49:21.120836"
   },
   "AWK": {
     "summary": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
@@ -3945,10 +4083,28 @@
     "updated": "2026-03-26T20:33:44.631706"
   },
   "APD": {
-    "summary": "{\"thesis\": \"AI Analaysis Failed: Connection Error: HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Max retries exceeded with url: /v1beta/models/gemini-3-pro-preview:generateContent?key=AIzaSyBGHSWUJrKAyfn5wPGYHRWJ5VD0B4VXKqY (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1032)')))\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
-    "summary_ko": "{\"thesis\": \"AI Analaysis Failed: Connection Error: HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Max retries exceeded with url: /v1beta/models/gemini-3-pro-preview:generateContent?key=AIzaSyBGHSWUJrKAyfn5wPGYHRWJ5VD0B4VXKqY (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1032)')))\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
-    "summary_en": "{\"thesis\": \"AI Analaysis Failed: Connection Error: HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Max retries exceeded with url: /v1beta/models/gemini-3-pro-preview:generateContent?key=AIzaSyBGHSWUJrKAyfn5wPGYHRWJ5VD0B4VXKqY (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1032)')))\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
+    "summary": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
+    "summary_ko": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
+    "summary_en": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
     "sources": [
+      {
+        "title": "Director at Air Products (NYSE: APD) receives phantom stock award - Stock Titan",
+        "url": "https://news.google.com/rss/articles/CBMiuwFBVV95cUxOOUZJalRXMDBTSy1wS0U2WWZjSXRjQWZiX2xKdEl5QjJ5STh4TEVkSU9pcnBZT2pVODQyaDVzbjBsQXhWdmVVU2VobGxHa2tKWnFZU1NfcnhKLVNPaUVZRnh6WFlUaXdvLVFCRnBCbnZoZ3laRExERzQzRXJKOW8zTFJVaUlKVHdwaEtxUG9hRmktM3otTHVEXzEzazBRVjFtNzNtZkZ4OWdpbFYyTldRS2tab3BDaWxqbUNR?oc=5",
+        "date": "2026-04-01",
+        "source": "Stock Titan"
+      },
+      {
+        "title": "Air Products (APD) upgraded by JPMorgan as helium prices turn higher - msn.com",
+        "url": "https://news.google.com/rss/articles/CBMiugFBVV95cUxOLTh4Z2tpbU8xX19aSXNiNExjUzkzYy12cS0yZjlOU29OUTRXOWo0UFllVjc0YjhIa0xObjdLTHUzN2RqZ0JTeGVta0g4MmtpdnFlV0JxVVd3TkxjdnVVWTFWcjAwTmtWWWMyRmJ3VXc3bVNoeUhaRHYtTnFqYlZ3TkhSMmZCYWwzeU80TmhwbXlQVG9VZHhiXzE2Ml9FOHVtVEhGbm4zRjU2Y3MtMjBENUEwYlJLeDVIS2c?oc=5",
+        "date": "2026-04-01",
+        "source": "msn.com"
+      },
+      {
+        "title": "Air Products and Chemicals (APD) is a Top-Ranked Growth Stock: Should You Buy? - Yahoo Finance Singapore",
+        "url": "https://news.google.com/rss/articles/CBMihgFBVV95cUxNaWYtUGVKc1lEdzJmNTNSN3FMYnNlVTRSUllkZzBoUTZGQ1B5YzU0TTVXZ2xJWWxHaHhiSlh2LXdYaFVGcGhrUGw5WlhjMHZVdDUzaHRqdVZrY3BtcnRJampKVnBJZjVsWHFqT3UzdjZCd1VVeHpvdWpva3hTdVFGS1ROS2tBZw?oc=5",
+        "date": "2026-03-30",
+        "source": "Yahoo Finance Singapore"
+      },
       {
         "title": "",
         "url": "",
@@ -3956,14 +4112,32 @@
         "source": "Yahoo Finance"
       }
     ],
-    "news_count": 1,
-    "updated": "2026-04-02T12:46:58.614134"
+    "news_count": 4,
+    "updated": "2026-04-03T15:49:24.518671"
   },
   "APO": {
-    "summary": "{\"thesis\": \"AI Analaysis Failed: Connection Error: HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Max retries exceeded with url: /v1beta/models/gemini-3-pro-preview:generateContent?key=AIzaSyBGHSWUJrKAyfn5wPGYHRWJ5VD0B4VXKqY (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1032)')))\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
-    "summary_ko": "{\"thesis\": \"AI Analaysis Failed: Connection Error: HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Max retries exceeded with url: /v1beta/models/gemini-3-pro-preview:generateContent?key=AIzaSyBGHSWUJrKAyfn5wPGYHRWJ5VD0B4VXKqY (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1032)')))\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
-    "summary_en": "{\"thesis\": \"AI Analaysis Failed: Connection Error: HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Max retries exceeded with url: /v1beta/models/gemini-3-pro-preview:generateContent?key=AIzaSyBGHSWUJrKAyfn5wPGYHRWJ5VD0B4VXKqY (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1032)')))\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
+    "summary": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
+    "summary_ko": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
+    "summary_en": "{\"thesis\": \"AI Analaysis Failed: API Error: 403\", \"catalysts\": [], \"bear_cases\": [], \"data_conflicts\": [\"AI Generation Error\"], \"key_metrics\": {}, \"recommendation\": \"HOLD\", \"confidence\": 0}",
     "sources": [
+      {
+        "title": "Company News for Apr 2, 2026 - Yahoo Finance Singapore",
+        "url": "https://news.google.com/rss/articles/CBMifEFVX3lxTE16U19YOEtjSkI5THlicWh5ZUhFYlhUOHFKTWhJX2ZxcXZHaDNPb3lRcjRNYjFLRVlVZUx1bmhHeFpDTDRtNUJ6RkxpTlpaTWY5RDZ6QmktVE9HcmN1TWJUY3N1QWhKQ3dEcV8zM2tCb2I0X0Etc3R6VXpmaWw?oc=5",
+        "date": "2026-04-02",
+        "source": "Yahoo Finance Singapore"
+      },
+      {
+        "title": "The Bull Case For Apollo Global Management (APO) Could Change Following Retirement-Access Shift And Intel Exit - Learn Why - simplywall.st",
+        "url": "https://news.google.com/rss/articles/CBMi6wFBVV95cUxPUVFzWE1sLUh6cnpFek96aVpZWXYwaENBdWdFTlRvRExuQkt6cGZvZFlXemg4Nkw2Q1U3VXIwMjZCZDlYT2dXWGRJWFJLcEpDNGJtV1VRUUVYdzhkTzFOcERXWHNRUU00LVdBTV91OExxbjljeHZSNURCRlA4S0ZaYmtpekVjUDh6azJPZEFueG5uSEdFSWhlT01Ca2dzdGduWjBWcWVyT3oxdjBBeHVPQzdBZ1ZJaU1BRW4wOGtLSGdMa2RwTlZKN2tDcnp3Ni1sY1lhZjlxNDNhUXZJTDByOVZSS3hETzFHZVVR0gHwAUFVX3lxTE1kM1FqRHNFNm1DRUVvMWk4WWNNcHhDV0FkYWc0TEY3Z3dYamZNQVdEWmFpRXdqZmxBandkSEgySFlyaW1nNVYyVFRZdkJJZURyTE9qS3ozWXFSTl80bG40QzB5TTBJWFZmdDYtZWRDcGJORS1OMGZ5WjN3NUpkQVVsNDVVeFBFbE0wY3BhYlZ5Z2ZtOGVWdEpFTzFxVXdaVldYSFdrMDFaUWVwS21FalBUWlc0OU8wdk15cGFBa19tbGlMbnN1NEkxcTdCNlJxRlcyaENianoyWUhiS0tEMy03Z29iTDdTSmFXVl9nUGkwRw?oc=5",
+        "date": "2026-04-02",
+        "source": "simplywall.st"
+      },
+      {
+        "title": "Apollo investors get Q1 results May 6, webcast starts at 8:30 ET - Stock Titan",
+        "url": "https://news.google.com/rss/articles/CBMiugFBVV95cUxPbzhGbnVQVTdIeEpwbDVpdlJHOWVUdC1sTEtJb3lOTF9Tb0h3TkxscEh0ajJiVjRqLXVqTjg5RWFmQkdrajZDN2JQb19Pc0FZclRMVFZUVGh5VENXZjAwdGxKVmtQLUN0ZTZKZUhVT2x4MkFTMlhNM21DN3Q0RWZ6S1MwV1p1V3NMVTN3NXR0dTJ3dzJiR3E2Rk9UcW51eUxyWV9QMTV5anlZalFocEo0d0RoWUJRWklzN1E?oc=5",
+        "date": "2026-04-01",
+        "source": "Stock Titan"
+      },
       {
         "title": "",
         "url": "",
@@ -3971,8 +4145,8 @@
         "source": "Yahoo Finance"
       }
     ],
-    "news_count": 1,
-    "updated": "2026-04-02T12:41:01.950856"
+    "news_count": 4,
+    "updated": "2026-04-03T15:49:27.858109"
   },
   "ARES": {
     "summary": "```json\n{\n  \"thesis\": \"ARES는 19.5%의 견조한 매출 성장률과 높은 목표가 괴리율(+51.6%)을 보이고 있으나, 사모신용 시장의 역풍과 투자자 환매 제한 조치, 63배가 넘는 높은 P/E 부담으로 인해 보수적인 접근이 필요합니다.\",\n  \"catalysts\": [\n    {\n      \"point\": \"견조한 외형 성장 및 높은 목표가 상향 여력\",\n      \"evidence\": \"매출 성장률 19.5% 달성 및 애널리스트 목표가 대비 +51.6%의 상승 여력 존재 [수치 분석 데이터]\"\n    }\n  ],\n  \"bear_cases\": [\n    {\n      \"point\": \"사모신용 펀드 유동성 위기 및 환매 제한\",\n      \"evidence\": \"투자자들의 자금 회수 요청 증가로 인해 환매를 제한함 [Business Insider, 2026-03-24]\"\n    },\n    {\n      \"point\": \"거시경제 불안 및 기관 투자자 이탈 징후\",\n      \"evidence\": \"Vanguard 리밸런싱 과정에서 ARES 보유량 0주 보고 [Stock Titan, 2026-03-26] 및 VIX 27.44의 공포 장세 [Macro Context]\"\n    },\n    {\n      \"point\": \"가치평가(Valuation) 부담\",\n      \"evidence\": \"현재 P/E가 63.11배로 거시경제 금리(10년물 4.42%)를 고려할 때 밸류에이션 축소(Multiple Contraction) 리스크 상존 [수치 분석 데이터]\"\n    }\n  ],\n  \"data_conflicts\": [\n    \"애널리스트 목표가 대비 상승 여력은 +51.6%로 매우 높으나, 최근 뉴스 센티먼트(환매 제한, 사모신용 역풍 지속, 주요 기관 지분 축소)는 극도로 부정적임.\"\n  ],\n  \"key_metrics\": {\n    \"pe\": 63.11,\n    \"growth\": 19.5,\n    \"rsi\": 43.4,\n    \"inst_pct\": 89.3\n  },\n  \"recommendation\": \"HOLD\",\n  \"confidence\": 70\n}\n```",

@@ -8,7 +8,18 @@
     "catalysts": [],
     "risk": "",
     "citations": [],
-    "analyzed_at": "2026-04-03T04:59:18.095529"
+    "analyzed_at": "2026-04-03T15:48:54.398389"
+  },
+  {
+    "ticker": "LNT",
+    "news_score": 0,
+    "sentiment": "neutral",
+    "reason": "뉴스 없음",
+    "action": "HOLD",
+    "catalysts": [],
+    "risk": "",
+    "citations": [],
+    "analyzed_at": "2026-04-03T15:48:55.410207"
   },
   {
     "ticker": "T",
@@ -19,10 +30,10 @@
     "catalysts": [],
     "risk": "",
     "citations": [],
-    "analyzed_at": "2026-04-03T04:59:19.103095"
+    "analyzed_at": "2026-04-03T15:48:56.428327"
   },
   {
-    "ticker": "AMZN",
+    "ticker": "AXP",
     "news_score": 0,
     "sentiment": "neutral",
     "reason": "뉴스 없음",
@@ -30,7 +41,7 @@
     "catalysts": [],
     "risk": "",
     "citations": [],
-    "analyzed_at": "2026-04-03T04:59:20.115791"
+    "analyzed_at": "2026-04-03T15:48:57.440929"
   },
   {
     "ticker": "ACGL",
@@ -41,17 +52,6 @@
     "catalysts": [],
     "risk": "",
     "citations": [],
-    "analyzed_at": "2026-04-03T04:59:21.132687"
-  },
-  {
-    "ticker": "APO",
-    "news_score": 0,
-    "sentiment": "neutral",
-    "reason": "뉴스 없음",
-    "action": "HOLD",
-    "catalysts": [],
-    "risk": "",
-    "citations": [],
-    "analyzed_at": "2026-04-03T04:59:22.151579"
+    "analyzed_at": "2026-04-03T15:48:58.452098"
   }
 ]

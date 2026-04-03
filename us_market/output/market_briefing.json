@@ -1,17 +1,26 @@
 {
-  "timestamp": "2026-04-03T04:59:24.027990",
+  "timestamp": "2026-04-03T15:49:00.507887",
   "version": "2.0",
   "market_data": {
-    "timestamp": "2026-04-03T04:59:24.027996",
+    "timestamp": "2026-04-03T15:49:00.507893",
     "indices": {
+      "SPY": {
+        "name": "S&P 500",
+        "price": 655.83,
+        "change": 0.09,
+        "prev_close": 655.24,
+        "high_52w": 695.94,
+        "low_52w": 476.34,
+        "pct_from_high": -5.76
+      },
       "QQQ": {
         "name": "NASDAQ 100",
-        "price": 584.9,
-        "change": 0.1,
+        "price": 584.98,
+        "change": 0.11,
         "prev_close": 584.31,
         "high_52w": 635.8,
         "low_52w": 400.45,
-        "pct_from_high": -8.01
+        "pct_from_high": -7.99
       },
       "DIA": {
         "name": "Dow Jones",
@@ -24,41 +33,41 @@
       },
       "IWM": {
         "name": "Russell 2000",
-        "price": 251.35,
-        "change": 0.72,
+        "price": 251.29,
+        "change": 0.69,
         "prev_close": 249.56,
         "high_52w": 271.12,
         "low_52w": 169.9,
-        "pct_from_high": -7.29
+        "pct_from_high": -7.31
       }
     },
     "futures": {
       "ES=F": {
         "name": "S&P 500 Futures",
-        "price": 6610.0,
-        "change": -0.12,
-        "prev_close": 6617.75,
+        "price": 6606.75,
+        "change": -0.23,
+        "prev_close": 6622.25,
         "high_52w": 7043.0,
         "low_52w": 4832.0,
-        "pct_from_high": -6.15
+        "pct_from_high": -6.19
       },
       "NQ=F": {
         "name": "NASDAQ Futures",
-        "price": 24151.25,
-        "change": -0.18,
-        "prev_close": 24194.75,
+        "price": 24154.5,
+        "change": -0.26,
+        "prev_close": 24218.0,
         "high_52w": 26399.0,
         "low_52w": 16460.0,
-        "pct_from_high": -8.51
+        "pct_from_high": -8.5
       },
       "YM=F": {
         "name": "Dow Futures",
-        "price": 46680.0,
-        "change": -0.27,
-        "prev_close": 46806.0,
+        "price": 46632.0,
+        "change": -0.21,
+        "prev_close": 46732.0,
         "high_52w": 50611.0,
         "low_52w": 36708.0,
-        "pct_from_high": -7.77
+        "pct_from_high": -7.86
       }
     },
     "bonds": {
@@ -93,111 +102,125 @@
     "currencies": {
       "DX-Y.NYB": {
         "name": "Dollar Index",
-        "price": 100.03,
-        "change": 0.38,
-        "prev_close": 99.65,
-        "high_52w": 104.31,
+        "price": 100.04,
+        "change": 0.01,
+        "prev_close": 100.03,
+        "high_52w": 103.54,
         "low_52w": 95.55,
-        "pct_from_high": -4.1
+        "pct_from_high": -3.38
       },
       "USDKRW=X": {
         "name": "USD/KRW",
-        "price": 1509.86,
-        "change": 0.43,
-        "prev_close": 1503.33,
+        "price": 1506.03,
+        "change": -0.4,
+        "prev_close": 1512.09,
         "high_52w": 1536.82,
         "low_52w": 1322.42,
-        "pct_from_high": -1.75
+        "pct_from_high": -2.0
       },
       "USDJPY=X": {
         "name": "USD/JPY",
-        "price": 159.67,
-        "change": 0.69,
-        "prev_close": 158.58,
+        "price": 159.62,
+        "change": 0.58,
+        "prev_close": 158.69,
         "high_52w": 160.23,
         "low_52w": 139.89,
-        "pct_from_high": -0.35
+        "pct_from_high": -0.38
       },
       "EURUSD=X": {
         "name": "EUR/USD",
         "price": 1.15,
-        "change": -0.31,
+        "change": -0.41,
         "prev_close": 1.16,
         "high_52w": 1.2,
-        "low_52w": 1.08,
-        "pct_from_high": -4.04
+        "low_52w": 1.09,
+        "pct_from_high": -3.99
       }
     },
     "commodities": {
       "GC=F": {
         "name": "Gold",
-        "price": 4695.0,
-        "change": -1.84,
+        "price": 4651.5,
+        "change": -2.75,
         "prev_close": 4783.2,
         "high_52w": 5586.2,
         "low_52w": 2949.7,
-        "pct_from_high": -15.95
+        "pct_from_high": -16.73
       },
       "CL=F": {
         "name": "Crude Oil",
-        "price": 111.37,
-        "change": 11.24,
+        "price": 111.54,
+        "change": 11.41,
         "prev_close": 100.12,
         "high_52w": 119.48,
         "low_52w": 54.98,
-        "pct_from_high": -6.79
+        "pct_from_high": -6.65
       },
       "BTC-USD": {
         "name": "Bitcoin",
-        "price": 67024.75,
-        "change": -1.55,
-        "prev_close": 68078.55,
+        "price": 66747.12,
+        "change": -0.21,
+        "prev_close": 66888.57,
         "high_52w": 126198.07,
         "low_52w": 60074.2,
-        "pct_from_high": -46.89
+        "pct_from_high": -47.11
       }
     },
     "korean_indices": {
       "^KS11": {
         "name": "KOSPI",
-        "price": 5478.7,
-        "change": 8.44,
-        "prev_close": 5052.46,
+        "price": 5387.57,
+        "change": 2.93,
+        "prev_close": 5234.05,
         "high_52w": 6347.41,
         "low_52w": 2284.72,
-        "pct_from_high": -13.69
+        "pct_from_high": -15.12
       },
       "^KQ11": {
         "name": "KOSDAQ",
-        "price": 1116.18,
-        "change": 6.06,
-        "prev_close": 1052.39,
+        "price": 1064.57,
+        "change": 0.78,
+        "prev_close": 1056.34,
         "high_52w": 1215.67,
         "low_52w": 637.55,
-        "pct_from_high": -8.18
+        "pct_from_high": -12.43
       }
     },
     "vix": {
-      "value": 24.73,
-      "change": 0.77,
+      "value": 23.87,
+      "change": -2.73,
       "level": "Neutral",
       "color": "#FFC107"
     }
   },
   "vix": {
-    "value": 24.73,
-    "change": 0.77,
+    "value": 23.87,
+    "change": -2.73,
     "level": "Neutral",
     "color": "#FFC107"
   },
   "fear_greed": {
-    "score": 50,
-    "level": "Neutral",
-    "color": "#FFC107",
+    "score": 62,
+    "level": "Greed",
+    "color": "#4CAF50",
     "components": {
       "vix": {
-        "value": 24.73,
-        "score": 51
+        "value": 23.87,
+        "score": 54
+      },
+      "momentum": {
+        "pct_from_high": -5.76,
+        "score": 71
+      },
+      "breadth": {
+        "spy_chg": 0.09,
+        "iwm_chg": 0.69,
+        "score": 56
+      },
+      "safe_haven": {
+        "stock_chg": 0.09,
+        "gold_chg": -2.75,
+        "score": 78
       },
       "junk_bond": {
         "yield_change": -0.14,
@@ -220,8 +243,8 @@
     },
     "risk": {
       "risk_level": "Elevated",
-      "var_95_5d": 2057.34,
-      "cvar_95_5d": 2505.3
+      "var_95_5d": 2057.66,
+      "cvar_95_5d": 2579.96
     },
     "top_picks": [
       {
@@ -319,8 +342,8 @@
       "alpha": "N/A"
     },
     "decision_signal": {
-      "score": 55,
-      "action": "BUY",
+      "score": 45,
+      "action": "HOLD",
       "timing": "SELECTIVE",
       "components": {
         "market_gate": {
@@ -340,8 +363,8 @@
           "contribution": 0
         },
         "sector_phase": {
-          "phase": "Mid Cycle",
-          "contribution": 5
+          "phase": "Late Cycle",
+          "contribution": -5
         }
       }
     }
@@ -352,7 +375,7 @@
   },
   "smart_money": {
     "top_picks": {
-      "timestamp": "2026-04-03T04:58:05.548935",
+      "timestamp": "2026-04-03T05:00:19.600580",
       "picks": [
         {
           "rank": 1,
