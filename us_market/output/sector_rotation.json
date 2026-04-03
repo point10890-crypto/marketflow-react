@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-04-03T15:40:40.227286",
+  "timestamp": "2026-04-03T16:57:10.091399",
   "performance_matrix": {
     "XLK": {
       "1w": -0.56,
@@ -356,11 +356,11 @@
         "recent_rs": -0.33
       }
     ],
-    "regime_change_alert": true
+    "regime_change_alert": false
   },
   "regime_change": {
-    "regime_change_alert": true,
-    "previous_phase": "Mid Cycle",
+    "regime_change_alert": false,
+    "previous_phase": "Late Cycle",
     "current_phase": "Late Cycle"
   },
   "rotation_clock": {

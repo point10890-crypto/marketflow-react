@@ -51,10 +51,10 @@
     },
     {
       "name": "Bitcoin",
-      "price": "66,846.18",
-      "change": "-42.39",
-      "change_pct": -0.06337499037870468,
-      "color": "red"
+      "price": "67,027.15",
+      "change": "+138.58",
+      "change_pct": 0.2071775855763848,
+      "color": "green"
     },
     {
       "name": "10Y Treasury",
@@ -65,18 +65,18 @@
     },
     {
       "name": "Dollar Index",
-      "price": "99.99",
-      "change": "-0.04",
-      "change_pct": -0.0409880702901931,
+      "price": "99.96",
+      "change": "-0.07",
+      "change_pct": -0.06498294731530428,
       "color": "red"
     },
     {
       "name": "USD/KRW",
-      "price": "1,506.71",
-      "change": "-5.38",
-      "change_pct": -0.35579925827322284,
+      "price": "1,507.86",
+      "change": "-4.23",
+      "change_pct": -0.27974396790968886,
       "color": "red"
     }
   ],
-  "timestamp": "2026-04-03T16:25:46.119592"
+  "timestamp": "2026-04-03T17:01:59.179735"
 }

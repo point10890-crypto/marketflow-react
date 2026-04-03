@@ -1,19 +1,19 @@
 {
-  "timestamp": "2026-04-03T15:41:27.585957",
+  "timestamp": "2026-04-03T16:57:15.795147",
   "portfolio_summary": {
     "total_picks": 15,
-    "portfolio_var_95_5d": -2057.66,
-    "portfolio_cvar_95_5d": -2579.96,
+    "portfolio_var_95_5d": -1920.7,
+    "portfolio_cvar_95_5d": -2377.54,
     "risk_level": "Elevated",
     "var_details": {
-      "var_pct": -2.06,
-      "var_dollar": -2057.66,
-      "cvar_pct": -2.58,
-      "cvar_dollar": -2579.96,
-      "t_var_dollar": -2038.37,
+      "var_pct": -1.92,
+      "var_dollar": -1920.7,
+      "cvar_pct": -2.38,
+      "cvar_dollar": -2377.54,
+      "t_var_dollar": -1827.68,
       "confidence": 0.95,
       "horizon_days": 5,
-      "degrees_of_freedom": 6.46
+      "degrees_of_freedom": 7.67
     }
   },
   "drawdowns": {
@@ -24,33 +24,19 @@
       "max_dd": -15.74,
       "from_peak_days": 8
     },
+    "LNT": {
+      "current_price": 72.85,
+      "peak_price": 73.03,
+      "current_dd": -0.25,
+      "max_dd": -5.92,
+      "from_peak_days": 17
+    },
     "T": {
       "current_price": 28.33,
       "peak_price": 29.1,
       "current_dd": -2.65,
       "max_dd": -6.28,
       "from_peak_days": 6
-    },
-    "AMZN": {
-      "current_price": 209.77,
-      "peak_price": 247.38,
-      "current_dd": -15.2,
-      "max_dd": -19.64,
-      "from_peak_days": 83
-    },
-    "ACGL": {
-      "current_price": 96.74,
-      "peak_price": 101.98,
-      "current_dd": -5.14,
-      "max_dd": -9.62,
-      "from_peak_days": 56
-    },
-    "APO": {
-      "current_price": 107.04,
-      "peak_price": 152.08,
-      "current_dd": -29.62,
-      "max_dd": -34.05,
-      "from_peak_days": 86
     },
     "AXP": {
       "current_price": 300.18,
@@ -59,26 +45,12 @@
       "max_dd": -23.8,
       "from_peak_days": 86
     },
-    "AIZ": {
-      "current_price": 218.26,
-      "peak_price": 242.33,
-      "current_dd": -9.93,
-      "max_dd": -12.57,
-      "from_peak_days": 55
-    },
-    "AEE": {
-      "current_price": 111.68,
-      "peak_price": 112.86,
-      "current_dd": -1.05,
-      "max_dd": -6.03,
-      "from_peak_days": 17
-    },
-    "LNT": {
-      "current_price": 72.85,
-      "peak_price": 73.03,
-      "current_dd": -0.25,
-      "max_dd": -5.92,
-      "from_peak_days": 17
+    "ACGL": {
+      "current_price": 96.74,
+      "peak_price": 101.98,
+      "current_dd": -5.14,
+      "max_dd": -9.62,
+      "from_peak_days": 56
     },
     "AEP": {
       "current_price": 132.68,
@@ -87,12 +59,19 @@
       "max_dd": -6.33,
       "from_peak_days": 17
     },
-    "APD": {
-      "current_price": 293.55,
-      "peak_price": 293.55,
-      "current_dd": 0.0,
-      "max_dd": -7.15,
-      "from_peak_days": 0
+    "AEE": {
+      "current_price": 111.68,
+      "peak_price": 112.86,
+      "current_dd": -1.05,
+      "max_dd": -6.03,
+      "from_peak_days": 17
+    },
+    "AIZ": {
+      "current_price": 218.26,
+      "peak_price": 242.33,
+      "current_dd": -9.93,
+      "max_dd": -12.57,
+      "from_peak_days": 55
     },
     "ALB": {
       "current_price": 178.09,
@@ -101,19 +80,26 @@
       "max_dd": -19.8,
       "from_peak_days": 36
     },
-    "AAPL": {
-      "current_price": 255.92,
-      "peak_price": 277.86,
-      "current_dd": -7.9,
-      "max_dd": -11.24,
-      "from_peak_days": 55
+    "APD": {
+      "current_price": 293.55,
+      "peak_price": 293.55,
+      "current_dd": 0.0,
+      "max_dd": -7.15,
+      "from_peak_days": 0
     },
-    "ANET": {
-      "current_price": 126.68,
-      "peak_price": 150.15,
-      "current_dd": -15.63,
-      "max_dd": -22.66,
-      "from_peak_days": 64
+    "APO": {
+      "current_price": 107.04,
+      "peak_price": 152.08,
+      "current_dd": -29.62,
+      "max_dd": -34.05,
+      "from_peak_days": 86
+    },
+    "AMZN": {
+      "current_price": 209.77,
+      "peak_price": 247.38,
+      "current_dd": -15.2,
+      "max_dd": -19.64,
+      "from_peak_days": 83
     },
     "AMD": {
       "current_price": 217.5,
@@ -121,6 +107,20 @@
       "current_dd": -16.24,
       "max_dd": -26.47,
       "from_peak_days": 69
+    },
+    "AAPL": {
+      "current_price": 255.92,
+      "peak_price": 277.86,
+      "current_dd": -7.9,
+      "max_dd": -11.24,
+      "from_peak_days": 55
+    },
+    "AMAT": {
+      "current_price": 348.47,
+      "peak_price": 394.95,
+      "current_dd": -11.77,
+      "max_dd": -18.19,
+      "from_peak_days": 36
     }
   },
   "concentration": {
@@ -179,17 +179,17 @@
     {
       "alert_type": "drawdown",
       "severity": "critical",
-      "ticker": "APO",
-      "message": "APO is in critical drawdown: -29.6% from peak",
-      "value": -29.62,
+      "ticker": "AXP",
+      "message": "AXP is in critical drawdown: -21.5% from peak",
+      "value": -21.49,
       "threshold": -20.0
     },
     {
       "alert_type": "drawdown",
       "severity": "critical",
-      "ticker": "AXP",
-      "message": "AXP is in critical drawdown: -21.5% from peak",
-      "value": -21.49,
+      "ticker": "APO",
+      "message": "APO is in critical drawdown: -29.6% from peak",
+      "value": -29.62,
       "threshold": -20.0
     },
     {
@@ -203,17 +203,17 @@
     {
       "alert_type": "drawdown",
       "severity": "warning",
-      "ticker": "ANET",
-      "message": "ANET drawdown warning: -15.6% from peak",
-      "value": -15.63,
+      "ticker": "AMD",
+      "message": "AMD drawdown warning: -16.2% from peak",
+      "value": -16.24,
       "threshold": -10.0
     },
     {
       "alert_type": "drawdown",
       "severity": "warning",
-      "ticker": "AMD",
-      "message": "AMD drawdown warning: -16.2% from peak",
-      "value": -16.24,
+      "ticker": "AMAT",
+      "message": "AMAT drawdown warning: -11.8% from peak",
+      "value": -11.77,
       "threshold": -10.0
     },
     {
