@@ -1,8 +1,8 @@
 {
-  "timestamp": "2026-04-03T12:00:28.983624",
+  "timestamp": "2026-04-03T12:01:08.545082",
   "predictions": {
     "BTC": {
-      "current_price": 66488.78,
+      "current_price": 66470.02,
       "bullish_probability": 21.4,
       "bearish_probability": 78.6,
       "confidence_level": "High",
@@ -10,7 +10,7 @@
         {
           "feature": "btc_return_20d",
           "impact": 0.1426,
-          "value": -6.64,
+          "value": -6.66,
           "direction": "bearish"
         },
         {
@@ -22,7 +22,7 @@
         {
           "feature": "eth_btc_relative_5d",
           "impact": 0.1211,
-          "value": 2.66,
+          "value": 2.67,
           "direction": "bullish"
         },
         {
@@ -34,7 +34,7 @@
         {
           "feature": "btc_return_5d",
           "impact": 0.1089,
-          "value": 0.81,
+          "value": 0.78,
           "direction": "bullish"
         }
       ]
