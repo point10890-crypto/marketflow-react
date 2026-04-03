@@ -1,0 +1,75 @@
+{
+  "name": "애드바이오텍",
+  "ticker": "179530.KQ",
+  "result": "데이터 없음",
+  "date": "2026-04-03 12:56:34",
+  "elapsed": 2.2,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 3120.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 3120.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "ADBIOTECH",
+    "sector": "Healthcare",
+    "industry": "Biotechnology",
+    "market_cap": 39487680512,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": null,
+    "beta": 0.295,
+    "fifty_two_week_high": 5450.0,
+    "fifty_two_week_low": 1300.0,
+    "revenue": 12897074176,
+    "profit_margin": -0.25618,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 2968036970
+    },
+    {
+      "date": "2025-09",
+      "value": 3626268270
+    },
+    {
+      "date": "2025-06",
+      "value": 2848435310
+    },
+    {
+      "date": "2025-03",
+      "value": 3454333890
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 6950096650
+    },
+    {
+      "date": "2025-09",
+      "value": -4804595690
+    },
+    {
+      "date": "2025-06",
+      "value": -5081285170
+    },
+    {
+      "date": "2025-03",
+      "value": -368233780
+    }
+  ],
+  "news": []
+}

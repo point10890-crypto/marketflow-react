@@ -1,0 +1,81 @@
+{
+  "name": "서부T&D",
+  "ticker": "006730.KQ",
+  "result": "적극 매수",
+  "date": "2026-04-03 12:58:16",
+  "elapsed": 2.1,
+  "consensus_score": 4.33,
+  "analyst_count": 3,
+  "recommendation_detail": {
+    "strongBuy": 1,
+    "buy": 2,
+    "hold": 0,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 13040.0,
+    "high": 21000.0,
+    "low": 13000.0,
+    "mean": 18000.0,
+    "median": 20000.0
+  },
+  "current_price": 13040.0,
+  "upside_potential": 38.0,
+  "key_stats": {
+    "name": "Seobu T&D",
+    "sector": "Consumer Cyclical",
+    "industry": "Lodging",
+    "market_cap": 830227480576,
+    "pe_ratio": null,
+    "forward_pe": 24.148148,
+    "dividend_yield": 0.77,
+    "beta": 0.788,
+    "fifty_two_week_high": 20450.0,
+    "fifty_two_week_low": 5200.0,
+    "revenue": 248329961472,
+    "profit_margin": 0.31866,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 80683341920
+    },
+    {
+      "date": "2025-09",
+      "value": 70051381550
+    },
+    {
+      "date": "2025-06",
+      "value": 54612507280
+    },
+    {
+      "date": "2025-03",
+      "value": 46131855590
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 55875182170
+    },
+    {
+      "date": "2025-09",
+      "value": 32413034140
+    },
+    {
+      "date": "2025-06",
+      "value": -5927649270
+    },
+    {
+      "date": "2025-03",
+      "value": -3226990710
+    }
+  ],
+  "news": []
+}

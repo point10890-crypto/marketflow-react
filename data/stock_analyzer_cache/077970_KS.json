@@ -1,0 +1,83 @@
+{
+  "name": "STX엔진",
+  "ticker": "077970.KS",
+  "result": "데이터 없음",
+  "date": "2026-04-03 13:30:22",
+  "elapsed": 2.9,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 36200.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 36200.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "STXEngine",
+    "sector": "Industrials",
+    "industry": "Specialty Industrial Machinery",
+    "market_cap": 1453023428608,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": null,
+    "beta": 0.599,
+    "fifty_two_week_high": 49800.0,
+    "fifty_two_week_low": 18310.0,
+    "revenue": 762635091968,
+    "profit_margin": 0.080019996,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 192065775360
+    },
+    {
+      "date": "2025-06",
+      "value": 213655135460
+    },
+    {
+      "date": "2025-03",
+      "value": 139139478660
+    },
+    {
+      "date": "2024-12",
+      "value": 217774682070
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 14049844710
+    },
+    {
+      "date": "2025-06",
+      "value": 29714152570
+    },
+    {
+      "date": "2025-03",
+      "value": 10546665310
+    },
+    {
+      "date": "2024-12",
+      "value": 6713756270
+    }
+  ],
+  "news": [
+    {
+      "title": "Undiscovered Gems in Asia with Promising Potential August 2025",
+      "summary": "As global markets react to potential rate cuts and shifting economic conditions, the Asian market has shown resilience, with Chinese indices reaching new highs amid stabilizing trade ties. In this dyn",
+      "url": "https://finance.yahoo.com/news/undiscovered-gems-asia-promising-potential-043259588.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2025-08-29T04:32:59Z"
+    }
+  ]
+}
