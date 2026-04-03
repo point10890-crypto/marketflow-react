@@ -1,35 +1,35 @@
 {
-  "name": "제닉",
-  "ticker": "123330.KQ",
+  "name": "흥아해운",
+  "ticker": "003280.KS",
   "result": "데이터 없음",
-  "date": "2026-04-03 21:14:05",
-  "elapsed": 2.0,
+  "date": "2026-04-03 22:07:25",
+  "elapsed": 1.6,
   "consensus_score": null,
   "analyst_count": 0,
   "recommendation_detail": null,
   "recommendation_period": null,
   "price_targets": {
-    "current": 28400.0,
+    "current": 4090.0,
     "high": null,
     "low": null,
     "mean": null,
     "median": null
   },
-  "current_price": 28400.0,
+  "current_price": 4090.0,
   "upside_potential": null,
   "key_stats": {
-    "name": "Genic",
-    "sector": "Consumer Defensive",
-    "industry": "Household & Personal Products",
-    "market_cap": 222221074432,
+    "name": "HeungaShipping",
+    "sector": "Industrials",
+    "industry": "Marine Shipping",
+    "market_cap": 982683222016,
     "pe_ratio": null,
     "forward_pe": null,
     "dividend_yield": null,
-    "beta": 0.888,
-    "fifty_two_week_high": 44100.0,
-    "fifty_two_week_low": 15570.0,
-    "revenue": 78198464512,
-    "profit_margin": 0.24152,
+    "beta": -0.913,
+    "fifty_two_week_high": 4795.0,
+    "fifty_two_week_low": 1414.0,
+    "revenue": 180812759040,
+    "profit_margin": 0.16919,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
@@ -38,37 +38,37 @@
   "revenue_quarters": [
     {
       "date": "2025-12",
-      "value": 12166097430
+      "value": 45038878470
     },
     {
       "date": "2025-09",
-      "value": 23555447940
+      "value": 41314490380
     },
     {
       "date": "2025-06",
-      "value": 24648863700
+      "value": 48688619280
     },
     {
       "date": "2025-03",
-      "value": 17828052050
+      "value": 45770765930
     }
   ],
   "net_income_quarters": [
     {
       "date": "2025-12",
-      "value": 6093570640
+      "value": 20882073410
     },
     {
       "date": "2025-09",
-      "value": 5277719420
+      "value": 9745720
     },
     {
       "date": "2025-06",
-      "value": 3999656410
+      "value": 6563244300
     },
     {
       "date": "2025-03",
-      "value": 3515624300
+      "value": 3135776620
     }
   ],
   "news": []
