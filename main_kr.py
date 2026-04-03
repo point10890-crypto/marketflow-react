@@ -1,6 +1,6 @@
 """
 Gemini Vision 한국 주식 차트 분석기
-코스피/코스닥 상위 100개 종목의 캔들차트를 자동 생성 → Gemini Vision API로 기술적 분석
+코스피/코스닥 상위 100개 종목의 캔들차트를 자동 생성 → Gemini/OpenAI Vision API로 기술적 분석
 """
 
 import os
@@ -8,6 +8,7 @@ import sys
 import re
 import json
 import asyncio
+import base64
 import logging
 from concurrent.futures import ThreadPoolExecutor
 
@@ -29,10 +30,11 @@ logger = logging.getLogger(__name__)
 # ── 환경변수 ──
 load_dotenv()
 API_KEY = os.getenv('GOOGLE_API_KEY') or os.getenv('GEMINI_API_KEY', '')
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', '')
 MODEL = os.getenv('GEMINI_MODEL', 'gemini-2.5-flash')
 
-if not API_KEY:
-    logger.error("GOOGLE_API_KEY 또는 GEMINI_API_KEY가 .env에 설정되지 않았습니다.")
+if not API_KEY and not OPENAI_API_KEY:
+    logger.error("GEMINI_API_KEY, OPENAI_API_KEY 둘 다 .env에 없습니다.")
     sys.exit(1)
 
 # ── 한글 폰트 ──
@@ -270,12 +272,66 @@ def _call_gemini(client: genai.Client, ticker: str, name: str, image_path: str) 
         return None
 
 
+def _call_openai_vision(ticker: str, name: str, image_path: str) -> dict | None:
+    """OpenAI Vision 폴백 — Gemini 실패 시 차트 분석"""
+    try:
+        from openai import OpenAI
+        client = OpenAI(api_key=OPENAI_API_KEY)
+
+        with open(image_path, 'rb') as f:
+            image_data = f.read()
+        b64_image = base64.b64encode(image_data).decode('utf-8')
+
+        prompt = ANALYSIS_PROMPT.format(name=name, ticker=ticker)
+
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": "You are a professional technical chart analyst. Respond only in valid JSON."},
+                {"role": "user", "content": [
+                    {"type": "text", "text": prompt},
+                    {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{b64_image}", "detail": "high"}},
+                ]},
+            ],
+            max_tokens=4096,
+            temperature=0.3,
+        )
+
+        text = response.choices[0].message.content.strip()
+        data = _extract_json(text)
+
+        if data is None:
+            logger.error(f"[OPENAI PARSE FAIL] {name}({ticker}): 응답 파싱 실패 — {text[:200]}")
+
+        return data
+    except Exception as e:
+        logger.error(f"[OPENAI ERROR] {name}({ticker}): {e}")
+        return None
+
+
+# Gemini 세션 내 가용 상태 추적
+_gemini_available = True
+
+
 async def analyze_chart(client: genai.Client, ticker: str, name: str,
                         image_path: str, semaphore: asyncio.Semaphore) -> dict | None:
-    """비동기 래핑: Gemini Vision 차트 분석"""
+    """비동기 래핑: Gemini Vision → OpenAI Vision 폴백"""
+    global _gemini_available
     async with semaphore:
         loop = asyncio.get_event_loop()
-        result = await loop.run_in_executor(_executor, _call_gemini, client, ticker, name, image_path)
+        result = None
+
+        # Gemini 시도 (이미 실패 확인되면 스킵)
+        if _gemini_available and API_KEY:
+            result = await loop.run_in_executor(_executor, _call_gemini, client, ticker, name, image_path)
+            if result is None and OPENAI_API_KEY:
+                _gemini_available = False
+                logger.warning(f"[FALLBACK] Gemini 실패 → OpenAI Vision 전환: {name}({ticker})")
+
+        # OpenAI Vision 폴백
+        if result is None and OPENAI_API_KEY:
+            result = await loop.run_in_executor(_executor, _call_openai_vision, ticker, name, image_path)
+
         if result:
             market = '코스피' if ticker.endswith('.KS') else '코스닥'
             code = ticker.split('.')[0]

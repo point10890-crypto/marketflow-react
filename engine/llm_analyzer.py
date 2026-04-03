@@ -1,7 +1,7 @@
 """
-🤖 LLM 뉴스 분석 시스템 (Perplexity + Gemini + Claude + OpenAI)
-실시간 웹 검색과 고도화된 AI 분석을 결합하여 종목별 호재 점수를 산출합니다.
-Claude AI 독립 종목 선별 기능을 포함합니다.
+🤖 LLM 뉴스 분석 시스템 (Gemini Grounding + Claude + OpenAI + xAI Grok)
+Gemini Google Search Grounding으로 실시간 웹 검색+분석을 단일 호출로 수행합니다.
+Multi-AI 폴백 체인과 독립 종목 선별 기능을 포함합니다.
 """
 
 import os
@@ -19,10 +19,11 @@ load_dotenv()
 
 # API 상태 추적 (Rate Limit 관리)
 API_STATUS = {
-    'perplexity': {'available': True, 'last_error': None, 'error_count': 0},
+    'gemini_grounding': {'available': True, 'last_error': None, 'error_count': 0},
     'gemini': {'available': True, 'last_error': None, 'error_count': 0},
     'claude': {'available': True, 'last_error': None, 'error_count': 0},
-    'openai': {'available': True, 'last_error': None, 'error_count': 0}
+    'openai': {'available': True, 'last_error': None, 'error_count': 0},
+    'xai': {'available': True, 'last_error': None, 'error_count': 0}
 }
 
 # Lock to protect API_STATUS mutations from async coroutines
@@ -41,62 +42,115 @@ def reset_api_status():
     for key in API_STATUS:
         API_STATUS[key] = {'available': True, 'last_error': None, 'error_count': 0}
 
-class PerplexityClient:
-    """Perplexity Sonar API를 이용한 실시간 뉴스 검색"""
-    
-    def __init__(self, api_key: str = None):
-        self.api_key = api_key or os.getenv("PERPLEXITY_API_KEY")
-        self.base_url = "https://api.perplexity.ai/chat/completions"
-        self.model = "sonar"
-        
-    async def search_stock_news(self, stock_name: str) -> Dict:
-        """최근 24시간 이내의 종목 관련 뉴스 검색 및 요약"""
-        if not self.api_key:
-            return {"news_summary": "", "citations": [], "error": "No API Key"}
+class GeminiGroundingClient:
+    """Gemini + Google Search Grounding (REST API) — 실시간 검색+분석 통합"""
 
-        if not API_STATUS['perplexity']['available']:
-            return {"news_summary": "", "citations": [], "error": f"Rate Limited: {API_STATUS['perplexity']['last_error']}"}
-            
-        headers = {
-            "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json"
-        }
-        
-        query = f"'{stock_name}' 종목에 대한 최신 뉴스와 시장 동향을 검색해주세요. 1. 최근 24시간 이내의 주요 뉴스(호재/악재), 2. 실적/수주/계약 정보, 3. 관련 테마 및 산업 동향을 포함해 답변해주세요."
-        
+    def __init__(self, api_key: str = None):
+        self.api_key = api_key or os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
+        self.model_name = "gemini-2.0-flash"
+        self.base_url = f"https://generativelanguage.googleapis.com/v1beta/models/{self.model_name}:generateContent"
+
+    async def search_and_analyze(self, stock_name: str, traditional_news: List[Dict] = None, dart_text: str = "") -> Dict:
+        """Google Search Grounding으로 실시간 뉴스 검색 + 분석을 단일 호출로 수행"""
+        if not self.api_key:
+            return {"score": 0, "reason": "No Gemini API Key", "themes": [], "source": "none"}
+
+        if not API_STATUS['gemini_grounding']['available']:
+            return {"score": 0, "reason": f"Rate Limited: {API_STATUS['gemini_grounding']['last_error']}", "themes": [], "source": "none"}
+
+        trad_text = ""
+        if traditional_news:
+            for i, item in enumerate(traditional_news[:5], 1):
+                trad_text += f"[{i}] {item.get('title')} - {item.get('summary', '')[:100]}\n"
+
+        dart_section = ""
+        if dart_text:
+            dart_section = f"\n[공식 공시 정보 (DART 전자공시)]\n{dart_text}\n"
+
+        prompt = f"""당신은 한국 주식 시장 전문 리서치 애널리스트입니다.
+'{stock_name}' 종목에 대해 다음을 수행하세요:
+
+1. Google 검색으로 최근 24시간 이내의 '{stock_name}' 관련 최신 뉴스, 실적/수주/계약 정보, 테마/산업 동향을 검색하세요.
+2. 검색 결과와 아래 추가 정보를 종합 분석하여 호재 강도를 평가하세요.
+
+[기존 뉴스 정보]
+{trad_text}
+{dart_section}
+
+분석 결과를 아래 JSON 형식으로 출력하세요:
+- score: 0~3점 (3:확실한 호재/수주/실적, 2:긍정 기대감, 1:중립, 0:악재/무소식)
+- reason: 분석 핵심 이유 (한 문장)
+- themes: 핵심 투자 테마 1~3개 (리스트 형식)
+- news_summary: 검색된 주요 뉴스 요약 (2~3문장)
+* 공식 공시(DART)가 있으면 뉴스보다 높은 신뢰도로 반영하세요 (자사주취득, 무상증자, 대규모수주 = 3점 수준)
+
+JSON Format: {{"score": 2, "reason": "...", "themes": ["...", "..."], "news_summary": "..."}}"""
+
         payload = {
-            "model": self.model,
-            "messages": [
-                {"role": "system", "content": "당신은 한국 주식 시장 전문 리서치 애널리스트입니다. 사실을 기반으로 명확하고 간결하게 답변하세요."},
-                {"role": "user", "content": query}
-            ],
-            "temperature": 0.2,
-            "max_tokens": 1024,
-            "return_citations": True,
-            "search_recency_filter": "day"
+            "contents": [{"parts": [{"text": prompt}]}],
+            "tools": [{"google_search": {}}],
+            "generationConfig": {"temperature": 0.2, "maxOutputTokens": 1024}
         }
-        
+
         try:
             async with httpx.AsyncClient(timeout=30.0) as client:
-                response = await client.post(self.base_url, headers=headers, json=payload)
+                response = await client.post(
+                    f"{self.base_url}?key={self.api_key}",
+                    json=payload
+                )
                 response.raise_for_status()
-                data = response.json()
-                
-                return {
-                    "news_summary": data["choices"][0]["message"]["content"],
-                    "citations": data.get("citations", []),
-                    "source": "perplexity"
-                }
+                resp_data = response.json()
+
+            # Extract text from response
+            text = ""
+            candidates = resp_data.get("candidates", [])
+            if candidates:
+                parts = candidates[0].get("content", {}).get("parts", [])
+                for part in parts:
+                    if "text" in part:
+                        text += part["text"]
+
+            # Extract grounding citations
+            citations = []
+            if candidates:
+                grounding = candidates[0].get("groundingMetadata", {})
+                for chunk in grounding.get("groundingChunks", []):
+                    web = chunk.get("web", {})
+                    if web.get("uri"):
+                        citations.append(web["uri"])
+
+            text = text.strip()
+            if not text:
+                return {"score": 0, "reason": "Empty response from Gemini Grounding", "themes": [], "source": "none"}
+
+            # Parse JSON from response
+            try:
+                data = json.loads(text)
+            except json.JSONDecodeError:
+                match = re.search(r"\{.*\}", text, re.DOTALL)
+                if match:
+                    data = json.loads(match.group())
+                else:
+                    data = {"score": 0, "reason": f"JSON Decode Failed: {text[:80]}", "themes": []}
+
+            if isinstance(data, list) and len(data) > 0:
+                data = data[0]
+            if not isinstance(data, dict):
+                data = {"score": 0, "reason": "Invalid response format", "themes": []}
+
+            data["source"] = "gemini_grounding"
+            data["citations"] = citations
+            return data
+
         except Exception as e:
             error_msg = str(e).lower()
-            print(f"[ERROR] Perplexity Search Failed: {e}")
+            print(f"[ERROR] Gemini Grounding Failed: {e}")
 
-            # Rate Limit 감지
-            if 'rate' in error_msg or 'limit' in error_msg or '429' in error_msg or 'quota' in error_msg:
-                await _mark_unavailable('perplexity', 'Rate Limit')
-                print("[WARN] Perplexity Rate Limit - 임시 비활성화")
+            if 'rate' in error_msg or 'limit' in error_msg or '429' in error_msg or 'quota' in error_msg or 'resource' in error_msg:
+                await _mark_unavailable('gemini_grounding', 'Rate Limit')
+                print("[WARN] Gemini Grounding Rate Limit - 임시 비활성화")
 
-            return {"news_summary": "", "citations": [], "error": str(e)}
+            return {"score": 0, "reason": f"Grounding Error: {e}", "themes": [], "source": "none"}
 
 class OpenAIAnalyzer:
     """OpenAI GPT를 이용한 뉴스 종합 분석 (Gemini Fallback)"""
@@ -325,92 +379,161 @@ JSON Format: {{"score": 2, "reason": "...", "themes": ["...", "..."]}}"""
             return {"score": 0, "reason": f"Claude Error: {e}", "themes": []}
 
 
-class LLMAnalyzer:
-    """통합 뉴스 분석 오케스트레이터 (Perplexity -> Gemini -> Claude -> OpenAI -> Fallback)
+class XAIAnalyzer:
+    """xAI Grok 기반 뉴스 분석 (OpenAI 호환 API)"""
 
-    4중 API 폴백 시스템:
-    1. Perplexity (실시간 검색) - Rate Limit 시 스킵
-    2. Gemini (분석) - Rate Limit 시 Claude로 폴백
-    3. Claude (분석) - Rate Limit 시 OpenAI로 폴백
-    4. OpenAI (분석) - Rate Limit 시 키워드 분석으로 폴백
+    def __init__(self, api_key: str = None):
+        self.api_key = api_key or os.getenv("XAI_API_KEY")
+        self.model_name = "grok-3-mini-fast"
+        self.client = None
+        if self.api_key:
+            from openai import AsyncOpenAI
+            self.client = AsyncOpenAI(api_key=self.api_key, base_url="https://api.x.ai/v1")
+
+    async def analyze_news(self, stock_name: str, news_context: str, traditional_news: List[Dict] = None, dart_text: str = "") -> Dict:
+        if not self.client:
+            return {"score": 0, "reason": "No xAI Client", "themes": []}
+
+        if not API_STATUS['xai']['available']:
+            return {"score": 0, "reason": f"Rate Limited: {API_STATUS['xai']['last_error']}", "themes": []}
+
+        trad_text = ""
+        if traditional_news:
+            for i, item in enumerate(traditional_news[:5], 1):
+                trad_text += f"[{i}] {item.get('title')} - {item.get('summary', '')[:100]}\n"
+
+        dart_section = ""
+        if dart_text:
+            dart_section = f"\n[공식 공시 정보 (DART 전자공시)]\n{dart_text}\n"
+
+        prompt = f"""당신은 주식 투자 전문가입니다. 다음 '{stock_name}' 종목의 정보를 분석하여 호재 강도와 테마를 추출하세요.
+
+[실시간 검색 결과]
+{news_context}
+
+[기존 뉴스 정보]
+{trad_text}
+{dart_section}
+위 정보를 종합 분석하여 아래 형식을 따르는 JSON 객체로만 출력하세요.
+- score: 0~3점 (3:확실한 호재/수주/실적, 2:긍정 기대감, 1:중립, 0:악재/무소식)
+- reason: 분석 핵심 이유 (한 문장)
+- themes: 핵심 투자 테마 1~3개 (리스트 형식)
+* 공식 공시(DART)가 있으면 뉴스보다 높은 신뢰도로 반영하세요
+
+JSON Format: {{"score": 2, "reason": "...", "themes": ["...", "..."]}}"""
+
+        try:
+            response = await self.client.chat.completions.create(
+                model=self.model_name,
+                messages=[
+                    {"role": "system", "content": "You are a helpful financial analyst. Respond only in JSON."},
+                    {"role": "user", "content": prompt}
+                ],
+                max_tokens=512
+            )
+            content = response.choices[0].message.content.strip()
+            try:
+                return json.loads(content)
+            except json.JSONDecodeError:
+                match = re.search(r"\{.*\}", content, re.DOTALL)
+                if match:
+                    return json.loads(match.group())
+                return {"score": 0, "reason": f"JSON Decode Failed: {content[:50]}", "themes": []}
+        except Exception as e:
+            error_msg = str(e).lower()
+            print(f"[ERROR] xAI Analysis Failed: {e}")
+
+            if 'rate' in error_msg or 'limit' in error_msg or '429' in error_msg or 'quota' in error_msg:
+                await _mark_unavailable('xai', 'Rate Limit')
+                print("[WARN] xAI Rate Limit - 임시 비활성화")
+
+            return {"score": 0, "reason": f"xAI Error: {e}", "themes": []}
+
+
+class LLMAnalyzer:
+    """통합 뉴스 분석 오케스트레이터 (Gemini Grounding -> Claude -> OpenAI -> xAI -> Fallback)
+
+    5중 API 폴백 시스템:
+    1. Gemini + Google Search Grounding (검색+분석 통합) - Rate Limit 시 스킵
+    2. Claude (분석) - Rate Limit 시 OpenAI로 폴백
+    3. OpenAI (분석) - Rate Limit 시 xAI로 폴백
+    4. xAI Grok (분석) - Rate Limit 시 키워드 분석으로 폴백
+    5. Keyword (최종 폴백)
     """
 
     def __init__(self):
-        self.perplexity = PerplexityClient()
+        self.grounding = GeminiGroundingClient()
         self.gemini = GeminiAnalyzer()
         self.claude = ClaudeAnalyzer()
         self.openai = OpenAIAnalyzer()
+        self.xai = XAIAnalyzer()
         # model 속성 추가 (generator.py 호환성)
         self.model = self.gemini.model or self.claude.client or self.openai.client
 
     def get_api_status(self) -> Dict:
         """현재 API 상태 반환"""
         return {
-            'perplexity': 'active' if API_STATUS['perplexity']['available'] else 'rate_limited',
+            'gemini_grounding': 'active' if API_STATUS['gemini_grounding']['available'] else 'rate_limited',
             'gemini': 'active' if API_STATUS['gemini']['available'] else 'rate_limited',
             'claude': 'active' if API_STATUS['claude']['available'] else 'rate_limited',
             'openai': 'active' if API_STATUS['openai']['available'] else 'rate_limited',
+            'xai': 'active' if API_STATUS['xai']['available'] else 'rate_limited',
             'errors': {k: v['error_count'] for k, v in API_STATUS.items()}
         }
 
     async def analyze_news_sentiment(self, stock_name: str, news_items: List[Dict] = None, dart_text: str = "") -> Dict:
-        """뉴스 감성 분석 통합 프로세스 (3중 폴백 시스템) + DART 공시 정보"""
-        news_summary = ""
-        citations = []
-        analysis_source = "none"
-
-        # 1. Perplexity 검색 (실시간 정보) - Rate Limit 시 스킵
-        if API_STATUS['perplexity']['available']:
-            p_res = await self.perplexity.search_stock_news(stock_name)
-            news_summary = p_res.get("news_summary", "")
-            citations = p_res.get("citations", [])
-
-            # Rate Limit 방지
-            if news_summary:
-                await asyncio.sleep(1)
-                analysis_source = "perplexity"
-        else:
-            print(f"[SKIP] Perplexity Rate Limited - {stock_name}")
-
-        # 분석 대상 데이터가 없으면 빠른 종료
-        if not news_summary and not news_items:
-            return self._keyword_fallback(stock_name, [])
-
+        """뉴스 감성 분석 통합 프로세스 (5중 폴백 시스템) + DART 공시 정보"""
         analysis = None
+        citations = []
 
-        # 2. Main Analysis (Gemini Attempt) - Rate Limit 시 스킵
-        if API_STATUS['gemini']['available']:
-            analysis = await self.gemini.analyze_news(stock_name, news_summary, news_items, dart_text)
-            if analysis.get("score") > 0 or "Error" not in analysis.get("reason", ""):
-                analysis["source"] = f"{analysis_source}+gemini" if analysis_source else "gemini_only"
-            else:
-                analysis = None  # Gemini 실패 - OpenAI로 폴백
+        # 1. Gemini + Google Search Grounding (검색+분석 통합)
+        if API_STATUS['gemini_grounding']['available']:
+            result = await self.grounding.search_and_analyze(stock_name, news_items, dart_text)
+            if result.get("score", 0) > 0 or ("Error" not in result.get("reason", "") and "Decode" not in result.get("reason", "")):
+                citations = result.pop("citations", [])
+                analysis = result
+                # Rate Limit 방지
+                await asyncio.sleep(0.5)
         else:
-            print(f"[SKIP] Gemini Rate Limited - {stock_name}")
+            print(f"[SKIP] Gemini Grounding Rate Limited - {stock_name}")
 
-        # 2.5 Claude Fallback (Gemini 실패 시) - Rate Limit 시 스킵
+        # 분석 대상 데이터가 없고 Grounding도 실패하면 빠른 종료 체크
+        news_context = analysis.get("news_summary", "") if analysis else ""
+
+        # 2. Claude Fallback (Grounding 실패 시)
         if analysis is None and API_STATUS['claude']['available']:
-            print(f"[FALLBACK] Gemini Failed for {stock_name}, trying Claude...")
-            analysis = await self.claude.analyze_news(stock_name, news_summary, news_items, dart_text)
-            if analysis.get("score") > 0 or "Error" not in analysis.get("reason", ""):
-                analysis["source"] = f"{analysis_source}+claude" if analysis_source else "claude_only"
+            print(f"[FALLBACK] Gemini Grounding Failed for {stock_name}, trying Claude...")
+            analysis = await self.claude.analyze_news(stock_name, news_context, news_items, dart_text)
+            if analysis.get("score", 0) > 0 or "Error" not in analysis.get("reason", ""):
+                analysis["source"] = "claude_fallback"
             else:
-                analysis = None  # Claude도 실패
+                analysis = None
         elif analysis is None and not API_STATUS['claude']['available']:
             print(f"[SKIP] Claude Rate Limited - {stock_name}")
 
-        # 3. Fallback Analysis (OpenAI Attempt) - Rate Limit 시 스킵
+        # 3. OpenAI Fallback
         if analysis is None and API_STATUS['openai']['available']:
             print(f"[FALLBACK] Claude Failed for {stock_name}, trying OpenAI...")
-            analysis = await self.openai.analyze_news(stock_name, news_summary, news_items, dart_text)
-            if analysis.get("score") > 0 or "Error" not in analysis.get("reason", ""):
-                analysis["source"] = f"{analysis_source}+openai" if analysis_source else "openai_only"
+            analysis = await self.openai.analyze_news(stock_name, news_context, news_items, dart_text)
+            if analysis.get("score", 0) > 0 or "Error" not in analysis.get("reason", ""):
+                analysis["source"] = "openai_fallback"
             else:
-                analysis = None  # OpenAI도 실패
-        elif analysis is None:
+                analysis = None
+        elif analysis is None and not API_STATUS['openai']['available']:
             print(f"[SKIP] OpenAI Rate Limited - {stock_name}")
 
-        # 4. Final Fallback (Keyword) - 모든 LLM 실패 시
+        # 4. xAI Grok Fallback
+        if analysis is None and API_STATUS['xai']['available']:
+            print(f"[FALLBACK] OpenAI Failed for {stock_name}, trying xAI Grok...")
+            analysis = await self.xai.analyze_news(stock_name, news_context, news_items, dart_text)
+            if analysis.get("score", 0) > 0 or "Error" not in analysis.get("reason", ""):
+                analysis["source"] = "xai_fallback"
+            else:
+                analysis = None
+        elif analysis is None and not API_STATUS['xai']['available']:
+            print(f"[SKIP] xAI Rate Limited - {stock_name}")
+
+        # 5. Final Fallback (Keyword) - 모든 LLM 실패 시
         if analysis is None or (analysis.get("score") == 0 and ("Error" in analysis.get("reason", "") or "Rate" in analysis.get("reason", ""))):
             print(f"[FALLBACK] All LLMs failed for {stock_name}, using keywords...")
             return self._keyword_fallback(stock_name, news_items)

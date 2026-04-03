@@ -41,7 +41,7 @@ def _get_active_tickers(min_volume: int = 500_000, min_price: int = 1000, max_ti
         logger.error(f"daily_prices.csv not found: {csv_path}")
         return []
 
-    df = pd.read_csv(csv_path, dtype={'ticker': str}, low_memory=False)
+    df = pd.read_csv(csv_path, dtype={'ticker': str}, low_memory=False, encoding='utf-8-sig')
     df['date'] = pd.to_datetime(df['date'])
 
     # 최근 20일 데이터만
@@ -198,7 +198,7 @@ def run_screener(market: str = 'KR', min_confidence: int = 40,
 
 def run_wave_scan():
     """scheduler.py에서 호출하는 래퍼."""
-    return run_screener(market='KR', min_confidence=40, max_tickers=800)
+    return run_screener(market='KR', min_confidence=60, max_tickers=800)
 
 
 # ── CLI 진입점 ──

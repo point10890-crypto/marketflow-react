@@ -65,7 +65,7 @@ def _fetch_portfolio_live():
                     'color': 'green' if change >= 0 else 'red'
                 })
         except Exception as e:
-            print(f"Error fetching {ticker}: {e}")
+            logger.warning(f"Error fetching {ticker}: {e}")
     result = {'market_indices': market_indices, 'timestamp': datetime.now().isoformat()}
     # 스냅샷 저장
     try:
@@ -114,8 +114,8 @@ def get_us_smart_money():
                     cached = json.load(f)
                 if cached.get('sort_by') == sort_by:
                     return jsonify(cached)
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning(f"Failed to load smart money snapshot: {e}")
 
     return _compute_smart_money_live(sort_by, lang)
 
@@ -138,8 +138,8 @@ def _compute_smart_money_live(sort_by='composite', lang='ko'):
                                 'updated_at': sm_data.get('analysis_timestamp', sm_data.get('analysis_date', ''))})
             return jsonify({'picks': [], 'count': 0})
 
-        df = pd.read_csv(csv_path)
-        
+        df = pd.read_csv(csv_path, encoding='utf-8-sig')
+
         # Sort based on criteria
         if sort_by == 'swing' and 'swing_score' in df.columns:
             df = df.sort_values(['swing_score', 'composite_score'], ascending=[False, False])
@@ -174,7 +174,7 @@ def _compute_smart_money_live(sort_by='composite', lang='ko'):
                 elif not data.empty and 'Close' in data.columns:
                     current_prices[tickers[0]] = round(float(data['Close'].iloc[-1]), 2)
         except Exception as e:
-            print(f"Batch price fetch failed: {e}")
+            logger.warning(f"Batch price fetch failed: {e}")
         
         # Build Response
         picks = []
@@ -275,9 +275,18 @@ def get_us_etf_flows():
 def get_us_stock_chart(ticker):
     """US 주식 차트 데이터"""
     try:
+        import re
+        if not re.match(r'^[A-Za-z0-9\.\-\^=]{1,20}$', ticker):
+            return jsonify({'error': 'Invalid ticker format'}), 400
         period = request.args.get('period', '1y')
         interval = request.args.get('interval', '1d')
-        
+        valid_periods = ('1d', '5d', '1mo', '3mo', '6mo', '1y', '2y', '5y', '10y', 'max', 'ytd')
+        valid_intervals = ('1m', '2m', '5m', '15m', '30m', '60m', '90m', '1h', '1d', '5d', '1wk', '1mo', '3mo')
+        if period not in valid_periods:
+            period = '1y'
+        if interval not in valid_intervals:
+            interval = '1d'
+
         hist = _yf_history_with_timeout(ticker, timeout=15, period=period, interval=interval)
 
         if hist.empty:
@@ -328,6 +337,9 @@ def get_us_history_dates():
 def get_us_history_by_date(date):
     """특정 날짜 히스토리 (YYYY-MM-DD format)"""
     try:
+        import re
+        if not re.match(r'^\d{4}-\d{2}-\d{2}$', date):
+            return jsonify({'error': 'Invalid date format. Use YYYY-MM-DD.'}), 400
         # Support both formats: picks_YYYY-MM-DD.json
         history_file = os.path.join(_HISTORY_DIR, f'picks_{date}.json')
         if os.path.exists(history_file):
@@ -359,7 +371,7 @@ def get_us_history_performance(date):
         spy_return = 0.0
 
         if os.path.exists(csv_path):
-            df = pd.read_csv(csv_path)
+            df = pd.read_csv(csv_path, encoding='utf-8-sig')
             latest_date = df['Date'].max()
             latest_df = df[df['Date'] == latest_date]
 
@@ -442,7 +454,7 @@ def get_us_history_summary():
             return jsonify({'error': 'Data not found'}), 404
 
         # Load price data
-        df = pd.read_csv(csv_path)
+        df = pd.read_csv(csv_path, encoding='utf-8-sig')
         latest_date = df['Date'].max()
         latest_df = df[df['Date'] == latest_date]
 
@@ -519,8 +531,8 @@ def get_us_cumulative_performance():
             if age < 300:  # 5분 TTL
                 with open(snap_path, 'r', encoding='utf-8') as f:
                     return jsonify(json.load(f))
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning(f"Failed to load cumulative perf snapshot: {e}")
     return _compute_cumulative_performance_live()
 
 
@@ -536,7 +548,7 @@ def _compute_cumulative_performance_live():
             return jsonify({'error': 'Data not found'}), 404
 
         # Load price data - get latest price per ticker
-        df = pd.read_csv(csv_path)
+        df = pd.read_csv(csv_path, encoding='utf-8-sig')
         latest_date = df['Date'].max()
         latest_df = df[df['Date'] == latest_date]
 
@@ -758,6 +770,9 @@ def get_us_earnings_transcripts():
 def get_us_ai_summary(ticker):
     """AI 종목 요약"""
     try:
+        import re
+        if not re.match(r'^[A-Za-z0-9\.\-\^=]{1,20}$', ticker):
+            return jsonify({'error': 'Invalid ticker format'}), 400
         lang = request.args.get('lang', 'ko')
         
         summary_path = os.path.join(_OUTPUT_DIR, 'ai_summaries.json')
@@ -799,8 +814,11 @@ def get_us_calendar():
 def get_technical_indicators(ticker):
     """기술적 지표"""
     try:
+        import re
+        if not re.match(r'^[A-Za-z0-9\.\-\^=]{1,20}$', ticker):
+            return jsonify({'error': 'Invalid ticker format'}), 400
         from app.utils.helpers import calculate_rsi
-        
+
         hist = _yf_history_with_timeout(ticker, timeout=15, period='1y')
 
         if hist.empty:
@@ -834,7 +852,7 @@ def us_super_performance():
         # 1) CSV 소스 (기존)
         csv_path = os.path.join(_OUTPUT_DIR, 'super_performance_picks.csv')
         if os.path.exists(csv_path):
-            df = pd.read_csv(csv_path)
+            df = pd.read_csv(csv_path, encoding='utf-8-sig')
             stocks = []
             for _, row in df.iterrows():
                 stocks.append({
@@ -948,7 +966,7 @@ def us_market_gate():
             })
         except ImportError as e:
             # Fallback to simple logic
-            print(f"Enhanced market_gate not available: {e}")
+            logger.warning(f"Enhanced market_gate not available: {e}")
             hist = _yf_history_with_timeout('SPY', timeout=15, period='200d')
 
             if len(hist) < 200:
@@ -969,7 +987,8 @@ def us_market_gate():
             try:
                 vix_data = _yf_history_with_timeout('^VIX', timeout=10, period='5d')
                 vix = float(vix_data['Close'].iloc[-1]) if not vix_data.empty else None
-            except Exception:
+            except Exception as e:
+                logger.warning(f"VIX fetch failed: {e}")
                 vix = None
 
             status = "NEUTRAL"
@@ -1099,7 +1118,7 @@ def get_us_institutional():
     try:
         csv_path = os.path.join(_OUTPUT_DIR, 'us_13f_holdings.csv')
         if os.path.exists(csv_path):
-            df = pd.read_csv(csv_path)
+            df = pd.read_csv(csv_path, encoding='utf-8-sig')
             holdings = df.to_dict('records')
             return jsonify({'holdings': holdings})
         return jsonify({'holdings': []})
@@ -1187,8 +1206,8 @@ def get_us_earnings_impact():
                 try:
                     ed = datetime.strptime(earn_date[:10], '%Y-%m-%d').date()
                     days_left = max(0, (ed - today).days)
-                except Exception:
-                    pass
+                except (ValueError, IndexError) as e:
+                    logger.warning(f"Failed to parse earnings date '{earn_date}': {e}")
                 enriched.append({
                     'ticker': ticker,
                     'date': earn_date,
@@ -1218,8 +1237,8 @@ def get_us_earnings_impact():
                             'avg_surprise_pct': detail.get('avg_surprise_pct', 0),
                             'surprises': detail.get('surprises', []),
                         })
-                except Exception:
-                    pass
+                except (ValueError, IndexError) as e:
+                    logger.warning(f"Failed to parse earnings date for {ticker}: {e}")
 
             # Sort by days_left
             enriched.sort(key=lambda x: x.get('days_left', 999))
@@ -1391,8 +1410,8 @@ def get_us_decision_signal():
             if age < 300:  # 5분 TTL
                 with open(snap_path, 'r', encoding='utf-8') as f:
                     return jsonify(json.load(f))
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning(f"Failed to load decision signal snapshot: {e}")
 
     return _compute_decision_signal_live()
 
@@ -1568,7 +1587,7 @@ def get_smart_money_detail(ticker):
         # 1. Load Smart Money CSV data
         csv_path = os.path.join(_OUTPUT_DIR, 'smart_money_picks_v2.csv')
         if os.path.exists(csv_path):
-            df = pd.read_csv(csv_path)
+            df = pd.read_csv(csv_path, encoding='utf-8-sig')
             row = df[df['ticker'] == ticker.upper()]
             if not row.empty:
                 r = row.iloc[0]
@@ -1601,7 +1620,7 @@ def get_smart_money_detail(ticker):
         if not result['smart_money']:
             vcp_path = os.path.join(_OUTPUT_DIR, 'super_performance_picks.csv')
             if os.path.exists(vcp_path):
-                vcp_df = pd.read_csv(vcp_path)
+                vcp_df = pd.read_csv(vcp_path, encoding='utf-8-sig')
                 vcp_row = vcp_df[vcp_df['ticker'] == ticker.upper()]
                 if not vcp_row.empty:
                     v = vcp_row.iloc[0]
@@ -1721,7 +1740,7 @@ def get_smart_money_detail(ticker):
                     'avg_volume_20d': int(avg_vol) if not pd.isna(avg_vol) else 0
                 }
         except Exception as e:
-            print(f"Chart data error for {ticker}: {e}")
+            logger.warning(f"Chart data error for {ticker}: {e}")
 
         # 3. AI Summary
         summary_path = os.path.join(_OUTPUT_DIR, 'ai_summaries.json')
@@ -1898,7 +1917,8 @@ def get_us_vcp_dates():
                 dates.append(f"{d[:4]}-{d[4:6]}-{d[6:]}")
         dates.sort(reverse=True)
         return jsonify(dates)
-    except Exception:
+    except Exception as e:
+        logger.warning(f"Failed to list VCP dates: {e}")
         return jsonify([]), 200
 
 

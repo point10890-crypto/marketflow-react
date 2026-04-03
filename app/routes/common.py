@@ -27,7 +27,7 @@ try:
         map_path = os.path.join(DATA_DIR, 'ticker_to_yahoo_map.csv')
 
     try:
-        map_df = pd.read_csv(map_path, dtype=str)
+        map_df = pd.read_csv(map_path, dtype=str, encoding='utf-8-sig')
     except FileNotFoundError:
         logger.warning("Ticker map not found: %s", map_path)
         map_df = pd.DataFrame()
@@ -53,7 +53,7 @@ def get_portfolio_data():
             if not os.path.exists(csv_path):
                 return jsonify({'error': 'History not found'}), 404
                 
-            df = pd.read_csv(csv_path, dtype={'ticker': str})
+            df = pd.read_csv(csv_path, dtype={'ticker': str}, encoding='utf-8-sig')
             df = df[df['recommendation_date'] == target_date]
             top_holdings_df = df.sort_values(by='final_investment_score', ascending=False).head(10)
             top_picks = top_holdings_df
@@ -133,7 +133,7 @@ def get_portfolio_data():
                     'style_box': {}
                 })
     
-            df = pd.read_csv(csv_path, dtype={'ticker': str})
+            df = pd.read_csv(csv_path, dtype={'ticker': str}, encoding='utf-8-sig')
             top_picks = df[df['investment_grade'].isin(['S급 (즉시 매수)', 'A급 (적극 매수)'])]
             
             avg_score = top_picks['final_investment_score'].mean() if not top_picks.empty else 0
@@ -445,7 +445,7 @@ def _fetch_performance_data():
     perf_csv_path = os.path.join(BASE_DIR, 'us_market', 'data', 'performance_report.csv')
     
     if os.path.exists(perf_csv_path):
-        perf_df = pd.read_csv(perf_csv_path)
+        perf_df = pd.read_csv(perf_csv_path, encoding='utf-8-sig')
         recent_perf = perf_df.sort_values('rec_date', ascending=False).head(10)
         for _, row in recent_perf.iterrows():
             performance_data.append({
@@ -1146,7 +1146,7 @@ def get_backtest_summary():
                 break
              
         if os.path.exists(csv_path):
-            df = pd.read_csv(csv_path)
+            df = pd.read_csv(csv_path, encoding='utf-8-sig')
             if not df.empty:
                 is_win_col = 'is_winner' if 'is_winner' in df.columns else 'is_win'
                 return_col = 'net_return' if 'net_return' in df.columns else 'return_pct'

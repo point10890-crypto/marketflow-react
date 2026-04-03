@@ -32,7 +32,7 @@ def get_kr_market_status():
         if not os.path.exists(prices_path):
             return jsonify({'status': 'UNKNOWN', 'reason': 'No price data'}), 404
             
-        df = pd.read_csv(prices_path, dtype={'ticker': str})
+        df = pd.read_csv(prices_path, dtype={'ticker': str}, encoding='utf-8-sig')
         target_ticker = '069500'
         target_name = 'KODEX 200'
         
@@ -83,7 +83,7 @@ def get_kr_market_status():
         })
 
     except Exception as e:
-        print(f"Error checking market status: {e}")
+        logger.error(f"Error checking market status: {e}")
         return jsonify({'error': str(e)}), 500
 
 
@@ -99,14 +99,14 @@ def _load_ticker_maps():
     for p in candidates:
         if os.path.exists(p):
             try:
-                df = pd.read_csv(p, dtype={'ticker': str})
+                df = pd.read_csv(p, dtype={'ticker': str}, encoding='utf-8-sig')
                 df['ticker'] = df['ticker'].str.zfill(6)
                 name_map = dict(zip(df['ticker'], df['name']))
                 market_map = dict(zip(df['ticker'], df['market']))
                 if 'yahoo_ticker' in df.columns:
                     yahoo_map = dict(zip(df['ticker'], df['yahoo_ticker']))
             except Exception as e:
-                print(f"[WARN] ticker map load error: {e}")
+                logger.warning(f"ticker map load error: {e}")
             break
     return name_map, market_map, yahoo_map
 
@@ -195,8 +195,7 @@ def get_kr_signals():
                     'source': 'json_live'
                 })
             except Exception as e:
-                print(f"Error reading JSON: {e}")
-                pass
+                logger.error(f"Error reading kr_ai_analysis.json: {e}")
 
         # Fallback to CSV
         signals_path = os.path.join(DATA_DIR, 'signals_log.csv')
@@ -381,7 +380,7 @@ def get_kr_stock_chart(ticker):
         if not os.path.exists(prices_path):
             return jsonify({'error': 'Price data not found'}), 404
         
-        df = pd.read_csv(prices_path, dtype={'ticker': str})
+        df = pd.read_csv(prices_path, dtype={'ticker': str}, encoding='utf-8-sig')
         ticker_padded = str(ticker).zfill(6)
         stock_df = df[df['ticker'] == ticker_padded].copy()
         
@@ -435,14 +434,14 @@ def get_kr_stock_chart(ticker):
                                 'volume': int(row['거래량'])
                             })
                 except Exception as rt_error:
-                    print(f"Error fetching real-time data for {ticker_padded}: {rt_error}")
+                    logger.warning(f"Error fetching real-time data for {ticker_padded}: {rt_error}")
         
         return jsonify({
             'ticker': ticker_padded,
             'data': chart_data
         })
     except Exception as e:
-        print(f"Error in get_kr_stock_chart: {e}")
+        logger.error(f"Error in get_kr_stock_chart: {e}")
         return jsonify({'error': str(e)}), 500
 
 
@@ -576,7 +575,8 @@ def _batch_fetch_prices(tickers: list, start_date: str) -> dict:
                         else:
                             if 'High' in sub.columns:
                                 result[t] = sub[['High', 'Low', 'Close']].dropna()
-                    except Exception:
+                    except Exception as e:
+                        logger.warning(f"yfinance ticker parse failed for {t}: {e}")
                         continue
         except Exception as e:
             logger.warning(f"yfinance batch fetch failed (chunk {i}): {e}")
@@ -628,7 +628,8 @@ def _evaluate_signal(sig: dict, prices: dict, today_str: str) -> dict:
     try:
         mask = df.index > pd.Timestamp(sig_date)
         post_df = df.loc[mask]
-    except Exception:
+    except Exception as e:
+        logger.warning(f"Failed to filter post-signal data for {sig_date}: {e}")
         post_df = pd.DataFrame()
 
     if post_df.empty:
@@ -691,7 +692,8 @@ def _evaluate_signal(sig: dict, prices: dict, today_str: str) -> dict:
         roi_pct = round((outcome_price - entry) / entry * 100, 2) if entry else 0
         try:
             days_held = (pd.Timestamp(outcome_date) - pd.Timestamp(sig_date)).days
-        except Exception:
+        except Exception as e:
+            logger.warning(f"Failed to calculate days_held: {e}")
             days_held = 0
 
     max_high_pct = round((max_high - entry) / entry * 100, 2) if entry and max_high > entry else 0
@@ -845,7 +847,8 @@ def get_kr_cumulative_return():
                 for sig in d.get('signals', []):
                     if sig.get('grade') in ('S', 'A', 'B'):
                         all_signals.append(sig)
-            except Exception:
+            except Exception as e:
+                logger.warning(f"Failed to load signal file: {e}")
                 continue
 
         if not all_signals:
@@ -952,7 +955,8 @@ def get_jongga_v2_performance():
                 total_signals += d.get('filtered_count', len(signals))
                 for grade, cnt in by_grade.items():
                     grade_totals[grade] = grade_totals.get(grade, 0) + cnt
-            except Exception:
+            except Exception as e:
+                logger.warning(f"Failed to parse history file: {e}")
                 continue
 
         return jsonify({
@@ -1041,8 +1045,8 @@ def kr_market_gate():
             if age < 300:  # 5분 TTL
                 with open(snap_path, 'r', encoding='utf-8') as f:
                     return jsonify(json.load(f))
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning(f"Failed to load market gate cache: {e}")
 
     return _compute_kr_market_gate_live()
 
@@ -1110,19 +1114,19 @@ def _compute_kr_market_gate_live():
             snap_path = os.path.join(DATA_DIR, 'market_gate_cache.json')
             with open(snap_path, 'w', encoding='utf-8') as f:
                 json.dump(result, f, ensure_ascii=False, indent=2)
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning(f"Failed to save market gate cache: {e}")
         return jsonify(result)
 
     except Exception as e:
-        traceback.print_exc()
+        logger.error(f"Market gate enhanced analysis failed: {e}")
         # Fallback to simple logic if enhanced fails
         try:
             prices_path = os.path.join(DATA_DIR, 'daily_prices.csv')
             if not os.path.exists(prices_path):
                 return jsonify({'status': 'NEUTRAL', 'score': 50, 'sectors': []})
             
-            df = pd.read_csv(prices_path, dtype={'ticker': str})
+            df = pd.read_csv(prices_path, dtype={'ticker': str}, encoding='utf-8-sig')
             market_df = df[df['ticker'] == '069500'].copy()
             
             if not market_df.empty and len(market_df) > 200:
@@ -1170,7 +1174,7 @@ def get_kr_realtime_prices():
 
         if os.path.exists(ticker_map_path):
             try:
-                map_df = pd.read_csv(ticker_map_path, dtype={'ticker': str})
+                map_df = pd.read_csv(ticker_map_path, dtype={'ticker': str}, encoding='utf-8-sig')
                 yahoo_map = dict(zip(map_df['ticker'].str.zfill(6), map_df['yahoo_ticker']))
             except Exception as e:
                 logger.warning(f"Failed to load ticker map from {ticker_map_path}: {e}")
@@ -1302,7 +1306,7 @@ def get_jongga_v2_history(date_str):
         return jsonify(data)
 
     except Exception as e:
-        print(f"Error reading historical data: {e}")
+        logger.error(f"Error reading historical data: {e}")
         return jsonify({"error": str(e)}), 500
 
 @kr_bp.route('/jongga-v2/analyze', methods=['POST'])
@@ -1330,7 +1334,7 @@ def analyze_single_stock():
             return jsonify({"status": "failed", "message": "Analysis failed or no signal generated"}), 500
             
     except Exception as e:
-        print(f"Error re-analyzing stock {code}: {e}")
+        logger.error(f"Error re-analyzing stock {code}: {e}")
         return jsonify({"error": str(e)}), 500
 
 @kr_bp.route('/jongga-v2/run', methods=['POST'])
@@ -1354,7 +1358,7 @@ def run_jongga_v2():
         })
         
     except Exception as e:
-        print(f"Error running Jongga V2 engine: {e}")
+        logger.error(f"Error running Jongga V2 engine: {e}")
         return jsonify({"error": str(e)}), 500
 
 

@@ -31,6 +31,7 @@ def _get_cached_csv() -> Optional[pd.DataFrame]:
             dtype={'ticker': str},
             parse_dates=['date'],
             low_memory=False,
+            encoding='utf-8-sig',
         )
         _csv_cache['df'] = df
         _csv_cache['mtime'] = mtime

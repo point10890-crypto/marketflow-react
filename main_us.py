@@ -1,6 +1,6 @@
 """
 Gemini Vision S&P 500 Chart Analyzer
-Top 100 S&P 500 stocks — auto-generate candlestick charts → Gemini Vision technical analysis
+Top 100 S&P 500 stocks — auto-generate candlestick charts → Gemini/OpenAI Vision technical analysis
 """
 
 import os
@@ -8,6 +8,7 @@ import sys
 import re
 import json
 import asyncio
+import base64
 import logging
 from concurrent.futures import ThreadPoolExecutor
 
@@ -28,10 +29,11 @@ logger = logging.getLogger(__name__)
 # ── Environment ──
 load_dotenv()
 API_KEY = os.getenv('GOOGLE_API_KEY') or os.getenv('GEMINI_API_KEY', '')
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', '')
 MODEL = os.getenv('GEMINI_MODEL', 'gemini-2.5-flash')
 
-if not API_KEY:
-    logger.error("GOOGLE_API_KEY or GEMINI_API_KEY not set in .env")
+if not API_KEY and not OPENAI_API_KEY:
+    logger.error("GEMINI_API_KEY and OPENAI_API_KEY both missing in .env")
     sys.exit(1)
 
 plt.rcParams['axes.unicode_minus'] = False
@@ -263,12 +265,70 @@ def _call_gemini(client: genai.Client, ticker: str, name: str, image_path: str) 
         return None
 
 
+def _call_openai_vision(ticker: str, name: str, image_path: str) -> dict | None:
+    """OpenAI Vision fallback for chart analysis"""
+    try:
+        from openai import OpenAI
+        client = OpenAI(api_key=OPENAI_API_KEY)
+
+        with open(image_path, 'rb') as f:
+            image_data = f.read()
+        b64_image = base64.b64encode(image_data).decode('utf-8')
+
+        prompt = ANALYSIS_PROMPT.format(name=name, ticker=ticker)
+
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": "You are a professional technical chart analyst. Respond only in valid JSON."},
+                {"role": "user", "content": [
+                    {"type": "text", "text": prompt},
+                    {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{b64_image}", "detail": "high"}},
+                ]},
+            ],
+            max_tokens=4096,
+            temperature=0.3,
+        )
+
+        text = response.choices[0].message.content.strip()
+        data = _extract_json(text)
+
+        if data is None:
+            logger.error(f"[OPENAI PARSE FAIL] {name}({ticker}): parse failed — {text[:200]}")
+
+        return data
+    except Exception as e:
+        logger.error(f"[OPENAI ERROR] {name}({ticker}): {e}")
+        return None
+
+
+# Track consecutive Gemini failures to detect sustained outage
+_gemini_fail_count = 0
+_GEMINI_FAIL_THRESHOLD = 5  # disable Gemini after N consecutive failures
+
+
 async def analyze_chart(client: genai.Client, ticker: str, name: str,
                         image_path: str, semaphore: asyncio.Semaphore) -> dict | None:
-    """Async wrapper: Gemini Vision chart analysis"""
+    """Async wrapper: Gemini Vision → OpenAI Vision fallback"""
+    global _gemini_fail_count
     async with semaphore:
         loop = asyncio.get_event_loop()
-        result = await loop.run_in_executor(_executor, _call_gemini, client, ticker, name, image_path)
+        result = None
+
+        # Try Gemini first (skip if too many consecutive failures)
+        if _gemini_fail_count < _GEMINI_FAIL_THRESHOLD and API_KEY:
+            result = await loop.run_in_executor(_executor, _call_gemini, client, ticker, name, image_path)
+            if result is None:
+                _gemini_fail_count += 1
+                if _gemini_fail_count >= _GEMINI_FAIL_THRESHOLD:
+                    logger.warning(f"[FALLBACK] Gemini failed {_GEMINI_FAIL_THRESHOLD} times consecutively, switching to OpenAI Vision")
+            else:
+                _gemini_fail_count = 0  # reset on success
+
+        # OpenAI Vision fallback
+        if result is None and OPENAI_API_KEY:
+            result = await loop.run_in_executor(_executor, _call_openai_vision, ticker, name, image_path)
+
         if result:
             sector = STOCKS.get(ticker, ("", "Unknown"))[1]
             result['ticker'] = ticker

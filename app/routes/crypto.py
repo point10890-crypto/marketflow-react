@@ -47,7 +47,7 @@ def _fetch_crypto_overview_live():
     for ticker, name in cryptos.items():
         try:
             coin = yf.Ticker(ticker)
-            hist = coin.history(period='5d')
+            hist = coin.history(period='5d', timeout=10)
             if not hist.empty and len(hist) >= 2:
                 price = safe_float(hist['Close'].iloc[-1])
                 prev = safe_float(hist['Close'].iloc[-2])
@@ -60,7 +60,7 @@ def _fetch_crypto_overview_live():
                     'change_pct': round(change_pct, 2), 'volume_24h': int(vol_24h),
                 })
         except Exception as e:
-            print(f"Error fetching {ticker}: {e}")
+            logger.warning(f"Error fetching {ticker}: {e}")
     data = {'cryptos': result, 'timestamp': datetime.now().isoformat()}
     # 스냅샷 저장
     try:
@@ -104,8 +104,8 @@ def get_crypto_dominance():
             if age < 300:  # 5분 TTL
                 with open(snap_path, 'r', encoding='utf-8') as f:
                     return jsonify(json.load(f))
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning(f"Failed to load dominance cache: {e}")
 
     return _compute_crypto_dominance_live()
 
@@ -116,8 +116,8 @@ def _compute_crypto_dominance_live():
         import yfinance as yf
         btc = yf.Ticker('BTC-USD')
         eth = yf.Ticker('ETH-USD')
-        btc_hist = btc.history(period='30d')
-        eth_hist = eth.history(period='30d')
+        btc_hist = btc.history(period='30d', timeout=10)
+        eth_hist = eth.history(period='30d', timeout=10)
 
         if btc_hist.empty:
             return jsonify({'error': 'No BTC data'}), 500
@@ -164,11 +164,17 @@ def _compute_crypto_dominance_live():
 def get_crypto_chart(ticker):
     """Crypto Price Chart Data"""
     try:
+        import re
         import yfinance as yf
+        if not re.match(r'^[A-Za-z0-9\-\.]{1,20}$', ticker):
+            return jsonify({'error': 'Invalid ticker format'}), 400
         period = request.args.get('period', '3mo')
+        valid_periods = ('1d', '5d', '1mo', '3mo', '6mo', '1y', '2y', '5y', '10y', 'max', 'ytd')
+        if period not in valid_periods:
+            period = '3mo'
         symbol = f"{ticker.upper()}-USD"
         coin = yf.Ticker(symbol)
-        hist = coin.history(period=period)
+        hist = coin.history(period=period, timeout=10)
         if hist.empty:
             return jsonify({'error': f'No data for {ticker}'}), 404
         chart_data = [{
@@ -199,7 +205,7 @@ def crypto_market_gate():
     try:
         import yfinance as yf
         btc = yf.Ticker('BTC-USD')
-        hist = btc.history(period='200d')
+        hist = btc.history(period='200d', timeout=10)
         if len(hist) < 200:
             return jsonify({'status': 'NEUTRAL', 'gate': 'YELLOW', 'score': 50})
         price = float(hist['Close'].iloc[-1])
@@ -390,7 +396,7 @@ def _generate_live_briefing():
     try:
         tickers = ['BTC-USD', 'SPY', 'GLD', 'DX-Y.NYB']
         labels = ['BTC', 'SPY', 'GLD', 'DXY']
-        data = yf.download(tickers, period='90d', progress=False)
+        data = yf.download(tickers, period='90d', progress=False, timeout=10)
         if not data.empty and 'Close' in data.columns:
             closes = data['Close']
             returns = closes.pct_change().dropna()
@@ -405,7 +411,7 @@ def _generate_live_briefing():
     # 7. BTC price history (90d)
     try:
         btc = yf.Ticker('BTC-USD')
-        hist = btc.history(period='90d')
+        hist = btc.history(period='90d', timeout=10)
         if not hist.empty:
             briefing['btc_price_history'] = [{'date': d.strftime('%Y-%m-%d'), 'price': round(float(r['Close']), 2)} for d, r in hist.iterrows()]
     except Exception as e:

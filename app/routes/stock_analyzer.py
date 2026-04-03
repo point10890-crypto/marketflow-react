@@ -52,7 +52,7 @@ def _load_kr_stocks():
         return _kr_stocks
 
     try:
-        df = pd.read_csv(TICKER_MAP_PATH)
+        df = pd.read_csv(TICKER_MAP_PATH, encoding='utf-8-sig')
         _kr_stocks = []
         for _, row in df.iterrows():
             _kr_stocks.append({

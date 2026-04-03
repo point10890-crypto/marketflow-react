@@ -104,10 +104,14 @@ def auto_git_push(scope: str = 'all') -> bool:
         project_dir = os.path.dirname(os.path.abspath(__file__))
         now_str = datetime.now().strftime('%Y-%m-%d %H:%M')
 
+        # Git subprocess용 환경변수 (cp949 인코딩 에러 방지)
+        git_env = {**os.environ, 'PYTHONIOENCODING': 'utf-8'}
+
         try:
             result = subprocess.run(
                 ['git', 'status', '--porcelain'],
-                capture_output=True, text=True, cwd=project_dir, timeout=30
+                capture_output=True, text=True, cwd=project_dir, timeout=30,
+                env=git_env, encoding='utf-8', errors='replace'
             )
             if result.returncode != 0:
                 logger.warning("⚠️ Git 저장소가 아닙니다. auto_git_push 스킵.")
@@ -129,12 +133,12 @@ def auto_git_push(scope: str = 'all') -> bool:
             ]
             for d in data_dirs:
                 subprocess.run(['git', 'add', d], cwd=project_dir, timeout=30,
-                               capture_output=True, text=True)
+                               capture_output=True, text=True, env=git_env)
 
             # 스테이징된 변경사항 확인
             staged = subprocess.run(
                 ['git', 'diff', '--cached', '--quiet'],
-                cwd=project_dir, timeout=10, capture_output=True
+                cwd=project_dir, timeout=10, capture_output=True, env=git_env
             )
             if staged.returncode == 0:
                 logger.info("📦 데이터 변경사항 없음, git push 스킵")
@@ -144,40 +148,40 @@ def auto_git_push(scope: str = 'all') -> bool:
             subprocess.run(
                 ['git', 'commit', '-m', msg],
                 cwd=project_dir, timeout=30, check=True,
-                capture_output=True, text=True
+                capture_output=True, text=True, env=git_env
             )
 
             # unstaged changes를 stash → rebase → stash pop (rebase 실패 방지)
             stashed = False
             stash_check = subprocess.run(
                 ['git', 'diff', '--quiet'],
-                cwd=project_dir, timeout=10, capture_output=True
+                cwd=project_dir, timeout=10, capture_output=True, env=git_env
             )
             if stash_check.returncode != 0:
                 subprocess.run(['git', 'stash', '--keep-index'],
-                               cwd=project_dir, timeout=30, capture_output=True, text=True)
+                               cwd=project_dir, timeout=30, capture_output=True, text=True, env=git_env)
                 stashed = True
 
             rebase_result = subprocess.run(
                 ['git', 'pull', '--rebase', 'origin', 'main'],
                 cwd=project_dir, timeout=120,
-                capture_output=True, text=True
+                capture_output=True, text=True, env=git_env
             )
             if rebase_result.returncode != 0:
                 logger.error(f"⚠️ Git rebase 실패, abort 후 merge 전략 시도: {rebase_result.stderr}")
                 subprocess.run(['git', 'rebase', '--abort'], cwd=project_dir, timeout=30,
-                               capture_output=True, text=True)
+                               capture_output=True, text=True, env=git_env)
                 subprocess.run(['git', 'pull', '--no-rebase', 'origin', 'main'],
-                               cwd=project_dir, timeout=120, capture_output=True, text=True)
+                               cwd=project_dir, timeout=120, capture_output=True, text=True, env=git_env)
 
             if stashed:
                 subprocess.run(['git', 'stash', 'pop'],
-                               cwd=project_dir, timeout=30, capture_output=True, text=True)
+                               cwd=project_dir, timeout=30, capture_output=True, text=True, env=git_env)
 
             push_result = subprocess.run(
                 ['git', 'push', 'origin', 'main'],
                 cwd=project_dir, timeout=120,
-                capture_output=True, text=True
+                capture_output=True, text=True, env=git_env
             )
 
             if push_result.returncode == 0:
@@ -333,8 +337,8 @@ def run_command(cmd: list, description: str, timeout: int = 600,
                     clean = line.strip()
                     if clean:
                         logger.info(f"   > {clean}")
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warning(f"⚠️ stdout 읽기 오류: {e}")
             finally:
                 process.stdout.close()
 
@@ -439,7 +443,7 @@ def _flush_telegram_queue():
             sent_indices.append(i)
             logger.info(f"✅ 텔레그램 큐 재전송 성공: {msg[:50]}...")
         else:
-            break  # 네트워크 아직 안됨 — 나머지 스킵
+            continue  # 네트워크 아직 안됨 — 이 메시지는 건너뛰고 나머지 시도
     for i in reversed(sent_indices):
         _telegram_queue.pop(i)
 
@@ -557,7 +561,8 @@ def update_daily_prices():
                     'volume': int(row.get('Volume', 0)),
                     'update_time': now_str,
                 })
-        except Exception:
+        except Exception as e:
+            logger.warning(f"⚠️ 종목 {ticker} 데이터 수집 실패: {e}")
             failed += 1
             continue
         if (i + 1) % 500 == 0:
@@ -1057,8 +1062,8 @@ def update_jongga_v2():
             if os.path.exists(perf_cache):
                 os.remove(perf_cache)
                 logger.info("🗑️ 누적 성과 캐시 삭제 (새 시그널 반영 대기)")
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning(f"⚠️ 누적 성과 캐시 삭제 실패: {e}")
 
     return success
 
@@ -2085,8 +2090,8 @@ def _run_ai_chart_analysis() -> bool:
                         lines.append(f"  🟢 <b>{row['종목명']}</b> ({row['종목코드']}) conf={row['confidence']}")
                     try:
                         send_telegram('\n'.join(lines))
-                    except Exception:
-                        pass
+                    except Exception as e:
+                        logger.warning(f"⚠️ KR AI Chart 텔레그램 전송 실패: {e}")
 
                 auto_git_push('ai_chart')
                 return True
@@ -2134,8 +2139,8 @@ def _run_us_ai_chart_analysis() -> bool:
                         lines.append(f"  🟢 <b>{row['name']}</b> ({row['ticker']}) conf={row['confidence']}")
                     try:
                         send_telegram('\n'.join(lines))
-                    except Exception:
-                        pass
+                    except Exception as e:
+                        logger.warning(f"⚠️ US AI Chart 텔레그램 전송 실패: {e}")
 
                 auto_git_push('us_ai_chart')
                 return True
@@ -2400,13 +2405,15 @@ def main():
                     logger.warning(f"⚠️ Scheduler 이미 실행 중 (PID {old_pid}). 종료.")
                     print(f"[SCHEDULER] 이미 실행 중 (PID {old_pid}). 종료.")
                     sys.exit(0)
-            except (ValueError, IOError, subprocess.TimeoutExpired):
-                pass
+            except (ValueError, IOError, subprocess.TimeoutExpired) as e:
+                logger.warning(f"⚠️ 기존 PID 확인 실패 (무시하고 진행): {e}")
 
-        # PID 기록
+        # PID 기록 (atomic write: temp → rename)
         os.makedirs(Config.LOG_DIR, exist_ok=True)
-        with open(pid_file, 'w') as f:
+        pid_tmp = pid_file + '.tmp'
+        with open(pid_tmp, 'w') as f:
             f.write(str(os.getpid()))
+        os.replace(pid_tmp, pid_file)
         logger.info(f"🔒 Scheduler PID 파일 생성 (PID {os.getpid()})")
 
         def _cleanup_pid():
@@ -2416,8 +2423,8 @@ def main():
                         pid = int(f.read().strip())
                     if pid == os.getpid():
                         os.remove(pid_file)
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warning(f"⚠️ PID 파일 정리 실패: {e}")
         atexit.register(_cleanup_pid)
 
     logger.info("=" * 60)

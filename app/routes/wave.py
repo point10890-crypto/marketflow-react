@@ -30,12 +30,12 @@ def _load_name_map():
     for path in [os.path.join(BASE_DIR, 'ticker_to_yahoo_map.csv'), TICKER_MAP_PATH]:
         if os.path.exists(path):
             try:
-                df = pd.read_csv(path, dtype={'ticker': str})
+                df = pd.read_csv(path, dtype={'ticker': str}, encoding='utf-8-sig')
                 df['ticker'] = df['ticker'].str.zfill(6)
                 _name_to_ticker = {row['name']: row['ticker'] for _, row in df.iterrows() if pd.notna(row.get('name'))}
                 _ticker_to_name.update({row['ticker']: row['name'] for _, row in df.iterrows() if pd.notna(row.get('name'))})
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warning(f"Failed to load ticker name map from {path}: {e}")
             break
     _name_map_loaded = True
 
@@ -116,8 +116,16 @@ def screener_latest():
             'message': 'No screener data available. Run wave scan first.',
         })
 
-    min_conf = int(request.args.get('min_confidence', '0'))
-    limit = int(request.args.get('limit', '100'))
+    try:
+        min_conf = int(request.args.get('min_confidence', '0'))
+    except (ValueError, TypeError):
+        min_conf = 0
+    min_conf = max(0, min(min_conf, 100))
+    try:
+        limit = int(request.args.get('limit', '100'))
+    except (ValueError, TypeError):
+        limit = 100
+    limit = max(1, min(limit, 500))
     pattern_class = request.args.get('pattern_class', '').upper()  # W or M
 
     signals = data.get('signals', [])
@@ -149,14 +157,28 @@ def detect_patterns(ticker: str):
     GET /api/wave/detect/005930?market=KR&lookback=200
     GET /api/wave/detect/삼성전자?market=KR  (종목명도 지원)
     """
+    import re
     market = request.args.get('market', 'KR').upper()
+    if market not in ('KR', 'US', 'CRYPTO'):
+        return jsonify({'error': 'Invalid market. Use KR, US, or CRYPTO.'}), 400
     # 종목명 → 코드 자동 변환
     if market == 'KR':
         ticker = _resolve_ticker(ticker)
-    lookback = int(request.args.get('lookback', '200'))
+    # Sanitize ticker: allow alphanumeric, dots, dashes, Korean chars
+    if not re.match(r'^[A-Za-z0-9가-힣\.\-\^]{1,30}$', ticker):
+        return jsonify({'error': 'Invalid ticker format'}), 400
+    try:
+        lookback = int(request.args.get('lookback', '200'))
+    except (ValueError, TypeError):
+        lookback = 200
+    lookback = max(50, min(lookback, 1000))  # Clamp to [50, 1000]
     reversal_pct = request.args.get('reversal_pct', None)
     if reversal_pct is not None:
-        reversal_pct = float(reversal_pct)
+        try:
+            reversal_pct = float(reversal_pct)
+            reversal_pct = max(0.5, min(reversal_pct, 50.0))  # Clamp to [0.5, 50]
+        except (ValueError, TypeError):
+            reversal_pct = None
 
     # 1. 데이터 로드
     data = load_ohlcv(ticker, market=market, lookback=lookback)
@@ -236,7 +258,11 @@ def signal_history():
 
     status = request.args.get('status', '')
     pattern_class = request.args.get('pattern_class', '').upper()
-    limit = int(request.args.get('limit', '100'))
+    try:
+        limit = int(request.args.get('limit', '100'))
+    except (ValueError, TypeError):
+        limit = 100
+    limit = max(1, min(limit, 500))
 
     query = WaveSignal.query.order_by(WaveSignal.detected_at.desc())
 
