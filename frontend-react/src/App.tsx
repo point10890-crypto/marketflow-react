@@ -56,9 +56,6 @@ const BriefingPortalPage = lazy(() => import('@/pages/dashboard/BriefingPortalPa
 const AccountPage = lazy(() => import('@/pages/AccountPage'));
 const DataStatusPage = lazy(() => import('@/pages/dashboard/DataStatusPage'));
 const AdminPage = lazy(() => import('@/pages/admin/AdminPage'));
-const AdminUsersPage = lazy(() => import('@/pages/admin/AdminUsersPage'));
-const AdminSubscriptionsPage = lazy(() => import('@/pages/admin/AdminSubscriptionsPage'));
-const AdminSystemPage = lazy(() => import('@/pages/admin/AdminSystemPage'));
 
 function ApprovedGuard({ children }: { children: React.ReactNode }) {
     const { user, loading } = useAuth();
@@ -138,9 +135,9 @@ export default function App() {
                     <Route path="/admin" element={<AdminGuard><DashboardLayout /></AdminGuard>}>
                         <Route index element={<Suspense fallback={<LoadingFallback />}><AdminPage /></Suspense>} />
                         <Route path="data-status" element={<Suspense fallback={<LoadingFallback />}><DataStatusPage /></Suspense>} />
-                        <Route path="users" element={<Suspense fallback={<LoadingFallback />}><AdminUsersPage /></Suspense>} />
-                        <Route path="subscriptions" element={<Suspense fallback={<LoadingFallback />}><AdminSubscriptionsPage /></Suspense>} />
-                        <Route path="system" element={<Suspense fallback={<LoadingFallback />}><AdminSystemPage /></Suspense>} />
+                        <Route path="users" element={<Navigate to="/admin" replace />} />
+                        <Route path="subscriptions" element={<Navigate to="/admin" replace />} />
+                        <Route path="system" element={<Navigate to="/admin" replace />} />
                     </Route>
 
                     {/* 404 Not Found */}

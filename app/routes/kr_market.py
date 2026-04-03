@@ -17,6 +17,7 @@ kr_bp = Blueprint('kr', __name__)
 
 # ── 고정 경로 ──────────────────────────────────────────────
 from app.utils.paths import BASE_DIR, DATA_DIR
+from app.auth.decorators import admin_required
 
 # market_gate 임포트를 위한 경로 등록
 if BASE_DIR not in sys.path:
@@ -1000,12 +1001,13 @@ def get_jongga_v2_today_summary():
 
 
 @kr_bp.route('/vcp-scan', methods=['POST'])
+@admin_required
 def kr_vcp_scan():
     """VCP 스캔 실행"""
     try:
-        from scheduler import run_vcp_scan
-        
-        result = run_vcp_scan()
+        from scheduler import run_vcp_signal_scan
+
+        result = run_vcp_signal_scan()
         return jsonify(result)
     except Exception as e:
         traceback.print_exc()
@@ -1013,6 +1015,7 @@ def kr_vcp_scan():
 
 
 @kr_bp.route('/update', methods=['POST'])
+@admin_required
 def kr_update():
     """KR 데이터 업데이트"""
     try:
@@ -1303,6 +1306,7 @@ def get_jongga_v2_history(date_str):
         return jsonify({"error": str(e)}), 500
 
 @kr_bp.route('/jongga-v2/analyze', methods=['POST'])
+@admin_required
 def analyze_single_stock():
     """
     단일 종목 재분석 요청
@@ -1330,6 +1334,7 @@ def analyze_single_stock():
         return jsonify({"error": str(e)}), 500
 
 @kr_bp.route('/jongga-v2/run', methods=['POST'])
+@admin_required
 def run_jongga_v2():
     """
     전체 종가베팅 v2 엔진 실행 (배치)
@@ -1464,11 +1469,14 @@ def kr_screener_leading():
 def kr_screener_history():
     """주도주 히스토리 — ?date=20260324 또는 ?dates=true"""
     from app.services.kis_screener import load_history, list_dates
+    import re
     date = request.args.get('date')
     if request.args.get('dates'):
         return jsonify({"dates": list_dates()})
     if not date:
         return jsonify({"error": "date 파라미터 필요"}), 400
+    if not re.match(r'^\d{8}$', date):
+        return jsonify({"error": "Invalid date format (YYYYMMDD)"}), 400
     result = load_history(date)
     if not result:
         return jsonify({"error": f"{date} 데이터 없음"}), 404

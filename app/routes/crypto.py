@@ -16,7 +16,7 @@ import subprocess
 import traceback
 from datetime import datetime
 from flask import Blueprint, jsonify, request, send_from_directory
-from app.auth.decorators import pro_required
+from app.auth.decorators import pro_required, admin_required
 
 from app.utils.paths import BASE_DIR, DATA_DIR, CRYPTO_MARKET_DIR, CRYPTO_OUTPUT_DIR
 from app.utils.safety import safe_float, load_json_file
@@ -603,6 +603,7 @@ def _run_subprocess_task(task_id: str, script_path: str, cwd: str | None = None)
 # ═══════════════════════════════════════════════════════
 
 @crypto_bp.route('/run-scan', methods=['POST'])
+@admin_required
 def run_scan():
     """VCP 스캔 실행 (게이트가 RED이면 스킵 옵션)"""
     # Check gate
@@ -623,6 +624,7 @@ def run_scan():
 
 
 @crypto_bp.route('/gate-scan', methods=['POST'])
+@admin_required
 def gate_scan():
     """Market Gate 스캔 실행 (동기 — 결과 직접 반환)"""
     script = os.path.join(CRYPTO_MARKET_DIR, 'market_gate.py')
@@ -649,6 +651,7 @@ def gate_scan():
 
 
 @crypto_bp.route('/run-prediction', methods=['POST'])
+@admin_required
 def run_prediction():
     """BTC 예측 모델 재학습/실행"""
     script = os.path.join(CRYPTO_MARKET_DIR, 'crypto_prediction.py')
@@ -661,6 +664,7 @@ def run_prediction():
 
 
 @crypto_bp.route('/run-risk', methods=['POST'])
+@admin_required
 def run_risk():
     """리스크 분석 실행"""
     script = os.path.join(CRYPTO_MARKET_DIR, 'crypto_risk.py')
@@ -673,6 +677,7 @@ def run_risk():
 
 
 @crypto_bp.route('/run-briefing', methods=['POST'])
+@admin_required
 def run_briefing():
     """브리핑 재생성"""
     # 기존 캐시 삭제
@@ -691,6 +696,7 @@ def run_briefing():
 
 
 @crypto_bp.route('/run-leadlag', methods=['POST'])
+@admin_required
 def run_leadlag():
     """Lead-Lag 분석 실행"""
     script = os.path.join(CRYPTO_MARKET_DIR, 'lead_lag', 'lead_lag_analysis.py')

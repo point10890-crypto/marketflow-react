@@ -13,6 +13,7 @@ from flask import Blueprint, jsonify, request, Response, stream_with_context
 
 from app.utils.cache import get_sector, SECTOR_MAP
 from app.utils.paths import BASE_DIR, DATA_DIR, US_OUTPUT_DIR, CRYPTO_OUTPUT_DIR
+from app.auth.decorators import admin_required
 
 logger = logging.getLogger(__name__)
 
@@ -41,9 +42,12 @@ except Exception as e:
 def get_portfolio_data():
     """포트폴리오 데이터 - KR Market"""
     try:
+        import re
         target_date = request.args.get('date')
-        
+
         if target_date:
+            if not re.match(r'^\d{4}-\d{2}-\d{2}$', target_date):
+                return jsonify({'error': 'Invalid date format (YYYY-MM-DD)'}), 400
             # --- Historical Data Mode ---
             csv_path = os.path.join(BASE_DIR, 'us_market', 'data', 'recommendation_history.csv')
             if not os.path.exists(csv_path):
@@ -349,6 +353,7 @@ def get_realtime_prices():
 
 
 @common_bp.route('/run-analysis', methods=['POST'])
+@admin_required
 def run_analysis():
     """분석 스크립트 백그라운드 실행"""
     try:
@@ -758,6 +763,7 @@ def get_data_status():
 
 
 @common_bp.route('/system/update-single')
+@admin_required
 def update_single_data():
     """개별 데이터 업데이트 (SSE 스트리밍)"""
     data_type = request.args.get('type', '')

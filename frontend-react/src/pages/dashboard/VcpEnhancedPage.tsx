@@ -114,7 +114,9 @@ export default function VCPEnhancedPage() {
     usePullToRefreshRegister(useCallback(async () => { await loadData(activeTab, selectedDate); }, [loadData, activeTab, selectedDate]));
 
     const current = data[activeTab];
-    const signals = current?.signals || [];
+    // 중복 제거: symbol 기준 첫 번째(최고 점수)만 유지
+    const rawSignals = current?.signals || [];
+    const signals = rawSignals.filter((s, i, arr) => arr.findIndex(x => x.symbol === s.symbol) === i);
     const meta = current?.metadata;
     const summary = current?.summary;
 

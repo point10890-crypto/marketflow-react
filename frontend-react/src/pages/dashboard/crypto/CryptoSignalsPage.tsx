@@ -77,7 +77,8 @@ export default function CryptoSignalsPage() {
 
     useEffect(() => { loadData(selectedDate); }, [selectedDate, loadData]);
 
-    const signals = data?.signals || [];
+    const rawSignals = data?.signals || [];
+    const signals = rawSignals.filter((s, i, arr) => arr.findIndex(x => x.symbol === s.symbol) === i);
     const meta = data?.metadata;
     const summary = data?.summary;
 

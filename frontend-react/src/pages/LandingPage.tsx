@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { usePWAInstall } from '@/hooks/usePWAInstall';
+import { InstallGuide } from '@/components/layout/InstallPrompt';
 
 const features = [
     { icon: 'fa-flag', title: 'KR Market', desc: '종가베팅, 주도주LIVE, VCP, AI Chart, Track Record', color: 'from-blue-500 to-indigo-600' },
@@ -14,11 +16,18 @@ export default function LandingPage() {
     const navigate = useNavigate();
     const [animState, setAnimState] = useState<'idle' | 'ripple' | 'exit'>('idle');
     const [mounted, setMounted] = useState(false);
+    const [showGuide, setShowGuide] = useState(false);
+    const { canInstall, isInstalled, isIOS, install } = usePWAInstall();
 
     useEffect(() => {
         const t = setTimeout(() => setMounted(true), 50);
         return () => clearTimeout(t);
     }, []);
+
+    const handleInstallApp = async () => {
+        const result = await install();
+        if (result === 'manual') setShowGuide(true);
+    };
 
     const handleEnter = () => {
         if (animState !== 'idle') return;
@@ -138,8 +147,39 @@ export default function LandingPage() {
                             이미 계정이 있으신가요? <Link to="/login" className="text-amber-400/70 hover:text-amber-400">로그인</Link>
                         </p>
                     </div>
+
+                    {/* App Download Section */}
+                    {!isInstalled && (
+                        <div className="mt-14 p-6 rounded-2xl border border-blue-500/20 bg-[#13151f] text-center">
+                            <div className="w-14 h-14 mx-auto mb-4 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-2xl flex items-center justify-center border border-blue-500/20">
+                                <i className="fas fa-mobile-screen-button text-blue-400 text-2xl" />
+                            </div>
+                            <h3 className="text-white font-bold text-lg mb-1">앱으로 더 빠르게</h3>
+                            <p className="text-gray-500 text-sm mb-4">홈 화면에 추가하고 네이티브 앱처럼 사용하세요</p>
+                            <div className="flex flex-wrap items-center justify-center gap-3 mb-4">
+                                <span className="flex items-center gap-1.5 text-xs text-gray-400">
+                                    <i className="fas fa-bolt text-amber-400 text-[10px]" /> 빠른 실행
+                                </span>
+                                <span className="flex items-center gap-1.5 text-xs text-gray-400">
+                                    <i className="fas fa-bell text-amber-400 text-[10px]" /> 푸시 알림
+                                </span>
+                                <span className="flex items-center gap-1.5 text-xs text-gray-400">
+                                    <i className="fas fa-expand text-amber-400 text-[10px]" /> 전체 화면
+                                </span>
+                            </div>
+                            <button
+                                onClick={handleInstallApp}
+                                className="inline-flex items-center gap-2 px-8 py-3 rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-400 hover:to-cyan-400 text-white font-bold text-sm transition-all"
+                            >
+                                <i className="fas fa-download" />
+                                앱 다운로드
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
+
+            {showGuide && <InstallGuide isIOS={isIOS} onClose={() => setShowGuide(false)} />}
 
             {/* Exit overlay */}
             <div className={`landing-exit-overlay ${animState === 'exit' ? 'landing-exit-overlay-active' : ''}`} aria-hidden />

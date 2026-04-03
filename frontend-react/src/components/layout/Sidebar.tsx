@@ -1,6 +1,8 @@
 import { Link, useLocation } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { usePWAInstall } from '@/hooks/usePWAInstall';
+import { InstallGuide } from './InstallPrompt';
 
 interface NavItem {
     name: string;
@@ -91,27 +93,9 @@ const navigation: NavItem[] = [
 
 const adminNavigation: NavItem[] = [
     {
-        name: '관리자 대시보드',
+        name: '관리자',
         href: '/admin',
         icon: 'fa-shield-alt',
-        color: 'text-red-400',
-    },
-    {
-        name: '사용자 관리',
-        href: '/admin/users',
-        icon: 'fa-users-cog',
-        color: 'text-red-400',
-    },
-    {
-        name: '구독 관리',
-        href: '/admin/subscriptions',
-        icon: 'fa-credit-card',
-        color: 'text-red-400',
-    },
-    {
-        name: '시스템 모니터',
-        href: '/admin/system',
-        icon: 'fa-server',
         color: 'text-red-400',
     },
 ];
@@ -120,11 +104,18 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
     const location = useLocation();
     const pathname = location.pathname ?? '';
     const { user, logout } = useAuth();
+    const { canInstall, isInstalled, isIOS, install } = usePWAInstall();
+    const [showGuide, setShowGuide] = useState(false);
 
     const userName = user?.name || 'Guest';
     const userTier = user?.tier || 'free';
     const userRole = user?.role || 'user';
     const isLoggedIn = !!user;
+
+    const handleSidebarInstall = async () => {
+        const result = await install();
+        if (result === 'manual') setShowGuide(true);
+    };
 
     return (
         <>
@@ -289,6 +280,21 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                     참여코드: <span className="text-yellow-400/80 font-mono">bitman88</span>
                 </div>
             </div>
+
+            {/* App Install */}
+            {!isInstalled && (
+                <div className="mx-3.5 mb-2">
+                    <button
+                        onClick={handleSidebarInstall}
+                        className="w-full flex items-center gap-2.5 p-3 rounded-xl bg-gradient-to-r from-blue-500/10 to-cyan-500/10 border border-blue-500/20 text-[13px] font-bold text-blue-400 hover:text-blue-300 transition-colors"
+                    >
+                        <i className="fas fa-mobile-screen-button w-5 text-center"></i>
+                        <span>앱 다운로드</span>
+                        <i className="fas fa-download text-[10px] ml-auto opacity-50"></i>
+                    </button>
+                </div>
+            )}
+            {showGuide && <InstallGuide isIOS={isIOS} onClose={() => setShowGuide(false)} />}
 
             {/* Admin tools - bottom pinned */}
             <div className="px-3.5 pb-2 space-y-1">

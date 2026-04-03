@@ -128,7 +128,10 @@ def _api_get(token, path, tr_id, params, retry=True):
         res = requests.get(f"{BASE_URL}{path}",
                            headers=_headers(token, tr_id),
                            params=params, timeout=10)
-        if res.status_code == 401 and retry:
+        token_expired = (res.status_code == 401 or
+                         (res.status_code == 500 and "EGW00123" in res.text))
+        if token_expired and retry:
+            logger.warning(f"KIS 토큰 만료 감지 ({res.status_code}), 재발급 시도")
             invalidate_token()
             new_token = get_token()
             if new_token:
@@ -184,7 +187,7 @@ def fetch_price_detail(token, stock_code):
                                "FID_COND_MRKT_DIV_CODE": "J",
                                "FID_INPUT_ISCD": stock_code,
                            }, timeout=10)
-        if res.status_code == 401:
+        if res.status_code == 401 or (res.status_code == 500 and "EGW00123" in res.text):
             return {}
         data = res.json().get("output", {})
         return data if isinstance(data, dict) else {}

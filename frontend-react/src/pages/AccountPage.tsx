@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { subscriptionAPI, type SubscriptionRequest } from '@/lib/api';
+import { usePWAInstall } from '@/hooks/usePWAInstall';
+import { InstallGuide } from '@/components/layout/InstallPrompt';
 
 export default function AccountPage() {
     const { user, token, refreshUser } = useAuth();
@@ -10,6 +12,13 @@ export default function AccountPage() {
     const [requesting, setRequesting] = useState(false);
     const [showBank, setShowBank] = useState(false);
     const [depositorName, setDepositorName] = useState('');
+    const { canInstall, isInstalled, isIOS, install } = usePWAInstall();
+    const [showInstallGuide, setShowInstallGuide] = useState(false);
+
+    const handleInstallApp = async () => {
+        const result = await install();
+        if (result === 'manual') setShowInstallGuide(true);
+    };
 
     const isPro = user?.tier === 'pro' || user?.tier === 'premium';
     const hasPending = requests.some(r => r.status === 'pending');
@@ -336,6 +345,34 @@ export default function AccountPage() {
                     </a>
                 </div>
             )}
+
+            {/* App Install */}
+            {!isInstalled && (
+                <div className="p-6 rounded-2xl border border-blue-500/20 bg-[#13151f]">
+                    <div className="flex items-center gap-3 mb-3">
+                        <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
+                            <i className="fas fa-mobile-screen-button text-blue-400" />
+                        </div>
+                        <div>
+                            <h3 className="text-white font-bold">앱 다운로드</h3>
+                            <p className="text-gray-500 text-xs">홈 화면에 추가하고 앱처럼 사용하세요</p>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-4 mb-4 text-xs text-gray-400">
+                        <span><i className="fas fa-bolt text-amber-400 mr-1" />빠른 실행</span>
+                        <span><i className="fas fa-expand text-amber-400 mr-1" />전체 화면</span>
+                        <span><i className="fas fa-bell text-amber-400 mr-1" />알림</span>
+                    </div>
+                    <button
+                        onClick={handleInstallApp}
+                        className="w-full py-3 rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-400 hover:to-cyan-400 text-white font-bold text-sm transition-all flex items-center justify-center gap-2"
+                    >
+                        <i className="fas fa-download" />
+                        앱 설치하기
+                    </button>
+                </div>
+            )}
+            {showInstallGuide && <InstallGuide isIOS={isIOS} onClose={() => setShowInstallGuide(false)} />}
 
             {/* Links */}
             <div className="flex items-center gap-4 pt-2">

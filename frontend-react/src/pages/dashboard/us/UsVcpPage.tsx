@@ -85,7 +85,8 @@ export default function UsVcpPage() {
     useSmartRefresh(silentRefresh, ['vcp_us_latest.json'], 15000, selectedDate === 'latest');
     usePullToRefreshRegister(useCallback(async () => { await loadData(selectedDate); }, [loadData, selectedDate]));
 
-    const signals = data?.signals || [];
+    const rawSignals = data?.signals || [];
+    const signals = rawSignals.filter((s, i, arr) => arr.findIndex(x => x.symbol === s.symbol) === i);
     const meta = data?.metadata;
     const summary = data?.summary;
 

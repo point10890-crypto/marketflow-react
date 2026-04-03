@@ -973,7 +973,7 @@ def update_jongga_v2():
     success = run_command(
         [Config.PYTHON_PATH, '-c', script],
         'KR 종가베팅 V2 분석 엔진',
-        timeout=600
+        timeout=1200
     )
 
     if not success:

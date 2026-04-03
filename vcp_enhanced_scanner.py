@@ -403,6 +403,16 @@ def scan_crypto_market() -> Dict:
             continue
 
     signals.sort(key=lambda s: s['composite']['composite_score'], reverse=True)
+
+    # 중복 제거: symbol 기준 최고 점수만 유지
+    seen = set()
+    unique_signals = []
+    for s in signals:
+        if s['symbol'] not in seen:
+            seen.add(s['symbol'])
+            unique_signals.append(s)
+    signals = unique_signals
+
     vcp_found = sum(1 for s in signals if s['vcp_pattern']['valid_vcp'])
     entry_ready = sum(1 for s in signals if s['composite']['entry_ready'])
 
@@ -488,6 +498,16 @@ def scan_kr_market() -> Dict:
             continue
 
     signals.sort(key=lambda s: s['composite']['composite_score'], reverse=True)
+
+    # 중복 제거: symbol 기준 최고 점수만 유지
+    seen = set()
+    unique_signals = []
+    for s in signals:
+        if s['symbol'] not in seen:
+            seen.add(s['symbol'])
+            unique_signals.append(s)
+    signals = unique_signals
+
     vcp_found = sum(1 for s in signals if s['vcp_pattern']['valid_vcp'])
     entry_ready = sum(1 for s in signals if s['composite']['entry_ready'])
 

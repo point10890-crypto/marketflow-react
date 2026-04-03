@@ -352,11 +352,20 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
             if (aiChartRes) setAiChart(aiChartRes);
             if (usAiChartRes) setUsAiChart(usAiChartRes);
 
-            // VCP summary
+            // VCP summary — 중복 제거 (symbol 기준)
+            const dedup = (signals: any[]) => {
+                const seen = new Set();
+                return signals.filter((s: any) => {
+                    const key = s.symbol || s.name || s.ticker;
+                    if (seen.has(key)) return false;
+                    seen.add(key);
+                    return true;
+                });
+            };
             const allSignals: Array<{ name: string; market: string; score: number }> = [];
             const addSignals = (data: any, market: string) => {
                 if (data?.signals) {
-                    data.signals.slice(0, 3).forEach((s: any) => {
+                    dedup(data.signals).slice(0, 3).forEach((s: any) => {
                         const score = typeof s.composite === 'object'
                             ? (s.composite?.composite_score ?? 0)
                             : (s.composite ?? s.score ?? 0);
@@ -369,9 +378,9 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
             addSignals(vcpCrypto, 'CRYPTO');
 
             setVcpData({
-                kr: vcpKr?.signals?.length ?? 0,
-                us: vcpUs?.signals?.length ?? 0,
-                crypto: vcpCrypto?.signals?.length ?? 0,
+                kr: vcpKr?.signals ? dedup(vcpKr.signals).length : 0,
+                us: vcpUs?.signals ? dedup(vcpUs.signals).length : 0,
+                crypto: vcpCrypto?.signals ? dedup(vcpCrypto.signals).length : 0,
                 topSignals: allSignals.sort((a, b) => b.score - a.score).slice(0, 5),
             });
         } catch { /* ignore */ }
@@ -387,10 +396,19 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                 usAPI.getVCPEnhanced().catch(() => null),
                 cryptoAPI.getVCPEnhanced().catch(() => null),
             ]).then(([vcpKr, vcpUs, vcpCrypto]) => {
+                const dedup = (signals: any[]) => {
+                    const seen = new Set();
+                    return signals.filter((s: any) => {
+                        const key = s.symbol || s.name || s.ticker;
+                        if (seen.has(key)) return false;
+                        seen.add(key);
+                        return true;
+                    });
+                };
                 const allSignals: Array<{ name: string; market: string; score: number }> = [];
                 const addSignals = (data: any, market: string) => {
                     if (data?.signals) {
-                        data.signals.slice(0, 3).forEach((s: any) => {
+                        dedup(data.signals).slice(0, 3).forEach((s: any) => {
                             const score = typeof s.composite === 'object'
                                 ? (s.composite?.composite_score ?? 0)
                                 : (s.composite ?? s.score ?? 0);
@@ -402,9 +420,9 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                 addSignals(vcpUs, 'US');
                 addSignals(vcpCrypto, 'CRYPTO');
                 setVcpData({
-                    kr: vcpKr?.signals?.length ?? 0,
-                    us: vcpUs?.signals?.length ?? 0,
-                    crypto: vcpCrypto?.signals?.length ?? 0,
+                    kr: vcpKr?.signals ? dedup(vcpKr.signals).length : 0,
+                    us: vcpUs?.signals ? dedup(vcpUs.signals).length : 0,
+                    crypto: vcpCrypto?.signals ? dedup(vcpCrypto.signals).length : 0,
                     topSignals: allSignals.sort((a, b) => b.score - a.score).slice(0, 5),
                 });
             });
