@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generated_at": "2026-04-04T20:00:17.996748",
+    "generated_at": "2026-04-05T00:00:29.285844",
     "market": "CRYPTO",
     "gate": "RED",
     "gate_score": 0,
@@ -8,12 +8,58 @@
   },
   "signals": [
     {
+      "symbol": "POLYX/USDT",
+      "name": "POLYX",
+      "market": "CRYPTO",
+      "price": 0.0481,
+      "composite": {
+        "composite_score": 50,
+        "rating": "Good Setup",
+        "entry_ready": true
+      },
+      "trend_template": {
+        "score": 0.0,
+        "passed": false
+      },
+      "vcp_pattern": {
+        "score": 61.5,
+        "valid_vcp": true,
+        "num_contractions": 3,
+        "pivot_price": 0.0481
+      },
+      "volume_pattern": {
+        "score": 91.6,
+        "dry_up_ratio": 3.38
+      },
+      "pivot_proximity": {
+        "score": 27.0,
+        "distance_from_pivot_pct": 6.86,
+        "trade_status": "BREAKOUT"
+      },
+      "relative_strength": {
+        "score": 42.7,
+        "rs_rank_estimate": 42.7
+      },
+      "stage": {
+        "stage": 1,
+        "stage_label": "Stage 1 - Accumulation"
+      },
+      "timeframe": "1d",
+      "signal_type": "BREAKOUT",
+      "liquidity_bucket": "C",
+      "market_regime": "BTC_DOWN|B",
+      "c1": 35.8,
+      "c2": 21.5,
+      "c3": 10.0,
+      "ml_win_prob": 42.7
+    },
+    {
       "symbol": "USD1/USDT",
       "name": "USD1",
       "market": "CRYPTO",
       "price": 1.0005,
       "composite": {
-        "composite_score": 46,
+        "composite_score": 48,
         "rating": "Developing",
         "entry_ready": false
       },
@@ -29,16 +75,16 @@
       },
       "volume_pattern": {
         "score": 4.0,
-        "dry_up_ratio": 0.3
+        "dry_up_ratio": 0.43
       },
       "pivot_proximity": {
-        "score": 45.0,
+        "score": 64.0,
         "distance_from_pivot_pct": -0.04,
         "trade_status": "APPROACHING"
       },
       "relative_strength": {
-        "score": 78.9,
-        "rs_rank_estimate": 78.9
+        "score": 73.5,
+        "rs_rank_estimate": 73.5
       },
       "stage": {
         "stage": 1,
@@ -51,17 +97,63 @@
       "c1": 2.0,
       "c2": 0.1,
       "c3": 0.1,
-      "ml_win_prob": 78.9
+      "ml_win_prob": 73.5
+    },
+    {
+      "symbol": "SAHARA/USDT",
+      "name": "SAHARA",
+      "market": "CRYPTO",
+      "price": 0.02376,
+      "composite": {
+        "composite_score": 31,
+        "rating": "Developing",
+        "entry_ready": false
+      },
+      "trend_template": {
+        "score": 0.0,
+        "passed": false
+      },
+      "vcp_pattern": {
+        "score": 18.2,
+        "valid_vcp": true,
+        "num_contractions": 3,
+        "pivot_price": 0.02376
+      },
+      "volume_pattern": {
+        "score": 75.2,
+        "dry_up_ratio": 5.75
+      },
+      "pivot_proximity": {
+        "score": 48.0,
+        "distance_from_pivot_pct": 4.12,
+        "trade_status": "BREAKOUT"
+      },
+      "relative_strength": {
+        "score": 50.6,
+        "rs_rank_estimate": 50.6
+      },
+      "stage": {
+        "stage": 1,
+        "stage_label": "Stage 1 - Accumulation"
+      },
+      "timeframe": "4h",
+      "signal_type": "BREAKOUT",
+      "liquidity_bucket": "C",
+      "market_regime": "BTC_DOWN|D",
+      "c1": 18.1,
+      "c2": 17.4,
+      "c3": 13.9,
+      "ml_win_prob": 50.6
     }
   ],
   "summary": {
     "total_screened": 50,
-    "setups_4h": 0,
+    "setups_4h": 1,
     "setups_1d": 14,
-    "signals_4h": 0,
-    "signals_1d": 1,
-    "vcp_found": 1,
-    "entry_ready": 0,
+    "signals_4h": 1,
+    "signals_1d": 2,
+    "vcp_found": 3,
+    "entry_ready": 1,
     "published": 0
   }
 }
