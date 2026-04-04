@@ -419,6 +419,15 @@ def _send_screener_alert(stock):
             json={"chat_id": chat_id, "text": msg, "parse_mode": "HTML"},
             timeout=5
         )
+        # 채널에도 전송
+        ch_token = os.environ.get('TELEGRAM_CHANNEL_BOT_TOKEN')
+        ch_id = os.environ.get('TELEGRAM_CHANNEL_CHAT_ID')
+        if ch_token and ch_id:
+            requests.post(
+                f"https://api.telegram.org/bot{ch_token}/sendMessage",
+                json={"chat_id": ch_id, "text": msg, "parse_mode": "HTML"},
+                timeout=5
+            )
     except Exception:
         pass
 
@@ -482,6 +491,15 @@ def _send_screener_hourly_summary(result):
             json={"chat_id": chat_id, "text": msg, "parse_mode": "HTML"},
             timeout=5
         )
+        # 채널에도 전송
+        ch_token = os.environ.get('TELEGRAM_CHANNEL_BOT_TOKEN')
+        ch_id = os.environ.get('TELEGRAM_CHANNEL_CHAT_ID')
+        if ch_token and ch_id:
+            requests.post(
+                f"https://api.telegram.org/bot{ch_token}/sendMessage",
+                json={"chat_id": ch_id, "text": msg, "parse_mode": "HTML"},
+                timeout=5
+            )
     except Exception:
         pass
 
