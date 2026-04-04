@@ -271,9 +271,7 @@ def list_purchases():
     page = request.args.get('page', 1, type=int)
     per_page = 10
 
-    query = PurchaseRequest.query.join(Post).join(
-        db.aliased(db.Model), PurchaseRequest.user_id == db.literal_column('1'), isouter=True
-    ) if False else PurchaseRequest.query
+    query = PurchaseRequest.query
 
     if status_filter:
         query = query.filter(PurchaseRequest.status == status_filter)
