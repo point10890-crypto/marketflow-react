@@ -17,6 +17,7 @@ frontend/.next/
 frontend/out/
 frontend-react/node_modules/
 frontend-react/dist/
+*.tsbuildinfo
 
 # Global CSV exclusion (with exceptions)
 *.csv
