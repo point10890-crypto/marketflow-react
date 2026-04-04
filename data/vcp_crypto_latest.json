@@ -1,58 +1,12 @@
 {
   "metadata": {
-    "generated_at": "2026-04-04T16:00:31.965227",
+    "generated_at": "2026-04-04T20:00:17.996748",
     "market": "CRYPTO",
     "gate": "RED",
     "gate_score": 0,
     "universe_size": 50
   },
   "signals": [
-    {
-      "symbol": "POLYX/USDT",
-      "name": "POLYX",
-      "market": "CRYPTO",
-      "price": 0.0481,
-      "composite": {
-        "composite_score": 48,
-        "rating": "Developing",
-        "entry_ready": false
-      },
-      "trend_template": {
-        "score": 0.0,
-        "passed": false
-      },
-      "vcp_pattern": {
-        "score": 62.8,
-        "valid_vcp": true,
-        "num_contractions": 3,
-        "pivot_price": 0.0481
-      },
-      "volume_pattern": {
-        "score": 69.2,
-        "dry_up_ratio": 2.62
-      },
-      "pivot_proximity": {
-        "score": 56.0,
-        "distance_from_pivot_pct": 13.51,
-        "trade_status": "BREAKOUT"
-      },
-      "relative_strength": {
-        "score": 51.1,
-        "rs_rank_estimate": 51.1
-      },
-      "stage": {
-        "stage": 1,
-        "stage_label": "Stage 1 - Accumulation"
-      },
-      "timeframe": "1d",
-      "signal_type": "BREAKOUT",
-      "liquidity_bucket": "C",
-      "market_regime": "BTC_DOWN|B",
-      "c1": 35.8,
-      "c2": 21.5,
-      "c3": 10.0,
-      "ml_win_prob": 51.1
-    },
     {
       "symbol": "USD1/USDT",
       "name": "USD1",
@@ -75,16 +29,16 @@
       },
       "volume_pattern": {
         "score": 4.0,
-        "dry_up_ratio": 0.13
+        "dry_up_ratio": 0.3
       },
       "pivot_proximity": {
         "score": 45.0,
-        "distance_from_pivot_pct": -0.05,
+        "distance_from_pivot_pct": -0.04,
         "trade_status": "APPROACHING"
       },
       "relative_strength": {
-        "score": 76.7,
-        "rs_rank_estimate": 76.7
+        "score": 78.9,
+        "rs_rank_estimate": 78.9
       },
       "stage": {
         "stage": 1,
@@ -97,7 +51,7 @@
       "c1": 2.0,
       "c2": 0.1,
       "c3": 0.1,
-      "ml_win_prob": 76.7
+      "ml_win_prob": 78.9
     }
   ],
   "summary": {
@@ -105,9 +59,9 @@
     "setups_4h": 0,
     "setups_1d": 14,
     "signals_4h": 0,
-    "signals_1d": 2,
-    "vcp_found": 2,
+    "signals_1d": 1,
+    "vcp_found": 1,
     "entry_ready": 0,
-    "published": 1
+    "published": 0
   }
 }
