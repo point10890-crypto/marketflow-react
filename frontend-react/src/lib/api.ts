@@ -736,10 +736,16 @@ function _handle401(status: number) {
 }
 
 async function _authFetch(url: string, options: RequestInit): Promise<Response> {
+    // Auto-inject auth token if not already present
+    const headers = new Headers(options.headers as HeadersInit);
+    if (!headers.has('Authorization')) {
+        const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+        if (token) headers.set('Authorization', `Bearer ${token}`);
+    }
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 15000);
     try {
-        const response = await fetch(url, { ...options, signal: controller.signal });
+        const response = await fetch(url, { ...options, headers, signal: controller.signal });
         clearTimeout(timeoutId);
         if (!response.ok) {
             _handle401(response.status);
@@ -898,4 +904,158 @@ export const briefingAPI = {
 export const stripeAPI = {
     createCheckout: (apiToken: string) => postAuthAPI<{ url: string }>('/api/stripe/create-checkout', undefined, apiToken),
     getPortal: (apiToken: string) => postAuthAPI<{ url: string }>('/api/stripe/portal', undefined, apiToken),
+};
+
+// ── Community API ──
+
+export interface CommunityBoard {
+    id: number;
+    slug: string;
+    name: string;
+    description: string;
+    icon: string;
+    sort_order: number;
+    min_tier: string;
+    write_tier: string;
+    is_active: boolean;
+    post_count: number;
+    can_read?: boolean;
+    can_write?: boolean;
+    created_at: string;
+}
+
+export interface PostAuthor {
+    id: number;
+    name: string;
+    tier: string;
+}
+
+export interface CommunityPost {
+    id: number;
+    board_id: number;
+    author: PostAuthor;
+    title: string;
+    content?: string;
+    images?: PostImage[];
+    is_notice: boolean;
+    view_count: number;
+    comment_count: number;
+    like_count: number;
+    created_at: string;
+    updated_at: string;
+    is_mine?: boolean;
+    board?: { id: number; slug: string; name: string };
+    // Formula market fields
+    price?: string;
+    file_url?: string;
+    file_name?: string;
+    is_public?: boolean;
+    purchase_status?: string | null; // null=미구매, pending, approved, rejected
+    purchase_id?: number;
+}
+
+export interface PostImage {
+    id: number;
+    filename: string;
+    original_name: string;
+    file_size: number;
+    url: string;
+}
+
+export interface CommunityComment {
+    id: number;
+    post_id: number;
+    author: PostAuthor;
+    parent_id: number | null;
+    content: string;
+    is_hidden: boolean;
+    like_count: number;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface PostListResponse {
+    posts: CommunityPost[];
+    notices: CommunityPost[];
+    total: number;
+    page: number;
+    per_page: number;
+    total_pages: number;
+}
+
+export const communityAPI = {
+    // Boards
+    getBoards: () => fetchAuthAPI<CommunityBoard[]>('/api/community/boards'),
+    createBoard: (data: Partial<CommunityBoard>) => postAuthAPI<CommunityBoard>('/api/community/boards', data),
+
+    // Posts
+    getPosts: (boardSlug: string, page = 1, perPage = 20) =>
+        fetchAuthAPI<PostListResponse>(`/api/community/boards/${boardSlug}/posts?page=${page}&per_page=${perPage}`),
+    getPost: (postId: number) => fetchAuthAPI<{ post: CommunityPost }>(`/api/community/posts/${postId}`),
+    createPost: (boardSlug: string, data: { title: string; content: string; image_filenames?: string[] }) =>
+        postAuthAPI<CommunityPost>(`/api/community/boards/${boardSlug}/posts`, data),
+    updatePost: (postId: number, data: { title?: string; content?: string }) =>
+        putAuthAPI<CommunityPost>(`/api/community/posts/${postId}`, data),
+    deletePost: (postId: number) =>
+        deleteAuthAPI<{ ok: boolean }>(`/api/community/posts/${postId}`),
+    toggleNotice: (postId: number) =>
+        putAuthAPI<{ is_notice: boolean }>(`/api/community/posts/${postId}/notice`),
+
+    // Comments
+    getComments: (postId: number) =>
+        fetchAuthAPI<CommunityComment[]>(`/api/community/posts/${postId}/comments`),
+    createComment: (postId: number, data: { content: string; parent_id?: number }) =>
+        postAuthAPI<CommunityComment>(`/api/community/posts/${postId}/comments`, data),
+    updateComment: (commentId: number, data: { content: string }) =>
+        putAuthAPI<CommunityComment>(`/api/community/comments/${commentId}`, data),
+    deleteComment: (commentId: number) =>
+        deleteAuthAPI<{ ok: boolean }>(`/api/community/comments/${commentId}`),
+
+    // Image Upload
+    uploadImage: async (file: File): Promise<{ url: string; filename: string }> => {
+        const formData = new FormData();
+        formData.append('file', file);
+        const { getToken } = await import('./auth');
+        const token = getToken();
+        const headers: Record<string, string> = {};
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        const res = await fetch(`${API_BASE}/api/community/upload`, {
+            method: 'POST',
+            headers,
+            body: formData,
+        });
+        if (!res.ok) throw new Error('Upload failed');
+        return res.json();
+    },
+
+    // Formula file upload
+    uploadFile: async (file: File): Promise<{ url: string; filename: string; original_name: string }> => {
+        const formData = new FormData();
+        formData.append('file', file);
+        const { getToken } = await import('./auth');
+        const token = getToken();
+        const headers: Record<string, string> = {};
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        const res = await fetch(`${API_BASE}/api/community/upload-file`, {
+            method: 'POST',
+            headers,
+            body: formData,
+        });
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.error || 'Upload failed');
+        }
+        return res.json();
+    },
+
+    // Purchase
+    createPurchase: (postId: number, buyerName: string) =>
+        postAuthAPI<{ id: number; status: string }>(`/api/community/posts/${postId}/purchase`, { buyer_name: buyerName }),
+
+    // Search
+    search: (q: string, board?: string, page = 1) => {
+        const params = new URLSearchParams({ q, page: String(page) });
+        if (board) params.set('board', board);
+        return fetchAuthAPI<PostListResponse>(`/api/community/search?${params}`);
+    },
 };

@@ -377,3 +377,24 @@ body {
     animation-duration: 60s !important;
   }
 }
+
+/* TipTap Editor */
+.tiptap p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: #6e6e73;
+  pointer-events: none;
+  height: 0;
+}
+.tiptap:focus {
+  outline: none;
+}
+.tiptap img {
+  max-width: 100%;
+  height: auto;
+}
+.tiptap a {
+  color: #2997ff;
+  text-decoration: underline;
+  cursor: pointer;
+}

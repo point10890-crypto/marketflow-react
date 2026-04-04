@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { adminAPI, AdminDashboard, AdminUser, SubscriptionRequest, fetchAuthAPI, API_BASE } from '@/lib/api';
 
@@ -72,6 +73,7 @@ export default function AdminPage() {
 // ── Dashboard Tab ────────────────────────────────────────────────────────────
 
 function DashboardTab({ data, onNavigate }: { data: AdminDashboard | null; onNavigate: (tab: AdminTab) => void }) {
+    const navigate = useNavigate();
     const stats = [
         { label: 'Total Users', value: data?.total_users || 0, icon: 'fa-users', color: 'text-blue-400', bg: 'bg-blue-500/10', tab: 'users' as AdminTab },
         { label: 'Pro Users', value: data?.pro_users || 0, icon: 'fa-crown', color: 'text-yellow-400', bg: 'bg-yellow-500/10', tab: 'users' as AdminTab },
@@ -103,7 +105,7 @@ function DashboardTab({ data, onNavigate }: { data: AdminDashboard | null; onNav
                     </button>
                 ))}
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 {links.map(l => (
                     <button
                         key={l.tab}
@@ -120,6 +122,19 @@ function DashboardTab({ data, onNavigate }: { data: AdminDashboard | null; onNav
                         </div>
                     </button>
                 ))}
+                <button
+                    onClick={() => navigate('/dashboard/community/formula-market/purchases')}
+                    className="apple-glass rounded-xl p-6 hover:bg-white/5 transition-colors group text-left"
+                >
+                    <div className="flex items-center gap-3">
+                        <i className="fas fa-receipt text-yellow-400 text-xl" />
+                        <div className="flex-1">
+                            <div className="text-white font-semibold group-hover:text-yellow-400 transition-colors">구매 관리</div>
+                            <div className="text-xs text-gray-500">수식 구매 승인/해제</div>
+                        </div>
+                        <i className="fas fa-chevron-right text-gray-600 group-hover:text-yellow-400 transition-colors" />
+                    </div>
+                </button>
             </div>
         </>
     );

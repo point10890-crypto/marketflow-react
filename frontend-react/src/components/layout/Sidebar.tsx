@@ -295,16 +295,16 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                 )}
 
                 {/* Community — inside scroll area */}
-                <div className="mt-4 p-3 rounded-xl bg-gradient-to-r from-yellow-500/10 to-amber-500/10 border border-yellow-500/20">
-                    <a href="https://open.kakao.com/o/gcvExOmi" target="_blank" rel="noopener noreferrer"
-                        className="flex items-center gap-2.5 text-[13px] font-bold text-yellow-400 hover:text-yellow-300 transition-colors">
-                        <i className="fas fa-comments w-5 text-center"></i>
-                        <span>커뮤니티 단톡방</span>
-                    </a>
-                    <div className="mt-1.5 text-[10px] text-gray-500 pl-7">
-                        참여코드: <span className="text-yellow-400/80 font-mono">bitman88</span>
-                    </div>
-                </div>
+                <Link to="/dashboard/community" onClick={onNavigate}
+                    className={`mt-4 flex items-center gap-2.5 p-3 rounded-xl text-[13px] font-bold transition-all border ${
+                        pathname.startsWith('/dashboard/community')
+                            ? 'text-yellow-400 bg-gradient-to-r from-yellow-500/15 to-amber-500/10 border-yellow-500/20'
+                            : 'text-yellow-400/80 hover:text-yellow-400 bg-gradient-to-r from-yellow-500/10 to-amber-500/5 border-yellow-500/10 hover:border-yellow-500/20'
+                    }`}
+                >
+                    <i className="fas fa-comments w-5 text-center"></i>
+                    <span>커뮤니티</span>
+                </Link>
 
                 {/* App Install — inside scroll area */}
                 {!isInstalled && (

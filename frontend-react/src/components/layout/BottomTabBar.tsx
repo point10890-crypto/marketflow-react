@@ -7,6 +7,7 @@ const tabs = [
     { name: 'US', href: '/dashboard/us', icon: 'fa-globe-americas', color: 'green' },
     { name: 'Crypto', href: '/dashboard/crypto', icon: 'fa-bitcoin', color: 'yellow' },
     { name: 'ProPicks', href: '/dashboard/stock-analyzer', icon: 'fa-crosshairs', color: 'orange' },
+    { name: '커뮤니티', href: '/dashboard/community', icon: 'fa-comments', color: 'cyan' },
 ];
 
 const activeColors: Record<string, string> = {

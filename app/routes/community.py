@@ -1,0 +1,550 @@
+"""Community bulletin board routes"""
+
+import os
+import uuid
+from flask import Blueprint, request, jsonify, send_from_directory, current_app
+from app.models import db
+from app.models.community import Board, Post, PostImage, Comment, PurchaseRequest
+from app.auth.decorators import login_required, approved_required, admin_required, _get_current_user
+
+community_bp = Blueprint('community', __name__)
+
+TIER_ORDER = {'free': 0, 'pro': 1, 'premium': 2}
+ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png', 'gif', 'webp'}
+FORMULA_FILE_EXTENSIONS = {'txt', 'csv', 'xlsx', 'xls', 'pdf', 'zip', 'hwp', 'docx'}
+MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
+MAX_FORMULA_FILE_SIZE = 20 * 1024 * 1024  # 20MB
+
+UPLOAD_DIR = os.path.join(os.path.abspath(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))),
+                          'data', 'uploads', 'community')
+
+
+def _check_tier(user_tier, required_tier):
+    if required_tier == 'admin':
+        return False  # Only admin role can pass, checked separately
+    return TIER_ORDER.get(user_tier, 0) >= TIER_ORDER.get(required_tier, 0)
+
+
+def _allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+# ── Boards ──
+
+@community_bp.route('/boards', methods=['GET'])
+@approved_required
+def list_boards():
+    user = _get_current_user()
+    boards = Board.query.filter_by(is_active=True).order_by(Board.sort_order).all()
+    result = []
+    for b in boards:
+        d = b.to_dict()
+        d['can_read'] = (user.role == 'admin') or _check_tier(user.tier, b.min_tier)
+        d['can_write'] = (user.role == 'admin') or _check_tier(user.tier, b.write_tier)
+        result.append(d)
+    return jsonify(result)
+
+
+@community_bp.route('/boards', methods=['POST'])
+@admin_required
+def create_board():
+    data = request.get_json() or {}
+    slug = data.get('slug', '').strip()
+    name = data.get('name', '').strip()
+    if not slug or not name:
+        return jsonify({'error': 'slug and name required'}), 400
+    if Board.query.filter_by(slug=slug).first():
+        return jsonify({'error': 'slug already exists'}), 409
+    board = Board(
+        slug=slug, name=name,
+        description=data.get('description', ''),
+        icon=data.get('icon', 'fa-comments'),
+        sort_order=data.get('sort_order', 0),
+        min_tier=data.get('min_tier', 'free'),
+        write_tier=data.get('write_tier', 'free'),
+    )
+    db.session.add(board)
+    db.session.commit()
+    return jsonify(board.to_dict()), 201
+
+
+@community_bp.route('/boards/<int:board_id>', methods=['PUT'])
+@admin_required
+def update_board(board_id):
+    board = Board.query.get_or_404(board_id)
+    data = request.get_json() or {}
+    for key in ('name', 'description', 'icon', 'sort_order', 'min_tier', 'write_tier'):
+        if key in data:
+            setattr(board, key, data[key])
+    db.session.commit()
+    return jsonify(board.to_dict())
+
+
+@community_bp.route('/boards/<int:board_id>', methods=['DELETE'])
+@admin_required
+def deactivate_board(board_id):
+    board = Board.query.get_or_404(board_id)
+    board.is_active = False
+    db.session.commit()
+    return jsonify({'ok': True})
+
+
+# ── Posts ──
+
+@community_bp.route('/boards/<slug>/posts', methods=['GET'])
+@approved_required
+def list_posts(slug):
+    user = _get_current_user()
+    board = Board.query.filter_by(slug=slug, is_active=True).first()
+    if not board:
+        return jsonify({'error': 'Board not found'}), 404
+    if user.role != 'admin' and not _check_tier(user.tier, board.min_tier):
+        return jsonify({'error': 'Tier upgrade required'}), 403
+
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 20, type=int)
+    per_page = min(per_page, 50)
+
+    # Notices (only page 1)
+    notices = []
+    if page == 1:
+        notice_q = Post.query.filter_by(board_id=board.id, is_hidden=False, is_notice=True)\
+            .order_by(Post.created_at.desc()).all()
+        notices = [p.to_dict() for p in notice_q]
+
+    # Regular posts
+    query = Post.query.filter_by(board_id=board.id, is_hidden=False, is_notice=False)\
+        .order_by(Post.created_at.desc())
+    pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+
+    return jsonify({
+        'posts': [p.to_dict() for p in pagination.items],
+        'notices': notices,
+        'total': pagination.total,
+        'page': page,
+        'per_page': per_page,
+        'total_pages': pagination.pages,
+        'board': board.to_dict(),
+    })
+
+
+@community_bp.route('/posts/<int:post_id>', methods=['GET'])
+@approved_required
+def get_post(post_id):
+    user = _get_current_user()
+    post = Post.query.get_or_404(post_id)
+    if post.is_hidden and user.role != 'admin':
+        return jsonify({'error': 'Post not found'}), 404
+    board = post.board
+    if user.role != 'admin' and not _check_tier(user.tier, board.min_tier):
+        return jsonify({'error': 'Tier upgrade required'}), 403
+
+    post.view_count += 1
+    db.session.commit()
+
+    post_data = post.to_dict(include_content=True, user_id=user.id)
+
+    # Include purchase status for formula-market posts
+    if board.slug == 'formula-market' and user.role != 'admin':
+        pr = PurchaseRequest.query.filter_by(post_id=post.id, user_id=user.id)\
+            .order_by(PurchaseRequest.created_at.desc()).first()
+        if pr:
+            post_data['purchase_status'] = pr.status
+            post_data['purchase_id'] = pr.id
+        else:
+            post_data['purchase_status'] = None
+        # Hide file info unless purchase is approved
+        if not pr or pr.status != 'approved':
+            post_data.pop('file_url', None)
+            post_data.pop('file_name', None)
+    elif board.slug == 'formula-market' and user.role == 'admin':
+        post_data['purchase_status'] = 'approved'
+
+    return jsonify({'post': post_data})
+
+
+@community_bp.route('/boards/<slug>/posts', methods=['POST'])
+@approved_required
+def create_post(slug):
+    user = _get_current_user()
+    board = Board.query.filter_by(slug=slug, is_active=True).first()
+    if not board:
+        return jsonify({'error': 'Board not found'}), 404
+    if user.role != 'admin' and not _check_tier(user.tier, board.write_tier):
+        return jsonify({'error': 'Tier upgrade required'}), 403
+
+    data = request.get_json() or {}
+    title = data.get('title', '').strip()
+    content = data.get('content', '').strip()
+    if not title or not content:
+        return jsonify({'error': 'Title and content required'}), 400
+
+    post = Post(board_id=board.id, author_id=user.id, title=title, content=content)
+
+    # Formula market fields
+    if board.slug == 'formula-market':
+        post.price = data.get('price', '').strip() or None
+        post.is_public = data.get('is_public', False)
+        post.file_url = data.get('file_url') or None
+        post.file_name = data.get('file_name') or None
+
+    db.session.add(post)
+    db.session.flush()
+
+    # Link uploaded images
+    for fn in data.get('image_filenames', []):
+        img = PostImage.query.filter_by(filename=fn).first()
+        if img and not img.post_id:
+            img.post_id = post.id
+
+    db.session.commit()
+    return jsonify(post.to_dict(include_content=True, user_id=user.id)), 201
+
+
+@community_bp.route('/posts/<int:post_id>', methods=['PUT'])
+@login_required
+def update_post(post_id):
+    user = _get_current_user()
+    post = Post.query.get_or_404(post_id)
+    if user.role != 'admin' and post.author_id != user.id:
+        return jsonify({'error': 'Permission denied'}), 403
+
+    data = request.get_json() or {}
+    if 'title' in data:
+        post.title = data['title'].strip()
+    if 'content' in data:
+        post.content = data['content'].strip()
+    db.session.commit()
+    return jsonify(post.to_dict(include_content=True, user_id=user.id))
+
+
+@community_bp.route('/posts/<int:post_id>', methods=['DELETE'])
+@login_required
+def delete_post(post_id):
+    user = _get_current_user()
+    post = Post.query.get_or_404(post_id)
+    if user.role != 'admin' and post.author_id != user.id:
+        return jsonify({'error': 'Permission denied'}), 403
+    post.is_hidden = True
+    db.session.commit()
+    return jsonify({'ok': True})
+
+
+@community_bp.route('/posts/<int:post_id>/notice', methods=['PUT'])
+@admin_required
+def toggle_notice(post_id):
+    post = Post.query.get_or_404(post_id)
+    post.is_notice = not post.is_notice
+    db.session.commit()
+    return jsonify({'is_notice': post.is_notice})
+
+
+# ── Purchase Requests ──
+
+@community_bp.route('/posts/<int:post_id>/purchase', methods=['POST'])
+@approved_required
+def create_purchase(post_id):
+    user = _get_current_user()
+    post = Post.query.get_or_404(post_id)
+    data = request.get_json() or {}
+    buyer_name = data.get('buyer_name', '').strip()
+    if not buyer_name:
+        return jsonify({'error': '입금자명을 입력하세요.'}), 400
+
+    # Check if already requested
+    existing = PurchaseRequest.query.filter_by(post_id=post.id, user_id=user.id, status='pending').first()
+    if existing:
+        return jsonify({'error': '이미 구매신청이 접수되었습니다.'}), 400
+
+    pr = PurchaseRequest(post_id=post.id, user_id=user.id, buyer_name=buyer_name)
+    db.session.add(pr)
+    db.session.commit()
+    return jsonify(pr.to_dict()), 201
+
+
+@community_bp.route('/purchases', methods=['GET'])
+@admin_required
+def list_purchases():
+    """Admin: list all purchase requests with pagination"""
+    status_filter = request.args.get('status', '')
+    search = request.args.get('search', '').strip()
+    page = request.args.get('page', 1, type=int)
+    per_page = 10
+
+    query = PurchaseRequest.query.join(Post).join(
+        db.aliased(db.Model), PurchaseRequest.user_id == db.literal_column('1'), isouter=True
+    ) if False else PurchaseRequest.query
+
+    if status_filter:
+        query = query.filter(PurchaseRequest.status == status_filter)
+    if search:
+        query = query.join(PurchaseRequest.user).filter(
+            db.or_(
+                PurchaseRequest.buyer_name.ilike(f'%{search}%'),
+            )
+        )
+
+    query = query.order_by(PurchaseRequest.created_at.desc())
+    total = query.count()
+    purchases = query.offset((page - 1) * per_page).limit(per_page).all()
+
+    return jsonify({
+        'purchases': [p.to_dict() for p in purchases],
+        'total': total,
+        'page': page,
+        'per_page': per_page,
+        'total_pages': max(1, (total + per_page - 1) // per_page),
+    })
+
+
+@community_bp.route('/purchases/<int:purchase_id>', methods=['PUT'])
+@admin_required
+def update_purchase(purchase_id):
+    """Admin: approve/reject purchase"""
+    pr = PurchaseRequest.query.get_or_404(purchase_id)
+    data = request.get_json() or {}
+    new_status = data.get('status', '')
+    if new_status not in ('approved', 'rejected'):
+        return jsonify({'error': 'Invalid status'}), 400
+    pr.status = new_status
+    if new_status == 'approved':
+        from datetime import datetime, timezone
+        pr.approved_at = datetime.now(timezone.utc)
+    else:
+        pr.approved_at = None
+    db.session.commit()
+    return jsonify(pr.to_dict())
+
+
+@community_bp.route('/purchases/<int:purchase_id>', methods=['DELETE'])
+@admin_required
+def delete_purchase(purchase_id):
+    """Admin: delete purchase record"""
+    pr = PurchaseRequest.query.get_or_404(purchase_id)
+    db.session.delete(pr)
+    db.session.commit()
+    return jsonify({'success': True})
+
+
+# ── Comments ──
+
+@community_bp.route('/posts/<int:post_id>/comments', methods=['GET'])
+@approved_required
+def list_comments(post_id):
+    post = Post.query.get_or_404(post_id)
+    comments = Comment.query.filter_by(post_id=post.id)\
+        .order_by(Comment.created_at.asc()).all()
+    return jsonify([c.to_dict() for c in comments])
+
+
+@community_bp.route('/posts/<int:post_id>/comments', methods=['POST'])
+@approved_required
+def create_comment(post_id):
+    user = _get_current_user()
+    post = Post.query.get_or_404(post_id)
+    board = post.board
+    if user.role != 'admin' and not _check_tier(user.tier, board.min_tier):
+        return jsonify({'error': 'Tier upgrade required'}), 403
+
+    data = request.get_json() or {}
+    content = data.get('content', '').strip()
+    if not content:
+        return jsonify({'error': 'Content required'}), 400
+
+    parent_id = data.get('parent_id')
+    if parent_id:
+        parent = Comment.query.get(parent_id)
+        if not parent or parent.post_id != post.id:
+            return jsonify({'error': 'Invalid parent comment'}), 400
+
+    comment = Comment(post_id=post.id, author_id=user.id, content=content, parent_id=parent_id)
+    db.session.add(comment)
+    post.comment_count = Comment.query.filter_by(post_id=post.id, is_hidden=False).count() + 1
+    db.session.commit()
+    return jsonify(comment.to_dict()), 201
+
+
+@community_bp.route('/comments/<int:comment_id>', methods=['PUT'])
+@login_required
+def update_comment(comment_id):
+    user = _get_current_user()
+    comment = Comment.query.get_or_404(comment_id)
+    if user.role != 'admin' and comment.author_id != user.id:
+        return jsonify({'error': 'Permission denied'}), 403
+
+    data = request.get_json() or {}
+    content = data.get('content', '').strip()
+    if not content:
+        return jsonify({'error': 'Content required'}), 400
+    comment.content = content
+    db.session.commit()
+    return jsonify(comment.to_dict())
+
+
+@community_bp.route('/comments/<int:comment_id>', methods=['DELETE'])
+@login_required
+def delete_comment(comment_id):
+    user = _get_current_user()
+    comment = Comment.query.get_or_404(comment_id)
+    if user.role != 'admin' and comment.author_id != user.id:
+        return jsonify({'error': 'Permission denied'}), 403
+    comment.is_hidden = True
+    post = Post.query.get(comment.post_id)
+    if post:
+        post.comment_count = max(0, Comment.query.filter_by(post_id=post.id, is_hidden=False).count() - 1)
+    db.session.commit()
+    return jsonify({'ok': True})
+
+
+# ── Image Upload ──
+
+@community_bp.route('/upload', methods=['POST'])
+@approved_required
+def upload_image():
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file provided'}), 400
+    file = request.files['file']
+    if not file.filename or not _allowed_file(file.filename):
+        return jsonify({'error': 'Invalid file type. Allowed: jpg, png, gif, webp'}), 400
+
+    # Read and check size
+    file_data = file.read()
+    if len(file_data) > MAX_FILE_SIZE:
+        return jsonify({'error': 'File too large (max 5MB)'}), 400
+
+    ext = file.filename.rsplit('.', 1)[1].lower()
+    filename = f"{uuid.uuid4().hex}.{ext}"
+
+    os.makedirs(UPLOAD_DIR, exist_ok=True)
+    filepath = os.path.join(UPLOAD_DIR, filename)
+    with open(filepath, 'wb') as f:
+        f.write(file_data)
+
+    # Save record (post_id will be linked when post is created)
+    img = PostImage(post_id=0, filename=filename, original_name=file.filename, file_size=len(file_data))
+    db.session.add(img)
+    db.session.commit()
+
+    return jsonify({
+        'url': f'/api/community/uploads/{filename}',
+        'filename': filename,
+    })
+
+
+@community_bp.route('/upload-file', methods=['POST'])
+@approved_required
+def upload_formula_file():
+    """Upload formula file (txt, csv, xlsx, pdf, zip, hwp, docx)"""
+    user = _get_current_user()
+    if user.role != 'admin':
+        return jsonify({'error': 'Admin only'}), 403
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file provided'}), 400
+    file = request.files['file']
+    if not file.filename:
+        return jsonify({'error': 'No filename'}), 400
+
+    ext = file.filename.rsplit('.', 1)[-1].lower() if '.' in file.filename else ''
+    if ext not in FORMULA_FILE_EXTENSIONS:
+        return jsonify({'error': f'Invalid file type. Allowed: {", ".join(sorted(FORMULA_FILE_EXTENSIONS))}'}), 400
+
+    file_data = file.read()
+    if len(file_data) > MAX_FORMULA_FILE_SIZE:
+        return jsonify({'error': 'File too large (max 20MB)'}), 400
+
+    filename = f"{uuid.uuid4().hex}.{ext}"
+    os.makedirs(UPLOAD_DIR, exist_ok=True)
+    filepath = os.path.join(UPLOAD_DIR, filename)
+    with open(filepath, 'wb') as f:
+        f.write(file_data)
+
+    return jsonify({
+        'url': f'/api/community/uploads/{filename}',
+        'filename': filename,
+        'original_name': file.filename,
+    })
+
+
+@community_bp.route('/uploads/<filename>', methods=['GET'])
+def serve_upload(filename):
+    if not os.path.exists(os.path.join(UPLOAD_DIR, filename)):
+        return jsonify({'error': 'Not found'}), 404
+    response = send_from_directory(UPLOAD_DIR, filename)
+    response.headers['Cache-Control'] = 'public, max-age=86400'
+    return response
+
+
+@community_bp.route('/posts/<int:post_id>/download', methods=['GET'])
+@approved_required
+def download_formula_file(post_id):
+    """Download formula file — requires approved purchase or admin"""
+    user = _get_current_user()
+    post = Post.query.get_or_404(post_id)
+
+    if not post.file_url:
+        return jsonify({'error': '파일이 없습니다.'}), 404
+
+    # Admin can always download
+    if user.role != 'admin':
+        pr = PurchaseRequest.query.filter_by(
+            post_id=post.id, user_id=user.id, status='approved'
+        ).first()
+        if not pr:
+            return jsonify({'error': '구매 승인 후 다운로드할 수 있습니다.'}), 403
+
+    # Extract stored filename from url like /api/community/uploads/xxxx.ext
+    stored_filename = post.file_url.rsplit('/', 1)[-1]
+    filepath = os.path.join(UPLOAD_DIR, stored_filename)
+    if not os.path.exists(filepath):
+        return jsonify({'error': '파일을 찾을 수 없습니다.'}), 404
+
+    download_name = post.file_name or stored_filename
+    return send_from_directory(
+        UPLOAD_DIR, stored_filename,
+        as_attachment=True,
+        download_name=download_name
+    )
+
+
+# ── Search ──
+
+@community_bp.route('/search', methods=['GET'])
+@approved_required
+def search_posts():
+    user = _get_current_user()
+    q = request.args.get('q', '').strip()
+    board_slug = request.args.get('board', '')
+    page = request.args.get('page', 1, type=int)
+    per_page = 20
+
+    if not q or len(q) < 2:
+        return jsonify({'posts': [], 'notices': [], 'total': 0, 'page': 1, 'per_page': per_page, 'total_pages': 0})
+
+    query = Post.query.join(Board).filter(
+        Post.is_hidden == False,
+        Board.is_active == True,
+    )
+
+    if board_slug:
+        query = query.filter(Board.slug == board_slug)
+
+    # Tier filter: exclude boards user can't access
+    if user.role != 'admin':
+        user_tier_val = TIER_ORDER.get(user.tier, 0)
+        accessible_tiers = [t for t, v in TIER_ORDER.items() if v <= user_tier_val]
+        query = query.filter(Board.min_tier.in_(accessible_tiers))
+
+    query = query.filter(
+        db.or_(Post.title.ilike(f'%{q}%'), Post.content.ilike(f'%{q}%'))
+    )
+    query = query.order_by(Post.created_at.desc())
+    pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+
+    return jsonify({
+        'posts': [p.to_dict() for p in pagination.items],
+        'notices': [],
+        'total': pagination.total,
+        'page': page,
+        'per_page': per_page,
+        'total_pages': pagination.pages,
+    })

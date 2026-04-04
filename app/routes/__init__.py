@@ -49,4 +49,8 @@ def register_blueprints(app):
     from app.routes.briefing import briefing_bp
     app.register_blueprint(briefing_bp, url_prefix='/api/briefing')
 
-    print("[OK] Blueprints registered (KR + US + Crypto + Econ + Auth + Admin + Stripe + StockAnalyzer + Wave + Briefing)")
+    # Community routes
+    from app.routes.community import community_bp
+    app.register_blueprint(community_bp, url_prefix='/api/community')
+
+    print("[OK] Blueprints registered (KR + US + Crypto + Econ + Auth + Admin + Stripe + StockAnalyzer + Wave + Briefing + Community)")

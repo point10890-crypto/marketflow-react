@@ -56,6 +56,13 @@ const BriefingPortalPage = lazy(() => import('@/pages/dashboard/BriefingPortalPa
 const AccountPage = lazy(() => import('@/pages/AccountPage'));
 const DataStatusPage = lazy(() => import('@/pages/dashboard/DataStatusPage'));
 const AdminPage = lazy(() => import('@/pages/admin/AdminPage'));
+const CommunityPage = lazy(() => import('@/pages/community/CommunityPage'));
+const BoardPage = lazy(() => import('@/pages/community/BoardPage'));
+const PostDetailPage = lazy(() => import('@/pages/community/PostDetailPage'));
+const PostWritePage = lazy(() => import('@/pages/community/PostWritePage'));
+const FormulaWritePage = lazy(() => import('@/pages/community/FormulaWritePage'));
+const FormulaListPage = lazy(() => import('@/pages/community/FormulaListPage'));
+const PurchaseAdminPage = lazy(() => import('@/pages/community/PurchaseAdminPage'));
 
 function ApprovedGuard({ children }: { children: React.ReactNode }) {
     const { user, loading } = useAuth();
@@ -129,6 +136,14 @@ export default function App() {
                         <Route path="stock-analyzer" element={<ProGuard><Suspense fallback={<LoadingFallback />}><StockAnalyzerPage /></Suspense></ProGuard>} />
                         <Route path="wave" element={<ProGuard><Suspense fallback={<LoadingFallback />}><WaveOverviewPage /></Suspense></ProGuard>} />
                         <Route path="briefing" element={<ProGuard><Suspense fallback={<LoadingFallback />}><BriefingPortalPage /></Suspense></ProGuard>} />
+                        <Route path="community" element={<Suspense fallback={<LoadingFallback />}><CommunityPage /></Suspense>} />
+                        <Route path="community/:boardSlug" element={<Suspense fallback={<LoadingFallback />}><BoardPage /></Suspense>} />
+                        <Route path="community/formula-market" element={<Suspense fallback={<LoadingFallback />}><FormulaListPage /></Suspense>} />
+                        <Route path="community/formula-market/purchases" element={<Suspense fallback={<LoadingFallback />}><PurchaseAdminPage /></Suspense>} />
+                        <Route path="community/formula-market/write" element={<Suspense fallback={<LoadingFallback />}><FormulaWritePage /></Suspense>} />
+                        <Route path="community/:boardSlug/write" element={<Suspense fallback={<LoadingFallback />}><PostWritePage /></Suspense>} />
+                        <Route path="community/post/:postId" element={<Suspense fallback={<LoadingFallback />}><PostDetailPage /></Suspense>} />
+                        <Route path="community/post/:postId/edit" element={<Suspense fallback={<LoadingFallback />}><PostWritePage /></Suspense>} />
                     </Route>
 
                     {/* Admin routes */}

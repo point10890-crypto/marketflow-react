@@ -67,6 +67,7 @@ def create_app(config=None):
     with app.app_context():
         from app.models.user import User  # noqa: F401
         from app.models.wave import WaveSignal, WaveTracking, WavePatternStats  # noqa: F401
+        from app.models.community import Board, Post, PostImage, Comment  # noqa: F401
         db.create_all()
 
         # Idempotent migration: add columns if missing
