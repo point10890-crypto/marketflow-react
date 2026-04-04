@@ -1,0 +1,28 @@
+수식관리자=>신호검색=>새로만들기
+
+신호명:
+
+AI전략(1000%수익)신호
+
+수식
+
+S = sum(1);
+R = S % 20;
+W = R == 1;
+HH = HighestSince(1, W, H);
+X = valueWhen(1, W, HH(1));
+LL = LowestSince(1, W, L);
+Y = valueWhen(1, W, LL(1));
+Z = valueWhen(1, W, C(1));
+a = (X + Y + Z) / 3;
+MA_Period = ma(C, Period);
+k = sum(((L + H + O + C) / 4) * V / 100000000);
+w = valueWhen(1, date(1) != date, k(1));
+e=k-w;
+BUY_SIGNAL = crossup(C, a * Multiplier) && MA_Period < C && e > Threshold;
+
+지표변수
+
+period  60
+Multiplier  1.1
+Threshold  200
