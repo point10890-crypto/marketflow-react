@@ -1,23 +1,31 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function LoginPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [remember, setRemember] = useState(true);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
-    const { login } = useAuth();
+    const { login, user } = useAuth();
     const navigate = useNavigate();
+
+    // 이미 로그인 상태면 대시보드로 리다이렉트
+    useEffect(() => {
+        if (user) {
+            navigate('/dashboard', { replace: true });
+        }
+    }, [user, navigate]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
         setLoading(true);
         try {
-            await login(email, password);
+            await login(email, password, remember);
             // pending 유저는 승인 대기 페이지로
-            const stored = localStorage.getItem('auth_user');
+            const stored = localStorage.getItem('auth_user') || sessionStorage.getItem('auth_user');
             if (stored) {
                 try {
                     const parsed = JSON.parse(stored);
@@ -26,7 +34,7 @@ export default function LoginPage() {
                         return;
                     }
                 } catch {
-                    // corrupted localStorage — proceed to dashboard
+                    // corrupted storage — proceed to dashboard
                 }
             }
             navigate('/dashboard');
@@ -62,6 +70,15 @@ export default function LoginPage() {
                             className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-600 focus:outline-none focus:border-[#2997ff] transition-colors"
                             placeholder="Min 6 characters" />
                     </div>
+                    <label className="flex items-center gap-2 cursor-pointer select-none">
+                        <input
+                            type="checkbox"
+                            checked={remember}
+                            onChange={(e) => setRemember(e.target.checked)}
+                            className="w-4 h-4 rounded border-white/20 bg-white/5 text-[#2997ff] focus:ring-[#2997ff] focus:ring-offset-0 accent-[#2997ff]"
+                        />
+                        <span className="text-sm text-gray-400">로그인 유지</span>
+                    </label>
                     <button type="submit" disabled={loading}
                         className="w-full py-3 rounded-xl bg-[#2997ff] hover:bg-[#2997ff]/90 text-white font-bold transition-all disabled:opacity-50">
                         {loading ? 'Signing in...' : 'Sign In'}

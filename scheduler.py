@@ -1456,20 +1456,90 @@ def run_crypto_vcp_scan() -> bool:
         published = result.get('published', 0) if isinstance(result, dict) else 0
         logger.info(f"🔍 Crypto VCP: {published}개 시그널 발행")
 
-        # 결과를 vcp_crypto_latest.json에 저장
+        # 결과를 vcp_crypto_latest.json에 저장 (VCPSignal 포맷 변환)
+        raw_signals = result.get('top_signals', [])
+        transformed = []
+        for s in raw_signals:
+            comp = s.get('components', {})
+            total_score = s.get('score', 0)
+            valid_vcp = comp.get('valid_vcp', False)
+            rating = comp.get('rating', 'Developing')
+            entry_ready = s.get('signal_type') in ('BREAKOUT', 'RETEST_OK') and total_score >= 50
+
+            # Normalize component scores to 0-100 range (from 40/25/25/10 max)
+            contraction_pct = round((comp.get('contraction', 0) / 40.0) * 100, 1) if comp else 0
+            trend_pct = round((comp.get('trend', 0) / 25.0) * 100, 1) if comp else 0
+            trigger_pct = round((comp.get('trigger', 0) / 25.0) * 100, 1) if comp else 0
+            risk_pct = round((comp.get('risk_liq', 0) / 10.0) * 100, 1) if comp else 0
+
+            transformed.append({
+                'symbol': s['symbol'],
+                'name': s['symbol'].replace('/USDT', ''),
+                'market': 'CRYPTO',
+                'price': s.get('pivot_high'),
+                'composite': {
+                    'composite_score': total_score,
+                    'rating': rating,
+                    'entry_ready': entry_ready,
+                },
+                'trend_template': {
+                    'score': trend_pct,
+                    'passed': trend_pct >= 50,
+                },
+                'vcp_pattern': {
+                    'score': contraction_pct,
+                    'valid_vcp': valid_vcp,
+                    'num_contractions': 3,
+                    'pivot_price': s.get('pivot_high'),
+                },
+                'volume_pattern': {
+                    'score': trigger_pct,
+                    'dry_up_ratio': s.get('vol_ratio'),
+                },
+                'pivot_proximity': {
+                    'score': risk_pct,
+                    'distance_from_pivot_pct': s.get('breakout_close_pct'),
+                    'trade_status': s.get('signal_type'),
+                },
+                'relative_strength': {
+                    'score': round(s['ml_win_prob'], 1) if s.get('ml_win_prob') is not None else 50,
+                    'rs_rank_estimate': s.get('ml_win_prob'),
+                },
+                'stage': {
+                    'stage': 2 if trend_pct >= 50 else 1,
+                    'stage_label': f"Stage 2 - {s.get('signal_type', 'Setup')}" if trend_pct >= 50 else "Stage 1 - Accumulation",
+                },
+                # Raw data 보존
+                'timeframe': s.get('timeframe'),
+                'signal_type': s.get('signal_type'),
+                'liquidity_bucket': s.get('liquidity_bucket'),
+                'market_regime': s.get('market_regime'),
+                'c1': s.get('c1'),
+                'c2': s.get('c2'),
+                'c3': s.get('c3'),
+                'ml_win_prob': s.get('ml_win_prob'),
+            })
+
+        vcp_found = len([s for s in transformed if s.get('vcp_pattern', {}).get('valid_vcp')])
+        entry_count = len([s for s in transformed if s.get('composite', {}).get('entry_ready')])
+
         out = {
             'metadata': {
                 'generated_at': datetime.now().isoformat(),
                 'market': 'CRYPTO',
                 'gate': gate,
+                'gate_score': 0,
                 'universe_size': result.get('universe_size', 0),
             },
-            'signals': result.get('top_signals', []),
+            'signals': transformed,
             'summary': {
+                'total_screened': result.get('universe_size', 0),
                 'setups_4h': result.get('setups_4h', 0),
                 'setups_1d': result.get('setups_1d', 0),
                 'signals_4h': result.get('signals_4h', 0),
                 'signals_1d': result.get('signals_1d', 0),
+                'vcp_found': vcp_found,
+                'entry_ready': entry_count,
                 'published': published,
             },
         }

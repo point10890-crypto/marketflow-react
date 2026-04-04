@@ -34,7 +34,7 @@ export default function SignupPage() {
 
             // Auto sign-in after registration → pricing page
             try {
-                await login(email, password);
+                await login(email, password, true);
                 navigate('/pricing');
             } catch {
                 // Login failed but registration succeeded

@@ -37,6 +37,7 @@ def create_app(config=None):
             "https://bitman-marketflow.pages.dev",
             "https://www.bit-man.net",
             "https://bit-man.net",
+            "https://marketflow-api.bit-man.net",
         ]
         CORS(app, resources={r"/api/*": {"origins": allowed_origins}})
     except ImportError:

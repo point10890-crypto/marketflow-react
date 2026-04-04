@@ -22,7 +22,7 @@ from config import ScannerCfg
 from universe import build_universe_binance_usdt
 from fetch_async import fetch_all_candles
 from signals import detect_setups, detect_breakouts, detect_retests
-from scoring import score_batch
+from scoring import score_batch, score_signal_detailed
 from storage import make_engine, get_state, upsert_state, insert_signal, get_recent_signals
 from vcp_ml_predictor import VCPMLPredictor
 
@@ -235,7 +235,30 @@ async def run_scan_async(
 
     # Build response
     top_signals = sorted(all_events, key=lambda x: x.score, reverse=True)[:30]
-    
+
+    # Build detailed output with component scores
+    tf_map = {cfg.tf_4h.timeframe: cfg.tf_4h, cfg.tf_1d.timeframe: cfg.tf_1d}
+    detailed_signals = []
+    for e in top_signals:
+        tf_cfg = tf_map.get(e.timeframe, cfg.tf_1d)
+        detail = score_signal_detailed(e, tf_cfg)
+        detailed_signals.append({
+            "symbol": e.symbol,
+            "timeframe": e.timeframe,
+            "signal_type": e.signal_type,
+            "score": e.score,
+            "pivot_high": e.pivot_high,
+            "breakout_close_pct": round(e.breakout_close_pct, 2),
+            "vol_ratio": round(e.vol_ratio, 2),
+            "liquidity_bucket": e.liquidity_bucket,
+            "market_regime": e.market_regime,
+            "c1": round(e.c1_range_pct, 1),
+            "c2": round(e.c2_range_pct, 1),
+            "c3": round(e.c3_range_pct, 1),
+            "ml_win_prob": round(e.ml_win_prob, 1) if e.ml_win_prob is not None else None,
+            "components": detail,
+        })
+
     return {
         "scan_time": dt.datetime.utcnow().isoformat() + "Z",
         "universe_size": len(symbols_with_qv),
@@ -244,24 +267,7 @@ async def run_scan_async(
         "signals_4h": len(events_4h),
         "signals_1d": len(events_1d),
         "published": len(published),
-        "top_signals": [
-            {
-                "symbol": e.symbol,
-                "timeframe": e.timeframe,
-                "signal_type": e.signal_type,
-                "score": e.score,
-                "pivot_high": e.pivot_high,
-                "breakout_close_pct": round(e.breakout_close_pct, 2),
-                "vol_ratio": round(e.vol_ratio, 2),
-                "liquidity_bucket": e.liquidity_bucket,
-                "market_regime": e.market_regime,
-                "c1": round(e.c1_range_pct, 1),
-                "c2": round(e.c2_range_pct, 1),
-                "c3": round(e.c3_range_pct, 1),
-                "ml_win_prob": round(e.ml_win_prob, 1) if e.ml_win_prob is not None else None,
-            }
-            for e in top_signals
-        ],
+        "top_signals": detailed_signals,
     }
 
 

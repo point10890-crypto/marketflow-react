@@ -16,7 +16,7 @@ interface AuthContextType {
     user: AuthUser | null;
     token: string | null;
     loading: boolean;
-    login: (email: string, password: string) => Promise<void>;
+    login: (email: string, password: string, remember?: boolean) => Promise<void>;
     logout: () => void;
     isAdmin: () => boolean;
     refreshUser: () => Promise<void>;
@@ -91,14 +91,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         saveUser(data);
     };
 
-    const login = async (email: string, password: string): Promise<void> => {
+    const login = async (email: string, password: string, remember?: boolean): Promise<void> => {
         const data = await postAPI<{ token: string; user?: AuthUserData }>('/api/auth/login', { email, password });
 
         if (!data.token) {
             throw new Error('No token received from server');
         }
 
-        setToken(data.token);
+        setToken(data.token, remember);
         setTokenState(data.token);
 
         if (data.user) {
