@@ -1,0 +1,83 @@
+{
+  "name": "유진투자증권",
+  "ticker": "001200.KS",
+  "result": "데이터 없음",
+  "date": "2026-04-06 07:44:09",
+  "elapsed": 1.8,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 4500.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 4500.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "EUGENEIS",
+    "sector": "Financial Services",
+    "industry": "Capital Markets",
+    "market_cap": 413276143616,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": 4.08,
+    "beta": 1.482,
+    "fifty_two_week_high": 6760.0,
+    "fifty_two_week_low": 2014.0,
+    "revenue": 1413114363904,
+    "profit_margin": 0.04524,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 84054892430
+    },
+    {
+      "date": "2025-06",
+      "value": 135897597060
+    },
+    {
+      "date": "2025-03",
+      "value": 56936256990
+    },
+    {
+      "date": "2024-12",
+      "value": 86529483910
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 18198371000
+    },
+    {
+      "date": "2025-06",
+      "value": 33567715640
+    },
+    {
+      "date": "2025-03",
+      "value": 6023260000
+    },
+    {
+      "date": "2024-12",
+      "value": 6133883570
+    }
+  ],
+  "news": [
+    {
+      "title": "Exploring Eugene Investment & SecuritiesLtd And 2 Other Promising Global Gems Backed By Strong Metrics",
+      "summary": "In recent weeks, global markets have been under pressure, with U.S. stocks declining amid concerns over the disruptive potential of artificial intelligence and mixed economic indicators affecting inve",
+      "url": "https://finance.yahoo.com/news/exploring-eugene-investment-securitiesltd-2-093310613.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-02-19T09:33:10Z"
+    }
+  ]
+}
