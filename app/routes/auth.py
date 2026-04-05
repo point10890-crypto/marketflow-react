@@ -1,11 +1,31 @@
 """Authentication routes — 회원가입, 로그인, 프로필, 구독 요청"""
 
 import os
+import threading
+import requests as http_requests
 from datetime import datetime, timezone
 from flask import Blueprint, request, jsonify
 from app.models import db
 from app.models.user import User, SubscriptionRequest
 from app.auth.decorators import generate_token, login_required
+
+
+def _notify_admin_telegram(message: str):
+    """관리자 텔레그램으로 알림 전송 (비동기)"""
+    def _send():
+        try:
+            token = os.getenv('TELEGRAM_BOT_TOKEN')
+            chat_id = os.getenv('TELEGRAM_CHAT_ID')
+            if not token or not chat_id:
+                return
+            http_requests.post(
+                f'https://api.telegram.org/bot{token}/sendMessage',
+                json={'chat_id': chat_id, 'text': message, 'parse_mode': 'HTML'},
+                timeout=10,
+            )
+        except Exception:
+            pass
+    threading.Thread(target=_send, daemon=True).start()
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -49,6 +69,14 @@ def register():
 
     db.session.add(user)
     db.session.commit()
+
+    # 관리자 텔레그램 알림 (신규 가입)
+    _notify_admin_telegram(
+        f"👤 <b>신규 회원가입</b>\n\n"
+        f"📧 이메일: {user.email}\n"
+        f"👤 이름: {user.name}\n"
+        f"📅 가입일: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M')}"
+    )
 
     token = generate_token(user.id)
     return jsonify({'user': user.to_dict(), 'token': token}), 201

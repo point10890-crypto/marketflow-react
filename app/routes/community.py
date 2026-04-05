@@ -2,10 +2,30 @@
 
 import os
 import uuid
+import threading
+import requests as http_requests
 from flask import Blueprint, request, jsonify, send_from_directory, current_app
 from app.models import db
 from app.models.community import Board, Post, PostImage, Comment, PurchaseRequest
 from app.auth.decorators import login_required, approved_required, admin_required, _get_current_user
+
+
+def _notify_admin_telegram(message: str):
+    """관리자 텔레그램으로 알림 전송 (비동기, 실패해도 무시)"""
+    def _send():
+        try:
+            token = os.getenv('TELEGRAM_BOT_TOKEN')
+            chat_id = os.getenv('TELEGRAM_CHAT_ID')
+            if not token or not chat_id:
+                return
+            http_requests.post(
+                f'https://api.telegram.org/bot{token}/sendMessage',
+                json={'chat_id': chat_id, 'text': message, 'parse_mode': 'HTML'},
+                timeout=10,
+            )
+        except Exception:
+            pass
+    threading.Thread(target=_send, daemon=True).start()
 
 community_bp = Blueprint('community', __name__)
 
@@ -259,6 +279,17 @@ def create_purchase(post_id):
     pr = PurchaseRequest(post_id=post.id, user_id=user.id, buyer_name=buyer_name)
     db.session.add(pr)
     db.session.commit()
+
+    # 관리자 텔레그램 알림
+    price = post.price or '가격 미정'
+    _notify_admin_telegram(
+        f"🔔 <b>수식마켓 구매 요청</b>\n\n"
+        f"📌 수식: {post.title}\n"
+        f"👤 구매자: {user.name} ({buyer_name})\n"
+        f"💰 금액: {price}\n\n"
+        f"👉 관리자 페이지에서 승인해주세요."
+    )
+
     return jsonify(pr.to_dict()), 201
 
 
