@@ -103,6 +103,12 @@ def create_app(config=None):
             # 엔드포인트별 no-cache는 개별 라우트에서 설정 (portfolio, market-gate 등)
             if not response.headers.get('Cache-Control'):
                 response.headers['Cache-Control'] = 'public, max-age=30'
+
+        # Security headers (all responses)
+        response.headers['X-Content-Type-Options'] = 'nosniff'
+        response.headers['X-Frame-Options'] = 'DENY'
+        response.headers['X-XSS-Protection'] = '1; mode=block'
+        response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
         return response
 
     # Health check endpoint

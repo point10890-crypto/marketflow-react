@@ -156,65 +156,20 @@ Else
     End If
 End If
 
+' ── 5. Watchdog Service (Python — 60초 간격, rate-limited, Telegram 알림) ──
+If IsProcessRunning("watchdog_service.py") Then
+    Log "Watchdog: already running"
+Else
+    Log "Watchdog: starting watchdog_service.py..."
+    objShell.CurrentDirectory = PROJECT
+    objShell.Run """" & PYTHON & """ watchdog_service.py", 0, False
+    WScript.Sleep 5000
+    If IsProcessRunning("watchdog_service.py") Then
+        Log "Watchdog: OK"
+    Else
+        Log "Watchdog: FAILED to start"
+    End If
+End If
+
 Log "========== AUTO START END =========="
 logFile.Close
-
-' ── 5. Watchdog 루프 (5분 간격 헬스체크 + 자동 재시작) ──
-Dim restartCount
-restartCount = 0
-
-Do While True
-    WScript.Sleep 300000  ' 5분 대기
-
-    Set logFile = objFSO.OpenTextFile(logDir & "\autostart.log", 8, True)
-
-    ' Flask 체크
-    If Not AnyPortOpen(5001) Then
-        Log "WATCHDOG: Flask DOWN — restarting..."
-        objShell.CurrentDirectory = PROJECT
-        objShell.Run """" & PYTHON & """ flask_app.py", 0, False
-        WScript.Sleep 10000
-        If AnyPortOpen(5001) Then
-            Log "WATCHDOG: Flask restarted OK"
-        Else
-            Log "WATCHDOG: Flask restart FAILED"
-        End If
-        restartCount = restartCount + 1
-    End If
-
-    ' Frontend 체크
-    If Not AnyPortOpen(4000) Then
-        Log "WATCHDOG: Frontend DOWN — restarting..."
-        objShell.CurrentDirectory = FRONTEND
-        objShell.Run "cmd /c ""cd /d " & FRONTEND & " && npm run dev""", 0, False
-        WScript.Sleep 15000
-        If AnyPortOpen(4000) Then
-            Log "WATCHDOG: Frontend restarted OK"
-        Else
-            Log "WATCHDOG: Frontend restart FAILED"
-        End If
-        restartCount = restartCount + 1
-    End If
-
-    ' Cloudflared 체크 — 사용자 터널(bitman-api)만 체크
-    If Not IsProcessRunning("run bitman-api") Then
-        Log "WATCHDOG: Cloudflared user tunnel DOWN — restarting..."
-        objShell.CurrentDirectory = PROJECT
-        objShell.Run """" & PROJECT & "\cloudflared.exe"" tunnel --config ""C:\Users\dynas\.cloudflared\config.yml"" run bitman-api", 0, False
-        WScript.Sleep 8000
-        Log "WATCHDOG: Cloudflared restarted"
-        restartCount = restartCount + 1
-    End If
-
-    ' Scheduler 체크
-    If Not IsProcessRunning("scheduler.py --daemon") Then
-        Log "WATCHDOG: Scheduler DOWN — restarting..."
-        objShell.CurrentDirectory = PROJECT
-        objShell.Run """" & PYTHON & """ scheduler.py --daemon", 0, False
-        WScript.Sleep 8000
-        Log "WATCHDOG: Scheduler restarted"
-        restartCount = restartCount + 1
-    End If
-
-    logFile.Close
-Loop

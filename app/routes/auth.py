@@ -1,6 +1,7 @@
 """Authentication routes — 회원가입, 로그인, 프로필, 구독 요청"""
 
 import os
+import time
 import threading
 import requests as http_requests
 from datetime import datetime, timezone
@@ -8,6 +9,46 @@ from flask import Blueprint, request, jsonify
 from app.models import db
 from app.models.user import User, SubscriptionRequest
 from app.auth.decorators import generate_token, login_required
+
+
+# ═══════════════════════════════════════════════════════
+#  Login Rate Limiter (in-memory, per IP)
+# ═══════════════════════════════════════════════════════
+_login_attempts = {}   # {ip: [(timestamp, ...), ...]}
+_login_lock = threading.Lock()
+_LOGIN_MAX_ATTEMPTS = 5
+_LOGIN_WINDOW_SEC = 300  # 5 minutes
+
+
+def _cleanup_old_attempts():
+    """Remove entries older than the rate limit window."""
+    cutoff = time.time() - _LOGIN_WINDOW_SEC
+    expired = [ip for ip, attempts in _login_attempts.items()
+               if all(t < cutoff for t in attempts)]
+    for ip in expired:
+        del _login_attempts[ip]
+
+
+def _check_login_rate_limit(ip: str) -> bool:
+    """Returns True if request should be blocked (rate limit exceeded)."""
+    now = time.time()
+    cutoff = now - _LOGIN_WINDOW_SEC
+    with _login_lock:
+        # Periodic cleanup (every 100th call)
+        if len(_login_attempts) > 100:
+            _cleanup_old_attempts()
+
+        attempts = _login_attempts.get(ip, [])
+        # Filter to recent window
+        attempts = [t for t in attempts if t > cutoff]
+        _login_attempts[ip] = attempts
+
+        if len(attempts) >= _LOGIN_MAX_ATTEMPTS:
+            return True  # blocked
+
+        attempts.append(now)
+        _login_attempts[ip] = attempts
+        return False
 
 
 def _notify_admin_telegram(message: str):
@@ -84,6 +125,11 @@ def register():
 
 @auth_bp.route('/login', methods=['POST'])
 def login():
+    # Rate limit check
+    client_ip = request.remote_addr or '0.0.0.0'
+    if _check_login_rate_limit(client_ip):
+        return jsonify({'error': 'Too many login attempts. Please try again later.'}), 429
+
     data = request.get_json()
     if not data:
         return jsonify({'error': 'Request body required'}), 400

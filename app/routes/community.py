@@ -49,6 +49,42 @@ def _allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
+# Magic bytes for image MIME validation
+_IMAGE_SIGNATURES = {
+    b'\xff\xd8\xff': 'jpg',       # JPEG
+    b'\x89PNG\r\n\x1a\n': 'png',  # PNG
+    b'GIF87a': 'gif',             # GIF87a
+    b'GIF89a': 'gif',             # GIF89a
+    b'RIFF': 'webp',             # WebP (RIFF....WEBP)
+}
+
+
+def _validate_image_content(file_data: bytes, claimed_ext: str) -> bool:
+    """Verify file content matches claimed extension using magic bytes.
+    Returns True if content is a valid image matching the claimed extension."""
+    if len(file_data) < 12:
+        return False
+
+    detected_type = None
+    for sig, img_type in _IMAGE_SIGNATURES.items():
+        if file_data[:len(sig)] == sig:
+            detected_type = img_type
+            break
+
+    if detected_type is None:
+        return False
+
+    # WebP needs extra check: bytes 8-12 must be 'WEBP'
+    if detected_type == 'webp' and file_data[8:12] != b'WEBP':
+        return False
+
+    # Map claimed extension to type for comparison
+    ext_to_type = {'jpg': 'jpg', 'jpeg': 'jpg', 'png': 'png', 'gif': 'gif', 'webp': 'webp'}
+    claimed_type = ext_to_type.get(claimed_ext.lower())
+
+    return detected_type == claimed_type
+
+
 # ── Boards ──
 
 @community_bp.route('/boards', methods=['GET'])
@@ -442,6 +478,10 @@ def upload_image():
         return jsonify({'error': 'File too large (max 5MB)'}), 400
 
     ext = file.filename.rsplit('.', 1)[1].lower()
+
+    # MIME validation: verify actual content matches claimed extension
+    if not _validate_image_content(file_data, ext):
+        return jsonify({'error': 'File content does not match extension. Upload rejected.'}), 400
     filename = f"{uuid.uuid4().hex}.{ext}"
 
     os.makedirs(UPLOAD_DIR, exist_ok=True)

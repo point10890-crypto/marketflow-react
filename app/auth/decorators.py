@@ -4,6 +4,7 @@ import hashlib
 import hmac
 import os
 import time
+import threading
 from functools import wraps
 from flask import request, jsonify, current_app
 from app.models import db
@@ -135,6 +136,47 @@ def pro_required(f):
     return decorated
 
 
+# ═══════════════════════════════════════════════════════
+#  Admin Rate Limiter (consecutive failures → 15min block)
+# ═══════════════════════════════════════════════════════
+_admin_failures = {}   # {ip: {'count': int, 'blocked_until': float}}
+_admin_lock = threading.Lock()
+_ADMIN_MAX_FAILURES = 3
+_ADMIN_BLOCK_SEC = 900  # 15 minutes
+
+
+def _check_admin_rate_limit(ip: str) -> bool:
+    """Returns True if IP is blocked due to consecutive admin auth failures."""
+    now = time.time()
+    with _admin_lock:
+        entry = _admin_failures.get(ip)
+        if not entry:
+            return False
+        if entry.get('blocked_until', 0) > now:
+            return True  # still blocked
+        # Block expired, reset
+        if entry.get('blocked_until', 0) <= now and entry.get('blocked_until', 0) > 0:
+            del _admin_failures[ip]
+        return False
+
+
+def _record_admin_failure(ip: str):
+    """Record a failed admin auth attempt. Block after 3 consecutive failures."""
+    now = time.time()
+    with _admin_lock:
+        entry = _admin_failures.get(ip, {'count': 0, 'blocked_until': 0})
+        entry['count'] = entry.get('count', 0) + 1
+        if entry['count'] >= _ADMIN_MAX_FAILURES:
+            entry['blocked_until'] = now + _ADMIN_BLOCK_SEC
+        _admin_failures[ip] = entry
+
+
+def _reset_admin_failures(ip: str):
+    """Reset failure count on successful admin auth."""
+    with _admin_lock:
+        _admin_failures.pop(ip, None)
+
+
 def admin_required(f):
     """관리자 전용 — role='admin' 유저만 접근 가능"""
     @wraps(f)
@@ -142,11 +184,20 @@ def admin_required(f):
         if _auth_disabled():
             request.current_user = None
             return f(*args, **kwargs)
+
+        client_ip = request.remote_addr or '0.0.0.0'
+        if _check_admin_rate_limit(client_ip):
+            return jsonify({'error': 'Too many failed admin attempts. Blocked for 15 minutes.'}), 429
+
         user = _get_current_user()
         if user is None:
+            _record_admin_failure(client_ip)
             return jsonify({'error': 'Authentication required'}), 401
         if not user.is_admin:
+            _record_admin_failure(client_ip)
             return jsonify({'error': 'Admin access denied'}), 403
+
+        _reset_admin_failures(client_ip)
         request.current_user = user
         return f(*args, **kwargs)
     return decorated
