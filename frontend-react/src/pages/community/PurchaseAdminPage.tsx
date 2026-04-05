@@ -79,20 +79,29 @@ export default function PurchaseAdminPage() {
     useEffect(() => { fetchData(1); }, [fetchData]);
 
     const handleStatusChange = async (purchaseId: number, newStatus: string) => {
+        // Optimistic update — 즉시 UI 반영
+        setPurchases(prev => prev.map(p =>
+            p.id === purchaseId ? { ...p, status: newStatus } : p
+        ));
         try {
             await putAuthAPI(`/api/community/purchases/${purchaseId}`, { status: newStatus });
             fetchData(page);
         } catch {
+            // Rollback on failure
+            fetchData(page);
             alert('상태 변경에 실패했습니다.');
         }
     };
 
     const handleDelete = async (purchaseId: number) => {
         if (!confirm('이 구매 내역을 삭제하시겠습니까?')) return;
+        // Optimistic update — 즉시 UI에서 제거
+        setPurchases(prev => prev.filter(p => p.id !== purchaseId));
+        setTotal(prev => prev - 1);
         try {
             await deleteAuthAPI(`/api/community/purchases/${purchaseId}`);
-            fetchData(page);
         } catch {
+            fetchData(page);
             alert('삭제에 실패했습니다.');
         }
     };
