@@ -1058,4 +1058,16 @@ export const communityAPI = {
         if (board) params.set('board', board);
         return fetchAuthAPI<PostListResponse>(`/api/community/search?${params}`);
     },
+
+    // Summary (public, no auth)
+    getSummary: () => fetchAPI<CommunitySummary>('/api/community/summary'),
 };
+
+export interface CommunitySummary {
+    total_posts: number;
+    total_comments: number;
+    today_posts: number;
+    recent_posts: Array<{ id: number; title: string; board_name: string; created_at: string; comment_count: number }>;
+    formula_count: number;
+    pending_purchases: number;
+}

@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
-import { usAPI, krAPI, cryptoAPI, jonggaAPI, waveAPI, briefingAPI, commonAPI, type AIBriefing, type MarketIndexItem, type KRAIChartAnalysisResponse, type USAIChartAnalysisResponse } from '@/lib/api';
+import { usAPI, krAPI, cryptoAPI, jonggaAPI, waveAPI, briefingAPI, commonAPI, communityAPI, type AIBriefing, type MarketIndexItem, type KRAIChartAnalysisResponse, type USAIChartAnalysisResponse, type CommunitySummary } from '@/lib/api';
 import { usePullToRefreshRegister } from '@/components/layout/PullToRefreshProvider';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
@@ -323,10 +323,11 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
     const [marketIndices, setMarketIndices] = useState<MarketIndexItem[]>([]);
     const [aiChart, setAiChart] = useState<KRAIChartAnalysisResponse | null>(null);
     const [usAiChart, setUsAiChart] = useState<USAIChartAnalysisResponse | null>(null);
+    const [communitySummary, setCommunitySummary] = useState<CommunitySummary | null>(null);
 
     const loadData = useCallback(async () => {
         try {
-            const [b, kr, crypto, vcpKr, vcpUs, vcpCrypto, jongga, leading, wave, aiBrf, indices, aiChartRes, usAiChartRes] = await Promise.all([
+            const [b, kr, crypto, vcpKr, vcpUs, vcpCrypto, jongga, leading, wave, aiBrf, indices, aiChartRes, usAiChartRes, communitySum] = await Promise.all([
                 usAPI.getMarketBriefing().catch(() => null),
                 krAPI.getMarketGate().catch(() => null),
                 cryptoAPI.getDominance().catch(() => null),
@@ -340,6 +341,7 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                 commonAPI.getMarketIndices().catch(() => null),
                 krAPI.getAIChartAnalysis().catch(() => null),
                 usAPI.getAIChartAnalysis().catch(() => null),
+                communityAPI.getSummary().catch(() => null),
             ]);
             setBriefing(b);
             setKrGate(kr);
@@ -351,6 +353,7 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
             if (indices?.indices) setMarketIndices(indices.indices);
             if (aiChartRes) setAiChart(aiChartRes);
             if (usAiChartRes) setUsAiChart(usAiChartRes);
+            if (communitySum) setCommunitySummary(communitySum);
 
             // VCP summary — 중복 제거 (symbol 기준)
             const dedup = (signals: any[]) => {
@@ -968,6 +971,18 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                     statusColor="text-purple-400"
                     metric={briefing?.smart_money?.top_picks?.picks?.[0]?.ticker ?? '—'}
                     metricLabel="Top Pick"
+                />
+                <CompactCard
+                    to="/dashboard/community"
+                    icon="fas fa-comments"
+                    label="커뮤니티"
+                    sublabel="게시판 · 수식마켓 · 토론"
+                    accent="#06b6d4"
+                    status={communitySummary?.today_posts ? `+${communitySummary.today_posts} today` : 'Active'}
+                    statusColor="text-cyan-400"
+                    metric={communitySummary ? String(communitySummary.total_posts) : '—'}
+                    metricLabel="Posts"
+                    badge={communitySummary?.pending_purchases ? `${communitySummary.pending_purchases} pending` : undefined}
                 />
             </div>
 

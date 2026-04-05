@@ -506,6 +506,44 @@ def download_formula_file(post_id):
 
 # ── Search ──
 
+@community_bp.route('/summary', methods=['GET'])
+def community_summary():
+    """Public summary stats for dashboard card (no auth required)"""
+    from datetime import datetime, timedelta
+    from sqlalchemy import func
+
+    total_posts = Post.query.filter_by(is_hidden=False).count()
+    total_comments = Comment.query.count()
+
+    today = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+    today_posts = Post.query.filter(Post.created_at >= today, Post.is_hidden == False).count()
+
+    # Recent posts (latest 3)
+    recent = Post.query.filter_by(is_hidden=False).order_by(Post.created_at.desc()).limit(3).all()
+    recent_posts = [{
+        'id': p.id,
+        'title': p.title[:40],
+        'board_name': p.board.name if p.board else '',
+        'created_at': p.created_at.isoformat() if p.created_at else '',
+        'comment_count': p.comment_count,
+    } for p in recent]
+
+    # Formula market stats
+    formula_count = Post.query.join(Board).filter(
+        Board.slug == 'formula-market', Post.is_hidden == False
+    ).count()
+    pending_purchases = PurchaseRequest.query.filter_by(status='pending').count()
+
+    return jsonify({
+        'total_posts': total_posts,
+        'total_comments': total_comments,
+        'today_posts': today_posts,
+        'recent_posts': recent_posts,
+        'formula_count': formula_count,
+        'pending_purchases': pending_purchases,
+    })
+
+
 @community_bp.route('/search', methods=['GET'])
 @approved_required
 def search_posts():
