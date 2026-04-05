@@ -4,7 +4,7 @@ import Image from '@tiptap/extension-image';
 import Link from '@tiptap/extension-link';
 import Placeholder from '@tiptap/extension-placeholder';
 import { useRef, useCallback, useEffect } from 'react';
-import { communityAPI } from '@/lib/api';
+import { communityAPI, API_BASE } from '@/lib/api';
 
 interface TipTapEditorProps {
     content: string;
@@ -158,7 +158,9 @@ export default function TipTapEditor({ content, onChange, placeholder = '내용�
         if (!editor) return;
         try {
             const result = await communityAPI.uploadImage(file);
-            editor.chain().focus().setImage({ src: result.url, alt: file.name }).run();
+            // 배포 환경에서 이미지 접근 가능하도록 API_BASE prefix 추가
+            const imgUrl = result.url.startsWith('/') ? `${API_BASE}${result.url}` : result.url;
+            editor.chain().focus().setImage({ src: imgUrl, alt: file.name }).run();
         } catch {
             alert('이미지 업로드에 실패했습니다.');
         }

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { communityAPI, type CommunityPost, type CommunityComment } from '@/lib/api';
+import { communityAPI, API_BASE, type CommunityPost, type CommunityComment } from '@/lib/api';
 import DOMPurify from 'dompurify';
 import FormulaPurchaseSection from './FormulaPurchaseSection';
 
@@ -296,10 +296,17 @@ export default function PostDetailPage() {
                             prose-pre:bg-white/5 prose-pre:border prose-pre:border-white/10 prose-pre:rounded-xl
                             prose-img:rounded-xl prose-img:border prose-img:border-white/10 prose-img:max-w-full"
                         dangerouslySetInnerHTML={{
-                            __html: DOMPurify.sanitize(post.content || '', {
-                                ADD_TAGS: ['img'],
-                                ADD_ATTR: ['target', 'rel', 'src', 'alt', 'href'],
-                            }),
+                            __html: (() => {
+                                let html = DOMPurify.sanitize(post.content || '', {
+                                    ADD_TAGS: ['img'],
+                                    ADD_ATTR: ['target', 'rel', 'src', 'alt', 'href'],
+                                });
+                                // 배포 환경: 상대 경로 이미지를 API 서버 절대 경로로 변환
+                                if (API_BASE) {
+                                    html = html.replace(/src="\/api\//g, `src="${API_BASE}/api/`);
+                                }
+                                return html;
+                            })(),
                         }}
                     />
                 </div>
