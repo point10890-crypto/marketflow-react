@@ -37,7 +37,7 @@ export default function BottomTabBar() {
     return (
         <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 mobile-safe-bottom">
             <div className="bg-[#0a0a0a]/90 backdrop-blur-xl border-t border-white/5">
-                <div className="flex items-center justify-around px-1 py-1.5">
+                <div className="flex items-center justify-around px-0.5 py-1.5">
                     {tabs.map((tab) => {
                         const isActive = tab.href === '/dashboard'
                             ? pathname === '/dashboard'
@@ -47,7 +47,7 @@ export default function BottomTabBar() {
                             <Link
                                 key={tab.href}
                                 to={tab.href}
-                                className={`flex flex-col items-center justify-center gap-0.5 py-1.5 px-3 rounded-xl transition-all min-w-[56px] ${
+                                className={`flex flex-col items-center justify-center gap-0.5 py-2 px-2 rounded-xl transition-all min-w-[50px] ${
                                     isActive
                                         ? `${activeColors[tab.color]}`
                                         : 'text-zinc-600'

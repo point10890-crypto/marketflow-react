@@ -2,8 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Mobile: prevent body overflow, ensure full viewport height */
+/* Full viewport height — use dvh for mobile Safari */
 html, body, #root {
+  height: 100dvh;
   height: 100%;
   overflow: hidden;
   overscroll-behavior: none;
