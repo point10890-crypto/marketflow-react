@@ -158,25 +158,9 @@ def restart_springboot() -> bool:
 
 
 def restart_tunnel() -> bool:
-    """Restart Cloudflare Tunnel."""
-    logger.info("Restarting Cloudflare Tunnel...")
-    try:
-        subprocess.Popen(
-            [CLOUDFLARED_PATH, "tunnel", "--config", CLOUDFLARED_CONFIG,
-             "run", "bitman-api"],
-            cwd=str(BASE_DIR),
-            creationflags=subprocess.CREATE_NO_WINDOW,
-        )
-        time.sleep(8)
-        alive = check_tunnel()
-        if alive:
-            logger.info("Cloudflare Tunnel restarted successfully")
-        else:
-            logger.error("Cloudflare Tunnel restart FAILED")
-        return alive
-    except Exception as e:
-        logger.error(f"Tunnel restart exception: {e}")
-        return False
+    """Tunnel은 별도 서비스(justbuy-tunnel)로 관리 — 재시작 안 함, 알림만."""
+    logger.warning("Cloudflare Tunnel down — 별도 서비스이므로 자동 재시작 안 함")
+    return False
 
 
 def restart_scheduler() -> bool:
