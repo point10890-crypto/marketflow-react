@@ -1,35 +1,35 @@
 {
-  "name": "HLB이노베이션",
-  "ticker": "024850.KQ",
+  "name": "SK증권",
+  "ticker": "001510.KS",
   "result": "데이터 없음",
-  "date": "2026-04-05 23:44:25",
+  "date": "2026-04-05 09:34:46",
   "elapsed": 2.1,
   "consensus_score": null,
   "analyst_count": 0,
   "recommendation_detail": null,
   "recommendation_period": null,
   "price_targets": {
-    "current": 4620.0,
+    "current": 1977.0,
     "high": null,
     "low": null,
     "mean": null,
     "median": null
   },
-  "current_price": 4620.0,
+  "current_price": 1977.0,
   "upside_potential": null,
   "key_stats": {
-    "name": "HLB innoVation",
-    "sector": "Technology",
-    "industry": "Semiconductor Equipment & Materials",
-    "market_cap": 666820280320,
+    "name": "SKSecu",
+    "sector": "Financial Services",
+    "industry": "Capital Markets",
+    "market_cap": 818292588544,
     "pe_ratio": null,
     "forward_pe": null,
-    "dividend_yield": null,
-    "beta": -0.842,
-    "fifty_two_week_high": 5820.0,
-    "fifty_two_week_low": 1460.0,
-    "revenue": 32263952384,
-    "profit_margin": -1.03418,
+    "dividend_yield": 0.05,
+    "beta": 1.568,
+    "fifty_two_week_high": 2825.0,
+    "fifty_two_week_low": 424.0,
+    "revenue": 975244230656,
+    "profit_margin": 0.0037599998,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
@@ -37,38 +37,38 @@
   "ai_analysis": null,
   "revenue_quarters": [
     {
-      "date": "2025-12",
-      "value": 8160749190
-    },
-    {
       "date": "2025-09",
-      "value": 7563507270
+      "value": 68022076210
     },
     {
       "date": "2025-06",
-      "value": 8990097230
+      "value": 61865768720
     },
     {
       "date": "2025-03",
-      "value": 7549598040
+      "value": 61447428110
+    },
+    {
+      "date": "2024-12",
+      "value": 117471321120
     }
   ],
   "net_income_quarters": [
     {
-      "date": "2025-12",
-      "value": -4392627120
-    },
-    {
       "date": "2025-09",
-      "value": -9637368440
+      "value": 18715568650
     },
     {
       "date": "2025-06",
-      "value": -9969366460
+      "value": 12799281900
     },
     {
       "date": "2025-03",
-      "value": -9367526720
+      "value": 2911306000
+    },
+    {
+      "date": "2024-12",
+      "value": -30762314570
     }
   ],
   "news": []

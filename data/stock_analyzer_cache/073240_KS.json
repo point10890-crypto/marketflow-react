@@ -2,8 +2,8 @@
   "name": "금호타이어",
   "ticker": "073240.KS",
   "result": "매수",
-  "date": "2026-03-24 21:01:26",
-  "elapsed": 2.2,
+  "date": "2026-04-05 23:42:53",
+  "elapsed": 2.1,
   "consensus_score": 4.0,
   "analyst_count": 8,
   "recommendation_detail": {
@@ -15,23 +15,23 @@
   },
   "recommendation_period": "0m",
   "price_targets": {
-    "current": 6250.0,
+    "current": 5910.0,
     "high": 10000.0,
     "low": 6500.0,
     "mean": 7975.0,
     "median": 7650.0
   },
-  "current_price": 6250.0,
-  "upside_potential": 27.6,
+  "current_price": 5910.0,
+  "upside_potential": 34.9,
   "key_stats": {
     "name": "KUMHOTIRE",
     "sector": "Consumer Cyclical",
     "industry": "Auto Parts",
-    "market_cap": 1795376807936,
+    "market_cap": 1697708244992,
     "pe_ratio": null,
-    "forward_pe": 4.285518,
+    "forward_pe": 4.0523863,
     "dividend_yield": null,
-    "beta": 0.549,
+    "beta": 0.627,
     "fifty_two_week_high": 7650.0,
     "fifty_two_week_low": 4060.0,
     "revenue": 4701282107392,
@@ -40,8 +40,12 @@
   },
   "finnhub_supplement": null,
   "source": "yfinance",
-  "ai_analysis": "금호타이어(073240.KS)에 대해 8명의 애널리스트가 제시한 컨센서스는 매수 의견입니다. 목표가 평균은 7,975원으로 현재가 6,250원 대비 27.6% 상승 여력이 있습니다. 투자 판단은 개인의 책임 하에 신중하게 이루어져야 합니다.",
+  "ai_analysis": null,
   "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 1160070248770
+    },
     {
       "date": "2025-09",
       "value": 1113745691720
@@ -53,13 +57,13 @@
     {
       "date": "2025-03",
       "value": 1206213100000
-    },
-    {
-      "date": "2024-12",
-      "value": 1240738298650
     }
   ],
   "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 169097613430
+    },
     {
       "date": "2025-09",
       "value": 82816735750
@@ -71,10 +75,6 @@
     {
       "date": "2025-03",
       "value": 96452861070
-    },
-    {
-      "date": "2024-12",
-      "value": 75880292340
     }
   ],
   "news": [

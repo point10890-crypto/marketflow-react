@@ -1,0 +1,117 @@
+{
+  "name": "삼성SDI",
+  "ticker": "006400.KS",
+  "result": "중립",
+  "date": "2026-04-05 13:21:44",
+  "elapsed": 2.1,
+  "consensus_score": 3.62,
+  "analyst_count": 32,
+  "recommendation_detail": {
+    "strongBuy": 8,
+    "buy": 12,
+    "hold": 7,
+    "sell": 2,
+    "strongSell": 3
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 438500.0,
+    "high": 650000.0,
+    "low": 135000.0,
+    "mean": 420949.3,
+    "median": 430000.0
+  },
+  "current_price": 438500.0,
+  "upside_potential": -4.0,
+  "key_stats": {
+    "name": "SAMSUNG SDI CO.,LTD.",
+    "sector": "Industrials",
+    "industry": "Electrical Equipment & Parts",
+    "market_cap": 34507157667840,
+    "pe_ratio": null,
+    "forward_pe": 32.223526,
+    "dividend_yield": 0.36,
+    "beta": 1.151,
+    "fifty_two_week_high": 473500.0,
+    "fifty_two_week_low": 157700.0,
+    "revenue": 13266730352640,
+    "profit_margin": -0.04895,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 3858686247390
+    },
+    {
+      "date": "2025-09",
+      "value": 3051820635180
+    },
+    {
+      "date": "2025-06",
+      "value": 3179406065750
+    },
+    {
+      "date": "2025-03",
+      "value": 3176817731170
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": -324275193000
+    },
+    {
+      "date": "2025-09",
+      "value": 47869982830
+    },
+    {
+      "date": "2025-06",
+      "value": -152515540940
+    },
+    {
+      "date": "2025-03",
+      "value": -220547906430
+    }
+  ],
+  "news": [
+    {
+      "title": "Samsung SDI extends maturity on $1.05 billion loan to Stellantis joint venture",
+      "summary": "South Korea's Samsung SDI said it has ‌extended the maturity of a 1.6 ‌trillion won ($1.05 billion) loan to StarPlus Energy, ​its battery joint venture with Stellantis. The company said in a regulator",
+      "url": "https://finance.yahoo.com/sectors/technology/articles/samsung-sdi-lend-1-05-003916872.html",
+      "provider": "Reuters",
+      "pub_time": "2026-03-31T00:39:16Z"
+    },
+    {
+      "title": "Joint Evaluation Agreement With Samsung SDI and BMW Supports Solid Power, Inc. (SLDP) Battery Validation",
+      "summary": "Solid Power, Inc. (NASDAQ:SLDP) is among the 12 Most Promising EV Battery Stocks to Buy Now. Solid Power, Inc. (NASDAQ:SLDP) is among the most promising stocks. TheFly reported on February 24 that SLD",
+      "url": "https://finance.yahoo.com/news/joint-evaluation-agreement-samsung-sdi-174412062.html",
+      "provider": "Insider Monkey",
+      "pub_time": "2026-03-02T17:44:12Z"
+    },
+    {
+      "title": "Solid Power (SLDP) Reports $21.7M in 2025 Revenue Amid Continued Operational Expansion",
+      "summary": "Solid Power Inc. (NASDAQ:SLDP) is one of the most promising penny stocks under $5 to buy. On February 24, Solid Power reported Q4 and full-year 2025 results, where the company generated $21.7 million ",
+      "url": "https://finance.yahoo.com/news/solid-power-sldp-reports-21-193052590.html",
+      "provider": "Insider Monkey",
+      "pub_time": "2026-02-26T19:30:52Z"
+    },
+    {
+      "title": "Solid Power, Inc. Q4 2025 Earnings Call Summary",
+      "summary": "Moby summary of Solid Power, Inc.'s Q4 2025 earnings call",
+      "url": "https://app.moby.co/home/research/tools/earningsCalendar/earnings-solid-power-inc-q4-2025-earnings-call-summary?utm_source=yahoo_finance&utm_medium=rss",
+      "provider": "Moby",
+      "pub_time": "2026-02-25T13:30:00Z"
+    },
+    {
+      "title": "Solid Power Q4 Earnings Call Highlights",
+      "summary": "Solid Power (NASDAQ:SLDP) used its fourth-quarter 2025 earnings call to outline progress on its electrolyte sampling strategy, development roadmap, and partner programs, while emphasizing continued fi",
+      "url": "https://www.marketbeat.com/instant-alerts/solid-power-q4-earnings-call-highlights-2026-02-25/?utm_source=yahoofinance&utm_medium=yahoofinance",
+      "provider": "MarketBeat",
+      "pub_time": "2026-02-25T06:07:48Z"
+    }
+  ]
+}

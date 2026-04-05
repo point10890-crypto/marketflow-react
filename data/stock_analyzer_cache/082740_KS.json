@@ -1,0 +1,81 @@
+{
+  "name": "한화엔진",
+  "ticker": "082740.KS",
+  "result": "매수",
+  "date": "2026-04-05 11:06:41",
+  "elapsed": 2.1,
+  "consensus_score": 4.25,
+  "analyst_count": 8,
+  "recommendation_detail": {
+    "strongBuy": 2,
+    "buy": 6,
+    "hold": 0,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 45700.0,
+    "high": 72000.0,
+    "low": 53000.0,
+    "mean": 62500.0,
+    "median": 64000.0
+  },
+  "current_price": 45700.0,
+  "upside_potential": 36.8,
+  "key_stats": {
+    "name": "Hanwha Engine",
+    "sector": "Industrials",
+    "industry": "Specialty Industrial Machinery",
+    "market_cap": 3812547100672,
+    "pe_ratio": null,
+    "forward_pe": 16.289944,
+    "dividend_yield": null,
+    "beta": 1.16,
+    "fifty_two_week_high": 59900.0,
+    "fifty_two_week_low": 20000.0,
+    "revenue": 1371057291264,
+    "profit_margin": 0.12673001,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 297345308790
+    },
+    {
+      "date": "2025-06",
+      "value": 387700400110
+    },
+    {
+      "date": "2025-03",
+      "value": 318181995140
+    },
+    {
+      "date": "2024-12",
+      "value": 326268101530
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 30300353330
+    },
+    {
+      "date": "2025-06",
+      "value": 21556459730
+    },
+    {
+      "date": "2025-03",
+      "value": 19408710270
+    },
+    {
+      "date": "2024-12",
+      "value": 39395696430
+    }
+  ],
+  "news": []
+}

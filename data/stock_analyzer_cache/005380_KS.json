@@ -2,8 +2,8 @@
   "name": "현대차",
   "ticker": "005380.KS",
   "result": "매수",
-  "date": "2026-04-03 20:04:19",
-  "elapsed": 2.4,
+  "date": "2026-04-05 20:36:46",
+  "elapsed": 2.2,
   "consensus_score": 4.22,
   "analyst_count": 32,
   "recommendation_detail": {
@@ -29,7 +29,7 @@
     "industry": "Auto Manufacturers",
     "market_cap": 122599707246592,
     "pe_ratio": null,
-    "forward_pe": 9.061157,
+    "forward_pe": 9.091367,
     "dividend_yield": 2.15,
     "beta": 1.576,
     "fifty_two_week_high": 687000.0,
@@ -79,11 +79,11 @@
   ],
   "news": [
     {
-      "title": "Hyundai North America CEO bets on growth with latest EV push",
-      "summary": "Hyundai Motor (005380.KS) North America CEO Randy Parker joins Yahoo Finance Senior Autos Reporter Pras Subramanian at the New York International Auto Show to discuss the company's plan to localize pr",
-      "url": "https://finance.yahoo.com/video/hyundai-north-america-ceo-bets-on-growth-with-latest-ev-push-141119467.html",
-      "provider": "Yahoo Finance Video",
-      "pub_time": "2026-04-02T14:11:19Z"
+      "title": "Hyundai's Boulder concept previews the automaker's truck future, built in America",
+      "summary": "Hyundai showed off its Boulder concept, a rugged, body-on-frame SUV with a design language Hyundai calls \"Art of Steel\" at the New York International Auto Show this week. For a brand long associated w",
+      "url": "https://finance.yahoo.com/markets/stocks/article/hyundais-boulder-concept-previews-the-automakers-truck-future-built-in-america-110912475.html",
+      "provider": "Yahoo Finance",
+      "pub_time": "2026-04-03T11:09:12Z"
     },
     {
       "title": "Hyundai Motor flags export disruptions as Middle East conflict hits shipping",
@@ -91,6 +91,13 @@
       "url": "https://finance.yahoo.com/news/hyundai-motor-flags-export-disruptions-073001120.html",
       "provider": "Reuters",
       "pub_time": "2026-04-03T07:30:01Z"
+    },
+    {
+      "title": "Hyundai North America CEO bets on growth with latest EV push",
+      "summary": "Hyundai Motor (005380.KS) North America CEO Randy Parker joins Yahoo Finance Senior Autos Reporter Pras Subramanian at the New York International Auto Show to discuss the company's plan to localize pr",
+      "url": "https://finance.yahoo.com/video/hyundai-north-america-ceo-bets-on-growth-with-latest-ev-push-141119467.html",
+      "provider": "Yahoo Finance Video",
+      "pub_time": "2026-04-02T14:11:19Z"
     },
     {
       "title": "NY Auto Show kicks off: What to expect from Chevy, Nissan, & more",
@@ -105,13 +112,6 @@
       "url": "https://finance.yahoo.com/sectors/technology/articles/humanoid-robots-offer-europe-path-140220520.html",
       "provider": "Bloomberg",
       "pub_time": "2026-04-01T14:02:20Z"
-    },
-    {
-      "title": "Tesla Q1 deliveries rise 9% amid Robotaxi focus",
-      "summary": "Yahoo Finance senior autos reporter Pras Subramanian joins Asking for a Trend host Josh Lipton to discuss expectations for Tesla's ((TSLA) Q1 global deliveries.",
-      "url": "https://finance.yahoo.com/video/tesla-q1-deliveries-rise-9-amid-robotaxi-focus-222534059.html",
-      "provider": "Yahoo Finance Video",
-      "pub_time": "2026-03-31T22:25:34Z"
     }
   ]
 }

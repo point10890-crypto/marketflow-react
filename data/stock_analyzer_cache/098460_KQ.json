@@ -1,0 +1,81 @@
+{
+  "name": "고영",
+  "ticker": "098460.KQ",
+  "result": "매수",
+  "date": "2026-04-05 17:18:21",
+  "elapsed": 2.0,
+  "consensus_score": 4.0,
+  "analyst_count": 7,
+  "recommendation_detail": {
+    "strongBuy": 3,
+    "buy": 1,
+    "hold": 3,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 26450.0,
+    "high": 40000.0,
+    "low": 18000.0,
+    "mean": 32857.145,
+    "median": 35000.0
+  },
+  "current_price": 26450.0,
+  "upside_potential": 24.2,
+  "key_stats": {
+    "name": "Koh Young",
+    "sector": "Technology",
+    "industry": "Semiconductor Equipment & Materials",
+    "market_cap": 1745526718464,
+    "pe_ratio": null,
+    "forward_pe": 35.19107,
+    "dividend_yield": 0.53,
+    "beta": 1.459,
+    "fifty_two_week_high": 37450.0,
+    "fifty_two_week_low": 11930.0,
+    "revenue": 232647213056,
+    "profit_margin": 0.06343,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 69145594220
+    },
+    {
+      "date": "2025-09",
+      "value": 60286386590
+    },
+    {
+      "date": "2025-06",
+      "value": 52090079760
+    },
+    {
+      "date": "2025-03",
+      "value": 51125158090
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 7797635670
+    },
+    {
+      "date": "2025-09",
+      "value": 8453775650
+    },
+    {
+      "date": "2025-06",
+      "value": -4704109770
+    },
+    {
+      "date": "2025-03",
+      "value": 3208786000
+    }
+  ],
+  "news": []
+}

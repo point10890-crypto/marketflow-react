@@ -1,35 +1,35 @@
 {
-  "name": "제닉",
-  "ticker": "123330.KQ",
+  "name": "경남스틸",
+  "ticker": "039240.KQ",
   "result": "데이터 없음",
-  "date": "2026-04-05 13:31:04",
-  "elapsed": 2.0,
+  "date": "2026-04-05 17:11:08",
+  "elapsed": 1.2,
   "consensus_score": null,
   "analyst_count": 0,
   "recommendation_detail": null,
   "recommendation_period": null,
   "price_targets": {
-    "current": 28400.0,
+    "current": 2800.0,
     "high": null,
     "low": null,
     "mean": null,
     "median": null
   },
-  "current_price": 28400.0,
+  "current_price": 2800.0,
   "upside_potential": null,
   "key_stats": {
-    "name": "Genic",
-    "sector": "Consumer Defensive",
-    "industry": "Household & Personal Products",
-    "market_cap": 222221074432,
+    "name": "K-Steel",
+    "sector": "",
+    "industry": "",
+    "market_cap": 75542888448,
     "pe_ratio": null,
     "forward_pe": null,
     "dividend_yield": null,
-    "beta": 0.888,
-    "fifty_two_week_high": 44100.0,
-    "fifty_two_week_low": 15570.0,
-    "revenue": 78198464512,
-    "profit_margin": 0.24152,
+    "beta": null,
+    "fifty_two_week_high": 9710.0,
+    "fifty_two_week_low": 2285.0,
+    "revenue": null,
+    "profit_margin": null,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
@@ -38,37 +38,37 @@
   "revenue_quarters": [
     {
       "date": "2025-12",
-      "value": 12166097430
+      "value": 81735997790
     },
     {
       "date": "2025-09",
-      "value": 23555447940
+      "value": 86385834980
     },
     {
       "date": "2025-06",
-      "value": 24648863700
+      "value": 96348422010
     },
     {
       "date": "2025-03",
-      "value": 17828052050
+      "value": 92668922730
     }
   ],
   "net_income_quarters": [
     {
       "date": "2025-12",
-      "value": 6093570640
+      "value": 557366550
     },
     {
       "date": "2025-09",
-      "value": 5277719420
+      "value": 1393567390
     },
     {
       "date": "2025-06",
-      "value": 3999656410
+      "value": 1676575780
     },
     {
       "date": "2025-03",
-      "value": 3515624300
+      "value": 1005327710
     }
   ],
   "news": []

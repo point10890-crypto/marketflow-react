@@ -1,0 +1,81 @@
+{
+  "name": "에이디테크놀로지",
+  "ticker": "200710.KQ",
+  "result": "적극 매수",
+  "date": "2026-04-05 13:24:19",
+  "elapsed": 1.6,
+  "consensus_score": 4.5,
+  "analyst_count": 2,
+  "recommendation_detail": {
+    "strongBuy": 1,
+    "buy": 1,
+    "hold": 0,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 56300.0,
+    "high": 60000.0,
+    "low": 49000.0,
+    "mean": 54500.0,
+    "median": 54500.0
+  },
+  "current_price": 56300.0,
+  "upside_potential": -3.2,
+  "key_stats": {
+    "name": "ADTechnology",
+    "sector": "",
+    "industry": "",
+    "market_cap": 729346277376,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": null,
+    "beta": null,
+    "fifty_two_week_high": 61500.0,
+    "fifty_two_week_low": 12630.0,
+    "revenue": null,
+    "profit_margin": null,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 61038392400
+    },
+    {
+      "date": "2025-09",
+      "value": 36805859460
+    },
+    {
+      "date": "2025-06",
+      "value": 34026867820
+    },
+    {
+      "date": "2025-03",
+      "value": 32640510180
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 5519185940
+    },
+    {
+      "date": "2025-09",
+      "value": 2932612690
+    },
+    {
+      "date": "2025-06",
+      "value": -3195224270
+    },
+    {
+      "date": "2025-03",
+      "value": -1649592200
+    }
+  ],
+  "news": []
+}

@@ -2,8 +2,8 @@
   "name": "삼성전자",
   "ticker": "005930.KS",
   "result": "매수",
-  "date": "2026-04-03 07:39:04",
-  "elapsed": 1.8,
+  "date": "2026-04-05 13:23:54",
+  "elapsed": 2.1,
   "consensus_score": 4.22,
   "analyst_count": 37,
   "recommendation_detail": {
@@ -15,25 +15,25 @@
   },
   "recommendation_period": "0m",
   "price_targets": {
-    "current": 178400.0,
+    "current": 186200.0,
     "high": 340000.0,
     "low": 110000.0,
     "mean": 239873.48,
     "median": 250000.0
   },
-  "current_price": 178400.0,
-  "upside_potential": 34.5,
+  "current_price": 186200.0,
+  "upside_potential": 28.8,
   "key_stats": {
     "name": "SamsungElec",
     "sector": "Technology",
     "industry": "Consumer Electronics",
-    "market_cap": 1192797243703296,
+    "market_cap": 1244948615659520,
     "pe_ratio": null,
-    "forward_pe": 6.2100616,
+    "forward_pe": 6.4815774,
     "dividend_yield": 1.27,
-    "beta": 1.121,
+    "beta": 1.211,
     "fifty_two_week_high": 223000.0,
-    "fifty_two_week_low": 52091.0,
+    "fifty_two_week_low": 52900.0,
     "revenue": 333605947572224,
     "profit_margin": 0.13267,
     "currency": "KRW"
@@ -79,6 +79,27 @@
   ],
   "news": [
     {
+      "title": "AMD Deepens Asian AI Ties With NAVER Cloud And Samsung Deals",
+      "summary": "Advanced Micro Devices (NasdaqGS:AMD) and NAVER Cloud agreed to work together on sovereign AI infrastructure projects in South Korea. AMD and Samsung expanded their collaboration to include HBM4 suppl",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/amd-deepens-asian-ai-ties-221047725.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-04-03T22:10:47Z"
+    },
+    {
+      "title": "Global Market Insights Samsung Electronics And 2 Other Stocks Estimated To Be Trading Below Their Intrinsic Value",
+      "summary": "In a global market environment characterized by geopolitical tensions and energy market volatility, investors are seeing major U.S. stock indexes rally amid signs of potential de-escalation in the Mid",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/global-market-insights-samsung-electronics-093753034.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-04-03T09:37:53Z"
+    },
+    {
+      "title": "Samsung Elec likely to report stupendous surge in quarterly profit to record level",
+      "summary": "Samsung Electronics, benefiting from red-hot chip prices stoked by the AI boom, is expected to book a six-fold jump in operating profit for January-March - a quarterly record and just shy of what it e",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/samsung-elec-likely-report-stupendous-080411493.html",
+      "provider": "Reuters",
+      "pub_time": "2026-04-03T08:04:11Z"
+    },
+    {
       "title": "Samsung Privacy Display Puts Visual Security At Heart Of Galaxy S26 Ultra",
       "summary": "Samsung Electronics (KOSE:A005930) has introduced a hardware based Privacy Display on the new Galaxy S26 Ultra. The feature is built into the screen and is designed to limit viewing angles to reduce s",
       "url": "https://finance.yahoo.com/markets/stocks/articles/samsung-privacy-display-puts-visual-161230000.html",
@@ -91,27 +112,6 @@
       "url": "https://finance.yahoo.com/markets/stocks/articles/amazon-com-amzn-planning-smartphone-134257305.html",
       "provider": "Insider Monkey",
       "pub_time": "2026-04-02T13:42:57Z"
-    },
-    {
-      "title": "South Korean Chip Stocks Drop Up to 24% as Fund Sees Buying Opportunity",
-      "summary": "Top-performing fund highlights Samsung and SK Hynix valuations as compelling amid geopolitical-driven selloff and potential rebound.",
-      "url": "https://finance.yahoo.com/sectors/technology/articles/south-korean-chip-stocks-drop-134005599.html",
-      "provider": "GuruFocus.com",
-      "pub_time": "2026-04-02T13:40:05Z"
-    },
-    {
-      "title": "Can Global Memory Chip Shortage Drive Applied Materials' Growth?",
-      "summary": "AMAT rides on AI-driven chip demand and memory shortages into 2026, but can high-margin innovations offset consumer electronics weakness?",
-      "url": "https://finance.yahoo.com/markets/stocks/articles/global-memory-chip-shortage-drive-133500157.html",
-      "provider": "Zacks",
-      "pub_time": "2026-04-02T13:35:00Z"
-    },
-    {
-      "title": "AMD And Samsung Deepen AI Memory Ties In Bid For Supply Strength",
-      "summary": "Advanced Micro Devices (NasdaqGS:AMD) and Samsung have expanded their collaboration in AI memory and computing. The agreement secures HBM4 supply for AMD's next generation Instinct accelerators and ad",
-      "url": "https://finance.yahoo.com/markets/stocks/articles/amd-samsung-deepen-ai-memory-221128883.html",
-      "provider": "Simply Wall St.",
-      "pub_time": "2026-04-01T22:11:28Z"
     }
   ]
 }

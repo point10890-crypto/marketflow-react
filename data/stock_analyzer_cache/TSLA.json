@@ -2,8 +2,8 @@
   "name": "Tesla",
   "ticker": "TSLA",
   "result": "중립",
-  "date": "2026-04-03 00:25:47",
-  "elapsed": 2.5,
+  "date": "2026-04-05 14:02:36",
+  "elapsed": 2.1,
   "consensus_score": 3.38,
   "analyst_count": 48,
   "recommendation_detail": {
@@ -15,23 +15,23 @@
   },
   "recommendation_period": "0m",
   "price_targets": {
-    "current": 365.7899,
+    "current": 360.59,
     "high": 600.0,
-    "low": 119.0,
-    "mean": 418.83316,
+    "low": 125.0,
+    "mean": 417.07706,
     "median": 441.0
   },
-  "current_price": 365.75,
-  "upside_potential": 14.5,
+  "current_price": 360.59,
+  "upside_potential": 15.7,
   "key_stats": {
     "name": "Tesla, Inc.",
     "sector": "Consumer Cyclical",
     "industry": "Auto Manufacturers",
-    "market_cap": 1372451897344,
-    "pe_ratio": 341.82242,
-    "forward_pe": 130.14023,
+    "market_cap": 1353089417216,
+    "pe_ratio": 333.8796,
+    "forward_pe": 128.3042,
     "dividend_yield": null,
-    "beta": 1.926,
+    "beta": 1.915,
     "fifty_two_week_high": 498.83,
     "fifty_two_week_low": 214.25,
     "revenue": 94827003904,
@@ -79,39 +79,39 @@
   ],
   "news": [
     {
-      "title": "Tech stocks today: Tesla stock falls as tech stocks rebound, AI industry leaks highlight cybersecurity risks",
-      "summary": "Live coverage of \"Magnificent Seven\" stocks, and the latest technology news.",
-      "url": "https://finance.yahoo.com/sectors/technology/article/tech-stocks-today-tesla-stock-falls-as-tech-stocks-rebound-ai-industry-leaks-highlight-cybersecurity-risks-144220928.html",
-      "provider": "Yahoo Finance",
-      "pub_time": "2026-03-13T14:42:20Z"
+      "title": "Prediction: Tesla Stock Is a Buy Before 2029 Due to This $10 Trillion Opportunity",
+      "summary": "Tesla is chasing its biggest opportunity yet.",
+      "url": "https://www.fool.com/investing/2026/04/04/predict-tesla-stock-buy-before-2029-trillion/",
+      "provider": "Motley Fool",
+      "pub_time": "2026-04-04T20:11:00Z"
     },
     {
-      "title": "Tesla misses Q1 2026 delivery estimates by a wide margin",
-      "summary": "Production outpaced deliveries by more than 50,000 vehicles, and energy storage deployments fell sharply from a record quarter",
-      "url": "https://qz.com/tesla-q1-2026-delivery-estimates-miss",
-      "provider": "Quartz",
-      "pub_time": "2026-04-02T15:15:13Z"
+      "title": "Eyes on AI! Wedbush Keeps $600 Tesla Stock Price Target despite Q1 Miss",
+      "summary": "Shares of Tesla (TSLA) dropped 5.42% on Thursday after the EV maker delivered 358,023 vehicles in Q1, missing Wall Street’s estimate of 370,000. Despite the miss, Wedbush’s five-star-rated analyst Dan",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/eyes-ai-wedbush-keeps-600-191200232.html",
+      "provider": "TipRanks",
+      "pub_time": "2026-04-04T19:12:00Z"
     },
     {
-      "title": "These Stocks Are Today’s Movers: Tesla, Micron, United Airlines, Norwegian Cruise Line, Blue Owl, and More",
-      "summary": "Cruise line and airline stocks broadly slid after President Donald Trump’s speech failed to assuage concerns over a drawn-out war in Iran.",
-      "url": "https://www.barrons.com/articles/stock-movers-cc1f9498?siteid=yhoof2&yptr=yahoo",
-      "provider": "Barrons.com",
-      "pub_time": "2026-04-02T15:01:00Z"
+      "title": "Veteran analyst sends message to Tesla investors after Q1 miss",
+      "summary": "Tesla (TSLA) stock just took a body blow after another underwhelming Q1 delivery report, but Dan Ives isn’t flinching. The veteran Wedbush analyst doubled down on his Buy rating for the stock, standin",
+      "url": "https://www.thestreet.com/investing/stocks/veteran-analyst-sends-message-to-tesla-investors-after-q1-miss",
+      "provider": "TheStreet",
+      "pub_time": "2026-04-04T18:03:00Z"
     },
     {
-      "title": "Tesla's Q1 Delivery Numbers 'Underwhelming,' But Not Surprising Given Current Global EV Backdrop, Wedbush Says",
-      "summary": "Tesla's (TSLA) Q1 delivery numbers were quite \"underwhelming,\" but this was not a surprise given the",
-      "url": "https://finance.yahoo.com/markets/stocks/articles/tesla-apos-q1-delivery-numbers-145316576.html",
-      "provider": "MT Newswires",
-      "pub_time": "2026-04-02T14:53:16Z"
+      "title": "Prediction: AI Robotics Will Be a $375 Billion Industry and These 2 Stocks Will Lead It",
+      "summary": "Both of these companies are proven trailblazers.",
+      "url": "https://www.fool.com/investing/2026/04/04/prediction-ai-robotics-will-be-a-375-billion-indus/",
+      "provider": "Motley Fool",
+      "pub_time": "2026-04-04T18:02:00Z"
     },
     {
-      "title": "Tesla Rival Rivian Tops Delivery Estimates With New Model Still Due",
-      "summary": "Rivian deliveries in the first quarter totaled 10,365 cars. Meanwhile, Tesla's were 358,023. Both stocks fell on Thursday.",
-      "url": "https://www.investors.com/news/rivian-deliveries-tesla-electric-vehicles-cars-auto-sales-byd-nio-xpeng-li/?src=A00220&yptr=yahoo",
-      "provider": "Investor's Business Daily",
-      "pub_time": "2026-04-02T14:50:05Z"
+      "title": "Tesla Ends Model S, X Production As Elon Musk Calls It 'Ending Of An Era'",
+      "summary": "Tesla Inc. CEO Elon Musk has said that the automaker has officially ended production of the premium Model S and X lines. The Ending Of An Era In the early hours of Wednesday, Musk marked the occasion ",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/tesla-ends-model-x-production-153345276.html",
+      "provider": "Benzinga",
+      "pub_time": "2026-04-04T15:33:45Z"
     }
   ]
 }

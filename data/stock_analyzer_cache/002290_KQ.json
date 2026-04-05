@@ -1,35 +1,35 @@
 {
-  "name": "제닉",
-  "ticker": "123330.KQ",
+  "name": "삼일기업공사",
+  "ticker": "002290.KQ",
   "result": "데이터 없음",
-  "date": "2026-04-05 13:31:04",
-  "elapsed": 2.0,
+  "date": "2026-04-05 21:33:33",
+  "elapsed": 1.2,
   "consensus_score": null,
   "analyst_count": 0,
   "recommendation_detail": null,
   "recommendation_period": null,
   "price_targets": {
-    "current": 28400.0,
+    "current": 3900.0,
     "high": null,
     "low": null,
     "mean": null,
     "median": null
   },
-  "current_price": 28400.0,
+  "current_price": 3900.0,
   "upside_potential": null,
   "key_stats": {
-    "name": "Genic",
-    "sector": "Consumer Defensive",
-    "industry": "Household & Personal Products",
-    "market_cap": 222221074432,
+    "name": "SAMIL ENTERPRISE",
+    "sector": "",
+    "industry": "",
+    "market_cap": 48360001536,
     "pe_ratio": null,
     "forward_pe": null,
     "dividend_yield": null,
-    "beta": 0.888,
-    "fifty_two_week_high": 44100.0,
-    "fifty_two_week_low": 15570.0,
-    "revenue": 78198464512,
-    "profit_margin": 0.24152,
+    "beta": null,
+    "fifty_two_week_high": 5190.0,
+    "fifty_two_week_low": 3225.0,
+    "revenue": null,
+    "profit_margin": null,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
@@ -38,37 +38,37 @@
   "revenue_quarters": [
     {
       "date": "2025-12",
-      "value": 12166097430
+      "value": 26185304690
     },
     {
       "date": "2025-09",
-      "value": 23555447940
+      "value": 17497999710
     },
     {
       "date": "2025-06",
-      "value": 24648863700
+      "value": 19821547500
     },
     {
       "date": "2025-03",
-      "value": 17828052050
+      "value": 21672257910
     }
   ],
   "net_income_quarters": [
     {
       "date": "2025-12",
-      "value": 6093570640
+      "value": 1257563660
     },
     {
       "date": "2025-09",
-      "value": 5277719420
+      "value": 1770304840
     },
     {
       "date": "2025-06",
-      "value": 3999656410
+      "value": 1951537390
     },
     {
       "date": "2025-03",
-      "value": 3515624300
+      "value": 1859041960
     }
   ],
   "news": []

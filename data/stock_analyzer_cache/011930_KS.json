@@ -1,0 +1,81 @@
+{
+  "name": "신성이엔지",
+  "ticker": "011930.KS",
+  "result": "매수",
+  "date": "2026-04-05 23:44:02",
+  "elapsed": 1.7,
+  "consensus_score": 4.0,
+  "analyst_count": 1,
+  "recommendation_detail": {
+    "strongBuy": 0,
+    "buy": 1,
+    "hold": 0,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 3445.0,
+    "high": 2800.0,
+    "low": 2800.0,
+    "mean": 2800.0,
+    "median": 2800.0
+  },
+  "current_price": 3445.0,
+  "upside_potential": -18.7,
+  "key_stats": {
+    "name": "SHINSUNG E&G",
+    "sector": "Industrials",
+    "industry": "Building Products & Equipment",
+    "market_cap": 701284876288,
+    "pe_ratio": null,
+    "forward_pe": 24.607143,
+    "dividend_yield": null,
+    "beta": 1.157,
+    "fifty_two_week_high": 3575.0,
+    "fifty_two_week_low": 1061.0,
+    "revenue": 567454400512,
+    "profit_margin": -0.01233,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 152587670770
+    },
+    {
+      "date": "2025-09",
+      "value": 158596868220
+    },
+    {
+      "date": "2025-06",
+      "value": 139969061920
+    },
+    {
+      "date": "2025-03",
+      "value": 116300790390
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 3138709110
+    },
+    {
+      "date": "2025-09",
+      "value": -3337528490
+    },
+    {
+      "date": "2025-06",
+      "value": 202112640
+    },
+    {
+      "date": "2025-03",
+      "value": -6997515100
+    }
+  ],
+  "news": []
+}

@@ -1,35 +1,35 @@
 {
-  "name": "제닉",
-  "ticker": "123330.KQ",
+  "name": "대영포장",
+  "ticker": "014160.KS",
   "result": "데이터 없음",
-  "date": "2026-04-05 13:31:04",
-  "elapsed": 2.0,
+  "date": "2026-04-05 18:38:41",
+  "elapsed": 1.1,
   "consensus_score": null,
   "analyst_count": 0,
   "recommendation_detail": null,
   "recommendation_period": null,
   "price_targets": {
-    "current": 28400.0,
+    "current": 1179.0,
     "high": null,
     "low": null,
     "mean": null,
     "median": null
   },
-  "current_price": 28400.0,
+  "current_price": 1179.0,
   "upside_potential": null,
   "key_stats": {
-    "name": "Genic",
-    "sector": "Consumer Defensive",
-    "industry": "Household & Personal Products",
-    "market_cap": 222221074432,
+    "name": "DaeyoungPkg",
+    "sector": "Consumer Cyclical",
+    "industry": "Packaging & Containers",
+    "market_cap": 121565806592,
     "pe_ratio": null,
     "forward_pe": null,
     "dividend_yield": null,
-    "beta": 0.888,
-    "fifty_two_week_high": 44100.0,
-    "fifty_two_week_low": 15570.0,
-    "revenue": 78198464512,
-    "profit_margin": 0.24152,
+    "beta": 0.08,
+    "fifty_two_week_high": 2525.0,
+    "fifty_two_week_low": 936.0,
+    "revenue": 305040457728,
+    "profit_margin": 0.02192,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
@@ -37,38 +37,38 @@
   "ai_analysis": null,
   "revenue_quarters": [
     {
-      "date": "2025-12",
-      "value": 12166097430
-    },
-    {
       "date": "2025-09",
-      "value": 23555447940
+      "value": 74638139490
     },
     {
       "date": "2025-06",
-      "value": 24648863700
+      "value": 71246228840
     },
     {
       "date": "2025-03",
-      "value": 17828052050
+      "value": 70384793700
+    },
+    {
+      "date": "2024-12",
+      "value": 72270334470
     }
   ],
   "net_income_quarters": [
     {
-      "date": "2025-12",
-      "value": 6093570640
-    },
-    {
       "date": "2025-09",
-      "value": 5277719420
+      "value": 1960462330
     },
     {
       "date": "2025-06",
-      "value": 3999656410
+      "value": 1693186030
     },
     {
       "date": "2025-03",
-      "value": 3515624300
+      "value": -115985740
+    },
+    {
+      "date": "2024-12",
+      "value": -3959164850
     }
   ],
   "news": []

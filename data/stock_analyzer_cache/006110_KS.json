@@ -1,35 +1,35 @@
 {
-  "name": "제닉",
-  "ticker": "123330.KQ",
+  "name": "삼아알미늄",
+  "ticker": "006110.KS",
   "result": "데이터 없음",
-  "date": "2026-04-05 13:31:04",
-  "elapsed": 2.0,
+  "date": "2026-04-05 12:55:57",
+  "elapsed": 2.2,
   "consensus_score": null,
   "analyst_count": 0,
   "recommendation_detail": null,
   "recommendation_period": null,
   "price_targets": {
-    "current": 28400.0,
+    "current": 36000.0,
     "high": null,
     "low": null,
     "mean": null,
     "median": null
   },
-  "current_price": 28400.0,
+  "current_price": 36000.0,
   "upside_potential": null,
   "key_stats": {
-    "name": "Genic",
-    "sector": "Consumer Defensive",
-    "industry": "Household & Personal Products",
-    "market_cap": 222221074432,
+    "name": "SamaAlum",
+    "sector": "Basic Materials",
+    "industry": "Aluminum",
+    "market_cap": 529628987392,
     "pe_ratio": null,
     "forward_pe": null,
-    "dividend_yield": null,
-    "beta": 0.888,
-    "fifty_two_week_high": 44100.0,
-    "fifty_two_week_low": 15570.0,
-    "revenue": 78198464512,
-    "profit_margin": 0.24152,
+    "dividend_yield": 0.07,
+    "beta": -0.113,
+    "fifty_two_week_high": 40200.0,
+    "fifty_two_week_low": 17550.0,
+    "revenue": 141937197056,
+    "profit_margin": 0.0026699998,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
@@ -38,37 +38,37 @@
   "revenue_quarters": [
     {
       "date": "2025-12",
-      "value": 12166097430
+      "value": 71245810690
     },
     {
       "date": "2025-09",
-      "value": 23555447940
+      "value": 66703155580
     },
     {
       "date": "2025-06",
-      "value": 24648863700
+      "value": 67413723980
     },
     {
       "date": "2025-03",
-      "value": 17828052050
+      "value": 66095962150
     }
   ],
   "net_income_quarters": [
     {
       "date": "2025-12",
-      "value": 6093570640
+      "value": -11684155740
     },
     {
       "date": "2025-09",
-      "value": 5277719420
+      "value": -5635222390
     },
     {
       "date": "2025-06",
-      "value": 3999656410
+      "value": -3660325500
     },
     {
       "date": "2025-03",
-      "value": 3515624300
+      "value": -3908876010
     }
   ],
   "news": []

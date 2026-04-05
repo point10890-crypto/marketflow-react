@@ -1,0 +1,117 @@
+{
+  "name": "SK바이오팜",
+  "ticker": "326030.KS",
+  "result": "매수",
+  "date": "2026-04-05 17:32:07",
+  "elapsed": 2.1,
+  "consensus_score": 4.07,
+  "analyst_count": 14,
+  "recommendation_detail": {
+    "strongBuy": 4,
+    "buy": 8,
+    "hold": 1,
+    "sell": 1,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 94100.0,
+    "high": 165000.0,
+    "low": 73000.0,
+    "mean": 144142.86,
+    "median": 150000.0
+  },
+  "current_price": 94100.0,
+  "upside_potential": 53.2,
+  "key_stats": {
+    "name": "SKBP",
+    "sector": "Healthcare",
+    "industry": "Biotechnology",
+    "market_cap": 7369276784640,
+    "pe_ratio": null,
+    "forward_pe": 20.047771,
+    "dividend_yield": null,
+    "beta": 0.864,
+    "fifty_two_week_high": 144100.0,
+    "fifty_two_week_low": 86900.0,
+    "revenue": 706740944896,
+    "profit_margin": 0.37772,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 194359961540
+    },
+    {
+      "date": "2025-09",
+      "value": 191726834800
+    },
+    {
+      "date": "2025-06",
+      "value": 176276907900
+    },
+    {
+      "date": "2025-03",
+      "value": 144377256060
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 136592929910
+    },
+    {
+      "date": "2025-09",
+      "value": 74136472030
+    },
+    {
+      "date": "2025-06",
+      "value": 32916482080
+    },
+    {
+      "date": "2025-03",
+      "value": 23304613780
+    }
+  ],
+  "news": [
+    {
+      "title": "Asian Companies Estimated Below Fair Value In October 2025",
+      "summary": "In October 2025, Asian markets are navigating a complex landscape marked by mixed economic signals and evolving monetary policies. As investors seek opportunities in this environment, identifying stoc",
+      "url": "https://finance.yahoo.com/news/asian-companies-estimated-below-fair-223416977.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2025-10-05T22:34:16Z"
+    },
+    {
+      "title": "Asian Value Stock Picks For Potential Capital Growth",
+      "summary": "As Asian markets continue to navigate a complex landscape of economic indicators and geopolitical tensions, investors are increasingly focused on identifying opportunities for potential capital growth",
+      "url": "https://finance.yahoo.com/news/asian-value-stock-picks-potential-043744888.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2025-09-02T04:37:44Z"
+    },
+    {
+      "title": "Discover 3 Asian Stocks That May Be Trading Below Their Estimated Value",
+      "summary": "As the Asian markets navigate a period of mixed economic signals, with China's stock indices experiencing a rally amid low interest rates and Japan's equity markets showing varied performance, investo",
+      "url": "https://finance.yahoo.com/news/discover-3-asian-stocks-may-223426584.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2025-09-01T22:34:26Z"
+    },
+    {
+      "title": "Asian Market Value Stocks: J&T Global Express Among 3 Picks Trading Below Estimated Fair Value",
+      "summary": "As the Asian markets navigate a landscape shaped by easing U.S.-China trade tensions and mixed economic signals from China, investors are increasingly attentive to opportunities that arise from stocks",
+      "url": "https://finance.yahoo.com/news/asian-market-value-stocks-j-044444562.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2025-08-22T04:44:44Z"
+    },
+    {
+      "title": "Asian Market Value Picks Trading Below Estimated Worth In August 2025",
+      "summary": "As global markets navigate the complexities of inflation data and interest rate speculations, Asian indices have shown resilience, with Japan's stock markets reaching record highs and Chinese stocks a",
+      "url": "https://finance.yahoo.com/news/asian-market-value-picks-trading-223801975.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2025-08-21T22:38:01Z"
+    }
+  ]
+}

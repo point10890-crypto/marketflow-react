@@ -1,0 +1,81 @@
+{
+  "name": "두산로보틱스",
+  "ticker": "454910.KS",
+  "result": "매수",
+  "date": "2026-04-05 13:24:41",
+  "elapsed": 1.5,
+  "consensus_score": 4.0,
+  "analyst_count": 2,
+  "recommendation_detail": {
+    "strongBuy": 1,
+    "buy": 0,
+    "hold": 1,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 82500.0,
+    "high": 130000.0,
+    "low": 88000.0,
+    "mean": 109000.0,
+    "median": 109000.0
+  },
+  "current_price": 82500.0,
+  "upside_potential": 32.1,
+  "key_stats": {
+    "name": "Doosan Robotics",
+    "sector": "Industrials",
+    "industry": "Specialty Industrial Machinery",
+    "market_cap": 5347648471040,
+    "pe_ratio": null,
+    "forward_pe": -315.01993,
+    "dividend_yield": null,
+    "beta": 4.04,
+    "fifty_two_week_high": 130600.0,
+    "fifty_two_week_low": 39550.0,
+    "revenue": 32978337792,
+    "profit_margin": -1.68278,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 13001620520
+    },
+    {
+      "date": "2025-09",
+      "value": 10164933790
+    },
+    {
+      "date": "2025-06",
+      "value": 4532272040
+    },
+    {
+      "date": "2025-03",
+      "value": 5279512000
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": -16653591670
+    },
+    {
+      "date": "2025-09",
+      "value": -12857557430
+    },
+    {
+      "date": "2025-06",
+      "value": -16566633370
+    },
+    {
+      "date": "2025-03",
+      "value": -9417559050
+    }
+  ],
+  "news": []
+}
