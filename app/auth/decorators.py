@@ -185,19 +185,12 @@ def admin_required(f):
             request.current_user = None
             return f(*args, **kwargs)
 
-        client_ip = request.remote_addr or '0.0.0.0'
-        if _check_admin_rate_limit(client_ip):
-            return jsonify({'error': 'Too many failed admin attempts. Blocked for 15 minutes.'}), 429
-
         user = _get_current_user()
         if user is None:
-            _record_admin_failure(client_ip)
             return jsonify({'error': 'Authentication required'}), 401
         if not user.is_admin:
-            _record_admin_failure(client_ip)
             return jsonify({'error': 'Admin access denied'}), 403
 
-        _reset_admin_failures(client_ip)
         request.current_user = user
         return f(*args, **kwargs)
     return decorated

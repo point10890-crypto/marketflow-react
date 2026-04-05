@@ -125,8 +125,8 @@ def register():
 
 @auth_bp.route('/login', methods=['POST'])
 def login():
-    # Rate limit check
-    client_ip = request.remote_addr or '0.0.0.0'
+    # Rate limit check (Cloudflare Tunnel: real IP from Cf-Connecting-IP)
+    client_ip = request.headers.get('Cf-Connecting-IP') or request.headers.get('X-Forwarded-For', '').split(',')[0].strip() or request.remote_addr or '0.0.0.0'
     if _check_login_rate_limit(client_ip):
         return jsonify({'error': 'Too many login attempts. Please try again later.'}), 429
 
