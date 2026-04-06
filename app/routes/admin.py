@@ -161,7 +161,15 @@ def reset_password(user_id):
 @admin_bp.route('/users/<int:user_id>', methods=['DELETE'])
 @admin_required
 def delete_user(user_id):
-    """유저 삭제"""
+    """유저 삭제 — 커뮤니티 게시글/댓글/구매요청까지 연쇄 제거.
+
+    SQLAlchemy 관계에 cascade 가 지정되어 있지 않아 기본 동작은 자식행의 FK 를
+    NULL 로 업데이트하는 것인데, posts/comments 의 author_id 와
+    purchase_requests.user_id 는 NOT NULL 이므로 IntegrityError 가 발생한다.
+    여기서 명시적으로 자식 레코드를 제거한 뒤 유저를 삭제한다.
+    """
+    from app.models.community import Post, PostImage, Comment, PurchaseRequest
+
     user = db.session.get(User, user_id)
     if not user:
         return jsonify({'error': 'User not found'}), 404
@@ -173,10 +181,31 @@ def delete_user(user_id):
     # 삭제 전 정보 보존 (세션 분리 후 접근 불가)
     email = user.email
 
-    # 연관 구독 요청도 삭제
-    SubscriptionRequest.query.filter_by(user_id=user_id).delete()
-    db.session.delete(user)
-    db.session.commit()
+    try:
+        # 1) 유저가 작성한 게시글에 달린 이미지/댓글/구매요청 제거
+        user_post_ids = [p.id for p in Post.query.filter_by(author_id=user_id).all()]
+        if user_post_ids:
+            PostImage.query.filter(PostImage.post_id.in_(user_post_ids)).delete(synchronize_session=False)
+            Comment.query.filter(Comment.post_id.in_(user_post_ids)).delete(synchronize_session=False)
+            PurchaseRequest.query.filter(PurchaseRequest.post_id.in_(user_post_ids)).delete(synchronize_session=False)
+
+        # 2) 유저가 다른 게시글에 남긴 댓글/구매요청 제거
+        Comment.query.filter_by(author_id=user_id).delete(synchronize_session=False)
+        PurchaseRequest.query.filter_by(user_id=user_id).delete(synchronize_session=False)
+
+        # 3) 유저 게시글 본체 제거
+        if user_post_ids:
+            Post.query.filter(Post.id.in_(user_post_ids)).delete(synchronize_session=False)
+
+        # 4) 연관 구독 요청 제거
+        SubscriptionRequest.query.filter_by(user_id=user_id).delete(synchronize_session=False)
+
+        # 5) 유저 삭제
+        db.session.delete(user)
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': f'Failed to delete user: {e}'}), 500
 
     return jsonify({'message': f'User {email} deleted'})
 
