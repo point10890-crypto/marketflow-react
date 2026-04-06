@@ -1,40 +1,40 @@
 {
-  "timestamp": "2026-04-06T12:15:53.586508",
+  "timestamp": "2026-04-06T17:16:58.798283",
   "predictions": {
     "BTC": {
-      "current_price": 69161.8,
-      "bullish_probability": 28.6,
-      "bearish_probability": 71.4,
-      "confidence_level": "High",
+      "current_price": 69155.8,
+      "bullish_probability": 32.6,
+      "bearish_probability": 67.4,
+      "confidence_level": "Moderate",
       "key_drivers": [
         {
           "feature": "btc_return_20d",
           "impact": 0.1426,
-          "value": -7.57,
+          "value": -6.45,
           "direction": "bearish"
         },
         {
           "feature": "btc_bb_position",
           "impact": 0.1355,
-          "value": 0.55,
+          "value": 0.59,
           "direction": "bullish"
         },
         {
           "feature": "eth_btc_relative_5d",
           "impact": 0.1211,
-          "value": 0.01,
-          "direction": "bullish"
+          "value": -1.67,
+          "direction": "bearish"
         },
         {
           "feature": "btc_rsi_14",
           "impact": 0.1204,
-          "value": 51.51,
+          "value": 51.44,
           "direction": "bullish"
         },
         {
           "feature": "btc_return_5d",
           "impact": 0.1089,
-          "value": 1.41,
+          "value": 1.58,
           "direction": "bullish"
         }
       ]
@@ -46,22 +46,22 @@
       {
         "name": "GradientBoosting",
         "accuracy": 68.3,
-        "bullish": 27.0
+        "bullish": 30.9
       },
       {
         "name": "RandomForest",
         "accuracy": 73.0,
-        "bullish": 25.1
+        "bullish": 26.4
       },
       {
         "name": "HistGradientBoosting",
         "accuracy": 67.4,
-        "bullish": 22.2
+        "bullish": 32.5
       },
       {
         "name": "LogisticRegression",
         "accuracy": 64.5,
-        "bullish": 40.2
+        "bullish": 40.5
       }
     ],
     "training_accuracy": 69.5,
