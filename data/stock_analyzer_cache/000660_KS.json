@@ -2,8 +2,8 @@
   "name": "SK하이닉스",
   "ticker": "000660.KS",
   "result": "매수",
-  "date": "2026-03-31 20:02:28",
-  "elapsed": 2.1,
+  "date": "2026-04-06 10:19:26",
+  "elapsed": 2.5,
   "consensus_score": 4.15,
   "analyst_count": 39,
   "recommendation_detail": {
@@ -15,23 +15,23 @@
   },
   "recommendation_period": "0m",
   "price_targets": {
-    "current": 807000.0,
+    "current": 894000.0,
     "high": 2500000.0,
     "low": 255245.0,
-    "mean": 1320166.0,
+    "mean": 1332730.1,
     "median": 1400000.0
   },
-  "current_price": 807000.0,
-  "upside_potential": 63.6,
+  "current_price": 895000.0,
+  "upside_potential": 48.9,
   "key_stats": {
     "name": "SK hynix",
     "sector": "Technology",
     "industry": "Semiconductors",
-    "market_cap": 557197415153664,
+    "market_cap": 617957478629376,
     "pe_ratio": null,
-    "forward_pe": 3.5047982,
-    "dividend_yield": 0.34,
-    "beta": 1.715,
+    "forward_pe": 3.8968928,
+    "dividend_yield": 0.36,
+    "beta": 1.751,
     "fifty_two_week_high": 1099000.0,
     "fifty_two_week_low": 162700.0,
     "revenue": 97146674085888,
@@ -40,7 +40,7 @@
   },
   "finnhub_supplement": null,
   "source": "yfinance",
-  "ai_analysis": "SK하이닉스(000660.KS)에 대해 39명의 애널리스트가 제시한 컨센서스는 '매수' 의견입니다 (5점 만점 중 4.15점). 목표가 평균은 1,320,166 KRW로, 현재가 807,000 KRW 대비 63.6% 상승 여력이 있는 것으로 분석됩니다. 이는 긍정적인 시장 전망을 시사합니다.",
+  "ai_analysis": null,
   "revenue_quarters": [
     {
       "date": "2025-12",
@@ -79,39 +79,39 @@
   ],
   "news": [
     {
-      "title": "Helium stocks of South Korea's chipmakers to last until June, sources say",
-      "summary": "South Korea has sufficient helium stocks until at least June, two sources said, while the industry minister ruled ‌out any first-half supply disruptions, allaying worries over the Iran war's impact on",
-      "url": "https://finance.yahoo.com/sectors/technology/articles/helium-stocks-south-koreas-chipmakers-071507806.html",
-      "provider": "Reuters",
-      "pub_time": "2026-03-31T07:15:07Z"
+      "title": "South Korea AI memory boom to drive Samsung, SK Hynix strategy shift",
+      "summary": "Investing.com — South Korea’s leading chipmakers are set to benefit from a powerful upswing in AI-driven memory demand, but will need to adapt their strategies to sustain gains, according to a Barclay",
+      "url": "https://finance.yahoo.com/sectors/technology/articles/south-korea-ai-memory-boom-140520080.html",
+      "provider": "Investing.com",
+      "pub_time": "2026-04-05T14:05:20Z"
     },
     {
-      "title": "Western Digital, Photronics, Nova, FormFactor, and Amkor Stocks Trade Down, What You Need To Know",
-      "summary": "A number of stocks fell in the afternoon session after rising geopolitical tensions from the Iran war, threatened to disrupt critical supply chains.",
-      "url": "https://finance.yahoo.com/markets/stocks/articles/western-digital-photronics-nova-formfactor-234218302.html",
-      "provider": "StockStory",
-      "pub_time": "2026-03-30T23:42:18Z"
+      "title": "The Top AI ETFs That Let You Invest In The Whole Trend At Once",
+      "summary": "AI spending has moved well past the hype phase. Consensus estimates now put 2026 hyperscaler capital expenditures at $611 billion, and the global AI market is projected to reach $4.8 trillion by 2033 ",
+      "url": "https://247wallst.com/investing/2026/04/04/the-top-ai-etfs-that-let-you-invest-in-the-whole-trend-at-once/",
+      "provider": "24/7 Wall St.",
+      "pub_time": "2026-04-04T16:52:05Z"
     },
     {
-      "title": "Amtech, Magnachip, Monolithic Power Systems, Allegro MicroSystems, and Kulicke and Soffa Shares Are Falling, What You Need To Know",
-      "summary": "A number of stocks fell in the afternoon session after rising geopolitical tensions from the Iran war, threatened to disrupt critical supply chains.",
-      "url": "https://finance.yahoo.com/markets/stocks/articles/amtech-magnachip-monolithic-power-systems-233418078.html",
-      "provider": "StockStory",
-      "pub_time": "2026-03-30T23:34:18Z"
+      "title": "Is It Too Late To Consider SK hynix (KOSE:A000660) After A 384% One Year Surge?",
+      "summary": "Wondering if SK hynix is still reasonably priced after its big run, or if you are late to the story? This breakdown focuses squarely on what the current share price could imply about value. The stock ",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/too-consider-sk-hynix-kose-100945653.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-04-04T10:09:45Z"
     },
     {
-      "title": "Himax, Teradyne, Entegris, IPG Photonics, and Universal Display Shares Plummet, What You Need To Know",
-      "summary": "A number of stocks fell in the afternoon session after rising geopolitical tensions from the Iran war, threatened to disrupt critical supply chains.",
-      "url": "https://finance.yahoo.com/markets/stocks/articles/himax-teradyne-entegris-ipg-photonics-232618792.html",
-      "provider": "StockStory",
-      "pub_time": "2026-03-30T23:26:18Z"
+      "title": "Did Alphabet Just Say Checkmate to Micron?",
+      "summary": "Alphabet's TurboQuant algorithm just decreased the amount of memory needed to run AI.",
+      "url": "https://www.fool.com/investing/2026/04/04/did-alphabet-just-say-checkmate-to-micron/",
+      "provider": "Motley Fool",
+      "pub_time": "2026-04-04T07:35:00Z"
     },
     {
-      "title": "Seagate, Applied Materials, KLA Corporation, Lam Research, and MACOM Stocks Trade Down, What You Need To Know",
-      "summary": "A number of stocks fell in the afternoon session after rising geopolitical tensions from the Iran war, threatened to disrupt critical supply chains.",
-      "url": "https://finance.yahoo.com/markets/stocks/articles/seagate-applied-materials-kla-corporation-231818997.html",
-      "provider": "StockStory",
-      "pub_time": "2026-03-30T23:18:18Z"
+      "title": "ASML Balances Record SK Hynix Order With Protests And Rich Valuation",
+      "summary": "ASML Holding (ENXTAM:ASML) has received what is described as the largest publicly disclosed equipment order in its history from memory chip maker SK Hynix. The multi year order focuses on advanced lit",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/asml-balances-record-sk-hynix-060952574.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-04-03T06:09:52Z"
     }
   ]
 }
