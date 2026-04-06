@@ -206,7 +206,8 @@ export default function DartDeepSection({ stockCode, stockName }: Props) {
         }
     }, [stockCode, stockName, startPolling]);
 
-    // Auto-expand + start analysis + scroll when arrived via ?panel=dart-deep or #dart-deep
+    // Auto-expand + start analysis when arrived via ?panel=dart-deep or #dart-deep
+    // Note: native hash navigation handles scrolling (respects scroll-mt-24); no manual scrollIntoView
     useEffect(() => {
         if (typeof window === 'undefined') return;
         const params = new URLSearchParams(window.location.search);
@@ -214,9 +215,6 @@ export default function DartDeepSection({ stockCode, stockName }: Props) {
         if (wantsDart) {
             setExpanded(true);
             startAnalyze();
-            setTimeout(() => {
-                document.getElementById('dart-deep')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }, 300);
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [stockCode]);
