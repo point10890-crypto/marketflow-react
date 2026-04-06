@@ -5,7 +5,16 @@
 //   Prod: VITE_API_BASE_URL → Cloudflare Tunnel → Flask 5001
 
 export const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
-export const API_HEADERS: Record<string, string> = {};
+
+// 모든 API 호출에 사용할 인증 헤더.
+// localStorage/sessionStorage 에서 토큰을 읽어 Bearer 헤더를 생성.
+// 토큰이 없으면 빈 객체 반환 → public 엔드포인트도 호출 가능.
+export function authHeaders(extra?: Record<string, string>): Record<string, string> {
+    const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+    const headers: Record<string, string> = extra ? { ...extra } : {};
+    if (token) headers.Authorization = `Bearer ${token}`;
+    return headers;
+}
 
 export async function fetchAPI<T>(endpoint: string): Promise<T> {
     const url = `${API_BASE}${endpoint}`;
@@ -15,7 +24,7 @@ export async function fetchAPI<T>(endpoint: string): Promise<T> {
     try {
         const response = await fetch(url, {
             signal: controller.signal,
-            headers: API_HEADERS,
+            headers: authHeaders(),
         });
         clearTimeout(timeoutId);
         if (!response.ok) {
@@ -37,7 +46,7 @@ export async function postAPI<T>(endpoint: string, body?: any): Promise<T> {
     try {
         const response = await fetch(url, {
             method: 'POST',
-            headers: { ...API_HEADERS, 'Content-Type': 'application/json' },
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
             body: body ? JSON.stringify(body) : undefined,
             signal: controller.signal,
         });
@@ -764,37 +773,40 @@ async function _authFetch(url: string, options: RequestInit): Promise<Response> 
     }
 }
 
+// apiToken 인자가 주어지면 해당 토큰 사용, 아니면 localStorage 토큰 자동 주입.
+function withToken(extra: Record<string, string> | undefined, apiToken?: string): Record<string, string> {
+    if (apiToken) return { ...(extra || {}), Authorization: `Bearer ${apiToken}` };
+    return authHeaders(extra);
+}
+
 export async function fetchAuthAPI<T>(endpoint: string, apiToken?: string): Promise<T> {
-    const headers: Record<string, string> = { ...API_HEADERS };
-    if (apiToken) headers['Authorization'] = `Bearer ${apiToken}`;
-    const response = await _authFetch(`${API_BASE}${endpoint}`, { headers });
+    const response = await _authFetch(`${API_BASE}${endpoint}`, { headers: withToken(undefined, apiToken) });
     return response.json();
 }
 
 export async function putAuthAPI<T>(endpoint: string, body?: any, apiToken?: string): Promise<T> {
-    const headers: Record<string, string> = { ...API_HEADERS, 'Content-Type': 'application/json' };
-    if (apiToken) headers['Authorization'] = `Bearer ${apiToken}`;
     const response = await _authFetch(`${API_BASE}${endpoint}`, {
-        method: 'PUT', headers,
+        method: 'PUT',
+        headers: withToken({ 'Content-Type': 'application/json' }, apiToken),
         body: body ? JSON.stringify(body) : undefined,
     });
     return response.json();
 }
 
 export async function postAuthAPI<T>(endpoint: string, body?: any, apiToken?: string): Promise<T> {
-    const headers: Record<string, string> = { ...API_HEADERS, 'Content-Type': 'application/json' };
-    if (apiToken) headers['Authorization'] = `Bearer ${apiToken}`;
     const response = await _authFetch(`${API_BASE}${endpoint}`, {
-        method: 'POST', headers,
+        method: 'POST',
+        headers: withToken({ 'Content-Type': 'application/json' }, apiToken),
         body: body ? JSON.stringify(body) : undefined,
     });
     return response.json();
 }
 
 export async function deleteAuthAPI<T>(endpoint: string, apiToken?: string): Promise<T> {
-    const headers: Record<string, string> = { ...API_HEADERS };
-    if (apiToken) headers['Authorization'] = `Bearer ${apiToken}`;
-    const response = await _authFetch(`${API_BASE}${endpoint}`, { method: 'DELETE', headers });
+    const response = await _authFetch(`${API_BASE}${endpoint}`, {
+        method: 'DELETE',
+        headers: withToken(undefined, apiToken),
+    });
     return response.json();
 }
 
@@ -804,7 +816,7 @@ export async function putAPI<T>(endpoint: string, body?: any): Promise<T> {
     try {
         const response = await fetch(`${API_BASE}${endpoint}`, {
             method: 'PUT',
-            headers: { ...API_HEADERS, 'Content-Type': 'application/json' },
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
             body: body ? JSON.stringify(body) : undefined,
             signal: controller.signal,
         });

@@ -14,41 +14,41 @@ from app.auth.decorators import generate_token, login_required
 # ═══════════════════════════════════════════════════════
 #  Login Rate Limiter (in-memory, per IP)
 # ═══════════════════════════════════════════════════════
-_login_attempts = {}   # {ip: [(timestamp, ...), ...]}
+_login_failures = {}   # {ip: [timestamp, ...]} — 실패한 시도만 기록
 _login_lock = threading.Lock()
-_LOGIN_MAX_ATTEMPTS = 5
+_LOGIN_MAX_FAILURES = 10
 _LOGIN_WINDOW_SEC = 300  # 5 minutes
 
 
-def _cleanup_old_attempts():
-    """Remove entries older than the rate limit window."""
-    cutoff = time.time() - _LOGIN_WINDOW_SEC
-    expired = [ip for ip, attempts in _login_attempts.items()
-               if all(t < cutoff for t in attempts)]
-    for ip in expired:
-        del _login_attempts[ip]
-
-
 def _check_login_rate_limit(ip: str) -> bool:
-    """Returns True if request should be blocked (rate limit exceeded)."""
+    """Returns True if IP is currently blocked due to too many failures."""
     now = time.time()
     cutoff = now - _LOGIN_WINDOW_SEC
     with _login_lock:
-        # Periodic cleanup (every 100th call)
-        if len(_login_attempts) > 100:
-            _cleanup_old_attempts()
+        failures = [t for t in _login_failures.get(ip, []) if t > cutoff]
+        _login_failures[ip] = failures
+        return len(failures) >= _LOGIN_MAX_FAILURES
 
-        attempts = _login_attempts.get(ip, [])
-        # Filter to recent window
-        attempts = [t for t in attempts if t > cutoff]
-        _login_attempts[ip] = attempts
 
-        if len(attempts) >= _LOGIN_MAX_ATTEMPTS:
-            return True  # blocked
+def _record_login_failure(ip: str):
+    """Record a failed login attempt."""
+    now = time.time()
+    cutoff = now - _LOGIN_WINDOW_SEC
+    with _login_lock:
+        failures = [t for t in _login_failures.get(ip, []) if t > cutoff]
+        failures.append(now)
+        _login_failures[ip] = failures
+        # 주기적 cleanup
+        if len(_login_failures) > 200:
+            expired = [k for k, v in _login_failures.items() if not v or max(v) < cutoff]
+            for k in expired:
+                del _login_failures[k]
 
-        attempts.append(now)
-        _login_attempts[ip] = attempts
-        return False
+
+def _reset_login_failures(ip: str):
+    """Reset failures on successful login."""
+    with _login_lock:
+        _login_failures.pop(ip, None)
 
 
 def _notify_admin_telegram(message: str):
@@ -152,7 +152,11 @@ def login():
 
     user = User.query.filter_by(email=email).first()
     if not user or not user.check_password(password):
+        _record_login_failure(client_ip)
         return jsonify({'error': 'Invalid email or password'}), 401
+
+    # 로그인 성공 — 실패 카운터 리셋
+    _reset_login_failures(client_ip)
 
     # 마지막 로그인 시간 업데이트
     user.last_login_at = datetime.now(timezone.utc)

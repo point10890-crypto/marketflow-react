@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { fetchAPI, API_BASE, API_HEADERS } from '@/lib/api';
+import { fetchAPI, API_BASE, authHeaders } from '@/lib/api';
 import PatternChart, { ChartDataPoint, PatternOverlay, PatternPoint } from '@/components/wave/PatternChart';
 
 /* ── Types ── */
@@ -108,7 +108,7 @@ export default function WaveOverviewPage() {
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 30000);
             const url = `${API_BASE}/api/wave/detect/${ticker}?market=${mkt}&lookback=200`;
-            const res = await fetch(url, { signal: controller.signal, headers: API_HEADERS });
+            const res = await fetch(url, { signal: controller.signal, headers: authHeaders() });
             clearTimeout(timeoutId);
             if (!res.ok) throw new Error(`API Error: ${res.status}`);
             const data: WaveDetectResult = await res.json();

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback, Suspense } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { API_BASE, API_HEADERS } from '@/lib/api';
+import { API_BASE, authHeaders } from '@/lib/api';
 
 /* ── 타입 정의 ── */
 interface Stock {
@@ -230,7 +230,7 @@ function StockAnalyzerContent() {
         try {
             const res = await fetch(`${API_BASE}/api/stock-analyzer/analyze`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', ...API_HEADERS },
+                headers: { ...authHeaders({ 'Content-Type': 'application/json' }) },
                 body: JSON.stringify({ ticker: stock.ticker, name: stock.name })
             });
             const data = await res.json();
@@ -277,7 +277,7 @@ function StockAnalyzerContent() {
     const searchStocks = useCallback(async (q: string) => {
         if (!q.trim()) { setSearchResults([]); setShowDropdown(false); return; }
         try {
-            const res = await fetch(`${API_BASE}/api/stock-analyzer/search?q=${encodeURIComponent(q)}`, { headers: API_HEADERS });
+            const res = await fetch(`${API_BASE}/api/stock-analyzer/search?q=${encodeURIComponent(q)}`, { headers: authHeaders() });
             if (res.ok) {
                 const data = await res.json();
                 setSearchResults(data);
@@ -352,7 +352,7 @@ function StockAnalyzerContent() {
         try {
             const res = await fetch(`${API_BASE}/api/stock-analyzer/export`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', ...API_HEADERS },
+                headers: { ...authHeaders({ 'Content-Type': 'application/json' }) },
                 body: JSON.stringify({ records })
             });
             if (res.ok) {

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useCallback } from 'react';
-import { API_BASE, API_HEADERS } from '@/lib/api';
+import { API_BASE, authHeaders } from '@/lib/api';
 
 /**
  * 자동 데이터 갱신 훅 (Page Visibility API 기반)
@@ -103,7 +103,7 @@ export function useSmartRefresh(
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 5000);
             const res = await fetch(versionUrl, {
-                headers: API_HEADERS,
+                headers: authHeaders(),
                 signal: controller.signal,
             });
             clearTimeout(timeoutId);

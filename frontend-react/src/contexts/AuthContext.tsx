@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import { getToken, setToken, clearToken, getUser, saveUser, isAuthenticated, isAdmin as checkIsAdmin, type AuthUserData } from '@/lib/auth';
-import { postAPI, API_BASE, API_HEADERS } from '@/lib/api';
+import { postAPI, API_BASE } from '@/lib/api';
 
 interface AuthUser {
     id: number | string;
@@ -59,7 +59,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 const controller = new AbortController();
                 const timeout = setTimeout(() => controller.abort(), 10000);
                 fetch(`${API_BASE}/api/auth/me`, {
-                    headers: { ...API_HEADERS, 'Authorization': `Bearer ${storedToken}` },
+                    headers: { 'Authorization': `Bearer ${storedToken}` },
                     signal: controller.signal,
                 }).then(r => { clearTimeout(timeout); return r.ok ? r.json() : null; }).then(data => {
                     if (data?.user) {
@@ -118,7 +118,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (!currentToken) return;
         try {
             const res = await fetch(`${API_BASE}/api/auth/me`, {
-                headers: { ...API_HEADERS, 'Authorization': `Bearer ${currentToken}` },
+                headers: { 'Authorization': `Bearer ${currentToken}` },
             });
             if (res.ok) {
                 const data = await res.json();

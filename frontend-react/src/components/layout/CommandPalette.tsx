@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { API_BASE, API_HEADERS } from '@/lib/api';
+import { API_BASE, authHeaders } from '@/lib/api';
 
 interface Stock {
     name: string;
@@ -46,7 +46,7 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
         try {
             const res = await fetch(
                 `${API_BASE}/api/stock-analyzer/search?q=${encodeURIComponent(q)}`,
-                { headers: API_HEADERS }
+                { headers: authHeaders() }
             );
             if (res.ok) {
                 const data = await res.json();

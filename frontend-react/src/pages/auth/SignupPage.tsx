@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { API_BASE, API_HEADERS } from '@/lib/api';
+import { API_BASE } from '@/lib/api';
 
 export default function SignupPage() {
     const [name, setName] = useState('');
@@ -20,7 +20,7 @@ export default function SignupPage() {
         try {
             const res = await fetch(`${API_BASE}/api/auth/register`, {
                 method: 'POST',
-                headers: { ...API_HEADERS, 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name, email, password }),
             });
 

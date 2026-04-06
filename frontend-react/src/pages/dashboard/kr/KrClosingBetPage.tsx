@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useAutoRefresh, useSmartRefresh } from '@/hooks/useAutoRefresh';
 import { usePullToRefreshRegister } from '@/components/layout/PullToRefreshProvider';
 import { useNotification } from '@/contexts/NotificationContext';
-import { API_BASE, API_HEADERS } from '@/lib/api';
+import { API_BASE, authHeaders } from '@/lib/api';
 
 // Interfaces (Based on backend models)
 interface ScoreDetail {
@@ -279,7 +279,7 @@ export default function JonggaV2Page() {
         const fetchDates = async () => {
             let data: any = null;
             try {
-                const res = await fetch(`${API_BASE}/api/kr/jongga-v2/dates`, { headers: API_HEADERS });
+                const res = await fetch(`${API_BASE}/api/kr/jongga-v2/dates`, { headers: authHeaders() });
                 data = await res.json();
             } catch {
                 try {
@@ -310,7 +310,7 @@ export default function JonggaV2Page() {
 
             let result: any;
             try {
-                const res = await fetch(url, { headers: API_HEADERS });
+                const res = await fetch(url, { headers: authHeaders() });
                 result = await res.json();
             } catch {
                 const fallbackUrl = (isUserSelected && selectedDate !== 'latest')
@@ -327,7 +327,7 @@ export default function JonggaV2Page() {
                 for (const d of dates) {
                     if (d === latestDateStr) continue;
                     try {
-                        const histRes = await fetch(`${API_BASE}/api/kr/jongga-v2/history/${d}`, { headers: API_HEADERS });
+                        const histRes = await fetch(`${API_BASE}/api/kr/jongga-v2/history/${d}`, { headers: authHeaders() });
                         const histData = await histRes.json();
                         if (histData?.signals && histData.signals.length > 0) {
                             setData(histData);
@@ -508,7 +508,7 @@ function DataStatusBox({ updatedAt }: { updatedAt?: string }) {
 
         setUpdating(true);
         try {
-            const res = await fetch(`${API_BASE}/api/kr/jongga-v2/run`, { method: 'POST', headers: API_HEADERS });
+            const res = await fetch(`${API_BASE}/api/kr/jongga-v2/run`, { method: 'POST', headers: authHeaders() });
             if (res.ok) {
                 alert('전체 분석이 완료되었습니다!');
                 window.location.reload();
