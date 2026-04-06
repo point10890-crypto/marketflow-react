@@ -6,17 +6,17 @@
     "BTC가 EMA50 아래 (하락 추세)",
     "EMA200 하락 중 (장기 약세)",
     "거래량 부족 (관심 저조)",
-    "알트 breadth 붕괴 (10% > EMA50)"
+    "알트 breadth 붕괴 (20% > EMA50)"
   ],
   "metrics": {
-    "btc_price": 69157.1640625,
-    "btc_ema50": 70389.12698602858,
-    "btc_ema200": 84119.70793584126,
-    "btc_ema200_slope_pct_20": -3.953598363895583,
-    "btc_volume_z_50": -0.6997674271061675,
-    "btc_atrp_14_pct": 2.950935352526407,
-    "alt_breadth_above_ema50": 0.1,
-    "funding_rate": 6.019e-05,
+    "btc_price": 69760.90625,
+    "btc_ema50": 70412.80315024428,
+    "btc_ema200": 84125.7153207915,
+    "btc_ema200_slope_pct_20": -3.9467392375163857,
+    "btc_volume_z_50": -0.3858991581668778,
+    "btc_atrp_14_pct": 2.998939441944658,
+    "alt_breadth_above_ema50": 0.2,
+    "funding_rate": 5.576e-05,
     "open_interest_delta_z": null,
     "gate_score_components": {
       "trend": 0.0,
@@ -28,5 +28,5 @@
     "fear_greed_index": 13,
     "fear_greed_class": "Extreme Fear"
   },
-  "generated_at": "2026-04-06T17:16:27.894139"
+  "generated_at": "2026-04-06T20:00:15.354984"
 }
