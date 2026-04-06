@@ -1,0 +1,103 @@
+{
+  "name": "롯데케미칼",
+  "ticker": "011170.KS",
+  "result": "중립",
+  "date": "2026-04-06 16:10:29",
+  "elapsed": 2.4,
+  "consensus_score": 3.39,
+  "analyst_count": 18,
+  "recommendation_detail": {
+    "strongBuy": 3,
+    "buy": 5,
+    "hold": 7,
+    "sell": 2,
+    "strongSell": 1
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 83600.0,
+    "high": 165000.0,
+    "low": 55000.0,
+    "mean": 93055.555,
+    "median": 90000.0
+  },
+  "current_price": 83600.0,
+  "upside_potential": 11.3,
+  "key_stats": {
+    "name": "LOTTE CHEMICAL Corp",
+    "sector": "Basic Materials",
+    "industry": "Chemicals",
+    "market_cap": 3525173575680,
+    "pe_ratio": null,
+    "forward_pe": -29.888374,
+    "dividend_yield": 1.27,
+    "beta": 1.124,
+    "fifty_two_week_high": 100500.0,
+    "fifty_two_week_low": 53800.0,
+    "revenue": 18483005882368,
+    "profit_margin": -0.11022,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "롯데케미칼(011170.KS)에 대한 애널리스트 컨센서스는 18명 참여 기준 '중립' 의견입니다. 목표가 평균은 93,056원으로 현재가 대비 11.3% 상승 여력이 있습니다. 투자 판단은 제시된 정보를 바탕으로 투자자 본인이 결정해야 합니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 4709943189430
+    },
+    {
+      "date": "2025-09",
+      "value": 4786058197530
+    },
+    {
+      "date": "2025-06",
+      "value": 4197070355160
+    },
+    {
+      "date": "2025-03",
+      "value": 4901760589380
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": -1323784011110
+    },
+    {
+      "date": "2025-09",
+      "value": -118022456170
+    },
+    {
+      "date": "2025-06",
+      "value": -404501237870
+    },
+    {
+      "date": "2025-03",
+      "value": -190827418930
+    }
+  ],
+  "news": [
+    {
+      "title": "Lotte Chemical Corp (XKRX:011170) Q3 2025 Earnings Call Highlights: Navigating Challenges with ...",
+      "summary": "Lotte Chemical Corp (XKRX:011170) reports narrowing losses and strategic advancements amid a challenging market environment in Q3 2025.",
+      "url": "https://finance.yahoo.com/news/lotte-chemical-corp-xkrx-011170-130253164.html",
+      "provider": "GuruFocus.com",
+      "pub_time": "2025-11-12T13:02:53Z"
+    },
+    {
+      "title": "Lotte Chemical Corp (XKRX:011170) Q2 2025 Earnings Call Highlights: Navigating Losses with ...",
+      "summary": "Despite significant operating losses, Lotte Chemical Corp (XKRX:011170) focuses on restructuring and strategic investments to enhance long-term competitiveness.",
+      "url": "https://finance.yahoo.com/news/lotte-chemical-corp-xkrx-011170-070137689.html",
+      "provider": "GuruFocus.com",
+      "pub_time": "2025-08-09T07:01:37Z"
+    },
+    {
+      "title": "Lotte Chemical Corp (XKRX:011170) Q1 2025 Earnings Call Highlights: Navigating Challenges with ...",
+      "summary": "Lotte Chemical Corp (XKRX:011170) shows operational efficiency gains despite ongoing net losses and market uncertainties.",
+      "url": "https://finance.yahoo.com/news/lotte-chemical-corp-xkrx-011170-070240187.html",
+      "provider": "GuruFocus.com",
+      "pub_time": "2025-05-14T07:02:40Z"
+    }
+  ]
+}
