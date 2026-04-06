@@ -1,0 +1,75 @@
+{
+  "name": "풍국주정",
+  "ticker": "023900.KQ",
+  "result": "데이터 없음",
+  "date": "2026-04-06 16:11:51",
+  "elapsed": 1.6,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 10610.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 10610.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "Pungguk Ethanol",
+    "sector": "Consumer Defensive",
+    "industry": "Beverages - Brewers",
+    "market_cap": 133686001664,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": 2.03,
+    "beta": 0.728,
+    "fifty_two_week_high": 11820.0,
+    "fifty_two_week_low": 8150.0,
+    "revenue": 163520036864,
+    "profit_margin": 0.06257,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 39020251200
+    },
+    {
+      "date": "2025-09",
+      "value": 43421914920
+    },
+    {
+      "date": "2025-06",
+      "value": 40456858230
+    },
+    {
+      "date": "2025-03",
+      "value": 40621018570
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 1374206260
+    },
+    {
+      "date": "2025-09",
+      "value": 3847905350
+    },
+    {
+      "date": "2025-06",
+      "value": 1991823500
+    },
+    {
+      "date": "2025-03",
+      "value": 2996450440
+    }
+  ],
+  "news": []
+}

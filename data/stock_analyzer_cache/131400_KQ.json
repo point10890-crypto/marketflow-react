@@ -1,33 +1,33 @@
 {
-  "name": "휴림로봇",
-  "ticker": "090710.KQ",
+  "name": "이브이첨단소재",
+  "ticker": "131400.KQ",
   "result": "데이터 없음",
-  "date": "2026-04-06 16:29:27",
+  "date": "2026-04-06 16:37:35",
   "elapsed": 1.2,
   "consensus_score": null,
   "analyst_count": 0,
   "recommendation_detail": null,
   "recommendation_period": null,
   "price_targets": {
-    "current": 10600.0,
+    "current": 1498.0,
     "high": null,
     "low": null,
     "mean": null,
     "median": null
   },
-  "current_price": 10600.0,
+  "current_price": 1498.0,
   "upside_potential": null,
   "key_stats": {
-    "name": "Hyulim ROBOT",
+    "name": "EV.A.M.",
     "sector": "",
     "industry": "",
-    "market_cap": 1265750638592,
+    "market_cap": 102755319808,
     "pe_ratio": null,
     "forward_pe": null,
     "dividend_yield": null,
     "beta": null,
-    "fifty_two_week_high": 26600.0,
-    "fifty_two_week_low": 1650.0,
+    "fifty_two_week_high": 2820.0,
+    "fifty_two_week_low": 1200.0,
     "revenue": null,
     "profit_margin": null,
     "currency": "KRW"
@@ -38,37 +38,37 @@
   "revenue_quarters": [
     {
       "date": "2025-09",
-      "value": 40467328650
+      "value": 13848007370
     },
     {
       "date": "2025-06",
-      "value": 52622002570
+      "value": 14505145170
     },
     {
       "date": "2025-03",
-      "value": 50627911790
+      "value": 19333496810
     },
     {
       "date": "2024-12",
-      "value": 67253121290
+      "value": 17081926100
     }
   ],
   "net_income_quarters": [
     {
       "date": "2025-09",
-      "value": -2664012550
+      "value": -2470957160
     },
     {
       "date": "2025-06",
-      "value": 1199962320
+      "value": -4440061290
     },
     {
       "date": "2025-03",
-      "value": -1793574300
+      "value": -4539318120
     },
     {
       "date": "2024-12",
-      "value": 6313250850
+      "value": -13310702980
     }
   ],
   "news": []
