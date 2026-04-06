@@ -58,26 +58,12 @@ def _get_current_user():
 
 
 def _auth_disabled():
-    """인증 비활성화 여부 — 개발 단계에서 모든 인증/구독 제한 해제.
+    """인증 비활성화 여부 — 명시적 escape hatch 만 허용.
 
-    활성화 조건 (OR):
-      1. Flask debug 모드
-      2. AUTH_DISABLED=true 환경변수
-      3. DEV_MODE=true 환경변수
-      4. RENDER 환경변수 존재 (Render 배포 자동 감지)
-
-    프로덕션 전환 시:
-      - Render: DEV_MODE 환경변수 제거 + 아래 RENDER 체크 라인 삭제
-      - 로컬: .env에서 DEV_MODE 제거
+    프로덕션은 항상 인증 활성. 비활성화는 아래 조건일 때만:
+      1. AUTH_DISABLED=true 환경변수 (명시적 옵트인)
     """
-    if current_app.debug:
-        return True
     if os.getenv('AUTH_DISABLED', '').lower() in ('true', '1', 'yes'):
-        return True
-    if os.getenv('DEV_MODE', '').lower() in ('true', '1', 'yes'):
-        return True
-    # 개발 단계: Render 배포 시 자동으로 인증 해제 (프로덕션 전환 시 이 줄 삭제)
-    if os.getenv('RENDER'):
         return True
     return False
 
