@@ -398,6 +398,160 @@ class DARTCollector:
             print(f"[DART] 재무제표 에러 ({stock_code}): {e}")
             return result
 
+    # ── 10년치 재무제표 (DART 심층분석 전용) ─────────────────
+
+    # 핵심 10개 계정 (한국어 명칭 매핑)
+    _FIN_ACCOUNTS_10YR = {
+        "revenue": ["매출액", "수익(매출액)", "영업수익"],
+        "op_profit": ["영업이익", "영업이익(손실)"],
+        "net_income": ["당기순이익", "당기순이익(손실)", "반기순이익", "분기순이익"],
+        "total_assets": ["자산총계"],
+        "total_liab": ["부채총계"],
+        "total_equity": ["자본총계"],
+        "cash": ["현금및현금성자산"],
+        "short_debt": ["단기차입금"],
+        "long_debt": ["장기차입금"],
+        "capex": ["유형자산의증가", "유형자산취득"],
+    }
+
+    async def fetch_10yr_financials(
+        self, stock_code: str, years: int = 10
+    ) -> Dict:
+        """
+        10년치 연도별 재무제표 수집 (연결 우선, 없으면 개별).
+
+        Returns:
+            {
+                "stock_code": "005930",
+                "corp_code": "00126380",
+                "years": [2015, 2016, ...],
+                "data": {
+                    2024: { "revenue": 3012345, "op_profit": ..., ... },   # 억원 단위
+                    ...
+                },
+                "missing_years": [],
+                "source": "CFS|OFS|mixed",
+            }
+        """
+        result = {
+            "stock_code": stock_code,
+            "corp_code": None,
+            "years": [],
+            "data": {},
+            "missing_years": [],
+            "source": "",
+        }
+        if not self.api_key:
+            return result
+
+        await self._ensure_corp_codes()
+        corp_code = self._get_corp_code(stock_code)
+        if not corp_code:
+            return result
+        result["corp_code"] = corp_code
+
+        current_year = date.today().year
+        target_years = list(range(current_year - years, current_year + 1))
+
+        sources_used: set = set()
+        for year in target_years:
+            raw = await self._fetch_financial_full(corp_code, str(year), "11011")
+            await asyncio.sleep(0.3)  # API rate limit 방어
+            if not raw:
+                result["missing_years"].append(year)
+                continue
+
+            accounts = self._extract_10yr_accounts(raw)
+            if not accounts:
+                result["missing_years"].append(year)
+                continue
+
+            # fs_div 추적 (CFS=연결, OFS=개별)
+            fs_divs = {item.get("fs_div") for item in raw if item.get("fs_div")}
+            if "CFS" in fs_divs:
+                sources_used.add("CFS")
+            elif "OFS" in fs_divs:
+                sources_used.add("OFS")
+
+            result["data"][year] = accounts
+            result["years"].append(year)
+
+        if not sources_used:
+            result["source"] = ""
+        elif len(sources_used) == 1:
+            result["source"] = sources_used.pop()
+        else:
+            result["source"] = "mixed"
+
+        # 원본 억원 단위로 저장
+        self._save_10yr_snapshot(stock_code, result)
+        return result
+
+    async def _fetch_financial_full(
+        self, corp_code: str, bsns_year: str, reprt_code: str
+    ) -> Optional[List[Dict]]:
+        """
+        DART 단일회사 전체 재무제표 API (fnlttSinglAcntAll).
+        연결(CFS) 우선 조회, 실패 시 개별(OFS) 폴백.
+        """
+        url = f"{self.BASE_URL}/fnlttSinglAcntAll.json"
+        for fs_div in ("CFS", "OFS"):
+            params = {
+                "crtfc_key": self.api_key,
+                "corp_code": corp_code,
+                "bsns_year": bsns_year,
+                "reprt_code": reprt_code,
+                "fs_div": fs_div,
+            }
+            try:
+                async with httpx.AsyncClient(timeout=15) as client:
+                    resp = await client.get(url, params=params)
+                    if resp.status_code != 200:
+                        continue
+                    data = resp.json()
+                    if data.get("status") == "000":
+                        return data.get("list", [])
+            except Exception as e:
+                print(f"[DART] fetch_10yr {bsns_year}/{fs_div} 에러: {e}")
+                continue
+        return None
+
+    def _extract_10yr_accounts(self, raw: List[Dict]) -> Dict[str, float]:
+        """
+        DART 응답에서 핵심 10계정 추출 → 억원 단위 float.
+        같은 계정명이 여러 개면 CFS(연결) 우선.
+        """
+        values: Dict[str, float] = {}
+        seen: Dict[str, str] = {}  # key -> fs_div
+        for item in raw:
+            nm = (item.get("account_nm") or "").strip()
+            fs_div = item.get("fs_div", "")
+            amt_str = item.get("thstrm_amount") or "0"
+
+            for key, aliases in self._FIN_ACCOUNTS_10YR.items():
+                if nm in aliases:
+                    # CFS 가 이미 있으면 OFS 로 덮어쓰지 않음
+                    if key in seen and seen[key] == "CFS" and fs_div != "CFS":
+                        continue
+                    amt = self._parse_amount(amt_str)
+                    values[key] = round(amt / 1e8, 1)  # 원 → 억원
+                    seen[key] = fs_div
+                    break
+        return values
+
+    def _save_10yr_snapshot(self, stock_code: str, result: Dict) -> None:
+        """10년 재무 원본 JSON 을 data/dart_deep/raw/ 에 저장."""
+        try:
+            out_dir = os.path.join(self._data_dir, "dart_deep", "raw")
+            os.makedirs(out_dir, exist_ok=True)
+            path = os.path.join(
+                out_dir, f"{stock_code}_{date.today().strftime('%Y%m%d')}.json"
+            )
+            with open(path, "w", encoding="utf-8") as f:
+                json.dump(result, f, ensure_ascii=False, indent=2)
+        except Exception as e:
+            print(f"[DART] 10yr snapshot 저장 실패: {e}")
+
     async def _fetch_financial(self, corp_code: str, bsns_year: str, reprt_code: str):
         """DART 단일회사 주요계정 API 호출"""
         url = f"{self.BASE_URL}/fnlttSinglAcnt.json"

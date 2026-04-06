@@ -973,6 +973,17 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                     metricLabel="Top Pick"
                 />
                 <CompactCard
+                    to="/dashboard/stock-analyzer?panel=dart-deep#dart-deep"
+                    icon="fas fa-file-invoice-dollar"
+                    label="DART 심층분석"
+                    sublabel="10년 재무제표 · Gemini DCF · 6단계 파이프라인"
+                    accent="#06b6d4"
+                    status="Gemini 2.5"
+                    statusColor="text-cyan-400"
+                    metric="10Y"
+                    metricLabel="재무분석"
+                />
+                <CompactCard
                     to="/dashboard/community"
                     icon="fas fa-comments"
                     label="커뮤니티"

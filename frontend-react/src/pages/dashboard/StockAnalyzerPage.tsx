@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback, Suspense } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { API_BASE, authHeaders } from '@/lib/api';
+import DartDeepSection from '@/components/stock-analyzer/DartDeepSection';
 
 /* ── 타입 정의 ── */
 interface Stock {
@@ -642,6 +643,14 @@ function StockAnalyzerContent() {
                     </div>
                 </div>
             )}
+
+            {/* DART 10년 재무제표 심층분석 (KR 6자리 코드만) */}
+            {(() => {
+                if (!analyzeResult || loading || !selectedStock) return null;
+                const m = (selectedStock.ticker || selectedStock.code || '').match(/(\d{6})/);
+                if (!m) return null;
+                return <DartDeepSection stockCode={m[1]} stockName={selectedStock.name} />;
+            })()}
 
             {/* Error */}
             {error && !loading && (

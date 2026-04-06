@@ -874,3 +874,68 @@ def export_history():
         as_attachment=True,
         download_name=filename
     )
+
+
+# ═══════════════════════════════════════════════════════
+#  DART 10년 재무제표 × Gemini 6단계 심층분석
+# ═══════════════════════════════════════════════════════
+
+from app.auth.decorators import pro_required
+from engine.dart_deep_pipeline import (
+    start_job as _dd_start_job,
+    get_job_status as _dd_get_status,
+    get_cached_result as _dd_get_cached,
+)
+
+
+@stock_analyzer_bp.route('/dart-deep/analyze', methods=['POST'])
+@pro_required
+def dart_deep_analyze():
+    """
+    DART 10년 재무제표 심층분석 시작.
+
+    Body: { "stock_code": "005930", "stock_name": "삼성전자" }
+
+    Returns:
+        - { "status": "cached", "result": {...} }  # 24h 캐시 재사용
+        - { "status": "running", "job_id": "..." }  # 신규/진행중 Job
+    """
+    data = request.get_json(silent=True) or {}
+    stock_code = (data.get('stock_code') or '').strip()
+    stock_name = (data.get('stock_name') or '').strip()
+
+    if not stock_code or len(stock_code) != 6 or not stock_code.isdigit():
+        return jsonify({'error': 'stock_code must be 6-digit'}), 400
+    if not stock_name:
+        stock_name = stock_code
+
+    try:
+        res = _dd_start_job(stock_code, stock_name)
+        return jsonify(res)
+    except Exception as e:
+        logger.exception('dart_deep_analyze failed')
+        return jsonify({'error': f'{type(e).__name__}: {e}'}), 500
+
+
+@stock_analyzer_bp.route('/dart-deep/status/<job_id>', methods=['GET'])
+@pro_required
+def dart_deep_status(job_id):
+    """Job 상태 폴링 (700ms 간격 호출용)."""
+    status = _dd_get_status(job_id)
+    if status is None:
+        return jsonify({'error': 'job not found'}), 404
+    return jsonify(status)
+
+
+@stock_analyzer_bp.route('/dart-deep/result/<stock_code>', methods=['GET'])
+@pro_required
+def dart_deep_result(stock_code):
+    """24h 이내 캐시된 결과 조회 (없으면 404)."""
+    stock_code = (stock_code or '').strip()
+    if not stock_code or len(stock_code) != 6 or not stock_code.isdigit():
+        return jsonify({'error': 'stock_code must be 6-digit'}), 400
+
+    cached = _dd_get_cached(stock_code)
+    if not cached:
+        return jsonify({'error': 'no cached result'}), 404
+    return jsonify(cached)

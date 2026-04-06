@@ -65,6 +65,7 @@ const marketCards: NavItem[] = [
 // 하단 도구
 const toolItems: NavItem[] = [
     { name: 'ProPicks', href: '/dashboard/stock-analyzer', icon: 'fa-crosshairs', color: 'text-orange-400', bg: 'from-orange-500/15 to-orange-600/5' },
+    { name: 'DART 심층분석', href: '/dashboard/stock-analyzer?panel=dart-deep#dart-deep', icon: 'fa-file-invoice-dollar', color: 'text-cyan-400', bg: 'from-cyan-500/15 to-cyan-600/5' },
 ];
 
 // 전체 navigation (하위 호환용)
