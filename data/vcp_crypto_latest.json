@@ -1,665 +1,96 @@
 {
   "metadata": {
-    "generated_at": "2026-04-06T12:10:52.957818",
+    "generated_at": "2026-04-06T17:16:16.015664",
     "market": "CRYPTO",
     "gate": "RED",
-    "gate_score": 0,
-    "universe_size": 50
+    "gate_score": 27,
+    "processing_time_sec": 17.8
+  },
+  "summary": {
+    "total_screened": 50,
+    "stage2_passed": 1,
+    "trend_passed": 1,
+    "vcp_found": 1,
+    "entry_ready": 1
   },
   "signals": [
     {
-      "symbol": "USD1/USDT",
-      "name": "USD1",
+      "symbol": "MKR",
+      "name": "MKR",
       "market": "CRYPTO",
-      "price": 1.0005,
+      "sector": "",
+      "price": 1762.22,
       "composite": {
-        "composite_score": 53,
-        "rating": "Good Setup",
-        "entry_ready": false
+        "composite_score": 69.2,
+        "rating": "Good VCP",
+        "rating_description": "양호한 VCP 패턴",
+        "guidance": "피벗 돌파 매수",
+        "valid_vcp": "True",
+        "entry_ready": "True",
+        "weakest_component": "Volume Pattern",
+        "strongest_component": "Trend Template",
+        "component_breakdown": {
+          "trend_template": {
+            "score": 100.0,
+            "weight": 0.25,
+            "weighted": 25.0,
+            "label": "Trend Template (Stage 2)"
+          },
+          "contraction_quality": {
+            "score": 48,
+            "weight": 0.25,
+            "weighted": 12.0,
+            "label": "Contraction Quality"
+          },
+          "volume_pattern": {
+            "score": 30,
+            "weight": 0.2,
+            "weighted": 6.0,
+            "label": "Volume Pattern"
+          },
+          "pivot_proximity": {
+            "score": 80,
+            "weight": 0.15,
+            "weighted": 12.0,
+            "label": "Pivot Proximity"
+          },
+          "relative_strength": {
+            "score": 95,
+            "weight": 0.15,
+            "weighted": 14.2,
+            "label": "Relative Strength"
+          }
+        }
       },
       "trend_template": {
-        "score": 32.4,
-        "passed": false
+        "score": 100.0,
+        "passed": "True",
+        "stage": 2,
+        "stage_label": "Stage 2 - Advancing"
       },
       "vcp_pattern": {
-        "score": 86.5,
-        "valid_vcp": true,
-        "num_contractions": 3,
-        "pivot_price": 1.0005
+        "score": 48,
+        "valid_vcp": "True",
+        "num_contractions": 2,
+        "pivot_price": 1785.23
       },
       "volume_pattern": {
-        "score": 4.0,
-        "dry_up_ratio": 0.11
+        "score": 30,
+        "dry_up_ratio": 1.54
       },
       "pivot_proximity": {
-        "score": 95.0,
-        "distance_from_pivot_pct": -0.04,
-        "trade_status": "APPROACHING"
+        "score": 80,
+        "distance_from_pivot_pct": 1.3,
+        "trade_status": "NEAR PIVOT"
       },
       "relative_strength": {
-        "score": 74.1,
-        "rs_rank_estimate": 74.1
-      },
-      "stage": {
-        "stage": 1,
-        "stage_label": "Stage 1 - Accumulation"
-      },
-      "timeframe": "1d",
-      "signal_type": "APPROACHING",
-      "liquidity_bucket": "A",
-      "market_regime": "BTC_DOWN|B",
-      "c1": 2.0,
-      "c2": 0.1,
-      "c3": 0.1,
-      "ml_win_prob": 74.1
-    },
-    {
-      "symbol": "TRX/USDT",
-      "name": "TRX",
-      "market": "CRYPTO",
-      "price": 0.3246,
-      "composite": {
-        "composite_score": 50,
-        "rating": "Good Setup",
-        "entry_ready": false
-      },
-      "trend_template": {
-        "score": 69.2,
-        "passed": true
-      },
-      "vcp_pattern": {
-        "score": 72.0,
-        "valid_vcp": true,
-        "num_contractions": 3,
-        "pivot_price": 0.3246
-      },
-      "volume_pattern": {
-        "score": 4.0,
-        "dry_up_ratio": 0.11
-      },
-      "pivot_proximity": {
-        "score": 31.0,
-        "distance_from_pivot_pct": -1.97,
-        "trade_status": "APPROACHING"
-      },
-      "relative_strength": {
-        "score": 14.1,
-        "rs_rank_estimate": 14.1
+        "score": 95,
+        "rs_rank_estimate": 95
       },
       "stage": {
         "stage": 2,
-        "stage_label": "Stage 2 - APPROACHING"
-      },
-      "timeframe": "1d",
-      "signal_type": "APPROACHING",
-      "liquidity_bucket": "B",
-      "market_regime": "BTC_DOWN|C",
-      "c1": 16.4,
-      "c2": 4.4,
-      "c3": 4.2,
-      "ml_win_prob": 14.1
-    },
-    {
-      "symbol": "RENDER/USDT",
-      "name": "RENDER",
-      "market": "CRYPTO",
-      "price": 1.964,
-      "composite": {
-        "composite_score": 48,
-        "rating": "Developing",
-        "entry_ready": false
-      },
-      "trend_template": {
-        "score": 64.8,
-        "passed": true
-      },
-      "vcp_pattern": {
-        "score": 60.0,
-        "valid_vcp": true,
-        "num_contractions": 3,
-        "pivot_price": 1.964
-      },
-      "volume_pattern": {
-        "score": 4.0,
-        "dry_up_ratio": 0.24
-      },
-      "pivot_proximity": {
-        "score": 67.0,
-        "distance_from_pivot_pct": -0.51,
-        "trade_status": "APPROACHING"
-      },
-      "relative_strength": {
-        "score": 53.1,
-        "rs_rank_estimate": 53.1
-      },
-      "stage": {
-        "stage": 2,
-        "stage_label": "Stage 2 - APPROACHING"
-      },
-      "timeframe": "1d",
-      "signal_type": "APPROACHING",
-      "liquidity_bucket": "C",
-      "market_regime": "BTC_DOWN|B",
-      "c1": 20.9,
-      "c2": 16.2,
-      "c3": 7.2,
-      "ml_win_prob": 53.1
-    },
-    {
-      "symbol": "DOGE/USDT",
-      "name": "DOGE",
-      "market": "CRYPTO",
-      "price": 0.09453,
-      "composite": {
-        "composite_score": 40,
-        "rating": "Developing",
-        "entry_ready": false
-      },
-      "trend_template": {
-        "score": 0.0,
-        "passed": false
-      },
-      "vcp_pattern": {
-        "score": 74.5,
-        "valid_vcp": true,
-        "num_contractions": 3,
-        "pivot_price": 0.09453
-      },
-      "volume_pattern": {
-        "score": 4.0,
-        "dry_up_ratio": 0.35
-      },
-      "pivot_proximity": {
-        "score": 92.0,
-        "distance_from_pivot_pct": -1.6,
-        "trade_status": "APPROACHING"
-      },
-      "relative_strength": {
-        "score": 20.7,
-        "rs_rank_estimate": 20.7
-      },
-      "stage": {
-        "stage": 1,
-        "stage_label": "Stage 1 - Accumulation"
-      },
-      "timeframe": "1d",
-      "signal_type": "APPROACHING",
-      "liquidity_bucket": "A",
-      "market_regime": "BTC_DOWN|D",
-      "c1": 14.7,
-      "c2": 10.2,
-      "c3": 5.9,
-      "ml_win_prob": 20.7
-    },
-    {
-      "symbol": "PEPE/USDT",
-      "name": "PEPE",
-      "market": "CRYPTO",
-      "price": 3.53e-06,
-      "composite": {
-        "composite_score": 40,
-        "rating": "Developing",
-        "entry_ready": false
-      },
-      "trend_template": {
-        "score": 0.0,
-        "passed": false
-      },
-      "vcp_pattern": {
-        "score": 79.0,
-        "valid_vcp": true,
-        "num_contractions": 3,
-        "pivot_price": 3.53e-06
-      },
-      "volume_pattern": {
-        "score": 12.8,
-        "dry_up_ratio": 0.59
-      },
-      "pivot_proximity": {
-        "score": 54.0,
-        "distance_from_pivot_pct": 1.13,
-        "trade_status": "BREAKOUT"
-      },
-      "relative_strength": {
-        "score": 34.7,
-        "rs_rank_estimate": 34.7
-      },
-      "stage": {
-        "stage": 1,
-        "stage_label": "Stage 1 - Accumulation"
-      },
-      "timeframe": "1d",
-      "signal_type": "BREAKOUT",
-      "liquidity_bucket": "B",
-      "market_regime": "BTC_DOWN|D",
-      "c1": 22.2,
-      "c2": 12.4,
-      "c3": 7.6,
-      "ml_win_prob": 34.7
-    },
-    {
-      "symbol": "BTC/USDT",
-      "name": "BTC",
-      "market": "CRYPTO",
-      "price": 69310.0,
-      "composite": {
-        "composite_score": 36,
-        "rating": "Developing",
-        "entry_ready": false
-      },
-      "trend_template": {
-        "score": 0.0,
-        "passed": false
-      },
-      "vcp_pattern": {
-        "score": 69.0,
-        "valid_vcp": true,
-        "num_contractions": 3,
-        "pivot_price": 69310.0
-      },
-      "volume_pattern": {
-        "score": 4.0,
-        "dry_up_ratio": 0.23
-      },
-      "pivot_proximity": {
-        "score": 73.0,
-        "distance_from_pivot_pct": -0.1,
-        "trade_status": "APPROACHING"
-      },
-      "relative_strength": {
-        "score": 44.6,
-        "rs_rank_estimate": 44.6
-      },
-      "stage": {
-        "stage": 1,
-        "stage_label": "Stage 1 - Accumulation"
-      },
-      "timeframe": "1d",
-      "signal_type": "APPROACHING",
-      "liquidity_bucket": "A",
-      "market_regime": "BTC_DOWN|D",
-      "c1": 11.4,
-      "c2": 9.8,
-      "c3": 5.2,
-      "ml_win_prob": 44.6
-    },
-    {
-      "symbol": "ETH/USDT",
-      "name": "ETH",
-      "market": "CRYPTO",
-      "price": 2167.85,
-      "composite": {
-        "composite_score": 36,
-        "rating": "Developing",
-        "entry_ready": false
-      },
-      "trend_template": {
-        "score": 0.0,
-        "passed": false
-      },
-      "vcp_pattern": {
-        "score": 66.5,
-        "valid_vcp": true,
-        "num_contractions": 3,
-        "pivot_price": 2167.85
-      },
-      "volume_pattern": {
-        "score": 4.0,
-        "dry_up_ratio": 0.19
-      },
-      "pivot_proximity": {
-        "score": 84.0,
-        "distance_from_pivot_pct": -1.53,
-        "trade_status": "APPROACHING"
-      },
-      "relative_strength": {
-        "score": 19.8,
-        "rs_rank_estimate": 19.8
-      },
-      "stage": {
-        "stage": 1,
-        "stage_label": "Stage 1 - Accumulation"
-      },
-      "timeframe": "1d",
-      "signal_type": "APPROACHING",
-      "liquidity_bucket": "A",
-      "market_regime": "BTC_DOWN|D",
-      "c1": 15.2,
-      "c2": 11.8,
-      "c3": 7.0,
-      "ml_win_prob": 19.8
-    },
-    {
-      "symbol": "SHIB/USDT",
-      "name": "SHIB",
-      "market": "CRYPTO",
-      "price": 6.05e-06,
-      "composite": {
-        "composite_score": 35,
-        "rating": "Developing",
-        "entry_ready": false
-      },
-      "trend_template": {
-        "score": 0.0,
-        "passed": false
-      },
-      "vcp_pattern": {
-        "score": 49.2,
-        "valid_vcp": true,
-        "num_contractions": 3,
-        "pivot_price": 6.05e-06
-      },
-      "volume_pattern": {
-        "score": 36.0,
-        "dry_up_ratio": 2.04
-      },
-      "pivot_proximity": {
-        "score": 60.0,
-        "distance_from_pivot_pct": 0.17,
-        "trade_status": "BREAKOUT"
-      },
-      "relative_strength": {
-        "score": 44.6,
-        "rs_rank_estimate": 44.6
-      },
-      "stage": {
-        "stage": 1,
-        "stage_label": "Stage 1 - Accumulation"
-      },
-      "timeframe": "4h",
-      "signal_type": "BREAKOUT",
-      "liquidity_bucket": "C",
-      "market_regime": "BTC_SIDE|C",
-      "c1": 5.5,
-      "c2": 4.6,
-      "c3": 4.3,
-      "ml_win_prob": 44.6
-    },
-    {
-      "symbol": "ASTER/USDT",
-      "name": "ASTER",
-      "market": "CRYPTO",
-      "price": 0.671,
-      "composite": {
-        "composite_score": 34,
-        "rating": "Developing",
-        "entry_ready": false
-      },
-      "trend_template": {
-        "score": 0.0,
-        "passed": false
-      },
-      "vcp_pattern": {
-        "score": 78.8,
-        "valid_vcp": true,
-        "num_contractions": 3,
-        "pivot_price": 0.671
-      },
-      "volume_pattern": {
-        "score": 4.0,
-        "dry_up_ratio": 1.25
-      },
-      "pivot_proximity": {
-        "score": 18.0,
-        "distance_from_pivot_pct": -0.6,
-        "trade_status": "APPROACHING"
-      },
-      "relative_strength": {
-        "score": 44.4,
-        "rs_rank_estimate": 44.4
-      },
-      "stage": {
-        "stage": 1,
-        "stage_label": "Stage 1 - Accumulation"
-      },
-      "timeframe": "4h",
-      "signal_type": "APPROACHING",
-      "liquidity_bucket": "C",
-      "market_regime": "BTC_SIDE|B",
-      "c1": 5.8,
-      "c2": 4.8,
-      "c3": 1.9,
-      "ml_win_prob": 44.4
-    },
-    {
-      "symbol": "SHIB/USDT",
-      "name": "SHIB",
-      "market": "CRYPTO",
-      "price": 6.16e-06,
-      "composite": {
-        "composite_score": 34,
-        "rating": "Developing",
-        "entry_ready": false
-      },
-      "trend_template": {
-        "score": 0.0,
-        "passed": false
-      },
-      "vcp_pattern": {
-        "score": 66.5,
-        "valid_vcp": true,
-        "num_contractions": 3,
-        "pivot_price": 6.16e-06
-      },
-      "volume_pattern": {
-        "score": 4.0,
-        "dry_up_ratio": 0.32
-      },
-      "pivot_proximity": {
-        "score": 60.0,
-        "distance_from_pivot_pct": -1.62,
-        "trade_status": "APPROACHING"
-      },
-      "relative_strength": {
-        "score": 20.6,
-        "rs_rank_estimate": 20.6
-      },
-      "stage": {
-        "stage": 1,
-        "stage_label": "Stage 1 - Accumulation"
-      },
-      "timeframe": "1d",
-      "signal_type": "APPROACHING",
-      "liquidity_bucket": "C",
-      "market_regime": "BTC_DOWN|D",
-      "c1": 12.7,
-      "c2": 10.2,
-      "c3": 6.3,
-      "ml_win_prob": 20.6
-    },
-    {
-      "symbol": "ZEC/USDT",
-      "name": "ZEC",
-      "market": "CRYPTO",
-      "price": 258.48,
-      "composite": {
-        "composite_score": 33,
-        "rating": "Developing",
-        "entry_ready": false
-      },
-      "trend_template": {
-        "score": 0.0,
-        "passed": false
-      },
-      "vcp_pattern": {
-        "score": 59.2,
-        "valid_vcp": true,
-        "num_contractions": 3,
-        "pivot_price": 258.48
-      },
-      "volume_pattern": {
-        "score": 4.0,
-        "dry_up_ratio": 0.23
-      },
-      "pivot_proximity": {
-        "score": 81.0,
-        "distance_from_pivot_pct": -0.9,
-        "trade_status": "APPROACHING"
-      },
-      "relative_strength": {
-        "score": 59.8,
-        "rs_rank_estimate": 59.8
-      },
-      "stage": {
-        "stage": 1,
-        "stage_label": "Stage 1 - Accumulation"
-      },
-      "timeframe": "1d",
-      "signal_type": "APPROACHING",
-      "liquidity_bucket": "B",
-      "market_regime": "BTC_DOWN|B",
-      "c1": 26.4,
-      "c2": 16.1,
-      "c3": 10.5,
-      "ml_win_prob": 59.8
-    },
-    {
-      "symbol": "AVAX/USDT",
-      "name": "AVAX",
-      "market": "CRYPTO",
-      "price": 9.48,
-      "composite": {
-        "composite_score": 33,
-        "rating": "Developing",
-        "entry_ready": false
-      },
-      "trend_template": {
-        "score": 0.0,
-        "passed": false
-      },
-      "vcp_pattern": {
-        "score": 54.5,
-        "valid_vcp": true,
-        "num_contractions": 3,
-        "pivot_price": 9.48
-      },
-      "volume_pattern": {
-        "score": 12.8,
-        "dry_up_ratio": 0.84
-      },
-      "pivot_proximity": {
-        "score": 81.0,
-        "distance_from_pivot_pct": 1.16,
-        "trade_status": "BREAKOUT"
-      },
-      "relative_strength": {
-        "score": 32.9,
-        "rs_rank_estimate": 32.9
-      },
-      "stage": {
-        "stage": 1,
-        "stage_label": "Stage 1 - Accumulation"
-      },
-      "timeframe": "1d",
-      "signal_type": "BREAKOUT",
-      "liquidity_bucket": "B",
-      "market_regime": "BTC_DOWN|D",
-      "c1": 15.9,
-      "c2": 14.6,
-      "c3": 9.1,
-      "ml_win_prob": 32.9
-    },
-    {
-      "symbol": "LTC/USDT",
-      "name": "LTC",
-      "market": "CRYPTO",
-      "price": 54.78,
-      "composite": {
-        "composite_score": 32,
-        "rating": "Developing",
-        "entry_ready": false
-      },
-      "trend_template": {
-        "score": 0.0,
-        "passed": false
-      },
-      "vcp_pattern": {
-        "score": 60.0,
-        "valid_vcp": true,
-        "num_contractions": 3,
-        "pivot_price": 54.78
-      },
-      "volume_pattern": {
-        "score": 4.0,
-        "dry_up_ratio": 0.12
-      },
-      "pivot_proximity": {
-        "score": 67.0,
-        "distance_from_pivot_pct": -0.71,
-        "trade_status": "APPROACHING"
-      },
-      "relative_strength": {
-        "score": 47.8,
-        "rs_rank_estimate": 47.8
-      },
-      "stage": {
-        "stage": 1,
-        "stage_label": "Stage 1 - Accumulation"
-      },
-      "timeframe": "1d",
-      "signal_type": "APPROACHING",
-      "liquidity_bucket": "C",
-      "market_regime": "BTC_DOWN|D",
-      "c1": 10.5,
-      "c2": 8.1,
-      "c3": 6.2,
-      "ml_win_prob": 47.8
-    },
-    {
-      "symbol": "ME/USDT",
-      "name": "ME",
-      "market": "CRYPTO",
-      "price": 0.1025,
-      "composite": {
-        "composite_score": 29,
-        "rating": "Developing",
-        "entry_ready": false
-      },
-      "trend_template": {
-        "score": 0.0,
-        "passed": false
-      },
-      "vcp_pattern": {
-        "score": 66.2,
-        "valid_vcp": true,
-        "num_contractions": 3,
-        "pivot_price": 0.1025
-      },
-      "volume_pattern": {
-        "score": 4.0,
-        "dry_up_ratio": 0.21
-      },
-      "pivot_proximity": {
-        "score": 18.0,
-        "distance_from_pivot_pct": -1.46,
-        "trade_status": "APPROACHING"
-      },
-      "relative_strength": {
-        "score": 29.3,
-        "rs_rank_estimate": 29.3
-      },
-      "stage": {
-        "stage": 1,
-        "stage_label": "Stage 1 - Accumulation"
-      },
-      "timeframe": "1d",
-      "signal_type": "APPROACHING",
-      "liquidity_bucket": "C",
-      "market_regime": "BTC_DOWN|D",
-      "c1": 57.3,
-      "c2": 40.9,
-      "c3": 6.8,
-      "ml_win_prob": 29.3
+        "stage_label": "Stage 2 - Advancing"
+      }
     }
-  ],
-  "summary": {
-    "total_screened": 50,
-    "setups_4h": 2,
-    "setups_1d": 19,
-    "signals_4h": 2,
-    "signals_1d": 12,
-    "vcp_found": 14,
-    "entry_ready": 0,
-    "published": 2
-  }
+  ]
 }
