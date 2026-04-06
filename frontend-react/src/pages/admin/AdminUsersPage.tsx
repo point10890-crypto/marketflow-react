@@ -3,7 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { adminAPI, AdminUser } from '@/lib/api';
 
 const TIER_STYLES: Record<string, { label: string; cls: string }> = {
-    free: { label: 'Free', cls: 'bg-gray-500/20 text-gray-400' },
+    none: { label: 'No Tier', cls: 'bg-gray-500/20 text-gray-400' },
     pro: { label: 'Pro', cls: 'bg-amber-500/20 text-amber-400' },
     premium: { label: 'Ultra Pro', cls: 'bg-purple-500/20 text-purple-400' },
 };
@@ -88,7 +88,10 @@ export default function AdminUsersPage() {
 
     // 필터링
     const filtered = users.filter(u => {
-        if (filterTier !== 'all' && u.tier !== filterTier) return false;
+        if (filterTier !== 'all') {
+            const tierKey = u.tier || 'none';
+            if (tierKey !== filterTier) return false;
+        }
         if (search) {
             const q = search.toLowerCase();
             return u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q);
@@ -96,7 +99,7 @@ export default function AdminUsersPage() {
         return true;
     });
 
-    const tierCount = (t: string) => users.filter(u => u.tier === t).length;
+    const tierCount = (t: string) => users.filter(u => (u.tier || 'none') === t).length;
 
     if (loading) {
         return (
@@ -115,7 +118,7 @@ export default function AdminUsersPage() {
                     <span>{users.length}명</span>
                     <span className="text-amber-400">{tierCount('pro')} Pro</span>
                     <span className="text-purple-400">{tierCount('premium')} Ultra</span>
-                    <span>{tierCount('free')} Free</span>
+                    <span>{tierCount('none')} No Tier</span>
                 </div>
             </div>
 
@@ -140,7 +143,7 @@ export default function AdminUsersPage() {
                         { key: 'all', label: '전체' },
                         { key: 'premium', label: 'Ultra Pro' },
                         { key: 'pro', label: 'Pro' },
-                        { key: 'free', label: 'Free' },
+                        { key: 'none', label: 'No Tier' },
                     ].map(tab => (
                         <button
                             key={tab.key}
@@ -170,7 +173,7 @@ export default function AdminUsersPage() {
                         {filtered.map(user => {
                             const isAdmin = user.role === 'admin';
                             const isSuspended = user.status === 'suspended';
-                            const tier = TIER_STYLES[user.tier] || TIER_STYLES.free;
+                            const tier = TIER_STYLES[user.tier || 'none'] || TIER_STYLES.none;
                             return (
                                 <tr key={user.id} className={`border-t border-white/[0.04] hover:bg-white/[0.02] transition-colors ${isSuspended ? 'opacity-50' : ''}`}>
                                     {/* 회원 정보 */}
@@ -203,12 +206,12 @@ export default function AdminUsersPage() {
                                             <span className="text-[10px] px-2 py-1 rounded bg-red-500/20 text-red-400 font-bold">Admin</span>
                                         ) : (
                                             <select
-                                                value={user.tier}
+                                                value={user.tier || ''}
                                                 onChange={e => handleTierChange(user.id, user.name, e.target.value)}
                                                 className={`text-[11px] px-2 py-1 rounded font-bold border-0 cursor-pointer focus:outline-none focus:ring-1 focus:ring-amber-500/50 ${tier.cls}`}
                                                 style={{ background: 'transparent' }}
                                             >
-                                                <option value="free" className="bg-[#1c1c1e] text-gray-300">Free</option>
+                                                <option value="" disabled className="bg-[#1c1c1e] text-gray-300">No Tier</option>
                                                 <option value="pro" className="bg-[#1c1c1e] text-amber-400">Pro</option>
                                                 <option value="premium" className="bg-[#1c1c1e] text-purple-400">Ultra Pro</option>
                                             </select>

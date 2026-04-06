@@ -20,11 +20,13 @@ def dashboard():
     return jsonify({
         'total_users': len(users),
         'pro_users': sum(1 for u in users if u.tier == 'pro'),
-        'free_users': sum(1 for u in users if u.tier == 'free'),
         'premium_users': sum(1 for u in users if u.tier == 'premium'),
+        # tier가 None/빈값인 유저 (신규 가입 · 만료 · 취소 후 대기)
+        'no_tier_users': sum(1 for u in users if not u.tier),
         'admin_users': sum(1 for u in users if u.role == 'admin'),
         'pending_users': sum(1 for u in users if u.status == 'pending'),
         'approved_users': sum(1 for u in users if u.status == 'approved'),
+        'suspended_users': sum(1 for u in users if u.status == 'suspended'),
         'pending_subscriptions': pending_subs,
     })
 
@@ -73,18 +75,30 @@ def set_role(user_id):
 @admin_bp.route('/users/<int:user_id>/tier', methods=['PUT'])
 @admin_required
 def set_tier(user_id):
-    """유저 구독 tier 변경 (free ↔ pro ↔ premium)"""
+    """유저 구독 tier 변경 (pro ↔ premium) — 지정 시 status도 approved로 자동 승격"""
     user = db.session.get(User, user_id)
     if not user:
         return jsonify({'error': 'User not found'}), 404
 
     data = request.get_json() or {}
     tier = (data.get('tier') or '').strip().lower()
-    if tier not in ('free', 'pro', 'premium'):
-        return jsonify({'error': 'Tier must be free, pro, or premium'}), 400
+    # 'free' 플랜은 폐지. tier 해제(구독 없음)는 /status로 suspend 사용.
+    if tier not in ('pro', 'premium'):
+        return jsonify({'error': 'Tier must be pro or premium'}), 400
 
-    old_tier = user.tier
+    old_tier = user.tier or 'none'
     user.tier = tier
+    # tier 부여 시 자동으로 승인 처리 — 접근 권한이 즉시 활성화되도록
+    if user.status != 'approved':
+        user.status = 'approved'
+        admin_user = getattr(request, 'current_user', None)
+        user.approved_at = datetime.now(timezone.utc)
+        user.approved_by = admin_user.id if admin_user else None
+    # Pro 만료일 자동 설정 (premium은 무기한)
+    if tier == 'pro' and not user.pro_expires_at:
+        user.pro_expires_at = datetime.now(timezone.utc) + timedelta(days=30)
+    elif tier == 'premium':
+        user.pro_expires_at = None
     db.session.commit()
 
     return jsonify({

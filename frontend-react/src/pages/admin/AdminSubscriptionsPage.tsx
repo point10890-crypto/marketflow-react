@@ -106,7 +106,7 @@ export default function AdminSubscriptionsPage() {
                                             <div className="text-white font-medium">{req.user_name || `User #${req.user_id}`}</div>
                                             <div className="text-xs text-gray-400">{req.user_email || ''}</div>
                                             <div className="text-xs text-gray-500 mt-1 flex flex-wrap items-center gap-1">
-                                                <span className={`px-1.5 py-0.5 rounded ${req.from_tier === 'free' ? 'bg-gray-500/20 text-gray-400' : 'bg-amber-500/20 text-amber-400'}`}>
+                                                <span className={`px-1.5 py-0.5 rounded ${req.from_tier === 'none' ? 'bg-gray-500/20 text-gray-400' : 'bg-amber-500/20 text-amber-400'}`}>
                                                     {req.from_tier}
                                                 </span>
                                                 <span className="mx-1">&rarr;</span>

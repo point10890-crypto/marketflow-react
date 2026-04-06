@@ -136,7 +136,7 @@ export default function AccountPage() {
                                     <i className="fas fa-crown text-xs" /> Pro
                                 </span>
                             ) : (
-                                <span className="text-gray-400 font-bold">Free</span>
+                                <span className="text-gray-400 font-bold">-</span>
                             )}
                         </div>
                     </div>

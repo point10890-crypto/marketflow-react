@@ -701,8 +701,12 @@ export interface AdminUser {
 export interface AdminDashboard {
     total_users: number;
     pro_users: number;
-    free_users: number;
+    premium_users: number;
+    no_tier_users: number;
     admin_users: number;
+    pending_users: number;
+    approved_users: number;
+    suspended_users: number;
     pending_subscriptions: number;
 }
 
@@ -712,8 +716,8 @@ export interface SubscriptionRequest {
     user_email: string;
     user_name: string;
     request_type: string;
-    from_tier: string;
-    to_tier: string;
+    from_tier: string;  // 'none' | 'pro' | 'premium'
+    to_tier: string;    // 'pro' | 'premium'
     status: string;
     payment_id: string | null;
     admin_note: string | null;

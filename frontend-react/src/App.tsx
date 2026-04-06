@@ -64,12 +64,15 @@ const FormulaWritePage = lazy(() => import('@/pages/community/FormulaWritePage')
 const FormulaListPage = lazy(() => import('@/pages/community/FormulaListPage'));
 const PurchaseAdminPage = lazy(() => import('@/pages/community/PurchaseAdminPage'));
 
+// Unified app access gate: login → approved status → pro/premium tier.
+// New signups land in /pending-approval until an admin assigns them a paid tier.
 function ApprovedGuard({ children }: { children: React.ReactNode }) {
     const { user, loading } = useAuth();
     if (loading) return <LoadingFallback />;
     if (!user) return <Navigate to="/login" replace />;
     if (user.role === 'admin') return <>{children}</>;
     if (user.status !== 'approved') return <Navigate to="/pending-approval" replace />;
+    if (user.tier !== 'pro' && user.tier !== 'premium') return <Navigate to="/pending-approval" replace />;
     return <>{children}</>;
 }
 

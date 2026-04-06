@@ -107,14 +107,16 @@ def register():
     user = User(email=email, name=name)
     user.set_password(password)
 
-    # 첫 번째 유저는 자동으로 admin + approved + pro
+    # 첫 번째 유저는 자동으로 admin + approved + premium (운영자)
+    # 그 외 신규 가입자는 pending 상태 — 관리자가 tier(pro/premium) 부여해야
+    # 앱에 접근 가능. 'free' 플랜은 더 이상 존재하지 않음.
     if User.query.count() == 0:
         user.role = 'admin'
         user.status = 'approved'
-        user.tier = 'pro'
+        user.tier = 'premium'
     else:
-        user.status = 'approved'
-        user.tier = 'free'
+        user.status = 'pending'
+        user.tier = None
 
     db.session.add(user)
     db.session.commit()
@@ -201,8 +203,9 @@ def request_subscription():
     data = request.get_json() or {}
     to_tier = (data.get('to_tier') or '').strip().lower()
 
-    if to_tier not in ('free', 'pro', 'premium'):
-        return jsonify({'error': 'Invalid tier. Use: free, pro, premium'}), 400
+    # 'free' 플랜은 폐지 — 구독 가능한 tier는 pro / premium 뿐
+    if to_tier not in ('pro', 'premium'):
+        return jsonify({'error': 'Invalid tier. Use: pro, premium'}), 400
 
     if to_tier == user.tier:
         return jsonify({'error': f'Already on {to_tier} tier'}), 400
@@ -218,8 +221,9 @@ def request_subscription():
     if existing:
         return jsonify({'error': 'You already have a pending subscription request'}), 409
 
+    # tier가 없는(None) 신규 가입자나 pro 유저가 상위 tier 신청 = upgrade
     req_type = 'upgrade' if (
-        (user.tier == 'free' and to_tier in ('pro', 'premium')) or
+        user.tier is None or
         (user.tier == 'pro' and to_tier == 'premium')
     ) else 'downgrade'
 
@@ -230,7 +234,8 @@ def request_subscription():
     sub_request = SubscriptionRequest(
         user_id=user.id,
         request_type=req_type,
-        from_tier=user.tier,
+        # from_tier NOT NULL — None 유저는 'none' 문자열로 기록
+        from_tier=user.tier or 'none',
         to_tier=to_tier,
         depositor_name=depositor_name,
         amount=amount,
@@ -277,8 +282,8 @@ def admin_set_tier_legacy():
     email = (data.get('email') or '').strip().lower()
     tier = (data.get('tier') or '').strip().lower()
 
-    if not email or tier not in ('free', 'pro', 'premium'):
-        return jsonify({'error': 'email and tier (free/pro/premium) are required'}), 400
+    if not email or tier not in ('pro', 'premium'):
+        return jsonify({'error': 'email and tier (pro/premium) are required'}), 400
 
     user = User.query.filter_by(email=email).first()
     if not user:

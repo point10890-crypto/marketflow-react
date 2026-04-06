@@ -42,7 +42,7 @@ export interface AuthUserData {
     id: number | string;
     email: string;
     name: string;
-    tier: string;
+    tier: string | null;
     role: string;
     status: string;
     pro_expires_at?: string | null;

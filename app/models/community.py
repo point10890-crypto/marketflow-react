@@ -13,8 +13,8 @@ class Board(db.Model):
     description = db.Column(db.Text, default='')
     icon = db.Column(db.String(50), default='fa-comments')
     sort_order = db.Column(db.Integer, default=0)
-    min_tier = db.Column(db.String(20), default='free')
-    write_tier = db.Column(db.String(20), default='free')
+    min_tier = db.Column(db.String(20), default='pro')
+    write_tier = db.Column(db.String(20), default='pro')
     is_active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 

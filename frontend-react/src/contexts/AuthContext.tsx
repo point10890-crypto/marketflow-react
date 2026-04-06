@@ -6,7 +6,8 @@ interface AuthUser {
     id: number | string;
     email: string;
     name: string;
-    tier: string;
+    // null = no active subscription. Access is gated by (status==='approved' && tier in {pro, premium}).
+    tier: string | null;
     role: string;
     status: string;
     pro_expires_at?: string | null;
@@ -44,7 +45,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             if (storedToken) {
                 setTokenState(storedToken);
                 const storedUser = getUser();
-                if (storedUser && storedUser.tier) {
+                if (storedUser) {
                     setUser({
                         id: storedUser.id,
                         email: storedUser.email,

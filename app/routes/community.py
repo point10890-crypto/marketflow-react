@@ -41,7 +41,7 @@ def _notify_admin_telegram(message: str):
 
 community_bp = Blueprint('community', __name__)
 
-TIER_ORDER = {'free': 0, 'pro': 1, 'premium': 2}
+TIER_ORDER = {'pro': 1, 'premium': 2}  # 'free' 플랜 폐지 — 미구독자(None)는 TIER_ORDER.get() 기본값 0으로 접근 불가
 ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png', 'gif', 'webp'}
 FORMULA_FILE_EXTENSIONS = {'txt', 'csv', 'xlsx', 'xls', 'pdf', 'zip', 'hwp', 'docx'}
 MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
@@ -128,8 +128,8 @@ def create_board():
         description=data.get('description', ''),
         icon=data.get('icon', 'fa-comments'),
         sort_order=data.get('sort_order', 0),
-        min_tier=data.get('min_tier', 'free'),
-        write_tier=data.get('write_tier', 'free'),
+        min_tier=data.get('min_tier', 'pro'),
+        write_tier=data.get('write_tier', 'pro'),
     )
     db.session.add(board)
     db.session.commit()

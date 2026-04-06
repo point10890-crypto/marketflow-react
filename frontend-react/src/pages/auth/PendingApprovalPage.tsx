@@ -15,16 +15,17 @@ export default function PendingApprovalPage() {
             await refreshUser();
             // refreshUser updates user state — check after a tick
             setTimeout(() => {
-                const stored = localStorage.getItem('auth_user');
+                const stored = localStorage.getItem('auth_user') || sessionStorage.getItem('auth_user');
                 if (stored) {
                     const parsed = JSON.parse(stored);
-                    if (parsed.status === 'approved') {
+                    const hasAccess = parsed.status === 'approved' && (parsed.tier === 'pro' || parsed.tier === 'premium');
+                    if (hasAccess || parsed.role === 'admin') {
                         setMessage('승인되었습니다! 대시보드로 이동합니다.');
                         setTimeout(() => navigate('/dashboard'), 1000);
                         return;
                     }
                 }
-                setMessage('아직 승인 대기 중입니다.');
+                setMessage('아직 승인 대기 중입니다. (Pro 이상 등급 부여 필요)');
                 setChecking(false);
             }, 500);
         } catch {
@@ -49,7 +50,7 @@ export default function PendingApprovalPage() {
                     <h1 className="text-2xl font-bold text-white mb-2">승인 대기 중</h1>
                     <p className="text-gray-400 text-sm mb-6">
                         회원가입이 완료되었습니다.<br />
-                        관리자 승인 후 서비스를 이용하실 수 있습니다.
+                        관리자가 Pro 또는 Ultra Pro 등급을 부여하면 서비스를 이용하실 수 있습니다.
                     </p>
 
                     {user && (

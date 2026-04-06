@@ -72,7 +72,9 @@ def webhook():
         if customer_id:
             user = User.query.filter_by(stripe_customer_id=customer_id).first()
             if user:
-                user.tier = 'free'
+                # 'free' 플랜 폐지 — 구독 취소 시 tier 제거 + 접근 차단
+                user.tier = None
+                user.status = 'suspended'
                 db.session.commit()
 
     return jsonify({'status': 'ok'})

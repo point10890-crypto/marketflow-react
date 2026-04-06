@@ -87,7 +87,9 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
     const [showGuide, setShowGuide] = useState(false);
 
     const userName = user?.name || 'Guest';
-    const userTier = user?.tier || 'free';
+    const userTier = user?.tier ?? null;
+    // Guards ensure only pro/premium/admin reach the dashboard, so tier-lock UI is vestigial.
+    const isLocked = false;
     const userRole = user?.role || 'user';
     const isLoggedIn = !!user;
 
@@ -146,7 +148,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                                         {item.badge}
                                     </span>
                                 )}
-                                {userTier === 'free' && item.href !== '/dashboard' && !item.glow && (
+                                {isLocked && item.href !== '/dashboard' && !item.glow && (
                                     <i className="fas fa-lock text-[10px] text-gray-600 ml-auto" />
                                 )}
                             </Link>
@@ -253,18 +255,6 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                             </span>
                             <span>내 계정</span>
                         </Link>
-                        {userTier === 'free' && (
-                            <Link
-                                to="/pricing"
-                                onClick={onNavigate}
-                                className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[14px] font-medium text-yellow-400 hover:text-white hover:bg-yellow-500/10 border border-transparent transition-all"
-                            >
-                                <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-yellow-500/15 to-yellow-600/5 flex items-center justify-center shrink-0">
-                                    <i className="fas fa-crown text-sm text-yellow-400"></i>
-                                </span>
-                                <span>Upgrade to Pro</span>
-                            </Link>
-                        )}
                     </>
                 )}
 
@@ -330,11 +320,11 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                         <div className="flex flex-col flex-1 min-w-0">
                             <span className="text-sm font-bold text-white truncate">{userName}</span>
                             <span className={`text-[11px] ${userTier === 'pro' || userTier === 'premium' ? 'text-purple-400' : 'text-gray-500'}`}>
-                                {userTier === 'pro' ? 'Pro Plan' : userTier === 'premium' ? 'Ultra Pro' : 'Free Plan'}
+                                {userTier === 'pro' ? 'Pro Plan' : userTier === 'premium' ? 'Ultra Pro' : 'Admin'}
                             </span>
                         </div>
                         <div className="flex items-center gap-1.5">
-                            {userTier !== 'free' && (
+                            {(userTier === 'pro' || userTier === 'premium') && (
                                 <span className="text-[11px] px-2.5 py-1 rounded-md bg-purple-500/10 text-purple-400 font-bold">
                                     {userTier === 'pro' ? 'Pro' : 'Ultra Pro'}
                                 </span>

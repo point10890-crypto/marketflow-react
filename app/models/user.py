@@ -15,8 +15,10 @@ class User(db.Model):
 
     # Role: 'user' | 'admin'
     role = db.Column(db.String(20), default='user', nullable=False)
-    # Tier: 'free' | 'pro' | 'premium'
-    tier = db.Column(db.String(20), default='free')
+    # Tier: 'pro' | 'premium' | NULL
+    # NULL means no active subscription — user cannot access the app.
+    # Access is gated by (status=='approved' AND tier IN ('pro','premium')).
+    tier = db.Column(db.String(20), nullable=True)
     # Subscription status: 'pending' | 'approved' | 'rejected' | 'suspended'
     status = db.Column(db.String(20), default='pending', nullable=False)
 
@@ -55,7 +57,11 @@ class User(db.Model):
             return False
         if self.pro_expires_at is None:
             return False
-        return datetime.now(timezone.utc) > self.pro_expires_at
+        # SQLAlchemy stores naive datetimes; normalize both sides to naive UTC for comparison.
+        expires = self.pro_expires_at
+        if expires.tzinfo is not None:
+            expires = expires.astimezone(timezone.utc).replace(tzinfo=None)
+        return datetime.utcnow() > expires
 
     def to_dict(self):
         return {

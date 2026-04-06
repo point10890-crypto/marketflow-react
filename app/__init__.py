@@ -111,6 +111,58 @@ def create_app(config=None):
         response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
         return response
 
+    # ═══════════════════════════════════════════════════════
+    #  App-wide access gate: pro/premium만 데이터 API 접근 허용
+    # ═══════════════════════════════════════════════════════
+    # 'free' 플랜 폐지 (2026-04-06). 앱의 데이터 엔드포인트는 status=approved
+    # + tier in (pro, premium) 유저만 호출할 수 있어야 함. 프론트엔드
+    # AppAccessGuard는 라우팅 레벨 방어선이고, 이 훅은 직접 API 호출을
+    # 차단하는 두 번째 방어선.
+    #
+    # 전략: DENYLIST 방식 — 데이터성 prefix만 게이트. auth/admin/stripe/
+    # system/scheduler/community 는 각자 이미 데코레이터로 보호 중.
+    _GATED_PREFIXES = (
+        '/api/kr/',
+        '/api/us/',
+        '/api/crypto/',
+        '/api/wave/',
+        '/api/briefing/',
+        '/api/stock-analyzer/',
+        '/api/econ/',
+    )
+    # 게이트 내에서도 허용할 정적/공개 엔드포인트
+    _GATE_EXEMPT = set()
+
+    @app.before_request
+    def _enforce_pro_access():
+        from flask import request as _req, jsonify as _jsonify
+        # preflight은 CORS 미들웨어가 처리
+        if _req.method == 'OPTIONS':
+            return None
+        path = _req.path or ''
+        if path in _GATE_EXEMPT:
+            return None
+        if not any(path.startswith(p) for p in _GATED_PREFIXES):
+            return None
+        # _auth_disabled() 체크: 로컬 DEV_MODE/Render 자동 우회
+        from app.auth.decorators import _auth_disabled, _get_current_user
+        if _auth_disabled():
+            return None
+        user = _get_current_user()
+        if user is None:
+            return _jsonify({'error': 'Authentication required'}), 401
+        if user.is_admin:
+            _req.current_user = user
+            return None
+        if user.status != 'approved':
+            return _jsonify({'error': 'Account not approved', 'status': user.status}), 403
+        if user.tier not in ('pro', 'premium'):
+            return _jsonify({'error': 'Pro subscription required', 'tier': user.tier}), 403
+        if user.is_pro_expired:
+            return _jsonify({'error': 'Pro subscription expired', 'expired': True}), 403
+        _req.current_user = user
+        return None
+
     # Health check endpoint
     @app.route('/api/health')
     def health_check():
@@ -246,9 +298,11 @@ def _start_expiry_checker(app):
                         User.pro_expires_at < datetime.now(timezone.utc),
                     ).all()
                     for user in expired:
-                        print(f"[Expiry] {user.email}: pro → free (expired {user.pro_expires_at})")
-                        user.tier = 'free'
+                        # 'free' 플랜 폐지 — Pro 만료 시 tier 제거 + suspended
+                        print(f"[Expiry] {user.email}: pro → suspended (expired {user.pro_expires_at})")
+                        user.tier = None
                         user.pro_expires_at = None
+                        user.status = 'suspended'
                     if expired:
                         db.session.commit()
             except Exception as e:

@@ -6,7 +6,7 @@ import { subscriptionAPI } from '@/lib/api';
 export default function PricingPage() {
     const { user, token } = useAuth();
     const navigate = useNavigate();
-    const userTier = user?.tier || 'free';
+    const userTier = user?.tier ?? null;
     const [requesting, setRequesting] = useState<string | null>(null);
     const [showBank, setShowBank] = useState(false);
     const [selectedPlan, setSelectedPlan] = useState<'pro' | 'premium' | null>(null);
@@ -47,12 +47,6 @@ export default function PricingPage() {
             setRequesting(null);
         }
     };
-
-    const freeFeatures = [
-        'Summary 대시보드',
-        '글로벌 시장 지수 실시간',
-        '조간/마감 브리핑 요약',
-    ];
 
     const proFeatures = [
         'Summary 대시보드 + 전체 기능',
@@ -98,33 +92,8 @@ export default function PricingPage() {
                 </p>
             </div>
 
-            {/* Plans Grid — 3 columns */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-5xl w-full">
-                {/* Free Plan */}
-                <div className="p-6 rounded-2xl border border-white/10 bg-[#1c1c1e]">
-                    <h3 className="text-xl font-bold text-white mb-1">Free</h3>
-                    <div className="flex items-baseline gap-1 mb-5">
-                        <span className="text-3xl font-black text-white">무료</span>
-                    </div>
-                    <ul className="space-y-2.5 mb-6">
-                        {freeFeatures.map((f) => (
-                            <li key={f} className="flex items-start gap-2 text-sm text-gray-300">
-                                <i className="fas fa-check text-green-400 text-xs mt-1 shrink-0" />
-                                {f}
-                            </li>
-                        ))}
-                        {proFeatures.slice(1, 5).map((m) => (
-                            <li key={m} className="flex items-start gap-2 text-sm text-gray-600">
-                                <i className="fas fa-lock text-gray-700 text-xs mt-1 shrink-0" />
-                                {m}
-                            </li>
-                        ))}
-                    </ul>
-                    <div className="w-full py-3 rounded-xl bg-white/5 text-gray-500 font-bold text-center text-sm">
-                        {userTier === 'free' ? '현재 플랜' : '기본 플랜'}
-                    </div>
-                </div>
-
+            {/* Plans Grid — 2 columns (Free plan removed — pro/ultra pro only) */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-4xl w-full">
                 {/* Pro Plan */}
                 <div className="p-6 rounded-2xl border border-amber-500/30 bg-[#1c1c1e] ring-1 ring-amber-500/20 relative">
                     <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-amber-500/10 text-amber-400 text-xs font-bold mb-3">
@@ -312,15 +281,6 @@ export default function PricingPage() {
                         카카오톡 문의하기
                     </a>
                 </div>
-            )}
-
-            {!showBank && userTier === 'free' && user && (
-                <button
-                    onClick={() => setShowBank(true)}
-                    className="mt-6 text-amber-400/70 hover:text-amber-400 transition-colors text-sm"
-                >
-                    <i className="fas fa-university mr-2" />계좌 정보 보기
-                </button>
             )}
 
             {/* Footer */}
