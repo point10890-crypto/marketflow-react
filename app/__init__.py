@@ -144,10 +144,8 @@ def create_app(config=None):
             return None
         if not any(path.startswith(p) for p in _GATED_PREFIXES):
             return None
-        # _auth_disabled() 체크: 로컬 DEV_MODE/Render 자동 우회
-        from app.auth.decorators import _auth_disabled, _get_current_user
-        if _auth_disabled():
-            return None
+        # Pro 게이트는 AUTH_DISABLED 와 무관하게 항상 작동 — 구독 경제 핵심 게이트
+        from app.auth.decorators import _get_current_user
         user = _get_current_user()
         if user is None:
             return _jsonify({'error': 'Authentication required'}), 401
