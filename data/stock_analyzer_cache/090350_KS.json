@@ -1,0 +1,83 @@
+{
+  "name": "노루페인트",
+  "ticker": "090350.KS",
+  "result": "데이터 없음",
+  "date": "2026-04-06 22:50:56",
+  "elapsed": 1.6,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 8340.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 8340.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "NOROOPAINT",
+    "sector": "Basic Materials",
+    "industry": "Specialty Chemicals",
+    "market_cap": 172956827648,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": 4.81,
+    "beta": 0.653,
+    "fifty_two_week_high": 10570.0,
+    "fifty_two_week_low": 7000.0,
+    "revenue": 771052142592,
+    "profit_margin": 0.02135,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 179475161740
+    },
+    {
+      "date": "2025-09",
+      "value": 195030662100
+    },
+    {
+      "date": "2025-06",
+      "value": 224428116880
+    },
+    {
+      "date": "2025-03",
+      "value": 172118212800
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": -607615370
+    },
+    {
+      "date": "2025-09",
+      "value": 7962911500
+    },
+    {
+      "date": "2025-06",
+      "value": 5715344480
+    },
+    {
+      "date": "2025-03",
+      "value": 3390726300
+    }
+  ],
+  "news": [
+    {
+      "title": "Top Asian Dividend Stocks To Enhance Your Portfolio",
+      "summary": "Amidst rising energy prices and geopolitical tensions impacting global markets, Asian equity indices have also experienced fluctuations, reflecting broader economic uncertainties. In such a volatile e",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/top-asian-dividend-stocks-enhance-043201679.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-03-26T04:32:01Z"
+    }
+  ]
+}

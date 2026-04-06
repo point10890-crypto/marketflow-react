@@ -2,8 +2,8 @@
   "name": "에코프로비엠",
   "ticker": "247540.KQ",
   "result": "중립",
-  "date": "2026-04-05 09:07:27",
-  "elapsed": 2.0,
+  "date": "2026-04-06 21:20:27",
+  "elapsed": 2.1,
   "consensus_score": 2.71,
   "analyst_count": 24,
   "recommendation_detail": {
@@ -15,21 +15,21 @@
   },
   "recommendation_period": "0m",
   "price_targets": {
-    "current": 192600.0,
+    "current": 199900.0,
     "high": 270000.0,
     "low": 76000.0,
     "mean": 152977.27,
     "median": 125000.0
   },
-  "current_price": 192600.0,
-  "upside_potential": -20.6,
+  "current_price": 199900.0,
+  "upside_potential": -23.5,
   "key_stats": {
     "name": "ECOPROBM",
     "sector": "Industrials",
     "industry": "Electrical Equipment & Parts",
-    "market_cap": 18822698369024,
+    "market_cap": 19536122216448,
     "pe_ratio": null,
-    "forward_pe": 183.16042,
+    "forward_pe": 190.10263,
     "dividend_yield": 0.05,
     "beta": 1.05,
     "fifty_two_week_high": 260000.0,
@@ -40,7 +40,7 @@
   },
   "finnhub_supplement": null,
   "source": "yfinance",
-  "ai_analysis": null,
+  "ai_analysis": "에코프로비엠에 대한 애널리스트 컨센서스는 중립적인 의견이며, 24명의 애널리스트가 참여했습니다. 평균 목표주가는 152,977원으로, 현재 주가 대비 -23.5% 하락 여력이 있는 것으로 분석됩니다. 투자 결정은 제시된 정보를 바탕으로 신중하게 판단해야 합니다.",
   "revenue_quarters": [
     {
       "date": "2025-12",

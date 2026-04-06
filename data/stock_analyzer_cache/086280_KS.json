@@ -1,0 +1,110 @@
+{
+  "name": "현대글로비스",
+  "ticker": "086280.KS",
+  "result": "매수",
+  "date": "2026-04-06 20:03:13",
+  "elapsed": 2.0,
+  "consensus_score": 4.0,
+  "analyst_count": 21,
+  "recommendation_detail": {
+    "strongBuy": 5,
+    "buy": 13,
+    "hold": 2,
+    "sell": 0,
+    "strongSell": 1
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 209000.0,
+    "high": 370000.0,
+    "low": 143000.0,
+    "mean": 295523.8,
+    "median": 319000.0
+  },
+  "current_price": 209000.0,
+  "upside_potential": 41.4,
+  "key_stats": {
+    "name": "HYUNDAIGLOVIS",
+    "sector": "Industrials",
+    "industry": "Integrated Freight & Logistics",
+    "market_cap": 15675000094720,
+    "pe_ratio": null,
+    "forward_pe": 8.218694,
+    "dividend_yield": 2.74,
+    "beta": 1.096,
+    "fifty_two_week_high": 296000.0,
+    "fifty_two_week_low": 104500.0,
+    "revenue": 29566410162176,
+    "profit_margin": 0.05864,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "현대글로비스(086280.KS)에 대해 21명의 애널리스트가 제시한 컨센서스 의견은 '매수'입니다. 목표가 평균은 295,524 KRW로, 현재가 209,000 KRW 대비 41.4%의 상승 여력이 있는 것으로 분석됩니다. 이는 애널리스트들이 현대글로비스의 향후 주가 상승 가능성을 높게 보고 있음을 시사합니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 7471997778660
+    },
+    {
+      "date": "2025-09",
+      "value": 7355054260530
+    },
+    {
+      "date": "2025-06",
+      "value": 7515967179640
+    },
+    {
+      "date": "2025-03",
+      "value": 7223390117790
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 440700261560
+    },
+    {
+      "date": "2025-09",
+      "value": 391862531760
+    },
+    {
+      "date": "2025-06",
+      "value": 503242282920
+    },
+    {
+      "date": "2025-03",
+      "value": 397933438850
+    }
+  ],
+  "news": [
+    {
+      "title": "Wilh. Wilhelmsen Holding ASA (STU:WML2) Q4 2025 Earnings Call Highlights: Strong Shareholder ...",
+      "summary": "Wilh. Wilhelmsen Holding ASA (STU:WML2) reports a robust 49% total shareholder return for 2025, with strategic investments and significant debt reduction despite macroeconomic challenges.",
+      "url": "https://finance.yahoo.com/news/wilh-wilhelmsen-holding-asa-stu-150251941.html",
+      "provider": "GuruFocus.com",
+      "pub_time": "2026-02-12T15:02:51Z"
+    },
+    {
+      "title": "Our members knew it first: 2 AI-picked Korean Value Stocks are up 40%+ in January",
+      "summary": "Investing.com — After a remarkable rally in 2025, South Korean stocks are carrying that momentum straight into 2026. While many global investors are still targeting modest annual gains, those who know",
+      "url": "https://finance.yahoo.com/news/members-knew-first-2-ai-111914593.html",
+      "provider": "Investing.com",
+      "pub_time": "2026-01-21T11:19:14Z"
+    },
+    {
+      "title": "Hyundai Motor Shares Hit Records as Robotics Drive $24 Billion Rally",
+      "summary": "Hyundai Motor group stocks surge after Atlas robot debut and Nvidia partnership lifts robotics optimism.",
+      "url": "https://finance.yahoo.com/news/hyundai-motor-shares-hit-records-175641807.html",
+      "provider": "GuruFocus.com",
+      "pub_time": "2026-01-13T17:56:41Z"
+    },
+    {
+      "title": "Hyundai is taking on Tesla and others in race to mass-produce humanoid robots",
+      "summary": "Hyundai said it's working to develop a system to mass-produce Boston Dynamics' Atlas robot by 2028.",
+      "url": "https://finance.yahoo.com/news/hyundai-is-taking-on-tesla-and-others-in-race-to-mass-produce-humanoid-robots-210056155.html",
+      "provider": "Yahoo Finance",
+      "pub_time": "2026-01-05T21:00:56Z"
+    }
+  ]
+}

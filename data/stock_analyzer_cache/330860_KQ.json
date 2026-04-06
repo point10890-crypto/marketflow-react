@@ -1,35 +1,35 @@
 {
-  "name": "코미팜",
-  "ticker": "041960.KQ",
+  "name": "네패스아크",
+  "ticker": "330860.KQ",
   "result": "데이터 없음",
-  "date": "2026-04-06 22:50:06",
-  "elapsed": 1.7,
+  "date": "2026-04-06 23:36:50",
+  "elapsed": 1.2,
   "consensus_score": null,
   "analyst_count": 0,
   "recommendation_detail": null,
   "recommendation_period": null,
   "price_targets": {
-    "current": 7830.0,
+    "current": 29100.0,
     "high": null,
     "low": null,
     "mean": null,
     "median": null
   },
-  "current_price": 7830.0,
+  "current_price": 29100.0,
   "upside_potential": null,
   "key_stats": {
-    "name": "KOMIPHARM",
-    "sector": "",
-    "industry": "",
-    "market_cap": 561423384576,
+    "name": "Nepes Ark",
+    "sector": "Technology",
+    "industry": "Semiconductors",
+    "market_cap": 354555723776,
     "pe_ratio": null,
     "forward_pe": null,
     "dividend_yield": null,
-    "beta": null,
-    "fifty_two_week_high": 9860.0,
-    "fifty_two_week_low": 4050.0,
-    "revenue": null,
-    "profit_margin": null,
+    "beta": 1.339,
+    "fifty_two_week_high": 31150.0,
+    "fifty_two_week_low": 9110.0,
+    "revenue": 114089902080,
+    "profit_margin": 0.02994,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
@@ -38,37 +38,37 @@
   "revenue_quarters": [
     {
       "date": "2025-12",
-      "value": 11897470650
+      "value": 24828015280
     },
     {
       "date": "2025-09",
-      "value": 12479842280
+      "value": 27732694090
     },
     {
       "date": "2025-06",
-      "value": 13677613270
+      "value": 32542848070
     },
     {
       "date": "2025-03",
-      "value": 14410368070
+      "value": 28986341110
     }
   ],
   "net_income_quarters": [
     {
       "date": "2025-12",
-      "value": -3907477810
+      "value": 3573888370
     },
     {
       "date": "2025-09",
-      "value": -150473300
+      "value": -604659600
     },
     {
       "date": "2025-06",
-      "value": -3197621620
+      "value": 1641153970
     },
     {
       "date": "2025-03",
-      "value": 46826680
+      "value": -1194166100
     }
   ],
   "news": []
