@@ -1286,27 +1286,17 @@ def get_us_index_prediction():
 
 @us_bp.route('/market-briefing')
 def get_us_market_briefing():
-    """Perplexity 기반 시황 분석 — briefing.json + market_briefing.json 병합"""
+    """Perplexity 기반 시황 분석 — market_briefing.json이 유일 소스.
+
+    NOTE: 과거 legacy briefing.json 폴백은 제거됨 (2026-02-25에서 stale,
+    현재 파이프라인이 생성하지 않음). market_briefing.json이 없으면 빈 응답.
+    """
     try:
         json_path = os.path.join(_OUTPUT_DIR, 'market_briefing.json')
         data = {}
         if os.path.exists(json_path):
             with open(json_path, 'r', encoding='utf-8') as f:
                 data = json.load(f)
-
-        # ai_analysis.content가 비어있으면 briefing.json에서 보충
-        ai = data.get('ai_analysis', {})
-        if not ai.get('content'):
-            briefing_path = os.path.join(_OUTPUT_DIR, 'briefing.json')
-            if not os.path.exists(briefing_path):
-                briefing_path = os.path.join(_PREVIEW_DIR, 'briefing.json')
-            if os.path.exists(briefing_path):
-                with open(briefing_path, 'r', encoding='utf-8') as f:
-                    briefing = json.load(f)
-                data['ai_analysis'] = {
-                    'content': briefing.get('content', ''),
-                    'citations': briefing.get('citations', [])
-                }
 
         # vix 데이터 보충 (market_data.json)
         if not data.get('vix', {}).get('value'):

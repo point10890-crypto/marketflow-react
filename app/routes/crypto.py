@@ -242,16 +242,22 @@ def crypto_gate_history():
 def crypto_vcp_signals():
     """Crypto VCP 시그널 조회"""
     try:
-        if CRYPTO_MARKET_DIR not in sys.path:
-            sys.path.insert(0, CRYPTO_MARKET_DIR)
+        # Load crypto storage module by absolute file path — do NOT mutate
+        # sys.path. Inserting crypto_market at position 0 shadows root modules
+        # (market_gate, config) and breaks KR/US routes that import them.
+        import importlib.util
+        _storage_path = os.path.join(CRYPTO_MARKET_DIR, 'storage.py')
+        _spec = importlib.util.spec_from_file_location('_crypto_storage', _storage_path)
+        _storage = importlib.util.module_from_spec(_spec)
+        _spec.loader.exec_module(_storage)
+        make_engine = _storage.make_engine
+        get_recent_signals = _storage.get_recent_signals
+
         limit = request.args.get('limit', 50, type=int)
         db_path = os.path.join(CRYPTO_MARKET_DIR, 'signals.sqlite3')
 
         if not os.path.exists(db_path):
             return jsonify({'signals': [], 'count': 0, 'error': 'No signals database found'})
-
-        # Import storage directly (avoids config path conflict with run_scan)
-        from storage import make_engine, get_recent_signals
         engine = make_engine(db_path)
         signals = get_recent_signals(engine, limit)
         return jsonify({'signals': signals, 'count': len(signals), 'generated_at': datetime.now().isoformat()})

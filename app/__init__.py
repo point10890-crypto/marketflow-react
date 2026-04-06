@@ -173,7 +173,7 @@ def create_app(config=None):
         base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         files_to_check = {
             'kr_jongga': os.path.join(base, 'data', 'jongga_v2_latest.json'),
-            'us_briefing': os.path.join(base, 'us_market', 'output', 'briefing.json'),
+            'us_briefing': os.path.join(base, 'us_market', 'output', 'market_briefing.json'),
             'us_market_data': os.path.join(base, 'us_market', 'output', 'market_data.json'),
             'us_top_picks': os.path.join(base, 'us_market', 'output', 'top_picks.json'),
         }
@@ -421,22 +421,45 @@ def _send_screener_alert(stock):
             + (f"\n🔥 {consecutive}일 연속 주도주!" if consecutive >= 2 else "")
             + (f"\n📊 {cap_tier}주" if cap_tier and cap_tier != "미분류" else "")
         )
-        requests.post(
-            f"https://api.telegram.org/bot{bot_token}/sendMessage",
-            json={"chat_id": chat_id, "text": msg, "parse_mode": "HTML"},
-            timeout=5
-        )
+        _telegram_post(bot_token, chat_id, msg, label="screener_alert_main")
         # 채널에도 전송
         ch_token = os.environ.get('TELEGRAM_CHANNEL_BOT_TOKEN')
         ch_id = os.environ.get('TELEGRAM_CHANNEL_CHAT_ID')
         if ch_token and ch_id:
-            requests.post(
-                f"https://api.telegram.org/bot{ch_token}/sendMessage",
-                json={"chat_id": ch_id, "text": msg, "parse_mode": "HTML"},
-                timeout=5
-            )
-    except Exception:
-        pass
+            _telegram_post(ch_token, ch_id, msg, label="screener_alert_channel")
+    except Exception as e:
+        _tg_logger().warning(f"_send_screener_alert failed: {type(e).__name__}: {e}")
+
+
+def _tg_logger():
+    import logging as _logging
+    return _logging.getLogger("marketflow.telegram")
+
+
+def _telegram_post(bot_token: str, chat_id: str, msg: str, *, label: str) -> bool:
+    """Centralized telegram send with explicit logging on failure.
+
+    Returns True on HTTP 200 success. Any exception or non-200 is logged
+    with label + truncated body so silent failures are visible in logs.
+    """
+    import requests
+    logger = _tg_logger()
+    try:
+        resp = requests.post(
+            f"https://api.telegram.org/bot{bot_token}/sendMessage",
+            json={"chat_id": chat_id, "text": msg, "parse_mode": "HTML"},
+            timeout=5,
+        )
+        if resp.status_code == 200:
+            logger.info(f"telegram[{label}] ok chat={chat_id}")
+            return True
+        logger.warning(
+            f"telegram[{label}] HTTP {resp.status_code} chat={chat_id} body={resp.text[:200]}"
+        )
+        return False
+    except Exception as e:
+        logger.warning(f"telegram[{label}] exception chat={chat_id}: {type(e).__name__}: {e}")
+        return False
 
 
 def _send_screener_hourly_summary(result):
@@ -493,22 +516,14 @@ def _send_screener_hourly_summary(result):
             lines.append(f"\nB등급: {', '.join(b_stocks[:5])}{'...' if len(b_stocks) > 5 else ''}")
 
         msg = '\n'.join(lines)
-        requests.post(
-            f"https://api.telegram.org/bot{bot_token}/sendMessage",
-            json={"chat_id": chat_id, "text": msg, "parse_mode": "HTML"},
-            timeout=5
-        )
+        _telegram_post(bot_token, chat_id, msg, label="screener_hourly_main")
         # 채널에도 전송
         ch_token = os.environ.get('TELEGRAM_CHANNEL_BOT_TOKEN')
         ch_id = os.environ.get('TELEGRAM_CHANNEL_CHAT_ID')
         if ch_token and ch_id:
-            requests.post(
-                f"https://api.telegram.org/bot{ch_token}/sendMessage",
-                json={"chat_id": ch_id, "text": msg, "parse_mode": "HTML"},
-                timeout=5
-            )
-    except Exception:
-        pass
+            _telegram_post(ch_token, ch_id, msg, label="screener_hourly_channel")
+    except Exception as e:
+        _tg_logger().warning(f"_send_screener_hourly_summary failed: {type(e).__name__}: {e}")
 
 
 def _precompute_snapshots(base_dir):

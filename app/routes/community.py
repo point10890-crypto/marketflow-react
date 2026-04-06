@@ -11,20 +11,32 @@ from app.auth.decorators import login_required, approved_required, admin_require
 
 
 def _notify_admin_telegram(message: str):
-    """관리자 텔레그램으로 알림 전송 (비동기, 실패해도 무시)"""
+    """관리자 텔레그램으로 알림 전송 (비동기, 실패는 경고 로그).
+
+    Previously silently swallowed all exceptions. Now logs HTTP failures
+    and exceptions so we can detect bad tokens/network outages.
+    """
+    import logging as _logging
+    _logger = _logging.getLogger("marketflow.telegram")
+
     def _send():
         try:
             token = os.getenv('TELEGRAM_BOT_TOKEN')
             chat_id = os.getenv('TELEGRAM_CHAT_ID')
             if not token or not chat_id:
+                _logger.info("telegram[community] skipped: TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID unset")
                 return
-            http_requests.post(
+            resp = http_requests.post(
                 f'https://api.telegram.org/bot{token}/sendMessage',
                 json={'chat_id': chat_id, 'text': message, 'parse_mode': 'HTML'},
                 timeout=10,
             )
-        except Exception:
-            pass
+            if resp.status_code != 200:
+                _logger.warning(
+                    f"telegram[community] HTTP {resp.status_code} body={resp.text[:200]}"
+                )
+        except Exception as e:
+            _logger.warning(f"telegram[community] exception: {type(e).__name__}: {e}")
     threading.Thread(target=_send, daemon=True).start()
 
 community_bp = Blueprint('community', __name__)

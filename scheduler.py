@@ -878,7 +878,7 @@ def send_morning_status_report():
             lines.append("❌ <b>Crypto VCP</b>: 데이터 없음")
 
         # ── US Briefing ──
-        us_briefing_path = os.path.join(Config.BASE_DIR, 'us_market', 'output', 'briefing.json')
+        us_briefing_path = os.path.join(Config.BASE_DIR, 'us_market', 'output', 'market_briefing.json')
         if os.path.exists(us_briefing_path):
             mtime = os.path.getmtime(us_briefing_path)
             mtime_str = datetime.fromtimestamp(mtime).strftime('%Y-%m-%d %H:%M')
@@ -2313,7 +2313,7 @@ class Scheduler:
 
         jongga_verify = _verify_file_today(os.path.join(Config.DATA_DIR, 'jongga_v2_latest.json'))
         vcp_kr_verify = _verify_file_today(os.path.join(Config.DATA_DIR, 'vcp_kr_latest.json'))
-        us_verify = _verify_file_today(os.path.join(Config.BASE_DIR, 'us_market', 'output', 'briefing.json'))
+        us_verify = _verify_file_today(os.path.join(Config.BASE_DIR, 'us_market', 'output', 'market_briefing.json'))
         us_track_verify = _verify_file_today(os.path.join(Config.BASE_DIR, 'us_market', 'output', 'performance_report.json'))
         crypto_verify = _verify_file_today(os.path.join(Config.DATA_DIR, 'vcp_crypto_latest.json'))
 

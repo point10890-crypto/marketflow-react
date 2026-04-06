@@ -1054,7 +1054,15 @@ def kr_market_gate():
 def _compute_kr_market_gate_live():
     """KR Market Gate 실시간 계산 + 스냅샷 저장"""
     try:
-        from market_gate import run_kr_market_gate
+        # sys.path may be polluted by crypto routes inserting
+        # crypto-analytics/crypto_market at position 0, which shadows the
+        # root market_gate.py. Load it by absolute file path to avoid that.
+        import importlib.util
+        _mg_path = os.path.join(BASE_DIR, 'market_gate.py')
+        _spec = importlib.util.spec_from_file_location('_root_market_gate', _mg_path)
+        _mg = importlib.util.module_from_spec(_spec)
+        _spec.loader.exec_module(_mg)
+        run_kr_market_gate = _mg.run_kr_market_gate
 
         # Run enhanced analysis
         res = run_kr_market_gate()
