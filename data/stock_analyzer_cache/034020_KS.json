@@ -2,8 +2,8 @@
   "name": "두산에너빌리티",
   "ticker": "034020.KS",
   "result": "적극 매수",
-  "date": "2026-04-06 08:27:52",
-  "elapsed": 1.6,
+  "date": "2026-04-06 16:41:33",
+  "elapsed": 3.0,
   "consensus_score": 4.44,
   "analyst_count": 18,
   "recommendation_detail": {
@@ -15,21 +15,21 @@
   },
   "recommendation_period": "0m",
   "price_targets": {
-    "current": 96600.0,
+    "current": 95700.0,
     "high": 157000.0,
     "low": 92000.0,
     "mean": 118833.336,
     "median": 115500.0
   },
-  "current_price": 96600.0,
-  "upside_potential": 23.0,
+  "current_price": 95700.0,
+  "upside_potential": 24.2,
   "key_stats": {
     "name": "Doosan Enerbility",
     "sector": "Industrials",
     "industry": "Specialty Industrial Machinery",
-    "market_cap": 61868932595712,
+    "market_cap": 61292513591296,
     "pe_ratio": null,
-    "forward_pe": 89.314316,
+    "forward_pe": 88.4822,
     "dividend_yield": null,
     "beta": 1.832,
     "fifty_two_week_high": 112100.0,
@@ -40,7 +40,7 @@
   },
   "finnhub_supplement": null,
   "source": "yfinance",
-  "ai_analysis": null,
+  "ai_analysis": "두산에너빌리티(034020.KS)는 현재 애널리스트 컨센서스 '적극 매수' 의견을 받고 있습니다. 18명의 애널리스트가 참여한 컨센서스 점수는 5.0 만점에 4.44점입니다. 목표가 평균은 118,833 KRW로, 현재가 대비 24.2%의 상승 여력이 있는 것으로 분석됩니다.",
   "revenue_quarters": [
     {
       "date": "2025-12",
