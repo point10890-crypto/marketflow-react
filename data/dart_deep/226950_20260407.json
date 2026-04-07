@@ -1,0 +1,274 @@
+{
+  "stock_code": "226950",
+  "stock_name": "올릭스",
+  "generated_at": "2026-04-06T23:01:12.805724+00:00",
+  "financials": {
+    "stock_code": "226950",
+    "corp_code": "01113718",
+    "years": [
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2017": {
+        "cash": 6.8,
+        "total_assets": 216.4,
+        "total_liab": 29.6,
+        "total_equity": 186.8,
+        "revenue": 2.4,
+        "op_profit": -54.1,
+        "net_income": 0.0
+      },
+      "2018": {
+        "cash": 28.1,
+        "total_assets": 556.4,
+        "total_liab": 7.0,
+        "total_equity": 549.4,
+        "revenue": 3.0,
+        "op_profit": -82.3,
+        "net_income": -77.4
+      },
+      "2019": {
+        "cash": 49.5,
+        "total_assets": 452.1,
+        "total_liab": 34.0,
+        "total_equity": 418.1,
+        "revenue": 11.3,
+        "op_profit": -151.2,
+        "net_income": 0.0
+      },
+      "2020": {
+        "cash": 113.3,
+        "total_assets": 785.8,
+        "total_liab": 332.3,
+        "total_equity": 453.5,
+        "revenue": 24.7,
+        "op_profit": -162.4,
+        "net_income": 0.0
+      },
+      "2021": {
+        "cash": 343.4,
+        "total_assets": 866.7,
+        "long_debt": 200.0,
+        "total_liab": 672.6,
+        "total_equity": 194.1,
+        "revenue": 36.7,
+        "op_profit": -254.2,
+        "net_income": 0.0
+      },
+      "2022": {
+        "cash": 49.3,
+        "total_assets": 1326.5,
+        "long_debt": 200.0,
+        "total_liab": 664.5,
+        "total_equity": 662.0,
+        "revenue": 93.2,
+        "op_profit": -223.8,
+        "net_income": 0.0
+      },
+      "2023": {
+        "total_assets": 1028.3,
+        "cash": 119.8,
+        "total_equity": 18.3,
+        "total_liab": 524.9,
+        "long_debt": 200.0,
+        "op_profit": -181.9,
+        "revenue": 170.6,
+        "net_income": 0.0
+      },
+      "2024": {
+        "total_assets": 712.5,
+        "cash": 38.8,
+        "total_equity": -54.7,
+        "total_liab": 527.8,
+        "long_debt": 214.3,
+        "op_profit": -309.2,
+        "revenue": 56.8,
+        "net_income": 0.0
+      },
+      "2025": {
+        "total_assets": 1953.7,
+        "cash": 63.6,
+        "total_equity": 12.3,
+        "short_debt": 6.4,
+        "total_liab": 452.9,
+        "long_debt": 178.6,
+        "op_profit": -299.7,
+        "revenue": 146.7,
+        "net_income": 0.0
+      }
+    },
+    "missing_years": [
+      2016,
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2017,
+        "revenue_eok": 2,
+        "op_profit_eok": -54,
+        "net_income_eok": 0,
+        "roe_pct": 0,
+        "op_margin_pct": -2700,
+        "debt_ratio_pct": 16.04
+      },
+      {
+        "year": 2018,
+        "revenue_eok": 3,
+        "op_profit_eok": -82,
+        "net_income_eok": -77,
+        "roe_pct": -14.03,
+        "op_margin_pct": -2733.33,
+        "debt_ratio_pct": 1.28
+      },
+      {
+        "year": 2019,
+        "revenue_eok": 11,
+        "op_profit_eok": -151,
+        "net_income_eok": 0,
+        "roe_pct": 0,
+        "op_margin_pct": -1372.73,
+        "debt_ratio_pct": 8.13
+      },
+      {
+        "year": 2020,
+        "revenue_eok": 25,
+        "op_profit_eok": -162,
+        "net_income_eok": 0,
+        "roe_pct": 0,
+        "op_margin_pct": -648,
+        "debt_ratio_pct": 73.13
+      },
+      {
+        "year": 2021,
+        "revenue_eok": 37,
+        "op_profit_eok": -254,
+        "net_income_eok": 0,
+        "roe_pct": 0,
+        "op_margin_pct": -686.49,
+        "debt_ratio_pct": 346.91
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 93,
+        "op_profit_eok": -224,
+        "net_income_eok": 0,
+        "roe_pct": 0,
+        "op_margin_pct": -240.86,
+        "debt_ratio_pct": 100.3
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 171,
+        "op_profit_eok": -182,
+        "net_income_eok": 0,
+        "roe_pct": 0,
+        "op_margin_pct": -106.43,
+        "debt_ratio_pct": 2916.67
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 57,
+        "op_profit_eok": -309,
+        "net_income_eok": 0,
+        "roe_pct": 0,
+        "op_margin_pct": -542.11,
+        "debt_ratio_pct": -960
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 147,
+        "op_profit_eok": -300,
+        "net_income_eok": 0,
+        "roe_pct": 0,
+        "op_margin_pct": -204.08,
+        "debt_ratio_pct": 3775
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": 63.69,
+      "op_profit_cagr_pct": 22.63,
+      "best_year": 2017,
+      "worst_year": 2024,
+      "avg_roe_pct": -1.56
+    },
+    "valuation": {
+      "grade": "D",
+      "strengths": [
+        "매출액의 높은 성장률: 2017년 2억원에서 2025년 147억원으로 연평균 63.69%의 높은 매출액 성장률을 기록했습니다.",
+        "자산 규모의 확대: 2017년 216억원에서 2022년 1,326억원까지 자산총계가 증가하며 사업 확장을 위한 투자를 지속했습니다.",
+        "영업손실 규모의 일시적 축소: 2021년 254억원이었던 영업손실이 2023년 182억원으로 일시적으로 감소하며 수익성 개선의 가능성을 보였습니다."
+      ],
+      "risks": [
+        "지속적인 대규모 영업손실 및 당기순손실: 분석 기간 내내 대규모 영업손실과 당기순손실이 지속되어 수익성 확보에 어려움을 겪고 있습니다.",
+        "자본잠식 및 재무구조 악화: 2024년 자본총계가 마이너스(-55억원)를 기록하며 자본잠식 상태에 진입했고, 부채비율이 매우 높아 재무 안정성이 취약합니다.",
+        "현금흐름 악화 및 자금 조달 리스크: 2021년 이후 현금 보유액이 급감하고 있으며, 지속적인 손실로 인해 추가적인 자금 조달 없이는 사업 유지가 어려울 수 있습니다."
+      ],
+      "one_liner": "높은 매출 성장률에도 불구하고 지속적인 대규모 손실과 자본잠식으로 재무 안정성이 매우 취약하며 투자 위험이 높은 기업입니다."
+    }
+  },
+  "dcf": {
+    "text": "퀀트 애널리스트로서 올릭스(226950)의 DCF 적정가치를 계산하겠습니다.\n\n제공된 정보를 바탕으로 DCF 모델을 구축하고, 기본 시나리오 적정가치 및 WACC와 영구성장률(g)에 대한 민감도 분석을 수행합니다.\n\n**가정 및 계산 단계:**\n\n1.  **FCF (Free Cash Flow) 계산:**\n    *   FCF = 영업이익 × (1 - 법인세율) + 감가상각비 - CAPEX\n    *   법인세율은 FCF 공식에 따라 25%로 적용합니다. (영업이익이 음수이므로 실제 법인세는 발생하지 않거나 이연법인세 자산이 발생할 수 있으나, 주어진 공식에 따라 계산합니다.)\n    *   감가상각비 = 매출액 × 10%\n    *   CAPEX = 매출액 × 5%\n\n2.  **미래 FCF 예측:**\n    *   문제에서 명시적인 매출액 및 영업이익 성장률이 제시되지 않았으므로, 5년간의 명시적 예측 기간(2025년 ~ 2029년) 동안 매출액과 영업이익은 2025년 기준 재무와 동일하게 유지된다고 가정합니다. (이는 매우 보수적인 가정이며, 실제 기업 가치 평가에서는 성장률 가정이 필수적입니다.)\n\n3.  **할인율 및 영구성장률:**\n    *   WACC (가중평균자본비용) = 9% (기본 시나리오)\n    *   영구성장률 (g) = 2% (기본 시나리오)\n\n4.  **터미널 밸류 (Terminal Value, TV) 계산:**\n    *   TV = (마지막 예측 연도의 FCF × (1 + g)) / (WACC - g)\n    *   TV는 마지막 예측 연도(2029년) 말에 발생한다고 가정하고, 현재 가치로 할인합니다.\n\n5.  **적정가치 계산:**\n    *   적정가치 = 5년간의 FCF 현재가치 합계 + 터미널 밸류의 현재가치\n\n---\n**Python 코드 실행 및 결과:**\n\n\n**분석 결과:**\n\n1.  **기본 시나리오 DCF 적정가치:**\n    *   2025년 기준 FCF는 **-217.65 억원**으로 계산됩니다.\n    *   5년간의 예측 기간 동안 FCF가 동일하게 유지되고, WACC 9%, 영구성장률 2%를 적용한 결과, 올릭스의 DCF 적정가치는 **-2907.82 억원**으로 산출되었습니다.\n    *   이는 현재 영업이익이 크게 음수이고, 명시적 예측 기간 동안 수익성 개선에 대한 가정이 없기 때문에 음의 가치가 도출된 것입니다. 일반적으로 바이오 기업과 같이 초기 투자 단계에 있는 기업은 상당 기간 음의 FCF를 기록할 수 있습니다.\n\n2.  **WACC × g 민감도 그리드:**\n    *   WACC와 영구성장률(g)의 변화에 따른 적정가치 민감도 분석 결과는 위 표와 같습니다.\n    *   WACC가 낮아지고 영구성장률(g)이 높아질수록 기업의 가치는 절대값 기준으로 증가(음의 값에서는 더 큰 음의 값)하는 경향을 보입니다. 이는 미래 현금흐름의 현재가치가 더 커지기 때문입니다.\n    *   WACC가 영구성장률(g)보다 작거나 같을 경우 터미널 밸류 계산이 불가능하거나 무한대가 되므로 \"N/A (WACC<=g)\"로 표시됩니다.\n\n**요약:**\n\n적정가치(기본): -2907.82억원\n\n**참고:**\n이 분석은 제공된 제한적인 정보와 가정에 기반합니다. 특히, 5년간의 매출액 및 영업이익 성장률에 대한 가정이 없었기 때문에 2025년 재무 상태가 5년간 유지된다는 보수적인 가정을 사용했습니다. 실제 기업 가치 평가에서는 미래 성장률, 수익성 개선 계획, 경쟁 환경, 신약 개발 성공 가능성 등 다양한 요소를 면밀히 분석하여 보다 현실적인 가정을 수립해야 합니다.",
+    "executed_code": "import pandas as pd\n\n# 1. 기본 시나리오 DCF 적정가치 계산\n\n# 재무 데이터 (억원)\nrevenue_2025 = 147\noperating_income_2025 = -300\n\n# 가정\ntax_rate = 0.25\ndepreciation_rate = 0.10 # 매출액의 10%\ncapex_rate = 0.05      # 매출액의 5%\nwacc_base = 0.09\ng_base = 0.02\nforecast_years = 5\n\n# FCF 계산 함수\ndef calculate_fcf(revenue, operating_income, tax_rate, depreciation_rate, capex_rate):\n    depreciation = revenue * depreciation_rate\n    capex = revenue * capex_rate\n    # 영업이익이 음수일 경우, 법인세 효과는 0 또는 세금 혜택으로 볼 수 있으나,\n    # 주어진 공식 (1 - 0.25)에 따라 계산합니다.\n    # 실제로는 이연법인세 자산 등이 고려될 수 있습니다.\n    fcf = operating_income * (1 - tax_rate) + depreciation - capex\n    return fcf\n\n# 기본 시나리오 FCF 계산 (2025년 기준)\nfcf_base_year = calculate_fcf(revenue_2025, operating_income_2025, tax_rate, depreciation_rate, capex_rate)\nprint(f\"기준 연도 FCF (2025년): {fcf_base_year:.2f} 억원\\n\")\n\n# 5년 예측 기간 동안 FCF가 동일하다고 가정\nfcf_forecast = [fcf_base_year] * forecast_years\n\n# DCF 계산 함수\ndef calculate_dcf(fcf_list, wacc, g, forecast_years):\n    present_value_fcf = 0\n    for i in range(forecast_years):\n        present_value_fcf += fcf_list[i] / ((1 + wacc) ** (i + 1))\n\n    # 터미널 밸류 계산\n    # 마지막 예측 연도의 FCF (fcf_list[-1])를 사용\n    # WACC - g 가 0 이하가 되면 계산 불가 (WACC > g 여야 함)\n    if wacc <= g:\n        return float('inf') if fcf_list[-1] > 0 else float('-inf') # 또는 오류 처리\n    \n    terminal_value = (fcf_list[-1] * (1 + g)) / (wacc - g)\n    present_value_terminal_value = terminal_value / ((1 + wacc) ** forecast_years)\n\n    total_dcf_value = present_value_fcf + present_value_terminal_value\n    return total_dcf_value\n\n# 기본 시나리오 DCF 적정가치 계산\ndcf_base_scenario = calculate_dcf(fcf_forecast, wacc_base, g_base, forecast_years)\nprint(f\"1. 기본 시나리오 DCF 적정가치: {dcf_base_scenario:.2f} 억원\\n\")\n\n# 2. WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 출력\n\nwacc_range = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_range = [0.01, 0.02, 0.03]\n\nsensitivity_results = {}\n\nfor wacc in wacc_range:\n    row_results = {}\n    for g in g_range:\n        if wacc <= g: # WACC는 g보다 커야 함\n            row_results[f'g={g*100:.0f}%'] = \"N/A (WACC<=g)\"\n        else:\n            dcf_value = calculate_dcf(fcf_forecast, wacc, g, forecast_years)\n            row_results[f'g={g*100:.0f}%'] = f\"{dcf_value:.2f}\"\n    sensitivity_results[f'WACC={wacc*100:.0f}%'] = row_results\n\nsensitivity_df = pd.DataFrame(sensitivity_results).T\nsensitivity_df.index.name = 'WACC/g'\n\nprint(\"2. WACC × g 민감도 그리드 (적정가치 억원):\\n\")\nprint(sensitivity_df)\nprint(\"\\n\")\n\n# 3. 마지막에 '적정가치(기본): {value}억원' 형태로 요약 출력\nprint(f\"3. 적정가치(기본): {dcf_base_scenario:.2f}억원\")",
+    "code_output": "기준 연도 FCF (2025년): -217.65 억원\n\n1. 기본 시나리오 DCF 적정가치: -2907.82 억원\n\n2. WACC × g 민감도 그리드 (적정가치 억원):\n\n              g=1%      g=2%      g=3%\nWACC/g                                \nWACC=7%   -3504.63  -4058.11  -4888.33\nWACC=8%   -3006.30  -3387.21  -3920.47\nWACC=9%   -2632.48  -2907.82  -3274.94\nWACC=10%  -2341.68  -2548.14  -2813.61\nWACC=11%  -2108.98  -2268.28  -2467.41\n\n\n3. 적정가치(기본): -2907.82억원"
+  },
+  "news": {
+    "text": "## 올릭스(226950) 투자 분석: 재무 위험과 파이프라인 기대감의 교차점\n\n한국 주식 시장 전문 애널리스트로서 올릭스(226950)의 10년 재무제표 분석 결과와 최근 2주간의 주요 뉴스를 종합하여 투자 의견을 제시합니다.\n\n**1. 재무 데이터가 보여주는 스토리와 현재 시장 컨센서스의 일치/불일치**\n\n제공된 10년 재무제표 분석에 따르면 올릭스는 높은 매출 성장률에도 불구하고 지속적인 대규모 손실과 자본잠식으로 재무 안정성이 매우 취약하며 투자 위험이 높은 \"투자등급 D\" 기업입니다.\n\n그러나 최근 2주간의 시장 컨센서스는 이러한 재무적 취약성과는 다소 불일치하는 양상을 보입니다. 중동발 지정학적 리스크로 바이오 업종 전반이 하락했던 지난 3월에도 올릭스 주가는 2.83% 상승하며 선방했습니다. 이는 주력 파이프라인의 임상 성과 기대감과 우호적인 신규 후보물질 데이터가 맞물린 결과로 풀이됩니다.\n\n주요 긍정적 뉴스들은 다음과 같습니다:\n*   대사이상지방간염(MASH) 및 비만 치료제 후보물질 'OLX702A'의 호주 임상 1상 마지막 반복투여(MAD) 환자 방문을 앞두고 있으며, 올 하반기 투약 완료 및 연내 중간 결과 확인이 가능할 것으로 예상됩니다. 일라이 릴리와의 파트너십 확대도 기대됩니다.\n*   탈모치료제 'OLX104C'의 임상 1b상 역시 연내 종료가 예상됩니다.\n*   황반변성 치료제 'OLX301A'가 미국 특허 등록 결정을 받았으며, 미국 임상 1상에서 우수한 안전성과 초기 효능 신호를 확인하여 임상 2a상 진입을 준비 중입니다. 복수의 글로벌 제약사들과 기술이전 협의도 진행하고 있습니다.\n*   ALK7 타깃 비만 신약 'OLX501A'의 첫 원숭이 실험 데이터(전임상)가 공개되었는데, 단회 투여 후 2주차에 ALK7 메신저리보핵산(mRNA)이 최대 84% 감소하고 4주차에도 70% 수준의 유전자 발현 억제가 유지되는 것이 확인되었습니다. 이는 최적화 전 초기 물질임에도 경쟁 약물과 대등한 효능을 보였다는 점에서 의미가 있으며, GLP-1 제제의 한계(요요현상, 근육 감소)를 극복할 차세대 기전으로 주목받고 있습니다. 올릭스는 내년 상반기 OLX501A 1상 임상시험계획(IND) 승인 신청을 목표로 하며 조기 기술이전을 통해 개발 속도를 끌어올릴 계획입니다.\n*   글로벌 시장조사기관에 따르면 전 세계 mRNA 치료제 시장이 2023년 117억 5천만 달러에서 2030년 313억 달러로 확대될 전망입니다.\n*   일부 전문가들은 올릭스의 목표주가를 높게 제시하며 추가 기술이전 가능성을 높게 평가하고 있습니다.\n\n반면, 우려되는 점으로는 미국 제약사 일라이릴리의 경구용 비만 치료제 승인으로 인한 경쟁 심화 우려가 반영되어 주가가 하락한 날도 있었으며, 최근 1주일간 외국인과 기관의 순매도로 주가가 11.83% 하락하기도 했습니다. 일부에서는 비만 관련 바이오주들의 주가 상승이 단순 기대감에 그칠 수 있다는 지적도 있습니다.\n\n결론적으로, 올릭스의 재무 데이터는 높은 위험을 시사하지만, 시장은 현재의 손실보다는 미래의 파이프라인 성과와 기술이전 가능성에 대한 기대를 크게 반영하고 있어 재무적 스토리와 시장 컨센서스 간에 불일치가 존재합니다.\n\n**2. 재무제표에서 드러나지 않는 리스크 또는 호재**\n\n**리스크:**\n*   **임상 실패 및 기술이전 지연/취소 리스크:** 바이오 기업의 본질적인 위험으로, 현재 진행 중인 임상에서 유의미한 결과가 나오지 않거나 기술이전 협상이 지연 또는 무산될 경우 기업 가치에 치명적인 영향을 미칠 수 있습니다. 특히 기술이전 계약의 대부분이 조건부 마일스톤으로 구성되어 있어 임상 불발이나 파트너사의 개발 중단 시 수익이 사라질 수 있다는 점은 큰 리스크입니다.\n*   **경쟁 심화:** 비만 치료제 시장은 글로벌 빅파마들의 참여로 경쟁이 심화되고 있으며, 이는 올릭스의 시장 점유율 확보에 부정적인 영향을 미칠 수 있습니다.\n*   **자금 조달의 불확실성:** 지속적인 대규모 손실과 자본잠식 상태에서 추가적인 연구개발 자금 조달에 대한 부담이 상존합니다. 기술이전 마일스톤 수익이 발생하기 전까지는 재무적 압박이 지속될 수 있습니다.\n\n**호재:**\n*   **RNAi 플랫폼 기술력 및 확장성:** 올릭스는 독자적인 RNA 간섭 플랫폼 기술을 기반으로 기존 RNAi 치료제의 부작용을 최소화하고 세포 전달력을 극대화하여 피부, 눈, 간, 비만, 탈모 등 다양한 질환으로 파이프라인을 확장하고 있습니다. 이는 장기적인 성장 잠재력을 높이는 핵심 요소입니다.\n*   **First-in-Class 또는 Best-in-Class 잠재력:** MASH 치료제 'OLX702A'의 MARC1 타깃은 경쟁 파이프라인의 이탈로 First-in-Class 가능성이 부각되고 있으며, 비만 신약 'OLX501A'는 ALK7 타깃으로 GLP-1 제제의 한계를 극복할 차세대 기전으로 Best-in-Class 잠재력을 가지고 있습니다.\n*   **글로벌 빅파마와의 파트너십 확대 가능성:** 일라이 릴리와의 기술이전 이력 및 'OLX301A'의 미국 특허 등록, 'OLX501A'의 조기 기술이전 목표 등은 추가적인 글로벌 파트너링 및 기술이전 가능성을 높이는 요인입니다. 특히 건성 황반변성 시장에서 대형 M&A가 활발한 점은 'OLX301A'의 전략적 가치를 부각시킬 수 있습니다.\n\n**3. 최종 판정**\n\n제공된 재무제표 분석 결과는 올릭스의 재무 안정성이 매우 취약함을 명확히 보여줍니다. 그러나 최근 2주간의 뉴스 흐름은 다수의 파이프라인에서 긍정적인 임상 및 전임상 데이터가 발표되고, 주요 물질의 미국 특허 등록, 그리고 글로벌 빅파마와의 추가 기술이전 가능성이 지속적으로 언급되며 시장의 높은 기대감을 반영하고 있습니다. 특히 바이오 업종 전반의 하락장 속에서도 주가가 선방했다는 점은 긍정적인 신호입니다.\n\n하지만 바이오 기업의 특성상 임상 실패 또는 기술이전 지연/취소는 언제든 발생할 수 있는 치명적인 리스크이며, 현재의 주가에는 미래의 기대감이 상당 부분 반영되어 있을 가능성이 높습니다. 재무적 안정성이 확보되지 않은 상황에서 이러한 기대감에만 의존한 투자는 높은 변동성을 수반할 수 있습니다.\n\n따라서 현재 시점에서는 긍정적인 파이프라인 진행 상황과 시장의 기대감이 존재하지만, 여전히 높은 재무적 위험과 임상 및 기술이전의 불확실성을 고려할 때 **관망** 의견을 제시합니다. 주요 파이프라인의 임상 중간 결과 또는 유의미한 추가 기술이전 계약 체결 등 구체적인 성과를 확인한 후 투자 여부를 결정하는 것이 바람직합니다.",
+    "citations": [
+      {
+        "title": "daum.net",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQECkmKjagXPsIFKwe-eyW4q5kiGbMRI248pEb_L2_gVFu5uVOTt-G-ruVbUCQwP3VaRwQaj-WYvkj9PFUrIDnTJ92-tZktrWZQZ4a3emxmPpePNYvPVPwTExZ_dhdULHZ1MYWT3LRXpuZypmQfj8vfooiBLtlYCbz1KsX_TNz6LYA=="
+      },
+      {
+        "title": "mt.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQH6E_NLDM3EuXm_6oKiYsOP-s8-f9cpNb3z7ksQDwTkHLg6tgKKmmnY1GJiWIArpMbn7tGR9bp-D1p_9JmZki4TrUN49n_R2aAMI27nqsSuyqPLTnNxEw38BBM1c3QHf9TSNJU8EMJzciH5JMvCb8uLrf884Q=="
+      },
+      {
+        "title": "daum.net",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHBnH-1Wh65sNU9PlJbNNXv_h2yav81LQy7GQaP-5kMJB8xmiFcXZA4hZFYc53wT4zlpF3Mb-Q6pEWxWtct6phryjMC4mzqClSsWZavyArVKdVyIdaKsEbbXiznAHm-my3KZR8ackDU-u8Deqv2-FdBKk2VeV3k2ebXR_39yP2ehw=="
+      },
+      {
+        "title": "edaily.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQF4JFFXnA4w0TR14BkwJ-ay66ki7WXCvOOtVNehlFefS1_VnqJ3ixPkJknbO5WHdLuzqsvQ45V8okJ4uMqXBEeIkTAVH98RyZg0ZH7CH-ug09-OZF-bkPcCC55ttEgTtXgb77fiUe7u2FDZsMjhxC2JaiN2M-_4AQ=="
+      },
+      {
+        "title": "daum.net",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQElGre9riF5UFiSJ8HU_6HeB0Y7dmF_L7AFmyJpgBnGeJd3QmRzumcO1_7eCsC_HSU0sukgSTEgih92LsKYpyJWMae-dZroE587fDnC6Itwsv6e-fSqFg7vGSlKvBQEC9w="
+      },
+      {
+        "title": "youtube.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQE4WlW5uKmfgMJ5KVpt0es4YkRIf02CgbMkteZ1vrjB2WIMUO3fCeOI0icl2FM9VMvRZYtxBXQv4yK6_yWNNWrZhp1l3lXFjjzPhnKIkUi1lZ9dZMwwmdJvxmJWNJ761eo_P3NxzA=="
+      },
+      {
+        "title": "littlebproject.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEC8samv3Iy-yVAiD68kEtQHf50nhNFi4_cyhXK1O5uHV8KWXzYi_oi7vi2ZorgpVfb8N0V_Y-D5ljDzWk-jRL8Vbr1COTrbcfoSYQa_KQVVdmcB3IBxe1qIQvc1_Ad9eia"
+      },
+      {
+        "title": "zum.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFoKN4P39w6bBmHR8J-cUyDA30CbAIvxIvkUVYh4hniCR09SPqd1cW_8TQpDjvZ4-tFD_SksPd8w7XBxR68peslY8laciOtC-YdsZR_j7hVvQcewFilJgXB9Lvh6VwsOpE="
+      },
+      {
+        "title": "chosun.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFdxNYnDf5kraLL7-SgxI1o44T2oSmQj99pJ1meQun4JEmYmZ6EUbQKZz8mq1Olq7QcQuT1evr0Pm4zmp2T6s0J_kb4xGAKQM76MtRzZ3w0fJKf_ZJumAwzH0R5IPItaDHih_EqIywZX6h3krIPnUXJSG99N0lsfRkn1WxcLxS7seyBD9EfHVY="
+      },
+      {
+        "title": "naver.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFb15daB1aF9ZR-SRf5cKxH2NHMeDGNrBVrJ--4Jd3rpv_g2qJ3Gch3-GVNUJSseEzorn6HHVlWpHjzH9jgx9Oqq_q7qZJwTqA9xpnI8xqQaIT8Sy5IIrabe5Gn-nlmLBWXk4jKvjNidy05FhAe8UQke10YdfT-47BEEHUvjDQdWDXinn7t8fI="
+      }
+    ]
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=01113718",
+    "summary": "공시 페이지 접근 제한"
+  }
+}

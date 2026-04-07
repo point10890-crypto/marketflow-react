@@ -1,0 +1,247 @@
+{
+  "stock_code": "087010",
+  "stock_name": "펩트론",
+  "generated_at": "2026-04-06T23:59:21.585504+00:00",
+  "financials": {
+    "stock_code": "087010",
+    "corp_code": "00415868",
+    "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2016": {
+        "cash": 35.4,
+        "total_assets": 579.0,
+        "total_liab": 46.9,
+        "total_equity": 532.1,
+        "revenue": 31.3,
+        "op_profit": -35.6,
+        "net_income": -31.9
+      },
+      "2017": {
+        "cash": 9.6,
+        "total_assets": 530.5,
+        "total_liab": 41.0,
+        "total_equity": 489.5,
+        "revenue": 32.2,
+        "op_profit": -47.7,
+        "net_income": -44.3
+      },
+      "2018": {
+        "cash": 18.0,
+        "total_assets": 717.6,
+        "total_liab": 266.6,
+        "total_equity": 451.0,
+        "revenue": 38.6,
+        "op_profit": -79.1,
+        "net_income": -37.3
+      },
+      "2019": {
+        "cash": 24.5,
+        "total_assets": 609.9,
+        "total_liab": 329.0,
+        "total_equity": 280.9,
+        "revenue": 18.0,
+        "op_profit": -127.0,
+        "net_income": -37.3
+      },
+      "2020": {
+        "cash": 679.7,
+        "total_assets": 1177.0,
+        "total_liab": 405.7,
+        "total_equity": 771.3,
+        "revenue": 31.2,
+        "op_profit": -176.1,
+        "net_income": -183.8
+      },
+      "2021": {
+        "cash": 46.4,
+        "total_assets": 778.7,
+        "total_liab": 155.9,
+        "total_equity": 622.8,
+        "revenue": 66.2,
+        "op_profit": -156.6,
+        "net_income": -150.4
+      },
+      "2022": {
+        "cash": 50.4,
+        "total_assets": 682.7,
+        "short_debt": 30.0,
+        "total_liab": 151.7,
+        "total_equity": 531.1,
+        "revenue": 58.1,
+        "op_profit": -152.3,
+        "net_income": -150.6
+      },
+      "2023": {
+        "total_assets": 525.0,
+        "cash": 42.6,
+        "total_equity": 48.9,
+        "total_liab": 163.7,
+        "long_debt": 45.0,
+        "op_profit": -158.8,
+        "net_income": -159.2,
+        "revenue": 33.4
+      },
+      "2024": {
+        "total_assets": 1688.9,
+        "cash": 10.5,
+        "total_equity": 116.5,
+        "short_debt": 9.9,
+        "total_liab": 171.8,
+        "long_debt": 80.6,
+        "op_profit": -165.3,
+        "net_income": -220.3,
+        "revenue": 31.5
+      },
+      "2025": {
+        "total_assets": 1789.8,
+        "cash": 43.8,
+        "total_equity": 1060.6,
+        "short_debt": 34.9,
+        "total_liab": 369.7,
+        "op_profit": -212.6,
+        "net_income": 0.0,
+        "revenue": 56.3
+      }
+    },
+    "missing_years": [
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2016,
+        "revenue_eok": 31,
+        "op_profit_eok": -36,
+        "net_income_eok": -32,
+        "roe_pct": -6.015,
+        "op_margin_pct": -116.129,
+        "debt_ratio_pct": 8.835
+      },
+      {
+        "year": 2017,
+        "revenue_eok": 32,
+        "op_profit_eok": -48,
+        "net_income_eok": -44,
+        "roe_pct": -8.98,
+        "op_margin_pct": -150.0,
+        "debt_ratio_pct": 8.367
+      },
+      {
+        "year": 2018,
+        "revenue_eok": 39,
+        "op_profit_eok": -79,
+        "net_income_eok": -37,
+        "roe_pct": -8.204,
+        "op_margin_pct": -202.564,
+        "debt_ratio_pct": 59.202
+      },
+      {
+        "year": 2019,
+        "revenue_eok": 18,
+        "op_profit_eok": -127,
+        "net_income_eok": -37,
+        "roe_pct": -13.167,
+        "op_margin_pct": -705.556,
+        "debt_ratio_pct": 117.082
+      },
+      {
+        "year": 2020,
+        "revenue_eok": 31,
+        "op_profit_eok": -176,
+        "net_income_eok": -184,
+        "roe_pct": -23.865,
+        "op_margin_pct": -567.742,
+        "debt_ratio_pct": 52.659
+      },
+      {
+        "year": 2021,
+        "revenue_eok": 66,
+        "op_profit_eok": -157,
+        "net_income_eok": -150,
+        "roe_pct": -24.077,
+        "op_margin_pct": -237.879,
+        "debt_ratio_pct": 25.04
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 58,
+        "op_profit_eok": -152,
+        "net_income_eok": -151,
+        "roe_pct": -28.437,
+        "op_margin_pct": -262.069,
+        "debt_ratio_pct": 28.625
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 33,
+        "op_profit_eok": -159,
+        "net_income_eok": -159,
+        "roe_pct": -324.49,
+        "op_margin_pct": -481.818,
+        "debt_ratio_pct": 334.694
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 32,
+        "op_profit_eok": -165,
+        "net_income_eok": -220,
+        "roe_pct": -189.655,
+        "op_margin_pct": -515.625,
+        "debt_ratio_pct": 148.276
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 56,
+        "op_profit_eok": -213,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": -380.357,
+        "debt_ratio_pct": 34.873
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": 6.73,
+      "op_profit_cagr_pct": 20.59,
+      "best_year": 2021,
+      "worst_year": 2019,
+      "avg_roe_pct": -62.689
+    },
+    "valuation": {
+      "grade": "D",
+      "strengths": [
+        "2025년 당기순이익이 0으로 예상되어, 대규모 적자 기조에서 벗어날 가능성을 보여줍니다.",
+        "2016년 대비 2025년 매출액이 증가하여 외형 성장을 지속하고 있습니다.",
+        "2024년과 2025년에 자산총계가 크게 증가하여 사업 확장을 위한 기반을 마련하고 있습니다."
+      ],
+      "risks": [
+        "10년간 지속된 대규모 영업손실로 인해 수익성 개선이 시급합니다.",
+        "매우 낮은 자본총계와 높은 부채비율로 재무 안정성이 매우 취약합니다.",
+        "지속적인 순손실로 인해 자본 잠식 위험이 있으며, 이는 추가 자금 조달 부담으로 이어질 수 있습니다."
+      ],
+      "one_liner": "지속적인 대규모 적자로 재무 안정성이 매우 취약하나, 매출 성장과 자산 확대를 통해 미래 성장 동력을 모색 중인 바이오 기업."
+    }
+  },
+  "dcf": {
+    "text": "퀀트 애널리스트로서 펩트론(087010)의 DCF 적정가치를 계산하고 민감도 분석을 수행하겠습니다.\n\n제공된 데이터를 바탕으로 FCF(Free Cash Flow)를 계산하고, 이를 WACC(가중평균자본비용)로 할인하여 적정가치를 산출합니다. 5년 예측 기간 이후에는 영구성장률(g)을 적용한 터미널 밸류(Terminal Value)를 계산하여 합산합니다.\n\n**가정 요약:**\n*   **기준 연도:** 2025년\n*   **최근 재무 (2025년 시작 값으로 가정):**\n    *   매출액: 56억원\n    *   영업이익: -213억원\n*   **FCF 계산식:** 영업이익 × (1 - 0.25) + 감가상각(매출의 10%) - CAPEX(매출의 5%)\n    *   세율: 25% (FCF 공식에 내재)\n    *   감가상각: 매출액의 10%\n    *   CAPEX: 매출액의 5%\n*   **할인율:** WACC = 9% (기본 시나리오)\n*   **영구성장률:** g = 2% (기본 시나리오)\n*   **예측 기간:** 5년 (2025년 ~ 2029년)\n*   **매출액 및 영업이익 성장률:** 명시되지 않아 예측 기간 동안 2025년 값으로 고정 가정합니다. (음의 영업이익이 지속되는 것으로 가정)\n\n---\n### Python 코드 실행\n\n\n---\n### 분석 결과\n\n1.  **기본 시나리오 DCF 적정가치:**\n    *   **적정가치(기본): -2096.86억원**\n\n    제공된 가정(특히 마이너스 영업이익이 지속된다는 가정)에 따라 펩트론의 DCF 적정가치는 음수로 계산되었습니다. 이는 현재의 재무 상태와 가정된 성장률 및 할인율 하에서는 기업의 미래 현금 흐름이 부채를 상환하고 자본 비용을 충당하기에 충분하지 않음을 의미합니다.\n\n2.  **WACC × g 민감도 그리드:**\n\n    |       | WACC=7%    | WACC=8%    | WACC=9%    | WACC=10%   | WACC=11%   |\n    | :---- | :--------- | :--------- | :--------- | :--------- | :--------- |\n    | **g=1%** | -2527.23억원 | -2167.88억원 | -1898.32억원 | -1688.61억원 | -1520.81억원 |\n    | **g=2%** | -2926.35억원 | -2442.55억원 | -2096.86억원 | -1837.50억원 | -1635.68억원 |\n    | **g=3%** | -3525.03억원 | -2827.10억원 | -2361.60억원 | -2028.92억원 | -1779.28억원 |\n\n    **민감도 분석 요약:**\n    *   **WACC가 낮아질수록 (할인율이 낮아질수록) 적정가치는 더 음의 값으로 커집니다.** 이는 미래의 마이너스 현금 흐름이 더 적게 할인되어 현재 가치에 더 큰 음의 영향을 미치기 때문입니다.\n    *   **영구성장률(g)이 높아질수록 적정가치는 더 음의 값으로 커집니다.** 이는 마이너스 현금 흐름이 더 높은 비율로 영구히 성장한다고 가정하기 때문에 터미널 밸류의 음의 값이 더욱 증폭되기 때문입니다.\n\n**결론:**\n주어진 가정 하에서는 펩트론의 DCF 적정가치가 음수로 평가됩니다. 이는 현재의 영업이익이 크게 마이너스이고, 이 상태가 예측 기간 동안 지속되며 영구적으로 성장한다고 가정했기 때문입니다. 실제 투자 결정 시에는 매출액 및 영업이익의 미래 성장률에 대한 보다 현실적인 가정을 수립하고, 특히 바이오 기업의 경우 신약 개발 성공 가능성, 파이프라인 가치 등 비재무적 요소를 함께 고려해야 합니다.",
+    "executed_code": "import pandas as pd\n\ndef calculate_dcf(revenue, operating_profit, tax_rate, wacc, g, forecast_period=5):\n    \"\"\"\n    제공된 재무 데이터 및 가정을 기반으로 DCF 적정가치를 계산합니다.\n\n    Args:\n        revenue (float): 현재 연도 매출액 (억원).\n        operating_profit (float): 현재 연도 영업이익 (억원).\n        tax_rate (float): 영업이익에 대한 세율 (예: 0.25).\n        wacc (float): 가중평균자본비용 (예: 0.09).\n        g (float): 영구성장률 (예: 0.02).\n        forecast_period (int): 명시적 예측 기간 (년).\n\n    Returns:\n        float: DCF 적정가치 (억원). WACC <= g인 경우 NaN을 반환합니다.\n    \"\"\"\n    if wacc <= g:\n        return float('nan') # WACC가 영구성장률보다 작거나 같으면 터미널 밸류 계산이 불가능\n\n    # 감가상각 및 CAPEX 계산\n    depreciation = revenue * 0.10\n    capex = revenue * 0.05\n\n    # 각 예측 연도의 FCF 계산 (매출액 및 영업이익이 예측 기간 동안 일정하다고 가정)\n    # FCF = 영업이익 * (1 - 세율) + 감가상각 - CAPEX\n    fcf_per_year = operating_profit * (1 - tax_rate) + depreciation - capex\n\n    # FCF의 현재 가치 합계 계산\n    pv_fcf_sum = 0\n    for year in range(1, forecast_period + 1):\n        pv_fcf_sum += fcf_per_year / ((1 + wacc) ** year)\n\n    # 터미널 밸류(Terminal Value) 계산\n    # 예측 기간 이후 첫 해(6년차)의 FCF\n    fcf_terminal_year = fcf_per_year * (1 + g)\n    terminal_value = fcf_terminal_year / (wacc - g)\n\n    # 터미널 밸류의 현재 가치 계산\n    pv_terminal_value = terminal_value / ((1 + wacc) ** forecast_period)\n\n    # 총 DCF 적정가치\n    dcf_value = pv_fcf_sum + pv_terminal_value\n    return dcf_value\n\n# --- 기본 시나리오 계산 ---\n# 입력 데이터\nrevenue_base = 56\noperating_profit_base = -213\ntax_rate_base = 0.25\nwacc_base = 0.09\ng_base = 0.02\nforecast_period_base = 5\n\n# 기본 시나리오 DCF 계산\ndcf_base_value = calculate_dcf(revenue_base, operating_profit_base, tax_rate_base, wacc_base, g_base, forecast_period_base)\n\n# --- 민감도 그리드 계산 ---\nwacc_range = [0.07, 0.08, 0.09, 0.10, 0.11] # WACC 범위 (7% ~ 11%)\ng_range = [0.01, 0.02, 0.03]             # 영구성장률 g 범위 (1% ~ 3%)\n\nsensitivity_results = {}\nfor current_g in g_range:\n    row_values = []\n    for current_wacc in wacc_range:\n        dcf_val = calculate_dcf(revenue_base, operating_profit_base, tax_rate_base, current_wacc, current_g, forecast_period_base)\n        row_values.append(round(dcf_val, 2)) # 가독성을 위해 소수점 둘째 자리까지 반올림\n    sensitivity_results[f'g={current_g*100:.0f}%'] = row_values\n\n# 민감도 그리드를 위한 DataFrame 생성\nsensitivity_df = pd.DataFrame(sensitivity_results, index=[f'WACC={w*100:.0f}%' for w in wacc_range])\nsensitivity_df = sensitivity_df.T # g를 행으로, WACC를 열로 표시하기 위해 전치\n\n# 결과 출력\nprint(f\"적정가치(기본): {dcf_base_value:.2f}억원\\n\")\nprint(\"--- DCF 적정가치 민감도 분석 (억원) ---\")\nprint(sensitivity_df.to_string()) # DataFrame 전체를 출력하기 위해 to_string() 사용",
+    "code_output": "적정가치(기본): -2096.86억원\n\n--- DCF 적정가치 민감도 분석 (억원) ---\n      WACC=7%  WACC=8%  WACC=9%  WACC=10%  WACC=11%\ng=1% -2527.23 -2167.88 -1898.32  -1688.61  -1520.81\ng=2% -2926.35 -2442.55 -2096.86  -1837.50  -1635.68\ng=3% -3525.03 -2827.10 -2361.60  -2028.92  -1779.28"
+  },
+  "news": null,
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=00415868",
+    "summary": "공시 페이지 접근 제한"
+  }
+}

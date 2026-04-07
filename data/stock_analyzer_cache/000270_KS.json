@@ -1,0 +1,117 @@
+{
+  "name": "기아",
+  "ticker": "000270.KS",
+  "result": "적극 매수",
+  "date": "2026-04-07 00:45:10",
+  "elapsed": 2.2,
+  "consensus_score": 4.35,
+  "analyst_count": 31,
+  "recommendation_detail": {
+    "strongBuy": 11,
+    "buy": 20,
+    "hold": 0,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 151600.0,
+    "high": 300000.0,
+    "low": 145000.0,
+    "mean": 213225.81,
+    "median": 210000.0
+  },
+  "current_price": 151600.0,
+  "upside_potential": 40.7,
+  "key_stats": {
+    "name": "KIA CORP.",
+    "sector": "Consumer Cyclical",
+    "industry": "Auto Manufacturers",
+    "market_cap": 58612126842880,
+    "pe_ratio": null,
+    "forward_pe": 6.3672404,
+    "dividend_yield": 4.52,
+    "beta": 1.088,
+    "fifty_two_week_high": 212500.0,
+    "fifty_two_week_low": 81300.0,
+    "revenue": 114140920152064,
+    "profit_margin": 0.06624,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "기아(000270.KS)에 대해 31명의 애널리스트가 적극 매수 의견(4.35/5.0)을 제시했습니다. 평균 목표 주가는 213,226원으로, 현재 주가 대비 40.7% 상승 여력이 있는 것으로 분석됩니다. 이는 컨센서스 기반의 데이터 요약입니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 28087737000000
+    },
+    {
+      "date": "2025-09",
+      "value": 28686037000000
+    },
+    {
+      "date": "2025-06",
+      "value": 29349635000000
+    },
+    {
+      "date": "2025-03",
+      "value": 28017510000000
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 1474347000000
+    },
+    {
+      "date": "2025-09",
+      "value": 1424827000000
+    },
+    {
+      "date": "2025-06",
+      "value": 2268846000000
+    },
+    {
+      "date": "2025-03",
+      "value": 2392963000000
+    }
+  ],
+  "news": [
+    {
+      "title": "Hyundai Motor flags export disruptions as Middle East conflict hits shipping",
+      "summary": "PYEONGTAEK, South Korea, April 3 (Reuters) - Hyundai Motor said on Friday that exports to Europe and North Africa, which typically transit through the Middle East, were being disrupted by the conflict",
+      "url": "https://finance.yahoo.com/news/hyundai-motor-flags-export-disruptions-073001120.html",
+      "provider": "Reuters",
+      "pub_time": "2026-04-03T07:30:01Z"
+    },
+    {
+      "title": "Automakers unveil new EVs for US market despite sales downturn",
+      "summary": "<body><p>STORY: Major automakers unveiled new electric vehicles at this week's New York Auto Show, as they face lagging consumer demand and a drop in sales after the Trump administration scrapped EV t",
+      "url": "https://finance.yahoo.com/video/automakers-unveil-evs-us-market-183247024.html",
+      "provider": "Reuters Videos",
+      "pub_time": "2026-04-02T18:32:47Z"
+    },
+    {
+      "title": "Kia to launch 13 BEV models globally by 2030",
+      "summary": "The South Korean automaker plans to increase overseas production capacity.",
+      "url": "https://www.just-auto.com/news/kia-to-launch-13-bev-models-globally-by-2030/",
+      "provider": "Just Auto",
+      "pub_time": "2026-03-30T09:21:57Z"
+    },
+    {
+      "title": "Auto demand seems strained. Could EVs make a comeback?",
+      "summary": "Cox Automotive anticipates slower 2026 auto sales due to pressures from gas (RB=F) prices and interest rates.Yahoo Finance Senior Autos Reporter Pras Subramanian outlines the details, highlighting how",
+      "url": "https://finance.yahoo.com/video/auto-demand-seems-strained-could-evs-make-a-comeback-203508967.html",
+      "provider": "Yahoo Finance Video",
+      "pub_time": "2026-03-25T20:35:08Z"
+    },
+    {
+      "title": "Plant owned by a Hyundai-Kia engine parts supplier destroyed by fire",
+      "summary": "South Korean automaker looks for alternative supplies of engine valves.",
+      "url": "https://www.just-auto.com/news/plant-owned-by-a-hyundai-kia-engine-parts-supplier-destroyed-by-fire/",
+      "provider": "Just Auto",
+      "pub_time": "2026-03-24T09:52:34Z"
+    }
+  ]
+}

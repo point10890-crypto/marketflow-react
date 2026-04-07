@@ -1,0 +1,118 @@
+{
+  "stock_code": "376900",
+  "stock_name": "로킷헬스케어",
+  "generated_at": "2026-04-06T23:59:50.391143+00:00",
+  "financials": {
+    "stock_code": "376900",
+    "corp_code": "01335143",
+    "years": [
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2023": {
+        "total_assets": 84.8,
+        "cash": 9.7,
+        "total_equity": 115.9,
+        "total_liab": 869.4,
+        "long_debt": 1.5,
+        "op_profit": -73.8,
+        "net_income": 166.0,
+        "revenue": 124.2
+      },
+      "2024": {
+        "total_assets": 113.3,
+        "cash": 30.1,
+        "total_equity": -770.7,
+        "total_liab": 884.5,
+        "long_debt": 3.5,
+        "net_income": -76.5,
+        "revenue": 131.1
+      },
+      "2025": {
+        "total_assets": 550.3,
+        "cash": 310.5,
+        "total_equity": 1093.4,
+        "total_liab": 434.7,
+        "long_debt": 0.5,
+        "op_profit": 4.5,
+        "net_income": -28.5,
+        "revenue": 262.5
+      }
+    },
+    "missing_years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2023,
+        "revenue_eok": 124,
+        "op_profit_eok": -74,
+        "net_income_eok": 166,
+        "roe_pct": 143.1,
+        "op_margin_pct": -59.68,
+        "debt_ratio_pct": 749.14
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 131,
+        "op_profit_eok": 0,
+        "net_income_eok": -76,
+        "roe_pct": 9.86,
+        "op_margin_pct": 0.0,
+        "debt_ratio_pct": -114.66
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 262,
+        "op_profit_eok": 4,
+        "net_income_eok": -28,
+        "roe_pct": -2.56,
+        "op_margin_pct": 1.53,
+        "debt_ratio_pct": 39.8
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": 45.36,
+      "op_profit_cagr_pct": -74,
+      "best_year": 2025,
+      "worst_year": 2023,
+      "avg_roe_pct": 50.13
+    },
+    "valuation": {
+      "grade": "D",
+      "strengths": [
+        "매출액이 2023년부터 2025년까지 높은 성장률을 보였습니다.",
+        "영업이익이 2023년 적자에서 2025년 흑자로 전환되었습니다.",
+        "2025년 부채비율이 크게 개선되었습니다."
+      ],
+      "risks": [
+        "2024년 자본총계가 마이너스를 기록하는 등 심각한 자본잠식 상태를 보였습니다.",
+        "당기순이익이 지속적으로 적자를 기록하고 있으며, 수익성이 매우 불안정합니다.",
+        "영업이익 흑자 전환에도 불구하고 절대적인 이익 규모가 매우 작아 사업 안정성이 낮습니다."
+      ],
+      "one_liner": "심각한 자본잠식과 불안정한 수익성에도 불구하고 매출액 성장과 영업이익 흑자 전환을 보인 고위험 종목입니다."
+    }
+  },
+  "dcf": {
+    "text": "DCF 적정가치를 계산하기 위해 5년간의 매출액과 영업이익 성장률 가정이 필요합니다. 현재 2025년 매출액(262억원)과 영업이익(4억원)만 주어져 있습니다.\n\n향후 5년(2026-2030년) 동안 적용할 **매출액 성장률**과 **영업이익 성장률**을 알려주시면 감사하겠습니다.\n\n만약 성장률 가정이 제공되지 않는다면, 계산 진행을 위해 5년간 매출액과 영업이익이 **0% 성장**한다고 가정하고 DCF를 계산하겠습니다. 이 경우 기업의 미래 성장 잠재력이 반영되지 않을 수 있습니다.",
+    "executed_code": "",
+    "code_output": ""
+  },
+  "news": null,
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=01335143",
+    "summary": "공시 페이지 접근 제한"
+  }
+}

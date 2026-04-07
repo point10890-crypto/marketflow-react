@@ -1,0 +1,303 @@
+{
+  "stock_code": "032820",
+  "stock_name": "우리기술",
+  "generated_at": "2026-04-06T22:38:02.998795+00:00",
+  "financials": {
+    "stock_code": "032820",
+    "corp_code": "00231044",
+    "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2016": {
+        "cash": 71.0,
+        "total_assets": 823.3,
+        "short_debt": 250.8,
+        "long_debt": 0.0,
+        "total_liab": 513.9,
+        "total_equity": 309.4,
+        "revenue": 314.5,
+        "op_profit": 38.4,
+        "net_income": 0.0
+      },
+      "2017": {
+        "cash": 59.7,
+        "total_assets": 852.2,
+        "short_debt": 229.8,
+        "long_debt": 100.0,
+        "total_liab": 476.0,
+        "total_equity": 376.2,
+        "revenue": 301.8,
+        "op_profit": 50.2,
+        "net_income": 0.0
+      },
+      "2018": {
+        "cash": 121.1,
+        "total_assets": 916.1,
+        "short_debt": 152.4,
+        "long_debt": 4.2,
+        "total_liab": 585.5,
+        "total_equity": 330.7,
+        "revenue": 281.9,
+        "op_profit": -28.7,
+        "net_income": 0.0
+      },
+      "2019": {
+        "cash": 58.4,
+        "total_assets": 1040.0,
+        "short_debt": 166.2,
+        "long_debt": 5.2,
+        "total_liab": 707.8,
+        "total_equity": 332.2,
+        "revenue": 325.9,
+        "op_profit": -90.0,
+        "net_income": 0.0
+      },
+      "2020": {
+        "cash": 170.3,
+        "total_assets": 1183.0,
+        "short_debt": 141.4,
+        "long_debt": 11.3,
+        "total_liab": 673.3,
+        "total_equity": 509.7,
+        "revenue": 499.1,
+        "op_profit": 27.1,
+        "net_income": 0.0
+      },
+      "2021": {
+        "cash": 279.4,
+        "total_assets": 1481.0,
+        "short_debt": 144.0,
+        "long_debt": 111.9,
+        "total_liab": 696.9,
+        "total_equity": 784.2,
+        "revenue": 521.4,
+        "op_profit": 72.5,
+        "net_income": 0.0
+      },
+      "2022": {
+        "cash": 137.2,
+        "total_assets": 1620.1,
+        "short_debt": 149.0,
+        "long_debt": 23.5,
+        "total_liab": 665.4,
+        "total_equity": 954.7,
+        "revenue": 494.9,
+        "op_profit": 48.0,
+        "net_income": 0.0
+      },
+      "2023": {
+        "total_assets": 1901.9,
+        "cash": 125.6,
+        "total_equity": 591.3,
+        "total_liab": 867.6,
+        "long_debt": 217.9,
+        "op_profit": 66.8,
+        "net_income": 0.0,
+        "revenue": 631.7
+      },
+      "2024": {
+        "total_assets": 2654.6,
+        "cash": 108.9,
+        "total_equity": 683.4,
+        "total_liab": 1533.7,
+        "op_profit": 5.5,
+        "net_income": 0.0,
+        "revenue": 712.5
+      },
+      "2025": {
+        "total_assets": 3384.6,
+        "cash": 94.8,
+        "total_equity": 802.1,
+        "short_debt": 338.2,
+        "total_liab": 2140.6,
+        "long_debt": 512.6,
+        "op_profit": -54.9,
+        "net_income": 0.0,
+        "revenue": 871.4
+      }
+    },
+    "missing_years": [
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2016,
+        "revenue_eok": 314,
+        "op_profit_eok": 38,
+        "net_income_eok": 0,
+        "roe_pct": 0,
+        "op_margin_pct": 12.1,
+        "debt_ratio_pct": 166.34
+      },
+      {
+        "year": 2017,
+        "revenue_eok": 302,
+        "op_profit_eok": 50,
+        "net_income_eok": 0,
+        "roe_pct": 0,
+        "op_margin_pct": 16.56,
+        "debt_ratio_pct": 126.6
+      },
+      {
+        "year": 2018,
+        "revenue_eok": 282,
+        "op_profit_eok": -29,
+        "net_income_eok": 0,
+        "roe_pct": 0,
+        "op_margin_pct": -10.28,
+        "debt_ratio_pct": 177.04
+      },
+      {
+        "year": 2019,
+        "revenue_eok": 326,
+        "op_profit_eok": -90,
+        "net_income_eok": 0,
+        "roe_pct": 0,
+        "op_margin_pct": -27.61,
+        "debt_ratio_pct": 213.25
+      },
+      {
+        "year": 2020,
+        "revenue_eok": 499,
+        "op_profit_eok": 27,
+        "net_income_eok": 0,
+        "roe_pct": 0,
+        "op_margin_pct": 5.41,
+        "debt_ratio_pct": 131.96
+      },
+      {
+        "year": 2021,
+        "revenue_eok": 521,
+        "op_profit_eok": 72,
+        "net_income_eok": 0,
+        "roe_pct": 0,
+        "op_margin_pct": 13.82,
+        "debt_ratio_pct": 88.9
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 495,
+        "op_profit_eok": 48,
+        "net_income_eok": 0,
+        "roe_pct": 0,
+        "op_margin_pct": 9.7,
+        "debt_ratio_pct": 69.63
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 632,
+        "op_profit_eok": 67,
+        "net_income_eok": 0,
+        "roe_pct": 0,
+        "op_margin_pct": 10.6,
+        "debt_ratio_pct": 146.87
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 712,
+        "op_profit_eok": 6,
+        "net_income_eok": 0,
+        "roe_pct": 0,
+        "op_margin_pct": 0.84,
+        "debt_ratio_pct": 224.6
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 871,
+        "op_profit_eok": -55,
+        "net_income_eok": 0,
+        "roe_pct": 0,
+        "op_margin_pct": -6.31,
+        "debt_ratio_pct": 266.96
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": 11.99,
+      "op_profit_cagr_pct": -204.36,
+      "best_year": 2021,
+      "worst_year": 2019,
+      "avg_roe_pct": 0
+    },
+    "valuation": {
+      "grade": "D",
+      "strengths": [
+        "매출액이 10년간 연평균 11.99% 성장하며 외형 성장을 지속하고 있습니다.",
+        "2021년 72억원, 2023년 67억원 등 일부 연도에는 비교적 높은 영업이익을 달성한 이력이 있습니다.",
+        "자산총계가 꾸준히 증가하고 있어 사업 규모가 확대되고 있음을 보여줍니다."
+      ],
+      "risks": [
+        "당기순이익이 10년간 지속적으로 0원으로 기록되어 수익성이 매우 취약합니다.",
+        "영업이익이 매우 불안정하며, 최근 2025년에는 다시 적자로 전환되어 수익 변동성이 큽니다.",
+        "부채비율이 2024년 224.60%, 2025년 266.96%로 급증하여 재무 건전성이 크게 악화되고 있습니다."
+      ],
+      "one_liner": "매출액 성장에도 불구하고 불안정한 영업이익과 지속적인 당기순이익 부재, 급증하는 부채로 인해 투자 매력이 매우 낮은 기업입니다."
+    }
+  },
+  "dcf": {
+    "text": "퀀트 애널리스트로서 우리기술(032820)의 DCF 적정가치를 계산하겠습니다.\n\n제공된 데이터를 바탕으로 DCF 모델을 구축하기 위해 몇 가지 가정이 필요합니다. 특히, 5년간의 예측 기간 동안 매출액 성장률과 영업이익률의 변화에 대한 가정이 필요합니다.\n\n**추가 가정 (사용자 요청에 없는 부분):**\n1.  **매출액 성장률:** 5년간(2026년~2030년) 연 5% 성장률을 가정합니다.\n2.  **영업이익률(OPM) 변화:** 현재 2025년 영업이익률은 -6.31%(-55억원 / 871억원)로 적자입니다. 현실적인 가치평가를 위해 영업이익률이 2025년 -6.31%에서 2030년까지 선형적으로 3%로 개선된다고 가정합니다. 이는 기업이 점진적으로 수익성을 회복한다는 시나리오를 반영합니다.\n3.  **FCF 계산식:** `FCF ≈ 영업이익 × (1 - 0.25) + 감가상각(매출의 10%) - CAPEX(매출의 5%)` 공식을 엄격히 따르며, 영업이익이 음수일 경우에도 `(1 - 0.25)`를 적용합니다.\n\n---\n\n### DCF 적정가치 계산\n\n\n제가 코드에서 변수명 오타를 냈습니다. `opm_improvement_per_per_year`를 `opm_improvement_per_year`로 수정하고 다시 실행하겠습니다.\n\n---\n\n### DCF 적정가치 계산 (수정 후 재실행)\n\n\n### 분석 결과\n\n제공된 데이터와 위에서 명시된 가정을 바탕으로 우리기술(032820)의 DCF 적정가치를 계산한 결과는 다음과 같습니다.\n\n**1. 기본 시나리오 DCF 적정가치 계산:**\n\n*   **초기 OPM (2025):** -6.31%\n*   **목표 OPM (2030):** 3.00%\n*   **연간 OPM 개선율:** 1.86%\n\n| Year | Revenue (억원) | OPM (%) | Operating Profit (억원) | Depreciation (억원) | CAPEX (억원) | FCF (억원) | Discount Factor | PV FCF (억원) |\n| :--- | :------------- | :------ | :---------------------- | :------------------ | :----------- | :--------- | :-------------- | :------------ |\n| 2026 | 914.55         | -4.45%  | -40.71                  | 91.46               | 45.73        | 15.19      | 1.09            | 13.94         |\n| 2027 | 960.28         | -2.59%  | -24.86                  | 96.03               | 48.01        | 29.37      | 1.19            | 24.72         |\n| 2028 | 1008.29        | -0.73%  | -7.32                   | 100.83              | 50.41        | 44.93      | 1.30            | 34.69         |\n| 2029 | 1058.71        | 1.14%   | 12.04                   | 105.87              | 52.94        | 61.96      | 1.41            | 43.90         |\n| 2030 | 1111.64        | 3.00%   | 33.35                   | 111.16              | 55.58        | 80.59      | 1.54            | 52.38         |\n\n*   **Terminal Value (2030년 기준):** 1174.37 억원\n*   **Terminal Value의 현재가치 (2025년 기준):** 763.26 억원\n*   **총 DCF 적정가치 (기본 시나리오):** 932.89 억원\n\n**2. WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드:**\n\n|       | WACC=7%   | WACC=8%   | WACC=9%   | WACC=10%  | WACC=11%  |\n| :---- | :-------- | :-------- | :-------- | :-------- | :-------- |\n| **g=1%** | 1148.54   | 966.73    | 830.93    | 725.79    | 642.09    |\n| **g=2%** | 1353.49   | 1107.77   | **932.89** | 802.24    | 701.08    |\n| **g=3%** | 1660.92   | 1305.24   | 1068.83   | 900.54    | 774.81    |\n\n*   `N/A (WACC<=g)`는 WACC가 영구성장률(g)보다 작거나 같아 터미널 가치 계산이 불가능한 경우를 나타냅니다.\n\n**3. 요약 출력:**\n\n적정가치(기본): 932.89억원",
+    "executed_code": "import pandas as pd\n\n# 1. Input Data and Assumptions (Base Case)\ncompany_name = \"우리기술 (032820)\"\nbase_year = 2025\n\n# Recent Financials (억원)\nrevenue_2025 = 871\nop_profit_2025 = -55\n\n# Assumptions\nrevenue_growth_rate = 0.05 # 5% annual growth for forecast period (Assumption)\ntax_rate = 0.25 # Tax rate for FCF calculation as per formula\ndepreciation_rate = 0.10 # 10% of revenue\ncapex_rate = 0.05 # 5% of revenue\nwacc_base = 0.09 # 9%\ng_base = 0.02 # 2%\nforecast_years = 5\n\n# Derived assumptions for Operating Profit Margin (OPM) evolution\nopm_2025 = op_profit_2025 / revenue_2025\ntarget_opm_2030 = 0.03 # Assuming OPM improves to 3% by 2030 (Assumption)\nopm_improvement_per_year = (target_opm_2030 - opm_2025) / forecast_years\n\nprint(f\"초기 OPM (2025): {opm_2025:.2%}\")\nprint(f\"목표 OPM (2030): {target_opm_2030:.2%}\")\nprint(f\"연간 OPM 개선율: {opm_improvement_per_per_year:.2%}\")\n\n# DCF Calculation Function\ndef calculate_dcf(revenue_2025, op_profit_2025, revenue_growth_rate, tax_rate, depreciation_rate, capex_rate, wacc, g, forecast_years, target_opm_2030):\n    # Initialize lists to store yearly data\n    revenues = []\n    op_profits = []\n    depreciations = []\n    capex_values = []\n    fcf_values = []\n    discount_factors = []\n    pv_fcf_values = []\n    opm_values = []\n\n    # Calculate OPM improvement per year\n    opm_2025_calc = op_profit_2025 / revenue_2025\n    opm_improvement_per_year_calc = (target_opm_2030 - opm_2025_calc) / forecast_years\n\n    # Project financials for the forecast period (2026-2030)\n    current_revenue = revenue_2025\n    current_opm = opm_2025_calc\n\n    for i in range(1, forecast_years + 1): # t=1 to t=5 (2026 to 2030)\n        # Revenue projection\n        current_revenue *= (1 + revenue_growth_rate)\n        revenues.append(current_revenue)\n\n        # OPM projection (linear improvement)\n        current_opm += opm_improvement_per_year_calc\n        opm_values.append(current_opm)\n\n        # Operating Profit\n        op_profit = current_revenue * current_opm\n        op_profits.append(op_profit)\n\n        # Depreciation and CAPEX\n        depreciation = current_revenue * depreciation_rate\n        capex = current_revenue * capex_rate\n        depreciations.append(depreciation)\n        capex_values.append(capex)\n\n        # Free Cash Flow (FCF) - Adjusted based on user's exact formula\n        # FCF ≈ 영업이익 × (1 - 0.25) + 감가상각(매출의 10%) - CAPEX(매출의 5%)\n        fcf = op_profit * (1 - tax_rate) + depreciation - capex\n        fcf_values.append(fcf)\n\n        # Discount Factor and Present Value of FCF\n        discount_factor = (1 + wacc) ** i\n        discount_factors.append(discount_factor)\n        pv_fcf_values.append(fcf / discount_factor)\n\n    # Calculate Terminal Value (TV)\n    last_fcf = fcf_values[-1] # FCF for 2030 (t=5)\n    \n    # Check for WACC <= g, which would lead to infinite TV\n    if wacc <= g:\n        return float('inf'), {} # Return inf and empty dict for details\n\n    terminal_value = last_fcf * (1 + g) / (wacc - g)\n    \n    # Discount Terminal Value to Present Value\n    pv_terminal_value = terminal_value / ((1 + wacc) ** forecast_years)\n\n    # Total DCF Value\n    total_dcf_value = sum(pv_fcf_values) + pv_terminal_value\n\n    return total_dcf_value, {\n        'years': [base_year + i for i in range(1, forecast_years + 1)],\n        'revenues': revenues,\n        'op_profits': op_profits,\n        'opm_values': opm_values,\n        'depreciations': depreciations,\n        'capex_values': capex_values,\n        'fcf_values': fcf_values,\n        'discount_factors': discount_factors,\n        'pv_fcf_values': pv_fcf_values,\n        'terminal_value': terminal_value,\n        'pv_terminal_value': pv_terminal_value\n    }\n\n# 1. 기본 시나리오 DCF 적정가치(억원) 계산\nbase_dcf_value, base_dcf_details = calculate_dcf(\n    revenue_2025, op_profit_2025, revenue_growth_rate, tax_rate,\n    depreciation_rate, capex_rate, wacc_base, g_base, forecast_years, target_opm_2030\n)\n\nprint(\"\\n--- 기본 시나리오 DCF 상세 ---\")\ndf_base = pd.DataFrame({\n    'Year': base_dcf_details['years'],\n    'Revenue': [f'{x:.2f}' for x in base_dcf_details['revenues']],\n    'OPM': [f'{x:.2%}' for x in base_dcf_details['opm_values']],\n    'Operating Profit': [f'{x:.2f}' for x in base_dcf_details['op_profits']],\n    'Depreciation': [f'{x:.2f}' for x in base_dcf_details['depreciations']],\n    'CAPEX': [f'{x:.2f}' for x in base_dcf_details['capex_values']],\n    'FCF': [f'{x:.2f}' for x in base_dcf_details['fcf_values']],\n    'Discount Factor': [f'{x:.2f}' for x in base_dcf_details['discount_factors']],\n    'PV FCF': [f'{x:.2f}' for x in base_dcf_details['pv_fcf_values']]\n})\nprint(df_base.to_string())\nprint(f\"\\nTerminal Value (2030): {base_dcf_details['terminal_value']:.2f} 억원\")\nprint(f\"PV of Terminal Value (2025): {base_dcf_details['pv_terminal_value']:.2f} 억원\")\nprint(f\"총 DCF 적정가치 (기본 시나리오): {base_dcf_value:.2f} 억원\")\n\n# 2. WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 출력\nwacc_scenarios = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_scenarios = [0.01, 0.02, 0.03]\n\nsensitivity_results = pd.DataFrame(index=[f'g={g*100:.0f}%' for g in g_scenarios],\n                                   columns=[f'WACC={wacc*100:.0f}%' for wacc in wacc_scenarios])\n\nfor g_val in g_scenarios:\n    for wacc_val in wacc_scenarios:\n        # Ensure WACC > g for terminal value calculation\n        if wacc_val <= g_val:\n            sensitivity_results.loc[f'g={g_val*100:.0f}%', f'WACC={wacc_val*100:.0f}%'] = \"N/A (WACC<=g)\"\n        else:\n            dcf_val, _ = calculate_dcf(\n                revenue_2025, op_profit_2025, revenue_growth_rate, tax_rate,\n                depreciation_rate, capex_rate, wacc_val, g_val, forecast_years, target_opm_2030\n            )\n            sensitivity_results.loc[f'g={g_val*100:.0f}%', f'WACC={wacc_val*100:.0f}%'] = f'{dcf_val:.2f}'\n\nprint(\"\\n--- DCF 적정가치 민감도 분석 (억원) ---\")\nprint(sensitivity_results.to_string())\n\n# 3. 마지막에 '적정가치(기본): {value}억원' 형태로 요약 출력\nprint(f\"\\n적정가치(기본): {base_dcf_value:.2f}억원\")\n\nimport pandas as pd\n\n# 1. Input Data and Assumptions (Base Case)\ncompany_name = \"우리기술 (032820)\"\nbase_year = 2025\n\n# Recent Financials (억원)\nrevenue_2025 = 871\nop_profit_2025 = -55\n\n# Assumptions\nrevenue_growth_rate = 0.05 # 5% annual growth for forecast period (Assumption)\ntax_rate = 0.25 # Tax rate for FCF calculation as per formula\ndepreciation_rate = 0.10 # 10% of revenue\ncapex_rate = 0.05 # 5% of revenue\nwacc_base = 0.09 # 9%\ng_base = 0.02 # 2%\nforecast_years = 5\n\n# Derived assumptions for Operating Profit Margin (OPM) evolution\nopm_2025 = op_profit_2025 / revenue_2025\ntarget_opm_2030 = 0.03 # Assuming OPM improves to 3% by 2030 (Assumption)\nopm_improvement_per_year = (target_opm_2030 - opm_2025) / forecast_years\n\nprint(f\"초기 OPM (2025): {opm_2025:.2%}\")\nprint(f\"목표 OPM (2030): {target_opm_2030:.2%}\")\nprint(f\"연간 OPM 개선율: {opm_improvement_per_year:.2%}\")\n\n# DCF Calculation Function\ndef calculate_dcf(revenue_2025, op_profit_2025, revenue_growth_rate, tax_rate, depreciation_rate, capex_rate, wacc, g, forecast_years, target_opm_2030):\n    # Initialize lists to store yearly data\n    revenues = []\n    op_profits = []\n    depreciations = []\n    capex_values = []\n    fcf_values = []\n    discount_factors = []\n    pv_fcf_values = []\n    opm_values = []\n\n    # Calculate OPM improvement per year\n    opm_2025_calc = op_profit_2025 / revenue_2025\n    opm_improvement_per_year_calc = (target_opm_2030 - opm_2025_calc) / forecast_years\n\n    # Project financials for the forecast period (2026-2030)\n    current_revenue = revenue_2025\n    current_opm = opm_2025_calc\n\n    for i in range(1, forecast_years + 1): # t=1 to t=5 (2026 to 2030)\n        # Revenue projection\n        current_revenue *= (1 + revenue_growth_rate)\n        revenues.append(current_revenue)\n\n        # OPM projection (linear improvement)\n        current_opm += opm_improvement_per_year_calc\n        opm_values.append(current_opm)\n\n        # Operating Profit\n        op_profit = current_revenue * current_opm\n        op_profits.append(op_profit)\n\n        # Depreciation and CAPEX\n        depreciation = current_revenue * depreciation_rate\n        capex = current_revenue * capex_rate\n        depreciations.append(depreciation)\n        capex_values.append(capex)\n\n        # Free Cash Flow (FCF) - Adjusted based on user's exact formula\n        # FCF ≈ 영업이익 × (1 - 0.25) + 감가상각(매출의 10%) - CAPEX(매출의 5%)\n        fcf = op_profit * (1 - tax_rate) + depreciation - capex\n        fcf_values.append(fcf)\n\n        # Discount Factor and Present Value of FCF\n        discount_factor = (1 + wacc) ** i\n        discount_factors.append(discount_factor)\n        pv_fcf_values.append(fcf / discount_factor)\n\n    # Calculate Terminal Value (TV)\n    last_fcf = fcf_values[-1] # FCF for 2030 (t=5)\n    \n    # Check for WACC <= g, which would lead to infinite TV\n    if wacc <= g:\n        return float('inf'), {} # Return inf and empty dict for details\n\n    terminal_value = last_fcf * (1 + g) / (wacc - g)\n    \n    # Discount Terminal Value to Present Value\n    pv_terminal_value = terminal_value / ((1 + wacc) ** forecast_years)\n\n    # Total DCF Value\n    total_dcf_value = sum(pv_fcf_values) + pv_terminal_value\n\n    return total_dcf_value, {\n        'years': [base_year + i for i in range(1, forecast_years + 1)],\n        'revenues': revenues,\n        'op_profits': op_profits,\n        'opm_values': opm_values,\n        'depreciations': depreciations,\n        'capex_values': capex_values,\n        'fcf_values': fcf_values,\n        'discount_factors': discount_factors,\n        'pv_fcf_values': pv_fcf_values,\n        'terminal_value': terminal_value,\n        'pv_terminal_value': pv_terminal_value\n    }\n\n# 1. 기본 시나리오 DCF 적정가치(억원) 계산\nbase_dcf_value, base_dcf_details = calculate_dcf(\n    revenue_2025, op_profit_2025, revenue_growth_rate, tax_rate,\n    depreciation_rate, capex_rate, wacc_base, g_base, forecast_years, target_opm_2030\n)\n\nprint(\"\\n--- 기본 시나리오 DCF 상세 ---\")\ndf_base = pd.DataFrame({\n    'Year': base_dcf_details['years'],\n    'Revenue': [f'{x:.2f}' for x in base_dcf_details['revenues']],\n    'OPM': [f'{x:.2%}' for x in base_dcf_details['opm_values']],\n    'Operating Profit': [f'{x:.2f}' for x in base_dcf_details['op_profits']],\n    'Depreciation': [f'{x:.2f}' for x in base_dcf_details['depreciations']],\n    'CAPEX': [f'{x:.2f}' for x in base_dcf_details['capex_values']],\n    'FCF': [f'{x:.2f}' for x in base_dcf_details['fcf_values']],\n    'Discount Factor': [f'{x:.2f}' for x in base_dcf_details['discount_factors']],\n    'PV FCF': [f'{x:.2f}' for x in base_dcf_details['pv_fcf_values']]\n})\nprint(df_base.to_string())\nprint(f\"\\nTerminal Value (2030): {base_dcf_details['terminal_value']:.2f} 억원\")\nprint(f\"PV of Terminal Value (2025): {base_dcf_details['pv_terminal_value']:.2f} 억원\")\nprint(f\"총 DCF 적정가치 (기본 시나리오): {base_dcf_value:.2f} 억원\")\n\n# 2. WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 출력\nwacc_scenarios = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_scenarios = [0.01, 0.02, 0.03]\n\nsensitivity_results = pd.DataFrame(index=[f'g={g*100:.0f}%' for g in g_scenarios],\n                                   columns=[f'WACC={wacc*100:.0f}%' for wacc in wacc_scenarios])\n\nfor g_val in g_scenarios:\n    for wacc_val in wacc_scenarios:\n        # Ensure WACC > g for terminal value calculation\n        if wacc_val <= g_val:\n            sensitivity_results.loc[f'g={g_val*100:.0f}%', f'WACC={wacc_val*100:.0f}%'] = \"N/A (WACC<=g)\"\n        else:\n            dcf_val, _ = calculate_dcf(\n                revenue_2025, op_profit_2025, revenue_growth_rate, tax_rate,\n                depreciation_rate, capex_rate, wacc_val, g_val, forecast_years, target_opm_2030\n            )\n            sensitivity_results.loc[f'g={g_val*100:.0f}%', f'WACC={wacc_val*100:.0f}%'] = f'{dcf_val:.2f}'\n\nprint(\"\\n--- DCF 적정가치 민감도 분석 (억원) ---\")\nprint(sensitivity_results.to_string())\n\n# 3. 마지막에 '적정가치(기본): {value}억원' 형태로 요약 출력\nprint(f\"\\n적정가치(기본): {base_dcf_value:.2f}억원\")",
+    "code_output": "초기 OPM (2025): -6.31%\n목표 OPM (2030): 3.00%\n\nTraceback (most recent call last):\n  File \"<string>\", line 27, in <module>\nNameError: name 'opm_improvement_per_per_year' is not defined\n\n초기 OPM (2025): -6.31%\n목표 OPM (2030): 3.00%\n연간 OPM 개선율: 1.86%\n\n--- 기본 시나리오 DCF 상세 ---\n   Year  Revenue     OPM Operating Profit Depreciation  CAPEX    FCF Discount Factor PV FCF\n0  2026   914.55  -4.45%           -40.71        91.46  45.73  15.19            1.09  13.94\n1  2027   960.28  -2.59%           -24.86        96.03  48.01  29.37            1.19  24.72\n2  2028  1008.29  -0.73%            -7.32       100.83  50.41  44.93            1.30  34.69\n3  2029  1058.71   1.14%            12.04       105.87  52.94  61.96            1.41  43.90\n4  2030  1111.64   3.00%            33.35       111.16  55.58  80.59            1.54  52.38\n\nTerminal Value (2030): 1174.37 억원\nPV of Terminal Value (2025): 763.26 억원\n총 DCF 적정가치 (기본 시나리오): 932.89 억원\n\n--- DCF 적정가치 민감도 분석 (억원) ---\n      WACC=7%  WACC=8%  WACC=9% WACC=10% WACC=11%\ng=1%  1148.54   966.73   830.93   725.79   642.09\ng=2%  1353.49  1107.77   932.89   802.24   701.08\ng=3%  1660.92  1305.24  1068.83   900.54   774.81\n\n적정가치(기본): 932.89억원"
+  },
+  "news": {
+    "text": "## 우리기술(032820) 10년 재무제표 및 최근 2주 뉴스 분석\n\n### 1. 재무 데이터가 보여주는 스토리와 현재 시장 컨센서스의 일치/불일치\n\n제시된 우리기술의 10년 재무제표 분석 결과는 '투자등급 D', '불안정한 영업이익과 지속적인 당기순이익 부재, 급증하는 부채로 인한 낮은 투자 매력'을 명확히 보여줍니다. 이는 기업의 기본적인 재무 건전성이 매우 취약함을 의미합니다.\n\n반면, 최근 2주간의 시장 컨센서스 및 뉴스 흐름은 이러한 재무 데이터와 상당한 불일치를 보입니다. 시장은 글로벌 원전 해체 시장 확대, 소형모듈원전(SMR) 사업 기대감, 방산 자회사 증설 등 미래 성장 테마에 주목하며 주가 급등락을 반복하고 있습니다. 일부 전문가들은 우리기술에 대해 평균 22,226원의 매수가와 최고 33,000원의 목표주가를 제시하기도 했습니다. 또한, PER(주가수익비율)이 4,000배 이상, PBR(주가순자산비율)이 20배 후반대에 달하는 등 현재 주가가 기업의 실적이나 자산 가치 대비 매우 고평가되어 있음을 시사합니다. 이는 시장이 현재의 부진한 재무 상태보다는 미래 성장 잠재력에 크게 베팅하고 있음을 보여주는 강력한 증거입니다.\n\n### 2. 재무제표에서 드러나지 않는 리스크 또는 호재\n\n**리스크:**\n*   **지정학적 리스크:** 최근 미국-이란 간 군사적 긴장감 고조 등 글로벌 지정학적 리스크는 국내 증시 전반 및 원전 관련주 투자 심리에 부정적인 영향을 미 미쳐 주가 하락을 야기했습니다. 이는 재무제표에 직접적으로 반영되지 않는 외부 변수입니다.\n*   **전환사채(CB) 물량 부담:** 단기 급등 이후 차익 실현 매물 출회와 함께 전환사채 물량 부담이 지속되고 있다는 점은 향후 주가 희석 가능성으로 작용할 수 있습니다.\n*   **테마주 성격의 높은 변동성:** 우리기술은 원전 및 SMR 테마와 밀접한 연관성을 가지며, 개별적인 호재보다는 시장 전반의 테마 흐름에 따라 주가가 크게 움직이는 경향이 있습니다. 이는 펀더멘털보다는 심리에 의한 투기적 성격이 강해 높은 변동성 리스크를 내포합니다.\n\n**호재:**\n*   **원전 핵심 기술력 및 SMR 참여:** 국내 유일의 원전 비안전계통 제어계측설비(MMIS) 업체로서 MMIS 국산화에 성공했으며, 차세대 원전인 SMR용 MMIS 개발에도 참여 중입니다. 이는 미래 원전 시장 확대 시 수혜를 받을 수 있는 핵심 경쟁력입니다.\n*   **신규 사업 수주 및 확장:** 신한울 3,4호기 MMIS DCS 공급 계약 체결 및 해외 원전 사업 수주, 친환경 에너지 사업 확대를 통해 중장기 성장 기반을 구축하고 있습니다.\n*   **사업 다각화:** 시스템(원자력), 방산, SOC(철도), 해상풍력 등 다양한 사업 부문을 영위하며, 특히 방산 분야에서도 자회사 증설 소식이 있었습니다.\n\n### 3. 최종 판정\n\n**매도**\n\n우리기술은 10년간의 재무제표 분석 결과 '투자등급 D'로 매우 취약한 재무 건전성을 보이며, 불안정한 수익성과 지속적인 순손실, 급증하는 부채는 기업의 내재 가치를 심각하게 훼손하고 있습니다. 현재 주가는 미래 성장 테마에 대한 기대감으로 인해 PER 및 PBR이 비정상적으로 높은 수준으로 형성되어 있어, 펀더멘털 대비 과도하게 고평가되어 있습니다.\n\n물론 원전 해체, SMR, 방산 등 미래 성장 동력에 대한 기대감과 일부 수주 소식은 긍정적이나, 이러한 호재들이 실제 기업의 안정적인 이익 창출로 이어지기까지는 상당한 시간이 소요될 것으로 판단됩니다. 또한, 지정학적 리스크와 전환사채 물량 부담, 테마주로서의 높은 변동성은 투자자에게 예측 불가능한 손실을 안겨줄 수 있는 주요 리스크 요인입니다.\n\n따라서 현재 우리기술은 재무적 안정성이 매우 낮고, 주가 또한 미래 기대감에 기반한 투기적 요소가 강하므로, 신중한 관점에서 **매도** 의견을 제시합니다.",
+    "citations": [
+      {
+        "title": "widedaily.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGzmpP6xzU5w1lSYqBq29ElY47HJe8HkHYQEq8dw2_EG2wIWEQixQ18Rn_5ei_ZQ5l-NuFjrt-kaqHVyySpBcIz_tqAkovj_eYY6RcRGoOBTCYEFXYSSTIxD8tbGa12z3-X7cvgMp0_brcM5Y2FTOzu25t_OC-14Q=="
+      },
+      {
+        "title": "widedaily.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQExtvUNy0-WOcf82dPsCJAZhRAb6hBmf9aeOL5bAnbqRKotPPHUPflGqqLZGzqGQhCPRIR0lydau6WxbNclGdAMxSUfNr5ZPm61Xdv51IATYfRa_oUCCgjJPdTRhK01j3QoxIcQlyEE9PBHpEWk62KiklgROpHZMA=="
+      },
+      {
+        "title": "jkn.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQE_-JJZAIzGdCISfAEhCn56STnGe58p-hQ6Ar8PmxUCjNuiNvZZiAmQMwLI0LCSbEXIhsikUWrR618BPhw7oNziwnOhaG2GUTQbsEuSP7-0Xx9fSyom2IdLxVt1r4I="
+      },
+      {
+        "title": "cbci.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHoTTAD_8XDK-BtwOmZ4N026czFFJbNsoU79TTlRTnprgWjSo9DaDM7zTzww_1rjhAFFsNJojwaUFpZiYOZZxrxy8VJW7vtjIMLUt1k3Xlt-Cag75tqrEzbs2PgYiWyMpZOXT2QFga9gbwSljw9l3aF"
+      },
+      {
+        "title": "cbci.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGG0xuPxx_vZDH8vIRebDjAh9ipjSuzdS3Arp1VmZAAfg7kGJbDS3BOHoC6xECQ2xrSligR9fvNvNDHaVWOCEld_obYcejD3h5dq8AnsrLQiiPfkVWNmNbdcAuRClggBvXjRUVWDgmTuTjN61wogww68MVDbQ=="
+      },
+      {
+        "title": "cbci.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGXI22eBTrdnFMoXkxNDY61l1X74W5c3lMThahGwThEXnP9pOyccVFAFRACWCO4i4gnOWPxQW6vLHUmJJikdVmdqO08vqSuWZPZmw5eV4JAd_rXmXuEWZgx-8f00nnpAO5ZmBThXXW675yV2u_RNq1uouDn3A=="
+      },
+      {
+        "title": "littlebproject.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHVOWfNhvIGD0KRGxNIWnEVGOWxKwr9rOLNC_HK0blCBDibjslDRD828woRP31EGw7DFTAz6HMuQqwZof_oH1DLqWnI3hv6H1A4QJdGjiumliLW1lQFgeO1fQ-GnO7GqAQYGA=="
+      },
+      {
+        "title": "wisereport.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFAtmLSlKS5zn2NUmR6Q2cAhamgXOKkDyKabgoN6VKBzA-2-X5DXiwHvVBOpwU3QBH5VqeJgjGNQTrxLsNrYvDYNG9kPXCdQBK8TqEHE43-dqUgxom61CbhUkaWbz7gS2d9o5uBBzFiy_HoS8Jfd-J8yb-AW8CDcOEErgT1"
+      },
+      {
+        "title": "investing.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQG7vScV-G_jlvj85lCISkKrEERKaDLdVjd21WOd_HTOa3nJYCtT_ErEQcuI69Vt1011Nx2Bzssfoe4SNkZy-48esec69W7CVLEjqiXA5fErvm_GssjxknqVKsE-M9rtKj9SlqOGbHnc9Akj52hqa6wfEg=="
+      },
+      {
+        "title": "butler.works",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQF9cag_5q27ab-vsuHSIwNMY6KUvkkB7ywPYR0fdCYOk6WtHCOdpcpbTVMKx2Qzzi-Wutfi5-arJkzDPxs1K7qmoSr9U7Tx8gCqWwpaXIEb5BhTn9pHEEhk6KACK4bLNbM5-cKZHbaQ1gE="
+      }
+    ]
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=00231044",
+    "summary": "The browse result indicates that the requested URL could not be found. Therefore, I cannot access the disclosure page.\n공시 페이지 접근 제한"
+  }
+}

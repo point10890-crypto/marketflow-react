@@ -1,0 +1,275 @@
+{
+  "stock_code": "115440",
+  "stock_name": "우리넷",
+  "generated_at": "2026-04-06T20:54:34.273000+00:00",
+  "financials": {
+    "stock_code": "115440",
+    "corp_code": "00664048",
+    "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2016": {
+        "cash": 20.0,
+        "total_assets": 652.7,
+        "short_debt": 47.3,
+        "long_debt": 30.0,
+        "total_liab": 173.9,
+        "total_equity": 478.8,
+        "revenue": 434.0,
+        "op_profit": 22.1,
+        "net_income": 27.2
+      },
+      "2017": {
+        "cash": 37.5,
+        "total_assets": 720.9,
+        "short_debt": 45.8,
+        "long_debt": 0.0,
+        "total_liab": 215.3,
+        "total_equity": 505.5,
+        "revenue": 516.7,
+        "op_profit": 32.3,
+        "net_income": 34.3
+      },
+      "2018": {
+        "cash": 52.2,
+        "total_assets": 865.4,
+        "short_debt": 64.6,
+        "total_liab": 331.0,
+        "total_equity": 534.4,
+        "revenue": 445.9,
+        "op_profit": 10.0,
+        "net_income": 18.6
+      },
+      "2019": {
+        "cash": 92.9,
+        "total_assets": 941.2,
+        "total_liab": 221.8,
+        "total_equity": 719.5,
+        "revenue": 736.6,
+        "op_profit": 28.2,
+        "net_income": 19.3
+      },
+      "2020": {
+        "cash": 329.8,
+        "total_assets": 997.8,
+        "total_liab": 400.3,
+        "total_equity": 597.4,
+        "revenue": 523.5,
+        "op_profit": -32.6,
+        "net_income": -116.6
+      },
+      "2021": {
+        "cash": 335.2,
+        "total_assets": 980.0,
+        "total_liab": 363.0,
+        "total_equity": 617.0,
+        "revenue": 604.1,
+        "op_profit": 23.7,
+        "net_income": 19.3
+      },
+      "2022": {
+        "cash": 134.1,
+        "total_assets": 1120.9,
+        "total_liab": 524.6,
+        "total_equity": 596.3,
+        "revenue": 622.7,
+        "op_profit": -69.5,
+        "net_income": -97.2
+      },
+      "2023": {
+        "total_assets": 1225.6,
+        "cash": 88.3,
+        "total_equity": 53.8,
+        "total_liab": 461.9,
+        "op_profit": 84.8,
+        "net_income": 67.6,
+        "revenue": 1190.7
+      },
+      "2024": {
+        "total_assets": 1380.4,
+        "cash": 530.9,
+        "total_equity": 419.6,
+        "total_liab": 448.2,
+        "op_profit": 200.7,
+        "net_income": 203.8,
+        "revenue": 1315.9
+      },
+      "2025": {
+        "total_assets": 1349.1,
+        "cash": 122.1,
+        "total_equity": 54.0,
+        "total_liab": 349.7,
+        "op_profit": 19.5,
+        "net_income": 36.7,
+        "revenue": 755.1
+      }
+    },
+    "missing_years": [
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2016,
+        "revenue_eok": 434,
+        "op_profit_eok": 22,
+        "net_income_eok": 27,
+        "roe_pct": 5.64,
+        "op_margin_pct": 5.07,
+        "debt_ratio_pct": 36.33
+      },
+      {
+        "year": 2017,
+        "revenue_eok": 517,
+        "op_profit_eok": 32,
+        "net_income_eok": 34,
+        "roe_pct": 6.72,
+        "op_margin_pct": 6.19,
+        "debt_ratio_pct": 42.49
+      },
+      {
+        "year": 2018,
+        "revenue_eok": 446,
+        "op_profit_eok": 10,
+        "net_income_eok": 19,
+        "roe_pct": 3.56,
+        "op_margin_pct": 2.24,
+        "debt_ratio_pct": 62.0
+      },
+      {
+        "year": 2019,
+        "revenue_eok": 737,
+        "op_profit_eok": 28,
+        "net_income_eok": 19,
+        "roe_pct": 2.64,
+        "op_margin_pct": 3.8,
+        "debt_ratio_pct": 30.83
+      },
+      {
+        "year": 2020,
+        "revenue_eok": 524,
+        "op_profit_eok": -33,
+        "net_income_eok": -117,
+        "roe_pct": -19.6,
+        "op_margin_pct": -6.3,
+        "debt_ratio_pct": 67.0
+      },
+      {
+        "year": 2021,
+        "revenue_eok": 604,
+        "op_profit_eok": 24,
+        "net_income_eok": 19,
+        "roe_pct": 3.08,
+        "op_margin_pct": 3.97,
+        "debt_ratio_pct": 58.83
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 623,
+        "op_profit_eok": -70,
+        "net_income_eok": -97,
+        "roe_pct": -16.28,
+        "op_margin_pct": -11.24,
+        "debt_ratio_pct": 88.09
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 1191,
+        "op_profit_eok": 85,
+        "net_income_eok": 68,
+        "roe_pct": 125.93,
+        "op_margin_pct": 7.14,
+        "debt_ratio_pct": 855.56
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 1316,
+        "op_profit_eok": 201,
+        "net_income_eok": 204,
+        "roe_pct": 48.57,
+        "op_margin_pct": 15.27,
+        "debt_ratio_pct": 106.67
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 755,
+        "op_profit_eok": 20,
+        "net_income_eok": 37,
+        "roe_pct": 68.52,
+        "op_margin_pct": 2.65,
+        "debt_ratio_pct": 648.15
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": 6.32,
+      "op_profit_cagr_pct": -1.11,
+      "best_year": 2024,
+      "worst_year": 2022,
+      "avg_roe_pct": 22.88
+    },
+    "valuation": {
+      "grade": "D",
+      "strengths": [
+        "최근 2개년(2023-2024) 매출액 및 영업이익의 급격한 성장세가 돋보입니다.",
+        "2024년 기록적인 영업이익률 15.27%를 달성하며 수익성이 크게 개선되었습니다.",
+        "2024년 현금 보유액이 531억원으로 증가하여 유동성이 개선된 모습을 보였습니다."
+      ],
+      "risks": [
+        "2023년과 2025년 자본총계가 54억원으로 극히 낮아 부채비율이 800% 이상을 기록하는 등 재무구조가 매우 취약합니다.",
+        "10년간 영업이익이 적자를 기록한 해가 두 차례이며, 영업이익률 변동성이 매우 커서 수익성 안정성이 부족합니다.",
+        "매출액 및 영업이익이 연도별로 급격한 등락을 보여 사업의 안정성이 낮고 예측 가능성이 떨어집니다."
+      ],
+      "one_liner": "극심한 재무구조 불안정성에도 불구하고 최근 매출액과 영업이익이 급증하며 반등을 시도하고 있으나, 지속적인 수익성 확보와 자본 확충이 시급한 기업입니다."
+    }
+  },
+  "dcf": {
+    "text": "퀀트 애널리스트로서 우리넷(115440)의 DCF 적정가치를 계산하고 민감도 분석을 수행하겠습니다.\n\n**가정 및 계산 로직:**\n\n1.  **FCF 계산:** 주어진 공식 `FCF ≈ 영업이익 × (1 - 0.25) + 감가상각(매출의 10%) - CAPEX(매출의 5%)`을 사용하여 기준 연도(2025년)의 FCF를 계산합니다.\n2.  **FCF 예측:** 명시된 매출액 또는 영업이익 성장률이 없으므로, 5년 예측 기간(2025년 ~ 2029년) 동안 FCF는 2025년과 동일하게 유지된다고 가정합니다.\n3.  **할인율:** WACC(가중평균자본비용)와 영구성장률(g)을 사용하여 미래 FCF와 터미널 밸류를 현재 가치로 할인합니다.\n4.  **터미널 밸류 (Terminal Value, TV):** 5년 예측 기간 이후의 가치를 반영하며, `TV = FCF_마지막예측년도 * (1 + g) / (WACC - g)` 공식을 사용합니다.\n\n---\n### Python 코드 실행 및 결과\n\n\n---\n### 분석 결과\n\n**1. 기본 시나리오 DCF 적정가치:**\n\n*   2025년 FCF는 **52.75 억원**으로 계산되었습니다.\n*   WACC 9%, 영구성장률 2%를 적용한 기본 시나리오에서의 DCF 적정가치는 **704.74 억원**입니다.\n\n**2. WACC × g 민감도 그리드:**\n\n아래 표는 WACC와 영구성장률(g) 변화에 따른 DCF 적정가치(억원)를 보여줍니다.\n\n|       | WACC=7% | WACC=8% | WACC=9% | WACC=10% | WACC=11% |\n| :---- | :------ | :------ | :------ | :------- | :------- |\n| **g=1%** | 849.39  | 728.61  | 638.01  | 567.53   | 511.13   |\n| **g=2%** | 983.53  | 820.93  | **704.74** | 617.57   | 549.74   |\n| **g=3%** | 1184.74 | 950.17  | 793.72  | 681.91   | 598.00   |\n\n*   WACC가 낮아지고 영구성장률(g)이 높아질수록 적정가치는 상승합니다.\n*   반대로 WACC가 높아지고 영구성장률(g)이 낮아질수록 적정가치는 하락합니다.\n*   WACC가 영구성장률(g)보다 작거나 같으면 터미널 밸류 계산이 불가능하여 \"N/A\"로 표시됩니다. (이 시나리오에서는 해당 없음)\n\n**3. 요약:**\n\n적정가치(기본): **704.74억원**",
+    "executed_code": "import pandas as pd\n\n# 회사 데이터 (억원)\nrevenue = 755\noperating_income = 20\nnet_income = 37\ntotal_assets = 1349\ntotal_liabilities = 350\n\n# 가정\nwacc_base = 0.09\ng_base = 0.02\nforecast_years = 5\n\n# FCF 계산 구성 요소\ntax_rate_implicit = 0.25 # FCF 공식의 (1 - 0.25)에서 유추\ndepreciation_rate_of_revenue = 0.10\ncapex_rate_of_revenue = 0.05\n\n# 1. 기준 연도(2025) FCF 계산\ndepreciation_2025 = revenue * depreciation_rate_of_revenue\ncapex_2025 = revenue * capex_rate_of_revenue\nfcf_2025 = operating_income * (1 - tax_rate_implicit) + depreciation_2025 - capex_2025\n\nprint(f\"--- FCF 계산 상세 ---\")\nprint(f\"매출액: {revenue} 억원\")\nprint(f\"영업이익: {operating_income} 억원\")\nprint(f\"감가상각 (매출의 10%): {depreciation_2025:.2f} 억원\")\nprint(f\"CAPEX (매출의 5%): {capex_2025:.2f} 억원\")\nprint(f\"2025년 FCF: {fcf_2025:.2f} 억원\")\n\n# 예측 기간 동안 FCF (성장률 가정 없음으로 2025년 FCF 유지)\nfcf_forecast = [fcf_2025] * forecast_years\nprint(f\"예측 기간 (2025-2029) FCF: {fcf_forecast}\")\n\n# DCF 계산 함수\ndef calculate_dcf(fcf_forecast_values, wacc, g, forecast_period):\n    present_value_fcf = 0\n    for i in range(forecast_period):\n        present_value_fcf += fcf_forecast_values[i] / ((1 + wacc)**(i + 1))\n\n    # 터미널 밸류 (Terminal Value) 계산\n    # 예측 기간 마지막 해 다음 해의 FCF\n    fcf_terminal_year = fcf_forecast_values[-1] * (1 + g)\n    terminal_value = fcf_terminal_year / (wacc - g)\n\n    # 터미널 밸류를 현재 가치로 할인\n    present_value_terminal_value = terminal_value / ((1 + wacc)**forecast_period)\n\n    dcf_value = present_value_fcf + present_value_terminal_value\n    return dcf_value\n\n# 1. 기본 시나리오 DCF 적정가치 계산\ndcf_base_value = calculate_dcf(fcf_forecast, wacc_base, g_base, forecast_years)\nprint(f\"\\n--- 기본 시나리오 DCF 적정가치 ---\")\nprint(f\"적정가치(기본): {dcf_base_value:.2f}억원\")\n\n# 2. WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 출력\nwacc_range = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_range = [0.01, 0.02, 0.03]\n\nsensitivity_results = pd.DataFrame(index=[f'g={g*100:.0f}%' for g in g_range],\n                                   columns=[f'WACC={wacc*100:.0f}%' for wacc in wacc_range])\n\nfor wacc in wacc_range:\n    for g in g_range:\n        # WACC <= g 인 경우 모델이 유효하지 않음\n        if wacc <= g:\n            sensitivity_results.loc[f'g={g*100:.0f}%', f'WACC={wacc*100:.0f}%'] = \"N/A\"\n        else:\n            dcf_value = calculate_dcf(fcf_forecast, wacc, g, forecast_years)\n            sensitivity_results.loc[f'g={g*100:.0f}%', f'WACC={wacc*100:.0f}%'] = round(dcf_value, 2)\n\nprint(\"\\n--- 민감도 그리드 (DCF 적정가치 억원) ---\")\nprint(sensitivity_results)\n\n# 3. 마지막에 '적정가치(기본): {value}억원' 형태로 요약 출력\nprint(f\"\\n적정가치(기본): {dcf_base_value:.2f}억원\")",
+    "code_output": "--- FCF 계산 상세 ---\n매출액: 755 억원\n영업이익: 20 억원\n감가상각 (매출의 10%): 75.50 억원\nCAPEX (매출의 5%): 37.75 억원\n2025년 FCF: 52.75 억원\n예측 기간 (2025-2029) FCF: [52.75, 52.75, 52.75, 52.75, 52.75]\n\n--- 기본 시나리오 DCF 적정가치 ---\n적정가치(기본): 704.74억원\n\n--- 민감도 그리드 (DCF 적정가치 억원) ---\n      WACC=7% WACC=8% WACC=9% WACC=10% WACC=11%\ng=1%   849.39  728.61  638.01   567.53   511.13\ng=2%   983.53  820.93  704.74   617.57   549.74\ng=3%  1184.74  950.17  793.72   681.91    598.0\n\n적정가치(기본): 704.74억원"
+  },
+  "news": {
+    "text": "## 우리넷(115440) 10년 재무제표 분석 및 최근 시장 컨센서스 종합 분석\n\n### 투자등급 D, 요약: 극심한 재무구조 불안정성에도 불구하고 최근 매출액과 영업이익이 급증하며 반등을 시도하고 있으나, 지속적인 수익성 확보와 자본 확충이 시급한 기업입니다.\n\n---\n\n### 1. 재무 데이터가 보여주는 스토리와 현재 시장 컨센서스의 일치/불일치\n\n제공된 재무 데이터는 우리넷이 극심한 재무구조 불안정성(투자등급 D)을 겪고 있으나, 최근 매출액과 영업이익이 급증하며 반등을 시도하고 있다고 밝히고 있습니다. 하지만 지속적인 수익성 확보와 자본 확충이 시급하다고 진단합니다.\n\n최근 2주간의 시장 컨센서스는 이러한 재무 데이터와 일부 상충되는 모습을 보입니다. 2025년 12월 기준 연결 매출액은 전년 대비 42.6% 감소, 영업이익은 90.3%, 순이익은 81.8% 감소하며 실적 부진을 겪었습니다. 이는 제공된 정보의 '최근 매출액과 영업이익 급증'과는 상이한 부분으로, '최근'의 시점에 대한 해석 차이 또는 2025년 연간 실적 발표 이후의 단기적인 반등 시도로 해석될 수 있습니다.\n\n그럼에도 불구하고 시장은 2026년 3월 중순부터 우리넷의 주가에 강한 매수세를 보였습니다. 3월 24일에는 4거래일 연속 상승하며 +24.87% 급등했고, 3월 26일에는 6거래일 연속 오름세를 이어가며 24일 20.73%, 25일 상한가를 기록하기도 했습니다. 이러한 주가 상승은 광통신 시장 성장 기대감과 5G 이동통신 테마 부각에 따른 것으로 분석됩니다.\n\n결론적으로, 재무 데이터가 보여주는 근본적인 재무 불안정성과 2025년 실적 부진에도 불구하고, 시장은 5G/6G, 양자암호통신 등 미래 성장 테마에 대한 기대감으로 단기적인 주가 반등을 이끌어내며 컨센서스에 불일치를 보이고 있습니다.\n\n### 2. 재무제표에서 드러나지 않는 리스크 또는 호재\n\n**리스크:**\n*   **공매도 과열종목 지정:** 3월 10일 공매도 과열종목으로 지정되어 단기 주가 급등에 대한 경고 신호로 해석될 수 있으며, 변동성 확대 가능성이 존재합니다.\n*   **높은 변동성:** 최근의 급격한 주가 상승은 테마성 수급에 의한 단기 과열 양상일 수 있으며, 이는 급격한 조정으로 이어질 수 있는 리스크를 내포합니다. 3월 23일 기준 개인 투자자가 순매수한 반면 외국인은 순매도하여 단기 수급 불균형을 보였습니다.\n*   **전문가 목표주가 상회:** 일부 전문가의 과거 목표주가(7,100원~9,900원)를 현재 주가(12,860원~13,550원대)가 크게 상회하고 있어, 추가 상승 여력에 대한 신중한 접근이 필요합니다.\n\n**호재:**\n*   **광통신 시장 성장 기대감:** 5G/6G, 양자암호통신 등 미래 통신 기술 관련 테마에 묶이며 시장의 기대를 받고 있습니다.\n*   **신기술 개발 및 시장 진입 노력:** 이음 5G IOT 모듈 및 지능 기술 융합, 양자암호 기술을 통한 보안 솔루션 추진은 미래 성장 동력 확보 측면에서 긍정적입니다.\n*   **안정적인 고객 기반:** KT, SK그룹, LGU+ 등 국내 주요 통신사업자 및 한국철도시설공단, 도로공사, 한전 등 공공기관을 주요 매출처로 확보하고 있습니다.\n*   **사업 다각화:** OLED 소재 사업을 통해 중국 디스플레이 업체에 공급하며 사업 영역을 확장하고 있습니다.\n*   **주주 환원 정책:** 3월 11일 현금·현물 배당 결정 공시는 주주 친화적인 정책으로 투자 심리에 긍정적인 영향을 줄 수 있습니다.\n\n### 3. 최종 판정\n\n**관망 (Hold)**\n\n우리넷은 극심한 재무구조 불안정성(투자등급 D)과 2025년 실적 부진이라는 근본적인 리스크를 안고 있습니다. 비록 최근 5G/6G 및 양자암호통신 테마에 힘입어 주가가 급등하며 시장의 주목을 받고 있으나, 이는 단기적인 수급과 기대감에 의한 측면이 강합니다. 공매도 과열종목 지정과 개인 투자자 중심의 매수세는 주가의 높은 변동성과 잠재적인 조정 위험을 시사합니다.\n\n미래 성장 동력 확보를 위한 신기술 개발 노력과 안정적인 고객 기반은 긍정적이나, 이러한 호재가 실질적인 재무 개선으로 이어지기까지는 시간이 필요하며, 지속적인 수익성 확보와 자본 확충이라는 근본적인 과제가 해결되지 않았습니다. 따라서 현재 시점에서는 추가적인 재무 개선과 사업 성과가 가시화될 때까지 관망하는 자세가 필요하다고 판단됩니다.",
+    "citations": [
+      {
+        "title": "seohakant.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEW0GAkt23q6NEbw2isOAPf7S_qFl_B525XCvN3wOKIdMfEHG1QFcj_J9_Qq8cVhkGrbAAPUB44GXqQu2YHIOuNx9dUZEn5KFWvQjGEi_4lmzIzcIPJICNW6nZzClNNth7kruVgx_0NsHqrUCEIYTeOhdjOSh04xpYsVsSADfvnAA=="
+      },
+      {
+        "title": "cbci.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQE6DyfilgH0UL105Hcdn-A22eUlz_AmmkJsdRKVpdBtjjCkwclTqopkx2tWqsHs_AI4dIt58LlNTcocTnl--KBjQMRqmTaTVoDOSMx3vUUs5RSx1e4CS4lOhzj2vq0wkKx5mwn_Fm6hEQPUybXsA0IdMXwsdA=="
+      },
+      {
+        "title": "jkn.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHH0Za8-hXQG5XvavouwMThiDr8aeT6bj2VLMjQptF1Vh1km0lOp4pozsLdbkoOP_rtf9ew3mDK3rwUlW9n6mGx32txE2o72L3lcedF0vKVPQBDlADeE359lfoed6I="
+      },
+      {
+        "title": "littlebproject.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFY2oEXi_D3_K6xzSM8neIgYhzV8vL1ieeMxgVMdatXJOoeKlmbBCrRrsrT8es0Le6FfSuu6rZojrdyKBoKklPx2HZQDqUwtwP4doEj8nlXQh5ZhLIG7B0Uw94XHFwoZUdjDQ=="
+      },
+      {
+        "title": "littlebproject.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFgQRuF-D2L0nwHBOgqrN4vtC14OY4bpc8ATGPFAUE3AS1XiDrbzqZpEW2k9-1q_2Jelmg7fCzip1ySaApyFxESG4P6M8_0XBHHWuhgmpBw1TqD_jxmYJplcourqTU8h0uEnl-bR7zixljbMkI="
+      },
+      {
+        "title": "finup.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEh-qrcIhfF2RteDa_7hmkFH1haOwfs5PSlOvpACPkqGFsUA15WWtCGUwqMLEyHHekcXhrNFkyUqdpqm6gP_nVtgidvGYNEr7RxB8jk5PVa6WDzv46y9IiY8r0E9BpP0dFd30c="
+      }
+    ]
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=00664048",
+    "summary": "공시 페이지 접근 제한"
+  }
+}

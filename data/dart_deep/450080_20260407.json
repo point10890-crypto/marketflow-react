@@ -1,0 +1,125 @@
+{
+  "stock_code": "450080",
+  "stock_name": "에코프로머티",
+  "generated_at": "2026-04-07T00:28:22.819771+00:00",
+  "financials": {
+    "stock_code": "450080",
+    "corp_code": "01311408",
+    "years": [
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2022": {
+        "cash": 9.2,
+        "total_assets": 6349.1,
+        "total_liab": 3206.1,
+        "total_equity": 3143.0,
+        "revenue": 6652.5,
+        "op_profit": 389.9,
+        "net_income": 155.8
+      },
+      "2023": {
+        "total_assets": 11042.4,
+        "cash": 3773.5,
+        "total_equity": 7991.0,
+        "total_liab": 3051.4,
+        "op_profit": 87.7,
+        "net_income": 50.5,
+        "revenue": 9525.2
+      },
+      "2024": {
+        "total_assets": 12902.4,
+        "cash": 859.7,
+        "total_liab": 5526.3,
+        "op_profit": -647.2,
+        "net_income": -426.9,
+        "revenue": 2998.5
+      },
+      "2025": {
+        "total_assets": 17291.0,
+        "cash": 450.4,
+        "total_liab": 5844.1,
+        "op_profit": -653.7,
+        "net_income": 0.0,
+        "revenue": 3925.1
+      }
+    },
+    "missing_years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2022,
+        "revenue_eok": 6652,
+        "op_profit_eok": 390,
+        "net_income_eok": 156,
+        "roe_pct": 4.96,
+        "op_margin_pct": 5.86,
+        "debt_ratio_pct": 102.0
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 9525,
+        "op_profit_eok": 88,
+        "net_income_eok": 50,
+        "roe_pct": 0.63,
+        "op_margin_pct": 0.92,
+        "debt_ratio_pct": 38.18
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 2998,
+        "op_profit_eok": -647,
+        "net_income_eok": -427,
+        "roe_pct": 0,
+        "op_margin_pct": -21.58,
+        "debt_ratio_pct": 0
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 3925,
+        "op_profit_eok": -654,
+        "net_income_eok": 0,
+        "roe_pct": 0,
+        "op_margin_pct": -16.66,
+        "debt_ratio_pct": 0
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": -16.14,
+      "op_profit_cagr_pct": -218.82,
+      "best_year": 2022,
+      "worst_year": 2025,
+      "avg_roe_pct": 1.4
+    },
+    "valuation": {
+      "grade": "D",
+      "strengths": [
+        "2023년까지 매출액이 성장세를 보이며 시장 확대 가능성을 보여주었습니다.",
+        "2023년 부채비율이 전년 대비 크게 개선되어 재무 구조 안정화 노력이 있었습니다.",
+        "초기 사업 연도(2022년)에는 5%대의 영업이익률을 기록하며 수익성을 확보했습니다."
+      ],
+      "risks": [
+        "2024년부터 매출액이 급감하고 대규모 영업손실이 발생하여 수익성이 크게 악화되었습니다.",
+        "2024년과 2025년 자본총계가 0으로 표시되어 완전 자본잠식 상태에 대한 심각한 우려가 있습니다.",
+        "지속적인 영업손실과 자본잠식으로 인해 재무 건전성이 매우 취약해졌으며, 이는 사업 지속성에 대한 의문을 제기합니다."
+      ],
+      "one_liner": "대규모 손실과 자본잠식으로 사업 지속성이 심각하게 위협받는 상황입니다."
+    }
+  },
+  "dcf": null,
+  "news": null,
+  "report": null
+}

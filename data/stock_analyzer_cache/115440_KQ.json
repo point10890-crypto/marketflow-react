@@ -2,40 +2,44 @@
   "name": "우리넷",
   "ticker": "115440.KQ",
   "result": "데이터 없음",
-  "date": "2026-03-27 21:36:29",
-  "elapsed": 1.7,
+  "date": "2026-04-07 05:54:34",
+  "elapsed": 2.6,
   "consensus_score": null,
   "analyst_count": 0,
   "recommendation_detail": null,
   "recommendation_period": null,
   "price_targets": {
-    "current": 13790.0,
+    "current": 11140.0,
     "high": null,
     "low": null,
     "mean": null,
     "median": null
   },
-  "current_price": 13790.0,
+  "current_price": 11140.0,
   "upside_potential": null,
   "key_stats": {
     "name": "WooriNet",
     "sector": "Technology",
     "industry": "Communication Equipment",
-    "market_cap": 142640758784,
+    "market_cap": 115229728768,
     "pe_ratio": null,
     "forward_pe": null,
-    "dividend_yield": 0.39,
-    "beta": 0.325,
-    "fifty_two_week_high": 16200.0,
-    "fifty_two_week_low": 5950.0,
-    "revenue": 85831892992,
-    "profit_margin": 0.067090005,
+    "dividend_yield": 0.47,
+    "beta": 1.037,
+    "fifty_two_week_high": 16440.0,
+    "fifty_two_week_low": 5868.0,
+    "revenue": 56631005184,
+    "profit_margin": 0.028380001,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
   "source": "yfinance",
   "ai_analysis": null,
   "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 17732159110
+    },
     {
       "date": "2025-09",
       "value": 17518722780
@@ -47,13 +51,13 @@
     {
       "date": "2025-03",
       "value": 15183792590
-    },
-    {
-      "date": "2024-12",
-      "value": 28058618950
     }
   ],
   "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 442703140
+    },
     {
       "date": "2025-09",
       "value": 722693890
@@ -65,10 +69,6 @@
     {
       "date": "2025-03",
       "value": -648814110
-    },
-    {
-      "date": "2024-12",
-      "value": 2530886010
     }
   ],
   "news": []

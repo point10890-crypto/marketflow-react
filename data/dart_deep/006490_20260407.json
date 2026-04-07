@@ -1,0 +1,228 @@
+{
+  "stock_code": "006490",
+  "stock_name": "인스코비",
+  "generated_at": "2026-04-07T00:29:07.205198+00:00",
+  "financials": {
+    "stock_code": "006490",
+    "corp_code": "00122825",
+    "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024
+    ],
+    "data": {
+      "2016": {
+        "cash": 49.7,
+        "total_assets": 451.8,
+        "short_debt": 0.1,
+        "long_debt": 0.0,
+        "total_liab": 132.6,
+        "total_equity": 319.2,
+        "revenue": 370.6,
+        "op_profit": -25.3,
+        "net_income": -7.4
+      },
+      "2017": {
+        "cash": 57.2,
+        "total_assets": 472.2,
+        "short_debt": 0.0,
+        "long_debt": 0.0,
+        "total_liab": 121.1,
+        "total_equity": 351.1,
+        "revenue": 495.7
+      },
+      "2018": {
+        "cash": 87.5,
+        "total_assets": 574.4,
+        "short_debt": 0.0,
+        "total_liab": 265.5,
+        "total_equity": 308.9,
+        "revenue": 585.9,
+        "op_profit": 53.3,
+        "net_income": 2.2
+      },
+      "2019": {
+        "cash": 92.9,
+        "total_assets": 507.2,
+        "total_liab": 250.2,
+        "total_equity": 257.0,
+        "revenue": 752.8,
+        "op_profit": 47.3,
+        "net_income": 0.0
+      },
+      "2020": {
+        "cash": 114.2,
+        "total_assets": 762.3,
+        "total_liab": 330.5,
+        "total_equity": 431.8,
+        "revenue": 578.2,
+        "op_profit": -10.1,
+        "net_income": 93.1
+      },
+      "2021": {
+        "cash": 225.4,
+        "total_assets": 1093.5,
+        "short_debt": 0.1,
+        "total_liab": 434.6,
+        "total_equity": 658.9,
+        "revenue": 716.7,
+        "op_profit": -24.2,
+        "net_income": -2.2
+      },
+      "2022": {
+        "cash": 146.6,
+        "total_assets": 1011.8,
+        "short_debt": 1.1,
+        "total_liab": 381.3,
+        "total_equity": 630.5,
+        "revenue": 766.8,
+        "op_profit": -13.9,
+        "net_income": -74.1
+      },
+      "2023": {
+        "total_assets": 764.8,
+        "cash": 98.1,
+        "total_equity": 758.4,
+        "short_debt": 8.2,
+        "total_liab": 381.3,
+        "op_profit": 4.5,
+        "net_income": 0.0,
+        "revenue": 998.1
+      },
+      "2024": {
+        "total_assets": 907.3,
+        "cash": 105.0,
+        "total_equity": 778.8,
+        "short_debt": 44.4,
+        "total_liab": 423.4,
+        "op_profit": -37.9,
+        "net_income": 0.0,
+        "revenue": 1005.3
+      }
+    },
+    "missing_years": [
+      2025,
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2016,
+        "revenue_eok": 371,
+        "op_profit_eok": -25,
+        "net_income_eok": -7,
+        "roe_pct": -2.19,
+        "op_margin_pct": -6.74,
+        "debt_ratio_pct": 41.69
+      },
+      {
+        "year": 2017,
+        "revenue_eok": 496,
+        "op_profit_eok": 0,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 0.0,
+        "debt_ratio_pct": 34.47
+      },
+      {
+        "year": 2018,
+        "revenue_eok": 586,
+        "op_profit_eok": 53,
+        "net_income_eok": 2,
+        "roe_pct": 0.65,
+        "op_margin_pct": 9.04,
+        "debt_ratio_pct": 86.08
+      },
+      {
+        "year": 2019,
+        "revenue_eok": 753,
+        "op_profit_eok": 47,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 6.24,
+        "debt_ratio_pct": 97.28
+      },
+      {
+        "year": 2020,
+        "revenue_eok": 578,
+        "op_profit_eok": -10,
+        "net_income_eok": 93,
+        "roe_pct": 21.53,
+        "op_margin_pct": -1.73,
+        "debt_ratio_pct": 76.39
+      },
+      {
+        "year": 2021,
+        "revenue_eok": 717,
+        "op_profit_eok": -24,
+        "net_income_eok": -2,
+        "roe_pct": -0.3,
+        "op_margin_pct": -3.35,
+        "debt_ratio_pct": 65.99
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 767,
+        "op_profit_eok": -14,
+        "net_income_eok": -74,
+        "roe_pct": -11.75,
+        "op_margin_pct": -1.83,
+        "debt_ratio_pct": 60.48
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 998,
+        "op_profit_eok": 4,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 0.4,
+        "debt_ratio_pct": 50.26
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 1005,
+        "op_profit_eok": -38,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": -3.78,
+        "debt_ratio_pct": 54.3
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": 13.06,
+      "op_profit_cagr_pct": 5.28,
+      "best_year": 2018,
+      "worst_year": 2024,
+      "avg_roe_pct": 0.88
+    },
+    "valuation": {
+      "grade": "D",
+      "strengths": [
+        "매출액의 꾸준한 성장세: 2016년 371억 원에서 2024년 1,005억 원으로 연평균 13.06%의 매출액 성장을 기록했습니다.",
+        "자본총계 증가를 통한 재무구조 개선: 2019년 이후 자본총계가 지속적으로 증가하여 재무 건전성이 강화되는 추세입니다.",
+        "부채비율의 안정화: 2019년 97.28%까지 상승했던 부채비율이 2024년 54.30% 수준으로 하향 안정화되었습니다."
+      ],
+      "risks": [
+        "극심한 영업이익 변동성 및 잦은 적자: 영업이익이 매년 큰 폭으로 변동하며, 최근 4년 중 3년(2021, 2022, 2024) 영업손실을 기록하는 등 본업의 수익성이 매우 취약합니다.",
+        "낮은 주주가치 창출 능력: 평균 ROE가 0.88%에 불과하고, 대부분의 연도에서 0% 또는 마이너스 ROE를 기록하여 주주가치 창출이 미흡합니다.",
+        "불안정한 당기순이익: 당기순이익 역시 대부분의 연도에서 0원 또는 적자를 기록하며, 일회성 이익을 제외하면 지속적인 이익 창출 능력이 부족합니다."
+      ],
+      "one_liner": "매출액은 성장했으나, 본업의 수익성이 극도로 불안정하고 주주가치 창출 능력이 미흡하여 투자 매력이 낮은 기업입니다."
+    }
+  },
+  "dcf": {
+    "text": "퀀트 애널리스트로서 인스코비(006490)의 DCF 적정가치를 계산하고 민감도 분석을 수행하겠습니다.\n\n**가정 사항 정리:**\n*   **기준 연도:** 2024년 (제공된 재무 데이터는 2024년 기준)\n*   **예측 기간:** 5년 (2025년 ~ 2029년)\n*   **FCF 계산식:** FCF = 영업이익 × (1 - 0.25) + 감가상각(매출의 10%) - CAPEX(매출의 5%)\n*   **감가상각:** 1005억원 * 10% = 100.5억원\n*   **CAPEX:** 1005억원 * 5% = 50.25억원\n*   **FCF 예측:** 명시된 성장률이 없으므로, 2024년 계산된 FCF가 5년 예측 기간 동안 동일하게 유지된다고 가정합니다.\n*   **WACC (기본):** 9%\n*   **영구성장률 g (기본):** 2%\n\n---\n\n### 1. 기본 시나리오 DCF 적정가치 계산\n\n먼저 주어진 데이터를 바탕으로 2024년 FCF를 계산하고, 이를 기반으로 5년 예측 및 터미널 밸류를 산정하여 DCF 적정가치를 계산합니다.\n\n\n**기본 시나리오 분석:**\n*   2024년 FCF = 영업이익(-38) * (1 - 0.25) + 감가상각(100.5) - CAPEX(50.25) = -28.5 + 100.5 - 50.25 = 21.75 억원\n*   이 FCF(21.75억원)가 5년 예측 기간 동안 유지된다고 가정하여 DCF를 계산한 결과, **290.58 억원**의 적정가치가 산출되었습니다.\n\n---\n\n### 2. WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 출력\n\n다양한 WACC와 영구성장률(g) 조합에 따른 DCF 적정가치 민감도 분석을 수행합니다.\n\n\n**민감도 그리드 분석:**\n*   WACC가 낮아지고 영구성장률(g)이 높아질수록 기업의 적정가치는 증가합니다. 이는 미래 현금흐름의 현재가치가 높아지고 터미널 밸류가 커지기 때문입니다.\n*   반대로 WACC가 높아지고 g가 낮아질수록 적정가치는 감소합니다.\n*   기본 시나리오(WACC=9%, g=2%)의 적정가치 290.58억원이 그리드 중앙에 위치함을 확인할 수 있습니다.\n\n---\n\n### 3. 요약 출력\n\n최종적으로 기본 시나리오의 적정가치를 요약하여 출력합니다.\n\n\n**최종 요약:**\n인스코비(006490)의 기본 시나리오(WACC 9%, 영구성장률 2%)에 따른 DCF 적정가치는 **290.58억원**으로 추정됩니다. 이 가치는 WACC와 영구성장률 가정에 따라 크게 달라질 수 있습니다.",
+    "executed_code": "import pandas as pd\n\ndef calculate_dcf(revenue, operating_income, wacc, g, forecast_years=5):\n    \"\"\"\n    DCF 적정가치를 계산하는 함수.\n    :param revenue: 매출액 (억원)\n    :param operating_income: 영업이익 (억원)\n    :param wacc: 가중평균자본비용 (WACC, %)\n    :param g: 영구성장률 (g, %)\n    :param forecast_years: 명시적 예측 기간 (년)\n    :return: DCF 적정가치 (억원)\n    \"\"\"\n    # 비율을 소수로 변환\n    wacc_decimal = wacc / 100\n    g_decimal = g / 100\n\n    # FCF 계산에 필요한 요소 계산\n    depreciation = revenue * 0.10  # 매출의 10%\n    capex = revenue * 0.05        # 매출의 5%\n    tax_rate_effect = 0.25        # (1 - 0.25)\n\n    # 2024년 FCF (기준 FCF) 계산\n    base_fcf = operating_income * (1 - tax_rate_effect) + depreciation - capex\n\n    # FCF가 음수이고 WACC <= g 인 경우, 계산 불가 또는 비현실적\n    if base_fcf <= 0 and wacc_decimal <= g_decimal:\n        return float('nan') # Not a Number\n\n    # 명시적 예측 기간 동안의 FCF 및 현재가치 계산\n    pv_fcf_sum = 0\n    # FCF는 2024년 FCF가 5년간 동일하게 유지된다고 가정\n    # (문제에서 명시적 성장률이 없으므로 보수적으로 가정)\n    for i in range(1, forecast_years + 1):\n        discount_factor = (1 + wacc_decimal) ** i\n        pv_fcf_sum += base_fcf / discount_factor\n\n    # 터미널 밸류 (Terminal Value) 계산\n    # FCF_Year_6 = FCF_Year_5 * (1 + g)\n    # FCF_Year_5는 base_fcf와 동일하다고 가정\n    fcf_terminal_year = base_fcf * (1 + g_decimal)\n    \n    # WACC와 g가 같거나 g가 더 크면 터미널 밸류 계산 불가 (무한대 또는 음수)\n    if wacc_decimal <= g_decimal:\n        return float('inf') # Infinite value\n\n    terminal_value = fcf_terminal_year / (wacc_decimal - g_decimal)\n\n    # 터미널 밸류의 현재가치 계산\n    pv_terminal_value = terminal_value / ((1 + wacc_decimal) ** forecast_years)\n\n    # 총 DCF 적정가치\n    total_dcf_value = pv_fcf_sum + pv_terminal_value\n    return total_dcf_value\n\n# 기업 데이터\nrevenue = 1005  # 억원\noperating_income = -38  # 억원\nnet_income = 0  # 억원 (사용되지 않음)\ntotal_assets = 907 # 억원 (사용되지 않음)\ntotal_liabilities = 423 # 억원 (사용되지 않음)\n\n# 기본 시나리오 가정\nbase_wacc = 9\nbase_g = 2\nforecast_years = 5\n\n# 기본 시나리오 DCF 계산\nbase_dcf_value = calculate_dcf(revenue, operating_income, base_wacc, base_g, forecast_years)\n\nprint(f\"기본 시나리오 DCF 적정가치: {base_dcf_value:.2f} 억원\")\n\n\n\nimport pandas as pd\n\n# calculate_dcf 함수는 위에서 정의된 것을 사용합니다.\n# (Jupyter/Python 환경에서는 이전에 정의된 함수를 재사용 가능)\n\n# 기업 데이터 (재정의)\nrevenue = 1005  # 억원\noperating_income = -38  # 억원\nforecast_years = 5\n\n# 민감도 분석을 위한 WACC 및 g 범위 설정\nwacc_range = [7, 8, 9, 10, 11]  # %\ng_range = [1, 2, 3]            # %\n\n# 결과를 저장할 DataFrame 초기화\nsensitivity_results = pd.DataFrame(index=[f'g={g}%' for g in g_range],\n                                   columns=[f'WACC={wacc}%' for wacc in wacc_range])\n\n# 각 WACC와 g 조합에 대해 DCF 계산\nfor g_val in g_range:\n    for wacc_val in wacc_range:\n        dcf_value = calculate_dcf(revenue, operating_income, wacc_val, g_val, forecast_years)\n        sensitivity_results.loc[f'g={g_val}%', f'WACC={wacc_val}%'] = dcf_value\n\n# 결과 출력\nprint(\"\\nDCF 적정가치 민감도 그리드 (단위: 억원)\")\nprint(sensitivity_results.round(2))\n\n\n\n# 기본 시나리오 DCF 값은 이미 계산되어 있습니다.\n# base_dcf_value 변수에 저장되어 있습니다.\n\nprint(f\"\\n적정가치(기본): {base_dcf_value:.2f}억원\")",
+    "code_output": "기본 시나리오 DCF 적정가치: 290.58 억원\n\n\nDCF 적정가치 민감도 그리드 (단위: 억원)\n         WACC=7%     WACC=8%     WACC=9%    WACC=10%    WACC=11%\ng=1%  350.221359  300.423034  263.067012  234.006159  210.752181\ng=2%  405.531262   338.48708  290.581741  254.638857  226.671513\ng=3%  488.496116  391.776745  327.268046  281.166611  246.570677\n\n\n적정가치(기본): 290.58억원"
+  },
+  "news": null,
+  "report": null
+}

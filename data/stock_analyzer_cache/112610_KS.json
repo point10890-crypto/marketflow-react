@@ -1,0 +1,81 @@
+{
+  "name": "씨에스윈드",
+  "ticker": "112610.KS",
+  "result": "적극 매수",
+  "date": "2026-04-07 13:55:49",
+  "elapsed": 1.3,
+  "consensus_score": 4.33,
+  "analyst_count": 6,
+  "recommendation_detail": {
+    "strongBuy": 3,
+    "buy": 2,
+    "hold": 1,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 65000.0,
+    "high": 79000.0,
+    "low": 46000.0,
+    "mean": 63666.668,
+    "median": 66500.0
+  },
+  "current_price": 65000.0,
+  "upside_potential": -2.1,
+  "key_stats": {
+    "name": "CSWIND",
+    "sector": "Industrials",
+    "industry": "Specialty Industrial Machinery",
+    "market_cap": 2693514133504,
+    "pe_ratio": null,
+    "forward_pe": 11.919648,
+    "dividend_yield": 1.54,
+    "beta": 0.957,
+    "fifty_two_week_high": 79400.0,
+    "fifty_two_week_low": 30050.0,
+    "revenue": 2931648626688,
+    "profit_margin": 0.01184,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "씨에스윈드(112610.KS)에 대해 6명의 애널리스트가 적극 매수 의견(4.33/5.0)을 제시했습니다. 현재 주가는 65,000 KRW입니다. 목표가 평균은 63,667 KRW로, 현재 주가 대비 소폭 하락 여력이 있는 것으로 분석됩니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 782737263340
+    },
+    {
+      "date": "2025-09",
+      "value": 597021110920
+    },
+    {
+      "date": "2025-06",
+      "value": 650003261040
+    },
+    {
+      "date": "2025-03",
+      "value": 901886946150
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": -154223417290
+    },
+    {
+      "date": "2025-09",
+      "value": 55904363280
+    },
+    {
+      "date": "2025-06",
+      "value": 38114610640
+    },
+    {
+      "date": "2025-03",
+      "value": 94905918690
+    }
+  ],
+  "news": []
+}

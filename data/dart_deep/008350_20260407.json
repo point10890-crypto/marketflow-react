@@ -1,0 +1,279 @@
+{
+  "stock_code": "008350",
+  "stock_name": "남선알미늄",
+  "generated_at": "2026-04-07T00:41:52.677384+00:00",
+  "financials": {
+    "stock_code": "008350",
+    "corp_code": "00107224",
+    "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2016": {
+        "cash": 9.4,
+        "total_assets": 2834.1,
+        "short_debt": 629.0,
+        "long_debt": 0.0,
+        "total_liab": 1608.4,
+        "total_equity": 1225.7,
+        "revenue": 4007.3,
+        "op_profit": 241.8,
+        "net_income": 204.0
+      },
+      "2017": {
+        "cash": 40.0,
+        "total_assets": 2846.5,
+        "short_debt": 529.6,
+        "long_debt": 0.0,
+        "total_liab": 1368.4,
+        "total_equity": 1478.1,
+        "revenue": 4006.7,
+        "op_profit": 207.5,
+        "net_income": 217.4
+      },
+      "2018": {
+        "cash": 135.3,
+        "total_assets": 3030.2,
+        "short_debt": 363.8,
+        "long_debt": 100.0,
+        "total_liab": 1343.0,
+        "total_equity": 1687.2,
+        "revenue": 3478.3,
+        "op_profit": 94.3,
+        "net_income": 252.2
+      },
+      "2019": {
+        "cash": 276.3,
+        "total_assets": 2955.3,
+        "short_debt": 242.6,
+        "long_debt": 111.2,
+        "total_liab": 1164.3,
+        "total_equity": 1791.0,
+        "revenue": 3247.8,
+        "op_profit": 115.8,
+        "net_income": 144.8
+      },
+      "2021": {
+        "cash": 254.4,
+        "total_assets": 3552.4,
+        "short_debt": 118.0,
+        "long_debt": 73.9,
+        "total_liab": 1193.1,
+        "total_equity": 2359.3,
+        "revenue": 2303.4,
+        "op_profit": -69.1,
+        "net_income": 416.9
+      },
+      "2022": {
+        "cash": 535.1,
+        "total_assets": 4012.0,
+        "short_debt": 59.9,
+        "long_debt": 45.5,
+        "total_liab": 945.6,
+        "total_equity": 3066.4,
+        "revenue": 2557.4,
+        "op_profit": -24.9,
+        "net_income": 279.3
+      },
+      "2023": {
+        "total_assets": 4327.1,
+        "cash": 659.6,
+        "total_equity": 328.3,
+        "total_liab": 1295.4,
+        "long_debt": 18.3,
+        "op_profit": 64.5,
+        "net_income": -2.6,
+        "revenue": 3105.0
+      },
+      "2024": {
+        "total_assets": 4047.2,
+        "cash": 526.1,
+        "total_equity": 2975.3,
+        "total_liab": 1071.9,
+        "op_profit": 48.2,
+        "net_income": 0.0,
+        "revenue": 2895.4
+      },
+      "2025": {
+        "total_assets": 4372.8,
+        "cash": 294.7,
+        "total_equity": 2841.9,
+        "short_debt": 357.7,
+        "total_liab": 1530.9,
+        "long_debt": 48.2,
+        "op_profit": -32.7,
+        "net_income": 0.0,
+        "revenue": 2589.2
+      }
+    },
+    "missing_years": [
+      2020,
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2016,
+        "revenue_eok": 4007,
+        "op_profit_eok": 242,
+        "net_income_eok": 204,
+        "roe_pct": 16.64,
+        "op_margin_pct": 6.04,
+        "debt_ratio_pct": 131.16
+      },
+      {
+        "year": 2017,
+        "revenue_eok": 4007,
+        "op_profit_eok": 208,
+        "net_income_eok": 217,
+        "roe_pct": 14.68,
+        "op_margin_pct": 5.19,
+        "debt_ratio_pct": 92.56
+      },
+      {
+        "year": 2018,
+        "revenue_eok": 3478,
+        "op_profit_eok": 94,
+        "net_income_eok": 252,
+        "roe_pct": 14.94,
+        "op_margin_pct": 2.7,
+        "debt_ratio_pct": 79.6
+      },
+      {
+        "year": 2019,
+        "revenue_eok": 3248,
+        "op_profit_eok": 116,
+        "net_income_eok": 145,
+        "roe_pct": 8.1,
+        "op_margin_pct": 3.57,
+        "debt_ratio_pct": 64.99
+      },
+      {
+        "year": 2021,
+        "revenue_eok": 2303,
+        "op_profit_eok": -69,
+        "net_income_eok": 417,
+        "roe_pct": 17.68,
+        "op_margin_pct": -3.0,
+        "debt_ratio_pct": 50.57
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 2557,
+        "op_profit_eok": -25,
+        "net_income_eok": 279,
+        "roe_pct": 9.1,
+        "op_margin_pct": -0.98,
+        "debt_ratio_pct": 30.85
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 3105,
+        "op_profit_eok": 64,
+        "net_income_eok": -3,
+        "roe_pct": -0.91,
+        "op_margin_pct": 2.06,
+        "debt_ratio_pct": 394.89
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 2895,
+        "op_profit_eok": 48,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 1.66,
+        "debt_ratio_pct": 36.03
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 2589,
+        "op_profit_eok": -33,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": -1.27,
+        "debt_ratio_pct": 53.87
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": -5.0,
+      "op_profit_cagr_pct": 0,
+      "best_year": 2016,
+      "worst_year": 2021,
+      "avg_roe_pct": 7.8
+    },
+    "valuation": {
+      "grade": "D",
+      "strengths": [
+        "일부 연도에 영업손실에도 불구하고 당기순이익이 긍정적이었던 점(2021년 등)은 비영업 부문의 기여를 시사합니다.",
+        "2016년 대비 2023년까지 현금 보유액이 크게 증가하여 유동성이 개선된 점은 긍정적입니다.",
+        "2022년까지 자본총계가 꾸준히 증가하며 재무구조가 개선되었던 점은 긍정적입니다."
+      ],
+      "risks": [
+        "지속적인 매출액 감소 추세(-5.00% CAGR)는 핵심 사업의 성장성 둔화를 나타냅니다.",
+        "영업이익의 극심한 변동성 및 반복적인 영업손실 발생은 사업의 수익성 및 안정성에 대한 우려를 높입니다.",
+        "2023년 자본총계의 급격한 감소와 이에 따른 부채비율 급증(394.89%)은 재무 건전성에 심각한 위험 요인입니다."
+      ],
+      "one_liner": "매출 감소와 불안정한 영업이익, 그리고 2023년 재무구조 악화로 인해 투자 매력이 매우 낮은 기업입니다."
+    }
+  },
+  "dcf": {
+    "text": "저는 퀀트 애널리스트로서 제공된 데이터를 바탕으로 남선알미늄(008350)의 DCF 적정가치를 계산하겠습니다.\n\n**가정 및 전제:**\n1.  제공된 재무 데이터는 2024년 기준이며, 2025년부터 5년간의 예측 기간이 시작됩니다.\n2.  **매출액 및 영업이익 성장률:** 문제에 명시된 성장률이 없으므로, 기본 시나리오에서는 예측 기간(2025-2029) 동안 매출액과 영업이익이 현재 수준(2589억원, -33억원)으로 **유지된다고 가정**합니다. 이는 특히 영업이익이 음수인 상황에서 매우 보수적인 가정입니다.\n3.  **세금 처리:** 영업이익이 음수임에도 불구하고, 제시된 FCF 공식 `영업이익 × (1 - 0.25)`를 그대로 적용합니다. 이는 영업이익이 음수일 때 세금 효과가 오히려 FCF를 더 감소시키는 결과를 초래할 수 있습니다. (일반적으로는 영업이익이 음수일 경우 세금은 0으로 처리되거나 이월결손금에 따른 세금 혜택이 있을 수 있습니다.)\n\n---\n\n### 1. 기본 시나리오 DCF 적정가치 계산\n\n**입력 데이터:**\n*   최근 매출액 (Revenue_0): 2589 억원\n*   최근 영업이익 (Operating_Profit_0): -33 억원\n*   세율 (Tax_Rate): 0.25\n*   감가상각률 (Depreciation_Rate): 0.10 (매출액의 10%)\n*   CAPEX율 (CAPEX_Rate): 0.05 (매출액의 5%)\n*   예측 기간 (Projection_Years): 5년\n*   WACC (기본): 9% (0.09)\n*   영구성장률 g (기본): 2% (0.02)\n\n**FCF 계산 (매년 동일):**\n*   감가상각 = 2589 억원 * 0.10 = 258.9 억원\n*   CAPEX = 2589 억원 * 0.05 = 129.45 억원\n*   FCF = 영업이익 * (1 - 세율) + 감가상각 - CAPEX\n*   FCF = -33 억원 * (1 - 0.25) + 258.9 억원 - 129.45 억원\n*   FCF = -24.75 억원 + 258.9 억원 - 129.45 억원 = 104.7 억원\n\n---\n\n이전 코드 실행 중 `NameError`가 발생했습니다. 이는 함수 인자 이름과 전역 변수 이름 간의 잠재적 혼동을 피하기 위해 함수 인자 이름을 명확히 변경하여 해결했습니다.\n\n아래는 수정된 Python 코드와 실행 결과입니다.\n\n---\n\n### 분석 결과\n\n**1. 기본 시나리오 DCF 적정가치:**\n*   **적정가치(기본): 1398.80억원**\n\n**2. WACC × g 민감도 그리드:**\n\n--- DCF 적정가치 민감도 분석 (억원) ---\n             g=1%     g=2%     g=3%\nWACC=7%   1685.89  1952.14  2351.52\nWACC=8%   1446.17  1629.41  1885.93\nWACC=9%   1266.35  1398.80  1575.40\nWACC=10%  1126.46  1225.78  1353.48\nWACC=11%  1014.52  1091.15  1186.94\n\n**3. 요약 출력:**\n*   **적정가치(기본): 1398.80억원**\n\n---\n\n**참고:**\n*   본 DCF 계산은 매출액 및 영업이익이 예측 기간 동안 현재 수준으로 유지된다는 보수적인 가정 하에 수행되었습니다. 실제 기업 가치는 미래 성장률 가정에 따라 크게 달라질 수 있습니다.\n*   영업이익이 음수임에도 불구하고 제시된 FCF 공식(`영업이익 × (1 - 0.25)`)을 그대로 적용하여 세금 효과를 반영했습니다. 이는 일반적인 세금 처리 방식과 다를 수 있으며, FCF를 더 낮게 평가하는 요인이 될 수 있습니다.",
+    "executed_code": "import pandas as pd\n\n# --- Parameters ---\nrevenue_0 = 2589  # 억원\noperating_profit_0 = -33  # 억원\ntax_rate = 0.25\ndepreciation_rate = 0.10  # of revenue\ncapex_rate = 0.05  # of revenue\nprojection_years = 5\n\n# Base case WACC and g\nwacc_base = 0.09\ng_base = 0.02\n\n# --- DCF Calculation Function ---\ndef calculate_dcf(wacc, g, revenue_initial, op_initial, tax_rate, dep_rate, capex_rate, proj_years):\n    if wacc <= g:\n        return float('inf') # WACC must be > g for Gordon Growth Model\n\n    fcf_list = []\n    pv_fcf_list = []\n\n    # Assuming revenue and operating profit remain constant for the projection period\n    # as no growth rate for these items was provided.\n    revenue_t = revenue_initial\n    operating_profit_t = op_initial\n\n    for t in range(1, proj_years + 1):\n        depreciation_t = revenue_t * dep_rate\n        capex_t = revenue_t * capex_rate\n        \n        # FCF calculation as per formula\n        fcf_t = operating_profit_t * (1 - tax_rate) + depreciation_t - capex_t\n        fcf_list.append(fcf_t)\n        pv_fcf_list.append(fcf_t / ((1 + wacc) ** t))\n\n    # Calculate Terminal Value (TV)\n    # FCF for the year after the projection period (Year 6)\n    # Assuming FCF grows at 'g' from the last projected year (Year 5)\n    fcf_year5 = fcf_list[-1]\n    \n    # Gordon Growth Model for Terminal Value\n    terminal_value = fcf_year5 * (1 + g) / (wacc - g)\n    \n    # Present Value of Terminal Value\n    pv_terminal_value = terminal_value / ((1 + wacc) ** proj_years)\n\n    # Total Intrinsic Value\n    intrinsic_value = sum(pv_fcf_list) + pv_terminal_value\n    return intrinsic_value\n\n# --- 1. Basic Scenario DCF Calculation ---\nbase_dcf_value = calculate_dcf(wacc_base, g_base, revenue_0, operating_profit_0, tax_rate, dep_rate, capex_rate, projection_years)\nprint(f\"적정가치(기본): {base_dcf_value:.2f}억원\")\n\n# --- 2. Sensitivity Grid ---\nwacc_scenarios = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_scenarios = [0.01, 0.02, 0.03]\n\nsensitivity_results = pd.DataFrame(index=[f'WACC={w*100:.0f}%' for w in wacc_scenarios],\n                                   columns=[f'g={g*100:.0f}%' for g in g_scenarios])\n\nfor wacc in wacc_scenarios:\n    for g in g_scenarios:\n        if wacc <= g:\n            sensitivity_results.loc[f'WACC={wacc*100:.0f}%', f'g={g*100:.0f}%'] = \"N/A (WACC <= g)\"\n        else:\n            value = calculate_dcf(wacc, g, revenue_0, operating_profit_0, tax_rate, dep_rate, capex_rate, projection_years)\n            sensitivity_results.loc[f'WACC={wacc*100:.0f}%', f'g={g*100:.0f}%'] = f\"{value:.2f}\"\n\nprint(\"\\n--- DCF 적정가치 민감도 분석 (억원) ---\")\nprint(sensitivity_results)\n\n# --- 3. Final Summary Output ---\nprint(f\"\\n적정가치(기본): {base_dcf_value:.2f}억원\")\n\nimport pandas as pd\n\n# --- Parameters ---\nrevenue_0 = 2589  # 억원\noperating_profit_0 = -33  # 억원\ntax_rate = 0.25\ndepreciation_rate = 0.10  # of revenue\ncapex_rate = 0.05  # of revenue\nprojection_years = 5\n\n# Base case WACC and g\nwacc_base = 0.09\ng_base = 0.02\n\n# --- DCF Calculation Function ---\ndef calculate_dcf(wacc_param, g_param, revenue_initial, op_initial, tax_rate_param, dep_rate_param, capex_rate_param, proj_years_param):\n    if wacc_param <= g_param:\n        return float('inf') # WACC must be > g for Gordon Growth Model\n\n    fcf_list = []\n    pv_fcf_list = []\n\n    # Assuming revenue and operating profit remain constant for the projection period\n    revenue_t = revenue_initial\n    operating_profit_t = op_initial\n\n    for t in range(1, proj_years_param + 1):\n        depreciation_t = revenue_t * dep_rate_param\n        capex_t = revenue_t * capex_rate_param\n        \n        # FCF calculation as per formula\n        fcf_t = operating_profit_t * (1 - tax_rate_param) + depreciation_t - capex_t\n        fcf_list.append(fcf_t)\n        pv_fcf_list.append(fcf_t / ((1 + wacc_param) ** t))\n\n    # Calculate Terminal Value (TV)\n    # FCF for the year after the projection period (Year 6)\n    # Assuming FCF grows at 'g' from the last projected year (Year 5)\n    fcf_year5 = fcf_list[-1]\n    \n    # Gordon Growth Model for Terminal Value\n    terminal_value = fcf_year5 * (1 + g_param) / (wacc_param - g_param)\n    \n    # Present Value of Terminal Value\n    pv_terminal_value = terminal_value / ((1 + wacc_param) ** proj_years_param)\n\n    # Total Intrinsic Value\n    intrinsic_value = sum(pv_fcf_list) + pv_terminal_value\n    return intrinsic_value\n\n# --- 1. Basic Scenario DCF Calculation ---\nbase_dcf_value = calculate_dcf(wacc_base, g_base, revenue_0, operating_profit_0, tax_rate, depreciation_rate, capex_rate, projection_years)\n\n# --- 2. Sensitivity Grid ---\nwacc_scenarios = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_scenarios = [0.01, 0.02, 0.03]\n\nsensitivity_results = pd.DataFrame(index=[f'WACC={w*100:.0f}%' for w in wacc_scenarios],\n                                   columns=[f'g={g*100:.0f}%' for g in g_scenarios])\n\nfor wacc in wacc_scenarios:\n    for g in g_scenarios:\n        if wacc <= g:\n            sensitivity_results.loc[f'WACC={wacc*100:.0f}%', f'g={g*100:.0f}%'] = \"N/A (WACC <= g)\"\n        else:\n            value = calculate_dcf(wacc, g, revenue_0, operating_profit_0, tax_rate, depreciation_rate, capex_rate, projection_years)\n            sensitivity_results.loc[f'WACC={wacc*100:.0f}%', f'g={g*100:.0f}%'] = f\"{value:.2f}\"\n\n# --- 3. Final Summary Output ---\nprint(f\"적정가치(기본): {base_dcf_value:.2f}억원\")\nprint(\"\\n--- DCF 적정가치 민감도 분석 (억원) ---\")\nprint(sensitivity_results)\nprint(f\"\\n적정가치(기본): {base_dcf_value:.2f}억원\")",
+    "code_output": "Traceback (most recent call last):\n  File \"<string>\", line 53, in <module>\nNameError: name 'dep_rate' is not defined\n\n적정가치(기본): 1398.80억원\n\n--- DCF 적정가치 민감도 분석 (억원) ---\n             g=1%     g=2%     g=3%\nWACC=7%   1685.89  1952.14  2351.52\nWACC=8%   1446.17  1629.41  1885.93\nWACC=9%   1266.35  1398.80  1575.40\nWACC=10%  1126.46  1225.78  1353.48\nWACC=11%  1014.52  1091.15  1186.94\n\n적정가치(기본): 1398.80억원"
+  },
+  "news": {
+    "text": "## 남선알미늄(008350) 투자 분석 보고서\n\n### 1. 재무 데이터 스토리와 현재 시장 컨센서스의 일치/불일치\n\n제공된 10년 재무제표 분석 결과에 따르면, 남선알미늄은 매출 감소, 불안정한 영업이익, 그리고 2023년 재무구조 악화로 인해 투자 매력이 매우 낮은 \"투자등급 D\" 기업입니다. 2025년 3분기 누적 연결기준 매출액은 전년 동기 대비 9.9% 감소했으며, 영업이익은 적자 전환, 당기순이익은 30.4% 감소하는 등 실적 부진이 지속되고 있습니다. 지난 5년간 연간 수익이 54.9% 감소했다는 분석도 있습니다.\n\n반면, 최근 2주간 시장의 움직임은 이러한 부정적인 재무 데이터와는 다소 불일치하는 양상을 보였습니다. 2026년 4월 6일, 남선알미늄의 주가는 18.55% 급등하며 52주 최고가를 경신했고, 거래량이 폭증했습니다. 4월 3일에도 VI(변동성 완화장치)가 발동하며 3.26% 상승하는 등 단기적인 강세를 보였습니다. 이러한 주가 상승은 기업의 펀더멘털 개선보다는 주로 '이낙연 관련주' 및 '알루미늄 테마'와 같은 테마성 요인과 단기 수급에 의한 것으로 분석됩니다. 일부 분석에서는 내재가치 대비 45.7% 고평가되었다는 의견도 있습니다.\n\n결론적으로, 기업의 재무적 약세와 현재 시장의 단기적 주가 급등은 불일치하며, 주가 상승은 펀더멘털보다는 투기적 요인에 의해 주도되고 있습니다.\n\n### 2. 재무제표에서 드러나지 않는 리스크 또는 호재\n\n**리스크:**\n*   **정치 테마주 리스크**: 남선알미늄은 과거 이낙연 전 총리 관련 인물과의 연결고리로 인해 정치 테마주로 분류되어 왔습니다. 정치적 이슈에 따라 주가가 급변할 수 있으며, 이는 기업의 본질 가치와 무관한 투기적 움직임을 유발하여 투자자에게 예측 불가능한 손실을 안겨줄 수 있습니다.\n*   **산업 환경 악화**: 핵심 사업인 알루미늄 부문은 건설 경기 위축과 원재료 가격 상승으로 수익성 악화를 겪고 있습니다. 이는 재무제표에 반영된 실적 부진의 주요 원인 중 하나입니다.\n*   **높은 변동성**: 최근 주가 급등과 거래량 폭증은 높은 시장의 관심과 함께 극심한 가격 변동성을 의미하며, 이는 단기 차익을 노리는 투자자에게는 기회가 될 수 있으나, 장기적인 관점에서는 큰 리스크로 작용할 수 있습니다.\n\n**호재:**\n*   **프리미엄 제품 출시**: 하이엔드 건축물 시장 공략을 위해 프리미엄 창호 'X-WIDE' 브랜드를 론칭하여 시장 경쟁력을 강화하고 있습니다. 이는 향후 수익성 개선에 긍정적인 영향을 미칠 수 있습니다.\n*   **자동차 사업부문 성장**: 자동차 사업부문은 한국지엠의 특별 연장근로 및 KG모빌리티의 신차 효과로 생산량이 증가하고 있습니다. 이는 전체 매출에서 알루미늄 사업 부문과 함께 주요 비중을 차지하고 있어 긍정적인 요인입니다.\n*   **알루미늄 테마 부각**: 최근 알루미늄 관련 테마가 시장에서 긍정적인 흐름을 보이고 있어, 단기적인 투자심리 개선에 영향을 줄 수 있습니다.\n\n### 3. 최종 판정\n\n제공된 재무제표 분석 결과(투자등급 D, 매출 감소, 불안정한 영업이익, 재무구조 악화)와 최근 시장의 움직임을 종합적으로 고려할 때, 남선알미늄에 대한 최종 판정은 **매도**입니다.\n\n기업의 펀더멘털은 매우 취약하며, 최근의 주가 급등은 기업의 내재가치 개선보다는 정치 테마 및 알루미늄 테마, 그리고 단기적인 수급에 의한 투기적 성격이 강합니다. 프리미엄 제품 출시나 자동차 사업부문의 성장은 긍정적인 요소이나, 현재의 심각한 재무구조 악화와 시장의 높은 변동성 및 테마주 리스크를 상쇄하기에는 역부족으로 판단됩니다. 따라서, 추가적인 하락 위험을 고려하여 매도 포지션을 권고합니다.",
+    "citations": [
+      {
+        "title": "wisereport.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHHNKlY-KymfaUD2xVZDRJNAHNmN69TfpeMP_aW6vk_DisXNpm5VK895f2pgJ1B2HLKUAoFbfGmz1KZymgZWlqA0UVn_66p9GYX4POnfkshibBMH5BevFzfBrp58-JXAyN0GtN4zY-h7yMzKeNu26xT0cjKX3UgkB-a1TE="
+      },
+      {
+        "title": "simplywall.st",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQF6gnEd9v6V_wZogfSZD1XFxlnizoXQ4uo3pHZBVNAQwecUa3smhBabMAEqS9lcI1YuzI7VstNcAiau0tccgbifuiNu2uOCTJaddM5JkRWL_aEKtWXiC32B3KXeEIuq6qCw3UFACGRT8ccdDR_NfzQREsxOZpBbajFMboATMVBOl6Azi21LLIhS0mk="
+      },
+      {
+        "title": "cbci.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHgBzx6j9VnTa4cEkATC9d4A9n8CQUx8a9zZUxtDUBeGhJEq__2190qVAe420W802Dq-hq4NoPv2Gwn5cv86ETpZ85QAuJRxOUhqLUr6rcqhXcdw34U0zxGClE86cWYuij9ctjb1IupvxVTD2ADdPUiH4vR"
+      },
+      {
+        "title": "minsimnews.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGDIpxnkBSYndv1XV3n93tQvcKDe0eCkbubLfLtTuCYJgJHZ5sUYqqj6TWBjkdzZCtap12PmqFsTuzMK0XMEG7IsSFBXMcEwnF7zpa5Qh7DOP-9NsW41g0F95KCFgv846BlMysGfYcDZSWJ7h1EduLxAHaVI1Zn"
+      },
+      {
+        "title": "daum.net",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFFmtwPUiAGLpKcTmpLfX37f0FbtA0Sd977hqQi3zBGR9FttMSZWIvFwuBsGNsqcPAJd4I2Ay9kky8ERwKYY-KQUVvuEXLHQg16BjD6-bFPeiK9SXkfo_15GB8XRigsMA0="
+      },
+      {
+        "title": "chosun.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFse1DMgx9Zhhf5N1JKbtWWf8QZ6l1ntwYSRC6Ima4_KM0qcPInX8VV8B4xPUzU_MmQNLOugNTYHwHhkgegAVhzOr5SqwUcknHq-IhHmfgIZizBIj95i7D_olRN7chIJCE01tj_SmQ4NDFlTIIcmhm7XeiKM0gO5d_n-nZ2vk_CbXFpQgc6FTN-fcEMzV_WhHRYMKF33JE="
+      },
+      {
+        "title": "alphasquare.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHCaW5mSAtV3cda2kJoIRAPSVSmzJaE5tEhGfen3TCWy8k-RwLjPM-SJ7a4u0TKwMgbibwht2o4yAiB3iPUb2o51-_5GYPttWVXdeel2RRp0L14V_c75OU1Sq02AKogP47dXYlV0SBH-C1p74TpZX-9zgY="
+      },
+      {
+        "title": "finup.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQE9HAitbNouJXlKeCT_py8C_rVJdT6ckC-TUBGeeOmz0DRbXEGySYmtKufYzLQOJMXyis_lH2MXcIO__PPYy22hnTL588DRZG28WVsqon0yvtU-TE2a7Vn7XxSF23pOwCxWgA=="
+      },
+      {
+        "title": "youtube.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQF1IgpOJTwKQ2Lx4Bo3gpbDW19351JOCUaovyPqVsu2dPS3pRml6Uz6pBRSHH863VfvliG5w9M7Nw4YBVhyisIdu--BY6nanxTyb-a7MP5IE_aFlLahP3u-sVSTqdXIQHuPRLkhrA=="
+      }
+    ]
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=00107224",
+    "summary": "The DART disclosure page could not be accessed. The system returned a \"요청하신 인터넷주소(URL)을 찾을 수 없습니다.\" (The requested internet address (URL) could not be found) message.\n공시 페이지 접근 제한"
+  }
+}

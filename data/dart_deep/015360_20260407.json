@@ -1,0 +1,301 @@
+{
+  "stock_code": "015360",
+  "stock_name": "INVENI",
+  "generated_at": "2026-04-07T04:44:26.491634+00:00",
+  "financials": {
+    "stock_code": "015360",
+    "corp_code": "00105101",
+    "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2016": {
+        "cash": 570.6,
+        "total_assets": 12860.6,
+        "short_debt": 883.7,
+        "long_debt": 362.4,
+        "total_liab": 6113.9,
+        "total_equity": 6746.6,
+        "revenue": 10513.2,
+        "op_profit": 211.3,
+        "net_income": 491.7
+      },
+      "2017": {
+        "cash": 957.8,
+        "total_assets": 14349.7,
+        "short_debt": 634.8,
+        "long_debt": 151.3,
+        "total_liab": 7375.6,
+        "total_equity": 6974.2,
+        "revenue": 11151.8,
+        "op_profit": 243.9,
+        "net_income": 270.7
+      },
+      "2018": {
+        "cash": 1243.7,
+        "total_assets": 15206.3,
+        "short_debt": 621.6,
+        "long_debt": 1081.0,
+        "total_liab": 8736.0,
+        "total_equity": 6470.4,
+        "revenue": 10953.7,
+        "op_profit": 252.1,
+        "net_income": 0.0
+      },
+      "2019": {
+        "cash": 1605.5,
+        "total_assets": 15442.9,
+        "short_debt": 997.7,
+        "long_debt": 1095.2,
+        "total_liab": 9353.0,
+        "total_equity": 6089.9,
+        "revenue": 11081.9,
+        "op_profit": 221.4,
+        "net_income": 0.0
+      },
+      "2020": {
+        "cash": 1940.6,
+        "total_assets": 15640.9,
+        "short_debt": 603.6,
+        "long_debt": 1206.2,
+        "total_liab": 10427.8,
+        "total_equity": 5213.1,
+        "revenue": 11223.7,
+        "op_profit": 95.9,
+        "net_income": -102.9
+      },
+      "2021": {
+        "cash": 1644.1,
+        "total_assets": 14230.0,
+        "short_debt": 66.4,
+        "long_debt": 712.1,
+        "total_liab": 8894.4,
+        "total_equity": 5335.6,
+        "revenue": 12666.7,
+        "op_profit": 240.3,
+        "net_income": 49.5
+      },
+      "2022": {
+        "cash": 928.0,
+        "total_assets": 14913.9,
+        "short_debt": 150.0,
+        "long_debt": 434.7,
+        "total_liab": 9718.6,
+        "total_equity": 5195.4,
+        "revenue": 14714.7,
+        "op_profit": 3.1,
+        "net_income": -99.6
+      },
+      "2023": {
+        "total_assets": 13580.4,
+        "cash": 738.4,
+        "total_equity": 483.3,
+        "total_liab": 8550.3,
+        "long_debt": 291.2,
+        "op_profit": 574.9,
+        "net_income": 0.0,
+        "revenue": 14305.1
+      },
+      "2024": {
+        "cash": 287.6,
+        "total_equity": -1.2,
+        "short_debt": 0.0,
+        "long_debt": 50.7,
+        "op_profit": 242.7,
+        "net_income": 0.0,
+        "revenue": 11603.5
+      },
+      "2025": {
+        "cash": 343.7,
+        "total_equity": 458.1,
+        "short_debt": 0.0,
+        "long_debt": 38.5,
+        "op_profit": 1117.2,
+        "net_income": 0.0,
+        "revenue": 13276.0
+      }
+    },
+    "missing_years": [
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2016,
+        "revenue_eok": 10513,
+        "op_profit_eok": 211,
+        "net_income_eok": 492,
+        "roe_pct": 7.29,
+        "op_margin_pct": 2.01,
+        "debt_ratio_pct": 90.62
+      },
+      {
+        "year": 2017,
+        "revenue_eok": 11152,
+        "op_profit_eok": 244,
+        "net_income_eok": 271,
+        "roe_pct": 3.89,
+        "op_margin_pct": 2.19,
+        "debt_ratio_pct": 105.76
+      },
+      {
+        "year": 2018,
+        "revenue_eok": 10954,
+        "op_profit_eok": 252,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 2.3,
+        "debt_ratio_pct": 135.02
+      },
+      {
+        "year": 2019,
+        "revenue_eok": 11082,
+        "op_profit_eok": 221,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 1.99,
+        "debt_ratio_pct": 153.58
+      },
+      {
+        "year": 2020,
+        "revenue_eok": 11224,
+        "op_profit_eok": 96,
+        "net_income_eok": -103,
+        "roe_pct": -1.98,
+        "op_margin_pct": 0.86,
+        "debt_ratio_pct": 200.04
+      },
+      {
+        "year": 2021,
+        "revenue_eok": 12667,
+        "op_profit_eok": 240,
+        "net_income_eok": 50,
+        "roe_pct": 0.94,
+        "op_margin_pct": 1.89,
+        "debt_ratio_pct": 166.68
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 14715,
+        "op_profit_eok": 3,
+        "net_income_eok": -100,
+        "roe_pct": -1.92,
+        "op_margin_pct": 0.02,
+        "debt_ratio_pct": 187.09
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 14305,
+        "op_profit_eok": 575,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 4.02,
+        "debt_ratio_pct": 1770.19
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 11604,
+        "op_profit_eok": 243,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 2.09,
+        "debt_ratio_pct": 0.0
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 13276,
+        "op_profit_eok": 1117,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 8.41,
+        "debt_ratio_pct": 0.0
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": 2.61,
+      "op_profit_cagr_pct": 19.16,
+      "best_year": 2025,
+      "worst_year": 2022,
+      "avg_roe_pct": 0.72
+    },
+    "valuation": {
+      "grade": "D",
+      "strengths": [
+        "2025년 영업이익이 1,117억원으로 크게 개선될 것으로 예상되며, 이는 과거 대비 높은 수준입니다.",
+        "매출액은 2016년 10,513억원에서 2025년 13,276억원으로 꾸준히 성장하는 추세를 보입니다.",
+        "2023년 이후 영업이익이 575억원, 243억원(2024), 1,117억원(2025)으로 회복세를 나타내고 있습니다."
+      ],
+      "risks": [
+        "당기순이익이 0원 또는 마이너스인 연도가 많고, 평균 자기자본이익률(ROE)이 0.72%로 매우 낮아 수익성이 불안정합니다.",
+        "2023년 부채비율이 1770%에 달하는 등 재무 건전성이 매우 취약하며, 자본잠식(2024년) 이력이 있습니다.",
+        "영업이익이 2022년 3억원에서 2025년 1,117억원으로 극심한 변동성을 보여 사업 안정성이 낮습니다."
+      ],
+      "one_liner": "매출액은 성장세를 보이나, 극심한 수익성 변동성과 매우 높은 부채비율로 재무 건전성이 취약한 기업입니다."
+    }
+  },
+  "dcf": {
+    "text": "퀀트 애널리스트로서 INVENI (015360)의 DCF 적정가치를 계산하겠습니다.\n\n**전제 및 가정:**\n\n*   **기준 연도:** 2025년 (예측 시작 연도)\n*   **최근 재무 (2024년 기준 가정):**\n    *   매출액: 13276 억원\n    *   영업이익: 1117 억원\n*   **영업이익률:** 1117 / 13276 ≈ 8.41% (5년 예측 기간 동안 일정하다고 가정)\n*   **법인세율:** 25% (FCF 공식에서 `(1 - 0.25)`로 유추)\n*   **감가상각:** 매출액의 10%\n*   **CAPEX:** 매출액의 5%\n*   **FCF 공식:** 영업이익 × (1 - 법인세율) + 감가상각 - CAPEX\n*   **WACC (기본 시나리오):** 9%\n*   **영구성장률 (g, 기본 시나리오):** 2%\n*   **예측 기간:** 5년 (2025년 ~ 2029년) + 영구 가치\n*   **매출액 성장률 (2025년 ~ 2029년):** **제공되지 않아 5%로 가정합니다.** 이는 DCF 결과에 큰 영향을 미치는 중요한 가정이므로, 실제 분석 시에는 추가적인 정보가 필요합니다.\n\n---\n\n### 1. 기본 시나리오 DCF 적정가치 계산\n\n\n---\n\n### 2. WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 출력\n\n\n---\n\n### 2. WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 출력\n\n\n---\n\n### 3. 요약 출력\n\n적정가치(기본): 24869.69억원",
+    "executed_code": "import pandas as pd\n\n# --- Input Data and Assumptions ---\nrevenue_2024 = 13276  # 억원\noperating_profit_2024 = 1117  # 억원\n\n# Assumptions\nforecast_years = 5\nstart_year = 2025\nend_year = start_year + forecast_years - 1\n\n# Crucial assumption: Revenue growth rate for the explicit forecast period\n# This was not provided, so I'm assuming 5% for demonstration.\n# I will explicitly state this assumption in the output.\nrevenue_growth_rate_explicit = 0.05\n\noperating_profit_margin = operating_profit_2024 / revenue_2024\ntax_rate = 0.25\ndepreciation_rate_of_revenue = 0.10\ncapex_rate_of_revenue = 0.05\n\nwacc_base = 0.09\nperpetual_growth_rate_g_base = 0.02\n\n# --- 1. Base Scenario DCF Calculation ---\n\n# Create a DataFrame to store projections\nyears = list(range(start_year, start_year + forecast_years))\ndf = pd.DataFrame(index=years)\n\n# Project Revenue\ndf['Revenue'] = [revenue_2024 * (1 + revenue_growth_rate_explicit)**i for i in range(1, forecast_years + 1)]\n\n# Project Operating Profit\ndf['Operating Profit'] = df['Revenue'] * operating_profit_margin\n\n# Project Depreciation\ndf['Depreciation'] = df['Revenue'] * depreciation_rate_of_revenue\n\n# Project CAPEX\ndf['CAPEX'] = df['Revenue'] * capex_rate_of_revenue\n\n# Calculate FCF\n# FCF = Operating Profit * (1 - Tax Rate) + Depreciation - CAPEX\ndf['FCF'] = df['Operating Profit'] * (1 - tax_rate) + df['Depreciation'] - df['CAPEX']\n\n# Calculate Discount Factors\ndf['Discount Factor'] = [1 / (1 + wacc_base)**i for i in range(1, forecast_years + 1)]\n\n# Calculate Present Value of FCFs\ndf['PV of FCF'] = df['FCF'] * df['Discount Factor']\n\n# Sum of PV of FCFs\nsum_pv_fcf = df['PV of FCF'].sum()\n\n# Calculate Terminal Value (TV)\n# FCF for the year after the explicit forecast period (Year 6, i.e., 2030)\nfcf_last_forecast_year = df['FCF'].iloc[-1]\nfcf_terminal_year = fcf_last_forecast_year * (1 + perpetual_growth_rate_g_base)\n\n# Terminal Value formula (Gordon Growth Model)\nterminal_value = fcf_terminal_year / (wacc_base - perpetual_growth_rate_g_base)\n\n# Discount Terminal Value to Present Value\npv_terminal_value = terminal_value / (1 + wacc_base)**forecast_years\n\n# Total DCF Value\ndcf_value_base = sum_pv_fcf + pv_terminal_value\n\nprint(\"--- 기본 시나리오 DCF 계산 ---\")\nprint(f\"**가정된 2025-2029년 매출액 성장률: {revenue_growth_rate_explicit*100:.0f}% (제공되지 않아 임의로 가정)**\")\nprint(f\"영업이익률: {operating_profit_margin*100:.2f}%\")\nprint(f\"법인세율: {tax_rate*100:.0f}%\")\nprint(f\"감가상각률 (매출액 대비): {depreciation_rate_of_revenue*100:.0f}%\")\nprint(f\"CAPEX율 (매출액 대비): {capex_rate_of_revenue*100:.0f}%\")\nprint(f\"WACC: {wacc_base*100:.0f}%\")\nprint(f\"영구성장률 (g): {perpetual_growth_rate_g_base*100:.0f}%\")\nprint(\"\\n예상 재무 및 FCF (억원):\")\nprint(df[['Revenue', 'Operating Profit', 'Depreciation', 'CAPEX', 'FCF', 'PV of FCF']].round(2))\nprint(f\"\\n5년 예측 기간 FCF의 현재가치 합계 (2025-2029): {sum_pv_fcf:.2f} 억원\")\nprint(f\"터미널 연도 (2030년) FCF: {fcf_terminal_year:.2f} 억원\")\nprint(f\"터미널 가치 (2029년 말 기준): {terminal_value:.2f} 억원\")\nprint(f\"터미널 가치의 현재가치: {pv_terminal_value:.2f} 억원\")\nprint(f\"DCF 적정가치 (기본 시나리오): {dcf_value_base:.2f} 억원\")\n\n\nimport pandas as pd\n\n# --- Input Data and Assumptions (from previous block) ---\nrevenue_2024 = 13276  # 억원\noperating_profit_2024 = 1117  # 억원\n\nforecast_years = 5\nstart_year = 2025\n\nrevenue_growth_rate_explicit = 0.05 # Assumed revenue growth rate for explicit forecast period\n\noperating_profit_margin = operating_profit_2024 / revenue_2024\ntax_rate = 0.25\ndepreciation_rate_of_revenue = 0.10\ncapex_rate_of_revenue = 0.05\n\n# Recalculate FCFs for the explicit forecast period (they don't change with WACC or g)\nyears = list(range(start_year, start_year + forecast_years))\ndf_fcf_only = pd.DataFrame(index=years)\ndf_fcf_only['Revenue'] = [revenue_2024 * (1 + revenue_growth_rate_explicit)**i for i in range(1, forecast_years + 1)]\ndf_fcf_only['Operating Profit'] = df_fcf_only['Revenue'] * operating_profit_margin\ndf_fcf_only['Depreciation'] = df_fcf_only['Revenue'] * depreciation_rate_of_revenue\ndf_fcf_only['CAPEX'] = df_fcf_only['Revenue'] * capex_rate_of_revenue\ndf_fcf_only['FCF'] = df_fcf_only['Operating Profit'] * (1 - tax_rate) + df_fcf_only['Depreciation'] - df_fcf_only['CAPEX']\nfcf_last_forecast_year = df_fcf_only['FCF'].iloc[-1]\n\n\n# --- 2. Sensitivity Grid ---\nwacc_range = [0.07, 0.08, 0.09, 0.10, 0.11] # 7%, 8%, 9%, 10%, 11%\ng_range = [0.01, 0.02, 0.03] # 1%, 2%, 3%\n\nsensitivity_results = pd.DataFrame(index=[f'g={g*100:.0f}%' for g in g_range],\n                                   columns=[f'WACC={w*100:.0f}%' for w in wacc_range])\n\nfor g in g_range:\n    for wacc in wacc_range:\n        if wacc <= g: # WACC must be greater than g for the Gordon Growth Model\n            sensitivity_results.loc[f'g={g*100:.0f}%', f'WACC={w*100:.0f}%'] = 'N/A'\n            continue\n\n        # Recalculate PV of FCFs (these depend only on WACC)\n        df_temp = df_fcf_only.copy()\n        df_temp['Discount Factor'] = [1 / (1 + wacc)**i for i in range(1, forecast_years + 1)]\n        df_temp['PV of FCF'] = df_temp['FCF'] * df_temp['Discount Factor']\n        sum_pv_fcf_sens = df_temp['PV of FCF'].sum()\n\n        # Recalculate Terminal Value and its PV\n        fcf_terminal_year_sens = fcf_last_forecast_year * (1 + g)\n        terminal_value_sens = fcf_terminal_year_sens / (wacc - g)\n        pv_terminal_value_sens = terminal_value_sens / (1 + wacc)**forecast_years\n\n        dcf_value_sens = sum_pv_fcf_sens + pv_terminal_value_sens\n        sensitivity_results.loc[f'g={g*100:.0f}%', f'WACC={w*100:.0f}%'] = round(dcf_value_sens, 2)\n\nprint(\"\\n--- DCF 적정가치 민감도 그리드 (억원) ---\")\nprint(f\"**가정된 2025-2029년 매출액 성장률: {revenue_growth_rate_explicit*100:.0f}%**\")\nprint(sensitivity_results)\n\n\nimport pandas as pd\n\n# --- Input Data and Assumptions (from previous block) ---\nrevenue_2024 = 13276  # 억원\noperating_profit_2024 = 1117  # 억원\n\nforecast_years = 5\nstart_year = 2025\n\nrevenue_growth_rate_explicit = 0.05 # Assumed revenue growth rate for explicit forecast period\n\noperating_profit_margin = operating_profit_2024 / revenue_2024\ntax_rate = 0.25\ndepreciation_rate_of_revenue = 0.10\ncapex_rate_of_revenue = 0.05\n\n# Recalculate FCFs for the explicit forecast period (they don't change with WACC or g)\nyears = list(range(start_year, start_year + forecast_years))\ndf_fcf_only = pd.DataFrame(index=years)\ndf_fcf_only['Revenue'] = [revenue_2024 * (1 + revenue_growth_rate_explicit)**i for i in range(1, forecast_years + 1)]\ndf_fcf_only['Operating Profit'] = df_fcf_only['Revenue'] * operating_profit_margin\ndf_fcf_only['Depreciation'] = df_fcf_only['Revenue'] * depreciation_rate_of_revenue\ndf_fcf_only['CAPEX'] = df_fcf_only['Revenue'] * capex_rate_of_revenue\ndf_fcf_only['FCF'] = df_fcf_only['Operating Profit'] * (1 - tax_rate) + df_fcf_only['Depreciation'] - df_fcf_only['CAPEX']\nfcf_last_forecast_year = df_fcf_only['FCF'].iloc[-1]\n\n\n# --- 2. Sensitivity Grid ---\nwacc_range = [0.07, 0.08, 0.09, 0.10, 0.11] # 7%, 8%, 9%, 10%, 11%\ng_range = [0.01, 0.02, 0.03] # 1%, 2%, 3%\n\nsensitivity_results = pd.DataFrame(index=[f'g={g*100:.0f}%' for g in g_range],\n                                   columns=[f'WACC={wacc*100:.0f}%' for wacc in wacc_range]) # Corrected 'w' to 'wacc'\n\nfor g in g_range:\n    for wacc in wacc_range:\n        if wacc <= g: # WACC must be greater than g for the Gordon Growth Model\n            sensitivity_results.loc[f'g={g*100:.0f}%', f'WACC={wacc*100:.0f}%'] = 'N/A'\n            continue\n\n        # Recalculate PV of FCFs (these depend only on WACC)\n        df_temp = df_fcf_only.copy()\n        df_temp['Discount Factor'] = [1 / (1 + wacc)**i for i in range(1, forecast_years + 1)]\n        df_temp['PV of FCF'] = df_temp['FCF'] * df_temp['Discount Factor']\n        sum_pv_fcf_sens = df_temp['PV of FCF'].sum()\n\n        # Recalculate Terminal Value and its PV\n        fcf_terminal_year_sens = fcf_last_forecast_year * (1 + g)\n        terminal_value_sens = fcf_terminal_year_sens / (wacc - g)\n        pv_terminal_value_sens = terminal_value_sens / (1 + wacc)**forecast_years\n\n        dcf_value_sens = sum_pv_fcf_sens + pv_terminal_value_sens\n        sensitivity_results.loc[f'g={g*100:.0f}%', f'WACC={wacc*100:.0f}%'] = round(dcf_value_sens, 2)\n\nprint(\"\\n--- DCF 적정가치 민감도 그리드 (억원) ---\")\nprint(f\"**가정된 2025-2029년 매출액 성장률: {revenue_growth_rate_explicit*100:.0f}%**\")\nprint(sensitivity_results)\n\n# --- 3. Summary Output ---\n# Re-calculate dcf_value_base for the summary output to ensure consistency\nwacc_base = 0.09\nperpetual_growth_rate_g_base = 0.02\n\ndf_base = df_fcf_only.copy()\ndf_base['Discount Factor'] = [1 / (1 + wacc_base)**i for i in range(1, forecast_years + 1)]\ndf_base['PV of FCF'] = df_base['FCF'] * df_base['Discount Factor']\nsum_pv_fcf_base = df_base['PV of FCF'].sum()\n\nfcf_terminal_year_base = fcf_last_forecast_year * (1 + perpetual_growth_rate_g_base)\nterminal_value_base = fcf_terminal_year_base / (wacc_base - perpetual_growth_rate_g_base)\npv_terminal_value_base = terminal_value_base / (1 + wacc_base)**forecast_years\ndcf_value_base = sum_pv_fcf_base + pv_terminal_value_base\n\nprint(f\"\\n적정가치(기본): {dcf_value_base:.2f}억원\")",
+    "code_output": "--- 기본 시나리오 DCF 계산 ---\n**가정된 2025-2029년 매출액 성장률: 5% (제공되지 않아 임의로 가정)**\n영업이익률: 8.41%\n법인세율: 25%\n감가상각률 (매출액 대비): 10%\nCAPEX율 (매출액 대비): 5%\nWACC: 9%\n영구성장률 (g): 2%\n\n예상 재무 및 FCF (억원):\n       Revenue  Operating Profit  Depreciation   CAPEX      FCF  PV of FCF\n2025  13939.80           1172.85       1393.98  696.99  1576.63    1446.45\n2026  14636.79           1231.49       1463.68  731.84  1655.46    1393.37\n2027  15368.63           1293.07       1536.86  768.43  1738.23    1342.23\n2028  16137.06           1357.72       1613.71  806.85  1825.14    1292.98\n2029  16943.91           1425.61       1694.39  847.20  1916.40    1245.53\n\n5년 예측 기간 FCF의 현재가치 합계 (2025-2029): 6720.55 억원\n터미널 연도 (2030년) FCF: 1954.73 억원\n터미널 가치 (2029년 말 기준): 27924.69 억원\n터미널 가치의 현재가치: 18149.14 억원\nDCF 적정가치 (기본 시나리오): 24869.69 억원\n\nTraceback (most recent call last):\n  File \"<string>\", line 53, in <module>\nNameError: name 'w' is not defined\n\n\n--- DCF 적정가치 민감도 그리드 (억원) ---\n**가정된 2025-2029년 매출액 성장률: 5%**\n       WACC=7%   WACC=8%   WACC=9%  WACC=10%  WACC=11%\ng=1%  30097.61  25723.55  22445.36  19897.64  17861.18\ng=2%  34970.99  29077.39  24869.69  21715.59  19263.83\ng=3%  42281.05  33772.76  28102.13  24052.96  21017.16\n\n적정가치(기본): 24869.69억원"
+  },
+  "news": {
+    "text": "INVENI(015360) 분석 보고서\n\n**1. 재무 데이터가 보여주는 스토리와 현재 시장 컨센서스의 일치/불일치**\n\n제공된 10년 재무제표 분석 결과에 따르면, INVENI는 매출액 성장세를 보이나 극심한 수익성 변동성과 매우 높은 부채비율로 재무 건전성이 취약하며, 투자등급 D를 받았습니다.\n\n최근 2주간의 시장 컨센서스는 다음과 같은 긍정적 요인에 주목하는 경향이 있습니다.\n*   **최대주주 책임 경영 강화:** LS그룹 구자은 회장이 INVENI 지분을 확대하며 책임 경영 의지를 표명했습니다. 이는 주주 신뢰도 향상에 긍정적인 영향을 미칠 수 있습니다.\n*   **투자형 지주사 전환 및 비전 제시:** INVENI는 투자형 지주사로 전환하고 2030년까지 기업가치 1조 원, 투자운용자산 1조 원 달성을 목표로 하는 '2030 1&1' 비전을 제시했습니다.\n*   **높은 배당 매력:** 2026년 배당금 5,400원, 시가 배당률 6.59%~6.89%로 높은 배당 수익률을 제공하고 있습니다.\n*   **수익성 개선 가능성:** 2025년 EPS가 2024년 대비 크게 증가했으며 (2024년 ₩2,136 → 2025년 ₩20,013), 주요 자회사인 예스코의 도시가스 요금 인상으로 매출 성장이 전망됩니다.\n*   **낮은 PER:** Simply Wall St에 따르면 INVENI의 주가수익률(3.6x)이 한국 시장(14.8x)보다 낮습니다.\n\n**일치/불일치:** 재무제표의 취약한 재무 건전성(높은 부채비율, 수익성 변동성)은 여전히 중요한 리스크 요인입니다. 그러나 시장은 최근 최대주주의 책임 경영 강화, 투자형 지주사로서의 성장 전략, 그리고 높은 배당 매력에 긍정적인 반응을 보이며 재무 데이터의 부정적인 측면을 일부 상쇄하려는 경향이 있습니다. 특히 2025년 EPS의 큰 폭 상승은 수익성 변동성에 대한 우려를 다소 완화할 수 있습니다.\n\n**2. 재무제표에서 드러나지 않는 리스크 또는 호재**\n\n**호재:**\n*   **지주사 전환을 통한 사업 다각화 및 성장 동력 확보:** 도시가스 사업의 안정성을 기반으로 투자 사업을 통해 새로운 성장 기회를 모색하고 있다는 점은 긍정적입니다.\n*   **최대주주의 적극적인 주주가치 제고 노력:** 구자은 회장의 지분 확대는 경영진의 주주가치 제고 의지를 보여주는 강력한 신호입니다.\n*   **주식분할:** 주식분할은 주당 가격을 낮춰 유동성을 높이고 더 많은 투자자의 접근성을 확대할 수 있습니다.\n\n**리스크:**\n*   **비현금 수입 및 배당금 충당 문제:** Simply Wall St는 INVENI의 높은 비현금 수입과 잉여현금흐름으로 배당금(6.87%)이 충분히 충당되지 않을 수 있다는 점을 리스크로 지적했습니다. 이는 배당 지속 가능성에 대한 의문을 제기할 수 있습니다.\n*   **투자형 지주사 전략의 불확실성:** 새로운 투자 사업의 성과가 아직 검증되지 않았으며, 투자 포트폴리오의 리스크가 존재할 수 있습니다.\n*   **애널리스트 분석 부족:** Simply Wall St에 따르면 INVENI에 대한 애널리스트 예측이 충분하지 않아 정보 비대칭이 발생할 수 있습니다.\n\n**3. 최종 판정**\n\n**관망**\n\nINVENI는 매출 성장에도 불구하고 극심한 수익성 변동성과 매우 높은 부채비율로 재무 건전성이 취약하다는 근본적인 문제를 안고 있습니다. 그러나 최근 최대주주의 책임 경영 강화, 투자형 지주사로의 전환 및 명확한 성장 비전 제시, 그리고 높은 배당 매력은 긍정적인 변화의 신호로 해석될 수 있습니다. 특히 2025년 EPS의 큰 폭 증가는 수익성 개선에 대한 기대를 높입니다.\n\n하지만 높은 비현금 수입과 잉여현금흐름으로 배당금이 충분히 충당되지 않을 수 있다는 점과 투자형 지주사 전략의 불확실성은 여전히 주의 깊게 지켜봐야 할 리스크입니다. 따라서 현재 시점에서는 재무 건전성 개선과 투자형 지주사로서의 실질적인 성과가 가시화될 때까지는 신중한 **관망** 자세를 유지하는 것이 바람직하다고 판단합니다.",
+    "citations": [
+      {
+        "title": "zum.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGUOW3YaEHTtA5C76LMLwXNbS2k0rg_nUV6UXjUGGwaQJttLbrrBn2d85vZ3pZ73fkHoOnK2XhV1pJmWVboqw7lJlzjxyxzySe6Rk0UUIdK8Neb3qwidqRMWSdxIZsdYA=="
+      },
+      {
+        "title": "therich.io",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQE6hNsWv8seoP1FUxXnuzMa6JDg_neVCBuIIyfgEAYd7oNczzXUIIWWLJXI1pilT5Uozgx_0IF14O6LEs6OPEICUjZrHltAxrp2q1P2-uy4rjUZSZvCXUL0mv1WgA6_h2u0WpADNvfq5XNYfa13KVhs"
+      },
+      {
+        "title": "pinpointnews.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEiqnOcwG1Cf5GbPUESE7eZAKhGcTsuS3E470Sr3DL7QpFRNf61e5apjNgAyWphF4ML0O-Oa53-iit_Yd9Cc1qBHLbYInxITNVP_wvsHxTJqo9QrZC1L5IdqtB9uLDga8Va9h3TsPg7QzQHLePTWqZkSllZmt8iPlqf3UsO"
+      },
+      {
+        "title": "wisereport.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFIsWw-916mP3A5KPN_LM8e7p27PkSKA6FSyWzChydm7ot8wD-9uPWeFwoF3_gKSuK4u7tmvMTYjCUJWaWoOv1cL3L7DzzUEnVBKUDkbB5eOZOU8mIHL5zp3TRDk2zIutN1IoeYcDcpBEnjCDa2ndIP4j8Dfl5qTj43jJ9_teEjrQ=="
+      },
+      {
+        "title": "wisereport.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGe2-_e7IM-pDR6kEysObHvevhAZK2RlbsWdYwYWezG8EPgQLX-amk8LjjfrxGYIkI_-l9Zd1jRaoDg0wGauqbUuBe97JSwYvFJXWjjsrv9Fqsn7CKnXiPP5l1Y18I2q5XS8BUEbMHUQ0tJd5a2PdHFjJDGmCnht_nEFCCdp4F5aA=="
+      },
+      {
+        "title": "simplywall.st",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFTI1sE8OBLcMqaRo3Nnqyaj39EwNtWlAaNKOH6HZZtZh6FCoK7JRtKx4Argegf9DyWh2hT2eLSBiW7p_Y4YqslOFoWMJrJuKVOOu_462JqlQehgZjY6BO-CfS1-NoFAAv-006et0d1sv_mCEr96jTJObjDCEqGlnOT70xaMHF4sPsRrb2lMLo="
+      },
+      {
+        "title": "simplywall.st",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHTUumHR1yrCmcATNV129e5asAWyo1zkUISmW0_wi61MESK7Ud2H6_BKtnjieREoWPDr3rh-Fful_DzoJKJ9wnOhVFtHpCGNFNtaUEv7_NCS1Id9ngEkoxBeqDAbv5dTk78KSM6DNfrJRaeJ2bJSKFt-KJ7InOAdQPCM1cF8yDNZttW"
+      },
+      {
+        "title": "infostock.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGNhMIsNDLhRXloy2sbAmZmp2ap41UCT9wBG8JOyceuG5M9vBOCeLYVGthn5yXNetX57toOs2z83jJE1_ENn8f4b9JmTlE9kr7T_Zv97ZP9rGj5KA=="
+      },
+      {
+        "title": "tossinvest.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGGUUVg0Z8V49EQe0BoWS9jUGvvyouehR3WwE7QEAgoiK2uFlQPKL7KiRqSqkTKgX4mlOCFDYJDLkhr6NV_wsDaatzW9F2C0S9-VO20YijT4JiRE9QR_IgbUh3p7PoCSDDxDdjfDE4DgwZc"
+      },
+      {
+        "title": "simplywall.st",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQG3kuG_K_FjS7YfJEEYpCM5UHvMxNO9P71ySYlbXnlctrfyhKaMptvi0SIa2kmgk0d4aVxp7GXNRXXgae1d7ds4stoUpO6iLiY9qI92PHO6CfRBFk9vosUJPRLU2X2blIEzXVguYRqevR0AyW3oj1DCF6ARXgJdHQo-x2VZrJKvucS7xFoL2XFtVA=="
+      }
+    ]
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=00105101",
+    "summary": "공시 페이지 접근 제한"
+  }
+}

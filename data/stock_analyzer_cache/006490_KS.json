@@ -1,0 +1,75 @@
+{
+  "name": "인스코비",
+  "ticker": "006490.KS",
+  "result": "데이터 없음",
+  "date": "2026-04-07 09:29:06",
+  "elapsed": 2.4,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 489.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 489.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "INSCOB",
+    "sector": "Communication Services",
+    "industry": "Telecom Services",
+    "market_cap": 60439027712,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": null,
+    "beta": 0.56,
+    "fifty_two_week_high": 2175.0,
+    "fifty_two_week_low": 217.0,
+    "revenue": 104128528384,
+    "profit_margin": -0.31574,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 26131804650
+    },
+    {
+      "date": "2025-06",
+      "value": 28638948400
+    },
+    {
+      "date": "2025-03",
+      "value": 24307287670
+    },
+    {
+      "date": "2024-12",
+      "value": 25050491740
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": -4364291620
+    },
+    {
+      "date": "2025-06",
+      "value": -5970039420
+    },
+    {
+      "date": "2025-03",
+      "value": -19875978770
+    },
+    {
+      "date": "2024-12",
+      "value": -2667471280
+    }
+  ],
+  "news": []
+}

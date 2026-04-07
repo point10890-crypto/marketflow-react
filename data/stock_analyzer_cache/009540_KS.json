@@ -1,0 +1,117 @@
+{
+  "name": "HD한국조선해양",
+  "ticker": "009540.KS",
+  "result": "매수",
+  "date": "2026-04-07 01:05:46",
+  "elapsed": 2.3,
+  "consensus_score": 4.29,
+  "analyst_count": 17,
+  "recommendation_detail": {
+    "strongBuy": 6,
+    "buy": 10,
+    "hold": 1,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 371500.0,
+    "high": 640000.0,
+    "low": 410000.0,
+    "mean": 566294.1,
+    "median": 580000.0
+  },
+  "current_price": 371500.0,
+  "upside_potential": 52.4,
+  "key_stats": {
+    "name": "HDKSOE",
+    "sector": "Industrials",
+    "industry": "Aerospace & Defense",
+    "market_cap": 26270486233088,
+    "pe_ratio": null,
+    "forward_pe": 6.5593333,
+    "dividend_yield": 4.96,
+    "beta": 1.187,
+    "fifty_two_week_high": 494500.0,
+    "fifty_two_week_low": 185700.0,
+    "revenue": 29933214629888,
+    "profit_margin": 0.07244,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "HD한국조선해양(009540.KS)에 대해 17명의 애널리스트가 제시한 컨센서스 의견은 '매수'입니다. 평균 목표 주가는 566,294 KRW으로, 현재 주가 대비 52.4%의 상승 여력이 있는 것으로 분석됩니다. 투자 판단은 제시된 데이터를 참고하여 신중하게 결정하시기 바랍니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 8151656564000
+    },
+    {
+      "date": "2025-09",
+      "value": 7581435732000
+    },
+    {
+      "date": "2025-06",
+      "value": 7428417053000
+    },
+    {
+      "date": "2025-03",
+      "value": 6771705878000
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 683273432000
+    },
+    {
+      "date": "2025-09",
+      "value": 633303118000
+    },
+    {
+      "date": "2025-06",
+      "value": 356438676000
+    },
+    {
+      "date": "2025-03",
+      "value": 495397203000
+    }
+  ],
+  "news": [
+    {
+      "title": "Asian Value Stocks That Might Be Trading Below Their Estimated Worth",
+      "summary": "As global markets navigate the complexities of shifting interest rates and economic uncertainties, Asia's financial landscape presents intriguing opportunities for investors seeking value. In this env",
+      "url": "https://finance.yahoo.com/news/asian-value-stocks-might-trading-043743373.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2025-12-15T04:37:43Z"
+    },
+    {
+      "title": "Asian Value Stocks: 3 Companies Trading Below Estimated Intrinsic Value",
+      "summary": "Amidst global economic shifts, Asian markets are navigating a complex landscape influenced by interest rate adjustments and deflationary pressures, particularly in China. As investors seek opportuniti",
+      "url": "https://finance.yahoo.com/news/asian-value-stocks-3-companies-223415713.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2025-12-14T22:34:15Z"
+    },
+    {
+      "title": "Global Value Opportunities With 3 Stocks Estimated Below Intrinsic Value",
+      "summary": "As global markets react to potential interest rate cuts and mixed economic signals, investors are carefully navigating an environment marked by modest gains in major indices and ongoing challenges in ",
+      "url": "https://finance.yahoo.com/news/global-value-opportunities-3-stocks-093759569.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2025-12-12T09:37:59Z"
+    },
+    {
+      "title": "Asian Value Stock Picks With Possible Undervaluation",
+      "summary": "In recent weeks, Asian markets have shown signs of resilience despite global economic uncertainties, with Chinese stocks gaining traction due to renewed interest in technology and artificial intellige",
+      "url": "https://finance.yahoo.com/news/asian-value-stock-picks-possible-043742710.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2025-12-12T04:37:42Z"
+    },
+    {
+      "title": "Asian Stocks Trading Below Estimated Value In December 2025",
+      "summary": "As 2025 draws to a close, Asian markets are navigating a complex landscape marked by economic slowdowns in key regions like China and Japan, while investor sentiment is cautiously optimistic amid hope",
+      "url": "https://finance.yahoo.com/news/asian-stocks-trading-below-estimated-223505997.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2025-12-11T22:35:05Z"
+    }
+  ]
+}

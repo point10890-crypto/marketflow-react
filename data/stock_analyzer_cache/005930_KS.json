@@ -2,8 +2,8 @@
   "name": "삼성전자",
   "ticker": "005930.KS",
   "result": "매수",
-  "date": "2026-04-06 23:28:57",
-  "elapsed": 2.3,
+  "date": "2026-04-07 07:31:39",
+  "elapsed": 2.2,
   "consensus_score": 4.22,
   "analyst_count": 37,
   "recommendation_detail": {
@@ -33,14 +33,14 @@
     "dividend_yield": 1.27,
     "beta": 1.211,
     "fifty_two_week_high": 223000.0,
-    "fifty_two_week_low": 52900.0,
+    "fifty_two_week_low": 52091.0,
     "revenue": 333605947572224,
     "profit_margin": 0.13267,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
   "source": "yfinance",
-  "ai_analysis": "삼성전자에 대해 37명의 애널리스트가 제시한 컨센서스 의견은 '매수'입니다. 목표가 평균은 239,873원으로, 현재가 대비 24.2% 상승 여력이 있습니다. 이는 애널리스트들이 삼성전자의 추가적인 주가 상승을 기대하고 있음을 시사합니다.",
+  "ai_analysis": "삼성전자는 37명의 애널리스트 컨센서스가 '매수' 의견으로, 5점 만점에 4.22점을 기록했습니다. 평균 목표 주가는 현재가 대비 24.2% 상승 여력이 있는 239,873원으로 제시되었습니다. 이는 시장 전문가들이 삼성전자의 추가적인 성장 가능성을 긍정적으로 평가하고 있음을 시사합니다.",
   "revenue_quarters": [
     {
       "date": "2025-12",
@@ -79,6 +79,20 @@
   ],
   "news": [
     {
+      "title": "ASML Faces China Export Curbs As Korean Chipmakers Lock In Capacity",
+      "summary": "U.S. lawmakers have proposed new export controls aimed at restricting ASML Holding's sales and servicing of chipmaking equipment to Chinese semiconductor producers. The proposal targets ASML's extreme",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/asml-faces-china-export-curbs-180908846.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-04-06T18:09:08Z"
+    },
+    {
+      "title": "ASML Revenue Is About to Explode Higher Again",
+      "summary": "AI chip demand keeps climbing, but chipmakers hit a brick wall without the right tools to crank out the next generation of processors. Only one company’s machines can unlock it: ASML Holding‘s(NASDAQ:",
+      "url": "https://247wallst.com/investing/2026/04/06/asml-revenue-is-about-to-explode-higher-again/",
+      "provider": "24/7 Wall St.",
+      "pub_time": "2026-04-06T14:42:19Z"
+    },
+    {
       "title": "South Korea AI memory boom to drive Samsung, SK Hynix strategy shift",
       "summary": "Investing.com — South Korea’s leading chipmakers are set to benefit from a powerful upswing in AI-driven memory demand, but will need to adapt their strategies to sustain gains, according to a Barclay",
       "url": "https://finance.yahoo.com/sectors/technology/articles/south-korea-ai-memory-boom-140520080.html",
@@ -98,20 +112,6 @@
       "url": "https://finance.yahoo.com/markets/stocks/articles/global-market-insights-samsung-electronics-093753034.html",
       "provider": "Simply Wall St.",
       "pub_time": "2026-04-03T09:37:53Z"
-    },
-    {
-      "title": "Samsung Elec likely to report stupendous surge in quarterly profit to record level",
-      "summary": "Samsung Electronics, benefiting from red-hot chip prices stoked by the AI boom, is expected to book a six-fold jump in operating profit for January-March - a quarterly record and just shy of what it e",
-      "url": "https://finance.yahoo.com/markets/stocks/articles/samsung-elec-likely-report-stupendous-080411493.html",
-      "provider": "Reuters",
-      "pub_time": "2026-04-03T08:04:11Z"
-    },
-    {
-      "title": "Samsung Privacy Display Puts Visual Security At Heart Of Galaxy S26 Ultra",
-      "summary": "Samsung Electronics (KOSE:A005930) has introduced a hardware based Privacy Display on the new Galaxy S26 Ultra. The feature is built into the screen and is designed to limit viewing angles to reduce s",
-      "url": "https://finance.yahoo.com/markets/stocks/articles/samsung-privacy-display-puts-visual-161230000.html",
-      "provider": "Simply Wall St.",
-      "pub_time": "2026-04-02T16:12:30Z"
     }
   ]
 }

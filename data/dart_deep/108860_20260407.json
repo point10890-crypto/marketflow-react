@@ -1,0 +1,306 @@
+{
+  "stock_code": "108860",
+  "stock_name": "셀바스AI",
+  "generated_at": "2026-04-06T22:39:06.147056+00:00",
+  "financials": {
+    "stock_code": "108860",
+    "corp_code": "00666064",
+    "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2016": {
+        "cash": 66.5,
+        "total_assets": 1006.5,
+        "short_debt": 66.6,
+        "long_debt": 252.0,
+        "total_liab": 437.6,
+        "total_equity": 568.9,
+        "revenue": 354.4,
+        "op_profit": -84.2,
+        "net_income": -192.9
+      },
+      "2017": {
+        "cash": 115.1,
+        "total_assets": 1069.1,
+        "short_debt": 235.8,
+        "long_debt": 157.0,
+        "total_liab": 522.0,
+        "total_equity": 547.1,
+        "revenue": 468.7,
+        "op_profit": 5.6,
+        "net_income": 42.8
+      },
+      "2018": {
+        "cash": 58.4,
+        "total_assets": 992.3,
+        "short_debt": 88.6,
+        "long_debt": 61.8,
+        "total_liab": 548.4,
+        "total_equity": 443.8,
+        "revenue": 355.6,
+        "op_profit": -170.6,
+        "net_income": -187.7
+      },
+      "2019": {
+        "cash": 193.5,
+        "total_assets": 941.3,
+        "short_debt": 53.3,
+        "long_debt": 67.2,
+        "total_liab": 503.3,
+        "total_equity": 438.0,
+        "revenue": 354.2,
+        "op_profit": -61.8,
+        "net_income": -70.8
+      },
+      "2020": {
+        "cash": 126.7,
+        "total_assets": 915.4,
+        "short_debt": 30.0,
+        "long_debt": 159.3,
+        "total_liab": 420.9,
+        "total_equity": 494.6,
+        "revenue": 347.9,
+        "op_profit": -15.3,
+        "net_income": 42.8
+      },
+      "2021": {
+        "cash": 150.1,
+        "total_assets": 984.1,
+        "short_debt": 0.0,
+        "long_debt": 147.9,
+        "total_liab": 423.9,
+        "total_equity": 560.1,
+        "revenue": 485.8,
+        "op_profit": 55.9,
+        "net_income": 48.1
+      },
+      "2022": {
+        "cash": 191.2,
+        "total_assets": 1065.8,
+        "short_debt": 7.9,
+        "long_debt": 125.0,
+        "total_liab": 350.4,
+        "total_equity": 715.4,
+        "revenue": 508.7,
+        "op_profit": 49.9,
+        "net_income": 77.3
+      },
+      "2023": {
+        "total_assets": 1927.9,
+        "cash": 845.5,
+        "total_equity": 134.6,
+        "short_debt": 38.3,
+        "total_liab": 242.7,
+        "long_debt": 50.0,
+        "op_profit": 40.9,
+        "net_income": -25.5,
+        "revenue": 530.1
+      },
+      "2024": {
+        "total_assets": 3121.4,
+        "cash": 356.8,
+        "total_equity": -350.7,
+        "short_debt": 122.9,
+        "total_liab": 492.2,
+        "long_debt": 0.0,
+        "op_profit": 8.0,
+        "net_income": -58.1,
+        "revenue": 1124.5
+      },
+      "2025": {
+        "total_assets": 3071.0,
+        "cash": 442.3,
+        "total_equity": 1041.0,
+        "short_debt": 110.2,
+        "total_liab": 471.9,
+        "long_debt": 1.5,
+        "op_profit": 14.8,
+        "net_income": 16.6,
+        "revenue": 1147.8
+      }
+    },
+    "missing_years": [
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2016,
+        "revenue_eok": 354,
+        "op_profit_eok": -84,
+        "net_income_eok": -193,
+        "roe_pct": -33.92,
+        "op_margin_pct": -23.73,
+        "debt_ratio_pct": 76.98
+      },
+      {
+        "year": 2017,
+        "revenue_eok": 469,
+        "op_profit_eok": 6,
+        "net_income_eok": 43,
+        "roe_pct": 7.86,
+        "op_margin_pct": 1.28,
+        "debt_ratio_pct": 95.43
+      },
+      {
+        "year": 2018,
+        "revenue_eok": 356,
+        "op_profit_eok": -171,
+        "net_income_eok": -188,
+        "roe_pct": -42.34,
+        "op_margin_pct": -48.03,
+        "debt_ratio_pct": 123.42
+      },
+      {
+        "year": 2019,
+        "revenue_eok": 354,
+        "op_profit_eok": -62,
+        "net_income_eok": -71,
+        "roe_pct": -16.21,
+        "op_margin_pct": -17.51,
+        "debt_ratio_pct": 114.84
+      },
+      {
+        "year": 2020,
+        "revenue_eok": 348,
+        "op_profit_eok": -15,
+        "net_income_eok": 43,
+        "roe_pct": 8.69,
+        "op_margin_pct": -4.31,
+        "debt_ratio_pct": 85.05
+      },
+      {
+        "year": 2021,
+        "revenue_eok": 486,
+        "op_profit_eok": 56,
+        "net_income_eok": 48,
+        "roe_pct": 8.57,
+        "op_margin_pct": 11.52,
+        "debt_ratio_pct": 75.71
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 509,
+        "op_profit_eok": 50,
+        "net_income_eok": 77,
+        "roe_pct": 10.77,
+        "op_margin_pct": 9.82,
+        "debt_ratio_pct": 48.95
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 530,
+        "op_profit_eok": 41,
+        "net_income_eok": -26,
+        "roe_pct": -19.26,
+        "op_margin_pct": 7.74,
+        "debt_ratio_pct": 180.0
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 1124,
+        "op_profit_eok": 8,
+        "net_income_eok": -58,
+        "roe_pct": 16.52,
+        "op_margin_pct": 0.71,
+        "debt_ratio_pct": -140.17
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 1148,
+        "op_profit_eok": 15,
+        "net_income_eok": 17,
+        "roe_pct": 1.63,
+        "op_margin_pct": 1.31,
+        "debt_ratio_pct": 45.34
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": 13.59,
+      "op_profit_cagr_pct": -182.57,
+      "best_year": 2021,
+      "worst_year": 2018,
+      "avg_roe_pct": -5.77
+    },
+    "valuation": {
+      "grade": "D",
+      "strengths": [
+        "매출액이 10년간 연평균 13.59% 성장하며 높은 성장세를 보이고 있습니다.",
+        "AI 산업의 성장과 함께 매출액이 2023년 이후 크게 증가하는 추세입니다.",
+        "2025년에는 당기순이익 흑자 전환 및 자본총계 회복이 예상됩니다."
+      ],
+      "risks": [
+        "영업이익 및 당기순이익이 매우 불안정하며, 잦은 손실을 기록하고 있습니다.",
+        "2024년 자본총계가 마이너스를 기록하며 자본잠식 상태에 빠지는 등 재무구조가 매우 취약합니다.",
+        "영업이익률이 대부분의 기간 동안 낮거나 마이너스를 기록하여 수익성이 매우 저조합니다."
+      ],
+      "one_liner": "매출액은 AI 산업 성장에 힘입어 빠르게 증가하고 있으나, 극심한 수익성 변동성과 2024년 자본잠식 등 재무적 불안정성이 매우 큰 고위험 기업입니다."
+    }
+  },
+  "dcf": {
+    "text": "퀀트 애널리스트로서 셀바스AI의 DCF 적정가치를 계산하겠습니다.\n\n**가정 사항:**\n*   제시된 2025년 매출액과 영업이익은 5년 예측 기간(2025년~2029년) 동안 동일하게 유지된다고 가정합니다. (명시된 성장률이 없으므로 보수적으로 가정)\n*   FCF는 `영업이익 × (1 - 0.25) + 감가상각(매출의 10%) - CAPEX(매출의 5%)` 공식으로 계산합니다. 여기서 0.25는 법인세율로 간주합니다.\n*   WACC (가중평균자본비용) = 9%, 영구성장률 (g) = 2%를 기본 시나리오로 사용합니다.\n*   5년 예측 기간 이후에는 영구성장률(g)로 FCF가 성장한다고 가정하여 터미널 밸류를 계산합니다.\n\n---\n\n### 1. 기본 시나리오 DCF 적정가치 계산\n\n먼저, 2025년 데이터를 바탕으로 연간 FCF를 계산합니다.\n*   매출액 (R): 1148 억원\n*   영업이익 (OP): 15 억원\n*   감가상각 (Depreciation): R * 0.10 = 1148 * 0.10 = 114.8 억원\n*   CAPEX: R * 0.05 = 1148 * 0.05 = 57.4 억원\n\nFCF = OP * (1 - 0.25) + Depreciation - CAPEX\nFCF = 15 * 0.75 + 114.8 - 57.4\nFCF = 11.25 + 114.8 - 57.4 = 68.65 억원\n\n이 FCF가 5년 예측 기간 동안 매년 발생한다고 가정하고, WACC 9%, 영구성장률 2%를 적용하여 DCF를 계산합니다.\n\n---\n\n### 2. Python 코드 실행 및 결과\n\n\n---\n\n### 3. 요약 출력\n\n적정가치(기본): 917.17억원",
+    "executed_code": "import pandas as pd\n\n# Define the DCF calculation function\ndef calculate_dcf(operating_profit, revenue, wacc, g, forecast_years):\n    # Calculate FCF for the base year (assuming it remains constant for the forecast period)\n    depreciation = revenue * 0.10\n    capex = revenue * 0.05\n    fcf_base = operating_profit * (1 - 0.25) + depreciation - capex\n\n    # Check for WACC <= g for terminal value calculation\n    if wacc <= g:\n        # This scenario leads to an infinite or undefined terminal value,\n        # which is unrealistic in a stable growth model.\n        return float('inf')\n\n    # Calculate the sum of discounted FCFs for the explicit forecast period\n    discounted_fcf_sum = 0\n    for i in range(1, forecast_years + 1):\n        discounted_fcf_sum += fcf_base / ((1 + wacc) ** i)\n\n    # Calculate Terminal Value (TV)\n    # FCF for the year immediately following the forecast period (Year forecast_years + 1)\n    fcf_terminal_year = fcf_base * (1 + g)\n    \n    terminal_value = fcf_terminal_year / (wacc - g)\n    \n    # Discount Terminal Value back to the present\n    discounted_terminal_value = terminal_value / ((1 + wacc) ** forecast_years)\n\n    # Total Intrinsic Value\n    intrinsic_value = discounted_fcf_sum + discounted_terminal_value\n    return intrinsic_value\n\n# --- Base Scenario Calculation ---\n# Provided data\nrevenue_2025 = 1148  # 억원\noperating_profit_2025 = 15  # 억원\n\n# Assumptions for base scenario\nwacc_base = 0.09\ng_base = 0.02\nforecast_years = 5\n\n# Calculate DCF for the base scenario\nbase_dcf_value = calculate_dcf(operating_profit_2025, revenue_2025, wacc_base, g_base, forecast_years)\n\n# --- Sensitivity Analysis ---\nwacc_values = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_values = [0.01, 0.02, 0.03]\n\n# Create a DataFrame to store sensitivity results\nsensitivity_results = pd.DataFrame(index=[f'g={g*100:.0f}%' for g in g_values],\n                                   columns=[f'WACC={wacc*100:.0f}%' for wacc in wacc_values])\n\n# Populate the sensitivity grid\nfor g_val in g_values:\n    for wacc_val in wacc_values:\n        value = calculate_dcf(operating_profit_2025, revenue_2025, wacc_val, g_val, forecast_years)\n        if value == float('inf'):\n            sensitivity_results.loc[f'g={g_val*100:.0f}%', f'WACC={wacc_val*100:.0f}%'] = \"Inf\"\n        else:\n            sensitivity_results.loc[f'g={g_val*100:.0f}%', f'WACC={wacc_val*100:.0f}%'] = f\"{value:.2f}\"\n\n# Output results\nprint(f\"적정가치(기본): {base_dcf_value:.2f}억원\")\nprint(\"\\nDCF 적정가치 민감도 분석 (억원):\")\nprint(sensitivity_results)",
+    "code_output": "적정가치(기본): 917.17억원\n\nDCF 적정가치 민감도 분석 (억원):\n      WACC=7%  WACC=8%  WACC=9% WACC=10% WACC=11%\ng=1%  1105.41   948.23   830.32   738.60   665.20\ng=2%  1279.99  1068.37   917.17   803.72   715.45\ng=3%  1541.85  1236.57  1032.96   887.45   778.26"
+  },
+  "news": {
+    "text": "## 셀바스AI(108860) 재무 및 시장 컨센서스 분석: 관망 의견 제시\n\n셀바스AI(108860)는 AI 산업 성장에 힘입어 매출액이 빠르게 증가하고 있으나, 과거 극심한 수익성 변동성과 재무적 불안정성이 지적된 고위험 기업으로 평가받았습니다. 최근 2주간의 주요 뉴스와 공시 자료를 바탕으로 재무 데이터 스토리와 시장 컨센서스를 비교하고, 재무제표에 드러나지 않는 리스크와 호재를 분석한 결과, 현재는 **관망** 의견을 제시합니다.\n\n### 1. 재무 데이터 스토리와 현재 시장 컨센서스의 일치/불일치\n\n초기 재무 데이터 분석은 셀바스AI의 매출액이 빠르게 증가하고 있지만, 극심한 수익성 변동성과 2024년 자본잠식 등 재무적 불안정성이 크다고 보았습니다.\n\n*   **매출액 증가:** 2025년 연결 기준 매출액 1,148억 원을 달성하며 역대 최대 실적을 기록, 전년 대비 2% 증가했습니다. 이는 AI 산업 성장에 따른 매출 증가 스토리와 일치합니다.\n*   **수익성 변동성:** 2025년 영업이익은 12.8억 원으로 전년 대비 60% 상승하며 수익성 개선을 보였습니다. 이는 과거의 극심한 변동성에서 개선된 모습이나, 절대적인 이익 규모는 여전히 크지 않아 지속적인 안정화 여부를 지켜볼 필요가 있습니다.\n*   **자본잠식:** 2025년 감사보고서에 따르면 자기자본이 자본금보다 훨씬 많아 자본잠식 상태가 아닌 것으로 확인되었습니다. 이는 \"2024년 자본잠식\"이라는 초기 재무 데이터 스토리와 **불일치**하며, 재무 안정성이 개선되었음을 시사합니다.\n*   **고위험 기업:** 2026년 3월 코스닥150 지수에 신규 편입된 것은 시장에서 셀바스AI의 기술력, 사업화 성과 및 성장 가능성을 인정받은 결과로 해석될 수 있습니다. 이는 '고위험 기업'이라는 인식과는 다소 상충되지만, 4월 초 주가 하락 및 VI 발동은 여전히 높은 시장 변동성과 위험 인식이 존재함을 보여줍니다.\n\n**결론적으로, 매출액 성장은 일치하지만, 2025년 실적 개선과 감사보고서상 자본잠식 해소는 초기 재무 데이터 스토리와 불일치하며 재무 안정성이 개선된 것으로 판단됩니다.**\n\n### 2. 재무제표에서 드러나지 않는 리스크 또는 호재\n\n**호재:**\n\n*   **코스닥150 신규 편입:** 2026년 3월 코스닥150 지수 편입으로 기관 및 패시브 투자 자금 유입 가능성이 높아졌으며, 시장 내 대표 AI 기업으로서의 입지를 강화했습니다.\n*   **다양한 AI 사업 확장 및 기술력 인정:** 의료 AI(통합 모니터링 솔루션, 음성인식), 모빌리티 AI(차량용 음성인식 미들웨어), AI 점자 단말기 등 다양한 분야에서 신제품 출시와 사업화 성과를 보이고 있습니다. 특히 우리은행 금융 키오스크에 음성 AI 기술을 적용하고, 아마존, 바이두 등 글로벌 빅테크 기업들과 모빌리티 AI 협력을 확대하는 등 성장 잠재력을 높이고 있습니다.\n*   **자회사 실적 견인:** 연결 종속기업 메디아나의 해외 매출 확대와 원가 구조 개선이 2025년 연결 실적 개선에 긍정적인 영향을 미쳤습니다.\n\n**리스크:**\n\n*   **높은 주가 변동성:** 최근 2주간 주가 하락 및 VI 발동은 AI 테마에 대한 높은 기대감과 함께 주가의 변동성이 크다는 것을 보여줍니다. AI 산업의 전반적인 시장 심리에 따라 주가가 크게 움직일 수 있습니다.\n*   **수익성 개선의 지속 가능성:** 2025년 영업이익이 개선되었으나, 절대적인 규모가 여전히 크지 않아 향후에도 안정적인 수익성 유지가 관건입니다. AI 관련 연구개발(R&D) 비용 등 지속적인 투자 지출이 수익성에 부담을 줄 수 있습니다.\n*   **경쟁 심화:** AI 산업은 빠르게 성장하는 만큼 경쟁이 매우 치열합니다. 글로벌 빅테크 기업들과의 경쟁 속에서 셀바스AI의 기술적 우위와 시장 점유율 유지가 중요합니다.\n\n### 3. 최종 판정\n\n초기 분석에서 지적된 2024년 자본잠식 우려가 2025년 감사보고서상 해소되었고, 매출액 성장 및 수익성 개선, 코스닥150 편입, 다양한 AI 사업 확장 등 긍정적인 변화가 확인됩니다. 이는 기업의 재무 안정성과 성장 동력이 강화되고 있음을 시사합니다.\n\n그러나 여전히 절대적인 영업이익 규모가 크지 않아 수익성 변동성에 대한 우려가 남아있으며, 최근 주가 급락과 같은 높은 변동성은 투자에 있어 신중한 접근을 요구합니다. AI 테마의 성장성은 분명하나, 기업의 펀더멘털 개선이 지속적으로 확인되어야 합니다.\n\n따라서, 현재 시점에서는 긍정적인 변화가 감지되나, 불확실성이 완전히 해소되었다고 보기는 어렵기에 **관망** 의견을 제시합니다. 추가적인 실적 개선과 재무 안정성 확보, 그리고 AI 사업의 구체적인 성과를 확인하며 투자 시점을 모색하는 것이 바람직합니다.",
+    "citations": [
+      {
+        "title": "hitnews.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGILfuyE_u2BduLM33CAK2VgviFocCBia94cRc2-N10gF8ciraG-QWqPrOdM6C5dSx0B1jYVZTo_ysbhe0rW59PnigbrAB5JUOMU7QYSr4fi-3mDLQZ2q0vI3Cg6MnZqg8Y6g6rZxdQIhb_OZl4vpB0J5fD_eg6"
+      },
+      {
+        "title": "selvasai.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHoCIW1qelX4X8rCxpjwr0uN6U1Se-3UEWTwBv_ft2TkVP-uw__Fg_xzb6WuIvh1Qu1NF9UwKefv81T_viJoBFDL3A7FVoT8PNOiCNwKoQm0fPzR_7IX3kKQpDBho5DrBjaS3tdRd_Hc9tywt9vHdW-DXgYhPLQL7Y="
+      },
+      {
+        "title": "ddaily.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFC3FydyFJrFJUID4FUkuPQ8h1j7Uee4KtdQdC2x1Lx5pHMaMc0kw9X1HB2sJKN3mGIyLesIhBShm2tczKnlPOBvgRq0pYlOzk3xadjQCTI97HE-DO90F4vWvTmueNyOPMPzj-BZiUXRWDHRvuNDHU="
+      },
+      {
+        "title": "daum.net",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQF52rWhrpuprFu5QoxRXSNI9R5xUgcyFsazq8brUiZLOGkgB3TT56uZN7citRXSpp_ZnLBwgiMr1wSc8aPyxHBcDtzgJ3BRRUHTH-6icWtISDoMAyuPiH1D2xnWkgM4bOWT8GPDcn7phdGBjqCxuVgqUtscCWXWM_l3H0WxgXayi19zSw=="
+      },
+      {
+        "title": "bokuennews.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFr6Je-tzEMm2Ki3p4MdyMSJh0eOrdj9LXL4rliweWA2bvYsfNi5L9l3jxPE3O2dZSUzVoAhncQUgQZLok_e8fblFeVJpe56CEpMp-KX2wG9qSJ48UVxiua8505OGgKHqOQMeAGibpxUlhNDplwBFqA"
+      },
+      {
+        "title": "edaily.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFbeIaezJKyqkvRQPhTMPGeITYLiKqMOw5MVbyyRcdaLZeXVTXjiPeX8EMUIhNp98sJ3P2Ng-8CjFTxfPHnAillJ4BvQ3CVo-RBKyAqHn_ouhD07CEfaajj89zmOvtDbNvaTH4b1QhXtVfKXtUPDThdN1Z2BQiWcngyC87z"
+      },
+      {
+        "title": "chosun.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEzN3MM4V1Gz_Dg-loUF6qu3uZOwkWttFTTeWLMwBGz7nRsSVmVPeqZCW78cPLrzGlCi3gMXmQXRRO5FDcDK1u539z7uz5iAIqhjvOWjPbL0Uo6Mqa7deynuXFKTTxOgTXEOB10gvcz2qfRd_O9OvzKrQMNMzC2g6NCepaQadejIx2UUBCm3HmkTmPdXQ3SaFVtxfnOcEMX"
+      },
+      {
+        "title": "alphasquare.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEeUVLlB_H09qJjSz609JjHnHBQQoRUoUygJTU5RmcFPnXTF2T286zzZ1gXyI6RV8FGN3Ic5L-PDHen0YEESKSFEkQ7amiGziuiL-F3_F8o-U_pm-wMSizcMNcKiH9n6a8jx_0JDrlu3VCXj4kdFnH3ERGb"
+      },
+      {
+        "title": "youtube.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEoPuZUwZ54lnKivaYo5Ts9aZ8jPSSjflNAx6dKmPXH8pzDmimujdPn7um304Qkzae0tbd9703Rp7s2QHbRxB6dYnlWMbGGdhZbHZIaeoGBEA6caidtawFygLXVBevvdGrXNQ2sz6A="
+      },
+      {
+        "title": "cbci.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFOOEKHdx8p9jSlsU1YPn2gOo8H1FbjNKNN6vc708W4kzhuA2yeRH4SAfr0iC8dzS2k3gdix6s1fgl3slOCtvdV_upxhoFKHeno8TQ4m1ExdFcbIr5yIueHwovrrEJURo8cPoFLQlCCnmXFtdgf6JEIGWRHwA=="
+      }
+    ]
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=00666064",
+    "summary": "공시 페이지 접근 제한"
+  }
+}

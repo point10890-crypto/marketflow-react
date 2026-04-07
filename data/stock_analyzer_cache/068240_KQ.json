@@ -1,0 +1,75 @@
+{
+  "name": "다원시스",
+  "ticker": "068240.KQ",
+  "result": "데이터 없음",
+  "date": "2026-04-07 07:52:56",
+  "elapsed": 17.6,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 2530.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 2530.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "DAWONSYS",
+    "sector": "Industrials",
+    "industry": "Railroads",
+    "market_cap": 96553492480,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": null,
+    "beta": 0.527,
+    "fifty_two_week_high": 9500.0,
+    "fifty_two_week_low": 2015.0,
+    "revenue": 183925817344,
+    "profit_margin": -0.37592,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 27994198270
+    },
+    {
+      "date": "2025-06",
+      "value": 35463273340
+    },
+    {
+      "date": "2025-03",
+      "value": 43974585680
+    },
+    {
+      "date": "2024-12",
+      "value": 76493761840
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": -18934334950
+    },
+    {
+      "date": "2025-06",
+      "value": -19281219200
+    },
+    {
+      "date": "2025-03",
+      "value": -19842657660
+    },
+    {
+      "date": "2024-12",
+      "value": -11083916930
+    }
+  ],
+  "news": []
+}

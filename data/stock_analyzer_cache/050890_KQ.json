@@ -1,0 +1,75 @@
+{
+  "name": "쏠리드",
+  "ticker": "050890.KQ",
+  "result": "데이터 없음",
+  "date": "2026-04-07 07:36:41",
+  "elapsed": 2.5,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 15640.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 15640.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "Solid",
+    "sector": "",
+    "industry": "",
+    "market_cap": 937197961216,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": null,
+    "beta": null,
+    "fifty_two_week_high": 17420.0,
+    "fifty_two_week_low": 5799.0,
+    "revenue": null,
+    "profit_margin": null,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 112850890190
+    },
+    {
+      "date": "2025-09",
+      "value": 70006352620
+    },
+    {
+      "date": "2025-06",
+      "value": 56222016650
+    },
+    {
+      "date": "2025-03",
+      "value": 55751069760
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 27106471490
+    },
+    {
+      "date": "2025-09",
+      "value": 5274696650
+    },
+    {
+      "date": "2025-06",
+      "value": 988313390
+    },
+    {
+      "date": "2025-03",
+      "value": 3063391630
+    }
+  ],
+  "news": []
+}

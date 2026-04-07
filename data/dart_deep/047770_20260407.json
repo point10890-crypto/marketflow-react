@@ -1,0 +1,273 @@
+{
+  "stock_code": "047770",
+  "stock_name": "코데즈컴바인",
+  "generated_at": "2026-04-06T23:08:12.841114+00:00",
+  "financials": {
+    "stock_code": "047770",
+    "corp_code": "00329093",
+    "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2016": {
+        "cash": 44.2,
+        "total_assets": 290.2,
+        "short_debt": 0.0,
+        "total_liab": 51.4,
+        "total_equity": 238.8,
+        "revenue": 163.4,
+        "op_profit": 13.2
+      },
+      "2017": {
+        "cash": 61.5,
+        "total_assets": 315.8,
+        "short_debt": 0.0,
+        "total_liab": 51.1,
+        "total_equity": 264.7,
+        "revenue": 212.3,
+        "op_profit": 18.1,
+        "net_income": 21.3
+      },
+      "2018": {
+        "cash": 43.4,
+        "total_assets": 644.1,
+        "total_liab": 289.4,
+        "total_equity": 354.7,
+        "revenue": 293.4,
+        "op_profit": 48.1,
+        "net_income": 0.5
+      },
+      "2019": {
+        "cash": 76.7,
+        "total_assets": 716.3,
+        "total_liab": 292.4,
+        "total_equity": 424.0,
+        "revenue": 358.2,
+        "op_profit": 45.1,
+        "net_income": 69.0
+      },
+      "2020": {
+        "cash": 106.6,
+        "total_assets": 758.9,
+        "total_liab": 278.5,
+        "total_equity": 480.4,
+        "revenue": 324.9,
+        "op_profit": 36.7,
+        "net_income": 56.5
+      },
+      "2021": {
+        "cash": 173.8,
+        "total_assets": 803.1,
+        "total_liab": 256.8,
+        "total_equity": 546.3,
+        "revenue": 382.6,
+        "op_profit": 42.7,
+        "net_income": 0.0
+      },
+      "2022": {
+        "cash": 300.3,
+        "total_assets": 840.6,
+        "total_liab": 218.0,
+        "total_equity": 622.6,
+        "revenue": 390.5,
+        "op_profit": 38.6,
+        "net_income": 0.3
+      },
+      "2023": {
+        "total_assets": 855.3,
+        "cash": 294.2,
+        "total_equity": 284.0,
+        "total_liab": 195.5,
+        "op_profit": 29.3,
+        "net_income": 37.1,
+        "revenue": 419.6
+      },
+      "2024": {
+        "total_assets": 888.8,
+        "cash": 49.1,
+        "total_equity": 22.3,
+        "short_debt": 57.7,
+        "total_liab": 210.5,
+        "op_profit": 10.6,
+        "net_income": 20.8,
+        "revenue": 396.0
+      },
+      "2025": {
+        "total_assets": 928.7,
+        "cash": 187.5,
+        "total_equity": 284.0,
+        "short_debt": 95.7,
+        "total_liab": 205.7,
+        "op_profit": 24.2,
+        "net_income": 0.5,
+        "revenue": 397.2
+      }
+    },
+    "missing_years": [
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2016,
+        "revenue_eok": 163,
+        "op_profit_eok": 13,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 7.98,
+        "debt_ratio_pct": 21.34
+      },
+      {
+        "year": 2017,
+        "revenue_eok": 212,
+        "op_profit_eok": 18,
+        "net_income_eok": 21,
+        "roe_pct": 7.92,
+        "op_margin_pct": 8.49,
+        "debt_ratio_pct": 19.25
+      },
+      {
+        "year": 2018,
+        "revenue_eok": 293,
+        "op_profit_eok": 48,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 16.38,
+        "debt_ratio_pct": 81.41
+      },
+      {
+        "year": 2019,
+        "revenue_eok": 358,
+        "op_profit_eok": 45,
+        "net_income_eok": 69,
+        "roe_pct": 16.27,
+        "op_margin_pct": 12.57,
+        "debt_ratio_pct": 68.87
+      },
+      {
+        "year": 2020,
+        "revenue_eok": 325,
+        "op_profit_eok": 37,
+        "net_income_eok": 56,
+        "roe_pct": 11.67,
+        "op_margin_pct": 11.38,
+        "debt_ratio_pct": 57.92
+      },
+      {
+        "year": 2021,
+        "revenue_eok": 383,
+        "op_profit_eok": 43,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 11.23,
+        "debt_ratio_pct": 47.07
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 390,
+        "op_profit_eok": 39,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 10.0,
+        "debt_ratio_pct": 34.99
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 420,
+        "op_profit_eok": 29,
+        "net_income_eok": 37,
+        "roe_pct": 13.03,
+        "op_margin_pct": 6.9,
+        "debt_ratio_pct": 69.01
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 396,
+        "op_profit_eok": 11,
+        "net_income_eok": 21,
+        "roe_pct": 95.45,
+        "op_margin_pct": 2.78,
+        "debt_ratio_pct": 954.55
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 397,
+        "op_profit_eok": 24,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 6.05,
+        "debt_ratio_pct": 72.54
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": 10.2,
+      "op_profit_cagr_pct": 7.07,
+      "best_year": 2018,
+      "worst_year": 2024,
+      "avg_roe_pct": 14.43
+    },
+    "valuation": {
+      "grade": "D",
+      "strengths": [
+        "매출액은 10년간 꾸준히 성장하는 추세를 보였습니다.",
+        "부채비율이 2018년 이후 2022년까지 점진적으로 개선되는 모습을 보였습니다.",
+        "2023년까지 현금 보유액이 증가하는 추세였습니다."
+      ],
+      "risks": [
+        "당기순이익이 0인 해가 많아 수익성의 지속 가능성에 대한 우려가 큽니다.",
+        "2024년 자본총계가 급격히 감소하며 부채비율이 비정상적으로 높아져 재무 안정성이 매우 취약합니다.",
+        "영업이익률이 2024년에 2.78%로 급락하는 등 수익성이 크게 악화되었습니다."
+      ],
+      "one_liner": "매출액 성장에도 불구하고 불안정한 수익성과 2024년 급격히 악화된 재무구조로 인해 투자 위험이 매우 높은 기업입니다."
+    }
+  },
+  "dcf": {
+    "text": "퀀트 애널리스트로서 코데즈컴바인(047770)의 DCF 적정가치를 계산하겠습니다.\n제공된 정보에 따라 5년 예측 기간 동안 매출액과 영업이익이 일정하게 유지된다고 가정하고 FCF를 계산합니다.\n\n**가정 요약:**\n*   **기준 연도:** 2025\n*   **최근 재무 (2025년 기준, 억원):**\n    *   매출액: 397\n    *   영업이익: 24\n*   **FCF 계산식:** 영업이익 × (1 - 0.25) + 감가상각(매출의 10%) - CAPEX(매출의 5%)\n    *   감가상각 = 397 억원 * 10% = 39.7 억원\n    *   CAPEX = 397 억원 * 5% = 19.85 억원\n    *   세율 (FCF 계산용) = 25% (영업이익에 적용)\n*   **예측 기간:** 5년\n*   **기본 시나리오:** WACC = 9%, 영구성장률 g = 2%\n*   **매출액 및 영업이익 성장률:** 별도 언급이 없어 5년 예측 기간 동안 현재 수준(매출액 397억원, 영업이익 24억원)을 유지한다고 가정합니다.\n\n---\n**Python 코드 실행 및 결과:**\n\n\n---\n**분석 결과:**\n\n1.  **기본 시나리오 DCF 적정가치:**\n    *   WACC 9%, 영구성장률 2%를 적용했을 때, 코데즈컴바인(047770)의 적정가치는 **505.68 억원**으로 계산됩니다.\n    *   예측 기간 동안의 연간 FCF는 37.85 억원으로 일정하게 가정되었습니다.\n\n2.  **WACC 및 영구성장률(g) 민감도 그리드:**\n    *   WACC가 낮아지고 영구성장률(g)이 높아질수록 기업의 적정가치는 상승합니다. 이는 미래 현금흐름의 할인율이 낮아지고 터미널 밸류가 커지기 때문입니다.\n    *   반대로 WACC가 높아지고 영구성장률(g)이 낮아질수록 적정가치는 하락합니다.\n    *   예를 들어, WACC 7%, g 3%일 경우 적정가치는 850.10 억원으로 가장 높게 나타나며, WACC 11%, g 1%일 경우 적정가치는 366.76 억원으로 가장 낮게 나타납니다.\n\n3.  **요약:**\n    *   **적정가치(기본): 505.68억원**\n\n**참고:**\n*   본 분석은 매출액 및 영업이익이 예측 기간 동안 일정하다는 강한 가정 하에 수행되었습니다. 실제 기업 가치 평가에서는 매출액 성장률, 영업이익률 변화, 자본 지출 계획 등에 대한 상세한 예측이 필요합니다.\n*   제시된 FCF 계산식은 간소화된 형태이며, 실제 FCF 계산 시에는 운전자본 변동, 법인세 등 다양한 요소가 고려되어야 합니다.",
+    "executed_code": "import pandas as pd\n\ndef calculate_dcf(revenue_base, op_profit_base, wacc, g, forecast_years=5):\n    \"\"\"\n    DCF 적정가치를 계산하는 함수.\n    매출액 및 영업이익 성장률이 주어지지 않아 예측 기간 동안 일정하다고 가정합니다.\n    \"\"\"\n    tax_rate = 0.25  # FCF 계산 시 영업이익에 적용되는 세율\n    depreciation_rate = 0.10 # 매출액의 10%\n    capex_rate = 0.05      # 매출액의 5%\n\n    # 예측 기간 동안의 FCF 계산\n    fcf_list = []\n    for i in range(1, forecast_years + 1):\n        # 매출액 및 영업이익이 예측 기간 동안 일정하다고 가정\n        revenue_proj = revenue_base\n        op_profit_proj = op_profit_base\n\n        depreciation = revenue_proj * depreciation_rate\n        capex = revenue_proj * capex_rate\n        \n        # FCF = 영업이익 * (1 - 세율) + 감가상각 - CAPEX\n        fcf = op_profit_proj * (1 - tax_rate) + depreciation - capex\n        fcf_list.append(fcf)\n\n    # 터미널 밸류(Terminal Value) 계산\n    # 예측 기간 마지막 해 다음 해의 FCF (Year 6)\n    fcf_terminal_year = fcf_list[-1] * (1 + g)\n    \n    # WACC가 영구성장률 g보다 작거나 같으면 무한대 또는 계산 불가\n    if wacc <= g:\n        return float('inf') # 무한대 값 반환\n\n    terminal_value = fcf_terminal_year / (wacc - g)\n\n    # FCF와 터미널 밸류의 현재가치 합산\n    present_value_fcf = 0\n    for i, fcf in enumerate(fcf_list):\n        present_value_fcf += fcf / ((1 + wacc) ** (i + 1))\n\n    present_value_terminal_value = terminal_value / ((1 + wacc) ** forecast_years)\n\n    total_dcf_value = present_value_fcf + present_value_terminal_value\n    return total_dcf_value\n\n# 기본 시나리오 입력값\nrevenue_base = 397  # 억원\nop_profit_base = 24 # 억원\nbase_wacc = 0.09    # 9%\nbase_g = 0.02       # 2%\nforecast_years = 5\n\n# 1. 기본 시나리오 DCF 적정가치 계산\nbase_dcf_value = calculate_dcf(revenue_base, op_profit_base, base_wacc, base_g, forecast_years)\n\n# 2. WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 출력\nwacc_values = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_values = [0.01, 0.02, 0.03]\n\nsensitivity_results = pd.DataFrame(index=[f'g={g*100:.0f}%' for g in g_values],\n                                   columns=[f'WACC={wacc*100:.0f}%' for wacc in wacc_values])\n\nfor g_val in g_values:\n    for wacc_val in wacc_values:\n        dcf_val = calculate_dcf(revenue_base, op_profit_base, wacc_val, g_val, forecast_years)\n        sensitivity_results.loc[f'g={g_val*100:.0f}%', f'WACC={wacc_val*100:.0f}%'] = round(dcf_val, 2)\n\n# 결과 출력\nprint(\"--- DCF Valuation Results ---\")\nprint(f\"기업: 코데즈컴바인 (047770)\")\nprint(f\"기준 연도: 2025\")\nprint(f\"가정: FCF ≈ 영업이익 × (1 - 0.25) + 감가상각(매출의 10%) - CAPEX(매출의 5%)\")\nprint(f\"       (매출액 및 영업이익은 예측 기간 동안 일정하다고 가정)\")\nprint(f\"       5년 예측 + Terminal Value\")\n\nprint(\"\\n1. 기본 시나리오 DCF 적정가치(억원) 계산:\")\nprint(f\"   WACC = {base_wacc*100:.0f}%, 영구성장률 g = {base_g*100:.0f}%\")\nprint(f\"   적정가치: {base_dcf_value:.2f} 억원\")\n\nprint(\"\\n2. WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 (단위: 억원):\")\nprint(sensitivity_results)\n\nprint(f\"\\n3. 요약 출력:\")\nprint(f\"적정가치(기본): {base_dcf_value:.2f}억원\")",
+    "code_output": "--- DCF Valuation Results ---\n기업: 코데즈컴바인 (047770)\n기준 연도: 2025\n가정: FCF ≈ 영업이익 × (1 - 0.25) + 감가상각(매출의 10%) - CAPEX(매출의 5%)\n       (매출액 및 영업이익은 예측 기간 동안 일정하다고 가정)\n       5년 예측 + Terminal Value\n\n1. 기본 시나리오 DCF 적정가치(억원) 계산:\n   WACC = 9%, 영구성장률 g = 2%\n   적정가치: 505.68 억원\n\n2. WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 (단위: 억원):\n     WACC=7% WACC=8% WACC=9% WACC=10% WACC=11%\ng=1%  609.47  522.81   457.8   407.22   366.76\ng=2%  705.72  589.05  505.68   443.13   394.46\ng=3%   850.1  681.78  569.52   489.29   429.09\n\n3. 요약 출력:\n적정가치(기본): 505.68억원"
+  },
+  "news": {
+    "text": "## 코데즈컴바인(047770) 투자 분석 보고서\n\n**투자등급 D, 요약: 매출액 성장에도 불구하고 불안정한 수익성과 2024년 급격히 악화된 재무구조로 인해 투자 위험이 매우 높은 기업입니다.**\n\n### 1. 재무 데이터가 보여주는 스토리와 현재 시장 컨센서스의 일치/불일치\n\n제공된 재무 데이터는 코데즈컴바인이 불안정한 수익성과 급격히 악화된 재무구조로 인해 투자 위험이 매우 높다는 부정적인 스토리를 보여줍니다. 최근 2주간의 시장 뉴스를 살펴보면, 이러한 재무적 불안정성과 일치하는 부분과 불일치하는 부분이 혼재되어 있습니다.\n\n*   **불일치 요소:** 3월 13일 외국인 순매수 및 단기 주가 상승(12.43%)이 관찰되었으며, 3월 30일에는 회사가 온라인 채널 확대 및 해외 수출을 통한 중장기 성장 전략을 시동하고, 재고 감축 및 정상 판매 비중 확대로 수익성 개선에 주력하고 있다는 긍정적인 경영 노력이 보도되었습니다. 이는 재무제표의 부정적인 평가와는 다소 상반되는 시장의 기대감 또는 단기적인 수급 요인을 반영합니다.\n*   **일치 요소:** 3월 30일 뉴스에서도 원/달러 환율 상승과 인건비 등 고정비 증가로 인한 원가 압박 등 녹록지 않은 경영 환경이 언급되어, '불안정한 수익성'이라는 재무 데이터의 내용과 맥을 같이 합니다.\n*   **특이점:** 코데즈컴바인은 과거 남북경협주로 분류되어 대북 관련 뉴스에 따라 주가가 급등하는 경향을 보였습니다 (2월 27일 사례). 이는 기업의 본질적인 재무 상태와 무관하게 외부 정치적 요인에 의해 주가가 크게 변동할 수 있음을 시사합니다.\n\n### 2. 재무제표에서 드러나지 않는 리스크 또는 호재\n\n**리스크:**\n\n*   **환율 변동성:** 해외 위탁 생산 비중이 높은 패션 업종 특성상 원/달러 환율 상승은 지속적인 비용 부담으로 작용할 수 있습니다. 이는 재무제표에는 반영되지만, 미래의 불확실한 환율 변동 자체가 추가적인 리스크입니다.\n*   **테마주 변동성:** 남북경협주와 같은 테마에 묶여 기업의 펀더멘털과 무관하게 정치적 상황에 따라 주가가 급변할 위험이 있습니다.\n*   **경쟁 심화 및 소비 둔화:** 패션/의류 산업 전반의 경쟁 심화와 민간 소비 둔화 가능성은 매출 및 수익성에 지속적인 압박으로 작용할 수 있습니다.\n\n**호재:**\n\n*   **사업 구조 다변화 노력:** 온라인 채널 확대 및 해외 수출 본격화, 생산 중심에서 수익 중심 경영으로의 전환 노력은 장기적인 관점에서 긍정적인 변화를 가져올 수 있습니다.\n*   **수익성 개선 전략:** 상품 라인업 정리, 재고 감축, 정상 판매 비중 확대 등 수익성 개선을 위한 구체적인 전략을 추진 중입니다.\n*   **안정적인 브랜드 포트폴리오:** 자체 브랜드 'Codes Combine' 외에 미국 이너웨어 브랜드 'JOCKEY' 국내 라이센스 계약을 통해 이마트, 홈쇼핑 등에 제품을 공급하고 있어 안정적인 매출처를 확보하고 있습니다.\n\n### 3. 최종 판정\n\n**매도**\n\n코데즈컴바인은 투자등급 D, 불안정한 수익성, 2024년 급격히 악화된 재무구조로 인해 투자 위험이 매우 높은 기업입니다. 비록 최근 온라인 채널 확대 및 해외 수출 등 사업 구조 다변화와 수익성 개선 노력이 보도되었으나, 이러한 노력이 실제 재무 성과로 이어지기까지는 상당한 시간이 소요될 것으로 판단됩니다. 또한, 남북경협주와 같은 외부 테마에 의한 주가 변동성이 높아 기업의 본질 가치와 무관하게 투자 리스크가 증대될 수 있습니다. 현재의 재무적 불안정성과 높은 투자 위험을 고려할 때, 적극적인 매도 의견을 제시합니다.",
+    "citations": [
+      {
+        "title": "etoday.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHoljWec2gYzACbNuCr12IR6_1WHM7h27TvbpIqLWpYu3O4Whue4SgK9adWkoQVEe1s-X_l7xnab6Kpg1S_hXzmESd2ivrUp7lsI9zCUvxbpNVc2BZu16iej720dNeP1XyG12m5"
+      },
+      {
+        "title": "chosun.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHq_dG5B6sVjQw2bhHdGW9xWps9s2u-KGVCDqAprDkZcGcaEsvIpkFisu_ZgEmYPm20jFPRXrr3VyUbcCKjP7P5Z4vc9ZxvfGECt15x-ZOnAIG7ikP1r7FYB4hk6vClHSN_nbNN9T5d1g7wi45fUI-uLL11hJeHwjQcRg8yLN224CpzCoTsh8Y="
+      },
+      {
+        "title": "daum.net",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQE3h1yM307SvU7tYPk1XVdDR-2un8E6csur8uVk3S_RQLrPrzSOZEohVnB0wKEb1xT4qMjQwdD9zI9SBBkEVcMNdWq3jb3163BNXDFU_YuheTYbfW0c42ywd5HYAtIo6ZwRLCibcp8Z3sU8qpVYi3cCoqXDF8YHjEm6bSg74yxiaw=="
+      },
+      {
+        "title": "zum.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEYKCI6rnNG1JVrD-1hQu59gGRsAUYgvcZX9FEvZiMJXEV7smr2CbeRTrSuz4O9BmeN3jpSG5kfCcTDL1arV5S6pzXq3le4TqCfW_n_xMEVrlvSjhe8HPTc3Qmq78rfUOo="
+      },
+      {
+        "title": "alphasquare.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQE6uw409jTsJRDpUNNEiQbDyrE_Rgyy6TC0TVEx2yuIbAZK80mOrTxnTJ3IybSEE_jBvibVeyUEigZ8OO_dgYqh4CFyPSL0UUw510twUUQr0J5fTiFmL4wUTHcM2gk-osU1qe_6N0LbIoIIixlh5iIoFVI="
+      },
+      {
+        "title": "widedaily.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEGX4U7wOzUSqv_e2Wpo3zmQAYGxAqilGIln2KqniTxzt26oudaQswm9281bgozz__nsekuifZEwGMtFQeC4Z-G9IbqpCnokrbLcOzPGaYMxTU9upGBXjEMwBsxA6UelXK8knD440fQZ7TdZGoOsrk7FqScQQPn"
+      }
+    ]
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=00329093",
+    "summary": "The browsing result indicates that the requested URL could not be found or accessed. Therefore, I cannot provide the requested information.\n공시 페이지 접근 제한"
+  }
+}

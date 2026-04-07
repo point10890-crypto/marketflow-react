@@ -1,0 +1,283 @@
+{
+  "stock_code": "123330",
+  "stock_name": "제닉",
+  "generated_at": "2026-04-06T16:59:41.176684+00:00",
+  "financials": {
+    "stock_code": "123330",
+    "corp_code": "00624998",
+    "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2016": {
+        "cash": 189.8,
+        "total_assets": 1015.6,
+        "short_debt": 66.1,
+        "long_debt": 186.6,
+        "total_liab": 396.3,
+        "total_equity": 619.3,
+        "revenue": 896.7,
+        "op_profit": 53.6,
+        "net_income": 12.3
+      },
+      "2017": {
+        "cash": 81.9,
+        "total_assets": 933.8,
+        "short_debt": 113.8,
+        "long_debt": 116.9,
+        "total_liab": 391.1,
+        "total_equity": 542.7,
+        "revenue": 646.9,
+        "op_profit": -82.9,
+        "net_income": -74.7
+      },
+      "2018": {
+        "cash": 84.8,
+        "total_assets": 733.1,
+        "short_debt": 105.0,
+        "long_debt": 103.2,
+        "total_liab": 343.7,
+        "total_equity": 389.4,
+        "revenue": 690.3,
+        "op_profit": -114.1,
+        "net_income": -153.2
+      },
+      "2019": {
+        "cash": 90.6,
+        "total_assets": 581.5,
+        "short_debt": 149.7,
+        "long_debt": 0.0,
+        "total_liab": 310.1,
+        "revenue": 522.6,
+        "op_profit": -50.3,
+        "net_income": -119.6
+      },
+      "2020": {
+        "cash": 54.4,
+        "total_assets": 501.0,
+        "short_debt": 135.0,
+        "total_liab": 277.7,
+        "revenue": 421.3,
+        "op_profit": 10.4,
+        "net_income": -43.5
+      },
+      "2021": {
+        "cash": 171.9,
+        "total_assets": 454.1,
+        "short_debt": 100.0,
+        "total_liab": 261.1,
+        "revenue": 384.1,
+        "op_profit": -39.4,
+        "net_income": -43.3
+      },
+      "2022": {
+        "cash": 33.5,
+        "total_assets": 303.6,
+        "short_debt": 0.0,
+        "total_liab": 144.1,
+        "revenue": 314.5,
+        "op_profit": -31.7,
+        "net_income": -33.4
+      },
+      "2023": {
+        "total_assets": 234.0,
+        "cash": 16.7,
+        "total_equity": -137.4,
+        "total_liab": 118.7,
+        "op_profit": -40.2,
+        "net_income": 0.0,
+        "revenue": 280.7
+      },
+      "2024": {
+        "total_assets": 381.6,
+        "cash": 12.9,
+        "total_equity": 274.0,
+        "short_debt": 50.0,
+        "total_liab": 160.0,
+        "op_profit": 60.2,
+        "net_income": 0.0,
+        "revenue": 499.1
+      },
+      "2025": {
+        "total_assets": 565.3,
+        "cash": 132.5,
+        "total_equity": 274.0,
+        "short_debt": 0.0,
+        "total_liab": 154.9,
+        "op_profit": 149.7,
+        "net_income": 188.9,
+        "revenue": 782.0
+      }
+    },
+    "missing_years": [
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2016,
+        "revenue_eok": 897,
+        "op_profit_eok": 54,
+        "net_income_eok": 12,
+        "roe_pct": 1.94,
+        "op_margin_pct": 6.02,
+        "debt_ratio_pct": 63.97
+      },
+      {
+        "year": 2017,
+        "revenue_eok": 647,
+        "op_profit_eok": -83,
+        "net_income_eok": -75,
+        "roe_pct": -13.81,
+        "op_margin_pct": -12.83,
+        "debt_ratio_pct": 72.01
+      },
+      {
+        "year": 2018,
+        "revenue_eok": 690,
+        "op_profit_eok": -114,
+        "net_income_eok": -153,
+        "roe_pct": -39.33,
+        "op_margin_pct": -16.52,
+        "debt_ratio_pct": 88.43
+      },
+      {
+        "year": 2019,
+        "revenue_eok": 523,
+        "op_profit_eok": -50,
+        "net_income_eok": -120,
+        "roe_pct": 0,
+        "op_margin_pct": -9.56,
+        "debt_ratio_pct": 0
+      },
+      {
+        "year": 2020,
+        "revenue_eok": 421,
+        "op_profit_eok": 10,
+        "net_income_eok": -44,
+        "roe_pct": 0,
+        "op_margin_pct": 2.38,
+        "debt_ratio_pct": 0
+      },
+      {
+        "year": 2021,
+        "revenue_eok": 384,
+        "op_profit_eok": -39,
+        "net_income_eok": -43,
+        "roe_pct": 0,
+        "op_margin_pct": -10.16,
+        "debt_ratio_pct": 0
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 314,
+        "op_profit_eok": -32,
+        "net_income_eok": -33,
+        "roe_pct": 0,
+        "op_margin_pct": -10.19,
+        "debt_ratio_pct": 0
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 281,
+        "op_profit_eok": -40,
+        "net_income_eok": 0,
+        "roe_pct": 0,
+        "op_margin_pct": -14.23,
+        "debt_ratio_pct": -86.86
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 499,
+        "op_profit_eok": 60,
+        "net_income_eok": 0,
+        "roe_pct": 0,
+        "op_margin_pct": 12.02,
+        "debt_ratio_pct": 58.39
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 782,
+        "op_profit_eok": 150,
+        "net_income_eok": 189,
+        "roe_pct": 68.98,
+        "op_margin_pct": 19.18,
+        "debt_ratio_pct": 56.57
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": -1.53,
+      "op_profit_cagr_pct": 11.89,
+      "best_year": 2025,
+      "worst_year": 2018,
+      "avg_roe_pct": 1.78
+    },
+    "valuation": {
+      "grade": "D",
+      "strengths": [
+        "2024년과 2025년에 걸쳐 매출액과 영업이익이 급격히 회복될 것으로 전망됩니다.",
+        "2025년에는 높은 ROE와 영업이익률을 달성하며 수익성이 크게 개선될 것으로 예상됩니다.",
+        "장기간 악화되었던 재무구조가 2024년부터 자본총계가 양전환되고 부채비율도 안정화되는 추세입니다."
+      ],
+      "risks": [
+        "2017년부터 2023년까지 7년간 지속된 영업손실과 당기순손실로 인해 재무구조가 심각하게 악화되었습니다.",
+        "2019년부터 2023년까지 자본총계가 0 또는 마이너스를 기록하며 완전 자본잠식 상태에 있었습니다.",
+        "과거 실적의 변동성이 매우 커 미래 실적 전망의 불확실성이 높으며, 예상치에 미달할 위험이 존재합니다."
+      ],
+      "one_liner": "장기간의 재무 악화와 자본잠식 상태를 겪었으나, 2024년 이후 실적 회복이 기대되는 고위험 고수익 투자 기회입니다."
+    }
+  },
+  "dcf": {
+    "text": "퀀트 애널리스트로서 제닉(123330)의 DCF 적정가치를 계산하겠습니다.\n\n**가정 사항:**\n*   **최근 재무 데이터는 2024년 기준입니다.** (기준 연도 2025이므로, 2025년 예측을 위한 시작점)\n*   **5년 예측 기간(2025년 ~ 2029년) 동안 매출액과 영업이익은 연 5% 성장한다고 가정합니다.** (문제에 명시된 성장률이 없어 합리적인 수준으로 가정)\n*   FCF 계산 공식: `FCF = 영업이익 × (1 - 법인세율) + 감가상각 - CAPEX`\n    *   법인세율: 25%\n    *   감가상각: 매출액의 10%\n    *   CAPEX: 매출액의 5%\n*   WACC (가중평균자본비용) = 9% (기본 시나리오)\n*   영구성장률 (g) = 2% (기본 시나리오)\n\n---\n\n### 1. 기본 시나리오 DCF 적정가치 계산\n\n\n---\n\n### 2. WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 출력\n\n\n---\n\n### 3. 요약 출력\n\n\n---\n\n**결론:**\n\n제시된 가정을 바탕으로 제닉(123330)의 DCF 적정가치를 계산한 결과는 다음과 같습니다.\n\n*   **적정가치(기본): 2510.90억원**\n    (WACC 9%, 영구성장률 2%, 5년 예측 기간 동안 매출액 및 영업이익 연 5% 성장 가정)\n\n민감도 분석 결과, WACC와 영구성장률의 변화에 따라 적정가치가 크게 변동함을 확인할 수 있습니다. 특히 WACC가 낮아지고 영구성장률이 높아질수록 기업 가치는 상승합니다.",
+    "executed_code": "import pandas as pd\n\n# Given data (억원)\nrevenue_0 = 782\noperating_income_0 = 150\n\n# Assumptions\ntax_rate = 0.25\ndepreciation_rate_of_revenue = 0.10\ncapex_rate_of_revenue = 0.05\nwacc_base = 0.09\ng_base = 0.02\nforecast_years = 5\n# Assumption for forecast period growth (not given, so assuming a reasonable rate)\n# Clarification: Assuming 5% annual growth for revenue and operating income for the 5-year forecast period.\nforecast_growth_rate = 0.05 \n\n# Function to calculate DCF for given WACC and g\ndef calculate_dcf(wacc, g, revenue_initial, operating_income_initial, forecast_growth, forecast_periods, tax_rate, dep_rate, capex_rate):\n    df_proj = pd.DataFrame(index=range(1, forecast_periods + 1))\n\n    revenue = [revenue_initial * (1 + forecast_growth)**i for i in range(1, forecast_periods + 1)]\n    operating_income = [operating_income_initial * (1 + forecast_growth)**i for i in range(1, forecast_periods + 1)]\n\n    df_proj['Revenue'] = revenue\n    df_proj['Operating Income'] = operating_income\n    df_proj['NOPAT'] = df_proj['Operating Income'] * (1 - tax_rate)\n    df_proj['Depreciation'] = df_proj['Revenue'] * dep_rate\n    df_proj['CAPEX'] = df_proj['Revenue'] * capex_rate\n    df_proj['FCF'] = df_proj['NOPAT'] + df_proj['Depreciation'] - df_proj['CAPEX']\n\n    df_proj['Discount Factor'] = [1 / ((1 + wacc)**i) for i in range(1, forecast_periods + 1)]\n    df_proj['PV of FCF'] = df_proj['FCF'] * df_proj['Discount Factor']\n\n    pv_fcf_forecast = df_proj['PV of FCF'].sum()\n\n    fcf_year_last = df_proj.loc[forecast_periods, 'FCF']\n    fcf_year_after_forecast = fcf_year_last * (1 + g)\n\n    # Check for WACC <= g to avoid division by zero or negative denominator\n    if wacc <= g:\n        return float('inf') # Or handle as an error/unrealistic scenario\n\n    terminal_value = fcf_year_after_forecast / (wacc - g)\n    pv_terminal_value = terminal_value / ((1 + wacc)**forecast_periods)\n\n    return pv_fcf_forecast + pv_terminal_value\n\n# --- 1. Basic Scenario DCF Calculation ---\nintrinsic_value_base = calculate_dcf(wacc_base, g_base, revenue_0, operating_income_0, \n                                     forecast_growth_rate, forecast_years, tax_rate, \n                                     depreciation_rate_of_revenue, capex_rate_of_revenue)\n\nprint(f\"--- 기본 시나리오 DCF 적정가치 ---\")\nprint(f\"가정: 매출액 및 영업이익 5년 예측 기간 동안 연 {forecast_growth_rate*100:.0f}% 성장\")\nprint(f\"적정가치(기본): {intrinsic_value_base:.2f} 억원\")\n\n\nimport pandas as pd\n\n# Given data (억원)\nrevenue_0 = 782\noperating_income_0 = 150\n\n# Assumptions\ntax_rate = 0.25\ndepreciation_rate_of_revenue = 0.10\ncapex_rate_of_revenue = 0.05\nwacc_base = 0.09\ng_base = 0.02\nforecast_years = 5\n# Assumption for forecast period growth (not given, so assuming a reasonable rate)\n# Clarification: Assuming 5% annual growth for revenue and operating income for the 5-year forecast period.\nforecast_growth_rate = 0.05 \n\n# Function to calculate DCF for given WACC and g\ndef calculate_dcf(wacc, g, revenue_initial, operating_income_initial, forecast_growth, forecast_periods, tax_rate, dep_rate, capex_rate):\n    df_proj = pd.DataFrame(index=range(1, forecast_periods + 1))\n\n    revenue = [revenue_initial * (1 + forecast_growth)**i for i in range(1, forecast_periods + 1)]\n    operating_income = [operating_income_initial * (1 + forecast_growth)**i for i in range(1, forecast_periods + 1)]\n\n    df_proj['Revenue'] = revenue\n    df_proj['Operating Income'] = operating_income\n    df_proj['NOPAT'] = df_proj['Operating Income'] * (1 - tax_rate)\n    df_proj['Depreciation'] = df_proj['Revenue'] * dep_rate\n    df_proj['CAPEX'] = df_proj['Revenue'] * capex_rate\n    df_proj['FCF'] = df_proj['NOPAT'] + df_proj['Depreciation'] - df_proj['CAPEX']\n\n    df_proj['Discount Factor'] = [1 / ((1 + wacc)**i) for i in range(1, forecast_periods + 1)]\n    df_proj['PV of FCF'] = df_proj['FCF'] * df_proj['Discount Factor']\n\n    pv_fcf_forecast = df_proj['PV of FCF'].sum()\n\n    fcf_year_last = df_proj.loc[forecast_periods, 'FCF']\n    fcf_year_after_forecast = fcf_year_last * (1 + g)\n\n    # Check for WACC <= g to avoid division by zero or negative denominator\n    if wacc <= g:\n        return float('inf') # Or handle as an error/unrealistic scenario\n\n    terminal_value = fcf_year_after_forecast / (wacc - g)\n    pv_terminal_value = terminal_value / ((1 + wacc)**forecast_periods)\n\n    return pv_fcf_forecast + pv_terminal_value\n\n# --- 2. Sensitivity Analysis ---\nwacc_range = [0.07, 0.08, 0.09, 0.10, 0.11] # 7% to 11%\ng_range = [0.01, 0.02, 0.03] # 1% to 3%\n\nsensitivity_results = pd.DataFrame(index=[f'g={int(g*100)}%' for g in g_range],\n                                   columns=[f'WACC={int(wacc*100)}%' for wacc in wacc_range])\n\nfor g_val in g_range:\n    for wacc_val in wacc_range:\n        if wacc_val <= g_val:\n            sensitivity_results.loc[f'g={int(g_val*100)}%', f'WACC={int(wacc_val*100)}%'] = 'N/A (WACC <= g)'\n        else:\n            value = calculate_dcf(wacc_val, g_val, revenue_0, operating_income_0, \n                                  forecast_growth_rate, forecast_years, tax_rate, \n                                  depreciation_rate_of_revenue, capex_rate_of_revenue)\n            sensitivity_results.loc[f'g={int(g_val*100)}%', f'WACC={int(wacc_val*100)}%'] = f'{value:.2f}'\n\nprint(\"\\n--- WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 (억원) ---\")\nprint(sensitivity_results)\n\n\nimport pandas as pd\n\n# Given data (억원)\nrevenue_0 = 782\noperating_income_0 = 150\n\n# Assumptions\ntax_rate = 0.25\ndepreciation_rate_of_revenue = 0.10\ncapex_rate_of_revenue = 0.05\nwacc_base = 0.09\ng_base = 0.02\nforecast_years = 5\n# Assumption for forecast period growth (not given, so assuming a reasonable rate)\n# Clarification: Assuming 5% annual growth for revenue and operating income for the 5-year forecast period.\nforecast_growth_rate = 0.05 \n\n# Function to calculate DCF for given WACC and g\ndef calculate_dcf(wacc, g, revenue_initial, operating_income_initial, forecast_growth, forecast_periods, tax_rate, dep_rate, capex_rate):\n    df_proj = pd.DataFrame(index=range(1, forecast_periods + 1))\n\n    revenue = [revenue_initial * (1 + forecast_growth)**i for i in range(1, forecast_periods + 1)]\n    operating_income = [operating_income_initial * (1 + forecast_growth)**i for i in range(1, forecast_periods + 1)]\n\n    df_proj['Revenue'] = revenue\n    df_proj['Operating Income'] = operating_income\n    df_proj['NOPAT'] = df_proj['Operating Income'] * (1 - tax_rate)\n    df_proj['Depreciation'] = df_proj['Revenue'] * dep_rate\n    df_proj['CAPEX'] = df_proj['Revenue'] * capex_rate\n    df_proj['FCF'] = df_proj['NOPAT'] + df_proj['Depreciation'] - df_proj['CAPEX']\n\n    df_proj['Discount Factor'] = [1 / ((1 + wacc)**i) for i in range(1, forecast_periods + 1)]\n    df_proj['PV of FCF'] = df_proj['FCF'] * df_proj['Discount Factor']\n\n    pv_fcf_forecast = df_proj['PV of FCF'].sum()\n\n    fcf_year_last = df_proj.loc[forecast_periods, 'FCF']\n    fcf_year_after_forecast = fcf_year_last * (1 + g)\n\n    # Check for WACC <= g to avoid division by zero or negative denominator\n    if wacc <= g:\n        return float('inf') # Or handle as an error/unrealistic scenario\n\n    terminal_value = fcf_year_after_forecast / (wacc - g)\n    pv_terminal_value = terminal_value / ((1 + wacc)**forecast_periods)\n\n    return pv_fcf_forecast + pv_terminal_value\n\n# --- 1. Basic Scenario DCF Calculation ---\nintrinsic_value_base = calculate_dcf(wacc_base, g_base, revenue_0, operating_income_0, \n                                     forecast_growth_rate, forecast_years, tax_rate, \n                                     depreciation_rate_of_revenue, capex_rate_of_revenue)\n\n# --- 3. Summary Output ---\nprint(f\"\\n적정가치(기본): {intrinsic_value_base:.2f}억원\")",
+    "code_output": "--- 기본 시나리오 DCF 적정가치 ---\n가정: 매출액 및 영업이익 5년 예측 기간 동안 연 5% 성장\n적정가치(기본): 2510.90 억원\n\n\n--- WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 (억원) ---\n      WACC=7%  WACC=8%  WACC=9% WACC=10% WACC=11%\ng=1%  3038.73  2597.11  2266.14  2008.91  1803.31\ng=2%  3530.75  2935.72  2510.90  2192.46  1944.92\ng=3%  4268.79  3409.78  2837.26  2428.44  2121.94\n\n\n적정가치(기본): 2510.90억원"
+  },
+  "news": {
+    "text": "## 제닉(123330) 투자 분석: 고위험 고수익 기회, 강력한 턴어라운드 주목\n\n제닉(123330)은 장기간의 재무 악화와 자본잠식 상태를 겪었으나, 2024년 이후 실적 회복이 기대되는 고위험 고수익 투자 기회로 평가됩니다. 최근 2주간의 시장 동향과 뉴스를 종합 분석한 결과, 과거의 재무적 어려움을 극복하고 강력한 성장 모멘텀을 확보한 것으로 판단됩니다.\n\n### 1. 재무 데이터 스토리와 현재 시장 컨센서스의 일치/불일치\n\n제시된 10년 재무제표 분석 결과는 \"2024년 이후 실적 회복이 기대되는 고위험 고수익 투자 기회\"라고 명시하며 과거의 재무 악화와 자본잠식 상태를 언급합니다. 이는 현재 시장 컨센서스와 비교했을 때, 과거의 부정적인 요소는 이미 상당 부분 해소되었고, 미래 성장성에 대한 기대감이 훨씬 더 크다는 점에서 차이가 있습니다.\n\n최근 시장 컨센서스는 제닉이 2024년에 흑자 전환에 성공했으며, 2025년과 2026년에는 사상 최대 실적을 기록할 것으로 전망하고 있습니다. 특히 2025년 연결 기준 매출액 782억 원(전년 대비 56.7% 증가), 영업이익 150억 원(전년 대비 150% 증가)을 기록하며 흑자 전환 이후 영업이익이 두 배 이상 급증한 것으로 나타났습니다. 메리츠증권은 2026년 매출액 1,012억 원, 영업이익 218억 원을 추정하며 지속적인 성장을 예상했습니다. 하나증권 또한 2025년 사상 최대 실적을 전망하며 '매수' 의견과 목표가 42,000원을 제시했습니다.\n\n결론적으로, 재무 데이터가 보여주는 '2024년 이후 실적 회복 기대'는 시장 컨센서스에서 '실적 대폭 개선 및 사상 최대 실적 달성'으로 구체화되며, 과거의 재무 악화는 현재 강력한 턴어라운드 스토리로 대체되고 있습니다.\n\n### 2. 재무제표에서 드러나지 않는 리스크 또는 호재\n\n**주요 호재:**\n\n*   **독보적인 기술력 및 시장 지배력:** 제닉은 세계 유일의 수용성 하이드로겔 마스크팩 글로벌 특허를 보유하고 있어 높은 진입 장벽을 구축하고 있습니다. 주요 고객사인 뷰티셀렉션의 '바이오던스' 하이드로겔 마스크팩은 아마존 프라임데이 마스크팩 카테고리 1위에 올랐으며, 코스트코, 세포라, 월마트 등 핵심 유통 채널에 입점하며 글로벌 시장 지배력을 확대하고 있습니다.\n*   **K-뷰티 트렌드 수혜:** 틱톡 등 SNS를 통해 'K마스크'로 입소문을 타며 글로벌 인기를 얻고 있어, K-뷰티 열풍의 직접적인 수혜를 받고 있습니다.\n*   **ODM 반사이익 및 고환율 효과:** 트럼프의 15% 관세 정책이 ODM(제조자 개발 생산) 업체인 제닉에게 반사이익으로 작용할 수 있으며, 고환율 또한 수출 중심 기업에 긍정적인 영향을 미칠 것으로 분석됩니다.\n*   **생산능력 확충 및 포트폴리오 다각화:** 수주 증가에 발맞춰 하이드로겔 마스크팩 생산능력을 지속적으로 확대하고 있으며, 신규 고객사 확보와 기초 화장품 분야 진출을 통해 포트폴리오를 다각화하고 있습니다.\n*   **기관 및 외국인 순매수:** 최근 외국인과 기관의 동시 순매수가 포착되며 시장의 긍정적인 시각을 반영하고 있습니다.\n\n**주요 리스크:**\n\n*   **특정 고객사 의존도:** 매출의 절반 이상이 뷰티셀렉션의 '바이오던스' 브랜드에 집중되어 있어, 해당 고객사의 실적 변동이 제닉에 미치는 영향이 클 수 있습니다.\n*   **글로벌 지정학적 리스크:** 중동 전쟁 장기화와 같은 글로벌 지정학적 불안정은 전반적인 증시 하락을 야기하여 실적이 좋은 기업에도 영향을 미칠 수 있습니다. 다만, 제닉의 수출 구조가 미국 중심이라 중동 전쟁의 직접적인 영향은 제한적일 수 있다는 분석도 있습니다.\n*   **과거 재무 악화 이력:** 장기간의 재무 악화와 자본잠식 이력은 현재의 턴어라운드에도 불구하고 잠재적인 리스크 요인으로 남아있을 수 있습니다.\n\n### 3. 최종 판정\n\n제닉은 과거의 재무적 어려움을 극복하고 독보적인 기술력과 글로벌 시장에서의 성공을 바탕으로 강력한 턴어라운드를 시현하고 있습니다. 현재 시장은 제닉의 성장 모멘텀에 주목하며 긍정적인 전망을 내놓고 있으며, 외국인과 기관의 매수세도 유입되고 있습니다. 특정 고객사 의존도와 지정학적 리스크는 존재하지만, 현재까지는 성장 동력이 이를 상회하는 것으로 판단됩니다.\n\n따라서, 제닉(123330)에 대한 최종 판정은 **매수**입니다. 다만, '고위험 고수익'이라는 특성을 고려하여 투자 비중을 신중하게 결정하고, 시장 상황 및 기업 실적 발표에 대한 지속적인 모니터링이 필요합니다.",
+    "citations": [
+      {
+        "title": "daum.net",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQF7isTACO5rNaUenCl67yQXkvJOHfUDe-JWTHNoGmVYBuiHthgo-t0l6kKtHfpxsuLqqABjSx9MGV3it_2oSPUzg2d3ny9bPY5q35a2lHjH5Pq-jxsMGGq0xiK3xhEXHcf0VJDY4Gjlt80oukH-ehSXOFPOUckoqBMiyGxu0gG5wro="
+      },
+      {
+        "title": "edaily.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGTzsGJQb_DAn0I59uTDPTqAy2x5EUHsYJNCRRuMRwbAmta4H2dFr9HAKtwHyvEFohFXMoiRJKKxfQmCEtp0DiWIw8LPxyY49Gs1i1Qc1KnDD9VP3Gm411iUGnspt17VQAHML0CSDZC--uIYt7iN87nk3KzTFuSRKeZ9ljo"
+      },
+      {
+        "title": "cosinkorea.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGSkTwcnPtT09JkRNlujYh_y25CciMgvQH9PXV6EhgRaUUnuZrTsKdRha4pHzKTrDn9lNT_Aguutr-ClP4Wokg4Q9Cqhbgn3dLqGAnhAYCdmhcQLl7VAGu8ikcM52qfDWdDe8_eodTiim4e5GYVqg=="
+      },
+      {
+        "title": "cosinkorea.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFJK6C-tnWXNFvNxAXRBiyvcwTW0_41bTR4JqNgTtBbsdQfDyDGWUhOlKri80onCV3_2YnxMoTEAW16A5zR5YO_PpDImokT16B2Y5GOs-fzl_oGEp9cP1W4c9Yx-jztKwsEpyiZTcZGbgAJnCd6jQzA"
+      },
+      {
+        "title": "youtube.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGfzpnhf1sDxtUQQeXVLMis07bzah4ZUGa6Ui9VuQuv84X0zC20OJVbD1z2aiKjN_71j8WKu86gmEfzrG3i81fMoMBCypu43xMMKqbpnLD6Y9Pqfq4qCqr0QVKiIzwnVKsKH169q-8="
+      },
+      {
+        "title": "youtube.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFQsCX5RJtWUYhMfELJ0_a_oCWV9Dk9m5AUXNukNVSb9Uq6JgsXIKgRc3QtMv7-c5Cp_NfFQx35wT2XIMpOZQAqb4F2j7FEB5Sp4fu5Hh_rT_XSHIxvYdQzlGPD7p5N94WQwSuLIp8="
+      },
+      {
+        "title": "newspim.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEjE52NQ-SjevN_Iqe13SoHiqj13_B5zJ_Zu7b7bT_Jt61KcEZvgbnrzdL9JxNnND4iLlu7APJVckAwJbRgAGKApt4J-F2ab16sx8qoyVzVpgUvxqwcWiFVcItaWAUBtjkJwh2kmjf7l83RFQ=="
+      }
+    ]
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=00624998",
+    "summary": "공시 페이지 접근 제한"
+  }
+}

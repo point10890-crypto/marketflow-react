@@ -1,0 +1,285 @@
+{
+  "stock_code": "015760",
+  "stock_name": "한국전력",
+  "generated_at": "2026-04-06T22:16:34.886853+00:00",
+  "financials": {
+    "stock_code": "015760",
+    "corp_code": "00159193",
+    "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2016": {
+        "cash": 30513.5,
+        "total_assets": 1778370.4,
+        "total_liab": 1047865.0,
+        "total_equity": 730505.4,
+        "revenue": 601903.8,
+        "op_profit": 120016.0,
+        "net_income": 0.0
+      },
+      "2017": {
+        "cash": 23697.4,
+        "total_assets": 1817889.1,
+        "total_liab": 1088242.7,
+        "total_equity": 729646.4,
+        "revenue": 598148.6,
+        "op_profit": 49531.5,
+        "net_income": 12987.2
+      },
+      "2018": {
+        "cash": 13583.5,
+        "total_assets": 1852490.6,
+        "total_liab": 1141563.0,
+        "total_equity": 710927.6,
+        "revenue": 606276.1,
+        "op_profit": -2080.0,
+        "net_income": -13145.7
+      },
+      "2019": {
+        "cash": 18101.3,
+        "total_assets": 1975977.9,
+        "total_liab": 1287081.4,
+        "total_equity": 688896.5,
+        "revenue": 591728.9,
+        "op_profit": -12765.2,
+        "net_income": -23455.2
+      },
+      "2020": {
+        "cash": 20295.8,
+        "total_assets": 2031421.1,
+        "total_liab": 1324752.6,
+        "total_equity": 706668.5,
+        "revenue": 585693.1,
+        "op_profit": 40862.8,
+        "net_income": 19913.5
+      },
+      "2021": {
+        "cash": 26352.4,
+        "total_assets": 2111088.7,
+        "total_liab": 1457970.2,
+        "total_equity": 653118.5,
+        "revenue": 605748.2,
+        "op_profit": -58601.4,
+        "net_income": -52292.2
+      },
+      "2022": {
+        "cash": 32347.8,
+        "total_assets": 2348049.9,
+        "total_liab": 1928047.4,
+        "total_equity": 420002.6,
+        "revenue": 712578.6,
+        "op_profit": -326551.5,
+        "net_income": -244291.1
+      },
+      "2023": {
+        "total_assets": 2397149.6,
+        "cash": 43428.9,
+        "total_equity": 14197.1,
+        "total_liab": 2024502.1,
+        "op_profit": -45416.5,
+        "revenue": 882194.6
+      },
+      "2024": {
+        "total_assets": 2468078.0,
+        "cash": 23829.8,
+        "total_equity": 201282.5,
+        "total_liab": 2054449.6,
+        "op_profit": 83647.1,
+        "net_income": 34917.0,
+        "revenue": 933989.0
+      },
+      "2025": {
+        "total_assets": 2549274.6,
+        "cash": 22408.1,
+        "total_equity": 285005.8,
+        "total_liab": 2056045.1,
+        "op_profit": 134905.6,
+        "net_income": 0.0,
+        "revenue": 974293.5
+      }
+    },
+    "missing_years": [
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2016,
+        "revenue_eok": 601904,
+        "op_profit_eok": 120016,
+        "net_income_eok": 0,
+        "roe_pct": 0,
+        "op_margin_pct": 19.939,
+        "debt_ratio_pct": 143.444
+      },
+      {
+        "year": 2017,
+        "revenue_eok": 598149,
+        "op_profit_eok": 49532,
+        "net_income_eok": 12987,
+        "roe_pct": 1.78,
+        "op_margin_pct": 8.281,
+        "debt_ratio_pct": 149.136
+      },
+      {
+        "year": 2018,
+        "revenue_eok": 606276,
+        "op_profit_eok": -2080,
+        "net_income_eok": -13146,
+        "roe_pct": -1.849,
+        "op_margin_pct": -0.343,
+        "debt_ratio_pct": 160.575
+      },
+      {
+        "year": 2019,
+        "revenue_eok": 591729,
+        "op_profit_eok": -12765,
+        "net_income_eok": -23455,
+        "roe_pct": -3.405,
+        "op_margin_pct": -2.157,
+        "debt_ratio_pct": 186.849
+      },
+      {
+        "year": 2020,
+        "revenue_eok": 585693,
+        "op_profit_eok": 40863,
+        "net_income_eok": 19914,
+        "roe_pct": 2.818,
+        "op_margin_pct": 6.977,
+        "debt_ratio_pct": 187.464
+      },
+      {
+        "year": 2021,
+        "revenue_eok": 605748,
+        "op_profit_eok": -58601,
+        "net_income_eok": -52292,
+        "roe_pct": -8.006,
+        "op_margin_pct": -9.674,
+        "debt_ratio_pct": 223.23
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 712579,
+        "op_profit_eok": -326552,
+        "net_income_eok": -244291,
+        "roe_pct": -58.164,
+        "op_margin_pct": -45.827,
+        "debt_ratio_pct": 459.054
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 882195,
+        "op_profit_eok": -45416,
+        "net_income_eok": 0,
+        "roe_pct": 0,
+        "op_margin_pct": -5.148,
+        "debt_ratio_pct": 14259.928
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 933989,
+        "op_profit_eok": 83647,
+        "net_income_eok": 34917,
+        "roe_pct": 17.347,
+        "op_margin_pct": 8.956,
+        "debt_ratio_pct": 1020.686
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 974294,
+        "op_profit_eok": 134906,
+        "net_income_eok": 0,
+        "roe_pct": 0,
+        "op_margin_pct": 13.846,
+        "debt_ratio_pct": 721.408
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": 5.56,
+      "op_profit_cagr_pct": 1.3,
+      "best_year": 2025,
+      "worst_year": 2022,
+      "avg_roe_pct": -5.948
+    },
+    "valuation": {
+      "grade": "D",
+      "strengths": [
+        "필수 공공 서비스 제공으로 안정적인 수요 기반을 보유하고 있습니다.",
+        "정부의 정책적 지원 가능성이 상존하여 위기 시 안전판 역할을 할 수 있습니다.",
+        "최근 요금 인상 및 연료비 하락으로 수익성 개선 추세가 나타나고 있습니다."
+      ],
+      "risks": [
+        "정부 정책 및 규제에 따른 요금 결정의 불확실성이 수익성에 큰 영향을 미칩니다.",
+        "국제 에너지 가격 변동에 따른 원가 부담이 심화될 수 있는 구조적 리스크가 있습니다.",
+        "과도한 부채 수준으로 인한 재무 건전성 악화 및 높은 이자 비용 부담이 지속되고 있습니다."
+      ],
+      "one_liner": "정부 정책에 민감한 필수 공공재 기업으로, 최근 재무구조 개선 노력이 긍정적이나 여전히 높은 부채와 정책 리스크가 상존합니다."
+    }
+  },
+  "dcf": {
+    "text": "저는 퀀트 애널리스트로서 한국전력(015760)의 DCF 적정가치를 계산하겠습니다.\n\n제공된 데이터를 바탕으로 FCF(Free Cash Flow)를 계산하고, 5년 예측 기간과 영구 가치(Terminal Value)를 합산하여 적정가치를 산출합니다.\n\n**DCF 계산 단계:**\n\n1.  **FCF (Free Cash Flow) 계산:**\n    *   FCF = 영업이익 × (1 - 법인세율) + 감가상각비 - CAPEX\n    *   법인세율은 FCF 공식에 따라 25%로 가정합니다.\n    *   감가상각비 = 매출액 × 10%\n    *   CAPEX = 매출액 × 5%\n    *   기준 연도(2025년, 예측 1년차)의 FCF는 최근 재무 데이터를 기반으로 계산하며, 이후 예측 기간(2~5년차) 동안은 영구성장률(g)과 동일하게 성장한다고 가정합니다.\n\n2.  **예측 기간 FCF의 현재가치 합산:**\n    *   각 연도별 FCF를 WACC(가중평균자본비용)로 할인하여 현재가치를 계산하고 합산합니다.\n\n3.  **영구 가치 (Terminal Value) 계산:**\n    *   5년차 이후의 FCF는 영구성장률(g)로 영원히 성장한다고 가정하여 영구 가치를 계산합니다.\n    *   TV = (FCF_6) / (WACC - g)\n    *   FCF_6 = FCF_5 * (1 + g)\n\n4.  **영구 가치의 현재가치 계산:**\n    *   계산된 영구 가치를 WACC로 할인하여 현재가치를 계산합니다.\n\n5.  **DCF 적정가치:**\n    *   예측 기간 FCF의 현재가치 합계와 영구 가치의 현재가치를 더하여 최종 DCF 적정가치를 산출합니다.\n\n**입력 데이터 및 가정:**\n\n*   **기업:** 한국전력 (015760)\n*   **기준 연도:** 2025 (예측 1년차)\n*   **최근 재무 (억원):**\n    *   매출액 (Revenue_0): 974294\n    *   영업이익 (Operating_Income_0): 134906\n*   **가정:**\n    *   FCF 계산식: 영업이익 × (1 - 0.25) + 감가상각(매출의 10%) - CAPEX(매출의 5%)\n    *   WACC (가중평균자본비용): 9% (기본 시나리오)\n    *   영구성장률 (g): 2% (기본 시나리오)\n    *   예측 기간: 5년\n\n---\n\n### 1. 기본 시나리오 DCF 적정가치 계산\n\n먼저, 기본 시나리오(WACC=9%, g=2%)에 대한 DCF 적정가치를 계산합니다.\n\n\n기본 시나리오(WACC 9%, 영구성장률 g 2%)에서의 한국전력 DCF 적정가치는 **2,141,345.71억원**으로 계산되었습니다.\n\n---\n\n### 2. WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 출력\n\n이제 WACC와 영구성장률(g)의 변화에 따른 DCF 적정가치 민감도 분석을 수행합니다.\n\n\n### DCF 적정가치 민감도 그리드 (단위: 억원)\n\n|             | g=1%        | g=2%        | g=3%        |\n| :---------- | :---------- | :---------- | :---------- |\n| **WACC=7%** | 2,498,237   | 2,997,884   | 3,747,355   |\n| **WACC=8%** | 2,141,346   | 2,498,237   | 2,997,884   |\n| **WACC=9%** | 1,873,677   | 2,141,346   | 2,498,237   |\n| **WACC=10%**| 1,665,491   | 1,873,677   | 2,141,346   |\n| **WACC=11%**| 1,498,942   | 1,665,491   | 1,873,677   |\n\n---\n\n### 3. 요약 출력\n\n적정가치(기본): 2,141,346억원",
+    "executed_code": "import pandas as pd\n\n# --- Input Data ---\nrevenue_0 = 974294  # 억원\noperating_income_0 = 134906  # 억원\n\n# --- Assumptions ---\ntax_rate = 0.25\ndepreciation_rate_of_revenue = 0.10\ncapex_rate_of_revenue = 0.05\nforecast_years = 5\n\n# Base Scenario\nbase_wacc = 0.09\nbase_g = 0.02\n\n# --- DCF Calculation Function ---\ndef calculate_dcf(wacc, g, revenue_0, operating_income_0, forecast_years, tax_rate, depreciation_rate_of_revenue, capex_rate_of_revenue):\n    if wacc <= g:\n        return float('inf') # Handle cases where WACC <= g for terminal value calculation\n\n    # Calculate FCF for Year 1 (2025), using the provided 'recent' financials\n    # This FCF is the starting point for growth in the explicit forecast period\n    depreciation_1 = revenue_0 * depreciation_rate_of_revenue\n    capex_1 = revenue_0 * capex_rate_of_revenue\n    fcf_1 = operating_income_0 * (1 - tax_rate) + depreciation_1 - capex_1\n\n    discounted_fcf_sum = 0\n\n    # Calculate FCF for explicit forecast period (Year 1 to Year 5) and their present values\n    for t in range(1, forecast_years + 1):\n        # FCF for year t, growing from fcf_1 at rate g\n        current_fcf = fcf_1 * (1 + g)**(t-1)\n        discount_factor = (1 + wacc)**t\n        discounted_fcf_sum += current_fcf / discount_factor\n\n    # Calculate Terminal Value (TV)\n    # FCF for Year 6 (FCF_forecast_years + 1)\n    # This is FCF_5 * (1 + g)\n    fcf_terminal_year = fcf_1 * (1 + g)**forecast_years # FCF_6\n    \n    terminal_value = fcf_terminal_year / (wacc - g)\n\n    # Discount Terminal Value back to present\n    pv_terminal_value = terminal_value / (1 + wacc)**forecast_years\n\n    total_dcf_value = discounted_fcf_sum + pv_terminal_value\n    return total_dcf_value\n\n# --- 1. Basic Scenario DCF Calculation ---\nbase_dcf_value = calculate_dcf(base_wacc, base_g, revenue_0, operating_income_0, forecast_years, tax_rate, depreciation_rate_of_revenue, capex_rate_of_revenue)\nprint(f\"기본 시나리오 DCF 적정가치: {base_dcf_value:,.2f}억원\")\n\n\nimport pandas as pd\n\n# --- Input Data (re-defined for tool execution context) ---\nrevenue_0 = 974294  # 억원\noperating_income_0 = 134906  # 억원\n\n# --- Assumptions (re-defined for tool execution context) ---\ntax_rate = 0.25\ndepreciation_rate_of_revenue = 0.10\ncapex_rate_of_revenue = 0.05\nforecast_years = 5\n\n# --- DCF Calculation Function (re-defined for tool execution context) ---\ndef calculate_dcf(wacc, g, revenue_0, operating_income_0, forecast_years, tax_rate, depreciation_rate_of_revenue, capex_rate_of_revenue):\n    if wacc <= g:\n        return float('inf') # Handle cases where WACC <= g for terminal value calculation\n\n    depreciation_1 = revenue_0 * depreciation_rate_of_revenue\n    capex_1 = revenue_0 * capex_rate_of_revenue\n    fcf_1 = operating_income_0 * (1 - tax_rate) + depreciation_1 - capex_1\n\n    discounted_fcf_sum = 0\n    for t in range(1, forecast_years + 1):\n        current_fcf = fcf_1 * (1 + g)**(t-1)\n        discount_factor = (1 + wacc)**t\n        discounted_fcf_sum += current_fcf / discount_factor\n\n    fcf_terminal_year = fcf_1 * (1 + g)**forecast_years # FCF_6\n    terminal_value = fcf_terminal_year / (wacc - g)\n    pv_terminal_value = terminal_value / (1 + wacc)**forecast_years\n\n    total_dcf_value = discounted_fcf_sum + pv_terminal_value\n    return total_dcf_value\n\n# --- 2. Sensitivity Grid Output ---\nwacc_values = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_values = [0.01, 0.02, 0.03]\n\nsensitivity_results = pd.DataFrame(index=[f'WACC={w*100:.0f}%' for w in wacc_values],\n                                   columns=[f'g={g*100:.0f}%' for g in g_values])\n\nfor wacc in wacc_values:\n    for g in g_values:\n        dcf_value = calculate_dcf(wacc, g, revenue_0, operating_income_0, forecast_years, tax_rate, depreciation_rate_of_revenue, capex_rate_of_revenue)\n        sensitivity_results.loc[f'WACC={wacc*100:.0f}%', f'g={g*100:.0f}%'] = f'{dcf_value:,.0f}' if dcf_value != float('inf') else 'N/A'\n\nprint(\"\\nDCF 적정가치 민감도 그리드 (단위: 억원)\")\nprint(sensitivity_results)\n\n# --- 3. Summary Output ---\nbase_wacc = 0.09\nbase_g = 0.02\nbase_dcf_value = calculate_dcf(base_wacc, base_g, revenue_0, operating_income_0, forecast_years, tax_rate, depreciation_rate_of_revenue, capex_rate_of_revenue)\nprint(f\"\\n적정가치(기본): {base_dcf_value:,.0f}억원\")",
+    "code_output": "기본 시나리오 DCF 적정가치: 2,141,345.71억원\n\n\nDCF 적정가치 민감도 그리드 (단위: 억원)\n               g=1%       g=2%       g=3%\nWACC=7%   2,498,237  2,997,884  3,747,355\nWACC=8%   2,141,346  2,498,237  2,997,884\nWACC=9%   1,873,677  2,141,346  2,498,237\nWACC=10%  1,665,491  1,873,677  2,141,346\nWACC=11%  1,498,942  1,665,491  1,873,677\n\n적정가치(기본): 2,141,346억원"
+  },
+  "news": {
+    "text": "## 한국전력(015760) 분석 보고서: 재무 개선 노력과 정책 수혜 기대\n\n**투자등급 D, 요약:** 정부 정책에 민감한 필수 공공재 기업으로, 최근 재무구조 개선 노력이 긍정적이나 여전히 높은 부채와 정책 리스크가 상존합니다.\n\n---\n\n### 1. 재무 데이터가 보여주는 스토리와 현재 시장 컨센서스의 일치/불일치\n\n제시된 10년 재무제표 분석 결과는 한국전력이 정부 정책에 민감하며 높은 부채와 정책 리스크를 안고 있음을 시사합니다. 최근 2주간의 뉴스 및 애널리스트 보고서를 종합해 볼 때, 시장 컨센서스는 이러한 재무적 어려움에도 불구하고 한국전력의 턴어라운드와 향후 실적 개선에 대한 기대감이 형성되어 있습니다.\n\n*   **일치하는 부분:**\n    *   **정책 민감성 및 부채 리스크:** 뉴스에서도 전기요금 인상, 원전 정책, 채권 발행 한도 등 정부 정책이 한국전력의 실적과 재무에 미치는 영향이 크게 다뤄지고 있으며, 200조 원이 넘는 높은 부채는 여전히 주요 과제로 언급됩니다.\n*   **불일치/추가되는 부분:**\n    *   **재무구조 개선 노력의 긍정적 평가:** 2025년 사상 최대 영업이익을 기록하며 흑자 전환에 성공했고, 2026년에도 실적 개선세가 이어질 것으로 전망됩니다. 이는 연료비 안정화와 전기요금 조정 효과에 기인하며, 2026년부터는 잉여현금흐름(FCF)이 플러스로 전환될 것으로 예상됩니다.\n    *   **시장 컨센서스 '매수':** 애널리스트 20명의 평균 목표주가는 현재 주가 대비 66% 이상의 상승 여력을 제시하며 '매수' 의견이 지배적입니다. 이는 재무제표의 투자등급 'D'와는 다소 상반되는, 미래 개선 가능성에 대한 시장의 긍정적인 시각을 보여줍니다.\n\n### 2. 재무제표에서 드러나지 않는 리스크 또는 호재\n\n**주요 호재:**\n\n*   **지역별 차등 요금제(LMP) 도입 (2026년 예정):** 발전소 인근 지역의 전기를 저렴하게 구매하고 수도권 등 전력 수요가 높은 지역의 전기를 비싸게 판매하는 구조로, 연간 약 1.3조 원의 전력 구입 비용 절감 효과가 기대됩니다. 이는 단순한 유가 하락에 기댄 일시적 흑자가 아닌, 구조적인 수익성 개선 요인입니다.\n*   **해외 원전 시장 확대:** 한국전력은 '팀코리아'를 통해 해외 원전 시장(미국, 튀르키예 등) 진출을 적극적으로 추진하고 있으며, 이는 중장기적인 성장 동력 및 기업 가치 재평가 요인이 될 수 있습니다.\n*   **정부의 채권 발행 한도 일몰(2027년)에 대한 암묵적 지원:** 2027년 말 채권 발행 한도 특례가 종료되지만, 정부가 한국전력을 방치할 수 없는 필수 공공재 기업이라는 점에서 해결 방안이 마련될 것이라는 기대감이 존재합니다.\n*   **원전 이용률 상승 및 신규 원전 가동:** 2026년 원전 이용률 목표 89% 제시 및 새울 3·4호기 준공 등 원전 설비 확대는 실적 개선에 긍정적인 영향을 미칠 것입니다.\n\n**주요 리스크:**\n\n*   **중동발 지정학적 리스크로 인한 유가 급등 가능성:** 최근 중동 정세 불안으로 국제 유가가 급등할 경우, 연료비 및 구입전력비 부담이 다시 커져 실적에 부정적인 영향을 미칠 수 있습니다.\n*   **주택용 전기요금 추가 인상의 정치적 부담:** 산업용 전기요금은 인상되었으나, 국민들이 직접 체감하는 주택용 전기요금의 추가 인상은 정치적 부담이 커 정책 추진이 어려울 수 있습니다.\n*   **원전 사후처리 비용 및 온실가스 배출 비용 증가:** 2025년 4분기 실적에서 예상치를 상회하는 기타 영업비용(원전 사후처리 충당부채, 온실가스 배출 비용 등)이 발생했으며, 이는 향후 실적에도 영향을 미칠 수 있습니다.\n*   **송배전망 투자 부담:** 국내 전력 수요 증가에 대응하기 위한 송배전망 투자(예: 에너지 고속도로) 확대는 불가피하며, 이는 재무 부담으로 작용할 수 있습니다.\n\n### 3. 최종 판정\n\n**[매수]**\n\n한국전력은 여전히 높은 부채와 정책 리스크를 안고 있지만, 2025년 사상 최대 영업이익을 기록하며 재무구조 개선의 긍정적인 흐름을 보여주고 있습니다. 특히 2026년 도입될 지역별 차등 요금제(LMP)는 구조적인 수익성 개선을 가져올 수 있는 중요한 호재이며, 해외 원전 수출 확대는 중장기적인 성장 동력으로 작용할 것입니다. 비록 중동발 지정학적 리스크와 주택용 전기요금 인상의 정치적 부담이 상존하지만, 현재 주가가 글로벌 전력 기업 대비 현저히 저평가되어 있고, 정부의 암묵적인 지원 가능성을 고려할 때, 현재 시점은 긍정적인 변화의 시작점으로 판단됩니다. 단기적인 변동성은 있을 수 있으나, 장기적인 관점에서 매수 의견을 제시합니다.",
+    "citations": [
+      {
+        "title": "youtube.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFe-scGOUzYOG7PbfnZRi6kMN4DT29wEf0eznGXarey-JSIp5yvUTQorrkJ5jvDSXa5DF6MDdPCssVowWCMs4O7Hpyl1v1KlQMOTrYd1mxDAXkchUVsIGfTbAKFJBg4SMoAaeGl-Pc="
+      },
+      {
+        "title": "alphabiz.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHNK7tW57cSqNhYyTinO23qnzKZY3NFli7e-VrTyJQrkL86J6ITtFBp-uaD6Y23wTdMdd69tRIZrorr6B5Gv82yMZ9iJy0fyJ_fT2IQZt7_BXI81wBAJ5YigpCok23aT1wRMt9pTFQUM5azPcM="
+      },
+      {
+        "title": "sisajournal-e.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQH0sZdbyYpiKi4yXZzmFzNqvnEWQ32LIjDtnjxDCMqA_JUgd4Ib1WkA0SIFf5prSxNgoZZTkvMJNjxeFbiyptBYz_HwpDfEGhPsJoR8-jOtqrJDpC2fVMsXM9agBn8nly3XQfMbSj0xZiq5Ya_VyA-7sn7I7f8jxLm0YRU="
+      },
+      {
+        "title": "jkn.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGX-IIxn9MsGlGyN9-APtztl_GYrtW4VRdlQbbbZRs67jI65tgtz-E9kzSkYgtpfGcJnRmlBWgE9aKjasav1IyMS8gyFczTiyprcM5ok3Yjk3qGlcO9TuMGp976gAc="
+      },
+      {
+        "title": "kiwoom.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEANy06_ino3l4arH4K032he5bla_4Tr7jsL_mF5NDn9h6SPNxjYTdaHmfU-yHtBn7q3-lowu2NTDhenU8IHwm4K3nkVS1pbg3fktHwpjIUJNfVZzBCjqn-r5em"
+      },
+      {
+        "title": "edaily.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFErEnNoh253fl59JbaMd1vuWrLz_Kr5vV-IEA5FRWMdpkIvrn_i4zH4YPcO1vvghf9T_gjGq2B6li0_EQ8gP4gnw1Uj7OwT9Aj5UjrdkoMTBQ0y7OQJ3ezbZa2TeSPjol7ludaPVWSfhnuL41YknrBLTRo8JY2yhzVaMp4"
+      },
+      {
+        "title": "investing.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEvdOlJwY56vEqsRKF17qyx0VwKA1CZHR5y0eQWfPN40Zr4tN0jjEr86aMeQQT4xHWk3RTJXwAvabaiHuRpz3m9X8Ll53CfC44569tc3Kn6G1dri8tNV9CnrBElQusHninuI5TwURgoFF58x6h2eHC3UDFpX2dI"
+      },
+      {
+        "title": "hankyung.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFmaUwrTOVKBkRp1CS3JW5HFGYfJmSGuUC4KoNzsaJzrzsa44Kb8rqe3V0C_fW035fW1qKw9Z0C2vxKr8fYmJvQhUnVMv0ySQONTLKE6lsuyFnB_pU2y_s1djsRnbaqKH0t-X464t0923EVdaWKUw=="
+      },
+      {
+        "title": "investing.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEWlY4M6UhcIs7dsgf9KgbfR-mQtvxAuAe2HX__HRKH8dGJHp0U2blfR06ZAPqQpoGjwI5pUpXBF2ZDv0r8AR1l4pDLEcbhmfUpsu1bAnbVuNZckPRiKEUs5tuUmzapDAdcXA=="
+      },
+      {
+        "title": "edaily.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQExd8IKd89auxGS17KnVprsGGi_YPc75I0I0fQN-Zih4KGSWpv7VMsnX5KYH7qLPBoqCupIy09mItBw-UMt_Ni2eYLdSqstoPvzNgMg9bjbOn-0JQnB5HxERZfD4YQ7tIPLHj0tYb2CH4ZpY4CE2U_JR7qbfY9TE9CFPtRH"
+      }
+    ]
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=00159193",
+    "summary": "공시 페이지 접근 제한"
+  }
+}

@@ -1,0 +1,305 @@
+{
+  "stock_code": "050890",
+  "stock_name": "쏠리드",
+  "generated_at": "2026-04-06T22:36:38.204081+00:00",
+  "financials": {
+    "stock_code": "050890",
+    "corp_code": "00364403",
+    "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2016": {
+        "cash": 285.4,
+        "total_assets": 3427.2,
+        "short_debt": 836.4,
+        "long_debt": 45.7,
+        "total_liab": 2653.9,
+        "total_equity": 773.3,
+        "revenue": 2914.9,
+        "op_profit": -513.3,
+        "net_income": 0.0
+      },
+      "2017": {
+        "cash": 447.0,
+        "total_assets": 2809.5,
+        "short_debt": 654.3,
+        "long_debt": 1.7,
+        "total_liab": 2013.4,
+        "total_equity": 796.0,
+        "revenue": 2593.1,
+        "op_profit": 202.2,
+        "net_income": 0.0
+      },
+      "2018": {
+        "cash": 307.2,
+        "total_assets": 2693.6,
+        "short_debt": 562.9,
+        "long_debt": 72.9,
+        "total_liab": 1590.6,
+        "total_equity": 1103.0,
+        "revenue": 2225.8,
+        "op_profit": 10.6,
+        "net_income": 0.0
+      },
+      "2019": {
+        "cash": 556.3,
+        "total_assets": 2837.6,
+        "short_debt": 466.6,
+        "long_debt": 186.3,
+        "total_liab": 1601.3,
+        "total_equity": 1236.3,
+        "revenue": 2292.8,
+        "op_profit": -35.2,
+        "net_income": 0.0
+      },
+      "2020": {
+        "cash": 589.4,
+        "total_assets": 2814.6,
+        "short_debt": 515.1,
+        "long_debt": 22.0,
+        "total_liab": 1696.8,
+        "total_equity": 1117.8,
+        "revenue": 1728.6,
+        "op_profit": -169.3,
+        "net_income": -118.6
+      },
+      "2021": {
+        "cash": 544.0,
+        "total_assets": 3695.4,
+        "short_debt": 697.5,
+        "long_debt": 68.9,
+        "total_liab": 1740.7,
+        "total_equity": 1954.8,
+        "revenue": 2122.6,
+        "op_profit": 61.3,
+        "net_income": 237.4
+      },
+      "2022": {
+        "cash": 721.1,
+        "total_assets": 4343.4,
+        "short_debt": 848.7,
+        "long_debt": 0.0,
+        "total_liab": 2054.6,
+        "total_equity": 2288.8,
+        "revenue": 2797.9,
+        "op_profit": 285.9,
+        "net_income": 298.4
+      },
+      "2023": {
+        "total_assets": 4572.5,
+        "cash": 636.7,
+        "total_equity": 306.1,
+        "short_debt": 786.8,
+        "total_liab": 1842.2,
+        "long_debt": 256.0,
+        "op_profit": 362.7,
+        "net_income": 408.8,
+        "revenue": 3213.6
+      },
+      "2024": {
+        "total_assets": 4968.0,
+        "cash": 1006.2,
+        "total_equity": 306.1,
+        "short_debt": 723.7,
+        "total_liab": 1739.6,
+        "long_debt": 30.0,
+        "op_profit": 351.4,
+        "net_income": 462.3,
+        "revenue": 3310.7
+      },
+      "2025": {
+        "total_assets": 5366.7,
+        "cash": 900.8,
+        "total_equity": 3533.4,
+        "short_debt": 990.2,
+        "total_liab": 1833.3,
+        "op_profit": 332.8,
+        "net_income": 0.1,
+        "revenue": 2948.3
+      }
+    },
+    "missing_years": [
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2016,
+        "revenue_eok": 2915,
+        "op_profit_eok": -513,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": -17.6,
+        "debt_ratio_pct": 343.34
+      },
+      {
+        "year": 2017,
+        "revenue_eok": 2593,
+        "op_profit_eok": 202,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 7.79,
+        "debt_ratio_pct": 252.9
+      },
+      {
+        "year": 2018,
+        "revenue_eok": 2226,
+        "op_profit_eok": 11,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 0.49,
+        "debt_ratio_pct": 144.24
+      },
+      {
+        "year": 2019,
+        "revenue_eok": 2293,
+        "op_profit_eok": -35,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": -1.53,
+        "debt_ratio_pct": 129.53
+      },
+      {
+        "year": 2020,
+        "revenue_eok": 1729,
+        "op_profit_eok": -169,
+        "net_income_eok": -119,
+        "roe_pct": -10.64,
+        "op_margin_pct": -9.77,
+        "debt_ratio_pct": 151.79
+      },
+      {
+        "year": 2021,
+        "revenue_eok": 2123,
+        "op_profit_eok": 61,
+        "net_income_eok": 237,
+        "roe_pct": 12.12,
+        "op_margin_pct": 2.87,
+        "debt_ratio_pct": 89.05
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 2798,
+        "op_profit_eok": 286,
+        "net_income_eok": 298,
+        "roe_pct": 13.02,
+        "op_margin_pct": 10.22,
+        "debt_ratio_pct": 89.78
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 3214,
+        "op_profit_eok": 363,
+        "net_income_eok": 409,
+        "roe_pct": 133.66,
+        "op_margin_pct": 11.3,
+        "debt_ratio_pct": 601.96
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 3311,
+        "op_profit_eok": 351,
+        "net_income_eok": 462,
+        "roe_pct": 150.98,
+        "op_margin_pct": 10.6,
+        "debt_ratio_pct": 568.63
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 2948,
+        "op_profit_eok": 333,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 11.3,
+        "debt_ratio_pct": 51.88
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": 0.13,
+      "op_profit_cagr_pct": 0.0,
+      "best_year": 2023,
+      "worst_year": 2016,
+      "avg_roe_pct": 29.91
+    },
+    "valuation": {
+      "grade": "C",
+      "strengths": [
+        "최근 4년간(2021-2024) 영업이익 흑자 전환 및 두 자릿수 영업이익률을 기록하며 수익성이 크게 개선되었습니다.",
+        "2025년 부채비율이 51.88%로 안정화되어 재무 건전성이 강화된 점은 긍정적입니다.",
+        "2023년과 2024년에 높은 당기순이익을 달성하며 이익 창출 능력을 입증했습니다."
+      ],
+      "risks": [
+        "지난 10년간 매출액 성장률이 0.13%로 미미하며, 영업이익은 극심한 변동성을 보여 사업 안정성이 부족합니다.",
+        "2023년과 2024년 자본총계가 비정상적으로 낮아 부채비율이 600%에 육박하는 등 재무구조의 불안정성이 크게 우려됩니다.",
+        "2025년 당기순이익이 다시 0으로 기록되어 최근의 수익성 개선 추세가 지속될지에 대한 불확실성이 존재합니다."
+      ],
+      "one_liner": "지난 10년간 매출 성장 정체와 영업이익의 높은 변동성을 보였으나, 최근 수익성 개선과 재무구조 안정화 노력이 긍정적이며 지속적인 관찰이 필요한 기업입니다."
+    }
+  },
+  "dcf": {
+    "text": "안녕하세요, 퀀트 애널리스트입니다. 제공해주신 데이터를 바탕으로 쏠리드(050890)의 DCF 적정가치를 계산하고 민감도 분석을 수행하겠습니다.\n\n**전제 조건 및 가정:**\n\n*   **기준 연도:** 2025년 (최근 재무는 2024년으로 간주하고 2025년부터 5년간 예측을 시작합니다.)\n*   **최근 재무 (2024년, 억원):**\n    *   매출액: 2948\n    *   영업이익: 333\n    *   당기순이익: 0 (DCF에서는 영업이익과 FCF가 중요하므로 당기순이익 0은 직접적인 계산에 큰 영향을 주지 않습니다.)\n    *   자산총계: 5367\n    *   부채총계: 1833\n*   **FCF 계산식:** FCF = 영업이익 × (1 - 법인세율) + 감가상각 - CAPEX\n    *   법인세율: 25% (주어진 FCF 식에 (1-0.25)가 있으므로 이를 법인세율로 간주합니다.)\n    *   감가상각: 매출의 10%\n    *   CAPEX: 매출의 5%\n*   **WACC (할인율):** 9% (기본 시나리오)\n*   **영구성장률 (g):** 2% (기본 시나리오)\n*   **예측 기간:** 5년 (2025년 ~ 2029년)\n*   **매출액 성장률:** 예측 기간 동안의 매출액 성장률이 명시되지 않았습니다. 합리적인 가정을 위해, 첫 2년간은 5%, 이후 3년간은 3%로 가정하겠습니다. (실제 분석에서는 산업 성장률, 기업의 과거 실적, 미래 전망 등을 고려하여 설정합니다.)\n*   **영업이익률:** 최근 영업이익률 (333 / 2948 ≈ 11.3%)을 예측 기간 동안 유지한다고 가정합니다.\n\n---\n\n### 1. 기본 시나리오 DCF 적정가치 계산\n\n먼저, 기본 시나리오에 대한 DCF 적정가치를 계산하겠습니다.\n\n\n죄송합니다. `dcf_valuation` 함수 호출 시 변수 이름에 오타가 있었습니다. `dep_rate` 대신 `depreciation_rate`를 사용해야 합니다. 수정하여 다시 실행하겠습니다.\n\n\n### 1. 기본 시나리오 DCF 적정가치 계산 결과\n\n쏠리드(050890)의 기본 시나리오 DCF 적정가치는 **6271억원**으로 계산되었습니다.\n\n**세부 내역:**\n\n*   **2024년 재무:** 매출액 2948억원, 영업이익 333억원\n*   **영업이익률:** 11.30% (2024년 기준, 예측 기간 유지 가정)\n*   **법인세율:** 25%\n*   **감가상각률:** 매출액의 10%\n*   **CAPEX율:** 매출액의 5%\n*   **WACC (할인율):** 9.0%\n*   **영구성장률 (g):** 2.0%\n*   **예측 매출액 성장률:** 2025년 5%, 2026년 5%, 2027년 3%, 2028년 3%, 2029년 3%\n\n**연도별 예측 FCF:**\n\n*   2025년 매출액: 3095억원, FCF: 417억원\n*   2026년 매출액: 3250억원, FCF: 438억원\n*   2027년 매출액: 3348억원, FCF: 451억원\n*   2028년 매출액: 3448억원, FCF: 465억원\n*   2029년 매출액: 3552억원, FCF: 478억원\n\n**Terminal Value (2029년 기준):** 6972억원\n\n---\n\n### 2. WACC × g 민감도 그리드 출력\n\n다양한 WACC와 영구성장률(g) 조합에 따른 DCF 적정가치 민감도 분석 결과입니다.\n\n\n### 3. 요약 출력\n\n**적정가치(기본): 6271억원**\n\n---\n\n**분석 결과 요약:**\n\n*   쏠리드(050890)의 기본 시나리오(WACC 9%, 영구성장률 2%, 매출액 성장률 첫 2년 5%, 이후 3년 3%)에 따른 DCF 적정가치는 **6,271억원**으로 추정됩니다.\n*   민감도 분석 결과, WACC가 낮아지고 영구성장률(g)이 높아질수록 기업의 적정가치는 상승하는 경향을 보입니다. 반대로 WACC가 높아지고 g가 낮아지면 적정가치는 하락합니다.\n*   특히 WACC와 g의 차이가 작아질수록 터미널 가치의 변동성이 커지므로, 이 두 가정에 대한 신중한 검토가 필요합니다. (예: WACC=7%, g=3%일 때 10,620억원으로 크게 상승)\n\n이 분석은 주어진 가정에 기반한 것이며, 실제 투자 결정 시에는 추가적인 시장 상황, 경쟁 환경, 경영진 역량 등 다양한 질적 요소를 함께 고려해야 합니다.",
+    "executed_code": "import pandas as pd\n\n# 1. 기본 시나리오 설정\ninitial_revenue = 2948  # 억원 (2024년 매출액)\ninitial_operating_profit = 333  # 억원 (2024년 영업이익)\ntax_rate = 0.25\ndepreciation_rate = 0.10  # 매출액의 10%\ncapex_rate = 0.05       # 매출액의 5%\nwacc_base = 0.09\ng_base = 0.02\nforecast_years = 5\n\n# 매출액 성장률 가정 (명시되지 않아 합리적으로 가정)\n# 예: 첫 2년 5%, 이후 3년 3%\nrevenue_growth_rates = [0.05, 0.05, 0.03, 0.03, 0.03]\n\n# 영업이익률 계산 (2024년 기준)\noperating_profit_margin = initial_operating_profit / initial_revenue\n\n# FCF 계산 함수\ndef calculate_fcf(revenue, op_margin, tax_rate, dep_rate, capex_rate):\n    operating_profit = revenue * op_margin\n    depreciation = revenue * dep_rate\n    capex = revenue * capex_rate\n    fcf = operating_profit * (1 - tax_rate) + depreciation - capex\n    return fcf\n\n# DCF 계산 함수\ndef dcf_valuation(initial_revenue, op_margin, tax_rate, dep_rate, capex_rate,\n                  revenue_growth_rates, wacc, g, forecast_years):\n    \n    cash_flows = []\n    revenues = []\n    \n    current_revenue = initial_revenue\n    \n    for i in range(forecast_years):\n        year = i + 1\n        # 매출액 예측\n        current_revenue *= (1 + revenue_growth_rates[i])\n        revenues.append(current_revenue)\n        \n        # FCF 계산\n        fcf = calculate_fcf(current_revenue, op_margin, tax_rate, dep_rate, capex_rate)\n        cash_flows.append(fcf)\n    \n    # 예측 기간 FCF의 현재 가치 (PV of FCF)\n    pv_fcf = 0\n    for i in range(forecast_years):\n        pv_fcf += cash_flows[i] / ((1 + wacc) ** (i + 1))\n        \n    # Terminal Value 계산\n    # 마지막 예측 연도의 FCF (FCF_n)\n    fcf_n = cash_flows[-1]\n    \n    # Terminal Value (TV)\n    # TV = FCF_n * (1 + g) / (WACC - g)\n    terminal_value = fcf_n * (1 + g) / (wacc - g)\n    \n    # Terminal Value의 현재 가치 (PV of TV)\n    pv_terminal_value = terminal_value / ((1 + wacc) ** forecast_years)\n    \n    # 기업 가치 (Enterprise Value)\n    enterprise_value = pv_fcf + pv_terminal_value\n    \n    return enterprise_value, cash_flows, revenues, terminal_value\n\n# 기본 시나리오 계산\nbase_enterprise_value, base_cash_flows, base_revenues, base_terminal_value = dcf_valuation(\n    initial_revenue, operating_profit_margin, tax_rate, dep_rate, capex_rate,\n    revenue_growth_rates, wacc_base, g_base, forecast_years\n)\n\nprint(f\"--- 기본 시나리오 DCF 계산 ({forecast_years}년 예측) ---\")\nprint(f\"2024년 매출액: {initial_revenue:.0f}억원\")\nprint(f\"2024년 영업이익: {initial_operating_profit:.0f}억원\")\nprint(f\"영업이익률: {operating_profit_margin:.2%}\")\nprint(f\"법인세율: {tax_rate:.0%}\")\nprint(f\"감가상각률 (매출액 대비): {depreciation_rate:.0%}\")\nprint(f\"CAPEX율 (매출액 대비): {capex_rate:.0%}\")\nprint(f\"WACC (할인율): {wacc_base:.1%}\")\nprint(f\"영구성장률 (g): {g_base:.1%}\")\nprint(f\"예측 매출액 성장률: {revenue_growth_rates}\")\nprint(\"-\" * 40)\n\nprint(\"연도별 예측:\")\nfor i in range(forecast_years):\n    year = 2025 + i\n    print(f\"  {year}년 매출액: {base_revenues[i]:.0f}억원, FCF: {base_cash_flows[i]:.0f}억원\")\n\nprint(f\"Terminal Value (2029년 기준): {base_terminal_value:.0f}억원\")\nprint(f\"DCF 적정가치 (기본 시나리오): {base_enterprise_value:.0f}억원\")\n\n\nimport pandas as pd\n\n# 1. 기본 시나리오 설정\ninitial_revenue = 2948  # 억원 (2024년 매출액)\ninitial_operating_profit = 333  # 억원 (2024년 영업이익)\ntax_rate = 0.25\ndepreciation_rate = 0.10  # 매출액의 10%\ncapex_rate = 0.05       # 매출액의 5%\nwacc_base = 0.09\ng_base = 0.02\nforecast_years = 5\n\n# 매출액 성장률 가정 (명시되지 않아 합리적으로 가정)\n# 예: 첫 2년 5%, 이후 3년 3%\nrevenue_growth_rates = [0.05, 0.05, 0.03, 0.03, 0.03]\n\n# 영업이익률 계산 (2024년 기준)\noperating_profit_margin = initial_operating_profit / initial_revenue\n\n# FCF 계산 함수\ndef calculate_fcf(revenue, op_margin, tax_rate, dep_rate_val, capex_rate_val):\n    operating_profit = revenue * op_margin\n    depreciation = revenue * dep_rate_val\n    capex = revenue * capex_rate_val\n    fcf = operating_profit * (1 - tax_rate) + depreciation - capex\n    return fcf\n\n# DCF 계산 함수\ndef dcf_valuation(initial_revenue, op_margin, tax_rate, depreciation_rate_val, capex_rate_val,\n                  revenue_growth_rates, wacc, g, forecast_years):\n    \n    cash_flows = []\n    revenues = []\n    \n    current_revenue = initial_revenue\n    \n    for i in range(forecast_years):\n        year = i + 1\n        # 매출액 예측\n        current_revenue *= (1 + revenue_growth_rates[i])\n        revenues.append(current_revenue)\n        \n        # FCF 계산\n        fcf = calculate_fcf(current_revenue, op_margin, tax_rate, depreciation_rate_val, capex_rate_val)\n        cash_flows.append(fcf)\n    \n    # 예측 기간 FCF의 현재 가치 (PV of FCF)\n    pv_fcf = 0\n    for i in range(forecast_years):\n        pv_fcf += cash_flows[i] / ((1 + wacc) ** (i + 1))\n        \n    # Terminal Value 계산\n    # 마지막 예측 연도의 FCF (FCF_n)\n    fcf_n = cash_flows[-1]\n    \n    # Terminal Value (TV)\n    # TV = FCF_n * (1 + g) / (WACC - g)\n    if wacc <= g:\n        return float('inf'), [], [], float('inf') # WACC가 g보다 작거나 같으면 무한대\n    terminal_value = fcf_n * (1 + g) / (wacc - g)\n    \n    # Terminal Value의 현재 가치 (PV of TV)\n    pv_terminal_value = terminal_value / ((1 + wacc) ** forecast_years)\n    \n    # 기업 가치 (Enterprise Value)\n    enterprise_value = pv_fcf + pv_terminal_value\n    \n    return enterprise_value, cash_flows, revenues, terminal_value\n\n# 기본 시나리오 계산\nbase_enterprise_value, base_cash_flows, base_revenues, base_terminal_value = dcf_valuation(\n    initial_revenue, operating_profit_margin, tax_rate, depreciation_rate, capex_rate,\n    revenue_growth_rates, wacc_base, g_base, forecast_years\n)\n\nprint(f\"--- 기본 시나리오 DCF 계산 ({forecast_years}년 예측) ---\")\nprint(f\"2024년 매출액: {initial_revenue:.0f}억원\")\nprint(f\"2024년 영업이익: {initial_operating_profit:.0f}억원\")\nprint(f\"영업이익률: {operating_profit_margin:.2%}\")\nprint(f\"법인세율: {tax_rate:.0%}\")\nprint(f\"감가상각률 (매출액 대비): {depreciation_rate:.0%}\")\nprint(f\"CAPEX율 (매출액 대비): {capex_rate:.0%}\")\nprint(f\"WACC (할인율): {wacc_base:.1%}\")\nprint(f\"영구성장률 (g): {g_base:.1%}\")\nprint(f\"예측 매출액 성장률: {revenue_growth_rates}\")\nprint(\"-\" * 40)\n\nprint(\"연도별 예측:\")\nfor i in range(forecast_years):\n    year = 2025 + i\n    print(f\"  {year}년 매출액: {base_revenues[i]:.0f}억원, FCF: {base_cash_flows[i]:.0f}억원\")\n\nprint(f\"Terminal Value (2029년 기준): {base_terminal_value:.0f}억원\")\nprint(f\"DCF 적정가치 (기본 시나리오): {base_enterprise_value:.0f}억원\")\n\n\nimport pandas as pd\n\n# 재사용을 위해 이전 코드에서 정의된 변수와 함수를 다시 정의합니다.\ninitial_revenue = 2948  # 억원 (2024년 매출액)\ninitial_operating_profit = 333  # 억원 (2024년 영업이익)\ntax_rate = 0.25\ndepreciation_rate = 0.10  # 매출액의 10%\ncapex_rate = 0.05       # 매출액의 5%\nforecast_years = 5\nrevenue_growth_rates = [0.05, 0.05, 0.03, 0.03, 0.03]\noperating_profit_margin = initial_operating_profit / initial_revenue\n\ndef calculate_fcf(revenue, op_margin, tax_rate, dep_rate_val, capex_rate_val):\n    operating_profit = revenue * op_margin\n    depreciation = revenue * dep_rate_val\n    capex = revenue * capex_rate_val\n    fcf = operating_profit * (1 - tax_rate) + depreciation - capex\n    return fcf\n\ndef dcf_valuation(initial_revenue, op_margin, tax_rate, depreciation_rate_val, capex_rate_val,\n                  revenue_growth_rates, wacc, g, forecast_years):\n    \n    cash_flows = []\n    current_revenue = initial_revenue\n    \n    for i in range(forecast_years):\n        current_revenue *= (1 + revenue_growth_rates[i])\n        fcf = calculate_fcf(current_revenue, op_margin, tax_rate, depreciation_rate_val, capex_rate_val)\n        cash_flows.append(fcf)\n    \n    pv_fcf = 0\n    for i in range(forecast_years):\n        pv_fcf += cash_flows[i] / ((1 + wacc) ** (i + 1))\n        \n    fcf_n = cash_flows[-1]\n    \n    if wacc <= g:\n        return float('inf') # WACC가 g보다 작거나 같으면 무한대\n    \n    terminal_value = fcf_n * (1 + g) / (wacc - g)\n    pv_terminal_value = terminal_value / ((1 + wacc) ** forecast_years)\n    \n    enterprise_value = pv_fcf + pv_terminal_value\n    \n    return enterprise_value\n\n# 민감도 분석을 위한 WACC 및 g 범위 설정\nwacc_values = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_values = [0.01, 0.02, 0.03]\n\n# 결과를 저장할 DataFrame 초기화\nsensitivity_df = pd.DataFrame(index=[f'WACC={w*100:.0f}%' for w in wacc_values],\n                              columns=[f'g={g*100:.0f}%' for g in g_values])\n\n# 각 조합에 대해 DCF 계산\nfor wacc in wacc_values:\n    for g in g_values:\n        # WACC가 g보다 작거나 같으면 계산 불가 (무한대)\n        if wacc <= g:\n            sensitivity_df.loc[f'WACC={wacc*100:.0f}%', f'g={g*100:.0f}%'] = 'N/A (WACC <= g)'\n        else:\n            value = dcf_valuation(initial_revenue, operating_profit_margin, tax_rate, depreciation_rate, capex_rate,\n                                  revenue_growth_rates, wacc, g, forecast_years)\n            sensitivity_df.loc[f'WACC={wacc*100:.0f}%', f'g={g*100:.0f}%'] = f'{value:.0f}'\n\nprint(\"\\n--- DCF 적정가치 민감도 분석 (억원) ---\")\nprint(sensitivity_df)\nprint(\"\\n* N/A (WACC <= g): WACC가 영구성장률(g)보다 작거나 같아 터미널 가치 계산이 불가능한 경우\")\n\n# 마지막에 '적정가치(기본): {value}억원' 형태로 요약 출력\nbase_wacc_str = f'WACC={wacc_base*100:.0f}%'\nbase_g_str = f'g={g_base*100:.0f}%'\nbase_value_summary = sensitivity_df.loc[base_wacc_str, base_g_str]\n\nprint(f\"\\n적정가치(기본): {base_value_summary}억원\")",
+    "code_output": "Traceback (most recent call last):\n  File \"<string>\", line 70, in <module>\nNameError: name 'dep_rate' is not defined\n\n--- 기본 시나리오 DCF 계산 (5년 예측) ---\n2024년 매출액: 2948억원\n2024년 영업이익: 333억원\n영업이익률: 11.30%\n법인세율: 25%\n감가상각률 (매출액 대비): 10%\nCAPEX율 (매출액 대비): 5%\nWACC (할인율): 9.0%\n영구성장률 (g): 2.0%\n예측 매출액 성장률: [0.05, 0.05, 0.03, 0.03, 0.03]\n----------------------------------------\n연도별 예측:\n  2025년 매출액: 3095억원, FCF: 417억원\n  2026년 매출액: 3250억원, FCF: 438억원\n  2027년 매출액: 3348억원, FCF: 451억원\n  2028년 매출액: 3448억원, FCF: 465억원\n  2029년 매출액: 3552억원, FCF: 478억원\nTerminal Value (2029년 기준): 6972억원\nDCF 적정가치 (기본 시나리오): 6271억원\n\n\n--- DCF 적정가치 민감도 분석 (억원) ---\n          g=1%  g=2%   g=3%\nWACC=7%   7578  8795  10620\nWACC=8%   6485  7322   8495\nWACC=9%   5665  6271   7078\nWACC=10%  5028  5482   6066\nWACC=11%  4519  4869   5307\n\n* N/A (WACC <= g): WACC가 영구성장률(g)보다 작거나 같아 터미널 가치 계산이 불가능한 경우\n\n적정가치(기본): 6271억원"
+  },
+  "news": {
+    "text": "## 쏠리드(050890) 투자 분석 보고서\n\n### 투자등급: C (기존)\n\n**요약:** 지난 10년간 매출 성장 정체와 영업이익의 높은 변동성을 보였으나, 최근 수익성 개선과 재무구조 안정화 노력이 긍정적이며 지속적인 관찰이 필요한 기업입니다.\n\n---\n\n### 최근 2주간 주요 뉴스 분석 (2026년 3월 23일 ~ 2026년 4월 6일)\n\n1.  **재무 데이터가 보여주는 스토리와 현재 시장 컨센서스의 일치/불일치**\n    제공된 10년 재무제표 분석은 매출 성장 정체와 영업이익 변동성을 지적했으나, 최근 2주간의 뉴스는 이러한 과거의 우려를 상쇄하고 긍정적인 변화를 보여줍니다.\n\n    *   **긍정적 실적 발표:** 2026년 3월 24일 발표된 2025년 4분기 실적은 매출액 1,128억 원으로 전년 동기 대비 25.25% 상승, 영업이익 260억 원으로 116.93% 상승, 순이익 271억 원으로 83.21% 상승하는 어닝 서프라이즈를 기록했습니다. 이는 재무제표 요약에서 언급된 '최근 수익성 개선'을 명확히 뒷받침합니다.\n    *   **애널리스트 투자의견 상향:** 하나증권은 2026년 3월 12일 쏠리드의 목표주가를 기존 15,000원에서 20,000원으로 상향 조정하고 '매수' 투자의견을 유지했습니다. 다른 다수의 전문가들도 3월 말에서 4월 초에 걸쳐 쏠리드에 대한 '매수' 의견과 긍정적인 목표주가를 제시했습니다. 전반적인 시장 컨센서스 등급은 '매수'에 해당하는 2.00으로 나타났습니다.\n    *   **시장 반응:** 쏠리드 주가는 '견조한 실적'과 '가격 매력 부각'으로 인해 3월 중순 10% 이상 상승하는 등 긍정적인 시장 반응을 보였습니다. 5G/6G 테마의 강세도 주가 상승에 기여했습니다.\n\n    **결론:** 과거 10년 재무제표의 정체 및 변동성 우려에도 불구하고, 최근 발표된 2025년 4분기 실적은 뚜렷한 개선세를 보이며 시장 컨센서스 또한 이를 긍정적으로 반영하고 있습니다. 재무 데이터의 최근 스토리는 시장의 긍정적 전망과 강하게 일치합니다.\n\n2.  **재무제표에서 드러나지 않는 리스크 또는 호재**\n\n    *   **호재:**\n        *   **5G/6G 및 오픈랜(Open RAN) 시장 성장 수혜:** 쏠리드는 이동통신 중계기, 광전송장비, 개방형 무선네트워크(Open RAN) 기술 기반 기지국 솔루션 전문 기업으로, 고주파 대역 5G 서비스 확산에 따른 인빌딩 DAS(Distributed Antenna System) 시장 확대의 구조적 수혜가 예상됩니다. 또한 6G 시대를 대비한 기술 경쟁력을 바탕으로 통신장비 업종의 '빅사이클' 진입 기대감이 높습니다.\n        *   **북미 시장 수주 확대:** 2026년 2월 24일, 북미 판매용 DAS(중계기) 공급 계약을 체결했으며, 계약 금액은 약 171억 원(미화 1,185만 달러)으로 최근 매출액 대비 5.19%에 해당하는 규모입니다. 이는 미국 시장에서의 견고한 입지와 추가적인 해외 수주 가능성을 시사합니다.\n        *   **기술 경쟁력 강화:** 고출력 10G EPON 광회선 단말(OLT) 광트랜시버의 내재화 및 양산에 성공하며 기술 경쟁력을 입증했습니다.\n        *   **국방 사업 다각화:** 종속회사 쏠리드윈텍을 통해 국방 통신 분야 및 K2 전차, 공격헬기용 부품 사업을 전개하며 사업 포트폴리오를 다각화하고 있습니다.\n\n    *   **리스크:**\n        *   **밸류에이션 논란 가능성:** 일부 자료에서는 쏠리드의 밸류에이션이 '매우 고평가'되어 있다고 언급하기도 했습니다. 이는 긍정적인 시장 컨센서스 및 목표주가 상향과 대비되는 부분으로, 단기적인 주가 급등에 따른 부담이 될 수 있습니다.\n        *   **통신사 CAPEX 변동성:** 통신장비 산업 특성상 주요 고객사인 통신사들의 설비투자(CAPEX) 계획에 따라 실적 변동성이 발생할 수 있습니다.\n\n3.  **최종 판정**\n\n제공된 10년 재무제표 분석 결과는 과거의 성장 정체와 이익 변동성을 지적했지만, 최근 2주간의 뉴스 분석 결과는 쏠리드가 괄목할 만한 실적 개선을 이루고 있으며, 5G/6G 및 오픈랜 시장의 성장이라는 강력한 산업 모멘텀을 등에 업고 있다는 것을 보여줍니다. 북미 시장에서의 견고한 수주와 기술 경쟁력 강화는 향후 성장 동력으로 작용할 것입니다. 비록 일부 밸류에이션에 대한 우려가 있을 수 있으나, 전반적인 시장 컨센서스와 애널리스트들의 긍정적인 투자의견은 현재 쏠리드의 긍정적인 변화에 주목하고 있음을 시사합니다.\n\n따라서, 쏠리드(050890)에 대한 최종 판정은 **매수**를 제시합니다.",
+    "citations": [
+      {
+        "title": "valueline.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFr4tLcToG6aLDo613CwHctFoFGtDsBXIe52OgH1so42VL_usSgYc1TUmN_9tIun68WxWMsY7rkGL6dplVIiI3XQ79HwQpYvfc52riLEtby3mfWAgOOoU8XeP1lV8YyIbcmTaMYFwhK6A1mKiI="
+      },
+      {
+        "title": "edaily.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQG788Gl0UqtJQzcr8znwSiGRi5XEcMWTSQyPrmjDa2Rzvw12qoLKGGyhbVgAwfP4T62LGGZ1CRxkRoHyfThKm19Qj7p7K-YMjSXlncWVMz7QsqTwi1oRGiWVltxXzyuquIB33P54bP_p5KnY9vjyv3TdzUFiqzovbBMtds="
+      },
+      {
+        "title": "littlebproject.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGC5kXDkiMwf3Lm6r8DowOtb0maNZoHGY0jYb00FEwzzQLLU1x5ciamwVtHjbxhR-MwGYq_3wUc5Iq5yeGCmlMEYNa0EsNQ4BIJHryQy2xtpC6e857jAp5r4b1iH_AU2BUY"
+      },
+      {
+        "title": "littlebproject.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQF3WLTqm7TBwnswA8aLWCU1Jb8Idb1bfMj7cgKST87yINhXoFnWXxrbdXeTSR0KfeVE0CHbMg2BtprywxGq209BUPtwpKlNOEEqj3PUgJiqIBMvL_xQzAPwcKORVw-vzvaS401XA2I6aZ0j1w=="
+      },
+      {
+        "title": "littlebproject.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQH7NJDj0daSeDmBhXNuMN0n0NOI1G2VQ4eVrLgh5JFBleIbgn2cSKVjQJ4rtB7gAdg0g-xlgVa1kWSZkldP_0TXWba8_k_eMx8EZnpsXX2-QwWJ35ga4xwhmXmDEZdZ3CNfhcOXslolTaFxUA=="
+      },
+      {
+        "title": "hankyung.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGi_4FTEOeNRFmMNjrNSJluLpX0_kOMGE2n2V4RgZAXdZWOQJAD2kQqKic7yKLqHZ8JDVlzlazpF4ET8fLrJO4vwLLOa9GJwChdIRMSjBNQ7bQHg8TRXGUKBo6uuy21AtcR0YeQqxhYJnaYEr1S"
+      },
+      {
+        "title": "hankyung.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFxD_202ILmXG72yKlwRywnRH4iJS_E4_AGnxjSo4fvmd_033q_nWBYQlolf6PYS8iWdvpr4GTTZysO1rLnN8Brq1ZP65jL4ww1ZrXfkxiF0jJhX0FQ4fIreRi4XFChhMeMaME="
+      },
+      {
+        "title": "alphasquare.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQH0RpVl7Ml-2_ZGGmQED4KVIA873NLzAavbxf15WAF6uroOg6PZF9R1PVq_hl1XICjJoUhDZbqYyafHi_dCDaCthCyVYULAS8_NyFe56bHve7MfQtXOmsjI-RB_4JukTTbMdbL7Iv-r9OOOBYYhVGRfrQE="
+      },
+      {
+        "title": "mk.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQG9nk_enwKkHxmnm4G5zog6y8c-1dE8Q_MQgNuBpHHvmc_9QHunGjRRxkp3vFlm-1IiNV0wYUCdvbiEyCW8U44uKwpOuRwYBVyt9yM8kZPOjFrat_v6koISde1MuniCek-SOw=="
+      },
+      {
+        "title": "finup.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGEKamWQ9FQJ7Qv0F7wFkHF89Vym6rPEfYkVDf82gZxgrLGGSLLMjMpGRsT8OHm-8P0AdKkpXUb3RLmtcLHtREHkBYDSLj3Ol_B41cCNLVafer7SovL9pTjZrok59w0N7lItA=="
+      }
+    ]
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=00364403",
+    "summary": "공시 페이지 접근 제한"
+  }
+}

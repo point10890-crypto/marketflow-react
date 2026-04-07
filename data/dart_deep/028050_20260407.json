@@ -1,0 +1,297 @@
+{
+  "stock_code": "028050",
+  "stock_name": "삼성E&A",
+  "generated_at": "2026-04-06T22:22:45.134825+00:00",
+  "financials": {
+    "stock_code": "028050",
+    "corp_code": "00126308",
+    "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2016": {
+        "cash": 8821.8,
+        "total_assets": 55094.2,
+        "long_debt": 0.0,
+        "total_liab": 45227.0,
+        "total_equity": 9867.2,
+        "revenue": 70105.4,
+        "op_profit": 711.6,
+        "net_income": 102.7
+      },
+      "2017": {
+        "cash": 7451.2,
+        "total_assets": 50728.3,
+        "long_debt": 1880.0,
+        "total_liab": 40967.4,
+        "total_equity": 9760.9,
+        "revenue": 55134.5,
+        "op_profit": 217.2,
+        "net_income": -644.4
+      },
+      "2018": {
+        "cash": 3693.6,
+        "total_assets": 46196.5,
+        "short_debt": 4385.4,
+        "long_debt": 0.0,
+        "total_liab": 36217.9,
+        "total_equity": 9978.6,
+        "revenue": 54669.6,
+        "op_profit": 1964.0,
+        "net_income": 628.6
+      },
+      "2019": {
+        "cash": 5895.1,
+        "total_assets": 45657.1,
+        "short_debt": 1481.8,
+        "long_debt": 0.0,
+        "total_liab": 32705.3,
+        "total_equity": 12951.9,
+        "revenue": 63920.6,
+        "op_profit": 4227.2,
+        "net_income": 3238.1
+      },
+      "2020": {
+        "cash": 7479.9,
+        "total_assets": 47555.8,
+        "short_debt": 2325.5,
+        "total_liab": 31738.4,
+        "total_equity": 15817.4,
+        "revenue": 67491.7,
+        "op_profit": 3611.8,
+        "net_income": 2521.4
+      },
+      "2021": {
+        "cash": 11383.1,
+        "total_assets": 60587.2,
+        "short_debt": 408.5,
+        "total_liab": 40982.0,
+        "total_equity": 19605.2,
+        "revenue": 74867.0,
+        "op_profit": 5032.9,
+        "net_income": 3510.7
+      },
+      "2022": {
+        "cash": 14120.7,
+        "total_assets": 78487.2,
+        "short_debt": 2318.7,
+        "total_liab": 52716.8,
+        "total_equity": 25770.4,
+        "revenue": 100543.4,
+        "op_profit": 7029.4,
+        "net_income": 5953.2
+      },
+      "2023": {
+        "total_assets": 78014.0,
+        "cash": 9150.2,
+        "total_equity": 9800.0,
+        "short_debt": 1193.3,
+        "total_liab": 45030.6,
+        "op_profit": 9931.3,
+        "net_income": 0.0,
+        "revenue": 106249.2
+      },
+      "2024": {
+        "total_assets": 100133.4,
+        "cash": 25956.7,
+        "total_equity": 9800.0,
+        "total_liab": 61176.0,
+        "op_profit": 9716.1,
+        "net_income": 0.0,
+        "revenue": 99665.5
+      },
+      "2025": {
+        "total_assets": 100395.6,
+        "cash": 8618.0,
+        "total_equity": 9800.0,
+        "short_debt": 0.0,
+        "total_liab": 55933.7,
+        "op_profit": 7920.8,
+        "net_income": 0.0,
+        "revenue": 90287.7
+      }
+    },
+    "missing_years": [
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2016,
+        "revenue_eok": 70105,
+        "op_profit_eok": 712,
+        "net_income_eok": 103,
+        "roe_pct": 1.04,
+        "op_margin_pct": 1.02,
+        "debt_ratio_pct": 458.36
+      },
+      {
+        "year": 2017,
+        "revenue_eok": 55134,
+        "op_profit_eok": 217,
+        "net_income_eok": -644,
+        "roe_pct": -6.6,
+        "op_margin_pct": 0.39,
+        "debt_ratio_pct": 419.7
+      },
+      {
+        "year": 2018,
+        "revenue_eok": 54670,
+        "op_profit_eok": 1964,
+        "net_income_eok": 629,
+        "roe_pct": 6.3,
+        "op_margin_pct": 3.59,
+        "debt_ratio_pct": 362.94
+      },
+      {
+        "year": 2019,
+        "revenue_eok": 63921,
+        "op_profit_eok": 4227,
+        "net_income_eok": 3238,
+        "roe_pct": 24.99,
+        "op_margin_pct": 6.61,
+        "debt_ratio_pct": 252.51
+      },
+      {
+        "year": 2020,
+        "revenue_eok": 67492,
+        "op_profit_eok": 3612,
+        "net_income_eok": 2521,
+        "roe_pct": 15.94,
+        "op_margin_pct": 5.35,
+        "debt_ratio_pct": 200.67
+      },
+      {
+        "year": 2021,
+        "revenue_eok": 74867,
+        "op_profit_eok": 5033,
+        "net_income_eok": 3511,
+        "roe_pct": 17.91,
+        "op_margin_pct": 6.72,
+        "debt_ratio_pct": 209.03
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 100543,
+        "op_profit_eok": 7029,
+        "net_income_eok": 5953,
+        "roe_pct": 23.1,
+        "op_margin_pct": 6.99,
+        "debt_ratio_pct": 204.57
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 106249,
+        "op_profit_eok": 9931,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 9.35,
+        "debt_ratio_pct": 459.5
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 99666,
+        "op_profit_eok": 9716,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 9.75,
+        "debt_ratio_pct": 624.24
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 90288,
+        "op_profit_eok": 7921,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 8.77,
+        "debt_ratio_pct": 570.76
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": 2.85,
+      "op_profit_cagr_pct": 30.73,
+      "best_year": 2023,
+      "worst_year": 2017,
+      "avg_roe_pct": 8.27
+    },
+    "valuation": {
+      "grade": "B",
+      "strengths": [
+        "지난 10년간 영업이익이 연평균 30.73% 성장하며 매우 견조한 성장세를 보였습니다.",
+        "영업이익률이 2016년 1.02%에서 2023년 9.35%까지 꾸준히 개선되어 수익성이 향상되었습니다.",
+        "매출액이 2016년 70,105억원에서 2023년 106,249억원으로 증가하며 외형 성장을 달성했습니다."
+      ],
+      "risks": [
+        "2023년부터 2025년까지 당기순이익이 0으로 기록되어 주주환원 및 최종 수익성 측면에서 심각한 우려가 있습니다.",
+        "부채비율이 2022년 204.57%에서 2024년 624.24%로 급증하는 등 재무 건전성 악화 가능성이 있습니다.",
+        "매출액 성장률(2.85% CAGR)이 영업이익 성장률에 비해 낮아, 외형 성장 동력이 둔화될 수 있습니다."
+      ],
+      "one_liner": "견조한 영업이익 성장과 수익성 개선에도 불구하고, 최근 당기순이익 부재와 급증하는 부채비율은 투자 매력을 저해하는 주요 요인입니다."
+    }
+  },
+  "dcf": {
+    "text": "퀀트 애널리스트로서 삼성E&A (028050)의 DCF 적정가치를 계산하겠습니다.\n\n**주요 가정:**\n*   **기준 연도:** 2025년이 첫 예측 연도이며, 제공된 재무 데이터는 2024년(Year 0) 기준입니다.\n*   **FCF 계산식:** `FCF = 영업이익 × (1 - 0.25) + 감가상각(매출의 10%) - CAPEX(매출의 5%)`\n    *   여기서 `0.25`는 법인세율로 간주됩니다.\n*   **예측 기간 성장률:** 5년 예측 기간(2025-2029) 동안 매출액과 영업이익은 연 5% 성장한다고 가정합니다. (이 성장률은 명시되지 않아 일반적인 가정에 따라 설정되었습니다.)\n*   **WACC (가중평균자본비용):** 9% (기본 시나리오)\n*   **영구성장률 (g):** 2% (기본 시나리오)\n*   **순부채:** 자산총계와 부채총계만 제공되었으므로, Equity Value 계산 시 `부채총계`를 순부채(Net Debt)의 근사치로 사용합니다. (정확한 순부채는 총 차입금에서 현금 및 현금성 자산을 제외하여 계산됩니다.)\n\n---\n### Python 코드 실행 및 결과\n\n\n---\n### 분석 결과\n\n1.  **기본 시나리오 DCF 적정가치:**\n    *   WACC = 9%, 영구성장률 g = 2%, 5년 예측 기간 동안 매출액/영업이익 성장률 5% 가정 시\n    *   **적정가치(기본): 117231억원**\n\n2.  **WACC × g 민감도 분석 (억원):**\n\n| WACC      | 영구성장률 (g) | g=1%   | g=2%   | g=3%   |\n| :-------- | :------------- | :----- | :----- | :----- |\n| WACC=7%   |                | 153633 | 187566 | 238465 |\n| WACC=8%   |                | 123177 | 146529 | 179223 |\n| WACC=9%   |                | 100351 | 117231 | 139738 |\n| WACC=10%  |                | 82611  | 95270  | 111545 |\n| WACC=11%  |                | 68432  | 78198  | 90406  |\n\n3.  **요약:**\n    *   **적정가치(기본): 117231억원**\n\n**참고:** 이 분석은 주어진 가정과 데이터에 기반하며, 특히 5년 예측 기간 동안의 매출액/영업이익 성장률(5%) 및 순부채 가정은 분석 결과에 큰 영향을 미칠 수 있습니다. 보다 정확한 분석을 위해서는 추가적인 정보(예: 예측 기간 성장률, 순차입금, 주식수 등)가 필요합니다.",
+    "executed_code": "import pandas as pd\n\n# --- Inputs ---\n# Recent Financials (억원) - Assuming these are for 2024 (Year 0)\nrevenue_0 = 90288\noperating_profit_0 = 7921\ntotal_liabilities = 55934 # Used as Net Debt proxy for Equity Value calculation\n\n# Assumptions\ntax_rate = 0.25\ndepreciation_rate = 0.10 # 10% of Revenue\ncapex_rate = 0.05      # 5% of Revenue\nwacc_base = 0.09\ng_base = 0.02\nforecast_years = 5\n# Assumed growth rate for Revenue and Operating Profit for the 5-year forecast period.\n# This is a critical assumption as it was not explicitly provided in the prompt.\n# A common practice is to assume a higher growth rate initially, converging to the terminal growth rate.\n# For simplicity and lack of further information, we assume a constant growth rate for the forecast period.\nforecast_growth_rate = 0.05 # 5%\n\n# --- DCF Calculation Function ---\ndef calculate_dcf(wacc, g, forecast_growth_rate, revenue_0, operating_profit_0, total_liabilities, tax_rate, depreciation_rate, capex_rate, forecast_years):\n    # Project FCFs\n    fcf_projections = []\n    revenues = [revenue_0]\n    operating_profits = [operating_profit_0]\n\n    for i in range(1, forecast_years + 1): # i represents the forecast year (1 to 5)\n        # Project Revenue and Operating Profit\n        current_revenue = revenues[-1] * (1 + forecast_growth_rate)\n        current_operating_profit = operating_profits[-1] * (1 + forecast_growth_rate)\n        revenues.append(current_revenue)\n        operating_profits.append(current_operating_profit)\n\n        # Calculate NOPAT (Net Operating Profit After Tax)\n        nopat = current_operating_profit * (1 - tax_rate)\n\n        # Calculate Depreciation and CAPEX\n        depreciation = current_revenue * depreciation_rate\n        capex = current_revenue * capex_rate\n\n        # Calculate FCF (Free Cash Flow to Firm)\n        fcf = nopat + depreciation - capex\n        fcf_projections.append(fcf)\n\n    # Calculate Present Value of FCFs\n    pv_fcf = 0\n    for i, fcf in enumerate(fcf_projections):\n        pv_fcf += fcf / ((1 + wacc) ** (i + 1))\n\n    # Calculate Terminal Value (TV)\n    # FCF for the year after the forecast period (Year 6)\n    fcf_year_6 = fcf_projections[-1] * (1 + g)\n    \n    # Terminal Value formula: TV = FCF_next_year / (WACC - g)\n    if wacc <= g:\n        return float('inf') # Handle cases where WACC <= g, which makes TV infinite or negative\n    \n    terminal_value = fcf_year_6 / (wacc - g)\n\n    # Calculate Present Value of Terminal Value\n    pv_terminal_value = terminal_value / ((1 + wacc) ** forecast_years)\n\n    # Calculate Enterprise Value (EV)\n    enterprise_value = pv_fcf + pv_terminal_value\n\n    # Calculate Equity Value\n    # Assumption: total_liabilities is used as a proxy for Net Debt.\n    # In a more detailed analysis, Net Debt = Total Debt - Cash & Cash Equivalents.\n    equity_value = enterprise_value - total_liabilities\n\n    return equity_value\n\n# --- 1. 기본 시나리오 DCF 적정가치 계산 ---\nbase_equity_value = calculate_dcf(wacc_base, g_base, forecast_growth_rate, revenue_0, operating_profit_0, total_liabilities, tax_rate, depreciation_rate, capex_rate, forecast_years)\n\n# --- 2. WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 출력 ---\nwacc_range = [0.07, 0.08, 0.09, 0.10, 0.11] # 7%, 8%, 9%, 10%, 11%\ng_range = [0.01, 0.02, 0.03]             # 1%, 2%, 3%\n\nsensitivity_results = {}\n\nfor wacc_val in wacc_range:\n    row_results = {}\n    for g_val in g_range:\n        # Ensure WACC > g for terminal value calculation\n        if wacc_val <= g_val:\n            row_results[f'g={g_val*100:.0f}%'] = 'N/A'\n        else:\n            value = calculate_dcf(wacc_val, g_val, forecast_growth_rate, revenue_0, operating_profit_0, total_liabilities, tax_rate, depreciation_rate, capex_rate, forecast_years)\n            row_results[f'g={g_val*100:.0f}%'] = f'{value:.0f}'\n    sensitivity_results[f'WACC={wacc_val*100:.0f}%'] = row_results\n\n# Convert to DataFrame for pretty printing\nsensitivity_df = pd.DataFrame(sensitivity_results).T\nsensitivity_df.index.name = 'WACC'\nsensitivity_df.columns.name = '영구성장률 (g)'\n\nprint(\"--- DCF 적정가치 민감도 분석 (억원) ---\")\nprint(sensitivity_df)\n\n# --- 3. 마지막에 '적정가치(기본): {value}억원' 형태로 요약 출력 ---\nprint(f\"\\n적정가치(기본): {base_equity_value:.0f}억원\")",
+    "code_output": "--- DCF 적정가치 민감도 분석 (억원) ---\n영구성장률 (g)    g=1%    g=2%    g=3%\nWACC                             \nWACC=7%    153633  187566  238465\nWACC=8%    123177  146529  179223\nWACC=9%    100351  117231  139738\nWACC=10%    82611   95270  111545\nWACC=11%    68432   78198   90406\n\n적정가치(기본): 117231억원"
+  },
+  "news": {
+    "text": "## 삼성E&A(028050) 10년 재무제표 분석 및 최근 시장 컨센서스 종합 분석\n\n**투자등급: B**\n\n**요약:** 견조한 영업이익 성장과 수익성 개선에도 불구하고, 최근 당기순이익 부재와 급증하는 부채비율은 투자 매력을 저해하는 주요 요인입니다. 그러나 최근 2주간의 시장 컨센서스는 이러한 재무적 우려를 상쇄하고도 남을 만한 긍정적인 변화와 기대감을 반영하고 있습니다.\n\n---\n\n### 1. 재무 데이터가 보여주는 스토리와 현재 시장 컨센서스의 일치/불일치\n\n제공된 10년 재무제표 분석 요약은 \"견조한 영업이익 성장과 수익성 개선\"을 긍정적으로 평가하면서도, \"최근 당기순이익 부재와 급증하는 부채비율\"을 투자 매력을 저해하는 요인으로 지적했습니다.\n\n*   **일치하는 부분:** 최근 시장 컨센서스는 삼성E&A의 2026년 1분기 실적에 대해 매출액 2조 3천억 원, 영업이익 1,832억 원을 달성할 것으로 추정하며, 이는 전년 동기 대비 각각 11.6%, 16.5% 증가한 수치로 견조한 영업이익 성장세를 예상하고 있습니다. 이는 재무제표 분석의 긍정적인 부분과 일치합니다.\n*   **불일치/보완되는 부분:**\n    *   **부채비율:** 재무제표 분석에서 언급된 \"급증하는 부채비율\"과는 달리, 최근 애널리스트 리포트들은 삼성E&A의 부채비율이 2025년 157.0%에서 2026년 125.8%, 2027년 111.2% 등으로 감소 추세에 있으며, 순현금 기조를 유지하고 있어 재무 구조가 우량하다는 평가를 내리고 있습니다. 이는 초기 재무제표 분석과 상반되는 긍정적인 변화로 해석됩니다.\n    *   **당기순이익 부재:** 당기순이익 부재에 대한 직접적인 언급은 없으나, 영업이익 개선과 신규 수주 기대감이 순이익 개선으로 이어질 것이라는 긍정적인 전망이 지배적입니다.\n\n---\n\n### 2. 재무제표에서 드러나지 않는 리스크 또는 호재\n\n**리스크 요인:**\n*   **중동 지정학적 리스크 장기화:** 최근 이란-이스라엘 사태로 인한 중동 지역의 지정학적 리스크는 단기적으로 공사 지연이나 자재 수급 문제, 비용 증가를 야기할 수 있습니다. 현재까지는 영향이 제한적이라는 분석이 지배적이나, 사태 장기화 시 리스크가 확대될 수 있습니다.\n*   **신규 사업(New Energy)의 불확실성:** LNG, SAF, 블루/그린 수소/암모니아 등 New Energy 분야는 높은 성장 잠재력을 가지고 있으나, 아직 초기 단계이며 대규모 수주 및 안정적인 수익성 확보까지는 시간이 필요할 수 있습니다. 특히 LNG 프로젝트의 경우 삼성E&A의 트랙 레코드가 부족하여 수주 성공 여부가 중요합니다.\n\n**호재 요인:**\n*   **사업 포트폴리오 재편 및 신사업 성장 동력 확보:** 삼성E&A는 기존 화공/비화공에서 화공, 첨단사업, New Energy 3가지 부문으로 사업 포트폴리오를 재편하며 중장기 성장 동력을 확보하고 있습니다. 이는 전통적인 화공 플랜트의 변동성을 줄이고 미래 고성장 분야로의 전환을 의미합니다.\n*   **그룹사(삼성전자, 삼성바이오로직스) Captive 물량의 견조한 증가:** 삼성전자 P5, P6 및 삼성바이오로직스 6공장 등 그룹사로부터의 안정적인 수주 물량은 대내외 불확실성 속에서도 견고한 실적 기반을 제공합니다.\n*   **강력한 신규 수주 파이프라인:** 1분기 3.8조 원의 조기 수주 달성에 이어 중동 대형 프로젝트(사우디 San 6 블루암모니아 등) 및 미국 LNG, SAF 프로젝트 등 New Energy 분야에서 대규모 수주가 기대됩니다.\n*   **공격적인 주주환원 정책 기대:** 우량한 재무 구조(순현금 약 3조 원 추정)를 바탕으로 2026년 새로운 3개년 주주환원 정책에서 더욱 공격적인 배당 정책이 발표될 가능성이 높습니다.\n*   **저평가된 밸류에이션 및 목표주가 상향:** 현재 주가는 글로벌 EPC사 대비 저평가되어 있으며, 사업 포트폴리오 변화와 수주 증가 기대감을 반영하여 다수의 증권사에서 목표주가를 상향 조정하고 있습니다.\n\n---\n\n### 3. 최종 판정\n\n제공된 재무제표 분석에서 지적된 \"급증하는 부채비율\"은 최근 시장 컨센서스에서 우량한 재무 구조와 개선되는 부채비율로 상쇄되고 있습니다. \"당기순이익 부재\"에 대한 우려 역시 견조한 영업이익 성장과 신규 수주 기대감으로 향후 개선될 가능성이 높습니다.\n\n특히, 사업 포트폴리오 재편을 통한 신사업 성장 동력 확보, 그룹사 물량을 포함한 강력한 수주 파이프라인, 그리고 주주환원 정책 강화 기대감은 삼성E&A의 투자 매력을 크게 높이는 요인입니다. 중동 리스크는 존재하나 현재까지 영향은 제한적이며, 리스크 해소 시 추가적인 주가 상승 모멘텀이 기대됩니다.\n\n종합적으로 판단할 때, 삼성E&A는 긍정적인 시장 컨센서스와 미래 성장 동력을 바탕으로 현재 저평가된 밸류에이션을 해소하며 추가적인 주가 상승을 기대할 수 있습니다.\n\n**최종 판정: 매수**",
+    "citations": [
+      {
+        "title": "sedaily.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQH3Qc1NOZD-zxyNpeJBUNA3KIZ7b3tL_VMXxzFbpk1Wa296EvDk7ZvrgOgXEJaZbiYuefGJ0g930cxOIp3Mmqv7_zO5kceEvrxcgYqvPB-9637iSyyZZBd-l_QEc-vHRNXH"
+      },
+      {
+        "title": "bondweb.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFBSsUY-0RokK7eMy2XyJkbtM5_mRoH-KTyouUSteuORF86gq7uMDhKV2dWwViy2BI5DOzjqe5PqeXYmADzE9UKRxFBfZOR8z6yqfDZQBkakBtGXy3bqJmv5XjsOdUXk-WhSeB0F3FOEe-KubT8YHJR8KQVWcCm0QuQvO4fHlh3JEDt"
+      },
+      {
+        "title": "kiwoom.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFvGJsYyynGyOLvjCuAmfcUea0FBIIQwpBdKcnheBEncOIYKcfMPd3RKZg5_EY1jTloGzWTTEyyjVR2CTptVuNTwGNM5XXcjopq_TYTMc2SQACAym417QGZ62rc"
+      },
+      {
+        "title": "imfnsec.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHvtiWjk1H_vfE2WiXgCeeFch0S72XjqafeFSxaMAUKXWTd3w6sPwl2apH-kB99u3mErvTMDXoP3SVeGyVyJM__WSgWLAi9fGzYEEQ2bOTvBvQq5i1Of1tXTggr9gY8xD-Dbk2hZ5UspjAstZH_-rSszcZjQzy4-DJ0wxwApuzn"
+      },
+      {
+        "title": "alphasquare.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEC-XwS4cBj_IXgLhfDCtF81bFopa4asRXLEBzDMnid1XJQN16U5RfGgE1goInv1kft1LLBMsgNpSUdt2FQpl-4eZ_TBsVX2GpSrA-X-O8EsX9l83QB_PDxaiUHAPjCsO1UXDrb5PbaTiAI3FoCrF9u8w9_GVlecDwzJITZihwlTX1-9on30jw6"
+      },
+      {
+        "title": "pstatic.net",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGr9L9gpf0iuyK86DBBosUlcWOGWykMGPxSz3b5wVIQr3MUIgC5G4PiPqy_IkqLZ-C8TZF4oL2WdFlyde1uzTrxPHiuBXdGLVERaasFmAvgtkviF71t2VzenGcX20e99Dp3u6xqT7A6ae0Zg_JN4kIIDqVRH1QShxO58KLz3LdBpFS4cto_o5jamSwVT6U="
+      },
+      {
+        "title": "imfnsec.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFOWzpGI1PLcUh80LukvU39BGfEkMoAkfZFHtdLFXPOUBTiOGnByXZRUvXdCfcG60kb3xAE_H2bn2tKs-tjtuIahQtyX367FV5nUVP5IdtOWeSiX4DGwFnE-uoYmxZ45QO_NLE0I_y3JD31LsEdHyOvBlvoFxdcBzFkpYOMWA=="
+      },
+      {
+        "title": "mk.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHx3eTcTZ6nvjqrrYJptCPap500idsVPQB_g16kcf2jv2a25SvKVcah7EciLrSof37PhC_u4xMgdzWFWcfbZEVPiTVeXNoswL9QDaAHN-ig1nVRUhgILmWyBQ7jyDcR_5XdLsw="
+      },
+      {
+        "title": "etoday.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEzm-nuDGRbtcJpIZw6JKlrT6syFpD3yM1PQsAl_SHR9JD-hEajSTRFp2csl8xtxCN0yQrK9_kWjO6Fk47Tuw8r6FMO_Fos7To-vP0LcQNWvtxB3Kf-UiIuhW5F8gy5-WhQ8pPj2Q=="
+      },
+      {
+        "title": "miraeasset.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQE6uahu05TO0HVsnccDCnR7_WBnhThAG1jOwWCQM_IhaiOwTqyiYMjM_VdEXm02a95g71BeMMgEsixy1F9Tgzf8dnkTEBQXGSm4pyWwerYIch0AG4Brl5i2SBVsRkc1q7cS7Wwq3MWM8R9ZSWylbDQ0SYEdLLKHGKAD0Agk10l08KtFOEpglxtFuUE="
+      }
+    ]
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=00126308",
+    "summary": "공시 페이지 접근 제한"
+  }
+}

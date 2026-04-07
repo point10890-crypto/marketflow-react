@@ -1,0 +1,306 @@
+{
+  "stock_code": "000270",
+  "stock_name": "기아",
+  "generated_at": "2026-04-06T15:38:36.590733+00:00",
+  "financials": {
+    "stock_code": "000270",
+    "corp_code": "00106641",
+    "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2016": {
+        "cash": 30641.9,
+        "total_assets": 508892.6,
+        "short_debt": 28762.8,
+        "long_debt": 22716.3,
+        "total_liab": 243098.4,
+        "total_equity": 265794.2,
+        "revenue": 527129.1,
+        "op_profit": 24614.8,
+        "net_income": 27546.4
+      },
+      "2017": {
+        "cash": 15617.4,
+        "total_assets": 522944.4,
+        "short_debt": 29937.1,
+        "long_debt": 18747.3,
+        "total_liab": 254332.6,
+        "total_equity": 268611.8,
+        "revenue": 535356.8,
+        "op_profit": 6622.3,
+        "net_income": 9680.2
+      },
+      "2018": {
+        "cash": 22926.6,
+        "total_assets": 517866.0,
+        "short_debt": 13666.5,
+        "long_debt": 13111.9,
+        "total_liab": 245431.4,
+        "total_equity": 272434.6,
+        "revenue": 541698.1,
+        "op_profit": 11574.8,
+        "net_income": 11559.4
+      },
+      "2019": {
+        "cash": 42687.2,
+        "total_assets": 553448.0,
+        "short_debt": 14147.6,
+        "long_debt": 13078.1,
+        "total_liab": 263666.6,
+        "total_equity": 289781.4,
+        "revenue": 581459.6,
+        "op_profit": 20096.8,
+        "net_income": 18266.6
+      },
+      "2020": {
+        "cash": 101607.0,
+        "total_assets": 604904.4,
+        "short_debt": 44794.5,
+        "long_debt": 21757.3,
+        "total_liab": 305987.7,
+        "total_equity": 298916.7,
+        "revenue": 591681.0,
+        "op_profit": 20664.6,
+        "net_income": 14875.9
+      },
+      "2021": {
+        "cash": 115337.1,
+        "total_assets": 668500.0,
+        "short_debt": 31077.7,
+        "long_debt": 16312.8,
+        "total_liab": 319374.4,
+        "total_equity": 349125.6,
+        "revenue": 698623.7,
+        "op_profit": 50656.8,
+        "net_income": 47604.5
+      },
+      "2022": {
+        "cash": 115539.7,
+        "total_assets": 737109.7,
+        "short_debt": 16595.0,
+        "long_debt": 9451.7,
+        "total_liab": 343678.8,
+        "total_equity": 393430.8,
+        "revenue": 865590.3,
+        "op_profit": 72331.2,
+        "net_income": -4.5
+      },
+      "2023": {
+        "total_assets": 806278.3,
+        "cash": 143531.4,
+        "total_equity": 15606.5,
+        "short_debt": 1287.7,
+        "total_liab": 340695.9,
+        "long_debt": 2000.0,
+        "op_profit": 116078.7,
+        "net_income": 0.0,
+        "revenue": 998084.2
+      },
+      "2024": {
+        "total_assets": 927558.7,
+        "cash": 135665.7,
+        "total_equity": 15606.5,
+        "short_debt": 2208.6,
+        "total_liab": 369155.7,
+        "long_debt": 0.0,
+        "op_profit": 126671.4,
+        "net_income": 0.0,
+        "revenue": 1074487.5
+      },
+      "2025": {
+        "total_assets": 989790.6,
+        "cash": 139981.1,
+        "total_equity": 15606.5,
+        "short_debt": 2112.9,
+        "total_liab": 377885.9,
+        "long_debt": 0.0,
+        "op_profit": 90781.5,
+        "net_income": 0.0,
+        "revenue": 1141409.2
+      }
+    },
+    "missing_years": [
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2016,
+        "revenue_eok": 527129,
+        "op_profit_eok": 24615,
+        "net_income_eok": 27546,
+        "roe_pct": 10.36,
+        "op_margin_pct": 4.67,
+        "debt_ratio_pct": 91.46
+      },
+      {
+        "year": 2017,
+        "revenue_eok": 535357,
+        "op_profit_eok": 6622,
+        "net_income_eok": 9680,
+        "roe_pct": 3.6,
+        "op_margin_pct": 1.24,
+        "debt_ratio_pct": 94.69
+      },
+      {
+        "year": 2018,
+        "revenue_eok": 541698,
+        "op_profit_eok": 11575,
+        "net_income_eok": 11559,
+        "roe_pct": 4.24,
+        "op_margin_pct": 2.14,
+        "debt_ratio_pct": 90.09
+      },
+      {
+        "year": 2019,
+        "revenue_eok": 581460,
+        "op_profit_eok": 20097,
+        "net_income_eok": 18267,
+        "roe_pct": 6.3,
+        "op_margin_pct": 3.46,
+        "debt_ratio_pct": 90.99
+      },
+      {
+        "year": 2020,
+        "revenue_eok": 591681,
+        "op_profit_eok": 20665,
+        "net_income_eok": 14876,
+        "roe_pct": 4.98,
+        "op_margin_pct": 3.49,
+        "debt_ratio_pct": 102.37
+      },
+      {
+        "year": 2021,
+        "revenue_eok": 698624,
+        "op_profit_eok": 50657,
+        "net_income_eok": 47604,
+        "roe_pct": 13.63,
+        "op_margin_pct": 7.25,
+        "debt_ratio_pct": 91.48
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 865590,
+        "op_profit_eok": 72331,
+        "net_income_eok": -4,
+        "roe_pct": -0.0,
+        "op_margin_pct": 8.36,
+        "debt_ratio_pct": 87.35
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 998084,
+        "op_profit_eok": 116079,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 11.63,
+        "debt_ratio_pct": 2183.0
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 1074488,
+        "op_profit_eok": 126671,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 11.79,
+        "debt_ratio_pct": 2365.47
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 1141409,
+        "op_profit_eok": 90782,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 7.95,
+        "debt_ratio_pct": 2421.41
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": 8.99,
+      "op_profit_cagr_pct": 15.49,
+      "best_year": 2024,
+      "worst_year": 2017,
+      "avg_roe_pct": 4.31
+    },
+    "valuation": {
+      "grade": "C",
+      "strengths": [
+        "매출액과 영업이익의 견조한 성장세: 10년간 매출액 CAGR 8.99%, 영업이익 CAGR 15.49%로 우수한 성장률을 기록했습니다.",
+        "수익성 개선: 영업이익률이 2016년 4.67%에서 2024년 11.79%까지 크게 개선되어 수익 창출 능력이 강화되었습니다.",
+        "현금 보유액 증가: 2016년 30,642억원에서 2025년 139,981억원으로 현금 보유액이 크게 증가하여 재무 유동성이 양호합니다."
+      ],
+      "risks": [
+        "극도로 악화된 재무 건전성: 2023년 이후 자본총계가 급격히 감소하고 부채비율이 2000%를 초과하는 등 재무 구조가 매우 취약해졌습니다.",
+        "당기순이익 부재: 2022년부터 당기순이익이 사실상 0에 가까워지면서 주주 환원 및 기업 가치 평가에 부정적인 영향을 미칠 수 있습니다.",
+        "영업이익률 변동성: 2025년 영업이익률이 7.95%로 하락하며 수익성 유지에 대한 우려가 있습니다."
+      ],
+      "one_liner": "견조한 외형 성장과 수익성 개선에도 불구하고, 최근 몇 년간 급격히 악화된 재무 건전성과 당기순이익 부재가 투자 매력을 저해하는 요인입니다."
+    }
+  },
+  "dcf": {
+    "text": "저는 퀀트 애널리스트로서 기아(000270)의 DCF(할인현금흐름) 적정가치를 계산하고 민감도 분석을 수행하겠습니다.\n\n**분석 가정:**\n\n*   **FCF (자유현금흐름) 계산:** `영업이익 × (1 - 0.25) + 감가상각(매출의 10%) - CAPEX(매출의 5%)`\n    *   주어진 FCF 공식에 따라 영업이익에 0.75를 곱하는 것으로 해석합니다.\n    *   매출액과 영업이익은 예측 기간(5년) 동안 동일하게 유지된다고 가정합니다. (성장률 정보 부재)\n*   **WACC (가중평균자본비용):** 기본 9%\n*   **영구성장률 (g):** 기본 2%\n*   **예측 기간:** 5년 (2025년 ~ 2029년) + 영구 가치 (Terminal Value)\n\n**주요 재무 데이터 (억원):**\n\n*   매출액: 1,141,409\n*   영업이익: 90,782\n\n---\n\n### Python 코드 실행 및 결과\n\n\n죄송합니다. f-string 내에서 백슬래시(`\\`) 문자를 사용하는 부분에서 구문 오류가 발생했습니다. 백슬래시를 리터럴로 출력하려면 `\\\\`로 이스케이프해야 합니다. 해당 부분을 수정하여 다시 실행하겠습니다.\n\n---\n\n### Python 코드 실행 및 결과 (수정 후)\n\n\n다시 한번 죄송합니다. f-string 내에서 백슬래시를 처리하는 데 문제가 계속 발생했습니다. 백슬래시 대신 슬래시(`/`)를 사용하여 \"WACC / g\"로 헤더를 표시하도록 수정하겠습니다. 이는 민감도 분석 그리드의 축을 나타내는 일반적인 방법이며, 구문 오류를 피할 수 있습니다.\n\n---\n\n### Python 코드 실행 및 결과 (수정 후)\n\n\n### 기아 (000270) DCF 적정가치 분석 결과\n\n퀀트 애널리스트로서 기아의 DCF 적정가치를 계산하고 민감도 분석을 수행한 결과는 다음과 같습니다.\n\n**1. 기본 시나리오 DCF 적정가치 계산**\n\n*   **기준 연도:** 2025년\n*   **최근 재무 (억원):**\n    *   매출액: 1,141,409\n    *   영업이익: 90,782\n*   **연간 FCF (추정):** 125,156.95 억원\n    *   (계산: 90,782 * (1 - 0.25) + 1,141,409 * 0.10 - 1,141,409 * 0.05)\n*   **가정:**\n    *   WACC (가중평균자본비용): 9%\n    *   영구성장률 (g): 2%\n    *   예측 기간: 5년\n\n**DCF 적정가치(기본): 1,672,106.87 억원**\n\n**2. WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 출력**\n\nDCF 적정가치 (단위: 조원)\n\n| WACC / g | 1%    | 2%    | 3%    |\n| :------- | :---- | :---- | :---- |\n| 7%       | 202   | 233   | 281   |\n| 8%       | 173   | 195   | 225   |\n| 9%       | 151   | 167   | 188   |\n| 10%      | 135   | 147   | 162   |\n| 11%      | 121   | 130   | 142   |\n\n*   `N/A`는 WACC가 영구성장률(g)보다 작거나 같아 터미널 밸류 계산이 불가능한 경우를 의미합니다. (이 분석에서는 해당 사례가 없습니다.)\n*   표의 값은 억원 단위를 10,000으로 나누어 조원 단위로 표시되었습니다.\n\n**3. 요약 출력**\n\n**적정가치(기본): 1,672,106.87억원**",
+    "executed_code": "import math\n\n# Given data\ncompany_name = \"기아 (000270)\"\nbase_year = 2025\nrevenue = 1141409  # 억원\noperating_profit = 90782  # 억원\n\n# Assumptions\nwacc_base = 0.09\ng_base = 0.02\nforecast_years = 5\n\n# FCF calculation components\n# FCF ≈ 영업이익 × (1 - 0.25) + 감가상각(매출의 10%) - CAPEX(매출의 5%)\ndepreciation_rate = 0.10 # 10% of Revenue\ncapex_rate = 0.05 # 5% of Revenue\noperating_profit_multiplier = 1 - 0.25 # This is a direct multiplier as per the formula\n\n# Calculate FCF for a single year based on the given formula and recent financials\ndepreciation = revenue * depreciation_rate\ncapex = revenue * capex_rate\nfcf_per_year = operating_profit * operating_profit_multiplier + depreciation - capex\n\nprint(f\"--- {company_name} DCF 분석 ---\")\nprint(f\"기준 연도: {base_year}\")\nprint(f\"최근 매출액: {revenue:,.0f} 억원\")\nprint(f\"최근 영업이익: {operating_profit:,.0f} 억원\")\nprint(f\"연간 FCF (추정): {fcf_per_year:,.2f} 억원\\n\")\n\n# DCF calculation function\ndef calculate_dcf(fcf_annual, wacc, g, years):\n    \"\"\"\n    Calculates the DCF fair value.\n    fcf_annual: Constant FCF per year during the forecast period.\n    wacc: Weighted Average Cost of Capital.\n    g: Perpetual growth rate.\n    years: Number of forecast years.\n    \"\"\"\n    # Present Value of FCFs during the forecast period\n    pv_fcf_forecast = 0\n    for i in range(1, years + 1):\n        pv_fcf_forecast += fcf_annual / ((1 + wacc) ** i)\n\n    # Terminal Value calculation\n    # FCF for the year after the forecast period (Year 'years + 1')\n    fcf_terminal_year = fcf_annual * (1 + g)\n    \n    # Check for WACC <= g, which would lead to an invalid (infinite or negative) TV\n    if wacc <= g:\n        return float('inf') # Indicate an invalid or infinite value\n\n    terminal_value = fcf_terminal_year / (wacc - g)\n\n    # Present Value of Terminal Value\n    pv_terminal_value = terminal_value / ((1 + wacc) ** years)\n\n    total_dcf_value = pv_fcf_forecast + pv_terminal_value\n    return total_dcf_value\n\n# 1. 기본 시나리오 DCF 적정가치(억원) 계산\ndcf_base_value = calculate_dcf(fcf_per_year, wacc_base, g_base, forecast_years)\n\nprint(f\"--- 기본 시나리오 ---\")\nprint(f\"WACC: {wacc_base*100:.0f}%\")\nprint(f\"영구성장률 (g): {g_base*100:.0f}%\")\nprint(f\"예측 기간: {forecast_years}년\")\nprint(f\"DCF 적정가치: {dcf_base_value:,.2f} 억원\\n\")\n\n# 2. WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 출력\nwacc_range = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_range = [0.01, 0.02, 0.03]\n\nprint(\"--- DCF 적정가치 민감도 분석 (단위: 조원) ---\")\nprint(f\"{'WACC \\\\ g':<10}\", end=\"\")\nfor g_val in g_range:\n    print(f\"{g_val*100:>8.0f}%\", end=\"\")\nprint()\nprint(\"-\" * (10 + len(g_range) * 8))\n\nsensitivity_results = {}\nfor wacc_val in wacc_range:\n    print(f\"{wacc_val*100:<9.0f}%\", end=\"\")\n    for g_val in g_range:\n        value = calculate_dcf(fcf_per_year, wacc_val, g_val, forecast_years)\n        sensitivity_results[(wacc_val, g_val)] = value\n        if value == float('inf'):\n            print(f\"{'  N/A':>8}\", end=\"\") # N/A for cases where WACC <= g\n        else:\n            # Display in Trillion KRW (조원). 1조원 = 10,000억원\n            print(f\"{value/10000:>8,.0f}\", end=\"\")\n    print()\nprint(\"-\" * (10 + len(g_range) * 8))\n\n# 3. 마지막에 '적정가치(기본): {value}억원' 형태로 요약 출력\nprint(\"\\n--- 요약 ---\")\nprint(f\"적정가치(기본): {dcf_base_value:,.2f}억원\")\n\nimport math\n\n# Given data\ncompany_name = \"기아 (000270)\"\nbase_year = 2025\nrevenue = 1141409  # 억원\noperating_profit = 90782  # 억원\n\n# Assumptions\nwacc_base = 0.09\ng_base = 0.02\nforecast_years = 5\n\n# FCF calculation components\n# FCF ≈ 영업이익 × (1 - 0.25) + 감가상각(매출의 10%) - CAPEX(매출의 5%)\ndepreciation_rate = 0.10 # 10% of Revenue\ncapex_rate = 0.05 # 5% of Revenue\noperating_profit_multiplier = 1 - 0.25 # This is a direct multiplier as per the formula\n\n# Calculate FCF for a single year based on the given formula and recent financials\ndepreciation = revenue * depreciation_rate\ncapex = revenue * capex_rate\nfcf_per_year = operating_profit * operating_profit_multiplier + depreciation - capex\n\nprint(f\"--- {company_name} DCF 분석 ---\")\nprint(f\"기준 연도: {base_year}\")\nprint(f\"최근 매출액: {revenue:,.0f} 억원\")\nprint(f\"최근 영업이익: {operating_profit:,.0f} 억원\")\nprint(f\"연간 FCF (추정): {fcf_per_year:,.2f} 억원\\n\")\n\n# DCF calculation function\ndef calculate_dcf(fcf_annual, wacc, g, years):\n    \"\"\"\n    Calculates the DCF fair value.\n    fcf_annual: Constant FCF per year during the forecast period.\n    wacc: Weighted Average Cost of Capital.\n    g: Perpetual growth rate.\n    years: Number of forecast years.\n    \"\"\"\n    # Present Value of FCFs during the forecast period\n    pv_fcf_forecast = 0\n    for i in range(1, years + 1):\n        pv_fcf_forecast += fcf_annual / ((1 + wacc) ** i)\n\n    # Terminal Value calculation\n    # FCF for the year after the forecast period (Year 'years + 1')\n    fcf_terminal_year = fcf_annual * (1 + g)\n    \n    # Check for WACC <= g, which would lead to an invalid (infinite or negative) TV\n    if wacc <= g:\n        return float('inf') # Indicate an invalid or infinite value\n\n    terminal_value = fcf_terminal_year / (wacc - g)\n\n    # Present Value of Terminal Value\n    pv_terminal_value = terminal_value / ((1 + wacc) ** years)\n\n    total_dcf_value = pv_fcf_forecast + pv_terminal_value\n    return total_dcf_value\n\n# 1. 기본 시나리오 DCF 적정가치(억원) 계산\ndcf_base_value = calculate_dcf(fcf_per_year, wacc_base, g_base, forecast_years)\n\nprint(f\"--- 기본 시나리오 ---\")\nprint(f\"WACC: {wacc_base*100:.0f}%\")\nprint(f\"영구성장률 (g): {g_base*100:.0f}%\")\nprint(f\"예측 기간: {forecast_years}년\")\nprint(f\"DCF 적정가치: {dcf_base_value:,.2f} 억원\\n\")\n\n# 2. WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 출력\nwacc_range = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_range = [0.01, 0.02, 0.03]\n\nprint(\"--- DCF 적정가치 민감도 분석 (단위: 조원) ---\")\nprint(f\"{'WACC \\\\\\\\ g':<10}\", end=\"\") # Corrected: escaped backslash\nfor g_val in g_range:\n    print(f\"{g_val*100:>8.0f}%\", end=\"\")\nprint()\nprint(\"-\" * (10 + len(g_range) * 8))\n\nsensitivity_results = {}\nfor wacc_val in wacc_range:\n    print(f\"{wacc_val*100:<9.0f}%\", end=\"\")\n    for g_val in g_range:\n        value = calculate_dcf(fcf_per_year, wacc_val, g_val, forecast_years)\n        sensitivity_results[(wacc_val, g_val)] = value\n        if value == float('inf'):\n            print(f\"{'  N/A':>8}\", end=\"\") # N/A for cases where WACC <= g\n        else:\n            # Display in Trillion KRW (조원). 1조원 = 10,000억원\n            print(f\"{value/10000:>8,.0f}\", end=\"\")\n    print()\nprint(\"-\" * (10 + len(g_range) * 8))\n\n# 3. 마지막에 '적정가치(기본): {value}억원' 형태로 요약 출력\nprint(\"\\n--- 요약 ---\")\nprint(f\"적정가치(기본): {dcf_base_value:,.2f}억원\")\n\nimport math\n\n# Given data\ncompany_name = \"기아 (000270)\"\nbase_year = 2025\nrevenue = 1141409  # 억원\noperating_profit = 90782  # 억원\n\n# Assumptions\nwacc_base = 0.09\ng_base = 0.02\nforecast_years = 5\n\n# FCF calculation components\n# FCF ≈ 영업이익 × (1 - 0.25) + 감가상각(매출의 10%) - CAPEX(매출의 5%)\ndepreciation_rate = 0.10 # 10% of Revenue\ncapex_rate = 0.05 # 5% of Revenue\noperating_profit_multiplier = 1 - 0.25 # This is a direct multiplier as per the formula\n\n# Calculate FCF for a single year based on the given formula and recent financials\ndepreciation = revenue * depreciation_rate\ncapex = revenue * capex_rate\nfcf_per_year = operating_profit * operating_profit_multiplier + depreciation - capex\n\nprint(f\"--- {company_name} DCF 분석 ---\")\nprint(f\"기준 연도: {base_year}\")\nprint(f\"최근 매출액: {revenue:,.0f} 억원\")\nprint(f\"최근 영업이익: {operating_profit:,.0f} 억원\")\nprint(f\"연간 FCF (추정): {fcf_per_year:,.2f} 억원\\n\")\n\n# DCF calculation function\ndef calculate_dcf(fcf_annual, wacc, g, years):\n    \"\"\"\n    Calculates the DCF fair value.\n    fcf_annual: Constant FCF per year during the forecast period.\n    wacc: Weighted Average Cost of Capital.\n    g: Perpetual growth rate.\n    years: Number of forecast years.\n    \"\"\"\n    # Present Value of FCFs during the forecast period\n    pv_fcf_forecast = 0\n    for i in range(1, years + 1):\n        pv_fcf_forecast += fcf_annual / ((1 + wacc) ** i)\n\n    # Terminal Value calculation\n    # FCF for the year after the forecast period (Year 'years + 1')\n    fcf_terminal_year = fcf_annual * (1 + g)\n    \n    # Check for WACC <= g, which would lead to an invalid (infinite or negative) TV\n    if wacc <= g:\n        return float('inf') # Indicate an invalid or infinite value\n\n    terminal_value = fcf_terminal_year / (wacc - g)\n\n    # Present Value of Terminal Value\n    pv_terminal_value = terminal_value / ((1 + wacc) ** years)\n\n    total_dcf_value = pv_fcf_forecast + pv_terminal_value\n    return total_dcf_value\n\n# 1. 기본 시나리오 DCF 적정가치(억원) 계산\ndcf_base_value = calculate_dcf(fcf_per_year, wacc_base, g_base, forecast_years)\n\nprint(f\"--- 기본 시나리오 ---\")\nprint(f\"WACC: {wacc_base*100:.0f}%\")\nprint(f\"영구성장률 (g): {g_base*100:.0f}%\")\nprint(f\"예측 기간: {forecast_years}년\")\nprint(f\"DCF 적정가치: {dcf_base_value:,.2f} 억원\\n\")\n\n# 2. WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 출력\nwacc_range = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_range = [0.01, 0.02, 0.03]\n\nprint(\"--- DCF 적정가치 민감도 분석 (단위: 조원) ---\")\nprint(f\"{'WACC / g':<10}\", end=\"\") # Corrected: used forward slash\nfor g_val in g_range:\n    print(f\"{g_val*100:>8.0f}%\", end=\"\")\nprint()\nprint(\"-\" * (10 + len(g_range) * 8))\n\nsensitivity_results = {}\nfor wacc_val in wacc_range:\n    print(f\"{wacc_val*100:<9.0f}%\", end=\"\")\n    for g_val in g_range:\n        value = calculate_dcf(fcf_per_year, wacc_val, g_val, forecast_years)\n        sensitivity_results[(wacc_val, g_val)] = value\n        if value == float('inf'):\n            print(f\"{'  N/A':>8}\", end=\"\") # N/A for cases where WACC <= g\n        else:\n            # Display in Trillion KRW (조원). 1조원 = 10,000억원\n            print(f\"{value/10000:>8,.0f}\", end=\"\")\n    print()\nprint(\"-\" * (10 + len(g_range) * 8))\n\n# 3. 마지막에 '적정가치(기본): {value}억원' 형태로 요약 출력\nprint(\"\\n--- 요약 ---\")\nprint(f\"적정가치(기본): {dcf_base_value:,.2f}억원\")",
+    "code_output": "Traceback (most recent call last):\n  File \"<string>\", line 75\n    print(f\"{'WACC \\\\ g':<10}\", end=\"\")\n                              ^\nSyntaxError: f-string expression part cannot include a backslash\n\nTraceback (most recent call last):\n  File \"<string>\", line 75\n    print(f\"{'WACC \\\\\\\\ g':<10}\", end=\"\") # Corrected: escaped backslash\n                                ^\nSyntaxError: f-string expression part cannot include a backslash\n\n--- 기아 (000270) DCF 분석 ---\n기준 연도: 2025\n최근 매출액: 1,141,409 억원\n최근 영업이익: 90,782 억원\n연간 FCF (추정): 125,156.95 억원\n\n--- 기본 시나리오 ---\nWACC: 9%\n영구성장률 (g): 2%\n예측 기간: 5년\nDCF 적정가치: 1,672,106.87 억원\n\n--- DCF 적정가치 민감도 분석 (단위: 조원) ---\nWACC / g         1%       2%       3%\n----------------------------------\n7        %     202     233     281\n8        %     173     195     225\n9        %     151     167     188\n10       %     135     147     162\n11       %     121     130     142\n----------------------------------\n\n--- 요약 ---\n적정가치(기본): 1,672,106.87억원"
+  },
+  "news": {
+    "text": "## 기아(000270) 투자 분석: 재무 건전성 우려 속 성장 모멘텀 지속\n\n### 1. 재무 데이터 스토리와 시장 컨센서스 일치/불일치\n\n제공된 기아의 10년 재무제표 분석 결과는 \"견조한 외형 성장과 수익성 개선에도 불구하고, 최근 몇 년간 급격히 악화된 재무 건전성과 당기순이익 부재가 투자 매력을 저해하는 요인\"이라고 명시하고 있습니다.\n\n반면, 최근 2주간의 시장 컨센서스는 이와 다소 상반된 양상을 보입니다. 시장은 기아의 견조한 외형 성장과 수익성 개선에 더욱 주목하며 긍정적인 전망을 내놓고 있습니다.\n\n*   **시장 컨센서스:**\n    *   **역대급 1분기 실적:** 기아는 2026년 1분기 역대 최대 판매 실적을 달성했으며, 특히 친환경차 판매가 호조를 보였습니다.\n    *   **안정적 실적 및 성장 모멘텀:** SK증권 등 다수 증권사는 기아의 1분기 매출액과 영업이익이 시장 컨센서스에 부합하며 안정적인 실적과 성장 모멘텀을 유지할 것으로 전망했습니다.\n    *   **압도적인 매수 의견:** 31명의 애널리스트들이 제시한 기아에 대한 평균 투자의견은 '적극 매수'이며, 평균 목표주가는 현재 주가 대비 높은 213,226원입니다.\n    *   **환율 수혜:** 현대차 대비 해외 매출 비중이 높아 환율 상승 시 영업이익 개선 효과를 기대할 수 있다는 분석도 있습니다.\n\n**일치/불일치:** 시장 컨센서스는 제공된 재무 데이터 스토리 중 '견조한 외형 성장과 수익성 개선' 부분에 집중하며, '재무 건전성 악화 및 당기순이익 부재'에 대한 우려보다는 현재의 견조한 영업 실적과 미래 성장 동력(친환경차, 신규 플랫폼, 자율주행 등)에 더 큰 비중을 두는 것으로 보입니다. 이는 재무 건전성 및 당기순이익 부재가 과거 데이터에 기반한 것이거나, 시장이 현재의 영업력으로 충분히 극복 가능하다고 판단하는 불일치 지점이 존재합니다.\n\n### 2. 재무제표에서 드러나지 않는 리스크 또는 호재\n\n*   **리스크:**\n    *   **전기차 보조금 소진 우려:** 국내외 전기차 보조금의 빠른 소진 소식은 전기차 판매량 둔화 우려를 키우는 요인으로 작용할 수 있습니다.\n    *   **미국 관세 정책 불확실성:** 미국 도널드 트럼프 행정부의 관세 정책 변화 가능성(외국산 자동차 25% 관세 부과)은 기아의 대미 수출에 큰 부담으로 작용할 수 있습니다.\n    *   **중동 지역 지정학적 리스크:** 중동 지역의 지정학적 리스크로 인해 중동 및 북아프리카(아중동) 지역 판매가 일부 감소했습니다.\n\n*   **호재:**\n    *   **친환경차 판매 호조 및 신차 효과:** 3월 한 달간 전기차 판매가 1만6187대를 기록했으며, 1분기 누적 판매는 3만4303대로 분기 기준 역대 최대치를 기록했습니다. EV3, PV5, EV5 등 신차들이 판매를 견인하고 있습니다. 또한, 픽업트럭 및 SUV 신차 출시를 통해 미국 시장 점유율을 끌어올릴 계획입니다.\n    *   **차세대 플랫폼 및 신사업(CID) 성장 동력:** 차세대 차량 플랫폼과 신규 사업(CID) 중심의 변화가 중장기 성장의 핵심 동력으로 작용할 가능성이 높습니다.\n    *   **자율주행 및 로보틱스 모멘텀:** 기아는 CEO 인베스터 데이 행사에서 자율주행 및 로보틱스 등을 공개하며 시장의 관심을 다시 한번 받을 것으로 분석됩니다. 이는 주가 상승에 큰 모멘텀이 될 수 있습니다.\n    *   **반도체 리스크 관리:** 기아는 반도체 수급과 관련하여 여러 업체와 장기 계약을 맺어 원가 부담 및 수급 리스크를 관리하고 있습니다.\n    *   **높은 배당 수익률:** 현재 4.53%의 현금 배당수익률은 투자 매력 요인 중 하나입니다.\n\n### 3. 최종 판정\n\n**관망**\n\n**판단 근거:**\n\n제공된 10년 재무제표 분석 결과는 '재무 건전성 악화'와 '당기순이익 부재'라는 중요한 투자 저해 요인을 지적하고 있습니다. 이는 기업의 장기적인 안정성과 지속 가능성에 대한 우려를 제기합니다.\n\n반면, 최근 2주간의 시장 뉴스는 기아의 '견조한 외형 성장', '안정적인 수익성', '역대급 1분기 판매 실적', 그리고 '친환경차, 자율주행, 로보틱스'와 같은 미래 성장 동력에 초점을 맞추며 매우 긍정적인 컨센서스를 형성하고 있습니다. 애널리스트들의 '적극 매수' 의견과 높은 목표주가는 현재 시장이 기아의 성장 잠재력을 높이 평가하고 있음을 보여줍니다.\n\n이러한 상반된 정보 속에서, 현재 시장은 과거의 재무 건전성 이슈보다는 현재의 뛰어난 영업 성과와 미래 성장 가능성에 더 높은 점수를 주고 있는 것으로 보입니다. 그러나 재무 건전성 악화와 당기순이익 부재는 기업의 장기적인 안정성을 위협할 수 있는 본질적인 문제입니다. 비록 최근 영업이익이 안정적이라 할지라도, 당기순이익의 부재가 지속된다면 투자 매력은 제한될 수 있습니다.\n\n따라서, 현재의 긍정적인 영업 실적과 미래 성장 동력은 분명한 호재이나, 제공된 재무 분석의 '재무 건전성 악화' 및 '당기순이익 부재'라는 리스크가 해소되었는지에 대한 추가적인 확인이 필요합니다. 전기차 보조금 소진 및 미국 관세 정책 불확실성 또한 잠재적인 하방 리스크로 작용할 수 있습니다.\n\n현재 시점에서는 긍정적인 시장 분위기와 잠재적 리스크를 동시에 고려하여, 재무 건전성 개선 여부와 당기순이익 회복 추이를 좀 더 지켜보는 '관망' 포지션이 합리적이라고 판단합니다.",
+    "citations": [
+      {
+        "title": "newstomato.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEdFGH-blh2YNTaESHGdBKy-rZspaXMz3t-_6t5J0W1N18kCyKp662ecLK50k_sFIkzg7VPzQiZbPLnCr5mbdxECGD1e7w_0ko0j0TdeSvGDL083wO6sHszvSeUeVKz_F93jcRlPf2ODLOx5hEX"
+      },
+      {
+        "title": "pinpointnews.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEXp77aHcC6IMQoIDQPeLXgXBIAcu9YR5t9ny5kZjGjKWgfc-_dR4yLEU7htJWnfB4bjqZsLvv-H2Ee1FWEUjlA1-HaxZDFmQFRV-zmNXws9zpBWUI4b0Olxvo6ZeHOVJT6IJ1JxD5rqITSEQ5OT7I_3WUl7z9lpIiOEG0="
+      },
+      {
+        "title": "hankyung.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQE6LrkV6qYEUb_NjlvowOSroBJrmrgyBv9qGLxrostaQ6SDU3bRqOxpQ9HdyYINznELjZIQsCpx5Ual7ufmnlWtBV_mlEpomOBhNutO9fzGWEYRWLxcRumzCeY2IS05fgBjYyf9DiuCl25BqMLk"
+      },
+      {
+        "title": "investing.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGkOhc0AOiJwbQnJ4w1u5LId4xvILxqRMtzzUz4_0znUW_Lp8e4JTq-kIO99p1XfXPWLxoVB3jELz8xvepBfx6xt035OIk5gKL2pMOwpCnTdoylhZgqZYQNTbpdP_qhzHTrok24PuGhwXjSCHAAE64baZfvUR0nPsLp4w=="
+      },
+      {
+        "title": "alphasquare.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGWmtQUhVMDIh9zoy_LFvZRqHU9lzRSpmVVSUdXBQ9mLOiq5dndqMexkILxv-MMRiVUujftMQ8FQmnWvDRGvdpImmHbDuf8UHXYo7xhxTz3hJPJlwSiXlNP289KLSbKef7tMMsZ3i0VIB2Fq6NuAhBg7os="
+      },
+      {
+        "title": "youtube.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFyMvENK3gwP7oGrYQ7jrFVvZ0yYK-GZpIpksFlpZ6zNFatuGK9zya8MIcQpErLmD6aut_MXBR7EzILQcS-jWVO-DzholRKZFEyX9q_MFfnUw2CEeIlHhRv5uiS97zYcjmZj01OJA=="
+      },
+      {
+        "title": "jkn.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQG9XLdUh0EKXZsnj7QApWZMw7R7HaOw3te2r8ZeICZP789TqmH5u1KJSJxwgQ3-FIRNcQALW43aZKb-74SeVkruobQq_Re3Ss8vGmuZHhsE-kcbICnGOs2kAH-0ng=="
+      },
+      {
+        "title": "zum.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEWIJAbF_s3Krw6CRXUgoEqENo_JvHqOJicTNFGWVtg_o_owBQx3yHUnrtlswXfSGfRhMrrdnDIiY8uY-8iql8K7SJrvJepmYBtf8gpw07JXuf7daH14QpD9A18BH28BLQ="
+      },
+      {
+        "title": "news1.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGlvByr-pxfHrYBpLm9mjauaOy-8Aw1uJtyNS-lvYm06jS-BULSss8g0nSkLU95ObBh4bNDVJer7RDXiMoqMMjZcrc5ec-fERLLkHXvRrGf_KEP6dY4h7ugjaq11DqYZmnDM19Gt3gj_1oeMT1x"
+      },
+      {
+        "title": "wisereport.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGpU5UFcfUaRlCKDXnsZhgVXETnbsNmwpUOLy6rpam0aIedNjp--rXmhJhx3tl-x3T_3MegmTQn9KTizCfeTFfp7VqTyrQnBWQGKzG-rI9eqEia2-926rDN8XrD2GmSJGUGrbyhCvPEAONc9JsDlEIR-x0qQ2Jys6c4MvV-CGHf"
+      }
+    ]
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=00106641",
+    "summary": "공시 페이지 접근 제한"
+  }
+}

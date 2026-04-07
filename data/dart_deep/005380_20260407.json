@@ -1,0 +1,296 @@
+{
+  "stock_code": "005380",
+  "stock_name": "현대차",
+  "generated_at": "2026-04-06T22:32:57.663410+00:00",
+  "financials": {
+    "stock_code": "005380",
+    "corp_code": "00164742",
+    "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2016": {
+        "cash": 78900.9,
+        "total_assets": 1788359.3,
+        "short_debt": 87606.8,
+        "long_debt": 133899.8,
+        "total_liab": 1064913.5,
+        "total_equity": 723445.8,
+        "revenue": 936490.2,
+        "op_profit": 51935.0
+      },
+      "2017": {
+        "cash": 88215.3,
+        "total_assets": 1781994.5,
+        "short_debt": 99596.5,
+        "long_debt": 124881.4,
+        "total_liab": 1034421.0,
+        "total_equity": 747573.5,
+        "revenue": 963760.8,
+        "op_profit": 45746.7
+      },
+      "2018": {
+        "cash": 91136.2,
+        "total_assets": 1806557.5,
+        "short_debt": 122498.5,
+        "long_debt": 99852.5,
+        "total_liab": 1067597.4,
+        "total_equity": 738960.1,
+        "revenue": 968126.1,
+        "op_profit": 24221.7
+      },
+      "2019": {
+        "cash": 86819.7,
+        "total_assets": 1945122.2,
+        "short_debt": 125706.9,
+        "long_debt": 112170.9,
+        "total_liab": 1181464.7,
+        "total_equity": 763657.5,
+        "revenue": 1057464.2,
+        "op_profit": 36055.1
+      },
+      "2020": {
+        "cash": 98621.4,
+        "total_assets": 2093442.1,
+        "short_debt": 137806.7,
+        "long_debt": 127267.2,
+        "total_liab": 1330032.4,
+        "total_equity": 763409.7,
+        "revenue": 1039976.0,
+        "op_profit": 23946.7
+      },
+      "2021": {
+        "cash": 127955.5,
+        "total_assets": 2339464.1,
+        "short_debt": 130878.4,
+        "long_debt": 106677.3,
+        "total_liab": 1513306.3,
+        "total_equity": 826157.9,
+        "revenue": 1176106.3,
+        "op_profit": 66789.5
+      },
+      "2022": {
+        "cash": 208648.8,
+        "total_assets": 2557424.6,
+        "short_debt": 113664.8,
+        "long_debt": 122851.5,
+        "total_liab": 1648459.2,
+        "total_equity": 908965.4,
+        "revenue": 1425275.4,
+        "op_profit": 98197.7
+      },
+      "2023": {
+        "total_assets": 2824633.5,
+        "cash": 191666.2,
+        "total_equity": 93121.3,
+        "short_debt": 90355.5,
+        "total_liab": 1806539.1,
+        "long_debt": 175697.6,
+        "op_profit": 151269.0,
+        "revenue": 1626635.8
+      },
+      "2024": {
+        "total_assets": 3397984.3,
+        "cash": 190149.4,
+        "total_equity": 76562.9,
+        "short_debt": 93271.4,
+        "total_liab": 2195225.0,
+        "long_debt": 242855.5,
+        "op_profit": 142395.9,
+        "revenue": 1752311.5
+      },
+      "2025": {
+        "total_assets": 3688448.5,
+        "cash": 183605.7,
+        "total_equity": 77804.7,
+        "short_debt": 103883.5,
+        "total_liab": 2411966.1,
+        "long_debt": 243400.0,
+        "op_profit": 114678.5,
+        "revenue": 1862544.7
+      }
+    },
+    "missing_years": [
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2016,
+        "revenue_eok": 936490,
+        "op_profit_eok": 51935,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 5.55,
+        "debt_ratio_pct": 147.2
+      },
+      {
+        "year": 2017,
+        "revenue_eok": 963761,
+        "op_profit_eok": 45747,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 4.75,
+        "debt_ratio_pct": 138.36
+      },
+      {
+        "year": 2018,
+        "revenue_eok": 968126,
+        "op_profit_eok": 24222,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 2.5,
+        "debt_ratio_pct": 144.48
+      },
+      {
+        "year": 2019,
+        "revenue_eok": 1057464,
+        "op_profit_eok": 36055,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 3.41,
+        "debt_ratio_pct": 154.71
+      },
+      {
+        "year": 2020,
+        "revenue_eok": 1039976,
+        "op_profit_eok": 23947,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 2.3,
+        "debt_ratio_pct": 174.22
+      },
+      {
+        "year": 2021,
+        "revenue_eok": 1176106,
+        "op_profit_eok": 66790,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 5.68,
+        "debt_ratio_pct": 183.17
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 1425275,
+        "op_profit_eok": 98198,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 6.89,
+        "debt_ratio_pct": 181.36
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 1626636,
+        "op_profit_eok": 151269,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 9.3,
+        "debt_ratio_pct": 1940.0
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 1752312,
+        "op_profit_eok": 142396,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 8.13,
+        "debt_ratio_pct": 2867.21
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 1862545,
+        "op_profit_eok": 114678,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 6.16,
+        "debt_ratio_pct": 3100.0
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": 7.92,
+      "op_profit_cagr_pct": 8.99,
+      "best_year": 2023,
+      "worst_year": 2020,
+      "avg_roe_pct": 0.0
+    },
+    "valuation": {
+      "grade": "D",
+      "strengths": [
+        "매출액이 10년간 연평균 7.92% 성장하며 꾸준한 외형 성장을 달성했습니다.",
+        "영업이익 또한 10년간 연평균 8.99% 성장하며 양호한 수익성 개선 흐름을 보였습니다.",
+        "2023년에는 1,512억 원의 영업이익을 기록하며 10년 중 가장 높은 영업 성과를 달성했습니다."
+      ],
+      "risks": [
+        "모든 연도에서 당기순이익이 0으로 기록되어 기업의 최종 수익성에 심각한 우려가 있습니다.",
+        "2023년 이후 자본총계가 급격히 감소하여 부채비율이 비정상적으로 높은 수준으로 치솟았습니다.",
+        "낮은 수익성과 극도로 높은 부채비율로 인해 전반적인 재무 건전성이 매우 취약한 상태입니다."
+      ],
+      "one_liner": "매출액과 영업이익은 성장세를 보였으나, 당기순이익 부재와 급증한 부채비율로 인해 재무 건전성이 심각하게 훼손된 기업입니다."
+    }
+  },
+  "dcf": {
+    "text": "퀀트 애널리스트로서 현대차(005380)의 DCF 적정가치를 계산하겠습니다.\n\n제공된 재무 데이터와 가정을 바탕으로 FCF를 계산하고, 5년 예측 기간과 영구 가치를 합산하여 적정가치를 산출합니다.\n\n**가정 사항 재확인:**\n*   **기준 연도 2025:** 제공된 재무 데이터(매출액, 영업이익)는 2024년 실적이며, 이를 바탕으로 2025년부터 5년간의 FCF를 예측합니다. 명시된 성장률이 없으므로, 5년 예측 기간 동안 FCF는 동일하게 유지된다고 가정합니다.\n*   **FCF 계산식:** FCF = 영업이익 × (1 - 법인세율) + 감가상각 - CAPEX\n    *   법인세율: 25%\n    *   감가상각: 매출액의 10%\n    *   CAPEX: 매출액의 5%\n*   **WACC (할인율):** 9% (기본 시나리오)\n*   **영구성장률 (g):** 2% (기본 시나리오)\n*   **예측 기간:** 5년 + 영구 가치 (Terminal Value)\n\n---\n\n### 1. 기본 시나리오 DCF 적정가치 계산\n\n먼저 제공된 재무 데이터를 사용하여 FCF를 계산하고, 이를 바탕으로 DCF 적정가치를 산출합니다.\n\n\n**기본 시나리오 FCF:** 179,135.75 억원\n**기본 시나리오 DCF 적정가치:** 2,393,267.96 억원\n\n---\n\n### 2. WACC × g 민감도 그리드 출력\n\nWACC (7/8/9/10/11%)와 영구성장률 g (1/2/3%)의 변화에 따른 DCF 적정가치 민감도 분석을 수행합니다.\n\n\n---\n\n### 3. 요약 출력\n\n**적정가치(기본): 2393267.96억원**",
+    "executed_code": "# 필요한 데이터 및 가정 정의 (억원 단위)\nrevenue = 1862545\noperating_income = 114678\n\n# FCF 계산 가정\ntax_rate = 0.25\ndepreciation_rate_of_revenue = 0.10\ncapex_rate_of_revenue = 0.05\n\n# DCF 가정\nforecast_years = 5\nbase_wacc = 0.09\nbase_g = 0.02\n\n# FCF 계산 함수\ndef calculate_fcf(revenue, operating_income, tax_rate, depreciation_rate, capex_rate):\n    nopat = operating_income * (1 - tax_rate)\n    depreciation = revenue * depreciation_rate\n    capex = revenue * capex_rate\n    fcf = nopat + depreciation - capex\n    return fcf\n\n# DCF 계산 함수\ndef calculate_dcf(fcf, wacc, g, forecast_years):\n    # FCF 예측 (5년간 동일하다고 가정)\n    fcf_forecasts = [fcf] * forecast_years\n\n    # 각 연도 FCF의 현재 가치 계산\n    pv_fcf = 0\n    for i in range(forecast_years):\n        pv_fcf += fcf_forecasts[i] / ((1 + wacc) ** (i + 1))\n\n    # Terminal Value 계산\n    # 마지막 예측 연도(5년차) FCF를 기준으로 영구성장률 적용\n    terminal_fcf = fcf_forecasts[-1] * (1 + g)\n    terminal_value = terminal_fcf / (wacc - g)\n\n    # Terminal Value의 현재 가치 계산\n    pv_terminal_value = terminal_value / ((1 + wacc) ** forecast_years)\n\n    # 총 적정가치\n    total_dcf_value = pv_fcf + pv_terminal_value\n    return total_dcf_value\n\n# 기본 시나리오 FCF 계산\ninitial_fcf = calculate_fcf(revenue, operating_income, tax_rate, depreciation_rate_of_revenue, capex_rate_of_revenue)\nprint(f\"초기 FCF (억원): {initial_fcf:.2f}\")\n\n# 기본 시나리오 DCF 적정가치 계산\nbase_dcf_value = calculate_dcf(initial_fcf, base_wacc, base_g, forecast_years)\nprint(f\"기본 시나리오 DCF 적정가치 (억원): {base_dcf_value:.2f}\")\n\n\nimport pandas as pd\n\n# WACC 및 g 범위 정의\nwacc_range = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_range = [0.01, 0.02, 0.03]\n\n# 결과를 저장할 데이터프레임 초기화\nsensitivity_results = pd.DataFrame(index=[f'WACC={w*100:.0f}%' for w in wacc_range],\n                                   columns=[f'g={g*100:.0f}%' for g in g_range])\n\n# 민감도 분석 실행\nfor wacc in wacc_range:\n    for g in g_range:\n        try:\n            dcf_value = calculate_dcf(initial_fcf, wacc, g, forecast_years)\n            sensitivity_results.loc[f'WACC={wacc*100:.0f}%', f'g={g*100:.0f}%'] = f\"{dcf_value:,.0f}\"\n        except ZeroDivisionError:\n            sensitivity_results.loc[f'WACC={wacc*100:.0f}%', f'g={g*100:.0f}%'] = \"N/A (WACC <= g)\"\n\nprint(\"DCF 적정가치 민감도 그리드 (억원):\")\nprint(sensitivity_results)",
+    "code_output": "초기 FCF (억원): 179135.75\n기본 시나리오 DCF 적정가치 (억원): 2393267.96\n\nDCF 적정가치 민감도 그리드 (억원):\n               g=1%       g=2%       g=3%\nWACC=7%   2,884,467  3,340,007  4,023,316\nWACC=8%   2,474,322  2,787,822  3,226,723\nWACC=9%   2,166,653  2,393,268  2,695,421\nWACC=10%  1,927,304  2,097,238  2,315,724\nWACC=11%  1,735,782  1,866,895  2,030,787"
+  },
+  "news": {
+    "text": "## 현대차(005380) 투자 분석 보고서\n\n### 1. 재무 데이터 스토리와 현재 시장 컨센서스의 일치/불일치\n\n제공된 10년 재무제표 분석 결과는 현대차의 투자 등급을 D로 평가하며, 매출액과 영업이익 성장에도 불구하고 당기순이익 부재와 급증한 부채비율로 인해 재무 건전성이 심각하게 훼손되었다고 진단했습니다.\n\n그러나 최근 2주간의 시장 컨센서스는 이와 **불일치**하는 양상을 보입니다. 다수의 증권사 리포트 및 애널리스트 의견은 현대차에 대해 '매수' 투자의견을 제시하고 있으며, 목표주가 또한 현재 주가 대비 상당한 상승 여력을 보여주고 있습니다. SK증권은 2026년 4월 3일 리포트에서 현대차의 실적이 양호하며 성장 모멘텀이 점증 구간에 진입했다고 평가했습니다. 다올투자증권 역시 2026년 4월 6일 리포트에서 1분기 실적 개선 흐름을 예상하며 'BUY' 의견을 유지했습니다. 이는 시장이 과거 재무 데이터의 부정적인 측면보다는 미래 성장 잠재력에 더 큰 비중을 두고 있음을 시사합니다.\n\n### 2. 재무제표에서 드러나지 않는 리스크 또는 호재\n\n**호재:**\n\n*   **미래 모빌리티 전환 가속화:** 현대차는 스마트 모빌리티 솔루션 기업으로의 성공적인 전환을 위해 전기차(EV), 소프트웨어 중심 차량(SDV), 인공지능(AI), 로보틱스 등 미래 신사업 분야에 대규모 투자를 단행하고 있습니다. 특히 최근에는 AI 거버넌스 TF팀을 신설하여 그룹의 AI 프로젝트를 총괄하고 AI 규제 리스크에 대응하는 등 미래 기술 리더십 확보에 집중하고 있습니다.\n*   **북미 시장 공략 강화:** 현대차는 미국 진출 40주년을 맞아 픽업트럭 시장 진출을 공식화하고 향후 4년간 북미 시장에 신차 또는 대폭 개선된 차량 36종을 투입할 계획입니다. 또한, 미국 현지 생산을 확대하여 관세 리스크를 완화하고 판매를 증대하려는 전략을 추진 중입니다.\n*   **대규모 전략적 투자 및 정책적 지원:** 현대차그룹은 전북 새만금에 9조원 규모의 미래 모빌리티 프로젝트 투자를 진행하며, 한국산업은행 등 주요 정책금융기관과의 협력을 통해 금융 지원을 확보했습니다. 이는 장기적인 성장 동력 확보와 정부 차원의 지원을 의미합니다.\n\n**리스크:**\n\n*   **대규모 투자에 따른 재무 부담:** 제공된 10년 재무제표 분석에서 드러난 '급증한 부채비율'과 '당기순이익 부재'는 현대차가 창사 이래 최대 규모의 국내 투자(2026년 24조 3천억원)를 계획하고 있다는 점에서 단기적인 재무 건전성 악화로 이어질 수 있는 잠재적 리스크입니다. 2025년 1월 보고서에 따르면, 당시 현대차의 현금성 자산이 유동부채를 감당하기에 부족하다는 우려가 제기되기도 했습니다.\n*   **신사업 성과 불확실성:** AI, 로보틱스, 자율주행 등 미래 신사업 분야에 대한 막대한 투자가 실제 수익으로 연결되기까지는 시간과 불확실성이 존재합니다.\n*   **글로벌 경기 변동 및 경쟁 심화:** 자동차 산업은 글로벌 경기 변동에 민감하며, 전기차 전환 및 자율주행 기술 개발 경쟁이 심화되면서 시장 환경 변화에 대한 지속적인 대응이 요구됩니다.\n\n### 3. 최종 판정\n\n**관망**\n\n제공된 10년 재무제표 분석 결과가 현대차의 재무 건전성에 대해 심각한 우려를 표명하고 있음에도 불구하고, 최근 시장 컨센서스는 미래 모빌리티 전환, 북미 시장 공략 강화, 대규모 전략적 투자 등 긍정적인 요인에 주목하며 '매수' 의견을 압도적으로 제시하고 있습니다. 이는 시장이 과거의 재무적 약점보다는 미래 성장 동력과 턴어라운드 가능성에 베팅하고 있음을 보여줍니다.\n\n그러나 '당기순이익 부재'와 '급증한 부채비율'이라는 근본적인 재무적 취약점은 단기간에 해소되기 어려운 구조적인 문제일 수 있습니다. 대규모 미래 투자가 성공적으로 수익으로 전환되고 재무구조가 실질적으로 개선되는지 여부를 지속적으로 확인할 필요가 있습니다. 따라서 현재 시점에서는 긍정적인 미래 전망과 잠재적 리스크를 모두 고려하여 **관망** 의견을 제시합니다. 향후 신사업의 구체적인 성과와 재무제표상의 유의미한 개선이 확인될 때까지 신중한 접근이 필요합니다.",
+    "citations": [
+      {
+        "title": "hankyung.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHba9mKTB-bvV9OM15eL1VWuI1VC_egMVxO9_viyF8qYosf-f127LtNdWUz-gw7gA0fzgu_FqOnggNN7Q8gRXf6DnFL6TB0AyA__41VkEz3ZMMl4qkULMHYLukvPgejkYcJP_MnLg6D-3B-M3JxTw=="
+      },
+      {
+        "title": "investing.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFeR5He5iwg-Ea2MQY4QLHFgrQgF8qjMSo6lh7_M2pMlWDHwPs1DTHA7IJPH_BWsCLnJPc4g03XPP4VVLhO0DhymgPlZYoEmCu4eEFU03LIMi6McdPWDZBFYiwe8dv_eyBeyvxX8IByG_9Que9mj363zKF_17kcndTjT4dXB5U="
+      },
+      {
+        "title": "newspim.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHvLm1-Mrrh3M-4fr6vaCSFKl0Mc6UHplFPMOODkwACfNTi5QfwJlz--U6GsghMvk2ebLfQ8XsTZyV2JIeV9pXUoKdOwl0eGVHvbaAXhMwTHKgPAzkrTl5lSubQn-Edgrjo9UP_kTG7O-A="
+      },
+      {
+        "title": "littlebproject.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQE5wyK4AHxoMUX7_7KAOr-ZCqB3_FXq-mbxPwMBLKgPTyZstJX3m9O3oiRH227og5_qO8eVlRgJPA1WH36GyS3nx8G0Oib-nkyDA5-uI9XnkbQ4Nc0bhIYQqJSVxbJNd0W0gA=="
+      },
+      {
+        "title": "wisereport.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQH2S1uOC_Qtih19brUyQNWU3JfTWs9Tc3XYYv2T2idvglpJSf1P8hG-lwDV8VFiS6T7__yGMExd3r9rzIA3YZcVC0JQPoeFfzZnSUv2zWhuoubE_h3WSJ6LGHwMaUM5TOfM1A7SQFIExIIjUcQaRV-FUEJf2Y0ao2zTfWiYyJ3u5w=="
+      },
+      {
+        "title": "samsungpop.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFE08SJ54whd5hOl-GmVq-37JEzE8Fhtp6JTuzips2NedMgJwurvtPcpb41B3njz7GgTiuncP-fDYn4_ZO-uF-0jvQZyeDHqzIynFVBestXltLGMjDMqGQV0ce3kvnTqZVG550wARWBM37O1lXTZsoJv7m1gbjiM4icOHIYpqXwQyVGUeehhtPEv2lJ2neVXuYuc021bXxTZxzC5CDyrEDbYeoJUs7yOfUEfcGOOYrPau7HDT0HexEw2oTKDtu-r9sbrYcpkjMCPdG45_4P0s8="
+      },
+      {
+        "title": "alphasquare.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFfR_A6DdQKxtM6_TUkCpo36moNef93fQAbwhSWwtNuNDJps6Ttuka4pEx-3YNl0RljLw40e3oaxuZSdbTF-2_JsQ4Ri5D7M6E8ocG2NH2YNuvYPSxXJICv0G0SVlPZf_fcnJOYPWXouMswWQHOliRVSAtM"
+      },
+      {
+        "title": "newstomato.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQF0KNQA4TqmB8DcHy5X504Indpist_oq11OeFw_aNYMLL6FuYAmOiDZlKzeus7B8JkKXh9C3z-Jfk2AZtMQ9OholIenm1bUQfTVUj56XN7IjDs2LQxs6BSIH7Gr2EESm8Ae0V5NN149jjpYgiM="
+      },
+      {
+        "title": "news1.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEFcWsNwBOLRXwmLTDRIvbZPONTCT-oqItWpoDVDG2Fp2zVrctyXzjysnT5ilnQ9LP3UdrqJIP_R8MhMhzypoQHFGnxeuDu1C9_dS474752BtTTouw7YapMOdGiIX1OcjeA5Ea9wTYdVIC4xbx1kQ=="
+      },
+      {
+        "title": "einfomax.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGcY6F3Jc7o7aKeSNvdnQLMf-KIAc4uiwi6ge7qrSy2ir-3sKyz7oIXC_P07n5MnzkqvoFE20PiAsc80bhGIr9UuHhj7tv0zDjhLQvjgSs7toqSzlFko5AixMbA8qAsJBhOP4JP36Z_c0ARuPrgwxHBW2TSyPB-iHaxVQ=="
+      }
+    ]
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=00164742",
+    "summary": "The browsing attempt failed, and the page returned a \"URL을 찾을 수 없습니다\" (URL not found) error. Therefore, I cannot access the information requested by the user.공시 페이지 접근 제한"
+  }
+}

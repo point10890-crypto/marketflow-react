@@ -1,0 +1,83 @@
+{
+  "name": "우리기술",
+  "ticker": "032820.KQ",
+  "result": "데이터 없음",
+  "date": "2026-04-07 07:38:07",
+  "elapsed": 1.8,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 20600.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 20600.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "WooriTG, Inc.",
+    "sector": "",
+    "industry": "",
+    "market_cap": 3425169309696,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": null,
+    "beta": null,
+    "fifty_two_week_high": 30200.0,
+    "fifty_two_week_low": 1453.0,
+    "revenue": null,
+    "profit_margin": null,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 24831558510
+    },
+    {
+      "date": "2025-09",
+      "value": 21183011770
+    },
+    {
+      "date": "2025-06",
+      "value": 22584360190
+    },
+    {
+      "date": "2025-03",
+      "value": 18536464900
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": -15271754300
+    },
+    {
+      "date": "2025-09",
+      "value": -1912340950
+    },
+    {
+      "date": "2025-06",
+      "value": 21830450000
+    },
+    {
+      "date": "2025-03",
+      "value": -3853904040
+    }
+  ],
+  "news": [
+    {
+      "title": "Nuclear startup Last Energy raises $100M for its steel-encased micro reactor",
+      "summary": "Last Energy will use the funds to build its 5 megawatt pilot reactor in Texas, which it hopes to turn on next year.",
+      "url": "https://finance.yahoo.com/news/nuclear-startup-last-energy-raises-130000186.html",
+      "provider": "TechCrunch",
+      "pub_time": "2025-12-16T13:00:00Z"
+    }
+  ]
+}

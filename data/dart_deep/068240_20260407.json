@@ -1,0 +1,275 @@
+{
+  "stock_code": "068240",
+  "stock_name": "다원시스",
+  "generated_at": "2026-04-06T22:52:56.739801+00:00",
+  "financials": {
+    "stock_code": "068240",
+    "corp_code": "00523307",
+    "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2016": {
+        "cash": 184.6,
+        "total_assets": 2380.1,
+        "total_liab": 989.2,
+        "total_equity": 1390.9,
+        "revenue": 741.9,
+        "op_profit": 92.4,
+        "net_income": 70.5
+      },
+      "2017": {
+        "cash": 192.2,
+        "total_assets": 3509.0,
+        "short_debt": 371.7,
+        "long_debt": 399.2,
+        "total_liab": 1717.8,
+        "total_equity": 1791.2,
+        "revenue": 1114.6,
+        "op_profit": 88.3,
+        "net_income": 54.0
+      },
+      "2018": {
+        "cash": 170.5,
+        "total_assets": 3573.8,
+        "short_debt": 444.8,
+        "long_debt": 386.9,
+        "total_liab": 1577.3,
+        "total_equity": 1996.4,
+        "revenue": 1287.5,
+        "op_profit": 86.9,
+        "net_income": 79.6
+      },
+      "2019": {
+        "cash": 1245.3,
+        "total_assets": 5357.8,
+        "short_debt": 397.6,
+        "long_debt": 668.5,
+        "total_liab": 3250.3,
+        "total_equity": 2107.4,
+        "revenue": 1750.8,
+        "op_profit": 82.6,
+        "net_income": 42.5
+      },
+      "2020": {
+        "cash": 874.1,
+        "total_assets": 6115.4,
+        "short_debt": 762.9,
+        "long_debt": 670.0,
+        "total_liab": 3889.7,
+        "total_equity": 2225.8,
+        "revenue": 2479.5,
+        "op_profit": 164.1,
+        "net_income": 147.2
+      },
+      "2021": {
+        "cash": 999.8,
+        "total_assets": 6765.8,
+        "total_liab": 4082.8,
+        "total_equity": 2683.0,
+        "revenue": 2954.5,
+        "op_profit": -144.9,
+        "net_income": -182.5
+      },
+      "2022": {
+        "cash": 380.6,
+        "total_assets": 6728.8,
+        "total_liab": 4674.0,
+        "total_equity": 2054.8,
+        "revenue": 2091.9,
+        "op_profit": -1592.7,
+        "net_income": -8.6
+      },
+      "2023": {
+        "total_assets": 6653.9,
+        "cash": 486.2,
+        "total_equity": 0.0,
+        "total_liab": 4542.0,
+        "op_profit": 192.7,
+        "net_income": -9.2,
+        "revenue": 3578.4
+      },
+      "2024": {
+        "total_assets": 7457.3,
+        "cash": 509.9,
+        "total_equity": -40.8,
+        "total_liab": 4868.0,
+        "op_profit": 76.5,
+        "net_income": 0.0,
+        "revenue": 3015.2
+      },
+      "2025": {
+        "total_assets": 6159.4,
+        "cash": 449.5,
+        "total_equity": -41.9,
+        "total_liab": 11315.9,
+        "op_profit": -1206.8,
+        "net_income": -1970.1,
+        "revenue": 1120.9
+      }
+    },
+    "missing_years": [
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2016,
+        "revenue_eok": 742,
+        "op_profit_eok": 92,
+        "net_income_eok": 70,
+        "roe_pct": 5.03,
+        "op_margin_pct": 12.4,
+        "debt_ratio_pct": 71.1
+      },
+      {
+        "year": 2017,
+        "revenue_eok": 1115,
+        "op_profit_eok": 88,
+        "net_income_eok": 54,
+        "roe_pct": 3.02,
+        "op_margin_pct": 7.89,
+        "debt_ratio_pct": 95.92
+      },
+      {
+        "year": 2018,
+        "revenue_eok": 1288,
+        "op_profit_eok": 87,
+        "net_income_eok": 80,
+        "roe_pct": 4.01,
+        "op_margin_pct": 6.75,
+        "debt_ratio_pct": 79.01
+      },
+      {
+        "year": 2019,
+        "revenue_eok": 1751,
+        "op_profit_eok": 83,
+        "net_income_eok": 42,
+        "roe_pct": 1.99,
+        "op_margin_pct": 4.74,
+        "debt_ratio_pct": 154.25
+      },
+      {
+        "year": 2020,
+        "revenue_eok": 2480,
+        "op_profit_eok": 164,
+        "net_income_eok": 147,
+        "roe_pct": 6.6,
+        "op_margin_pct": 6.61,
+        "debt_ratio_pct": 174.75
+      },
+      {
+        "year": 2021,
+        "revenue_eok": 2954,
+        "op_profit_eok": -145,
+        "net_income_eok": -182,
+        "roe_pct": -6.78,
+        "op_margin_pct": -4.91,
+        "debt_ratio_pct": 152.18
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 2092,
+        "op_profit_eok": -1593,
+        "net_income_eok": -9,
+        "roe_pct": -0.44,
+        "op_margin_pct": -76.15,
+        "debt_ratio_pct": 227.44
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 3578,
+        "op_profit_eok": 193,
+        "net_income_eok": -9,
+        "op_margin_pct": 5.39
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 3015,
+        "op_profit_eok": 76,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 2.52,
+        "debt_ratio_pct": -11873.17
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 1121,
+        "op_profit_eok": -1207,
+        "net_income_eok": -1970,
+        "roe_pct": 4690.48,
+        "op_margin_pct": -107.67,
+        "debt_ratio_pct": -26942.86
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": 4.65,
+      "best_year": 2023,
+      "worst_year": 2022,
+      "avg_roe_pct": 522.65
+    },
+    "valuation": {
+      "grade": "D",
+      "strengths": [
+        "2023년 매출액이 3,578억원으로 10년 중 최고치를 기록했습니다.",
+        "2023년 영업이익이 193억원으로 긍정적인 전환을 보였습니다.",
+        "2016년부터 2020년까지 매출액이 꾸준히 성장하는 모습을 보였습니다."
+      ],
+      "risks": [
+        "2023년 자본총계가 0원, 2024년과 2025년에는 마이너스 자본을 기록하며 심각한 자본잠식 상태에 있습니다.",
+        "2021년, 2022년, 2025년에 대규모 영업손실을 기록하는 등 수익성의 변동성이 매우 큽니다.",
+        "2025년에는 매출액이 급감하고 영업이익과 당기순이익이 대규모 적자를 기록하여 사업 지속성에 대한 우려가 큽니다."
+      ],
+      "one_liner": "심각한 자본잠식과 극심한 수익성 변동성으로 인해 사업 지속성에 대한 우려가 매우 큰 기업입니다."
+    }
+  },
+  "dcf": {
+    "text": "퀀트 애널리스트로서 다원시스(068240)의 DCF 적정가치를 계산하겠습니다.\n\n**1. 분석 전 고려사항 및 가정**\n\n*   **매출액 및 영업이익 예측:** 주어진 데이터는 2025년 기준의 최근 재무 정보이며, 향후 5년간의 매출액 및 영업이익 성장률에 대한 정보는 없습니다. 따라서, **기본 시나리오에서는 2025년의 매출액(1121억원)과 영업이익(-1207억원)이 향후 5년간(2025년~2029년) 동일하게 유지된다고 가정**합니다. 이는 매우 보수적인 가정이지만, 추가 정보가 없는 상황에서 가장 명확한 접근 방식입니다.\n*   **FCF 계산식:** 제시된 FCF 계산식 `FCF ≈ 영업이익 × (1 - 0.25) + 감가상각(매출의 10%) - CAPEX(매출의 5%)`을 따릅니다. 여기서 `영업이익 × (1 - 0.25)`는 세후 영업이익(NOPAT)으로 해석됩니다.\n*   **적정가치:** 본 계산은 Unlevered Free Cash Flow (UFCF)를 기반으로 한 기업가치(Enterprise Value)를 산출합니다. 순부채 정보가 없으므로, 주주가치(Equity Value)로의 전환은 수행하지 않습니다.\n*   **음의 영업이익:** 다원시스의 영업이익이 -1207억원으로 크게 음수이므로, 계산되는 FCF 및 적정가치 또한 음수가 될 가능성이 높습니다. 이는 현재 재무 상태를 반영한 결과입니다.\n*   **WACC > g 조건:** 터미널 밸류 계산을 위한 고든 성장 모델(Gordon Growth Model)은 WACC > g 조건을 전제로 합니다. 제시된 민감도 분석 범위 내에서는 이 조건이 모두 충족됩니다.\n\n**2. 기본 시나리오 DCF 적정가치 계산**\n\n주어진 가정과 데이터를 바탕으로 Python 코드를 사용하여 DCF 적정가치를 계산합니다.\n\n*   **기준 연도:** 2025년\n*   **예측 기간:** 5년 (2025년 ~ 2029년)\n*   **기본 가정:**\n    *   WACC = 9% (0.09)\n    *   영구성장률 g = 2% (0.02)\n    *   법인세율 = 25% (FCF 계산식에 포함)\n    *   감가상각 = 매출액의 10%\n    *   CAPEX = 매출액의 5%\n\n\n**3. WACC × g 민감도 그리드 출력**\n\n다양한 WACC와 영구성장률(g) 조합에 따른 DCF 적정가치 민감도 분석을 수행합니다.\n\n*   **WACC 시나리오:** 7%, 8%, 9%, 10%, 11%\n*   **g 시나리오:** 1%, 2%, 3%\n\n\n**4. 요약**\n\n*   **적정가치(기본): -11345.38억원**\n\n**결론:**\n\n제시된 재무 데이터(2025년 영업이익 -1207억원)와 가정(5년간 영업이익 유지, WACC 9%, 영구성장률 2%)에 따르면, 다원시스의 DCF 적정가치는 약 **-11345.38억원**으로 산출됩니다. 이는 회사가 현재 상당한 규모의 영업 손실을 기록하고 있으며, 이러한 손실이 향후에도 지속될 것으로 가정할 경우 기업가치가 음수로 평가됨을 의미합니다.\n\n민감도 분석 결과에서도 WACC와 영구성장률의 변화에 따라 적정가치는 변동하지만, 모든 시나리오에서 음의 값을 유지하고 있습니다. 이는 현재의 영업이익 수준이 지속될 경우 기업의 가치 창출 능력이 매우 낮다는 것을 시사합니다.",
+    "executed_code": "import pandas as pd\n\ndef calculate_dcf(revenue_2025, op_income_2025, tax_rate, dep_rate, capex_rate, forecast_years, wacc, g):\n    \"\"\"\n    DCF 적정가치를 계산하는 함수.\n    revenue_2025: 2025년 매출액 (억원)\n    op_income_2025: 2025년 영업이익 (억원)\n    tax_rate: 법인세율 (예: 0.25)\n    dep_rate: 감가상각률 (매출액 대비, 예: 0.10)\n    capex_rate: CAPEX율 (매출액 대비, 예: 0.05)\n    forecast_years: 예측 기간 (년)\n    wacc: 가중평균자본비용 (예: 0.09)\n    g: 영구성장률 (예: 0.02)\n    \"\"\"\n    \n    # 예측 기간 동안 매출액과 영업이익이 2025년 수준으로 유지된다고 가정\n    revenues = [revenue_2025] * forecast_years\n    op_incomes = [op_income_2025] * forecast_years\n\n    fcf_list = []\n    for i in range(forecast_years):\n        # FCF ≈ 영업이익 × (1 - 0.25) + 감가상각(매출의 10%) - CAPEX(매출의 5%)\n        after_tax_op_income = op_incomes[i] * (1 - tax_rate)\n        depreciation = revenues[i] * dep_rate\n        capex = revenues[i] * capex_rate\n        fcf = after_tax_op_income + depreciation - capex\n        fcf_list.append(fcf)\n\n    # Terminal Value (TV) 계산\n    last_fcf = fcf_list[-1] # 예측 기간 마지막 해의 FCF (2029년 FCF)\n    \n    # WACC <= g 인 경우, 고든 성장 모델이 유효하지 않거나 무한한 값을 반환하므로 처리\n    if wacc <= g:\n        # FCF가 음수이므로, WACC <= g인 경우 무한히 음의 가치를 의미\n        return float('-inf')\n\n    terminal_value = last_fcf * (1 + g) / (wacc - g)\n\n    # FCF 및 Terminal Value 할인\n    discounted_fcf_sum = 0\n    for i in range(forecast_years):\n        discount_factor = 1 / ((1 + wacc)**(i + 1))\n        discounted_fcf_sum += fcf_list[i] * discount_factor\n\n    # Terminal Value는 마지막 예측 연도(5년차) 말에 발생하므로, 5년차 할인율 적용\n    discount_factor_tv = 1 / ((1 + wacc)**forecast_years)\n    discounted_terminal_value = terminal_value * discount_factor_tv\n\n    total_dcf_value = discounted_fcf_sum + discounted_terminal_value\n    return total_dcf_value\n\n# 기본 시나리오 입력 값\nrevenue_2025_base = 1121\nop_income_2025_base = -1207\ntax_rate_base = 0.25\ndep_rate_base = 0.10\ncapex_rate_base = 0.05\nforecast_years_base = 5\nwacc_base = 0.09\ng_base = 0.02\n\n# 1. 기본 시나리오 DCF 적정가치 계산\nbase_dcf_value = calculate_dcf(\n    revenue_2025_base, op_income_2025_base, tax_rate_base,\n    dep_rate_base, capex_rate_base, forecast_years_base,\n    wacc_base, g_base\n)\n\nprint(f\"적정가치(기본): {base_dcf_value:.2f}억원\")\n\n\nimport pandas as pd\n\ndef calculate_dcf(revenue_2025, op_income_2025, tax_rate, dep_rate, capex_rate, forecast_years, wacc, g):\n    \"\"\"\n    DCF 적정가치를 계산하는 함수.\n    revenue_2025: 2025년 매출액 (억원)\n    op_income_2025: 2025년 영업이익 (억원)\n    tax_rate: 법인세율 (예: 0.25)\n    dep_rate: 감가상각률 (매출액 대비, 예: 0.10)\n    capex_rate: CAPEX율 (매출액 대비, 예: 0.05)\n    forecast_years: 예측 기간 (년)\n    wacc: 가중평균자본비용 (예: 0.09)\n    g: 영구성장률 (예: 0.02)\n    \"\"\"\n    \n    revenues = [revenue_2025] * forecast_years\n    op_incomes = [op_income_2025] * forecast_years\n\n    fcf_list = []\n    for i in range(forecast_years):\n        after_tax_op_income = op_incomes[i] * (1 - tax_rate)\n        depreciation = revenues[i] * dep_rate\n        capex = revenues[i] * capex_rate\n        fcf = after_tax_op_income + depreciation - capex\n        fcf_list.append(fcf)\n\n    last_fcf = fcf_list[-1]\n    \n    if wacc <= g:\n        return float('-inf')\n\n    terminal_value = last_fcf * (1 + g) / (wacc - g)\n\n    discounted_fcf_sum = 0\n    for i in range(forecast_years):\n        discount_factor = 1 / ((1 + wacc)**(i + 1))\n        discounted_fcf_sum += fcf_list[i] * discount_factor\n\n    discount_factor_tv = 1 / ((1 + wacc)**forecast_years)\n    discounted_terminal_value = terminal_value * discount_factor_tv\n\n    total_dcf_value = discounted_fcf_sum + discounted_terminal_value\n    return total_dcf_value\n\n# 기본 시나리오 입력 값 (민감도 분석에도 동일하게 적용)\nrevenue_2025_base = 1121\nop_income_2025_base = -1207\ntax_rate_base = 0.25\ndep_rate_base = 0.10\ncapex_rate_base = 0.05\nforecast_years_base = 5\nwacc_base = 0.09 # 기본값\ng_base = 0.02 # 기본값\n\n# WACC 및 g 시나리오 정의\nwacc_scenarios = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_scenarios = [0.01, 0.02, 0.03]\n\n# 민감도 분석 결과를 저장할 DataFrame 생성\nsensitivity_results = pd.DataFrame(index=[f'g={g*100:.0f}%' for g in g_scenarios],\n                                   columns=[f'WACC={wacc*100:.0f}%' for wacc in wacc_scenarios])\n\n# 각 WACC와 g 조합에 대해 DCF 계산\nfor g_val in g_scenarios:\n    for wacc_val in wacc_scenarios:\n        dcf_val = calculate_dcf(\n            revenue_2025_base, op_income_2025_base, tax_rate_base,\n            dep_rate_base, capex_rate_base, forecast_years_base,\n            wacc_val, g_val\n        )\n        sensitivity_results.loc[f'g={g_val*100:.0f}%', f'WACC={wacc_val*100:.0f}%'] = dcf_val\n\nprint(\"\\nDCF 적정가치 민감도 분석 (억원):\")\n# 결과 출력 시 -inf 값은 '-Inf'로 표시하고, 나머지는 소수점 둘째 자리까지 포맷팅\nprint(sensitivity_results.applymap(lambda x: f'{x:.2f}' if x != float('-inf') else '-Inf'))\n\n# 마지막에 기본 시나리오 요약 출력\nbase_dcf_value = calculate_dcf(\n    revenue_2025_base, op_income_2025_base, tax_rate_base,\n    dep_rate_base, capex_rate_base, forecast_years_base,\n    wacc_base, g_base\n)\nprint(f\"\\n적정가치(기본): {base_dcf_value:.2f}억원\")",
+    "code_output": "적정가치(기본): -11345.38억원\n\n\nDCF 적정가치 민감도 분석 (억원):\n        WACC=7%    WACC=8%    WACC=9%   WACC=10%  WACC=11%\ng=1%  -13673.93  -11729.62  -10271.10   -9136.46  -8228.54\ng=2%  -15833.43  -13215.78  -11345.38   -9942.04  -8850.09\ng=3%  -19072.69  -15296.41  -12777.75  -10977.78  -9627.03\n\n적정가치(기본): -11345.38억원"
+  },
+  "news": {
+    "text": "## 다원시스(068240) 투자 분석: 심각한 위기 상황, '매도' 의견 제시\n\n### 1. 재무 데이터가 보여주는 스토리와 현재 시장 컨센서스의 일치/불일치\n\n제시된 다원시스의 10년 재무제표 분석 결과는 '투자등급 D', '심각한 자본잠식과 극심한 수익성 변동성으로 인한 사업 지속성 우려'를 명확히 보여주고 있습니다. 최근 2주간의 시장 뉴스는 이러한 재무 데이터의 부정적인 스토리를 **강력하게 뒷받침하며, 오히려 재무제표에 드러난 우려가 현실화되고 있음을 시사합니다.**\n\n*   **일치**: 한국철도공사와의 3,640억원 규모 간선형전기동차(EMU-150) 공급 계약이 납품 지연을 사유로 해지되었습니다. 이는 다원시스 최근 매출액의 282.74%에 해당하는 막대한 규모이며, 계약보증금 및 선금 잔액 약 2,523억원을 반환해야 하는 의무가 발생하여 회사의 재무 건전성에 치명적인 영향을 미칠 것입니다.\n*   **일치**: 다원시스는 수원회생법원에 기업회생절차 개시를 신청했습니다. 이는 사업 지속성에 대한 우려가 현실화되었음을 공식적으로 인정한 것입니다.\n*   **일치**: 나이스신용평가는 다원시스의 프라이머리 채권담보부증권(P-CBO) 신용등급을 기존 'B-'에서 'D'로 강등했습니다. 이는 원금 또는 이자가 지급 불능 상태에 있음을 의미합니다.\n*   **일치**: 감사인(삼일회계법인)은 다원시스의 재무제표에 대해 '의견거절'을 표명했으며, 이는 코스닥 시장본부로부터 상장폐지 사유 발생으로 이어져 주식 매매 거래가 정지되었습니다. 감사인은 경영진의 감사 자료 제출 비협조를 의견거절의 주요 사유로 들었습니다.\n\n**결론적으로, 현재 시장 컨센서스는 재무 데이터가 보여주는 부정적인 스토리를 넘어 회사의 존립 자체에 대한 심각한 위기 상황을 반영하고 있습니다.**\n\n### 2. 재무제표에서 드러나지 않는 리스크 또는 호재\n\n*   **드러나지 않는 리스크 (이미 현실화된 리스크 포함)**:\n    *   **경영 투명성 및 내부 통제 문제**: 감사인의 '의견거절' 사유 중 경영진의 감사 자료 제출 비협조는 재무제표만으로는 파악하기 어려운 회사의 근본적인 경영 투명성 및 내부 통제 시스템의 심각한 문제를 드러냅니다.\n    *   **공공 발주 시스템과의 관계 악화**: 대통령이 다원시스 사태를 직접 거론하며 '정부 기관이 사기당한 것'이라고 언급하고 선급금 제도 개선을 지시한 점은, 향후 다원시스가 공공 발주 프로젝트를 수주하는 데 있어 심각한 제약이 될 수 있음을 시사합니다.\n    *   **법적 분쟁 가능성**: 한국철도공사와의 계약 해지 사유에 대한 입장 차이로 법적 대응을 검토 중이라는 점은 추가적인 비용과 불확실성을 야기합니다.\n    *   **상장폐지 및 투자금 회수 불능 위험**: 감사 의견 거절로 인한 상장폐지 사유 발생 및 거래 정지는 투자자들에게 가장 큰 리스크로, 투자 원금 회수가 불가능해질 수 있습니다.\n*   **드러나지 않는 호재**:\n    *   현재 다원시스는 기업회생절차 신청, 대규모 계약 해지, 상장폐지 사유 발생 등 최악의 상황에 직면해 있어 재무제표에서 드러나지 않는 유의미한 호재를 찾아보기 어렵습니다. 과거 신사업(반도체/디스플레이 장비, BNCT 암치료 장비)에 대한 기대감이 있었으나, 현 위기 상황에서는 이들의 추진 동력이나 성공 가능성을 논하기 어렵습니다.\n\n### 3. 최종 판정\n\n다원시스의 10년 재무제표 분석 결과와 최근 2주간의 주요 뉴스를 종합적으로 고려할 때, 회사는 심각한 재무 위기와 사업 지속성 위협에 직면해 있습니다. 대규모 계약 해지로 인한 매출 급감 및 선급금 반환 의무, 기업회생절차 신청, 감사인의 '의견거절'로 인한 상장폐지 사유 발생 및 거래 정지, 신용등급 D 강등 등은 회사의 존립 자체를 위협하는 수준입니다.\n\n**최종 판정: 매도**\n\n**근거:**\n*   **사업 지속성 불투명**: 핵심 계약 해지와 기업회생절차 신청은 회사의 정상적인 영업 활동 및 미래 성장 동력을 심각하게 훼손합니다.\n*   **투자금 회수 위험**: 상장폐지 사유 발생 및 거래 정지는 주식의 유동성을 완전히 상실하게 하며, 투자 원금 회수가 불가능해질 수 있는 결정적인 리스크입니다.\n*   **재무 건전성 최악**: 막대한 선급금 반환 의무와 신용등급 D 강등은 회사의 재무 상태가 회복 불능 수준에 이르렀음을 보여줍니다.\n\n현재 다원시스는 투자 가치를 논하기 어려운 상황이며, 추가 손실 방지를 위해 매도하는 것이 합리적인 판단입니다.",
+    "citations": [
+      {
+        "title": "ket.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEFPuQ1IuDcY_3myHl01E_6KDx4jLqQdaI4ibzhP_SzVG9OT2I4STORg3hYEAhxIoA1FjuSJ13YcU5Vc63nQPy-X4DcXdWyrNTT3nur4kiuD2gNi4QBJF7VHDl05aDMIpNHgdx8"
+      },
+      {
+        "title": "digitaltoday.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEMRFDo9KtVh2qhFKt7BpQeZkRGVo1C1E4PEb0Dx6K9JTDnq9-DZgYpKk9ZCKfTBB86sELxkDUuxx6fFjdSM-wvFENbUL6leoQ7z0JBYeiUFrLdS1C-sv5DX8IgUvyFP-eDgYxH-LD8Oj2_tJmOWsWcmOgvVxQfpLWDHMJH"
+      },
+      {
+        "title": "einfomax.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQECY2ROOgMHd5trfQcTaAwv9mWWsN5OBO5256w2JVDJudim3kGTbDqDGmtwefd-rijJVShl9k03HoukAlFO7xO0DeWp6EIfCUpzL0N2lz7V9Tm5zJmZXsn0CJqyvyxK4HbXST1AeP2JJCBgEuRAxGMCoDWWOtsWfZq0mA=="
+      },
+      {
+        "title": "einfomax.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHy3M_dMKEvIyEx-P_dhDcXexxzzIopoFomXJDnHhhAERAFrHtWzl4nCSLYPLJA4yhQcG3873lBU1oaRpuXKk08ASYhUU5U_-q8hRCEKpGNK5XF4aracoXDXLJdNN0XHCHoPLrZMPoOH7ntaLB_3TUeKS9RSA_An6LX7Q=="
+      },
+      {
+        "title": "kbthink.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQF-4oDCCvHzzqT7xcYQU4OAFsy2CsOZT68cqZ1AyDNZjgYYdaSuytBwi3m-3K_eU4Mgae7jiAMXxkY5lBZmqlOU-0sMsqeKOlflxts8GtHGs5xta_zvfNvu6hEysZIyuFcr3emx59OsCb1P9mtvIj-L0MW2_zCumG5VLWM="
+      },
+      {
+        "title": "myasset.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQG4zE_VuPtfyTkkYtg1KlWqx71RKoHZBDpmnxAl3gLgCMfT5YipV_JBuwwWyNBj6zHB394QbghMzpWtPJkQbj85ZDNptq6Izjuv0X4OMbsqIB7AFNqKI9JjWuvfD0Eb8pxbn8nuEtLTpaI5hbSgf9YjHfwenkxEVnAjQrhGrGPB9qz-uyMWChjXyxW61lvk34_dZOM2MrLSvAdprc2cx4fo6_TmOtIj-U6YXRP_eM2ksDdGzYNffM6dDMhg4Sc="
+      }
+    ]
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=00523307",
+    "summary": "공시 페이지 접근 제한"
+  }
+}

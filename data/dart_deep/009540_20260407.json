@@ -1,0 +1,286 @@
+{
+  "stock_code": "009540",
+  "stock_name": "HD한국조선해양",
+  "generated_at": "2026-04-06T16:05:49.186742+00:00",
+  "financials": {
+    "stock_code": "009540",
+    "corp_code": "00164830",
+    "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2016": {
+        "cash": 43264.9,
+        "total_assets": 489492.6,
+        "total_liab": 311627.0,
+        "total_equity": 177865.6,
+        "revenue": 393203.8,
+        "op_profit": 15496.4,
+        "net_income": 818.2
+      },
+      "2017": {
+        "cash": 32397.3,
+        "total_assets": 304088.5,
+        "total_liab": 180368.1,
+        "total_equity": 123720.4,
+        "revenue": 154688.4,
+        "op_profit": 146.5,
+        "net_income": 24577.5
+      },
+      "2018": {
+        "cash": 30417.9,
+        "total_assets": 247299.0,
+        "total_liab": 116189.4,
+        "total_equity": 131109.6,
+        "revenue": 131198.9,
+        "op_profit": -5225.2,
+        "net_income": -4890.6
+      },
+      "2019": {
+        "cash": 22251.4,
+        "total_assets": 250553.7,
+        "total_liab": 121290.6,
+        "total_equity": 129263.2,
+        "revenue": 151825.5,
+        "op_profit": 2901.7,
+        "net_income": 1640.8
+      },
+      "2020": {
+        "cash": 37034.1,
+        "total_assets": 252441.9,
+        "total_liab": 128229.7,
+        "total_equity": 124212.3,
+        "revenue": 149036.6,
+        "op_profit": 743.7,
+        "net_income": -8337.9
+      },
+      "2021": {
+        "cash": 45674.7,
+        "total_assets": 272930.9,
+        "total_liab": 148793.4,
+        "total_equity": 124137.6,
+        "revenue": 154933.8,
+        "op_profit": -13848.2,
+        "net_income": -11412.0
+      },
+      "2022": {
+        "cash": 26972.2,
+        "total_assets": 298834.8,
+        "total_liab": 175713.5,
+        "total_equity": 123121.3,
+        "revenue": 173020.2,
+        "op_profit": -3555.6,
+        "net_income": -782.3
+      },
+      "2023": {
+        "total_assets": 322425.7,
+        "cash": 30183.9,
+        "total_equity": 99036.9,
+        "total_liab": 198724.7,
+        "op_profit": 2822.6,
+        "net_income": 2217.1,
+        "revenue": 212962.1
+      },
+      "2024": {
+        "total_assets": 367191.4,
+        "cash": 37173.2,
+        "total_equity": 25997.8,
+        "total_liab": 225633.2,
+        "op_profit": 14340.9,
+        "net_income": 11723.4,
+        "revenue": 255385.8
+      },
+      "2025": {
+        "total_assets": 395422.1,
+        "cash": 37420.2,
+        "total_equity": 30167.8,
+        "total_liab": 226338.6,
+        "op_profit": 39044.9,
+        "net_income": 0.0,
+        "revenue": 299332.2
+      }
+    },
+    "missing_years": [
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2016,
+        "revenue_eok": 393204,
+        "op_profit_eok": 15496,
+        "net_income_eok": 818,
+        "roe_pct": 0.46,
+        "op_margin_pct": 3.94,
+        "debt_ratio_pct": 175.2
+      },
+      {
+        "year": 2017,
+        "revenue_eok": 154688,
+        "op_profit_eok": 146,
+        "net_income_eok": 24578,
+        "roe_pct": 19.87,
+        "op_margin_pct": 0.09,
+        "debt_ratio_pct": 145.79
+      },
+      {
+        "year": 2018,
+        "revenue_eok": 131199,
+        "op_profit_eok": -5225,
+        "net_income_eok": -4891,
+        "roe_pct": -3.73,
+        "op_margin_pct": -3.98,
+        "debt_ratio_pct": 88.62
+      },
+      {
+        "year": 2019,
+        "revenue_eok": 151826,
+        "op_profit_eok": 2902,
+        "net_income_eok": 1641,
+        "roe_pct": 1.27,
+        "op_margin_pct": 1.91,
+        "debt_ratio_pct": 93.83
+      },
+      {
+        "year": 2020,
+        "revenue_eok": 149037,
+        "op_profit_eok": 744,
+        "net_income_eok": -8338,
+        "roe_pct": -6.71,
+        "op_margin_pct": 0.5,
+        "debt_ratio_pct": 103.23
+      },
+      {
+        "year": 2021,
+        "revenue_eok": 154934,
+        "op_profit_eok": -13848,
+        "net_income_eok": -11412,
+        "roe_pct": -9.19,
+        "op_margin_pct": -8.94,
+        "debt_ratio_pct": 119.86
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 173020,
+        "op_profit_eok": -3556,
+        "net_income_eok": -782,
+        "roe_pct": -0.64,
+        "op_margin_pct": -2.06,
+        "debt_ratio_pct": 142.72
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 212962,
+        "op_profit_eok": 2823,
+        "net_income_eok": 2217,
+        "roe_pct": 2.24,
+        "op_margin_pct": 1.32,
+        "debt_ratio_pct": 200.65
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 255386,
+        "op_profit_eok": 14341,
+        "net_income_eok": 11723,
+        "roe_pct": 45.09,
+        "op_margin_pct": 5.62,
+        "debt_ratio_pct": 867.88
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 299332,
+        "op_profit_eok": 39045,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 13.04,
+        "debt_ratio_pct": 750.25
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": -2.98,
+      "op_profit_cagr_pct": 10.7,
+      "best_year": 2025,
+      "worst_year": 2021,
+      "avg_roe_pct": 4.87
+    },
+    "valuation": {
+      "grade": "D",
+      "strengths": [
+        "향후 2년간 매출액 및 영업이익의 급격한 회복세가 예상됩니다.",
+        "2025년 예상 영업이익률은 13.04%로 과거 최고 수준을 상회하며 수익성 개선이 뚜렷합니다.",
+        "조선업황 회복에 따른 수주 증가 및 고부가가치 선박 건조 효과가 기대됩니다."
+      ],
+      "risks": [
+        "자본총계의 급격한 감소로 인해 부채비율이 2024년 867%, 2025년 750%를 기록하는 등 재무 안정성이 매우 취약합니다.",
+        "과거 10년간 영업이익과 당기순이익이 극심한 변동성을 보였으며, 대규모 적자를 기록한 해가 많아 사업의 예측 가능성이 낮습니다.",
+        "글로벌 경기 변동 및 해운 시황 변화에 따라 실적 변동성이 다시 확대될 위험이 존재합니다."
+      ],
+      "one_liner": "과거 극심한 실적 변동성을 겪었으나 향후 2년간 뚜렷한 실적 개선이 예상됩니다. 다만, 급격히 악화된 재무구조와 매우 높은 부채비율은 투자에 있어 심각한 리스크 요인입니다."
+    }
+  },
+  "dcf": {
+    "text": "## HD한국조선해양 (009540) DCF 적정가치 분석\n\n퀀트 애널리스트로서 HD한국조선해양의 DCF(할인현금흐름) 적정가치를 계산했습니다.\n\n### 1. 기본 시나리오 DCF 적정가치 계산\n\n**가정:**\n*   **기준 연도:** 2025년 (최근 재무는 2024년 기준으로 사용)\n*   **FCF 계산식:** 영업이익 × (1 - 0.25) + 감가상각(매출의 10%) - CAPEX(매출의 5%)\n*   **WACC (가중평균자본비용):** 9%\n*   **영구성장률 (g):** 2%\n*   **예측 기간 성장률:** 영구성장률과 동일하게 2% 적용 (별도 성장률 미제시)\n*   **예측 기간:** 5년 (2025년 ~ 2029년)\n\n**최근 재무 (2024년 기준, 억원):**\n*   매출액: 299,332\n*   영업이익: 39,045\n\n**DCF 기본 시나리오 예측 결과:**\n\n| 연도 | 매출액 (억원) | 영업이익 (억원) | 감가상각 (억원) | CAPEX (억원) | FCF (억원) | 할인율 | FCF 현재가치 (억원) |\n| :--- | :---------- | :---------- | :---------- | :--------- | :--------- | :----- | :------------------ |\n| 2025 | 305,319     | 39,826      | 30,532      | 15,266     | 45,135     | 1      | 41,409              |\n| 2026 | 311,425     | 40,622      | 31,143      | 15,571     | 46,038     | 1      | 38,749              |\n| 2027 | 317,654     | 41,435      | 31,765      | 15,883     | 46,959     | 1      | 36,261              |\n| 2028 | 324,007     | 42,264      | 32,401      | 16,200     | 47,898     | 1      | 33,932              |\n| 2029 | 330,487     | 43,109      | 33,049      | 16,524     | 48,856     | 1      | 31,753              |\n\n*   **예측 기간 FCF 현재가치 합계 (2025-2029):** 182,104 억원\n*   **2030년 FCF (예측 기간 이후 첫 해):** 49,833 억원\n*   **영구 가치 (2029년 말 기준):** 711,901 억원\n*   **영구 가치 현재가치:** 462,687 억원\n\n**총 DCF 적정가치 (기본 시나리오): 644,791 억원**\n\n### 2. WACC × g 민감도 분석 그리드\n\n다양한 WACC와 영구성장률(g) 시나리오에 따른 DCF 적정가치(억원) 민감도 분석 결과는 다음과 같습니다.\n\n|             | g=1%      | g=2%      | g=3%      |\n| :---------- | :-------- | :-------- | :-------- |\n| **WACC=7%** | 744,881   | 902,707   | 1,139,447 |\n| **WACC=8%** | 638,469   | 752,256   | 911,557   |\n| **WACC=9%** | 558,661   | 644,791   | 759,631   |\n| **WACC=10%**| 496,587   | 564,192   | 651,112   |\n| **WACC=11%**| 446,929   | 501,504   | 569,723   |\n\n### 3. 요약\n\n**적정가치(기본): 644,791억원**",
+    "executed_code": "import pandas as pd\n\n# 1. 기본 시나리오 DCF 적정가치 계산\n\n# Input Data (억원)\nrevenue_0 = 299332\noperating_profit_0 = 39045\n# net_income_0 = 0 # Not directly used in FCF formula provided\n# total_assets_0 = 395422 # Not directly used in FCF formula provided\n# total_liabilities_0 = 226339 # Not directly used in FCF formula provided\n\n# Assumptions for base scenario\nwacc_base = 0.09\ng_base = 0.02\ntax_rate = 0.25\ndepreciation_rate_of_revenue = 0.10\ncapex_rate_of_revenue = 0.05\nforecast_years = 5\n\n# Assuming the perpetual growth rate 'g' applies to revenue and operating profit for the forecast period\n# as no other specific forecast growth rate is provided.\nforecast_growth_rate = g_base\n\n# Create a DataFrame to store yearly projections\nyears = [2025 + i for i in range(forecast_years)]\ndf_forecast = pd.DataFrame(index=years)\n\n# Initialize values for the start of the forecast (end of 2024, or start of 2025)\ncurrent_revenue = revenue_0\ncurrent_operating_profit = operating_profit_0\n\n# Project FCF for each forecast year\nfcf_list = []\npv_fcf_list = []\n\nprint(\"--- DCF 기본 시나리오 예측 ---\")\nprint(f\"초기 매출액 (2024년 기준): {current_revenue:,.0f} 억원\")\nprint(f\"초기 영업이익 (2024년 기준): {current_operating_profit:,.0f} 억원\")\nprint(f\"예측 기간 성장률 (매출액 & 영업이익): {forecast_growth_rate:.2%}\")\nprint(f\"WACC: {wacc_base:.2%}, 영구성장률 (g): {g_base:.2%}\")\nprint(\"-\" * 40)\n\nfor i, year in enumerate(years):\n    # Project Revenue and Operating Profit\n    current_revenue = current_revenue * (1 + forecast_growth_rate)\n    current_operating_profit = current_operating_profit * (1 + forecast_growth_rate)\n\n    # Calculate Depreciation and CAPEX based on projected Revenue\n    depreciation = current_revenue * depreciation_rate_of_revenue\n    capex = current_revenue * capex_rate_of_revenue\n\n    # Calculate FCF\n    fcf = current_operating_profit * (1 - tax_rate) + depreciation - capex\n    fcf_list.append(fcf)\n\n    # Calculate Discount Factor and Present Value of FCF\n    discount_factor = 1 / ((1 + wacc_base) ** (i + 1))\n    pv_fcf = fcf * discount_factor\n    pv_fcf_list.append(pv_fcf)\n\n    df_forecast.loc[year, '매출액'] = current_revenue\n    df_forecast.loc[year, '영업이익'] = current_operating_profit\n    df_forecast.loc[year, '감가상각'] = depreciation\n    df_forecast.loc[year, 'CAPEX'] = capex\n    df_forecast.loc[year, 'FCF'] = fcf\n    df_forecast.loc[year, '할인율'] = discount_factor\n    df_forecast.loc[year, 'FCF 현재가치'] = pv_fcf\n\nprint(df_forecast.round(0).astype(int))\nprint(\"-\" * 40)\n\n# Sum of Present Values of FCF for the forecast period\nsum_pv_fcf = sum(pv_fcf_list)\nprint(f\"예측 기간 FCF 현재가치 합계 (2025-2029): {sum_pv_fcf:,.0f} 억원\")\n\n# Calculate Terminal Value (TV)\n# FCF for the year after the forecast period (Year 6, i.e., 2030)\nfcf_year_after_forecast = fcf_list[-1] * (1 + g_base)\nterminal_value = fcf_year_after_forecast / (wacc_base - g_base)\n\n# Present Value of Terminal Value\npv_terminal_value = terminal_value / ((1 + wacc_base) ** forecast_years)\n\nprint(f\"2030년 FCF (예측 기간 이후 첫 해): {fcf_year_after_forecast:,.0f} 억원\")\nprint(f\"영구 가치 (2029년 말 기준): {terminal_value:,.0f} 억원\")\nprint(f\"영구 가치 현재가치: {pv_terminal_value:,.0f} 억원\")\nprint(\"-\" * 40)\n\n# Total DCF Fair Value\ndcf_fair_value_base = sum_pv_fcf + pv_terminal_value\nprint(f\"총 DCF 적정가치 (기본 시나리오): {dcf_fair_value_base:,.0f} 억원\")\n\n# 2. WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 출력\n\nwacc_scenarios = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_scenarios = [0.01, 0.02, 0.03]\n\nsensitivity_results = pd.DataFrame(index=[f'WACC={w*100:.0f}%' for w in wacc_scenarios],\n                                   columns=[f'g={g*100:.0f}%' for g in g_scenarios])\n\nprint(\"\\n--- DCF 민감도 분석 (적정가치, 억원) ---\")\n\ndef calculate_dcf(wacc, g, initial_revenue, initial_operating_profit, forecast_years, tax_rate, depreciation_rate, capex_rate):\n    # Ensure WACC > g for TV calculation\n    if wacc <= g:\n        return float('inf') # Return infinity or a large number if WACC <= g\n\n    current_rev = initial_revenue\n    current_op_profit = initial_operating_profit\n    \n    pv_fcf_sum = 0\n    \n    # Project FCF for forecast years\n    # Assuming forecast growth rate is 'g' for both revenue and operating profit\n    for i in range(forecast_years):\n        current_rev = current_rev * (1 + g)\n        current_op_profit = current_op_profit * (1 + g)\n\n        depreciation = current_rev * depreciation_rate\n        capex = current_rev * capex_rate\n        \n        fcf = current_op_profit * (1 - tax_rate) + depreciation - capex\n        pv_fcf_sum += fcf / ((1 + wacc) ** (i + 1))\n        \n    # Calculate Terminal Value\n    fcf_year_after_forecast = fcf * (1 + g) # FCF at the end of forecast_years + 1\n    terminal_value = fcf_year_after_forecast / (wacc - g)\n    pv_terminal_value = terminal_value / ((1 + wacc) ** forecast_years)\n    \n    return pv_fcf_sum + pv_terminal_value\n\nfor wacc in wacc_scenarios:\n    for g in g_scenarios:\n        value = calculate_dcf(wacc, g, revenue_0, operating_profit_0, forecast_years, tax_rate, depreciation_rate_of_revenue, capex_rate_of_revenue)\n        sensitivity_results.loc[f'WACC={wacc*100:.0f}%', f'g={g*100:.0f}%'] = round(value, 0)\n\nprint(sensitivity_results.astype(int))\n\n# 3. 마지막에 '적정가치(기본): {value}억원' 형태로 요약 출력\nprint(f\"\\n적정가치(기본): {dcf_fair_value_base:,.0f}억원\")",
+    "code_output": "--- DCF 기본 시나리오 예측 ---\n초기 매출액 (2024년 기준): 299,332 억원\n초기 영업이익 (2024년 기준): 39,045 억원\n예측 기간 성장률 (매출액 & 영업이익): 2.00%\nWACC: 9.00%, 영구성장률 (g): 2.00%\n----------------------------------------\n         매출액   영업이익   감가상각  CAPEX    FCF  할인율  FCF 현재가치\n2025  305319  39826  30532  15266  45135    1     41409\n2026  311425  40622  31143  15571  46038    1     38749\n2027  317654  41435  31765  15883  46959    1     36261\n2028  324007  42264  32401  16200  47898    1     33932\n2029  330487  43109  33049  16524  48856    1     31753\n----------------------------------------\n예측 기간 FCF 현재가치 합계 (2025-2029): 182,104 억원\n2030년 FCF (예측 기간 이후 첫 해): 49,833 억원\n영구 가치 (2029년 말 기준): 711,901 억원\n영구 가치 현재가치: 462,687 억원\n----------------------------------------\n총 DCF 적정가치 (기본 시나리오): 644,791 억원\n\n--- DCF 민감도 분석 (적정가치, 억원) ---\n            g=1%    g=2%     g=3%\nWACC=7%   744881  902707  1139447\nWACC=8%   638469  752256   911557\nWACC=9%   558661  644791   759631\nWACC=10%  496587  564192   651112\nWACC=11%  446929  501504   569723\n\n적정가치(기본): 644,791억원"
+  },
+  "news": {
+    "text": "## HD한국조선해양(009540) 투자 분석 보고서\n\n### 1. 재무 데이터 스토리와 시장 컨센서스 일치/불일치\n\n제시된 10년 재무제표 분석 요약은 HD한국조선해양이 과거 극심한 실적 변동성을 겪었으며, 급격히 악화된 재무구조와 매우 높은 부채비율이 심각한 리스크 요인이라고 지적했습니다. 그러나 최근 2주간의 시장 컨센서스는 이러한 재무 데이터의 스토리와 일부 불일치하는 양상을 보입니다.\n\n*   **실적 개선:** 재무제표 요약의 \"향후 2년간 뚜렷한 실적 개선 예상\"은 시장 컨센서스와 일치합니다. 오히려 시장에서는 2026년 1분기 영업이익이 컨센서스를 5.3% 상회하며 전년 대비 43.2% 증가할 것으로 전망하고 있습니다. 이는 고부가가치 선박 수주 및 건조 비중 확대에 기인합니다.\n*   **재무구조 및 부채비율:** 재무제표 요약의 \"급격히 악화된 재무구조와 매우 높은 부채비율\"에 대한 우려는 최근 뉴스에서 상당 부분 완화되었습니다. 2025년 말 기준 부채비율은 159%에서 134%로 개선되었으며, 현금 및 현금성 자산이 45% 증가한 8조 1,766억 원을 기록했습니다. 특히, 조선업의 부채 중 상당 부분이 선수금(계약부채)이며, 실질적인 이자부 차입금은 전체 부채의 4.6% 수준에 불과하고 단기유동성이 차입금의 약 7.8배에 달한다는 점은 재무 건전성이 양호함을 시사합니다. 또한, 최근 3조 원 규모의 교환사채(EB) 발행이 성공적으로 이루어지며 미래 투자 자금을 확보한 것은 시장이 HD한국조선해양의 재무 상태와 성장 잠재력을 긍정적으로 평가하고 있음을 보여줍니다.\n\n결론적으로, 실적 개선에 대한 전망은 일치하나, 재무구조 및 부채비율에 대한 시장의 평가는 재무제표 요약보다 훨씬 긍정적으로 변화했습니다.\n\n### 2. 재무제표에서 드러나지 않는 리스크 또는 호재\n\n**호재:**\n\n*   **고부가가치 선박 중심의 선별 수주:** HD한국조선해양은 LNG 운반선, LPG/암모니아 운반선 등 수익성이 높은 선종 위주로 수주하며 수익성 개선을 꾀하고 있습니다. 최근 1조 2천억 원 규모의 선박 12척(LPG선 4척, PC선 8척)을 수주하며 연간 목표의 28.9%를 달성했습니다.\n*   **글로벌 조선업 호황 지속:** 신조선가 지수가 호황 기준인 180선을 굳건히 유지하고 있으며, 중동 전쟁 장기화에도 불구하고 선대 확충 움직임이 일고 있어 업황 호조가 당분간 지속될 것이라는 관측이 지배적입니다.\n*   **미래 신사업 투자 및 글로벌 확장:** 교환사채 발행을 통해 확보한 자금으로 친환경 선박 사업 확대, 해외 야드 생산설비 확충, SMR(소형모듈원자로)·수소연료전지·해상풍력 등 차세대 에너지원 개발, 한-미 조선 협력 프로젝트 '마스가(MASGA)' 추진 등 미래 성장 동력 확보에 적극적으로 투자하고 있습니다. 이는 장기적인 기업 가치 상승에 기여할 잠재적 호재입니다.\n\n**리스크:**\n\n*   **지정학적 리스크:** 중동 전쟁 장기화 등 글로벌 공급망 및 해상 물류 불확실성은 여전히 존재하며, 이는 조선업황에 예상치 못한 부정적인 영향을 미 미칠 수 있습니다.\n*   **원자재 가격 변동성:** 후판 등 주요 원자재 가격의 급격한 변동은 수익성에 영향을 줄 수 있습니다. (뉴스에서 직접적으로 언급되지는 않았으나, 조선업의 일반적인 리스크 요인)\n\n### 3. 최종 판정\n\n제시된 재무제표 분석 요약은 과거의 실적 변동성과 재무구조 악화를 지적하며 투자등급 D를 부여했으나, 최근 2주간의 뉴스 흐름을 종합해 볼 때 HD한국조선해양은 긍정적인 변화를 보이고 있습니다.\n\n*   **실적 턴어라운드 가속화:** 고부가가치 선박 중심의 수주 전략이 성공적으로 안착하며 실적 개선이 가시화되고 있으며, 1분기 실적은 시장 기대치를 상회할 것으로 전망됩니다.\n*   **재무구조 개선 및 안정성 확보:** 부채비율이 개선되었고, 풍부한 현금성 자산과 선수금의 특성을 고려할 때 재무적 안정성이 강화되었습니다. 대규모 교환사채 발행 성공은 시장의 신뢰를 보여줍니다.\n*   **미래 성장 동력 확보:** 친환경 선박, 차세대 에너지원 등 미래를 위한 전략적 투자를 통해 장기적인 성장 잠재력을 높이고 있습니다.\n*   **견조한 업황:** 글로벌 조선업 호황이 지속될 것이라는 전망이 우세하며, 신조선가 지수도 견고하게 유지되고 있습니다.\n\n물론 지정학적 리스크 등 외부 변수는 존재하지만, 현재 HD한국조선해양은 과거의 실적 변동성을 극복하고 수익성 중심의 성장과 재무구조 개선을 동시에 이루어내고 있는 것으로 판단됩니다. 특히, 재무제표 분석 요약에서 지적된 \"급격히 악화된 재무구조와 매우 높은 부채비율\"은 최근의 뉴스 흐름을 통해 상당 부분 해소되었거나, 그 심각성이 완화된 것으로 보입니다.\n\n따라서, 현재 시점에서는 **매수** 의견을 제시합니다.",
+    "citations": [
+      {
+        "title": "biztribune.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEFyahXqxZ0ZsuHbNlHJLfJz3h4rBsEDsmuvqHnlVXkW9SwTVnw7K164WE-vY1kwcXBOFK2fbPMpEkJdTMthCZ5xoQoVv73C_7vRki0L2gLfX8yR7s6BcWIC43JfgxTWdT4QmYXHuebMEGwH3N51bwTlhIrQfY85BcBzg=="
+      },
+      {
+        "title": "news1.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEsqMuItFI1gx6adD6iDkxnq7NgP-eTUU97X3ko-oMcEA3gcKIS3BgYFRaRT8zA6iqBZ6sTYMA_RJStD6uDFz9pze9Z-80fOtj_kp0j3Ikycm6Tr8EBhkZJmWwOSsrV8YVyYyyvptfY-8U62jA_PYt0PQ=="
+      },
+      {
+        "title": "mk.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFwmstskVLLRXw-QL91BJZDkB_pjd84kP2YIFqxRLyopULIBrVJYa9Vx1pBIlpn2Fn1ImLYITjqnRJ9adn1oAXvo2RDU4EckdtZPJVKC6rk2xv-RkMEW8AVevTCS3C2tuH03MN45Y0="
+      },
+      {
+        "title": "newstomato.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHo2LmzVrNGmhogg-066Opgtjj09l55ydZ7GN0I6B90VofhtwBw7AsWxLeqB3hmzhB8cZCh_r7xcfUTD55pcxwhoYlmQCaWCYQEdwUFes2g2woIZa0l7nLSOG-1_E3sVjAJ4tc8z8RSUPR-xWXh-A=="
+      },
+      {
+        "title": "ebn.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEhKC_vJFvvCwuCXHVcJJMJuVx0ii9S0_vu5E9SLUe7Q1JJtKTDjXjRH6pXMLEwByT8eYQ9cyd0LZRf1DuRltNVAL0aP0Mung0nwmWL5_WPLD9he-PwerXHx6eRf_HDoJqmt9V4gLGYP5QMDAHZBwMneF7xkQ=="
+      },
+      {
+        "title": "dealsite.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFasPyFi-nF3uaCIcWaUl5y4nSaa2Lk9EtxrMCOxgXTwlE4yy-cap7l5e5IhtFxL16ri0Xhwid5n_vFjGdlzzkoLBwqTZemqECJaMLTCMrhlgRGSRLLfrVt26AQmWkYqlewnM1s9G59KA=="
+      },
+      {
+        "title": "youtube.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQESSdZgigfb9VGfzSY93-vzZ_PDsQBmZUfKuJXoAvEFmLcXozK8CyiuXsnU2TfqVckrWJL2rLAX2rDdh3ZdylLjFqUqB04f1pddF1U2pOGcGkRsgzAaP2YhIwCyULB_vyirhug="
+      },
+      {
+        "title": "mk.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEz_0QrUqhd8Kk1C7jgYJyfCEltRzl_wS7nFVWXsYa5op3FuneFekC7CbdsbAZ43X3DO_zdM7XTeMX7Xz_fi18CEO1g1UoHtVjl7aMX3-kMRbVKuwThZps3YIpgMZP95Hcp1EI="
+      },
+      {
+        "title": "ulsanpress.net",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHNLq6vOjAsDaiM_VoAL4cclStD0tOlJ5sy90WY4vC-CjACvKw4RyfMmAPxvbPcb4rOvoNVn9JgSLV-vDh-_4JZZA7dnNR_1m1XfN5GDyCW6kOaGdiwSBWFT5vRfM7lvg_w5qSt8RRYnsAHTnCfhli5Qu4E_MLofkA="
+      },
+      {
+        "title": "chosun.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQG6llmFXE6qCC12JBnb69VY_zj5C9YHDCaXYymJ34zjkwyY9Z4VLgKtBrgBfjYOr-5emzdb2vuWGfUS_EIVI-ajw7tlVDx3mdBukbn41FDjRDse4Tmfb_E7KOKdipvdQ6uipR7P7Woi9uz4jSXNaiuIupSG8-3bWNkleJehq-jicmZNfOg0W0JCqg=="
+      }
+    ]
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=00164830",
+    "summary": "공시 페이지 접근 제한"
+  }
+}

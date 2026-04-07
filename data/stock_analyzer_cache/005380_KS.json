@@ -2,7 +2,7 @@
   "name": "현대차",
   "ticker": "005380.KS",
   "result": "매수",
-  "date": "2026-04-05 20:36:46",
+  "date": "2026-04-07 07:33:00",
   "elapsed": 2.2,
   "consensus_score": 4.22,
   "analyst_count": 32,
@@ -15,32 +15,32 @@
   },
   "recommendation_period": "0m",
   "price_targets": {
-    "current": 471000.0,
+    "current": 469000.0,
     "high": 900000.0,
     "low": 315789.0,
     "mean": 630118.4,
     "median": 635000.0
   },
-  "current_price": 471000.0,
-  "upside_potential": 33.8,
+  "current_price": 469000.0,
+  "upside_potential": 34.4,
   "key_stats": {
     "name": "HyundaiMtr",
     "sector": "Consumer Cyclical",
     "industry": "Auto Manufacturers",
-    "market_cap": 122599707246592,
+    "market_cap": 122079118622720,
     "pe_ratio": null,
-    "forward_pe": 9.091367,
+    "forward_pe": 9.052762,
     "dividend_yield": 2.15,
     "beta": 1.576,
     "fifty_two_week_high": 687000.0,
-    "fifty_two_week_low": 175800.0,
+    "fifty_two_week_low": 169083.0,
     "revenue": 186254478016512,
     "profit_margin": 0.05072,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
   "source": "yfinance",
-  "ai_analysis": null,
+  "ai_analysis": "현대차(005380.KS)에 대해 32명의 애널리스트가 제시한 컨센서스 의견은 '매수'입니다. 목표가 평균은 630,118 KRW으로, 현재가 469,000 KRW 대비 34.4%의 상승 여력이 있는 것으로 분석됩니다. 투자 결정은 개인의 판단에 따라 신중하게 이루어져야 합니다.",
   "revenue_quarters": [
     {
       "date": "2025-12",
@@ -79,6 +79,13 @@
   ],
   "news": [
     {
+      "title": "Auto industry trade group urges feds to scrap gas tax and replace it with a vehicle weight fee",
+      "summary": "Alliance for Automotive Innovation CEO John Bozzella proposed replacing the federal gas tax with a weight-based vehicle fee for road infrastructure spending.",
+      "url": "https://www.foxbusiness.com/economy/auto-industry-trade-group-urges-feds-scrap-gas-tax-replace-vehicle-weight-fee",
+      "provider": "Fox Business",
+      "pub_time": "2026-04-05T11:00:54Z"
+    },
+    {
       "title": "Hyundai's Boulder concept previews the automaker's truck future, built in America",
       "summary": "Hyundai showed off its Boulder concept, a rugged, body-on-frame SUV with a design language Hyundai calls \"Art of Steel\" at the New York International Auto Show this week. For a brand long associated w",
       "url": "https://finance.yahoo.com/markets/stocks/article/hyundais-boulder-concept-previews-the-automakers-truck-future-built-in-america-110912475.html",
@@ -105,13 +112,6 @@
       "url": "https://finance.yahoo.com/video/ny-auto-show-kicks-off-what-to-expect-from-chevy-nissan--more-203351989.html",
       "provider": "Yahoo Finance Video",
       "pub_time": "2026-04-01T20:33:51Z"
-    },
-    {
-      "title": "Humanoid Robots Offer Europe Path to Stay in Tech Race",
-      "summary": "(Bloomberg) -- Europe has been late to the AI boom and trails China on electric cars. But when it comes to humanoid robots, it’s still in the race.Sweden’s Hexagon AB has built a humanoid that’s being",
-      "url": "https://finance.yahoo.com/sectors/technology/articles/humanoid-robots-offer-europe-path-140220520.html",
-      "provider": "Bloomberg",
-      "pub_time": "2026-04-01T14:02:20Z"
     }
   ]
 }

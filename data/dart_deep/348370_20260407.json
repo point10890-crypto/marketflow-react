@@ -1,0 +1,205 @@
+{
+  "stock_code": "348370",
+  "stock_name": "엔켐",
+  "generated_at": "2026-04-06T22:25:45.156796+00:00",
+  "financials": {
+    "stock_code": "348370",
+    "corp_code": "01011526",
+    "years": [
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2021": {
+        "cash": 815.1,
+        "total_assets": 4074.2,
+        "short_debt": 299.8,
+        "long_debt": 5.9,
+        "total_liab": 1908.2,
+        "total_equity": 2166.0,
+        "revenue": 2143.3,
+        "op_profit": -259.7,
+        "net_income": -194.7
+      },
+      "2022": {
+        "cash": 333.2,
+        "total_assets": 6802.5,
+        "short_debt": 449.3,
+        "long_debt": 26.7,
+        "total_liab": 3868.9,
+        "total_equity": 2933.6,
+        "revenue": 5097.9,
+        "op_profit": 153.6,
+        "net_income": 0.0
+      },
+      "2023": {
+        "total_assets": 8868.8,
+        "cash": 457.0,
+        "total_equity": 82.5,
+        "total_liab": 5968.0,
+        "long_debt": 314.6,
+        "op_profit": 51.2,
+        "net_income": -492.3,
+        "revenue": 4246.9
+      },
+      "2024": {
+        "total_assets": 11598.5,
+        "cash": 1026.5,
+        "total_equity": 10538.8,
+        "short_debt": 1064.3,
+        "total_liab": 6750.0,
+        "long_debt": 466.2,
+        "op_profit": -504.0,
+        "net_income": 0.0,
+        "revenue": 3657.1
+      },
+      "2025": {
+        "total_assets": 11075.5,
+        "cash": 121.3,
+        "total_equity": 139.9,
+        "short_debt": 1624.7,
+        "total_liab": 6265.2,
+        "long_debt": 317.3,
+        "op_profit": -783.9,
+        "net_income": 0.0,
+        "revenue": 3127.9
+      }
+    },
+    "missing_years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2021,
+        "revenue_eok": 2143,
+        "op_profit_eok": -260,
+        "net_income_eok": -195,
+        "roe_pct": -8.99,
+        "op_margin_pct": -12.13,
+        "debt_ratio_pct": 88.09
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 5098,
+        "op_profit_eok": 154,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 3.02,
+        "debt_ratio_pct": 131.81
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 4247,
+        "op_profit_eok": 51,
+        "net_income_eok": -492,
+        "roe_pct": -600.0,
+        "op_margin_pct": 1.2,
+        "debt_ratio_pct": 7278.05
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 3657,
+        "op_profit_eok": -504,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": -13.78,
+        "debt_ratio_pct": 64.05
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 3128,
+        "op_profit_eok": -784,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": -25.06,
+        "debt_ratio_pct": 4475.0
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": 9.93,
+      "op_profit_cagr_pct": 31.9,
+      "best_year": 2022,
+      "worst_year": 2025,
+      "avg_roe_pct": -121.8
+    },
+    "valuation": {
+      "grade": "D",
+      "strengths": [
+        "매출액은 5년간 연평균 9.93% 성장하며 외형 성장을 지속하고 있습니다.",
+        "2022년과 2023년에는 영업이익 흑자를 기록하며 수익성 개선의 가능성을 보여주었습니다.",
+        "2024년 자본총계가 크게 증가하여 일시적으로 재무 건전성이 개선된 모습을 보였습니다."
+      ],
+      "risks": [
+        "2021년 이후 2022년 잠시 흑자를 제외하고는 지속적인 영업손실과 당기순손실을 기록하며 수익성이 크게 악화되고 있습니다.",
+        "2023년과 2025년에 자본총계가 급격히 감소하며 부채비율이 매우 높아져 재무 안정성이 심각하게 취약합니다.",
+        "매출액 성장에도 불구하고 영업이익이 급격히 악화되고 있으며, 자본 효율성을 나타내는 ROE가 평균 -121.80%로 매우 저조합니다."
+      ],
+      "one_liner": "외형 성장은 지속되나, 심각한 수익성 악화와 불안정한 재무구조로 인해 투자에 매우 신중해야 할 기업입니다."
+    }
+  },
+  "dcf": {
+    "text": "퀀트 애널리스트로서 엔켐(348370)의 DCF 적정가치를 계산하겠습니다.\n\n**가정 사항 및 전제:**\n*   제공된 \"최근 재무\" 데이터는 2024년 기준이며, 5년 예측은 2025년부터 시작됩니다.\n*   **매출액 및 영업이익 성장률:** 사용자로부터 성장률 정보가 제공되지 않았으므로, 5년 예측 기간(2025-2029) 동안 **매출액과 영업이익은 0% 성장**한다고 가정합니다. 이는 보수적인 가정이며, 실제 기업 가치는 성장률 가정에 따라 크게 달라질 수 있습니다.\n*   FCF 계산식: `영업이익 × (1 - 0.25) + 감가상각(매출의 10%) - CAPEX(매출의 5%)`를 그대로 적용합니다.\n*   WACC = 9%, 영구성장률 g = 2% (기본 시나리오)\n*   5년 예측 후 영구 성장 모형을 통한 터미널 밸류 계산\n\n**입력 데이터:**\n*   기업: 엔켐 (348370)\n*   기준 연도: 2025 (예측 시작 연도)\n*   최근 재무 (2024년, 억원):\n    *   매출액: 3128\n    *   영업이익: -784\n    *   당기순이익: 0\n    *   자산총계: 11076\n    *   부채총계: 6265\n*   WACC (기본): 9%\n*   영구성장률 g (기본): 2%\n*   예측 기간: 5년\n\n**FCF 계산 상세 (0% 성장 가정 시):**\n*   매출액 (매년): 3128 억원\n*   영업이익 (매년): -784 억원\n*   감가상각 (매년): 3128 * 0.10 = 312.8 억원\n*   CAPEX (매년): 3128 * 0.05 = 156.4 억원\n*   FCF (매년): -784 * (1 - 0.25) + 312.8 - 156.4 = -588 + 312.8 - 156.4 = -431.6 억원\n*   영업이익이 음수이므로 FCF 또한 음수로 계산됩니다.\n\n---\n### Python 코드 실행\n---\n\n---\n### 분석 결과\n\n**1. 기본 시나리오 DCF 적정가치:**\n*   **적정가치(기본): -5766.21 억원**\n\n**2. DCF 적정가치 민감도 분석 (억원):**\n\n|          | WACC=7%   | WACC=8%   | WACC=9%   | WACC=10%  | WACC=11%  |\n| :------- | :-------- | :-------- | :-------- | :-------- | :-------- |\n| **g=1%** | -6949.68  | -5961.50  | -5220.22  | -4643.54  | -4182.10  |\n| **g=2%** | -8047.23  | -6716.83  | -5766.21  | -5052.97  | -4498.00  |\n| **g=3%** | -9693.56  | -7774.29  | -6494.20  | -5579.38  | -4892.87  |\n\n**요약:**\n제공된 재무 데이터와 가정(특히 0% 매출 및 영업이익 성장률)에 따라 엔켐의 DCF 적정가치는 **음수**로 계산되었습니다. 이는 현재 영업이익이 크게 음수이며, 이 상태가 지속될 경우 기업이 미래에 창출할 현금 흐름이 마이너스임을 의미합니다. WACC가 낮아지거나 영구성장률(g)이 높아질수록 음의 가치는 절대값 기준으로 더 커지는 경향을 보입니다.\n\n**참고:**\n기업의 영업이익이 지속적으로 음수인 경우, 일반적인 DCF 모델은 적절한 가치 평가 도구가 아닐 수 있습니다. 이러한 기업의 가치 평가는 턴어라운드 시나리오, 자산 가치, 또는 다른 평가 방법론을 고려해야 할 수 있습니다.",
+    "executed_code": "import pandas as pd\n\ndef calculate_dcf(revenue_base, op_profit_base, tax_rate_implied, depreciation_rate, capex_rate,\n                  wacc, g, forecast_years, revenue_growth_rate):\n    \n    forecast_years_list = list(range(1, forecast_years + 1))\n    \n    # Initialize lists to store yearly values\n    revenues = []\n    op_profits = []\n    depreciations = []\n    capex_values = []\n    fcfs = []\n    pv_fcfs = []\n\n    current_revenue = revenue_base\n    current_op_profit = op_profit_base\n\n    for i in forecast_years_list:\n        # Forecast Revenue and Operating Profit\n        # Assuming operating profit grows at the same rate as revenue\n        current_revenue *= (1 + revenue_growth_rate)\n        current_op_profit *= (1 + revenue_growth_rate)\n        \n        revenues.append(current_revenue)\n        op_profits.append(current_op_profit)\n        \n        # Calculate Depreciation and CAPEX\n        depreciation = current_revenue * depreciation_rate\n        capex = current_revenue * capex_rate\n        \n        depreciations.append(depreciation)\n        capex_values.append(capex)\n        \n        # Calculate FCF\n        # FCF ≈ 영업이익 × (1 - 0.25) + 감가상각(매출의 10%) - CAPEX(매출의 5%)\n        fcf = current_op_profit * (1 - tax_rate_implied) + depreciation - capex\n        fcfs.append(fcf)\n        \n        # Discount FCF\n        pv_fcf = fcf / ((1 + wacc) ** i)\n        pv_fcfs.append(pv_fcf)\n\n    # Calculate Terminal Value\n    last_fcf = fcfs[-1]\n    \n    # Check for WACC <= g, which would make the formula invalid or result in infinite/negative TV\n    if wacc <= g:\n        return float('nan') # Indicate an invalid calculation\n\n    terminal_value = last_fcf * (1 + g) / (wacc - g)\n    \n    # Discount Terminal Value\n    pv_terminal_value = terminal_value / ((1 + wacc) ** forecast_years)\n    \n    # Total DCF Value\n    dcf_value = sum(pv_fcfs) + pv_terminal_value\n    \n    return dcf_value\n\n# Base Scenario Parameters\nrevenue_2024 = 3128 # 억원\nop_profit_2024 = -784 # 억원\ntax_rate_implied = 0.25\ndepreciation_rate = 0.10\ncapex_rate = 0.05\nwacc_base = 0.09\ng_base = 0.02\nforecast_years = 5\n\n# Assume 0% revenue growth rate for the forecast period as it's not provided.\n# This means revenue and operating profit remain constant.\nrevenue_growth_rate_base = 0.0\n\n# 1. 기본 시나리오 DCF 적정가치(억원) 계산\nbase_dcf_value = calculate_dcf(revenue_2024, op_profit_2024, tax_rate_implied, depreciation_rate, capex_rate,\n                               wacc_base, g_base, forecast_years, revenue_growth_rate_base)\n\nprint(f\"--- 기본 시나리오 DCF 적정가치 계산 (매출액 및 영업이익 성장률 0% 가정) ---\")\nprint(f\"기준 연도: 2025 (5년 예측: 2025-2029)\")\nprint(f\"WACC: {wacc_base*100}%, 영구성장률(g): {g_base*100}%\")\nprint(f\"FCF 계산식: 영업이익 × (1 - 0.25) + 감가상각(매출의 10%) - CAPEX(매출의 5%)\")\nprint(f\"기본 시나리오 DCF 적정가치: {base_dcf_value:.2f} 억원\")\nprint(\"\\n\")\n\n# 2. WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 출력\nwacc_scenarios = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_scenarios = [0.01, 0.02, 0.03]\n\nsensitivity_results = pd.DataFrame(index=[f'g={g*100:.0f}%' for g in g_scenarios],\n                                   columns=[f'WACC={wacc*100:.0f}%' for wacc in wacc_scenarios])\n\nfor g_val in g_scenarios:\n    for wacc_val in wacc_scenarios:\n        dcf_val = calculate_dcf(revenue_2024, op_profit_2024, tax_rate_implied, depreciation_rate, capex_rate,\n                                wacc_val, g_val, forecast_years, revenue_growth_rate_base)\n        sensitivity_results.loc[f'g={g_val*100:.0f}%', f'WACC={wacc_val*100:.0f}%'] = f\"{dcf_val:.2f}\" if not pd.isna(dcf_val) else \"N/A\"\n\nprint(\"--- DCF 적정가치 민감도 분석 (억원) ---\")\nprint(f\"매출액 및 영업이익 성장률 0% 가정\")\nprint(sensitivity_results)\nprint(\"\\n\")\n\n# 3. 마지막에 '적정가치(기본): {value}억원' 형태로 요약 출력\nprint(f\"적정가치(기본): {base_dcf_value:.2f}억원\")",
+    "code_output": "--- 기본 시나리오 DCF 적정가치 계산 (매출액 및 영업이익 성장률 0% 가정) ---\n기준 연도: 2025 (5년 예측: 2025-2029)\nWACC: 9.0%, 영구성장률(g): 2.0%\nFCF 계산식: 영업이익 × (1 - 0.25) + 감가상각(매출의 10%) - CAPEX(매출의 5%)\n기본 시나리오 DCF 적정가치: -5766.21 억원\n\n\n--- DCF 적정가치 민감도 분석 (억원) ---\n매출액 및 영업이익 성장률 0% 가정\n       WACC=7%   WACC=8%   WACC=9%  WACC=10%  WACC=11%\ng=1%  -6949.68  -5961.50  -5220.22  -4643.54  -4182.10\ng=2%  -8047.23  -6716.83  -5766.21  -5052.97  -4498.00\ng=3%  -9693.56  -7774.29  -6494.20  -5579.38  -4892.87\n\n\n적정가치(기본): -5766.21억원"
+  },
+  "news": {
+    "text": "## 엔켐(348370) 투자 분석: 심각한 재무 리스크와 불확실성 증대\n\n한국 주식 시장 전문 애널리스트로서 엔켐(348370)의 10년 재무제표 분석 결과와 최근 2주간의 뉴스를 종합하여 투자 의견을 제시합니다. 엔켐은 외형 성장을 지속하고 있으나, 심각한 수익성 악화와 불안정한 재무구조로 인해 투자에 매우 신중해야 할 기업으로 판단됩니다.\n\n### 1. 재무 데이터 스토리와 시장 컨센서스의 일치/불일치\n\n제공된 재무 데이터가 보여주는 \"투자등급 D, 심각한 수익성 악화, 불안정한 재무구조\"라는 스토리는 최근 시장의 움직임과 상당 부분 일치합니다.\n\n*   **일치:** 지난 3월 감사보고서 제출 지연 사태와 감사 의견에 포함된 '계속기업 존속 불확실성' 지적은 엔켐의 재무적 불확실성에 대한 시장의 우려를 증폭시켰습니다. 매출 감소와 영업손실 지속 또한 투자 심리에 부정적인 영향을 미 미치며 주가 급락으로 이어졌습니다. 이는 재무 데이터가 경고하는 위험 신호가 시장에 직접적으로 반영되고 있음을 보여줍니다.\n*   **불일치/괴리:** 그럼에도 불구하고, 엔켐은 정기 주주총회에서 하반기 분기 흑자 전환 목표와 CATL을 포함한 주요 글로벌 고객사향 납품 확대 계획을 발표하며 긍정적인 사업 전망을 제시했습니다. 또한, 프랑스 배터리 기업 베르코(Verkor)와의 전략적 협력 강화 소식에 주가가 상승하기도 했습니다. 이러한 긍정적 사업 전망은 현재의 심각한 재무적 불확실성과는 다소 괴리가 있으며, 시장은 단기적인 호재와 장기적인 재무 리스크 사이에서 혼란스러운 모습을 보이고 있습니다.\n\n### 2. 재무제표에서 드러나지 않는 리스크 또는 호재\n\n**리스크:**\n*   **감사보고서 '계속기업 존속 불확실성' 언급:** 재무제표 수치 자체를 넘어선 감사인의 의견으로, 기업의 미래 생존 가능성에 대한 심각한 우려를 표명하는 강력한 경고 신호입니다.\n*   **오버행 리스크:** 대규모 전환사채(CB) 및 신주인수권부사채(BW) 물량이 주가 상승 시 잠재적인 매도 압력으로 작용하여 주가 희석 및 상승을 제한할 수 있습니다.\n*   **IRA 불확실성 및 리튬 가격 변동성:** 이차전지 산업 전반에 영향을 미치는 거시적 요인으로, 엔켐의 수익성에 예측 불가능한 영향을 미칠 수 있습니다.\n*   **우발채무 확대 및 재무 리스크 부각:** 중국 기업 인수 및 관계사 보증 등으로 인한 대규모 채무보증 및 지분 담보 제공은 기업의 재무 부담을 가중시키고 잠재적 위험을 내포합니다.\n\n**호재:**\n*   **글로벌 고객사 납품 확대 및 하반기 흑자 전환 목표:** 2분기 말부터 CATL 등 주요 글로벌 고객사향 납품이 본격 확대될 예정이며, 이를 통해 하반기 실적 반등을 기대하고 있습니다.\n*   **프랑스 Verkor와의 전략적 협력 강화:** 유럽 시장 내 전해액 공급망 강화 및 고객 대응 체계 구축에 긍정적인 영향을 미칠 수 있는 전략적 파트너십입니다.\n*   **북미 전해액 시장 선점 및 IRA 수혜:** IRA 시행 이후 북미 시장 내 최대 생산 능력을 보유하고 있어, 장기적인 성장 동력으로 작용할 수 있습니다.\n*   **핵심 원료 내재화 및 신사업 추진:** 중국 원재료 업체 인수 및 폐NMP 리사이클링, CNT 사업 등은 원가 경쟁력 확보 및 포트폴리오 다변화에 기여할 수 있습니다.\n*   **차세대 전해질 개발:** 세라믹 공정 기반 산화물 전해질 및 고분자 고체 전해질 개발은 미래 시장 경쟁력 확보에 중요한 요소입니다.\n\n### 3. 최종 판정\n\n**매도**\n\n엔켐은 외형 성장을 위한 노력과 미래 성장 동력 확보를 위한 투자를 지속하고 있으나, 현재 기업이 직면한 재무적 위험이 매우 심각하고 가시적입니다. \"투자등급 D\"와 \"심각한 수익성 악화, 불안정한 재무구조\"라는 재무제표 분석 결과는 기업의 내재적 취약성을 명확히 보여줍니다.\n\n특히, 최근 감사보고서에 명시된 '계속기업 존속 불확실성'은 기업의 생존 자체에 대한 심각한 의문을 제기하며, 투자자들에게 매우 강력한 경고 신호로 작용합니다. 또한, 오버행 리스크, IRA 불확실성, 리튬 가격 변동성, 우발채무 확대 등 재무제표에 직접적으로 드러나지 않는 잠재적 리스크 요인들도 주가에 지속적인 하방 압력을 가할 수 있습니다.\n\n비록 CATL 납품 확대, Verkor와의 협력 강화, 북미 시장에서의 경쟁력 등 긍정적인 사업 전망과 잠재적 호재가 존재하지만, 이는 아직 실현되지 않은 기대치이며 현재의 심각한 재무적 불확실성을 상쇄하기에는 역부족입니다. 현재 시점에서는 기업의 재무 건전성 회복과 불확실성 해소가 우선되어야 하며, 투자자들은 매우 신중한 접근을 넘어선 매도 관점으로 대응해야 할 것으로 판단됩니다.",
+    "citations": [
+      {
+        "title": "jkn.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFS6FyQpXmF6HloJPpYqTfUbhWPTlrDEDI-vsIyKUEOsRCzQBLGBfXjpqJChepeOfDxzpxvjNJ8zHOganTohcwbVuKaLE5lKNWlHZPPLnZSyzF2Rh7HnTZRsnatDDo="
+      },
+      {
+        "title": "cbci.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQG8GjpabbvSR6EaqULhG5_gbziYl4DOobz-voddlLvVndj3nEov-Qn-ponPJQuttTBlnzmFiIz-OdC72gO0QXfC4Sshnw72p6FpdEcpWzV1cKo3o93ybH7nv2DhUOYKpUe833jTQwhUluO_OfRjI35ql40Glw=="
+      },
+      {
+        "title": "sedaily.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQF0OjmG8MeT7JxesEuMTuezYjUh7JwJ9c-5NXy0dly4PC4x8S-LRW56ps3vJgnmb8PiAPrAOt-QY6Ad1wghAnqLrlVGpkexGBl0qY6z6Ycxhj-ptrPPo2jFgS3KouA9Dd8apPY="
+      },
+      {
+        "title": "edaily.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQF8Og-Sv8OLIOAKiqoxzNxn1yMZjIzCvorXk8UVt7_N5cknmoZbizHq5Xj0p9pE84PcbJoylGy5vbae_FwlrYTEh9HOvCrnXP-lXdvaX9PHhdsTnZp7S-2FsOCQFLAq5vHWqwem1UBa428g862nxpE9e0vVJOwXQ5VnreNj4fL4jSDn5D5jGA=="
+      },
+      {
+        "title": "tistory.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFvVXJhlqJclTIf9U1LUq2er8eyXTO_abxYnu3tVkaJe6o_OyVZCreVGdMBGynSQu8D5pZu8h8mlBoFijV1STo1aFVNEKZlkagjzOmKP2BtULCrZW4tz9xMqeL0sR0h8TrThwI="
+      },
+      {
+        "title": "tistory.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGR8L-eZzXCYsnVAwwF91GQNtWARoj0RRLbMCC9bUS6LdgobRr4aJty9fHnwALgUZXVuKVQaQS7-8HDDsyPLj8WbFWHvz4JXI1_LpopKiAd1nHrQEtCZ0ladQPBJ1MES5g_E5oRYbDfeYk3FeQMm5I3Sb_itIj-SnimxUUzqNE-6bKi7gmTQdI6E3aTFZlqS3ekYzjEQqXeZ9spo2mNORVpFSBfVkiYPfQd6n-ar2tgwVCslsBgLBxFGJ9JoJBSLrdNqKuZcTSWCcpHuNvYv8WfsVEz-bK4WjEI18a84S0f47repxB_xIt-401Mb02YSZsZCd0vFGnSc2pTDESiQSQ-KMK7nfMpi_47Y0F5flD8Q33SdeW_V__qWmntLlrwpbRbAtMr6Uht2X-rzQ5ZriN2au2D033YQKGXQWQTrdY_PUCv1gJVKAl0Xd_03V_g"
+      },
+      {
+        "title": "newstomato.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEOzeyuVvQxyt6xEywhTCvPu41-DD3WlG0-upXwZSCzGWGrO2MXXg9YX6LLsr5JHNJAHmm2cNtAuRXEH7ya-A0i8dWk_O9yBgyaVPVA0KKk0Z8p3kiVPPwJliwTr7YO9C06pvUk943kRy462ywbfw=="
+      },
+      {
+        "title": "tistory.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHTvaQsJ4j5ag_xwqZE0_xQmKtXFW6YVJVBCUnP4BZcptVyW1HhscP9vkJ_bgfMsv-A-_u4QnuTPnRPSLgEQWq79PBfOptyqe2LDqGj7OOe_i3rngiJOe0LZiIQ3mOpeJt0OKvMUegcJsw6yFeZfkIfb-V6tylvJNwpkBsE2piZhS148DmIh8zCbAKqx7R_X2hh6H_u8fy8Zhm-2dyAEU-vT9wFtGT3UPC07XOv0yHTH8k9qdRbu-BX_uRnx1oo6MYLDCDWGZuA6xrY-E999LEV5NpXNfHVf4pK1Gqlt8EIuKe6FMTBte_OQs0aXFV89ee0WW9JexOvK1KfhcLz6TK2UBFiT-_V07I7hstBMZXaIBfxYQU_X3WfQowuQoZKVWMuUmwEQCWjR6pETX8j63VS-O-roqafkTkOaA=="
+      },
+      {
+        "title": "alphasquare.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHiW_1KadS2wDKp53nmnvFJpAqhn2E_IcYMvcI0h1qScnHzSwZAMHeWqW5rx20pRq0SpsUss86z2xkRPRi0uJVBA1nDjQPOAE3NIKjfodMufLr3gHYq5hob6EKbWoMwZkF8wvhIx4_auTCz-XiwVOvziRps"
+      },
+      {
+        "title": "wisereport.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGOYTFO8AB0IeDxfBZ1kwfbY3shhsGKLFAT8g2HE34fyEMNkmLtgThxYj15pByG9zb2zqp5pDOwl9sbLQTvWmJT1qcveFViZUPoft51sJ1o5ZMZMv8YLtPE_nk_QSo7U9Vw29tJP1dIJtmdtgD3SXDVdNkApSNdG6V2Zn6R"
+      }
+    ]
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=01011526",
+    "summary": "공시 페이지 접근 제한"
+  }
+}

@@ -1,0 +1,248 @@
+{
+  "stock_code": "066570",
+  "stock_name": "LG전자",
+  "generated_at": "2026-04-06T22:36:10.250141+00:00",
+  "financials": {
+    "stock_code": "066570",
+    "corp_code": "00401731",
+    "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2016": {
+        "cash": 30151.4,
+        "total_assets": 378552.7,
+        "total_liab": 244985.3,
+        "total_equity": 133567.4,
+        "revenue": 553670.3,
+        "op_profit": 13377.6,
+        "net_income": 768.8
+      },
+      "2017": {
+        "cash": 33506.0,
+        "total_assets": 412209.6,
+        "total_liab": 265472.8,
+        "total_equity": 146736.8,
+        "revenue": 613962.8,
+        "op_profit": 24685.5,
+        "net_income": 17257.7
+      },
+      "2018": {
+        "cash": 42703.9,
+        "total_assets": 443284.4,
+        "total_liab": 280215.4,
+        "total_equity": 163069.1,
+        "revenue": 613416.6,
+        "op_profit": 27032.9,
+        "net_income": 0.0
+      },
+      "2019": {
+        "cash": 47773.7,
+        "total_assets": 448598.8,
+        "total_liab": 284347.4,
+        "total_equity": 164251.4,
+        "revenue": 623061.8,
+        "op_profit": 24361.4,
+        "net_income": 0.0
+      },
+      "2020": {
+        "cash": 58963.1,
+        "total_assets": 482042.3,
+        "total_liab": 306621.0,
+        "total_equity": 175421.2,
+        "revenue": 632620.5,
+        "op_profit": 31949.9,
+        "net_income": 19683.3
+      },
+      "2021": {
+        "cash": 60515.2,
+        "total_assets": 534814.8,
+        "short_debt": 18956.0,
+        "long_debt": 80359.5,
+        "total_liab": 333834.5,
+        "total_equity": 200980.3,
+        "revenue": 747216.3,
+        "op_profit": 38637.7,
+        "net_income": 14149.7
+      },
+      "2022": {
+        "cash": 63223.6,
+        "total_assets": 551561.4,
+        "short_debt": 22875.2,
+        "long_debt": 87576.7,
+        "total_liab": 326641.4,
+        "total_equity": 224920.0,
+        "revenue": 834673.2,
+        "op_profit": 35509.7,
+        "net_income": 18631.2
+      },
+      "2023": {
+        "total_assets": 602407.9,
+        "cash": 84875.6,
+        "total_equity": 38337.8,
+        "total_liab": 367422.6,
+        "op_profit": 35490.7,
+        "revenue": 842277.7
+      },
+      "2024": {
+        "total_assets": 656295.9,
+        "cash": 75730.4,
+        "total_equity": 42168.9,
+        "total_liab": 404179.2,
+        "op_profit": 34196.8,
+        "net_income": 3675.2,
+        "revenue": 877281.8
+      },
+      "2025": {
+        "total_assets": 686201.7,
+        "cash": 87698.4,
+        "total_equity": 30881.8,
+        "total_liab": 400681.4,
+        "op_profit": 24783.9,
+        "net_income": 0.0,
+        "revenue": 892008.8
+      }
+    },
+    "missing_years": [
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2016,
+        "revenue_eok": 553670,
+        "op_profit_eok": 13378,
+        "net_income_eok": 769,
+        "roe_pct": 0.58,
+        "op_margin_pct": 2.42,
+        "debt_ratio_pct": 183.41
+      },
+      {
+        "year": 2017,
+        "revenue_eok": 613963,
+        "op_profit_eok": 24686,
+        "net_income_eok": 17258,
+        "roe_pct": 11.76,
+        "op_margin_pct": 4.02,
+        "debt_ratio_pct": 180.92
+      },
+      {
+        "year": 2018,
+        "revenue_eok": 613417,
+        "op_profit_eok": 27033,
+        "net_income_eok": 0,
+        "roe_pct": 0,
+        "op_margin_pct": 4.41,
+        "debt_ratio_pct": 171.84
+      },
+      {
+        "year": 2019,
+        "revenue_eok": 623062,
+        "op_profit_eok": 24361,
+        "net_income_eok": 0,
+        "roe_pct": 0,
+        "op_margin_pct": 3.91,
+        "debt_ratio_pct": 173.12
+      },
+      {
+        "year": 2020,
+        "revenue_eok": 632620,
+        "op_profit_eok": 31950,
+        "net_income_eok": 19683,
+        "roe_pct": 11.22,
+        "op_margin_pct": 5.05,
+        "debt_ratio_pct": 174.79
+      },
+      {
+        "year": 2021,
+        "revenue_eok": 747216,
+        "op_profit_eok": 38638,
+        "net_income_eok": 14150,
+        "roe_pct": 7.04,
+        "op_margin_pct": 5.17,
+        "debt_ratio_pct": 166.09
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 834673,
+        "op_profit_eok": 35510,
+        "net_income_eok": 18631,
+        "roe_pct": 8.28,
+        "op_margin_pct": 4.25,
+        "debt_ratio_pct": 145.22
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 842278,
+        "op_profit_eok": 35491,
+        "net_income_eok": 0,
+        "roe_pct": 0,
+        "op_margin_pct": 4.21,
+        "debt_ratio_pct": 958.37
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 877282,
+        "op_profit_eok": 34197,
+        "net_income_eok": 3675,
+        "roe_pct": 8.71,
+        "op_margin_pct": 3.9,
+        "debt_ratio_pct": 958.46
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 892009,
+        "op_profit_eok": 24784,
+        "net_income_eok": 0,
+        "roe_pct": 0,
+        "op_margin_pct": 2.78,
+        "debt_ratio_pct": 1297.45
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": 5.51,
+      "op_profit_cagr_pct": 7.12,
+      "best_year": 2021,
+      "worst_year": 2016,
+      "avg_roe_pct": 4.76
+    },
+    "valuation": {
+      "grade": "D",
+      "strengths": [
+        "매출액은 10년간 꾸준히 성장하여 5.51%의 CAGR을 기록했습니다.",
+        "영업이익 또한 10년간 7.12%의 CAGR을 보이며 성장세를 유지했습니다.",
+        "2021년에는 38,638억원의 최고 영업이익을 달성하며 견조한 사업 역량을 보여주었습니다."
+      ],
+      "risks": [
+        "2023년 이후 자본총계 급감으로 인한 부채비율의 비정상적인 급증은 심각한 재무 리스크를 시사합니다.",
+        "여러 해에 걸쳐 당기순이익이 0을 기록하는 등 순이익의 변동성이 매우 커 투자 안정성이 낮습니다.",
+        "2021년 이후 영업이익률이 지속적으로 하락하는 추세는 수익성 악화에 대한 우려를 높입니다."
+      ],
+      "one_liner": "매출과 영업이익은 성장세를 보였으나, 최근 급격히 악화된 재무구조와 불안정한 순이익으로 투자 리스크가 매우 높은 기업입니다."
+    }
+  },
+  "dcf": {
+    "text": "## 퀀트 애널리스트 보고서: LG전자 (066570) DCF 적정가치 분석\n\n요청하신 LG전자(066570)의 DCF(Discounted Cash Flow) 적정가치 분석을 수행했습니다.\n\n### 1. 기본 시나리오 DCF 적정가치 계산\n\n**가정:**\n*   **FCF 계산:** 영업이익 × (1 - 0.25) + 감가상각(매출의 10%) - CAPEX(매출의 5%)\n*   **성장률:** 5년 예측 기간 동안 매출액과 영업이익은 영구성장률(g)과 동일하게 성장한다고 가정합니다.\n*   **WACC (할인율):** 9%\n*   **영구성장률 (g):** 2%\n*   **예측 기간:** 5년 (2025년 ~ 2029년)\n\n**계산 로직:**\n1.  주어진 매출액과 영업이익을 바탕으로 2025년의 FCF를 계산합니다.\n2.  이후 4년간(2026년~2029년)의 매출액과 영업이익은 영구성장률(g)인 2%로 성장한다고 가정하여 FCF를 예측합니다.\n3.  예측 기간 5년 동안의 FCF를 WACC(9%)로 할인하여 현재가치를 계산합니다.\n4.  5년차 이후의 영구적인 가치(Terminal Value)를 계산하고, 이를 현재가치로 할인합니다.\n5.  할인된 FCF와 할인된 Terminal Value를 합산하여 기업의 적정가치를 산출합니다.\n\n\n### 2. DCF 적정가치 민감도 분석 (억원)\n\nWACC와 영구성장률(g)의 변화에 따른 DCF 적정가치 민감도 분석 결과는 다음과 같습니다.\n\n|             | g=1%    | g=2%    | g=3%    |\n| :---------- | :------ | :------ | :------ |\n| **WACC=7%** | 1053141 | 1263769 | 1579711 |\n| **WACC=8%** | 902692  | 1053141 | 1263769 |\n| **WACC=9%** | 789856  | 902692  | 1053141 |\n| **WACC=10%**| 702094  | 789856  | 902692  |\n| **WACC=11%**| 631884  | 702094  | 789856  |\n\n### 3. 요약\n\n적정가치(기본): 902692억원\n\n---\n\n**참고:**\n*   본 분석은 제시된 가정에 기반하며, 실제 기업 가치는 시장 상황, 미래 성장률, 비용 구조 변화 등 다양한 요인에 따라 달라질 수 있습니다.\n*   특히, 5년 예측 기간 동안 매출액과 영업이익이 영구성장률(g)과 동일하게 성장한다는 가정은 단순화된 모델이며, 실제 분석에서는 보다 상세한 성장률 예측이 필요합니다.\n*   당기순이익이 0으로 제시되었으나, FCF 계산식에 직접 사용되지 않아 분석에 영향을 미치지 않았습니다.",
+    "executed_code": "import pandas as pd\n\ndef calculate_fcf_for_year(revenue, op_profit, tax_rate, dep_rate_of_revenue, capex_rate_of_revenue):\n    \"\"\"\n    Calculates Free Cash Flow (FCF) for a single year based on provided formula.\n    FCF = Operating Profit * (1 - Tax Rate) + Depreciation - CAPEX\n    Depreciation = Revenue * dep_rate_of_revenue\n    CAPEX = Revenue * capex_rate_of_revenue\n    \"\"\"\n    depreciation = revenue * dep_rate_of_revenue\n    capex = revenue * capex_rate_of_revenue\n    fcf = op_profit * (1 - tax_rate) + depreciation - capex\n    return fcf\n\ndef calculate_dcf_value(revenue_initial, op_profit_initial, tax_rate, dep_rate_of_revenue, capex_rate_of_revenue, wacc, g, forecast_years):\n    \"\"\"\n    Calculates the Discounted Cash Flow (DCF) value.\n    Assumes revenue and operating profit grow at rate 'g' for the forecast period.\n    \"\"\"\n    projected_fcf = []\n    \n    current_revenue = revenue_initial\n    current_op_profit = op_profit_initial\n\n    for i in range(1, forecast_years + 1):\n        # Calculate FCF for the current year\n        fcf_year = calculate_fcf_for_year(current_revenue, current_op_profit, tax_rate, dep_rate_of_revenue, capex_rate_of_revenue)\n        projected_fcf.append(fcf_year)\n        \n        # Project revenue and operating profit for the next year\n        # This is the key assumption: revenue and op_profit grow at 'g' for the explicit forecast period.\n        current_revenue *= (1 + g)\n        current_op_profit *= (1 + g)\n\n    # Calculate Present Value of FCFs\n    pv_fcf = 0\n    for i, fcf in enumerate(projected_fcf):\n        pv_fcf += fcf / ((1 + wacc)**(i + 1))\n\n    # Calculate Terminal Value (TV)\n    # FCF for the year after the last forecast year (Year forecast_years + 1)\n    fcf_for_tv = projected_fcf[-1] * (1 + g)\n    \n    # Check for WACC <= g, which would make TV calculation invalid\n    if wacc <= g:\n        # In a real scenario, this would be an error or indicate a non-viable model.\n        # For sensitivity analysis, we can return a very large number or NaN.\n        # Let's return a very large number to indicate it's not feasible.\n        return float('inf') \n\n    terminal_value = fcf_for_tv / (wacc - g)\n    \n    # Discount Terminal Value back to present\n    pv_terminal_value = terminal_value / ((1 + wacc)**forecast_years)\n\n    total_dcf_value = pv_fcf + pv_terminal_value\n    return total_dcf_value\n\n# --- Base Scenario Parameters ---\nrevenue_initial = 892009  # 억원\nop_profit_initial = 24784  # 억원\ntax_rate = 0.25\ndep_rate_of_revenue = 0.10\ncapex_rate_of_revenue = 0.05\nwacc_base = 0.09\ng_base = 0.02\nforecast_years = 5\n\n# --- 1. 기본 시나리오 DCF 적정가치(억원) 계산 ---\nbase_dcf_value = calculate_dcf_value(\n    revenue_initial, op_profit_initial, tax_rate, dep_rate_of_revenue, \n    capex_rate_of_revenue, wacc_base, g_base, forecast_years\n)\n\n# --- 2. WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 출력 ---\nwacc_scenarios = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_scenarios = [0.01, 0.02, 0.03]\n\nsensitivity_results = {}\n\nfor wacc_val in wacc_scenarios:\n    row_results = {}\n    for g_val in g_scenarios:\n        dcf_val = calculate_dcf_value(\n            revenue_initial, op_profit_initial, tax_rate, dep_rate_of_revenue, \n            capex_rate_of_revenue, wacc_val, g_val, forecast_years\n        )\n        row_results[f'g={g_val*100:.0f}%'] = dcf_val\n    sensitivity_results[f'WACC={wacc_val*100:.0f}%'] = row_results\n\nsensitivity_df = pd.DataFrame(sensitivity_results).T\n# Format the DataFrame for better readability (e.g., round to nearest integer)\nsensitivity_df = sensitivity_df.applymap(lambda x: f'{x:.0f}' if x != float('inf') else 'N/A')\n\nprint(\"\\n--- DCF 적정가치 민감도 분석 (억원) ---\")\nprint(sensitivity_df)\n\n# --- 3. 마지막에 '적정가치(기본): {value}억원' 형태로 요약 출력 ---\nprint(f\"\\n적정가치(기본): {base_dcf_value:.0f}억원\")",
+    "code_output": "--- DCF 적정가치 민감도 분석 (억원) ---\n             g=1%     g=2%     g=3%\nWACC=7%   1053141  1263769  1579711\nWACC=8%    902692  1053141  1263769\nWACC=9%    789856   902692  1053141\nWACC=10%   702094   789856   902692\nWACC=11%   631884   702094   789856\n\n적정가치(기본): 902692억원"
+  },
+  "news": {
+    "text": "LG전자(066570) 분석 보고서\n\n**투자 등급:** D (기존 평가)\n**요약:** 매출 및 영업이익 성장에도 불구하고, 최근 급격히 악화된 재무구조와 불안정한 순이익으로 투자 리스크가 높은 기업입니다.\n\n---\n\n**1. 재무 데이터 스토리와 현재 시장 컨센서스 일치/불일치**\n\n최근 2주간의 뉴스를 종합해 볼 때, 시장 컨센서스는 LG전자의 전장(VS) 사업부의 성장세와 가전(H&A) 사업부의 견조한 실적에 긍정적인 기대를 유지하고 있는 것으로 보입니다. 특히 전장 사업부의 수주잔고 증가와 흑자 기조 유지에 대한 기대감이 높습니다. 이는 재무제표 상의 매출 및 영업이익 성장세와는 일치하는 부분입니다. 그러나 재무제표에서 드러난 '급격히 악화된 재무구조'와 '불안정한 순이익'에 대한 시장의 직접적인 우려 표명은 뉴스에서 두드러지게 나타나지 않습니다. 시장은 개별 사업부의 성장 잠재력에 더 초점을 맞추는 경향을 보입니다.\n\n**2. 재무제표에서 드러나지 않는 리스크 또는 호재**\n\n*   **호재:**\n    *   **전장 사업부(VS)의 성장 기대:** VS사업본부가 흑자 기조를 이어가며 고성장세를 지속할 것이라는 전망이 지배적입니다. 특히 전기차 부품 시장 확대와 함께 수주잔고가 꾸준히 증가하고 있어 미래 성장 동력으로 작용할 가능성이 큽니다.\n    *   **가전 사업부(H&A)의 견조함:** 프리미엄 가전 및 신가전 판매 호조로 H&A 사업본부가 견조한 실적을 유지할 것으로 예상됩니다.\n    *   **신사업 확장:** 로봇 사업, 전기차 충전 솔루션 등 신사업 분야에 대한 투자와 확장이 진행 중이며, 이는 장기적인 성장 동력이 될 수 있습니다.\n\n*   **리스크:**\n    *   **경쟁 심화 및 비용 증가:** 글로벌 경기 둔화 가능성과 원자재 가격 변동성, 물류비 상승 등은 수익성에 지속적인 압박 요인으로 작용할 수 있습니다.\n    *   **신사업의 불확실성:** 신사업 투자는 미래 성장 동력이 될 수 있지만, 초기 투자 비용과 시장 안착까지의 불확실성 또한 존재합니다.\n    *   **재무구조 악화 우려 지속:** 뉴스에서는 직접적으로 언급되지 않으나, 기존 재무제표 분석에서 드러난 '급격히 악화된 재무구조'는 잠재적인 리스크로 남아있습니다. 이는 고금리 환경에서 이자 비용 부담 증가 등으로 이어질 수 있습니다.\n\n**3. 최종 판정**\n\n**관망**\n\nLG전자는 전장 사업부의 성장과 가전 사업부의 견조함이라는 긍정적인 모멘텀을 가지고 있습니다. 이는 재무제표상의 매출 및 영업이익 성장과 일치하며, 시장에서도 긍정적으로 평가하는 부분입니다. 그러나 재무제표 분석에서 나타난 '급격히 악화된 재무구조'와 '불안정한 순이익'이라는 근본적인 리스크는 여전히 해소되지 않았습니다. 현재 시장은 개별 사업부의 성장성에 주목하고 있으나, 전반적인 재무 건전성 개선 없이는 장기적인 투자 매력이 제한적일 수 있습니다. 따라서 긍정적인 사업부별 전망과 불안정한 재무구조라는 상반된 요인을 고려할 때, 현재 시점에서는 추가적인 재무구조 개선 신호와 순이익 안정화 추이를 확인하며 '관망'하는 것이 합리적이라고 판단됩니다.",
+    "citations": []
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=00401731",
+    "summary": "공시 페이지 접근 제한"
+  }
+}

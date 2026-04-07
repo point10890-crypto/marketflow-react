@@ -1,0 +1,246 @@
+{
+  "stock_code": "298380",
+  "stock_name": "에이비엘바이오",
+  "generated_at": "2026-04-06T17:04:45.419221+00:00",
+  "financials": {
+    "stock_code": "298380",
+    "corp_code": "01256864",
+    "years": [
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2018": {
+        "cash": 1220.3,
+        "total_assets": 1688.7,
+        "total_liab": 119.1,
+        "total_equity": 1569.6,
+        "revenue": 12.6
+      },
+      "2019": {
+        "cash": 911.5,
+        "total_assets": 1429.0,
+        "total_liab": 108.9,
+        "total_equity": 1320.1,
+        "revenue": 39.9
+      },
+      "2020": {
+        "cash": 406.6,
+        "total_assets": 998.9,
+        "total_liab": 92.3,
+        "total_equity": 906.6,
+        "revenue": 81.0,
+        "op_profit": -596.5,
+        "net_income": -556.1
+      },
+      "2021": {
+        "cash": 215.9,
+        "total_assets": 654.5,
+        "total_liab": 95.0,
+        "total_equity": 559.5,
+        "revenue": 53.3,
+        "op_profit": -523.1,
+        "net_income": -435.6
+      },
+      "2022": {
+        "cash": 251.4,
+        "total_assets": 1851.8,
+        "total_liab": 1156.7,
+        "total_equity": 695.1,
+        "revenue": 673.0,
+        "op_profit": 9.1,
+        "net_income": 32.1
+      },
+      "2023": {
+        "total_assets": 1601.4,
+        "cash": 280.6,
+        "total_equity": 3637.6,
+        "total_liab": 860.7,
+        "op_profit": -26.2,
+        "net_income": -26.5,
+        "revenue": 655.5
+      },
+      "2024": {
+        "total_assets": 2319.8,
+        "cash": 562.9,
+        "total_equity": 5110.0,
+        "total_liab": 647.0,
+        "op_profit": -593.8,
+        "net_income": -555.3,
+        "revenue": 334.0
+      },
+      "2025": {
+        "total_assets": 2809.3,
+        "cash": 1119.8,
+        "total_equity": 275.6,
+        "total_liab": 1242.4,
+        "op_profit": -403.9,
+        "net_income": 0.0,
+        "revenue": 793.5
+      }
+    },
+    "missing_years": [
+      2016,
+      2017,
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2018,
+        "revenue_eok": 13,
+        "op_profit_eok": 0,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 0.0,
+        "debt_ratio_pct": 7.58
+      },
+      {
+        "year": 2019,
+        "revenue_eok": 40,
+        "op_profit_eok": 0,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 0.0,
+        "debt_ratio_pct": 8.26
+      },
+      {
+        "year": 2020,
+        "revenue_eok": 81,
+        "op_profit_eok": -596,
+        "net_income_eok": -556,
+        "roe_pct": -61.3,
+        "op_margin_pct": -735.8,
+        "debt_ratio_pct": 10.14
+      },
+      {
+        "year": 2021,
+        "revenue_eok": 53,
+        "op_profit_eok": -523,
+        "net_income_eok": -436,
+        "roe_pct": -77.86,
+        "op_margin_pct": -986.79,
+        "debt_ratio_pct": 16.96
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 673,
+        "op_profit_eok": 9,
+        "net_income_eok": 32,
+        "roe_pct": 4.6,
+        "op_margin_pct": 1.34,
+        "debt_ratio_pct": 166.47
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 656,
+        "op_profit_eok": -26,
+        "net_income_eok": -26,
+        "roe_pct": -0.71,
+        "op_margin_pct": -3.96,
+        "debt_ratio_pct": 23.67
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 334,
+        "op_profit_eok": -594,
+        "net_income_eok": -555,
+        "roe_pct": -10.86,
+        "op_margin_pct": -177.84,
+        "debt_ratio_pct": 12.66
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 794,
+        "op_profit_eok": -404,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": -50.88,
+        "debt_ratio_pct": 450.0
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": 61.05,
+      "op_profit_cagr_pct": 0.0,
+      "best_year": 2022,
+      "worst_year": 2020,
+      "avg_roe_pct": -18.27
+    },
+    "valuation": {
+      "grade": "D",
+      "strengths": [
+        "매출액이 특정 연도에 크게 증가하는 경향이 있어 기술이전 등 대규모 계약 잠재력을 시사합니다.",
+        "현금 보유액이 2024년과 2025년에 증가하는 추세로, 운영 자금 확보에 긍정적입니다.",
+        "자산총계가 꾸준히 증가하고 있어 사업 확장 및 연구개발 투자가 지속되고 있음을 보여줍니다."
+      ],
+      "risks": [
+        "대부분의 연도에 걸쳐 영업손실과 당기순손실이 지속되어 수익성 확보에 어려움을 겪고 있습니다.",
+        "매출액과 영업이익의 변동성이 매우 커서 안정적인 사업 운영이 어렵고 미래 실적 예측이 불확실합니다.",
+        "2025년 자본총계가 매우 낮은 수준으로 예측되어 재무 건전성 악화 및 자본잠식 위험이 존재합니다."
+      ],
+      "one_liner": "지속적인 대규모 영업손실과 높은 재무 변동성으로 인해 투자 위험이 매우 높은 바이오 기업입니다."
+    }
+  },
+  "dcf": {
+    "text": "퀀트 애널리스트로서 에이비엘바이오(298380)의 DCF 적정가치를 계산하겠습니다.\n\n**가정 사항 명확화:**\n제공된 정보만으로는 향후 5년간의 매출액 성장률과 영업이익률을 예측하기 어렵습니다. 따라서, 합리적인 가정을 추가하여 분석을 진행합니다.\n\n*   **매출액 성장률 (2026년 ~ 2030년):** 바이오 기업의 성장 단계를 고려하여 초기 높은 성장률에서 점차 안정화되는 가정을 적용합니다.\n    *   2026년: 20%\n    *   2027년: 15%\n    *   2028년: 10%\n    *   2029년: 5%\n    *   2030년: 5%\n*   **영업이익률 (2026년 ~ 2030년):** 현재 적자 상태(-50.88%)에서 예측 기간 말(2030년)에는 10%의 영업이익률을 달성하는 것으로 가정하고, 이를 5년간 선형 보간하여 개선되는 것으로 가정합니다.\n\n이러한 가정 하에 DCF 적정가치를 계산하고 민감도 분석을 수행합니다.\n\n---\n**Python 코드 실행 및 결과:**\n\n\n---\n**분석 결과:**\n\n**1. 기본 시나리오 DCF 적정가치 계산:**\n\n*   **가정:**\n    *   매출액 성장률 (2026-2030): 20%, 15%, 10%, 5%, 5%\n    *   영업이익률 (2026-2030, 선형 보간): -38.71%, -26.53%, -14.35%, -2.18%, 10.00% (2025년 -50.88%에서 2030년 10%로 개선)\n    *   WACC: 9%\n    *   영구성장률 (g): 2%\n    *   FCF 계산: 영업이익 × (1 - 25%) + 감가상각(매출의 10%) - CAPEX(매출의 5%)\n*   **예측 재무 및 FCF (단위: 억원):**\n    *   초기 3년간은 영업손실로 인해 FCF가 음수이지만, 영업이익률 개선 및 매출 성장에 따라 2029년부터 FCF가 양전환됩니다.\n    *   2030년 Terminal Value (현재가치): 1573.08 억원\n    *   예측 기간 FCF 현재가치 합계: -262.93 억원\n*   **적정가치(기본): 1310.15 억원**\n\n**2. WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 출력:**\n\n|             | g=1%    | g=2%    | g=3%    |\n| :---------- | :------ | :------ | :------ |\n| WACC=7%     | 1731.26 | 2153.67 | 2787.27 |\n| WACC=8%     | 1368.41 | 1659.10 | 2066.08 |\n| WACC=9%     | 1100.02 | 1310.15 | 1590.32 |\n| WACC=10%    | 894.45  | 1052.02 | 1254.61 |\n| WACC=11%    | 732.72  | 854.29  | 1006.26 |\n\n**3. 요약 출력:**\n\n**적정가치(기본): 1310.15억원**",
+    "executed_code": "import pandas as pd\n\ndef calculate_dcf(\n    revenue_2025, op_income_2025,\n    revenue_growth_rates, op_margin_targets,\n    depreciation_rate, capex_rate, tax_rate,\n    wacc, g, forecast_years\n):\n    # Initialize lists to store projected values\n    years = [2025 + i for i in range(forecast_years + 1)]\n    projected_revenue = [revenue_2025]\n    projected_op_income = [op_income_2025]\n    projected_depreciation = []\n    projected_capex = []\n    projected_fcf = []\n    discount_factors = []\n    pv_fcf = []\n\n    # Project financials for forecast_years (2026 to 2030)\n    for i in range(forecast_years):\n        # Revenue\n        current_revenue = projected_revenue[-1]\n        next_revenue = current_revenue * (1 + revenue_growth_rates[i])\n        projected_revenue.append(next_revenue)\n\n        # Operating Income (using interpolated margin for the next year)\n        next_op_margin = op_margin_targets[i]\n        next_op_income = next_revenue * next_op_margin\n        projected_op_income.append(next_op_income)\n\n        # Depreciation and CAPEX (based on next year's revenue)\n        depreciation = next_revenue * depreciation_rate\n        capex = next_revenue * capex_rate\n        projected_depreciation.append(depreciation)\n        projected_capex.append(capex)\n\n        # FCF = Operating Income * (1 - Tax Rate) + Depreciation - CAPEX\n        fcf = next_op_income * (1 - tax_rate) + depreciation - capex\n        projected_fcf.append(fcf)\n\n        # Discount Factor\n        df = 1 / ((1 + wacc) ** (i + 1))\n        discount_factors.append(df)\n        pv_fcf.append(fcf * df)\n\n    # Calculate Terminal Value (TV)\n    # FCF for TV is the last projected FCF (FCF_2030 in this case)\n    last_fcf = projected_fcf[-1]\n    \n    # Ensure WACC > g for TV calculation\n    if wacc <= g:\n        raise ValueError(\"WACC must be greater than g for Terminal Value calculation.\")\n    \n    terminal_value = last_fcf * (1 + g) / (wacc - g)\n    \n    # Discount Terminal Value to Present Value\n    pv_terminal_value = terminal_value * discount_factors[-1] # Discount by the last discount factor (year 5)\n\n    # Total DCF Value\n    total_dcf_value = sum(pv_fcf) + pv_terminal_value\n\n    # Prepare detailed output for base scenario\n    df_projection = pd.DataFrame({\n        'Year': years[1:], # Start from 2026\n        'Revenue': projected_revenue[1:],\n        'Operating Income': projected_op_income[1:],\n        'Depreciation': projected_depreciation,\n        'CAPEX': projected_capex,\n        'FCF': projected_fcf,\n        'Discount Factor': discount_factors,\n        'PV of FCF': pv_fcf\n    })\n    \n    return total_dcf_value, df_projection, terminal_value, pv_terminal_value\n\n# Base Scenario Parameters\nrevenue_2025_base = 794 # 억원\nop_income_2025_base = -404 # 억원\ndepreciation_rate_base = 0.10\ncapex_rate_base = 0.05\ntax_rate_base = 0.25 # From (1 - 0.25)\nwacc_base = 0.09\ng_base = 0.02\nforecast_years_base = 5 # 2026년 ~ 2030년\n\n# Assumptions for revenue growth and operating margin improvement\nrevenue_growth_rates_base = [0.20, 0.15, 0.10, 0.05, 0.05] # For 2026, 2027, 2028, 2029, 2030\n\n# Operating margin improvement (linear interpolation from 2025 margin to 10% in 2030)\nop_margin_2025 = op_income_2025_base / revenue_2025_base\ntarget_op_margin_terminal = 0.10 # 10% in 2030\nop_margin_step = (target_op_margin_terminal - op_margin_2025) / forecast_years_base\nop_margin_targets_base = [op_margin_2025 + (i + 1) * op_margin_step for i in range(forecast_years_base)]\n\n\n# 1. 기본 시나리오 DCF 적정가치(억원) 계산\nbase_dcf_value, base_projection_df, base_tv, base_pv_tv = calculate_dcf(\n    revenue_2025_base, op_income_2025_base,\n    revenue_growth_rates_base, op_margin_targets_base,\n    depreciation_rate_base, capex_rate_base, tax_rate_base,\n    wacc_base, g_base, forecast_years_base\n)\n\n# Print base scenario details\nprint(\"--- 기본 시나리오 DCF 계산 상세 ---\")\nprint(f\"기준 연도: 2025\")\nprint(f\"예측 기간: {forecast_years_base}년 (2026년 ~ {2025 + forecast_years_base}년)\")\nprint(f\"WACC: {wacc_base*100:.0f}%\")\nprint(f\"영구성장률 (g): {g_base*100:.0f}%\")\nprint(f\"FCF 계산 가정: 영업이익 × (1 - {tax_rate_base*100:.0f}%) + 감가상각(매출의 {depreciation_rate_base*100:.0f}%) - CAPEX(매출의 {capex_rate_base*100:.0f}%)\")\nprint(f\"매출액 성장률 가정 (2026-2030): {[f'{r*100:.0f}%' for r in revenue_growth_rates_base]}\")\nprint(f\"영업이익률 가정 (2026-2030, 선형 보간): {[f'{m*100:.2f}%' for m in op_margin_targets_base]}\")\nprint(\"\\n--- 예측 재무 및 FCF (단위: 억원) ---\")\nprint(base_projection_df.to_string(index=False, float_format=\"%.2f\"))\nprint(f\"\\nTerminal Value (2030년 기준): {base_tv:.2f} 억원\")\nprint(f\"Terminal Value 현재가치: {base_pv_tv:.2f} 억원\")\nprint(f\"예측 기간 FCF 현재가치 합계: {base_projection_df['PV of FCF'].sum():.2f} 억원\")\nprint(f\"적정가치(기본): {base_dcf_value:.2f} 억원\")\n\n# 2. WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 출력\nwacc_range = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_range = [0.01, 0.02, 0.03]\n\nsensitivity_results = pd.DataFrame(index=[f'WACC={w*100:.0f}%' for w in wacc_range],\n                                   columns=[f'g={g_val*100:.0f}%' for g_val in g_range])\n\nfor w in wacc_range:\n    for g_val in g_range:\n        try:\n            dcf_value, _, _, _ = calculate_dcf(\n                revenue_2025_base, op_income_2025_base,\n                revenue_growth_rates_base, op_margin_targets_base,\n                depreciation_rate_base, capex_rate_base, tax_rate_base,\n                w, g_val, forecast_years_base\n            )\n            sensitivity_results.loc[f'WACC={w*100:.0f}%', f'g={g_val*100:.0f}%'] = f'{dcf_value:.2f}'\n        except ValueError as e:\n            sensitivity_results.loc[f'WACC={w*100:.0f}%', f'g={g_val*100:.0f}%'] = \"N/A (WACC<=g)\"\n\nprint(\"\\n--- DCF 적정가치 민감도 분석 (단위: 억원) ---\")\nprint(sensitivity_results.to_string())\n\n# 3. 마지막에 '적정가치(기본): {value}억원' 형태로 요약 출력\nprint(f\"\\n적정가치(기본): {base_dcf_value:.2f}억원\")",
+    "code_output": "--- 기본 시나리오 DCF 계산 상세 ---\n기준 연도: 2025\n예측 기간: 5년 (2026년 ~ 2030년)\nWACC: 9%\n영구성장률 (g): 2%\nFCF 계산 가정: 영업이익 × (1 - 25%) + 감가상각(매출의 10%) - CAPEX(매출의 5%)\n매출액 성장률 가정 (2026-2030): ['20%', '15%', '10%', '5%', '5%']\n영업이익률 가정 (2026-2030, 선형 보간): ['-38.71%', '-26.53%', '-14.35%', '-2.18%', '10.00%']\n\n--- 예측 재무 및 FCF (단위: 억원) ---\n Year  Revenue  Operating Income  Depreciation  CAPEX     FCF  Discount Factor  PV of FCF\n 2026   952.80           -368.78         95.28  47.64 -228.95             0.92    -210.04\n 2027  1095.72           -290.68        109.57  54.79 -163.23             0.84    -137.38\n 2028  1205.29           -172.99        120.53  60.26  -69.48             0.77     -53.65\n 2029  1265.56            -27.54        126.56  63.28   42.62             0.71      30.19\n 2030  1328.83            132.88        132.88  66.44  166.10             0.65     107.96\n\nTerminal Value (2030년 기준): 2420.38 억원\nTerminal Value 현재가치: 1573.08 억원\n예측 기간 FCF 현재가치 합계: -262.93 억원\n적정가치(기본): 1310.15 억원\n\n--- DCF 적정가치 민감도 분석 (단위: 억원) ---\n             g=1%     g=2%     g=3%\nWACC=7%   1731.26  2153.67  2787.27\nWACC=8%   1368.41  1659.10  2066.08\nWACC=9%   1100.02  1310.15  1590.32\nWACC=10%   894.45  1052.02  1254.61\nWACC=11%   732.72   854.29  1006.26\n\n적정가치(기본): 1310.15억원"
+  },
+  "news": {
+    "text": "## 에이비엘바이오(298380) 투자 분석: 관망\n\n### 1. 재무 데이터가 보여주는 스토리와 현재 시장 컨센서스의 일치/불일치\n\n제공된 에이비엘바이오의 10년 재무제표 분석 결과는 **투자등급 D**로, \"지속적인 대규모 영업손실과 높은 재무 변동성으로 인해 투자 위험이 매우 높은 바이오 기업\"임을 명확히 보여줍니다. 이는 기업의 현재 수익성과 재무 안정성이 매우 취약하다는 것을 의미합니다.\n\n반면, 최근 시장 컨센서스는 5명의 애널리스트 모두 **\"매수\"** 의견을 제시하고 있으며, 평균 12개월 목표주가는 현재 주가 대비 약 33~35%의 상승 여력을 보여줍니다. 그러나 동시에 향후 3년간 수익성이 없을 것으로 예상되며, 주가수익비율(PER)은 마이너스 또는 N/A를 기록하고, Price/LTM Sales는 138.2배로 섹터 평균을 크게 상회하여 이미 미래 성장 기대감이 과도하게 반영되었을 가능성을 시사합니다. Stockopedia에서는 에이비엘바이오를 \"모멘텀 트랩\"으로 분류하기도 했습니다.\n\n결론적으로, 현재 에이비엘바이오의 **재무 데이터가 보여주는 스토리(높은 위험, 지속 손실)와 시장 컨센서스(매수 의견, 높은 목표주가)는 크게 불일치**합니다. 시장은 현재의 재무적 성과보다는 미래 파이프라인의 성공 가능성과 기술 가치에 대한 기대감에 집중하고 있는 것으로 판단됩니다.\n\n### 2. 재무제표에서 드러나지 않는 리스크 또는 호재\n\n**호재 (재무제표에 드러나지 않는 긍정적 요인):**\n\n*   **BBB 셔틀 기술 가치 재평가 기대:** 미국 데날리 테라퓨틱스의 혈뇌장벽(BBB) 셔틀 기술 적용 약물 FDA 승인으로 에이비엘바이오의 '그랩바디-B' 플랫폼 가치 재평가 기대감이 커지고 있습니다. 미래에셋증권은 '그랩바디-B'가 데날리 기술보다 경쟁 우위에 있다고 평가했습니다.\n*   **기술이전 성과:** '그랩바디-B' 관련하여 현재까지 9조 원 이상의 기술이전 계약을 확보했습니다. 이는 미래 수익원으로 이어질 잠재력이 있습니다.\n*   **파이프라인 임상 진전:** 담도암 치료제 '토베시미그'의 2/3상 데이터가 4월에 발표될 예정이며, 이중항체 ADC 파이프라인(ABL206, ABL209)은 미국 임상 1상 IND 승인을 받고 2027년 초기 임상 데이터 발표를 목표로 하고 있습니다.\n*   **자회사 투자 통한 개발 가속화:** 미국 자회사 네옥 바이오에 377억 원을 추가 투자하여 이중항체 ADC 임상을 가속화하고 있습니다.\n\n**리스크 (재무제표에 드러나지 않는 부정적 요인):**\n\n*   **유상증자 및 주주가치 희석 우려:** 최근 발표된 유상증자 결정은 단기적으로 주주가치 희석 우려를 야기하며 투자 심리를 위축시킬 수 있습니다.\n*   **높은 밸류에이션:** 애널리스트들의 긍정적인 전망에도 불구하고, Price/LTM Sales가 138.2배에 달하는 등 이미 미래 성장 기대감이 과도하게 주가에 반영되었을 가능성이 있습니다.\n*   **임상 실패 위험:** 바이오 기업의 특성상 임상 시험은 성공을 보장할 수 없으며, 실패할 경우 기업 가치에 치명적인 영향을 미칠 수 있는 고유한 리스크가 존재합니다.\n*   **낮은 애널리스트 커버리지:** 애널리스트 커버리지가 낮다는 점은 정보의 비대칭성을 야기하고, 시장의 관심이 상대적으로 적을 수 있음을 의미합니다.\n*   **\"모멘텀 트랩\" 분류:** Stockopedia에서 \"모멘텀 트랩\"으로 분류된 것은 과거의 모멘텀이 지속되지 않을 수 있음을 경고하는 신호일 수 있습니다.\n\n### 3. 최종 판정\n\n**관망**\n\n에이비엘바이오는 지속적인 대규모 영업손실과 높은 재무 변동성이라는 재무적 취약점을 안고 있습니다. 그럼에도 불구하고, BBB 셔틀 기술의 가치 재평가 기대, 다수의 파이프라인 임상 진전, 그리고 기술이전 성과 등 긍정적인 모멘텀이 존재하며 시장 컨센서스 또한 미래 성장성에 대한 기대감을 반영하고 있습니다.\n\n그러나 최근 유상증자 결정으로 인한 주주가치 희석 우려와 이미 높은 밸류에이션은 단기적인 투자에 부담으로 작용할 수 있습니다. 특히 바이오 기업의 본질적인 임상 실패 위험과 향후 3년간 수익성 개선이 어렵다는 전망은 투자 결정에 신중함을 요구합니다.\n\n따라서 현재 시점에서는 긍정적인 기대감과 부정적인 리스크가 혼재되어 있으며, 재무적 안정성이 매우 취약한 상황에서 미래 기대감만으로 투자하기에는 불확실성이 크다고 판단됩니다. 주요 임상 결과 발표 등 불확실성이 해소되고 기업의 실질적인 가치 상승이 확인되는 시점까지 **관망**하며 신중하게 접근하는 것이 바람직합니다.",
+    "citations": [
+      {
+        "title": "investing.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHZB5trrwJV25bUNI55DRZxBW1wqs5JkbyVG_zshzA36DkgdKeOS1qkjCSHj3xQMqjem-EWxGEIB7xSwpgu2Rg8FpulQzqXpHKB1u-OYTj9aUT2UHpj-zZNQwbzbKrZ6N_XDHfkA1TLu_eIdxlL_OHIMFWOHMDjiYLLciJjqg=="
+      },
+      {
+        "title": "marketscreener.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHDc3JAsQS_S-twdeHQIRrM0Bdb5x6YRYBCssB8ssTKFVkvGFQIA42F_9fndcI884LXMSZdn4An27hcuPJ3vhpP8JPW4HKLrODb7Qx0oTDjETmG4tHsS7aNuJNlXA28RCoOiu4H2E3YNvruGqyDA5SimzAAQUragoRGgK2Q"
+      },
+      {
+        "title": "investing.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFva6WuqpzIPDJMA1AJDlf2seflV31oXlL5dF43ZVEa_xGbwP9jy7nezcGF04aqrRBs5v4jwkIhdS2ctOEHt-3IdsJmNOLgTsMWfzlMRIO5tpKoVexYrD4NLIqlStOtnPPDnobt3If6GPdTuPGn2rZ_DkGP3aJ7rglSdYOd"
+      },
+      {
+        "title": "stockopedia.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEG-TKiXdVF1Cn3dKAdayo_LKRjb36esKuRBez31UgRf3cR9YgQWwtYb74yNX3iip1Zmcr7-JbVmuJri8GgxDtZDArXm6rjm0Yhk6ZAoWKp1DK5OC_Qr9A8UQCm5waTq_h-tImPMrBepbJ9wbyKyERt54Bj3CoOxmNYIA=="
+      },
+      {
+        "title": "perplexity.ai",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFNwTjfmdKXg-SSQOgkEajYJSaymGP-htCfhPF5CeVt5x03ppcvTlyVJ3jCqy88ZXC_LA1squRBL1Nkz9FkB-zzdXWG_PwE_Duh9TS-8WlDyXYQNpmgyTgnjM6ar64lDoyXzJQOxpE="
+      },
+      {
+        "title": "simplywall.st",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGkGaDVKN5JsVdE10IYzhvDZQMA_C0qb8hcbjiou-Id2COnPMt4tLOScjYLsZ-U5YCDt6w5MNQhDuIvg39zU72WZja5H6MEE8AE91dJKPzrsAUAdO3iPcLxhcnnYKxmk8LF4spzSgVNEUiXeCxbUa44plfkMLkG88nOcuB4zrg1mNMv-AkO9A36dtQme3jC-nK53NCmClb0"
+      },
+      {
+        "title": "daum.net",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHfokUbFiIlH0_-gMOlInP-bqRqrY2O1gOrco46DGFRJHz8P4HDGnjQ5xmGtR9Kzj5c682kJjrfXBxTyXwLs5j3cnkpxjA_L1OJRb9b84azP6lLzc4wEQh_G5Ovi96B7GdItrLVP71QxPg="
+      },
+      {
+        "title": "stockplus.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFVqkHJ7CyKRN2Bti0XvFyLM6tqQp_C9EwHplfOWh-6s9Q2JNe5yuHRRX4ntjTF7QKewtbqg8Z2J_OE180lmveZU7j8cHu1YTR8GSA-ojTAcG3ThlpfZVXeKYAWSKldDcIvgddxVfef7ju9rQ=="
+      },
+      {
+        "title": "sedaily.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQErt_dczWrhD3fDggcVQCZaxd59l3HlOf8Rpg5x20e2SMwp7PXwX_jqXgHDLfxPA452bYHHSe3Jm74aZXY7Xqp_W59PzyWFwHI3Yz3F-LK-mujYdm5UBpAI1ufrjxNq4wHJC7m-tc0D8XDR1XANbqN9pad0C_mmirNuAV0Sl_As-ZgP0lZDv6d92ysYEct6QtzHGX1EfZ6Ojzg="
+      },
+      {
+        "title": "ablbio.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFhUlTqXv5c-E16baisTr9AtWt0_rbCfPW4M0CgPqWwkTl-N9kgyAWK6SP1mej0-varZyP054LHw_Xrx7JMcl4e8mSUx8SzeRSY7SqftC9oe8kWeh6L7itOGnHIQskMzvTasQTf9g=="
+      }
+    ]
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=01256864",
+    "summary": "공시 페이지 접근 제한"
+  }
+}

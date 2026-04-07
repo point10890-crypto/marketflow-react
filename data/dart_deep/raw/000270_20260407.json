@@ -1,0 +1,132 @@
+{
+  "stock_code": "000270",
+  "corp_code": "00106641",
+  "years": [
+    2016,
+    2017,
+    2018,
+    2019,
+    2020,
+    2021,
+    2022,
+    2023,
+    2024,
+    2025
+  ],
+  "data": {
+    "2016": {
+      "cash": 30641.9,
+      "total_assets": 508892.6,
+      "short_debt": 28762.8,
+      "long_debt": 22716.3,
+      "total_liab": 243098.4,
+      "total_equity": 265794.2,
+      "revenue": 527129.1,
+      "op_profit": 24614.8,
+      "net_income": 27546.4
+    },
+    "2017": {
+      "cash": 15617.4,
+      "total_assets": 522944.4,
+      "short_debt": 29937.1,
+      "long_debt": 18747.3,
+      "total_liab": 254332.6,
+      "total_equity": 268611.8,
+      "revenue": 535356.8,
+      "op_profit": 6622.3,
+      "net_income": 9680.2
+    },
+    "2018": {
+      "cash": 22926.6,
+      "total_assets": 517866.0,
+      "short_debt": 13666.5,
+      "long_debt": 13111.9,
+      "total_liab": 245431.4,
+      "total_equity": 272434.6,
+      "revenue": 541698.1,
+      "op_profit": 11574.8,
+      "net_income": 11559.4
+    },
+    "2019": {
+      "cash": 42687.2,
+      "total_assets": 553448.0,
+      "short_debt": 14147.6,
+      "long_debt": 13078.1,
+      "total_liab": 263666.6,
+      "total_equity": 289781.4,
+      "revenue": 581459.6,
+      "op_profit": 20096.8,
+      "net_income": 18266.6
+    },
+    "2020": {
+      "cash": 101607.0,
+      "total_assets": 604904.4,
+      "short_debt": 44794.5,
+      "long_debt": 21757.3,
+      "total_liab": 305987.7,
+      "total_equity": 298916.7,
+      "revenue": 591681.0,
+      "op_profit": 20664.6,
+      "net_income": 14875.9
+    },
+    "2021": {
+      "cash": 115337.1,
+      "total_assets": 668500.0,
+      "short_debt": 31077.7,
+      "long_debt": 16312.8,
+      "total_liab": 319374.4,
+      "total_equity": 349125.6,
+      "revenue": 698623.7,
+      "op_profit": 50656.8,
+      "net_income": 47604.5
+    },
+    "2022": {
+      "cash": 115539.7,
+      "total_assets": 737109.7,
+      "short_debt": 16595.0,
+      "long_debt": 9451.7,
+      "total_liab": 343678.8,
+      "total_equity": 393430.8,
+      "revenue": 865590.3,
+      "op_profit": 72331.2,
+      "net_income": -4.5
+    },
+    "2023": {
+      "total_assets": 806278.3,
+      "cash": 143531.4,
+      "total_equity": 15606.5,
+      "short_debt": 1287.7,
+      "total_liab": 340695.9,
+      "long_debt": 2000.0,
+      "op_profit": 116078.7,
+      "net_income": 0.0,
+      "revenue": 998084.2
+    },
+    "2024": {
+      "total_assets": 927558.7,
+      "cash": 135665.7,
+      "total_equity": 15606.5,
+      "short_debt": 2208.6,
+      "total_liab": 369155.7,
+      "long_debt": 0.0,
+      "op_profit": 126671.4,
+      "net_income": 0.0,
+      "revenue": 1074487.5
+    },
+    "2025": {
+      "total_assets": 989790.6,
+      "cash": 139981.1,
+      "total_equity": 15606.5,
+      "short_debt": 2112.9,
+      "total_liab": 377885.9,
+      "long_debt": 0.0,
+      "op_profit": 90781.5,
+      "net_income": 0.0,
+      "revenue": 1141409.2
+    }
+  },
+  "missing_years": [
+    2026
+  ],
+  "source": ""
+}

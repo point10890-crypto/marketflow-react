@@ -1,0 +1,81 @@
+{
+  "name": "풍산홀딩스",
+  "ticker": "005810.KS",
+  "result": "매수",
+  "date": "2026-04-07 12:33:08",
+  "elapsed": 2.1,
+  "consensus_score": 4.0,
+  "analyst_count": 1,
+  "recommendation_detail": {
+    "strongBuy": 0,
+    "buy": 1,
+    "hold": 0,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 50900.0,
+    "high": 53300.0,
+    "low": 53300.0,
+    "mean": 53300.0,
+    "median": 53300.0
+  },
+  "current_price": 50900.0,
+  "upside_potential": 4.7,
+  "key_stats": {
+    "name": "POONGSAN HOLDINGS",
+    "sector": "Basic Materials",
+    "industry": "Copper",
+    "market_cap": 698799095808,
+    "pe_ratio": null,
+    "forward_pe": 10.793045,
+    "dividend_yield": 4.56,
+    "beta": 0.957,
+    "fifty_two_week_high": 54900.0,
+    "fifty_two_week_low": 24950.0,
+    "revenue": 432529866752,
+    "profit_margin": 0.17211,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "풍산홀딩스(005810.KS)에 대해 1명의 애널리스트가 매수 의견을 제시했습니다. 컨센서스 점수는 4.0/5.0입니다. 목표가 평균은 53,300원으로 현재가 대비 4.7% 상승 여력이 있습니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 108770524210
+    },
+    {
+      "date": "2025-09",
+      "value": 102844018630
+    },
+    {
+      "date": "2025-06",
+      "value": 123054891850
+    },
+    {
+      "date": "2025-03",
+      "value": 97860434440
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 16398406490
+    },
+    {
+      "date": "2025-09",
+      "value": 16273098440
+    },
+    {
+      "date": "2025-06",
+      "value": 25326912280
+    },
+    {
+      "date": "2025-03",
+      "value": 16444429150
+    }
+  ],
+  "news": []
+}

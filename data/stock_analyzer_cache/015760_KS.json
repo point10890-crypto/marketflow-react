@@ -1,0 +1,117 @@
+{
+  "name": "한국전력",
+  "ticker": "015760.KS",
+  "result": "매수",
+  "date": "2026-04-07 07:16:32",
+  "elapsed": 2.6,
+  "consensus_score": 4.0,
+  "analyst_count": 21,
+  "recommendation_detail": {
+    "strongBuy": 6,
+    "buy": 9,
+    "hold": 6,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 40250.0,
+    "high": 92000.0,
+    "low": 47000.0,
+    "mean": 66900.0,
+    "median": 69000.0
+  },
+  "current_price": 40250.0,
+  "upside_potential": 66.2,
+  "key_stats": {
+    "name": "KEPCO",
+    "sector": "Utilities",
+    "industry": "Utilities - Regulated Electric",
+    "market_cap": 25839053832192,
+    "pe_ratio": null,
+    "forward_pe": 2.2786324,
+    "dividend_yield": 3.74,
+    "beta": 0.991,
+    "fifty_two_week_high": 69500.0,
+    "fifty_two_week_low": 20720.0,
+    "revenue": 97429345009664,
+    "profit_margin": 0.0877,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "한국전력(015760.KS)에 대해 21명의 애널리스트가 제시한 컨센서스 의견은 '매수'입니다. 목표가 평균은 66,900원으로 현재가 대비 66.2%의 상승 여력이 있습니다. 이는 애널리스트들이 한국전력의 주가 상승 가능성을 높게 보고 있음을 시사합니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 27572384000000
+    },
+    {
+      "date": "2025-06",
+      "value": 21950138000000
+    },
+    {
+      "date": "2025-03",
+      "value": 24223984000000
+    },
+    {
+      "date": "2024-12",
+      "value": 22708458000000
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 3755618000000
+    },
+    {
+      "date": "2025-06",
+      "value": 1136712000000
+    },
+    {
+      "date": "2025-03",
+      "value": 2328246000000
+    },
+    {
+      "date": "2024-12",
+      "value": 1015812000000
+    }
+  ],
+  "news": [
+    {
+      "title": "Asian Equities Traded in the US as American Depositary Receipts Fall Sharply in Thursday Trading",
+      "summary": "Asian equities traded in the US as American depositary receipts look set to close out the shortened",
+      "url": "https://finance.yahoo.com/markets/world-indices/articles/asian-equities-traded-us-american-143607057.html",
+      "provider": "MT Newswires",
+      "pub_time": "2026-04-02T14:36:07Z"
+    },
+    {
+      "title": "Asian Equities Traded in the US as American Depositary Receipts Open Week Lower in Monday Trading",
+      "summary": "Asian equities traded in the US as American depositary receipts started the week lower Monday mornin",
+      "url": "https://finance.yahoo.com/markets/world-indices/articles/asian-equities-traded-us-american-144024830.html",
+      "provider": "MT Newswires",
+      "pub_time": "2026-03-30T14:40:24Z"
+    },
+    {
+      "title": "Korea Electric Power Corporation (KEP): Smart Electric Life Launch and Robust FY2025 Earnings",
+      "summary": "Korea Electric Power Corporation (NYSE:KEP) is one of the best Korean stocks to buy. On March 18, the Ministry of Climate, Energy and Environment and Korea Electric Power Corporation (KEPCO) introduce",
+      "url": "https://finance.yahoo.com/sectors/energy/articles/korea-electric-power-corporation-kep-192737242.html",
+      "provider": "Insider Monkey",
+      "pub_time": "2026-03-20T19:27:37Z"
+    },
+    {
+      "title": "Energy Security: US moves to fund Japanese and Korean nuclear fuel projects",
+      "summary": "Investing.com -- The U.S. Export-Import Bank has moved to solidify energy security ties across the Indo-Pacific, advancing a $4.2 billion financing package to help Japanese and South Korean nuclear op",
+      "url": "https://finance.yahoo.com/news/energy-security-us-moves-fund-083438272.html",
+      "provider": "Investing.com",
+      "pub_time": "2026-03-15T08:34:38Z"
+    },
+    {
+      "title": "Korea Electric Power: Q4 Earnings Snapshot",
+      "summary": "NAJU-SI, Korea, Republic Of (AP) — Korea Electric Power Corp. KEP) on Tuesday reported net income of $914.2 million in its fourth quarter. On a per-share basis, the Naju-Si, Korea, Republic Of-based c",
+      "url": "https://finance.yahoo.com/news/korea-electric-power-q4-earnings-073628266.html",
+      "provider": "Associated Press Finance",
+      "pub_time": "2026-03-11T07:36:28Z"
+    }
+  ]
+}

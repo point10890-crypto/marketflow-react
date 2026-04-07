@@ -1,0 +1,75 @@
+{
+  "name": "남선알미늄",
+  "ticker": "008350.KS",
+  "result": "데이터 없음",
+  "date": "2026-04-07 09:41:55",
+  "elapsed": 2.4,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 2165.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 2165.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "NamsunAlum",
+    "sector": "Industrials",
+    "industry": "Metal Fabrication",
+    "market_cap": 280122818560,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": null,
+    "beta": 0.028,
+    "fifty_two_week_high": 2165.0,
+    "fifty_two_week_low": 1000.0,
+    "revenue": 268467093504,
+    "profit_margin": -0.1289,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 53555322590
+    },
+    {
+      "date": "2025-06",
+      "value": 73700380370
+    },
+    {
+      "date": "2025-03",
+      "value": 63682672690
+    },
+    {
+      "date": "2024-12",
+      "value": 77528722760
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": -3862276000
+    },
+    {
+      "date": "2025-06",
+      "value": 6178176000
+    },
+    {
+      "date": "2025-03",
+      "value": 6564560280
+    },
+    {
+      "date": "2024-12",
+      "value": -43485208800
+    }
+  ],
+  "news": []
+}

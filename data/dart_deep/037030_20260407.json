@@ -1,0 +1,217 @@
+{
+  "stock_code": "037030",
+  "stock_name": "파워넷",
+  "generated_at": "2026-04-06T22:37:39.536617+00:00",
+  "financials": {
+    "stock_code": "037030",
+    "corp_code": "00231354",
+    "years": [
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2018": {
+        "cash": 369.5,
+        "total_assets": 825.3,
+        "short_debt": 40.0,
+        "total_liab": 351.0,
+        "total_equity": 474.4,
+        "revenue": 1168.7,
+        "op_profit": 27.7,
+        "net_income": 45.3
+      },
+      "2019": {
+        "cash": 118.6,
+        "total_assets": 1062.8,
+        "short_debt": 40.0,
+        "long_debt": 50.0,
+        "total_liab": 531.7,
+        "total_equity": 531.1,
+        "revenue": 1285.5,
+        "op_profit": 51.6,
+        "net_income": 54.2
+      },
+      "2020": {
+        "cash": 167.0,
+        "total_assets": 1201.8,
+        "short_debt": 70.0,
+        "long_debt": 50.0,
+        "total_liab": 467.7,
+        "total_equity": 734.1,
+        "revenue": 1471.8,
+        "op_profit": 65.9,
+        "net_income": 2.1
+      },
+      "2021": {
+        "cash": 151.9,
+        "total_assets": 1571.5,
+        "short_debt": 60.0,
+        "long_debt": 0.0,
+        "total_liab": 728.5,
+        "total_equity": 842.9,
+        "revenue": 2078.6,
+        "op_profit": 54.6,
+        "net_income": 23.8
+      },
+      "2022": {
+        "cash": 100.4,
+        "total_assets": 1422.3,
+        "short_debt": 60.0,
+        "long_debt": 0.0,
+        "total_liab": 511.8,
+        "total_equity": 910.5,
+        "revenue": 2110.9,
+        "op_profit": 56.7,
+        "net_income": 16.6
+      },
+      "2023": {
+        "total_assets": 1483.1,
+        "cash": 219.3,
+        "total_equity": 258.7,
+        "total_liab": 546.5,
+        "op_profit": 71.5,
+        "net_income": -2.0,
+        "revenue": 1861.6
+      },
+      "2024": {
+        "total_assets": 4799.7,
+        "cash": 473.3,
+        "total_equity": 218.8,
+        "total_liab": 2159.1,
+        "long_debt": 1102.2,
+        "op_profit": 133.0,
+        "net_income": 207.6,
+        "revenue": 3226.8
+      },
+      "2025": {
+        "total_assets": 5838.1,
+        "cash": 576.4,
+        "total_equity": 518.2,
+        "total_liab": 2493.1,
+        "long_debt": 0.0,
+        "op_profit": 246.1,
+        "net_income": 151.9,
+        "revenue": 4470.4
+      }
+    },
+    "missing_years": [
+      2016,
+      2017,
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2018,
+        "revenue_eok": 1169,
+        "op_profit_eok": 28,
+        "net_income_eok": 45,
+        "roe_pct": 9.49,
+        "op_margin_pct": 2.4,
+        "debt_ratio_pct": 74.05
+      },
+      {
+        "year": 2019,
+        "revenue_eok": 1286,
+        "op_profit_eok": 52,
+        "net_income_eok": 54,
+        "roe_pct": 10.17,
+        "op_margin_pct": 4.04,
+        "debt_ratio_pct": 100.19
+      },
+      {
+        "year": 2020,
+        "revenue_eok": 1472,
+        "op_profit_eok": 66,
+        "net_income_eok": 2,
+        "roe_pct": 0.27,
+        "op_margin_pct": 4.48,
+        "debt_ratio_pct": 63.76
+      },
+      {
+        "year": 2021,
+        "revenue_eok": 2079,
+        "op_profit_eok": 55,
+        "net_income_eok": 24,
+        "roe_pct": 2.85,
+        "op_margin_pct": 2.65,
+        "debt_ratio_pct": 86.36
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 2111,
+        "op_profit_eok": 57,
+        "net_income_eok": 17,
+        "roe_pct": 1.87,
+        "op_margin_pct": 2.7,
+        "debt_ratio_pct": 56.26
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 1862,
+        "op_profit_eok": 72,
+        "net_income_eok": -2,
+        "roe_pct": -0.77,
+        "op_margin_pct": 3.87,
+        "debt_ratio_pct": 210.81
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 3227,
+        "op_profit_eok": 133,
+        "net_income_eok": 208,
+        "roe_pct": 94.98,
+        "op_margin_pct": 4.12,
+        "debt_ratio_pct": 985.84
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 4470,
+        "op_profit_eok": 246,
+        "net_income_eok": 152,
+        "roe_pct": 29.34,
+        "op_margin_pct": 5.5,
+        "debt_ratio_pct": 481.27
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": 21.01,
+      "op_profit_cagr_pct": 34.01,
+      "best_year": 2025,
+      "worst_year": 2018,
+      "avg_roe_pct": 18.52
+    },
+    "valuation": {
+      "grade": "C",
+      "strengths": [
+        "최근 매출액 및 영업이익이 높은 성장세를 보이고 있습니다.",
+        "영업이익률이 점진적으로 개선되는 추세입니다.",
+        "영업이익의 연평균 성장률(CAGR)이 매우 긍정적입니다."
+      ],
+      "risks": [
+        "매우 높은 부채비율로 인해 재무 안정성이 심각하게 악화되었습니다.",
+        "당기순이익의 변동성이 크며, 2023년에는 적자를 기록했습니다.",
+        "자본총계가 급격히 감소하여 ROE 지표의 신뢰성에 의문이 제기됩니다."
+      ],
+      "one_liner": "높은 성장 잠재력에도 불구하고 심각한 재무 구조 악화가 투자 리스크로 작용하는 기업입니다."
+    }
+  },
+  "dcf": {
+    "text": "퀀트 애널리스트로서 파워넷(037030)의 DCF 적정가치를 계산하겠습니다.\n\n**가정 및 계산 전제:**\n*   제시된 FCF 계산식에 따라 2025년 기준 FCF를 계산하고, 이 FCF가 5년 예측 기간(2025년 ~ 2029년) 동안 매년 동일하게 발생한다고 가정합니다. (별도의 성장률이 제시되지 않았기 때문)\n*   DCF 결과는 기업가치(Enterprise Value)를 의미하며, 순부채 정보가 없어 주주가치(Equity Value)로의 전환은 수행하지 않습니다.\n*   WACC가 영구성장률(g)보다 작거나 같을 경우, 고든 성장 모형(Gordon Growth Model)을 적용할 수 없으므로 해당 값은 'N/A'로 표시됩니다.\n\n---\n\n### 1. 기본 시나리오 DCF 적정가치 계산\n\n먼저 FCF(Free Cash Flow)를 계산합니다.\n\n*   **매출액:** 4470 억원\n*   **영업이익:** 246 억원\n*   **세율:** 25% (FCF 공식의 `(1 - 0.25)`에서 유추)\n*   **감가상각:** 매출액의 10% = 4470 억원 * 0.10 = 447 억원\n*   **CAPEX:** 매출액의 5% = 4470 억원 * 0.05 = 223.5 억원\n\n**FCF 계산:**\nFCF = 영업이익 × (1 - 세율) + 감가상각 - CAPEX\nFCF = 246 억원 × (1 - 0.25) + 447 억원 - 223.5 억원\nFCF = 246 억원 × 0.75 + 447 억원 - 223.5 억원\nFCF = 184.5 억원 + 447 억원 - 223.5 억원\n**FCF = 408 억원**\n\n이 FCF 408억원을 5년 예측 기간 동안 매년 동일하게 적용하여 DCF를 계산합니다.\n\n**기본 시나리오 가정:**\n*   WACC = 9% (0.09)\n*   영구성장률 (g) = 2% (0.02)\n*   예측 기간 = 5년\n\n\n---\n\n### 3. 요약 출력\n\n적정가치(기본): 5450.91억원",
+    "executed_code": "import pandas as pd\n\n# Base Scenario Inputs\nrevenue = 4470  # 억원\noperating_profit = 246  # 억원\ntax_rate = 0.25\ndepreciation_rate_of_revenue = 0.10\ncapex_rate_of_revenue = 0.05\nwacc_base = 0.09\ng_base = 0.02\nforecast_years = 5\n\n# Calculate FCF for the base year (and assumed constant for forecast period)\ndepreciation = revenue * depreciation_rate_of_revenue\ncapex = revenue * capex_rate_of_revenue\nfcf_initial = operating_profit * (1 - tax_rate) + depreciation - capex\n\nprint(f\"계산된 감가상각: {depreciation:.2f} 억원\")\nprint(f\"계산된 CAPEX: {capex:.2f} 억원\")\nprint(f\"계산된 FCF (초기): {fcf_initial:.2f} 억원\")\n\n# DCF Calculation Function\ndef calculate_dcf(fcf_forecast_value, wacc, g, num_forecast_years):\n    pv_fcf = 0\n    for i in range(1, num_forecast_years + 1):\n        pv_fcf += fcf_forecast_value / ((1 + wacc) ** i)\n\n    # Terminal Value Calculation\n    # FCF_n+1 = FCF_n * (1 + g)\n    # Here, FCF_n is the FCF at the end of the forecast period (year 5).\n    # We assume FCF_forecast_value is constant for the forecast period, so FCF_5 = fcf_forecast_value\n    fcf_terminal_year = fcf_forecast_value * (1 + g)\n    \n    if wacc <= g:\n        return float('inf') # WACC must be greater than g for Gordon Growth Model\n\n    terminal_value = fcf_terminal_year / (wacc - g)\n    pv_terminal_value = terminal_value / ((1 + wacc) ** num_forecast_years)\n\n    enterprise_value = pv_fcf + pv_terminal_value\n    return enterprise_value\n\n# 1. Base Scenario DCF Calculation\nbase_dcf_value = calculate_dcf(fcf_initial, wacc_base, g_base, forecast_years)\nprint(f\"\\n적정가치(기본): {base_dcf_value:.2f}억원\")\n\n# 2. Sensitivity Grid\nwacc_values = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_values = [0.01, 0.02, 0.03]\n\nsensitivity_results = pd.DataFrame(index=[f'g={g*100:.0f}%' for g in g_values],\n                                   columns=[f'WACC={wacc*100:.0f}%' for wacc in wacc_values])\n\nfor g in g_values:\n    for wacc in wacc_values:\n        if wacc <= g:\n            sensitivity_results.loc[f'g={g*100:.0f}%', f'WACC={wacc*100:.0f}%'] = \"N/A (WACC<=g)\"\n        else:\n            value = calculate_dcf(fcf_initial, wacc, g, forecast_years)\n            sensitivity_results.loc[f'g={g*100:.0f}%', f'WACC={wacc*100:.0f}%'] = f\"{value:.2f}\"\n\nprint(\"\\n--- DCF 적정가치 민감도 그리드 (억원) ---\")\nprint(\"FCF는 5년 예측 기간 동안 매년 408억원으로 가정하며, 이후 영구성장률 g로 성장합니다.\")\nprint(sensitivity_results)\n\n# 3. Final Summary Output\nprint(f\"\\n적정가치(기본): {base_dcf_value:.2f}억원\")",
+    "code_output": "계산된 감가상각: 447.00 억원\n계산된 CAPEX: 223.50 억원\n계산된 FCF (초기): 408.00 억원\n\n적정가치(기본): 5450.91억원\n\n--- DCF 적정가치 민감도 그리드 (억원) ---\nFCF는 5년 예측 기간 동안 매년 408억원으로 가정하며, 이후 영구성장률 g로 성장합니다.\n      WACC=7%  WACC=8%  WACC=9% WACC=10% WACC=11%\ng=1%  6569.67  5635.52  4934.77  4389.63  3953.42\ng=2%  7607.21  6349.55  5450.91  4776.67  4252.04\ng=3%  9163.51  7349.19  6139.10  5274.30  4625.33\n\n적정가치(기본): 5450.91억원"
+  },
+  "news": null,
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=00231354",
+    "summary": "공시 페이지 접근 제한"
+  }
+}
