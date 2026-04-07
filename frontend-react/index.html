@@ -24,9 +24,9 @@
         window.__pwaInstallPrompt = e;
       });
 
-      // v3.0.1 — 오래된 SW 캐시 강제 정리 (1회성)
+      // v3.0.2 — Cloudflare 캐시 오염 복구 — SW + 모든 캐시 강제 정리
       (function() {
-        var CACHE_VER = 'v3.0.1';
+        var CACHE_VER = 'v3.0.2';
         if (localStorage.getItem('cache_ver') !== CACHE_VER) {
           if ('caches' in window) {
             caches.keys().then(function(names) {
