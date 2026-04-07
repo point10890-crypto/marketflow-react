@@ -1,10 +1,10 @@
 {
-  "date": "2026-04-06",
+  "date": "2026-04-07",
   "open_signals": 134,
   "closed_signals": 0,
   "today_new_signals": 134,
   "total_signals": 134,
-  "generated_at": "2026-04-06T17:31:14.337425",
+  "generated_at": "2026-04-07T16:13:02.489492",
   "env": {
     "base_dir": "C:\\bitman_marketfloww",
     "python": "C:\\bitman_marketfloww\\.venv\\Scripts\\python.exe"

@@ -1,0 +1,75 @@
+{
+  "name": "창해에탄올",
+  "ticker": "004650.KQ",
+  "result": "데이터 없음",
+  "date": "2026-04-07 15:53:18",
+  "elapsed": 2.1,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 12010.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 12010.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "Changhae Ethanol",
+    "sector": "Consumer Defensive",
+    "industry": "Beverages - Wineries & Distilleries",
+    "market_cap": 91124088832,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": 6.32,
+    "beta": 0.294,
+    "fifty_two_week_high": 13460.0,
+    "fifty_two_week_low": 8580.0,
+    "revenue": 120574492672,
+    "profit_margin": 0.09275,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 27958073770
+    },
+    {
+      "date": "2025-06",
+      "value": 31982755650
+    },
+    {
+      "date": "2025-03",
+      "value": 30018716300
+    },
+    {
+      "date": "2024-12",
+      "value": 30614946830
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 2733878630
+    },
+    {
+      "date": "2025-06",
+      "value": 3996931980
+    },
+    {
+      "date": "2025-03",
+      "value": 3539390110
+    },
+    {
+      "date": "2024-12",
+      "value": 913605750
+    }
+  ],
+  "news": []
+}

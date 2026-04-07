@@ -1,0 +1,280 @@
+{
+  "stock_code": "004650",
+  "stock_name": "창해에탄올",
+  "generated_at": "2026-04-07T06:53:19.256142+00:00",
+  "financials": {
+    "stock_code": "004650",
+    "corp_code": "00123523",
+    "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2016": {
+        "cash": 144.2,
+        "total_assets": 4145.4,
+        "long_debt": 487.5,
+        "total_liab": 2264.4,
+        "revenue": 2125.8,
+        "op_profit": 78.3,
+        "net_income": 16.8
+      },
+      "2017": {
+        "cash": 99.6,
+        "total_assets": 3831.3,
+        "total_liab": 2010.4,
+        "total_equity": 1820.9,
+        "revenue": 2169.4,
+        "op_profit": 121.5,
+        "net_income": 50.0
+      },
+      "2018": {
+        "cash": 132.1,
+        "total_assets": 3654.0,
+        "short_debt": 940.5,
+        "long_debt": 611.7,
+        "total_liab": 2068.2,
+        "total_equity": 1585.8,
+        "revenue": 1953.6,
+        "op_profit": 104.6,
+        "net_income": 37.2
+      },
+      "2019": {
+        "cash": 67.8,
+        "total_assets": 1930.4,
+        "short_debt": 483.0,
+        "long_debt": 53.5,
+        "total_liab": 662.4,
+        "total_equity": 1268.0,
+        "revenue": 1872.8,
+        "op_profit": 88.8,
+        "net_income": 213.9
+      },
+      "2020": {
+        "cash": 59.7,
+        "total_assets": 1957.5,
+        "short_debt": 450.8,
+        "long_debt": 40.7,
+        "total_liab": 619.9,
+        "total_equity": 1337.6,
+        "revenue": 1146.6,
+        "op_profit": 194.3,
+        "net_income": 130.0
+      },
+      "2021": {
+        "cash": 50.0,
+        "total_assets": 1900.2,
+        "short_debt": 396.8,
+        "long_debt": 27.9,
+        "total_liab": 522.5,
+        "total_equity": 1377.7,
+        "revenue": 969.9,
+        "op_profit": 141.0,
+        "net_income": 98.4
+      },
+      "2022": {
+        "cash": 37.5,
+        "total_assets": 1950.8,
+        "short_debt": 427.0,
+        "long_debt": 28.6,
+        "total_liab": 598.1,
+        "total_equity": 1352.8,
+        "revenue": 1094.3,
+        "op_profit": 97.7,
+        "net_income": 3.0
+      },
+      "2023": {
+        "total_assets": 1914.7,
+        "cash": 36.9,
+        "total_equity": 1281.4,
+        "total_liab": 633.3,
+        "op_profit": 145.8,
+        "net_income": -38.4,
+        "revenue": 1164.2
+      },
+      "2024": {
+        "total_assets": 1900.9,
+        "cash": 64.5,
+        "total_equity": 1330.8,
+        "total_liab": 535.9,
+        "op_profit": 173.8,
+        "net_income": 125.2,
+        "revenue": 1374.5
+      },
+      "2025": {
+        "total_assets": 1945.9,
+        "cash": 67.1,
+        "total_equity": 1331.7,
+        "total_liab": 489.4,
+        "op_profit": 158.9,
+        "net_income": 132.7,
+        "revenue": 1223.4
+      }
+    },
+    "missing_years": [
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2016,
+        "revenue_eok": 2126,
+        "op_profit_eok": 78,
+        "net_income_eok": 17,
+        "roe_pct": 0.0,
+        "op_margin_pct": 3.67,
+        "debt_ratio_pct": 0.0
+      },
+      {
+        "year": 2017,
+        "revenue_eok": 2169,
+        "op_profit_eok": 122,
+        "net_income_eok": 50,
+        "roe_pct": 2.75,
+        "op_margin_pct": 5.62,
+        "debt_ratio_pct": 110.38
+      },
+      {
+        "year": 2018,
+        "revenue_eok": 1954,
+        "op_profit_eok": 105,
+        "net_income_eok": 37,
+        "roe_pct": 2.33,
+        "op_margin_pct": 5.37,
+        "debt_ratio_pct": 130.39
+      },
+      {
+        "year": 2019,
+        "revenue_eok": 1873,
+        "op_profit_eok": 89,
+        "net_income_eok": 214,
+        "roe_pct": 16.88,
+        "op_margin_pct": 4.75,
+        "debt_ratio_pct": 52.21
+      },
+      {
+        "year": 2020,
+        "revenue_eok": 1147,
+        "op_profit_eok": 194,
+        "net_income_eok": 130,
+        "roe_pct": 9.72,
+        "op_margin_pct": 16.91,
+        "debt_ratio_pct": 46.34
+      },
+      {
+        "year": 2021,
+        "revenue_eok": 970,
+        "op_profit_eok": 141,
+        "net_income_eok": 98,
+        "roe_pct": 7.11,
+        "op_margin_pct": 14.54,
+        "debt_ratio_pct": 37.88
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 1094,
+        "op_profit_eok": 98,
+        "net_income_eok": 3,
+        "roe_pct": 0.22,
+        "op_margin_pct": 8.96,
+        "debt_ratio_pct": 44.2
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 1164,
+        "op_profit_eok": 146,
+        "net_income_eok": -38,
+        "roe_pct": -2.97,
+        "op_margin_pct": 12.54,
+        "debt_ratio_pct": 49.41
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 1374,
+        "op_profit_eok": 174,
+        "net_income_eok": 125,
+        "roe_pct": 9.39,
+        "op_margin_pct": 12.66,
+        "debt_ratio_pct": 40.27
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 1223,
+        "op_profit_eok": 159,
+        "net_income_eok": 133,
+        "roe_pct": 9.98,
+        "op_margin_pct": 13.0,
+        "debt_ratio_pct": 36.71
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": -6.0,
+      "op_profit_cagr_pct": 8.31,
+      "best_year": 2020,
+      "worst_year": 2016,
+      "avg_roe_pct": 4.54
+    },
+    "valuation": {
+      "grade": "B",
+      "strengths": [
+        "영업이익률의 뚜렷한 개선: 초기 3~5%대에서 최근 12~16%대로 크게 상승하며 수익성 강화.",
+        "재무구조의 안정화: 부채비율이 과거 높은 수준에서 30~50%대로 하락하여 재무 건전성 확보.",
+        "영업이익의 꾸준한 성장: 매출액 감소에도 불구하고 영업이익은 10년간 연평균 8.31% 성장."
+      ],
+      "risks": [
+        "매출액의 지속적인 감소 추세: 10년간 연평균 -6.00%의 매출액 감소는 성장성에 대한 우려.",
+        "당기순이익의 변동성: 특정 연도에 대규모 순이익이 발생하거나 적자를 기록하는 등 이익의 안정성 부족.",
+        "과거 재무 건전성 문제: 2016년 자본총계 0원 기록 등 과거 재무 상태가 매우 취약했던 이력."
+      ],
+      "one_liner": "매출액 감소에도 불구하고 수익성 개선과 재무구조 안정화를 통해 체질 개선에 성공했으나, 지속적인 매출 성장 동력 확보가 필요한 기업."
+    }
+  },
+  "dcf": {
+    "text": "저는 퀀트 애널리스트로서 제공된 데이터를 바탕으로 창해에탄올(004650)의 DCF 적정가치를 계산하고 민감도 분석을 수행하겠습니다.\n\n**가정 사항 재확인:**\n*   **FCF 계산식**: FCF = 영업이익 × (1 - 0.25) + 감가상각(매출의 10%) - CAPEX(매출의 5%)\n    *   여기서 (1 - 0.25)는 세후 영업이익을 의미하며, 법인세율 25%를 가정합니다.\n*   **예측 기간 성장률**: 5년 예측 기간 동안 매출액과 영업이익은 영구성장률(g)과 동일하게 2% 성장한다고 가정합니다. (별도 성장률이 명시되지 않아 영구성장률을 적용)\n*   **WACC (기본)**: 9%\n*   **영구성장률 g (기본)**: 2%\n*   **예측 기간**: 5년 명시적 예측 + 이후 영구 성장 가치 (Terminal Value)\n\n**계산 단계:**\n1.  **FCF 계산 함수 정의**: 주어진 FCF 계산식에 따라 각 연도의 FCF를 계산합니다.\n2.  **5년 FCF 예측**: 매출액과 영업이익이 매년 2% 성장한다고 가정하여 5년간의 FCF를 예측합니다.\n3.  **Terminal Value 계산**: 5년차 이후의 FCF에 영구성장률을 적용하여 Terminal Value를 계산합니다.\n4.  **현재 가치 할인**: 예측된 FCF와 Terminal Value를 WACC으로 할인하여 현재 가치를 구하고 합산합니다.\n5.  **민감도 분석**: WACC과 영구성장률(g)의 다양한 조합에 따라 적정가치를 계산하여 민감도 그리드를 생성합니다.\n\n---\n\n**DCF 적정가치 계산 결과:**\n\n**1. 기본 시나리오 DCF 적정가치:**\n*   **적정가치(기본): 2628.69억원**\n\n**2. WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 (억원):**\n\n\n```\n             g=1%     g=2%     g=3%\nWACC=7%   3036.73  3680.16   4645.3\nWACC=8%   2602.91   3066.8  3716.24\nWACC=9%   2277.55  2628.69  3096.87\nWACC=10%  2024.49   2300.1  2654.46\nWACC=11%  1822.04  2044.53  2322.65\n```\n\n\n**요약:**\n제공된 재무 데이터와 가정에 따라 창해에탄올의 DCF 적정가치는 기본 시나리오(WACC 9%, 영구성장률 2%)에서 **2628.69억원**으로 계산되었습니다. 민감도 분석 결과, WACC이 낮아지고 영구성장률이 높아질수록 적정가치는 상승하는 경향을 보입니다.",
+    "executed_code": "import pandas as pd\n\n# 기업 데이터 (억원)\nrevenue_initial = 1223\noperating_profit_initial = 159\n\n# 가정\ntax_rate = 0.25 # FCF 공식의 (1 - 0.25)에서 유추\ndepreciation_rate_of_revenue = 0.10\ncapex_rate_of_revenue = 0.05\nwacc_base = 0.09\ng_base = 0.02\nforecast_years = 5\n\n# FCF 및 DCF 적정가치 계산 함수 정의\ndef calculate_dcf_value(\n    revenue_initial,\n    operating_profit_initial,\n    tax_rate,\n    depreciation_rate_of_revenue,\n    capex_rate_of_revenue,\n    wacc,\n    g,\n    forecast_years,\n    growth_rate_forecast=None # 명시적 예측 기간 동안의 성장률 (없으면 g 사용)\n):\n    if growth_rate_forecast is None:\n        growth_rate_forecast = g # 명시적 예측 기간 성장률이 주어지지 않으면 영구성장률 사용\n\n    projected_revenue = [revenue_initial]\n    projected_operating_profit = [operating_profit_initial]\n    projected_fcf = []\n    discounted_fcf = []\n\n    # 5년 예측 기간 동안의 FCF 계산 (Year 1 ~ Year 5)\n    for i in range(1, forecast_years + 1):\n        # 매출액 및 영업이익 성장 예측\n        current_revenue = projected_revenue[-1] * (1 + growth_rate_forecast)\n        current_operating_profit = projected_operating_profit[-1] * (1 + growth_rate_forecast)\n\n        projected_revenue.append(current_revenue)\n        projected_operating_profit.append(current_operating_profit)\n\n        # 감가상각 및 CAPEX 계산 (매출액 기준)\n        current_depreciation = current_revenue * depreciation_rate_of_revenue\n        current_capex = current_revenue * capex_rate_of_revenue\n\n        # FCF 계산: 영업이익 * (1 - 세율) + 감가상각 - CAPEX\n        current_fcf = current_operating_profit * (1 - tax_rate) + current_depreciation - current_capex\n        projected_fcf.append(current_fcf)\n\n        # FCF 할인\n        discounted_fcf.append(current_fcf / ((1 + wacc) ** i))\n\n    # Terminal Value (TV) 계산\n    fcf_year_last_forecast = projected_fcf[-1] # 5년차 FCF\n    fcf_year_after_forecast = fcf_year_last_forecast * (1 + g) # 6년차 FCF\n\n    # WACC <= g 인 경우 무한대 또는 오류 처리 (실제로는 WACC > g 여야 함)\n    if wacc <= g:\n        return float('inf') # 실현 불가능한 값으로 처리\n\n    terminal_value = fcf_year_after_forecast / (wacc - g)\n\n    # Terminal Value 할인\n    discounted_terminal_value = terminal_value / ((1 + wacc) ** forecast_years)\n\n    # 총 적정가치 = 할인된 FCF 합계 + 할인된 Terminal Value\n    intrinsic_value = sum(discounted_fcf) + discounted_terminal_value\n    return intrinsic_value\n\n# --- 1. 기본 시나리오 DCF 적정가치(억원) 계산 ---\nbase_dcf_value = calculate_dcf_value(\n    revenue_initial,\n    operating_profit_initial,\n    tax_rate,\n    depreciation_rate_of_revenue,\n    capex_rate_of_revenue,\n    wacc_base,\n    g_base,\n    forecast_years\n)\n\n# --- 2. WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 출력 ---\nwacc_range = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_range = [0.01, 0.02, 0.03]\n\nsensitivity_results = {}\n\nfor wacc in wacc_range:\n    for g in g_range:\n        value = calculate_dcf_value(\n            revenue_initial,\n            operating_profit_initial,\n            tax_rate,\n            depreciation_rate_of_revenue,\n            capex_rate_of_revenue,\n            wacc,\n            g,\n            forecast_years\n        )\n        sensitivity_results[(wacc, g)] = value\n\n# 민감도 분석 결과를 DataFrame으로 정리\nsensitivity_df = pd.DataFrame(index=[f'WACC={w*100:.0f}%' for w in wacc_range],\n                              columns=[f'g={gr*100:.0f}%' for gr in g_range])\n\nfor (wacc, g), value in sensitivity_results.items():\n    wacc_label = f'WACC={wacc*100:.0f}%'\n    g_label = f'g={g*100:.0f}%'\n    sensitivity_df.loc[wacc_label, g_label] = round(value, 2)\n\n# --- 3. 마지막에 '적정가치(기본): {value}억원' 형태로 요약 출력 ---\nprint(f\"적정가치(기본): {base_dcf_value:.2f}억원\")\nprint(\"\\n--- DCF 민감도 분석 (억원) ---\")\nprint(sensitivity_df)",
+    "code_output": "적정가치(기본): 2628.69억원\n\n--- DCF 민감도 분석 (억원) ---\n             g=1%     g=2%     g=3%\nWACC=7%   3036.73  3680.16   4645.3\nWACC=8%   2602.91   3066.8  3716.24\nWACC=9%   2277.55  2628.69  3096.87\nWACC=10%  2024.49   2300.1  2654.46\nWACC=11%  1822.04  2044.53  2322.65"
+  },
+  "news": {
+    "text": "## 창해에탄올(004650) 투자 분석 보고서\n\n### 요약\n\n창해에탄올은 10년 재무제표 분석 결과 매출액 감소에도 불구하고 수익성 개선과 재무구조 안정화를 통해 체질 개선에 성공했으나, 지속적인 매출 성장 동력 확보가 필요하다는 평가를 받았습니다. 최근 2주간의 시장 뉴스를 종합하여 현재 시장 컨센서스와 재무제표에 드러나지 않는 요인들을 분석하고 최종 투자 의견을 제시합니다.\n\n### 1. 재무 데이터가 보여주는 스토리와 현재 시장 컨센서스의 일치/불일치\n\n제공된 10년 재무제표 분석 요약은 창해에탄올이 \"매출액 감소에도 불구하고 수익성 개선과 재무구조 안정화를 통해 체질 개선에 성공\"했다고 명시하고 있습니다. 최근 공시된 재무 안정성 지표를 살펴보면 부채비율이 2025년 12월 기준 33.60%로 동종업계 중앙값 48.02%보다 낮게 유지되는 등 재무구조 안정화가 지속되고 있음을 확인할 수 있습니다. 이는 재무제표 분석 요약과 일치하는 부분입니다.\n\n그러나 \"지속적인 매출 성장 동력 확보가 필요한 기업\"이라는 점은 시장의 잠재적 우려 요인이었습니다. 최근 뉴스에 따르면, 2026년 4월 3일 미국에서 15% 에탄올 혼합 가솔린 판매가 한시적으로 승인되었다는 소식에 주정 및 에탄올 관련 테마가 상승하며 창해에탄올의 주가가 10.64% 급등했습니다. 또한, 4월 7일에는 전일 하락 마감에도 불구하고 18.62% 급등하며 52주 최고가를 경신했습니다.\n\n이러한 시장의 강한 긍정적 반응은 과거 매출액 감소에 대한 우려를 상쇄하고, 새로운 성장 동력 확보 가능성에 대한 기대를 반영하는 것으로 보입니다. 시장 컨센서스는 아직 명확하게 통일되지 않았으나, 최근의 주가 흐름은 긍정적인 방향으로 전환되고 있음을 시사합니다.\n\n### 2. 재무제표에서 드러나지 않는 리스크 또는 호재\n\n**호재:**\n\n*   **미국 에탄올 혼합 가솔린 판매 승인 (단기적):** 미국 내 에탄올 혼합 가솔린 판매 승인은 에탄올 수요 증가로 이어져 창해에탄올의 주정 사업에 긍정적인 영향을 미칠 수 있는 단기적인 호재입니다.\n*   **안정적인 주정 수요 및 원료 확보:** 창해에탄올은 소주 시장과 밀접한 주정 제조를 주요 사업으로 영위하며 안정적인 수요를 확보하고 있습니다. 또한, 주정 생산 원료인 타피오카 칩의 안정적인 확보를 위해 베트남 내 파트너십을 구축하고 있으며, 해외 원료 비중 확대를 통해 원가 경쟁력을 확보하고 있습니다.\n*   **성공적인 기업 인수 경험:** 과거 주정업체 및 보해양조 인수를 통해 본업 강화 및 사업 확장에 성공한 이력이 있어, 향후에도 유사한 방식으로 성장 동력을 확보할 잠재력이 있습니다.\n*   **꾸준한 배당 지급:** 최근 몇 년간 주당 600원의 배당을 꾸준히 지급하며 연 5% 내외의 배당수익률을 기록하고 있어 주주 친화적인 정책을 유지하고 있습니다.\n\n**리스크:**\n\n*   **지속적인 매출 성장 동력 확보의 불확실성:** 재무제표 분석 요약에서 지적된 바와 같이, 단기적인 호재에도 불구하고 주정 시장의 본질적인 성장 한계와 장기적인 관점에서 지속 가능한 매출 성장 동력을 확보하는 것은 여전히 중요한 과제입니다.\n*   **원자재 가격 변동성:** 주정 생산의 주요 원료인 타피오카 칩의 해외 의존도가 높아 국제 원자재 가격 변동에 따른 원가 부담이 발생할 수 있습니다.\n\n### 3. 최종 판정\n\n**매수 (Buy)**\n\n창해에탄올은 10년간의 재무 분석을 통해 수익성 개선과 재무구조 안정화라는 긍정적인 체질 개선을 이루었음이 확인되었습니다. 여기에 최근 미국 에탄올 혼합 가솔린 판매 승인이라는 강력한 외부 호재가 발생하여 주가에 긍정적인 모멘텀을 제공하고 있습니다. 이는 그동안 필요했던 \"지속적인 매출 성장 동력 확보\"에 대한 시장의 기대를 높이는 계기가 될 수 있습니다. 안정적인 주정 수요와 원료 확보 능력, 그리고 과거 성공적인 M&A 경험은 회사의 사업 안정성과 성장 잠재력을 뒷받침합니다. 따라서 현재 시점에서 창해에탄올에 대한 투자 의견은 **매수**를 제시합니다.",
+    "citations": [
+      {
+        "title": "tossinvest.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQECOHhaQue7upSZXp8ckTedTEDCvsuKF1T6ctT3wf5SvrtPUlxu2C_5A2Nha33rDREb-ImMR5OKXY7piuSxXVGUHLmiQFDhf1WijrbJ6DvoJkQrYAasJ5KTVco6xthcWvcJn49yxxpOoX59"
+      },
+      {
+        "title": "investing.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEC3WMTmJTQA6gEBCfymMsxZuAk8BCHtNst32k665y0U5_HYVIDwnNZfrur5Y5Uh3B5FvydCbtUzlbS74VgxHU2x_3-kYWV1RPb-93rFmTEWrOA7xoB2v71WGSakuM3ejuSh9TL8_08yt6r-my2Oa1oKYYT_xP6lYkQRw=="
+      },
+      {
+        "title": "cbci.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHqy-FC37Y2srJS0hWjYFKEROqTLQDeD0RlzQvizRsjQHN1Lj-A-UXNCKeRZMIEd_rMhP0xvCRgBM79pAyaD_uqUCP4lg6mdftszXwS9O8OjRBH1Hl5SpGYKWg982lXEraF_9U_gouLFJHtUkaGeLZQTz3_XA=="
+      },
+      {
+        "title": "alphasquare.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHqnhy9vZvM4co_kw7DciyhKowSSm4-gQoyJ1Esu6unZ57-Y1ehucR3fRMqMeaFiGnJuhFHl3J74INgQHYfBNJ1lp_5jFC4ubl_DJFrHUGaUWR9gHdgOaGC_CZ9dYAVZHR3nJXz46Eca7ta1XdSKCbcMJjK"
+      },
+      {
+        "title": "sedaily.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHz5dosgFbYwhJbFBvkkN2piiMLfbNS99XNwsKtqvfLNsdDiAlEEUxuJ-QnkC02H3y1nCg4h0s3QupBp_9BM9GKBSo6rRYnIpeeOMjx__pRWtYfC1fnkzng-CsVJEIEtIYg"
+      },
+      {
+        "title": "eugenefn.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFsdFijj0-e3Mk_UaOTYDbtbP0shnSdCn7BqfNnSlgHZnkZY_f7Qh5H58FBq1osAKtPRAcqsJk-ilrtT-WNvoimSEVm8L4i44U4m2irsRKA2XdMyFF45JyR3sJs4oxgWgPITjEXvBCmw-H-1HNEN3cnUmErWItzHqmXXCeY68Crqw=="
+      }
+    ]
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=00123523",
+    "summary": "공시 페이지 접근 제한"
+  }
+}
