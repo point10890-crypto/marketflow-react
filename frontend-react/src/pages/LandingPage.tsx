@@ -134,11 +134,16 @@ export default function LandingPage() {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
                         <div className="md:col-span-1 relative overflow-hidden rounded-2xl border border-amber-500/20 bg-gradient-to-br from-[#1a1410] via-[#13151f] to-[#0f0f12] p-6 text-center">
                             <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 blur-3xl rounded-full" />
-                            <div className="relative w-24 h-24 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-amber-400 via-amber-500 to-orange-600 flex items-center justify-center text-white text-4xl font-black shadow-2xl shadow-amber-500/30">
-                                M
+                            <div className="relative w-28 h-28 mx-auto mb-4 rounded-2xl overflow-hidden ring-2 ring-amber-500/40 shadow-2xl shadow-amber-500/20">
+                                <img
+                                    src="/landing/minervini.png"
+                                    alt="Mark Minervini"
+                                    className="w-full h-full object-cover"
+                                    loading="lazy"
+                                />
                             </div>
                             <div className="text-white font-bold text-base">Mark Minervini</div>
-                            <div className="text-amber-400/70 text-[11px] mt-1">US Investing Champion 1997</div>
+                            <div className="text-amber-400/70 text-[11px] mt-1">US Investing Champion · 334% Return</div>
                             <div className="flex justify-center gap-1 mt-3">
                                 <span className="px-2 py-0.5 text-[9px] rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">SEPA</span>
                                 <span className="px-2 py-0.5 text-[9px] rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">VCP</span>
