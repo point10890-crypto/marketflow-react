@@ -1,0 +1,117 @@
+{
+  "name": "Palantir",
+  "ticker": "PLTR",
+  "result": "중립",
+  "date": "2026-04-07 20:26:57",
+  "elapsed": 2.2,
+  "consensus_score": 3.52,
+  "analyst_count": 29,
+  "recommendation_detail": {
+    "strongBuy": 1,
+    "buy": 16,
+    "hold": 10,
+    "sell": 1,
+    "strongSell": 1
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 147.93,
+    "high": 260.0,
+    "low": 70.0,
+    "mean": 185.2474,
+    "median": 198.0
+  },
+  "current_price": 147.93,
+  "upside_potential": 25.2,
+  "key_stats": {
+    "name": "Palantir Technologies Inc.",
+    "sector": "Technology",
+    "industry": "Software - Infrastructure",
+    "market_cap": 353800552448,
+    "pe_ratio": 238.59676,
+    "forward_pe": 79.47201,
+    "dividend_yield": null,
+    "beta": 1.674,
+    "fifty_two_week_high": 207.52,
+    "fifty_two_week_low": 75.22,
+    "revenue": 4475445760,
+    "profit_margin": 0.36310002,
+    "currency": "USD"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "Palantir (PLTR)에 대한 애널리스트 컨센서스는 중립이며, 29명의 애널리스트가 참여했습니다. 목표가 평균은 현재가 대비 25.2% 상승 여력이 있는 185 USD로 제시되었습니다. 현재 PER은 238.6배입니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 1406802000
+    },
+    {
+      "date": "2025-09",
+      "value": 1181092000
+    },
+    {
+      "date": "2025-06",
+      "value": 1003697000
+    },
+    {
+      "date": "2025-03",
+      "value": 883855000
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 608676000
+    },
+    {
+      "date": "2025-09",
+      "value": 475599000
+    },
+    {
+      "date": "2025-06",
+      "value": 326727000
+    },
+    {
+      "date": "2025-03",
+      "value": 214031000
+    }
+  ],
+  "news": [
+    {
+      "title": "Palantir Could Be First Mover in Defense AI -- Oracle, Microsoft to Follow",
+      "summary": "Wednush: Palantir, Oracle, Microsoft Seen Leading Defense AI Push",
+      "url": "https://finance.yahoo.com/sectors/technology/articles/palantir-could-first-mover-defense-111459493.html",
+      "provider": "GuruFocus.com",
+      "pub_time": "2026-04-07T11:14:59Z"
+    },
+    {
+      "title": "2 Hypergrowth AI Stocks to Buy in the Current Sell-Off",
+      "summary": "These AI leaders are growing rapidly and doing so profitably.",
+      "url": "https://www.fool.com/investing/2026/04/06/2-hypergrowth-ai-stocks-to-buy-in-the-current-sell/",
+      "provider": "Motley Fool",
+      "pub_time": "2026-04-06T20:20:00Z"
+    },
+    {
+      "title": "Got $1,000? The Best Pick-and-Shovel Growth Stock for the AI Supercycle Isn't American.",
+      "summary": "One of the best AI plays isn't in the U.S. and isn't building AI agents.",
+      "url": "https://www.fool.com/investing/2026/04/06/got-1000-best-pick-and-shovel-growth-stock-ai/",
+      "provider": "Motley Fool",
+      "pub_time": "2026-04-06T18:20:00Z"
+    },
+    {
+      "title": "UBS Loves This ‘AI Moat’ at Palantir. Why Analysts Still Think You Should Buy PLTR Stock",
+      "summary": "PLTR stock probably will not outperform the market, at least until the company reports its Q1 results.",
+      "url": "https://www.barchart.com/story/news/1162378/ubs-loves-this-ai-moat-at-palantir-why-analysts-still-think-you-should-buy-pltr-stock",
+      "provider": "Barchart",
+      "pub_time": "2026-04-06T17:53:51Z"
+    },
+    {
+      "title": "Forget Palantir: This Beaten-Down “Fed” AI Stock Has More Upside Potential",
+      "summary": "Palantir Technologies Inc. (NASDAQ:PLTR) has been one of the most talked-about AI stocks of the past three years, delivering a 524% gain over five years. Palantir has already given back more than 10% ",
+      "url": "https://247wallst.com/investing/2026/04/06/forget-palantir-this-beaten-down-fed-ai-stock-has-more-upside-potential/",
+      "provider": "24/7 Wall St.",
+      "pub_time": "2026-04-06T17:52:22Z"
+    }
+  ]
+}

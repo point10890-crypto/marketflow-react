@@ -1,0 +1,199 @@
+{
+  "stock_code": "259960",
+  "stock_name": "크래프톤",
+  "generated_at": "2026-04-07T13:26:44.840156+00:00",
+  "financials": {
+    "stock_code": "259960",
+    "corp_code": "00760971",
+    "years": [
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2021": {
+        "cash": 30193.1,
+        "total_assets": 56351.0,
+        "total_liab": 10268.6,
+        "total_equity": 46082.4,
+        "revenue": 18863.2,
+        "op_profit": 6396.4,
+        "net_income": 0.0
+      },
+      "2022": {
+        "cash": 6746.9,
+        "total_assets": 60303.1,
+        "short_debt": 70.0,
+        "total_liab": 9174.6,
+        "total_equity": 51128.5,
+        "revenue": 18540.2,
+        "op_profit": 7516.1,
+        "net_income": 0.0
+      },
+      "2023": {
+        "total_assets": 64404.6,
+        "cash": 7210.5,
+        "total_equity": 14720.3,
+        "short_debt": 70.0,
+        "total_liab": 8816.4,
+        "op_profit": 7680.5,
+        "net_income": 0.0,
+        "revenue": 19105.8
+      },
+      "2024": {
+        "total_assets": 79194.6,
+        "cash": 5816.6,
+        "total_equity": 14778.0,
+        "short_debt": 70.0,
+        "total_liab": 10903.3,
+        "op_profit": 11824.9,
+        "net_income": 0.0,
+        "revenue": 27097.7
+      },
+      "2025": {
+        "total_assets": 94336.5,
+        "cash": 5967.3,
+        "total_equity": 14765.4,
+        "total_liab": 22495.0,
+        "op_profit": 10543.8,
+        "net_income": 0.0,
+        "revenue": 33265.5
+      }
+    },
+    "missing_years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2021,
+        "revenue_eok": 18863,
+        "op_profit_eok": 6396,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 33.91,
+        "debt_ratio_pct": 22.28
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 18540,
+        "op_profit_eok": 7516,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 40.54,
+        "debt_ratio_pct": 17.94
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 19106,
+        "op_profit_eok": 7680,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 40.2,
+        "debt_ratio_pct": 59.89
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 27098,
+        "op_profit_eok": 11825,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 43.64,
+        "debt_ratio_pct": 73.77
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 33266,
+        "op_profit_eok": 10544,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 31.7,
+        "debt_ratio_pct": 152.36
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": 15.3,
+      "op_profit_cagr_pct": 13.35,
+      "best_year": 2024,
+      "worst_year": 2021,
+      "avg_roe_pct": 0.0
+    },
+    "valuation": {
+      "grade": "D",
+      "strengths": [
+        "높은 영업이익률을 꾸준히 유지하고 있습니다.",
+        "매출액이 견조한 성장세를 보이고 있습니다.",
+        "영업이익 또한 지속적으로 증가하는 추세입니다."
+      ],
+      "risks": [
+        "제공된 데이터상 당기순이익이 지속적으로 발생하지 않고 있습니다.",
+        "부채비율이 2025년에 급격히 상승하며 재무 건전성에 대한 우려가 있습니다.",
+        "현금성 자산이 2021년 대비 크게 감소하는 추세입니다."
+      ],
+      "one_liner": "높은 영업이익률과 매출 성장을 기록했음에도 불구하고, 당기순이익이 지속적으로 발생하지 않고 부채비율이 급증하는 점은 심각한 투자 위험 요인입니다."
+    }
+  },
+  "dcf": {
+    "text": "퀀트 애널리스트로서 크래프톤(259960)의 DCF 적정가치를 계산하고 민감도 분석을 수행하겠습니다.\n\n**가정 및 데이터 요약:**\n\n*   **기준 연도:** 2025 (따라서 제공된 재무 데이터는 2024년 기준으로 간주)\n*   **2024년 재무 (억원):**\n    *   매출액: 33266\n    *   영업이익: 10544\n    *   영업이익률: 10544 / 33266 = 31.69%\n*   **FCF 계산식:** `영업이익 × (1 - 0.25) + 감가상각(매출의 10%) - CAPEX(매출의 5%)`\n    *   세율: 25% (FCF 식에서 유추)\n    *   감가상각: 매출액의 10%\n    *   CAPEX: 매출액의 5%\n*   **DCF 가정:**\n    *   예측 기간: 5년 (2025년 ~ 2029년)\n    *   **매출액 성장률 (예측 기간 5년):** 5% (제공되지 않아 합리적으로 가정)\n    *   WACC (기본): 9%\n    *   영구성장률 g (기본): 2%\n\n---\n\n### Python 코드 실행 및 결과\n\n\n---\n\n### 분석 결과\n\n1.  **기본 시나리오 DCF 적정가치:**\n    *   크래프톤의 기본 시나리오(WACC 9%, 영구성장률 2%, 예측 기간 매출 성장률 5%) 기준 DCF 적정가치는 **158,526.36 억원**으로 계산되었습니다.\n\n2.  **DCF 적정가치 민감도 분석 (억원):**\n\n|             | WACC=7%   | WACC=8%   | WACC=9%   | WACC=10%  | WACC=11%  |\n| :---------- | :-------- | :-------- | :-------- | :-------- | :-------- |\n| **g=1%**    | 191,851   | 163,969   | 143,073   | 126,833   | 113,852   |\n| **g=2%**    | 222,915   | 185,347   | 158,526   | 138,421   | 122,793   |\n| **g=3%**    | 269,511   | 215,277   | 179,131   | 153,320   | 133,969   |\n\n    *   민감도 분석 결과, WACC가 낮아지고 영구성장률(g)이 높아질수록 적정가치가 상승하는 것을 확인할 수 있습니다. 이는 미래 현금흐름의 현재가치가 더 높게 평가되기 때문입니다.\n    *   예를 들어, WACC가 7%이고 영구성장률이 3%인 경우 적정가치는 269,511 억원으로 크게 증가하며, WACC가 11%이고 영구성장률이 1%인 경우 113,852 억원으로 감소합니다.\n\n3.  **요약:**\n    적정가치(기본): 158526.36억원",
+    "executed_code": "import pandas as pd\n\n# Provided data (억원)\ncurrent_revenue = 33266\ncurrent_operating_income = 10544\n\n# Assumptions\nprojection_years = 5\ntax_rate = 0.25 # Implied from FCF formula: (1 - 0.25)\ndepreciation_rate_of_revenue = 0.10\ncapex_rate_of_revenue = 0.05\n\n# Base case assumptions\nbase_revenue_growth_rate = 0.05 # Assuming 5% revenue growth for the projection period\nbase_wacc = 0.09\nbase_g = 0.02\n\n# Calculate operating margin from current data\noperating_margin = current_operating_income / current_revenue\n\ndef calculate_dcf(\n    revenue_2024,\n    operating_margin,\n    revenue_growth_rate,\n    tax_rate,\n    depreciation_rate_of_revenue,\n    capex_rate_of_revenue,\n    wacc,\n    g,\n    projection_years\n):\n    # Check for valid WACC and g for terminal value\n    if wacc <= g:\n        return float('nan') # WACC must be > g for terminal value calculation\n\n    fcf_list = []\n    discount_factors = []\n    \n    # Year 0 (current year)\n    current_rev = revenue_2024\n\n    for i in range(1, projection_years + 1):\n        # Project Revenue\n        projected_rev = current_rev * (1 + revenue_growth_rate)\n\n        # Project Operating Income\n        projected_op_inc = projected_rev * operating_margin\n\n        # Project Depreciation\n        depreciation = projected_rev * depreciation_rate_of_revenue\n\n        # Project CAPEX\n        capex = projected_rev * capex_rate_of_revenue\n\n        # Calculate FCF\n        fcf = projected_op_inc * (1 - tax_rate) + depreciation - capex\n        fcf_list.append(fcf)\n\n        # Update current_rev for next iteration\n        current_rev = projected_rev\n\n        # Calculate discount factor\n        discount_factors.append(1 / ((1 + wacc) ** i))\n\n    # Calculate Terminal Value (TV)\n    # FCF for the first year of the terminal period (Year 6, or projection_years + 1)\n    fcf_terminal_year = fcf_list[-1] * (1 + g)\n    terminal_value = fcf_terminal_year / (wacc - g)\n\n    # Discount Terminal Value\n    pv_terminal_value = terminal_value / ((1 + wacc) ** projection_years)\n\n    # Discount FCFs\n    pv_fcf_sum = sum(fcf * df for fcf, df in zip(fcf_list, discount_factors))\n\n    # Total Enterprise Value\n    enterprise_value = pv_fcf_sum + pv_terminal_value\n    return enterprise_value\n\n# 1. 기본 시나리오 DCF 적정가치(억원) 계산\nbase_dcf_value = calculate_dcf(\n    revenue_2024=current_revenue,\n    operating_margin=operating_margin,\n    revenue_growth_rate=base_revenue_growth_rate,\n    tax_rate=tax_rate,\n    depreciation_rate_of_revenue=depreciation_rate_of_revenue,\n    capex_rate_of_revenue=capex_rate_of_revenue,\n    wacc=base_wacc,\n    g=base_g,\n    projection_years=projection_years\n)\n\nprint(f\"기본 시나리오 DCF 적정가치: {base_dcf_value:.2f} 억원\")\n\n# 2. WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 출력\nwacc_scenarios = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_scenarios = [0.01, 0.02, 0.03]\n\nsensitivity_results = pd.DataFrame(index=[f'g={g*100:.0f}%' for g in g_scenarios],\n                                   columns=[f'WACC={wacc*100:.0f}%' for wacc in wacc_scenarios])\n\nfor g_val in g_scenarios:\n    for wacc_val in wacc_scenarios:\n        value = calculate_dcf(\n            revenue_2024=current_revenue,\n            operating_margin=operating_margin,\n            revenue_growth_rate=base_revenue_growth_rate, # Keep base revenue growth for sensitivity\n            tax_rate=tax_rate,\n            depreciation_rate_of_revenue=depreciation_rate_of_revenue,\n            capex_rate_of_revenue=capex_rate_of_revenue,\n            wacc=wacc_val,\n            g=g_val,\n            projection_years=projection_years\n        )\n        sensitivity_results.loc[f'g={g_val*100:.0f}%', f'WACC={wacc_val*100:.0f}%'] = f\"{value:,.0f}\" if not pd.isna(value) else \"N/A\"\n\nprint(\"\\nDCF 적정가치 민감도 분석 (억원):\")\nprint(sensitivity_results)\n\n# 3. 마지막에 '적정가치(기본): {value}억원' 형태로 요약 출력\nprint(f\"\\n적정가치(기본): {base_dcf_value:.2f}억원\")",
+    "code_output": "기본 시나리오 DCF 적정가치: 158526.36 억원\n\nDCF 적정가치 민감도 분석 (억원):\n      WACC=7%  WACC=8%  WACC=9% WACC=10% WACC=11%\ng=1%  191,851  163,969  143,073  126,833  113,852\ng=2%  222,915  185,347  158,526  138,421  122,793\ng=3%  269,511  215,277  179,131  153,320  133,969\n\n적정가치(기본): 158526.36억원"
+  },
+  "news": {
+    "text": "## 크래프톤(259960) 투자 분석 보고서\n\n**투자등급: D (기존 평가)**\n**요약:** 높은 영업이익률과 매출 성장을 기록했음에도 불구하고, 당기순이익이 지속적으로 발생하지 않고 부채비율이 급증하는 점은 심각한 투자 위험 요인입니다.\n\n---\n\n### 1. 재무 데이터 스토리와 현재 시장 컨센서스의 일치/불일치\n\n*   **높은 영업이익률 및 매출 성장:** 재무 데이터가 보여주는 높은 영업이익률과 매출 성장은 현재 시장 컨센서스와 일치합니다. SK증권과 NH투자증권은 'PUBG: 배틀그라운드'의 2026년 1분기 견조한 성과를 바탕으로 매출 및 영업이익이 시장 기대치를 상회할 것으로 전망하며, 연간 이익 추정치도 상향 조정했습니다.\n*   **당기순이익의 지속성 부족:** 재무 데이터는 당기순이익의 지속적인 발생이 어렵다는 점을 지적합니다. 시장 컨센서스는 1분기 자발적 퇴사 프로그램 관련 일회성 비용(약 400억 원) 발생에도 불구하고 호실적을 예상하고 있으나, 이는 단기적 기대이며 장기적인 순이익의 안정적 확보에 대한 우려는 여전히 존재합니다.\n*   **부채비율 급증:** 재무 데이터의 부채비율 급증 우려는 2025년 크래프톤의 부채비율이 31.31%로 상승했다는 점에서 확인됩니다. 이는 2023년 15.86% 대비 증가한 수치로, 재무적 안정성 측면에서 주의가 필요합니다. 다만, 타 게임사들과 비교 시 아주 이례적인 수준은 아니라는 분석도 있습니다.\n\n### 2. 재무제표에서 드러나지 않는 리스크 또는 호재\n\n**호재:**\n\n*   **신작 파이프라인 및 IP 다각화:** 크래프톤은 '빅 프랜차이즈 IP' 전략 아래 총 26개의 게임 프로젝트를 개발 중이며, 이 중 12개는 향후 2년 내 출시를 목표로 하고 있습니다. '서브노티카 2', '어센드 투 제로', 'NO LAW', '오버데어' 등 다양한 장르의 신작들이 기대를 모으고 있습니다.\n*   **AI 및 메타버스 신사업 진출:** 한화에어로스페이스와의 '피지컬 AI' 협력, 신임 최고AI책임자(CAIO) 선임, 네이버제트와의 메타버스 플랫폼 '오버데어' 출시 예정 등 미래 성장 동력 확보를 위한 노력이 긍정적입니다.\n*   **주주환원 정책 기대:** 낮은 주가 레벨을 고려하여 추가적인 자사주 매입 및 소각 가능성이 언급되고 있습니다.\n\n**리스크:**\n\n*   **핵심 IP 의존도 및 신작 성공 불확실성:** 여전히 'PUBG'의 매출 기여도가 절대적이며, 신작 'PUBG: 블라인드스팟'의 서비스 종료는 IP 확장의 어려움을 보여줍니다. 과거 자회사 신작들의 실패 사례가 있어, 다수의 파이프라인에도 불구하고 실제 흥행으로 이어질지는 미지수입니다.\n*   **국민연금의 지분 축소:** 국민연금이 크래프톤 주식을 대규모 처분하며 최대 1,000억 원의 손실을 본 것으로 추정됩니다. 이는 주요 기관 투자자의 투자 심리 악화를 보여주는 강력한 부정적 신호입니다.\n*   **법적 리스크:** 자회사 언노운 월즈 엔터테인먼트의 전 경영진 부당해고 소송 패소 판결은 기업 신뢰도 하락 및 잠재적 재무 부담으로 이어질 수 있습니다.\n\n---\n\n### 3. 최종 판정\n\n**관망**\n\n크래프톤은 높은 영업이익률과 매출 성장, 그리고 다수의 신작 파이프라인 및 AI, 메타버스 등 미래 성장 동력 확보 노력을 통해 긍정적인 시장 기대를 받고 있습니다. 일부 증권사들은 목표주가를 상향하고 '매수' 의견을 제시하기도 했습니다.\n\n그러나 제공된 재무제표 분석 결과(투자등급 D, 당기순이익 지속성 부족, 부채비율 급증)가 보여주는 재무적 불안정성은 여전히 간과할 수 없는 위험 요인입니다. 특히, 'PUBG'에 대한 높은 의존도와 신작 성공의 불확실성, 자회사 관련 법적 리스크는 투자에 대한 신중한 접근을 요구합니다. 결정적으로, **국민연금의 대규모 지분 처분 및 손실 발생**은 주요 기관 투자자의 신뢰 하락을 의미하며, 이는 재무제표에 드러나지 않는 시장의 우려를 반영하는 강력한 신호로 해석됩니다.\n\n따라서 현재 시점에서는 신작들의 구체적인 성과가 확인되고, 재무 안정성이 개선되며, 기관 투자자들의 매수세가 유입되는 등 불확실성이 해소될 때까지 **관망**하는 것이 현명하다고 판단됩니다.",
+    "citations": [
+      {
+        "title": "businesspost.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGava5gzLsn0UrTfHPXfK_JGBSCYn-BO0ZsG6EKmPkTv6wjYs7FYz3Wk1jdALs8Kr9ojrTuTzehWjs-7PAz2r6UtwRO4r-T1_A2b_ec0rhBdcp354GzV8vVVRJ-JQBP4Gej08TopB0o2q9dse5_ZKEyDvbo1Z4B4qO3HxFE"
+      },
+      {
+        "title": "newspim.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEIUqsBpzkEPo-BMc9TnnafwMn4ttWa8648sEOZVgg1nICngbaFlTVPB-qtmxDhZQULNThTE0JhBcynbR6p5aQtEOnFCRDLk4fnwDeILFTyrQQjCBetykNsQgZg6C21GvN7FHR50IN7KJw="
+      },
+      {
+        "title": "hankyung.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFHIDz4gUpg0p1BXA7-5nnjKYnXtF2hMGgZprTCCaxwFDG7LUJB9-qhu8-SnAfxDd9qtrga1hRKRTCVeMHy4gaAKoZngWx3SM3C41gR6zcSwXvaLlUznwgvTAsuiIP9Suzb9_LNwQgjjZp9NXogepl6pETzfuwL"
+      },
+      {
+        "title": "bloter.net",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEmqeo3bXmfOnEl81nw5B4QLX6kULyeQQWJ9gb2L3bmw3oXiZD3psDCXhUKJx4B-bzHWEEZvY8a-Hke054wF9TlhuQSdhUbDjPlrCS5IJ86lDXqXFA9cD_-IXyjDlC-U4qQkEB1plp2wHt9xBejYnUx-URk4Q=="
+      },
+      {
+        "title": "sisajournal-e.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQE7qWIkNNbvFw6KusoVdnMKGuoU5Sqdh9VAa7FpO1kxdr5Ak7ldsopRqK7xGDr7SqYK1oaR5Ldol8fBbzl11_rx7gFTBtU7X1joIXgV0d0G2UmhZKQ1iS8K4QhvozVidBjLWcv3u2DfPMM-6CNPRrLFeQyMpfppknGFi8A="
+      },
+      {
+        "title": "m-i.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEeJ54vN1qPT9NDPAYqTIpo9CjMYvwBv1_i6IJmQMGkCRDAIBHENlCAberaYIM43YCdjAUw3vEntt80vs_o2g_xR6UW6P-8Q_hYv0GdhM8CfQQbqrir5of_UBGzBVoku1vOsTj9gLRKa_mJcQWwzMnsCQ=="
+      },
+      {
+        "title": "chosun.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGxw9kWQ2jxezsac-fqy7fJdvwc27RuY0OWQQc8Vam8qahuRZkdBrPcwyVgSzfLpTOHZXvUo-fraS8IQH8Ukq6C9L4CMNVFAapH0e-vRdQxxRDdLuLdNukV9cX9DF55CuwluJfm7Fv396q0qxK1982WVlTVYAuOifNdGV3GHOJkFGrddALAnnc="
+      },
+      {
+        "title": "krafton.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEcM4Rt5gOMmMeNMlqLA1WVJ_A9-jXOi1I76lGO5HaUFBlLO607LkYVuwTw9IaBUsVGYfzUJO5YwME3h1N2evVnQR4lsOdGA5jfZTNVm1HDykh6xHXnsiQRth9wS-jNTX1eIiHyGiBDX_zPZTSR7txt757fYMBt1xAGkCXxKon3C2LVYksVSyRLgRnzKSP-lURNquNwp_4CFpZ_IWPp0dOpd0WiY0ogaNY5eADXI4UJZy0S40GT2OXd4ttrpzpVhUryJgsMCUWlzUCuqVXCVcx-iIKNkL662epYuY2FLgDavve4SAejmJ9stdLIizH_7JazlAmShX6GwWdCEyslQeEnL74s_T2dmfpH3iujN_UHKvehgigOt9RaLEidKstG_aGetQ=="
+      },
+      {
+        "title": "mk.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEvKwCL_oomQVcgfYdcOcV5VcM8TyjNuXq46Pc0xJ3QeCEoWL9V7Cpgd_bWqt8hZTqFAfxoARs9bMZgY3hRxAZUyFUCXu67nWT_sZNPIvp1zdeRsheuRy0CeHroXFF58YQ="
+      },
+      {
+        "title": "alphasquare.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFzJa8tF-lnJqMc3nmc-CSEdqYEW38-EFLYk1uJOM_xTOkqHNmfc4UbmoccVVy7Lm7fTrmJ0ku6jkVnuaN_YD6dKE2OZfDp2p8bOYjDYW_XRdSX7b97MQ64brA6vkNLxCjLnUVbRuZwyXRiPA7Ahcg2SKd2"
+      }
+    ]
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=00760971",
+    "summary": "공시 페이지 접근 제한"
+  }
+}

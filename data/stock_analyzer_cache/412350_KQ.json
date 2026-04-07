@@ -1,0 +1,75 @@
+{
+  "name": "레이저쎌",
+  "ticker": "412350.KQ",
+  "result": "데이터 없음",
+  "date": "2026-04-07 21:21:01",
+  "elapsed": 2.1,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 8290.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 8290.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "Laserssel",
+    "sector": "",
+    "industry": "",
+    "market_cap": 80959455232,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": null,
+    "beta": null,
+    "fifty_two_week_high": 11160.0,
+    "fifty_two_week_low": 1573.0,
+    "revenue": null,
+    "profit_margin": null,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 212936100
+    },
+    {
+      "date": "2025-06",
+      "value": 984202590
+    },
+    {
+      "date": "2025-03",
+      "value": 1162021390
+    },
+    {
+      "date": "2024-12",
+      "value": 153569020
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": -2817517000
+    },
+    {
+      "date": "2025-06",
+      "value": -4057081000
+    },
+    {
+      "date": "2025-03",
+      "value": -2793353000
+    },
+    {
+      "date": "2024-12",
+      "value": -2318375140
+    }
+  ],
+  "news": []
+}

@@ -1,0 +1,249 @@
+{
+  "stock_code": "263700",
+  "stock_name": "케어랩스",
+  "generated_at": "2026-04-07T11:19:09.418497+00:00",
+  "financials": {
+    "stock_code": "263700",
+    "corp_code": "01187148",
+    "years": [
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2017": {
+        "cash": 33.4,
+        "total_assets": 398.2,
+        "total_liab": 129.5,
+        "total_equity": 268.7,
+        "revenue": 393.4,
+        "op_profit": 62.6,
+        "net_income": 51.3
+      },
+      "2018": {
+        "cash": 349.3,
+        "total_assets": 1246.1,
+        "total_liab": 605.9,
+        "revenue": 543.8,
+        "op_profit": 50.7,
+        "net_income": 35.5
+      },
+      "2019": {
+        "cash": 180.6,
+        "total_assets": 1271.1,
+        "total_liab": 596.4,
+        "total_equity": 674.7,
+        "revenue": 683.0,
+        "op_profit": 36.2,
+        "net_income": -0.5
+      },
+      "2020": {
+        "cash": 439.5,
+        "total_assets": 1319.3,
+        "total_liab": 287.2,
+        "total_equity": 1032.2,
+        "revenue": 766.7,
+        "op_profit": 59.6,
+        "net_income": 43.3
+      },
+      "2021": {
+        "cash": 398.8,
+        "total_assets": 1986.0,
+        "total_liab": 906.5,
+        "total_equity": 1079.6,
+        "revenue": 939.3,
+        "op_profit": 32.8,
+        "net_income": 12.5
+      },
+      "2022": {
+        "cash": 265.3,
+        "total_assets": 1806.6,
+        "total_liab": 890.8,
+        "total_equity": 915.8,
+        "revenue": 876.1,
+        "op_profit": -63.8,
+        "net_income": -261.2
+      },
+      "2023": {
+        "total_assets": 1622.0,
+        "cash": 237.5,
+        "total_equity": 944.1,
+        "total_liab": 871.3,
+        "op_profit": -116.0,
+        "revenue": 818.3,
+        "net_income": -244.7
+      },
+      "2024": {
+        "total_assets": 1432.6,
+        "cash": 306.3,
+        "total_equity": 944.1,
+        "total_liab": 882.8,
+        "op_profit": -44.6,
+        "revenue": 831.9,
+        "net_income": -202.8
+      },
+      "2025": {
+        "total_assets": 1074.3,
+        "cash": 397.6,
+        "total_equity": 61.4,
+        "total_liab": 328.0,
+        "op_profit": -28.8,
+        "revenue": 816.9,
+        "net_income": 191.8
+      }
+    },
+    "missing_years": [
+      2016,
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2017,
+        "revenue_eok": 393,
+        "op_profit_eok": 63,
+        "net_income_eok": 51,
+        "roe_pct": 18.96,
+        "op_margin_pct": 16.03,
+        "debt_ratio_pct": 48.33
+      },
+      {
+        "year": 2018,
+        "revenue_eok": 544,
+        "op_profit_eok": 51,
+        "net_income_eok": 36,
+        "op_margin_pct": 9.38
+      },
+      {
+        "year": 2019,
+        "revenue_eok": 683,
+        "op_profit_eok": 36,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 5.27,
+        "debt_ratio_pct": 88.3
+      },
+      {
+        "year": 2020,
+        "revenue_eok": 767,
+        "op_profit_eok": 60,
+        "net_income_eok": 43,
+        "roe_pct": 4.17,
+        "op_margin_pct": 7.82,
+        "debt_ratio_pct": 27.81
+      },
+      {
+        "year": 2021,
+        "revenue_eok": 939,
+        "op_profit_eok": 33,
+        "net_income_eok": 12,
+        "roe_pct": 1.11,
+        "op_margin_pct": 3.51,
+        "debt_ratio_pct": 83.89
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 876,
+        "op_profit_eok": -64,
+        "net_income_eok": -261,
+        "roe_pct": -28.49,
+        "op_margin_pct": -7.31,
+        "debt_ratio_pct": 97.27
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 818,
+        "op_profit_eok": -116,
+        "net_income_eok": -245,
+        "roe_pct": -25.95,
+        "op_margin_pct": -14.18,
+        "debt_ratio_pct": 92.27
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 832,
+        "op_profit_eok": -45,
+        "net_income_eok": -203,
+        "roe_pct": -21.5,
+        "op_margin_pct": -5.41,
+        "debt_ratio_pct": 93.54
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 817,
+        "op_profit_eok": -29,
+        "net_income_eok": 192,
+        "roe_pct": 314.75,
+        "op_margin_pct": -3.55,
+        "debt_ratio_pct": 537.7
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": 9.57,
+      "op_profit_cagr_pct": -146.03,
+      "best_year": 2017,
+      "worst_year": 2023,
+      "avg_roe_pct": 32.76
+    },
+    "valuation": {
+      "grade": "D",
+      "strengths": [
+        "2017년부터 2021년까지 매출액이 꾸준히 성장했습니다.",
+        "2025년 당기순이익이 크게 흑자 전환하며 높은 ROE를 기록했습니다.",
+        "2020년 부채비율이 27.81%로 일시적으로 양호한 재무구조를 보였습니다."
+      ],
+      "risks": [
+        "최근 4년간(2022-2025) 영업이익이 지속적으로 적자를 기록하며 본업의 수익성이 크게 악화되었습니다.",
+        "2018년 자본총계가 0원을 기록하고 2025년에도 매우 낮은 수준을 유지하는 등 자본잠식 위험이 존재합니다.",
+        "2025년 부채비율이 500%를 초과하는 등 전반적으로 높은 부채비율을 유지하며 재무 안정성이 취약합니다."
+      ],
+      "one_liner": "본업의 수익성 악화와 불안정한 재무구조로 투자 위험이 매우 높은 기업입니다."
+    }
+  },
+  "dcf": {
+    "text": "퀀트 애널리스트로서 케어랩스(263700)의 DCF 적정가치를 계산하겠습니다.\n\n제공된 데이터를 바탕으로 다음과 같은 가정을 적용합니다:\n*   **기준 연도**: 2025년 (최근 재무는 2024년 기준이며, 2025년부터 5년간 예측을 시작합니다.)\n*   **매출액 및 영업이익 성장률**: 명시된 성장률이 없으므로, 예측 기간(5년) 동안 최근 재무 데이터(2024년)와 동일하게 유지된다고 가정합니다.\n*   **FCF 계산**: `영업이익 × (1 - 0.25) + 감가상각(매출의 10%) - CAPEX(매출의 5%)`\n    *   세율은 25%로 가정됩니다.\n*   **WACC (기본)**: 9%\n*   **영구성장률 g (기본)**: 2%\n*   **예측 기간**: 5년 + 영구 가치 (Terminal Value)\n\n먼저, 주어진 재무 데이터를 사용하여 연간 FCF를 계산합니다.\n\n*   매출액 (Revenue, R): 817 억원\n*   영업이익 (Operating Income, OI): -29 억원\n*   감가상각 (Depreciation, D): R * 0.10 = 817 * 0.10 = 81.7 억원\n*   CAPEX (C): R * 0.05 = 817 * 0.05 = 40.85 억원\n*   세율 (Tax Rate): 0.25\n\n연간 FCF = OI * (1 - Tax Rate) + D - C\n연간 FCF = -29 * (1 - 0.25) + 81.7 - 40.85\n연간 FCF = -21.75 + 81.7 - 40.85 = 19.1 억원\n\n이 FCF는 5년 예측 기간 동안 매년 동일하게 발생한다고 가정합니다.\n\n---\n\n### 1. 기본 시나리오 DCF 적정가치 계산\n\n\n---\n\n### 2. WACC × g 민감도 그리드 출력\n\nWACC와 영구성장률(g)의 변화에 따른 적정가치 민감도 분석을 수행합니다.\n\n*   **WACC**: 7%, 8%, 9%, 10%, 11%\n*   **g**: 1%, 2%, 3%\n\n\n---\n\n### 3. 요약 출력\n\n최종적으로 기본 시나리오의 적정가치를 요약하여 출력합니다.\n\n적정가치(기본): 255.18억원",
+    "executed_code": "import pandas as pd\n\ndef calculate_dcf(revenue, operating_income, wacc, g, forecast_years=5, tax_rate=0.25, dep_rate=0.10, capex_rate=0.05):\n    \"\"\"\n    DCF 적정가치를 계산하는 함수.\n    revenue: 최근 매출액 (억원)\n    operating_income: 최근 영업이익 (억원)\n    wacc: 가중평균자본비용 (예: 0.09)\n    g: 영구성장률 (예: 0.02)\n    forecast_years: 예측 기간 (년)\n    tax_rate: 세율\n    dep_rate: 매출액 대비 감가상각 비율\n    capex_rate: 매출액 대비 CAPEX 비율\n    \"\"\"\n\n    # 연간 FCF 계산 (예측 기간 동안 동일하다고 가정)\n    depreciation = revenue * dep_rate\n    capex = revenue * capex_rate\n    fcf_per_year = operating_income * (1 - tax_rate) + depreciation - capex\n\n    # FCF 할인 및 현재가치 계산\n    discounted_fcf_sum = 0\n    for i in range(1, forecast_years + 1):\n        discounted_fcf_sum += fcf_per_year / ((1 + wacc) ** i)\n\n    # Terminal Value (TV) 계산\n    # FCF_year_n+1 = FCF_year_n * (1 + g)\n    fcf_terminal_year = fcf_per_year * (1 + g)\n    if wacc <= g:\n        # WACC가 g보다 작거나 같으면 무한대 또는 음수 가치 발생, 모델 한계 알림\n        return float('inf') if wacc == g else float('-inf')\n    terminal_value = fcf_terminal_year / (wacc - g)\n\n    # Terminal Value 현재가치 계산\n    discounted_terminal_value = terminal_value / ((1 + wacc) ** forecast_years)\n\n    # 총 적정가치\n    intrinsic_value = discounted_fcf_sum + discounted_terminal_value\n    return intrinsic_value\n\n# 입력 데이터\nrevenue = 817  # 억원\noperating_income = -29  # 억원\nwacc_base = 0.09\ng_base = 0.02\n\n# 기본 시나리오 DCF 계산\nbase_dcf_value = calculate_dcf(revenue, operating_income, wacc_base, g_base)\nprint(f\"기본 시나리오 DCF 적정가치: {base_dcf_value:.2f}억원\")\n\n\n\nimport pandas as pd\n\n# calculate_dcf 함수는 위에서 정의된 것을 재사용합니다.\n# (Jupyter 환경에서는 셀이 독립적이므로 다시 정의하거나, 스크립트에서는 한 번만 정의)\n\ndef calculate_dcf(revenue, operating_income, wacc, g, forecast_years=5, tax_rate=0.25, dep_rate=0.10, capex_rate=0.05):\n    depreciation = revenue * dep_rate\n    capex = revenue * capex_rate\n    fcf_per_year = operating_income * (1 - tax_rate) + depreciation - capex\n\n    discounted_fcf_sum = 0\n    for i in range(1, forecast_years + 1):\n        discounted_fcf_sum += fcf_per_year / ((1 + wacc) ** i)\n\n    fcf_terminal_year = fcf_per_year * (1 + g)\n    if wacc <= g:\n        return float('inf') if wacc == g else float('-inf')\n    terminal_value = fcf_terminal_year / (wacc - g)\n\n    discounted_terminal_value = terminal_value / ((1 + wacc) ** forecast_years)\n\n    intrinsic_value = discounted_fcf_sum + discounted_terminal_value\n    return intrinsic_value\n\n# 입력 데이터\nrevenue = 817  # 억원\noperating_income = -29  # 억원\n\n# 민감도 분석을 위한 WACC 및 g 범위\nwacc_values = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_values = [0.01, 0.02, 0.03]\n\n# 결과를 저장할 DataFrame 초기화\nsensitivity_results = pd.DataFrame(index=[f'WACC={w*100:.0f}%' for w in wacc_values],\n                                   columns=[f'g={g*100:.0f}%' for g in g_values])\n\n# 민감도 분석 실행\nfor wacc in wacc_values:\n    for g in g_values:\n        value = calculate_dcf(revenue, operating_income, wacc, g)\n        sensitivity_results.loc[f'WACC={wacc*100:.0f}%', f'g={g*100:.0f}%'] = f\"{value:.2f}\"\n\nprint(\"DCF 적정가치 민감도 그리드 (단위: 억원)\")\nprint(sensitivity_results)\n\n# 기본 시나리오 값 다시 계산 (출력 형식 맞추기 위함)\nbase_dcf_value = calculate_dcf(revenue, operating_income, wacc_base, g_base)",
+    "code_output": "기본 시나리오 DCF 적정가치: 255.18억원\n\nDCF 적정가치 민감도 그리드 (단위: 억원)\n            g=1%    g=2%    g=3%\nWACC=7%   307.55  356.12  428.98\nWACC=8%   263.82  297.25  344.04\nWACC=9%   231.02  255.18  287.39\nWACC=10%  205.50  223.61  246.91\nWACC=11%  185.07  199.05  216.53"
+  },
+  "news": {
+    "text": "## 케어랩스(263700) 투자 분석: 재무 개선 가능성과 신사업 모색 속 '관망' 필요\n\n**투자등급 D, 요약: 본업의 수익성 악화와 불안정한 재무구조로 투자 위험이 매우 높은 기업입니다.** 라는 10년 재무제표 분석 결과는 케어랩스에 대한 보수적인 시각을 제시합니다. 그러나 최근 2주간의 뉴스를 종합해 볼 때, 재무 데이터가 보여주는 스토리와 현재 시장 컨센서스 사이에 일부 불일치와 함께 재무제표에 아직 반영되지 않은 잠재적 호재와 리스크가 혼재되어 있어 신중한 접근이 필요합니다.\n\n### 1. 재무 데이터가 보여주는 스토리와 현재 시장 컨센서스의 일치/불일치\n\n제공된 10년 재무제표 분석은 본업의 수익성 악화와 불안정한 재무구조를 지적하며 높은 투자 위험을 경고합니다. 이는 낮은 투자등급 'D'와 일맥상통합니다.\n\n그러나 최근 뉴스에서는 긍정적인 변화의 조짐이 포착됩니다. 2025년 3분기 누적 실적에서 연결 기준 매출액이 전년 동기 대비 9.1% 증가했으며, 영업이익과 당기순이익이 흑자 전환에 성공했습니다. 이는 '본업의 수익성 악화'라는 재무 데이터의 장기적 스토리와는 상반되는 최근의 긍정적인 변화입니다. 또한, 스톡베리AI 분석에 따르면 2025년 3분기 실적 턴어라운드를 통해 성장 가능성을 보여주었다고 언급됩니다.\n\n그럼에도 불구하고 시장의 전반적인 컨센서스는 여전히 조심스러운 것으로 보입니다. 스톡베리AI는 케어랩스에 대해 '중립' 의견을 제시하며, 단기적으로는 횡보, 중기적으로는 하락 추세에 있다고 분석했습니다. 또한, 낮은 PBR(0.64)과 PER(2.28)은 시장이 여전히 기업 가치를 높게 평가하지 않고 있음을 시사합니다. 이는 장기 재무 분석의 '높은 투자 위험'이라는 평가와 일치하는 부분입니다.\n\n결론적으로, 장기 재무 데이터는 부정적이지만, 최근 분기 실적에서 긍정적인 턴어라운드가 나타나면서 부분적인 불일치가 존재합니다. 시장은 이러한 변화를 인지하고 있으나, 아직은 '중립'적인 관점에서 지속적인 개선 여부를 관망하는 것으로 판단됩니다.\n\n### 2. 재무제표에서 드러나지 않는 리스크 또는 호재\n\n**호재:**\n\n*   **시니어케어 신사업 진출:** 케어랩스는 3월 27일 정기 주주총회에서 이민경 대표를 재선임하고, 초고령화 추세에 발맞춰 재활·돌봄 중심의 시니어케어 시장에 진출하여 디지털 헬스케어 역량과 시너지를 창출하겠다고 밝혔습니다. 이는 기존 재무제표에 반영되지 않은 새로운 성장 동력으로 작용할 수 있습니다.\n*   **AI 연계 통한 플랫폼 경쟁력 강화:** 굿닥, 바비톡, 힐오 등 자회사에서 축적한 데이터를 인공지능(AI)과 연계하여 기존 디지털 헬스케어 플랫폼의 시너지를 창출하고 서비스 연계 및 확장을 이끌 계획입니다. 이는 장기적인 기업 가치 상승에 기여할 수 있는 요소입니다.\n*   **굿닥 지분 추가 확보:** 핵심 자회사인 굿닥의 지분 추가 확보는 긍정적인 신호로 해석될 수 있습니다.\n*   **기관 순매수 포착:** 최근 코스닥 기관 연속 순매수 상위 종목에 케어랩스가 포함된 것은 기관 투자자들의 관심이 일부 유입되고 있음을 보여줍니다.\n*   **원격의료 테마 부각 가능성:** 케어랩스는 원격의료 테마와 연관되어 있어, 향후 관련 규제 완화 시 수혜를 입을 가능성이 있습니다.\n\n**리스크:**\n\n*   **수익성 개선의 지속성 불확실:** 2025년 3분기 실적 턴어라운드가 있었지만, 이것이 장기적인 수익성 개선으로 이어질지는 지속적인 관찰이 필요합니다. 스톡베리AI는 여전히 EPS가 적자 상태임을 지적했습니다.\n*   **신사업의 성공 여부:** 시니어케어 시장 진출은 긍정적이지만, 신규 사업은 항상 초기 투자 비용과 시장 안착에 대한 불확실성을 내포합니다.\n*   **경쟁 심화:** 헬스케어 및 뷰티케어 플랫폼 시장의 경쟁 심화는 수익성 개선에 부담으로 작용할 수 있습니다.\n*   **불안정한 재무구조:** 10년 재무제표 분석에서 지적된 '불안정한 재무구조'는 단기적인 뉴스만으로는 해소되었다고 보기 어려우며, 여전히 잠재적인 리스크로 남아있습니다.\n\n### 3. 최종 판정\n\n제공된 10년 재무제표 분석 결과(투자등급 D, 불안정한 재무구조)는 기업의 내재적 위험이 높음을 명확히 보여줍니다. 그러나 최근 2025년 3분기 실적 턴어라운드와 시니어케어 신사업 진출, AI 연계 강화 등 긍정적인 변화의 시도가 나타나고 있습니다. 이러한 변화가 기업의 근본적인 재무구조 개선과 지속적인 수익성 확보로 이어질지 여부는 아직 불확실합니다.\n\n따라서 현재 시점에서는 긍정적인 변화의 가능성을 주시하되, 재무적 안정성이 완전히 확보되고 신사업 성과가 가시화될 때까지 **관망**하는 것이 합리적인 투자 판단으로 사료됩니다.",
+    "citations": [
+      {
+        "title": "wisereport.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQG-AX-OG2h8iLzVJ8hPdVTRO68ct8o6psaoN92OKdU-vO1YLA2wXU2-oea98PQfrNwuV7YGZ0698_JTN5Q4wEr7wFq4yJFGha-0Fc6XoWdLk3mUf3c72UwbCXoEKkviZt_bd3kv8Fcfi4lo5NK_sxA7eMMpGZ3pw_cxoJqc"
+      },
+      {
+        "title": "stockvery.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHwdjGX5MOVJDMHvxXPmqagMYLbDlpzCc45LT3ztSWD0_FWuCxzzzEicg9qgH4Hquhc8g5ruyk-05cceVgGaun-nCG1uHhhBVWNGrYxyFvA4P_Z-MCSrgWXRYAcpyNY"
+      },
+      {
+        "title": "etnews.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFWQpcd5E5JnbImc9AA3SHr-vvtlI073vEeWDQT5JgLflkdczRCN6GyfdJPg2xLNFIdyNZA0S6cMchGmKqoQX_wmutrJIxa5P1o-CPdrkC0jKD-C0MX9oIf61UZJIDQK4c="
+      },
+      {
+        "title": "stockplus.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFsqaZ8J0OzwxaMDJ7Hy-JbGnip6Spxu_EcrCgwvJQVylzNeYvIq_zxAMszmbSRGeBF1Z3uTCs68Sz4yp6SffWcTRmzEC194hfLSPt-2oV4d-C0yoCV-QNdr7SzmVqE6IdAopPUdRA_mZPo1sNbGfT6IjOqvQ=="
+      },
+      {
+        "title": "alphasquare.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGHoSrVQ9c7mx4x1a0-05lJ693__ipSS3K7A8EFYszAHTynVTvgmaHmqRmH6BSiA6hYopPWRiqJK184XSN2_D4RqnvpzNSS1qnhNzNyUfiXgeQWQwOLCBXr8wvweCe_is2_HaM8oRPpKUE1DUTWNYgH6AsZ"
+      },
+      {
+        "title": "deepsearch.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQECJG29Mc32k7CUgs5oHqEn-qv-4EK4z8SZhKPnZWogMeIDsvwaUy-h8Xe-K-oJwODzpPttI7E-Wyyi-Rkia5MtFQrWGiztfV-Gu4CtF1Ypv9OjGa6KvmPxGCkYI8Z9ZF40i5hMsG74gPRtPEjbKdxj62OtOCsKuT7sjWyb8RQG5Q_mK7r1gEd26Hy2_8mLxVM_60YhNhhktQG7yzfOeIEVCahmnwfY5T_hPDuQ_uo0Nk9SUqMJKZHoH60bgd8C5zykhoYFUMWUQJHTi6pk0y_qLnAzuN8ZqI2gXs5AaeULLcwYJCDecPLMowX_BMTToWgUBNwINmNvHot_YzFj_5SeoaMvJad_-hdY"
+      }
+    ]
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=01187148",
+    "summary": "공시 페이지 접근 제한"
+  }
+}

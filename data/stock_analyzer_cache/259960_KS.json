@@ -2,8 +2,8 @@
   "name": "크래프톤",
   "ticker": "259960.KS",
   "result": "매수",
-  "date": "2026-03-31 10:34:27",
-  "elapsed": 5.1,
+  "date": "2026-04-07 22:26:43",
+  "elapsed": 2.1,
   "consensus_score": 4.16,
   "analyst_count": 25,
   "recommendation_detail": {
@@ -15,23 +15,23 @@
   },
   "recommendation_period": "0m",
   "price_targets": {
-    "current": 254500.0,
-    "high": 500000.0,
+    "current": 233000.0,
+    "high": 470000.0,
     "low": 250000.0,
-    "mean": 354916.66,
-    "median": 355000.0
+    "mean": 355333.34,
+    "median": 360000.0
   },
-  "current_price": 254500.0,
-  "upside_potential": 39.5,
+  "current_price": 233000.0,
+  "upside_potential": 52.5,
   "key_stats": {
     "name": "KRAFTON",
     "sector": "Communication Services",
     "industry": "Electronic Gaming & Multimedia",
-    "market_cap": 11360820789248,
+    "market_cap": 10401065467904,
     "pe_ratio": null,
-    "forward_pe": 10.374906,
-    "dividend_yield": 0.89,
-    "beta": 1.017,
+    "forward_pe": 9.422191,
+    "dividend_yield": 0.91,
+    "beta": 0.848,
     "fifty_two_week_high": 393000.0,
     "fifty_two_week_low": 208500.0,
     "revenue": 3326553620480,
@@ -40,7 +40,7 @@
   },
   "finnhub_supplement": null,
   "source": "yfinance",
-  "ai_analysis": "크래프톤(259960.KS)에 대해 25명의 애널리스트가 제시한 컨센서스는 '매수' 의견입니다. 목표가 평균은 354,917 KRW로, 현재가 254,500 KRW 대비 39.5% 상승 여력이 있습니다. 이는 긍정적인 시장 전망을 시사합니다.",
+  "ai_analysis": "크래프톤(259960.KS)에 대해 25명의 애널리스트가 제시한 컨센서스는 매수 의견입니다. 목표가 평균은 355,333 KRW으로, 현재가 233,000 KRW 대비 52.5% 상승 여력이 있습니다. 이는 긍정적인 시장 전망을 반영하는 데이터입니다.",
   "revenue_quarters": [
     {
       "date": "2025-12",

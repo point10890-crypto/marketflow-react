@@ -1,0 +1,102 @@
+{
+  "stock_code": "263700",
+  "corp_code": "01187148",
+  "years": [
+    2017,
+    2018,
+    2019,
+    2020,
+    2021,
+    2022,
+    2023,
+    2024,
+    2025
+  ],
+  "data": {
+    "2017": {
+      "cash": 33.4,
+      "total_assets": 398.2,
+      "total_liab": 129.5,
+      "total_equity": 268.7,
+      "revenue": 393.4,
+      "op_profit": 62.6,
+      "net_income": 51.3
+    },
+    "2018": {
+      "cash": 349.3,
+      "total_assets": 1246.1,
+      "total_liab": 605.9,
+      "revenue": 543.8,
+      "op_profit": 50.7,
+      "net_income": 35.5
+    },
+    "2019": {
+      "cash": 180.6,
+      "total_assets": 1271.1,
+      "total_liab": 596.4,
+      "total_equity": 674.7,
+      "revenue": 683.0,
+      "op_profit": 36.2,
+      "net_income": -0.5
+    },
+    "2020": {
+      "cash": 439.5,
+      "total_assets": 1319.3,
+      "total_liab": 287.2,
+      "total_equity": 1032.2,
+      "revenue": 766.7,
+      "op_profit": 59.6,
+      "net_income": 43.3
+    },
+    "2021": {
+      "cash": 398.8,
+      "total_assets": 1986.0,
+      "total_liab": 906.5,
+      "total_equity": 1079.6,
+      "revenue": 939.3,
+      "op_profit": 32.8,
+      "net_income": 12.5
+    },
+    "2022": {
+      "cash": 265.3,
+      "total_assets": 1806.6,
+      "total_liab": 890.8,
+      "total_equity": 915.8,
+      "revenue": 876.1,
+      "op_profit": -63.8,
+      "net_income": -261.2
+    },
+    "2023": {
+      "total_assets": 1622.0,
+      "cash": 237.5,
+      "total_equity": 944.1,
+      "total_liab": 871.3,
+      "op_profit": -116.0,
+      "revenue": 818.3,
+      "net_income": -244.7
+    },
+    "2024": {
+      "total_assets": 1432.6,
+      "cash": 306.3,
+      "total_equity": 944.1,
+      "total_liab": 882.8,
+      "op_profit": -44.6,
+      "revenue": 831.9,
+      "net_income": -202.8
+    },
+    "2025": {
+      "total_assets": 1074.3,
+      "cash": 397.6,
+      "total_equity": 61.4,
+      "total_liab": 328.0,
+      "op_profit": -28.8,
+      "revenue": 816.9,
+      "net_income": 191.8
+    }
+  },
+  "missing_years": [
+    2016,
+    2026
+  ],
+  "source": ""
+}

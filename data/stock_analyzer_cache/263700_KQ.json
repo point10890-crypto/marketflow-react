@@ -1,35 +1,35 @@
 {
-  "name": "에코프로머티",
-  "ticker": "450080.KS",
+  "name": "케어랩스",
+  "ticker": "263700.KQ",
   "result": "데이터 없음",
-  "date": "2026-04-07 21:30:08",
-  "elapsed": 2.2,
+  "date": "2026-04-07 20:19:09",
+  "elapsed": 2.1,
   "consensus_score": null,
   "analyst_count": 0,
   "recommendation_detail": null,
   "recommendation_period": null,
   "price_targets": {
-    "current": 73100.0,
+    "current": 2185.0,
     "high": null,
     "low": null,
     "mean": null,
     "median": null
   },
-  "current_price": 73100.0,
+  "current_price": 2185.0,
   "upside_potential": null,
   "key_stats": {
-    "name": "ECOPRO MAT",
-    "sector": "Industrials",
-    "industry": "Electrical Equipment & Parts",
-    "market_cap": 5157844680704,
+    "name": "CLS",
+    "sector": "Healthcare",
+    "industry": "Health Information Services",
+    "market_cap": 42388955136,
     "pe_ratio": null,
-    "forward_pe": 72.44797,
+    "forward_pe": null,
     "dividend_yield": null,
-    "beta": 2.451,
-    "fifty_two_week_high": 78900.0,
-    "fifty_two_week_low": 40600.0,
-    "revenue": 392506179584,
-    "profit_margin": 0.06141,
+    "beta": 0.349,
+    "fifty_two_week_high": 6300.0,
+    "fifty_two_week_low": 1987.0,
+    "revenue": 81694244864,
+    "profit_margin": 0.23477,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
@@ -38,37 +38,37 @@
   "revenue_quarters": [
     {
       "date": "2025-12",
-      "value": 115202955950
+      "value": 14948896000
     },
     {
       "date": "2025-09",
-      "value": 63153785110
+      "value": 21158485000
     },
     {
       "date": "2025-06",
-      "value": 78068573060
+      "value": 22521599800
     },
     {
       "date": "2025-03",
-      "value": 136080858580
+      "value": 23065261870
     }
   ],
   "net_income_quarters": [
     {
       "date": "2025-12",
-      "value": -96656822650
+      "value": -4003747210
     },
     {
       "date": "2025-09",
-      "value": 161587947810
+      "value": -1297185630
     },
     {
       "date": "2025-06",
-      "value": -33501838340
+      "value": -877705460
     },
     {
       "date": "2025-03",
-      "value": -7325548460
+      "value": 25357771450
     }
   ],
   "news": []

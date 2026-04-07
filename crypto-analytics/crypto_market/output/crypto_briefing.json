@@ -1,114 +1,114 @@
 {
-  "timestamp": "2026-04-07T20:00:21.397383",
+  "timestamp": "2026-04-08T00:00:39.489013",
   "version": "1.0",
   "market_summary": {
-    "total_market_cap": 2416588183422.0,
-    "total_volume_24h": 90675214309.0,
-    "btc_dominance": 56.53,
+    "total_market_cap": 2407238518955.0,
+    "total_volume_24h": 96237135498.0,
+    "btc_dominance": 56.54,
     "btc_dominance_change_24h": 0,
-    "total_market_cap_change_24h": -2.01,
-    "active_cryptocurrencies": 17760
+    "total_market_cap_change_24h": -2.32,
+    "active_cryptocurrencies": 17763
   },
   "major_coins": {
     "BTC": {
-      "price": 68232,
-      "change_24h": -2.15,
+      "price": 67947,
+      "change_24h": -2.47,
       "change_7d": 0,
-      "volume_24h": 40737005922,
-      "market_cap": 1365499426647
+      "volume_24h": 45070971951,
+      "market_cap": 1360012974146
     },
     "ETH": {
-      "price": 2089.12,
-      "change_24h": -2.92,
+      "price": 2071.41,
+      "change_24h": -4.02,
       "change_7d": 0,
-      "volume_24h": 16193754169,
-      "market_cap": 252265849098
+      "volume_24h": 16404586955,
+      "market_cap": 250212021924
     },
     "BNB": {
-      "price": 597.44,
-      "change_24h": -1.45,
+      "price": 594.95,
+      "change_24h": -2.01,
       "change_7d": 0,
-      "volume_24h": 687411893,
-      "market_cap": 81472425341
+      "volume_24h": 833062546,
+      "market_cap": 81140826750
     },
     "XRP": {
-      "price": 1.31,
-      "change_24h": -3.37,
+      "price": 1.3,
+      "change_24h": -3.58,
       "change_7d": 0,
-      "volume_24h": 1548850199,
-      "market_cap": 80321876412
+      "volume_24h": 1561402161,
+      "market_cap": 79758874902
     },
     "SOL": {
-      "price": 79.42,
-      "change_24h": -3.86,
+      "price": 78.67,
+      "change_24h": -4.21,
       "change_7d": 0,
-      "volume_24h": 2583542567,
-      "market_cap": 45559137199
+      "volume_24h": 2770816796,
+      "market_cap": 45134146147
     }
   },
   "top_movers": {
     "gainers": [
       {
-        "symbol": "CC",
-        "name": "Canton",
-        "price": 0.148296,
-        "change_24h": 6.23
+        "symbol": "MORPHO",
+        "name": "Morpho",
+        "price": 1.62,
+        "change_24h": 6.28
       },
       {
         "symbol": "RAIN",
         "name": "Rain",
-        "price": 0.00705777,
-        "change_24h": 5.97
-      },
-      {
-        "symbol": "MORPHO",
-        "name": "Morpho",
-        "price": 1.61,
-        "change_24h": 4.59
+        "price": 0.00701081,
+        "change_24h": 6.14
       },
       {
         "symbol": "ZEC",
         "name": "Zcash",
-        "price": 264.59,
-        "change_24h": 3.35
+        "price": 265.41,
+        "change_24h": 4.96
+      },
+      {
+        "symbol": "HASH",
+        "name": "Provenance Blockchain",
+        "price": 0.01066225,
+        "change_24h": 3.94
       },
       {
         "symbol": "USDY",
         "name": "Ondo US Dollar Yield",
-        "price": 1.12,
-        "change_24h": 0.64
+        "price": 1.14,
+        "change_24h": 0.87
       }
     ],
     "losers": [
       {
         "symbol": "AAVE",
         "name": "Aave",
-        "price": 88.71,
-        "change_24h": -9.14
+        "price": 87.37,
+        "change_24h": -9.86
       },
       {
         "symbol": "AVAX",
         "name": "Avalanche",
-        "price": 8.63,
-        "change_24h": -8.74
+        "price": 8.58,
+        "change_24h": -8.23
       },
       {
-        "symbol": "ALGO",
-        "name": "Algorand",
-        "price": 0.112963,
-        "change_24h": -8.59
+        "symbol": "VET",
+        "name": "VeChain",
+        "price": 0.00700551,
+        "change_24h": -5.9
+      },
+      {
+        "symbol": "WLFI",
+        "name": "World Liberty Financial",
+        "price": 0.095315,
+        "change_24h": -5.64
       },
       {
         "symbol": "ONDO",
         "name": "Ondo",
-        "price": 0.250553,
-        "change_24h": -6.51
-      },
-      {
-        "symbol": "ETC",
-        "name": "Ethereum Classic",
-        "price": 8.15,
-        "change_24h": -6.4
+        "price": 0.250959,
+        "change_24h": -5.21
       }
     ]
   },
@@ -126,24 +126,24 @@
   "funding_rates": {
     "BTC": {
       "symbol": "BTCUSDT",
-      "rate": 3.6e-05,
-      "rate_pct": 0.0036,
-      "annualized_pct": 3.96,
+      "rate": 5.9e-05,
+      "rate_pct": 0.0059,
+      "annualized_pct": 6.49,
       "sentiment": "neutral"
     },
     "ETH": {
       "symbol": "ETHUSDT",
-      "rate": 1e-05,
-      "rate_pct": 0.001,
-      "annualized_pct": 1.13,
+      "rate": 1.2e-05,
+      "rate_pct": 0.0012,
+      "annualized_pct": 1.3,
       "sentiment": "neutral"
     }
   },
   "macro_correlations": {
     "btc_pairs": {
-      "BTC_SPY": 0.5585,
-      "BTC_GLD": 0.2324,
-      "BTC_DXY": -0.1806
+      "BTC_SPY": 0.5584,
+      "BTC_GLD": 0.2334,
+      "BTC_DXY": -0.1773
     }
   },
   "market_gate": {
@@ -157,14 +157,14 @@
       "알트 breadth 붕괴 (10% > EMA50)"
     ],
     "metrics": {
-      "btc_price": 68220.5625,
-      "btc_ema50": 70292.88227266849,
-      "btc_ema200": 83958.89030324937,
-      "btc_ema200_slope_pct_20": -3.9593811086128654,
-      "btc_volume_z_50": -0.5243231787970754,
-      "btc_atrp_14_pct": 2.9850815919686973,
+      "btc_price": 67944.625,
+      "btc_ema50": 70282.06119423712,
+      "btc_ema200": 83956.14465648319,
+      "btc_ema200_slope_pct_20": -3.962521855396546,
+      "btc_volume_z_50": -0.42769638342366845,
+      "btc_atrp_14_pct": 3.0382545141145667,
       "alt_breadth_above_ema50": 0.1,
-      "funding_rate": 3.614e-05,
+      "funding_rate": 5.929e-05,
       "open_interest_delta_z": null,
       "gate_score_components": {
         "trend": 0.0,
@@ -176,7 +176,7 @@
       "fear_greed_index": 11,
       "fear_greed_class": "Extreme Fear"
     },
-    "generated_at": "2026-04-07T20:00:07.837126"
+    "generated_at": "2026-04-08T00:00:25.918606"
   },
   "btc_price_history": [
     {
@@ -537,7 +537,7 @@
     },
     {
       "date": "2026-04-07",
-      "price": 68240.2421875
+      "price": 67944.625
     }
   ],
   "sentiment_summary": {

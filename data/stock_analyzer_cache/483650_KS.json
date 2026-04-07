@@ -1,0 +1,81 @@
+{
+  "name": "달바글로벌",
+  "ticker": "483650.KS",
+  "result": "매수",
+  "date": "2026-04-07 21:30:20",
+  "elapsed": 1.6,
+  "consensus_score": 4.11,
+  "analyst_count": 9,
+  "recommendation_detail": {
+    "strongBuy": 1,
+    "buy": 8,
+    "hold": 0,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 161800.0,
+    "high": 270000.0,
+    "low": 180000.0,
+    "mean": 230100.0,
+    "median": 222500.0
+  },
+  "current_price": 161800.0,
+  "upside_potential": 42.2,
+  "key_stats": {
+    "name": "d'Alba Global",
+    "sector": "Consumer Defensive",
+    "industry": "Household & Personal Products",
+    "market_cap": 1997245382656,
+    "pe_ratio": null,
+    "forward_pe": 12.123377,
+    "dividend_yield": 1.79,
+    "beta": null,
+    "fifty_two_week_high": 247500.0,
+    "fifty_two_week_low": 104600.0,
+    "revenue": 451629907968,
+    "profit_margin": 0.15843001,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "달바글로벌(483650.KS)에 대해 9명의 애널리스트가 제시한 컨센서스 의견은 '매수'입니다. 목표가 평균은 230,100원으로, 현재가 161,800원 대비 42.2%의 상승 여력이 있는 것으로 분석됩니다. 투자 판단은 제시된 분석 데이터를 참고하여 신중하게 결정하시기 바랍니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 114165749000
+    },
+    {
+      "date": "2025-06",
+      "value": 128372734050
+    },
+    {
+      "date": "2025-03",
+      "value": 113759841460
+    },
+    {
+      "date": "2024-12",
+      "value": 95331577130
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 14014411520
+    },
+    {
+      "date": "2025-06",
+      "value": 19803061000
+    },
+    {
+      "date": "2025-03",
+      "value": 24749213280
+    },
+    {
+      "date": "2024-12",
+      "value": 12987047120
+    }
+  ],
+  "news": []
+}
