@@ -143,7 +143,7 @@ export default function LandingPage() {
                                 />
                             </div>
                             <div className="text-white font-bold text-base">Mark Minervini</div>
-                            <div className="text-amber-400/70 text-[11px] mt-1">US Investing Champion · 334% Return</div>
+                            <div className="text-amber-400/70 text-[11px] mt-1">US Investing Champion · 334% Annual Return</div>
                             <div className="flex justify-center gap-1 mt-3">
                                 <span className="px-2 py-0.5 text-[9px] rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">SEPA</span>
                                 <span className="px-2 py-0.5 text-[9px] rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">VCP</span>
