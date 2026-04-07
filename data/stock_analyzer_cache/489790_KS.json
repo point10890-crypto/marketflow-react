@@ -2,7 +2,7 @@
   "name": "한화비전",
   "ticker": "489790.KS",
   "result": "매수",
-  "date": "2026-03-31 08:57:25",
+  "date": "2026-04-07 17:48:17",
   "elapsed": 2.1,
   "consensus_score": 4.0,
   "analyst_count": 2,
@@ -15,24 +15,24 @@
   },
   "recommendation_period": "0m",
   "price_targets": {
-    "current": 75700.0,
+    "current": 71400.0,
     "high": 100000.0,
     "low": 64000.0,
     "mean": 82000.0,
     "median": 82000.0
   },
-  "current_price": 75700.0,
-  "upside_potential": 8.3,
+  "current_price": 71400.0,
+  "upside_potential": 14.8,
   "key_stats": {
     "name": "Hanwha Vision",
     "sector": "Industrials",
     "industry": "Security & Protection Services",
-    "market_cap": 3813580210176,
+    "market_cap": 3596956729344,
     "pe_ratio": null,
-    "forward_pe": 2053.7632,
+    "forward_pe": 1937.1028,
     "dividend_yield": null,
     "beta": null,
-    "fifty_two_week_high": 94400.0,
+    "fifty_two_week_high": 97900.0,
     "fifty_two_week_low": 35650.0,
     "revenue": 1790921932800,
     "profit_margin": 0.02546,
@@ -40,8 +40,12 @@
   },
   "finnhub_supplement": null,
   "source": "yfinance",
-  "ai_analysis": "한화비전에 대해 2명의 애널리스트가 매수 의견을 제시하고 있으며, 컨센서스 점수는 4.0/5.0입니다. 평균 목표 주가는 82,000원으로 현재 주가 대비 8.3% 상승 여력이 있습니다. 투자 판단은 개인의 분석과 판단에 따라 결정해야 합니다.",
+  "ai_analysis": "한화비전에 대해 2명의 애널리스트가 매수 의견을 제시하고 있으며, 컨센서스 점수는 4.0/5.0이다. 평균 목표 주가는 82,000원으로, 현재 주가 대비 14.8% 상승 여력이 있는 것으로 분석된다. 투자 판단은 제시된 분석 데이터를 참고하여 투자자 본인이 결정해야 한다.",
   "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 459211764770
+    },
     {
       "date": "2025-09",
       "value": 422742391620
@@ -53,13 +57,13 @@
     {
       "date": "2025-03",
       "value": 451805860290
-    },
-    {
-      "date": "2024-12",
-      "value": 353797096790
     }
   ],
   "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 63680606980
+    },
     {
       "date": "2025-09",
       "value": -5976021160
@@ -71,10 +75,6 @@
     {
       "date": "2025-03",
       "value": -2391827690
-    },
-    {
-      "date": "2024-12",
-      "value": 22373213190
     }
   ],
   "news": [

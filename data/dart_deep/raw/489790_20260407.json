@@ -1,0 +1,38 @@
+{
+  "stock_code": "489790",
+  "corp_code": "01867758",
+  "years": [
+    2024,
+    2025
+  ],
+  "data": {
+    "2024": {
+      "total_assets": 15911.5,
+      "cash": 1537.5,
+      "total_equity": 8247.3,
+      "total_liab": 7664.2,
+      "op_profit": -1.2,
+      "net_income": 0.0
+    },
+    "2025": {
+      "total_assets": 18093.9,
+      "cash": 2487.6,
+      "total_equity": 7008.8,
+      "total_liab": 9431.7,
+      "op_profit": 1622.7,
+      "net_income": 0.0
+    }
+  },
+  "missing_years": [
+    2016,
+    2017,
+    2018,
+    2019,
+    2020,
+    2021,
+    2022,
+    2023,
+    2026
+  ],
+  "source": ""
+}

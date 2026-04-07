@@ -1,0 +1,140 @@
+{
+  "stock_code": "489790",
+  "stock_name": "한화비전",
+  "generated_at": "2026-04-07T08:48:38.801027+00:00",
+  "financials": {
+    "stock_code": "489790",
+    "corp_code": "01867758",
+    "years": [
+      2024,
+      2025
+    ],
+    "data": {
+      "2024": {
+        "total_assets": 15911.5,
+        "cash": 1537.5,
+        "total_equity": 8247.3,
+        "total_liab": 7664.2,
+        "op_profit": -1.2,
+        "net_income": 0.0
+      },
+      "2025": {
+        "total_assets": 18093.9,
+        "cash": 2487.6,
+        "total_equity": 7008.8,
+        "total_liab": 9431.7,
+        "op_profit": 1622.7,
+        "net_income": 0.0
+      }
+    },
+    "missing_years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2024,
+        "revenue_eok": 0,
+        "op_profit_eok": -1,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 0.0,
+        "debt_ratio_pct": 92.93
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 0,
+        "op_profit_eok": 1623,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 0.0,
+        "debt_ratio_pct": 134.57
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": 0.0,
+      "op_profit_cagr_pct": 0.0,
+      "best_year": 2025,
+      "worst_year": 2024,
+      "avg_roe_pct": 0.0
+    },
+    "valuation": {
+      "grade": "D",
+      "strengths": [
+        "2025년 영업이익이 흑자로 전환되며 큰 폭의 개선을 보였습니다.",
+        "현금성 자산이 2024년 대비 2025년에 증가하여 유동성이 개선되었습니다.",
+        "자산총계가 꾸준히 증가하는 추세입니다."
+      ],
+      "risks": [
+        "매출액이 0으로 기록되어 있어 핵심 사업 활동이 부재하거나 심각한 데이터 오류가 있을 가능성이 높습니다.",
+        "2025년 영업이익 흑자에도 불구하고 당기순이익이 0인 점은 비영업손실 등 추가적인 재무 위험이 존재함을 시사합니다.",
+        "부채비율이 2024년 92.93%에서 2025년 134.57%로 급증하여 재무 건전성 악화가 우려됩니다."
+      ],
+      "one_liner": "매출액 부재와 당기순이익 0%로 사업 지속성에 대한 심각한 우려가 존재하나, 2025년 영업이익 흑자 전환은 긍정적 신호로 해석될 수 있습니다."
+    }
+  },
+  "dcf": {
+    "text": "제공해주신 데이터를 바탕으로 한화비전(489790)의 DCF 적정가치를 계산하겠습니다.\n\n**전제 및 가정:**\n\n제공된 재무 데이터 중 `매출액: 0`이라는 점이 DCF 모델의 FCF 계산에 영향을 미칩니다. FCF 공식에 `감가상각(매출의 10%)`과 `CAPEX(매출의 5%)`가 포함되어 있으나, 매출액이 0일 경우 이 두 항목은 0이 됩니다. 또한, 5년 예측 기간 동안 매출액이나 영업이익의 성장률에 대한 정보가 없으므로, 다음과 같이 가정하여 진행합니다.\n\n1.  **FCF 계산:** `매출액: 0`이므로 `감가상각`과 `CAPEX`는 0으로 가정합니다. 따라서 FCF는 `영업이익 × (1 - 0.25)`로 계산됩니다.\n2.  **영업이익 성장:** 5년 예측 기간 동안 영업이익은 기준 연도(2025년)의 1623억원으로 일정하게 유지된다고 가정합니다.\n3.  **법인세율:** FCF 공식의 `(1 - 0.25)`를 통해 법인세율은 25%로 가정합니다.\n4.  **기준 연도:** 2025년이 첫 번째 예측 연도입니다.\n\n위 가정에 따라, 5년 예측 기간 동안의 연간 FCF는 다음과 같습니다:\n`FCF = 1623억원 × (1 - 0.25) = 1623억원 × 0.75 = 1217.25억원`\n\n---\n\n\n---\n\n### 분석 결과\n\n**1. 기본 시나리오 DCF 적정가치:**\n\n*   **적정가치(기본): 16262.56 억원**\n\n**2. DCF 적정가치 민감도 분석 (억원):**\n\n아래 표는 WACC와 영구성장률(g) 변화에 따른 DCF 적정가치 민감도 분석 결과입니다.\n\n|             | g=1%       | g=2%       | g=3%       |\n| :---------- | :--------- | :--------- | :--------- |\n| **WACC=7%** | 19600.32   | 22695.77   | 27338.94   |\n| **WACC=8%** | 16813.33   | 18943.60   | 21925.99   |\n| **WACC=9%** | 14722.68   | 16262.56   | 18315.73   |\n| **WACC=10%**| 13096.28   | 14251.00   | 15735.63   |\n| **WACC=11%**| 11794.85   | 12685.79   | 13799.46   |\n\n**3. 요약:**\n\n*   **적정가치(기본): 16262.56억원**\n\n---\n\n**참고:**\n이 분석은 제공된 데이터와 명시된 가정(특히 `매출액: 0`으로 인한 감가상각 및 CAPEX 0 처리, 영업이익 고정)에 기반한 결과입니다. 실제 기업 가치 평가에서는 매출액 성장률, 영업이익 성장률, 감가상각 및 CAPEX에 대한 보다 상세한 예측이 필요합니다.",
+    "executed_code": "import pandas as pd\n\n# --- Given Data ---\noperating_profit_base = 1623  # 억원\ntax_rate = 0.25 # Implied from FCF formula: 영업이익 × (1 - 0.25)\nprojection_years = 5\n\n# --- Base Case Assumptions ---\nwacc_base = 0.09\ng_base = 0.02\n\n# --- FCF Calculation (based on interpretation of 매출액: 0) ---\n# Assuming 매출액: 0 means 감가상각 and CAPEX are 0 for all projected years.\n# Also assuming operating profit remains constant for the 5 projection years as no growth rate is given.\nfcf_per_year = operating_profit_base * (1 - tax_rate)\n\nprint(f\"가정된 연간 FCF (5년 예측 기간): {fcf_per_year:.2f} 억원\")\n\n# --- DCF Function ---\ndef calculate_dcf(op_profit, tax_rate, proj_years, wacc, g):\n    # FCF for projection years (assuming constant operating profit and 0 dep/capex)\n    fcf_proj = op_profit * (1 - tax_rate)\n\n    # Calculate Present Value of FCFs for projection years\n    pv_fcf_sum = 0\n    for i in range(1, proj_years + 1):\n        pv_fcf_sum += fcf_proj / ((1 + wacc) ** i)\n\n    # Calculate Terminal Value\n    # FCF in the year after projection period (Year 6)\n    fcf_terminal_year = fcf_proj * (1 + g)\n\n    # Check for WACC <= g, which would make the model invalid\n    if wacc <= g:\n        return float('inf') # Or handle as an error/invalid scenario\n\n    terminal_value = fcf_terminal_year / (wacc - g)\n\n    # Discount Terminal Value back to present\n    pv_terminal_value = terminal_value / ((1 + wacc) ** proj_years)\n\n    # Total DCF Value\n    total_dcf = pv_fcf_sum + pv_terminal_value\n    return total_dcf\n\n# --- 1. 기본 시나리오 DCF 적정가치 계산 ---\nbase_dcf_value = calculate_dcf(operating_profit_base, tax_rate, projection_years, wacc_base, g_base)\nprint(f\"\\n--- 1. 기본 시나리오 DCF 적정가치 ---\")\nprint(f\"적정가치(기본): {base_dcf_value:.2f} 억원\")\n\n# --- 2. WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 출력 ---\nwacc_range = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_range = [0.01, 0.02, 0.03]\n\nsensitivity_results = {}\n\nfor current_wacc in wacc_range:\n    for current_g in g_range:\n        dcf_val = calculate_dcf(operating_profit_base, tax_rate, projection_years, current_wacc, current_g)\n        sensitivity_results[(current_wacc, current_g)] = dcf_val\n\n# Create a DataFrame for better presentation\ndf_sensitivity = pd.DataFrame(index=[f'WACC={w*100:.0f}%' for w in wacc_range],\n                              columns=[f'g={g*100:.0f}%' for g in g_range])\n\nfor (wacc, g), value in sensitivity_results.items():\n    wacc_label = f'WACC={wacc*100:.0f}%'\n    g_label = f'g={g*100:.0f}%'\n    df_sensitivity.loc[wacc_label, g_label] = f'{value:.2f}' # Format to 2 decimal places\n\nprint(f\"\\n--- 2. DCF 적정가치 민감도 분석 (억원) ---\")\nprint(df_sensitivity)\n\n# --- 3. 마지막에 '적정가치(기본): {value}억원' 형태로 요약 출력 ---\nprint(f\"\\n--- 3. 요약 ---\")\nprint(f\"적정가치(기본): {base_dcf_value:.2f}억원\")",
+    "code_output": "가정된 연간 FCF (5년 예측 기간): 1217.25 억원\n\n--- 1. 기본 시나리오 DCF 적정가치 ---\n적정가치(기본): 16262.56 억원\n\n--- 2. DCF 적정가치 민감도 분석 (억원) ---\n              g=1%      g=2%      g=3%\nWACC=7%   19600.32  22695.77  27338.94\nWACC=8%   16813.33  18943.60  21925.99\nWACC=9%   14722.68  16262.56  18315.73\nWACC=10%  13096.28  14251.00  15735.63\nWACC=11%  11794.85  12685.79  13799.46\n\n--- 3. 요약 ---\n적정가치(기본): 16262.56억원"
+  },
+  "news": {
+    "text": "## 한화비전(489790) 투자 분석 보고서\n\n### 요약\n\n제공된 10년 재무제표 분석 결과(투자등급 D, 매출액 부재 및 당기순이익 0%로 사업 지속성 우려)는 과거 또는 단기적인 관점을 반영하는 것으로 보입니다. 최근 2주간의 시장 컨센서스와 뉴스를 종합한 결과, 한화비전은 반도체 장비 사업(한화세미텍)과 AI 기반 영상 보안 솔루션 사업의 성장 동력을 바탕으로 2025년 이후 실적 턴어라운드 및 고성장이 기대됩니다. 현재 시장은 이러한 미래 성장성에 주목하며 긍정적인 평가를 내리고 있습니다.\n\n### 1. 재무 데이터가 보여주는 스토리와 현재 시장 컨센서스의 일치/불일치\n\n제공된 재무 데이터는 \"매출액 부재와 당기순이익 0%로 사업 지속성에 대한 심각한 우려\"를 표명하며 투자등급 D를 제시했습니다. 이는 과거 또는 현재 시점의 특정 재무적 어려움을 반영하는 것으로 해석됩니다.\n\n그러나 최근 시장 컨센서스는 이와 **크게 불일치**하며 매우 긍정적인 전망을 제시하고 있습니다.\n*   **투자의견:** 대부분의 증권사 애널리스트들은 \"매수\" 또는 \"강력 매수\" 의견을 제시하고 있습니다.\n*   **목표주가:** 애널리스트들의 평균 목표주가는 현재 주가(70,000원대 초중반) 대비 상당한 상승 여력을 보여주며, 81,000원에서 120,000원 사이로 형성되어 있습니다.\n*   **실적 전망:** 2025년 영업이익 흑자 전환을 넘어, 2026년부터 매출액과 영업이익, 당기순이익이 큰 폭으로 성장할 것으로 예상됩니다. 특히 키움증권은 2026년 영업이익이 2,451억 원(전년 대비 +47%)으로 급증할 것으로 전망했으며, 알파증권은 3,200억 원까지 상향 조정했습니다. 밸류라인에 따르면 2026년 예상 매출액은 전월 대비 11.09%, 주당순이익(EPS)은 5358.46% 상승했습니다.\n\n결론적으로, 제공된 재무 데이터는 과거의 어려움을 나타내지만, 현재 시장 컨센서스는 2025년 이후의 강력한 실적 개선과 성장 잠재력을 반영하고 있어 큰 차이를 보입니다.\n\n### 2. 재무제표에서 드러나지 않는 리스크 또는 호재\n\n**호재 (긍정적 요인):**\n\n*   **반도체 장비 사업(한화세미텍)의 폭발적 성장:**\n    *   **HBM 시장 수혜:** 한화세미텍은 SK하이닉스에 HBM(고대역폭 메모리)용 TC 본더를 대량 공급하며 2026년 영업이익 급증의 핵심 동력이 될 것으로 전망됩니다.\n    *   **차세대 본딩 기술 선점:** 향후 NAND(2026년), 파운드리(2027년), HBM(2028년)에 적용될 HCB(하이브리드 본딩) 장비를 개발 중이며, 삼성전자 및 SK하이닉스의 핵심 공급업체로 부상할 가능성이 높습니다.\n    *   **한화세미텍 흑자 전환:** 지난 3년간 영업적자를 기록했던 한화세미텍이 2026년에는 SK하이닉스향 TC 본더 공급 확대와 SMT 실적 호조에 힘입어 517억 원의 영업이익을 기록하며 흑자 전환할 것으로 예상됩니다.\n*   **AI 기반 영상 보안 솔루션 강화:**\n    *   **신제품 출시 및 기술 협력:** 북미 최대 보안 전시회에서 AI 기반 영상관제 솔루션 '블레이즈(BLAZE)'를 공개하며 AI 기술력을 선보였습니다. 또한 글로벌 AI 반도체 기업 암바렐라(Ambarella)와 차세대 AI 영상 보안 기술 개발을 위한 전략적 파트너십을 체결했습니다.\n    *   **수익성 개선:** AI 카메라 제품 믹스 개선으로 평균 판매 단가(ASP) 상승 및 교체 주기 단축 효과가 나타나 시큐리티 사업부의 수익성 개선에 기여하고 있습니다.\n\n**리스크 (부정적 요인):**\n\n*   **특정 고객사 의존도:** 반도체 장비 사업의 주요 고객사가 SK하이닉스에 집중되어 있어, 고객사의 투자 계획 변동에 따라 실적 변동성이 발생할 수 있습니다. 다만, 삼성전자, 대만, 중국 등 고객 다변화 노력도 진행 중입니다.\n*   **지정학적 리스크:** 시큐리티 사업 매출의 55%가 미주 지역에서 발생하고 있어, 관세 등 무역 정책 변화에 영향을 받을 수 있습니다. 그러나 AI 제품 믹스 개선 효과로 충분히 상쇄 가능할 것으로 전망됩니다.\n*   **과거 M&A 관련 의혹 (간접적 리스크):** 한화솔루션 자회사의 기술 탈취 의혹 관련 경찰 수사 뉴스가 있었으나, 이는 한화비전의 직접적인 사업과는 거리가 있습니다.\n\n### 3. 최종 판정\n\n제공된 재무제표 분석 결과의 우려에도 불구하고, 한화비전은 반도체 장비 사업의 HBM 시장 성장과 차세대 본딩 기술 선점, 그리고 AI 기반 영상 보안 솔루션의 혁신을 통해 강력한 성장 모멘텀을 확보하고 있습니다. 시장 컨센서스는 이러한 미래 성장성을 적극적으로 반영하여 긍정적인 실적 전망과 높은 목표주가를 제시하고 있습니다. 현재의 긍정적인 사업 환경과 미래 성장 잠재력을 고려할 때, 최종 판정은 **매수**입니다.",
+    "citations": [
+      {
+        "title": "hankyung.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHzmgUil8uuhQ-fQxwTUN3O9y7lXGPeVMWYuc0z_obscrmm7uwx-hzOJT5yZnhN0lCSaGwUB4bO-C-G44GzgDIOA3ADxQMm9GIe-5Qd2OShv7RSsv350Jx1TW6Fqv7MtfJlzRNXkqN-2yrqYiT2Tw=="
+      },
+      {
+        "title": "investing.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHCPnr_71Bnmtdxd9GZNyt9bEuyBX4Ei2vLYktOZwUnSjQD_fa-EyErslf1flnid9rnt-osavJ7KghINgIZntcz8vr-k3ep82TDGpym4Im9Ue_zxrwH3isgibgM8Gq4TUCLz3nxDDA3EbQbuFKLrmuY8axfo8Lqph58C-eJoeTyjdTQnBJyyTDNuAXNIg=="
+      },
+      {
+        "title": "hankyung.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFH4kMgihL6Do3Wi1vldey1aYKdoZ2Ploal7mfU4tuv-pMvAFhRWPZks6vgiUcPqyGtzZkubG8qJoW66AFmGLxZ4tylX7DZGg0o1Z0SkRkq0sdBPZnzN9byUb3QVBbORPXA2REF"
+      },
+      {
+        "title": "alphasquare.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEoPvBT2-N9mUFuHJlaAewPKgbmPNKriPfsV3yoRRHk9XjZlLx7T61kdcHIHPLccoSQaouWrqFhlOqUNYjgYWFpAKCZIQ3rFjVwSDDgX3sHZ1WwqRGyHa0PRxzg3w5CciXXR7OVxnZw_6wNOBrAoWp5Y5-8x0SERpkKSBUYMN5ZL6dsW7dPz1wevTbkiZmTWcfbfARfWJj_2frZS9pHcV1Ub9la4rH68UT3X4iwar9bQtwQ6cGceamucj0y2uRyEkSwhmEoR5i37mc_DFcIQT95"
+      },
+      {
+        "title": "marketmood.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFG79QkeAOcauusguUsDcodyYE8_jO0hjHb_FjUEmW2kXnrJOB9IugrWzKWd4OODe4FRjsp_ztJRJlrHEUaMWpu8T5lFYdNtsDetvtEU0H7nM-L6b2B-CYQL4B9AxRpwg=="
+      },
+      {
+        "title": "littlebproject.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGz8T4RFdqVfZ-wmzez2SfU87r0KafxXbyM7kE-uTxMBVr4It4ezTxH-XZLnSZyjuDZr_5XJuMf0knM2LBhJK_z3mgz5a1u52LdZ3TOhde9Xn86XwK8HYqMkTMH8CcKIpOwMQ=="
+      },
+      {
+        "title": "kiwoom.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHVUgQjypBGRhjW6At3cFGRuwA6hvoD6S1SzTK2O-wWOtoO8dAj1k0NRIHiLS7eAUeNqqavDePxyy2j1Hq3WDGU5CRCL7eVzr8L33bGx9BOlsZL-A-rAeaEtAlg"
+      },
+      {
+        "title": "valueline.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGvhQiXJDgUj8_d6S_3o6Tj-S3hAR2U88wTPZRTCXDNv7ahcLFqSZEei_m20chUYO24uVZoIXze0aE9YvOKGDSwL4653vjSRcf3DHqkOeZCBjfdziXczqUQd6lpvflxieHGe7LD_jQvE9CPWfCp"
+      },
+      {
+        "title": "mydailybyte.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGV__VSgAf_tzmzaDzHfqUbAB8YLy8xsr35P07_Zgd2pOKQdhyA2w8LOegOwwtYfWbWFIFUx2TTKGhtg587IbKlxi9UMCUI21GOuvVDcRzjaTCrdVqAfnvfkyc6zlKTZtPxd8_iCX5PvX7sYnNg"
+      },
+      {
+        "title": "deepsearch.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQG7f1f6_NTVjwiXjFCbQTLQ4MHY8MIIO_RMyOjpZeJvdVAYJB6KdhsAVCxUSOJNnXbaK9XyxmqZr8kodFt2uzgOxkamK_1nf8B1vzKyH87S-X16B_J0etuhJgoumfZYIIWc1oZOd2Y="
+      }
+    ]
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=01867758",
+    "summary": "공시 페이지 접근 제한"
+  }
+}

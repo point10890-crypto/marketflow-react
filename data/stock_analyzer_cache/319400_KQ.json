@@ -2,8 +2,8 @@
   "name": "현대무벡스",
   "ticker": "319400.KQ",
   "result": "매수",
-  "date": "2026-03-28 19:05:20",
-  "elapsed": 2.0,
+  "date": "2026-04-07 19:55:30",
+  "elapsed": 2.4,
   "consensus_score": 4.0,
   "analyst_count": 1,
   "recommendation_detail": {
@@ -15,33 +15,37 @@
   },
   "recommendation_period": "0m",
   "price_targets": {
-    "current": 25800.0,
+    "current": 25250.0,
     "high": 7700.0,
     "low": 7700.0,
     "mean": 7700.0,
     "median": 7700.0
   },
-  "current_price": 25800.0,
-  "upside_potential": -70.2,
+  "current_price": 25250.0,
+  "upside_potential": -69.5,
   "key_stats": {
     "name": "HYUNDAI MOVEX",
     "sector": "Financial Services",
     "industry": "Shell Companies",
-    "market_cap": 2830052884480,
+    "market_cap": 2769722277888,
     "pe_ratio": null,
-    "forward_pe": 78.41946,
+    "forward_pe": 76.74772,
     "dividend_yield": 0.19,
-    "beta": 2.484,
+    "beta": 2.485,
     "fifty_two_week_high": 50400.0,
-    "fifty_two_week_low": 3170.0,
+    "fifty_two_week_low": 3200.0,
     "revenue": 393940631552,
     "profit_margin": 0.028670002,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
   "source": "yfinance",
-  "ai_analysis": "현재 현대무벡스에 대해 1명의 애널리스트가 매수 의견을 제시하고 있습니다. 목표가 평균은 7,700원으로, 현재 주가 대비 상당 폭 하락 여력이 있는 것으로 분석됩니다. 투자 결정 시 이러한 컨센서스와 목표가 정보를 참고하시기 바랍니다.",
+  "ai_analysis": "현재 현대무벡스에 대해 1명의 애널리스트가 매수 의견을 제시하고 있습니다. 그러나 목표가 평균은 현재 주가보다 현저히 낮은 수준으로, 상당 폭의 하락 가능성을 시사합니다. 투자 시 목표가와 컨센서스 간의 괴리를 신중하게 고려해야 합니다.",
   "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 113899959660
+    },
     {
       "date": "2025-09",
       "value": 103477170520
@@ -53,13 +57,13 @@
     {
       "date": "2025-03",
       "value": 77712421020
-    },
-    {
-      "date": "2024-12",
-      "value": 123961621010
     }
   ],
   "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 1193883230
+    },
     {
       "date": "2025-09",
       "value": 5006830730
@@ -71,10 +75,6 @@
     {
       "date": "2025-03",
       "value": 992880920
-    },
-    {
-      "date": "2024-12",
-      "value": 16169197500
     }
   ],
   "news": []
