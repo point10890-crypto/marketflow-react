@@ -1,0 +1,75 @@
+{
+  "name": "후성",
+  "ticker": "093370.KS",
+  "result": "데이터 없음",
+  "date": "2026-04-08 07:32:55",
+  "elapsed": 1.7,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 9870.0,
+    "high": 12000.0,
+    "low": 12000.0,
+    "mean": 12000.0,
+    "median": 12000.0
+  },
+  "current_price": 9870.0,
+  "upside_potential": 21.6,
+  "key_stats": {
+    "name": "FOOSUNG",
+    "sector": "Basic Materials",
+    "industry": "Chemicals",
+    "market_cap": 1058609168384,
+    "pe_ratio": null,
+    "forward_pe": 27.493036,
+    "dividend_yield": null,
+    "beta": 0.973,
+    "fifty_two_week_high": 10590.0,
+    "fifty_two_week_low": 3800.0,
+    "revenue": 471564288000,
+    "profit_margin": 0.01126,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 120986978120
+    },
+    {
+      "date": "2025-06",
+      "value": 124206380450
+    },
+    {
+      "date": "2025-03",
+      "value": 107117451810
+    },
+    {
+      "date": "2024-12",
+      "value": 110421752840
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 13539412070
+    },
+    {
+      "date": "2025-06",
+      "value": -19606704490
+    },
+    {
+      "date": "2025-03",
+      "value": -81693580
+    },
+    {
+      "date": "2024-12",
+      "value": -75899884120
+    }
+  ],
+  "news": []
+}

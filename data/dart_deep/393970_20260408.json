@@ -1,0 +1,134 @@
+{
+  "stock_code": "393970",
+  "stock_name": "대진첨단소재",
+  "generated_at": "2026-04-07T22:29:27.929603+00:00",
+  "financials": {
+    "stock_code": "393970",
+    "corp_code": "01549472",
+    "years": [
+      2024,
+      2025
+    ],
+    "data": {
+      "2024": {
+        "total_assets": 1429.8,
+        "cash": 70.8,
+        "total_equity": 492.6,
+        "short_debt": 30.2,
+        "total_liab": 812.2,
+        "long_debt": 167.1,
+        "op_profit": 59.9,
+        "net_income": 0.0,
+        "revenue": 889.9
+      },
+      "2025": {
+        "total_assets": 1519.2,
+        "cash": 28.5,
+        "total_equity": 744.0,
+        "short_debt": 245.6,
+        "total_liab": 1001.4,
+        "long_debt": 137.1,
+        "op_profit": -203.6,
+        "net_income": 0.0,
+        "revenue": 845.1
+      }
+    },
+    "missing_years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2024,
+        "revenue_eok": 890,
+        "op_profit_eok": 60,
+        "net_income_eok": 0,
+        "roe_pct": 0,
+        "op_margin_pct": 6.74,
+        "debt_ratio_pct": 164.71
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 845,
+        "op_profit_eok": -204,
+        "net_income_eok": 0,
+        "roe_pct": 0,
+        "op_margin_pct": -24.14,
+        "debt_ratio_pct": 134.54
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": -5.06,
+      "op_profit_cagr_pct": -440,
+      "best_year": 2024,
+      "worst_year": 2025,
+      "avg_roe_pct": 0
+    },
+    "valuation": {
+      "grade": "D",
+      "strengths": [
+        "2024년에는 긍정적인 영업이익을 기록했습니다.",
+        "2025년 부채비율이 전년 대비 소폭 개선되었습니다.",
+        "2025년 자본총계가 전년 대비 증가했습니다."
+      ],
+      "risks": [
+        "2025년 매출액 감소와 함께 대규모 영업손실을 기록하여 수익성이 크게 악화되었습니다.",
+        "지속적인 당기순이익 0원 기록은 기업의 본질적인 이익 창출 능력 부재를 시사합니다.",
+        "여전히 높은 부채비율은 재무 건전성에 대한 우려를 높이며, 현금성 자산 감소는 유동성 위험을 가중시킵니다."
+      ],
+      "one_liner": "매출 감소와 대규모 영업손실로 수익성이 급격히 악화되었으며, 재무 건전성에도 빨간불이 켜진 상황입니다."
+    }
+  },
+  "dcf": {
+    "text": "퀀트 애널리스트로서 대진첨단소재(393970)의 DCF 적정가치를 계산했습니다.\n\n**1. 기본 시나리오 DCF 적정가치 계산**\n\n제공된 재무 데이터와 가정을 바탕으로 2025년 FCF를 계산하고, 이를 5년간 예측 기간 동안 동일하게 유지된다고 가정하여 DCF 모델을 적용했습니다.\n\n*   **2025년 매출액:** 845 억원\n*   **2025년 영업이익:** -204 억원\n*   **세율 (가정):** 25% (영업이익 × (1 - 0.25)에 따라)\n*   **감가상각:** 매출액의 10% = 845 억원 × 0.10 = 84.5 억원\n*   **CAPEX:** 매출액의 5% = 845 억원 × 0.05 = 42.25 억원\n*   **2025년 FCF:** 영업이익 × (1 - 0.25) + 감가상각 - CAPEX\n    = -204 억원 × 0.75 + 84.5 억원 - 42.25 억원\n    = -153 억원 + 84.5 억원 - 42.25 억원\n    = -110.75 억원\n\n이 FCF를 5년간 유지하고, WACC 9%, 영구성장률 2%를 적용하여 적정가치를 계산했습니다.\n\n**2. WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 출력**\n\nWACC와 영구성장률(g) 변화에 따른 DCF 적정가치 민감도 분석 결과는 다음과 같습니다. (단위: 억원)\n\n--- DCF 민감도 분석 (억원) ---\nWACC / g          1%        2%        3%\n7%          -1783.31  -2064.95  -2487.40\n8%          -1529.74  -1723.56  -1994.91\n9%          -1339.53  -1479.63  -1666.43\n10%         -1191.55  -1296.61  -1431.69\n11%         -1073.14  -1154.20  -1255.53\n\n**3. 요약 출력**\n\n적정가치(기본): -1479.63억원\n\n**분석 결과 요약:**\n대진첨단소재는 현재 마이너스 영업이익을 기록하고 있어, 제공된 가정에 따라 계산된 FCF 또한 마이너스입니다. 이로 인해 DCF 모델을 통한 적정가치는 모든 시나리오에서 음수로 나타났습니다. 이는 기업이 현재 현금을 창출하지 못하고 있으며, 이 상태가 지속될 경우 기업 가치가 음수임을 시사합니다. 이러한 상황에서는 추가적인 자금 조달이나 사업 구조 개선을 통한 수익성 회복이 필수적입니다.",
+    "executed_code": "def calculate_dcf(revenue, op_profit, tax_rate, dep_rate, capex_rate, wacc, g, forecast_years):\n    # Calculate FCF for the first year (base year)\n    depreciation = revenue * dep_rate\n    capex = revenue * capex_rate\n    \n    # NOPLAT (Net Operating Profit Less Adjusted Taxes)\n    # The problem explicitly states \"영업이익 × (1 - 0.25)\", so I will follow this.\n    # Even if operating profit is negative, the factor (1-0.25) is applied.\n    noplat = op_profit * (1 - tax_rate)\n    \n    fcf_base_year = noplat + depreciation - capex\n    \n    # Assuming FCF remains constant for the forecast period (5 years)\n    # as no growth rates are provided for revenue/op_profit for these years.\n    \n    present_value_fcf = 0\n    for i in range(1, forecast_years + 1):\n        present_value_fcf += fcf_base_year / ((1 + wacc) ** i)\n        \n    # Calculate Terminal Value\n    # FCF for the year after the forecast period (Year 6 in a 5-year forecast)\n    # This FCF is assumed to grow at 'g' from the last forecast year's FCF.\n    fcf_terminal_year = fcf_base_year * (1 + g) \n    \n    if wacc <= g:\n        # This condition should not be met with typical WACC and g values (WACC > g is required for GGM).\n        # If it were, it would imply infinite value or an unsustainable growth rate.\n        return float('inf') \n        \n    terminal_value_at_forecast_end = fcf_terminal_year / (wacc - g)\n    \n    # Discount Terminal Value back to present\n    present_value_terminal_value = terminal_value_at_forecast_end / ((1 + wacc) ** forecast_years)\n    \n    total_intrinsic_value = present_value_fcf + present_value_terminal_value\n    \n    return total_intrinsic_value\n\n# Base Scenario Inputs\nrevenue_base = 845\nop_profit_base = -204\ntax_rate_base = 0.25\ndep_rate_base = 0.10\ncapex_rate_base = 0.05\nwacc_base = 0.09\ng_base = 0.02\nforecast_years_base = 5\n\n# 1. 기본 시나리오 DCF 적정가치(억원) 계산\nbase_dcf_value = calculate_dcf(revenue_base, op_profit_base, tax_rate_base, dep_rate_base, capex_rate_base, wacc_base, g_base, forecast_years_base)\nprint(f\"기본 시나리오 DCF 적정가치: {base_dcf_value:.2f} 억원\")\n\n# 2. WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 출력\nwacc_values = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_values = [0.01, 0.02, 0.03]\n\nsensitivity_results = {}\n\nprint(\"\\n--- DCF 민감도 분석 (억원) ---\")\nprint(f\"{'WACC \\\\ g':<10}\", end=\"\")\nfor g_val in g_values:\n    print(f\"{g_val*100:.0f}%\".rjust(10), end=\"\")\nprint()\n\nfor wacc_val in wacc_values:\n    print(f\"{wacc_val*100:.0f}%\".ljust(10), end=\"\")\n    for g_val in g_values:\n        # Ensure WACC > g for Gordon Growth Model\n        if wacc_val <= g_val:\n            dcf_val = \"N/A\" # Not Applicable or infinite value\n        else:\n            dcf_val = calculate_dcf(revenue_base, op_profit_base, tax_rate_base, dep_rate_base, capex_rate_base, wacc_val, g_val, forecast_years_base)\n            dcf_val = f\"{dcf_val:.2f}\"\n        print(f\"{dcf_val}\".rjust(10), end=\"\")\n    print()\n\n# 3. 마지막에 '적정가치(기본): {value}억원' 형태로 요약 출력\nprint(f\"\\n적정가치(기본): {base_dcf_value:.2f}억원\")\n\ndef calculate_dcf(revenue, op_profit, tax_rate, dep_rate, capex_rate, wacc, g, forecast_years):\n    # Calculate FCF for the first year (base year)\n    depreciation = revenue * dep_rate\n    capex = revenue * capex_rate\n    \n    # NOPLAT (Net Operating Profit Less Adjusted Taxes)\n    # The problem explicitly states \"영업이익 × (1 - 0.25)\", so I will follow this.\n    # Even if operating profit is negative, the factor (1-0.25) is applied.\n    noplat = op_profit * (1 - tax_rate)\n    \n    fcf_base_year = noplat + depreciation - capex\n    \n    # Assuming FCF remains constant for the forecast period (5 years)\n    # as no growth rates are provided for revenue/op_profit for these years.\n    \n    present_value_fcf = 0\n    for i in range(1, forecast_years + 1):\n        present_value_fcf += fcf_base_year / ((1 + wacc) ** i)\n        \n    # Calculate Terminal Value\n    # FCF for the year after the forecast period (Year 6 in a 5-year forecast)\n    # This FCF is assumed to grow at 'g' from the last forecast year's FCF.\n    fcf_terminal_year = fcf_base_year * (1 + g) \n    \n    if wacc <= g:\n        # This condition should not be met with typical WACC and g values (WACC > g is required for GGM).\n        # If it were, it would imply infinite value or an unsustainable growth rate.\n        return float('inf') \n        \n    terminal_value_at_forecast_end = fcf_terminal_year / (wacc - g)\n    \n    # Discount Terminal Value back to present\n    present_value_terminal_value = terminal_value_at_forecast_end / ((1 + wacc) ** forecast_years)\n    \n    total_intrinsic_value = present_value_fcf + present_value_terminal_value\n    \n    return total_intrinsic_value\n\n# Base Scenario Inputs\nrevenue_base = 845\nop_profit_base = -204\ntax_rate_base = 0.25\ndep_rate_base = 0.10\ncapex_rate_base = 0.05\nwacc_base = 0.09\ng_base = 0.02\nforecast_years_base = 5\n\n# 1. 기본 시나리오 DCF 적정가치(억원) 계산\nbase_dcf_value = calculate_dcf(revenue_base, op_profit_base, tax_rate_base, dep_rate_base, capex_rate_base, wacc_base, g_base, forecast_years_base)\nprint(f\"기본 시나리오 DCF 적정가치: {base_dcf_value:.2f} 억원\")\n\n# 2. WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 출력\nwacc_values = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_values = [0.01, 0.02, 0.03]\n\nprint(\"\\n--- DCF 민감도 분석 (억원) ---\")\n# Corrected f-string for header\nprint(f\"{'WACC / g':<10}\", end=\"\")\nfor g_val in g_values:\n    print(f\"{g_val*100:.0f}%\".rjust(10), end=\"\")\nprint()\n\nfor wacc_val in wacc_values:\n    print(f\"{wacc_val*100:.0f}%\".ljust(10), end=\"\")\n    for g_val in g_values:\n        # Ensure WACC > g for Gordon Growth Model\n        if wacc_val <= g_val:\n            dcf_val = \"N/A\" # Not Applicable or infinite value\n        else:\n            dcf_val = calculate_dcf(revenue_base, op_profit_base, tax_rate_base, dep_rate_base, capex_rate_base, wacc_val, g_val, forecast_years_base)\n            dcf_val = f\"{dcf_val:.2f}\"\n        print(f\"{dcf_val}\".rjust(10), end=\"\")\n    print()\n\n# 3. 마지막에 '적정가치(기본): {value}억원' 형태로 요약 출력\nprint(f\"\\n적정가치(기본): {base_dcf_value:.2f}억원\")",
+    "code_output": "Traceback (most recent call last):\n  File \"<string>\", line 60\n    print(f\"{'WACC \\\\ g':<10}\", end=\"\")\n                              ^\nSyntaxError: f-string expression part cannot include a backslash\n\n기본 시나리오 DCF 적정가치: -1479.63 억원\n\n--- DCF 민감도 분석 (억원) ---\nWACC / g          1%        2%        3%\n7%          -1783.31  -2064.95  -2487.40\n8%          -1529.74  -1723.56  -1994.91\n9%          -1339.53  -1479.63  -1666.43\n10%         -1191.55  -1296.61  -1431.69\n11%         -1073.14  -1154.20  -1255.53\n\n적정가치(기본): -1479.63억원"
+  },
+  "news": {
+    "text": "## 대진첨단소재(393970) 투자 의견: **매도**\n\n### 1. 재무 데이터가 보여주는 스토리와 현재 시장 컨센서스의 일치/불일치\n\n제공된 대진첨단소재의 10년 재무제표 분석 결과(투자등급 D, 매출 감소, 대규모 영업손실, 재무 건전성 악화)는 현재 시장의 컨센서스와 **완벽하게 일치**합니다. 오히려 최근 2주간의 뉴스는 재무제표에서 드러난 부정적인 상황을 넘어, 기업의 존립 자체를 위협하는 심각한 리스크가 현실화되었음을 보여줍니다.\n\n과거 2025년 4월의 일부 증권사 리포트에서는 2차전지 소재 기업으로서의 성장 가능성을 긍정적으로 평가했으나, 이는 현재의 상황과는 완전히 상반되며, 불과 1년여 만에 기업의 펀더멘털이 급격히 훼손되었음을 시사합니다. 현재 시장은 대진첨단소재에 대해 \"강력 매도\" 또는 \"매도\" 의견을 제시하고 있으며, 전문가들의 목표주가 컨센서스 또한 형성되지 않고 있습니다.\n\n### 2. 재무제표에서 드러나지 않는 리스크 또는 호재\n\n**드러나지 않는 리스크 (매우 심각):**\n\n*   **상장폐지 리스크:** 2025사업연도 감사의견과 관련된 상장폐지 사유가 발생하여 현재 주권매매거래가 정지된 상태입니다. 상장적격성 실질심사 결과 및 이의신청 여부에 따라 상장폐지될 가능성이 매우 높습니다. 이는 재무제표만으로는 파악할 수 없는 가장 치명적인 리스크입니다.\n*   **횡령/배임 혐의 및 전 대표 구속:** 전 대표의 횡령/배임 혐의가 불거졌으며, 핵심 부품 도면 유출 혐의로 전 대표가 구속 수사 중인 것으로 알려졌습니다. 이는 기업의 도덕적 해이와 경영 투명성 부재를 여실히 보여주며, 기업 신뢰도에 막대한 손상을 입혔습니다.\n*   **전환사채(CB) 관련 불확실성:** 약 400억 원 규모의 전환사채 잔량과 납입일 연기 등은 재무제표상 부채로 기록되지만, 상장폐지 위기 상황에서 투자자들의 권리 행사 및 상환 가능성에 대한 불확실성을 극대화합니다.\n\n**호재:**\n\n*   현재까지의 검색 결과로는 재무제표에서 드러나지 않는 긍정적인 호재는 전혀 찾아볼 수 없습니다.\n\n### 3. 최종 판정\n\n제공된 재무제표 분석 결과와 최근 2주간의 뉴스를 종합적으로 고려할 때, 대진첨단소재는 심각한 경영 위기에 직면해 있으며, 상장폐지 가능성이 매우 높은 상황입니다. 기업의 사업 지속성 자체가 불투명하며, 투자자 보호가 거의 불가능한 수준입니다.\n\n따라서, 대진첨단소재에 대한 최종 투자 판정은 **매도**입니다.\n\n**근거:**\n*   **상장폐지 위기:** 감사의견 거절 및 횡령/배임 혐의로 인한 거래 정지 및 상장폐지 실질심사 대상 지정은 기업의 존립 자체를 위협하는 가장 큰 요인입니다.\n*   **경영 투명성 상실:** 전 대표의 구속 및 핵심 기술 유출 혐의는 경영진의 도덕적 해이와 기업 지배구조의 심각한 문제를 드러내며, 기업에 대한 신뢰를 완전히 상실하게 만들었습니다.\n*   **재무 건전성 악화:** 이미 투자등급 D로 평가될 만큼 재무 상태가 좋지 않으며, 대규모 영업손실과 전환사채 관련 불확실성으로 회생 가능성이 희박합니다.\n*   **시장 컨센서스 부재:** 현재 대진첨단소재의 회복을 기대할 만한 긍정적인 시장 컨센서스나 뉴스는 전무합니다.\n\n이러한 상황에서 주식을 보유하는 것은 투자금 전액 손실로 이어질 가능성이 매우 높으므로, 매도를 통해 추가 손실을 방지하는 것이 현명한 판단입니다.",
+    "citations": [
+      {
+        "title": "datatooza.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQG5NoETEfPg8j3ditm2ibihBpn-QM5nVQS3RifzJtfbYGgrILTfEhqJjqqJZw_l5tufOYSvcG85ZRESvIBi22wF-DcZTb6A4zFTvOjrp26Y-UGUI8ieGL57NfPXHzI6AsyUOAGhcG0bsVfSD9xS2XVgFVLl9IcPX0F6YLxq"
+      },
+      {
+        "title": "youtube.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQH9vMRWIePBa8OercpC80FH7ztJ9q-HN7asXTB6I7B_WwF6smT9IMxuSpqy2L3ROL9QqVuEBvuLS-AflFvrW75fvR0JqHDC1_4QKYt9cAWRU8N77n-CvxXGQTsuTt_Wl4JWF88nEUs="
+      },
+      {
+        "title": "youtube.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQG8JJaVSOX0wbsOGONsa2TByJpXiDGqvuA7vNbdfKdKhqIdpmO-rpp948eLy6RXzLHuJ4QuZRxhMTAoj7q_qHK9vOC_iSM1Sxxay6qjs2kjJDp88WjhzyV6YzIVO71d4RarZjwxI3M="
+      },
+      {
+        "title": "youtube.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFEEZk1ySrahqtu3p_nrqd8x-Om0jT_mNHWLJBfBcCXzCxDndUIDJK0Lijx9fZuHQxRVVCKQoyeYT_P22sVe6Kt7m9UnS_cOKExJvQDLa4u3SGKJ2zffbW4K3sesGZPuP4rVHqzv1U="
+      },
+      {
+        "title": "samsungpop.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGoB9O7uUR2M3Q9hsXWkKVrVwfvdaSKvyQd2ZB6R-hT-mZZq-3e9BarI06b-QzOJsDeGwylfB_tMDFK93hiMUPqWK0-dfbivEOwmy43D87ms3QH51WFtTPg7xBR0yTxv5e6hrJIWeNO6PfhEY5ylx0FOYKzeAuV_Omz36yFZrLngMSOWAKy3hVMCCiAw6ih6bVF-CrUfpwxzxjXIGywObNY2VdZ2jX_VYbzqR6oRG9miKYIKb6fvQnpkqt_dyGkK7dXcZvf7SmnOn9HBi0RdIw="
+      },
+      {
+        "title": "alphasquare.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHQ1554dkjTQCGP8GCl1QXO827NLSPR_AVr79VWW6peWkdeulClCeMdv6X2LThG6mB6xBHmFcKJP7KdKVs91RxRKTMEmYfBmYATnuZ987ekxkSCrdT-n3A-CU8gsm8NtjZ7XlQIw_8BkprLUjnoWFpzWVPO"
+      },
+      {
+        "title": "littlebproject.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHeHmASSBqfG8dSzt9QrWyTbkOppfTSmWHsXiwRTbuaj1rm7WjzE3aHHN2TgqNFvCEHMlbq6BConnjT4wOCs0r1CgdLTY1X3YqNJpvGNm4jYSG05jXPGy6ePgQn-EyByVl8Cw=="
+      }
+    ]
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=01549472",
+    "summary": "공시 페이지 접근 제한"
+  }
+}

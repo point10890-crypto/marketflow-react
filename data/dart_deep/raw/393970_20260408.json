@@ -1,0 +1,44 @@
+{
+  "stock_code": "393970",
+  "corp_code": "01549472",
+  "years": [
+    2024,
+    2025
+  ],
+  "data": {
+    "2024": {
+      "total_assets": 1429.8,
+      "cash": 70.8,
+      "total_equity": 492.6,
+      "short_debt": 30.2,
+      "total_liab": 812.2,
+      "long_debt": 167.1,
+      "op_profit": 59.9,
+      "net_income": 0.0,
+      "revenue": 889.9
+    },
+    "2025": {
+      "total_assets": 1519.2,
+      "cash": 28.5,
+      "total_equity": 744.0,
+      "short_debt": 245.6,
+      "total_liab": 1001.4,
+      "long_debt": 137.1,
+      "op_profit": -203.6,
+      "net_income": 0.0,
+      "revenue": 845.1
+    }
+  },
+  "missing_years": [
+    2016,
+    2017,
+    2018,
+    2019,
+    2020,
+    2021,
+    2022,
+    2023,
+    2026
+  ],
+  "source": ""
+}

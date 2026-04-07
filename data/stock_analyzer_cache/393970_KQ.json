@@ -1,0 +1,75 @@
+{
+  "name": "대진첨단소재",
+  "ticker": "393970.KQ",
+  "result": "데이터 없음",
+  "date": "2026-04-08 07:29:27",
+  "elapsed": 1.9,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 2825.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 2825.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "DAEJIN ADVANCED MATERIALS",
+    "sector": "Basic Materials",
+    "industry": "Specialty Chemicals",
+    "market_cap": 41880117248,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": null,
+    "beta": null,
+    "fifty_two_week_high": 15160.0,
+    "fifty_two_week_low": 2340.0,
+    "revenue": 87005315072,
+    "profit_margin": -0.12617,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 32496036310
+    },
+    {
+      "date": "2025-06",
+      "value": 12319768210
+    },
+    {
+      "date": "2025-03",
+      "value": 20220375430
+    },
+    {
+      "date": "2024-12",
+      "value": 21969132230
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 134423120
+    },
+    {
+      "date": "2025-06",
+      "value": -10228941580
+    },
+    {
+      "date": "2025-03",
+      "value": -216638020
+    },
+    {
+      "date": "2024-12",
+      "value": -666540370
+    }
+  ],
+  "news": []
+}

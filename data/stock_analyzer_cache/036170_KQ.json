@@ -1,0 +1,75 @@
+{
+  "name": "에이치엠넥스",
+  "ticker": "036170.KQ",
+  "result": "데이터 없음",
+  "date": "2026-04-08 06:24:52",
+  "elapsed": 2.8,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 3895.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 3895.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "HMNEX",
+    "sector": "",
+    "industry": "",
+    "market_cap": 234762190848,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": null,
+    "beta": null,
+    "fifty_two_week_high": 7120.0,
+    "fifty_two_week_low": 801.0,
+    "revenue": null,
+    "profit_margin": null,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 11826571090
+    },
+    {
+      "date": "2025-09",
+      "value": 11308015320
+    },
+    {
+      "date": "2025-06",
+      "value": 4754359910
+    },
+    {
+      "date": "2025-03",
+      "value": 3818428860
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 3844671970
+    },
+    {
+      "date": "2025-09",
+      "value": 3527682650
+    },
+    {
+      "date": "2025-06",
+      "value": 1729933010
+    },
+    {
+      "date": "2025-03",
+      "value": 1808045140
+    }
+  ],
+  "news": []
+}

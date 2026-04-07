@@ -1,9 +1,8 @@
 {
   "AKAM": "Tech",
-  "LNT": "Util",
-  "AEE": "Util",
   "ACGL": "Fin",
   "AIZ": "Fin",
-  "APA": "Energy",
-  "ANET": "Tech"
+  "AEE": "Util",
+  "ANET": "Tech",
+  "APA": "Energy"
 }
