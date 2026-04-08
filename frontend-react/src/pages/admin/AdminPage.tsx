@@ -499,16 +499,19 @@ function SubscriptionsTab({ apiToken, onCountChange }: { apiToken?: string; onCo
     const [requests, setRequests] = useState<SubscriptionRequest[]>([]);
     const [loading, setLoading] = useState(true);
     const [actionMsg, setActionMsg] = useState('');
+    // 처리 중인 request id 추적 — 같은 row 더블클릭 방지 + 이미 처리된 row 보호
+    const [processing, setProcessing] = useState<Set<number>>(new Set());
 
-    const loadRequests = useCallback(async () => {
-        setLoading(true);
+    // silent=true 이면 스피너를 띄우지 않음 (refresh 버튼용 기본은 스피너 O)
+    const loadRequests = useCallback(async (silent = false) => {
+        if (!silent) setLoading(true);
         try {
             const res = await adminAPI.getSubscriptions(apiToken);
             const reqs = res.requests || [];
             setRequests(reqs);
             onCountChange(reqs.filter((r: SubscriptionRequest) => r.status === 'pending').length);
         } catch { /* */ }
-        setLoading(false);
+        if (!silent) setLoading(false);
     }, [apiToken, onCountChange]);
 
     useEffect(() => { loadRequests(); }, [loadRequests]);
@@ -516,47 +519,66 @@ function SubscriptionsTab({ apiToken, onCountChange }: { apiToken?: string; onCo
     const showAction = (msg: string) => { setActionMsg(msg); setTimeout(() => setActionMsg(''), 3000); };
 
     const handleApprove = async (id: number) => {
+        // 이미 처리 중이거나 pending 이 아닌 row 는 무시 (중복 클릭 차단)
+        if (processing.has(id)) return;
+        const current = requests.find(r => r.id === id);
+        if (!current || current.status !== 'pending') return;
+
+        setProcessing(prev => { const n = new Set(prev); n.add(id); return n; });
         // 1) Optimistic UI: 즉시 approved 로 전환
         setRequests(prev => {
-            const next = prev.map(r => r.id === id ? { ...r, status: 'approved' as const } : r);
+            const next = prev.map(r => r.id === id ? { ...r, status: 'approved' as const, processed_at: new Date().toISOString() } : r);
             onCountChange(next.filter(r => r.status === 'pending').length);
             return next;
         });
         showAction('✅ 구독 승인 완료');
         try {
-            // 2) 서버 확정 (백그라운드) — 실패 시 롤백 + 에러 표시
-            await adminAPI.approveSubscription(id, apiToken);
-            // 3) 서버 확정된 최신 상태로 재동기화 (user tier/pro_expires_at 포함)
-            loadRequests();
+            // 2) 서버 확정. 응답의 request 객체로 로컬 상태 merge (loadRequests 호출 X → 스피너 X)
+            const res = await adminAPI.approveSubscription(id, apiToken);
+            if (res?.request) {
+                setRequests(prev => prev.map(r => r.id === id ? res.request : r));
+            }
         } catch (err: any) {
+            // 실패 시에만 롤백
             setRequests(prev => {
-                const next = prev.map(r => r.id === id ? { ...r, status: 'pending' as const } : r);
+                const next = prev.map(r => r.id === id ? { ...r, status: 'pending' as const, processed_at: null } : r);
                 onCountChange(next.filter(r => r.status === 'pending').length);
                 return next;
             });
             showAction(`❌ ${err.message}`);
+        } finally {
+            setProcessing(prev => { const n = new Set(prev); n.delete(id); return n; });
         }
     };
 
     const handleReject = async (id: number) => {
+        if (processing.has(id)) return;
+        const current = requests.find(r => r.id === id);
+        if (!current || current.status !== 'pending') return;
+
         const note = prompt('거절 사유 (선택):');
+        setProcessing(prev => { const n = new Set(prev); n.add(id); return n; });
         // Optimistic UI
         setRequests(prev => {
-            const next = prev.map(r => r.id === id ? { ...r, status: 'rejected' as const, admin_note: note || '' } : r);
+            const next = prev.map(r => r.id === id ? { ...r, status: 'rejected' as const, admin_note: note || '', processed_at: new Date().toISOString() } : r);
             onCountChange(next.filter(r => r.status === 'pending').length);
             return next;
         });
         showAction('구독 요청 거절됨');
         try {
-            await adminAPI.rejectSubscription(id, note || undefined, apiToken);
-            loadRequests();
+            const res = await adminAPI.rejectSubscription(id, note || undefined, apiToken);
+            if (res?.request) {
+                setRequests(prev => prev.map(r => r.id === id ? res.request : r));
+            }
         } catch (err: any) {
             setRequests(prev => {
-                const next = prev.map(r => r.id === id ? { ...r, status: 'pending' as const } : r);
+                const next = prev.map(r => r.id === id ? { ...r, status: 'pending' as const, processed_at: null, admin_note: null } : r);
                 onCountChange(next.filter(r => r.status === 'pending').length);
                 return next;
             });
             showAction(`❌ ${err.message}`);
+        } finally {
+            setProcessing(prev => { const n = new Set(prev); n.delete(id); return n; });
         }
     };
 
@@ -579,7 +601,7 @@ function SubscriptionsTab({ apiToken, onCountChange }: { apiToken?: string; onCo
                     <h2 className="text-lg font-semibold text-yellow-400">
                         <i className="fas fa-clock mr-2" />대기 중 ({pending.length})
                     </h2>
-                    <button onClick={loadRequests} className="text-xs text-gray-400 hover:text-white px-3 py-1.5 rounded bg-white/5 hover:bg-white/10 transition-colors">
+                    <button onClick={() => loadRequests()} className="text-xs text-gray-400 hover:text-white px-3 py-1.5 rounded bg-white/5 hover:bg-white/10 transition-colors">
                         <i className="fas fa-sync-alt mr-1" /> 새로고침
                     </button>
                 </div>
@@ -618,14 +640,16 @@ function SubscriptionsTab({ apiToken, onCountChange }: { apiToken?: string; onCo
                                     </div>
                                     <div className="flex gap-2">
                                         <button onClick={() => handleApprove(req.id)}
-                                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                                            disabled={processing.has(req.id)}
+                                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
                                                 req.to_tier === 'premium' ? 'bg-purple-500/20 text-purple-400 hover:bg-purple-500/30' : 'bg-amber-500/20 text-amber-400 hover:bg-amber-500/30'
                                             }`}>
-                                            <i className={`fas ${req.to_tier === 'premium' ? 'fa-gem' : 'fa-crown'} mr-1`} />
+                                            <i className={`fas ${processing.has(req.id) ? 'fa-spinner fa-spin' : (req.to_tier === 'premium' ? 'fa-gem' : 'fa-crown')} mr-1`} />
                                             {req.to_tier === 'premium' ? 'Ultra Pro 승인' : 'Pro 승인'}
                                         </button>
                                         <button onClick={() => handleReject(req.id)}
-                                            className="px-4 py-2 bg-red-500/20 text-red-400 rounded-lg text-sm font-medium hover:bg-red-500/30 transition-colors">
+                                            disabled={processing.has(req.id)}
+                                            className="px-4 py-2 bg-red-500/20 text-red-400 rounded-lg text-sm font-medium hover:bg-red-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                                             <i className="fas fa-times mr-1" /> 거절
                                         </button>
                                     </div>
