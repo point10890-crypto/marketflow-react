@@ -31,6 +31,10 @@ class User(db.Model):
     approved_by = db.Column(db.Integer, nullable=True)  # admin user id
     last_login_at = db.Column(db.DateTime, nullable=True)
 
+    # 만료 D-3/D-1 알림 중복 방지: 'd3' | 'd1' | 'expired' | NULL
+    # 만료일이 갱신되면(extend/tier 변경) NULL 로 리셋해 알림이 다시 발송된다.
+    pro_expiry_alert_stage = db.Column(db.String(10), nullable=True)
+
     def set_password(self, password: str):
         self.password_hash = bcrypt.hashpw(
             password.encode('utf-8'), bcrypt.gensalt()
@@ -75,6 +79,37 @@ class User(db.Model):
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'approved_at': self.approved_at.isoformat() if self.approved_at else None,
             'last_login_at': self.last_login_at.isoformat() if self.last_login_at else None,
+        }
+
+
+class AdminAuditLog(db.Model):
+    """관리자 행위 감사 로그 — 모든 mutation 기록 (회원 관리 추적용)."""
+    __tablename__ = 'admin_audit_log'
+
+    id = db.Column(db.Integer, primary_key=True)
+    admin_id = db.Column(db.Integer, nullable=True)  # 액션 수행한 관리자 id
+    admin_email = db.Column(db.String(255), nullable=True)
+    action = db.Column(db.String(50), nullable=False, index=True)  # set_tier, set_status, ...
+    target_user_id = db.Column(db.Integer, nullable=True, index=True)
+    target_email = db.Column(db.String(255), nullable=True)
+    before = db.Column(db.Text, nullable=True)  # JSON
+    after = db.Column(db.Text, nullable=True)   # JSON
+    note = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
+
+    def to_dict(self):
+        import json
+        return {
+            'id': self.id,
+            'admin_id': self.admin_id,
+            'admin_email': self.admin_email,
+            'action': self.action,
+            'target_user_id': self.target_user_id,
+            'target_email': self.target_email,
+            'before': json.loads(self.before) if self.before else None,
+            'after': json.loads(self.after) if self.after else None,
+            'note': self.note,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
         }
 
 

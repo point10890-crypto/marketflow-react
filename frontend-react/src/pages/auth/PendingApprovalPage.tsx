@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -7,13 +7,34 @@ export default function PendingApprovalPage() {
     const navigate = useNavigate();
     const [checking, setChecking] = useState(false);
     const [message, setMessage] = useState('');
+    const pollRef = useRef<number | null>(null);
+
+    // user 가 승인 + tier 부여 상태가 되면 즉시 대시보드로
+    useEffect(() => {
+        if (!user) return;
+        if (user.role === 'admin') {
+            navigate('/admin', { replace: true });
+            return;
+        }
+        if (user.status === 'approved' && (user.tier === 'pro' || user.tier === 'premium')) {
+            navigate('/dashboard', { replace: true });
+        }
+    }, [user, navigate]);
+
+    // 30초마다 자동 폴링 — 관리자가 승인하면 자동으로 대시보드 진입
+    useEffect(() => {
+        const tick = () => { refreshUser().catch(() => {}); };
+        pollRef.current = window.setInterval(tick, 30000);
+        return () => {
+            if (pollRef.current) window.clearInterval(pollRef.current);
+        };
+    }, [refreshUser]);
 
     const handleCheckStatus = async () => {
         setChecking(true);
         setMessage('');
         try {
             await refreshUser();
-            // refreshUser updates user state — check after a tick
             setTimeout(() => {
                 const stored = localStorage.getItem('auth_user') || sessionStorage.getItem('auth_user');
                 if (stored) {
@@ -51,6 +72,9 @@ export default function PendingApprovalPage() {
                     <p className="text-gray-400 text-sm mb-6">
                         회원가입이 완료되었습니다.<br />
                         관리자가 Pro 또는 Ultra Pro 등급을 부여하면 서비스를 이용하실 수 있습니다.
+                    </p>
+                    <p className="text-gray-600 text-[11px] mb-4">
+                        30초마다 자동으로 승인 상태를 확인합니다.
                     </p>
 
                     {user && (

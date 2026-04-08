@@ -84,7 +84,7 @@ def create_app(config=None):
     from app.models import db
     db.init_app(app)
     with app.app_context():
-        from app.models.user import User  # noqa: F401
+        from app.models.user import User, AdminAuditLog  # noqa: F401
         from app.models.wave import WaveSignal, WaveTracking, WavePatternStats  # noqa: F401
         from app.models.community import Board, Post, PostImage, Comment  # noqa: F401
         db.create_all()
@@ -102,11 +102,13 @@ def create_app(config=None):
                 if 'amount' not in sr_cols:
                     conn.execute(text('ALTER TABLE subscription_requests ADD COLUMN amount VARCHAR(50)'))
 
-            # users 테이블 — pro_expires_at 컬럼 추가
+            # users 테이블 — pro_expires_at, pro_expiry_alert_stage 컬럼 추가
             user_cols = [c['name'] for c in inspector.get_columns('users')]
             with db.engine.begin() as conn:
                 if 'pro_expires_at' not in user_cols:
                     conn.execute(text('ALTER TABLE users ADD COLUMN pro_expires_at DATETIME'))
+                if 'pro_expiry_alert_stage' not in user_cols:
+                    conn.execute(text('ALTER TABLE users ADD COLUMN pro_expiry_alert_stage VARCHAR(10)'))
         except Exception:
             pass  # table may not exist yet (create_all handles it)
 
@@ -297,9 +299,27 @@ def create_app(config=None):
 
 
 def _start_expiry_checker(app):
-    """Pro 구독 만료 유저 자동 다운그레이드 (1시간 간격)"""
+    """Pro 구독 만료 자동 다운그레이드 + D-3/D-1/만료일 텔레그램 알림 (1시간 간격)"""
     import threading
     import time
+
+    def _alert(user, stage: str, when: str):
+        """관리자 텔레그램에 만료 알림. 본인용 알림은 별도 채널 미구성으로 생략."""
+        try:
+            bot_token = os.environ.get('TELEGRAM_BOT_TOKEN')
+            chat_id = os.environ.get('TELEGRAM_CHAT_ID')
+            if not bot_token or not chat_id:
+                return
+            label_map = {'d3': 'D-3 만료 임박', 'd1': 'D-1 만료 임박', 'expired': '만료 처리'}
+            msg = (
+                f"⏰ <b>Pro 구독 {label_map.get(stage, stage)}</b>\n\n"
+                f"👤 {user.name} ({user.email})\n"
+                f"📅 만료일: {when}\n"
+                f"🆔 user_id={user.id}"
+            )
+            _telegram_post(bot_token, chat_id, msg, label=f"expiry_{stage}")
+        except Exception as e:
+            print(f"[Expiry alert] {type(e).__name__}: {e}")
 
     def _expiry_loop():
         time.sleep(30)  # Flask 초기화 대기
@@ -308,19 +328,55 @@ def _start_expiry_checker(app):
                 with app.app_context():
                     from app.models.user import User
                     from app.models import db
-                    from datetime import datetime, timezone
+                    from datetime import datetime, timezone, timedelta
+
+                    now = datetime.now(timezone.utc)
+                    d3_window = now + timedelta(days=3)
+                    d1_window = now + timedelta(days=1)
+
+                    # 1) 만료된 유저 처리
                     expired = User.query.filter(
                         User.tier == 'pro',
                         User.pro_expires_at.isnot(None),
-                        User.pro_expires_at < datetime.now(timezone.utc),
+                        User.pro_expires_at < now,
                     ).all()
                     for user in expired:
-                        # 'free' 플랜 폐지 — Pro 만료 시 tier 제거 + suspended
+                        when = user.pro_expires_at.isoformat() if user.pro_expires_at else '?'
                         print(f"[Expiry] {user.email}: pro → suspended (expired {user.pro_expires_at})")
+                        if user.pro_expiry_alert_stage != 'expired':
+                            _alert(user, 'expired', when)
                         user.tier = None
                         user.pro_expires_at = None
                         user.status = 'suspended'
-                    if expired:
+                        user.pro_expiry_alert_stage = 'expired'
+
+                    # 2) D-1 임박 (이미 d1 알림 보낸 유저는 스킵)
+                    d1_users = User.query.filter(
+                        User.tier == 'pro',
+                        User.pro_expires_at.isnot(None),
+                        User.pro_expires_at >= now,
+                        User.pro_expires_at < d1_window,
+                    ).all()
+                    for user in d1_users:
+                        if user.pro_expiry_alert_stage in ('d1', 'expired'):
+                            continue
+                        _alert(user, 'd1', user.pro_expires_at.isoformat())
+                        user.pro_expiry_alert_stage = 'd1'
+
+                    # 3) D-3 임박
+                    d3_users = User.query.filter(
+                        User.tier == 'pro',
+                        User.pro_expires_at.isnot(None),
+                        User.pro_expires_at >= d1_window,
+                        User.pro_expires_at < d3_window,
+                    ).all()
+                    for user in d3_users:
+                        if user.pro_expiry_alert_stage in ('d3', 'd1', 'expired'):
+                            continue
+                        _alert(user, 'd3', user.pro_expires_at.isoformat())
+                        user.pro_expiry_alert_stage = 'd3'
+
+                    if expired or d1_users or d3_users:
                         db.session.commit()
             except Exception as e:
                 print(f"[Expiry] Error: {e}")
@@ -328,7 +384,7 @@ def _start_expiry_checker(app):
 
     thread = threading.Thread(target=_expiry_loop, daemon=True, name='ExpiryChecker')
     thread.start()
-    print("[OK] Pro expiry checker started (1h interval)")
+    print("[OK] Pro expiry checker started (1h interval, D-3/D-1/expired alerts)")
 
 
 def _start_precompute_worker(app):

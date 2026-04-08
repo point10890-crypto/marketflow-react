@@ -8,15 +8,26 @@ export default function LoginPage() {
     const [remember, setRemember] = useState(true);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
-    const { login, user } = useAuth();
+    const { login, user, loading: authLoading } = useAuth();
     const navigate = useNavigate();
 
-    // 이미 로그인 상태면 대시보드로 리다이렉트
+    // 이미 로그인 상태면 적절한 페이지로 리다이렉트.
+    // authLoading=true 인 동안에는 hydration 중이므로 절대 리다이렉트하지 않음
+    // (synthesized status='unknown' 단계에서 잘못된 위치로 튀는 것을 막는다).
     useEffect(() => {
-        if (user) {
-            navigate('/dashboard', { replace: true });
+        if (authLoading) return;
+        if (!user) return;
+        if (user.status === 'unknown') return;
+        if (user.role === 'admin') {
+            navigate('/admin', { replace: true });
+            return;
         }
-    }, [user, navigate]);
+        if (user.status !== 'approved' || (user.tier !== 'pro' && user.tier !== 'premium')) {
+            navigate('/pending-approval', { replace: true });
+            return;
+        }
+        navigate('/dashboard', { replace: true });
+    }, [user, authLoading, navigate]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

@@ -1,14 +1,86 @@
-"""Admin API routes — 관리자 전용 엔드포인트"""
+"""Admin API routes — 관리자 전용 엔드포인트
+
+Wave 2-4 추가:
+- 모든 mutation에 audit log + 텔레그램 알림 (best-effort)
+- /users 페이지네이션 + status/tier/q 필터 (backward-compatible: 단일 페이지면 기존 users 키 그대로)
+- /users/<id>/extend, /users/<id>/expiry — 만료일 관리
+- /users/bulk-tier, /users/bulk-approve — 일괄 처리
+- /audit-log — 감사 로그 조회
+"""
 
 import os
+import json
 from datetime import datetime, timezone, timedelta
 from flask import Blueprint, request, jsonify
 from app.models import db
-from app.models.user import User, SubscriptionRequest
+from app.models.user import User, SubscriptionRequest, AdminAuditLog
 from app.auth.decorators import admin_required
 
 admin_bp = Blueprint('admin', __name__)
 
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 헬퍼: 감사 로그 + 텔레그램 알림
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _admin_user():
+    return getattr(request, 'current_user', None)
+
+
+def _record_audit(action: str, target_user: User | None, before: dict | None, after: dict | None, note: str = ''):
+    """감사 로그 기록 (best-effort — 실패해도 메인 트랜잭션에 영향 X)"""
+    try:
+        admin = _admin_user()
+        log = AdminAuditLog(
+            admin_id=admin.id if admin else None,
+            admin_email=admin.email if admin else None,
+            action=action,
+            target_user_id=target_user.id if target_user else None,
+            target_email=target_user.email if target_user else None,
+            before=json.dumps(before, default=str) if before else None,
+            after=json.dumps(after, default=str) if after else None,
+            note=note or None,
+        )
+        db.session.add(log)
+        db.session.commit()
+    except Exception as e:
+        print(f"[AuditLog] failed: {type(e).__name__}: {e}")
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
+
+
+def _notify_admin(action: str, target_user: User, detail: str = ''):
+    """관리자 텔레그램 알림 (best-effort)"""
+    try:
+        import requests
+        bot_token = os.environ.get('TELEGRAM_BOT_TOKEN')
+        chat_id = os.environ.get('TELEGRAM_CHAT_ID')
+        if not bot_token or not chat_id:
+            return
+        admin = _admin_user()
+        admin_label = admin.email if admin else 'system'
+        msg = (
+            f"👑 <b>관리자 액션: {action}</b>\n\n"
+            f"👤 대상: {target_user.name} ({target_user.email})\n"
+            f"🆔 user_id={target_user.id}\n"
+            f"🛠 by {admin_label}"
+        )
+        if detail:
+            msg += f"\n\n{detail}"
+        requests.post(
+            f"https://api.telegram.org/bot{bot_token}/sendMessage",
+            json={"chat_id": chat_id, "text": msg, "parse_mode": "HTML"},
+            timeout=5,
+        )
+    except Exception as e:
+        print(f"[AdminNotify] {type(e).__name__}: {e}")
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 대시보드 통계
+# ─────────────────────────────────────────────────────────────────────────────
 
 @admin_bp.route('/dashboard')
 @admin_required
@@ -21,7 +93,6 @@ def dashboard():
         'total_users': len(users),
         'pro_users': sum(1 for u in users if u.tier == 'pro'),
         'premium_users': sum(1 for u in users if u.tier == 'premium'),
-        # tier가 None/빈값인 유저 (신규 가입 · 만료 · 취소 후 대기)
         'no_tier_users': sum(1 for u in users if not u.tier),
         'admin_users': sum(1 for u in users if u.role == 'admin'),
         'pending_users': sum(1 for u in users if u.status == 'pending'),
@@ -31,12 +102,66 @@ def dashboard():
     })
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+# 회원 목록 (필터 + 페이지네이션, backward-compatible)
+# ─────────────────────────────────────────────────────────────────────────────
+
 @admin_bp.route('/users')
 @admin_required
 def list_users():
-    """전체 유저 목록 조회"""
-    users = User.query.order_by(User.created_at.desc()).all()
-    return jsonify({'users': [u.to_dict() for u in users]})
+    """전체 유저 목록 조회 + 필터 + 페이지네이션
+
+    Query params (모두 선택):
+        status: pending|approved|rejected|suspended
+        tier:   pro|premium|none
+        q:      이름/이메일 부분일치
+        page:   1부터 (없으면 페이지네이션 없이 전체 반환 — 기존 동작)
+        per_page: 50 기본
+    응답: { users: [...], total, page?, per_page?, total_pages? }
+    """
+    q = User.query
+
+    status = (request.args.get('status') or '').strip().lower()
+    if status in ('pending', 'approved', 'rejected', 'suspended'):
+        q = q.filter(User.status == status)
+
+    tier = (request.args.get('tier') or '').strip().lower()
+    if tier == 'none':
+        q = q.filter(User.tier.is_(None))
+    elif tier in ('pro', 'premium'):
+        q = q.filter(User.tier == tier)
+
+    search = (request.args.get('q') or '').strip()
+    if search:
+        like = f'%{search}%'
+        q = q.filter((User.email.ilike(like)) | (User.name.ilike(like)))
+
+    q = q.order_by(User.created_at.desc())
+
+    page_arg = request.args.get('page')
+    if page_arg is None:
+        # backward-compatible: 페이지 미지정 시 전체 반환 (기존 프론트 호환)
+        users = q.all()
+        return jsonify({'users': [u.to_dict() for u in users], 'total': len(users)})
+
+    try:
+        page = max(1, int(page_arg))
+    except (TypeError, ValueError):
+        page = 1
+    try:
+        per_page = max(1, min(200, int(request.args.get('per_page') or 50)))
+    except (TypeError, ValueError):
+        per_page = 50
+
+    total = q.count()
+    users = q.limit(per_page).offset((page - 1) * per_page).all()
+    return jsonify({
+        'users': [u.to_dict() for u in users],
+        'total': total,
+        'page': page,
+        'per_page': per_page,
+        'total_pages': (total + per_page - 1) // per_page,
+    })
 
 
 @admin_bp.route('/users/<int:user_id>')
@@ -48,6 +173,10 @@ def get_user(user_id):
         return jsonify({'error': 'User not found'}), 404
     return jsonify(user.to_dict())
 
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 단건 mutation
+# ─────────────────────────────────────────────────────────────────────────────
 
 @admin_bp.route('/users/<int:user_id>/role', methods=['PUT'])
 @admin_required
@@ -62,12 +191,14 @@ def set_role(user_id):
     if role not in ('user', 'admin'):
         return jsonify({'error': 'Role must be user or admin'}), 400
 
-    old_role = user.role
+    before = {'role': user.role}
     user.role = role
     db.session.commit()
+    _record_audit('set_role', user, before, {'role': role})
+    _notify_admin('역할 변경', user, f"{before['role']} → {role}")
 
     return jsonify({
-        'message': f'{user.email}: {old_role} → {role}',
+        'message': f"{user.email}: {before['role']} → {role}",
         'user': user.to_dict(),
     })
 
@@ -75,34 +206,45 @@ def set_role(user_id):
 @admin_bp.route('/users/<int:user_id>/tier', methods=['PUT'])
 @admin_required
 def set_tier(user_id):
-    """유저 구독 tier 변경 (pro ↔ premium) — 지정 시 status도 approved로 자동 승격"""
+    """유저 구독 tier 변경 (pro ↔ premium) — tier 부여 시 status 자동 승인"""
     user = db.session.get(User, user_id)
     if not user:
         return jsonify({'error': 'User not found'}), 404
 
     data = request.get_json() or {}
     tier = (data.get('tier') or '').strip().lower()
-    # 'free' 플랜은 폐지. tier 해제(구독 없음)는 /status로 suspend 사용.
     if tier not in ('pro', 'premium'):
         return jsonify({'error': 'Tier must be pro or premium'}), 400
 
-    old_tier = user.tier or 'none'
+    before = {
+        'tier': user.tier,
+        'status': user.status,
+        'pro_expires_at': user.pro_expires_at.isoformat() if user.pro_expires_at else None,
+    }
     user.tier = tier
-    # tier 부여 시 자동으로 승인 처리 — 접근 권한이 즉시 활성화되도록
     if user.status != 'approved':
         user.status = 'approved'
-        admin_user = getattr(request, 'current_user', None)
+        admin = _admin_user()
         user.approved_at = datetime.now(timezone.utc)
-        user.approved_by = admin_user.id if admin_user else None
-    # Pro 만료일 자동 설정 (premium은 무기한)
+        user.approved_by = admin.id if admin else None
     if tier == 'pro' and not user.pro_expires_at:
         user.pro_expires_at = datetime.now(timezone.utc) + timedelta(days=30)
     elif tier == 'premium':
         user.pro_expires_at = None
+    # tier 변경 → 만료 알림 stage 리셋 (재발송 가능)
+    user.pro_expiry_alert_stage = None
     db.session.commit()
 
+    after = {
+        'tier': user.tier,
+        'status': user.status,
+        'pro_expires_at': user.pro_expires_at.isoformat() if user.pro_expires_at else None,
+    }
+    _record_audit('set_tier', user, before, after)
+    _notify_admin('구독 등급 변경', user, f"{before['tier'] or 'none'} → {tier}")
+
     return jsonify({
-        'message': f'{user.email}: {old_tier} → {tier}',
+        'message': f"{user.email}: {before['tier'] or 'none'} → {tier}",
         'user': user.to_dict(),
     })
 
@@ -110,7 +252,7 @@ def set_tier(user_id):
 @admin_bp.route('/users/<int:user_id>/status', methods=['PUT'])
 @admin_required
 def set_status(user_id):
-    """유저 계정 상태 변경 (pending → approved 등)"""
+    """유저 계정 상태 변경"""
     user = db.session.get(User, user_id)
     if not user:
         return jsonify({'error': 'User not found'}), 404
@@ -120,26 +262,104 @@ def set_status(user_id):
     if status not in ('pending', 'approved', 'rejected', 'suspended'):
         return jsonify({'error': 'Status must be pending, approved, rejected, or suspended'}), 400
 
-    old_status = user.status
+    before = {'status': user.status}
     user.status = status
-
     if status == 'approved':
-        admin_user = getattr(request, 'current_user', None)
+        admin = _admin_user()
         user.approved_at = datetime.now(timezone.utc)
-        user.approved_by = admin_user.id if admin_user else None
-
+        user.approved_by = admin.id if admin else None
     db.session.commit()
 
+    _record_audit('set_status', user, before, {'status': status})
+    _notify_admin('계정 상태 변경', user, f"{before['status']} → {status}")
+
     return jsonify({
-        'message': f'{user.email}: {old_status} → {status}',
+        'message': f"{user.email}: {before['status']} → {status}",
         'user': user.to_dict(),
     })
+
+
+@admin_bp.route('/users/<int:user_id>/extend', methods=['POST'])
+@admin_required
+def extend_pro(user_id):
+    """Pro 만료일 N일 연장 (기본 30일)"""
+    user = db.session.get(User, user_id)
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+
+    try:
+        days = int(request.args.get('days') or (request.get_json() or {}).get('days') or 30)
+    except (TypeError, ValueError):
+        days = 30
+    if days <= 0 or days > 3650:
+        return jsonify({'error': 'days must be between 1 and 3650'}), 400
+
+    before = {
+        'tier': user.tier,
+        'pro_expires_at': user.pro_expires_at.isoformat() if user.pro_expires_at else None,
+    }
+    base = user.pro_expires_at
+    if base is None or (base.tzinfo is None and base < datetime.utcnow()) or \
+       (base.tzinfo is not None and base < datetime.now(timezone.utc)):
+        base = datetime.now(timezone.utc)
+    elif base.tzinfo is None:
+        base = base.replace(tzinfo=timezone.utc)
+    user.pro_expires_at = base + timedelta(days=days)
+    if user.tier not in ('pro', 'premium'):
+        user.tier = 'pro'
+    if user.status != 'approved':
+        user.status = 'approved'
+        admin = _admin_user()
+        user.approved_at = datetime.now(timezone.utc)
+        user.approved_by = admin.id if admin else None
+    user.pro_expiry_alert_stage = None  # 알림 재발송 가능
+    db.session.commit()
+
+    after = {'tier': user.tier, 'pro_expires_at': user.pro_expires_at.isoformat()}
+    _record_audit('extend_pro', user, before, after, note=f'+{days}d')
+    _notify_admin('Pro 만료 연장', user, f"+{days}일 → {user.pro_expires_at.isoformat()}")
+
+    return jsonify({'message': f'{user.email} +{days}일', 'user': user.to_dict()})
+
+
+@admin_bp.route('/users/<int:user_id>/expiry', methods=['PUT'])
+@admin_required
+def set_expiry(user_id):
+    """Pro 만료일 직접 지정 (ISO datetime)"""
+    user = db.session.get(User, user_id)
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+
+    data = request.get_json() or {}
+    expires_raw = (data.get('pro_expires_at') or '').strip()
+    if not expires_raw:
+        return jsonify({'error': 'pro_expires_at required (ISO format)'}), 400
+    try:
+        # 'YYYY-MM-DD' 또는 ISO datetime 둘 다 허용
+        if 'T' not in expires_raw:
+            expires = datetime.fromisoformat(expires_raw).replace(tzinfo=timezone.utc)
+        else:
+            expires = datetime.fromisoformat(expires_raw.replace('Z', '+00:00'))
+            if expires.tzinfo is None:
+                expires = expires.replace(tzinfo=timezone.utc)
+    except (ValueError, TypeError):
+        return jsonify({'error': 'Invalid date format. Use YYYY-MM-DD or ISO 8601'}), 400
+
+    before = {'pro_expires_at': user.pro_expires_at.isoformat() if user.pro_expires_at else None}
+    user.pro_expires_at = expires
+    user.pro_expiry_alert_stage = None
+    db.session.commit()
+
+    _record_audit('set_expiry', user, before, {'pro_expires_at': expires.isoformat()})
+    _notify_admin('만료일 변경', user, f"→ {expires.isoformat()}")
+
+    return jsonify({'message': f'{user.email} 만료일 변경', 'user': user.to_dict()})
 
 
 @admin_bp.route('/users/<int:user_id>/reset-password', methods=['PUT'])
 @admin_required
 def reset_password(user_id):
-    """유저 비밀번호 리셋 → 임시 비밀번호 발급"""
+    """유저 비밀번호 리셋"""
     user = db.session.get(User, user_id)
     if not user:
         return jsonify({'error': 'User not found'}), 404
@@ -152,6 +372,9 @@ def reset_password(user_id):
     user.set_password(new_password)
     db.session.commit()
 
+    _record_audit('reset_password', user, None, None, note='admin reset')
+    _notify_admin('비밀번호 리셋', user)
+
     return jsonify({
         'message': f'{user.email} 비밀번호 리셋 완료',
         'user': user.to_dict(),
@@ -161,54 +384,147 @@ def reset_password(user_id):
 @admin_bp.route('/users/<int:user_id>', methods=['DELETE'])
 @admin_required
 def delete_user(user_id):
-    """유저 삭제 — 커뮤니티 게시글/댓글/구매요청까지 연쇄 제거.
-
-    SQLAlchemy 관계에 cascade 가 지정되어 있지 않아 기본 동작은 자식행의 FK 를
-    NULL 로 업데이트하는 것인데, posts/comments 의 author_id 와
-    purchase_requests.user_id 는 NOT NULL 이므로 IntegrityError 가 발생한다.
-    여기서 명시적으로 자식 레코드를 제거한 뒤 유저를 삭제한다.
-    """
+    """유저 삭제 — 커뮤니티 게시글/댓글/구매요청까지 연쇄 제거."""
     from app.models.community import Post, PostImage, Comment, PurchaseRequest
 
     user = db.session.get(User, user_id)
     if not user:
         return jsonify({'error': 'User not found'}), 404
 
-    admin_user = getattr(request, 'current_user', None)
-    if admin_user and admin_user.id == user_id:
+    admin = _admin_user()
+    if admin and admin.id == user_id:
         return jsonify({'error': 'Cannot delete yourself'}), 400
 
-    # 삭제 전 정보 보존 (세션 분리 후 접근 불가)
     email = user.email
+    snapshot = user.to_dict()
 
     try:
-        # 1) 유저가 작성한 게시글에 달린 이미지/댓글/구매요청 제거
         user_post_ids = [p.id for p in Post.query.filter_by(author_id=user_id).all()]
         if user_post_ids:
             PostImage.query.filter(PostImage.post_id.in_(user_post_ids)).delete(synchronize_session=False)
             Comment.query.filter(Comment.post_id.in_(user_post_ids)).delete(synchronize_session=False)
             PurchaseRequest.query.filter(PurchaseRequest.post_id.in_(user_post_ids)).delete(synchronize_session=False)
 
-        # 2) 유저가 다른 게시글에 남긴 댓글/구매요청 제거
         Comment.query.filter_by(author_id=user_id).delete(synchronize_session=False)
         PurchaseRequest.query.filter_by(user_id=user_id).delete(synchronize_session=False)
 
-        # 3) 유저 게시글 본체 제거
         if user_post_ids:
             Post.query.filter(Post.id.in_(user_post_ids)).delete(synchronize_session=False)
 
-        # 4) 연관 구독 요청 제거
         SubscriptionRequest.query.filter_by(user_id=user_id).delete(synchronize_session=False)
 
-        # 5) 유저 삭제
         db.session.delete(user)
         db.session.commit()
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': f'Failed to delete user: {e}'}), 500
 
+    # 감사 로그 (user 객체는 삭제됨 → snapshot 사용)
+    try:
+        log = AdminAuditLog(
+            admin_id=admin.id if admin else None,
+            admin_email=admin.email if admin else None,
+            action='delete_user',
+            target_user_id=user_id,
+            target_email=email,
+            before=json.dumps(snapshot, default=str),
+            after=None,
+            note='hard delete with cascade',
+        )
+        db.session.add(log)
+        db.session.commit()
+    except Exception as e:
+        print(f"[AuditLog] delete_user log failed: {e}")
+
     return jsonify({'message': f'User {email} deleted'})
 
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 일괄 처리
+# ─────────────────────────────────────────────────────────────────────────────
+
+@admin_bp.route('/users/bulk-tier', methods=['POST'])
+@admin_required
+def bulk_tier():
+    """일괄 tier 부여
+    Body: { user_ids: [int], tier: 'pro'|'premium' }
+    """
+    data = request.get_json() or {}
+    user_ids = data.get('user_ids') or []
+    tier = (data.get('tier') or '').strip().lower()
+    if not isinstance(user_ids, list) or not user_ids:
+        return jsonify({'error': 'user_ids required'}), 400
+    if tier not in ('pro', 'premium'):
+        return jsonify({'error': 'tier must be pro or premium'}), 400
+
+    admin = _admin_user()
+    updated = []
+    for uid in user_ids:
+        try:
+            user = db.session.get(User, int(uid))
+        except (TypeError, ValueError):
+            continue
+        if not user:
+            continue
+        before = {'tier': user.tier, 'status': user.status}
+        user.tier = tier
+        if user.status != 'approved':
+            user.status = 'approved'
+            user.approved_at = datetime.now(timezone.utc)
+            user.approved_by = admin.id if admin else None
+        if tier == 'pro' and not user.pro_expires_at:
+            user.pro_expires_at = datetime.now(timezone.utc) + timedelta(days=30)
+        elif tier == 'premium':
+            user.pro_expires_at = None
+        user.pro_expiry_alert_stage = None
+        updated.append((user, before))
+
+    db.session.commit()
+
+    for user, before in updated:
+        _record_audit('bulk_tier', user, before, {'tier': tier}, note='bulk')
+    if updated:
+        _notify_admin('일괄 등급 부여', updated[0][0], f"{len(updated)}명 → {tier}")
+
+    return jsonify({'message': f'{len(updated)}명 처리 완료', 'count': len(updated)})
+
+
+@admin_bp.route('/users/bulk-approve', methods=['POST'])
+@admin_required
+def bulk_approve():
+    """일괄 승인 (status=approved). tier 부여는 별도."""
+    data = request.get_json() or {}
+    user_ids = data.get('user_ids') or []
+    if not isinstance(user_ids, list) or not user_ids:
+        return jsonify({'error': 'user_ids required'}), 400
+
+    admin = _admin_user()
+    updated = []
+    for uid in user_ids:
+        try:
+            user = db.session.get(User, int(uid))
+        except (TypeError, ValueError):
+            continue
+        if not user or user.status == 'approved':
+            continue
+        before = {'status': user.status}
+        user.status = 'approved'
+        user.approved_at = datetime.now(timezone.utc)
+        user.approved_by = admin.id if admin else None
+        updated.append((user, before))
+    db.session.commit()
+
+    for user, before in updated:
+        _record_audit('bulk_approve', user, before, {'status': 'approved'}, note='bulk')
+    if updated:
+        _notify_admin('일괄 승인', updated[0][0], f"{len(updated)}명 approved")
+
+    return jsonify({'message': f'{len(updated)}명 승인 완료', 'count': len(updated)})
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 구독 요청
+# ─────────────────────────────────────────────────────────────────────────────
 
 @admin_bp.route('/subscriptions')
 @admin_required
@@ -230,27 +546,40 @@ def approve_subscription(req_id):
     if sub_req.status != 'pending':
         return jsonify({'error': f'Request already {sub_req.status}'}), 400
 
-    admin_user = getattr(request, 'current_user', None)
+    admin = _admin_user()
 
-    # 요청 승인
     sub_req.status = 'approved'
     sub_req.processed_at = datetime.now(timezone.utc)
-    sub_req.processed_by = admin_user.id if admin_user else None
+    sub_req.processed_by = admin.id if admin else None
 
-    # 유저 tier 변경 적용 + 만료일 설정
     user = db.session.get(User, sub_req.user_id)
+    before = None
     if user:
+        before = {
+            'tier': user.tier,
+            'status': user.status,
+            'pro_expires_at': user.pro_expires_at.isoformat() if user.pro_expires_at else None,
+        }
         user.tier = sub_req.to_tier
         if sub_req.to_tier == 'pro':
-            # Pro: 승인일로부터 30일
             user.pro_expires_at = datetime.now(timezone.utc) + timedelta(days=30)
         elif sub_req.to_tier == 'premium':
-            # Ultra Pro: 무기한
             user.pro_expires_at = None
         if user.status == 'pending':
             user.status = 'approved'
+            user.approved_at = datetime.now(timezone.utc)
+            user.approved_by = admin.id if admin else None
+        user.pro_expiry_alert_stage = None
 
     db.session.commit()
+
+    if user:
+        _record_audit('approve_subscription', user, before, {
+            'tier': user.tier,
+            'status': user.status,
+            'pro_expires_at': user.pro_expires_at.isoformat() if user.pro_expires_at else None,
+        })
+        _notify_admin('구독 요청 승인', user, f"{sub_req.from_tier} → {sub_req.to_tier}")
 
     return jsonify({
         'message': f'Subscription approved: {sub_req.from_tier} → {sub_req.to_tier}',
@@ -268,17 +597,51 @@ def reject_subscription(req_id):
     if sub_req.status != 'pending':
         return jsonify({'error': f'Request already {sub_req.status}'}), 400
 
-    admin_user = getattr(request, 'current_user', None)
+    admin = _admin_user()
     data = request.get_json() or {}
 
     sub_req.status = 'rejected'
     sub_req.admin_note = data.get('note') or data.get('admin_note') or ''
     sub_req.processed_at = datetime.now(timezone.utc)
-    sub_req.processed_by = admin_user.id if admin_user else None
+    sub_req.processed_by = admin.id if admin else None
 
     db.session.commit()
+
+    user = db.session.get(User, sub_req.user_id)
+    if user:
+        _record_audit('reject_subscription', user, None, None, note=sub_req.admin_note or 'rejected')
 
     return jsonify({
         'message': 'Subscription request rejected',
         'request': sub_req.to_dict(),
     })
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 감사 로그 조회
+# ─────────────────────────────────────────────────────────────────────────────
+
+@admin_bp.route('/audit-log')
+@admin_required
+def audit_log():
+    """관리자 감사 로그 조회 (최근순)
+    Query: limit (기본 100, 최대 500), action, target_user_id
+    """
+    try:
+        limit = max(1, min(500, int(request.args.get('limit') or 100)))
+    except (TypeError, ValueError):
+        limit = 100
+
+    q = AdminAuditLog.query.order_by(AdminAuditLog.created_at.desc())
+    action = (request.args.get('action') or '').strip()
+    if action:
+        q = q.filter(AdminAuditLog.action == action)
+    target_id = request.args.get('target_user_id')
+    if target_id:
+        try:
+            q = q.filter(AdminAuditLog.target_user_id == int(target_id))
+        except (TypeError, ValueError):
+            pass
+
+    logs = q.limit(limit).all()
+    return jsonify({'logs': [l.to_dict() for l in logs], 'count': len(logs)})

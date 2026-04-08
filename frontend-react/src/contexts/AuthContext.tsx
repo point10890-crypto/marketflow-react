@@ -66,10 +66,11 @@ function toAuthUser(d: AuthUserData): AuthUser {
 
 /**
  * 캐시는 비었지만 토큰은 유효한 상태를 위한 폴백 유저.
- * (예: localStorage 일부 손상 + 백엔드 다운 동시 발생)
  *
- * 토큰 포맷 `user_id:expiry:sig` — 서버 HMAC 으로 한 번 발급된 사실 자체를
- * 신뢰해 임시로 통과시킨다. 다음 /api/auth/me 성공 시 실제 값으로 덮어써진다.
+ * 절대 가짜 권한(`tier='pro'`, `status='approved'`)을 부여하지 않는다.
+ * 가드를 우회시켜 pending/free 유저가 dashboard 에 잠시라도 들어가는 사고를
+ * 막기 위함. tier=null + status='unknown' 으로 발급해 ApprovedGuard 가
+ * `/api/auth/me` 응답을 기다리게 한다.
  */
 function synthesizeUserFromToken(token: string): AuthUser | null {
     const parts = token.split(':');
@@ -78,11 +79,11 @@ function synthesizeUserFromToken(token: string): AuthUser | null {
     if (!id) return null;
     return {
         id,
-        email: '(offline)',
-        name: '사용자',
-        tier: 'pro',
+        email: '(loading)',
+        name: '...',
+        tier: null,
         role: 'user',
-        status: 'approved',
+        status: 'unknown',
         pro_expires_at: null,
     };
 }

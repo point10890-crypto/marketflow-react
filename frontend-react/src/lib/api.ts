@@ -702,9 +702,23 @@ export interface AdminUser {
     role: string;
     tier: string;
     status: string;
+    pro_expires_at: string | null;
     created_at: string;
     approved_at: string | null;
     last_login_at: string | null;
+}
+
+export interface AdminAuditLogEntry {
+    id: number;
+    admin_id: number | null;
+    admin_email: string | null;
+    action: string;
+    target_user_id: number | null;
+    target_email: string | null;
+    before: any;
+    after: any;
+    note: string | null;
+    created_at: string;
 }
 
 export interface AdminDashboard {
@@ -829,16 +843,40 @@ export async function putAPI<T>(endpoint: string, body?: any): Promise<T> {
 // ── Admin API (Bearer token 기반) ──
 export const adminAPI = {
     getDashboard: (token?: string) => fetchAuthAPI<AdminDashboard>('/api/admin/dashboard', token),
-    getUsers: (token?: string) => fetchAuthAPI<{ users: AdminUser[] }>('/api/admin/users', token),
+    getUsers: (token?: string, params?: { status?: string; tier?: string; q?: string; page?: number; per_page?: number }) => {
+        const qs = new URLSearchParams();
+        if (params?.status) qs.set('status', params.status);
+        if (params?.tier) qs.set('tier', params.tier);
+        if (params?.q) qs.set('q', params.q);
+        if (params?.page) qs.set('page', String(params.page));
+        if (params?.per_page) qs.set('per_page', String(params.per_page));
+        const suffix = qs.toString();
+        return fetchAuthAPI<{ users: AdminUser[]; total?: number; page?: number; per_page?: number; total_pages?: number }>(
+            `/api/admin/users${suffix ? '?' + suffix : ''}`,
+            token,
+        );
+    },
     getUser: (id: number, token?: string) => fetchAuthAPI<AdminUser>(`/api/admin/users/${id}`, token),
     setUserRole: (id: number, role: string, token?: string) => putAuthAPI<{ user: AdminUser }>(`/api/admin/users/${id}/role`, { role }, token),
     setUserTier: (id: number, tier: string, token?: string) => putAuthAPI<{ user: AdminUser }>(`/api/admin/users/${id}/tier`, { tier }, token),
     setUserStatus: (id: number, status: string, token?: string) => putAuthAPI<{ user: AdminUser }>(`/api/admin/users/${id}/status`, { status }, token),
+    extendPro: (id: number, days: number, token?: string) => postAuthAPI<{ user: AdminUser }>(`/api/admin/users/${id}/extend`, { days }, token),
+    setExpiry: (id: number, pro_expires_at: string, token?: string) => putAuthAPI<{ user: AdminUser }>(`/api/admin/users/${id}/expiry`, { pro_expires_at }, token),
+    bulkTier: (user_ids: number[], tier: string, token?: string) => postAuthAPI<{ count: number }>(`/api/admin/users/bulk-tier`, { user_ids, tier }, token),
+    bulkApprove: (user_ids: number[], token?: string) => postAuthAPI<{ count: number }>(`/api/admin/users/bulk-approve`, { user_ids }, token),
     resetPassword: (id: number, password: string, token?: string) => putAuthAPI<{ message: string; user: AdminUser }>(`/api/admin/users/${id}/reset-password`, { password }, token),
     deleteUser: (id: number, token?: string) => deleteAuthAPI<{ message: string }>(`/api/admin/users/${id}`, token),
     getSubscriptions: (token?: string) => fetchAuthAPI<{ requests: SubscriptionRequest[] }>('/api/admin/subscriptions', token),
     approveSubscription: (id: number, token?: string) => putAuthAPI<{ request: SubscriptionRequest }>(`/api/admin/subscriptions/${id}/approve`, undefined, token),
     rejectSubscription: (id: number, note?: string, token?: string) => putAuthAPI<{ request: SubscriptionRequest }>(`/api/admin/subscriptions/${id}/reject`, { note }, token),
+    getAuditLog: (token?: string, params?: { limit?: number; action?: string; target_user_id?: number }) => {
+        const qs = new URLSearchParams();
+        if (params?.limit) qs.set('limit', String(params.limit));
+        if (params?.action) qs.set('action', params.action);
+        if (params?.target_user_id) qs.set('target_user_id', String(params.target_user_id));
+        const suffix = qs.toString();
+        return fetchAuthAPI<{ logs: AdminAuditLogEntry[]; count: number }>(`/api/admin/audit-log${suffix ? '?' + suffix : ''}`, token);
+    },
 };
 
 // ── Wave Pattern API ──
