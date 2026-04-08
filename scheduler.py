@@ -1895,6 +1895,25 @@ def run_full_update():
 # ============================================================
 
 _LAST_RUN_FILE = os.path.join(Config.DATA_DIR, 'scheduler_last_run.json')
+_HEARTBEAT_FILE = os.path.join(Config.DATA_DIR, 'scheduler_heartbeat.json')
+
+
+def write_heartbeat():
+    """데몬 살아있음 신호 파일. 외부 watchdog 가 mtime 으로 stale 판정.
+
+    실패는 조용히 무시 (디스크 일시 오류로 데몬을 죽이지 않음).
+    """
+    try:
+        os.makedirs(Config.DATA_DIR, exist_ok=True)
+        tmp = _HEARTBEAT_FILE + '.tmp'
+        with open(tmp, 'w', encoding='utf-8') as f:
+            json.dump({
+                'pid': os.getpid(),
+                'ts': datetime.now().isoformat(timespec='seconds'),
+            }, f)
+        os.replace(tmp, _HEARTBEAT_FILE)
+    except Exception:
+        pass
 
 
 _last_run_lock = threading.Lock()
@@ -2405,10 +2424,12 @@ class Scheduler:
 
         last_missed_check = time.time()
         MISSED_CHECK_INTERVAL = 300  # 5분마다 놓친 스케줄 점검
+        write_heartbeat()  # 시작 즉시 1회
 
         while self.running:
             try:
                 schedule.run_pending()
+                write_heartbeat()  # 매 루프(30s) 갱신 → watchdog 가 stale 판정 가능
 
                 # 주기적 놓친 스케줄 복구 (Windows sleep/hibernate 대응)
                 now = time.time()
