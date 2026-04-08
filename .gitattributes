@@ -1,0 +1,5 @@
+# Linux 호환 파일은 LF 줄바꿈 강제 (Windows에서 편집해도 변환 금지)
+*.sh         text eol=lf
+*.service    text eol=lf
+preflight_check.sh text eol=lf
+deploy/systemd/** text eol=lf

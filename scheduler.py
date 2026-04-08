@@ -245,8 +245,10 @@ class Config:
     CRYPTO_TASK_TIMEOUT = int(os.environ.get('CRYPTO_MARKET_TASK_TIMEOUT', '600'))
     CRYPTO_BRIEFING_TIMEOUT = int(os.environ.get('CRYPTO_MARKET_BRIEFING_TIMEOUT', '300'))
 
-    # Python 실행 경로 (가상환경 우선)
-    _VENV_PYTHON = os.path.join(_SCRIPT_DIR, '.venv', 'Scripts', 'python.exe')
+    # Python 실행 경로 (가상환경 우선) — POSIX/Windows 양쪽 호환
+    _VENV_PYTHON_WIN = os.path.join(_SCRIPT_DIR, '.venv', 'Scripts', 'python.exe')
+    _VENV_PYTHON_POSIX = os.path.join(_SCRIPT_DIR, '.venv', 'bin', 'python')
+    _VENV_PYTHON = _VENV_PYTHON_WIN if os.name == 'nt' else _VENV_PYTHON_POSIX
     PYTHON_PATH = os.environ.get(
         'KR_MARKET_PYTHON',
         _VENV_PYTHON if os.path.exists(_VENV_PYTHON) else sys.executable

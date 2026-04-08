@@ -22,6 +22,9 @@ spring:
 
 app:
   data:
+    # APP_BASE_DIR env var로 OS별 오버라이드:
+    #   Windows: C:/bitman_marketfloww  (default)
+    #   Linux:   APP_BASE_DIR=/srv/marketflow
     base-dir: ${APP_BASE_DIR:C:/bitman_marketfloww}
     us-output-dir: ${app.data.base-dir}/us_market/output
     kr-data-dir: ${app.data.base-dir}/data

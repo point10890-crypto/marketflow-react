@@ -1,0 +1,26 @@
+[Unit]
+Description=MarketFlow Spring Boot API (port 8080)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=marketflow
+Group=marketflow
+WorkingDirectory=/srv/marketflow/backend
+Environment=APP_BASE_DIR=/srv/marketflow
+Environment=JAVA_OPTS=-Xms512m -Xmx1g
+ExecStart=/usr/bin/java -Xms512m -Xmx1g -jar /srv/marketflow/backend/build/libs/marketflow-0.0.1-SNAPSHOT.jar
+Restart=on-failure
+RestartSec=10
+StandardOutput=append:/srv/marketflow/logs/spring.log
+StandardError=append:/srv/marketflow/logs/spring.err
+
+# 보안 하드닝
+NoNewPrivileges=true
+ProtectSystem=full
+ProtectHome=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
