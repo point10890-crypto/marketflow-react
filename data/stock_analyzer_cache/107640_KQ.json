@@ -1,0 +1,75 @@
+{
+  "name": "한중엔시에스",
+  "ticker": "107640.KQ",
+  "result": "데이터 없음",
+  "date": "2026-04-09 07:28:35",
+  "elapsed": 1.4,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 49250.0,
+    "high": 63000.0,
+    "low": 63000.0,
+    "mean": 63000.0,
+    "median": 63000.0
+  },
+  "current_price": 49250.0,
+  "upside_potential": 27.9,
+  "key_stats": {
+    "name": "HanJungNCS",
+    "sector": "Consumer Cyclical",
+    "industry": "Auto Parts",
+    "market_cap": 446448599040,
+    "pe_ratio": null,
+    "forward_pe": 42.166096,
+    "dividend_yield": null,
+    "beta": 0.661,
+    "fifty_two_week_high": 63600.0,
+    "fifty_two_week_low": 20350.0,
+    "revenue": 175264972800,
+    "profit_margin": 0.02325,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 59866778240
+    },
+    {
+      "date": "2025-09",
+      "value": 45864927960
+    },
+    {
+      "date": "2025-06",
+      "value": 36429493820
+    },
+    {
+      "date": "2025-03",
+      "value": 33103776640
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 4047691650
+    },
+    {
+      "date": "2025-09",
+      "value": 568406140
+    },
+    {
+      "date": "2025-06",
+      "value": 79074700
+    },
+    {
+      "date": "2025-03",
+      "value": -619811150
+    }
+  ],
+  "news": []
+}
