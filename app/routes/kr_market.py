@@ -18,6 +18,7 @@ kr_bp = Blueprint('kr', __name__)
 # ── 고정 경로 ──────────────────────────────────────────────
 from app.utils.paths import BASE_DIR, DATA_DIR
 from app.auth.decorators import admin_required
+from app.utils.json_cache import load_json_cached
 
 # market_gate 임포트를 위한 경로 등록
 if BASE_DIR not in sys.path:
@@ -119,11 +120,9 @@ def get_kr_signals():
 
         json_path = os.path.join(DATA_DIR, 'kr_ai_analysis.json')
 
-        if os.path.exists(json_path):
+        data = load_json_cached(json_path, ttl=300)
+        if data is not None:
             try:
-                with open(json_path, 'r', encoding='utf-8') as f:
-                    data = json.load(f)
-
                 signals = data.get('signals', [])
 
                 # ── 종목명 + 마켓 보완 (ticker_to_yahoo_map 기반) ──
@@ -975,10 +974,9 @@ def get_jongga_v2_today_summary():
     try:
         data_dir = DATA_DIR
         latest_file = os.path.join(data_dir, 'jongga_v2_latest.json')
-        if not os.path.exists(latest_file):
+        d = load_json_cached(latest_file, ttl=300)
+        if d is None:
             return jsonify({'signals': 0, 'top_signal': None, 'by_grade': {}})
-        with open(latest_file, 'r', encoding='utf-8') as f:
-            d = json.load(f)
         signals = d.get('signals', [])
         by_grade = d.get('by_grade', {})
         top_signal = None
@@ -1270,8 +1268,9 @@ def get_jongga_v2_latest():
         # data 디렉토리 경로 (패키지 루트 기준)
         data_dir = DATA_DIR
         latest_file = os.path.join(data_dir, 'jongga_v2_latest.json')
-        
-        if not os.path.exists(latest_file):
+
+        data = load_json_cached(latest_file, ttl=300)
+        if data is None:
             # 파일이 없으면 혹시 날짜별 파일 중 가장 최신 것이라도 찾음
             import glob
             files = glob.glob(os.path.join(data_dir, 'jongga_v2_results_*.json'))
@@ -1281,11 +1280,12 @@ def get_jongga_v2_latest():
                     "signals": [],
                     "message": "No data available"
                 })
-            latest_file = max(files, key=os.path.getctime)
-            
-        with open(latest_file, 'r', encoding='utf-8') as f:
-            data = json.load(f)
-            return jsonify(data)
+            fallback = max(files, key=os.path.getctime)
+            data = load_json_cached(fallback, ttl=300)
+            if data is None:
+                return jsonify({"error": "Failed to read latest file"}), 500
+
+        return jsonify(data)
             
     except Exception as e:
         return jsonify({"error": str(e)}), 500

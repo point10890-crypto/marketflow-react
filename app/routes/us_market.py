@@ -12,6 +12,7 @@ import yfinance as yf
 from flask import Blueprint, jsonify, request
 
 from app.utils.cache import get_sector
+from app.utils.json_cache import load_json_cached
 from app.utils.paths import BASE_DIR, US_MARKET_DIR, US_OUTPUT_DIR, US_DATA_DIR, US_HISTORY_DIR, US_PREVIEW_DIR
 from app.utils.safety import safe_float, safe_str
 
@@ -697,29 +698,32 @@ def get_us_macro_analysis():
 def get_us_sector_heatmap():
     """섹터 히트맵"""
     try:
+        import copy
         heatmap_path = os.path.join(_OUTPUT_DIR, 'sector_heatmap.json')
-        if os.path.exists(heatmap_path):
-            with open(heatmap_path, 'r', encoding='utf-8') as f:
-                data = json.load(f)
+        _cached = load_json_cached(heatmap_path, ttl=600)
+        if _cached is None:
+            return jsonify({'sectors': [], 'series': []})
 
-            # sector_groups → series 변환 (프론트엔드 SectorSeries[] 호환)
-            if 'sector_groups' in data and 'series' not in data:
-                series = []
-                for sector_name, stocks in data['sector_groups'].items():
-                    items = []
-                    for s in stocks:
-                        items.append({
-                            'x': s.get('ticker', s.get('symbol', '')),
-                            'y': s.get('weight', s.get('market_cap', 0)),
-                            'price': s.get('price', 0),
-                            'change': s.get('change_pct', s.get('change', 0)),
-                            'color': ''
-                        })
-                    series.append({'name': sector_name, 'data': items})
-                data['series'] = series
+        # deepcopy: we add 'series' below and must not poison the shared cache
+        data = copy.deepcopy(_cached)
 
-            return jsonify(data)
-        return jsonify({'sectors': [], 'series': []})
+        # sector_groups → series 변환 (프론트엔드 SectorSeries[] 호환)
+        if 'sector_groups' in data and 'series' not in data:
+            series = []
+            for sector_name, stocks in data['sector_groups'].items():
+                items = []
+                for s in stocks:
+                    items.append({
+                        'x': s.get('ticker', s.get('symbol', '')),
+                        'y': s.get('weight', s.get('market_cap', 0)),
+                        'price': s.get('price', 0),
+                        'change': s.get('change_pct', s.get('change', 0)),
+                        'color': ''
+                    })
+                series.append({'name': sector_name, 'data': items})
+            data['series'] = series
+
+        return jsonify(data)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -776,19 +780,16 @@ def get_us_ai_summary(ticker):
         lang = request.args.get('lang', 'ko')
         
         summary_path = os.path.join(_OUTPUT_DIR, 'ai_summaries.json')
-        if os.path.exists(summary_path):
-            with open(summary_path, 'r', encoding='utf-8') as f:
-                summaries = json.load(f)
-            
-            if ticker in summaries:
-                data = summaries[ticker]
-                summary = data.get('summary_ko' if lang == 'ko' else 'summary_en', '')
-                return jsonify({
-                    'ticker': ticker,
-                    'summary': summary,
-                    'generated_at': data.get('generated_at', '')
-                })
-        
+        summaries = load_json_cached(summary_path, ttl=600)
+        if summaries and ticker in summaries:
+            data = summaries[ticker]
+            summary = data.get('summary_ko' if lang == 'ko' else 'summary_en', '')
+            return jsonify({
+                'ticker': ticker,
+                'summary': summary,
+                'generated_at': data.get('generated_at', '')
+            })
+
         return jsonify({'ticker': ticker, 'summary': None})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -1174,20 +1175,16 @@ def get_us_earnings_impact():
     try:
         # 1) earnings_impact.json — sector_profiles
         data = {'sector_profiles': {}, 'upcoming_earnings': [], 'details': {}}
-        impact_path = os.path.join(_OUTPUT_DIR, 'earnings_impact.json')
-        if os.path.exists(impact_path):
-            with open(impact_path, 'r', encoding='utf-8') as f:
-                impact = json.load(f)
+        impact = load_json_cached(os.path.join(_OUTPUT_DIR, 'earnings_impact.json'), ttl=600)
+        if impact is not None:
             data['sector_profiles'] = impact.get('sector_profiles', {})
             data['timestamp'] = impact.get('timestamp', '')
 
         # 2) earnings_analysis.json — upcoming_earnings + details (per-ticker)
-        analysis_path = os.path.join(_OUTPUT_DIR, 'earnings_analysis.json')
-        if not os.path.exists(analysis_path):
-            analysis_path = os.path.join(_PREVIEW_DIR, 'earnings_analysis.json')
-        if os.path.exists(analysis_path):
-            with open(analysis_path, 'r', encoding='utf-8') as f:
-                analysis = json.load(f)
+        analysis = load_json_cached(os.path.join(_OUTPUT_DIR, 'earnings_analysis.json'), ttl=600)
+        if analysis is None:
+            analysis = load_json_cached(os.path.join(_PREVIEW_DIR, 'earnings_analysis.json'), ttl=600)
+        if analysis is not None:
             # upcoming_earnings from analysis (has actual entries)
             upcoming = analysis.get('upcoming_earnings', [])
             details = analysis.get('details', {})
@@ -1245,10 +1242,8 @@ def get_us_earnings_impact():
             data['upcoming_earnings'] = enriched
 
         # 3) earnings_transcripts.json — transcript metadata
-        transcripts_path = os.path.join(_OUTPUT_DIR, 'earnings_transcripts.json')
-        if os.path.exists(transcripts_path):
-            with open(transcripts_path, 'r', encoding='utf-8') as f:
-                transcripts = json.load(f)
+        transcripts = load_json_cached(os.path.join(_OUTPUT_DIR, 'earnings_transcripts.json'), ttl=600)
+        if transcripts is not None:
             data['transcript_metadata'] = transcripts.get('metadata', {})
 
         return jsonify(data)
@@ -1292,20 +1287,19 @@ def get_us_market_briefing():
     현재 파이프라인이 생성하지 않음). market_briefing.json이 없으면 빈 응답.
     """
     try:
+        import copy
         json_path = os.path.join(_OUTPUT_DIR, 'market_briefing.json')
-        data = {}
-        if os.path.exists(json_path):
-            with open(json_path, 'r', encoding='utf-8') as f:
-                data = json.load(f)
+        _cached = load_json_cached(json_path, ttl=300)
+        # deepcopy: we mutate below and must not poison the shared cache entry
+        data = copy.deepcopy(_cached) if _cached is not None else {}
 
         # vix 데이터 보충 (market_data.json)
         if not data.get('vix', {}).get('value'):
             md_path = os.path.join(_OUTPUT_DIR, 'market_data.json')
-            if not os.path.exists(md_path):
-                md_path = os.path.join(_PREVIEW_DIR, 'market_data.json')
-            if os.path.exists(md_path):
-                with open(md_path, 'r', encoding='utf-8') as f:
-                    md = json.load(f)
+            md = load_json_cached(md_path, ttl=300)
+            if md is None:
+                md = load_json_cached(os.path.join(_PREVIEW_DIR, 'market_data.json'), ttl=300)
+            if md is not None:
                 vol = md.get('volatility', {})
                 vix_data = vol.get('^VIX', {})
                 val = vix_data.get('current', 0)
@@ -1324,12 +1318,10 @@ def get_us_market_briefing():
         # smart_money.top_picks 키 매핑
         sm = data.get('smart_money', {})
         if sm and 'top_picks' not in sm:
-            tp_path = os.path.join(_OUTPUT_DIR, 'top_picks.json')
-            if not os.path.exists(tp_path):
-                tp_path = os.path.join(_PREVIEW_DIR, 'top_picks.json')
-            if os.path.exists(tp_path):
-                with open(tp_path, 'r', encoding='utf-8') as f:
-                    tp = json.load(f)
+            tp = load_json_cached(os.path.join(_OUTPUT_DIR, 'top_picks.json'), ttl=300)
+            if tp is None:
+                tp = load_json_cached(os.path.join(_PREVIEW_DIR, 'top_picks.json'), ttl=300)
+            if tp is not None:
                 picks = tp.get('top_picks', tp.get('picks', []))
                 for p in picks:
                     if 'composite_score' in p and 'final_score' not in p:

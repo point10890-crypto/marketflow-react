@@ -13,6 +13,7 @@ from flask import Blueprint, jsonify, request, Response, stream_with_context
 
 from app.utils.cache import get_sector, SECTOR_MAP
 from app.utils.paths import BASE_DIR, DATA_DIR, US_OUTPUT_DIR, CRYPTO_OUTPUT_DIR
+from app.utils.json_cache import load_json_cached
 from app.auth.decorators import admin_required
 
 logger = logging.getLogger(__name__)
@@ -249,9 +250,8 @@ def portfolio_summary():
         
         # KR Market
         kr_path = os.path.join(DATA_DIR, 'kr_ai_analysis.json')
-        if os.path.exists(kr_path):
-            with open(kr_path, 'r', encoding='utf-8') as f:
-                data = json.load(f)
+        data = load_json_cached(kr_path, ttl=300)
+        if data is not None:
             signals = data.get('signals', [])
             summary['kr_market']['count'] = len(signals)
             if signals:
