@@ -2,8 +2,8 @@
   "name": "SK하이닉스",
   "ticker": "000660.KS",
   "result": "매수",
-  "date": "2026-04-06 10:19:26",
-  "elapsed": 2.5,
+  "date": "2026-04-08 20:08:39",
+  "elapsed": 2.2,
   "consensus_score": 4.15,
   "analyst_count": 39,
   "recommendation_detail": {
@@ -15,22 +15,22 @@
   },
   "recommendation_period": "0m",
   "price_targets": {
-    "current": 894000.0,
+    "current": 1033000.0,
     "high": 2500000.0,
     "low": 255245.0,
-    "mean": 1332730.1,
+    "mean": 1341704.5,
     "median": 1400000.0
   },
-  "current_price": 895000.0,
-  "upside_potential": 48.9,
+  "current_price": 1033000.0,
+  "upside_potential": 29.9,
   "key_stats": {
     "name": "SK hynix",
     "sector": "Technology",
     "industry": "Semiconductors",
-    "market_cap": 617957478629376,
+    "market_cap": 713240321458176,
     "pe_ratio": null,
-    "forward_pe": 3.8968928,
-    "dividend_yield": 0.36,
+    "forward_pe": 4.388263,
+    "dividend_yield": 0.33,
     "beta": 1.751,
     "fifty_two_week_high": 1099000.0,
     "fifty_two_week_low": 162700.0,
@@ -40,7 +40,7 @@
   },
   "finnhub_supplement": null,
   "source": "yfinance",
-  "ai_analysis": null,
+  "ai_analysis": "SK하이닉스(000660.KS)에 대해 39명의 애널리스트가 제시한 컨센서스 의견은 '매수'입니다. 목표가 평균은 1,341,704 KRW로, 현재가 1,033,000 KRW 대비 29.9% 상승 여력이 있습니다. 이는 애널리스트들이 SK하이닉스의 추가적인 주가 상승을 기대하고 있음을 시사합니다.",
   "revenue_quarters": [
     {
       "date": "2025-12",
@@ -79,39 +79,39 @@
   ],
   "news": [
     {
-      "title": "South Korea AI memory boom to drive Samsung, SK Hynix strategy shift",
-      "summary": "Investing.com — South Korea’s leading chipmakers are set to benefit from a powerful upswing in AI-driven memory demand, but will need to adapt their strategies to sustain gains, according to a Barclay",
-      "url": "https://finance.yahoo.com/sectors/technology/articles/south-korea-ai-memory-boom-140520080.html",
-      "provider": "Investing.com",
-      "pub_time": "2026-04-05T14:05:20Z"
+      "title": "Is Western Digital Corporation (WDC) at Threat from Google’s TurboQuant?",
+      "summary": "​Western Digital Corporation (NASDAQ:WDC) is one of the Unstoppable Technology Stocks to Buy Now. According to a March 26 report by CNBC, memory stocks saw a sell-off after Google unveiled its TurboQu",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/western-digital-corporation-wdc-threat-094400975.html",
+      "provider": "Insider Monkey",
+      "pub_time": "2026-04-08T09:44:00Z"
     },
     {
-      "title": "The Top AI ETFs That Let You Invest In The Whole Trend At Once",
-      "summary": "AI spending has moved well past the hype phase. Consensus estimates now put 2026 hyperscaler capital expenditures at $611 billion, and the global AI market is projected to reach $4.8 trillion by 2033 ",
-      "url": "https://247wallst.com/investing/2026/04/04/the-top-ai-etfs-that-let-you-invest-in-the-whole-trend-at-once/",
-      "provider": "24/7 Wall St.",
-      "pub_time": "2026-04-04T16:52:05Z"
+      "title": "SK Hynix shares jump 15% after Samsung projects blowout earnings",
+      "summary": "<body><p>STORY: SK Hynix shares surged on Wednesday (April 8).</p><p>Investors bought in after its fellow South Korean chipmaker Samsung forecast a big quarterly earnings jump.</p><p>It led markets to",
+      "url": "https://finance.yahoo.com/video/sk-hynix-shares-jump-15-083435049.html",
+      "provider": "Reuters Videos",
+      "pub_time": "2026-04-08T08:34:35Z"
     },
     {
-      "title": "Is It Too Late To Consider SK hynix (KOSE:A000660) After A 384% One Year Surge?",
-      "summary": "Wondering if SK hynix is still reasonably priced after its big run, or if you are late to the story? This breakdown focuses squarely on what the current share price could imply about value. The stock ",
-      "url": "https://finance.yahoo.com/markets/stocks/articles/too-consider-sk-hynix-kose-100945653.html",
-      "provider": "Simply Wall St.",
-      "pub_time": "2026-04-04T10:09:45Z"
+      "title": "SK Hynix shares jump 15% after peer Samsung projects blowout earnings",
+      "summary": "Shares of South Korean chipmaker SK Hynix ‌surged on Wednesday after peer ‌Samsung Electronics forecast market-beating quarterly earnings, fuelling expectations ​about SK Hynix's results. Samsung Elec",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/sk-hynix-shares-jump-15-045647322.html",
+      "provider": "Reuters",
+      "pub_time": "2026-04-08T04:56:47Z"
     },
     {
-      "title": "Did Alphabet Just Say Checkmate to Micron?",
-      "summary": "Alphabet's TurboQuant algorithm just decreased the amount of memory needed to run AI.",
-      "url": "https://www.fool.com/investing/2026/04/04/did-alphabet-just-say-checkmate-to-micron/",
-      "provider": "Motley Fool",
-      "pub_time": "2026-04-04T07:35:00Z"
+      "title": "Pain or Gain Ahead of South Korea ETFs?",
+      "summary": "South Korea ETFs at a crossroads -- chip-led rebound meets geopolitical risk as AI optimism clashes with Iran war uncertainty.",
+      "url": "https://finance.yahoo.com/markets/world-indices/articles/pain-gain-ahead-south-korea-140000484.html",
+      "provider": "Zacks",
+      "pub_time": "2026-04-07T14:00:00Z"
     },
     {
-      "title": "ASML Balances Record SK Hynix Order With Protests And Rich Valuation",
-      "summary": "ASML Holding (ENXTAM:ASML) has received what is described as the largest publicly disclosed equipment order in its history from memory chip maker SK Hynix. The multi year order focuses on advanced lit",
-      "url": "https://finance.yahoo.com/markets/stocks/articles/asml-balances-record-sk-hynix-060952574.html",
-      "provider": "Simply Wall St.",
-      "pub_time": "2026-04-03T06:09:52Z"
+      "title": "Samsung Profit Rises 700% as Memory Chip Demand Surges. Micron Stock Drops.",
+      "summary": "Samsung expects a more than eightfold increase in first-quarter profit, boding well for memory-chip rival Micron.",
+      "url": "https://www.barrons.com/articles/micron-stock-price-samsung-profit-memory-chip-b64598dc?siteid=yhoof2&yptr=yahoo",
+      "provider": "Barrons.com",
+      "pub_time": "2026-04-07T13:48:00Z"
     }
   ]
 }

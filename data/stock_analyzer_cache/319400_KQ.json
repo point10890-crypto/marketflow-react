@@ -2,8 +2,8 @@
   "name": "현대무벡스",
   "ticker": "319400.KQ",
   "result": "매수",
-  "date": "2026-04-07 19:55:30",
-  "elapsed": 2.4,
+  "date": "2026-04-08 20:06:02",
+  "elapsed": 2.2,
   "consensus_score": 4.0,
   "analyst_count": 1,
   "recommendation_detail": {
@@ -15,22 +15,22 @@
   },
   "recommendation_period": "0m",
   "price_targets": {
-    "current": 25250.0,
+    "current": 29200.0,
     "high": 7700.0,
     "low": 7700.0,
     "mean": 7700.0,
     "median": 7700.0
   },
-  "current_price": 25250.0,
-  "upside_potential": -69.5,
+  "current_price": 29200.0,
+  "upside_potential": -73.6,
   "key_stats": {
     "name": "HYUNDAI MOVEX",
     "sector": "Financial Services",
     "industry": "Shell Companies",
-    "market_cap": 2769722277888,
+    "market_cap": 3203005415424,
     "pe_ratio": null,
-    "forward_pe": 76.74772,
-    "dividend_yield": 0.19,
+    "forward_pe": 88.7538,
+    "dividend_yield": 0.2,
     "beta": 2.485,
     "fifty_two_week_high": 50400.0,
     "fifty_two_week_low": 3200.0,
@@ -40,7 +40,7 @@
   },
   "finnhub_supplement": null,
   "source": "yfinance",
-  "ai_analysis": "현재 현대무벡스에 대해 1명의 애널리스트가 매수 의견을 제시하고 있습니다. 그러나 목표가 평균은 현재 주가보다 현저히 낮은 수준으로, 상당 폭의 하락 가능성을 시사합니다. 투자 시 목표가와 컨센서스 간의 괴리를 신중하게 고려해야 합니다.",
+  "ai_analysis": "현재 현대무벡스에 대해 1명의 애널리스트가 매수 의견을 제시하고 있습니다. 목표가 평균은 7,700원으로, 현재 주가 대비 상당 폭 하락 여력이 있는 것으로 분석됩니다. 투자 결정 시 이러한 점을 고려해야 합니다.",
   "revenue_quarters": [
     {
       "date": "2025-12",

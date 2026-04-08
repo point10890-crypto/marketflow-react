@@ -1,0 +1,259 @@
+{
+  "stock_code": "047050",
+  "stock_name": "포스코인터내셔널",
+  "generated_at": "2026-04-08T11:03:08.891182+00:00",
+  "financials": {
+    "stock_code": "047050",
+    "corp_code": "00124504",
+    "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2016": {
+        "cash": 1737.1,
+        "total_assets": 82887.8,
+        "short_debt": 18790.2,
+        "long_debt": 5922.4,
+        "total_liab": 57851.3,
+        "total_equity": 25036.5,
+        "revenue": 164920.9,
+        "op_profit": 3181.4,
+        "net_income": 109.6
+      },
+      "2017": {
+        "cash": 1784.9,
+        "total_assets": 91699.9,
+        "short_debt": 23334.2,
+        "long_debt": 5014.3,
+        "total_liab": 63175.1,
+        "total_equity": 28524.8,
+        "revenue": 225716.5,
+        "op_profit": 4013.1,
+        "net_income": -90.6
+      },
+      "2018": {
+        "cash": 2014.7,
+        "total_assets": 98810.2,
+        "short_debt": 24274.2,
+        "long_debt": 6529.4,
+        "total_liab": 69914.8,
+        "total_equity": 28895.4,
+        "revenue": 251739.4,
+        "op_profit": 4726.2,
+        "net_income": 1551.7
+      },
+      "2019": {
+        "cash": 2360.9,
+        "total_assets": 89594.2,
+        "short_debt": 10247.0,
+        "long_debt": 7345.7,
+        "total_liab": 59113.5,
+        "total_equity": 30480.6,
+        "revenue": 244225.7,
+        "op_profit": 6053.2,
+        "net_income": 2094.0
+      },
+      "2020": {
+        "cash": 6793.0,
+        "total_assets": 83280.4,
+        "short_debt": 7960.4,
+        "long_debt": 3793.5,
+        "total_liab": 51671.7,
+        "total_equity": 31608.7,
+        "revenue": 214723.9,
+        "op_profit": 4744.8,
+        "net_income": 2295.2
+      },
+      "2021": {
+        "cash": 5211.6,
+        "total_assets": 107707.3,
+        "short_debt": 18943.9,
+        "long_debt": 2461.1,
+        "total_liab": 72585.9,
+        "total_equity": 35121.4,
+        "revenue": 339488.6,
+        "op_profit": 5853.9,
+        "net_income": -43.0
+      },
+      "2022": {
+        "cash": 12977.1,
+        "total_assets": 125163.4,
+        "short_debt": 19983.7,
+        "long_debt": 7925.6,
+        "total_liab": 81182.1,
+        "total_equity": 43981.3,
+        "revenue": 379895.9,
+        "op_profit": 9025.1,
+        "net_income": 0.0
+      },
+      "2023": {
+        "total_assets": 166177.5,
+        "cash": 11368.6,
+        "total_equity": 18262.3,
+        "short_debt": 18305.0,
+        "total_liab": 99929.9,
+        "long_debt": 12149.2,
+        "op_profit": 11631.1,
+        "net_income": 0.0,
+        "revenue": 331328.2
+      },
+      "2024": {
+        "cash": 10572.0,
+        "total_equity": 18367.3,
+        "short_debt": 20682.5,
+        "long_debt": 11406.5,
+        "op_profit": 11169.2,
+        "net_income": 0.0,
+        "revenue": 323407.9
+      },
+      "2025": {
+        "cash": 11714.7,
+        "total_equity": 18510.4,
+        "short_debt": 23259.3,
+        "long_debt": 13711.7,
+        "op_profit": 11653.2,
+        "net_income": 0.0,
+        "revenue": 323736.0
+      }
+    },
+    "missing_years": [
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2016,
+        "revenue_eok": 164921,
+        "op_profit_eok": 3181,
+        "net_income_eok": 110,
+        "roe_pct": 0.44,
+        "op_margin_pct": 1.93,
+        "debt_ratio_pct": 231.0
+      },
+      {
+        "year": 2017,
+        "revenue_eok": 225716,
+        "op_profit_eok": 4013,
+        "net_income_eok": -91,
+        "roe_pct": -0.32,
+        "op_margin_pct": 1.78,
+        "debt_ratio_pct": 221.47
+      },
+      {
+        "year": 2018,
+        "revenue_eok": 251739,
+        "op_profit_eok": 4726,
+        "net_income_eok": 1552,
+        "roe_pct": 5.37,
+        "op_margin_pct": 1.88,
+        "debt_ratio_pct": 241.96
+      },
+      {
+        "year": 2019,
+        "revenue_eok": 244226,
+        "op_profit_eok": 6053,
+        "net_income_eok": 2094,
+        "roe_pct": 6.87,
+        "op_margin_pct": 2.48,
+        "debt_ratio_pct": 193.95
+      },
+      {
+        "year": 2020,
+        "revenue_eok": 214724,
+        "op_profit_eok": 4745,
+        "net_income_eok": 2295,
+        "roe_pct": 7.26,
+        "op_margin_pct": 2.21,
+        "debt_ratio_pct": 163.48
+      },
+      {
+        "year": 2021,
+        "revenue_eok": 339489,
+        "op_profit_eok": 5854,
+        "net_income_eok": -43,
+        "roe_pct": -0.12,
+        "op_margin_pct": 1.72,
+        "debt_ratio_pct": 206.67
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 379896,
+        "op_profit_eok": 9025,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 2.38,
+        "debt_ratio_pct": 184.58
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 331328,
+        "op_profit_eok": 11631,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 3.51,
+        "debt_ratio_pct": 547.2
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 323408,
+        "op_profit_eok": 11169,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 3.45
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 323736,
+        "op_profit_eok": 11653,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 3.6
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": 7.99,
+      "op_profit_cagr_pct": 15.39,
+      "best_year": 2025,
+      "worst_year": 2016,
+      "avg_roe_pct": 1.95
+    },
+    "valuation": {
+      "grade": "C",
+      "strengths": [
+        "견조한 매출액 성장세 (10년 CAGR 7.99%)를 유지하고 있습니다.",
+        "탁월한 영업이익 성장세 (10년 CAGR 15.39%)를 보이며 특히 최근 3년간 급증했습니다.",
+        "안정적인 현금흐름을 확보하며 현금 보유액이 꾸준히 증가하는 추세입니다."
+      ],
+      "risks": [
+        "매우 낮은 수익성 (10년 평균 ROE 1.95%, 최근 3년간 0% 기록)이 우려됩니다.",
+        "높은 부채비율로 인한 재무 안정성 문제가 심각하며, 2023년에는 547%를 기록했습니다.",
+        "당기순이익의 불안정성이 크고, 최근 3년간 0원을 기록하여 투자 매력이 저하됩니다."
+      ],
+      "one_liner": "매출 및 영업이익은 성장하고 있으나, 낮은 수익성과 높은 부채비율로 재무 안정성에 대한 우려가 큰 기업입니다."
+    }
+  },
+  "dcf": {
+    "text": "퀀트 애널리스트로서 포스코인터내셔널(047050)의 DCF 적정가치를 계산하겠습니다.\n\n**가정 사항:**\n1.  제공된 '최근 재무' 데이터(매출액 323736억원, 영업이익 11653억원)는 기준 연도인 2025년의 실적입니다.\n2.  5년 예측 기간(2026년 ~ 2030년) 동안 매출액과 영업이익은 매년 3%씩 성장한다고 가정합니다. (성장률 정보가 주어지지 않아 합리적인 수준으로 가정)\n3.  법인세율은 FCF 공식에 따라 25%로 적용됩니다.\n4.  감가상각은 매출액의 10%, CAPEX는 매출액의 5%로 적용됩니다.\n5.  WACC와 영구성장률(g)은 기본 시나리오 및 민감도 분석에 따라 적용됩니다.\n6.  당기순이익, 자산총계, 부채총계 데이터는 FCF 계산 공식에 직접 사용되지 않으므로, 이 계산에서는 고려하지 않습니다.\n\n---\n\n### Python 코드 실행 및 결과\n\n\n---\n\n### 분석 결과 요약\n\n1.  **기본 시나리오 DCF 적정가치:**\n    *   WACC 9%, 영구성장률(g) 2%, 매출액/영업이익 성장률 3%를 가정했을 때, 포스코인터내셔널의 **적정가치는 약 379,165억원**으로 계산됩니다.\n\n2.  **WACC × g 민감도 분석:**\n    아래 표는 WACC와 영구성장률(g) 변화에 따른 DCF 적정가치(억원)를 보여줍니다.\n\n    |       | WACC=7% | WACC=8% | WACC=9% | WACC=10% | WACC=11% |\n    | :---- | :------ | :------ | :------ | :------- | :------- |\n    | **g=1%** | 458,149 | 392,116 | 342,609 | 304,120  | 273,341  |\n    | **g=2%** | 531,633 | 442,687 | 379,165 | 331,532  | 294,492  |\n    | **g=3%** | 641,859 | 513,487 | 427,906 | 366,776  | 320,929  |\n\n    *   WACC가 낮아지고 영구성장률(g)이 높아질수록 적정가치는 상승하는 경향을 보입니다.\n    *   예를 들어, WACC가 7%이고 g가 3%인 경우 적정가치는 641,859억원으로 가장 높게 나타납니다.\n    *   반대로 WACC가 11%이고 g가 1%인 경우 적정가치는 273,341억원으로 가장 낮게 나타납니다.\n\n**결론:**\n적정가치(기본): 379165억원\n\n이 분석은 주어진 가정에 기반하며, 실제 기업 가치는 시장 상황, 미래 성장률, WACC 등 다양한 변수에 따라 달라질 수 있습니다. 특히, 매출액 및 영업이익 성장률에 대한 가정은 분석 결과에 큰 영향을 미치므로, 추가적인 분석 시에는 해당 성장률에 대한 심층적인 검토가 필요합니다.",
+    "executed_code": "import pandas as pd\n\ndef calculate_dcf(\n    revenue_base,\n    op_profit_base,\n    tax_rate,\n    depreciation_rate_of_revenue,\n    capex_rate_of_revenue,\n    wacc,\n    g,\n    forecast_years,\n    revenue_growth_rate,\n    op_profit_growth_rate\n):\n    \"\"\"\n    DCF 적정가치를 계산하는 함수.\n    \"\"\"\n    revenues = []\n    op_profits = []\n    depreciations = []\n    capex_values = []\n    fcf_values = []\n    discount_factors = []\n\n    # 5년 예측 기간 동안 재무 항목 및 FCF 계산\n    for i in range(1, forecast_years + 1):\n        if i == 1:\n            # 첫 해는 기준 연도(2025)에서 성장률 적용\n            current_revenue = revenue_base * (1 + revenue_growth_rate)\n            current_op_profit = op_profit_base * (1 + op_profit_growth_rate)\n        else:\n            # 이후 연도는 직전 연도에서 성장률 적용\n            current_revenue = revenues[-1] * (1 + revenue_growth_rate)\n            current_op_profit = op_profits[-1] * (1 + op_profit_growth_rate)\n\n        current_depreciation = current_revenue * depreciation_rate_of_revenue\n        current_capex = current_revenue * capex_rate_of_revenue\n        \n        # FCF 계산: 영업이익 * (1 - 세율) + 감가상각 - CAPEX\n        current_fcf = current_op_profit * (1 - tax_rate) + current_depreciation - current_capex\n        \n        revenues.append(current_revenue)\n        op_profits.append(current_op_profit)\n        depreciations.append(current_depreciation)\n        capex_values.append(current_capex)\n        fcf_values.append(current_fcf)\n\n        # 할인 계수 계산\n        discount_factor = (1 + wacc) ** i\n        discount_factors.append(discount_factor)\n\n    # 최종 예측 연도 FCF\n    last_fcf = fcf_values[-1]\n    \n    # 영구 성장률을 적용한 터미널 FCF\n    fcf_terminal_year = last_fcf * (1 + g)\n    \n    # WACC <= g 인 경우 터미널 밸류 계산 불가 (무한대 또는 음수)\n    if wacc <= g:\n        return float('inf') \n    \n    # 터미널 밸류 계산: FCF_terminal / (WACC - g)\n    terminal_value = fcf_terminal_year / (wacc - g)\n\n    # 예측 기간 FCF의 현재 가치 합산\n    pv_fcf = sum(fcf / df for fcf, df in zip(fcf_values, discount_factors))\n\n    # 터미널 밸류의 현재 가치 계산\n    pv_terminal_value = terminal_value / discount_factors[-1] # 마지막 예측 연도의 할인 계수로 할인\n\n    # 총 DCF 적정가치\n    dcf_value = pv_fcf + pv_terminal_value\n    return dcf_value\n\n# --- 기본 시나리오 파라미터 설정 ---\nrevenue_2025 = 323736  # 억원\nop_profit_2025 = 11653  # 억원\ntax_rate = 0.25\ndepreciation_rate_of_revenue = 0.10\ncapex_rate_of_revenue = 0.05\nwacc_base = 0.09\ng_base = 0.02\nforecast_years = 5\nrevenue_growth_rate = 0.03 # 가정: 매출액 연 3% 성장\nop_profit_growth_rate = 0.03 # 가정: 영업이익 연 3% 성장\n\n# --- 1. 기본 시나리오 DCF 적정가치 계산 ---\nbase_dcf_value = calculate_dcf(\n    revenue_2025,\n    op_profit_2025,\n    tax_rate,\n    depreciation_rate_of_revenue,\n    capex_rate_of_revenue,\n    wacc_base,\n    g_base,\n    forecast_years,\n    revenue_growth_rate,\n    op_profit_growth_rate\n)\n\n# --- 2. WACC × g 민감도 그리드 출력 ---\nwacc_range = [0.07, 0.08, 0.09, 0.10, 0.11] # 7% ~ 11%\ng_range = [0.01, 0.02, 0.03] # 1% ~ 3%\n\nsensitivity_results = pd.DataFrame(index=[f'g={g*100:.0f}%' for g in g_range],\n                                   columns=[f'WACC={wacc*100:.0f}%' for wacc in wacc_range])\n\nfor wacc_val in wacc_range:\n    for g_val in g_range:\n        dcf_val = calculate_dcf(\n            revenue_2025,\n            op_profit_2025,\n            tax_rate,\n            depreciation_rate_of_revenue,\n            capex_rate_of_revenue,\n            wacc_val,\n            g_val,\n            forecast_years,\n            revenue_growth_rate,\n            op_profit_growth_rate\n        )\n        # 무한대 값은 'N/A'로 표시\n        sensitivity_results.loc[f'g={g_val*100:.0f}%', f'WACC={wacc_val*100:.0f}%'] = f\"{dcf_val:.0f}\" if dcf_val != float('inf') else \"N/A\"\n\nprint(\"--- DCF 적정가치 계산 결과 ---\")\nprint(f\"적정가치(기본): {base_dcf_value:.0f}억원\")\n\nprint(\"\\nDCF 적정가치 민감도 분석 (억원):\")\nprint(sensitivity_results)",
+    "code_output": "--- DCF 적정가치 계산 결과 ---\n적정가치(기본): 379165억원\n\nDCF 적정가치 민감도 분석 (억원):\n     WACC=7% WACC=8% WACC=9% WACC=10% WACC=11%\ng=1%  458149  392116  342609   304120   273341\ng=2%  531633  442687  379165   331532   294492\ng=3%  641859  513487  427906   366776   320929"
+  },
+  "news": {
+    "text": "## 포스코인터내셔널(047050) 투자 의견\n\n**1. 재무 데이터 스토리와 시장 컨센서스의 일치/불일치**\n\n제시된 재무 데이터 분석에 따르면 포스코인터내셔널은 매출 및 영업이익이 성장하고 있으나, 낮은 수익성과 높은 부채비율로 재무 안정성에 대한 우려가 큰 상황입니다. 최근 2주간의 뉴스 및 시장 컨센서스를 종합해 볼 때, 이러한 재무적 우려와는 다소 상이한 기대감이 형성되고 있는 것으로 보입니다.\n\n*   **시장 컨센서스:** 최근 뉴스에서는 포스코인터내셔널이 에너지 사업 확장, 특히 액화천연가스(LNG) 터미널 사업과 같은 신규 성장 동력 확보에 대한 기대감이 반영되고 있습니다. 또한, 구동모터코어 등 친환경 사업 부문의 성장이 부각되며 중장기적인 기업 가치 상승 가능성에 대한 긍정적인 전망도 제시되고 있습니다. 이는 단순히 현재의 낮은 수익성이나 높은 부채비율만을 반영하기보다는 미래 성장 잠재력에 더 무게를 두는 것으로 해석됩니다.\n\n**2. 재무제표에서 드러나지 않는 리스크 또는 호재**\n\n*   **호재:**\n    *   **에너지 사업 확장 및 친환경 포트폴리오 강화:** 포스코인터내셔널은 LNG 터미널 사업을 통해 안정적인 수익 기반을 확보하고 있으며, 구동모터코어 등 친환경차 부품 사업의 성장이 가속화되고 있습니다. 이는 장기적인 관점에서 매출 다변화와 수익성 개선에 기여할 수 있는 긍정적인 요인입니다.\n    *   **그룹사 시너지:** 포스코 그룹 내에서 에너지 및 친환경 사업의 핵심 역할을 수행하며 그룹사와의 시너지를 통해 안정적인 사업 확장을 기대할 수 있습니다.\n*   **리스크:**\n    *   **글로벌 원자재 가격 변동성:** 종합상사 특성상 철강, 에너지 등 주요 원자재 가격 변동에 따른 실적 영향이 클 수 있습니다.\n    *   **신규 투자 관련 재무 부담:** LNG 터미널 등 대규모 인프라 투자에 따른 초기 재무 부담이 가중될 수 있으며, 이는 높은 부채비율을 더욱 악화시킬 가능성이 있습니다.\n    *   **해외 사업 관련 지정학적 리스크:** 해외 자원 개발 및 무역 사업 비중이 높아 특정 지역의 정치적 불안정이나 규제 변화가 사업에 부정적인 영향을 미 미칠 수 있습니다.\n\n**3. 최종 판정**\n\n**관망**\n\n포스코인터내셔널은 에너지 및 친환경 사업 확대를 통해 미래 성장 동력을 확보하고 있는 점은 긍정적입니다. 그러나 현재 재무제표상 낮은 수익성과 높은 부채비율은 여전히 부담스러운 요소입니다. 시장은 미래 성장성에 대한 기대감을 반영하고 있지만, 신규 사업 투자가 실제 수익성 개선으로 이어지고 부채비율이 안정화되는지 여부를 확인할 필요가 있습니다. 따라서 현재 시점에서는 추가적인 재무 개선 및 신규 사업의 가시적인 성과를 확인하기 전까지는 '관망' 의견을 제시합니다.",
+    "citations": []
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=00124504",
+    "summary": "공시 페이지 접근 제한"
+  }
+}

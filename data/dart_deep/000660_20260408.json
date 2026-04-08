@@ -1,0 +1,288 @@
+{
+  "stock_code": "000660",
+  "stock_name": "SK하이닉스",
+  "generated_at": "2026-04-08T11:08:58.596837+00:00",
+  "financials": {
+    "stock_code": "000660",
+    "corp_code": "00164779",
+    "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2016": {
+        "cash": 6137.9,
+        "total_assets": 322160.3,
+        "total_liab": 81925.0,
+        "total_equity": 240235.3,
+        "revenue": 171979.8,
+        "op_profit": 32767.5,
+        "net_income": 67.1
+      },
+      "2017": {
+        "cash": 29499.9,
+        "total_assets": 454184.6,
+        "long_debt": 33974.9,
+        "total_liab": 115975.4,
+        "total_equity": 338209.2,
+        "revenue": 301094.3,
+        "op_profit": 137213.3,
+        "net_income": 106422.2
+      },
+      "2018": {
+        "cash": 23493.2,
+        "total_assets": 636583.3,
+        "long_debt": 36676.3,
+        "total_liab": 168060.0,
+        "total_equity": 468523.3,
+        "revenue": 404450.7,
+        "op_profit": 208437.5,
+        "net_income": 155399.8
+      },
+      "2019": {
+        "cash": 23060.7,
+        "total_assets": 647894.9,
+        "total_liab": 168463.0,
+        "total_equity": 479432.0,
+        "revenue": 269907.3,
+        "op_profit": 27127.2,
+        "net_income": 20132.9
+      },
+      "2020": {
+        "cash": 29759.9,
+        "total_assets": 711738.5,
+        "total_liab": 192647.6,
+        "total_equity": 519091.0,
+        "revenue": 319004.2,
+        "op_profit": 50126.2,
+        "net_income": 47589.1
+      },
+      "2021": {
+        "cash": 50579.8,
+        "total_assets": 963864.7,
+        "total_liab": 341954.2,
+        "total_equity": 621910.6,
+        "revenue": 429977.9,
+        "op_profit": 124103.4,
+        "net_income": 96161.9
+      },
+      "2022": {
+        "cash": 49770.1,
+        "total_assets": 1038715.1,
+        "total_liab": 405809.7,
+        "total_equity": 632905.4,
+        "revenue": 446215.7,
+        "op_profit": 68094.2,
+        "net_income": 22295.6
+      },
+      "2023": {
+        "total_assets": 1003301.7,
+        "cash": 75873.3,
+        "total_equity": 535042.8,
+        "total_liab": 468264.1,
+        "op_profit": -77303.1,
+        "net_income": -91124.3,
+        "revenue": 327657.2
+      },
+      "2024": {
+        "total_assets": 1198552.1,
+        "cash": 112051.2,
+        "total_equity": 44871.2,
+        "total_liab": 459395.0,
+        "op_profit": 234673.2,
+        "net_income": 0.0,
+        "revenue": 661929.6
+      },
+      "2025": {
+        "total_assets": 1761076.6,
+        "cash": 149237.7,
+        "total_equity": 89537.1,
+        "total_liab": 554409.1,
+        "op_profit": 472063.2,
+        "net_income": 0.0,
+        "revenue": 971466.8
+      }
+    },
+    "missing_years": [
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2016,
+        "revenue_eok": 171980,
+        "op_profit_eok": 32768,
+        "net_income_eok": 67,
+        "roe_pct": 0.03,
+        "op_margin_pct": 19.05,
+        "debt_ratio_pct": 34.1
+      },
+      {
+        "year": 2017,
+        "revenue_eok": 301094,
+        "op_profit_eok": 137213,
+        "net_income_eok": 106422,
+        "roe_pct": 31.47,
+        "op_margin_pct": 45.57,
+        "debt_ratio_pct": 34.29
+      },
+      {
+        "year": 2018,
+        "revenue_eok": 404451,
+        "op_profit_eok": 208438,
+        "net_income_eok": 155400,
+        "roe_pct": 33.17,
+        "op_margin_pct": 51.53,
+        "debt_ratio_pct": 35.87
+      },
+      {
+        "year": 2019,
+        "revenue_eok": 269907,
+        "op_profit_eok": 27127,
+        "net_income_eok": 20133,
+        "roe_pct": 4.2,
+        "op_margin_pct": 10.05,
+        "debt_ratio_pct": 35.14
+      },
+      {
+        "year": 2020,
+        "revenue_eok": 319004,
+        "op_profit_eok": 50126,
+        "net_income_eok": 47589,
+        "roe_pct": 9.17,
+        "op_margin_pct": 15.71,
+        "debt_ratio_pct": 37.11
+      },
+      {
+        "year": 2021,
+        "revenue_eok": 429978,
+        "op_profit_eok": 124103,
+        "net_income_eok": 96162,
+        "roe_pct": 15.46,
+        "op_margin_pct": 28.86,
+        "debt_ratio_pct": 54.98
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 446216,
+        "op_profit_eok": 68094,
+        "net_income_eok": 22296,
+        "roe_pct": 3.52,
+        "op_margin_pct": 15.26,
+        "debt_ratio_pct": 64.12
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 327657,
+        "op_profit_eok": -77303,
+        "net_income_eok": -91124,
+        "roe_pct": -17.03,
+        "op_margin_pct": -23.59,
+        "debt_ratio_pct": 87.52
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 661930,
+        "op_profit_eok": 234673,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 35.45,
+        "debt_ratio_pct": 1023.79
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 971467,
+        "op_profit_eok": 472063,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 48.59,
+        "debt_ratio_pct": 619.17
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": 20.09,
+      "op_profit_cagr_pct": 33.08,
+      "best_year": 2025,
+      "worst_year": 2023,
+      "avg_roe_pct": 8.0
+    },
+    "valuation": {
+      "grade": "C",
+      "strengths": [
+        "높은 매출액 및 영업이익 성장률을 기록했습니다.",
+        "메모리 반도체 업황 회복에 따른 실적 턴어라운드 능력을 보여주었습니다.",
+        "호황기에는 높은 영업이익률을 달성하는 능력이 있습니다."
+      ],
+      "risks": [
+        "메모리 반도체 사이클에 대한 높은 의존도로 인해 실적 변동성이 극심합니다.",
+        "2024년, 2025년 당기순이익이 0원으로 예상되며, 매우 높은 부채비율이 우려됩니다.",
+        "미래 재무구조의 불확실성이 크며, 특히 자본총계 대비 부채 규모가 급증하는 점은 심각한 리스크입니다."
+      ],
+      "one_liner": "메모리 반도체 업황 회복에 힘입어 높은 성장성을 보이지만, 극심한 실적 변동성과 미래 재무구조의 불확실성이 큰 기업입니다."
+    }
+  },
+  "dcf": {
+    "text": "퀀트 애널리스트로서 SK하이닉스(000660)의 DCF 적정가치를 계산하겠습니다.\n\n**가정 및 전제:**\n1.  **기준 연도:** 2025년이 첫 번째 현금흐름 발생 연도입니다.\n2.  **최근 재무 데이터:** 제공된 매출액, 영업이익은 2025년의 예상치로 간주합니다.\n3.  **성장률:** 5년 예측 기간 동안 매출액 및 영업이익에 대한 성장률이 명시되지 않았으므로, **5년 예측 기간 동안 매출액과 영업이익은 2025년 수준으로 일정하게 유지된다고 가정합니다.** (이는 중요한 가정이며, 실제 분석에서는 성장률 가정이 필수적입니다.)\n4.  **FCF 계산식:** FCF = 영업이익 × (1 - 법인세율) + 감가상각비 - CAPEX\n    *   법인세율: 25%\n    *   감가상각비: 매출액의 10%\n    *   CAPEX: 매출액의 5%\n5.  **할인율 및 영구성장률:**\n    *   WACC (가중평균자본비용): 9% (기본 시나리오)\n    *   영구성장률 (g): 2% (기본 시나리오)\n6.  **예측 기간:** 5년 명시적 예측 기간 + 영구 가치 (Terminal Value)\n\n---\n\n### 1. 기본 시나리오 DCF 적정가치 계산\n\n먼저, 주어진 데이터를 바탕으로 2025년의 FCF를 계산하고, 이를 5년간 동일하게 적용하여 DCF 적정가치를 산출합니다.\n\n\n**분석 결과:**\n\n1.  **기본 시나리오 DCF 적정가치:**\n    *   2025년 FCF (및 명시적 예측 기간 FCF): 402,620.60 억원\n    *   명시적 예측 기간 FCF의 현재가치: 1,566,053.73 억원\n    *   5년차 말 영구 가치 (Terminal Value): 5,866,757.31 억원\n    *   영구 가치의 현재가치: 3,812,989.71 억원\n    *   **총 DCF 적정가치 (기본 시나리오): 5,379,043 억원**\n\n2.  **WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 (DCF 적정가치, 억원):**\n\n|       | WACC=7%   | WACC=8%   | WACC=9%   | WACC=10%  | WACC=11%  |\n| :---- | :-------- | :-------- | :-------- | :-------- | :-------- |\n| g=1%  | 6,483,050 | 5,561,219 | 4,869,710 | 4,331,756 | 3,901,295 |\n| g=2%  | 7,506,908 | 6,265,833 | 5,379,043 | 4,713,694 | 4,195,983 |\n| g=3%  | 9,042,694 | 7,252,294 | 6,058,154 | 5,204,757 | 4,564,342 |\n\n3.  **요약:**\n    적정가치(기본): 5379043억원\n\n**참고:** 본 분석은 5년 예측 기간 동안 매출액과 영업이익이 2025년 수준으로 일정하게 유지된다는 중요한 가정 하에 수행되었습니다. 실제 기업 가치 평가에서는 성장률에 대한 면밀한 분석과 가정이 필요합니다.",
+    "executed_code": "import pandas as pd\n\n# --- Input Data ---\nrevenue_recent = 971467  # 억원\noperating_profit_recent = 472063  # 억원\n\n# --- Assumptions ---\ntax_rate = 0.25\ndepreciation_rate_of_revenue = 0.10\ncapex_rate_of_revenue = 0.05\nwacc_base = 0.09\ng_base = 0.02\nprojection_years = 5\n\n# --- Base Scenario Calculation ---\n\n# 1. Calculate FCF for the first projection year (2025)\n# Assumption: Revenue and Operating Profit remain constant for the 5-year explicit forecast period.\ndepreciation_2025 = revenue_recent * depreciation_rate_of_revenue\ncapex_2025 = revenue_recent * capex_rate_of_revenue\nfcf_2025 = operating_profit_recent * (1 - tax_rate) + depreciation_2025 - capex_2025\n\nprint(f\"1. 2025년 FCF (및 명시적 예측 기간 FCF): {fcf_2025:.2f} 억원\\n\")\n\n# Project FCFs for the explicit period (5 years)\nfcf_explicit_period = [fcf_2025] * projection_years\n\n# 2. Calculate Present Value of explicit FCFs\npv_fcf_explicit = 0\nfor i in range(projection_years):\n    pv_fcf_explicit += fcf_explicit_period[i] / ((1 + wacc_base) ** (i + 1))\n\nprint(f\"2. 명시적 예측 기간 FCF의 현재가치: {pv_fcf_explicit:.2f} 억원\\n\")\n\n# 3. Calculate Terminal Value (TV)\n# FCF_year_6 = FCF_year_5 * (1 + g)\n# TV_at_year_5 = FCF_year_6 / (WACC - g)\nfcf_year_5 = fcf_explicit_period[-1] # FCF at the end of the explicit period\nfcf_year_6 = fcf_year_5 * (1 + g_base)\n\nif wacc_base <= g_base:\n    raise ValueError(\"WACC must be greater than perpetual growth rate (g) for Terminal Value calculation.\")\n\nterminal_value_at_year_5 = fcf_year_6 / (wacc_base - g_base)\nprint(f\"3. 5년차 말 영구 가치 (Terminal Value): {terminal_value_at_year_5:.2f} 억원\\n\")\n\n# 4. Calculate Present Value of Terminal Value\npv_terminal_value = terminal_value_at_year_5 / ((1 + wacc_base) ** projection_years)\nprint(f\"4. 영구 가치의 현재가치: {pv_terminal_value:.2f} 억원\\n\")\n\n# 5. Total DCF Fair Value\ndcf_fair_value_base = pv_fcf_explicit + pv_terminal_value\nprint(f\"5. 총 DCF 적정가치 (기본 시나리오): {dcf_fair_value_base:.2f} 억원\\n\")\n\n# --- Sensitivity Analysis Setup ---\nwacc_range = [0.07, 0.08, 0.09, 0.10, 0.11] # 7%, 8%, 9%, 10%, 11%\ng_range = [0.01, 0.02, 0.03] # 1%, 2%, 3%\n\nsensitivity_results = pd.DataFrame(index=[f'g={g*100:.0f}%' for g in g_range],\n                                   columns=[f'WACC={wacc*100:.0f}%' for wacc in wacc_range])\n\n# --- Sensitivity Analysis Calculation ---\nfor g_val in g_range:\n    for wacc_val in wacc_range:\n        if wacc_val <= g_val:\n            sensitivity_results.loc[f'g={g_val*100:.0f}%', f'WACC={wacc_val*100:.0f}%'] = \"N/A (WACC <= g)\"\n            continue\n\n        # Recalculate PV of explicit FCFs (FCFs themselves don't change with WACC/g, only their present value)\n        pv_fcf_explicit_sens = 0\n        for i in range(projection_years):\n            pv_fcf_explicit_sens += fcf_explicit_period[i] / ((1 + wacc_val) ** (i + 1))\n\n        # Recalculate Terminal Value and its PV\n        fcf_year_6_sens = fcf_year_5 * (1 + g_val)\n        terminal_value_at_year_5_sens = fcf_year_6_sens / (wacc_val - g_val)\n        pv_terminal_value_sens = terminal_value_at_year_5_sens / ((1 + wacc_val) ** projection_years)\n\n        dcf_fair_value_sens = pv_fcf_explicit_sens + pv_terminal_value_sens\n        sensitivity_results.loc[f'g={g_val*100:.0f}%', f'WACC={wacc_val*100:.0f}%'] = f\"{dcf_fair_value_sens:.0f}\"\n\nprint(\"--- WACC 및 영구성장률(g) 민감도 그리드 (DCF 적정가치, 억원) ---\\n\")\nprint(sensitivity_results)\n\nprint(f\"\\n적정가치(기본): {dcf_fair_value_base:.0f}억원\")",
+    "code_output": "1. 2025년 FCF (및 명시적 예측 기간 FCF): 402620.60 억원\n\n2. 명시적 예측 기간 FCF의 현재가치: 1566053.73 억원\n\n3. 5년차 말 영구 가치 (Terminal Value): 5866757.31 억원\n\n4. 영구 가치의 현재가치: 3812989.71 억원\n\n5. 총 DCF 적정가치 (기본 시나리오): 5379043.44 억원\n\n--- WACC 및 영구성장률(g) 민감도 그리드 (DCF 적정가치, 억원) ---\n\n      WACC=7%  WACC=8%  WACC=9% WACC=10% WACC=11%\ng=1%  6483050  5561219  4869710  4331756  3901295\ng=2%  7506908  6265833  5379043  4713694  4195983\ng=3%  9042694  7252294  6058154  5204757  4564342\n\n적정가치(기본): 5379043억원"
+  },
+  "news": {
+    "text": "## SK하이닉스(000660) 투자 의견: 매수\n\n### 1. 재무 데이터 스토리와 현재 시장 컨센서스의 일치/불일치\n\n제공된 10년 재무제표 분석 결과는 SK하이닉스에 대해 '투자등급 C, 극심한 실적 변동성과 미래 재무구조의 불확실성'이라는 평가를 내렸습니다. 그러나 최근 2주간의 시장 컨센서스는 이와 **크게 불일치**하며 매우 긍정적인 방향으로 전환되었습니다.\n\n*   **시장 컨센서스 급등:** 삼성전자의 호실적 발표 이후, SK하이닉스 또한 2026년 1분기 \"역대급 실적\" 또는 \"어닝 서프라이즈\"를 기록할 것이라는 기대감이 지배적입니다.\n*   **실적 전망치 상향:** 1분기 매출액은 46조~51조원, 영업이익은 32조~38조원 이상으로 전망되며, 이는 전년 동기 대비 영업이익이 330%에서 417%까지 급증할 것으로 예상됩니다. 연간 영업이익 전망치 또한 2026년 232조~256조원, 2027년 365조원까지 상향 조정되고 있습니다.\n*   **목표주가 상향:** 다수의 증권사가 SK하이닉스의 목표주가를 160만원에서 193만원, 심지어 170만원(KB증권)까지 상향 조정했습니다.\n*   **투자의견:** 전반적인 애널리스트 투자의견은 '적극 매수' 또는 '매수'입니다.\n\n이는 메모리 반도체 업황 회복을 넘어 AI 반도체 수요에 따른 산업의 구조적 변화가 실적에 본격적으로 반영되기 시작했다는 시장의 판단을 보여줍니다.\n\n### 2. 재무제표에서 드러나지 않는 리스크 또는 호재\n\n**주요 호재:**\n\n*   **HBM 시장 지배력:** SK하이닉스는 고대역폭메모리(HBM) 시장에서 57%(2025년 4분기 기준)의 압도적인 점유율을 유지하며 선두를 달리고 있습니다. AI 서버 및 데이터센터 투자 확대에 따라 HBM 수요는 공급을 초과하고 있으며, HBM은 '없어서 못 파는' 고수익 제품으로 인식되고 있습니다.\n*   **반도체 사이클의 구조적 변화:** 현재의 반도체 시장 호황은 단순한 경기 회복을 넘어 AI 수요에 기반한 구조적인 변화로 해석되고 있으며, 이는 장기적인 성장 동력으로 작용할 것으로 전망됩니다.\n*   **D램 및 낸드 가격 급등:** HBM 외에도 범용 D램 및 낸드플래시 가격이 공급 부족과 고객사들의 선제적 물량 확보 움직임으로 인해 예상보다 가파르게 상승하고 있습니다.\n*   **장기 공급 계약(LTA) 확대:** 주요 고객사들과의 장기 공급 계약 체결이 늘어나면서 과거의 실적 변동성이 완화되고 안정적인 매출 확보가 가능해질 것으로 보입니다.\n*   **미국 ADR 상장 추진:** 미국 증권거래위원회(SEC)에 ADR 상장 공모 관련 등록신청서를 제출하여, 향후 기업 가치 재평가 및 글로벌 투자자 접근성 확대가 기대됩니다.\n*   **경영진 자사주 매입:** SK하이닉스 경영진이 스톡옵션을 활용해 62억원 규모의 자사주를 매입하며 회사 성장에 대한 강한 자신감을 표명했습니다.\n\n**주요 리스크:**\n\n*   **HBM 경쟁 심화:** SK하이닉스가 HBM 시장을 선도하고 있으나, 삼성전자 또한 HBM4 양산을 시작하며 경쟁이 가속화되고 있으며, 중국 기업들의 HBM 기술 추격도 예상됩니다.\n*   **지정학적 리스크:** 중동 지역의 긴장 고조는 글로벌 공급망에 부담을 줄 수 있으며, 반도체 공정에 필요한 산업용 가스 수급에 간접적인 영향을 미쳐 수율 및 비용에 영향을 줄 가능성이 있습니다.\n*   **과거 실적 변동성:** 비록 현재는 AI 수요로 인한 구조적 변화가 예상되지만, 메모리 반도체 산업의 본질적인 사이클 특성과 과거의 극심한 실적 변동성은 잠재적인 리스크로 남아있습니다.\n\n### 3. 최종 판정\n\n현재 SK하이닉스는 AI 반도체 시장의 폭발적인 성장과 HBM 기술 리더십을 바탕으로 전례 없는 호황을 맞이하고 있습니다. 과거 재무제표에서 드러났던 실적 변동성 리스크는 AI 수요에 기반한 산업 구조 변화와 장기 공급 계약 확대로 상당 부분 완화될 것으로 판단됩니다. 시장 컨센서스는 매우 긍정적이며, 주요 증권사들은 목표주가를 대폭 상향 조정하고 있습니다. 경쟁 심화 및 지정학적 리스크는 존재하나, 현재의 강력한 성장 모멘텀과 HBM 시장에서의 독보적인 지위를 고려할 때 단기적인 우려보다는 장기적인 성장 잠재력에 주목해야 합니다.\n\n**최종 판정: 매수**",
+    "citations": [
+      {
+        "title": "newstomato.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEXQuyMAfR5MutCCBbiboS97iwJqyTZcntvx_5Xau6TgAmupIeX0ST-sGmK8496w4XawPjINUjhwEltS_WSAHz9YB56CJ_iee5JrjsyX4B_4Q4RS0zGUp7MYi-Ig7hdfLg_ePqFaOfbChQtjxhSNA=="
+      },
+      {
+        "title": "mk.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFcJWneznd1eecIxKO2SYa9kRoU3nUb8A5plfAS5HTasR0hIG8AL82g5-KsT9FRkJVo3lDBTIc12RMTLVD4SXEl3Ypo9loEqjGyTuIUAsROMU7hZCsqSf7ppefAfKEAIE5kGdE="
+      },
+      {
+        "title": "einfomax.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQE4gakFoXkgvlOg8BJi6p1D9960Dl-y8We-nsF-RFH7EsUMJZ_O3uReztAqiZ-j-rbBPyhhzBYMRUGvAcaFpBIHx8KUIV15ubcP_pDFgMrCHYPSzd90Xj30vk9vx-fhwwAM3RaHf8EDqymIUNw7r0MFn6MYCUQIBziTIA=="
+      },
+      {
+        "title": "nongaek.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQF84Ag29xMw5oSnQ6AUDqfqKaBk3wYgnk_FMOLWSnAUCdLgwk9wIVNLrz8uwN6mfE0-Ri-qTDb8_cyjW5TiWcvSKUN9waWaF_czi583GYLnyyn07gat0-R8l5yRkbw4k4_fqgQ84mWTGfUCIMzYalkLjVb1og=="
+      },
+      {
+        "title": "hansbiz.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFMaFvgo_JBdoHYm0yR6-RguBd09celN2cibrL2OwOYaf7cgdeaK83hfMX-YYYfJHgztG1K51MFP0AAfCU5X5KlL31YxKuf064I8QCzEByn0dNDOfcFhQ6UwV3uvSgKkgOAGeh1EDURUsqL0djpx9R1vHw8ynAI"
+      },
+      {
+        "title": "widedaily.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEycUkIzLx6wMSdg0F6rliCL5lLWCEKmBxaG4PnqrxWTjxnpl6MQqgIiW2jjM4HlFIwBxIcEcs0cMUYFmY5cqHYQwExGca3wyYZMPf4hTitaw--UF51QTIPslaNPZEuq3mVpD1voH7DuECvKZAF75-tK-edy57KZg=="
+      },
+      {
+        "title": "jnilbo.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQE9cn37f5lADUArv3n6XHaPEmhS6fW1CLa1aClIsSzcMhUzXeECxgg-ECGHhTBlgzDt2AG8Nr2c7eAxMUrA9thvrpBs-OahpKnL_hUYS1ZEryvebJ5lnUoOTAX0P_aQGgwVEBmbF6qkPQ2rO5OdRLVpYlDFFO6V6TF2"
+      },
+      {
+        "title": "daum.net",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQH7y9y-NJ7wXtnkVHV1BSAYIAVW5FZbM292qBtAlMu-wrXBIhes74iJgseAY6sdUG_EDoNGdOtZJErPWGCXoUiCmIkSgQmqcBs6KsX7f2pFlc0ZMLs9UE2ZuhwaN-3VGeeZ"
+      },
+      {
+        "title": "wisereport.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFi9VQ4yvHCS4vZgXvqMIGpM5LVoonJ4TNPFfsS_4VnC_PFkeAJEUm2xjikdwcuCGM0pHF1BQp0B4XGGwdMe5jgSuyNMievhzoFJJXyetNVEhCZ1SW0EOeNE3CIFweO1gnek6mwVuMfzMPSh8gucVI17AAxf3UgqdfDbebpF6YFxw=="
+      },
+      {
+        "title": "hankyung.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFrSUEXbs85No_YphyuUL3g_Izl1YdJvxJo2wH62HRXnydKuqkBDWLmmlRGqDWduOqv4jcdfIy_jm1tqEZyuIYvwS69goCNgnqa5ncBvvpiSLmhtLE5dWLmPGt31HpAtB501YuN0jgNAUvpYHl2ug=="
+      }
+    ]
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=00164779",
+    "summary": "공시 페이지 접근 제한"
+  }
+}

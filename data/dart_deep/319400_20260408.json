@@ -1,0 +1,214 @@
+{
+  "stock_code": "319400",
+  "stock_name": "현대무벡스",
+  "generated_at": "2026-04-08T11:06:04.736318+00:00",
+  "financials": {
+    "stock_code": "319400",
+    "corp_code": "01358463",
+    "years": [
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2020": {
+        "cash": 0.8,
+        "total_assets": 200.7,
+        "total_liab": 32.1,
+        "total_equity": 168.6,
+        "revenue": 0.0,
+        "op_profit": -0.4,
+        "net_income": 1.2
+      },
+      "2021": {
+        "cash": 194.3,
+        "total_assets": 2111.8,
+        "total_liab": 844.7,
+        "total_equity": 1267.2,
+        "revenue": 2400.9,
+        "op_profit": 154.1,
+        "net_income": 81.3
+      },
+      "2022": {
+        "cash": 282.9,
+        "total_assets": 2194.5,
+        "total_liab": 648.7,
+        "total_equity": 1545.8,
+        "revenue": 2104.6,
+        "op_profit": 121.6,
+        "net_income": 92.5
+      },
+      "2023": {
+        "total_assets": 2489.3,
+        "cash": 192.9,
+        "total_equity": 1607.3,
+        "total_liab": 882.0,
+        "op_profit": 41.4,
+        "net_income": 42.1,
+        "revenue": 2678.4
+      },
+      "2024": {
+        "total_assets": 2988.7,
+        "cash": 585.5,
+        "total_equity": 704.7,
+        "total_liab": 1267.2,
+        "op_profit": 245.7,
+        "net_income": 269.2,
+        "revenue": 3413.8
+      },
+      "2025": {
+        "total_assets": 2834.4,
+        "cash": 361.2,
+        "total_equity": 716.7,
+        "total_liab": 1231.3,
+        "op_profit": 182.1,
+        "net_income": 0.0,
+        "revenue": 3939.4
+      }
+    },
+    "missing_years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2020,
+        "revenue_eok": 0,
+        "op_profit_eok": 0,
+        "net_income_eok": 1,
+        "roe_pct": 0.59,
+        "op_margin_pct": 0.0,
+        "debt_ratio_pct": 18.93
+      },
+      {
+        "year": 2021,
+        "revenue_eok": 2401,
+        "op_profit_eok": 154,
+        "net_income_eok": 81,
+        "roe_pct": 6.39,
+        "op_margin_pct": 6.41,
+        "debt_ratio_pct": 66.69
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 2105,
+        "op_profit_eok": 122,
+        "net_income_eok": 92,
+        "roe_pct": 5.95,
+        "op_margin_pct": 5.79,
+        "debt_ratio_pct": 42.0
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 2678,
+        "op_profit_eok": 41,
+        "net_income_eok": 42,
+        "roe_pct": 2.61,
+        "op_margin_pct": 1.53,
+        "debt_ratio_pct": 54.88
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 3414,
+        "op_profit_eok": 246,
+        "net_income_eok": 269,
+        "roe_pct": 38.16,
+        "op_margin_pct": 7.21,
+        "debt_ratio_pct": 179.72
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 3939,
+        "op_profit_eok": 182,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 4.62,
+        "debt_ratio_pct": 171.69
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": 13.17,
+      "op_profit_cagr_pct": 4.25,
+      "best_year": 2024,
+      "worst_year": 2020,
+      "avg_roe_pct": 8.95
+    },
+    "valuation": {
+      "grade": "C",
+      "strengths": [
+        "2021년 이후 매출액의 꾸준한 성장 추세 (연평균 13.17% 성장).",
+        "2024년 기록적인 영업이익 및 당기순이익 달성.",
+        "2024년 높은 자기자본이익률(ROE) 기록 (38.16%)."
+      ],
+      "risks": [
+        "수익성 변동성 심화: 영업이익률 및 당기순이익의 변동성이 매우 크며, 특히 2023년과 2025년 수익성 악화.",
+        "재무 건전성 악화: 2024년 이후 부채비율이 급증하여 재무적 부담 증가.",
+        "2025년 당기순이익 0 기록: 2025년 당기순이익이 0으로 기록되어 향후 수익성 지속 가능성에 대한 우려."
+      ],
+      "one_liner": "매출액 성장세는 긍정적이나, 심한 수익성 변동성과 급증하는 부채비율로 인해 재무적 리스크가 높은 기업."
+    }
+  },
+  "dcf": {
+    "text": "알겠습니다. 퀀트 애널리스트로서 현대무벡스(319400)의 DCF 적정가치를 계산하겠습니다.\n\n제공된 정보에 따라, 예측 기간(5년) 동안 매출액과 영업이익의 성장률에 대한 가정이 명시되어 있지 않습니다. 따라서, **기본 시나리오에서는 5년 예측 기간 동안 매출액과 영업이익이 2025년 수준으로 일정하게 유지된다고 가정**하고 계산을 진행하겠습니다. 이 가정은 결과에 큰 영향을 미칠 수 있습니다.\n\n---\n\n### 1. 기본 시나리오 DCF 적정가치 계산\n\n**입력 데이터 및 가정:**\n*   **기업:** 현대무벡스 (319400)\n*   **기준 연도:** 2025\n*   **최근 재무 (억원, 2025년 기준):**\n    *   매출액: 3939\n    *   영업이익: 182\n*   **FCF 계산 가정:**\n    *   세율: 25% (영업이익 × (1 - 0.25)에서 유추)\n    *   감가상각: 매출액의 10%\n    *   CAPEX: 매출액의 5%\n*   **할인율 및 성장률:**\n    *   WACC (가중평균자본비용): 9% (0.09)\n    *   영구성장률 (g): 2% (0.02)\n*   **예측 기간:** 5년 (2025년 ~ 2029년) + 영구 가치 (Terminal Value)\n\n**기본 시나리오 가정 (추가):**\n*   예측 기간 5년 동안 매출액과 영업이익은 2025년 수준(매출액 3939억원, 영업이익 182억원)으로 유지됩니다.\n\n\n### 분석 결과\n\n1.  **기본 시나리오 DCF 적정가치:**\n    *   예측 기간 5년 동안의 FCF 현재가치 합계: 1,297.00 억원\n    *   터미널 밸류의 현재가치: 3,157.91 억원\n    *   **DCF 적정가치 (기본 시나리오): 4,454.92 억원**\n\n2.  **WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드:**\n\n|             | g=1%      | g=2%      | g=3%      |\n| :---------- | :-------- | :-------- | :-------- |\n| **WACC=7%** | 5369.26   | 6217.21   | 7489.15   |\n| **WACC=8%** | 4605.80   | 5189.36   | 6006.34   |\n| **WACC=9%** | 4033.09   | 4454.92   | 5017.36   |\n| **WACC=10%**| 3587.56   | 3903.88   | 4310.58   |\n| **WACC=11%**| 3231.05   | 3475.11   | 3780.18   |\n\n    *(N/A는 WACC <= g 인 경우로, 터미널 밸류 계산이 불가능합니다.)*\n\n3.  **요약:**\n    적정가치(기본): 4454.92억원\n\n---\n**참고:** 본 계산은 예측 기간 동안 매출액과 영업이익이 2025년 수준으로 일정하게 유지된다는 가정 하에 수행되었습니다. 매출액 성장률 등 추가적인 가정이 적용될 경우 적정가치는 달라질 수 있습니다.",
+    "executed_code": "import pandas as pd\n\n# 1. 기본 시나리오 DCF 적정가치 계산\n\n# 입력 데이터 및 가정\nrevenue_2025 = 3939  # 억원\noperating_profit_2025 = 182  # 억원\ntax_rate = 0.25\ndepreciation_rate = 0.10  # 매출액의 10%\ncapex_rate = 0.05  # 매출액의 5%\nwacc = 0.09\ng = 0.02\nforecast_years = 5\n\nprint(f\"--- 기본 시나리오 DCF 계산 ---\")\nprint(f\"매출액 (2025): {revenue_2025} 억원\")\nprint(f\"영업이익 (2025): {operating_profit_2025} 억원\")\nprint(f\"WACC: {wacc*100}%\")\nprint(f\"영구성장률 (g): {g*100}%\")\nprint(f\"예측 기간: {forecast_years}년\")\nprint(f\"**가정: 예측 기간 5년 동안 매출액과 영업이익은 2025년 수준으로 일정하게 유지됩니다.**\\n\")\n\n# FCF 계산\n# NOPAT = 영업이익 * (1 - 세율)\n# 감가상각 = 매출액 * 감가상각률\n# CAPEX = 매출액 * CAPEX율\n# FCF = NOPAT + 감가상각 - CAPEX\n\n# 2025년 기준 FCF 계산 (예측 기간 동안 동일)\nnopat = operating_profit_2025 * (1 - tax_rate)\ndepreciation = revenue_2025 * depreciation_rate\ncapex = revenue_2025 * capex_rate\nfcf_per_year = nopat + depreciation - capex\n\nprint(f\"NOPAT (매년): {nopat:.2f} 억원\")\nprint(f\"감가상각 (매년): {depreciation:.2f} 억원\")\nprint(f\"CAPEX (매년): {capex:.2f} 억원\")\nprint(f\"예측 기간 FCF (매년): {fcf_per_year:.2f} 억원\\n\")\n\n# 예측 기간 FCF의 현재가치 합계\npv_fcf_sum = 0\nfor t in range(1, forecast_years + 1):\n    pv_fcf = fcf_per_year / ((1 + wacc) ** t)\n    pv_fcf_sum += pv_fcf\n    print(f\"Year {t} FCF: {fcf_per_year:.2f} 억원, PV: {pv_fcf:.2f} 억원\")\n\nprint(f\"\\n예측 기간 FCF 현재가치 합계: {pv_fcf_sum:.2f} 억원\")\n\n# 터미널 밸류 (Terminal Value) 계산\n# FCF_t+1 = FCF_t * (1 + g)\n# TV_t = FCF_t+1 / (WACC - g)\n# PV_TV = TV_t / (1 + WACC)^t\n\nfcf_year_6 = fcf_per_year * (1 + g)\nterminal_value_year_5 = fcf_year_6 / (wacc - g)\npv_terminal_value = terminal_value_year_5 / ((1 + wacc) ** forecast_years)\n\nprint(f\"6년차 FCF (TV 계산용): {fcf_year_6:.2f} 억원\")\nprint(f\"5년차 말 터미널 밸류: {terminal_value_year_5:.2f} 억원\")\nprint(f\"터미널 밸류의 현재가치: {pv_terminal_value:.2f} 억원\\n\")\n\n# 적정가치 (Enterprise Value) 계산\ndcf_valuation_base = pv_fcf_sum + pv_terminal_value\n\nprint(f\"**DCF 적정가치 (기본 시나리오): {dcf_valuation_base:.2f} 억원**\\n\")\n\n# 2. WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 출력\n\nwacc_range = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_range = [0.01, 0.02, 0.03]\n\nsensitivity_results = {}\n\nprint(f\"--- WACC x g 민감도 분석 그리드 ---\")\nprint(f\"FCF (매년): {fcf_per_year:.2f} 억원\")\nprint(f\"예측 기간: {forecast_years}년\\n\")\n\nfor current_wacc in wacc_range:\n    for current_g in g_range:\n        if current_wacc <= current_g:\n            # WACC가 g보다 작거나 같으면 계산 불가 (분모가 0 또는 음수)\n            sensitivity_results[(current_wacc, current_g)] = \"N/A\"\n            continue\n\n        # 예측 기간 FCF의 현재가치 합계 (WACC만 변경)\n        pv_fcf_sum_sens = 0\n        for t in range(1, forecast_years + 1):\n            pv_fcf_sum_sens += fcf_per_year / ((1 + current_wacc) ** t)\n\n        # 터미널 밸류 계산 (WACC, g 변경)\n        fcf_year_6_sens = fcf_per_year * (1 + current_g)\n        terminal_value_year_5_sens = fcf_year_6_sens / (current_wacc - current_g)\n        pv_terminal_value_sens = terminal_value_year_5_sens / ((1 + current_wacc) ** forecast_years)\n\n        dcf_valuation_sens = pv_fcf_sum_sens + pv_terminal_value_sens\n        sensitivity_results[(current_wacc, current_g)] = dcf_valuation_sens\n\n# 결과 출력 (표 형식)\ndf_sensitivity = pd.DataFrame(index=[f'WACC={w*100:.0f}%' for w in wacc_range],\n                              columns=[f'g={g*100:.0f}%' for g in g_range])\n\nfor (w, g_val), value in sensitivity_results.items():\n    w_label = f'WACC={w*100:.0f}%'\n    g_label = f'g={g_val*100:.0f}%'\n    if value == \"N/A\":\n        df_sensitivity.loc[w_label, g_label] = value\n    else:\n        df_sensitivity.loc[w_label, g_label] = f'{value:.2f}'\n\nprint(df_sensitivity)\nprint(\"\\n(N/A는 WACC <= g 인 경우로, 터미널 밸류 계산이 불가능합니다.)\\n\")\n\n# 3. 마지막에 '적정가치(기본): {value}억원' 형태로 요약 출력\nprint(f\"적정가치(기본): {dcf_valuation_base:.2f}억원\")",
+    "code_output": "--- 기본 시나리오 DCF 계산 ---\n매출액 (2025): 3939 억원\n영업이익 (2025): 182 억원\nWACC: 9.0%\n영구성장률 (g): 2.0%\n예측 기간: 5년\n**가정: 예측 기간 5년 동안 매출액과 영업이익은 2025년 수준으로 일정하게 유지됩니다.**\n\nNOPAT (매년): 136.50 억원\n감가상각 (매년): 393.90 억원\nCAPEX (매년): 196.95 억원\n예측 기간 FCF (매년): 333.45 억원\n\nYear 1 FCF: 333.45 억원, PV: 305.92 억원\nYear 2 FCF: 333.45 억원, PV: 280.66 억원\nYear 3 FCF: 333.45 억원, PV: 257.48 억원\nYear 4 FCF: 333.45 억원, PV: 236.22 억원\nYear 5 FCF: 333.45 억원, PV: 216.72 억원\n\n예측 기간 FCF 현재가치 합계: 1297.00 억원\n6년차 FCF (TV 계산용): 340.12 억원\n5년차 말 터미널 밸류: 4858.84 억원\n터미널 밸류의 현재가치: 3157.91 억원\n\n**DCF 적정가치 (기본 시나리오): 4454.92 억원**\n\n--- WACC x g 민감도 분석 그리드 ---\nFCF (매년): 333.45 억원\n예측 기간: 5년\n\n             g=1%     g=2%     g=3%\nWACC=7%   5369.26  6217.21  7489.15\nWACC=8%   4605.80  5189.36  6006.34\nWACC=9%   4033.09  4454.92  5017.36\nWACC=10%  3587.56  3903.88  4310.58\nWACC=11%  3231.05  3475.11  3780.18\n\n(N/A는 WACC <= g 인 경우로, 터미널 밸류 계산이 불가능합니다.)\n\n적정가치(기본): 4454.92억원"
+  },
+  "news": {
+    "text": "## 현대무벡스(319400) 투자 분석: 재무 리스크와 성장 잠재력의 교차점\n\n한국 주식 시장 전문 애널리스트로서 현대무벡스(319400)의 10년 재무제표 분석 결과와 최근 2주간의 시장 뉴스를 종합하여 투자 의견을 제시합니다.\n\n**투자등급 C, 요약: 매출액 성장세는 긍정적이나, 심한 수익성 변동성과 급증하는 부채비율로 인해 재무적 리스크가 높은 기업.**\n\n---\n\n### 1. 재무 데이터가 보여주는 스토리와 현재 시장 컨센서스의 일치/불일치\n\n제공된 재무 데이터는 현대무벡스가 매출액 성장세는 긍정적이지만, 심한 수익성 변동성과 급증하는 부채비율로 인해 재무적 리스크가 높다는 점을 명확히 보여줍니다. 이는 투자등급 'C'로도 확인할 수 있습니다.\n\n반면, 최근 시장 컨센서스는 현대무벡스를 스마트 물류 및 로봇 자동화 시장의 성장 수혜주로 평가하며 긍정적인 시각을 유지하고 있습니다. 주요 증권사 리포트에서는 AI와 로보틱스를 통한 스마트 물류 시장에서의 실적 개선 가속화와 물류 자동화 수요 확대로 인한 수혜를 강조합니다. 특히, 현대차그룹의 AI 및 로봇 분야 50조 원 투자 소식은 현대무벡스 주가 급등의 요인으로 작용하기도 했습니다.\n\n이러한 시장의 기대감은 최근 주가 흐름에서도 나타나, 지난 2월 실적 발표에서 매출액은 증가했으나 영업이익과 당기순이익이 감소했음에도 불구하고 주가가 반등하는 모습을 보였습니다. 또한, 4월 8일에는 북미 최대 물류 전시회 'MODEX 2026' 참가 소식과 함께 주가가 16.83% 상승하며 VI(변동성 완화장치)가 발동되기도 했습니다.\n\n결론적으로, **재무 데이터가 보여주는 '높은 재무적 리스크'와 시장의 '미래 성장성에 대한 높은 기대감' 사이에는 불일치**가 존재합니다. 시장은 단기적인 재무 건전성보다는 스마트 물류 및 로봇 산업의 구조적 성장과 현대무벡스의 기술력 및 시장 확장 가능성에 더 큰 비중을 두고 있는 것으로 판단됩니다. 다만, 높은 PER(276.46)과 PBR(18.68)은 이미 상당한 성장 기대감이 주가에 반영되어 있음을 시사합니다.\n\n---\n\n### 2. 재무제표에서 드러나지 않는 리스크 또는 호재\n\n**재무제표에서 드러나지 않는 리스크:**\n\n*   **해외 수주 관련 충당금 설정:** 최근 중국 고객사의 기업 회생 절차로 인해 대규모 해외 수주 사업에서 손실 충당금을 대폭 늘려 잡은 사례가 있습니다. 이는 해외 사업 확장 과정에서 발생할 수 있는 예상치 못한 미수금 및 손실 위험을 보여주며, 향후 유사한 리스크가 반복될 가능성을 배제할 수 없습니다.\n*   **경쟁 심화:** 스마트팩토리 물류자동화 업계에 SK그룹 계열사(에스엠코어), 코윈테크, LG CNS 등 대기업 계열사들이 본격적으로 진입하면서 경쟁이 심화되고 있으며, 이는 현대무벡스의 수익성 압박 요인으로 작용할 수 있습니다.\n*   **잠재적 물량 부담 (Dilution Risk):** 공시 빈도 및 보고서 키워드를 기반으로 추정된 잠재적 물량 부담 리스크가 10%로 언급되어, 향후 유상증자 등으로 인한 주가 희석 가능성도 고려해야 합니다.\n\n**재무제표에서 드러나지 않는 호재:**\n\n*   **스마트 물류 및 로봇 시장의 구조적 성장:** 인건비 부담 및 인력 부족으로 물류 자동화 및 로봇 시장은 구조적으로 확대되고 있으며, 이커머스, 2차전지, K-푸드, K-뷰티 등 다양한 전방 산업의 투자 사이클 변화에 유연하게 대응 가능한 비캡티브(non-captive) 영업 구조는 현대무벡스의 성장 가시성을 높이는 요인입니다.\n*   **글로벌 시장 확장 및 기술력:** 북미 최대 물류 전시회 'MODEX 2026' 참가와 같은 적극적인 해외 시장 공략을 통해 글로벌 경쟁력을 입증하고 있으며, AMR(자율주행모바일로봇), AGV(무인이송로봇) 등 고도화된 스마트 물류 솔루션 기술력을 보유하고 있습니다.\n*   **현대차그룹의 미래 신사업 투자 수혜 기대:** 현대차그룹이 인공지능(AI)과 로봇 등 미래 신사업에 향후 5년간 50조 원을 투자하겠다고 밝히면서, 현대그룹 계열사인 현대무벡스가 직간접적인 수혜를 입을 것이라는 기대감이 존재합니다.\n*   **수주잔고 증가 및 유지보수 매출 확대:** 국내외 대형 프로젝트 수주를 기반으로 수주잔고 회복이 가시화되고 있으며, 메인터넌스(유지보수) 매출 확대에 따른 믹스 개선은 수익성 개선을 견인할 요인으로 평가됩니다.\n\n---\n\n### 3. 최종 판정\n\n제공된 재무제표 분석 결과는 현대무벡스의 재무적 리스크가 높음을 분명히 보여줍니다. 특히 심한 수익성 변동성과 급증하는 부채비율은 투자에 있어 신중함을 요구하는 부분입니다.\n\n그러나 최근 시장의 흐름과 뉴스들은 현대무벡스가 스마트 물류 및 로봇 자동화라는 성장 산업의 핵심 플레이어로서 높은 미래 성장 잠재력을 보유하고 있음을 시사합니다. 적극적인 해외 시장 진출과 기술력 확보 노력은 긍정적인 요소입니다.\n\n하지만, 이러한 성장 기대감이 이미 높은 밸류에이션(PER, PBR)에 상당 부분 반영되어 있으며, 해외 수주 관련 충당금 설정과 같은 잠재적 리스크 또한 현실화될 수 있다는 점을 간과할 수 없습니다. 따라서 긍정적인 성장 모멘텀에도 불구하고, 재무적 안정성 대비 높은 밸류에이션과 잠재적 리스크를 고려할 때, 현재 시점에서는 신중한 접근이 필요하다고 판단됩니다.\n\n**최종 판정: 관망**",
+    "citations": [
+      {
+        "title": "daum.net",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFX52x83f1_bCuj5x8IQgAQYDVwbeP9NsQcjT77C8cqgzp0x2fwXvXFO8vkQ6yOHyFbTN9yySB4Oogcwn78TcXuadwNRMSGbl2sCPIFEBpZVBFPLMR6PpbyhaK0l0D5Clk="
+      },
+      {
+        "title": "hankyung.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHCZ_9uAFkKotMYYehicICqjc72QKfH_QhSUQi7CM74XDX-87ChE9VqjHxCKPg0gyjbZvthh71RS9wDO5KztKahmyWTiVV_0IJcyqI8lJFlamsFaDF2XuR3b53OF9DNxe2hsVblSBsrN8zk2rcw"
+      },
+      {
+        "title": "pstatic.net",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQF-fkKz8ssLydTYIUvf14B7m3NqtxmC31RlQ0UiwF-ub_anK3ilDgexJOVyG4fKIWj7Fji6pFZgWOq2bp2iH_YvdLj0-gM6FMxmf454dpytzgua0mmyVpDI4PMJG0raNt-CLH5Gt-jiACZ56c0P8TuU9cSlRet6MU5lBkXHoAD27LcC6cR-KJgwOzVXUQ=="
+      },
+      {
+        "title": "widedaily.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFtYK4KvM9pO_3W06bwnYNtKVAFdcA2iTZPukqoRTLKMsIjHmfiXaqOf5mzlmNUSfRX9b4yCGzetcBRiI3HRhz-5gdsT8sZLc5KtFs-tVRSZk9c9s4qcCd29PgqFe1aruJ8l0kla1qrBX_LqRqJnyK1tSMt8-3h"
+      },
+      {
+        "title": "cbci.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGSH46a401Gx7sF0NX_5wdeMlhOSS_tAxpxfKHRIc99tjRi7TwKh3hPkfc2pPeI4PjTmLVrHqNMNXWAOsexdy_RN66bzdqsFckMkFvZDpESTkbXc9r6RpihQnI_nvH8V7zHOhEZGZfWzJshGdf8aqfuYD3c"
+      },
+      {
+        "title": "cbci.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHjq5L7T8eGFYylw0Lx1KS6HjcxpVRl-lnfcjjIZbgyhu80puHJsUOruLFGWNAEOy4fM2ypo2EtJzHHefdoDGKRHTjdqJHPZapUg5Ni_OmVRBeTjX01yRKdcnzfB48ojbOLX9S30IZS_gw5KygLGGU="
+      },
+      {
+        "title": "chosun.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGZCj3zsyArLn6NzFobZmtKyyQaC6zcIKqxoY6YbdbvpZ_dCuZ-FVwdW3-LsGeEQR41J1VNI9oFKGp_E9KaGtuPTmDwKTKiqpyceQBSligli4ewmSjk_-eDjJdPJ-5fWbXl3CHX2jVBRy0RePH0AzhaDeAW3by_fG96HQCg33oqqh7HQo2RH4I="
+      },
+      {
+        "title": "etoday.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEfmRox4frhRiX53Hs9EXOi5ZJdut0inoVo0abODL7jWS7DorSk1RR1vOoy5GBisvu0qMxUaDXm2qjbDDIRPWRQ267RAajEBCb7fmMAgTFt23U75N7zo7pNdMbxYVvW8MDenIFD"
+      },
+      {
+        "title": "wisereport.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHpP7o8sXfNoSEDC83CBdjbqfF2UpZvt_86tF_t2NZK-OQXDwVqePI3Qh5z7h5GbITKG3kh6pvfJNnxpbmeA7PClNKTuqUt5rRdtQJZOGmpyGIGyoe4taK_fqXmLfLvOuUWNmUgCo8vDZbeqt17E3gsbiKzYxxgguzbVu3CsUH7"
+      },
+      {
+        "title": "dealsitetv.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGY0K3f_AnGjfmAkz8zYtYJqqQ67wgMfT6XqL7kCUT8QTrqherho8nWsdSPc09KNhXTiSXvVbCWYZuVVRA4bMCMhSQ_0dNrEPUXuuyaQGRXg3lVLpQpVYM3CDVB0TCtQMo="
+      }
+    ]
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=01358463",
+    "summary": "공시 페이지 접근 제한"
+  }
+}
