@@ -41,24 +41,17 @@ export function usePullToRefresh(
         // Only enable on mobile
         if (window.innerWidth >= 768) return;
 
-        const onTouchStart = (e: TouchEvent) => {
-            if (el.scrollTop <= 0 && !isRefreshingRef.current) {
-                startY.current = e.touches[0].clientY;
-                pulling.current = true;
-            } else {
-                pulling.current = false;
-            }
-        };
+        // Skip entirely if no refresh handler is registered for this page —
+        // attaching idle touch listeners can interfere with iOS scroll boundary.
+        if (!onRefreshRef.current) return;
 
         const onTouchMove = (e: TouchEvent) => {
             if (!pulling.current || isRefreshingRef.current) return;
             const deltaY = e.touches[0].clientY - startY.current;
-            // Only engage pull-to-refresh when finger moves DOWN at scrollTop=0.
-            // For any other direction (or once user has scrolled away from top),
-            // bail out IMMEDIATELY without touching pullDistance state — that
-            // re-render used to detach handlers mid-gesture and lock scrolling.
             if (deltaY <= 0 || el.scrollTop > 0) {
+                // No longer pulling — detach touchmove so browser owns the scroll.
                 pulling.current = false;
+                el.removeEventListener('touchmove', onTouchMove);
                 return;
             }
             const dampened = Math.min(deltaY * 0.4, threshold * 1.5);
@@ -69,7 +62,19 @@ export function usePullToRefresh(
             }
         };
 
+        const onTouchStart = (e: TouchEvent) => {
+            // Only arm pull-to-refresh when starting at the very top.
+            // Attaching touchmove dynamically (only when armed) lets the browser
+            // handle scroll natively the rest of the time — no iOS boundary lock.
+            if (el.scrollTop <= 0 && !isRefreshingRef.current && onRefreshRef.current) {
+                startY.current = e.touches[0].clientY;
+                pulling.current = true;
+                el.addEventListener('touchmove', onTouchMove, { passive: false });
+            }
+        };
+
         const onTouchEnd = () => {
+            el.removeEventListener('touchmove', onTouchMove);
             if (!pulling.current) return;
             pulling.current = false;
             if (pullDistanceRef.current >= threshold) {
@@ -81,7 +86,6 @@ export function usePullToRefresh(
         };
 
         el.addEventListener('touchstart', onTouchStart, { passive: true });
-        el.addEventListener('touchmove', onTouchMove, { passive: false });
         el.addEventListener('touchend', onTouchEnd, { passive: true });
         el.addEventListener('touchcancel', onTouchEnd, { passive: true });
 
@@ -91,7 +95,7 @@ export function usePullToRefresh(
             el.removeEventListener('touchend', onTouchEnd);
             el.removeEventListener('touchcancel', onTouchEnd);
         };
-    }, [scrollRef, threshold, handleRefresh]);
+    }, [scrollRef, threshold, handleRefresh, onRefresh]);
 
     return { pullDistance, isRefreshing };
 }
