@@ -1,0 +1,251 @@
+{
+  "stock_code": "123330",
+  "stock_name": "제닉",
+  "generated_at": "2026-04-08T17:02:56.750929+00:00",
+  "financials": {
+    "stock_code": "123330",
+    "corp_code": "00624998",
+    "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2016": {
+        "cash": 189.8,
+        "total_assets": 1015.6,
+        "short_debt": 66.1,
+        "long_debt": 186.6,
+        "total_liab": 396.3,
+        "total_equity": 619.3,
+        "revenue": 896.7,
+        "op_profit": 53.6,
+        "net_income": 12.3
+      },
+      "2017": {
+        "cash": 81.9,
+        "total_assets": 933.8,
+        "short_debt": 113.8,
+        "long_debt": 116.9,
+        "total_liab": 391.1,
+        "total_equity": 542.7,
+        "revenue": 646.9,
+        "op_profit": -82.9,
+        "net_income": -74.7
+      },
+      "2018": {
+        "cash": 84.8,
+        "total_assets": 733.1,
+        "short_debt": 105.0,
+        "long_debt": 103.2,
+        "total_liab": 343.7,
+        "total_equity": 389.4,
+        "revenue": 690.3,
+        "op_profit": -114.1,
+        "net_income": -153.2
+      },
+      "2019": {
+        "cash": 90.6,
+        "total_assets": 581.5,
+        "short_debt": 149.7,
+        "long_debt": 0.0,
+        "total_liab": 310.1,
+        "revenue": 522.6,
+        "op_profit": -50.3,
+        "net_income": -119.6
+      },
+      "2020": {
+        "cash": 54.4,
+        "total_assets": 501.0,
+        "short_debt": 135.0,
+        "total_liab": 277.7,
+        "revenue": 421.3,
+        "op_profit": 10.4,
+        "net_income": -43.5
+      },
+      "2021": {
+        "cash": 171.9,
+        "total_assets": 454.1,
+        "short_debt": 100.0,
+        "total_liab": 261.1,
+        "revenue": 384.1,
+        "op_profit": -39.4,
+        "net_income": -43.3
+      },
+      "2022": {
+        "cash": 33.5,
+        "total_assets": 303.6,
+        "short_debt": 0.0,
+        "total_liab": 144.1,
+        "revenue": 314.5,
+        "op_profit": -31.7,
+        "net_income": -33.4
+      },
+      "2023": {
+        "total_assets": 234.0,
+        "cash": 16.7,
+        "total_equity": -137.4,
+        "total_liab": 118.7,
+        "op_profit": -40.2,
+        "net_income": 0.0,
+        "revenue": 280.7
+      },
+      "2024": {
+        "total_assets": 381.6,
+        "cash": 12.9,
+        "total_equity": 274.0,
+        "short_debt": 50.0,
+        "total_liab": 160.0,
+        "op_profit": 60.2,
+        "net_income": 0.0,
+        "revenue": 499.1
+      },
+      "2025": {
+        "total_assets": 565.3,
+        "cash": 132.5,
+        "total_equity": 274.0,
+        "short_debt": 0.0,
+        "total_liab": 154.9,
+        "op_profit": 149.7,
+        "net_income": 188.9,
+        "revenue": 782.0
+      }
+    },
+    "missing_years": [
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2016,
+        "revenue_eok": 897,
+        "op_profit_eok": 54,
+        "net_income_eok": 12,
+        "roe_pct": 1.9386,
+        "op_margin_pct": 6.0201,
+        "debt_ratio_pct": 63.9741
+      },
+      {
+        "year": 2017,
+        "revenue_eok": 647,
+        "op_profit_eok": -83,
+        "net_income_eok": -75,
+        "roe_pct": -13.8121,
+        "op_margin_pct": -12.8284,
+        "debt_ratio_pct": 72.0074
+      },
+      {
+        "year": 2018,
+        "revenue_eok": 690,
+        "op_profit_eok": -114,
+        "net_income_eok": -153,
+        "roe_pct": -39.3316,
+        "op_margin_pct": -16.5217,
+        "debt_ratio_pct": 88.4319
+      },
+      {
+        "year": 2019,
+        "revenue_eok": 523,
+        "op_profit_eok": -50,
+        "net_income_eok": -120,
+        "roe_pct": 0.0,
+        "op_margin_pct": -9.5602,
+        "debt_ratio_pct": 0.0
+      },
+      {
+        "year": 2020,
+        "revenue_eok": 421,
+        "op_profit_eok": 10,
+        "net_income_eok": -44,
+        "roe_pct": 0.0,
+        "op_margin_pct": 2.3753,
+        "debt_ratio_pct": 0.0
+      },
+      {
+        "year": 2021,
+        "revenue_eok": 384,
+        "op_profit_eok": -39,
+        "net_income_eok": -43,
+        "roe_pct": 0.0,
+        "op_margin_pct": -10.1562,
+        "debt_ratio_pct": 0.0
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 314,
+        "op_profit_eok": -32,
+        "net_income_eok": -33,
+        "roe_pct": 0.0,
+        "op_margin_pct": -10.1911,
+        "debt_ratio_pct": 0.0
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 281,
+        "op_profit_eok": -40,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": -14.2349,
+        "debt_ratio_pct": 0.0
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 499,
+        "op_profit_eok": 60,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 12.024,
+        "debt_ratio_pct": 58.3942
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 782,
+        "op_profit_eok": 150,
+        "net_income_eok": 189,
+        "roe_pct": 68.9781,
+        "op_margin_pct": 19.1816,
+        "debt_ratio_pct": 56.5693
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": -1.41,
+      "op_profit_cagr_pct": 11.97,
+      "best_year": 2025,
+      "worst_year": 2018,
+      "avg_roe_pct": 2.9622
+    },
+    "valuation": {
+      "grade": "C",
+      "strengths": [
+        "2024년 이후 매출액 및 영업이익의 급격한 턴어라운드 전망.",
+        "2025년 높은 당기순이익 및 ROE 달성 예상.",
+        "재무구조 개선 및 부채비율 안정화 추세 (2024년 이후)."
+      ],
+      "risks": [
+        "2017년부터 2023년까지 장기간 지속된 영업손실 및 순손실 기록.",
+        "2019년부터 2023년까지 자본잠식 상태로 심각한 재무 불안정성 노출.",
+        "미래 실적 전망치에 대한 높은 의존도 및 불확실성 존재."
+      ],
+      "one_liner": "과거 심각한 재무 악화를 겪었으나, 2024년 이후 매출 및 이익 턴어라운드가 기대되는 고위험 고수익 잠재 기업."
+    }
+  },
+  "dcf": {
+    "text": "퀀트 애널리스트로서 제닉(123330)의 DCF 적정가치를 계산하고 민감도 분석을 수행하겠습니다.\n\n**1. 기본 시나리오 DCF 적정가치 계산**\n\n주어진 데이터를 바탕으로 FCF를 계산하고 DCF 모델을 적용합니다.\n\n*   **재무 데이터 (억원):**\n    *   매출액 (Revenue): 782\n    *   영업이익 (Operating Income): 150\n*   **가정:**\n    *   법인세율 (Tax Rate): 25% (FCF 공식에서 `1 - 0.25`로 유추)\n    *   감가상각 (Depreciation): 매출액의 10%\n    *   CAPEX: 매출액의 5%\n    *   WACC (기본): 9%\n    *   영구성장률 g (기본): 2%\n    *   예측 기간: 5년\n\nFCF 계산 공식: `FCF = 영업이익 × (1 - 법인세율) + 감가상각 - CAPEX`\n\n예측 기간(5년) 동안 매출액과 영업이익은 영구성장률 `g`와 동일하게 성장한다고 가정하여 FCF를 계산합니다.\n\n\n**2. WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 출력**\n\nWACC와 영구성장률(g)의 변화에 따른 적정가치 민감도 분석을 수행합니다.\n\n\n**3. 요약 출력**\n\n*   **적정가치(기본): 2165.71억원**\n\n**분석 결과:**\n\n제닉(123330)의 DCF 적정가치는 기본 시나리오(WACC 9%, 영구성장률 2%)에서 **2165.71억원**으로 계산됩니다.\n\n민감도 분석 결과, WACC가 낮아지고 영구성장률(g)이 높아질수록 기업의 적정가치는 상승하는 것을 확인할 수 있습니다. 특히, 영구성장률 3%에서는 WACC 7%일 때 3790.00억원까지 적정가치가 상승하며, WACC 11%에서는 1895.00억원으로 하락합니다. 이는 DCF 모델이 할인율과 성장률 가정에 매우 민감하게 반응함을 보여줍니다.",
+    "executed_code": "import pandas as pd\nimport numpy as np\n\ndef calculate_dcf(initial_revenue, initial_operating_income, tax_rate, dep_rate, capex_rate, wacc, g, forecast_years):\n    fcf_forecast = []\n    current_revenue = initial_revenue\n    current_operating_income = initial_operating_income\n\n    # Calculate FCF for each forecast year\n    for i in range(forecast_years):\n        depreciation = current_revenue * dep_rate\n        capex = current_revenue * capex_rate\n        fcf = current_operating_income * (1 - tax_rate) + depreciation - capex\n        fcf_forecast.append(fcf)\n\n        # Project revenue and operating income for the next year using growth rate 'g'\n        current_revenue *= (1 + g)\n        current_operating_income *= (1 + g)\n\n    # Calculate Terminal Value\n    # FCF for the year after the forecast period (Year forecast_years + 1)\n    fcf_terminal_year = fcf_forecast[-1] * (1 + g)\n    \n    # Check for WACC <= g condition for terminal value calculation\n    if wacc <= g:\n        return \"N/A (WACC <= g)\"\n\n    terminal_value = fcf_terminal_year / (wacc - g)\n\n    # Discount all cash flows to present value\n    present_value_fcf = 0\n    for i in range(forecast_years):\n        present_value_fcf += fcf_forecast[i] / ((1 + wacc)**(i + 1))\n\n    present_value_terminal_value = terminal_value / ((1 + wacc)**forecast_years)\n\n    intrinsic_value = present_value_fcf + present_value_terminal_value\n    return intrinsic_value\n\n# Base case parameters\nrevenue_base = 782\noperating_income_base = 150\ntax_rate_base = 0.25\ndep_rate_base = 0.10\ncapex_rate_base = 0.05\nwacc_base = 0.09\ng_base = 0.02\nforecast_years_base = 5\n\n# Calculate base case DCF intrinsic value\nbase_intrinsic_value = calculate_dcf(\n    initial_revenue=revenue_base,\n    initial_operating_income=operating_income_base,\n    tax_rate=tax_rate_base,\n    dep_rate=dep_rate_base,\n    capex_rate=capex_rate_base,\n    wacc=wacc_base,\n    g=g_base,\n    forecast_years=forecast_years_base\n)\n\nprint(f\"기본 시나리오 DCF 적정가치: {base_intrinsic_value:.2f}억원\")\n\nimport pandas as pd\nimport numpy as np\n\ndef calculate_dcf(initial_revenue, initial_operating_income, tax_rate, dep_rate, capex_rate, wacc, g, forecast_years):\n    fcf_forecast = []\n    current_revenue = initial_revenue\n    current_operating_income = initial_operating_income\n\n    for i in range(forecast_years):\n        depreciation = current_revenue * dep_rate\n        capex = current_revenue * capex_rate\n        fcf = current_operating_income * (1 - tax_rate) + depreciation - capex\n        fcf_forecast.append(fcf)\n\n        current_revenue *= (1 + g)\n        current_operating_income *= (1 + g)\n\n    if wacc <= g:\n        return \"N/A (WACC <= g)\"\n\n    fcf_terminal_year = fcf_forecast[-1] * (1 + g)\n    terminal_value = fcf_terminal_year / (wacc - g)\n\n    present_value_fcf = 0\n    for i in range(forecast_years):\n        present_value_fcf += fcf_forecast[i] / ((1 + wacc)**(i + 1))\n\n    present_value_terminal_value = terminal_value / ((1 + wacc)**forecast_years)\n\n    intrinsic_value = present_value_fcf + present_value_terminal_value\n    return intrinsic_value\n\n# Base case parameters (re-defined for clarity in this block)\nrevenue_base = 782\noperating_income_base = 150\ntax_rate_base = 0.25\ndep_rate_base = 0.10\ncapex_rate_base = 0.05\nforecast_years_base = 5\n\n# Sensitivity ranges\nwacc_range = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_range = [0.01, 0.02, 0.03]\n\nsensitivity_results = {}\n\nfor current_wacc in wacc_range:\n    for current_g in g_range:\n        value = calculate_dcf(\n            initial_revenue=revenue_base,\n            initial_operating_income=operating_income_base,\n            tax_rate=tax_rate_base,\n            dep_rate=dep_rate_base,\n            capex_rate=capex_rate_base,\n            wacc=current_wacc,\n            g=current_g,\n            forecast_years=forecast_years_base\n        )\n        sensitivity_results[(current_wacc, current_g)] = value\n\n# Create a DataFrame for better presentation\ndf_sensitivity = pd.DataFrame(index=[f\"{w*100:.0f}%\" for w in wacc_range], columns=[f\"{g*100:.0f}%\" for g in g_range])\n\nfor wacc_val in wacc_range:\n    for g_val in g_range:\n        key = (wacc_val, g_val)\n        result = sensitivity_results.get(key, \"N/A\")\n        if isinstance(result, float):\n            df_sensitivity.loc[f\"{wacc_val*100:.0f}%\", f\"{g_val*100:.0f}%\"] = f\"{result:.2f}\"\n        else:\n            df_sensitivity.loc[f\"{wacc_val*100:.0f}%\", f\"{g_val*100:.0f}%\"] = result\n\nprint(\"민감도 분석 (적정가치, 억원):\")\nprint(df_sensitivity)\n\n# Recalculate base intrinsic value for final summary\nbase_intrinsic_value = calculate_dcf(\n    initial_revenue=revenue_base,\n    initial_operating_income=operating_income_base,\n    tax_rate=tax_rate_base,\n    dep_rate=dep_rate_base,\n    capex_rate=capex_rate_base,\n    wacc=wacc_base,\n    g=g_base,\n    forecast_years=forecast_years_base\n)\n\nprint(f\"\\n적정가치(기본): {base_intrinsic_value:.2f}억원\")",
+    "code_output": "기본 시나리오 DCF 적정가치: 2165.71억원\n\n민감도 분석 (적정가치, 억원):\n          1%       2%       3%\n7%   2526.67  3032.00  3790.00\n8%   2165.71  2526.67  3032.00\n9%   1895.00  2165.71  2526.67\n10%  1684.44  1895.00  2165.71\n11%  1516.00  1684.44  1895.00\n\n적정가치(기본): 2165.71억원"
+  },
+  "news": null,
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=00624998",
+    "summary": "공시 페이지 접근 제한"
+  }
+}
