@@ -85,14 +85,32 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     }, [permission]);
 
     const notify = useCallback((n: Omit<AppNotification, 'id' | 'timestamp' | 'read'>) => {
+        // 충돌 불가 ID — crypto.randomUUID 우선, 폴백은 ms+counter+random12
+        const uid =
+            (typeof crypto !== 'undefined' && 'randomUUID' in crypto)
+                ? crypto.randomUUID()
+                : `${Date.now()}-${Math.random().toString(36).slice(2, 14)}`;
+
         const newNotif: AppNotification = {
             ...n,
-            id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+            id: uid,
             timestamp: Date.now(),
             read: false,
         };
 
         setNotifications(prev => {
+            // 동일 (title, message, link) 조합이 1초 내 중복 추가되는 경우 방어
+            // (StrictMode 이중 호출 + 다중 트리거 컴포넌트)
+            const recent = prev[0];
+            if (
+                recent &&
+                recent.title === newNotif.title &&
+                recent.message === newNotif.message &&
+                recent.link === newNotif.link &&
+                newNotif.timestamp - recent.timestamp < 1000
+            ) {
+                return prev;
+            }
             const updated = [newNotif, ...prev].slice(0, MAX_NOTIFICATIONS);
             saveToStorage(updated);
             return updated;

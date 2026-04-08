@@ -16,12 +16,17 @@ export default function NotificationToast() {
     const navigate = useNavigate();
     const [visible, setVisible] = useState<string[]>([]);
 
-    // 새 알림이 추가되면 표시 목록에 추가
+    // 새 알림이 추가되면 표시 목록에 추가 (중복 ID 방어)
     useEffect(() => {
         const unread = notifications.filter(n => !n.read).map(n => n.id);
         const newIds = unread.filter(id => !visible.includes(id));
         if (newIds.length > 0) {
-            setVisible(prev => [...newIds, ...prev].slice(0, MAX_VISIBLE));
+            setVisible(prev => {
+                const merged = [...newIds, ...prev];
+                // 중복 제거 — Set 으로 unique 보장
+                const unique = Array.from(new Set(merged));
+                return unique.slice(0, MAX_VISIBLE);
+            });
         }
     }, [notifications]); // eslint-disable-line react-hooks/exhaustive-deps
 
