@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "deploy": "npm run build && npx wrangler pages deploy dist --project-name=bitman-marketflow --branch=main --commit-dirty=true"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.62.0",
@@ -42,6 +43,7 @@
     "tailwindcss": "^3.4.16",
     "typescript": "^5.6.3",
     "vite": "^5.4.11",
-    "vite-plugin-pwa": "^1.2.0"
+    "vite-plugin-pwa": "^1.2.0",
+    "wrangler": "^4.81.0"
   }
 }
