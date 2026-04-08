@@ -1,6 +1,7 @@
 """Authentication routes — 회원가입, 로그인, 프로필, 구독 요청"""
 
 import os
+import hmac
 import time
 import threading
 import requests as http_requests
@@ -78,8 +79,15 @@ def _notify_admin_telegram(message: str):
 
 auth_bp = Blueprint('auth', __name__)
 
-# 관리자 비밀키 (레거시 호환)
-ADMIN_SECRET = os.getenv('ADMIN_SECRET', 'marketflow-admin-2024')
+# 관리자 비밀키 (레거시 호환) — 환경변수 필수.
+# 미설정 시 admin_set_tier_legacy 라우트가 503 을 반환하도록 None 유지.
+ADMIN_SECRET = os.getenv('ADMIN_SECRET') or None
+if not ADMIN_SECRET:
+    import logging as _al
+    _al.getLogger(__name__).warning(
+        "ADMIN_SECRET not set — /auth/admin/set-tier legacy route will return 503. "
+        "Use /api/admin/* endpoints instead."
+    )
 
 
 # ═══════════════════════════════════════════════════════
@@ -275,8 +283,10 @@ def subscription_status():
 @auth_bp.route('/admin/set-tier', methods=['POST'])
 def admin_set_tier_legacy():
     """유저 tier 변경 (레거시 — X-Admin-Secret 헤더)"""
+    if not ADMIN_SECRET:
+        return jsonify({'error': 'Admin legacy endpoint disabled (ADMIN_SECRET not configured)'}), 503
     secret = request.headers.get('X-Admin-Secret', '')
-    if secret != ADMIN_SECRET:
+    if not hmac.compare_digest(secret, ADMIN_SECRET):
         return jsonify({'error': 'Admin access denied'}), 403
 
     data = request.get_json()
