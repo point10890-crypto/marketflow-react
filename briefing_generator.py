@@ -405,6 +405,12 @@ class BriefingGenerator:
 
             # Note: response_mime_type="application/json" is incompatible with
             # Google Search tool. We request JSON in the prompt and parse manually.
+            #
+            # gemini-2.5-flash burns budget on "thinking" + tool-use tokens. With
+            # max_output_tokens=8192 + Search tool, thinking phase routinely hits
+            # MAX_TOKENS before any text is emitted → response.text = '' → fallback.
+            # Fix: disable thinking budget (this is structured output, not reasoning)
+            # and raise the output ceiling so text always has room.
             response = await asyncio.to_thread(
                 self.client.models.generate_content,
                 model=self.model,
@@ -412,13 +418,27 @@ class BriefingGenerator:
                 config=types.GenerateContentConfig(
                     tools=[types.Tool(google_search=types.GoogleSearch())],
                     temperature=0.7,
-                    max_output_tokens=8192,
+                    max_output_tokens=32768,
+                    thinking_config=types.ThinkingConfig(thinking_budget=0),
                 )
             )
 
             text = response.text
             if not text:
-                logger.error("Gemini returned empty response")
+                # Salvage from candidates[].content.parts[].text — happens when
+                # finish_reason=MAX_TOKENS truncates mid-stream but parts have content.
+                try:
+                    parts = response.candidates[0].content.parts or []
+                    text = ''.join(p.text for p in parts if getattr(p, 'text', None))
+                except Exception:
+                    text = None
+            if not text:
+                fr = None
+                try:
+                    fr = response.candidates[0].finish_reason
+                except Exception:
+                    pass
+                logger.error(f"Gemini returned empty response (finish_reason={fr})")
                 return None
 
             # Try direct JSON parse first
@@ -562,17 +582,35 @@ class BriefingGenerator:
         return result
 
     def _save(self, briefing_type: str, data: dict):
+        """원자적 저장 — tempfile + os.replace 로 mid-write 손상 방지.
+        Flask 라우트가 동시에 latest.json 을 읽기 때문에 부분 쓰기 노출 금지."""
         date_str = data.get('date', datetime.now().strftime('%Y%m%d'))
 
-        # Save dated file
-        dated_path = os.path.join(_BRIEFING_DIR, f'{briefing_type}_{date_str}.json')
-        with open(dated_path, 'w', encoding='utf-8') as f:
-            json.dump(data, f, ensure_ascii=False, indent=2)
+        def _atomic_write(path: str, payload: dict) -> None:
+            import tempfile
+            dir_path = os.path.dirname(path)
+            tmp_path = None
+            try:
+                with tempfile.NamedTemporaryFile(
+                    mode='w', dir=dir_path, suffix='.tmp',
+                    delete=False, encoding='utf-8'
+                ) as f:
+                    tmp_path = f.name
+                    json.dump(payload, f, ensure_ascii=False, indent=2)
+                os.replace(tmp_path, path)  # Windows 에서도 원자적
+                tmp_path = None
+            finally:
+                if tmp_path and os.path.exists(tmp_path):
+                    try:
+                        os.remove(tmp_path)
+                    except OSError:
+                        pass
 
-        # Save latest
+        dated_path = os.path.join(_BRIEFING_DIR, f'{briefing_type}_{date_str}.json')
+        _atomic_write(dated_path, data)
+
         latest_path = os.path.join(_BRIEFING_DIR, 'latest.json')
-        with open(latest_path, 'w', encoding='utf-8') as f:
-            json.dump(data, f, ensure_ascii=False, indent=2)
+        _atomic_write(latest_path, data)
 
         logger.info(f"Saved: {dated_path}")
 

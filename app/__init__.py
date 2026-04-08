@@ -14,12 +14,31 @@ sys.path = [p for p in sys.path if not any(b.lower() in p.lower() for b in _bloc
 sys.path.insert(0, _app_root)
 
 
+import math
+
+
+def _sanitize_nan(obj):
+    """재귀적으로 NaN/Infinity float 값을 None 으로 치환.
+
+    문자열 치환(`.replace("NaN", "null")`) 은 stock 이름 등 합법적 'NaN'
+    부분 문자열까지 손상시키므로 값 단계에서 처리해야 한다.
+    """
+    if isinstance(obj, float):
+        if math.isnan(obj) or math.isinf(obj):
+            return None
+        return obj
+    if isinstance(obj, dict):
+        return {k: _sanitize_nan(v) for k, v in obj.items()}
+    if isinstance(obj, (list, tuple)):
+        return [_sanitize_nan(v) for v in obj]
+    return obj
+
+
 class SafeJSONProvider(DefaultJSONProvider):
     """NaN/Infinity → null 변환 (JSON 표준 준수)"""
     def dumps(self, obj, **kwargs):
         kwargs.setdefault("default", self.default)
-        raw = super().dumps(obj, **kwargs)
-        return raw.replace("NaN", "null").replace("Infinity", "null").replace("-Infinity", "null")
+        return super().dumps(_sanitize_nan(obj), **kwargs)
 
 
 def create_app(config=None):

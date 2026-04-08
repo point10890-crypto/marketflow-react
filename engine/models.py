@@ -126,10 +126,12 @@ class ScoreDetail:
 
     @property
     def total(self) -> int:
-        """총점"""
+        """총점 — 악재 공시(disclosure=-2)는 페널티로 차감되어야 한다.
+        과거: max(0, self.disclosure) 로 클리핑 → 페널티가 사라지는 버그.
+        수정: 음수 disclosure 도 반영 (total 의 하한은 호출측 등급 임계값으로 거름)."""
         return (self.news + self.volume + self.chart +
                 self.candle + self.consolidation + self.supply +
-                max(0, self.disclosure) + self.analyst + self.financial)
+                self.disclosure + self.analyst + self.financial)
     
     @property
     def mandatory_passed(self) -> bool:

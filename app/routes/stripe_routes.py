@@ -2,7 +2,7 @@
 
 import os
 import stripe
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
 from app.models import db
 from app.models.user import User
 from app.auth.decorators import login_required
@@ -53,7 +53,9 @@ def webhook():
     try:
         event = stripe.Webhook.construct_event(payload, sig, STRIPE_WEBHOOK_SECRET)
     except (ValueError, stripe.SignatureVerificationError, Exception) as e:
-        return jsonify({'error': f'Webhook verification failed: {str(e)}'}), 400
+        # 서버 로그에는 상세 에러, 클라이언트에는 일반 메시지만 (info disclosure 방지)
+        current_app.logger.warning(f"[Stripe] Webhook verification failed: {e}")
+        return jsonify({'error': 'Webhook verification failed'}), 400
 
     if event['type'] == 'checkout.session.completed':
         session = event['data']['object']

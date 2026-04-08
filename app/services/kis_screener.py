@@ -45,8 +45,8 @@ def _load_cached_token():
                 data = json.load(f)
             if data.get("expires_at", 0) > time.time():
                 return data["token"]
-        except Exception:
-            pass
+        except (IOError, OSError, json.JSONDecodeError, KeyError) as e:
+            logger.warning(f"KIS token cache load failed: {e}")
     return None
 
 
@@ -55,8 +55,8 @@ def _save_token_cache(token):
         os.makedirs(os.path.dirname(_TOKEN_CACHE_FILE), exist_ok=True)
         with open(_TOKEN_CACHE_FILE, "w") as f:
             json.dump({"token": token, "expires_at": time.time() + 23 * 3600}, f)
-    except Exception:
-        pass
+    except (IOError, OSError) as e:
+        logger.warning(f"KIS token cache write failed: {e}")
 
 
 def get_token():

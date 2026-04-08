@@ -20,15 +20,8 @@ from pathlib import Path
 import warnings
 warnings.filterwarnings('ignore')
 
-# 로깅 설정
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler('institutional_trend_analyzer.log', encoding='utf-8'),
-        logging.StreamHandler()
-    ]
-)
+# 로깅 — 모듈 레벨 basicConfig 는 Flask logger 를 덮어쓰므로 금지.
+# CLI 단독 실행 시에만 핸들러를 부착한다 (`if __name__ == '__main__'` 분기에서).
 logger = logging.getLogger(__name__)
 
 @dataclass
@@ -1038,4 +1031,13 @@ def main():
         print(f"\n❌ Enhanced 기관 데이터 다운로드 실패!")
 
 if __name__ == "__main__":
+    # CLI 단독 실행 시에만 파일 + 콘솔 핸들러 부착 (Flask import 시에는 부착 X)
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(levelname)s - %(message)s',
+        handlers=[
+            logging.FileHandler('institutional_trend_analyzer.log', encoding='utf-8'),
+            logging.StreamHandler(),
+        ],
+    )
     main()

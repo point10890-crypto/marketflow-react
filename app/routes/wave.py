@@ -15,6 +15,7 @@ from engine.wave.zigzag import zigzag, extract_five_point_groups
 from engine.wave.classifier import classify_pattern
 from engine.wave.pattern_scorer import score_pattern
 from engine.wave.models import WAVE_META, WaveDetectResult
+from app.auth.decorators import admin_required
 
 # 종목명 → 종목코드 매핑 캐시
 _name_to_ticker: dict = {}
@@ -314,8 +315,9 @@ def pattern_stats():
 
 
 @wave_bp.route('/signals/save', methods=['POST'])
+@admin_required
 def save_signals():
-    """스크리너 결과를 DB에 적재 (내부 호출용)."""
+    """스크리너 결과를 DB에 적재 (admin 전용)."""
     from app.services.wave_tracker import save_screener_to_db
 
     data = _load_screener_json()
@@ -327,8 +329,9 @@ def save_signals():
 
 
 @wave_bp.route('/signals/track', methods=['POST'])
+@admin_required
 def track_signals():
-    """활성 시그널 일별 추적 업데이트 (내부 호출용)."""
+    """활성 시그널 일별 추적 업데이트 (admin 전용)."""
     from app.services.wave_tracker import update_active_signals, refresh_pattern_stats
 
     result = update_active_signals()

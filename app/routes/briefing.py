@@ -6,7 +6,10 @@ import os
 import json
 import time
 import re
+import logging
 from flask import Blueprint, jsonify
+
+logger = logging.getLogger(__name__)
 from app.utils.paths import BRIEFING_DIR
 
 briefing_bp = Blueprint('briefing', __name__)
@@ -33,7 +36,8 @@ def _load(filename: str) -> dict | None:
             data = json.load(f)
         _cache[filename] = (data, now)
         return data
-    except Exception:
+    except (IOError, OSError, json.JSONDecodeError) as e:
+        logger.warning(f"Failed to load briefing {filename}: {e}")
         return None
 
 

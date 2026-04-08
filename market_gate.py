@@ -15,7 +15,8 @@ from dataclasses import dataclass
 
 from config import KOSPI_TICKER, KOSDAQ_TICKER, USD_KRW_TICKER, MarketGateConfig
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+# 모듈 레벨 basicConfig 금지 — Flask logger 설정을 덮어쓴다.
+# CLI 실행 시에는 main 또는 진입점에서 핸들러를 부착할 것.
 logger = logging.getLogger(__name__)
 
 @dataclass
@@ -364,6 +365,7 @@ def run_kr_market_gate() -> KRMarketGateResult:
         return KRMarketGateResult(gate="YELLOW", score=50, reasons=[str(e)], sectors=[], metrics={})
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
     res = run_kr_market_gate()
     print(f"\n🇰🇷 KR Gate: {res.gate} ({res.score}/100)")
     print(f"Reasons: {res.reasons}")

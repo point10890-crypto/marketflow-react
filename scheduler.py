@@ -1949,8 +1949,9 @@ def record_task_run(task_key: str):
 
 
 def _was_run_recently(task_key: str, hours: int = 4) -> bool:
-    """해당 task_key가 최근 N시간 내 실행되었는지 확인 (자정 경계 안전)"""
-    data = _load_last_run()
+    """해당 task_key가 최근 N시간 내 실행되었는지 확인 (자정 경계 안전, 락 보호)"""
+    with _last_run_lock:
+        data = _load_last_run()
     last_run_str = data.get(task_key)
     if not last_run_str:
         return False
@@ -1963,8 +1964,9 @@ def _was_run_recently(task_key: str, hours: int = 4) -> bool:
 
 
 def _was_run_today(task_key: str) -> bool:
-    """해당 task_key가 오늘 실행됐거나 최근 2시간 내 실행됐는지 (자정 경계 안전)"""
-    data = _load_last_run()
+    """해당 task_key가 오늘 실행됐거나 최근 2시간 내 실행됐는지 (자정 경계 안전, 락 보호)"""
+    with _last_run_lock:
+        data = _load_last_run()
     last_run_str = data.get(task_key)
     if not last_run_str:
         return False

@@ -21,7 +21,8 @@ from bs4 import BeautifulSoup
 import logging
 import yfinance as yf
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+# 모듈 레벨 basicConfig 금지 — Flask logger 설정을 덮어쓴다.
+# CLI 실행 시에는 진입점에서 핸들러를 부착할 것.
 logger = logging.getLogger(__name__)
 
 # 파일 동시접근 보호
@@ -411,4 +412,5 @@ def main():
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
     main()
