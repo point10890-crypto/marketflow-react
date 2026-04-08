@@ -10,6 +10,7 @@ __pycache__/
 venv/
 dist/
 build/
+.pytest_cache/
 
 # Node
 frontend/node_modules/

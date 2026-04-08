@@ -2268,8 +2268,9 @@ class Scheduler:
 
                     result = task_fn()
 
-                    # 1차: 리턴값 체크
-                    success = (result is None or result)
+                    # 1차: 리턴값 체크 — 모든 task 함수는 명시적 bool 을 반환해야 함.
+                    # `None` 은 "return 누락" 버그이므로 실패로 간주 (verify_fn 이 있으면 거기서 한 번 더 검증).
+                    success = bool(result)
 
                     # 2차: 검증 함수 체크 (파일 존재/데이터 유효성)
                     if success and verify_fn:
