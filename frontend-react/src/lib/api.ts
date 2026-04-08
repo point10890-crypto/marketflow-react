@@ -739,13 +739,10 @@ export interface SubscriptionRequest {
 // ── Authenticated API helpers (Bearer token 포함) ──
 
 function _handle401(status: number) {
-    if (status === 401) {
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('auth_user');
-        if (window.location.pathname !== '/login') {
-            window.location.href = '/login';
-        }
-    }
+    // 단일 API 401에 즉시 로그아웃·리다이렉트하지 않음 (사용자 세션 보존).
+    // 진짜 만료 토큰은 isAuthenticated() / AuthContext의 /api/auth/me 체크에서 처리됨.
+    // 페이지는 throw된 에러로 빈 상태/에러 UI를 보여주고, 새로고침 시 자연 복구.
+    void status;
 }
 
 async function _authFetch(url: string, options: RequestInit): Promise<Response> {

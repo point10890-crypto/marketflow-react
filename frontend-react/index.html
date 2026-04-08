@@ -4,7 +4,6 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    <link rel="manifest" href="/manifest.json" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#000000" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -24,25 +23,29 @@
         window.__pwaInstallPrompt = e;
       });
 
-      // v3.0.2 — Cloudflare 캐시 오염 복구 — SW + 모든 캐시 강제 정리
+      // v3.1.0 — Service Worker 영구 제거 + 캐시 정리 (1회 자동 reload)
       (function() {
-        var CACHE_VER = 'v3.0.2';
-        if (localStorage.getItem('cache_ver') !== CACHE_VER) {
-          if ('caches' in window) {
-            caches.keys().then(function(names) {
-              names.forEach(function(name) { caches.delete(name); });
-            });
-          }
-          if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.getRegistrations().then(function(regs) {
-              regs.forEach(function(r) { r.unregister(); });
-            }).then(function() {
-              localStorage.setItem('cache_ver', CACHE_VER);
-              window.location.reload();
-            });
-          } else {
-            localStorage.setItem('cache_ver', CACHE_VER);
-          }
+        var CACHE_VER = 'v3.1.0';
+        var hadSW = false;
+        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+          hadSW = true;
+        }
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.getRegistrations().then(function(regs) {
+            regs.forEach(function(r) { r.unregister(); });
+          }).catch(function(){});
+        }
+        if ('caches' in window) {
+          caches.keys().then(function(names) {
+            names.forEach(function(name) { caches.delete(name); });
+          }).catch(function(){});
+        }
+        // 기존 SW가 통제 중이었으면 1회만 강제 새로고침해서 깨끗한 상태로 진입
+        if (hadSW && localStorage.getItem('cache_ver') !== CACHE_VER) {
+          localStorage.setItem('cache_ver', CACHE_VER);
+          setTimeout(function() { window.location.reload(); }, 100);
+        } else {
+          localStorage.setItem('cache_ver', CACHE_VER);
         }
       })();
     </script>

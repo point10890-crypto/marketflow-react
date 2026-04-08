@@ -583,7 +583,10 @@ function ChartDetailModal({
                 </div>
 
                 {/* Body (scrollable) */}
-                <div className="overflow-y-auto p-4 space-y-3">
+                <div
+                    className="overflow-y-auto p-4 space-y-3"
+                    style={{ touchAction: 'pan-y', overscrollBehavior: 'contain', WebkitOverflowScrolling: 'touch' }}
+                >
                     <PatternChart
                         chartData={detailResult.chart_data}
                         patterns={detailResult.patterns}

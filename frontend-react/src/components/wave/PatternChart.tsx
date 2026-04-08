@@ -184,6 +184,6 @@ export default function PatternChart({
     };
 
     return (
-        <div ref={containerRef} data-no-swipe className="w-full rounded-xl overflow-hidden border border-white/5" style={{ touchAction: 'auto' }} />
+        <div ref={containerRef} data-no-swipe className="w-full rounded-xl overflow-hidden border border-white/5" style={{ touchAction: 'pan-y' }} />
     );
 }

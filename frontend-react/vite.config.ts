@@ -1,7 +1,9 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import { VitePWA } from 'vite-plugin-pwa';
 import { fileURLToPath, URL } from 'node:url';
+
+// VitePWA 영구 제거 — SW가 stale 캐시 서빙해서 "앱 안 뜸" 사용자 불만 발생.
+// 오프라인 모드 포기 (어차피 거의 작동 안 함). Cloudflare CDN edge 캐시로 충분.
 
 export default defineConfig({
   define: {
@@ -9,46 +11,6 @@ export default defineConfig({
   },
   plugins: [
     react(),
-    VitePWA({
-      registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'apple-touch-icon.png'],
-      manifest: false, // use public/manifest.json
-      workbox: {
-        skipWaiting: true,
-        clientsClaim: true,
-        cleanupOutdatedCaches: true,
-        globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
-        navigateFallbackDenylist: [], // 모든 navigation을 SW가 처리
-        runtimeCaching: [
-          {
-            // index.html은 항상 네트워크 우선 → 캐시된 구버전 방지
-            urlPattern: ({ request }) => request.mode === 'navigate',
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'pages-cache',
-              networkTimeoutSeconds: 5,
-            },
-          },
-          {
-            urlPattern: /^https:\/\/api\.bit-man\.net\/api\//,
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'api-cache',
-              expiration: { maxEntries: 50, maxAgeSeconds: 300 },
-              networkTimeoutSeconds: 10,
-            },
-          },
-          {
-            urlPattern: /^https:\/\/cdnjs\.cloudflare\.com\//,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'cdn-cache',
-              expiration: { maxEntries: 10, maxAgeSeconds: 86400 * 30 },
-            },
-          },
-        ],
-      },
-    }),
   ],
   resolve: {
     alias: {

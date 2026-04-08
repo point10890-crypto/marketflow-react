@@ -1,0 +1,75 @@
+{
+  "name": "대동금속",
+  "ticker": "020400.KQ",
+  "result": "데이터 없음",
+  "date": "2026-04-08 12:47:14",
+  "elapsed": 1.2,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 10680.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 10680.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "DaedongMetal",
+    "sector": "Industrials",
+    "industry": "Metal Fabrication",
+    "market_cap": 34060292096,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": 0.6,
+    "beta": 0.034,
+    "fifty_two_week_high": 15840.0,
+    "fifty_two_week_low": 5450.0,
+    "revenue": 101817188352,
+    "profit_margin": -0.013660001,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 20807944410
+    },
+    {
+      "date": "2025-09",
+      "value": 27539835280
+    },
+    {
+      "date": "2025-06",
+      "value": 29410525230
+    },
+    {
+      "date": "2025-03",
+      "value": 24058882900
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 134668590
+    },
+    {
+      "date": "2025-09",
+      "value": -496162290
+    },
+    {
+      "date": "2025-06",
+      "value": 52424140
+    },
+    {
+      "date": "2025-03",
+      "value": -1081343690
+    }
+  ],
+  "news": []
+}

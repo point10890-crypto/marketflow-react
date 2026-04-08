@@ -1,0 +1,112 @@
+{
+  "stock_code": "068270",
+  "corp_code": "00413046",
+  "years": [
+    2016,
+    2017,
+    2018,
+    2019,
+    2020,
+    2021,
+    2022,
+    2023,
+    2024,
+    2025
+  ],
+  "data": {
+    "2016": {
+      "cash": 2684.1,
+      "total_assets": 28838.5,
+      "total_liab": 8229.7,
+      "total_equity": 20608.7,
+      "revenue": 6705.8,
+      "op_profit": 2212.4,
+      "net_income": 1589.6
+    },
+    "2017": {
+      "cash": 4192.1,
+      "total_assets": 32941.0,
+      "total_liab": 8836.0,
+      "total_equity": 24105.0,
+      "revenue": 9490.8,
+      "op_profit": 4995.9,
+      "net_income": 95.0
+    },
+    "2018": {
+      "cash": 4105.5,
+      "total_assets": 35031.1,
+      "total_liab": 9078.5,
+      "total_equity": 25952.6,
+      "revenue": 9820.7,
+      "op_profit": 3231.3,
+      "net_income": 2457.6
+    },
+    "2019": {
+      "cash": 5461.4,
+      "total_assets": 38596.5,
+      "total_liab": 9867.3,
+      "total_equity": 28729.1,
+      "revenue": 11284.6,
+      "op_profit": 3815.3,
+      "net_income": 3014.4
+    },
+    "2020": {
+      "cash": 6842.9,
+      "total_assets": 50201.2,
+      "total_liab": 15925.4,
+      "total_equity": 34275.8,
+      "revenue": 18491.2,
+      "op_profit": 7185.8,
+      "net_income": 79.4
+    },
+    "2021": {
+      "cash": 11883.3,
+      "total_assets": 56741.2,
+      "total_liab": 16237.5,
+      "total_equity": 40503.7,
+      "revenue": 19116.0,
+      "op_profit": 7568.6,
+      "net_income": 5794.6
+    },
+    "2022": {
+      "cash": 5511.9,
+      "total_assets": 58916.5,
+      "total_liab": 16174.5,
+      "total_equity": 42742.0,
+      "revenue": 22839.7,
+      "op_profit": 6472.0,
+      "net_income": 5425.7
+    },
+    "2023": {
+      "total_assets": 199175.3,
+      "cash": 5646.1,
+      "total_equity": 147719.5,
+      "total_liab": 27917.4,
+      "op_profit": 6514.8,
+      "net_income": 0.0,
+      "revenue": 21764.3
+    },
+    "2024": {
+      "total_assets": 210552.2,
+      "cash": 9964.3,
+      "total_equity": 148030.5,
+      "total_liab": 34751.6,
+      "op_profit": 4920.2,
+      "net_income": 0.0,
+      "revenue": 35573.0
+    },
+    "2025": {
+      "total_assets": 223349.0,
+      "cash": 11192.1,
+      "total_equity": 141900.5,
+      "total_liab": 49823.7,
+      "op_profit": 11684.7,
+      "net_income": 0.0,
+      "revenue": 41625.0
+    }
+  },
+  "missing_years": [
+    2026
+  ],
+  "source": ""
+}

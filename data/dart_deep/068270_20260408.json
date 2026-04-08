@@ -1,0 +1,242 @@
+{
+  "stock_code": "068270",
+  "stock_name": "셀트리온",
+  "generated_at": "2026-04-08T03:04:36.656390+00:00",
+  "financials": {
+    "stock_code": "068270",
+    "corp_code": "00413046",
+    "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2016": {
+        "cash": 2684.1,
+        "total_assets": 28838.5,
+        "total_liab": 8229.7,
+        "total_equity": 20608.7,
+        "revenue": 6705.8,
+        "op_profit": 2212.4,
+        "net_income": 1589.6
+      },
+      "2017": {
+        "cash": 4192.1,
+        "total_assets": 32941.0,
+        "total_liab": 8836.0,
+        "total_equity": 24105.0,
+        "revenue": 9490.8,
+        "op_profit": 4995.9,
+        "net_income": 95.0
+      },
+      "2018": {
+        "cash": 4105.5,
+        "total_assets": 35031.1,
+        "total_liab": 9078.5,
+        "total_equity": 25952.6,
+        "revenue": 9820.7,
+        "op_profit": 3231.3,
+        "net_income": 2457.6
+      },
+      "2019": {
+        "cash": 5461.4,
+        "total_assets": 38596.5,
+        "total_liab": 9867.3,
+        "total_equity": 28729.1,
+        "revenue": 11284.6,
+        "op_profit": 3815.3,
+        "net_income": 3014.4
+      },
+      "2020": {
+        "cash": 6842.9,
+        "total_assets": 50201.2,
+        "total_liab": 15925.4,
+        "total_equity": 34275.8,
+        "revenue": 18491.2,
+        "op_profit": 7185.8,
+        "net_income": 79.4
+      },
+      "2021": {
+        "cash": 11883.3,
+        "total_assets": 56741.2,
+        "total_liab": 16237.5,
+        "total_equity": 40503.7,
+        "revenue": 19116.0,
+        "op_profit": 7568.6,
+        "net_income": 5794.6
+      },
+      "2022": {
+        "cash": 5511.9,
+        "total_assets": 58916.5,
+        "total_liab": 16174.5,
+        "total_equity": 42742.0,
+        "revenue": 22839.7,
+        "op_profit": 6472.0,
+        "net_income": 5425.7
+      },
+      "2023": {
+        "total_assets": 199175.3,
+        "cash": 5646.1,
+        "total_equity": 147719.5,
+        "total_liab": 27917.4,
+        "op_profit": 6514.8,
+        "net_income": 0.0,
+        "revenue": 21764.3
+      },
+      "2024": {
+        "total_assets": 210552.2,
+        "cash": 9964.3,
+        "total_equity": 148030.5,
+        "total_liab": 34751.6,
+        "op_profit": 4920.2,
+        "net_income": 0.0,
+        "revenue": 35573.0
+      },
+      "2025": {
+        "total_assets": 223349.0,
+        "cash": 11192.1,
+        "total_equity": 141900.5,
+        "total_liab": 49823.7,
+        "op_profit": 11684.7,
+        "net_income": 0.0,
+        "revenue": 41625.0
+      }
+    },
+    "missing_years": [
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2016,
+        "revenue_eok": 6706,
+        "op_profit_eok": 2212,
+        "net_income_eok": 1590,
+        "roe_pct": 7.71,
+        "op_margin_pct": 33.0,
+        "debt_ratio_pct": 39.94
+      },
+      {
+        "year": 2017,
+        "revenue_eok": 9491,
+        "op_profit_eok": 4996,
+        "net_income_eok": 95,
+        "roe_pct": 0.39,
+        "op_margin_pct": 52.64,
+        "debt_ratio_pct": 36.66
+      },
+      {
+        "year": 2018,
+        "revenue_eok": 9821,
+        "op_profit_eok": 3231,
+        "net_income_eok": 2458,
+        "roe_pct": 9.47,
+        "op_margin_pct": 32.9,
+        "debt_ratio_pct": 34.98
+      },
+      {
+        "year": 2019,
+        "revenue_eok": 11285,
+        "op_profit_eok": 3815,
+        "net_income_eok": 3014,
+        "roe_pct": 10.49,
+        "op_margin_pct": 33.81,
+        "debt_ratio_pct": 34.35
+      },
+      {
+        "year": 2020,
+        "revenue_eok": 18491,
+        "op_profit_eok": 7186,
+        "net_income_eok": 79,
+        "roe_pct": 0.23,
+        "op_margin_pct": 38.86,
+        "debt_ratio_pct": 46.46
+      },
+      {
+        "year": 2021,
+        "revenue_eok": 19116,
+        "op_profit_eok": 7569,
+        "net_income_eok": 5795,
+        "roe_pct": 14.31,
+        "op_margin_pct": 39.6,
+        "debt_ratio_pct": 40.09
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 22840,
+        "op_profit_eok": 6472,
+        "net_income_eok": 5426,
+        "roe_pct": 12.69,
+        "op_margin_pct": 28.34,
+        "debt_ratio_pct": 37.84
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 21764,
+        "op_profit_eok": 6515,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 29.93,
+        "debt_ratio_pct": 18.9
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 35573,
+        "op_profit_eok": 4920,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 13.83,
+        "debt_ratio_pct": 23.48
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 41625,
+        "op_profit_eok": 11685,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 28.07,
+        "debt_ratio_pct": 35.11
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": 22.59,
+      "op_profit_cagr_pct": 19.12,
+      "best_year": 2025,
+      "worst_year": 2018,
+      "avg_roe_pct": 5.53
+    },
+    "valuation": {
+      "grade": "C",
+      "strengths": [
+        "높은 매출액 성장률: 10년간 매출액 CAGR 22.59%로 매우 높은 성장세를 보였습니다.",
+        "견조한 영업이익 성장세: 10년간 영업이익 CAGR 19.12%로 매출액과 함께 꾸준히 성장했습니다.",
+        "안정적인 재무구조: 부채비율이 대부분 50% 미만으로 유지되어 재무 안정성이 양호합니다."
+      ],
+      "risks": [
+        "불안정한 순이익: 2023년부터 2025년까지 당기순이익이 0으로 기록되어 주주환원 및 기업가치에 대한 우려가 큽니다.",
+        "변동성 큰 영업이익률: 영업이익률이 연도별로 13.83%에서 52.64%까지 큰 변동성을 보여 수익성 예측이 어렵습니다.",
+        "낮은 평균 ROE: 10년간 평균 ROE가 5.53%로 주주 자본 효율성이 낮은 수준입니다."
+      ],
+      "one_liner": "매출액과 영업이익은 고성장세를 유지하나, 당기순이익의 급격한 하락과 불안정한 수익성이 투자 매력을 저해하는 바이오시밀러 기업입니다."
+    }
+  },
+  "dcf": {
+    "text": "저는 퀀트 애널리스트로서 셀트리온(068270)의 DCF 적정가치를 계산하겠습니다. 제공된 재무 데이터와 가정을 바탕으로 Python 코드를 작성하고 실행하여 결과를 도출합니다.\n\n**[중요 가정]**\n제공된 정보에는 예측 기간(5년) 동안의 매출액 및 영업이익 성장률이 명시되어 있지 않습니다. DCF 모델의 특성상 미래 현금흐름 예측을 위해 성장률 가정이 필수적이므로, **기본 시나리오에서는 예측 기간 동안 매출액 및 영업이익이 연 5% 성장한다고 가정**합니다. 민감도 분석 시에는 WACC와 영구성장률(g)만 변화시키고 이 성장률은 고정합니다.\n\n---\n### DCF 적정가치 계산\n\n\n### 분석 결과\n\n1.  **기본 시나리오 DCF 적정가치**:\n    *   가정된 매출액 및 영업이익 5% 성장률, WACC 9%, 영구성장률 2%를 적용했을 때, 셀트리온의 적정가치는 **171,069억원**으로 계산됩니다.\n\n2.  **WACC 및 영구성장률(g) 민감도 그리드**:\n    *   아래 표는 WACC와 영구성장률(g) 변화에 따른 DCF 적정가치(억원)를 보여줍니다.\n    *   WACC가 낮아지고 영구성장률(g)이 높아질수록 적정가치는 상승하는 것을 확인할 수 있습니다.\n\n|        | WACC=7%    | WACC=8%    | WACC=9%    | WACC=10%   | WACC=11%   |\n| :----- | :--------- | :--------- | :--------- | :--------- | :--------- |\n| **g=1%** | 207,030.0  | 176,942.0  | 154,393.0  | 136,868.0  | 122,860.0  |\n| **g=2%** | 240,552.0  | 200,012.0  | **171,069.0** | 149,373.0  | 132,508.0  |\n| **g=3%** | 290,835.0  | 232,310.0  | 193,304.0  | 165,451.0  | 144,569.0  |\n\n**적정가치(기본): 171,069억원**",
+    "executed_code": "import pandas as pd\n\n# --- 1. Define Financial Data and Base Assumptions ---\n# Financial Data (2025, 억원)\nrevenue_2025 = 41625\noperating_profit_2025 = 11685\n# 당기순이익, 자산총계, 부채총계는 제공된 FCF 계산식에 사용되지 않습니다.\n\n# Assumptions\ntax_rate = 0.25  # Implied from (1 - 0.25) in FCF formula\ndepreciation_rate_of_revenue = 0.10\ncapex_rate_of_revenue = 0.05\n\nwacc_base = 0.09\ng_base = 0.02\nforecast_years = 5\n\n# Crucial assumption for base scenario: Revenue and Operating Profit Growth Rate\n# This was not provided in the prompt, so a reasonable rate is assumed for the forecast period.\nrevenue_op_growth_rate_base = 0.05\n\n# --- 2. Function to calculate DCF ---\ndef calculate_dcf(\n    initial_revenue,\n    initial_operating_profit,\n    tax_rate,\n    depreciation_rate_of_revenue,\n    capex_rate_of_revenue,\n    wacc,\n    g,\n    forecast_years,\n    revenue_op_growth_rate\n):\n    fcf_list = []\n    \n    current_revenue = initial_revenue\n    current_operating_profit = initial_operating_profit\n\n    # Calculate FCF for forecast years\n    for i in range(1, forecast_years + 1):\n        # Project revenue and operating profit\n        if i > 1: # For years after the initial year (2025 is year 1)\n            current_revenue *= (1 + revenue_op_growth_rate)\n            current_operating_profit *= (1 + revenue_op_growth_rate)\n        \n        depreciation = current_revenue * depreciation_rate_of_revenue\n        capex = current_revenue * capex_rate_of_revenue\n        \n        # FCF = Operating Profit * (1 - Tax Rate) + Depreciation - CAPEX\n        fcf = current_operating_profit * (1 - tax_rate) + depreciation - capex\n        fcf_list.append(fcf)\n    \n    # Calculate Present Value of FCFs\n    pv_fcf_sum = 0\n    for i, fcf in enumerate(fcf_list):\n        pv_fcf_sum += fcf / ((1 + wacc) ** (i + 1))\n\n    # Calculate Terminal Value (TV)\n    # FCF for the year after the forecast period (Year 6)\n    fcf_terminal_year = fcf_list[-1] * (1 + g)\n    \n    # Terminal Value formula: TV = FCF_terminal_year / (WACC - g)\n    # Check for WACC <= g to avoid division by zero or negative denominator\n    if wacc <= g:\n        return float('inf') # Indicates an unrealistic scenario\n    \n    terminal_value = fcf_terminal_year / (wacc - g)\n    \n    # Discount Terminal Value back to present\n    pv_terminal_value = terminal_value / ((1 + wacc) ** forecast_years)\n    \n    # Total DCF Value\n    dcf_value = pv_fcf_sum + pv_terminal_value\n    \n    return dcf_value\n\n# --- 3. Base Scenario DCF Calculation ---\ndcf_base = calculate_dcf(\n    revenue_2025,\n    operating_profit_2025,\n    tax_rate,\n    depreciation_rate_of_revenue,\n    capex_rate_of_revenue,\n    wacc_base,\n    g_base,\n    forecast_years,\n    revenue_op_growth_rate_base\n)\n\n# --- 4. Sensitivity Analysis ---\nwacc_range = [0.07, 0.08, 0.09, 0.10, 0.11] # 7% to 11%\ng_range = [0.01, 0.02, 0.03] # 1% to 3%\n\nsensitivity_results = pd.DataFrame(index=[f'g={int(g*100)}%' for g in g_range],\n                                   columns=[f'WACC={int(wacc*100)}%' for wacc in wacc_range])\n\nfor g_val in g_range:\n    for wacc_val in wacc_range:\n        # Use the same revenue_op_growth_rate_base for sensitivity analysis\n        dcf_val = calculate_dcf(\n            revenue_2025,\n            operating_profit_2025,\n            tax_rate,\n            depreciation_rate_of_revenue,\n            capex_rate_of_revenue,\n            wacc_val,\n            g_val,\n            forecast_years,\n            revenue_op_growth_rate_base\n        )\n        sensitivity_results.loc[f'g={int(g_val*100)}%', f'WACC={int(wacc_val*100)}%'] = round(dcf_val, 0) # Round to nearest integer\n\n# --- 5. Output Results ---\nprint(f\"--- DCF 적정가치 계산 (셀트리온) ---\")\nprint(f\"기준 연도: 2025\")\nprint(f\"재무 데이터 (2025, 억원): 매출액={revenue_2025}, 영업이익={operating_profit_2025}\")\nprint(f\"가정:\")\nprint(f\"  - FCF 계산식: 영업이익 × (1 - {tax_rate}) + 감가상각(매출의 {depreciation_rate_of_revenue*100:.0f}%) - CAPEX(매출의 {capex_rate_of_revenue*100:.0f}%)\")\nprint(f\"  - WACC (기본): {wacc_base*100:.0f}%\")\nprint(f\"  - 영구성장률 g (기본): {g_base*100:.0f}%\")\nprint(f\"  - 예측 기간: {forecast_years}년\")\nprint(f\"  - **[중요 가정] 예측 기간 (5년) 동안 매출액 및 영업이익 성장률: {revenue_op_growth_rate_base*100:.0f}% (제공되지 않아 합리적으로 가정)**\")\nprint(\"\\n\")\n\nprint(f\"1. 기본 시나리오 DCF 적정가치:\")\nprint(f\"   적정가치(기본): {dcf_base:,.0f}억원\")\nprint(\"\\n\")\n\nprint(f\"2. WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 (단위: 억원):\")\nprint(sensitivity_results)\nprint(\"\\n\")\n\nprint(f\"적정가치(기본): {dcf_base:,.0f}억원\")",
+    "code_output": "--- DCF 적정가치 계산 (셀트리온) ---\n기준 연도: 2025\n재무 데이터 (2025, 억원): 매출액=41625, 영업이익=11685\n가정:\n  - FCF 계산식: 영업이익 × (1 - 0.25) + 감가상각(매출의 10%) - CAPEX(매출의 5%)\n  - WACC (기본): 9%\n  - 영구성장률 g (기본): 2%\n  - 예측 기간: 5년\n  - **[중요 가정] 예측 기간 (5년) 동안 매출액 및 영업이익 성장률: 5% (제공되지 않아 합리적으로 가정)**\n\n\n1. 기본 시나리오 DCF 적정가치:\n   적정가치(기본): 171,069억원\n\n\n2. WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 (단위: 억원):\n       WACC=7%   WACC=8%   WACC=9%  WACC=10%  WACC=11%\ng=1%  207030.0  176942.0  154393.0  136868.0  122860.0\ng=2%  240552.0  200012.0  171069.0  149373.0  132508.0\ng=3%  290835.0  232310.0  193304.0  165451.0  144569.0\n\n\n적정가치(기본): 171,069억원"
+  },
+  "news": null,
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=00413046",
+    "summary": "The browsing result indicates that the requested URL could not be found and suggests that the URL might have changed or been deleted. Therefore, I cannot access the disclosure page to retrieve the information.\n공시 페이지 접근 제한"
+  }
+}

@@ -9,31 +9,10 @@ import PricingPage from '@/pages/static/PricingPage';
 import LandingPage from '@/pages/LandingPage';
 
 // Dashboard pages - lazy loaded
-import { lazy, Suspense, Component, type ReactNode } from 'react';
+import { lazy, Suspense } from 'react';
 
-class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
-    constructor(props: { children: ReactNode }) {
-        super(props);
-        this.state = { hasError: false };
-    }
-    static getDerivedStateFromError() { return { hasError: true }; }
-    componentDidCatch(error: Error) { console.error('[ErrorBoundary]', error); }
-    render() {
-        if (this.state.hasError) {
-            return (
-                <div className="flex items-center justify-center h-full min-h-[400px]">
-                    <div className="text-center p-8">
-                        <i className="fas fa-exclamation-triangle text-amber-400 text-3xl mb-4 block"></i>
-                        <h2 className="text-white text-lg font-bold mb-2">오류가 발생했습니다</h2>
-                        <p className="text-gray-400 text-sm mb-4">페이지를 새로고침 해주세요</p>
-                        <button onClick={() => window.location.reload()} className="px-4 py-2 bg-amber-500 text-black rounded-lg font-bold text-sm">새로고침</button>
-                    </div>
-                </div>
-            );
-        }
-        return this.props.children;
-    }
-}
+// 에러 경계는 DashboardLayout 안 <Outlet /> 주변(PageErrorBoundary)으로 이동.
+// 이렇게 두면 한 페이지가 터져도 사이드바·네비·다른 페이지 진입은 살아 있음.
 const SummaryPage = lazy(() => import('@/pages/dashboard/SummaryPage'));
 const VcpEnhancedPage = lazy(() => import('@/pages/dashboard/VcpEnhancedPage'));
 const KrOverviewPage = lazy(() => import('@/pages/dashboard/kr/KrOverviewPage'));
@@ -118,7 +97,7 @@ export default function App() {
                     <Route path="/pending-approval" element={<PendingApprovalPage />} />
 
                     {/* Dashboard routes (ApprovedGuard blocks pending users) */}
-                    <Route path="/dashboard" element={<ErrorBoundary><ApprovedGuard><DashboardLayout /></ApprovedGuard></ErrorBoundary>}>
+                    <Route path="/dashboard" element={<ApprovedGuard><DashboardLayout /></ApprovedGuard>}>
                         <Route index element={<Suspense fallback={<LoadingFallback />}><SummaryPage /></Suspense>} />
                         <Route path="account" element={<Suspense fallback={<LoadingFallback />}><AccountPage /></Suspense>} />
                         <Route path="vcp-enhanced" element={<ProGuard><Suspense fallback={<LoadingFallback />}><VcpEnhancedPage /></Suspense></ProGuard>} />
