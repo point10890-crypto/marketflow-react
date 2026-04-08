@@ -87,16 +87,17 @@ export default function DashboardLayout() {
                     <MobileSubNav />
                     <div
                         ref={scrollRef}
-                        className="flex-1 overflow-y-auto p-3 md:p-6 pb-36 md:pb-6 scroll-smooth overscroll-contain relative"
+                        className={`flex-1 ${isWavePage ? 'overflow-hidden p-0' : 'overflow-y-auto p-3 md:p-6 pb-36 md:pb-6'} scroll-smooth overscroll-contain relative`}
                     >
                         <PullIndicator pullDistance={pullDistance} isRefreshing={isRefreshing} />
                         <div
+                            className={isWavePage ? 'h-full' : ''}
                             style={pullDistance > 0
                                 ? { transform: `translateY(${pullDistance}px)`, transition: 'none' }
                                 : { transition: 'transform 0.3s ease' }}
                         >
                             <PageErrorBoundary resetKey={pathname}>
-                                <div key={pathname} className="page-enter">
+                                <div key={pathname} className={`page-enter ${isWavePage ? 'h-full' : ''}`}>
                                     <Outlet />
                                 </div>
                             </PageErrorBoundary>

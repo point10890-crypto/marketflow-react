@@ -162,7 +162,7 @@ export default function WaveOverviewPage() {
 
     return (
         <div
-            className="space-y-5 h-[calc(100dvh-180px)] md:h-[calc(100dvh-120px)] overflow-y-auto pr-1 -mr-1"
+            className="space-y-5 h-full overflow-y-auto p-3 md:p-6 pb-36 md:pb-6"
             style={{ touchAction: 'pan-y', overscrollBehavior: 'contain', WebkitOverflowScrolling: 'touch' }}
         >
             {/* Header */}
