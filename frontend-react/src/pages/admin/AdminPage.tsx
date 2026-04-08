@@ -516,28 +516,48 @@ function SubscriptionsTab({ apiToken, onCountChange }: { apiToken?: string; onCo
     const showAction = (msg: string) => { setActionMsg(msg); setTimeout(() => setActionMsg(''), 3000); };
 
     const handleApprove = async (id: number) => {
+        // 1) Optimistic UI: 즉시 approved 로 전환
+        setRequests(prev => {
+            const next = prev.map(r => r.id === id ? { ...r, status: 'approved' as const } : r);
+            onCountChange(next.filter(r => r.status === 'pending').length);
+            return next;
+        });
+        showAction('✅ 구독 승인 완료');
         try {
+            // 2) 서버 확정 (백그라운드) — 실패 시 롤백 + 에러 표시
             await adminAPI.approveSubscription(id, apiToken);
+            // 3) 서버 확정된 최신 상태로 재동기화 (user tier/pro_expires_at 포함)
+            loadRequests();
+        } catch (err: any) {
             setRequests(prev => {
-                const next = prev.map(r => r.id === id ? { ...r, status: 'approved' } : r);
+                const next = prev.map(r => r.id === id ? { ...r, status: 'pending' as const } : r);
                 onCountChange(next.filter(r => r.status === 'pending').length);
                 return next;
             });
-            showAction('✅ 구독 승인 완료');
-        } catch (err: any) { showAction(`❌ ${err.message}`); }
+            showAction(`❌ ${err.message}`);
+        }
     };
 
     const handleReject = async (id: number) => {
         const note = prompt('거절 사유 (선택):');
+        // Optimistic UI
+        setRequests(prev => {
+            const next = prev.map(r => r.id === id ? { ...r, status: 'rejected' as const, admin_note: note || '' } : r);
+            onCountChange(next.filter(r => r.status === 'pending').length);
+            return next;
+        });
+        showAction('구독 요청 거절됨');
         try {
             await adminAPI.rejectSubscription(id, note || undefined, apiToken);
+            loadRequests();
+        } catch (err: any) {
             setRequests(prev => {
-                const next = prev.map(r => r.id === id ? { ...r, status: 'rejected', admin_note: note } : r);
+                const next = prev.map(r => r.id === id ? { ...r, status: 'pending' as const } : r);
                 onCountChange(next.filter(r => r.status === 'pending').length);
                 return next;
             });
-            showAction('구독 요청 거절됨');
-        } catch (err: any) { showAction(`❌ ${err.message}`); }
+            showAction(`❌ ${err.message}`);
+        }
     };
 
     if (loading) return <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500" /></div>;

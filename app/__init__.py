@@ -3,7 +3,7 @@
 
 import os
 import sys
-from flask import Flask, make_response
+from flask import Flask, make_response, request
 from flask.json.provider import DefaultJSONProvider
 
 # 패키지 루트 경로 추가 + OneDrive/외부 경로 오염 방지
@@ -119,10 +119,17 @@ def create_app(config=None):
     # ── API Cache-Control 정책 ──
     @app.after_request
     def add_cache_headers(response):
-        """JSON API: 기본 30초 브라우저 캐시 허용, 실시간 엔드포인트는 개별 no-cache 설정"""
+        """JSON API: 기본 30초 브라우저 캐시 허용, 실시간 엔드포인트는 개별 no-cache 설정
+
+        - /api/admin/*, /api/auth/*: 운영자·계정 상태는 즉시 반영 필요 → no-store
+        - 그 외: 기존 정책 (30초 브라우저 캐시)
+        """
         if response.content_type and 'application/json' in response.content_type:
-            # 엔드포인트별 no-cache는 개별 라우트에서 설정 (portfolio, market-gate 등)
-            if not response.headers.get('Cache-Control'):
+            path = (request.path or '')
+            if path.startswith('/api/admin/') or path.startswith('/api/auth/'):
+                response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+                response.headers['Pragma'] = 'no-cache'
+            elif not response.headers.get('Cache-Control'):
                 response.headers['Cache-Control'] = 'public, max-age=30'
 
         # Security headers (all responses)

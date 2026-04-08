@@ -52,30 +52,41 @@ def _record_audit(action: str, target_user: User | None, before: dict | None, af
 
 
 def _notify_admin(action: str, target_user: User, detail: str = ''):
-    """관리자 텔레그램 알림 (best-effort)"""
-    try:
-        import requests
-        bot_token = os.environ.get('TELEGRAM_BOT_TOKEN')
-        chat_id = os.environ.get('TELEGRAM_CHAT_ID')
-        if not bot_token or not chat_id:
-            return
-        admin = _admin_user()
-        admin_label = admin.email if admin else 'system'
-        msg = (
-            f"👑 <b>관리자 액션: {action}</b>\n\n"
-            f"👤 대상: {target_user.name} ({target_user.email})\n"
-            f"🆔 user_id={target_user.id}\n"
-            f"🛠 by {admin_label}"
-        )
-        if detail:
-            msg += f"\n\n{detail}"
-        requests.post(
-            f"https://api.telegram.org/bot{bot_token}/sendMessage",
-            json={"chat_id": chat_id, "text": msg, "parse_mode": "HTML"},
-            timeout=5,
-        )
-    except Exception as e:
-        print(f"[AdminNotify] {type(e).__name__}: {e}")
+    """관리자 텔레그램 알림 (fire-and-forget, 요청 스레드 블로킹 금지)
+
+    텔레그램 API 가 느리거나 네트워크가 불안정할 때 승인 버튼이 '몇 분'
+    걸려 보이는 현상을 막기 위해 백그라운드 데몬 스레드로 전송한다.
+    """
+    bot_token = os.environ.get('TELEGRAM_BOT_TOKEN')
+    chat_id = os.environ.get('TELEGRAM_CHAT_ID')
+    if not bot_token or not chat_id:
+        return
+
+    # 요청 컨텍스트 안에서 admin email 미리 스냅샷 (스레드에선 request 접근 불가)
+    admin = _admin_user()
+    admin_label = admin.email if admin else 'system'
+    msg = (
+        f"👑 <b>관리자 액션: {action}</b>\n\n"
+        f"👤 대상: {target_user.name} ({target_user.email})\n"
+        f"🆔 user_id={target_user.id}\n"
+        f"🛠 by {admin_label}"
+    )
+    if detail:
+        msg += f"\n\n{detail}"
+
+    def _send():
+        try:
+            import requests as _rq
+            _rq.post(
+                f"https://api.telegram.org/bot{bot_token}/sendMessage",
+                json={"chat_id": chat_id, "text": msg, "parse_mode": "HTML"},
+                timeout=5,
+            )
+        except Exception as e:
+            print(f"[AdminNotify] {type(e).__name__}: {e}")
+
+    import threading
+    threading.Thread(target=_send, daemon=True).start()
 
 
 # ─────────────────────────────────────────────────────────────────────────────
