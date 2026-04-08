@@ -156,20 +156,12 @@ Else
     End If
 End If
 
-' ── 5. Watchdog Service (Python — 60초 간격, rate-limited, Telegram 알림) ──
-If IsProcessRunning("watchdog_service.py") Then
-    Log "Watchdog: already running"
-Else
-    Log "Watchdog: starting watchdog_service.py..."
-    objShell.CurrentDirectory = PROJECT
-    objShell.Run """" & PYTHON & """ watchdog_service.py", 0, False
-    WScript.Sleep 5000
-    If IsProcessRunning("watchdog_service.py") Then
-        Log "Watchdog: OK"
-    Else
-        Log "Watchdog: FAILED to start"
-    End If
-End If
+' ── 5. Watchdog Service — REMOVED 2026-04-08 ──
+' watchdog_service.py / healthcheck.py 폐기. 사유:
+'   - 2일치 로그상 유익한 동작 0건 (Flask 재시작 1회는 Task Scheduler 와 중복)
+'   - Spring Boot "재시작 성공" 4건/일 false positive — JUST BUY 8080 과 충돌
+'   - Cloudflared restart 는 no-op, Scheduler restart 는 대부분 실패
+' Task Scheduler MarketFlow-V1-Flask + MarketFlow-Scheduler 가 모든 재시작을 처리.
 
 Log "========== AUTO START END =========="
 logFile.Close

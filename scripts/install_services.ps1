@@ -146,7 +146,7 @@ $principal = New-ScheduledTaskPrincipal -UserId $USERNAME -LogonType Interactive
 
 Register-ScheduledTask -TaskName $taskName `
     -Trigger $trigger -Action $action -Settings $settings -Principal $principal `
-    -Description "Cloudflare Tunnel for api.bit-man.net (auto-restart on failure)" | Out-Null
+    -Description "Cloudflare Tunnel for marketflow-api.bit-man.net (auto-restart on failure)" | Out-Null
 
 Write-Host "  $taskName registered (AtLogOn + RestartOnFailure)" -ForegroundColor Green
 

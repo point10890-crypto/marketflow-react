@@ -4,7 +4,9 @@
 > 어떤 코드/문서가 이 파일과 충돌하면 **이 파일이 옳고**, 코드를 이 파일에 맞춰 수정합니다.
 > 변경 시 반드시 이 파일을 먼저 갱신하고 PR/커밋합니다.
 
-Last updated: 2026-04-07
+Last updated: 2026-04-08
+
+> **2026-04-08 정정**: 라이브 프로세스 검사 결과, 8080 포트는 MarketFlow 가 아닌 별도 프로젝트 JUST BUY (`C:\bitman_justbuy_project`) 의 `justbuy-api-1.0.0.jar` 가 점유하며 `api.bit-man.net` 도 JUST BUY 로 라우팅됨이 확인되었습니다. MarketFlow `backend/` 디렉토리는 dead code 로 분류하고, 8080 / Spring Boot 관련 항목을 SSOT 에서 제거했습니다. 미니PC 이전 시 MarketFlow 측 systemd unit 은 `marketflow-flask.service`, `marketflow-scheduler.service` 두 개만 만듭니다.
 
 ---
 
@@ -19,7 +21,7 @@ Last updated: 2026-04-07
 | 데이터 디렉토리 | `C:\bitman_marketfloww\data` | `/c/bitman_marketfloww/data` |
 | 로그 디렉토리 | `C:\bitman_marketfloww\logs` | `/c/bitman_marketfloww/logs` |
 | 프론트엔드 | `C:\bitman_marketfloww\frontend-react` | `/c/bitman_marketfloww/frontend-react` |
-| 백엔드 (Spring) | `C:\bitman_marketfloww\backend` | `/c/bitman_marketfloww/backend` |
+| ~~백엔드 (Spring)~~ | `C:\bitman_marketfloww\backend` (**DEAD CODE — 운영 배포 없음**) | 동일 |
 | Cloudflared 설정 | `C:\Users\dynas\.cloudflared\config.yml` | `/c/Users/dynas/.cloudflared/config.yml` |
 | Cloudflared 자격 | `C:\Users\dynas\.cloudflared\678e9c60-9f8d-4f49-9fba-a49400ef4ca0.json` | 동일 |
 | Crypto 분석 | `C:\bitman_marketfloww\crypto-analytics\crypto_market` | 동일 |
@@ -33,18 +35,17 @@ Last updated: 2026-04-07
 | 데이터 디렉토리 | `/srv/marketflow/data` |
 | 로그 디렉토리 | `/srv/marketflow/logs` |
 | 프론트엔드 | `/srv/marketflow/frontend-react` |
-| 백엔드 (Spring) | `/srv/marketflow/backend` |
 | Cloudflared 설정 | `/etc/cloudflared/config.yml` |
 | Cloudflared 자격 | `/etc/cloudflared/678e9c60-9f8d-4f49-9fba-a49400ef4ca0.json` |
 | Crypto 분석 | `/srv/marketflow/crypto-analytics/crypto_market` |
-| systemd unit | `/etc/systemd/system/marketflow-{flask,scheduler,spring}.service` |
+| systemd unit | `/etc/systemd/system/marketflow-{flask,scheduler}.service` |
 
 **OS 분기 패턴**:
 - Python: `Path(__file__).resolve().parent` 기준 상대 계산 (모든 모듈)
 - `scheduler.py` `Config.PYTHON_PATH`: `os.name == 'nt'` 분기 (`.venv/Scripts/python.exe` vs `.venv/bin/python`)
-- Spring Boot: `application.yml`의 `${APP_BASE_DIR:C:/bitman_marketfloww}` env var로 오버라이드 (Linux는 systemd unit에서 `Environment=APP_BASE_DIR=/srv/marketflow`)
 - Cloudflared: 사용자 홈 의존 제거, `/etc/cloudflared/`로 시스템 영역 이동
 - `healthcheck.py`: **Windows 전용** (`tasklist`/`wmic`/`CREATE_NO_WINDOW`). Linux에서는 systemd `Restart=on-failure`가 동일 역할 수행 — Linux에서 호출 금지
+- `backend/` (Spring Boot): **운영 배포 없음**. 코드는 repo에 남아있지만 어떤 호스트에서도 실행되지 않음. 미니PC 이전 시 systemd unit 만들지 말 것.
 
 **규칙**:
 - 모든 코드에서 경로는 **`os.path.dirname(__file__)` 기반 상대 계산** 또는 **이 표의 절대 경로**만 사용
@@ -60,17 +61,18 @@ Last updated: 2026-04-07
 | 포트 | 서비스 | 프로세스 | 시작 명령 | 외부 노출 |
 |---|---|---|---|---|
 | **5001** | Flask API (메인) | `flask_app.py` | `cd /c/bitman_marketfloww && PYTHONIOENCODING=utf-8 .venv/Scripts/python.exe flask_app.py` | 터널 경유 (`marketflow-api.bit-man.net`) |
-| **8080** | Spring Boot API (Summary 3종) | `backend/` | `cd /c/bitman_marketfloww/backend && ./gradlew bootRun` | 터널 경유 (`api.bit-man.net`) |
 | **5173** | Vite dev (개발용) | `frontend-react` | `cd /c/bitman_marketfloww/frontend-react && npm run dev` | 로컬만 |
 | **N/A** | Scheduler 데몬 | `scheduler.py --daemon` | `cd /c/bitman_marketfloww && PYTHONIOENCODING=utf-8 .venv/Scripts/python.exe scheduler.py --daemon` | 없음 (백그라운드 잡) |
 
-**금지 포트**: `5002` (구 cloudflared 잘못된 라우팅의 흔적, 이제 사용 안 함)
+**금지/외부 점유 포트**:
+- `5002`: 구 cloudflared 잘못된 라우팅의 흔적, 사용 안 함
+- `8080`: **MarketFlow가 사용하지 않음**. 이 PC에서는 별도 프로젝트(JUST BUY, `C:\bitman_justbuy_project`)의 Spring Boot JAR이 점유 중. MarketFlow `backend/` 디렉토리는 dead code이며, 실수로라도 `gradlew bootRun`을 띄우지 말 것 (JUST BUY와 충돌). JUST BUY의 `autostart.vbs`는 침범 시 자동 종료시키는 방어 로직(`KillStrayMarketflowOn8080`) 보유.
 
 ### 2.2 포트 점유 확인 / 종료
 
 ```bash
-# 확인
-netstat -ano | grep -E "LISTENING.*:(5001|8080|5173) "
+# 확인 (MarketFlow는 5001/5173만; 8080은 외부 프로젝트 점유라 무시)
+netstat -ano | grep -E "LISTENING.*:(5001|5173) "
 
 # 종료 (예: 5001)
 netstat -ano | grep ":5001" | grep LISTEN | awk '{print $5}' | sort -u | xargs -I{} taskkill //F //PID {}
@@ -98,24 +100,27 @@ netstat -ano | grep ":5001" | grep LISTEN | awk '{print $5}' | sort -u | xargs -
 | Credentials | `C:\Users\dynas\.cloudflared\678e9c60-9f8d-4f49-9fba-a49400ef4ca0.json` |
 | 연결 수 | 4 (icn05 ×2, icn06 ×2) |
 
-### 3.2 라우팅 매트릭스 (FIXED)
+> **참고**: 같은 PC에 별도 프로젝트(JUST BUY)가 자기 터널(`justbuy-tunnel`)을 함께 운영합니다. MarketFlow 운영상 무관하므로 이 SSOT는 추적하지 않습니다.
+
+### 3.2 라우팅 매트릭스 (MarketFlow 소속만)
 
 | 외부 호스트 | → | 로컬 서비스 | 용도 |
 |---|---|---|---|
-| `https://api.bit-man.net` | → | `http://localhost:8080` | Spring Boot (Summary 대시보드 3 엔드포인트) |
 | `https://marketflow-api.bit-man.net` | → | `http://localhost:5001` | Flask API (메인 전체) |
-| (그 외) | → | `http_status:404` | 차단 |
+| (그 외 MarketFlow 호스트) | → | `http_status:404` | 차단 |
 
-### 3.3 config.yml (정본)
+> `api.bit-man.net` 은 동일 config.yml 에 ingress 로 남아있지만 **JUST BUY 프로젝트의 :8080 JAR 로 라우팅** 됩니다. MarketFlow 코드/문서/배포에서 이 호스트를 호출하거나 재정의하지 마세요. config.yml 상의 의존성은 JUST BUY 측 변경 권한에 둡니다.
+
+### 3.3 config.yml (현행 — JUST BUY 라인 포함)
 
 ```yaml
 tunnel: 678e9c60-9f8d-4f49-9fba-a49400ef4ca0
 credentials-file: C:\Users\dynas\.cloudflared\678e9c60-9f8d-4f49-9fba-a49400ef4ca0.json
 
 ingress:
-  - hostname: api.bit-man.net
+  - hostname: api.bit-man.net               # JUST BUY 소유 (MarketFlow 무관)
     service: http://localhost:8080
-  - hostname: marketflow-api.bit-man.net
+  - hostname: marketflow-api.bit-man.net    # MarketFlow Flask
     service: http://localhost:5001
   - service: http_status:404
 ```
@@ -131,7 +136,6 @@ taskkill //F //IM cloudflared.exe
 
 # 헬스체크
 curl -s -o /dev/null -w "Flask:  %{http_code}\n" https://marketflow-api.bit-man.net/api/kr/jongga-v2/latest
-curl -s -o /dev/null -w "Spring: %{http_code}\n" https://api.bit-man.net/api/us/market-briefing
 ```
 
 ---
@@ -162,7 +166,7 @@ npx wrangler pages deploy dist --project-name=bitman-marketflow --branch=main --
 VITE_API_BASE_URL=https://marketflow-api.bit-man.net
 ```
 
-> 프론트엔드는 **모든 API 호출을 `marketflow-api.bit-man.net`(Flask) 로** 보냅니다. Spring Boot의 3개 엔드포인트는 Flask가 프록시하거나, 별도 분기 시 `api.bit-man.net`으로 보내야 합니다.
+> 프론트엔드는 **모든 API 호출을 `marketflow-api.bit-man.net`(Flask) 로** 보냅니다. MarketFlow 에는 자체 Spring Boot 백엔드가 없으며, 모든 엔드포인트(KR/US/Crypto/Wave/Briefing 전부)는 Flask `:5001` 한 곳에서 서빙됩니다. `api.bit-man.net` 은 별도 프로젝트(JUST BUY) 소속이므로 호출 금지.
 
 ### 4.4 CI/CD
 
@@ -227,7 +231,6 @@ ls /c/bitman_marketfloww/data/scheduler_last_run.json && echo "[OK] Manifest"
 
 # 2. 로컬 포트
 netstat -ano | grep -q ":5001.*LISTENING" && echo "[OK] Flask 5001" || echo "[FAIL] Flask 5001"
-netstat -ano | grep -q ":8080.*LISTENING" && echo "[OK] Spring 8080" || echo "[FAIL] Spring 8080"
 
 # 3. 스케줄러
 test -f /c/bitman_marketfloww/logs/scheduler.pid && echo "[OK] Scheduler PID" || echo "[FAIL] Scheduler PID"
@@ -239,7 +242,6 @@ tasklist | grep -qi cloudflared && echo "[OK] Cloudflared running" || echo "[FAI
 
 # 5. 외부 도달
 curl -s -o /dev/null -w "[%{http_code}] Flask via tunnel\n" https://marketflow-api.bit-man.net/api/kr/jongga-v2/latest
-curl -s -o /dev/null -w "[%{http_code}] Spring via tunnel\n" https://api.bit-man.net/api/us/market-briefing
 curl -s -o /dev/null -w "[%{http_code}] Frontend\n" https://bit-man.net/
 
 # 6. Manifest 신선도 (24h 이내)

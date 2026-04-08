@@ -1,8 +1,10 @@
 # MarketFlow 홈서버 이전(Migration) 전수 조사 보고서
 
-> 작성일: 2026-04-08
+> 작성일: 2026-04-08 (1차) / 정정: 2026-04-08 (2차)
 > 대상: 현 운영 호스트 → 전용 로컬 홈서버(미니PC) 교체
 > 목적: 24/7 안정 운용 + 전력 효율 + 노트북 해방
+>
+> **⚠ 2026-04-08 정정**: 1차 작성 시 8080 / Spring Boot / `api.bit-man.net` 이 MarketFlow 소속이라 잘못 가정했습니다. 라이브 프로세스 검사 결과 **8080 은 별도 프로젝트(JUST BUY) 소속**이며, MarketFlow `backend/` 디렉토리는 운영 배포된 적 없는 dead code 입니다. MarketFlow 의 실제 운영 컴포넌트는 **Flask(5001) + scheduler.py + cloudflared(`marketflow-api.bit-man.net`) + Vite(개발만)** 4가지입니다. 본 문서 §2 표 / §4 systemd unit / §6 헬스체크 등에서 8080·Spring Boot 가정은 무효화되었으므로 미니PC 이전 시 따르지 마세요.
 
 ---
 
@@ -32,7 +34,7 @@
 | `data/prices/` | 117 MB | 종목별 가격 캐시 |
 | `data/wave/` | 15 MB | W 패턴 추적 |
 | `data/users.db` (+wal) | 2.5 + 3.2 MB | SQLite 유저 DB |
-| `data/marketflow.mv.db` | 1.7 MB | H2 (Spring Boot) |
+| `data/marketflow.mv.db` | 1.7 MB | H2 (구 Spring Boot 시도의 잔재 — dead, 이전 불필요) |
 | `logs/` | 40 MB | 런타임 로그 |
 | `crypto-analytics/` | 8.2 MB | 크립토 분석 산출물 |
 | `frontend-react/dist/` | 2.1 MB | 빌드 산출물 (배포용) |
@@ -45,23 +47,22 @@
 | `cloudflared.exe` | **12+** | Cloudflare Tunnel 커넥터 (icn05·icn06 ×4 + 자식) |
 | `python.exe / python3.13.exe` | 4 | Flask 5001 + scheduler 데몬 |
 | `node.exe` | 4 | Vite dev / wrangler |
-| `java` (Spring Boot 8080) | **0** | 현재 미가동 (정의는 있음) |
-
-> 관측 시점 기준 Spring Boot가 떠 있지 않음. INFRASTRUCTURE.md상으로는 8080 필수.
+| ~~`java` (Spring Boot 8080)~~ | — | **MarketFlow 와 무관** — 같은 호스트의 별도 프로젝트(JUST BUY)가 8080 점유 |
 
 ### 1.4 서비스 매트릭스
 | 포트 | 서비스 | 진입점 | 외부 노출 |
 |---|---|---|---|
 | 5001 | Flask API (메인) | `flask_app.py` | `marketflow-api.bit-man.net` (Cloudflare Tunnel) |
-| 8080 | Spring Boot (Summary 3종) | `backend/` (Gradle Kotlin DSL) | `api.bit-man.net` (Cloudflare Tunnel) |
 | 5173 | Vite dev | `frontend-react/` | 로컬만 |
 | - | Scheduler 데몬 | `scheduler.py --daemon` | 없음 (cron-like) |
 | - | Cloudflared | `C:\Users\dynas\.cloudflared\config.yml` | UUID `678e9c60-...` |
 
+> 8080 / `api.bit-man.net` 은 같은 호스트의 별도 프로젝트(JUST BUY) 점유. 미니PC 이전 작업에서는 MarketFlow 만 옮기고 8080 자산은 손대지 마세요.
+
 ### 1.5 외부 의존성
 - **API 키 19종** (`.env`): GEMINI / GOOGLE / OPENAI / PERPLEXITY / ANTHROPIC / XAI / DART / FMP / KIS(4종) / TELEGRAM(4종) / GITHUB(2종)
 - **Python 패키지** 49 라인 (`requirements.txt`)
-- **외부 도메인**: `bit-man.net`, `www.bit-man.net`, `api.bit-man.net`, `marketflow-api.bit-man.net` (Cloudflare 관리)
+- **외부 도메인 (MarketFlow 소속만)**: `bit-man.net`, `www.bit-man.net`, `marketflow-api.bit-man.net` (Cloudflare 관리). `api.bit-man.net` 은 JUST BUY 소속이므로 본 마이그레이션 범위 외.
 - **프론트엔드**: Cloudflare Pages 프로젝트 `bitman-marketflow` (이전 시 영향 없음 — 호스트 외부)
 
 ### 1.6 스케줄러 잡 (KST)
@@ -130,8 +131,8 @@ INFRASTRUCTURE.md가 절대 경로를 **FIXED**로 못박고 있어, 그대로 L
 - `autostart.vbs` 워치독 → systemd `Restart=on-failure`로 흡수
 - `taskkill` 의존 종료 → `systemctl stop`
 
-### 3.5 Spring Boot
-- Java 21 / Gradle Kotlin DSL → Linux에서 동일 동작 (의존성 없음). 단지 systemd 유닛 추가 필요.
+### 3.5 ~~Spring Boot~~ (제외)
+MarketFlow `backend/` Spring Boot 디렉토리는 운영 배포된 적이 없는 dead code 입니다. 미니PC 이전 시 빌드/배포/Java 설치 모두 불필요. 같은 호스트의 8080 자산은 별도 프로젝트(JUST BUY) 소속이므로 본 마이그레이션 범위 외.
 
 ---
 
@@ -147,9 +148,9 @@ INFRASTRUCTURE.md가 절대 경로를 **FIXED**로 못박고 있어, 그대로 L
 | 전력 idle/peak | **6/20 W** |
 | 가격대 | 25~40만원 |
 | 장점 | 팬리스(N100) 또는 초저소음, 손바닥 크기, 24/7 적합 |
-| 단점 | 단일 코어 성능 낮음 → Gradle 빌드 느림 (런타임은 무리 없음) |
+| 단점 | 단일 코어 성능 낮음 (Python/Vite 런타임에는 무리 없음) |
 
-→ **MarketFlow 워크로드(스케줄러 + Flask + Spring Boot + cloudflared)** 는 평시 2~3 vCPU 활용. N100으로 충분.
+→ **MarketFlow 워크로드(scheduler.py + Flask + cloudflared)** 는 평시 1~2 vCPU 활용. N100으로 충분.
 
 ### 옵션 B — 균형 (개발도 같이 할 거면)
 **Intel i5-13500T / i5-12500T 미니PC** (Beelink SEi13 / NUC 13 Pro / Minisforum UM773)
@@ -181,12 +182,11 @@ INFRASTRUCTURE.md가 절대 경로를 **FIXED**로 못박고 있어, 그대로 L
 | 레이어 | 선택 | 이유 |
 |---|---|---|
 | **OS** | **Debian 12 / Ubuntu Server 24.04 LTS** | 5년 보안 업데이트, 한국 미러 빠름, systemd 표준 |
-| **방화벽** | `ufw` | 포트 5001/8080 LAN-only, 22 SSH key-only |
+| **방화벽** | `ufw` | 포트 5001 LAN-only, 22 SSH key-only (8080 은 MarketFlow 와 무관) |
 | **자동 패치** | `unattended-upgrades` | 보안 패치만 자동, 커널 재부팅은 새벽 4:30 사전예약 |
 | **프로세스 매니저** | **systemd unit** | Restart=on-failure, journalctl 로그 통합 |
 | **Python** | **3.13** + `uv` (또는 venv) | uv가 pip 대비 10~100배 빠름 |
-| **Java** | **Eclipse Temurin 21 LTS** | Spring Boot 3.4.3 호환 |
-| **Node** | **20 LTS** (nvm) | Vite 5 호환 |
+| **Node** | **20 LTS** (nvm) | Vite 5 호환 (Java 는 MarketFlow 운영에 불필요 — backend/ dead code) |
 | **Cloudflared** | apt repo 정식 | systemd 통합, 자동 업데이트 |
 | **모니터링** | journalctl + Telegram 알림 (기존 유지) | 추가 인프라 0 |
 | **백업** | `restic` → 외장 USB or 클라우드 | 증분 백업, 암호화 |
@@ -202,7 +202,7 @@ INFRASTRUCTURE.md가 절대 경로를 **FIXED**로 못박고 있어, 그대로 L
 ├── .env                          ← 600 권한, marketflow:marketflow 소유
 ├── flask_app.py
 ├── scheduler.py
-├── app/  engine/  backend/  frontend-react/  ...
+├── app/  engine/  frontend-react/  ...   (backend/ 는 dead code, 이전 시 빌드/실행 안 함)
 ├── data/                         ← 750 권한, 백업 대상
 └── logs/                         ← journalctl 외 보조 로그
 
@@ -212,7 +212,6 @@ INFRASTRUCTURE.md가 절대 경로를 **FIXED**로 못박고 있어, 그대로 L
 
 /etc/systemd/system/
 ├── marketflow-flask.service
-├── marketflow-spring.service
 ├── marketflow-scheduler.service
 └── cloudflared.service           ← 패키지 설치 시 자동
 ```
@@ -269,26 +268,11 @@ RestartSec=10
 WantedBy=multi-user.target
 ```
 
-### 7.3 Spring Boot
-```ini
-# /etc/systemd/system/marketflow-spring.service
-[Unit]
-Description=MarketFlow Spring Boot API
-After=network-online.target
+### 7.3 ~~Spring Boot~~ (제외)
 
-[Service]
-Type=simple
-User=marketflow
-WorkingDirectory=/srv/marketflow/backend
-ExecStart=/usr/bin/java -jar /srv/marketflow/backend/build/libs/marketflow-0.0.1-SNAPSHOT.jar
-Restart=on-failure
-RestartSec=10
+**MarketFlow 는 Spring Boot 백엔드를 운영하지 않습니다.** repo 안의 `backend/` 디렉토리는 dead code 이며 미니PC 에 systemd unit 을 만들지 마세요. 같은 호스트의 8080 자산은 별도 프로젝트(JUST BUY) 가 점유하므로 본 마이그레이션 범위 외입니다.
 
-[Install]
-WantedBy=multi-user.target
-```
-
-→ `systemctl enable --now marketflow-flask marketflow-scheduler marketflow-spring`
+→ `systemctl enable --now marketflow-flask marketflow-scheduler` (2 unit 만)
 
 ---
 
@@ -296,9 +280,9 @@ WantedBy=multi-user.target
 
 ### Phase 0 — 사전 준비 (D-7 ~ D-1, 노트북 위에서)
 1. 미니PC 발주·수령·OS 설치 (Debian 12 minimal)
-2. SSH key 등록, `ufw` 설정 (22/LAN, 5001/LAN, 8080/LAN)
+2. SSH key 등록, `ufw` 설정 (22/LAN, 5001/LAN — 8080 은 MarketFlow 가 사용하지 않으므로 열지 않음)
 3. 사용자 `marketflow` 생성 + `/srv/marketflow` 디렉토리
-4. Python 3.13 / Java 21 / Node 20 / cloudflared 설치
+4. Python 3.13 / Node 20 / cloudflared 설치 (Java 는 MarketFlow 운영에 불필요)
 5. **코드 수정 PR**: `INFRASTRUCTURE.md`에 Linux 경로 섹션 추가, `paths.py` 검증, batch/vbs 의존 제거 — **이 단계에서 노트북에서 동작 회귀 테스트** (POSIX/Windows 동시 호환 유지)
 
 ### Phase 1 — 데이터 베이스라인 동기 (D-day, 1시간)
@@ -307,25 +291,25 @@ WantedBy=multi-user.target
 3. `data/` 압축: `tar czf marketflow_data_$(date +%Y%m%d).tgz data/ logs/ .env`
 4. `scp` 로 미니PC `/srv/marketflow/`에 전송
 5. 미니PC에서 `git clone` (또는 위 tarball에 코드 포함) → `uv venv && uv pip install -r requirements.txt`
-6. `cd backend && ./gradlew build`
-7. 권한: `chown -R marketflow:marketflow /srv/marketflow && chmod 600 .env`
+6. 권한: `chown -R marketflow:marketflow /srv/marketflow && chmod 600 .env`
 
 ### Phase 2 — 평행 가동 (D-day, 30분)
-1. 미니PC: Flask·Spring·Scheduler systemd 유닛 enable → start
+1. 미니PC: Flask·Scheduler systemd 유닛 enable → start
 2. **localhost 헬스체크**:
    ```
    curl http://localhost:5001/api/kr/jongga-v2/latest
-   curl http://localhost:8080/api/us/market-briefing
    ```
 3. 노트북은 계속 살려둠 — Cloudflare Tunnel은 아직 노트북 향해 있음
 
 ### Phase 3 — 터널 전환 (D-day, 5분 윈도)
-1. 노트북: `taskkill //F //IM cloudflared.exe` → 터널 끊김 (5초)
-2. 미니PC: `systemctl start cloudflared` (config.yml + UUID json은 사전 복사됨)
+
+> ⚠ 주의: 같은 호스트에서 별도 프로젝트(JUST BUY)도 같은 cloudflared 터널을 공유할 가능성이 높습니다. JUST BUY 도 미니PC 로 함께 이전하지 않는 한 노트북측 cloudflared 를 끄면 JUST BUY 까지 끊깁니다. 본 문서는 MarketFlow 단독 이전을 다루므로, 터널 전환 전 JUST BUY 측 영향과 ingress 분리 방안을 별도 검토하세요.
+
+1. 노트북: `taskkill //F //IM cloudflared.exe` → 터널 끊김 (5초) — **JUST BUY 에 영향 줄 수 있음**
+2. 미니PC: `systemctl start cloudflared` (config.yml + UUID json은 사전 복사됨, ingress 는 `marketflow-api.bit-man.net` 만 포함)
 3. **외부 헬스체크**:
    ```
    curl https://marketflow-api.bit-man.net/api/kr/jongga-v2/latest
-   curl https://api.bit-man.net/api/us/market-briefing
    curl https://bit-man.net/
    ```
 4. 21개 dashboard 라우트 PC + 모바일 walk

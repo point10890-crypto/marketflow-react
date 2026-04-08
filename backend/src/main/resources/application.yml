@@ -22,9 +22,11 @@ spring:
 
 app:
   data:
-    # APP_BASE_DIR env var로 OS별 오버라이드:
-    #   Windows: C:/bitman_marketfloww  (default)
-    #   Linux:   APP_BASE_DIR=/srv/marketflow
+    # ⚠ DEAD CODE — 이 backend/ 디렉토리는 운영 배포되지 않음.
+    # 현 운영 호스트의 8080 포트는 별도 프로젝트(JUST BUY)가 점유하므로
+    # 절대 `gradlew bootRun` 으로 띄우지 말 것 (포트 충돌). 자세한 내용은
+    # 루트의 INFRASTRUCTURE.md §2.1 참고.
+    # APP_BASE_DIR env var는 미래에 부활시킬 경우를 위한 OS 분기 슬롯.
     base-dir: ${APP_BASE_DIR:C:/bitman_marketfloww}
     us-output-dir: ${app.data.base-dir}/us_market/output
     kr-data-dir: ${app.data.base-dir}/data

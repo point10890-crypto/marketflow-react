@@ -19,7 +19,9 @@ TZ_NOW=$(timedatectl 2>/dev/null | awk -F': ' '/Time zone/ {print $2}' | awk '{p
 locale -a 2>/dev/null | grep -qi 'ko_KR.utf' && ok "ko_KR.UTF-8 locale" || fail "ko_KR.UTF-8 locale missing"
 
 hr "2. 필수 패키지"
-for cmd in python3 java node npm git curl rsync tar systemctl; do
+# Java/Spring 은 MarketFlow 운영에 필요 없음 (backend/ 디렉토리는 dead code).
+# 같은 호스트의 8080 은 별도 프로젝트(JUST BUY)가 점유.
+for cmd in python3 node npm git curl rsync tar systemctl; do
   command -v "$cmd" >/dev/null 2>&1 && ok "$cmd present" || fail "$cmd missing"
 done
 
@@ -27,12 +29,6 @@ PYV=$(python3 --version 2>&1 | awk '{print $2}')
 case "$PYV" in
   3.1[0-9].*|3.[2-9][0-9].*) ok "python3 $PYV (>= 3.10)" ;;
   *) fail "python3 $PYV too old (need >= 3.10)" ;;
-esac
-
-JAVAV=$(java -version 2>&1 | head -1 | awk -F'"' '{print $2}')
-case "$JAVAV" in
-  21.*|22.*|23.*) ok "java $JAVAV (>= 21)" ;;
-  *) fail "java $JAVAV (need 21+)" ;;
 esac
 
 NODEV=$(node --version 2>&1 | tr -d 'v')
@@ -66,15 +62,7 @@ else
   fail ".venv/bin/python missing — run: cd $PROJECT && python3 -m venv .venv && .venv/bin/pip install -r requirements.txt"
 fi
 
-hr "5. Spring Boot jar"
-JAR=$(ls "$PROJECT/backend/build/libs/"*.jar 2>/dev/null | head -1)
-if [ -n "$JAR" ]; then
-  ok "Spring Boot jar: $(basename "$JAR")"
-else
-  fail "Spring Boot jar missing — run: cd $PROJECT/backend && ./gradlew bootJar"
-fi
-
-hr "6. .env 키 존재성"
+hr "5. .env 키 존재성"
 if [ -f "$PROJECT/.env" ]; then
   REQUIRED_KEYS=(
     GEMINI_API_KEY OPENAI_API_KEY ANTHROPIC_API_KEY DART_API_KEY FMP_API_KEY
@@ -90,24 +78,24 @@ if [ -f "$PROJECT/.env" ]; then
   done
 fi
 
-hr "7. Cloudflared 설정"
+hr "6. Cloudflared 설정"
 [ -f /etc/cloudflared/config.yml ] && ok "/etc/cloudflared/config.yml" || fail "/etc/cloudflared/config.yml missing"
 CRED=$(ls /etc/cloudflared/*.json 2>/dev/null | head -1)
 [ -n "$CRED" ] && ok "credentials json: $(basename "$CRED")" || fail "tunnel credentials json missing in /etc/cloudflared/"
 
-hr "8. systemd unit 파일"
-for u in marketflow-flask marketflow-scheduler marketflow-spring; do
+hr "7. systemd unit 파일"
+for u in marketflow-flask marketflow-scheduler; do
   [ -f "/etc/systemd/system/$u.service" ] && ok "$u.service installed" || fail "$u.service not installed (cp deploy/systemd/$u.service /etc/systemd/system/)"
 done
 
-hr "9. 방화벽 (ufw)"
+hr "8. 방화벽 (ufw)"
 if command -v ufw >/dev/null 2>&1; then
   ufw status 2>/dev/null | grep -q "Status: active" && ok "ufw active" || fail "ufw inactive (sudo ufw enable)"
 else
   fail "ufw not installed"
 fi
 
-hr "10. 디스크 여유"
+hr "9. 디스크 여유"
 FREE_GB=$(df -BG --output=avail "$PROJECT" 2>/dev/null | tail -1 | tr -d 'G ')
 if [ -n "$FREE_GB" ] && [ "$FREE_GB" -ge 50 ]; then
   ok "disk free ${FREE_GB}G (>= 50G)"

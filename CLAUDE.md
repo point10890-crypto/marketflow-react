@@ -22,16 +22,16 @@ FRONTEND="$PROJECT/frontend-react"
 | 서비스 | 포트 | 시작 명령 |
 |--------|------|----------|
 | Flask API | 5001 | `cd "$PROJECT" && "$PYTHON" flask_app.py &` |
-| Spring Boot | 8080 | `cd "$PROJECT/backend" && ./gradlew bootRun &` |
 | Vite React | 4000 | `cd "$FRONTEND" && npm run dev &` |
 | Scheduler | - | `cd "$PROJECT" && PYTHONIOENCODING=utf-8 "$PYTHON" scheduler.py --daemon &` |
 
+> ⚠ **8080 포트는 MarketFlow 가 사용하지 않습니다.** 같은 PC 의 별도 프로젝트(JUST BUY) 가 점유 중이며, MarketFlow `backend/` 디렉토리(Spring Boot) 는 dead code 입니다. **절대 `gradlew bootRun` 또는 `taskkill 8080` 을 실행하지 마세요** — JUST BUY 운영 중단을 일으킵니다. INFRASTRUCTURE.md §2.1 참고.
+
 ```bash
-# 포트 확인
-netstat -ano | grep -E "5001|8080|4000"
-# 프로세스 종료
+# 포트 확인 (MarketFlow 만)
+netstat -ano | grep -E "5001|4000"
+# 프로세스 종료 (MarketFlow 만 — 8080 은 절대 건드리지 말 것)
 netstat -ano | grep 5001 | awk '{print $5}' | sort -u | xargs -I{} taskkill //F //PID {} 2>/dev/null
-netstat -ano | grep 8080 | awk '{print $5}' | sort -u | xargs -I{} taskkill //F //PID {} 2>/dev/null
 netstat -ano | grep 4000 | awk '{print $5}' | sort -u | xargs -I{} taskkill //F //PID {} 2>/dev/null
 ```
 
@@ -41,18 +41,17 @@ NEXTAUTH_URL=http://localhost:4000
 NEXTAUTH_SECRET=marketflow-nextauth-secret-change-in-production
 AUTH_TRUST_HOST=true
 BACKEND_URL=http://localhost:5001
-SPRING_BOOT_URL=http://localhost:8080
 NEXT_PUBLIC_API_URL=http://localhost:4000
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_placeholder
 ```
 
 > **중요**: `NEXT_PUBLIC_API_URL`이 설정되면 클라이언트가 `/api/*` → Next.js rewrite → 백엔드로 요청.
 > 비어있으면 `/api/data/*` 정적 스냅샷 모드 (Vercel 배포용).
-> Summary 대시보드 3개 엔드포인트는 Spring Boot(8080)으로, 나머지는 Flask(5001)로 라우팅.
+> 모든 엔드포인트는 Flask(5001) 한 곳에서 서빙 — MarketFlow 는 자체 Spring Boot 백엔드가 없습니다.
 
 ---
 
-## 2. 프로젝트 아키텍처 (v2.7.0 Spring Boot 추가)
+## 2. 프로젝트 아키텍처
 
 ### 디렉토리 구조
 ```
@@ -66,15 +65,9 @@ NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_placeholder
 ├── briefing_generator.py     # AI 브리핑 생성 (Gemini 기반)
 ├── .env                      # API 키 관리
 │
-├── backend/                  # === Spring Boot API (Java 21, Gradle) ===
-│   ├── build.gradle.kts      # Spring Boot 3.4.3 + Caffeine
-│   ├── gradlew / gradlew.bat # Gradle wrapper
-│   └── src/main/java/com/bitman/marketflow/
-│       ├── MarketFlowApplication.java     # 진입점 (포트 8080)
-│       ├── config/            # AppConfig, CacheConfig, JacksonConfig
-│       ├── controller/        # UsMarket, KrMarket, Crypto 컨트롤러
-│       ├── service/           # 비즈니스 로직 (Flask 폴백 포함)
-│       └── util/              # JsonFileReader (30s TTL 캐시)
+├── backend/                  # === ⚠ DEAD CODE — 운영 배포 없음 ===
+│   ├── build.gradle.kts      # (Spring Boot 코드는 남아있으나 어떤 호스트에서도 실행 안 됨)
+│   └── src/main/java/...     # 8080 은 별도 프로젝트(JUST BUY)가 점유 중. bootRun 금지.
 │
 ├── engine/                   # === 종가베팅 V2 핵심 엔진 ===
 │   ├── config.py             # V2 설정 (SignalConfig, Grade, 점수 가중치 17점)
@@ -696,22 +689,13 @@ Investing.com ProPicks 분석 결과(적극 매수/매수/중립/매도/적극 �
 - PendingApprovalPage, ApprovedGuard, AuthContext status 필드
 - 관리자 페이지 한글화 (승인/해제)
 
-### v2.7.0 (2026-03-03) — Spring Boot Backend Migration (Phase 1)
-**Spring Boot 프로젝트 생성:**
+### v2.7.0 (2026-03-03) — Spring Boot Backend Migration (Phase 1) **[ABANDONED]**
+> **2026-04-08 정정**: 이 마이그레이션은 운영 배포된 적이 없으며, `backend/` Spring Boot 디렉토리는 dead code 입니다. 같은 호스트의 8080 포트는 이후 별도 프로젝트(JUST BUY)가 점유했고, MarketFlow 는 모든 엔드포인트를 Flask(5001) 단일 백엔드에서 서빙합니다. 아래 내용은 역사 기록용으로만 보존합니다.
+
+**(역사) 시도된 작업:**
 - `backend/` 디렉토리에 Spring Boot 3.4.3 + Java 21 + Gradle (Kotlin DSL) 프로젝트 생성
-- 3개 Summary Dashboard 엔드포인트 구현: `/api/us/market-briefing`, `/api/kr/market-gate`, `/api/crypto/dominance`
-- US market-briefing: JSON 파일 직접 읽기 (Flask 로직 완전 이식)
-- KR market-gate, Crypto dominance: Flask(5001) 폴백 방식 (라이브 연산은 Flask 유지)
-- Caffeine 30초 TTL 캐시 (Flask `_CACHE_TTL=30` 동일)
-- NaN/Infinity → null 변환 커스텀 Jackson 시리얼라이저
-
-**프론트엔드 라우팅 분기:**
-- `next.config.ts`: Summary 3개 엔드포인트 → Spring Boot(8080), 나머지 → Flask(5001)
-- `.env.local`: `SPRING_BOOT_URL=http://localhost:8080` 추가
-
-**아키텍처 전환 전략:**
-- Phase 1 (현재): Summary 3개 엔드포인트만 Spring Boot
-- Phase 2+: 추가 엔드포인트 점진적 마이그레이션, Flask 폴백 제거
+- 3개 Summary Dashboard 엔드포인트 구현 시도
+- 운영 호스트에 배포되지 않고 dead code 로 종료됨
 
 ### v2.6.0 (2026-02-27) — Codebase Cleanup + Scoring Fix
 **Dead Code 제거 (~4.5GB):**
