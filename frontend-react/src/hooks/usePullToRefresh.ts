@@ -41,10 +41,6 @@ export function usePullToRefresh(
         // Only enable on mobile
         if (window.innerWidth >= 768) return;
 
-        // Skip entirely if no refresh handler is registered for this page —
-        // attaching idle touch listeners can interfere with iOS scroll boundary.
-        if (!onRefreshRef.current) return;
-
         const onTouchMove = (e: TouchEvent) => {
             if (!pulling.current || isRefreshingRef.current) return;
             const deltaY = e.touches[0].clientY - startY.current;
@@ -95,7 +91,7 @@ export function usePullToRefresh(
             el.removeEventListener('touchend', onTouchEnd);
             el.removeEventListener('touchcancel', onTouchEnd);
         };
-    }, [scrollRef, threshold, handleRefresh, onRefresh]);
+    }, [scrollRef, threshold, handleRefresh]);
 
     return { pullDistance, isRefreshing };
 }
