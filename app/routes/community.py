@@ -282,6 +282,19 @@ def update_post(post_id):
         post.title = data['title'].strip()
     if 'content' in data:
         post.content = data['content'].strip()
+
+    # Formula market: allow editing price (포인트 금액) + 식파일
+    if post.board and post.board.slug == 'formula-market':
+        if 'price' in data:
+            raw = data.get('price')
+            post.price = (raw.strip() or None) if isinstance(raw, str) else (str(raw) if raw is not None else None)
+        if 'file_url' in data:
+            post.file_url = data.get('file_url') or None
+        if 'file_name' in data:
+            post.file_name = data.get('file_name') or None
+        if 'is_public' in data:
+            post.is_public = bool(data.get('is_public'))
+
     db.session.commit()
     return jsonify(post.to_dict(include_content=True, user_id=user.id))
 

@@ -1007,7 +1007,7 @@ export const communityAPI = {
     getPost: (postId: number) => fetchAuthAPI<{ post: CommunityPost }>(`/api/community/posts/${postId}`),
     createPost: (boardSlug: string, data: { title: string; content: string; image_filenames?: string[] }) =>
         postAuthAPI<CommunityPost>(`/api/community/boards/${boardSlug}/posts`, data),
-    updatePost: (postId: number, data: { title?: string; content?: string }) =>
+    updatePost: (postId: number, data: { title?: string; content?: string; price?: string; file_url?: string | null; file_name?: string | null; is_public?: boolean }) =>
         putAuthAPI<CommunityPost>(`/api/community/posts/${postId}`, data),
     deletePost: (postId: number) =>
         deleteAuthAPI<{ ok: boolean }>(`/api/community/posts/${postId}`),
