@@ -161,7 +161,10 @@ export default function WaveOverviewPage() {
     const pat = detailResult?.patterns?.[selectedIdx];
 
     return (
-        <div className="space-y-5">
+        <div
+            className="space-y-5 h-[calc(100dvh-180px)] md:h-[calc(100dvh-120px)] overflow-y-auto pr-1 -mr-1"
+            style={{ touchAction: 'pan-y', overscrollBehavior: 'contain', WebkitOverflowScrolling: 'touch' }}
+        >
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
