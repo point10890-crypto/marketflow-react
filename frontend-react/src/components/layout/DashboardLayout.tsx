@@ -11,6 +11,7 @@ import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import { useSwipeNavigation } from '@/hooks/useSwipeNavigation';
 import { useSmartRefresh } from '@/hooks/useAutoRefresh';
 import { useNotification } from '@/contexts/NotificationContext';
+import { PageErrorBoundary } from '@/components/PageErrorBoundary';
 
 const SWIPE_TABS = [
     { href: '/dashboard' },
@@ -87,11 +88,18 @@ export default function DashboardLayout() {
                     <div
                         ref={scrollRef}
                         className="flex-1 overflow-y-auto p-3 md:p-6 pb-36 md:pb-6 scroll-smooth overscroll-contain relative"
-                        style={pullDistance > 0 ? { transform: `translateY(${pullDistance}px)`, transition: 'none' } : { transition: 'transform 0.3s ease' }}
                     >
                         <PullIndicator pullDistance={pullDistance} isRefreshing={isRefreshing} />
-                        <div key={pathname} className="page-enter">
-                            <Outlet />
+                        <div
+                            style={pullDistance > 0
+                                ? { transform: `translateY(${pullDistance}px)`, transition: 'none' }
+                                : { transition: 'transform 0.3s ease' }}
+                        >
+                            <PageErrorBoundary resetKey={pathname}>
+                                <div key={pathname} className="page-enter">
+                                    <Outlet />
+                                </div>
+                            </PageErrorBoundary>
                         </div>
                     </div>
                 </main>

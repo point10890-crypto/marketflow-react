@@ -14,17 +14,25 @@ export function usePullToRefresh(
     const [isRefreshing, setIsRefreshing] = useState(false);
     const startY = useRef(0);
     const pulling = useRef(false);
+    const pullDistanceRef = useRef(0);
+    const isRefreshingRef = useRef(false);
+    const onRefreshRef = useRef(onRefresh);
+
+    onRefreshRef.current = onRefresh;
+    isRefreshingRef.current = isRefreshing;
 
     const handleRefresh = useCallback(async () => {
-        if (!onRefresh || isRefreshing) return;
+        const fn = onRefreshRef.current;
+        if (!fn || isRefreshingRef.current) return;
         setIsRefreshing(true);
         try {
-            await onRefresh();
+            await fn();
         } finally {
             setIsRefreshing(false);
+            pullDistanceRef.current = 0;
             setPullDistance(0);
         }
-    }, [onRefresh, isRefreshing]);
+    }, []);
 
     useEffect(() => {
         const el = scrollRef.current;
@@ -34,34 +42,40 @@ export function usePullToRefresh(
         if (window.innerWidth >= 768) return;
 
         const onTouchStart = (e: TouchEvent) => {
-            if (el.scrollTop <= 0 && !isRefreshing) {
+            if (el.scrollTop <= 0 && !isRefreshingRef.current) {
                 startY.current = e.touches[0].clientY;
                 pulling.current = true;
+            } else {
+                pulling.current = false;
             }
         };
 
         const onTouchMove = (e: TouchEvent) => {
-            if (!pulling.current || isRefreshing) return;
+            if (!pulling.current || isRefreshingRef.current) return;
             const deltaY = e.touches[0].clientY - startY.current;
-            if (deltaY > 0 && el.scrollTop <= 0) {
-                // Dampen the pull distance
-                const dampened = Math.min(deltaY * 0.4, threshold * 1.5);
-                setPullDistance(dampened);
-                if (dampened > 10) {
-                    e.preventDefault();
-                }
-            } else {
+            // Only engage pull-to-refresh when finger moves DOWN at scrollTop=0.
+            // For any other direction (or once user has scrolled away from top),
+            // bail out IMMEDIATELY without touching pullDistance state — that
+            // re-render used to detach handlers mid-gesture and lock scrolling.
+            if (deltaY <= 0 || el.scrollTop > 0) {
                 pulling.current = false;
-                setPullDistance(0);
+                return;
+            }
+            const dampened = Math.min(deltaY * 0.4, threshold * 1.5);
+            pullDistanceRef.current = dampened;
+            setPullDistance(dampened);
+            if (dampened > 10) {
+                e.preventDefault();
             }
         };
 
         const onTouchEnd = () => {
             if (!pulling.current) return;
             pulling.current = false;
-            if (pullDistance >= threshold) {
+            if (pullDistanceRef.current >= threshold) {
                 handleRefresh();
-            } else {
+            } else if (pullDistanceRef.current !== 0) {
+                pullDistanceRef.current = 0;
                 setPullDistance(0);
             }
         };
@@ -69,13 +83,15 @@ export function usePullToRefresh(
         el.addEventListener('touchstart', onTouchStart, { passive: true });
         el.addEventListener('touchmove', onTouchMove, { passive: false });
         el.addEventListener('touchend', onTouchEnd, { passive: true });
+        el.addEventListener('touchcancel', onTouchEnd, { passive: true });
 
         return () => {
             el.removeEventListener('touchstart', onTouchStart);
             el.removeEventListener('touchmove', onTouchMove);
             el.removeEventListener('touchend', onTouchEnd);
+            el.removeEventListener('touchcancel', onTouchEnd);
         };
-    }, [scrollRef, isRefreshing, pullDistance, threshold, handleRefresh]);
+    }, [scrollRef, threshold, handleRefresh]);
 
     return { pullDistance, isRefreshing };
 }
