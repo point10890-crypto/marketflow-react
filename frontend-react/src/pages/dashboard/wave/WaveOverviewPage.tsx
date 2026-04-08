@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useSearchParams } from 'react-router-dom';
 import { fetchAPI, API_BASE, authHeaders } from '@/lib/api';
 import PatternChart, { ChartDataPoint, PatternOverlay, PatternPoint } from '@/components/wave/PatternChart';
@@ -231,71 +232,16 @@ export default function WaveOverviewPage() {
                 </div>
             )}
 
-            {/* Detail Chart (when a ticker is selected) */}
+            {/* Detail Chart Modal (when a ticker is selected) */}
             {(selectedTicker && detailResult) && (
-                <div className="bg-[#1c1c1e] rounded-2xl border border-cyan-500/20 p-4 space-y-3">
-                    <div className="space-y-1">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-1.5 flex-wrap">
-                                <span className="text-base font-black text-white">{detailResult.name || detailResult.ticker}</span>
-                                <span className="text-[10px] text-gray-400">{detailResult.ticker}</span>
-                                <span className="text-[10px] text-gray-500">{detailResult.market}</span>
-                                {pat && (
-                                    <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
-                                        pat.pattern_class === 'W'
-                                            ? 'bg-cyan-500/20 text-cyan-400'
-                                            : 'bg-pink-500/20 text-pink-400'
-                                    }`}>{pat.wave_label}</span>
-                                )}
-                                {pat && (
-                                    <span className={`text-xs font-bold ${
-                                        pat.confidence >= 70 ? 'text-green-400' :
-                                        pat.confidence >= 50 ? 'text-yellow-400' : 'text-gray-400'
-                                    }`}>{pat.confidence}점</span>
-                                )}
-                            </div>
-                            <div className="flex items-center gap-2 shrink-0 ml-2">
-                                {(() => {
-                                    const sig = screener?.signals?.find(s => s.ticker === detailResult.ticker);
-                                    return sig ? (
-                                        <span className="text-yellow-400 font-mono font-bold text-lg">{sig.price.toLocaleString()}<span className="text-sm">원</span></span>
-                                    ) : null;
-                                })()}
-                                <button
-                                    onClick={closeDetail}
-                                    className="text-gray-500 hover:text-white text-xs px-1.5 py-1 rounded-lg hover:bg-white/10 transition-colors"
-                                >
-                                    <i className="fas fa-times" />
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    <PatternChart
-                        chartData={detailResult.chart_data}
-                        patterns={detailResult.patterns}
-                        turningPoints={detailResult.turning_points}
-                        selectedPatternIdx={selectedIdx}
-                        height={350}
-                    />
-                    {/* Pattern selector pills */}
-                    {detailResult.patterns.length > 1 && (
-                        <div className="flex gap-2 flex-wrap">
-                            {detailResult.patterns.map((p, i) => (
-                                <button
-                                    key={i}
-                                    onClick={() => setSelectedIdx(i)}
-                                    className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
-                                        selectedIdx === i
-                                            ? 'bg-cyan-500 text-black'
-                                            : 'bg-white/5 text-gray-400 hover:bg-white/10'
-                                    }`}
-                                >
-                                    {p.wave_label} ({p.confidence}점)
-                                </button>
-                            ))}
-                        </div>
-                    )}
-                </div>
+                <ChartDetailModal
+                    detailResult={detailResult}
+                    pat={pat}
+                    selectedIdx={selectedIdx}
+                    setSelectedIdx={setSelectedIdx}
+                    screenerSignal={screener?.signals?.find(s => s.ticker === detailResult.ticker) ?? null}
+                    onClose={closeDetail}
+                />
             )}
 
             {/* Screener Stats */}
@@ -552,5 +498,119 @@ function StatCard({ label, value, icon, color = 'text-white' }: {
             </div>
             <div className={`text-lg font-black ${color}`}>{value}</div>
         </div>
+    );
+}
+
+
+/* ── Chart Detail Modal ── */
+
+function ChartDetailModal({
+    detailResult,
+    pat,
+    selectedIdx,
+    setSelectedIdx,
+    screenerSignal,
+    onClose,
+}: {
+    detailResult: WaveDetectResult;
+    pat: PatternOverlay | undefined;
+    selectedIdx: number;
+    setSelectedIdx: (i: number) => void;
+    screenerSignal: ScreenerSignal | null;
+    onClose: () => void;
+}) {
+    // Lock body scroll while modal is open
+    useEffect(() => {
+        const prev = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+        return () => {
+            document.body.style.overflow = prev;
+        };
+    }, []);
+
+    // Close on Escape
+    useEffect(() => {
+        const onKey = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') onClose();
+        };
+        window.addEventListener('keydown', onKey);
+        return () => window.removeEventListener('keydown', onKey);
+    }, [onClose]);
+
+    return createPortal(
+        <div
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-3 sm:p-6"
+            onClick={onClose}
+        >
+            <div
+                className="bg-[#1c1c1e] rounded-2xl border border-cyan-500/20 w-full max-w-3xl max-h-[92vh] flex flex-col overflow-hidden shadow-2xl"
+                onClick={e => e.stopPropagation()}
+            >
+                {/* Header */}
+                <div className="flex items-center justify-between gap-2 p-4 border-b border-white/5 shrink-0">
+                    <div className="flex items-center gap-1.5 flex-wrap min-w-0">
+                        <span className="text-base font-black text-white truncate">{detailResult.name || detailResult.ticker}</span>
+                        <span className="text-[10px] text-gray-400">{detailResult.ticker}</span>
+                        <span className="text-[10px] text-gray-500">{detailResult.market}</span>
+                        {pat && (
+                            <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                                pat.pattern_class === 'W'
+                                    ? 'bg-cyan-500/20 text-cyan-400'
+                                    : 'bg-pink-500/20 text-pink-400'
+                            }`}>{pat.wave_label}</span>
+                        )}
+                        {pat && (
+                            <span className={`text-xs font-bold ${
+                                pat.confidence >= 70 ? 'text-green-400' :
+                                pat.confidence >= 50 ? 'text-yellow-400' : 'text-gray-400'
+                            }`}>{pat.confidence}점</span>
+                        )}
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                        {screenerSignal && (
+                            <span className="text-yellow-400 font-mono font-bold text-base sm:text-lg">
+                                {screenerSignal.price.toLocaleString()}<span className="text-xs sm:text-sm">원</span>
+                            </span>
+                        )}
+                        <button
+                            onClick={onClose}
+                            aria-label="Close"
+                            className="text-gray-400 hover:text-white w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10 transition-colors"
+                        >
+                            <i className="fas fa-times" />
+                        </button>
+                    </div>
+                </div>
+
+                {/* Body (scrollable) */}
+                <div className="overflow-y-auto p-4 space-y-3">
+                    <PatternChart
+                        chartData={detailResult.chart_data}
+                        patterns={detailResult.patterns}
+                        turningPoints={detailResult.turning_points}
+                        selectedPatternIdx={selectedIdx}
+                        height={400}
+                    />
+                    {detailResult.patterns.length > 1 && (
+                        <div className="flex gap-2 flex-wrap">
+                            {detailResult.patterns.map((p, i) => (
+                                <button
+                                    key={i}
+                                    onClick={() => setSelectedIdx(i)}
+                                    className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
+                                        selectedIdx === i
+                                            ? 'bg-cyan-500 text-black'
+                                            : 'bg-white/5 text-gray-400 hover:bg-white/10'
+                                    }`}
+                                >
+                                    {p.wave_label} ({p.confidence}점)
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>,
+        document.body
     );
 }
