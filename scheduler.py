@@ -1916,6 +1916,24 @@ def write_heartbeat():
         pass
 
 
+def start_heartbeat_thread():
+    """전용 heartbeat 스레드.
+
+    메인 스레드가 startup catch-up (예: ai_chart 100종목, 5-15분 소요)
+    같은 장시간 작업에 묶여 있어도 외부 watchdog 가 false positive 로
+    데몬을 죽이지 않도록, heartbeat 만 별도 스레드에서 매 30초 갱신한다.
+
+    Daemon thread 라 메인 프로세스 종료 시 자동 정리.
+    """
+    def _loop():
+        while True:
+            write_heartbeat()
+            time.sleep(30)
+    t = threading.Thread(target=_loop, name='heartbeat-writer', daemon=True)
+    t.start()
+    return t
+
+
 _last_run_lock = threading.Lock()
 
 
@@ -2025,14 +2043,21 @@ def check_and_run_missed_tasks():
         logger.info("🔍 놓친 스케줄 점검 시작...")
 
         # ── 평일 전용 작업 ──
+        # 등록된 모든 평일 스케줄을 빠짐없이 catch-up 대상에 포함시킨다.
+        # 한 작업이라도 빠지면 데몬 사망 시점 이후 그 슬롯은 영영 놓친다.
         weekday_tasks = [
             # (예정시각_분, task_key, 실행함수, 라벨, 마감시각_분)
             # 마감시각: 이 시각 이후에는 실행하지 않음 (다음 작업과 충돌 방지)
-            (4 * 60,  'us_market',  run_us_market_update,        'US 마켓 전체 갱신',  14 * 60),
-            (9 * 60,  'morning_report', send_morning_status_report, '일별 상태 리포트', 14 * 60),
-            (9 * 60 + 30, 'us_track', save_us_track_record_snapshot, 'US Track Record', 14 * 60),
-            (15 * 60, 'kr_jongga',  run_kr_full_update,          'KR 종가베팅',        23 * 60),
-            (16 * 60, 'vcp_all',    run_vcp_all_markets,         'VCP 전시장',         23 * 60),
+            (4 * 60,       'us_market',        run_us_market_update,        'US 마켓 전체 갱신',  14 * 60),
+            (4 * 60,       'us_ai_chart',      _run_us_ai_chart_analysis,   'US AI Chart 분석',   14 * 60),
+            (9 * 60,       'morning_report',   send_morning_status_report,  '일별 상태 리포트',   14 * 60),
+            (9 * 60 + 5,   'morning_briefing', run_morning_briefing,        'AI 조간 브리핑',     14 * 60),
+            (9 * 60 + 30,  'us_track',         save_us_track_record_snapshot,'US Track Record',   14 * 60),
+            (14 * 60,      'ai_chart',         _run_ai_chart_analysis,      'KR AI Chart 분석',   23 * 60),
+            (15 * 60,      'kr_jongga',        run_kr_full_update,          'KR 종가베팅',        23 * 60),
+            (16 * 60,      'vcp_all',          run_vcp_all_markets,         'VCP 전시장',         23 * 60),
+            (16 * 60 + 5,  'closing_briefing', run_closing_briefing,        'AI 마감 브리핑',     23 * 60),
+            (16 * 60 + 30, 'wave_scan',        _run_wave_scan,              'Wave 패턴 스캔',     23 * 60),
         ]
 
         # ── 매일 실행 작업 (Crypto - 주말 포함) ──
@@ -2637,6 +2662,10 @@ def main():
     if Config.SCHEDULE_ENABLED:
         scheduler = Scheduler()
         scheduler.setup_schedules()
+        # heartbeat 스레드를 catch-up 전에 띄워야 함.
+        # startup catch-up 이 장시간(예: ai_chart 100종목 5-15분)을 잡아도
+        # 외부 watchdog 가 false positive 로 데몬을 죽이지 않도록.
+        start_heartbeat_thread()
         # 놓친 스케줄 복구 (스케줄 등록 후, 데몬 루프 시작 전)
         check_and_run_missed_tasks()
         scheduler.run()
