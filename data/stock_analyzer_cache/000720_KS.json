@@ -2,8 +2,8 @@
   "name": "현대건설",
   "ticker": "000720.KS",
   "result": "매수",
-  "date": "2026-03-29 08:07:41",
-  "elapsed": 2.0,
+  "date": "2026-04-08 14:46:07",
+  "elapsed": 2.2,
   "consensus_score": 4.25,
   "analyst_count": 20,
   "recommendation_detail": {
@@ -15,33 +15,37 @@
   },
   "recommendation_period": "0m",
   "price_targets": {
-    "current": 149800.0,
+    "current": 188100.0,
     "high": 240000.0,
     "low": 86000.0,
-    "mean": 153789.47,
-    "median": 148000.0
+    "mean": 156105.27,
+    "median": 150000.0
   },
-  "current_price": 149800.0,
-  "upside_potential": 2.7,
+  "current_price": 188100.0,
+  "upside_potential": -17.0,
   "key_stats": {
     "name": "HyundaiEng&Const",
     "sector": "Industrials",
     "industry": "Engineering & Construction",
-    "market_cap": 16839086178304,
+    "market_cap": 21144407113728,
     "pe_ratio": null,
-    "forward_pe": 22.42535,
-    "dividend_yield": 0.52,
-    "beta": 1.636,
-    "fifty_two_week_high": 176900.0,
-    "fifty_two_week_low": 33200.0,
+    "forward_pe": 28.034418,
+    "dividend_yield": 0.51,
+    "beta": 1.6,
+    "fifty_two_week_high": 198400.0,
+    "fifty_two_week_low": 34800.0,
     "revenue": 31062912663552,
     "profit_margin": 0.01201,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
   "source": "yfinance",
-  "ai_analysis": "현대건설(000720.KS)에 대해 20명의 애널리스트가 제시한 컨센서스는 매수 의견(4.25/5.0)입니다. 목표가 평균은 153,789 KRW으로, 현재가 149,800 KRW 대비 약 2.7% 상승 여력이 있습니다. 투자 판단은 제시된 정보를 바탕으로 투자자 본인이 결정해야 합니다.",
+  "ai_analysis": "현대건설(000720.KS)에 대해 20명의 애널리스트가 제시한 컨센서스 의견은 '매수'입니다. 컨센서스 점수는 5점 만점에 4.25점으로 나타났습니다. 그러나 목표가 평균은 156,105원으로 현재가 188,100원 대비 -17.0% 하락 여력이 있는 것으로 분석됩니다.",
   "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 8060144000000
+    },
     {
       "date": "2025-09",
       "value": 7826469000000
@@ -53,13 +57,13 @@
     {
       "date": "2025-03",
       "value": 7455579000000
-    },
-    {
-      "date": "2024-12",
-      "value": 7246868000000
     }
   ],
   "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 114632000000
+    },
     {
       "date": "2025-09",
       "value": 43598000000
@@ -71,10 +75,6 @@
     {
       "date": "2025-03",
       "value": 120440000000
-    },
-    {
-      "date": "2024-12",
-      "value": -525053000000
     }
   ],
   "news": [
