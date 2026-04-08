@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { API_BASE, krAPI, KRMarketGate, KRSignalsResponse } from '@/lib/api';
+import { krAPI, fetchAPI, KRMarketGate, KRSignalsResponse } from '@/lib/api';
 import { useAutoRefresh, useSmartRefresh } from '@/hooks/useAutoRefresh';
 import { usePullToRefreshRegister } from '@/components/layout/PullToRefreshProvider';
 
@@ -159,10 +159,8 @@ export default function KRMarketOverview() {
             if (signals) setSignalsData(signals);
 
             try {
-                const btRes = await fetch(`${API_BASE}/api/kr/backtest-summary`);
-                if (btRes.ok) {
-                    setBacktestData(await btRes.json());
-                }
+                const bt = await fetchAPI<BacktestSummary>('/api/kr/backtest-summary');
+                if (bt) setBacktestData(bt);
             } catch { /* backtest-summary endpoint may not exist */ }
 
             setLastUpdated(new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }));
@@ -184,8 +182,8 @@ export default function KRMarketOverview() {
             if (gate) setGateData(gate);
             if (signals) setSignalsData(signals);
             try {
-                const btRes = await fetch(`${API_BASE}/api/kr/backtest-summary`);
-                if (btRes.ok) setBacktestData(await btRes.json());
+                const bt = await fetchAPI<BacktestSummary>('/api/kr/backtest-summary');
+                if (bt) setBacktestData(bt);
             } catch { /* silent */ }
             setLastUpdated(new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }));
         } catch { /* silent */ }

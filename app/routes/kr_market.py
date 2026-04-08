@@ -1035,20 +1035,48 @@ def kr_update():
 
 @kr_bp.route('/market-gate')
 def kr_market_gate():
-    """KR Market Gate 상태 — 스냅샷 우선, 실시간 폴백"""
-    # 스냅샷 파일 확인 (5분 이내면 즉시 반환)
+    """KR Market Gate 상태 — 스냅샷 우선, 실패 시 stale 폴백.
+
+    1) 캐시 <10분 → fresh 반환
+    2) 라이브 계산 시도 (FinanceDataReader는 종종 30s+ hang/500)
+    3) 라이브 실패 시 캐시 (나이 무관) → stale=true 로 반환
+    """
     import time as _time
     snap_path = os.path.join(DATA_DIR, 'market_gate_cache.json')
-    try:
-        if os.path.exists(snap_path):
-            age = _time.time() - os.path.getmtime(snap_path)
-            if age < 300:  # 5분 TTL
-                with open(snap_path, 'r', encoding='utf-8') as f:
-                    return jsonify(json.load(f))
-    except Exception as e:
-        logger.warning(f"Failed to load market gate cache: {e}")
 
-    return _compute_kr_market_gate_live()
+    def _read_cache():
+        try:
+            if os.path.exists(snap_path):
+                with open(snap_path, 'r', encoding='utf-8') as f:
+                    return json.load(f), _time.time() - os.path.getmtime(snap_path)
+        except (IOError, OSError, json.JSONDecodeError) as e:
+            logger.warning(f"Failed to load market gate cache: {e}")
+        return None, None
+
+    cached, age = _read_cache()
+    if cached is not None and age is not None and age < 600:  # 10분 fresh TTL
+        return jsonify(cached)
+
+    # 라이브 시도 — 실패(예외 또는 5xx) 시 stale 폴백
+    try:
+        live = _compute_kr_market_gate_live()
+    except Exception as e:
+        logger.warning(f"market-gate live raised: {e}; serving stale")
+        live = None
+
+    # _compute_kr_market_gate_live 는 실패 시 (Response, 500) 튜플 반환할 수 있음
+    if isinstance(live, tuple) and len(live) >= 2 and isinstance(live[1], int) and live[1] >= 500:
+        logger.warning(f"market-gate live returned {live[1]}; serving stale")
+        live = None
+
+    if live is not None:
+        return live
+
+    if cached is not None:
+        cached['stale'] = True
+        cached['stale_age_sec'] = int(age) if age else None
+        return jsonify(cached)
+    return jsonify({'error': 'market gate unavailable', 'sectors': []}), 503
 
 
 def _compute_kr_market_gate_live():
