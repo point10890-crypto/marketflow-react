@@ -2069,8 +2069,8 @@ def check_and_run_missed_tasks():
         # 평일 작업 복구
         if weekday < 5:  # Mon-Fri
             for sched_min, task_key, task_fn, label, deadline_min in weekday_tasks:
-                if hour_min <= sched_min:
-                    continue  # 아직 예정 시각 전
+                if hour_min < sched_min:
+                    continue  # 아직 예정 시각 전 (== 시각이면 catch-up 대상에 포함)
                 if hour_min > deadline_min:
                     logger.info(f"  ⏭️ {label}: 마감 지남 ({deadline_min//60}:{deadline_min%60:02d}), 스킵")
                     continue
