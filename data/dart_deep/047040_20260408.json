@@ -1,0 +1,244 @@
+{
+  "stock_code": "047040",
+  "stock_name": "대우건설",
+  "generated_at": "2026-04-08T01:07:10.947559+00:00",
+  "financials": {
+    "stock_code": "047040",
+    "corp_code": "00124540",
+    "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2016": {
+        "cash": 8167.8,
+        "total_assets": 99702.5,
+        "total_liab": 79003.4,
+        "total_equity": 20699.1,
+        "revenue": 111059.3,
+        "op_profit": -4672.4,
+        "net_income": -190.8
+      },
+      "2017": {
+        "cash": 5170.9,
+        "total_assets": 87763.3,
+        "total_liab": 64982.6,
+        "total_equity": 22780.7,
+        "revenue": 117668.4,
+        "op_profit": 4290.3,
+        "net_income": 2578.9
+      },
+      "2018": {
+        "cash": 7059.5,
+        "total_assets": 87338.5,
+        "total_liab": 64161.2,
+        "total_equity": 23177.2,
+        "revenue": 106054.9,
+        "op_profit": 6287.3,
+        "net_income": -13.6
+      },
+      "2019": {
+        "cash": 7567.6,
+        "total_assets": 96977.0,
+        "total_liab": 72094.5,
+        "total_equity": 24882.5,
+        "revenue": 86518.5,
+        "op_profit": 3640.6,
+        "net_income": 2012.4
+      },
+      "2020": {
+        "cash": 8064.9,
+        "total_assets": 93059.2,
+        "total_liab": 66289.2,
+        "total_equity": 26770.0,
+        "revenue": 81367.1,
+        "op_profit": 5582.6,
+        "net_income": 2826.0
+      },
+      "2021": {
+        "cash": 10610.4,
+        "total_assets": 104579.8,
+        "total_liab": 72416.0,
+        "total_equity": 32163.8,
+        "revenue": 86852.1,
+        "op_profit": 7383.1,
+        "net_income": 2.4
+      },
+      "2022": {
+        "cash": 14230.9,
+        "total_assets": 111403.5,
+        "total_liab": 74157.4,
+        "total_equity": 37246.2,
+        "revenue": 104192.1,
+        "op_profit": 7600.1,
+        "net_income": 5080.1
+      },
+      "2023": {
+        "total_assets": 112431.4,
+        "cash": 9816.5,
+        "total_equity": -4456.1,
+        "short_debt": 6025.3,
+        "total_liab": 71812.2,
+        "long_debt": 7062.5,
+        "op_profit": 6625.2,
+        "net_income": 0.0,
+        "revenue": 116478.0
+      },
+      "2024": {
+        "total_assets": 126584.6,
+        "cash": 11617.9,
+        "total_equity": 5621.8,
+        "total_liab": 83243.6,
+        "op_profit": 4031.3,
+        "net_income": 0.0,
+        "revenue": 105036.1
+      },
+      "2025": {
+        "total_assets": 133585.0,
+        "cash": 18288.8,
+        "total_equity": 5621.8,
+        "total_liab": 98839.0,
+        "op_profit": -8154.3,
+        "net_income": 0.0,
+        "revenue": 80546.3
+      }
+    },
+    "missing_years": [
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2016,
+        "revenue_eok": 111059,
+        "op_profit_eok": -4672,
+        "net_income_eok": -191,
+        "roe_pct": -0.92,
+        "op_margin_pct": -4.21,
+        "debt_ratio_pct": 381.67
+      },
+      {
+        "year": 2017,
+        "revenue_eok": 117668,
+        "op_profit_eok": 4290,
+        "net_income_eok": 2579,
+        "roe_pct": 11.32,
+        "op_margin_pct": 3.65,
+        "debt_ratio_pct": 285.25
+      },
+      {
+        "year": 2018,
+        "revenue_eok": 106055,
+        "op_profit_eok": 6287,
+        "net_income_eok": -14,
+        "roe_pct": -0.06,
+        "op_margin_pct": 5.93,
+        "debt_ratio_pct": 276.83
+      },
+      {
+        "year": 2019,
+        "revenue_eok": 86518,
+        "op_profit_eok": 3641,
+        "net_income_eok": 2012,
+        "roe_pct": 8.09,
+        "op_margin_pct": 4.21,
+        "debt_ratio_pct": 289.74
+      },
+      {
+        "year": 2020,
+        "revenue_eok": 81367,
+        "op_profit_eok": 5583,
+        "net_income_eok": 2826,
+        "roe_pct": 10.56,
+        "op_margin_pct": 6.86,
+        "debt_ratio_pct": 247.62
+      },
+      {
+        "year": 2021,
+        "revenue_eok": 86852,
+        "op_profit_eok": 7383,
+        "net_income_eok": 2,
+        "roe_pct": 0.01,
+        "op_margin_pct": 8.5,
+        "debt_ratio_pct": 225.16
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 104192,
+        "op_profit_eok": 7600,
+        "net_income_eok": 5080,
+        "roe_pct": 13.64,
+        "op_margin_pct": 7.29,
+        "debt_ratio_pct": 199.1
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 116478,
+        "op_profit_eok": 6625,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 5.69,
+        "debt_ratio_pct": -1611.53
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 105036,
+        "op_profit_eok": 4031,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 3.84,
+        "debt_ratio_pct": 1480.68
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 80546,
+        "op_profit_eok": -8154,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": -10.12,
+        "debt_ratio_pct": 1758.07
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": -3.36,
+      "op_profit_cagr_pct": 0.0,
+      "best_year": 2022,
+      "worst_year": 2025,
+      "avg_roe_pct": 4.26
+    },
+    "valuation": {
+      "grade": "D",
+      "strengths": [
+        "2017년부터 2022년까지 영업이익이 꾸준히 개선되는 흐름을 보였습니다.",
+        "2022년 매출액과 영업이익은 10년 중 최고치를 기록했습니다.",
+        "현금 보유액이 지속적으로 증가하여 2025년에는 18,289억원으로 예상됩니다."
+      ],
+      "risks": [
+        "2023년 자본총계가 마이너스를 기록하며 완전 자본잠식 상태에 빠졌고, 2024년 이후에도 자본총계가 매우 낮은 수준으로 유지됩니다.",
+        "2016년과 2025년에 대규모 영업손실이 발생했으며, 특히 2025년에는 8,154억원의 큰 폭의 적자가 예상됩니다.",
+        "매출액이 10년간 -3.36%의 역성장을 기록했으며, 영업이익의 변동성이 매우 커 안정적인 수익 창출에 어려움이 있습니다."
+      ],
+      "one_liner": "부정적인 자본총계와 반복되는 대규모 영업손실로 인해 재무 안정성이 매우 취약하며, 투자에 신중한 접근이 필요합니다."
+    }
+  },
+  "dcf": {
+    "text": "퀀트 애널리스트로서 대우건설(047040)의 DCF 적정가치를 계산하겠습니다. 제공된 재무 데이터와 가정을 바탕으로 Python 코드를 작성하고 실행하여 적정가치를 산출하고 민감도 분석을 수행합니다.\n\n**가정 요약:**\n*   **기준 연도:** 2025년\n*   **최근 재무 (억원):**\n    *   매출액: 80546\n    *   영업이익: -8154\n*   **FCF 계산식:** FCF ≈ 영업이익 × (1 - 0.25) + 감가상각(매출의 10%) - CAPEX(매출의 5%)\n*   **기본 시나리오:** WACC = 9%, 영구성장률 g = 2%\n*   **예측 기간:** 5년 예측 + Terminal Value\n*   **추가 가정 (명시되지 않아 적용):** 예측 기간 5년 동안 매출액과 영업이익은 최근 재무와 동일하게 유지된다고 가정합니다. (이는 현재 영업이익이 음수이므로 매우 보수적인 가정이며, 결과적으로 적정가치가 음수로 나올 수 있습니다.)\n\n### 1. 기본 시나리오 DCF 적정가치 계산\n\n먼저, 주어진 가정에 따라 FCF를 계산합니다.\n*   감가상각 = 매출액 × 10% = 80546 억원 × 0.10 = 8054.6 억원\n*   CAPEX = 매출액 × 5% = 80546 억원 × 0.05 = 4027.3 억원\n*   FCF = 영업이익 × (1 - 0.25) + 감가상각 - CAPEX\n*   FCF = -8154 억원 × 0.75 + 8054.6 억원 - 4027.3 억원\n*   FCF = -6115.5 억원 + 8054.6 억원 - 4027.3 억원\n*   FCF = -2088.2 억원\n\n이 FCF는 예측 기간 5년 동안 동일하게 적용되며, Terminal Value 계산에도 사용됩니다.\n\n\n### 분석 결과\n\n1.  **기본 시나리오 DCF 적정가치:**\n    *   제공된 데이터와 가정에 따라 계산된 대우건설의 적정가치는 **-27899억원** 입니다.\n    *   이는 현재 영업이익이 음수(-8154억원)이고, 예측 기간 동안 이 상태가 지속된다는 보수적인 가정으로 인해 FCF가 지속적으로 음수(-2088.2억원)로 산출되었기 때문입니다. DCF 모델에서 FCF가 지속적으로 음수이면 기업 가치 또한 음수로 평가됩니다.\n\n2.  **WACC × g 민감도 그리드:**\n\n|             | g=1%     | g=2%     | g=3%     |\n| :---------- | :------- | :------- | :------- |\n| **WACC=7%** | -33624.0 | -38935.0 | -46900.0 |\n| **WACC=8%** | -28843.0 | -32498.0 | -37614.0 |\n| **WACC=9%** | -25257.0 | -27899.0 | -31421.0 |\n| **WACC=10%**| -22467.0 | -24448.0 | -26995.0 |\n| **WACC=11%**| -20234.0 | -21763.0 | -23673.0 |\n\n    *   민감도 분석 결과, WACC가 낮아지고 영구성장률(g)이 높아질수록 기업의 적정가치(절대값 기준)는 더욱 음의 방향으로 커지는 것을 확인할 수 있습니다. 이는 FCF가 음수이기 때문에 할인율이 낮아지거나 성장률이 높아질수록 음의 FCF의 현재가치가 더 크게 반영되기 때문입니다.\n\n3.  **요약:**\n    적정가치(기본): -27899억원\n\n**결론 및 유의사항:**\n제공된 데이터와 가정에 따르면 대우건설의 DCF 적정가치는 음수로 산출되었습니다. 이는 현재 기업의 영업이익이 적자 상태이며, 이 적자가 예측 기간 동안 지속된다는 가정이 반영된 결과입니다. 실제 기업 가치 평가에서는 이러한 적자 기업의 경우, 턴어라운드 시점 및 이후의 이익 성장률, 또는 자산 가치 등을 고려한 다른 평가 방법(예: PBR, 청산가치 등)을 함께 고려하는 것이 일반적입니다. DCF 모델은 미래 현금흐름이 긍정적이고 예측 가능한 기업에 더 적합합니다.",
+    "executed_code": "import pandas as pd\n\ndef calculate_dcf(revenue, operating_profit, wacc, g, forecast_years=5):\n    # Assumptions\n    tax_rate = 0.25\n    depreciation_rate = 0.10 # 10% of Revenue\n    capex_rate = 0.05 # 5% of Revenue\n\n    # Project FCF for forecast years\n    fcf_list = []\n    for year in range(1, forecast_years + 1):\n        depreciation = revenue * depreciation_rate\n        capex = revenue * capex_rate\n        fcf = operating_profit * (1 - tax_rate) + depreciation - capex\n        fcf_list.append(fcf)\n\n    # Calculate Terminal Value\n    # FCF for the year after the forecast period (Year 6)\n    fcf_terminal_year = fcf_list[-1] * (1 + g)\n    \n    if wacc <= g:\n        # WACC must be greater than g for the Gordon Growth Model to be valid\n        return float('-inf') # Indicate an invalid scenario\n\n    terminal_value = fcf_terminal_year / (wacc - g)\n\n    # Discount FCFs and Terminal Value\n    present_value_fcf = 0\n    for i, fcf in enumerate(fcf_list):\n        present_value_fcf += fcf / ((1 + wacc)**(i + 1))\n\n    present_value_terminal_value = terminal_value / ((1 + wacc)**forecast_years)\n\n    dcf_value = present_value_fcf + present_value_terminal_value\n    return dcf_value\n\n# Base Scenario Inputs\nrevenue_base = 80546\noperating_profit_base = -8154\nwacc_base = 0.09\ng_base = 0.02\nforecast_years_base = 5\n\n# 1. Calculate Base Scenario DCF\nbase_dcf_value = calculate_dcf(revenue_base, operating_profit_base, wacc_base, g_base, forecast_years_base)\nprint(f\"적정가치(기본): {base_dcf_value:.0f}억원\")\n\n# 2. WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 출력\nwacc_range = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_range = [0.01, 0.02, 0.03]\n\nsensitivity_results = {}\nfor current_wacc in wacc_range:\n    row_results = {}\n    for current_g in g_range:\n        dcf_val = calculate_dcf(revenue_base, operating_profit_base, current_wacc, current_g, forecast_years_base)\n        row_results[f'g={current_g*100:.0f}%'] = dcf_val\n    sensitivity_results[f'WACC={current_wacc*100:.0f}%'] = row_results\n\n# Convert to DataFrame for better display\nsensitivity_df = pd.DataFrame(sensitivity_results).T\nprint(\"\\nDCF 적정가치 민감도 분석 (억원):\")\nprint(sensitivity_df.round(0))\n\n# 3. Final summary output\nprint(f\"\\n적정가치(기본): {base_dcf_value:.0f}억원\")",
+    "code_output": "적정가치(기본): -27899억원\n\nDCF 적정가치 민감도 분석 (억원):\n             g=1%     g=2%     g=3%\nWACC=7%  -33624.0 -38935.0 -46900.0\nWACC=8%  -28843.0 -32498.0 -37614.0\nWACC=9%  -25257.0 -27899.0 -31421.0\nWACC=10% -22467.0 -24448.0 -26995.0\nWACC=11% -20234.0 -21763.0 -23673.0\n\n적정가치(기본): -27899억원"
+  },
+  "news": null,
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=00124540",
+    "summary": "공시 페이지 접근 제한"
+  }
+}

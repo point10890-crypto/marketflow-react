@@ -1,0 +1,158 @@
+{
+  "stock_code": "092790",
+  "stock_name": "넥스틸",
+  "generated_at": "2026-04-08T01:55:37.273333+00:00",
+  "financials": {
+    "stock_code": "092790",
+    "corp_code": "00220613",
+    "years": [
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2023": {
+        "total_assets": 6424.8,
+        "cash": 563.2,
+        "total_equity": 171.4,
+        "short_debt": 540.0,
+        "total_liab": 1975.4,
+        "long_debt": 150.6,
+        "op_profit": 1573.4,
+        "net_income": 0.0,
+        "revenue": 6190.5
+      },
+      "2024": {
+        "total_assets": 6917.8,
+        "cash": 890.6,
+        "total_equity": 171.4,
+        "short_debt": 490.0,
+        "total_liab": 2268.5,
+        "long_debt": 474.5,
+        "op_profit": 632.0,
+        "net_income": 0.0,
+        "revenue": 5523.7
+      },
+      "2025": {
+        "total_assets": 6993.2,
+        "cash": 485.8,
+        "total_equity": 171.4,
+        "short_debt": 690.0,
+        "total_liab": 2353.1,
+        "long_debt": 530.0,
+        "op_profit": 399.4,
+        "net_income": 0.0,
+        "revenue": 5509.9
+      }
+    },
+    "missing_years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2023,
+        "revenue_eok": 6190,
+        "op_profit_eok": 1573,
+        "net_income_eok": 0,
+        "roe_pct": 0,
+        "op_margin_pct": 25.41,
+        "debt_ratio_pct": 1154.97
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 5524,
+        "op_profit_eok": 632,
+        "net_income_eok": 0,
+        "roe_pct": 0,
+        "op_margin_pct": 11.44,
+        "debt_ratio_pct": 1326.32
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 5510,
+        "op_profit_eok": 399,
+        "net_income_eok": 0,
+        "roe_pct": 0,
+        "op_margin_pct": 7.24,
+        "debt_ratio_pct": 1373.1
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": -5.65,
+      "op_profit_cagr_pct": -49.64,
+      "best_year": 2023,
+      "worst_year": 2025,
+      "avg_roe_pct": 0
+    },
+    "valuation": {
+      "grade": "D",
+      "strengths": [
+        "2023년에는 25% 이상의 높은 영업이익률을 달성하여 수익 창출 잠재력을 보여주었습니다.",
+        "2025년까지 5,500억원대의 매출 규모를 유지하고 있어 사업 기반이 완전히 붕괴된 것은 아닙니다.",
+        "2024년에 현금 보유액이 일시적으로 증가한 점은 긍정적입니다."
+      ],
+      "risks": [
+        "2023년 대비 2025년 영업이익이 크게 감소하여 수익성이 급격히 악화되고 있습니다.",
+        "자본총계가 매우 낮은 수준으로 유지되어 부채비율이 1000%를 상회하는 매우 불안정한 재무구조를 가지고 있습니다.",
+        "3개년 연속 당기순이익이 0원으로 기록되어 주주가치 창출에 기여하지 못하고 있습니다."
+      ],
+      "one_liner": "급격한 수익성 악화와 매우 높은 부채비율로 인해 투자 매력이 현저히 낮은 기업입니다."
+    }
+  },
+  "dcf": {
+    "text": "## 퀀트 애널리스트 보고서: 넥스틸 (092790) DCF 적정가치 분석\n\n### 1. 분석 개요\n\n본 보고서는 넥스틸(092790)의 2025년 기준 DCF(Discounted Cash Flow) 적정가치를 산출합니다. 주어진 재무 데이터와 가정을 바탕으로 5년간의 명시적 예측 기간과 이후의 영구 성장 가치를 합산하여 기업 가치를 평가했습니다.\n\n### 2. 기본 가정 및 데이터\n\n*   **기업:** 넥스틸 (092790)\n*   **기준 연도:** 2025\n*   **최근 재무 (2025년 기준, 억원):**\n    *   매출액: 5510\n    *   영업이익: 399\n*   **FCF (Free Cash Flow) 산정 공식:**\n    *   FCF ≈ 영업이익 × (1 - 법인세율) + 감가상각 - CAPEX\n    *   법인세율: 25% (영업이익 × (1 - 0.25)에서 유추)\n    *   감가상각: 매출액의 10%\n    *   CAPEX: 매출액의 5%\n*   **할인율 및 성장률:**\n    *   WACC (가중평균자본비용): 9%\n    *   영구성장률 (g): 2%\n*   **예측 기간:** 5년 명시적 예측 + Terminal Value (영구가치)\n*   **명시적 예측 기간 (5년) 성장률:** 매출액 및 영업이익은 명시된 성장률이 없으므로, 5년 예측 기간 동안 2025년 수준으로 **일정하게 유지된다고 가정**하여 FCF를 산출했습니다.\n\n### 3. FCF (Free Cash Flow) 계산 (2025년 기준)\n\n*   감가상각 = 매출액 × 10% = 5510 억원 × 0.10 = 551 억원\n*   CAPEX = 매출액 × 5% = 5510 억원 × 0.05 = 275.5 억원\n*   FCF = 399 억원 × (1 - 0.25) + 551 억원 - 275.5 억원\n*   FCF = 299.25 억원 + 551 억원 - 275.5 억원 = **574.75 억원**\n\n이 FCF는 5년 예측 기간 (2025년 ~ 2029년) 동안 매년 동일하게 발생한다고 가정합니다.\n\n### 4. DCF 적정가치 계산 결과\n\n#### 1. 기본 시나리오 DCF 적정가치\n\n주어진 WACC 9%와 영구성장률 2%를 적용하여 계산한 넥스틸의 기본 시나리오 DCF 적정가치는 다음과 같습니다.\n\n*   **기본 시나리오 DCF 적정가치: 7678.71 억원**\n\n#### 2. WACC 및 영구성장률(g)에 따른 민감도 분석\n\nWACC와 영구성장률(g) 변화에 따른 DCF 적정가치 민감도 분석 결과는 아래 표와 같습니다. (단위: 억원)\n\n--- DCF 적정가치 민감도 분석 (억원) ---\nWACC \\ g         1%       2%       3%\n7        %     9255   10716   12909\n8        %     7939    8945   10353\n9        %     6952    7679    8648\n10       %     6184    6729    7430\n11       %     5569    5990    6516\n\n### 5. 요약\n\n넥스틸의 DCF 적정가치는 기본 시나리오(WACC 9%, 영구성장률 2%)에서 **7678.71 억원**으로 산출되었습니다. 민감도 분석 결과, WACC가 낮아지고 영구성장률이 높아질수록 기업가치는 상승하는 경향을 보입니다. 특히, WACC와 영구성장률의 차이가 작아질수록 터미널 밸류의 기여도가 커져 기업가치가 급격히 상승할 수 있습니다.\n\n**적정가치(기본): 7678.71억원**",
+    "executed_code": "# 1. Define inputs\nrevenue_2025 = 5510  # 억원\noperating_profit_2025 = 399  # 억원\ntax_rate = 0.25\ndepreciation_rate_of_revenue = 0.10\ncapex_rate_of_revenue = 0.05\nforecast_years = 5\n\n# Base scenario assumptions\nbase_wacc = 0.09\nbase_g = 0.02\n\n# Function to calculate FCF for a given year\ndef calculate_fcf(revenue, operating_profit, tax_rate, dep_rate, capex_rate):\n    depreciation = revenue * dep_rate\n    capex = revenue * capex_rate\n    fcf = operating_profit * (1 - tax_rate) + depreciation - capex\n    return fcf\n\n# Function to calculate DCF value\ndef calculate_dcf(revenue_base, op_profit_base, tax_rate, dep_rate, capex_rate,\n                  forecast_years, wacc, g):\n    \n    fcf_list = []\n    \n    # Calculate FCF for each forecast year.\n    # Assuming Revenue and Operating Profit remain constant for the 5 forecast years\n    # as no specific growth rate for this period was provided.\n    # The perpetual growth rate 'g' is applied to the FCF for the Terminal Value calculation.\n    for i in range(1, forecast_years + 1):\n        fcf = calculate_fcf(revenue_base, op_profit_base, tax_rate, dep_rate, capex_rate)\n        fcf_list.append(fcf)\n\n    # Calculate Terminal Value\n    # FCF_n is the FCF of the last forecast year (Year 5)\n    fcf_n = fcf_list[-1]\n    \n    # Check for WACC - g > 0 to avoid division by zero or negative TV\n    if wacc <= g:\n        return float('inf') # Indicate an unrealistic scenario\n\n    terminal_value = fcf_n * (1 + g) / (wacc - g)\n\n    # Discount FCFs and Terminal Value\n    present_value_fcf = 0\n    for i, fcf in enumerate(fcf_list):\n        present_value_fcf += fcf / ((1 + wacc) ** (i + 1))\n\n    present_value_terminal_value = terminal_value / ((1 + wacc) ** forecast_years)\n\n    total_dcf_value = present_value_fcf + present_value_terminal_value\n    return total_dcf_value\n\n# 1. 기본 시나리오 DCF 적정가치(억원) 계산\nbase_dcf_value = calculate_dcf(revenue_2025, operating_profit_2025, tax_rate,\n                               depreciation_rate_of_revenue, capex_rate_of_revenue,\n                               forecast_years, base_wacc, base_g)\n\nprint(f\"기본 시나리오 DCF 적정가치: {base_dcf_value:.2f} 억원\")\n\n# 2. WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 출력\nwacc_range = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_range = [0.01, 0.02, 0.03]\n\nsensitivity_results = {}\n\nfor wacc in wacc_range:\n    for g in g_range:\n        dcf_value = calculate_dcf(revenue_2025, operating_profit_2025, tax_rate,\n                                  depreciation_rate_of_revenue, capex_rate_of_revenue,\n                                  forecast_years, wacc, g)\n        sensitivity_results[(wacc, g)] = dcf_value\n\n# Format and print the sensitivity grid\nprint(\"\\n--- DCF 적정가치 민감도 분석 (억원) ---\")\nprint(f\"{'WACC \\\\ g':<10}\", end=\"\")\nfor g_val in g_range:\n    print(f\"{g_val*100:>8.0f}%\", end=\"\")\nprint()\n\nfor wacc_val in wacc_range:\n    print(f\"{wacc_val*100:<9.0f}%\", end=\" \")\n    for g_val in g_range:\n        value = sensitivity_results[(wacc_val, g_val)]\n        if value == float('inf'):\n            print(f\"{'Inf':>8}\", end=\"\")\n        else:\n            print(f\"{value:>8.0f}\", end=\"\")\n    print()\n\n# 3. 마지막에 '적정가치(기본): {value}억원' 형태로 요약 출력\nprint(f\"\\n적정가치(기본): {base_dcf_value:.2f}억원\")\n\n\nimport pandas as pd\n\n# 1. Define inputs\nrevenue_2025 = 5510  # 억원\noperating_profit_2025 = 399  # 억원\ntax_rate = 0.25\ndepreciation_rate_of_revenue = 0.10\ncapex_rate_of_revenue = 0.05\nforecast_years = 5\n\n# Base scenario assumptions\nbase_wacc = 0.09\nbase_g = 0.02\n\n# Function to calculate FCF for a given year\ndef calculate_fcf(revenue, operating_profit, tax_rate, dep_rate, capex_rate):\n    depreciation = revenue * dep_rate\n    capex = revenue * capex_rate\n    fcf = operating_profit * (1 - tax_rate) + depreciation - capex\n    return fcf\n\n# Function to calculate DCF value\ndef calculate_dcf(revenue_base, op_profit_base, tax_rate, dep_rate, capex_rate,\n                  forecast_years, wacc, g):\n    \n    fcf_list = []\n    \n    # Calculate FCF for each forecast year.\n    # Assuming Revenue and Operating Profit remain constant for the 5 forecast years\n    # as no specific growth rate for this period was provided.\n    # The perpetual growth rate 'g' is applied to the FCF for the Terminal Value calculation.\n    for i in range(1, forecast_years + 1):\n        fcf = calculate_fcf(revenue_base, op_profit_base, tax_rate, dep_rate, capex_rate)\n        fcf_list.append(fcf)\n\n    # Calculate Terminal Value\n    # FCF_n is the FCF of the last forecast year (Year 5)\n    fcf_n = fcf_list[-1]\n    \n    # Check for WACC - g > 0 to avoid division by zero or negative TV\n    if wacc <= g:\n        return float('inf') # Indicate an unrealistic scenario\n\n    terminal_value = fcf_n * (1 + g) / (wacc - g)\n\n    # Discount FCFs and Terminal Value\n    present_value_fcf = 0\n    for i, fcf in enumerate(fcf_list):\n        present_value_fcf += fcf / ((1 + wacc) ** (i + 1))\n\n    present_value_terminal_value = terminal_value / ((1 + wacc) ** forecast_years)\n\n    total_dcf_value = present_value_fcf + present_value_terminal_value\n    return total_dcf_value\n\n# 1. 기본 시나리오 DCF 적정가치(억원) 계산\nbase_dcf_value = calculate_dcf(revenue_2025, operating_profit_2025, tax_rate,\n                               depreciation_rate_of_revenue, capex_rate_of_revenue,\n                               forecast_years, base_wacc, base_g)\n\nprint(f\"기본 시나리오 DCF 적정가치: {base_dcf_value:.2f} 억원\")\n\n# 2. WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 출력\nwacc_range = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_range = [0.01, 0.02, 0.03]\n\nsensitivity_results = {}\n\nfor wacc in wacc_range:\n    for g in g_range:\n        dcf_value = calculate_dcf(revenue_2025, operating_profit_2025, tax_rate,\n                                  depreciation_rate_of_revenue, capex_rate_of_revenue,\n                                  forecast_years, wacc, g)\n        sensitivity_results[(wacc, g)] = dcf_value\n\n# Format and print the sensitivity grid\nprint(\"\\n--- DCF 적정가치 민감도 분석 (억원) ---\")\n# Fix for the f-string backslash issue\nheader_str = \"WACC \\\\ g\"\nprint(f\"{header_str:<10}\", end=\"\")\nfor g_val in g_range:\n    print(f\"{g_val*100:>8.0f}%\", end=\"\")\nprint()\n\nfor wacc_val in wacc_range:\n    print(f\"{wacc_val*100:<9.0f}%\", end=\" \")\n    for g_val in g_range:\n        value = sensitivity_results[(wacc_val, g_val)]\n        if value == float('inf'):\n            print(f\"{'Inf':>8}\", end=\"\")\n        else:\n            print(f\"{value:>8.0f}\", end=\"\")\n    print()\n\n# 3. 마지막에 '적정가치(기본): {value}억원' 형태로 요약 출력\nprint(f\"\\n적정가치(기본): {base_dcf_value:.2f}억원\")",
+    "code_output": "Traceback (most recent call last):\n  File \"<string>\", line 76\n    print(f\"{'WACC \\\\ g':<10}\", end=\"\")\n                              ^\nSyntaxError: f-string expression part cannot include a backslash\n\n기본 시나리오 DCF 적정가치: 7678.71 억원\n\n--- DCF 적정가치 민감도 분석 (억원) ---\nWACC \\ g         1%       2%       3%\n7        %     9255   10716   12909\n8        %     7939    8945   10353\n9        %     6952    7679    8648\n10       %     6184    6729    7430\n11       %     5569    5990    6516\n\n적정가치(기본): 7678.71억원"
+  },
+  "news": {
+    "text": "## 넥스틸(092790) 투자 분석: 재무 악화 속 단기 호재, 최종 판정 '매도'\n\n### 재무 데이터와 시장 컨센서스의 불일치\n\n넥스틸(092790)의 지난 10년간 재무제표 분석 결과는 '투자등급 D'로, 급격한 수익성 악화와 매우 높은 부채비율로 인해 투자 매력이 현저히 낮은 기업으로 평가됩니다. 연결기준 매출액은 3년 연속 감소했으며, 영업이익은 4분의 1 수준으로 급감했습니다. 특히 2025년에는 미국의 철강 관세 50% 부과 영향으로 미주 지역 실적이 크게 악화된 바 있습니다.\n\n그러나 최근 2주간의 시장 움직임은 이러한 재무 데이터와는 상반된 모습을 보였습니다. 넥스틸 주가는 4월 3일 미국 특허 취득 소식과 중동 내 미국 철강 공장 피격 소식에 20% 이상 급등하는 등 강세를 나타냈습니다. 또한 4월 2일에는 5거래일 연속 상승세를 기록하며 외국인 매수세가 유입되기도 했습니다. 이는 시장이 기업의 과거 재무 성과보다는 특정 호재성 뉴스에 단기적으로 반응하며, 잠재적 성장 동력과 지정학적 이슈에 더 큰 비중을 두는 것으로 해석됩니다. 일부 전문가들은 최근까지도 넥스틸에 대한 매수 의견과 목표 주가를 제시하고 있습니다.\n\n### 재무제표에 드러나지 않는 리스크 또는 호재\n\n**호재:**\n*   **극저온 강관 미국 특허 취득:** 넥스틸은 극저온 환경에서 원유 및 천연가스 장거리 수송에 필요한 라인파이프용 강관 제조 기술에 대한 미국 특허를 확보했습니다. 이는 미주 지역 극저온 환경 시장 진출에 적극 활용될 계획이며, 고부가가치 시장 개척의 발판이 될 수 있습니다.\n*   **글로벌 에너지 인프라 투자 확대 수혜:** 넥스틸은 유정 굴착 및 채유에 사용되는 OCTG(유정용 강관)와 송유관을 주력으로 생산하며, 미국 텍사스에 현지 생산 시설을 보유하고 있어 북미 시장 수출 비중이 높습니다. 도널드 트럼프 전 미국 대통령의 알래스카 LNG 사업 및 베네수엘라 석유 산업 정상화 발언 등은 에너지 인프라 투자 확대 기대를 불러일으키며 강관 수요 증가에 긍정적인 영향을 미칠 수 있습니다.\n*   **신재생 에너지 분야 투자:** 넥스틸은 신재생 및 풍력 에너지 등에 사용되는 초대구경 강관 설비 구축에 투자를 진행하며 사업 다각화를 모색하고 있습니다.\n\n**리스크:**\n*   **높은 지정학적 리스크 노출:** 중동 지역의 지정학적 긴장은 단기적으로 철강 가격 상승 및 관련주 강세 요인이 될 수 있으나, 장기적으로는 원자재 가격 변동성 확대, 공급망 불안정 등 예측 불가능한 리스크로 작용할 수 있습니다.\n*   **미국 보호무역주의 기조:** 넥스틸은 미국 시장 의존도가 높아 미국의 고율 관세 부과 등 보호무역주의 기조 강화가 주요 사업 리스크로 작용하고 있습니다.\n*   **원자재 가격 변동성:** 주요 원재료인 열연코일(Skelp) 가격 변동은 수익성에 직접적인 영향을 미칩니다.\n*   **단기 투기성 자금 유입 가능성:** 최근 급등은 특정 뉴스에 의한 단기 투기성 자금 유입의 성격이 강하며, 바닥에서 매집한 외국인들이 뉴스를 이용해 개인에게 물량을 넘기는 패턴도 관찰되었습니다. 이는 주가 변동성을 크게 확대시킬 수 있습니다.\n\n### 최종 판정\n\n**매도**\n\n넥스틸은 극저온 강관 특허 취득 및 글로벌 에너지 인프라 투자 확대 기대감 등 긍정적인 요인들이 존재하지만, 이는 단기적인 주가 부양 효과에 그칠 가능성이 높습니다. 지난 10년간의 재무제표 분석 결과에서 드러난 급격한 수익성 악화와 매우 높은 부채비율이라는 근본적인 재무적 취약점은 여전히 해소되지 않았습니다. 매출액과 영업이익의 지속적인 감소 추세는 기업의 내재 가치 하락을 시사하며, 미국의 철강 관세와 같은 외부 요인에 대한 취약성도 여전합니다.\n\n현재 주가 상승은 주로 단기적인 호재와 투기성 자금 유입에 기반하고 있어, 기업의 펀더멘털 개선으로 이어질지는 불확실합니다. 따라서 현재 시점에서는 재무적 안정성이 확보될 때까지 관망하거나, 이미 보유하고 있다면 매도하여 리스크를 관리하는 것이 현명하다고 판단됩니다.",
+    "citations": [
+      {
+        "title": "thecommoditiesnews.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQE0HOzM9i0EKUxaCAWN-m27pY_KPhUmskxEiIOPZ0G5UT3T1gS2L9sKrTF90DGKVhtmMSV4Gh4-kn73ilDDKakFGPtvLAAB2bSAK6_2qqBN_lr5TBZ8iT0_pwuDsyBy8qdJWkcPpEVfwpOnEWGakzdx5TM6ZQVn9dRjc63CF_yd"
+      },
+      {
+        "title": "alphasquare.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFJJ2gLh1Fm5LszA64RybYTb-HbUZy0iumJYs4AoXZvh7ENm5Qm0sAxaf7GKeTgxSo745N_Vr70fFZNslepMD5u1U_5lusXhopf3DNTJA8WTUOR9Pr_tnsBTOKyp5o6xBqBvcqQoYgtJqxeltLIel6uxloC"
+      },
+      {
+        "title": "tistory.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHnIXkZ9JFdAtx7hmG5tO3r_iIRlvYebB3yBdOXYiCz32XPU4bt6j_2_Kn9fpKkpEo3k97_zTbLQpb5AqDWb6X-DV91tfbJrwZ0M6bv2a_tcIAPGdO29NNffg=="
+      },
+      {
+        "title": "littlebproject.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQG8A6VyK_v3nNGmgsfz-EMaOJJS-FC03ZokudMQQOW1J2AdevKTRHUxOltiXaO26WLwvM7Ywnoxyfx19bsUQHYSf7_eoAM_VS5RtZ13u1i9KNranJnUJ1r-ECPWzoVdyLtUIvTR-h9gFg19Xxg="
+      },
+      {
+        "title": "riskweather.io",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQE8fnrmDOBSZk7-y4VdOTHCzmG_KKJmeZeUyD7Yru-Udy0KWduMFaDs3X-pue6vtBbJT4yD89yh2R4Lnl_qkeKd_l5jjRkMvlYqny4-6Nho1gTn7AxqfsGGRdS8JXjqxXTg2C1KAkUuRprAm-ZfLTNvb7-2MRbtA2WseM_xlQ=="
+      },
+      {
+        "title": "alphasquare.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHUIHB0nyTBFmdUBA0bSEH4pZXVWo4Z5M1_Btho6J0lfcuQ-M6_8vPirEgqCrGIfKMF9zdrWX0qZR9BWsxqPDygQWqBw3_MBotAYTJmpMCu9RM0oAmkfkkxV_zxlwjjTA5zXg0saw2Skm7XJG2H-Pux2XIL0n9tiLgkfC4="
+      },
+      {
+        "title": "valueline.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGz-bPo1iCswh5Lz-5RISwFZTYpTk6abHQpg2UTf7DJtWPzb681GYngAnV5Zhr2QCc7TlseBq6c3lhIYo0SZKA63Ss3FTEjAGdam0zoWvfpuZMvI1XokA-lcWRyB8tR_cVG88QLnG_IuMRN9KkS"
+      },
+      {
+        "title": "youtube.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFtm4SU1635Hc564C4wHDuzD2RsTQtbf7izPHP0yIyl9fGfkYwYzsim-l4UTbqEe81Ee5zxZkXrKpsFsQPz5DJuK-f1A-_YawppbRKPLJ_G9xqjHXQWDx3E-v23DxIDCDfUTzZC"
+      }
+    ]
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=00220613",
+    "summary": "공시 페이지 접근 제한"
+  }
+}

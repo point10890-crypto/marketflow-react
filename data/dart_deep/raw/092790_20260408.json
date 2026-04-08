@@ -1,0 +1,55 @@
+{
+  "stock_code": "092790",
+  "corp_code": "00220613",
+  "years": [
+    2023,
+    2024,
+    2025
+  ],
+  "data": {
+    "2023": {
+      "total_assets": 6424.8,
+      "cash": 563.2,
+      "total_equity": 171.4,
+      "short_debt": 540.0,
+      "total_liab": 1975.4,
+      "long_debt": 150.6,
+      "op_profit": 1573.4,
+      "net_income": 0.0,
+      "revenue": 6190.5
+    },
+    "2024": {
+      "total_assets": 6917.8,
+      "cash": 890.6,
+      "total_equity": 171.4,
+      "short_debt": 490.0,
+      "total_liab": 2268.5,
+      "long_debt": 474.5,
+      "op_profit": 632.0,
+      "net_income": 0.0,
+      "revenue": 5523.7
+    },
+    "2025": {
+      "total_assets": 6993.2,
+      "cash": 485.8,
+      "total_equity": 171.4,
+      "short_debt": 690.0,
+      "total_liab": 2353.1,
+      "long_debt": 530.0,
+      "op_profit": 399.4,
+      "net_income": 0.0,
+      "revenue": 5509.9
+    }
+  },
+  "missing_years": [
+    2016,
+    2017,
+    2018,
+    2019,
+    2020,
+    2021,
+    2022,
+    2026
+  ],
+  "source": ""
+}
