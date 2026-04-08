@@ -2,8 +2,8 @@
   "name": "삼성증권",
   "ticker": "016360.KS",
   "result": "적극 매수",
-  "date": "2026-04-02 13:03:03",
-  "elapsed": 2.8,
+  "date": "2026-04-08 19:32:00",
+  "elapsed": 1.6,
   "consensus_score": 4.33,
   "analyst_count": 12,
   "recommendation_detail": {
@@ -15,23 +15,23 @@
   },
   "recommendation_period": "0m",
   "price_targets": {
-    "current": 93100.0,
+    "current": 104400.0,
     "high": 154000.0,
     "low": 91000.0,
-    "mean": 118250.0,
-    "median": 110500.0
+    "mean": 119916.664,
+    "median": 115500.0
   },
-  "current_price": 93100.0,
-  "upside_potential": 27.0,
+  "current_price": 104400.0,
+  "upside_potential": 14.9,
   "key_stats": {
     "name": "SamsungSecu",
     "sector": "Financial Services",
     "industry": "Capital Markets",
-    "market_cap": 8313829851136,
+    "market_cap": 9322919624704,
     "pe_ratio": null,
-    "forward_pe": 6.9576783,
-    "dividend_yield": 4.07,
-    "beta": 0.874,
+    "forward_pe": 7.743084,
+    "dividend_yield": 4.2,
+    "beta": 0.908,
     "fifty_two_week_high": 119400.0,
     "fifty_two_week_low": 41550.0,
     "revenue": 2599602094080,
@@ -40,7 +40,7 @@
   },
   "finnhub_supplement": null,
   "source": "yfinance",
-  "ai_analysis": null,
+  "ai_analysis": "삼성증권(016360.KS)은 현재 104,400 KRW에 거래되고 있으며, 애널리스트 컨센서스는 12명 참여 기준 '적극 매수' 의견입니다. 목표가 평균은 119,917 KRW로, 현재 주가 대비 14.9% 상승 여력이 있는 것으로 분석됩니다. 투자 판단은 제시된 데이터를 참고하여 신중하게 결정하시기 바랍니다.",
   "revenue_quarters": [
     {
       "date": "2025-09",

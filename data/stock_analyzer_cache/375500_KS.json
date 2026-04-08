@@ -2,46 +2,50 @@
   "name": "DL이앤씨",
   "ticker": "375500.KS",
   "result": "적극 매수",
-  "date": "2026-03-25 14:53:05",
-  "elapsed": 1.6,
-  "consensus_score": 4.36,
-  "analyst_count": 14,
+  "date": "2026-04-08 16:51:53",
+  "elapsed": 2.3,
+  "consensus_score": 4.33,
+  "analyst_count": 15,
   "recommendation_detail": {
     "strongBuy": 6,
-    "buy": 7,
+    "buy": 8,
     "hold": 1,
     "sell": 0,
     "strongSell": 0
   },
   "recommendation_period": "0m",
   "price_targets": {
-    "current": 68800.0,
-    "high": 65000.0,
+    "current": 95200.0,
+    "high": 110000.0,
     "low": 49000.0,
-    "mean": 55642.855,
-    "median": 55500.0
+    "mean": 65133.332,
+    "median": 57000.0
   },
-  "current_price": 68800.0,
-  "upside_potential": -19.1,
+  "current_price": 95200.0,
+  "upside_potential": -31.6,
   "key_stats": {
     "name": "DL E&C",
     "sector": "Industrials",
     "industry": "Engineering & Construction",
-    "market_cap": 2920874508288,
+    "market_cap": 4041675374592,
     "pe_ratio": null,
-    "forward_pe": 6.880006,
-    "dividend_yield": 1.34,
-    "beta": 0.684,
-    "fifty_two_week_high": 74000.0,
+    "forward_pe": 9.499183,
+    "dividend_yield": 1.18,
+    "beta": 0.322,
+    "fifty_two_week_high": 97200.0,
     "fifty_two_week_low": 37150.0,
-    "revenue": 8145420681216,
-    "profit_margin": 0.03464,
+    "revenue": 7402424893440,
+    "profit_margin": 0.05001,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
   "source": "yfinance",
-  "ai_analysis": "DL이앤씨(375500.KS)에 대해 14명의 애널리스트가 적극 매수 의견(4.36/5.0)을 제시했습니다. 현재 주가는 68,800 KRW입니다. 목표가 평균은 55,643 KRW으로, 현재 주가 대비 -19.1%의 하락 여력이 있습니다.",
+  "ai_analysis": "DL이앤씨(375500.KS)에 대해 15명의 애널리스트가 적극 매수 의견을 제시하고 있습니다. 컨센서스 점수는 5점 만점에 4.33점입니다. 그러나 목표가 평균은 65,133원으로 현재가 95,200원 대비 31.6% 하락 여력이 있는 것으로 분석됩니다.",
   "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 1695819307050
+    },
     {
       "date": "2025-09",
       "value": 1906994631340
@@ -53,13 +57,13 @@
     {
       "date": "2025-03",
       "value": 1808165128970
-    },
-    {
-      "date": "2024-12",
-      "value": 2438814761190
     }
   ],
   "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 205331697230
+    },
     {
       "date": "2025-09",
       "value": 126320867450
@@ -71,10 +75,6 @@
     {
       "date": "2025-03",
       "value": 30245048230
-    },
-    {
-      "date": "2024-12",
-      "value": 117312670240
     }
   ],
   "news": []
