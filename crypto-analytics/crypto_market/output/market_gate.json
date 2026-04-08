@@ -15,7 +15,7 @@
     "btc_volume_z_50": 0.7851017976313465,
     "btc_atrp_14_pct": 3.157713675933832,
     "alt_breadth_above_ema50": 0.3,
-    "funding_rate": 6.325e-05,
+    "funding_rate": 6.377e-05,
     "open_interest_delta_z": null,
     "gate_score_components": {
       "trend": 12.0,
@@ -27,5 +27,5 @@
     "fear_greed_index": 17,
     "fear_greed_class": "Extreme Fear"
   },
-  "generated_at": "2026-04-08T20:10:46.842804"
+  "generated_at": "2026-04-08T20:11:17.261725"
 }
