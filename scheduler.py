@@ -2122,6 +2122,38 @@ def check_and_run_missed_tasks():
 # Wave 패턴 스캔
 # ============================================================
 
+def _run_kis_token_warmup() -> bool:
+    """KIS OpenAPI 토큰 예열 — 장 시작 직전 토큰 갱신 및 실패 시 텔레그램 알림.
+
+    lazy 리프레시 구조(`get_token()`)가 있지만, 자격증명/네트워크 문제를 장 시작
+    이후가 아닌 장 시작 전에 감지하기 위한 방어적 웜업 job.
+    """
+    logger.info("=" * 60)
+    logger.info("🔑 KIS 토큰 웜업 시작")
+    logger.info("=" * 60)
+    try:
+        from app.services.kis_screener import invalidate_token, get_token
+        invalidate_token()  # 캐시 강제 만료 → 실제 API 호출 경로 검증
+        tok = get_token()
+        if not tok:
+            send_telegram(
+                "⚠️ <b>KIS 토큰 웜업 실패</b>\n\n"
+                "장 시작 전 토큰 발급 실패. 자격증명/네트워크 확인 필요.\n"
+                "주도주LIVE/KR 실시간 기능 영향 있을 수 있음."
+            )
+            logger.error("❌ KIS 토큰 웜업 실패")
+            return False
+        logger.info(f"✅ KIS 토큰 웜업 완료 (len={len(tok)})")
+        return True
+    except Exception as e:
+        logger.error(f"❌ KIS 토큰 웜업 에러: {e}", exc_info=True)
+        try:
+            send_telegram(f"⚠️ KIS 토큰 웜업 에러: {type(e).__name__}: {e}")
+        except Exception:
+            pass
+        return False
+
+
 def _run_wave_scan() -> bool:
     """Wave 패턴 전 종목 스캔 (KR)"""
     logger.info("=" * 60)
@@ -2367,6 +2399,10 @@ class Scheduler:
         crypto_verify = _verify_file_today(os.path.join(Config.DATA_DIR, 'vcp_crypto_latest.json'))
 
         for day in weekdays:
+            # 08:55 — KIS 토큰 웜업 (장 시작 5분 전 자격증명/네트워크 사전 검증)
+            getattr(schedule.every(), day).at('08:55').do(
+                self._with_record(_run_kis_token_warmup, 'kis_token_warmup',
+                                  max_retries=2, retry_delay=60))
             # 04:00 — US Market 전체 데이터 갱신 + Smart Money Top 5 텔레그램
             getattr(schedule.every(), day).at(Config.US_UPDATE_TIME).do(
                 self._with_record(run_us_market_update, 'us_market',
@@ -2420,6 +2456,7 @@ class Scheduler:
                                   max_retries=1, retry_delay=600, verify_fn=crypto_verify))
 
         logger.info("📅 스케줄 등록 완료:")
+        logger.info("   🔑 평일 08:55  KIS 토큰 웜업 (장 시작 전 자격증명 사전 검증)")
         logger.info(f"   🇺🇸 평일 {Config.US_UPDATE_TIME}  US Market 전체 갱신 + Smart Money Top 5")
         logger.info(f"   📋 평일 {Config.MORNING_REPORT_TIME}  일별 상태 리포트 → 텔레그램")
         logger.info(f"   🇺🇸 평일 {Config.US_TRACK_TIME}  US Track Record 스냅샷")

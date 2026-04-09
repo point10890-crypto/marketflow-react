@@ -285,6 +285,12 @@ WantedBy=multi-user.target
 4. Python 3.13 / Node 20 / cloudflared 설치 (Java 는 MarketFlow 운영에 불필요)
 5. **코드 수정 PR**: `INFRASTRUCTURE.md`에 Linux 경로 섹션 추가, `paths.py` 검증, batch/vbs 의존 제거 — **이 단계에서 노트북에서 동작 회귀 테스트** (POSIX/Windows 동시 호환 유지)
 
+> **⚠ 절대 복사 금지 (per-machine 로컬 파일)** — 다음 파일들은 새 호스트에서 자연스럽게 재생성되어야 함. 복사하면 구 PC 경로 참조로 깨짐:
+> - `.claude/settings.local.json` — Claude Code 로컬 권한 allowlist (호스트별 하드코딩 경로 포함)
+> - `.venv/` — 심링크/절대경로 의존. 반드시 미니PC에서 `uv venv` 로 새로 생성
+> - `logs/scheduler.pid` — PID 파일. 없는 상태에서 daemon 기동해야 정상 싱글톤 락 동작
+> - `data/kis_token_cache.json` — 복사해도 무방하나, 첫 기동 시 lazy refresh 로 재발급되므로 필수 아님
+
 ### Phase 1 — 데이터 베이스라인 동기 (D-day, 1시간)
 1. 노트북에서 **`scheduler.py` 일시 정지** (`taskkill //F //IM cloudflared.exe`는 아직 X)
 2. `git fetch && git status` 깨끗한지 확인 → 더티 파일 커밋

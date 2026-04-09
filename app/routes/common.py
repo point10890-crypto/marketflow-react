@@ -14,6 +14,7 @@ from flask import Blueprint, jsonify, request, Response, stream_with_context
 from app.utils.cache import get_sector, SECTOR_MAP
 from app.utils.paths import BASE_DIR, DATA_DIR, US_OUTPUT_DIR, CRYPTO_OUTPUT_DIR
 from app.utils.json_cache import load_json_cached
+from app.utils.yf_safe import yf_download_safe, yf_ticker_history_safe
 from app.auth.decorators import admin_required
 
 logger = logging.getLogger(__name__)
@@ -74,7 +75,7 @@ def get_portfolio_data():
                     ticker_map[yf_t] = t_padded
 
                 try:
-                    price_data = yf.download(yf_tickers, period='1d', interval='1m', progress=False, threads=True)
+                    price_data = yf_download_safe(yf_tickers, timeout=8.0, period='1d', interval='1m')
                     if not price_data.empty:
                         price_data = price_data.ffill()
                         if 'Close' in price_data.columns:
@@ -266,9 +267,9 @@ def portfolio_summary():
 def get_stock_detail(ticker):
     """개별 종목 상세 정보"""
     try:
-        stock = yf.Ticker(ticker)
-        info = stock.info
-        
+        from app.utils.yf_safe import yf_ticker_info_safe
+        info = yf_ticker_info_safe(ticker, timeout=8.0)
+
         return jsonify({
             'ticker': ticker,
             'name': info.get('shortName', ticker),
@@ -329,7 +330,7 @@ def get_realtime_prices():
         else:
             # US Market
             try:
-                price_data = yf.download(tickers, period='1d', interval='1m', progress=False, threads=True)
+                price_data = yf_download_safe(tickers, timeout=8.0, period='1d', interval='1m')
                 if not price_data.empty:
                     price_data = price_data.ffill()
                     if 'Close' in price_data.columns:
@@ -403,7 +404,7 @@ def _fetch_market_indices():
     
     try:
         tickers_list = list(indices_map.keys())
-        idx_data = yf.download(tickers_list, period='5d', progress=False, threads=True)
+        idx_data = yf_download_safe(tickers_list, timeout=10.0, period='5d')
         
         if not idx_data.empty:
             closes = idx_data['Close']
