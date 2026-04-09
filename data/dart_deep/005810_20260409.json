@@ -1,0 +1,302 @@
+{
+  "stock_code": "005810",
+  "stock_name": "풍산홀딩스",
+  "generated_at": "2026-04-09T02:28:33.479744+00:00",
+  "financials": {
+    "stock_code": "005810",
+    "corp_code": "00155531",
+    "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2016": {
+        "cash": 289.3,
+        "total_assets": 7626.5,
+        "short_debt": 384.3,
+        "long_debt": 8.2,
+        "total_liab": 1192.7,
+        "total_equity": 6433.8,
+        "revenue": 2975.9,
+        "op_profit": 665.2,
+        "net_income": 611.6
+      },
+      "2017": {
+        "cash": 263.4,
+        "total_assets": 8184.6,
+        "short_debt": 387.5,
+        "long_debt": 41.1,
+        "total_liab": 1352.9,
+        "total_equity": 6831.7,
+        "revenue": 3147.6,
+        "op_profit": 736.3,
+        "net_income": 677.1
+      },
+      "2018": {
+        "cash": 164.5,
+        "total_assets": 8793.5,
+        "short_debt": 514.0,
+        "long_debt": 155.4,
+        "total_liab": 1659.1,
+        "total_equity": 7134.3,
+        "revenue": 3060.6,
+        "op_profit": 365.4,
+        "net_income": 0.0
+      },
+      "2019": {
+        "cash": 348.0,
+        "total_assets": 9386.3,
+        "short_debt": 517.8,
+        "long_debt": 5.2,
+        "total_liab": 2163.1,
+        "total_equity": 7223.2,
+        "revenue": 2644.1,
+        "op_profit": 107.9,
+        "net_income": 0.0
+      },
+      "2020": {
+        "cash": 203.1,
+        "total_assets": 9753.0,
+        "short_debt": 1110.1,
+        "long_debt": 60.4,
+        "total_liab": 2474.3,
+        "total_equity": 7278.7,
+        "revenue": 2659.4,
+        "op_profit": 94.1,
+        "net_income": 0.0
+      },
+      "2021": {
+        "cash": 377.3,
+        "total_assets": 10519.6,
+        "short_debt": 463.0,
+        "long_debt": 100.3,
+        "total_liab": 1556.8,
+        "total_equity": 8962.7,
+        "revenue": 4877.8,
+        "op_profit": 968.3,
+        "net_income": 0.0
+      },
+      "2022": {
+        "cash": 336.6,
+        "total_assets": 11427.8,
+        "short_debt": 579.7,
+        "long_debt": 43.3,
+        "total_liab": 1782.2,
+        "total_equity": 9645.6,
+        "revenue": 3876.7,
+        "op_profit": 801.6,
+        "net_income": 1.2
+      },
+      "2023": {
+        "total_assets": 11942.5,
+        "cash": 355.6,
+        "total_equity": 2695.6,
+        "short_debt": 622.6,
+        "total_liab": 1703.5,
+        "long_debt": 32.3,
+        "op_profit": 678.4,
+        "net_income": 0.0,
+        "revenue": 4067.3
+      },
+      "2024": {
+        "total_assets": 13191.3,
+        "cash": 355.7,
+        "total_equity": 2460.7,
+        "short_debt": 627.8,
+        "total_liab": 2036.7,
+        "long_debt": 21.2,
+        "op_profit": 1047.5,
+        "net_income": 0.0,
+        "revenue": 4493.9
+      },
+      "2025": {
+        "total_assets": 13543.1,
+        "cash": 449.3,
+        "total_equity": 86.7,
+        "short_debt": 1013.7,
+        "total_liab": 1815.4,
+        "long_debt": 10.2,
+        "op_profit": 668.0,
+        "net_income": 744.4,
+        "revenue": 4325.3
+      }
+    },
+    "missing_years": [
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2016,
+        "revenue_eok": 2976,
+        "op_profit_eok": 665,
+        "net_income_eok": 612,
+        "roe_pct": 9.51,
+        "op_margin_pct": 22.34,
+        "debt_ratio_pct": 18.54
+      },
+      {
+        "year": 2017,
+        "revenue_eok": 3148,
+        "op_profit_eok": 736,
+        "net_income_eok": 677,
+        "roe_pct": 9.91,
+        "op_margin_pct": 23.38,
+        "debt_ratio_pct": 19.8
+      },
+      {
+        "year": 2018,
+        "revenue_eok": 3061,
+        "op_profit_eok": 365,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 11.92,
+        "debt_ratio_pct": 23.25
+      },
+      {
+        "year": 2019,
+        "revenue_eok": 2644,
+        "op_profit_eok": 108,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 4.08,
+        "debt_ratio_pct": 29.95
+      },
+      {
+        "year": 2020,
+        "revenue_eok": 2659,
+        "op_profit_eok": 94,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 3.53,
+        "debt_ratio_pct": 34.0
+      },
+      {
+        "year": 2021,
+        "revenue_eok": 4878,
+        "op_profit_eok": 968,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 19.84,
+        "debt_ratio_pct": 17.37
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 3877,
+        "op_profit_eok": 802,
+        "net_income_eok": 1,
+        "roe_pct": 0.01,
+        "op_margin_pct": 20.69,
+        "debt_ratio_pct": 18.47
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 4067,
+        "op_profit_eok": 678,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 16.67,
+        "debt_ratio_pct": 63.21
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 4494,
+        "op_profit_eok": 1048,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 23.32,
+        "debt_ratio_pct": 82.77
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 4325,
+        "op_profit_eok": 668,
+        "net_income_eok": 744,
+        "roe_pct": 855.17,
+        "op_margin_pct": 15.45,
+        "debt_ratio_pct": 2086.21
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": 4.25,
+      "op_profit_cagr_pct": 0.05,
+      "best_year": 2024,
+      "worst_year": 2020,
+      "avg_roe_pct": 87.46
+    },
+    "valuation": {
+      "grade": "D",
+      "strengths": [
+        "매출액은 10년간 소폭 성장세를 유지했으며, 2021년 이후 과거 대비 증가한 수준을 유지하고 있습니다.",
+        "영업이익은 2024년에 1,048억원으로 10년 내 최고치를 기록하며 일시적인 수익성 개선을 보였습니다.",
+        "주력 사업 부문의 안정적인 수요를 바탕으로 매출액 규모를 유지하고 있습니다."
+      ],
+      "risks": [
+        "당기순이익이 다년간 0원을 기록하며 주주가치 창출에 실패했고, 수익성의 지속 가능성이 불투명합니다.",
+        "2023년 이후 자본총계가 급격히 감소하고 부채비율이 매우 높아져 재무구조가 심각하게 악화되었습니다.",
+        "영업이익의 변동성이 크고, 2025년에는 영업이익이 다시 감소하는 등 핵심 수익 창출 능력에 대한 우려가 있습니다."
+      ],
+      "one_liner": "다년간의 순이익 부재와 최근 급격히 악화된 재무구조로 인해 투자 매력이 매우 낮은 기업입니다."
+    }
+  },
+  "dcf": {
+    "text": "주어진 정보만으로는 매출액과 영업이익의 미래 성장률을 알 수 없습니다. DCF 모델을 실행하려면 5년간의 매출액과 영업이익 성장률 가정이 필요합니다. 이 정보가 제공되어야 정확한 FCF를 예측하고 적정가치를 계산할 수 있습니다.\n\n성장률에 대한 가정을 알려주시겠습니까? 예를 들어, \"매출액은 매년 5% 성장하고, 영업이익률은 일정하게 유지된다\"와 같은 가정이 필요합니다.",
+    "executed_code": "",
+    "code_output": ""
+  },
+  "news": {
+    "text": "## 풍산홀딩스(005810) 분석 보고서\n\n### 1. 재무 데이터 스토리와 현재 시장 컨센서스의 일치/불일치\n\n제공된 10년 재무제표 분석 결과에 따르면, 풍산홀딩스는 \"다년간의 순이익 부재와 최근 급격히 악화된 재무구조로 인해 투자 매력이 매우 낮은 기업\"으로 평가됩니다. 이는 기업의 기본적인 재무 건전성에 대한 부정적인 시각을 반영합니다.\n\n그러나 최근 2주간의 시장 컨센서스는 이와 상반되는 흐름을 보이고 있습니다. 풍산홀딩스의 자회사인 풍산의 방산 사업부 매각 가능성이 주요 뉴스로 부각되면서 주가가 단기간에 급등했습니다. 특히, 한화그룹으로의 매각설과 함께 방산 지분 가치가 풍산홀딩스의 현재 시가총액을 크게 상회할 수 있다는 기대감이 형성되었습니다. 이는 과거의 부정적인 재무 실적보다는 미래의 기업 구조 개편과 자산 가치 재평가에 시장이 주목하고 있음을 보여주며, 재무 데이터가 보여주는 스토리와 현재 시장 컨센서스 간에 **불일치**가 존재합니다.\n\n### 2. 재무제표에서 드러나지 않는 리스크 또는 호재\n\n**호재:**\n*   **풍산 방산 사업부 매각 가능성**: 자회사 풍산의 방산 사업부 매각은 풍산홀딩스에 상당한 현금 유입을 가져올 수 있으며, 이는 지주회사 할인율 해소 및 재무구조 개선의 강력한 기회로 작용할 수 있습니다. 언론 보도에 따르면 방산 지분 가치가 약 1.5조 원으로 평가되는데, 이는 현재 풍산홀딩스의 시가총액(약 6,486.9억 원)을 크게 웃도는 수준입니다.\n*   **방산 산업 호황**: 러시아-우크라이나 전쟁 및 중동 지역의 지정학적 긴장 확대로 전 세계적인 방산 수요가 증가하고 있으며, 이는 풍산의 방산 부문 실적에 긍정적인 영향을 미칠 수 있습니다.\n\n**리스크:**\n*   **매각 불확실성**: 방산 사업부 매각은 아직 확정된 사안이 아니며, 매각 조건, 시기, 그리고 최종 성사 여부에 대한 불확실성이 존재합니다. 매각이 무산될 경우 현재 주가에 반영된 기대감이 소멸하며 주가가 급락할 위험이 있습니다.\n*   **신성장 동력 부진**: 풍산홀딩스가 추진하는 이차전지 소재(파우치용 리드탭 수직계열화) 사업이 미국의 전기차 보조금 폐지 및 셀업체 출하 부진 등으로 난항을 겪고 있다는 분석이 있습니다. 이는 미래 성장 동력 확보에 대한 우려를 키우는 요인으로, 재무제표에 큰 손실로 반영되기 전까지는 드러나지 않을 수 있는 리스크입니다.\n*   **자회사 실적 부진 지속 가능성**: 자회사 풍산의 2025년 4분기 실적이 부진했으며, 2026년 방산 수출 증가 기대치도 예상보다 낮을 수 있다는 분석이 제기되었습니다. 지주회사로서 자회사의 실적 부진은 연결 재무제표에 부정적인 영향을 미칠 수 있습니다.\n\n### 3. 최종 판정\n\n**관망**\n\n풍산홀딩스는 다년간의 순이익 부재와 악화된 재무구조라는 근본적인 약점을 가지고 있습니다. 그러나 최근 자회사 풍산의 방산 사업부 매각 가능성이라는 강력한 호재가 부각되며 주가가 단기간에 크게 상승했습니다. 이 매각이 성사될 경우 기업가치에 긍정적인 변화를 가져올 수 있지만, 매각은 아직 확정된 것이 아니며 신성장 동력의 부진 등 잠재적 리스크도 상존합니다.\n\n현재 주가는 매각 기대감을 상당 부분 반영하여 단기 급등한 상태이므로, 공격적인 매수보다는 신중한 접근이 필요합니다. 매각 진행 상황 및 구체적인 조건이 명확해질 때까지는 추가적인 정보 확인과 함께 관망하는 자세를 유지하는 것이 현명하다고 판단됩니다.",
+    "citations": [
+      {
+        "title": "tradingview.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEUnzKwrvlKV4vFa0ABqZ19osTB7x2BZYYe7whUklLzWfTSI4JznEUQbMciLL_s_4RYFjfSWw8jZPCPyQ-vnonVtnEtF6kXH5WNfHSR2fw2wgm7fmTSx80J0xGwQWaGN6FjSD1z7evX32A="
+      },
+      {
+        "title": "alphasquare.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGPjwalc_5h5QUzrVSZ0BDLcJ8R0Up7p_Fd8PC2Jx3-Zz7dasX9g9wa8LQPRoKcWpRk8XJuF4lZbt3VQamkAy6CUxHISzry4KRY6oA95wH8BFqvUxmgei1QDRTeSWj5G1U9V9pB7KZnhZbH7btckedu53r-"
+      },
+      {
+        "title": "daum.net",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEO1etsrzVrK7i3D8Q3SWL2UElkq7w64dzL-K56tgwp0sn6de6MbUVH0jRXYxW2n-moDTE09nr7VozzgfRaP8CTmgmLHdMuuA2B0luiW0CR2-RUUjDvaXV3AACQbI83jHYE2hCV"
+      },
+      {
+        "title": "bondweb.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEwze_JKXkMJ3u2qWHFXr7x3gSkt8GIzRu5mNoswkcD1XRTrzjoVqmdLi0BoNF_WSO5bVHb5fYezT02Rc5dbUt0sI58MEqqT-UJd8bGP-XVs_yTZlpSCwgFyhJHJrKm99CHEP2l8NJDrgix242mXnivKyP6GT6Hc4zncMVJC-XGGKx-"
+      },
+      {
+        "title": "investing.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFDUuu539Fil2vEIUDPhWNNQBfc96QNvrg_bmp7wFXZtdKfoYmkVHGN-EFmqY57pFFiCSkN8WttPBUCyoY_fUW4m-e3ivFvuSgbYZ8BufNgjoUYxoP2ooe6PpAg6CPsFw6JasqVLq6i-4bM-DiAyA=="
+      },
+      {
+        "title": "daum.net",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFF1sPEKYRBitGWnm9THOEBkwddXEO6UjxC2IgzythvFwQCiYMq-bxZojSVjV8IiNdrgF_V7OgwkrgkJLdTJrlwkwSRORN4NVTMIUFVmh-FasUYp3b5m2-PcCeUuW3ZheH93XAAiD78Rypvz1t7u_EeNrlmy-PwQ5dF1I_dZX89_Fc="
+      },
+      {
+        "title": "miraeasset.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEUjvwp1Ivqtji7SyGmZ7sSJfH-o_ytJoE0iQoJBrdASA8TlbT5ZUbE1BDiKmjg1y19atXpnGiXQHFg_40oZe1Y414suI5Rs7ZC9Cgbc_vcf5oZSNcbIufcThL1Y43jnHi7RSLjwb5t2KYvPbp7P92Ch0Qf-SjluiOt5qPF6La_EfR7bVkUYfuToEM="
+      },
+      {
+        "title": "miraeasset.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFroTSMV99wPgv5pFOCQEvZaI_o9-g1_hz7itFf4b55lucTWOOHVCWSjFQf8EYIWfa1IMGnCnk8b0gAi13JqYo2o-2oWk5o-UWFAlapFQCadWZVU1Esoik0kGsU8smkdYSVK3Uiih-dZxydg4GJzM9Manpq9Gt54QVbvixdsFMHlWgq0Jjou1wazkM="
+      },
+      {
+        "title": "bnkfn.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHZvbrpaRKkI52ueKI10XunQcnVTj8iZguKW8aK5HU_BdclcoeIRG2KXGTumMlsOFiptqKhYbLDFMxQyp-gdfsvxc5A_r5Es1McWUyfLMlSJcYTdLwEIENWZf2ZjI3h0vOitf4SyPJqOdoG1e6k-TqttIj4OtwsFg=="
+      }
+    ]
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=00155531",
+    "summary": "공시 페이지 접근 제한"
+  }
+}

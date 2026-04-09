@@ -1,0 +1,295 @@
+{
+  "stock_code": "138080",
+  "stock_name": "오이솔루션",
+  "generated_at": "2026-04-09T02:09:08.631818+00:00",
+  "financials": {
+    "stock_code": "138080",
+    "corp_code": "00571483",
+    "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2016": {
+        "cash": 92.7,
+        "total_assets": 899.3,
+        "short_debt": 200.0,
+        "total_liab": 346.3,
+        "total_equity": 552.9,
+        "revenue": 797.2,
+        "op_profit": 47.2,
+        "net_income": 61.3
+      },
+      "2017": {
+        "cash": 219.2,
+        "total_assets": 960.6,
+        "short_debt": 200.0,
+        "total_liab": 291.1,
+        "total_equity": 669.5,
+        "revenue": 765.9,
+        "op_profit": -19.2,
+        "net_income": -17.9
+      },
+      "2018": {
+        "cash": 110.7,
+        "total_assets": 991.5,
+        "short_debt": 194.0,
+        "long_debt": 2.0,
+        "total_liab": 311.1,
+        "total_equity": 680.5,
+        "revenue": 815.0,
+        "op_profit": 2.3,
+        "net_income": 25.8
+      },
+      "2019": {
+        "cash": 442.6,
+        "total_assets": 1843.7,
+        "short_debt": 270.0,
+        "long_debt": 0.0,
+        "total_liab": 450.6,
+        "total_equity": 1393.1,
+        "revenue": 2102.8,
+        "op_profit": 582.6,
+        "net_income": 460.7
+      },
+      "2020": {
+        "cash": 400.7,
+        "total_assets": 1951.8,
+        "short_debt": 360.0,
+        "long_debt": 0.0,
+        "total_liab": 482.0,
+        "total_equity": 1469.8,
+        "revenue": 1031.8,
+        "op_profit": 73.3,
+        "net_income": 123.5
+      },
+      "2021": {
+        "cash": 311.0,
+        "total_assets": 2018.4,
+        "short_debt": 340.0,
+        "total_liab": 425.4,
+        "total_equity": 1593.0,
+        "revenue": 986.8,
+        "op_profit": 16.5,
+        "net_income": 143.7
+      },
+      "2022": {
+        "cash": 232.9,
+        "total_assets": 1879.2,
+        "short_debt": 340.0,
+        "total_liab": 402.6,
+        "total_equity": 1476.6,
+        "revenue": 769.5,
+        "op_profit": -87.1,
+        "net_income": -59.8
+      },
+      "2023": {
+        "total_assets": 1519.7,
+        "cash": 146.7,
+        "total_equity": 545.9,
+        "short_debt": 340.0,
+        "total_liab": 405.5,
+        "op_profit": -310.8,
+        "net_income": -338.2,
+        "revenue": 460.0
+      },
+      "2024": {
+        "total_assets": 1366.4,
+        "cash": 51.6,
+        "total_equity": 520.0,
+        "short_debt": 300.0,
+        "total_liab": 625.4,
+        "op_profit": -303.6,
+        "net_income": 0.0,
+        "revenue": 320.3
+      },
+      "2025": {
+        "total_assets": 1196.1,
+        "cash": 153.1,
+        "total_equity": 679.5,
+        "short_debt": 279.0,
+        "total_liab": 553.4,
+        "op_profit": -160.0,
+        "net_income": 0.0,
+        "revenue": 573.8
+      }
+    },
+    "missing_years": [
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2016,
+        "revenue_eok": 797,
+        "op_profit_eok": 47,
+        "net_income_eok": 61,
+        "roe_pct": 11.03,
+        "op_margin_pct": 5.9,
+        "debt_ratio_pct": 62.57
+      },
+      {
+        "year": 2017,
+        "revenue_eok": 766,
+        "op_profit_eok": -19,
+        "net_income_eok": -18,
+        "roe_pct": -2.69,
+        "op_margin_pct": -2.48,
+        "debt_ratio_pct": 43.43
+      },
+      {
+        "year": 2018,
+        "revenue_eok": 815,
+        "op_profit_eok": 2,
+        "net_income_eok": 26,
+        "roe_pct": 3.82,
+        "op_margin_pct": 0.25,
+        "debt_ratio_pct": 45.74
+      },
+      {
+        "year": 2019,
+        "revenue_eok": 2103,
+        "op_profit_eok": 583,
+        "net_income_eok": 461,
+        "roe_pct": 33.09,
+        "op_margin_pct": 27.72,
+        "debt_ratio_pct": 32.38
+      },
+      {
+        "year": 2020,
+        "revenue_eok": 1032,
+        "op_profit_eok": 73,
+        "net_income_eok": 124,
+        "roe_pct": 8.44,
+        "op_margin_pct": 7.07,
+        "debt_ratio_pct": 32.79
+      },
+      {
+        "year": 2021,
+        "revenue_eok": 987,
+        "op_profit_eok": 16,
+        "net_income_eok": 144,
+        "roe_pct": 9.04,
+        "op_margin_pct": 1.62,
+        "debt_ratio_pct": 26.68
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 770,
+        "op_profit_eok": -87,
+        "net_income_eok": -60,
+        "roe_pct": -4.06,
+        "op_margin_pct": -11.3,
+        "debt_ratio_pct": 27.29
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 460,
+        "op_profit_eok": -311,
+        "net_income_eok": -338,
+        "roe_pct": -61.9,
+        "op_margin_pct": -67.61,
+        "debt_ratio_pct": 74.36
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 320,
+        "op_profit_eok": -304,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": -95.0,
+        "debt_ratio_pct": 120.19
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 574,
+        "op_profit_eok": -160,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": -27.87,
+        "debt_ratio_pct": 81.32
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": -3.36,
+      "op_profit_cagr_pct": -214.32,
+      "best_year": 2019,
+      "worst_year": 2023,
+      "avg_roe_pct": -0.32
+    },
+    "valuation": {
+      "grade": "D",
+      "strengths": [
+        "광통신 부품 전문 기업으로서 5G 투자 확대 등 산업 회복 시 실적 개선 잠재력 보유.",
+        "2019년 매출액 2,103억, 영업이익 583억을 기록하며 높은 수익성을 달성한 경험을 보유.",
+        "자본총계가 2023년 급감했으나, 여전히 부채총계보다 높은 수준을 유지하며 재무적 안정성 확보 노력."
+      ],
+      "risks": [
+        "지속적인 매출액 감소와 대규모 영업손실 및 당기순손실 발생으로 인한 수익성 악화.",
+        "현금흐름 악화 및 유동성 리스크 증가 (현금 감소).",
+        "높은 부채비율 증가 추세와 자본총계 급감으로 인한 재무구조 악화."
+      ],
+      "one_liner": "광통신 산업 침체와 경쟁 심화로 인한 실적 부진이 심화되고 있으며, 재무 건전성 악화가 우려되는 상황."
+    }
+  },
+  "dcf": {
+    "text": "퀀트 애널리스트로서 오이솔루션(138080)의 DCF 적정가치를 계산하겠습니다.\n\n**중요 가정 사항:**\n제공된 데이터에 5년 예측 기간 동안의 매출액 및 영업이익 성장률에 대한 명확한 가정이 없어, 다음과 같이 추가 가정을 설정하여 분석을 진행합니다. 이 가정은 분석 결과에 큰 영향을 미치므로, 실제 분석 시에는 더욱 면밀한 검토와 사용자 입력이 필요합니다.\n\n*   **매출액 성장률:** 5년 예측 기간(2026년 ~ 2030년) 동안 매년 5% 성장한다고 가정합니다.\n*   **영업이익률 개선:** 2025년의 음수 영업이익률(-27.87%)이 5년 예측 기간 동안 선형적으로 개선되어 2030년에는 긍정적인 5%의 영업이익률에 도달한다고 가정합니다. (연간 약 6.574%p 개선)\n*   **세금 처리:** 영업이익이 음수일 경우 법인세는 0으로 가정합니다.\n\n---\n\n### 1. 기본 시나리오 DCF 적정가치 계산\n\n**입력 데이터 및 가정:**\n*   **기준 연도:** 2025년\n*   **2025년 재무 (억원):**\n    *   매출액: 574\n    *   영업이익: -160\n*   **FCF 계산식:** FCF = NOPAT + 감가상각 - CAPEX\n    *   NOPAT = 영업이익 × (1 - 0.25) (영업이익 > 0일 경우) 또는 영업이익 (영업이익 <= 0일 경우)\n    *   감가상각: 매출액의 10%\n    *   CAPEX: 매출액의 5%\n*   **할인율 및 성장률:**\n    *   WACC (가중평균자본비용): 9%\n    *   영구성장률 (g): 2%\n*   **예측 기간:** 5년 (2026년 ~ 2030년)\n\n**Python 코드 실행:**\n\n\n**기본 시나리오 분석:**\n*   2025년의 음수 영업이익(-160억원)으로 인해 예측 기간 초반에는 FCF가 음수로 나타납니다.\n*   영업이익률이 점진적으로 개선되어 2029년부터 FCF가 양수로 전환됩니다.\n*   이러한 가정 하에 계산된 오이솔루션의 DCF 적정가치는 **507.57 억원**입니다.\n\n---\n\n### 2. WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 출력\n\n다양한 WACC와 영구성장률(g) 조합에 따른 DCF 적정가치 민감도 분석을 수행합니다.\n\n**Python 코드 실행:**\n\n\n**민감도 분석 결과:**\n*   WACC가 낮아지고 영구성장률(g)이 높아질수록 적정가치는 상승합니다.\n*   WACC가 7%, g가 3%일 때 가장 높은 1078.15억원의 가치를 보이며, WACC가 11%, g가 1%일 때 가장 낮은 284.24억원의 가치를 보입니다.\n*   기본 시나리오(WACC=9%, g=2%)의 507.57억원은 그리드 중앙에 위치합니다.\n\n---\n\n### 3. 요약 출력\n\n**적정가치(기본): 507.57억원**",
+    "executed_code": "import pandas as pd\n\ndef calculate_dcf(\n    revenue_2025,\n    operating_income_2025,\n    wacc,\n    g,\n    forecast_years=5,\n    tax_rate=0.25,\n    depreciation_rate=0.10,\n    capex_rate=0.05,\n    revenue_growth_rate=0.05,\n    target_operating_margin=0.05 # Target operating margin at the end of the forecast period\n):\n    \"\"\"\n    Calculates the DCF valuation based on provided financials and assumptions.\n\n    Args:\n        revenue_2025 (float): Revenue in 2025 (억원).\n        operating_income_2025 (float): Operating Income in 2025 (억원).\n        wacc (float): Weighted Average Cost of Capital.\n        g (float): Perpetual growth rate.\n        forecast_years (int): Number of years for explicit forecast.\n        tax_rate (float): Corporate tax rate.\n        depreciation_rate (float): Depreciation as a percentage of revenue.\n        capex_rate (float): CAPEX as a percentage of revenue.\n        revenue_growth_rate (float): Annual revenue growth rate for forecast period.\n        target_operating_margin (float): Target operating margin at the end of the forecast period.\n\n    Returns:\n        float: DCF 적정가치 (억원).\n        pd.DataFrame: Detailed projection table.\n    \"\"\"\n\n    years = [2025 + i for i in range(forecast_years + 1)]\n    projections = pd.DataFrame(index=years)\n\n    # Initial values for 2025\n    projections.loc[2025, 'Revenue'] = revenue_2025\n    projections.loc[2025, 'Operating Income'] = operating_income_2025\n    projections.loc[2025, 'Operating Margin'] = operating_income_2025 / revenue_2025 if revenue_2025 != 0 else 0\n\n    # Calculate annual operating margin improvement\n    initial_op_margin = projections.loc[2025, 'Operating Margin']\n    op_margin_improvement_per_year = (target_operating_margin - initial_op_margin) / forecast_years\n\n    # Project financials for forecast_years (2026-2030)\n    for i in range(1, forecast_years + 1):\n        year = 2025 + i\n        prev_year = year - 1\n\n        # Revenue\n        projections.loc[year, 'Revenue'] = projections.loc[prev_year, 'Revenue'] * (1 + revenue_growth_rate)\n\n        # Operating Margin (linear improvement)\n        projections.loc[year, 'Operating Margin'] = initial_op_margin + (op_margin_improvement_per_year * i)\n        # Ensure operating margin doesn't exceed target if it starts higher (unlikely here)\n        projections.loc[year, 'Operating Margin'] = min(projections.loc[year, 'Operating Margin'], target_operating_margin)\n\n        # Operating Income\n        projections.loc[year, 'Operating Income'] = projections.loc[year, 'Revenue'] * projections.loc[year, 'Operating Margin']\n\n        # NOPAT (Net Operating Profit After Tax)\n        # If Operating Income is negative, NOPAT is Operating Income (assuming no tax benefit or 0 tax paid)\n        # If Operating Income is positive, NOPAT = OI * (1 - tax_rate)\n        if projections.loc[year, 'Operating Income'] > 0:\n            projections.loc[year, 'NOPAT'] = projections.loc[year, 'Operating Income'] * (1 - tax_rate)\n            projections.loc[year, 'Tax Paid'] = projections.loc[year, 'Operating Income'] * tax_rate\n        else:\n            projections.loc[year, 'NOPAT'] = projections.loc[year, 'Operating Income']\n            projections.loc[year, 'Tax Paid'] = 0 # No tax paid on negative income\n\n        # Depreciation\n        projections.loc[year, 'Depreciation'] = projections.loc[year, 'Revenue'] * depreciation_rate\n\n        # CAPEX\n        projections.loc[year, 'CAPEX'] = projections.loc[year, 'Revenue'] * capex_rate\n\n        # FCF (Free Cash Flow)\n        projections.loc[year, 'FCF'] = projections.loc[year, 'NOPAT'] + projections.loc[year, 'Depreciation'] - projections.loc[year, 'CAPEX']\n\n        # Discount Factor\n        projections.loc[year, 'Discount Factor'] = 1 / ((1 + wacc) ** i)\n\n        # Present Value of FCF\n        projections.loc[year, 'PV of FCF'] = projections.loc[year, 'FCF'] * projections.loc[year, 'Discount Factor']\n\n    # Calculate Terminal Value\n    terminal_year = 2025 + forecast_years\n    fcf_terminal_year = projections.loc[terminal_year, 'FCF']\n\n    # FCF for the year after the forecast period (for TV calculation)\n    fcf_next_year = fcf_terminal_year * (1 + g)\n\n    # Terminal Value at the end of the forecast period (e.g., end of 2030)\n    if wacc <= g:\n        # Handle case where WACC <= g, which makes TV calculation problematic (infinite or negative)\n        # For this exercise, we assume WACC > g.\n        terminal_value = 0 # This case should ideally be handled with a warning or error in a real scenario\n        print(f\"Warning: WACC ({wacc*100:.2f}%) <= Perpetual Growth Rate ({g*100:.2f}%). Terminal Value calculation may be invalid.\")\n    else:\n        terminal_value = fcf_next_year / (wacc - g)\n\n    # Present Value of Terminal Value\n    pv_terminal_value = terminal_value / ((1 + wacc) ** forecast_years)\n\n    # Total DCF Value\n    total_dcf_value = projections['PV of FCF'].sum() + pv_terminal_value\n\n    return total_dcf_value, projections.drop(2025) # Drop 2025 as it's the base year, not a forecast year for FCF\n\n# Base Scenario Parameters\nrevenue_2025_base = 574\noperating_income_2025_base = -160\nwacc_base = 0.09\ng_base = 0.02\nforecast_years_base = 5\ntax_rate_base = 0.25\ndepreciation_rate_base = 0.10\ncapex_rate_base = 0.05\nrevenue_growth_rate_base = 0.05\ntarget_operating_margin_base = 0.05\n\nbase_dcf_value, base_projections = calculate_dcf(\n    revenue_2025_base,\n    operating_income_2025_base,\n    wacc_base,\n    g_base,\n    forecast_years=forecast_years_base,\n    tax_rate=tax_rate_base,\n    depreciation_rate=depreciation_rate_base,\n    capex_rate=capex_rate_base,\n    revenue_growth_rate=revenue_growth_rate_base,\n    target_operating_margin=target_operating_margin_base\n)\n\nprint(\"### 1. 기본 시나리오 DCF 적정가치 계산 결과 ###\")\nprint(f\"**DCF 적정가치 (기본 시나리오): {base_dcf_value:.2f} 억원**\\n\")\n\nprint(\"--- 연도별 FCF 예측 (기본 시나리오) ---\")\n# Display selected columns for clarity\ndisplay_cols = ['Revenue', 'Operating Margin', 'Operating Income', 'NOPAT', 'Depreciation', 'CAPEX', 'FCF', 'PV of FCF']\nprint(base_projections[display_cols].round(2).to_markdown(numalign=\"left\", stralign=\"left\"))\nprint(f\"\\nTerminal Value (2030년 말 기준): {base_projections.loc[2030, 'FCF'] * (1 + g_base) / (wacc_base - g_base):.2f} 억원\")\nprint(f\"Terminal Value의 현재가치: {base_projections.loc[2030, 'FCF'] * (1 + g_base) / (wacc_base - g_base) / ((1 + wacc_base) ** forecast_years_base):.2f} 억원\")\nprint(f\"예측 기간 FCF 현재가치 합계: {base_projections['PV of FCF'].sum():.2f} 억원\")\n\n\nimport pandas as pd\n\n# Re-define the calculate_dcf function if the kernel resets, or ensure it's in scope.\n# For this execution, assume the function from the previous block is still available.\n\n# Sensitivity Analysis Parameters\nwacc_scenarios = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_scenarios = [0.01, 0.02, 0.03]\n\nsensitivity_results = pd.DataFrame(index=[f'WACC={w*100:.0f}%' for w in wacc_scenarios],\n                                   columns=[f'g={g*100:.0f}%' for g in g_scenarios])\n\nfor wacc in wacc_scenarios:\n    for g in g_scenarios:\n        # Ensure WACC > g for valid Terminal Value calculation\n        if wacc <= g:\n            sensitivity_results.loc[f'WACC={wacc*100:.0f}%', f'g={g*100:.0f}%'] = \"N/A (WACC<=g)\"\n            continue\n\n        dcf_value, _ = calculate_dcf(\n            revenue_2025_base,\n            operating_income_2025_base,\n            wacc,\n            g,\n            forecast_years=forecast_years_base,\n            tax_rate=tax_rate_base,\n            depreciation_rate=depreciation_rate_base,\n            capex_rate=capex_rate_base,\n            revenue_growth_rate=revenue_growth_rate_base,\n            target_operating_margin=target_operating_margin_base\n        )\n        sensitivity_results.loc[f'WACC={wacc*100:.0f}%', f'g={g*100:.0f}%'] = round(dcf_value, 2)\n\nprint(\"\\n### 2. WACC × g 민감도 그리드 (DCF 적정가치, 억원) ###\")\nprint(sensitivity_results.to_markdown(numalign=\"left\", stralign=\"left\"))",
+    "code_output": "### 1. 기본 시나리오 DCF 적정가치 계산 결과 ###\n**DCF 적정가치 (기본 시나리오): 507.57 억원**\n\n--- 연도별 FCF 예측 (기본 시나리오) ---\n|      | Revenue   | Operating Margin   | Operating Income   | NOPAT   | Depreciation   | CAPEX   | FCF    | PV of FCF   |\n|:-----|:----------|:-------------------|:-------------------|:--------|:---------------|:--------|:-------|:------------|\n| 2026 | 602.7     | -0.21              | -128.37            | -128.37 | 60.27          | 30.14   | -98.24 | -90.13      |\n| 2027 | 632.84    | -0.15              | -93.18             | -93.18  | 63.28          | 31.64   | -61.54 | -51.8       |\n| 2028 | 664.48    | -0.08              | -54.15             | -54.15  | 66.45          | 33.22   | -20.93 | -16.16      |\n| 2029 | 697.7     | -0.02              | -10.99             | -10.99  | 69.77          | 34.89   | 23.9   | 16.93       |\n| 2030 | 732.59    | 0.05               | 36.63              | 27.47   | 73.26          | 36.63   | 64.1   | 41.66       |\n\nTerminal Value (2030년 말 기준): 934.05 억원\nTerminal Value의 현재가치: 607.07 억원\n예측 기간 FCF 현재가치 합계: -99.50 억원\n\n\n### 2. WACC × g 민감도 그리드 (DCF 적정가치, 억원) ###\n|          | g=1%   | g=2%   | g=3%    |\n|:---------|:-------|:-------|:--------|\n| WACC=7%  | 670.62 | 833.63 | 1078.15 |\n| WACC=8%  | 530.32 | 642.5  | 799.55  |\n| WACC=9%  | 426.48 | 507.57 | 615.69  |\n| WACC=10% | 346.9  | 407.7  | 485.89  |\n| WACC=11% | 284.24 | 331.16 | 389.81  |"
+  },
+  "news": {
+    "text": "## 오이솔루션(138080) 투자 분석 보고서\n\n**투자등급 D, 요약: 광통신 산업 침체와 경쟁 심화로 인한 실적 부진이 심화되고 있으며, 재무 건전성 악화가 우려되는 상황.**\n\n제공된 10년 재무제표 분석 결과는 오이솔루션의 과거 실적 부진과 재무 건전성 악화에 대한 우려를 나타내고 있습니다. 그러나 최근 2주간의 주요 뉴스를 통해 현재 시장의 컨센서스는 이와 상이한 긍정적인 전망을 형성하고 있음을 확인할 수 있었습니다.\n\n### 1. 재무 데이터가 보여주는 스토리와 현재 시장 컨센서스의 일치/불일치\n\n*   **재무 데이터 스토리 (불일치):** 제공된 재무 분석은 광통신 산업 침체와 경쟁 심화로 인한 실적 부진 및 재무 건전성 악화를 지적합니다. 실제로 오이솔루션은 2025년 연결 기준 매출액은 증가했으나 159억 원의 영업적자를 기록하며 과거 실적 부진을 이어갔습니다.\n*   **현재 시장 컨센서스 (불일치):** 최근 시장 컨센서스는 2026년부터의 긍정적인 턴어라운드를 기대하고 있습니다. 하나증권은 2026년 하반기 흑자 전환을 예상하며 목표주가를 6만 원으로 상향 조정했고, 투자의견 '매수'를 유지했습니다. 메리츠증권 또한 2026년 매출액 816억 원, 영업이익 61억 원으로 흑자 전환을 전망했습니다. 이는 북미 통신 인프라 투자 확대, AI 데이터센터 시장 진출, 핵심 부품 내재화 등에 대한 기대감에 기반합니다.\n\n### 2. 재무제표에서 드러나지 않는 리스크 또는 호재\n\n**호재:**\n\n*   **북미 통신 인프라 투자 확대 수혜:** AT&T의 5년간 2,500억 달러 규모의 설비투자(CAPEX) 계획과 미국 주파수 경매 등 대규모 통신 장비 투자 로드맵이 구체화되면서, 과거 북미 시장에 무선향 트랜시버를 공급한 이력이 있는 오이솔루션의 수주 기대감이 커지고 있습니다.\n*   **AI 데이터센터 시장 진출 및 차세대 제품:** 오이솔루션은 세계 최대 광통신 전시회(OFC 2026)에서 AI 데이터센터용 1.6Tbps OSFP 광트랜시버 및 외부광원 소형 착탈식 모듈(ELSFP) 등 차세대 제품을 공개하며 AI 데이터센터 시장으로의 사업 확장을 본격화하고 있습니다.\n*   **LD칩 내재화를 통한 원가 경쟁력 확보:** 과거 외부에서 매입하던 LD칩을 내재화하는 데 성공하여, 원가 비중이 높은 LD칩의 자체 생산을 통해 마진율이 크게 개선될 것으로 기대됩니다.\n*   **6G 시대 준비 및 기술력:** 5G SA에서 6G로 이어지는 통신 빅사이클의 초입에 있으며, 정부 국책과제 선점을 통해 6G 기술 격차를 확대하고 있습니다. 또한, 세계 3번째로 개발한 파장가변형(Tunable) 광트랜시버 기술력을 보유하고 있습니다.\n\n**리스크:**\n\n*   **광통신 산업의 변동성:** 광통신 산업은 유무선 데이터 트래픽 증가 및 국가 통신 정책에 민감하게 반응하는 B2B 산업으로, 대규모 투자 사이클에 따라 실적 변동성이 클 수 있습니다.\n*   **경쟁 심화:** 신규 시장 선점을 위한 경쟁이 지속될 수 있으며, 제품 성능, 가격 경쟁력, 고객 서비스가 핵심 경쟁 요소입니다.\n*   **실적 턴어라운드 지연 가능성:** 시장의 흑자 전환 기대에도 불구하고, 북미 투자 집행 지연이나 신규 제품의 시장 침투 지연 등은 턴어라운드를 늦출 수 있습니다.\n\n### 3. 최종 판정\n\n제공된 10년 재무제표 분석 결과는 부정적이지만, 최근 2주간의 뉴스를 통해 오이솔루션은 북미 통신 인프라 투자 확대, AI 데이터센터 시장 진출, 핵심 부품 내재화 등 강력한 미래 성장 동력을 확보하고 있으며, 이에 대한 시장의 긍정적인 컨센서스가 형성되고 있습니다. 2025년까지는 적자를 기록했으나, 2026년부터의 흑자 전환 전망이 다수의 증권사에서 나오고 있는 점은 긍정적입니다.\n\n따라서, 과거의 재무 데이터가 보여주는 부정적인 스토리에도 불구하고, 현재 시점에서 발현되고 있는 강력한 호재와 미래 성장 잠재력을 고려할 때, **매수** 의견을 제시합니다. 다만, 턴어라운드 기대감이 이미 주가에 상당 부분 반영되었을 가능성과 실제 실적 개선 여부를 지속적으로 모니터링할 필요가 있습니다.\n\n**최종 판정: 매수**",
+    "citations": [
+      {
+        "title": "edaily.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEHMJR_TlGRdZxoZpk75zurDa0oewL-es0b2-tJEpdHenL7qaMynPJp1KXS3-1ca26kCMj9ItIxV-uY3luqckTtsb9s-Ey1pqsYUh-U3m_g9HRvumUxB99Thvw6Gllt1Npgj6v2JIeur5ueZSgO9IIRXY0pssV4pN7EfYdI"
+      },
+      {
+        "title": "edaily.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGXwSCJGVzzvvBCM9bqFi-OL2vAp_TKZWxq-H-8dFEQSmx71xxc98P6iOGmiU7gHRnuNuN_CmdZLuq293gqi6355TYJZrPIWEG2JyUYWRd1qqKWBs3L5-I733e2QtaCGYp-CIONSNaR4hMBOxaAMvaNLBnILP0B2BbgSRUE"
+      },
+      {
+        "title": "thedailymoney.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFzpxfl1reA-6JGfqJnwsyHaav6dfw4Qtt_FnTdchWXosahyhutw1YIEpit77RUMbLDzJXORJSoWXh8QQLiu41ujAMdsoyiNUwrMD0lK4gPDDKgG__toDj7lTbKToB_Us425fswMvNGkB4aoxxtqg6frOTX8wrWrWSzGUU="
+      },
+      {
+        "title": "newstnt.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGbu01DAwupe4lr_SHMWKlwma6yoyOBGEcqn0jr1cY7KiHcg9DweueXxH4vKZud5yTbLs_6sQEqrQMdjt5li3LDQinmyc-kFP8P6SCa9HSI5ch1jUQJFeQlaTXb_pViQIy66sKyDNQa6K56d8TS5iL8TscKWA=="
+      },
+      {
+        "title": "yna.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEnFd_I-OS5hBkpKnGMQrEKtSvV9ryUjLqQaM650_40SZ4KgBW0itVYkCm9VuJP79qyEwCBcD8VkMGbmALZJRVzaJ-RvGe4r7PkXwKEPVPH6TtItkqFUyTVhsB016HhCJeuovJybkyFJ-kA"
+      },
+      {
+        "title": "g-enews.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFgU4AR3n6Nj0xw2GTbMw2Hk_sYHAYjurHyH4vazL51ukZonUnP0Xi6GCCFlc7WvpDVmlHUrOmpPfZOQ_NVJMI6xgW5EdIsE0MMRdRHUWaWsuNvwWysgYCN2uLbtZCUqAaY-sVgjZpfQBFOXaxS4d7iHHWO8JtWlOr9NwUzvMOl3G3-Jf0KBZgLpQNisA=="
+      },
+      {
+        "title": "alphasquare.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEgN1WkAjK8f3o1xT9FuGfjo184xWmUzQC1tVdhAoNMEmH2W7TFlmAbkm9wA1GusnC6Ta_OAjJgixADfWNm99R7MGKl36hxbI4oJYYDk1hkMfXlroXIxvoKNc4sA9aGE4nZbrSdw8fTQ6fRD93yg7lq1UvcswZmJ6QNhSLDxrADP0PA3-xgsDlpF4VfrtY="
+      },
+      {
+        "title": "krx.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHX3H__fYI56gcv-Ar-4KKHim2_1jLVcsYsFrG6-Cjz5NOqF_bpwWBY-tQzxnQeKXEMi7gkSpzn9rNDpNGOM_6n_Q5IjivogX1O0-xiFccqpBDxHMqxtw1w5Rvfs891dc50zbux1lMC9gh75H186JWixGvgPYRCoI1v6SgBJqKUOnHdbOegE63uXqh74g=="
+      },
+      {
+        "title": "pstatic.net",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEBbpQkdJ9xY21OfYHw1Q5Netudpjww80IiqNV0jNOZ0ZQkfLkji1TvfXlNoZ7j3g2oAyoflcnHS5KEdhFmKowUWRusNW6ACnV9xtc-4DZS8CPxwJoFb3w-dITISUvMBfd80W_wkXhngF0tutSwwuBvdh0G5TqmzdQx0p-QE7kQ_o6CoB5M"
+      }
+    ]
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=00571483",
+    "summary": "공시 페이지 접근 제한"
+  }
+}

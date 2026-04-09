@@ -1,35 +1,35 @@
 {
-  "name": "네패스",
-  "ticker": "033640.KQ",
+  "name": "오이솔루션",
+  "ticker": "138080.KQ",
   "result": "데이터 없음",
-  "date": "2026-04-09 09:53:45",
-  "elapsed": 2.4,
+  "date": "2026-04-09 11:08:56",
+  "elapsed": 2.1,
   "consensus_score": null,
   "analyst_count": 0,
   "recommendation_detail": null,
   "recommendation_period": null,
   "price_targets": {
-    "current": 22000.0,
+    "current": 38750.0,
     "high": null,
     "low": null,
     "mean": null,
     "median": null
   },
-  "current_price": 22000.0,
+  "current_price": 38750.0,
   "upside_potential": null,
   "key_stats": {
-    "name": "NEPES",
-    "sector": "Technology",
-    "industry": "Semiconductor Equipment & Materials",
-    "market_cap": 507302445056,
+    "name": "OE Solutions",
+    "sector": "",
+    "industry": "",
+    "market_cap": 390469451776,
     "pe_ratio": null,
     "forward_pe": null,
     "dividend_yield": null,
-    "beta": 1.562,
-    "fifty_two_week_high": 22550.0,
-    "fifty_two_week_low": 6250.0,
-    "revenue": 521439281152,
-    "profit_margin": 0.0318,
+    "beta": null,
+    "fifty_two_week_high": 46750.0,
+    "fifty_two_week_low": 7840.0,
+    "revenue": null,
+    "profit_margin": null,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
@@ -38,37 +38,37 @@
   "revenue_quarters": [
     {
       "date": "2025-12",
-      "value": 123678984310
+      "value": 14364199760
     },
     {
       "date": "2025-09",
-      "value": 137481316370
+      "value": 13068761270
     },
     {
       "date": "2025-06",
-      "value": 130909286540
+      "value": 15875402540
     },
     {
       "date": "2025-03",
-      "value": 129369699780
+      "value": 14068922610
     }
   ],
   "net_income_quarters": [
     {
       "date": "2025-12",
-      "value": -2424282480
+      "value": -13114213730
     },
     {
       "date": "2025-09",
-      "value": 3081862070
+      "value": -3205094520
     },
     {
       "date": "2025-06",
-      "value": 12171131120
+      "value": -4843650410
     },
     {
       "date": "2025-03",
-      "value": 8880365360
+      "value": -5876250540
     }
   ],
   "news": []

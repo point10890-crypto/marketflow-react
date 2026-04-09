@@ -2,8 +2,8 @@
   "name": "SK바이오팜",
   "ticker": "326030.KS",
   "result": "매수",
-  "date": "2026-04-05 17:32:07",
-  "elapsed": 2.1,
+  "date": "2026-04-09 11:24:58",
+  "elapsed": 2.3,
   "consensus_score": 4.07,
   "analyst_count": 14,
   "recommendation_detail": {
@@ -15,21 +15,21 @@
   },
   "recommendation_period": "0m",
   "price_targets": {
-    "current": 94100.0,
+    "current": 97700.0,
     "high": 165000.0,
     "low": 73000.0,
     "mean": 144142.86,
     "median": 150000.0
   },
-  "current_price": 94100.0,
-  "upside_potential": 53.2,
+  "current_price": 97700.0,
+  "upside_potential": 47.5,
   "key_stats": {
     "name": "SKBP",
     "sector": "Healthcare",
     "industry": "Biotechnology",
-    "market_cap": 7369276784640,
+    "market_cap": 7651204268032,
     "pe_ratio": null,
-    "forward_pe": 20.047771,
+    "forward_pe": 20.814743,
     "dividend_yield": null,
     "beta": 0.864,
     "fifty_two_week_high": 144100.0,
@@ -40,7 +40,7 @@
   },
   "finnhub_supplement": null,
   "source": "yfinance",
-  "ai_analysis": null,
+  "ai_analysis": "SK바이오팜(326030.KS)에 대해 14명의 애널리스트가 제시한 컨센서스 의견은 '매수'입니다. 목표가 평균은 144,143원으로, 현재가 97,700원 대비 47.5%의 상승 여력이 있는 것으로 분석됩니다. 헬스케어 섹터에 속해 있습니다.",
   "revenue_quarters": [
     {
       "date": "2025-12",

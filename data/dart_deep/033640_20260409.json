@@ -1,0 +1,306 @@
+{
+  "stock_code": "033640",
+  "stock_name": "네패스",
+  "generated_at": "2026-04-09T00:53:52.934430+00:00",
+  "financials": {
+    "stock_code": "033640",
+    "corp_code": "00227333",
+    "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2016": {
+        "cash": 489.0,
+        "total_assets": 2986.0,
+        "short_debt": 463.3,
+        "long_debt": 188.1,
+        "total_liab": 1827.8,
+        "total_equity": 1158.2,
+        "revenue": 2545.4,
+        "op_profit": 82.4,
+        "net_income": 179.7
+      },
+      "2017": {
+        "cash": 479.7,
+        "total_assets": 3081.2,
+        "short_debt": 398.2,
+        "long_debt": 358.3,
+        "total_liab": 1872.5,
+        "total_equity": 1208.7,
+        "revenue": 2850.3,
+        "op_profit": 193.1,
+        "net_income": 39.4
+      },
+      "2018": {
+        "cash": 323.1,
+        "total_assets": 2819.9,
+        "short_debt": 315.9,
+        "long_debt": 122.8,
+        "total_liab": 1407.9,
+        "total_equity": 1412.1,
+        "revenue": 2733.2,
+        "op_profit": 220.3,
+        "net_income": 250.9
+      },
+      "2019": {
+        "cash": 1133.7,
+        "total_assets": 5216.5,
+        "short_debt": 399.7,
+        "long_debt": 1001.2,
+        "total_liab": 3310.1,
+        "total_equity": 1906.4,
+        "revenue": 3563.2,
+        "op_profit": 615.9,
+        "net_income": -7.7
+      },
+      "2020": {
+        "cash": 1708.7,
+        "total_assets": 8016.9,
+        "short_debt": 273.7,
+        "long_debt": 2182.5,
+        "total_liab": 5410.9,
+        "total_equity": 2606.1,
+        "revenue": 3435.6,
+        "op_profit": -35.7,
+        "net_income": -138.4
+      },
+      "2021": {
+        "cash": 2465.3,
+        "total_assets": 11048.6,
+        "short_debt": 698.0,
+        "long_debt": 1715.8,
+        "total_liab": 8380.4,
+        "total_equity": 2668.2,
+        "revenue": 4183.7,
+        "op_profit": -164.0,
+        "net_income": 105.3
+      },
+      "2022": {
+        "cash": 1361.7,
+        "total_assets": 11319.3,
+        "short_debt": 991.8,
+        "long_debt": 1901.1,
+        "total_liab": 7396.1,
+        "total_equity": 3923.2,
+        "revenue": 5880.4,
+        "op_profit": -67.1,
+        "net_income": 0.0
+      },
+      "2023": {
+        "total_assets": 9631.2,
+        "cash": 949.6,
+        "total_equity": 2831.7,
+        "short_debt": 1001.8,
+        "total_liab": 6799.5,
+        "long_debt": 1695.4,
+        "op_profit": -700.0,
+        "net_income": -1094.6,
+        "revenue": 4801.1
+      },
+      "2024": {
+        "total_assets": 7101.1,
+        "cash": 639.9,
+        "total_equity": 2072.4,
+        "short_debt": 1065.8,
+        "total_liab": 5028.8,
+        "long_debt": 1166.7,
+        "op_profit": 34.0,
+        "net_income": -622.4,
+        "revenue": 4643.3
+      },
+      "2025": {
+        "total_assets": 6962.0,
+        "cash": 878.5,
+        "total_equity": 1730.4,
+        "short_debt": 1294.8,
+        "total_liab": 4507.7,
+        "long_debt": 1059.3,
+        "op_profit": 237.6,
+        "net_income": 0.0,
+        "revenue": 5214.4
+      }
+    },
+    "missing_years": [
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2016,
+        "revenue_eok": 2545,
+        "op_profit_eok": 82,
+        "net_income_eok": 180,
+        "roe_pct": 15.54,
+        "op_margin_pct": 3.22,
+        "debt_ratio_pct": 157.86
+      },
+      {
+        "year": 2017,
+        "revenue_eok": 2850,
+        "op_profit_eok": 193,
+        "net_income_eok": 39,
+        "roe_pct": 3.23,
+        "op_margin_pct": 6.77,
+        "debt_ratio_pct": 154.84
+      },
+      {
+        "year": 2018,
+        "revenue_eok": 2733,
+        "op_profit_eok": 220,
+        "net_income_eok": 251,
+        "roe_pct": 17.78,
+        "op_margin_pct": 8.05,
+        "debt_ratio_pct": 99.72
+      },
+      {
+        "year": 2019,
+        "revenue_eok": 3563,
+        "op_profit_eok": 616,
+        "net_income_eok": -8,
+        "roe_pct": -0.42,
+        "op_margin_pct": 17.29,
+        "debt_ratio_pct": 173.66
+      },
+      {
+        "year": 2020,
+        "revenue_eok": 3436,
+        "op_profit_eok": -36,
+        "net_income_eok": -138,
+        "roe_pct": -5.29,
+        "op_margin_pct": -1.05,
+        "debt_ratio_pct": 207.64
+      },
+      {
+        "year": 2021,
+        "revenue_eok": 4184,
+        "op_profit_eok": -164,
+        "net_income_eok": 105,
+        "roe_pct": 3.94,
+        "op_margin_pct": -3.92,
+        "debt_ratio_pct": 314.02
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 5880,
+        "op_profit_eok": -67,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": -1.14,
+        "debt_ratio_pct": 188.53
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 4801,
+        "op_profit_eok": -700,
+        "net_income_eok": -1095,
+        "roe_pct": -38.67,
+        "op_margin_pct": -14.58,
+        "debt_ratio_pct": 240.18
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 4643,
+        "op_profit_eok": 34,
+        "net_income_eok": -622,
+        "roe_pct": -30.02,
+        "op_margin_pct": 0.73,
+        "debt_ratio_pct": 242.71
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 5214,
+        "op_profit_eok": 238,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 4.56,
+        "debt_ratio_pct": 260.58
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": 8.3,
+      "op_profit_cagr_pct": 12.39,
+      "best_year": 2019,
+      "worst_year": 2023,
+      "avg_roe_pct": -3.39
+    },
+    "valuation": {
+      "grade": "D",
+      "strengths": [
+        "2019년에 616억원의 높은 영업이익을 기록한 적이 있습니다.",
+        "10년간 매출액이 꾸준히 증가하는 추세를 보였습니다 (2016년 2,545억원 -> 2025년 5,214억원).",
+        "2025년에는 영업이익이 흑자로 전환될 것으로 전망됩니다."
+      ],
+      "risks": [
+        "최근 몇 년간 대규모 영업손실과 당기순손실을 기록하며 수익성이 크게 악화되었습니다.",
+        "부채비율이 200%를 상회하며 재무 건전성이 매우 취약한 상태입니다.",
+        "ROE가 지속적으로 마이너스를 기록하고 있으며, 매우 불안정한 모습을 보입니다."
+      ],
+      "one_liner": "매출액 성장에도 불구하고 심각한 수익성 악화와 높은 부채비율로 재무적 위험이 큰 기업입니다."
+    }
+  },
+  "dcf": {
+    "text": "퀀트 애널리스트로서 네패스(033640)의 DCF 적정가치를 계산하고 민감도 분석을 수행하겠습니다.\n\n제공된 데이터를 바탕으로 FCF를 계산하고, 5년간의 예측 기간과 영구 성장률을 이용한 터미널 밸류를 합산하여 적정가치를 산출합니다.\n\n**1. 기본 시나리오 DCF 적정가치 계산**\n\n먼저, 주어진 가정에 따라 FCF를 계산합니다.\n*   매출액: 5214 억원\n*   영업이익: 238 억원\n*   법인세율 (FCF 계산용): 25%\n*   감가상각비: 매출액의 10% = 5214 * 0.10 = 521.4 억원\n*   CAPEX: 매출액의 5% = 5214 * 0.05 = 260.7 억원\n\nFCF = 영업이익 × (1 - 법인세율) + 감가상각비 - CAPEX\nFCF = 238 × (1 - 0.25) + 521.4 - 260.7\nFCF = 238 × 0.75 + 521.4 - 260.7\nFCF = 178.5 + 521.4 - 260.7 = 439.2 억원\n\n5년 예측 기간 동안 FCF는 매년 439.2억원으로 가정합니다.\n\n**기본 시나리오 가정:**\n*   WACC = 9% (0.09)\n*   영구성장률 (g) = 2% (0.02)\n*   예측 기간 = 5년\n\n이제 Python 코드를 사용하여 DCF 적정가치를 계산하겠습니다.\n\n\n**결론:**\n\n*   **적정가치(기본): 5867.75억원**\n\n**DCF 적정가치 민감도 분석 (억원):**\n\n|       | WACC=7%   | WACC=8%   | WACC=9%   | WACC=10%  | WACC=11%  |\n| :---- | :-------- | :-------- | :-------- | :-------- | :-------- |\n| **g=1%** | 7072.06   | 6066.47   | 5312.14   | 4725.31   | 4255.74   |\n| **g=2%** | 8188.93   | 6835.10   | 5867.75   | 5141.95   | 4577.20   |\n| **g=3%** | 9864.25   | 7911.19   | 6608.56   | 5677.63   | 4979.03   |\n\n위 표는 WACC와 영구성장률(g)의 변화에 따른 네패스의 DCF 적정가치 민감도 분석 결과입니다. WACC가 낮아지고 영구성장률이 높아질수록 기업의 적정가치가 상승하는 것을 확인할 수 있습니다.",
+    "executed_code": "import pandas as pd\n\ndef calculate_dcf(revenue, operating_profit, tax_rate, depreciation_rate, capex_rate, wacc, g, forecast_years):\n    \"\"\"\n    DCF 적정가치를 계산하는 함수.\n    \"\"\"\n    # FCF 계산\n    depreciation = revenue * depreciation_rate\n    capex = revenue * capex_rate\n    fcf_base = operating_profit * (1 - tax_rate) + depreciation - capex\n\n    # 예측 기간 동안 FCF (성장률 가정이 없으므로 기본 FCF로 고정)\n    fcf_forecast = [fcf_base] * forecast_years\n\n    # Terminal Value 계산\n    if wacc <= g:\n        return float('inf') # WACC가 g보다 작거나 같으면 무한대 반환\n\n    fcf_year_n_plus_1 = fcf_forecast[-1] * (1 + g)\n    terminal_value = fcf_year_n_plus_1 / (wacc - g)\n\n    # FCF의 현재가치 합산\n    pv_fcf = 0\n    for i in range(forecast_years):\n        pv_fcf += fcf_forecast[i] / ((1 + wacc)**(i + 1))\n\n    # Terminal Value의 현재가치\n    pv_terminal_value = terminal_value / ((1 + wacc)**forecast_years)\n\n    return pv_fcf + pv_terminal_value\n\n# 재무 데이터 (억원)\nrevenue = 5214\noperating_profit = 238\n\n# 가정\ntax_rate = 0.25\ndepreciation_rate = 0.10\ncapex_rate = 0.05\nforecast_years = 5\n\n# 기본 시나리오\nwacc_base = 0.09\ng_base = 0.02\n\ndcf_fair_value_base = calculate_dcf(revenue, operating_profit, tax_rate, depreciation_rate, capex_rate, wacc_base, g_base, forecast_years)\n\nprint(f\"적정가치(기본): {dcf_fair_value_base:.2f}억원\")\n\n# 2. WACC × g 민감도 그리드 출력\nwacc_range = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_range = [0.01, 0.02, 0.03]\n\nsensitivity_results = pd.DataFrame(index=[f'g={g*100:.0f}%' for g in g_range],\n                                   columns=[f'WACC={wacc*100:.0f}%' for wacc in wacc_range])\n\nfor g_val in g_range:\n    for wacc_val in wacc_range:\n        value = calculate_dcf(revenue, operating_profit, tax_rate, depreciation_rate, capex_rate, wacc_val, g_val, forecast_years)\n        sensitivity_results.loc[f'g={g_val*100:.0f}%', f'WACC={wacc_val*100:.0f}%'] = f'{value:.2f}'\n\nprint(\"\\nDCF 적정가치 민감도 분석 (억원):\")\nprint(sensitivity_results)",
+    "code_output": "적정가치(기본): 5867.75억원\n\nDCF 적정가치 민감도 분석 (억원):\n      WACC=7%  WACC=8%  WACC=9% WACC=10% WACC=11%\ng=1%  7072.06  6066.47  5312.14  4725.31  4255.74\ng=2%  8188.93  6835.10  5867.75  5141.95  4577.20\ng=3%  9864.25  7911.19  6608.56  5677.63  4979.03"
+  },
+  "news": {
+    "text": "## 네패스(033640) 재무 및 시장 컨센서스 분석\n\n### 1. 재무 데이터가 보여주는 스토리와 현재 시장 컨센서스의 일치/불일치\n\n**재무 데이터 스토리 (10년 분석):** 네패스는 매출액 성장에도 불구하고 심각한 수익성 악화와 높은 부채비율로 인해 재무적 위험이 큰 기업으로 평가됩니다. 투자등급 D는 이러한 과거 재무 상태를 명확히 보여줍니다.\n\n**현재 시장 컨센서스 (최근 2주 뉴스):** 최근 시장 컨센서스는 과거 재무 데이터와는 **불일치**하는 양상을 보입니다. 시장은 네패스의 미래 성장 잠재력에 크게 주목하고 있으며, 긍정적인 전망이 지배적입니다.\n\n*   **AI/HBM 및 첨단 패키징 기술 선도:** 네패스는 비메모리 어드밴스드 패키징 시장, 특히 FO-PLP(Fan-Out Panel Level Packaging) 및 WLP(Wafer Level Packaging) 분야에서 강점을 보이며, AI 및 고대역폭메모리(HBM) 등 첨단 반도체에 필요한 차세대 패키징 기술(PoP, 2.5D 패키징) 개발에 적극적입니다. 2025년 하반기 양산을 목표로 하고 있습니다.\n*   **탈중국화 수혜:** 미국의 중국 규제 강화로 글로벌 팹리스 기업들이 밸류체인 탈중국화를 추진하면서 네패스와 같은 한국 기업들이 반사 이익을 얻고 있으며, 주요 고객사(M사)향 사업 확장이 기대됩니다.\n*   **실적 턴어라운드 기대:** 2026년 4월 3일자 보고서에 따르면 국내 AP 채택 확대에 따른 PMIC 물량 증가로 반도체 가동률이 빠르게 개선되고 있으며, NVIDIA 데이터센터향 전력반도체 공급 본격화 등 포트폴리오 다변화가 진행 중입니다. 또한, 2025년 3분기 누적 기준 매출액 10.9% 증가, 영업이익 100.7% 증가, 당기순이익 흑자 전환 등 긍정적인 실적 개선 흐름이 언급되기도 했습니다.\n*   **주가 상승:** 최근 삼성전자의 역대급 실적 발표와 반도체 소부장 기업들의 강세에 힘입어 네패스 주가가 52주 신고가를 경신하는 등 시장의 긍정적인 반응이 나타났습니다.\n\n### 2. 재무제표에서 드러나지 않는 리스크 또는 호재\n\n**호재:**\n\n*   **기술 리더십 및 신기술 개발:** 네패스는 2017년 업계 최초로 600mm FO-PLP를 상용화하는 등 비메모리 어드밴스드 패키징 분야에서 기술적 우위를 가지고 있습니다. AI 반도체 및 HBM 시장 성장에 발맞춰 PoP 및 2.5D 패키징 기술을 개발하고 있으며, 이는 향후 고성장 동력이 될 수 있습니다.\n*   **글로벌 공급망 재편 수혜:** 미중 무역 분쟁과 같은 지정학적 요인으로 인한 글로벌 반도체 공급망 재편은 중화권 의존도를 낮추려는 팹리스 고객사들에게 네패스와 같은 한국 기업의 위상을 높이는 기회가 되고 있습니다.\n*   **사업 다각화:** 반도체 패키징 외에도 전자재료(국산화 Chemical, HBM 공정용 소재) 및 2차전지 부품(ESS, EV 배터리) 사업을 영위하며 포트폴리오를 다각화하고 있습니다.\n*   **뉴로모픽 칩 관련성:** AI 다음 타자로 거론되는 인간 뇌 구조 모방 '뉴로모픽' 칩 관련 테마에 엮여 있어 미래 성장 가능성이 있습니다.\n\n**리스크:**\n\n*   **FO-PLP 사업의 초기 적자:** 핵심 기술인 FO-PLP는 현재 양산 초기 단계로 낮은 가동률로 인해 분기당 약 150억 원의 적자가 발생하는 것으로 추정됩니다. 의미 있는 이익 발생을 위해서는 10K/월 규모의 CAPA 가동이 필요하며, 이는 추가적인 시간과 투자를 요구합니다.\n*   **높은 밸류에이션:** 현재 PBR이 4.25배(2025.12.04 기준) 또는 4.59배(2026.04.07 기준)로, 과거 재무 상황 대비 높은 수준을 보이고 있습니다. 이는 미래 성장 기대감이 주가에 상당 부분 반영되어 있음을 의미하며, 기대에 미치지 못할 경우 조정 가능성이 있습니다.\n*   **경쟁 심화:** AI 패키징 시장은 대만 기업들이 과점하고 있어 경쟁이 치열하며, 네패스의 신기술 상용화 및 시장 점유율 확대에 대한 불확실성이 존재합니다.\n*   **실적 개선의 불확실성:** 2023년에는 IT 수요 부진으로 인한 상반기 Fabless 업체의 주문 감소와 파운드리 가동률 하락이 전망되기도 했습니다. (현재 시점은 2026년이지만, 과거 시장 환경의 변동성을 보여주는 예시입니다.)\n\n### 3. 최종 판정\n\n네패스는 과거 10년간의 재무제표 분석 결과 심각한 수익성 악화와 높은 부채비율로 인해 투자등급 D를 받았지만, 최근 시장은 AI, HBM, 첨단 패키징 기술 및 탈중국화 수혜 등 미래 성장 동력에 집중하며 긍정적인 전망을 내놓고 있습니다. 이러한 기대감은 주가에 상당 부분 반영되어 52주 신고가를 경신하기도 했습니다.\n\n그러나 핵심 사업인 FO-PLP의 초기 적자 상태와 신기술 상용화 및 수익성 확보까지의 실행 리스크가 여전히 존재합니다. 현재 주가는 미래 성장 기대감을 선반영하고 있는 것으로 판단됩니다.\n\n따라서, 단기적인 급등보다는 중장기적인 관점에서 실제 실적 개선 여부를 확인하는 것이 중요하다고 판단하여 **관망** 의견을 제시합니다.\n\n**최종 판정: 관망**",
+    "citations": [
+      {
+        "title": "pstatic.net",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFZaqh2vjWfXt6di7CCF_eicEQs16uKolqVpxg7lOz7aPVOhotWWqxotymN2MoR_jwXPixkB2LwI0tBinFzEzMMXroPdOl9Q3Nc7SKj3vZz3pABmp_9JsQ6xNbtU8y0gKO36zhWcQTMYE7Nib2Yob0-J-a5K4bJTgKRziZoGRZqwCqUuHg3"
+      },
+      {
+        "title": "newsprime.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQF4s8OaQ6mGiqn5Cy3OWynSy7vmrNletkNE7zTpHqktGP466zN3IRQJ_3XcDe-isPLeX1pqZggSolhvcQ7T1SPxdgGUiZp9NVrFJILlI_SuYOwBpljrKyRuQZKJLMFMTLbHxbESJmY3bATr_gleKI-ZfR1WYdPR4A=="
+      },
+      {
+        "title": "naver.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGvXQM5yVAdXHxFfcCd_GuFyoLSRz5QU7buifLFXVS64MSfMluy-5DAENZjkDdfjT71FWw5meLOdwayBn3m7HkGVNgZwyeOw0ukH2fMx3P1UaHJrNAOSXOK4DXEdxux0DQUbd3yzsAXojtjz9ERyDFFUG3jUYWU-HODk0pbxNe4H0YdQAyYh2o_PKnJEQ=="
+      },
+      {
+        "title": "tistory.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHldNlck1oaFmQwP9ibReoh-Prxc8dIoO4GY7SiwjXpFwW5uPZS9b6f1taA-Evbkyu0tQPKVKIIB6sF2mNf46BDa8B5245XnrM9jm2Oi10x6DlwADxRVl-2Su1sze_DzNB7R9uON8YrVayu-URNyM9s3y_wU2DMVD0N-MvvWW8F7GuUj2tKGnb5poa1vvHl-3d9cuIjJfMhTqtTSC6ZApIG5q6HkL4stsp-_AqOND0RLOsyJWVLvrOEq8sX7s0hddb5k6AQFO6uO89Tm6JAicR6QR1PO9SoJnHNWPJCTJ6nLvR5hVLSzh-jC49So3OtzhXVH4ekMFo="
+      },
+      {
+        "title": "newspim.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQH7C1D_ItvQt3vKFxN5_mhpj2_tkvuCjMmPppnhWmCwcZkfcDL3SI5uLYFnXYaPshIoNOsdr5Pup8pWoxv5tipgMDCeFCUcp6o0o9_5nXdU0XYEpjz6XvcwxfRtrOJskDqg_qF90GjwTj_-gA=="
+      },
+      {
+        "title": "hankyung.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFM7IWTl_0lnsl0mWW512amAP9m9xIQA_LE1xFhvXwl1v0eLxpExGrf2VX_bAQI95HcwdPvyozMRQ4-8iPcbOc0ch7Xg9-gcbA9s3xVgRAL1ChRfeuSk9IlCWwjs0QD26MTwfG2jP3GvV4="
+      },
+      {
+        "title": "wisereport.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQE4R5bhi7k2azsoddDztEbpEHV1L8AWiMgpMJMGUSm6NpifTlMCYfcmRWM91exz9usZdWvaFd7on-A5CndO4uxvHC6kyURrYLCgHSIpuJ5YnkYPb6IKUrvwdA0lRCJpWRa1WwzgrX946QV0fyklHKiAjtvV8buSKzVq6K9Y"
+      },
+      {
+        "title": "etoday.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFdLZpnfYz0L3HZuZBthVYkeuCKODpdBwCUYRGjL7zBoHPXAh_j0XOSIk5d5rZlx8DfC7Rkz6A862gyDlwBqdnDBkWVMWYPplzMj_g67je7UeNEQKzdICCwQnakGZBoZSl_ABaR3w=="
+      },
+      {
+        "title": "daum.net",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFJrk66_wHdGjcJQeCkZjkbhpsoD8TI87AODDJ9iSIBYFpfT7to_WSofK0fvnFLVDG4d2hVAjjYA4zi421EFLSaSkja8hflzcndcX9_-RpDe3jl5Oq06h4fqxDf53VZxi0bb4sr4zUV"
+      },
+      {
+        "title": "daum.net",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGygzEkN0ZHcFPk3T-fv6uCh6XqzQqQc4osLkh7jDEf4cYcOMJbXIJim6IA2o-4yYls3O5d8l_r41ITcpZB9Y3z6FXiB_6nqp4zcfodEZl17kvAnD369orSfJQRanj7U7_vzFP5AYegSSc="
+      }
+    ]
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=00227333",
+    "summary": "공시 페이지 접근 제한"
+  }
+}
