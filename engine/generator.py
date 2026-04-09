@@ -8,12 +8,40 @@
 
 import asyncio
 from datetime import date, datetime, timedelta
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Any
+import json
 import os
 import sys
+import tempfile
 import time
 from dotenv import load_dotenv
 load_dotenv(override=True)
+
+
+def _write_json_atomic(filepath: str, data: Any, indent: int = 2) -> None:
+    """Crash-safe JSON write. Local to engine/ to preserve Flask decoupling.
+
+    Writes to a temp file in the same directory, fsyncs, then os.replace()
+    for atomic rename. Readers see either the old file or the fully-written
+    new one — never a truncated one.
+    """
+    abs_path = os.path.abspath(filepath)
+    directory = os.path.dirname(abs_path) or '.'
+    os.makedirs(directory, exist_ok=True)
+    fd, tmp_path = tempfile.mkstemp(prefix='.tmp_', suffix='.json', dir=directory)
+    try:
+        with os.fdopen(fd, 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=indent, ensure_ascii=False)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(tmp_path, abs_path)
+    except Exception:
+        try:
+            if os.path.exists(tmp_path):
+                os.unlink(tmp_path)
+        except OSError:
+            pass
+        raise
 
 # 모듈 경로 추가 + OneDrive/외부 경로 오염 방지
 _blocked = ['kr_market_package', 'OneDrive', '바탕 화면', 'desktop',
@@ -473,17 +501,15 @@ async def analyze_single_stock_by_code(
             data["signals"] = updated_signals
             data["updated_at"] = datetime.now().isoformat() # 전체 업데이트 시간 갱신
             
-            # 파일 저장
+            # 파일 저장 (atomic rename — 크래시 시에도 truncated 파일 방지)
             # 1) Latest
-            with open(latest_path, "w", encoding="utf-8") as f:
-                json.dump(data, f, indent=2, ensure_ascii=False)
-                
+            _write_json_atomic(latest_path, data)
+
             # 2) Daily (오늘 날짜)
             date_str = date.today().strftime("%Y%m%d")
             daily_path = os.path.join(base_dir, f"jongga_v2_results_{date_str}.json")
             if os.path.exists(daily_path):
-                 with open(daily_path, "w", encoding="utf-8") as f:
-                    json.dump(data, f, indent=2, ensure_ascii=False)
+                _write_json_atomic(daily_path, data)
             
             return new_signal
             
@@ -492,10 +518,7 @@ async def analyze_single_stock_by_code(
             return None
 
 def save_result_to_json(result: ScreenerResult, claude_picks: dict = None):
-    """결과 JSON 저장 (Daily + Latest)"""
-    import json
-    import shutil
-
+    """결과 JSON 저장 (Daily + Latest) — atomic rename"""
     data = {
         "date": result.date.isoformat(),
         "total_candidates": result.total_candidates,
@@ -507,26 +530,21 @@ def save_result_to_json(result: ScreenerResult, claude_picks: dict = None):
         "updated_at": _get_kst_now().isoformat(),
         "claude_picks": claude_picks or {}
     }
-    
+
     # 1. 날짜별 파일 저장
     date_str = result.date.strftime("%Y%m%d")
     filename = f"jongga_v2_results_{date_str}.json"
-    
+
     base_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data")
     os.makedirs(base_dir, exist_ok=True)
-    
+
     save_path = os.path.join(base_dir, filename)
-    
-    with open(save_path, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2, ensure_ascii=False)
-    
+    _write_json_atomic(save_path, data)
     print(f"\n[저장 완료] Daily: {save_path}")
-    
+
     # 2. Latest 파일 업데이트 (덮어쓰기)
     latest_path = os.path.join(base_dir, "jongga_v2_latest.json")
-    with open(latest_path, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2, ensure_ascii=False)
-        
+    _write_json_atomic(latest_path, data)
     print(f"[저장 완료] Latest: {latest_path}")
 
 

@@ -16,6 +16,7 @@ from threading import Lock
 logger = logging.getLogger(__name__)
 
 from app.utils.paths import DATA_DIR
+from app.utils.atomic_json import write_json_atomic
 
 # ─── 설정 ───
 _paper = os.environ.get("KIS_PAPER", "true").lower() in ("true", "1")
@@ -52,9 +53,11 @@ def _load_cached_token():
 
 def _save_token_cache(token):
     try:
-        os.makedirs(os.path.dirname(_TOKEN_CACHE_FILE), exist_ok=True)
-        with open(_TOKEN_CACHE_FILE, "w") as f:
-            json.dump({"token": token, "expires_at": time.time() + 23 * 3600}, f)
+        write_json_atomic(
+            _TOKEN_CACHE_FILE,
+            {"token": token, "expires_at": time.time() + 23 * 3600},
+            indent=0,
+        )
     except (IOError, OSError) as e:
         logger.warning(f"KIS token cache write failed: {e}")
 
@@ -574,18 +577,14 @@ def _save_result(result):
 
         if has_results:
             # 결과 있음 → latest + archive 모두 저장
-            with open(latest, "w", encoding="utf-8") as f:
-                json.dump(result, f, ensure_ascii=False)
-            with open(archive, "w", encoding="utf-8") as f:
-                json.dump(result, f, ensure_ascii=False)
+            write_json_atomic(latest, result, indent=0)
+            write_json_atomic(archive, result, indent=0)
         else:
             # 결과 없음 (장 마감 등) → 기존 파일이 있으면 보존, 없으면 저장
             if not os.path.exists(latest):
-                with open(latest, "w", encoding="utf-8") as f:
-                    json.dump(result, f, ensure_ascii=False)
+                write_json_atomic(latest, result, indent=0)
             if not os.path.exists(archive):
-                with open(archive, "w", encoding="utf-8") as f:
-                    json.dump(result, f, ensure_ascii=False)
+                write_json_atomic(archive, result, indent=0)
     except Exception as e:
         logger.warning(f"스크리너 결과 저장 실패: {e}")
 
