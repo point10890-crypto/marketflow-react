@@ -173,12 +173,12 @@ export default function WaveOverviewPage() {
                         <i className="fas fa-wave-square text-cyan-400" />
                     </div>
                     <div>
-                        <h1 className="text-xl font-black text-white">W Pattern</h1>
-                        <p className="text-xs text-gray-500">AI 차트 패턴 자동 인식 · M&W 파동 분석</p>
+                        <h1 className="text-2xl font-black text-white">W Pattern</h1>
+                        <p className="text-sm text-gray-400">AI 차트 패턴 자동 인식 · M&W 파동 분석</p>
                     </div>
                 </div>
                 {screener?.updated_at && (
-                    <div className="text-[10px] text-gray-600">
+                    <div className="text-xs text-gray-500">
                         Updated: {screener.updated_at}
                     </div>
                 )}
@@ -288,7 +288,7 @@ export default function WaveOverviewPage() {
                             </button>
                         ))}
                     </div>
-                    <div className="flex items-center gap-1.5 text-[10px] text-gray-500">
+                    <div className="flex items-center gap-1.5 text-xs text-gray-400">
                         <span>정렬</span>
                         {([
                             ['confidence', '신뢰도'],
@@ -298,10 +298,10 @@ export default function WaveOverviewPage() {
                             <button
                                 key={key}
                                 onClick={() => setSortMode(key)}
-                                className={`px-2 py-0.5 rounded text-[10px] transition-all ${
+                                className={`px-2.5 py-1 rounded text-xs transition-all ${
                                     sortMode === key
                                         ? 'bg-white/10 text-white font-bold'
-                                        : 'text-gray-600 hover:text-gray-400'
+                                        : 'text-gray-500 hover:text-gray-300'
                                 }`}
                             >
                                 {label}
@@ -320,26 +320,26 @@ export default function WaveOverviewPage() {
             ) : filteredSignals.length > 0 ? (
                 <div className="bg-[#1c1c1e] rounded-2xl border border-white/5 overflow-hidden">
                     <div className="px-4 py-3 border-b border-white/5 flex items-center justify-between">
-                        <h3 className="text-sm font-bold text-white">
+                        <h3 className="text-base font-bold text-white">
                             감지된 패턴 <span className="text-cyan-400">{filteredSignals.length}개</span>
                         </h3>
-                        <span className="text-[10px] text-gray-600">{screener?.date}</span>
+                        <span className="text-xs text-gray-500">{screener?.date}</span>
                     </div>
 
                     {/* Desktop Table */}
                     <div className="hidden sm:block">
                         <table className="w-full text-sm">
                             <thead>
-                                <tr className="text-gray-500 text-xs border-b border-white/5">
-                                    <th className="text-left px-4 py-2 font-medium">종목</th>
-                                    <th className="text-center px-2 py-2 font-medium">패턴</th>
-                                    <th className="text-center px-2 py-2 font-medium">방향</th>
-                                    <th className="text-center px-2 py-2 font-medium">신뢰도</th>
-                                    <th className="text-center px-2 py-2 font-medium">완성도</th>
-                                    <th className="text-right px-3 py-2 font-medium">현재가</th>
-                                    <th className="text-right px-3 py-2 font-medium">넥라인</th>
-                                    <th className="text-right px-3 py-2 font-medium">거리</th>
-                                    <th className="text-center px-2 py-2 font-medium">거래량</th>
+                                <tr className="text-gray-400 text-sm border-b border-white/5">
+                                    <th className="text-left px-4 py-2.5 font-medium">종목</th>
+                                    <th className="text-center px-2 py-2.5 font-medium">패턴</th>
+                                    <th className="text-center px-2 py-2.5 font-medium">방향</th>
+                                    <th className="text-center px-2 py-2.5 font-medium">신뢰도</th>
+                                    <th className="text-center px-2 py-2.5 font-medium">완성도</th>
+                                    <th className="text-right px-3 py-2.5 font-medium">현재가</th>
+                                    <th className="text-right px-3 py-2.5 font-medium">넥라인</th>
+                                    <th className="text-right px-3 py-2.5 font-medium">거리</th>
+                                    <th className="text-center px-2 py-2.5 font-medium">거래량</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -353,61 +353,61 @@ export default function WaveOverviewPage() {
                                                 selectedTicker === s.ticker ? 'bg-cyan-500/10' : 'hover:bg-white/5'
                                             }`}
                                         >
-                                            <td className="px-4 py-2.5">
+                                            <td className="px-4 py-3">
                                                 <div className="flex items-center gap-2">
-                                                    <span className="text-white font-semibold text-xs">{s.name}</span>
-                                                    <span className="text-gray-600 text-[10px]">{s.ticker}</span>
+                                                    <span className="text-white font-bold text-sm">{s.name}</span>
+                                                    <span className="text-gray-500 text-xs">{s.ticker}</span>
                                                 </div>
                                             </td>
-                                            <td className="text-center px-2 py-2.5">
-                                                <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                                            <td className="text-center px-2 py-3">
+                                                <span className={`px-2 py-0.5 rounded text-xs font-bold ${
                                                     bp.pattern_class === 'W'
                                                         ? 'bg-cyan-500/20 text-cyan-400'
                                                         : 'bg-pink-500/20 text-pink-400'
                                                 }`}>{bp.wave_label}</span>
                                             </td>
-                                            <td className="text-center px-2 py-2.5">
-                                                <span className={`text-[10px] font-bold ${
+                                            <td className="text-center px-2 py-3">
+                                                <span className={`text-xs font-bold ${
                                                     bp.bullish_bias > 0 ? 'text-green-400' : 'text-red-400'
                                                 }`}>
                                                     {bp.bullish_bias > 0 ? 'Bullish' : 'Bearish'}
                                                 </span>
                                             </td>
-                                            <td className="text-center px-2 py-2.5">
-                                                <span className={`font-bold text-xs ${
+                                            <td className="text-center px-2 py-3">
+                                                <span className={`font-bold text-sm ${
                                                     bp.confidence >= 70 ? 'text-green-400' :
                                                     bp.confidence >= 50 ? 'text-yellow-400' : 'text-gray-400'
                                                 }`}>{bp.confidence}</span>
                                             </td>
-                                            <td className="text-center px-2 py-2.5">
-                                                <div className="flex items-center justify-center gap-1">
-                                                    <div className="w-10 h-1.5 bg-gray-700 rounded-full overflow-hidden">
+                                            <td className="text-center px-2 py-3">
+                                                <div className="flex items-center justify-center gap-1.5">
+                                                    <div className="w-12 h-2 bg-gray-700 rounded-full overflow-hidden">
                                                         <div
                                                             className="h-full bg-cyan-500 rounded-full"
                                                             style={{ width: `${bp.completion_pct}%` }}
                                                         />
                                                     </div>
-                                                    <span className="text-gray-400 text-[10px]">{bp.completion_pct}%</span>
+                                                    <span className="text-gray-300 text-xs">{bp.completion_pct}%</span>
                                                 </div>
                                             </td>
-                                            <td className="text-right px-3 py-2.5 text-white font-mono text-xs">
+                                            <td className="text-right px-3 py-3 text-white font-mono text-sm font-bold">
                                                 {s.price.toLocaleString()}
                                             </td>
-                                            <td className="text-right px-3 py-2.5 text-gray-400 font-mono text-xs">
+                                            <td className="text-right px-3 py-3 text-gray-300 font-mono text-sm">
                                                 {bp.neckline_price.toLocaleString()}
                                             </td>
-                                            <td className="text-right px-3 py-2.5">
-                                                <span className={`font-mono text-xs ${
+                                            <td className="text-right px-3 py-3">
+                                                <span className={`font-mono text-sm font-bold ${
                                                     bp.neckline_distance_pct > 0 ? 'text-green-400' : 'text-red-400'
                                                 }`}>
                                                     {bp.neckline_distance_pct > 0 ? '+' : ''}{bp.neckline_distance_pct.toFixed(1)}%
                                                 </span>
                                             </td>
-                                            <td className="text-center px-2 py-2.5">
+                                            <td className="text-center px-2 py-3">
                                                 {bp.volume_confirmed ? (
-                                                    <i className="fas fa-check-circle text-green-400 text-xs" />
+                                                    <i className="fas fa-check-circle text-green-400 text-sm" />
                                                 ) : (
-                                                    <i className="fas fa-minus-circle text-gray-600 text-xs" />
+                                                    <i className="fas fa-minus-circle text-gray-600 text-sm" />
                                                 )}
                                             </td>
                                         </tr>
@@ -497,10 +497,10 @@ function StatCard({ label, value, icon, color = 'text-white' }: {
     return (
         <div className="bg-[#1c1c1e] rounded-xl border border-white/5 p-3">
             <div className="flex items-center gap-2 mb-1">
-                <i className={`fas ${icon} text-[10px] text-gray-600`} />
-                <span className="text-[10px] text-gray-500">{label}</span>
+                <i className={`fas ${icon} text-xs text-gray-500`} />
+                <span className="text-xs text-gray-400">{label}</span>
             </div>
-            <div className={`text-lg font-black ${color}`}>{value}</div>
+            <div className={`text-xl font-black ${color}`}>{value}</div>
         </div>
     );
 }
