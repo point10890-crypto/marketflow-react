@@ -101,12 +101,12 @@ export default function PatternChart({
 
         // ── Candlestick ──
         const candleSeries = chart.addSeries(CandlestickSeries, {
-            upColor: '#22c55e',
-            downColor: '#ef4444',
-            borderDownColor: '#ef4444',
-            borderUpColor: '#22c55e',
-            wickDownColor: '#ef4444',
-            wickUpColor: '#22c55e',
+            upColor: '#ef4444',
+            downColor: '#3b82f6',
+            borderDownColor: '#3b82f6',
+            borderUpColor: '#ef4444',
+            wickDownColor: '#3b82f6',
+            wickUpColor: '#ef4444',
         });
 
         // 날짜 중복 제거 (lightweight-charts는 동일 time 허용 안 함)
@@ -137,7 +137,7 @@ export default function PatternChart({
         const volData: HistogramData<Time>[] = uniqueData.map(c => ({
             time: c.date as Time,
             value: c.volume,
-            color: c.close >= c.open ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.2)',
+            color: c.close >= c.open ? 'rgba(239,68,68,0.2)' : 'rgba(59,130,246,0.2)',
         }));
         volumeSeries.setData(volData);
 
