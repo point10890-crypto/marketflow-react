@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, type ReactNode } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { usAPI, krAPI, cryptoAPI, briefingAPI, type BriefingData, type BriefingMarketData, type DecisionSignalData, type AIBriefing } from '@/lib/api';
 import { usePullToRefreshRegister } from '@/components/layout/PullToRefreshProvider';
@@ -243,6 +243,35 @@ function BriefingTabBar({ active, onChange, morningAvail, closingAvail }: {
 
 // ── Simple Markdown Renderer ────────────────────────────────────────────────
 
+// Parse inline **bold** and `code` into React nodes.
+// Returns plain text + <strong>/<code> elements — no HTML strings, no XSS.
+function inlineFmt(text: string): ReactNode[] {
+    const parts: ReactNode[] = [];
+    const pattern = /\*\*(.+?)\*\*|`(.+?)`/g;
+    let lastIndex = 0;
+    let key = 0;
+    let match: RegExpExecArray | null;
+    while ((match = pattern.exec(text)) !== null) {
+        if (match.index > lastIndex) {
+            parts.push(text.slice(lastIndex, match.index));
+        }
+        if (match[1] !== undefined) {
+            parts.push(
+                <strong key={key++} className="text-white font-bold">{match[1]}</strong>
+            );
+        } else if (match[2] !== undefined) {
+            parts.push(
+                <code key={key++} className="text-amber-300 bg-white/5 px-1 rounded text-[10px]">{match[2]}</code>
+            );
+        }
+        lastIndex = match.index + match[0].length;
+    }
+    if (lastIndex < text.length) {
+        parts.push(text.slice(lastIndex));
+    }
+    return parts;
+}
+
 function RenderMarkdown({ content }: { content: string }) {
     const lines = content.split('\n');
     const elements: JSX.Element[] = [];
@@ -253,21 +282,15 @@ function RenderMarkdown({ content }: { content: string }) {
             elements.push(
                 <ul key={`list-${elements.length}`} className="space-y-1 my-2">
                     {listItems.map((item, i) => (
-                        <li key={i} className="flex items-start gap-2 text-[11px] text-gray-300 leading-relaxed">
+                        <li key={`li-${i}-${item.slice(0, 16)}`} className="flex items-start gap-2 text-[11px] text-gray-300 leading-relaxed">
                             <span className="text-amber-400 mt-0.5 shrink-0">•</span>
-                            <span dangerouslySetInnerHTML={{ __html: inlineFmt(item) }} />
+                            <span>{inlineFmt(item)}</span>
                         </li>
                     ))}
                 </ul>
             );
             listItems = [];
         }
-    };
-
-    const inlineFmt = (text: string): string => {
-        return text
-            .replace(/\*\*(.+?)\*\*/g, '<strong class="text-white font-bold">$1</strong>')
-            .replace(/`(.+?)`/g, '<code class="text-amber-300 bg-white/5 px-1 rounded text-[10px]">$1</code>');
     };
 
     for (let i = 0; i < lines.length; i++) {
@@ -299,16 +322,17 @@ function RenderMarkdown({ content }: { content: string }) {
                             <thead>
                                 <tr>
                                     {header.map((h, j) => (
-                                        <th key={j} className="text-left text-gray-500 font-semibold py-1 px-2 border-b border-white/10">{h}</th>
+                                        <th key={`th-${j}-${h}`} className="text-left text-gray-500 font-semibold py-1 px-2 border-b border-white/10">{h}</th>
                                     ))}
                                 </tr>
                             </thead>
                             <tbody>
                                 {body.map((row, ri) => (
-                                    <tr key={ri}>
+                                    <tr key={`tr-${ri}`}>
                                         {row.map((cell, ci) => (
-                                            <td key={ci} className="text-gray-300 py-1 px-2 border-b border-white/5"
-                                                dangerouslySetInnerHTML={{ __html: inlineFmt(cell) }} />
+                                            <td key={`td-${ri}-${ci}`} className="text-gray-300 py-1 px-2 border-b border-white/5">
+                                                {inlineFmt(cell)}
+                                            </td>
                                         ))}
                                     </tr>
                                 ))}
@@ -321,8 +345,9 @@ function RenderMarkdown({ content }: { content: string }) {
         }
         flushList();
         elements.push(
-            <p key={`p-${elements.length}`} className="text-[11px] text-gray-300 leading-relaxed my-1"
-                dangerouslySetInnerHTML={{ __html: inlineFmt(line) }} />
+            <p key={`p-${elements.length}`} className="text-[11px] text-gray-300 leading-relaxed my-1">
+                {inlineFmt(line)}
+            </p>
         );
     }
     flushList();
