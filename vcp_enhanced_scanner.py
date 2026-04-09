@@ -25,8 +25,15 @@ import numpy as np
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE_DIR, 'data')
 
+# app.utils.yf_safe 경로 확보 (scheduler 없이 단독 실행도 지원)
+if BASE_DIR not in sys.path:
+    sys.path.insert(0, BASE_DIR)
+
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [VCP] %(message)s')
 logger = logging.getLogger(__name__)
+
+# 하드 타임아웃 래핑된 yfinance 헬퍼 — 네트워크 블립/rate-limit 시에도 스캐너가 멈추지 않도록
+from app.utils.yf_safe import yf_download_safe
 
 
 # ── Minervini Stage 2 Trend Template ──────────────────────────────────────
@@ -263,9 +270,7 @@ def compute_composite(trend: Dict, vcp: Dict, volume: Dict, pivot: Dict, rs: Dic
 # ── Market Scanners ───────────────────────────────────────────────────────
 
 def scan_us_market() -> Dict:
-    """US 마켓 VCP 스캔 — yfinance 기반"""
-    import yfinance as yf
-
+    """US 마켓 VCP 스캔 — yfinance (yf_safe 하드 타임아웃) 기반"""
     start_time = time.time()
     logger.info("🇺🇸 US VCP 스캔 시작...")
 
@@ -278,11 +283,13 @@ def scan_us_market() -> Dict:
 
     signals = []
     stage2_count = 0
+    download_failed = 0
 
     for ticker in tickers:
         try:
-            hist = yf.download(ticker, period='1y', progress=False, timeout=10)
+            hist = yf_download_safe(ticker, timeout=12.0, period='1y')
             if hist.empty or len(hist) < 100:
+                download_failed += 1
                 continue
 
             closes = hist['Close'].values.flatten()
@@ -348,9 +355,7 @@ def scan_us_market() -> Dict:
 
 
 def scan_crypto_market() -> Dict:
-    """Crypto 마켓 VCP 스캔 — yfinance 기반"""
-    import yfinance as yf
-
+    """Crypto 마켓 VCP 스캔 — yfinance (yf_safe 하드 타임아웃) 기반"""
     start_time = time.time()
     logger.info("₿ Crypto VCP 스캔 시작...")
 
@@ -360,11 +365,13 @@ def scan_crypto_market() -> Dict:
 
     signals = []
     stage2_count = 0
+    download_failed = 0
 
     for ticker in tickers:
         try:
-            hist = yf.download(ticker, period='1y', progress=False, timeout=10)
+            hist = yf_download_safe(ticker, timeout=12.0, period='1y')
             if hist.empty or len(hist) < 60:
+                download_failed += 1
                 continue
 
             closes = hist['Close'].values.flatten()
@@ -440,9 +447,7 @@ def scan_crypto_market() -> Dict:
 
 
 def scan_kr_market() -> Dict:
-    """KR 마켓 VCP 스캔 — 기존 daily_prices.csv + yfinance 기반"""
-    import yfinance as yf
-
+    """KR 마켓 VCP 스캔 — yfinance (yf_safe 하드 타임아웃) 기반"""
     start_time = time.time()
     logger.info("🇰🇷 KR VCP 스캔 시작...")
 
@@ -451,16 +456,18 @@ def scan_kr_market() -> Dict:
 
     signals = []
     stage2_count = 0
+    download_failed = 0
 
     for code, name in tickers:
         try:
             ticker_yf = f"{code}.KS"
-            hist = yf.download(ticker_yf, period='1y', progress=False, timeout=10)
+            hist = yf_download_safe(ticker_yf, timeout=12.0, period='1y')
             if hist.empty or len(hist) < 100:
                 # KOSDAQ 시도
                 ticker_yf = f"{code}.KQ"
-                hist = yf.download(ticker_yf, period='1y', progress=False, timeout=10)
+                hist = yf_download_safe(ticker_yf, timeout=12.0, period='1y')
                 if hist.empty or len(hist) < 100:
+                    download_failed += 1
                     continue
 
             closes = hist['Close'].values.flatten()
@@ -554,12 +561,11 @@ def _save_result(data: Dict, filename: str):
 
 
 def _get_benchmark_closes(ticker: str) -> Optional[np.ndarray]:
-    import yfinance as yf
     try:
-        hist = yf.download(ticker, period='1y', progress=False, timeout=10)
+        hist = yf_download_safe(ticker, timeout=12.0, period='1y')
         if not hist.empty:
             return hist['Close'].values.flatten()
-    except:
+    except Exception:
         pass
     return None
 
@@ -575,7 +581,7 @@ def _get_ticker_name(ticker: str) -> str:
         'SNPS': 'Synopsys', 'CDNS': 'Cadence', 'MRVL': 'Marvell', 'ON': 'ON Semi',
         'PANW': 'Palo Alto', 'CRWD': 'CrowdStrike', 'FTNT': 'Fortinet', 'ZS': 'Zscaler',
         'NET': 'Cloudflare', 'DDOG': 'Datadog', 'SNOW': 'Snowflake', 'MDB': 'MongoDB',
-        'PLTR': 'Palantir', 'COIN': 'Coinbase', 'SQ': 'Block', 'SHOP': 'Shopify',
+        'PLTR': 'Palantir', 'COIN': 'Coinbase', 'XYZ': 'Block', 'SHOP': 'Shopify',
         'UBER': 'Uber', 'ABNB': 'Airbnb', 'DASH': 'DoorDash', 'SPOT': 'Spotify',
         'LLY': 'Eli Lilly', 'UNH': 'UnitedHealth', 'JNJ': 'J&J', 'ABBV': 'AbbVie',
         'PFE': 'Pfizer', 'MRK': 'Merck', 'TMO': 'Thermo Fisher', 'ABT': 'Abbott',
@@ -610,7 +616,7 @@ def _get_us_watchlist() -> List[str]:
         # 빅테크
         'AAPL', 'GOOGL', 'AMZN', 'META', 'TSLA', 'NFLX',
         # 핀테크
-        'V', 'MA', 'SQ', 'COIN', 'SHOP',
+        'V', 'MA', 'XYZ', 'COIN', 'SHOP',
         # 헬스케어
         'LLY', 'UNH', 'ABBV', 'TMO', 'ISRG', 'DXCM', 'VEEV', 'ABT',
         # 금융

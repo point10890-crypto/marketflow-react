@@ -1215,6 +1215,9 @@ def run_vcp_enhanced_scan(market: str) -> bool:
                 with open(result_file, 'r', encoding='utf-8') as f:
                     data = json.load(f)
                 signals = data.get('signals', [])
+                summary = data.get('summary', {}) or {}
+                stage2_passed = int(summary.get('stage2_passed', 0) or 0)
+                total_screened = int(summary.get('total_screened', 0) or 0)
                 mtime = os.path.getmtime(result_file)
                 file_age = time.time() - mtime
                 if file_age > 300:  # 5분 이상 된 파일 = 갱신 안 됨
@@ -1222,7 +1225,26 @@ def run_vcp_enhanced_scan(market: str) -> bool:
                     if attempt < max_retries:
                         time.sleep(10)
                     continue
-                logger.info(f"✅ {market_upper} VCP 검증 완료: {len(signals)}개 시그널")
+                # self-verify: stage2==0 또는 signals 비어있으면 이상 징후 (yfinance 일시 장애 의심)
+                if total_screened > 0 and stage2_passed == 0 and len(signals) == 0:
+                    logger.warning(
+                        f"⚠️ {market_upper} VCP self-verify 실패: stage2=0 "
+                        f"(screened={total_screened}) — yfinance 일시 장애 의심"
+                    )
+                    if attempt < max_retries:
+                        time.sleep(30)  # yfinance 회복 대기
+                        continue
+                    # 최종 실패 → 알림
+                    send_telegram(
+                        f"⚠️ {market_upper} VCP self-verify 실패\n"
+                        f"screened={total_screened}, stage2=0, signals=0\n"
+                        f"yfinance 외부 장애 가능성 — 다음 스케줄 재시도"
+                    )
+                    return False
+                logger.info(
+                    f"✅ {market_upper} VCP 검증 완료: {len(signals)}개 시그널 "
+                    f"(stage2={stage2_passed}/{total_screened})"
+                )
                 return True
             except Exception as e:
                 logger.warning(f"⚠️ {market_upper} VCP 결과 파일 읽기 실패: {e}")
