@@ -19,6 +19,7 @@ kr_bp = Blueprint('kr', __name__)
 from app.utils.paths import BASE_DIR, DATA_DIR
 from app.auth.decorators import admin_required
 from app.utils.json_cache import load_json_cached
+from app.utils.atomic_json import write_json_atomic
 
 # market_gate 임포트를 위한 경로 등록
 if BASE_DIR not in sys.path:
@@ -148,7 +149,8 @@ def get_kr_signals():
                         signal_by_yf[yf_t] = s
 
                     if yf_tickers:
-                        price_data = yf.download(yf_tickers, period='1d', interval='1m', progress=False, threads=True)
+                        from app.utils.yf_safe import yf_download_safe
+                        price_data = yf_download_safe(yf_tickers, timeout=8.0, period='1d', interval='1m')
 
                         if not price_data.empty:
                             closes = price_data['Close']
@@ -531,20 +533,19 @@ def _build_yf_ticker(code: str, market: str) -> str:
 
 
 def _batch_fetch_prices(tickers: list, start_date: str) -> dict:
-    """yfinance로 가격 일괄 다운로드 → {ticker: DataFrame}"""
-    import yfinance as yf
+    """yfinance로 가격 일괄 다운로드 → {ticker: DataFrame} (hard timeout 적용)"""
+    from app.utils.yf_safe import yf_download_safe
 
     result = {}
     chunk_size = 30
     for i in range(0, len(tickers), chunk_size):
         chunk = tickers[i:i + chunk_size]
         try:
-            df = yf.download(
+            df = yf_download_safe(
                 chunk,
+                timeout=15.0,
                 start=start_date,
                 auto_adjust=True,
-                progress=False,
-                threads=True,
             )
             if df.empty:
                 continue
@@ -1143,11 +1144,10 @@ def _compute_kr_market_gate_live():
             'kosdaq_change_pct': kosdaq_change_pct,
             'updated_at': datetime.now().isoformat()
         }
-        # 스냅샷 저장
+        # 스냅샷 저장 (atomic rename)
         try:
             snap_path = os.path.join(DATA_DIR, 'market_gate_cache.json')
-            with open(snap_path, 'w', encoding='utf-8') as f:
-                json.dump(result, f, ensure_ascii=False, indent=2)
+            write_json_atomic(snap_path, result)
         except Exception as e:
             logger.warning(f"Failed to save market gate cache: {e}")
         return jsonify(result)
@@ -1228,10 +1228,9 @@ def get_kr_realtime_prices():
             yf_tickers.append(yf_t)
             req_ticker_map[yf_t] = orig_t
 
-        # 3. Fetch Data
-        import yfinance as yf
-        # Optimize: 1m interval is good for realtime.
-        df = yf.download(yf_tickers, period='1d', interval='1m', progress=False, threads=True)
+        # 3. Fetch Data (hard timeout 으로 Flask 워커 블로킹 방지)
+        from app.utils.yf_safe import yf_download_safe
+        df = yf_download_safe(yf_tickers, timeout=8.0, period='1d', interval='1m')
         
         result = {}
         if not df.empty:

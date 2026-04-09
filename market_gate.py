@@ -9,6 +9,7 @@ import yfinance as yf
 import pandas as pd
 import numpy as np
 import logging
+from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
 from datetime import datetime
 from typing import Dict, List, Any, Tuple
 from dataclasses import dataclass
@@ -18,6 +19,32 @@ from config import KOSPI_TICKER, KOSDAQ_TICKER, USD_KRW_TICKER, MarketGateConfig
 # 모듈 레벨 basicConfig 금지 — Flask logger 설정을 덮어쓴다.
 # CLI 실행 시에는 main 또는 진입점에서 핸들러를 부착할 것.
 logger = logging.getLogger(__name__)
+
+# yfinance 는 자체 타임아웃 파라미터가 없어 네트워크 hang 시 Flask worker 가
+# 수 분 동안 블로킹된다. ThreadPoolExecutor 로 감싸서 상한을 강제한다.
+_YF_EXECUTOR = ThreadPoolExecutor(max_workers=2, thread_name_prefix='mg_yf')
+_YF_TIMEOUT_SEC = 15
+
+
+def _yf_download_with_timeout(tickers, period="1y", progress=False, timeout=_YF_TIMEOUT_SEC):
+    """yf.download wrapped with a hard timeout.
+
+    Returns an empty DataFrame on timeout or any downstream exception —
+    callers already branch on `empty` / missing columns, so no raise.
+    """
+    def _fetch():
+        return yf.download(tickers, period=period, progress=progress)
+
+    future = _YF_EXECUTOR.submit(_fetch)
+    try:
+        return future.result(timeout=timeout)
+    except FuturesTimeoutError:
+        logger.warning(f"[market_gate] yfinance timeout (>{timeout}s) for {tickers}")
+        future.cancel()
+        return pd.DataFrame()
+    except Exception as e:
+        logger.warning(f"[market_gate] yfinance error for {tickers}: {type(e).__name__}: {e}")
+        return pd.DataFrame()
 
 @dataclass
 class SectorResult:
@@ -213,7 +240,7 @@ def run_kr_market_gate() -> KRMarketGateResult:
             if missing_indices:
                 logger.warning(f"Indices missing in FDR: {missing_indices}, trying Yahoo for indices...")
                 try:
-                    yf_data = yf.download(missing_indices, period="1y", progress=False)
+                    yf_data = _yf_download_with_timeout(missing_indices, period="1y")
                     if not yf_data.empty and 'Close' in yf_data.columns:
                         # Merge Yahoo data into existing data
                         for missing in missing_indices:
@@ -232,14 +259,11 @@ def run_kr_market_gate() -> KRMarketGateResult:
         
     # Fallback to Yahoo Finance (if FDR failed)
     if data is None or data.empty:
-        try:
-            data = yf.download(all_tickers, period="1y", progress=False)
-            if data.empty or 'Close' not in data.columns:
-                raise ValueError("Yahoo Finance returned empty data")
-            logger.info("✅ Yahoo Finance loaded data as fallback")
-        except Exception as yf_error:
-            logger.error(f"Yahoo Finance also failed: {yf_error}")
+        data = _yf_download_with_timeout(all_tickers, period="1y")
+        if data.empty or 'Close' not in data.columns:
+            logger.error("Yahoo Finance fallback returned no usable data")
             return KRMarketGateResult(gate="YELLOW", score=50, reasons=["데이터 소스 오류"], sectors=[], metrics={})
+        logger.info("✅ Yahoo Finance loaded data as fallback")
     
     if data.empty:
         return KRMarketGateResult(gate="YELLOW", score=50, reasons=["No data"], sectors=[], metrics={})
