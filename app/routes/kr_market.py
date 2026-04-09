@@ -414,25 +414,23 @@ def get_kr_stock_chart(ticker):
             # If last data is not from today (and it's a weekday), try to fetch real-time data
             if last_date.date() < today and today.weekday() < 5:
                 try:
-                    from pykrx import stock
-                    today_str = today.strftime('%Y%m%d')
-                    
-                    # Fetch just today's OHLCV
-                    today_ohlcv = stock.get_market_ohlcv(today_str, today_str, ticker_padded)
-                    
+                    from app.utils.kr_data_safe import get_today_ohlcv_safe
+
+                    today_ohlcv = get_today_ohlcv_safe(ticker_padded, timeout=6.0)
+
                     if not today_ohlcv.empty:
-                        # pykrx returns DataFrame with columns: 시가, 고가, 저가, 종가, 거래량
+                        # kr_data_safe returns normalized columns: Open, High, Low, Close, Volume
                         row = today_ohlcv.iloc[0]
-                        
+
                         # Only append if we have valid price (> 0) to avoid pre-market zeros
-                        if row['종가'] > 0:
+                        if row['Close'] > 0:
                             chart_data.append({
                                 'date': today.strftime('%Y-%m-%d'),
-                                'open': float(row['시가']),
-                                'high': float(row['고가']),
-                                'low': float(row['저가']),
-                                'close': float(row['종가']),
-                                'volume': int(row['거래량'])
+                                'open': float(row['Open']),
+                                'high': float(row['High']),
+                                'low': float(row['Low']),
+                                'close': float(row['Close']),
+                                'volume': int(row['Volume'])
                             })
                 except Exception as rt_error:
                     logger.warning(f"Error fetching real-time data for {ticker_padded}: {rt_error}")

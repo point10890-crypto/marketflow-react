@@ -126,31 +126,28 @@ def load_ohlcv(
 ) -> Optional[Dict[str, np.ndarray]]:
     """
     시장별 자동 데이터 로드.
-    KR → daily_prices.csv 우선 → pykrx 폴백
+    KR → daily_prices.csv 우선 → FDR(네이버) → pykrx(KRX) 폴백
     US/CRYPTO → yfinance
     """
     if market == 'KR':
         data = load_ohlcv_from_csv(ticker, lookback)
         if data is not None:
             return data
-        # pykrx 폴백
+        # FDR → pykrx 폴백 (kr_data_safe)
         return _load_pykrx(ticker, lookback)
     else:
         return load_ohlcv_yfinance(ticker, lookback)
 
 
 def _load_pykrx(ticker: str, lookback: int) -> Optional[Dict[str, np.ndarray]]:
-    """pykrx 폴백"""
+    """FDR → pykrx 폴백 (kr_data_safe 통합 래퍼 사용, 하드 타임아웃 보장)."""
     try:
-        from pykrx import stock as pykrx_stock
+        from app.utils.kr_data_safe import get_ohlcv_safe
     except ImportError:
         return None
 
     try:
-        end = datetime.now().strftime('%Y%m%d')
-        start = (datetime.now() - timedelta(days=lookback * 2)).strftime('%Y%m%d')
-        df = pykrx_stock.get_market_ohlcv(start, end, ticker)
-
+        df = get_ohlcv_safe(ticker, lookback_days=lookback * 2, timeout=10.0)
         if df is None or len(df) < 30:
             return None
 
@@ -159,14 +156,14 @@ def _load_pykrx(ticker: str, lookback: int) -> Optional[Dict[str, np.ndarray]]:
 
         return {
             'dates': dates,
-            'opens': df['시가'].values.astype(float),
-            'highs': df['고가'].values.astype(float),
-            'lows': df['저가'].values.astype(float),
-            'closes': df['종가'].values.astype(float),
-            'volumes': df['거래량'].values.astype(float),
+            'opens': df['Open'].values.astype(float),
+            'highs': df['High'].values.astype(float),
+            'lows': df['Low'].values.astype(float),
+            'closes': df['Close'].values.astype(float),
+            'volumes': df['Volume'].values.astype(float),
         }
     except Exception as e:
-        logger.error("pykrx load failed for %s: %s", ticker, e)
+        logger.error("kr_data_safe load failed for %s: %s", ticker, e)
         return None
 
 

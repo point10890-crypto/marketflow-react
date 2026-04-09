@@ -926,7 +926,7 @@ def start_kr_price_scheduler():
     """KR 종가베팅 V2 가격 업데이트 스케줄러 (5분 간격)
 
     - data/jongga_v2_latest.json 기반
-    - pykrx로 현재가 갱신
+    - FDR → pykrx 폴백 (kr_data_safe)으로 현재가 갱신
     - 시그널별 수익률 재계산
     """
     def _run_scheduler():
@@ -947,7 +947,8 @@ def start_kr_price_scheduler():
                     time.sleep(300)
                     continue
 
-                # pykrx로 현재가 업데이트
+                # FDR → pykrx 폴백으로 현재가 업데이트 (kr_data_safe)
+                from app.utils.kr_data_safe import get_today_ohlcv_safe
                 updated = 0
                 for sig in signals:
                     code = sig.get('stock_code', '')
@@ -956,11 +957,9 @@ def start_kr_price_scheduler():
                         continue
 
                     try:
-                        from pykrx import stock as pykrx_stock
-                        today = date.today().strftime("%Y%m%d")
-                        df = pykrx_stock.get_market_ohlcv(today, today, code)
+                        df = get_today_ohlcv_safe(code, timeout=6.0)
                         if not df.empty:
-                            cur = int(df.iloc[-1]['종가'])
+                            cur = int(df.iloc[-1]['Close'])
                             if cur > 0:
                                 sig['current_price'] = cur
                                 sig['return_pct'] = round(((cur - entry) / entry) * 100, 2)
