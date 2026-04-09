@@ -581,6 +581,72 @@ export default function KRMarketOverview() {
                 </div>
 
             </div>
+
+            {/* ── Row 4: Top 10 종가베팅 시그널 ───────────────────────────────── */}
+            {signalsData && signalsData.signals.length > 0 && (
+                <div>
+                    <div className="flex items-center gap-2 mb-2">
+                        <div className="w-1 h-4 bg-rose-500 rounded-full" />
+                        <h3 className="text-sm font-bold text-white">Top 종가베팅</h3>
+                        <span className="px-1.5 py-0.5 bg-rose-500/15 text-rose-400 text-xs font-bold rounded-full border border-rose-500/20">
+                            {Math.min(signalsData.signals.length, 10)}
+                        </span>
+                    </div>
+                    <div className="rounded-xl bg-[#13151f] border border-white/[0.06] overflow-hidden">
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left border-collapse">
+                                <thead>
+                                    <tr className="text-xs text-zinc-400 border-b border-white/[0.04] uppercase tracking-wider bg-white/[0.02]">
+                                        <th className="px-3 py-2.5 font-medium text-center w-8">#</th>
+                                        <th className="px-3 py-2.5 font-medium">종목</th>
+                                        <th className="px-3 py-2.5 font-medium text-center">등급</th>
+                                        <th className="px-3 py-2.5 font-medium text-right">현재가</th>
+                                        <th className="px-3 py-2.5 font-medium text-right">수익률</th>
+                                        <th className="px-3 py-2.5 font-medium text-right hidden sm:table-cell">점수</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-white/[0.04] text-sm">
+                                    {[...signalsData.signals]
+                                        .sort((a, b) => b.score - a.score)
+                                        .slice(0, 10)
+                                        .map((s, idx) => (
+                                        <tr key={s.ticker} className="hover:bg-white/[0.03] transition-colors">
+                                            <td className="px-3 py-2.5 text-center text-xs text-zinc-500 font-mono">{idx + 1}</td>
+                                            <td className="px-3 py-2.5">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-white font-bold text-sm">{s.name}</span>
+                                                    <span className="text-xs text-zinc-500 font-mono">{s.ticker}</span>
+                                                    <span className="text-xs text-zinc-600">{s.market}</span>
+                                                </div>
+                                            </td>
+                                            <td className="px-3 py-2.5 text-center">
+                                                <span className={`px-2 py-0.5 rounded text-xs font-bold ${
+                                                    s.score >= 12 ? 'bg-rose-500/20 text-rose-400' :
+                                                    s.score >= 9 ? 'bg-amber-500/20 text-amber-400' :
+                                                    'bg-zinc-500/20 text-zinc-400'
+                                                }`}>
+                                                    {s.score >= 12 ? 'S' : s.score >= 9 ? 'A' : 'B'}
+                                                </span>
+                                            </td>
+                                            <td className="px-3 py-2.5 text-right text-white font-mono text-sm font-bold">
+                                                {s.current_price.toLocaleString()}원
+                                            </td>
+                                            <td className="px-3 py-2.5 text-right">
+                                                <span className={`font-mono text-sm font-bold ${s.return_pct >= 0 ? 'text-rose-400' : 'text-blue-400'}`}>
+                                                    {s.return_pct >= 0 ? '+' : ''}{s.return_pct.toFixed(1)}%
+                                                </span>
+                                            </td>
+                                            <td className="px-3 py-2.5 text-right text-zinc-300 font-mono text-sm hidden sm:table-cell">
+                                                {s.score}점
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

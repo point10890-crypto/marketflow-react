@@ -4,6 +4,7 @@ import {
     usAPI, USMarketGate, CumulativePerformanceSummary,
     PortfolioIndex, DecisionSignalData,
     MarketRegimeData, IndexPredictionData, RiskAlertData, SectorRotationData,
+    BriefingData, BriefingSmartMoneyPick,
 } from '@/lib/api';
 import { useAutoRefresh } from '@/hooks/useAutoRefresh';
 import StockDetailModal from '@/components/us/StockDetailModal';
@@ -86,6 +87,7 @@ export default function UsOverviewPage() {
     const [predictionData, setPredictionData] = useState<IndexPredictionData | null>(null);
     const [riskData, setRiskData] = useState<RiskAlertData | null>(null);
     const [sectorData, setSectorData] = useState<SectorRotationData | null>(null);
+    const [smartPicks, setSmartPicks] = useState<BriefingSmartMoneyPick[]>([]);
     const [isRefreshing, setIsRefreshing] = useState(false);
 
     useEffect(() => { loadData(); }, []);
@@ -94,7 +96,7 @@ export default function UsOverviewPage() {
         setLoading(true);
         setIsRefreshing(true);
         try {
-            const [portfolioRes, gateRes, perfRes, dsRes, regimeRes, predRes, riskRes, sectorRes] = await Promise.all([
+            const [portfolioRes, gateRes, perfRes, dsRes, regimeRes, predRes, riskRes, sectorRes, briefingRes] = await Promise.all([
                 usAPI.getPortfolio().catch(() => null),
                 usAPI.getMarketGate().catch(() => null),
                 usAPI.getCumulativePerformance().catch(() => null),
@@ -103,6 +105,7 @@ export default function UsOverviewPage() {
                 usAPI.getIndexPrediction().catch(() => null),
                 usAPI.getRiskAlerts().catch(() => null),
                 usAPI.getSectorRotation().catch(() => null),
+                usAPI.getMarketBriefing().catch(() => null),
             ]);
             setIndices(portfolioRes?.market_indices ?? []);
             setGateData(gateRes);
@@ -112,6 +115,7 @@ export default function UsOverviewPage() {
             setPredictionData(predRes);
             setRiskData(riskRes);
             setSectorData(sectorRes);
+            setSmartPicks(briefingRes?.smart_money?.top_picks?.picks ?? []);
             setLastUpdated(new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }));
         } catch (err) {
             console.error('Failed to load US Market data:', err);
@@ -123,7 +127,7 @@ export default function UsOverviewPage() {
 
     const silentRefresh = useCallback(async () => {
         try {
-            const [portfolioRes, gateRes, perfRes, dsRes, regimeRes, predRes, riskRes, sectorRes] = await Promise.all([
+            const [portfolioRes, gateRes, perfRes, dsRes, regimeRes, predRes, riskRes, sectorRes, briefingRes] = await Promise.all([
                 usAPI.getPortfolio().catch(() => null),
                 usAPI.getMarketGate().catch(() => null),
                 usAPI.getCumulativePerformance().catch(() => null),
@@ -132,6 +136,7 @@ export default function UsOverviewPage() {
                 usAPI.getIndexPrediction().catch(() => null),
                 usAPI.getRiskAlerts().catch(() => null),
                 usAPI.getSectorRotation().catch(() => null),
+                usAPI.getMarketBriefing().catch(() => null),
             ]);
             setIndices(portfolioRes?.market_indices ?? []);
             setGateData(gateRes);
@@ -141,6 +146,7 @@ export default function UsOverviewPage() {
             setPredictionData(predRes);
             setRiskData(riskRes);
             setSectorData(sectorRes);
+            setSmartPicks(briefingRes?.smart_money?.top_picks?.picks ?? []);
             setLastUpdated(new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }));
         } catch { /* silent */ }
     }, []);
@@ -434,6 +440,73 @@ export default function UsOverviewPage() {
                     </div>
                 </div>
             </div>
+
+            {/* ── Row 4: Top 10 Smart Money Picks ─────────────────────── */}
+            {smartPicks.length > 0 && (
+                <div>
+                    <div className="flex items-center gap-2 mb-2">
+                        <div className="w-1 h-4 bg-blue-500 rounded-full" />
+                        <h3 className="text-sm font-bold text-white">Smart Money Top Picks</h3>
+                        <span className="px-1.5 py-0.5 bg-blue-500/15 text-blue-400 text-xs font-bold rounded-full border border-blue-500/20">
+                            {Math.min(smartPicks.length, 10)}
+                        </span>
+                    </div>
+                    <div className="rounded-xl bg-[#13151f] border border-white/[0.06] overflow-hidden">
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left border-collapse">
+                                <thead>
+                                    <tr className="text-xs text-zinc-400 border-b border-white/[0.04] uppercase tracking-wider bg-white/[0.02]">
+                                        <th className="px-3 py-2.5 font-medium text-center w-8">#</th>
+                                        <th className="px-3 py-2.5 font-medium">Ticker</th>
+                                        <th className="px-3 py-2.5 font-medium text-center">Signal</th>
+                                        <th className="px-3 py-2.5 font-medium text-right">Score</th>
+                                        <th className="px-3 py-2.5 font-medium text-right hidden sm:table-cell">Upside</th>
+                                        <th className="px-3 py-2.5 font-medium text-center hidden sm:table-cell">Stage</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-white/[0.04] text-sm">
+                                    {smartPicks.slice(0, 10).map((pick, idx) => (
+                                        <tr
+                                            key={pick.ticker}
+                                            className="hover:bg-white/[0.03] transition-colors cursor-pointer"
+                                            onClick={() => setSelectedTicker(pick.ticker)}
+                                        >
+                                            <td className="px-3 py-2.5 text-center text-xs text-zinc-500 font-mono">{idx + 1}</td>
+                                            <td className="px-3 py-2.5">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-white font-bold text-sm">{pick.ticker}</span>
+                                                    <span className="text-xs text-zinc-500 truncate max-w-[120px]">{pick.name}</span>
+                                                </div>
+                                            </td>
+                                            <td className="px-3 py-2.5 text-center">
+                                                <span className={`px-2 py-0.5 rounded text-xs font-bold ${
+                                                    pick.ai_recommendation === 'Strong Buy' ? 'bg-emerald-500/20 text-emerald-400' :
+                                                    pick.ai_recommendation === 'Buy' ? 'bg-blue-500/20 text-blue-400' :
+                                                    pick.ai_recommendation === 'Hold' ? 'bg-amber-500/20 text-amber-400' :
+                                                    'bg-zinc-500/20 text-zinc-400'
+                                                }`}>
+                                                    {pick.ai_recommendation}
+                                                </span>
+                                            </td>
+                                            <td className="px-3 py-2.5 text-right text-white font-mono text-sm font-bold">
+                                                {pick.final_score.toFixed(1)}
+                                            </td>
+                                            <td className="px-3 py-2.5 text-right hidden sm:table-cell">
+                                                <span className={`font-mono text-sm font-bold ${pick.target_upside >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                                    {pick.target_upside >= 0 ? '+' : ''}{pick.target_upside.toFixed(1)}%
+                                                </span>
+                                            </td>
+                                            <td className="px-3 py-2.5 text-center hidden sm:table-cell">
+                                                <span className="text-xs text-zinc-400 font-mono">{pick.sd_stage}</span>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Stock Detail Modal */}
             {selectedTicker && (

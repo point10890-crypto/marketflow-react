@@ -370,8 +370,8 @@ export default function CryptoOverviewPage() {
                 <div>
                     <div className="flex items-center gap-2 mb-2">
                         <div className="w-1 h-4 bg-yellow-500 rounded-full" />
-                        <h3 className="text-sm font-bold text-white">Top Coins</h3>
-                        <span className="px-1.5 py-0.5 bg-yellow-500/15 text-yellow-400 text-[10px] font-bold rounded-full border border-yellow-500/20">
+                        <h3 className="text-base font-bold text-white">Top Coins</h3>
+                        <span className="px-1.5 py-0.5 bg-yellow-500/15 text-yellow-400 text-xs font-bold rounded-full border border-yellow-500/20">
                             {cryptos.length}
                         </span>
                     </div>
@@ -381,17 +381,17 @@ export default function CryptoOverviewPage() {
                         <div className="flex flex-col gap-2">
                             {cryptos.slice(0, 10).map((c, idx) => (
                                 <div key={c.ticker} className="rounded-xl bg-[#13151f] border border-white/[0.06] p-3 flex items-center gap-3">
-                                    <div className="text-[10px] text-zinc-600 font-mono w-4 text-center flex-shrink-0">{idx + 1}</div>
-                                    <div className="w-7 h-7 rounded-md bg-gradient-to-br from-yellow-500/20 to-amber-500/20 border border-white/[0.08] flex items-center justify-center text-white font-bold text-[10px] flex-shrink-0">
+                                    <div className="text-xs text-zinc-500 font-mono w-5 text-center flex-shrink-0">{idx + 1}</div>
+                                    <div className="w-8 h-8 rounded-md bg-gradient-to-br from-yellow-500/20 to-amber-500/20 border border-white/[0.08] flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
                                         {c.ticker.slice(0, 3)}
                                     </div>
                                     <div className="flex flex-col min-w-0 flex-1">
-                                        <span className="text-white font-semibold text-[13px] truncate">{c.name}</span>
-                                        <span className="text-[10px] text-zinc-600 font-mono">{c.ticker}</span>
+                                        <span className="text-white font-bold text-sm truncate">{c.name}</span>
+                                        <span className="text-xs text-zinc-500 font-mono">{c.ticker}</span>
                                     </div>
                                     <div className="flex flex-col items-end flex-shrink-0">
-                                        <span className="text-xs text-white font-mono font-medium">{formatPrice(c.price)}</span>
-                                        <span className={`text-[11px] font-mono font-bold ${getChangeColor(c.change_pct)}`}>{fmtChange(c.change_pct)}</span>
+                                        <span className="text-sm text-white font-mono font-bold">{formatPrice(c.price)}</span>
+                                        <span className={`text-xs font-mono font-bold ${getChangeColor(c.change_pct)}`}>{fmtChange(c.change_pct)}</span>
                                     </div>
                                 </div>
                             ))}
@@ -402,7 +402,7 @@ export default function CryptoOverviewPage() {
                             <div className="overflow-x-auto">
                                 <table className="w-full text-left border-collapse">
                                     <thead>
-                                        <tr className="text-[10px] text-zinc-500 border-b border-white/[0.04] uppercase tracking-wider bg-white/[0.02]">
+                                        <tr className="text-xs text-zinc-400 border-b border-white/[0.04] uppercase tracking-wider bg-white/[0.02]">
                                             <th className="px-3 py-2.5 font-medium text-center w-8">#</th>
                                             <th className="px-3 py-2.5 font-medium">Coin</th>
                                             <th className="px-3 py-2.5 font-medium text-right">Price</th>
@@ -410,28 +410,28 @@ export default function CryptoOverviewPage() {
                                             <th className="px-3 py-2.5 font-medium text-right">Volume</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-white/[0.04] text-[13px]">
+                                    <tbody className="divide-y divide-white/[0.04] text-sm">
                                         {cryptos.slice(0, 10).map((c, idx) => (
                                             <tr key={c.ticker} className="hover:bg-white/[0.03] transition-colors">
-                                                <td className="px-3 py-2.5 text-center text-[10px] text-zinc-600 font-mono">{idx + 1}</td>
-                                                <td className="px-3 py-2.5">
+                                                <td className="px-3 py-3 text-center text-xs text-zinc-500 font-mono">{idx + 1}</td>
+                                                <td className="px-3 py-3">
                                                     <div className="flex items-center gap-2.5">
-                                                        <div className="w-7 h-7 rounded-md bg-gradient-to-br from-yellow-500/20 to-amber-500/20 border border-white/[0.08] flex items-center justify-center text-white font-bold text-[10px] flex-shrink-0">
+                                                        <div className="w-8 h-8 rounded-md bg-gradient-to-br from-yellow-500/20 to-amber-500/20 border border-white/[0.08] flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
                                                             {c.ticker.slice(0, 3)}
                                                         </div>
                                                         <div className="flex flex-col min-w-0">
-                                                            <span className="text-white font-semibold text-[13px]">{c.name}</span>
-                                                            <span className="text-[10px] text-zinc-600 font-mono">{c.ticker}</span>
+                                                            <span className="text-white font-bold text-sm">{c.name}</span>
+                                                            <span className="text-xs text-zinc-500 font-mono">{c.ticker}</span>
                                                         </div>
                                                     </div>
                                                 </td>
-                                                <td className="px-3 py-2.5 text-right font-mono text-xs text-white font-medium">
+                                                <td className="px-3 py-3 text-right font-mono text-sm text-white font-bold">
                                                     {formatPrice(c.price)}
                                                 </td>
-                                                <td className={`px-3 py-2.5 text-right font-mono text-xs font-bold ${getChangeColor(c.change_pct)}`}>
+                                                <td className={`px-3 py-3 text-right font-mono text-sm font-bold ${getChangeColor(c.change_pct)}`}>
                                                     {fmtChange(c.change_pct)}
                                                 </td>
-                                                <td className="px-3 py-2.5 text-right font-mono text-xs text-zinc-500">
+                                                <td className="px-3 py-3 text-right font-mono text-sm text-zinc-400">
                                                     {formatVolume(c.volume_24h)}
                                                 </td>
                                             </tr>
