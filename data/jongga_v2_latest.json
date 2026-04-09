@@ -1,41 +1,510 @@
 {
-  "date": "2026-04-08",
-  "total_candidates": 11,
-  "filtered_count": 11,
+  "date": "2026-04-09",
+  "total_candidates": 22,
+  "filtered_count": 22,
   "signals": [
     {
       "id": null,
-      "stock_code": "007660",
-      "stock_name": "이수페타시스",
+      "stock_code": "278470",
+      "stock_name": "에이피알",
       "market": "KOSPI",
       "sector": "",
-      "signal_date": "2026-04-08",
+      "signal_date": "2026-04-09",
       "grade": "S",
       "score": {
         "news": 3,
         "volume": 3,
-        "chart": 0,
-        "candle": 1,
+        "chart": 1,
+        "candle": 0,
         "consolidation": 0,
         "supply": 1,
         "disclosure": 0,
         "analyst": 3,
         "financial": 3,
-        "llm_reason": "DB증권에서 목표가를 155,000원으로 제시하며 긍정적인 리포트를 발행했고, 1분기 실적 컨센서스를 상회할 것이라는 전망이 있으며, AI 인프라 확산의 직접적인 수혜를 입고 있어 확실한 호재로 판단됩니다.",
+        "llm_reason": "1분기 역대 최대 실적 전망과 함께 유럽, 미국 등 해외 시장에서의 폭발적인 성장세가 뚜렷하며, 증권사들의 목표 주가 상향 조정이 잇따르고 있어 확실한 호재로 판단됨",
         "llm_source": "gemini_grounding",
         "total": 14
       },
       "checklist": {
         "has_news": true,
         "news_sources": [
+          "매일경제",
+          "연합뉴스",
+          "한국경제TV"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": true,
+        "is_breakout": false,
+        "ma_aligned": false,
+        "good_candle": false,
+        "has_consolidation": false,
+        "supply_positive": true,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": true,
+        "volume_suspicious": false
+      },
+      "current_price": 371000,
+      "entry_price": 371000,
+      "stop_price": 359870,
+      "target_price": 389550,
+      "quantity": 33,
+      "position_size": 12243000,
+      "r_value": 250000.0,
+      "r_multiplier": 1.5,
+      "trading_value": 260160229250,
+      "change_pct": 10.58,
+      "volume_ratio": 0.0,
+      "foreign_5d": -65423,
+      "inst_5d": 226852,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "[특징주] 에이피알, 1분기 깜짝 실적 전망에 신고가",
+          "source": "연합뉴스",
+          "published_at": "2026-04-09T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0016011101&office_id=001&code=278470&page=1&sm="
+        },
+        {
+          "title": "에이피알, 1분기 호실적 전망·해외사업 순항에 신고가 경신",
+          "source": "매일경제",
+          "published_at": "2026-04-09T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005663316&office_id=009&code=278470&page=1&sm="
+        },
+        {
+          "title": "\"하루 만에 변심이야\"…초조한 개미, 5일째 '머뭇'",
+          "source": "한국경제TV",
+          "published_at": "2026-04-09T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0001248431&office_id=215&code=278470&page=1&sm="
+        }
+      ],
+      "themes": [
+        "화장품",
+        "뷰티 디바이스",
+        "글로벌 확장"
+      ]
+    },
+    {
+      "id": null,
+      "stock_code": "483650",
+      "stock_name": "달바글로벌",
+      "market": "KOSPI",
+      "sector": "",
+      "signal_date": "2026-04-09",
+      "grade": "S",
+      "score": {
+        "news": 3,
+        "volume": 3,
+        "chart": 1,
+        "candle": 1,
+        "consolidation": 0,
+        "supply": 1,
+        "disclosure": 0,
+        "analyst": 2,
+        "financial": 2,
+        "llm_reason": "최근 24시간 내 달바글로벌 주가가 VI 발동 및 9% 이상 급등했고, 증권가에서 1분기 호실적 전망 및 해외 성과 대비 저평가 분석이 나오면서 긍정적인 투자 심리를 자극하고 있음.",
+        "llm_source": "gemini_grounding",
+        "total": 13
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
           "뉴스1",
-          "한국경제",
-          "조선비즈"
+          "이데일리",
+          "한국경제TV"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": false,
+        "is_breakout": false,
+        "ma_aligned": true,
+        "good_candle": true,
+        "has_consolidation": false,
+        "supply_positive": true,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": false,
+        "volume_suspicious": false
+      },
+      "current_price": 179800,
+      "entry_price": 179800,
+      "stop_price": 174406,
+      "target_price": 188790,
+      "quantity": 69,
+      "position_size": 12406200,
+      "r_value": 250000.0,
+      "r_multiplier": 1.5,
+      "trading_value": 89706155050,
+      "change_pct": 8.05,
+      "volume_ratio": 0.0,
+      "foreign_5d": 75356,
+      "inst_5d": -1502,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "\"하루 만에 변심이야\"…초조한 개미, 5일째 '머뭇'",
+          "source": "한국경제TV",
+          "published_at": "2026-04-09T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0001248431&office_id=215&code=483650&page=1&sm="
+        },
+        {
+          "title": "달바글로벌, 해외 성과 대비 저평가…7%↑[특징주]",
+          "source": "이데일리",
+          "published_at": "2026-04-09T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0006253358&office_id=018&code=483650&page=1&sm="
+        },
+        {
+          "title": "불안한 휴전, 코스피·코스닥 1% 약세…외인 1조 순매도[장중시황]",
+          "source": "뉴스1",
+          "published_at": "2026-04-09T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0008880295&office_id=421&code=483650&page=1&sm="
+        }
+      ],
+      "themes": [
+        "화장품",
+        "K-뷰티",
+        "비건 뷰티"
+      ]
+    },
+    {
+      "id": null,
+      "stock_code": "017550",
+      "stock_name": "수산세보틱스",
+      "market": "KOSPI",
+      "sector": "",
+      "signal_date": "2026-04-09",
+      "grade": "S",
+      "score": {
+        "news": 3,
+        "volume": 3,
+        "chart": 1,
+        "candle": 0,
+        "consolidation": 0,
+        "supply": 2,
+        "disclosure": 0,
+        "analyst": 0,
+        "financial": 2,
+        "llm_reason": "미국-이란 휴전 합의로 중동 재건 기대감이 높아지고 있으며, 수산세보틱스가 상한가를 기록하는 등 주가 급등세를 보이고 있어 확실한 호재로 판단됨.",
+        "llm_source": "gemini_grounding",
+        "total": 11
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "서울신문"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": false,
+        "is_breakout": false,
+        "ma_aligned": true,
+        "good_candle": false,
+        "has_consolidation": false,
+        "supply_positive": true,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": true,
+        "volume_suspicious": false
+      },
+      "current_price": 2945,
+      "entry_price": 2945,
+      "stop_price": 2856,
+      "target_price": 3092,
+      "quantity": 4244,
+      "position_size": 12498580,
+      "r_value": 250000.0,
+      "r_multiplier": 1.5,
+      "trading_value": 149745602265,
+      "change_pct": 9.07,
+      "volume_ratio": 0.0,
+      "foreign_5d": 123066,
+      "inst_5d": 579,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "[서울데이터랩]금일 코스피 거래량 1위 남선알미늄 거래대금 1,986억...",
+          "source": "서울신문",
+          "published_at": "2026-04-09T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0003633829&office_id=081&code=017550&page=1&sm="
+        },
+        {
+          "title": "[서울데이터랩]금일 코스피 거래량 1위 대우건설 거래대금 무려 1조 6...",
+          "source": "서울신문",
+          "published_at": "2026-04-08T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0003633414&office_id=081&code=017550&page=1&sm="
+        }
+      ],
+      "themes": [
+        "건설기계",
+        "우크라이나 재건",
+        "중동 재건"
+      ]
+    },
+    {
+      "id": null,
+      "stock_code": "071090",
+      "stock_name": "하이스틸",
+      "market": "KOSPI",
+      "sector": "",
+      "signal_date": "2026-04-09",
+      "grade": "S",
+      "score": {
+        "news": 2,
+        "volume": 3,
+        "chart": 1,
+        "candle": 1,
+        "consolidation": 0,
+        "supply": 1,
+        "disclosure": 0,
+        "analyst": 0,
+        "financial": 1,
+        "llm_reason": "최근 강관 테마 상승세 및 남북러 가스관 사업 기대감으로 주가가 상승하고 있으며, 건설 경기 부진에도 불구하고 에너지 강관 수요 증가 전망이 긍정적이다.",
+        "llm_source": "gemini_grounding",
+        "total": 9
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "서울신문"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": false,
+        "is_breakout": false,
+        "ma_aligned": true,
+        "good_candle": true,
+        "has_consolidation": false,
+        "supply_positive": true,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": false,
+        "volume_suspicious": false
+      },
+      "current_price": 4560,
+      "entry_price": 4560,
+      "stop_price": 4423,
+      "target_price": 4788,
+      "quantity": 2741,
+      "position_size": 12498960,
+      "r_value": 250000.0,
+      "r_multiplier": 1.5,
+      "trading_value": 87779603817,
+      "change_pct": 19.22,
+      "volume_ratio": 0.0,
+      "foreign_5d": -56018,
+      "inst_5d": 187,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "[서울데이터랩]금일 코스피 거래량 1위 남선알미늄 거래대금 1,986억...",
+          "source": "서울신문",
+          "published_at": "2026-04-09T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0003633829&office_id=081&code=071090&page=1&sm="
+        }
+      ],
+      "themes": [
+        "강관",
+        "남북러 가스관",
+        "에너지"
+      ]
+    },
+    {
+      "id": null,
+      "stock_code": "259630",
+      "stock_name": "엠플러스",
+      "market": "KOSDAQ",
+      "sector": "",
+      "signal_date": "2026-04-09",
+      "grade": "S",
+      "score": {
+        "news": 3,
+        "volume": 3,
+        "chart": 1,
+        "candle": 0,
+        "consolidation": 0,
+        "supply": 0,
+        "disclosure": 0,
+        "analyst": 0,
+        "financial": 2,
+        "llm_reason": "전고체 배터리 양산 핵심 기술 개발 및 파일럿 장비 수주 성공으로 전극공정까지 사업 확장, 2차전지 생산 전공정 턴키 대응 체계 구축 기대.",
+        "llm_source": "gemini_grounding",
+        "total": 9
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "파이낸셜뉴스",
+          "머니투데이",
+          "이데일리"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": false,
+        "is_breakout": false,
+        "ma_aligned": true,
+        "good_candle": false,
+        "has_consolidation": false,
+        "supply_positive": false,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": true,
+        "volume_suspicious": false
+      },
+      "current_price": 15100,
+      "entry_price": 15100,
+      "stop_price": 14647,
+      "target_price": 15855,
+      "quantity": 827,
+      "position_size": 12487700,
+      "r_value": 250000.0,
+      "r_multiplier": 1.5,
+      "trading_value": 73281975325,
+      "change_pct": 14.92,
+      "volume_ratio": 0.0,
+      "foreign_5d": -145528,
+      "inst_5d": -403,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "엠플러스 \"전고체 배터리 양산 핵심 기술 개발…파일럿 장비 수주\"",
+          "source": "이데일리",
+          "published_at": "2026-04-09T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0006253464&office_id=018&code=259630&page=1&sm="
+        },
+        {
+          "title": "엠플러스, '꿈의 배터리' 전고체 양산 보틀넥 해결…'조립에서 전극까...",
+          "source": "머니투데이",
+          "published_at": "2026-04-09T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005341876&office_id=008&code=259630&page=1&sm="
+        },
+        {
+          "title": "엠플러스, 전고체 배터리 양산 핵심 기술 개발",
+          "source": "파이낸셜뉴스",
+          "published_at": "2026-04-09T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005504944&office_id=014&code=259630&page=1&sm="
+        }
+      ],
+      "themes": [
+        "전고체 배터리",
+        "2차전지",
+        "배터리 장비"
+      ]
+    },
+    {
+      "id": null,
+      "stock_code": "036570",
+      "stock_name": "엔씨소프트",
+      "market": "KOSPI",
+      "sector": "",
+      "signal_date": "2026-04-09",
+      "grade": "A",
+      "score": {
+        "news": 3,
+        "volume": 2,
+        "chart": 0,
+        "candle": 1,
+        "consolidation": 0,
+        "supply": 1,
+        "disclosure": 0,
+        "analyst": 2,
+        "financial": 2,
+        "llm_reason": "최근 엔씨소프트의 ESG 평가 최고 등급 획득과 1분기 실적 호조 전망, 리니지 클래식 및 아이온2의 성공적인 매출, 자사주 소각 결정 등 긍정적인 요인이 복합적으로 작용하여 확실한 호재로 판단됨",
+        "llm_source": "gemini_grounding",
+        "total": 11
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "매일경제",
+          "한국경제"
         ],
         "volume_sufficient": true,
         "is_new_high": false,
         "is_breakout": false,
         "ma_aligned": false,
+        "good_candle": true,
+        "has_consolidation": false,
+        "supply_positive": true,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": false,
+        "volume_suspicious": false
+      },
+      "current_price": 234000,
+      "entry_price": 234000,
+      "stop_price": 226980,
+      "target_price": 245700,
+      "quantity": 35,
+      "position_size": 8190000,
+      "r_value": 250000.0,
+      "r_multiplier": 1.0,
+      "trading_value": 33046201000,
+      "change_pct": 7.34,
+      "volume_ratio": 0.0,
+      "foreign_5d": -89437,
+      "inst_5d": 82332,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "엔씨, 2026 ESG 평가 최고등급 AAA 등급 획득",
+          "source": "매일경제",
+          "published_at": "2026-04-09T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005663374&office_id=009&code=036570&page=1&sm="
+        },
+        {
+          "title": "엔씨, 이틀째 강세…1Q 실적 전망 ‘호조’",
+          "source": "매일경제",
+          "published_at": "2026-04-09T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005663446&office_id=009&code=036570&page=1&sm="
+        },
+        {
+          "title": "'연봉 1억' 잘나가더니…돌연 '희망퇴직' 러시 벌어진 곳",
+          "source": "한국경제",
+          "published_at": "2026-04-09T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005272750&office_id=015&code=036570&page=1&sm="
+        }
+      ],
+      "themes": [
+        "ESG 경영",
+        "실적 개선",
+        "주주가치 제고"
+      ]
+    },
+    {
+      "id": null,
+      "stock_code": "010950",
+      "stock_name": "S-Oil",
+      "market": "KOSPI",
+      "sector": "",
+      "signal_date": "2026-04-09",
+      "grade": "A",
+      "score": {
+        "news": 2,
+        "volume": 3,
+        "chart": 1,
+        "candle": 1,
+        "consolidation": 0,
+        "supply": 1,
+        "disclosure": 0,
+        "analyst": 2,
+        "financial": 0,
+        "llm_reason": "최근 증권사에서 1분기 실적 전망을 긍정적으로 평가하며 목표 주가를 유지했고, 외국인/기관의 동시 순매수가 발생했으며, 정유 테마가 강세를 보이는 등 긍정적인 요소들이 나타나고 있습니다. 다만, 기존 뉴스 정보에서 유가 변동성 및 정부 정책 변화에 대한 우려가 존재하며, 2025년 실적이 하락했다는 점을 고려하여 긍정 기대감으로 평가합니다.",
+        "llm_source": "gemini_grounding",
+        "total": 10
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "머니투데이",
+          "이데일리",
+          "조선비즈"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": false,
+        "is_breakout": false,
+        "ma_aligned": true,
         "good_candle": true,
         "has_consolidation": false,
         "supply_positive": true,
@@ -49,69 +518,137 @@
       "entry_price": 119400,
       "stop_price": 115818,
       "target_price": 125370,
-      "quantity": 104,
-      "position_size": 12417600,
+      "quantity": 69,
+      "position_size": 8238600,
       "r_value": 250000.0,
-      "r_multiplier": 1.5,
-      "trading_value": 122385643150,
-      "change_pct": 12.64,
+      "r_multiplier": 1.0,
+      "trading_value": 64401734600,
+      "change_pct": 6.51,
       "volume_ratio": 0.0,
-      "foreign_5d": 2104,
-      "inst_5d": -685977,
+      "foreign_5d": 330469,
+      "inst_5d": -89914,
       "status": "PENDING",
       "news_items": [
         {
-          "title": "삼전 '깜짝실적'에 반도체株 동반 강세…'20만전자·92만닉스' 돌파",
-          "source": "한국경제",
-          "published_at": "2026-04-07T00:00:00",
-          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005271784&office_id=015&code=007660&page=1&sm="
+          "title": "'고물가' 우려에…나프타 수입 차액 지원율, 50→70% 확대",
+          "source": "이데일리",
+          "published_at": "2026-04-09T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0006253643&office_id=018&code=010950&page=1&sm="
         },
         {
-          "title": "[특징주] 휴전 소식에 ‘21만전자’·‘100만닉스’ 복귀…반도체株 ....",
+          "title": "기름값 올리는 ‘사후정산제’ 폐지된다",
           "source": "조선비즈",
-          "published_at": "2026-04-08T00:00:00",
-          "url": "https://finance.naver.com/item/news_read.naver?article_id=0001155076&office_id=366&code=007660&page=1&sm="
+          "published_at": "2026-04-09T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0001155464&office_id=366&code=010950&page=1&sm="
         },
         {
-          "title": "대구·경북 상장사 시가총액 한 달 새 19.1조 증발…전기·전자 부진",
-          "source": "뉴스1",
-          "published_at": "2026-04-07T00:00:00",
-          "url": "https://finance.naver.com/item/news_read.naver?article_id=0008874418&office_id=421&code=007660&page=1&sm="
+          "title": "주유소, 다른 정유사 기름 40% 섞어팔 수 있다…'사후정산'도 폐지",
+          "source": "머니투데이",
+          "published_at": "2026-04-09T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005341966&office_id=008&code=010950&page=1&sm="
         }
       ],
       "themes": [
-        "AI 반도체",
-        "5G",
-        "데이터센터"
+        "정유",
+        "인플레이션",
+        "중동 지정학적 리스크"
       ]
     },
     {
       "id": null,
-      "stock_code": "039490",
-      "stock_name": "키움증권",
+      "stock_code": "298020",
+      "stock_name": "효성티앤씨",
       "market": "KOSPI",
       "sector": "",
-      "signal_date": "2026-04-08",
-      "grade": "S",
+      "signal_date": "2026-04-09",
+      "grade": "A",
       "score": {
         "news": 2,
-        "volume": 3,
+        "volume": 2,
+        "chart": 2,
+        "candle": 0,
+        "consolidation": 0,
+        "supply": 1,
+        "disclosure": 0,
+        "analyst": 2,
+        "financial": 0,
+        "llm_reason": "탈 플라스틱 테마 강세 속 친환경 사업 확대 기대감 및 스판덱스 업황 회복에 대한 긍정적 전망이 주가에 긍정적 영향을 미치고 있음.",
+        "llm_source": "gemini_grounding",
+        "total": 9
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "서울신문"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": true,
+        "is_breakout": false,
+        "ma_aligned": true,
+        "good_candle": false,
+        "has_consolidation": false,
+        "supply_positive": true,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": true,
+        "volume_suspicious": false
+      },
+      "current_price": 447000,
+      "entry_price": 447000,
+      "stop_price": 433590,
+      "target_price": 469350,
+      "quantity": 18,
+      "position_size": 8046000,
+      "r_value": 250000.0,
+      "r_multiplier": 1.0,
+      "trading_value": 36503673750,
+      "change_pct": 9.29,
+      "volume_ratio": 0.0,
+      "foreign_5d": -7418,
+      "inst_5d": 17560,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "[서울데이터랩]‘광전자’ 16.17% 급등…실시간 상승률 1위",
+          "source": "서울신문",
+          "published_at": "2026-04-09T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0003633733&office_id=081&code=298020&page=1&sm="
+        }
+      ],
+      "themes": [
+        "탈 플라스틱",
+        "친환경",
+        "스판덱스"
+      ]
+    },
+    {
+      "id": null,
+      "stock_code": "306200",
+      "stock_name": "세아제강",
+      "market": "KOSPI",
+      "sector": "",
+      "signal_date": "2026-04-09",
+      "grade": "A",
+      "score": {
+        "news": 2,
+        "volume": 2,
         "chart": 0,
         "candle": 1,
         "consolidation": 0,
         "supply": 1,
         "disclosure": 0,
         "analyst": 2,
-        "financial": 2,
-        "llm_reason": "키움증권이 퇴직연금 시장에 본격 진출하며 성장 기대감이 높아지고, 1분기 실적 컨센서스를 상회할 가능성이 제기됨.",
+        "financial": 1,
+        "llm_reason": "신규 해상풍력 및 LNG 프로젝트 매출 본격화로 실적 개선 기대감이 있으며, 특히 해상풍력 사업은 장기적인 성장 동력으로 작용할 가능성이 높음.",
         "llm_source": "gemini_grounding",
-        "total": 11
+        "total": 9
       },
       "checklist": {
         "has_news": true,
         "news_sources": [
-          "연합뉴스",
-          "연합뉴스TV"
+          "매일경제",
+          "이데일리"
         ],
         "volume_sufficient": true,
         "is_new_high": false,
@@ -126,155 +663,147 @@
         "upper_wick_long": false,
         "volume_suspicious": false
       },
-      "current_price": 464500,
-      "entry_price": 464500,
-      "stop_price": 450565,
-      "target_price": 487725,
-      "quantity": 26,
-      "position_size": 12077000,
+      "current_price": 152500,
+      "entry_price": 152500,
+      "stop_price": 147925,
+      "target_price": 160125,
+      "quantity": 54,
+      "position_size": 8235000,
       "r_value": 250000.0,
-      "r_multiplier": 1.5,
-      "trading_value": 68040771500,
-      "change_pct": 13.43,
+      "r_multiplier": 1.0,
+      "trading_value": 12640887400,
+      "change_pct": 7.47,
       "volume_ratio": 0.0,
-      "foreign_5d": -84338,
-      "inst_5d": 52515,
+      "foreign_5d": -3780,
+      "inst_5d": 7734,
       "status": "PENDING",
       "news_items": [
         {
-          "title": "키움증권, 퇴직연금 사업자 등록…상반기 서비스 개시한다",
-          "source": "연합뉴스TV",
+          "title": "기업 \"직고용 요구 쏟아질것\"… 상시파업 불안",
+          "source": "매일경제",
           "published_at": "2026-04-08T00:00:00",
-          "url": "https://finance.naver.com/item/news_read.naver?article_id=0000852842&office_id=422&code=039490&page=1&sm="
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005663155&office_id=009&code=306200&page=1&sm="
         },
         {
-          "title": "키움증권, 퇴직연금 사업자 등록 완료…상반기 서비스 개시 예정",
-          "source": "연합뉴스",
-          "published_at": "2026-04-08T00:00:00",
-          "url": "https://finance.naver.com/item/news_read.naver?article_id=0016009632&office_id=001&code=039490&page=1&sm="
-        },
-        {
-          "title": "코스피, 장중 6% 올라 5,800대 강세 지속…코스닥도 급등",
-          "source": "연합뉴스",
-          "published_at": "2026-04-08T00:00:00",
-          "url": "https://finance.naver.com/item/news_read.naver?article_id=0016009152&office_id=001&code=039490&page=1&sm="
+          "title": "세아제강, 실적 개선 본격화…신규 프로젝트 효과 반영-하나",
+          "source": "이데일리",
+          "published_at": "2026-04-09T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0006253228&office_id=018&code=306200&page=1&sm="
         }
       ],
       "themes": [
-        "증권",
-        "퇴직연금",
-        "플랫폼"
+        "해상풍력",
+        "LNG",
+        "에너지 인프라"
       ]
     },
     {
       "id": null,
-      "stock_code": "053690",
-      "stock_name": "한미글로벌",
+      "stock_code": "008350",
+      "stock_name": "남선알미늄",
       "market": "KOSPI",
       "sector": "",
-      "signal_date": "2026-04-08",
-      "grade": "S",
+      "signal_date": "2026-04-09",
+      "grade": "A",
       "score": {
-        "news": 3,
+        "news": 2,
         "volume": 3,
-        "chart": 2,
-        "candle": 1,
+        "chart": 1,
+        "candle": 0,
         "consolidation": 0,
-        "supply": 0,
+        "supply": 2,
         "disclosure": 0,
         "analyst": 0,
         "financial": 1,
-        "llm_reason": "부산 삼익비치 재건축 사업관리 수주와 종전 후 재건 기대감, 원전 및 하이테크 투자 확대 수혜 전망으로 확실한 호재로 판단됨",
+        "llm_reason": "미-이란 지정학적 리스크 지속으로 인한 알루미늄 공급 차질 우려 및 알루미늄 가격 상승에 따른 수혜 기대감으로 주가 상승 모멘텀이 발생하고 있음.",
         "llm_source": "gemini_grounding",
-        "total": 10
+        "total": 9
       },
       "checklist": {
         "has_news": true,
         "news_sources": [
-          "아시아경제",
-          "머니투데이",
-          "한국경제TV"
+          "연합뉴스",
+          "서울신문"
         ],
         "volume_sufficient": true,
-        "is_new_high": true,
+        "is_new_high": false,
         "is_breakout": false,
         "ma_aligned": true,
-        "good_candle": true,
+        "good_candle": false,
         "has_consolidation": false,
-        "supply_positive": false,
+        "supply_positive": true,
         "has_disclosure": false,
         "disclosure_types": [],
         "negative_news": false,
         "upper_wick_long": false,
         "volume_suspicious": false
       },
-      "current_price": 32750,
-      "entry_price": 32750,
-      "stop_price": 31767,
-      "target_price": 34387,
-      "quantity": 381,
-      "position_size": 12477750,
+      "current_price": 2170,
+      "entry_price": 2170,
+      "stop_price": 2104,
+      "target_price": 2278,
+      "quantity": 3840,
+      "position_size": 8332800,
       "r_value": 250000.0,
-      "r_multiplier": 1.5,
-      "trading_value": 70989351400,
-      "change_pct": 15.52,
+      "r_multiplier": 1.0,
+      "trading_value": 207255628838,
+      "change_pct": 5.34,
       "volume_ratio": 0.0,
-      "foreign_5d": -212,
-      "inst_5d": -170555,
+      "foreign_5d": 1973730,
+      "inst_5d": 9717,
       "status": "PENDING",
       "news_items": [
         {
-          "title": "\"이게 무슨 일이야\"…재건 기대감에 줄줄이 '상한가'",
-          "source": "한국경제TV",
+          "title": "美-이란 휴전 합의에 돌아온 외국인…반도체 집중 '사자'",
+          "source": "연합뉴스",
           "published_at": "2026-04-08T00:00:00",
-          "url": "https://finance.naver.com/item/news_read.naver?article_id=0001248323&office_id=215&code=053690&page=1&sm="
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0016008866&office_id=001&code=008350&page=1&sm="
         },
         {
-          "title": "포성 멈추면 삽 소리 들린다…'종전 수혜' 건설·에너지株 30% 불기둥",
-          "source": "머니투데이",
-          "published_at": "2026-04-08T00:00:00",
-          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005341399&office_id=008&code=053690&page=1&sm="
+          "title": "[서울데이터랩]금일 코스피 거래량 1위 남선알미늄 거래대금 1,986억...",
+          "source": "서울신문",
+          "published_at": "2026-04-09T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0003633829&office_id=081&code=008350&page=1&sm="
         },
         {
-          "title": "한미글로벌, 부산 재건축 최대어 '삼익비치' 사업관리 수주",
-          "source": "아시아경제",
-          "published_at": "2026-04-07T00:00:00",
-          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005746180&office_id=277&code=053690&page=1&sm="
+          "title": "[서울데이터랩]‘광전자’ 16.17% 급등…실시간 상승률 1위",
+          "source": "서울신문",
+          "published_at": "2026-04-09T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0003633733&office_id=081&code=008350&page=1&sm="
         }
       ],
       "themes": [
-        "재건축",
-        "원전",
-        "하이테크"
+        "알루미늄",
+        "비철금속",
+        "지정학적 리스크"
       ]
     },
     {
       "id": null,
-      "stock_code": "028260",
-      "stock_name": "삼성물산",
-      "market": "KOSPI",
+      "stock_code": "039200",
+      "stock_name": "오스코텍",
+      "market": "KOSDAQ",
       "sector": "",
-      "signal_date": "2026-04-08",
-      "grade": "S",
+      "signal_date": "2026-04-09",
+      "grade": "A",
       "score": {
         "news": 2,
-        "volume": 3,
+        "volume": 2,
         "chart": 0,
         "candle": 1,
         "consolidation": 0,
-        "supply": 0,
+        "supply": 1,
         "disclosure": 0,
-        "analyst": 3,
-        "financial": 1,
-        "llm_reason": "압구정4구역 수주 가능성 높고, 스마트빌딩 플랫폼 협력 등 신사업 추진으로 긍정적 기대감이 있음",
+        "analyst": 0,
+        "financial": 3,
+        "llm_reason": "최근 주주와의 갈등을 봉합하고 주주가치 연동을 제시하는 등 긍정적인 움직임을 보이고 있으며, 알츠하이머 치료제 기술이전 및 폐암 치료제 매출 확대 기대감이 존재함.",
         "llm_source": "gemini_grounding",
-        "total": 10
+        "total": 9
       },
       "checklist": {
         "has_news": true,
         "news_sources": [
-          "한국경제",
-          "연합뉴스"
+          "비즈워치"
         ],
         "volume_sufficient": true,
         "is_new_high": false,
@@ -282,81 +811,216 @@
         "ma_aligned": false,
         "good_candle": true,
         "has_consolidation": false,
-        "supply_positive": false,
+        "supply_positive": true,
         "has_disclosure": false,
         "disclosure_types": [],
         "negative_news": false,
         "upper_wick_long": false,
         "volume_suspicious": false
       },
-      "current_price": 310500,
-      "entry_price": 310500,
-      "stop_price": 301185,
-      "target_price": 326025,
-      "quantity": 40,
-      "position_size": 12420000,
+      "current_price": 52500,
+      "entry_price": 52500,
+      "stop_price": 50925,
+      "target_price": 55125,
+      "quantity": 158,
+      "position_size": 8295000,
       "r_value": 250000.0,
-      "r_multiplier": 1.5,
-      "trading_value": 198897219750,
-      "change_pct": 13.32,
+      "r_multiplier": 1.0,
+      "trading_value": 17601242400,
+      "change_pct": 7.8,
       "volume_ratio": 0.0,
-      "foreign_5d": -41110,
-      "inst_5d": -263700,
+      "foreign_5d": 143166,
+      "inst_5d": -231818,
       "status": "PENDING",
       "news_items": [
         {
-          "title": "대기업 오너일가 보유 주식 25%가 담보…전액 담보 오너는 15명",
-          "source": "연합뉴스",
-          "published_at": "2026-04-08T00:00:00",
-          "url": "https://finance.naver.com/item/news_read.naver?article_id=0016008146&office_id=001&code=028260&page=1&sm="
-        },
-        {
-          "title": "삼성물산 구호플러스, '경량 점퍼' 앞세운 여름 컬렉션 출시",
-          "source": "연합뉴스",
-          "published_at": "2026-04-08T00:00:00",
-          "url": "https://finance.naver.com/item/news_read.naver?article_id=0016008227&office_id=001&code=028260&page=1&sm="
-        },
-        {
-          "title": "\"이쯤에서 하차\"…'상위 1%' 고수들, SK하이닉스 팔고 향한 곳 [...",
-          "source": "한국경제",
-          "published_at": "2026-04-08T00:00:00",
-          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005272439&office_id=015&code=028260&page=1&sm="
+          "title": "'사노피 기술수출' 아델, 490억 투자 유치…\"연내 코스닥 목표\"",
+          "source": "비즈워치",
+          "published_at": "2026-04-09T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0000046103&office_id=648&code=039200&page=1&sm="
         }
       ],
       "themes": [
-        "건설",
-        "스마트빌딩",
-        "해외사업"
+        "신약 개발",
+        "기술 이전",
+        "항암제"
       ]
     },
     {
       "id": null,
-      "stock_code": "071050",
-      "stock_name": "한국금융지주",
+      "stock_code": "093370",
+      "stock_name": "후성",
       "market": "KOSPI",
       "sector": "",
-      "signal_date": "2026-04-08",
-      "grade": "S",
+      "signal_date": "2026-04-09",
+      "grade": "A",
+      "score": {
+        "news": 3,
+        "volume": 3,
+        "chart": 1,
+        "candle": 0,
+        "consolidation": 0,
+        "supply": 1,
+        "disclosure": 0,
+        "analyst": 0,
+        "financial": 0,
+        "llm_reason": "최근 주가가 급등하고 있고, 2차전지 및 반도체 소재 수요 증가와 실적 턴어라운드 기대감이 반영되어 투자 심리가 개선되고 있기 때문",
+        "llm_source": "gemini_grounding",
+        "total": 8
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "서울신문"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": false,
+        "is_breakout": false,
+        "ma_aligned": true,
+        "good_candle": false,
+        "has_consolidation": false,
+        "supply_positive": true,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": true,
+        "volume_suspicious": false
+      },
+      "current_price": 11070,
+      "entry_price": 11070,
+      "stop_price": 10737,
+      "target_price": 11623,
+      "quantity": 752,
+      "position_size": 8324640,
+      "r_value": 250000.0,
+      "r_multiplier": 1.0,
+      "trading_value": 244595446400,
+      "change_pct": 14.01,
+      "volume_ratio": 0.0,
+      "foreign_5d": -212748,
+      "inst_5d": 61425,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "[서울데이터랩]금일 코스피 거래량 1위 남선알미늄 거래대금 1,986억...",
+          "source": "서울신문",
+          "published_at": "2026-04-09T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0003633829&office_id=081&code=093370&page=1&sm="
+        }
+      ],
+      "themes": [
+        "2차전지",
+        "반도체",
+        "폭염"
+      ]
+    },
+    {
+      "id": null,
+      "stock_code": "017670",
+      "stock_name": "SK텔레콤",
+      "market": "KOSPI",
+      "sector": "",
+      "signal_date": "2026-04-09",
+      "grade": "A",
+      "score": {
+        "news": 1,
+        "volume": 3,
+        "chart": 1,
+        "candle": 0,
+        "consolidation": 0,
+        "supply": 2,
+        "disclosure": 0,
+        "analyst": 1,
+        "financial": 0,
+        "llm_reason": "최근 SK텔레콤의 유심 해킹 사고 및 그에 따른 보상, 과징금 등으로 인해 실적 악화가 예상되지만, AI 사업 확장 및 주주 가치 제고 노력이 긍정적으로 평가될 수 있음",
+        "llm_source": "gemini_grounding",
+        "total": 8
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "매일경제",
+          "연합뉴스"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": false,
+        "is_breakout": false,
+        "ma_aligned": true,
+        "good_candle": false,
+        "has_consolidation": false,
+        "supply_positive": true,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": true,
+        "volume_suspicious": false
+      },
+      "current_price": 94400,
+      "entry_price": 94400,
+      "stop_price": 91568,
+      "target_price": 99120,
+      "quantity": 88,
+      "position_size": 8307200,
+      "r_value": 250000.0,
+      "r_multiplier": 1.0,
+      "trading_value": 201297824700,
+      "change_pct": 6.07,
+      "volume_ratio": 0.0,
+      "foreign_5d": 16967,
+      "inst_5d": 225772,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "이통3사 \"보안 강화·AI 투자 확대\"…부총리 \"환골탈태해야\"",
+          "source": "연합뉴스",
+          "published_at": "2026-04-09T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0016012443&office_id=001&code=017670&page=1&sm="
+        },
+        {
+          "title": "부총리 겸 과학기술정보통신부 장관-통신사 CEO 간담회",
+          "source": "연합뉴스",
+          "published_at": "2026-04-09T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0016012376&office_id=001&code=017670&page=1&sm="
+        },
+        {
+          "title": "“오랜만에 세컨폰 켰는데 왜 막혔지?”…‘유령 회선’ 정리하는 이...",
+          "source": "매일경제",
+          "published_at": "2026-04-09T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005663540&office_id=009&code=017670&page=1&sm="
+        }
+      ],
+      "themes": [
+        "AI",
+        "보안",
+        "주주가치"
+      ]
+    },
+    {
+      "id": null,
+      "stock_code": "003280",
+      "stock_name": "흥아해운",
+      "market": "KOSPI",
+      "sector": "",
+      "signal_date": "2026-04-09",
+      "grade": "A",
       "score": {
         "news": 2,
         "volume": 3,
         "chart": 0,
         "candle": 0,
         "consolidation": 0,
-        "supply": 2,
+        "supply": 1,
         "disclosure": 0,
-        "analyst": 2,
-        "financial": 1,
-        "llm_reason": "최근 한국투자증권의 AI 트레이딩 개발 지원 확대 및 뱅키스 주식선물옵션 거래 이벤트 시즌2 실시 등 긍정적인 소식이 있으며, 메리츠화재 출신 인력 영입을 통해 보험업 진출에 속도를 내고 있어 사업 다각화에 대한 기대감이 있음.",
+        "analyst": 0,
+        "financial": 2,
+        "llm_reason": "호르무즈 해협 변수 재부각으로 해상 운임 상승 기대감이 형성되었으나, 봉쇄 여부에 대한 엇갈린 신호가 존재하며, 최근 외국인과 기관의 순매도세가 나타나고 있어 긍정적 기대와 함께 리스크 관리 필요",
         "llm_source": "gemini_grounding",
-        "total": 10
+        "total": 8
       },
       "checklist": {
         "has_news": true,
         "news_sources": [
-          "서울경제",
-          "조선비즈",
-          "한국경제TV"
+          "한국경제"
         ],
         "volume_sufficient": true,
         "is_new_high": false,
@@ -371,67 +1035,148 @@
         "upper_wick_long": false,
         "volume_suspicious": false
       },
-      "current_price": 237500,
-      "entry_price": 237500,
-      "stop_price": 230375,
-      "target_price": 249375,
-      "quantity": 52,
-      "position_size": 12350000,
+      "current_price": 3160,
+      "entry_price": 3160,
+      "stop_price": 3065,
+      "target_price": 3318,
+      "quantity": 2637,
+      "position_size": 8332920,
       "r_value": 250000.0,
-      "r_multiplier": 1.5,
-      "trading_value": 71088942500,
-      "change_pct": 11.5,
+      "r_multiplier": 1.0,
+      "trading_value": 149069494087,
+      "change_pct": 5.69,
       "volume_ratio": 0.0,
-      "foreign_5d": 6492,
-      "inst_5d": 18451,
+      "foreign_5d": 1298856,
+      "inst_5d": -127021,
       "status": "PENDING",
       "news_items": [
         {
-          "title": "이제는 SK하이닉스의 시간…영업익 250조 도전",
-          "source": "한국경제TV",
-          "published_at": "2026-04-08T00:00:00",
-          "url": "https://finance.naver.com/item/news_read.naver?article_id=0001248330&office_id=215&code=071050&page=1&sm="
+          "title": "불안한 휴전…코스피, 호르무즈 재봉쇄 경계감 장 초반 1%대↓",
+          "source": "한국경제",
+          "published_at": "2026-04-09T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005272799&office_id=015&code=003280&page=1&sm="
         },
         {
-          "title": "한투, ETF 거래액 따라 최대 100만 원 추첨 제공",
-          "source": "서울경제",
+          "title": "美·이란 휴전 합의에…석유·해운株 '와르르'",
+          "source": "한국경제",
           "published_at": "2026-04-08T00:00:00",
-          "url": "https://finance.naver.com/item/news_read.naver?article_id=0004608386&office_id=011&code=071050&page=1&sm="
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005272613&office_id=015&code=003280&page=1&sm="
         },
         {
-          "title": "예별·롯데 두 손해보험사 매각 주관하는 삼정... 한투 선택에 관심 집...",
-          "source": "조선비즈",
+          "title": "트럼프 '휴전 선언'에 증시 급등?…오히려 '악' 소리난 곳",
+          "source": "한국경제",
           "published_at": "2026-04-08T00:00:00",
-          "url": "https://finance.naver.com/item/news_read.naver?article_id=0001155121&office_id=366&code=071050&page=1&sm="
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005272515&office_id=015&code=003280&page=1&sm="
         }
       ],
       "themes": [
-        "증권",
-        "AI 트레이딩",
-        "보험업 진출"
+        "해운",
+        "중동전쟁",
+        "지정학적 리스크"
       ]
     },
     {
       "id": null,
-      "stock_code": "001440",
-      "stock_name": "대한전선",
+      "stock_code": "004170",
+      "stock_name": "신세계",
       "market": "KOSPI",
       "sector": "",
-      "signal_date": "2026-04-08",
-      "grade": "S",
+      "signal_date": "2026-04-09",
+      "grade": "A",
+      "score": {
+        "news": 2,
+        "volume": 2,
+        "chart": 0,
+        "candle": 1,
+        "consolidation": 0,
+        "supply": 1,
+        "disclosure": 0,
+        "analyst": 2,
+        "financial": 0,
+        "llm_reason": "신세계라이브쇼핑의 맨즈컬렉션 팝업 스토어 오픈 및 브레빌 팝업 스토어 진행으로 긍정적인 기대감이 있으며, 1분기 실적 전망도 긍정적입니다.",
+        "llm_source": "gemini_grounding",
+        "total": 8
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "머니투데이",
+          "연합뉴스"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": false,
+        "is_breakout": false,
+        "ma_aligned": false,
+        "good_candle": true,
+        "has_consolidation": false,
+        "supply_positive": true,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": false,
+        "volume_suspicious": false
+      },
+      "current_price": 348000,
+      "entry_price": 348000,
+      "stop_price": 337560,
+      "target_price": 365400,
+      "quantity": 23,
+      "position_size": 8004000,
+      "r_value": 250000.0,
+      "r_multiplier": 1.0,
+      "trading_value": 16694007250,
+      "change_pct": 5.45,
+      "volume_ratio": 0.0,
+      "foreign_5d": 22798,
+      "inst_5d": -9096,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "신세계라이브쇼핑 '맨즈컬렉션', 백화점서 팝업…오프라인 확장",
+          "source": "연합뉴스",
+          "published_at": "2026-04-09T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0016010991&office_id=001&code=004170&page=1&sm="
+        },
+        {
+          "title": "신세계백화점, 브레빌 대형 팝업스토어 진행",
+          "source": "연합뉴스",
+          "published_at": "2026-04-09T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0016011627&office_id=001&code=004170&page=1&sm="
+        },
+        {
+          "title": "백화점으로 무대 넓힌다…신세계라이브쇼핑, '맨즈컬렉션' 팝업 열어",
+          "source": "머니투데이",
+          "published_at": "2026-04-09T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005342074&office_id=008&code=004170&page=1&sm="
+        }
+      ],
+      "themes": [
+        "백화점",
+        "패션",
+        "라이프스타일"
+      ]
+    },
+    {
+      "id": null,
+      "stock_code": "356860",
+      "stock_name": "티엘비",
+      "market": "KOSDAQ",
+      "sector": "",
+      "signal_date": "2026-04-09",
+      "grade": "A",
       "score": {
         "news": 0,
         "volume": 3,
         "chart": 0,
-        "candle": 1,
+        "candle": 0,
         "consolidation": 0,
-        "supply": 2,
+        "supply": 1,
         "disclosure": 0,
-        "analyst": 3,
-        "financial": 1,
+        "analyst": 2,
+        "financial": 2,
         "llm_reason": "",
         "llm_source": "",
-        "total": 10
+        "total": 8
       },
       "checklist": {
         "has_news": false,
@@ -440,65 +1185,64 @@
         "is_new_high": false,
         "is_breakout": false,
         "ma_aligned": false,
-        "good_candle": true,
+        "good_candle": false,
         "has_consolidation": false,
         "supply_positive": true,
         "has_disclosure": false,
         "disclosure_types": [],
         "negative_news": false,
-        "upper_wick_long": false,
+        "upper_wick_long": true,
         "volume_suspicious": false
       },
-      "current_price": 31300,
-      "entry_price": 31300,
-      "stop_price": 30361,
-      "target_price": 32865,
-      "quantity": 399,
-      "position_size": 12488700,
+      "current_price": 79500,
+      "entry_price": 79500,
+      "stop_price": 77115,
+      "target_price": 83475,
+      "quantity": 104,
+      "position_size": 8268000,
       "r_value": 250000.0,
-      "r_multiplier": 1.5,
-      "trading_value": 132364390150,
-      "change_pct": 11.19,
+      "r_multiplier": 1.0,
+      "trading_value": 62770878400,
+      "change_pct": 7.72,
       "volume_ratio": 0.0,
-      "foreign_5d": 813149,
-      "inst_5d": 510519,
+      "foreign_5d": -51624,
+      "inst_5d": 91236,
       "status": "PENDING",
       "news_items": [],
       "themes": []
     },
     {
       "id": null,
-      "stock_code": "010170",
-      "stock_name": "대한광통신",
+      "stock_code": "380550",
+      "stock_name": "뉴로핏",
       "market": "KOSDAQ",
       "sector": "",
-      "signal_date": "2026-04-08",
-      "grade": "S",
+      "signal_date": "2026-04-09",
+      "grade": "A",
       "score": {
-        "news": 3,
+        "news": 2,
         "volume": 3,
-        "chart": 2,
+        "chart": 0,
         "candle": 0,
         "consolidation": 0,
         "supply": 1,
         "disclosure": 0,
         "analyst": 0,
-        "financial": 0,
-        "llm_reason": "글로벌 빅테크 AI 데이터센터에 광케이블 1차 물량 수주 계약 체결 및 추가 물량 확보 협상 진행 중, 미국 내 생산 기반 확보로 북미 시장 수주 확대 기대.",
+        "financial": 2,
+        "llm_reason": "미국 워싱턴대학교와 AI 뇌 영상 분석 소프트웨어 공급 계약 체결 및 FDA 승인 획득으로 미국 시장 진출에 속도를 내고 있으며, 알츠하이머 치료제 시장 확대에 따른 뇌 영상 분석 수요 증가가 기대됨.",
         "llm_source": "gemini_grounding",
-        "total": 9
+        "total": 8
       },
       "checklist": {
         "has_news": true,
         "news_sources": [
-          "조선일보",
-          "한국경제",
-          "서울경제"
+          "이데일리",
+          "서울신문"
         ],
         "volume_sufficient": true,
-        "is_new_high": true,
+        "is_new_high": false,
         "is_breakout": false,
-        "ma_aligned": true,
+        "ma_aligned": false,
         "good_candle": false,
         "has_consolidation": false,
         "supply_positive": true,
@@ -508,154 +1252,140 @@
         "upper_wick_long": false,
         "volume_suspicious": false
       },
-      "current_price": 14860,
-      "entry_price": 14860,
-      "stop_price": 14414,
-      "target_price": 15603,
-      "quantity": 841,
-      "position_size": 12497260,
+      "current_price": 20600,
+      "entry_price": 20600,
+      "stop_price": 19982,
+      "target_price": 21630,
+      "quantity": 404,
+      "position_size": 8322400,
       "r_value": 250000.0,
-      "r_multiplier": 1.5,
-      "trading_value": 735602584820,
-      "change_pct": 17.56,
+      "r_multiplier": 1.0,
+      "trading_value": 80306965800,
+      "change_pct": 7.18,
       "volume_ratio": 0.0,
-      "foreign_5d": 2400987,
-      "inst_5d": -1082341,
+      "foreign_5d": 78890,
+      "inst_5d": -9359,
       "status": "PENDING",
       "news_items": [
         {
-          "title": "\"이쯤에서 하차\"…'상위 1%' 고수들, SK하이닉스 팔고 향한 곳 [...",
-          "source": "한국경제",
-          "published_at": "2026-04-08T00:00:00",
-          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005272439&office_id=015&code=010170&page=1&sm="
+          "title": "뉴로핏, 美 일라이릴리 PET 분석 자동화 성공...양사 논문 공동 출...",
+          "source": "이데일리",
+          "published_at": "2026-04-09T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0006253276&office_id=018&code=380550&page=1&sm="
         },
         {
-          "title": "휴전 소식에 삼성전자 쓸어담았다…초고수, 현대차·LG엔솔도 ‘픽’...",
-          "source": "서울경제",
-          "published_at": "2026-04-08T00:00:00",
-          "url": "https://finance.naver.com/item/news_read.naver?article_id=0004608446&office_id=011&code=010170&page=1&sm="
-        },
-        {
-          "title": "AI 시대 필수 인프라로 떠올라… 빛나는 광통신주",
-          "source": "조선일보",
-          "published_at": "2026-04-07T00:00:00",
-          "url": "https://finance.naver.com/item/news_read.naver?article_id=0003969216&office_id=023&code=010170&page=1&sm="
+          "title": "[서울데이터랩]‘애머릿지’ 30% 상한가…실시간 상승률 1위",
+          "source": "서울신문",
+          "published_at": "2026-04-09T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0003633732&office_id=081&code=380550&page=1&sm="
         }
       ],
       "themes": [
-        "AI 데이터센터",
-        "광통신",
-        "북미 인프라 투자"
+        "AI 의료",
+        "뇌 질환 진단",
+        "알츠하이머"
       ]
     },
     {
       "id": null,
-      "stock_code": "161390",
-      "stock_name": "한국타이어앤테크놀로지",
+      "stock_code": "006110",
+      "stock_name": "삼아알미늄",
       "market": "KOSPI",
       "sector": "",
-      "signal_date": "2026-04-08",
+      "signal_date": "2026-04-09",
       "grade": "A",
       "score": {
         "news": 2,
-        "volume": 2,
-        "chart": 0,
-        "candle": 1,
+        "volume": 3,
+        "chart": 1,
+        "candle": 0,
         "consolidation": 0,
         "supply": 1,
         "disclosure": 0,
-        "analyst": 2,
-        "financial": 2,
-        "llm_reason": "타이어 테마 상승세 및 MLB 구장 브랜드 광고 시행으로 긍정적 기대감이 있음",
+        "analyst": 0,
+        "financial": 0,
+        "llm_reason": "최근 알루미늄 가격 상승 전망 및 중동 분쟁으로 인한 공급망 불안정으로 주가가 상승하고 있으며, 2차전지 소재 사업 성장 기대감이 존재함.",
         "llm_source": "gemini_grounding",
-        "total": 10
+        "total": 7
       },
       "checklist": {
         "has_news": true,
         "news_sources": [
-          "매일경제",
-          "이데일리",
-          "연합뉴스"
+          "한국경제",
+          "서울신문"
         ],
         "volume_sufficient": true,
         "is_new_high": false,
         "is_breakout": false,
-        "ma_aligned": false,
-        "good_candle": true,
+        "ma_aligned": true,
+        "good_candle": false,
         "has_consolidation": false,
         "supply_positive": true,
         "has_disclosure": false,
         "disclosure_types": [],
         "negative_news": false,
-        "upper_wick_long": false,
+        "upper_wick_long": true,
         "volume_suspicious": false
       },
-      "current_price": 61200,
-      "entry_price": 61200,
-      "stop_price": 59364,
-      "target_price": 64260,
-      "quantity": 136,
-      "position_size": 8323200,
+      "current_price": 48000,
+      "entry_price": 48000,
+      "stop_price": 46560,
+      "target_price": 50400,
+      "quantity": 173,
+      "position_size": 8304000,
       "r_value": 250000.0,
       "r_multiplier": 1.0,
-      "trading_value": 34721372150,
-      "change_pct": 14.82,
+      "trading_value": 78490841675,
+      "change_pct": 13.74,
       "volume_ratio": 0.0,
-      "foreign_5d": -95198,
-      "inst_5d": 49115,
+      "foreign_5d": 55975,
+      "inst_5d": -84675,
       "status": "PENDING",
       "news_items": [
         {
-          "title": "[노란봉투법 한달] ③ 이도저도 못하는 재계…\"소송·수용 다 안돼\"",
-          "source": "연합뉴스",
-          "published_at": "2026-04-08T00:00:00",
-          "url": "https://finance.naver.com/item/news_read.naver?article_id=0016008159&office_id=001&code=161390&page=1&sm="
+          "title": "불안한 휴전…코스피, 호르무즈 재봉쇄 경계감 장 초반 1%대↓",
+          "source": "한국경제",
+          "published_at": "2026-04-09T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005272799&office_id=015&code=006110&page=1&sm="
         },
         {
-          "title": "한국타이어 티스테이션, ‘두산베어스’와 11년 연속 동행",
-          "source": "매일경제",
-          "published_at": "2026-04-08T00:00:00",
-          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005662819&office_id=009&code=161390&page=1&sm="
-        },
-        {
-          "title": "한국타이어 티스테이션, 두산베어스 스폰서십 11년 연속 체결",
-          "source": "이데일리",
-          "published_at": "2026-04-08T00:00:00",
-          "url": "https://finance.naver.com/item/news_read.naver?article_id=0006252545&office_id=018&code=161390&page=1&sm="
+          "title": "[서울데이터랩]‘광전자’ 16.17% 급등…실시간 상승률 1위",
+          "source": "서울신문",
+          "published_at": "2026-04-09T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0003633733&office_id=081&code=006110&page=1&sm="
         }
       ],
       "themes": [
-        "타이어",
-        "스포츠 마케팅",
-        "글로벌 브랜드"
+        "알루미늄 가격 상승",
+        "2차전지",
+        "중동 지정학적 리스크"
       ]
     },
     {
       "id": null,
-      "stock_code": "006650",
-      "stock_name": "대한유화",
+      "stock_code": "008970",
+      "stock_name": "KBI동양철관",
       "market": "KOSPI",
       "sector": "",
-      "signal_date": "2026-04-08",
+      "signal_date": "2026-04-09",
       "grade": "A",
       "score": {
         "news": 2,
-        "volume": 2,
+        "volume": 3,
         "chart": 1,
         "candle": 0,
         "consolidation": 0,
         "supply": 0,
         "disclosure": 0,
-        "analyst": 3,
-        "financial": 2,
-        "llm_reason": "최근 주가 급등 및 2차전지 소재 성장 기대감이 있지만, 석유화학 업황 부진 및 구조개편 지연으로 인한 불확실성이 존재함",
+        "analyst": 0,
+        "financial": 1,
+        "llm_reason": "최근 주가 급등은 긍정적이지만, 2025년 실적은 적자 전환되었고, 강관 산업 자체의 변동성도 존재하여 긍정적 기대감과 리스크가 혼재함",
         "llm_source": "gemini_grounding",
-        "total": 10
+        "total": 7
       },
       "checklist": {
         "has_news": true,
         "news_sources": [
-          "헤럴드경제",
           "서울신문"
         ],
         "volume_sufficient": true,
@@ -671,57 +1401,45 @@
         "upper_wick_long": true,
         "volume_suspicious": false
       },
-      "current_price": 156100,
-      "entry_price": 156100,
-      "stop_price": 151417,
-      "target_price": 163905,
-      "quantity": 53,
-      "position_size": 8273300,
+      "current_price": 2015,
+      "entry_price": 2015,
+      "stop_price": 1954,
+      "target_price": 2115,
+      "quantity": 4135,
+      "position_size": 8332025,
       "r_value": 250000.0,
       "r_multiplier": 1.0,
-      "trading_value": 21048305550,
-      "change_pct": 12.22,
+      "trading_value": 91282940499,
+      "change_pct": 9.1,
       "volume_ratio": 0.0,
-      "foreign_5d": -20169,
-      "inst_5d": -57967,
+      "foreign_5d": -282767,
+      "inst_5d": -197,
       "status": "PENDING",
       "news_items": [
         {
-          "title": "‘여수 1호’ 석화재편 금융지원 대상 확정",
-          "source": "헤럴드경제",
-          "published_at": "2026-04-07T00:00:00",
-          "url": "https://finance.naver.com/item/news_read.naver?article_id=0002625891&office_id=016&code=006650&page=1&sm="
-        },
-        {
-          "title": "‘여수 1호’ 석화재편 금융지원 대상 확정…최대 복병 울산은 교착 ....",
-          "source": "헤럴드경제",
-          "published_at": "2026-04-07T00:00:00",
-          "url": "https://finance.naver.com/item/news_read.naver?article_id=0002625720&office_id=016&code=006650&page=1&sm="
-        },
-        {
-          "title": "[서울데이터랩]‘광전자’ 23.67% 폭등…실시간 상승률 1위",
+          "title": "[서울데이터랩]금일 코스피 거래량 1위 남선알미늄 거래대금 1,986억...",
           "source": "서울신문",
-          "published_at": "2026-04-08T00:00:00",
-          "url": "https://finance.naver.com/item/news_read.naver?article_id=0003633329&office_id=081&code=006650&page=1&sm="
+          "published_at": "2026-04-09T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0003633829&office_id=081&code=008970&page=1&sm="
         }
       ],
       "themes": [
-        "석유화학",
-        "2차전지",
-        "주주환원"
+        "강관",
+        "이라크 재건",
+        "우크라이나 재건"
       ]
     },
     {
       "id": null,
-      "stock_code": "005690",
-      "stock_name": "파미셀",
-      "market": "KOSPI",
+      "stock_code": "101490",
+      "stock_name": "에스앤에스텍",
+      "market": "KOSDAQ",
       "sector": "",
-      "signal_date": "2026-04-08",
+      "signal_date": "2026-04-09",
       "grade": "A",
       "score": {
-        "news": 3,
-        "volume": 2,
+        "news": 0,
+        "volume": 3,
         "chart": 0,
         "candle": 1,
         "consolidation": 0,
@@ -729,15 +1447,13 @@
         "disclosure": 0,
         "analyst": 0,
         "financial": 3,
-        "llm_reason": "2025년 최대 실적 달성 및 두산과의 전자재료용 소재 공급계약 체결, 서울아산병원과 첨단재생의료 CMO 계약 체결 등 호재가 겹침",
-        "llm_source": "gemini_grounding",
-        "total": 9
+        "llm_reason": "",
+        "llm_source": "",
+        "total": 7
       },
       "checklist": {
-        "has_news": true,
-        "news_sources": [
-          "서울경제"
-        ],
+        "has_news": false,
+        "news_sources": [],
         "volume_sufficient": true,
         "is_new_high": false,
         "is_breakout": false,
@@ -751,273 +1467,392 @@
         "upper_wick_long": false,
         "volume_suspicious": false
       },
-      "current_price": 16510,
-      "entry_price": 16510,
-      "stop_price": 16014,
-      "target_price": 17335,
-      "quantity": 504,
-      "position_size": 8321040,
+      "current_price": 101900,
+      "entry_price": 101900,
+      "stop_price": 98843,
+      "target_price": 106995,
+      "quantity": 81,
+      "position_size": 8253900,
       "r_value": 250000.0,
       "r_multiplier": 1.0,
-      "trading_value": 12882564310,
-      "change_pct": 13.39,
+      "trading_value": 87030112000,
+      "change_pct": 12.35,
       "volume_ratio": 0.0,
-      "foreign_5d": -67305,
-      "inst_5d": -56090,
+      "foreign_5d": -15887,
+      "inst_5d": -12049,
       "status": "PENDING",
-      "news_items": [
-        {
-          "title": "‘신약 리스크’ 반도체로 넘는다…K바이오, 사업 다각화 사활",
-          "source": "서울경제",
-          "published_at": "2026-04-08T00:00:00",
-          "url": "https://finance.naver.com/item/news_read.naver?article_id=0004608302&office_id=011&code=005690&page=1&sm="
-        },
-        {
-          "title": "“캐시카우 확보”…K바이오, 첨단소재 영역 확장",
-          "source": "서울경제",
-          "published_at": "2026-04-07T00:00:00",
-          "url": "https://finance.naver.com/item/news_read.naver?article_id=0004608123&office_id=011&code=005690&page=1&sm="
-        }
-      ],
-      "themes": [
-        "줄기세포",
-        "바이오케미컬",
-        "첨단소재"
-      ]
+      "news_items": [],
+      "themes": []
     },
     {
       "id": null,
-      "stock_code": "005940",
-      "stock_name": "NH투자증권",
-      "market": "KOSPI",
+      "stock_code": "042940",
+      "stock_name": "상지건설",
+      "market": "KOSDAQ",
       "sector": "",
-      "signal_date": "2026-04-08",
+      "signal_date": "2026-04-09",
       "grade": "A",
       "score": {
         "news": 2,
-        "volume": 2,
-        "chart": 0,
-        "candle": 1,
+        "volume": 3,
+        "chart": 1,
+        "candle": 0,
         "consolidation": 0,
         "supply": 1,
         "disclosure": 0,
-        "analyst": 2,
+        "analyst": 0,
         "financial": 0,
-        "llm_reason": "IMA 1호 상품의 성공적인 판매와 법인 자금 유입 증가는 NH투자증권의 IB 역량과 안정성을 입증하며 긍정적인 투자 심리를 자극할 수 있습니다. 또한 증권사 목표가 상향도 긍정적입니다.",
+        "llm_reason": "중동 휴전 합의에 따른 재건 기대감과 건설 경기 부양책 기대감이 주가에 긍정적으로 작용하고 있으며, 외국인 매수세도 유입되고 있음.",
         "llm_source": "gemini_grounding",
-        "total": 8
+        "total": 7
       },
       "checklist": {
         "has_news": true,
         "news_sources": [
-          "한국경제",
-          "연합뉴스",
-          "연합뉴스TV"
+          "머니투데이",
+          "한국경제TV",
+          "비즈워치"
         ],
         "volume_sufficient": true,
         "is_new_high": false,
         "is_breakout": false,
-        "ma_aligned": false,
-        "good_candle": true,
+        "ma_aligned": true,
+        "good_candle": false,
         "has_consolidation": false,
         "supply_positive": true,
         "has_disclosure": false,
         "disclosure_types": [],
         "negative_news": false,
-        "upper_wick_long": false,
+        "upper_wick_long": true,
         "volume_suspicious": false
       },
-      "current_price": 34050,
-      "entry_price": 34050,
-      "stop_price": 33028,
-      "target_price": 35752,
-      "quantity": 244,
-      "position_size": 8308200,
+      "current_price": 11550,
+      "entry_price": 11550,
+      "stop_price": 11203,
+      "target_price": 12127,
+      "quantity": 721,
+      "position_size": 8327550,
       "r_value": 250000.0,
       "r_multiplier": 1.0,
-      "trading_value": 37802137625,
-      "change_pct": 11.46,
+      "trading_value": 77061591320,
+      "change_pct": 12.24,
       "volume_ratio": 0.0,
-      "foreign_5d": -454615,
-      "inst_5d": 110365,
+      "foreign_5d": 34953,
+      "inst_5d": 0,
       "status": "PENDING",
       "news_items": [
         {
-          "title": "NH투자증권 \"IMA 1호, 법인 자금 50% 넘게 유입\"",
-          "source": "연합뉴스TV",
+          "title": "\"이게 무슨 일이야\"…재건 기대감에 줄줄이 '상한가'",
+          "source": "한국경제TV",
           "published_at": "2026-04-08T00:00:00",
-          "url": "https://finance.naver.com/item/news_read.naver?article_id=0000852770&office_id=422&code=005940&page=1&sm="
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0001248323&office_id=215&code=042940&page=1&sm="
         },
         {
-          "title": "NH투자증권 \"IMA 1호, 법인 자금 55%·신규 자산 60% 유입...",
-          "source": "연합뉴스",
+          "title": "중동戰 막바지?…재건 수혜 기대로 건설·에너지株 '벌떡'",
+          "source": "머니투데이",
           "published_at": "2026-04-08T00:00:00",
-          "url": "https://finance.naver.com/item/news_read.naver?article_id=0016009016&office_id=001&code=005940&page=1&sm="
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005341612&office_id=008&code=042940&page=1&sm="
         },
         {
-          "title": "NH투자증권 \"IMA 1호 판매액 중 법인자산 55%·신규유입 60%...",
-          "source": "한국경제",
+          "title": "코스피 6000 다시 오나...중동 긴장 완화에 7% 급등",
+          "source": "비즈워치",
           "published_at": "2026-04-08T00:00:00",
-          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005272412&office_id=015&code=005940&page=1&sm="
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0000046089&office_id=648&code=042940&page=1&sm="
         }
       ],
       "themes": [
-        "IB(기업금융)",
-        "자산관리(WM)",
-        "주주환원"
+        "중동 재건",
+        "건설 경기 부양",
+        "중소형 건설사"
+      ]
+    },
+    {
+      "id": null,
+      "stock_code": "037440",
+      "stock_name": "희림",
+      "market": "KOSDAQ",
+      "sector": "",
+      "signal_date": "2026-04-09",
+      "grade": "A",
+      "score": {
+        "news": 2,
+        "volume": 3,
+        "chart": 1,
+        "candle": 0,
+        "consolidation": 0,
+        "supply": 1,
+        "disclosure": 0,
+        "analyst": 0,
+        "financial": 0,
+        "llm_reason": "최근 이란 재건 사업 기대감 및 AI 데이터센터 사업 진출로 주가가 급등했으며, 나우동인과의 컨소시엄을 통한 재건축 설계 수주도 긍정적이지만, 과거 정부와의 유착 의혹 및 건설 경기 악화에 따른 실적 감소 우려도 존재함.",
+        "llm_source": "gemini_grounding",
+        "total": 7
+      },
+      "checklist": {
+        "has_news": true,
+        "news_sources": [
+          "파이낸셜뉴스",
+          "한국경제TV",
+          "아시아경제"
+        ],
+        "volume_sufficient": true,
+        "is_new_high": false,
+        "is_breakout": false,
+        "ma_aligned": true,
+        "good_candle": false,
+        "has_consolidation": false,
+        "supply_positive": true,
+        "has_disclosure": false,
+        "disclosure_types": [],
+        "negative_news": false,
+        "upper_wick_long": true,
+        "volume_suspicious": false
+      },
+      "current_price": 5990,
+      "entry_price": 5990,
+      "stop_price": 5810,
+      "target_price": 6289,
+      "quantity": 1391,
+      "position_size": 8332090,
+      "r_value": 250000.0,
+      "r_multiplier": 1.0,
+      "trading_value": 116149779840,
+      "change_pct": 10.11,
+      "volume_ratio": 0.0,
+      "foreign_5d": 42228,
+      "inst_5d": 0,
+      "status": "PENDING",
+      "news_items": [
+        {
+          "title": "\"이게 무슨 일이야\"…재건 기대감에 줄줄이 '상한가'",
+          "source": "한국경제TV",
+          "published_at": "2026-04-08T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0001248323&office_id=215&code=037440&page=1&sm="
+        },
+        {
+          "title": "인천공항공사, '팀 코리아' 출범… 우즈벡 우르겐치 공항 사업 박차",
+          "source": "아시아경제",
+          "published_at": "2026-04-09T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005747002&office_id=277&code=037440&page=1&sm="
+        },
+        {
+          "title": "인천공항공사 \"우즈벡 우르겐치 공항 사업 본격화\"… '팀 코리아' 출...",
+          "source": "파이낸셜뉴스",
+          "published_at": "2026-04-09T00:00:00",
+          "url": "https://finance.naver.com/item/news_read.naver?article_id=0005504928&office_id=014&code=037440&page=1&sm="
+        }
+      ],
+      "themes": [
+        "우크라이나 재건",
+        "네옴시티",
+        "AI 데이터센터"
       ]
     }
   ],
   "by_grade": {
-    "S": 7,
-    "A": 4,
+    "S": 5,
+    "A": 17,
     "B": 0,
     "C": 0
   },
   "by_market": {
-    "KOSPI": 10,
-    "KOSDAQ": 1
+    "KOSPI": 15,
+    "KOSDAQ": 7
   },
-  "processing_time_ms": 200780.9374332428,
-  "updated_at": "2026-04-08T15:24:49.047269+09:00",
+  "processing_time_ms": 414336.6231918335,
+  "updated_at": "2026-04-09T15:08:07.993991+09:00",
   "claude_picks": {
     "picks": [
       {
-        "stock_code": "007660",
-        "stock_name": "이수페타시스",
+        "stock_code": "278470",
+        "stock_name": "에이피알",
         "rank": 1,
         "confidence": "HIGH",
-        "reason": "[Gemini] AI 반도체 핵심 기판 제조사로, 증권사의 목표가 상향 리포트와 1분기 실적 호전 전망이 긍정적입니다. AI 인프라 확산의 직접적인 수혜주로 견조한 수급 유입이 기대됩니다. [GPT-4o] AI 반도체 및 데이터센터 관련 긍정적 리포트와 실적 기대감으로 인해 높은 수익이 예상됨.",
-        "risk": "기관의 대규모 매도세가 지속될 경우 상승이 제한될 수 있습니다.",
-        "expected_return": "+3% ~ +10%",
+        "reason": "[Gemini] 1분기 역대 최대 실적 전망과 함께 유럽, 미국 등 해외 시장에서의 폭발적인 성장세가 뚜렷합니다. 증권사들의 목표 주가 상향 조정이 잇따르고 있으며 기관의 강한 매수세가 유입 중입니다. [GPT-4o] 유럽, 미국 시장에서의 폭발적 성장세와 증권사 목표 주가 상향 조정이 긍정적이며, 1분기 역대 최대 실적 전망이 뛰어난 점수를 매김.",
+        "risk": "단기 급등에 따른 차익 실현 매물 출회 가능성이 있으며, 시장 전반의 변동성에 영향을 받을 수 있습니다.",
+        "expected_return": "5% ~ 10%",
         "source": "consensus",
-        "gemini_rank": 2,
+        "gemini_rank": 1,
         "openai_rank": 1
       },
       {
-        "stock_code": "010170",
-        "stock_name": "대한광통신",
+        "stock_code": "017550",
+        "stock_name": "수산세보틱스",
         "rank": 2,
         "confidence": "HIGH",
-        "reason": "[Gemini] 글로벌 빅테크향 AI 데이터센터 광케이블 대규모 수주 소식이 강력하며, 압도적인 거래대금과 외국인 순매수가 주가 상승을 견인할 것으로 예상됩니다. 북미 인프라 투자 확대라는 장기 모멘텀도 보유하고 있습니다. [GPT-4o] 광케이블 수주 계약 체결로 AI 데이터센터 관련 테마의 강력한 상승 모멘텀이 있음.",
-        "risk": "기관의 대량 매도세 및 단기 급등에 따른 차익 실현 압박이 존재합니다.",
-        "expected_return": "+5% ~ +15%",
+        "reason": "[Gemini] 미국-이란 휴전 합의로 중동 재건 기대감이 고조되며 상한가를 기록하는 등 강력한 모멘텀이 포착되었습니다. 외국인과 기관의 동반 매수세가 유입되어 수급이 안정적입니다. [GPT-4o] 미국-이란 휴전 합의에 따른 중동 재건 기대가 특징적이며, 주가가 상한가를 기록함.",
+        "risk": "재건 테마는 불확실성이 높고, 실제 수주 성과 없이 기대감만으로 주가가 움직일 수 있어 변동성이 매우 큽니다.",
+        "expected_return": "7% ~ 12%",
         "source": "consensus",
-        "gemini_rank": 1,
-        "openai_rank": 2
-      },
-      {
-        "stock_code": "053690",
-        "stock_name": "한미글로벌",
-        "rank": 3,
-        "confidence": "HIGH",
-        "reason": "[Gemini] 부산 삼익비치 재건축 사업관리 수주와 원전 및 하이테크 투자 확대에 따른 수혜가 명확하며, 차트 기술적으로도 긍정적인 위치에서 추가 상승 여력을 보여주고 있습니다. [GPT-4o] 대규모 재건축 수주와 원전 투자 확대 수혜가 예상됨.",
-        "risk": "기관 매도세가 단기적으로 주가를 압박할 수 있으며, 재료 소멸 시 급락 위험이 있습니다.",
-        "expected_return": "+4% ~ +12%",
-        "source": "consensus",
-        "gemini_rank": 4,
-        "openai_rank": 4
-      },
-      {
-        "stock_code": "039490",
-        "stock_name": "키움증권",
-        "rank": 4,
-        "confidence": "HIGH",
-        "reason": "[Gemini] 퇴직연금 시장 진출을 통한 신성장 동력 확보와 양호한 1분기 실적 전망이 긍정적입니다. 증권업종 전반의 밸류업 기대감 속에서 수급 개선 가능성도 엿보입니다. [GPT-4o] 퇴직연금 시장 진출로 인한 성장 기대감 및 긍정적 실적 전망이 있음.",
-        "risk": "외국인 수급의 불확실성 및 시장의 변동성에 영향을 받을 수 있습니다.",
-        "expected_return": "+2% ~ +7%",
-        "source": "consensus",
-        "gemini_rank": 5,
+        "gemini_rank": 3,
         "openai_rank": 3
       },
       {
-        "stock_code": "028260",
-        "stock_name": "삼성물산",
-        "rank": 5,
+        "stock_code": "483650",
+        "stock_name": "달바글로벌",
+        "rank": 3,
         "confidence": "HIGH",
-        "reason": "[Gemini] 압구정4구역 재건축 수주 가능성과 스마트빌딩 플랫폼 등 신사업 추진 기대감이 유효하며, 대형주로서 풍부한 거래대금과 안정적인 흐름이 투자 매력으로 작용합니다. [GPT-4o] 신사업 추진과 압구정4구역 수주 기대감으로 긍정적인 전망이 있음.",
-        "risk": "외국인과 기관의 동반 매도세가 단기 주가 상승을 제한할 수 있습니다.",
-        "expected_return": "+1% ~ +5%",
+        "reason": "[Gemini] 최근 1분기 호실적 전망 및 해외 성과 대비 저평가 분석이 나오면서 강한 상승 모멘텀을 보였습니다. 외국인 순매수가 유입되고 있어 긍정적입니다. [GPT-4o] 1분기 호실적 전망과 해외 성과 대비 저평가 분석이 부각되어 투자 매력도가 높음.",
+        "risk": "단기 급등 후 숨 고르기 구간에 진입할 수 있으며, 기관 매도세가 일부 존재하여 수급 불안정성이 있습니다.",
+        "expected_return": "4% ~ 8%",
         "source": "consensus",
-        "gemini_rank": 6,
-        "openai_rank": 5
+        "gemini_rank": 5,
+        "openai_rank": 2
       },
       {
-        "stock_code": "071050",
-        "stock_name": "한국금융지주",
-        "rank": 6,
-        "confidence": "MEDIUM",
-        "reason": "[Gemini] 외국인과 기관의 강력한 동반 매수세가 확인되며, AI 트레이딩 개발 지원 확대 등 신사업 추진을 통해 성장 기대감이 높습니다. 증권업황 개선과 정부의 밸류업 프로그램 수혜도 기대됩니다. [GPT-4o] AI 트레이딩 개발 및 주식선물옵션 거래 이벤트가 긍정적으로 판단됨.",
-        "risk": "시장 금리 변동성 및 글로벌 증시 불안정성이 주가에 영향을 줄 수 있습니다.",
-        "expected_return": "+3% ~ +8%",
+        "stock_code": "008350",
+        "stock_name": "남선알미늄",
+        "rank": 4,
+        "confidence": "HIGH",
+        "reason": "[Gemini] 미-이란 지정학적 리스크 지속으로 인한 알루미늄 공급 차질 우려와 알루미늄 가격 상승에 따른 수혜 기대감이 강합니다. 외국인과 기관의 동반 순매수세가 돋보이며 대규모 거래대금이 유입되었습니다. [GPT-4o] 알루미늄 가격 상승과 함께 외국인 및 기관 매수가 긍정적인 모멘텀을 제공.",
+        "risk": "지정학적 리스크 완화 시 알루미늄 가격 하락 및 주가 조정 가능성이 존재하며, 원자재 가격 변동성이 높습니다.",
+        "expected_return": "5% ~ 8%",
         "source": "consensus",
-        "gemini_rank": 3,
+        "gemini_rank": 2,
+        "openai_rank": 10
+      },
+      {
+        "stock_code": "036570",
+        "stock_name": "엔씨소프트",
+        "rank": 5,
+        "confidence": "HIGH",
+        "reason": "[Gemini] 1분기 실적 호조 전망과 자사주 소각 결정 등 주주 가치 제고 노력이 긍정적입니다. 기관 순매수세가 유입되어 하방 경직성을 확보했습니다. [GPT-4o] ESG 평가 최고 등급 획득 및 자사주 소각 결정으로 주주가치 제고 노력을 보여 실적 개선 기대.",
+        "risk": "거래대금이 상대적으로 적어 단기 변동성 확대 시 유동성 확보가 어려울 수 있으며, 차트 흐름이 강하지 않습니다.",
+        "expected_return": "2% ~ 5%",
+        "source": "consensus",
+        "gemini_rank": 14,
+        "openai_rank": 6
+      },
+      {
+        "stock_code": "071090",
+        "stock_name": "하이스틸",
+        "rank": 6,
+        "confidence": "HIGH",
+        "reason": "[Gemini] 최근 강관 테마 상승세 및 남북러 가스관 사업 기대감으로 주가가 크게 상승했습니다. 건설 경기 부진에도 불구하고 에너지 강관 수요 증가 전망이 긍정적입니다. [GPT-4o] 강관 테마 상승세와 남북러 가스관 사업 기대감으로 주가 상승세를 보이고 있음.",
+        "risk": "테마주 성격이 강하여 시장의 심리 변화에 민감하며, 외국인 순매도세가 존재하여 수급 불안정성이 있습니다.",
+        "expected_return": "3% ~ 6%",
+        "source": "consensus",
+        "gemini_rank": 13,
+        "openai_rank": 4
+      },
+      {
+        "stock_code": "010950",
+        "stock_name": "S-Oil",
+        "rank": 7,
+        "confidence": "HIGH",
+        "reason": "[Gemini] 증권사에서 1분기 실적 전망을 긍정적으로 평가하며 목표 주가를 유지했고, 정유 테마가 강세를 보이고 있습니다. 외국인 순매수가 강하게 유입되었습니다. [GPT-4o] 외국인과 기관이 동시 순매수하며, 1분기 실적이 긍정적으로 평가받고 있어 주가 상승 예상.",
+        "risk": "기관 순매도세가 뚜렷하며, 중동 지정학적 리스크에 따라 유가 변동성이 확대될 수 있어 주의가 필요합니다.",
+        "expected_return": "3% ~ 6%",
+        "source": "consensus",
+        "gemini_rank": 10,
         "openai_rank": 7
       },
       {
-        "stock_code": "005690",
-        "stock_name": "파미셀",
-        "rank": 7,
-        "confidence": "LOW",
-        "reason": "2025년 최대 실적 달성 전망과 두산 및 서울아산병원과의 첨단 바이오 소재 계약 등 강력한 호재성 뉴스가 주가 상승의 촉매제가 될 수 있습니다.",
-        "risk": "매우 낮은 거래대금과 외국인/기관의 동반 매도세로 인해 유동성 위험이 크며, 변동성이 확대될 수 있습니다.",
-        "expected_return": "+5% ~ +20%",
+        "stock_code": "298020",
+        "stock_name": "효성티앤씨",
+        "rank": 8,
+        "confidence": "HIGH",
+        "reason": "[Gemini] 탈 플라스틱 테마 강세 속 친환경 사업 확대 기대감 및 스판덱스 업황 회복에 대한 긍정적 전망이 주가에 영향을 미치고 있습니다. 차트 기술적 위치가 양호하고 기관 매수세가 유입됩니다. [GPT-4o] 환경 규제 강화에 따른 스판덱스 업황 회복이 긍정적이며, 친환경 사업 기대감이 높음.",
+        "risk": "거래대금이 상대적으로 적어 단기 변동성 확대 시 유동성 확보에 어려움이 있을 수 있습니다.",
+        "expected_return": "3% ~ 7%",
+        "source": "consensus",
+        "gemini_rank": 11,
+        "openai_rank": 8
+      },
+      {
+        "stock_code": "093370",
+        "stock_name": "후성",
+        "rank": 9,
+        "confidence": "MEDIUM",
+        "reason": "2차전지 및 반도체 소재 수요 증가와 실적 턴어라운드 기대감이 강하며, 대규모 거래대금을 동반한 주가 급등세가 지속되고 있습니다. 기관 매수세가 유입되어 긍정적입니다.",
+        "risk": "외국인 순매도세가 일부 존재하며, 2차전지 섹터의 전반적인 변동성이 높다는 점을 고려해야 합니다.",
+        "expected_return": "5% ~ 9%",
         "source": "gemini_only"
       },
       {
-        "stock_code": "001440",
-        "stock_name": "대한전선",
-        "rank": 8,
-        "confidence": "LOW",
-        "reason": "외국인 및 기관의 강한 매수세로 급증하는 거래량이 돋보이는 종목.",
-        "risk": "주요 뉴스 부재로 인한 모멘텀 지속성 리스크 존재.",
-        "expected_return": "10~15%",
-        "source": "openai_only"
-      },
-      {
-        "stock_code": "161390",
-        "stock_name": "한국타이어앤테크놀로지",
-        "rank": 9,
-        "confidence": "LOW",
-        "reason": "타이어 업종의 상승세와 스포츠 마케팅에 대한 기대감이 있음.",
-        "risk": "외국인 매도 지속성 리스크 존재.",
-        "expected_return": "5~10%",
-        "source": "openai_only"
-      },
-      {
-        "stock_code": "006650",
-        "stock_name": "대한유화",
+        "stock_code": "017670",
+        "stock_name": "SK텔레콤",
         "rank": 10,
-        "confidence": "LOW",
-        "reason": "2차전지 소재 성장 기대감이 긍정적이지만 석유화학 업황 부진이 우려됨.",
-        "risk": "매출 구조개편 지연 및 외국인 매도를 주의해야 함.",
-        "expected_return": "5~10%",
-        "source": "openai_only"
+        "confidence": "MEDIUM",
+        "reason": "AI 사업 확장 및 주주 가치 제고 노력이 긍정적으로 평가되며, 외국인과 기관의 견조한 동반 순매수세가 나타나고 있습니다. 대규모 거래대금을 동반한 안정적인 흐름을 보입니다.",
+        "risk": "유심 해킹 사고 및 그에 따른 보상, 과징금 등으로 인한 단기적인 실적 악화 우려가 상존합니다.",
+        "expected_return": "3% ~ 6%",
+        "source": "gemini_only"
       },
       {
-        "stock_code": "005940",
-        "stock_name": "NH투자증권",
+        "stock_code": "037440",
+        "stock_name": "희림",
         "rank": 11,
         "confidence": "LOW",
-        "reason": "IMA 1호 상품 성공 및 법인 자금 유입 증가로 긍정적인 투자 기회가 예상됨.",
-        "risk": "외국인 매도가 지속되며 시장 변동성에 민감할 수 있음.",
-        "expected_return": "5~10%",
+        "reason": "이란 재건 사업 기대감과 AI 데이터센터 사업 진출 등 다양한 성장 동력이 부각되고 있습니다. 견조한 거래대금과 외국인 매수세가 특징입니다.",
+        "risk": "재건 사업은 진행 과정의 불확실성이 크고, AI 데이터센터 사업은 아직 초기 단계라는 점을 인지해야 합니다.",
+        "expected_return": "4% ~ 7%",
+        "source": "gemini_only"
+      },
+      {
+        "stock_code": "042940",
+        "stock_name": "상지건설",
+        "rank": 12,
+        "confidence": "LOW",
+        "reason": "중동 휴전 합의에 따른 재건 기대감과 국내 건설 경기 부양책 기대감이 주가에 긍정적으로 작용하고 있습니다. 외국인 매수세도 유입되어 모멘텀이 강합니다.",
+        "risk": "재건 및 건설 경기 부양은 정책적 리스크와 실제 효과 발생까지 시간이 소요될 수 있으며, 기관 매수세는 부재합니다.",
+        "expected_return": "4% ~ 7%",
+        "source": "gemini_only"
+      },
+      {
+        "stock_code": "380550",
+        "stock_name": "뉴로핏",
+        "rank": 13,
+        "confidence": "LOW",
+        "reason": "미국 워싱턴대학교와 AI 뇌 영상 분석 소프트웨어 공급 계약 체결 및 FDA 승인 획득으로 미국 시장 진출에 속도를 내고 있습니다. 외국인 순매수가 유입되어 긍정적입니다.",
+        "risk": "기관 매도세가 존재하며, 바이오/의료 AI 섹터 특성상 임상 결과나 계약 성과에 대한 기대감과 실망감이 공존합니다.",
+        "expected_return": "3% ~ 6%",
+        "source": "gemini_only"
+      },
+      {
+        "stock_code": "003280",
+        "stock_name": "흥아해운",
+        "rank": 14,
+        "confidence": "LOW",
+        "reason": "호르무즈 해협 변수 재부각으로 해상 운임 상승 기대감이 형성되었으며, 높은 거래대금과 외국인 순매수가 강하게 나타났습니다.",
+        "risk": "중동 지정학적 리스크의 불확실성이 매우 크고, 기관 순매도세가 강하게 나타나고 있어 변동성에 유의해야 합니다.",
+        "expected_return": "3% ~ 7%",
+        "source": "gemini_only"
+      },
+      {
+        "stock_code": "259630",
+        "stock_name": "엠플러스",
+        "rank": 15,
+        "confidence": "MEDIUM",
+        "reason": "전고체 배터리 양산 핵심 기술 개발로 인해 장기적인 성장 기대감이 크며, 파일럿 장비 수주 성공이 긍정적.",
+        "risk": "기술 개발 지연 가능성.",
+        "expected_return": "15%~18%",
+        "source": "openai_only"
+      },
+      {
+        "stock_code": "306200",
+        "stock_name": "세아제강",
+        "rank": 16,
+        "confidence": "LOW",
+        "reason": "신규 해상풍력 및 LNG 프로젝트 매출 본격화로 성장 잠재력이 높음.",
+        "risk": "프로젝트 결과의 불확실성.",
+        "expected_return": "8%~12%",
         "source": "openai_only"
       }
     ],
-    "consensus_count": 6,
-    "gemini_count": 7,
+    "consensus_count": 8,
+    "gemini_count": 14,
     "openai_count": 10,
-    "market_view": "[Gemini] 오늘 시장은 AI 관련 기술주와 증권업종의 강세가 돋보였으며, 일부 건설/인프라 관련 종목들도 개별 호재에 힘입어 상승세를 보였습니다. 전반적으로 특정 테마에 수급이 집중되는 모습입니다. | [GPT-4o] 오늘 시장은 전반적으로 AI 및 5G 관련 테마가 강하게 부각되고 있는 상황입니다.",
+    "market_view": "[Gemini] 오늘 시장은 지정학적 리스크 완화에 따른 재건 및 원자재 관련 테마와 함께, 실적 개선 및 신사업 성장을 기대하는 뷰티/IT 섹터가 강세를 보이며 양호한 흐름을 나타냈습니다. | [GPT-4o] 오늘 시장은 글로벌 및 지정학적 리스크와 관련된 테마들이 주도를 하며, 한국 시장의 단기적 변동성이 나타날 것으로 예상됨.",
     "top_themes": [
-      "AI 반도체/데이터센터",
-      "증권/밸류업",
-      "건설/재건축/인프라",
-      "AI 데이터센터",
-      "5G",
-      "재건축"
+      "K-뷰티 / 화장품",
+      "중동 재건 / 건설",
+      "2차전지 / 반도체 소재",
+      "중동 재건",
+      "2차전지",
+      "화장품 산업"
     ],
-    "generated_at": "2026-04-08T15:24:49.045126",
+    "generated_at": "2026-04-09T15:08:07.991143",
     "models": [
       "gemini-2.5-flash",
       "gpt-4o"
