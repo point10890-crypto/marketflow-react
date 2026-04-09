@@ -634,8 +634,8 @@ def send_vcp_telegram_summary():
         logger.info("📭 VCP 시그널이 없습니다.")
         return
 
-    # composite score 기준 정��
-    signals.sort(key=lambda s: s.get('composite', {}).get('score', 0)
+    # composite_score 기준 정렬
+    signals.sort(key=lambda s: s.get('composite', {}).get('composite_score', 0)
                  if isinstance(s.get('composite'), dict)
                  else 0, reverse=True)
 
@@ -653,16 +653,21 @@ def send_vcp_telegram_summary():
         symbol = s.get('symbol', '?')
         name = s.get('name', symbol)
         comp = s.get('composite', {})
-        score = comp.get('score', 0) if isinstance(comp, dict) else 0
-        price = s.get('price', {})
-        close = price.get('close', 0) if isinstance(price, dict) else 0
-        change = price.get('change_pct', 0) if isinstance(price, dict) else 0
+        score = comp.get('composite_score', 0) if isinstance(comp, dict) else 0
+        # price 는 float (dict 아님)
+        price = s.get('price', 0)
+        if isinstance(price, dict):
+            close = price.get('close', 0)
+            change = price.get('change_pct', 0)
+        else:
+            close = float(price) if price else 0
+            change = 0
 
         # 패턴 정보
         trend = s.get('trend_template', {})
-        tt_pass = trend.get('passed', False) if isinstance(trend, dict) else False
+        tt_pass = str(trend.get('passed', False)).lower() == 'true' if isinstance(trend, dict) else False
         vcp = s.get('vcp_pattern', {})
-        vcp_pass = vcp.get('detected', False) if isinstance(vcp, dict) else False
+        vcp_pass = str(vcp.get('valid_vcp', False)).lower() == 'true' if isinstance(vcp, dict) else False
 
         icons = []
         if tt_pass:
@@ -672,7 +677,7 @@ def send_vcp_telegram_summary():
         icon_str = ' '.join(icons)
 
         msg += f"\n{i}. <b>{name}</b> ({symbol}) {icon_str}\n"
-        msg += f"   점수: {score:.1f} | {close:,.0f}원 ({change:+.1f}%)\n"
+        msg += f"   점수: {score:.1f} | {close:,.0f}원\n"
 
     send_telegram(msg)
 
@@ -1085,7 +1090,7 @@ def _build_vcp_top10_text() -> str:
     if not signals:
         return ""
 
-    signals.sort(key=lambda s: s.get('composite', {}).get('score', 0)
+    signals.sort(key=lambda s: s.get('composite', {}).get('composite_score', 0)
                  if isinstance(s.get('composite'), dict) else 0, reverse=True)
 
     top_10 = signals[:10]
@@ -1096,11 +1101,10 @@ def _build_vcp_top10_text() -> str:
         name = s.get('name', s.get('symbol', '?'))
         symbol = s.get('symbol', '?')
         comp = s.get('composite', {})
-        score = comp.get('score', 0) if isinstance(comp, dict) else 0
-        price = s.get('price', {})
-        close = price.get('close', 0) if isinstance(price, dict) else 0
-        change = price.get('change_pct', 0) if isinstance(price, dict) else 0
-        text += f"{i}. <b>{name}({symbol})</b> {score:.1f}점 {close:,.0f}원 ({change:+.1f}%)\n"
+        score = comp.get('composite_score', 0) if isinstance(comp, dict) else 0
+        price = s.get('price', 0)
+        close = float(price) if not isinstance(price, dict) else price.get('close', 0)
+        text += f"{i}. <b>{name}({symbol})</b> {score:.1f}점 {close:,.0f}원\n"
 
     return text
 
