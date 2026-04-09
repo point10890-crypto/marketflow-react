@@ -8,11 +8,14 @@ import os
 import json
 import re
 import asyncio
+import logging
 import httpx
 import google.generativeai as genai
 from typing import List, Dict, Optional
 from datetime import datetime
 from dotenv import load_dotenv
+
+logger = logging.getLogger(__name__)
 
 # 환경변수 로드
 load_dotenv()
@@ -885,18 +888,19 @@ class MultiAIConsensusScreener:
 
     async def _safe_screen(self, screener, signals_data: List[Dict], timeout: int = 60) -> Dict:
         """개별 스크리너 (타임아웃 + 에러 핸들링)"""
+        model_name = getattr(screener, 'model_name', 'unknown')
         try:
             return await asyncio.wait_for(
                 screener.screen_candidates(signals_data),
                 timeout=timeout
             )
         except asyncio.TimeoutError:
-            model_name = getattr(screener, 'model_name', 'unknown')
-            print(f"[TIMEOUT] {model_name} Screener timed out after {timeout}s")
+            logger.warning(f"[MultiAI] {model_name} screener timed out after {timeout}s")
             return {"picks": [], "error": f"Timeout after {timeout}s", "model": model_name}
         except Exception as e:
-            model_name = getattr(screener, 'model_name', 'unknown')
-            print(f"[ERROR] {model_name} Screener Failed: {e}")
+            logger.warning(
+                f"[MultiAI] {model_name} screener failed: {type(e).__name__}: {e}"
+            )
             return {"picks": [], "error": str(e), "model": model_name}
 
     def _build_consensus(self, gemini_result: Dict, openai_result: Dict) -> Dict:

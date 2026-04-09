@@ -7,6 +7,7 @@
 """
 
 import asyncio
+import logging
 from datetime import date, datetime, timedelta
 from typing import List, Optional, Dict, Any
 import json
@@ -16,6 +17,8 @@ import tempfile
 import time
 from dotenv import load_dotenv
 load_dotenv(override=True)
+
+logger = logging.getLogger(__name__)
 
 
 def _write_json_atomic(filepath: str, data: Any, indent: int = 2) -> None:
@@ -204,7 +207,12 @@ class SignalGenerator:
 
             for i, result in enumerate(results):
                 if isinstance(result, Exception):
-                    print(f"  [{i+1}/{len(candidates)}] {candidates[i].name} 분석 실패: {result}")
+                    name = candidates[i].name if i < len(candidates) else '?'
+                    logger.warning(
+                        f"[analyze] {market} [{i+1}/{len(candidates)}] {name} failed: "
+                        f"{type(result).__name__}: {result}"
+                    )
+                    print(f"  [{i+1}/{len(candidates)}] {name} 분석 실패: {result}")
                     continue
                 signal = result
                 if signal and signal.grade in (Grade.S, Grade.A):
@@ -248,14 +256,26 @@ class SignalGenerator:
                 news_list, dart_result = await asyncio.gather(
                     news_coro, dart_coro, return_exceptions=True
                 )
-                # 예외 처리
+                # 예외 처리 (logger + print — scheduler 로그에 영구 보존)
                 if isinstance(news_list, Exception):
+                    logger.warning(
+                        f"[news/dart] {stock.code}/{stock.name} news failed: "
+                        f"{type(news_list).__name__}: {news_list}"
+                    )
                     print(f"    ⚠ News fetch failed ({type(news_list).__name__}): {news_list}")
                     news_list = []
                 if isinstance(dart_result, Exception):
+                    logger.warning(
+                        f"[news/dart] {stock.code}/{stock.name} DART failed: "
+                        f"{type(dart_result).__name__}: {dart_result}"
+                    )
                     print(f"    ⚠ DART fetch failed ({type(dart_result).__name__}): {dart_result}")
                     dart_result = None
             except Exception as e:
+                logger.error(
+                    f"[news/dart] {stock.code}/{stock.name} gather raised: "
+                    f"{type(e).__name__}: {e}"
+                )
                 print(f"    ⚠ News/DART fetch failed ({type(e).__name__}): {e}")
                 news_list = []
                 dart_result = None

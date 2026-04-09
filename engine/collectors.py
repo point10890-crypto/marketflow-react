@@ -435,9 +435,15 @@ class EnhancedNewsCollector:
             # tasks.append(self._collect_daum_search(stock_name, days))
             
         results = await asyncio.gather(*tasks, return_exceptions=True)
-        
+
         all_news = []
-        for result in results:
+        for i, result in enumerate(results):
+            if isinstance(result, Exception):
+                logger.warning(
+                    f"[news collect_all] source[{i}] for {stock_code}/{stock_name} "
+                    f"failed: {type(result).__name__}: {result}"
+                )
+                continue
             if isinstance(result, list):
                 all_news.extend(result)
         
@@ -548,9 +554,16 @@ class EnhancedNewsCollector:
         return news_list
 
     async def fetch_news_bodies(self, news_list: List[NewsData]):
-        """뉴스 본문 일괄 수집"""
+        """뉴스 본문 일괄 수집 — 개별 실패가 전체 배치를 중단시키지 않도록 격리"""
         tasks = [self._fetch_single_body(news) for news in news_list]
-        await asyncio.gather(*tasks)
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+        for i, r in enumerate(results):
+            if isinstance(r, Exception):
+                title = news_list[i].title[:40] if i < len(news_list) else '?'
+                logger.warning(
+                    f"[fetch_news_bodies] item[{i}] '{title}' failed: "
+                    f"{type(r).__name__}: {r}"
+                )
 
     async def _fetch_single_body(self, news: NewsData):
         """단일 뉴스 본문 수집"""
