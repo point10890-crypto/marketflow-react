@@ -1,0 +1,49 @@
+{
+  "stock_code": "001200",
+  "corp_code": "00131054",
+  "years": [
+    2023,
+    2024,
+    2025
+  ],
+  "data": {
+    "2023": {
+      "total_assets": 86993.3,
+      "cash": 4463.7,
+      "total_equity": 10119.0,
+      "total_liab": 76874.3,
+      "net_income": 307.0,
+      "op_profit": 270.4,
+      "revenue": 16476.6
+    },
+    "2024": {
+      "total_assets": 96467.1,
+      "cash": 4690.0,
+      "total_equity": 0.0,
+      "total_liab": 85953.3,
+      "net_income": 0.0,
+      "op_profit": 583.4,
+      "revenue": 16526.0
+    },
+    "2025": {
+      "total_assets": 110490.3,
+      "cash": 5524.0,
+      "total_equity": -108.0,
+      "total_liab": 99165.6,
+      "net_income": 645.4,
+      "op_profit": 844.4,
+      "revenue": 16940.8
+    }
+  },
+  "missing_years": [
+    2016,
+    2017,
+    2018,
+    2019,
+    2020,
+    2021,
+    2022,
+    2026
+  ],
+  "source": ""
+}

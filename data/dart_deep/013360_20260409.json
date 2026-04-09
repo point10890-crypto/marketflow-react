@@ -1,0 +1,281 @@
+{
+  "stock_code": "013360",
+  "stock_name": "일성건설",
+  "generated_at": "2026-04-09T11:51:04.484722+00:00",
+  "financials": {
+    "stock_code": "013360",
+    "corp_code": "00146232",
+    "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2016": {
+        "cash": 220.7,
+        "total_assets": 2774.6,
+        "short_debt": 172.5,
+        "long_debt": 154.0,
+        "total_liab": 1800.4,
+        "revenue": 2857.9,
+        "op_profit": 81.1,
+        "net_income": 20.8
+      },
+      "2017": {
+        "cash": 208.6,
+        "total_assets": 3053.0,
+        "short_debt": 168.4,
+        "long_debt": 374.7,
+        "total_liab": 2211.0,
+        "total_equity": 842.0,
+        "revenue": 4208.3,
+        "op_profit": 129.3,
+        "net_income": -120.1
+      },
+      "2018": {
+        "cash": 212.4,
+        "total_assets": 3087.5,
+        "short_debt": 161.1,
+        "long_debt": 108.1,
+        "total_liab": 2186.6,
+        "total_equity": 900.9,
+        "revenue": 3640.2,
+        "op_profit": 98.7,
+        "net_income": 24.3
+      },
+      "2019": {
+        "cash": 173.4,
+        "total_assets": 3508.6,
+        "short_debt": 412.1,
+        "long_debt": 72.0,
+        "total_liab": 2597.7,
+        "total_equity": 911.0,
+        "revenue": 3758.2,
+        "op_profit": 74.0,
+        "net_income": 18.6
+      },
+      "2020": {
+        "cash": 221.3,
+        "total_assets": 2985.1,
+        "short_debt": 94.6,
+        "long_debt": 416.2,
+        "total_liab": 2082.1,
+        "total_equity": 903.0,
+        "revenue": 3409.6,
+        "op_profit": 102.8,
+        "net_income": 28.6
+      },
+      "2021": {
+        "cash": 418.0,
+        "total_assets": 3792.9,
+        "short_debt": 53.6,
+        "long_debt": 853.0,
+        "total_liab": 2699.5,
+        "total_equity": 1093.4,
+        "revenue": 4161.8,
+        "op_profit": 108.1,
+        "net_income": 56.6
+      },
+      "2022": {
+        "cash": 191.7,
+        "total_assets": 4133.0,
+        "short_debt": 27.4,
+        "long_debt": 545.0,
+        "total_liab": 2928.2,
+        "total_equity": 1204.9,
+        "revenue": 4626.0,
+        "op_profit": 27.2,
+        "net_income": 1.9
+      },
+      "2023": {
+        "total_assets": 4093.1,
+        "cash": 253.4,
+        "total_equity": 251.1,
+        "short_debt": 10.7,
+        "total_liab": 2842.7,
+        "long_debt": 365.8,
+        "op_profit": 72.7,
+        "net_income": 40.8,
+        "revenue": 6077.1
+      },
+      "2024": {
+        "total_assets": 3704.2,
+        "cash": 206.3,
+        "total_equity": 664.9,
+        "short_debt": 49.8,
+        "total_liab": 3036.1,
+        "long_debt": 515.9,
+        "op_profit": -435.9,
+        "net_income": -575.4,
+        "revenue": 5003.8
+      },
+      "2025": {
+        "total_assets": 3790.6,
+        "cash": 115.1,
+        "total_equity": 26.6,
+        "short_debt": 46.6,
+        "total_liab": 3055.6,
+        "long_debt": 253.0,
+        "op_profit": 103.8,
+        "net_income": 37.4,
+        "revenue": 4526.7
+      }
+    },
+    "missing_years": [
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2016,
+        "revenue_eok": 2858,
+        "op_profit_eok": 81,
+        "net_income_eok": 21,
+        "roe_pct": 0,
+        "op_margin_pct": 2.83,
+        "debt_ratio_pct": 0
+      },
+      {
+        "year": 2017,
+        "revenue_eok": 4208,
+        "op_profit_eok": 129,
+        "net_income_eok": -120,
+        "roe_pct": -14.25,
+        "op_margin_pct": 3.07,
+        "debt_ratio_pct": 262.59
+      },
+      {
+        "year": 2018,
+        "revenue_eok": 3640,
+        "op_profit_eok": 99,
+        "net_income_eok": 24,
+        "roe_pct": 2.66,
+        "op_margin_pct": 2.72,
+        "debt_ratio_pct": 242.73
+      },
+      {
+        "year": 2019,
+        "revenue_eok": 3758,
+        "op_profit_eok": 74,
+        "net_income_eok": 19,
+        "roe_pct": 2.09,
+        "op_margin_pct": 1.97,
+        "debt_ratio_pct": 285.18
+      },
+      {
+        "year": 2020,
+        "revenue_eok": 3410,
+        "op_profit_eok": 103,
+        "net_income_eok": 29,
+        "roe_pct": 3.21,
+        "op_margin_pct": 3.02,
+        "debt_ratio_pct": 230.56
+      },
+      {
+        "year": 2021,
+        "revenue_eok": 4162,
+        "op_profit_eok": 108,
+        "net_income_eok": 57,
+        "roe_pct": 5.21,
+        "op_margin_pct": 2.59,
+        "debt_ratio_pct": 247.03
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 4626,
+        "op_profit_eok": 27,
+        "net_income_eok": 2,
+        "roe_pct": 0.17,
+        "op_margin_pct": 0.58,
+        "debt_ratio_pct": 242.99
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 6077,
+        "op_profit_eok": 73,
+        "net_income_eok": 41,
+        "roe_pct": 16.33,
+        "op_margin_pct": 1.2,
+        "debt_ratio_pct": 1132.67
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 5004,
+        "op_profit_eok": -436,
+        "net_income_eok": -575,
+        "roe_pct": -86.47,
+        "op_margin_pct": -8.71,
+        "debt_ratio_pct": 456.54
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 4527,
+        "op_profit_eok": 104,
+        "net_income_eok": 37,
+        "roe_pct": 137.04,
+        "op_margin_pct": 2.3,
+        "debt_ratio_pct": 11318.52
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": 5.21,
+      "op_profit_cagr_pct": 2.88,
+      "best_year": 2017,
+      "worst_year": 2024,
+      "avg_roe_pct": 7.33
+    },
+    "valuation": {
+      "grade": "D",
+      "strengths": [
+        "매출액은 10년간 연평균 5.21% 성장하며 외형 성장을 지속했습니다.",
+        "2024년 대규모 영업손실을 기록했으나, 2025년에는 다시 흑자 전환이 예상됩니다.",
+        "대부분의 기간 동안 영업이익을 창출하며 사업 운영 능력을 보여주었습니다."
+      ],
+      "risks": [
+        "영업이익 및 당기순이익의 변동성이 매우 크며, 2024년에는 대규모 적자를 기록하여 수익 안정성이 취약합니다.",
+        "자본총계가 매우 낮은 연도(2016, 2023, 2025)가 많아 재무구조가 극히 불안정하며, 부채비율이 비정상적으로 높습니다.",
+        "건설 경기 변동 및 프로젝트 리스크에 대한 노출이 커, 향후 실적 예측이 어렵습니다."
+      ],
+      "one_liner": "매출액은 성장세를 보였으나, 극심한 이익 변동성과 취약한 재무구조로 인해 투자 위험이 매우 높은 건설사입니다."
+    }
+  },
+  "dcf": {
+    "text": "저는 퀀트 애널리스트로서 일성건설(013360)의 DCF 적정가치를 계산하고 민감도 분석을 수행하겠습니다.\n\n**가정 사항 정리:**\n\n*   **기준 연도:** 2025년 (2025년 재무 데이터가 첫 번째 예측 연도에 사용되며, 이후 연도에는 영구성장률 g를 적용하여 성장한다고 가정합니다.)\n*   **최근 재무 (억원):**\n    *   매출액 (Revenue): 4527\n    *   영업이익 (Operating Profit): 104\n*   **FCF 계산식:** FCF = 영업이익 × (1 - 법인세율) + 감가상각 - CAPEX\n    *   법인세율: 25% (영업이익에 1-0.25 적용)\n    *   감가상각 (Depreciation): 매출액의 10%\n    *   CAPEX: 매출액의 5%\n*   **DCF 파라미터:**\n    *   WACC (가중평균자본비용): 9% (기본 시나리오)\n    *   영구성장률 (g): 2% (기본 시나리오)\n    *   예측 기간: 5년 (2025년 ~ 2029년) + 영구 가치 (Terminal Value)\n\n**Python 코드 실행:**\n\n아래 Python 코드는 주어진 가정을 바탕으로 DCF 적정가치를 계산하고, WACC와 영구성장률(g)에 대한 민감도 분석 그리드를 생성합니다.\n\n\n**분석 결과:**\n\n1.  **기본 시나리오 DCF 적정가치:**\n    *   WACC 9%, 영구성장률(g) 2%를 적용한 일성건설의 DCF 적정가치는 **4347.86억원**으로 계산되었습니다.\n\n2.  **WACC 및 영구성장률(g)에 대한 민감도 분석 그리드:**\n    아래 표는 WACC와 영구성장률(g) 변화에 따른 DCF 적정가치(억원)를 보여줍니다.\n\n|             | g=1%    | g=2%    | g=3%    |\n| :---------- | :------ | :------ | :------ |\n| **WACC=7%** | 5072.5  | 6087.0  | 7608.75 |\n| **WACC=8%** | 4347.86 | 5072.5  | 6087.0  |\n| **WACC=9%** | 3804.37 | 4347.86 | 5072.5  |\n| **WACC=10%**| 3381.67 | 3804.37 | 4347.86 |\n| **WACC=11%**| 3043.5  | 3381.67 | 3804.37 |\n\n**요약:**\n\n적정가치(기본): 4347.86억원",
+    "executed_code": "import pandas as pd\n\n# --- Input Data and Assumptions ---\n# Recent Financials (억원) - Assumed for the first forecast year (2025)\nrevenue_initial = 4527\nop_initial = 104\n\n# Assumptions for FCF calculation\ntax_rate = 0.25\ndepreciation_rate = 0.10 # 10% of Revenue\ncapex_rate = 0.05      # 5% of Revenue\n\n# DCF Assumptions (Base Scenario)\nwacc_base = 0.09\ng_base = 0.02\nforecast_years = 5 # 5-year explicit forecast period\n\n# --- DCF Calculation Function ---\ndef calculate_dcf(revenue_initial, op_initial, tax_rate, depreciation_rate, capex_rate, wacc, g, forecast_years):\n    \"\"\"\n    Calculates the DCF fair value.\n    Assumes revenue and operating profit grow at 'g' during the explicit forecast period.\n    \"\"\"\n    fcf_list = []\n    current_revenue = revenue_initial\n    current_op = op_initial\n\n    # Project FCF for the explicit forecast period\n    for i in range(1, forecast_years + 1):\n        # For the first year (i=1), use initial values. For subsequent years, grow by g.\n        if i > 1:\n            current_revenue *= (1 + g)\n            current_op *= (1 + g)\n\n        depreciation = current_revenue * depreciation_rate\n        capex = current_revenue * capex_rate\n        fcf = current_op * (1 - tax_rate) + depreciation - capex\n        fcf_list.append(fcf)\n\n    # Calculate Terminal Value (TV)\n    # FCF for the year after the forecast period (Year forecast_years + 1)\n    fcf_terminal_year = fcf_list[-1] * (1 + g)\n\n    # Check for WACC <= g condition for Terminal Value\n    if wacc <= g:\n        return float('nan') # Return NaN if WACC is not greater than g, as TV formula is invalid\n\n    terminal_value = fcf_terminal_year / (wacc - g)\n\n    # Calculate Present Value of FCFs\n    pv_fcf = 0\n    for i, fcf in enumerate(fcf_list):\n        pv_fcf += fcf / ((1 + wacc) ** (i + 1))\n\n    # Calculate Present Value of Terminal Value\n    pv_terminal_value = terminal_value / ((1 + wacc) ** forecast_years)\n\n    total_dcf_value = pv_fcf + pv_terminal_value\n    return total_dcf_value\n\n# --- 1. 기본 시나리오 DCF 적정가치 계산 ---\nbase_dcf_value = calculate_dcf(revenue_initial, op_initial, tax_rate, depreciation_rate, capex_rate, wacc_base, g_base, forecast_years)\nprint(f\"적정가치(기본): {base_dcf_value:.2f}억원\")\n\n# --- 2. WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 출력 ---\nwacc_range = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_range = [0.01, 0.02, 0.03]\n\nsensitivity_results = {}\nfor wacc_val in wacc_range:\n    for g_val in g_range:\n        dcf_value = calculate_dcf(revenue_initial, op_initial, tax_rate, depreciation_rate, capex_rate, wacc_val, g_val, forecast_years)\n        sensitivity_results[(wacc_val, g_val)] = dcf_value\n\n# Format results into a DataFrame for better presentation\ndf_sensitivity = pd.DataFrame(index=[f'WACC={w*100:.0f}%' for w in wacc_range],\n                              columns=[f'g={g*100:.0f}%' for g in g_range])\n\nfor wacc_val in wacc_range:\n    for g_val in g_range:\n        df_sensitivity.loc[f'WACC={wacc_val*100:.0f}%', f'g={g_val*100:.0f}%'] = round(sensitivity_results[(wacc_val, g_val)], 2)\n\nprint(\"\\n--- DCF 적정가치 민감도 분석 (억원) ---\")\nprint(df_sensitivity)\n\n# --- 3. 마지막에 '적정가치(기본): {value}억원' 형태로 요약 출력 ---\nprint(f\"\\n적정가치(기본): {base_dcf_value:.2f}억원\")",
+    "code_output": "적정가치(기본): 4347.86억원\n\n--- DCF 적정가치 민감도 분석 (억원) ---\n             g=1%     g=2%     g=3%\nWACC=7%    5072.5   6087.0  7608.75\nWACC=8%   4347.86   5072.5   6087.0\nWACC=9%   3804.37  4347.86   5072.5\nWACC=10%  3381.67  3804.37  4347.86\nWACC=11%   3043.5  3381.67  3804.37\n\n적정가치(기본): 4347.86억원"
+  },
+  "news": {
+    "text": "## 일성건설(013360) 재무 및 시장 컨센서스 분석\n\n### 1. 재무 데이터와 현재 시장 컨센서스의 일치/불일치\n\n제공된 10년 재무제표 분석 결과에 따르면, 일성건설은 매출액 성장에도 불구하고 **극심한 이익 변동성과 취약한 재무구조로 인해 투자 위험이 매우 높은 건설사(투자등급 D)**로 평가됩니다.\n\n반면, 최근 2주간의 시장 뉴스는 다소 다른 분위기를 보여줍니다. 2026년 4월 8일자 뉴스에서는 **중동 재건 기대감**으로 건설 및 에너지 관련주가 상승세를 보였으며, 일성건설 또한 이러한 **'종전 수혜' 기대감**에 힘입어 주가가 급등했습니다. 또한 2026년 3월 13일에는 **건설 중소형 테마 상승세**에 힘입어 일성건설 주가가 5.56% 상승하기도 했습니다.\n\n이는 **재무 데이터가 보여주는 높은 위험성과 시장의 최근 긍정적인 기대감 사이에 불일치**가 있음을 시사합니다. 시장은 잠재적인 미래 성장 동력(중동 재건, 정부 정책 수혜 등)에 주목하고 있으나, 이는 아직 재무제표에 반영되지 않은 기대감이며, 기업의 근본적인 재무 건전성 문제를 해결한 것으로 보기는 어렵습니다.\n\n### 2. 재무제표에서 드러나지 않는 리스크 또는 호재\n\n**호재:**\n*   **중동 재건 사업 참여 기대감:** 최근 중동 지역의 정세 변화로 인한 재건 사업 발주 가능성은 일성건설과 같은 해외 사업 경험이 있는 건설사들에게 긍정적인 모멘텀으로 작용할 수 있습니다. 일성건설은 동남아 및 중동 지역에서 다양한 건설 프로젝트 경험을 보유하고 있습니다.\n*   **정부 SOC 예산 확대 및 정책 수혜:** 정부의 사회간접자본(SOC) 예산 확대, 노후 인프라 개선, 국가 균형 발전, 지역 교통망 구축 등 다양한 국책 사업은 일성건설의 중장기 성장에 긍정적인 영향을 미칠 수 있습니다.\n*   **사업 다각화 노력:** 폐기물 처리 시설, 수자원 관리 시설 등 환경 에너지 관련 인프라 분야로의 사업 확장 및 서울 수도권 중심의 재건축·재개발 시장 집중은 고부가가치 사업으로의 전환 가능성을 제시합니다.\n\n**리스크:**\n*   **높은 이익 변동성 지속:** 재무제표 분석에서 드러난 극심한 이익 변동성은 외부 환경 변화에 취약하다는 것을 의미하며, 이는 미래에도 지속될 수 있는 내재적 리스크입니다.\n*   **해외 사업의 불확실성:** 중동 재건과 같은 해외 대규모 프로젝트는 높은 수익성을 기대할 수 있지만, 동시에 지정학적 리스크, 환율 변동, 현지 법규 및 문화 차이 등 예측하기 어려운 변수들이 많아 사업 추진에 대한 불확실성이 존재합니다.\n*   **건설 경기 침체 가능성:** 국내 건설 시장의 전반적인 침체나 미분양 리스크는 여전히 존재하며, 이는 일성건설의 국내 사업 부문에 부정적인 영향을 미 미칠 수 있습니다.\n\n### 3. 최종 판정\n\n**관망 (Hold)**\n\n일성건설은 재무제표상 **투자 위험이 매우 높은 건설사(투자등급 D)**라는 점이 명확합니다. 극심한 이익 변동성과 취약한 재무구조는 투자 결정에 있어 매우 신중해야 할 부분입니다.\n\n다만, 최근 중동 재건 기대감 및 정부 정책 수혜 가능성 등은 단기적인 시장의 긍정적 모멘텀으로 작용하고 있으며, 실제로 주가 상승을 견인했습니다. 이는 재무제표에 아직 반영되지 않은 잠재적인 호재로 볼 수 있습니다.\n\n하지만 이러한 호재들이 실제 실적 개선으로 이어질지는 불확실하며, 기업의 근본적인 재무 건전성 문제를 해결했다고 보기는 어렵습니다. 따라서 현재 시점에서는 재무적 위험을 인지하고, 시장의 긍정적 기대감이 실제 수주 및 이익으로 구체화되는지 여부를 **관망**하며 지켜보는 것이 합리적인 판단으로 사료됩니다.",
+    "citations": [
+      {
+        "title": "alphasquare.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFOdVDH6D1ADhIIudv8quga0icvMRYUe9dDcACwZNOJzRJAD2FyhIDF5Ipyz3pV7cNqy8Bc4m4ajQAbCwG71pIFHyAEXb8qSvd5mfU4PfwajzQKuedkaWtvDYnrH07hrzGjU5MZP4Phhx3VR7gaR2dAkOIW"
+      },
+      {
+        "title": "daum.net",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQESqIHhWM8LM5IenxkLqEkzmA7BFkrQMPNVo-cYauFiyby6aPbUa4mYTR-DYmzfRdIMujkFIM_k8qQb3YbvjsqkL0C2Kbapw_pFDaAKez4ewbhnKxfy4NMZbjJ7_xNHfHR2Ewoofgj-6Yw="
+      },
+      {
+        "title": "mk.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGDz8EiTL7PNY7CF6WW6NtaR9zxFNyQtVNvNc6xLyUCFSh31zrdMNDS2RYxyKcOEuyuuAkNxdo6mj1SPmWR2Ut2U7fkPwMeOWP7n3AzSB0TpomdWegdKbv58CKVnB2QkiD7sn8="
+      },
+      {
+        "title": "youtube.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFraWGFVEOHuZQr2KyVSjs2e_YWkcTEUrxJ_ji8gKdWVGxHyFqYiMatmSCLy-Sva--HY3vCOyNX5xJOA8UXFMIM1eEj-KNVXjXQXDsvrLBF9SXPUn4_iGnDODuEbwvqrSB-Bb9gphk="
+      }
+    ]
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=00146232",
+    "summary": "공시 페이지 접근 제한"
+  }
+}

@@ -1,0 +1,294 @@
+{
+  "stock_code": "007570",
+  "stock_name": "일양약품",
+  "generated_at": "2026-04-09T11:49:43.651952+00:00",
+  "financials": {
+    "stock_code": "007570",
+    "corp_code": "00146454",
+    "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2016": {
+        "cash": 133.1,
+        "total_assets": 4312.6,
+        "short_debt": 1022.8,
+        "total_liab": 2139.1,
+        "total_equity": 2173.5,
+        "revenue": 2616.1,
+        "op_profit": 231.8,
+        "net_income": 119.6
+      },
+      "2017": {
+        "cash": 235.5,
+        "total_assets": 4363.7,
+        "short_debt": 1168.3,
+        "total_liab": 2253.9,
+        "total_equity": 2109.8,
+        "revenue": 2698.1,
+        "op_profit": 244.3,
+        "net_income": 0.0
+      },
+      "2018": {
+        "cash": 222.1,
+        "total_assets": 4322.5,
+        "short_debt": 1155.7,
+        "total_liab": 2223.7,
+        "total_equity": 2098.8,
+        "revenue": 3000.4,
+        "op_profit": 167.2,
+        "net_income": 0.0
+      },
+      "2019": {
+        "cash": 359.0,
+        "total_assets": 4374.6,
+        "short_debt": 976.6,
+        "total_liab": 2147.2,
+        "total_equity": 2227.4,
+        "revenue": 3245.7,
+        "op_profit": 325.1,
+        "net_income": 0.0
+      },
+      "2020": {
+        "cash": 413.4,
+        "total_assets": 4391.2,
+        "short_debt": 842.6,
+        "total_liab": 1941.9,
+        "total_equity": 2449.2,
+        "revenue": 3433.3,
+        "op_profit": 341.0,
+        "net_income": 0.0
+      },
+      "2021": {
+        "cash": 477.3,
+        "total_assets": 4942.7,
+        "short_debt": 960.6,
+        "total_liab": 2225.1,
+        "total_equity": 2717.6,
+        "revenue": 3713.5,
+        "op_profit": 410.3,
+        "net_income": 0.0
+      },
+      "2022": {
+        "cash": 71.7,
+        "total_assets": 4029.2,
+        "short_debt": 710.0,
+        "total_liab": 1651.3,
+        "total_equity": 2377.8,
+        "revenue": 2477.7,
+        "op_profit": 142.5,
+        "net_income": 0.0
+      },
+      "2023": {
+        "total_assets": 3926.1,
+        "cash": 34.1,
+        "total_equity": 579.6,
+        "short_debt": 657.9,
+        "total_liab": 1622.1,
+        "long_debt": 60.0,
+        "op_profit": 163.8,
+        "net_income": 0.0,
+        "revenue": 2666.7
+      },
+      "2024": {
+        "total_assets": 4312.1,
+        "cash": 43.0,
+        "total_equity": 783.7,
+        "short_debt": 925.0,
+        "total_liab": 1896.3,
+        "long_debt": 147.0,
+        "op_profit": 110.0,
+        "net_income": 0.0,
+        "revenue": 2688.6
+      },
+      "2025": {
+        "total_assets": 4573.3,
+        "cash": 236.5,
+        "total_equity": 2376.0,
+        "total_liab": 2159.2,
+        "long_debt": 266.7,
+        "op_profit": 49.6,
+        "net_income": 2.3,
+        "revenue": 2724.2
+      }
+    },
+    "missing_years": [
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2016,
+        "revenue_eok": 2616,
+        "op_profit_eok": 232,
+        "net_income_eok": 120,
+        "roe_pct": 5.52,
+        "op_margin_pct": 8.87,
+        "debt_ratio_pct": 98.39
+      },
+      {
+        "year": 2017,
+        "revenue_eok": 2698,
+        "op_profit_eok": 244,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 9.04,
+        "debt_ratio_pct": 106.82
+      },
+      {
+        "year": 2018,
+        "revenue_eok": 3000,
+        "op_profit_eok": 167,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 5.57,
+        "debt_ratio_pct": 105.96
+      },
+      {
+        "year": 2019,
+        "revenue_eok": 3246,
+        "op_profit_eok": 325,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 10.01,
+        "debt_ratio_pct": 96.41
+      },
+      {
+        "year": 2020,
+        "revenue_eok": 3433,
+        "op_profit_eok": 341,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 9.93,
+        "debt_ratio_pct": 79.3
+      },
+      {
+        "year": 2021,
+        "revenue_eok": 3714,
+        "op_profit_eok": 410,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 11.04,
+        "debt_ratio_pct": 81.86
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 2478,
+        "op_profit_eok": 142,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 5.73,
+        "debt_ratio_pct": 69.43
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 2667,
+        "op_profit_eok": 164,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 6.15,
+        "debt_ratio_pct": 279.66
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 2689,
+        "op_profit_eok": 110,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 4.09,
+        "debt_ratio_pct": 241.84
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 2724,
+        "op_profit_eok": 50,
+        "net_income_eok": 2,
+        "roe_pct": 0.08,
+        "op_margin_pct": 1.84,
+        "debt_ratio_pct": 90.87
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": 0.45,
+      "op_profit_cagr_pct": -15.98,
+      "best_year": 2021,
+      "worst_year": 2025,
+      "avg_roe_pct": 0.56
+    },
+    "valuation": {
+      "grade": "D",
+      "strengths": [
+        "2021년까지 매출액이 꾸준히 성장하며 외형을 확대했습니다.",
+        "2019년부터 2021년까지 영업이익률이 10%대를 유지하며 양호한 수익성을 보였습니다.",
+        "2025년 자본총계가 회복되어 부채비율이 개선되며 재무구조 안정화의 기반을 마련했습니다."
+      ],
+      "risks": [
+        "최근 3년간 매출액과 영업이익이 급격히 감소하며 전반적인 수익성이 크게 악화되었습니다.",
+        "2023년과 2024년 자본총계 급감으로 부채비율이 200%를 상회하는 등 재무 안정성이 크게 훼손되었습니다.",
+        "대부분의 기간 동안 당기순이익이 0을 기록하여 주주가치 창출 능력이 매우 미흡한 것으로 판단됩니다."
+      ],
+      "one_liner": "매출액 정체와 급격한 수익성 악화, 그리고 불안정한 재무구조로 인해 투자 매력이 크게 저하된 제약사."
+    }
+  },
+  "dcf": {
+    "text": "퀀트 애널리스트로서 일양약품(007570)의 DCF 적정가치를 계산하고 민감도 분석을 수행하겠습니다.\n\n제공된 데이터를 바탕으로 FCF를 계산하고, 이를 WACC와 영구성장률(g)로 할인하여 적정가치를 산출합니다.\n\n**DCF 모델 가정:**\n*   **FCF 계산식:** 영업이익 × (1 - 0.25) + 감가상각(매출의 10%) - CAPEX(매출의 5%)\n*   **예측 기간:** 5년 (2025년 ~ 2029년)\n*   **예측 기간 FCF 성장률:** 영구성장률(g)과 동일하게 적용 (2% for base scenario)\n*   **할인율 (WACC):** 9% (기본 시나리오)\n*   **영구성장률 (g):** 2% (기본 시나리오)\n\n---\n### 1. 기본 시나리오 DCF 적정가치 계산\n\n먼저 2025년의 FCF를 계산하고, 이를 바탕으로 5년간의 FCF를 예측한 후 터미널 밸류를 산정하여 적정가치를 계산합니다.\n\n\n---\n### 2. WACC × g 민감도 그리드 출력\n\nWACC와 영구성장률(g)의 변화에 따른 적정가치 민감도 분석 결과입니다.\n\n\n---\n### 3. 요약 출력\n\n**적정가치(기본): 2481.43억원**",
+    "executed_code": "import pandas as pd\n\n# --- Input Data ---\nrevenue = 2724  # 억원\noperating_income = 50  # 억원\n\n# --- Assumptions (Base Scenario) ---\nwacc_base = 0.09\ng_base = 0.02\nforecast_years = 5\n\n# --- FCF Calculation Function ---\ndef calculate_fcf(revenue, operating_income, depreciation_rate=0.10, capex_rate=0.05, tax_rate=0.25):\n    \"\"\"\n    주어진 매출액과 영업이익을 바탕으로 FCF를 계산합니다.\n    \"\"\"\n    depreciation = revenue * depreciation_rate\n    capex = revenue * capex_rate\n    # FCF = Operating Income * (1 - Tax Rate) + Depreciation - CAPEX\n    fcf = operating_income * (1 - tax_rate) + depreciation - capex\n    return fcf\n\n# --- DCF Valuation Function ---\ndef dcf_valuation(revenue, operating_income, wacc, g, forecast_years):\n    \"\"\"\n    DCF 모델을 사용하여 기업의 적정가치를 계산합니다.\n    \"\"\"\n    if wacc <= g:\n        raise ValueError(\"WACC는 영구성장률(g)보다 커야 합니다.\")\n\n    # 1. 초기 FCF 계산 (기준 연도 2025년)\n    initial_fcf = calculate_fcf(revenue, operating_income)\n\n    # 2. 예측 기간(5년) FCF 예측 및 현재가치 계산\n    fcf_forecast = []\n    pv_fcf_sum = 0\n    for i in range(1, forecast_years + 1):\n        # FCF_t = initial_fcf * (1 + g)^(t-1)\n        fcf_t = initial_fcf * ((1 + g) ** (i - 1))\n        fcf_forecast.append(fcf_t)\n        pv_fcf_sum += fcf_t / ((1 + wacc) ** i)\n\n    # 3. 터미널 밸류(Terminal Value) 계산\n    # 예측 기간 마지막 해 다음 해의 FCF (Year 6 FCF)\n    fcf_terminal_year = fcf_forecast[-1] * (1 + g)\n    terminal_value = fcf_terminal_year / (wacc - g)\n\n    # 4. 터미널 밸류의 현재가치 계산\n    pv_terminal_value = terminal_value / ((1 + wacc) ** forecast_years)\n\n    # 5. 총 적정가치\n    intrinsic_value = pv_fcf_sum + pv_terminal_value\n    return intrinsic_value\n\n# --- Task 1: Basic Scenario DCF Calculation ---\nbase_intrinsic_value = dcf_valuation(revenue, operating_income, wacc_base, g_base, forecast_years)\n\nprint(f\"적정가치(기본): {base_intrinsic_value:.2f}억원\")\n\n\nimport pandas as pd\n\n# --- Input Data ---\nrevenue = 2724  # 억원\noperating_income = 50  # 억원\n\n# --- Assumptions ---\nforecast_years = 5\n\n# --- FCF Calculation Function (re-defined for tool_code scope) ---\ndef calculate_fcf(revenue, operating_income, depreciation_rate=0.10, capex_rate=0.05, tax_rate=0.25):\n    depreciation = revenue * depreciation_rate\n    capex = revenue * capex_rate\n    fcf = operating_income * (1 - tax_rate) + depreciation - capex\n    return fcf\n\n# --- DCF Valuation Function (re-defined for tool_code scope) ---\ndef dcf_valuation(revenue, operating_income, wacc, g, forecast_years):\n    if wacc <= g:\n        raise ValueError(\"WACC는 영구성장률(g)보다 커야 합니다.\")\n\n    initial_fcf = calculate_fcf(revenue, operating_income)\n\n    fcf_forecast = []\n    pv_fcf_sum = 0\n    for i in range(1, forecast_years + 1):\n        fcf_t = initial_fcf * ((1 + g) ** (i - 1))\n        fcf_forecast.append(fcf_t)\n        pv_fcf_sum += fcf_t / ((1 + wacc) ** i)\n\n    fcf_terminal_year = fcf_forecast[-1] * (1 + g)\n    terminal_value = fcf_terminal_year / (wacc - g)\n\n    pv_terminal_value = terminal_value / ((1 + wacc) ** forecast_years)\n\n    intrinsic_value = pv_fcf_sum + pv_terminal_value\n    return intrinsic_value\n\n# --- Task 2: Sensitivity Grid ---\nwacc_scenarios = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_scenarios = [0.01, 0.02, 0.03]\n\nsensitivity_results = pd.DataFrame(index=[f'g={g*100:.0f}%' for g in g_scenarios],\n                                   columns=[f'WACC={w*100:.0f}%' for w in wacc_scenarios])\n\nfor wacc in wacc_scenarios:\n    for g in g_scenarios:\n        try:\n            value = dcf_valuation(revenue, operating_income, wacc, g, forecast_years)\n            sensitivity_results.loc[f'g={g*100:.0f}%', f'WACC={wacc*100:.0f}%'] = f'{value:.2f}'\n        except ValueError as e: # Catch the ValueError for WACC <= g\n            sensitivity_results.loc[f'g={g*100:.0f}%', f'WACC={wacc*100:.0f}%'] = 'N/A (WACC <= g)'\n\nprint(\"\\n--- DCF 적정가치 민감도 분석 (억원) ---\")\nprint(sensitivity_results)",
+    "code_output": "적정가치(기본): 2481.43억원\n\n\n--- DCF 적정가치 민감도 분석 (억원) ---\n      WACC=7%  WACC=8%  WACC=9% WACC=10% WACC=11%\ng=1%  2895.00  2481.43  2171.25  1930.00  1737.00\ng=2%  3474.00  2895.00  2481.43  2171.25  1930.00\ng=3%  4342.50  3474.00  2895.00  2481.43  2171.25"
+  },
+  "news": {
+    "text": "## 일양약품(007570) 재무제표 분석 및 최신 뉴스 기반 투자 의견\n\n### 1. 재무 데이터 스토리와 시장 컨센서스의 일치/불일치\n\n제공된 10년 재무제표 분석 결과는 \"투자등급 D, 매출액 정체와 급격한 수익성 악화, 그리고 불안정한 재무구조로 인해 투자 매력이 크게 저하된 제약사\"로 매우 부정적인 스토리를 보여줍니다.\n\n그러나 최근 2주간의 주요 뉴스를 종합해 볼 때, 현재 시장 컨센서스는 과거 재무 데이터가 보여주는 스토리와는 다른 긍정적인 변화의 조짐을 보이고 있습니다.\n\n*   **불일치 (긍정적 변화):**\n    *   가장 큰 악재였던 상장폐지 위기에서 벗어나 주식 거래가 재개되었습니다. 이는 기업의 존속 불확실성을 해소한 매우 중요한 변화입니다.\n    *   금융당국이 제기했던 회계 처리 위반 및 외부 감사 방해 의혹에 대해 검찰이 무혐의 처분을 내렸습니다. 이는 법적 리스크를 크게 경감시키고 기업의 도덕성 논란을 일부 해소하는 긍정적인 요인입니다.\n    *   중국 합자법인과의 미배당 이익금 180억원 소송에서 최종 승소하여 재무 안정성 개선 및 향후 중국 시장 사업 확장의 기반을 마련했습니다.\n    *   경영 투명성 강화를 위한 이사회 재편 및 위원회 신설 등 지배구조 개선 노력이 진행 중입니다.\n\n*   **일치 (지속되는 우려):**\n    *   2025년 영업이익이 전년 대비 53% 감소하는 등 단기적인 수익성 악화는 여전히 존재합니다. 이는 일회성 법률 자문 비용과 금융당국 과징금 부과가 주된 원인이었습니다.\n    *   2025년 연결 기준 매출액이 전년 대비 1.3% 증가에 그쳐, 매출액 정체 기조는 지속되고 있습니다.\n\n**결론적으로,** 과거의 부정적인 재무 데이터 스토리는 여전히 일부 유효하지만, 최근 상장폐지 위기 해소 및 법적 리스크 경감, 그리고 지배구조 개선 노력 등으로 인해 시장의 시각은 점차 개선될 여지가 생겼다고 판단됩니다.\n\n### 2. 재무제표에서 드러나지 않는 리스크 또는 호재\n\n*   **리스크:**\n    *   **일회성 비용 부담의 여파:** 검찰 무혐의 처분에도 불구하고, 과거 회계 이슈 대응 과정에서 발생한 법률 자문 비용 및 금융당국 과징금 부과는 2025년 영업이익에 큰 타격을 주었으며, 단기적인 실적 회복에 부담으로 작용할 수 있습니다.\n    *   **기업 이미지 및 신뢰 회복 시간 소요:** 회계 위반 논란으로 인한 기업 이미지 손상과 시장의 신뢰를 완전히 회복하기까지는 상당한 시간이 필요할 것입니다.\n    *   **핵심 사업 성장 동력 가시화 지연:** 백신 사업 확장 및 신약 '놀텍 플러스정' 적응증 추가, '슈펙트'의 중국 시장 진출 계획 등 미래 성장 동력 확보 노력은 긍정적이나, 실제 성과로 이어지기까지는 시간이 필요합니다.\n\n*   **호재:**\n    *   **상장폐지 위기 해소 및 거래 재개:** 기업의 존속 가능성에 대한 가장 큰 불확실성이 제거되어 투자 심리에 긍정적인 영향을 미칠 것입니다.\n    *   **회계 위반 혐의 검찰 무혐의 처분:** 금융당국의 중징계와 달리 검찰이 무혐의 처분을 내림으로써 회사의 법적 리스크가 크게 해소되었고, 기업의 회계 투명성에 대한 부정적 인식을 일부 완화할 수 있습니다.\n    *   **중국 미배당 이익금 180억원 회수:** 3년 이상 묶여있던 자금의 회수는 재무 안정성 개선에 기여하며, 향후 중국 시장에서의 사업 확장을 위한 기반을 마련했습니다.\n    *   **경영 투명성 강화 및 지배구조 개선 의지:** 이사회 재편, 윤리경영위원회 등 신설, 사외이사 및 감사 기능 독립성 강화 등의 노력은 장기적으로 기업 가치 제고에 긍정적인 영향을 줄 수 있습니다.\n    *   **OTC 사업 강화 및 신약 개발 지속:** 일반의약품(OTC) 전문가의 사내이사 신규 선임은 해당 사업부문에 대한 회사의 의지를 보여주며, 백신 사업 확장 및 신약의 적응증 확대, 해외 진출 노력은 미래 성장 동력 확보를 위한 긍정적인 시그널입니다.\n\n### 3. 최종 판정\n\n**관망**\n\n일양약품은 과거 10년간의 재무 데이터가 보여주는 부정적인 스토리와 투자등급 D라는 평가를 받았으나, 최근 상장폐지 위기 해소, 회계 위반 혐의 무혐의 처분, 중국 미배당 이익금 회수 등 기업의 존속과 관련된 가장 큰 불확실성들이 제거되었습니다. 또한, 경영 투명성 강화 및 지배구조 개선, 신사업 확장 등 긍정적인 변화를 위한 노력이 진행 중입니다.\n\n그러나 2025년 영업이익이 크게 감소하는 등 단기적인 실적 부진은 여전히 부담이며, 과거의 부정적인 기업 이미지를 완전히 회복하고 새로운 경영 전략이 실제 성과로 이어지는지 확인하는 과정이 필요합니다. 따라서 현재 시점은 과거의 심각한 리스크가 해소되고 새로운 전환점에 서 있지만, 기업의 개선 노력이 실제 재무 성과로 가시화될 때까지는 신중하게 **관망**하는 자세가 합리적이라고 판단됩니다.",
+    "citations": [
+      {
+        "title": "chosun.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEbd8g8LG6zTCmEHF1Sb1uBDMQj3iLzd87_0LAYFTIMCuI-OIXPAng7LEicR0mAEL8LRuBm5cnA3LNxhEJzNvpLXp028DNTYusm8Yx5okb1XJdHOsUz2GwwR2P0yoJCHBwaiS79Rve1yzWGSNVxBtEDCnRTmpN2mBgoqdXvEg=="
+      },
+      {
+        "title": "dailypharm.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEybzSWskvbnpHEKPelYILI9G_8nOSsBiOpr3krUrNMjMwDy04g2FXzD-m8VnqJdHJaIZfUOYTTo0hkDZ6tCXpLRONv2FvEcQfnQawwrk61EhUQ0u8nx_OB1JS1n4Ok9Vwf"
+      },
+      {
+        "title": "dailypharm.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQF_CW1z-2eo60NfdJe6K39UsfjG8_lE1ZirwVFtkJ_iOpV4Uf7wtuvmTxFkQOy1Zxy1_239Miks6xGMdUHzXXwB_J77Iywg-IfQC07saPCxxJgkn8vsMf3Up6XQSiSxNQVgQiXR-wvCUDI-u03hJ4Jz"
+      },
+      {
+        "title": "bloter.net",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGq06t8bh6QL-K8VxKepwuahHy_Amou0UeQdXBD73bMgQfFWeqWvz6ROlCsevIV4biskXxQc2m6jtSk0nXBYbgatqXw-U0Ze4FyeaWG6cUQYcIyee_4iKh3gXFV3X0uVxWwhBa22b0bFkgrgBvfe-Pv30CI"
+      },
+      {
+        "title": "edaily.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGcUwI19tFmFwXRaue3FliVd8VPmqNfjPQpxuRBo3-GnEKo8v10PcNUBGPoAB-pnYPm8PVaf7c_yzvn2_je0WhiRRI-etMxcp4PwMVJns1xi_C4BVsuP4FWlwGGBz0styRNVHwT0rY3n2XNTLUyT5EfKPOXf1iDIw=="
+      },
+      {
+        "title": "sedaily.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFV3-kYwHbiWO7nSpWQqtBGIRQcsXkn8jR9mtMiVS_B7N84jy7UeTRs2UNEP3fQRwgDG0RnCyLSc2GkTbw1OIOjUZth98J5rI0H7i8huJHizyVNd_nsMXuBnkYzpa0tjETMgGI="
+      },
+      {
+        "title": "daum.net",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGFd7Trhky1ZCTU8mNgMhTyWGFLeZBQtY7uXevw6WVghafzJL9Fm4ma5hOcY1xi99u5Zd8hRB-LXfL10NkO1rWzKmywEcB4r-m_kvJImL-asrbpwxWGi_yr1GBgOyuNTXgbkTZ855-O_5lrRdcTFbV005uWfqZMX5muDm5TtdVC2Q=="
+      },
+      {
+        "title": "digitaltoday.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGGzX-sA8cArLYqDqM1lexXbzFZFQAB0W5q4UgS4LBSyJTn9LPWoIJmg8YEX8VojkuV2-ylyGtg3TfaZ_-EouSkmr3b3i0elKruolduYXV3R_3FWqQSWzRV-3wJgFRYe8ul8h1-uojyoN5Q_Pw5xZRtlpnDE6AE6BMjDtY="
+      },
+      {
+        "title": "sedaily.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFUDA_hyOWscU7DsEz1h3_tZqiyzfx7Srv8jEwnUwvbPqRDyUMKVEFe_C-7aCrrWI4p3WJtdwdyLrJLGNSNWlMRi8CWK7e_Agg90Bq_kYj5n2ojdneoowxo4vwhVByAtZXAFgA="
+      }
+    ]
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=00146454",
+    "summary": "공시 페이지 접근 제한"
+  }
+}

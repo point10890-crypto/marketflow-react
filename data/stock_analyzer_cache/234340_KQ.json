@@ -1,0 +1,96 @@
+{
+  "name": "헥토파이낸셜",
+  "ticker": "234340.KQ",
+  "result": "적극 매수",
+  "date": "2026-04-09 21:59:33",
+  "elapsed": 1.7,
+  "consensus_score": 4.33,
+  "analyst_count": 3,
+  "recommendation_detail": {
+    "strongBuy": 1,
+    "buy": 2,
+    "hold": 0,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 25900.0,
+    "high": 50000.0,
+    "low": 20666.666,
+    "mean": 30888.889,
+    "median": 22000.0
+  },
+  "current_price": 25900.0,
+  "upside_potential": 19.3,
+  "key_stats": {
+    "name": "Hecto Financial",
+    "sector": "Technology",
+    "industry": "Software - Infrastructure",
+    "market_cap": 350878203904,
+    "pe_ratio": null,
+    "forward_pe": 18.133022,
+    "dividend_yield": 0.86,
+    "beta": null,
+    "fifty_two_week_high": 45000.0,
+    "fifty_two_week_low": 8686.667,
+    "revenue": 72880414720,
+    "profit_margin": 0.16115,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "헥토파이낸셜(234340.KQ)에 대해 3명의 애널리스트가 제시한 컨센서스는 '적극 매수' 의견입니다 (5점 만점 중 4.33점). 평균 목표 주가는 30,889원으로, 현재 주가 대비 19.3% 상승 여력이 있습니다. 투자 판단은 제시된 분석 데이터를 참고하여 신중하게 결정하시기 바랍니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 51160766430
+    },
+    {
+      "date": "2025-09",
+      "value": 45759016040
+    },
+    {
+      "date": "2025-06",
+      "value": 44525827440
+    },
+    {
+      "date": "2025-03",
+      "value": 45989988930
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": -445326300
+    },
+    {
+      "date": "2025-09",
+      "value": 4019675100
+    },
+    {
+      "date": "2025-06",
+      "value": 2564042130
+    },
+    {
+      "date": "2025-03",
+      "value": 3134920380
+    }
+  ],
+  "news": [
+    {
+      "title": "Circle Internet Group Extends USDC Reach With Hecto Cross-Border Integration",
+      "summary": "Hecto Financial has integrated with Circle Payments Network to support regulated cross-border stablecoin payments using USDC. The integration targets enterprise clients and financial institutions that",
+      "url": "https://finance.yahoo.com/news/circle-internet-group-extends-usdc-071034345.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-02-05T07:10:34Z"
+    },
+    {
+      "title": "Hecto Tie Up Tests Circle Payments Network Story In Asia Markets",
+      "summary": "Hecto Financial has integrated with Circle Payments Network to support global cross-border payments using regulated stablecoins such as USDC. The partnership expands Circle Internet Group's payment re",
+      "url": "https://finance.yahoo.com/news/hecto-tie-tests-circle-payments-061230310.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-02-04T06:12:30Z"
+    }
+  ]
+}

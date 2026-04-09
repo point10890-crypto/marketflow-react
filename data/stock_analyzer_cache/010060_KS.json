@@ -1,0 +1,89 @@
+{
+  "name": "OCI홀딩스",
+  "ticker": "010060.KS",
+  "result": "적극 매수",
+  "date": "2026-04-09 23:11:04",
+  "elapsed": 5.4,
+  "consensus_score": 4.6,
+  "analyst_count": 5,
+  "recommendation_detail": {
+    "strongBuy": 3,
+    "buy": 2,
+    "hold": 0,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 200000.0,
+    "high": 270000.0,
+    "low": 187000.0,
+    "mean": 220400.0,
+    "median": 200000.0
+  },
+  "current_price": 200000.0,
+  "upside_potential": 10.2,
+  "key_stats": {
+    "name": "OCI Holdings",
+    "sector": "Financial Services",
+    "industry": "Asset Management",
+    "market_cap": 3734046507008,
+    "pe_ratio": null,
+    "forward_pe": 10.845046,
+    "dividend_yield": 0.51,
+    "beta": 0.413,
+    "fifty_two_week_high": 235000.0,
+    "fifty_two_week_low": 58600.0,
+    "revenue": 3380060356608,
+    "profit_margin": -0.026589999,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "OCI홀딩스(010060.KS)는 현재 200,000 KRW에 거래되고 있으며, 애널리스트 컨센서스는 5명 참여 기준 '적극 매수' (4.6/5.0)입니다. 목표가 평균은 220,400 KRW로, 현재가 대비 10.2% 상승 여력이 있습니다. 제시된 분석 데이터는 투자 판단에 참고 자료로 활용될 수 있습니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 810585091000
+    },
+    {
+      "date": "2025-09",
+      "value": 845110460000
+    },
+    {
+      "date": "2025-06",
+      "value": 526975389000
+    },
+    {
+      "date": "2025-03",
+      "value": 538788090000
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 25369687000
+    },
+    {
+      "date": "2025-09",
+      "value": -36411201000
+    },
+    {
+      "date": "2025-06",
+      "value": -721948000
+    },
+    {
+      "date": "2025-03",
+      "value": -15757164000
+    }
+  ],
+  "news": [
+    {
+      "title": "OCI Holdings Co Ltd (XKRX:010060) Q2 2025 Earnings Call Highlights: Navigating Challenges and ...",
+      "summary": "Despite significant operating losses, OCI Holdings Co Ltd (XKRX:010060) is poised for future growth through strategic initiatives and the OBBB Act.",
+      "url": "https://finance.yahoo.com/news/oci-holdings-co-ltd-xkrx-070115936.html",
+      "provider": "GuruFocus.com",
+      "pub_time": "2025-07-25T07:01:15Z"
+    }
+  ]
+}

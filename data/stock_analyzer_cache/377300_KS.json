@@ -1,0 +1,89 @@
+{
+  "name": "카카오페이",
+  "ticker": "377300.KS",
+  "result": "중립",
+  "date": "2026-04-09 22:00:39",
+  "elapsed": 1.6,
+  "consensus_score": 3.17,
+  "analyst_count": 12,
+  "recommendation_detail": {
+    "strongBuy": 2,
+    "buy": 3,
+    "hold": 3,
+    "sell": 3,
+    "strongSell": 1
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 52800.0,
+    "high": 82000.0,
+    "low": 30000.0,
+    "mean": 56600.0,
+    "median": 58000.0
+  },
+  "current_price": 52800.0,
+  "upside_potential": 7.2,
+  "key_stats": {
+    "name": "kakaopay",
+    "sector": "Technology",
+    "industry": "Software - Infrastructure",
+    "market_cap": 7139839967232,
+    "pe_ratio": null,
+    "forward_pe": 55.851406,
+    "dividend_yield": null,
+    "beta": 2.296,
+    "fifty_two_week_high": 114000.0,
+    "fifty_two_week_low": 26350.0,
+    "revenue": 958371069952,
+    "profit_margin": 0.047199998,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "카카오페이에 대한 애널리스트 컨센서스는 12명 참여 기준 '중립' 의견입니다. 평균 목표주가는 56,600원으로 현재 주가 대비 약 7.2% 상승 여력이 있습니다. 투자 판단은 제시된 정보를 바탕으로 투자자 본인이 결정해야 합니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 269827582450
+    },
+    {
+      "date": "2025-09",
+      "value": 238350040630
+    },
+    {
+      "date": "2025-06",
+      "value": 238288944370
+    },
+    {
+      "date": "2025-03",
+      "value": 211904505910
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 4051797280
+    },
+    {
+      "date": "2025-09",
+      "value": 15186470390
+    },
+    {
+      "date": "2025-06",
+      "value": 12705482010
+    },
+    {
+      "date": "2025-03",
+      "value": 13295440810
+    }
+  ],
+  "news": [
+    {
+      "title": "kakaopay Corp (XKRX:377300) Q4 2025 Earnings Call Highlights: A Year of Turnaround and ...",
+      "summary": "kakaopay Corp (XKRX:377300) reports its first annual operating profit and outlines ambitious growth strategies for 2026 amidst regulatory challenges.",
+      "url": "https://finance.yahoo.com/news/kakaopay-corp-xkrx-377300-q4-010354678.html",
+      "provider": "GuruFocus.com",
+      "pub_time": "2026-02-07T01:03:54Z"
+    }
+  ]
+}

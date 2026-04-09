@@ -1,0 +1,81 @@
+{
+  "name": "한미글로벌",
+  "ticker": "053690.KS",
+  "result": "매수",
+  "date": "2026-04-09 20:57:48",
+  "elapsed": 2.6,
+  "consensus_score": 4.0,
+  "analyst_count": 2,
+  "recommendation_detail": {
+    "strongBuy": 0,
+    "buy": 2,
+    "hold": 0,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 30700.0,
+    "high": 32000.0,
+    "low": 31000.0,
+    "mean": 31500.0,
+    "median": 31500.0
+  },
+  "current_price": 30700.0,
+  "upside_potential": 2.6,
+  "key_stats": {
+    "name": "HanmiGlobal",
+    "sector": "Industrials",
+    "industry": "Engineering & Construction",
+    "market_cap": 309887336448,
+    "pe_ratio": null,
+    "forward_pe": 10.70619,
+    "dividend_yield": 1.22,
+    "beta": -0.415,
+    "fifty_two_week_high": 32500.0,
+    "fifty_two_week_low": 13530.0,
+    "revenue": 448833650688,
+    "profit_margin": 0.041300002,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "한미글로벌(053690.KS)에 대해 2명의 애널리스트가 제시한 컨센서스는 매수(4.0/5.0)입니다. 평균 목표주가는 31,500원으로 현재가(30,700 KRW) 대비 2.6% 상승 여력이 있습니다. 투자 판단은 개인의 분석과 판단에 따라 결정되어야 합니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 112592258070
+    },
+    {
+      "date": "2025-09",
+      "value": 105265106830
+    },
+    {
+      "date": "2025-06",
+      "value": 108454587900
+    },
+    {
+      "date": "2025-03",
+      "value": 122521708330
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 1191386060
+    },
+    {
+      "date": "2025-09",
+      "value": 4820060880
+    },
+    {
+      "date": "2025-06",
+      "value": 5960047990
+    },
+    {
+      "date": "2025-03",
+      "value": 6566451440
+    }
+  ],
+  "news": []
+}

@@ -1,35 +1,35 @@
 {
-  "name": "미래에셋벤처투자",
-  "ticker": "100790.KQ",
+  "name": "일성건설",
+  "ticker": "013360.KS",
   "result": "데이터 없음",
-  "date": "2026-04-09 20:58:17",
-  "elapsed": 1.8,
+  "date": "2026-04-09 20:51:04",
+  "elapsed": 3.1,
   "consensus_score": null,
   "analyst_count": 0,
   "recommendation_detail": null,
   "recommendation_period": null,
   "price_targets": {
-    "current": 28600.0,
+    "current": 2140.0,
     "high": null,
     "low": null,
     "mean": null,
     "median": null
   },
-  "current_price": 28600.0,
+  "current_price": 2140.0,
   "upside_potential": null,
   "key_stats": {
-    "name": "Mirae Asset Venture",
-    "sector": "",
-    "industry": "",
-    "market_cap": 1519248474112,
+    "name": "IlsungConst",
+    "sector": "Industrials",
+    "industry": "Engineering & Construction",
+    "market_cap": 115613245440,
     "pe_ratio": null,
     "forward_pe": null,
     "dividend_yield": null,
-    "beta": null,
-    "fifty_two_week_high": 33050.0,
-    "fifty_two_week_low": 4170.0,
-    "revenue": null,
-    "profit_margin": null,
+    "beta": 0.004,
+    "fifty_two_week_high": 4445.0,
+    "fifty_two_week_low": 1192.0,
+    "revenue": 452672913408,
+    "profit_margin": 0.00827,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
@@ -38,37 +38,37 @@
   "revenue_quarters": [
     {
       "date": "2025-09",
-      "value": 21773387180
+      "value": 110899903450
     },
     {
       "date": "2025-06",
-      "value": 85874675790
+      "value": 115142530380
     },
     {
       "date": "2025-03",
-      "value": 18427313680
+      "value": 114090329750
     },
     {
       "date": "2024-12",
-      "value": 102932246520
+      "value": 116267352030
     }
   ],
   "net_income_quarters": [
     {
       "date": "2025-09",
-      "value": 7239376690
+      "value": -336958740
     },
     {
       "date": "2025-06",
-      "value": 5938984410
+      "value": 404152810
     },
     {
       "date": "2025-03",
-      "value": -1453827000
+      "value": 725248690
     },
     {
       "date": "2024-12",
-      "value": -7738899710
+      "value": -58683135850
     }
   ],
   "news": []

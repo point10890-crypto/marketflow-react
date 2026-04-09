@@ -1,0 +1,293 @@
+{
+  "stock_code": "005860",
+  "stock_name": "한일사료",
+  "generated_at": "2026-04-09T11:48:37.309924+00:00",
+  "financials": {
+    "stock_code": "005860",
+    "corp_code": "00162911",
+    "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2016": {
+        "cash": 255.5,
+        "total_assets": 1882.0,
+        "short_debt": 938.5,
+        "long_debt": 17.5,
+        "total_liab": 1237.0,
+        "total_equity": 645.0,
+        "revenue": 3100.2,
+        "op_profit": 66.3,
+        "net_income": 22.2
+      },
+      "2017": {
+        "cash": 154.9,
+        "total_assets": 1668.5,
+        "total_liab": 1023.2,
+        "total_equity": 645.3,
+        "revenue": 2991.5,
+        "op_profit": -8.6,
+        "net_income": 18.9
+      },
+      "2018": {
+        "cash": 124.0,
+        "total_assets": 1734.8,
+        "total_liab": 1114.7,
+        "total_equity": 620.1,
+        "revenue": 3078.4,
+        "op_profit": 20.6,
+        "net_income": 3.6
+      },
+      "2019": {
+        "cash": 135.1,
+        "total_assets": 1766.3,
+        "short_debt": 866.0,
+        "total_liab": 1146.2,
+        "total_equity": 620.1,
+        "revenue": 3435.0,
+        "op_profit": 44.4,
+        "net_income": 1.9
+      },
+      "2020": {
+        "cash": 119.1,
+        "total_assets": 1525.6,
+        "short_debt": 643.4,
+        "long_debt": 11.2,
+        "total_liab": 895.1,
+        "total_equity": 630.5,
+        "revenue": 3316.1,
+        "op_profit": 34.3,
+        "net_income": 21.5
+      },
+      "2021": {
+        "cash": 124.3,
+        "total_assets": 1750.9,
+        "short_debt": 683.3,
+        "long_debt": 28.3,
+        "total_liab": 1056.8,
+        "total_equity": 694.1,
+        "revenue": 3557.8,
+        "op_profit": 136.2,
+        "net_income": 73.6
+      },
+      "2022": {
+        "cash": 192.6,
+        "total_assets": 1878.9,
+        "short_debt": 1048.8,
+        "long_debt": 36.4,
+        "total_liab": 1333.2,
+        "total_equity": 545.7,
+        "revenue": 4083.2,
+        "op_profit": -82.4,
+        "net_income": -141.9
+      },
+      "2023": {
+        "total_assets": 2415.2,
+        "cash": 249.1,
+        "total_equity": 7.2,
+        "short_debt": 480.6,
+        "total_liab": 847.4,
+        "long_debt": 37.1,
+        "op_profit": 17.7,
+        "net_income": 1.7,
+        "revenue": 3969.4
+      },
+      "2024": {
+        "total_assets": 2075.8,
+        "cash": 271.0,
+        "total_equity": -1.5,
+        "short_debt": 203.6,
+        "total_liab": 506.9,
+        "long_debt": 50.5,
+        "op_profit": 37.0,
+        "net_income": 36.9,
+        "revenue": 4309.8
+      },
+      "2025": {
+        "total_assets": 2094.3,
+        "cash": 352.3,
+        "total_equity": 208.1,
+        "short_debt": 215.4,
+        "total_liab": 447.5,
+        "long_debt": 54.8,
+        "op_profit": 58.6,
+        "net_income": 63.8,
+        "revenue": 4548.5
+      }
+    },
+    "missing_years": [
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2016,
+        "revenue_eok": 3100,
+        "op_profit_eok": 66,
+        "net_income_eok": 22,
+        "roe_pct": 3.41,
+        "op_margin_pct": 2.13,
+        "debt_ratio_pct": 191.78
+      },
+      {
+        "year": 2017,
+        "revenue_eok": 2992,
+        "op_profit_eok": -9,
+        "net_income_eok": 19,
+        "roe_pct": 2.95,
+        "op_margin_pct": -0.3,
+        "debt_ratio_pct": 158.6
+      },
+      {
+        "year": 2018,
+        "revenue_eok": 3078,
+        "op_profit_eok": 21,
+        "net_income_eok": 4,
+        "roe_pct": 0.65,
+        "op_margin_pct": 0.68,
+        "debt_ratio_pct": 179.84
+      },
+      {
+        "year": 2019,
+        "revenue_eok": 3435,
+        "op_profit_eok": 44,
+        "net_income_eok": 2,
+        "roe_pct": 0.32,
+        "op_margin_pct": 1.28,
+        "debt_ratio_pct": 184.84
+      },
+      {
+        "year": 2020,
+        "revenue_eok": 3316,
+        "op_profit_eok": 34,
+        "net_income_eok": 22,
+        "roe_pct": 3.49,
+        "op_margin_pct": 1.02,
+        "debt_ratio_pct": 142.06
+      },
+      {
+        "year": 2021,
+        "revenue_eok": 3558,
+        "op_profit_eok": 136,
+        "net_income_eok": 74,
+        "roe_pct": 10.66,
+        "op_margin_pct": 3.82,
+        "debt_ratio_pct": 152.31
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 4083,
+        "op_profit_eok": -82,
+        "net_income_eok": -142,
+        "roe_pct": -25.99,
+        "op_margin_pct": -2.01,
+        "debt_ratio_pct": 244.14
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 3969,
+        "op_profit_eok": 18,
+        "net_income_eok": 2,
+        "roe_pct": 28.57,
+        "op_margin_pct": 0.45,
+        "debt_ratio_pct": 12100.0
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 4310,
+        "op_profit_eok": 37,
+        "net_income_eok": 37,
+        "roe_pct": -1850.0,
+        "op_margin_pct": 0.86,
+        "debt_ratio_pct": -25350.0
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 4548,
+        "op_profit_eok": 59,
+        "net_income_eok": 64,
+        "roe_pct": 30.77,
+        "op_margin_pct": 1.3,
+        "debt_ratio_pct": 215.38
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": 4.17,
+      "op_profit_cagr_pct": -1.2,
+      "best_year": 2021,
+      "worst_year": 2022,
+      "avg_roe_pct": -179.52
+    },
+    "valuation": {
+      "grade": "D",
+      "strengths": [
+        "매출액은 10년간 꾸준히 증가하는 추세를 보였습니다.",
+        "2024년 자본잠식 이후 2025년에는 자본총계가 흑자로 전환되며 재무구조 개선의 가능성을 보였습니다.",
+        "최근 몇 년간 현금 보유액이 증가하는 긍정적인 추세를 보였습니다."
+      ],
+      "risks": [
+        "영업이익 변동성이 매우 크고, 2017년, 2022년에는 영업손실을 기록하는 등 수익성이 불안정합니다.",
+        "2024년에 자본잠식 상태에 빠지는 등 심각한 재무구조 악화를 경험했으며, 이는 기업의 존속 가능성에 대한 우려를 야기합니다.",
+        "자본총계가 극히 낮거나 음수인 기간이 있어 부채비율이 비정상적으로 높게 나타나며, 이는 높은 재무 위험을 의미합니다."
+      ],
+      "one_liner": "매출액은 성장했으나 극심한 영업이익 변동성과 자본잠식 이력으로 재무 안정성이 매우 취약한 기업입니다."
+    }
+  },
+  "dcf": {
+    "text": "퀀트 애널리스트로서 한일사료(005860)의 DCF 적정가치를 계산하겠습니다.\n\n**가정 및 계산 방식 요약:**\n*   **FCF 계산:** 주어진 공식 `FCF ≈ 영업이익 × (1 - 0.25) + 감가상각(매출의 10%) - CAPEX(매출의 5%)`을 사용합니다.\n*   **FCF 예측:** 5년간의 명시적 예측 기간 동안 매출액 및 영업이익의 성장률이 별도로 주어지지 않았으므로, 최근 재무 데이터를 기반으로 계산된 FCF가 매년 동일하게 발생한다고 가정합니다.\n*   **할인율 및 영구성장률:** 기본 시나리오에서는 WACC 9%, 영구성장률(g) 2%를 적용합니다.\n*   **터미널 밸류:** 고든 성장 모델(Gordon Growth Model)을 사용하여 계산합니다.\n*   **단위:** 모든 가치는 '억원' 단위로 계산됩니다.\n\n---\n### 1. 기본 시나리오 DCF 적정가치 계산\n\n먼저, 주어진 데이터를 바탕으로 연간 FCF를 계산합니다.\n\n*   매출액: 4548 억원\n*   영업이익: 59 억원\n*   세율: 25% (FCF 공식에서 `(1 - 0.25)`로 유추)\n*   감가상각: 매출액의 10%\n*   CAPEX: 매출액의 5%\n\n\n---\n### 2. WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 출력\n\n다양한 WACC와 영구성장률(g) 조합에 따른 DCF 적정가치 민감도 분석 결과입니다.\n\n\n---\n### 3. 요약 출력\n\n**적정가치(기본): 3629.27억원**",
+    "executed_code": "import pandas as pd\n\n# Given Data\nrevenue = 4548  # 억원\noperating_income = 59  # 억원\nwacc_base = 0.09\ng_base = 0.02\nforecast_years = 5\n\n# FCF Calculation components\ntax_rate = 0.25\ndepreciation_rate = 0.10  # 10% of revenue\ncapex_rate = 0.05  # 5% of revenue\n\n# Calculate FCF for the base year (assuming current numbers apply to the first forecast year)\n# NOPAT = Operating Income * (1 - Tax Rate)\nnopat = operating_income * (1 - tax_rate)\n\n# Depreciation = Revenue * Depreciation Rate\ndepreciation = revenue * depreciation_rate\n\n# CAPEX = Revenue * CAPEX Rate\ncapex = revenue * capex_rate\n\n# FCF = NOPAT + Depreciation - CAPEX\n# Assuming FCF is constant for the 5 forecast years as no growth rate for revenue/operating income is provided.\nfcf_per_year = nopat + depreciation - capex\n\nprint(f\"NOPAT: {nopat=:.2f} 억원\")\nprint(f\"Depreciation: {depreciation=:.2f} 억원\")\nprint(f\"CAPEX: {capex=:.2f} 억원\")\nprint(f\"FCF per year (constant for 5 years): {fcf_per_year=:.2f} 억원\")\n\n# Calculate PV of FCFs for the explicit forecast period\npv_fcf_sum = 0\nfor t in range(1, forecast_years + 1):\n    pv_fcf_sum += fcf_per_year / ((1 + wacc_base) ** t)\n\n# Calculate Terminal Value (TV) at the end of the forecast period (Year 5)\n# TV_5 = FCF_5 * (1 + g) / (WACC - g)\n# Here FCF_5 is the FCF of the last explicit forecast year, which is fcf_per_year in our constant FCF assumption.\nterminal_value_year_5 = fcf_per_year * (1 + g_base) / (wacc_base - g_base)\n\n# Calculate Present Value of Terminal Value\npv_terminal_value = terminal_value_year_5 / ((1 + wacc_base) ** forecast_years)\n\n# Total DCF Value\ndcf_value_base = pv_fcf_sum + pv_terminal_value\n\nprint(f\"\\nPV of FCFs (5 years): {pv_fcf_sum=:.2f} 억원\")\nprint(f\"Terminal Value (Year 5): {terminal_value_year_5=:.2f} 억원\")\nprint(f\"PV of Terminal Value: {pv_terminal_value=:.2f} 억원\")\nprint(f\"DCF 적정가치 (기본 시나리오): {dcf_value_base=:.2f} 억원\")\n\n\nimport pandas as pd\n\n# Given Data (re-initialize for tool execution context)\nrevenue = 4548  # 억원\noperating_income = 59  # 억원\nforecast_years = 5\n\n# FCF Calculation components\ntax_rate = 0.25\ndepreciation_rate = 0.10  # 10% of revenue\ncapex_rate = 0.05  # 5% of revenue\n\n# Calculate FCF per year (constant for 5 years)\nnopat = operating_income * (1 - tax_rate)\ndepreciation = revenue * depreciation_rate\ncapex = revenue * capex_rate\nfcf_per_year = nopat + depreciation - capex\n\nwacc_scenarios = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_scenarios = [0.01, 0.02, 0.03]\n\nsensitivity_results = {}\n\nfor wacc in wacc_scenarios:\n    row_results = {}\n    for g in g_scenarios:\n        # WACC must be greater than g for the Gordon Growth Model\n        # For the given ranges (WACC min 7%, g max 3%), WACC > g is always true.\n        # if wacc <= g:\n        #     row_results[f'g={g*100:.0f}%'] = \"N/A\"\n        #     continue\n\n        # Recalculate PV of FCFs (this part depends on WACC)\n        pv_fcf_sum_sens = 0\n        for t in range(1, forecast_years + 1):\n            pv_fcf_sum_sens += fcf_per_year / ((1 + wacc) ** t)\n\n        # Recalculate Terminal Value\n        terminal_value_sens = fcf_per_year * (1 + g) / (wacc - g)\n\n        # Recalculate PV of Terminal Value\n        pv_terminal_value_sens = terminal_value_sens / ((1 + wacc) ** forecast_years)\n\n        # Total DCF Value for this scenario\n        dcf_value_sens = pv_fcf_sum_sens + pv_terminal_value_sens\n        row_results[f'g={g*100:.0f}%'] = round(dcf_value_sens, 2)\n    sensitivity_results[f'WACC={wacc*100:.0f}%'] = row_results\n\n# Convert to DataFrame for pretty printing\nsensitivity_df = pd.DataFrame(sensitivity_results).T\nsensitivity_df.index.name = 'WACC \\\\ g'\n\nprint(\"--- DCF 적정가치 민감도 분석 그리드 (억원) ---\")\nprint(sensitivity_df)",
+    "code_output": "NOPAT: nopat=44.25 억원\nDepreciation: depreciation=454.80 억원\nCAPEX: capex=227.40 억원\nFCF per year (constant for 5 years): fcf_per_year=271.65 억원\n\nPV of FCFs (5 years): pv_fcf_sum=1056.62 억원\nTerminal Value (Year 5): terminal_value_year_5=3958.33 억원\nPV of Terminal Value: pv_terminal_value=2572.64 억원\nDCF 적정가치 (기본 시나리오): dcf_value_base=3629.27 억원\n\n--- DCF 적정가치 민감도 분석 그리드 (억원) ---\n             g=1%     g=2%     g=3%\nWACC \\ g                           \nWACC=7%   4374.14  5064.95  6101.15\nWACC=8%   3752.18  4227.59  4893.16\nWACC=9%   3285.62  3629.27  4087.47\nWACC=10%  2922.66  3180.35  3511.67\nWACC=11%  2632.22  2831.05  3079.58"
+  },
+  "news": {
+    "text": "## 한일사료(005860) 분석 보고서: 재무 안정성 취약, 테마성 주가 변동성 주의\n\n### 1. 재무 데이터가 보여주는 스토리와 현재 시장 컨센서스의 일치/불일치\n\n한일사료의 10년 재무제표 분석 결과는 \"매출액은 성장했으나 극심한 영업이익 변동성과 자본잠식 이력으로 재무 안정성이 매우 취약한 기업\"으로 요약됩니다. 최근 2주간의 시장 컨센서스는 이러한 재무 데이터와 일부 일치하면서도 단기적인 호재에 반응하는 모습을 보입니다.\n\n*   **일치:** 최근 2025년 3분기 누적 연결 기준 매출액이 전년 동기 대비 7.8% 증가했다는 소식은 재무 데이터의 '매출액 성장' 스토리와 부합합니다. 또한, 국제 곡물 가격 변동에 민감하게 반응하여 주가가 급등하는 현상은 사료 산업의 특성상 영업이익 변동성이 클 수 있다는 재무 데이터의 스토리와 간접적으로 일치합니다.\n*   **불일치/보완:** 재무제표 분석에서 지적된 '자본잠식 이력으로 재무 안정성이 매우 취약'하다는 부분과 관련하여, 최근 정기주주총회에서 제58기 재무제표가 '적정' 의견으로 승인되고 현금 배당(주당 75원)을 결의한 점은 현재 시점에서 자본잠식 상태가 아니며 재무 상태가 개선되었음을 시사합니다. 2024년 12월 연결 기준 자산총계 2,076억 원, 부채총계 507억 원, 자본총계 1,569억 원으로 자본잠식 상태가 아님이 확인됩니다. 시장은 단기적인 실적 개선과 테마성 움직임에 더 주목하는 경향을 보입니다.\n\n### 2. 재무제표에서 드러나지 않는 리스크 또는 호재\n\n**리스크:**\n*   **원자재 가격 변동성:** 사료 산업은 국제 곡물 가격 변동에 매우 민감하며, 이는 원가 부담으로 이어져 수익성에 큰 영향을 미칠 수 있습니다. 지정학적 리스크로 인한 곡물가 상승은 단기적인 주가 상승 요인이 될 수 있으나, 장기적으로는 원가 압박을 심화시키는 양날의 검이라는 전문가들의 경고가 있습니다.\n*   **가축 질병:** 구제역, 돼지열병 등 가축 질병 발생 시 사료 수요 감소 및 축산물 가격 하락으로 이어져 실적에 부정적인 영향을 미칠 수 있습니다.\n\n**호재:**\n*   **종합 축산 전문회사로의 성장:** 'FROM FEED TO FOOD' 전략을 통해 배합사료뿐만 아니라 수입 우육 및 돈육 유통 사업을 영위하며 사업 다각화를 이루고 있습니다. 특히 정육유통 부문의 안정적인 성장세가 예상됩니다.\n*   **낙농사료 부문의 안정적 사업 기반:** 서울우유협동조합과의 지속적인 거래를 통해 낙농사료 공급의 안정적인 사업 기반을 확보하고 있습니다.\n*   **테마성 수급 유입:** 국제 곡물 가격 상승, 식량 안보, 가축 질병 등 테마가 부각될 때마다 단기적인 수급이 유입되어 주가에 긍정적인 영향을 미칩니다. 최근 외국인과 기관의 순매수세도 관찰되었습니다.\n*   **배당 실시:** 현금 배당을 결정한 것은 주주 친화 정책의 일환으로 볼 수 있으며, 기업의 이익 창출 능력에 대한 자신감을 보여줍니다.\n\n### 3. 최종 판정\n\n**관망**\n\n한일사료는 최근 매출액 및 영업이익 개선, 현금 배당 결정 등 긍정적인 소식이 있었으나, 이는 주로 사료 산업의 테마성 움직임(국제 곡물 가격 상승 및 지정학적 리스크)에 기인한 바가 큽니다. 10년 재무제표 분석에서 드러난 '투자등급 D', '극심한 영업이익 변동성', '자본잠식 이력' 등 내재적인 재무 안정성 취약점은 여전히 해소되지 않았습니다.\n\n단기적인 테마성 주가 상승은 높은 변동성을 동반하며, 펀더멘털 개선 없이 지속적인 상승을 기대하기는 어렵습니다. 특히 원자재 가격 변동성이라는 사료 산업의 고질적인 리스크는 언제든 수익성에 부정적인 영향을 미칠 수 있습니다. 따라서 현재 시점에서는 추가적인 재무 안정성 개선과 사업 구조의 견고함이 확인될 때까지 **관망**하는 것이 prudent한 투자 전략으로 판단됩니다.",
+    "citations": [
+      {
+        "title": "wisereport.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFIAv5jF12iiWbZuxRM8GGFo_BPOVcF1D1WGQd1jwKB7FywVon4yrrfMWCbL4PNUVz7UmzZKIqzXrZzjZ5mEVHQCLDrsYXjKsTdX3UIQUY761U73Y87TGRyA2_3MlT5AnNwsRB5gxpplDqcYDK29EDrhcGyinT1zzyrbwj7liQLiw=="
+      },
+      {
+        "title": "pinpointnews.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGKJCYyToxpnRKGE71I8sjxE-6kiD2I8dy6pGc_9xdYp-EzcCKm4qbLG47ApEwCSMY6S11y5iScka--o3Kietg5y2WDf3K-kLutSz6u-2Sf1RmjQ4rPiuOz7kJUXNLrHWPr0nBrS-XBJqZY9yo4bPtjgRzUD44iy34JlV2r"
+      },
+      {
+        "title": "digitaltoday.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQG_iBUrggYJvvpNfTeOGV2MfxwMiU_0FpxDmNbeF0wlB882Myt9tH_bmAobt8QPGE_b_WwLQYWjfCdaeFax5wzp5c88mpqXirczTuFdUZolKyMpm06ZQ8poG7eguFhVpR2qPINVnZk5Li-Ns7QEshKgHQ8oTWbw_hi-yjBG"
+      },
+      {
+        "title": "alphasquare.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGC6_g_SlgfzhkxE45sS60pDfMI1x4PPQWi1ZLjsyUDaIdFyA_cMaBSLxzuUL0ucdWX3I52DCgr9a8Y-qmmU5MTagtoACjzg8xNsdaLflDjH13JYscHQFt38OhuXpEM1d9Ip6YLJGYH9xwvY9TmkxO4IISj"
+      },
+      {
+        "title": "stockplus.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHMSJkT7O41p8zEnzLd7PMllqeAfXSTE0PDqsXa_yEv7vix7GSZyyZrW0smM_MGgCYZv9kNk1V4a9MsgmmGZmXRf3e1X9fJKo3BSdD79Gx3sJIb5BaSOIZOSQ7R5qz1B3sfiSh-FiceLIKzIA=="
+      },
+      {
+        "title": "chosun.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFA-v2vP8L7Se0lGgUL2mwvzXltUFtlXTd0XcVqHIZ7SaQC34NSmVmCwds0DqxRtTGq4_iEDF5dnQ0xR6FSZw4H-Vqt5504_vp539JsuEvYBncSG1hyLDBvz4YzD36ldgOHCUSeK6k9zr_N21wt9ytrnycPpTSTfxlmvmn0m4mBbACoXJ3AW-wG4qVvpyTVXH2ri1GVdNY3"
+      },
+      {
+        "title": "mk.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFc3xZU8nqDkX0AU8N43KkqD5Q8hw0gpGkOCt_feGPC1clkbKDQz1RQ881WNLzCPiQmV_mtEU6lAK3RWqq6NgEnt-uPH04jJTVw2mR_RFHaT8H-R2R7xqsHaCLMyHonOyoxFMQ="
+      },
+      {
+        "title": "finup.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQE6bkB7PkLxfo7iBVoRFcj80FHtkO-d_KmJ5xXN0rM4JMyL3bodYg7D8O94e-a7LodkLe4uKi62wUtSRFQ_A3EhgnptpFB2XZYbCoR0XnZ-SRdrM1ie4i3Liz3TEqB6Li5nJXg="
+      }
+    ]
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=00162911",
+    "summary": "공시 페이지 접근 제한"
+  }
+}

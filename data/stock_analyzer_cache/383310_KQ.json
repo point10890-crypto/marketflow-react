@@ -1,35 +1,35 @@
 {
-  "name": "삼화페인트",
-  "ticker": "000390.KS",
+  "name": "에코프로에이치엔",
+  "ticker": "383310.KQ",
   "result": "데이터 없음",
-  "date": "2026-04-09 21:58:55",
-  "elapsed": 2.6,
+  "date": "2026-04-09 21:49:33",
+  "elapsed": 1.7,
   "consensus_score": null,
   "analyst_count": 0,
   "recommendation_detail": null,
   "recommendation_period": null,
   "price_targets": {
-    "current": 9090.0,
+    "current": 30400.0,
     "high": null,
     "low": null,
     "mean": null,
     "median": null
   },
-  "current_price": 9090.0,
+  "current_price": 30400.0,
   "upside_potential": null,
   "key_stats": {
-    "name": "SamhwaPaint",
-    "sector": "Basic Materials",
-    "industry": "Specialty Chemicals",
-    "market_cap": 225566785536,
+    "name": "ECOPRO HN",
+    "sector": "Industrials",
+    "industry": "Pollution & Treatment Controls",
+    "market_cap": 636376514560,
     "pe_ratio": null,
     "forward_pe": null,
-    "dividend_yield": 3.72,
-    "beta": 0.69,
-    "fifty_two_week_high": 14300.0,
-    "fifty_two_week_low": 5260.0,
-    "revenue": 617067577344,
-    "profit_margin": 0.01244,
+    "dividend_yield": 0.65,
+    "beta": 0.962,
+    "fifty_two_week_high": 46900.0,
+    "fifty_two_week_low": 22050.0,
+    "revenue": 141057114112,
+    "profit_margin": 0.09373,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
@@ -38,37 +38,37 @@
   "revenue_quarters": [
     {
       "date": "2025-12",
-      "value": 150787532710
+      "value": 39225168200
     },
     {
       "date": "2025-09",
-      "value": 155501778050
+      "value": 28396775220
     },
     {
       "date": "2025-06",
-      "value": 177509100090
+      "value": 39001735250
     },
     {
       "date": "2025-03",
-      "value": 133269135310
+      "value": 34433439360
     }
   ],
   "net_income_quarters": [
     {
       "date": "2025-12",
-      "value": 570952390
+      "value": 3643208590
     },
     {
       "date": "2025-09",
-      "value": 489814180
+      "value": 2498285000
     },
     {
       "date": "2025-06",
-      "value": 7907970290
+      "value": 3393599000
     },
     {
       "date": "2025-03",
-      "value": -1293391950
+      "value": 3685877000
     }
   ],
   "news": []

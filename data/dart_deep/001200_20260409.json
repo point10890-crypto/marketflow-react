@@ -1,0 +1,160 @@
+{
+  "stock_code": "001200",
+  "stock_name": "유진투자증권",
+  "generated_at": "2026-04-09T11:49:21.749318+00:00",
+  "financials": {
+    "stock_code": "001200",
+    "corp_code": "00131054",
+    "years": [
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2023": {
+        "total_assets": 86993.3,
+        "cash": 4463.7,
+        "total_equity": 10119.0,
+        "total_liab": 76874.3,
+        "net_income": 307.0,
+        "op_profit": 270.4,
+        "revenue": 16476.6
+      },
+      "2024": {
+        "total_assets": 96467.1,
+        "cash": 4690.0,
+        "total_equity": 0.0,
+        "total_liab": 85953.3,
+        "net_income": 0.0,
+        "op_profit": 583.4,
+        "revenue": 16526.0
+      },
+      "2025": {
+        "total_assets": 110490.3,
+        "cash": 5524.0,
+        "total_equity": -108.0,
+        "total_liab": 99165.6,
+        "net_income": 645.4,
+        "op_profit": 844.4,
+        "revenue": 16940.8
+      }
+    },
+    "missing_years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2023,
+        "revenue_eok": 16477,
+        "op_profit_eok": 270,
+        "net_income_eok": 307,
+        "roe_pct": 3.0339,
+        "op_margin_pct": 1.6386,
+        "debt_ratio_pct": 759.7223
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 16526,
+        "op_profit_eok": 583,
+        "net_income_eok": 0,
+        "roe_pct": 0,
+        "op_margin_pct": 3.5277,
+        "debt_ratio_pct": 0
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 16941,
+        "op_profit_eok": 844,
+        "net_income_eok": 645,
+        "roe_pct": -597.2222,
+        "op_margin_pct": 4.9819,
+        "debt_ratio_pct": -91819.9074
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": 1.4,
+      "op_profit_cagr_pct": 76.79,
+      "best_year": 2025,
+      "worst_year": 2023,
+      "avg_roe_pct": -198.0628
+    },
+    "valuation": {
+      "grade": "D",
+      "strengths": [
+        "매출액이 3년간 소폭이나마 꾸준히 증가하는 추세입니다.",
+        "영업이익이 2023년 270억원에서 2025년 844억원으로 크게 개선될 것으로 예상됩니다.",
+        "영업이익률이 2023년 1.64%에서 2025년 4.98%로 개선되는 긍정적인 추세가 나타납니다."
+      ],
+      "risks": [
+        "2024년 자본총계가 0원, 2025년에는 -108억원으로 완전자본잠식 상태에 진입하여 재무 건전성이 매우 취약합니다.",
+        "2024년 당기순이익이 0원으로 예상되며, 2025년에도 자본잠식으로 인해 ROE가 극도로 낮은 수준을 기록할 것으로 보입니다.",
+        "부채비율이 2023년 759%에서 2024년 자본잠식, 2025년 완전자본잠식으로 인해 사실상 무한대에 가까운 수준으로 치솟아 재무적 위험이 매우 높습니다."
+      ],
+      "one_liner": "심각한 자본잠식과 불안정한 수익성으로 인해 투자 매력이 현저히 낮은 매우 위험한 종목입니다."
+    }
+  },
+  "dcf": {
+    "text": "## 퀀트 애널리스트 보고서: 유진투자증권 (001200) DCF 적정가치 분석\n\n### 1. 분석 개요\n\n주어진 데이터를 바탕으로 유진투자증권(001200)의 DCF(할인현금흐름) 적정가치를 계산하였습니다. 2025년을 기준 연도로 하여 5년간의 명시적 예측 기간과 이후 영구 성장률을 적용한 터미널 밸류를 산정했습니다.\n\n**주요 가정:**\n*   **FCF (Free Cash Flow) 계산:** 영업이익 × (1 - 0.25) + 감가상각(매출의 10%) - CAPEX(매출의 5%)\n*   **명시적 예측 기간 FCF 성장률:** 영구성장률(g)과 동일하게 적용 (별도 성장률 미제시)\n*   **WACC (가중평균자본비용):** 9% (기본 시나리오)\n*   **영구성장률 (g):** 2% (기본 시나리오)\n*   **예측 기간:** 5년\n\n### 2. Python 코드 실행 및 결과\n\n\n### 3. 분석 결과\n\n**1. 기본 시나리오 DCF 적정가치:**\n*   **WACC:** 9%\n*   **영구성장률 (g):** 2%\n*   **예측 기간:** 5년\n*   **적정가치:** 21,143.57 억원\n\n**2. WACC x g 민감도 그리드 (적정가치: 억원):**\n\n|             | g=1%      | g=2%      | g=3%      |\n| :---------- | :-------- | :-------- | :-------- |\n| **WACC=7%** | 24667.5   | 29601.0   | 37001.25  |\n| **WACC=8%** | 21143.57  | 24667.5   | 29601.0   |\n| **WACC=9%** | 18500.62  | 21143.57  | 24667.5   |\n| **WACC=10%**| 16445.0   | 18500.62  | 21143.57  |\n| **WACC=11%**| 14800.5   | 16445.0   | 18500.62  |\n\n**요약:**\n적정가치(기본): 21143.57억원\n\n### 4. 결론\n\n유진투자증권(001200)의 DCF 분석 결과, 기본 시나리오(WACC 9%, 영구성장률 2%)에서 적정가치는 **21,143.57 억원**으로 산출되었습니다. 민감도 분석 그리드를 통해 WACC가 낮아지거나 영구성장률(g)이 높아질수록 기업의 적정가치가 상승하는 것을 확인할 수 있습니다. 특히, WACC와 g의 차이가 줄어들수록 터미널 밸류의 기여도가 크게 증가하여 적정가치가 민감하게 반응합니다.",
+    "executed_code": "import pandas as pd\n\n# --- 1. Define the DCF calculation function ---\ndef calculate_dcf(revenue, operating_profit, wacc, g, forecast_years=5):\n    \"\"\"\n    Calculates the DCF fair value based on the given assumptions.\n\n    Args:\n        revenue (float): Recent revenue in 억원.\n        operating_profit (float): Recent operating profit in 억원.\n        wacc (float): Weighted Average Cost of Capital (e.g., 0.09 for 9%).\n        g (float): Perpetual growth rate (e.g., 0.02 for 2%).\n        forecast_years (int): Number of explicit forecast years.\n\n    Returns:\n        float: DCF fair value in 억원.\n    \"\"\"\n    # Calculate initial FCF for the base year (2025)\n    # FCF ≈ 영업이익 × (1 - 0.25) + 감가상각(매출의 10%) - CAPEX(매출의 5%)\n    depreciation = revenue * 0.10\n    capex = revenue * 0.05\n    fcf_initial = operating_profit * (1 - 0.25) + depreciation - capex\n\n    # List to store present values of FCFs\n    pv_fcf_list = []\n\n    # Calculate FCF for each forecast year and its present value\n    # Assumption: FCF grows at the perpetual growth rate 'g' for the explicit forecast period.\n    # FCF_t = FCF_initial * (1 + g)^(t-1) where t is the year number (1 to forecast_years)\n    for t in range(1, forecast_years + 1):\n        fcf_t = fcf_initial * ((1 + g) ** (t - 1))\n        pv_fcf = fcf_t / ((1 + wacc) ** t)\n        pv_fcf_list.append(pv_fcf)\n\n    # Sum of present values of explicit FCFs\n    sum_pv_fcf = sum(pv_fcf_list)\n\n    # Calculate Terminal Value (TV)\n    # FCF for the year after the last forecast year (Year forecast_years + 1)\n    fcf_n_plus_1 = fcf_initial * ((1 + g) ** forecast_years)\n\n    # Gordon Growth Model for Terminal Value\n    # TV_n = FCF_n_plus_1 / (WACC - g)\n    if wacc <= g:\n        # This scenario implies infinite value or a negative denominator, which is not valid for this model.\n        return float('inf') # Or handle as NaN or error\n\n    terminal_value = fcf_n_plus_1 / (wacc - g)\n\n    # Present Value of Terminal Value\n    pv_terminal_value = terminal_value / ((1 + wacc) ** forecast_years)\n\n    # Total DCF Fair Value\n    dcf_value = sum_pv_fcf + pv_terminal_value\n\n    return dcf_value\n\n# --- 2. Base Scenario DCF Calculation ---\n# Input Data\nrevenue_base = 16941\noperating_profit_base = 844\nwacc_base = 0.09\ng_base = 0.02\nforecast_years_base = 5\n\ndcf_base_value = calculate_dcf(revenue_base, operating_profit_base, wacc_base, g_base, forecast_years_base)\n\n# --- 3. Sensitivity Grid Calculation ---\nwacc_range = [0.07, 0.08, 0.09, 0.10, 0.11] # 7%, 8%, 9%, 10%, 11%\ng_range = [0.01, 0.02, 0.03] # 1%, 2%, 3%\n\nsensitivity_results = pd.DataFrame(index=[f'WACC={w*100:.0f}%' for w in wacc_range],\n                                   columns=[f'g={g*100:.0f}%' for g in g_range])\n\nfor w in wacc_range:\n    for g_val in g_range:\n        # Ensure WACC > g for the Gordon Growth Model\n        if w <= g_val:\n            sensitivity_results.loc[f'WACC={w*100:.0f}%', f'g={g_val*100:.0f}%'] = 'N/A (WACC<=g)'\n        else:\n            value = calculate_dcf(revenue_base, operating_profit_base, w, g_val, forecast_years_base)\n            sensitivity_results.loc[f'WACC={w*100:.0f}%', f'g={g_val*100:.0f}%'] = round(value, 2)\n\n# --- 4. Output Results ---\nprint(\"--- DCF 적정가치 계산 결과 ---\")\nprint(f\"기업: 유진투자증권 (001200)\")\nprint(f\"기준 연도: 2025\")\nprint(f\"가정: FCF는 예측 기간(5년) 동안 영구성장률(g)로 성장한다고 가정합니다.\")\nprint(\"\\n[1. 기본 시나리오 DCF 적정가치]\")\nprint(f\"  - WACC: {wacc_base*100:.0f}%\")\nprint(f\"  - 영구성장률 (g): {g_base*100:.0f}%\")\nprint(f\"  - 예측 기간: {forecast_years_base}년\")\nprint(f\"  - 적정가치: {dcf_base_value:.2f} 억원\")\n\nprint(\"\\n[2. WACC x g 민감도 그리드 (적정가치: 억원)]\")\nprint(sensitivity_results)\n\nprint(f\"\\n적정가치(기본): {dcf_base_value:.2f}억원\")",
+    "code_output": "--- DCF 적정가치 계산 결과 ---\n기업: 유진투자증권 (001200)\n기준 연도: 2025\n가정: FCF는 예측 기간(5년) 동안 영구성장률(g)로 성장한다고 가정합니다.\n\n[1. 기본 시나리오 DCF 적정가치]\n  - WACC: 9%\n  - 영구성장률 (g): 2%\n  - 예측 기간: 5년\n  - 적정가치: 21143.57 억원\n\n[2. WACC x g 민감도 그리드 (적정가치: 억원)]\n              g=1%      g=2%      g=3%\nWACC=7%    24667.5   29601.0  37001.25\nWACC=8%   21143.57   24667.5   29601.0\nWACC=9%   18500.62  21143.57   24667.5\nWACC=10%   16445.0  18500.62  21143.57\nWACC=11%   14800.5   16445.0  18500.62\n\n적정가치(기본): 21143.57억원"
+  },
+  "news": {
+    "text": "## 유진투자증권(001200) 투자 분석 보고서\n\n### 1. 재무 데이터 스토리와 시장 컨센서스 일치/불일치\n\n초기 재무제표 분석에서 제시된 \"심각한 자본잠식\"이라는 내용은 최근 감사보고서(2026년 3월 16일 제출)를 통해 사실이 아님을 확인했습니다. 감사보고서에 따르면 자본총계가 자본금을 크게 상회하고 있어 자본잠식 상태가 아닙니다. 이는 초기 재무 데이터가 보여주는 스토리와 현재의 공식적인 재무 상태 간에 **심각한 불일치**가 있음을 의미합니다.\n\n수익성 측면에서는 과거 불안정한 모습을 보였으나, 2023년 대규모 부동산 프로젝트파이낸싱(PF) 충당금 적립 및 보수적인 PF 사업 운영을 통해 리스크를 관리하며 2024년 및 2025년 3분기 실적 개선을 이루었습니다. 최근 감사보고서 또한 영업이익과 당기순이익이 전년 대비 증가했음을 보여줍니다. 시장 컨센서스는 최근 미-이란 휴전 합의 소식 등으로 증권주 전반이 강세를 보이는 등 우호적인 시장 환경을 반영하고 있습니다. 기술적 분석 또한 유진투자증권에 대해 \"강력 매수\" 등급을 제시하고 있습니다.\n\n### 2. 재무제표에서 드러나지 않는 리스크 또는 호재\n\n**리스크 요인:**\n*   **부동산 PF 관련 잠재 위험:** 무등급 PF 및 해외자산 비중이 높고, PF 우발채무 중 중·후순위 및 브릿지론 비중이 높아 질적 위험이 다소 높은 편입니다. 부동산 PF 시장 침체가 장기화될 경우 수익성 및 건전성 지표의 변동성이 재차 확대될 수 있습니다.\n*   **지배구조 관련 공정위 조사:** 모기업 유진그룹에 대한 공정거래위원회의 조사가 진행 중이며, 이는 경영 불확실성을 높이는 요인으로 작용할 수 있습니다.\n*   **위탁매매 수익성 한계:** 개인투자자 의존도가 높은 브로커리지 수익 구조로 인해 증시 거래대금 및 시장 환경 변화에 따른 실적 변동성이 큰 구조적 한계가 존재합니다. 신사업 진출 노력에도 불구하고 단기적인 수익성 개선 기여는 제한적일 수 있습니다.\n*   **중소형 증권사 경쟁 심화:** 초대형사 중심의 경쟁 심화로 위탁매매 부문 수익성이 저하될 수 있다는 분석이 있습니다.\n\n**호재 요인:**\n*   **부동산 PF 리스크 관리 및 자산건전성 개선:** 2023년 대규모 충당금 적립 및 부실채권 정리 노력을 통해 자산건전성 지표가 개선되고 있다는 긍정적인 평가가 있습니다.\n*   **양호한 자본적정성:** 2025년 9월 말 기준 수정 NCR(순자본비율) 236.4%, 영업용순자본비율 414.4%로 규제 수준을 크게 상회하며 양호한 자본적정성을 유지하고 있습니다.\n*   **신사업 추진:** 디지털 플랫폼 고도화 및 토큰증권(ST) 등 신사업 진출을 추진하며 장기적인 관점에서 포트폴리오 다변화 및 수익원 확보를 모색하고 있습니다.\n*   **최근 증시 환경 개선:** 미-이란 휴전 합의 소식 등 최근 증시 전반의 긍정적인 흐름은 증권주에 우호적인 환경을 제공하고 있습니다.\n\n### 3. 최종 판정\n\n초기 분석의 핵심 오류였던 \"심각한 자본잠식\"은 사실이 아닌 것으로 확인되었으며, 최근 실적은 회복세를 보이고 있습니다. 또한, PF 리스크 관리 노력과 양호한 자본적정성은 긍정적인 요소입니다. 그러나 여전히 부동산 PF 관련 잠재 위험, 모기업에 대한 공정위 조사, 그리고 위탁매매 중심의 수익 구조 한계 등 내재된 리스크와 불확실성이 존재합니다. 최근 증권주 강세는 시장 전반의 영향이 크므로, 기업 자체의 펀더멘털 개선이 지속될지 면밀한 관찰이 필요합니다.\n\n따라서, 긍정적인 변화와 잠재적 위험을 종합적으로 고려할 때, **관망**을 최종 판정으로 제시합니다.",
+    "citations": [
+      {
+        "title": "krx.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFcJwZcwDCrYOjMX_M_RWzeD25NnyRWK6fp00owHb9dyBmzN7roQNRpy0sAqft_LAQzXYoJq19asdOG-o_2xQji5fW3GKMbgYz2EpMn4KkEPjXHZ75SRYp2bMPfRfdmBR1MddSjxlfBIQdrE8doO9d7CWjmEJBJovqSOPFUxxZdtxlzIfNdm4QLEk9jjg2QQZMVSUoOrK0L7xpDvtXp0bSW"
+      },
+      {
+        "title": "newdaily.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFL7kTJG29eNggspBUPg6qgQfnTCSyE0AMs92EaJeWUI3DAdsIqwLKndPrhkqzaf6_j7Ex14j7s9fx0dTGrtdD-9CVndsp-ggYR61uSZl5Ee3H3AtOS4O91HOM4e2xWPATvEZBlLE2BMx_YWXoIUZLmWBnfFLcUn5vFbTnXWwtamwG4"
+      },
+      {
+        "title": "kukinews.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQH6Quuiv658-J34Guh0WlU7FRD-Nl4f7-RHyyuPQvvxWR4OoCXIqwe8tz5spG0DsUpz-QHizI748WcC1y2fo8wR56kjFS0awP6wAKu0G-zRAS9kqv-DsLi7p20w7ED9BrKsxjJvjLZQWSenbZ-lBdhZ"
+      },
+      {
+        "title": "creditnews.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGFf5nJQcpIUhk0z_HK3b4a_gCVxouoCh0nPf6u62T23yCWAZqHUAKfmslEyGVbrDDJzbTxAfrftevvGH3S2n-Hh14ZCrTcxbtR8MjgADds79OSRqDVvvGYS4jAZTtwc06HazoFEgsNyTzgJ2Z78hj-WPjBeas="
+      },
+      {
+        "title": "alphasquare.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQG_kTKy4puS4uIeBARs5U7UybhP0-aZ-gwGnCvjcvDlj1bD0f5nqjTAZiIIX2z1A3t15w538WC0OehkZqVvin5fIHvc7bZj0vH0EkENGNHrpAI__TsRH6G-zP2cisZq9D_xNCcLz59Z3FaGMLEK3znp4DPs"
+      },
+      {
+        "title": "daum.net",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGMOkdjQTJ5SfGlXUdAYhGUiqmDvbUl_JwoMFq5TQTjcbZuItATerLrHhUcmEc5OrcHt9KIPjXfT-HgINEX-1wZTSQuRg4e5kwnODt73_EeVzHuOKj_23WW28agFYZGH9FL3A=="
+      },
+      {
+        "title": "tradingview.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQENvTtJ7ZJobaDi2Y3ZSPh7_Mig5Q9P58FzjrXaEahFSmO8XLb72DE1IX9yrMEo6maB6YMmw1g-y1j-Q6Tbc69rSN-dqAHsLkkW5DysAZu0-IE05Q8F0SmFT5lZAfLzVWBQ_VG2jOy7Qpw="
+      },
+      {
+        "title": "newstomato.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQE2XkLjueFNxFejaW4GeoE3XhdcDweVrMlNAlWAqmUWmiShd5UtLYpGmT39cHpph8BQICH3F3UeVSrFl8h-czqKkGAiomUT3CDEXBr4sl5Wma_jiYpA2RxAcpyhNEmLIQv9jHGfHWB_3jtvyyPO5g=="
+      },
+      {
+        "title": "megaeconomy.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHnc1KFx1T6zzRNfdG3ys_dxWEKABbbwhu_m6t11-XH8WakKS12Iw6s8uRxseJGIhzK3EEgk9q5g5gZQj6oOr9phLlA_m1TBOfEglCHpeD2hadbx3ItSb8NvsgIAxGqBBeOG7kdzl505vM3gz_rjlZUSn22L-tiRSahKKWQ5uJ_"
+      },
+      {
+        "title": "bloter.net",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHcg_anShVQeUZjrTVWNMmwrFcvQC2xG4HHwCdceTQHGhZUyuHtxclUsDBxrEB5UibdtY9TFZK3BPRadltdKJdUl9zlR6qNf8W-JqSiKb5HNKRoWlss4q7NezuRWPN6lG2IQEvrlM9lGE1u5gNPPxIs3jOvhg=="
+      }
+    ]
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=00131054",
+    "summary": "공시 페이지 접근 제한"
+  }
+}

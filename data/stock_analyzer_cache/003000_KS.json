@@ -2,30 +2,30 @@
   "name": "부광약품",
   "ticker": "003000.KS",
   "result": "데이터 없음",
-  "date": "2026-03-27 16:49:16",
-  "elapsed": 2.3,
+  "date": "2026-04-09 21:59:17",
+  "elapsed": 1.7,
   "consensus_score": null,
   "analyst_count": 0,
   "recommendation_detail": null,
   "recommendation_period": null,
   "price_targets": {
-    "current": 9600.0,
+    "current": 7560.0,
     "high": null,
     "low": null,
     "mean": null,
     "median": null
   },
-  "current_price": 9600.0,
+  "current_price": 7560.0,
   "upside_potential": null,
   "key_stats": {
     "name": "BukwangPharm",
     "sector": "Healthcare",
     "industry": "Drug Manufacturers - Specialty & Generic",
-    "market_cap": 947180863488,
+    "market_cap": 745904930816,
     "pe_ratio": null,
     "forward_pe": null,
-    "dividend_yield": 1.34,
-    "beta": 0.796,
+    "dividend_yield": 1.72,
+    "beta": 0.374,
     "fifty_two_week_high": 9890.0,
     "fifty_two_week_low": 3200.0,
     "revenue": 200714190848,
@@ -37,6 +37,10 @@
   "ai_analysis": null,
   "revenue_quarters": [
     {
+      "date": "2025-12",
+      "value": 62514210280
+    },
+    {
       "date": "2025-09",
       "value": 47814964850
     },
@@ -47,13 +51,13 @@
     {
       "date": "2025-03",
       "value": 47806438230
-    },
-    {
-      "date": "2024-12",
-      "value": 46181095520
     }
   ],
   "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 4669193740
+    },
     {
       "date": "2025-09",
       "value": 1530569560
@@ -65,10 +69,6 @@
     {
       "date": "2025-03",
       "value": -69124000
-    },
-    {
-      "date": "2024-12",
-      "value": 1847257680
     }
   ],
   "news": []
