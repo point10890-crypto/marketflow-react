@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback, Suspense } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { useMutation } from '@tanstack/react-query';
 import { API_BASE, authHeaders } from '@/lib/api';
 import DartDeepSection from '@/components/stock-analyzer/DartDeepSection';
 
@@ -201,11 +202,6 @@ function StockAnalyzerContent() {
     const [selectedIndex, setSelectedIndex] = useState(0);
     const [showDropdown, setShowDropdown] = useState(false);
 
-    // Analysis state
-    const [loading, setLoading] = useState(false);
-    const [analyzeResult, setAnalyzeResult] = useState<AnalyzeResult | null>(null);
-    const [error, setError] = useState('');
-
     // History state
     const [history, setHistory] = useState<HistoryEntry[]>([]);
 
@@ -216,49 +212,68 @@ function StockAnalyzerContent() {
     const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const inputRef = useRef<HTMLInputElement>(null);
     const autoAnalyzed = useRef(false);
+    // AbortController for in-flight analyze request — cancels on re-submit so
+    // a slow first response can't clobber a fast second one (race fix).
+    const analyzeAbortRef = useRef<AbortController | null>(null);
 
     const showToast = useCallback((message: string, isError: boolean) => {
         setToast({ message, isError });
         setTimeout(() => setToast(null), 3000);
     }, []);
 
-    // Analyze stock
-    const analyzeStock = useCallback(async (stock: Stock) => {
-        setLoading(true);
-        setAnalyzeResult(null);
-        setError('');
+    // Analyze stock — useMutation + AbortController pattern.
+    // Each call cancels the previous in-flight request, so the UI always
+    // reflects the most recent click instead of whatever happened to land last.
+    const analyzeMutation = useMutation<AnalyzeResult, Error, Stock>({
+        mutationFn: async (stock) => {
+            // Cancel any previous analyze in flight
+            analyzeAbortRef.current?.abort();
+            const controller = new AbortController();
+            analyzeAbortRef.current = controller;
 
-        try {
             const res = await fetch(`${API_BASE}/api/stock-analyzer/analyze`, {
                 method: 'POST',
                 headers: { ...authHeaders({ 'Content-Type': 'application/json' }) },
-                body: JSON.stringify({ ticker: stock.ticker, name: stock.name })
+                body: JSON.stringify({ ticker: stock.ticker, name: stock.name }),
+                signal: controller.signal,
             });
-            const data = await res.json();
-
-            if (res.ok) {
-                setAnalyzeResult(data);
-                const entry: HistoryEntry = {
-                    name: data.name,
-                    ticker: data.ticker,
-                    result: data.result,
-                    date: data.date,
-                    consensus_score: data.consensus_score,
-                    analyst_count: data.analyst_count || 0,
-                };
-                setHistory(prev => [entry, ...prev]);
-                showToast(`${data.name}: ${data.result}`, false);
-            } else {
-                setError(data.error || '분석 실패');
-                showToast(data.error || '분석 실패', true);
+            if (!res.ok) {
+                const data = await res.json().catch(() => ({}));
+                throw new Error(data.error || '분석 실패');
             }
-        } catch {
-            setError('네트워크 오류');
-            showToast('네트워크 오류', true);
-        } finally {
-            setLoading(false);
-        }
-    }, [showToast]);
+            return res.json() as Promise<AnalyzeResult>;
+        },
+        onSuccess: (data) => {
+            const entry: HistoryEntry = {
+                name: data.name,
+                ticker: data.ticker,
+                result: data.result,
+                date: data.date,
+                consensus_score: data.consensus_score,
+                analyst_count: data.analyst_count || 0,
+            };
+            setHistory(prev => [entry, ...prev]);
+            showToast(`${data.name}: ${data.result}`, false);
+        },
+        onError: (err) => {
+            // AbortError is expected when a newer request supersedes this one —
+            // swallow silently so the user doesn't see a "network error" flash.
+            if (err.name === 'AbortError') return;
+            showToast(err.message || '네트워크 오류', true);
+        },
+    });
+
+    // Derive the legacy state shape from the mutation so the rest of the
+    // component can read it without caring which implementation is underneath.
+    const loading = analyzeMutation.isPending;
+    const analyzeResult = analyzeMutation.data ?? null;
+    const error = analyzeMutation.error && analyzeMutation.error.name !== 'AbortError'
+        ? (analyzeMutation.error.message || '')
+        : '';
+
+    const analyzeStock = useCallback((stock: Stock) => {
+        analyzeMutation.mutate(stock);
+    }, [analyzeMutation]);
 
     // Auto-analyze from URL params (CommandPalette redirect)
     useEffect(() => {
@@ -300,14 +315,14 @@ function StockAnalyzerContent() {
         setQuery(stock.name);
         setSearchResults([]);
         setShowDropdown(false);
-        setError('');
+        analyzeMutation.reset();
     };
 
     const clearSelection = () => {
         setSelectedStock(null);
         setQuery('');
-        setAnalyzeResult(null);
-        setError('');
+        analyzeMutation.reset();
+        analyzeAbortRef.current?.abort();
         inputRef.current?.focus();
     };
 
