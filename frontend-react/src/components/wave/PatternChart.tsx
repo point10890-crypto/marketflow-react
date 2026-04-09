@@ -58,7 +58,10 @@ export default function PatternChart({
         renderChart();
         const handleResize = () => {
             if (containerRef.current && chartRef.current) {
-                chartRef.current.applyOptions({ width: containerRef.current.clientWidth });
+                chartRef.current.applyOptions({
+                    width: containerRef.current.clientWidth,
+                    height,
+                });
             }
         };
         window.addEventListener('resize', handleResize);
@@ -69,7 +72,7 @@ export default function PatternChart({
                 chartRef.current = null;
             }
         };
-    }, [chartData, patterns, selectedPatternIdx]);
+    }, [chartData, patterns, selectedPatternIdx, height]);
 
     const renderChart = () => {
         if (!containerRef.current) return;
@@ -91,8 +94,8 @@ export default function PatternChart({
             crosshair: { mode: 1 },
             rightPriceScale: { borderColor: 'rgba(255,255,255,0.1)' },
             timeScale: { borderColor: 'rgba(255,255,255,0.1)', timeVisible: false },
-            handleScroll: { vertTouchDrag: false, horzTouchDrag: false },
-            handleScale: { pinch: false, axisPressedMouseMove: false, mouseWheel: true },
+            handleScroll: { vertTouchDrag: false, horzTouchDrag: true, mouseWheel: true, pressedMouseMove: true },
+            handleScale: { pinch: true, axisPressedMouseMove: true, mouseWheel: true },
         });
         chartRef.current = chart;
 
@@ -184,6 +187,6 @@ export default function PatternChart({
     };
 
     return (
-        <div ref={containerRef} data-no-swipe className="w-full rounded-xl overflow-hidden border border-white/5" style={{ touchAction: 'pan-y' }} />
+        <div ref={containerRef} data-no-swipe className="w-full rounded-xl overflow-hidden border border-white/5" style={{ height, touchAction: 'none' }} />
     );
 }

@@ -158,8 +158,12 @@ def create_app(config=None):
         '/api/stock-analyzer/',
         '/api/econ/',
     )
-    # 게이트 내에서도 허용할 정적/공개 엔드포인트
+    # 게이트 내에서도 허용할 정적/공개 엔드포인트 (<img> 태그는 Authorization 헤더 불가)
     _GATE_EXEMPT = set()
+    _GATE_EXEMPT_PREFIXES = (
+        '/api/kr/ai-chart-image/',
+        '/api/us/ai-chart-image/',
+    )
 
     @app.before_request
     def _enforce_pro_access():
@@ -169,6 +173,8 @@ def create_app(config=None):
             return None
         path = _req.path or ''
         if path in _GATE_EXEMPT:
+            return None
+        if any(path.startswith(p) for p in _GATE_EXEMPT_PREFIXES):
             return None
         if not any(path.startswith(p) for p in _GATED_PREFIXES):
             return None

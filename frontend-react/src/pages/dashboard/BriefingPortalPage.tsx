@@ -19,7 +19,7 @@ function fmtK(n: number | undefined | null): string {
 }
 
 function chgColor(v: number | undefined | null): string {
-    if (v == null) return 'text-gray-500';
+    if (v == null) return 'text-gray-400';
     return v > 0 ? 'text-emerald-400' : v < 0 ? 'text-red-400' : 'text-gray-400';
 }
 
@@ -35,9 +35,9 @@ function TickerStrip({ items }: { items: { label: string; price: string; change:
         <div className="flex items-center gap-4 overflow-x-auto scrollbar-none py-2 px-1 -mx-1">
             {items.map(t => (
                 <div key={t.label} className="flex items-center gap-2 shrink-0">
-                    <span className="text-[10px] font-bold text-gray-400">{t.label}</span>
-                    <span className="text-[11px] font-bold text-white tabular-nums">{t.price}</span>
-                    <span className={`text-[10px] font-semibold tabular-nums ${chgColor(t.change)}`}>
+                    <span className="text-xs font-bold text-gray-400">{t.label}</span>
+                    <span className="text-sm font-bold text-white tabular-nums">{t.price}</span>
+                    <span className={`text-xs font-semibold tabular-nums ${chgColor(t.change)}`}>
                         {chgStr(t.change)}
                     </span>
                 </div>
@@ -56,9 +56,9 @@ function IndexCard({ name, ticker, data }: { name: string; ticker: string; data?
     return (
         <div className="flex flex-col gap-1.5 rounded-xl border border-white/[0.07] bg-[#13151f] p-3">
             <div className="flex items-center justify-between">
-                <span className="text-[10px] font-semibold text-gray-500">{ticker}</span>
+                <span className="text-xs font-semibold text-gray-400">{ticker}</span>
                 {data.pct_from_high != null && (
-                    <span className="text-[9px] text-gray-600">ATH {data.pct_from_high > 0 ? '+' : ''}{data.pct_from_high.toFixed(1)}%</span>
+                    <span className="text-[9px] text-gray-500">ATH {data.pct_from_high > 0 ? '+' : ''}{data.pct_from_high.toFixed(1)}%</span>
                 )}
             </div>
             <span className="text-lg font-extrabold text-white tabular-nums leading-tight">{fmt(data.price)}</span>
@@ -68,7 +68,7 @@ function IndexCard({ name, ticker, data }: { name: string; ticker: string; data?
                 </div>
                 <span className={`text-xs font-bold tabular-nums ${chgColor(pct)}`}>{chgStr(pct)}</span>
             </div>
-            <span className="text-[10px] text-gray-500 font-medium">{name}</span>
+            <span className="text-xs text-gray-400 font-medium">{name}</span>
         </div>
     );
 }
@@ -81,7 +81,7 @@ function IndicatorTile({ label, value, change, icon, color }: {
     return (
         <div className="flex flex-col items-center gap-1 rounded-xl border border-white/[0.07] bg-[#13151f] p-3 min-w-0">
             <i className={`fas ${icon} text-xs ${color}`} />
-            <span className="text-[9px] font-semibold text-gray-500 uppercase tracking-wider">{label}</span>
+            <span className="text-[9px] font-semibold text-gray-400 uppercase tracking-wider">{label}</span>
             <span className="text-sm font-bold text-white tabular-nums">{value}</span>
             {change != null && (
                 <span className={`text-[9px] font-semibold tabular-nums ${chgColor(change)}`}>{chgStr(change)}</span>
@@ -105,7 +105,7 @@ function PortalLink({ to, icon, label, desc, accent }: {
             </div>
             <div className="flex flex-col min-w-0">
                 <span className="text-xs font-bold text-white">{label}</span>
-                <span className="text-[10px] text-gray-500 truncate">{desc}</span>
+                <span className="text-xs text-gray-400 truncate">{desc}</span>
             </div>
             <i className="fas fa-chevron-right text-[9px] text-gray-700 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
         </Link>
@@ -124,19 +124,19 @@ function SmartMoneyRow({ rank, ticker, name, score, recommendation, upside }: {
             : 'text-gray-400 bg-gray-400/10';
     return (
         <div className="flex items-center gap-3 py-2.5 border-b border-white/[0.04] last:border-b-0">
-            <span className="w-6 h-6 rounded-lg bg-amber-500/15 text-amber-400 text-[10px] font-black flex items-center justify-center shrink-0">
+            <span className="w-6 h-6 rounded-lg bg-amber-500/15 text-amber-400 text-xs font-black flex items-center justify-center shrink-0">
                 {rank}
             </span>
             <div className="flex flex-col min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                     <span className="text-xs font-bold text-white">{ticker}</span>
-                    <span className="text-[10px] text-gray-500 truncate">{name}</span>
+                    <span className="text-xs text-gray-400 truncate">{name}</span>
                 </div>
                 <div className="flex items-center gap-2 mt-0.5">
                     <div className="h-1 flex-1 max-w-[80px] rounded-full bg-white/[0.06] overflow-hidden">
                         <div className="h-full rounded-full bg-amber-400" style={{ width: `${Math.min(score, 100)}%` }} />
                     </div>
-                    <span className="text-[9px] text-gray-500 tabular-nums">{score.toFixed(0)}</span>
+                    <span className="text-[9px] text-gray-400 tabular-nums">{score.toFixed(0)}</span>
                 </div>
             </div>
             <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full shrink-0 ${recColor}`}>
@@ -166,7 +166,7 @@ function SignalPanel({ signal }: { signal: DecisionSignalData | null }) {
         <div className="rounded-xl border border-white/[0.07] bg-[#13151f] p-4">
             <div className="flex items-center justify-between mb-3">
                 <span className="text-xs font-bold text-white">Decision Signal</span>
-                <span className={`text-[10px] font-black px-2 py-1 rounded-lg border ${style}`}>{signal.action}</span>
+                <span className={`text-xs font-black px-2 py-1 rounded-lg border ${style}`}>{signal.action}</span>
             </div>
             {/* Score bar */}
             <div className="flex items-center gap-3 mb-3">
@@ -185,8 +185,8 @@ function SignalPanel({ signal }: { signal: DecisionSignalData | null }) {
                 <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
                     {Object.entries(components).map(([key, comp]) => (
                         <div key={key} className="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg bg-white/[0.03]">
-                            <span className="text-[8px] font-semibold text-gray-600 uppercase">{key.replace('_', ' ')}</span>
-                            <span className={`text-[10px] font-bold tabular-nums ${(comp as any).contribution > 0 ? 'text-emerald-400' : (comp as any).contribution < 0 ? 'text-red-400' : 'text-gray-400'}`}>
+                            <span className="text-[8px] font-semibold text-gray-500 uppercase">{key.replace('_', ' ')}</span>
+                            <span className={`text-xs font-bold tabular-nums ${(comp as any).contribution > 0 ? 'text-emerald-400' : (comp as any).contribution < 0 ? 'text-red-400' : 'text-gray-400'}`}>
                                 {(comp as any).contribution > 0 ? '+' : ''}{(comp as any).contribution}
                             </span>
                         </div>
@@ -194,7 +194,7 @@ function SignalPanel({ signal }: { signal: DecisionSignalData | null }) {
                 </div>
             )}
             {signal.timing && (
-                <div className="mt-2 text-[10px] text-gray-500">
+                <div className="mt-2 text-xs text-gray-400">
                     <i className="fas fa-clock mr-1" />Timing: <span className="text-gray-300 font-semibold">{signal.timing}</span>
                 </div>
             )}
@@ -221,13 +221,13 @@ function BriefingTabBar({ active, onChange, morningAvail, closingAvail }: {
                 <button
                     key={t.key}
                     onClick={() => onChange(t.key)}
-                    className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-[11px] font-bold transition-all ${
+                    className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-sm font-bold transition-all ${
                         active === t.key
                             ? 'bg-amber-500/20 text-amber-400 shadow-sm'
-                            : 'text-gray-500 hover:text-gray-300 hover:bg-white/[0.04]'
+                            : 'text-gray-400 hover:text-gray-300 hover:bg-white/[0.04]'
                     }`}
                 >
-                    <i className={`fas ${t.icon} text-[10px]`} />
+                    <i className={`fas ${t.icon} text-xs`} />
                     {t.label}
                     {t.avail === false && t.key !== 'portal' && (
                         <span className="w-1.5 h-1.5 rounded-full bg-gray-600 shrink-0" />
@@ -261,7 +261,7 @@ function inlineFmt(text: string): ReactNode[] {
             );
         } else if (match[2] !== undefined) {
             parts.push(
-                <code key={key++} className="text-amber-300 bg-white/5 px-1 rounded text-[10px]">{match[2]}</code>
+                <code key={key++} className="text-amber-300 bg-white/5 px-1 rounded text-xs">{match[2]}</code>
             );
         }
         lastIndex = match.index + match[0].length;
@@ -282,7 +282,7 @@ function RenderMarkdown({ content }: { content: string }) {
             elements.push(
                 <ul key={`list-${elements.length}`} className="space-y-1 my-2">
                     {listItems.map((item, i) => (
-                        <li key={`li-${i}-${item.slice(0, 16)}`} className="flex items-start gap-2 text-[11px] text-gray-300 leading-relaxed">
+                        <li key={`li-${i}-${item.slice(0, 16)}`} className="flex items-start gap-2 text-sm text-gray-300 leading-relaxed">
                             <span className="text-amber-400 mt-0.5 shrink-0">•</span>
                             <span>{inlineFmt(item)}</span>
                         </li>
@@ -318,11 +318,11 @@ function RenderMarkdown({ content }: { content: string }) {
                 const [header, ...body] = rows;
                 elements.push(
                     <div key={`table-${elements.length}`} className="overflow-x-auto my-2">
-                        <table className="w-full text-[10px]">
+                        <table className="w-full text-xs">
                             <thead>
                                 <tr>
                                     {header.map((h, j) => (
-                                        <th key={`th-${j}-${h}`} className="text-left text-gray-500 font-semibold py-1 px-2 border-b border-white/10">{h}</th>
+                                        <th key={`th-${j}-${h}`} className="text-left text-gray-400 font-semibold py-1 px-2 border-b border-white/10">{h}</th>
                                     ))}
                                 </tr>
                             </thead>
@@ -345,7 +345,7 @@ function RenderMarkdown({ content }: { content: string }) {
         }
         flushList();
         elements.push(
-            <p key={`p-${elements.length}`} className="text-[11px] text-gray-300 leading-relaxed my-1">
+            <p key={`p-${elements.length}`} className="text-sm text-gray-300 leading-relaxed my-1">
                 {inlineFmt(line)}
             </p>
         );
@@ -374,13 +374,13 @@ function BriefingView({ briefing }: { briefing: AIBriefing }) {
                         {briefing.market_sentiment}
                     </span>
                 </div>
-                <p className="text-[11px] text-gray-400 leading-relaxed">{briefing.summary}</p>
+                <p className="text-sm text-gray-400 leading-relaxed">{briefing.summary}</p>
                 {briefing.confidence > 0 && (
                     <div className="flex items-center gap-2 mt-2">
                         <div className="flex-1 h-1 rounded-full bg-white/[0.06] overflow-hidden max-w-[120px]">
                             <div className="h-full rounded-full bg-amber-400" style={{ width: `${briefing.confidence * 100}%` }} />
                         </div>
-                        <span className="text-[9px] text-gray-500">confidence {(briefing.confidence * 100).toFixed(0)}%</span>
+                        <span className="text-[9px] text-gray-400">confidence {(briefing.confidence * 100).toFixed(0)}%</span>
                     </div>
                 )}
             </div>
@@ -401,7 +401,7 @@ function BriefingView({ briefing }: { briefing: AIBriefing }) {
                     </h4>
                     <div className="flex flex-wrap gap-1.5">
                         {briefing.key_events.map((ev, i) => (
-                            <span key={i} className="text-[10px] text-gray-300 bg-white/[0.05] rounded-lg px-2 py-1 border border-white/[0.07]">
+                            <span key={i} className="text-xs text-gray-300 bg-white/[0.05] rounded-lg px-2 py-1 border border-white/[0.07]">
                                 {ev}
                             </span>
                         ))}
@@ -410,7 +410,7 @@ function BriefingView({ briefing }: { briefing: AIBriefing }) {
             )}
 
             {/* Sources + Timestamp */}
-            <div className="flex items-center justify-between text-[9px] text-gray-600 px-1">
+            <div className="flex items-center justify-between text-[9px] text-gray-500 px-1">
                 <div className="flex items-center gap-1">
                     <i className="fas fa-robot" />
                     <span>Gemini 2.5 Flash + Google Search</span>
@@ -563,9 +563,9 @@ export default function BriefingPortalPage() {
                             Briefing
                         </span>
                     </h2>
-                    <p className="text-[10px] text-gray-500 mt-0.5">Yahoo Finance-Style Market Portal</p>
+                    <p className="text-xs text-gray-400 mt-0.5">Yahoo Finance-Style Market Portal</p>
                 </div>
-                <span className="text-[10px] text-gray-600">
+                <span className="text-xs text-gray-500">
                     {briefing?.timestamp ? new Date(briefing.timestamp).toLocaleString('ko-KR', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : ''}
                 </span>
             </div>
@@ -584,7 +584,7 @@ export default function BriefingPortalPage() {
                     <div className="flex items-center justify-center py-16">
                         <div className="flex flex-col items-center gap-3">
                             <div className="w-6 h-6 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
-                            <span className="text-xs text-gray-500">Loading briefing...</span>
+                            <span className="text-xs text-gray-400">Loading briefing...</span>
                         </div>
                     </div>
                 ) : morningBriefing ? (
@@ -592,8 +592,8 @@ export default function BriefingPortalPage() {
                 ) : (
                     <div className="flex flex-col items-center justify-center py-16 gap-2">
                         <i className="fas fa-sun text-2xl text-gray-700" />
-                        <span className="text-xs text-gray-500">조간 브리핑이 아직 생성되지 않았습니다</span>
-                        <span className="text-[10px] text-gray-600">매일 09:05 KST에 자동 생성됩니다</span>
+                        <span className="text-xs text-gray-400">조간 브리핑이 아직 생성되지 않았습니다</span>
+                        <span className="text-xs text-gray-500">매일 09:05 KST에 자동 생성됩니다</span>
                     </div>
                 )
             )}
@@ -603,7 +603,7 @@ export default function BriefingPortalPage() {
                     <div className="flex items-center justify-center py-16">
                         <div className="flex flex-col items-center gap-3">
                             <div className="w-6 h-6 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
-                            <span className="text-xs text-gray-500">Loading briefing...</span>
+                            <span className="text-xs text-gray-400">Loading briefing...</span>
                         </div>
                     </div>
                 ) : closingBriefing ? (
@@ -611,8 +611,8 @@ export default function BriefingPortalPage() {
                 ) : (
                     <div className="flex flex-col items-center justify-center py-16 gap-2">
                         <i className="fas fa-moon text-2xl text-gray-700" />
-                        <span className="text-xs text-gray-500">마감 브리핑이 아직 생성되지 않았습니다</span>
-                        <span className="text-[10px] text-gray-600">매일 16:05 KST에 자동 생성됩니다</span>
+                        <span className="text-xs text-gray-400">마감 브리핑이 아직 생성되지 않았습니다</span>
+                        <span className="text-xs text-gray-500">매일 16:05 KST에 자동 생성됩니다</span>
                     </div>
                 )
             )}
@@ -629,7 +629,7 @@ export default function BriefingPortalPage() {
             <div className="grid grid-cols-3 gap-3">
                 {/* Opportunity Score */}
                 <div className="flex flex-col items-center gap-1 rounded-xl border border-white/[0.07] bg-[#13151f] p-4">
-                    <span className="text-[9px] font-semibold text-gray-500 uppercase tracking-widest">Opportunity</span>
+                    <span className="text-[9px] font-semibold text-gray-400 uppercase tracking-widest">Opportunity</span>
                     <div className="relative" style={{ width: 96, height: 96 }}>
                         <svg width={96} height={96} viewBox="0 0 96 96">
                             <circle cx={cx} cy={cy} r={r} fill="none" stroke="#1e2130" strokeWidth={stroke} />
@@ -642,7 +642,7 @@ export default function BriefingPortalPage() {
                         </svg>
                         <div className="absolute inset-0 flex flex-col items-center justify-center">
                             <span className="text-2xl font-extrabold tabular-nums leading-none" style={{ color: opColor }}>{Math.round(opScore)}</span>
-                            <span className="text-[8px] text-gray-600 font-semibold">/100</span>
+                            <span className="text-[8px] text-gray-500 font-semibold">/100</span>
                         </div>
                     </div>
                     <span className="text-[9px] font-black px-2 py-0.5 rounded-full" style={{ background: `${opColor}20`, color: opColor }}>{opLabel}</span>
@@ -650,9 +650,9 @@ export default function BriefingPortalPage() {
 
                 {/* VIX */}
                 <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-white/[0.07] bg-[#13151f] p-4">
-                    <span className="text-[9px] font-semibold text-gray-500 uppercase tracking-widest">VIX</span>
+                    <span className="text-[9px] font-semibold text-gray-400 uppercase tracking-widest">VIX</span>
                     <span className={`text-3xl font-extrabold tabular-nums ${vixColor}`}>{vix?.value != null ? Number(vix.value).toFixed(1) : '—'}</span>
-                    <span className={`text-[10px] font-semibold tabular-nums ${chgColor(vix?.change)}`}>
+                    <span className={`text-xs font-semibold tabular-nums ${chgColor(vix?.change)}`}>
                         {chgStr(vix?.change, '')}
                     </span>
                     <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${
@@ -664,7 +664,7 @@ export default function BriefingPortalPage() {
 
                 {/* Fear & Greed */}
                 <div className="flex flex-col items-center gap-1 rounded-xl border border-white/[0.07] bg-[#13151f] p-4">
-                    <span className="text-[9px] font-semibold text-gray-500 uppercase tracking-widest">Fear & Greed</span>
+                    <span className="text-[9px] font-semibold text-gray-400 uppercase tracking-widest">Fear & Greed</span>
                     <div className="relative" style={{ width: 96, height: 96 }}>
                         <svg width={96} height={96} viewBox="0 0 96 96">
                             <circle cx={cx} cy={cy} r={r} fill="none" stroke="#1e2130" strokeWidth={stroke} />
@@ -677,7 +677,7 @@ export default function BriefingPortalPage() {
                         </svg>
                         <div className="absolute inset-0 flex flex-col items-center justify-center">
                             <span className="text-2xl font-extrabold tabular-nums leading-none" style={{ color: fgColor }}>{fg?.score ?? '—'}</span>
-                            <span className="text-[8px] text-gray-600 font-semibold">/100</span>
+                            <span className="text-[8px] text-gray-500 font-semibold">/100</span>
                         </div>
                     </div>
                     <span className="text-[9px] font-black px-2 py-0.5 rounded-full" style={{ background: `${fgColor}20`, color: fgColor }}>{fg?.level ?? '—'}</span>
@@ -740,9 +740,9 @@ export default function BriefingPortalPage() {
                     <div className="grid grid-cols-3 gap-2">
                         {Object.entries(futures).slice(0, 3).map(([key, data]) => (
                             <div key={key} className="flex flex-col items-center gap-1 rounded-xl border border-white/[0.07] bg-[#13151f] p-3">
-                                <span className="text-[10px] font-semibold text-gray-500">{data.name || key}</span>
+                                <span className="text-xs font-semibold text-gray-400">{data.name || key}</span>
                                 <span className="text-sm font-bold text-white tabular-nums">{fmt(data.price)}</span>
-                                <span className={`text-[10px] font-semibold tabular-nums ${chgColor(data.change)}`}>{chgStr(data.change)}</span>
+                                <span className={`text-xs font-semibold tabular-nums ${chgColor(data.change)}`}>{chgStr(data.change)}</span>
                             </div>
                         ))}
                     </div>
@@ -756,7 +756,7 @@ export default function BriefingPortalPage() {
                         <h3 className="text-sm font-bold text-white">
                             <i className="fas fa-trophy text-amber-400 mr-2" />Smart Money Top Picks
                         </h3>
-                        <Link to="/dashboard/us" className="text-[10px] text-amber-400 hover:text-amber-300 font-semibold">
+                        <Link to="/dashboard/us" className="text-xs text-amber-400 hover:text-amber-300 font-semibold">
                             View All <i className="fas fa-chevron-right text-[8px] ml-0.5" />
                         </Link>
                     </div>

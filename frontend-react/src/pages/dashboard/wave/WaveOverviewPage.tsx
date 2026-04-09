@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { useSearchParams } from 'react-router-dom';
 import { fetchAPI, API_BASE, authHeaders } from '@/lib/api';
 import PatternChart, { ChartDataPoint, PatternOverlay, PatternPoint } from '@/components/wave/PatternChart';
+import { useIsMobile } from '@/hooks/useIsMobile';
 
 /* ── Types ── */
 
@@ -522,6 +523,9 @@ function ChartDetailModal({
     screenerSignal: ScreenerSignal | null;
     onClose: () => void;
 }) {
+    const isMobile = useIsMobile();
+    const chartHeight = isMobile ? 260 : 400;
+
     // Lock body scroll while modal is open
     useEffect(() => {
         const prev = document.body.style.overflow;
@@ -595,7 +599,7 @@ function ChartDetailModal({
                         patterns={detailResult.patterns}
                         turningPoints={detailResult.turning_points}
                         selectedPatternIdx={selectedIdx}
-                        height={400}
+                        height={chartHeight}
                     />
                     {detailResult.patterns.length > 1 && (
                         <div className="flex gap-2 flex-wrap">
