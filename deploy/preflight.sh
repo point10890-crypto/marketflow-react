@@ -37,9 +37,10 @@ echo "════════════════════════�
 echo ""
 echo -e "${CYAN}▶ 1. 코드 상태${NC}"
 cd "$PROJECT"
-check "Git repo 클린 (uncommitted 없음)" git diff --quiet HEAD
+# data/, logs/ 등 런타임 변경은 무시 — 소스 코드만 체크
+check "소스코드 커밋 완료" git diff --quiet HEAD -- '*.py' '*.tsx' '*.ts' '*.service' '*.sh' '*.yml'
 check "main 브랜치" test "$(git branch --show-current)" = "main"
-warn_check "원격과 동기화" git diff --quiet origin/main..HEAD
+warn_check "원격과 동기화" git diff --quiet origin/main..HEAD -- '*.py' '*.tsx' '*.ts'
 
 # ── 2. 필수 파일 존재 ──
 echo ""
