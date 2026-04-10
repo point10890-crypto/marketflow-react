@@ -1,0 +1,242 @@
+{
+  "stock_code": "042700",
+  "stock_name": "한미반도체",
+  "generated_at": "2026-04-10T07:47:54.408109+00:00",
+  "financials": {
+    "stock_code": "042700",
+    "corp_code": "00161383",
+    "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2016": {
+        "cash": 686.2,
+        "total_assets": 2849.9,
+        "total_liab": 756.4,
+        "total_equity": 2093.4,
+        "revenue": 1662.7,
+        "op_profit": 385.5,
+        "net_income": 314.5
+      },
+      "2017": {
+        "cash": 734.7,
+        "total_assets": 2850.6,
+        "total_liab": 788.9,
+        "total_equity": 2061.7,
+        "revenue": 1973.0,
+        "op_profit": 516.6,
+        "net_income": 95.0
+      },
+      "2018": {
+        "cash": 248.5,
+        "total_assets": 2460.3,
+        "total_liab": 304.7,
+        "total_equity": 2155.6,
+        "revenue": 2171.1,
+        "op_profit": 567.9,
+        "net_income": 492.7
+      },
+      "2019": {
+        "cash": 478.1,
+        "total_assets": 2574.7,
+        "total_liab": 377.7,
+        "total_equity": 2197.1,
+        "revenue": 1203.8,
+        "op_profit": 137.3,
+        "net_income": 192.6
+      },
+      "2020": {
+        "cash": 811.5,
+        "total_assets": 3269.7,
+        "total_liab": 698.8,
+        "total_equity": 2570.9,
+        "revenue": 2573.9,
+        "op_profit": 666.5,
+        "net_income": 501.3
+      },
+      "2021": {
+        "cash": 496.1,
+        "total_assets": 4292.9,
+        "total_liab": 824.7,
+        "total_equity": 3468.1,
+        "revenue": 3731.7,
+        "op_profit": 1224.2,
+        "net_income": 1044.4
+      },
+      "2022": {
+        "cash": 909.0,
+        "total_assets": 4554.3,
+        "total_liab": 653.4,
+        "total_equity": 3901.0,
+        "revenue": 3275.9,
+        "op_profit": 1118.6,
+        "net_income": 922.6
+      },
+      "2023": {
+        "total_assets": 7238.4,
+        "cash": 1797.3,
+        "total_equity": 563.8,
+        "total_liab": 1519.4,
+        "op_profit": 345.7,
+        "net_income": 2671.7,
+        "revenue": 1590.1
+      },
+      "2024": {
+        "total_assets": 7108.7,
+        "cash": 1039.7,
+        "total_equity": -1385.9,
+        "total_liab": 1699.8,
+        "op_profit": 2553.9,
+        "net_income": 1526.1,
+        "revenue": 5589.2
+      },
+      "2025": {
+        "total_assets": 8133.3,
+        "cash": 2762.4,
+        "total_equity": 414.6,
+        "total_liab": 1230.0,
+        "op_profit": 2513.9,
+        "net_income": 0.0,
+        "revenue": 5766.8
+      }
+    },
+    "missing_years": [
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2016,
+        "revenue_eok": 1663,
+        "op_profit_eok": 386,
+        "net_income_eok": 314,
+        "roe_pct": 15.0,
+        "op_margin_pct": 23.21,
+        "debt_ratio_pct": 36.12
+      },
+      {
+        "year": 2017,
+        "revenue_eok": 1973,
+        "op_profit_eok": 517,
+        "net_income_eok": 95,
+        "roe_pct": 4.61,
+        "op_margin_pct": 26.2,
+        "debt_ratio_pct": 38.26
+      },
+      {
+        "year": 2018,
+        "revenue_eok": 2171,
+        "op_profit_eok": 568,
+        "net_income_eok": 493,
+        "roe_pct": 22.87,
+        "op_margin_pct": 26.16,
+        "debt_ratio_pct": 14.15
+      },
+      {
+        "year": 2019,
+        "revenue_eok": 1204,
+        "op_profit_eok": 137,
+        "net_income_eok": 193,
+        "roe_pct": 8.78,
+        "op_margin_pct": 11.38,
+        "debt_ratio_pct": 17.21
+      },
+      {
+        "year": 2020,
+        "revenue_eok": 2574,
+        "op_profit_eok": 666,
+        "net_income_eok": 501,
+        "roe_pct": 19.49,
+        "op_margin_pct": 25.87,
+        "debt_ratio_pct": 27.19
+      },
+      {
+        "year": 2021,
+        "revenue_eok": 3732,
+        "op_profit_eok": 1224,
+        "net_income_eok": 1044,
+        "roe_pct": 30.1,
+        "op_margin_pct": 32.8,
+        "debt_ratio_pct": 23.79
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 3276,
+        "op_profit_eok": 1119,
+        "net_income_eok": 923,
+        "roe_pct": 23.66,
+        "op_margin_pct": 34.16,
+        "debt_ratio_pct": 16.74
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 1590,
+        "op_profit_eok": 346,
+        "net_income_eok": 2672,
+        "roe_pct": 473.76,
+        "op_margin_pct": 21.76,
+        "debt_ratio_pct": 269.33
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 5589,
+        "op_profit_eok": 2554,
+        "net_income_eok": 1526,
+        "roe_pct": -110.1,
+        "op_margin_pct": 45.7,
+        "debt_ratio_pct": -122.65
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 5767,
+        "op_profit_eok": 2514,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 43.59,
+        "debt_ratio_pct": 296.39
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": 14.41,
+      "op_profit_cagr_pct": 23.02,
+      "best_year": 2024,
+      "worst_year": 2019,
+      "avg_roe_pct": 48.82
+    },
+    "valuation": {
+      "grade": "C",
+      "strengths": [
+        "높은 매출액 및 영업이익 성장률: 10년간 매출액과 영업이익 모두 두 자릿수 이상의 높은 CAGR을 기록하며 견조한 외형 성장을 보여주었습니다.",
+        "탁월한 영업수익성: 2024년 45.70%, 2025년 43.59% 등 최근 높은 영업이익률을 기록하며 뛰어난 사업 경쟁력을 입증하고 있습니다.",
+        "반도체 산업 내 핵심 기술력: 특히 2024년과 2025년의 급격한 매출 및 영업이익 증가는 반도체 산업의 성장과 동사의 핵심 기술력이 시너지를 내고 있음을 시사합니다."
+      ],
+      "risks": [
+        "심각한 재무 구조 악화: 2024년 자본총계가 마이너스를 기록하며 완전 자본잠식 상태에 빠졌고, 2023년과 2025년에도 매우 높은 부채비율을 보여 재무 안정성이 매우 취약합니다.",
+        "높은 ROE 변동성 및 신뢰성 문제: 2023년 473%에 달하는 비정상적인 ROE와 2024년 마이너스 ROE는 자본총계의 급격한 변동에 기인하며, 지표의 해석에 주의가 필요합니다.",
+        "미래 이익 불확실성: 2025년 당기순이익이 0으로 예상되는 점은 향후 수익성에 대한 불확실성을 높이며, 재무 구조 개선에 대한 압박으로 작용할 수 있습니다."
+      ],
+      "one_liner": "뛰어난 영업 성과에도 불구하고 심각한 재무 구조 악화로 인해 투자에 매우 신중한 접근이 요구되는 기업입니다."
+    }
+  },
+  "dcf": {
+    "text": "퀀트 애널리스트로서 한미반도체(042700)의 DCF 적정가치를 계산하겠습니다.\n\n**가정 사항 명확화:**\n제공된 '최근 재무' 데이터는 2024년 기준이며, 2025년부터 5년간의 예측 기간 동안 매출액과 영업이익은 2024년 수준으로 일정하게 유지된다고 가정합니다. (별도의 성장률이 제시되지 않았기 때문입니다.)\n\n### 1. 기본 시나리오 DCF 적정가치 계산\n\n먼저, 주어진 가정에 따라 매년의 FCF(Free Cash Flow)를 계산하고, 이를 바탕으로 DCF 적정가치를 산출합니다.\n\n**재무 데이터 (2024년 기준):**\n*   매출액 (Revenue): 5767 억원\n*   영업이익 (Operating Profit): 2514 억원\n\n**FCF 계산 가정:**\n*   세율 (Tax Rate): 25% (영업이익 × (1 - 0.25)에서 유추)\n*   감가상각 (Depreciation): 매출액의 10%\n*   CAPEX: 매출액의 5%\n*   FCF = 영업이익 × (1 - 세율) + 감가상각 - CAPEX\n\n**DCF 가정:**\n*   WACC (가중평균자본비용): 9%\n*   영구성장률 (g): 2%\n*   예측 기간: 5년 (2025년 ~ 2029년)\n\n\n### 2. WACC × g 민감도 그리드 출력\n\nWACC와 영구성장률(g)의 변화에 따른 DCF 적정가치 민감도 분석 결과입니다.\n\n\n### 3. 요약 출력\n\n**적정가치(기본): 29043억원**",
+    "executed_code": "# Define financial data and assumptions\nrevenue_0 = 5767  # 억원\noperating_profit_0 = 2514  # 억원\n\n# Assumptions for FCF calculation\ntax_rate = 0.25\ndepreciation_rate_of_revenue = 0.10\ncapex_rate_of_revenue = 0.05\n\n# DCF Assumptions\nwacc_base = 0.09\ng_base = 0.02\nforecast_period = 5 # years\n\n# Calculate FCF for a single year (assuming constant revenue and operating profit for the forecast period)\n# This FCF will be the same for year 1 to year 5\ndepreciation = revenue_0 * depreciation_rate_of_revenue\ncapex = revenue_0 * capex_rate_of_revenue\nfcf_per_year = operating_profit_0 * (1 - tax_rate) + depreciation - capex\n\nprint(f\"--- FCF 계산 (매년 동일) ---\")\nprint(f\"감가상각 (매출의 10%): {depreciation:.2f} 억원\")\nprint(f\"CAPEX (매출의 5%): {capex:.2f} 억원\")\nprint(f\"매년 FCF (2025-2029): {fcf_per_year:.2f} 억원\")\n\n# Calculate DCF for the base scenario\npresent_value_fcf_sum = 0\nfor t in range(1, forecast_period + 1):\n    pv_fcf = fcf_per_year / ((1 + wacc_base) ** t)\n    present_value_fcf_sum += pv_fcf\n    # print(f\"PV of FCF Year {t}: {pv_fcf:.2f}\")\n\n# Calculate Terminal Value\nfcf_year_6 = fcf_per_year * (1 + g_base)\nterminal_value = fcf_year_6 / (wacc_base - g_base)\npv_terminal_value = terminal_value / ((1 + wacc_base) ** forecast_period)\n\n# Total DCF Value\ndcf_value_base = present_value_fcf_sum + pv_terminal_value\n\nprint(f\"\\n--- DCF 기본 시나리오 계산 ---\")\nprint(f\"예측 기간 FCF 현재가치 합계 (2025-2029): {present_value_fcf_sum:.2f} 억원\")\nprint(f\"6년차 FCF (영구성장률 적용): {fcf_year_6:.2f} 억원\")\nprint(f\"5년차 말 터미널 밸류: {terminal_value:.2f} 억원\")\nprint(f\"터미널 밸류 현재가치: {pv_terminal_value:.2f} 억원\")\nprint(f\"DCF 적정가치(기본): {dcf_value_base:.2f} 억원\")\n\n\n# Define ranges for WACC and g\nwacc_range = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_range = [0.01, 0.02, 0.03]\n\n# Function to calculate DCF for given WACC and g\ndef calculate_dcf(wacc, g, fcf_per_year, forecast_period):\n    if wacc <= g:\n        return float('inf') # WACC must be > g for Terminal Value formula to be valid\n\n    pv_fcf_sum = 0\n    for t in range(1, forecast_period + 1):\n        pv_fcf_sum += fcf_per_year / ((1 + wacc) ** t)\n\n    fcf_next_year_for_tv = fcf_per_year * (1 + g)\n    terminal_value = fcf_next_year_for_tv / (wacc - g)\n    pv_terminal_value = terminal_value / ((1 + wacc) ** forecast_period)\n\n    return pv_fcf_sum + pv_terminal_value\n\n# Create a grid for sensitivity analysis\nsensitivity_results = {}\nfor wacc in wacc_range:\n    sensitivity_results[wacc] = {}\n    for g in g_range:\n        dcf_value = calculate_dcf(wacc, g, fcf_per_year, forecast_period)\n        sensitivity_results[wacc][g] = dcf_value\n\n# Print the sensitivity grid\nprint(\"\\n--- DCF 적정가치 민감도 분석 (억원) ---\")\nprint(f\"{'WACC \\\\ g':<10}\", end=\"\")\nfor g_val in g_range:\n    print(f\"{g_val*100:>8.0f}%\", end=\"\")\nprint()\nprint(\"-\" * (10 + len(g_range) * 8))\n\nfor wacc_val in wacc_range:\n    print(f\"{wacc_val*100:<9.0f}%\", end=\"\")\n    for g_val in g_range:\n        value = sensitivity_results[wacc_val][g_val]\n        if value == float('inf'):\n            print(f\"{'N/A':>8}\", end=\"\")\n        else:\n            print(f\"{value:>8.0f}\", end=\"\")\n    print()\n\n\n# Define financial data and assumptions (re-defining for independent tool_code block)\nrevenue_0 = 5767  # 억원\noperating_profit_0 = 2514  # 억원\n\n# Assumptions for FCF calculation\ntax_rate = 0.25\ndepreciation_rate_of_revenue = 0.10\ncapex_rate_of_revenue = 0.05\n\n# Calculate FCF for a single year (assuming constant revenue and operating profit for the forecast period)\ndepreciation = revenue_0 * depreciation_rate_of_revenue\ncapex = revenue_0 * capex_rate_of_revenue\nfcf_per_year = operating_profit_0 * (1 - tax_rate) + depreciation - capex\n\n# DCF Assumptions\nforecast_period = 5 # years\n\n# Define ranges for WACC and g\nwacc_range = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_range = [0.01, 0.02, 0.03]\n\n# Function to calculate DCF for given WACC and g\ndef calculate_dcf(wacc, g, fcf_per_year, forecast_period):\n    if wacc <= g:\n        return float('inf') # WACC must be > g for Terminal Value formula to be valid\n\n    pv_fcf_sum = 0\n    for t in range(1, forecast_period + 1):\n        pv_fcf_sum += fcf_per_year / ((1 + wacc) ** t)\n\n    fcf_next_year_for_tv = fcf_per_year * (1 + g)\n    terminal_value = fcf_next_year_for_tv / (wacc - g)\n    pv_terminal_value = terminal_value / ((1 + wacc) ** forecast_period)\n\n    return pv_fcf_sum + pv_terminal_value\n\n# Create a grid for sensitivity analysis\nsensitivity_results = {}\nfor wacc in wacc_range:\n    sensitivity_results[wacc] = {}\n    for g in g_range:\n        dcf_value = calculate_dcf(wacc, g, fcf_per_year, forecast_period)\n        sensitivity_results[wacc][g] = dcf_value\n\n# Print the sensitivity grid\nprint(\"\\n--- DCF 적정가치 민감도 분석 (억원) ---\")\nprint(f\"{'WACC / g':<10}\", end=\"\") # Corrected f-string\nfor g_val in g_range:\n    print(f\"{g_val*100:>8.0f}%\", end=\"\")\nprint()\nprint(\"-\" * (10 + len(g_range) * 8))\n\nfor wacc_val in wacc_range:\n    print(f\"{wacc_val*100:<9.0f}%\", end=\"\")\n    for g_val in g_range:\n        value = sensitivity_results[wacc_val][g_val]\n        if value == float('inf'):\n            print(f\"{'N/A':>8}\", end=\"\")\n        else:\n            print(f\"{value:>8.0f}\", end=\"\")\n    print()\n\n# Re-calculate base DCF value for final summary, as the previous block's variable might not persist\nwacc_base = 0.09\ng_base = 0.02\ndcf_value_base = calculate_dcf(wacc_base, g_base, fcf_per_year, forecast_period)\n\nprint(f\"\\n적정가치(기본): {dcf_value_base:.0f}억원\")",
+    "code_output": "--- FCF 계산 (매년 동일) ---\n감가상각 (매출의 10%): 576.70 억원\nCAPEX (매출의 5%): 288.35 억원\n매년 FCF (2025-2029): 2173.85 억원\n\n--- DCF 기본 시나리오 계산 ---\n예측 기간 FCF 현재가치 합계 (2025-2029): 8455.52 억원\n6년차 FCF (영구성장률 적용): 2217.33 억원\n5년차 말 터미널 밸류: 31676.10 억원\n터미널 밸류 현재가치: 20587.29 억원\nDCF 적정가치(기본): 29042.81 억원\n\nTraceback (most recent call last):\n  File \"<string>\", line 30\n    print(f\"{'WACC \\\\ g':<10}\", end=\"\")\n                              ^\nSyntaxError: f-string expression part cannot include a backslash\n\n\n--- DCF 적정가치 민감도 분석 (억원) ---\nWACC / g         1%       2%       3%\n----------------------------------\n7        %   35004   40532   48824\n8        %   30026   33831   39157\n9        %   26293   29043   32710\n10       %   23388   25450   28102\n11       %   21064   22655   24644\n\n적정가치(기본): 29043억원"
+  },
+  "news": null,
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=00161383",
+    "summary": "공시 페이지 접근 제한"
+  }
+}

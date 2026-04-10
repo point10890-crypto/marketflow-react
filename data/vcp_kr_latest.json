@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "generated_at": "2026-04-10T16:41:52.747058",
+    "generated_at": "2026-04-10T16:49:37.164136",
     "market": "KR",
     "gate": "GREEN",
     "gate_score": 80,
-    "processing_time_sec": 83.1
+    "processing_time_sec": 73.1
   },
   "summary": {
     "total_screened": 200,
