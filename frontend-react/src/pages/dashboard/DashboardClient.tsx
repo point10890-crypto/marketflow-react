@@ -126,6 +126,7 @@ function OpportunityScoreCard({ score, krScore, usScore, cryptoScore }: {
     const arc = Math.min(score / 100, 1);
     const r = 28, cx = 36, cy = 36, stroke = 6;
     const circumference = 2 * Math.PI * r;
+    const markets: [string, number, string][] = [['KR', krScore, '#3b82f6'], ['US', usScore, '#10b981'], ['Crypto', cryptoScore, '#f59e0b']];
     return (
         <div className="flex items-center gap-4 rounded-2xl border border-white/[0.07] bg-[#13151f] p-4">
             {/* Arc gauge */}
@@ -152,12 +153,24 @@ function OpportunityScoreCard({ score, krScore, usScore, cryptoScore }: {
                 </div>
                 <p className="text-[10px] text-gray-600">3개 시장 종합 진입 기회 지수</p>
                 <div className="flex items-center gap-3 mt-0.5">
-                    {[['KR', krScore, '#3b82f6'], ['US', usScore, '#10b981'], ['Crypto', cryptoScore, '#f59e0b']].map(([m, s, c]) => (
-                        <span key={m as string} className="text-[9px] font-semibold" style={{ color: c as string }}>
-                            {m} {Math.round(s as number)}
+                    {markets.map(([m, s, c]) => (
+                        <span key={m} className="text-[9px] font-semibold" style={{ color: c }}>
+                            {m} {Math.round(s)}
                         </span>
                     ))}
                 </div>
+            </div>
+            {/* Strength bars */}
+            <div className="hidden sm:flex flex-col gap-1.5 shrink-0 w-28">
+                {markets.map(([m, s, c]) => (
+                    <div key={m} className="flex items-center gap-1.5">
+                        <span className="text-[8px] text-gray-500 w-8 text-right font-medium">{m}</span>
+                        <div className="flex-1 h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
+                            <div className="h-full rounded-full transition-all duration-700"
+                                style={{ width: `${Math.min(s, 100)}%`, backgroundColor: c }} />
+                        </div>
+                    </div>
+                ))}
             </div>
         </div>
     );
