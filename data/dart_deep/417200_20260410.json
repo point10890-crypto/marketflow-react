@@ -1,0 +1,157 @@
+{
+  "stock_code": "417200",
+  "stock_name": "LS머트리얼즈",
+  "generated_at": "2026-04-10T04:08:34.888395+00:00",
+  "financials": {
+    "stock_code": "417200",
+    "corp_code": "01528141",
+    "years": [
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2023": {
+        "total_assets": 2662.0,
+        "cash": 1196.0,
+        "total_equity": 0.2,
+        "short_debt": 232.1,
+        "total_liab": 631.4,
+        "op_profit": 135.7,
+        "net_income": 121.6
+      },
+      "2024": {
+        "total_assets": 2531.5,
+        "cash": 502.6,
+        "total_equity": 225.8,
+        "short_debt": 157.9,
+        "total_liab": 459.9,
+        "op_profit": 62.0,
+        "net_income": 56.7
+      },
+      "2025": {
+        "total_assets": 2745.3,
+        "cash": 574.3,
+        "total_equity": 1270.5,
+        "short_debt": 120.5,
+        "total_liab": 684.6,
+        "long_debt": 350.0,
+        "op_profit": -1.4,
+        "net_income": 0.0
+      }
+    },
+    "missing_years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2023,
+        "revenue_eok": 0,
+        "op_profit_eok": 136,
+        "net_income_eok": 122,
+        "roe_pct": 0,
+        "op_margin_pct": 0,
+        "debt_ratio_pct": 0
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 0,
+        "op_profit_eok": 62,
+        "net_income_eok": 57,
+        "roe_pct": 25.22,
+        "op_margin_pct": 0,
+        "debt_ratio_pct": 203.54
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 0,
+        "op_profit_eok": -1,
+        "net_income_eok": 0,
+        "roe_pct": 0,
+        "op_margin_pct": 0,
+        "debt_ratio_pct": 53.94
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": 0,
+      "op_profit_cagr_pct": 0,
+      "best_year": 2023,
+      "worst_year": 2025,
+      "avg_roe_pct": 12.61
+    },
+    "valuation": {
+      "grade": "D",
+      "strengths": [
+        "2023년과 2024년에는 영업이익이 흑자를 기록했습니다.",
+        "2025년 부채비율이 53.94%로 안정적인 수준을 보입니다.",
+        "2024년에 자본총계가 양수로 전환되었습니다."
+      ],
+      "risks": [
+        "3개년 연속 매출액이 0원으로 기록되어 사업의 지속 가능성에 대한 우려가 큽니다.",
+        "영업이익이 2023년 136억에서 2025년 -1억으로 급감하며 적자 전환했습니다.",
+        "2023년 자본총계가 0원으로 기록되어 재무 건전성이 매우 취약한 상태였습니다."
+      ],
+      "one_liner": "매출액 0원과 급격한 이익 감소로 사업의 불확실성이 매우 높은 기업입니다."
+    }
+  },
+  "dcf": {
+    "text": "퀀트 애널리스트로서 LS머트리얼즈의 DCF 적정가치를 계산하겠습니다.\n\n**전제 조건 및 가정:**\n\n*   **매출액 0원 및 영업이익 -1억원 처리:** 제공된 데이터에 따르면 기준 연도(2025년)의 매출액이 0원입니다. 이 경우 감가상각(매출의 10%)과 CAPEX(매출의 5%)는 모두 0원이 됩니다. 또한, 5년 예측 기간 동안 매출액 및 영업이익 성장률에 대한 정보가 없으므로, 영업이익은 5년 예측 기간 동안 -1억원으로 일정하게 유지된다고 가정합니다. 이로 인해 FCF는 예측 기간 내내 음수(-0.75억원)가 됩니다.\n*   **세율:** FCF 계산식 `영업이익 × (1 - 0.25)`에서 0.25를 법인세율로 가정합니다.\n*   **WACC <= g 처리:** 영구성장률(g)이 WACC보다 크거나 같을 경우, 터미널 가치 계산식의 분모가 0이 되거나 음수가 되어 비현실적인 결과(무한대 또는 양수)가 나올 수 있습니다. 현재 FCF가 음수이므로, 이 경우 적정가치는 음의 무한대(`-inf`)로 표시됩니다.\n\n---\n\n### 1. 기본 시나리오 DCF 적정가치 계산\n\n\n### 분석 결과\n\n**1. 기본 시나리오 DCF 적정가치:**\n\n*   **DCF 적정가치(기본): -10.02 억원**\n\n제공된 데이터(매출액 0원, 영업이익 -1억원)와 가정에 따라, 5년 예측 기간 동안 FCF는 매년 -0.75억원으로 계산됩니다. 이러한 음의 현금흐름으로 인해 DCF 적정가치는 음수로 산출되었습니다. 이는 현재의 재무 상태로는 기업 가치가 마이너스임을 의미합니다.\n\n**2. WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드:**\n\n아래 표는 WACC와 영구성장률(g) 변화에 따른 DCF 적정가치(억원)를 보여줍니다.\n\n|       | WACC=7% | WACC=8% | WACC=9% | WACC=10% | WACC=11% |\n| :---- | :------ | :------ | :------ | :------- | :------- |\n| g=1%  | -12.08  | -10.36  | -9.07   | -8.07    | -7.27    |\n| g=2%  | -13.98  | -11.67  | -10.02  | -8.78    | -7.82    |\n| g=3%  | -16.84  | -13.51  | -11.29  | -9.70    | -8.50    |\n\n*   **WACC 증가 시:** 적정가치는 감소합니다 (절대값은 감소, 즉 덜 음수가 됨). 이는 할인율이 높아져 미래 현금흐름의 현재 가치가 낮아지기 때문입니다.\n*   **영구성장률(g) 증가 시:** 적정가치는 감소합니다 (절대값은 증가, 즉 더 음수가 됨). 이는 FCF가 음수이므로, 음의 현금흐름이 더 높은 성장률로 영구히 지속될 경우 가치 하락 폭이 커지기 때문입니다.\n\n**3. 요약:**\n\n*   **적정가치(기본): -10.02억원**\n\n**결론:**\n제공된 재무 데이터(매출액 0원, 영업이익 -1억원)를 바탕으로 한 DCF 분석 결과, LS머트리얼즈의 적정가치는 음수로 평가됩니다. 이는 현재의 사업 모델이 현금흐름을 창출하지 못하고 손실을 기록하고 있음을 시사합니다. 이러한 상황에서 긍정적인 기업 가치를 도출하기 위해서는 매출액 발생 및 영업이익 흑자 전환에 대한 구체적인 성장 가정이 필요합니다.",
+    "executed_code": "import pandas as pd\n\n# 1. Input Data and Assumptions\ncompany_name = \"LS머트리얼즈 (417200)\"\nbase_year = 2025\n\n# Recent Financials (in 100 million KRW)\nrevenue_base = 0\noperating_income_base = -1\nnet_income_base = 0\ntotal_assets_base = 2745\ntotal_liabilities_base = 685\n\n# Assumptions\ntax_rate = 0.25\ndepreciation_rate_of_revenue = 0.10\ncapex_rate_of_revenue = 0.05\nwacc_base = 0.09\ng_base = 0.02\nforecast_period = 5 # years\n\n# --- Clarification and Assumption for Calculation ---\n# Given revenue_base is 0, depreciation and CAPEX will be 0.\n# No growth rate for operating income is provided for the forecast period.\n# Therefore, assuming operating income remains constant at -1 억원 for the 5 forecast years.\n# This will result in constant FCF for the forecast period.\n# This will lead to a very negative valuation.\n# ----------------------------------------------------\n\ndef calculate_dcf(operating_income_base, revenue_base, tax_rate, depreciation_rate_of_revenue, capex_rate_of_revenue,\n                  wacc, g, forecast_period):\n    \"\"\"\n    Calculates the DCF intrinsic value based on provided parameters.\n    \"\"\"\n    fcf_forecasts = []\n    present_value_fcf = 0\n\n    # Calculate FCF for each forecast year\n    for i in range(1, forecast_period + 1):\n        # Assuming operating income remains constant as no growth rate is provided for the forecast period\n        # And revenue remains 0, so depreciation and CAPEX are 0.\n        current_operating_income = operating_income_base\n        current_revenue = revenue_base # This will keep depreciation and CAPEX at 0\n\n        depreciation = current_revenue * depreciation_rate_of_revenue\n        capex = current_revenue * capex_rate_of_revenue\n\n        fcf = current_operating_income * (1 - tax_rate) + depreciation - capex\n        fcf_forecasts.append(fcf)\n\n        # Discount factor for the current year\n        df = 1 / ((1 + wacc) ** i)\n        present_value_fcf += fcf * df\n\n    # Calculate Terminal Value (TV)\n    # FCF for the year after the forecast period (Year 6)\n    # Using the last FCF from the forecast period for TV calculation\n    fcf_terminal_year = fcf_forecasts[-1]\n\n    if wacc <= g:\n        # If WACC <= g and FCF is negative, the terminal value becomes negative infinite.\n        # If WACC <= g and FCF is positive, the terminal value becomes positive infinite.\n        # Given FCF is negative here, it will be negative infinite.\n        return float('-inf')\n\n    terminal_value = fcf_terminal_year * (1 + g) / (wacc - g)\n\n    # Discount Terminal Value to present\n    present_value_terminal_value = terminal_value / ((1 + wacc) ** forecast_period)\n\n    # Total DCF Value\n    dcf_value = present_value_fcf + present_value_terminal_value\n    return dcf_value\n\n# 1. Basic Scenario DCF Calculation\ndcf_basic = calculate_dcf(operating_income_base, revenue_base, tax_rate, depreciation_rate_of_revenue,\n                          capex_rate_of_revenue, wacc_base, g_base, forecast_period)\n\nprint(f\"--- {company_name} DCF Valuation (Basic Scenario) ---\")\nprint(f\"Base Year Operating Income: {operating_income_base} 억원\")\nprint(f\"Base Year Revenue: {revenue_base} 억원\")\nprint(f\"Assumed FCF for forecast years (1-5): {operating_income_base * (1 - tax_rate):.2f} 억원 (since revenue is 0, Depr & CAPEX are 0)\")\nprint(f\"WACC: {wacc_base*100:.0f}%\")\nprint(f\"Perpetual Growth Rate (g): {g_base*100:.0f}%\")\nprint(f\"DCF 적정가치(기본): {dcf_basic:.2f} 억원\")\nprint(\"\\n\")\n\n# 2. Sensitivity Grid Calculation\nwacc_scenarios = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_scenarios = [0.01, 0.02, 0.03]\n\nsensitivity_results = pd.DataFrame(index=[f'g={g*100:.0f}%' for g in g_scenarios],\n                                   columns=[f'WACC={wacc*100:.0f}%' for wacc in wacc_scenarios])\n\nfor g_val in g_scenarios:\n    for wacc_val in wacc_scenarios:\n        dcf_val = calculate_dcf(operating_income_base, revenue_base, tax_rate, depreciation_rate_of_revenue,\n                                capex_rate_of_revenue, wacc_val, g_val, forecast_period)\n        sensitivity_results.loc[f'g={g_val*100:.0f}%', f'WACC={wacc_val*100:.0f}%'] = f\"{dcf_val:.2f}\"\n\nprint(\"--- DCF Sensitivity Analysis (억원) ---\")\nprint(sensitivity_results)\nprint(\"\\n\")\n\n# 3. Summary Output\nprint(f\"적정가치(기본): {dcf_basic:.2f}억원\")",
+    "code_output": "--- LS머트리얼즈 (417200) DCF Valuation (Basic Scenario) ---\nBase Year Operating Income: -1 억원\nBase Year Revenue: 0 억원\nAssumed FCF for forecast years (1-5): -0.75 억원 (since revenue is 0, Depr & CAPEX are 0)\nWACC: 9%\nPerpetual Growth Rate (g): 2%\nDCF 적정가치(기본): -10.02 억원\n\n\n--- DCF Sensitivity Analysis (억원) ---\n     WACC=7% WACC=8% WACC=9% WACC=10% WACC=11%\ng=1%  -12.08  -10.36   -9.07    -8.07    -7.27\ng=2%  -13.98  -11.67  -10.02    -8.78    -7.82\ng=3%  -16.84  -13.51  -11.29    -9.70    -8.50\n\n\n적정가치(기본): -10.02억원"
+  },
+  "news": {
+    "text": "## LS머트리얼즈(417200) 투자 분석: 재무 데이터와 시장 컨센서스 간의 괴리 및 향후 전망\n\n제공된 LS머트리얼즈(417200)의 10년 재무제표 분석 결과(\"매출액 0원과 급격한 이익 감소로 사업의 불확실성이 매우 높은 기업\")는 현재 시장의 컨센서스 및 실제 기업 현황과 **완전히 불일치**합니다. Google 검색을 통해 확인된 최근 2주간의 주요 뉴스와 기업 정보는 LS머트리얼즈가 활발히 사업을 영위하며 미래 성장 동력을 확보하고 있는 기업임을 명확히 보여줍니다.\n\n### 1. 재무 데이터가 보여주는 스토리와 현재 시장 컨센서스의 일치/불일치\n\n**제공된 재무 데이터 스토리:** 매출액 0원, 급격한 이익 감소, 사업 불확실성 매우 높음 (투자등급 D).\n\n**현재 시장 컨센서스 및 실제 재무 현황:**\n최근 정보에 따르면, LS머트리얼즈는 2024년 연결 기준 매출액 1,421억원, 영업이익 62억원, 당기순이익 57억원을 기록했습니다. 또한, 2025년에는 매출액 1,897억원, 영업이익률 11.7% 성장이 예상되며, 비록 2025년에 매출 1,535억원, 영업손실 1.4억원을 기록하며 다소 저조한 실적을 보였으나, 이는 \"매출액 0원\"이라는 정보와는 큰 차이가 있습니다. 시장은 LS머트리얼즈를 울트라커패시터와 알루미늄 부품 전문 기업으로 인식하고 있으며, AI 데이터센터, 신재생에너지, 전기차 부품 등 전방 산업의 성장에 대한 기대감이 높습니다. 애널리스트 투자의견 또한 '매수' 등급을 유지하고 있습니다.\n\n**결론:** 제공된 재무 데이터 스토리는 현재 LS머트리얼즈의 실제 재무 상황 및 시장 컨센서스와 **완전히 불일치**합니다. 기업은 이미 상당한 매출을 발생시키고 있으며, 미래 성장 동력을 바탕으로 긍정적인 전망을 받고 있습니다.\n\n### 2. 재무제표에서 드러나지 않는 리스크 또는 호재\n\n**주요 호재:**\n*   **AI 데이터센터 및 신재생에너지 시장 성장 수혜:** 울트라커패시터는 AI 데이터센터의 전력 안정화 솔루션 및 풍력 발전 등 신재생에너지 시장에서 핵심 부품으로 주목받고 있습니다. 특히 엔비디아 파트너사인 버티브(Vertiv)와의 협력 및 AI 데이터센터용 울트라커패시터 시스템 공개는 향후 큰 폭의 수주 확대를 기대하게 합니다. LS그룹 차원에서도 북미 AI 데이터센터 시장을 정조준하며 \"4~5년치 일감\"을 확보했다는 소식은 매우 긍정적입니다.\n*   **전기차 부품 사업 확대:** 알루미늄 EV 부품의 현대차그룹향 독점 공급 기대 및 2027년 2,000억원 매출 목표는 새로운 성장 동력으로 작용할 수 있습니다. 2026년부터 배터리 시스템 부품 사업의 턴어라운드도 기대됩니다.\n*   **LS그룹 시너지 효과:** LS전선의 자회사로서 LS그룹 내 계열사들과의 시너지 효과를 통해 안정적인 사업 기반을 확보하고 있습니다.\n*   **기술력 및 시장 지위:** 중대형 울트라커패시터 분야에서 대형 제품 글로벌 시장 점유율 1위를 차지하고 있으며, 차세대 리튬이온커패시터 개발 등 기술 경쟁력을 보유하고 있습니다.\n\n**주요 리스크:**\n*   **울트라커패시터 증설 지연:** IPO를 통해 증설 자금을 조달했으나, 부지 선정 과정에서 증설이 지연되고 있어 예상 매출 발생 시기가 늦춰질 수 있습니다.\n*   **전기차 부품 사업 딜레이:** 하이엠케이(HAIMK)를 통한 전기차 부품 사업이 예상보다 지연되고 있다는 언급이 있습니다.\n*   **수익성 개선 지연:** 2025년 영업손실을 기록하는 등 아직 안정적인 수익성을 확보하는 데 시간이 필요할 수 있습니다.\n\n### 3. 최종 판정\n\n제공된 초기 재무 데이터가 잘못된 정보였음을 감안할 때, LS머트리얼즈는 현재 활발히 사업을 영위하며 미래 성장 동력을 확보하고 있는 기업입니다. 특히 AI 데이터센터 및 신재생에너지 시장의 급격한 성장은 울트라커패시터 사업에 막대한 기회를 제공할 것으로 예상됩니다. 비록 일부 사업의 지연 리스크와 수익성 개선 과제가 존재하나, 전반적인 시장의 성장성과 기업의 기술 경쟁력, 그리고 LS그룹의 지원 등을 고려할 때 긍정적인 전망이 우세합니다.\n\n**최종 판정: 매수**",
+    "citations": [
+      {
+        "title": "digitaltoday.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQF3R9E57MRS49e_T7_MePyXKDzkm_5io2BxWm8cebp3ca6sctVKzwxubcO2etzOrWtKKiMvCgiQnr9ume8l5tmP0bJgFuYe79j_NTE-43cFlAOnl7x5olgHcI8kDoWttGFoahkiZUw_GGBdysxvUnPWEykvjunvHWqmT5ip"
+      },
+      {
+        "title": "deepsearch.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQF51WzJPmpET2p4QZlNPAceS5b0VXF-mvGM5whJduvkjaHAx_lSrlijb11OHtsAAdpEgDEU3yHGB3iDfQzGOV5KFh8I0D_m0OzE-ZIFqrFZwBKeIL3oSTGdjhqvozBiLIoaNOInqB4="
+      },
+      {
+        "title": "tistory.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEuvZ8QqPZUf1zByeAsfh3NGf_ufr09Ct-gXP9nI8rY-mGmL2EO-wnzrnXfb0NqbXia61H4FO2BceQsy638JFJbGkwrGC63EHss-R0DFaRDVsunZk6x4BWNVu2mg54pibVjwvGRjDE-1VmxZjeT4f5PTT1q5Xg4lMCcn53-VI5mkncnkOuWPmfISRLdi7boYnXOEp9mDSIZxBZnbnnD4zE4w2THxMr7JJ7zH1mNwhmTq1H6IfQBBgH-zYSKGF3R6Ly8SUUBI9Idli-03jirbJV0GaeVmffqLXW-yFATaRejKPV0uSi1eZb690MbebizqDh-60-lWmw2kBd7A3iLtTn1wTeyEDHwMqadx16os8KClPgV0OI7sg3oGB0cwtmVl_EzGiWVIxhsqGy1ahCD3ODM8P2sDNC-re-W98W7Sb-iPIU="
+      },
+      {
+        "title": "sisajournal-e.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFPyxPTWD56aITpN4ySkB9INDsMmzdBLPn-u_3-Tw2YWr99sDFgfHimjFfJdQr1cFxUEb_K7VWeR3IX9GveocoBVzngujuy24yzUvFINVOAajoQKrwxJL4AK5bDrs7oFyV-UJynJV_2ci0VMds8EfAZZjTOpGq6RTHq7v4="
+      },
+      {
+        "title": "kbthink.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQH_83zUlNLNlK_sl1hetNM4GMJITE4iHIDQgOTQN8D-IkaB-Acokkc8xfvdUGm9drLVqfZdt5bzaPFtxuy3eAxFNULT0Mk8_T_GxR6SAzvYXRLQl7zgH9IRPDNerfH3JUZk4Cdxl_LtyMLLeKlVaFlaprokph9zHFvOafBU"
+      },
+      {
+        "title": "alphasquare.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQH7FyhVaizC-Rpmbh1iWA-JpPOOE4f2bSRlOSKR9fYRVcokPH5SUe48p2dCANgEaJZipq2W6IhrYk2GCJnwgNTzg8nrgA7b1ClPYn8kPHNzfc_yUixirnOK8EhdL8U2pX8KcLltSFEr18cvD1RvVPBScSdiHSzR2aIq_6iiqG65jmDkCnTYWu6g14HAWewfkFloDR-u0HMAegJ6nsWAIU8Mp_aVNNgi6w=="
+      },
+      {
+        "title": "hankyung.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGTQyeGHnbP8DZ8qon5NZmQY6DJemNxv6Qyl1Sl1M9fGSo73MAVXfxZeUSxZxBYL0id2m1E1j-0qIXoe4bXbCI819IPZa2anV7DgeAMy-OyIX6BJl473y45H5zrbGlN1kNkbTQ4J8i479wJLlNgxg=="
+      },
+      {
+        "title": "stockplus.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHxEmpLideS_TQretnRr8mDjRLAK39cBOkmpsqhLWhRHS7G0gvSFjvs_BzEA8Jn70U2kRcxrhndtQl_8wD9XmpriK6atge2pNndiQd5tQOFTY4T4IH4Zq0Pa0RKehZW7ovo5EZaoq5jfsoPoA=="
+      },
+      {
+        "title": "daum.net",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEFTVRr_RsGYed833kd3vPnNBB3viQhTHQVi0YkGw-I8hYuEzphokFbBVGGxKSVZ1bEADPFiwb-EGHo3MUgffK2eZtojbGNXBxmD8VjgqdX5LzknsH-UDAi03_aJD4q-carPnFmGoTiiZc="
+      }
+    ]
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=01528141",
+    "summary": "공시 페이지 접근 제한"
+  }
+}

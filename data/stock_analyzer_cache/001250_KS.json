@@ -1,35 +1,35 @@
 {
-  "name": "LS머트리얼즈",
-  "ticker": "417200.KQ",
+  "name": "GS글로벌",
+  "ticker": "001250.KS",
   "result": "데이터 없음",
-  "date": "2026-04-10 13:08:26",
-  "elapsed": 2.1,
+  "date": "2026-04-10 13:07:43",
+  "elapsed": 2.6,
   "consensus_score": null,
   "analyst_count": 0,
   "recommendation_detail": null,
   "recommendation_period": null,
   "price_targets": {
-    "current": 20050.0,
+    "current": 3565.0,
     "high": null,
     "low": null,
     "mean": null,
     "median": null
   },
-  "current_price": 20050.0,
+  "current_price": 3565.0,
   "upside_potential": null,
   "key_stats": {
-    "name": "LS Materials",
+    "name": "GS Global",
     "sector": "Industrials",
-    "industry": "Electrical Equipment & Parts",
-    "market_cap": 1356435816448,
+    "industry": "Industrial Distribution",
+    "market_cap": 294095388672,
     "pe_ratio": null,
     "forward_pe": null,
-    "dividend_yield": 0.11,
-    "beta": 1.599,
-    "fifty_two_week_high": 27000.0,
-    "fifty_two_week_low": 9050.0,
-    "revenue": 153582403584,
-    "profit_margin": 0.00283,
+    "dividend_yield": 0.69,
+    "beta": 0.655,
+    "fifty_two_week_high": 3870.0,
+    "fifty_two_week_low": 2200.0,
+    "revenue": 4109264486400,
+    "profit_margin": 0.00484,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
@@ -38,37 +38,37 @@
   "revenue_quarters": [
     {
       "date": "2025-12",
-      "value": 40559065410
+      "value": 1067747906000
     },
     {
       "date": "2025-09",
-      "value": 38504493470
+      "value": 945778987000
     },
     {
       "date": "2025-06",
-      "value": 39193324520
+      "value": 1073997170000
     },
     {
       "date": "2025-03",
-      "value": 35325515600
+      "value": 1021740498000
     }
   ],
   "net_income_quarters": [
     {
       "date": "2025-12",
-      "value": 1284360740
+      "value": -902258000
     },
     {
       "date": "2025-09",
-      "value": 10240670
+      "value": 1046513000
     },
     {
       "date": "2025-06",
-      "value": 98960550
+      "value": 11949712000
     },
     {
       "date": "2025-03",
-      "value": -958180100
+      "value": 7810060000
     }
   ],
   "news": []

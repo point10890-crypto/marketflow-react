@@ -1,0 +1,50 @@
+{
+  "stock_code": "417200",
+  "corp_code": "01528141",
+  "years": [
+    2023,
+    2024,
+    2025
+  ],
+  "data": {
+    "2023": {
+      "total_assets": 2662.0,
+      "cash": 1196.0,
+      "total_equity": 0.2,
+      "short_debt": 232.1,
+      "total_liab": 631.4,
+      "op_profit": 135.7,
+      "net_income": 121.6
+    },
+    "2024": {
+      "total_assets": 2531.5,
+      "cash": 502.6,
+      "total_equity": 225.8,
+      "short_debt": 157.9,
+      "total_liab": 459.9,
+      "op_profit": 62.0,
+      "net_income": 56.7
+    },
+    "2025": {
+      "total_assets": 2745.3,
+      "cash": 574.3,
+      "total_equity": 1270.5,
+      "short_debt": 120.5,
+      "total_liab": 684.6,
+      "long_debt": 350.0,
+      "op_profit": -1.4,
+      "net_income": 0.0
+    }
+  },
+  "missing_years": [
+    2016,
+    2017,
+    2018,
+    2019,
+    2020,
+    2021,
+    2022,
+    2026
+  ],
+  "source": ""
+}
