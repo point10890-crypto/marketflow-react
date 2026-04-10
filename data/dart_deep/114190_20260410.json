@@ -1,0 +1,279 @@
+{
+  "stock_code": "114190",
+  "stock_name": "강원에너지",
+  "generated_at": "2026-04-10T13:32:50.017825+00:00",
+  "financials": {
+    "stock_code": "114190",
+    "corp_code": "00100601",
+    "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2016": {
+        "cash": 159.0,
+        "total_assets": 771.9,
+        "long_debt": 100.0,
+        "total_liab": 221.0,
+        "total_equity": 550.9,
+        "revenue": 422.9,
+        "op_profit": -13.1,
+        "net_income": -11.3
+      },
+      "2017": {
+        "cash": 140.7,
+        "total_assets": 931.8,
+        "long_debt": 72.0,
+        "total_liab": 448.8,
+        "total_equity": 483.0,
+        "revenue": 820.3,
+        "op_profit": -55.9,
+        "net_income": -64.5
+      },
+      "2018": {
+        "cash": 197.4,
+        "total_assets": 938.5,
+        "short_debt": 72.0,
+        "long_debt": 0.0,
+        "total_liab": 436.4,
+        "total_equity": 502.0,
+        "revenue": 859.1,
+        "op_profit": 3.4,
+        "net_income": 17.1
+      },
+      "2019": {
+        "cash": 36.4,
+        "total_assets": 566.0,
+        "short_debt": 72.0,
+        "long_debt": 33.2,
+        "total_liab": 354.8,
+        "total_equity": 211.2,
+        "revenue": 425.5,
+        "op_profit": -171.8,
+        "net_income": -356.5
+      },
+      "2020": {
+        "cash": 89.3,
+        "total_assets": 329.7,
+        "short_debt": 13.0,
+        "long_debt": 26.6,
+        "total_liab": 158.7,
+        "total_equity": 171.0,
+        "revenue": 383.5,
+        "op_profit": -92.3,
+        "net_income": -128.7
+      },
+      "2021": {
+        "cash": 68.5,
+        "total_assets": 415.4,
+        "short_debt": 0.0,
+        "long_debt": 0.0,
+        "total_liab": 129.4,
+        "total_equity": 285.9,
+        "revenue": 441.6,
+        "op_profit": 19.2,
+        "net_income": 0.0
+      },
+      "2022": {
+        "cash": 14.3,
+        "total_assets": 844.4,
+        "short_debt": 136.1,
+        "long_debt": 72.2,
+        "total_liab": 521.2,
+        "total_equity": 323.2,
+        "revenue": 713.8,
+        "op_profit": 26.2,
+        "net_income": 0.0
+      },
+      "2023": {
+        "total_assets": 1715.3,
+        "cash": 19.3,
+        "total_equity": -3.3,
+        "total_liab": 1290.1,
+        "long_debt": 195.0,
+        "op_profit": 69.3,
+        "net_income": 0.0,
+        "revenue": 1392.1
+      },
+      "2024": {
+        "total_assets": 1638.8,
+        "cash": 81.4,
+        "total_equity": 254.3,
+        "total_liab": 920.0,
+        "op_profit": 67.7,
+        "net_income": 0.0,
+        "revenue": 2244.2
+      },
+      "2025": {
+        "total_assets": 1466.4,
+        "cash": 231.1,
+        "total_equity": -2.9,
+        "total_liab": 826.0,
+        "op_profit": -61.0,
+        "net_income": 0.0,
+        "revenue": 2122.5
+      }
+    },
+    "missing_years": [
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2016,
+        "revenue_eok": 423,
+        "op_profit_eok": -13,
+        "net_income_eok": -11,
+        "roe_pct": -1.996,
+        "op_margin_pct": -3.073,
+        "debt_ratio_pct": 40.109
+      },
+      {
+        "year": 2017,
+        "revenue_eok": 820,
+        "op_profit_eok": -56,
+        "net_income_eok": -64,
+        "roe_pct": -13.251,
+        "op_margin_pct": -6.829,
+        "debt_ratio_pct": 92.961
+      },
+      {
+        "year": 2018,
+        "revenue_eok": 859,
+        "op_profit_eok": 3,
+        "net_income_eok": 17,
+        "roe_pct": 3.386,
+        "op_margin_pct": 0.349,
+        "debt_ratio_pct": 86.853
+      },
+      {
+        "year": 2019,
+        "revenue_eok": 426,
+        "op_profit_eok": -172,
+        "net_income_eok": -356,
+        "roe_pct": -168.72,
+        "op_margin_pct": -40.376,
+        "debt_ratio_pct": 168.246
+      },
+      {
+        "year": 2020,
+        "revenue_eok": 384,
+        "op_profit_eok": -92,
+        "net_income_eok": -129,
+        "roe_pct": -75.439,
+        "op_margin_pct": -23.958,
+        "debt_ratio_pct": 92.982
+      },
+      {
+        "year": 2021,
+        "revenue_eok": 442,
+        "op_profit_eok": 19,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 4.299,
+        "debt_ratio_pct": 45.105
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 714,
+        "op_profit_eok": 26,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 3.641,
+        "debt_ratio_pct": 161.299
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 1392,
+        "op_profit_eok": 69,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 4.957,
+        "debt_ratio_pct": -43000.0
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 2244,
+        "op_profit_eok": 68,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 3.03,
+        "debt_ratio_pct": 362.205
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 2122,
+        "op_profit_eok": -61,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": -2.875,
+        "debt_ratio_pct": -27533.333
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": 18.64,
+      "op_profit_cagr_pct": 0,
+      "best_year": 2023,
+      "worst_year": 2019,
+      "avg_roe_pct": -25.602
+    },
+    "valuation": {
+      "grade": "D",
+      "strengths": [
+        "2022년부터 2024년까지 매출액이 크게 증가하며 외형 성장을 달성했습니다.",
+        "2021년부터 2024년까지 4년간 영업이익 흑자를 기록하며 수익성 개선 노력을 보였습니다.",
+        "2023년 자본잠식 이후 2024년 자본총계가 흑자로 전환되며 재무구조 개선 노력을 보였습니다."
+      ],
+      "risks": [
+        "극심한 영업이익 변동성과 반복적인 적자 기록으로 사업의 안정성이 매우 낮습니다.",
+        "2023년과 2025년에 자본잠식이 발생하는 등 재무구조가 매우 취약합니다.",
+        "대부분의 기간 동안 당기순이익이 부재하거나 적자를 기록하여 주주가치 창출 능력이 미흡합니다."
+      ],
+      "one_liner": "매출액 성장에도 불구하고 불안정한 수익성과 반복적인 자본잠식으로 인해 투자 리스크가 매우 높은 기업입니다."
+    }
+  },
+  "dcf": {
+    "text": "퀀트 애널리스트로서 강원에너지(114190)의 DCF 적정가치를 계산하겠습니다.\n\n**가정 사항 요약:**\n*   **기준 연도:** 2025년 (최근 재무는 2025년 시작 값으로 간주)\n*   **예측 기간:** 5년 (2025년 ~ 2029년)\n*   **FCF 계산:** 영업이익 × (1 - 0.25) + 감가상각(매출의 10%) - CAPEX(매출의 5%)\n*   **세율:** 25% (FCF 공식에서 유추)\n*   **기본 시나리오 WACC:** 9%\n*   **기본 시나리오 영구성장률 (g):** 2%\n*   **예측 기간(5년) 동안 매출액 및 영업이익 성장률:** 명시된 바가 없으므로, 기본 시나리오에서는 2025년 값을 기준으로 **매년 동일하게 유지**된다고 가정합니다. 영구성장률(g)은 터미널 가치 계산에만 적용됩니다.\n\n---\n### Python 코드 실행\n\n\n---\n### 분석 결과\n\n1.  **기본 시나리오 DCF 적정가치:**\n    *   WACC 9%, 영구성장률(g) 2%를 적용한 강원에너지의 DCF 적정가치는 **806.28 억원**으로 계산되었습니다.\n    *   예측 기간(5년) 동안의 연간 FCF는 60.35 억원으로 동일하게 유지된다고 가정했습니다.\n\n2.  **DCF 적정가치 민감도 그리드:**\n    *   WACC와 영구성장률(g)의 변화에 따른 적정가치 민감도 분석 결과는 위 표와 같습니다.\n    *   일반적으로 WACC가 낮아지고 영구성장률(g)이 높아질수록 기업의 적정가치는 상승합니다.\n    *   WACC가 영구성장률(g)보다 작거나 같을 경우, 터미널 가치 계산이 불가능하거나 비현실적인 값이 도출될 수 있어 \"N/A (WACC<=g)\"로 표시했습니다.\n\n**적정가치(기본): 806.28억원**",
+    "executed_code": "import pandas as pd\n\n# 1. Define inputs\nrevenue_initial = 2122  # 억원\noperating_income_initial = -61  # 억원\ntax_rate = 0.25\ndepreciation_rate = 0.10  # 10% of Revenue\ncapex_rate = 0.05       # 5% of Revenue\nforecast_years = 5\n\n# Base scenario assumptions\nbase_wacc = 0.09\nbase_g = 0.02\n\ndef calculate_dcf(wacc, g, revenue_start, op_income_start, forecast_period):\n    \"\"\"Calculates DCF valuation given WACC, perpetual growth rate, and initial financials.\"\"\"\n    \n    # List to store FCF for each forecast year\n    fcf_list = []\n    \n    # Calculate FCF for each forecast year\n    # Assumption: Revenue and Operating Income remain constant for the forecast period\n    # as no explicit growth rate for the forecast period is provided.\n    for i in range(1, forecast_period + 1):\n        current_revenue = revenue_start\n        current_operating_income = op_income_start\n        \n        depreciation = current_revenue * depreciation_rate\n        capex = current_revenue * capex_rate\n        \n        # FCF = Operating Income * (1 - Tax Rate) + Depreciation - CAPEX\n        fcf = current_operating_income * (1 - tax_rate) + depreciation - capex\n        fcf_list.append(fcf)\n        \n    # Calculate Present Value of FCFs\n    pv_fcf = 0\n    for i, fcf in enumerate(fcf_list):\n        pv_fcf += fcf / ((1 + wacc) ** (i + 1))\n        \n    # Calculate Terminal Value (TV)\n    # FCF for the year after the forecast period (Year 6)\n    fcf_terminal_year = fcf_list[-1] * (1 + g)\n    \n    # Check for WACC <= g, which would lead to infinite or negative TV\n    if wacc <= g:\n        return float('inf') if fcf_terminal_year > 0 else float('-inf') # Or handle as N/A\n    \n    terminal_value = fcf_terminal_year / (wacc - g)\n    \n    # Present Value of Terminal Value\n    pv_terminal_value = terminal_value / ((1 + wacc) ** forecast_period)\n    \n    total_dcf_value = pv_fcf + pv_terminal_value\n    \n    return total_dcf_value\n\n# 1. 기본 시나리오 DCF 적정가치(억원) 계산\nbase_dcf_value = calculate_dcf(base_wacc, base_g, revenue_initial, operating_income_initial, forecast_years)\n\n# 2. WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 출력\nwacc_scenarios = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_scenarios = [0.01, 0.02, 0.03]\n\nsensitivity_results = pd.DataFrame(index=[f'g={g*100:.0f}%' for g in g_scenarios], \n                                   columns=[f'WACC={wacc*100:.0f}%' for wacc in wacc_scenarios])\n\nfor g_val in g_scenarios:\n    for wacc_val in wacc_scenarios:\n        if wacc_val <= g_val:\n            sensitivity_results.loc[f'g={g_val*100:.0f}%', f'WACC={wacc_val*100:.0f}%'] = \"N/A (WACC<=g)\"\n        else:\n            dcf_val = calculate_dcf(wacc_val, g_val, revenue_initial, operating_income_initial, forecast_years)\n            sensitivity_results.loc[f'g={g_val*100:.0f}%', f'WACC={wacc_val*100:.0f}%'] = f\"{dcf_val:.2f}\"\n\nprint(\"--- DCF 적정가치 계산 결과 ---\")\nprint(f\"1. 기본 시나리오 DCF 적정가치: {base_dcf_value:.2f} 억원\\n\")\n\nprint(\"2. DCF 적정가치 민감도 그리드 (억원):\")\nprint(sensitivity_results)\nprint(\"\\n* N/A (WACC<=g): WACC가 영구성장률(g)보다 작거나 같아 터미널 가치 계산이 불가능한 경우입니다.\")\n\n# 3. 마지막에 '적정가치(기본): {value}억원' 형태로 요약 출력\nprint(f\"\\n적정가치(기본): {base_dcf_value:.2f}억원\")",
+    "code_output": "--- DCF 적정가치 계산 결과 ---\n1. 기본 시나리오 DCF 적정가치: 806.28 억원\n\n2. DCF 적정가치 민감도 그리드 (억원):\n      WACC=7%  WACC=8% WACC=9% WACC=10% WACC=11%\ng=1%   971.76   833.59  729.94   649.30   584.78\ng=2%  1125.23   939.20  806.28   706.55   628.95\ng=3%  1355.44  1087.07  908.07   780.16   684.16\n\n* N/A (WACC<=g): WACC가 영구성장률(g)보다 작거나 같아 터미널 가치 계산이 불가능한 경우입니다.\n\n적정가치(기본): 806.28억원"
+  },
+  "news": {
+    "text": "## 강원에너지(114190) 투자 분석 보고서\n\n### 1. 재무 데이터 스토리와 현재 시장 컨센서스의 일치/불일치\n\n제공된 강원에너지의 10년 재무제표 분석 결과는 \"매출액 성장에도 불구하고 불안정한 수익성과 반복적인 자본잠식으로 인해 투자 리스크가 매우 높은 기업(투자등급 D)\"으로 요약됩니다. 이는 기업의 외형 성장은 있으나 내실이 부실하고 재무 안정성이 매우 취약하다는 것을 의미합니다.\n\n최근 2주간의 시장 컨센서스를 살펴보면, 강원에너지는 2차전지 소재(무수수산화리튬) 사업 부문의 성장성에 주목받고 있습니다. 특히, 올해 1월부터 5월까지의 무수수산화리튬 누적 수주 물량이 전년 동기 대비 2.5배 이상 증가했다는 소식이 전해지며, 하이니켈 양극재 적용 확대에 따른 성장 기대감이 형성되고 있습니다. 이는 재무 데이터가 보여주는 '매출액 성장'이라는 부분과 일치하는 긍정적인 신호입니다.\n\n그러나 재무 데이터의 핵심 리스크인 '불안정한 수익성'과 '반복적인 자본잠식'에 대한 시장의 명확한 해소 컨센서스는 부족합니다. 오히려 2025년 연결 영업이익은 -61억원으로 적자 전환했으며, 리튬 공장 가동률이 여전히 약 20%에 머물고 있다는 지적이 있습니다. 또한, PBR(주가순자산비율)이 10.35배로 섹터 중앙값(1.17배)의 8.8배에 달하는 극도의 고평가 상태라는 분석은 재무적 불안정성에도 불구하고 2차전지 테마에 대한 기대감으로 주가가 과도하게 상승했을 가능성을 시사하며, 이는 재무 데이터 스토리와 시장 컨센서스 간의 불일치를 보여줍니다.\n\n### 2. 재무제표에서 드러나지 않는 리스크 또는 호재\n\n**호재:**\n*   **2차전지 소재 사업 성장 잠재력:** 무수수산화리튬 수주 물량의 급증은 하이니켈 양극재 시장 확대에 따른 수혜를 보여주며, 국내 시장점유율 1위 확보와 가동률 증가 기대는 향후 실적 개선의 잠재적 요인입니다.\n*   **리튬 가격 상승 기대:** JP모건은 2026년부터 글로벌 리튬 공급 부족이 본격화될 것으로 전망하며 리튬 가격 상승을 예상하고 있어, 이는 강원에너지의 리튬 사업 수익성에 긍정적으로 작용할 수 있습니다.\n*   **다중 테마 편입:** 원자력, 2차전지, 리튬 등 다양한 성장 테마에 편입되어 있어 테마 순환 장세에서 반복적인 매수세 유입 가능성이 있습니다.\n\n**리스크:**\n*   **낮은 리튬 공장 가동률:** 무수수산화리튬 공장 준공 후 3년 이상 경과했음에도 가동률이 약 20%에 불과하다는 점은 실제 수요 확보 또는 생산 효율성에 대한 우려를 낳습니다. 이는 수주 증가가 곧바로 수익성 개선으로 이어지지 않을 수 있음을 의미합니다.\n*   **극도의 고평가 및 테마성 매매 의존:** 현재 PBR 10.35배는 섹터 중앙값 대비 매우 높은 수준으로, 적자 지속에도 불구하고 시장의 기대감이 과도하게 반영된 것으로 보입니다. 증권사 커버리지가 전무하여 주가가 개인 투자자 중심의 테마 매매에 의존하고 있다는 점은 주가 변동성을 확대시키는 요인입니다.\n*   **낮은 경영진 지분율 및 잦은 대표이사 변경:** 경영진 지분율이 0.8%에 불과하고, 2025년 12월 대표이사가 변경된 이력은 지배구조의 안정성에 대한 리스크로 작용할 수 있습니다.\n*   **기존 플랜트 부문의 역성장:** 2025년 2차전지 소재 부문 매출 성장에도 불구하고 기존 플랜트 부문의 역성장으로 연결 영업이익이 적자 전환한 점은 사업 포트폴리오 전환 과정에서의 어려움을 보여줍니다.\n\n### 3. 최종 판정\n\n제공된 10년 재무제표 분석 결과(투자등급 D, 불안정한 수익성, 반복적인 자본잠식)는 강원에너지의 내재적 가치와 재무 안정성이 매우 취약함을 명확히 보여줍니다. 최근 2차전지 소재 부문의 수주 증가라는 긍정적인 소식이 있으나, 여전히 낮은 리튬 공장 가동률, 극도로 높은 밸류에이션, 낮은 경영진 지분율, 증권사 커버리지 부재 등 재무제표에서 드러나지 않는 심각한 리스크들이 존재합니다. 특히, 기업의 근본적인 재무적 불안정성에도 불구하고 테마성 기대감으로 주가가 과도하게 상승했을 가능성이 높습니다.\n\n따라서, 현재 시점에서는 **매도** 의견을 제시합니다. 기업의 근본적인 재무 안정성 개선과 리튬 사업의 실질적인 수익성 증대가 명확히 확인되기 전까지는 투자에 매우 신중해야 합니다.",
+    "citations": [
+      {
+        "title": "edaily.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGLZGmrPwzFrM_ciojQmJIYoEyn-LRZ0RGSsc8uQKLqU5EohRJ4N5AU4N_RjKikoTp102gyu3F5VnEJzuNCnCmMt33FfI4wGdIHVpFs1XhO_eapG4S9CfrRbvEH_tuqb6-yZ9xF6fM52CtJb0JxCbnLkBngyi1MKjjN1yqU"
+      },
+      {
+        "title": "daum.net",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFCjfq6ez5dXIHeRiTkr9bzF6sBMCggAE96e3v3Fze49LmPIeNjDxI3KWxOHRGBB0V-Lm8uiOey_vNcjFsB3Lef99KElrENZv2EGHI59UM21V7NiVsiUmne-sR_SNQwm5Bn"
+      },
+      {
+        "title": "marketmood.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGjXyXwgYb4rPAw0DxFZlRvCB1H9E7jWWLHAmgS1nZtBJhRJ2_7jLOrWXtc-eS9vd60sP1f4nLxFuJdN3biURrOTZ7kb0eIEFC3c5gXdMS2leJPht3Xfl45Jfl7u82UVw=="
+      },
+      {
+        "title": "youtube.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHxexe6Ktb9yomY0HqXQ6O5ZHxmPI5VJbfc6n6e1BgFzOVZAwkyYVplrsFWjex7jycMxOX8AsGfNAZCdlum8yMeb0AjsmSV9tqz4Q20a59Mmt7esCbOEqYlTw8Te0JedQxRPmOj-9Q="
+      },
+      {
+        "title": "alphasquare.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEo3r4X3TrbBMxpVxFTX6h1FC_xC7vStl7Vvt8dYdKHDWcqGUWMuGBl778EwJflG9JEFmnADv-3_pdI3JInV5VmBLMrsrxHmWneGr8NhUkx8tror6_KP5r7obVH5fyUCypCbx4U49cTQJfjuO2hCcmBSiFzJFaYefIjh1E="
+      }
+    ]
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=00100601",
+    "summary": "공시 페이지 접근 제한"
+  }
+}

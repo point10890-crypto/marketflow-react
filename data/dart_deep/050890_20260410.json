@@ -1,0 +1,301 @@
+{
+  "stock_code": "050890",
+  "stock_name": "쏠리드",
+  "generated_at": "2026-04-10T14:43:01.176612+00:00",
+  "financials": {
+    "stock_code": "050890",
+    "corp_code": "00364403",
+    "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2016": {
+        "cash": 285.4,
+        "total_assets": 3427.2,
+        "short_debt": 836.4,
+        "long_debt": 45.7,
+        "total_liab": 2653.9,
+        "total_equity": 773.3,
+        "revenue": 2914.9,
+        "op_profit": -513.3,
+        "net_income": 0.0
+      },
+      "2017": {
+        "cash": 447.0,
+        "total_assets": 2809.5,
+        "short_debt": 654.3,
+        "long_debt": 1.7,
+        "total_liab": 2013.4,
+        "total_equity": 796.0,
+        "revenue": 2593.1,
+        "op_profit": 202.2,
+        "net_income": 0.0
+      },
+      "2018": {
+        "cash": 307.2,
+        "total_assets": 2693.6,
+        "short_debt": 562.9,
+        "long_debt": 72.9,
+        "total_liab": 1590.6,
+        "total_equity": 1103.0,
+        "revenue": 2225.8,
+        "op_profit": 10.6,
+        "net_income": 0.0
+      },
+      "2019": {
+        "cash": 556.3,
+        "total_assets": 2837.6,
+        "short_debt": 466.6,
+        "long_debt": 186.3,
+        "total_liab": 1601.3,
+        "total_equity": 1236.3,
+        "revenue": 2292.8,
+        "op_profit": -35.2,
+        "net_income": 0.0
+      },
+      "2020": {
+        "cash": 589.4,
+        "total_assets": 2814.6,
+        "short_debt": 515.1,
+        "long_debt": 22.0,
+        "total_liab": 1696.8,
+        "total_equity": 1117.8,
+        "revenue": 1728.6,
+        "op_profit": -169.3,
+        "net_income": -118.6
+      },
+      "2021": {
+        "cash": 544.0,
+        "total_assets": 3695.4,
+        "short_debt": 697.5,
+        "long_debt": 68.9,
+        "total_liab": 1740.7,
+        "total_equity": 1954.8,
+        "revenue": 2122.6,
+        "op_profit": 61.3,
+        "net_income": 237.4
+      },
+      "2022": {
+        "cash": 721.1,
+        "total_assets": 4343.4,
+        "short_debt": 848.7,
+        "long_debt": 0.0,
+        "total_liab": 2054.6,
+        "total_equity": 2288.8,
+        "revenue": 2797.9,
+        "op_profit": 285.9,
+        "net_income": 298.4
+      },
+      "2023": {
+        "total_assets": 4572.5,
+        "cash": 636.7,
+        "total_equity": 306.1,
+        "short_debt": 786.8,
+        "total_liab": 1842.2,
+        "long_debt": 256.0,
+        "op_profit": 362.7,
+        "net_income": 408.8,
+        "revenue": 3213.6
+      },
+      "2024": {
+        "total_assets": 4968.0,
+        "cash": 1006.2,
+        "total_equity": 306.1,
+        "short_debt": 723.7,
+        "total_liab": 1739.6,
+        "long_debt": 30.0,
+        "op_profit": 351.4,
+        "net_income": 462.3,
+        "revenue": 3310.7
+      },
+      "2025": {
+        "total_assets": 5366.7,
+        "cash": 900.8,
+        "total_equity": 3533.4,
+        "short_debt": 990.2,
+        "total_liab": 1833.3,
+        "op_profit": 332.8,
+        "net_income": 0.1,
+        "revenue": 2948.3
+      }
+    },
+    "missing_years": [
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2016,
+        "revenue_eok": 2915,
+        "op_profit_eok": -513,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": -17.6,
+        "debt_ratio_pct": 343.34
+      },
+      {
+        "year": 2017,
+        "revenue_eok": 2593,
+        "op_profit_eok": 202,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 7.79,
+        "debt_ratio_pct": 252.9
+      },
+      {
+        "year": 2018,
+        "revenue_eok": 2226,
+        "op_profit_eok": 11,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 0.49,
+        "debt_ratio_pct": 144.24
+      },
+      {
+        "year": 2019,
+        "revenue_eok": 2293,
+        "op_profit_eok": -35,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": -1.53,
+        "debt_ratio_pct": 129.53
+      },
+      {
+        "year": 2020,
+        "revenue_eok": 1729,
+        "op_profit_eok": -169,
+        "net_income_eok": -119,
+        "roe_pct": -10.64,
+        "op_margin_pct": -9.77,
+        "debt_ratio_pct": 151.79
+      },
+      {
+        "year": 2021,
+        "revenue_eok": 2123,
+        "op_profit_eok": 61,
+        "net_income_eok": 237,
+        "roe_pct": 12.12,
+        "op_margin_pct": 2.87,
+        "debt_ratio_pct": 89.05
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 2798,
+        "op_profit_eok": 286,
+        "net_income_eok": 298,
+        "roe_pct": 13.02,
+        "op_margin_pct": 10.22,
+        "debt_ratio_pct": 89.78
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 3214,
+        "op_profit_eok": 363,
+        "net_income_eok": 409,
+        "roe_pct": 133.66,
+        "op_margin_pct": 11.3,
+        "debt_ratio_pct": 601.96
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 3311,
+        "op_profit_eok": 351,
+        "net_income_eok": 462,
+        "roe_pct": 150.98,
+        "op_margin_pct": 10.6,
+        "debt_ratio_pct": 568.63
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 2948,
+        "op_profit_eok": 333,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 11.3,
+        "debt_ratio_pct": 51.88
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": 0.11,
+      "op_profit_cagr_pct": 6.38,
+      "best_year": 2023,
+      "worst_year": 2016,
+      "avg_roe_pct": 29.91
+    },
+    "valuation": {
+      "grade": "C",
+      "strengths": [
+        "최근 3년간(2021-2023) 매출액 및 영업이익의 뚜렷한 성장세와 흑자 전환에 성공했습니다.",
+        "2023년과 2024년에 기록적인 당기순이익을 달성하며 수익성을 개선했습니다.",
+        "2024년 현금 보유액이 1,000억원을 돌파하며 유동성이 크게 개선되었습니다."
+      ],
+      "risks": [
+        "과거 10년간 매출액 CAGR이 0.11%로 매우 저조하며, 영업이익의 변동성이 매우 큽니다.",
+        "2023년과 2024년 극도로 높은 부채비율(600% 이상)과 비정상적인 자본총계 변동으로 재무 안정성에 대한 우려가 큽니다.",
+        "2025년 매출액 감소 및 당기순이익 0원 기록으로 최근 성장세 지속 여부에 대한 불확실성이 존재합니다."
+      ],
+      "one_liner": "과거 부진을 딛고 영업이익 흑자 전환에 성공했으나, 불안정한 재무구조와 미래 성장 불확실성이 상존하는 기업입니다."
+    }
+  },
+  "dcf": {
+    "text": "퀀트 애널리스트로서 쏠리드(050890)의 DCF 적정가치를 계산하고 민감도 분석을 수행하겠습니다.\n\n**가정 요약:**\n*   **기준 연도:** 2025년\n*   **최근 재무 (2025년 시작 값으로 가정):**\n    *   매출액: 2948 억원\n    *   영업이익: 333 억원\n*   **FCF 계산식:** FCF = 영업이익 × (1 - 0.25) + 감가상각(매출의 10%) - CAPEX(매출의 5%)\n    *   감가상각 = 2948 억원 × 10% = 294.8 억원\n    *   CAPEX = 2948 억원 × 5% = 147.4 억원\n    *   세율은 25%로 가정됩니다 (1 - 0.25).\n    *   예측 기간 동안 매출액과 영업이익은 일정하다고 가정합니다.\n*   **할인율 (WACC):** 9% (기본 시나리오)\n*   **영구성장률 (g):** 2% (기본 시나리오)\n*   **예측 기간:** 5년 + 영구 가치 (Terminal Value)\n\n---\n\n### 1. 기본 시나리오 DCF 적정가치 계산\n\n주어진 가정에 따라 FCF를 계산하고, 5년간의 FCF와 Terminal Value를 현재 가치로 할인하여 적정가치를 산출합니다.\n\n**FCF 계산 (매년 동일):**\nFCF = 333 억원 × (1 - 0.25) + 294.8 억원 - 147.4 억원\nFCF = 333 × 0.75 + 294.8 - 147.4\nFCF = 249.75 + 294.8 - 147.4 = 397.15 억원\n\n**Terminal Value 계산:**\n*   FCF_6 = FCF_5 × (1 + g) = 397.15 억원 × (1 + 0.02) = 405.093 억원\n*   Terminal Value = FCF_6 / (WACC - g) = 405.093 억원 / (0.09 - 0.02) = 405.093 / 0.07 = 5787.04 억원\n\n**DCF 계산:**\n각 연도 FCF와 Terminal Value의 현재 가치를 합산합니다.\n\n\n---\n\n### 2. WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 출력\n\nWACC와 영구성장률(g) 변화에 따른 DCF 적정가치 민감도 분석 결과는 다음과 같습니다.\n\n**DCF 적정가치 민감도 그리드 (억원):**\n\n|             | g=1%    | g=2%    | g=3%    |\n| :---------- | :------ | :------ | :------ |\n| **WACC=7%** | 6394.96 | 7404.91 | 8919.83 |\n| **WACC=8%** | 5485.66 | 6180.70 | 7153.75 |\n| **WACC=9%** | 4803.54 | 5305.96 | 5975.84 |\n| **WACC=10%**| 4272.90 | 4649.65 | 5134.04 |\n| **WACC=11%**| 3848.29 | 4138.97 | 4502.32 |\n\n*참고: WACC가 g보다 작거나 같으면 고든 성장 모형(Gordon Growth Model)이 적용될 수 없어 계산이 불가능합니다. 본 계산에서는 해당 경우가 발생하지 않았습니다.*\n\n---\n\n### 3. 요약 출력\n\n**적정가치(기본): 5305.96억원**",
+    "executed_code": "import pandas as pd\n\ndef calculate_dcf(revenue, operating_profit, wacc, g, forecast_years=5):\n    # Assumptions\n    depreciation_rate = 0.10\n    capex_rate = 0.05\n    tax_rate = 0.25 # (1 - 0.25) implies a tax rate of 25%\n\n    # Calculate Depreciation and CAPEX based on current revenue\n    depreciation = revenue * depreciation_rate\n    capex = revenue * capex_rate\n\n    # Calculate FCF for each forecast year\n    # Assuming operating profit and revenue (for D&C) remain constant for the forecast period\n    fcf_list = []\n    for year in range(1, forecast_years + 1):\n        fcf = operating_profit * (1 - tax_rate) + depreciation - capex\n        fcf_list.append(fcf)\n\n    # Calculate Present Value of FCFs\n    pv_fcf_sum = 0\n    for i, fcf in enumerate(fcf_list):\n        pv_fcf = fcf / ((1 + wacc) ** (i + 1))\n        pv_fcf_sum += pv_fcf\n\n    # Calculate Terminal Value\n    # FCF_terminal = FCF_last_forecast_year * (1 + g)\n    fcf_terminal_year = fcf_list[-1] * (1 + g)\n    \n    # Check for WACC <= g condition for Gordon Growth Model\n    if wacc <= g:\n        return \"N/A (WACC <= g)\"\n        \n    terminal_value = fcf_terminal_year / (wacc - g)\n\n    # Calculate Present Value of Terminal Value\n    pv_terminal_value = terminal_value / ((1 + wacc) ** forecast_years)\n\n    # Total Enterprise Value\n    enterprise_value = pv_fcf_sum + pv_terminal_value\n    return enterprise_value\n\n# Base Scenario Inputs\nrevenue_base = 2948\noperating_profit_base = 333\nwacc_base = 0.09\ng_base = 0.02\nforecast_years_base = 5\n\n# 1. Calculate Base Scenario DCF\nbase_dcf_value = calculate_dcf(revenue_base, operating_profit_base, wacc_base, g_base, forecast_years_base)\nprint(f\"기본 시나리오 DCF 적정가치: {base_dcf_value:.2f}억원\")\n\n# 2. Sensitivity Grid\nwacc_values = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_values = [0.01, 0.02, 0.03]\n\nsensitivity_results = {}\nfor wacc in wacc_values:\n    for g in g_values:\n        key = (wacc, g)\n        value = calculate_dcf(revenue_base, operating_profit_base, wacc, g, forecast_years_base)\n        sensitivity_results[key] = value\n\n# Format for display\ndf_sensitivity = pd.DataFrame(index=[f'WACC={w*100:.0f}%' for w in wacc_values], columns=[f'g={g*100:.0f}%' for g in g_values])\n\nfor wacc in wacc_values:\n    for g in g_values:\n        key = (wacc, g)\n        col_name = f'g={g*100:.0f}%'\n        row_name = f'WACC={wacc*100:.0f}%'\n        val = sensitivity_results[key]\n        if isinstance(val, str):\n            df_sensitivity.loc[row_name, col_name] = val\n        else:\n            df_sensitivity.loc[row_name, col_name] = f'{val:.2f}'\n\nprint(\"\\nDCF 적정가치 민감도 그리드 (억원):\")\nprint(df_sensitivity)\n\n# 3. Summary\nprint(f\"\\n적정가치(기본): {base_dcf_value:.2f}억원\")",
+    "code_output": "기본 시나리오 DCF 적정가치: 5305.96억원\n\nDCF 적정가치 민감도 그리드 (억원):\n             g=1%     g=2%     g=3%\nWACC=7%   6394.96  7404.91  8919.83\nWACC=8%   5485.66  6180.70  7153.75\nWACC=9%   4803.54  5305.96  5975.84\nWACC=10%  4272.90  4649.65  5134.04\nWACC=11%  3848.29  4138.97  4502.32\n\n적정가치(기본): 5305.96억원"
+  },
+  "news": {
+    "text": "## 쏠리드(050890) 투자 분석 보고서\n\n**투자등급: 관망**\n\n### 1. 재무 데이터 스토리와 현재 시장 컨센서스의 일치/불일치\n\n제시된 10년 재무제표 분석 결과(투자등급 C, 불안정한 재무구조 및 미래 성장 불확실성 상존)는 과거의 부진과 잠재적 리스크를 강조합니다. 그러나 최근 시장 컨센서스는 이러한 재무 데이터 스토리와 다소 불일치하며, 긍정적인 변화에 주목하는 모습입니다.\n\n*   **불일치:** 쏠리드는 2025년 4분기 영업이익이 전년 동기 대비 116% 증가하는 어닝 서프라이즈를 기록하며 체질 개선에 대한 기대감을 높였습니다. 이는 과거의 부진을 딛고 흑자 전환에 성공했다는 재무 데이터의 긍정적인 측면을 강화하며, '미래 성장 불확실성'이라는 평가를 상당 부분 완화하고 있습니다.\n*   **긍정적 컨센서스:** 2026년부터 유럽, 일본 등 글로벌 통신장비 시장의 구조적 회복이 예상되며 쏠리드의 실적 개선이 기대됩니다. 또한 Open RAN, 6G, 위성통신 등 차세대 통신 기술을 통한 성장 동력 확보에 대한 기대감이 시장에 형성되어 있습니다. 최근 주가 또한 통신장비/5G 테마 상승 및 Open RAN 성장 기대감으로 상승세를 보였습니다.\n*   **혼재된 시각:** 일부 증권사 리포트는 목표주가를 제시하며 긍정적인 시각을 유지하고 있으나, AI 예측 등에서는 중립 또는 매도 의견도 혼재되어 있어, 시장 전체의 강력한 '매수' 컨센서스가 형성되었다고 보기는 어렵습니다.\n\n### 2. 재무제표에서 드러나지 않는 리스크 또는 호재\n\n**호재:**\n\n*   **예상치 상회 실적:** 2025년 4분기 영업이익 116% 증가 등 시장 기대치를 뛰어넘는 실적을 달성하며 회사의 펀더멘털 개선 가능성을 보여주었습니다.\n*   **차세대 통신 기술 리더십:** 6G 및 위성통신 분야로의 사업 확장과 Open RAN 장비 공급 확대는 미래 성장 동력으로서 재무제표에 아직 완전히 반영되지 않은 잠재력을 가지고 있습니다.\n*   **글로벌 시장 확장:** 유럽을 넘어 미주 지역 관공서 DAS(Distributed Antenna System) 매출이 확대되고 있으며, 2026년 글로벌 통신장비 시장의 구조적 회복은 추가적인 성장 기회가 될 수 있습니다.\n*   **국방 통신 사업:** 자회사 쏠리드윈텍을 통해 TICN, TMMR 등 국방 통신 분야에 참여하고 있어 안정적인 매출 기반을 제공합니다.\n\n**리스크:**\n\n*   **불안정한 재무구조:** 10년 재무제표 분석에서 언급된 '불안정한 재무구조'는 단기간 내 해소되기 어려운 구조적 리스크일 수 있으며, 최근 뉴스에서 직접적인 개선 내용은 확인되지 않았습니다.\n*   **높은 밸류에이션:** 2026년 예상 PER이 28.07배로, 미래 성장 기대감이 상당 부분 주가에 선반영되었을 가능성이 있습니다. 이는 향후 실적 성장세가 기대에 미치지 못할 경우 주가 조정으로 이어질 수 있습니다.\n*   **통신사 투자 사이클 의존성:** 통신장비 산업 특성상 주요 고객사인 통신사들의 투자 계획에 따라 실적 변동성이 클 수 있습니다. 2025년 국내 통신사들의 투자 연기로 인한 어려움이 대표적인 예시입니다.\n\n### 3. 최종 판정\n\n**관망**\n\n쏠리드는 과거 부진을 딛고 영업이익 흑자 전환에 성공했으며, 2025년 4분기 어닝 서프라이즈와 Open RAN, 6G, 위성통신 등 차세대 통신 기술을 통한 미래 성장 동력 확보는 매우 긍정적인 신호입니다. 2026년 글로벌 통신장비 시장의 회복 기대감 또한 긍정적인 요소입니다.\n\n그러나 제시된 재무제표 분석에서 언급된 '불안정한 재무구조'가 여전히 잠재적 리스크로 남아있으며, 현재 주가에 미래 성장 기대감이 상당 부분 반영되어 높은 밸류에이션(PER)을 형성하고 있다는 점을 고려해야 합니다.\n\n따라서 쏠리드는 긍정적인 변화의 흐름 속에 있으나, 재무구조의 안정화와 신규 성장 동력의 실질적인 성과가 추가적으로 확인될 때까지는 신중한 접근이 필요하다고 판단됩니다. 지속적인 관심과 관찰을 통해 투자 시점을 모색하는 '관망' 의견을 제시합니다.",
+    "citations": [
+      {
+        "title": "youtube.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFhzZsrGcBoVxr0zpFbb-eyMWuQ_2nynnAbYpnqTgz5TcT7Fv4zpzCKrQbZRFn_j0CWNv0X2oPKpfr7REerAD4s2ev9vbIO27MnvmACM65WaYPym8HL_lv5dW9CRv232qrismq7UhE="
+      },
+      {
+        "title": "tistory.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFNGk4lyBXC_YHy6T1i6oIA_Q_mG0-J6L86iJkWICMRArqMLmD3W0CCZAn1a628gpMVsvPw-xZ0qtMwlUFyMYwQrsWeeUicoW4k_JAqfRkCRyA5J5ut77OGFZ9nzt5Mn3KBTuCUwe9WYoZpQOoi5VS7oC6vs8SLAfJ2hEiI9yrwmSvTUxyZo8aky8GLWBxQxLmhdyyLjrX040iFUUnBO1wVucN9psBNsvpnBNj-BsxvyBdJBe6Qm5TxsaT0TZ24k_y4mmWFXmO4FOF_22tw7c11g0kHUnZPAuySbfatZow-THgtBCgIH-E35sVOj_QjwtE1iHbdHY9NoqZnilgFOA_5dBRsFCel8oyfmSwl4PmqcEQ9AO9K2F4927jWsMz8p8EuWBMFHw=="
+      },
+      {
+        "title": "valueline.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEcZpE1W9S9lAMIHb46kQLaudjDuM0Yw-Is_vKDULRM91hFzdvYRtOrftjT_hmUMRi3C-BByQbbFZIMm4nFvIC2h-CSYSUY3BkcV2tgCMCQJotHAiYRua9AgnIYR9mZ3T8sGGdoNNN8aVTEtBfB"
+      },
+      {
+        "title": "infostockdaily.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQElUPKMySUnNbEH7q_WjAGpw_ure3DaABKHHeGZsC5tuYJECnulROQEm_5rI_k5yF6vHJtEuk65GriZZevRUTzHzJFtm8svLEs7GvtmhhVncWGUkFsRWNZciLkHYLYv_U04AYN5LPcO3d_bf5LBOiW8ogIH17o9Q9mpD858tl4="
+      },
+      {
+        "title": "littlebproject.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQENYLksJArFPo8uFH6kzFZTHVJpYFcfmOlh04AEGrXyjrPIWSQLFX2m_vNtZyDy38zgFbfeAOcPftYZt7TRZYyXSnxTeABJ0SkFUfNUhWB_mhZsG3RdDhOJo_SgCv4Yd5OXUg=="
+      },
+      {
+        "title": "alphasquare.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQES46E66z2hqgEV8OcvNQ4gJkKmjc6lhYKSqJY70WyvgHHdNPhoDC4znI2M-RIFt3rVRGcsWRVnTVlu1s2F_7pkrGs61CuEumOnSav3kJQ8jp19c9TMs5kuDTcbD5kImvrmF47hKmpugVRo6aaOdxEvY2M7"
+      },
+      {
+        "title": "investing.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHj23OI8LxtSk4PAZWq8CGePA_M5cZIa269sLy7z2DX-IbRp4jXCqklUDMXdN1r2JvVokPQbqavYq7G51vmB7TEbKTNviYnqKg_N4aP7seqdSLlh7arRVeLe_thikpeuwrRyeHklrxSPNeR8Ec3Q_0lD1OtlQs8WnkvIQ=="
+      },
+      {
+        "title": "newsprime.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEPDsrLQ1vwTYDPhtG0fmNs6m_U8M3FwQwvaixZuRc55_GpvbvvBtbkOq3H6euLUp0I8TUQaImvvTyH7afCMTsur8V0lwUEJ4SmFqaY-rTXlLXpCzOYlxOFCNjPPGN4vOugEqDJJBAvuXmXNtGPr8J_vtyv_4qkpw=="
+      },
+      {
+        "title": "wisereport.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHvJKgEfEPVRINRnUBifMYJRmG14RSVHGKbIB6CqFFqNCs0HvM0j6wyk8H4tnIM_2mTaYr06OgjHKEV8J3qiyCSyIbhH3MwiYgtXGRd5mpgq_kEMBMkebsbLESsHd6ornwqGNCJEToC_DcqOcDQmCr-kVlhKm1sVHHATaOhlbFTHg=="
+      }
+    ]
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=00364403",
+    "summary": "공시 페이지 접근 제한"
+  }
+}

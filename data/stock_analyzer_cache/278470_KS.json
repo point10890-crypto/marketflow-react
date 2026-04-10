@@ -2,46 +2,50 @@
   "name": "에이피알",
   "ticker": "278470.KS",
   "result": "적극 매수",
-  "date": "2026-03-27 21:32:28",
-  "elapsed": 1.9,
-  "consensus_score": 4.35,
-  "analyst_count": 26,
+  "date": "2026-04-10 23:49:33",
+  "elapsed": 2.1,
+  "consensus_score": 4.33,
+  "analyst_count": 27,
   "recommendation_detail": {
     "strongBuy": 9,
-    "buy": 17,
+    "buy": 18,
     "hold": 0,
     "sell": 0,
     "strongSell": 0
   },
   "recommendation_period": "0m",
   "price_targets": {
-    "current": 327000.0,
-    "high": 450000.0,
+    "current": 393000.0,
+    "high": 480000.0,
     "low": 275000.0,
-    "mean": 368961.53,
-    "median": 360000.0
+    "mean": 391425.94,
+    "median": 380000.0
   },
-  "current_price": 327000.0,
-  "upside_potential": 12.8,
+  "current_price": 393000.0,
+  "upside_potential": -0.4,
   "key_stats": {
     "name": "APR",
     "sector": "Consumer Defensive",
     "industry": "Household & Personal Products",
-    "market_cap": 12242276843520,
+    "market_cap": 14713194807296,
     "pe_ratio": null,
-    "forward_pe": 21.860647,
-    "dividend_yield": 1.64,
-    "beta": 1.708,
-    "fifty_two_week_high": 377000.0,
-    "fifty_two_week_low": 60000.0,
+    "forward_pe": 24.709808,
+    "dividend_yield": 1.39,
+    "beta": 0.919,
+    "fifty_two_week_high": 396000.0,
+    "fifty_two_week_low": 64600.0,
     "revenue": 1527344922624,
     "profit_margin": 0.18965,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
   "source": "yfinance",
-  "ai_analysis": "에이피알(278470.KS)은 애널리스트 컨센서스 '적극 매수' 의견을 받고 있습니다. 26명의 애널리스트가 참여한 컨센서스 점수는 5점 만점에 4.35점입니다. 목표가 평균은 368,962원으로, 현재가 대비 12.8% 상승 여력이 있습니다.",
+  "ai_analysis": "에이피알(278470.KS)에 대해 27명의 애널리스트가 적극 매수 의견을 제시했습니다. 컨센서스 점수는 5점 만점에 4.33점입니다. 목표가 평균은 391,426원으로, 현재가 393,000원 대비 소폭 하락 여력이 있습니다.",
   "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 547634595480
+    },
     {
       "date": "2025-09",
       "value": 385942757340
@@ -53,13 +57,13 @@
     {
       "date": "2025-03",
       "value": 266032725960
-    },
-    {
-      "date": "2024-12",
-      "value": 244214607580
     }
   ],
   "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 98770046870
+    },
     {
       "date": "2025-09",
       "value": 74634440010
@@ -71,13 +75,16 @@
     {
       "date": "2025-03",
       "value": 49941244110
-    },
-    {
-      "date": "2024-12",
-      "value": 43390899350
     }
   ],
   "news": [
+    {
+      "title": "Asian Growth Stocks Insiders Favor With Up To 58% Revenue Growth",
+      "summary": "As geopolitical tensions in the Middle East and fluctuating energy prices continue to influence global markets, Asian equities have been navigating a complex landscape shaped by these external pressur",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/asian-growth-stocks-insiders-favor-223814174.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-04-01T22:38:14Z"
+    },
     {
       "title": "Insider-Owned Growth Companies In Global For December 2025",
       "summary": "As global markets navigate the anticipation of potential interest rate cuts and mixed economic signals, investors are closely watching growth companies with significant insider ownership. Such compani",

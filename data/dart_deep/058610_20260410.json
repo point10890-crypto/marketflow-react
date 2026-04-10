@@ -1,0 +1,304 @@
+{
+  "stock_code": "058610",
+  "stock_name": "에스피지",
+  "generated_at": "2026-04-10T14:44:54.523879+00:00",
+  "financials": {
+    "stock_code": "058610",
+    "corp_code": "00220686",
+    "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2016": {
+        "cash": 299.6,
+        "total_assets": 2461.3,
+        "short_debt": 654.9,
+        "long_debt": 181.5,
+        "total_liab": 1452.3,
+        "total_equity": 1009.0,
+        "revenue": 1522.7,
+        "op_profit": 61.4,
+        "net_income": 0.0
+      },
+      "2017": {
+        "cash": 154.9,
+        "total_assets": 2466.6,
+        "short_debt": 729.3,
+        "long_debt": 165.7,
+        "total_liab": 1500.0,
+        "total_equity": 966.6,
+        "revenue": 2957.5,
+        "op_profit": 63.7,
+        "net_income": -8.8
+      },
+      "2018": {
+        "cash": 152.1,
+        "total_assets": 2752.3,
+        "short_debt": 599.7,
+        "long_debt": 80.0,
+        "total_liab": 1498.7,
+        "total_equity": 1253.6,
+        "revenue": 3054.1,
+        "op_profit": 121.0,
+        "net_income": 0.0
+      },
+      "2019": {
+        "cash": 152.3,
+        "total_assets": 2757.4,
+        "short_debt": 501.5,
+        "long_debt": 80.0,
+        "total_liab": 1445.1,
+        "total_equity": 1312.3,
+        "revenue": 3151.6,
+        "op_profit": 103.0,
+        "net_income": 0.0
+      },
+      "2020": {
+        "cash": 125.8,
+        "total_assets": 2883.9,
+        "short_debt": 479.6,
+        "long_debt": 100.0,
+        "total_liab": 1436.0,
+        "total_equity": 1447.9,
+        "revenue": 3548.3,
+        "op_profit": 180.8,
+        "net_income": 0.0
+      },
+      "2021": {
+        "cash": 181.8,
+        "total_assets": 3650.9,
+        "short_debt": 776.7,
+        "long_debt": 100.0,
+        "total_liab": 1720.0,
+        "total_equity": 1930.9,
+        "revenue": 4163.3,
+        "op_profit": 235.4,
+        "net_income": 0.0
+      },
+      "2022": {
+        "cash": 216.9,
+        "total_assets": 3543.4,
+        "short_debt": 722.4,
+        "long_debt": 0.0,
+        "total_liab": 1408.5,
+        "total_equity": 2134.9,
+        "revenue": 4404.8,
+        "op_profit": 254.8,
+        "net_income": 0.0
+      },
+      "2023": {
+        "total_assets": 3469.9,
+        "cash": 322.1,
+        "total_equity": 647.6,
+        "total_liab": 1280.8,
+        "long_debt": 0.0,
+        "op_profit": 159.7,
+        "net_income": 110.0,
+        "revenue": 3937.9
+      },
+      "2024": {
+        "total_assets": 3975.1,
+        "cash": 279.8,
+        "total_equity": 547.6,
+        "total_liab": 1433.8,
+        "long_debt": 100.0,
+        "op_profit": 123.4,
+        "net_income": 131.1,
+        "revenue": 3884.8
+      },
+      "2025": {
+        "total_assets": 4284.7,
+        "cash": 420.2,
+        "total_equity": 447.6,
+        "short_debt": 540.6,
+        "total_liab": 1704.9,
+        "long_debt": 0.0,
+        "op_profit": 179.4,
+        "net_income": 0.0,
+        "revenue": 3416.7
+      }
+    },
+    "missing_years": [
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2016,
+        "revenue_eok": 1523,
+        "op_profit_eok": 61,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 4.005,
+        "debt_ratio_pct": 143.905
+      },
+      {
+        "year": 2017,
+        "revenue_eok": 2958,
+        "op_profit_eok": 64,
+        "net_income_eok": -9,
+        "roe_pct": -0.931,
+        "op_margin_pct": 2.164,
+        "debt_ratio_pct": 155.119
+      },
+      {
+        "year": 2018,
+        "revenue_eok": 3054,
+        "op_profit_eok": 121,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 3.962,
+        "debt_ratio_pct": 119.537
+      },
+      {
+        "year": 2019,
+        "revenue_eok": 3152,
+        "op_profit_eok": 103,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 3.268,
+        "debt_ratio_pct": 110.137
+      },
+      {
+        "year": 2020,
+        "revenue_eok": 3548,
+        "op_profit_eok": 181,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 5.102,
+        "debt_ratio_pct": 99.171
+      },
+      {
+        "year": 2021,
+        "revenue_eok": 4163,
+        "op_profit_eok": 235,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 5.645,
+        "debt_ratio_pct": 89.073
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 4405,
+        "op_profit_eok": 255,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 5.789,
+        "debt_ratio_pct": 65.948
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 3938,
+        "op_profit_eok": 160,
+        "net_income_eok": 110,
+        "roe_pct": 16.975,
+        "op_margin_pct": 4.063,
+        "debt_ratio_pct": 197.685
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 3885,
+        "op_profit_eok": 123,
+        "net_income_eok": 131,
+        "roe_pct": 23.905,
+        "op_margin_pct": 3.166,
+        "debt_ratio_pct": 261.679
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 3417,
+        "op_profit_eok": 179,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 5.238,
+        "debt_ratio_pct": 380.58
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": 9.4,
+      "op_profit_cagr_pct": 12.73,
+      "best_year": 2022,
+      "worst_year": 2016,
+      "avg_roe_pct": 3.995
+    },
+    "valuation": {
+      "grade": "C",
+      "strengths": [
+        "지난 10년간 매출액과 영업이익이 꾸준히 성장했습니다.",
+        "2022년까지 영업이익이 지속적으로 증가하며 수익성 개선 노력을 보였습니다.",
+        "2023년과 2024년에 높은 ROE를 기록하며 자본 활용 효율성이 개선되는 모습을 보였습니다."
+      ],
+      "risks": [
+        "당기순이익이 대부분의 연도에 0으로 기록되어 최종 수익성이 매우 불안정합니다.",
+        "최근 2023년부터 부채비율이 급격히 상승하여 재무 건전성에 대한 우려가 큽니다.",
+        "영업이익이 2022년 이후 감소세를 보였으며, 2025년 매출액 감소와 함께 당기순이익이 다시 0으로 예상되는 점은 실적 변동성을 시사합니다."
+      ],
+      "one_liner": "매출액과 영업이익은 성장세를 보였으나, 불안정한 당기순이익과 급증하는 부채비율로 인해 재무적 리스크 관리가 필요한 기업입니다."
+    }
+  },
+  "dcf": {
+    "text": "DCF 적정가치를 계산하기 위해 5년간의 매출액 및 영업이익 성장률 가정이 필요합니다. 이 정보가 제공되지 않아, 아래와 같이 **매출액 및 영업이익 성장률을 연 5%로 가정**하여 계산을 진행합니다.\n\n---\n\n### DCF 적정가치 계산\n\n**가정 (추가)**:\n*   매출액 성장률: 연 5% (5년간)\n*   영업이익 성장률: 연 5% (5년간)\n\n\n### 분석 결과\n\n위 가정된 성장률(매출액 및 영업이익 연 5%)을 바탕으로 에스피지(058610)의 DCF 적정가치를 계산한 결과는 다음과 같습니다.\n\n1.  **기본 시나리오 DCF 적정가치**:\n    *   WACC = 9%, 영구성장률 g = 2%\n    *   **적정가치(기본): 5053억원**\n\n2.  **WACC 및 영구성장률(g)에 따른 민감도 분석 (단위: 억원)**:\n\n|             | g=1% | g=2% | g=3% |\n| :---------- | :--- | :--- | :--- |\n| **WACC=7%** | 6116 | 7106 | 8591 |\n| **WACC=8%** | 5227 | 5908 | 6862 |\n| **WACC=9%** | 4561 | 5053 | 5710 |\n| **WACC=10%**| 4043 | 4412 | 4887 |\n| **WACC=11%**| 3629 | 3914 | 4270 |\n\n3.  **요약**:\n    *   **적정가치(기본): 5053억원**",
+    "executed_code": "import pandas as pd\n\n# --- Input Data and Assumptions ---\nrevenue_0 = 3417  # 억원 (최근 재무)\nop_profit_0 = 179  # 억원 (최근 재무)\ntax_rate = 0.25\ndepreciation_rate = 0.10  # 매출액의 10%\ncapex_rate = 0.05  # 매출액의 5%\nwacc_base = 0.09\ng_base = 0.02\nforecast_years = 5\n\n# --- Assumed Growth Rates (due to missing information in the prompt) ---\n# 매출액 및 영업이익 성장률 가정이 없어, 연 5%로 가정하여 진행합니다.\nrevenue_growth_rate = 0.05  # 5% per year\nop_profit_growth_rate = 0.05  # 5% per year\n\n# --- DCF Calculation Function ---\ndef calculate_dcf(wacc, g, rev_growth, op_growth):\n    projected_data = []\n    current_revenue = revenue_0\n    current_op_profit = op_profit_0\n\n    for year in range(1, forecast_years + 1):\n        current_revenue *= (1 + rev_growth)\n        current_op_profit *= (1 + op_growth)\n        \n        depreciation = current_revenue * depreciation_rate\n        capex = current_revenue * capex_rate\n        \n        # FCF = 영업이익 * (1 - 세율) + 감가상각 - CAPEX\n        fcf = current_op_profit * (1 - tax_rate) + depreciation - capex\n        \n        projected_data.append({\n            'Year': year,\n            'Revenue': current_revenue,\n            'Operating Profit': current_op_profit,\n            'Depreciation': depreciation,\n            'CAPEX': capex,\n            'FCF': fcf\n        })\n\n    df = pd.DataFrame(projected_data)\n\n    # Calculate Present Value of FCFs\n    pv_fcf_sum = 0\n    for index, row in df.iterrows():\n        pv_fcf_sum += row['FCF'] / ((1 + wacc) ** row['Year'])\n\n    # Calculate Terminal Value (TV)\n    # FCF for year 6 (first year after forecast period)\n    fcf_year_6 = df.iloc[-1]['FCF'] * (1 + g)\n    \n    if wacc <= g:\n        # WACC가 영구성장률(g)보다 작거나 같으면 터미널 밸류 계산이 불가능하거나 무한대가 됩니다.\n        return float('inf') \n    \n    terminal_value = fcf_year_6 / (wacc - g)\n    \n    # Present Value of Terminal Value\n    pv_terminal_value = terminal_value / ((1 + wacc) ** forecast_years)\n\n    # Total DCF Value\n    total_dcf_value = pv_fcf_sum + pv_terminal_value\n    return total_dcf_value\n\n# --- 1. 기본 시나리오 DCF 적정가치 계산 ---\nbase_dcf_value = calculate_dcf(wacc_base, g_base, revenue_growth_rate, op_profit_growth_rate)\nprint(f\"적정가치(기본): {base_dcf_value:.0f}억원\")\n\n# --- 2. WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 출력 ---\nwacc_scenarios = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_scenarios = [0.01, 0.02, 0.03]\n\nsensitivity_results = {}\nfor wacc in wacc_scenarios:\n    sensitivity_results[wacc] = {}\n    for g in g_scenarios:\n        # WACC는 g보다 커야 합니다. 주어진 시나리오에서는 항상 WACC > g 입니다.\n        if wacc <= g:\n            sensitivity_results[wacc][g] = \"N/A (WACC <= g)\"\n        else:\n            value = calculate_dcf(wacc, g, revenue_growth_rate, op_profit_growth_rate)\n            sensitivity_results[wacc][g] = f\"{value:.0f}\"\n\n# Format for display\nsensitivity_df = pd.DataFrame(sensitivity_results).T\nsensitivity_df.columns = [f'g={int(g*100)}%' for g in g_scenarios]\nsensitivity_df.index = [f'WACC={int(wacc*100)}%' for wacc in wacc_scenarios]\n\nprint(\"\\n--- DCF 적정가치 민감도 분석 (억원) ---\")\nprint(sensitivity_df)\n\n# --- 3. 마지막에 '적정가치(기본): {value}억원' 형태로 요약 출력 ---\nprint(f\"\\n적정가치(기본): {base_dcf_value:.0f}억원\")",
+    "code_output": "적정가치(기본): 5053억원\n\n--- DCF 적정가치 민감도 분석 (억원) ---\n          g=1%  g=2%  g=3%\nWACC=7%   6116  7106  8591\nWACC=8%   5227  5908  6862\nWACC=9%   4561  5053  5710\nWACC=10%  4043  4412  4887\nWACC=11%  3629  3914  4270\n\n적정가치(기본): 5053억원"
+  },
+  "news": {
+    "text": "## 에스피지(058610) 투자 분석 보고서\n\n### 1. 재무 데이터 스토리와 현재 시장 컨센서스의 일치/불일치\n\n제공된 에스피지(058610)의 10년 재무제표 분석 결과에 따르면, 매출액과 영업이익은 성장세를 보였으나 당기순이익의 불안정성과 급증하는 부채비율로 인해 재무적 리스크 관리가 필요한 기업으로 평가됩니다 (투자등급 C).\n\n현재 시장 컨센서스는 에스피지에 대해 대체로 긍정적인 '매수' 의견을 유지하고 있습니다. iM증권은 2025년 5월 30일 목표주가 38,000원에 '매수' 의견을 제시했으며, Investing.com에 따르면 1명의 애널리스트가 '적극 매수' 의견을 제시하고 평균 목표주가를 34,000원으로 보고 있습니다. 증권플러스에서는 2026년 4월 7일 기준 목표주가 170,000원에 '매수' 의견을 제시했습니다.\n\n시장에서는 에스피지를 단순 부품 제조사가 아닌 '로봇 테크 기업'으로 재평가하며 로봇 시장 성장에 대한 수혜를 기대하고 있습니다. 특히 로봇용 정밀 감속기 국산화 성공 및 시장 확대 가능성에 주목하고 있습니다. 2026년 1월 보고서에 따르면 부채비율은 관리 가능한 수준으로 유지되고 있으며, 로봇 부품 설비 증설을 위한 자금 여력도 충분하다고 분석됩니다. 또한, 회사는 2026년 3월 26일 기업가치 제고 계획을 통해 원가 경쟁력 강화, 신제품 매출 확대, 지속적인 연구개발, IR 및 공시 강화, 안정적인 재무구조를 바탕으로 주주가치 제고를 위한 배당 확대를 추진하겠다고 밝혔습니다.\n\n**일치/불일치:**\n*   **일치:** 재무 데이터의 매출액 및 영업이익 성장세는 시장의 로봇 산업 성장 및 감속기 국산화에 대한 기대감과 일치합니다.\n*   **불일치:** 불안정한 당기순이익과 급증하는 부채비율이라는 재무 데이터 스토리는 일부 시장 컨센서스(예: '관리 가능한 부채비율')와는 다소 불일치합니다. 다만, 기업가치 제고 계획을 통해 재무적 리스크 관리에 대한 의지를 표명한 점은 긍정적입니다. 현재 PER이 다소 높다는 점에서 단기 과열 가능성도 언급됩니다.\n\n### 2. 재무제표에서 드러나지 않는 리스크 또는 호재\n\n**호재:**\n*   **로봇 산업 성장 수혜:** 에스피지는 로봇용 정밀 감속기 국산화에 성공하여 일본 기업이 독점하던 시장에 진입했으며, 이는 회사의 밸류에이션 리레이팅을 이끄는 핵심 요인입니다. 스마트팩토리, 이차전지 장비, 로봇 산업 등의 성장세와 함께 관련주로 주목받고 있습니다.\n*   **LG전자와의 로봇 액추에이터 개발 협력:** 2026년 4월 5일 발표된 LG전자와의 협력 소식은 로봇 산업 내 기술 경쟁력 강화 및 사업 영역 확장 측면에서 긍정적인 요인입니다.\n*   **휴머노이드 로봇 산업 관련 ETF 출시:** 한국투자신탁운용이 4월 7일 'ACE K휴머노이드로봇산업TOP2+ ETF'를 상장하는 등 로봇 관련 테마에 대한 시장의 관심이 높아지고 있습니다.\n*   **기업가치 제고 계획 발표:** 2026년 3월 26일, 에스피지는 원가 경쟁력 강화, 신제품 매출 확대, 지속적인 연구개발, IR 및 공시 강화, 주주가치 제고를 위한 배당 확대 등을 포함한 기업가치 제고 계획을 발표했습니다.\n*   **해외 시장 확대 및 의료용 로봇 분야 진출:** 미주 및 일본 시장에서 긍정적인 반응을 얻고 있으며, 큐렉소와 의료용 로봇의 국산화 및 글로벌 경쟁력 강화를 위한 정밀 액추에이터 공급 업무협약(MOU)을 체결했습니다.\n\n**리스크:**\n*   **높은 밸류에이션:** 현재 주가가 전통적인 제조업 기준으로는 상당히 높은 PER을 받고 있으며, 이는 로봇 시장의 개화 속도와 감속기 매출의 실제 성과가 이 높은 밸류에이션을 정당화할 수 있는지가 관건입니다.\n*   **전방 산업의 변동성:** 로봇 산업(특히 휴머노이드, 협동로봇)의 성장이 예상보다 지연될 경우, 선반영된 기대감이 주가 조정으로 이어질 수 있습니다.\n*   **경쟁 심화:** 중국 로봇 부품 기업들이 저가 공세를 펼치며 추격하고 있으며, 중저가형 로봇 시장에서의 가격 경쟁이 심화될 수 있습니다.\n*   **원자재 가격 변동:** 모터와 감속기의 주원료 가격 변동에 따른 원가율 상승 압박이 있을 수 있습니다.\n*   **최근 주가 하락세:** LG전자 로봇 협력 소식 및 로봇 ETF 출시 등 긍정적인 뉴스에도 불구하고 최근 4월 9일 5.10% 하락 마감했으며, 4월 10일에도 약보합세를 기록하며 시장 강세와 대조적인 흐름을 보였습니다. 이는 단기적인 시장의 관망세 또는 매도세가 우세했음을 시사합니다.\n\n### 3. 최종 판정\n\n**관망**\n\n**판정 이유:**\n에스피지는 로봇 산업 성장의 핵심 수혜주로서 강력한 성장 잠재력을 보유하고 있으며, 정밀 감속기 국산화 및 주요 기업과의 협력은 매우 긍정적인 요소입니다. 또한, 기업가치 제고 계획을 통해 재무 건전성 및 주주 가치 제고에 대한 의지를 표명했습니다.\n\n그러나 제공된 재무제표 분석 결과에서 드러난 \"불안정한 당기순이익과 급증하는 부채비율\"이라는 재무적 리스크는 여전히 존재합니다. 현재 시장의 높은 PER은 미래 성장 기대감이 상당 부분 반영된 것으로 보이며, 최근 긍정적인 뉴스에도 불구하고 주가가 하락세를 보인 점은 단기적인 시장의 불확실성을 나타냅니다. 로봇 산업의 성장이 예상보다 지연될 경우 주가 조정 가능성도 배제할 수 없습니다.\n\n따라서, 장기적인 성장 동력은 유효하나, 현재 재무적 리스크의 실제 개선 여부, 높은 밸류에이션에 대한 부담, 그리고 단기적인 시장의 반응을 좀 더 관찰하며 신중하게 접근하는 것이 바람직하다고 판단됩니다.",
+    "citations": [
+      {
+        "title": "hankyung.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQE2Pgzkqe0r0FYUjIq5vkFbxOK2xrM-rsZczPf6v8dZoVU_PeOh2F57QFyUvBjheulaSDMtzEJOIf5qN6D1wtyYTGR0Q1wzV5wqfefQ-Q8AmO50MrczAFl1wROMpjdDfDrCCR417IFm1Yh4mf2Bow=="
+      },
+      {
+        "title": "investing.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFu0CCLGG3p4kxLyYf2ur7Gl77YgEgyeisDxSxFyg3w6-mI03dbRsgBNz823CZAxQ74huq4QHP4dYFCH8hmgMRyt3yobBoEaEMGERwpEhlk971aEOn5bB62eIzWJV5QgvgMUstOfm3ON3fh__uBk9lqe-t11Lp0AobkoB4="
+      },
+      {
+        "title": "stockplus.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHVLCpwDc3wxsFQpE0ZJ-Hea7kx5dMh0TljgFbjpUQOHN5ZIJbecJlX1bz0Zi56uLs4jYw53rYu3kXwfWjkAmjsRQzuDupCmuVXJGwMiDlHpU6s6d_WRuUdnBZUhdi4JgzCexSAhbZoJNuZjA=="
+      },
+      {
+        "title": "naver.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQH3uZBixnPxxfWJdGZY-pqZYikfDwJ4Y1-ixxETOneXFrKiJRa0_kC_JqhTYkmcb-DlhQZpwaaWTLfAoL1BxYcd4Z9rWkb6R6CUMqrWELXt86-IjAcKgcV6Ql6OWoeRmj6rEIvPqMtF77E9QKSm2u1VG88NjNxBBPM4P44U0xFOLKeMKH_MmYHNoC3F"
+      },
+      {
+        "title": "tistory.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGmQF1qQnl3opGKTqzDfa8DlqmeUed4oU8ZHktoedvFo6LHWMn2qaVbQJH0xP6hZaSnZa85jakq1sIEAQiX7qG3el0LN1hhrxOZDi6AGUnWkZPgkP76Zk1-bg=="
+      },
+      {
+        "title": "digitaltoday.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEBQKrB-SkJKM8gKX6_3XAcqCI_5KGxjsTR_OlWlgXwSRW0LaD-0iZQULACXzEna2eG188P3-VllJoszHfFHEn8msIbFj5yWRrX0pH3jhaYs0Q0KD60IKL1k-3223_6mim0D-21-UYIocqygTR_EKgyuDd1Izm7tC4CVCeO"
+      },
+      {
+        "title": "tistory.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHcbj8RC-cGUW6iDlYe3wXajvPcejUGTJd0oQPBs7MXCA3fRHeoau27LTkkDGSIQoeheFWxq_-Cn_HeaiakqpicTtxIrmmVy2LodSA6UdCs2MMPaeXwoTea_daY3Vg="
+      },
+      {
+        "title": "jkn.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFnFwll3HJbCzMXVATGvwktnJOdVp8P7gv37Hz7LTV251RxPbIjbmxlCOx9WmDlou1SHD0JvbFrf3rl5bZT04o8Kw_2NN02QQ9qLSSBojZGmM51gnKCVkj6EqGNiyQ="
+      },
+      {
+        "title": "alphasquare.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEk2q1hb8dDPHsiJN3ZYsFPrbsWlLoJogcDRalYkG9IXGEELTk3ibYB0kLTQxibwkgrRkeyiW9q3yRRIsGIkYixhDKejpgvUZLENAMShHZt1MCmZ7oaXDE0DUD4sB8HKwsaefGbMMOEBGinaN_JL9lsf0vR"
+      },
+      {
+        "title": "alphasquare.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFriL9QVCrPA_sZITDeVuqYwbKGc6RhZC96BAxPU9JdLfS4mCodW31Yo2C7W3M-57bhrS8aazC9s6Sny2-ZoztkOp2Rp19jNHgPT00WcPUympXLrW_rNyZWWWBtRRyfpG1Nus85oHaaTROKXttE6Rt0mAQV2TkgD-DBkFc="
+      }
+    ]
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=00220686",
+    "summary": "The provided URL could not be accessed. The page returned an error stating \"요청하신 인터넷주소(URL)을 찾을 수 없습니다.\" (The requested internet address (URL) could not be found.)\n\n공시 페이지 접근 제한"
+  }
+}

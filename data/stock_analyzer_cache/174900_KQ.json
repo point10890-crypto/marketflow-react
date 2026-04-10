@@ -1,35 +1,35 @@
 {
-  "name": "코데즈컴바인",
-  "ticker": "047770.KQ",
+  "name": "앱클론",
+  "ticker": "174900.KQ",
   "result": "데이터 없음",
-  "date": "2026-04-10 23:38:04",
-  "elapsed": 1.7,
+  "date": "2026-04-10 22:33:28",
+  "elapsed": 2.2,
   "consensus_score": null,
   "analyst_count": 0,
   "recommendation_detail": null,
   "recommendation_period": null,
   "price_targets": {
-    "current": 4865.0,
+    "current": 50300.0,
     "high": null,
     "low": null,
     "mean": null,
     "median": null
   },
-  "current_price": 4865.0,
+  "current_price": 50300.0,
   "upside_potential": null,
   "key_stats": {
-    "name": "Codes Combine",
-    "sector": "",
-    "industry": "",
-    "market_cap": 183650156544,
+    "name": "AbClon",
+    "sector": "Healthcare",
+    "industry": "Biotechnology",
+    "market_cap": 960375291904,
     "pe_ratio": null,
     "forward_pe": null,
     "dividend_yield": null,
-    "beta": null,
-    "fifty_two_week_high": 5960.0,
-    "fifty_two_week_low": 1575.0,
-    "revenue": null,
-    "profit_margin": null,
+    "beta": 1.141,
+    "fifty_two_week_high": 95800.0,
+    "fifty_two_week_low": 7500.0,
+    "revenue": 4714084352,
+    "profit_margin": 0.0,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
@@ -38,37 +38,37 @@
   "revenue_quarters": [
     {
       "date": "2025-12",
-      "value": 12355328350
+      "value": 1623183150
     },
     {
       "date": "2025-09",
-      "value": 9563625010
+      "value": 1566146470
     },
     {
       "date": "2025-06",
-      "value": 9465418090
+      "value": 1112112260
     },
     {
       "date": "2025-03",
-      "value": 8338499490
+      "value": 412642290
     }
   ],
   "net_income_quarters": [
     {
       "date": "2025-12",
-      "value": 1080206390
+      "value": -5060793320
     },
     {
       "date": "2025-09",
-      "value": 1278507330
+      "value": -3521973380
     },
     {
       "date": "2025-06",
-      "value": 609457970
+      "value": -3469384400
     },
     {
       "date": "2025-03",
-      "value": 1442258930
+      "value": -5978293000
     }
   ],
   "news": []

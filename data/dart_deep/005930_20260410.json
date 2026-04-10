@@ -1,0 +1,306 @@
+{
+  "stock_code": "005930",
+  "stock_name": "삼성전자",
+  "generated_at": "2026-04-10T14:35:37.726390+00:00",
+  "financials": {
+    "stock_code": "005930",
+    "corp_code": "00126380",
+    "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2016": {
+        "cash": 321114.4,
+        "total_assets": 2621743.2,
+        "short_debt": 127467.9,
+        "long_debt": 12442.4,
+        "total_liab": 692112.9,
+        "total_equity": 1929630.3,
+        "revenue": 2018667.4,
+        "op_profit": 292406.7,
+        "net_income": 227260.9
+      },
+      "2017": {
+        "cash": 305451.3,
+        "total_assets": 3017520.9,
+        "short_debt": 157676.2,
+        "long_debt": 18144.5,
+        "total_liab": 872606.6,
+        "total_equity": 2144914.3,
+        "revenue": 2395753.8,
+        "op_profit": 536450.4,
+        "net_income": 413445.7
+      },
+      "2018": {
+        "cash": 303405.0,
+        "total_assets": 3393572.4,
+        "short_debt": 135866.6,
+        "long_debt": 850.9,
+        "total_liab": 916040.7,
+        "total_equity": 2477531.8,
+        "revenue": 2437714.1,
+        "op_profit": 588866.7,
+        "net_income": 438908.8
+      },
+      "2019": {
+        "cash": 268860.0,
+        "total_assets": 3525645.0,
+        "short_debt": 143934.7,
+        "long_debt": 21971.8,
+        "total_liab": 896840.8,
+        "total_equity": 2628804.2,
+        "revenue": 2304008.8,
+        "op_profit": 277685.1,
+        "net_income": 215050.5
+      },
+      "2020": {
+        "cash": 293825.8,
+        "total_assets": 3782357.2,
+        "short_debt": 165534.3,
+        "long_debt": 19997.2,
+        "total_liab": 1022877.0,
+        "total_equity": 2759480.2,
+        "revenue": 2368069.9,
+        "op_profit": 359938.8,
+        "net_income": 260908.5
+      },
+      "2021": {
+        "cash": 390314.2,
+        "total_assets": 4266211.6,
+        "short_debt": 136877.9,
+        "long_debt": 28661.6,
+        "total_liab": 1217212.3,
+        "total_equity": 3048999.3,
+        "revenue": 2796048.0,
+        "op_profit": 516338.6,
+        "net_income": 6636.6
+      },
+      "2022": {
+        "cash": 496807.1,
+        "total_assets": 4484245.1,
+        "short_debt": 51473.2,
+        "long_debt": 35606.7,
+        "total_liab": 936749.0,
+        "total_equity": 3547496.0,
+        "revenue": 3022313.6,
+        "op_profit": 433766.3,
+        "net_income": 9240.6
+      },
+      "2023": {
+        "total_assets": 4559059.8,
+        "cash": 690808.9,
+        "total_equity": 104440.9,
+        "short_debt": 71146.0,
+        "total_liab": 922281.2,
+        "long_debt": 37248.5,
+        "op_profit": 65669.8,
+        "net_income": 144734.0,
+        "revenue": 2589354.9
+      },
+      "2024": {
+        "total_assets": 5145319.5,
+        "cash": 537055.8,
+        "total_equity": 3705131.9,
+        "short_debt": 131725.0,
+        "total_liab": 1123398.8,
+        "long_debt": 39358.6,
+        "op_profit": 327259.6,
+        "net_income": 0.0,
+        "revenue": 3008709.0
+      },
+      "2025": {
+        "total_assets": 5669421.1,
+        "cash": 578563.8,
+        "total_equity": 44038.9,
+        "short_debt": 175749.8,
+        "total_liab": 1306217.7,
+        "long_debt": 64795.2,
+        "op_profit": 436010.5,
+        "net_income": 442609.6,
+        "revenue": 3336059.4
+      }
+    },
+    "missing_years": [
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2016,
+        "revenue_eok": 2018667,
+        "op_profit_eok": 292407,
+        "net_income_eok": 227261,
+        "roe_pct": 11.777,
+        "op_margin_pct": 14.485,
+        "debt_ratio_pct": 35.868
+      },
+      {
+        "year": 2017,
+        "revenue_eok": 2395754,
+        "op_profit_eok": 536450,
+        "net_income_eok": 413446,
+        "roe_pct": 19.276,
+        "op_margin_pct": 22.392,
+        "debt_ratio_pct": 40.683
+      },
+      {
+        "year": 2018,
+        "revenue_eok": 2437714,
+        "op_profit_eok": 588867,
+        "net_income_eok": 438909,
+        "roe_pct": 17.716,
+        "op_margin_pct": 24.157,
+        "debt_ratio_pct": 36.974
+      },
+      {
+        "year": 2019,
+        "revenue_eok": 2304009,
+        "op_profit_eok": 277685,
+        "net_income_eok": 215050,
+        "roe_pct": 8.173,
+        "op_margin_pct": 12.052,
+        "debt_ratio_pct": 34.116
+      },
+      {
+        "year": 2020,
+        "revenue_eok": 2368070,
+        "op_profit_eok": 359939,
+        "net_income_eok": 260908,
+        "roe_pct": 9.455,
+        "op_margin_pct": 15.2,
+        "debt_ratio_pct": 37.06
+      },
+      {
+        "year": 2021,
+        "revenue_eok": 2796048,
+        "op_profit_eok": 516339,
+        "net_income_eok": 6637,
+        "roe_pct": 0.218,
+        "op_margin_pct": 18.467,
+        "debt_ratio_pct": 39.921
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 3022314,
+        "op_profit_eok": 433766,
+        "net_income_eok": 9241,
+        "roe_pct": 0.26,
+        "op_margin_pct": 14.352,
+        "debt_ratio_pct": 26.408
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 2589355,
+        "op_profit_eok": 65670,
+        "net_income_eok": 144734,
+        "roe_pct": 138.581,
+        "op_margin_pct": 2.536,
+        "debt_ratio_pct": 883.076
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 3008709,
+        "op_profit_eok": 327260,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 10.877,
+        "debt_ratio_pct": 30.319
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 3336059,
+        "op_profit_eok": 436010,
+        "net_income_eok": 442610,
+        "roe_pct": 1005.041,
+        "op_margin_pct": 13.069,
+        "debt_ratio_pct": 2965.916
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": 5.68,
+      "op_profit_cagr_pct": 4.49,
+      "best_year": 2018,
+      "worst_year": 2023,
+      "avg_roe_pct": 121.045
+    },
+    "valuation": {
+      "grade": "D",
+      "strengths": [
+        "10년간 매출액이 꾸준히 증가하는 추세로, 대규모 사업 규모를 유지하고 있습니다.",
+        "2018년 58조원, 2021년 51조원 등 대규모 영업이익을 꾸준히 창출하는 능력을 보유하고 있습니다.",
+        "글로벌 시장에서 독보적인 시장 지위를 바탕으로 안정적인 매출 기반을 확보하고 있습니다."
+      ],
+      "risks": [
+        "2023년과 2025년 자본총계가 급격히 감소하여 부채비율이 비정상적으로 높아지는 등 재무 건전성에 심각한 문제가 발생한 것으로 보입니다.",
+        "2023년 영업이익이 급감하고, 2021년, 2022년, 2024년 당기순이익이 매우 낮은 수준을 기록하는 등 수익성 변동성이 극심합니다.",
+        "2024년 당기순이익이 0으로 기록되는 등 미래 순이익 창출에 대한 불확실성이 매우 높습니다."
+      ],
+      "one_liner": "제공된 데이터 상으로는 매출액과 영업이익 규모는 크지만, 자본총계의 급격한 변동으로 인해 재무 건전성과 수익성에 대한 심각한 우려가 제기되는 기업입니다."
+    }
+  },
+  "dcf": {
+    "text": "퀀트 애널리스트로서 삼성전자(005930)의 DCF 적정가치를 계산하고 민감도 분석을 수행했습니다.\n\n**가정:**\n*   FCF ≈ 영업이익 × (1 - 0.25) + 감가상각(매출의 10%) - CAPEX(매출의 5%)\n*   WACC = 9%, 영구성장률 g = 2% (기본 시나리오)\n*   5년 예측 + Terminal Value\n*   예측 기간(5년) 동안 매출액 및 영업이익의 성장률이 명시되지 않아, 첫 해 FCF를 계산한 후 해당 FCF가 5년 동안 일정하게 유지된다고 가정했습니다.\n\n---\n\n### 1. 기본 시나리오 DCF 적정가치 계산\n\n**FCF 계산 (단위: 억원):**\n*   매출액: 3,336,059\n*   영업이익: 436,010\n*   감가상각 (매출의 10%): 3,336,059 * 0.10 = 333,605.9\n*   CAPEX (매출의 5%): 3,336,059 * 0.05 = 166,802.95\n*   법인세율: 25%\n*   FCF = 436,010 * (1 - 0.25) + 333,605.9 - 166,802.95 = 327,007.5 + 333,605.9 - 166,802.95 = 493,810.45 억원\n\n이 FCF를 5년간 일정하게 적용하고, WACC 9%, 영구성장률 2%를 사용하여 DCF를 계산합니다.\n\n---\n\n### 2. WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 출력\n\n아래는 다양한 WACC와 영구성장률(g) 조합에 따른 DCF 적정가치(억원) 민감도 분석 결과입니다.\n\n---\n\n---\n\n### 3. 요약 출력\n\n**적정가치(기본): 6597347.13억원**",
+    "executed_code": "import pandas as pd\n\ndef calculate_dcf(\n    revenue,\n    operating_profit,\n    wacc,\n    g,\n    forecast_years=5,\n    tax_rate=0.25,\n    depreciation_rate_of_revenue=0.10,\n    capex_rate_of_revenue=0.05,\n):\n    \"\"\"\n    Calculates the DCF valuation based on provided financial data and assumptions.\n    Assumes FCF is constant for the forecast period due to lack of explicit growth rates for revenue/operating profit.\n    \"\"\"\n    # Calculate FCF for the first year\n    depreciation = revenue * depreciation_rate_of_revenue\n    capex = revenue * capex_rate_of_revenue\n    fcf_year1 = operating_profit * (1 - tax_rate) + depreciation - capex\n\n    # Project FCF for forecast years (assuming constant FCF for now)\n    # In a real-world scenario, revenue and operating profit would be projected with growth rates.\n    # For this problem, we use fcf_year1 as the FCF for each of the forecast_years.\n    \n    # Calculate Present Value of FCFs\n    pv_fcf_sum = 0\n    for t in range(1, forecast_years + 1):\n        pv_fcf_sum += fcf_year1 / ((1 + wacc) ** t)\n\n    # Calculate Terminal Value\n    # FCF_n is the FCF of the last forecast year.\n    # Since we assume constant FCF, FCF_n = fcf_year1\n    fcf_n = fcf_year1 \n    \n    # Ensure WACC > g for the Gordon Growth Model\n    if wacc <= g:\n        return float('inf') # Or handle as an error, but inf is common for valuation models\n\n    terminal_value = fcf_n * (1 + g) / (wacc - g)\n\n    # Calculate Present Value of Terminal Value\n    pv_terminal_value = terminal_value / ((1 + wacc) ** forecast_years)\n\n    # Total DCF Valuation\n    dcf_value = pv_fcf_sum + pv_terminal_value\n    return dcf_value\n\n# Base Scenario Data\nrevenue_base = 3336059\noperating_profit_base = 436010\nwacc_base = 0.09\ng_base = 0.02\n\n# Calculate Base Scenario DCF\ndcf_base_value = calculate_dcf(\n    revenue=revenue_base,\n    operating_profit=operating_profit_base,\n    wacc=wacc_base,\n    g=g_base\n)\n\nprint(f\"적정가치(기본): {dcf_base_value:.2f}억원\")\n\n# Sensitivity Analysis\nwacc_values = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_values = [0.01, 0.02, 0.03]\n\nsensitivity_results = pd.DataFrame(index=[f'WACC={w*100:.0f}%' for w in wacc_values],\n                                   columns=[f'g={g*100:.0f}%' for g in g_values])\n\nfor w in wacc_values:\n    for g_rate in g_values:\n        # Ensure WACC > g for the Gordon Growth Model\n        if w <= g_rate:\n            sensitivity_results.loc[f'WACC={w*100:.0f}%', f'g={g_rate*100:.0f}%'] = \"N/A (WACC <= g)\"\n        else:\n            value = calculate_dcf(\n                revenue=revenue_base,\n                operating_profit=operating_profit_base,\n                wacc=w,\n                g=g_rate\n            )\n            sensitivity_results.loc[f'WACC={w*100:.0f}%', f'g={g_rate*100:.0f}%'] = f\"{value:.2f}\"\n\nprint(\"\\n--- DCF 적정가치 민감도 분석 (억원) ---\")\nprint(sensitivity_results)\n\nprint(f\"\\n적정가치(기본): {dcf_base_value:.2f}억원\")\n\n\nimport pandas as pd\n\ndef calculate_dcf(\n    revenue,\n    operating_profit,\n    wacc,\n    g,\n    forecast_years=5,\n    tax_rate=0.25,\n    depreciation_rate_of_revenue=0.10,\n    capex_rate_of_revenue=0.05,\n):\n    \"\"\"\n    Calculates the DCF valuation based on provided financial data and assumptions.\n    Assumes FCF is constant for the forecast period due to lack of explicit growth rates for revenue/operating profit.\n    \"\"\"\n    # Calculate FCF for the first year\n    depreciation = revenue * depreciation_rate_of_revenue\n    capex = revenue * capex_rate_of_revenue\n    fcf_year1 = operating_profit * (1 - tax_rate) + depreciation - capex\n\n    # Project FCF for forecast years (assuming constant FCF for now)\n    # In a real-world scenario, revenue and operating profit would be projected with growth rates.\n    # For this problem, we use fcf_year1 as the FCF for each of the forecast_years.\n    \n    # Calculate Present Value of FCFs\n    pv_fcf_sum = 0\n    for t in range(1, forecast_years + 1):\n        pv_fcf_sum += fcf_year1 / ((1 + wacc) ** t)\n\n    # Calculate Terminal Value\n    # FCF_n is the FCF of the last forecast year.\n    # Since we assume constant FCF, FCF_n = fcf_year1\n    fcf_n = fcf_year1 \n    \n    # Ensure WACC > g for the Gordon Growth Model\n    if wacc <= g:\n        return float('inf') # Or handle as an error, but inf is common for valuation models\n\n    terminal_value = fcf_n * (1 + g) / (wacc - g)\n\n    # Calculate Present Value of Terminal Value\n    pv_terminal_value = terminal_value / ((1 + wacc) ** forecast_years)\n\n    # Total DCF Valuation\n    dcf_value = pv_fcf_sum + pv_terminal_value\n    return dcf_value\n\n# Base Scenario Data\nrevenue_base = 3336059\noperating_profit_base = 436010\nwacc_base = 0.09\ng_base = 0.02\n\n# Calculate Base Scenario DCF\ndcf_base_value = calculate_dcf(\n    revenue=revenue_base,\n    operating_profit=operating_profit_base,\n    wacc=wacc_base,\n    g=g_base\n)\n\nprint(f\"적정가치(기본): {dcf_base_value:.2f}억원\")\n\n# Sensitivity Analysis\nwacc_values = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_values = [0.01, 0.02, 0.03]\n\nsensitivity_results = pd.DataFrame(index=[f'WACC={w*100:.0f}%' for w in wacc_values],\n                                   columns=[f'g={g*100:.0f}%' for g in g_values])\n\nfor w in wacc_values:\n    for g_rate in g_values:\n        # Ensure WACC > g for the Gordon Growth Model\n        if w <= g_rate:\n            sensitivity_results.loc[f'WACC={w*100:.0f}%', f'g={g_rate*100:.0f}%'] = \"N/A (WACC <= g)\"\n        else:\n            value = calculate_dcf(\n                revenue=revenue_base,\n                operating_profit=operating_profit_base,\n                wacc=w,\n                g=g_rate\n            )\n            sensitivity_results.loc[f'WACC={w*100:.0f}%', f'g={g_rate*100:.0f}%'] = f\"{value:.2f}\"\n\nprint(\"\\n--- DCF 적정가치 민감도 분석 (억원) ---\")\nprint(sensitivity_results)\n\nprint(f\"\\n적정가치(기본): {dcf_base_value:.2f}억원\")",
+    "code_output": "적정가치(기본): 6597347.13억원\n\n--- DCF 적정가치 민감도 분석 (억원) ---\n                g=1%        g=2%         g=3%\nWACC=7%   7951400.78  9207152.87  11090781.01\nWACC=8%   6820783.16  7684986.55   8894871.29\nWACC=9%   5972654.68  6597347.13   7430270.40\nWACC=10%  5312859.15  5781302.45   6383586.71\nWACC=11%  4784902.49  5146333.87   5598123.09\n\n적정가치(기본): 6597347.13억원\n\n적정가치(기본): 6597347.13억원\n\n--- DCF 적정가치 민감도 분석 (억원) ---\n                g=1%        g=2%         g=3%\nWACC=7%   7951400.78  9207152.87  11090781.01\nWACC=8%   6820783.16  7684986.55   8894871.29\nWACC=9%   5972654.68  6597347.13   7430270.40\nWACC=10%  5312859.15  5781302.45   6383586.71\nWACC=11%  4784902.49  5146333.87   5598123.09\n\n적정가치(기본): 6597347.13억원"
+  },
+  "news": {
+    "text": "## 삼성전자(005930) 투자 의견: 관망\n\n### 1. 재무 데이터 스토리와 시장 컨센서스의 일치/불일치\n\n제공된 10년 재무제표 분석 결과는 \"투자등급 D\"로, 자본총계의 급격한 변동으로 인한 재무 건전성 및 수익성 우려를 제기하고 있습니다. 하지만 최근 2주간의 시장 컨센서스는 이와 상반되는 강력한 '매수' 의견과 긍정적인 실적 전망을 보여줍니다.\n\n*   **시장 컨센서스**: 다수의 증권사에서 삼성전자에 대해 '매수' 투자의견을 제시하고 있으며, 목표주가 또한 현재 주가 대비 높은 수준입니다. 특히, 2026년 1분기 잠정 실적이 시장 컨센서스를 크게 상회하는 '어닝 서프라이즈'를 기록했습니다. 매출액 133조 원, 영업이익 57조 2천억 원으로 전년 동기 대비 각각 68.06%, 755.01% 증가했습니다. 이는 국내 기업 사상 최대 영업이익입니다.\n*   **메모리 반도체 실적 견인**: 1분기 메모리 반도체 부문에서만 504억 달러(약 74조 5천억 원)의 매출을 기록하며 사상 최대 실적을 경신했습니다. D램과 낸드플래시 모두 역대 최고 매출을 달성했으며, 특히 고대역폭메모리(HBM) 주도권 탈환과 범용 메모리 시장에서의 수익성 극대화가 주효했습니다.\n*   **컨센서스 불일치**: 제공된 재무제표 분석(투자등급 D)은 과거 데이터에 기반한 것으로 보이며, 최근 발표된 1분기 실적과 향후 전망에 대한 시장의 매우 긍정적인 컨센서스와는 큰 괴리가 있습니다. 시장은 AI 반도체 수요 증가에 따른 메모리 업황 개선과 HBM 기술 경쟁력 강화를 긍정적으로 평가하고 있습니다.\n\n### 2. 재무제표에서 드러나지 않는 리스크 또는 호재\n\n**호재:**\n\n*   **AI 반도체 시장 성장 및 HBM 경쟁력 강화**: AI 시대의 핵심인 HBM 시장에서 삼성전자가 HBM4 기술 경쟁력 우위를 점하며 점유율 확대 기회를 맞고 있습니다. 2분기 HBM 출하량이 전년 동기 대비 331% 증가할 것으로 예상됩니다.\n*   **베트남 반도체 패키징 거점 구축**: 약 6조 원을 투자하여 베트남에 반도체 패키징 생산 라인을 구축할 계획입니다. 이는 AI 반도체 시장 확대로 중요성이 커진 첨단 패키징 역량을 강화하고 글로벌 공급망 재편에 대응하기 위한 전략입니다.\n*   **파운드리 사업 개선 기대**: 파운드리 부문은 현재 영업적자이나, 4nm 및 2nm 신규 고객 및 신규 제품 수주 증가로 하반기 영업 흑자 전환 가능성이 높아지고 있습니다.\n\n**리스크:**\n\n*   **지정학적 리스크**: 이란 전쟁 등 중동 지역의 지정학적 불안정성은 여전히 중요한 리스크 요인으로 언급되고 있습니다.\n*   **글로벌 경쟁 심화 및 규제**: 메모리 및 로직 칩 분야의 막대한 자본 지출과 잠재적 공급 과잉, 그리고 관세, 수출 통제, 규제 및 ESG 요건으로 인한 리스크가 존재합니다. 특히 중국 반도체 업체들의 추격도 리스크 요인으로 작용할 수 있습니다.\n*   **스마트폰/가전 부문 수익성 부담**: 메모리 가격 급등에 따른 원가 부담으로 DX(스마트폰, TV, 가전 등) 부문의 영업이익이 전년 대비 감소할 전망입니다.\n\n### 3. 최종 판정\n\n제공된 재무제표 분석 결과는 과거 데이터에 기반한 것으로 보이며, 최근 발표된 1분기 어닝 서프라이즈와 AI 반도체 시장의 긍정적인 전망을 반영하지 못하고 있습니다. 현재 시장 컨센서스는 삼성전자의 실적 턴어라운드와 미래 성장 동력에 대해 매우 낙관적입니다.\n\n그러나 지정학적 리스크와 글로벌 경쟁 심화, 그리고 스마트폰/가전 부문의 수익성 부담 등 잠재적 리스크 요인 또한 상존합니다. 또한, \"자본총계의 급격한 변동\"이라는 재무 건전성 우려가 해소되었는지에 대한 추가적인 확인이 필요합니다.\n\n따라서, 단기적인 급등세에 편승하기보다는 재무 건전성 지표의 안정화 여부와 HBM 및 파운드리 사업의 실제적인 성과를 좀 더 지켜볼 필요가 있습니다.\n\n**최종 판정: 관망**",
+    "citations": [
+      {
+        "title": "hankyung.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHqeaROP10dzRNKF9CjDTcmHCHlnJ2hxNgf-_T9TeP6CDPFw6HZyRzaN6SSjhHQkmqc-mDR-VB-q3SoCKrtVTLAi1hKvgWoEWh8mjm4mT86Y72abB55WAIR-ViCGgYRTVVn7nZh8cUGZoFI4ylATA=="
+      },
+      {
+        "title": "investing.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQE3NGxsWjpserwqhyqDk9SeBvEjxX-aq_V7ezdFKGoTyZveOPHx8dmopm5qScNZbhIaCzI0Mn1mH7P7NzsCxhHHMJyYGeQJ7RvY4CRz2vS-zRqLa3Ko0zw-NQ5QlpqHSshQO-W5WaFLTHkrm4O41dHlEJce_1CpP9jFRzTVo9uCYtbj_V-vFK0rldc8"
+      },
+      {
+        "title": "daum.net",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGS0a-QgjlwNZ2jHnZqhfoGTDGYI5asg_rNNPOT8H526J0HP7QJ7mLp6pUPuMRaNcxZ8uIgSHJMSTAJKuCP37YZEAOvLnn8EzxvctqMvKEfqtpNQuYqWeXs409vPs85aRc8"
+      },
+      {
+        "title": "einfomax.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQE3eUyuWt5f6NIh_jparzUxk0NQbHaGK92tc-9H5gMKV7C5kTf3QNPNZku66wbxMk1yYM7rt-I88IplwX0VedwCEqPzQ8Dm7PvMk3LLGw3VAJuhX7smUNvtcUl3gL_RjQoJdYWD4uJD6sF_Xa3N86RXSBH5upCx28GKoQ=="
+      },
+      {
+        "title": "sedaily.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEY972EwBk-2wl6oHzisVgvwfdICDcHqGhT1ngeb_snci02UL-I9WK0K1RsGFUSQrRY0Y9eSi55oEDECP0aHC7W4Q-jc3Wi7hzo7hAc8hJ2cOIkw2zCtybo7VbFzo3ZwlHS"
+      },
+      {
+        "title": "samsungpop.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEic52Ld_lEHmwNDenf5_U3WuwaMfbJJV-k6XK8Giif6GZhS9OH2tl5oT5mRePZ6Ie6ojbErc102kuRMlvCyPWIbSyMUDZvN3nqMtaS0bZb5BG9HVNAsbaApYQmt7BMzZmaXhXWkxdSlG-SLQbnES9wpGDNEYDiSxvXNhV3SnqVb3Aspu8BJxl2QLYsG6GcELN_7aGe_cYJw8iB2wnBjvWC_5dRCMhdswwDMQmzC80L55SFweap5c1MjBnGuDPaMBQXuvXFlIUf4xJrjompoSk="
+      },
+      {
+        "title": "kiwoom.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEpZ8ImLRGfJK3VoDDOS3xT8_cEzIUhztv5K9NB1kuXxTZkpvvVDnoBnjsAe6I7WmUfEuYAUDyEwomnPshIZHSnaHWAyoES8VdOlsJnI7FXBBnrgfOnOnovewzi"
+      },
+      {
+        "title": "infostockdaily.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHLaGvsqH1adrdmymxStB5K0C5bNEbxEIpeSvlvaht48RDCyL8tqvKa2s-QeIyUuNEK7uNcTWXJ8DlTqD9ciRkAS2lADEDa_FIc3nHGPuz64AUgnzH0VYUKs_uJI1-6raDPpe1hD4Za23MBvPtLc2_i8Dp6YBY2tsleEPGXAvw="
+      },
+      {
+        "title": "investing.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQG0XtE_12DYzau7S1JDqGp7WTFKvHhVx0uhEeCQ4Poov8vDcdrr0cdtef7oiTv5qRRP32qIrvM7M0JF3r91elNUYlRWoAyGMh1wYEejabvgO0FKa78Gk0jrliYLaC2ILNKCleZ9PqCub9k5EKq5EwqkBoXceVgi9efUJxvL"
+      },
+      {
+        "title": "simplywall.st",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHR11eo7hVLEj7SUMy2H_sVudZnWGOANzEPHh7b-YVCw1Jg-pRir45svM79ulXm43M2c383poz7Dl7xCw6l9fFA0k5R5Sm4lSqVGOhfJAxK9GmpasC0u4V8rxY-oEtXLQ_vI12-c_qf4OHG9KCn72BVDrrUk0kaGVgKv1oBibddU4nw_aXsR5053Qe7lCKjAABRqNaPZ6Mz5wVtlxnIYvHK"
+      }
+    ]
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=00126380",
+    "summary": "공시 페이지 접근 제한"
+  }
+}

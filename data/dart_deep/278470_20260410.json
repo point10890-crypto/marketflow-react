@@ -1,0 +1,239 @@
+{
+  "stock_code": "278470",
+  "stock_name": "에이피알",
+  "generated_at": "2026-04-10T14:49:34.938704+00:00",
+  "financials": {
+    "stock_code": "278470",
+    "corp_code": "01190568",
+    "years": [
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2019": {
+        "cash": 174.5,
+        "total_assets": 605.3,
+        "short_debt": 0.0,
+        "total_liab": 511.3,
+        "total_equity": 94.0,
+        "revenue": 1590.0,
+        "op_profit": 71.5,
+        "net_income": -3.2
+      },
+      "2020": {
+        "cash": 296.2,
+        "total_assets": 918.3,
+        "short_debt": 60.0,
+        "total_liab": 401.3,
+        "total_equity": 517.0,
+        "revenue": 2199.4,
+        "op_profit": 144.7,
+        "net_income": 0.0
+      },
+      "2021": {
+        "cash": 338.0,
+        "total_assets": 1264.3,
+        "short_debt": 165.0,
+        "total_liab": 604.3,
+        "total_equity": 660.0,
+        "revenue": 2591.5,
+        "op_profit": 142.7,
+        "net_income": 0.0
+      },
+      "2022": {
+        "cash": 572.5,
+        "total_assets": 1841.2,
+        "short_debt": 215.0,
+        "total_liab": 838.6,
+        "total_equity": 1002.6,
+        "revenue": 3977.0,
+        "op_profit": 392.3,
+        "net_income": 299.5
+      },
+      "2023": {
+        "total_assets": 2873.1,
+        "cash": 1253.3,
+        "total_equity": 1969.5,
+        "short_debt": 75.0,
+        "total_liab": 903.6,
+        "op_profit": 1041.9,
+        "net_income": 815.5,
+        "revenue": 5238.1
+      },
+      "2024": {
+        "total_assets": 5651.4,
+        "cash": 903.7,
+        "total_equity": 38.1,
+        "short_debt": 0.0,
+        "total_liab": 2416.2,
+        "op_profit": 1227.1,
+        "net_income": 1075.9,
+        "revenue": 7227.5
+      },
+      "2025": {
+        "total_assets": 7717.4,
+        "cash": 1543.5,
+        "total_equity": 132.2,
+        "short_debt": 0.0,
+        "total_liab": 3259.4,
+        "op_profit": 3655.2,
+        "net_income": 2896.5,
+        "revenue": 15273.4
+      }
+    },
+    "missing_years": [
+      2016,
+      2017,
+      2018,
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2019,
+        "revenue_eok": 1590,
+        "op_profit_eok": 72,
+        "net_income_eok": -3,
+        "roe_pct": -3.19,
+        "op_margin_pct": 4.53,
+        "debt_ratio_pct": 543.62
+      },
+      {
+        "year": 2020,
+        "revenue_eok": 2199,
+        "op_profit_eok": 145,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 6.59,
+        "debt_ratio_pct": 77.56
+      },
+      {
+        "year": 2021,
+        "revenue_eok": 2592,
+        "op_profit_eok": 143,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 5.52,
+        "debt_ratio_pct": 91.52
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 3977,
+        "op_profit_eok": 392,
+        "net_income_eok": 300,
+        "roe_pct": 29.91,
+        "op_margin_pct": 9.86,
+        "debt_ratio_pct": 83.65
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 5238,
+        "op_profit_eok": 1042,
+        "net_income_eok": 816,
+        "roe_pct": 41.42,
+        "op_margin_pct": 19.89,
+        "debt_ratio_pct": 45.89
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 7228,
+        "op_profit_eok": 1227,
+        "net_income_eok": 1076,
+        "roe_pct": 2831.58,
+        "op_margin_pct": 16.98,
+        "debt_ratio_pct": 6357.89
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 15273,
+        "op_profit_eok": 3655,
+        "net_income_eok": 2896,
+        "roe_pct": 2193.94,
+        "op_margin_pct": 23.93,
+        "debt_ratio_pct": 2468.94
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": 45.56,
+      "op_profit_cagr_pct": 120.45,
+      "best_year": 2025,
+      "worst_year": 2019,
+      "avg_roe_pct": 727.67
+    },
+    "valuation": {
+      "grade": "B",
+      "strengths": [
+        "매출액과 영업이익의 폭발적인 성장세가 돋보입니다.",
+        "지속적인 영업이익률 개선을 통해 수익성이 크게 향상되었습니다.",
+        "최근 당기순이익이 급증하며 이익 창출 능력이 강화되었습니다."
+      ],
+      "risks": [
+        "2024년 이후 극도로 높은 부채비율과 불안정한 자본 구조는 심각한 재무 리스크입니다.",
+        "ROE 지표의 비정상적인 변동성은 재무 안정성에 대한 우려를 증폭시킵니다.",
+        "현재의 높은 성장률을 미래에도 지속할 수 있을지에 대한 불확실성이 존재합니다."
+      ],
+      "one_liner": "폭발적인 성장세와 수익성 개선이 돋보이나, 불안정한 재무 구조는 면밀한 검토가 필요한 고성장 기업입니다."
+    }
+  },
+  "dcf": {
+    "text": "퀀트 애널리스트로서 에이피알(278470)의 DCF 적정가치를 계산하겠습니다.\n\n**전제 및 가정:**\n\n1.  **기준 연도 해석:** \"기준 연도: 2025\"는 5년 예측의 첫 해를 의미합니다. 따라서 제공된 \"최근 재무\" 데이터는 2024년 실적으로 간주하고, 2025년부터 2029년까지 5년간의 FCF를 예측합니다.\n2.  **성장률 가정 (5년 예측 기간):** 문제에서 5년 예측 기간 동안의 매출액 및 영업이익 성장률이 명시되지 않았습니다. 합리적인 분석을 위해, **5년 예측 기간(2025-2029) 동안 매출액과 영업이익이 매년 10%씩 성장**한다고 가정합니다. 이는 영구성장률(2%)보다 높은 초기 성장률을 반영하는 일반적인 접근 방식입니다.\n3.  **FCF 계산식:** FCF = 영업이익 × (1 - 법인세율) + 감가상각 - CAPEX\n    *   법인세율: 25% (주어진 식 `영업이익 × (1 - 0.25)`에서 유추)\n    *   감가상각: 매출액의 10%\n    *   CAPEX: 매출액의 5%\n\n**제공된 데이터:**\n\n*   기업: 에이피알 (278470)\n*   기준 연도: 2025 (첫 예측 연도)\n*   최근 재무 (2024년으로 가정, 억원):\n    *   매출액: 15273\n    *   영업이익: 3655\n    *   당기순이익: 2896\n    *   자산총계: 7717\n    *   부채총계: 3259\n*   가정:\n    *   WACC (가중평균자본비용) = 9%\n    *   영구성장률 (g) = 2%\n    *   예측 기간: 5년 (2025년 ~ 2029년)\n\n---\n\n### 1. 기본 시나리오 DCF 적정가치 계산\n\n먼저, 파이썬 코드를 사용하여 FCF를 예측하고 DCF 적정가치를 계산합니다.\n\n\n---\n\n### 2. WACC × g 민감도 그리드 출력\n\n이제 WACC(7/8/9/10/11%)와 영구성장률 g(1/2/3%)에 대한 민감도 분석을 수행합니다.\n\n\n---\n\n### 3. 요약 출력\n\n**적정가치(기본): 71470.27억원**",
+    "executed_code": "import pandas as pd\n\n# 1. 기본 데이터 및 가정 설정\n# 최근 재무 (2024년으로 가정)\nrevenue_2024 = 15273  # 억원\noperating_income_2024 = 3655  # 억원\n\n# 가정\nexplicit_growth_rate = 0.10  # 5년 예측 기간 동안 매출액 및 영업이익 성장률 (10%)\ntax_rate = 0.25\ndepreciation_rate_of_revenue = 0.10\ncapex_rate_of_revenue = 0.05\nwacc_base = 0.09\ng_base = 0.02\nforecast_years = 5\n\n# 2. FCF 계산 함수 정의\ndef calculate_dcf(revenue_base, operating_income_base, explicit_growth, wacc, g, forecast_years):\n    years = [f'Year {i}' for i in range(1, forecast_years + 1)]\n    df = pd.DataFrame(index=years)\n\n    # 초기값 설정 (2024년)\n    current_revenue = revenue_base\n    current_operating_income = operating_income_base\n\n    fcf_list = []\n    discount_factors = []\n\n    for i in range(1, forecast_years + 1):\n        # 매출액 및 영업이익 성장\n        projected_revenue = current_revenue * (1 + explicit_growth)\n        projected_operating_income = current_operating_income * (1 + explicit_growth)\n\n        # 감가상각 및 CAPEX\n        depreciation = projected_revenue * depreciation_rate_of_revenue\n        capex = projected_revenue * capex_rate_of_revenue\n\n        # FCF 계산\n        fcf = projected_operating_income * (1 - tax_rate) + depreciation - capex\n        fcf_list.append(fcf)\n\n        # 할인 계수\n        discount_factor = 1 / ((1 + wacc) ** i)\n        discount_factors.append(discount_factor)\n\n        # 다음 연도를 위한 업데이트\n        current_revenue = projected_revenue\n        current_operating_income = projected_operating_income\n\n    df['Revenue'] = [revenue_base * (1 + explicit_growth)**i for i in range(1, forecast_years + 1)]\n    df['Operating Income'] = [operating_income_base * (1 + explicit_growth)**i for i in range(1, forecast_years + 1)]\n    df['Depreciation'] = df['Revenue'] * depreciation_rate_of_revenue\n    df['CAPEX'] = df['Revenue'] * capex_rate_of_revenue\n    df['FCF'] = fcf_list\n    df['Discount Factor'] = discount_factors\n    df['PV of FCF'] = df['FCF'] * df['Discount Factor']\n\n    # Terminal Value (TV) 계산\n    last_fcf = fcf_list[-1]\n    terminal_value = (last_fcf * (1 + g)) / (wacc - g)\n    pv_terminal_value = terminal_value / ((1 + wacc) ** forecast_years)\n\n    # 총 DCF 적정가치\n    total_dcf_value = df['PV of FCF'].sum() + pv_terminal_value\n\n    return total_dcf_value, df, terminal_value, pv_terminal_value\n\n# 기본 시나리오 계산\nbase_dcf_value, fcf_df, base_tv, base_pv_tv = calculate_dcf(\n    revenue_2024, operating_income_2024, explicit_growth_rate, wacc_base, g_base, forecast_years\n)\n\nprint(\"--- FCF 예측 및 할인 현황 (기본 시나리오) ---\")\nprint(fcf_df.round(2))\nprint(\"\\n\")\nprint(f\"최종 FCF (2029년): {fcf_df['FCF'].iloc[-1]:.2f} 억원\")\nprint(f\"Terminal Value (2029년 말): {base_tv:.2f} 억원\")\nprint(f\"PV of Terminal Value: {base_pv_tv:.2f} 억원\")\nprint(f\"PV of Explicit FCFs: {fcf_df['PV of FCF'].sum():.2f} 억원\")\nprint(f\"DCF 적정가치 (기본 시나리오): {base_dcf_value:.2f} 억원\")\n\n\nimport pandas as pd\n\n# 1. 기본 데이터 및 가정 설정 (재정의)\nrevenue_2024 = 15273  # 억원\noperating_income_2024 = 3655  # 억원\n\nexplicit_growth_rate = 0.10  # 5년 예측 기간 동안 매출액 및 영업이익 성장률 (10%)\ntax_rate = 0.25\ndepreciation_rate_of_revenue = 0.10\ncapex_rate_of_revenue = 0.05\nforecast_years = 5\n\n# FCF 계산 함수 (이전과 동일)\ndef calculate_dcf(revenue_base, operating_income_base, explicit_growth, wacc, g, forecast_years):\n    # WACC <= g 인 경우 무한대 또는 음수 발생하므로 처리\n    if wacc <= g:\n        return float('inf') # 또는 적절한 오류 값\n\n    current_revenue = revenue_base\n    current_operating_income = operating_income_base\n\n    fcf_list = []\n    for i in range(1, forecast_years + 1):\n        projected_revenue = current_revenue * (1 + explicit_growth)\n        projected_operating_income = current_operating_income * (1 + explicit_growth)\n        depreciation = projected_revenue * depreciation_rate_of_revenue\n        capex = projected_revenue * capex_rate_of_revenue\n        fcf = projected_operating_income * (1 - tax_rate) + depreciation - capex\n        fcf_list.append(fcf)\n        current_revenue = projected_revenue\n        current_operating_income = projected_operating_income\n\n    # PV of Explicit FCFs\n    pv_explicit_fcf = sum(fcf_list[i] / ((1 + wacc) ** (i + 1)) for i in range(forecast_years))\n\n    # Terminal Value (TV) 계산\n    last_fcf = fcf_list[-1]\n    terminal_value = (last_fcf * (1 + g)) / (wacc - g)\n    pv_terminal_value = terminal_value / ((1 + wacc) ** forecast_years)\n\n    total_dcf_value = pv_explicit_fcf + pv_terminal_value\n    return total_dcf_value\n\n# 민감도 분석을 위한 WACC 및 g 범위 설정\nwacc_values = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_values = [0.01, 0.02, 0.03]\n\n# 결과를 저장할 DataFrame 초기화\nsensitivity_df = pd.DataFrame(index=[f'g={int(g*100)}%' for g in g_values],\n                              columns=[f'WACC={int(wacc*100)}%' for wacc in wacc_values])\n\n# 각 조합에 대해 DCF 계산\nfor g in g_values:\n    for wacc in wacc_values:\n        dcf_value = calculate_dcf(\n            revenue_2024, operating_income_2024, explicit_growth_rate, wacc, g, forecast_years\n        )\n        sensitivity_df.loc[f'g={int(g*100)}%', f'WACC={int(wacc*100)}%'] = round(dcf_value, 2)\n\nprint(\"--- DCF 적정가치 민감도 그리드 (억원) ---\")\nprint(sensitivity_df)",
+    "code_output": "--- FCF 예측 및 할인 현황 (기본 시나리오) ---\n         Revenue  Operating Income  Depreciation    CAPEX      FCF  Discount Factor  PV of FCF\nYear 1  16800.30           4020.50       1680.03   840.02  3855.39             0.92    3537.06\nYear 2  18480.33           4422.55       1848.03   924.02  4240.93             0.84    3569.51\nYear 3  20328.36           4864.81       2032.84  1016.42  4665.02             0.77    3602.25\nYear 4  22361.20           5351.29       2236.12  1118.06  5131.52             0.71    3635.30\nYear 5  24597.32           5886.41       2459.73  1229.87  5644.68             0.65    3668.65\n\n\n최종 FCF (2029년): 5644.68 억원\nTerminal Value (2029년 말): 82251.00 억원\nPV of Terminal Value: 53457.51 억원\nPV of Explicit FCFs: 18012.77 억원\nDCF 적정가치 (기본 시나리오): 71470.27 억원\n\n--- DCF 적정가치 민감도 그리드 (억원) ---\n        WACC=7%   WACC=8%   WACC=9%  WACC=10%  WACC=11%\ng=1%   86801.83   73952.3   64329.5  56857.27  50889.91\ng=2%  101156.16  83830.88  71470.27  62211.98  55021.38\ng=3%  122687.64   97660.9   80991.3   69096.6  60185.72"
+  },
+  "news": {
+    "text": "## 에이피알(278470) 투자 분석: 폭발적 성장세 지속, 시장 컨센서스 상회 전망\n\n**투자등급: B (고성장 기업, 재무 구조 면밀 검토 필요)**\n\n에이피알(278470)은 폭발적인 성장세와 수익성 개선이 돋보이는 고성장 기업으로 평가됩니다. 최근 2주간의 시장 동향 및 뉴스 분석 결과, 이러한 긍정적인 재무 데이터 스토리는 현재 시장 컨센서스와 강력하게 일치하며, 추가적인 호재들이 주가 상승을 견인하고 있습니다.\n\n### 1. 재무 데이터 스토리와 현재 시장 컨센서스의 일치/불일치\n\n제시된 \"폭발적인 성장세와 수익성 개선\"이라는 재무 데이터 스토리는 현재 시장 컨센서스와 완벽하게 일치합니다. 다수의 증권사 리포트와 뉴스 기사는 에이피알이 2026년 1분기 시장 기대치를 뛰어넘는 호실적을 기록할 것으로 전망하며, 이는 비수기임에도 불구하고 견조한 실적을 예상한다는 점에서 더욱 긍정적입니다. 특히, 미국, 일본을 넘어 유럽(영국, 독일 등)으로의 공격적인 해외 시장 확장이 매출 성장을 가속화할 주요 요인으로 꼽히고 있습니다.\n\n시장 컨센서스는 \"강력 매수(Strong Buy)\" 의견이 지배적이며, 27명의 애널리스트가 매수를 추천하고 있습니다. 평균 목표주가는 37만원대 후반에서 39만원대 초반을 형성하고 있으나, 최근 삼성증권은 50만원, LS증권은 45만원으로 목표주가를 상향 조정하는 등 긍정적인 전망이 이어지고 있습니다. 높은 주가수익비율(PER 약 45배) 에 대한 부담이 있을 수 있으나, 애널리스트들은 지난해 320%에 달하는 인상적인 주당순이익(EPS) 성장과 향후 70%의 성장을 예상하며 시장 대비 높은 성장성을 고려할 때 정당한 수준으로 판단하고 있습니다.\n\n초기 분석 요약에 언급된 \"불안정한 재무 구조\"에 대한 우려는 최근 뉴스에서는 크게 부각되지 않고 있습니다. 오히려 2023년 3분기 기준 순현금 포지션과 47%의 부채비율, 271%의 유동비율을 기록하는 등 양호한 재무 상태를 보였다는 과거 분석도 존재합니다. 이는 회사의 폭발적인 성장이 재무 건전성 개선으로 이어졌거나, 초기 우려가 해소되었을 가능성을 시사합니다.\n\n### 2. 재무제표에서 드러나지 않는 리스크 또는 호재\n\n**잠재적 리스크:**\n*   **높은 밸류에이션 부담:** 현재 높은 PER은 향후 성장률 둔화 시 주가 조정의 빌미가 될 수 있습니다.\n*   **브랜드 집중도:** '메디큐브' 브랜드에 대한 매출 집중도가 60%를 넘어서는 구조적 리스크가 과거에 지적된 바 있습니다. 브랜드 다각화 전략의 가시성이 중요합니다.\n*   **글로벌 경제 및 규제 불확실성:** 해외 매출 비중이 높은 만큼, 글로벌 경제 둔화나 각국의 규제 변화, 공급망 복잡성 등이 비용 증가 및 마진 압박으로 이어질 수 있습니다.\n\n**잠재적 호재:**\n*   **'디바이스 + 코스메틱' 독점적 생태계:** 에이피알의 홈 뷰티 디바이스와 화장품을 결합한 독창적인 비즈니스 모델은 강력한 경쟁 우위와 고객 충성도를 확보하고 있습니다.\n*   **공격적인 해외 채널 확장:** 미국 얼타 뷰티(Ulta Beauty) 입점, 일본 돈키호테 등 주요 오프라인 채널 진출 및 아마존, 틱톡샵 등 온라인 플랫폼에서의 성공적인 확장은 지속적인 매출 성장의 핵심 동력입니다.\n*   **적극적인 R&D 투자:** 지난해 R&D 비용을 240% 증액하며 혁신 제품 개발에 집중하는 것은 뷰티테크 기업으로서 장기적인 성장 동력을 확보하는 중요한 요소입니다.\n*   **의료기기 시장 진출 가능성:** 홈 뷰티 디바이스 기술 시너지를 활용한 의료기기 시장 진출 계획은 새로운 성장 동력이자 밸류에이션 리레이팅의 기회가 될 수 있습니다.\n*   **영업 레버리지 효과:** 마케팅 비용 및 관세 부담에도 불구하고 규모의 경제 효과와 고정비 절감으로 수익성이 지속적으로 개선되고 있습니다.\n*   **PDRN 제품군 글로벌 히트:** 메디큐브 PDRN 제품군의 글로벌 누적 판매량 5천만 개 돌파는 브랜드 경쟁력 강화 및 매출 성장에 긍정적인 영향을 미치고 있습니다.\n\n### 3. 최종 판정\n\n에이피알은 현재 시장의 강력한 지지와 함께 견조한 실적 성장, 성공적인 해외 시장 확장, 그리고 혁신적인 사업 모델을 바탕으로 긍정적인 모멘텀을 이어가고 있습니다. 초기 재무 구조에 대한 우려가 있었으나, 현재 시장은 성장성에 더 큰 비중을 두고 있으며, 실제 재무 상태도 개선된 것으로 보입니다. 잠재적 리스크 요인들이 존재하지만, 현재의 성장 동력과 시장의 기대감을 고려할 때 충분히 상쇄 가능하다고 판단됩니다.\n\n**최종 판정: 매수**",
+    "citations": [
+      {
+        "title": "kbsec.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHK15aQomc7EitsZSgxedP_f1UCmncN3mQgOCb4uB8Ekt_8QncxeRKwjrhnaiZkgIyD58_LvXXOqo04vlvAkrU2NJFN3e_0f4dkK_Oo4wxm0Ut_Hat1fZPku_jZeW1Pf9FSPonhPmx7Ujax1DA0wqpDeDo="
+      },
+      {
+        "title": "tickertrends.io",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFsp4SDo7itkFmWFL4ohpsk3BiwcKoewwHd3-I4iD9JqXsEs93esFeRTtrnUlTcwIJVx5BOAlZ5I16c1YJ2NhwOowWgOR9lUBI81Ge1I5K3EHAHxZvuAVJYRQL-DOoMWsGd_NZUvwOQWEWKIA0Ex0xACGeWw3gHJH_oSo67"
+      },
+      {
+        "title": "miraeasset.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHKYZlSyjgddKEC0RhG5vTlHlJGGsBQIJqAqmneh9_8hKr1JvaUzH3EMXPNrJHvBLDO6WM4OG_cdXk3jgfq3JNDJ7HHxJIT51XxlEEgV22VLstBSHfYQaNCOWtT3CXBbxKTCGglJm_MgWGePKaiT5joEOGW3Mjkqr3juGljGpChpTOGXyIJW6G7bbq2fzkmlrirruTHoJEC0hG0B6vifd2W"
+      },
+      {
+        "title": "sedaily.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEBrxH6ZS5bxGLE7vJsvqJEkVkklB30_Kk9dYM6_5wL6loaM9yHFmjkNQqKHA-CzvUrSpSoqiYYbYA9QSHIwSF4H4F6DXFgZOgzSxofSjhP0zMtp090jyXdvDkfxnvmP4bD3p7pkdXkEHvNoqnf5nlb9zMCjhKYua3MDJIIHYRzAPpUCyWhzdpMn27xQOOQQRXuggJZtgy1afixfKrOb-I="
+      },
+      {
+        "title": "news1.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFvgGFIsyKVrQ_6ITFs_AFULwm8dsCszSbN1KdHhscr5bnzntBZ3-XdKlll6ood_ZTO7dov3P3KiYvtCf45BQH86iy10vqLOqg55jZv6CxUQBWgTr-fBlp84U7Z6NJVS4QVYq3ZUwNoorWk"
+      },
+      {
+        "title": "kiwoom.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEO0NPR3Hh0o3FfIu5Ik6R0BWGnQQ1PCXDAa4eBCgmpaVooZoOl9U2ub_DT4duH_fFufBSs2ZUs4jj2Evye2JCQcG1SLmRCEYEXQAW6Zndldbaf6lJuJyA886Yk"
+      },
+      {
+        "title": "chosun.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFXO-H16tM_4rmc6xsIL0Ci9b3slz59f_ff04XvWF93vO5GjHgVuWvm_1eKQ7evMwZYM7r2xdfclCF-gydMQx_3IsC5oT-cJXvLjp1OwqzlgIucSYOucFtfoXV4mEBMSXWv8WTeMhKyMBSLrBZd__2kmzoE7EjKyRksfkP6skZiqEtFWo79Sg=="
+      },
+      {
+        "title": "mk.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHI2uqKNIE4yzV7N6RzIrRBBTWMgNeAzbU6VGsiJ8X77YvYO6Ii_fj8mrU0U0yv2duQUeh0TH3kyRC1bjS7su762th-I_dvdbI0hCYApRi0mZb_W7LIN8Fb9iopW417WmGlfKQ="
+      },
+      {
+        "title": "asiae.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHhLKtUUNLCYV_x4c4E2-rusNMlBqOdvdSDSqgxqFe98u2Gix7ibumTIQQpponaHhsiPlhdEe4g8FKH6naImHX8arq8QaXbTxOhDuA-T2tC5uPPcEeMuBApwzQCBEnZfCKdxiwAiZL1sBC2DLCgikLc1w=="
+      },
+      {
+        "title": "news1.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGcz3G2a8Brdm2QVh8U8gPIZwcSYDctSEu6oDzDPjDNIIbxL7fH6uDh9vUoYp4PpphWQj33ALtkvT1k6JfReY0sgBMzhdVzC_X8KmvdkFMSFNCp07ZZNrWVf-oaYx0p6s1yxwurAzZbVJQWdvLj"
+      }
+    ]
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=01190568",
+    "summary": "공시 페이지 접근 제한"
+  }
+}
