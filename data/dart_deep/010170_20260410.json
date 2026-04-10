@@ -1,0 +1,292 @@
+{
+  "stock_code": "010170",
+  "stock_name": "대한광통신",
+  "generated_at": "2026-04-10T06:03:28.327308+00:00",
+  "financials": {
+    "stock_code": "010170",
+    "corp_code": "00113261",
+    "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2016": {
+        "cash": 201.1,
+        "total_assets": 1270.8,
+        "long_debt": 40.0,
+        "total_liab": 666.7,
+        "total_equity": 604.1,
+        "revenue": 1164.7,
+        "op_profit": -15.4,
+        "net_income": -125.9
+      },
+      "2017": {
+        "cash": 246.6,
+        "total_assets": 1557.7,
+        "short_debt": 134.1,
+        "long_debt": 100.0,
+        "total_liab": 593.4,
+        "total_equity": 964.2,
+        "revenue": 1396.6,
+        "op_profit": 150.2,
+        "net_income": 132.9
+      },
+      "2018": {
+        "cash": 983.1,
+        "total_assets": 3170.3,
+        "short_debt": 454.2,
+        "long_debt": 390.0,
+        "total_liab": 1259.6,
+        "total_equity": 1910.7,
+        "revenue": 1671.5,
+        "op_profit": 154.9,
+        "net_income": 215.3
+      },
+      "2019": {
+        "cash": 568.4,
+        "total_assets": 2897.0,
+        "short_debt": 352.8,
+        "total_liab": 1103.0,
+        "total_equity": 1794.0,
+        "revenue": 1543.0,
+        "op_profit": -96.3,
+        "net_income": -117.0
+      },
+      "2020": {
+        "cash": 390.9,
+        "total_assets": 2688.9,
+        "short_debt": 344.9,
+        "total_liab": 1163.5,
+        "total_equity": 1525.4,
+        "revenue": 1360.9,
+        "op_profit": -226.6,
+        "net_income": -274.0
+      },
+      "2021": {
+        "cash": 487.9,
+        "total_assets": 2358.7,
+        "short_debt": 403.1,
+        "total_liab": 1325.3,
+        "total_equity": 1033.5,
+        "revenue": 1566.1,
+        "op_profit": -274.7,
+        "net_income": -491.1
+      },
+      "2022": {
+        "cash": 135.4,
+        "total_assets": 2520.8,
+        "short_debt": 516.0,
+        "total_liab": 1465.5,
+        "total_equity": 1055.3,
+        "revenue": 1901.1,
+        "op_profit": 34.6,
+        "net_income": -30.8
+      },
+      "2023": {
+        "total_assets": 2348.0,
+        "cash": 160.8,
+        "total_equity": 669.9,
+        "total_liab": 1587.8,
+        "op_profit": -232.2,
+        "net_income": -294.6,
+        "revenue": 1802.6
+      },
+      "2024": {
+        "total_assets": 2096.6,
+        "cash": 85.1,
+        "total_equity": 347.8,
+        "total_liab": 1688.4,
+        "op_profit": -297.0,
+        "net_income": -560.4,
+        "revenue": 1527.2
+      },
+      "2025": {
+        "total_assets": 2190.2,
+        "cash": 97.8,
+        "total_equity": 666.5,
+        "short_debt": 840.3,
+        "total_liab": 1523.6,
+        "op_profit": -214.1,
+        "net_income": -279.7,
+        "revenue": 1394.5
+      }
+    },
+    "missing_years": [
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2016,
+        "revenue_eok": 1165,
+        "op_profit_eok": -15,
+        "net_income_eok": -126,
+        "roe_pct": -20.86,
+        "op_margin_pct": -1.29,
+        "debt_ratio_pct": 110.43
+      },
+      {
+        "year": 2017,
+        "revenue_eok": 1397,
+        "op_profit_eok": 150,
+        "net_income_eok": 133,
+        "roe_pct": 13.8,
+        "op_margin_pct": 10.74,
+        "debt_ratio_pct": 61.51
+      },
+      {
+        "year": 2018,
+        "revenue_eok": 1672,
+        "op_profit_eok": 155,
+        "net_income_eok": 215,
+        "roe_pct": 11.25,
+        "op_margin_pct": 9.27,
+        "debt_ratio_pct": 65.93
+      },
+      {
+        "year": 2019,
+        "revenue_eok": 1543,
+        "op_profit_eok": -96,
+        "net_income_eok": -117,
+        "roe_pct": -6.52,
+        "op_margin_pct": -6.22,
+        "debt_ratio_pct": 61.48
+      },
+      {
+        "year": 2020,
+        "revenue_eok": 1361,
+        "op_profit_eok": -227,
+        "net_income_eok": -274,
+        "roe_pct": -17.97,
+        "op_margin_pct": -16.68,
+        "debt_ratio_pct": 76.33
+      },
+      {
+        "year": 2021,
+        "revenue_eok": 1566,
+        "op_profit_eok": -275,
+        "net_income_eok": -491,
+        "roe_pct": -47.49,
+        "op_margin_pct": -17.56,
+        "debt_ratio_pct": 128.14
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 1901,
+        "op_profit_eok": 35,
+        "net_income_eok": -31,
+        "roe_pct": -2.94,
+        "op_margin_pct": 1.84,
+        "debt_ratio_pct": 138.96
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 1803,
+        "op_profit_eok": -232,
+        "net_income_eok": -295,
+        "roe_pct": -44.03,
+        "op_margin_pct": -12.87,
+        "debt_ratio_pct": 237.01
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 1527,
+        "op_profit_eok": -297,
+        "net_income_eok": -560,
+        "roe_pct": -160.92,
+        "op_margin_pct": -19.45,
+        "debt_ratio_pct": 485.06
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 1394,
+        "op_profit_eok": -214,
+        "net_income_eok": -280,
+        "roe_pct": -42.04,
+        "op_margin_pct": -15.35,
+        "debt_ratio_pct": 228.83
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": 2.0,
+      "op_profit_cagr_pct": 32.13,
+      "best_year": 2018,
+      "worst_year": 2024,
+      "avg_roe_pct": -31.77
+    },
+    "valuation": {
+      "grade": "D",
+      "strengths": [
+        "10년간 매출액이 1,100억원대에서 1,900억원대 사이를 오가며 일정 수준의 사업 규모를 유지하고 있습니다.",
+        "2017년, 2018년, 2022년에 영업이익 흑자를 기록하며 일시적으로나마 수익성을 시현한 경험이 있습니다.",
+        "영위하는 광통신 사업은 미래 통신 인프라에 필수적인 분야로, 산업 자체의 장기적인 성장 잠재력은 존재합니다."
+      ],
+      "risks": [
+        "대부분의 연도에서 대규모 영업손실과 당기순손실이 발생하여 사업의 근본적인 수익성에 대한 우려가 큽니다.",
+        "자본총계가 급격히 감소하고 부채비율이 400%를 초과하는 등 재무구조가 매우 취약하여 상장 유지 및 사업 지속 가능성에 대한 리스크가 높습니다.",
+        "영업활동 현금흐름이 불안정하며 현금 보유액이 지속적으로 감소하여 유동성 위기에 직면할 가능성이 있습니다."
+      ],
+      "one_liner": "지속적인 대규모 손실과 심각한 재무구조 악화로 인해 투자 매력이 매우 낮은 기업입니다."
+    }
+  },
+  "dcf": {
+    "text": "퀀트 애널리스트로서 대한광통신(010170)의 DCF 적정가치를 계산하겠습니다.\n\n**전제 및 가정:**\n\n*   **기준 연도:** 2025년\n*   **최근 재무 (2025년 기준):**\n    *   매출액: 1394 억원\n    *   영업이익: -214 억원\n*   **FCF 계산식:** FCF = 영업이익 × (1 - 0.25) + 감가상각(매출의 10%) - CAPEX(매출의 5%)\n    *   이는 FCF = 영업이익 × 0.75 + 매출액 × 0.05 로 단순화됩니다.\n*   **WACC (가중평균자본비용):** 9% (기본 시나리오)\n*   **영구성장률 (g):** 2% (기본 시나리오)\n*   **예측 기간:** 5년 (2025년 ~ 2029년)\n*   **매출액 및 영업이익 성장률:** 문제에서 예측 기간 동안의 매출액 및 영업이익 성장률이 주어지지 않았으므로, 5년 예측 기간 동안 매출액과 영업이익은 2025년 수준으로 **일정하게 유지된다고 가정**합니다. 이 가정은 실제 DCF 모델링에서는 추가적인 성장률 가정이 필요하지만, 주어진 정보 내에서 계산하기 위한 불가피한 선택입니다.\n\n---\n\n### 1. 기본 시나리오 DCF 적정가치 계산\n\n먼저, 주어진 데이터를 바탕으로 2025년의 FCF를 계산합니다.\n\n*   **2025년 FCF 계산:**\n    FCF = (-214 억원 × 0.75) + (1394 억원 × 0.05)\n    FCF = -160.5 억원 + 69.7 억원\n    FCF = -90.8 억원\n\n이 FCF가 5년 예측 기간 동안 일정하게 유지된다고 가정하고, WACC 9%, 영구성장률 2%를 적용하여 DCF 적정가치를 계산합니다.\n\n\n---\n\n### 2. WACC × g 민감도 그리드 출력\n\nWACC(7/8/9/10/11%)와 영구성장률 g(1/2/3%) 변화에 따른 DCF 적정가치 민감도 분석을 수행합니다.\n\n\n---\n\n### 3. 요약 출력\n\n**적정가치(기본): -1213.10억원**",
+    "executed_code": "import pandas as pd\n\ndef calculate_dcf(revenue, operating_income, wacc, g, forecast_years=5):\n    \"\"\"\n    DCF 적정가치를 계산하는 함수.\n    매출액과 영업이익은 예측 기간 동안 일정하다고 가정합니다.\n    \"\"\"\n    # FCF 계산식: FCF = 영업이익 * 0.75 + 매출액 * 0.05\n    fcf_base = (operating_income * 0.75) + (revenue * 0.05)\n\n    # 예측 기간 동안의 FCF (일정하다고 가정)\n    projected_fcfs = [fcf_base] * forecast_years\n\n    # FCF의 현재가치 합계 계산\n    pv_fcfs = 0\n    for i in range(forecast_years):\n        pv_fcfs += projected_fcfs[i] / ((1 + wacc)**(i + 1))\n\n    # 영구 성장 모델을 이용한 터미널 밸류(Terminal Value) 계산\n    # WACC <= g 인 경우 모델이 유효하지 않음\n    if wacc <= g:\n        return float('inf') if fcf_base > 0 else float('-inf')\n\n    fcf_for_tv = projected_fcfs[-1] * (1 + g) # 마지막 예측 연도 다음 해의 FCF\n    terminal_value = fcf_for_tv / (wacc - g)\n\n    # 터미널 밸류의 현재가치 계산\n    pv_terminal_value = terminal_value / ((1 + wacc)**forecast_years)\n\n    # 적정가치 = FCF 현재가치 합계 + 터미널 밸류 현재가치\n    intrinsic_value = pv_fcfs + pv_terminal_value\n    \n    return intrinsic_value\n\n# 기본 시나리오 데이터\nrevenue_base = 1394  # 억원\noperating_income_base = -214  # 억원\nwacc_base = 0.09\ng_base = 0.02\n\n# 기본 시나리오 DCF 적정가치 계산\nbase_case_value = calculate_dcf(revenue_base, operating_income_base, wacc_base, g_base)\nprint(f\"적정가치(기본): {base_case_value:.2f}억원\")\n\n\nimport pandas as pd\n\ndef calculate_dcf(revenue, operating_income, wacc, g, forecast_years=5):\n    \"\"\"\n    DCF 적정가치를 계산하는 함수.\n    매출액과 영업이익은 예측 기간 동안 일정하다고 가정합니다.\n    \"\"\"\n    # FCF 계산식: FCF = 영업이익 * 0.75 + 매출액 * 0.05\n    fcf_base = (operating_income * 0.75) + (revenue * 0.05)\n\n    # 예측 기간 동안의 FCF (일정하다고 가정)\n    projected_fcfs = [fcf_base] * forecast_years\n\n    # FCF의 현재가치 합계 계산\n    pv_fcfs = 0\n    for i in range(forecast_years):\n        pv_fcfs += projected_fcfs[i] / ((1 + wacc)**(i + 1))\n\n    # 영구 성장 모델을 이용한 터미널 밸류(Terminal Value) 계산\n    # WACC <= g 인 경우 모델이 유효하지 않음\n    if wacc <= g:\n        return float('inf') if fcf_base > 0 else float('-inf')\n\n    fcf_for_tv = projected_fcfs[-1] * (1 + g) # 마지막 예측 연도 다음 해의 FCF\n    terminal_value = fcf_for_tv / (wacc - g)\n\n    # 터미널 밸류의 현재가치 계산\n    pv_terminal_value = terminal_value / ((1 + wacc)**forecast_years)\n\n    # 적정가치 = FCF 현재가치 합계 + 터미널 밸류 현재가치\n    intrinsic_value = pv_fcfs + pv_terminal_value\n    \n    return intrinsic_value\n\n# 기본 시나리오 데이터 (민감도 분석에도 동일하게 적용)\nrevenue_base = 1394  # 억원\noperating_income_base = -214  # 억원\n\n# WACC 및 g 시나리오 정의\nwacc_scenarios = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_scenarios = [0.01, 0.02, 0.03]\n\n# 민감도 분석 결과를 저장할 DataFrame 생성\nsensitivity_results = pd.DataFrame(index=[f'g={g*100:.0f}%' for g in g_scenarios], \n                                   columns=[f'WACC={wacc*100:.0f}%' for wacc in wacc_scenarios])\n\n# 각 시나리오에 대해 DCF 적정가치 계산\nfor g_val in g_scenarios:\n    for wacc_val in wacc_scenarios:\n        if wacc_val <= g_val:\n            # WACC가 g보다 작거나 같으면 영구성장 모델이 유효하지 않음\n            sensitivity_results.loc[f'g={g_val*100:.0f}%', f'WACC={wacc_val*100:.0f}%'] = \"N/A (WACC <= g)\"\n        else:\n            value = calculate_dcf(revenue_base, operating_income_base, wacc_val, g_val)\n            sensitivity_results.loc[f'g={g_val*100:.0f}%', f'WACC={wacc_val*100:.0f}%'] = f\"{value:.2f}\"\n\nprint(\"DCF 민감도 분석 (적정가치, 억원):\")\nprint(sensitivity_results)",
+    "code_output": "적정가치(기본): -1213.10억원\n\nDCF 민감도 분석 (적정가치, 억원):\n       WACC=7%   WACC=8%   WACC=9%  WACC=10%  WACC=11%\ng=1%  -1462.07  -1254.18  -1098.23   -976.91   -879.83\ng=2%  -1692.98  -1413.09  -1213.10  -1063.04   -946.29\ng=3%  -2039.33  -1635.56  -1366.25  -1173.79  -1029.36"
+  },
+  "news": {
+    "text": "## 대한광통신(010170) 분석: 미래 기대감과 현재 재무 리스크의 충돌\n\n### 1. 재무 데이터 스토리와 현재 시장 컨센서스의 일치/불일치\n\n제공된 10년 재무제표 분석 결과에 따르면 대한광통신은 **투자등급 D**로, 지속적인 대규모 손실과 심각한 재무구조 악화로 인해 투자 매력이 매우 낮은 기업입니다. 이는 과거의 실적을 기반으로 한 냉정한 평가입니다.\n\n그러나 최근 2주간의 시장 컨센서스는 이와 **크게 불일치**합니다. 대한광통신은 AI 데이터센터 확산에 따른 광통신 인프라 수요 증가와 북미 시장 성장에 대한 기대감으로 주가가 급등했습니다. 특히, 국내 유일의 광섬유 원재료부터 완제품까지 생산하는 수직계열화 기업이라는 점이 부각되며 AI 시대의 핵심 수혜주로 주목받고 있습니다. 2026년 매출 2,280억 원 및 흑자 전환이 전망된다는 긍정적인 분석도 존재합니다.\n\n하지만 일부 전문가들은 현재 주가가 펀더멘털을 크게 앞서간 과열 상태이며, 2027~2028년 실적까지 선반영하고 있다고 판단하여 '매도' 의견과 함께 현재가보다 훨씬 낮은 목표주가를 제시하고 있습니다. 이는 시장의 뜨거운 기대감과 기업의 현재 재무 상태 및 합리적인 가치 평가 사이에 상당한 괴리가 있음을 시사합니다.\n\n### 2. 재무제표에서 드러나지 않는 리스크 또는 호재\n\n**긍정적 요인 (호재):**\n\n*   **AI 데이터센터 및 5G/6G 인프라 수요 폭증 수혜:** AI 혁명으로 인한 데이터 처리량 증가로 광케이블의 중요성이 커지고 있으며, 대한광통신은 광섬유 수직계열화로 이 시장에서 독점적인 경쟁 우위를 확보하고 있습니다.\n*   **글로벌 빅테크 공급망 진입:** 지난 2월 글로벌 AI·XR 플랫폼 기업과 54억 원 규모의 864 파이버 초고밀도 광케이블 공급 계약을 체결하며 글로벌 빅테크 공급망에 진입했다는 평가를 받고 있습니다.\n*   **북미 시장 확장 및 현지 생산 거점 확보:** 미국의 광대역 인프라 투자 정책(BEAD)으로 북미 광통신 수요가 폭발적으로 증가하고 있으며, 대한광통신은 북미 매출이 전년 대비 221% 급증했습니다. 또한, '인캡 아메리카' 인수를 추진하여 현지 생산 거점을 확보하고 'Buy America' 규제에 대응하려는 전략을 펼치고 있습니다.\n*   **방산 레이저 무기 국산화:** 방산 레이저 무기 '천광'의 핵심 광섬유 레이저 모듈 국산화 등 방산 부문에서의 성장 가능성도 존재합니다.\n*   **최대주주 주식 담보 대출 전량 해소:** 오버행(잠재적 매도 물량 부담) 리스크가 해소되었다는 긍정적인 소식도 있습니다.\n\n**리스크 요인:**\n\n*   **여전히 적자 기업:** 긍정적인 전망에도 불구하고 2025년에도 영업손실(229억 원)을 기록하는 등 아직 흑자 전환을 이루지 못했습니다. 현재 주가는 미래 기대감이 과도하게 선반영된 상태입니다.\n*   **유상증자로 인한 주식 가치 희석:** 신주 약 2,350만 주 상장으로 인해 주식 수가 증가하고 1주당 가치가 희석될 가능성이 있습니다.\n*   **투자경고 종목 지정 및 과열 구간 진입:** 한국거래소로부터 투자경고 종목으로 지정될 정도로 단기 급등에 따른 변동성이 매우 높습니다. 일부 분석은 현재 주가가 펀더멘털을 크게 앞서간 과열 상태이며, 밸류에이션 정상화 과정에서 상당한 조정이 예상된다고 경고합니다.\n*   **높은 부채비율:** 2024년 기준 부채비율이 413%에 달하는 등 여전히 취약한 재무구조를 가지고 있습니다.\n\n### 3. 최종 판정\n\n대한광통신은 AI 시대의 핵심 인프라 수혜주로서 매력적인 성장 잠재력을 가지고 있으며, 북미 시장 확장 및 기술적 우위 등 긍정적인 요인이 많습니다. 그러나 지난 10년간의 대규모 손실과 심각한 재무구조 악화라는 근본적인 약점을 간과할 수 없습니다. 최근 주가 급등은 미래 기대감에 기반한 것으로, 현재 기업의 실적과 재무 상태를 고려할 때 과도하게 상승한 측면이 있습니다. 유상증자로 인한 주식 가치 희석과 투자경고 종목 지정은 단기적인 리스크를 더욱 증폭시킵니다.\n\n따라서 현재 시점에서는 **관망** 의견을 제시합니다. 흑자 전환의 가시성이 더욱 명확해지고, 과열된 주가가 합리적인 수준으로 조정된 후 재진입을 고려하는 것이 현명해 보입니다.\n\n**최종 판정: 관망**",
+    "citations": [
+      {
+        "title": "ai-fortunate.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHiqgPosCgNacuWsyvX32JOUPcznL8xg9fIMp-SZCfExmjWkYiA1cFwqYHVTCDjH-mdOdxvYokvlkqJ_4IA3rtUM3Ngb9yGIORf-dBadyn-6uJVUwrxv3SoBf0sxX4iMGqJ7Jc_Wn9duS4M"
+      },
+      {
+        "title": "mk.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGBM7LGElCFeEkkiWq5WcB7PSfGQ0_9mAh46IRsQEzmi0uFYHWHpOJuCKGTpPQeUNRlycE6_YahwT1xEOWH_TsNydV5-Lgar0yLcutpcxyKb109Yt-tQ8odSMpGKNs1dV-Qpm8="
+      },
+      {
+        "title": "thedailymoney.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEajsN-CgXaN0FB4tZJICHqeeZ42RZfPlvnVvBfbqwlEnrmYCWed7Y-Bk3JVrJbfuKQgdYqFLaaE5LUvBhDg16Wk0fRbAQ5QGzG6eK6_opK3hpmkqNSFyghOXZ1S2E-aHDaoDKthJH-A3FKcdhf6XFQh8IUmTdGxauRH94="
+      },
+      {
+        "title": "mk.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGKj5V8wv14fGJnb-YuRQVle7V4ubmU-yEp-n-Cyl_9kGHVd1Ksx_3ZCeSf0mM-MBaBIu4J5821rBexTCY12SUKiIM5Fop29tNDM5FRxnazqcAHqXKQruBuA8ZXx9LW5paa31Q="
+      },
+      {
+        "title": "alphasquare.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQH7YReqL32tUXgHRVipKg-BA9kbMC8MhZK0oX2MC_XCUDWLnfOVtd1CVfyyv5353gej79aj_9E0nKjWMthT3ZqN3r1Q4y8ze98md8dR8mJuYM7x0gkQMV_F-6WEButCw3-CibG4x4OV2bvit8-GNWLH48duozbyt19XGVs="
+      },
+      {
+        "title": "alphasquare.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEoeIYVvBUNLEHbqRW4uUhrsW_aVbnnJUB0BufFhiLR1OUV0EeZpyk_ZyQSFAVZiwZs1KqKCxD5wBPaST74aF0yllW9JiL-Y7q76QFIrGyss46oKhUv4PPgTcSzDNAwBpLWp0bPVe72kfJ17wzctKwmfGUa"
+      },
+      {
+        "title": "marketmood.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHRi3F_bfe3eaOZ4BVaMeLNdx0j9jhh-wrF9HUWFKW98-q97XlZMZZsoxWDamLBmpjCIFX1bWK9Cy8VTYPPWmr02zSZ66DyDnSc-86qnXHZWhNISLRUeCRBo9v7v6q1Hmzl"
+      },
+      {
+        "title": "littlebproject.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQH1bkgi3zfTc0ne6ob7yIU8BwnJBvJTatw7MfCu5AFHz3dIVq9F-1ymiGoMeJ-LywCCfU_RLRXtuXD2QN54rZOeGnMSSN5M_XobP_qkJRXV9TK3L4-pkdtY7Ka_Swz5jUJLQg=="
+      },
+      {
+        "title": "royalroader.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGHX0d2w1d9yCkgAB8qO22HJiISF47PyushS_vq0WWe7psxe3gOekjFXuOaYMfBwJo-T56adrKWk8A-bbyP-n9OYX5gfUeasy0IALMPv2WLMS6g-DgzmA4RhQ49A_06Km-fL6bWalSXfL2tGe8uPMpH"
+      }
+    ]
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=00113261",
+    "summary": "공시 페이지 접근 제한"
+  }
+}

@@ -1,459 +1,439 @@
 {
-"timestamp": "2026-04-10T14:25:20.328124",
-"market_status": "open",
-"time_weight": 0.8,
-"total_candidates": 20,
+"timestamp": "2026-04-10T15:39:30.943838",
+"market_status": "closed",
+"time_weight": 1.0,
+"total_candidates": 21,
 "results": [
 {
 "rank": 1,
-"grade": "A",
-"code": "050890",
-"name": "쏠리드",
-"price": 17870,
-"change_pct": 25.67,
-"trading_value": 687382960800,
-"trading_value_eok": 6874,
-"volume": 40502083,
-"score": {
-"total": 62,
-"trading_value": 30,
-"momentum": 25,
-"smart_money": 0,
-"volume_surge": 10,
-"sector": 0,
-"new_high": 12,
-"ai_news": null,
-"consecutive": null,
-"total_enriched": null
-},
-"investor": {
-"foreign_net": 0,
-"inst_net": 0
-},
-"volume_ratio": 904.2,
-"sector_rising_count": 0,
-"high_52w": {
-"high_52w": 18050,
-"low_52w": 6980,
-"high_date": "20260410",
-"days_since": 0,
-"distance_pct": 1.0
-},
-"market_cap_eok": 10869
-},
-{
-"rank": 2,
-"grade": "A",
-"code": "011930",
-"name": "신성이엔지",
-"price": 3867,
-"change_pct": 22.37,
-"trading_value": 458064574801,
-"trading_value_eok": 4581,
-"volume": 122824374,
-"score": {
-"total": 62,
-"trading_value": 30,
-"momentum": 25,
-"smart_money": 0,
-"volume_surge": 10,
-"sector": 0,
-"new_high": 12,
-"ai_news": null,
-"consecutive": null,
-"total_enriched": null
-},
-"investor": {
-"foreign_net": 0,
-"inst_net": 0
-},
-"volume_ratio": 655.7,
-"sector_rising_count": 0,
-"high_52w": {
-"high_52w": 3980,
-"low_52w": 1527,
-"high_date": "20260410",
-"days_since": 0,
-"distance_pct": 2.8
-},
-"market_cap_eok": 7956
-},
-{
-"rank": 3,
-"grade": "B",
-"code": "010170",
-"name": "대한광통신",
-"price": 18000,
-"change_pct": 26.94,
-"trading_value": 1366822890330,
-"trading_value_eok": 13668,
-"volume": 80244546,
-"score": {
-"total": 58,
-"trading_value": 30,
-"momentum": 25,
-"smart_money": 0,
-"volume_surge": 6,
-"sector": 0,
-"new_high": 12,
-"ai_news": null,
-"consecutive": null,
-"total_enriched": null
-},
-"investor": {
-"foreign_net": 0,
-"inst_net": 0
-},
-"volume_ratio": 298.6,
-"sector_rising_count": 0,
-"high_52w": {
-"high_52w": 18340,
-"low_52w": 2194,
-"high_date": "20260410",
-"days_since": 0,
-"distance_pct": 1.9
-},
-"market_cap_eok": 28019
-},
-{
-"rank": 4,
-"grade": "B",
+"grade": "S",
 "code": "010820",
 "name": "퍼스텍",
-"price": 11370,
-"change_pct": 16.38,
-"trading_value": 320825472270,
-"trading_value_eok": 3208,
-"volume": 28633788,
+"price": 11390,
+"change_pct": 16.58,
+"trading_value": 342055336195,
+"trading_value_eok": 3421,
+"volume": 30509900,
 "score": {
-"total": 54,
+"total": 93,
 "trading_value": 30,
 "momentum": 25,
-"smart_money": 0,
+"smart_money": 25,
 "volume_surge": 3,
 "sector": 0,
 "new_high": 10,
-"ai_news": null,
-"consecutive": null,
-"total_enriched": null
+"ai_news": 0,
+"consecutive": 0,
+"total_enriched": 93
 },
 "investor": {
-"foreign_net": 0,
-"inst_net": 0
+"foreign_net": 267598,
+"inst_net": 17914
 },
-"volume_ratio": 153.7,
+"volume_ratio": 163.7,
 "sector_rising_count": 0,
 "high_52w": {
 "high_52w": 11750,
 "low_52w": 3830,
 "high_date": "20260410",
 "days_since": 0,
-"distance_pct": 3.2
+"distance_pct": 3.1
 },
-"market_cap_eok": 5555
+"market_cap_eok": 5555,
+"enrichment": {
+"ai_score": 0,
+"ai_reason": "",
+"themes": [],
+"consecutive_days": 0,
+"market_cap_eok": 0,
+"market_cap_tier": "미분류",
+"enriched_at": "2026-04-10T15:37:09.248932"
+}
 },
 {
-"rank": 5,
-"grade": "B",
+"rank": 2,
+"grade": "S",
 "code": "005880",
 "name": "대한해운",
-"price": 3040,
-"change_pct": 27.73,
-"trading_value": 413239163561,
-"trading_value_eok": 4132,
-"volume": 144159185,
+"price": 3090,
+"change_pct": 29.83,
+"trading_value": 452432463772,
+"trading_value_eok": 4524,
+"volume": 156888470,
 "score": {
-"total": 52,
+"total": 90,
 "trading_value": 30,
 "momentum": 25,
-"smart_money": 0,
+"smart_money": 25,
 "volume_surge": 10,
 "sector": 0,
 "new_high": 0,
-"ai_news": null,
-"consecutive": null,
-"total_enriched": null
+"ai_news": 0,
+"consecutive": 0,
+"total_enriched": 90
 },
 "investor": {
-"foreign_net": 0,
-"inst_net": 0
+"foreign_net": 15343508,
+"inst_net": 65940
 },
-"volume_ratio": 1475.8,
+"volume_ratio": 1606.2,
 "sector_rising_count": 0,
 "high_52w": {
 "high_52w": 3235,
 "low_52w": 1716,
 "high_date": "20260304",
 "days_since": 37,
-"distance_pct": 6.0
+"distance_pct": 4.5
 },
-"market_cap_eok": 9812
-},
-{
-"rank": 6,
-"grade": "B",
-"code": "069540",
-"name": "빛과전자",
-"price": 5180,
-"change_pct": 22.6,
-"trading_value": 264411251161,
-"trading_value_eok": 2644,
-"volume": 52524567,
-"score": {
-"total": 52,
-"trading_value": 30,
-"momentum": 25,
-"smart_money": 0,
-"volume_surge": 0,
-"sector": 0,
-"new_high": 10,
-"ai_news": null,
-"consecutive": null,
-"total_enriched": null
-},
-"investor": {
-"foreign_net": 0,
-"inst_net": 0
-},
-"volume_ratio": 87.6,
-"sector_rising_count": 0,
-"high_52w": {
-"high_52w": 5450,
-"low_52w": 592,
-"high_date": "20260410",
-"days_since": 0,
-"distance_pct": 5.0
-},
-"market_cap_eok": 5027
-},
-{
-"rank": 7,
-"grade": "B",
-"code": "047040",
-"name": "대우건설",
-"price": 24825,
-"change_pct": 6.32,
-"trading_value": 1301781211425,
-"trading_value_eok": 13018,
-"volume": 52799634,
-"score": {
-"total": 43,
-"trading_value": 30,
-"momentum": 14,
-"smart_money": 0,
-"volume_surge": 0,
-"sector": 0,
-"new_high": 10,
-"ai_news": 0,
-"consecutive": 8,
-"total_enriched": 51
-},
-"investor": {
-"foreign_net": 0,
-"inst_net": 0
-},
-"volume_ratio": 53.6,
-"sector_rising_count": 0,
-"high_52w": {
-"high_52w": 26100,
-"low_52w": 3610,
-"high_date": "20260410",
-"days_since": 0,
-"distance_pct": 4.9
-},
-"market_cap_eok": 101700,
+"market_cap_eok": 9973,
 "enrichment": {
 "ai_score": 0,
 "ai_reason": "",
 "themes": [],
-"consecutive_days": 5,
-"market_cap_eok": 101905,
-"market_cap_tier": "대형",
-"enriched_at": "2026-04-10T13:57:21.865403"
-}
-},
-{
-"rank": 8,
-"grade": "B",
-"code": "064260",
-"name": "다날",
-"price": 8170,
-"change_pct": 14.11,
-"trading_value": 317764980555,
-"trading_value_eok": 3178,
-"volume": 39387075,
-"score": {
-"total": 50,
-"trading_value": 30,
-"momentum": 22,
-"smart_money": 0,
-"volume_surge": 10,
-"sector": 0,
-"new_high": 0,
-"ai_news": null,
-"consecutive": null,
-"total_enriched": null
-},
-"investor": {
-"foreign_net": 0,
-"inst_net": 0
-},
-"volume_ratio": 670.9,
-"sector_rising_count": 0,
-"high_52w": {
-"high_52w": 10700,
-"low_52w": 5760,
-"high_date": "20260127",
-"days_since": 73,
-"distance_pct": 23.6
-},
-"market_cap_eok": 6142
-},
-{
-"rank": 9,
-"grade": "B",
-"code": "079550",
-"name": "LIG넥스원",
-"price": 926000,
-"change_pct": 4.4,
-"trading_value": 371955226000,
-"trading_value_eok": 3720,
-"volume": 402028,
-"score": {
-"total": 42,
-"trading_value": 30,
-"momentum": 10,
-"smart_money": 0,
-"volume_surge": 0,
-"sector": 0,
-"new_high": 12,
-"ai_news": 0,
-"consecutive": 8,
-"total_enriched": 50
-},
-"investor": {
-"foreign_net": 0,
-"inst_net": 0
-},
-"volume_ratio": 53.3,
-"sector_rising_count": 0,
-"high_52w": {
-"high_52w": 949000,
-"low_52w": 399500,
-"high_date": "20260410",
-"days_since": 0,
-"distance_pct": 2.4
-},
-"market_cap_eok": 203940,
-"enrichment": {
-"ai_score": 0,
-"ai_reason": "",
-"themes": [],
-"consecutive_days": 3,
+"consecutive_days": 0,
 "market_cap_eok": 0,
 "market_cap_tier": "미분류",
-"enriched_at": "2026-04-10T13:57:23.660820"
+"enriched_at": "2026-04-10T15:36:22.591806"
 }
 },
 {
-"rank": 10,
-"grade": "B",
+"rank": 3,
+"grade": "S",
 "code": "009150",
 "name": "삼성전기",
-"price": 562000,
-"change_pct": 8.91,
-"trading_value": 537882199500,
-"trading_value_eok": 5379,
-"volume": 956939,
+"price": 565000,
+"change_pct": 9.5,
+"trading_value": 611019126500,
+"trading_value_eok": 6110,
+"volume": 1086530,
 "score": {
-"total": 49,
+"total": 82,
 "trading_value": 30,
 "momentum": 18,
-"smart_money": 0,
-"volume_surge": 3,
+"smart_money": 18,
+"volume_surge": 6,
 "sector": 0,
 "new_high": 10,
-"ai_news": null,
-"consecutive": null,
-"total_enriched": null
+"ai_news": 0,
+"consecutive": 5,
+"total_enriched": 87
 },
 "investor": {
-"foreign_net": 0,
-"inst_net": 0
+"foreign_net": 62657,
+"inst_net": -13692
 },
-"volume_ratio": 196.4,
+"volume_ratio": 223.0,
 "sector_rising_count": 0,
 "high_52w": {
 "high_52w": 583000,
 "low_52w": 253000,
 "high_date": "20260410",
 "days_since": 0,
-"distance_pct": 3.6
+"distance_pct": 3.1
 },
-"market_cap_eok": 420899
+"market_cap_eok": 422019,
+"enrichment": {
+"ai_score": 0,
+"ai_reason": "",
+"themes": [],
+"consecutive_days": 2,
+"market_cap_eok": 421272,
+"market_cap_tier": "대형",
+"enriched_at": "2026-04-10T15:36:40.433181"
+}
 },
 {
-"rank": 11,
-"grade": "B",
-"code": "003280",
-"name": "흥아해운",
-"price": 3350,
-"change_pct": 7.03,
-"trading_value": 281161807617,
-"trading_value_eok": 2812,
-"volume": 83793127,
+"rank": 4,
+"grade": "S",
+"code": "079550",
+"name": "LIG넥스원",
+"price": 921000,
+"change_pct": 3.83,
+"trading_value": 424692634500,
+"trading_value_eok": 4247,
+"volume": 459096,
 "score": {
-"total": 41,
+"total": 77,
 "trading_value": 30,
-"momentum": 18,
-"smart_money": 0,
-"volume_surge": 3,
+"momentum": 10,
+"smart_money": 25,
+"volume_surge": 0,
 "sector": 0,
-"new_high": 0,
+"new_high": 12,
 "ai_news": 0,
 "consecutive": 8,
-"total_enriched": 49
+"total_enriched": 85
+},
+"investor": {
+"foreign_net": 19754,
+"inst_net": 17848
+},
+"volume_ratio": 60.9,
+"sector_rising_count": 0,
+"high_52w": {
+"high_52w": 949000,
+"low_52w": 399500,
+"high_date": "20260410",
+"days_since": 0,
+"distance_pct": 3.0
+},
+"market_cap_eok": 202620,
+"enrichment": {
+"ai_score": 0,
+"ai_reason": "",
+"themes": [],
+"consecutive_days": 3,
+"market_cap_eok": 202620,
+"market_cap_tier": "대형",
+"enriched_at": "2026-04-10T15:37:09.351177"
+}
+},
+{
+"rank": 5,
+"grade": "S",
+"code": "010170",
+"name": "대한광통신",
+"price": 17770,
+"change_pct": 25.32,
+"trading_value": 1493272081150,
+"trading_value_eok": 14933,
+"volume": 87295107,
+"score": {
+"total": 73,
+"trading_value": 30,
+"momentum": 25,
+"smart_money": 0,
+"volume_surge": 8,
+"sector": 0,
+"new_high": 10,
+"ai_news": 0,
+"consecutive": 8,
+"total_enriched": 81
 },
 "investor": {
 "foreign_net": 0,
 "inst_net": 0
 },
-"volume_ratio": 167.4,
+"volume_ratio": 324.8,
+"sector_rising_count": 0,
+"high_52w": {
+"high_52w": 18340,
+"low_52w": 2194,
+"high_date": "20260410",
+"days_since": 0,
+"distance_pct": 3.1
+},
+"market_cap_eok": 27630,
+"enrichment": {
+"ai_score": 0,
+"ai_reason": "",
+"themes": [],
+"consecutive_days": 6,
+"market_cap_eok": 27925,
+"market_cap_tier": "중형",
+"enriched_at": "2026-04-10T15:35:15.653176"
+}
+},
+{
+"rank": 6,
+"grade": "S",
+"code": "011930",
+"name": "신성이엔지",
+"price": 3785,
+"change_pct": 19.78,
+"trading_value": 511755087780,
+"trading_value_eok": 5118,
+"volume": 136937193,
+"score": {
+"total": 75,
+"trading_value": 30,
+"momentum": 25,
+"smart_money": 0,
+"volume_surge": 10,
+"sector": 0,
+"new_high": 10,
+"ai_news": 0,
+"consecutive": 5,
+"total_enriched": 80
+},
+"investor": {
+"foreign_net": 0,
+"inst_net": 0
+},
+"volume_ratio": 731.1,
+"sector_rising_count": 0,
+"high_52w": {
+"high_52w": 3980,
+"low_52w": 1527,
+"high_date": "20260410",
+"days_since": 0,
+"distance_pct": 4.9
+},
+"market_cap_eok": 7791,
+"enrichment": {
+"ai_score": 0,
+"ai_reason": "",
+"themes": [],
+"consecutive_days": 2,
+"market_cap_eok": 0,
+"market_cap_tier": "미분류",
+"enriched_at": "2026-04-10T15:36:03.626523"
+}
+},
+{
+"rank": 7,
+"grade": "A",
+"code": "069540",
+"name": "빛과전자",
+"price": 4920,
+"change_pct": 16.45,
+"trading_value": 296985815344,
+"trading_value_eok": 2970,
+"volume": 59089475,
+"score": {
+"total": 78,
+"trading_value": 30,
+"momentum": 25,
+"smart_money": 18,
+"volume_surge": 0,
+"sector": 0,
+"new_high": 5,
+"ai_news": 0,
+"consecutive": 0,
+"total_enriched": 78
+},
+"investor": {
+"foreign_net": 80855,
+"inst_net": -59089
+},
+"volume_ratio": 98.5,
+"sector_rising_count": 0,
+"high_52w": {
+"high_52w": 5450,
+"low_52w": 592,
+"high_date": "20260410",
+"days_since": 0,
+"distance_pct": 9.7
+},
+"market_cap_eok": 4802,
+"enrichment": {
+"ai_score": 0,
+"ai_reason": "",
+"themes": [],
+"consecutive_days": 0,
+"market_cap_eok": 4802,
+"market_cap_tier": "중소형",
+"enriched_at": "2026-04-10T15:37:09.239412"
+}
+},
+{
+"rank": 8,
+"grade": "A",
+"code": "003280",
+"name": "흥아해운",
+"price": 3285,
+"change_pct": 4.95,
+"trading_value": 320912744396,
+"trading_value_eok": 3209,
+"volume": 95604855,
+"score": {
+"total": 68,
+"trading_value": 30,
+"momentum": 10,
+"smart_money": 25,
+"volume_surge": 3,
+"sector": 0,
+"new_high": 0,
+"ai_news": 0,
+"consecutive": 8,
+"total_enriched": 76
+},
+"investor": {
+"foreign_net": 459842,
+"inst_net": 971
+},
+"volume_ratio": 191.0,
 "sector_rising_count": 0,
 "high_52w": {
 "high_52w": 4795,
 "low_52w": 1553,
 "high_date": "20260402",
 "days_since": 8,
-"distance_pct": 30.1
+"distance_pct": 31.5
 },
-"market_cap_eok": 8102,
+"market_cap_eok": 7898,
 "enrichment": {
 "ai_score": 0,
 "ai_reason": "",
 "themes": [],
 "consecutive_days": 3,
-"market_cap_eok": 8090,
+"market_cap_eok": 7898,
 "market_cap_tier": "중소형",
-"enriched_at": "2026-04-10T13:57:22.774738"
+"enriched_at": "2026-04-10T15:37:09.397927"
 }
 },
 {
-"rank": 12,
-"grade": "B",
-"code": "046970",
-"name": "우리로",
-"price": 8070,
-"change_pct": 11.31,
-"trading_value": 231117761505,
-"trading_value_eok": 2311,
-"volume": 28408588,
+"rank": 9,
+"grade": "A",
+"code": "006360",
+"name": "GS건설",
+"price": 37650,
+"change_pct": 5.91,
+"trading_value": 310027766900,
+"trading_value_eok": 3100,
+"volume": 8256802,
 "score": {
-"total": 48,
+"total": 72,
 "trading_value": 30,
-"momentum": 22,
-"smart_money": 0,
-"volume_surge": 8,
+"momentum": 14,
+"smart_money": 15,
+"volume_surge": 3,
+"sector": 0,
+"new_high": 10,
+"ai_news": 0,
+"consecutive": 2,
+"total_enriched": 74
+},
+"investor": {
+"foreign_net": -819568,
+"inst_net": 66652
+},
+"volume_ratio": 122.1,
+"sector_rising_count": 0,
+"high_52w": {
+"high_52w": 39250,
+"low_52w": 18220,
+"high_date": "20260410",
+"days_since": 0,
+"distance_pct": 4.1
+},
+"market_cap_eok": 32221,
+"enrichment": {
+"ai_score": 0,
+"ai_reason": "",
+"themes": [],
+"consecutive_days": 1,
+"market_cap_eok": 32221,
+"market_cap_tier": "중형",
+"enriched_at": "2026-04-10T15:37:09.269866"
+}
+},
+{
+"rank": 10,
+"grade": "A",
+"code": "005290",
+"name": "동진쎄미켐",
+"price": 49500,
+"change_pct": 9.88,
+"trading_value": 292438647450,
+"trading_value_eok": 2924,
+"volume": 5972610,
+"score": {
+"total": 72,
+"trading_value": 30,
+"momentum": 18,
+"smart_money": 18,
+"volume_surge": 6,
 "sector": 0,
 "new_high": 0,
 "ai_news": null,
@@ -461,71 +441,285 @@
 "total_enriched": null
 },
 "investor": {
-"foreign_net": 0,
-"inst_net": 0
+"foreign_net": 2722151,
+"inst_net": -2708554
 },
-"volume_ratio": 307.9,
+"volume_ratio": 246.4,
 "sector_rising_count": 0,
 "high_52w": {
-"high_52w": 10150,
-"low_52w": 1211,
-"high_date": "20260401",
-"days_since": 9,
-"distance_pct": 20.5
+"high_52w": 59700,
+"low_52w": 36700,
+"high_date": "20260130",
+"days_since": 70,
+"distance_pct": 17.1
 },
-"market_cap_eok": 3524
+"market_cap_eok": 25450
 },
 {
-"rank": 13,
-"grade": "B",
-"code": "006360",
-"name": "GS건설",
-"price": 37700,
-"change_pct": 6.05,
-"trading_value": 276967702375,
-"trading_value_eok": 2770,
-"volume": 7383250,
+"rank": 11,
+"grade": "A",
+"code": "050890",
+"name": "쏠리드",
+"price": 17080,
+"change_pct": 20.11,
+"trading_value": 759901024790,
+"trading_value_eok": 7599,
+"volume": 44666922,
 "score": {
-"total": 46,
+"total": 70,
 "trading_value": 30,
-"momentum": 14,
+"momentum": 25,
 "smart_money": 0,
-"volume_surge": 3,
+"volume_surge": 10,
 "sector": 0,
-"new_high": 10,
+"new_high": 5,
 "ai_news": 0,
 "consecutive": 2,
-"total_enriched": 48
+"total_enriched": 72
 },
 "investor": {
 "foreign_net": 0,
 "inst_net": 0
 },
-"volume_ratio": 109.1,
+"volume_ratio": 997.2,
 "sector_rising_count": 0,
 "high_52w": {
-"high_52w": 39250,
-"low_52w": 18220,
+"high_52w": 18050,
+"low_52w": 6980,
 "high_date": "20260410",
 "days_since": 0,
-"distance_pct": 3.9
+"distance_pct": 5.4
 },
-"market_cap_eok": 32264,
+"market_cap_eok": 10377,
 "enrichment": {
 "ai_score": 0,
 "ai_reason": "",
 "themes": [],
 "consecutive_days": 1,
-"market_cap_eok": 32093,
+"market_cap_eok": 0,
+"market_cap_tier": "미분류",
+"enriched_at": "2026-04-10T15:35:40.055876"
+}
+},
+{
+"rank": 12,
+"grade": "A",
+"code": "047040",
+"name": "대우건설",
+"price": 24300,
+"change_pct": 4.07,
+"trading_value": 1431004277275,
+"trading_value_eok": 14310,
+"volume": 58063250,
+"score": {
+"total": 63,
+"trading_value": 30,
+"momentum": 10,
+"smart_money": 18,
+"volume_surge": 0,
+"sector": 0,
+"new_high": 5,
+"ai_news": 0,
+"consecutive": 8,
+"total_enriched": 71
+},
+"investor": {
+"foreign_net": 454873,
+"inst_net": -417794
+},
+"volume_ratio": 58.9,
+"sector_rising_count": 0,
+"high_52w": {
+"high_52w": 26100,
+"low_52w": 3610,
+"high_date": "20260410",
+"days_since": 0,
+"distance_pct": 6.9
+},
+"market_cap_eok": 99851,
+"enrichment": {
+"ai_score": 0,
+"ai_reason": "",
+"themes": [],
+"consecutive_days": 5,
+"market_cap_eok": 100672,
+"market_cap_tier": "대형",
+"enriched_at": "2026-04-10T15:37:09.496088"
+}
+},
+{
+"rank": 13,
+"grade": "A",
+"code": "064260",
+"name": "다날",
+"price": 7960,
+"change_pct": 11.17,
+"trading_value": 371126822245,
+"trading_value_eok": 3711,
+"volume": 46002174,
+"score": {
+"total": 62,
+"trading_value": 30,
+"momentum": 22,
+"smart_money": 0,
+"volume_surge": 10,
+"sector": 0,
+"new_high": 0,
+"ai_news": 0,
+"consecutive": 0,
+"total_enriched": 62
+},
+"investor": {
+"foreign_net": -307996,
+"inst_net": -7358
+},
+"volume_ratio": 783.6,
+"sector_rising_count": 0,
+"high_52w": {
+"high_52w": 10700,
+"low_52w": 5760,
+"high_date": "20260127",
+"days_since": 73,
+"distance_pct": 25.6
+},
+"market_cap_eok": 6021,
+"enrichment": {
+"ai_score": 0,
+"ai_reason": "",
+"themes": [],
+"consecutive_days": 0,
+"market_cap_eok": 6067,
+"market_cap_tier": "중소형",
+"enriched_at": "2026-04-10T15:36:55.001095"
+}
+},
+{
+"rank": 14,
+"grade": "A",
+"code": "000660",
+"name": "SK하이닉스",
+"price": 1027000,
+"change_pct": 2.91,
+"trading_value": 3131732810500,
+"trading_value_eok": 31317,
+"volume": 3036771,
+"score": {
+"total": 53,
+"trading_value": 30,
+"momentum": 5,
+"smart_money": 18,
+"volume_surge": 0,
+"sector": 0,
+"new_high": 0,
+"ai_news": 0,
+"consecutive": 8,
+"total_enriched": 61
+},
+"investor": {
+"foreign_net": 897131,
+"inst_net": -373943
+},
+"volume_ratio": 60.4,
+"sector_rising_count": 0,
+"high_52w": {
+"high_52w": 1099000,
+"low_52w": 647000,
+"high_date": "20260226",
+"days_since": 43,
+"distance_pct": 6.6
+},
+"market_cap_eok": 7319453,
+"enrichment": {
+"ai_score": 0,
+"ai_reason": "",
+"themes": [],
+"consecutive_days": 5,
+"market_cap_eok": 7319453,
+"market_cap_tier": "대형",
+"enriched_at": "2026-04-10T15:37:09.556994"
+}
+},
+{
+"rank": 15,
+"grade": "B",
+"code": "005935",
+"name": "삼성전자우",
+"price": 140400,
+"change_pct": 1.96,
+"trading_value": 343348918500,
+"trading_value_eok": 3433,
+"volume": 2449335,
+"score": {
+"total": 53,
+"trading_value": 30,
+"momentum": 5,
+"smart_money": 18,
+"volume_surge": 0,
+"sector": 0,
+"new_high": 0,
+"ai_news": null,
+"consecutive": null,
+"total_enriched": null
+},
+"investor": {
+"foreign_net": 586819,
+"inst_net": -1470
+},
+"volume_ratio": 67.2,
+"sector_rising_count": 0,
+"high_52w": {
+"high_52w": 150000,
+"low_52w": 89200,
+"high_date": "20260226",
+"days_since": 43,
+"distance_pct": 6.4
+},
+"market_cap_eok": 1145628
+},
+{
+"rank": 16,
+"grade": "B",
+"code": "038500",
+"name": "삼표시멘트",
+"price": 17100,
+"change_pct": 1.36,
+"trading_value": 330568023360,
+"trading_value_eok": 3306,
+"volume": 17987067,
+"score": {
+"total": 43,
+"trading_value": 30,
+"momentum": 5,
+"smart_money": 0,
+"volume_surge": 8,
+"sector": 0,
+"new_high": 0,
+"ai_news": 0,
+"consecutive": 2,
+"total_enriched": 45
+},
+"investor": {
+"foreign_net": 0,
+"inst_net": 0
+},
+"volume_ratio": 475.1,
+"sector_rising_count": 0,
+"enrichment": {
+"ai_score": 0,
+"ai_reason": "",
+"themes": [],
+"consecutive_days": 1,
+"market_cap_eok": 18454,
 "market_cap_tier": "중형",
-"enriched_at": "2026-04-10T13:55:32.609721"
+"enriched_at": "2026-04-10T15:37:09.531924"
 }
 }
 ],
 "by_grade": {
-"A": 2,
-"B": 11
+"S": 6,
+"A": 8,
+"B": 2
 },
 "api_calls": 33,
-"elapsed_ms": 570156
+"elapsed_ms": 581181
 }

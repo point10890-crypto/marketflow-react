@@ -1,0 +1,117 @@
+{
+  "name": "KT",
+  "ticker": "030200.KS",
+  "result": "매수",
+  "date": "2026-04-10 15:32:25",
+  "elapsed": 3.5,
+  "consensus_score": 4.16,
+  "analyst_count": 25,
+  "recommendation_detail": {
+    "strongBuy": 6,
+    "buy": 17,
+    "hold": 2,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 62300.0,
+    "high": 120000.0,
+    "low": 58000.0,
+    "mean": 72150.836,
+    "median": 70500.0
+  },
+  "current_price": 62300.0,
+  "upside_potential": 15.8,
+  "key_stats": {
+    "name": "KT",
+    "sector": "Communication Services",
+    "industry": "Telecom Services",
+    "market_cap": 15022551990272,
+    "pe_ratio": null,
+    "forward_pe": 9.494501,
+    "dividend_yield": 4.75,
+    "beta": 0.184,
+    "fifty_two_week_high": 69400.0,
+    "fifty_two_week_low": 46200.0,
+    "revenue": 28244160020480,
+    "profit_margin": 0.061290003,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "KT(030200.KS)에 대해 25명의 애널리스트가 제시한 컨센서스는 매수 의견(4.16/5.0)입니다. 목표가 평균은 72,151 KRW로, 현재가 62,300 KRW 대비 15.8% 상승 여력이 있습니다. 이는 애널리스트들이 KT의 추가적인 주가 상승 가능성을 예상하고 있음을 시사합니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 7126734000000
+    },
+    {
+      "date": "2025-06",
+      "value": 7427337000000
+    },
+    {
+      "date": "2025-03",
+      "value": 6845117000000
+    },
+    {
+      "date": "2024-12",
+      "value": 6524056000000
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": 391542000000
+    },
+    {
+      "date": "2025-06",
+      "value": 687941000000
+    },
+    {
+      "date": "2025-03",
+      "value": 539839000000
+    },
+    {
+      "date": "2024-12",
+      "value": -666035000000
+    }
+  ],
+  "news": [
+    {
+      "title": "5 Low Price-to-Sales Stocks to Strengthen Your Investment Portfolio",
+      "summary": "Low price-to-sales stocks screen as undervalued, using revenue-based valuation to spot discounted growth opportunities when earnings are weak or volatile.",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/5-low-price-sales-stocks-133500843.html",
+      "provider": "Zacks",
+      "pub_time": "2026-04-01T13:35:00Z"
+    },
+    {
+      "title": "Should Value Investors Buy KT (KT) Stock?",
+      "summary": "Here at Zacks, our focus is on the proven Zacks Rank system, which emphasizes earnings estimates and estimate revisions to find great stocks. Nevertheless, we are always paying attention to the latest",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/value-investors-buy-kt-kt-134004377.html",
+      "provider": "Zacks",
+      "pub_time": "2026-03-25T13:40:04Z"
+    },
+    {
+      "title": "KT Corp (KT) Q4 2025 Earnings Call Highlights: Strong Cloud Growth and Strategic Initiatives",
+      "summary": "KT Corp (KT) reports a 27.4% growth in cloud services, with plans to expand offerings and sustain momentum into the next year.",
+      "url": "https://finance.yahoo.com/news/kt-corp-kt-q4-2025-130028607.html",
+      "provider": "GuruFocus.com",
+      "pub_time": "2026-02-10T13:00:28Z"
+    },
+    {
+      "title": "NAN FUNG TRINITY Loads Up KT Corp Stock With 1.49 Million Shares Bought",
+      "summary": "KT provides telecom and digital media services to consumers and enterprises in South Korea and abroad, with a broad subscription base.",
+      "url": "https://www.fool.com/coverage/filings/2026/02/04/nan-fung-trinity-loads-up-kt-with-149m-shares-bought/",
+      "provider": "Motley Fool",
+      "pub_time": "2026-02-04T15:50:05Z"
+    },
+    {
+      "title": "KT Stock Up 22% This Past Year, but Does One Fund's $8.3 Million Exit Signal a Shift in Conviction?",
+      "summary": "KT’s fundamentals are improving, but one fund’s timing suggests the upside case may be changing faster than the headline numbers imply.",
+      "url": "https://www.fool.com/coverage/filings/2026/01/01/kt-stock-up-22-this-past-year-but-does-one-fund-s-usd8-3-million-exit-signal-a-shift-in-conviction/",
+      "provider": "Motley Fool",
+      "pub_time": "2026-01-01T23:23:44Z"
+    }
+  ]
+}

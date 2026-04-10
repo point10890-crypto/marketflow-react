@@ -1,0 +1,213 @@
+{
+  "stock_code": "347700",
+  "stock_name": "스피어",
+  "generated_at": "2026-04-10T05:57:24.882532+00:00",
+  "financials": {
+    "stock_code": "347700",
+    "corp_code": "01336762",
+    "years": [
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2020": {
+        "cash": 55.1,
+        "total_assets": 95.4,
+        "short_debt": 2.0,
+        "total_liab": 73.5,
+        "total_equity": 21.9,
+        "revenue": 26.7,
+        "net_income": -93.1
+      },
+      "2021": {
+        "cash": 241.4,
+        "total_assets": 332.9,
+        "short_debt": 2.0,
+        "total_liab": 202.3,
+        "total_equity": 130.6,
+        "revenue": 46.3
+      },
+      "2022": {
+        "cash": 75.7,
+        "total_assets": 261.3,
+        "short_debt": 1.0,
+        "total_liab": 165.6,
+        "total_equity": 95.7,
+        "revenue": 28.2
+      },
+      "2023": {
+        "total_assets": 190.3,
+        "cash": 53.5,
+        "total_equity": 89.8,
+        "short_debt": 1.0,
+        "total_liab": 100.6,
+        "net_income": -112.6,
+        "revenue": 33.3
+      },
+      "2024": {
+        "total_assets": 446.4,
+        "cash": 193.4,
+        "total_equity": 110.2,
+        "short_debt": 0.0,
+        "total_liab": 133.9,
+        "net_income": -170.0,
+        "revenue": 25.6
+      },
+      "2025": {
+        "total_assets": 953.6,
+        "cash": 41.7,
+        "total_equity": 636.3,
+        "short_debt": 10.0,
+        "total_liab": 317.2,
+        "op_profit": 90.5,
+        "net_income": 1.7,
+        "revenue": 956.4
+      }
+    },
+    "missing_years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2020,
+        "revenue_eok": 27,
+        "op_profit_eok": 0,
+        "net_income_eok": -93,
+        "roe_pct": -422.73,
+        "op_margin_pct": 0.0,
+        "debt_ratio_pct": 336.36
+      },
+      {
+        "year": 2021,
+        "revenue_eok": 46,
+        "op_profit_eok": 0,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 0.0,
+        "debt_ratio_pct": 154.2
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 28,
+        "op_profit_eok": 0,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 0.0,
+        "debt_ratio_pct": 172.92
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 33,
+        "op_profit_eok": 0,
+        "net_income_eok": -113,
+        "roe_pct": -125.56,
+        "op_margin_pct": 0.0,
+        "debt_ratio_pct": 112.22
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 26,
+        "op_profit_eok": 0,
+        "net_income_eok": -170,
+        "roe_pct": -154.55,
+        "op_margin_pct": 0.0,
+        "debt_ratio_pct": 121.82
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 956,
+        "op_profit_eok": 90,
+        "net_income_eok": 2,
+        "roe_pct": 0.31,
+        "op_margin_pct": 9.41,
+        "debt_ratio_pct": 49.84
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": 104.6,
+      "op_profit_cagr_pct": 0.0,
+      "best_year": 2025,
+      "worst_year": 2024,
+      "avg_roe_pct": -117.09
+    },
+    "valuation": {
+      "grade": "C",
+      "strengths": [
+        "2025년 매출액이 956억원으로 급증하며 사업 규모가 크게 확대되었습니다.",
+        "2025년 영업이익이 90억원으로 흑자 전환에 성공하며 수익성이 개선되었습니다.",
+        "2025년 부채비율이 49.84%로 크게 하락하여 재무 건전성이 개선되었습니다."
+      ],
+      "risks": [
+        "2020년부터 2024년까지 5년간 영업이익이 발생하지 않았으며, 당기순손실이 지속되었습니다.",
+        "매출액, 영업이익, 당기순이익 등 주요 재무 지표의 연간 변동성이 매우 높습니다.",
+        "과거 2020년 300% 이상을 기록하는 등 높은 부채비율을 유지했던 이력이 있습니다."
+      ],
+      "one_liner": "과거 부진한 실적과 높은 재무 변동성을 보였으나, 2025년 매출액과 영업이익이 큰 폭으로 개선되며 흑자 전환에 성공한 잠재적 턴어라운드 기업입니다."
+    }
+  },
+  "dcf": {
+    "text": "퀀트 애널리스트로서 스피어(347700)의 DCF 적정가치를 계산하겠습니다.\n\n**1. 기본 시나리오 DCF 적정가치 계산**\n\n주어진 데이터를 바탕으로 FCF를 계산하고 DCF 모델을 적용합니다.\n\n*   **가정:** 매출액과 영업이익은 5년 예측 기간 동안 최근 재무 수치(매출액 956억원, 영업이익 90억원)로 일정하게 유지된다고 가정합니다. (성장률이 명시되지 않았기 때문)\n*   **FCF 계산식:** FCF = 영업이익 × (1 - 0.25) + 감가상각(매출의 10%) - CAPEX(매출의 5%)\n*   **기본 시나리오:** WACC = 9%, 영구성장률 g = 2%\n\n\n**2. WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 출력**\n\n다양한 WACC와 영구성장률(g) 조합에 따른 DCF 적정가치를 계산하여 민감도 분석을 수행합니다.\n\n\n**3. 요약 출력**\n\n*   **적정가치(기본): 1540.42억원**",
+    "executed_code": "import pandas as pd\n\n# 1. 기본 시나리오 DCF 적정가치 계산\n\n# 기업 데이터 (억원)\nrevenue_0 = 956\noperating_income_0 = 90\n\n# 가정\ntax_rate_effective = 0.25 # 영업이익에 곱해지는 (1-0.25)를 유효세율로 가정\ndepreciation_rate = 0.10 # 매출액의 10%\ncapex_rate = 0.05 # 매출액의 5%\nforecast_years = 5\n\n# 기본 시나리오 가정\nbase_wacc = 0.09\nbase_g = 0.02\n\n# FCF 계산 함수\ndef calculate_fcf(revenue, operating_income, tax_rate, dep_rate, capex_rate):\n    depreciation = revenue * dep_rate\n    capex = revenue * capex_rate\n    fcf = operating_income * (1 - tax_rate) + depreciation - capex\n    return fcf\n\n# DCF 계산 함수\ndef calculate_dcf(revenue_start, operating_income_start, tax_rate, dep_rate, capex_rate,\n                  wacc, g, num_forecast_years):\n    \n    # FCF 예측 (매출액과 영업이익이 예측 기간 동안 일정하다고 가정)\n    fcf_list = []\n    for year in range(1, num_forecast_years + 1):\n        fcf = calculate_fcf(revenue_start, operating_income_start, tax_rate, dep_rate, capex_rate)\n        fcf_list.append(fcf)\n\n    # 예측 기간 FCF의 현재가치 계산\n    pv_fcf = 0\n    for i, fcf in enumerate(fcf_list):\n        pv_fcf += fcf / ((1 + wacc) ** (i + 1))\n\n    # Terminal Value 계산 (마지막 예측 연도 다음 해의 FCF를 사용)\n    # FCF_terminal = FCF_last_forecast_year * (1 + g)\n    # 여기서는 FCF가 일정하므로 FCF_last_forecast_year = fcf_list[-1]\n    fcf_terminal_year = fcf_list[-1] * (1 + g) # FCF_year_6\n    \n    if wacc <= g:\n        # WACC가 g보다 작거나 같으면 터미널 가치 계산이 불가능하거나 무한대가 됨\n        # 실제 분석에서는 이런 경우 모델 가정을 재검토해야 함\n        return float('inf') # 무한대 반환 또는 오류 처리\n    \n    terminal_value = fcf_terminal_year / (wacc - g)\n    \n    # Terminal Value의 현재가치 계산\n    pv_terminal_value = terminal_value / ((1 + wacc) ** num_forecast_years)\n\n    # 총 적정가치\n    total_valuation = pv_fcf + pv_terminal_value\n    return total_valuation\n\n# 기본 시나리오 계산\nbase_fcf_per_year = calculate_fcf(revenue_0, operating_income_0, tax_rate_effective, depreciation_rate, capex_rate)\nprint(f\"매년 FCF (예측 기간): {base_fcf_per_year:.2f} 억원\\n\")\n\nbase_dcf_value = calculate_dcf(revenue_0, operating_income_0, tax_rate_effective, depreciation_rate, capex_rate,\n                               base_wacc, base_g, forecast_years)\nprint(f\"기본 시나리오 DCF 적정가치: {base_dcf_value:.2f} 억원\")\n\n\n# 민감도 분석 그리드\nwacc_scenarios = [0.07, 0.08, 0.09, 0.10, 0.11] # 7%, 8%, 9%, 10%, 11%\ng_scenarios = [0.01, 0.02, 0.03] # 1%, 2%, 3%\n\nsensitivity_results = {}\n\nfor wacc in wacc_scenarios:\n    row_results = {}\n    for g in g_scenarios:\n        if wacc <= g: # WACC가 g보다 작거나 같으면 계산 불가\n            row_results[g] = \"N/A\"\n        else:\n            dcf_value = calculate_dcf(revenue_0, operating_income_0, tax_rate_effective, depreciation_rate, capex_rate,\n                                      wacc, g, forecast_years)\n            row_results[g] = f\"{dcf_value:.2f}\"\n    sensitivity_results[wacc] = row_results\n\n# 결과 출력\nprint(\"\\n--- DCF 적정가치 민감도 분석 (억원) ---\")\nprint(f\"{'WACC \\\\ g':<10}\", end=\"\")\nfor g_val in g_scenarios:\n    print(f\"{g_val*100:>8.0f}%\", end=\"\")\nprint()\nprint(\"-\" * (10 + len(g_scenarios) * 8))\n\nfor wacc_val in wacc_scenarios:\n    print(f\"{wacc_val*100:<9.0f}%\", end=\"\")\n    for g_val in g_scenarios:\n        value = sensitivity_results[wacc_val][g_val]\n        print(f\"{value:>8}\", end=\"\")\n    print()\nprint(\"-\" * (10 + len(g_scenarios) * 8))\n\n# 마지막에 '적정가치(기본): {value}억원' 형태로 요약 출력\nprint(f\"\\n적정가치(기본): {base_dcf_value:.2f}억원\")\n\n\n# 민감도 분석 그리드\nwacc_scenarios = [0.07, 0.08, 0.09, 0.10, 0.11] # 7%, 8%, 9%, 10%, 11%\ng_scenarios = [0.01, 0.02, 0.03] # 1%, 2%, 3%\n\nsensitivity_results = {}\n\nfor wacc in wacc_scenarios:\n    row_results = {}\n    for g in g_scenarios:\n        if wacc <= g: # WACC가 g보다 작거나 같으면 계산 불가\n            row_results[g] = \"N/A\"\n        else:\n            dcf_value = calculate_dcf(revenue_0, operating_income_0, tax_rate_effective, depreciation_rate, capex_rate,\n                                      wacc, g, forecast_years)\n            row_results[g] = f\"{dcf_value:.2f}\"\n    sensitivity_results[wacc] = row_results\n\n# 결과 출력\nprint(\"\\n--- DCF 적정가치 민감도 분석 (억원) ---\")\n# 수정된 f-string: 'WACC \\ g' 대신 'WACC / g' 사용\nprint(f\"{'WACC / g':<10}\", end=\"\")\nfor g_val in g_scenarios:\n    print(f\"{g_val*100:>8.0f}%\", end=\"\")\nprint()\nprint(\"-\" * (10 + len(g_scenarios) * 8))\n\nfor wacc_val in wacc_scenarios:\n    print(f\"{wacc_val*100:<9.0f}%\", end=\"\")\n    for g_val in g_scenarios:\n        value = sensitivity_results[wacc_val][g_val]\n        print(f\"{value:>8}\", end=\"\")\n    print()\nprint(\"-\" * (10 + len(g_scenarios) * 8))\n\n# 마지막에 '적정가치(기본): {value}억원' 형태로 요약 출력\nprint(f\"\\n적정가치(기본): {base_dcf_value:.2f}억원\")",
+    "code_output": "매년 FCF (예측 기간): 115.30 억원\n\n기본 시나리오 DCF 적정가치: 1540.42 억원\n\nTraceback (most recent call last):\n  File \"<string>\", line 20\n    print(f\"{'WACC \\\\ g':<10}\", end=\"\")\n                              ^\nSyntaxError: f-string expression part cannot include a backslash\n\n\n--- DCF 적정가치 민감도 분석 (억원) ---\nWACC / g         1%       2%       3%\n----------------------------------\n7        % 1856.58 2149.78 2589.59\n8        % 1592.59 1794.37 2076.87\n9        % 1394.56 1540.42 1734.90\n10       % 1240.50 1349.88 1490.51\n11       % 1117.23 1201.62 1307.11\n----------------------------------\n\n적정가치(기본): 1540.42억원"
+  },
+  "news": {
+    "text": "## 스피어(347700) 재무제표 및 시장 컨센서스 분석\n\n한국 주식 시장 전문 애널리스트로서 스피어(347700)에 대한 10년 재무제표 분석 결과와 최근 2주간의 시장 뉴스를 종합하여 분석합니다.\n\n### 1. 재무 데이터 스토리와 현재 시장 컨센서스의 일치/불일치\n\n제공된 재무 데이터 요약에 따르면 스피어는 과거 부진한 실적과 높은 재무 변동성을 보였으나, 2025년 매출액과 영업이익이 큰 폭으로 개선되며 흑자 전환에 성공한 잠재적 턴어라운드 기업입니다. 투자등급은 C입니다.\n\n최근 시장 컨센서스는 이러한 턴어라운드 스토리에 대체로 **일치**하는 모습을 보입니다. 스피어는 2025년 스피어코리아와의 합병을 통해 디지털 헬스케어에서 우주항공 특수합금 사업으로 성공적으로 전환했으며, 스페이스X의 1차 벤더사(Tier 1)로서 고성능 특수합금 소재를 공급하는 글로벌 공급망 솔루션 기업으로 자리매김했습니다.\n\n특히 2026년 3월에는 최근 매출액 대비 각각 1,627%와 1,097%에 달하는 416억 원 및 280억 원 규모의 우주항공 특수합금 공급 계약을 체결하며 폭발적인 매출 성장을 예고했습니다. 2025년 연매출은 956억 원을 달성했으며, 2026년을 '퀀텀 점프의 해'로 정의하고 있습니다.\n\n다만, 시장 컨센서스에는 일부 **불일치**도 존재합니다. 일부 증권사에서는 대규모 계약 이행 가능성에 대한 시장의 의구심과 전환사채(CB)로 인한 희석 우려를 이유로 '관망(Hold)' 의견을 제시하고 있습니다. 또한, 2026년 4월 7일에는 외국인 매수에도 불구하고 주가가 6.93% 급락하는 등 최근 2주간 높은 변동성과 수급 불안정성을 보였습니다.\n\n### 2. 재무제표에서 드러나지 않는 리스크 또는 호재\n\n**주요 호재:**\n*   **우주항공 산업 내 독점적 지위:** 스피어는 스페이스X의 세계 5대 Tier 1 고난도 특수합금 공급업체 중 하나로, 우주항공 발사체 부품 공급망의 높은 진입 장벽을 통과했습니다. 이는 단순한 소재 유통을 넘어 고부가가치 가공 및 맞춤형 솔루션을 제공하는 SDC(Space Logistics Center) 사업으로 확장될 잠재력이 있습니다.\n*   **장기 계약 및 수직 계열화:** 미국 글로벌 우주발사업체와의 10년 장기 공급 계약을 체결했으며, 인도네시아 니켈 제련소 지분 확보를 통해 핵심 원자재 수급부터 생산까지 이어지는 공급망 구조를 완성했습니다.\n*   **전문 인력 확보:** PCC 출신 CTO와 스페이스X 출신 글로벌 공급망 전문가를 영입하여 우주항공사업부문 전담 조직을 강화했습니다.\n\n**주요 리스크:**\n*   **대규모 계약 이행 리스크:** 연매출 25억 원 규모의 기업이 416억 원 규모의 계약을 체결한 것에 대해 시장은 계약 이행 가능성에 대한 의구심을 가지고 있습니다.\n*   **전환사채(CB) 희석 리스크:** 3회차 및 4회차 전환사채(총 300억 원 이상)의 전환권 행사 시 대규모 신주 발행으로 기존 주주 지분 가치가 희석될 수 있습니다. 특히 2026년 2월에는 보호예수 물량 1,600만 주가 풀릴 수 있다는 우려도 제기되었습니다.\n*   **신사업 트랙 레코드 부재:** 2025년에 특수합금 사업으로 전환했으므로, 해당 사업 분야에서의 장기적인 실적 트랙 레코드가 아직 부족합니다.\n*   **높은 주가 변동성:** 최근 주가는 단기적인 하락 압력과 함께 높은 변동성을 보이고 있으며, 기관의 순매도와 외국인의 순매수가 엇갈리는 등 수급 불안정성이 나타나고 있습니다.\n\n### 3. 최종 판정\n\n스피어는 우주항공 특수합금 사업으로의 성공적인 전환과 스페이스X와의 공급 계약을 통해 높은 성장 잠재력을 보유한 턴어라운드 기업임은 분명합니다. 그러나 현재 시점에서는 대규모 계약 이행에 대한 불확실성, 전환사채로 인한 잠재적 오버행(Overhang) 리스크, 그리고 높은 주가 변동성이 투자에 부담으로 작용할 수 있습니다.\n\n따라서 단기적인 관점에서 불확실성이 해소되고 실적 가시성이 더욱 명확해질 때까지 **관망** 의견을 제시합니다. 장기적인 성장 모멘텀은 긍정적이나, 리스크 요인들을 면밀히 주시하며 신중한 접근이 필요합니다.",
+    "citations": [
+      {
+        "title": "hankyung.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHcJKx28kx9HK6RWyFPD5lQXIazCZkDXZuEErNNA1RCTzqpnylAmjkUEPeEuxEQpaznI708j1beRqdEI9XRZbL5FHHbeKcoZnQ51JG2NFdJs2nuVkHS3U_BFdmgpM508ssh8xlQHtj08iCct_tUuQ=="
+      },
+      {
+        "title": "marketmood.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGCXVUUX5lNYEX7cVz2ugW1g_AO4K7Cn4s6s5kHOGA5bvbU-6zAuFcxLbv_FjClZYosGQx4hosvs8B6HFLZFbirLgz_PLF-T_M5i8mIQ9uDXEWaiT-F-1zPyEP_cJ0GnOmEIw=="
+      },
+      {
+        "title": "hibulls.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQF0QyVEHGGK1VWFMgS70BjO19o3hpEKg2k6BgohpOGLyEmxqMHDeOndustbwjuVjrsaUlHCpeawhMcT4zU3W4lZUaunxbhSd5zzpMEDTruhfjVFFecdo6M0DktADnludddwks6ekadPSQKmXQ=="
+      },
+      {
+        "title": "youtube.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHvy2KEZaF2mLLaCtvd36Gx7XGU7_5TD2SVsyFQrba1SeFjJrsWsA8DlVokM65WQ-IFQU1nuyiBY6BfpTsRLAKwUDnfLIlet4wi5uR9spwTeDDhByI7EgG53IXp5Btr4UpX1Gv1hV8="
+      },
+      {
+        "title": "stockvery.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEwFDHQTkGMjSdFumQn4Okk07WSXnuWqYikkx7u_nXnpZs-odNAIe49JuoWVs78KoZ34HdDnb70mmht_6erz6s8fE7kTRSvo3F_PXTqKq2LcNSYd8z6Y6-5hY_YMOdD"
+      },
+      {
+        "title": "tistory.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGPiXvSrJYuwD0oPV8aGEdDwtn8uG8YS1aqaDShdJr6N3Vqkt5GVv5kUaLP-doxeD1WknHLifDXoTxSTt5sdAlQtbGgQivC8VxsjJ8UV6PLg31mISFZIAcsqcy4cp4-oFnDbDWsPm5jmXOrHIyTAV926khFqg6HMTIFsSWMMnuDb2eFQ-u3mF_811y_Z46V5p49ij98Rsjt0pdAR39YL_1Pc9xNQhZitEFuRQM8TsXPbsukArb0PErI9IBHgwn4flAKR5B6BL6iovp9_ijxRidf3JtqA2zLRAF_EXnaS7EgEGADAoBylxP4Ff3wsT5lfuAivycL8itHv-cADxq0fd9hluotCgBNeKYDJYdx7QNgEE0XaD-rkr5tIF3Hp9hc2MITztoTnfqU6YXYL6J-3kr7bZiz4DwoJM64Jbagl3wmupRhS45fikLfrIqWqNHVu1E7r2P7j45yqGx-WmzSVSmmTZzhZiu6V2W39XfrOF4DNVca3qtYc7PURJ1XiZvaZxzBdI6e6JwBow=="
+      },
+      {
+        "title": "youtube.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGcjYokV2Yhs0dixk7DOksRYtNHfd74ZHFKZwRsCmaQU-gRMs1jEUFwQRUawZwHYiOjry9tP8A72GTZkA1-mvBf6T4B0LuWOz0tGd1lgq4idzvN_wpnYRou6iOoMsDxR27eHCv8UtU="
+      },
+      {
+        "title": "edaily.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQE2awAg5X-TThGMRIONuS0gro0vwpizCTXl64fsrGha5BQ4N8xl38bPdoLuZEwbIgeGZEKwXOjfLYVH7NLHV9cmPY6tC_3LAfwlmO5utc9AzCG_K1wyrD9_xYuliaYAV1MUUYRbqMm1Tx7SNy7qKXIKoRCgOoYp0YwppcRd"
+      },
+      {
+        "title": "minsimnews.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFAg0tYFTkpPomF2pjK4_HUskZLF-FWb6QcCT8-jrw4c-LoBmu5srs8bxnqNBrLSF2EipQQJe-Na1W4fVwcIZWk4KxdqIbUzll8UoAa827mhUHYKriT8if7lpDh9xC5U7v3Fw1rllfD3gRxpvL5z0NkQblzrUQetA=="
+      },
+      {
+        "title": "daum.net",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQH8KKSbgbaqt-q0ZwaKauRw-1LCGTTx3wYIte5ucufpS3D5hC9-0UJuIKKbfIA_E_Kyhk1Ws6pj_YPmfU6Xv5te4IevseNmj8TWkf5ZBdxH_HBJfHwx35Ik2L7bEHVyF_MsEJYxTf_0-Nw="
+      }
+    ]
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=01336762",
+    "summary": "공시 페이지 접근 제한"
+  }
+}
