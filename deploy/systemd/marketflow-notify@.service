@@ -1,0 +1,9 @@
+[Unit]
+Description=MarketFlow 장애 텔레그램 알림 (%i)
+
+[Service]
+Type=oneshot
+ExecStart=/srv/marketflow/deploy/notify-failure.sh %i
+EnvironmentFile=/srv/marketflow/.env
+User=marketflow
+Group=marketflow

@@ -2,6 +2,7 @@
 Description=MarketFlow Scheduler Daemon
 After=marketflow-flask.service network-online.target
 Requires=marketflow-flask.service
+OnFailure=marketflow-notify@%n.service
 
 [Service]
 Type=simple

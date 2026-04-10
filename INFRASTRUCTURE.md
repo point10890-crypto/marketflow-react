@@ -38,13 +38,17 @@ Last updated: 2026-04-08
 | Cloudflared 설정 | `/etc/cloudflared/config.yml` |
 | Cloudflared 자격 | `/etc/cloudflared/678e9c60-9f8d-4f49-9fba-a49400ef4ca0.json` |
 | Crypto 분석 | `/srv/marketflow/crypto-analytics/crypto_market` |
-| systemd unit | `/etc/systemd/system/marketflow-{flask,scheduler}.service` |
+| systemd unit | `/etc/systemd/system/marketflow-{flask,scheduler,backup}.service` |
+| systemd timer | `/etc/systemd/system/marketflow-backup.timer` |
+| logrotate | `/etc/logrotate.d/marketflow` |
 
 **OS 분기 패턴**:
 - Python: `Path(__file__).resolve().parent` 기준 상대 계산 (모든 모듈)
 - `scheduler.py` `Config.PYTHON_PATH`: `os.name == 'nt'` 분기 (`.venv/Scripts/python.exe` vs `.venv/bin/python`)
 - Cloudflared: 사용자 홈 의존 제거, `/etc/cloudflared/`로 시스템 영역 이동
-- `healthcheck.py`: **Windows 전용** (`tasklist`/`wmic`/`CREATE_NO_WINDOW`). Linux에서는 systemd `Restart=on-failure`가 동일 역할 수행 — Linux에서 호출 금지
+- `diagnostics.py`: `tasklist` → `/proc/status` + `ps` 크로스플랫폼 분기 (2026-04-11 수정)
+- `production_utils.py`: `msvcrt`/`fcntl` 독립 임포트 (2026-04-11 수정)
+- `flask_app.py`: `RENDER` 환경변수 없으면 `127.0.0.1` 바인딩 (홈서버 보안)
 - `backend/` (Spring Boot): **운영 배포 없음**. 코드는 repo에 남아있지만 어떤 호스트에서도 실행되지 않음. 미니PC 이전 시 systemd unit 만들지 말 것.
 
 **규칙**:

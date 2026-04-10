@@ -1,0 +1,11 @@
+[Unit]
+Description=MarketFlow 일일 백업
+
+[Service]
+Type=oneshot
+User=marketflow
+Group=marketflow
+ExecStart=/srv/marketflow/deploy/backup.sh
+EnvironmentFile=/srv/marketflow/.env
+StandardOutput=append:/srv/marketflow/logs/backup.log
+StandardError=append:/srv/marketflow/logs/backup.log

@@ -92,17 +92,45 @@ ok "ufw 활성화 (SSH 허용)"
 
 # ── 7. systemd 유닛 설치 ──
 echo ""
-echo "▶ 7/7  systemd 유닛"
+echo "▶ 7/10  systemd 유닛"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 if [[ -d "$SCRIPT_DIR/systemd" ]]; then
-    cp "$SCRIPT_DIR/systemd/marketflow-flask.service" /etc/systemd/system/
-    cp "$SCRIPT_DIR/systemd/marketflow-scheduler.service" /etc/systemd/system/
+    cp "$SCRIPT_DIR/systemd/"*.service /etc/systemd/system/ 2>/dev/null
+    cp "$SCRIPT_DIR/systemd/"*.timer /etc/systemd/system/ 2>/dev/null
     systemctl daemon-reload
     systemctl enable marketflow-flask marketflow-scheduler
-    ok "systemd 유닛 설치 + enable"
+    ok "systemd 유닛 설치 (flask + scheduler + notify + backup)"
 else
     warn "systemd/ 디렉토리 없음 — 수동 복사 필요"
 fi
+
+# ── 8. logrotate ──
+echo ""
+echo "▶ 8/10  logrotate"
+if [[ -f "$SCRIPT_DIR/logrotate.conf" ]]; then
+    cp "$SCRIPT_DIR/logrotate.conf" /etc/logrotate.d/marketflow
+    ok "logrotate 설정 (/etc/logrotate.d/marketflow)"
+else
+    warn "logrotate.conf 없음"
+fi
+
+# ── 9. 타임존 + 로케일 ──
+echo ""
+echo "▶ 9/10  타임존 + 로케일"
+timedatectl set-timezone Asia/Seoul 2>/dev/null && ok "타임존: Asia/Seoul" || warn "타임존 설정 실패"
+locale-gen ko_KR.UTF-8 > /dev/null 2>&1 && ok "로케일: ko_KR.UTF-8" || warn "로케일 생성 실패"
+
+# ── 10. restic 백업 (선택) ──
+echo ""
+echo "▶ 10/10  restic 백업 도구"
+if ! command -v restic &>/dev/null; then
+    apt-get install -y -qq restic > /dev/null 2>&1 && ok "restic 설치" || warn "restic 설치 실패 (수동 설치 필요)"
+else
+    ok "restic $(restic version 2>&1 | head -1)"
+fi
+
+# ── 스크립트 실행 권한 ──
+chmod +x "$PROJECT_DIR/deploy/"*.sh 2>/dev/null
 
 # ── 완료 ──
 echo ""
@@ -119,6 +147,9 @@ echo "   4. Cloudflared 자격증명 복사:"
 echo "      cp <cred>.json /etc/cloudflared/"
 echo "      cp config.yml /etc/cloudflared/"
 echo "   5. 서비스 시작:"
-echo "      systemctl start marketflow-flask"
-echo "      systemctl start marketflow-scheduler"
+echo "      systemctl start marketflow-flask marketflow-scheduler cloudflared"
+echo "   6. 백업 타이머 활성화 (선택):"
+echo "      systemctl enable --now marketflow-backup.timer"
+echo "   7. 헬스체크:"
+echo "      bash $PROJECT_DIR/deploy/healthcheck.sh"
 echo "═══════════════════════════════════════════════════════"
