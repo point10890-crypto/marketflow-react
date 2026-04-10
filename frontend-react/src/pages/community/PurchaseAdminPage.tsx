@@ -79,16 +79,20 @@ export default function PurchaseAdminPage() {
     useEffect(() => { fetchData(1); }, [fetchData]);
 
     const handleStatusChange = async (purchaseId: number, newStatus: string) => {
-        // Optimistic update — 즉시 UI 반영
-        setPurchases(prev => prev.map(p =>
-            p.id === purchaseId ? { ...p, status: newStatus } : p
+        // Optimistic update — 즉시 UI 반영 (스피너 없음)
+        const prev = purchases;
+        setPurchases(ps => ps.map(p =>
+            p.id === purchaseId
+                ? { ...p, status: newStatus, approved_at: newStatus === 'approved' ? new Date().toISOString() : null }
+                : p
         ));
         try {
-            await putAuthAPI(`/api/community/purchases/${purchaseId}`, { status: newStatus });
-            fetchData(page);
+            const updated = await putAuthAPI<PurchaseItem>(`/api/community/purchases/${purchaseId}`, { status: newStatus });
+            // 서버 응답으로 해당 row만 갱신 (전체 재로드 X)
+            setPurchases(ps => ps.map(p => p.id === purchaseId ? updated : p));
         } catch {
-            // Rollback on failure
-            fetchData(page);
+            // 실패 시 롤백
+            setPurchases(prev);
             alert('상태 변경에 실패했습니다.');
         }
     };
