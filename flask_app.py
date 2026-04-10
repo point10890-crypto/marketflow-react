@@ -27,7 +27,7 @@ if sys.platform.startswith('win'):
 
     # Windows sys.path pollution prevention
     _blocked = ['korean market', 'crypto-analytics', 'us-market-pro', 'kr_market_package',
-                'C:\\Projects', 'OneDrive']
+                'Projects', 'OneDrive']
     sys.path = [p for p in sys.path if not any(b.lower() in p.lower() for b in _blocked)]
 
 # ── Path setup (all platforms) ──
@@ -54,4 +54,6 @@ if __name__ == '__main__':
     print(f"   Cloud: {'Render' if os.getenv('RENDER') else 'Local'}")
     print(f"{'='*60}\n")
 
-    app.run(host='0.0.0.0', port=port, debug=False)
+    # Cloud(Render): 0.0.0.0 필수 / 홈서버(Linux): 127.0.0.1 (Cloudflare Tunnel 경유)
+    host = '0.0.0.0' if os.getenv('RENDER') else '127.0.0.1'
+    app.run(host=host, port=port, debug=False)

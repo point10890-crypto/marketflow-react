@@ -24,7 +24,11 @@ try:
     import fcntl
 except ImportError:
     fcntl = None
+
+try:
     import msvcrt
+except ImportError:
+    msvcrt = None
 from datetime import datetime, timedelta
 from dataclasses import dataclass, field, asdict
 from typing import Dict, List, Optional, Any, Callable
@@ -66,8 +70,10 @@ class FileLock:
             self._fd = open(self.lock_file, 'w', encoding='utf-8')
             if fcntl:
                 fcntl.flock(self._fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
-            else:
+            elif msvcrt:
                 msvcrt.locking(self._fd.fileno(), msvcrt.LK_NBLCK, 1)
+            else:
+                pass  # 락 미지원 환경 — 단일 인스턴스 보장 불가
             self._fd.write(f"{os.getpid()}\n{datetime.now(KST).isoformat()}")
             self._fd.flush()
             return True
@@ -83,7 +89,7 @@ class FileLock:
             try:
                 if fcntl:
                     fcntl.flock(self._fd, fcntl.LOCK_UN)
-                else:
+                elif msvcrt:
                     self._fd.seek(0)
                     msvcrt.locking(self._fd.fileno(), msvcrt.LK_UNLCK, 1)
                 self._fd.close()

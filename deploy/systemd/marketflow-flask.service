@@ -11,9 +11,12 @@ WorkingDirectory=/srv/marketflow
 EnvironmentFile=/srv/marketflow/.env
 Environment=PYTHONIOENCODING=utf-8
 Environment=PYTHONUNBUFFERED=1
+Environment=TZ=Asia/Seoul
 ExecStart=/srv/marketflow/.venv/bin/python flask_app.py
+ExecStartPost=/bin/bash -c 'for i in $(seq 1 30); do curl -sf http://127.0.0.1:5001/ >/dev/null 2>&1 && exit 0; sleep 1; done; exit 1'
 Restart=on-failure
 RestartSec=5
+TimeoutStartSec=45
 StandardOutput=append:/srv/marketflow/logs/flask.log
 StandardError=append:/srv/marketflow/logs/flask.err
 
