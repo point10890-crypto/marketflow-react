@@ -1,49 +1,49 @@
 {
-  "timestamp": "2026-04-11T00:01:01.359561",
+  "timestamp": "2026-04-11T04:00:36.496737",
   "version": "1.0",
   "market_summary": {
-    "total_market_cap": 2547030960384.0,
-    "total_volume_24h": 101879601972.0,
+    "total_market_cap": 2552337834848.0,
+    "total_volume_24h": 95238828561.0,
     "btc_dominance": 57.25,
     "btc_dominance_change_24h": 0,
-    "total_market_cap_change_24h": 2.02,
-    "active_cryptocurrencies": 17701
+    "total_market_cap_change_24h": 1.15,
+    "active_cryptocurrencies": 17707
   },
   "major_coins": {
     "BTC": {
-      "price": 72935,
-      "change_24h": 2.61,
+      "price": 73113,
+      "change_24h": 1.7,
       "change_7d": 0,
-      "volume_24h": 42642084214,
-      "market_cap": 1458816359924
+      "volume_24h": 39197104257,
+      "market_cap": 1463376523886
     },
     "ETH": {
-      "price": 2243.5,
-      "change_24h": 3.15,
+      "price": 2250.21,
+      "change_24h": 1.93,
       "change_7d": 0,
-      "volume_24h": 19676784298,
-      "market_cap": 270729259476
+      "volume_24h": 16739073823,
+      "market_cap": 271590466491
     },
     "XRP": {
       "price": 1.36,
-      "change_24h": 1.91,
+      "change_24h": 0.27,
       "change_7d": 0,
-      "volume_24h": 2512084154,
-      "market_cap": 83266172591
+      "volume_24h": 2220938407,
+      "market_cap": 83487249504
     },
     "BNB": {
-      "price": 607.14,
-      "change_24h": 1.1,
+      "price": 609.41,
+      "change_24h": 0.44,
       "change_7d": 0,
-      "volume_24h": 1055770544,
-      "market_cap": 82764725424
+      "volume_24h": 1020644937,
+      "market_cap": 83097115934
     },
     "SOL": {
-      "price": 85.1,
-      "change_24h": 3.6,
+      "price": 85.22,
+      "change_24h": 1.59,
       "change_7d": 0,
-      "volume_24h": 4065029801,
-      "market_cap": 48837757371
+      "volume_24h": 3129215808,
+      "market_cap": 48906263355
     }
   },
   "top_movers": {
@@ -51,64 +51,64 @@
       {
         "symbol": "DASH",
         "name": "Dash",
-        "price": 42.89,
-        "change_24h": 33.49
-      },
-      {
-        "symbol": "ZEC",
-        "name": "Zcash",
-        "price": 379.42,
-        "change_24h": 19.8
-      },
-      {
-        "symbol": "HASH",
-        "name": "Provenance Blockchain",
-        "price": 0.01105032,
-        "change_24h": 7.53
+        "price": 43.27,
+        "change_24h": 28.36
       },
       {
         "symbol": "ARB",
         "name": "Arbitrum",
-        "price": 0.110033,
-        "change_24h": 7.16
+        "price": 0.110951,
+        "change_24h": 7.68
+      },
+      {
+        "symbol": "HASH",
+        "name": "Provenance Blockchain",
+        "price": 0.01110151,
+        "change_24h": 7.22
       },
       {
         "symbol": "ENA",
         "name": "Ethena",
-        "price": 0.094276,
-        "change_24h": 6.96
+        "price": 0.096564,
+        "change_24h": 5.97
+      },
+      {
+        "symbol": "ZEC",
+        "name": "Zcash",
+        "price": 377.08,
+        "change_24h": 5.39
       }
     ],
     "losers": [
       {
         "symbol": "TAO",
         "name": "Bittensor",
-        "price": 271.4,
-        "change_24h": -18.67
+        "price": 269.31,
+        "change_24h": -20.38
       },
       {
         "symbol": "WLFI",
         "name": "World Liberty Financial",
-        "price": 0.08112,
-        "change_24h": -12.8
+        "price": 0.081778,
+        "change_24h": -13.41
+      },
+      {
+        "symbol": "JST",
+        "name": "JUST",
+        "price": 0.067291,
+        "change_24h": -3.95
       },
       {
         "symbol": "TRUMP",
         "name": "Official Trump",
-        "price": 2.89,
-        "change_24h": -3.32
+        "price": 2.88,
+        "change_24h": -3.42
       },
       {
-        "symbol": "ALGO",
-        "name": "Algorand",
-        "price": 0.111804,
-        "change_24h": -2.88
-      },
-      {
-        "symbol": "FET",
-        "name": "Artificial Superintelligence Alliance",
-        "price": 0.239898,
-        "change_24h": -1.63
+        "symbol": "SIREN",
+        "name": "Siren",
+        "price": 0.70917,
+        "change_24h": -3.3
       }
     ]
   },
@@ -126,24 +126,24 @@
   "funding_rates": {
     "BTC": {
       "symbol": "BTCUSDT",
-      "rate": -6e-06,
-      "rate_pct": -0.0006,
-      "annualized_pct": -0.66,
+      "rate": -5.7e-05,
+      "rate_pct": -0.0057,
+      "annualized_pct": -6.28,
       "sentiment": "neutral"
     },
     "ETH": {
       "symbol": "ETHUSDT",
-      "rate": 1e-05,
-      "rate_pct": 0.001,
-      "annualized_pct": 1.11,
+      "rate": -6.5e-05,
+      "rate_pct": -0.0065,
+      "annualized_pct": -7.15,
       "sentiment": "neutral"
     }
   },
   "macro_correlations": {
     "btc_pairs": {
-      "BTC_SPY": 0.5027,
-      "BTC_GLD": 0.2374,
-      "BTC_DXY": -0.1996
+      "BTC_SPY": 0.5007,
+      "BTC_GLD": 0.2366,
+      "BTC_DXY": -0.1998
     }
   },
   "market_gate": {
@@ -157,14 +157,14 @@
       "알트 breadth 붕괴 (20% > EMA50)"
     ],
     "metrics": {
-      "btc_price": 72891.0078125,
-      "btc_ema50": 70609.79463076901,
-      "btc_ema200": 83640.2056081579,
-      "btc_ema200_slope_pct_20": -3.7487667163300915,
-      "btc_volume_z_50": 0.22080774580220378,
-      "btc_atrp_14_pct": 2.9846761790854477,
+      "btc_price": 72880.1484375,
+      "btc_ema50": 70609.36877292587,
+      "btc_ema200": 83640.09755467532,
+      "btc_ema200_slope_pct_20": -3.74889106180347,
+      "btc_volume_z_50": -0.061393269499137884,
+      "btc_atrp_14_pct": 3.0022524443989522,
       "alt_breadth_above_ema50": 0.2,
-      "funding_rate": -6.09e-06,
+      "funding_rate": -5.737e-05,
       "open_interest_delta_z": null,
       "gate_score_components": {
         "trend": 12.0,
@@ -176,7 +176,7 @@
       "fear_greed_index": 16,
       "fear_greed_class": "Extreme Fear"
     },
-    "generated_at": "2026-04-11T00:00:26.616241"
+    "generated_at": "2026-04-11T04:00:16.379241"
   },
   "btc_price_history": [
     {
@@ -537,7 +537,7 @@
     },
     {
       "date": "2026-04-10",
-      "price": 72902.0234375
+      "price": 72880.1484375
     }
   ],
   "sentiment_summary": {
