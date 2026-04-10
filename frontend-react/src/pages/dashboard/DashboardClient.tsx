@@ -134,7 +134,7 @@ function OpportunityScoreCard({ score, krScore, usScore, cryptoScore }: {
     const markets: [string, number][] = [['KR', krScore], ['US', usScore], ['Crypto', cryptoScore]];
     return (
         <div className="flex flex-col gap-3 rounded-2xl border border-white/[0.07] bg-[#13151f] p-4 sm:p-5">
-            {/* Top row: gauge + title */}
+            {/* Top: gauge + title */}
             <div className="flex items-center gap-4">
                 <div className="flex flex-col items-center gap-1.5 shrink-0">
                     <div className="relative" style={{ width: 80, height: 80 }}>
@@ -164,7 +164,7 @@ function OpportunityScoreCard({ score, krScore, usScore, cryptoScore }: {
                     </div>
                 </div>
             </div>
-            {/* Bottom row: 시장별 강도 바 (full width) */}
+            {/* Bottom: 시장별 강도 바 */}
             <div className="flex flex-col gap-1.5">
                 {markets.map(([m, s]) => {
                     const lv = getLevel(s);
