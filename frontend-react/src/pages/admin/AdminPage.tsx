@@ -39,19 +39,19 @@ export default function AdminPage() {
             </div>
 
             {/* Tab Navigation */}
-            <div className="flex gap-1 bg-white/[0.03] rounded-xl p-1 border border-white/[0.06]">
+            <div className="grid grid-cols-4 gap-1 bg-white/[0.03] rounded-xl p-1 border border-white/[0.06]">
                 {TABS.map(tab => (
                     <button
                         key={tab.key}
                         onClick={() => setActiveTab(tab.key)}
-                        className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                        className={`flex items-center justify-center gap-1.5 px-2 py-2.5 rounded-lg text-xs sm:text-sm font-medium transition-all whitespace-nowrap ${
                             activeTab === tab.key
                                 ? 'bg-red-500/15 text-red-400 border border-red-500/20'
                                 : 'text-gray-500 hover:text-white hover:bg-white/5 border border-transparent'
                         }`}
                     >
                         <i className={`fas ${tab.icon} text-xs`} />
-                        <span className="hidden sm:inline">{tab.label}</span>
+                        <span>{tab.label}</span>
                         {tab.key === 'subscriptions' && pendingCount > 0 && (
                             <span className="px-1.5 py-0.5 rounded-full bg-yellow-500/20 text-yellow-400 text-[10px] font-bold">
                                 {pendingCount}
@@ -80,6 +80,7 @@ function DashboardTab({ data, onNavigate }: { data: AdminDashboard | null; onNav
         { label: 'Ultra Pro', value: data?.premium_users || 0, icon: 'fa-gem', color: 'text-purple-400', bg: 'bg-purple-500/10', tab: 'users' as AdminTab },
         { label: 'No Tier', value: data?.no_tier_users || 0, icon: 'fa-user-clock', color: 'text-gray-400', bg: 'bg-gray-500/10', tab: 'users' as AdminTab },
         { label: 'Pending Subs', value: data?.pending_subscriptions || 0, icon: 'fa-clock', color: 'text-orange-400', bg: 'bg-orange-500/10', tab: 'subscriptions' as AdminTab },
+        { label: '구매 승인', value: '—', icon: 'fa-receipt', color: 'text-yellow-400', bg: 'bg-yellow-500/10', tab: null as any, route: '/dashboard/community/formula-market/purchases' },
     ];
 
     const links = [
@@ -90,11 +91,11 @@ function DashboardTab({ data, onNavigate }: { data: AdminDashboard | null; onNav
 
     return (
         <>
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
                 {stats.map(s => (
                     <button
                         key={s.label}
-                        onClick={() => onNavigate(s.tab)}
+                        onClick={() => s.route ? navigate(s.route) : onNavigate(s.tab)}
                         className="apple-glass rounded-xl p-4 text-left hover:bg-white/5 hover:border-white/10 transition-all group cursor-pointer"
                     >
                         <div className={`w-10 h-10 ${s.bg} rounded-lg flex items-center justify-center mb-3 group-hover:scale-110 transition-transform`}>
@@ -105,34 +106,34 @@ function DashboardTab({ data, onNavigate }: { data: AdminDashboard | null; onNav
                     </button>
                 ))}
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {links.map(l => (
                     <button
                         key={l.tab}
                         onClick={() => onNavigate(l.tab)}
-                        className="apple-glass rounded-xl p-6 hover:bg-white/5 transition-colors group text-left"
+                        className="apple-glass rounded-xl p-4 md:p-6 hover:bg-white/5 transition-colors group text-left"
                     >
-                        <div className="flex items-center gap-3">
-                            <i className={`fas ${l.icon} text-red-400 text-xl`} />
-                            <div className="flex-1">
-                                <div className="text-white font-semibold group-hover:text-red-400 transition-colors">{l.label}</div>
-                                <div className="text-xs text-gray-500">{l.desc}</div>
+                        <div className="flex items-center gap-2 md:gap-3">
+                            <i className={`fas ${l.icon} text-red-400 text-lg md:text-xl`} />
+                            <div className="flex-1 min-w-0">
+                                <div className="text-sm md:text-base text-white font-semibold group-hover:text-red-400 transition-colors truncate">{l.label}</div>
+                                <div className="text-[10px] md:text-xs text-gray-500 truncate">{l.desc}</div>
                             </div>
-                            <i className="fas fa-chevron-right text-gray-600 group-hover:text-red-400 transition-colors" />
+                            <i className="fas fa-chevron-right text-gray-600 group-hover:text-red-400 transition-colors text-xs" />
                         </div>
                     </button>
                 ))}
                 <button
                     onClick={() => navigate('/dashboard/community/formula-market/purchases')}
-                    className="apple-glass rounded-xl p-6 hover:bg-white/5 transition-colors group text-left"
+                    className="apple-glass rounded-xl p-4 md:p-6 hover:bg-white/5 transition-colors group text-left"
                 >
-                    <div className="flex items-center gap-3">
-                        <i className="fas fa-receipt text-yellow-400 text-xl" />
-                        <div className="flex-1">
-                            <div className="text-white font-semibold group-hover:text-yellow-400 transition-colors">구매 관리</div>
-                            <div className="text-xs text-gray-500">수식 구매 승인/해제</div>
+                    <div className="flex items-center gap-2 md:gap-3">
+                        <i className="fas fa-receipt text-yellow-400 text-lg md:text-xl" />
+                        <div className="flex-1 min-w-0">
+                            <div className="text-sm md:text-base text-white font-semibold group-hover:text-yellow-400 transition-colors truncate">구매 관리</div>
+                            <div className="text-[10px] md:text-xs text-gray-500 truncate">구매 승인/해제</div>
                         </div>
-                        <i className="fas fa-chevron-right text-gray-600 group-hover:text-yellow-400 transition-colors" />
+                        <i className="fas fa-chevron-right text-gray-600 group-hover:text-yellow-400 transition-colors text-xs" />
                     </div>
                 </button>
             </div>
