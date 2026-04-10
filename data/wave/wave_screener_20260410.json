@@ -1,10 +1,10 @@
 {
   "date": "2026-04-10",
-  "updated_at": "2026-04-10 16:43:44",
+  "updated_at": "2026-04-10 16:51:41",
   "market": "KR",
   "scan_count": 467,
   "signal_count": 306,
-  "processing_time_sec": 29.5,
+  "processing_time_sec": 29.9,
   "min_confidence": 60,
   "signals": [
     {
