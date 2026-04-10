@@ -121,14 +121,21 @@ function VCPMiniRow({ name, market, score, accent }: { name: string; market: str
 function OpportunityScoreCard({ score, krScore, usScore, cryptoScore }: {
     score: number; krScore: number; usScore: number; cryptoScore: number;
 }) {
-    const color = score >= 70 ? '#10b981' : score >= 45 ? '#f59e0b' : '#ef4444';
-    const label = score >= 70 ? 'HIGH' : score >= 45 ? 'MODERATE' : 'LOW';
+    // 5단계 강도: 적극매수(80+) / 매수(60+) / 관망(40+) / 매도(20+) / 적극매도(<20)
+    const levels = [
+        { label: '적극매도', min: 0,  color: '#ef4444' },
+        { label: '매도',     min: 20, color: '#f97316' },
+        { label: '관망',     min: 40, color: '#f59e0b' },
+        { label: '매수',     min: 60, color: '#22c55e' },
+        { label: '적극매수', min: 80, color: '#10b981' },
+    ];
+    const current = [...levels].reverse().find(l => score >= l.min) || levels[0];
+    const color = current.color;
     const arc = Math.min(score / 100, 1);
     const r = 28, cx = 36, cy = 36, stroke = 6;
     const circumference = 2 * Math.PI * r;
-    const markets: [string, number, string][] = [['KR', krScore, '#3b82f6'], ['US', usScore, '#10b981'], ['Crypto', cryptoScore, '#f59e0b']];
     return (
-        <div className="flex items-center gap-4 rounded-2xl border border-white/[0.07] bg-[#13151f] p-4">
+        <div className="flex items-center gap-3 sm:gap-4 rounded-2xl border border-white/[0.07] bg-[#13151f] p-3 sm:p-4">
             {/* Arc gauge */}
             <div className="relative shrink-0" style={{ width: 72, height: 72 }}>
                 <svg width={72} height={72} viewBox="0 0 72 72">
@@ -149,28 +156,30 @@ function OpportunityScoreCard({ score, krScore, usScore, cryptoScore }: {
             <div className="flex flex-col gap-1 flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                     <span className="text-xs font-bold text-white">Opportunity Score</span>
-                    <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: `${color}20`, color }}>{label}</span>
+                    <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: `${color}20`, color }}>{current.label}</span>
                 </div>
                 <p className="text-[10px] text-gray-600">3개 시장 종합 진입 기회 지수</p>
                 <div className="flex items-center gap-3 mt-0.5">
-                    {markets.map(([m, s, c]) => (
-                        <span key={m} className="text-[9px] font-semibold" style={{ color: c }}>
-                            {m} {Math.round(s)}
+                    {[['KR', krScore, '#3b82f6'], ['US', usScore, '#10b981'], ['Crypto', cryptoScore, '#f59e0b']].map(([m, s, c]) => (
+                        <span key={m as string} className="text-[9px] font-semibold" style={{ color: c as string }}>
+                            {m} {Math.round(s as number)}
                         </span>
                     ))}
                 </div>
             </div>
-            {/* Strength bars */}
-            <div className="flex flex-col gap-1.5 shrink-0 w-20 sm:w-28">
-                {markets.map(([m, s, c]) => (
-                    <div key={m} className="flex items-center gap-1.5">
-                        <span className="text-[8px] text-gray-500 w-8 text-right font-medium">{m}</span>
-                        <div className="flex-1 h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
-                            <div className="h-full rounded-full transition-all duration-700"
-                                style={{ width: `${Math.min(s, 100)}%`, backgroundColor: c }} />
-                        </div>
-                    </div>
-                ))}
+            {/* 강도 바 — 5단계 색상 */}
+            <div className="flex flex-col gap-0.5 shrink-0 w-16 sm:w-24">
+                {/* 그라데이션 강도 바 */}
+                <div className="relative h-2.5 sm:h-3 rounded-full overflow-hidden" style={{ background: 'linear-gradient(to right, #ef4444, #f97316, #f59e0b, #22c55e, #10b981)' }}>
+                    {/* 현재 위치 마커 */}
+                    <div className="absolute top-0 h-full w-1 bg-white rounded-full shadow-[0_0_4px_rgba(255,255,255,0.8)]"
+                        style={{ left: `${Math.min(Math.max(score, 2), 98)}%`, transform: 'translateX(-50%)', transition: 'left 0.6s ease' }} />
+                </div>
+                {/* 레이블 */}
+                <div className="flex justify-between">
+                    <span className="text-[7px] sm:text-[8px] text-red-400/70">매도</span>
+                    <span className="text-[7px] sm:text-[8px] text-emerald-400/70">매수</span>
+                </div>
             </div>
         </div>
     );
