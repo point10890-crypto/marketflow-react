@@ -1,27 +1,17 @@
 {
-  "timestamp": "2026-04-10T12:19:02.304797",
+  "timestamp": "2026-04-10T12:37:59.252887",
   "version": "1.0",
   "market_summary": {
-    "total_market_cap": 2519254879533.0,
-    "total_volume_24h": 94965885159.0,
+    "total_market_cap": 2515341050414.0,
+    "total_volume_24h": 94862875216.0,
     "btc_dominance": 57.17,
     "btc_dominance_change_24h": 0,
-    "total_market_cap_change_24h": 1.06,
+    "total_market_cap_change_24h": 0.9,
     "active_cryptocurrencies": 17731
   },
   "major_coins": {},
   "top_movers": null,
-  "fear_greed": {
-    "score": 16,
-    "current_score": 16,
-    "current_label": "Extreme Fear",
-    "level": "Extreme Fear",
-    "timestamp": "1775779200",
-    "previous": 14,
-    "previous_score": 14,
-    "previous_label": "Extreme Fear",
-    "change": 2
-  },
+  "fear_greed": null,
   "funding_rates": null,
   "macro_correlations": {
     "btc_pairs": {
@@ -41,14 +31,14 @@
       "알트 breadth 붕괴 (20% > EMA50)"
     ],
     "metrics": {
-      "btc_price": 71886.2265625,
-      "btc_ema50": 70521.32696463793,
-      "btc_ema200": 83749.4158407132,
-      "btc_ema200_slope_pct_20": -3.825379161673381,
-      "btc_volume_z_50": -0.031091695575640337,
-      "btc_atrp_14_pct": 3.0738013296960336,
+      "btc_price": 71838.96875,
+      "btc_ema50": 70519.47371708891,
+      "btc_ema200": 83748.94561372316,
+      "btc_ema200_slope_pct_20": -3.8259191523350653,
+      "btc_volume_z_50": -0.08324505533538663,
+      "btc_atrp_14_pct": 3.0758233677267652,
       "alt_breadth_above_ema50": 0.2,
-      "funding_rate": -9.49e-06,
+      "funding_rate": 0.0001,
       "open_interest_delta_z": null,
       "gate_score_components": {
         "trend": 12.0,
@@ -60,7 +50,7 @@
       "fear_greed_index": 16,
       "fear_greed_class": "Extreme Fear"
     },
-    "generated_at": "2026-04-10T12:18:22.812012"
+    "generated_at": "2026-04-10T12:33:41.785418"
   },
   "btc_price_history": [
     {
@@ -417,13 +407,12 @@
     },
     {
       "date": "2026-04-10",
-      "price": 71899.6640625
+      "price": 71922.828125
     }
   ],
   "sentiment_summary": {
     "overall": "Neutral",
     "factors": [
-      "fear_greed: extreme_fear (bullish)",
       "dominance: btc_high (neutral)"
     ]
   }
