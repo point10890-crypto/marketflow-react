@@ -121,19 +121,19 @@ function VCPMiniRow({ name, market, score, accent }: { name: string; market: str
 function OpportunityScoreCard({ score, krScore, usScore, cryptoScore }: {
     score: number; krScore: number; usScore: number; cryptoScore: number;
 }) {
-    // 5단계 강도: 적극매수(80+) / 매수(60+) / 관망(40+) / 매도(20+) / 적극매도(<20)
-    const levels = [
-        { label: '적극매도', min: 0,  color: '#ef4444' },
-        { label: '매도',     min: 20, color: '#f97316' },
-        { label: '관망',     min: 40, color: '#f59e0b' },
-        { label: '매수',     min: 60, color: '#22c55e' },
-        { label: '적극매수', min: 80, color: '#10b981' },
-    ];
-    const current = [...levels].reverse().find(l => score >= l.min) || levels[0];
+    const getLevel = (s: number) => {
+        if (s >= 80) return { label: '적극매수', color: '#10b981' };
+        if (s >= 60) return { label: '매수', color: '#22c55e' };
+        if (s >= 40) return { label: '관망', color: '#f59e0b' };
+        if (s >= 20) return { label: '매도', color: '#f97316' };
+        return { label: '적극매도', color: '#ef4444' };
+    };
+    const current = getLevel(score);
     const color = current.color;
     const arc = Math.min(score / 100, 1);
     const r = 28, cx = 36, cy = 36, stroke = 6;
     const circumference = 2 * Math.PI * r;
+    const markets: [string, number][] = [['KR', krScore], ['US', usScore], ['Crypto', cryptoScore]];
     return (
         <div className="flex items-center gap-3 sm:gap-4 rounded-2xl border border-white/[0.07] bg-[#13151f] p-3 sm:p-4">
             {/* Arc gauge */}
@@ -160,26 +160,28 @@ function OpportunityScoreCard({ score, krScore, usScore, cryptoScore }: {
                 </div>
                 <p className="text-[10px] text-gray-600">3개 시장 종합 진입 기회 지수</p>
                 <div className="flex items-center gap-3 mt-0.5">
-                    {[['KR', krScore, '#3b82f6'], ['US', usScore, '#10b981'], ['Crypto', cryptoScore, '#f59e0b']].map(([m, s, c]) => (
-                        <span key={m as string} className="text-[9px] font-semibold" style={{ color: c as string }}>
-                            {m} {Math.round(s as number)}
+                    {markets.map(([m, s]) => (
+                        <span key={m} className="text-[9px] font-semibold" style={{ color: getLevel(s).color }}>
+                            {m} {Math.round(s)}
                         </span>
                     ))}
                 </div>
             </div>
-            {/* 강도 바 — 5단계 색상 */}
-            <div className="flex flex-col gap-0.5 shrink-0 w-16 sm:w-24">
-                {/* 그라데이션 강도 바 */}
-                <div className="relative h-2.5 sm:h-3 rounded-full overflow-hidden" style={{ background: 'linear-gradient(to right, #ef4444, #f97316, #f59e0b, #22c55e, #10b981)' }}>
-                    {/* 현재 위치 마커 */}
-                    <div className="absolute top-0 h-full w-1 bg-white rounded-full shadow-[0_0_4px_rgba(255,255,255,0.8)]"
-                        style={{ left: `${Math.min(Math.max(score, 2), 98)}%`, transform: 'translateX(-50%)', transition: 'left 0.6s ease' }} />
-                </div>
-                {/* 레이블 */}
-                <div className="flex justify-between">
-                    <span className="text-[7px] sm:text-[8px] text-red-400/70">매도</span>
-                    <span className="text-[7px] sm:text-[8px] text-emerald-400/70">매수</span>
-                </div>
+            {/* 시장별 강도 바 */}
+            <div className="flex flex-col gap-1 shrink-0 w-20 sm:w-28">
+                {markets.map(([m, s]) => {
+                    const lv = getLevel(s);
+                    return (
+                        <div key={m} className="flex items-center gap-1">
+                            <span className="text-[7px] sm:text-[8px] text-gray-500 w-7 sm:w-9 text-right font-medium">{m}</span>
+                            <div className="relative flex-1 h-2 sm:h-2.5 rounded-full overflow-hidden" style={{ background: 'linear-gradient(to right, #ef4444, #f97316, #f59e0b, #22c55e, #10b981)' }}>
+                                <div className="absolute top-0 h-full w-0.5 sm:w-1 bg-white rounded-full shadow-[0_0_3px_rgba(255,255,255,0.9)]"
+                                    style={{ left: `${Math.min(Math.max(s, 2), 98)}%`, transform: 'translateX(-50%)', transition: 'left 0.6s ease' }} />
+                            </div>
+                            <span className="text-[7px] sm:text-[8px] font-bold w-7 sm:w-10" style={{ color: lv.color }}>{lv.label.replace('적극', '')}</span>
+                        </div>
+                    );
+                })}
             </div>
         </div>
     );
@@ -651,13 +653,13 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                             </div>
                             <div>
                                 <div className="flex items-center gap-2">
-                                    <h3 className="text-base font-bold text-white">W Pattern</h3>
+                                    <h3 className="text-base font-bold text-white">W 패턴</h3>
                                     <span className="relative flex items-center">
                                         <span className="w-1.5 h-1.5 rounded-full bg-pink-400 animate-ping absolute opacity-75" />
                                         <span className="w-1.5 h-1.5 rounded-full bg-pink-400 relative" />
                                     </span>
                                 </div>
-                                <p className="text-[10px] text-gray-500">M&W Chart Pattern AI Detection</p>
+                                <p className="text-[10px] text-gray-500">M&W 차트 패턴 AI 탐지</p>
                             </div>
                         </div>
                         <div className="flex items-center gap-2">
@@ -671,9 +673,9 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                     {/* Stats breakdown with stagger animation */}
                     <div className="relative flex items-center gap-4 mb-3">
                         {[
-                            { label: 'Active', value: waveData.summary?.active ?? 0, color: 'pink', dot: 'bg-pink-400', text: 'text-pink-400' },
-                            { label: 'Wins', value: waveData.summary?.wins ?? 0, color: 'emerald', dot: 'bg-emerald-400', text: 'text-emerald-400' },
-                            { label: 'Losses', value: waveData.summary?.losses ?? 0, color: 'red', dot: 'bg-red-400', text: 'text-red-400' },
+                            { label: '활성', value: waveData.summary?.active ?? 0, color: 'pink', dot: 'bg-pink-400', text: 'text-pink-400' },
+                            { label: '승리', value: waveData.summary?.wins ?? 0, color: 'emerald', dot: 'bg-emerald-400', text: 'text-emerald-400' },
+                            { label: '패배', value: waveData.summary?.losses ?? 0, color: 'red', dot: 'bg-red-400', text: 'text-red-400' },
                         ].map((stat, i) => (
                             <span key={stat.label} className="flex items-center gap-1.5 text-[10px] font-semibold"
                                 style={{ animation: `fadeInUp 0.4s ease-out ${i * 0.1}s both` }}>
@@ -684,7 +686,7 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                         ))}
                         {waveData.summary?.win_rate > 0 && (
                             <span className="text-[10px] font-bold text-amber-400 ml-auto animate-pulse" style={{ animationDuration: '2.5s' }}>
-                                WR {waveData.summary.win_rate}%
+                                승률 {waveData.summary.win_rate}%
                             </span>
                         )}
                     </div>
@@ -762,8 +764,8 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                             <i className="fas fa-bolt text-lg text-cyan-400" />
                         </div>
                         <div>
-                            <h3 className="text-base font-bold text-white">VCP Enhanced</h3>
-                            <p className="text-[10px] text-gray-500">Volume Contraction Pattern · All Markets</p>
+                            <h3 className="text-base font-bold text-white">VCP 강화</h3>
+                            <p className="text-[10px] text-gray-500">거래량 수축 패턴 · 전 시장</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
@@ -819,7 +821,7 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                                 <i className="fas fa-robot text-lg text-violet-400" />
                             </div>
                             <div>
-                                <h3 className="text-base font-bold text-white">AI Chart Analysis</h3>
+                                <h3 className="text-base font-bold text-white">AI 차트 분석</h3>
                                 <p className="text-[10px] text-gray-500">Gemini Vision · KR 100 종목 기술적 분석</p>
                             </div>
                         </div>
@@ -835,20 +837,20 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                     <div className="relative flex items-center gap-3 mb-3">
                         <span className="flex items-center gap-1.5 text-[10px] font-semibold">
                             <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                            <span className="text-gray-400">BUY</span>
+                            <span className="text-gray-400">매수</span>
                             <span className="text-emerald-400 tabular-nums">{aiChart.summary.by_signal?.BUY ?? 0}</span>
                         </span>
                         <span className="flex items-center gap-1.5 text-[10px] font-semibold">
                             <span className="w-2 h-2 rounded-full bg-yellow-400" />
-                            <span className="text-gray-400">HOLD</span>
+                            <span className="text-gray-400">관망</span>
                             <span className="text-yellow-400 tabular-nums">{aiChart.summary.by_signal?.HOLD ?? 0}</span>
                         </span>
                         <span className="flex items-center gap-1.5 text-[10px] font-semibold">
                             <span className="w-2 h-2 rounded-full bg-red-400" />
-                            <span className="text-gray-400">SELL</span>
+                            <span className="text-gray-400">매도</span>
                             <span className="text-red-400 tabular-nums">{aiChart.summary.by_signal?.SELL ?? 0}</span>
                         </span>
-                        <span className="ml-auto text-[9px] text-gray-600">avg conf. {aiChart.summary.avg_confidence}%</span>
+                        <span className="ml-auto text-[9px] text-gray-600">평균 신뢰도 {aiChart.summary.avg_confidence}%</span>
                     </div>
 
                     {/* Top BUY signals */}
@@ -863,7 +865,7 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                                 {buys.map((s, i) => (
                                     <div key={i} className="flex items-center justify-between py-1.5">
                                         <div className="flex items-center gap-2">
-                                            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400">BUY</span>
+                                            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400">매수</span>
                                             <span className="text-xs font-semibold text-white truncate max-w-[120px]">{s.stock_name}</span>
                                             <span className="text-[9px] text-gray-600">{s.ma_status}</span>
                                         </div>
@@ -890,7 +892,7 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                                 <i className="fas fa-robot text-lg text-green-400" />
                             </div>
                             <div>
-                                <h3 className="text-base font-bold text-white">US AI Chart</h3>
+                                <h3 className="text-base font-bold text-white">US AI 차트</h3>
                                 <p className="text-[10px] text-gray-500">Gemini Vision · S&P 500 Top 100</p>
                             </div>
                         </div>
@@ -905,20 +907,20 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                     <div className="relative flex items-center gap-3 mb-3">
                         <span className="flex items-center gap-1.5 text-[10px] font-semibold">
                             <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                            <span className="text-gray-400">BUY</span>
+                            <span className="text-gray-400">매수</span>
                             <span className="text-emerald-400 tabular-nums">{usAiChart.summary.by_signal?.BUY ?? 0}</span>
                         </span>
                         <span className="flex items-center gap-1.5 text-[10px] font-semibold">
                             <span className="w-2 h-2 rounded-full bg-yellow-400" />
-                            <span className="text-gray-400">HOLD</span>
+                            <span className="text-gray-400">관망</span>
                             <span className="text-yellow-400 tabular-nums">{usAiChart.summary.by_signal?.HOLD ?? 0}</span>
                         </span>
                         <span className="flex items-center gap-1.5 text-[10px] font-semibold">
                             <span className="w-2 h-2 rounded-full bg-red-400" />
-                            <span className="text-gray-400">SELL</span>
+                            <span className="text-gray-400">매도</span>
                             <span className="text-red-400 tabular-nums">{usAiChart.summary.by_signal?.SELL ?? 0}</span>
                         </span>
-                        <span className="ml-auto text-[9px] text-gray-600">avg conf. {usAiChart.summary.avg_confidence}%</span>
+                        <span className="ml-auto text-[9px] text-gray-600">평균 신뢰도 {usAiChart.summary.avg_confidence}%</span>
                     </div>
 
                     {(() => {
@@ -932,7 +934,7 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                                 {buys.map((s, i) => (
                                     <div key={i} className="flex items-center justify-between py-1.5">
                                         <div className="flex items-center gap-2">
-                                            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400">BUY</span>
+                                            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400">매수</span>
                                             <span className="text-xs font-semibold text-white truncate max-w-[120px]">{s.name}</span>
                                             <span className="text-[9px] text-gray-600">{s.ticker}</span>
                                         </div>
@@ -956,7 +958,7 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                     status={krSignalLabel}
                     statusColor={gateColor}
                     metric={gateScore}
-                    metricLabel="Gate Score"
+                    metricLabel="게이트 점수"
                     metricSuffix="/ 100"
                 />
                 <CompactCard
@@ -992,7 +994,7 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                     status="AI Powered"
                     statusColor="text-purple-400"
                     metric={briefing?.smart_money?.top_picks?.picks?.[0]?.ticker ?? '—'}
-                    metricLabel="Top Pick"
+                    metricLabel="최고 추천"
                 />
                 <CompactCard
                     to="/dashboard/stock-analyzer?panel=dart-deep#dart-deep"
