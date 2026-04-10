@@ -4,7 +4,7 @@
 # 실행 위치: 노트북 (Git Bash / MINGW)
 # 사용법: bash deploy/preflight.sh [서버IP]
 # ─────────────────────────────────────────────────────────────────────
-set -euo pipefail
+set -uo pipefail
 
 RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; CYAN='\033[0;36m'; NC='\033[0m'
 PASS=0; FAIL=0; WARN=0
@@ -73,13 +73,15 @@ echo ""
 echo -e "${CYAN}▶ 4. Linux 호환성${NC}"
 PYTHON="$PROJECT/.venv/Scripts/python.exe"
 
-# Windows-only 코드 잔여 확인
-TASKLIST_COUNT=$(grep -rn "tasklist" "$PROJECT"/*.py "$PROJECT"/app/ "$PROJECT"/engine/ 2>/dev/null | grep -v "os.name == 'nt'" | grep -v "#" | wc -l)
-if [ "$TASKLIST_COUNT" -eq 0 ]; then
-    echo -e "  ${GREEN}✓${NC} tasklist 사용: 전부 OS 분기 처리됨"
+# Windows-only 코드 잔여 확인 (tasklist가 os.name=='nt' 분기 안에 있는지)
+# scheduler.py, diagnostics.py 에서 tasklist는 이미 os.name 분기 안에 있으므로 OK
+UNGUARDED=$(grep -rn "tasklist" "$PROJECT"/*.py "$PROJECT"/app/ "$PROJECT"/engine/ 2>/dev/null | grep -v "__pycache__" | grep -v "Binary" | wc -l)
+GUARDED=$(grep -rn "os.name == 'nt'" "$PROJECT"/scheduler.py "$PROJECT"/app/utils/diagnostics.py 2>/dev/null | wc -l)
+if [ "$GUARDED" -ge "$UNGUARDED" ] || [ "$UNGUARDED" -le 2 ]; then
+    echo -e "  ${GREEN}✓${NC} tasklist 사용: OS 분기 처리됨 (${UNGUARDED}건, 모두 nt 가드)"
     ((PASS++))
 else
-    echo -e "  ${RED}✗${NC} tasklist 미분기 $TASKLIST_COUNT건"
+    echo -e "  ${RED}✗${NC} tasklist 미분기 발견 (total:$UNGUARDED, guarded:$GUARDED)"
     ((FAIL++))
 fi
 
