@@ -1,35 +1,35 @@
 {
-  "name": "인스코비",
-  "ticker": "006490.KS",
+  "name": "휴비스",
+  "ticker": "079980.KS",
   "result": "데이터 없음",
-  "date": "2026-04-10 18:34:27",
-  "elapsed": 3.4,
+  "date": "2026-04-10 17:51:13",
+  "elapsed": 2.2,
   "consensus_score": null,
   "analyst_count": 0,
   "recommendation_detail": null,
   "recommendation_period": null,
   "price_targets": {
-    "current": 520.0,
+    "current": 3180.0,
     "high": null,
     "low": null,
     "mean": null,
     "median": null
   },
-  "current_price": 520.0,
+  "current_price": 3180.0,
   "upside_potential": null,
   "key_stats": {
-    "name": "INSCOB",
-    "sector": "Communication Services",
-    "industry": "Telecom Services",
-    "market_cap": 64270540800,
+    "name": "HUVIS",
+    "sector": "Consumer Cyclical",
+    "industry": "Textile Manufacturing",
+    "market_cap": 104654815232,
     "pe_ratio": null,
     "forward_pe": null,
     "dividend_yield": null,
-    "beta": 0.56,
-    "fifty_two_week_high": 2175.0,
-    "fifty_two_week_low": 217.0,
-    "revenue": 104128528384,
-    "profit_margin": -0.31574,
+    "beta": 0.07,
+    "fifty_two_week_high": 4070.0,
+    "fifty_two_week_low": 2315.0,
+    "revenue": 889528451072,
+    "profit_margin": 0.00262,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
@@ -37,38 +37,38 @@
   "ai_analysis": null,
   "revenue_quarters": [
     {
+      "date": "2025-12",
+      "value": 214720911620
+    },
+    {
       "date": "2025-09",
-      "value": 26131804650
+      "value": 210186292350
     },
     {
       "date": "2025-06",
-      "value": 28638948400
+      "value": 224518202840
     },
     {
       "date": "2025-03",
-      "value": 24307287670
-    },
-    {
-      "date": "2024-12",
-      "value": 25050491740
+      "value": 240103034740
     }
   ],
   "net_income_quarters": [
     {
+      "date": "2025-12",
+      "value": -6731228120
+    },
+    {
       "date": "2025-09",
-      "value": -4364291620
+      "value": -3245566360
     },
     {
       "date": "2025-06",
-      "value": -5970039420
+      "value": 8983686720
     },
     {
       "date": "2025-03",
-      "value": -19875978770
-    },
-    {
-      "date": "2024-12",
-      "value": -2667471280
+      "value": 3317292710
     }
   ],
   "news": []

@@ -1,0 +1,286 @@
+{
+  "stock_code": "006490",
+  "stock_name": "인스코비",
+  "generated_at": "2026-04-10T09:34:28.113912+00:00",
+  "financials": {
+    "stock_code": "006490",
+    "corp_code": "00122825",
+    "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2016": {
+        "cash": 49.7,
+        "total_assets": 451.8,
+        "short_debt": 0.1,
+        "long_debt": 0.0,
+        "total_liab": 132.6,
+        "total_equity": 319.2,
+        "revenue": 370.6,
+        "op_profit": -25.3,
+        "net_income": -7.4
+      },
+      "2017": {
+        "cash": 57.2,
+        "total_assets": 472.2,
+        "short_debt": 0.0,
+        "long_debt": 0.0,
+        "total_liab": 121.1,
+        "total_equity": 351.1,
+        "revenue": 495.7
+      },
+      "2018": {
+        "cash": 87.5,
+        "total_assets": 574.4,
+        "short_debt": 0.0,
+        "total_liab": 265.5,
+        "total_equity": 308.9,
+        "revenue": 585.9,
+        "op_profit": 53.3,
+        "net_income": 2.2
+      },
+      "2019": {
+        "cash": 92.9,
+        "total_assets": 507.2,
+        "total_liab": 250.2,
+        "total_equity": 257.0,
+        "revenue": 752.8,
+        "op_profit": 47.3,
+        "net_income": 0.0
+      },
+      "2020": {
+        "cash": 114.2,
+        "total_assets": 762.3,
+        "total_liab": 330.5,
+        "total_equity": 431.8,
+        "revenue": 578.2,
+        "op_profit": -10.1,
+        "net_income": 93.1
+      },
+      "2021": {
+        "cash": 225.4,
+        "total_assets": 1093.5,
+        "short_debt": 0.1,
+        "total_liab": 434.6,
+        "total_equity": 658.9,
+        "revenue": 716.7,
+        "op_profit": -24.2,
+        "net_income": -2.2
+      },
+      "2022": {
+        "cash": 146.6,
+        "total_assets": 1011.8,
+        "short_debt": 1.1,
+        "total_liab": 381.3,
+        "total_equity": 630.5,
+        "revenue": 766.8,
+        "op_profit": -13.9,
+        "net_income": -74.1
+      },
+      "2023": {
+        "total_assets": 764.8,
+        "cash": 98.1,
+        "total_equity": 758.4,
+        "short_debt": 8.2,
+        "total_liab": 381.3,
+        "op_profit": 4.5,
+        "net_income": 0.0,
+        "revenue": 998.1
+      },
+      "2024": {
+        "total_assets": 907.3,
+        "cash": 105.0,
+        "total_equity": 778.8,
+        "short_debt": 44.4,
+        "total_liab": 423.4,
+        "op_profit": -37.9,
+        "net_income": 0.0,
+        "revenue": 1005.3
+      },
+      "2025": {
+        "total_assets": 604.6,
+        "cash": 12.2,
+        "total_equity": -1348.3,
+        "short_debt": 123.9,
+        "total_liab": 444.0,
+        "op_profit": 40.8,
+        "net_income": 0.0,
+        "revenue": 1055.6
+      }
+    },
+    "missing_years": [
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2016,
+        "revenue_eok": 371,
+        "op_profit_eok": -25,
+        "net_income_eok": -7,
+        "roe_pct": -2.19,
+        "op_margin_pct": -6.74,
+        "debt_ratio_pct": 41.7
+      },
+      {
+        "year": 2017,
+        "revenue_eok": 496,
+        "op_profit_eok": 0,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 0.0,
+        "debt_ratio_pct": 34.47
+      },
+      {
+        "year": 2018,
+        "revenue_eok": 586,
+        "op_profit_eok": 53,
+        "net_income_eok": 2,
+        "roe_pct": 0.65,
+        "op_margin_pct": 9.04,
+        "debt_ratio_pct": 86.08
+      },
+      {
+        "year": 2019,
+        "revenue_eok": 753,
+        "op_profit_eok": 47,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 6.24,
+        "debt_ratio_pct": 97.28
+      },
+      {
+        "year": 2020,
+        "revenue_eok": 578,
+        "op_profit_eok": -10,
+        "net_income_eok": 93,
+        "roe_pct": 21.53,
+        "op_margin_pct": -1.73,
+        "debt_ratio_pct": 76.39
+      },
+      {
+        "year": 2021,
+        "revenue_eok": 717,
+        "op_profit_eok": -24,
+        "net_income_eok": -2,
+        "roe_pct": -0.3,
+        "op_margin_pct": -3.35,
+        "debt_ratio_pct": 65.9
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 767,
+        "op_profit_eok": -14,
+        "net_income_eok": -74,
+        "roe_pct": -11.75,
+        "op_margin_pct": -1.83,
+        "debt_ratio_pct": 60.48
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 998,
+        "op_profit_eok": 4,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 0.4,
+        "debt_ratio_pct": 50.26
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 1005,
+        "op_profit_eok": -38,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": -3.78,
+        "debt_ratio_pct": 54.3
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 1056,
+        "op_profit_eok": 41,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 3.88,
+        "debt_ratio_pct": -32.94
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": 12.18,
+      "op_profit_cagr_pct": 0.0,
+      "best_year": 2018,
+      "worst_year": 2024,
+      "avg_roe_pct": 0.79
+    },
+    "valuation": {
+      "grade": "D",
+      "strengths": [
+        "매출액은 10년간 연평균 12.18%의 성장률을 기록하며 외형을 꾸준히 확장했습니다.",
+        "2025년에는 영업이익이 흑자 전환하며 수익성 개선의 가능성을 보여주었습니다.",
+        "2019년부터 2024년까지 자본총계가 증가하는 추세를 보이며 재무 건전성 개선 노력이 있었습니다."
+      ],
+      "risks": [
+        "영업이익이 매우 불안정하며 다수의 적자를 기록하여 본업의 수익성이 취약합니다.",
+        "2025년에는 자본총계가 마이너스로 전환되어 심각한 자본잠식 상태에 직면했습니다.",
+        "ROE가 대부분 0% 이하로 저조하여 주주가치 창출 능력이 미흡합니다."
+      ],
+      "one_liner": "불안정한 수익성과 심각한 자본잠식으로 인해 투자 위험이 매우 높은 기업입니다."
+    }
+  },
+  "dcf": {
+    "text": "퀀트 애널리스트로서 인스코비(006490)의 DCF 적정가치를 계산하고 민감도 분석을 수행하겠습니다.\n\n제공된 데이터를 바탕으로 FCF(Free Cash Flow)를 계산하고, 이를 WACC(가중평균자본비용)와 영구성장률(g)을 사용하여 현재가치로 할인하여 적정가치를 산출합니다.\n\n**가정 요약:**\n*   **FCF 계산식:** 영업이익 × (1 - 0.25) + 감가상각(매출의 10%) - CAPEX(매출의 5%)\n*   **기본 WACC:** 9%\n*   **기본 영구성장률 (g):** 2%\n*   **예측 기간:** 5년 (2025년 ~ 2029년)\n*   **매출액 및 영업이익 성장률:** 명시되지 않았으므로, 예측 기간 동안 매출액, 영업이익, 감가상각, CAPEX는 현재 수준으로 유지된다고 가정합니다.\n\n---\n### **Python 코드 실행 및 결과**\n\n\n---\n### **결과 요약**\n\n1.  **기본 시나리오 DCF 적정가치:**\n    *   FCF (매년) = 41억원 * (1 - 0.25) + (1056억원 * 0.10) - (1056억원 * 0.05) = 30.75 + 105.6 - 52.8 = 83.55억원\n    *   WACC = 9%, 영구성장률 g = 2%를 적용한 **DCF 적정가치는 1,116.23억원** 입니다.\n\n2.  **WACC 및 영구성장률(g)에 대한 민감도 그리드 (단위: 억원):**\n\n|       | WACC=7% | WACC=8% | WACC=9% | WACC=10% | WACC=11% |\n| :---- | :------ | :------ | :------ | :------- | :------- |\n| **g=1%** | 1345.33 | 1154.04 | 1010.54 | 898.91   | 809.58   |\n| **g=2%** | 1557.80 | 1300.26 | 1116.23 | 978.16   | 870.73   |\n| **g=3%** | 1876.50 | 1504.96 | 1257.16 | 1080.07  | 947.17   |\n\n3.  **최종 요약:**\n    적정가치(기본): 1116.23억원\n\n---",
+    "executed_code": "import pandas as pd\n\ndef calculate_dcf(revenue, ebit, tax_rate, dep_rate, capex_rate, wacc, g, forecast_years):\n    \"\"\"\n    DCF 적정가치를 계산하는 함수.\n\n    Args:\n        revenue (float): 현재 매출액 (억원).\n        ebit (float): 현재 영업이익 (억원).\n        tax_rate (float): 법인세율.\n        dep_rate (float): 매출액 대비 감가상각비율.\n        capex_rate (float): 매출액 대비 CAPEX 비율.\n        wacc (float): 가중평균자본비용.\n        g (float): 영구성장률.\n        forecast_years (int): 명시적 예측 기간 (년).\n\n    Returns:\n        float: DCF 적정가치 (억원).\n    \"\"\"\n    # 감가상각비 및 CAPEX 계산\n    depreciation = revenue * dep_rate\n    capex = revenue * capex_rate\n\n    # FCF 계산 (예측 기간 동안 일정하다고 가정)\n    fcf_base = ebit * (1 - tax_rate) + depreciation - capex\n\n    # 명시적 예측 기간 동안의 FCF 현재가치 합계\n    pv_fcf = 0\n    for t in range(1, forecast_years + 1):\n        pv_fcf += fcf_base / ((1 + wacc) ** t)\n\n    # 터미널 밸류(Terminal Value) 계산\n    # 예측 기간 마지막 해 다음 해의 FCF (FCF_forecast_years+1)\n    fcf_terminal_year = fcf_base * (1 + g) \n    \n    if wacc <= g:\n        # WACC가 g보다 작거나 같으면 터미널 밸류가 무한대가 되므로 예외 처리\n        return float('inf') \n    \n    terminal_value = fcf_terminal_year / (wacc - g)\n    \n    # 터미널 밸류의 현재가치\n    pv_terminal_value = terminal_value / ((1 + wacc) ** forecast_years)\n\n    # 총 DCF 적정가치\n    dcf_value = pv_fcf + pv_terminal_value\n    return dcf_value\n\n# 주어진 데이터 (억원)\nrevenue = 1056\nebit = 41\n# 당기순이익, 자산총계, 부채총계는 FCF 계산식에 직접 사용되지 않음\n\n# 가정\ntax_rate = 0.25\ndep_rate = 0.10\ncapex_rate = 0.05\nbase_wacc = 0.09\nbase_g = 0.02\nforecast_years = 5\n\n# 1. 기본 시나리오 DCF 적정가치 계산\nbase_dcf_value = calculate_dcf(revenue, ebit, tax_rate, dep_rate, capex_rate, base_wacc, base_g, forecast_years)\nprint(f\"기본 시나리오 DCF 적정가치: {base_dcf_value:.2f} 억원\")\n\n# 2. WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 출력\nwacc_values = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_values = [0.01, 0.02, 0.03]\n\n# 결과를 저장할 DataFrame 생성\nsensitivity_results = pd.DataFrame(index=[f'g={g*100:.0f}%' for g in g_values],\n                                   columns=[f'WACC={wacc*100:.0f}%' for wacc in wacc_values])\n\n# 각 WACC와 g 조합에 대해 DCF 계산\nfor g_val in g_values:\n    for wacc_val in wacc_values:\n        dcf_val = calculate_dcf(revenue, ebit, tax_rate, dep_rate, capex_rate, wacc_val, g_val, forecast_years)\n        sensitivity_results.loc[f'g={g_val*100:.0f}%', f'WACC={wacc_val*100:.0f}%'] = f\"{dcf_val:.2f}\"\n\nprint(\"\\nDCF 적정가치 민감도 그리드 (억원):\")\nprint(sensitivity_results)\n\n# 3. 마지막에 '적정가치(기본): {value}억원' 형태로 요약 출력\nprint(f\"\\n적정가치(기본): {base_dcf_value:.2f}억원\")",
+    "code_output": "기본 시나리오 DCF 적정가치: 1116.23 억원\n\nDCF 적정가치 민감도 그리드 (억원):\n      WACC=7%  WACC=8%  WACC=9% WACC=10% WACC=11%\ng=1%  1345.33  1154.04  1010.54   898.91   809.58\ng=2%  1557.80  1300.26  1116.23   978.16   870.73\ng=3%  1876.50  1504.96  1257.16  1080.07   947.17\n\n적정가치(기본): 1116.23억원"
+  },
+  "news": {
+    "text": "## 인스코비(006490) 투자 분석 보고서\n\n**투자등급 D, 요약: 불안정한 수익성과 심각한 자본잠식으로 인해 투자 위험이 매우 높은 기업입니다.**\n\n---\n\n### 1. 재무 데이터 스토리와 현재 시장 컨센서스의 일치/불일치\n\n제시된 재무 데이터의 '불안정한 수익성과 심각한 자본잠식으로 인한 높은 투자 위험'이라는 스토리는 최근 시장 컨센서스와 **일치**합니다.\n\n*   **일치점:**\n    *   2026년 4월 7일 공시된 내용에 따르면, 인스코비는 74%의 심각한 자본잠식률로 인해 '관리종목' 지정을 유지하고 있으며, 지정 사유가 '의견거절'에서 '자본잠식'으로 변경되었습니다. 이는 재무 데이터가 보여주는 심각한 자본잠식 상태를 명확히 뒷받침합니다.\n    *   2025년 연결 기준 영업이익은 흑자 전환했으나, 관계기업 투자주식 평가손실 및 유동부채 증가에 따른 금융비용 확대로 당기순손실 234억원을 기록하며 순이익 측면에서는 여전히 불안정한 모습을 보였습니다.\n    *   2026년 3월 31일 정기주주총회가 의결정족수 미달로 불성립되었고, 감사보고서 제출도 관계회사 감사 절차 미완료로 지연되는 등 기업 운영 및 투명성 측면에서 불안정한 상황이 지속되고 있습니다.\n\n### 2. 재무제표에서 드러나지 않는 리스크 또는 호재\n\n**리스크:**\n\n*   **지배구조 불안정성 및 투명성 문제:** 정기주주총회 불성립 및 감사보고서 제출 지연은 경영진의 의사결정 능력 및 기업 투명성에 대한 심각한 의문을 제기하며, 이는 재무제표 수치만으로는 파악하기 어려운 투자 리스크입니다.\n*   **관리종목 지정 및 상장폐지 위험:** 74%에 달하는 자본잠식률로 관리종목에 지정된 상태는 향후 개선되지 않을 경우 상장폐지 가능성이라는 치명적인 리스크를 내포합니다.\n*   **신규 최대주주의 불확실성:** 최대주주가 케이에스인더스트리로 변경되고 유상증자를 통해 운영자금을 조달했으나, 신규 경영진의 구체적인 사업 재건 계획과 실행력은 아직 검증되지 않아 불확실성이 매우 큽니다.\n\n**호재:**\n\n*   **최대주주 변경 및 자본 확충 시도:** 케이에스인더스트리로의 최대주주 변경과 유상증자를 통한 자본 확충 노력은 기업 회생을 위한 긍정적인 신호로 해석될 수 있습니다. 신규 최대주주가 '해양 AI 및 통신 융합 성장 전략'을 언급한 점은 새로운 사업 방향성을 제시할 가능성이 있습니다.\n*   **다각화된 사업 포트폴리오:** MVNO(알뜰폰), 스마트그리드, 바이오 등 다양한 사업 부문을 영위하고 있어, 특정 부문의 성공적인 구조조정이나 성장이 이루어진다면 긍정적인 전환점이 될 수 있습니다. 특히 프리텔레콤은 국내 유일하게 통신 3사 망을 모두 사용하는 알뜰폰 사업자라는 강점이 있습니다.\n\n### 3. 최종 판정\n\n**매도**\n\n인스코비는 심각한 자본잠식 상태로 관리종목에 지정되어 있으며, 지배구조 불안정성 및 감사보고서 지연 등 기업 운영의 불확실성이 매우 높습니다. 비록 최대주주 변경과 자본 확충 시도가 있었으나, 이러한 노력이 기업의 근본적인 재무 건전성을 회복하고 지속적인 수익성을 창출할 수 있을지는 미지수입니다. 현재로서는 투자 위험이 매우 커 신중한 접근이 필요하며, 추가적인 재무 개선 및 경영 안정화가 확인되기 전까지는 투자를 지양하는 것이 바람직하다고 판단됩니다.",
+    "citations": [
+      {
+        "title": "newstnt.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFR13v6UQJR8qJJ0KnQnalkZER2s6sGTW_miUPjsIF_birQKgJXEXKNn7ix1MQ8lg0vrHTt4NIlk-sMRecjzXFphwFGc2Zb2C9IYDraBbpbvCOpyHt6Fa2f2nCCAuhNHhLArawzGa2s4p3Q7xjdjbGRr5LSCA=="
+      },
+      {
+        "title": "digitaltoday.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEF5DoDwoRIKI8YjWHrztFCoSz7A5ApiXyhgK6635JwCOJmo6OAJNVP_f2RlyBB5nTWqRGDu-Le886zYokIhLD2MJcOCuMxEwnMHoOoDskKujQmqiTO8uOZ2xk3SgeTsGe4_DPlxBRIzNkKDsKEhB1GbFuWOsIiu1F8KbP9"
+      },
+      {
+        "title": "digitaltoday.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQF6JPUsXByEEgL6y5pVzrpK1ex0ckukKPF4Q2kWsYPe8pGXFy5Znz_FYEgZMdUJcmrbDVLt_2bh3gj2NZawAMQJ75o3wRCdeFs41tN7CK1ai9yhjzBCb3ZZBB-AwD5IzQ19MFu7KGYw1nYZQP1XtOCDRAXJWwV9d-ujTZEc"
+      },
+      {
+        "title": "digitaltoday.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFSwRCMFQIho3f3oeXqAhhBc7pzQX6f2ZslgBeps1vxE6OcSfN_1E1n88rhwTtr4lwqUz6RPEzUC9dKgZiEEIFO50Xn-ZFJxrFjvfha9yOWObRdCKC235dRCzzvwlnL5_b_J3UASVxD7qS1_BQUMgpUg95Cnp8ypYhk_vHs"
+      },
+      {
+        "title": "yna.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQG8uumvelLzI9KAQYNAiDm91XkPBrsa86D_m6bPkU10i44GWgDyx77VS2bFSkgdMPBI-_cx5_Td8aUMOEMBdTYmwfQwU5xCbUP-B9i45fun8c4N_q6Ra4dK9Y00WaUzrxXU6yJkL0ZVBSU2"
+      },
+      {
+        "title": "alphasquare.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEvvJVT0cIzHWxXjqpoZALWZ3884OT4GBMORmLULPT3qyfvug_leqxoGdsjeVAKZ_CXH48RXzJFlcMQLYtgzaBBlByy4eN34MRaAU9tYjh5L9eBPLtWkan5UvAfllzYDMUkoTwzG1AJ0Md0g4jiQntpD4BH"
+      },
+      {
+        "title": "wisereport.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHWC8WZRiyivNi0khN861WInBbdSIh8QvDsvQ-ICWi-El4q_-rCxAcE4VatP_VUdNLMlxhGWTtE4fe7gtFImqd8vL85rO-BeV8O9EJ3WvAB4D8z7142QEBg959aDp-C-204jDJI_XakkxdL-PU01-nYzyd_8I5nSc9QDcNm8Plh6A=="
+      },
+      {
+        "title": "freet.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQH3owtRKEV2Tx6mPWedZshq-FYwr3BClDKiMlquLoSnE1wfHD-4O2pklE5lpyvwt1s1m_dsTxg4OXKvKa9O84-aR-w7FRlIi1SoCuBUf0q1MiS7Ohlit72IKHhnyv2q3z7xIh4="
+      }
+    ]
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=00122825",
+    "summary": "공시 페이지 접근 제한"
+  }
+}

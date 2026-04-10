@@ -1,0 +1,111 @@
+{
+  "name": "우리기술투자",
+  "ticker": "041190.KQ",
+  "result": "데이터 없음",
+  "date": "2026-04-10 17:02:02",
+  "elapsed": 1.6,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 6480.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 6480.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "WTIC",
+    "sector": "Financial Services",
+    "industry": "Asset Management",
+    "market_cap": 504605048832,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": null,
+    "beta": 1.357,
+    "fifty_two_week_high": 13140.0,
+    "fifty_two_week_low": 5460.0,
+    "revenue": 2746502912,
+    "profit_margin": 77.16345,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-09",
+      "value": 1494711180
+    },
+    {
+      "date": "2025-06",
+      "value": 166538290540
+    },
+    {
+      "date": "2025-03",
+      "value": 17882983000
+    },
+    {
+      "date": "2024-12",
+      "value": 77660546260
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-09",
+      "value": -964349470
+    },
+    {
+      "date": "2025-06",
+      "value": 130659694380
+    },
+    {
+      "date": "2025-03",
+      "value": 14838095670
+    },
+    {
+      "date": "2024-12",
+      "value": 67396200970
+    }
+  ],
+  "news": [
+    {
+      "title": "Exploring Undiscovered Gems In Global Markets This January 2026",
+      "summary": "As global markets navigate a period of volatility, with major indices like the S&P MidCap 400 and Russell 2000 experiencing slight declines amid geopolitical tensions and economic shifts, investors ar",
+      "url": "https://finance.yahoo.com/news/exploring-undiscovered-gems-global-markets-093319140.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-01-26T09:33:19Z"
+    },
+    {
+      "title": "Exploring 3 Undiscovered Gems in Asia with Promising Potential",
+      "summary": "As global markets experience mixed performance, with small-cap and value stocks leading gains over large-cap counterparts, attention turns to Asia where emerging opportunities may lie. In this dynamic",
+      "url": "https://finance.yahoo.com/news/exploring-3-undiscovered-gems-asia-043432185.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-01-21T04:34:32Z"
+    },
+    {
+      "title": "Ruifeng Power Group And 2 Other Undiscovered Gems In Asia",
+      "summary": "As the Asian markets continue to navigate a complex landscape of regulatory changes and economic indicators, small-cap stocks have shown resilience, with indices like the S&P MidCap 400 and Russell 20",
+      "url": "https://finance.yahoo.com/news/ruifeng-power-group-2-other-223347592.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-01-20T22:33:47Z"
+    },
+    {
+      "title": "Three Undiscovered Asian Gems To Enhance Your Investment Portfolio",
+      "summary": "As Asian markets navigate a complex landscape of regulatory changes and economic shifts, investors are increasingly eyeing opportunities in the region's small-cap sector. With indices like Japan's Nik",
+      "url": "https://finance.yahoo.com/news/three-undiscovered-asian-gems-enhance-223839093.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-01-19T22:38:39Z"
+    },
+    {
+      "title": "Exploring 3 Undiscovered Gems in Asia with Strong Fundamentals",
+      "summary": "As global markets navigate a complex landscape marked by mixed performances in major indices and evolving economic conditions, Asia presents intriguing opportunities for investors seeking to uncover p",
+      "url": "https://finance.yahoo.com/news/exploring-3-undiscovered-gems-asia-043308699.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-01-06T04:33:08Z"
+    }
+  ]
+}

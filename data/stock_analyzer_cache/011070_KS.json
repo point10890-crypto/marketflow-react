@@ -2,37 +2,37 @@
   "name": "LG이노텍",
   "ticker": "011070.KS",
   "result": "매수",
-  "date": "2026-03-27 21:31:14",
-  "elapsed": 3.4,
-  "consensus_score": 4.0,
+  "date": "2026-04-10 19:37:14",
+  "elapsed": 1.8,
+  "consensus_score": 4.15,
   "analyst_count": 27,
   "recommendation_detail": {
-    "strongBuy": 8,
+    "strongBuy": 9,
     "buy": 14,
     "hold": 3,
     "sell": 1,
-    "strongSell": 1
+    "strongSell": 0
   },
   "recommendation_period": "0m",
   "price_targets": {
-    "current": 320500.0,
-    "high": 380000.0,
+    "current": 380000.0,
+    "high": 460000.0,
     "low": 190000.0,
-    "mean": 314666.66,
-    "median": 330000.0
+    "mean": 340269.22,
+    "median": 351500.0
   },
-  "current_price": 320500.0,
-  "upside_potential": -1.8,
+  "current_price": 380000.0,
+  "upside_potential": -10.5,
   "key_stats": {
     "name": "LG Innotek",
     "sector": "Technology",
     "industry": "Electronic Components",
-    "market_cap": 7584474988544,
+    "market_cap": 8992513327104,
     "pe_ratio": null,
-    "forward_pe": 11.114244,
-    "dividend_yield": 0.62,
-    "beta": 0.584,
-    "fifty_two_week_high": 353500.0,
+    "forward_pe": 12.458923,
+    "dividend_yield": 0.55,
+    "beta": 0.603,
+    "fifty_two_week_high": 383500.0,
     "fifty_two_week_low": 121000.0,
     "revenue": 21896603107328,
     "profit_margin": 0.01559,
@@ -40,7 +40,7 @@
   },
   "finnhub_supplement": null,
   "source": "yfinance",
-  "ai_analysis": "LG이노텍은 애널리스트 컨센서스 '매수' 의견을 받고 있으며, 27명의 애널리스트가 참여했습니다. 목표가 평균은 현재가 대비 소폭 하락 여력이 있는 것으로 분석됩니다. 투자 결정은 개인의 판단에 따라 신중하게 이루어져야 합니다.",
+  "ai_analysis": "LG이노텍은 현재 애널리스트 컨센서스가 '매수' 의견으로 긍정적입니다. (컨센서스 점수 4.15/5.0, 참여 애널리스트 27명) 하지만, 목표가 평균은 340,269원으로 현재 주가 대비 -10.5% 하락 여력이 있습니다. 투자 결정 시 컨센서스와 목표가의 차이를 고려해야 합니다.",
   "revenue_quarters": [
     {
       "date": "2025-12",
@@ -79,6 +79,13 @@
   ],
   "news": [
     {
+      "title": "Applied Intuition and LG Innotek strike autonomous vehicle development partnership",
+      "summary": "The arrangement is intended to fine-tune Applied Intuition’s Self Driving System (SDS) so it operates effectively with LG Innotek’s camera, lidar and radar sensors.",
+      "url": "https://www.just-auto.com/news/applied-intuition-lg-innotek-partnership/",
+      "provider": "Just Auto",
+      "pub_time": "2026-03-31T11:38:17Z"
+    },
+    {
       "title": "Aeva Technologies, Inc. Q4 2025 Earnings Call Summary",
       "summary": "Moby summary of Aeva Technologies, Inc.'s Q4 2025 earnings call",
       "url": "https://app.moby.co/home/research/tools/earningsCalendar/earnings-aeva-technologies-inc-q4-2025-earnings-call-summary?utm_source=yahoo_finance&utm_medium=rss",
@@ -105,13 +112,6 @@
       "url": "https://finance.yahoo.com/news/aevas-50m-lg-alliance-fast-123600205.html",
       "provider": "Zacks",
       "pub_time": "2025-08-11T12:36:00Z"
-    },
-    {
-      "title": "TechCrunch Mobility: Tesla’s ride-hailing gambit",
-      "summary": "Welcome back to TechCrunch Mobility — your central hub for news and insights on the future of transportation.",
-      "url": "https://finance.yahoo.com/news/techcrunch-mobility-tesla-ride-hailing-160500167.html",
-      "provider": "TechCrunch",
-      "pub_time": "2025-08-04T16:05:00Z"
     }
   ]
 }
