@@ -1,0 +1,298 @@
+{
+  "stock_code": "066970",
+  "stock_name": "엘앤에프",
+  "generated_at": "2026-04-09T23:37:23.795323+00:00",
+  "financials": {
+    "stock_code": "066970",
+    "corp_code": "00398701",
+    "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2016": {
+        "cash": 71.1,
+        "total_assets": 2026.7,
+        "short_debt": 381.6,
+        "long_debt": 272.2,
+        "total_liab": 1153.2,
+        "total_equity": 873.5,
+        "revenue": 2497.3,
+        "op_profit": 138.6,
+        "net_income": 52.2
+      },
+      "2017": {
+        "cash": 223.4,
+        "total_assets": 2654.8,
+        "short_debt": 564.7,
+        "long_debt": 325.7,
+        "total_liab": 1421.7,
+        "total_equity": 1233.0,
+        "revenue": 4030.2,
+        "op_profit": 293.7,
+        "net_income": 0.0
+      },
+      "2018": {
+        "cash": 113.7,
+        "total_assets": 3309.8,
+        "short_debt": 718.2,
+        "long_debt": 421.9,
+        "total_liab": 1879.9,
+        "total_equity": 1429.9,
+        "revenue": 5056.6,
+        "op_profit": 270.2,
+        "net_income": 198.8
+      },
+      "2019": {
+        "cash": 8.3,
+        "total_assets": 4162.0,
+        "short_debt": 1389.2,
+        "long_debt": 867.2,
+        "total_liab": 2843.8,
+        "total_equity": 1318.2,
+        "revenue": 3132.6,
+        "op_profit": -76.6,
+        "net_income": -88.1
+      },
+      "2020": {
+        "cash": 212.3,
+        "total_assets": 4662.2,
+        "short_debt": 967.7,
+        "long_debt": 905.3,
+        "total_liab": 2686.1,
+        "total_equity": 1976.1,
+        "revenue": 3561.1,
+        "op_profit": 14.7,
+        "net_income": 0.0
+      },
+      "2021": {
+        "cash": 2717.8,
+        "total_assets": 15322.0,
+        "short_debt": 1296.2,
+        "long_debt": 1559.6,
+        "total_liab": 8970.1,
+        "total_equity": 6351.9,
+        "revenue": 9707.6,
+        "op_profit": 442.5,
+        "net_income": 0.0
+      },
+      "2022": {
+        "cash": 1202.0,
+        "total_assets": 30239.3,
+        "short_debt": 4061.4,
+        "long_debt": 4120.5,
+        "total_liab": 17386.0,
+        "total_equity": 12853.3,
+        "revenue": 38872.9,
+        "op_profit": 2663.2,
+        "net_income": 10.4
+      },
+      "2023": {
+        "total_assets": 33514.4,
+        "cash": 2412.7,
+        "short_debt": 7178.9,
+        "total_liab": 22414.6,
+        "long_debt": 4662.2,
+        "op_profit": -2223.0,
+        "net_income": 0.0,
+        "revenue": 46440.9
+      },
+      "2024": {
+        "total_assets": 27998.3,
+        "cash": 2795.2,
+        "total_liab": 20764.8,
+        "long_debt": 5021.1,
+        "op_profit": -5586.9,
+        "net_income": -3807.3,
+        "revenue": 19074.8
+      },
+      "2025": {
+        "total_assets": 31341.0,
+        "cash": 3828.8,
+        "short_debt": 7810.3,
+        "total_liab": 24572.8,
+        "long_debt": 3788.8,
+        "op_profit": -1568.5,
+        "net_income": 0.0,
+        "revenue": 21549.4
+      }
+    },
+    "missing_years": [
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2016,
+        "revenue_eok": 2497,
+        "op_profit_eok": 139,
+        "net_income_eok": 52,
+        "roe_pct": 5.95,
+        "op_margin_pct": 5.57,
+        "debt_ratio_pct": 131.92
+      },
+      {
+        "year": 2017,
+        "revenue_eok": 4030,
+        "op_profit_eok": 294,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 7.3,
+        "debt_ratio_pct": 115.33
+      },
+      {
+        "year": 2018,
+        "revenue_eok": 5057,
+        "op_profit_eok": 270,
+        "net_income_eok": 199,
+        "roe_pct": 13.92,
+        "op_margin_pct": 5.34,
+        "debt_ratio_pct": 131.47
+      },
+      {
+        "year": 2019,
+        "revenue_eok": 3133,
+        "op_profit_eok": -77,
+        "net_income_eok": -88,
+        "roe_pct": -6.68,
+        "op_margin_pct": -2.46,
+        "debt_ratio_pct": 215.78
+      },
+      {
+        "year": 2020,
+        "revenue_eok": 3561,
+        "op_profit_eok": 15,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 0.42,
+        "debt_ratio_pct": 135.93
+      },
+      {
+        "year": 2021,
+        "revenue_eok": 9708,
+        "op_profit_eok": 442,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 4.55,
+        "debt_ratio_pct": 141.22
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 38873,
+        "op_profit_eok": 2663,
+        "net_income_eok": 10,
+        "roe_pct": 0.08,
+        "op_margin_pct": 6.85,
+        "debt_ratio_pct": 135.27
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 46441,
+        "op_profit_eok": -2223,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": -4.79,
+        "debt_ratio_pct": 0.0
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 19075,
+        "op_profit_eok": -5587,
+        "net_income_eok": -3807,
+        "roe_pct": 0.0,
+        "op_margin_pct": -29.3,
+        "debt_ratio_pct": 0.0
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 21549,
+        "op_profit_eok": -1568,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": -7.28,
+        "debt_ratio_pct": 0.0
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": 26.11,
+      "op_profit_cagr_pct": 0.0,
+      "best_year": 2022,
+      "worst_year": 2024,
+      "avg_roe_pct": 1.33
+    },
+    "valuation": {
+      "grade": "D",
+      "strengths": [
+        "지난 10년간 매출액이 연평균 26.11% 성장하며 외형 성장을 지속했습니다.",
+        "2021년과 2022년에 매출액이 급증하며 사업 규모를 크게 확장했습니다.",
+        "최근 몇 년간 현금 보유액이 증가하여 유동성 측면에서는 일부 완충력을 확보했습니다."
+      ],
+      "risks": [
+        "2023년부터 2025년까지 3년 연속 심각한 영업손실을 기록하며 수익성이 크게 악화되었습니다.",
+        "2023년부터 2025년까지 자본총계가 0으로 나타나 자본잠식 상태에 빠져 재무 건전성이 매우 취약합니다.",
+        "당기순이익이 대부분의 연도에서 0이거나 마이너스를 기록하며 이익 창출 능력이 매우 불안정합니다."
+      ],
+      "one_liner": "매출액 성장은 돋보였으나, 최근 심각한 영업손실과 자본잠식으로 재무 건전성이 크게 악화되어 투자에 매우 유의해야 합니다."
+    }
+  },
+  "dcf": {
+    "text": "퀀트 애널리스트로서 엘앤에프(066970)의 DCF 적정가치를 계산하겠습니다.\n\n**전제 및 가정:**\n\n1.  **매출액 및 영업이익 성장률 부재:** 제시된 데이터에 향후 매출액 및 영업이익 성장률에 대한 가정이 없어, 예측 기간(2025-2029년) 동안 매출액과 영업이익은 2024년 수준으로 **일정하게 유지된다고 가정**합니다. 이는 현실적이지 않을 수 있으나, 주어진 정보 내에서 계산을 수행하기 위한 불가피한 가정입니다.\n2.  **FCF 계산:** FCF = 영업이익 × (1 - 법인세율) + 감가상각 - CAPEX 공식을 따릅니다. 여기서 법인세율은 FCF 공식에 따라 25%로 적용합니다.\n3.  **적정가치 정의:** \"DCF 적정가치\"는 기업가치(Enterprise Value)를 의미하는 것으로 해석하여 계산합니다. (현금 및 부채 정보가 불완전하여 순부채를 통한 자기자본가치 계산은 어렵습니다.)\n4.  **음의 영업이익:** 현재 영업이익이 음수이므로, 예측 기간 동안 FCF 또한 음수가 될 수 있습니다. 이는 DCF 적정가치가 음수로 계산될 수 있음을 의미합니다.\n\n---\n\n### 1. 기본 시나리오 DCF 적정가치 계산\n\n**입력 데이터:**\n*   최근 매출액 (2024년): 21,549 억원\n*   최근 영업이익 (2024년): -1,568 억원\n*   법인세율: 25% (FCF 공식에서 유추)\n*   감가상각률: 매출액의 10%\n*   CAPEX율: 매출액의 5%\n*   WACC (기본): 9%\n*   영구성장률 g (기본): 2%\n*   예측 기간: 5년 (2025년 ~ 2029년)\n\n\n**분석:**\n제공된 데이터와 가정에 따라 계산된 기본 시나리오의 FCF는 매년 -98.55 억원으로 음수입니다. 이는 영업이익이 음수이고, 감가상각과 CAPEX를 고려하더라도 현금 흐름이 마이너스이기 때문입니다. 결과적으로 DCF 적정가치 또한 **-1,316.64 억원**으로 음수가 나왔습니다. 이는 기업이 현재의 재무 상태와 성장 가정 하에서는 가치를 창출하지 못하고 있음을 의미합니다.\n\n---\n\n### 2. WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 출력\n\nWACC와 영구성장률(g) 변화에 따른 DCF 적정가치 민감도 분석을 수행합니다.\n\n\n**분석:**\n민감도 그리드에서도 모든 시나리오에서 DCF 적정가치가 음수로 나타났습니다. 이는 기본 시나리오와 동일하게 예측 기간 동안의 FCF가 음수이기 때문입니다.\n*   WACC가 낮아질수록, 또는 영구성장률(g)이 높아질수록 음의 가치(절대값 기준으로는 더 큰 음수)가 계산됩니다. 이는 미래의 음의 현금 흐름이 더 적게 할인되거나 더 빠르게 성장하여 현재 가치에 더 큰 음의 영향을 미치기 때문입니다.\n\n---\n\n### 3. 요약 출력\n\n**적정가치(기본): -1316.64억원**",
+    "executed_code": "import pandas as pd\n\n# 1. 기본 시나리오 DCF 적정가치 계산\n\n# 입력 데이터\nrevenue_current = 21549  # 억원\noperating_profit_current = -1568  # 억원\ntax_rate = 0.25\ndepreciation_rate = 0.10\ncapex_rate = 0.05\nwacc_base = 0.09\ng_base = 0.02\nforecast_years = 5\n\n# 가정: 매출액과 영업이익은 예측 기간 동안 현재 수준으로 유지\n# FCF 계산 함수 정의\ndef calculate_dcf(wacc, g, revenue, operating_profit, tax_rate, depreciation_rate, capex_rate, forecast_years):\n    if wacc <= g:\n        return float('inf') if wacc < g else float('nan') # WACC <= g 인 경우 처리\n\n    fcf_forecasts = []\n    for year in range(1, forecast_years + 1):\n        # 매출액 및 영업이익은 현재 수준으로 고정 가정\n        revenue_t = revenue\n        operating_profit_t = operating_profit\n\n        depreciation_t = revenue_t * depreciation_rate\n        capex_t = revenue_t * capex_rate\n        \n        # FCF = 영업이익 * (1 - 법인세율) + 감가상각 - CAPEX\n        fcf_t = operating_profit_t * (1 - tax_rate) + depreciation_t - capex_t\n        fcf_forecasts.append(fcf_t)\n\n    # 예측 기간 FCF의 현재가치 합계\n    pv_fcf = sum(fcf / (1 + wacc)**t for t, fcf in enumerate(fcf_forecasts, 1))\n\n    # 터미널 밸류 (Terminal Value) 계산\n    fcf_terminal_year = fcf_forecasts[-1] # 마지막 예측 연도의 FCF\n    terminal_value = fcf_terminal_year * (1 + g) / (wacc - g)\n    \n    # 터미널 밸류의 현재가치\n    pv_terminal_value = terminal_value / (1 + wacc)**forecast_years\n\n    # 기업가치 (Enterprise Value)\n    enterprise_value = pv_fcf + pv_terminal_value\n    return enterprise_value\n\n# 기본 시나리오 계산\nbase_scenario_value = calculate_dcf(\n    wacc_base, g_base, revenue_current, operating_profit_current,\n    tax_rate, depreciation_rate, capex_rate, forecast_years\n)\n\nprint(f\"기본 시나리오 FCF 계산:\")\n# 첫 해 FCF 예시 출력\nrevenue_t_example = revenue_current\noperating_profit_t_example = operating_profit_current\ndepreciation_t_example = revenue_t_example * depreciation_rate\ncapex_t_example = revenue_t_example * capex_rate\nfcf_t_example = operating_profit_t_example * (1 - tax_rate) + depreciation_t_example - capex_t_example\nprint(f\"  매출액: {revenue_t_example:.0f} 억원\")\nprint(f\"  영업이익: {operating_profit_t_example:.0f} 억원\")\nprint(f\"  감가상각 (매출의 10%): {depreciation_t_example:.2f} 억원\")\nprint(f\"  CAPEX (매출의 5%): {capex_t_example:.2f} 억원\")\nprint(f\"  FCF (매년 동일): {fcf_t_example:.2f} 억원\")\nprint(f\"\\n기본 시나리오 DCF 적정가치: {base_scenario_value:.2f} 억원\")\n\n\nimport pandas as pd\n\n# WACC와 g 값 범위 정의\nwacc_values = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_values = [0.01, 0.02, 0.03]\n\n# 민감도 분석 결과를 저장할 DataFrame 초기화\nsensitivity_results = pd.DataFrame(index=[f'g={g*100:.0f}%' for g in g_values],\n                                   columns=[f'WACC={wacc*100:.0f}%' for wacc in wacc_values])\n\n# 각 WACC와 g 조합에 대해 DCF 계산\nfor g in g_values:\n    for wacc in wacc_values:\n        if wacc <= g:\n            sensitivity_results.loc[f'g={g*100:.0f}%', f'WACC={wacc*100:.0f}%'] = \"N/A (WACC<=g)\"\n        else:\n            value = calculate_dcf(\n                wacc, g, revenue_current, operating_profit_current,\n                tax_rate, depreciation_rate, capex_rate, forecast_years\n            )\n            sensitivity_results.loc[f'g={g*100:.0f}%', f'WACC={wacc*100:.0f}%'] = f\"{value:.2f}\"\n\nprint(\"\\nDCF 적정가치 민감도 그리드 (단위: 억원):\")\nprint(sensitivity_results)",
+    "code_output": "기본 시나리오 FCF 계산:\n  매출액: 21549 억원\n  영업이익: -1568 억원\n  감가상각 (매출의 10%): 2154.90 억원\n  CAPEX (매출의 5%): 1077.45 억원\n  FCF (매년 동일): -98.55 억원\n\n기본 시나리오 DCF 적정가치: -1316.64 억원\n\n\nDCF 적정가치 민감도 그리드 (단위: 억원):\n       WACC=7%   WACC=8%   WACC=9%  WACC=10%  WACC=11%\ng=1%  -1586.87  -1361.23  -1191.97  -1060.29   -954.93\ng=2%  -1837.48  -1533.70  -1316.64  -1153.78  -1027.06\ng=3%  -2213.39  -1775.15  -1482.86  -1273.98  -1117.22"
+  },
+  "news": {
+    "text": "## 엘앤에프(066970) 투자 분석 보고서\n\n### 1. 재무 데이터 스토리와 시장 컨센서스의 일치/불일치\n\n제공된 10년 재무제표 분석 결과에 따르면 엘앤에프는 **투자등급 D**로, 매출액 성장은 돋보였으나 최근 심각한 영업손실과 자본잠식으로 재무 건전성이 크게 악화된 상태입니다. 이는 투자에 매우 유의해야 함을 시사합니다.\n\n그러나 최근 2주간의 시장 컨센서스와 뉴스는 이러한 재무 데이터와 상이한 낙관적인 전망을 제시하고 있습니다. 애널리스트 25명 중 17명이 '매수' 의견을 제시하며 전반적인 투자의견은 '매수'로 형성되어 있습니다. 특히, 2025년 4분기에는 시장 컨센서스를 크게 상회하는 흑자 전환(영업이익 825억 원)을 달성했으며, 2026년 1분기에도 흑자 기조가 이어질 것으로 전망됩니다. 이러한 긍정적인 실적 개선은 리튬 재고 자산 평가손실 환입 효과와 테슬라향 하이니켈 양극재 출하량 증가에 기인합니다.\n\n결론적으로, 과거 재무 데이터는 심각한 재무 악화를 보여주지만, 시장 컨센서스는 최근 실적 턴어라운드와 미래 성장 동력에 초점을 맞춰 긍정적인 평가를 내리고 있어 **불일치**하는 양상입니다.\n\n### 2. 재무제표에 드러나지 않는 리스크 또는 호재\n\n**호재:**\n*   **LFP 양극재 사업 진출 및 ESS 시장 확대:** 엘앤에프는 국내 양극재 업체 중 LFP 양극재 개발 일정이 가장 빠르며, 북미 전기차 및 에너지저장장치(ESS) 시장 진출을 목표로 하고 있습니다. 글로벌 ESS 시장 확대는 엘앤에프의 중요한 성장 동력으로 작용할 전망입니다.\n*   **테슬라향 하이니켈 양극재 출하 확대:** 테슬라의 신차 모델 판매 호조에 힘입어 엘앤에프의 고니켈 양극재 출하량이 급증할 것으로 예상되며, 46파이 원통형 배터리용 하이니켈 제품 출하도 시작되었습니다.\n*   **리튬 가격 반등 및 재고평가손실 환입:** 리튬 가격 반등은 재고평가손실 환입으로 이어져 수익성 개선에 긍정적인 영향을 미치고 있습니다.\n\n**리스크:**\n*   **높은 부채비율 및 자본잠식 우려:** 지속적인 적자로 인해 자기자본이 감소하고 부채비율이 260~360%에 달하는 등 재무 건전성 악화가 심각합니다. 이는 추가적인 자본 확충 시 기존 주주 지분 희석 가능성을 내포합니다.\n*   **원자재 가격 변동성:** 리튬 가격 반등이 호재로 작용했지만, 원자재 가격의 변동성은 여전히 수익성에 큰 영향을 미칠 수 있는 리스크입니다.\n*   **특정 고객사 의존도:** 테슬라향 매출 비중이 높은 점은 긍정적이지만, 특정 고객사의 정책 변화나 판매 부진 시 실적에 부정적인 영향을 미칠 수 있습니다.\n\n### 3. 최종 판정\n\n**관망 (Hold/Observe)**\n\n엘앤에프는 과거 심각한 재무 악화를 겪었으나, 최근 4분기 흑자 전환과 1분기 흑자 기조 유지 전망, 그리고 LFP 양극재 및 ESS 시장 진출이라는 강력한 성장 동력을 확보하며 긍정적인 전환점을 맞이하고 있습니다. 시장은 이러한 미래 성장 가능성을 높이 평가하여 주가에 반영하고 있으며, 애널리스트 컨센서스 또한 '매수' 의견이 지배적입니다.\n\n그러나 여전히 높은 부채비율과 자본잠식 우려 등 재무 건전성 측면의 리스크가 상존하며, 최근 주가 급등으로 인해 일부 애널리스트 목표주가 대비 현재 주가가 높은 수준을 보이고 있습니다. 따라서 현재 시점에서는 긍정적인 사업 재편과 실적 턴어라운드의 지속 가능성을 확인하고, 재무 건전성 개선 추이를 면밀히 관찰하며 신중하게 접근하는 **관망** 의견을 제시합니다.",
+    "citations": [
+      {
+        "title": "tistory.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGPrbXnC2UMmjItVRepYT5wsX6IQ15aEpA91tXnjjoQlzoZSHhZk056K78USmYvcdPj35CZqZgjTLCpxx_dt11EFEn_Q4Uh38o8RxrkwTuCgUDeiZaFO9LH"
+      },
+      {
+        "title": "bizwatch.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGl649Lia0k6zc69nSM69sst804dp59JGWXJ1Lw07aatnMCEZm6C-QTMExrN0cAMzIxULhiVkJm5p0EtPUKJ_gcRLfoLPm2mJslMcr9JCm2CMKcLqSLi6bHy7JrapdasJyZov_mfAlp-XtdpEuH3vgwwRc3RK6wjA=="
+      },
+      {
+        "title": "investing.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEJpblumoosq7vob0FSOmYIRug-7_dfl5DJcusSxMywZv0bpJBI-ScS7kYmqS3rUAxhNa7s5JEN94QG74L0021ZXmdu4fwnnp8ewVQZKPEAGdWgUBWW53t4U98cckS0YKxQ4JSWhefNaiGSQoNRKoi4JnJD5_5sHy24ZQ=="
+      },
+      {
+        "title": "investing.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFxEsyugn0eWprOXiHVYs4P3IGyS4TvHcXrM4lUTuh-fyKklAmQw5nH6IftRRfx5BrlPBwgXvrlSOIY0zxQsaSmkjhkF35SnZ61G7DttMl45L3FptjZoLNR8_ZNpVZpLkmIEXLS-8Y="
+      },
+      {
+        "title": "youtube.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGQjxpCKJhZV8t_9MxQLDiDOMqJpH24bYRbA5L7VV1EqdcijoHjeG0LOw6khh7v5cpExspWnxTlAkMD2bytdTqqV1Cfu1G5EjU9eNwxarKsqs3xjwaw1Gc_Gtvf7L74KaD9o80Hkeg="
+      },
+      {
+        "title": "kiwoom.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGs7g3-T1TeYcNK1D8drRYr88bRNHVZdOmU18C5NZlvWaZJgbiXHWdKBIp6YanVX9p1PySonTf8JpXA5nSvsBp37n5X7gkmTk_7sGUITPt0JzeZrQMW4EDw8ZSL"
+      },
+      {
+        "title": "jkn.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEySeVXKH4gpXpV7xXnKKUWcNrmhonRRhr3HauvbQYWUh5c6OD-YzROcz9POVXYNLzeXqMNUvc6O1rRswjm7pydszAFim3wtt6TcNLhFdC5dSDJlGwAGUSwD31jcQU="
+      },
+      {
+        "title": "naver.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEeIc6MyIsCBCz2j3UWrYh1tMFW_PmNhj8BT_CveOVfcKWVh-oyD7jgYy9grawHeNRTFzBVvTJICAyHsQLdrs6BQ9-7pDg-rOvD80S7sIIr1k_RA4rbnBbdYBqbOZjHEkorQhIIzVcB_-_3rmpmBq84FSPD5okZEx5KQjkNLMjY8zjm7aMboseTr0B508k46TwVjBn4C06P04fD0_50kQa6A6pgHuq3WQ=="
+      },
+      {
+        "title": "investing.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFSrVURTfkG7FbQemZZiU0poykwC80ySSraWApLEJ4evrgWb1BkoH1W977FTy7BzonQJFKITLc95rqX5H1yJvqT9z4gZEWxHiUsgJE9JVJZcDG1XB10WMv4oK-fUZ3C9yOyAFK7Edah3O1GmFmw-2TLYMJGD-Y9UB8="
+      }
+    ]
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=00398701",
+    "summary": "공시 페이지 접근 제한"
+  }
+}

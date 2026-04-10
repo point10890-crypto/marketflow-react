@@ -1,0 +1,305 @@
+{
+  "stock_code": "100090",
+  "stock_name": "SK오션플랜트",
+  "generated_at": "2026-04-10T02:50:38.816585+00:00",
+  "financials": {
+    "stock_code": "100090",
+    "corp_code": "00480367",
+    "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2016": {
+        "cash": 57.0,
+        "total_assets": 2382.7,
+        "short_debt": 1073.9,
+        "long_debt": 75.1,
+        "total_liab": 1652.6,
+        "total_equity": 730.0,
+        "revenue": 1730.5,
+        "op_profit": 104.8,
+        "net_income": 31.6
+      },
+      "2017": {
+        "cash": 228.5,
+        "total_assets": 5304.6,
+        "short_debt": 1049.5,
+        "long_debt": 997.6,
+        "total_liab": 2810.6,
+        "total_equity": 2494.1,
+        "revenue": 1230.7,
+        "op_profit": -209.7,
+        "net_income": 962.5
+      },
+      "2018": {
+        "cash": 34.6,
+        "total_assets": 5380.6,
+        "short_debt": 819.1,
+        "long_debt": 1404.0,
+        "total_liab": 3123.7,
+        "total_equity": 2256.9,
+        "revenue": 1439.7,
+        "op_profit": -353.3,
+        "net_income": -601.8
+      },
+      "2019": {
+        "cash": 124.2,
+        "total_assets": 6279.3,
+        "short_debt": 1343.2,
+        "long_debt": 875.4,
+        "total_liab": 4321.5,
+        "total_equity": 1957.8,
+        "revenue": 3845.3,
+        "op_profit": -206.0,
+        "net_income": -371.3
+      },
+      "2020": {
+        "cash": 121.9,
+        "total_assets": 6600.4,
+        "short_debt": 1344.6,
+        "long_debt": 1087.1,
+        "total_liab": 4263.4,
+        "total_equity": 2337.0,
+        "revenue": 4272.4,
+        "op_profit": 290.5,
+        "net_income": 122.5
+      },
+      "2021": {
+        "cash": 964.7,
+        "total_assets": 7393.9,
+        "short_debt": 2022.2,
+        "long_debt": 449.1,
+        "total_liab": 5593.1,
+        "total_equity": 1800.8,
+        "revenue": 5030.6,
+        "op_profit": 264.3,
+        "net_income": -868.1
+      },
+      "2022": {
+        "cash": 862.1,
+        "total_assets": 12200.0,
+        "short_debt": 660.9,
+        "long_debt": 78.4,
+        "total_liab": 6940.5,
+        "total_equity": 5259.6,
+        "revenue": 6918.3,
+        "op_profit": 719.4,
+        "net_income": 280.1
+      },
+      "2023": {
+        "total_assets": 14319.1,
+        "cash": 447.8,
+        "total_equity": 5382.1,
+        "total_liab": 7330.6,
+        "long_debt": 328.7,
+        "op_profit": 756.0,
+        "net_income": 574.8,
+        "revenue": 9258.4
+      },
+      "2024": {
+        "total_assets": 14219.4,
+        "cash": 708.9,
+        "total_equity": 5382.1,
+        "short_debt": 1076.7,
+        "total_liab": 7084.4,
+        "long_debt": 653.0,
+        "op_profit": 418.0,
+        "net_income": 0.0,
+        "revenue": 6626.2
+      },
+      "2025": {
+        "total_assets": 11482.4,
+        "cash": 229.9,
+        "total_equity": 641.0,
+        "short_debt": 1086.8,
+        "total_liab": 3337.0,
+        "long_debt": 986.3,
+        "op_profit": 595.1,
+        "net_income": 0.0,
+        "revenue": 9653.9
+      }
+    },
+    "missing_years": [
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2016,
+        "revenue_eok": 1730,
+        "op_profit_eok": 105,
+        "net_income_eok": 32,
+        "roe_pct": 4.38,
+        "op_margin_pct": 6.07,
+        "debt_ratio_pct": 226.44
+      },
+      {
+        "year": 2017,
+        "revenue_eok": 1231,
+        "op_profit_eok": -210,
+        "net_income_eok": 962,
+        "roe_pct": 38.57,
+        "op_margin_pct": -17.06,
+        "debt_ratio_pct": 112.71
+      },
+      {
+        "year": 2018,
+        "revenue_eok": 1440,
+        "op_profit_eok": -353,
+        "net_income_eok": -602,
+        "roe_pct": -26.67,
+        "op_margin_pct": -24.51,
+        "debt_ratio_pct": 138.41
+      },
+      {
+        "year": 2019,
+        "revenue_eok": 3845,
+        "op_profit_eok": -206,
+        "net_income_eok": -371,
+        "roe_pct": -18.95,
+        "op_margin_pct": -5.36,
+        "debt_ratio_pct": 220.74
+      },
+      {
+        "year": 2020,
+        "revenue_eok": 4272,
+        "op_profit_eok": 290,
+        "net_income_eok": 122,
+        "roe_pct": 5.22,
+        "op_margin_pct": 6.79,
+        "debt_ratio_pct": 182.41
+      },
+      {
+        "year": 2021,
+        "revenue_eok": 5031,
+        "op_profit_eok": 264,
+        "net_income_eok": -868,
+        "roe_pct": -48.19,
+        "op_margin_pct": 5.25,
+        "debt_ratio_pct": 310.55
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 6918,
+        "op_profit_eok": 719,
+        "net_income_eok": 280,
+        "roe_pct": 5.32,
+        "op_margin_pct": 10.39,
+        "debt_ratio_pct": 131.94
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 9258,
+        "op_profit_eok": 756,
+        "net_income_eok": 575,
+        "roe_pct": 10.68,
+        "op_margin_pct": 8.17,
+        "debt_ratio_pct": 136.21
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 6626,
+        "op_profit_eok": 418,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 6.31,
+        "debt_ratio_pct": 131.62
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 9654,
+        "op_profit_eok": 595,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 6.16,
+        "debt_ratio_pct": 520.59
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": 20.0,
+      "op_profit_cagr_pct": 20.1,
+      "best_year": 2023,
+      "worst_year": 2018,
+      "avg_roe_pct": -0.3
+    },
+    "valuation": {
+      "grade": "C",
+      "strengths": [
+        "매출액의 높은 성장률 (10년 CAGR 20.00%).",
+        "해상풍력 등 신재생에너지 산업 성장의 수혜를 받는 사업 구조.",
+        "영업이익이 2020년 이후 흑자 전환 및 개선 추세를 보임."
+      ],
+      "risks": [
+        "과거 및 현재의 불안정한 수익성 (잦은 당기순손실 및 2024-2025년 당기순이익 0원).",
+        "높은 부채비율과 재무 건전성 악화 우려 (특히 2025년 520.59%).",
+        "해상풍력 프로젝트 수주 및 진행 상황에 따른 실적 변동성."
+      ],
+      "one_liner": "높은 매출 성장세를 보이나, 불안정한 수익성과 높은 부채비율로 재무적 리스크 관리가 필요한 해상풍력 전문 기업."
+    }
+  },
+  "dcf": {
+    "text": "퀀트 애널리스트로서 SK오션플랜트(100090)의 DCF 적정가치를 계산하겠습니다.\n\n**가정 사항 요약:**\n*   **기준 연도 (2025년) 재무:** 매출액 9654억원, 영업이익 595억원\n*   **FCF 계산식:** FCF = 영업이익 × (1 - 법인세율) + 감가상각 - CAPEX\n    *   법인세율: 25% (영업이익에 적용)\n    *   감가상각: 매출액의 10%\n    *   CAPEX: 매출액의 5%\n*   **할인율 및 성장률:**\n    *   WACC (가중평균자본비용): 9% (기본 시나리오)\n    *   영구성장률 (g): 2% (기본 시나리오)\n*   **예측 기간:** 5년 명시적 예측 + 영구 가치 (Terminal Value)\n*   **명시적 예측 기간 (2025-2029) 성장률:** 매출액과 영업이익에 대한 명시적인 성장률이 주어지지 않았으므로, 해당 기간 동안 매출액과 영업이익은 2025년 수준으로 **변동 없이 유지된다고 가정**합니다.\n\n---\n\n### 1. 기본 시나리오 DCF 적정가치 계산\n\n먼저, 주어진 가정을 바탕으로 FCF를 계산하고 DCF 적정가치를 산출하는 Python 코드를 작성하고 실행하겠습니다.\n\n\n**기본 시나리오 DCF 적정가치:** 12410.85억원\n\n---\n\n### 2. WACC × g 민감도 그리드 출력\n\n다양한 WACC와 영구성장률(g) 조합에 따른 DCF 적정가치 민감도 분석을 수행합니다.\n\n\n**DCF 적정가치 민감도 분석 (억원):**\n\n|       | WACC=7%   | WACC=8%   | WACC=9%   | WACC=10%  | WACC=11%  |\n| :---- | :-------- | :-------- | :-------- | :-------- | :-------- |\n| **g=1%** | 14958.08 | 12831.17 | 11235.68 | 9994.48  | 9001.30  |\n| **g=2%** | 17320.38 | 14456.90 | 12410.85 | 10875.71 | 9681.22  |\n| **g=3%** | 20863.84 | 16732.92 | 13977.73 | 12008.72 | 10531.12 |\n\n---\n\n### 3. 요약 출력\n\n**적정가치(기본): 12410.85억원**",
+    "executed_code": "import pandas as pd\n\ndef calculate_dcf(revenue_2025, op_profit_2025, wacc, g, forecast_years=5):\n    \"\"\"\n    Calculates the DCF valuation based on the provided assumptions.\n\n    Args:\n        revenue_2025 (float): Revenue for the base year (2025) in KRW 100 million.\n        op_profit_2025 (float): Operating Profit for the base year (2025) in KRW 100 million.\n        wacc (float): Weighted Average Cost of Capital (as a decimal, e.g., 0.09).\n        g (float): Perpetual growth rate (as a decimal, e.g., 0.02).\n        forecast_years (int): Number of explicit forecast years.\n\n    Returns:\n        float: The calculated DCF fair value in KRW 100 million.\n    \"\"\"\n    tax_rate = 0.25\n    depreciation_rate = 0.10 # 10% of Revenue\n    capex_rate = 0.05      # 5% of Revenue\n\n    # Assuming no growth in revenue and operating profit for the explicit forecast period\n    # as no specific growth rates were provided.\n    # All values are in KRW 100 million.\n\n    # Calculate FCF for each forecast year (t=1 to 5)\n    fcf_forecasts = []\n    for year in range(1, forecast_years + 1):\n        # For simplicity, assuming revenue and op_profit remain constant for the forecast period\n        # as no growth rates for these items were provided.\n        current_revenue = revenue_2025\n        current_op_profit = op_profit_2025\n\n        depreciation = current_revenue * depreciation_rate\n        capex = current_revenue * capex_rate\n        fcf = current_op_profit * (1 - tax_rate) + depreciation - capex\n        fcf_forecasts.append(fcf)\n\n    # Calculate Present Value of FCFs\n    pv_fcf_sum = 0\n    for i, fcf in enumerate(fcf_forecasts):\n        pv_fcf_sum += fcf / ((1 + wacc) ** (i + 1))\n\n    # Calculate Terminal Value (TV)\n    # FCF for the year after the forecast period (Year 6)\n    fcf_terminal_year = fcf_forecasts[-1] * (1 + g) # Assuming FCF grows at 'g' after forecast period\n\n    # Terminal Value formula\n    if wacc <= g:\n        return float('inf') # Handle cases where WACC is less than or equal to g\n    terminal_value = fcf_terminal_year / (wacc - g)\n\n    # Discount Terminal Value to Present Value\n    pv_terminal_value = terminal_value / ((1 + wacc) ** forecast_years)\n\n    # Total DCF Value\n    total_dcf_value = pv_fcf_sum + pv_terminal_value\n    return total_dcf_value\n\n# Input data (억원)\nrevenue_2025 = 9654\nop_profit_2025 = 595\n\n# Base Scenario parameters\nbase_wacc = 0.09\nbase_g = 0.02\n\n# Calculate Basic Scenario DCF Fair Value\nbase_dcf_value = calculate_dcf(revenue_2025, op_profit_2025, base_wacc, base_g)\nprint(f\"적정가치(기본): {base_dcf_value:.2f}억원\")\n\n\nimport pandas as pd\n\ndef calculate_dcf(revenue_2025, op_profit_2025, wacc, g, forecast_years=5):\n    \"\"\"\n    Calculates the DCF valuation based on the provided assumptions.\n\n    Args:\n        revenue_2025 (float): Revenue for the base year (2025) in KRW 100 million.\n        op_profit_2025 (float): Operating Profit for the base year (2025) in KRW 100 million.\n        wacc (float): Weighted Average Cost of Capital (as a decimal, e.g., 0.09).\n        g (float): Perpetual growth rate (as a decimal, e.g., 0.02).\n        forecast_years (int): Number of explicit forecast years.\n\n    Returns:\n        float: The calculated DCF fair value in KRW 100 million.\n    \"\"\"\n    tax_rate = 0.25\n    depreciation_rate = 0.10 # 10% of Revenue\n    capex_rate = 0.05      # 5% of Revenue\n\n    # Assuming no growth in revenue and operating profit for the explicit forecast period\n    # as no specific growth rates were provided.\n    # All values are in KRW 100 million.\n\n    # Calculate FCF for each forecast year (t=1 to 5)\n    fcf_forecasts = []\n    for year in range(1, forecast_years + 1):\n        # For simplicity, assuming revenue and op_profit remain constant for the forecast period\n        # as no growth rates for these items were provided.\n        current_revenue = revenue_2025\n        current_op_profit = op_profit_2025\n\n        depreciation = current_revenue * depreciation_rate\n        capex = current_revenue * capex_rate\n        fcf = current_op_profit * (1 - tax_rate) + depreciation - capex\n        fcf_forecasts.append(fcf)\n\n    # Calculate Present Value of FCFs\n    pv_fcf_sum = 0\n    for i, fcf in enumerate(fcf_forecasts):\n        pv_fcf_sum += fcf / ((1 + wacc) ** (i + 1))\n\n    # Calculate Terminal Value (TV)\n    # FCF for the year after the forecast period (Year 6)\n    fcf_terminal_year = fcf_forecasts[-1] * (1 + g) # Assuming FCF grows at 'g' after forecast period\n\n    # Terminal Value formula\n    if wacc <= g:\n        return float('inf') # Handle cases where WACC is less than or equal to g\n    terminal_value = fcf_terminal_year / (wacc - g)\n\n    # Discount Terminal Value to Present Value\n    pv_terminal_value = terminal_value / ((1 + wacc) ** forecast_years)\n\n    # Total DCF Value\n    total_dcf_value = pv_fcf_sum + pv_terminal_value\n    return total_dcf_value\n\n# Input data (억원)\nrevenue_2025 = 9654\nop_profit_2025 = 595\n\n# Sensitivity Analysis parameters\nwacc_values = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_values = [0.01, 0.02, 0.03]\n\nsensitivity_results = pd.DataFrame(index=[f'g={g*100:.0f}%' for g in g_values],\n                                   columns=[f'WACC={wacc*100:.0f}%' for wacc in wacc_values])\n\nfor g_val in g_values:\n    for wacc_val in wacc_values:\n        dcf_val = calculate_dcf(revenue_2025, op_profit_2025, wacc_val, g_val)\n        sensitivity_results.loc[f'g={g_val*100:.0f}%', f'WACC={wacc_val*100:.0f}%'] = f'{dcf_val:.2f}'\n\nprint(\"DCF 적정가치 민감도 분석 (억원):\")\nprint(sensitivity_results)",
+    "code_output": "적정가치(기본): 12410.85억원\n\nDCF 적정가치 민감도 분석 (억원):\n       WACC=7%   WACC=8%   WACC=9%  WACC=10%  WACC=11%\ng=1%  14958.08  12831.17  11235.68   9994.48   9001.30\ng=2%  17320.38  14456.90  12410.85  10875.71   9681.22\ng=3%  20863.84  16732.92  13977.73  12008.72  10531.12"
+  },
+  "news": {
+    "text": "## SK오션플랜트(100090) 투자 의견: 관망 (Hold)\n\n### 1. 재무 데이터가 보여주는 스토리와 현재 시장 컨센서스의 일치/불일치\n\nSK오션플랜트의 10년 재무제표 분석 결과는 '높은 매출 성장세'를 보이나 '불안정한 수익성과 높은 부채비율'로 재무적 리스크 관리가 필요하다는 점을 시사합니다. 현재 시장 컨센서스는 이러한 재무 데이터의 스토리와 일부 일치하면서도 중요한 차이를 보입니다.\n\n*   **성장성 일치:** 해상풍력 시장의 급격한 성장과 SK오션플랜트의 대규모 수주 소식, 그리고 2028년 완공 예정인 제3야드를 통한 압도적인 생산 능력 확보 계획 등은 재무제표의 '높은 매출 성장세'와 일치하며, 미래 성장 잠재력에 대한 시장의 긍정적인 기대를 반영합니다. 특히 '해상풍력 보급 촉진 및 산업 육성에 관한 특별법' 시행 기대는 정부 주도 정책에 힘입어 수주 증가를 가속화할 것으로 예상됩니다.\n*   **수익성/재무 리스크 불일치 (단기적):** 재무제표의 '불안정한 수익성'과 '높은 부채비율'은 여전히 유효한 리스크 요인입니다. 그러나 시장은 해상풍력 부문의 '두 자릿수 마진'이 지속되고 특수선 매출 비중 감소로 전반적인 마진 개선 여지가 높을 것으로 전망하며, 장기적인 수익성 개선에 대한 기대감을 형성하고 있습니다.\n*   **단기 시장 컨센서스 불일치:** 최근 2대 주주 일가의 대규모 지분 매각과 SK에코플랜트의 SK오션플랜트 매각 난항 소식은 주가 급락으로 이어져, 단기적으로는 재무적 리스크와 지배구조 불확실성이 시장 컨센서스에 부정적인 영향을 미치고 있습니다. 이는 장기적인 성장 잠재력에도 불구하고 단기적인 시장의 불안정성을 보여줍니다.\n\n### 2. 재무제표에서 드러나지 않는 리스크 또는 호재\n\n**드러나지 않는 리스크:**\n\n*   **지배구조 불확실성 및 매각 난항:** SK에코플랜트의 SK오션플랜트 매각 지연과 2대 주주 일가의 대규모 지분 매각은 지배구조 변화 및 거래 성사 여부에 대한 불확실성을 증폭시키며 투자심리에 부정적인 영향을 미치고 있습니다.\n*   **하도급법 위반 과징금 소송 패소:** 과거 하도급 계약서 미발급으로 인한 과징금 부과에 대한 소송 패소는 기업의 준법 경영 리스크를 보여주며, 향후 유사한 법적 리스크 발생 가능성을 내포합니다.\n*   **프로젝트 지연 리스크:** 안마도 해상풍력 프로젝트가 군 작전성 이슈로 지연되었던 사례는 해상풍력 사업이 정부 규제 및 외부 요인에 의해 영향을 받을 수 있음을 보여줍니다.\n\n**드러나지 않는 호재:**\n\n*   **해상풍력 특별법 제정 기대:** '해상풍력 보급 촉진 및 산업 육성에 관한 특별법' 시행 기대는 정부 주도의 계획 입지 지정 및 인허가 간소화를 통해 대규모 프로젝트 발주를 촉진하고 SK오션플랜트의 수주 기회를 확대할 것으로 예상됩니다.\n*   **압도적인 생산 능력 확보:** 2028년 경남 고성 제3야드 완공 시 압도적인 생산 능력을 갖추게 되어 글로벌 해상풍력 시장 성장의 핵심 수혜주로 부각될 잠재력이 있습니다.\n*   **해상풍력 부문 마진 개선 기대:** 특수선 매출 비중 감소와 해상풍력 부문의 두 자릿수 마진 유지 전망은 전반적인 수익성 개선에 대한 기대를 높입니다.\n*   **신임 대표이사 선임:** 해양사업 전문가인 강영규 사장의 신임 대표이사 선임은 '토탈 마린 솔루션' 기업으로의 도약을 가속화하고 전문성을 강화할 수 있는 긍정적인 요인입니다.\n\n### 3. 최종 판정: 관망 (Hold)\n\nSK오션플랜트는 해상풍력 시장의 폭발적인 성장과 정부 정책 지원, 그리고 압도적인 생산 능력 확보 계획 등 강력한 장기 성장 동력을 보유하고 있습니다. 이는 재무제표에서 드러난 높은 매출 성장세와 일치하며, 향후 수익성 개선 가능성도 높게 평가됩니다.\n\n그러나 최근 2대 주주 일가의 대규모 지분 매각과 SK에코플랜트의 매각 난항 소식은 단기적인 주가 하락과 투자심리 위축을 야기하고 있습니다. 이러한 지배구조 관련 불확실성은 재무제표에 직접적으로 드러나지 않는 중요한 리스크 요인으로 작용하고 있습니다. 또한, 제공된 재무제표 분석 결과인 '불안정한 수익성'과 '높은 부채비율'은 여전히 재무적 리스크 관리의 필요성을 시사합니다.\n\n현재 시점에서는 해상풍력 본업의 긍정적인 전망에도 불구하고, 지배구조 관련 불확실성이 해소될 때까지는 신중한 접근이 필요하다고 판단됩니다. 매각 관련 노이즈가 해소되고 본업의 가치가 더욱 명확하게 부각될 때까지는 '관망' 포지션을 유지하는 것이 합리적입니다.",
+    "citations": [
+      {
+        "title": "fntoday.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGrVksyPkkA4WtyAz5Mg3K9r3uTTMkeUM7qAP8d6zcCwvB6D-mDzSbnpXpx7XUWrdrXzg2bqcxBgBN_5ZBufFNSKo4WfuIhqrPVCRYUFKObW2VijEo8Ui4pOMUkWP1jzSbgZXTLfKhIfmLCP_M1gWK0OTCPvm1vOw=="
+      },
+      {
+        "title": "edaily.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFwY40RIxb_qOpVMafqivhTc4QNsjWcnBZh5TgUsLN40QEwp-BRqYmj9raN3zvPkipdUoUMi9yl6WUt5PjsVV4Bsw9t1H_70ZB5hR9CMXaOYogxNvMXHfoqkwvkn7DU_f0D4l5biS1gGh_8nvrnClw4nYvENTDrBneYeAx9"
+      },
+      {
+        "title": "sedaily.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGoZuOI5QWc_Xg68jYVELfortjdBBI0MDarNelb-XJJT2UoDItrnCkP_6NsitAuIn400owkwGIyuULUFM_Yttx1bilF8csTkWUG6K9xBJpNHBDPy9AR22il6RACEiRmEAa0"
+      },
+      {
+        "title": "daum.net",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGTHoTkTOF_FPzMV8Qc1qLYP9y1Iw2xvnztncKIos9gzoYkRErhwxjT6otAemebYYD_XV_P_gP8wFEoMCJMqiATZDddue3d7cusS1kDM-OxU1xm49lG1z8xtU-FQ6HHAz0IhNl8FuWXjawupg=="
+      },
+      {
+        "title": "mk.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQH7NsPQ5k8-xsUYTDEzGXmUVUOINuIGdIHpJ2R6iieSdU16e5daSWmqE-p7tBeAYYY2KC7d9eYn4rhUP9lIOHhLqTdiJcKHjpmKJe5a-z8ZLt_hxGnzrUUw_Wp-a5IWrdo3G8U="
+      },
+      {
+        "title": "newsfc.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHcrVUHUfGtTgP-BcIiL6FLivdKr0P0_9H2lkDh-PljvdtalLKMTq6wWc2vsPfR4iHECy_9wMIXGNeU9abs95-vAC6SGXqx4YxNyq2Uso053GucIF7BgNbLrDDAKefz2yM_VC48jaF7o-okXFMjx9a1bvok0B4="
+      },
+      {
+        "title": "ferrotimes.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQE2iUGHLnRG_NAOiS5IYRJquFtDmzrM21ut58_ZMaqtEtiGRTRxfvxAZJH5VQQ-VmUbTzcTb0oVpUFzaZHzEAYaDLS_BLQ6eH652w3y9skusJKERGb5705cRhi3s1DkTFMIIDpsWx_aI7vlLv6KcAwBDFDIPv83Hg=="
+      },
+      {
+        "title": "digitaltoday.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHe6Hs6oJf7GZZvOOH9SZaqGU7gGy5Hlwqa4SHWNJhAwVT6oECADgBNlbLxOxSjewpjFvitFQBPL6TQ7bXD46HZifP54f31486V1Ufs0HrCa4107sucI8IvnMbz_f8o8On4dZfKxoNiDyHNYfRtGcHfLuZm2QUYUpEUvW7x"
+      },
+      {
+        "title": "asiasis.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHCafh0SkQsjzczcm-RtjdgK9Ron_-x-I_mdk0cSiDewsSgfjVLpf-A-vtgKRd9KvJ2vx7ansEqMW2vwXSqVksFc0oxbTVDGyYTm78MrPWlSz19axZvxesQhtsDyufqKR8ZMdHqnCuRpw1Y1V6oyL03JNbU08c="
+      },
+      {
+        "title": "joongangenews.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEzh4TYXUE9koVReQimoaa7YdbzDd4W8hULcUHj8KPU2aZzSCqVuxiCycGqdUYhsCMBqJsbwDpd38Jz8cOc1010f1fIHxEryxHwPWwc3JhkxIs5Fgf0GDXuv3XOPNKCvKXWFnWsEK7EofvHyl8caQy5dE0ITk9wgVnYa6c="
+      }
+    ]
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=00480367",
+    "summary": "공시 페이지 접근 제한"
+  }
+}

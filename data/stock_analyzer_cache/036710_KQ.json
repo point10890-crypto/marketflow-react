@@ -1,35 +1,35 @@
 {
-  "name": "클로봇",
-  "ticker": "466100.KQ",
+  "name": "심텍홀딩스",
+  "ticker": "036710.KQ",
   "result": "데이터 없음",
-  "date": "2026-04-10 08:24:23",
+  "date": "2026-04-10 08:57:43",
   "elapsed": 2.3,
   "consensus_score": null,
   "analyst_count": 0,
   "recommendation_detail": null,
   "recommendation_period": null,
   "price_targets": {
-    "current": 46850.0,
+    "current": 2940.0,
     "high": null,
     "low": null,
     "mean": null,
     "median": null
   },
-  "current_price": 46850.0,
+  "current_price": 2940.0,
   "upside_potential": null,
   "key_stats": {
-    "name": "CLOBOT",
+    "name": "SIMMTECH HOLDINGS",
     "sector": "Technology",
-    "industry": "Software - Infrastructure",
-    "market_cap": 1170881773568,
+    "industry": "Semiconductors",
+    "market_cap": 149394046976,
     "pe_ratio": null,
     "forward_pe": null,
-    "dividend_yield": null,
-    "beta": null,
-    "fifty_two_week_high": 82300.0,
-    "fifty_two_week_low": 15940.0,
-    "revenue": 41406083072,
-    "profit_margin": -0.05193,
+    "dividend_yield": 0.34,
+    "beta": 1.36,
+    "fifty_two_week_high": 4750.0,
+    "fifty_two_week_low": 1178.0,
+    "revenue": 1528084037632,
+    "profit_margin": -0.02475,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
@@ -38,37 +38,37 @@
   "revenue_quarters": [
     {
       "date": "2025-12",
-      "value": 17899747770
+      "value": 437560637890
     },
     {
       "date": "2025-09",
-      "value": 10734313730
+      "value": 398052866260
     },
     {
       "date": "2025-06",
-      "value": 7849410880
+      "value": 368115385560
     },
     {
       "date": "2025-03",
-      "value": 4922609030
+      "value": 324355123000
     }
   ],
   "net_income_quarters": [
     {
       "date": "2025-12",
-      "value": 1067070270
+      "value": -11878046420
     },
     {
       "date": "2025-09",
-      "value": 1173520990
+      "value": -667122710
     },
     {
       "date": "2025-06",
-      "value": -1351247830
+      "value": 2386585980
     },
     {
       "date": "2025-03",
-      "value": -2964128390
+      "value": -27654110700
     }
   ],
   "news": []

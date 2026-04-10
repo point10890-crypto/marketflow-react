@@ -1,0 +1,131 @@
+{
+  "stock_code": "466100",
+  "stock_name": "클로봇",
+  "generated_at": "2026-04-09T23:24:24.353600+00:00",
+  "financials": {
+    "stock_code": "466100",
+    "corp_code": "01784914",
+    "years": [
+      2024,
+      2025
+    ],
+    "data": {
+      "2024": {
+        "total_assets": 695.1,
+        "cash": 93.4,
+        "total_equity": 599.1,
+        "short_debt": 0.0,
+        "total_liab": 95.4,
+        "op_profit": -74.9,
+        "net_income": -67.3,
+        "revenue": 334.0
+      },
+      "2025": {
+        "total_assets": 730.4,
+        "cash": 131.8,
+        "total_equity": 0.9,
+        "total_liab": 126.0,
+        "op_profit": -31.8,
+        "net_income": -21.5,
+        "revenue": 414.1
+      }
+    },
+    "missing_years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2024,
+        "revenue_eok": 334,
+        "op_profit_eok": -75,
+        "net_income_eok": -67,
+        "roe_pct": -11.19,
+        "op_margin_pct": -22.46,
+        "debt_ratio_pct": 15.86
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 414,
+        "op_profit_eok": -32,
+        "net_income_eok": -22,
+        "roe_pct": -2200.0,
+        "op_margin_pct": -7.73,
+        "debt_ratio_pct": 12600.0
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": 23.95,
+      "op_profit_cagr_pct": -57.33,
+      "best_year": 2025,
+      "worst_year": 2024,
+      "avg_roe_pct": -1105.6
+    },
+    "valuation": {
+      "grade": "D",
+      "strengths": [
+        "매출액이 전년 대비 성장했습니다.",
+        "영업손실 폭이 감소하는 추세입니다.",
+        "현금성 자산이 증가했습니다."
+      ],
+      "risks": [
+        "2025년 자본총계가 1억원으로 급감하여 심각한 자본잠식 상태입니다.",
+        "지속적인 영업손실로 인해 수익성이 매우 취약합니다.",
+        "제공된 데이터 기간이 2년으로 짧아 장기적인 재무 추세 분석에 한계가 있습니다."
+      ],
+      "one_liner": "매출액은 성장했으나, 2025년 심각한 자본잠식과 높은 부채비율로 재무 안정성이 극도로 취약하며 지속적인 영업손실이 우려됩니다."
+    }
+  },
+  "dcf": {
+    "text": "퀀트 애널리스트로서 클로봇(466100)의 DCF 적정가치를 계산하겠습니다.\n\n**가정 사항 요약:**\n*   **기준 연도**: 2025년 (제공된 재무 데이터는 2024년 기준)\n*   **FCF 계산**: `영업이익 × (1 - 0.25) + 감가상각(매출의 10%) - CAPEX(매출의 5%)`\n    *   세율: 25% (FCF 공식에서 유추)\n    *   감가상각비: 매출액의 10%\n    *   CAPEX: 매출액의 5%\n*   **WACC (기본)**: 9%\n*   **영구성장률 g (기본)**: 2%\n*   **예측 기간**: 5년 (2025년 ~ 2029년) + 영구 가치 (Terminal Value)\n\n**추가 가정 (제공되지 않아 합리적으로 추정):**\n클로봇은 현재 영업이익이 음수이므로, 향후 수익성 개선을 가정해야 합니다.\n*   **매출액 성장률**:\n    *   2025년: 20%\n    *   2026년: 20%\n    *   2027년: 15%\n    *   2028년: 10%\n    *   2029년: 5%\n*   **영업이익률 개선**: 2024년 현재 영업이익률(-7.73%)에서 2029년까지 5%로 선형적으로 개선된다고 가정합니다.\n\n---\n\n### 1. 기본 시나리오 DCF 적정가치 계산\n\n\n---\n\n### 분석 결과\n\n1.  **기본 시나리오 DCF 적정가치**:\n    *   클로봇의 기본 시나리오 DCF 적정가치는 **784.09억원**으로 계산되었습니다.\n\n2.  **WACC 및 영구성장률(g) 민감도 분석 (억원)**:\n\n|       | WACC=7% | WACC=8% | WACC=9% | WACC=10% | WACC=11% |\n| :---- | :------ | :------ | :------ | :------- | :------- |\n| **g=1%** | 968.83  | 812.86  | 696.44  | 606.37   | 534.72   |\n| **g=2%** | 1145.02 | 934.12  | 784.09  | 672.09   | 585.43   |\n| **g=3%** | 1409.32 | 1103.87 | 900.96  | 756.60   | 648.82   |\n\n민감도 분석 결과, WACC가 낮아지거나 영구성장률(g)이 높아질수록 기업의 적정가치가 상승하는 것을 확인할 수 있습니다. 특히 영구성장률의 변화에 따라 적정가치가 크게 변동하는 것을 볼 수 있습니다.\n\n3.  **요약**:\n    적정가치(기본): 784.09억원",
+    "executed_code": "import pandas as pd\n\n# 초기 데이터 및 가정 (억원)\nrevenue_2024 = 414\nop_profit_2024 = -32\ntax_rate = 0.25 # FCF 공식에서 (1 - 0.25)로 유추\ndepreciation_rate = 0.10 # 매출의 10%\ncapex_rate = 0.05 # 매출의 5%\nwacc_base = 0.09\ng_base = 0.02\nprojection_years = 5\n\n# 연도별 성장률 및 마진 가정\n# 매출액 성장률\nrevenue_growth_rates = {\n    2025: 0.20, # 20%\n    2026: 0.20, # 20%\n    2027: 0.15, # 15%\n    2028: 0.10, # 10%\n    2029: 0.05  # 5%\n}\n\n# 영업이익률 개선 가정\n# 2024년 영업이익률: -32 / 414 = -7.73%\n# 2029년까지 5%로 개선된다고 가정 (선형 보간)\nop_margin_2024 = op_profit_2024 / revenue_2024\ntarget_op_margin_2029 = 0.05\n\nop_margins = {}\nop_margins[2024] = op_margin_2024\nfor i in range(1, projection_years + 1):\n    year = 2024 + i\n    op_margins[year] = op_margin_2024 + (target_op_margin_2029 - op_margin_2024) / projection_years * i\n\n# DCF 계산 함수\ndef calculate_dcf(wacc, g, revenue_2024, op_profit_2024, tax_rate, depreciation_rate, capex_rate,\n                  revenue_growth_rates, op_margins, projection_years):\n    \n    forecast_years = list(range(2025, 2025 + projection_years))\n    \n    revenues = {2024: revenue_2024}\n    op_profits = {2024: op_profit_2024}\n    \n    fcf_list = []\n    discount_factors = []\n    \n    for i, year in enumerate(forecast_years):\n        # 매출액 계산\n        revenues[year] = revenues[year-1] * (1 + revenue_growth_rates[year])\n        \n        # 영업이익 계산 (영업이익률 적용)\n        op_profits[year] = revenues[year] * op_margins[year]\n        \n        # 감가상각비, CAPEX 계산\n        depreciation = revenues[year] * depreciation_rate\n        capex = revenues[year] * capex_rate\n        \n        # FCF 계산\n        # FCF = NOPAT + Depreciation - CAPEX\n        # NOPAT = Operating Profit * (1 - Tax Rate)\n        fcf = op_profits[year] * (1 - tax_rate) + depreciation - capex\n        fcf_list.append(fcf)\n        \n        # 할인 계수\n        discount_factor = 1 / ((1 + wacc) ** (i + 1))\n        discount_factors.append(discount_factor)\n        \n    # Terminal Value 계산\n    # 마지막 예측 연도 (2029) 다음 해 (2030)의 FCF\n    fcf_terminal_year = fcf_list[-1] * (1 + g)\n    \n    # 영구성장률이 WACC보다 크거나 같으면 계산 불가\n    if wacc <= g:\n        return float('inf') # 계산 불가\n    \n    terminal_value = fcf_terminal_year / (wacc - g)\n    \n    # Terminal Value의 현재 가치\n    pv_terminal_value = terminal_value / ((1 + wacc) ** projection_years)\n    \n    # 예측 기간 FCF의 현재 가치 합계\n    pv_fcf_sum = sum([fcf * df for fcf, df in zip(fcf_list, discount_factors)])\n    \n    # 적정 가치\n    intrinsic_value = pv_fcf_sum + pv_terminal_value\n    \n    return intrinsic_value\n\n# 기본 시나리오 계산\nbase_intrinsic_value = calculate_dcf(wacc_base, g_base, revenue_2024, op_profit_2024, tax_rate,\n                                     depreciation_rate, capex_rate, revenue_growth_rates,\n                                     op_margins, projection_years)\n\nprint(f\"적정가치(기본): {base_intrinsic_value:.2f}억원\")\n\n# 2. WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 출력\n\nwacc_scenarios = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_scenarios = [0.01, 0.02, 0.03]\n\nsensitivity_results = pd.DataFrame(index=[f'g={g*100:.0f}%' for g in g_scenarios],\n                                   columns=[f'WACC={wacc*100:.0f}%' for wacc in wacc_scenarios])\n\nfor wacc in wacc_scenarios:\n    for g in g_scenarios:\n        value = calculate_dcf(wacc, g, revenue_2024, op_profit_2024, tax_rate,\n                              depreciation_rate, capex_rate, revenue_growth_rates,\n                              op_margins, projection_years)\n        sensitivity_results.loc[f'g={g*100:.0f}%', f'WACC={wacc*100:.0f}%'] = f'{value:.2f}' if value != float('inf') else 'N/A'\n\nprint(\"\\n--- DCF 적정가치 민감도 분석 (억원) ---\")\nprint(sensitivity_results)\n\n# 3. 마지막에 '적정가치(기본): {value}억원' 형태로 요약 출력\nprint(f\"\\n적정가치(기본): {base_intrinsic_value:.2f}억원\")",
+    "code_output": "적정가치(기본): 784.09억원\n\n--- DCF 적정가치 민감도 분석 (억원) ---\n      WACC=7%  WACC=8% WACC=9% WACC=10% WACC=11%\ng=1%   968.83   812.86  696.44   606.37   534.72\ng=2%  1145.02   934.12  784.09   672.09   585.43\ng=3%  1409.32  1103.87  900.96   756.60   648.82\n\n적정가치(기본): 784.09억원"
+  },
+  "news": {
+    "text": "## 클로봇(466100) 분석 보고서\n\n**투자등급:** D (제공된 정보 기준)\n\n**요약:** 매출액은 성장했으나, 2025년 심각한 자본잠식과 높은 부채비율로 재무 안정성이 극도로 취약하며 지속적인 영업손실이 우려됩니다.\n\n---\n\n### 1. 재무 데이터 스토리와 시장 컨센서스의 일치/불일치\n\n**재무 데이터 스토리:**\n제공된 10년 재무제표 분석 결과는 클로봇의 재무 안정성이 극도로 취약하며 지속적인 영업손실이 우려된다는 매우 부정적인 상황을 보여줍니다. 2024년 회계연도 실적은 여전히 주당 313원의 손실을 기록했지만, 매출액이 38% 증가하고 순손실이 70% 축소되는 등 개선의 조짐을 보였습니다.\n\n**시장 컨센서스:**\n시장은 현재 클로봇의 재무적 어려움을 인지하고 있습니다. 높은 PBR(17~21배), 음수 PER, 음수 ROE 등 재무 지표는 여전히 좋지 않으며, 밸류에이션이 \"매우 고평가\" 또는 \"고평가\" 구간이라는 분석이 있습니다. 최근 대규모 유상증자 공시로 인한 주가 하락 압력도 시장의 우려를 반영합니다.\n\n그러나 동시에 시장은 클로봇의 미래 성장 잠재력에 기대를 걸고 있습니다. 리서치알음은 클로봇이 로봇 소프트웨어 기술력과 로봇 서비스 자회사 ROAS의 매출 호조, 자체 브랜드 배송 로봇 론칭 등을 통해 2025년(또는 2026년) 흑자 전환할 것으로 전망했습니다. 기업설명회(IR) 개최 소식에 주가가 상승하며 투자 심리가 일부 회복된 점도 긍정적인 시그널입니다.\n\n**일치/불일치:**\n현재의 취약한 재무 상태는 시장의 높은 밸류에이션 평가와 유상증자 우려와 일부 일치합니다. 하지만 매출 성장과 손실 폭 축소는 미래 흑자 전환에 대한 시장의 기대감과 연결되어, 현재의 재무적 어려움에도 불구하고 성장성에 대한 기대가 공존하는 불일치 양상을 보입니다.\n\n### 2. 재무제표에서 드러나지 않는 리스크 또는 호재\n\n**리스크:**\n*   **대규모 유상증자:** 최근 대규모 유상증자 공시는 기존 주주들에게 주식 가치 희석이라는 리스크로 작용합니다. 이는 회사의 자금 조달 필요성을 보여주는 동시에, 단기적으로 주가에 부정적인 영향을 미칠 수 있습니다.\n*   **높은 밸류에이션:** 현재 PBR이 매우 높고 PER이 음수라는 점은 재무 상태 대비 주가가 과도하게 높을 수 있다는 점을 시사하며, 이는 향후 주가 조정의 리스크로 작용할 수 있습니다.\n*   **지속적인 영업손실:** 2024년 손실 폭이 줄었음에도 불구하고 여전히 영업손실을 기록하고 있다는 점은 현금 흐름의 불안정성을 나타내며, 재무 건전성 확보까지는 시간이 더 필요함을 의미합니다.\n\n**호재:**\n*   **로봇 산업 성장 잠재력:** 클로봇은 로봇 소프트웨어 솔루션 및 로봇 서비스를 제공하며, 특히 실내 자율주행 영역에서 독보적인 기술력과 레퍼런스를 보유하고 있습니다. 글로벌 로봇 시장의 성장은 클로봇의 장기적인 성장 동력이 될 수 있습니다.\n*   **흑자 전환 기대감:** 리서치알음은 클로봇이 핵심 사업 집중과 수익성 개선을 통해 2025년(또는 2026년) 흑자 전환할 것으로 전망하고 있습니다. 로봇 서비스 자회사 ROAS의 매출 호조와 자체 브랜드 배송 로봇 론칭도 긍정적인 요소입니다.\n*   **IR 활동을 통한 소통:** 기업설명회 개최는 투자자들에게 회사의 비전과 유상증자 목적 등을 설명하며 불확실성을 해소하고 긍정적인 투자 심리를 유도하려는 노력으로 평가할 수 있습니다.\n\n### 3. 최종 판정\n\n클로봇은 심각한 재무적 취약성을 가지고 있으나, 로봇 산업의 성장 잠재력과 흑자 전환에 대한 기대감이 동시에 존재합니다. 최근 유상증자로 인한 주주 가치 희석 우려와 여전히 높은 밸류에이션은 투자에 있어 상당한 리스크 요인입니다. 현재 시점에서는 재무 건전성 개선의 가시적인 성과와 흑자 전환의 구체적인 증거가 더 필요하다고 판단됩니다.\n\n**최종 판정: 관망**",
+    "citations": [
+      {
+        "title": "simplywall.st",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGWsgUNmtXKAQS1n5B_i_w0Teahyjc736qCGug5hSiLzwos85D78KqckkrhztZtm6-rDclcAL2ZAfPsYjkzxXnabvsutKcWAi7dg3GPwk2xEkotaZGGhPmbGFOwYW95rPlrBLKRDidoDpzbZhsOakYl9qX35CT-frSSqpNStMALkpJZ1sABIOFzrxCV4nesGLG2nKAOgAsiDQ=="
+      },
+      {
+        "title": "valueline.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEted0GMWJDz1SCMwyYEZ-a6rA-6XGYgBeYF2jNN-akJJji-R5AVS9JDmEq9yUwOnAEWoWbKQBjGVyD03-OySE0n42muNs2avLyfQ21_1UPe5oAVRFY49AZZQxje4G5b-l1b8yN7XsM6A=="
+      },
+      {
+        "title": "valueline.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQE_gd_eoh-30uyVCSaSsMxpIPPm6bev7uJkLOhPOTlsk-wipcaN6ZjcEeeK90kab7uXRWWaOjSf5JGhkd_2N8rc0zQVKFgpkqXjA5R8tqGpNzn7RnCsMVE6oevg6ig7twX1dJ6cCuWFrCSJp4PjJ3yeyQ=="
+      },
+      {
+        "title": "valueline.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGtNjWMkyWutbjXQWvKjanWyO3PNUVnGpvAETnnqJJ6e11BP8LE07fd85eW-NmHfJCsAVRHETY73SQ8JeM0b4i5Po8QbbkdJs4A_xiMalubnMRfkuK7X_CwAYkY3g5w0qCliCHZmXY0UMQctlI="
+      },
+      {
+        "title": "jkn.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFBiT3jmfBv9Yt1yfZ0Eh8jF_IiYP3et3IZjyCfyutXWHgdeWVKG1686pYoemN6isnakew1OGMqtzu1gRn4LsUq8wSDfjvPErgM8Uqrbeu3It8lYse0ws89sh8hJw=="
+      },
+      {
+        "title": "etoday.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFX7_kzX8JkZk5xFsaf0TqqdF8gvvSYzdiPb4NCx0uixY80lcw-sa4Ld9TZY7oRcaOg1sd3cTlJd1yzkt7w3OX04JumbqpSRo72wE2ejhYeN1_ekTpGjYV5LXoa5p5KyTVDbvCz"
+      },
+      {
+        "title": "tistory.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHje98zsPPy4GLNJitBhYYD90mc6iizpzWNuVXQhnI4Y7PIudOI5mrNCua7Ci8NZaWVKMnBmGbQThTqSNB4MIbC5t4dVeov0lA-vvMgUXkTLzjgx8WWIz47qqwxBHJcEneFFoaBxu_bn9Kp3KGfJjDTQwza4UxAGlTtEf-IX1dhf-1MWLDFvjIdmExFvk2elt8B6KdNN-nKLZL6c-0afy25x_dwa5BPtL_GDWN26eOSZTBHxXxZ1l9hdb0RRcx1NX0-lHZQmeBOiWsPzOMjifn1aIIFLGX20YumcVmr36Kc_jmU1KN5jafApIqGb4pgfjAYD-Zu40jHxlkCNnjxqY_nkUJtZ5scPUOllq7Eaw3rNccd_eH9ePRDoR60PesDT-l2S6P2X9M_aieObNJfGSZQ8fhnk8fi-KW-kmO410bX8z9g_EOmeKSZucK8BpkpdYjebxVQtLHIwCG9t-EAWu6N9A=="
+      }
+    ]
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=01784914",
+    "summary": "공시 페이지 접근 제한"
+  }
+}

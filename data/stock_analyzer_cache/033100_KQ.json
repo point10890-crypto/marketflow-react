@@ -1,35 +1,35 @@
 {
-  "name": "클로봇",
-  "ticker": "466100.KQ",
+  "name": "제룡전기",
+  "ticker": "033100.KQ",
   "result": "데이터 없음",
-  "date": "2026-04-10 08:24:23",
-  "elapsed": 2.3,
+  "date": "2026-04-10 08:40:52",
+  "elapsed": 1.7,
   "consensus_score": null,
   "analyst_count": 0,
   "recommendation_detail": null,
   "recommendation_period": null,
   "price_targets": {
-    "current": 46850.0,
+    "current": 47350.0,
     "high": null,
     "low": null,
     "mean": null,
     "median": null
   },
-  "current_price": 46850.0,
+  "current_price": 47350.0,
   "upside_potential": null,
   "key_stats": {
-    "name": "CLOBOT",
-    "sector": "Technology",
-    "industry": "Software - Infrastructure",
-    "market_cap": 1170881773568,
+    "name": "CheryongElec",
+    "sector": "Industrials",
+    "industry": "Specialty Industrial Machinery",
+    "market_cap": 760555044864,
     "pe_ratio": null,
     "forward_pe": null,
-    "dividend_yield": null,
-    "beta": null,
-    "fifty_two_week_high": 82300.0,
-    "fifty_two_week_low": 15940.0,
-    "revenue": 41406083072,
-    "profit_margin": -0.05193,
+    "dividend_yield": 2.32,
+    "beta": 1.059,
+    "fifty_two_week_high": 70100.0,
+    "fifty_two_week_low": 25729.0,
+    "revenue": 224017006592,
+    "profit_margin": 0.26209,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
@@ -38,37 +38,37 @@
   "revenue_quarters": [
     {
       "date": "2025-12",
-      "value": 17899747770
+      "value": 43706522070
     },
     {
       "date": "2025-09",
-      "value": 10734313730
+      "value": 69750099560
     },
     {
       "date": "2025-06",
-      "value": 7849410880
+      "value": 60357879480
     },
     {
       "date": "2025-03",
-      "value": 4922609030
+      "value": 50202511820
     }
   ],
   "net_income_quarters": [
     {
       "date": "2025-12",
-      "value": 1067070270
+      "value": 8880972600
     },
     {
       "date": "2025-09",
-      "value": 1173520990
+      "value": 19979195160
     },
     {
       "date": "2025-06",
-      "value": -1351247830
+      "value": 15121031890
     },
     {
       "date": "2025-03",
-      "value": -2964128390
+      "value": 14731239280
     }
   ],
   "news": []

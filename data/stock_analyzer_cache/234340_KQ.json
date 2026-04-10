@@ -2,8 +2,8 @@
   "name": "헥토파이낸셜",
   "ticker": "234340.KQ",
   "result": "적극 매수",
-  "date": "2026-04-09 21:59:33",
-  "elapsed": 1.7,
+  "date": "2026-04-10 10:39:53",
+  "elapsed": 2.6,
   "consensus_score": 4.33,
   "analyst_count": 3,
   "recommendation_detail": {
@@ -30,7 +30,7 @@
     "market_cap": 350878203904,
     "pe_ratio": null,
     "forward_pe": 18.133022,
-    "dividend_yield": 0.86,
+    "dividend_yield": 0.85,
     "beta": null,
     "fifty_two_week_high": 45000.0,
     "fifty_two_week_low": 8686.667,
@@ -40,7 +40,7 @@
   },
   "finnhub_supplement": null,
   "source": "yfinance",
-  "ai_analysis": "헥토파이낸셜(234340.KQ)에 대해 3명의 애널리스트가 제시한 컨센서스는 '적극 매수' 의견입니다 (5점 만점 중 4.33점). 평균 목표 주가는 30,889원으로, 현재 주가 대비 19.3% 상승 여력이 있습니다. 투자 판단은 제시된 분석 데이터를 참고하여 신중하게 결정하시기 바랍니다.",
+  "ai_analysis": "헥토파이낸셜(234340.KQ)에 대해 3명의 애널리스트가 제시한 컨센서스는 '적극 매수'입니다 (4.33/5.0). 평균 목표 주가는 30,889원으로 현재 주가 25,900원 대비 19.3% 상승 여력이 있습니다. 이는 애널리스트들이 헥토파이낸셜의 추가적인 성장 가능성을 높게 평가하고 있음을 시사합니다.",
   "revenue_quarters": [
     {
       "date": "2025-12",

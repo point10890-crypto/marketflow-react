@@ -1,0 +1,286 @@
+{
+  "stock_code": "068270",
+  "stock_name": "셀트리온",
+  "generated_at": "2026-04-09T23:30:52.228474+00:00",
+  "financials": {
+    "stock_code": "068270",
+    "corp_code": "00413046",
+    "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2016": {
+        "cash": 2684.1,
+        "total_assets": 28838.5,
+        "total_liab": 8229.7,
+        "total_equity": 20608.7,
+        "revenue": 6705.8,
+        "op_profit": 2212.4,
+        "net_income": 1589.6
+      },
+      "2017": {
+        "cash": 4192.1,
+        "total_assets": 32941.0,
+        "total_liab": 8836.0,
+        "total_equity": 24105.0,
+        "revenue": 9490.8,
+        "op_profit": 4995.9,
+        "net_income": 95.0
+      },
+      "2018": {
+        "cash": 4105.5,
+        "total_assets": 35031.1,
+        "total_liab": 9078.5,
+        "total_equity": 25952.6,
+        "revenue": 9820.7,
+        "op_profit": 3231.3,
+        "net_income": 2457.6
+      },
+      "2019": {
+        "cash": 5461.4,
+        "total_assets": 38596.5,
+        "total_liab": 9867.3,
+        "total_equity": 28729.1,
+        "revenue": 11284.6,
+        "op_profit": 3815.3,
+        "net_income": 3014.4
+      },
+      "2020": {
+        "cash": 6842.9,
+        "total_assets": 50201.2,
+        "total_liab": 15925.4,
+        "total_equity": 34275.8,
+        "revenue": 18491.2,
+        "op_profit": 7185.8,
+        "net_income": 79.4
+      },
+      "2021": {
+        "cash": 11883.3,
+        "total_assets": 56741.2,
+        "total_liab": 16237.5,
+        "total_equity": 40503.7,
+        "revenue": 19116.0,
+        "op_profit": 7568.6,
+        "net_income": 5794.6
+      },
+      "2022": {
+        "cash": 5511.9,
+        "total_assets": 58916.5,
+        "total_liab": 16174.5,
+        "total_equity": 42742.0,
+        "revenue": 22839.7,
+        "op_profit": 6472.0,
+        "net_income": 5425.7
+      },
+      "2023": {
+        "total_assets": 199175.3,
+        "cash": 5646.1,
+        "total_equity": 147719.5,
+        "total_liab": 27917.4,
+        "op_profit": 6514.8,
+        "net_income": 0.0,
+        "revenue": 21764.3
+      },
+      "2024": {
+        "total_assets": 210552.2,
+        "cash": 9964.3,
+        "total_equity": 148030.5,
+        "total_liab": 34751.6,
+        "op_profit": 4920.2,
+        "net_income": 0.0,
+        "revenue": 35573.0
+      },
+      "2025": {
+        "total_assets": 223349.0,
+        "cash": 11192.1,
+        "total_equity": 141900.5,
+        "total_liab": 49823.7,
+        "op_profit": 11684.7,
+        "net_income": 0.0,
+        "revenue": 41625.0
+      }
+    },
+    "missing_years": [
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2016,
+        "revenue_eok": 6706,
+        "op_profit_eok": 2212,
+        "net_income_eok": 1590,
+        "roe_pct": 7.71,
+        "op_margin_pct": 33.0,
+        "debt_ratio_pct": 39.94
+      },
+      {
+        "year": 2017,
+        "revenue_eok": 9491,
+        "op_profit_eok": 4996,
+        "net_income_eok": 95,
+        "roe_pct": 0.39,
+        "op_margin_pct": 52.64,
+        "debt_ratio_pct": 36.66
+      },
+      {
+        "year": 2018,
+        "revenue_eok": 9821,
+        "op_profit_eok": 3231,
+        "net_income_eok": 2458,
+        "roe_pct": 9.47,
+        "op_margin_pct": 32.9,
+        "debt_ratio_pct": 34.98
+      },
+      {
+        "year": 2019,
+        "revenue_eok": 11285,
+        "op_profit_eok": 3815,
+        "net_income_eok": 3014,
+        "roe_pct": 10.49,
+        "op_margin_pct": 33.81,
+        "debt_ratio_pct": 34.35
+      },
+      {
+        "year": 2020,
+        "revenue_eok": 18491,
+        "op_profit_eok": 7186,
+        "net_income_eok": 79,
+        "roe_pct": 0.23,
+        "op_margin_pct": 38.86,
+        "debt_ratio_pct": 46.46
+      },
+      {
+        "year": 2021,
+        "revenue_eok": 19116,
+        "op_profit_eok": 7569,
+        "net_income_eok": 5795,
+        "roe_pct": 14.31,
+        "op_margin_pct": 39.6,
+        "debt_ratio_pct": 40.09
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 22840,
+        "op_profit_eok": 6472,
+        "net_income_eok": 5426,
+        "roe_pct": 12.69,
+        "op_margin_pct": 28.34,
+        "debt_ratio_pct": 37.84
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 21764,
+        "op_profit_eok": 6515,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 29.93,
+        "debt_ratio_pct": 18.9
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 35573,
+        "op_profit_eok": 4920,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 13.83,
+        "debt_ratio_pct": 23.48
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 41625,
+        "op_profit_eok": 11685,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 28.07,
+        "debt_ratio_pct": 35.11
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": 22.09,
+      "op_profit_cagr_pct": 19.01,
+      "best_year": 2017,
+      "worst_year": 2024,
+      "avg_roe_pct": 5.53
+    },
+    "valuation": {
+      "grade": "C",
+      "strengths": [
+        "매출액이 10년간 연평균 22.09% 성장하며 높은 성장세를 유지하고 있습니다.",
+        "영업이익 또한 10년간 연평균 19.01% 성장하여 견조한 이익 성장세를 보였습니다.",
+        "부채비율이 대체로 40% 내외로 안정적으로 유지되어 재무 건전성이 양호합니다."
+      ],
+      "risks": [
+        "당기순이익이 2023년부터 0으로 기록되어 수익성 악화 또는 불확실성이 매우 큽니다.",
+        "영업이익률이 2017년 52.64%에서 2024년 13.83%까지 크게 하락하는 등 수익성 변동성이 높습니다.",
+        "평균 ROE가 5.53%로 낮은 수준이며, 최근 3년간 0%를 기록하여 주주가치 창출 능력이 미흡합니다."
+      ],
+      "one_liner": "높은 매출 성장세와 양호한 재무 건전성을 보이나, 당기순이익 부재와 영업이익률 변동성으로 수익성 개선이 시급한 기업입니다."
+    }
+  },
+  "dcf": {
+    "text": "DCF 적정가치를 계산하기 위해 5년 예측 기간 동안의 매출액 성장률 가정이 필요합니다. 이 정보가 제공되지 않아 계산을 진행할 수 없습니다. 매출액 성장률에 대한 가정을 알려주시겠습니까?",
+    "executed_code": "",
+    "code_output": ""
+  },
+  "news": {
+    "text": "## 셀트리온(068270) 투자 분석 보고서\n\n**투자 등급: 매수**\n\n### 1. 재무 데이터 스토리와 시장 컨센서스 일치/불일치\n\n제시된 10년 재무제표 분석 결과(높은 매출 성장세와 양호한 재무 건전성, 당기순이익 부재 및 영업이익률 변동성으로 수익성 개선 시급)와 최근 시장 컨센서스는 다음과 같이 평가됩니다.\n\n*   **매출 성장 및 재무 건전성:** 시장은 셀트리온의 신제품 중심 고성장 가시성을 높게 평가하며, 1분기 매출액이 전년 동기 대비 33.2% 증가할 것으로 추정하는 등 매출 성장세는 긍정적으로 일치합니다. 합병 이후 부채비율 및 차입금 의존도도 안정적인 흐름을 유지하고 있어 재무 건전성 또한 시장에서 긍정적으로 인식하고 있습니다.\n*   **수익성 (당기순이익 부재 및 영업이익률 변동성):** 1분기 영업이익은 미국 공장 재정비 비용 등 일회성 요인으로 시장 기대치를 소폭 하회할 것으로 예상됩니다. 이는 재무제표에서 드러난 수익성 개선 필요성과 단기적으로 일치하는 부분입니다. 그러나 증권가에서는 2분기부터 실적 정상화 및 원가율 개선을 기대하며 중장기적인 수익성 향상에 대한 긍정적인 전망을 내놓고 있어, 단기적 불일치에도 불구하고 중장기적으로는 개선될 것으로 보고 있습니다.\n\n**결론적으로, 셀트리온의 매출 성장 및 재무 건전성은 시장 컨센서스와 일치하며 긍정적입니다. 수익성 측면에서는 단기적인 우려가 있으나, 시장은 이를 일회성으로 판단하고 중장기적인 개선을 기대하고 있습니다.**\n\n### 2. 재무제표에서 드러나지 않는 리스크 또는 호재\n\n**호재:**\n\n*   **ADC 신약 파이프라인 가속화:** 항체-약물접합체(ADC) 신약 후보물질 'CT-P71'이 미국 FDA 패스트트랙 지정을 받으며 신약 개발 속도가 빨라지고 있습니다. 이는 미래 성장 동력으로 재무제표에 아직 반영되지 않은 큰 호재입니다.\n*   **미국 시장 점유율 확대 및 직판 체제 강화:** 혈액암 치료제 '트룩시마'가 국내 바이오시밀러 최초로 미국 처방 점유율 1위를 달성했으며, '짐펜트라'의 처방량도 증가하고 있습니다. 또한, 미국 현지 생산 체계 구축으로 관세 리스크가 해소되고 가격 경쟁력이 강화될 것으로 기대됩니다.\n*   **미국 CMS 정책 변화 수혜:** 미국 메디케어 및 메디케이드 서비스(CMS) 정책 개정안이 바이오시밀러 사용을 장려하여 셀트리온의 미국 시장 내 입지를 더욱 강화할 잠재적 호재로 작용할 것입니다.\n*   **합병 시너지 본격화 및 신제품 출시:** 셀트리온과 셀트리온헬스케어의 합병 시너지가 원가율 및 영업이익률 개선에 긍정적인 영향을 미치고 있으며, 옴리클로, 아이덴젤트 등 신규 바이오시밀러 출시 및 비만 치료제 등 신약 파이프라인 확장이 예정되어 있습니다.\n\n**리스크:**\n\n*   **1분기 실적 일시적 부진:** 미국 공장 재정비 비용 등 일회성 요인으로 1분기 영업이익이 시장 기대치를 하회할 수 있다는 점은 단기적인 리스크 요인입니다.\n\n### 3. 최종 판정\n\n셀트리온은 단기적인 1분기 실적 우려에도 불구하고, 핵심 바이오시밀러 제품의 미국 시장 점유율 확대, ADC 신약 파이프라인 가속화, 미국 현지 생산 체계 구축을 통한 관세 리스크 해소 및 직판 경쟁력 강화, 그리고 미국 CMS 정책 변화에 따른 바이오시밀러 시장 확대 등 중장기적인 성장 동력이 매우 강력합니다. 재무제표상의 수익성 개선 필요성은 시장도 인지하고 있으나, 합병 시너지와 신제품 효과로 점진적인 개선이 기대되고 있습니다. 다수의 증권사에서 '매수' 의견과 상향된 목표주가를 제시하고 있는 점도 긍정적입니다.\n\n**최종 판정: 매수**",
+    "citations": [
+      {
+        "title": "einfomax.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEINhnXEVZ49gGVLk2w7dLZ0hmeyYx2xByd_I1Y0-3sfwbcjCljJI5gW3M-76GJ6yQqkNwJXii7BcavDZOvx4XgSLke6Mjgx7vdTC0gixS23UtokxxtqLyaGk6PXeIpQalFws8kKmSjE-izRHJAJ7V8x7K9Its99E4b_A=="
+      },
+      {
+        "title": "edaily.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQH3GMEhYf0b2KUNMXCCADFJ5D_fDu_RjsyktWhr6UizfZXfhACEVzaKD1Xu8uAgu4zsULGeuxb29g8lEtz5KP83pW392egYfyrqoToip8uiDBfjmd33mXQ0oVhvBNOifVcLH6GC7och6Cma-lAf2Valuaod2Ccpq5nlzmR0"
+      },
+      {
+        "title": "einfomax.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGz9Y8yt398Ozxr6_14SIg-Mp0syVyiAFdMCk4sqCn5LvJeYbixP76ucDGdD2_trTOk-wwp2jpt1fv1mmnTIapTJtShnfhS1gG-dCTPOxcqM8hOixb5zCyqKlaXCrJ5Egt4zF6otjHNu1KwFz3K0OyB_Sa6oDtuDxM3qg=="
+      },
+      {
+        "title": "newstnt.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQF5hoNww5gj7Pe8eHdyvjxlCdz8ZAmrCPtuvxEyJZb4tbz3hW_SPygtiZPFQ0rqrb2WvXH1UO80_U113OZOKxvUJtJV1ALcEFRhVBcjztVnrp6_yFxqoc5VqFgmf3i7SBEPeP86ZFjv1oUf7cXbyVr1acY1Cg=="
+      },
+      {
+        "title": "pstatic.net",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGMRp-JyvbSWgLj2Z2gOXqTeiVXDIY44OeontTSlfden2l3B0z3rEynQLrhVTxrHV8bYcexu9_kwe00yJ0EQEIIqNcMjYb-OBfplQLODZMpz84pwpIuA6MkqnHEIJWYNRm3BsQsB6RMiCBzTXLuUyaZ4kYZB7jJNXxn_pNmhxbZLaRw1neGBPIUEXiRlw=="
+      },
+      {
+        "title": "daum.net",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEr4_c_jlaRV-5FKy1Y_5aVD3NeigLPGVBnlkxNPioCFsu9e28eHX9Zdib3N-_ksy_X4yvTtJkBLUIvcMbfq_R4XPhNKdAIIXDvxrlR8-KPrIS9cXgGmyme9pj5J0cYKF5C"
+      },
+      {
+        "title": "sedaily.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFyRcCMAg9Jx2_Pjo8UuWJMkmyPbJ5FHcvFp1Mmvo9qsKQ0B11qke87WR4eSWjmN8IQJImtI5yb8ofJh--si0IgMkFnGwhVQFYc9Cc2tVyvky1Rw3axyx6vmeYT920zZwWQgbI="
+      },
+      {
+        "title": "news1.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGywvRpazNi03mA_q5FBwFK_PXbfgQYsHoLa08Cygf9ybJ5pTQ0hT96HzRlBJQINhesLfqOemyjWMd4tzxWCJlgK6aaJbpp2TnLgwQWO-2dnApiYQxwxBwVkH34uEdtI6CjlZeioXgyuIhcx992RQ=="
+      },
+      {
+        "title": "news1.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEZtfo2gr3pLexdtSqVHjxasNr06AUjMSbYUpmposytAW-CeCpc3r7kcys8B7n4WiryzuY6uw_5aKwm2YphWmXcM2hT-0TX7kiTqWmXwu-4ggouKMb4AEnI9M9AXM5r6PMVfKT3AzRstTafFH5n6Q=="
+      },
+      {
+        "title": "newsprime.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQG1FTO5F-0CzS55zjdjisnpwUsSLHAeCP6stttAbfaYpYYDQJCgVAHkW8O1wmUYdgG7fUo-ELyC4V1NQBLMpnHWvC_x25m33QTDHP_AfppQlOfk-c01FiiAbtts5XpoQQhdI1-lspEf0TsSFTUje_N0wKiqyz_N_q0bvgE="
+      }
+    ]
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=00413046",
+    "summary": "The browsing result indicates that the URL could not be found or accessed. Therefore, I cannot fulfill the request.공시 페이지 접근 제한"
+  }
+}
