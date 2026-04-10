@@ -161,7 +161,7 @@ function OpportunityScoreCard({ score, krScore, usScore, cryptoScore }: {
                 </div>
             </div>
             {/* Strength bars */}
-            <div className="hidden sm:flex flex-col gap-1.5 shrink-0 w-28">
+            <div className="flex flex-col gap-1.5 shrink-0 w-20 sm:w-28">
                 {markets.map(([m, s, c]) => (
                     <div key={m} className="flex items-center gap-1.5">
                         <span className="text-[8px] text-gray-500 w-8 text-right font-medium">{m}</span>
