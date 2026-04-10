@@ -131,54 +131,51 @@ function OpportunityScoreCard({ score, krScore, usScore, cryptoScore }: {
     const current = getLevel(score);
     const color = current.color;
     const arc = Math.min(score / 100, 1);
-    const r = 28, cx = 36, cy = 36, stroke = 6;
-    const circumference = 2 * Math.PI * r;
     const markets: [string, number][] = [['KR', krScore], ['US', usScore], ['Crypto', cryptoScore]];
     return (
-        <div className="flex items-center gap-3 sm:gap-4 rounded-2xl border border-white/[0.07] bg-[#13151f] p-3 sm:p-4">
-            {/* Arc gauge */}
-            <div className="relative shrink-0" style={{ width: 72, height: 72 }}>
-                <svg width={72} height={72} viewBox="0 0 72 72">
-                    <circle cx={cx} cy={cy} r={r} fill="none" stroke="#1e2130" strokeWidth={stroke} />
-                    <circle cx={cx} cy={cy} r={r} fill="none" stroke={color} strokeWidth={stroke}
-                        strokeDasharray={`${arc * circumference} ${circumference}`}
-                        strokeLinecap="round"
-                        transform={`rotate(-90 ${cx} ${cy})`}
-                        style={{ transition: 'stroke-dasharray 0.6s ease' }}
-                    />
-                </svg>
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-lg font-extrabold tabular-nums leading-none" style={{ color }}>{Math.round(score)}</span>
-                    <span className="text-[8px] text-gray-600 font-semibold">/100</span>
+        <div className="flex flex-col gap-3 rounded-2xl border border-white/[0.07] bg-[#13151f] p-4 sm:p-5">
+            {/* Top row: gauge + title */}
+            <div className="flex items-center gap-4">
+                <div className="flex flex-col items-center gap-1.5 shrink-0">
+                    <div className="relative" style={{ width: 80, height: 80 }}>
+                        <svg width={80} height={80} viewBox="0 0 80 80">
+                            <circle cx={40} cy={40} r={30} fill="none" stroke="#1e2130" strokeWidth={6} />
+                            <circle cx={40} cy={40} r={30} fill="none" stroke={color} strokeWidth={6}
+                                strokeDasharray={`${arc * 2 * Math.PI * 30} ${2 * Math.PI * 30}`}
+                                strokeLinecap="round" transform="rotate(-90 40 40)"
+                                style={{ transition: 'stroke-dasharray 0.6s ease' }} />
+                        </svg>
+                        <div className="absolute inset-0 flex flex-col items-center justify-center">
+                            <span className="text-xl font-extrabold tabular-nums leading-none" style={{ color }}>{Math.round(score)}</span>
+                            <span className="text-[8px] text-gray-600 font-semibold">/100</span>
+                        </div>
+                    </div>
+                    <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full" style={{ background: `${color}20`, color }}>{current.label}</span>
+                </div>
+                <div className="flex flex-col gap-1 flex-1 min-w-0">
+                    <span className="text-sm font-bold text-white">Opportunity Score</span>
+                    <p className="text-[11px] text-gray-500">3개 시장 종합 진입 기회 지수</p>
+                    <div className="flex items-center gap-3 mt-0.5">
+                        {markets.map(([m, s]) => (
+                            <span key={m} className="text-[11px] font-semibold" style={{ color: getLevel(s).color }}>
+                                {m} {Math.round(s)}
+                            </span>
+                        ))}
+                    </div>
                 </div>
             </div>
-            {/* Text */}
-            <div className="flex flex-col gap-1 flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-white">Opportunity Score</span>
-                    <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: `${color}20`, color }}>{current.label}</span>
-                </div>
-                <p className="text-[10px] text-gray-600">3개 시장 종합 진입 기회 지수</p>
-                <div className="flex items-center gap-3 mt-0.5">
-                    {markets.map(([m, s]) => (
-                        <span key={m} className="text-[9px] font-semibold" style={{ color: getLevel(s).color }}>
-                            {m} {Math.round(s)}
-                        </span>
-                    ))}
-                </div>
-            </div>
-            {/* 시장별 강도 바 */}
-            <div className="flex flex-col gap-1 shrink-0 w-20 sm:w-28">
+            {/* Bottom row: 시장별 강도 바 (full width) */}
+            <div className="flex flex-col gap-1.5">
                 {markets.map(([m, s]) => {
                     const lv = getLevel(s);
                     return (
-                        <div key={m} className="flex items-center gap-1">
-                            <span className="text-[7px] sm:text-[8px] text-gray-500 w-7 sm:w-9 text-right font-medium">{m}</span>
-                            <div className="relative flex-1 h-2 sm:h-2.5 rounded-full overflow-hidden" style={{ background: 'linear-gradient(to right, #ef4444, #f97316, #f59e0b, #22c55e, #10b981)' }}>
-                                <div className="absolute top-0 h-full w-0.5 sm:w-1 bg-white rounded-full shadow-[0_0_3px_rgba(255,255,255,0.9)]"
+                        <div key={m} className="flex items-center gap-2">
+                            <span className="text-[10px] text-gray-500 w-10 text-right font-medium">{m}</span>
+                            <div className="relative flex-1 h-2.5 rounded-full overflow-hidden" style={{ background: 'linear-gradient(to right, #ef4444, #f97316, #f59e0b, #22c55e, #10b981)' }}>
+                                <div className="absolute top-0 h-full w-1 bg-white rounded-full shadow-[0_0_4px_rgba(255,255,255,0.9)]"
                                     style={{ left: `${Math.min(Math.max(s, 2), 98)}%`, transform: 'translateX(-50%)', transition: 'left 0.6s ease' }} />
                             </div>
-                            <span className="text-[7px] sm:text-[8px] font-bold w-7 sm:w-10" style={{ color: lv.color }}>{lv.label.replace('적극', '')}</span>
+                            <span className="text-[10px] font-bold w-12" style={{ color: lv.color }}>{lv.label}</span>
                         </div>
                     );
                 })}
