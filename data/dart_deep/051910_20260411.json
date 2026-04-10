@@ -1,0 +1,257 @@
+{
+  "stock_code": "051910",
+  "stock_name": "LG화학",
+  "generated_at": "2026-04-10T23:06:21.533043+00:00",
+  "financials": {
+    "stock_code": "051910",
+    "corp_code": "00356361",
+    "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2016": {
+        "cash": 14743.7,
+        "total_assets": 204870.6,
+        "total_liab": 64360.9,
+        "total_equity": 140509.7,
+        "op_profit": 19919.2,
+        "net_income": 12811.2
+      },
+      "2017": {
+        "cash": 22493.4,
+        "total_assets": 250412.2,
+        "total_liab": 87026.4,
+        "total_equity": 163385.8,
+        "net_income": 766.9
+      },
+      "2018": {
+        "cash": 25137.0,
+        "total_assets": 289441.4,
+        "total_liab": 116220.1,
+        "total_equity": 173221.3
+      },
+      "2019": {
+        "cash": 18886.3,
+        "total_assets": 340244.3,
+        "total_liab": 166406.4,
+        "total_equity": 173837.9,
+        "net_income": 3133.7
+      },
+      "2020": {
+        "cash": 32742.5,
+        "total_assets": 413888.9,
+        "total_liab": 225984.5,
+        "total_equity": 187904.4,
+        "net_income": 6824.1
+      },
+      "2021": {
+        "cash": 37608.3,
+        "total_assets": 511353.0,
+        "total_liab": 279253.1,
+        "total_equity": 232099.9,
+        "net_income": 36697.9
+      },
+      "2022": {
+        "cash": 84978.8,
+        "total_assets": 679738.2,
+        "total_liab": 304927.0,
+        "total_equity": 374811.3,
+        "op_profit": 29957.0,
+        "net_income": 18453.6
+      },
+      "2023": {
+        "cash": 90849.0,
+        "total_equity": 5980.4,
+        "op_profit": 25292.0,
+        "net_income": 13378.1
+      },
+      "2024": {
+        "cash": 78548.8,
+        "total_equity": 27513.0,
+        "op_profit": 9168.0,
+        "net_income": -6908.5
+      },
+      "2025": {
+        "total_assets": 1010616.6,
+        "cash": 98999.3,
+        "total_equity": 126539.7,
+        "op_profit": 11809.0,
+        "net_income": 0.0,
+        "revenue": 459321.7
+      }
+    },
+    "missing_years": [
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2016,
+        "revenue_eok": 0,
+        "op_profit_eok": 19919,
+        "net_income_eok": 12811,
+        "roe_pct": 9.117,
+        "debt_ratio_pct": 45.805
+      },
+      {
+        "year": 2017,
+        "revenue_eok": 0,
+        "op_profit_eok": 0,
+        "net_income_eok": 767,
+        "roe_pct": 0.469,
+        "debt_ratio_pct": 53.266
+      },
+      {
+        "year": 2018,
+        "revenue_eok": 0,
+        "op_profit_eok": 0,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "debt_ratio_pct": 67.093
+      },
+      {
+        "year": 2019,
+        "revenue_eok": 0,
+        "op_profit_eok": 0,
+        "net_income_eok": 3134,
+        "roe_pct": 1.803,
+        "debt_ratio_pct": 95.725
+      },
+      {
+        "year": 2020,
+        "revenue_eok": 0,
+        "op_profit_eok": 0,
+        "net_income_eok": 6824,
+        "roe_pct": 3.631,
+        "debt_ratio_pct": 120.266
+      },
+      {
+        "year": 2021,
+        "revenue_eok": 0,
+        "op_profit_eok": 0,
+        "net_income_eok": 36698,
+        "roe_pct": 15.811,
+        "debt_ratio_pct": 120.316
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 0,
+        "op_profit_eok": 29957,
+        "net_income_eok": 18454,
+        "roe_pct": 4.924,
+        "debt_ratio_pct": 81.355
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 0,
+        "op_profit_eok": 25292,
+        "net_income_eok": 13378,
+        "roe_pct": 223.712,
+        "debt_ratio_pct": 0.0
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 0,
+        "op_profit_eok": 9168,
+        "net_income_eok": -6908,
+        "roe_pct": -25.108,
+        "debt_ratio_pct": 0.0
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 459322,
+        "op_profit_eok": 11809,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 2.571,
+        "debt_ratio_pct": 0.0
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": 0.0,
+      "op_profit_cagr_pct": -5.42,
+      "best_year": 2022,
+      "worst_year": 2017,
+      "avg_roe_pct": 23.436
+    },
+    "valuation": {
+      "grade": "D",
+      "strengths": [
+        "2022년에 10년 내 최고 영업이익을 달성하며 일시적인 수익성 개선을 보였습니다.",
+        "2025년 매출액이 45조 원 이상으로 급증하여 외형 성장에 대한 기대감을 높입니다.",
+        "2023년 높은 ROE는 자본 효율성 측면에서 긍정적인 신호로 해석될 수 있습니다."
+      ],
+      "risks": [
+        "대부분의 연도에 매출액이 0으로 기록되어 기업의 핵심 사업 활동을 파악하기 어렵습니다.",
+        "2024년 당기순이익이 적자로 전환되고 영업이익이 급감하는 등 최근 실적 변동성이 매우 큽니다.",
+        "2023년부터 부채총계가 0으로 기록되어 재무 건전성 지표를 신뢰하기 어려우며, 이는 재무 구조의 투명성에 대한 의문을 제기합니다."
+      ],
+      "one_liner": "제공된 재무 데이터의 심각한 불일치로 인해 기업의 실제 가치를 평가하기 어려우며, 특히 매출액과 부채총계의 0원 표기는 분석의 신뢰도를 저해합니다."
+    }
+  },
+  "dcf": {
+    "text": "퀀트 애널리스트로서 LG화학(051910)의 DCF 적정가치를 계산하겠습니다.\n\n**가정 및 전제:**\n*   제공된 '최근 재무' 데이터는 기준 연도인 2025년의 시작점 데이터로 간주합니다.\n*   5년 예측 기간(2025년 ~ 2029년) 동안 매출액 및 영업이익은 2025년 수준으로 일정하게 유지된다고 가정합니다. (성장률에 대한 정보가 없으므로 보수적으로 가정)\n*   FCF 계산 공식: `FCF = 영업이익 × (1 - 0.25) + 감가상각(매출의 10%) - CAPEX(매출의 5%)`\n*   WACC = 9%, 영구성장률 g = 2% (기본 시나리오)\n*   부채총계가 0으로 주어졌으므로, 계산된 기업가치(Enterprise Value)를 적정가치(Equity Value)로 간주합니다.\n\n---\n\n### 1. 기본 시나리오 DCF 적정가치 계산\n\n먼저, 2025년의 FCF를 계산하고, 이를 바탕으로 5년 예측 기간의 FCF와 터미널 밸류를 계산하여 현재가치로 할인합니다.\n\n\n---\n\n### 2. WACC × g 민감도 그리드 출력\n\nWACC와 영구성장률(g)의 변화에 따른 적정가치 민감도 분석을 수행합니다.\n\n\n---\n\n### 3. 요약 출력\n\n**적정가치(기본): 425,155.82억원**",
+    "executed_code": "# 필요한 라이브러리 임포트\nimport pandas as pd\n\n# 입력 데이터 (억원)\nrevenue = 459322\noperating_income = 11809\n\n# 가정\ntax_rate = 0.25\ndepreciation_rate = 0.10  # 매출의 10%\ncapex_rate = 0.05         # 매출의 5%\nwacc_base = 0.09          # 9%\ng_base = 0.02             # 2%\nforecast_years = 5\n\n# 1. FCF 계산 (2025년 기준, 5년간 동일하다고 가정)\ndepreciation = revenue * depreciation_rate\ncapex = revenue * capex_rate\nfcf_per_year = operating_income * (1 - tax_rate) + depreciation - capex\n\nprint(f\"매출액: {revenue:,.0f} 억원\")\nprint(f\"영업이익: {operating_income:,.0f} 억원\")\nprint(f\"감가상각 (매출의 10%): {depreciation:,.2f} 억원\")\nprint(f\"CAPEX (매출의 5%): {capex:,.2f} 억원\")\nprint(f\"연간 FCF (2025-2029): {fcf_per_year:,.2f} 억원\\n\")\n\n# 2. 5년 예측 기간 FCF의 현재가치 계산\npv_fcf_sum = 0\nfcf_list = []\nfor year in range(1, forecast_years + 1):\n    discount_factor = 1 / ((1 + wacc_base) ** year)\n    pv_fcf = fcf_per_year * discount_factor\n    pv_fcf_sum += pv_fcf\n    fcf_list.append({'Year': 2024 + year, 'FCF': fcf_per_year, 'Discount Factor': discount_factor, 'PV of FCF': pv_fcf})\n\ndf_fcf = pd.DataFrame(fcf_list)\nprint(\"5년 예측 기간 FCF 및 현재가치:\")\nprint(df_fcf.to_string(index=False, formatters={'FCF': '{:,.2f}'.format, 'Discount Factor': '{:,.4f}'.format, 'PV of FCF': '{:,.2f}'.format}))\nprint(f\"\\n5년 예측 기간 FCF 현재가치 합계: {pv_fcf_sum:,.2f} 억원\\n\")\n\n# 3. 터미널 밸류 (Terminal Value, TV) 계산\n# FCF_year6 = FCF_year5 * (1 + g)\nfcf_year6 = fcf_per_year * (1 + g_base)\nterminal_value_year5 = fcf_year6 / (wacc_base - g_base)\npv_terminal_value = terminal_value_year5 / ((1 + wacc_base) ** forecast_years)\n\nprint(f\"6년차 FCF (2030년): {fcf_year6:,.2f} 억원\")\nprint(f\"5년차 말 터미널 밸류 (TV): {terminal_value_year5:,.2f} 억원\")\nprint(f\"터미널 밸류의 현재가치: {pv_terminal_value:,.2f} 억원\\n\")\n\n# 4. 총 적정가치 계산\ntotal_intrinsic_value = pv_fcf_sum + pv_terminal_value\n\nprint(f\"총 적정가치 (기본 시나리오): {total_intrinsic_value:,.2f} 억원\")\n\n\n# 민감도 분석 함수 정의\ndef calculate_dcf_value(fcf_per_year, wacc, g, forecast_years):\n    if wacc <= g:\n        return float('inf') # WACC가 g보다 작거나 같으면 무한대 또는 계산 불가\n    \n    # 5년 예측 기간 FCF의 현재가치 계산\n    pv_fcf_sum = 0\n    for year in range(1, forecast_years + 1):\n        pv_fcf_sum += fcf_per_year / ((1 + wacc) ** year)\n    \n    # 터미널 밸류 (TV) 계산 및 현재가치화\n    fcf_year6 = fcf_per_year * (1 + g)\n    terminal_value_year5 = fcf_year6 / (wacc - g)\n    pv_terminal_value = terminal_value_year5 / ((1 + wacc) ** forecast_years)\n    \n    return pv_fcf_sum + pv_terminal_value\n\n# WACC 및 g 범위 설정\nwacc_range = [0.07, 0.08, 0.09, 0.10, 0.11] # 7%, 8%, 9%, 10%, 11%\ng_range = [0.01, 0.02, 0.03]             # 1%, 2%, 3%\n\n# 결과를 저장할 데이터프레임 생성\nsensitivity_results = pd.DataFrame(index=[f'g={int(g*100)}%' for g in g_range],\n                                   columns=[f'WACC={int(w*100)}%' for w in wacc_range])\n\n# 민감도 분석 실행\nfor g_val in g_range:\n    for wacc_val in wacc_range:\n        value = calculate_dcf_value(fcf_per_year, wacc_val, g_val, forecast_years)\n        sensitivity_results.loc[f'g={int(g_val*100)}%', f'WACC={int(wacc_val*100)}%'] = f'{value:,.0f}' if value != float('inf') else 'N/A'\n\nprint(\"DCF 적정가치 민감도 그리드 (억원):\\n\")\nprint(sensitivity_results)",
+    "code_output": "매출액: 459,322 억원\n영업이익: 11,809 억원\n감가상각 (매출의 10%): 45,932.20 억원\nCAPEX (매출의 5%): 22,966.10 억원\n연간 FCF (2025-2029): 31,822.85 억원\n\n5년 예측 기간 FCF 및 현재가치:\n Year       FCF Discount Factor PV of FCF\n 2025 31,822.85          0.9174 29,195.28\n 2026 31,822.85          0.8417 26,784.66\n 2027 31,822.85          0.7722 24,573.08\n 2028 31,822.85          0.7084 22,544.11\n 2029 31,822.85          0.6499 20,682.67\n\n5년 예측 기간 FCF 현재가치 합계: 123,779.79 억원\n\n6년차 FCF (2030년): 32,459.31 억원\n5년차 말 터미널 밸류 (TV): 463,704.39 억원\n터미널 밸류의 현재가치: 301,376.03 억원\n\n총 적정가치 (기본 시나리오): 425,155.82 억원\n\nDCF 적정가치 민감도 그리드 (억원):\n\n      WACC=7%  WACC=8%  WACC=9% WACC=10% WACC=11%\ng=1%  512,416  439,555  384,898  342,379  308,356\ng=2%  593,341  495,247  425,156  372,567  331,648\ng=3%  714,728  573,216  478,832  411,380  360,762"
+  },
+  "news": {
+    "text": "## LG화학(051910) 투자 분석 보고서\n\n**투자등급 D (제공된 재무 데이터 신뢰도 낮음)**\n\n제공된 LG화학의 10년 재무제표 분석 결과(매출액 및 부채총계 0원 표기)는 기업의 실제 가치를 평가하기에 심각한 불일치를 보이며, 분석의 신뢰도를 현저히 저해합니다. LG화학은 대한민국 1위 화학기업으로, 수십조 원의 매출과 자산을 보유하고 있습니다. 따라서 본 분석은 제공된 재무 데이터의 신뢰성이 없음을 전제로, 최근 2주간의 시장 뉴스 및 컨센서스를 바탕으로 진행되었습니다.\n\n---\n\n### 1. 재무 데이터 스토리와 시장 컨센서스의 일치/불일치\n\n*   **제공된 재무 데이터의 스토리:** 매출액과 부채총계가 0원으로 표기된 재무 데이터는 LG화학이 사실상 사업을 영위하지 않거나 재무적으로 심각한 문제가 있는 것처럼 보입니다. 이는 LG화학의 실제 기업 규모와 위상에 비추어 볼 때 **완전히 잘못된 정보**입니다.\n*   **현재 시장 컨센서스:** 시장은 LG화학이 석유화학 부문의 어려움을 겪고 있음을 인지하고 있으나, 배터리 소재 사업의 성장 잠재력과 LG에너지솔루션 지분 가치를 긍정적으로 평가하고 있습니다. 2025년 연결기준 매출액은 약 45조 9천억원, 영업이익은 약 1조 1천억원 이상을 기록했으며, 2026년 1분기 예상 매출액은 약 12조원 수준입니다. 애널리스트들은 목표주가를 하향 조정하는 추세이나, 여전히 \"매수\" 의견을 유지하며 현재 주가 대비 상승 여력이 있다고 판단하고 있습니다.\n\n**결론:** 제공된 재무 데이터는 LG화학의 실제 재무 상태 및 시장 컨센서스와 **심각하게 불일치하며, 분석에 활용할 수 없습니다.**\n\n---\n\n### 2. 재무제표에서 드러나지 않는 리스크 또는 호재\n\n**리스크:**\n\n*   **석유화학 업황 부진 장기화:** 중국발 공급 과잉과 고유가 환경이 지속되면서 범용 석유화학 제품의 수익성 악화가 예상보다 길어질 수 있습니다. LG화학은 비스페놀A(BPA) 사업부 지분 매각을 검토하는 등 저수익 사업 구조조정을 추진 중입니다.\n*   **배터리 시장 경쟁 심화 및 성장 둔화 우려:** 전기차 시장의 일시적 수요 정체(캐즘) 우려와 중국 배터리 업체와의 경쟁 심화는 배터리 소재 사업의 성장 속도에 영향을 미칠 수 있습니다.\n*   **대규모 투자 부담:** 배터리 소재 사업 확대를 위한 미국 테네시 양극재 공장 건설(30억 달러 이상 투자) 등 대규모 투자는 단기적으로 재무 부담으로 작용할 수 있습니다.\n\n**호재:**\n\n*   **배터리 소재 사업의 고성장 잠재력:** LG화학은 양극재 등 배터리 핵심 소재 분야에서 대규모 수주(예: 파나소닉향 3.8조원 규모 양극재 공급 계약)와 미국 생산 기지 구축을 통해 미래 성장 동력을 확보하고 있습니다. 이는 석유화학 부문의 부진을 상쇄하고 장기적인 기업 가치 상승을 견인할 핵심 요인입니다.\n*   **사업 포트폴리오 재편 가속화:** 저수익 범용 석유화학 사업을 정리하고 친환경 소재, 배터리 소재, 생명과학 등 고부가 가치 사업으로의 전환을 가속화하고 있습니다. 이는 장기적인 수익성 개선에 긍정적인 영향을 미칠 것입니다.\n*   **LG에너지솔루션 지분 가치:** LG화학이 보유한 LG에너지솔루션 지분은 여전히 상당한 가치를 지니고 있으며, 이는 LG화학의 밸류에이션에 중요한 요소로 작용합니다.\n\n---\n\n### 3. 최종 판정\n\n제공된 재무제표 데이터는 신뢰할 수 없어 직접적인 분석에 활용할 수 없습니다. 그러나 최근 뉴스와 시장 컨센서스를 종합적으로 고려할 때, LG화학은 단기적으로 석유화학 업황 부진과 배터리 시장의 불확실성으로 인해 어려움을 겪을 수 있습니다. 하지만 장기적인 관점에서 배터리 소재 사업으로의 성공적인 전환과 고부가 가치 포트폴리오 구축 노력은 긍정적인 요소입니다. 현재 주가는 이러한 불확실성이 상당 부분 반영된 수준으로 판단됩니다.\n\n따라서, 단기적인 변동성은 존재하나, 중장기적인 성장 잠재력을 고려할 때 현재 시점은 **관망** 후 매수 기회를 엿보는 것이 합리적입니다. 석유화학 사업 구조조정의 가시적인 성과와 배터리 소재 사업의 실질적인 이익 기여가 확인될 때까지는 신중한 접근이 필요합니다.\n\n**최종 판정: 관망**",
+    "citations": [
+      {
+        "title": "wikipedia.org",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGZE8bz7QL5EFgjY7u59Wt9qa20bYasO81i_HC-DcI8LBV1cmsKr9wCaIqwtCyfwwQCONGbC3FTQ1fgKaF11D9DqqIcq1LDnaOh_Ti_MqLCChK-g7ifSz7yh7_tpItqlQYlM5Ke0CuPf_JUCRXS"
+      },
+      {
+        "title": "thelec.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQElArKUP6-A1LvN3_MbpRo5F1f-SI_tF3fzaeihi_uLPOD1Rm01zRTfBljy8fT60a1vhYYNPt4ZBwSInb-rp9LcRsRynyYsWoa9q3yG5mPDGiGgeVkCH5xMpq_uJgkW0BqAhwv2RKOKMku_u5JyuJrhI6g="
+      },
+      {
+        "title": "kdfnews.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQG5jfYf1rwvBY9q5u4Nh7CpvYAStH16pL4sOgbdRckdHFcLRurM20o60gopXWQtoYI4sKBey4Ua3qajc_oIrkQR7Ioj-Tw3_1w1CwZ9jyGByNOrla4aVfVRJgyohflZhF6JpO5VQBU_s7feYqmLCFtxJQvUr5I="
+      },
+      {
+        "title": "businesspost.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFYXGMcpTJhEJEFXDvZmd2lyjvoJa8u0Vbfus7Ti3hN1yHCN32Cr5zcv53K558we7eh6JiaR__CltCLho5AXQI1QVuKFcq34DkmWA5v8Hsd0ZXhDepKQM1yAoqHu1HHDnFfdkugN8qFxMPsFoKNPOB_M-mM6ZQpqkTlRccY"
+      },
+      {
+        "title": "thelec.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFLlrHUOLToFCXv6AR3OvEWARxJucYvh07YbwgsgBH7SPV9rLtc7vewMjHZrM-9isC_HV30YukdPRaKXYy77bPJ8hJL5SFvHzaw4dHMG4N04dJxC2suNK8YE5Bt6kp6_XMd0CQFcBWBCxRnx2CzxHrNfA4="
+      },
+      {
+        "title": "lg.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGwdgcup5jv3jsX4T9_qYcP8rk1pLuCWECnb1Bfl4u7UPy_4z6RrpDqzlkoiRsD5QY7UaSRfnTZxnRXUZ4oBVMkNl9DedwmslN61lZlsqvtUBIxuwGapAybF7qLiVJFZkAOG40xmSxC9-7T6Q=="
+      },
+      {
+        "title": "youtube.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGcFgky-evFwzSI1QRYlLLfChV--s0WvyKZ2mr31KQIDGUtd8QogWiEsaH5vWCr4NrqORVa6QHDRCwkAvb3ipjF6mCo1FDMugAKzWoSCqfoObxpWKb6jSCAcUVj3cU_E7sCLKuzSKo="
+      },
+      {
+        "title": "mk.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGw78amIhbRF_1gwz-7wkutxQcBsJE30GqSAKyY7xWJXGcOYiF9hVfMZa9wXXcJQXjL-TS2QWXX2Yqs-UQ7NuC2eO7IK-qXR13fswzXxvm30audQIkbQ58K7MWiRzKsq-GmxDI="
+      },
+      {
+        "title": "wisereport.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHz7XSmFVDgyyqrk5Hkhb0GExkqoztPztyzKxr-SSg2NdzDOMytNSDl0nJYmrWILCbecnmgVVqC5UUW759W6sx6b07UFYNtfhrZ5-LeAAdIFh739pQAVefNthK1s7opJZT2i2WxFQ1jHujDVhdyRMS__YpbQKx0oo_Qi5Vv6jiv4Q=="
+      },
+      {
+        "title": "hankyung.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGXgX683kIEg_mQh9Ngk-nFUT1iXyeM9fO6sVK50oG9tNl-DmoAYhn5obdZjLdmhgzHroMyC0UjQzbRy1wTwdn3PNatqYuKQBUwsxMwfwTTVnDrIIMSxeiroVVxYcUx6sMJOGNkGvt9AJ0="
+      }
+    ]
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=00356361",
+    "summary": "공시 페이지 접근 제한"
+  }
+}
