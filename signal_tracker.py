@@ -38,6 +38,14 @@ except ImportError:
     def safe_read(filepath, timeout=10):
         yield filepath
 
+# Atomic JSON writes (crash-safe)
+try:
+    from app.utils.atomic_json import write_json_atomic
+except ImportError:
+    def write_json_atomic(path, data, **kw):
+        with open(path, 'w', encoding='utf-8') as f:
+            json.dump(data, f, ensure_ascii=False, indent=kw.get('indent', 2))
+
 
 class SignalTracker:
     """시그널 추적 및 성과 기록"""
@@ -336,10 +344,9 @@ class SignalTracker:
             "strategy_params": self.strategy_params
         }
         
-        # 저장
+        # 저장 (atomic write)
         with safe_write(self.performance_path):
-            with open(self.performance_path, 'w', encoding='utf-8') as f:
-                json.dump(report, f, ensure_ascii=False, indent=2)
+            write_json_atomic(self.performance_path, report)
         
         return report
     

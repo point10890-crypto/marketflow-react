@@ -10,7 +10,8 @@ import re
 import asyncio
 import logging
 import httpx
-import google.generativeai as genai
+from google import genai
+from google.genai import types as genai_types
 from typing import List, Dict, Optional
 from datetime import datetime
 from dotenv import load_dotenv
@@ -232,15 +233,15 @@ class GeminiAnalyzer:
     def __init__(self, api_key: str = None):
         self.api_key = api_key or os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
         if self.api_key:
-            genai.configure(api_key=self.api_key)
-            model_name = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
-            self.model = genai.GenerativeModel(model_name)
+            self.client = genai.Client(api_key=self.api_key)
+            self.model_name = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
         else:
-            self.model = None
-            
+            self.client = None
+            self.model_name = None
+
     async def analyze_news(self, stock_name: str, perplexity_news: str, traditional_news: List[Dict] = None, dart_text: str = "") -> Dict:
         """Perplexity 결과와 네이버 뉴스를 통합 분석하여 점수화"""
-        if not self.model:
+        if not self.client:
             return {"score": 0, "reason": "No Gemini Model", "themes": []}
 
         if not API_STATUS['gemini']['available']:
@@ -278,9 +279,12 @@ class GeminiAnalyzer:
         
         try:
             response = await asyncio.to_thread(
-                self.model.generate_content,
-                prompt,
-                generation_config={"response_mime_type": "application/json"}
+                self.client.models.generate_content,
+                model=self.model_name,
+                contents=prompt,
+                config=genai_types.GenerateContentConfig(
+                    response_mime_type="application/json"
+                ),
             )
             text = response.text.strip()
             # JSON 파싱 및 예외 처리
@@ -785,13 +789,12 @@ class GeminiScreener(BaseScreener):
     def __init__(self, api_key: str = None):
         self.api_key = api_key or os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
         self.model_name = os.getenv("GEMINI_SCREENER_MODEL", "gemini-2.5-flash")
-        self.model = None
+        self.client = None
         if self.api_key:
-            genai.configure(api_key=self.api_key)
-            self.model = genai.GenerativeModel(self.model_name)
+            self.client = genai.Client(api_key=self.api_key)
 
     async def screen_candidates(self, signals_data: List[Dict]) -> Dict:
-        if not self.model:
+        if not self.client:
             return {"picks": [], "error": "No Gemini Client", "generated_at": datetime.now().isoformat()}
         if not signals_data:
             return {"picks": [], "error": "No signals", "generated_at": datetime.now().isoformat()}
@@ -801,9 +804,12 @@ class GeminiScreener(BaseScreener):
 
         try:
             response = await asyncio.to_thread(
-                self.model.generate_content,
-                prompt,
-                generation_config={"response_mime_type": "application/json"}
+                self.client.models.generate_content,
+                model=self.model_name,
+                contents=prompt,
+                config=genai_types.GenerateContentConfig(
+                    response_mime_type="application/json"
+                ),
             )
             content = response.text.strip()
             result = self._parse_json_response(content)

@@ -180,6 +180,63 @@ GEMINI3_SYSTEM_PROMPT = """당신은 Google 검색 기능과 정밀한 경제 �
 ```
 **주의**: 주석 없이 순수 JSON만 출력하세요. 모든 섹터(SEC, CON, FIN, MFG, SVC, EXP, EMP, CPI)의 1~12월 점수를 포함해야 합니다."""
 
+
+# ============================================================================
+# Grok 4 프롬프트
+# ============================================================================
+
+GROK4_SYSTEM_PROMPT = """한국 경제 8개 섹터(SEC, CON, FIN, MFG, SVC, EXP, EMP, CPI)에 대해 2026년 1~12월 월별 점수(-5~+5)를 JSON으로 예측하세요.
+출력은 순수 JSON만 (주석 금지). predictions, annual_totals, scenarios 포함."""
+
+
+# ============================================================================
+# Multi-AI Forecaster 클래스
+# ============================================================================
+
+class MultiAIForecaster:
+    """GPT-5.2 / Gemini 3 / Grok 4 병렬 호출 경제 예측"""
+
+    def __init__(self):
+        self.openai_key = os.getenv('OPENAI_API_KEY')
+        self.google_key = os.getenv('GEMINI_API_KEY') or os.getenv('GOOGLE_API_KEY')
+        self.xai_key = os.getenv('XAI_API_KEY')
+
+    async def call_gpt52(self, context: str) -> Dict[str, Any]:
+        """GPT-5.2 호출"""
+        if not self.openai_key:
+            return {"error": "OPENAI_API_KEY not set"}
+
+        payload = {
+            'model': 'gpt-4o',
+            'messages': [
+                {'role': 'system', 'content': GPT52_SYSTEM_PROMPT},
+                {'role': 'user', 'content': GPT52_USER_PROMPT.format(context=context)},
+            ],
+            'temperature': 0.7,
+            'max_tokens': 8000,
+            'response_format': {'type': 'json_object'},
+        }
+
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.post(
+                    'https://api.openai.com/v1/chat/completions',
+                    headers={
+                        'Authorization': f'Bearer {self.openai_key}',
+                        'Content-Type': 'application/json',
+                    },
+                    json=payload,
+                    timeout=aiohttp.ClientTimeout(total=120),
+                ) as response:
+                    data = await response.json()
+                    return {
+                        'model': 'GPT-5.2',
+                        'result': data.get('choices', [{}])[0].get('message', {}).get('content', ''),
+                    }
+        except Exception as e:
+            logger.error(f"GPT-5.2 error: {e}")
+            return {"error": str(e)}
+
     async def call_gemini3(self, context: str) -> Dict[str, Any]:
         """Gemini 3 Pro 호출"""
         if not self.google_key:
@@ -279,7 +336,7 @@ GEMINI3_SYSTEM_PROMPT = """당신은 Google 검색 기능과 정밀한 경제 �
         
         for i, result in enumerate(results):
             if isinstance(result, Exception):
-                logger.error(f"{model_names[i]} failed: {result}")
+                logger.error(f"{model_names[i]} failed: {type(result).__name__}: {result}")
                 forecasts[model_names[i]] = {"error": str(result)}
             else:
                 forecasts[model_names[i]] = result

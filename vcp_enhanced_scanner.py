@@ -29,6 +29,14 @@ DATA_DIR = os.path.join(BASE_DIR, 'data')
 if BASE_DIR not in sys.path:
     sys.path.insert(0, BASE_DIR)
 
+# Atomic JSON writes (crash-safe)
+try:
+    from app.utils.atomic_json import write_json_atomic
+except ImportError:
+    def write_json_atomic(path, data, **kw):
+        with open(path, 'w', encoding='utf-8') as f:
+            json.dump(data, f, ensure_ascii=False, indent=kw.get('indent', 2))
+
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [VCP] %(message)s')
 logger = logging.getLogger(__name__)
 
@@ -545,8 +553,9 @@ def scan_kr_market() -> Dict:
 
 def _save_result(data: Dict, filename: str):
     path = os.path.join(DATA_DIR, filename)
-    with open(path, 'w', encoding='utf-8') as f:
-        json.dump(data, f, ensure_ascii=False, indent=2, default=str)
+    # default=str 처리: datetime 등 비직렬화 객체를 사전에 변환
+    serializable = json.loads(json.dumps(data, ensure_ascii=False, default=str))
+    write_json_atomic(path, serializable)
     logger.info(f"  💾 저장: {path}")
 
     # 날짜별 아카이브 저장 (*_latest.json → *_YYYYMMDD.json)
@@ -555,8 +564,7 @@ def _save_result(data: Dict, filename: str):
         date_str = datetime.now().strftime('%Y%m%d')
         archive_name = filename.replace('_latest.json', f'_{date_str}.json')
         archive_path = os.path.join(DATA_DIR, archive_name)
-        with open(archive_path, 'w', encoding='utf-8') as f:
-            json.dump(data, f, ensure_ascii=False, indent=2, default=str)
+        write_json_atomic(archive_path, serializable)
         logger.info(f"  💾 아카이브: {archive_path}")
 
 

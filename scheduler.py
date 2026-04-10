@@ -73,6 +73,21 @@ except ImportError:
     def safe_read(filepath, timeout=10):
         yield filepath
 
+# Atomic JSON writes (crash-safe)
+try:
+    from app.utils.atomic_json import write_json_atomic
+except ImportError:
+    def write_json_atomic(path, data, **kw):
+        with open(path, 'w', encoding='utf-8') as f:
+            json.dump(data, f, ensure_ascii=False, indent=kw.get('indent', 2))
+
+# Process-level filelock
+try:
+    from filelock import FileLock, Timeout as FileLockTimeout
+except ImportError:
+    FileLock = None
+    FileLockTimeout = None
+
 # 선택적 import (배포 시 설치 필요)
 try:
     import schedule
@@ -358,7 +373,7 @@ def run_command(cmd: list, description: str, timeout: int = 600,
         else:
             logger.error(f"❌ 실패: {description} (Exit Code: {process.returncode})")
             if notify:
-                send_telegram(f"❌ 실패: {description} (Error Code: {process.returncode})")
+                send_telegram(f"❌ 실패: {description} (Error Code: {process.returncode})", channel=False)
             return False
 
     except subprocess.TimeoutExpired:
@@ -366,12 +381,12 @@ def run_command(cmd: list, description: str, timeout: int = 600,
         process.wait(timeout=5)
         logger.error(f"⏰ 타임아웃: {description}")
         if notify:
-            send_telegram(f"⏰ 타임아웃 발생: {description}")
+            send_telegram(f"⏰ 타임아웃 발생: {description}", channel=False)
         return False
     except Exception as e:
         logger.error(f"❌ 에러: {description} - {e}")
         if notify:
-            send_telegram(f"❌ 예외 발생: {description}\n{str(e)}")
+            send_telegram(f"❌ 예외 발생: {description}\n{str(e)}", channel=False)
         return False
 
 
@@ -409,23 +424,27 @@ _telegram_queue: list = []  # [(message, timestamp)]
 _TELEGRAM_QUEUE_TTL = 3600  # 1시간 후 폐기
 
 
-def _try_send_telegram(message: str) -> bool:
-    """실제 전송 시도 (개인 + 채널)"""
+def _try_send_telegram(message: str, channel: bool = True) -> bool:
+    """실제 전송 시도.
+    channel=True  → 개인 + 채널 양쪽 (분석 결과)
+    channel=False → 개인 봇만 (시스템 메시지)
+    """
     success = False
 
-    # 1) 개인 봇
+    # 1) 개인 봇 (항상)
     token = os.getenv("TELEGRAM_BOT_TOKEN")
     chat_id = os.getenv("TELEGRAM_CHAT_ID")
     if token and chat_id and "your_bot_token" not in token:
         if _telegram_post(token, chat_id, message):
             success = True
 
-    # 2) 채널 봇 (style_종가매매)
-    ch_token = os.getenv("TELEGRAM_CHANNEL_BOT_TOKEN")
-    ch_chat_id = os.getenv("TELEGRAM_CHANNEL_CHAT_ID")
-    if ch_token and ch_chat_id:
-        if _telegram_post(ch_token, ch_chat_id, message):
-            success = True
+    # 2) 채널 봇 — 분석 결과만 (시스템 메시지 제외)
+    if channel:
+        ch_token = os.getenv("TELEGRAM_CHANNEL_BOT_TOKEN")
+        ch_chat_id = os.getenv("TELEGRAM_CHANNEL_CHAT_ID")
+        if ch_token and ch_chat_id:
+            if _telegram_post(ch_token, ch_chat_id, message):
+                success = True
 
     return success
 
@@ -450,12 +469,14 @@ def _flush_telegram_queue():
         _telegram_queue.pop(i)
 
 
-def send_telegram(message: str) -> bool:
-    """텔레그램 메시지 전송 (실패 시 큐 저장 + 이전 실패 재전송)"""
-    # 먼저 큐에 쌓인 이전 메시지 재전송 시도
+def send_telegram(message: str, channel: bool = True) -> bool:
+    """텔레그램 메시지 전송 (실패 시 큐 저장 + 이전 실패 재전송)
+    channel=True  → 개인+채널 (분석 결과, 기본값)
+    channel=False → 개인만 (시스템 메시지)
+    """
     _flush_telegram_queue()
 
-    success = _try_send_telegram(message)
+    success = _try_send_telegram(message, channel=channel)
 
     if not success:
         _telegram_queue.append((message, time.time()))
@@ -463,11 +484,11 @@ def send_telegram(message: str) -> bool:
     return success
 
 
-def send_telegram_long(message: str) -> bool:
+def send_telegram_long(message: str, channel: bool = True) -> bool:
     """긴 텔레그램 메시지를 4000자 단위로 분할 전송"""
     MAX_LEN = 4000
     if len(message) <= MAX_LEN:
-        return send_telegram(message)
+        return send_telegram(message, channel=channel)
 
     chunks = []
     current = ""
@@ -483,7 +504,7 @@ def send_telegram_long(message: str) -> bool:
 
     ok = True
     for chunk in chunks:
-        if not send_telegram(chunk):
+        if not send_telegram(chunk, channel=channel):
             ok = False
         time.sleep(0.5)
     return ok
@@ -764,16 +785,14 @@ def run_ai_analysis_scan():
         }
 
         json_path = os.path.join(Config.DATA_DIR, 'kr_ai_analysis.json')
-        with open(json_path, 'w', encoding='utf-8') as f:
-            json.dump(result, f, ensure_ascii=False, indent=2)
+        write_json_atomic(json_path, result)
 
         today_str = datetime.now().strftime('%Y%m%d')
         history_dir = os.path.join(Config.DATA_DIR, 'history')
         os.makedirs(history_dir, exist_ok=True)
         history_path = os.path.join(history_dir, f'kr_ai_analysis_{today_str}.json')
 
-        with open(history_path, 'w', encoding='utf-8') as f:
-            json.dump(result, f, ensure_ascii=False, indent=2)
+        write_json_atomic(history_path, result)
 
         logger.info(f"✅ AI 분석 JSON 저장 완료: {len(target_signals)}개 시그널 → {json_path}")
         return True
@@ -807,8 +826,7 @@ def generate_daily_report():
         }
 
         report_path = os.path.join(Config.DATA_DIR, 'daily_report.json')
-        with open(report_path, 'w', encoding='utf-8') as f:
-            json.dump(report, f, ensure_ascii=False, indent=2)
+        write_json_atomic(report_path, report)
 
         logger.info(f"✅ 일일 리포트: VCP 시그널 {total_signals}개")
         return True
@@ -1142,7 +1160,8 @@ def run_kr_full_update(skip_sync: bool = False):
         f"<b>🇰🇷 15시 종가베팅 업데이트 완료</b>\n"
         f"⏰ {datetime.now().strftime('%Y-%m-%d %H:%M')} ({elapsed}초)\n"
         f"결과: {success_count}/{total_count}\n\n"
-        + "\n".join(summary_lines)
+        + "\n".join(summary_lines),
+        channel=False
     )
 
     if not skip_sync:
@@ -1180,7 +1199,8 @@ def run_vcp_all_markets(skip_sync: bool = False):
         f"<b>📈 16시 전 시장 VCP 업데이트 완료</b>\n"
         f"⏰ {datetime.now().strftime('%Y-%m-%d %H:%M')} ({elapsed}초)\n"
         f"결과: {success_count}/{len(results)}\n\n"
-        + "\n".join(summary_lines)
+        + "\n".join(summary_lines),
+        channel=False
     )
 
     if not skip_sync:
@@ -1242,7 +1262,8 @@ def run_vcp_enhanced_scan(market: str) -> bool:
                     send_telegram(
                         f"⚠️ {market_upper} VCP self-verify 실패\n"
                         f"screened={total_screened}, stage2=0, signals=0\n"
-                        f"yfinance 외부 장애 가능성 — 다음 스케줄 재시도"
+                        f"yfinance 외부 장애 가능성 — 다음 스케줄 재시도",
+                        channel=False
                     )
                     return False
                 logger.info(
@@ -1258,7 +1279,7 @@ def run_vcp_enhanced_scan(market: str) -> bool:
         if attempt < max_retries:
             time.sleep(10)
 
-    send_telegram(f"❌ {market_upper} VCP 스캔 {max_retries}회 실패")
+    send_telegram(f"❌ {market_upper} VCP 스캔 {max_retries}회 실패", channel=False)
     return False
 
 
@@ -1404,11 +1425,23 @@ def run_crypto_gate_check() -> bool:
 
     try:
         crypto_dir = Config.CRYPTO_MARKET_DIR
-        if crypto_dir not in sys.path:
+        path_added = crypto_dir not in sys.path
+        if path_added:
             sys.path.insert(0, crypto_dir)
 
-        from market_gate import run_market_gate_sync
-        result = run_market_gate_sync()
+        # sys.modules 스냅샷 — crypto 모듈이 루트 모듈(config 등) 덮어쓰기 방지
+        _saved_mods = {k: v for k, v in sys.modules.items()}
+        try:
+            from market_gate import run_market_gate_sync
+            result = run_market_gate_sync()
+        finally:
+            for k in [k for k in sys.modules if k not in _saved_mods]:
+                del sys.modules[k]
+            for k, v in _saved_mods.items():
+                if sys.modules.get(k) is not v:
+                    sys.modules[k] = v
+            if path_added and crypto_dir in sys.path:
+                sys.path.remove(crypto_dir)
 
         old_gate = _crypto_gate
         _crypto_gate = result.gate
@@ -1426,8 +1459,7 @@ def run_crypto_gate_check() -> bool:
             'generated_at': datetime.now().isoformat()
         }
         output_path = os.path.join(Config.CRYPTO_OUTPUT_DIR, 'market_gate.json')
-        with open(output_path, 'w', encoding='utf-8') as f:
-            json.dump(gate_json, f, ensure_ascii=False, indent=2)
+        write_json_atomic(output_path, gate_json)
 
         # History
         history_path = os.path.join(Config.CRYPTO_OUTPUT_DIR, 'gate_history.json')
@@ -1446,8 +1478,7 @@ def run_crypto_gate_check() -> bool:
         })
         history = history[-90:]
 
-        with open(history_path, 'w', encoding='utf-8') as f:
-            json.dump(history, f, ensure_ascii=False, indent=2)
+        write_json_atomic(history_path, history)
 
         # Gate 전환 알림
         if old_gate != _crypto_gate:
@@ -1475,11 +1506,22 @@ def run_crypto_vcp_scan() -> bool:
 
     try:
         crypto_dir = Config.CRYPTO_MARKET_DIR
-        if crypto_dir not in sys.path:
+        path_added = crypto_dir not in sys.path
+        if path_added:
             sys.path.insert(0, crypto_dir)
 
-        from run_scan import run_scan_sync
-        result = run_scan_sync(top_n=top_n)
+        _saved_mods = {k: v for k, v in sys.modules.items()}
+        try:
+            from run_scan import run_scan_sync
+            result = run_scan_sync(top_n=top_n)
+        finally:
+            for k in [k for k in sys.modules if k not in _saved_mods]:
+                del sys.modules[k]
+            for k, v in _saved_mods.items():
+                if sys.modules.get(k) is not v:
+                    sys.modules[k] = v
+            if path_added and crypto_dir in sys.path:
+                sys.path.remove(crypto_dir)
 
         published = result.get('published', 0) if isinstance(result, dict) else 0
         logger.info(f"🔍 Crypto VCP: {published}개 시그널 발행")
@@ -1572,8 +1614,7 @@ def run_crypto_vcp_scan() -> bool:
             },
         }
         out_path = os.path.join(Config.DATA_DIR, 'vcp_crypto_latest.json')
-        with open(out_path, 'w', encoding='utf-8') as f:
-            json.dump(out, f, ensure_ascii=False, indent=2)
+        write_json_atomic(out_path, out)
         logger.info(f"💾 Crypto VCP 결과 저장: {out_path}")
 
         if published > 0:
@@ -1840,7 +1881,8 @@ def run_crypto_pipeline(skip_sync: bool = False):
             f"⚠️ <b>Crypto 파이프라인 부분 실패</b>\n\n"
             f"성공: {success_count}/{len(results)}\n"
             f"실패: {', '.join(failed)}\n"
-            f"시간: {datetime.now().strftime('%H:%M')}"
+            f"시간: {datetime.now().strftime('%H:%M')}",
+            channel=False
         )
 
     # Git 자동 커밋 + 푸시 (→ Render 자동 배포)
@@ -1910,7 +1952,7 @@ def run_full_update():
         + f"\n\n📦 {git_text}"
     )
 
-    send_telegram(msg)
+    send_telegram(msg, channel=False)
     logger.info(f"🌐 전체 업데이트 완료: {success_count}/{total_count} ({overall_elapsed}초)")
 
     return success_count == total_count
@@ -2130,13 +2172,6 @@ def check_and_run_missed_tasks():
                     logger.error(f"  ❌ 복구 실패: Crypto 파이프라인 — {e}", exc_info=True)
 
         if recovered:
-            msg = (
-                f"<b>🔄 놓친 스케줄 복구 완료</b>\n"
-                f"⏰ {now.strftime('%Y-%m-%d %H:%M')}\n"
-                f"복구: {len(recovered)}개\n\n"
-                + "\n".join(f"  ✅ {r}" for r in recovered)
-            )
-            send_telegram(msg)
             logger.info(f"🔄 놓친 스케줄 복구: {len(recovered)}개 — {', '.join(recovered)}")
         else:
             logger.info("✅ 놓친 스케줄 없음 (모두 정상)")
@@ -2162,19 +2197,14 @@ def _run_kis_token_warmup() -> bool:
         invalidate_token()  # 캐시 강제 만료 → 실제 API 호출 경로 검증
         tok = get_token()
         if not tok:
-            send_telegram(
-                "⚠️ <b>KIS 토큰 웜업 실패</b>\n\n"
-                "장 시작 전 토큰 발급 실패. 자격증명/네트워크 확인 필요.\n"
-                "주도주LIVE/KR 실시간 기능 영향 있을 수 있음."
-            )
-            logger.error("❌ KIS 토큰 웜업 실패")
+            logger.error("❌ KIS 토큰 웜업 실패 — 자격증명/네트워크 확인 필요")
             return False
         logger.info(f"✅ KIS 토큰 웜업 완료 (len={len(tok)})")
         return True
     except Exception as e:
         logger.error(f"❌ KIS 토큰 웜업 에러: {e}", exc_info=True)
         try:
-            send_telegram(f"⚠️ KIS 토큰 웜업 에러: {type(e).__name__}: {e}")
+            send_telegram(f"⚠️ KIS 토큰 웜업 에러: {type(e).__name__}: {e}", channel=False)
         except Exception:
             pass
         return False
@@ -2385,7 +2415,7 @@ class Scheduler:
                     if success:
                         record_task_run(task_key)
                         if attempt > 0:
-                            send_telegram(f"✅ {task_key} 재시도 {attempt}회 만에 성공")
+                            send_telegram(f"✅ {task_key} 재시도 {attempt}회 만에 성공", channel=False)
                         return result
                     else:
                         logger.warning(f"⚠️ {task_key} 실패 (시도 {attempt + 1}/{1 + max_retries})")
@@ -2398,7 +2428,8 @@ class Scheduler:
             send_telegram(
                 f"🚨 <b>{task_key} 업데이트 실패</b>\n\n"
                 f"총 {1 + max_retries}회 시도 후 실패\n"
-                f"수동 확인 필요"
+                f"수동 확인 필요",
+                channel=False
             )
             return False
 
@@ -2501,13 +2532,11 @@ class Scheduler:
         logger.info("⏰ 통합 스케줄러 시작... (US + KR + Crypto)")
         logger.info("   Ctrl+C / SIGTERM으로 종료")
 
-        send_telegram(
-            "<b>⏰ MarketFlow 통합 스케줄러 시작</b>\n\n"
-            f"🇺🇸 US Market: {Config.US_UPDATE_TIME} (평일)\n"
-            f"🇰🇷 종가베팅: {Config.KR_UPDATE_TIME} (평일)\n"
-            f"📈 VCP 전시장: {Config.VCP_UPDATE_TIME} (평일)\n"
-            f"🪙 Crypto: 매 4시간 24/7 ({', '.join(Config.CRYPTO_TIMES)})\n"
-            f"📍 {Config.BASE_DIR}"
+        # 시스템 메시지는 로그만 (텔레그램 전송 안 함)
+        logger.info(
+            "⏰ 스케줄러 시작 — "
+            f"US:{Config.US_UPDATE_TIME} KR:{Config.KR_UPDATE_TIME} "
+            f"VCP:{Config.VCP_UPDATE_TIME} Crypto:{','.join(Config.CRYPTO_TIMES)}"
         )
 
         last_missed_check = time.time()
@@ -2572,6 +2601,21 @@ def main():
     parser.add_argument('--us-ai-chart', action='store_true', help='US AI Chart Analysis (Gemini Vision S&P 500)')
 
     args = parser.parse_args()
+
+    # ── Process-level filelock (이중 실행 방지) ──
+    lock_path = os.path.join(Config.DATA_DIR, '.scheduler.lock')
+    _scheduler_lock = None
+    if FileLock is not None:
+        _scheduler_lock = FileLock(lock_path, timeout=5)
+        try:
+            _scheduler_lock.acquire()
+            atexit.register(lambda: _scheduler_lock.release(force=True))
+            logger.info(f"🔒 스케줄러 락 획득: {lock_path}")
+        except FileLockTimeout:
+            logger.error(f"❌ 스케줄러 이미 실행 중 (락 파일: {lock_path})")
+            sys.exit(0)
+    else:
+        logger.warning("⚠️ filelock 미설치 — 프로세스 레벨 락 비활성")
 
     # ── PID 파일 기반 단일 인스턴스 (--daemon 모드) ──
     if args.daemon:

@@ -16,6 +16,14 @@ load_dotenv()
 
 logger = logging.getLogger(__name__)
 
+# Atomic JSON writes (crash-safe)
+try:
+    from app.utils.atomic_json import write_json_atomic
+except ImportError:
+    def write_json_atomic(path, data, **kw):
+        with open(path, 'w', encoding='utf-8') as f:
+            json.dump(data, f, ensure_ascii=False, indent=kw.get('indent', 2))
+
 _BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 _DATA_DIR = os.path.join(_BASE_DIR, 'data')
 _BRIEFING_DIR = os.path.join(_DATA_DIR, 'briefing')
@@ -582,35 +590,15 @@ class BriefingGenerator:
         return result
 
     def _save(self, briefing_type: str, data: dict):
-        """원자적 저장 — tempfile + os.replace 로 mid-write 손상 방지.
+        """원자적 저장 — write_json_atomic 사용.
         Flask 라우트가 동시에 latest.json 을 읽기 때문에 부분 쓰기 노출 금지."""
         date_str = data.get('date', datetime.now().strftime('%Y%m%d'))
 
-        def _atomic_write(path: str, payload: dict) -> None:
-            import tempfile
-            dir_path = os.path.dirname(path)
-            tmp_path = None
-            try:
-                with tempfile.NamedTemporaryFile(
-                    mode='w', dir=dir_path, suffix='.tmp',
-                    delete=False, encoding='utf-8'
-                ) as f:
-                    tmp_path = f.name
-                    json.dump(payload, f, ensure_ascii=False, indent=2)
-                os.replace(tmp_path, path)  # Windows 에서도 원자적
-                tmp_path = None
-            finally:
-                if tmp_path and os.path.exists(tmp_path):
-                    try:
-                        os.remove(tmp_path)
-                    except OSError:
-                        pass
-
         dated_path = os.path.join(_BRIEFING_DIR, f'{briefing_type}_{date_str}.json')
-        _atomic_write(dated_path, data)
+        write_json_atomic(dated_path, data)
 
         latest_path = os.path.join(_BRIEFING_DIR, 'latest.json')
-        _atomic_write(latest_path, data)
+        write_json_atomic(latest_path, data)
 
         logger.info(f"Saved: {dated_path}")
 
