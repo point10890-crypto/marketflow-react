@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { krAPI, fetchAPI, KRMarketGate, KRSignalsResponse } from '@/lib/api';
+import { krAPI, fetchAPI, jonggaAPI, waveAPI, KRMarketGate, KRSignalsResponse, KRAIChartSignal, KRAIChartAnalysisResponse, WaveDashboardData, JonggaV2Result } from '@/lib/api';
 import { useAutoRefresh, useSmartRefresh } from '@/hooks/useAutoRefresh';
 import { usePullToRefreshRegister } from '@/components/layout/PullToRefreshProvider';
 
@@ -139,6 +139,11 @@ export default function KRMarketOverview() {
     const [gateData, setGateData] = useState<KRMarketGate | null>(null);
     const [signalsData, setSignalsData] = useState<KRSignalsResponse | null>(null);
     const [backtestData, setBacktestData] = useState<BacktestSummary | null>(null);
+    const [jonggaData, setJonggaData] = useState<JonggaV2Result | null>(null);
+    const [vcpData, setVcpData] = useState<any>(null);
+    const [waveData, setWaveData] = useState<WaveDashboardData | null>(null);
+    const [aiChartData, setAiChartData] = useState<KRAIChartAnalysisResponse | null>(null);
+    const [leadingData, setLeadingData] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [lastUpdated, setLastUpdated] = useState<string>('');
     const [isRefreshing, setIsRefreshing] = useState(false);
@@ -151,12 +156,22 @@ export default function KRMarketOverview() {
         setLoading(true);
         setIsRefreshing(true);
         try {
-            const [gate, signals] = await Promise.all([
+            const [gate, signals, jongga, vcp, wave, aiChart, leading] = await Promise.all([
                 krAPI.getMarketGate().catch(() => null),
                 krAPI.getSignals().catch(() => null),
+                jonggaAPI.getLatest().catch(() => null),
+                krAPI.getVCPEnhanced().catch(() => null),
+                waveAPI.getDashboard().catch(() => null),
+                krAPI.getAIChartAnalysis().catch(() => null),
+                krAPI.getLeadingStocks().catch(() => null),
             ]);
             if (gate) setGateData(gate);
             if (signals) setSignalsData(signals);
+            if (jongga) setJonggaData(jongga);
+            if (vcp) setVcpData(vcp);
+            if (wave) setWaveData(wave);
+            if (aiChart) setAiChartData(aiChart);
+            if (leading) setLeadingData(leading);
 
             try {
                 const bt = await fetchAPI<BacktestSummary>('/api/kr/backtest-summary');
@@ -175,12 +190,22 @@ export default function KRMarketOverview() {
     // 사일런트 자동 갱신 (30초)
     const silentRefresh = useCallback(async () => {
         try {
-            const [gate, signals] = await Promise.all([
+            const [gate, signals, jongga, vcp, wave, aiChart, leading] = await Promise.all([
                 krAPI.getMarketGate().catch(() => null),
                 krAPI.getSignals().catch(() => null),
+                jonggaAPI.getLatest().catch(() => null),
+                krAPI.getVCPEnhanced().catch(() => null),
+                waveAPI.getDashboard().catch(() => null),
+                krAPI.getAIChartAnalysis().catch(() => null),
+                krAPI.getLeadingStocks().catch(() => null),
             ]);
             if (gate) setGateData(gate);
             if (signals) setSignalsData(signals);
+            if (jongga) setJonggaData(jongga);
+            if (vcp) setVcpData(vcp);
+            if (wave) setWaveData(wave);
+            if (aiChart) setAiChartData(aiChart);
+            if (leading) setLeadingData(leading);
             try {
                 const bt = await fetchAPI<BacktestSummary>('/api/kr/backtest-summary');
                 if (bt) setBacktestData(bt);
@@ -582,71 +607,166 @@ export default function KRMarketOverview() {
 
             </div>
 
-            {/* ── Row 4: Top 10 종가베팅 시그널 ───────────────────────────────── */}
-            {signalsData && signalsData.signals.length > 0 && (
-                <div>
-                    <div className="flex items-center gap-2 mb-2">
-                        <div className="w-1 h-4 bg-rose-500 rounded-full" />
-                        <h3 className="text-sm font-bold text-white">Top 종가베팅</h3>
-                        <span className="px-1.5 py-0.5 bg-rose-500/15 text-rose-400 text-xs font-bold rounded-full border border-rose-500/20">
-                            {Math.min(signalsData.signals.length, 10)}
-                        </span>
-                    </div>
-                    <div className="rounded-xl bg-[#13151f] border border-white/[0.06] overflow-hidden">
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left border-collapse">
-                                <thead>
-                                    <tr className="text-xs text-zinc-400 border-b border-white/[0.04] uppercase tracking-wider bg-white/[0.02]">
-                                        <th className="px-3 py-2.5 font-medium text-center w-8">#</th>
-                                        <th className="px-3 py-2.5 font-medium">종목</th>
-                                        <th className="px-3 py-2.5 font-medium text-center">등급</th>
-                                        <th className="px-3 py-2.5 font-medium text-right">현재가</th>
-                                        <th className="px-3 py-2.5 font-medium text-right">수익률</th>
-                                        <th className="px-3 py-2.5 font-medium text-right hidden sm:table-cell">점수</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-white/[0.04] text-sm">
-                                    {[...signalsData.signals]
-                                        .sort((a, b) => b.score - a.score)
-                                        .slice(0, 10)
-                                        .map((s, idx) => (
-                                        <tr key={s.ticker} className="hover:bg-white/[0.03] transition-colors">
-                                            <td className="px-3 py-2.5 text-center text-xs text-zinc-500 font-mono">{idx + 1}</td>
-                                            <td className="px-3 py-2.5">
-                                                <div className="flex items-center gap-2">
-                                                    <span className="text-white font-bold text-sm">{s.name}</span>
-                                                    <span className="text-xs text-zinc-500 font-mono">{s.ticker}</span>
-                                                    <span className="text-xs text-zinc-600">{s.market}</span>
-                                                </div>
-                                            </td>
-                                            <td className="px-3 py-2.5 text-center">
-                                                <span className={`px-2 py-0.5 rounded text-xs font-bold ${
-                                                    s.score >= 12 ? 'bg-rose-500/20 text-rose-400' :
-                                                    s.score >= 9 ? 'bg-amber-500/20 text-amber-400' :
-                                                    'bg-zinc-500/20 text-zinc-400'
-                                                }`}>
-                                                    {s.score >= 12 ? 'S' : s.score >= 9 ? 'A' : 'B'}
-                                                </span>
-                                            </td>
-                                            <td className="px-3 py-2.5 text-right text-white font-mono text-sm font-bold">
-                                                {s.current_price.toLocaleString()}원
-                                            </td>
-                                            <td className="px-3 py-2.5 text-right">
-                                                <span className={`font-mono text-sm font-bold ${s.return_pct >= 0 ? 'text-rose-400' : 'text-blue-400'}`}>
-                                                    {s.return_pct >= 0 ? '+' : ''}{s.return_pct.toFixed(1)}%
-                                                </span>
-                                            </td>
-                                            <td className="px-3 py-2.5 text-right text-zinc-300 font-mono text-sm hidden sm:table-cell">
-                                                {s.score}점
-                                            </td>
+            {/* ── Row 4: 섹션별 Best Pick ───────────────────────────────── */}
+            {(() => {
+                const bestPicks: Array<{
+                    section: string;
+                    icon: string;
+                    name: string;
+                    code: string;
+                    grade: string;
+                    price: number;
+                    changePct: number;
+                    score: string;
+                    link: string;
+                    color: string;
+                }> = [];
+
+                // VCP Best: lowest contraction_ratio
+                if (vcpData?.signals?.length) {
+                    const best = [...vcpData.signals].sort((a: any, b: any) => (a.contraction_ratio ?? 1) - (b.contraction_ratio ?? 1))[0];
+                    if (best) bestPicks.push({
+                        section: 'VCP', icon: '📐', name: best.name || best.stock_name,
+                        code: best.ticker || best.stock_code, grade: best.grade || best.vcp_grade || '-',
+                        price: best.current_price || best.price || 0,
+                        changePct: best.change_pct ?? best.return_pct ?? 0,
+                        score: `${((1 - (best.contraction_ratio ?? 0)) * 100).toFixed(0)}%`,
+                        link: '/dashboard/kr/vcp', color: 'violet',
+                    });
+                }
+
+                // 종가베팅 Best: highest score.total
+                if (jonggaData?.signals?.length) {
+                    const best = [...jonggaData.signals].sort((a, b) => (b.score?.total ?? 0) - (a.score?.total ?? 0))[0];
+                    if (best) bestPicks.push({
+                        section: '종가베팅', icon: '🎯', name: best.stock_name,
+                        code: best.stock_code, grade: best.grade,
+                        price: best.current_price,
+                        changePct: best.change_pct ?? 0,
+                        score: `${best.score?.total ?? 0}/17`,
+                        link: '/dashboard/kr/closing-bet', color: 'rose',
+                    });
+                }
+
+                // W패턴 Best: highest confidence
+                if (waveData?.active_signals?.length) {
+                    const best = [...waveData.active_signals].sort((a, b) => (b.confidence ?? 0) - (a.confidence ?? 0))[0];
+                    if (best) bestPicks.push({
+                        section: 'W패턴', icon: '🌊', name: best.name,
+                        code: best.ticker, grade: best.wave_label || best.pattern_class,
+                        price: best.signal_price || 0,
+                        changePct: 0,
+                        score: `${(best.confidence ?? 0).toFixed(0)}%`,
+                        link: '/dashboard/kr/wave', color: 'cyan',
+                    });
+                }
+
+                // AI차트 Best: highest confidence among BUY signals
+                if (aiChartData?.signals?.length) {
+                    const buySignals = aiChartData.signals.filter(s => s.signal === 'BUY');
+                    if (buySignals.length) {
+                        const best = [...buySignals].sort((a, b) => (b.confidence ?? 0) - (a.confidence ?? 0))[0];
+                        bestPicks.push({
+                            section: 'AI차트', icon: '🤖', name: best.stock_name,
+                            code: best.stock_code, grade: 'BUY',
+                            price: 0,
+                            changePct: 0,
+                            score: `${(best.confidence ?? 0).toFixed(0)}%`,
+                            link: '/dashboard/kr/ai-chart', color: 'emerald',
+                        });
+                    }
+                }
+
+                // 주도주 Best: highest total_score
+                if (leadingData?.stocks?.length) {
+                    const best = [...leadingData.stocks].sort((a: any, b: any) => (b.total_score ?? 0) - (a.total_score ?? 0))[0];
+                    if (best) bestPicks.push({
+                        section: '주도주', icon: '🔥', name: best.name || best.stock_name,
+                        code: best.ticker || best.stock_code, grade: best.grade || 'S',
+                        price: best.current_price || best.price || 0,
+                        changePct: best.change_pct ?? 0,
+                        score: `${best.total_score ?? 0}점`,
+                        link: '/dashboard/kr/leading', color: 'amber',
+                    });
+                }
+
+                if (bestPicks.length === 0) return null;
+
+                const colorMap: Record<string, { bg: string; border: string; text: string; badge: string }> = {
+                    violet: { bg: 'bg-violet-500/10', border: 'border-violet-500/20', text: 'text-violet-400', badge: 'bg-violet-500/20 text-violet-400' },
+                    rose: { bg: 'bg-rose-500/10', border: 'border-rose-500/20', text: 'text-rose-400', badge: 'bg-rose-500/20 text-rose-400' },
+                    cyan: { bg: 'bg-cyan-500/10', border: 'border-cyan-500/20', text: 'text-cyan-400', badge: 'bg-cyan-500/20 text-cyan-400' },
+                    emerald: { bg: 'bg-emerald-500/10', border: 'border-emerald-500/20', text: 'text-emerald-400', badge: 'bg-emerald-500/20 text-emerald-400' },
+                    amber: { bg: 'bg-amber-500/10', border: 'border-amber-500/20', text: 'text-amber-400', badge: 'bg-amber-500/20 text-amber-400' },
+                };
+
+                return (
+                    <div>
+                        <div className="flex items-center gap-2 mb-2">
+                            <div className="w-1 h-4 bg-rose-500 rounded-full" />
+                            <h3 className="text-sm font-bold text-white">섹션별 Best Pick</h3>
+                            <span className="px-1.5 py-0.5 bg-rose-500/15 text-rose-400 text-xs font-bold rounded-full border border-rose-500/20">
+                                {bestPicks.length}
+                            </span>
+                        </div>
+                        <div className="rounded-xl bg-[#13151f] border border-white/[0.06] overflow-hidden">
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr className="text-xs text-zinc-400 border-b border-white/[0.04] uppercase tracking-wider bg-white/[0.02]">
+                                            <th className="px-3 py-2.5 font-medium">섹션</th>
+                                            <th className="px-3 py-2.5 font-medium">종목</th>
+                                            <th className="px-3 py-2.5 font-medium text-center">등급</th>
+                                            <th className="px-3 py-2.5 font-medium text-right">현재가</th>
+                                            <th className="px-3 py-2.5 font-medium text-right">등락</th>
+                                            <th className="px-3 py-2.5 font-medium text-right hidden sm:table-cell">점수</th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody className="divide-y divide-white/[0.04] text-sm">
+                                        {bestPicks.map((p) => {
+                                            const c = colorMap[p.color] || colorMap.rose;
+                                            return (
+                                                <tr key={p.section} className="hover:bg-white/[0.03] transition-colors">
+                                                    <td className="px-3 py-2.5">
+                                                        <Link to={p.link} className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-bold ${c.bg} ${c.border} border ${c.text} hover:brightness-125 transition`}>
+                                                            <span>{p.icon}</span>
+                                                            <span>{p.section}</span>
+                                                        </Link>
+                                                    </td>
+                                                    <td className="px-3 py-2.5">
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="text-white font-bold text-sm">{p.name}</span>
+                                                            <span className="text-xs text-zinc-500 font-mono">{p.code}</span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-3 py-2.5 text-center">
+                                                        <span className={`px-2 py-0.5 rounded text-xs font-bold ${c.badge}`}>
+                                                            {p.grade}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-3 py-2.5 text-right text-white font-mono text-sm font-bold">
+                                                        {p.price > 0 ? `${p.price.toLocaleString()}원` : '-'}
+                                                    </td>
+                                                    <td className="px-3 py-2.5 text-right">
+                                                        {p.changePct !== 0 ? (
+                                                            <span className={`font-mono text-sm font-bold ${p.changePct >= 0 ? 'text-rose-400' : 'text-blue-400'}`}>
+                                                                {p.changePct >= 0 ? '+' : ''}{p.changePct.toFixed(1)}%
+                                                            </span>
+                                                        ) : <span className="text-zinc-500">-</span>}
+                                                    </td>
+                                                    <td className="px-3 py-2.5 text-right text-zinc-300 font-mono text-sm hidden sm:table-cell">
+                                                        {p.score}
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
+                );
+            })()}
         </div>
     );
 }
