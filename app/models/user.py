@@ -113,6 +113,30 @@ class AdminAuditLog(db.Model):
         }
 
 
+class AdminNotification(db.Model):
+    """관리자 인앱 알림 — 구매신청, 구독요청, 신규가입 등 이벤트 발생 시 자동 생성"""
+    __tablename__ = 'admin_notifications'
+
+    id = db.Column(db.Integer, primary_key=True)
+    type = db.Column(db.String(50), nullable=False, index=True)  # purchase_request, subscription_request, new_signup
+    title = db.Column(db.String(200), nullable=False)
+    message = db.Column(db.Text, nullable=False)
+    is_read = db.Column(db.Boolean, default=False, nullable=False, index=True)
+    related_id = db.Column(db.Integer, nullable=True)  # 관련 엔티티 ID (purchase_id, subscription_id, user_id)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'type': self.type,
+            'title': self.title,
+            'message': self.message,
+            'is_read': self.is_read,
+            'related_id': self.related_id,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+        }
+
+
 class SubscriptionRequest(db.Model):
     """구독 변경 요청 (free→pro, pro→premium 등)"""
     __tablename__ = 'subscription_requests'

@@ -137,6 +137,15 @@ def register():
         f"📅 가입일: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M')}"
     )
 
+    # 인앱 알림
+    from app.routes.admin import create_admin_notification
+    create_admin_notification(
+        'new_signup',
+        '신규 회원가입',
+        f'{user.name} ({user.email})',
+        related_id=user.id,
+    )
+
     token = generate_token(user.id)
     return jsonify({'user': user.to_dict(), 'token': token}), 201
 
@@ -254,6 +263,22 @@ def request_subscription():
     )
     db.session.add(sub_request)
     db.session.commit()
+
+    # 관리자 텔레그램 + 인앱 알림
+    tier_label = {'pro': 'Pro', 'premium': 'Ultra Pro'}.get(to_tier, to_tier)
+    _notify_admin_telegram(
+        f"💳 <b>구독 업그레이드 요청</b>\n\n"
+        f"👤 {user.name} ({user.email})\n"
+        f"📋 {user.tier or 'none'} → {to_tier}\n"
+        f"💰 {amount or '-'}"
+    )
+    from app.routes.admin import create_admin_notification
+    create_admin_notification(
+        'subscription_request',
+        f'구독 요청: {tier_label}',
+        f'{user.name} ({user.email}) — {user.tier or "none"} → {to_tier}',
+        related_id=sub_request.id,
+    )
 
     return jsonify({'request': sub_request.to_dict()}), 201
 

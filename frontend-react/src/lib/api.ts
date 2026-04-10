@@ -721,6 +721,16 @@ export interface AdminAuditLogEntry {
     created_at: string;
 }
 
+export interface AdminNotification {
+    id: number;
+    type: 'purchase_request' | 'subscription_request' | 'new_signup';
+    title: string;
+    message: string;
+    is_read: boolean;
+    related_id: number | null;
+    created_at: string;
+}
+
 export interface AdminDashboard {
     total_users: number;
     pro_users: number;
@@ -869,6 +879,10 @@ export const adminAPI = {
     getSubscriptions: (token?: string) => fetchAuthAPI<{ requests: SubscriptionRequest[] }>('/api/admin/subscriptions', token),
     approveSubscription: (id: number, token?: string) => putAuthAPI<{ request: SubscriptionRequest }>(`/api/admin/subscriptions/${id}/approve`, undefined, token),
     rejectSubscription: (id: number, note?: string, token?: string) => putAuthAPI<{ request: SubscriptionRequest }>(`/api/admin/subscriptions/${id}/reject`, { note }, token),
+    getNotifications: (token?: string, page = 1) => fetchAuthAPI<{ notifications: AdminNotification[]; total: number; page: number; total_pages: number }>(`/api/admin/notifications?page=${page}`, token),
+    getUnreadCount: (token?: string) => fetchAuthAPI<{ unread_count: number }>('/api/admin/notifications/unread-count', token),
+    markRead: (id: number, token?: string) => putAuthAPI<AdminNotification>(`/api/admin/notifications/${id}/read`, undefined, token),
+    markAllRead: (token?: string) => putAuthAPI<{ message: string }>('/api/admin/notifications/read-all', undefined, token),
     getAuditLog: (token?: string, params?: { limit?: number; action?: string; target_user_id?: number }) => {
         const qs = new URLSearchParams();
         if (params?.limit) qs.set('limit', String(params.limit));

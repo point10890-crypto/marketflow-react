@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { adminAPI, AdminDashboard, AdminUser, SubscriptionRequest, fetchAuthAPI, API_BASE } from '@/lib/api';
+import { adminAPI, AdminDashboard, AdminUser, AdminNotification, SubscriptionRequest, fetchAuthAPI, API_BASE } from '@/lib/api';
 
 type AdminTab = 'dashboard' | 'users' | 'subscriptions' | 'system';
 
@@ -11,6 +11,23 @@ const TABS: { key: AdminTab; label: string; icon: string }[] = [
     { key: 'subscriptions', label: '구독', icon: 'fa-credit-card' },
     { key: 'system', label: '시스템', icon: 'fa-server' },
 ];
+
+function notiIcon(type: string) {
+    if (type === 'purchase_request') return 'fa-receipt text-yellow-400';
+    if (type === 'subscription_request') return 'fa-credit-card text-purple-400';
+    return 'fa-user-plus text-blue-400';
+}
+
+function notiTimeAgo(dateStr: string) {
+    const diff = Date.now() - new Date(dateStr).getTime();
+    const m = Math.floor(diff / 60000);
+    if (m < 1) return '방금';
+    if (m < 60) return `${m}분 전`;
+    const h = Math.floor(m / 60);
+    if (h < 24) return `${h}시간 전`;
+    const d = Math.floor(h / 24);
+    return `${d}일 전`;
+}
 
 // ── Main Admin Page ──────────────────────────────────────────────────────────
 
@@ -62,7 +79,7 @@ export default function AdminPage() {
             </div>
 
             {/* Tab Content */}
-            {activeTab === 'dashboard' && <DashboardTab data={dashData} onNavigate={setActiveTab} />}
+            {activeTab === 'dashboard' && <DashboardTab data={dashData} onNavigate={setActiveTab} apiToken={apiToken} />}
             {activeTab === 'users' && <UsersTab apiToken={apiToken} />}
             {activeTab === 'subscriptions' && <SubscriptionsTab apiToken={apiToken} onCountChange={setPendingCount} />}
             {activeTab === 'system' && <SystemTab token={token} />}
@@ -72,8 +89,44 @@ export default function AdminPage() {
 
 // ── Dashboard Tab ────────────────────────────────────────────────────────────
 
-function DashboardTab({ data, onNavigate }: { data: AdminDashboard | null; onNavigate: (tab: AdminTab) => void }) {
+function DashboardTab({ data, onNavigate, apiToken }: { data: AdminDashboard | null; onNavigate: (tab: AdminTab) => void; apiToken?: string }) {
     const navigate = useNavigate();
+    const [notifications, setNotifications] = useState<AdminNotification[]>([]);
+    const [unreadCount, setUnreadCount] = useState(0);
+    const [notiLoading, setNotiLoading] = useState(true);
+
+    useEffect(() => {
+        let cancelled = false;
+        (async () => {
+            try {
+                const [listRes, countRes] = await Promise.all([
+                    adminAPI.getNotifications(apiToken),
+                    adminAPI.getUnreadCount(apiToken),
+                ]);
+                if (cancelled) return;
+                setNotifications(listRes.notifications || []);
+                setUnreadCount(countRes.unread_count || 0);
+            } catch { /* */ }
+            if (!cancelled) setNotiLoading(false);
+        })();
+        return () => { cancelled = true; };
+    }, [apiToken]);
+
+    const handleMarkRead = async (id: number) => {
+        try {
+            await adminAPI.markRead(id, apiToken);
+            setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
+            setUnreadCount(prev => Math.max(0, prev - 1));
+        } catch { /* */ }
+    };
+
+    const handleMarkAllRead = async () => {
+        try {
+            await adminAPI.markAllRead(apiToken);
+            setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+            setUnreadCount(0);
+        } catch { /* */ }
+    };
     const stats = [
         { label: 'Total Users', value: data?.total_users || 0, icon: 'fa-users', color: 'text-blue-400', bg: 'bg-blue-500/10', tab: 'users' as AdminTab },
         { label: 'Pro Users', value: data?.pro_users || 0, icon: 'fa-crown', color: 'text-yellow-400', bg: 'bg-yellow-500/10', tab: 'users' as AdminTab },
@@ -136,6 +189,68 @@ function DashboardTab({ data, onNavigate }: { data: AdminDashboard | null; onNav
                         <i className="fas fa-chevron-right text-gray-600 group-hover:text-yellow-400 transition-colors text-xs" />
                     </div>
                 </button>
+            </div>
+
+            {/* 최근 알림 */}
+            <div className="apple-glass rounded-xl overflow-hidden">
+                <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.06]">
+                    <div className="flex items-center gap-2">
+                        <i className="fas fa-bell text-red-400" />
+                        <span className="text-sm font-semibold text-white">최근 알림</span>
+                        {unreadCount > 0 && (
+                            <span className="px-1.5 py-0.5 rounded-full bg-red-500/20 text-red-400 text-[10px] font-bold">
+                                {unreadCount}
+                            </span>
+                        )}
+                    </div>
+                    {unreadCount > 0 && (
+                        <button
+                            onClick={handleMarkAllRead}
+                            className="text-[11px] text-gray-500 hover:text-white transition-colors"
+                        >
+                            모두 읽음
+                        </button>
+                    )}
+                </div>
+
+                {notiLoading ? (
+                    <div className="p-6 text-center text-gray-500 text-sm">
+                        <i className="fas fa-spinner fa-spin mr-1" /> 로딩 중...
+                    </div>
+                ) : notifications.length === 0 ? (
+                    <div className="p-6 text-center text-gray-600 text-sm">
+                        <i className="fas fa-bell-slash mr-1" /> 알림이 없습니다
+                    </div>
+                ) : (
+                    <div className="divide-y divide-white/[0.04]">
+                        {notifications.slice(0, 10).map(n => (
+                            <div
+                                key={n.id}
+                                className={`flex items-start gap-3 px-4 py-3 transition-colors ${
+                                    n.is_read ? 'opacity-60' : 'bg-white/[0.02]'
+                                }`}
+                            >
+                                <div className="w-8 h-8 rounded-lg bg-white/[0.06] flex items-center justify-center flex-shrink-0 mt-0.5">
+                                    <i className={`fas ${notiIcon(n.type)} text-xs`} />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <div className="text-sm text-white font-medium truncate">{n.title}</div>
+                                    <div className="text-xs text-gray-400 truncate mt-0.5">{n.message}</div>
+                                    <div className="text-[10px] text-gray-600 mt-1">{notiTimeAgo(n.created_at)}</div>
+                                </div>
+                                {!n.is_read && (
+                                    <button
+                                        onClick={() => handleMarkRead(n.id)}
+                                        className="text-[10px] text-gray-500 hover:text-white transition-colors flex-shrink-0 mt-1"
+                                        title="읽음 처리"
+                                    >
+                                        <i className="fas fa-check" />
+                                    </button>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
         </>
     );

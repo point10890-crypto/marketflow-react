@@ -351,6 +351,15 @@ def create_purchase(post_id):
         f"👉 관리자 페이지에서 승인해주세요."
     )
 
+    # 인앱 알림
+    from app.routes.admin import create_admin_notification
+    create_admin_notification(
+        'purchase_request',
+        '수식마켓 구매 요청',
+        f'{user.name} ({buyer_name}) — {post.title} ({price})',
+        related_id=pr.id,
+    )
+
     return jsonify(pr.to_dict()), 201
 
 

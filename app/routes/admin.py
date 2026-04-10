@@ -13,7 +13,7 @@ import json
 from datetime import datetime, timezone, timedelta
 from flask import Blueprint, request, jsonify
 from app.models import db
-from app.models.user import User, SubscriptionRequest, AdminAuditLog
+from app.models.user import User, SubscriptionRequest, AdminAuditLog, AdminNotification
 from app.auth.decorators import admin_required
 
 admin_bp = Blueprint('admin', __name__)
@@ -87,6 +87,25 @@ def _notify_admin(action: str, target_user: User, detail: str = ''):
 
     import threading
     threading.Thread(target=_send, daemon=True).start()
+
+
+def create_admin_notification(noti_type: str, title: str, message: str, related_id: int | None = None):
+    """관리자 인앱 알림 생성 (best-effort — 실패해도 호출자에 영향 X)"""
+    try:
+        noti = AdminNotification(
+            type=noti_type,
+            title=title,
+            message=message,
+            related_id=related_id,
+        )
+        db.session.add(noti)
+        db.session.commit()
+    except Exception as e:
+        print(f"[AdminNotification] failed: {type(e).__name__}: {e}")
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -656,3 +675,59 @@ def audit_log():
 
     logs = q.limit(limit).all()
     return jsonify({'logs': [l.to_dict() for l in logs], 'count': len(logs)})
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 알림 (인앱)
+# ─────────────────────────────────────────────────────────────────────────────
+
+@admin_bp.route('/notifications')
+@admin_required
+def list_notifications():
+    """관리자 알림 목록 (최근순, 페이지네이션)"""
+    try:
+        page = max(1, int(request.args.get('page') or 1))
+    except (TypeError, ValueError):
+        page = 1
+    per_page = 20
+
+    q = AdminNotification.query.order_by(AdminNotification.created_at.desc())
+    total = q.count()
+    notifications = q.offset((page - 1) * per_page).limit(per_page).all()
+
+    return jsonify({
+        'notifications': [n.to_dict() for n in notifications],
+        'total': total,
+        'page': page,
+        'per_page': per_page,
+        'total_pages': max(1, (total + per_page - 1) // per_page),
+    })
+
+
+@admin_bp.route('/notifications/unread-count')
+@admin_required
+def unread_count():
+    """읽지 않은 알림 수"""
+    count = AdminNotification.query.filter_by(is_read=False).count()
+    return jsonify({'unread_count': count})
+
+
+@admin_bp.route('/notifications/<int:noti_id>/read', methods=['PUT'])
+@admin_required
+def mark_read(noti_id):
+    """알림 읽음 처리"""
+    noti = db.session.get(AdminNotification, noti_id)
+    if not noti:
+        return jsonify({'error': 'Not found'}), 404
+    noti.is_read = True
+    db.session.commit()
+    return jsonify(noti.to_dict())
+
+
+@admin_bp.route('/notifications/read-all', methods=['PUT'])
+@admin_required
+def mark_all_read():
+    """모든 알림 읽음 처리"""
+    AdminNotification.query.filter_by(is_read=False).update({'is_read': True})
+    db.session.commit()
+    return jsonify({'message': 'All notifications marked as read'})
