@@ -43,7 +43,13 @@ if sys.platform == 'win32':
 elif sys.platform == 'darwin':
     font_path = '/System/Library/Fonts/AppleSDGothicNeo.ttc'
 else:
-    font_path = None
+    # Linux: Noto Sans CJK 우선, 없으면 나눔고딕
+    _linux_fonts = [
+        '/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc',
+        '/usr/share/fonts/noto-cjk/NotoSansCJK-Regular.ttc',
+        '/usr/share/fonts/truetype/nanum/NanumGothic.ttf',
+    ]
+    font_path = next((f for f in _linux_fonts if os.path.exists(f)), None)
 
 if font_path and os.path.exists(font_path):
     fm.fontManager.addfont(font_path)

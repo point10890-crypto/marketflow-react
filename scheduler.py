@@ -2624,12 +2624,21 @@ def main():
             try:
                 with open(pid_file, 'r') as f:
                     old_pid = int(f.read().strip())
-                # PID 생존 확인
-                result = subprocess.run(
-                    ['tasklist', '/FI', f'PID eq {old_pid}', '/NH', '/FO', 'CSV'],
-                    capture_output=True, text=True, timeout=10
-                )
-                if str(old_pid) in result.stdout:
+                # PID 생존 확인 (크로스플랫폼)
+                pid_alive = False
+                if os.name == 'nt':
+                    result = subprocess.run(
+                        ['tasklist', '/FI', f'PID eq {old_pid}', '/NH', '/FO', 'CSV'],
+                        capture_output=True, text=True, timeout=10
+                    )
+                    pid_alive = str(old_pid) in result.stdout
+                else:
+                    try:
+                        os.kill(old_pid, 0)  # signal 0 = 존재 확인만
+                        pid_alive = True
+                    except (ProcessLookupError, PermissionError):
+                        pid_alive = False
+                if pid_alive:
                     logger.warning(f"⚠️ Scheduler 이미 실행 중 (PID {old_pid}). 종료.")
                     print(f"[SCHEDULER] 이미 실행 중 (PID {old_pid}). 종료.")
                     sys.exit(0)

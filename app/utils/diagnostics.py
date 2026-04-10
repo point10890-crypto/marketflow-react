@@ -249,17 +249,34 @@ def _check_memory():
         try:
             import subprocess
             pid = os.getpid()
-            result = subprocess.run(
-                ['tasklist', '/FI', f'PID eq {pid}', '/FO', 'CSV', '/NH'],
-                capture_output=True, text=True, timeout=5
-            )
-            # Parse: "python.exe","1234","Console","1","50,000 K"
-            parts = result.stdout.strip().split(',')
-            if len(parts) >= 5:
-                mem_str = parts[-1].strip().strip('"').replace(',', '').replace(' K', '')
-                rss_mb = int(mem_str) / 1024
+            if os.name == 'nt':
+                result = subprocess.run(
+                    ['tasklist', '/FI', f'PID eq {pid}', '/FO', 'CSV', '/NH'],
+                    capture_output=True, text=True, timeout=5
+                )
+                parts = result.stdout.strip().split(',')
+                if len(parts) >= 5:
+                    mem_str = parts[-1].strip().strip('"').replace(',', '').replace(' K', '')
+                    rss_mb = int(mem_str) / 1024
+                else:
+                    rss_mb = -1
             else:
-                rss_mb = -1
+                # Linux/macOS: /proc/<pid>/status 또는 ps
+                try:
+                    with open(f'/proc/{pid}/status', 'r') as f:
+                        for line in f:
+                            if line.startswith('VmRSS:'):
+                                rss_mb = int(line.split()[1]) / 1024
+                                break
+                        else:
+                            rss_mb = -1
+                except FileNotFoundError:
+                    result = subprocess.run(
+                        ['ps', '-o', 'rss=', '-p', str(pid)],
+                        capture_output=True, text=True, timeout=5
+                    )
+                    rss_kb = result.stdout.strip()
+                    rss_mb = int(rss_kb) / 1024 if rss_kb.isdigit() else -1
         except Exception:
             rss_mb = -1
 

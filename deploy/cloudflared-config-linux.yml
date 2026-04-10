@@ -1,0 +1,17 @@
+# MarketFlow Cloudflared config — Linux 홈서버용
+# 위치: /etc/cloudflared/config.yml
+#
+# ⚠ 주의: api.bit-man.net (8080) 은 JUST BUY 프로젝트 소속.
+# JUST BUY가 같은 서버에서 운영되지 않으면 해당 ingress 제거.
+# MarketFlow만 이전하는 경우 아래 설정 사용.
+
+tunnel: 678e9c60-9f8d-4f49-9fba-a49400ef4ca0
+credentials-file: /etc/cloudflared/678e9c60-9f8d-4f49-9fba-a49400ef4ca0.json
+
+ingress:
+  - hostname: marketflow-api.bit-man.net
+    service: http://localhost:5001
+  # JUST BUY가 같은 서버에서 운영 시에만 아래 주석 해제
+  # - hostname: api.bit-man.net
+  #   service: http://localhost:8080
+  - service: http_status:404
