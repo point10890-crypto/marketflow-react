@@ -1,0 +1,302 @@
+{
+  "stock_code": "001440",
+  "stock_name": "대한전선",
+  "generated_at": "2026-04-11T11:01:32.462139+00:00",
+  "financials": {
+    "stock_code": "001440",
+    "corp_code": "00113207",
+    "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2016": {
+        "cash": 1557.2,
+        "total_assets": 13158.1,
+        "short_debt": 2091.7,
+        "long_debt": 4205.2,
+        "total_liab": 10166.9,
+        "total_equity": 2991.2,
+        "revenue": 13740.1,
+        "op_profit": 486.8,
+        "net_income": -158.8
+      },
+      "2017": {
+        "cash": 1092.6,
+        "total_assets": 13356.2,
+        "short_debt": 1382.8,
+        "long_debt": 4961.5,
+        "total_liab": 9976.4,
+        "total_equity": 3379.8,
+        "revenue": 15876.0,
+        "op_profit": 547.1,
+        "net_income": -433.9
+      },
+      "2018": {
+        "cash": 1132.2,
+        "total_assets": 11729.4,
+        "short_debt": 1285.7,
+        "long_debt": 4507.2,
+        "total_liab": 8510.3,
+        "total_equity": 3219.2,
+        "revenue": 16488.2,
+        "op_profit": 494.6,
+        "net_income": 0.0
+      },
+      "2019": {
+        "cash": 1987.8,
+        "total_assets": 12350.8,
+        "short_debt": 1629.8,
+        "long_debt": 0.0,
+        "total_liab": 9224.3,
+        "total_equity": 3126.5,
+        "revenue": 15547.4,
+        "op_profit": 332.2,
+        "net_income": 0.0
+      },
+      "2020": {
+        "cash": 1305.6,
+        "total_assets": 11994.6,
+        "short_debt": 1190.2,
+        "long_debt": 0.0,
+        "total_liab": 8398.3,
+        "total_equity": 3596.3,
+        "revenue": 15968.4,
+        "op_profit": 566.4,
+        "net_income": 0.0
+      },
+      "2021": {
+        "cash": 1479.2,
+        "total_assets": 14208.7,
+        "short_debt": 3505.2,
+        "long_debt": 2300.0,
+        "total_liab": 10331.1,
+        "total_equity": 3877.6,
+        "revenue": 19977.1,
+        "op_profit": 394.6,
+        "net_income": 10.1
+      },
+      "2022": {
+        "cash": 2172.2,
+        "total_assets": 16202.6,
+        "short_debt": 820.8,
+        "long_debt": 2100.0,
+        "total_liab": 7380.6,
+        "total_equity": 8822.0,
+        "revenue": 24505.5,
+        "op_profit": 481.7,
+        "net_income": 0.0
+      },
+      "2023": {
+        "total_assets": 18785.7,
+        "cash": 2893.3,
+        "total_equity": 1244.5,
+        "short_debt": 1653.6,
+        "total_liab": 9252.8,
+        "long_debt": 2250.0,
+        "op_profit": 798.2,
+        "net_income": 0.0,
+        "revenue": 28439.8
+      },
+      "2024": {
+        "total_assets": 26427.3,
+        "cash": 3334.8,
+        "total_equity": 9845.4,
+        "total_liab": 11466.1,
+        "op_profit": 1151.7,
+        "net_income": 0.0,
+        "revenue": 32913.0
+      },
+      "2025": {
+        "total_assets": 34932.8,
+        "cash": 4388.6,
+        "total_equity": 4696.7,
+        "total_liab": 18609.4,
+        "op_profit": 1286.1,
+        "net_income": 0.0,
+        "revenue": 36360.2
+      }
+    },
+    "missing_years": [
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2016,
+        "revenue_eok": 13740,
+        "op_profit_eok": 487,
+        "net_income_eok": -159,
+        "roe_pct": -5.32,
+        "op_margin_pct": 3.54,
+        "debt_ratio_pct": 339.92
+      },
+      {
+        "year": 2017,
+        "revenue_eok": 15876,
+        "op_profit_eok": 547,
+        "net_income_eok": -434,
+        "roe_pct": -12.84,
+        "op_margin_pct": 3.45,
+        "debt_ratio_pct": 295.15
+      },
+      {
+        "year": 2018,
+        "revenue_eok": 16488,
+        "op_profit_eok": 495,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 3.0,
+        "debt_ratio_pct": 264.36
+      },
+      {
+        "year": 2019,
+        "revenue_eok": 15547,
+        "op_profit_eok": 332,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 2.14,
+        "debt_ratio_pct": 295.05
+      },
+      {
+        "year": 2020,
+        "revenue_eok": 15968,
+        "op_profit_eok": 566,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 3.54,
+        "debt_ratio_pct": 233.54
+      },
+      {
+        "year": 2021,
+        "revenue_eok": 19977,
+        "op_profit_eok": 395,
+        "net_income_eok": 10,
+        "roe_pct": 0.26,
+        "op_margin_pct": 1.98,
+        "debt_ratio_pct": 266.41
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 24506,
+        "op_profit_eok": 482,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 1.97,
+        "debt_ratio_pct": 83.66
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 28440,
+        "op_profit_eok": 798,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 2.81,
+        "debt_ratio_pct": 743.81
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 32913,
+        "op_profit_eok": 1152,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 3.5,
+        "debt_ratio_pct": 116.47
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 36360,
+        "op_profit_eok": 1286,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 3.54,
+        "debt_ratio_pct": 396.2
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": 11.32,
+      "op_profit_cagr_pct": 11.29,
+      "best_year": 2025,
+      "worst_year": 2019,
+      "avg_roe_pct": -1.79
+    },
+    "valuation": {
+      "grade": "C",
+      "strengths": [
+        "매출액 및 영업이익의 견조한 성장세: 10년간 매출액과 영업이익 모두 두 자릿수 CAGR을 기록하며 외형 성장과 수익성 개선을 동시에 달성했습니다.",
+        "2025년 사상 최대 매출액 및 영업이익 전망: 분석 기간 마지막 해인 2025년에 가장 높은 매출액과 영업이익을 기록하며 긍정적인 사업 전망을 시사합니다.",
+        "현금 보유액 증가: 현금 보유액이 꾸준히 증가하여 재무 유동성 개선에 기여하고 있습니다."
+      ],
+      "risks": [
+        "지속적인 당기순손실 및 낮은 ROE: 대부분의 연도에 당기순이익이 0이거나 마이너스를 기록하여 주주가치 창출에 어려움이 있습니다.",
+        "높은 부채비율과 변동성: 부채비율이 매우 높고 연도별 변동성이 커서 재무 안정성에 대한 우려가 존재합니다.",
+        "자본총계의 급격한 변동: 자본총계가 특정 연도에 급격히 감소하는 등 자본 구조의 불안정성이 관찰됩니다."
+      ],
+      "one_liner": "매출액과 영업이익은 성장세를 보이나, 지속적인 순손실과 높은 부채비율로 인해 재무 안정성 개선이 시급한 기업입니다."
+    }
+  },
+  "dcf": {
+    "text": "**퀀트 애널리스트 보고서: 대한전선 (001440) DCF 적정가치 분석**\n\n**1. 기본 시나리오 DCF 적정가치 계산**\n\n제공된 재무 데이터와 가정에 따라 대한전선(001440)의 DCF 적정가치를 계산했습니다.\n\n*   **기준 연도:** 2025\n*   **최근 재무 (2024년 기준):**\n    *   매출액: 36,360 억원\n    *   영업이익: 1,286 억원\n*   **가정:**\n    *   FCF 산정: `FCF = 영업이익 × (1 - 0.25) + 감가상각(매출의 10%) - CAPEX(매출의 5%)`\n    *   WACC (할인율): 9%\n    *   영구성장률 (g): 2%\n    *   5년 예측 기간 (2025년 ~ 2029년) 동안 매출액 및 영업이익 성장률은 영구성장률과 동일하게 2%로 가정했습니다.\n\n위 가정을 바탕으로 계산된 **기본 시나리오 DCF 적정가치**는 다음과 같습니다.\n\n*   **기본 시나리오 DCF 적정가치:** 40,545.00 억원\n\n**2. WACC 및 영구성장률(g)에 따른 민감도 분석**\n\nWACC와 영구성장률(g) 변화에 따른 DCF 적정가치 민감도 분석 결과는 아래 표와 같습니다. WACC가 낮아지거나 영구성장률이 높아질수록 기업가치가 상승하는 것을 확인할 수 있습니다.\n\n**DCF 적정가치 민감도 분석 (단위: 억원)**\n\n|             | WACC=7%    | WACC=8%    | WACC=9%    | WACC=10%   | WACC=11%   |\n| :---------- | :--------- | :--------- | :--------- | :--------- | :--------- |\n| **g=1%**    | 48,950.69  | 41,926.10  | 36,658.65  | 32,562.58  | 29,286.45  |\n| **g=2%**    | 56,763.00  | 47,302.50  | 40,545.00  | 35,476.87  | 31,535.00  |\n| **g=3%**    | 68,481.47  | 54,829.46  | 45,726.80  | 39,223.82  | 34,345.68  |\n\n*   `N/A (WACC<=g)`: WACC가 영구성장률보다 작거나 같을 경우, 이론적으로 무한한 가치가 산출되므로 분석에서 제외됩니다.\n\n**3. 요약**\n\n*   **적정가치(기본): 40545.00억원**",
+    "executed_code": "import pandas as pd\n\ndef calculate_dcf(sales_2024, oi_2024, wacc, g_perpetual, forecast_years=5, sales_growth_rate_forecast=None):\n    \"\"\"\n    Calculates the DCF valuation based on the provided parameters.\n\n    Args:\n        sales_2024 (float): Sales for the most recent year (2024).\n        oi_2024 (float): Operating Income for the most recent year (2024).\n        wacc (float): Weighted Average Cost of Capital (e.g., 0.09 for 9%).\n        g_perpetual (float): Perpetual growth rate (e.g., 0.02 for 2%).\n        forecast_years (int): Number of years for explicit forecast.\n        sales_growth_rate_forecast (float): Annual growth rate for sales and operating income\n                                            during the forecast period. If None, uses g_perpetual.\n\n    Returns:\n        float: The calculated DCF value.\n    \"\"\"\n    if sales_growth_rate_forecast is None:\n        sales_growth_rate_forecast = g_perpetual # Assuming sales and OI grow at perpetual growth rate if not specified\n\n    tax_rate = 0.25\n    depreciation_rate_of_sales = 0.10\n    capex_rate_of_sales = 0.05\n\n    # Initialize lists to store projected values\n    projected_sales = []\n    projected_oi = []\n    projected_depreciation = []\n    projected_capex = []\n    projected_fcf = []\n    pv_fcf = []\n\n    # Project for the forecast period\n    current_sales = sales_2024\n    current_oi = oi_2024\n\n    for i in range(1, forecast_years + 1):\n        # Project Sales and Operating Income\n        current_sales *= (1 + sales_growth_rate_forecast)\n        current_oi *= (1 + sales_growth_rate_forecast)\n        projected_sales.append(current_sales)\n        projected_oi.append(current_oi)\n\n        # Calculate Depreciation and CAPEX\n        depreciation = current_sales * depreciation_rate_of_sales\n        capex = current_sales * capex_rate_of_sales\n        projected_depreciation.append(depreciation)\n        projected_capex.append(capex)\n\n        # Calculate FCF\n        fcf = current_oi * (1 - tax_rate) + depreciation - capex\n        projected_fcf.append(fcf)\n\n        # Calculate Present Value of FCF\n        pv_fcf.append(fcf / ((1 + wacc) ** i))\n\n    # Calculate Terminal Value\n    # FCF for the year after the forecast period (Year 6)\n    fcf_last_forecast_year = projected_fcf[-1]\n    fcf_terminal_year = fcf_last_forecast_year * (1 + g_perpetual)\n\n    # Terminal Value formula\n    if wacc <= g_perpetual:\n        # This case should ideally not happen for a stable company, or implies infinite value.\n        # For practical purposes, WACC must be greater than g.\n        return float('inf') # Or handle as an error\n\n    terminal_value = fcf_terminal_year / (wacc - g_perpetual)\n\n    # Calculate Present Value of Terminal Value\n    pv_terminal_value = terminal_value / ((1 + wacc) ** forecast_years)\n\n    # Total DCF Value\n    total_dcf_value = sum(pv_fcf) + pv_terminal_value\n\n    return total_dcf_value\n\n# Given data and base assumptions\nsales_2024_base = 36360 # 억원\noi_2024_base = 1286 # 억원\nwacc_base = 0.09\ng_perpetual_base = 0.02\nforecast_years_base = 5\n\n# For the forecast period growth, I'll use g_perpetual_base as no other growth rate is specified.\n# This is a common simplification if not explicitly given.\n\n# 1. 기본 시나리오 DCF 적정가치(억원) 계산\ndcf_base_scenario = calculate_dcf(\n    sales_2024=sales_2024_base,\n    oi_2024=oi_2024_base,\n    wacc=wacc_base,\n    g_perpetual=g_perpetual_base,\n    forecast_years=forecast_years_base,\n    sales_growth_rate_forecast=g_perpetual_base # Using g_perpetual for forecast period growth\n)\n\nprint(f\"기본 시나리오 DCF 적정가치: {dcf_base_scenario:.2f} 억원\")\n\n# 2. WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 출력\nwacc_values = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_values = [0.01, 0.02, 0.03]\n\nsensitivity_results = pd.DataFrame(index=[f'g={g*100:.0f}%' for g in g_values],\n                                   columns=[f'WACC={wacc*100:.0f}%' for wacc in wacc_values])\n\nfor g in g_values:\n    for wacc in wacc_values:\n        # Ensure WACC > g for terminal value calculation\n        if wacc <= g:\n            sensitivity_results.loc[f'g={g*100:.0f}%', f'WACC={wacc*100:.0f}%'] = \"N/A (WACC<=g)\"\n        else:\n            value = calculate_dcf(\n                sales_2024=sales_2024_base,\n                oi_2024=oi_2024_base,\n                wacc=wacc,\n                g_perpetual=g,\n                forecast_years=forecast_years_base,\n                sales_growth_rate_forecast=g_perpetual_base # Keep forecast growth consistent with base scenario\n            )\n            sensitivity_results.loc[f'g={g*100:.0f}%', f'WACC={wacc*100:.0f}%'] = f\"{value:.2f}\"\n\nprint(\"\\nDCF 적정가치 민감도 분석 (억원):\")\nprint(sensitivity_results)\n\n# 3. 마지막에 '적정가치(기본): {value}억원' 형태로 요약 출력\nprint(f\"\\n적정가치(기본): {dcf_base_scenario:.2f}억원\")",
+    "code_output": "기본 시나리오 DCF 적정가치: 40545.00 억원\n\nDCF 적정가치 민감도 분석 (억원):\n       WACC=7%   WACC=8%   WACC=9%  WACC=10%  WACC=11%\ng=1%  48950.69  41926.10  36658.65  32562.58  29286.45\ng=2%  56763.00  47302.50  40545.00  35476.87  31535.00\ng=3%  68481.47  54829.46  45726.80  39223.82  34345.68\n\n적정가치(기본): 40545.00억원"
+  },
+  "news": {
+    "text": "## 대한전선(001440) 투자 분석: 성장 동력 확보로 재무 안정성 개선 기대\n\n대한전선(001440)은 지난 10년간 매출액과 영업이익의 성장세를 보였음에도 불구하고, 지속적인 순손실과 높은 부채비율로 인해 재무 안정성 개선이 시급하다는 평가(투자등급 C)를 받았습니다. 그러나 최근 2주간의 시장 동향과 뉴스 분석 결과, 대한전선은 글로벌 전력 인프라 시장의 변화와 자체적인 사업 구조 개편을 통해 재무적 약점을 극복하고 강력한 성장 동력을 확보하고 있는 것으로 판단됩니다.\n\n### 1. 재무 데이터 스토리와 현재 시장 컨센서스의 일치/불일치\n\n제공된 10년 재무제표 분석 결과는 '지속적인 순손실'과 '높은 부채비율'을 지적하며 재무 안정성 개선의 시급성을 강조합니다. 이는 과거 대한전선의 재무 상태를 반영하는 정확한 분석입니다.\n\n그러나 현재 시장 컨센서스는 이러한 과거의 재무적 약점에도 불구하고 대한전선의 미래 성장 잠재력에 크게 주목하며 매우 긍정적인 시각을 유지하고 있습니다. 시장은 AI 산업의 폭발적인 성장으로 인한 전력 부족 현상, 글로벌 해상풍력 시장의 확대, 미국과 유럽의 노후 전력망 교체 등 전 세계적인 전력 인프라 '슈퍼 사이클'의 최대 수혜주로 대한전선을 꼽고 있습니다.\n\n특히, 대한전선이 고부가가치 제품인 초고압 및 해저케이블 사업을 중심으로 사업 구조를 전환하고 있으며, 이를 통해 수익성 개선이 본격화될 것으로 전망하고 있습니다. 실제로 2025년 4분기 매출액과 영업이익이 시장 기대치를 상회했으며, 고수익성 초고압 케이블 매출 비중 확대가 실적 개선을 이끌었다는 분석이 나왔습니다. 또한, 2026년부터는 수익성 높은 프로젝트 매출 인식이 본격화되며 영업이익률이 더욱 개선될 것으로 예상됩니다.\n\n결론적으로, 과거 재무 데이터가 보여주는 스토리와 현재 시장 컨센서스는 **부분적으로 불일치**합니다. 시장은 과거의 재무 안정성 문제를 인지하고 있지만, 현재 진행 중인 사업 구조 개편과 우호적인 시장 환경이 미래의 재무 안정성 개선과 성장을 이끌 것이라는 강한 기대감을 반영하고 있습니다.\n\n### 2. 재무제표에서 드러나지 않는 리스크 또는 호재\n\n**주요 호재:**\n\n*   **글로벌 전력 인프라 슈퍼 사이클 수혜:** AI 데이터센터 확충, 신재생에너지(해상풍력) 확대, 노후 전력망 교체 등으로 전 세계적인 초고압/해저케이블 수요가 폭증하고 있습니다. 이는 대한전선이 강점을 가진 고부가가치 제품군의 수요를 직접적으로 견인할 것입니다.\n*   **해저케이블 사업 경쟁력 강화:** 당진 해저케이블 공장 증설과 신규 포설선 확보를 통해 제조뿐만 아니라 시공 역량까지 내재화하여 턴키(Turnkey) 수주 경쟁력을 강화하고 있습니다. 2025년 하반기부터 국내 해저케이블 매출이 본격화될 전망입니다.\n*   **HVDC(초고압직류송전) 기술력 및 시장 확대:** HVDC 해저케이블 2공장 건설(2027년 준공 예정)을 통해 고부가가치 제품 생산 능력을 확대하고 있으며, 서해안 에너지 고속도로 등 국내외 HVDC 송전망 확충 사업의 수혜가 예상됩니다. HVDC는 높은 기술 장벽으로 소수 기업만이 경쟁하는 시장입니다.\n*   **사상 최대 수주잔고 확보:** 2025년 수주잔고가 3조 7천억 원으로 역대 최대 수준을 기록했으며, 이는 약 2년치 매출에 해당하는 물량으로 중장기 실적 가시성을 확보했습니다. 특히 수익성 높은 해외 프로젝트 비중이 확대되고 있습니다.\n*   **전선 업계 공급 부족 우려:** 최근 전선 업계의 재고 부족 및 생산 차질 우려가 제기되고 있어, 이는 제품 가격 인상으로 이어져 수익성 개선에 긍정적인 영향을 미칠 수 있습니다.\n\n**주요 리스크:**\n\n*   **원자재 가격 변동성:** 구리 등 주요 원자재 가격 변동은 수익성에 직접적인 영향을 미칠 수 있습니다. 다만, 수주 산업 특성상 발주처와 가격 연동 계약을 맺는 경우가 많아 어느 정도 헤징이 가능합니다.\n*   **대규모 투자에 따른 단기적 재무 부담:** HVDC 2공장 건설 등 대규모 설비 투자가 진행 중이며, 이는 단기적인 부채 증가로 이어질 수 있습니다. 그러나 이러한 투자는 미래 성장을 위한 필수적인 과정으로 평가됩니다.\n\n### 3. 최종 판정\n\n대한전선은 과거 재무제표상의 약점에도 불구하고, 글로벌 전력 인프라 시장의 구조적인 성장과 고부가가치 제품 중심의 사업 재편을 통해 강력한 성장 모멘텀을 확보했습니다. 사상 최대 수주잔고와 해저케이블, HVDC 등 신사업의 가시화는 향후 매출액 증가뿐만 아니라 수익성 개선에 크게 기여할 것으로 예상됩니다. 이미 2025년 4분기 실적에서 턴어라운드 조짐을 보였으며, 2026년부터는 본격적인 이익 성장이 기대됩니다.\n\n물론 대규모 투자에 따른 재무 부담과 원자재 가격 변동성 등의 리스크는 존재하지만, 현재 시장은 이러한 리스크보다는 미래 성장성에 더 큰 비중을 두고 긍정적으로 평가하고 있습니다. 다수의 증권사에서 '매수' 의견과 함께 목표주가를 상향하고 있는 점도 이러한 판단을 뒷받침합니다.\n\n따라서, 단기적인 재무 안정성보다는 중장기적인 성장 잠재력에 초점을 맞춘다면 현재 시점에서는 긍정적인 관점을 유지하는 것이 합리적입니다.\n\n**최종 판정: 매수**",
+    "citations": [
+      {
+        "title": "tistory.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGKo-QFgzl0jOHwtoSat9kHurACXLrFE9DNUBjJJ08rX1GAZImImgtoBkSFyBsNS-7IOUZ1dW13ISiMA7n8ptuxWskeHeu43BurD-9X5wixdlXxWRNPlHLTg0rzPEYn-ElqwxzSiHoa75Rc6xFqi-ikn25naGAMWsOIzpzzzJ5m89De_yvE0cLoz6UehBivS2GbyztkQ7UqqzfZyNeeT1ICFm_739yrDmBHAeCy4gFId61Theher9l7R7zJdY_4IDwSaINqlt6w6Cjrh6Fx9ER0PkCdrtkCa8f_Kyo7xoHKs6fEDH86IjSiuJ0oH0eXhX9fBap1tsfRHHLmWmQ89nDloYd2HHDb"
+      },
+      {
+        "title": "imfnsec.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHwGRU0HkvigQyIQyv2I3E1taGmLgTe_EmXqofcMeXC1LuEeJ-h3Rooi3T0DE69odhlswv9Mg8Mnnw2E_BJbJiE3wypysr46dI_uWmZM0_5E7Mr_6oCgtCI8iyVfAFp326e8U-AoRa_Crqc2TIydSUA0FMlP8W0ijjJmBc14uqF"
+      },
+      {
+        "title": "edaily.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQE-TCEiGGluhCFYvMbjGaJZB69dMGnY3IyytWCtsR14cHd_cJlBS7VnLUjIt-LjzPfPSvZDmdJGY-gJIHTgOpojWTs8AWXHpOXgVj4T2h_3pnuFMmWgKil0dKjpBZ1YszGhFoTiIs7iNT1JpPYxse7vMWzf7tFA5MwDIKsq"
+      },
+      {
+        "title": "alphasquare.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQH2jdnF94DDN7DyRUL6ryIE9sr1N4jhYKTUr8pdZHOMnm6BXTzq1iSH17hh1jALfI6W90gEk5zWHNoX8GvOckzZpr98PNYYwH7qruXqEYL5fBfaKZPO9Y6d36UdBt1uVObe41_owj67W49K9QEDWLQR3yWNbPfyw9AhUPe53NmW1BOkAjlLUkpdpSdan-Nk"
+      },
+      {
+        "title": "newsprime.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHjrUlvvwupwTEQkkSYArD3KuIdwP6rL_Zuc6o0OwG4dAogivuKDakGjgfYBYl0EBrLCLV3CleTMTZOMO9VJLNrifHCIzjX5BIcCwoTmayFFfpzAnfgEG9zK1ikpjbZ1VINvn56-PoZf2KekyOxi78x0ykmAaURjg=="
+      },
+      {
+        "title": "daum.net",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHpZBD7fe-0Hxjd7es0g9tV68Oa_eyQkvdNdr2G7xlfMv7O7jlQKEo_bi3wpQlNQZiRfBslSxnvMtVaf3uZ91WOeG5rC1n23g9K1_bNfdT8Y83riLj-YuzZpyQ="
+      },
+      {
+        "title": "youtube.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFhkrojznM1PGD_lYIGy8c5w6s-0W3BaIzEXrLGiTROaKX80-LHxn7VZmDpFAnaJFbdg2M1O6f3dlVYn23Wzmq-RVelwphuR7Kw9OT4g3Z8E7jCD-hpdnU7g81QTz0Vu6H1F9eQbB8="
+      },
+      {
+        "title": "incheonilbo.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEAN_kcV76QJ-FZicX-d3B3GzL40_HAmx1R1NcR6heROj9lWuVEdfHIE-XeJ7t5UQpQ6aD0ED0D5R3sGRb4cKBdqdWshZ19aVm_HvYibdQ6lPkdptEVxKlVHy6sO9Xcijy6JZR39l_I6bvmV_eI8JwAZU9Xtj3SJUWXEg=="
+      },
+      {
+        "title": "daum.net",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGeEbTxow_U1frgHhNRZi-TWD39W8rpg--Ylbb6kkE0NZApBrYjz_pfh8g1wMTqzMiJsRXiXuIUxfiFB9lFrBPDjQeDnUSCzkcmjgwqnDhmoUGWaxGefUNUiDkbgiwH3okyHtUKVpBpHVEPNY_UPxVwPPBm"
+      },
+      {
+        "title": "pstatic.net",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFnk9R-wtbBmWZekjU-A00y_Qzk-ZjoYhsI8uGBKkRw4pnw-CgsbHqG5q3MF4NiRYRl1LGnc9890E2qfiNTu9uDbjShs_pSBRVtMxrqfEz-swOf-R1hJdMSDDgfjI65hS0XioY-z40Vq-Vl_M3F0gLzT6gdFa4OXOxCfRGqXcvEDBtNXmY3vYyKxHw_m-Q="
+      }
+    ]
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=00113207",
+    "summary": "공시 페이지 접근 제한"
+  }
+}
