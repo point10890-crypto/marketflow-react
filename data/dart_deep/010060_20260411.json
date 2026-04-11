@@ -1,0 +1,268 @@
+{
+  "stock_code": "010060",
+  "stock_name": "OCI홀딩스",
+  "generated_at": "2026-04-11T13:42:08.226192+00:00",
+  "financials": {
+    "stock_code": "010060",
+    "corp_code": "00148896",
+    "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2016": {
+        "cash": 3386.1,
+        "total_assets": 62485.6,
+        "total_liab": 29839.6,
+        "total_equity": 32646.0,
+        "revenue": 27393.6,
+        "op_profit": 1213.5,
+        "net_income": 2421.1
+      },
+      "2017": {
+        "cash": 9139.7,
+        "total_assets": 60778.2,
+        "total_liab": 26621.3,
+        "revenue": 36316.3,
+        "op_profit": 2844.5,
+        "net_income": 2349.0
+      },
+      "2018": {
+        "cash": 7442.7,
+        "total_assets": 56595.9,
+        "total_liab": 21670.3,
+        "revenue": 31121.4,
+        "op_profit": 1586.7,
+        "net_income": 1037.9
+      },
+      "2019": {
+        "cash": 4875.5,
+        "total_assets": 48112.1,
+        "total_liab": 21254.9,
+        "revenue": 26051.4,
+        "op_profit": -1806.1,
+        "net_income": -8073.9
+      },
+      "2020": {
+        "cash": 4435.5,
+        "total_assets": 44372.4,
+        "total_liab": 20515.1,
+        "revenue": 20025.2,
+        "op_profit": -861.5,
+        "net_income": -2511.6
+      },
+      "2021": {
+        "cash": 6987.0,
+        "total_assets": 57040.6,
+        "total_liab": 25802.7,
+        "revenue": 32440.0,
+        "op_profit": 6259.8,
+        "net_income": 6476.5
+      },
+      "2022": {
+        "cash": 12459.9,
+        "total_assets": 67455.3,
+        "total_liab": 27341.4,
+        "revenue": 46713.2,
+        "op_profit": 9766.7,
+        "net_income": 8802.9
+      },
+      "2023": {
+        "total_assets": 59565.5,
+        "cash": 12138.2,
+        "total_equity": 8402.0,
+        "total_liab": 21416.2,
+        "op_profit": 5312.2,
+        "net_income": 7135.1,
+        "revenue": 26496.9
+      },
+      "2024": {
+        "total_assets": 80936.5,
+        "cash": 11432.6,
+        "total_equity": 8402.1,
+        "total_liab": 32581.1,
+        "op_profit": 1015.3,
+        "net_income": 1137.2,
+        "revenue": 35773.8
+      },
+      "2025": {
+        "total_assets": 78708.7,
+        "cash": 10347.4,
+        "total_equity": 8402.1,
+        "total_liab": 31393.4,
+        "op_profit": -576.3,
+        "net_income": 0.0,
+        "revenue": 33800.6
+      }
+    },
+    "missing_years": [
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2016,
+        "revenue_eok": 27394,
+        "op_profit_eok": 1214,
+        "net_income_eok": 2421,
+        "roe_pct": 7.416,
+        "op_margin_pct": 4.432,
+        "debt_ratio_pct": 91.392
+      },
+      {
+        "year": 2017,
+        "revenue_eok": 36316,
+        "op_profit_eok": 2844,
+        "net_income_eok": 2349,
+        "op_margin_pct": 7.831
+      },
+      {
+        "year": 2018,
+        "revenue_eok": 31121,
+        "op_profit_eok": 1587,
+        "net_income_eok": 1038,
+        "op_margin_pct": 5.099
+      },
+      {
+        "year": 2019,
+        "revenue_eok": 26051,
+        "op_profit_eok": -1806,
+        "net_income_eok": -8074,
+        "op_margin_pct": -6.932
+      },
+      {
+        "year": 2020,
+        "revenue_eok": 20025,
+        "op_profit_eok": -862,
+        "net_income_eok": -2512,
+        "op_margin_pct": -4.305
+      },
+      {
+        "year": 2021,
+        "revenue_eok": 32440,
+        "op_profit_eok": 6260,
+        "net_income_eok": 6476,
+        "op_margin_pct": 19.297
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 46713,
+        "op_profit_eok": 9767,
+        "net_income_eok": 8803,
+        "op_margin_pct": 20.908
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 26497,
+        "op_profit_eok": 5312,
+        "net_income_eok": 7135,
+        "roe_pct": 84.919,
+        "op_margin_pct": 20.048,
+        "debt_ratio_pct": 254.892
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 35774,
+        "op_profit_eok": 1015,
+        "net_income_eok": 1137,
+        "roe_pct": 13.532,
+        "op_margin_pct": 2.837,
+        "debt_ratio_pct": 387.777
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 33801,
+        "op_profit_eok": -576,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": -1.704,
+        "debt_ratio_pct": 373.637
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": 2.39,
+      "op_profit_cagr_pct": -191.6,
+      "best_year": 2022,
+      "worst_year": 2019,
+      "avg_roe_pct": 26.467
+    },
+    "valuation": {
+      "grade": "D",
+      "strengths": [
+        "매출액은 변동성이 크지만, 2020년 이후 2022년까지 큰 폭의 회복세를 보인 경험이 있습니다.",
+        "재무제표상 현금 보유액이 꾸준히 증가하여 유동성 측면에서 안정적인 모습을 보입니다.",
+        "2021년과 2022년에 높은 영업이익률을 달성하며 수익성 개선 잠재력을 입증했습니다."
+      ],
+      "risks": [
+        "영업이익과 당기순이익의 극심한 변동성 및 반복적인 대규모 손실 발생은 사업의 예측 가능성을 크게 저해합니다.",
+        "2025년 예상 영업손실은 향후 수익성에 대한 우려를 증폭시키며, 사업 환경의 불확실성을 반영합니다.",
+        "자본총계가 0으로 표시된 기간이 길어 재무구조 분석에 어려움이 있으며, 부채비율이 높은 수준을 유지하는 경향이 있습니다."
+      ],
+      "one_liner": "극심한 이익 변동성과 반복되는 손실로 인해 투자 위험이 매우 높은 기업입니다."
+    }
+  },
+  "dcf": {
+    "text": "퀀트 애널리스트로서 OCI홀딩스(010060)의 DCF 적정가치를 계산하고 민감도 분석을 수행했습니다.\n\n**1. FCF 계산 (기본 시나리오)**\n\n주어진 재무 데이터와 가정에 따라 연간 FCF를 계산합니다.\n*   매출액: 33801 억원\n*   영업이익: -576 억원\n*   세율: 25% (FCF 공식에서 `(1 - 0.25)`로 가정)\n*   감가상각: 매출액의 10% = 33801 * 0.10 = 3380.1 억원\n*   CAPEX: 매출액의 5% = 33801 * 0.05 = 1690.05 억원\n\nFCF = 영업이익 × (1 - 세율) + 감가상각 - CAPEX\nFCF = -576 × (1 - 0.25) + 3380.1 - 1690.05\nFCF = -432 + 3380.1 - 1690.05\nFCF = 1258.05 억원\n\n5년 예측 기간 동안 매출액 및 영업이익 성장률에 대한 가정이 없으므로, FCF는 매년 1258.05억원으로 일정하다고 가정합니다.\n\n**2. DCF 적정가치 계산 (기본 시나리오)**\n\n*   WACC (할인율): 9%\n*   영구성장률 (g): 2%\n*   예측 기간: 5년\n\nDCF 적정가치는 예측 기간 동안의 FCF 현재가치와 터미널 밸류(Terminal Value)의 현재가치를 합산하여 계산됩니다.\n\n\n**3. 분석 결과**\n\n**DCF 적정가치 민감도 그리드 (억원):**\n\n|             | g=1%     | g=2%     | g=3%     |\n| :---------- | :------- | :------- | :------- |\n| **WACC=7%** | 20257.29 | 23456.49 | 28255.29 |\n| **WACC=8%** | 17376.88 | 19578.56 | 22660.91 |\n| **WACC=9%** | 15216.16 | 16807.65 | 18929.64 |\n| **WACC=10%**| 13535.24 | 14728.66 | 16263.06 |\n| **WACC=11%**| 12190.20 | 13110.99 | 14261.99 |\n\n**요약:**\n\n적정가치(기본): 16807.65억원\n\n**결론:**\n\n주어진 가정(WACC 9%, 영구성장률 g 2%) 하에 OCI홀딩스의 DCF 적정가치는 약 16,807.65억원으로 산출되었습니다. 민감도 분석 결과, WACC가 낮아지고 영구성장률 g가 높아질수록 적정가치는 상승하는 경향을 보입니다. 특히 WACC가 7%이고 g가 3%일 경우 적정가치는 28,255.29억원까지 상승하며, WACC가 11%이고 g가 1%일 경우 12,190.20억원으로 하락합니다. 이는 DCF 모델이 할인율과 영구성장률 가정에 매우 민감함을 보여줍니다.\n\n**참고:** 본 분석은 주어진 재무 데이터와 가정에 기반하며, 예측 기간 동안 매출액 및 영업이익이 일정하다는 보수적인 가정을 포함하고 있습니다. 실제 기업 가치는 시장 상황, 미래 성장률, 경쟁 환경 등 다양한 요인에 따라 달라질 수 있습니다.",
+    "executed_code": "# Base Scenario DCF Calculation\n\n# Input Data (억원)\nrevenue = 33801\noperating_income = -576\n\n# Assumptions\ntax_rate = 0.25\ndepreciation_rate = 0.10\ncapex_rate = 0.05\nwacc_base = 0.09\ng_base = 0.02\nprojection_years = 5\n\n# Calculate FCF for a single year\n# Assuming revenue, operating income, depreciation, and CAPEX remain constant for the projection period\n# as no growth rates are provided for these items.\ndepreciation = revenue * depreciation_rate\ncapex = revenue * capex_rate\n\nfcf_per_year = operating_income * (1 - tax_rate) + depreciation - capex\nprint(f'{fcf_per_year=}')\n\n# Calculate Present Value of FCFs for the projection period\npv_fcf_sum = 0\nfor t in range(1, projection_years + 1):\n    pv_fcf_sum += fcf_per_year / ((1 + wacc_base) ** t)\nprint(f'{pv_fcf_sum=}')\n\n# Calculate Terminal Value\n# FCF at the end of the projection period (year 5) is fcf_per_year\nterminal_value = fcf_per_year * (1 + g_base) / (wacc_base - g_base)\nprint(f'{terminal_value=}')\n\n# Calculate Present Value of Terminal Value\npv_terminal_value = terminal_value / ((1 + wacc_base) ** projection_years)\nprint(f'{pv_terminal_value=}')\n\n# Total Intrinsic Value\nintrinsic_value_base = pv_fcf_sum + pv_terminal_value\nprint(f'{intrinsic_value_base=}')\n\n\n\nimport pandas as pd\n\n# Define the DCF calculation function\ndef calculate_dcf(fcf_per_year, wacc, g, projection_years):\n    if wacc <= g:\n        return float('nan') # Use NaN for invalid cases where WACC <= g\n\n    pv_fcf_sum = 0\n    for t in range(1, projection_years + 1):\n        pv_fcf_sum += fcf_per_year / ((1 + wacc) ** t)\n\n    # FCF for Terminal Value calculation is FCF_last_projection_year * (1 + g)\n    # In this model, FCF_last_projection_year is fcf_per_year\n    terminal_value = fcf_per_year * (1 + g) / (wacc - g)\n    pv_terminal_value = terminal_value / ((1 + wacc) ** projection_years)\n\n    return pv_fcf_sum + pv_terminal_value\n\n# Re-calculate fcf_per_year and projection_years for clarity within this block\n# Input Data (억원)\nrevenue = 33801\noperating_income = -576\n\n# Assumptions for FCF calculation\ntax_rate = 0.25\ndepreciation_rate = 0.10\ncapex_rate = 0.05\nprojection_years = 5\n\n# Calculate FCF for a single year (assuming constant values for the projection period)\ndepreciation = revenue * depreciation_rate\ncapex = revenue * capex_rate\nfcf_per_year = operating_income * (1 - tax_rate) + depreciation - capex\n\n# Base WACC and g for summary output\nwacc_base = 0.09\ng_base = 0.02\n\n# Calculate base scenario value for summary\nintrinsic_value_base = calculate_dcf(fcf_per_year, wacc_base, g_base, projection_years)\n\n# Sensitivity Analysis parameters\nwacc_values = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_values = [0.01, 0.02, 0.03]\n\n# Create a DataFrame to store results\nsensitivity_df = pd.DataFrame(index=[f'WACC={w*100:.0f}%' for w in wacc_values],\n                              columns=[f'g={g*100:.0f}%' for g in g_values])\n\nfor wacc in wacc_values:\n    for g in g_values:\n        value = calculate_dcf(fcf_per_year, wacc, g, projection_years)\n        sensitivity_df.loc[f'WACC={wacc*100:.0f}%', f'g={g*100:.0f}%'] = round(value, 2)\n\nprint(\"DCF 적정가치 민감도 그리드 (억원):\")\nprint(sensitivity_df)\nprint(f\"\\n적정가치(기본): {round(intrinsic_value_base, 2)}억원\")\n\n\nimport pandas as pd\n\n# Define the DCF calculation function\ndef calculate_dcf(fcf_per_year, wacc, g, projection_years):\n    if wacc <= g:\n        return float('nan') # WACC가 g보다 작거나 같으면 계산 불가\n\n    pv_fcf_sum = 0\n    for t in range(1, projection_years + 1):\n        pv_fcf_sum += fcf_per_year / ((1 + wacc) ** t)\n\n    # 터미널 밸류 계산 (예측 기간 마지막 FCF * (1 + g) / (WACC - g))\n    terminal_value = fcf_per_year * (1 + g) / (wacc - g)\n    pv_terminal_value = terminal_value / ((1 + wacc) ** projection_years)\n\n    return pv_fcf_sum + pv_terminal_value\n\n# Input Data (억원)\nrevenue = 33801\noperating_income = -576\n\n# Assumptions for FCF calculation\ntax_rate = 0.25\ndepreciation_rate = 0.10\ncapex_rate = 0.05\nprojection_years = 5\n\n# Calculate FCF for a single year (예측 기간 동안 일정하다고 가정)\ndepreciation = revenue * depreciation_rate\ncapex = revenue * capex_rate\nfcf_per_year = operating_income * (1 - tax_rate) + depreciation - capex\n\n# Base WACC and g for summary output\nwacc_base = 0.09\ng_base = 0.02\n\n# Calculate base scenario value for summary\nintrinsic_value_base = calculate_dcf(fcf_per_year, wacc_base, g_base, projection_years)\n\n# Sensitivity Analysis parameters\nwacc_values = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_values = [0.01, 0.02, 0.03]\n\n# Create a DataFrame to store results\nsensitivity_df = pd.DataFrame(index=[f'WACC={w*100:.0f}%' for w in wacc_values],\n                              columns=[f'g={g*100:.0f}%' for g in g_values])\n\nfor wacc in wacc_values:\n    for g in g_values:\n        value = calculate_dcf(fcf_per_year, wacc, g, projection_years)\n        sensitivity_df.loc[f'WACC={wacc*100:.0f}%', f'g={g*100:.0f}%'] = round(value, 2)\n\nprint(\"DCF 적정가치 민감도 그리드 (억원):\")\nprint(sensitivity_df)\nprint(f\"\\n적정가치(기본): {round(intrinsic_value_base, 2)}억원\")",
+    "code_output": "fcf_per_year=1258.0500000000002\npv_fcf_sum=4893.375771859627\nterminal_value=18331.58571428572\npv_terminal_value=11914.27291633266\nintrinsic_value_base=16807.648688192286\n\nDCF 적정가치 민감도 그리드 (억원):\n              g=1%      g=2%      g=3%\nWACC=7%   20257.29  23456.49  28255.29\nWACC=8%   17376.88  19578.56  22660.91\nWACC=9%   15216.16  16807.65  18929.64\nWACC=10%  13535.24  14728.66  16263.06\nWACC=11%   12190.2  13110.99  14261.99\n\n적정가치(기본): 16807.65억원\n\nDCF 적정가치 민감도 그리드 (억원):\n              g=1%      g=2%      g=3%\nWACC=7%   20257.29  23456.49  28255.29\nWACC=8%   17376.88  19578.56  22660.91\nWACC=9%   15216.16  16807.65  18929.64\nWACC=10%  13535.24  14728.66  16263.06\nWACC=11%   12190.2  13110.99  14261.99\n\n적정가치(기본): 16807.65억원"
+  },
+  "news": {
+    "text": "## OCI홀딩스(010060) 투자 분석 보고서\n\n**투자등급 D, 요약: 극심한 이익 변동성과 반복되는 손실로 인해 투자 위험이 매우 높은 기업입니다.** (제공된 정보)\n\n---\n\n### 1. 재무 데이터 스토리와 현재 시장 컨센서스의 일치/불일치\n\n제공된 10년 재무제표 분석 결과는 OCI홀딩스가 극심한 이익 변동성과 반복되는 손실로 인해 투자 위험이 높은 기업(투자등급 D)임을 보여줍니다. 이는 과거의 불안정한 실적 흐름을 반영합니다.\n\n그러나 최근 2주간의 시장 컨센서스는 이러한 과거 재무 데이터와 **불일치**하며, 매우 긍정적인 전망을 제시하고 있습니다.\n*   미래에셋증권은 OCI홀딩스의 목표주가를 기존 18만 2천 원에서 27만 원으로 대폭 상향 조정하며 '섹터 내 Top Pick'을 유지했습니다. 이는 밸류에이션 리레이팅에 기반한 것으로, 적용 12개월 선행 주가수익비율(PER)을 기존 10배에서 15배로 상향 조정했습니다.\n*   삼성증권 또한 OCI홀딩스에 대해 '매수' 투자의견과 목표주가 24만 5천 원을 제시하며 커버리지를 개시했습니다.\n*   2025년 4분기 영업이익은 273억 원으로 컨센서스(238억 원)를 15% 상회하며 흑자 전환했으며, 2026년 1분기 영업이익은 전분기 대비 160% 증가한 709억 원으로 전망됩니다.\n*   최근 외국인과 기관의 동시 순매수세가 유입되며 주가가 상승하는 모습도 포착되었습니다.\n\n이는 과거의 부진한 재무 실적에도 불구하고, 시장이 OCI홀딩스의 미래 성장 잠재력과 사업 구조 변화에 주목하며 기업 가치를 재평가하고 있음을 시사합니다.\n\n### 2. 재무제표에서 드러나지 않는 리스크 또는 호재\n\n**주요 호재:**\n*   **에너지 안보 패러다임 변화 수혜:** 지정학적 위기로 인한 에너지 안보의 중요성 증대와 미국 등 주요국이 중국 태양광 공급망에서 벗어나려는 움직임이 가속화되면서, 비중국 폴리실리콘 생산자인 OCI홀딩스의 수혜가 기대됩니다. 이는 폴리실리콘 수요 증가 및 가격 상승으로 이어질 전망입니다.\n*   **폴리실리콘 업황 반등 진입:** 증권가에서는 현재 폴리실리콘 시장이 2013년 가격 반등 국면과 유사하며, 중국 공급과잉 이후 구조조정, 보호무역 정책 강화, 태양광 수요 회복이 맞물려 업황 반등이 기대된다고 분석합니다.\n*   **사업 포트폴리오 다각화 및 고부가가치 전환:** 단순 폴리실리콘 사업자에서 벗어나 반도체용 폴리실리콘 사업을 확대하고 있습니다. 말레이시아 자회사 OCI TerraSus는 국제금융공사(IFC)로부터 1억 2,500만 달러(약 1,900억 원) 규모의 투자를 유치하여 반도체 합작법인 OTSM 프로젝트를 추진하며, 2029년부터 초고순도 반도체용 폴리실리콘을 상업 생산할 계획입니다. 또한 태양광 웨이퍼 사업 진출 및 대규모 발전 자산 파이프라인(3.2GW 태양광, 3.4GW ESS)을 보유하고 있어 복합 태양광 발전 사업자로의 진화가 기대됩니다.\n*   **ESG 경영 인정:** OCI홀딩스는 모건스탠리캐피탈인터내셔널(MSCI)이 주관하는 2025년 ESG 평가에서 종합 A등급을 획득하며 ESG 경쟁력을 인정받았습니다.\n\n**주요 리스크:**\n*   **과거 재무 건전성 및 오너 리스크:** 과거 막대한 우발채무 리스크와 이우현 회장의 국적 논란, 공정거래위원회 제재 등 오너 리스크가 경영 불확실성을 확대했던 이력이 있습니다.\n*   **반복되는 안전사고:** 군산, 포항 공장 등에서 화학물질 유출 및 설비 관련 안전사고가 반복적으로 발생하여 현장 안전관리 체계에 대한 우려가 상존합니다.\n*   **바이오 사업 부진:** 신성장 동력으로 제시했던 바이오 사업(부광약품 인수)이 아직 가시적인 성과를 내지 못하고 누적 적자를 기록 중입니다.\n\n### 3. 최종 판정\n\n**매수**\n\nOCI홀딩스는 과거 재무제표상 극심한 이익 변동성과 반복되는 손실로 높은 투자 위험을 보였으나, 최근 글로벌 에너지 안보 패러다임 변화와 비중국 태양광 공급망 재편이라는 거대한 흐름 속에서 구조적인 수혜가 기대됩니다. 반도체용 폴리실리콘 사업 확장과 신재생에너지 발전 사업 다각화는 회사의 장기 성장 동력을 확보하고 수익 구조를 개선할 중요한 전환점이 될 것입니다. 비록 과거의 리스크 요인들이 존재하지만, 현재 시장은 이러한 긍정적인 변화와 미래 성장 잠재력에 주목하며 기업 가치를 재평가하고 있는 것으로 판단됩니다.",
+    "citations": [
+      {
+        "title": "edaily.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHZeIakig0OKRw9RkG90HI4tp81fo-ujIGkveygJx-cYaXU2zrZuGU1-oLjUszpfIVxu_EE0o_lQ_M7uY37Q_dujvbrTbFrsJqwtNFCe6n92ZuuUWuUH5W_1XRpTJ8x52WOntAb9RW3YNWjwBbMb8k1ZdeObnfZZwTz4NUD"
+      },
+      {
+        "title": "mk.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGmLEnxfFU91cRKsx2N8wiIA_aH2WGDn0OsZezEXoSRjooVagNAqwuu1DK7YsSdqp4pwf7pHmDEKGejyIWln2enBiLulmbyDulK9qeLhz3LeI2KejZ2d79D9zJCLIj5ZSZYUeo="
+      },
+      {
+        "title": "alphasquare.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGydvPxtVR0c-ztrw2_Tf2h_--Xo49MJHSCGiR-FcbDefGA0ur13THrmuKqIURQ75tEGYD1A3lMbmiFL_9Gw9loF0GYI8LsCHov9YW0TGTKTZddL387LBMSDlGYaz4uw2AgMYzYJFo5sRgCR9pxcwmpYPV3-YgnQuITogo="
+      },
+      {
+        "title": "miraeasset.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQH7G1cyNsOGcJaa-pPl8aC6okst8vuWpFq8DI2MYt1UZw4xzpBvv7Kc3RVMJW2DHkgh7dieZWE1taUdJaMkpd8EVXbB2t-Od_tbx0HM5h_hd0NAE0MTReyn0caPtjAO_L_BRTveIyvFRv0TmzXgHgwfltbqZ24gVvDaWqcgf0MH0uElyAShIK4hJEg="
+      },
+      {
+        "title": "newspim.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEK8wX6INnvz_0F_IvEJUrCpV0JY86hQ9CGUZCGXGbq2rwBZDN_3OZFMoZyjazkzb-UF6ub_MHiMRlIJJ1jhhn8RZ_Fz7E0RcqWOxNvdPp6i9P-162UQviI6RGob8G-sdr6FPfMfUyvgszEiQ=="
+      },
+      {
+        "title": "youtube.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQG4dgi6fhh4MZvXmalX71zeMhxOnxYtihiYj6jE5AyvtNUuI5OXSxJxvywG296riGRhrB34SGdWgb8jQ_kAgMMJCdKi4nwBiz_Pv8FXymCNAGOMRDymCWHR5tA-Zhe04HoXIvjvOA0="
+      },
+      {
+        "title": "daum.net",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQF5bQOV81YwQNGr57S8aS8MPBgeU4JIscP6GyUjHC3Qy9Fq97huddyzPJ2snSSdYsVjcIE4ZQD_HNySkBqEfPrkVpbTTxHTmpFPpZJ8zo2WtsRgVUmCU5FgH5Jq0f--HezE-XfJZ1-BqpJ0TnberN_5hSTlA2UAh5K-v8QxztGXUDk="
+      },
+      {
+        "title": "businesspost.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGyQIXT6d-77g7b_dGWNUJpY4apWrU55at6Z1Ku5D6d_ktFxRUi1M53ZnrmgJvKwwITO-WPF9DjcixNP4eyPujCslfHeeRVIZXwLIY4cILmMGII_op1oXbV0egytP-6AP3mlXrUgZs2GA9bfPTizkrjWzGwNQCSgyBydmvh"
+      },
+      {
+        "title": "ppss.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQElqZ3VFTOOY9lDAWLuk2gUQw24xcn2EDVMnOgRQh1sqVkRckOTLp6RFRCTgvcHlFqZVrS21tKtQNfK4Q5-lirEzJD1gK9kqEKkhe4bRzVtTL3DY-1SWf5xt079UEmmB5_RoyCLAGvORwq0QtQ9RBmvjg=="
+      },
+      {
+        "title": "livesnews.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHACvGf8UTsPrvvES-Uf9sbARtjXkxUrRp59-7hcU_9u9TOpIHZNpnU1pAqT3QZVuT_xjpF3vbi_2YMV3Oc0ddq6W9qjAsNQq8lgS4Q9whZ3ZgFzSiDoRujm29FdEe04aEHauaQjbGiDsRo6yJJAZc-0A=="
+      }
+    ]
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=00148896",
+    "summary": "공시 페이지 접근 제한"
+  }
+}

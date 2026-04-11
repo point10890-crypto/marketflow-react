@@ -1,0 +1,265 @@
+{
+  "stock_code": "103140",
+  "stock_name": "풍산",
+  "generated_at": "2026-04-11T14:42:07.639811+00:00",
+  "financials": {
+    "stock_code": "103140",
+    "corp_code": "00684714",
+    "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2016": {
+        "cash": 732.7,
+        "total_assets": 27149.5,
+        "short_debt": 3925.2,
+        "long_debt": 2193.3,
+        "total_liab": 14801.1,
+        "total_equity": 12348.4,
+        "revenue": 28317.7,
+        "op_profit": 2178.0,
+        "net_income": 1375.9
+      },
+      "2017": {
+        "cash": 568.5,
+        "total_assets": 27295.0,
+        "short_debt": 3547.7,
+        "long_debt": 1183.7,
+        "total_liab": 14203.6,
+        "total_equity": 13091.3,
+        "revenue": 29449.6,
+        "op_profit": 2410.7,
+        "net_income": 1506.9
+      },
+      "2018": {
+        "cash": 556.6,
+        "total_assets": 26681.2,
+        "short_debt": 3953.5,
+        "long_debt": 1623.7,
+        "total_liab": 12887.9,
+        "total_equity": 13793.2,
+        "revenue": 27745.0,
+        "op_profit": 1075.0,
+        "net_income": 1.1
+      },
+      "2019": {
+        "cash": 705.0,
+        "total_assets": 25625.1,
+        "short_debt": 2933.9,
+        "long_debt": 1066.4,
+        "total_liab": 11786.9,
+        "total_equity": 13838.1,
+        "revenue": 24513.1,
+        "op_profit": 411.4,
+        "net_income": 176.3
+      },
+      "2020": {
+        "cash": 793.7,
+        "total_assets": 25520.3,
+        "short_debt": 3286.2,
+        "long_debt": 843.5,
+        "total_liab": 11056.2,
+        "total_equity": 14464.0,
+        "revenue": 25936.4,
+        "op_profit": 1212.1,
+        "net_income": 719.1
+      },
+      "2021": {
+        "cash": 1262.5,
+        "total_assets": 31482.6,
+        "short_debt": 5179.4,
+        "long_debt": 748.6,
+        "total_liab": 14626.3,
+        "total_equity": 16856.4,
+        "revenue": 35095.0,
+        "op_profit": 3141.3,
+        "net_income": 2433.2
+      },
+      "2022": {
+        "cash": 1548.2,
+        "total_assets": 33953.0,
+        "short_debt": 5394.6,
+        "long_debt": 792.8,
+        "total_liab": 15530.6,
+        "total_equity": 18422.4,
+        "revenue": 43729.8,
+        "op_profit": 2316.2,
+        "net_income": 1751.4
+      },
+      "2023": {
+        "total_assets": 36606.3,
+        "cash": 4078.8,
+        "total_equity": 4945.2,
+        "short_debt": 3279.4,
+        "total_liab": 16946.7,
+        "long_debt": 776.5,
+        "op_profit": 2286.4,
+        "net_income": 0.0,
+        "revenue": 41252.6
+      },
+      "2024": {
+        "total_assets": 40965.8,
+        "cash": 3451.9,
+        "total_equity": 4945.2,
+        "short_debt": 3928.3,
+        "total_liab": 18972.8,
+        "long_debt": 904.1,
+        "op_profit": 3237.7,
+        "net_income": 0.0,
+        "revenue": 45544.1
+      },
+      "2025": {
+        "total_assets": 43291.9,
+        "cash": 2390.7,
+        "total_equity": 939.0,
+        "short_debt": 5353.7,
+        "total_liab": 20310.6,
+        "long_debt": 1421.8,
+        "op_profit": 2974.3,
+        "net_income": 0.0,
+        "revenue": 50485.8
+      }
+    },
+    "missing_years": [
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2016,
+        "revenue_eok": 28318,
+        "op_profit_eok": 2178,
+        "net_income_eok": 1376,
+        "roe_pct": 11.14,
+        "op_margin_pct": 7.69,
+        "debt_ratio_pct": 119.87
+      },
+      {
+        "year": 2017,
+        "revenue_eok": 29450,
+        "op_profit_eok": 2411,
+        "net_income_eok": 1507,
+        "roe_pct": 11.51,
+        "op_margin_pct": 8.19,
+        "debt_ratio_pct": 108.5
+      },
+      {
+        "year": 2018,
+        "revenue_eok": 27745,
+        "op_profit_eok": 1075,
+        "net_income_eok": 1,
+        "roe_pct": 0.01,
+        "op_margin_pct": 3.87,
+        "debt_ratio_pct": 93.44
+      },
+      {
+        "year": 2019,
+        "revenue_eok": 24513,
+        "op_profit_eok": 411,
+        "net_income_eok": 176,
+        "roe_pct": 1.27,
+        "op_margin_pct": 1.68,
+        "debt_ratio_pct": 85.19
+      },
+      {
+        "year": 2020,
+        "revenue_eok": 25936,
+        "op_profit_eok": 1212,
+        "net_income_eok": 719,
+        "roe_pct": 4.97,
+        "op_margin_pct": 4.67,
+        "debt_ratio_pct": 76.44
+      },
+      {
+        "year": 2021,
+        "revenue_eok": 35095,
+        "op_profit_eok": 3141,
+        "net_income_eok": 2433,
+        "roe_pct": 14.43,
+        "op_margin_pct": 8.95,
+        "debt_ratio_pct": 86.77
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 43730,
+        "op_profit_eok": 2316,
+        "net_income_eok": 1751,
+        "roe_pct": 9.51,
+        "op_margin_pct": 5.3,
+        "debt_ratio_pct": 84.31
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 41253,
+        "op_profit_eok": 2286,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 5.54,
+        "debt_ratio_pct": 342.73
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 45544,
+        "op_profit_eok": 3238,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 7.11,
+        "debt_ratio_pct": 383.7
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 50486,
+        "op_profit_eok": 2974,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 5.89,
+        "debt_ratio_pct": 2163.05
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": 6.64,
+      "op_profit_cagr_pct": 3.53,
+      "best_year": 2024,
+      "worst_year": 2019,
+      "avg_roe_pct": 5.28
+    },
+    "valuation": {
+      "grade": "D",
+      "strengths": [
+        "매출액이 꾸준히 성장하여 10년간 연평균 6.64%의 성장률을 기록했습니다.",
+        "2024년 3,238억원의 영업이익을 기록하며 10년 내 최고 실적을 달성했습니다.",
+        "2021년에는 14.43%의 높은 ROE를 기록하며 우수한 자본 효율성을 보인 바 있습니다."
+      ],
+      "risks": [
+        "2023년부터 당기순이익이 0원으로 급감하며 수익성이 크게 악화되었습니다.",
+        "2023년 이후 자본총계가 급격히 감소하고 부채비율이 2000% 이상으로 치솟아 재무 건전성이 심각하게 훼손되었습니다.",
+        "영업이익의 변동성이 크고, 특히 2019년에는 411억원으로 최저치를 기록하는 등 이익 안정성이 부족합니다."
+      ],
+      "one_liner": "매출액 성장은 긍정적이나, 최근 급격한 재무구조 악화와 수익성 저하로 투자에 매우 신중해야 할 기업입니다."
+    }
+  },
+  "dcf": {
+    "text": "알겠습니다. 퀀트 애널리스트로서 제공된 데이터를 바탕으로 풍산(103140)의 DCF 적정가치를 계산하겠습니다.\n\n**전제 및 가정:**\n*   제공된 2025년 매출액(50486억원)과 영업이익(2974억원)은 5년 예측 기간(2025-2029) 동안 매년 동일하게 유지된다고 가정합니다. (매출액/영업이익 성장률에 대한 정보가 없으므로 보수적으로 가정)\n*   FCF 계산식: 영업이익 × (1 - 0.25) + 감가상각(매출의 10%) - CAPEX(매출의 5%)\n*   WACC = 9%, 영구성장률 g = 2% (기본 시나리오)\n*   5년 예측 기간 이후 Terminal Value 계산\n\n---\n### 1. 기본 시나리오 DCF 적정가치 계산\n\n먼저, 주어진 가정에 따라 매년 발생하는 FCF를 계산하고, 이를 바탕으로 DCF 적정가치를 산출합니다.\n\n\n---\n### 2. WACC × g 민감도 그리드 출력\n\nWACC와 영구성장률(g)의 변화에 따른 DCF 적정가치 민감도를 계산하여 그리드 형태로 출력합니다.\n\n\n---\n### 3. 요약 출력\n\n**적정가치(기본): 63524.51억원**",
+    "executed_code": "import pandas as pd\n\n# --- 1. 기본 시나리오 DCF 계산 ---\n\n# 입력 데이터\nrevenue_2025 = 50486  # 억원\noperating_income_2025 = 2974  # 억원\ntax_rate = 0.25\ndepreciation_rate = 0.10  # 매출액의 10%\ncapex_rate = 0.05     # 매출액의 5%\nwacc_base = 0.09\ng_base = 0.02\nforecast_years = 5\n\n# 가정: 매출액과 영업이익은 예측 기간 동안 일정하다고 가정 (성장률 정보 부재)\n\n# 매년 FCF 구성 요소 계산\ndepreciation = revenue_2025 * depreciation_rate\ncapex = revenue_2025 * capex_rate\n\n# FCF = 영업이익 * (1 - 법인세율) + 감가상각 - CAPEX\nfcf_per_year = operating_income_2025 * (1 - tax_rate) + depreciation - capex\n\nprint(f\"계산된 감가상각비: {depreciation:.2f} 억원\")\nprint(f\"계산된 CAPEX: {capex:.2f} 억원\")\nprint(f\"매년 FCF (2025-2029): {fcf_per_year:.2f} 억원\\n\")\n\n# 예측 기간 FCF의 현재가치 합계 계산\npv_fcf_sum = 0\nfor i in range(1, forecast_years + 1):\n    pv_fcf = fcf_per_year / ((1 + wacc_base) ** i)\n    pv_fcf_sum += pv_fcf\n\n# 터미널 밸류 (Terminal Value, TV) 계산\n# 예측 기간 마지막 해(5년차) 다음 해(6년차)의 FCF\nfcf_year_after_forecast = fcf_per_year * (1 + g_base)\n# TV = FCF_6년차 / (WACC - g)\nterminal_value = fcf_year_after_forecast / (wacc_base - g_base)\n\n# 터미널 밸류의 현재가치 계산\npv_terminal_value = terminal_value / ((1 + wacc_base) ** forecast_years)\n\n# 총 DCF 적정가치\ndcf_valuation_base = pv_fcf_sum + pv_terminal_value\n\nprint(f\"예측 기간 FCF 현재가치 합계 (2025-2029): {pv_fcf_sum:.2f} 억원\")\nprint(f\"6년차 FCF (TV 계산용): {fcf_year_after_forecast:.2f} 억원\")\nprint(f\"터미널 밸류 (2029년 말 기준): {terminal_value:.2f} 억원\")\nprint(f\"터미널 밸류의 현재가치: {pv_terminal_value:.2f} 억원\\n\")\nprint(f\"DCF 적정가치 (기본 시나리오): {dcf_valuation_base:.2f} 억원\")\n\n\nimport pandas as pd\n\n# --- 2. 민감도 그리드 계산 ---\n\n# 입력 데이터 (FCF는 기본 시나리오와 동일)\nrevenue_2025 = 50486  # 억원\noperating_income_2025 = 2974  # 억원\ntax_rate = 0.25\ndepreciation_rate = 0.10\ncapex_rate = 0.05\nforecast_years = 5\n\n# 매년 FCF (기본 시나리오와 동일하게 계산)\ndepreciation = revenue_2025 * depreciation_rate\ncapex = revenue_2025 * capex_rate\nfcf_per_year = operating_income_2025 * (1 - tax_rate) + depreciation - capex\n\nwacc_range = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_range = [0.01, 0.02, 0.03]\n\nsensitivity_results = {}\n\ndef calculate_dcf(wacc, g, fcf_annual, forecast_years):\n    if wacc <= g:\n        # WACC가 g보다 작거나 같으면 터미널 밸류 공식이 무한대가 되므로 계산 불가\n        return float('inf') \n    \n    pv_fcf_sum = 0\n    for i in range(1, forecast_years + 1):\n        pv_fcf_sum += fcf_annual / ((1 + wacc) ** i)\n    \n    fcf_year_after_forecast = fcf_annual * (1 + g)\n    terminal_value = fcf_year_after_forecast / (wacc - g)\n    pv_terminal_value = terminal_value / ((1 + wacc) ** forecast_years)\n    \n    return pv_fcf_sum + pv_terminal_value\n\nfor wacc in wacc_range:\n    for g in g_range:\n        key = f\"WACC={wacc*100:.0f}%, g={g*100:.0f}%\"\n        sensitivity_results[key] = calculate_dcf(wacc, g, fcf_per_year, forecast_years)\n\n# 결과를 DataFrame으로 정리하여 출력\nsensitivity_df = pd.DataFrame(index=[f\"g={g*100:.0f}%\" for g in g_range],\n                              columns=[f\"WACC={wacc*100:.0f}%\" for wacc in wacc_range])\n\nfor wacc in wacc_range:\n    for g in g_range:\n        wacc_col = f\"WACC={wacc*100:.0f}%\"\n        g_row = f\"g={g*100:.0f}%\"\n        value = sensitivity_results[f\"WACC={wacc*100:.0f}%, g={g*100:.0f}%\"]\n        if value == float('inf'):\n            sensitivity_df.loc[g_row, wacc_col] = \"N/A\" # WACC <= g 인 경우\n        else:\n            sensitivity_df.loc[g_row, wacc_col] = f\"{value:.2f}\"\n\nprint(\"\\n--- DCF 적정가치 민감도 그리드 (단위: 억원) ---\")\nprint(sensitivity_df)",
+    "code_output": "계산된 감가상각비: 5048.60 억원\n계산된 CAPEX: 2524.30 억원\n매년 FCF (2025-2029): 4754.80 억원\n\n예측 기간 FCF 현재가치 합계 (2025-2029): 18494.51 억원\n6년차 FCF (TV 계산용): 4849.90 억원\n터미널 밸류 (2029년 말 기준): 69284.23 억원\n터미널 밸류의 현재가치: 45029.99 억원\n\nDCF 적정가치 (기본 시나리오): 63524.51 억원\n\n\n--- DCF 적정가치 민감도 그리드 (단위: 억원) ---\n        WACC=7%   WACC=8%   WACC=9%  WACC=10%  WACC=11%\ng=1%   76562.41  65675.93  57509.47  51156.44  46072.85\ng=2%   88653.80  73997.17  63524.51  55666.98  49553.00\ng=3%  106790.87  85646.90  71544.56  61466.25  53903.18"
+  },
+  "news": {
+    "text": "## 풍산(103140) 투자 분석 보고서\n\n**투자 등급:** D (기존 분석 결과)\n**요약:** 매출액 성장은 긍정적이나, 최근 급격한 재무구조 악화와 수익성 저하로 투자에 매우 신중해야 할 기업입니다.\n\n---\n\n### 최근 2주간 주요 뉴스 분석 (2026년 3월 28일 ~ 2026년 4월 11일)\n\n최근 2주간 풍산(103140)과 관련된 주요 뉴스를 검색한 결과, 특별히 주목할 만한 개별 기업 관련 이슈는 발견되지 않았습니다. 주로 방위산업 및 비철금속 시장 전반에 대한 거시적인 분석이나 증권사 리포트에서 언급되는 경향이 있습니다.\n\n### 1. 재무 데이터 스토리와 현재 시장 컨센서스 일치/불일치\n\n제공된 10년 재무제표 분석 결과는 '매출액 성장은 긍정적이나, 최근 급격한 재무구조 악화와 수익성 저하'를 지적하고 있습니다. 최근 2주간의 뉴스 검색 결과, 풍산의 재무구조 악화나 수익성 저하에 대한 직접적인 시장 컨센서스를 명확히 보여주는 기사는 찾기 어렵습니다. 다만, 방산 부문의 견조한 실적 기대감과 비철금속 가격 변동성이 상존한다는 내용이 간접적으로 언급됩니다. 시장은 방산 부문의 안정적인 수주 및 수출 증가에 긍정적인 시각을 유지하는 경향이 있으나, 비철금속 부문의 수익성 변동성에 대한 우려도 상존합니다. 따라서 재무제표에서 드러난 '수익성 저하'와 '재무구조 악화'에 대한 시장의 직접적인 경고음은 아직 크지 않지만, 잠재적인 리스크로 인식될 가능성이 있습니다.\n\n### 2. 재무제표에서 드러나지 않는 리스크 또는 호재\n\n*   **호재:**\n    *   **방산 부문 수출 확대 기대:** 지정학적 리스크 고조로 인한 전 세계적인 국방비 증가는 풍산의 방산 부문(탄약 등) 수출 증가로 이어질 수 있는 잠재적 호재입니다. 이는 재무제표에 즉각적으로 반영되지 않지만, 향후 매출 및 수익성 개선에 기여할 수 있습니다.\n    *   **구리 가격 상승:** 풍산은 비철금속 사업을 영위하고 있어, 구리 등 주요 원자재 가격 상승은 재고 자산 가치 상승 및 제품 판매가 인상으로 이어져 수익성 개선에 긍정적인 영향을 미칠 수 있습니다.\n*   **리스크:**\n    *   **원자재 가격 변동성:** 구리 등 비철금속 가격은 국제 정세 및 경제 상황에 따라 변동성이 매우 큽니다. 이는 풍산의 비철금속 부문 수익성에 직접적인 영향을 미치며, 예측하기 어려운 리스크 요인입니다.\n    *   **환율 변동성:** 수출 비중이 높은 기업의 특성상 환율 변동은 매출 및 수익성에 영향을 미칠 수 있습니다.\n    *   **지정학적 리스크:** 방산 부문은 지정학적 리스크에 따라 수요가 변동될 수 있으며, 특정 국가와의 관계 악화 시 수출에 제약이 발생할 수 있습니다.\n\n### 3. 최종 판정\n\n**관망**\n\n제공된 재무제표 분석 결과(투자등급 D, 재무구조 악화 및 수익성 저하)는 매우 부정적입니다. 비록 최근 뉴스에서 방산 부문의 긍정적인 전망과 구리 가격 상승 가능성이 언급되지만, 이는 아직 재무제표의 근본적인 약점을 상쇄할 만큼 강력한 호재로 보기는 어렵습니다. 특히 '급격한 재무구조 악화'는 투자 결정에 있어 매우 신중해야 할 부분입니다. 현재로서는 재무제표상의 리스크가 해소되거나, 방산 및 비철금속 부문의 실질적인 개선이 재무제표에 반영되는 것을 확인하기 전까지는 투자를 보류하고 시장 상황을 **관망**하는 것이 합리적이라고 판단됩니다.",
+    "citations": []
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=00684714",
+    "summary": "공시 페이지 접근 제한"
+  }
+}

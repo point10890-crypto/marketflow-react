@@ -1,0 +1,213 @@
+{
+  "stock_code": "347700",
+  "stock_name": "스피어",
+  "generated_at": "2026-04-11T13:41:10.080613+00:00",
+  "financials": {
+    "stock_code": "347700",
+    "corp_code": "01336762",
+    "years": [
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2020": {
+        "cash": 55.1,
+        "total_assets": 95.4,
+        "short_debt": 2.0,
+        "total_liab": 73.5,
+        "total_equity": 21.9,
+        "revenue": 26.7,
+        "net_income": -93.1
+      },
+      "2021": {
+        "cash": 241.4,
+        "total_assets": 332.9,
+        "short_debt": 2.0,
+        "total_liab": 202.3,
+        "total_equity": 130.6,
+        "revenue": 46.3
+      },
+      "2022": {
+        "cash": 75.7,
+        "total_assets": 261.3,
+        "short_debt": 1.0,
+        "total_liab": 165.6,
+        "total_equity": 95.7,
+        "revenue": 28.2
+      },
+      "2023": {
+        "total_assets": 190.3,
+        "cash": 53.5,
+        "total_equity": 89.8,
+        "short_debt": 1.0,
+        "total_liab": 100.6,
+        "net_income": -112.6,
+        "revenue": 33.3
+      },
+      "2024": {
+        "total_assets": 446.4,
+        "cash": 193.4,
+        "total_equity": 110.2,
+        "short_debt": 0.0,
+        "total_liab": 133.9,
+        "net_income": -170.0,
+        "revenue": 25.6
+      },
+      "2025": {
+        "total_assets": 953.6,
+        "cash": 41.7,
+        "total_equity": 636.3,
+        "short_debt": 10.0,
+        "total_liab": 317.2,
+        "op_profit": 90.5,
+        "net_income": 1.7,
+        "revenue": 956.4
+      }
+    },
+    "missing_years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2020,
+        "revenue_eok": 27,
+        "op_profit_eok": 0,
+        "net_income_eok": -93,
+        "roe_pct": -422.73,
+        "op_margin_pct": 0.0,
+        "debt_ratio_pct": 336.36
+      },
+      {
+        "year": 2021,
+        "revenue_eok": 46,
+        "op_profit_eok": 0,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 0.0,
+        "debt_ratio_pct": 154.2
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 28,
+        "op_profit_eok": 0,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 0.0,
+        "debt_ratio_pct": 172.92
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 33,
+        "op_profit_eok": 0,
+        "net_income_eok": -113,
+        "roe_pct": -125.56,
+        "op_margin_pct": 0.0,
+        "debt_ratio_pct": 112.22
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 26,
+        "op_profit_eok": 0,
+        "net_income_eok": -170,
+        "roe_pct": -154.55,
+        "op_margin_pct": 0.0,
+        "debt_ratio_pct": 121.82
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 956,
+        "op_profit_eok": 90,
+        "net_income_eok": 2,
+        "roe_pct": 0.31,
+        "op_margin_pct": 9.41,
+        "debt_ratio_pct": 49.84
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": 103.5,
+      "op_profit_cagr_pct": 0.0,
+      "best_year": 2025,
+      "worst_year": 2024,
+      "avg_roe_pct": -117.09
+    },
+    "valuation": {
+      "grade": "B",
+      "strengths": [
+        "2025년 매출액 및 영업이익의 급격한 성장: 2025년에 매출액이 전년 대비 30배 이상 증가하고 영업이익이 흑자 전환하며 괄목할 만한 성장을 기록했습니다.",
+        "2025년 재무구조 개선: 2025년 부채비율이 49.84%로 크게 개선되어 재무 안정성이 강화되었습니다.",
+        "긍정적인 순이익 흑자 전환: 오랜 기간 적자를 기록하다 2025년에 당기순이익이 흑자로 전환된 점은 긍정적인 신호입니다."
+      ],
+      "risks": [
+        "과거 지속적인 영업손실 및 순손실: 2020년부터 2024년까지 5년간 영업이익이 없었고, 당기순이익도 지속적으로 적자를 기록했습니다.",
+        "불안정한 수익성: 2025년 실적이 크게 개선되었으나, 이전 연도들의 불안정한 수익성 이력을 고려할 때 이러한 추세가 지속될지 불확실합니다.",
+        "높은 변동성: 매출액, 영업이익, 순이익 등 주요 재무 지표의 연간 변동성이 매우 커서 미래 실적 예측이 어렵습니다."
+      ],
+      "one_liner": "2025년 극적인 실적 턴어라운드를 보였으나, 과거 부진한 실적 이력과 높은 변동성으로 인해 향후 지속적인 성과를 입증해야 할 기업."
+    }
+  },
+  "dcf": {
+    "text": "다음은 스피어 (347700) 기업에 대한 DCF 적정가치 계산 결과입니다.\n\n**가정 요약:**\n*   **기준 연도:** 2025년 (최근 재무는 2024년으로 간주하여 2025년부터 5년간 예측 시작)\n*   **매출액 성장률:** 5% (5년 예측 기간 동안, 별도 정보가 없어 합리적으로 가정)\n*   **영업이익률:** 90 / 956 = 9.41% (최근 재무 기준, 예측 기간 동안 일정하다고 가정)\n*   **FCF 계산식:** 영업이익 × (1 - 0.25) + 감가상각(매출의 10%) - CAPEX(매출의 5%)\n*   **WACC (기본):** 9%\n*   **영구성장률 g (기본):** 2%\n*   **예측 기간:** 5년 + 영구 가치 (Terminal Value)\n\n---\n\n### 1. 기본 시나리오 DCF 적정가치 계산\n\n**적정가치(기본): 1909.68억원 (매출액 성장률 5% 가정)**\n\n---\n\n### 2. WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 출력\n\nDCF 적정가치 민감도 분석 (억원)\n-----------------------------------------------------------------\nWACC / g  1%        2%        3%        \n-----------------------------------------------------------------\n7%        2311.12    2685.33    3246.65    \n8%        1975.24    2232.77    2593.32    \n9%        1723.52    1909.68    2157.89    \n10%        1527.89    1667.48    1846.96    \n11%        1371.51    1479.22    1613.85    \n-----------------------------------------------------------------\n\n---\n\n### 3. 요약 출력\n\n**적정가치(기본): 1909.68억원**",
+    "executed_code": "import pandas as pd\n\ndef calculate_dcf(\n    revenue_0,\n    operating_profit_0,\n    revenue_growth_rate, # for forecast years\n    tax_rate_for_fcf, # 0.25 in the problem\n    depreciation_rate, # 0.10 in the problem\n    capex_rate, # 0.05 in the problem\n    wacc,\n    perpetual_growth_rate, # g\n    forecast_years=5\n):\n    # Calculate operating profit margin from year 0\n    op_margin = operating_profit_0 / revenue_0\n\n    # Initialize lists to store projected values\n    revenues = []\n    operating_profits = []\n    depreciations = []\n    capex_values = []\n    fcfs = []\n    discount_factors = []\n    pv_fcfs = []\n\n    # Project for forecast years\n    current_revenue = revenue_0\n    for t in range(1, forecast_years + 1):\n        # Revenue projection\n        current_revenue *= (1 + revenue_growth_rate)\n        revenues.append(current_revenue)\n\n        # Operating Profit\n        op_profit = current_revenue * op_margin\n        operating_profits.append(op_profit)\n\n        # Depreciation\n        depreciation = current_revenue * depreciation_rate\n        depreciations.append(depreciation)\n\n        # CAPEX\n        capex = current_revenue * capex_rate\n        capex_values.append(capex)\n\n        # FCF calculation\n        # FCF = Operating Profit * (1 - Tax Rate) + Depreciation - CAPEX\n        # The problem states FCF ≈ 영업이익 × (1 - 0.25) + 감가상각(매출의 10%) - CAPEX(매출의 5%)\n        # This implies that the 0.25 is a \"tax-like\" reduction on operating profit, not a standard tax on NOPAT.\n        # Let's follow the formula exactly:\n        fcf = op_profit * (1 - tax_rate_for_fcf) + depreciation - capex\n        fcfs.append(fcf)\n\n        # Discount Factor\n        df = 1 / ((1 + wacc) ** t)\n        discount_factors.append(df)\n        pv_fcfs.append(fcf * df)\n\n    # Calculate Terminal Value\n    # FCF for year 6 (year after forecast period)\n    fcf_last_year = fcfs[-1]\n    fcf_terminal_year = fcf_last_year * (1 + perpetual_growth_rate)\n\n    # Terminal Value formula (Gordon Growth Model)\n    if wacc <= perpetual_growth_rate:\n        # This case should ideally not happen for a stable company, or indicates issues with assumptions\n        # For practical purposes, we might return a very large number or raise an error.\n        # Let's return NaN for now, as it indicates an invalid scenario.\n        return float('nan')\n\n    terminal_value = fcf_terminal_year / (wacc - perpetual_growth_rate)\n\n    # Discount Terminal Value back to present\n    pv_terminal_value = terminal_value / ((1 + wacc) ** forecast_years)\n\n    # Total Enterprise Value\n    enterprise_value = sum(pv_fcfs) + pv_terminal_value\n\n    return enterprise_value\n\n# Base Scenario Parameters\nrevenue_0 = 956\noperating_profit_0 = 90\n# Assuming a 5% revenue growth rate for the 5 forecast years as no specific rate was provided.\n# This is a common practice when not explicitly given, but should be noted as an assumption.\nrevenue_growth_rate_base = 0.05\ntax_rate_for_fcf = 0.25\ndepreciation_rate = 0.10\ncapex_rate = 0.05\nwacc_base = 0.09\nperpetual_growth_rate_base = 0.02\nforecast_years = 5\n\n# 1. Calculate Base Scenario DCF Valuation\nbase_dcf_value = calculate_dcf(\n    revenue_0,\n    operating_profit_0,\n    revenue_growth_rate_base,\n    tax_rate_for_fcf,\n    depreciation_rate,\n    capex_rate,\n    wacc_base,\n    perpetual_growth_rate_base,\n    forecast_years\n)\n\nprint(f\"적정가치(기본): {base_dcf_value:.2f}억원\\n\")\n\n# 2. WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 출력\nwacc_scenarios = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_scenarios = [0.01, 0.02, 0.03]\n\nsensitivity_results = {}\n\nfor wacc_val in wacc_scenarios:\n    for g_val in g_scenarios:\n        dcf_val = calculate_dcf(\n            revenue_0,\n            operating_profit_0,\n            revenue_growth_rate_base, # Keep revenue growth rate constant for sensitivity\n            tax_rate_for_fcf,\n            depreciation_rate,\n            capex_rate,\n            wacc_val,\n            g_val,\n            forecast_years\n        )\n        if wacc_val not in sensitivity_results:\n            sensitivity_results[wacc_val] = {}\n        sensitivity_results[wacc_val][g_val] = dcf_val\n\n# Format and print the sensitivity grid\nprint(\"DCF 적정가치 민감도 분석 (억원)\")\nprint(\"-----------------------------------------------------------------\")\nprint(f\"{'WACC \\\\ g':<10}\", end=\"\")\nfor g_val in g_scenarios:\n    print(f\"{g_val*100:.0f}%{'':<8}\", end=\"\")\nprint()\nprint(\"-----------------------------------------------------------------\")\n\nfor wacc_val in wacc_scenarios:\n    print(f\"{wacc_val*100:.0f}%{'':<8}\", end=\"\")\n    for g_val in g_scenarios:\n        value = sensitivity_results[wacc_val][g_val]\n        if pd.isna(value):\n            print(f\"{'N/A':<10}\", end=\"\")\n        else:\n            print(f\"{value:.2f}{'':<4}\", end=\"\")\n    print()\nprint(\"-----------------------------------------------------------------\")\n\n# 3. Final summary output\nprint(f\"\\n적정가치(기본): {base_dcf_value:.2f}억원\")\n\nimport pandas as pd\n\ndef calculate_dcf(\n    revenue_0,\n    operating_profit_0,\n    revenue_growth_rate, # for forecast years\n    tax_rate_for_fcf, # 0.25 in the problem\n    depreciation_rate, # 0.10 in the problem\n    capex_rate, # 0.05 in the problem\n    wacc,\n    perpetual_growth_rate, # g\n    forecast_years=5\n):\n    # Calculate operating profit margin from year 0\n    op_margin = operating_profit_0 / revenue_0\n\n    # Initialize lists to store projected values\n    revenues = []\n    operating_profits = []\n    depreciations = []\n    capex_values = []\n    fcfs = []\n    discount_factors = []\n    pv_fcfs = []\n\n    # Project for forecast years\n    current_revenue = revenue_0\n    for t in range(1, forecast_years + 1):\n        # Revenue projection\n        current_revenue *= (1 + revenue_growth_rate)\n        revenues.append(current_revenue)\n\n        # Operating Profit\n        op_profit = current_revenue * op_margin\n        operating_profits.append(op_profit)\n\n        # Depreciation\n        depreciation = current_revenue * depreciation_rate\n        depreciations.append(depreciation)\n\n        # CAPEX\n        capex = current_revenue * capex_rate\n        capex_values.append(capex)\n\n        # FCF calculation\n        # FCF = Operating Profit * (1 - Tax Rate) + Depreciation - CAPEX\n        # The problem states FCF ≈ 영업이익 × (1 - 0.25) + 감가상각(매출의 10%) - CAPEX(매출의 5%)\n        # This implies that the 0.25 is a \"tax-like\" reduction on operating profit, not a standard tax on NOPAT.\n        # Let's follow the formula exactly:\n        fcf = op_profit * (1 - tax_rate_for_fcf) + depreciation - capex\n        fcfs.append(fcf)\n\n        # Discount Factor\n        df = 1 / ((1 + wacc) ** t)\n        discount_factors.append(df)\n        pv_fcfs.append(fcf * df)\n\n    # Calculate Terminal Value\n    # FCF for year 6 (year after forecast period)\n    fcf_last_year = fcfs[-1]\n    fcf_terminal_year = fcf_last_year * (1 + perpetual_growth_rate)\n\n    # Terminal Value formula (Gordon Growth Model)\n    if wacc <= perpetual_growth_rate:\n        # This case should ideally not happen for a stable company, or indicates issues with assumptions\n        # For practical purposes, we might return a very large number or raise an error.\n        # Let's return NaN for now, as it indicates an invalid scenario.\n        return float('nan')\n\n    terminal_value = fcf_terminal_year / (wacc - perpetual_growth_rate)\n\n    # Discount Terminal Value back to present\n    pv_terminal_value = terminal_value / ((1 + wacc) ** forecast_years)\n\n    # Total Enterprise Value\n    enterprise_value = sum(pv_fcfs) + pv_terminal_value\n\n    return enterprise_value\n\n# Base Scenario Parameters\nrevenue_0 = 956\noperating_profit_0 = 90\n# Assuming a 5% revenue growth rate for the 5 forecast years as no specific rate was provided.\n# This is a common practice when not explicitly given, but should be noted as an assumption.\nrevenue_growth_rate_base = 0.05\ntax_rate_for_fcf = 0.25\ndepreciation_rate = 0.10\ncapex_rate = 0.05\nwacc_base = 0.09\nperpetual_growth_rate_base = 0.02\nforecast_years = 5\n\n# 1. Calculate Base Scenario DCF Valuation\nbase_dcf_value = calculate_dcf(\n    revenue_0,\n    operating_profit_0,\n    revenue_growth_rate_base,\n    tax_rate_for_fcf,\n    depreciation_rate,\n    capex_rate,\n    wacc_base,\n    perpetual_growth_rate_base,\n    forecast_years\n)\n\nprint(f\"적정가치(기본): {base_dcf_value:.2f}억원 (매출액 성장률 5% 가정)\\n\")\n\n# 2. WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 출력\nwacc_scenarios = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_scenarios = [0.01, 0.02, 0.03]\n\nsensitivity_results = {}\n\nfor wacc_val in wacc_scenarios:\n    for g_val in g_scenarios:\n        dcf_val = calculate_dcf(\n            revenue_0,\n            operating_profit_0,\n            revenue_growth_rate_base, # Keep revenue growth rate constant for sensitivity\n            tax_rate_for_fcf,\n            depreciation_rate,\n            capex_rate,\n            wacc_val,\n            g_val,\n            forecast_years\n        )\n        if wacc_val not in sensitivity_results:\n            sensitivity_results[wacc_val] = {}\n        sensitivity_results[wacc_val][g_val] = dcf_val\n\n# Format and print the sensitivity grid\nprint(\"DCF 적정가치 민감도 분석 (억원)\")\nprint(\"-----------------------------------------------------------------\")\n# Corrected f-string for header\nprint(f\"{'WACC \\\\ g':<10}\", end=\"\")\nfor g_val in g_scenarios:\n    print(f\"{g_val*100:.0f}%{'':<8}\", end=\"\")\nprint()\nprint(\"-----------------------------------------------------------------\")\n\nfor wacc_val in wacc_scenarios:\n    print(f\"{wacc_val*100:.0f}%{'':<8}\", end=\"\")\n    for g_val in g_scenarios:\n        value = sensitivity_results[wacc_val][g_val]\n        if pd.isna(value):\n            print(f\"{'N/A':<10}\", end=\"\")\n        else:\n            print(f\"{value:.2f}{'':<4}\", end=\"\")\n    print()\nprint(\"-----------------------------------------------------------------\")\n\n# 3. Final summary output\nprint(f\"\\n적정가치(기본): {base_dcf_value:.2f}억원\")\n\nimport pandas as pd\n\ndef calculate_dcf(\n    revenue_0,\n    operating_profit_0,\n    revenue_growth_rate, # for forecast years\n    tax_rate_for_fcf, # 0.25 in the problem\n    depreciation_rate, # 0.10 in the problem\n    capex_rate, # 0.05 in the problem\n    wacc,\n    perpetual_growth_rate, # g\n    forecast_years=5\n):\n    # Calculate operating profit margin from year 0\n    op_margin = operating_profit_0 / revenue_0\n\n    # Initialize lists to store projected values\n    revenues = []\n    operating_profits = []\n    depreciations = []\n    capex_values = []\n    fcfs = []\n    discount_factors = []\n    pv_fcfs = []\n\n    # Project for forecast years\n    current_revenue = revenue_0\n    for t in range(1, forecast_years + 1):\n        # Revenue projection\n        current_revenue *= (1 + revenue_growth_rate)\n        revenues.append(current_revenue)\n\n        # Operating Profit\n        op_profit = current_revenue * op_margin\n        operating_profits.append(op_profit)\n\n        # Depreciation\n        depreciation = current_revenue * depreciation_rate\n        depreciations.append(depreciation)\n\n        # CAPEX\n        capex = current_revenue * capex_rate\n        capex_values.append(capex)\n\n        # FCF calculation\n        # FCF = Operating Profit * (1 - Tax Rate) + Depreciation - CAPEX\n        # The problem states FCF ≈ 영업이익 × (1 - 0.25) + 감가상각(매출의 10%) - CAPEX(매출의 5%)\n        # This implies that the 0.25 is a \"tax-like\" reduction on operating profit, not a standard tax on NOPAT.\n        # Let's follow the formula exactly:\n        fcf = op_profit * (1 - tax_rate_for_fcf) + depreciation - capex\n        fcfs.append(fcf)\n\n        # Discount Factor\n        df = 1 / ((1 + wacc) ** t)\n        discount_factors.append(df)\n        pv_fcfs.append(fcf * df)\n\n    # Calculate Terminal Value\n    # FCF for year 6 (year after forecast period)\n    fcf_last_year = fcfs[-1]\n    fcf_terminal_year = fcf_last_year * (1 + perpetual_growth_rate)\n\n    # Terminal Value formula (Gordon Growth Model)\n    if wacc <= perpetual_growth_rate:\n        # This case should ideally not happen for a stable company, or indicates issues with assumptions\n        # For practical purposes, we might return a very large number or raise an error.\n        # Let's return NaN for now, as it indicates an invalid scenario.\n        return float('nan')\n\n    terminal_value = fcf_terminal_year / (wacc - perpetual_growth_rate)\n\n    # Discount Terminal Value back to present\n    pv_terminal_value = terminal_value / ((1 + wacc) ** forecast_years)\n\n    # Total Enterprise Value\n    enterprise_value = sum(pv_fcfs) + pv_terminal_value\n\n    return enterprise_value\n\n# Base Scenario Parameters\nrevenue_0 = 956\noperating_profit_0 = 90\n# Assuming a 5% revenue growth rate for the 5 forecast years as no specific rate was provided.\n# This is a common practice when not explicitly given, but should be noted as an assumption.\nrevenue_growth_rate_base = 0.05\ntax_rate_for_fcf = 0.25\ndepreciation_rate = 0.10\ncapex_rate = 0.05\nwacc_base = 0.09\nperpetual_growth_rate_base = 0.02\nforecast_years = 5\n\n# 1. Calculate Base Scenario DCF Valuation\nbase_dcf_value = calculate_dcf(\n    revenue_0,\n    operating_profit_0,\n    revenue_growth_rate_base,\n    tax_rate_for_fcf,\n    depreciation_rate,\n    capex_rate,\n    wacc_base,\n    perpetual_growth_rate_base,\n    forecast_years\n)\n\nprint(f\"적정가치(기본): {base_dcf_value:.2f}억원 (매출액 성장률 5% 가정)\\n\")\n\n# 2. WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 출력\nwacc_scenarios = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_scenarios = [0.01, 0.02, 0.03]\n\nsensitivity_results = {}\n\nfor wacc_val in wacc_scenarios:\n    for g_val in g_scenarios:\n        dcf_val = calculate_dcf(\n            revenue_0,\n            operating_profit_0,\n            revenue_growth_rate_base, # Keep revenue growth rate constant for sensitivity\n            tax_rate_for_fcf,\n            depreciation_rate,\n            capex_rate,\n            wacc_val,\n            g_val,\n            forecast_years\n        )\n        if wacc_val not in sensitivity_results:\n            sensitivity_results[wacc_val] = {}\n        sensitivity_results[wacc_val][g_val] = dcf_val\n\n# Format and print the sensitivity grid\nprint(\"DCF 적정가치 민감도 분석 (억원)\")\nprint(\"-----------------------------------------------------------------\")\n# Corrected f-string for header using '/' instead of '\\'\nprint(f\"{'WACC / g':<10}\", end=\"\")\nfor g_val in g_scenarios:\n    print(f\"{g_val*100:.0f}%{'':<8}\", end=\"\")\nprint()\nprint(\"-----------------------------------------------------------------\")\n\nfor wacc_val in wacc_scenarios:\n    print(f\"{wacc_val*100:.0f}%{'':<8}\", end=\"\")\n    for g_val in g_scenarios:\n        value = sensitivity_results[wacc_val][g_val]\n        if pd.isna(value):\n            print(f\"{'N/A':<10}\", end=\"\")\n        else:\n            print(f\"{value:.2f}{'':<4}\", end=\"\")\n    print()\nprint(\"-----------------------------------------------------------------\")\n\n# 3. Final summary output\nprint(f\"\\n적정가치(기본): {base_dcf_value:.2f}억원\")",
+    "code_output": "Traceback (most recent call last):\n  File \"<string>\", line 134\n    print(f\"{'WACC \\\\ g':<10}\", end=\"\")\n                              ^\nSyntaxError: f-string expression part cannot include a backslash\n\nTraceback (most recent call last):\n  File \"<string>\", line 135\n    print(f\"{'WACC \\\\ g':<10}\", end=\"\")\n                              ^\nSyntaxError: f-string expression part cannot include a backslash\n\n적정가치(기본): 1909.68억원 (매출액 성장률 5% 가정)\n\nDCF 적정가치 민감도 분석 (억원)\n-----------------------------------------------------------------\nWACC / g  1%        2%        3%        \n-----------------------------------------------------------------\n7%        2311.12    2685.33    3246.65    \n8%        1975.24    2232.77    2593.32    \n9%        1723.52    1909.68    2157.89    \n10%        1527.89    1667.48    1846.96    \n11%        1371.51    1479.22    1613.85    \n-----------------------------------------------------------------\n\n적정가치(기본): 1909.68억원"
+  },
+  "news": {
+    "text": "## 스피어(347700) 10년 재무제표 분석 및 최근 시장 동향 종합 분석\n\n스피어(347700)는 2025년 극적인 실적 턴어라운드를 보였으나, 과거 부진한 실적 이력과 높은 변동성으로 인해 향후 지속적인 성과를 입증해야 할 기업으로 평가됩니다. 최근 2주간의 주요 뉴스와 시장 컨센서스를 바탕으로 재무 데이터가 보여주는 스토리와 시장의 시각, 그리고 재무제표에 드러나지 않는 리스크 및 호재를 분석하여 최종 투자 판정을 제시합니다.\n\n### 1. 재무 데이터가 보여주는 스토리와 현재 시장 컨센서스의 일치/불일치\n\n**재무 데이터 스토리:**\n스피어는 2025년에 매출액이 크게 증가하며 턴어라운드 조짐을 보였으나, 최근 분기(2025년 4분기)에는 주당순이익(EPS)이 -597.59를 기록하며 다시 적자로 전환하는 등 수익성 측면에서는 여전히 변동성이 존재함을 보여줍니다. 2025년 1분기와 2분기에는 흑자를 기록했으나, 3분기와 4분기에는 다시 적자로 전환되었습니다. 그럼에도 불구하고 매출액은 꾸준히 증가하는 추세입니다. 현재 주가순자산비율(PBR)은 29.48배, 주가수익비율(PER)은 -43.00배로 높은 밸류에이션을 형성하고 있습니다.\n\n**현재 시장 컨센서스:**\n시장 컨센서스는 스피어에 대해 \"매수\" 의견(등급 2.00)을 유지하며 긍정적인 전망을 보이고 있습니다. 최근 1개월 내 전문가 5인의 평균 목표 주가는 45,000원, 최고 목표 주가는 57,000원으로 제시되었습니다. 특히 SpaceX와의 장기 공급 계약과 니켈 제련소 지분 확보를 통한 원가 절감 효과 등 미래 성장 잠재력에 주목하고 있습니다.\n\n**일치/불일치:**\n재무 데이터는 2025년 턴어라운드에도 불구하고 최근 분기 실적에서 수익성 변동성을 보여주지만, 시장 컨센서스는 스페이스X와의 강력한 파트너십과 장기 성장 동력에 기반하여 긍정적인 전망을 유지하고 있습니다. 이는 단기적인 수익성 변동성에도 불구하고 중장기적인 성장 스토리에 대한 기대감이 높다는 점에서 부분적인 불일치와 함께 미래 성장성에 대한 기대는 일치한다고 볼 수 있습니다. 현재의 높은 PBR은 이러한 미래 성장 기대감을 반영하는 것으로 보입니다.\n\n### 2. 재무제표에서 드러나지 않는 리스크 또는 호재\n\n**호재:**\n*   **SpaceX의 핵심 공급사 지위:** 스피어는 글로벌 최대 민간 우주기업인 SpaceX의 5대 Tier 1 공급업체 중 하나이자 아시아 유일의 업체로, 우주항공 특수합금 공급망 관리(SCM) 분야에서 독점적인 해자를 보유하고 있습니다. 이는 높은 진입 장벽과 기술력을 바탕으로 한 강력한 경쟁 우위입니다.\n*   **장기 공급 계약:** SpaceX와 2035년까지 약 1.5조 원(또는 10억 5,400만 달러, 약 1조 4,708억 원) 규모의 10년 장기 공급 계약을 체결하여 중장기적인 매출 가시성을 확보했습니다. 2026년 3월 25일에는 전년도 매출액 대비 1097%에 달하는 우주항공 특수합금 초대형 수주 공시로 인해 일시적인 거래 정지가 발생하기도 했습니다.\n*   **원가 경쟁력 확보:** 2025년 인도네시아 니켈 제련소 지분 10%를 인수하여 LME(런던금속거래소) 시세 대비 약 50% 낮은 가격으로 니켈을 조달할 수 있게 되어 연간 150억 원 이상의 비용 절감 효과가 기대됩니다. 이는 수익성 개선에 크게 기여할 잠재적 요인입니다.\n*   **우주 산업 성장 수혜:** SpaceX의 차세대 발사체(Starship) 상용화 및 발사 빈도 확대는 특수합금 수요를 구조적으로 증가시킬 것이며, 스피어는 이 성장의 직접적인 수혜를 입을 것으로 예상됩니다.\n*   **사업 모델 성공적 전환:** 과거 만성 적자였던 헬스케어 사업(라이프시맨틱스)에서 우주항공 특수합금 공급사로 성공적으로 사업 모델을 전환하여 기업의 체질을 개선했습니다.\n\n**리스크:**\n*   **전환사채(CB) 오버행:** 300억 원 규모의 전환사채 오버행은 향후 주식 전환 시 주가 희석으로 이어질 수 있는 잠재적 리스크입니다. 실제로 2026년 4월 7일 추가상장(국내사모 CB전환) 공시가 있었습니다.\n*   **수익성 변동성:** 2025년 매출 턴어라운드에도 불구하고 최근 분기 순이익이 다시 적자를 기록하는 등 수익성의 안정화가 아직 완전히 이루어지지 않았다는 점은 리스크 요인입니다.\n*   **높은 밸류에이션:** 현재 PBR이 29.48배로 매우 높아, 미래 성장 기대감이 상당 부분 주가에 반영되어 있을 가능성이 있습니다.\n*   **특정 고객사 의존도:** SpaceX에 대한 높은 매출 의존도는 해당 고객사의 사업 전략 변화나 예상치 못한 문제 발생 시 스피어의 실적에 직접적인 영향을 미칠 수 있습니다.\n\n### 3. 최종 판정\n\n**관망**\n\n스피어는 SpaceX의 핵심 공급사로서 우주항공 산업의 성장에 따른 강력한 중장기 성장 동력을 확보했으며, 니켈 제련소 지분 인수를 통한 원가 경쟁력 강화 등 긍정적인 요인이 많습니다. 시장 컨센서스 또한 이러한 미래 성장성에 대한 기대감을 반영하여 \"매수\" 의견을 유지하고 있습니다.\n\n그러나 2025년 턴어라운드에도 불구하고 최근 분기 실적에서 다시 적자를 기록하는 등 수익성 측면의 변동성이 여전히 존재하며, 높은 PBR과 전환사채(CB) 오버행 리스크는 주가에 부담으로 작용할 수 있습니다. 특히 최근 CB 전환으로 인한 추가 상장 공시는 잠재적인 주식 희석 우려를 높입니다.\n\n따라서 스피어는 매력적인 성장 스토리를 가지고 있으나, 단기적인 수익성 안정화와 오버행 이슈 해소 여부를 확인하며 투자하는 것이 바람직하다고 판단됩니다. 2025년의 '극적인 턴어라운드'가 지속적인 '성과'로 이어지는지 추가적인 재무 데이터와 시장 반응을 관망할 필요가 있습니다.",
+    "citations": [
+      {
+        "title": "investing.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFv0_p6zjtykseDgeYpsNCEBmUct1nNMLJZiJ9JjhvmlIlh6TLO4qGrMELyNwXYv0u_nXhRc1jE7PX9OgAx_MUxdhe5cN8JohFtbOAd8FlOwy5gaju1yKnFW7aQfHTHDV5V__IcFRYTdOuh4ybqqpUybUn-"
+      },
+      {
+        "title": "investing.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEJfYZ3n_0u3DJZxDVbpTsvQZiN03GkzVbsMZP-Yz1_ywZmsyo9caQmVn6px-YjeEZHbYP19xIGnpd_F-yztAhYGU97EiYgUAP1R5JRAz2uAqxukB3Ie5FGODgmSieqNZFxviKG_ZtQ-sKqQSirxsP9Tp1oS0TCbil-9PdH"
+      },
+      {
+        "title": "daum.net",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEBnK49VUlWU_dyPf102vmqzvyi5gGcVdJYPPnnYRRua4Qs1WKz88sDGJlsT34KSWI5_vvv9iB2dtWQaGC-y03KonJHcaqaDQxR0zXbDoJ3Nnosr5TyozGTDEo-PKF3A5_PZiEf1ooYSD8="
+      },
+      {
+        "title": "hankyung.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGk530gespPNpxX557mdLO3frX8sWQa71gcd17GKNsktZVfHPvze2ynv6mqYLFH4xTOdIlP6kZweV_72Iim_GTyTW_mXhBHCANx9ee24kMK6PsXKoWMbkuwF_baExoYDQUXcNznj0aTkVHd8d3h7w=="
+      },
+      {
+        "title": "hankyung.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQG-qO5Jrp6s0eYM11ap1ZoU8Qx2XBWGbmk2LL0FOxC6po3SvMSVwChdKFvjGwy8P7zAMcML2IJZw48tgsp-En76JbejajRxDWSRdkqKiEyIC5hjgYG-CuiAb4_FRBBxSpbiexjm"
+      },
+      {
+        "title": "littlebproject.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGQCBw4-4DT7KMRku2V0cn7d8qsluRg0J0wzHcJer0gTa7evPrP3weE6kSNJX16qor3s91drondNGo-2IvipRe_gsfFHZlwc5NNbuyu8G0b59qEC8EOpo4nbl-0GVW5_m4Tug=="
+      },
+      {
+        "title": "sks.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEI6m2Jlj7r8caAY1dFOVun0j5S-cpwSXf5t39T0u8dsh9qYRWxhFqsaUi1xaD3s1QA-8A6SXkd0Y4gg6xhyaTCcu4SRRafR0qgCbPQ9A6XAhh_ugKnA6Ya7XRhbHZXzOnV53p8b8_DS7fwPba6uswq6BZ2zfZdii476eQAqjmbmRE0Fw=="
+      },
+      {
+        "title": "youtube.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHvz23eD0ERlwiObq4SGJ4OqVMInUuBpWbylDjqwmILALPy6kus0HaVFVMbxhXPRfTWjnFAyaH_C6HRz_yl6WWa5yBvYNu5qTuaw4glu6PMZsUcWAcSO5_reIzmbxfw7c7QYzgAFWs="
+      },
+      {
+        "title": "daum.net",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFnZglCtG6tYM9XbmbsyBPGqRYRjXu-QIaWx0fwLKwxpayayKorE_l136H1vU52Tls8mB-szZw1aaEiERZ_3dWe6Hph0-Gywt23opiyTkih8T1xk6bCmIoD8I0HzRnROZM7xdTKkPbInMTPscClVfIkw_v3U6MJNyP4SzdUDq7UrpU="
+      },
+      {
+        "title": "youtube.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQH_2zu27lSbT16adym6_k_EWyJB2OEZoNCorWicrC9F57XM-I0WCkXfhTqzgevrHfN26k0UBHt7h08ewKjiXceYHCg2YqBKkUqw0IADm0ybGQw5X8ZU0LlDAragQesikfaGEgSbZrE="
+      }
+    ]
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=01336762",
+    "summary": "The browsing result indicates that the URL could not be found, and it suggests the URL might have changed or been deleted. Therefore, I cannot access the disclosure page.\n공시 페이지 접근 제한"
+  }
+}

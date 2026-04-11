@@ -1,0 +1,305 @@
+{
+  "stock_code": "003160",
+  "stock_name": "디아이",
+  "generated_at": "2026-04-11T13:41:42.782910+00:00",
+  "financials": {
+    "stock_code": "003160",
+    "corp_code": "00118275",
+    "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2016": {
+        "cash": 260.1,
+        "total_assets": 1795.8,
+        "short_debt": 296.4,
+        "long_debt": 92.5,
+        "total_liab": 650.4,
+        "total_equity": 1145.4,
+        "revenue": 1097.3,
+        "op_profit": 54.8,
+        "net_income": 10.6
+      },
+      "2017": {
+        "cash": 473.2,
+        "total_assets": 2015.5,
+        "short_debt": 193.7,
+        "long_debt": 21.8,
+        "total_liab": 697.1,
+        "total_equity": 1318.4,
+        "revenue": 1521.7,
+        "op_profit": 115.2,
+        "net_income": 184.1
+      },
+      "2018": {
+        "cash": 346.7,
+        "total_assets": 2104.9,
+        "short_debt": 298.0,
+        "long_debt": 16.4,
+        "total_liab": 681.9,
+        "total_equity": 1422.9,
+        "revenue": 1959.9,
+        "op_profit": 215.2,
+        "net_income": 42.8
+      },
+      "2019": {
+        "cash": 299.8,
+        "total_assets": 2148.3,
+        "short_debt": 397.6,
+        "long_debt": 13.7,
+        "total_liab": 744.2,
+        "total_equity": 1404.1,
+        "revenue": 1095.4,
+        "op_profit": -65.4,
+        "net_income": -1.4
+      },
+      "2020": {
+        "cash": 357.5,
+        "total_assets": 2288.9,
+        "short_debt": 295.0,
+        "long_debt": 205.8,
+        "total_liab": 924.0,
+        "total_equity": 1364.9,
+        "revenue": 1622.6,
+        "op_profit": 55.2,
+        "net_income": 57.6
+      },
+      "2021": {
+        "cash": 261.7,
+        "total_assets": 2481.6,
+        "short_debt": 262.8,
+        "long_debt": 185.9,
+        "total_liab": 961.0,
+        "total_equity": 1520.6,
+        "revenue": 2265.7,
+        "op_profit": 164.8,
+        "net_income": 151.4
+      },
+      "2022": {
+        "cash": 361.6,
+        "total_assets": 2745.9,
+        "short_debt": 292.0,
+        "long_debt": 274.7,
+        "total_liab": 1112.1,
+        "total_equity": 1633.8,
+        "revenue": 2310.0,
+        "op_profit": 111.5,
+        "net_income": 146.0
+      },
+      "2023": {
+        "total_assets": 2805.9,
+        "cash": 473.1,
+        "total_equity": 101.1,
+        "short_debt": 395.0,
+        "total_liab": 1193.4,
+        "long_debt": 239.3,
+        "op_profit": 61.4,
+        "net_income": 31.5,
+        "revenue": 2145.4
+      },
+      "2024": {
+        "total_assets": 3196.1,
+        "cash": 429.9,
+        "total_equity": 439.5,
+        "short_debt": 343.9,
+        "total_liab": 1518.7,
+        "long_debt": 221.3,
+        "op_profit": 30.8,
+        "net_income": 11.0,
+        "revenue": 2139.6
+      },
+      "2025": {
+        "total_assets": 3737.8,
+        "cash": 1071.2,
+        "total_equity": 439.5,
+        "total_liab": 1878.8,
+        "long_debt": 306.5,
+        "op_profit": 365.1,
+        "net_income": 51.0,
+        "revenue": 4322.9
+      }
+    },
+    "missing_years": [
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2016,
+        "revenue_eok": 1097,
+        "op_profit_eok": 55,
+        "net_income_eok": 11,
+        "roe_pct": 0.96,
+        "op_margin_pct": 5.01,
+        "debt_ratio_pct": 56.77
+      },
+      {
+        "year": 2017,
+        "revenue_eok": 1522,
+        "op_profit_eok": 115,
+        "net_income_eok": 184,
+        "roe_pct": 13.96,
+        "op_margin_pct": 7.56,
+        "debt_ratio_pct": 52.88
+      },
+      {
+        "year": 2018,
+        "revenue_eok": 1960,
+        "op_profit_eok": 215,
+        "net_income_eok": 43,
+        "roe_pct": 3.02,
+        "op_margin_pct": 10.97,
+        "debt_ratio_pct": 47.93
+      },
+      {
+        "year": 2019,
+        "revenue_eok": 1095,
+        "op_profit_eok": -65,
+        "net_income_eok": -1,
+        "roe_pct": -0.07,
+        "op_margin_pct": -5.94,
+        "debt_ratio_pct": 53.0
+      },
+      {
+        "year": 2020,
+        "revenue_eok": 1623,
+        "op_profit_eok": 55,
+        "net_income_eok": 58,
+        "roe_pct": 4.25,
+        "op_margin_pct": 3.39,
+        "debt_ratio_pct": 67.69
+      },
+      {
+        "year": 2021,
+        "revenue_eok": 2266,
+        "op_profit_eok": 165,
+        "net_income_eok": 151,
+        "roe_pct": 9.93,
+        "op_margin_pct": 7.28,
+        "debt_ratio_pct": 63.18
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 2310,
+        "op_profit_eok": 112,
+        "net_income_eok": 146,
+        "roe_pct": 8.93,
+        "op_margin_pct": 4.85,
+        "debt_ratio_pct": 68.05
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 2145,
+        "op_profit_eok": 61,
+        "net_income_eok": 32,
+        "roe_pct": 31.68,
+        "op_margin_pct": 2.84,
+        "debt_ratio_pct": 1181.19
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 2140,
+        "op_profit_eok": 31,
+        "net_income_eok": 11,
+        "roe_pct": 2.5,
+        "op_margin_pct": 1.45,
+        "debt_ratio_pct": 345.23
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 4323,
+        "op_profit_eok": 365,
+        "net_income_eok": 51,
+        "roe_pct": 11.59,
+        "op_margin_pct": 8.44,
+        "debt_ratio_pct": 427.05
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": 16.01,
+      "op_profit_cagr_pct": 22.17,
+      "best_year": 2025,
+      "worst_year": 2019,
+      "avg_roe_pct": 8.68
+    },
+    "valuation": {
+      "grade": "C",
+      "strengths": [
+        "2025년 매출액 및 영업이익의 큰 폭 성장이 예상됩니다.",
+        "10년간 매출액 및 영업이익의 견조한 CAGR을 기록했습니다.",
+        "현금 보유액이 꾸준히 증가하는 추세입니다."
+      ],
+      "risks": [
+        "영업이익 및 당기순이익의 변동성이 매우 높습니다.",
+        "2019년 영업손실을 기록하는 등 수익성 악화 이력이 있습니다.",
+        "2023년 이후 자본총계가 급감하며 부채비율이 매우 높아져 재무 안정성이 취약합니다."
+      ],
+      "one_liner": "2025년 실적 개선 기대감에도 불구하고, 과거 실적 변동성과 급격히 악화된 재무구조가 투자 리스크로 작용합니다."
+    }
+  },
+  "dcf": {
+    "text": "다음은 제공된 데이터를 바탕으로 디아이(003160)의 DCF 적정가치를 계산하고 민감도 분석을 수행한 결과입니다.\n\n**가정 요약:**\n*   **FCF 계산:** 영업이익 × (1 - 0.25) + 감가상각(매출의 10%) - CAPEX(매출의 5%)\n*   **기준 연도 FCF:** 2025년 재무 데이터를 기준으로 계산되며, 명시된 성장률이 없으므로 5년 예측 기간 동안 FCF는 동일하게 유지된다고 가정합니다.\n*   **WACC (기본):** 9%\n*   **영구성장률 g (기본):** 2%\n*   **예측 기간:** 5년 + 영구 가치 (Terminal Value)\n*   **적정가치:** 순부채 정보가 제공되지 않아 기업가치(Enterprise Value)를 적정가치로 간주합니다.\n\n---\n\n### 1. 기본 시나리오 DCF 적정가치(억원) 계산\n\n**FCF 계산 (2025년 기준):**\n*   매출액: 4323 억원\n*   영업이익: 365 억원\n*   감가상각 = 매출액 × 10% = 4323 × 0.10 = 432.3 억원\n*   CAPEX = 매출액 × 5% = 4323 × 0.05 = 216.15 억원\n*   FCF = 영업이익 × (1 - 0.25) + 감가상각 - CAPEX\n    = 365 × 0.75 + 432.3 - 216.15\n    = 273.75 + 432.3 - 216.15 = 489.9 억원\n\n**DCF 계산 (WACC=9%, g=2%):**\n*   5년간 FCF (489.9억원)의 현재가치 합계\n*   Terminal Value (6년차 FCF = 489.9 * (1+0.02) = 499.698억원)의 현재가치\n\n\n### 1. 기본 시나리오 DCF 적정가치(억원) 계산\n\n기본 시나리오 (WACC = 9%, 영구성장률 g = 2%) 하에 계산된 디아이의 DCF 적정가치는 다음과 같습니다.\n\n**기본 시나리오 DCF 적정가치: 6545.10 억원**\n\n### 2. WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 출력\n\nWACC와 영구성장률(g) 변화에 따른 DCF 적정가치 민감도 분석 결과는 다음과 같습니다.\n\n**DCF 적정가치 민감도 그리드 (억원):**\n\n|             | g=1%    | g=2%    | g=3%     |\n| :---------- | :------ | :------ | :------- |\n| **WACC=7%** | 7888.43 | 9134.24 | 11002.95 |\n| **WACC=8%** | 6766.77 | 7624.13 | 8824.43  |\n| **WACC=9%** | 5925.36 | 6545.10 | 7371.43  |\n| **WACC=10%**| 5270.79 | 5735.52 | 6333.04  |\n| **WACC=11%**| 4747.01 | 5105.58 | 5553.79  |\n\n### 3. 요약 출력\n\n**적정가치(기본): 6545.10억원**",
+    "executed_code": "import pandas as pd\n\ndef calculate_dcf_value(revenue, operating_profit, forecast_years, wacc, g):\n    \"\"\"\n    Calculates the DCF intrinsic value (Enterprise Value) based on provided financials and assumptions.\n\n    Args:\n        revenue (float): Current year's revenue.\n        operating_profit (float): Current year's operating profit.\n        forecast_years (int): Number of explicit forecast years.\n        wacc (float): Weighted Average Cost of Capital (as a decimal).\n        g (float): Perpetual growth rate (as a decimal).\n\n    Returns:\n        float: The calculated DCF intrinsic value (Enterprise Value).\n    \"\"\"\n    # Assumptions for FCF calculation\n    tax_rate_op = 0.25 # (1 - 0.25) factor for operating profit\n    depreciation_rate = 0.10 # 10% of revenue\n    capex_rate = 0.05 # 5% of revenue\n\n    # Calculate Depreciation and CAPEX for the base year\n    depreciation = revenue * depreciation_rate\n    capex = revenue * capex_rate\n\n    # Calculate FCF for the base year (Year 1 of forecast)\n    # Assuming operating profit, depreciation, and CAPEX remain constant for the forecast period\n    # as no growth rate for these is provided for the explicit forecast period.\n    fcf_base = operating_profit * (1 - tax_rate_op) + depreciation - capex\n\n    # Check for WACC - g > 0 for Terminal Value calculation\n    if wacc <= g:\n        return float('inf') # Return infinity if WACC <= g, as the formula becomes invalid or implies infinite value\n\n    # Project FCFs for the explicit forecast period and calculate their present values\n    pv_fcf_sum = 0\n    for t in range(1, forecast_years + 1):\n        discount_factor = 1 / ((1 + wacc) ** t)\n        pv_fcf_sum += fcf_base * discount_factor\n\n    # Calculate Terminal Value (TV)\n    # FCF_year_N+1 = FCF_year_N * (1 + g)\n    # Here, FCF_year_N is fcf_base (assuming constant FCF for forecast years)\n    fcf_terminal_year = fcf_base * (1 + g)\n    terminal_value = fcf_terminal_year / (wacc - g)\n\n    # Discount Terminal Value to Present Value\n    pv_terminal_value = terminal_value / ((1 + wacc) ** forecast_years)\n\n    # Total Enterprise Value\n    enterprise_value = pv_fcf_sum + pv_terminal_value\n\n    return enterprise_value\n\n# --- Input Data ---\nrevenue = 4323 # 억원\noperating_profit = 365 # 억원\nforecast_years = 5\n\n# --- Base Scenario Assumptions ---\nbase_wacc = 0.09\nbase_g = 0.02\n\n# 1. 기본 시나리오 DCF 적정가치(억원) 계산\nbase_dcf_value = calculate_dcf_value(revenue, operating_profit, forecast_years, base_wacc, base_g)\nprint(f\"기본 시나리오 DCF 적정가치: {base_dcf_value:.2f} 억원\")\n\n# 2. WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 출력\nwacc_range = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_range = [0.01, 0.02, 0.03]\n\nsensitivity_results = {}\nfor wacc in wacc_range:\n    row_results = {}\n    for g in g_range:\n        value = calculate_dcf_value(revenue, operating_profit, forecast_years, wacc, g)\n        row_results[f'g={g*100:.0f}%'] = value\n    sensitivity_results[f'WACC={wacc*100:.0f}%'] = row_results\n\nsensitivity_df = pd.DataFrame(sensitivity_results).T\nprint(\"\\nDCF 적정가치 민감도 그리드 (억원):\")\nprint(sensitivity_df.round(2))\n\n# 3. 마지막에 '적정가치(기본): {value}억원' 형태로 요약 출력\nprint(f\"\\n적정가치(기본): {base_dcf_value:.2f}억원\")\n\nimport pandas as pd\n\ndef calculate_dcf_value(revenue, operating_profit, forecast_years, wacc, g):\n    \"\"\"\n    Calculates the DCF intrinsic value (Enterprise Value) based on provided financials and assumptions.\n\n    Args:\n        revenue (float): Current year's revenue.\n        operating_profit (float): Current year's operating profit.\n        forecast_years (int): Number of explicit forecast years.\n        wacc (float): Weighted Average Cost of Capital (as a decimal).\n        g (float): Perpetual growth rate (as a decimal).\n\n    Returns:\n        float: The calculated DCF intrinsic value (Enterprise Value).\n    \"\"\"\n    # Assumptions for FCF calculation\n    tax_rate_op = 0.25 # (1 - 0.25) factor for operating profit\n    depreciation_rate = 0.10 # 10% of revenue\n    capex_rate = 0.05 # 5% of revenue\n\n    # Calculate Depreciation and CAPEX for the base year\n    depreciation = revenue * depreciation_rate\n    capex = revenue * capex_rate\n\n    # Calculate FCF for the base year (Year 1 of forecast)\n    # Assuming operating profit, depreciation, and CAPEX remain constant for the forecast period\n    # as no growth rate for these is provided for the explicit forecast period.\n    fcf_base = operating_profit * (1 - tax_rate_op) + depreciation - capex\n\n    # Check for WACC - g > 0 for Terminal Value calculation\n    if wacc <= g:\n        return float('inf') # Return infinity if WACC <= g, as the formula becomes invalid or implies infinite value\n\n    # Project FCFs for the explicit forecast period and calculate their present values\n    pv_fcf_sum = 0\n    for t in range(1, forecast_years + 1):\n        discount_factor = 1 / ((1 + wacc) ** t)\n        pv_fcf_sum += fcf_base * discount_factor\n\n    # Calculate Terminal Value (TV)\n    # FCF_year_N+1 = FCF_year_N * (1 + g)\n    # Here, FCF_year_N is fcf_base (assuming constant FCF for forecast years)\n    fcf_terminal_year = fcf_base * (1 + g)\n    terminal_value = fcf_terminal_year / (wacc - g)\n\n    # Discount Terminal Value to Present Value\n    pv_terminal_value = terminal_value / ((1 + wacc) ** forecast_years)\n\n    # Total Enterprise Value\n    enterprise_value = pv_fcf_sum + pv_terminal_value\n\n    return enterprise_value\n\n# --- Input Data ---\nrevenue = 4323 # 억원\noperating_profit = 365 # 억원\nforecast_years = 5\n\n# --- Base Scenario Assumptions ---\nbase_wacc = 0.09\nbase_g = 0.02\n\n# 1. 기본 시나리오 DCF 적정가치(억원) 계산\nbase_dcf_value = calculate_dcf_value(revenue, operating_profit, forecast_years, base_wacc, base_g)\nprint(f\"기본 시나리오 DCF 적정가치: {base_dcf_value:.2f} 억원\")\n\n# 2. WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 출력\nwacc_range = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_range = [0.01, 0.02, 0.03]\n\nsensitivity_results = {}\nfor wacc in wacc_range:\n    row_results = {}\n    for g in g_range:\n        value = calculate_dcf_value(revenue, operating_profit, forecast_years, wacc, g)\n        row_results[f'g={g*100:.0f}%'] = value\n    sensitivity_results[f'WACC={wacc*100:.0f}%'] = row_results\n\nsensitivity_df = pd.DataFrame(sensitivity_results).T\nprint(\"\\nDCF 적정가치 민감도 그리드 (억원):\")\nprint(sensitivity_df.round(2))\n\n# 3. 마지막에 '적정가치(기본): {value}억원' 형태로 요약 출력\nprint(f\"\\n적정가치(기본): {base_dcf_value:.2f}억원\")",
+    "code_output": "기본 시나리오 DCF 적정가치: 6545.10 억원\n\nDCF 적정가치 민감도 그리드 (억원):\n             g=1%     g=2%      g=3%\nWACC=7%   7888.43  9134.24  11002.95\nWACC=8%   6766.77  7624.13   8824.43\nWACC=9%   5925.36  6545.10   7371.43\nWACC=10%  5270.79  5735.52   6333.04\nWACC=11%  4747.01  5105.58   5553.79\n\n적정가치(기본): 6545.10억원\n\n기본 시나리오 DCF 적정가치: 6545.10 억원\n\nDCF 적정가치 민감도 그리드 (억원):\n             g=1%     g=2%      g=3%\nWACC=7%   7888.43  9134.24  11002.95\nWACC=8%   6766.77  7624.13   8824.43\nWACC=9%   5925.36  6545.10   7371.43\nWACC=10%  5270.79  5735.52   6333.04\nWACC=11%  4747.01  5105.58   5553.79\n\n적정가치(기본): 6545.10억원"
+  },
+  "news": {
+    "text": "## 디아이(003160) 투자 분석 보고서\n\n**투자등급: 관망**\n\n### 1. 재무 데이터와 시장 컨센서스의 일치/불일치\n\n제공된 10년 재무제표 분석 결과는 2025년 실적 개선 기대감에도 불구하고 과거 실적 변동성과 급격히 악화된 재무구조를 투자 리스크로 지적하며 '투자등급 C'를 제시했습니다.\n\n최근 2주간의 시장 뉴스를 종합해 보면, 시장 컨센서스는 디아이의 2025년 이후 실적 개선에 대한 기대감이 매우 높은 것으로 나타났습니다. 특히, 자회사 디지털프론티어를 통한 HBM(고대역폭메모리) 테스트 장비 국산화 및 SK하이닉스향 공급 확대가 핵심 성장 동력으로 부각되고 있습니다.\n\n*   **긍정적 컨센서스:**\n    *   신한투자증권은 디아이의 2026년 매출액 5082억원, 영업이익 656억원을 추정하며, HBM 테스트 장비의 고객사 내 퍼스트 밴더(1순위 공급사)로서 점유율 70% 이상이 가능하다고 분석했습니다.\n    *   하나증권은 HBM4 시대 진입에 따른 검사 공정 중요도 상승으로 올해부터 본격적인 이익 성장이 기대된다고 밝혔으며, 2026년 영업이익 추정치를 기존 대비 약 30% 상향한 704억원으로 전망했습니다.\n    *   다수의 증권사 리포트에서 HBM용 테스트 장비 국산화 수혜와 HBM4 전환 가속화에 따른 이익 레벨업을 전망하고 있습니다.\n    *   2025년 3분기 누적 연결기준 매출액은 전년 동기 대비 150.4% 증가, 영업이익 및 당기순이익이 흑자 전환하는 등 실적 개선이 가시화되고 있습니다.\n    *   최근 HBM 테마의 강세 속에서 디아이의 주가가 상승세를 보였으며, 재무 성장성, 안정성, 수익성 모두 테마 평균을 상회한다는 분석도 있습니다.\n\n*   **재무 데이터와의 불일치 가능성:**\n    *   제공된 재무제표 분석 요약에서 언급된 '과거 실적 변동성'과 '급격히 악화된 재무구조'에 대한 구체적인 내용은 최근 뉴스에서 직접적으로 다뤄지지 않았습니다. 시장은 HBM 관련 성장성에 더 큰 비중을 두고 있는 것으로 보입니다. 다만, 2025년 3분기 실적 개선에도 불구하고 3분기 출하량 감소로 실적이 소폭 둔화되었다는 언급도 있어, 단기적인 실적 변동성은 여전히 존재할 수 있습니다.\n\n결론적으로, 시장 컨센서스는 디아이의 HBM 관련 성장성에 대한 강한 기대를 반영하고 있으며, 이는 2025년 실적 개선 기대감과 일치합니다. 그러나 재무구조 악화 등 과거 재무 데이터의 부정적인 측면은 시장에서 상대적으로 덜 부각되거나, 향후 성장성으로 상쇄될 것으로 기대하는 경향이 있습니다.\n\n### 2. 재무제표에서 드러나지 않는 리스크 또는 호재\n\n**호재:**\n\n*   **HBM 테스트 장비 국산화 및 독점 공급 가능성:** 디아이의 자회사 디지털프론티어는 SK하이닉스향 HBM 테스트 장비의 국산화를 성공적으로 추진하고 있으며, HBM 테스트 장비 시장에서 고객사 내 퍼스트 밴더로서 70% 이상의 점유율을 확보할 가능성이 언급됩니다. 이는 기존 외국계 기업이 독점하던 시장에서 국내 기업의 경쟁력 강화와 안정적인 매출처 확보를 의미합니다.\n*   **HBM4 시대의 수혜:** HBM4는 적층 수 증가로 테스트 시간이 늘어나면서 웨이퍼 번인 및 코어 테스트의 중요도가 부각되고 있습니다. 디아이는 수냉식 기반 열 관리 솔루션으로 고적층 환경의 발열 문제에 효과적으로 대응하며 경쟁 우위를 점하고 있어, HBM4 시장의 성장에 따른 직접적인 수혜가 예상됩니다.\n*   **2차전지 검사장비 사업 확대:** 디아이는 2021년 브이텐시스템 인수를 통해 2차전지 검사장비 사업을 확대하고 있으며, ESS 컨테이너 사업도 영위하고 있습니다. 이는 반도체 외 신성장 동력을 확보하고 있다는 점에서 긍정적입니다.\n\n**리스크:**\n\n*   **반도체 시장의 외부 요인:** 미국과 이란 간의 전쟁 장기화 및 메모리 반도체 시장 둔화 우려로 인해 반도체주 전반의 하락세가 디아이의 주가에도 부정적인 영향을 미칠 수 있습니다. 이는 개별 기업의 실적과 무관하게 시장 전체의 센티멘트에 영향을 받을 수 있는 외부 리스크입니다.\n*   **HBM4 퀄리피케이션 지연 가능성:** HBM4용 장비에 대한 퀄리피케이션(품질 인증) 진행 중 일부 지연이 있었으나, 이는 반도체 장비 업계에서 흔한 일이며 빠른 시일 내 재개될 것으로 예상됩니다. 하지만 예상보다 지연될 경우 단기적인 실적 및 주가에 부정적인 영향을 미칠 수 있습니다.\n*   **'싸이 테마주'로서의 변동성:** 디아이는 싸이의 부친이 최대주주로 있는 기업이라는 이유로 '싸이 테마주'로 분류되기도 하며, 싸이의 활동과 무관하게 주가가 급등락을 반복해왔습니다. 이는 기업의 본질적인 가치와 무관한 주가 변동성을 야기할 수 있는 리스크입니다.\n\n### 3. 최종 판정\n\n제공된 재무제표 분석 결과에서 지적된 과거 실적 변동성과 재무구조 악화는 분명한 리스크 요인입니다. 그러나 최근 뉴스에서 확인된 바와 같이, 디아이는 자회사 디지털프론티어를 통해 HBM 테스트 장비 시장에서 독보적인 경쟁력을 확보하고 있으며, HBM4 시대의 도래와 함께 폭발적인 성장이 기대되는 상황입니다. 시장의 컨센서스 또한 이러한 성장성에 크게 주목하고 있습니다.\n\n현재 시점에서 재무구조의 급격한 악화에 대한 구체적인 정보는 부족하지만, HBM 시장의 성장성과 디아이의 기술적 우위는 긍정적인 투자 요인으로 작용합니다. 다만, 과거 실적 변동성과 외부 시장 환경의 불확실성, 그리고 '싸이 테마주'로서의 비이성적 주가 변동 가능성 또한 고려해야 합니다.\n\n따라서 현재는 긍정적인 성장 모멘텀과 잠재적 리스크가 공존하는 시점으로 판단됩니다. HBM 관련 수주 및 실적 가시화 추이를 좀 더 지켜보며 재무구조 개선 여부를 확인하는 것이 중요합니다.\n\n**최종 판정: 관망**",
+    "citations": [
+      {
+        "title": "deepsearch.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFnmZZpNOJORxBuFFuOT7ve32sUsCbVNB4wHJ2DbmBrTX6gLpfuhA896gk0tWxfaT-rGtWETy_BNICo5AySbKqZaau2yDII1PHxouZhG4yBRB7y6zbdJQUc6sly1cbyhARaR6THfTc="
+      },
+      {
+        "title": "pstatic.net",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHKGoBOqiG9yeJOwDNFr3Xj_CafPNnOU6Jq0zV6JmlkPR6P-lV0jb0tkAp2yFTNJacJKPwZzk-oIgyCffvbx6BsIPRapnLxAzod4GGjoirPyYZKqfdAHWaulJy-r_X24ejpqzRcoKbmxfxnY1FcQwVi-uDWNAA3ADAP82glDQ7ZEHG0pY0FbgxaUdK7BSI="
+      },
+      {
+        "title": "daum.net",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHBHcXvFtgIZcdHukSg0jmRfSebFwMmSEoA2lHntC9y_sJhqZsMUeHSUFHhe3cP_wLMc6bUwbEx-sOEFJkHOBihQlvH_Er8K8f82UlE4cteBdSaD3TFmoaK6ULUDJcAnlh9JUCr0JNP34UjedYhHNMNF2hGw1wed5P_y05AoHHF3Q4="
+      },
+      {
+        "title": "investing.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEeMOzSaGB8AxFdGFPpyDX9Yb7W_1V9TgYPxW4XV48NyIMlM5cP1G9doMyncFzXopmX4qoHZn7AmDBPyC30pQQB9wL0UG7ICc9A-CNSwWZWL7eNpdZ9goNdXNDBRltHMV_JtCs9M1vfOvtOWC7IAFMIBY5iYA0AXw_DrQ=="
+      },
+      {
+        "title": "wisereport.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQH_P_z5ZL0dl8CdI-gGCIsqdwyn1kegpGz1LsWAjxsTbpiKFqzLXWtgdC8g7hXxw2hbOruuSWY8dYjbLu4O9_oiXwCnx3g0NVrUoKQht3SLwz3dlpu_6Fk3jsXl4WoxP47xbQBclIpQKnLh9TxyT1uYOMHqz7VR1bstrvh7"
+      },
+      {
+        "title": "newslock.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFA_b7r7bNxR1g48m4OHNxq49rc8YQAArZSm47DY5md1iqzkXt9RaaF6QbaOTwGKMkQkmH9auUsraN3HoRihI4o5bIJsbl0u-0t1klROtCJnFhj-RWy95RN01qJDjxJKgDLh3kqlixttKu7Lyt63rDFtMpVwr5Igg=="
+      },
+      {
+        "title": "mk.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEgwbVCBtH-z7WyQjcvu6Wm71NKL9-_3BLgKNdDLg9XY7OXW4JpK1A8kjIEmhmdVq1yt2aQR1-Tem5pZGLmnv7z_XA-PnRhCQqeXdcF0l8amV_ETEHIxgi0thYRzrmoXWnTOEc="
+      },
+      {
+        "title": "alphasquare.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEAAIsL1HSfXZWg1_NEysR0X1MrrClXtQgb-FdzF-eWDS5v9G6HAtEcj_vNjoFyZaR9Y4m2b4lIdouffSp1DKUTwrsS5xDLkWIJ2hoLxbX6L--3_o8EvxC0T1GCPvFOcnebZPHXmSr6zOPypAfoIw10cBZL1tcBDWfWIudgCGBrhloLKqQtinU3RdWk7M0yC01IkqA="
+      },
+      {
+        "title": "wisereport.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFXKtptAHSv7Bm-siXSXqoUWMMJsSFJDweipfCKdEeDztaBwJKu-owHIxdJoUAQ3lqseGdzanrJ69TqzGs_SRRktFee1fP6nOxY-GYJZX-eSQdA_83f3GPpn6ntkRzV5KPW1KL-NbWuW-EHupurBW66gPXgBoK87C3vZG2-IKk0OA=="
+      },
+      {
+        "title": "widedaily.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHrotx1WP_OVV4Ssq4K6IWKOP7ttRy7payxJFow3jWPFCZ_urh9FdQmn4KQ38czpOS8AGPxuRnYzNOL8tb6TcNE8lO209BHgUXBp1CQoI6ycarsLL0rbfvqsz3VqZ76RV_MtC1kTvEB1YJoffYjIHlmT28gsABYYw=="
+      }
+    ]
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=00118275",
+    "summary": "공시 페이지 접근 제한"
+  }
+}

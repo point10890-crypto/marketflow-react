@@ -1,0 +1,284 @@
+{
+  "stock_code": "196170",
+  "stock_name": "알테오젠",
+  "generated_at": "2026-04-11T13:56:06.945136+00:00",
+  "financials": {
+    "stock_code": "196170",
+    "corp_code": "00989619",
+    "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2016": {
+        "cash": 83.9,
+        "total_assets": 479.5,
+        "short_debt": 0.0,
+        "long_debt": 0.0,
+        "total_liab": 27.2,
+        "total_equity": 452.3,
+        "revenue": 68.4,
+        "op_profit": -54.1,
+        "net_income": 0.0
+      },
+      "2017": {
+        "cash": 52.3,
+        "total_assets": 430.1,
+        "total_liab": 31.7,
+        "total_equity": 398.5,
+        "revenue": 121.0,
+        "op_profit": -61.7,
+        "net_income": 0.0
+      },
+      "2018": {
+        "cash": 89.2,
+        "total_assets": 713.8,
+        "total_liab": 46.8,
+        "total_equity": 667.0,
+        "revenue": 137.0,
+        "op_profit": -76.6,
+        "net_income": -70.7
+      },
+      "2019": {
+        "cash": 44.1,
+        "total_assets": 859.8,
+        "short_debt": 31.0,
+        "long_debt": 10.0,
+        "total_liab": 157.7,
+        "total_equity": 702.0,
+        "revenue": 292.3,
+        "op_profit": -22.5,
+        "net_income": -17.4
+      },
+      "2020": {
+        "cash": 389.2,
+        "total_assets": 1592.1,
+        "short_debt": 28.0,
+        "long_debt": 6.9,
+        "total_liab": 229.4,
+        "total_equity": 1362.7,
+        "revenue": 424.3,
+        "op_profit": 1.0,
+        "net_income": 0.0
+      },
+      "2021": {
+        "cash": 105.4,
+        "total_assets": 2603.4,
+        "short_debt": 23.0,
+        "long_debt": 9.4,
+        "total_liab": 1264.1,
+        "total_equity": 1339.2,
+        "revenue": 411.2,
+        "op_profit": -128.0,
+        "net_income": -91.9
+      },
+      "2022": {
+        "cash": 458.3,
+        "total_assets": 2454.9,
+        "short_debt": 31.3,
+        "long_debt": 6.9,
+        "total_liab": 1001.1,
+        "total_equity": 1453.8,
+        "revenue": 288.1,
+        "op_profit": -293.7,
+        "net_income": -19.3
+      },
+      "2023": {
+        "total_assets": 2561.0,
+        "cash": 302.0,
+        "total_equity": 1478.4,
+        "total_liab": 1082.6,
+        "long_debt": 0.0,
+        "op_profit": -97.4,
+        "net_income": 0.0,
+        "revenue": 965.2
+      },
+      "2024": {
+        "total_assets": 4090.1,
+        "cash": 189.9,
+        "total_equity": 1652.6,
+        "total_liab": 1349.2,
+        "long_debt": 50.0,
+        "op_profit": 254.0,
+        "net_income": 0.0,
+        "revenue": 1028.5
+      },
+      "2025": {
+        "total_assets": 6987.4,
+        "cash": 663.8,
+        "total_equity": 267.5,
+        "short_debt": 0.0,
+        "total_liab": 2443.0,
+        "long_debt": 40.3,
+        "op_profit": 1069.0,
+        "net_income": 0.0,
+        "revenue": 2158.6
+      }
+    },
+    "missing_years": [
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2016,
+        "revenue_eok": 68,
+        "op_profit_eok": -54,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": -79.41,
+        "debt_ratio_pct": 5.97
+      },
+      {
+        "year": 2017,
+        "revenue_eok": 121,
+        "op_profit_eok": -62,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": -51.24,
+        "debt_ratio_pct": 8.04
+      },
+      {
+        "year": 2018,
+        "revenue_eok": 137,
+        "op_profit_eok": -77,
+        "net_income_eok": -71,
+        "roe_pct": -10.64,
+        "op_margin_pct": -56.2,
+        "debt_ratio_pct": 7.05
+      },
+      {
+        "year": 2019,
+        "revenue_eok": 292,
+        "op_profit_eok": -22,
+        "net_income_eok": -17,
+        "roe_pct": -2.42,
+        "op_margin_pct": -7.53,
+        "debt_ratio_pct": 22.51
+      },
+      {
+        "year": 2020,
+        "revenue_eok": 424,
+        "op_profit_eok": 1,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 0.24,
+        "debt_ratio_pct": 16.8
+      },
+      {
+        "year": 2021,
+        "revenue_eok": 411,
+        "op_profit_eok": -128,
+        "net_income_eok": -92,
+        "roe_pct": -6.87,
+        "op_margin_pct": -31.14,
+        "debt_ratio_pct": 94.4
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 288,
+        "op_profit_eok": -294,
+        "net_income_eok": -19,
+        "roe_pct": -1.31,
+        "op_margin_pct": -102.08,
+        "debt_ratio_pct": 68.84
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 965,
+        "op_profit_eok": -97,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": -10.05,
+        "debt_ratio_pct": 73.27
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 1028,
+        "op_profit_eok": 254,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 24.71,
+        "debt_ratio_pct": 81.61
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 2159,
+        "op_profit_eok": 1069,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 49.51,
+        "debt_ratio_pct": 911.57
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": 44.8,
+      "op_profit_cagr_pct": 0.0,
+      "best_year": 2025,
+      "worst_year": 2022,
+      "avg_roe_pct": -2.12
+    },
+    "valuation": {
+      "grade": "B",
+      "strengths": [
+        "매출액의 폭발적인 성장률을 기록하며 시장 확대에 성공했습니다.",
+        "만성적인 영업손실에서 흑자 전환에 성공하고 영업이익이 괄목할 만하게 개선되었습니다.",
+        "바이오 산업 특유의 높은 성장 잠재력과 기술 경쟁력을 보유하고 있습니다."
+      ],
+      "risks": [
+        "과거 지속된 당기순손실과 전반적으로 낮은 수익성은 여전히 리스크 요인입니다.",
+        "2025년 급증하는 부채비율(911.57%)로 인한 재무 건전성 악화 가능성이 있습니다.",
+        "영업이익의 높은 변동성으로 인한 안정적인 수익 창출 능력에 대한 불확실성이 존재합니다."
+      ],
+      "one_liner": "매출액의 폭발적인 성장과 영업이익 흑자 전환은 긍정적이나, 높은 재무 레버리지와 과거 수익성 불안정성은 투자 시 면밀한 검토를 요구합니다."
+    }
+  },
+  "dcf": {
+    "text": "퀀트 애널리스트로서 알테오젠(196170)의 DCF 적정가치를 계산하겠습니다.\n\n제공된 데이터를 바탕으로 FCF(Free Cash Flow)를 계산하고, 이를 WACC(가중평균자본비용)로 할인하여 기업의 적정가치를 산출합니다. 5년의 명시적 예측 기간과 이후의 영구성장률을 가정한 터미널 밸류(Terminal Value)를 사용합니다.\n\n**가정 사항:**\n*   **FCF 계산:** 영업이익 × (1 - 법인세율) + 감가상각비 - CAPEX\n    *   법인세율: 25% (FCF 공식에서 (1 - 0.25)로 유추)\n    *   감가상각비: 매출액의 10%\n    *   CAPEX: 매출액의 5%\n*   **명시적 예측 기간(2025년~2029년) 동안의 매출액 및 영업이익 성장률:** 별도로 제시되지 않아 영구성장률 `g`와 동일하게 2%로 가정합니다.\n*   **할인 시작 시점:** 2025년 초 (2025년 FCF는 1년 할인, 2029년 FCF 및 터미널 밸류는 5년 할인)\n\n---\n\n### Python 코드 실행 및 결과\n\n\n---\n\n### 분석 결과\n\n1.  **기본 시나리오 DCF 적정가치:**\n    *   WACC 9%, 영구성장률(g) 2%를 적용한 알테오젠의 DCF 적정가치는 **12,995.71억원**으로 계산되었습니다.\n\n2.  **WACC x g 민감도 그리드:**\n    *   WACC와 영구성장률(g)의 변화에 따른 적정가치 민감도 분석 결과는 위 표와 같습니다.\n    *   일반적으로 WACC가 낮아지거나 영구성장률(g)이 높아질수록 기업의 적정가치는 상승하는 경향을 보입니다.\n    *   WACC가 g보다 작거나 같은 경우(WACC <= g)에는 터미널 밸류 계산식이 무한대로 발산하므로 \"N/A (WACC <= g)\"로 표시됩니다.\n\n3.  **요약:**\n    *   **적정가치(기본): 12995.71억원**",
+    "executed_code": "import pandas as pd\n\n# 1. 기본 시나리오 DCF 적정가치(억원) 계산\n\n# 기업 데이터 (2025년 기준)\nrevenue_2025 = 2159  # 억원\nop_profit_2025 = 1069  # 억원\n\n# 가정\ntax_rate = 0.25\ndepreciation_rate = 0.10  # 매출의 10%\ncapex_rate = 0.05       # 매출의 5%\nwacc_base = 0.09\ng_base = 0.02\nforecast_years = 5 # 5년 예측 (2025년 ~ 2029년)\n\n# FCF 계산 함수\ndef calculate_fcf(revenue, op_profit, tax_rate, depreciation_rate, capex_rate):\n    depreciation = revenue * depreciation_rate\n    capex = revenue * capex_rate\n    fcf = op_profit * (1 - tax_rate) + depreciation - capex\n    return fcf\n\n# DCF 적정가치 계산 함수\ndef dcf_valuation(initial_revenue, initial_op_profit, tax_rate, depreciation_rate, capex_rate, wacc, g, forecast_years):\n    if wacc <= g:\n        return float('inf') # WACC가 g보다 작거나 같으면 모델이 유효하지 않음\n\n    fcf_list = []\n    current_revenue = initial_revenue\n    current_op_profit = initial_op_profit\n\n    # 명시적 예측 기간 FCF 계산 (2025년 ~ 2029년)\n    for i in range(forecast_years):\n        fcf = calculate_fcf(current_revenue, current_op_profit, tax_rate, depreciation_rate, capex_rate)\n        fcf_list.append(fcf)\n        # 다음 연도 매출액 및 영업이익 예측 (g 성장률 적용)\n        current_revenue *= (1 + g)\n        current_op_profit *= (1 + g)\n\n    pv_fcf_sum = 0\n    for i, fcf in enumerate(fcf_list):\n        # 2025년 FCF는 1년 할인, 2026년 FCF는 2년 할인 ... 2029년 FCF는 5년 할인\n        pv_fcf_sum += fcf / ((1 + wacc)**(i + 1))\n\n    # 터미널 밸류(Terminal Value) 계산\n    # current_revenue와 current_op_profit은 이제 예측 기간 다음 해 (2030년)의 값임\n    fcf_terminal_year = calculate_fcf(current_revenue, current_op_profit, tax_rate, depreciation_rate, capex_rate) # 2030년 FCF\n    terminal_value = fcf_terminal_year / (wacc - g)\n\n    # 터미널 밸류를 현재 가치로 할인 (예측 기간 마지막 해인 5년으로 할인)\n    pv_terminal_value = terminal_value / ((1 + wacc)**forecast_years)\n\n    intrinsic_value = pv_fcf_sum + pv_terminal_value\n    return intrinsic_value\n\n# 기본 시나리오 계산\nbase_intrinsic_value = dcf_valuation(\n    revenue_2025, op_profit_2025, tax_rate, depreciation_rate, capex_rate,\n    wacc_base, g_base, forecast_years\n)\n\nprint(f\"1. 기본 시나리오 DCF 적정가치: {base_intrinsic_value:.2f}억원\")\n\n# 2. WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 출력\n\nwacc_scenarios = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_scenarios = [0.01, 0.02, 0.03]\n\nsensitivity_results = pd.DataFrame(index=[f'WACC={w*100:.0f}%' for w in wacc_scenarios],\n                                   columns=[f'g={g*100:.0f}%' for g in g_scenarios])\n\nfor wacc in wacc_scenarios:\n    for g in g_scenarios:\n        if wacc <= g:\n            sensitivity_results.loc[f'WACC={wacc*100:.0f}%', f'g={g*100:.0f}%'] = \"N/A (WACC <= g)\"\n        else:\n            value = dcf_valuation(\n                revenue_2025, op_profit_2025, tax_rate, depreciation_rate, capex_rate,\n                wacc, g, forecast_years\n            )\n            sensitivity_results.loc[f'WACC={wacc*100:.0f}%', f'g={g*100:.0f}%'] = f\"{value:.2f}\"\n\nprint(\"\\n2. WACC x g 민감도 그리드 (적정가치, 억원):\")\nprint(sensitivity_results)\n\n# 3. 마지막에 '적정가치(기본): {value}억원' 형태로 요약 출력\nprint(f\"\\n3. 적정가치(기본): {base_intrinsic_value:.2f}억원\")",
+    "code_output": "1. 기본 시나리오 DCF 적정가치: 12995.71억원\n\n2. WACC x g 민감도 그리드 (적정가치, 억원):\n              g=1%      g=2%      g=3%\nWACC=7%   15161.67  18194.00  22742.50\nWACC=8%   12995.71  15161.67  18194.00\nWACC=9%   11371.25  12995.71  15161.67\nWACC=10%  10107.78  11371.25  12995.71\nWACC=11%   9097.00  10107.78  11371.25\n\n3. 적정가치(기본): 12995.71억원"
+  },
+  "news": {
+    "text": "## 알테오젠(196170) 10년 재무제표 분석 및 최근 시장 컨센서스 종합 분석\n\n알테오젠(196170)에 대한 10년 재무제표 분석 결과, 매출액의 폭발적인 성장과 영업이익 흑자 전환은 긍정적이나, 높은 재무 레버리지와 과거 수익성 불안정성은 투자 시 면밀한 검토를 요구하는 투자등급 B를 받았습니다. 최근 2주간의 시장 뉴스를 종합하여 현재 상황을 분석합니다.\n\n### 1. 재무 데이터가 보여주는 스토리와 현재 시장 컨센서스의 일치/불일치\n\n알테오젠의 재무 데이터는 매출액의 폭발적인 성장과 영업이익 흑자 전환이라는 긍정적인 스토리를 보여줍니다. 이는 ALT-B4 플랫폼 기술을 기반으로 한 글로벌 기술이전 성과와 일치하는 부분입니다. 실제로 ALT-B4 단일 품목으로 누적 9조 원 규모의 기술 수출을 달성하는 등 견고한 성과를 기록했습니다.\n\n그러나 최근 시장 컨센서스는 이러한 재무 데이터의 긍정적인 스토리와 단기적으로 불일치하는 모습을 보입니다. 4명의 애널리스트가 2026년 매출 및 주당순이익(EPS) 전망치를 대폭 하향 조정하며 단기적인 성장 둔화 가능성을 시사했습니다. 2026년 매출 컨센서스는 기존 5,800억 원에서 5,150억 원으로, EPS는 6,240원에서 4,984원으로 낮아졌습니다. 이는 재무제표상의 과거 성장세에도 불구하고, 향후 실적에 대한 시장의 기대치가 다소 보수적으로 변했음을 나타냅니다. 또한, 최근 할인된 현금흐름(DCF) 계산 결과, 알테오젠이 다소 고평가되어 있을 수 있다는 분석도 제기되었습니다. 높은 PER(140.51배)과 PBR(44.81배) 역시 현재 주가에 상당한 미래 성장이 반영되어 있음을 보여줍니다.\n\n### 2. 재무제표에서 드러나지 않는 리스크 또는 호재\n\n**리스크:**\n*   **애널리스트 전망 하향 조정:** 최근 애널리스트들의 2026년 매출 및 EPS 전망치 대폭 하향 조정은 단기 실적에 대한 우려를 증폭시키는 주요 리스크입니다.\n*   **바이오 섹터 전반의 약세:** 알테오젠이 속한 코스닥 바이오 섹터는 전반적인 투자 심리 위축과 대형주 변동성 확대의 영향을 받고 있습니다.\n*   **기술료 및 특허 관련 불확실성:** 과거 MSD 키트루다SC 로열티율에 대한 시장 기대치 하회 및 할로자임과의 특허 분쟁 등 기술료 및 특허 관련 불확실성이 여전히 존재하여 주가 변동성 요인으로 작용할 수 있습니다.\n*   **거시경제 및 지정학적 리스크:** 중동 지정학적 리스크 등 거시적인 요인도 국내 증시 전반의 투자 심리에 부정적인 영향을 미치고 있으며, 이는 알테오젠 주가에도 영향을 줄 수 있습니다.\n\n**호재:**\n*   **독보적인 플랫폼 기술 (Hybrozyme™/ALT-B4):** 정맥주사를 피하주사(SC) 제형으로 전환하는 독점적인 원천 기술인 Hybrozyme™ 플랫폼은 글로벌 제약사들과의 대규모 기술이전 계약을 통해 높은 기술력을 인정받고 있습니다.\n*   **장기적인 특허 보호:** ALT-B4의 미국 물질특허 등록 성공으로 특허권 존속 기간인 2043년 초까지 독점적 지위가 보장되어 안정적인 미래 수익원 확보가 가능합니다.\n*   **누적 기술 수출 성과:** ALT-B4 단일 품목으로 누적 9조 원 규모의 기술 수출을 달성하는 등 견고한 기술 수출 성과를 기록하고 있으며, 이는 장기적인 성장 동력으로 작용할 것입니다.\n*   **코스피 이전 상장 기대감:** 코스닥 시가총액 상위 기업으로서 코스피 이전 상장에 대한 기대감이 지속되고 있으며, 이는 기업 이미지 제고 및 투자자 유치에 긍정적인 영향을 미칠 수 있습니다.\n\n### 3. 최종 판정\n\n**관망**\n\n알테오젠은 독보적인 플랫폼 기술과 이를 기반으로 한 대규모 기술 수출 성과, 그리고 장기적인 특허 보호를 통해 견고한 성장 잠재력을 보유하고 있습니다. 이는 재무제표상의 매출액 성장과 흑자 전환을 뒷받침하는 긍정적인 요인입니다.\n\n그러나 최근 2주간의 뉴스에서는 2026년 실적에 대한 애널리스트들의 하향 조정된 전망과 높은 밸류에이션에 대한 우려가 제기되고 있습니다. 또한, 바이오 섹터 전반의 약세, 기술료 및 특허 관련 불확실성, 거시경제 및 지정학적 리스크 등 단기적인 주가 변동성을 야기할 수 있는 요인들이 상존합니다.\n\n주어진 재무제표 분석 결과의 \"높은 재무 레버리지와 과거 수익성 불안정성\"이라는 우려와 함께, 최근 시장 컨센서스의 단기 실적 하향 조정은 신중한 접근을 요구합니다. 장기적인 성장 동력은 유효하나, 단기적인 불확실성과 높은 밸류에이션을 고려할 때, 현재 시점에서는 추가적인 정보와 시장 상황을 관망하며 투자 결정을 보류하는 것이 합리적이라고 판단합니다.",
+    "citations": [
+      {
+        "title": "newstomato.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHcklaPHeR_PzJqZYOlfXYHu9iGp2G4xpJ_Wx48vRBgS3MMb3YlQKZF3Ycy-DuJ2AfiYf5gJl56Q81_QKwfnmEy91ojvxZtGj0YM7vYespLlQfMb6d6l_3zEYPHSnilmpt9bZZoej_AkM3U8IYy"
+      },
+      {
+        "title": "simplywall.st",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHis0Yo9N2X9FA1iATWvRdrt55X3DHJa6_FUM5FqEMe-cZn5wjkMfsHNi8DkJ1oUDHhqnK4Sv41kmOcLOtr1qFDukkhvFnfEqNTGX8k8eQlanvrgnhPPrR_UzWgUKyPu9zLEH7Gvf-iweJCRAwu1IDM9vNI0r5J_A4j57HQ348nDhJqPrf1uH4rBu_wXLEJF-qsU_F_gEicDjlifjqy5vLUZR539TLnmT0RBwDk_w=="
+      },
+      {
+        "title": "wisereport.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFtekAA_xwPRmzcsogPO052-C6d3sSpP9ikzoQdBZ1EfAk939WUwqjh-glzTnz-EC2WdbwW_MKro-zQz93pGL4QbHsHYWoIe2izlfk6RRH9rl2FE-2uW4CLFw9bgLx677O4gxjgB6Wq4kwCHOqI2Xfma1fF4jymPwn7XOb2q439"
+      },
+      {
+        "title": "jkn.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEaLfWK8DopJbwDUzezn_wNP-BFJ8uALdak6Kh1SM_BgG38MPZpFGweub5VR6zFuNB26TZOAi8eqQsQ16_kU7gw0uZ3P6fEEvX7I58R7VO773LU2OpiEqKlTC7VgA=="
+      },
+      {
+        "title": "alphasquare.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFJSb8MP0Tc_KjwosFE24w-uoqZ_W50HYM7GnuPHXdOWfGycbBKrJUdJLawHu_mKWm3wpfjS_bqg_ws5QjU8luvHnHjWJgw9H-yUL3JJ2gFIc80LIqPMNby-ltq6AM85s11eD_9fSQ6nJX8R9_7NhXRRh4KGoDfsF-p6g=="
+      },
+      {
+        "title": "edaily.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHeDd6U_qy9hF6sqT11GU2LB5ojzds1U302BsxJWney2iB3u3SMam0ox-TGKXbnSIJuC2cLSX9AfRZzbRhRtCPn7uZy2Z6I8USEe-RfBtGBV__eb_lalDmnsAJqZCItWVaSq_MdiUtOZmcL0LZq6vgoXKf89aBNmpTaiTM="
+      }
+    ]
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=00989619",
+    "summary": "The browse tool indicates that the requested URL could not be found, returning a \"서비스 이용에 불편을 드려 죄송합니다. 요청하신 인터넷주소(URL)을 찾을 수 없습니다.\" message. Therefore, I cannot access the disclosure page.\n공시 페이지 접근 제한"
+  }
+}

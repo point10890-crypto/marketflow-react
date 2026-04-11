@@ -2,8 +2,8 @@
   "name": "삼성전자",
   "ticker": "005930.KS",
   "result": "매수",
-  "date": "2026-04-10 23:35:34",
-  "elapsed": 2.3,
+  "date": "2026-04-11 22:40:21",
+  "elapsed": 2.6,
   "consensus_score": 4.22,
   "analyst_count": 37,
   "recommendation_detail": {
@@ -30,17 +30,17 @@
     "market_cap": 1359256888541184,
     "pe_ratio": null,
     "forward_pe": 7.1708107,
-    "dividend_yield": 1.11,
+    "dividend_yield": 1.1,
     "beta": 1.211,
     "fifty_two_week_high": 223000.0,
-    "fifty_two_week_low": 52900.0,
+    "fifty_two_week_low": 53700.0,
     "revenue": 333605947572224,
     "profit_margin": 0.13267,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
   "source": "yfinance",
-  "ai_analysis": "삼성전자는 현재 애널리스트 컨센서스 '매수' 의견이며, 37명의 애널리스트가 참여하여 5점 만점에 4.22점을 기록했습니다. 평균 목표 주가는 239,873원으로, 현재 주가 대비 16.4% 상승 여력이 있는 것으로 분석됩니다. 이는 시장 전문가들이 삼성전자의 추가적인 성장 가능성을 긍정적으로 평가하고 있음을 시사합니다.",
+  "ai_analysis": "삼성전자는 37명의 애널리스트 컨센서스 기준 '매수' 의견을 받고 있습니다. 목표가 평균은 239,873원으로, 현재가 대비 16.4% 상승 여력이 있습니다. 이는 5점 만점에 4.22점에 해당하는 긍정적인 평가입니다.",
   "revenue_quarters": [
     {
       "date": "2025-12",
@@ -79,39 +79,39 @@
   ],
   "news": [
     {
+      "title": "Samsung’s New AI Galaxy A Series Puts Valuation And Margins In Focus",
+      "summary": "Samsung Electronics (KOSE:A005930) has introduced the Galaxy A57 5G and A37 5G with AI-powered features. The new models bring voice, image, productivity and security tools previously focused on premiu",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/samsung-ai-galaxy-series-puts-060718241.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-04-11T06:07:18Z"
+    },
+    {
+      "title": "Evaluating Samsung Electronics (KOSE:A005930) Valuation After Strong Recent Share Price Momentum",
+      "summary": "Samsung Electronics (KOSE:A005930) has drawn fresh attention after its shares closed at ₩206,000, with returns over the past month and past 3 months standing at 8.4% and 48.2% respectively. See our la",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/evaluating-samsung-electronics-kose-a005930-050748307.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-04-11T05:07:48Z"
+    },
+    {
+      "title": "Taiwan Semiconductor Manufacturing (TSM): The Best Under-The-Radar AI Stock in Billionaire Ken Fisher’s Portfolio?",
+      "summary": "We just covered Billionaire Ken Fisher’s Latest Portfolio: 10 Best AI Stocks to Buy. Taiwan Semiconductor Manufacturing Company Limited (NYSE:TSM) ranks #6 (see the 5 Best AI Stocks to Buy). Billionai",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/taiwan-semiconductor-manufacturing-tsm-best-212423173.html",
+      "provider": "Insider Monkey",
+      "pub_time": "2026-04-10T21:24:23Z"
+    },
+    {
+      "title": "Tweedy Browne International Value Reduces Stake in Samsung Electronics Co Ltd by 39.48%",
+      "summary": "Insights from the First Quarter of 2026 N-PORT Filing",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/tweedy-browne-international-value-reduces-210225344.html",
+      "provider": "GuruFocus.com",
+      "pub_time": "2026-04-10T21:02:25Z"
+    },
+    {
       "title": "The Week in Numbers: oil prices swing wildly, AI boom motors on",
       "summary": "<body><p>STORY: From wild swings in oil prices to the AI boom driving revenues... this is The Week in Numbers.</p><p>:: 11%</p><p>More than 11% was how far Brent Crude prices slid&nbsp;after a two-wee",
       "url": "https://finance.yahoo.com/video/week-numbers-oil-prices-swing-104740612.html",
       "provider": "Reuters Videos",
       "pub_time": "2026-04-10T10:47:40Z"
-    },
-    {
-      "title": "Apple leads smartphone market even as overall shipments decline, Counterpoint says",
-      "summary": "IPhone-maker Apple led global smartphone shipments in the first quarter of ‌2026, growing 5% year-on-year, even as ‌overall shipments fell due to a shortage of memory components, ​Counterpoint Researc",
-      "url": "https://finance.yahoo.com/markets/stocks/articles/apple-leads-global-smartphone-shipments-090358471.html",
-      "provider": "Reuters",
-      "pub_time": "2026-04-10T09:03:58Z"
-    },
-    {
-      "title": "Samsung Plans $4 Billion Vietnam Chip Packaging Plant Expansion",
-      "summary": "Phased investment in Thai Nguyen begins with $2 billion as Vietnam advances semiconductor ambitions",
-      "url": "https://finance.yahoo.com/sectors/technology/articles/samsung-plans-4-billion-vietnam-223828591.html",
-      "provider": "GuruFocus.com",
-      "pub_time": "2026-04-09T22:38:28Z"
-    },
-    {
-      "title": "Nvidia Shares Near Level Where Technical Traders See a Breakout",
-      "summary": "(Bloomberg) -- After months of sluggish returns, Nvidia Corp.’s stock is rallying again and close to breaking out of its narrow trading range, which market technicians see as a bullish signal. Shares ",
-      "url": "https://finance.yahoo.com/news/nvidia-shares-near-level-where-103637884.html",
-      "provider": "Bloomberg",
-      "pub_time": "2026-04-09T13:31:41Z"
-    },
-    {
-      "title": "Apple’s Hinge Cringe: Foldable Flop or Strategic Stop?",
-      "summary": "Apple continues to strengthen its market position by leveraging record services revenue and a new surge in development for artificial intelligence tools.",
-      "url": "https://www.marketbeat.com/originals/apples-hinge-cringe-foldable-flop-or-strategic-stop/?utm_source=yahoofinance&utm_medium=yahoofinance",
-      "provider": "MarketBeat",
-      "pub_time": "2026-04-09T13:00:00Z"
     }
   ]
 }
