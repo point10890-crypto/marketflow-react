@@ -1,0 +1,94 @@
+{
+  "stock_code": "307180",
+  "corp_code": "01326279",
+  "years": [
+    2018,
+    2019,
+    2020,
+    2021,
+    2022,
+    2023,
+    2024,
+    2025
+  ],
+  "data": {
+    "2018": {
+      "cash": 13.4,
+      "total_assets": 98.4,
+      "total_liab": 12.3,
+      "total_equity": 86.1,
+      "revenue": 0.0,
+      "op_profit": -1.6,
+      "net_income": -1.3
+    },
+    "2019": {
+      "cash": 68.6,
+      "total_assets": 272.2,
+      "total_liab": 150.4,
+      "total_equity": 121.7,
+      "revenue": 202.8,
+      "op_profit": 10.9,
+      "net_income": -27.3
+    },
+    "2020": {
+      "cash": 24.1,
+      "total_assets": 401.7,
+      "total_liab": 305.7,
+      "total_equity": 95.9,
+      "revenue": 175.5,
+      "op_profit": -51.4,
+      "net_income": -42.7
+    },
+    "2021": {
+      "cash": 70.5,
+      "total_assets": 728.6,
+      "total_liab": 574.5,
+      "total_equity": 154.1,
+      "revenue": 486.3,
+      "op_profit": 25.7,
+      "net_income": -76.8
+    },
+    "2022": {
+      "cash": 10.8,
+      "total_assets": 727.8,
+      "total_liab": 495.3,
+      "total_equity": 232.6,
+      "revenue": 491.6,
+      "op_profit": -7.4,
+      "net_income": 20.9
+    },
+    "2023": {
+      "total_assets": 794.0,
+      "cash": 80.4,
+      "total_equity": 250.7,
+      "total_liab": 649.5,
+      "op_profit": -167.4,
+      "net_income": 0.0,
+      "revenue": 390.8
+    },
+    "2024": {
+      "total_assets": 1382.3,
+      "cash": 43.0,
+      "total_equity": 306.7,
+      "total_liab": 1204.6,
+      "op_profit": 50.4,
+      "net_income": 0.0,
+      "revenue": 835.0
+    },
+    "2025": {
+      "total_assets": 1547.0,
+      "cash": 13.1,
+      "total_equity": 197.7,
+      "total_liab": 1315.1,
+      "op_profit": -85.0,
+      "net_income": -111.1,
+      "revenue": 1028.6
+    }
+  },
+  "missing_years": [
+    2016,
+    2017,
+    2026
+  ],
+  "source": ""
+}
