@@ -1,0 +1,41 @@
+{
+  "stock_code": "466100",
+  "corp_code": "01784914",
+  "years": [
+    2024,
+    2025
+  ],
+  "data": {
+    "2024": {
+      "total_assets": 695.1,
+      "cash": 93.4,
+      "total_equity": 599.1,
+      "short_debt": 0.0,
+      "total_liab": 95.4,
+      "op_profit": -74.9,
+      "net_income": -67.3,
+      "revenue": 334.0
+    },
+    "2025": {
+      "total_assets": 730.4,
+      "cash": 131.8,
+      "total_equity": 0.9,
+      "total_liab": 126.0,
+      "op_profit": -31.8,
+      "net_income": -21.5,
+      "revenue": 414.1
+    }
+  },
+  "missing_years": [
+    2016,
+    2017,
+    2018,
+    2019,
+    2020,
+    2021,
+    2022,
+    2023,
+    2026
+  ],
+  "source": ""
+}

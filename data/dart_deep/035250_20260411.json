@@ -1,0 +1,282 @@
+{
+  "stock_code": "035250",
+  "stock_name": "강원랜드",
+  "generated_at": "2026-04-11T00:46:21.130235+00:00",
+  "financials": {
+    "stock_code": "035250",
+    "corp_code": "00255619",
+    "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2016": {
+        "cash": 930.0,
+        "total_assets": 39789.9,
+        "total_liab": 7262.6,
+        "total_equity": 32527.3,
+        "op_profit": 6186.2,
+        "net_income": 4545.3
+      },
+      "2017": {
+        "cash": 1055.7,
+        "total_assets": 41856.6,
+        "total_liab": 6844.2,
+        "total_equity": 35012.4,
+        "op_profit": 5309.0,
+        "net_income": 4375.4
+      },
+      "2018": {
+        "cash": 488.5,
+        "total_assets": 42312.4,
+        "long_debt": 0.0,
+        "total_liab": 6444.6,
+        "total_equity": 35867.8,
+        "op_profit": 4307.0,
+        "net_income": 0.0
+      },
+      "2019": {
+        "cash": 606.7,
+        "total_assets": 44381.2,
+        "total_liab": 7203.6,
+        "total_equity": 37177.6,
+        "revenue": 15200.8,
+        "op_profit": 5011.5,
+        "net_income": 0.0
+      },
+      "2020": {
+        "cash": 660.5,
+        "total_assets": 36416.3,
+        "total_liab": 3946.0,
+        "total_equity": 32470.3,
+        "revenue": 4785.8,
+        "op_profit": -4315.8,
+        "net_income": -0.2
+      },
+      "2021": {
+        "cash": 2064.0,
+        "total_assets": 38272.7,
+        "total_liab": 5744.8,
+        "revenue": 7884.3,
+        "op_profit": -527.0,
+        "net_income": -105.8
+      },
+      "2022": {
+        "cash": 1010.6,
+        "total_assets": 41677.5,
+        "total_liab": 7523.7,
+        "revenue": 12706.9,
+        "op_profit": 2175.7,
+        "net_income": 1156.1
+      },
+      "2023": {
+        "total_assets": 44486.6,
+        "cash": 1661.9,
+        "total_equity": 1277.8,
+        "total_liab": 7707.6,
+        "op_profit": 2822.6,
+        "net_income": 0.0,
+        "revenue": 13885.7
+      },
+      "2024": {
+        "total_assets": 47006.4,
+        "cash": 2445.0,
+        "total_equity": -0.0,
+        "total_liab": 8169.8,
+        "op_profit": 2857.9,
+        "net_income": 4569.0,
+        "revenue": 14268.6
+      },
+      "2025": {
+        "total_assets": 48452.0,
+        "cash": 2003.6,
+        "total_equity": 1277.8,
+        "total_liab": 8806.8,
+        "op_profit": 2353.1,
+        "net_income": 0.0,
+        "revenue": 14767.3
+      }
+    },
+    "missing_years": [
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2016,
+        "revenue_eok": 0,
+        "op_profit_eok": 6186,
+        "net_income_eok": 4545,
+        "roe_pct": 13.97,
+        "op_margin_pct": 0.0,
+        "debt_ratio_pct": 22.33
+      },
+      {
+        "year": 2017,
+        "revenue_eok": 0,
+        "op_profit_eok": 5309,
+        "net_income_eok": 4375,
+        "roe_pct": 12.5,
+        "op_margin_pct": 0.0,
+        "debt_ratio_pct": 19.55
+      },
+      {
+        "year": 2018,
+        "revenue_eok": 0,
+        "op_profit_eok": 4307,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 0.0,
+        "debt_ratio_pct": 17.97
+      },
+      {
+        "year": 2019,
+        "revenue_eok": 15201,
+        "op_profit_eok": 5012,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 32.97,
+        "debt_ratio_pct": 19.38
+      },
+      {
+        "year": 2020,
+        "revenue_eok": 4786,
+        "op_profit_eok": -4316,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": -90.18,
+        "debt_ratio_pct": 12.15
+      },
+      {
+        "year": 2021,
+        "revenue_eok": 7884,
+        "op_profit_eok": -527,
+        "net_income_eok": -106,
+        "roe_pct": 0.0,
+        "op_margin_pct": -6.68,
+        "debt_ratio_pct": 0.0
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 12707,
+        "op_profit_eok": 2176,
+        "net_income_eok": 1156,
+        "roe_pct": 0.0,
+        "op_margin_pct": 17.12,
+        "debt_ratio_pct": 0.0
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 13886,
+        "op_profit_eok": 2823,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 20.33,
+        "debt_ratio_pct": 603.13
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 14269,
+        "op_profit_eok": 2858,
+        "net_income_eok": 4569,
+        "roe_pct": 0.0,
+        "op_margin_pct": 20.03,
+        "debt_ratio_pct": 0.0
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 14767,
+        "op_profit_eok": 2353,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 15.93,
+        "debt_ratio_pct": 689.12
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": -0.49,
+      "op_profit_cagr_pct": -10.04,
+      "best_year": 2016,
+      "worst_year": 2020,
+      "avg_roe_pct": 2.65
+    },
+    "valuation": {
+      "grade": "C",
+      "strengths": [
+        "코로나19 팬데믹 이후 매출액이 꾸준히 회복세를 보이고 있습니다.",
+        "2022년 이후 영업이익이 흑자 전환되어 안정적인 수익 기반을 마련하고 있습니다.",
+        "2024년 현금 보유액이 크게 증가하여 재무 유동성이 개선되었습니다."
+      ],
+      "risks": [
+        "장기적인 영업이익 감소 추세와 2020년 대규모 적자 발생으로 수익성 변동성이 큽니다.",
+        "여러 해에 걸쳐 자본총계가 0으로 기록되어 재무 건전성에 대한 우려가 존재합니다.",
+        "매출액이 2019년 수준을 회복하지 못하고 있으며, 성장 동력이 약화된 것으로 보입니다."
+      ],
+      "one_liner": "코로나19 이후 회복세를 보이고 있으나, 장기적인 수익성 하락과 불안정한 자본 구조가 투자 리스크로 작용하는 기업입니다."
+    }
+  },
+  "dcf": {
+    "text": "제공해주신 데이터를 바탕으로 강원랜드(035250)의 DCF 적정가치를 계산하고 민감도 분석을 수행했습니다.\n\n### DCF 적정가치 계산 결과\n\n**가정:**\n*   FCF = 영업이익 × (1 - 0.25) + 감가상각(매출의 10%) - CAPEX(매출의 5%)\n*   WACC (기본) = 9%\n*   영구성장률 g (기본) = 2%\n*   예측 기간 동안 매출액 및 영업이익은 영구성장률 g(2%)로 성장한다고 가정했습니다.\n\n---\n\n### 1. 기본 시나리오 DCF 적정가치\n\n*   **적정가치(기본): 36474억원**\n\n---\n\n### 2. DCF 적정가치 민감도 분석 (억원)\n\n아래 표는 WACC와 영구성장률(g) 변화에 따른 DCF 적정가치(억원)를 보여줍니다.\n\n|       | WACC=7% | WACC=8% | WACC=9% | WACC=10% | WACC=11% |\n| :---- | :------ | :------ | :------ | :------- | :------- |\n| **g=1%** | 42136.0 | 36116.0 | 31602.0 | 28090.0  | 25281.0  |\n| **g=2%** | 51063.0 | 42553.0 | 36474.0 | 31915.0  | 28368.0  |\n| **g=3%** | 64455.0 | 51564.0 | 42970.0 | 36831.0  | 32227.0  |\n\n---\n\n### 요약\n\n적정가치(기본): 36474억원",
+    "executed_code": "import pandas as pd\n\n# 1. 기본 시나리오 DCF 적정가치(억원) 계산\n\n# Input Data (억원)\nrevenue_0 = 14767\noperating_profit_0 = 2353\n# net_income_0 = 0 # Not directly used in FCF formula\n# total_assets_0 = 48452\n# total_liabilities_0 = 8807\n\n# Assumptions\ntax_rate = 0.25\ndepreciation_rate_of_revenue = 0.10\ncapex_rate_of_revenue = 0.05\nwacc_base = 0.09\ng_base = 0.02\nforecast_years = 5\n\ndef calculate_dcf(wacc, g, revenue_initial, operating_profit_initial, forecast_period):\n    \"\"\"\n    DCF 적정가치를 계산하는 함수\n    \"\"\"\n    fcf_list = []\n    pv_fcf_list = []\n\n    # Calculate FCF for each forecast year\n    for t in range(1, forecast_period + 1):\n        # Assuming revenue and operating profit grow at the perpetual growth rate 'g' during the forecast period\n        revenue_t = revenue_initial * (1 + g)**t\n        operating_profit_t = operating_profit_initial * (1 + g)**t\n\n        depreciation_t = revenue_t * depreciation_rate_of_revenue\n        capex_t = revenue_t * capex_rate_of_revenue\n\n        # FCF calculation formula: Operating Profit * (1 - Tax Rate) + Depreciation - CAPEX\n        fcf_t = operating_profit_t * (1 - tax_rate) + depreciation_t - capex_t\n        fcf_list.append(fcf_t)\n\n        # Discount FCF to present value\n        pv_fcf_t = fcf_t / ((1 + wacc)**t)\n        pv_fcf_list.append(pv_fcf_t)\n\n    # Calculate Terminal Value (TV)\n    # FCF for the year after the forecast period (Year 6)\n    # This is FCF_5 * (1 + g)\n    fcf_terminal_year = fcf_list[-1] * (1 + g)\n    \n    # Check for WACC <= g, which would lead to an infinite TV\n    if wacc <= g:\n        return float('inf') # Or handle as an error/unrealistic scenario\n    \n    terminal_value = fcf_terminal_year / (wacc - g)\n\n    # Discount Terminal Value to present value\n    pv_terminal_value = terminal_value / ((1 + wacc)**forecast_period)\n\n    # Total DCF Value\n    dcf_value = sum(pv_fcf_list) + pv_terminal_value\n    return dcf_value\n\n# 1. 기본 시나리오 DCF 적정가치 계산\nbase_dcf_value = calculate_dcf(wacc_base, g_base, revenue_0, operating_profit_0, forecast_years)\n\n# 2. WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 출력\nwacc_scenarios = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_scenarios = [0.01, 0.02, 0.03]\n\nsensitivity_results = pd.DataFrame(index=[f'g={g*100:.0f}%' for g in g_scenarios],\n                                   columns=[f'WACC={wacc*100:.0f}%' for wacc in wacc_scenarios])\n\nfor wacc in wacc_scenarios:\n    for g in g_scenarios:\n        # Ensure WACC > g for TV calculation\n        if wacc <= g:\n            sensitivity_results.loc[f'g={g*100:.0f}%', f'WACC={wacc*100:.0f}%'] = 'N/A (WACC<=g)'\n        else:\n            dcf_val = calculate_dcf(wacc, g, revenue_0, operating_profit_0, forecast_years)\n            sensitivity_results.loc[f'g={g*100:.0f}%', f'WACC={wacc*100:.0f}%'] = round(dcf_val, 0) # Round to nearest integer for display\n\n# Print results\nprint(\"--- DCF 적정가치 계산 결과 ---\")\nprint(f\"기본 시나리오 적정가치: {base_dcf_value:.0f}억원\")\nprint(\"\\n--- DCF 적정가치 민감도 분석 (억원) ---\")\nprint(sensitivity_results)\nprint(f\"\\n적정가치(기본): {base_dcf_value:.0f}억원\")",
+    "code_output": "--- DCF 적정가치 계산 결과 ---\n기본 시나리오 적정가치: 36474억원\n\n--- DCF 적정가치 민감도 분석 (억원) ---\n      WACC=7%  WACC=8%  WACC=9% WACC=10% WACC=11%\ng=1%  42136.0  36116.0  31602.0  28090.0  25281.0\ng=2%  51063.0  42553.0  36474.0  31915.0  28368.0\ng=3%  64455.0  51564.0  42970.0  36831.0  32227.0\n\n적정가치(기본): 36474억원"
+  },
+  "news": {
+    "text": "## 강원랜드(035250) 투자 분석 보고서\n\n**투자등급 C, 요약: 코로나19 이후 회복세를 보이고 있으나, 장기적인 수익성 하락과 불안정한 자본 구조가 투자 리스크로 작용하는 기업입니다.**\n\n---\n\n### 1. 재무 데이터가 보여주는 스토리와 현재 시장 컨센서스의 일치/불일치\n\n**재무 데이터 스토리:** 강원랜드는 2025년 팬데믹 이후 최대 매출액인 1조 4,767억 원을 기록하며 회복세를 보였습니다. 그러나 인건비 상승, 영업비용 증가, 전년도 일회성 수익에 따른 기저효과로 영업이익과 당기순이익은 각각 17.7%, 30.4% 감소하며 수익성 둔화가 나타났습니다. 2025년 4분기 실적 또한 시장 기대치를 하회했습니다. 이는 초기 재무제표 분석 결과인 '수익성 하락'과 '불안정한 자본 구조'에 대한 우려를 뒷받침합니다.\n\n**시장 컨센서스:** 시장은 매출 회복세를 긍정적으로 평가하면서도 수익성 둔화에 대한 우려를 인지하고 있습니다. IBK투자증권은 베팅 한도 상향 효과와 적극적인 주주환원 정책을 근거로 '매수' 의견을 유지했습니다. 반면, 스톡베리AI는 단기/중기 하락 추세와 비용 증가를 언급하며 '중립' 의견을 제시했습니다. 하나증권은 2분기부터 카지노 업종의 실적 모멘텀 확보를 전망하는 등 긍정적인 전망도 존재합니다.\n\n**결론:** 재무 데이터가 보여주는 '매출 회복 속 수익성 둔화' 스토리는 시장 컨센서스에 일부 반영되어 있으나, 'K-HIT 프로젝트'와 '주주환원 정책' 등 미래 성장 동력과 주주 가치 제고 노력에 대한 기대감이 공존하여 완전히 일치한다고 보기는 어렵습니다.\n\n---\n\n### 2. 재무제표에서 드러나지 않는 리스크 또는 호재\n\n**리스크:**\n*   **규제 리스크:** 국내 유일 내국인 카지노라는 독점적 지위에도 불구하고, 출입일수 제한(월 15일) 등 사회적 규제가 성장의 상한을 제한합니다.\n*   **비용 증가 압박:** 인건비 및 지반침하 보강공사 감가상각비 등 구조적인 영업비용 증가가 수익성 둔화의 주요 원인으로 작용하고 있습니다.\n*   **중대재해처벌법 이슈:** 잠재적 리스크로 언급됩니다.\n*   **사회적 책임 비용:** 도박 중독 치유 모델 구축 등 사회적 책임 활동 강화는 기업 이미지에 긍정적이나, 추가적인 비용 부담으로 이어질 수 있습니다.\n\n**호재:**\n*   **K-HIT 프로젝트:** 2035년까지 약 3조 원 규모의 시설 투자를 통해 글로벌 복합리조트로 도약하려는 중장기 성장 동력 확보 계획은 긍정적입니다.\n*   **주주환원 정책 강화:** 800억 원 규모의 자기주식 취득 완료 및 하반기 200억 원 추가 취득 계획, 높은 주주환원율(60%) 및 배당성향(50% 이상) 목표는 주주 가치 제고에 기여할 것으로 보입니다.\n*   **베팅 한도 상향 효과:** 2025년 5월부터 시행된 일부 테이블 베팅 한도 상향과 외국인 전용구역 베팅 한도 상향은 실적 개선에 긍정적인 영향을 미칠 수 있습니다.\n*   **폐광기금 소송 승소 가능성:** 3심에서 승소 시 약 1,887억 원 규모의 환입금이 주주환원으로 이어질 수 있습니다.\n*   **관광 회복세:** 한국 관광 회복세에 힘입어 외국인 관광객이 증가하고 있으며, 이는 강원랜드의 실적에 긍정적인 영향을 미칠 수 있습니다.\n*   **금융자산 운용 효율화:** 2.3조 원 규모의 금융자산 운용사 선정은 자산 운용의 효율성을 높여 수익률 개선에 기여할 수 있습니다.\n\n---\n\n### 3. 최종 판정\n\n**관망**\n\n**판단 근거:**\n강원랜드는 코로나19 이후 매출 회복세를 보이고 있으며, 중장기적인 성장 동력 확보를 위한 'K-HIT 프로젝트'와 적극적인 '주주환원 정책'은 긍정적인 요소입니다. 베팅 한도 상향과 관광 회복세 또한 실적 개선에 기여할 것으로 기대됩니다.\n\n그러나 지속적인 수익성 둔화, 규제 리스크, 그리고 비용 증가 압박은 여전히 투자에 대한 불확실성으로 작용합니다. 현재 시장 컨센서스 또한 '매수'와 '중립' 의견이 혼재되어 있어, 추가적인 실적 개선 추이와 'K-HIT 프로젝트'의 구체적인 진행 상황, 그리고 규제 환경 변화를 신중하게 지켜볼 필요가 있습니다.",
+    "citations": [
+      {
+        "title": "news1.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQG5trkIRcLo2DxydNKZZu663ftjgj9gVc55s3Zpu9vElMfNkdoUVF_C0q6Z72PRvpeQqEqMiNnoemdWtkO7wD0WANyqSjuyJxf7fHc6sTj0TvKnX5ipunMGG5Q8J1EUwOau-WNGuYp_4zO4octW"
+      },
+      {
+        "title": "sigma.world",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEjRaMnHVKOfhI3z9N0a2eQqHfubuD_Hm2OhJNpYIwrbiI0tzFxerB2STMoHe2QPXRO4r_vvcIk7pUCz_r07yxyu9kBBcDJrWpVoOCu3F35-Dr2LQgfNSySNMyhLlLU1j9sVfS7urm53B2fJnhXMHNf-Gy9k2fNDK4LRrHovm0="
+      },
+      {
+        "title": "naver.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQES5w-wOOtlsfCBaY0GQ_FhdqmDVrVhIPUdlc7pbH2vPDbnV8R_PIbj7j9u_V1V9oe8WJffme1dQkxokPtbPpjVNu8mCDETMsKJDUS8sAUJBG-TVDHJ-MtNFwlURf_Rwt7DambEes_1WcGMn4J2jfI1odm-vEjx0GJLh6vm3UvIiYohF24aaIeGrDJUbtg="
+      },
+      {
+        "title": "ibks.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFP8Gc8VtA5kx91cJlHccrXJ4uZf_Rzz5k2dOKS5MElM1b_zj3MLn5wH0veXNbndFuvcKniZ1fHagGyChj_WzbahKJuk_SsK37E2SGAp9-FdxNrT-ND0r0rhA4Rzr_X8Ls3hcLOAysY2hq09E9BIVSk-I7ztFGYiKTL755c3fd2nHHVRb8ItM7rdLBuPNTIMvVW"
+      },
+      {
+        "title": "stockvery.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEod4z7wF2SeH2n4IqisN_UMGK_HB5U7UeU3lJ1EtLu_Z_rEgfMvZrTPk5Nwvz8Es3Z7Too-ebDNYGkZQv36OyAmG-D5Az_rCayVPJkgDgS7Z7o14qRqHuNCm7S7TE="
+      },
+      {
+        "title": "jkn.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQF94ACvcUE3KDd5fGtI94eDKryfJIhvDULxkJkDsILGY-gzEALAS5dTFEEP6kf3lWxeCZRXf0YCFOYprgO_D2O-GrKuX4AmevWAYLIiMfFKRYV_A7IIpqU4lneojQ=="
+      },
+      {
+        "title": "jkn.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHpEverrsX2zdyEGufZclYLdWb_tVcLvmxp_JkZ_U3gZs3hKQp2T30KMCWuxO6BUGpRcJqgrhhRYAgHCxQV3nTEGrLOip5PvRBCDNGcGXLVPE8cHyc1QQxozfydPA=="
+      },
+      {
+        "title": "alphasquare.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHcovtxUSkRKpXj1NhvBVsOHbhadK6HcxU7L0uNeMDicaZowBQdFCOYoE2sQspcmEkhtjEgHAGHkH8B4lZhHGGRQIW-Hg1fz_7GvLwx2dNu0br4O305_5_LaB4-_-dlmXQb6q0Grj0iJgsPsXfOqa5_6Vc="
+      },
+      {
+        "title": "etoday.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFKUU5djFCx6RiGDiDPcEUDFo8A3SvNQ8-ppx1PHRE8_vfDronN4DjGEDvBhtYHd6_L4fdZhQ4lG992vYG0vsaLndmywGlqIjMZCyHJMTxXaUmuq7haSnsr0Ga8JsoEo_fxdZpB"
+      },
+      {
+        "title": "hankyung.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQE1tKuoGPeYBq9yLsxbp7dRg8izsob-T7OOMQHKG5mwJT0orZQTM3YSTR6yIPwPQyv1yu_omtgcIzmmu4Ni6eb1uDC-ck7da5YKPgAEv9zNcjDG27_fp6jKhKVc78cEBEaSPX4="
+      }
+    ]
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=00255619",
+    "summary": "공시 페이지 접근 제한"
+  }
+}
