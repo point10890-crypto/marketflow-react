@@ -1,0 +1,75 @@
+{
+  "name": "아미코젠",
+  "ticker": "092040.KQ",
+  "result": "데이터 없음",
+  "date": "2026-04-11 12:42:47",
+  "elapsed": 1.3,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 1928.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 1928.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "Amicogen",
+    "sector": "Healthcare",
+    "industry": "Drug Manufacturers - Specialty & Generic",
+    "market_cap": 106552991744,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": null,
+    "beta": 0.093,
+    "fifty_two_week_high": 4980.0,
+    "fifty_two_week_low": 1160.0,
+    "revenue": 41981407232,
+    "profit_margin": -0.71364,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 10868078910
+    },
+    {
+      "date": "2025-09",
+      "value": 10144345840
+    },
+    {
+      "date": "2025-06",
+      "value": 10147995350
+    },
+    {
+      "date": "2025-03",
+      "value": 10820986010
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": -5384690670
+    },
+    {
+      "date": "2025-09",
+      "value": -12863484170
+    },
+    {
+      "date": "2025-06",
+      "value": -5996871620
+    },
+    {
+      "date": "2025-03",
+      "value": -5714519690
+    }
+  ],
+  "news": []
+}

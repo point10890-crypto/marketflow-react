@@ -2,8 +2,8 @@
   "name": "한국타이어앤테크놀로지",
   "ticker": "161390.KS",
   "result": "매수",
-  "date": "2026-03-26 19:52:39",
-  "elapsed": 2.1,
+  "date": "2026-04-11 13:15:15",
+  "elapsed": 2.2,
   "consensus_score": 4.0,
   "analyst_count": 17,
   "recommendation_detail": {
@@ -15,33 +15,37 @@
   },
   "recommendation_period": "0m",
   "price_targets": {
-    "current": 57400.0,
+    "current": 65000.0,
     "high": 89000.0,
     "low": 40000.0,
-    "mean": 75411.766,
+    "mean": 75941.18,
     "median": 79000.0
   },
-  "current_price": 57400.0,
-  "upside_potential": 31.4,
+  "current_price": 65000.0,
+  "upside_potential": 16.8,
   "key_stats": {
     "name": "HANKOOK TIRE & TECHNOLOGY",
     "sector": "Consumer Cyclical",
     "industry": "Auto Parts",
-    "market_cap": 7002154598400,
+    "market_cap": 7929268797440,
     "pe_ratio": null,
-    "forward_pe": 4.4577436,
-    "dividend_yield": 3.96,
-    "beta": 0.29,
+    "forward_pe": 5.1079736,
+    "dividend_yield": 3.54,
+    "beta": 0.51,
     "fifty_two_week_high": 78400.0,
-    "fifty_two_week_low": 35950.0,
+    "fifty_two_week_low": 37350.0,
     "revenue": 21202298994688,
     "profit_margin": 0.05138,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
   "source": "yfinance",
-  "ai_analysis": "한국타이어앤테크놀로지에 대해 17명의 애널리스트가 제시한 컨센서스는 '매수' 의견입니다. 목표가 평균은 75,412원으로, 현재가 57,400원 대비 31.4%의 상승 여력이 있는 것으로 분석됩니다. 이는 5점 만점 기준 4.0점에 해당합니다.",
+  "ai_analysis": "한국타이어앤테크놀로지에 대해 17명의 애널리스트가 매수 컨센서스(4.0/5.0)를 제시했습니다. 목표가 평균은 75,941원으로 현재가 대비 16.8% 상승 여력이 있습니다. 이는 애널리스트들이 긍정적인 전망을 가지고 있음을 시사합니다.",
   "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 5456245734090
+    },
     {
       "date": "2025-09",
       "value": 5412726880900
@@ -53,13 +57,13 @@
     {
       "date": "2025-03",
       "value": 4963667180880
-    },
-    {
-      "date": "2024-12",
-      "value": 2531528706120
     }
   ],
   "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 197433176570
+    },
     {
       "date": "2025-09",
       "value": 390269020520
@@ -71,10 +75,6 @@
     {
       "date": "2025-03",
       "value": 319693689300
-    },
-    {
-      "date": "2024-12",
-      "value": 58947277330
     }
   ],
   "news": []

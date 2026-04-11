@@ -1,0 +1,278 @@
+{
+  "stock_code": "161390",
+  "stock_name": "한국타이어앤테크놀로지",
+  "generated_at": "2026-04-11T04:15:17.548284+00:00",
+  "financials": {
+    "stock_code": "161390",
+    "corp_code": "00937324",
+    "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2016": {
+        "cash": 4653.5,
+        "total_assets": 96219.7,
+        "total_liab": 36604.9,
+        "total_equity": 59614.8,
+        "revenue": 66217.6,
+        "op_profit": 11032.3,
+        "net_income": 8790.9
+      },
+      "2017": {
+        "cash": 6941.5,
+        "total_assets": 95187.9,
+        "total_liab": 31452.8,
+        "total_equity": 63735.1,
+        "revenue": 68128.6,
+        "op_profit": 7934.3,
+        "net_income": 6064.6
+      },
+      "2018": {
+        "cash": 6119.8,
+        "total_assets": 97964.4,
+        "total_liab": 30061.3,
+        "total_equity": 67903.1,
+        "revenue": 67950.9,
+        "op_profit": 7026.5,
+        "net_income": 5303.8
+      },
+      "2019": {
+        "cash": 8776.0,
+        "total_assets": 101646.1,
+        "total_liab": 29773.9,
+        "total_equity": 71872.2,
+        "revenue": 68832.7,
+        "op_profit": 5439.6,
+        "net_income": 101.0
+      },
+      "2020": {
+        "cash": 10608.6,
+        "total_assets": 106585.5,
+        "total_liab": 32464.0,
+        "total_equity": 74121.5,
+        "revenue": 64530.7,
+        "op_profit": 6282.7,
+        "net_income": 3723.4
+      },
+      "2021": {
+        "cash": 10620.4,
+        "total_assets": 117039.2,
+        "total_liab": 34987.8,
+        "total_equity": 82051.4,
+        "revenue": 71411.4,
+        "op_profit": 6421.9,
+        "net_income": 6043.4
+      },
+      "2022": {
+        "cash": 11394.4,
+        "total_assets": 125813.6,
+        "total_liab": 37056.5,
+        "total_equity": 88757.1,
+        "revenue": 83942.0,
+        "op_profit": 7058.2,
+        "net_income": 6902.5
+      },
+      "2023": {
+        "total_assets": 127633.1,
+        "cash": 22438.7,
+        "total_equity": 770.4,
+        "total_liab": 31337.5,
+        "op_profit": 13279.5,
+        "net_income": 7202.2,
+        "revenue": 89396.2
+      },
+      "2024": {
+        "total_assets": 158497.4,
+        "cash": 18823.1,
+        "total_equity": 111003.7,
+        "total_liab": 46548.9,
+        "op_profit": 17622.6,
+        "net_income": 11146.3,
+        "revenue": 94119.5
+      },
+      "2025": {
+        "total_assets": 266471.9,
+        "cash": 26030.8,
+        "total_equity": 619.4,
+        "total_liab": 124452.1,
+        "op_profit": 18410.8,
+        "net_income": 10894.7,
+        "revenue": 212023.0
+      }
+    },
+    "missing_years": [
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2016,
+        "revenue_eok": 66218,
+        "op_profit_eok": 11032,
+        "net_income_eok": 8791,
+        "roe_pct": 14.75,
+        "op_margin_pct": 16.66,
+        "debt_ratio_pct": 61.4
+      },
+      {
+        "year": 2017,
+        "revenue_eok": 68129,
+        "op_profit_eok": 7934,
+        "net_income_eok": 6065,
+        "roe_pct": 9.52,
+        "op_margin_pct": 11.65,
+        "debt_ratio_pct": 49.35
+      },
+      {
+        "year": 2018,
+        "revenue_eok": 67951,
+        "op_profit_eok": 7026,
+        "net_income_eok": 5304,
+        "roe_pct": 7.81,
+        "op_margin_pct": 10.34,
+        "debt_ratio_pct": 44.27
+      },
+      {
+        "year": 2019,
+        "revenue_eok": 68833,
+        "op_profit_eok": 5440,
+        "net_income_eok": 101,
+        "roe_pct": 0.14,
+        "op_margin_pct": 7.9,
+        "debt_ratio_pct": 41.43
+      },
+      {
+        "year": 2020,
+        "revenue_eok": 64531,
+        "op_profit_eok": 6283,
+        "net_income_eok": 3723,
+        "roe_pct": 5.02,
+        "op_margin_pct": 9.74,
+        "debt_ratio_pct": 43.8
+      },
+      {
+        "year": 2021,
+        "revenue_eok": 71411,
+        "op_profit_eok": 6422,
+        "net_income_eok": 6043,
+        "roe_pct": 7.37,
+        "op_margin_pct": 8.99,
+        "debt_ratio_pct": 42.64
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 83942,
+        "op_profit_eok": 7058,
+        "net_income_eok": 6902,
+        "roe_pct": 7.78,
+        "op_margin_pct": 8.41,
+        "debt_ratio_pct": 41.79
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 89396,
+        "op_profit_eok": 13280,
+        "net_income_eok": 7202,
+        "roe_pct": 935.33,
+        "op_margin_pct": 14.86,
+        "debt_ratio_pct": 4070.0
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 94120,
+        "op_profit_eok": 17623,
+        "net_income_eok": 11146,
+        "roe_pct": 10.04,
+        "op_margin_pct": 18.72,
+        "debt_ratio_pct": 41.93
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 212023,
+        "op_profit_eok": 18411,
+        "net_income_eok": 10895,
+        "roe_pct": 1760.1,
+        "op_margin_pct": 8.68,
+        "debt_ratio_pct": 20090.79
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": 13.33,
+      "op_profit_cagr_pct": 5.79,
+      "best_year": 2025,
+      "worst_year": 2019,
+      "avg_roe_pct": 275.78
+    },
+    "valuation": {
+      "grade": "C",
+      "strengths": [
+        "최근 3년간 (2023-2025) 매출액 및 영업이익의 가파른 성장세를 보였습니다.",
+        "10년간 매출액 CAGR 13.33%로 견조한 외형 성장을 달성했습니다.",
+        "2024년 영업이익률 18.72%를 기록하며 높은 수익성을 시현했습니다."
+      ],
+      "risks": [
+        "2023년 및 2025년 극도로 낮은 자본총계로 인해 재무구조의 심각한 불안정성이 관찰됩니다.",
+        "2023년 및 2025년 부채비율이 비정상적으로 높아 재무적 리스크가 매우 큽니다.",
+        "당기순이익의 변동성이 크며, 특히 2019년에는 매우 낮은 수준을 기록했습니다."
+      ],
+      "one_liner": "최근 매출 및 영업이익의 급격한 성장은 긍정적이나, 2023년과 2025년의 비정상적인 자본총계와 부채비율은 심각한 재무적 위험을 내포하고 있어 투자에 신중한 접근이 필요합니다."
+    }
+  },
+  "dcf": {
+    "text": "퀀트 애널리스트로서 한국타이어앤테크놀로지(161390)의 DCF 적정가치를 계산하겠습니다.\n\n**가정 사항 (추가 및 명확화):**\n제공된 정보에 매출액 및 영업이익의 성장률이 명시되어 있지 않아, 합리적인 가정을 추가합니다.\n*   **매출액 및 영업이익 성장률 (향후 5년간)**: 연 5% 성장 (기본 시나리오)\n*   **법인세율**: 25% (FCF 계산식의 `(1 - 0.25)`에서 유추)\n*   **감가상각비**: 매출액의 10%\n*   **CAPEX**: 매출액의 5%\n*   **WACC (기본)**: 9%\n*   **영구성장률 g (기본)**: 2%\n*   **기준 연도**: 2025년 (따라서 최근 재무는 2024년 실적으로 간주하고, 2025년부터 5년간 예측을 시작합니다.)\n\n---\n\n### 1. 기본 시나리오 DCF 적정가치 계산\n\n\n### 2. WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 출력\n\nDCF 적정가치 계산 로직을 함수로 만들고, WACC와 영구성장률(g)의 다양한 조합에 대해 민감도 분석을 수행합니다.\n\n\n### 3. 요약 출력\n\n**적정가치(기본): 419,037억원**",
+    "executed_code": "import pandas as pd\n\n# 재무 데이터 (억원)\nrevenue_2024 = 212023\nop_income_2024 = 18411\n\n# 가정\ngrowth_rate = 0.05  # 매출액 및 영업이익 성장률 (5년)\ntax_rate = 0.25\ndepreciation_rate = 0.10  # 매출액 대비 감가상각비 비율\ncapex_rate = 0.05       # 매출액 대비 CAPEX 비율\nwacc_base = 0.09        # WACC\ng_base = 0.02           # 영구성장률\n\n# 예측 기간 설정\nforecast_years = 5\nstart_year = 2025\n\n# 데이터프레임 초기화\ndf = pd.DataFrame(index=range(start_year, start_year + forecast_years + 1)) # +1 for terminal value calculation (Year 6 FCF)\n\n# 2024년 데이터 설정 (예측의 시작점)\ndf.loc[start_year - 1, 'Revenue'] = revenue_2024\ndf.loc[start_year - 1, 'Operating Income'] = op_income_2024\n\n# 5년간 예측\nfor i in range(forecast_years):\n    year = start_year + i\n    prev_year = year - 1\n\n    df.loc[year, 'Revenue'] = df.loc[prev_year, 'Revenue'] * (1 + growth_rate)\n    df.loc[year, 'Operating Income'] = df.loc[prev_year, 'Operating Income'] * (1 + growth_rate)\n    df.loc[year, 'NOPAT'] = df.loc[year, 'Operating Income'] * (1 - tax_rate)\n    df.loc[year, 'Depreciation'] = df.loc[year, 'Revenue'] * depreciation_rate\n    df.loc[year, 'CAPEX'] = df.loc[year, 'Revenue'] * capex_rate\n    df.loc[year, 'FCF'] = df.loc[year, 'NOPAT'] + df.loc[year, 'Depreciation'] - df.loc[year, 'CAPEX']\n\n# FCF for Year 6 (for Terminal Value calculation)\nyear_6 = start_year + forecast_years\ndf.loc[year_6, 'Revenue'] = df.loc[year_6 - 1, 'Revenue'] * (1 + growth_rate)\ndf.loc[year_6, 'Operating Income'] = df.loc[year_6 - 1, 'Operating Income'] * (1 + growth_rate)\ndf.loc[year_6, 'NOPAT'] = df.loc[year_6, 'Operating Income'] * (1 - tax_rate)\ndf.loc[year_6, 'Depreciation'] = df.loc[year_6, 'Revenue'] * depreciation_rate\ndf.loc[year_6, 'CAPEX'] = df.loc[year_6, 'Revenue'] * capex_rate\ndf.loc[year_6, 'FCF'] = df.loc[year_6, 'NOPAT'] + df.loc[year_6, 'Depreciation'] - df.loc[year_6, 'CAPEX']\n\n\n# Terminal Value 계산\nterminal_value = df.loc[year_6, 'FCF'] * (1 + g_base) / (wacc_base - g_base)\ndf.loc[year_6, 'Terminal Value'] = terminal_value\n\n# FCF 및 Terminal Value 할인\npresent_value_fcf = 0\nfor i in range(forecast_years):\n    year = start_year + i\n    discount_factor = (1 + wacc_base) ** (i + 1)\n    df.loc[year, 'PV_FCF'] = df.loc[year, 'FCF'] / discount_factor\n    present_value_fcf += df.loc[year, 'PV_FCF']\n\n# Terminal Value의 현재 가치\npv_terminal_value = terminal_value / ((1 + wacc_base) ** forecast_years)\n\n# 총 적정가치\ndcf_valuation_base = present_value_fcf + pv_terminal_value\n\nprint(\"--- 기본 시나리오 DCF 예측 상세 ---\")\nprint(df.round(0).astype(int))\nprint(f\"\\n할인된 FCF 합계: {present_value_fcf:,.0f} 억원\")\nprint(f\"터미널 밸류 (Year {year_6}): {terminal_value:,.0f} 억원\")\nprint(f\"터미널 밸류의 현재 가치: {pv_terminal_value:,.0f} 억원\")\nprint(f\"적정가치(기본): {dcf_valuation_base:,.0f} 억원\")\n\n\nimport pandas as pd\n\n# 재무 데이터 (억원)\nrevenue_2024 = 212023\nop_income_2024 = 18411\n\n# 가정\ngrowth_rate = 0.05  # 매출액 및 영업이익 성장률 (5년)\ntax_rate = 0.25\ndepreciation_rate = 0.10  # 매출액 대비 감가상각비 비율\ncapex_rate = 0.05       # 매출액 대비 CAPEX 비율\nwacc_base = 0.09        # WACC\ng_base = 0.02           # 영구성장률\n\n# 예측 기간 설정\nforecast_years = 5\nstart_year = 2025\n\n# 데이터프레임 초기화\n# 2024년 데이터도 포함하여 예측 시작점을 명확히 함\ndf = pd.DataFrame(index=range(start_year - 1, start_year + forecast_years + 1))\n\n# 2024년 데이터 설정 (예측의 시작점)\ndf.loc[start_year - 1, 'Revenue'] = revenue_2024\ndf.loc[start_year - 1, 'Operating Income'] = op_income_2024\n# NOPAT, Depreciation, CAPEX, FCF는 2024년에는 계산하지 않음 (예측 시작 전)\ndf.loc[start_year - 1, 'NOPAT'] = op_income_2024 * (1 - tax_rate) # For consistency, calculate NOPAT for 2024 as well\ndf.loc[start_year - 1, 'Depreciation'] = revenue_2024 * depreciation_rate\ndf.loc[start_year - 1, 'CAPEX'] = revenue_2024 * capex_rate\ndf.loc[start_year - 1, 'FCF'] = df.loc[start_year - 1, 'NOPAT'] + df.loc[start_year - 1, 'Depreciation'] - df.loc[start_year - 1, 'CAPEX']\n\n\n# 5년간 예측\nfor i in range(forecast_years):\n    year = start_year + i\n    prev_year = year - 1\n\n    df.loc[year, 'Revenue'] = df.loc[prev_year, 'Revenue'] * (1 + growth_rate)\n    df.loc[year, 'Operating Income'] = df.loc[prev_year, 'Operating Income'] * (1 + growth_rate)\n    df.loc[year, 'NOPAT'] = df.loc[year, 'Operating Income'] * (1 - tax_rate)\n    df.loc[year, 'Depreciation'] = df.loc[year, 'Revenue'] * depreciation_rate\n    df.loc[year, 'CAPEX'] = df.loc[year, 'Revenue'] * capex_rate\n    df.loc[year, 'FCF'] = df.loc[year, 'NOPAT'] + df.loc[year, 'Depreciation'] - df.loc[year, 'CAPEX']\n\n# FCF for Year 6 (for Terminal Value calculation)\nyear_6 = start_year + forecast_years\ndf.loc[year_6, 'Revenue'] = df.loc[year_6 - 1, 'Revenue'] * (1 + growth_rate)\ndf.loc[year_6, 'Operating Income'] = df.loc[year_6 - 1, 'Operating Income'] * (1 + growth_rate)\ndf.loc[year_6, 'NOPAT'] = df.loc[year_6, 'Operating Income'] * (1 - tax_rate)\ndf.loc[year_6, 'Depreciation'] = df.loc[year_6, 'Revenue'] * depreciation_rate\ndf.loc[year_6, 'CAPEX'] = df.loc[year_6, 'Revenue'] * capex_rate\ndf.loc[year_6, 'FCF'] = df.loc[year_6, 'NOPAT'] + df.loc[year_6, 'Depreciation'] - df.loc[year_6, 'CAPEX']\n\n\n# Terminal Value 계산\nterminal_value = df.loc[year_6, 'FCF'] * (1 + g_base) / (wacc_base - g_base)\ndf.loc[year_6, 'Terminal Value'] = terminal_value\n\n# FCF 및 Terminal Value 할인\npresent_value_fcf = 0\nfor i in range(forecast_years):\n    year = start_year + i\n    discount_factor = (1 + wacc_base) ** (i + 1)\n    df.loc[year, 'PV_FCF'] = df.loc[year, 'FCF'] / discount_factor\n    present_value_fcf += df.loc[year, 'PV_FCF']\n\n# Terminal Value의 현재 가치\npv_terminal_value = terminal_value / ((1 + wacc_base) ** forecast_years)\n\n# 총 적정가치\ndcf_valuation_base = present_value_fcf + pv_terminal_value\n\nprint(\"--- 기본 시나리오 DCF 예측 상세 ---\")\n# NaN 값을 0으로 채우고 정수로 변환하여 출력\nprint(df.fillna(0).round(0).astype(int))\nprint(f\"\\n할인된 FCF 합계: {present_value_fcf:,.0f} 억원\")\nprint(f\"터미널 밸류 (Year {year_6}): {terminal_value:,.0f} 억원\")\nprint(f\"터미널 밸류의 현재 가치: {pv_terminal_value:,.0f} 억원\")\nprint(f\"적정가치(기본): {dcf_valuation_base:,.0f} 억원\")\n\n\nimport pandas as pd\n\n# 재무 데이터 (억원)\nrevenue_2024 = 212023\nop_income_2024 = 18411\n\n# 고정 가정\ngrowth_rate = 0.05  # 매출액 및 영업이익 성장률 (5년)\ntax_rate = 0.25\ndepreciation_rate = 0.10  # 매출액 대비 감가상각비 비율\ncapex_rate = 0.05       # 매출액 대비 CAPEX 비율\nforecast_years = 5\nstart_year = 2025\n\ndef calculate_dcf(wacc, g):\n    \"\"\"\n    주어진 WACC와 영구성장률(g)로 DCF 적정가치를 계산하는 함수.\n    \"\"\"\n    if wacc <= g:\n        return float('inf') # WACC가 g보다 작거나 같으면 무한대 반환 (모델 오류 방지)\n\n    df_calc = pd.DataFrame(index=range(start_year - 1, start_year + forecast_years + 1))\n\n    # 2024년 데이터 설정\n    df_calc.loc[start_year - 1, 'Revenue'] = revenue_2024\n    df_calc.loc[start_year - 1, 'Operating Income'] = op_income_2024\n    df_calc.loc[start_year - 1, 'NOPAT'] = op_income_2024 * (1 - tax_rate)\n    df_calc.loc[start_year - 1, 'Depreciation'] = revenue_2024 * depreciation_rate\n    df_calc.loc[start_year - 1, 'CAPEX'] = revenue_2024 * capex_rate\n    df_calc.loc[start_year - 1, 'FCF'] = df_calc.loc[start_year - 1, 'NOPAT'] + df_calc.loc[start_year - 1, 'Depreciation'] - df_calc.loc[start_year - 1, 'CAPEX']\n\n    # 5년간 예측\n    for i in range(forecast_years):\n        year = start_year + i\n        prev_year = year - 1\n\n        df_calc.loc[year, 'Revenue'] = df_calc.loc[prev_year, 'Revenue'] * (1 + growth_rate)\n        df_calc.loc[year, 'Operating Income'] = df_calc.loc[prev_year, 'Operating Income'] * (1 + growth_rate)\n        df_calc.loc[year, 'NOPAT'] = df_calc.loc[year, 'Operating Income'] * (1 - tax_rate)\n        df_calc.loc[year, 'Depreciation'] = df_calc.loc[year, 'Revenue'] * depreciation_rate\n        df_calc.loc[year, 'CAPEX'] = df_calc.loc[year, 'Revenue'] * capex_rate\n        df_calc.loc[year, 'FCF'] = df_calc.loc[year, 'NOPAT'] + df_calc.loc[year, 'Depreciation'] - df_calc.loc[year, 'CAPEX']\n\n    # FCF for Year 6 (for Terminal Value calculation)\n    year_6 = start_year + forecast_years\n    df_calc.loc[year_6, 'Revenue'] = df_calc.loc[year_6 - 1, 'Revenue'] * (1 + growth_rate)\n    df_calc.loc[year_6, 'Operating Income'] = df_calc.loc[year_6 - 1, 'Operating Income'] * (1 + growth_rate)\n    df_calc.loc[year_6, 'NOPAT'] = df_calc.loc[year_6, 'Operating Income'] * (1 - tax_rate)\n    df_calc.loc[year_6, 'Depreciation'] = df_calc.loc[year_6, 'Revenue'] * depreciation_rate\n    df_calc.loc[year_6, 'CAPEX'] = df_calc.loc[year_6, 'Revenue'] * capex_rate\n    df_calc.loc[year_6, 'FCF'] = df_calc.loc[year_6, 'NOPAT'] + df_calc.loc[year_6, 'Depreciation'] - df_calc.loc[year_6, 'CAPEX']\n\n    # Terminal Value 계산\n    terminal_value = df_calc.loc[year_6, 'FCF'] * (1 + g) / (wacc - g)\n\n    # FCF 및 Terminal Value 할인\n    present_value_fcf = 0\n    for i in range(forecast_years):\n        year = start_year + i\n        discount_factor = (1 + wacc) ** (i + 1)\n        present_value_fcf += df_calc.loc[year, 'FCF'] / discount_factor\n\n    # Terminal Value의 현재 가치\n    pv_terminal_value = terminal_value / ((1 + wacc) ** forecast_years)\n\n    # 총 적정가치\n    dcf_valuation = present_value_fcf + pv_terminal_value\n    return dcf_valuation\n\n# 민감도 분석을 위한 WACC 및 g 범위\nwacc_values = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_values = [0.01, 0.02, 0.03]\n\n# 결과를 저장할 데이터프레임\nsensitivity_df = pd.DataFrame(index=[f'WACC={int(w*100)}%' for w in wacc_values],\n                              columns=[f'g={int(g*100)}%' for g in g_values])\n\n# 민감도 분석 실행\nfor wacc in wacc_values:\n    for g in g_values:\n        # WACC가 g보다 작거나 같으면 계산하지 않음\n        if wacc <= g:\n            sensitivity_df.loc[f'WACC={int(wacc*100)}%', f'g={int(g*100)}%'] = 'N/A'\n        else:\n            value = calculate_dcf(wacc, g)\n            sensitivity_df.loc[f'WACC={int(wacc*100)}%', f'g={int(g*100)}%'] = round(value, 0)\n\nprint(\"\\n--- DCF 적정가치 민감도 분석 (단위: 억원) ---\")\nprint(sensitivity_df)\n\n# 기본 시나리오 값 다시 출력 (확인용)\nwacc_base = 0.09\ng_base = 0.02\ndcf_valuation_base = calculate_dcf(wacc_base, g_base)\n\nprint(f\"\\n적정가치(기본): {dcf_valuation_base:,.0f}억원\")",
+    "code_output": "--- 기본 시나리오 DCF 예측 상세 ---\n\nTraceback (most recent call last):\n  File \"<string>\", line 67, in <module>\n  File \"generic.py\", line 6643, in astype\n    new_data = self._mgr.astype(dtype=dtype, copy=copy, errors=errors)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"managers.py\", line 430, in astype\n    return self.apply(\n           ^^^^^^^^^^^\n  File \"managers.py\", line 363, in apply\n    applied = getattr(b, f)(**kwargs)\n              ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"blocks.py\", line 758, in astype\n    new_values = astype_array_safe(values, dtype, copy=copy, errors=errors)\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"astype.py\", line 237, in astype_array_safe\n    new_values = astype_array(values, dtype, copy=copy)\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"astype.py\", line 182, in astype_array\n    values = _astype_nansafe(values, dtype, copy=copy)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"astype.py\", line 101, in _astype_nansafe\n    return _astype_float_to_int_nansafe(arr, dtype, copy)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"astype.py\", line 145, in _astype_float_to_int_nansafe\n    raise IntCastingNaNError(\npandas.errors.IntCastingNaNError: Cannot convert non-finite values (NA or inf) to integer\n\n--- 기본 시나리오 DCF 예측 상세 ---\n      Revenue  Operating Income  NOPAT  Depreciation  CAPEX    FCF  Terminal Value  PV_FCF\n2024   212023             18411  13808         21202  10601  24409               0       0\n2025   222624             19332  14499         22262  11131  25630               0   23514\n2026   233755             20298  15224         23376  11688  26911               0   22651\n2027   245443             21313  15985         24544  12272  28257               0   21820\n2028   257715             22379  16784         25772  12886  29670               0   21019\n2029   270601             23498  17623         27060  13530  31153               0   20247\n2030   284131             24673  18504         28413  14207  32711          476645       0\n\n할인된 FCF 합계: 109,250 억원\n터미널 밸류 (Year 2030): 476,645 억원\n터미널 밸류의 현재 가치: 309,787 억원\n적정가치(기본): 419,037 억원\n\n\n--- DCF 적정가치 민감도 분석 (단위: 억원) ---\n              g=1%      g=2%      g=3%\nWACC=7%   507966.0  591149.0  715924.0\nWACC=8%   433462.0  490708.0  570853.0\nWACC=9%   377656.0  419037.0  474211.0\nWACC=10%  334313.0  365343.0  405240.0\nWACC=11%  299690.0  323632.0  353559.0\n\n적정가치(기본): 419,037억원"
+  },
+  "news": {
+    "text": "## 한국타이어앤테크놀로지(161390) 투자 분석 보고서\n\n### 요약\n\n한국타이어앤테크놀로지(161390)는 최근 매출 및 영업이익의 급격한 성장을 보이며 긍정적인 실적 흐름을 이어가고 있습니다. 그러나 2023년과 2025년의 비정상적인 자본총계와 부채비율은 여전히 재무적 위험으로 남아있어 신중한 접근이 필요합니다. 최근 2주간의 시장 컨센서스는 긍정적인 실적 모멘텀과 한온시스템 관련 리스크 완화에 초점을 맞추고 있으나, 재무제표상의 근본적인 우려가 완전히 해소되었다고 보기는 어렵습니다.\n\n### 1. 재무 데이터가 보여주는 스토리와 현재 시장 컨센서스의 일치/불일치\n\n**재무 데이터 스토리 (제공된 정보):** 최근 매출 및 영업이익의 급격한 성장은 긍정적이나, 2023년과 2025년의 비정상적인 자본총계와 부채비율은 심각한 재무적 위험을 내포하고 있어 투자에 신중한 접근이 필요합니다. (투자등급 C)\n\n**현재 시장 컨센서스 (Google 검색 결과):**\n*   **일치하는 부분:** 시장 컨센서스 역시 한국타이어앤테크놀로지의 최근 매출 및 영업이익 성장을 매우 긍정적으로 평가하고 있습니다. 3분기 및 4분기 실적이 시장 기대치를 상회했으며, 고인치 타이어 및 전기차(EV) 타이어 비중 확대에 따른 판매 믹스 개선과 수익성 향상에 주목하고 있습니다.\n*   **불일치/차이점:**\n    *   **재무적 위험:** 제공된 재무 분석에서 언급된 \"2023년과 2025년의 비정상적인 자본총계와 부채비율\"에 대한 직접적인 우려는 최근 애널리스트 리포트에서 명확하게 다뤄지지 않고 있습니다. 오히려 한온시스템 인수 관련 유상증자 참여 규모가 예상보다 완화되어 차입 부담이 줄었다는 긍정적인 평가가 있으며, 한온시스템의 실적 개선 및 정상화가 가시화될 것으로 전망하며 추가 유상증자가 제한적일 것이라는 분석이 지배적입니다. 이는 재무적 위험에 대한 시장의 우려가 다소 완화된 것으로 해석될 수 있습니다.\n    *   **투자 등급:** 다수의 증권사 리포트에서 '매수(Buy)' 의견과 함께 목표주가를 상향 조정하고 있어, 제공된 '투자등급 C'와는 상이한 매우 긍정적인 시장 분위기를 보여줍니다.\n\n### 2. 재무제표에서 드러나지 않는 리스크 또는 호재\n\n**호재:**\n*   **한온시스템 리스크 완화 및 턴어라운드 기대:** 한온시스템 인수 관련 차입 부담이 예상보다 완화되었고, 한온시스템의 실적 개선 및 정상화가 가시화될 것이라는 전망이 제기되며 과거 재무제표에 반영된 인수 관련 우려가 해소될 가능성이 있습니다.\n*   **주주환원 확대 기대:** 2025년 25%, 2026년 30%로 배당성향 확대 가정을 통해 주당배당금(DPS) 증가가 기대됩니다.\n*   **EV 타이어 및 고인치 타이어 시장 성장:** 전기차 시장 성장과 고인치 타이어 수요 증가는 평균판매단가(ASP) 상승 및 수익성 개선에 긍정적으로 작용할 것으로 예상됩니다. 특히 OE(신차용) 타이어 중 EV 비중이 32%를 돌파했다는 점은 주목할 만합니다.\n*   **원재료 및 물류비 안정화:** 투입 원재료비 및 물류비 업황의 추가 안정화가 기대되어 수익성 개선에 기여할 것으로 보입니다.\n*   **미국 테네시 신공장 가동 및 관세 영향 제한적:** 미국 테네시 신공장 가동으로 생산량이 증가하고, 대미 수출 품목관세율 인하로 관세 영향이 제한적일 것이라는 전망이 있습니다.\n*   **오너일가 주식담보 비중 감소:** 한국앤컴퍼니 오너일가의 주식담보 비중 감소 및 조현범 회장의 대출금 일부 상환 소식은 지배구조 및 재무 건전성 측면에서 긍정적인 신호로 해석될 수 있습니다.\n\n**리스크:**\n*   **글로벌 경기 둔화 및 수요 불확실성:** 타이어 산업은 전방 산업인 자동차 산업 및 글로벌 경기 변동에 민감하게 반응하므로, 예상치 못한 경기 둔화는 수요 감소로 이어질 수 있습니다.\n*   **한온시스템 턴어라운드 지연 가능성:** 한온시스템 리스크가 축소되고 있다는 전망이 우세하지만, 예상보다 턴어라운드가 지연될 경우 재무적 부담으로 작용할 수 있는 잠재적 리스크가 있습니다.\n\n### 3. 최종 판정\n\n제공된 재무제표 분석에서 언급된 \"2023년과 2025년의 비정상적인 자본총계와 부채비율\"이라는 심각한 재무적 위험은 여전히 명확하게 해소되지 않은 상태입니다. 비록 최근 시장 컨센서스가 긍정적인 실적 모멘텀과 한온시스템 관련 리스크 완화에 주목하며 '매수' 의견을 제시하고 있지만, 재무제표상의 근본적인 우려가 완전히 해소되었다는 증거는 부족합니다. 기업의 체질 개선 노력과 긍정적인 시장 전망에도 불구하고, 재무적 안정성 지표에 대한 지속적인 모니터링이 필요하며, 잠재적 위험을 완전히 배제할 수 없습니다.\n\n따라서, 현재 시점에서는 **관망** 의견을 제시합니다.",
+    "citations": [
+      {
+        "title": "pstatic.net",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQF4FCeEQR67zAxAe5LGzdIbBnOno7i2xv6tzbW1rRKKkaGFsnfOyyEnyO-WPvKwrkXcL9NCPKzcqzTPVKze3hA6nYvoJEfCWl1HIdr3wEX_mfND3821m7vE9SP_RSKSyreGPLAf9GMIfeVPfyKPHzwXvjTmfFZw1C2UxWM9vi2u1d8epaC91Wm8zinVMqQ="
+      },
+      {
+        "title": "kiwoom.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEMh4DpGA9tnNneeIPtpT52bmzNWeZmZszFH7snDgs0yELhYIoZZkex1qTXaVoU7IwoR1uzeNBnKqmMatPxrlOfFoZGZymmKCMRtdXZfpx_P2Kx3EdX8Mc8W-g="
+      },
+      {
+        "title": "alphasquare.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGk63d4CRnGSXZRahcGMoEarF-ALop8PmZQNN2VP2sgKTojEDYGpyRmPt6ImOX9gwk7nl4_US53-F-k6Nwf0unzPGkatAogn7C8OpicFp_OaZdHB18MiG9BY5CkEm-uqcCVzButEU9Gfg9J1uNPAWfE859lOCODByPK7mSK2ElAjHyiojoNsMp0W3b0RAXU0px_GyssRAXQfyvGk9xpGd-8DoXNXPLKXEpevn-otQlewNEA_sndhE6f7BywreuxJ9pW_1KYd5yiz3f_-IDtJHEuXcDWckOJiFsT7x0BYI56RqHh"
+      },
+      {
+        "title": "hankyung.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQG2_XU1z7DF1B7-OAkLtSDhAAQDkkRd7d2RIIK0dlzAkT-COgri_z-mjnufhKp9GLgomceflXtGDpBX7AFkQ66YdujP2PXBNgivzPRa3c3Hb20soVh-q1ekTjZ_J6gRvrz0UarQd370pSIpbwOdYw=="
+      },
+      {
+        "title": "wisereport.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEYZOSoWHo6V71WQvIfZSOBCO-SdvAY3EVZCCXgCDD_shlJvSUz_CpUk4Icoy1ypM9SaVtn9a2uzZG6QMAPHOoq88kYF9WDwgv34f1y4yrzw84uUoz-470HvnqQ1EqbVZuN0agjBXSFP1L0kMqq07yreUpp0vylsBP29dGyDps_fA=="
+      },
+      {
+        "title": "kbthink.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHAHtuRmQCgbKcE08zM2q9ocdhqrhXFEb_jdBajXI8XJIg8Yf8NzbW-to6L9jRhIiObh-Fii8smKG9iYaIJSZyF7W4ZwUF0d0dUNWbFlQKSNWcRgFugxvOqfaVLjPCritK9swKNdxQwg45KRzXPtk5GXTEDbaSw324FYWYP"
+      },
+      {
+        "title": "samsungpop.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGm27vfJvr9-2O8bzm9d1_u-Msv5lkHE7Q8nnimSDB1D8kyXkRLpUAfeUxTTXwlhNnes5FAris5vbSE5KAzyeehjKhbJjSRuODvH0SRckKty_Tf_ExvicOUpOwLiITgJj--pNUqqQZGNGD4zdxbirQUnNtsRjZ_6TYq7IAdSy0maDWL9hARwxZ8hWlzVjsQTlYt2bPXwaynd0t-Hxac4BjL2udgR15ubWRP3xMg_PBgKdqBgZ7bt0u-kYuytoEOu6Arl_pJ4cT71yYVnAnnvZo="
+      },
+      {
+        "title": "alphasquare.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGx9b-oV6-DslYi7yPNfg2SZfWEAfnD-XEwFqFtPK8tSVzgVzrM2ktj2qY2el_-9ZkTFL2hzpIvUsWYOubi_CO1AlWmN7i1jlNLJ56p2cv0iVPdjWczEgAdE_yHeB7cFN41waAI-1OLCthgwVZWYZnWdeaB"
+      }
+    ]
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=00937324",
+    "summary": "공시 페이지 접근 제한"
+  }
+}
