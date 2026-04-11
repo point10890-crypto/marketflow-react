@@ -1,0 +1,296 @@
+{
+  "stock_code": "112610",
+  "stock_name": "씨에스윈드",
+  "generated_at": "2026-04-11T22:14:28.517234+00:00",
+  "financials": {
+    "stock_code": "112610",
+    "corp_code": "00670340",
+    "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2016": {
+        "cash": 560.7,
+        "total_assets": 3856.9,
+        "short_debt": 153.2,
+        "long_debt": 15.8,
+        "total_liab": 870.6,
+        "total_equity": 2986.3,
+        "revenue": 3112.2,
+        "op_profit": -236.7,
+        "net_income": -172.4
+      },
+      "2017": {
+        "cash": 449.1,
+        "total_assets": 3879.4,
+        "short_debt": 300.1,
+        "long_debt": 0.0,
+        "total_liab": 860.6,
+        "total_equity": 3018.8,
+        "revenue": 3122.3,
+        "op_profit": 354.1,
+        "net_income": 389.5
+      },
+      "2018": {
+        "cash": 400.9,
+        "total_assets": 6063.9,
+        "short_debt": 1210.3,
+        "total_liab": 2878.8,
+        "total_equity": 3185.2,
+        "revenue": 5022.1,
+        "op_profit": 327.4,
+        "net_income": 70.6
+      },
+      "2019": {
+        "cash": 838.9,
+        "total_assets": 7356.1,
+        "short_debt": 1425.6,
+        "total_liab": 3657.7,
+        "total_equity": 3698.3,
+        "revenue": 7993.9,
+        "op_profit": 601.4,
+        "net_income": 346.8
+      },
+      "2020": {
+        "cash": 917.8,
+        "total_assets": 8806.6,
+        "short_debt": 1461.3,
+        "long_debt": 631.1,
+        "total_liab": 4371.3,
+        "total_equity": 4435.3,
+        "revenue": 9690.7,
+        "op_profit": 975.7,
+        "net_income": 27.3
+      },
+      "2021": {
+        "cash": 2618.1,
+        "total_assets": 17739.0,
+        "short_debt": 1879.1,
+        "long_debt": 2062.4,
+        "total_liab": 8270.9,
+        "total_equity": 9468.2,
+        "revenue": 12034.2,
+        "op_profit": 1009.7,
+        "net_income": 662.1
+      },
+      "2022": {
+        "cash": 1916.2,
+        "total_assets": 17795.4,
+        "short_debt": 2326.9,
+        "long_debt": 1736.1,
+        "total_liab": 8548.7,
+        "total_equity": 9246.7,
+        "revenue": 13748.9,
+        "op_profit": 421.2,
+        "net_income": -9.8
+      },
+      "2023": {
+        "total_assets": 28326.5,
+        "cash": 2071.2,
+        "total_equity": 2413.0,
+        "short_debt": 3840.9,
+        "total_liab": 18882.3,
+        "long_debt": 3032.5,
+        "op_profit": 1046.7,
+        "net_income": 198.7,
+        "revenue": 15201.6
+      },
+      "2024": {
+        "total_assets": 36094.8,
+        "cash": 3591.8,
+        "total_equity": 6129.9,
+        "short_debt": 4254.8,
+        "total_liab": 24092.2,
+        "long_debt": 6557.1,
+        "op_profit": 2554.8,
+        "net_income": 0.0,
+        "revenue": 30725.3
+      },
+      "2025": {
+        "total_assets": 32165.9,
+        "cash": 4788.8,
+        "total_equity": 4074.8,
+        "short_debt": 2424.8,
+        "total_liab": 20149.2,
+        "long_debt": 5670.9,
+        "op_profit": 3203.2,
+        "net_income": 54.3,
+        "revenue": 29316.5
+      }
+    },
+    "missing_years": [
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2016,
+        "revenue_eok": 3112,
+        "op_profit_eok": -237,
+        "net_income_eok": -172,
+        "roe_pct": -5.76,
+        "op_margin_pct": -7.62,
+        "debt_ratio_pct": 29.18
+      },
+      {
+        "year": 2017,
+        "revenue_eok": 3122,
+        "op_profit_eok": 354,
+        "net_income_eok": 390,
+        "roe_pct": 12.92,
+        "op_margin_pct": 11.34,
+        "debt_ratio_pct": 28.52
+      },
+      {
+        "year": 2018,
+        "revenue_eok": 5022,
+        "op_profit_eok": 327,
+        "net_income_eok": 71,
+        "roe_pct": 2.23,
+        "op_margin_pct": 6.51,
+        "debt_ratio_pct": 90.39
+      },
+      {
+        "year": 2019,
+        "revenue_eok": 7994,
+        "op_profit_eok": 601,
+        "net_income_eok": 347,
+        "roe_pct": 9.38,
+        "op_margin_pct": 7.52,
+        "debt_ratio_pct": 98.92
+      },
+      {
+        "year": 2020,
+        "revenue_eok": 9691,
+        "op_profit_eok": 976,
+        "net_income_eok": 27,
+        "roe_pct": 0.61,
+        "op_margin_pct": 10.07,
+        "debt_ratio_pct": 98.56
+      },
+      {
+        "year": 2021,
+        "revenue_eok": 12034,
+        "op_profit_eok": 1010,
+        "net_income_eok": 662,
+        "roe_pct": 6.99,
+        "op_margin_pct": 8.39,
+        "debt_ratio_pct": 87.37
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 13749,
+        "op_profit_eok": 421,
+        "net_income_eok": -10,
+        "roe_pct": -0.11,
+        "op_margin_pct": 3.06,
+        "debt_ratio_pct": 92.46
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 15202,
+        "op_profit_eok": 1047,
+        "net_income_eok": 199,
+        "roe_pct": 8.25,
+        "op_margin_pct": 6.89,
+        "debt_ratio_pct": 782.51
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 30725,
+        "op_profit_eok": 2555,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 8.32,
+        "debt_ratio_pct": 393.02
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 29316,
+        "op_profit_eok": 3203,
+        "net_income_eok": 54,
+        "roe_pct": 1.33,
+        "op_margin_pct": 10.93,
+        "debt_ratio_pct": 494.4
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": 27.98,
+      "op_profit_cagr_pct": 29.8,
+      "best_year": 2025,
+      "worst_year": 2016,
+      "avg_roe_pct": 3.58
+    },
+    "valuation": {
+      "grade": "C",
+      "strengths": [
+        "매출액 및 영업이익의 높은 성장세: 10년간 매출액 CAGR 27.98%, 영업이익 CAGR 29.80% (2017년 기준)로 외형 성장이 매우 돋보입니다.",
+        "글로벌 신재생에너지 시장 성장 수혜: 풍력 타워 제조 분야의 선두 주자로서 글로벌 신재생에너지 전환 트렌드의 직접적인 수혜를 받고 있습니다.",
+        "생산 능력 및 시장 지위 강화: 글로벌 생산 거점 확대를 통해 시장 지배력을 강화하고 있으며, 이는 향후 매출 성장의 기반이 될 것입니다."
+      ],
+      "risks": [
+        "매우 높은 부채비율: 2023년 이후 부채비율이 급격히 상승하여 700%를 상회하는 등 재무 건전성이 매우 취약합니다.",
+        "불안정한 수익성 및 낮은 ROE: 당기순이익이 적자를 기록하거나 매우 낮은 수준을 유지하는 등 수익성이 불안정하며, 평균 ROE가 3.58%로 저조합니다.",
+        "영업이익 및 당기순이익의 높은 변동성: 영업이익과 당기순이익이 특정 연도에 크게 감소하거나 적자를 기록하는 등 사업의 이익 변동성이 높습니다."
+      ],
+      "one_liner": "글로벌 풍력 시장 성장의 수혜를 입는 외형 성장 기업이나, 불안정한 수익성과 매우 높은 부채비율로 인한 재무 리스크 관리가 시급합니다."
+    }
+  },
+  "dcf": {
+    "text": "퀀트 애널리스트로서 씨에스윈드(112610)의 DCF 적정가치를 계산하겠습니다.\n\n**가정 사항 명확화:**\n*   **기준 연도:** 2025년 (따라서 제공된 최근 재무 데이터는 2024년 기준이며, 2025년부터 5년간 예측을 시작합니다.)\n*   **매출액 성장률 (예측 기간 5년):** 문제에서 주어지지 않았으므로, **기본 시나리오에서는 연 5% 성장률을 가정**합니다.\n*   **영업이익률:** 2024년 매출액 대비 영업이익률을 사용하여 예측 기간 동안 일정하다고 가정합니다.\n*   **법인세율:** FCF 공식 `영업이익 × (1 - 0.25)`에 따라 25%로 가정합니다.\n*   **감가상각비:** 매출액의 10%\n*   **CAPEX:** 매출액의 5%\n*   **적정가치:** 기업가치(Enterprise Value)를 의미합니다. (순부채 정보가 없어 주주가치(Equity Value) 계산은 생략합니다.)\n\n---\n\n### 1. 기본 시나리오 DCF 적정가치 계산\n\n**초기 데이터:**\n*   2024년 매출액: 29316 억원\n*   2024년 영업이익: 3203 억원\n*   영업이익률: 3203 / 29316 ≈ 10.925%\n*   WACC (기본): 9%\n*   영구성장률 g (기본): 2%\n*   예측 기간: 5년 (2025년 ~ 2029년)\n*   매출액 성장률 (예측 기간): 5%\n\n\n**기본 시나리오 적정가치(기업가치): 64,065 억원**\n\n---\n\n### 2. WACC × g 민감도 그리드 출력\n\nWACC (7/8/9/10/11%)와 영구성장률 g (1/2/3%)에 따른 적정가치 민감도 분석을 수행합니다.\n\n\n---\n\n### 3. 요약 출력\n\n**적정가치(기본): 64,065억원**",
+    "executed_code": "import pandas as pd\n\n# 초기 데이터\nrevenue_2024 = 29316  # 억원\noperating_profit_2024 = 3203  # 억원\noperating_margin = operating_profit_2024 / revenue_2024\n\n# 가정\ntax_rate = 0.25\ndepreciation_rate_of_revenue = 0.10\ncapex_rate_of_revenue = 0.05\nbase_wacc = 0.09\nbase_g = 0.02\nprojection_years = 5\nrevenue_growth_rate = 0.05 # 5% for the projection period\n\ndef calculate_dcf(initial_revenue, initial_operating_margin, tax_rate, depreciation_rate, capex_rate,\n                  revenue_growth_rate, wacc, g, projection_years):\n    \n    # 예측 기간 동안의 재무 데이터 저장\n    projections = pd.DataFrame(index=range(1, projection_years + 1))\n    \n    # 매출액 예측\n    projections['Revenue'] = initial_revenue * (1 + revenue_growth_rate) ** projections.index\n    \n    # 영업이익 예측\n    projections['Operating_Profit'] = projections['Revenue'] * initial_operating_margin\n    \n    # NOPAT (세후 영업이익)\n    projections['NOPAT'] = projections['Operating_Profit'] * (1 - tax_rate)\n    \n    # 감가상각비 (매출액의 10%)\n    projections['Depreciation'] = projections['Revenue'] * depreciation_rate\n    \n    # CAPEX (매출액의 5%)\n    projections['CAPEX'] = projections['Revenue'] * capex_rate\n    \n    # FCF (Free Cash Flow) 계산\n    # FCF = NOPAT + Depreciation - CAPEX\n    projections['FCF'] = projections['NOPAT'] + projections['Depreciation'] - projections['CAPEX']\n    \n    # FCF 할인\n    projections['Discount_Factor'] = 1 / (1 + wacc) ** projections.index\n    projections['PV_FCF'] = projections['FCF'] * projections['Discount_Factor']\n    \n    # 예측 기간 FCF의 현재가치 합계\n    sum_pv_fcf = projections['PV_FCF'].sum()\n    \n    # 터미널 밸류 (Terminal Value) 계산\n    # 마지막 예측 연도 (Year 5)의 FCF\n    fcf_last_year = projections['FCF'].iloc[-1]\n    \n    # Year 6의 FCF\n    fcf_year_plus_1 = fcf_last_year * (1 + g)\n    \n    # 터미널 밸류 (고든 성장 모델)\n    if wacc <= g:\n        # WACC가 g보다 작거나 같으면 모델이 유효하지 않음\n        return float('inf') # 또는 적절한 오류 처리\n    terminal_value = fcf_year_plus_1 / (wacc - g)\n    \n    # 터미널 밸류의 현재가치\n    pv_terminal_value = terminal_value / (1 + wacc) ** projection_years\n    \n    # 총 기업가치 (Enterprise Value)\n    enterprise_value = sum_pv_fcf + pv_terminal_value\n    \n    return enterprise_value, projections\n\n# 기본 시나리오 계산\nbase_enterprise_value, base_projections = calculate_dcf(\n    revenue_2024, operating_margin, tax_rate, depreciation_rate_of_revenue, capex_rate_of_revenue,\n    revenue_growth_rate, base_wacc, base_g, projection_years\n)\n\nprint(f\"--- 기본 시나리오 예측 재무 및 FCF (단위: 억원) ---\")\nprint(base_projections[['Revenue', 'Operating_Profit', 'NOPAT', 'Depreciation', 'CAPEX', 'FCF']].round(0))\nprint(f\"\\n--- 기본 시나리오 DCF 결과 ---\")\nprint(f\"예측 기간 FCF 현재가치 합계: {base_projections['PV_FCF'].sum():,.0f} 억원\")\nprint(f\"터미널 밸류 현재가치: {base_projections['PV_FCF'].iloc[-1] / base_projections['Discount_Factor'].iloc[-1] * (1 + base_g) / (base_wacc - base_g) / (1 + base_wacc)**projection_years:,.0f} 억원\")\nprint(f\"기본 시나리오 적정가치 (기업가치): {base_enterprise_value:,.0f} 억원\")\n\n\n\nimport pandas as pd\n\n# 초기 데이터 (위에서 정의된 값 사용)\nrevenue_2024 = 29316\noperating_margin = 3203 / 29316\ntax_rate = 0.25\ndepreciation_rate_of_revenue = 0.10\ncapex_rate_of_revenue = 0.05\nprojection_years = 5\nrevenue_growth_rate = 0.05 # 예측 기간 매출 성장률은 기본 시나리오와 동일하게 5% 유지\n\n# WACC 및 g 범위\nwacc_values = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_values = [0.01, 0.02, 0.03]\n\n# 결과를 저장할 DataFrame\nsensitivity_results = pd.DataFrame(index=[f'g={g*100:.0f}%' for g in g_values],\n                                   columns=[f'WACC={wacc*100:.0f}%' for wacc in wacc_values])\n\n# DCF 계산 함수 (이전 셀에서 정의된 함수 재사용)\ndef calculate_dcf(initial_revenue, initial_operating_margin, tax_rate, depreciation_rate, capex_rate,\n                  revenue_growth_rate, wacc, g, projection_years):\n    \n    projections = pd.DataFrame(index=range(1, projection_years + 1))\n    projections['Revenue'] = initial_revenue * (1 + revenue_growth_rate) ** projections.index\n    projections['Operating_Profit'] = projections['Revenue'] * initial_operating_margin\n    projections['NOPAT'] = projections['Operating_Profit'] * (1 - tax_rate)\n    projections['Depreciation'] = projections['Revenue'] * depreciation_rate\n    projections['CAPEX'] = projections['Revenue'] * capex_rate\n    projections['FCF'] = projections['NOPAT'] + projections['Depreciation'] - projections['CAPEX']\n    \n    projections['Discount_Factor'] = 1 / (1 + wacc) ** projections.index\n    projections['PV_FCF'] = projections['FCF'] * projections['Discount_Factor']\n    \n    sum_pv_fcf = projections['PV_FCF'].sum()\n    \n    fcf_last_year = projections['FCF'].iloc[-1]\n    fcf_year_plus_1 = fcf_last_year * (1 + g)\n    \n    if wacc <= g:\n        return float('nan'), None # WACC가 g보다 작거나 같으면 NaN 반환\n    \n    terminal_value = fcf_year_plus_1 / (wacc - g)\n    pv_terminal_value = terminal_value / (1 + wacc) ** projection_years\n    \n    enterprise_value = sum_pv_fcf + pv_terminal_value\n    \n    return enterprise_value, projections # projections는 여기서는 사용하지 않지만 함수의 형태를 유지\n\n# 민감도 분석 실행\nfor g in g_values:\n    for wacc in wacc_values:\n        enterprise_value, _ = calculate_dcf(\n            revenue_2024, operating_margin, tax_rate, depreciation_rate_of_revenue, capex_rate_of_revenue,\n            revenue_growth_rate, wacc, g, projection_years\n        )\n        sensitivity_results.loc[f'g={g*100:.0f}%', f'WACC={wacc*100:.0f}%'] = round(enterprise_value, 0)\n\nprint(\"\\n--- WACC(%) × g(%) 민감도 그리드 (적정가치: 억원) ---\")\nprint(sensitivity_results.applymap(lambda x: f'{int(x):,}' if pd.notna(x) else 'N/A'))",
+    "code_output": "--- 기본 시나리오 예측 재무 및 FCF (단위: 억원) ---\n   Revenue  Operating_Profit   NOPAT  Depreciation   CAPEX     FCF\n1  30782.0            3363.0  2522.0        3078.0  1539.0  4061.0\n2  32321.0            3531.0  2648.0        3232.0  1616.0  4265.0\n3  33937.0            3708.0  2781.0        3394.0  1697.0  4478.0\n4  35634.0            3893.0  2920.0        3563.0  1782.0  4702.0\n5  37415.0            4088.0  3066.0        3742.0  1871.0  4937.0\n\n--- 기본 시나리오 DCF 결과 ---\n예측 기간 FCF 현재가치 합계: 17,312 억원\n터미널 밸류 현재가치: 46,753 억원\n기본 시나리오 적정가치 (기업가치): 64,065 억원\n\n\n--- WACC(%) × g(%) 민감도 그리드 (적정가치: 억원) ---\n      WACC=7% WACC=8% WACC=9% WACC=10% WACC=11%\ng=1%   77,533  66,265  57,820   51,257   46,011\ng=2%   90,087  74,904  64,065   55,940   49,624\ng=3%  108,918  87,000  72,392   61,961   54,141"
+  },
+  "news": {
+    "text": "## 씨에스윈드(112610) 투자 분석 보고서\n\n**투자등급 C, 요약: 글로벌 풍력 시장 성장의 수혜를 입는 외형 성장 기업이나, 불안정한 수익성과 매우 높은 부채비율로 인한 재무 리스크 관리가 시급합니다.**\n\n---\n\n### 1. 재무 데이터 스토리와 현재 시장 컨센서스의 일치/불일치\n\n제공된 재무 데이터는 씨에스윈드가 글로벌 풍력 시장 성장의 수혜를 입는 외형 성장 기업이지만, 불안정한 수익성과 높은 부채비율로 인한 재무 리스크가 있다고 지적합니다.\n\n그러나 최근 2주간의 시장 컨센서스는 이러한 재무 데이터의 부정적인 측면을 상쇄하고도 남을 긍정적인 전망이 지배적입니다.\n\n*   **수익성 개선 기대:** NH투자증권은 1분기 영업이익이 전년 동기 대비 하락할 것으로 전망하면서도 시장 기대치에 부합할 것으로 보며, 에너지 가격 급등으로 인한 재생에너지 투자 심리 개선과 풍력 터빈 업체 수혜를 예상했습니다. 키움증권은 2026년 하부구조물 법인의 영업이익률이 개선될 것으로 전망하며, 미국 법인의 생산성 및 가동률 개선을 통한 질적 성장을 핵심으로 꼽았습니다. 또한, 타워 단가 인상 협의 성공 및 해상풍력 하부구조물 적기 납품에 따른 인센티브 반영으로 수익성 개선이 기대됩니다.\n*   **외형 성장 지속:** 다수의 증권사가 투자의견 '매수'를 유지하며 2026년 매출 3조원 시대를 열 것으로 내다봤습니다. 미국 선지아(SunZia) 프로젝트 타워 전량 수주 예정 및 2024년 수주 물량 확보, 2025년 미국법인 베스타스 예상 물량 증가 등 대규모 수주 소식이 이어지고 있습니다. 국내외 해상풍력 특별법 시행과 대규모 발주 기대감 또한 외형 성장에 긍정적인 요인입니다.\n\n**결론적으로, 재무 데이터가 보여주는 '불안정한 수익성'과 '높은 부채비율'이라는 리스크는 시장 컨센서스에서 2026년 이후의 수익성 개선과 견조한 수주를 통한 재무 구조 개선 기대로 상당 부분 희석되고 있습니다.** '외형 성장' 측면에서는 재무 데이터와 시장 컨센서스가 일치합니다.\n\n### 2. 재무제표에서 드러나지 않는 리스크 또는 호재\n\n**드러나지 않는 리스크:**\n\n*   **말레이시아 법인 반덤핑/상계관세:** 말레이시아 법인의 미국 수출 물량에 대한 반덤핑·상계관세 판결로 인한 세금 비용이 타워 부문 마진 둔화에 영향을 미쳤습니다. 이는 일회성 비용일 수 있으나, 향후 무역 분쟁 가능성을 내포합니다.\n*   **경쟁 심화:** 일본 철강 기업의 해상풍력 후판 개발 등 경쟁 환경이 심화될 가능성이 있습니다.\n\n**드러나지 않는 호재:**\n\n*   **생산성 개선 프로그램(PIP) 효과:** 미국 법인에서 추진 중인 생산성 개선 프로그램(PIP)을 통해 단기간 내 약 20% 수준의 생산성 향상이 확인되었습니다. 이는 재무제표에 즉각적으로 반영되기 어려운 내부 효율성 개선 요인으로, 향후 수익성 개선에 크게 기여할 것입니다.\n*   **타워 단가 인상 협의:** 2024년 인건비, 물가상승률을 반영한 베스타스와의 타워 단가 인상 협의가 성사되어 향후 수익성 개선에 긍정적인 영향을 미칠 것으로 예상됩니다.\n*   **정책적 지원 강화:** 이재명 대통령의 재생에너지 신속 전환 발언 및 국내 해상풍력 특별법 시행 등 국내외 정책적 지원 강화는 장기적인 성장 동력으로 작용할 것입니다.\n*   **밸류에이션 매력:** 현재 주가가 12개월 선행 P/E 9배 수준으로, 역사적으로나 국내외 유사 기업 대비 매력적인 밸류에이션 구간에 위치해 있다는 분석이 있습니다.\n*   **일회성 비용 소멸:** 덴마크 Lindo 공장 폐쇄 관련 약 2,205억원의 손상차손은 일회성 비용으로, 향후 반복되지 않을 재무적 부담입니다.\n\n### 3. 최종 판정\n\n최근 뉴스와 시장 컨센서스를 종합적으로 고려할 때, 씨에스윈드는 과거 재무제표에서 드러난 불안정한 수익성과 높은 부채비율이라는 약점을 극복하고, 생산성 개선, 단가 인상, 대규모 수주, 그리고 우호적인 정책 환경을 바탕으로 뚜렷한 실적 턴어라운드와 외형 성장을 기대할 수 있는 시점에 진입했습니다. 현재 밸류에이션 매력도 부각되고 있어, 단기적인 재무 리스크보다는 미래 성장성에 무게를 두는 것이 합리적이라고 판단됩니다.\n\n**최종 판정: 매수**",
+    "citations": [
+      {
+        "title": "alphasquare.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFgxnk0mJZZvaiQpZ1ZjKCdBbujdUMw83kxcga_YUdMoNt9T8RZ9RQ3lm-NnojAi_Osqd6eql8zyXqeEDz1MspBJDTrTiMv6jtPocfwBbizOLev2J1DHO9W4wlYX-WdpfWxHZsammvNW_gh5a6uq930x12w"
+      },
+      {
+        "title": "daum.net",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHyjAwDgMjH2UswIgHdU1Diu7gnefs0WPHhIyHWjVDV0yqZNWWCyyO-z9HQkMBXE9SDjNA8mIKsWsgMSMrMeh73oqqzpsHLtnwyBJ0aGxjl6zgkly9q5CEoy1ZUnrmZSI4FhdiQ"
+      },
+      {
+        "title": "kiwoom.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQF3L-p-eHWdxmStVwyV-44DgohZNDL4bxrUEyryrPrGxhBsyqQ6xOptlB7Jv9LxT0VWCcE9cK7Mf-zGpuKZCWU3YI1TEyOowM1u3ItadUReX62uo-nskgw1cwMSbUIlVaKa-tRjK6hMgySdwvplWyiGAobkPEDFdkF8XbcGbuPmWHnhN-QarBq27VHBsGiAg0aTMs3-dHB3F_dBuMgnqr0="
+      },
+      {
+        "title": "cswind.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEy2Zy6K6GbJCc3za6-BfbABqoSrSmtSsJdu2xeqte0jR_yWQZ0ybo7O_vzL5xnQItfNF-dgWmuI9rJFktRXTUGfWeBk76od9qJsgJq7LmOjc2SKxmQ1WESfdjFs2mo0f_t8ya0d2zLMjI-jAJC6Jc1kO-bGBgU-2ACCVSiEUpRXSSVtZ8RdpYUjOwIpSRB-VlVYgQ="
+      },
+      {
+        "title": "ket.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQG3IOUX95SrjQwYSNRWWSJzwDcMGgg5w0pIZ_ueDrLUmarzANHSIru81ZL19XJ0IIh064cTa8O6zyIIxuYheiuTNwyPQ5cBf_B7wlsPljgE3CJ-7bR0sK0aYwllf856oM8ICXIN"
+      },
+      {
+        "title": "riskweather.io",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEuTF9cLOGu1bqAI0Mxj7vQMpzsK8WMJ9CbCKT31HNDyMK21Cki_o8yYxET933S_wgyfzLJTtRqSEbGNnmjIVyYmdiD4fvBaMFFjzeZsvtMPNYU2_8lwJQ4QgEg52X5eHPe6OgPCett8l8r4eVrqSEFofZZL-6wIKY="
+      },
+      {
+        "title": "daum.net",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFDDlVUnaNfk9DPsf52h-hbN-4abzETMkN_5dD4M3NhY9eJH0hPGWE2v8GslW5Enxok8-DeHM80ISiw3nEAezUS6BNuyCwDpTXIOfWeixV0XzouJdK8M9RUYILmONJKYMyomEgSB60w8T9HHE1_oVtHJr8DDkFQ-mHJh7Xom6YCfGo="
+      },
+      {
+        "title": "snmnews.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHFFPQIq8fMeOdGuZW9sgX1lrbVyEKb-ckDuTuDcK7paDjYErjEivfVZ9zTcSkw9l0RBnd7szIcL4zw7npAecxEcBlrKy0G1UNd-FLsNXGT5bad2dpOHULYVA4SwWOEvEz4uFsUROghndZ_AMnCSlILK_AUSQ=="
+      }
+    ]
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=00670340",
+    "summary": "공시 페이지 접근 제한"
+  }
+}

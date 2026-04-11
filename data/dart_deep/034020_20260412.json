@@ -1,0 +1,306 @@
+{
+  "stock_code": "034020",
+  "stock_name": "두산에너빌리티",
+  "generated_at": "2026-04-11T20:04:51.449838+00:00",
+  "financials": {
+    "stock_code": "034020",
+    "corp_code": "00159616",
+    "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2016": {
+        "cash": 13695.0,
+        "total_assets": 248325.7,
+        "short_debt": 28926.9,
+        "long_debt": 25349.9,
+        "total_liab": 180097.4,
+        "total_equity": 68228.3,
+        "revenue": 138926.8,
+        "op_profit": 7911.7,
+        "net_income": -1707.5
+      },
+      "2017": {
+        "cash": 19701.5,
+        "total_assets": 249297.7,
+        "short_debt": 37651.5,
+        "long_debt": 20620.7,
+        "total_liab": 184520.9,
+        "total_equity": 64776.9,
+        "revenue": 145188.5,
+        "op_profit": 8302.3,
+        "net_income": -1979.5
+      },
+      "2018": {
+        "cash": 20753.3,
+        "total_assets": 248102.0,
+        "short_debt": 28400.7,
+        "long_debt": 30434.4,
+        "total_liab": 186883.8,
+        "total_equity": 61218.2,
+        "revenue": 147436.0,
+        "op_profit": 10006.0,
+        "net_income": -4300.7
+      },
+      "2019": {
+        "cash": 14412.8,
+        "total_assets": 247742.1,
+        "short_debt": 37672.7,
+        "long_debt": 16979.8,
+        "total_liab": 187881.1,
+        "total_equity": 59861.0,
+        "revenue": 155704.3,
+        "op_profit": 9183.5,
+        "net_income": -2236.5
+      },
+      "2020": {
+        "cash": 23368.0,
+        "total_assets": 255671.7,
+        "short_debt": 53685.8,
+        "long_debt": 11830.4,
+        "total_liab": 184606.8,
+        "total_equity": 71065.0,
+        "revenue": 152438.2,
+        "op_profit": 4092.4,
+        "net_income": -6225.5
+      },
+      "2021": {
+        "cash": 19086.0,
+        "total_assets": 237205.5,
+        "short_debt": 39084.8,
+        "long_debt": 15169.2,
+        "total_liab": 149129.5,
+        "total_equity": 88076.0,
+        "revenue": 112836.1,
+        "op_profit": 8778.8,
+        "net_income": 4952.7
+      },
+      "2022": {
+        "cash": 13958.4,
+        "total_assets": 230497.8,
+        "short_debt": 14335.7,
+        "long_debt": 23508.7,
+        "total_liab": 129694.9,
+        "total_equity": 100802.9,
+        "revenue": 154210.6,
+        "op_profit": 11061.2,
+        "net_income": -7724.9
+      },
+      "2023": {
+        "total_assets": 246408.3,
+        "cash": 26201.9,
+        "total_equity": 11845.3,
+        "short_debt": 11865.8,
+        "total_liab": 137993.3,
+        "long_debt": 14577.5,
+        "op_profit": 14673.2,
+        "net_income": 556.0,
+        "revenue": 175898.9
+      },
+      "2024": {
+        "total_assets": 263148.3,
+        "cash": 28983.0,
+        "total_equity": 15721.0,
+        "short_debt": 21412.6,
+        "total_liab": 146537.4,
+        "long_debt": 24345.3,
+        "op_profit": 10176.0,
+        "net_income": 0.0,
+        "revenue": 162330.5
+      },
+      "2025": {
+        "total_assets": 275132.2,
+        "cash": 30810.0,
+        "total_equity": 14415.7,
+        "short_debt": 18835.7,
+        "total_liab": 155038.5,
+        "long_debt": 23361.4,
+        "op_profit": 7627.1,
+        "net_income": 0.0,
+        "revenue": 170578.8
+      }
+    },
+    "missing_years": [
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2016,
+        "revenue_eok": 138927,
+        "op_profit_eok": 7912,
+        "net_income_eok": -1708,
+        "roe_pct": -2.5,
+        "op_margin_pct": 5.69,
+        "debt_ratio_pct": 263.96
+      },
+      {
+        "year": 2017,
+        "revenue_eok": 145188,
+        "op_profit_eok": 8302,
+        "net_income_eok": -1980,
+        "roe_pct": -3.06,
+        "op_margin_pct": 5.72,
+        "debt_ratio_pct": 284.85
+      },
+      {
+        "year": 2018,
+        "revenue_eok": 147436,
+        "op_profit_eok": 10006,
+        "net_income_eok": -4301,
+        "roe_pct": -7.02,
+        "op_margin_pct": 6.79,
+        "debt_ratio_pct": 305.27
+      },
+      {
+        "year": 2019,
+        "revenue_eok": 155704,
+        "op_profit_eok": 9184,
+        "net_income_eok": -2236,
+        "roe_pct": -3.74,
+        "op_margin_pct": 5.9,
+        "debt_ratio_pct": 313.85
+      },
+      {
+        "year": 2020,
+        "revenue_eok": 152438,
+        "op_profit_eok": 4092,
+        "net_income_eok": -6226,
+        "roe_pct": -8.76,
+        "op_margin_pct": 2.68,
+        "debt_ratio_pct": 259.77
+      },
+      {
+        "year": 2021,
+        "revenue_eok": 112836,
+        "op_profit_eok": 8779,
+        "net_income_eok": 4953,
+        "roe_pct": 5.62,
+        "op_margin_pct": 7.78,
+        "debt_ratio_pct": 169.32
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 154211,
+        "op_profit_eok": 11061,
+        "net_income_eok": -7725,
+        "roe_pct": -7.66,
+        "op_margin_pct": 7.17,
+        "debt_ratio_pct": 128.66
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 175899,
+        "op_profit_eok": 14673,
+        "net_income_eok": 556,
+        "roe_pct": 4.69,
+        "op_margin_pct": 8.34,
+        "debt_ratio_pct": 1165.0
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 162330,
+        "op_profit_eok": 10176,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 6.27,
+        "debt_ratio_pct": 932.11
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 170579,
+        "op_profit_eok": 7627,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 4.47,
+        "debt_ratio_pct": 1075.46
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": 2.39,
+      "op_profit_cagr_pct": -0.41,
+      "best_year": 2023,
+      "worst_year": 2020,
+      "avg_roe_pct": -2.74
+    },
+    "valuation": {
+      "grade": "C",
+      "strengths": [
+        "최근 3년간(2021-2023) 매출액이 회복세를 보이며 성장 동력을 확보했습니다.",
+        "2023년 영업이익이 14,673억원으로 10년 내 최고치를 기록하며 수익성이 개선되었습니다.",
+        "주력 사업의 견조한 매출과 영업이익을 통해 사업 규모를 유지하고 있습니다."
+      ],
+      "risks": [
+        "2023년 이후 자본총계가 급격히 감소하여 부채비율이 1,000%를 상회하는 등 재무구조가 매우 취약합니다.",
+        "당기순이익이 대부분의 기간 동안 적자를 기록했으며, 2024년과 2025년에는 0원으로 예상되어 수익 안정성이 낮습니다.",
+        "영업이익률이 2020년 2.68%까지 하락하는 등 변동성이 크고, 2025년에는 다시 4.47%로 감소할 것으로 예상됩니다."
+      ],
+      "one_liner": "매출 및 영업이익은 개선되었으나, 극도로 취약한 재무구조와 불안정한 순이익이 투자 리스크를 높이는 기업입니다."
+    }
+  },
+  "dcf": {
+    "text": "**퀀트 애널리스트 보고서: 두산에너빌리티 (034020) DCF 적정가치 분석**\n\n제시된 데이터를 바탕으로 두산에너빌리티의 DCF(할인현금흐름) 적정가치를 계산하였습니다.\n\n**1. 기본 시나리오 DCF 적정가치 계산**\n\n*   **기준 연도 (2025년) FCF 계산:**\n    *   매출액: 170,579 억원\n    *   영업이익: 7,627 억원\n    *   세율: 25% (FCF 가정에 따라)\n    *   감가상각비: 매출액의 10% = 170,579 * 0.10 = 17,057.9 억원\n    *   CAPEX: 매출액의 5% = 170,579 * 0.05 = 8,528.95 억원\n    *   FCF = 영업이익 * (1 - 세율) + 감가상각비 - CAPEX\n    *   FCF = 7,627 * (1 - 0.25) + 17,057.9 - 8,528.95 = 14,249.2 억원\n\n*   **가정 (5년 예측 기간):**\n    *   5년 예측 기간(2026년~2030년) 동안 매출액 및 영업이익은 2025년 수준으로 유지된다고 가정했습니다. (별도의 성장률이 제시되지 않아 보수적으로 가정)\n    *   WACC (가중평균자본비용) = 9%\n    *   영구성장률 (g) = 2%\n\n*   **DCF 계산 결과:**\n    *   5년간의 FCF 현가 합계 및 5년차 말의 터미널 밸류(Terminal Value) 현가를 합산하여 적정가치를 산출했습니다.\n\n**적정가치(기본): 190370억원**\n\n**2. WACC 및 영구성장률(g)에 대한 민감도 그리드**\n\nWACC와 영구성장률(g) 변화에 따른 적정가치 민감도 분석 결과는 다음과 같습니다.\n\n--- DCF 적정가치 민감도 그리드 (억원) ---\n|        | WACC=7% | WACC=8% | WACC=9% | WACC=10% | WACC=11% |\n|:-------|:--------|:--------|:--------|:---------|:---------|\n| g=1%   | 229442  | 196818  | 172345  | 153306   | 138071   |\n| g=2%   | 265678  | 221755  | 190370  | 166823   | 148501   |\n| g=3%   | 320031  | 256667  | 214405  | 184202   | 161537   |\n\n**3. 요약**\n\n제시된 가정과 데이터를 바탕으로 계산된 두산에너빌리티의 DCF 적정가치는 **190370억원**입니다. WACC가 낮아지고 영구성장률이 높아질수록 기업가치는 상승하는 경향을 보입니다. 특히 WACC와 영구성장률의 차이가 줄어들수록 터미널 밸류의 기여도가 커져 기업가치가 크게 변동하는 것을 확인할 수 있습니다.",
+    "executed_code": "import pandas as pd\n\n# --- 1. Define Inputs ---\n# Recent Financials (억원) - Assuming these are for 2025\nrevenue_2025 = 170579\noperating_profit_2025 = 7627\n\n# Assumptions\ntax_rate = 0.25 # Implied from FCF formula: Operating Profit * (1 - 0.25)\ndepreciation_rate_of_revenue = 0.10\ncapex_rate_of_revenue = 0.05\nforecast_years = 5\n\n# Base Scenario Assumptions\nbase_wacc = 0.09\nbase_g = 0.02\n\n# --- 2. FCF Calculation Function ---\ndef calculate_fcf(revenue, operating_profit, tax_rate, dep_rate, capex_rate):\n    depreciation = revenue * dep_rate\n    capex = revenue * capex_rate\n    fcf = operating_profit * (1 - tax_rate) + depreciation - capex\n    return fcf\n\n# --- 3. DCF Valuation Function ---\ndef dcf_valuation(initial_revenue, initial_operating_profit, tax_rate, dep_rate, capex_rate,\n                  wacc, g, forecast_years):\n\n    # Project FCFs for the forecast period\n    # Assumption: Revenue and Operating Profit remain constant at initial_revenue/operating_profit\n    # for the forecast years as no growth rate for the forecast period was provided.\n    fcf_forecasts = []\n    for year in range(1, forecast_years + 1):\n        fcf = calculate_fcf(initial_revenue, initial_operating_profit, tax_rate, dep_rate, capex_rate)\n        fcf_forecasts.append(fcf)\n\n    # Calculate Present Value of FCFs\n    pv_fcf_sum = 0\n    for i, fcf in enumerate(fcf_forecasts):\n        pv_fcf_sum += fcf / ((1 + wacc) ** (i + 1))\n\n    # Calculate Terminal Value\n    # FCF for the year after the forecast period (Year 6)\n    fcf_terminal_year = fcf_forecasts[-1] * (1 + g) # FCF_5 * (1+g)\n    \n    # Check for WACC <= g, which would lead to infinite TV\n    if wacc <= g:\n        return float('inf') # Or handle as an error/invalid scenario\n\n    terminal_value = fcf_terminal_year / (wacc - g)\n\n    # Calculate Present Value of Terminal Value\n    pv_terminal_value = terminal_value / ((1 + wacc) ** forecast_years)\n\n    # Total DCF Value\n    dcf_value = pv_fcf_sum + pv_terminal_value\n    return dcf_value\n\n# --- 4. Base Scenario Calculation ---\nbase_dcf_value = dcf_valuation(\n    revenue_2025, operating_profit_2025, tax_rate, depreciation_rate_of_revenue,\n    capex_rate_of_revenue, base_wacc, base_g, forecast_years\n)\n\nprint(f\"적정가치(기본): {base_dcf_value:.0f}억원\")\n\n# --- 5. Sensitivity Analysis ---\nwacc_range = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_range = [0.01, 0.02, 0.03]\n\nsensitivity_results = pd.DataFrame(index=[f'g={g*100:.0f}%' for g in g_range],\n                                   columns=[f'WACC={wacc*100:.0f}%' for wacc in wacc_range])\n\nfor g_val in g_range:\n    for wacc_val in wacc_range:\n        # Ensure WACC > g for terminal value calculation\n        if wacc_val <= g_val:\n            sensitivity_results.loc[f'g={g_val*100:.0f}%', f'WACC={wacc_val*100:.0f}%'] = \"N/A (WACC <= g)\"\n        else:\n            value = dcf_valuation(\n                revenue_2025, operating_profit_2025, tax_rate, depreciation_rate_of_revenue,\n                capex_rate_of_revenue, wacc_val, g_val, forecast_years\n            )\n            sensitivity_results.loc[f'g={g_val*100:.0f}%', f'WACC={wacc_val*100:.0f}%'] = f\"{value:.0f}\"\n\nprint(\"\\n--- DCF 적정가치 민감도 그리드 (억원) ---\")\nprint(sensitivity_results)",
+    "code_output": "적정가치(기본): 190370억원\n\n--- DCF 적정가치 민감도 그리드 (억원) ---\n     WACC=7% WACC=8% WACC=9% WACC=10% WACC=11%\ng=1%  229442  196818  172345   153306   138071\ng=2%  265678  221755  190370   166823   148501\ng=3%  320031  256667  214405   184202   161537"
+  },
+  "news": {
+    "text": "## 두산에너빌리티(034020) 투자 분석 보고서\n\n### 1. 재무 데이터 스토리와 현재 시장 컨센서스의 일치/불일치\n\n제공된 10년 재무제표 분석 결과는 매출 및 영업이익 개선에도 불구하고 '극도로 취약한 재무구조와 불안정한 순이익'을 지적하며 투자등급 C를 부여했습니다. 반면, 현재 시장 컨센서스는 두산에너빌리티에 대해 \"적극 매수\" 또는 \"매수\" 의견이 지배적입니다.\n\n*   **일치하는 부분:** 시장 컨센서스 역시 2026년 대규모 수주 및 영업이익 성장을 예상하며 매출 및 영업이익 개선 스토리에 동의합니다.\n*   **불일치하는 부분:** 시장은 재무제표상 취약한 재무구조에 대한 우려보다는 신사업 수주 확대와 이에 따른 중장기적인 재무 안정성 개선 가능성에 주목하고 있습니다. 2025년 12월 한국기업평가와 나이스신용평가는 두산에너빌리티의 신용등급 전망을 '안정적'에서 '긍정적'으로 상향 조정하며 재무 안정성 개선 가능성에 긍정적인 평가를 내렸습니다. 이는 과거 재무 리스크에 대한 우려가 점차 완화될 것으로 보고 있음을 시사합니다.\n\n### 2. 재무제표에서 드러나지 않는 리스크 또는 호재\n\n**호재:**\n\n*   **SMR(소형모듈원전) 사업 확장:** SMR 전용 공장 신축 계획과 글로벌 SMR 선도 기업들과의 주기기 제작 독점권 확보는 미래 핵심 성장 동력으로 매우 긍정적입니다.\n*   **가스터빈 국산화 및 수주 확대:** 세계 5번째 독자 개발 가스터빈의 해외 수출 및 추가 공급 계약은 글로벌 시장 진입을 의미하며, AI 데이터센터발 전력 수요 폭증에 따른 가스터빈 수요 증가는 큰 호재로 작용할 것입니다.\n*   **대형 원전 수주 행진:** 체코 두코바니 원전 주기기 공급 계약 등 대규모 해외 원전 수주는 향후 실적에 크게 기여할 것으로 예상됩니다.\n*   **공급자 우위 시장 형성:** 대형 원전 주기기와 SMR을 동시에 제작할 수 있는 유일한 공급사로서 '공급자 우위 시장'이 형성되어 수익성 개선에 긍정적입니다.\n*   **유상증자 계획 없음:** 대규모 투자에도 불구하고 유상증자를 통한 주주가치 희석은 고려하지 않는다고 밝혀 주주 친화적인 정책으로 해석됩니다.\n\n**리스크:**\n\n*   **대규모 투자에 따른 일시적 현금 흐름 악화:** SMR 전용 공장 신축 등 향후 2년간 1.8조 원 규모의 투자가 예정되어 있어 일시적인 현금 흐름 악화는 불가피할 수 있습니다.\n*   **지정학적 리스크 및 환율 변동성:** 해외 원전 수주 과정에서의 법적 분쟁, 외교적 변수, 그리고 대규모 EPC 프로젝트 특성상 환율 및 금리 변동에 따른 금융 비용 부담은 상존하는 리스크 요인입니다.\n*   **운전자본 부담:** 2025년 3월 기사에서는 재고자산 급증에 따른 운전자본 부담이 현금 유입을 제약하고 부채 부담을 가중시킬 수 있다고 언급했습니다.\n\n### 3. 최종 판정\n\n제공된 재무제표 분석 결과는 과거의 재무 리스크를 강조하지만, 최근 2주간의 뉴스 및 시장 컨센서스는 두산에너빌리티의 사업 구조 변화와 미래 성장 동력에 대한 강한 기대를 보여줍니다. 특히 SMR, 가스터빈, 대형 원전 등 신사업 분야에서의 수주 확대와 독점적인 지위는 향후 매출 및 이익 성장을 견인할 것으로 예상됩니다. 신용평가사들의 등급 전망 상향 또한 재무 안정성 개선에 대한 긍정적인 시그널입니다.\n\n물론 대규모 투자에 따른 일시적인 현금 흐름 악화나 지정학적 리스크, 금리/환율 변동성 등은 여전히 존재하지만, 현재 시장은 이러한 리스크보다는 미래 성장 잠재력에 더 큰 비중을 두고 있는 것으로 판단됩니다. 특히 '공급자 우위 시장'이라는 점은 향후 수익성 개선에 매우 긍정적인 요소입니다.\n\n따라서 현재 시점에서는 재무구조 개선의 가시성이 높아지고 있고, 미래 성장 동력이 확고하다는 점에서 긍정적인 관점을 유지하는 것이 합리적이라고 판단됩니다.\n\n**최종 판정: 매수**",
+    "citations": [
+      {
+        "title": "investing.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGPZwJ5YMaQWPiOn5mL0aYu_wFaBvaLjeRAgWbHp8Pd8ULAh8T4tbZfXuuUh3ZIzoPoARla8f41O4VPCzrs2hLof9zI6ZGuTo6QwgQ37zKeorKdaEa0I1xdEFAcCE6e96PilJCcLJtG4-co3AAhjcaZ65kra1WTrG7XgdRJGgO93yzgx3qj9A-1CD7z"
+      },
+      {
+        "title": "hankyung.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFlS474BEOIbdACH3V8uv8ScmWyrgOP9HaxKTY6VP34KokgoreqD22oOO2li3CRwixfmT5FbsWOn4Q4glpeUqRrFYCy1Lt4kQErLeMXwbDOztZZSXMvNp54k4VSeBLwuAR64OxHn8udLZqBjqLPow=="
+      },
+      {
+        "title": "kbthink.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHvQBwGlqA3VhN1Uzk2JwWo_inhqhnZ2AWmp0O7kfg5rvoCb1bcYeZdfBq2YbdxE7G2oZshba3IWPgaWVHNG0s1_L5S6UJq9XWYl6IKCXopwM37e0RXjTHQp9PlstwbwM-8hMj3Jw7wRLVTtLlPCfGdaqwz4EEsRHTDYMY1"
+      },
+      {
+        "title": "thedailymoney.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGe6k0ioqfKCdtDiLasyi2TdwMu3xu8vVdhq--8uL51J7UPyezUgekjJ6TFgI2JdITQrLD_8utSP-q1nsrbHoEX-xqMoLU3U8Dyw_ftm_TCE5D72Zu_VeYu6FiEg0nJlc3hLzrnKd4LGrlFqGGgWoMRyvHWFqLUUb9Ispk="
+      },
+      {
+        "title": "kiwoom.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEqsUhjQt2l2N3Zujh3VAnVt0w-pnk8fOYLlxx_3FmexQwKYst3THcdzd3V35rkbdfZdnj4BaSiwXxcr1B-g8aWrwcVKDVJsdDe7RpNrjm6o7yXiiHENBcUSb92"
+      },
+      {
+        "title": "daum.net",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEtha8Y_EmGEbs-Y5AAgajQYVputxab2gHLZqTIM3hULguu9R2o3j8XUU-kCy7S6BgA0q9sgyD66vktbR8DKM8Yrxxnlu6PIZJdRE03NFF0spApVPAyR7nYC9LH-e0IvfE-knv3ZnYbm8NYhr27J60IMlh5QS7lBsYbRFsOHYT6Oco="
+      },
+      {
+        "title": "korearatings.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGk4dMcL3_AG1sc-B_BVPX-KepxaCilRS_qg5LcM7O21yxNEY23YaPGz69mNHUXyeDTHWUe5sPHK-Bt5PyquZjY0Pb97yEc7LJK2cNL33g60DpWPktAdKOPycjeNueZIho6QrUk1HM5ZsQ="
+      },
+      {
+        "title": "einfomax.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQERZcyRhgUHBD6SnwkIf9fITnEUg7wyHq6pyd55qdSIOReT-DaSTeWbOQvgFYGapZI6LuxbWKXUnY9UmZwmSNHtLQtf23ojQo8fEBOhsnsVF42LwnrLsYJcYlCxmD2nxfrUitt09tEtnX8fVdItimNMprE6e2CslCtJRA=="
+      },
+      {
+        "title": "cbci.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQF49NZwDxfV_jDanRsQyh0iG8fmFT2z4m38oWAZGb6EYDMWXd8aOUTx4foHM0aSQhuvHSXzKYEpMCwcutON3UkVDXqDm1R0vKzMN9n31tD_MPnSR6gpWppoDhQIgt-a661unuAJtgfjI3ZfZvjDvXtlK2Bm-f6D2jui5P523RB4zKtadUXe47eg_lu698Q3Al-wT0mAEfsVE4Z5SS2T_OfuqpALh0thUvRyaa9EiYPSHJuxvuUSjCEKoWfISROPNReHRHKjYW1j0W5bEktVy1PWC7zQ_-riyyp7oO84tUY1yDGLx_cGbHEPnd7kXa61amodsOjSklFCE3gG8B_0oCoY_HGMkXshP7l8xM7cKKjXp-JKtLshUawBk3yXdOp9ARdIPxc9FvrCdrooZSkyYLmepoqhGlSB-Kc9XA0jKTQURLDp7XC8ykrK6khUxjGB2oR8ds8BTG-LlK-fy-7aSY9Ls17lzQskObKQ2TeYPSVbj64bxPPsXQia46AkcKn06CD8oBoG5PQ5SJC89PWHa1C1WUlh0aV-ODi-GcepNYxcne4Q4j5QHzi__j8GaSfJZGa34DpbcFbYmmRQ_jmv4O-gfueZAFzzGK0WxIUdM-BICi6-rcu34CkgjBnH6yxqso0Bfn81G2x6bAZwpRAXqc7QnHXBasH2huecSAtQYTuN6jl3BSdGKUWTSM5MCEcndzJBR_piFfBkalfWBCrr9bC59JxBaW-QFLmf3ziQLHx40dlTZbvguxeQuKiRGBdLWkwtJbNxLJnAev7485sBjx8NpF3MtjY9AUoV9Nb6-Pt01MnciWeqGl3XNKTMTQgVEEMGFvsR3bPYZ_YcqUroS867oxvtOxj-7KqqSCV-hP4siwiY0YMdLFchNeh5SJ1AhhmHe12dY88Y8nmi453e_rqUaVz7iWAdMKvUGIWztmg3RfOdDImdb3KYC7LZDvAWsLsxJiCjhB_z4SOmJClGFXiQM2FoTg=="
+      },
+      {
+        "title": "newstomato.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFlP_mDNqqpuHC1-W8HZgAf8BftznNd55Pwbw2SmrwogWAEDOySxApfAdvsy4Mmpg1QY4ZA2hmaeppBVYu-N_Cwxg7u-baRAtTIND5BOMaNIrHNHu-hEEG8AcEa8SYdqy6Y0-ldvIXFngIQa8U2bA=="
+      }
+    ]
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=00159616",
+    "summary": "The browsing result indicates that the requested URL could not be found and suggests it might have changed or been deleted. Therefore, I cannot access the disclosure page.\n공시 페이지 접근 제한"
+  }
+}
