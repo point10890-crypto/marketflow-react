@@ -1,0 +1,289 @@
+{
+  "stock_code": "005290",
+  "stock_name": "동진쎄미켐",
+  "generated_at": "2026-04-12T06:23:03.520851+00:00",
+  "financials": {
+    "stock_code": "005290",
+    "corp_code": "00118804",
+    "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2016": {
+        "cash": 618.5,
+        "total_assets": 6575.9,
+        "short_debt": 3339.8,
+        "long_debt": 372.7,
+        "total_liab": 4606.7,
+        "total_equity": 1969.3,
+        "op_profit": 454.0,
+        "net_income": 263.8
+      },
+      "2017": {
+        "cash": 730.2,
+        "total_assets": 6671.7,
+        "short_debt": 2692.7,
+        "long_debt": 482.2,
+        "total_liab": 3995.7,
+        "total_equity": 2676.0,
+        "revenue": 7851.5,
+        "op_profit": 719.0,
+        "net_income": 450.0
+      },
+      "2018": {
+        "cash": 858.4,
+        "total_assets": 7604.5,
+        "short_debt": 2666.1,
+        "long_debt": 801.6,
+        "total_liab": 4545.6,
+        "total_equity": 3058.9,
+        "revenue": 8272.3,
+        "net_income": 479.6
+      },
+      "2019": {
+        "cash": 1143.8,
+        "total_assets": 8407.1,
+        "short_debt": 3321.5,
+        "long_debt": 221.5,
+        "total_liab": 4803.5,
+        "total_equity": 3603.6,
+        "op_profit": 1048.7,
+        "net_income": 0.0
+      },
+      "2020": {
+        "cash": 2012.9,
+        "total_assets": 9607.9,
+        "short_debt": 2774.9,
+        "long_debt": 907.6,
+        "total_liab": 5227.8,
+        "total_equity": 4380.1,
+        "op_profit": 1262.6,
+        "net_income": 0.0
+      },
+      "2021": {
+        "cash": 2312.1,
+        "total_assets": 11861.9,
+        "short_debt": 2858.8,
+        "long_debt": 1381.8,
+        "total_liab": 6251.6,
+        "total_equity": 5610.3,
+        "op_profit": 1318.1,
+        "net_income": 0.0
+      },
+      "2022": {
+        "cash": 2804.6,
+        "total_assets": 13743.0,
+        "short_debt": 3369.2,
+        "long_debt": 1126.9,
+        "total_liab": 6735.2,
+        "total_equity": 7007.9,
+        "op_profit": 2163.1,
+        "net_income": 1562.0
+      },
+      "2023": {
+        "total_assets": 16065.9,
+        "cash": 2725.6,
+        "total_equity": 285.5,
+        "short_debt": 3501.4,
+        "total_liab": 7711.1,
+        "long_debt": 2345.7,
+        "op_profit": 1761.7,
+        "net_income": 1273.1
+      },
+      "2024": {
+        "total_assets": 20169.9,
+        "cash": 4173.9,
+        "total_equity": 1220.0,
+        "short_debt": 5234.6,
+        "total_liab": 9965.6,
+        "long_debt": 2473.7,
+        "op_profit": 2082.3,
+        "net_income": 1434.8
+      },
+      "2025": {
+        "total_assets": 20061.3,
+        "cash": 3719.1,
+        "total_equity": 8616.1,
+        "short_debt": 3492.2,
+        "total_liab": 9045.5,
+        "long_debt": 3041.8,
+        "op_profit": 1724.5,
+        "net_income": 990.7
+      }
+    },
+    "missing_years": [
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2016,
+        "revenue_eok": 0,
+        "op_profit_eok": 454,
+        "net_income_eok": 264,
+        "roe_pct": 13.41,
+        "op_margin_pct": 0.0,
+        "debt_ratio_pct": 234.08
+      },
+      {
+        "year": 2017,
+        "revenue_eok": 7852,
+        "op_profit_eok": 719,
+        "net_income_eok": 450,
+        "roe_pct": 16.82,
+        "op_margin_pct": 9.16,
+        "debt_ratio_pct": 149.4
+      },
+      {
+        "year": 2018,
+        "revenue_eok": 8272,
+        "op_profit_eok": 0,
+        "net_income_eok": 480,
+        "roe_pct": 15.71,
+        "op_margin_pct": 0.0,
+        "debt_ratio_pct": 148.61
+      },
+      {
+        "year": 2019,
+        "revenue_eok": 0,
+        "op_profit_eok": 1049,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 0.0,
+        "debt_ratio_pct": 133.3
+      },
+      {
+        "year": 2020,
+        "revenue_eok": 0,
+        "op_profit_eok": 1263,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 0.0,
+        "debt_ratio_pct": 119.36
+      },
+      {
+        "year": 2021,
+        "revenue_eok": 0,
+        "op_profit_eok": 1318,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 0.0,
+        "debt_ratio_pct": 111.44
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 0,
+        "op_profit_eok": 2163,
+        "net_income_eok": 1562,
+        "roe_pct": 22.29,
+        "op_margin_pct": 0.0,
+        "debt_ratio_pct": 96.1
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 0,
+        "op_profit_eok": 1762,
+        "net_income_eok": 1273,
+        "roe_pct": 445.1,
+        "op_margin_pct": 0.0,
+        "debt_ratio_pct": 2696.15
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 0,
+        "op_profit_eok": 2082,
+        "net_income_eok": 1435,
+        "roe_pct": 117.62,
+        "op_margin_pct": 0.0,
+        "debt_ratio_pct": 816.89
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 0,
+        "op_profit_eok": 1724,
+        "net_income_eok": 991,
+        "roe_pct": 11.5,
+        "op_margin_pct": 0.0,
+        "debt_ratio_pct": 104.99
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": 0.0,
+      "op_profit_cagr_pct": 15.97,
+      "best_year": 2022,
+      "worst_year": 2018,
+      "avg_roe_pct": 64.25
+    },
+    "valuation": {
+      "grade": "D",
+      "strengths": [
+        "영업이익 CAGR이 15.97%로 양호한 성장세를 보였습니다.",
+        "2022년 영업이익이 2,163억원으로 10년 내 최고 실적을 달성했습니다.",
+        "최근 3년간 당기순이익이 1,000억원 이상을 기록하며 수익성 개선 노력을 보였습니다."
+      ],
+      "risks": [
+        "매출액 데이터가 대부분 0으로 표기되어 있어 사업 활동 및 수익성 분석에 심각한 제약이 있습니다.",
+        "2023년과 2024년 자본총계가 급격히 감소하여 부채비율이 각각 2,696.15%, 816.89%에 달하는 등 재무 건전성이 매우 취약합니다.",
+        "ROE가 445.10%와 같이 비정상적으로 높은 수치를 기록한 것은 낮은 자본총계에 기인한 것으로, 실제 기업의 효율성을 반영한다고 보기 어렵습니다."
+      ],
+      "one_liner": "매출액 데이터의 신뢰성 문제와 극도로 취약한 재무구조가 투자에 심각한 위험을 초래하는 기업입니다."
+    }
+  },
+  "dcf": {
+    "text": "The provided '최근 재무' lists '매출액: 0'. However, the FCF formula requires '매출액' to calculate 감가상각 (Depreciation) and CAPEX. Could you please provide a realistic revenue figure for the base year (2025) or clarify if the provided '최근 재무' is for a prior year and I should project revenue from there?\n\nAdditionally, the prompt specifies a perpetual growth rate (g = 2%) for the terminal value, but it doesn't provide a growth rate for revenue or operating profit during the 5-year explicit forecast period (2025-2029). Should I assume a specific growth rate for these 5 years, or should I use the perpetual growth rate (g = 2%) for the explicit forecast as well, or assume 0% growth for the explicit period?",
+    "executed_code": "",
+    "code_output": ""
+  },
+  "news": {
+    "text": "## 동진쎄미켐(005290) 투자 분석 보고서\n\n### 1. 재무 데이터 스토리와 현재 시장 컨센서스의 일치/불일치\n\n제공된 10년 재무제표 분석 결과는 동진쎄미켐에 대해 \"투자등급 D, 매출액 데이터의 신뢰성 문제와 극도로 취약한 재무구조\"라는 부정적인 스토리를 제시합니다.\n\n그러나 최근 시장 컨센서스 및 뉴스는 이러한 재무 데이터 스토리와 상당한 불일치를 보입니다.\n\n*   **긍정적 컨센서스:** 최근 동진쎄미켐은 미국 텍사스에 2,600억 원 규모의 고순도 황산 공장 설립을 추진하며 TSMC를 주요 고객사로 확보할 것이라는 기대감을 높이고 있습니다. 또한, 200억 원 규모의 자사주 매입을 완료하며 주주가치 제고 의지를 보였습니다. 반도체 슈퍼사이클 도래에 대한 기대감과 동진쎄미켐의 포토레지스트 등 반도체 핵심 소재 기술력에 대한 긍정적인 평가도 이어지고 있습니다.\n*   **2025년 실적:** 2025년 연간 연결 기준 매출액, 영업이익, 당기순이익은 전년 대비 감소했으나, 2025년 4분기 실적은 전년 동기 대비 매출액 6.9%, 영업이익 0.6% 증가하며 회복세를 보였습니다.\n*   **엇갈린 시각:** 와이즈리포트 등은 2026년 이후의 매출액, 영업이익 등의 긍정적인 전망치를 제시하고 있지만, 알파스퀘어 AI는 동진쎄미켐에 대해 '강력 매도' 의견을 제시하는 등 시장 내에서도 상반된 시각이 존재합니다. Riskweather는 최근 매출 성장에도 불구하고 높은 PER(17.2배)로 인한 밸류에이션 부담을 지적하며 주가 조정 압력을 예상했습니다.\n\n결론적으로, 과거 재무 데이터는 매우 부정적이나, 시장은 회사의 미래 성장 동력(미국 투자, 반도체 업황)에 더 주목하며 긍정적인 기대를 반영하고 있습니다.\n\n### 2. 재무제표에서 드러나지 않는 리스크 또는 호재\n\n**리스크:**\n\n*   **재무구조 취약성 지속:** 초기 분석에서 지적된 '극도로 취약한 재무구조'는 단기간 내 해소되기 어려울 수 있으며, 대규모 미국 투자로 인한 추가적인 재무 부담이 발생할 가능성이 있습니다.\n*   **매출액 신뢰성 문제:** 재무제표 분석에서 언급된 '매출액 데이터의 신뢰성 문제'가 명확히 해소되지 않는다면, 현재 및 미래 실적 전망에 대한 근본적인 불확실성이 상존합니다.\n*   **신규 투자 관련 불확실성:** 텍사스 공장 건설 및 가동 과정에서 발생할 수 있는 지연, 비용 초과, 초기 생산 수율 문제 등 예상치 못한 운영 리스크가 존재합니다.\n*   **단기 주가 변동성:** 최근 기업가치 제고 계획 및 주주환원 정책 기대감으로 급등 후 차익 실현 매물로 하락하는 등 단기적인 주가 변동성이 커 투자에 주의가 필요합니다.\n\n**호재:**\n\n*   **미국 시장 진출 및 고객 다변화:** 텍사스 고순도 황산 공장 투자는 미국 내 첨단 반도체 제조 시장 진출을 의미하며, TSMC와 같은 글로벌 파운드리 고객사 확보를 통해 매출처를 다변화하고 안정적인 성장을 도모할 수 있는 강력한 호재입니다.\n*   **반도체 업황 회복 및 슈퍼사이클:** 전반적인 반도체 산업의 회복과 '슈퍼사이클' 진입 기대감은 동진쎄미켐의 주력 사업인 전자재료 부문에 긍정적인 영향을 미칠 것입니다.\n*   **기술 리더십 강화:** 포토레지스트 등 핵심 전자재료 분야에서의 지속적인 기술 개발 및 리더십은 장기적인 경쟁 우위와 성장 동력을 제공합니다.\n*   **주주환원 정책:** 자사주 매입은 주주가치 제고에 대한 경영진의 의지를 보여주는 긍정적인 신호로, 투자 심리에 긍정적으로 작용할 수 있습니다.\n\n### 3. 최종 판정\n\n**관망**\n\n**판단 근거:**\n\n동진쎄미켐은 과거 재무제표에서 드러난 매출액 신뢰성 문제와 극도로 취약한 재무구조라는 심각한 약점을 가지고 있습니다. 그러나 최근 미국 텍사스 공장 투자, 자사주 매입, 반도체 슈퍼사이클 기대감 등 강력한 미래 성장 동력과 주주 친화적인 행보를 보이고 있습니다.\n\n이러한 긍정적인 요인들이 장기적인 기업가치 상승으로 이어질 잠재력은 충분하지만, 과거 재무적 문제점들이 완전히 해소되었는지에 대한 명확한 증거가 부족하며, 대규모 신규 투자에 따른 재무적 부담과 운영 리스크도 고려해야 합니다. 또한, 일부 AI 분석에서 '강력 매도' 의견이 제시되는 등 시장의 시각이 엇갈리고 단기적인 주가 변동성도 높은 상황입니다.\n\n따라서, 현재 시점에서는 긍정적인 미래 전망과 부정적인 과거 재무 상태가 공존하는 만큼, 추가적인 재무구조 개선 여부와 미국 신규 투자의 구체적인 성과를 확인하며 신중하게 '관망'하는 것이 합리적인 투자 판단이라고 사료됩니다.",
+    "citations": [
+      {
+        "title": "miraeasset.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGbprjXgANw4or9Ju1rvYFxaIpgSnUBrnq9vI8fZ9jGOAN2kANHqmT_jSdt2U8DFLuBNdoAtb4QPn13JrXy5l8zxGAG7MmSau3LuoW8GB_iJSPP-XO1mEfycnNtdgy9Ndjp2nVkRYxYI4jdndMUsC3frU2Ehb8vH99STf-BMGvqqCEGgTVnf70VH3M="
+      },
+      {
+        "title": "daum.net",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHlVKELDC2KlTYnhGDXPer6EQyx7uuIRIVgTqYH0bQspfcc_GB75V2DmPsq_sVMiS2Id0BKJq7AlO6Uq4pARLS9xg3eySewsmexVoGn_-9R0v_NqhPU25gG7WUBwvAR9HN1"
+      },
+      {
+        "title": "daum.net",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFtbgqtgClt0tMT5vLgLn0SZekwbzSk-OzPLSrRZlqXLqD7-38Y4mbAdsTHEqq2ILoRsb9f4YA-DZ0gLYrPwQiBembqyUMHi-4h1izGF8b0TVOcc7M8Rn3owSvLByz91pGidqh41uq_6gs="
+      },
+      {
+        "title": "alphasquare.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHvCX47pNCmN4JXQe2cxDD_OaTG13DUe6B39bWYlYrz98ZKmadFOQky1ENyyqvSUN3lZK0cK3bg49EC51daqPHv0Jgd9aLipTtIGwh5xkRrBRJfoXZIFQssOjCEB6pHpKY55Neb31EAR720_rB3BELZ-O2T"
+      },
+      {
+        "title": "jkn.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFscwYbqcLsUEDHhkcoK3WGHZIe2VgpVSIdMj8JaNuTDBwaEFBi7Wh6RC_fr1LXJXCDfzxPqoD6CYTpzp0maSijzYRpyMNVzok_VfKMuuM3YtDQ7CBBAw5197zpx3M="
+      },
+      {
+        "title": "digitaltoday.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEAux5zZN3dj3DWwZd7TpLZez0iYF-_1Q1l9S6xVw3queAg8PZ4rdpvSU3AZYB55shNJFxLi1aiKg5PWFfOLmZ6ERIPvqeivGzduLtye2kzzw57reu9mljzrSV_e2ftGS0M8nfUeRqQMMGZYozH0cMzE5jUQaUeBn7zVgX6"
+      },
+      {
+        "title": "wisereport.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQG0qhM011MePzECW6thBD_54ehed0jeDLPickPIO5IcRuU3GTjplGaBcIERTBq0TpzjRv4dQqO_5Mx1klRU-58TuW_8QFwzVtVrAvrZu7FLN_uXwN497FgrbZePCUKXNfmhRkD4GLgsvSB903lYaCtIisRV6RwmAXLxnV5eQaI2OQ=="
+      },
+      {
+        "title": "riskweather.io",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFZPP447OcN_MbzkDiaPIi7g1tx51sPHEs1ZR8gO9Fhjxx5HycW5vJkfmxm5q0ZzSIKSOyW3_Oko2jUj3k5eWkRgY8Iegjfe6TmQiOH5aGlSNk6UH7fQ5_ESEjnx3FnFi2TOSqlV_32"
+      }
+    ]
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=00118804",
+    "summary": "공시 페이지 접근 제한"
+  }
+}

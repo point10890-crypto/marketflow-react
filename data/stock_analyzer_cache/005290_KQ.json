@@ -1,0 +1,75 @@
+{
+  "name": "동진쎄미켐",
+  "ticker": "005290.KQ",
+  "result": "데이터 없음",
+  "date": "2026-04-12 15:22:51",
+  "elapsed": 1.2,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 49500.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 49500.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "DONGJIN",
+    "sector": "Basic Materials",
+    "industry": "Chemicals",
+    "market_cap": 2545017421824,
+    "pe_ratio": null,
+    "forward_pe": 15.137614,
+    "dividend_yield": 1.31,
+    "beta": 1.504,
+    "fifty_two_week_high": 59700.0,
+    "fifty_two_week_low": 26750.0,
+    "revenue": 1194144563200,
+    "profit_margin": 0.082959995,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 309226800160
+    },
+    {
+      "date": "2025-09",
+      "value": 299907717150
+    },
+    {
+      "date": "2025-06",
+      "value": 376841102990
+    },
+    {
+      "date": "2025-03",
+      "value": 368107777990
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 31099977440
+    },
+    {
+      "date": "2025-09",
+      "value": 23607096040
+    },
+    {
+      "date": "2025-06",
+      "value": 6870618340
+    },
+    {
+      "date": "2025-03",
+      "value": 37492198060
+    }
+  ],
+  "news": []
+}
