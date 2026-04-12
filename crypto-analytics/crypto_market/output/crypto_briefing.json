@@ -1,49 +1,49 @@
 {
-  "timestamp": "2026-04-13T00:00:46.285535",
+  "timestamp": "2026-04-13T04:53:48.291158",
   "version": "1.0",
   "market_summary": {
-    "total_market_cap": 2487321042602.0,
-    "total_volume_24h": 77626572822.0,
+    "total_market_cap": 2500900092777.0,
+    "total_volume_24h": 72567693468.0,
     "btc_dominance": 56.94,
     "btc_dominance_change_24h": 0,
-    "total_market_cap_change_24h": -2.22,
+    "total_market_cap_change_24h": -3.06,
     "active_cryptocurrencies": 17656
   },
   "major_coins": {
     "BTC": {
-      "price": 70777,
-      "change_24h": -2.66,
+      "price": 71105,
+      "change_24h": -3.47,
       "change_7d": 0,
-      "volume_24h": 30423602017,
-      "market_cap": 1416863424117
+      "volume_24h": 28804763630,
+      "market_cap": 1423228429487
     },
     "ETH": {
-      "price": 2182.24,
-      "change_24h": -2.68,
+      "price": 2198.72,
+      "change_24h": -4.99,
       "change_7d": 0,
-      "volume_24h": 16121419554,
-      "market_cap": 263447016895
+      "volume_24h": 14984743991,
+      "market_cap": 265416632593
     },
     "XRP": {
-      "price": 1.32,
-      "change_24h": -1.49,
+      "price": 1.33,
+      "change_24h": -2.88,
       "change_7d": 0,
-      "volume_24h": 2046812608,
-      "market_cap": 81258298690
+      "volume_24h": 1810398866,
+      "market_cap": 81723915344
     },
     "BNB": {
-      "price": 590.18,
-      "change_24h": -2.42,
+      "price": 592.91,
+      "change_24h": -3.32,
       "change_7d": 0,
-      "volume_24h": 1028113851,
-      "market_cap": 80489210416
+      "volume_24h": 963700900,
+      "market_cap": 80838900324
     },
     "SOL": {
-      "price": 81.58,
-      "change_24h": -3.28,
+      "price": 81.98,
+      "change_24h": -4.63,
       "change_7d": 0,
-      "volume_24h": 3060215836,
-      "market_cap": 46877278510
+      "volume_24h": 2812497102,
+      "market_cap": 47119432260
     }
   },
   "top_movers": {
@@ -51,64 +51,64 @@
       {
         "symbol": "RAVE",
         "name": "RaveDAO",
-        "price": 2.91,
-        "change_24h": 39.62
+        "price": 4.63,
+        "change_24h": 117.03
       },
       {
         "symbol": "JST",
         "name": "JUST",
-        "price": 0.076253,
-        "change_24h": 9.36
+        "price": 0.079066,
+        "change_24h": 13.19
       },
       {
-        "symbol": "TON",
-        "name": "Toncoin",
-        "price": 1.46,
-        "change_24h": 4.07
+        "symbol": "SIREN",
+        "name": "Siren",
+        "price": 0.803291,
+        "change_24h": 5.56
       },
       {
-        "symbol": "FIGR_HELOC",
-        "name": "Figure Heloc",
-        "price": 1.04,
-        "change_24h": 1.81
+        "symbol": "M",
+        "name": "MemeCore",
+        "price": 2.83,
+        "change_24h": 3.45
       },
       {
         "symbol": "TRX",
         "name": "TRON",
-        "price": 0.322124,
-        "change_24h": 1.14
+        "price": 0.322589,
+        "change_24h": 0.89
       }
     ],
     "losers": [
       {
         "symbol": "DASH",
         "name": "Dash",
-        "price": 42.61,
-        "change_24h": -7.39
+        "price": 41.87,
+        "change_24h": -9.34
       },
       {
-        "symbol": "NIGHT",
-        "name": "Midnight",
-        "price": 0.03797828,
-        "change_24h": -6.78
-      },
-      {
-        "symbol": "RENDER",
-        "name": "Render",
-        "price": 1.88,
-        "change_24h": -6.38
+        "symbol": "PUMP",
+        "name": "Pump.fun",
+        "price": 0.00180248,
+        "change_24h": -8.1
       },
       {
         "symbol": "MORPHO",
         "name": "Morpho",
-        "price": 1.68,
-        "change_24h": -4.07
+        "price": 1.67,
+        "change_24h": -8.09
       },
       {
-        "symbol": "POL",
-        "name": "POL (ex-MATIC)",
-        "price": 0.082197,
-        "change_24h": -4.06
+        "symbol": "RENDER",
+        "name": "Render",
+        "price": 1.89,
+        "change_24h": -8.07
+      },
+      {
+        "symbol": "PEPE",
+        "name": "Pepe",
+        "price": 3.48e-06,
+        "change_24h": -7.22
       }
     ]
   },
@@ -126,16 +126,16 @@
   "funding_rates": {
     "BTC": {
       "symbol": "BTCUSDT",
-      "rate": -6e-06,
-      "rate_pct": -0.0006,
-      "annualized_pct": -0.69,
+      "rate": -4.1e-05,
+      "rate_pct": -0.0041,
+      "annualized_pct": -4.49,
       "sentiment": "neutral"
     },
     "ETH": {
       "symbol": "ETHUSDT",
-      "rate": -6.6e-05,
-      "rate_pct": -0.0066,
-      "annualized_pct": -7.22,
+      "rate": -4.9e-05,
+      "rate_pct": -0.0049,
+      "annualized_pct": -5.38,
       "sentiment": "neutral"
     }
   },
@@ -157,14 +157,14 @@
       "알트 breadth 붕괴 (20% > EMA50)"
     ],
     "metrics": {
-      "btc_price": 70812.8359375,
-      "btc_ema50": 70713.0466946938,
-      "btc_ema200": 83406.87919008425,
-      "btc_ema200_slope_pct_20": -3.6296837255440564,
-      "btc_volume_z_50": -0.8133513967482178,
-      "btc_atrp_14_pct": 3.1196438183585093,
+      "btc_price": 71113.5546875,
+      "btc_ema50": 70724.83958685066,
+      "btc_ema200": 83409.8714164524,
+      "btc_ema200_slope_pct_20": -3.6262264351590954,
+      "btc_volume_z_50": -0.9239252536263283,
+      "btc_atrp_14_pct": 3.111504495333286,
       "alt_breadth_above_ema50": 0.2,
-      "funding_rate": -6.32e-06,
+      "funding_rate": -4.105e-05,
       "open_interest_delta_z": null,
       "gate_score_components": {
         "trend": 12.0,
@@ -176,7 +176,7 @@
       "fear_greed_index": 16,
       "fear_greed_class": "Extreme Fear"
     },
-    "generated_at": "2026-04-13T00:00:24.487936"
+    "generated_at": "2026-04-13T04:53:23.077299"
   },
   "btc_price_history": [
     {
@@ -537,7 +537,7 @@
     },
     {
       "date": "2026-04-12",
-      "price": 70807.34375
+      "price": 71081.5859375
     }
   ],
   "sentiment_summary": {
@@ -545,7 +545,8 @@
     "factors": [
       "fear_greed: extreme_fear (bullish)",
       "funding: neutral (neutral)",
-      "dominance: btc_high (neutral)"
+      "dominance: btc_high (neutral)",
+      "momentum: strong_down (bearish)"
     ]
   }
 }
