@@ -1,0 +1,305 @@
+{
+  "stock_code": "020150",
+  "stock_name": "롯데에너지머티리얼즈",
+  "generated_at": "2026-04-12T08:25:36.525717+00:00",
+  "financials": {
+    "stock_code": "020150",
+    "corp_code": "00113997",
+    "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2016": {
+        "cash": 265.3,
+        "total_assets": 3907.7,
+        "short_debt": 103.1,
+        "long_debt": 23.9,
+        "total_liab": 960.7,
+        "total_equity": 2947.0,
+        "revenue": 3989.6,
+        "op_profit": 290.2,
+        "net_income": 393.1
+      },
+      "2017": {
+        "cash": 462.0,
+        "total_assets": 6502.8,
+        "short_debt": 75.4,
+        "long_debt": 38.0,
+        "total_liab": 1198.5,
+        "total_equity": 5304.3,
+        "revenue": 4540.4,
+        "op_profit": 495.2,
+        "net_income": 421.9
+      },
+      "2018": {
+        "cash": 531.0,
+        "total_assets": 6922.1,
+        "short_debt": 133.5,
+        "long_debt": 52.9,
+        "total_liab": 1637.9,
+        "total_equity": 5284.1,
+        "revenue": 5020.1,
+        "op_profit": 487.2,
+        "net_income": 413.1
+      },
+      "2019": {
+        "cash": 3330.0,
+        "total_assets": 10369.3,
+        "short_debt": 6.7,
+        "long_debt": 37.8,
+        "total_liab": 2214.8,
+        "total_equity": 8154.5,
+        "revenue": 5502.1,
+        "op_profit": 468.5,
+        "net_income": 468.4
+      },
+      "2020": {
+        "cash": 1366.8,
+        "total_assets": 10810.1,
+        "short_debt": 0.0,
+        "long_debt": 10.1,
+        "total_liab": 2273.8,
+        "total_equity": 8536.3,
+        "revenue": 5369.2,
+        "op_profit": 508.7,
+        "net_income": 427.3
+      },
+      "2021": {
+        "cash": 2345.8,
+        "total_assets": 17535.7,
+        "short_debt": 1.8,
+        "long_debt": 7.5,
+        "total_liab": 4042.8,
+        "total_equity": 13492.8,
+        "revenue": 6888.9,
+        "op_profit": 699.3,
+        "net_income": 627.7
+      },
+      "2022": {
+        "cash": 2006.1,
+        "total_assets": 24302.8,
+        "short_debt": 306.1,
+        "long_debt": 4.8,
+        "total_liab": 4401.9,
+        "total_equity": 19900.9,
+        "revenue": 7293.6,
+        "op_profit": 847.7,
+        "net_income": 489.9
+      },
+      "2023": {
+        "total_assets": 23922.5,
+        "cash": 5519.9,
+        "total_equity": 19658.3,
+        "short_debt": 1458.3,
+        "total_liab": 4264.1,
+        "long_debt": 56.5,
+        "op_profit": 118.1,
+        "net_income": 0.0,
+        "revenue": 8090.1
+      },
+      "2024": {
+        "total_assets": 22820.2,
+        "cash": 4186.2,
+        "total_equity": 19019.6,
+        "short_debt": 180.0,
+        "total_liab": 3800.7,
+        "long_debt": 1068.3,
+        "op_profit": -644.4,
+        "net_income": 0.0,
+        "revenue": 9022.5
+      },
+      "2025": {
+        "total_assets": 22086.8,
+        "cash": 1050.6,
+        "total_equity": 17934.6,
+        "short_debt": 185.0,
+        "total_liab": 4152.2,
+        "long_debt": 628.5,
+        "net_income": 0.0,
+        "revenue": 6775.3
+      }
+    },
+    "missing_years": [
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2016,
+        "revenue_eok": 3990,
+        "op_profit_eok": 290,
+        "net_income_eok": 393,
+        "roe_pct": 13.34,
+        "op_margin_pct": 7.27,
+        "debt_ratio_pct": 32.61
+      },
+      {
+        "year": 2017,
+        "revenue_eok": 4540,
+        "op_profit_eok": 495,
+        "net_income_eok": 422,
+        "roe_pct": 7.96,
+        "op_margin_pct": 10.9,
+        "debt_ratio_pct": 22.59
+      },
+      {
+        "year": 2018,
+        "revenue_eok": 5020,
+        "op_profit_eok": 487,
+        "net_income_eok": 413,
+        "roe_pct": 7.82,
+        "op_margin_pct": 9.7,
+        "debt_ratio_pct": 31.0
+      },
+      {
+        "year": 2019,
+        "revenue_eok": 5502,
+        "op_profit_eok": 468,
+        "net_income_eok": 468,
+        "roe_pct": 5.74,
+        "op_margin_pct": 8.51,
+        "debt_ratio_pct": 27.16
+      },
+      {
+        "year": 2020,
+        "revenue_eok": 5369,
+        "op_profit_eok": 509,
+        "net_income_eok": 427,
+        "roe_pct": 5.0,
+        "op_margin_pct": 9.48,
+        "debt_ratio_pct": 26.64
+      },
+      {
+        "year": 2021,
+        "revenue_eok": 6889,
+        "op_profit_eok": 699,
+        "net_income_eok": 628,
+        "roe_pct": 4.65,
+        "op_margin_pct": 10.15,
+        "debt_ratio_pct": 29.96
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 7294,
+        "op_profit_eok": 848,
+        "net_income_eok": 490,
+        "roe_pct": 2.46,
+        "op_margin_pct": 11.63,
+        "debt_ratio_pct": 22.12
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 8090,
+        "op_profit_eok": 118,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 1.46,
+        "debt_ratio_pct": 21.69
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 9022,
+        "op_profit_eok": -644,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": -7.14,
+        "debt_ratio_pct": 19.98
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 6775,
+        "op_profit_eok": 0,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 0.0,
+        "debt_ratio_pct": 23.15
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": 6.01,
+      "op_profit_cagr_pct": -100.0,
+      "best_year": 2022,
+      "worst_year": 2024,
+      "avg_roe_pct": 4.7
+    },
+    "valuation": {
+      "grade": "D",
+      "strengths": [
+        "2016년부터 2022년까지 꾸준한 매출액 성장세를 보였습니다.",
+        "전반적으로 낮은 부채비율을 유지하여 재무 건전성이 양호합니다.",
+        "2023년 현금 보유액이 일시적으로 크게 증가했습니다."
+      ],
+      "risks": [
+        "2023년부터 영업이익이 급감하고 2024년에는 영업손실을 기록하는 등 수익성이 크게 악화되었습니다.",
+        "2023년부터 당기순이익이 발생하지 않아 기업의 본질적인 가치 창출 능력이 상실되었습니다.",
+        "2025년 매출액이 급격히 감소할 것으로 예상되어 향후 성장 동력에 대한 우려가 큽니다."
+      ],
+      "one_liner": "과거 성장세를 뒤로하고 최근 급격한 수익성 악화와 성장 동력 상실이 우려되는 기업입니다."
+    }
+  },
+  "dcf": {
+    "text": "## 퀀트 애널리스트 보고서: 롯데에너지머티리얼즈 (020150) DCF 적정가치 분석\n\n제공된 데이터를 바탕으로 롯데에너지머티리얼즈의 DCF(Discounted Cash Flow) 적정가치를 계산하고, WACC와 영구성장률(g)에 대한 민감도 분석을 수행했습니다.\n\n### 1. 기본 시나리오 DCF 적정가치 계산\n\n**가정:**\n*   기준 연도: 2025\n*   매출액: 6775억원\n*   영업이익: 0억원\n*   감가상각: 매출액의 10%\n*   CAPEX: 매출액의 5%\n*   세율: 25% (FCF 공식의 `(1 - 0.25)`에서 유추)\n*   WACC (가중평균자본비용): 9%\n*   영구성장률 (g): 2%\n*   예측 기간: 5년 (2025년 ~ 2029년)\n*   FCF는 예측 기간 동안 영구성장률(g)과 동일하게 성장한다고 가정합니다.\n\n**FCF 계산:**\n*   2025년 감가상각 = 6775억원 * 10% = 677.5억원\n*   2025년 CAPEX = 6775억원 * 5% = 338.75억원\n*   2025년 FCF = 영업이익 * (1 - 세율) + 감가상각 - CAPEX\n    = 0 * (1 - 0.25) + 677.5 - 338.75\n    = 338.75억원\n\n위 FCF를 바탕으로 5년간의 FCF를 영구성장률(g=2%)로 성장시키고, WACC(9%)로 할인하여 적정가치를 산출합니다.\n\n\n기본 시나리오에 따른 롯데에너지머티리얼즈의 DCF 적정가치는 **4839.29억원**으로 계산되었습니다.\n\n### 2. WACC x g 민감도 그리드 출력\n\nWACC(7/8/9/10/11%)와 영구성장률 g(1/2/3%)의 변화에 따른 적정가치 민감도 분석 결과는 다음과 같습니다.\n\n\n### 3. 요약\n\n*   **적정가치(기본): 4839.29억원**\n\n민감도 분석 결과, WACC가 낮아지고 영구성장률(g)이 높아질수록 적정가치는 상승하는 경향을 보입니다. 특히, WACC와 g의 차이가 줄어들수록 적정가치는 크게 증가합니다. (예: WACC=7%, g=3%일 때 8468.75억원) 반대로 WACC가 높아지고 g가 낮아질수록 적정가치는 감소합니다. (예: WACC=11%, g=1%일 때 3387.50억원)",
+    "executed_code": "import pandas as pd\n\n# --- Input Data ---\nrevenue = 6775  # 억원\noperating_income = 0  # 억원\n\n# --- Assumptions ---\ndepreciation_rate = 0.10  # 10% of Revenue\ncapex_rate = 0.05  # 5% of Revenue\ntax_rate = 0.25  # From (1 - 0.25) in FCF formula\nforecast_years = 5\n\n# Base Scenario\nwacc_base = 0.09\ng_base = 0.02\n\n# --- DCF Calculation Function ---\ndef calculate_dcf(wacc, g, revenue, operating_income, depreciation_rate, capex_rate, tax_rate, forecast_years):\n    if wacc <= g:\n        return float('inf') # Or handle as an error/undefined\n\n    # 1. Calculate FCF for the base year (2025)\n    depreciation_2025 = revenue * depreciation_rate\n    capex_2025 = revenue * capex_rate\n    # FCF = Operating Income * (1 - Tax Rate) + Depreciation - CAPEX\n    fcf_2025 = operating_income * (1 - tax_rate) + depreciation_2025 - capex_2025\n\n    # 2. Project FCF for the forecast period (5 years)\n    fcf_forecast = []\n    current_fcf = fcf_2025\n    for i in range(forecast_years):\n        fcf_forecast.append(current_fcf)\n        current_fcf *= (1 + g) # FCF grows at 'g' during the explicit forecast period\n\n    # 3. Calculate Present Value of FCFs\n    pv_fcf_sum = 0\n    for i in range(forecast_years):\n        pv_fcf_sum += fcf_forecast[i] / ((1 + wacc)**(i + 1))\n\n    # 4. Calculate Terminal Value (TV)\n    # FCF for the year after the forecast period (Year 6, 2030)\n    fcf_terminal_year_start = fcf_forecast[-1] * (1 + g)\n    tv = fcf_terminal_year_start / (wacc - g)\n\n    # 5. Calculate Present Value of TV\n    pv_tv = tv / ((1 + wacc)**forecast_years)\n\n    # 6. Total DCF Value\n    dcf_value = pv_fcf_sum + pv_tv\n    return dcf_value\n\n# --- 1. Basic Scenario DCF Calculation ---\nbase_dcf_value = calculate_dcf(wacc_base, g_base, revenue, operating_income,\n                               depreciation_rate, capex_rate, tax_rate, forecast_years)\n\nprint(f\"--- 1. 기본 시나리오 DCF 적정가치 ---\")\nprint(f\"적정가치(기본): {base_dcf_value:.2f}억원\")\n\n\nimport pandas as pd\n\n# --- Input Data ---\nrevenue = 6775  # 억원\noperating_income = 0  # 억원\n\n# --- Assumptions ---\ndepreciation_rate = 0.10  # 10% of Revenue\ncapex_rate = 0.05  # 5% of Revenue\ntax_rate = 0.25  # From (1 - 0.25) in FCF formula\nforecast_years = 5\n\n# Base Scenario\nwacc_base = 0.09\ng_base = 0.02\n\n# --- DCF Calculation Function ---\ndef calculate_dcf(wacc, g, revenue, operating_income, depreciation_rate, capex_rate, tax_rate, forecast_years):\n    if wacc <= g:\n        return float('inf') # Or handle as an error/undefined\n\n    # 1. Calculate FCF for the base year (2025)\n    depreciation_2025 = revenue * depreciation_rate\n    capex_2025 = revenue * capex_rate\n    # FCF = Operating Income * (1 - Tax Rate) + Depreciation - CAPEX\n    fcf_2025 = operating_income * (1 - tax_rate) + depreciation_2025 - capex_2025\n\n    # 2. Project FCF for the forecast period (5 years)\n    fcf_forecast = []\n    current_fcf = fcf_2025\n    for i in range(forecast_years):\n        fcf_forecast.append(current_fcf)\n        current_fcf *= (1 + g) # FCF grows at 'g' during the explicit forecast period\n\n    # 3. Calculate Present Value of FCFs\n    pv_fcf_sum = 0\n    for i in range(forecast_years):\n        pv_fcf_sum += fcf_forecast[i] / ((1 + wacc)**(i + 1))\n\n    # 4. Calculate Terminal Value (TV)\n    # FCF for the year after the forecast period (Year 6, 2030)\n    fcf_terminal_year_start = fcf_forecast[-1] * (1 + g)\n    tv = fcf_terminal_year_start / (wacc - g)\n\n    # 5. Calculate Present Value of TV\n    pv_tv = tv / ((1 + wacc)**forecast_years)\n\n    # 6. Total DCF Value\n    dcf_value = pv_fcf_sum + pv_tv\n    return dcf_value\n\n# --- 1. Basic Scenario DCF Calculation ---\nbase_dcf_value = calculate_dcf(wacc_base, g_base, revenue, operating_income,\n                               depreciation_rate, capex_rate, tax_rate, forecast_years)\n\n\n# --- 2. Sensitivity Grid Calculation ---\nwacc_values = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_values = [0.01, 0.02, 0.03]\n\nsensitivity_results = pd.DataFrame(index=[f'g={g*100:.0f}%' for g in g_values],\n                                   columns=[f'WACC={wacc*100:.0f}%' for wacc in wacc_values])\n\nfor g_val in g_values:\n    for wacc_val in wacc_values:\n        if wacc_val <= g_val:\n            sensitivity_results.loc[f'g={g_val*100:.0f}%', f'WACC={wacc_val*100:.0f}%'] = \"N/A (WACC <= g)\"\n        else:\n            dcf = calculate_dcf(wacc_val, g_val, revenue, operating_income,\n                                depreciation_rate, capex_rate, tax_rate, forecast_years)\n            sensitivity_results.loc[f'g={g_val*100:.0f}%', f'WACC={wacc_val*100:.0f}%'] = f\"{dcf:.2f}\"\n\nprint(\"\\n--- 2. WACC x g 민감도 그리드 (적정가치, 억원) ---\")\nprint(sensitivity_results)\n\n# --- 3. Final Summary Output ---\nprint(f\"\\n적정가치(기본): {base_dcf_value:.2f}억원\")",
+    "code_output": "--- 1. 기본 시나리오 DCF 적정가치 ---\n적정가치(기본): 4839.29억원\n\n\n--- 2. WACC x g 민감도 그리드 (적정가치, 억원) ---\n      WACC=7%  WACC=8%  WACC=9% WACC=10% WACC=11%\ng=1%  5645.83  4839.29  4234.37  3763.89  3387.50\ng=2%  6775.00  5645.83  4839.29  4234.37  3763.89\ng=3%  8468.75  6775.00  5645.83  4839.29  4234.37\n\n적정가치(기본): 4839.29억원"
+  },
+  "news": {
+    "text": "## 롯데에너지머티리얼즈(020150) 투자 분석: 관망\n\n### 1. 재무 데이터 스토리와 현재 시장 컨센서스의 일치/불일치\n\n제공된 10년 재무제표 분석 결과, 롯데에너지머티리얼즈는 \"과거 성장세를 뒤로하고 최근 급격한 수익성 악화와 성장 동력 상실이 우려되는 기업\"으로 평가되었습니다. 이는 2025년 4분기 실적에서 매출액 감소 및 영업손실 지속(적자 확대)으로 명확히 확인됩니다. 2025년 전체 영업손실은 1,452억 원으로 적자 폭이 크게 확대되었으며, 낮은 가동률(4분기 45% 수준)로 인한 고정비 부담이 적자의 주요 원인으로 지목됩니다. 특히 전기차 시장 둔화와 북미 보조금 정책 폐지 등이 EV(전기차)향 판매 감소 및 가동률 하락에 영향을 미쳤습니다.\n\n그러나 현재 시장 컨센서스는 이러한 과거 실적 부진을 인지하면서도, 미래 성장 동력에 대한 기대감이 큽니다. NH투자증권은 2026년 동박 판매량이 전년 대비 31% 증가할 것으로 예상하며, 특히 ESS(에너지저장장치) 판매는 140%, AI용 고부가 회로박 판매는 96% 증가하며 성장을 주도할 것으로 전망했습니다. 익산공장을 2027년까지 AI용 고부가가치 회로 기판 라인으로 100% 전환하고 관련 매출액이 약 2.6배 이상 성장할 것으로 기대하고 있습니다. 유진투자증권, SK증권 등 다수의 증권사 또한 AI 회로박과 전고체 소재에 대한 기대를 표명하며 '매수' 의견을 제시하고 있습니다. 전반적인 시장 컨센서스 등급은 '매수'에 가깝습니다 (2.13).\n\n**결론적으로, 재무 데이터가 보여주는 과거의 수익성 악화 및 성장 동력 상실 우려와 현재 시장 컨센서스가 제시하는 미래 성장 동력 확보에 대한 기대감 사이에는 일부 불일치(과거 부진 vs. 미래 기대)가 존재합니다.**\n\n### 2. 재무제표에서 드러나지 않는 리스크 또는 호재\n\n**리스크:**\n*   **전기차 시장 둔화 장기화:** 북미 전기차 보조금 정책 폐지 및 전반적인 전기차 수요 둔화가 EV향 동박 판매량 감소와 가동률 하락의 주요 원인이며, 이는 단기적인 실적 개선에 지속적인 부담으로 작용할 수 있습니다.\n*   **공장 전환 비용 및 시간:** 익산공장 전지박 생산라인을 말레이시아로 이관하는 과정에서 발생하는 비용이 수익성 전망치를 일부 하향 조정하는 요인이 되었으며, 익산공장의 회로박 라인 100% 전환이 2027년까지 계획되어 있어 단기적인 전환 비용 및 생산 차질 리스크가 존재합니다.\n\n**호재:**\n*   **AI용 고부가 회로박 시장 성장 및 선점:** AI 데이터센터 투자 확대에 따른 AI용 고부가 회로박 수요 확대는 강력한 호재입니다. 롯데에너지머티리얼즈는 익산공장 전환을 통해 AI용 네트워크 회로 기판 공급을 확대하며 관련 매출액이 크게 성장할 것으로 기대됩니다. 특히 AI 서버에 탑재되는 MLB 기판 및 CCL 성장에 따른 쇼티지 가능성과 AI 밸류체인의 탈중국 수혜가 기대됩니다.\n*   **ESS 시장 확대:** 국내외 배터리 고객사들의 ESS 사업 확대와 북미 지역에서의 ESS향 동박 출하량 증가가 기대되며, 2026년 하반기 북미 OEM ESS향 공급이 예상됩니다.\n*   **신사업 포트폴리오 다각화:** 전고체 배터리용 고체 전해질 사업과 LFP 양극재 사업 추진은 장기적인 성장 동력을 확보하는 중요한 호재입니다. 전고체 전해질 파일럿 라인 가동 및 증설 계획, LFP 양극재 파일럿 라인 완공 예정 등이 구체적으로 제시되고 있습니다.\n*   **북미향 판매 본격화:** 2026년 2분기부터 북미향 판매가 본격화될 전망이며, 신규 고객 확보 여부도 2026년 1분기 내 최종 확인 가능할 것으로 보입니다.\n\n### 3. 최종 판정\n\n**관망**\n\n**판정 근거:**\n롯데에너지머티리얼즈는 과거 재무 실적의 부진에도 불구하고, AI용 고부가 회로박 및 ESS 시장 성장이라는 새로운 성장 동력으로의 사업 포트폴리오 전환이 가시화되고 있어 긍정적인 미래 성장 잠재력을 보여줍니다. 애널리스트들의 목표주가 상향 및 '매수' 의견 유지 또한 이러한 기대를 반영합니다.\n\n그러나 전기차 시장 둔화의 장기화 가능성과 익산공장 전환에 따른 단기적인 비용 및 생산 차질, 말레이시아 공장 가동률의 불확실성 등 리스크 요인 또한 존재합니다. 현재 주가에 상당 부분 미래 기대감이 반영되어 있을 수 있으므로, 단기적인 변동성을 고려하여 신중한 접근이 필요합니다. 2026년 하반기로 예상되는 턴어라운드 시점까지는 관망하며, AI용 회로박 및 ESS 사업의 실제적인 매출 성장과 수익성 개선 추이를 지켜보는 것이 합리적이라고 판단됩니다.",
+    "citations": [
+      {
+        "title": "chosun.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGSDt6qD2aUYzsw1cxFqV2n1m40CzLGS_paXz2g9Nyy0d5PZ-HBY9WGmY08ogZKn2unv7GST184UiKA0A7iw_DqsEu9zw9U4K_7TNF9gFVYktXFN2V7616vLFe7N3nVVe7GskznJeoD9sPnCdyNTbFcMnN0-gWv-UlLnv5oOcED-E-MZYPeN9DEdg=="
+      },
+      {
+        "title": "mt.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFKmAORWHaIsSlJ8LLdwy5FEkPkw7Id4ym0ALE6kEVcavQk8vW1f8wTZ8swNTMHTE9EYGFtvtL1M6wUMa5Y-h7Acy0CUsiFFxJE42FcC2rBpp_9YOjEeRV9JWdSoIwz17eGOiAh1zvQBrrtmYJNxBxyXU0mDHstbA=="
+      },
+      {
+        "title": "dailyinvest.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEhwo6fm6wPgHUHbUKbh0PyQwEeT6R3F8S6CGW6wdlhK3sxLg8w7D1hXW1bUUfL1HxoyQdnTkeJIYpFIBixMHcMwdpGlUlcIatIpWo7KmMgCABk_Mpy6Yyhd8eH-Bq5nQBsQXiHnKio8VF8pCOGVAvaaQfFuV9A"
+      },
+      {
+        "title": "edaily.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFGDyEg7YTKNwpCh7vvXJaREa4ybyzgUCJhd5xeHGt2nnO6rzvyYkh4KIGVls929iJa4Jg5alKTnw1k6bdcdEB4PdVlHY67DdRDT2IN-qVu1kh0OFmKM6q6e0jtAqDVZZIO-8xm3IXQ-cXgjhYOtecwlNm_xnyFnGt0ABuP"
+      },
+      {
+        "title": "edaily.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEC_ZMJvpDpR79QUroEXr4DRi3pv9_zkHfpu2G8Fko6lUHjxDLUJmNwmZFFNcWnFw775iqTnAdi5rPB9IvA6U8v16sK1AuVqUiwWEx2QjQzJRew6lhF3ZPYdfqiHzpqxT-bTIMM8KsW9E46j6Xa2bQjcnTGauKLazoRU2T6"
+      },
+      {
+        "title": "kiwoom.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEQW5FmbIpnh0wWjW3tgE9TW0uZvMoyW6o3wJaecnwSvASosN43otPOzuIAUpdKsa17WDAR1aUHbkGChCkv-DGOkZVtwBW_yC2bG-4mw96vXkvp5yZrgDtTy3Uy"
+      },
+      {
+        "title": "einfomax.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEEAiBn476d3mgHSWxyH7GyhN5YopdrsIRYKwXdpGPULkoqonF5hZkCt20R_iWRZ1vdgPlkPqTaUJv-oCt13VyAt8sC3zluUvH1WnRpQXLcvlZaD2FiNZk3qlXp90F-pG3xLHrZp6qytAU0ypguk_A1NVinQKDPr6ZHdg=="
+      },
+      {
+        "title": "ibks.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQH0z8d7BFq9ohMhcn0sRemb3-W7eBYuC121wsW54mJ9aRWr2pANGG9HaLFeY5YOMWijt-nTW_5JISiedf-2-FvMQ0Y6dayuQdxk8maixKjNaWQVWrOHamLEeQmNrO1G9E74_EiEXyp0MP4bNWgBwk8zzVNmj8WShBCmz5HySn9KTlbz3lxBl-UDOEKwdO24NS4S8A=="
+      },
+      {
+        "title": "hankyung.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQH0fjdER20QZdRdR5JCyNpciVepnrmvVsASOUEBC-haLZlTqM1EHXPrvDldMLYpFRwmFFjAnFVzr9cXwPzKHyLC9hs5KAeo0jxBWZK40v2pan7ezRuo6ZG_VvLLZz9QCnmikXx5NOQ9Se10nQ4alg=="
+      },
+      {
+        "title": "hankyung.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHirwf1uyZKnE_nFarelvQ0wMZOZsBneqtrVajyLqlwDSS-FmFz55Fv0qLCRk0dudPyyvBSiLJIze5PAnJTZm_Ncb2zsg-EgsfE0yIAycXXYoIeYQPTDwfPTqPoGC3h9sfbWfy3"
+      }
+    ]
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=00113997",
+    "summary": "공시 페이지 접근 제한"
+  }
+}

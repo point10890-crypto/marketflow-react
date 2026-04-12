@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generated_at": "2026-04-12T16:11:51.826896",
+    "generated_at": "2026-04-12T20:01:03.794151",
     "market": "CRYPTO",
     "gate": "RED",
     "gate_score": 0,
@@ -13,7 +13,7 @@
       "market": "CRYPTO",
       "price": 0.3246,
       "composite": {
-        "composite_score": 60,
+        "composite_score": 61,
         "rating": "Good Setup",
         "entry_ready": false
       },
@@ -29,11 +29,11 @@
       },
       "volume_pattern": {
         "score": 4.0,
-        "dry_up_ratio": 0.24
+        "dry_up_ratio": 0.46
       },
       "pivot_proximity": {
-        "score": 75.0,
-        "distance_from_pivot_pct": -1.42,
+        "score": 81.0,
+        "distance_from_pivot_pct": -0.96,
         "trade_status": "APPROACHING"
       },
       "relative_strength": {
@@ -75,7 +75,7 @@
       },
       "volume_pattern": {
         "score": 4.0,
-        "dry_up_ratio": 0.74
+        "dry_up_ratio": 1.08
       },
       "pivot_proximity": {
         "score": 91.0,
@@ -100,58 +100,12 @@
       "ml_win_prob": null
     },
     {
-      "symbol": "BARD/USDT",
-      "name": "BARD",
-      "market": "CRYPTO",
-      "price": 0.34,
-      "composite": {
-        "composite_score": 44,
-        "rating": "Developing",
-        "entry_ready": false
-      },
-      "trend_template": {
-        "score": 21.6,
-        "passed": false
-      },
-      "vcp_pattern": {
-        "score": 81.2,
-        "valid_vcp": true,
-        "num_contractions": 3,
-        "pivot_price": 0.34
-      },
-      "volume_pattern": {
-        "score": 4.0,
-        "dry_up_ratio": 1.36
-      },
-      "pivot_proximity": {
-        "score": 54.0,
-        "distance_from_pivot_pct": -1.62,
-        "trade_status": "APPROACHING"
-      },
-      "relative_strength": {
-        "score": 50,
-        "rs_rank_estimate": null
-      },
-      "stage": {
-        "stage": 1,
-        "stage_label": "Stage 1 - Accumulation"
-      },
-      "timeframe": "4h",
-      "signal_type": "APPROACHING",
-      "liquidity_bucket": "B",
-      "market_regime": "BTC_UP|B",
-      "c1": 20.0,
-      "c2": 6.9,
-      "c3": 4.6,
-      "ml_win_prob": null
-    },
-    {
       "symbol": "BTC/USDT",
       "name": "BTC",
       "market": "CRYPTO",
       "price": 69310.0,
       "composite": {
-        "composite_score": 39,
+        "composite_score": 38,
         "rating": "Developing",
         "entry_ready": false
       },
@@ -166,12 +120,12 @@
         "pivot_price": 69310.0
       },
       "volume_pattern": {
-        "score": 26.0,
-        "dry_up_ratio": 0.35
+        "score": 24.4,
+        "dry_up_ratio": 0.46
       },
       "pivot_proximity": {
         "score": 45.0,
-        "distance_from_pivot_pct": 3.37,
+        "distance_from_pivot_pct": 3.1,
         "trade_status": "BREAKOUT"
       },
       "relative_strength": {
@@ -206,18 +160,18 @@
         "passed": false
       },
       "vcp_pattern": {
-        "score": 73.8,
+        "score": 73.5,
         "valid_vcp": true,
         "num_contractions": 3,
         "pivot_price": 3.53e-06
       },
       "volume_pattern": {
         "score": 4.0,
-        "dry_up_ratio": 0.48
+        "dry_up_ratio": 0.56
       },
       "pivot_proximity": {
         "score": 31.0,
-        "distance_from_pivot_pct": -0.57,
+        "distance_from_pivot_pct": -1.13,
         "trade_status": "APPROACHING"
       },
       "relative_strength": {
@@ -252,18 +206,18 @@
         "passed": false
       },
       "vcp_pattern": {
-        "score": 60.5,
+        "score": 60.2,
         "valid_vcp": true,
         "num_contractions": 3,
         "pivot_price": 0.0969
       },
       "volume_pattern": {
-        "score": 18.8,
-        "dry_up_ratio": 0.43
+        "score": 21.2,
+        "dry_up_ratio": 0.59
       },
       "pivot_proximity": {
         "score": 18.0,
-        "distance_from_pivot_pct": 14.45,
+        "distance_from_pivot_pct": 14.04,
         "trade_status": "BREAKOUT"
       },
       "relative_strength": {
@@ -286,11 +240,11 @@
   ],
   "summary": {
     "total_screened": 50,
-    "setups_4h": 7,
-    "setups_1d": 17,
-    "signals_4h": 1,
+    "setups_4h": 4,
+    "setups_1d": 18,
+    "signals_4h": 0,
     "signals_1d": 5,
-    "vcp_found": 6,
+    "vcp_found": 5,
     "entry_ready": 0,
     "published": 0
   }

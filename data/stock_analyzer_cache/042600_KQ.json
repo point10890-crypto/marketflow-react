@@ -1,35 +1,35 @@
 {
-  "name": "모나리자",
-  "ticker": "012690.KS",
+  "name": "새로닉스",
+  "ticker": "042600.KQ",
   "result": "데이터 없음",
-  "date": "2026-04-12 18:20:10",
-  "elapsed": 1.3,
+  "date": "2026-04-12 17:19:50",
+  "elapsed": 2.4,
   "consensus_score": null,
   "analyst_count": 0,
   "recommendation_detail": null,
   "recommendation_period": null,
   "price_targets": {
-    "current": 2255.0,
+    "current": 21300.0,
     "high": null,
     "low": null,
     "mean": null,
     "median": null
   },
-  "current_price": 2255.0,
+  "current_price": 21300.0,
   "upside_potential": null,
   "key_stats": {
-    "name": "Monalisa",
-    "sector": "Consumer Defensive",
-    "industry": "Household & Personal Products",
-    "market_cap": 82444550144,
+    "name": "SERONICS",
+    "sector": "Technology",
+    "industry": "Electronic Components",
+    "market_cap": 260532420608,
     "pe_ratio": null,
     "forward_pe": null,
-    "dividend_yield": 2.22,
-    "beta": 1.034,
-    "fifty_two_week_high": 3165.0,
-    "fifty_two_week_low": 1938.0,
-    "revenue": 109074243584,
-    "profit_margin": -0.007900001,
+    "dividend_yield": null,
+    "beta": 0.637,
+    "fifty_two_week_high": 22100.0,
+    "fifty_two_week_low": 6540.0,
+    "revenue": 164947820544,
+    "profit_margin": -0.19127001,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
@@ -38,37 +38,37 @@
   "revenue_quarters": [
     {
       "date": "2025-12",
-      "value": 31560630720
+      "value": 34473614540
     },
     {
       "date": "2025-09",
-      "value": 30979794390
+      "value": 40036483240
     },
     {
       "date": "2025-06",
-      "value": 29822247560
+      "value": 39503226240
     },
     {
       "date": "2025-03",
-      "value": 31658542660
+      "value": 50934498790
     }
   ],
   "net_income_quarters": [
     {
       "date": "2025-12",
-      "value": 1081920590
+      "value": 19883092630
     },
     {
       "date": "2025-09",
-      "value": 118079210
+      "value": -12763788710
     },
     {
       "date": "2025-06",
-      "value": 458429770
+      "value": -21627993920
     },
     {
       "date": "2025-03",
-      "value": -161016640
+      "value": -17041023850
     }
   ],
   "news": []

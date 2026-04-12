@@ -1,0 +1,89 @@
+{
+  "name": "롯데에너지머티리얼즈",
+  "ticker": "020150.KS",
+  "result": "매수",
+  "date": "2026-04-12 17:25:34",
+  "elapsed": 2.3,
+  "consensus_score": 3.8,
+  "analyst_count": 10,
+  "recommendation_detail": {
+    "strongBuy": 2,
+    "buy": 5,
+    "hold": 2,
+    "sell": 1,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 49150.0,
+    "high": 65000.0,
+    "low": 20000.0,
+    "mean": 47450.0,
+    "median": 50000.0
+  },
+  "current_price": 49150.0,
+  "upside_potential": -3.5,
+  "key_stats": {
+    "name": "LOTTE ENERGY MATERIALS Corp",
+    "sector": "Industrials",
+    "industry": "Electrical Equipment & Parts",
+    "market_cap": 2573762560000,
+    "pe_ratio": null,
+    "forward_pe": 80.34795,
+    "dividend_yield": null,
+    "beta": 1.015,
+    "fifty_two_week_high": 50500.0,
+    "fifty_two_week_low": 19460.0,
+    "revenue": 677530828800,
+    "profit_margin": -0.23253,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "롯데에너지머티리얼즈(020150.KS)에 대한 애널리스트 컨센서스는 10명 참여 기준 '매수' 의견(3.8/5.0)입니다. 목표가 평균은 47,450원으로 현재가(49,150 KRW) 대비 -3.5% 하락 여력이 있습니다. 투자 판단은 제시된 정보를 바탕으로 투자자 본인이 결정해야 합니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 170904016900
+    },
+    {
+      "date": "2025-09",
+      "value": 143705956170
+    },
+    {
+      "date": "2025-06",
+      "value": 204945979310
+    },
+    {
+      "date": "2025-03",
+      "value": 157974854210
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": -37198148870
+    },
+    {
+      "date": "2025-09",
+      "value": -25360857660
+    },
+    {
+      "date": "2025-06",
+      "value": -48242250000
+    },
+    {
+      "date": "2025-03",
+      "value": -46746186660
+    }
+  ],
+  "news": [
+    {
+      "title": "Lotte Chemical Corp (XKRX:011170) Q3 2025 Earnings Call Highlights: Navigating Challenges with ...",
+      "summary": "Lotte Chemical Corp (XKRX:011170) reports narrowing losses and strategic advancements amid a challenging market environment in Q3 2025.",
+      "url": "https://finance.yahoo.com/news/lotte-chemical-corp-xkrx-011170-130253164.html",
+      "provider": "GuruFocus.com",
+      "pub_time": "2025-11-12T13:02:53Z"
+    }
+  ]
+}

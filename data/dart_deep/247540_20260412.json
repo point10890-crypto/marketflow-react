@@ -1,0 +1,253 @@
+{
+  "stock_code": "247540",
+  "stock_name": "에코프로비엠",
+  "generated_at": "2026-04-12T10:12:16.138022+00:00",
+  "financials": {
+    "stock_code": "247540",
+    "corp_code": "01160363",
+    "years": [
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2018": {
+        "cash": 95.5,
+        "total_assets": 4644.5,
+        "short_debt": 801.6,
+        "long_debt": 898.5,
+        "total_liab": 3039.1,
+        "total_equity": 1605.5,
+        "revenue": 5891.9,
+        "op_profit": 502.8,
+        "net_income": 368.6
+      },
+      "2019": {
+        "cash": 201.1,
+        "total_assets": 6503.6,
+        "short_debt": 557.4,
+        "long_debt": 1323.0,
+        "total_liab": 2801.5,
+        "total_equity": 3702.1,
+        "revenue": 6160.9,
+        "op_profit": 370.8,
+        "net_income": 0.0
+      },
+      "2020": {
+        "cash": 592.3,
+        "total_assets": 7989.9,
+        "short_debt": 600.4,
+        "long_debt": 1242.6,
+        "total_liab": 3316.7,
+        "revenue": 8547.5,
+        "op_profit": 547.7,
+        "net_income": 0.0
+      },
+      "2021": {
+        "cash": 1046.5,
+        "total_assets": 14258.6,
+        "short_debt": 2650.0,
+        "long_debt": 1934.8,
+        "total_liab": 8297.1,
+        "total_equity": 5961.5,
+        "revenue": 14856.3,
+        "op_profit": 1150.3,
+        "net_income": 1008.4
+      },
+      "2022": {
+        "cash": 3203.6,
+        "total_assets": 33741.7,
+        "short_debt": 3777.6,
+        "long_debt": 3133.3,
+        "total_liab": 18859.5,
+        "total_equity": 14882.2,
+        "revenue": 53576.1,
+        "op_profit": 3806.8,
+        "net_income": 2726.5
+      },
+      "2023": {
+        "total_assets": 43617.7,
+        "cash": 5126.6,
+        "total_equity": 15993.9,
+        "short_debt": 10729.0,
+        "total_liab": 27623.8,
+        "long_debt": 5924.3,
+        "op_profit": 1560.3,
+        "net_income": -87.3,
+        "revenue": 69008.7
+      },
+      "2024": {
+        "total_assets": 43236.6,
+        "cash": 4991.9,
+        "total_equity": 8774.5,
+        "short_debt": 7692.2,
+        "total_liab": 23466.4,
+        "long_debt": 10250.4,
+        "op_profit": -341.1,
+        "net_income": 380.0,
+        "revenue": 27668.4
+      },
+      "2025": {
+        "total_assets": 48820.2,
+        "cash": 5185.5,
+        "total_equity": 8774.5,
+        "short_debt": 8633.1,
+        "total_liab": 28660.1,
+        "long_debt": 9083.6,
+        "op_profit": 1433.1,
+        "net_income": 393.7,
+        "revenue": 25315.8
+      }
+    },
+    "missing_years": [
+      2016,
+      2017,
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2018,
+        "revenue_eok": 5892,
+        "op_profit_eok": 503,
+        "net_income_eok": 369,
+        "roe_pct": 22.98,
+        "op_margin_pct": 8.54,
+        "debt_ratio_pct": 189.23
+      },
+      {
+        "year": 2019,
+        "revenue_eok": 6161,
+        "op_profit_eok": 371,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 6.02,
+        "debt_ratio_pct": 75.69
+      },
+      {
+        "year": 2020,
+        "revenue_eok": 8548,
+        "op_profit_eok": 548,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 6.41,
+        "debt_ratio_pct": 0.0
+      },
+      {
+        "year": 2021,
+        "revenue_eok": 14856,
+        "op_profit_eok": 1150,
+        "net_income_eok": 1008,
+        "roe_pct": 16.91,
+        "op_margin_pct": 7.74,
+        "debt_ratio_pct": 139.16
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 53576,
+        "op_profit_eok": 3807,
+        "net_income_eok": 2726,
+        "roe_pct": 18.31,
+        "op_margin_pct": 7.11,
+        "debt_ratio_pct": 126.73
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 69009,
+        "op_profit_eok": 1560,
+        "net_income_eok": -87,
+        "roe_pct": -0.54,
+        "op_margin_pct": 2.26,
+        "debt_ratio_pct": 172.71
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 27668,
+        "op_profit_eok": -341,
+        "net_income_eok": 380,
+        "roe_pct": 4.33,
+        "op_margin_pct": -1.23,
+        "debt_ratio_pct": 267.45
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 25316,
+        "op_profit_eok": 1433,
+        "net_income_eok": 394,
+        "roe_pct": 4.49,
+        "op_margin_pct": 5.66,
+        "debt_ratio_pct": 326.65
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": 23.08,
+      "op_profit_cagr_pct": 16.01,
+      "best_year": 2022,
+      "worst_year": 2024,
+      "avg_roe_pct": 8.31
+    },
+    "valuation": {
+      "grade": "C",
+      "strengths": [
+        "2018년부터 2025년까지 연평균 23.08%의 견조한 매출 성장을 기록하며 높은 성장 잠재력을 보여주었습니다.",
+        "전기차 배터리 소재 시장의 구조적 성장에 따른 양극재 수요 증가로 장기적인 성장 동력을 보유하고 있습니다.",
+        "2024년 일시적인 영업손실 이후 2025년에는 영업이익이 흑자 전환하며 수익성 회복이 기대됩니다."
+      ],
+      "risks": [
+        "2024년 267.45%, 2025년 326.65%로 급격히 증가하는 부채비율은 재무 안정성에 심각한 위험 요인입니다.",
+        "2023년 당기순손실, 2024년 영업손실을 기록하는 등 최근 수익성 변동성이 크게 확대되어 예측 가능성이 낮습니다.",
+        "양극재 생산 능력 확대를 위한 대규모 설비 투자가 지속되면서 재무 부담이 가중될 수 있습니다."
+      ],
+      "one_liner": "높은 성장 잠재력에도 불구하고 최근 수익성 악화와 급증하는 부채로 인해 재무적 부담이 커진 상황입니다."
+    }
+  },
+  "dcf": {
+    "text": "퀀트 애널리스트로서 에코프로비엠(247540)의 DCF 적정가치를 계산하겠습니다.\n\n제공된 정보에 따르면, 5년간의 예측 기간 동안의 매출액 성장률 가정이 명시되어 있지 않습니다. DCF 모델에서 미래 현금흐름을 예측하기 위해서는 매출액 성장률 가정이 필수적입니다.\n\n**따라서, 매출액 성장률에 대한 가정이 필요합니다. 현재로서는 임의로 5년간 연간 15%의 매출액 성장률을 가정하여 계산을 진행하겠습니다.** 이 가정은 결과에 큰 영향을 미치므로, 실제 분석 시에는 시장 상황, 산업 성장률, 기업의 과거 실적 및 미래 계획 등을 고려하여 신중하게 결정되어야 합니다.\n\n**가정 요약:**\n*   **기준 연도:** 2025년 (최근 재무는 2024년 기준이며, 예측은 2025년부터 시작)\n*   **매출액 성장률:** 15% (5년간 일정, 사용자 입력 부재로 임의 가정)\n*   **영업이익률:** 2024년 영업이익률(1433 / 25316)을 유지한다고 가정\n*   **세율:** 25% (FCF 공식에서 1 - 0.25)\n*   **감가상각비:** 매출액의 10%\n*   **CAPEX:** 매출액의 5%\n*   **WACC (기본):** 9%\n*   **영구성장률 g (기본):** 2%\n*   **예측 기간:** 5년 (2025년 ~ 2029년) + 영구 가치\n\n---\n### Python 코드 실행 및 결과\n\n\n---\n### 분석 결과\n\n1.  **기본 시나리오 DCF 적정가치:**\n    *   가정된 매출액 성장률 15%, WACC 9%, 영구성장률 2%를 적용했을 때, 에코프로비엠의 적정가치는 **58,367억원**으로 계산됩니다.\n\n2.  **WACC × g 민감도 그리드:**\n    아래 표는 WACC와 영구성장률(g) 변화에 따른 DCF 적정가치(억원)를 보여줍니다.\n\n|             | g=1%   | g=2%   | g=3%    |\n| :---------- | :----- | :----- | :------ |\n| **WACC=7%** | 71106  | 83077  | 101035  |\n| **WACC=8%** | 60413  | 68652  | 80187   |\n| **WACC=9%** | 52411  | 58367  | 66307   |\n| **WACC=10%**| 46202  | 50668  | 56410   |\n| **WACC=11%**| 41248  | 44693  | 49000   |\n\n*   WACC가 낮아지고 영구성장률(g)이 높아질수록 적정가치는 상승합니다.\n*   특히 WACC와 g의 차이가 작아질수록(예: WACC=7%, g=3%) 영구 가치 계산 시 분모가 작아져 적정가치가 크게 증가하는 것을 볼 수 있습니다.\n\n**요약:**\n적정가치(기본): 58367억원\n\n**참고:** 이 분석은 매출액 성장률을 15%로 임의 가정한 결과입니다. 이 가정의 변화에 따라 적정가치는 크게 달라질 수 있습니다.",
+    "executed_code": "import pandas as pd\n\n# --- 1. Define Inputs and Assumptions ---\n# Recent Financials (2024, 억원)\nrevenue_2024 = 25316\noperating_profit_2024 = 1433\n\n# Assumptions\nwacc_base = 0.09\ng_base = 0.02\nforecast_years = 5 # 2025, 2026, 2027, 2028, 2029\n\n# FCF formula components\ntax_rate = 0.25 # (1 - 0.25) implies tax rate of 25%\ndepreciation_rate_of_revenue = 0.10\ncapex_rate_of_revenue = 0.05\n\n# CRITICAL MISSING ASSUMPTION: Revenue Growth Rate\n# As the revenue growth rate is not provided, we assume a constant growth rate\n# for the 5-year forecast period. This is a significant assumption.\n# For a growth company like EcoPro BM, a 15% growth rate for the initial forecast\n# period is used as a placeholder.\nrevenue_growth_rate_assumption = 0.15 # Placeholder: 15% annual revenue growth\n\n# --- DCF Calculation Function ---\ndef calculate_dcf(wacc, g, revenue_growth_rate):\n    # Initialize lists for projections\n    revenues = [revenue_2024]\n    operating_profits = [operating_profit_2024]\n    fcfs = []\n\n    # Calculate FCF for each forecast year\n    for i in range(1, forecast_years + 1):\n        # Project Revenue\n        projected_revenue = revenues[-1] * (1 + revenue_growth_rate)\n        revenues.append(projected_revenue)\n\n        # Project Operating Profit (assuming constant operating profit margin)\n        op_margin_2024 = operating_profit_2024 / revenue_2024\n        projected_operating_profit = projected_revenue * op_margin_2024\n        operating_profits.append(projected_operating_profit)\n\n        # Calculate Depreciation and CAPEX based on projected revenue\n        depreciation = projected_revenue * depreciation_rate_of_revenue\n        capex = projected_revenue * capex_rate_of_revenue\n\n        # Calculate FCF for the year\n        # FCF = Operating Profit * (1 - Tax Rate) + Depreciation - CAPEX\n        fcf = projected_operating_profit * (1 - tax_rate) + depreciation - capex\n        fcfs.append(fcf)\n\n    # Calculate Terminal Value (TV)\n    # FCF_year_5 is the last calculated FCF\n    fcf_year_5 = fcfs[-1]\n    if wacc <= g:\n        # Handle cases where WACC is less than or equal to g, which makes TV calculation invalid\n        return float('inf') # Or handle as an error/unrealistic scenario\n    terminal_value = fcf_year_5 * (1 + g) / (wacc - g)\n\n    # Discount FCFs and Terminal Value\n    present_value_fcfs = 0\n    for i in range(forecast_years):\n        present_value_fcfs += fcfs[i] / ((1 + wacc)**(i + 1))\n\n    present_value_terminal_value = terminal_value / ((1 + wacc)**forecast_years)\n\n    # Total DCF Value\n    dcf_value = present_value_fcfs + present_value_terminal_value\n    return dcf_value\n\n# --- 2. Basic Scenario DCF Calculation ---\nprint(f\"--- 기본 시나리오 DCF 적정가치 계산 ---\")\nprint(f\"가정된 매출액 성장률: {revenue_growth_rate_assumption*100:.0f}% (사용자 입력 부재로 임의 가정)\")\nbase_dcf_value = calculate_dcf(wacc_base, g_base, revenue_growth_rate_assumption)\nprint(f\"적정가치(기본): {base_dcf_value:.0f}억원\")\n\n# --- 3. Sensitivity Grid Output ---\nprint(f\"\\n--- WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 (단위: 억원) ---\")\n\nwacc_values = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_values = [0.01, 0.02, 0.03]\n\nsensitivity_results = pd.DataFrame(index=[f'WACC={w*100:.0f}%' for w in wacc_values],\n                                   columns=[f'g={g_val*100:.0f}%' for g_val in g_values])\n\nfor wacc in wacc_values:\n    for g in g_values:\n        if wacc <= g:\n            sensitivity_results.loc[f'WACC={wacc*100:.0f}%', f'g={g*100:.0f}%'] = \"N/A (WACC <= g)\"\n        else:\n            dcf_val = calculate_dcf(wacc, g, revenue_growth_rate_assumption)\n            sensitivity_results.loc[f'WACC={wacc*100:.0f}%', f'g={g*100:.0f}%'] = f\"{dcf_val:.0f}\"\n\nprint(sensitivity_results)\n\n# --- 4. Final Summary Output ---\nprint(f\"\\n적정가치(기본): {base_dcf_value:.0f}억원\")",
+    "code_output": "--- 기본 시나리오 DCF 적정가치 계산 ---\n가정된 매출액 성장률: 15% (사용자 입력 부재로 임의 가정)\n적정가치(기본): 58367억원\n\n--- WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 (단위: 억원) ---\n           g=1%   g=2%    g=3%\nWACC=7%   71106  83077  101035\nWACC=8%   60413  68652   80187\nWACC=9%   52411  58367   66307\nWACC=10%  46202  50668   56410\nWACC=11%  41248  44693   49000\n\n적정가치(기본): 58367억원"
+  },
+  "news": {
+    "text": "## 에코프로비엠(247540) 투자 의견: 관망\n\n### 1. 재무 데이터 스토리와 시장 컨센서스 일치/불일치\n\n제공된 재무 데이터 분석 결과인 '높은 성장 잠재력에도 불구하고 최근 수익성 악화와 급증하는 부채로 인해 재무적 부담이 커진 상황'은 현재 시장 컨센서스와 대체로 일치합니다.\n\n*   **수익성 악화 및 재무 부담:** 최근 증권사 분석에 따르면, 에코프로비엠은 인도네시아 투자 이익, 재고자산 충당금 환입 등 일회성 요인을 제외하면 본업의 수익성은 여전히 부진하거나 적자를 기록 중인 것으로 평가됩니다. 2026년 1분기 실적은 컨센서스를 상회할 것으로 전망되나, 이는 탄산리튬 가격 상승 및 원/달러 환율 상승에 따른 재고자산 평가손실 환입 등 일회성 이익에 기인할 가능성이 높습니다.\n*   **성장 잠재력:** 중장기적인 성장 잠재력에 대한 기대는 여전히 존재합니다. 유럽향 판매 반등 및 헝가리 공장 가동을 통한 유럽 시장 공략 가속화 등이 긍정적으로 평가됩니다. 그러나 2024년 연평균 양극재 판가 하락과 유럽 OEM향 수요 둔화 우려, LFP 배터리 채택 증가 가능성 등으로 인해 단기적인 성장세는 제한적일 수 있으며, 중장기 실적 전망치도 하향 조정된 바 있습니다.\n*   **투자 등급/의견:** KB증권은 'Buy' 의견을 유지하며 1분기 실적 개선을 전망하지만, 키움증권은 본업 적자 지속을 강조하며 'Outperform' 의견을 제시합니다. IBK투자증권은 '중립' 의견과 목표주가 하향을, iM증권은 'Hold' 의견을 고수하며 높은 밸류에이션 부담을 경고하고 있습니다. 전반적인 애널리스트 투자의견은 '중립'에 가깝습니다.\n\n### 2. 재무제표에서 드러나지 않는 리스크 또는 호재\n\n**리스크:**\n*   **전기차 시장 둔화 및 경쟁 심화:** 북미 전기차 판매 부진, 유럽 시장 내 중국 업체와의 경쟁 심화, 보급형 전기차의 LFP 배터리 채택 확대 가능성은 양극재 수요 및 판가에 부정적인 영향을 미 미칠 수 있습니다.\n*   **높은 밸류에이션 부담:** 현재 주가 수준은 실적 개선보다는 정부 정책 기대감에 따른 수급 유입에 기인한 것으로 분석되며, 전 세계 2차전지 업종 내 가장 높은 밸류에이션을 기록하고 있다는 경고가 있습니다.\n*   **정부 정책 불확실성:** 미국 대선을 앞두고 친환경 정책에 대한 불확실성 증가는 투자 심리를 위축시킬 수 있습니다.\n\n**호재:**\n*   **유럽 시장 반등 및 생산 거점 확보:** 유럽 전방 고객의 재고 조정 마무리로 인한 판매 반등 기대와 헝가리 공장 가동을 통한 유럽 현지 고객 대응 및 원가 경쟁력 확보는 중장기적인 성장 동력으로 작용할 수 있습니다.\n*   **신제품 및 기술 개발:** 중저가 전기차 시장을 겨냥한 고전압 미드니켈, 리튬망간리치 제품군 개발 및 전고체 배터리 관련 기술 개발은 미래 성장 동력 확보에 긍정적입니다.\n*   **재고자산 평가손실 환입:** 단기적으로 탄산리튬 가격 상승 및 원/달러 환율 상승에 따른 재고자산 평가손실 환입은 수익성 개선에 기여할 수 있습니다.\n\n### 3. 최종 판정\n\n**관망**\n\n에코프로비엠은 중장기적인 성장 잠재력을 보유하고 있으나, 단기적으로는 일회성 이익을 제외한 본업의 수익성 악화가 지속되고 있으며, 전기차 시장의 불확실성과 높은 밸류에이션 부담이 공존합니다. 긍정적인 요인들이 있으나 그 효과가 가시화되기까지는 시간이 필요하며, 현재 주가 수준은 이미 많은 기대감을 선반영한 것으로 판단됩니다. 따라서, 추가적인 실적 개선의 가시성과 시장 불확실성 해소 여부를 확인하며 관망하는 자세가 필요합니다.",
+    "citations": [
+      {
+        "title": "kbthink.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEWO82uDQqzdanCIeHKE0mjdQhvP0SZ-2Bcv0xa2MO0YteDTnA8xTsg0QeJFvRtPEzoFOtDwuptE-rku9p0cNV4X9yJFc5V1j9rQr5E6yV0HGDmCSr0O1CF41fnjS1vcyb2XG6ndQA7-p6dWS7eaoiYuonHwA6mP23Up8x1"
+      },
+      {
+        "title": "kiwoom.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGpmWOW3OH3ixfp3xBxhd_767t3CsB73iWhQ5yIcOuKaua-MjeOJgFPc2MTJKzWOyFoTrlkYjzJ2im75hKovvIzbTIKqbDzLCTZUf-LOIEwo1BmQb-vtR7abO8i"
+      },
+      {
+        "title": "mk.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFu3GjydHO8t5fVjwhnh1XajT3netRQFNPL6M3NU_aq7xCEo_ha9Jc8RFvGQ1XW918IAHL_p_Ebe1OcTpytM4IyeKzttEGFOvhAlYm6Ahf9WcxscAqHsp4hPcb3OhGPDpC1E1g="
+      },
+      {
+        "title": "edaily.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGk9hBJ__m-9ANgC4LLocpPrW5Du0FhQbf0HaUzLcGZpQWqIC9dm4pgIiSpr0uv0utwU2AKd4E_g4kfLcHEC1lx4D7eri0GPkp4vCmJsFmqDfXtuyjpLgOsn-jG06iErqEOpDVk8JtK9syvecmixPqlQCPyGkmkz8mm8pmk"
+      },
+      {
+        "title": "pstatic.net",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFvpFB3i8uAI3izNgIVoe8aGQeGsJX86taGM0UQiz54n7Quo3nSAXympu-kllxLUPfBalqwt_qPN9jtw4CfKp3oxAiRX_1Uar-2Agd3FcG6-UPKYxKluAILluN4xfRhM45ukNjAYiVyPSqVKQ8JtW2Eb4kiWFGRHx81I3toSfClmM_r6GkD"
+      },
+      {
+        "title": "ibks.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGDbZSqoco9ZRZru8D8OGt6_GsjyApn2DypR0HVtEqA8SVDSVWELPzUQlD3XDzQKnpcfFRi99qTAKdmwnNWnn4UgeHB3ccJsTx6sxt-AoWkPhtVbeO8HLNpCl-h1HSvCb6N_lsyLGpjFyFEiLaaZneVgk569Gsxba1V_uSnpvg5rkgMVgREbIHpL7C_I3wjLBVlkRI="
+      },
+      {
+        "title": "investing.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFdZMCvbPZdO4lLZWbL8GKy10Zo8SncKAVoOEUgzkNPgWMdwrY2FG1IhOCwILYxcHy-2IBMeM_RmFVDXD7qawmFaIzR1XIBtDI5vAPgu2uBrr1rF9v3uSReco5ka1evF3QsTKF4pXPdNoLEije6"
+      }
+    ]
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=01160363",
+    "summary": "공시 페이지 접근 제한"
+  }
+}
