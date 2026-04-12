@@ -1,0 +1,293 @@
+{
+  "stock_code": "096770",
+  "stock_name": "SK이노베이션",
+  "generated_at": "2026-04-12T14:31:45.831356+00:00",
+  "financials": {
+    "stock_code": "096770",
+    "corp_code": "00631518",
+    "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2016": {
+        "cash": 26442.1,
+        "total_assets": 325813.3,
+        "short_debt": 218.9,
+        "total_liab": 142762.9,
+        "total_equity": 183050.5,
+        "revenue": 395205.4,
+        "op_profit": 32283.4,
+        "net_income": 501.0
+      },
+      "2017": {
+        "cash": 20037.4,
+        "total_assets": 342436.0,
+        "short_debt": 2428.8,
+        "total_liab": 149342.7,
+        "total_equity": 193093.3,
+        "revenue": 462609.3,
+        "op_profit": 32343.7,
+        "net_income": 21451.0
+      },
+      "2018": {
+        "cash": 18559.2,
+        "total_assets": 360853.8,
+        "short_debt": 1537.4,
+        "total_liab": 167574.0,
+        "total_equity": 193279.8,
+        "revenue": 545109.0,
+        "op_profit": 21175.9,
+        "net_income": 17099.8
+      },
+      "2019": {
+        "cash": 21960.0,
+        "total_assets": 395260.6,
+        "short_debt": 11319.7,
+        "total_liab": 213164.3,
+        "total_equity": 182096.2,
+        "revenue": 498765.3,
+        "op_profit": 12692.9,
+        "net_income": 657.7
+      },
+      "2020": {
+        "cash": 29406.6,
+        "total_assets": 384981.5,
+        "short_debt": 15302.8,
+        "total_liab": 230396.8,
+        "total_equity": 154584.7,
+        "revenue": 341645.3,
+        "op_profit": -25688.0
+      },
+      "2021": {
+        "cash": 34238.3,
+        "total_assets": 495574.4,
+        "short_debt": 8640.5,
+        "total_liab": 299242.5,
+        "total_equity": 196331.9,
+        "revenue": 468429.3,
+        "op_profit": 17541.7
+      },
+      "2022": {
+        "cash": 94790.9,
+        "total_assets": 672189.2,
+        "short_debt": 75585.8,
+        "total_liab": 439766.1,
+        "total_equity": 232423.1,
+        "revenue": 780569.4,
+        "op_profit": 39173.4,
+        "net_income": 18951.8
+      },
+      "2023": {
+        "total_assets": 808355.1,
+        "cash": 130744.3,
+        "total_equity": 8779.3,
+        "short_debt": 81849.5,
+        "total_liab": 508155.5,
+        "op_profit": 19038.9,
+        "net_income": 2562.5,
+        "revenue": 772884.9
+      },
+      "2024": {
+        "total_assets": 1105301.0,
+        "cash": 158650.8,
+        "total_equity": 127168.7,
+        "short_debt": 120512.0,
+        "total_liab": 708811.9,
+        "op_profit": 3154.9,
+        "net_income": 0.0,
+        "revenue": 747169.7
+      },
+      "2025": {
+        "total_assets": 1056084.8,
+        "cash": 160915.5,
+        "total_equity": 146263.3,
+        "short_debt": 72017.1,
+        "total_liab": 692169.9,
+        "op_profit": 4486.8,
+        "revenue": 802960.5
+      }
+    },
+    "missing_years": [
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2016,
+        "revenue_eok": 395205,
+        "op_profit_eok": 32283,
+        "net_income_eok": 501,
+        "roe_pct": 0.27,
+        "op_margin_pct": 8.17,
+        "debt_ratio_pct": 78.0
+      },
+      {
+        "year": 2017,
+        "revenue_eok": 462609,
+        "op_profit_eok": 32344,
+        "net_income_eok": 21451,
+        "roe_pct": 11.11,
+        "op_margin_pct": 6.99,
+        "debt_ratio_pct": 77.34
+      },
+      {
+        "year": 2018,
+        "revenue_eok": 545109,
+        "op_profit_eok": 21176,
+        "net_income_eok": 17100,
+        "roe_pct": 8.85,
+        "op_margin_pct": 3.88,
+        "debt_ratio_pct": 86.7
+      },
+      {
+        "year": 2019,
+        "revenue_eok": 498765,
+        "op_profit_eok": 12693,
+        "net_income_eok": 658,
+        "roe_pct": 0.36,
+        "op_margin_pct": 2.54,
+        "debt_ratio_pct": 117.06
+      },
+      {
+        "year": 2020,
+        "revenue_eok": 341645,
+        "op_profit_eok": -25688,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": -7.52,
+        "debt_ratio_pct": 149.03
+      },
+      {
+        "year": 2021,
+        "revenue_eok": 468429,
+        "op_profit_eok": 17542,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 3.74,
+        "debt_ratio_pct": 152.42
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 780569,
+        "op_profit_eok": 39173,
+        "net_income_eok": 18952,
+        "roe_pct": 8.15,
+        "op_margin_pct": 5.02,
+        "debt_ratio_pct": 189.22
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 772885,
+        "op_profit_eok": 19039,
+        "net_income_eok": 2562,
+        "roe_pct": 29.18,
+        "op_margin_pct": 2.46,
+        "debt_ratio_pct": 5788.16
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 747170,
+        "op_profit_eok": 3155,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 0.42,
+        "debt_ratio_pct": 557.39
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 802960,
+        "op_profit_eok": 4487,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 0.56,
+        "debt_ratio_pct": 473.24
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": 8.2,
+      "op_profit_cagr_pct": -20.63,
+      "best_year": 2022,
+      "worst_year": 2020,
+      "avg_roe_pct": 5.79
+    },
+    "valuation": {
+      "grade": "D",
+      "strengths": [
+        "10년간 매출액은 꾸준히 성장하는 모습을 보였습니다.",
+        "대규모 자산총계와 현금 보유액을 유지하며 사업 규모를 확장하고 있습니다.",
+        "어려운 시장 환경 속에서도 상당한 매출을 창출하는 능력을 보유하고 있습니다."
+      ],
+      "risks": [
+        "영업이익의 극심한 변동성과 하락 추세는 핵심 사업의 수익성 불안정성을 시사합니다.",
+        "매우 높은 수준의 부채비율과 급격한 증가세는 심각한 재무 위험을 초래하고 있습니다.",
+        "낮고 불규칙한 ROE 및 영업이익률은 지속 가능한 수익 창출 능력에 대한 우려를 높입니다."
+      ],
+      "one_liner": "매출액은 성장세를 보였으나, 극심한 영업이익 변동성과 매우 높은 부채비율로 인해 재무 안정성이 심각하게 훼손된 기업입니다."
+    }
+  },
+  "dcf": {
+    "text": "퀀트 애널리스트로서 SK이노베이션(096770)의 DCF 적정가치를 계산하고 민감도 분석을 수행하겠습니다.\n\n**핵심 가정:**\n*   주어진 FCF 계산식에 따라, 5년간의 명시적 예측 기간(2025-2029) 동안 매출액과 영업이익은 2024년 수준으로 **성장 없이 유지**된다고 가정합니다. (성장률이 명시되지 않아 보수적으로 0% 성장률 적용)\n*   FCF = 영업이익 × (1 - 0.25) + 감가상각(매출의 10%) - CAPEX(매출의 5%)\n*   기준 WACC = 9%, 영구성장률 g = 2%\n*   5년 예측 기간 + 영구 성장 모형을 통한 터미널 밸류 계산\n\n---\n### DCF 적정가치 계산 및 민감도 분석\n\n\n---\n### 분석 결과\n\n**1. 기본 시나리오 DCF 적정가치 계산:**\n\n*   **연간 FCF (2025-2029):** 43,513.25 억원 (매년 동일)\n    *   (영업이익 4,487억 * 0.75) + (매출액 802,960억 * 0.10) - (매출액 802,960억 * 0.05) = 3,365.25 + 80,296 - 40,148 = 43,513.25 억원\n*   **5년간 FCF의 현재가치 합계:** 169,251.37 억원\n*   **Terminal Value (5년차 말 기준):** 634,050.21 억원\n*   **Terminal Value의 현재가치:** 412,089.13 억원\n*   **DCF 적정가치 (기본 시나리오):** 581,340.50 억원\n\n**2. WACC vs. 영구성장률(g) 민감도 분석 (DCF 적정가치, 억원):**\n\n|             | g=1%      | g=2%      | g=3%      |\n| :---------- | :-------- | :-------- | :-------- |\n| **WACC=7%** | 700,656   | 811,310   | 977,290   |\n| **WACC=8%** | 601,029   | 677,180   | 783,792   |\n| **WACC=9%** | 526,294   | **581,341** | 654,735   |\n| **WACC=10%**| 468,155   | 509,433   | 562,505   |\n| **WACC=11%**| 421,633   | 453,481   | 493,292   |\n\n*   민감도 분석 결과, WACC가 낮아지고 영구성장률(g)이 높아질수록 적정가치는 증가하는 것을 확인할 수 있습니다.\n*   기본 시나리오(WACC=9%, g=2%)에서의 적정가치는 581,341억원입니다.\n\n**3. 요약:**\n\n적정가치(기본): 581,341억원",
+    "executed_code": "import pandas as pd\n\n# --- 1. 기본 시나리오 DCF 적정가치 계산 ---\n\n# 재무 데이터 (억원)\nrevenue_2024 = 802960\noperating_income_2024 = 4487\n\n# 가정\ntax_rate = 0.25 # FCF 공식의 (1 - 0.25)에서 유추\ndepreciation_rate_of_revenue = 0.10\ncapex_rate_of_revenue = 0.05\nwacc_base = 0.09\ng_base = 0.02\nprojection_years = 5 # 2025-2029\n\n# Assumption: 0% growth for Revenue and Operating Income during the 5-year projection period\n# This is a critical assumption due to missing growth rates in the prompt.\n\n# Calculate FCF for each projection year (2025-2029)\nfcf_list = []\nfor year in range(1, projection_years + 1):\n    # Assuming revenue and operating income remain constant for the projection period\n    projected_revenue = revenue_2024\n    projected_operating_income = operating_income_2024\n\n    depreciation = projected_revenue * depreciation_rate_of_revenue\n    capex = projected_revenue * capex_rate_of_revenue\n    \n    fcf = projected_operating_income * (1 - tax_rate) + depreciation - capex\n    fcf_list.append(fcf)\n\n# Calculate Present Value of FCFs\npv_fcf_sum = 0\nfor i, fcf in enumerate(fcf_list):\n    discount_factor = (1 + wacc_base)**(i + 1)\n    pv_fcf_sum += fcf / discount_factor\n\n# Calculate Terminal Value (TV)\nfcf_year5 = fcf_list[-1] # FCF at the end of the projection period (Year 5)\nfcf_year6 = fcf_year5 * (1 + g_base)\n\n# Check for WACC <= g, which would lead to an infinite or negative TV\nif wacc_base <= g_base:\n    raise ValueError(\"WACC must be greater than the perpetual growth rate (g) for Terminal Value calculation.\")\n\nterminal_value = fcf_year6 / (wacc_base - g_base)\n\n# Calculate Present Value of Terminal Value\npv_terminal_value = terminal_value / (1 + wacc_base)**projection_years\n\n# Calculate DCF Fair Value\ndcf_fair_value_base = pv_fcf_sum + pv_terminal_value\n\nprint(f\"--- 기본 시나리오 DCF 적정가치 계산 ---\")\nprint(f\"연간 FCF (2025-2029): {fcf_list[0]:,.2f} 억원 (매년 동일)\")\nprint(f\"5년간 FCF의 현재가치 합계: {pv_fcf_sum:,.2f} 억원\")\nprint(f\"Terminal Value (Year 5 기준): {terminal_value:,.2f} 억원\")\nprint(f\"Terminal Value의 현재가치: {pv_terminal_value:,.2f} 억원\")\nprint(f\"DCF 적정가치 (기본 시나리오): {dcf_fair_value_base:,.2f} 억원\")\nprint(\"-\" * 40)\n\n# --- 2. WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 출력 ---\n\nwacc_scenarios = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_scenarios = [0.01, 0.02, 0.03]\n\nsensitivity_results = {}\n\nfor wacc in wacc_scenarios:\n    for g in g_scenarios:\n        # Recalculate PV of FCFs for the current WACC\n        current_pv_fcf_sum = 0\n        for i, fcf in enumerate(fcf_list):\n            discount_factor = (1 + wacc)**(i + 1)\n            current_pv_fcf_sum += fcf / discount_factor\n        \n        # Recalculate Terminal Value\n        fcf_year5_for_tv = fcf_list[-1] # FCF at the end of the projection period (Year 5)\n        fcf_year6_for_tv = fcf_year5_for_tv * (1 + g)\n\n        if wacc <= g:\n            dcf_value = \"N/A (WACC<=g)\" # Indicate not calculable\n        else:\n            current_terminal_value = fcf_year6_for_tv / (wacc - g)\n            current_pv_terminal_value = current_terminal_value / (1 + wacc)**projection_years\n            dcf_value = current_pv_fcf_sum + current_pv_terminal_value\n        \n        sensitivity_results[(wacc, g)] = dcf_value\n\n# Format results into a DataFrame for better readability\ndf_sensitivity = pd.DataFrame(index=[f'WACC={w*100:.0f}%' for w in wacc_scenarios], \n                              columns=[f'g={g*100:.0f}%' for g in g_scenarios])\n\nfor wacc in wacc_scenarios:\n    for g in g_scenarios:\n        key = (wacc, g)\n        value = sensitivity_results[key]\n        if isinstance(value, str):\n            df_sensitivity.loc[f'WACC={wacc*100:.0f}%', f'g={g*100:.0f}%'] = value\n        else:\n            df_sensitivity.loc[f'WACC={wacc*100:.0f}%', f'g={g*100:.0f}%'] = f'{value:,.0f}'\n\nprint(\"\\n--- WACC vs. 영구성장률(g) 민감도 분석 (DCF 적정가치, 억원) ---\")\nprint(df_sensitivity)\nprint(\"-\" * 40)\n\n# --- 3. 마지막에 '적정가치(기본): {value}억원' 형태로 요약 출력 ---\nprint(f\"\\n적정가치(기본): {dcf_fair_value_base:,.0f}억원\")",
+    "code_output": "--- 기본 시나리오 DCF 적정가치 계산 ---\n연간 FCF (2025-2029): 43,513.25 억원 (매년 동일)\n5년간 FCF의 현재가치 합계: 169,251.37 억원\nTerminal Value (Year 5 기준): 634,050.21 억원\nTerminal Value의 현재가치: 412,089.13 억원\nDCF 적정가치 (기본 시나리오): 581,340.50 억원\n----------------------------------------\n\n--- WACC vs. 영구성장률(g) 민감도 분석 (DCF 적정가치, 억원) ---\n             g=1%     g=2%     g=3%\nWACC=7%   700,656  811,310  977,290\nWACC=8%   601,029  677,180  783,792\nWACC=9%   526,294  581,341  654,735\nWACC=10%  468,155  509,433  562,505\nWACC=11%  421,633  453,481  493,292\n----------------------------------------\n\n적정가치(기본): 581,341억원"
+  },
+  "news": {
+    "text": "## SK이노베이션(096770) 심층 분석: 재무 안정성 훼손과 시장 컨센서스\n\nSK이노베이션(096770)은 매출액 성장에도 불구하고 극심한 영업이익 변동성과 매우 높은 부채비율로 인해 재무 안정성이 심각하게 훼손되어 투자등급 D를 받았습니다. 최근 2주간의 시장 뉴스를 종합하여 재무 데이터가 보여주는 스토리와 시장 컨센서스를 비교하고, 재무제표에 드러나지 않는 리스크 및 호재를 분석하여 최종 투자 판정을 내립니다.\n\n### 1. 재무 데이터 스토리와 현재 시장 컨센서스의 일치/불일치\n\n제공된 재무 데이터가 보여주는 '극심한 영업이익 변동성'과 '매우 높은 부채비율로 인한 재무 안정성 훼손'이라는 스토리는 최근 시장 뉴스에서도 명확히 드러나고 있습니다.\n\n*   **일치:** SK이노베이션은 2025년 4분기 배터리 사업 침체와 자산 손상 등의 영향으로 5조원 이상의 대규모 세전손실을 기록했으며, 특히 미국 포드와의 합작법인 구조재편 과정에서 4조2천억원 규모의 손상을 인식했습니다. 이로 인해 2025년 회계연도에 대한 무배당을 결정하며 재무적 어려움을 공식화했습니다. 회사는 정기 주주총회를 통해 '성장보다 생존', '재무 안정화 기조'를 공식화하고 포트폴리오 리밸런싱 및 순차입금 감축을 통한 재무 건전성 확보에 나서겠다고 밝혔습니다. 이는 재무 안정성 훼손이라는 본질적인 문제에 대한 시장의 인식이 회사와 일치함을 보여줍니다.\n*   **불일치:** 애널리스트들의 평균 목표주가는 118,333원이며, \"중립\" 의견이 지배적입니다 (매수 7명, 매도 5명, 보유 10명). 이는 재무 안정성 악화에도 불구하고 일부 긍정적인 전망과 부정적인 전망이 혼재되어 있음을 시사합니다. 또한, 일부 증권사에서는 정유/화학 부문의 실적 개선과 SK온의 적자 축소 노력에 힘입어 2026년 1분기 영업이익이 시장 컨센서스를 상회할 것으로 전망하기도 했습니다. 이는 '투자등급 D'가 암시하는 심각한 재무 안정성 훼손에 비해 단기적인 실적 개선 가능성에 대한 시장의 기대가 다소 존재함을 나타냅니다.\n\n### 2. 재무제표에서 드러나지 않는 리스크 또는 호재\n\n**리스크:**\n*   **배터리 사업 불확실성 지속:** SK온은 비우호적인 업황에 대응하기 위해 유럽 및 중국 공장 증설 시점을 탄력적으로 조정하고 있으며, 미국 전기차 시장의 단기간 회복이 어렵다는 전망이 지배적입니다. 특히 현대차와의 북미 합작 프로젝트 재원 조달 방안이 아직 모색 중인 단계라는 점은 추가적인 재무 부담으로 작용할 수 있습니다.\n*   **석유화학 업황 부진:** 중국발 공급과잉과 중동 전쟁 여파로 인한 나프타 수급 대란, 원재료 가격 급등 등 석유화학 업계 전반의 실적 부진 전망은 전통 사업 부문의 실적 개선 기대감을 상쇄할 수 있는 요인입니다.\n*   **고금리 추세:** 지속되는 고금리 추세는 높은 부채비율을 가진 SK이노베이션에 추가적인 재무 부담으로 작용할 수 있습니다.\n\n**호재:**\n*   **강력한 재무 안정화 및 사업 구조 재편 의지:** SK이노베이션은 '재무 안정화 기조'를 공식화하고 포트폴리오 리밸런싱을 통해 핵심 사업에 집중하며 순차입금 감축에 나설 방침입니다. SK온 또한 수익성 중심의 수주 전략으로 전환하고 있습니다.\n*   **전통 사업의 견조함 및 에너지 안보 역량:** 정유·화학 등 전통 산업의 강세가 지속되고 있으며, 이란 전쟁 등으로 에너지 가격이 상승하는 가운데 40년간 축적된 해외 자원 개발 역량이 에너지 안보 및 수익성 측면에서 주목받고 있습니다. 호주 바로사 가스전에서 LNG를 국내에 도입하는 등 구체적인 성과도 나오고 있습니다.\n*   **배터리 사업의 장기적 성장 잠재력:** 단기적인 어려움에도 불구하고, SK온은 북미 에너지저장장치(ESS) 사업 확대, 수익성 중심의 전기차 배터리 수주 전략을 추진하고 있으며, 하반기 이후 SK온 배터리 장착 신차 출시 및 미국 인플레이션 감축법(IRA)에 따른 AMPC 수혜 등 장기적인 성장 동력은 여전히 유효합니다.\n\n### 3. 최종 판정\n\n**관망**\n\nSK이노베이션은 제공된 재무제표 분석 결과(투자등급 D, 심각한 재무 안정성 훼손)가 보여주듯이 높은 부채비율과 영업이익 변동성이라는 심각한 구조적 문제를 안고 있습니다. 최근 뉴스에서도 배터리 사업의 대규모 손실 인식과 무배당 결정 등 재무 리스크가 현실화되었음이 확인됩니다.\n\n그러나 회사가 이러한 문제를 명확히 인지하고 '재무 안정화'와 '사업 구조 재편'에 강력한 의지를 보이며 수익성 중심의 사업 전환 노력을 기울이고 있다는 점은 긍정적입니다. 또한, 전통 정유/화학 사업의 견조함과 해외 자원 개발 역량은 일정 부분 실적을 방어하고 새로운 성장 동력을 제공할 잠재력이 있습니다. 시장 컨센서스 또한 '중립' 의견이 지배적이며, 단기적인 실적 개선 기대감도 존재합니다.\n\n현재 시점에서는 재무 안정성 훼손이라는 근본적인 리스크가 여전히 크므로 적극적인 '매수' 의견을 제시하기는 어렵습니다. 동시에 회사의 강력한 재무 개선 의지와 전통 사업의 견조함, 그리고 장기적인 배터리 사업의 잠재력을 고려할 때 '매도' 의견 또한 섣부릅니다.\n\n따라서 SK이노베이션의 사업 구조 재편 및 재무 건전성 확보 노력이 실제 실적 개선으로 이어지는지 추가적인 관찰이 필요하며, 가시적인 성과가 확인될 때까지는 **관망**하는 것이 현명한 투자 판단이라고 사료됩니다.",
+    "citations": [
+      {
+        "title": "hani.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFJg2v8OJZwJYOQ7kfhRlRB590hbu_4lnRIue4dvBaLzVLO-TCJ9u7htYIaJIdQ4GqqrNe71hJeih66sbC4rXw2Ku3GJxwVTlXAuyWi6HDaZOP9Uv_Hdd8ewMdVYU3byrolEaXJGMa7qchRnja_G0wAEaSYPHO7urNocQ=="
+      },
+      {
+        "title": "youtube.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHolj8kuj1giJrYY5AVX-amq7VAASfs9lsLqn_W0dFJhTrxighkJIgOGCR1yAC60v-suTtW7XIrghtqbY8bFSeFt6rO7CvTDCnCcPDyG2rkL_-_UXjUeHWEA0NjFlfn1l87xg0bPw=="
+      },
+      {
+        "title": "newsis.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFWOMso9RRH-ITlahf9QF8ZSBLL35M8xjNFzQw7YyOtBLZxAAKRJVZykL5w1SmsUED3oHoq1A9jlZunuVvkQTtZ7QiNa1DxcOqDduX5fJS2Xb5X7V7o4Ohg-Anb8cRkISwv7in8oS3KPuvm_-D800jm"
+      },
+      {
+        "title": "newsway.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHg9CB_HuGby1n3Q8TRqbbT9gwizdQuLjQabIUNI5o8_-iZKrJRu1f0Xw1IafF_br-Bun49lUplQDhjhuCM6rNKDvABuS6TvWt1pn2JlP3OYkoLtk4NbSYWDSfWyr7hIEYG3aNxlx244oN_5_PqER1fNOgFgA=="
+      },
+      {
+        "title": "investing.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQF-VIJOjGkkuYO8VaxmA-c8LILZZDs0KOypU_ImUlHondpJeB9xP1HO5TbtYlSgjIz6aZ5qK3DxaNkxwrOjZCk2_2v3tRy9WgwThrpxzmUyzU_GZfhnqd6a58tP_fY-od_PbH83Sxa6qmR1YsJ4h2DISExyJgoQ2gW171tudg=="
+      },
+      {
+        "title": "jaturi.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFPodHM4jWPThuceNhJGxkX52Ss3ufbywJ0k10bqFu_mRSIgcknTeeaT88WEISwDZUy0d6CuXFW8TaNDfMPxaCgHoomuuUtkWIUQMP2tvPPHluOjW68IgN80d6RLaNJ_7rEg-rdd_sg0nusviErpFq28Q=="
+      },
+      {
+        "title": "asiae.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHYwzBHi4oY14zx2CuC7dzsMCLiyMPYna8mhdoGnNGmGvO4iBqmvShYRZpDvbxLWakrAkXnbFKkhBBAFp5JoBA-Yf1zW_0QDc_TCvISYovbRq1nWkngXoRSxxwF1tnN6r5SNaJ0RuDn4HCMfPcD"
+      },
+      {
+        "title": "dealsite.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGPvBVfJifNT2SWmWcI1_Gp8Oj_KWt1S5ecGMjY1N8M5vDahrcnh2u0Qn72fFz6Qvpp4EZkgO0VNDFv6kFEOpeRmehh05gI6EXtEwSaQbTlx27dBoyq8aEGczA_aGBnS4U4sAYn-o_gACEM"
+      },
+      {
+        "title": "infostockdaily.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEzsOqwNXzziagMmtWDj-WvGd55T4Y1YV6bgAUMUIVaUPF1PfioQ2rzmCiKl7-i9cR3apo-YWFj4og5SZlB_3L7WCMaTIWZF8_HVIEkhTWcH51CW9qEILRDTGlSk9n5atg_QVqR3Mbjy4y6dWzuU8tzJbfCUmVugk9xUTdYYQ=="
+      },
+      {
+        "title": "news1.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEHDGYlJYlFe7YG3v0__i1hNyYRv9vcuajrrDj0lyPsRPpRbYcJnG7Gjc-5eKmyI5ODhbneAieWze0njOLMsRxDg4PH39nm-6G8YJg6HeIcOkHvH1mk5MkiSGAGFdW5R8UpPHHUz3f4eJsFGGxZo0m-"
+      }
+    ]
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=00631518",
+    "summary": "공시 페이지 접근 제한"
+  }
+}

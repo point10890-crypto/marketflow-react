@@ -2,8 +2,8 @@
   "name": "SK이노베이션",
   "ticker": "096770.KS",
   "result": "중립",
-  "date": "2026-04-07 09:04:56",
-  "elapsed": 2.2,
+  "date": "2026-04-12 23:31:44",
+  "elapsed": 2.4,
   "consensus_score": 3.23,
   "analyst_count": 22,
   "recommendation_detail": {
@@ -15,21 +15,21 @@
   },
   "recommendation_period": "0m",
   "price_targets": {
-    "current": 123200.0,
+    "current": 122400.0,
     "high": 170000.0,
     "low": 60000.0,
-    "mean": 117380.95,
+    "mean": 118333.336,
     "median": 120000.0
   },
-  "current_price": 123200.0,
-  "upside_potential": -4.7,
+  "current_price": 122400.0,
+  "upside_potential": -3.3,
   "key_stats": {
     "name": "SK Innovation",
     "sector": "Energy",
     "industry": "Oil & Gas Refining & Marketing",
-    "market_cap": 20588120768512,
+    "market_cap": 20454431522816,
     "pe_ratio": null,
-    "forward_pe": 21.314146,
+    "forward_pe": 21.381687,
     "dividend_yield": 1.84,
     "beta": 1.49,
     "fifty_two_week_high": 141300.0,
@@ -40,7 +40,7 @@
   },
   "finnhub_supplement": null,
   "source": "yfinance",
-  "ai_analysis": "SK이노베이션에 대한 애널리스트 컨센서스는 22명 참여 기준 '중립' 의견입니다. 목표가 평균은 117,381원으로 현재 주가 대비 약 4.7% 하락 여력이 있습니다. 종합적으로 볼 때, 현재 주가 수준에서 추가적인 상승을 기대하기는 어려워 보입니다.",
+  "ai_analysis": "SK이노베이션에 대한 애널리스트 컨센서스는 중립적인 의견이며, 22명의 애널리스트가 참여했습니다. 목표가 평균은 현재 주가보다 소폭 낮은 118,333원으로 제시되었습니다. 이는 현재 주가 대비 약 -3.3%의 하락 여력을 의미합니다.",
   "revenue_quarters": [
     {
       "date": "2025-12",
