@@ -1,0 +1,289 @@
+{
+  "stock_code": "006400",
+  "stock_name": "삼성SDI",
+  "generated_at": "2026-04-12T01:47:36.018968+00:00",
+  "financials": {
+    "stock_code": "006400",
+    "corp_code": "00126362",
+    "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2016": {
+        "cash": 10117.0,
+        "total_assets": 149003.1,
+        "short_debt": 3839.6,
+        "long_debt": 5665.9,
+        "total_liab": 39362.0,
+        "total_equity": 109641.1,
+        "revenue": 52008.2,
+        "op_profit": -9263.3,
+        "net_income": 2194.1
+      },
+      "2017": {
+        "cash": 12090.2,
+        "total_assets": 157514.8,
+        "short_debt": 10793.1,
+        "long_debt": 3453.0,
+        "total_liab": 42994.8,
+        "total_equity": 114520.0,
+        "revenue": 63215.6,
+        "op_profit": 1168.9,
+        "net_income": -140.4
+      },
+      "2018": {
+        "cash": 15165.9,
+        "total_assets": 193497.2,
+        "short_debt": 17393.9,
+        "long_debt": 15142.8,
+        "total_liab": 71245.0,
+        "total_equity": 122252.2,
+        "op_profit": 7149.7,
+        "net_income": 438.8
+      },
+      "2019": {
+        "cash": 11563.0,
+        "total_assets": 198521.0,
+        "short_debt": 17664.7,
+        "long_debt": 18019.9,
+        "total_liab": 71917.5,
+        "total_equity": 126603.5,
+        "revenue": 100974.3,
+        "op_profit": 4621.8,
+        "net_income": 3565.5
+      },
+      "2020": {
+        "cash": 15459.7,
+        "total_assets": 215342.3,
+        "short_debt": 24275.0,
+        "long_debt": 14843.2,
+        "total_liab": 81753.1,
+        "total_equity": 133589.3,
+        "revenue": 112947.7,
+        "op_profit": 6713.4,
+        "net_income": 562.4
+      },
+      "2021": {
+        "cash": 23256.9,
+        "total_assets": 258331.9,
+        "short_debt": 25102.2,
+        "long_debt": 21077.6,
+        "total_liab": 106364.9,
+        "total_equity": 151967.0,
+        "revenue": 135532.2,
+        "op_profit": 10675.8,
+        "net_income": 11698.0
+      },
+      "2022": {
+        "cash": 26142.7,
+        "total_assets": 302575.3,
+        "short_debt": 28511.8,
+        "long_debt": 22970.4,
+        "total_liab": 130400.2,
+        "total_equity": 172175.0,
+        "revenue": 201240.7,
+        "op_profit": 18080.1,
+        "net_income": 20393.6
+      },
+      "2023": {
+        "total_assets": 340388.6,
+        "cash": 15244.6,
+        "total_equity": 50019.7,
+        "short_debt": 28682.7,
+        "total_liab": 141316.1,
+        "long_debt": 28495.2,
+        "op_profit": 16333.7,
+        "net_income": 20092.1,
+        "revenue": 227083.0
+      },
+      "2024": {
+        "total_assets": 405973.4,
+        "cash": 18850.7,
+        "total_equity": 50019.7,
+        "short_debt": 65141.5,
+        "total_liab": 190301.1,
+        "long_debt": 50637.4,
+        "op_profit": 3633.0,
+        "net_income": 0.0,
+        "revenue": 165922.5
+      },
+      "2025": {
+        "cash": 18039.9,
+        "total_equity": 26944.4,
+        "short_debt": 53905.7,
+        "long_debt": 54933.4,
+        "revenue": 132667.3
+      }
+    },
+    "missing_years": [
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2016,
+        "revenue_eok": 52008,
+        "op_profit_eok": -9263,
+        "net_income_eok": 2194,
+        "roe_pct": 2.0,
+        "op_margin_pct": -17.81,
+        "debt_ratio_pct": 35.9
+      },
+      {
+        "year": 2017,
+        "revenue_eok": 63216,
+        "op_profit_eok": 1169,
+        "net_income_eok": -140,
+        "roe_pct": -0.12,
+        "op_margin_pct": 1.85,
+        "debt_ratio_pct": 37.54
+      },
+      {
+        "year": 2018,
+        "revenue_eok": 0,
+        "op_profit_eok": 7150,
+        "net_income_eok": 439,
+        "roe_pct": 0.36,
+        "op_margin_pct": 0.0,
+        "debt_ratio_pct": 58.28
+      },
+      {
+        "year": 2019,
+        "revenue_eok": 100974,
+        "op_profit_eok": 4622,
+        "net_income_eok": 3566,
+        "roe_pct": 2.82,
+        "op_margin_pct": 4.58,
+        "debt_ratio_pct": 56.8
+      },
+      {
+        "year": 2020,
+        "revenue_eok": 112948,
+        "op_profit_eok": 6713,
+        "net_income_eok": 562,
+        "roe_pct": 0.42,
+        "op_margin_pct": 5.94,
+        "debt_ratio_pct": 61.2
+      },
+      {
+        "year": 2021,
+        "revenue_eok": 135532,
+        "op_profit_eok": 10676,
+        "net_income_eok": 11698,
+        "roe_pct": 7.7,
+        "op_margin_pct": 7.88,
+        "debt_ratio_pct": 69.99
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 201241,
+        "op_profit_eok": 18080,
+        "net_income_eok": 20394,
+        "roe_pct": 11.85,
+        "op_margin_pct": 8.98,
+        "debt_ratio_pct": 75.74
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 227083,
+        "op_profit_eok": 16334,
+        "net_income_eok": 20092,
+        "roe_pct": 40.17,
+        "op_margin_pct": 7.19,
+        "debt_ratio_pct": 282.52
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 165922,
+        "op_profit_eok": 3633,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 2.19,
+        "debt_ratio_pct": 380.45
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 132667,
+        "op_profit_eok": 0,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 0.0,
+        "debt_ratio_pct": 0.0
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": 10.77,
+      "op_profit_cagr_pct": 0.0,
+      "best_year": 2022,
+      "worst_year": 2016,
+      "avg_roe_pct": 6.52
+    },
+    "valuation": {
+      "grade": "C",
+      "strengths": [
+        "2016년부터 2023년까지 매출액이 크게 성장했습니다 (2018년 특이치 제외 시).",
+        "2022년에는 영업이익이 18,080억원으로 최고치를 기록하며 높은 수익성을 보여주었습니다.",
+        "2023년에는 40%가 넘는 높은 ROE를 기록했습니다."
+      ],
+      "risks": [
+        "매출액, 영업이익, 자본총계 등 핵심 재무 지표에서 극심한 변동성이 관찰됩니다.",
+        "2016년 영업손실, 2025년 영업이익 및 당기순이익 0원 등 수익성 변동성이 매우 큽니다.",
+        "2023년과 2025년 자본총계의 급격한 감소와 2023-2024년 부채비율의 급증은 재무 안정성에 대한 우려를 제기합니다."
+      ],
+      "one_liner": "삼성SDI는 과거 높은 성장세를 보였으나, 최근 재무 데이터의 극심한 변동성과 불확실성으로 인해 투자에 신중한 접근이 필요합니다."
+    }
+  },
+  "dcf": {
+    "text": "제공해주신 `영업이익` (Operating Profit)이 0으로 되어 있습니다. 하지만 FCF(잉여현금흐름) 공식은 영업이익에 크게 의존하며, 영업이익이 0일 경우 FCF가 음수가 되어 적정가치 또한 음수가 될 가능성이 높습니다. 이는 삼성SDI와 같은 기업의 실제 가치와는 거리가 멀 수 있습니다.\n\n정확한 DCF 적정가치 계산을 위해 2025년 기준의 현실적인 `영업이익` 수치를 제공해주시거나, 영업이익을 어떻게 가정해야 할지 알려주시면 감사하겠습니다.",
+    "executed_code": "",
+    "code_output": ""
+  },
+  "news": {
+    "text": "## 삼성SDI(006400) 투자 분석: 단기 불확실성 속 장기 성장 동력 확보\n\n삼성SDI(006400)는 과거 높은 성장세를 보였으나, 최근 재무 데이터의 극심한 변동성과 불확실성으로 인해 투자에 신중한 접근이 필요하다는 기존 분석(투자등급 C)이 현재 시장 컨센서스와 주요 뉴스들을 통해 재확인되고 있습니다. 단기적인 실적 부진이 예상되지만, 전고체 배터리 및 ESS 시장에서의 장기적인 성장 동력을 확보하려는 노력이 긍정적으로 평가됩니다.\n\n### 1. 재무 데이터 스토리와 현재 시장 컨센서스의 일치/불일치\n\n제공된 10년 재무제표 분석 결과(높은 성장세 이후 최근 극심한 변동성 및 불확실성)는 최근 시장 컨센서스와 상당 부분 일치합니다.\n\n*   **단기 실적 부진:** 2026년 1분기 실적은 시장 예상치(영업이익 기준 적자 2,635억원)를 소폭 상회하는 영업적자 2,363억원을 기록할 것으로 전망되나, 2분기 실적은 매출 3.5조원, 영업적자 1,834억원으로 시장 예상치(영업적자 900억원)를 하회할 것으로 예상됩니다. 이는 유럽 핵심 고객향 전기차(EV) 부문 출하량 감소 및 북미 스텔란티스와의 합작법인(JV) 출하 감소에 기인합니다.\n*   **연간 실적 하향 조정:** 2026년 연간 실적 또한 매출 15.4조원, 영업적자 887억원으로 하향 조정될 것으로 보이며, 일부 증권사에서는 1조원 이상의 영업손실을 추정하기도 합니다. 이는 기존 재무 데이터의 불확실성을 더욱 심화시키는 요인입니다.\n*   **목표주가 및 투자의견 혼재:** 애널리스트들의 평균 목표주가는 약 441,899원으로 제시되나, 목표주가 범위는 135,000원에서 650,000원까지 넓게 분포되어 있습니다. 투자의견 또한 '매수' 의견이 다소 우세하지만, '매도' 의견도 존재하며, 전반적인 컨센서스 등급은 '보유'에 가까운 2.38입니다. 이는 현재 삼성SDI의 미래 실적에 대한 시장의 불확실성과 의견 차이를 명확히 보여줍니다.\n\n### 2. 재무제표에서 드러나지 않는 리스크 또는 호재\n\n**리스크:**\n\n*   **EV 시장 둔화 장기화:** 유럽 및 북미 EV 시장의 성장 둔화가 예상보다 길어질 경우, 중대형 전지 부문의 실적 회복이 지연될 수 있습니다.\n*   **AMPC 반영 규모 축소:** 북미 생산세액공제(AMPC) 반영 규모가 당초 예상보다 축소될 가능성이 있어 수익성에 부정적인 영향을 미칠 수 있습니다.\n*   **ESS 수익성 하락:** 북미 ESS LFP 라인 가동 확대에 따라 AMPC를 제외한 ESS 부문의 수익성이 국내 생산 위주였던 과거 대비 낮아질 수 있다는 우려가 있습니다.\n\n**호재:**\n\n*   **전고체 배터리 개발 가속화:** 2025년 하반기 전고체 배터리 양산 라인 착공이 예정되어 있으며, 이는 글로벌 경쟁사 대비 프리미엄 요인으로 작용할 수 있습니다.\n*   **ESS 시장 성장 및 북미 공략 강화:** 북미 ESS 시장에서 대규모 수주를 연이어 확보하고 있으며, 2026년 4분기 북미 ESS LFP 라인 본격 가동으로 매출 및 AMPC 규모가 크게 증가할 것으로 기대됩니다.\n*   **탈중국 공급망 구축:** 국내 양극재 기업인 엘앤에프와 1.6조원 규모의 LFP 양극재 중장기 공급 계약을 체결하여 북미 시장 정책 리스크에 선제적으로 대응하고, 공급망 안정성을 확보했습니다.\n*   **자산 유동화를 통한 투자 재원 확보:** 삼성디스플레이 지분 매각을 통해 전고체 배터리, ESS 생산 거점 구축 등 미래 성장을 위한 투자 재원을 확보할 계획이며, 이는 추가 유상증자 우려를 해소하는 긍정적인 요인입니다.\n*   **소형 전지 부문 회복세:** 전동 공구 고객사의 재고 조정 이후 수요가 회복되고, 데이터센터 BBU향 물량 증가로 소형 전지 부문의 회복세가 긍정적입니다.\n\n### 3. 최종 판정\n\n**관망**\n\n삼성SDI는 단기적으로 전기차 시장 둔화와 AMPC 감소 등으로 인해 2026년까지 영업적자가 지속될 것으로 예상됩니다. 이는 과거 높은 성장세를 보였던 재무 데이터의 변동성과 불확실성을 더욱 심화시키는 요인입니다. 그러나 중장기적으로는 전고체 배터리 양산 준비, 북미 ESS 시장에서의 강력한 입지 구축, 탈중국 공급망 확보, 그리고 자산 유동화를 통한 미래 투자 재원 마련 등 긍정적인 성장 동력을 확보하고 있습니다. 현재 주가는 P/B 0.7배 수준으로 저평가되어 있다는 의견도 있으나, 단기 실적 불확실성이 여전히 크고, 장기 성장 동력의 가시화까지는 시간이 필요할 것으로 판단됩니다. 따라서 현재 시점에서는 추가적인 실적 회복과 신규 사업의 구체적인 성과를 확인하며 신중하게 접근하는 **관망** 의견을 제시합니다.",
+    "citations": [
+      {
+        "title": "samsungpop.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQH5TfjQ_H3Bhq_K56vLWn72Qdh-y70IgszeXYxxAoZnM8hb8xBVT3hdu89Yc3xmAGnrgfn9YX5tpdXg_WlHOMNpzqUwqEJgdGoxR5q7tvxYf1LnKcsS3KShZgLNJeqv7Tkhhqd3e0aVG14VmTsYjOBmBGLNGgmPPRTW6or7bPBs_J-XPUwjlMmfXkL3y87Iwg5wBLDc3mm037h2CEOaW5wcS-HVlMoYwTwQcc1Q12KtWuAxii-9WDvOcFQnQZ1Sp5AETLRyxpp5LVL8ZNAsZQ=="
+      },
+      {
+        "title": "samsungpop.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEX8jtXoaZAggm3K2ZMGXWu9Tf8H15UvpZjJ4pUUdAFD5huaIUdB8UllDSz88Ty2kcp_RoKHP2rm-toYawEsWUhD9lwG7aYQurgrLlZBDdBZsMACdVRkXYviuO0TUohEcwlpDPeTbLdrQ_nOQoUTGo7EewV6jEPFazZb9fK9kminmniqYoC-2Jk_BxZkDUAmogjGEIE-MPtNrKEFmaUS--Vf_HrMWf3qf0BMMu4Mj5-o9zYD0SB9Zr1IVYE1_4PnZ4iZq3kIxPPWNHObj46oA=="
+      },
+      {
+        "title": "alphasquare.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFgOwMBcVjgDdciX1L-IZMS64MmgeKd9EOy3x0a8R5Or1LboVJJC2XziHezF-rYVnFKhETK6qNdiHsmsGMsxZuTWD0Q0Lq_nHREULokc6JCcctJ21zlS05xMG7v5YNKDs0Fjz-77NRY_9yFISEJIoIDnhEsIYDApSnZxqUTiX40Frs5gTu7iOgSE9o-_f9xZZThTn0GzhUO_KczLD5i1YBlP5-kWDQkMRO2oalP9fQwqohC82ChsPjkDt8g0hdI4HCTM8vwO41eRKDzZUreBSAEfJgcKkoe4e95vF0I1aE2RZfTNvrr2-ijTPiKP2rSL9XMlp2Wy4SRhrMwjmn8VGBlYJmaRv9ClESXqe-3NY-a1E8YUvKkVz_9bxatidO9vefaBlfVJibWfuiTlFYY89CuSHLq33SJruUU8x_--RomL97-nrvmBXjHcp2xhw1yIZQicWPnM39XlplHJgdpDimlAUbGIMtDqGoka9BaBKhUu5l0_Hdp7m0t1Afv8u53AFYmvTYXkL7k2m8xFZ-izhZ19LOHnOIipOST9NH-wi5nGTYbjY5IfdwqtJ4-bg8j8CKyVa6Wwe8wR-Ek"
+      },
+      {
+        "title": "goodinsight.xyz",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFeSYVkjEeix54XDsCLJakZhweUUZn2p1dd3J81yr1OOiztn_RWtsCzyhL1DzPcOT503dNoaN9sp3Hs6Ld_jxBzo_GXm7fapZk9776QofEO0PvG23KE1Ov7qOmSezAPifbHORLyLNuLa5fcWRF89-Uxc688KCrM8SzhJdNbhlA="
+      },
+      {
+        "title": "investing.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEclsnHyJft3X2oK3yPG1lFx17lTMNMqZ8DGrhytU3lHiGGnw2JSvCbgc6uG2MG2MmlIehZXjUNkiQ3YCiU-5lWoGJImeWrv3vaErPlPAdfGmOKbsQ7NrdUzLUV52FRh4rO8-h0KfO3N8UOAy-bpCBRWhtom_5EqbN65e8="
+      },
+      {
+        "title": "hankyung.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQF_f6uGmfqIToNJWUDYGMfK3B78_BQpZsbSWedDh3Avc1h67stxmlq-RkQv_OR7iYALKyY73C9r-6okkr4cqzvOx7SwhPSvqvQj3Pn9V6pbjiSeynm3PBNJyF-MX-IUkKDNkOUTNRE7SnaLktkz"
+      },
+      {
+        "title": "einfomax.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGcMgHA5e7AmE1tkNFYCaYxYwm4Y0SfjcahD6hS8iV_X83_A8KzTU_Cc8BhvGKCN886Xl1pOtcBL6-gFP2BVoOkZIm5m-G1lC3rKoyAQ33x0ewcXElba2pt6yB68qhgCqkxaXA27aGiqfu_HuQgmQUSUzIDD1WeREpK"
+      }
+    ]
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=00126362",
+    "summary": "공시 페이지 접근 제한"
+  }
+}

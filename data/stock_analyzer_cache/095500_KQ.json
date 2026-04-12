@@ -2,32 +2,32 @@
   "name": "미래나노텍",
   "ticker": "095500.KQ",
   "result": "데이터 없음",
-  "date": "2026-03-31 21:36:02",
-  "elapsed": 2.6,
+  "date": "2026-04-12 11:57:05",
+  "elapsed": 2.4,
   "consensus_score": null,
   "analyst_count": 0,
   "recommendation_detail": null,
   "recommendation_period": null,
   "price_targets": {
-    "current": 9650.0,
+    "current": 9540.0,
     "high": null,
     "low": null,
     "mean": null,
     "median": null
   },
-  "current_price": 9650.0,
+  "current_price": 9540.0,
   "upside_potential": null,
   "key_stats": {
     "name": "MNtech",
     "sector": "",
     "industry": "",
-    "market_cap": 273793499136,
+    "market_cap": 270672543744,
     "pe_ratio": null,
     "forward_pe": null,
     "dividend_yield": null,
     "beta": null,
     "fifty_two_week_high": 14160.0,
-    "fifty_two_week_low": 6950.0,
+    "fifty_two_week_low": 7050.0,
     "revenue": null,
     "profit_margin": null,
     "currency": "KRW"
@@ -36,6 +36,10 @@
   "source": "yfinance",
   "ai_analysis": null,
   "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 120695855340
+    },
     {
       "date": "2025-09",
       "value": 126724387870
@@ -47,13 +51,13 @@
     {
       "date": "2025-03",
       "value": 168430636670
-    },
-    {
-      "date": "2024-12",
-      "value": 144504361670
     }
   ],
   "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 5149795830
+    },
     {
       "date": "2025-09",
       "value": 4712521400
@@ -65,10 +69,6 @@
     {
       "date": "2025-03",
       "value": 8945645880
-    },
-    {
-      "date": "2024-12",
-      "value": 11258281290
     }
   ],
   "news": [

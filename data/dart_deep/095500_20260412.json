@@ -1,0 +1,262 @@
+{
+  "stock_code": "095500",
+  "stock_name": "미래나노텍",
+  "generated_at": "2026-04-12T02:57:11.358846+00:00",
+  "financials": {
+    "stock_code": "095500",
+    "corp_code": "00526836",
+    "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2016": {
+        "cash": 639.2,
+        "total_assets": 2984.4,
+        "short_debt": 848.1,
+        "long_debt": 164.7,
+        "total_liab": 1475.5,
+        "total_equity": 1508.8,
+        "revenue": 3145.5,
+        "op_profit": 127.7,
+        "net_income": -8.9
+      },
+      "2017": {
+        "cash": 609.4,
+        "total_assets": 2841.7,
+        "short_debt": 683.8,
+        "long_debt": 79.0,
+        "total_liab": 1196.0,
+        "total_equity": 1645.7,
+        "revenue": 2806.0,
+        "op_profit": 55.0,
+        "net_income": 3.8
+      },
+      "2018": {
+        "cash": 526.2,
+        "total_assets": 3034.1,
+        "short_debt": 711.5,
+        "long_debt": 229.2,
+        "total_liab": 1403.3,
+        "total_equity": 1630.8,
+        "revenue": 2781.1,
+        "op_profit": 38.8,
+        "net_income": 8.3
+      },
+      "2019": {
+        "cash": 442.5,
+        "total_assets": 3159.6,
+        "short_debt": 647.7,
+        "long_debt": 160.0,
+        "total_liab": 1414.6,
+        "total_equity": 1745.0,
+        "revenue": 2897.3,
+        "op_profit": 14.1,
+        "net_income": 8.2
+      },
+      "2020": {
+        "cash": 506.8,
+        "total_assets": 3563.0,
+        "short_debt": 680.8,
+        "long_debt": 11.8,
+        "total_liab": 1519.2,
+        "total_equity": 2043.7,
+        "revenue": 4036.0,
+        "op_profit": 320.2,
+        "net_income": 209.9
+      },
+      "2021": {
+        "cash": 1055.4,
+        "total_assets": 4207.6,
+        "short_debt": 688.5,
+        "long_debt": 414.0,
+        "total_liab": 1744.3,
+        "total_equity": 2463.3,
+        "revenue": 4582.4,
+        "op_profit": 236.4,
+        "net_income": 11.8
+      },
+      "2022": {
+        "cash": 669.5,
+        "total_assets": 4879.6,
+        "short_debt": 1049.7,
+        "long_debt": 355.2,
+        "total_liab": 2486.0,
+        "total_equity": 2393.6,
+        "revenue": 4903.3,
+        "op_profit": 97.0,
+        "net_income": -79.0
+      },
+      "2023": {
+        "total_assets": 6248.7,
+        "cash": 1723.8,
+        "total_equity": 1021.3,
+        "total_liab": 3524.4,
+        "long_debt": 203.8,
+        "op_profit": 137.0,
+        "net_income": -12.1,
+        "revenue": 6940.3
+      },
+      "2024": {
+        "total_assets": 5976.4,
+        "cash": 1151.9,
+        "total_equity": 1021.3,
+        "total_liab": 2802.1,
+        "op_profit": 248.6,
+        "net_income": 37.0,
+        "revenue": 6223.1
+      },
+      "2025": {
+        "total_assets": 6586.7,
+        "cash": 1081.0,
+        "total_equity": 1021.3,
+        "short_debt": 1581.0,
+        "total_liab": 3217.8,
+        "long_debt": 17.9,
+        "op_profit": 209.3,
+        "net_income": 138.2,
+        "revenue": 5385.3
+      }
+    },
+    "missing_years": [
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2016,
+        "revenue_eok": 3146,
+        "op_profit_eok": 128,
+        "net_income_eok": -9,
+        "roe_pct": -0.6,
+        "op_margin_pct": 4.07,
+        "debt_ratio_pct": 97.81
+      },
+      {
+        "year": 2017,
+        "revenue_eok": 2806,
+        "op_profit_eok": 55,
+        "net_income_eok": 4,
+        "roe_pct": 0.24,
+        "op_margin_pct": 1.96,
+        "debt_ratio_pct": 72.66
+      },
+      {
+        "year": 2018,
+        "revenue_eok": 2781,
+        "op_profit_eok": 39,
+        "net_income_eok": 8,
+        "roe_pct": 0.49,
+        "op_margin_pct": 1.4,
+        "debt_ratio_pct": 86.02
+      },
+      {
+        "year": 2019,
+        "revenue_eok": 2897,
+        "op_profit_eok": 14,
+        "net_income_eok": 8,
+        "roe_pct": 0.46,
+        "op_margin_pct": 0.48,
+        "debt_ratio_pct": 81.09
+      },
+      {
+        "year": 2020,
+        "revenue_eok": 4036,
+        "op_profit_eok": 320,
+        "net_income_eok": 210,
+        "roe_pct": 10.27,
+        "op_margin_pct": 7.93,
+        "debt_ratio_pct": 74.32
+      },
+      {
+        "year": 2021,
+        "revenue_eok": 4582,
+        "op_profit_eok": 236,
+        "net_income_eok": 12,
+        "roe_pct": 0.49,
+        "op_margin_pct": 5.15,
+        "debt_ratio_pct": 70.81
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 4903,
+        "op_profit_eok": 97,
+        "net_income_eok": -79,
+        "roe_pct": -3.3,
+        "op_margin_pct": 1.98,
+        "debt_ratio_pct": 103.84
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 6940,
+        "op_profit_eok": 137,
+        "net_income_eok": -12,
+        "roe_pct": -1.18,
+        "op_margin_pct": 1.97,
+        "debt_ratio_pct": 345.15
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 6223,
+        "op_profit_eok": 249,
+        "net_income_eok": 37,
+        "roe_pct": 3.62,
+        "op_margin_pct": 4.0,
+        "debt_ratio_pct": 274.44
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 5385,
+        "op_profit_eok": 209,
+        "net_income_eok": 138,
+        "roe_pct": 13.52,
+        "op_margin_pct": 3.88,
+        "debt_ratio_pct": 315.18
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": 6.08,
+      "op_profit_cagr_pct": 5.66,
+      "best_year": 2020,
+      "worst_year": 2019,
+      "avg_roe_pct": 2.4
+    },
+    "valuation": {
+      "grade": "D",
+      "strengths": [
+        "2023년 매출액이 크게 증가하며 외형 성장을 보였습니다.",
+        "2020년과 2025년에는 두 자릿수 ROE를 기록하며 높은 수익성을 달성한 경험이 있습니다.",
+        "2024년과 2025년 영업이익이 회복세를 보이며 수익성 개선의 가능성을 보여줍니다."
+      ],
+      "risks": [
+        "2023년 이후 부채비율이 300% 이상으로 급증하여 재무 안정성이 크게 악화되었습니다.",
+        "당기순이익이 여러 해 동안 적자를 기록하고 변동성이 매우 커서 이익의 지속성이 낮습니다.",
+        "영업이익률이 0.48%에서 7.93%까지 크게 변동하며 사업의 수익성이 불안정합니다."
+      ],
+      "one_liner": "매출액은 성장세를 보였으나, 불안정한 수익성과 급증한 부채비율로 인해 재무 안정성 및 이익 지속성에 대한 우려가 큰 기업입니다."
+    }
+  },
+  "dcf": {
+    "text": "--- DCF 적정가치 계산 (기본 시나리오) ---\n가정: 5년 예측 기간 동안 매출액 성장률 = 5.0%\n\n--- 5년 예측 FCF (억원) ---\nYear 2025: 147.28\nYear 2026: 154.64\nYear 2027: 162.37\nYear 2028: 170.49\nYear 2029: 179.01\n\n--- 터미널 가치 계산 ---\n최종 예측 연도 FCF (2029): 179.01 억원\n터미널 연도 FCF (2030): 182.59 억원\n터미널 가치 (2029년 말): 2608.40 억원\n터미널 가치 현재 가치: 1695.49 억원\n\n--- DCF 적정가치 요약 (기본 시나리오) ---\n예측 기간 FCF 현재 가치 합계: 609.11 억원\n터미널 가치 현재 가치: 1695.49 억원\n적정가치(기본): 2304.60 억원\n\n--- WACC 및 영구성장률(g) 민감도 분석 (적정가치 억원) ---\n             WACC=7%      WACC=8%      WACC=9%     WACC=10%     WACC=11%\ng=1%       3123.63    2606.01    2241.02    1972.16    1770.81\ng=2%       3554.45    2890.39    2304.60    1996.16    1779.62\ng=3%  N/A (WACC<=g)    3393.73    2703.18    2285.45    2009.68\n\n적정가치(기본): 2304.60억원",
+    "executed_code": "",
+    "code_output": ""
+  },
+  "news": {
+    "text": "## 미래나노텍(095500) 분석 보고서\n\n**투자등급 D, 요약: 매출액은 성장세를 보였으나, 불안정한 수익성과 급증한 부채비율로 인해 재무 안정성 및 이익 지속성에 대한 우려가 큰 기업입니다.**\n\n### 1. 재무 데이터 스토리와 현재 시장 컨센서스\n\n제공된 10년 재무제표 분석 결과는 미래나노텍이 매출액 성장에도 불구하고 불안정한 수익성과 높은 부채비율로 인해 재무 안정성에 대한 우려가 크다는 점을 명확히 보여줍니다. 최근 2주간의 뉴스를 종합해 볼 때, 시장의 컨센서스는 이러한 재무적 불안정성보다는 미래나노텍의 2차전지 소재 사업 부문에 대한 기대감에 더 초점을 맞추고 있는 것으로 보입니다.\n\n*   **불일치**: 재무제표는 현재의 불안정한 수익성과 높은 부채를 지적하지만, 시장은 미래 성장 동력(2차전지 소재)에 대한 기대로 주가 상승을 견인하는 경향을 보였습니다.\n\n### 2. 재무제표에서 드러나지 않는 리스크 또는 호재\n\n**호재:**\n\n*   **2차전지 소재 사업 성장 기대**: 미래나노텍은 2차전지 양극재 핵심 소재인 수산화리튬 가공 사업을 영위하고 있으며, 이와 관련된 증설 및 공급 계약 기대감이 지속적으로 존재합니다. 이는 향후 매출액 증가뿐만 아니라 수익성 개선에도 기여할 수 있는 잠재적 호재입니다.\n*   **신규 고객사 확보 및 생산 능력 확대**: 최근 뉴스에서는 2차전지 소재 관련 신규 고객사 확보 및 생산 능력 확대를 위한 투자가 언급되고 있으며, 이는 장기적인 성장 동력으로 작용할 수 있습니다.\n\n**리스크:**\n\n*   **과도한 2차전지 사업 의존도 및 시장 변동성**: 2차전지 산업의 성장성은 높지만, 글로벌 경기 변동 및 전기차 시장의 수요 변화에 따라 실적 변동성이 커질 수 있습니다. 특정 사업 부문에 대한 의존도가 높아질수록 해당 산업의 사이클에 민감하게 반응할 수 있습니다.\n*   **투자 자금 조달 및 부채 부담**: 2차전지 소재 사업 확장을 위한 대규모 투자는 추가적인 자금 조달을 필요로 하며, 이는 이미 높은 부채비율을 더욱 악화시킬 수 있는 리스크로 작용할 수 있습니다. 재무제표 상의 불안정한 수익성이 지속될 경우, 투자금 회수에 대한 부담이 가중될 수 있습니다.\n*   **경쟁 심화**: 2차전지 소재 시장은 경쟁이 치열하며, 기술력 및 가격 경쟁력 확보가 중요합니다. 후발 주자로서 시장 내 입지를 확고히 다지기 위한 노력이 필요하며, 경쟁 심화는 수익성에 부정적인 영향을 미칠 수 있습니다.\n\n### 3. 최종 판정\n\n**관망**\n\n미래나노텍은 2차전지 소재 사업이라는 강력한 성장 동력을 보유하고 있으며, 이에 대한 시장의 기대감이 주가에 반영되고 있습니다. 그러나 현재 재무제표 상의 불안정한 수익성과 높은 부채비율은 여전히 큰 우려 요인입니다. 2차전지 사업의 실질적인 성과가 재무제표에 반영되어 수익성 개선과 부채 부담 완화로 이어지는지 추가적인 확인이 필요합니다. 단기적인 시장 기대감보다는 중장기적인 기업의 펀더멘털 개선 여부를 지켜보며 신중하게 접근할 것을 권고합니다.",
+    "citations": []
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=00526836",
+    "summary": "공시 페이지 접근 제한"
+  }
+}

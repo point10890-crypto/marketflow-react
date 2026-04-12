@@ -1,0 +1,205 @@
+{
+  "stock_code": "348370",
+  "stock_name": "엔켐",
+  "generated_at": "2026-04-11T23:17:34.201147+00:00",
+  "financials": {
+    "stock_code": "348370",
+    "corp_code": "01011526",
+    "years": [
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2021": {
+        "cash": 815.1,
+        "total_assets": 4074.2,
+        "short_debt": 299.8,
+        "long_debt": 5.9,
+        "total_liab": 1908.2,
+        "total_equity": 2166.0,
+        "revenue": 2143.3,
+        "op_profit": -259.7,
+        "net_income": -194.7
+      },
+      "2022": {
+        "cash": 333.2,
+        "total_assets": 6802.5,
+        "short_debt": 449.3,
+        "long_debt": 26.7,
+        "total_liab": 3868.9,
+        "total_equity": 2933.6,
+        "revenue": 5097.9,
+        "op_profit": 153.6,
+        "net_income": 0.0
+      },
+      "2023": {
+        "total_assets": 8868.8,
+        "cash": 457.0,
+        "total_equity": 82.5,
+        "total_liab": 5968.0,
+        "long_debt": 314.6,
+        "op_profit": 51.2,
+        "net_income": -492.3,
+        "revenue": 4246.9
+      },
+      "2024": {
+        "total_assets": 11598.5,
+        "cash": 1026.5,
+        "total_equity": 10538.8,
+        "short_debt": 1064.3,
+        "total_liab": 6750.0,
+        "long_debt": 466.2,
+        "op_profit": -504.0,
+        "net_income": 0.0,
+        "revenue": 3657.1
+      },
+      "2025": {
+        "total_assets": 11075.5,
+        "cash": 121.3,
+        "total_equity": 139.9,
+        "short_debt": 1624.7,
+        "total_liab": 6265.2,
+        "long_debt": 317.3,
+        "op_profit": -783.9,
+        "net_income": 0.0,
+        "revenue": 3127.9
+      }
+    },
+    "missing_years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2021,
+        "revenue_eok": 2143,
+        "op_profit_eok": -260,
+        "net_income_eok": -195,
+        "roe_pct": -8.99,
+        "op_margin_pct": -12.13,
+        "debt_ratio_pct": 88.09
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 5098,
+        "op_profit_eok": 154,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 3.02,
+        "debt_ratio_pct": 131.8
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 4247,
+        "op_profit_eok": 51,
+        "net_income_eok": -492,
+        "roe_pct": -600.0,
+        "op_margin_pct": 1.2,
+        "debt_ratio_pct": 7278.05
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 3657,
+        "op_profit_eok": -504,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": -13.78,
+        "debt_ratio_pct": 64.05
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 3128,
+        "op_profit_eok": -784,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": -25.06,
+        "debt_ratio_pct": 4475.0
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": 9.93,
+      "op_profit_cagr_pct": 31.94,
+      "best_year": 2022,
+      "worst_year": 2025,
+      "avg_roe_pct": -121.8
+    },
+    "valuation": {
+      "grade": "D",
+      "strengths": [
+        "2021년부터 2025년까지 매출액은 연평균 9.93%의 성장률을 기록했습니다.",
+        "2022년 5,098억원의 최대 매출액을 달성하며 외형 성장의 잠재력을 보였습니다.",
+        "2024년 대규모 자본 확충으로 일시적인 재무구조 개선을 시도했습니다."
+      ],
+      "risks": [
+        "2021년 이후 지속적인 영업손실과 당기순손실로 수익성이 매우 취약합니다.",
+        "2023년과 2025년 자본총계가 급감하여 부채비율이 비정상적으로 높아지는 등 재무 안정성이 극도로 불안정합니다.",
+        "영업이익의 변동성이 매우 크고, 최근 손실 규모가 확대되는 추세입니다."
+      ],
+      "one_liner": "수익성 악화와 불안정한 재무구조로 인해 투자 위험이 매우 높은 기업입니다."
+    }
+  },
+  "dcf": {
+    "text": "퀀트 애널리스트로서 엔켐(348370)의 DCF 적정가치를 계산하겠습니다.\n\n**전제 및 가정:**\n\n제공된 정보만으로는 5년간의 매출액 및 영업이익 성장률을 예측하기 어렵습니다. 따라서, 합리적인 DCF 계산을 위해 다음과 같은 추가 가정을 적용합니다.\n\n*   **기준 연도:** 2025년부터 5년간 예측 (2025년 ~ 2029년). 제공된 재무 데이터는 2024년 기준입니다.\n*   **매출액 성장률:**\n    *   2025년 ~ 2027년: 연 15% 성장\n    *   2028년 ~ 2029년: 연 10% 성장\n*   **영업이익률 개선:**\n    *   2024년 영업이익률: -25.05% (-784억 / 3128억)\n    *   2029년 목표 영업이익률: 5% (산업 평균 및 장기적인 수익성 가정)\n    *   5년간 선형적으로 영업이익률 개선 (연간 약 6.01%p 개선)\n*   **세율:** 25% (FCF 공식에 명시된 `(1 - 0.25)`에 근거)\n*   **감가상각비:** 매출액의 10%\n*   **CAPEX:** 매출액의 5%\n*   **WACC (가중평균자본비용):** 9% (기본 시나리오)\n*   **영구성장률 (g):** 2% (기본 시나리오)\n\n---\n\n### 1. 기본 시나리오 DCF 적정가치 계산\n\n아래 Python 코드를 사용하여 DCF 적정가치를 계산합니다.\n\n\n### 2. 분석 결과\n\n**1. 기본 시나리오 DCF 적정가치:**\n\n*   **예측 재무 (억원):**\n\n| Year | Revenue | Operating Margin | Operating Income | Depreciation | CAPEX | FCF |\n| :--- | :------ | :--------------- | :--------------- | :----------- | :---- | :---- |\n| 2025 | 3597.20 | -0.19            | -685.31          | 359.72       | 179.86 | -334.12 |\n| 2026 | 4136.78 | -0.13            | -539.37          | 413.68       | 206.84 | -197.69 |\n| 2027 | 4757.30 | -0.07            | -334.23          | 475.73       | 237.86 | -12.81 |\n| 2028 | 5233.03 | -0.01            | -53.00           | 523.30       | 261.65 | 221.90 |\n| 2029 | 5756.33 | 0.05             | 287.82           | 575.63       | 287.82 | 503.68 |\n\n*   **DCF 계산 요약:**\n    *   예측 기간 FCF의 현재가치 합계 (2025-2029): 1.75 억원\n    *   2029년 기준 터미널 밸류 (Terminal Value): 7339.32 억원\n    *   터미널 밸류의 현재가치: 4770.05 억원\n    *   **총 DCF 적정가치 (기본 시나리오): 4771.80 억원**\n\n**2. WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 (억원):**\n\n|       | WACC=7%   | WACC=8%   | WACC=9%   | WACC=10%  | WACC=11%  |\n| :---- | :-------- | :-------- | :-------- | :-------- | :-------- |\n| **g=1%** | 6078.14   | 4962.92   | 4134.62   | 3497.25   | 2993.24   |\n| **g=2%** | 7358.99   | 5844.40   | **4771.80** | 3975.06   | 3361.90   |\n| **g=3%** | 9280.26   | 7078.46   | 5621.37   | 4589.38   | 3822.71   |\n\n*   민감도 분석 결과, WACC가 낮고 영구성장률(g)이 높을수록 적정가치는 상승합니다.\n*   기본 시나리오 (WACC=9%, g=2%)의 적정가치는 4771.80억원입니다.\n\n**3. 요약 출력:**\n\n적정가치(기본): 4771.80억원\n\n---\n**참고:** 본 DCF 분석은 제시된 가정과 추가적인 매출액/영업이익률 가정에 기반합니다. 특히 현재 영업이익이 음수인 기업의 경우, 영업이익률 개선에 대한 가정은 적정가치에 큰 영향을 미치므로, 해당 가정의 현실성에 대한 심층적인 분석이 필요합니다.",
+    "executed_code": "import pandas as pd\n\n# --- 0. Input Data and Assumptions ---\n# Financials (억원) - Assuming these are for 2024 (Year 0)\nrevenue_2024 = 3128\noperating_income_2024 = -784\n\n# DCF Assumptions\nwacc_base = 0.09\ng_base = 0.02\ntax_rate = 0.25 # Implied by (1 - 0.25)\ndepreciation_rate = 0.10 # 10% of Revenue\ncapex_rate = 0.05 # 5% of Revenue\nforecast_years = 5 # 2025-2029\n\n# Growth Assumptions (made due to lack of explicit guidance)\n# Revenue Growth Rate\nrevenue_growth_rates = {\n    2025: 0.15,\n    2026: 0.15,\n    2027: 0.15,\n    2028: 0.10,\n    2029: 0.10\n}\n\n# Operating Margin Improvement\n# Current Operating Margin (2024)\nop_margin_2024 = operating_income_2024 / revenue_2024\n# Target Operating Margin by 2029 (Year 5)\ntarget_op_margin_2029 = 0.05 # 5%\n# Linear improvement over 5 years\nop_margin_improvement_per_year = (target_op_margin_2029 - op_margin_2024) / forecast_years\n\nprint(f\"Initial Operating Margin (2024): {op_margin_2024:.2%}\")\nprint(f\"Target Operating Margin (2029): {target_op_margin_2029:.2%}\")\nprint(f\"Annual Operating Margin Improvement: {op_margin_improvement_per_year:.2%}\")\n\n# --- 1. Base Scenario DCF Calculation ---\n\n# Initialize lists to store projected values\nyears = [2024 + i for i in range(forecast_years + 1)] # 2024 (base) to 2029 (year 5)\nprojected_revenue = [revenue_2024]\nprojected_op_margin = [op_margin_2024]\nprojected_operating_income = [operating_income_2024]\nprojected_depreciation = [revenue_2024 * depreciation_rate]\nprojected_capex = [revenue_2024 * capex_rate]\nprojected_fcf = [] # FCF starts from 2025 (Year 1)\n\n# Project financials for 2025-2029\nfor i in range(1, forecast_years + 1):\n    year = years[i]\n    prev_year_revenue = projected_revenue[-1]\n    prev_year_op_margin = projected_op_margin[-1]\n\n    # Revenue\n    current_revenue = prev_year_revenue * (1 + revenue_growth_rates[year])\n    projected_revenue.append(current_revenue)\n\n    # Operating Margin\n    current_op_margin = prev_year_op_margin + op_margin_improvement_per_year\n    projected_op_margin.append(current_op_margin)\n\n    # Operating Income\n    current_operating_income = current_revenue * current_op_margin\n    projected_operating_income.append(current_operating_income)\n\n    # Depreciation & CAPEX (based on current revenue)\n    current_depreciation = current_revenue * depreciation_rate\n    projected_depreciation.append(current_depreciation)\n    current_capex = current_revenue * capex_rate\n    projected_capex.append(current_capex)\n\n    # FCF (using the given formula)\n    # FCF ≈ 영업이익 × (1 - 0.25) + 감가상각(매출의 10%) - CAPEX(매출의 5%)\n    current_fcf = current_operating_income * (1 - tax_rate) + current_depreciation - current_capex\n    projected_fcf.append(current_fcf)\n\n# Create a DataFrame for better visualization\ndf_forecast = pd.DataFrame({\n    'Year': years[1:], # Start from 2025\n    'Revenue': projected_revenue[1:],\n    'Operating Margin': projected_op_margin[1:],\n    'Operating Income': projected_operating_income[1:],\n    'Depreciation': projected_depreciation[1:],\n    'CAPEX': projected_capex[1:],\n    'FCF': projected_fcf\n})\ndf_forecast = df_forecast.set_index('Year')\n\nprint(\"\\n--- Projected Financials (억원) ---\")\nprint(df_forecast.round(2))\n\n# Calculate Present Value of FCFs\npv_fcf = []\nfor i in range(forecast_years):\n    fcf = projected_fcf[i]\n    discount_factor = (1 + wacc_base)**(i + 1) # i+1 because first FCF is for year 1 (2025)\n    pv_fcf.append(fcf / discount_factor)\n\n# Calculate Terminal Value (TV)\n# FCF for Year 6 (2030)\nfcf_year5 = projected_fcf[-1] # FCF for 2029\nfcf_year6 = fcf_year5 * (1 + g_base)\n\nterminal_value = fcf_year6 / (wacc_base - g_base)\npv_terminal_value = terminal_value / (1 + wacc_base)**forecast_years\n\n# Total DCF Value\ndcf_value_base = sum(pv_fcf) + pv_terminal_value\n\nprint(f\"\\n--- Base Scenario DCF Calculation ---\")\nprint(f\"Sum of PV of FCFs (2025-2029): {sum(pv_fcf):.2f} 억원\")\nprint(f\"Terminal Value (2029): {terminal_value:.2f} 억원\")\nprint(f\"PV of Terminal Value: {pv_terminal_value:.2f} 억원\")\nprint(f\"Total DCF 적정가치 (기본): {dcf_value_base:.2f} 억원\")\n\n# --- 2. Sensitivity Grid ---\nwacc_range = [0.07, 0.08, 0.09, 0.10, 0.11] # 7% to 11%\ng_range = [0.01, 0.02, 0.03] # 1% to 3%\n\nsensitivity_results = pd.DataFrame(index=[f'g={g*100:.0f}%' for g in g_range],\n                                   columns=[f'WACC={wacc*100:.0f}%' for wacc in wacc_range])\n\ndef calculate_dcf(wacc, g, projected_fcf_list, forecast_years):\n    if wacc <= g:\n        return float('inf') # Or handle as an error/undefined\n    \n    pv_fcf_sens = []\n    for i in range(forecast_years):\n        fcf = projected_fcf_list[i]\n        discount_factor = (1 + wacc)**(i + 1)\n        pv_fcf_sens.append(fcf / discount_factor)\n\n    fcf_year5 = projected_fcf_list[-1]\n    fcf_year6 = fcf_year5 * (1 + g)\n    terminal_value_sens = fcf_year6 / (wacc - g)\n    pv_terminal_value_sens = terminal_value_sens / (1 + wacc)**forecast_years\n\n    return sum(pv_fcf_sens) + pv_terminal_value_sens\n\nfor wacc in wacc_range:\n    for g in g_range:\n        col_name = f'WACC={wacc*100:.0f}%'\n        row_name = f'g={g*100:.0f}%'\n        sensitivity_results.loc[row_name, col_name] = calculate_dcf(wacc, g, projected_fcf, forecast_years)\n\nprint(\"\\n--- DCF 적정가치 민감도 그리드 (억원) ---\")\nprint(sensitivity_results.round(2))\n\n# --- 3. Summary Output ---\nprint(f\"\\n적정가치(기본): {dcf_value_base:.2f}억원\")",
+    "code_output": "Initial Operating Margin (2024): -25.06%\nTarget Operating Margin (2029): 5.00%\nAnnual Operating Margin Improvement: 6.01%\n\n--- Projected Financials (억원) ---\n      Revenue  Operating Margin  Operating Income  Depreciation   CAPEX     FCF\nYear                                                                           \n2025  3597.20             -0.19           -685.31        359.72  179.86 -334.12\n2026  4136.78             -0.13           -539.37        413.68  206.84 -197.69\n2027  4757.30             -0.07           -334.23        475.73  237.86  -12.81\n2028  5233.03             -0.01            -53.00        523.30  261.65  221.90\n2029  5756.33              0.05            287.82        575.63  287.82  503.68\n\n--- Base Scenario DCF Calculation ---\nSum of PV of FCFs (2025-2029): 1.75 억원\nTerminal Value (2029): 7339.32 억원\nPV of Terminal Value: 4770.05 억원\nTotal DCF 적정가치 (기본): 4771.80 억원\n\n--- DCF 적정가치 민감도 그리드 (억원) ---\n        WACC=7%      WACC=8%      WACC=9%     WACC=10%     WACC=11%\ng=1%  6078.1401  4962.924896  4134.624595   3497.25432  2993.241126\ng=2%  7358.9873  5844.398631  4771.800977  3975.059058  3361.895392\ng=3%  9280.2581   7078.46186  5621.369488  4589.379435  3822.713225\n\n적정가치(기본): 4771.80억원"
+  },
+  "news": {
+    "text": "## 엔켐(348370) 재무제표 및 최근 뉴스 분석 보고서\n\n**투자등급 D, 요약: 수익성 악화와 불안정한 재무구조로 인해 투자 위험이 매우 높은 기업입니다.**\n\n### 1. 재무 데이터 스토리와 현재 시장 컨센서스의 일치/불일치\n\n제시된 10년 재무제표 분석 결과(수익성 악화, 불안정한 재무구조, 투자 위험 매우 높음)는 최근 공시 및 뉴스에서 드러난 재무 상황과 대체로 일치합니다. 엔켐은 최근 분기 순이익이 연속 적자를 기록하고 있으며, EBITDA 또한 마이너스를 기록하는 등 수익성 악화가 지속되고 있습니다. 2024년 4분기 실적은 흑자 전환했으나 시장 컨센서스를 하회했으며, 중국 시장 내 전해액 공급 과잉으로 인한 물량 감소와 판매 단가 하락이 주요 원인으로 지목되었습니다.\n\n과거 일부 증권사 리포트는 IRA 수혜, 원료 내재화 등을 이유로 '매수' 의견과 높은 목표주가를 제시하기도 했으나, 최근 주가는 상당한 하락세를 보이며 이러한 긍정적 전망이 시장에 충분히 반영되지 못했거나, 새로운 리스크 요인이 부각되고 있음을 시사합니다. 특히 2차전지 섹터 전반의 강세 속에서도 엔켐은 홀로 하락하거나 보합권에 머무는 등 시장의 긍정적 흐름에 동참하지 못하는 차별화된 움직임을 보였습니다.\n\n### 2. 재무제표에서 드러나지 않는 리스크 또는 호재\n\n**리스크:**\n*   **최대주주 주식 담보 제공 계약:** 최근 최대주주인 와이어트그룹이 주식 담보 제공 계약을 체결했으며, 담보권 실행 시 최대주주 변경을 수반할 수 있어 경영권 불안정 및 잠재적 오버행(대량 매도 물량 출회) 리스크가 부각됩니다. 이는 재무제표상으로는 즉각적으로 드러나지 않지만, 투자 심리에 매우 부정적인 영향을 미칠 수 있는 요인입니다.\n*   **우발채무 확대 및 재무 리스크 부각:** 관계회사에 대한 연대보증 및 중국 기업 인수 관련 대규모 채무보증을 제공하며 우발채무가 확대되고 재무 리스크가 증대되고 있습니다. 이는 현금성 자산이 아닌 지분 담보로 제공되는 경우가 있어 재무 건전성에 대한 우려를 키웁니다.\n*   **전환사채(CB) 오버행 우려:** 대규모 전환사채 물량은 주가 상승 시 잠재적인 매물 압박으로 작용하여 주가 상단을 제한할 수 있습니다. 비록 일부 분석에서는 현재 주가 대비 전환가액이 높아 당장 전환 유인이 낮다고 보기도 하지만, 시장의 불확실성을 가중시키는 요인입니다.\n\n**호재:**\n*   **유럽 시장 확장 및 공급망 강화:** 프랑스 베르코와의 전략적 협력을 통해 유럽 현지 생산 기반 공급 체계를 강화하고 장기 공급 협력을 재확인했습니다. 이는 중국 시장의 과잉 공급 문제에서 벗어나 매출처 다변화 및 성장을 기대할 수 있는 요인입니다.\n*   **CATL 납품 확대 및 하반기 흑자 전환 목표:** 정기 주주총회에서 CATL 납품 확대 및 연간 판매량 20만 톤 달성 목표, 하반기 분기 흑자 전환을 목표로 제시했습니다. 이러한 목표 달성 시 실적 턴어라운드의 중요한 계기가 될 수 있습니다.\n*   **북미 ESS 라인 확보 및 LFP 전해액 공급:** 북미 ESS(에너지 저장 시스템) 라인을 확보하고 글로벌 셀 제조사에 LFP 전해액을 공급한다는 소식은 성장 동력 확보 측면에서 긍정적입니다.\n*   **IRA 수혜 및 핵심 원료 수직 계열화:** 인플레이션 감축법(IRA)의 수혜를 받을 수 있는 북미 생산 능력을 보유하고 있으며, 핵심 원료의 수직 계열화를 추진하여 안정적인 원료 수급 및 수익성 개선을 꾀하고 있습니다.\n\n### 3. 최종 판정\n\n**관망**\n\n엔켐은 유럽 및 북미 시장 확장, CATL 공급 확대, 하반기 흑자 전환 목표 등 긍정적인 성장 전략을 가지고 있습니다. 그러나 현재 재무제표에서 드러나는 수익성 악화와 불안정한 재무구조, 그리고 최근 최대주주 주식 담보 제공 계약과 우발채무 확대 등 재무적으로 불확실성이 매우 큰 상황입니다. 2차전지 섹터의 전반적인 강세 속에서도 엔켐이 차별화된 하락세를 보이는 것은 이러한 리스크 요인들이 시장에 반영되고 있음을 시사합니다.\n\n단기적으로는 최대주주 관련 불확실성 해소 및 실적 턴어라운드 가시성 확보가 필요하며, 중장기적인 성장 동력은 유효하나 현재로서는 리스크가 더 크게 부각됩니다. 따라서 투자 위험을 관리하고 추가적인 정보와 실적 개선의 명확한 신호를 기다리는 **관망** 의견을 제시합니다.",
+    "citations": [
+      {
+        "title": "tradingview.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQH2ZuHeMUcR-jzN75-oA2F-c3xbH0sNYaw3z_-b5hWQj4lMluE5O28oBAIMMDI0vcfDOfLbiIyvaQWZtE-0ftlmKteWT-_aekKlIASwoZx5pcnhgYREnw-NyQl1o1cYyrv99pQkLYU_kA=="
+      },
+      {
+        "title": "daum.net",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGy4pYD96Mb1MXL2Ks6BdK8IYxPJJSbsmCLLF3iEEQxNpX18K4c3ttaj2_yKXX3X76kEo_Hh7JnPd-HdMdzgwRGjpFXVm73HqTInra24NLyPYp2j26Cimd90BCPR_hA724FISusNNxaZx9V8uiXIwG_MS8="
+      },
+      {
+        "title": "hankyung.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQH68wZNAqFkP6qs87Lv0NP6R7jbsTtYxgZ7B4S9mvVzuIanIF44mMsAfT2N-fpUPz4miHNaPK9soSV_rzoF19OSoa6N4E8X4aqrjThaJxR4fcCGYfu3EJ-hlIf6J0TJ--R1eLADEUMEolAU7YIW"
+      },
+      {
+        "title": "tistory.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEc0VF2nwOrNc82yy3fmMDnbO9US_MBofio5V73ENJcHlmMKPCJONAj6aQCuNEFf3MA8v5GzZ95l8oSxcBAwwQwVAPceJMc3__OdEAQqwgfnXfO7rYU9DJ97kTFsYIvMolhSq0Yd4AzKcVxn9FfN-nIJ9B1hfGMi1uDyZEfvhTCw-qNgn2GUOfj-f9MU-TUsp5aJecJNJbYzm3LAKZr1djkTkSGLQJWaMsvIlt-RmSaBd-f4b_HuFax--KFIdC7T8T4WKNb5ZcyYEveQz8Xu5qdKkJy0hiOkQsPM15yAfM2_WfXEN54Mhufih1YzbZxvpMHKTKSFcjSlMkJKeio3F2g62EVC8EZbjwO8gCjFHQr0SKaWTU0xj_KAS9CODGI_58jv3CWVKNHlYsudDR2wJVtRDON2R4uEu3Vt5TswDd3JtzfAtVvEAmYaXywfU0="
+      },
+      {
+        "title": "jkn.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGioKcf85xsfsN7eOJLdz1RRW3trSmtmshkLtjJDuUV7aL4TLIENSTOKBZxij4toMD08viLMp7n4j0cqxWTxl8HUW2iBBXzyehEKWHfMLeaJYwVLZptXJPtifH-Wg=="
+      },
+      {
+        "title": "jkn.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHwIq6hPwmY3F12hQz8s8TrJZ3SJ46c6HUd-HMQ-rO1msy4ErIbg3aKZsItzLeGZvJRCAXg1-s5EfH5yCX3sEo-29jRaqhfjWpGx8OS5LTyjesbr3o0epLxd__MEQ=="
+      },
+      {
+        "title": "digitaltoday.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHyzyIxDucqVMtaHCOeYBtDanINCOx3oyuC5Y_W_W2DZzaWVmFsydgjWYu9RClQaVudNonrpRO4FOQWn7NC-z_Jk5fV1tmhM69aQSwFXU5JccXQ3ecXK3n28V8qdxKs9Egq_dITik5vsVi2gQI0PJ5TIB5s9SDNMJ0yyy0="
+      },
+      {
+        "title": "newstomato.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHvVGP7i5AzgiSlrFgR9ejit-NKxR0AiFUBzmT4vYQa3DNzqPm_6YUFEZ42thohBTeCfJuAXpTjxiky-0mV1SCSk2kkyVPLVQvDyVlXvehzp0IvUIM7yc3M-YcpggRbw96k2jI6Zm2KFa4Hby0h"
+      },
+      {
+        "title": "tistory.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHc3b1nIMHVKcY4tYNwSn0w6gIjF1hd6rSG9NE9Qazlen8HQtnWJvVfkgL9jdW7VeMTpNqpBzFnJx0e83tSOloNTQd23of1W7gwahjRoQdS82a82gALeANCsM2dRo2g3ZdH1w=="
+      },
+      {
+        "title": "alphasquare.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQF6GSvAJziL7eWg7DhxiXGh0mEPG2jkOViOFpJ45F7ISZwYV4O2CFNiOqHefTz4EWPVYUOK5fVJzpyWTaZq8BUaRyoJ0FqGnzdNKNDN7PG0r6fxXKsr8EmsP_9xcJzrrnw2jsD500VjWA8IiyMmmWTp4n8="
+      }
+    ]
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=01011526",
+    "summary": "공시 페이지 접근 제한"
+  }
+}

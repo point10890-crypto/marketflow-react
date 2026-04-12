@@ -1,0 +1,81 @@
+{
+  "name": "SGC에너지",
+  "ticker": "005090.KS",
+  "result": "적극 매수",
+  "date": "2026-04-12 11:24:42",
+  "elapsed": 2.3,
+  "consensus_score": 5.0,
+  "analyst_count": 1,
+  "recommendation_detail": {
+    "strongBuy": 1,
+    "buy": 0,
+    "hold": 0,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 56900.0,
+    "high": 86000.0,
+    "low": 86000.0,
+    "mean": 86000.0,
+    "median": 86000.0
+  },
+  "current_price": 56900.0,
+  "upside_potential": 51.1,
+  "key_stats": {
+    "name": "SGC Energy",
+    "sector": "Industrials",
+    "industry": "Engineering & Construction",
+    "market_cap": 819772063744,
+    "pe_ratio": null,
+    "forward_pe": -120.80679,
+    "dividend_yield": 2.28,
+    "beta": 0.703,
+    "fifty_two_week_high": 68300.0,
+    "fifty_two_week_low": 20150.0,
+    "revenue": 2460687794176,
+    "profit_margin": -0.024939999,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "SGC에너지(005090.KS)에 대해 1명의 애널리스트가 적극 매수 의견을 제시했습니다. 목표가 평균은 86,000원으로 현재가 대비 51.1% 상승 여력이 있습니다. 이는 현재 주가 대비 상당한 상승 가능성을 시사합니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 624806646260
+    },
+    {
+      "date": "2025-09",
+      "value": 598943208950
+    },
+    {
+      "date": "2025-06",
+      "value": 618460152230
+    },
+    {
+      "date": "2025-03",
+      "value": 618477763700
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": -43726311520
+    },
+    {
+      "date": "2025-09",
+      "value": -15104004010
+    },
+    {
+      "date": "2025-06",
+      "value": 233879920
+    },
+    {
+      "date": "2025-03",
+      "value": -2778628870
+    }
+  ],
+  "news": []
+}
