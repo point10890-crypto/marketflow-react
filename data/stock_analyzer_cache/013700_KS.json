@@ -1,0 +1,75 @@
+{
+  "name": "까뮤이앤씨",
+  "ticker": "013700.KS",
+  "result": "데이터 없음",
+  "date": "2026-04-13 00:25:50",
+  "elapsed": 2.1,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 1364.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 1364.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "CAMUS E&S",
+    "sector": "Industrials",
+    "industry": "Engineering & Construction",
+    "market_cap": 81500135424,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": 2.2,
+    "beta": 0.427,
+    "fifty_two_week_high": 1636.0,
+    "fifty_two_week_low": 997.0,
+    "revenue": 118996148224,
+    "profit_margin": 0.03786,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 115591197090
+    },
+    {
+      "date": "2025-09",
+      "value": 64225986860
+    },
+    {
+      "date": "2025-06",
+      "value": 61679110150
+    },
+    {
+      "date": "2025-03",
+      "value": 55957142780
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 8506067270
+    },
+    {
+      "date": "2025-09",
+      "value": 3506402000
+    },
+    {
+      "date": "2025-06",
+      "value": 5530539480
+    },
+    {
+      "date": "2025-03",
+      "value": 2538741370
+    }
+  ],
+  "news": []
+}

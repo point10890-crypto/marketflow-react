@@ -1,0 +1,75 @@
+{
+  "name": "계양전기우",
+  "ticker": "012205.KS",
+  "result": "데이터 없음",
+  "date": "2026-04-13 01:15:15",
+  "elapsed": 1.3,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 8370.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 8370.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "KeyangElecMach(1P)",
+    "sector": "Industrials",
+    "industry": "Tools & Accessories",
+    "market_cap": 245405024256,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": null,
+    "beta": 1.85,
+    "fifty_two_week_high": 15040.0,
+    "fifty_two_week_low": 2830.0,
+    "revenue": 389798756352,
+    "profit_margin": -0.09458,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 91439125780
+    },
+    {
+      "date": "2025-09",
+      "value": 102300583320
+    },
+    {
+      "date": "2025-06",
+      "value": 102181636360
+    },
+    {
+      "date": "2025-03",
+      "value": 93877412130
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": -31087286460
+    },
+    {
+      "date": "2025-09",
+      "value": 2582242300
+    },
+    {
+      "date": "2025-06",
+      "value": -8568148540
+    },
+    {
+      "date": "2025-03",
+      "value": 204936280
+    }
+  ],
+  "news": []
+}
