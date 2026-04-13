@@ -16,10 +16,10 @@ export function authHeaders(extra?: Record<string, string>): Record<string, stri
     return headers;
 }
 
-export async function fetchAPI<T>(endpoint: string): Promise<T> {
+export async function fetchAPI<T>(endpoint: string, timeoutMs = 10000): Promise<T> {
     const url = `${API_BASE}${endpoint}`;
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000);
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
     try {
         const response = await fetch(url, {

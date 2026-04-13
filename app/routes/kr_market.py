@@ -518,7 +518,7 @@ def get_kr_ai_history(date):
 
 # ── 누적 성과 캐시 ───────────────────────────────────────────
 _cumulative_cache: dict = {}       # {'data': ..., 'ts': 0}
-_CUMULATIVE_TTL = 1800             # 30분 캐시
+_CUMULATIVE_TTL = 14400            # 4시간 캐시 (yfinance 대량 호출 방지)
 
 _TARGET_PCT = 9.0   # 목표 수익률 %
 _STOP_PCT = 5.0     # 손절 %
@@ -866,8 +866,19 @@ def get_kr_cumulative_return():
 
         # 3. yfinance 일괄 가격 다운로드
         logger.info(f"[cumulative] Fetching prices for {len(ticker_set)} tickers from {earliest}")
-        prices = _batch_fetch_prices(list(ticker_set), earliest)
-        logger.info(f"[cumulative] Got prices for {len(prices)} tickers")
+        try:
+            prices = _batch_fetch_prices(list(ticker_set), earliest)
+            logger.info(f"[cumulative] Got prices for {len(prices)} tickers")
+        except Exception as e:
+            logger.warning(f"[cumulative] yfinance fetch failed: {e}, trying stale cache")
+            # yfinance 실패 시 stale 캐시 반환
+            if os.path.exists(cache_path):
+                with open(cache_path, 'r', encoding='utf-8') as f:
+                    stale = json.load(f)
+                _cumulative_cache['data'] = stale
+                _cumulative_cache['ts'] = now
+                return jsonify(stale)
+            prices = {}
 
         # 4. 시그널별 판정
         today_str = datetime.now().strftime('%Y-%m-%d')
