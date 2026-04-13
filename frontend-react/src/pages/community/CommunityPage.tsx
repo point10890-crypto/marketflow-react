@@ -10,6 +10,7 @@ const BOARD_COLORS: Record<string, { bg: string; icon: string; glow: string }> =
     'trade-journal': { bg: 'from-violet-500/20 to-violet-600/5', icon: 'text-violet-400', glow: 'shadow-violet-500/10' },
     'pro-lounge':    { bg: 'from-indigo-500/20 to-indigo-600/5', icon: 'text-indigo-400', glow: 'shadow-indigo-500/10' },
     'formula-market': { bg: 'from-yellow-500/20 to-yellow-600/5', icon: 'text-yellow-400', glow: 'shadow-yellow-500/10' },
+    'lotto-ai':      { bg: 'from-pink-500/20 to-pink-600/5',   icon: 'text-pink-400',   glow: 'shadow-pink-500/10' },
 };
 
 const BOARD_ICONS: Record<string, string> = {
@@ -19,6 +20,7 @@ const BOARD_ICONS: Record<string, string> = {
     'trade-journal': 'fa-book-open',
     'pro-lounge': 'fa-crown',
     'formula-market': 'fa-calculator',
+    'lotto-ai': 'fa-dice',
 };
 
 function tierLabel(tier: string) {

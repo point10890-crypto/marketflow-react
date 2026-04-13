@@ -1,6 +1,7 @@
 """Authentication routes — 회원가입, 로그인, 프로필, 구독 요청"""
 
 import os
+import re
 import hmac
 import time
 import threading
@@ -52,6 +53,53 @@ def _reset_login_failures(ip: str):
         _login_failures.pop(ip, None)
 
 
+# ═══════════════════════════════════════════════════════
+#  Registration Rate Limiter (in-memory, per IP)
+# ═══════════════════════════════════════════════════════
+_reg_attempts = {}   # {ip: [timestamp, ...]}
+_reg_lock = threading.Lock()
+_REG_MAX_ATTEMPTS = 5
+_REG_WINDOW_SEC = 600  # 10 minutes
+
+
+def _check_reg_rate_limit(ip: str) -> bool:
+    """Returns True if IP is blocked from registering."""
+    now = time.time()
+    cutoff = now - _REG_WINDOW_SEC
+    with _reg_lock:
+        attempts = [t for t in _reg_attempts.get(ip, []) if t > cutoff]
+        _reg_attempts[ip] = attempts
+        return len(attempts) >= _REG_MAX_ATTEMPTS
+
+
+def _record_reg_attempt(ip: str):
+    """Record a registration attempt."""
+    now = time.time()
+    cutoff = now - _REG_WINDOW_SEC
+    with _reg_lock:
+        attempts = [t for t in _reg_attempts.get(ip, []) if t > cutoff]
+        attempts.append(now)
+        _reg_attempts[ip] = attempts
+        if len(_reg_attempts) > 200:
+            expired = [k for k, v in _reg_attempts.items() if not v or max(v) < cutoff]
+            for k in expired:
+                del _reg_attempts[k]
+
+
+# ═══════════════════════════════════════════════════════
+#  Password Policy
+# ═══════════════════════════════════════════════════════
+def _validate_password(pw: str) -> tuple[bool, str]:
+    """비밀번호 정책 검증. Returns (ok, error_msg)."""
+    if len(pw) < 8:
+        return False, '비밀번호는 8자 이상이어야 합니다'
+    if not re.search(r'[A-Za-z]', pw):
+        return False, '비밀번호에 영문자를 포함해야 합니다'
+    if not re.search(r'\d', pw):
+        return False, '비밀번호에 숫자를 포함해야 합니다'
+    return True, ''
+
+
 def _notify_admin_telegram(message: str):
     """관리자 텔레그램으로 알림 전송 (비동기, 실패는 경고 로그)."""
     import logging as _logging
@@ -96,6 +144,12 @@ if not ADMIN_SECRET:
 
 @auth_bp.route('/register', methods=['POST'])
 def register():
+    # Rate limit check
+    client_ip = request.headers.get('Cf-Connecting-IP') or request.headers.get('X-Forwarded-For', '').split(',')[0].strip() or request.remote_addr or '0.0.0.0'
+    if _check_reg_rate_limit(client_ip):
+        return jsonify({'error': '가입 요청이 너무 많습니다. 잠시 후 다시 시도하세요.'}), 429
+    _record_reg_attempt(client_ip)
+
     data = request.get_json()
     if not data:
         return jsonify({'error': 'Request body required'}), 400
@@ -106,11 +160,25 @@ def register():
 
     if not email or not password or not name:
         return jsonify({'error': 'email, password, name are required'}), 400
-    if len(password) < 6:
-        return jsonify({'error': 'Password must be at least 6 characters'}), 400
+
+    pw_ok, pw_err = _validate_password(password)
+    if not pw_ok:
+        return jsonify({'error': pw_err}), 400
 
     if User.query.filter_by(email=email).first():
         return jsonify({'error': 'Email already registered'}), 409
+
+    # 동일 이름 중복 가입 경고 (차단은 하지 않음 — 동명이인 가능)
+    same_name_users = User.query.filter(db.func.lower(User.name) == name.lower()).all()
+    if same_name_users:
+        existing_emails = ', '.join(u.email for u in same_name_users[:3])
+        _notify_admin_telegram(
+            f"⚠️ <b>중복 의심 가입</b>\n\n"
+            f"👤 이름: {name}\n"
+            f"📧 신규: {email}\n"
+            f"📧 기존: {existing_emails}\n"
+            f"⚡ 동명이인일 수 있으니 확인 바랍니다."
+        )
 
     user = User(email=email, name=name)
     user.set_password(password)
@@ -172,6 +240,15 @@ def login():
         _record_login_failure(client_ip)
         return jsonify({'error': 'Invalid email or password'}), 401
 
+    # 계정 상태 검증 (admin은 상태 무관 허용)
+    if not user.is_admin:
+        if user.status == 'pending':
+            return jsonify({'error': '관리자 승인 대기 중입니다. 승인 후 로그인 가능합니다.', 'status': 'pending'}), 403
+        if user.status == 'suspended':
+            return jsonify({'error': '계정이 정지되었습니다. 관리자에게 문의하세요.', 'status': 'suspended'}), 403
+        if user.status == 'rejected':
+            return jsonify({'error': '가입이 거절되었습니다.', 'status': 'rejected'}), 403
+
     # 로그인 성공 — 실패 카운터 리셋
     _reset_login_failures(client_ip)
 
@@ -211,6 +288,32 @@ def update_profile():
         db.session.commit()
 
     return jsonify({'user': user.to_dict()})
+
+
+@auth_bp.route('/change-password', methods=['PUT'])
+@login_required
+def change_password():
+    """유저 본인 비밀번호 변경 (현재 비밀번호 확인 필수)"""
+    user = request.current_user
+    if not user:
+        return jsonify({'error': 'Authentication required'}), 401
+
+    data = request.get_json() or {}
+    current_password = data.get('current_password', '')
+    new_password = data.get('new_password', '')
+
+    if not current_password or not new_password:
+        return jsonify({'error': '현재 비밀번호와 새 비밀번호를 입력하세요'}), 400
+    pw_ok, pw_err = _validate_password(new_password)
+    if not pw_ok:
+        return jsonify({'error': pw_err}), 400
+    if not user.check_password(current_password):
+        return jsonify({'error': '현재 비밀번호가 일치하지 않습니다'}), 401
+
+    user.set_password(new_password)
+    db.session.commit()
+
+    return jsonify({'message': '비밀번호가 변경되었습니다'})
 
 
 @auth_bp.route('/subscription/request', methods=['POST'])

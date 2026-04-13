@@ -15,6 +15,42 @@ export default function AccountPage() {
     const { canInstall, isInstalled, isIOS, install } = usePWAInstall();
     const [showInstallGuide, setShowInstallGuide] = useState(false);
 
+    // 비밀번호 변경
+    const [showPwChange, setShowPwChange] = useState(false);
+    const [currentPw, setCurrentPw] = useState('');
+    const [newPw, setNewPw] = useState('');
+    const [confirmPw, setConfirmPw] = useState('');
+    const [pwMsg, setPwMsg] = useState<{ text: string; error: boolean } | null>(null);
+    const [pwLoading, setPwLoading] = useState(false);
+
+    const pwStrength = (pw: string): { level: number; label: string; cls: string } => {
+        if (!pw) return { level: 0, label: '', cls: '' };
+        const hasLetter = /[A-Za-z]/.test(pw);
+        const hasDigit = /\d/.test(pw);
+        const hasSpecial = /[^A-Za-z0-9]/.test(pw);
+        const long = pw.length >= 12;
+        if (pw.length < 8 || !hasLetter || !hasDigit) return { level: 1, label: '약함', cls: 'bg-red-500' };
+        if (long && hasSpecial) return { level: 3, label: '강함', cls: 'bg-emerald-500' };
+        return { level: 2, label: '보통', cls: 'bg-amber-500' };
+    };
+    const pwValid = newPw.length >= 8 && /[A-Za-z]/.test(newPw) && /\d/.test(newPw);
+
+    const handleChangePassword = async () => {
+        if (!token) return;
+        if (newPw !== confirmPw) { setPwMsg({ text: '새 비밀번호가 일치하지 않습니다', error: true }); return; }
+        if (!pwValid) { setPwMsg({ text: '비밀번호는 8자 이상, 영문+숫자를 포함해야 합니다', error: true }); return; }
+        setPwLoading(true);
+        try {
+            await subscriptionAPI.changePassword(currentPw, newPw, token);
+            setPwMsg({ text: '비밀번호가 변경되었습니다', error: false });
+            setCurrentPw(''); setNewPw(''); setConfirmPw('');
+            setTimeout(() => setShowPwChange(false), 2000);
+        } catch (err: any) {
+            setPwMsg({ text: err.message || '비밀번호 변경 실패', error: true });
+        }
+        setPwLoading(false);
+    };
+
     const handleInstallApp = async () => {
         const result = await install();
         if (result === 'manual') setShowInstallGuide(true);
@@ -148,6 +184,70 @@ export default function AccountPage() {
                         </p>
                     </div>
                 </div>
+            </div>
+
+            {/* Password Change */}
+            <div className="p-6 rounded-2xl border border-white/[0.07] bg-[#13151f]">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
+                            <i className="fas fa-lock text-gray-400" />
+                        </div>
+                        <div>
+                            <h3 className="text-white font-bold">비밀번호 변경</h3>
+                            <p className="text-gray-500 text-xs">계정 보안을 위해 주기적으로 변경하세요</p>
+                        </div>
+                    </div>
+                    <button
+                        onClick={() => { setShowPwChange(!showPwChange); setPwMsg(null); }}
+                        className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white text-sm font-medium transition-colors"
+                    >
+                        {showPwChange ? '닫기' : '변경'}
+                    </button>
+                </div>
+
+                {showPwChange && (
+                    <div className="mt-4 space-y-3">
+                        <input type="password" value={currentPw} onChange={e => setCurrentPw(e.target.value)}
+                            placeholder="현재 비밀번호"
+                            className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-amber-500/50" />
+                        <input type="password" value={newPw} onChange={e => setNewPw(e.target.value)}
+                            placeholder="새 비밀번호 (8자 이상, 영문+숫자)"
+                            className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-amber-500/50" />
+                        {newPw && (
+                            <div>
+                                <div className="flex gap-1 mb-1">
+                                    {[1, 2, 3].map(i => (
+                                        <div key={i} className={`h-1 flex-1 rounded-full ${i <= pwStrength(newPw).level ? pwStrength(newPw).cls : 'bg-white/10'}`} />
+                                    ))}
+                                </div>
+                                <div className="flex justify-between text-[10px]">
+                                    <span className="text-gray-400">{pwStrength(newPw).label}</span>
+                                    {!pwValid && <span className="text-red-400">8자 이상, 영문+숫자 필수</span>}
+                                </div>
+                            </div>
+                        )}
+                        <input type="password" value={confirmPw} onChange={e => setConfirmPw(e.target.value)}
+                            placeholder="새 비밀번호 확인"
+                            className={`w-full px-4 py-3 rounded-xl bg-white/5 border text-white text-sm placeholder-gray-500 focus:outline-none focus:border-amber-500/50 ${confirmPw && confirmPw !== newPw ? 'border-red-500/50' : 'border-white/10'}`} />
+                        {confirmPw && confirmPw !== newPw && (
+                            <p className="text-xs text-red-400"><i className="fas fa-exclamation-circle mr-1" />비밀번호가 일치하지 않습니다</p>
+                        )}
+                        {pwMsg && (
+                            <p className={`text-sm ${pwMsg.error ? 'text-red-400' : 'text-emerald-400'}`}>
+                                <i className={`fas ${pwMsg.error ? 'fa-exclamation-circle' : 'fa-check-circle'} mr-1`} />
+                                {pwMsg.text}
+                            </p>
+                        )}
+                        <button
+                            onClick={handleChangePassword}
+                            disabled={pwLoading || !currentPw || !newPw || !confirmPw}
+                            className="w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-sm transition-colors disabled:opacity-30"
+                        >
+                            {pwLoading ? '처리 중...' : '비밀번호 변경'}
+                        </button>
+                    </div>
+                )}
             </div>
 
             {/* Subscription Period (Pro users) */}

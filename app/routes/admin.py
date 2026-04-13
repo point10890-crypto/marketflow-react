@@ -197,11 +197,24 @@ def list_users():
 @admin_bp.route('/users/<int:user_id>')
 @admin_required
 def get_user(user_id):
-    """유저 상세 조회"""
+    """유저 상세 조회 + 감사 로그 + 구독 이력"""
     user = db.session.get(User, user_id)
     if not user:
         return jsonify({'error': 'User not found'}), 404
-    return jsonify(user.to_dict())
+
+    data = user.to_dict()
+
+    # 최근 감사 로그 (해당 유저 관련)
+    logs = AdminAuditLog.query.filter_by(target_user_id=user_id) \
+        .order_by(AdminAuditLog.created_at.desc()).limit(20).all()
+    data['audit_logs'] = [l.to_dict() for l in logs]
+
+    # 구독 요청 이력
+    sub_reqs = SubscriptionRequest.query.filter_by(user_id=user_id) \
+        .order_by(SubscriptionRequest.created_at.desc()).limit(10).all()
+    data['subscription_history'] = [s.to_dict() for s in sub_reqs]
+
+    return jsonify(data)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -375,6 +388,10 @@ def set_expiry(user_id):
     except (ValueError, TypeError):
         return jsonify({'error': 'Invalid date format. Use YYYY-MM-DD or ISO 8601'}), 400
 
+    # 과거 날짜 설정 방지
+    if expires < datetime.now(timezone.utc):
+        return jsonify({'error': '과거 날짜는 설정할 수 없습니다'}), 400
+
     before = {'pro_expires_at': user.pro_expires_at.isoformat() if user.pro_expires_at else None}
     user.pro_expires_at = expires
     user.pro_expiry_alert_stage = None
@@ -396,14 +413,21 @@ def reset_password(user_id):
 
     data = request.get_json() or {}
     new_password = data.get('password', '').strip()
-    if not new_password or len(new_password) < 6:
-        return jsonify({'error': 'Password must be at least 6 characters'}), 400
+    note = (data.get('note') or '').strip() or 'admin reset'
+
+    if not new_password:
+        return jsonify({'error': '새 비밀번호를 입력하세요'}), 400
+    # 동일 비밀번호 정책 적용
+    from app.routes.auth import _validate_password
+    pw_ok, pw_err = _validate_password(new_password)
+    if not pw_ok:
+        return jsonify({'error': pw_err}), 400
 
     user.set_password(new_password)
     db.session.commit()
 
-    _record_audit('reset_password', user, None, None, note='admin reset')
-    _notify_admin('비밀번호 리셋', user)
+    _record_audit('reset_password', user, None, None, note=note)
+    _notify_admin('비밀번호 리셋', user, f"사유: {note}")
 
     return jsonify({
         'message': f'{user.email} 비밀번호 리셋 완료',
@@ -467,6 +491,74 @@ def delete_user(user_id):
         print(f"[AuditLog] delete_user log failed: {e}")
 
     return jsonify({'message': f'User {email} deleted'})
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 중복 계정 탐지
+# ─────────────────────────────────────────────────────────────────────────────
+
+@admin_bp.route('/users/duplicates', methods=['GET'])
+@admin_required
+def detect_duplicates():
+    """같은 이름 또는 유사 이메일로 중복 가입 의심 계정 그룹 반환."""
+    users = User.query.order_by(User.name, User.created_at).all()
+
+    # 1) 이름 기준 그룹핑
+    from collections import defaultdict
+    name_groups = defaultdict(list)
+    for u in users:
+        key = (u.name or '').strip().lower()
+        if key:
+            name_groups[key].append(u)
+
+    # 2) 이메일 prefix 기준 그룹핑 (@ 앞 부분, 숫자 제거 후 3자 이상 일치)
+    import re as _re
+    prefix_groups = defaultdict(list)
+    for u in users:
+        prefix = (u.email or '').split('@')[0]
+        normalized = _re.sub(r'\d+', '', prefix).lower()
+        if len(normalized) >= 3:
+            prefix_groups[normalized].append(u)
+
+    # 3) 2명 이상인 그룹만 반환 (중복 제거: 이름그룹+prefix그룹 병합)
+    seen_sets = set()
+    result = []
+
+    def _user_dict(u):
+        return {
+            'id': u.id, 'email': u.email, 'name': u.name,
+            'tier': u.tier, 'status': u.status,
+            'created_at': u.created_at.isoformat() if u.created_at else None,
+            'last_login_at': u.last_login_at.isoformat() if u.last_login_at else None,
+        }
+
+    for name_key, group in name_groups.items():
+        if len(group) < 2:
+            continue
+        ids = tuple(sorted(u.id for u in group))
+        if ids in seen_sets:
+            continue
+        seen_sets.add(ids)
+        result.append({
+            'reason': 'same_name',
+            'key': group[0].name,
+            'accounts': [_user_dict(u) for u in group],
+        })
+
+    for prefix_key, group in prefix_groups.items():
+        if len(group) < 2:
+            continue
+        ids = tuple(sorted(u.id for u in group))
+        if ids in seen_sets:
+            continue
+        seen_sets.add(ids)
+        result.append({
+            'reason': 'similar_email',
+            'key': prefix_key,
+            'accounts': [_user_dict(u) for u in group],
+        })
+
+    return jsonify({'groups': result, 'total_groups': len(result)})
 
 
 # ─────────────────────────────────────────────────────────────────────────────

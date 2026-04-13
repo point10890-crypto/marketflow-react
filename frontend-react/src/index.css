@@ -1,6 +1,8 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+/* cache-bust */
+.cache-bust-v20260413 { --cb: 1; }
 
 /* Full viewport height — use dvh for mobile Safari */
 html, body, #root {

@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { adminAPI, AdminDashboard, AdminUser, AdminNotification, SubscriptionRequest, fetchAuthAPI, API_BASE } from '@/lib/api';
@@ -32,7 +33,7 @@ function notiTimeAgo(dateStr: string) {
 // ── Main Admin Page ──────────────────────────────────────────────────────────
 
 export default function AdminPage() {
-    const { token } = useAuth();
+    const { token, user: authUser } = useAuth();
     const apiToken = token ?? undefined;
     const [activeTab, setActiveTab] = useState<AdminTab>('dashboard');
     const [dashData, setDashData] = useState<AdminDashboard | null>(null);
@@ -80,7 +81,7 @@ export default function AdminPage() {
 
             {/* Tab Content */}
             {activeTab === 'dashboard' && <DashboardTab data={dashData} onNavigate={setActiveTab} apiToken={apiToken} />}
-            {activeTab === 'users' && <UsersTab apiToken={apiToken} />}
+            {activeTab === 'users' && <UsersTab apiToken={apiToken} currentUserId={authUser?.id} />}
             {activeTab === 'subscriptions' && <SubscriptionsTab apiToken={apiToken} onCountChange={setPendingCount} />}
             {activeTab === 'system' && <SystemTab token={token} />}
         </div>
@@ -264,20 +265,50 @@ const TIER_STYLES: Record<string, { label: string; cls: string }> = {
     premium: { label: 'Ultra Pro', cls: 'bg-purple-500/20 text-purple-400' },
 };
 
-function UsersTab({ apiToken }: { apiToken?: string }) {
+function UsersTab({ apiToken, currentUserId }: { apiToken?: string; currentUserId?: number | string }) {
     const [users, setUsers] = useState<AdminUser[]>([]);
     const [loading, setLoading] = useState(true);
     const [actionMsg, setActionMsg] = useState('');
     const [filterTier, setFilterTier] = useState('all');
     const [filterStatus, setFilterStatus] = useState('all');
     const [search, setSearch] = useState('');
+    const [searchDebounced, setSearchDebounced] = useState('');
     const [resetTarget, setResetTarget] = useState<AdminUser | null>(null);
     const [newPassword, setNewPassword] = useState('');
+    const [resetNote, setResetNote] = useState('');
     const [deleteTarget, setDeleteTarget] = useState<AdminUser | null>(null);
     const [expiryTarget, setExpiryTarget] = useState<AdminUser | null>(null);
     const [expiryValue, setExpiryValue] = useState('');
+    const [detailUser, setDetailUser] = useState<any | null>(null);
+    const [detailLoading, setDetailLoading] = useState(false);
+    const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+    const [duplicates, setDuplicates] = useState<Array<{ reason: string; key: string; accounts: Array<{ id: number; email: string; name: string; tier: string | null; status: string; created_at: string | null; last_login_at: string | null }> }>>([]);
+    const [showDuplicates, setShowDuplicates] = useState(false);
+    const [mobileMenuId, setMobileMenuId] = useState<number | null>(null);
 
-    useEffect(() => { loadUsers(); }, [apiToken]);
+    // Search debounce (300ms)
+    useEffect(() => {
+        const timer = setTimeout(() => setSearchDebounced(search), 300);
+        return () => clearTimeout(timer);
+    }, [search]);
+
+    useEffect(() => { loadUsers(); loadDuplicates(); }, [apiToken]);
+
+    const loadDuplicates = async () => {
+        try {
+            const res = await adminAPI.getDuplicates(apiToken);
+            setDuplicates(res.groups || []);
+        } catch { /* */ }
+    };
+
+    const openUserDetail = async (userId: number) => {
+        setDetailLoading(true);
+        try {
+            const data = await fetchAuthAPI<any>(`/api/admin/users/${userId}`, apiToken);
+            setDetailUser(data);
+        } catch { /* */ }
+        setDetailLoading(false);
+    };
 
     const loadUsers = async () => {
         setLoading(true);
@@ -289,7 +320,7 @@ function UsersTab({ apiToken }: { apiToken?: string }) {
     };
 
     const showAction = (msg: string, isError = false) => {
-        setActionMsg(isError ? `❌ ${msg}` : `✅ ${msg}`);
+        setActionMsg(isError ? `error:${msg}` : `ok:${msg}`);
         setTimeout(() => setActionMsg(''), 3000);
     };
 
@@ -319,12 +350,15 @@ function UsersTab({ apiToken }: { apiToken?: string }) {
     };
 
     const handleResetPassword = async () => {
-        if (!resetTarget || !newPassword || newPassword.length < 6) return;
+        if (!resetTarget || !newPassword) return;
+        if (newPassword.length < 8 || !/[A-Za-z]/.test(newPassword) || !/\d/.test(newPassword)) return;
+        if (!resetNote.trim()) return;
         try {
-            await adminAPI.resetPassword(resetTarget.id, newPassword, apiToken);
+            await adminAPI.resetPassword(resetTarget.id, newPassword, apiToken, resetNote.trim());
             showAction(`${resetTarget.name} 비밀번호 변경 완료`);
             setResetTarget(null);
             setNewPassword('');
+            setResetNote('');
         } catch (err: any) { showAction(err.message, true); }
     };
 
@@ -357,14 +391,54 @@ function UsersTab({ apiToken }: { apiToken?: string }) {
         } catch (err: any) { showAction(err.message, true); }
     };
 
+    // Bulk actions
+    const handleBulkApprove = async () => {
+        const ids = Array.from(selectedIds);
+        if (ids.length === 0) return;
+        try {
+            await adminAPI.bulkApprove(ids, apiToken);
+            setUsers(prev => prev.map(u => ids.includes(u.id) ? { ...u, status: 'approved' } : u));
+            showAction(`${ids.length}명 일괄 승인 완료`);
+            setSelectedIds(new Set());
+        } catch (err: any) { showAction(err.message, true); }
+    };
+
+    const handleBulkTier = async (tier: string) => {
+        const ids = Array.from(selectedIds);
+        if (ids.length === 0) return;
+        try {
+            await adminAPI.bulkTier(ids, tier, apiToken);
+            setUsers(prev => prev.map(u => ids.includes(u.id) ? { ...u, tier } : u));
+            showAction(`${ids.length}명 일괄 ${TIER_STYLES[tier]?.label || tier} 부여`);
+            setSelectedIds(new Set());
+        } catch (err: any) { showAction(err.message, true); }
+    };
+
+    const toggleSelect = (id: number) => {
+        setSelectedIds(prev => {
+            const next = new Set(prev);
+            if (next.has(id)) next.delete(id); else next.add(id);
+            return next;
+        });
+    };
+
+    const toggleSelectAll = () => {
+        const selectable = filtered.filter(u => u.role !== 'admin');
+        if (selectedIds.size === selectable.length && selectable.length > 0) {
+            setSelectedIds(new Set());
+        } else {
+            setSelectedIds(new Set(selectable.map(u => u.id)));
+        }
+    };
+
     const filtered = users.filter(u => {
         if (filterTier !== 'all') {
             const tierKey = u.tier || 'none';
             if (tierKey !== filterTier) return false;
         }
         if (filterStatus !== 'all' && u.status !== filterStatus) return false;
-        if (search) {
-            const q = search.toLowerCase();
+        if (searchDebounced) {
+            const q = searchDebounced.toLowerCase();
             return u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q);
         }
         return true;
@@ -385,11 +459,31 @@ function UsersTab({ apiToken }: { apiToken?: string }) {
         return { label: `${dateStr} (${days}일)`, cls: 'text-gray-500' };
     };
 
+    const daysSince = (iso: string | null): string => {
+        if (!iso) return '-';
+        const days = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
+        return `${days}일째`;
+    };
+
+    // Password strength
+    const pwStrength = (pw: string): { level: number; label: string; cls: string } => {
+        if (!pw) return { level: 0, label: '', cls: '' };
+        const hasLetter = /[A-Za-z]/.test(pw);
+        const hasDigit = /\d/.test(pw);
+        const hasSpecial = /[^A-Za-z0-9]/.test(pw);
+        const long = pw.length >= 12;
+        if (pw.length < 8 || !hasLetter || !hasDigit) return { level: 1, label: '약함', cls: 'bg-red-500' };
+        if (long && hasSpecial) return { level: 3, label: '강함', cls: 'bg-emerald-500' };
+        return { level: 2, label: '보통', cls: 'bg-amber-500' };
+    };
+
+    const pwValid = newPassword.length >= 8 && /[A-Za-z]/.test(newPassword) && /\d/.test(newPassword);
+
     if (loading) return <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-500" /></div>;
 
     return (
         <>
-            {/* 요약 */}
+            {/* 요약 바 */}
             <div className="flex items-center justify-between mb-1 flex-wrap gap-2">
                 <div className="flex items-center gap-3 text-xs text-gray-500 flex-wrap">
                     <span>{users.length}명</span>
@@ -401,21 +495,142 @@ function UsersTab({ apiToken }: { apiToken?: string }) {
                             승인 대기 {statusCount('pending')}
                         </span>
                     )}
+                    {duplicates.length > 0 && (
+                        <button onClick={() => setShowDuplicates(!showDuplicates)}
+                            className="px-2 py-0.5 rounded bg-red-500/15 text-red-400 font-bold hover:bg-red-500/25 transition-colors">
+                            중복 의심 {duplicates.length}
+                        </button>
+                    )}
                 </div>
             </div>
 
             {actionMsg && (
-                <div className={`p-3 rounded-lg text-sm font-medium ${actionMsg.startsWith('❌') ? 'bg-red-500/10 border border-red-500/20 text-red-400' : 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400'}`}>
-                    {actionMsg}
+                <div className={`p-3 rounded-lg text-sm font-medium ${actionMsg.startsWith('error:') ? 'bg-red-500/10 border border-red-500/20 text-red-400' : 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400'}`}>
+                    {actionMsg.replace(/^(error:|ok:)/, '')}
                 </div>
             )}
 
+            {/* 중복 계정 경고 패널 */}
+            {showDuplicates && duplicates.length > 0 && (
+                <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                        <h3 className="text-sm font-bold text-red-400">
+                            <i className="fas fa-exclamation-triangle mr-1.5" />중복 계정 탐지 ({duplicates.length}그룹)
+                        </h3>
+                        <button onClick={() => setShowDuplicates(false)} className="text-gray-500 hover:text-white text-xs">
+                            <i className="fas fa-times" />
+                        </button>
+                    </div>
+                    <p className="text-[10px] text-gray-500">
+                        <i className="fas fa-shield-alt mr-1 text-emerald-400" />최근 로그인 계정 = 주 계정 (보호). 나머지 = 중복 의심 (삭제 가능).
+                    </p>
+                    <div className="space-y-2 max-h-72 overflow-y-auto">
+                        {duplicates.map((group, gi) => {
+                            // 주 계정 판별: 가장 최근 로그인한 계정 (로그인 기록 없으면 가입일 기준)
+                            const primaryId = group.accounts.reduce((bestId, acc) => {
+                                const best = group.accounts.find(a => a.id === bestId);
+                                if (!best) return acc.id;
+                                const bestTime = best.last_login_at || best.created_at || '';
+                                const accTime = acc.last_login_at || acc.created_at || '';
+                                return accTime > bestTime ? acc.id : bestId;
+                            }, group.accounts[0]?.id);
+
+                            return (
+                                <div key={gi} className="rounded-lg bg-white/[0.03] border border-white/[0.06] p-3">
+                                    <div className="text-xs text-gray-400 mb-2">
+                                        <span className="text-red-400 font-bold">{group.reason === 'same_name' ? '동일 이름' : '유사 이메일'}</span>
+                                        <span className="ml-1.5 text-white font-medium">{group.key}</span>
+                                        <span className="ml-2 text-gray-600">({group.accounts.length}개 계정)</span>
+                                    </div>
+                                    <div className="space-y-1">
+                                        {group.accounts.map(acc => {
+                                            const isPrimary = acc.id === primaryId;
+                                            const isCurrentAdmin = currentUserId != null && String(acc.id) === String(currentUserId);
+                                            const isProtected = isPrimary || isCurrentAdmin;
+
+                                            return (
+                                                <div key={acc.id} className={`flex items-center justify-between text-xs px-2 py-1.5 rounded ${isPrimary ? 'bg-emerald-500/5 border border-emerald-500/15' : 'bg-white/[0.02]'}`}>
+                                                    <div className="flex items-center gap-2 min-w-0">
+                                                        {isPrimary ? (
+                                                            <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-500/20 text-emerald-400 shrink-0">주 계정</span>
+                                                        ) : (
+                                                            <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-red-500/15 text-red-400 shrink-0">중복</span>
+                                                        )}
+                                                        {isCurrentAdmin && (
+                                                            <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-blue-500/20 text-blue-400 shrink-0">나</span>
+                                                        )}
+                                                        <span className="text-white font-medium truncate">{acc.email}</span>
+                                                        <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${TIER_STYLES[acc.tier || 'none']?.cls || 'bg-gray-500/20 text-gray-400'}`}>
+                                                            {TIER_STYLES[acc.tier || 'none']?.label || 'No Tier'}
+                                                        </span>
+                                                        <span className={`text-[10px] ${acc.status === 'approved' ? 'text-emerald-400' : acc.status === 'suspended' ? 'text-red-400' : 'text-amber-400'}`}>
+                                                            {acc.status === 'approved' ? '활성' : acc.status === 'suspended' ? '정지' : '대기'}
+                                                        </span>
+                                                        <span className="text-[10px] text-gray-600 hidden sm:inline">
+                                                            {acc.last_login_at ? `로그인 ${new Date(acc.last_login_at).toLocaleDateString('ko-KR')}` : '미접속'}
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex items-center gap-1 shrink-0">
+                                                        <button onClick={() => openUserDetail(acc.id)}
+                                                            className="p-1 rounded text-gray-500 hover:text-amber-400 hover:bg-amber-500/10 transition-colors" title="상세">
+                                                            <i className="fas fa-eye text-[10px]" />
+                                                        </button>
+                                                        {!isProtected && (
+                                                            <button onClick={() => setDeleteTarget({ id: acc.id, name: acc.name, email: acc.email } as AdminUser)}
+                                                                className="p-1 rounded text-gray-500 hover:text-red-400 hover:bg-red-500/10 transition-colors" title="삭제">
+                                                                <i className="fas fa-trash-alt text-[10px]" />
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            )}
+
+            {/* 벌크 액션 바 */}
+            {selectedIds.size > 0 && (
+                <div className="flex items-center gap-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
+                    <span className="text-sm text-amber-400 font-bold">{selectedIds.size}명 선택</span>
+                    <div className="flex gap-1.5">
+                        <button onClick={handleBulkApprove}
+                            className="px-3 py-1.5 rounded-lg bg-emerald-500/15 text-emerald-400 text-xs font-bold hover:bg-emerald-500/25 transition-colors">
+                            일괄 승인
+                        </button>
+                        <button onClick={() => handleBulkTier('pro')}
+                            className="px-3 py-1.5 rounded-lg bg-amber-500/15 text-amber-400 text-xs font-bold hover:bg-amber-500/25 transition-colors">
+                            일괄 Pro
+                        </button>
+                        <button onClick={() => handleBulkTier('premium')}
+                            className="px-3 py-1.5 rounded-lg bg-purple-500/15 text-purple-400 text-xs font-bold hover:bg-purple-500/25 transition-colors">
+                            일괄 Ultra
+                        </button>
+                    </div>
+                    <button onClick={() => setSelectedIds(new Set())}
+                        className="ml-auto text-xs text-gray-500 hover:text-white transition-colors">선택 해제</button>
+                </div>
+            )}
+
+            {/* 필터 + 검색 */}
             <div className="flex items-center gap-3 flex-wrap">
-                <input
-                    type="text" value={search} onChange={e => setSearch(e.target.value)}
-                    placeholder="이름 또는 이메일 검색..."
-                    className="flex-1 min-w-[200px] px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-amber-500/50"
-                />
+                <div className="relative flex-1 min-w-[200px]">
+                    <input
+                        type="text" value={search} onChange={e => setSearch(e.target.value)}
+                        placeholder="이름 또는 이메일 검색..."
+                        className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-amber-500/50"
+                    />
+                    {search && (
+                        <button onClick={() => setSearch('')}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white text-xs">
+                            <i className="fas fa-times" />
+                        </button>
+                    )}
+                </div>
                 <div className="flex gap-1">
                     {[{ key: 'all', label: '전체' }, { key: 'premium', label: 'Ultra Pro' }, { key: 'pro', label: 'Pro' }, { key: 'none', label: 'No Tier' }].map(tab => (
                         <button key={tab.key} onClick={() => setFilterTier(tab.key)}
@@ -437,6 +652,12 @@ function UsersTab({ apiToken }: { apiToken?: string }) {
                         </button>
                     ))}
                 </div>
+                {(filterTier !== 'all' || filterStatus !== 'all' || search) && (
+                    <button onClick={() => { setFilterTier('all'); setFilterStatus('all'); setSearch(''); }}
+                        className="px-3 py-2 rounded-lg text-xs font-medium text-gray-500 hover:text-white hover:bg-white/5 transition-colors">
+                        <i className="fas fa-undo mr-1" />초기화
+                    </button>
+                )}
             </div>
 
             {/* 테이블 */}
@@ -444,6 +665,12 @@ function UsersTab({ apiToken }: { apiToken?: string }) {
                 <table className="w-full">
                     <thead>
                         <tr className="bg-white/[0.03]">
+                            <th className="w-10 px-3 py-3">
+                                <input type="checkbox"
+                                    checked={filtered.filter(u => u.role !== 'admin').length > 0 && selectedIds.size === filtered.filter(u => u.role !== 'admin').length}
+                                    onChange={toggleSelectAll}
+                                    className="rounded border-gray-600 bg-white/5 text-amber-500 focus:ring-amber-500/50 cursor-pointer" />
+                            </th>
                             <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wider px-4 py-3">회원</th>
                             <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wider px-4 py-3 hidden md:table-cell">가입일</th>
                             <th className="text-center text-[10px] font-semibold text-gray-500 uppercase tracking-wider px-4 py-3">플랜</th>
@@ -458,6 +685,12 @@ function UsersTab({ apiToken }: { apiToken?: string }) {
                             const tier = TIER_STYLES[user.tier || 'none'] || TIER_STYLES.none;
                             return (
                                 <tr key={user.id} className={`border-t border-white/[0.04] hover:bg-white/[0.02] transition-colors ${isSuspended ? 'opacity-50' : ''}`}>
+                                    <td className="w-10 px-3 py-3">
+                                        {!isAdmin ? (
+                                            <input type="checkbox" checked={selectedIds.has(user.id)} onChange={() => toggleSelect(user.id)}
+                                                className="rounded border-gray-600 bg-white/5 text-amber-500 focus:ring-amber-500/50 cursor-pointer" />
+                                        ) : <div className="w-4" />}
+                                    </td>
                                     <td className="px-4 py-3">
                                         <div className="flex items-center gap-3">
                                             <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0 ${isAdmin ? 'bg-red-500' : 'bg-white/10'}`}>
@@ -465,9 +698,10 @@ function UsersTab({ apiToken }: { apiToken?: string }) {
                                             </div>
                                             <div className="min-w-0">
                                                 <div className="flex items-center gap-1.5">
-                                                    <span className="text-sm font-medium text-white truncate">{user.name}</span>
+                                                    <button onClick={() => openUserDetail(user.id)} className="text-sm font-medium text-white truncate hover:text-amber-400 transition-colors text-left">{user.name}</button>
                                                     {isAdmin && <span className="text-[9px] px-1 py-0.5 bg-red-500/20 text-red-400 rounded shrink-0">관리자</span>}
                                                     {isSuspended && <span className="text-[9px] px-1 py-0.5 bg-red-500/20 text-red-400 rounded shrink-0">정지</span>}
+                                                    {user.status === 'pending' && <span className="text-[9px] px-1 py-0.5 bg-amber-500/20 text-amber-400 rounded shrink-0">대기</span>}
                                                 </div>
                                                 <div className="text-xs text-gray-500 truncate">{user.email}</div>
                                             </div>
@@ -488,9 +722,6 @@ function UsersTab({ apiToken }: { apiToken?: string }) {
                                                 <option value="premium" className="bg-[#1c1c1e] text-purple-400">Ultra Pro</option>
                                             </select>
                                         )}
-                                        {user.status === 'pending' && (
-                                            <div className="text-[9px] text-amber-400 font-bold mt-1">승인 대기</div>
-                                        )}
                                     </td>
                                     <td className="px-4 py-3 hidden lg:table-cell">
                                         {user.tier === 'premium' ? (
@@ -507,18 +738,17 @@ function UsersTab({ apiToken }: { apiToken?: string }) {
                                         )}
                                     </td>
                                     <td className="px-4 py-3">
-                                        <div className="flex items-center justify-end gap-1">
+                                        {/* Desktop: inline buttons */}
+                                        <div className="hidden md:flex items-center justify-end gap-1">
                                             {user.status === 'pending' && !isAdmin && (
                                                 <button onClick={() => handleApprove(user)}
-                                                    className="p-1.5 rounded-lg text-amber-400 hover:bg-amber-500/10 text-xs transition-colors"
-                                                    title="승인">
+                                                    className="p-1.5 rounded-lg text-amber-400 hover:bg-amber-500/10 text-xs transition-colors" title="승인">
                                                     <i className="fas fa-check" />
                                                 </button>
                                             )}
                                             {user.tier === 'pro' && !isAdmin && (
                                                 <button onClick={() => handleExtend(user, 30)}
-                                                    className="p-1.5 rounded-lg text-gray-500 hover:text-emerald-400 hover:bg-emerald-500/10 text-xs transition-colors"
-                                                    title="+30일 연장">
+                                                    className="p-1.5 rounded-lg text-gray-500 hover:text-emerald-400 hover:bg-emerald-500/10 text-xs transition-colors" title="+30일 연장">
                                                     <i className="fas fa-plus" />
                                                 </button>
                                             )}
@@ -529,7 +759,7 @@ function UsersTab({ apiToken }: { apiToken?: string }) {
                                                     <i className={`fas ${isSuspended ? 'fa-undo' : 'fa-ban'}`} />
                                                 </button>
                                             )}
-                                            <button onClick={() => { setResetTarget(user); setNewPassword(''); }}
+                                            <button onClick={() => { setResetTarget(user); setNewPassword(''); setResetNote(''); }}
                                                 className="p-1.5 rounded-lg text-gray-500 hover:text-amber-400 hover:bg-amber-500/10 text-xs transition-colors" title="비밀번호 리셋">
                                                 <i className="fas fa-key" />
                                             </button>
@@ -538,6 +768,45 @@ function UsersTab({ apiToken }: { apiToken?: string }) {
                                                     className="p-1.5 rounded-lg text-gray-500 hover:text-red-400 hover:bg-red-500/10 text-xs transition-colors" title="삭제">
                                                     <i className="fas fa-trash-alt" />
                                                 </button>
+                                            )}
+                                        </div>
+                                        {/* Mobile: dropdown menu */}
+                                        <div className="md:hidden relative flex justify-end">
+                                            <button onClick={() => setMobileMenuId(mobileMenuId === user.id ? null : user.id)}
+                                                className="p-1.5 rounded-lg text-gray-500 hover:text-white hover:bg-white/10 text-xs transition-colors">
+                                                <i className="fas fa-ellipsis-v" />
+                                            </button>
+                                            {mobileMenuId === user.id && (
+                                                <div className="absolute right-0 top-8 z-50 bg-[#1c1c1e] border border-white/10 rounded-xl shadow-xl py-1 min-w-[140px]"
+                                                    onClick={() => setMobileMenuId(null)}>
+                                                    <button onClick={() => openUserDetail(user.id)}
+                                                        className="w-full px-4 py-2.5 text-left text-xs text-gray-300 hover:bg-white/5 hover:text-white">
+                                                        <i className="fas fa-eye mr-2 text-amber-400" />상세 보기
+                                                    </button>
+                                                    {user.status === 'pending' && !isAdmin && (
+                                                        <button onClick={() => handleApprove(user)}
+                                                            className="w-full px-4 py-2.5 text-left text-xs text-gray-300 hover:bg-white/5 hover:text-white">
+                                                            <i className="fas fa-check mr-2 text-emerald-400" />승인
+                                                        </button>
+                                                    )}
+                                                    {!isAdmin && (
+                                                        <button onClick={() => handleSuspend(user.id, user.name, user.status)}
+                                                            className="w-full px-4 py-2.5 text-left text-xs text-gray-300 hover:bg-white/5 hover:text-white">
+                                                            <i className={`fas ${isSuspended ? 'fa-undo' : 'fa-ban'} mr-2 ${isSuspended ? 'text-emerald-400' : 'text-red-400'}`} />
+                                                            {isSuspended ? '복원' : '정지'}
+                                                        </button>
+                                                    )}
+                                                    <button onClick={() => { setResetTarget(user); setNewPassword(''); setResetNote(''); }}
+                                                        className="w-full px-4 py-2.5 text-left text-xs text-gray-300 hover:bg-white/5 hover:text-white">
+                                                        <i className="fas fa-key mr-2 text-amber-400" />비밀번호 리셋
+                                                    </button>
+                                                    {!isAdmin && (
+                                                        <button onClick={() => setDeleteTarget(user)}
+                                                            className="w-full px-4 py-2.5 text-left text-xs text-gray-300 hover:bg-white/5 hover:text-white">
+                                                            <i className="fas fa-trash-alt mr-2 text-red-400" />삭제
+                                                        </button>
+                                                    )}
+                                                </div>
                                             )}
                                         </div>
                                     </td>
@@ -550,26 +819,46 @@ function UsersTab({ apiToken }: { apiToken?: string }) {
             </div>
 
             {/* 비밀번호 리셋 모달 */}
-            {resetTarget && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setResetTarget(null)}>
-                    <div className="bg-[#1c1c1e] border border-white/10 rounded-2xl p-6 w-full max-w-sm" onClick={e => e.stopPropagation()}>
+            {resetTarget && createPortal(
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60" style={{ backdropFilter: 'blur(4px)' }} onClick={() => setResetTarget(null)}>
+                    <div className="bg-[#1c1c1e] border border-white/10 rounded-2xl p-6 w-full max-w-sm mx-4" onClick={e => e.stopPropagation()}>
                         <h3 className="text-lg font-bold text-white mb-1">비밀번호 리셋</h3>
                         <p className="text-sm text-gray-400 mb-4">{resetTarget.name} ({resetTarget.email})</p>
                         <input type="text" value={newPassword} onChange={e => setNewPassword(e.target.value)}
-                            placeholder="새 비밀번호 (6자 이상)"
-                            className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-amber-500/50 mb-4" autoFocus />
+                            placeholder="새 비밀번호 (8자 이상, 영문+숫자)"
+                            className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-amber-500/50 mb-2" autoFocus />
+                        {/* 비밀번호 강도 인디케이터 */}
+                        {newPassword && (
+                            <div className="mb-3">
+                                <div className="flex gap-1 mb-1">
+                                    {[1, 2, 3].map(i => (
+                                        <div key={i} className={`h-1 flex-1 rounded-full ${i <= pwStrength(newPassword).level ? pwStrength(newPassword).cls : 'bg-white/10'}`} />
+                                    ))}
+                                </div>
+                                <div className="flex justify-between text-[10px]">
+                                    <span className={pwStrength(newPassword).level >= 1 ? 'text-gray-400' : 'text-gray-600'}>
+                                        {pwStrength(newPassword).label}
+                                    </span>
+                                    {!pwValid && <span className="text-red-400">8자 이상, 영문+숫자 필수</span>}
+                                </div>
+                            </div>
+                        )}
+                        <input type="text" value={resetNote} onChange={e => setResetNote(e.target.value)}
+                            placeholder="리셋 사유 (필수)"
+                            className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-amber-500/50 mb-4" />
                         <div className="flex gap-2">
                             <button onClick={() => setResetTarget(null)} className="flex-1 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-400 text-sm font-medium transition-colors">취소</button>
-                            <button onClick={handleResetPassword} disabled={!newPassword || newPassword.length < 6} className="flex-1 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black text-sm font-bold transition-colors disabled:opacity-30">변경</button>
+                            <button onClick={handleResetPassword} disabled={!pwValid || !resetNote.trim()}
+                                className="flex-1 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black text-sm font-bold transition-colors disabled:opacity-30">변경</button>
                         </div>
                     </div>
-                </div>
-            )}
+                </div>,
+            document.getElementById('modal-root') || document.body)}
 
             {/* 만료일 변경 모달 */}
-            {expiryTarget && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setExpiryTarget(null)}>
-                    <div className="bg-[#1c1c1e] border border-white/10 rounded-2xl p-6 w-full max-w-sm" onClick={e => e.stopPropagation()}>
+            {expiryTarget && createPortal(
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60" style={{ backdropFilter: 'blur(4px)' }} onClick={() => setExpiryTarget(null)}>
+                    <div className="bg-[#1c1c1e] border border-white/10 rounded-2xl p-6 w-full max-w-sm mx-4" onClick={e => e.stopPropagation()}>
                         <h3 className="text-lg font-bold text-white mb-1">Pro 만료일 변경</h3>
                         <p className="text-sm text-gray-400 mb-4">{expiryTarget.name} ({expiryTarget.email})</p>
                         <input type="date" value={expiryValue} onChange={e => setExpiryValue(e.target.value)}
@@ -588,13 +877,13 @@ function UsersTab({ apiToken }: { apiToken?: string }) {
                             <button onClick={handleSetExpiry} disabled={!expiryValue} className="flex-1 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black text-sm font-bold transition-colors disabled:opacity-30">날짜 적용</button>
                         </div>
                     </div>
-                </div>
-            )}
+                </div>,
+            document.getElementById('modal-root') || document.body)}
 
             {/* 삭제 확인 모달 */}
-            {deleteTarget && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setDeleteTarget(null)}>
-                    <div className="bg-[#1c1c1e] border border-white/10 rounded-2xl p-6 w-full max-w-sm" onClick={e => e.stopPropagation()}>
+            {deleteTarget && createPortal(
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60" style={{ backdropFilter: 'blur(4px)' }} onClick={() => setDeleteTarget(null)}>
+                    <div className="bg-[#1c1c1e] border border-white/10 rounded-2xl p-6 w-full max-w-sm mx-4" onClick={e => e.stopPropagation()}>
                         <h3 className="text-lg font-bold text-white mb-1">회원 삭제</h3>
                         <p className="text-sm text-gray-400 mb-2"><span className="text-white font-bold">{deleteTarget.name}</span> ({deleteTarget.email})</p>
                         <p className="text-sm text-red-400 mb-4">삭제하면 복구할 수 없습니다.</p>
@@ -603,8 +892,126 @@ function UsersTab({ apiToken }: { apiToken?: string }) {
                             <button onClick={handleDelete} className="flex-1 py-2.5 rounded-xl bg-red-500 hover:bg-red-400 text-white text-sm font-bold transition-colors">삭제</button>
                         </div>
                     </div>
-                </div>
-            )}
+                </div>,
+            document.getElementById('modal-root') || document.body)}
+
+            {/* 회원 상세 정보 모달 */}
+            {(detailUser || detailLoading) && createPortal(
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60" style={{ backdropFilter: 'blur(4px)' }} onClick={() => setDetailUser(null)}>
+                    <div className="bg-[#1c1c1e] border border-white/10 rounded-2xl p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto mx-4" onClick={e => e.stopPropagation()}>
+                        {detailLoading && !detailUser ? (
+                            <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-500" /></div>
+                        ) : detailUser ? (
+                            <>
+                                <div className="flex items-center justify-between mb-4">
+                                    <div>
+                                        <h3 className="text-lg font-bold text-white">회원 상세 정보</h3>
+                                        {detailUser.created_at && (
+                                            <span className="text-xs text-gray-500">가입 {daysSince(detailUser.created_at)}</span>
+                                        )}
+                                    </div>
+                                    <button onClick={() => setDetailUser(null)} className="text-gray-500 hover:text-white transition-colors">
+                                        <i className="fas fa-times" />
+                                    </button>
+                                </div>
+
+                                {/* 중복 계정 경고 */}
+                                {duplicates.some(g => g.accounts.some(a => a.id === detailUser.id)) && (
+                                    <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20">
+                                        <div className="flex items-center gap-2 text-xs text-red-400 font-bold">
+                                            <i className="fas fa-exclamation-triangle" />
+                                            같은 이름으로 다른 계정이 존재합니다
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* 기본 정보 */}
+                                <div className="grid grid-cols-2 gap-3 mb-4">
+                                    {[
+                                        { label: '이름', value: detailUser.name },
+                                        { label: '이메일', value: detailUser.email },
+                                        { label: '가입일', value: detailUser.created_at ? new Date(detailUser.created_at).toLocaleString('ko-KR') : '-' },
+                                        { label: '마지막 로그인', value: detailUser.last_login_at ? new Date(detailUser.last_login_at).toLocaleString('ko-KR') : '없음' },
+                                        { label: '플랜', value: detailUser.tier === 'premium' ? 'Ultra Pro' : detailUser.tier === 'pro' ? 'Pro' : '없음' },
+                                        { label: '상태', value: detailUser.status === 'approved' ? '승인' : detailUser.status === 'pending' ? '대기' : detailUser.status === 'suspended' ? '정지' : detailUser.status },
+                                        { label: '역할', value: detailUser.role === 'admin' ? '관리자' : '일반 사용자' },
+                                        { label: 'Pro 만료일', value: detailUser.pro_expires_at ? new Date(detailUser.pro_expires_at).toLocaleDateString('ko-KR') : '—' },
+                                    ].map(item => (
+                                        <div key={item.label} className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+                                            <span className="text-[10px] text-gray-500 uppercase tracking-wider">{item.label}</span>
+                                            <p className="text-white text-sm font-medium mt-0.5 truncate">{item.value}</p>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {/* 모달 내 빠른 액션 */}
+                                {detailUser.role !== 'admin' && (
+                                    <div className="flex gap-2 mb-4">
+                                        <button onClick={() => { setResetTarget(detailUser); setNewPassword(''); setResetNote(''); }}
+                                            className="flex-1 py-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-amber-400 text-xs font-bold transition-colors">
+                                            <i className="fas fa-key mr-1.5" />비번 리셋
+                                        </button>
+                                        <button onClick={() => handleSuspend(detailUser.id, detailUser.name, detailUser.status)}
+                                            className={`flex-1 py-2 rounded-xl text-xs font-bold transition-colors ${detailUser.status === 'suspended' ? 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400' : 'bg-red-500/10 hover:bg-red-500/20 text-red-400'}`}>
+                                            <i className={`fas ${detailUser.status === 'suspended' ? 'fa-undo' : 'fa-ban'} mr-1.5`} />
+                                            {detailUser.status === 'suspended' ? '복원' : '정지'}
+                                        </button>
+                                        {detailUser.status === 'pending' && (
+                                            <button onClick={() => { handleApprove(detailUser); setDetailUser({ ...detailUser, status: 'approved' }); }}
+                                                className="flex-1 py-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-xs font-bold transition-colors">
+                                                <i className="fas fa-check mr-1.5" />승인
+                                            </button>
+                                        )}
+                                    </div>
+                                )}
+
+                                {/* 구독 이력 */}
+                                {detailUser.subscription_history?.length > 0 && (
+                                    <div className="mb-4">
+                                        <h4 className="text-sm font-bold text-white mb-2">
+                                            <i className="fas fa-credit-card mr-1.5 text-purple-400" />구독 이력
+                                        </h4>
+                                        <div className="space-y-1.5">
+                                            {detailUser.subscription_history.map((s: any) => (
+                                                <div key={s.id} className="flex items-center justify-between px-3 py-2 rounded-lg bg-white/[0.03] text-xs">
+                                                    <span className="text-gray-400">{s.from_tier || 'none'} → {s.to_tier}</span>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className={`px-1.5 py-0.5 rounded ${s.status === 'approved' ? 'bg-emerald-500/10 text-emerald-400' : s.status === 'pending' ? 'bg-yellow-500/10 text-yellow-400' : 'bg-red-500/10 text-red-400'}`}>
+                                                            {s.status === 'approved' ? '승인' : s.status === 'pending' ? '대기' : '거절'}
+                                                        </span>
+                                                        <span className="text-gray-600">{new Date(s.created_at).toLocaleDateString('ko-KR')}</span>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* 감사 로그 */}
+                                {detailUser.audit_logs?.length > 0 && (
+                                    <div>
+                                        <h4 className="text-sm font-bold text-white mb-2">
+                                            <i className="fas fa-history mr-1.5 text-amber-400" />관리 이력
+                                        </h4>
+                                        <div className="space-y-1.5 max-h-48 overflow-y-auto">
+                                            {detailUser.audit_logs.map((log: any) => (
+                                                <div key={log.id} className="px-3 py-2 rounded-lg bg-white/[0.03] text-xs">
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="text-amber-400 font-medium">{log.action}</span>
+                                                        <span className="text-gray-600">{new Date(log.created_at).toLocaleString('ko-KR')}</span>
+                                                    </div>
+                                                    {log.note && <p className="text-gray-500 mt-0.5">{log.note}</p>}
+                                                    {log.admin_email && <p className="text-gray-600 mt-0.5">by {log.admin_email}</p>}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </>
+                        ) : null}
+                    </div>
+                </div>,
+            document.getElementById('modal-root') || document.body)}
         </>
     );
 }

@@ -44,8 +44,10 @@ community_bp = Blueprint('community', __name__)
 TIER_ORDER = {'pro': 1, 'premium': 2}  # 'free' 플랜 폐지 — 미구독자(None)는 TIER_ORDER.get() 기본값 0으로 접근 불가
 ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png', 'gif', 'webp'}
 FORMULA_FILE_EXTENSIONS = {'txt', 'csv', 'xlsx', 'xls', 'pdf', 'zip', 'hwp', 'docx'}
+VIDEO_EXTENSIONS = {'mp4', 'mov', 'webm'}
 MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
 MAX_FORMULA_FILE_SIZE = 20 * 1024 * 1024  # 20MB
+MAX_VIDEO_SIZE = 100 * 1024 * 1024  # 100MB
 
 UPLOAD_DIR = os.path.join(os.path.abspath(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))),
                           'data', 'uploads', 'community')
@@ -554,6 +556,37 @@ def upload_formula_file():
     file_data = file.read()
     if len(file_data) > MAX_FORMULA_FILE_SIZE:
         return jsonify({'error': 'File too large (max 20MB)'}), 400
+
+    filename = f"{uuid.uuid4().hex}.{ext}"
+    os.makedirs(UPLOAD_DIR, exist_ok=True)
+    filepath = os.path.join(UPLOAD_DIR, filename)
+    with open(filepath, 'wb') as f:
+        f.write(file_data)
+
+    return jsonify({
+        'url': f'/api/community/uploads/{filename}',
+        'filename': filename,
+        'original_name': file.filename,
+    })
+
+
+@community_bp.route('/upload-video', methods=['POST'])
+@approved_required
+def upload_video():
+    """Upload video file (mp4, mov, webm) — max 100MB"""
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file provided'}), 400
+    file = request.files['file']
+    if not file.filename:
+        return jsonify({'error': 'No filename'}), 400
+
+    ext = file.filename.rsplit('.', 1)[-1].lower() if '.' in file.filename else ''
+    if ext not in VIDEO_EXTENSIONS:
+        return jsonify({'error': f'Invalid file type. Allowed: {", ".join(sorted(VIDEO_EXTENSIONS))}'}), 400
+
+    file_data = file.read()
+    if len(file_data) > MAX_VIDEO_SIZE:
+        return jsonify({'error': 'File too large (max 100MB)'}), 400
 
     filename = f"{uuid.uuid4().hex}.{ext}"
     os.makedirs(UPLOAD_DIR, exist_ok=True)

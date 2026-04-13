@@ -109,36 +109,11 @@ Else
     If Not AnyPortOpen(4000) Then Log "Frontend: FAILED to start"
 End If
 
-' ── 3. Cloudflared Tunnel ──
-' 중요: Windows 서비스(SYSTEM)로 돌아가는 cloudflared는 사용자 config 못 읽어서 530 발생
-' 따라서 "bitman-api" 커맨드라인이 포함된 프로세스만 체크 (사용자 세션 터널)
-If IsProcessRunning("cloudflared"" tunnel") Then
-    ' 추가 확인: 실제로 bitman-api 터널인지
-    If IsProcessRunning("run bitman-api") Then
-        Log "Cloudflared: already running (user tunnel)"
-    Else
-        ' SYSTEM 서비스만 돌고 있을 수 있음 — 사용자 터널 시작
-        Log "Cloudflared: SYSTEM service detected, starting user tunnel..."
-        objShell.CurrentDirectory = PROJECT
-        objShell.Run """" & PROJECT & "\cloudflared.exe"" tunnel --config ""C:\Users\dynas\.cloudflared\config.yml"" run bitman-api", 0, False
-        WScript.Sleep 8000
-        If IsProcessRunning("run bitman-api") Then
-            Log "Cloudflared: OK (user tunnel started)"
-        Else
-            Log "Cloudflared: FAILED"
-        End If
-    End If
-Else
-    Log "Cloudflared: starting Named Tunnel (bitman-api)..."
-    objShell.CurrentDirectory = PROJECT
-    objShell.Run """" & PROJECT & "\cloudflared.exe"" tunnel --config ""C:\Users\dynas\.cloudflared\config.yml"" run bitman-api", 0, False
-    WScript.Sleep 8000
-    If IsProcessRunning("run bitman-api") Then
-        Log "Cloudflared: OK"
-    Else
-        Log "Cloudflared: FAILED"
-    End If
-End If
+' ── 3. Cloudflared Tunnel — DISABLED 2026-04-13 ──
+' 미니PC 에서 터널 단독 운영. 본 PC 에서 같은 터널을 실행하면
+' Cloudflare 가 로드밸런싱하여 Flask 가 없는 본 PC 로 트래픽이
+' 분산되어 앱이 간헐적으로 실패함.
+Log "Cloudflared: SKIPPED (mini-PC only)"
 
 ' ── 4. Scheduler Daemon ──
 ' scheduler.py --daemon 커맨드라인으로 정확히 체크

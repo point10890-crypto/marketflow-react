@@ -251,6 +251,7 @@ class Config:
     MORNING_REPORT_TIME = os.environ.get('MORNING_REPORT_TIME', '09:00')   # 일별 상태 리포트
     MORNING_BRIEFING_TIME = os.environ.get('MORNING_BRIEFING_TIME', '09:05')  # AI 조간 브리핑
     CLOSING_BRIEFING_TIME = os.environ.get('CLOSING_BRIEFING_TIME', '16:05')  # AI 마감 브리핑
+    LOTTO_POST_TIME = os.environ.get('LOTTO_POST_TIME', '17:00')           # 금요일 AI 로또 분석
 
     # 타임아웃 (초)
     PRICE_TIMEOUT = int(os.environ.get('KR_MARKET_PRICE_TIMEOUT', '600'))
@@ -983,6 +984,47 @@ def run_closing_briefing():
         return False
     except Exception as e:
         logger.error(f"❌ 마감 브리핑 실패: {e}")
+        return False
+
+
+def run_lotto_analysis():
+    """금요일 17:00 KST — AI 로또 분석 게시"""
+    logger.info("=" * 60)
+    logger.info("🎱 AI 로또 분석 게시 시작")
+    logger.info("=" * 60)
+    try:
+        scripts_dir = os.path.join(Config.BASE_DIR, 'scripts')
+        if scripts_dir not in sys.path:
+            sys.path.insert(0, scripts_dir)
+        from lotto_analysis import run_lotto_analysis_post
+        result = run_lotto_analysis_post()
+        if result:
+            logger.info("✅ AI 로또 분석 게시 완료")
+
+            # 텔레그램 상세 메시지
+            post_id = result.get('post_id', '')
+            title = result.get('title', 'AI 로또 분석')
+            candidates = result.get('candidates', {})
+
+            lines = [f"🎱 AI 로또 분석 게시 완료", f"📋 {title}", ""]
+            style_emoji = {'안정형': '🛡️', '균형형': '⚖️', '실험형': '🔥'}
+            for style_name, data in candidates.items():
+                emoji = style_emoji.get(style_name, '🎯')
+                for s in data.get('sets', [])[:2]:
+                    nums = ', '.join(str(n) for n in s['numbers'])
+                    lines.append(f"{emoji} {style_name}: [{nums}] (점수: {s['score']})")
+            lines.append("")
+            lines.append(f"👉 커뮤니티에서 확인: /dashboard/community/post/{post_id}")
+            lines.append("⚠️ 본 분석은 통계 기반 참고용이며 당첨을 보장하지 않습니다.")
+
+            send_telegram('\n'.join(lines))
+            return True
+        logger.warning("⚠️ AI 로또 분석 게시 실패")
+        send_telegram("⚠️ AI 로또 분석 게시 실패 — 로그를 확인하세요.", channel=False)
+        return False
+    except Exception as e:
+        logger.error(f"❌ AI 로또 분석 실패: {e}", exc_info=True)
+        send_telegram(f"❌ AI 로또 분석 실패: {str(e)[:200]}", channel=False)
         return False
 
 
@@ -2501,6 +2543,11 @@ class Scheduler:
                 self._with_record(_run_us_ai_chart_analysis, 'us_ai_chart',
                                   max_retries=1, retry_delay=600))
 
+        # 금요일 21:30 — AI 로또 분석 게시
+        schedule.every().friday.at(Config.LOTTO_POST_TIME).do(
+            self._with_record(run_lotto_analysis, 'lotto_analysis',
+                              max_retries=1, retry_delay=1800))
+
         # 토요일 히스토리 수집
         schedule.every().saturday.at(Config.HISTORY_TIME).do(
             self._with_record(collect_historical_institutional, 'history',
@@ -2524,6 +2571,7 @@ class Scheduler:
         logger.info(f"   🤖 평일 {Config.US_AI_CHART_TIME}  US AI Chart Analysis (Gemini Vision)")
         logger.info(f"   📰 평일 {Config.MORNING_BRIEFING_TIME}  AI 조간 브리핑 (Gemini)")
         logger.info(f"   📰 평일 {Config.CLOSING_BRIEFING_TIME}  AI 마감 브리핑 (Gemini)")
+        logger.info(f"   🎱 금요일 {Config.LOTTO_POST_TIME}  AI 로또 분석 게시")
         logger.info(f"   🇰🇷 토요일 {Config.HISTORY_TIME}  히스토리 수집")
         logger.info(f"   🪙 매 4시간 {', '.join(Config.CRYPTO_TIMES)}  Crypto 전체 파이프라인")
 
@@ -2599,6 +2647,8 @@ def main():
     # AI Chart Analysis
     parser.add_argument('--ai-chart', action='store_true', help='AI Chart Analysis KR (Gemini Vision 100종목)')
     parser.add_argument('--us-ai-chart', action='store_true', help='US AI Chart Analysis (Gemini Vision S&P 500)')
+    # 로또 분석
+    parser.add_argument('--lotto', action='store_true', help='AI 로또 분석 게시 (즉시 실행)')
 
     args = parser.parse_args()
 
@@ -2770,6 +2820,12 @@ def main():
 
     if args.us_ai_chart:
         _run_us_ai_chart_analysis()
+        ran_any = True
+        if not args.daemon:
+            return
+
+    if args.lotto:
+        run_lotto_analysis()
         ran_any = True
         if not args.daemon:
             return

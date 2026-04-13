@@ -874,8 +874,9 @@ export const adminAPI = {
     setExpiry: (id: number, pro_expires_at: string, token?: string) => putAuthAPI<{ user: AdminUser }>(`/api/admin/users/${id}/expiry`, { pro_expires_at }, token),
     bulkTier: (user_ids: number[], tier: string, token?: string) => postAuthAPI<{ count: number }>(`/api/admin/users/bulk-tier`, { user_ids, tier }, token),
     bulkApprove: (user_ids: number[], token?: string) => postAuthAPI<{ count: number }>(`/api/admin/users/bulk-approve`, { user_ids }, token),
-    resetPassword: (id: number, password: string, token?: string) => putAuthAPI<{ message: string; user: AdminUser }>(`/api/admin/users/${id}/reset-password`, { password }, token),
+    resetPassword: (id: number, password: string, token?: string, note?: string) => putAuthAPI<{ message: string; user: AdminUser }>(`/api/admin/users/${id}/reset-password`, { password, note }, token),
     deleteUser: (id: number, token?: string) => deleteAuthAPI<{ message: string }>(`/api/admin/users/${id}`, token),
+    getDuplicates: (token?: string) => fetchAuthAPI<{ groups: Array<{ reason: string; key: string; accounts: Array<{ id: number; email: string; name: string; tier: string | null; status: string; created_at: string | null; last_login_at: string | null }> }>; total_groups: number }>('/api/admin/users/duplicates', token),
     getSubscriptions: (token?: string) => fetchAuthAPI<{ requests: SubscriptionRequest[] }>('/api/admin/subscriptions', token),
     approveSubscription: (id: number, token?: string) => putAuthAPI<{ request: SubscriptionRequest }>(`/api/admin/subscriptions/${id}/approve`, undefined, token),
     rejectSubscription: (id: number, note?: string, token?: string) => putAuthAPI<{ request: SubscriptionRequest }>(`/api/admin/subscriptions/${id}/reject`, { note }, token),
@@ -933,6 +934,7 @@ export const subscriptionAPI = {
     requestUpgrade: (toTier: string, token?: string, depositorName?: string) => postAuthAPI<{ request: SubscriptionRequest }>('/api/auth/subscription/request', { to_tier: toTier, depositor_name: depositorName }, token),
     getStatus: (token?: string) => fetchAuthAPI<{ user: AdminUser; requests: SubscriptionRequest[] }>('/api/auth/subscription/status', token),
     updateProfile: (name: string, token?: string) => putAuthAPI<{ user: AdminUser }>('/api/auth/profile', { name }, token),
+    changePassword: (currentPassword: string, newPassword: string, token?: string) => putAuthAPI<{ message: string }>('/api/auth/change-password', { current_password: currentPassword, new_password: newPassword }, token),
 };
 
 // ── AI Briefing API (조간/마감 브리핑) ──
@@ -1090,6 +1092,26 @@ export const communityAPI = {
             body: formData,
         });
         if (!res.ok) throw new Error('Upload failed');
+        return res.json();
+    },
+
+    // Video upload
+    uploadVideo: async (file: File): Promise<{ url: string; filename: string; original_name: string }> => {
+        const formData = new FormData();
+        formData.append('file', file);
+        const { getToken } = await import('./auth');
+        const token = getToken();
+        const headers: Record<string, string> = {};
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        const res = await fetch(`${API_BASE}/api/community/upload-video`, {
+            method: 'POST',
+            headers,
+            body: formData,
+        });
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.error || 'Video upload failed');
+        }
         return res.json();
     },
 

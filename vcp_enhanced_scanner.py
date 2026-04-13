@@ -646,9 +646,9 @@ def _get_crypto_watchlist() -> List[str]:
     return [
         'BTC-USD', 'ETH-USD', 'BNB-USD', 'SOL-USD', 'XRP-USD',
         'ADA-USD', 'DOGE-USD', 'AVAX-USD', 'DOT-USD', 'LINK-USD',
-        'MATIC-USD', 'UNI-USD', 'ATOM-USD', 'LTC-USD', 'FIL-USD',
+        'POL28321-USD', 'UNI-USD', 'ATOM-USD', 'LTC-USD', 'FIL-USD',
         'NEAR-USD', 'APT-USD', 'ARB-USD', 'OP-USD', 'INJ-USD',
-        'SUI-USD', 'SEI-USD', 'TIA-USD', 'RUNE-USD', 'AAVE-USD',
+        'SUI20947-USD', 'SEI-USD', 'TIA-USD', 'RUNE-USD', 'AAVE-USD',
         'MKR-USD', 'SNX-USD', 'CRV-USD', 'COMP-USD', 'LDO-USD',
         'FET-USD', 'RNDR-USD', 'GRT-USD', 'IMX-USD', 'MANA-USD',
         'SAND-USD', 'AXS-USD', 'GALA-USD', 'ENJ-USD', 'CHZ-USD',

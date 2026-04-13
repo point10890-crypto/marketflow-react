@@ -287,24 +287,40 @@ export default function PostDetailPage() {
                     </div>
                 </div>
 
-                {/* Content */}
-                <div className="px-5 md:px-7 py-6 md:py-8">
+                {/* Content — Blog-style */}
+                <div className="px-6 md:px-10 lg:px-14 py-8 md:py-10">
                     <div
-                        className="prose prose-invert prose-sm max-w-none text-gray-300 leading-relaxed
-                            prose-headings:text-white prose-a:text-[#2997ff] prose-strong:text-white
-                            prose-code:text-pink-400 prose-code:bg-white/5 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded
-                            prose-pre:bg-white/5 prose-pre:border prose-pre:border-white/10 prose-pre:rounded-xl
-                            prose-img:rounded-xl prose-img:border prose-img:border-white/10 prose-img:max-w-full"
+                        className="max-w-none text-gray-300 text-[15px] md:text-base leading-relaxed md:leading-loose
+                            [&_h2]:text-xl [&_h2]:md:text-2xl [&_h2]:font-bold [&_h2]:text-white [&_h2]:mt-8 [&_h2]:mb-3 [&_h2]:border-b [&_h2]:border-white/[0.06] [&_h2]:pb-3
+                            [&_h3]:text-lg [&_h3]:md:text-xl [&_h3]:font-semibold [&_h3]:text-white [&_h3]:mt-6 [&_h3]:mb-2
+                            [&_p]:my-3 [&_p]:md:my-4 [&_p]:text-[15px] [&_p]:md:text-base [&_p]:leading-relaxed [&_p]:md:leading-loose
+                            [&_a]:text-[#2997ff] [&_a]:no-underline hover:[&_a]:underline
+                            [&_strong]:text-white [&_strong]:font-semibold
+                            [&_ul]:my-3 [&_ul]:pl-6 [&_ul]:space-y-1.5 [&_ul]:list-disc
+                            [&_ol]:my-3 [&_ol]:pl-6 [&_ol]:space-y-1.5 [&_ol]:list-decimal
+                            [&_li]:text-[15px] [&_li]:md:text-base [&_li]:leading-relaxed
+                            [&_blockquote]:border-l-4 [&_blockquote]:border-yellow-500/40 [&_blockquote]:bg-white/[0.02] [&_blockquote]:rounded-r-xl [&_blockquote]:py-1 [&_blockquote]:px-5 [&_blockquote]:italic [&_blockquote]:text-gray-400
+                            [&_hr]:border-white/[0.06] [&_hr]:my-8
+                            [&_code]:text-pink-400 [&_code]:bg-white/5 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded
+                            [&_pre]:bg-white/5 [&_pre]:border [&_pre]:border-white/10 [&_pre]:rounded-xl
+                            [&_img]:rounded-xl [&_img]:border [&_img]:border-white/10 [&_img]:max-w-full [&_img]:my-6
+                            [&_video]:rounded-xl [&_video]:border [&_video]:border-white/10 [&_video]:max-w-full [&_video]:my-6
+                            [&_iframe]:rounded-xl [&_iframe]:my-6 [&_iframe]:w-full [&_iframe]:aspect-video"
                         dangerouslySetInnerHTML={{
                             __html: (() => {
                                 let html = DOMPurify.sanitize(post.content || '', {
-                                    ADD_TAGS: ['img'],
-                                    ADD_ATTR: ['target', 'rel', 'src', 'alt', 'href'],
+                                    ADD_TAGS: ['img', 'video', 'source', 'iframe'],
+                                    ADD_ATTR: ['target', 'rel', 'src', 'alt', 'href',
+                                        'controls', 'playsinline', 'muted', 'loop', 'autoplay',
+                                        'width', 'height', 'allowfullscreen', 'frameborder', 'allow', 'type',
+                                        'style'],
                                 });
-                                // 배포 환경: 상대 경로 이미지를 API 서버 절대 경로로 변환
+                                // 배포 환경: 상대 경로를 API 서버 절대 경로로 변환
                                 if (API_BASE) {
                                     html = html.replace(/src="\/api\//g, `src="${API_BASE}/api/`);
                                 }
+                                // iframe: YouTube 도메인만 허용, 나머지 제거
+                                html = html.replace(/<iframe[^>]*src="(?!https:\/\/(www\.)?(youtube\.com|youtube-nocookie\.com)\/)[^"]*"[^>]*><\/iframe>/gi, '');
                                 return html;
                             })(),
                         }}
