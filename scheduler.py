@@ -1572,13 +1572,16 @@ def run_crypto_gate_check() -> bool:
             sys.path.insert(0, crypto_dir)
 
         # sys.modules 스냅샷 — crypto 모듈이 루트 모듈(config 등) 덮어쓰기 방지
+        # sklearn/joblib 등 C extension은 재로드 불가하므로 유지
+        _KEEP_PREFIXES = ('sklearn', 'joblib', 'scipy', 'numpy', 'pandas')
         _saved_mods = {k: v for k, v in sys.modules.items()}
         try:
             from market_gate import run_market_gate_sync
             result = run_market_gate_sync()
         finally:
             for k in [k for k in sys.modules if k not in _saved_mods]:
-                del sys.modules[k]
+                if not k.startswith(_KEEP_PREFIXES):
+                    del sys.modules[k]
             for k, v in _saved_mods.items():
                 if sys.modules.get(k) is not v:
                     sys.modules[k] = v
@@ -1652,13 +1655,16 @@ def run_crypto_vcp_scan() -> bool:
         if path_added:
             sys.path.insert(0, crypto_dir)
 
+        # sklearn/joblib 등 C extension 모듈은 프로세스 수준 싱글턴이라 삭제하면 재로드 불가
+        _KEEP_PREFIXES = ('sklearn', 'joblib', 'scipy', 'numpy', 'pandas')
         _saved_mods = {k: v for k, v in sys.modules.items()}
         try:
             from run_scan import run_scan_sync
             result = run_scan_sync(top_n=top_n)
         finally:
             for k in [k for k in sys.modules if k not in _saved_mods]:
-                del sys.modules[k]
+                if not k.startswith(_KEEP_PREFIXES):
+                    del sys.modules[k]
             for k, v in _saved_mods.items():
                 if sys.modules.get(k) is not v:
                     sys.modules[k] = v
@@ -1884,11 +1890,11 @@ def _notify_crypto_signals(count: int) -> bool:
         symbol = s.get('symbol', '?')
         tf = s.get('timeframe', '?')
         sig_type = s.get('signal_type', '?')
-        score = s.get('score', 0)
-        ml_prob = s.get('ml_win_prob', 0)
-        pivot = s.get('pivot_high', 0)
-        vol_ratio = s.get('vol_ratio', 0)
-        bp_pct = s.get('breakout_close_pct', 0)
+        score = s.get('score') or 0
+        ml_prob = s.get('ml_win_prob') or 0
+        pivot = s.get('pivot_high') or 0
+        vol_ratio = s.get('vol_ratio') or 0
+        bp_pct = s.get('breakout_close_pct') or 0
 
         # 시그널 타입 이모지
         type_emoji = '🚀' if sig_type == 'BREAKOUT' else '⏳' if sig_type == 'APPROACHING' else '🔄'

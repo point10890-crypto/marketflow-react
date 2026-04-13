@@ -229,6 +229,11 @@ async def run_scan_async(
     except Exception as e:
         logger.warning(f"⚠️ ML prediction failed: {e}")
 
+    # ML 예측 실패한 이벤트에 기본값 채우기
+    for evt in all_events:
+        if not hasattr(evt, 'ml_win_prob') or evt.ml_win_prob is None:
+            evt.ml_win_prob = 0.0
+
     # Process and publish
     published = process_events(all_events, cfg, engine)
     logger.info(f"✅ Published {len(published)} new signals")

@@ -14,7 +14,15 @@ from datetime import datetime
 from typing import Dict, List, Any, Tuple
 from dataclasses import dataclass
 
-from config import KOSPI_TICKER, KOSDAQ_TICKER, USD_KRW_TICKER, MarketGateConfig
+import importlib.util as _ilu
+_cfg_path = __import__('os').path.join(__import__('os').path.dirname(__import__('os').path.abspath(__file__)), 'config.py')
+_cfg_spec = _ilu.spec_from_file_location('_root_config', _cfg_path)
+_cfg_mod = _ilu.module_from_spec(_cfg_spec)
+_cfg_spec.loader.exec_module(_cfg_mod)
+KOSPI_TICKER = _cfg_mod.KOSPI_TICKER
+KOSDAQ_TICKER = _cfg_mod.KOSDAQ_TICKER
+USD_KRW_TICKER = _cfg_mod.USD_KRW_TICKER
+MarketGateConfig = _cfg_mod.MarketGateConfig
 
 # 모듈 레벨 basicConfig 금지 — Flask logger 설정을 덮어쓴다.
 # CLI 실행 시에는 main 또는 진입점에서 핸들러를 부착할 것.
