@@ -474,8 +474,6 @@ class LLMAnalyzer:
         self.claude = ClaudeAnalyzer()
         self.openai = OpenAIAnalyzer()
         self.xai = XAIAnalyzer()
-        # model 속성 추가 (generator.py 호환성)
-        self.model = self.gemini.model or self.claude.client or self.openai.client
 
     def get_api_status(self) -> Dict:
         """현재 API 상태 반환"""

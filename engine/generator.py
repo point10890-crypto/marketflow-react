@@ -287,7 +287,7 @@ class SignalGenerator:
             # 4. LLM 뉴스 분석 (Rate Limit 방지 Sleep) + DART 공시 정보 포함
             llm_result = None
             dart_text = self.dart_collector.format_for_llm(dart_result) if dart_result else ""
-            if (news_list or dart_text) and self.llm_analyzer.model:
+            if (news_list or dart_text) and self.llm_analyzer.gemini.client:
                 print(f"    [LLM] Analyzing {stock.name} news...")
                 news_dicts = [{"title": n.title, "summary": n.summary} for n in news_list]
                 llm_result = await self.llm_analyzer.analyze_news_sentiment(stock.name, news_dicts, dart_text)
@@ -430,7 +430,7 @@ async def run_screener(
     claude_picks = {}  # 키 이름 유지 (하위 호환)
     try:
         screener = MultiAIConsensusScreener()
-        if screener.gemini_screener.model or screener.openai_screener.client:
+        if screener.gemini_screener.client or screener.openai_screener.client:
             print("🤖 Multi-AI Consensus 스크리닝 시작 (Gemini + GPT-4o)...", flush=True)
             signals_data = [s.to_dict() for s in signals]
             claude_picks = await screener.screen_candidates(signals_data)
