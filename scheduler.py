@@ -101,6 +101,79 @@ except ImportError:
 # ============================================================
 _git_lock = threading.Lock()
 
+def _sync_code_from_remote():
+    """원격 코드 변경 자동 반영 (git pull)
+
+    1시간마다 실행. 소스 코드 변경(scheduler.py, engine/ 등)을 원격에서 받아온다.
+    데이터 충돌 방지: unstaged changes가 있으면 stash → pull → stash pop.
+    실패해도 데몬은 계속 동작 (로그만 남김).
+    """
+    import subprocess
+    project_dir = os.path.dirname(os.path.abspath(__file__))
+    git_env = {**os.environ, 'PYTHONIOENCODING': 'utf-8'}
+
+    try:
+        # 현재 브랜치 확인
+        branch = subprocess.run(
+            ['git', 'rev-parse', '--abbrev-ref', 'HEAD'],
+            capture_output=True, text=True, cwd=project_dir, timeout=10, env=git_env
+        ).stdout.strip()
+        if branch != 'main':
+            return  # main이 아니면 스킵
+
+        # fetch만 먼저 (네트워크 체크)
+        fetch = subprocess.run(
+            ['git', 'fetch', 'origin', 'main', '--quiet'],
+            capture_output=True, text=True, cwd=project_dir, timeout=30, env=git_env
+        )
+        if fetch.returncode != 0:
+            return  # 네트워크 불가 → 조용히 스킵
+
+        # 원격과 차이 확인
+        diff_check = subprocess.run(
+            ['git', 'diff', 'HEAD', 'origin/main', '--stat'],
+            capture_output=True, text=True, cwd=project_dir, timeout=10, env=git_env
+        )
+        if not diff_check.stdout.strip():
+            return  # 차이 없음
+
+        # unstaged changes stash
+        status = subprocess.run(
+            ['git', 'status', '--porcelain'],
+            capture_output=True, text=True, cwd=project_dir, timeout=10, env=git_env
+        ).stdout.strip()
+        stashed = False
+        if status:
+            subprocess.run(
+                ['git', 'stash', '--include-untracked'],
+                capture_output=True, text=True, cwd=project_dir, timeout=30, env=git_env
+            )
+            stashed = True
+
+        # pull
+        pull = subprocess.run(
+            ['git', 'pull', '--rebase', 'origin', 'main'],
+            capture_output=True, text=True, cwd=project_dir, timeout=60, env=git_env
+        )
+        if pull.returncode != 0:
+            # rebase 실패 시 abort + merge 전략
+            subprocess.run(['git', 'rebase', '--abort'], cwd=project_dir, timeout=10,
+                           capture_output=True, env=git_env)
+            subprocess.run(['git', 'pull', '--no-rebase', 'origin', 'main'],
+                           cwd=project_dir, timeout=60, capture_output=True, env=git_env)
+
+        if stashed:
+            subprocess.run(
+                ['git', 'stash', 'pop'],
+                capture_output=True, text=True, cwd=project_dir, timeout=30, env=git_env
+            )
+
+        logger.info("🔄 코드 동기화 완료 (git pull)")
+
+    except Exception as e:
+        logger.debug(f"코드 동기화 스킵: {e}")
+
+
 def auto_git_push(scope: str = 'all') -> bool:
     """데이터 업데이트 후 자동 git commit + push (origin만)
 
@@ -1029,110 +1102,144 @@ def run_lotto_analysis():
 
 
 def update_jongga_v2():
-    """종가베팅 V2 데이터 업데이트 + S/A급 텔레그램 전송 (재시도는 _with_record 위임)"""
-    script = (
-        "import asyncio; "
-        "from datetime import datetime, timedelta, date; "
-        "from engine.generator import run_screener; "
-        "now = datetime.now(); "
-        "target_date = date.today(); "
-        "target_date = (target_date - timedelta(days=1)) if now.hour < 9 else target_date; "
-        "target_date = (target_date - timedelta(days=2)) if target_date.weekday() == 6 else "
-        "((target_date - timedelta(days=1)) if target_date.weekday() == 5 else target_date); "
-        "print(f'분석 기준일: {target_date}'); "
-        "asyncio.run(run_screener(capital=50_000_000, markets=['KOSPI', 'KOSDAQ'], target_date=target_date))"
-    )
-    success = run_command(
-        [Config.PYTHON_PATH, '-c', script],
-        'KR 종가베팅 V2 분석 엔진',
-        timeout=1200
-    )
+    """종가베팅 V2 데이터 업데이트 + S/A급 텔레그램 전송 (재시도는 _with_record 위임)
 
-    if not success:
+    v2: subprocess 대신 in-process 실행으로 전환 (2026-04-13)
+    - subprocess '-c' 방식은 코드 버그 시 exit code 1로만 보고, traceback이 로그에만 남아 진단 어려움
+    - in-process 실행은 예외가 그대로 전파되어 _with_record 재시도 + 에러 메시지 텔레그램 전송 가능
+    - pre-flight import 검증으로 코드 버그를 사전 탐지
+    """
+    import asyncio
+
+    # ── Pre-flight: 코드 임포트 검증 (코드 버그 조기 탐지) ──
+    try:
+        from engine.generator import run_screener, SignalGenerator
+        from engine.llm_analyzer import LLMAnalyzer
+        from engine.scorer import Scorer
+        logger.info("✅ V2 pre-flight 임포트 검증 통과")
+    except Exception as e:
+        error_msg = f"❌ 종가베팅 V2 코드 버그 감지 (import 실패): {e}"
+        logger.error(error_msg, exc_info=True)
+        send_telegram(
+            f"<b>🚨 종가베팅 V2 코드 버그</b>\n\n"
+            f"엔진 임포트 실패:\n<code>{str(e)[:300]}</code>\n\n"
+            f"코드 수정이 필요합니다.",
+            channel=False
+        )
         return False
 
-    if success:
+    # ── 분석 기준일 계산 ──
+    now = datetime.now()
+    target_date = now.date()
+    if now.hour < 9:
+        target_date = target_date - timedelta(days=1)
+    if target_date.weekday() == 6:  # 일요일
+        target_date = target_date - timedelta(days=2)
+    elif target_date.weekday() == 5:  # 토요일
+        target_date = target_date - timedelta(days=1)
+
+    logger.info(f"🎯 종가베팅 V2 분석 시작 (기준일: {target_date})")
+
+    # ── In-process 실행 ──
+    try:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
         try:
-            json_path = os.path.join(Config.DATA_DIR, "jongga_v2_latest.json")
-            # 결과 파일 검증
-            if not os.path.exists(json_path) or (time.time() - os.path.getmtime(json_path)) > 300:
-                logger.warning("⚠️ 종가베팅 결과 파일 없거나 오래됨")
-                return False
-            if os.path.exists(json_path):
-                with open(json_path, 'r', encoding='utf-8') as f:
-                    data = json.load(f)
+            loop.run_until_complete(
+                run_screener(capital=50_000_000, markets=['KOSPI', 'KOSDAQ'], target_date=target_date)
+            )
+        finally:
+            loop.close()
+        logger.info("✅ 종가베팅 V2 스크리너 완료")
+    except Exception as e:
+        error_msg = f"❌ 종가베팅 V2 실행 실패: {e}"
+        logger.error(error_msg, exc_info=True)
+        send_telegram(
+            f"<b>🚨 종가베팅 V2 실행 실패</b>\n\n"
+            f"<code>{type(e).__name__}: {str(e)[:300]}</code>\n\n"
+            f"기준일: {target_date}",
+            channel=False
+        )
+        return False
 
-                date_str = data.get("date", "")
-                all_signals = data.get("signals", [])
-                total_count = len(all_signals)
+    # ── 결과 검증 + 텔레그램 전송 ──
+    try:
+        json_path = os.path.join(Config.DATA_DIR, "jongga_v2_latest.json")
+        if not os.path.exists(json_path) or (time.time() - os.path.getmtime(json_path)) > 300:
+            logger.warning("⚠️ 종가베팅 결과 파일 없거나 오래됨")
+            return False
 
-                sa_signals = [s for s in all_signals if s.get("grade") in ["S", "A"]]
-                s_count = len([s for s in all_signals if s.get("grade") == "S"])
-                a_count = len([s for s in all_signals if s.get("grade") == "A"])
-                b_count = len([s for s in all_signals if s.get("grade") == "B"])
+        with open(json_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
 
-                header = f"<b>🎯 종가베팅 V2 ({date_str})</b>\n\n"
-                header += f"총 {total_count}개 시그널 (S:{s_count} A:{a_count} B:{b_count})\n"
-                header += "────────────────────"
+        date_str = data.get("date", "")
+        all_signals = data.get("signals", [])
+        total_count = len(all_signals)
 
-                if not sa_signals:
-                    send_telegram(header + "\n\n⚠️ S/A급 시그널 없음 (B급 제외됨)")
+        sa_signals = [s for s in all_signals if s.get("grade") in ["S", "A"]]
+        s_count = len([s for s in all_signals if s.get("grade") == "S"])
+        a_count = len([s for s in all_signals if s.get("grade") == "A"])
+        b_count = len([s for s in all_signals if s.get("grade") == "B"])
+
+        header = f"<b>🎯 종가베팅 V2 ({date_str})</b>\n\n"
+        header += f"총 {total_count}개 시그널 (S:{s_count} A:{a_count} B:{b_count})\n"
+        header += "────────────────────"
+
+        if not sa_signals:
+            send_telegram(header + "\n\n⚠️ S/A급 시그널 없음 (B급 제외됨)")
+        else:
+            seen_codes = set()
+            items = []
+            for s in sa_signals:
+                code = s.get("stock_code", "")
+                if code in seen_codes:
+                    continue
+                seen_codes.add(code)
+
+                grade = s.get("grade", "B")
+                icon = "🥇" if grade == "S" else "🥈"
+                change_pct = s.get("change_pct", 0)
+
+                item = f"\n{icon} <b>{s.get('stock_name')}</b> ({code}) {s.get('market', '')}\n"
+                item += f"   등급: {grade} | 점수: {s.get('score', {}).get('total', 0)} | 등락: {change_pct:+.1f}%\n"
+                item += f"   진입: {s.get('entry_price', 0):,}원 | 목표: {s.get('target_price', 0):,}원\n"
+                if s.get("themes"):
+                    item += f"   테마: {', '.join(s.get('themes')[:3])}\n"
+                llm_reason = s.get('score', {}).get('llm_reason', '')
+                if llm_reason:
+                    item += f"   💡 {llm_reason[:60]}...\n"
+                items.append(item)
+
+            chunks = []
+            current_chunk = header
+            for item in items:
+                if len(current_chunk) + len(item) > 3800:
+                    chunks.append(current_chunk)
+                    current_chunk = item
                 else:
-                    # 시그널 텍스트 생성 (중복 방지: stock_code 기준 dedup)
-                    seen_codes = set()
-                    items = []
-                    for s in sa_signals:
-                        code = s.get("stock_code", "")
-                        if code in seen_codes:
-                            continue
-                        seen_codes.add(code)
+                    current_chunk += item
+            if current_chunk:
+                chunks.append(current_chunk)
 
-                        grade = s.get("grade", "B")
-                        icon = "🥇" if grade == "S" else "🥈"
-                        change_pct = s.get("change_pct", 0)
+            for i, chunk in enumerate(chunks):
+                if i > 0:
+                    chunk = f"<b>🎯 종가베팅 V2 계속 ({i+1}/{len(chunks)})</b>\n" + chunk
+                send_telegram(chunk)
+                time.sleep(0.5)
 
-                        item = f"\n{icon} <b>{s.get('stock_name')}</b> ({code}) {s.get('market', '')}\n"
-                        item += f"   등급: {grade} | 점수: {s.get('score', {}).get('total', 0)} | 등락: {change_pct:+.1f}%\n"
-                        item += f"   진입: {s.get('entry_price', 0):,}원 | 목표: {s.get('target_price', 0):,}원\n"
-                        if s.get("themes"):
-                            item += f"   테마: {', '.join(s.get('themes')[:3])}\n"
-                        llm_reason = s.get('score', {}).get('llm_reason', '')
-                        if llm_reason:
-                            item += f"   💡 {llm_reason[:60]}...\n"
-                        items.append(item)
+    except Exception as e:
+        logger.error(f"❌ 종가베팅 결과 전송 실패: {e}")
 
-                    # 메시지 분할 (4000자 제한)
-                    chunks = []
-                    current_chunk = header
-                    for item in items:
-                        if len(current_chunk) + len(item) > 3800:
-                            chunks.append(current_chunk)
-                            current_chunk = item
-                        else:
-                            current_chunk += item
-                    if current_chunk:
-                        chunks.append(current_chunk)
+    # 누적 성과 캐시 무효화
+    try:
+        perf_cache = os.path.join(Config.DATA_DIR, "cumulative_performance.json")
+        if os.path.exists(perf_cache):
+            os.remove(perf_cache)
+            logger.info("🗑️ 누적 성과 캐시 삭제 (새 시그널 반영 대기)")
+    except Exception as e:
+        logger.warning(f"⚠️ 누적 성과 캐시 삭제 실패: {e}")
 
-                    # 전송 (각 chunk 1회씩만)
-                    for i, chunk in enumerate(chunks):
-                        if i > 0:
-                            chunk = f"<b>🎯 종가베팅 V2 계속 ({i+1}/{len(chunks)})</b>\n" + chunk
-                        send_telegram(chunk)
-                        time.sleep(0.5)
-
-        except Exception as e:
-            logger.error(f"❌ 종가베팅 결과 전송 실패: {e}")
-
-        # 누적 성과 캐시 무효화 → 다음 API 호출 시 새 시그널 포함하여 재계산
-        try:
-            perf_cache = os.path.join(Config.DATA_DIR, "cumulative_performance.json")
-            if os.path.exists(perf_cache):
-                os.remove(perf_cache)
-                logger.info("🗑️ 누적 성과 캐시 삭제 (새 시그널 반영 대기)")
-        except Exception as e:
-            logger.warning(f"⚠️ 누적 성과 캐시 삭제 실패: {e}")
-
-    return success
+    return True
 
 
 def _build_vcp_top10_text() -> str:
@@ -2588,7 +2695,9 @@ class Scheduler:
         )
 
         last_missed_check = time.time()
+        last_code_sync = time.time()
         MISSED_CHECK_INTERVAL = 300  # 5분마다 놓친 스케줄 점검
+        CODE_SYNC_INTERVAL = 3600   # 1시간마다 코드 동기화 (git pull)
         write_heartbeat()  # 시작 즉시 1회
 
         while self.running:
@@ -2596,8 +2705,9 @@ class Scheduler:
                 schedule.run_pending()
                 write_heartbeat()  # 매 루프(30s) 갱신 → watchdog 가 stale 판정 가능
 
-                # 주기적 놓친 스케줄 복구 (Windows sleep/hibernate 대응)
                 now = time.time()
+
+                # 주기적 놓친 스케줄 복구 (Windows sleep/hibernate 대응)
                 if now - last_missed_check > MISSED_CHECK_INTERVAL:
                     threading.Thread(
                         target=check_and_run_missed_tasks,
@@ -2605,6 +2715,15 @@ class Scheduler:
                         daemon=True
                     ).start()
                     last_missed_check = now
+
+                # 주기적 코드 동기화 (git pull) — 원격 코드 변경 자동 반영
+                if now - last_code_sync > CODE_SYNC_INTERVAL:
+                    threading.Thread(
+                        target=_sync_code_from_remote,
+                        name="code-sync",
+                        daemon=True
+                    ).start()
+                    last_code_sync = now
 
             except Exception as e:
                 logger.error(f"❌ 스케줄 실행 중 예외 (데몬 유지): {e}", exc_info=True)
