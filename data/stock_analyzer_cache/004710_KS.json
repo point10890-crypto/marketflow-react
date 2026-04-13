@@ -1,35 +1,35 @@
 {
-  "name": "휴림로봇",
-  "ticker": "090710.KQ",
+  "name": "한솔테크닉스",
+  "ticker": "004710.KS",
   "result": "데이터 없음",
-  "date": "2026-04-13 16:29:24",
-  "elapsed": 2.3,
+  "date": "2026-04-13 14:49:21",
+  "elapsed": 2.0,
   "consensus_score": null,
   "analyst_count": 0,
   "recommendation_detail": null,
   "recommendation_period": null,
   "price_targets": {
-    "current": 10750.0,
+    "current": 6510.0,
     "high": null,
     "low": null,
     "mean": null,
     "median": null
   },
-  "current_price": 10750.0,
+  "current_price": 6510.0,
   "upside_potential": null,
   "key_stats": {
-    "name": "Hyulim ROBOT",
-    "sector": "",
-    "industry": "",
-    "market_cap": 1283662282752,
+    "name": "HansolTechnics",
+    "sector": "Technology",
+    "industry": "Electronic Components",
+    "market_cap": 204528025600,
     "pe_ratio": null,
     "forward_pe": null,
-    "dividend_yield": null,
-    "beta": null,
-    "fifty_two_week_high": 26600.0,
-    "fifty_two_week_low": 1826.0,
-    "revenue": null,
-    "profit_margin": null,
+    "dividend_yield": 2.0,
+    "beta": 1.075,
+    "fifty_two_week_high": 7500.0,
+    "fifty_two_week_low": 3935.0,
+    "revenue": 1252424810496,
+    "profit_margin": -0.0109399995,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
@@ -38,37 +38,37 @@
   "revenue_quarters": [
     {
       "date": "2025-12",
-      "value": 24587546040
+      "value": 289469259060
     },
     {
       "date": "2025-09",
-      "value": 40467328650
+      "value": 331628595980
     },
     {
       "date": "2025-06",
-      "value": 52622002570
+      "value": 293573552870
     },
     {
       "date": "2025-03",
-      "value": 50627911790
+      "value": 337753353010
     }
   ],
   "net_income_quarters": [
     {
       "date": "2025-12",
-      "value": -13642355520
+      "value": -36525677800
     },
     {
       "date": "2025-09",
-      "value": -2664012550
+      "value": 7848433660
     },
     {
       "date": "2025-06",
-      "value": 1199962320
+      "value": 4572372490
     },
     {
       "date": "2025-03",
-      "value": -1793574300
+      "value": 10400574150
     }
   ],
   "news": []

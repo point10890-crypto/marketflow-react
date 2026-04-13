@@ -1,0 +1,295 @@
+{
+  "stock_code": "090430",
+  "stock_name": "아모레퍼시픽",
+  "generated_at": "2026-04-13T07:22:45.281066+00:00",
+  "financials": {
+    "stock_code": "090430",
+    "corp_code": "00583424",
+    "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2016": {
+        "cash": 6237.0,
+        "total_assets": 51815.8,
+        "total_liab": 12849.5,
+        "total_equity": 38966.3,
+        "revenue": 56454.4,
+        "op_profit": 8481.0,
+        "net_income": 0.0
+      },
+      "2017": {
+        "cash": 6041.9,
+        "total_assets": 53756.8,
+        "total_liab": 12003.1,
+        "total_equity": 41753.7,
+        "revenue": 51238.3,
+        "op_profit": 5964.0,
+        "net_income": 0.0
+      },
+      "2018": {
+        "cash": 7355.1,
+        "total_assets": 53711.4,
+        "total_liab": 9247.2,
+        "total_equity": 44464.2,
+        "revenue": 52778.4,
+        "op_profit": 4819.8,
+        "net_income": 0.0
+      },
+      "2019": {
+        "cash": 6735.8,
+        "total_assets": 59890.1,
+        "short_debt": 993.5,
+        "long_debt": 0.0,
+        "total_liab": 14901.7,
+        "total_equity": 44988.4,
+        "revenue": 55801.4,
+        "op_profit": 4278.3,
+        "net_income": 0.0
+      },
+      "2020": {
+        "cash": 7937.3,
+        "total_assets": 57019.2,
+        "short_debt": 1541.6,
+        "long_debt": 0.0,
+        "total_liab": 12375.2,
+        "total_equity": 44644.0,
+        "revenue": 44321.8,
+        "op_profit": 1430.1,
+        "net_income": 0.0
+      },
+      "2021": {
+        "cash": 5376.9,
+        "total_assets": 61167.1,
+        "short_debt": 1991.2,
+        "total_liab": 13724.1,
+        "total_equity": 47443.0,
+        "revenue": 48631.3,
+        "op_profit": 3433.6,
+        "net_income": 1936.8
+      },
+      "2022": {
+        "cash": 4496.0,
+        "total_assets": 58017.8,
+        "short_debt": 2234.1,
+        "total_liab": 10225.1,
+        "total_equity": 47792.8,
+        "revenue": 41349.3,
+        "op_profit": 2142.3,
+        "net_income": -52.1
+      },
+      "2023": {
+        "total_assets": 58865.1,
+        "cash": 5063.8,
+        "total_equity": 7204.8,
+        "short_debt": 2441.1,
+        "total_liab": 10138.1,
+        "op_profit": 1081.7,
+        "net_income": -62.2,
+        "revenue": 36739.6
+      },
+      "2024": {
+        "total_assets": 67835.1,
+        "cash": 4515.4,
+        "total_equity": 7204.8,
+        "short_debt": 3061.9,
+        "total_liab": 14575.0,
+        "op_profit": 2204.8,
+        "net_income": 0.0,
+        "revenue": 38851.1
+      },
+      "2025": {
+        "total_assets": 69612.1,
+        "cash": 5245.6,
+        "total_equity": 7204.8,
+        "short_debt": 2562.5,
+        "total_liab": 14577.6,
+        "op_profit": 3358.3,
+        "net_income": 0.0,
+        "revenue": 42528.2
+      }
+    },
+    "missing_years": [
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2016,
+        "revenue_eok": 56454,
+        "op_profit_eok": 8481,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 15.02,
+        "debt_ratio_pct": 32.98
+      },
+      {
+        "year": 2017,
+        "revenue_eok": 51238,
+        "op_profit_eok": 5964,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 11.64,
+        "debt_ratio_pct": 28.75
+      },
+      {
+        "year": 2018,
+        "revenue_eok": 52778,
+        "op_profit_eok": 4820,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 9.13,
+        "debt_ratio_pct": 20.79
+      },
+      {
+        "year": 2019,
+        "revenue_eok": 55801,
+        "op_profit_eok": 4278,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 7.67,
+        "debt_ratio_pct": 33.12
+      },
+      {
+        "year": 2020,
+        "revenue_eok": 44322,
+        "op_profit_eok": 1430,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 3.23,
+        "debt_ratio_pct": 27.72
+      },
+      {
+        "year": 2021,
+        "revenue_eok": 48631,
+        "op_profit_eok": 3434,
+        "net_income_eok": 1937,
+        "roe_pct": 4.08,
+        "op_margin_pct": 7.06,
+        "debt_ratio_pct": 28.93
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 41349,
+        "op_profit_eok": 2142,
+        "net_income_eok": -52,
+        "roe_pct": -0.11,
+        "op_margin_pct": 5.18,
+        "debt_ratio_pct": 21.4
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 36740,
+        "op_profit_eok": 1082,
+        "net_income_eok": -62,
+        "roe_pct": -0.86,
+        "op_margin_pct": 2.94,
+        "debt_ratio_pct": 140.71
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 38851,
+        "op_profit_eok": 2205,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 5.68,
+        "debt_ratio_pct": 202.29
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 42528,
+        "op_profit_eok": 3358,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 7.89,
+        "debt_ratio_pct": 202.34
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": -2.98,
+      "op_profit_cagr_pct": -10.12,
+      "best_year": 2016,
+      "worst_year": 2023,
+      "avg_roe_pct": 0.31
+    },
+    "valuation": {
+      "grade": "D",
+      "strengths": [
+        "2023년 최저점을 기록한 후 2024년과 2025년 매출액과 영업이익이 회복될 것으로 전망됩니다.",
+        "영업이익률이 2023년 2.94%에서 2025년 7.89%로 개선될 것으로 예상됩니다.",
+        "2022년과 2023년 당기순손실을 기록했으나, 2024년과 2025년에는 손실을 벗어나 흑자 전환이 예상됩니다."
+      ],
+      "risks": [
+        "지난 10년간 매출액 및 영업이익이 지속적으로 감소하여 성장성이 크게 둔화되었습니다.",
+        "2023년 이후 자본총계가 급격히 감소하여 부채비율이 200%를 초과하는 등 재무 건전성이 심각하게 악화되었습니다.",
+        "2022년과 2023년에 당기순손실을 기록하는 등 수익성이 저조하며, 평균 ROE가 매우 낮은 수준입니다."
+      ],
+      "one_liner": "과거 실적 부진과 심각한 재무 건전성 악화에도 불구하고 최근 회복세를 보이는 화장품 기업."
+    }
+  },
+  "dcf": {
+    "text": "퀀트 애널리스트로서 아모레퍼시픽(090430)의 DCF 적정가치를 계산하겠습니다.\n\n제공된 데이터를 바탕으로 다음과 같은 가정을 적용하여 계산을 진행합니다.\n\n**가정 요약:**\n*   **기준 연도:** 2025\n*   **최근 재무 (억원):**\n    *   매출액: 42528\n    *   영업이익: 3358\n*   **FCF 계산식:** 영업이익 × (1 - 0.25) + 감가상각(매출의 10%) - CAPEX(매출의 5%)\n    *   (여기서 0.25는 법인세율로 간주합니다.)\n*   **WACC (가중평균자본비용):** 9% (기본 시나리오)\n*   **영구성장률 (g):** 2% (기본 시나리오)\n*   **예측 기간:** 5년 명시적 예측 + 영구 가치 (Terminal Value)\n*   **5년 예측 기간 동안 매출액 및 영업이익 성장률:** 별도 언급이 없으므로, 5년 예측 기간 동안 매출액과 영업이익은 `최근 재무` 값으로 일정하게 유지된다고 가정합니다.\n\n---\n\n### 1. 기본 시나리오 DCF 적정가치 계산\n\n먼저, 기본 시나리오(WACC=9%, g=2%)에 대한 DCF 적정가치를 계산합니다.\n\n\n**기본 시나리오 적정가치:** 62,056.24 억원\n\n---\n\n### 2. WACC × g 민감도 그리드 출력\n\nWACC(7/8/9/10/11%)와 영구성장률 g(1/2/3%)의 변화에 따른 적정가치 민감도 분석을 수행합니다.\n\n\n**DCF 적정가치 민감도 그리드 (단위: 억원)**\n\n| WACC \\ 영구성장률 (g) | g=1%      | g=2%      | g=3%      |\n| :-------------------- | :-------- | :-------- | :-------- |\n| WACC=7%               | 74792.79  | 86604.70  | 104322.56 |\n| WACC=8%               | 64157.93  | 72286.83  | 83667.30  |\n| WACC=9%               | 56180.23  | 62056.24  | 69890.91  |\n| WACC=10%              | 49974.03  | 54380.32  | 60045.55  |\n| WACC=11%              | 45007.95  | 48407.66  | 52657.29  |\n\n---\n\n### 3. 요약 출력\n\n**적정가치(기본): 62056.24억원**",
+    "executed_code": "import pandas as pd\n\n# 1. 기본 데이터 및 가정 설정\nrevenue = 42528  # 억원\noperating_income = 3358  # 억원\ntax_rate = 0.25\ndepreciation_rate = 0.10\ncapex_rate = 0.05\nforecast_years = 5\n\n# WACC 및 영구성장률 (기본 시나리오)\nwacc_base = 0.09\ng_base = 0.02\n\n# FCF 계산 함수 정의\ndef calculate_dcf(revenue, operating_income, tax_rate, depreciation_rate, capex_rate,\n                  wacc, g, forecast_years):\n    \n    # 5년 예측 기간 동안 매출액과 영업이익이 일정하다고 가정\n    # 감가상각 및 CAPEX 계산\n    depreciation = revenue * depreciation_rate\n    capex = revenue * capex_rate\n    \n    # 매년 FCF 계산 (5년 예측 기간 동안 동일)\n    fcf_annual = operating_income * (1 - tax_rate) + depreciation - capex\n    \n    # 각 연도별 FCF 및 현재가치 계산\n    fcf_pv_list = []\n    for i in range(1, forecast_years + 1):\n        fcf_pv = fcf_annual / ((1 + wacc) ** i)\n        fcf_pv_list.append(fcf_pv)\n    \n    # Terminal Value (TV) 계산\n    # 5년차 말 FCF (6년차 FCF)\n    fcf_year_n_plus_1 = fcf_annual * (1 + g)\n    \n    # TV at end of year 5\n    terminal_value = fcf_year_n_plus_1 / (wacc - g)\n    \n    # Terminal Value의 현재가치 계산\n    pv_terminal_value = terminal_value / ((1 + wacc) ** forecast_years)\n    \n    # 총 적정가치\n    fair_value = sum(fcf_pv_list) + pv_terminal_value\n    \n    return fair_value\n\n# 기본 시나리오 DCF 적정가치 계산\nbase_fair_value = calculate_dcf(revenue, operating_income, tax_rate, depreciation_rate, capex_rate,\n                                wacc_base, g_base, forecast_years)\n\nprint(f\"기본 시나리오 적정가치: {base_fair_value:.2f} 억원\")\n\n\nimport pandas as pd\n\n# 1. 기본 데이터 및 가정 설정 (재사용)\nrevenue = 42528  # 억원\noperating_income = 3358  # 억원\ntax_rate = 0.25\ndepreciation_rate = 0.10\ncapex_rate = 0.05\nforecast_years = 5\n\n# FCF 계산 함수 정의 (재사용)\ndef calculate_dcf(revenue, operating_income, tax_rate, depreciation_rate, capex_rate,\n                  wacc, g, forecast_years):\n    \n    # 5년 예측 기간 동안 매출액과 영업이익이 일정하다고 가정\n    # 감가상각 및 CAPEX 계산\n    depreciation = revenue * depreciation_rate\n    capex = revenue * capex_rate\n    \n    # 매년 FCF 계산 (5년 예측 기간 동안 동일)\n    fcf_annual = operating_income * (1 - tax_rate) + depreciation - capex\n    \n    # 각 연도별 FCF 및 현재가치 계산\n    fcf_pv_list = []\n    for i in range(1, forecast_years + 1):\n        fcf_pv = fcf_annual / ((1 + wacc) ** i)\n        fcf_pv_list.append(fcf_pv)\n    \n    # Terminal Value (TV) 계산\n    # 5년차 말 FCF (6년차 FCF)\n    fcf_year_n_plus_1 = fcf_annual * (1 + g)\n    \n    # TV at end of year 5\n    # WACC <= g 인 경우 오류 방지\n    if wacc <= g:\n        return float('inf') # 무한대 값으로 처리\n    terminal_value = fcf_year_n_plus_1 / (wacc - g)\n    \n    # Terminal Value의 현재가치 계산\n    pv_terminal_value = terminal_value / ((1 + wacc) ** forecast_years)\n    \n    # 총 적정가치\n    fair_value = sum(fcf_pv_list) + pv_terminal_value\n    \n    return fair_value\n\n# WACC 및 g 범위 설정\nwacc_values = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_values = [0.01, 0.02, 0.03]\n\n# 민감도 분석 결과 저장할 딕셔너리\nsensitivity_results = {}\n\n# 민감도 분석 실행\nfor wacc in wacc_values:\n    row_results = {}\n    for g in g_values:\n        # WACC <= g 인 경우 계산 불가 (분모가 0 또는 음수)\n        if wacc <= g:\n            row_results[f'g={g*100:.0f}%'] = 'N/A'\n        else:\n            value = calculate_dcf(revenue, operating_income, tax_rate, depreciation_rate, capex_rate,\n                                  wacc, g, forecast_years)\n            row_results[f'g={g*100:.0f}%'] = f'{value:.2f}'\n    sensitivity_results[f'WACC={wacc*100:.0f}%'] = row_results\n\n# 결과를 DataFrame으로 변환하여 출력\ndf_sensitivity = pd.DataFrame(sensitivity_results).T\ndf_sensitivity.index.name = 'WACC'\ndf_sensitivity.columns.name = '영구성장률 (g)'\n\nprint(\"DCF 적정가치 민감도 그리드 (단위: 억원)\")\nprint(df_sensitivity)",
+    "code_output": "기본 시나리오 적정가치: 62056.24 억원\n\nDCF 적정가치 민감도 그리드 (단위: 억원)\n영구성장률 (g)      g=1%      g=2%       g=3%\nWACC                                    \nWACC=7%    74792.79  86604.70  104322.56\nWACC=8%    64157.93  72286.83   83667.30\nWACC=9%    56180.23  62056.24   69890.91\nWACC=10%   49974.03  54380.32   60045.55\nWACC=11%   45007.95  48407.66   52657.29"
+  },
+  "news": {
+    "text": "## 아모레퍼시픽(090430) 재무 및 시장 분석 보고서\n\n**투자등급 D, 요약: 과거 실적 부진과 심각한 재무 건전성 악화에도 불구하고 최근 회복세를 보이는 화장품 기업.**\n\n### 1. 재무 데이터가 보여주는 스토리와 현재 시장 컨센서스의 일치/불일치\n\n제공된 재무 데이터 요약은 아모레퍼시픽이 과거 실적 부진과 재무 건전성 악화를 겪었으나 최근 회복세를 보인다는 점을 명확히 합니다. 현재 시장 컨센서스는 이러한 재무 데이터의 '최근 회복세' 스토리에 강하게 동조하며, 미래 전망에 대해 매우 긍정적인 시각을 유지하고 있습니다.\n\n*   **일치하는 부분:** 시장 애널리스트들은 아모레퍼시픽의 2026년 1분기 실적이 매출액과 영업이익 모두 시장 컨센서스에 부합하거나 상회할 것으로 전망하고 있습니다. 특히, 2025년 4분기에 반영된 희망퇴직 관련 일회성 비용이 2026년부터는 연간 약 200억 원 수준의 인건비 절감 효과로 이어져 수익성 개선에 기여할 것으로 예상됩니다. 이는 과거의 재무 건전성 악화를 개선하려는 노력의 결과로 해석될 수 있습니다. 또한, 북미 및 유럽 시장에서의 라네즈, 에스트라 등 주요 브랜드의 견조한 성장세가 지속되고 있다는 점도 '최근 회복세'를 뒷받침합니다.\n*   **불일치하는 부분:** 과거의 '심각한 재무 건전성 악화'에 대한 직접적인 언급은 최근 뉴스에서 찾아보기 어렵습니다. 이는 시장이 이미 과거의 악재를 반영하고 현재의 턴어라운드에 초점을 맞추고 있음을 시사합니다. 다만, 2025년 4분기 영업이익이 희망퇴직 비용으로 인해 시장 기대치를 하회했으나, 일회성 요인을 제외하면 추정치에 부합했다는 분석이 지배적입니다.\n\n결론적으로, 시장 컨센서스는 아모레퍼시픽의 과거 어려움을 인지하고 있으나, 현재 진행 중인 구조조정 및 해외 시장 성장에 기반한 '회복세'에 더욱 주목하며 긍정적인 전망을 제시하고 있어 재무 데이터의 '최근 회복세' 스토리와 강하게 일치합니다.\n\n### 2. 재무제표에서 드러나지 않는 리스크 또는 호재\n\n**리스크 요인:**\n\n*   **중국 시장의 불확실성:** 중화권 사업이 흑자 기조를 유지하고 있으나, 백화점 매장 축소 등의 영향으로 매출 감소가 지속되고 있어 성장세는 보수적으로 전망됩니다. 중국 시장의 완전한 회복 지연은 여전히 잠재적 리스크로 작용할 수 있습니다.\n*   **코스알엑스(COSRX)의 실적 변동성:** 코스알엑스는 2025년 4분기부터 턴어라운드를 시작했으나, 과거 실적 부진이 주가에 부정적인 영향을 미쳤던 만큼 지속적인 회복세 확인이 필요합니다.\n*   **화장품 섹터 전반의 투자 심리 위축:** 개별 기업의 긍정적인 소식에도 불구하고, 화장품 섹터 전반의 투자 심리 위축이 발생할 경우 주가 하방 압력으로 작용할 수 있습니다.\n\n**호재 요인:**\n\n*   **구조적인 비용 효율화:** 2025년 4분기 희망퇴직으로 인한 일회성 비용 반영 이후, 2026년부터 연간 약 200억 원의 인건비 절감 효과가 기대되며 전사적인 실적 가시성이 높아질 것으로 전망됩니다. 이는 재무제표상 과거 비용으로 인식되었던 부분이 미래 수익성 개선으로 이어지는 긍정적인 변화입니다.\n*   **서구권 시장 중심의 글로벌 성장 가속화:** 북미, 유럽 등 서구권 시장에서 라네즈, 에스트라, 이니스프리, 설화수 등의 브랜드가 두 자릿수 성장을 견인하며 해외 매출 다변화 및 성장을 이끌고 있습니다. 특히 실리콘투와의 협업을 통한 유럽향 매출 증가는 신시장 개척 측면에서 의미가 큽니다.\n*   **코스알엑스(COSRX)의 성공적인 턴어라운드 및 신제품 파이프라인 확장:** 코스알엑스의 매출 회복 속도가 예상보다 빠르게 나타나고 있으며, 틱톡샵에서 아이패치가 인기를 끄는 등 펩타이드 라인 매출 비중이 상승하며 스네일 라인 의존도를 낮추고 있습니다. 이는 브랜드 포트폴리오 강화 및 성장 동력 확보에 긍정적입니다.\n*   **더마 사이언스 및 AI 기반 연구 개발 강화:** 아모레퍼시픽은 세계피부과학회에서 '더마 사이언스' 리더십을 주도하고 AI 및 분자 모델링 기반의 모발 케라틴 강화 펩타이드 개발 등 바이오 기술 기반의 항노화 연구에 집중하며 미래 성장 동력을 확보하고 있습니다. 이는 장기적인 경쟁력 강화에 기여할 것입니다.\n\n### 3. 최종 판정\n\n**매수**\n\n아모레퍼시픽은 과거 재무 건전성 악화와 실적 부진을 겪었으나, 최근 구조적인 비용 효율화 노력과 북미/유럽 시장 중심의 글로벌 성장, 그리고 코스알엑스의 성공적인 턴어라운드를 통해 뚜렷한 회복세를 보이고 있습니다. 2025년 4분기 일회성 비용은 단기적인 실적 하락 요인이었으나, 2026년부터는 고정비 부담 완화와 함께 수익성 개선이 본격화될 것으로 예상됩니다. 현재 시장 컨센서스 또한 아모레퍼시픽에 대해 '적극 매수' 의견과 높은 목표주가를 제시하며 긍정적인 전망을 내놓고 있습니다. 중국 시장의 불확실성은 여전히 존재하지만, 서구권 시장에서의 성공적인 확장과 브랜드 포트폴리오 다변화가 이를 상쇄하고 있습니다. 따라서 아모레퍼시픽은 현재 투자 매력이 높은 '매수' 의견을 제시합니다.",
+    "citations": [
+      {
+        "title": "newspim.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHjj7ut82_7RSSfJBFFluLR14jl_fvp8cmDBDGhkzfcQ8v3y-LN-ocpC_gBbw7-XXtprbNbv1j1iNrtK8rvmyzI8A4TUuEvX5PSC6awaxPR3g9IhvmCcY6o9TaV_NxavXZqLXDDC3B2lvM="
+      },
+      {
+        "title": "newspim.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHXpYPonmGwaPm9CHvttqlcsQ1HanZkbtm2uv5qfWn-LHtlSml6ZequHAgSi5Xiu-jnWa5vNCFH1FNOtSqLZxlgUBEqlhbZ871fu2dkXFjIDnj-MOoyJ1NPUF4xOCZzD5XSLoNilj2D07PV_Q=="
+      },
+      {
+        "title": "newspim.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFHWFMcG2tosXxCI6K3d1kMFuSwegRriqFjuqhl3-yVFmFIzgpm0QL19F81sMrknbTZiUvFz3WcXHCoR_vpwag3jByS9OS7cee6SoukeChVINb_-L_Sjp5q-A0H5Lp-27H3qXnhFNVsUXRAIA=="
+      },
+      {
+        "title": "jkn.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHT0AlQR7oZ3ZtOPnB36v2yY6TytxdsafmsOPO_j5uVVrOxT6jwjuMvqkXQSWHeBkNoTdhHlnZUgAlEoA35fFD0PHWYbgNJ8pCk4wfd0181S9-BK717ZEQHICVZCYI="
+      },
+      {
+        "title": "edaily.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEcq-v4gN_-if91sTtU2H3jppTL9qXi-Le9fv0Z9v1ZG6bSlW48N7-YAo5bQTaD3DtTdvYsldKeO8rz4I3r9mPi45oKHDbemeqDvIY90TLyMiq1Zb4DLIBZfZg9AyrSAkBomMzwPpk6s9W4oNXHPaelMDtyYLQy2IC30x76"
+      },
+      {
+        "title": "einfomax.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHFCgQLz9VcSVtq4kDwhBnDpjmi-3JiPnVD2GVMlfLuaHOAO33ldbpp3QL33Ax4g0tenEFEBz90cb349QvIyGSFaOenB_YOnXXzsE8YBs1ecfcBlziEZ-oLptORDGnTACqF2njNw1Zshz6fm3v7puuxznvUYYC9zes6tA=="
+      },
+      {
+        "title": "kiwoom.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQE-RGwabHgntJ0GNribVfuHtRxMCl2kuo33tX-abSycLu1CD8SQzsjKAvbJ9y8NjEIQzPOvD43CwXYsNkAGndzGp3sLlT0p0rX7hEMvvd_k0RVqBz4XrzE6n4IW"
+      },
+      {
+        "title": "edaily.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGKJKUhcVpv1qcD5OY9my2Y3-5t3HXW9hJI5itP1PaaWNmcumVoPQ3Z4Q0yghjaMLXgAcVXRpTklYEHm8ycV5DYx_rfHrh83neI6H57RCFIWRyLbrPMlIWlFUs_8m4-Irwt2sWAH0yoTJsZfEoCWSHLFxaB4jzMvGaGHRzW"
+      },
+      {
+        "title": "alphasquare.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQE2mvyN-m_F4_1xXcXt6y5ngi6Fp-dMbC7QK6LFt_uEfqLeziM7iu0CiUCheHUtWOGvytuJmkgJqtNnIQYYHUI4tMMlvI-T2jJP9s88-4BwNIL6950txyg1AJ2RBIIzNV_r_3Qs5IsI3f-Jb25JDdtR0ssmC1X63ze563DvRGUb1KxzIFIc2CbRnWUeD-mW"
+      },
+      {
+        "title": "alphasquare.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGgRfPhkRkDq2qH17joaBKVIp1YEDkf7GNdDXwYlJ64sSXkyZLgMtfdywgSa0leB_pJIpCpKz1VxeGalVzKhCZfuKPS5FmNl1AZLUx2UjyYnC5IJzwjNOihUujurlvnB-reaVo1Vq65C2AzJfwcoMjhnhWm6u53aHm7xHbffZIojo4XYoJHcgkdhihqJNQHuc1Ei6VTxoxo-WuSPELPf2Z90bMwBXeR1mOFJNHgjI7P-91PED3xESeurJWuPG666nJxl-dsmCSuTZ7GyW3SAAUa5V-I9DNWfYG7yHHg62J1HIGsPXpIeRN61QK8027mBeuacJp9sgAbhpVA2tutdDbh4FhOuQ=="
+      }
+    ]
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=00583424",
+    "summary": "공시 페이지 접근 제한"
+  }
+}

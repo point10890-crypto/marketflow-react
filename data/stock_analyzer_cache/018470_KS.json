@@ -1,35 +1,35 @@
 {
-  "name": "휴림로봇",
-  "ticker": "090710.KQ",
+  "name": "조일알미늄",
+  "ticker": "018470.KS",
   "result": "데이터 없음",
-  "date": "2026-04-13 16:29:24",
-  "elapsed": 2.3,
+  "date": "2026-04-13 16:42:08",
+  "elapsed": 2.5,
   "consensus_score": null,
   "analyst_count": 0,
   "recommendation_detail": null,
   "recommendation_period": null,
   "price_targets": {
-    "current": 10750.0,
+    "current": 1917.0,
     "high": null,
     "low": null,
     "mean": null,
     "median": null
   },
-  "current_price": 10750.0,
+  "current_price": 1917.0,
   "upside_potential": null,
   "key_stats": {
-    "name": "Hyulim ROBOT",
-    "sector": "",
-    "industry": "",
-    "market_cap": 1283662282752,
+    "name": "CHOILALUMINUM",
+    "sector": "Basic Materials",
+    "industry": "Aluminum",
+    "market_cap": 242753011712,
     "pe_ratio": null,
     "forward_pe": null,
     "dividend_yield": null,
-    "beta": null,
-    "fifty_two_week_high": 26600.0,
-    "fifty_two_week_low": 1826.0,
-    "revenue": null,
-    "profit_margin": null,
+    "beta": -0.267,
+    "fifty_two_week_high": 1950.0,
+    "fifty_two_week_low": 1095.0,
+    "revenue": 486678691840,
+    "profit_margin": 0.016390001,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
@@ -38,37 +38,37 @@
   "revenue_quarters": [
     {
       "date": "2025-12",
-      "value": 24587546040
+      "value": 118414314020
     },
     {
       "date": "2025-09",
-      "value": 40467328650
+      "value": 113581751870
     },
     {
       "date": "2025-06",
-      "value": 52622002570
+      "value": 117416143650
     },
     {
       "date": "2025-03",
-      "value": 50627911790
+      "value": 137266483690
     }
   ],
   "net_income_quarters": [
     {
       "date": "2025-12",
-      "value": -13642355520
+      "value": 1030615110
     },
     {
       "date": "2025-09",
-      "value": -2664012550
+      "value": -416828160
     },
     {
       "date": "2025-06",
-      "value": 1199962320
+      "value": -1101569050
     },
     {
       "date": "2025-03",
-      "value": -1793574300
+      "value": 8464106130
     }
   ],
   "news": []
