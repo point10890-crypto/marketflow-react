@@ -1102,62 +1102,55 @@ def run_lotto_analysis():
 
 
 def update_jongga_v2():
-    """종가베팅 V2 데이터 업데이트 + S/A급 텔레그램 전송 (재시도는 _with_record 위임)
+    """종가베팅 V2 데이터 업데이트 + S/A급 텔레그램 전송
 
-    v2: subprocess 대신 in-process 실행으로 전환 (2026-04-13)
-    - subprocess '-c' 방식은 코드 버그 시 exit code 1로만 보고, traceback이 로그에만 남아 진단 어려움
-    - in-process 실행은 예외가 그대로 전파되어 _with_record 재시도 + 에러 메시지 텔레그램 전송 가능
-    - pre-flight import 검증으로 코드 버그를 사전 탐지
+    subprocess 방식 유지 (git pull 후 디스크의 최신 코드를 항상 사용).
+    pre-flight 검증으로 코드 버그 사전 탐지 + 실패 시 텔레그램 즉시 알림.
     """
-    import asyncio
-
-    # ── Pre-flight: 코드 임포트 검증 (코드 버그 조기 탐지) ──
-    try:
-        from engine.generator import run_screener, SignalGenerator
-        from engine.llm_analyzer import LLMAnalyzer
-        from engine.scorer import Scorer
-        logger.info("✅ V2 pre-flight 임포트 검증 통과")
-    except Exception as e:
-        error_msg = f"❌ 종가베팅 V2 코드 버그 감지 (import 실패): {e}"
-        logger.error(error_msg, exc_info=True)
+    # ── Pre-flight: subprocess로 import만 테스트 (최신 디스크 코드 검증) ──
+    preflight = run_command(
+        [Config.PYTHON_PATH, '-c',
+         'from engine.generator import run_screener; '
+         'from engine.llm_analyzer import LLMAnalyzer; '
+         'from engine.scorer import Scorer; '
+         'print("OK")'],
+        'V2 pre-flight 검증',
+        timeout=30
+    )
+    if not preflight:
         send_telegram(
-            f"<b>🚨 종가베팅 V2 코드 버그</b>\n\n"
-            f"엔진 임포트 실패:\n<code>{str(e)[:300]}</code>\n\n"
-            f"코드 수정이 필요합니다.",
+            "<b>🚨 종가베팅 V2 코드 버그</b>\n\n"
+            "엔진 import 실패 — 코드 수정 필요!\n"
+            "scheduler 로그를 확인하세요.",
             channel=False
         )
         return False
+    logger.info("✅ V2 pre-flight 임포트 검증 통과")
 
-    # ── 분석 기준일 계산 ──
-    now = datetime.now()
-    target_date = now.date()
-    if now.hour < 9:
-        target_date = target_date - timedelta(days=1)
-    if target_date.weekday() == 6:  # 일요일
-        target_date = target_date - timedelta(days=2)
-    elif target_date.weekday() == 5:  # 토요일
-        target_date = target_date - timedelta(days=1)
+    # ── 메인 실행 (subprocess — 항상 디스크 최신 코드 사용) ──
+    script = (
+        "import asyncio; "
+        "from datetime import datetime, timedelta, date; "
+        "from engine.generator import run_screener; "
+        "now = datetime.now(); "
+        "target_date = date.today(); "
+        "target_date = (target_date - timedelta(days=1)) if now.hour < 9 else target_date; "
+        "target_date = (target_date - timedelta(days=2)) if target_date.weekday() == 6 else "
+        "((target_date - timedelta(days=1)) if target_date.weekday() == 5 else target_date); "
+        "print(f'분석 기준일: {target_date}'); "
+        "asyncio.run(run_screener(capital=50_000_000, markets=['KOSPI', 'KOSDAQ'], target_date=target_date))"
+    )
+    success = run_command(
+        [Config.PYTHON_PATH, '-c', script],
+        'KR 종가베팅 V2 분석 엔진',
+        timeout=1200
+    )
 
-    logger.info(f"🎯 종가베팅 V2 분석 시작 (기준일: {target_date})")
-
-    # ── In-process 실행 ──
-    try:
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        try:
-            loop.run_until_complete(
-                run_screener(capital=50_000_000, markets=['KOSPI', 'KOSDAQ'], target_date=target_date)
-            )
-        finally:
-            loop.close()
-        logger.info("✅ 종가베팅 V2 스크리너 완료")
-    except Exception as e:
-        error_msg = f"❌ 종가베팅 V2 실행 실패: {e}"
-        logger.error(error_msg, exc_info=True)
+    if not success:
         send_telegram(
-            f"<b>🚨 종가베팅 V2 실행 실패</b>\n\n"
-            f"<code>{type(e).__name__}: {str(e)[:300]}</code>\n\n"
-            f"기준일: {target_date}",
+            "<b>🚨 종가베팅 V2 실행 실패</b>\n\n"
+            "스크리너 subprocess 비정상 종료.\n"
+            "scheduler 로그에서 traceback을 확인하세요.",
             channel=False
         )
         return False
