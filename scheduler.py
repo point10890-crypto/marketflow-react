@@ -2540,6 +2540,16 @@ class Scheduler:
             verify_fn: 결과 검증 함수 (None이면 리턴값만 체크)
         """
         def wrapper():
+            # 중복 실행 방지 (catch-up 복구와의 충돌, 워치독 재시작 후 이중 실행 방지)
+            # crypto는 4시간 주기이므로 _was_run_recently 사용, 나머지는 _was_run_today
+            if task_key == 'crypto':
+                if _was_run_recently(task_key, hours=3):
+                    logger.info(f"⏭️ {task_key}: 최근 3시간 내 실행됨, 스킵")
+                    return None
+            elif _was_run_today(task_key):
+                logger.info(f"⏭️ {task_key}: 오늘 이미 실행됨, 스킵")
+                return None
+
             for attempt in range(1 + max_retries):
                 try:
                     if attempt > 0:
