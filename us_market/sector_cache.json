@@ -1,13 +1,9 @@
 {
-  "AJG": "Fin",
-  "AKAM": "Tech",
-  "AIZ": "Fin",
-  "AEE": "Util",
-  "APO": "Fin",
-  "ANET": "Tech",
-  "APA": "Energy",
   "AME": "Indust",
   "LNT": "Util",
+  "AEE": "Util",
   "ACGL": "Fin",
-  "ABNB": "Cons"
+  "AIZ": "Fin",
+  "ABNB": "Cons",
+  "ANET": "Tech"
 }
