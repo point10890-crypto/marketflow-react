@@ -34,16 +34,16 @@ class CryptoRiskAnalyzer:
     COIN_TICKERS = [
         'BTC-USD', 'ETH-USD', 'SOL-USD', 'BNB-USD', 'XRP-USD',
         'ADA-USD', 'DOGE-USD', 'AVAX-USD', 'DOT-USD', 'LINK-USD',
-        'POL-USD', 'ATOM-USD', 'LTC-USD', 'NEAR-USD', 'SUI-USD',
+        'POL28321-USD', 'ATOM-USD', 'LTC-USD', 'NEAR-USD', 'SUI20947-USD',
     ]
 
     COIN_LABELS = {
         'BTC-USD': 'BTC', 'ETH-USD': 'ETH', 'SOL-USD': 'SOL',
         'BNB-USD': 'BNB', 'XRP-USD': 'XRP', 'ADA-USD': 'ADA',
         'DOGE-USD': 'DOGE', 'AVAX-USD': 'AVAX', 'DOT-USD': 'DOT',
-        'LINK-USD': 'LINK', 'POL-USD': 'POL',
+        'LINK-USD': 'LINK', 'POL28321-USD': 'POL',
         'ATOM-USD': 'ATOM', 'LTC-USD': 'LTC', 'NEAR-USD': 'NEAR',
-        'SUI-USD': 'SUI',
+        'SUI20947-USD': 'SUI',
     }
 
     # Alert thresholds
