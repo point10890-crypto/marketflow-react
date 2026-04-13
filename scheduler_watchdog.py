@@ -172,13 +172,12 @@ def is_scheduler_alive() -> bool:
 
 
 def kill_scheduler():
-    """기존 스케줄러 프로세스 종료"""
+    """기존 스케줄러 프로세스 종료 (PowerShell 사용 — wmic 없는 Windows 대응)"""
     try:
         r = subprocess.run(
-            ['wmic', 'process', 'where',
-             "CommandLine like '%scheduler.py --daemon%' and not CommandLine like '%wmic%'",
-             'get', 'ProcessId'],
-            capture_output=True, text=True, timeout=10
+            ['powershell', '-Command',
+             "Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -like '*scheduler.py --daemon*' } | Select-Object -ExpandProperty ProcessId"],
+            capture_output=True, text=True, timeout=15
         )
         for line in r.stdout.strip().splitlines():
             line = line.strip()
@@ -314,13 +313,12 @@ def setup_task_scheduler():
         capture_output=True, timeout=10
     )
 
-    # 새 작업 생성: 5분마다, 무기한 반복
+    # 새 작업 생성: 5분마다, 무기한 반복 (/RL HIGHEST 없이 — 비관리자 계정 대응)
     cmd = [
         'schtasks', '/Create',
         '/TN', task_name,
         '/TR', f'"{pythonw}" "{script}"',
         '/SC', 'MINUTE', '/MO', '5',
-        '/RL', 'HIGHEST',
         '/F',
     ]
     r = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
