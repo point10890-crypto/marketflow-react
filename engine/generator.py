@@ -201,6 +201,23 @@ class SignalGenerator:
             candidates = await self._collector.get_top_gainers(market, top_n)
             print(f"  - 1차 필터 통과: {len(candidates)}개")
 
+            # 1-b. (옵션) 키움 조건검색 후보 병합 — KIWOOM_SCREENER_ENABLED=1 시 활성
+            if os.getenv("KIWOOM_SCREENER_ENABLED", "0") == "1":
+                try:
+                    from engine.kiwoom_screener import fetch_kiwoom_candidates_safe
+                    seq = os.getenv("KIWOOM_SCREENER_SEQ") or None
+                    name_q = os.getenv("KIWOOM_SCREENER_NAME") or None
+                    extra = await fetch_kiwoom_candidates_safe(seq=seq, name=name_q, market=market)
+                    if extra:
+                        existing = {s.code for s in candidates}
+                        added = [s for s in extra if s.code not in existing]
+                        candidates = candidates + added
+                        print(f"  - 키움 조건검색 추가: {len(added)}개 (병합 후 {len(candidates)})")
+                    else:
+                        print(f"  - 키움 조건검색 결과 없음 (장외/권한/조건미등록)")
+                except Exception as e:
+                    logger.warning("[generator] 키움 조건검색 폴백: %s", e)
+
             # 2. 각 종목 분석 (semaphore로 최대 5개 동시 실행)
             tasks = [self._analyze_with_limit(stock, target_date) for stock in candidates]
             results = await asyncio.gather(*tasks, return_exceptions=True)
