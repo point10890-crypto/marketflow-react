@@ -2358,6 +2358,25 @@ def _run_kis_token_warmup() -> bool:
         return False
 
 
+def _run_kiwoom_ai_theme() -> bool:
+    """키움 AI전략 테마 랭커 — 장중 15분 주기. 장외엔 자동 skip."""
+    now = datetime.now()
+    if now.weekday() >= 5:
+        return True
+    hm = now.hour * 60 + now.minute
+    if not (9 * 60 + 10 <= hm <= 15 * 60 + 25):
+        return True
+    try:
+        import asyncio
+        from engine.kiwoom_theme_ranker import update_ai_theme_ranking
+        result = asyncio.run(update_ai_theme_ranking(top_n=15))
+        logger.info(f"🤖 키움 AI전략 테마: executed={result['executed']}/{result['total_conditions']} unique={result['unique_stocks']}")
+        return True
+    except Exception as e:
+        logger.warning(f"키움 AI전략 테마 폴백: {type(e).__name__}: {e}")
+        return False
+
+
 def _run_wave_scan() -> bool:
     """Wave 패턴 전 종목 스캔 (KR)"""
     logger.info("=" * 60)
@@ -2618,6 +2637,14 @@ class Scheduler:
             getattr(schedule.every(), day).at('08:55').do(
                 self._with_record(_run_kis_token_warmup, 'kis_token_warmup',
                                   max_retries=2, retry_delay=60))
+            # 🤖 키움 AI전략 테마 — 장중(09:10~15:25) 15분 주기, 함수 내부에서 시간대 게이트
+            for hm in ['09:10','09:25','09:40','09:55','10:10','10:25','10:40','10:55',
+                       '11:10','11:25','11:40','11:55','12:10','12:25','12:40','12:55',
+                       '13:10','13:25','13:40','13:55','14:10','14:25','14:40','14:55',
+                       '15:10','15:25']:
+                getattr(schedule.every(), day).at(hm).do(
+                    self._with_record(_run_kiwoom_ai_theme, 'kiwoom_ai_theme',
+                                      max_retries=1, retry_delay=60))
             # 04:00 — US Market 전체 데이터 갱신 + Smart Money Top 5 텔레그램
             getattr(schedule.every(), day).at(Config.US_UPDATE_TIME).do(
                 self._with_record(run_us_market_update, 'us_market',
