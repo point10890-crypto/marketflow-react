@@ -1,0 +1,81 @@
+{
+  "name": "천보",
+  "ticker": "278280.KQ",
+  "result": "중립",
+  "date": "2026-04-13 23:51:39",
+  "elapsed": 3.4,
+  "consensus_score": 3.67,
+  "analyst_count": 6,
+  "recommendation_detail": {
+    "strongBuy": 2,
+    "buy": 0,
+    "hold": 4,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 64600.0,
+    "high": 131000.0,
+    "low": 50000.0,
+    "mean": 72000.0,
+    "median": 60000.0
+  },
+  "current_price": 64600.0,
+  "upside_potential": 11.5,
+  "key_stats": {
+    "name": "Chunbo",
+    "sector": "Basic Materials",
+    "industry": "Chemicals",
+    "market_cap": 641477967872,
+    "pe_ratio": null,
+    "forward_pe": 587.9556,
+    "dividend_yield": null,
+    "beta": 1.153,
+    "fifty_two_week_high": 80600.0,
+    "fifty_two_week_low": 31500.0,
+    "revenue": 133849587712,
+    "profit_margin": -0.43163,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "천보(278280.KQ)에 대한 애널리스트 컨센서스는 6명의 참여자 기준 중립 의견입니다. 목표가 평균은 72,000원으로 현재가(64,600원) 대비 11.5% 상승 여력이 있습니다. 투자 판단은 제시된 데이터를 참고하여 신중하게 결정하시기 바랍니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 34580174480
+    },
+    {
+      "date": "2025-09",
+      "value": 30625439480
+    },
+    {
+      "date": "2025-06",
+      "value": 33088121260
+    },
+    {
+      "date": "2025-03",
+      "value": 35555854410
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": -50690003500
+    },
+    {
+      "date": "2025-09",
+      "value": -2917730040
+    },
+    {
+      "date": "2025-06",
+      "value": -5086314890
+    },
+    {
+      "date": "2025-03",
+      "value": 920487610
+    }
+  ],
+  "news": []
+}

@@ -1,0 +1,302 @@
+{
+  "stock_code": "043260",
+  "stock_name": "성호전자",
+  "generated_at": "2026-04-13T11:58:56.243772+00:00",
+  "financials": {
+    "stock_code": "043260",
+    "corp_code": "00317210",
+    "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2016": {
+        "cash": 15.5,
+        "total_assets": 960.1,
+        "short_debt": 344.0,
+        "long_debt": 16.4,
+        "total_liab": 546.0,
+        "total_equity": 414.2,
+        "revenue": 876.9,
+        "op_profit": 19.0,
+        "net_income": 7.0
+      },
+      "2017": {
+        "cash": 10.1,
+        "total_assets": 910.0,
+        "short_debt": 346.7,
+        "long_debt": 12.9,
+        "total_liab": 515.0,
+        "total_equity": 395.0,
+        "revenue": 922.6,
+        "op_profit": 8.7,
+        "net_income": 4.9
+      },
+      "2018": {
+        "cash": 10.2,
+        "total_assets": 970.1,
+        "short_debt": 366.3,
+        "long_debt": 20.4,
+        "total_liab": 547.5,
+        "total_equity": 422.6,
+        "revenue": 913.6,
+        "op_profit": 1.5,
+        "net_income": 0.0
+      },
+      "2019": {
+        "cash": 29.1,
+        "total_assets": 956.5,
+        "short_debt": 293.3,
+        "long_debt": 2.5,
+        "total_liab": 545.0,
+        "total_equity": 411.5,
+        "revenue": 992.9,
+        "op_profit": -30.7,
+        "net_income": 0.0
+      },
+      "2020": {
+        "cash": 19.2,
+        "total_assets": 1416.3,
+        "short_debt": 420.5,
+        "long_debt": 58.0,
+        "total_liab": 686.3,
+        "total_equity": 730.0,
+        "revenue": 1071.9,
+        "op_profit": 28.4,
+        "net_income": 0.0
+      },
+      "2021": {
+        "cash": 51.6,
+        "total_assets": 1988.6,
+        "short_debt": 567.3,
+        "long_debt": 161.4,
+        "total_liab": 1059.7,
+        "total_equity": 928.9,
+        "revenue": 1332.2,
+        "op_profit": 12.3,
+        "net_income": 0.0
+      },
+      "2022": {
+        "cash": 367.5,
+        "total_assets": 2321.2,
+        "short_debt": 527.0,
+        "long_debt": 425.5,
+        "total_liab": 1491.3,
+        "total_equity": 829.9,
+        "revenue": 1535.8,
+        "op_profit": 20.5,
+        "net_income": -41.9
+      },
+      "2023": {
+        "total_assets": 2698.7,
+        "cash": 475.9,
+        "total_equity": 149.1,
+        "total_liab": 1678.2,
+        "long_debt": 154.7,
+        "op_profit": 258.6,
+        "net_income": 0.0,
+        "revenue": 2080.6
+      },
+      "2024": {
+        "total_assets": 3673.3,
+        "cash": 369.2,
+        "total_equity": 1434.7,
+        "total_liab": 2238.6,
+        "op_profit": 63.1,
+        "net_income": 0.0,
+        "revenue": 2073.3
+      },
+      "2025": {
+        "total_assets": 5810.9,
+        "cash": 295.7,
+        "total_equity": 310.4,
+        "total_liab": 3270.8,
+        "long_debt": 127.6,
+        "op_profit": 75.5,
+        "net_income": 0.0,
+        "revenue": 2315.8
+      }
+    },
+    "missing_years": [
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2016,
+        "revenue_eok": 877,
+        "op_profit_eok": 19,
+        "net_income_eok": 7,
+        "roe_pct": 1.69,
+        "op_margin_pct": 2.17,
+        "debt_ratio_pct": 131.88
+      },
+      {
+        "year": 2017,
+        "revenue_eok": 923,
+        "op_profit_eok": 9,
+        "net_income_eok": 5,
+        "roe_pct": 1.27,
+        "op_margin_pct": 0.98,
+        "debt_ratio_pct": 130.38
+      },
+      {
+        "year": 2018,
+        "revenue_eok": 914,
+        "op_profit_eok": 2,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 0.22,
+        "debt_ratio_pct": 129.55
+      },
+      {
+        "year": 2019,
+        "revenue_eok": 993,
+        "op_profit_eok": -31,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": -3.12,
+        "debt_ratio_pct": 132.28
+      },
+      {
+        "year": 2020,
+        "revenue_eok": 1072,
+        "op_profit_eok": 28,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 2.61,
+        "debt_ratio_pct": 93.97
+      },
+      {
+        "year": 2021,
+        "revenue_eok": 1332,
+        "op_profit_eok": 12,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 0.9,
+        "debt_ratio_pct": 114.0
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 1536,
+        "op_profit_eok": 20,
+        "net_income_eok": -42,
+        "roe_pct": -5.06,
+        "op_margin_pct": 1.3,
+        "debt_ratio_pct": 179.64
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 2081,
+        "op_profit_eok": 259,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 12.45,
+        "debt_ratio_pct": 1126.17
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 2073,
+        "op_profit_eok": 63,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 3.04,
+        "debt_ratio_pct": 156.03
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 2316,
+        "op_profit_eok": 76,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 3.28,
+        "debt_ratio_pct": 1055.16
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": 11.29,
+      "op_profit_cagr_pct": 16.65,
+      "best_year": 2023,
+      "worst_year": 2019,
+      "avg_roe_pct": -0.21
+    },
+    "valuation": {
+      "grade": "D",
+      "strengths": [
+        "10년간 매출액이 연평균 11.29% 성장하며 꾸준한 외형 성장을 보였습니다.",
+        "2023년에 영업이익이 259억원으로 크게 증가하며 일시적으로 높은 수익성을 기록했습니다.",
+        "자산총계가 2016년 960억원에서 2025년 5,811억원으로 크게 확대되어 사업 규모가 성장했습니다."
+      ],
+      "risks": [
+        "2023년 1126%, 2025년 1055% 등 극도로 높은 부채비율로 인해 심각한 재무 안정성 위험에 직면해 있습니다.",
+        "영업이익률이 대부분 3% 미만으로 낮고, 당기순이익은 대부분 0 또는 마이너스를 기록하여 전반적인 수익성이 매우 취약합니다.",
+        "10년간 평균 ROE가 -0.21%로 주주 자본에 대한 수익 창출 능력이 매우 미흡하며, 주주 가치 제고에 어려움이 있습니다."
+      ],
+      "one_liner": "매출액은 성장했으나 극도로 높은 부채비율과 낮은 수익성으로 재무 안정성이 매우 취약한 기업입니다."
+    }
+  },
+  "dcf": {
+    "text": "퀀트 애널리스트로서 성호전자(043260)의 DCF 적정가치를 계산하고 민감도 분석을 수행하겠습니다.\n\n제공된 데이터를 바탕으로 FCF(Free Cash Flow)를 계산하고, 이를 WACC(가중평균자본비용)와 영구성장률(g)을 사용하여 할인하여 적정가치를 산출합니다.\n\n**1. 기본 시나리오 DCF 적정가치 계산**\n\n*   **FCF 계산 가정:**\n    *   세율: 25% (영업이익 × (1 - 0.25)에 포함)\n    *   감가상각: 매출액의 10%\n    *   CAPEX: 매출액의 5%\n*   **DCF 가정:**\n    *   WACC: 9%\n    *   영구성장률(g): 2%\n    *   예측 기간: 5년\n    *   예측 기간 동안의 FCF는 초기 계산된 FCF로 일정하다고 가정합니다 (별도 성장률 미제시).\n\n**계산 단계:**\n1.  매출액, 영업이익을 바탕으로 감가상각비와 CAPEX를 계산합니다.\n2.  주어진 FCF 공식을 사용하여 기준 연도(2025년)의 FCF를 계산합니다.\n3.  예측 기간 5년 동안의 FCF를 현재가치로 할인합니다.\n4.  5년 차 이후의 영구적인 가치를 나타내는 터미널 밸류(Terminal Value)를 계산하고 현재가치로 할인합니다.\n5.  할인된 FCF와 할인된 터미널 밸류를 합산하여 적정가치(기업가치)를 산출합니다.\n\n**2. WACC × g 민감도 그리드 출력**\n\n*   WACC: 7%, 8%, 9%, 10%, 11%\n*   영구성장률(g): 1%, 2%, 3%\n*   각 조합에 대한 DCF 적정가치를 계산하여 표 형태로 제시합니다.\n\n**3. 요약 출력**\n\n*   기본 시나리오의 적정가치를 명확하게 요약하여 출력합니다.\n\n---\n**Python 코드 실행 및 결과:**\n\n\n**분석 결과:**\n\n1.  **기본 시나리오 DCF 적정가치:**\n    *   감가상각: 231.60 억원\n    *   CAPEX: 115.80 억원\n    *   세후 영업이익 (NOPAT): 57.00 억원\n    *   FCF (자유현금흐름): 172.80 억원\n    *   **DCF 적정가치 (WACC=9%, g=2%): 2308.62 억원**\n\n2.  **WACC × g 민감도 그리드 (DCF 적정가치, 억원):**\n\n|             | g=1%    | g=2%    | g=3%    |\n| :---------- | :------ | :------ | :------ |\n| **WACC=7%** | 2782.45 | 3221.88 | 3881.02 |\n| **WACC=8%** | 2386.81 | 2689.22 | 3112.60 |\n| **WACC=9%** | 2090.02 | 2308.62 | 2600.09 |\n| **WACC=10%**| 1859.14 | 2023.06 | 2233.82 |\n| **WACC=11%**| 1674.39 | 1800.87 | 1958.96 |\n\n3.  **요약:**\n    *   **적정가치(기본): 2308.62억원**\n\n이 분석은 제시된 가정에 기반하며, 실제 투자 결정 시에는 다양한 시나리오와 추가적인 질적 분석이 필요합니다.",
+    "executed_code": "import pandas as pd\n\n# 1. Base Scenario DCF Calculation\n\n# Input Data (억원)\nrevenue = 2316\noperating_profit = 76\n\n# Assumptions for FCF\ntax_rate = 0.25\ndepreciation_rate = 0.10\ncapex_rate = 0.05\n\n# DCF Assumptions\nwacc_base = 0.09\ng_base = 0.02\nforecast_years = 5\n\n# Function to calculate FCF\ndef calculate_fcf(revenue, operating_profit, tax_rate, depreciation_rate, capex_rate):\n    depreciation = revenue * depreciation_rate\n    capex = revenue * capex_rate\n    # FCF = NOPAT + Depreciation - CAPEX\n    fcf = operating_profit * (1 - tax_rate) + depreciation - capex\n    return fcf\n\n# Function to calculate DCF value (Enterprise Value)\ndef calculate_dcf(fcf_initial, wacc, g, forecast_years):\n    if wacc <= g:\n        return float('inf') # WACC must be greater than g for terminal value formula\n\n    # Calculate FCF for explicit forecast period (assuming constant FCF as no growth rate for explicit period is given)\n    fcf_forecast = [fcf_initial] * forecast_years\n\n    # Discounted FCFs for the explicit forecast period\n    pv_fcf = 0\n    for i in range(forecast_years):\n        pv_fcf += fcf_forecast[i] / ((1 + wacc)**(i + 1))\n\n    # Calculate Terminal Value\n    # FCF at the end of the forecast period, growing at 'g'\n    fcf_terminal_year = fcf_forecast[-1] * (1 + g)\n    terminal_value = fcf_terminal_year / (wacc - g)\n\n    # Discount Terminal Value to present\n    pv_terminal_value = terminal_value / ((1 + wacc)**forecast_years)\n\n    # Total Enterprise Value\n    enterprise_value = pv_fcf + pv_terminal_value\n    return enterprise_value\n\n# Base Scenario Calculation\nfcf_base = calculate_fcf(revenue, operating_profit, tax_rate, depreciation_rate, capex_rate)\ndcf_base_value = calculate_dcf(fcf_base, wacc_base, g_base, forecast_years)\n\nprint(f\"--- 기본 시나리오 계산 결과 ---\")\nprint(f\"감가상각 (매출의 10%): {revenue * depreciation_rate:.2f} 억원\")\nprint(f\"CAPEX (매출의 5%): {revenue * capex_rate:.2f} 억원\")\nprint(f\"세후 영업이익 (NOPAT): {operating_profit * (1 - tax_rate):.2f} 억원\")\nprint(f\"FCF (기본 시나리오): {fcf_base:.2f} 억원\")\nprint(f\"DCF 적정가치 (기본 시나리오, WACC={wacc_base*100:.0f}%, g={g_base*100:.0f}%): {dcf_base_value:.2f} 억원\")\n\n# 2. WACC x g Sensitivity Grid\n\nwacc_range = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_range = [0.01, 0.02, 0.03]\n\nsensitivity_results = {}\n\nfor wacc in wacc_range:\n    row_results = {}\n    for g in g_range:\n        if wacc <= g:\n            row_results[f'g={g*100:.0f}%'] = 'N/A (WACC <= g)'\n        else:\n            dcf_value = calculate_dcf(fcf_base, wacc, g, forecast_years)\n            row_results[f'g={g*100:.0f}%'] = f'{dcf_value:.2f}'\n    sensitivity_results[f'WACC={wacc*100:.0f}%'] = row_results\n\n# Convert to DataFrame for better display\nsensitivity_df = pd.DataFrame(sensitivity_results).T\nprint(\"\\n--- DCF 적정가치 민감도 분석 (억원) ---\")\nprint(sensitivity_df)\n\n# 3. Summary Output\nprint(f\"\\n적정가치(기본): {dcf_base_value:.2f}억원\")",
+    "code_output": "--- 기본 시나리오 계산 결과 ---\n감가상각 (매출의 10%): 231.60 억원\nCAPEX (매출의 5%): 115.80 억원\n세후 영업이익 (NOPAT): 57.00 억원\nFCF (기본 시나리오): 172.80 억원\nDCF 적정가치 (기본 시나리오, WACC=9%, g=2%): 2308.62 억원\n\n--- DCF 적정가치 민감도 분석 (억원) ---\n             g=1%     g=2%     g=3%\nWACC=7%   2782.45  3221.88  3881.02\nWACC=8%   2386.81  2689.22  3112.60\nWACC=9%   2090.02  2308.62  2600.09\nWACC=10%  1859.14  2023.06  2233.82\nWACC=11%  1674.39  1800.87  1958.96\n\n적정가치(기본): 2308.62억원"
+  },
+  "news": {
+    "text": "## 성호전자(043260) 투자 분석 보고서\n\n### 1. 재무 데이터 스토리와 시장 컨센서스의 일치/불일치\n\n제공된 10년 재무제표 분석 결과에 따르면 성호전자는 투자등급 D로, 매출액은 성장했으나 극도로 높은 부채비율과 낮은 수익성으로 재무 안정성이 매우 취약한 기업으로 평가됩니다.\n\n그러나 최근 시장 컨센서스는 이러한 재무 데이터와 부분적으로 불일치하는 양상을 보입니다.\n\n*   **불일치:**\n    *   최근 뉴스에서는 2023년 연간 연결 기준 매출액이 2,081억 원으로 전년 대비 35.5% 성장했고, 영업이익은 259억 원으로 1164% 급증했다고 보도되었습니다. 또한, 직전 12개월(TTM) 투자수익률(ROI)은 45%, 순이익률은 39%로 매우 높은 수익성을 기록했습니다. 이는 초기 분석의 '낮은 수익성'과 상반됩니다.\n    *   증권플러스에 따르면 최근 3년간 업종 평균보다 빠른 매출액 성장률과 최근 4개 분기 기준 업종 평균보다 높은 영업이익률을 기록했습니다.\n    *   일부 전문가들은 성호전자에 대해 53,000원에서 60,000원까지의 높은 목표주가를 제시하며 '매수' 의견을 내고 있습니다.\n*   **부분 일치:**\n    *   Investing.com에 따르면 성호전자의 총부채비율은 83%로 나타났습니다. 이는 초기 분석의 '높은 부채비율'과 일맥상통하며, 여전히 재무 건전성에 대한 주의가 필요함을 시사합니다.\n    *   현재 주가수익비율(PER)은 294.6으로 매우 높아, 현재 수익 대비 주가가 과도하게 높게 평가되어 있을 가능성이 있으며, 이는 장기적인 수익성 우려와 연결될 수 있습니다.\n\n### 2. 재무제표에서 드러나지 않는 리스크 또는 호재\n\n**리스크:**\n\n*   **주가 조작 가능성:** 최근 주가 급등 과정에서 \"소수 계좌의 매수가 과하게 참여한 종목\"이라는 공시가 자주 나왔으며, \"세력주\"로 언급되는 등 인위적인 주가 부양 가능성이 제기됩니다. 이는 기업의 펀더멘털과 무관하게 투자자에게 큰 손실을 야기할 수 있는 심각한 리스크입니다.\n*   **높은 주가 변동성:** 성호전자의 52주 주가 범위는 최저 938원에서 최고 59,600원까지로 극심한 변동성을 보입니다. 이는 투자 위험을 크게 높이는 요인입니다.\n*   **일회성 매출의 영향:** 2023년 실적 개선에는 \"1회성인 분양 사업 관련 매출액\"이 포함되어 있어, 본업의 지속적인 수익성 개선 여부는 불확실합니다.\n*   **과도한 고평가:** 매우 높은 PER(294.6)은 현재 기업의 가치에 비해 주가가 과도하게 높게 형성되어 있음을 나타냅니다.\n\n**호재:**\n\n*   **신사업 확장 및 성장 동력:** 성호전자는 전원공급장치(PSU) 및 필름콘덴서 외에 프린터, 생활가전, LED 조명, 디지털 TV 등으로 사업 영역을 확대하고 있습니다. 또한, AI 인프라 및 데이터센터 관련 기술력 확보에 대한 시장의 기대감이 존재합니다.\n*   **경영진 보강:** 2025년 9월 신규 대표이사 선임을 통해 각자대표 체제로 전환하며 사업 추진력과 의사결정 체계 개선이 기대됩니다.\n*   **외국인/기관 순매수:** 4월 1일 외국인과 기관의 동시 순매수가 관찰되어 단기적인 수급에 긍정적인 영향을 미쳤습니다.\n\n### 3. 최종 판정\n\n**[매도]**\n\n성호전자는 매출액 성장에도 불구하고 초기 재무제표 분석에서 드러난 극도로 높은 부채비율과 낮은 수익성(투자등급 D)이라는 근본적인 재무적 취약점을 안고 있습니다. 비록 최근 뉴스에서 일부 긍정적인 재무 지표와 신사업 성장 기대감이 나타났으나, 이는 일회성 매출의 영향일 수 있으며, 여전히 높은 부채비율과 극도로 높은 PER은 주가에 부담으로 작용합니다.\n\n무엇보다 \"소수 계좌의 매수가 과하게 참여한 종목\", \"세력주\"라는 언급은 주가 조작 가능성을 강력히 시사하며, 이는 기업의 내재 가치와 무관하게 투자자에게 예측 불가능한 위험을 초래할 수 있습니다. 극심한 주가 변동성 또한 투자 위험을 가중시킵니다. 따라서 현재 성호전자에 대한 투자는 매우 위험하며, 기존 보유자는 매도를 통해 리스크를 줄이는 것이 현명하다고 판단됩니다.",
+    "citations": [
+      {
+        "title": "pstatic.net",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGYLqv7IlqPHS9-N7Kh3zRydjtCTccEu1aqN1nr9-_Akn_x8G2WcoP_iyvFMt2fFBnEMZdl7iT0vX8647E39dpco5BI10UZKt_A6Kw9ddTNOwG0hH4VmnQoIH5qXtsRmhZvf0FWVaCTq9ogaOtRgM1avSRp2FlNrjzjPjk-bUdfR-YylWrM"
+      },
+      {
+        "title": "investing.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQH6fHSSyiTVjYFKJXQRQX6pXtOE59RX7x06XBZuP8-HMbYizrbbxq8q5IBfmutDLH71H7urLji0WVWvHmkMkTJwML_TWMl4oSW3hlT0Sq61aymoipD7TmQ6wnTlzKj2cYrXX2cFIdOHZA77NXVnN7GOXR66N8ukc6uaA7Dpbx5l13nlnz7HaA=="
+      },
+      {
+        "title": "stockplus.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHXE0CnGZSqR-3bMlOsz3E9lOzpPpWYiXOJuhmDPndPY1L42NbzuObGZloTsHNdaaUwaXGRxQ5lG76W1UfpnKlC2il0d3ChTWX5087WBf1jAPf3Z0AhASRWrPJ_H9oXHEKMRNk2k-sinr2TD8vVpLRINGyBFw=="
+      },
+      {
+        "title": "littlebproject.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQH5HEVLaVZhudQTGrZIKUca-57lElJXD3EAH32n83sndAhLTKxia9pigF48cUP5PAGtA0PgBxWiaV8jUx-cYj8BnfeOgVtbgh60tNiNvWMHCUSYR7y5o6WEiU26AZqYWMtbJg=="
+      },
+      {
+        "title": "alpha-lenz.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHVRbn7UZYxgicbJq0bc04jxh0waa9SDf9duP_o1L6VJnTO7uQSOo2WjpnIqI6qlF9DrVIhe1NJD6lzSP65iZ8w2HMmI5AWWOdkLbkhxxQsc1IGlMGik5brJ3jnBbrD5nP0oA=="
+      },
+      {
+        "title": "youtube.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGLWTC438lnPosPc9peMzaPNKdi0wYLRuVxfYTq695Yl5TGqRmselOioqzJfkzX7JiUo0oFqGe0cVNGsIVi-GKhVr0xzqBXITb2e5nQZFJQ5qbQMX5vV-nFbNqjuC-5J-kIDhLUZY8="
+      },
+      {
+        "title": "investing.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGzgxH04lhM9mC3q9NnuSpa4Ud1n9Bvvx-stAM2RTcnX4VzLqWajS7QtkM5oHPQ0mkUt1Qe8A7PJppUi7OQZg3iE2Q019Huvxy_UU84AhMZ2bwhGq1BqZFvYCY2U1UOpC-rQvx2X-lQwk2GUureSeCKPr2t6A=="
+      },
+      {
+        "title": "hankyung.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFdP0LM689hRXVF3YrSdsZJLM1XYmSAvWSsKbz5ddmNBqbcQG6XMu3583JkiVobsfN-5h7XefNpPCERtBN0m5g5KydcpE1r4EHjt7qpRtmKyI7Ggyvah8dKtyZCRWD_CKiGnsgM"
+      },
+      {
+        "title": "alphasquare.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHjw2J53BLHUvHzYCedfEVzg9kMAwfZIF9J6qZlaf8j3bAAIdcsUlYLY7NBK8JB35c1oP9bFZBVZjYhPL20nKxBjswz9DFVx7cvh5VCkj2ZkbqWgc9_GcpUmhAViCM35ImERgaIvZcXCeKDdoo4uK0Qe46s"
+      },
+      {
+        "title": "mk.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHTghTIZ_IqigntOI65Bn61I64CHk0wShfAgNTP_z1J242bysQHz9zZMrBT9czxUr2W377QT2_XX9dCbzOJK4sFptXN7YjDdAZtHetDLVZcQQt65kTEWEXGAfjMD_QQcFYZUEc="
+      }
+    ]
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=00317210",
+    "summary": "공시 페이지 접근 제한"
+  }
+}

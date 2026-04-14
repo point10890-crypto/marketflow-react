@@ -1,0 +1,295 @@
+{
+  "stock_code": "042660",
+  "stock_name": "한화오션",
+  "generated_at": "2026-04-13T14:51:45.520454+00:00",
+  "financials": {
+    "stock_code": "042660",
+    "corp_code": "00111704",
+    "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2016": {
+        "cash": 2242.7,
+        "total_assets": 150648.3,
+        "short_debt": 28609.9,
+        "long_debt": 7420.4,
+        "total_liab": 144054.5,
+        "total_equity": 6593.8,
+        "revenue": 128192.2,
+        "op_profit": -15308.4,
+        "net_income": 0.0
+      },
+      "2017": {
+        "cash": 2058.0,
+        "total_assets": 114467.5,
+        "short_debt": 20465.0,
+        "long_debt": 6736.1,
+        "total_liab": 84560.9,
+        "total_equity": 29906.6,
+        "revenue": 111018.2,
+        "op_profit": 7330.0,
+        "net_income": 6457.6
+      },
+      "2018": {
+        "cash": 3511.9,
+        "total_assets": 119185.2,
+        "short_debt": 14726.0,
+        "long_debt": 9359.0,
+        "total_liab": 80783.0,
+        "revenue": 96443.8,
+        "op_profit": 10248.3,
+        "net_income": 3447.2
+      },
+      "2019": {
+        "cash": 20122.4,
+        "total_assets": 112760.8,
+        "short_debt": 11244.1,
+        "long_debt": 9734.8,
+        "total_liab": 75211.8,
+        "total_equity": 37549.0,
+        "revenue": 83587.4,
+        "op_profit": 2927.6,
+        "net_income": -464.9
+      },
+      "2020": {
+        "cash": 13435.6,
+        "total_assets": 103207.7,
+        "short_debt": 10118.9,
+        "long_debt": 1355.7,
+        "total_liab": 64518.0,
+        "total_equity": 38689.7,
+        "revenue": 70301.8,
+        "op_profit": 1534.4,
+        "net_income": 865.7
+      },
+      "2021": {
+        "cash": 17789.4,
+        "total_assets": 106232.1,
+        "short_debt": 11379.5,
+        "long_debt": 1225.1,
+        "total_liab": 84056.3,
+        "total_equity": 22175.8,
+        "revenue": 44865.9,
+        "op_profit": -17546.5,
+        "net_income": -16998.3
+      },
+      "2022": {
+        "cash": 6597.2,
+        "total_assets": 122356.7,
+        "short_debt": 12834.3,
+        "long_debt": 997.2,
+        "total_liab": 114906.9,
+        "total_equity": 7449.7,
+        "revenue": 48601.5,
+        "op_profit": -16135.6,
+        "net_income": -17447.8
+      },
+      "2023": {
+        "total_assets": 139447.7,
+        "cash": 17993.1,
+        "total_equity": 5589.5,
+        "total_liab": 96326.2,
+        "long_debt": 16647.4,
+        "net_income": 1598.9,
+        "revenue": 74083.1
+      },
+      "2024": {
+        "total_assets": 178438.1,
+        "cash": 5882.6,
+        "total_equity": 23328.3,
+        "total_liab": 129804.6,
+        "op_profit": 2378.8,
+        "net_income": 5281.2,
+        "revenue": 107760.0
+      },
+      "2025": {
+        "total_assets": 201409.1,
+        "cash": 7784.7,
+        "total_equity": 15519.3,
+        "total_liab": 139659.1,
+        "op_profit": 11675.9,
+        "net_income": 0.8,
+        "revenue": 127835.1
+      }
+    },
+    "missing_years": [
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2016,
+        "revenue_eok": 128192,
+        "op_profit_eok": -15308,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": -11.94,
+        "debt_ratio_pct": 2184.69
+      },
+      {
+        "year": 2017,
+        "revenue_eok": 111018,
+        "op_profit_eok": 7330,
+        "net_income_eok": 6458,
+        "roe_pct": 21.59,
+        "op_margin_pct": 6.6,
+        "debt_ratio_pct": 282.75
+      },
+      {
+        "year": 2018,
+        "revenue_eok": 96444,
+        "op_profit_eok": 10248,
+        "net_income_eok": 3447,
+        "roe_pct": 0.0,
+        "op_margin_pct": 10.63,
+        "debt_ratio_pct": 0.0
+      },
+      {
+        "year": 2019,
+        "revenue_eok": 83587,
+        "op_profit_eok": 2928,
+        "net_income_eok": -465,
+        "roe_pct": -1.24,
+        "op_margin_pct": 3.5,
+        "debt_ratio_pct": 200.3
+      },
+      {
+        "year": 2020,
+        "revenue_eok": 70302,
+        "op_profit_eok": 1534,
+        "net_income_eok": 866,
+        "roe_pct": 2.24,
+        "op_margin_pct": 2.18,
+        "debt_ratio_pct": 166.75
+      },
+      {
+        "year": 2021,
+        "revenue_eok": 44866,
+        "op_profit_eok": -17546,
+        "net_income_eok": -16998,
+        "roe_pct": -76.65,
+        "op_margin_pct": -39.11,
+        "debt_ratio_pct": 379.05
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 48602,
+        "op_profit_eok": -16136,
+        "net_income_eok": -17448,
+        "roe_pct": -234.2,
+        "op_margin_pct": -33.2,
+        "debt_ratio_pct": 1542.38
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 74083,
+        "op_profit_eok": 0,
+        "net_income_eok": 1599,
+        "roe_pct": 28.6,
+        "op_margin_pct": 0.0,
+        "debt_ratio_pct": 1723.18
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 107760,
+        "op_profit_eok": 2379,
+        "net_income_eok": 5281,
+        "roe_pct": 22.64,
+        "op_margin_pct": 2.21,
+        "debt_ratio_pct": 556.44
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 127835,
+        "op_profit_eok": 11676,
+        "net_income_eok": 1,
+        "roe_pct": 0.01,
+        "op_margin_pct": 9.13,
+        "debt_ratio_pct": 900.05
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": -0.03,
+      "op_profit_cagr_pct": 0.0,
+      "best_year": 2025,
+      "worst_year": 2021,
+      "avg_roe_pct": -26.22
+    },
+    "valuation": {
+      "grade": "C",
+      "strengths": [
+        "2022년 이후 매출액이 회복세로 전환되어 2025년까지 견조한 성장이 예상됩니다.",
+        "과거 대규모 적자에서 벗어나 2024년 이후 영업이익 및 당기순이익 흑자 기조가 전망됩니다.",
+        "조선업황 개선에 따른 수주 증가로 향후 실적 가시성이 확보될 것으로 보입니다."
+      ],
+      "risks": [
+        "2016년, 2021년, 2022년 등 대규모 영업손실과 당기순손실을 기록하며 이익 안정성이 매우 취약합니다.",
+        "자본잠식 이력과 200%를 상회하는 높은 부채비율로 재무구조가 매우 불안정합니다.",
+        "평균 ROE가 음수이며, 수익성 지표가 매우 변동성이 커 투자 매력도가 낮습니다."
+      ],
+      "one_liner": "과거 극심한 부진을 겪었으나 최근 턴어라운드에 성공하며 실적 개선이 기대되는 조선업체로, 재무구조 안정화와 이익 지속성 확보가 향후 핵심 과제입니다."
+    }
+  },
+  "dcf": null,
+  "news": {
+    "text": "## 한화오션(042660) 투자 분석 보고서\n\n### 투자등급: C (과거 극심한 부진 후 최근 턴어라운드, 재무구조 안정화 및 이익 지속성 확보가 핵심 과제)\n\n### 1. 재무 데이터 스토리와 시장 컨센서스의 일치/불일치\n\n제공된 재무 데이터 분석 결과(과거 극심한 부진 후 최근 턴어라운드, 실적 개선 기대)는 최근 시장 컨센서스와 대체로 일치합니다. 증권사들은 한화오션의 2026년 1분기 연결 실적이 매출액 3조 2,621억~3조 3,628억 원, 영업이익 3,667억~4,015억 원을 기록하며 시장 기대치에 부합하거나 상회할 것으로 전망하고 있습니다. 이는 2023년 이후 수주한 고선가 물량의 인도가 본격화되고 상선 부문의 마진 개선, 그리고 우호적인 환율 효과에 기인한 것으로 분석됩니다. 특히, 저마진 물량 해소에 따른 LNG선 비중 감소에도 불구하고 수익성 확대가 지속될 것으로 예상되어, 과거 부진을 딛고 이익 지속성을 확보하려는 노력이 가시적인 성과를 내고 있음을 보여줍니다.\n\n### 2. 재무제표에서 드러나지 않는 리스크 또는 호재\n\n**호재:**\n\n*   **고부가가치 선별 수주 전략의 성공:** 한화오션은 최근 2주간 초대형 원유운반선(VLCC) 4척을 포함하여 총 5척의 선박을 약 1조 7천억 원 규모로 수주했습니다. 특히, VLCC 수주는 기존 건조 실적을 보유한 '반복 선형'을 기반으로 하여 설계, 자재 조달, 생산 공정 전반에서 효율성을 확보하고 수익성 개선에 기여할 것으로 기대됩니다. 중국 조선소들의 가격 경쟁력에도 불구하고 한화오션이 수주에 성공한 것은 가격, 품질, 납기 측면에서 경쟁력이 입증된 결과로 평가됩니다.\n*   **특수선(방산) 부문의 강력한 성장 모멘텀:** 한화오션은 글로벌 함정 시장에서 풍부한 기회 요인을 보유하고 있습니다. 3월 말 한화필리조선소가 미 해군 차세대 군수지원함 개념설계 사업 참여에 성공했으며, 이는 향후 한화오션의 기여도가 클 것으로 예상됩니다. 또한, 올해 상반기 내 캐나다 잠수함, 태국 호위함 등 해외 수주 기대감이 높아 방산 부문이 추가적인 성장 동력으로 작용할 전망입니다.\n*   **중동 사태로 인한 유조선 수요 증가:** 중동 지역의 지정학적 불안정으로 인해 유조선 확보 움직임이 빨라지면서 VLCC 발주가 증가하고 있으며, 이는 한화오션의 수주 확대에 긍정적인 영향을 미치고 있습니다.\n\n**리스크:**\n\n*   **조선업황 변동성:** 전반적인 글로벌 경기 둔화나 해운 시황 악화 시 수주 감소 및 선가 하락 압력이 발생할 수 있습니다.\n*   **원자재 가격 변동성:** 후판 등 주요 원자재 가격 상승은 수익성에 부정적인 영향을 미칠 수 있습니다.\n*   **재무구조 안정화의 지속성:** 과거 극심한 부진을 겪었던 만큼, 현재의 턴어라운드가 지속적인 재무구조 개선으로 이어지는지 여부에 대한 꾸준한 모니터링이 필요합니다.\n\n### 3. 최종 판정\n\n**매수**\n\n한화오션은 과거의 부진을 딛고 최근 턴어라운드에 성공하며 실적 개선세를 명확히 보여주고 있습니다. 특히, 고부가가치 선박 중심의 선별 수주 전략이 성공적으로 안착하고 있으며, 이는 1분기 실적 호조 전망과 함께 수익성 개선으로 이어지고 있습니다. 재무제표에 아직 완전히 반영되지 않은 특수선(방산) 부문의 해외 수주 모멘텀과 중동 사태로 인한 유조선 수요 증가는 향후 성장 잠재력을 더욱 높이는 강력한 호재입니다. 주요 증권사들 또한 한화오션에 대해 '매수' 의견과 긍정적인 목표주가를 제시하며 시장의 기대감을 반영하고 있습니다. 비록 조선업 고유의 리스크는 존재하지만, 현재 한화오션이 보여주는 경쟁력과 성장 동력을 고려할 때 긍정적인 투자 관점을 유지하는 것이 합리적이라고 판단됩니다.",
+    "citations": [
+      {
+        "title": "edaily.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGaUpTYT_cn5QrYu7eOAMYZiTmQY0NA6asACzReI3b6C20UBn25V0i7iqMw3WKzQDUX_Vjpw9KKnHhd5IFNRW4NlxDUqFsy6njWtu-ubr9XF8yQfddVLhvGoLDlY633pmSK7esW1-wVRbubI8PYfuYBdctwJkFgH0oMLqLs"
+      },
+      {
+        "title": "shippingnewsnet.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQF1-JzvoiiakX6vAsQZoEG6h1EYHbBgc75_i9ltNl6HbbFQwDVdViQfxtjrRc0isdS0QQATKS-TYJQn9_neUWEWswW_XrFslXuge6HvPHc-6MW3tj3ldHyXvuKBQT3oqOxNyiOjBSSd-euRmYb7AkQ0smdcKjHX0GFRgJnM"
+      },
+      {
+        "title": "buffettlab.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEn-A_1vMiszGocx33TvOoM7SaRxuCcYgApEIjUJ-9LTwAnng3GEFUFNwKdJ1EIAj3-NeKtHYvHm6amIqUty5_m02fsd7nUS0AXo9HJlkTXPaBOTrjLvsT3VJb7aK1nYeWrwSyGKP4SOdf0UnmAo8c="
+      },
+      {
+        "title": "kdfnews.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGNB8wMICUpZhcOKdDRm0mGQcArYGT0rwS6p-J-3ktKHwkzZmxl8F4Vx3qGMvjugTPBYnJq51VQ1jHWmB8L5YLlwJw_uaUPf2gVeoaFnOK29SZ9B8JU_q62fN7PDMovkz-QIQcSs3UFhMy0QQJX5ELjeee_3Os="
+      },
+      {
+        "title": "einfomax.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEygUcEx-jGsf4AHSZRgmGRB2M0g03Kl1jIboRlniHAZ-QAIqSrD7ZAELoVVPUbIn666UUEsPuB50gBzgQ-zXZQnaR57JLUzrD52twf33t-iwRlhtbXxM2J8ffBivCuwIWXfotqMB-qnS4GDH_jjaWmVu8j-IM9FwbCfQ=="
+      },
+      {
+        "title": "chosun.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEBbJd5BlLrB-Ut1WEIACu3UeEDBowOgCrCjtKIR7lhqHQVaXBLgRngn_DGxoiUG55TIxZOmF4WzBgxosZocyGZuDjlKkHlRD0mN3_UtlQFXciDFkQ9HsEFaq-L9Ja6auYuCPOXPWOjBcVtBAZMzTlgecJhgN_0w-_ND4d8Rd6vr-qQOOIPVZZRjg=="
+      },
+      {
+        "title": "news1.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFz7aIibBRMg1ruofll6wFhXRPghIJAbfVLAkq5Y5vqLMZ1hwynGS977LD7cA2OCnDwiLXgubMMrcJHJV4ogi9f-18ZJLmg8RPSzvDcVwRuK3i8chVvclhiDyghqHOyAZqtSIPm_o8Us5GeTSVrp9xCOA=="
+      },
+      {
+        "title": "alphasquare.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQH5vycOyK23SAYLdmflF2D-Nwo53t2VOhM6spvY7TbNDVFk5UQWvRProYZfhiRMWkGkEuD094xDfAEy1hKmZePaZqZMlpGRtBDwtjyvm9LLcguzouMrCAS2OYzIGo1ApLWtE92nVfkP_Dc1anGNvE60S82xdhEKUsoojlU="
+      },
+      {
+        "title": "heraldcorp.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGQL2Ldd-3UfnDStKjY1ASC4_HG2IuPE1K2skMNfHnSGT34L_zMqlqrMgblz3Beko8pR4FH5f7skjnYFjDcBgW722--oG-rvXgelc9IaksbS1SklQbbIOB-DVOcFYH0EqPhKj5NfB4="
+      },
+      {
+        "title": "sedaily.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGCGxf1ahVWHLFh_8dRlrefeaJuug2sX49_MSfCFDSXqIURXu1wK27AcnIdpcXjT_aNm1x7_mLo0NhZhC9Wbq05YEyYDwIyv5GGTUPMfETIE2nRkawQE3kvffHnoAX6Xkah6x0="
+      }
+    ]
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=00111704",
+    "summary": "공시 페이지 접근 제한"
+  }
+}

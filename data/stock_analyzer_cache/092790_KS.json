@@ -2,32 +2,32 @@
   "name": "넥스틸",
   "ticker": "092790.KS",
   "result": "데이터 없음",
-  "date": "2026-04-08 10:55:31",
-  "elapsed": 2.4,
+  "date": "2026-04-14 05:04:29",
+  "elapsed": 2.2,
   "consensus_score": null,
   "analyst_count": 0,
   "recommendation_detail": null,
   "recommendation_period": null,
   "price_targets": {
-    "current": 13450.0,
+    "current": 17610.0,
     "high": null,
     "low": null,
     "mean": null,
     "median": null
   },
-  "current_price": 13480.0,
+  "current_price": 17610.0,
   "upside_potential": null,
   "key_stats": {
     "name": "NEXTEEL",
     "sector": "Industrials",
     "industry": "Metal Fabrication",
-    "market_cap": 349726900224,
+    "market_cap": 457895215104,
     "pe_ratio": null,
     "forward_pe": null,
-    "dividend_yield": 10.04,
+    "dividend_yield": 8.52,
     "beta": 0.554,
     "fifty_two_week_high": 18490.0,
-    "fifty_two_week_low": 9030.0,
+    "fifty_two_week_low": 8925.0,
     "revenue": 550992478208,
     "profit_margin": 0.06542,
     "currency": "KRW"
@@ -36,6 +36,10 @@
   "source": "yfinance",
   "ai_analysis": null,
   "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 94268249450
+    },
     {
       "date": "2025-09",
       "value": 121920398210
@@ -47,13 +51,13 @@
     {
       "date": "2025-03",
       "value": 156770327130
-    },
-    {
-      "date": "2024-12",
-      "value": 126214310480
     }
   ],
   "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": -3245326950
+    },
     {
       "date": "2025-09",
       "value": 9513774020
@@ -65,10 +69,6 @@
     {
       "date": "2025-03",
       "value": 20024466320
-    },
-    {
-      "date": "2024-12",
-      "value": 2050789460
     }
   ],
   "news": []

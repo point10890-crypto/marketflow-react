@@ -1,0 +1,117 @@
+{
+  "name": "카카오",
+  "ticker": "035720.KS",
+  "result": "매수",
+  "date": "2026-04-14 05:48:12",
+  "elapsed": 2.9,
+  "consensus_score": 4.12,
+  "analyst_count": 26,
+  "recommendation_detail": {
+    "strongBuy": 7,
+    "buy": 15,
+    "hold": 4,
+    "sell": 0,
+    "strongSell": 0
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 47000.0,
+    "high": 90000.0,
+    "low": 59000.0,
+    "mean": 74692.305,
+    "median": 75000.0
+  },
+  "current_price": 47000.0,
+  "upside_potential": 58.9,
+  "key_stats": {
+    "name": "Kakao",
+    "sector": "Communication Services",
+    "industry": "Internet Content & Information",
+    "market_cap": 20674238218240,
+    "pe_ratio": null,
+    "forward_pe": 26.904346,
+    "dividend_yield": 0.16,
+    "beta": 1.434,
+    "fifty_two_week_high": 71600.0,
+    "fifty_two_week_low": 36249.0,
+    "revenue": 8099148070912,
+    "profit_margin": 0.06068,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "카카오(035720.KS)에 대해 26명의 애널리스트가 제시한 컨센서스 의견은 '매수'입니다. 목표가 평균은 74,692원으로, 현재가 47,000원 대비 58.9%의 상승 여력이 있는 것으로 분석됩니다. 이는 5점 만점 기준 4.12점에 해당합니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 2120524018360
+    },
+    {
+      "date": "2025-09",
+      "value": 2086580139320
+    },
+    {
+      "date": "2025-06",
+      "value": 2028312877030
+    },
+    {
+      "date": "2025-03",
+      "value": 1863730780370
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 33468884830
+    },
+    {
+      "date": "2025-09",
+      "value": 124923929300
+    },
+    {
+      "date": "2025-06",
+      "value": 161247035740
+    },
+    {
+      "date": "2025-03",
+      "value": 171851708310
+    }
+  ],
+  "news": [
+    {
+      "title": "South Korea set to finally a get fully functioning Google Maps",
+      "summary": "South Korea will soon no longer be one of the few countries where Google Maps doesn't work properly, after its security-conscious government reversed a two-decade stance to approve ‌the export of high",
+      "url": "https://finance.yahoo.com/news/south-korea-approves-google-bid-050937703.html",
+      "provider": "Reuters",
+      "pub_time": "2026-02-27T05:09:37Z"
+    },
+    {
+      "title": "Kakao Corp (XKRX:035720) Q4 2025 Earnings Call Highlights: Record Revenue and Strategic AI ...",
+      "summary": "Kakao Corp reports strong financial performance with significant growth in Talk Biz advertising and strategic collaborations to enhance AI services.",
+      "url": "https://finance.yahoo.com/news/kakao-corp-xkrx-035720-q4-010542682.html",
+      "provider": "GuruFocus.com",
+      "pub_time": "2026-02-13T01:05:42Z"
+    },
+    {
+      "title": "Korean tech giants to clash over stablecoins as competition heats up",
+      "summary": "Naver plans to integrate stablecoin with its e-commerce and webtoons networks Kakao wants to let K-pop fans use stablecoins Government keen to let firms launch KRW-pegged coins, despite existing ban",
+      "url": "https://www.dlnews.com/articles/markets/korean-tech-giants-to-clash-over-stablecoins/",
+      "provider": "DLNews",
+      "pub_time": "2025-12-01T16:33:51Z"
+    },
+    {
+      "title": "KakaoBank Pushes Forward With Korean Won-Backed Stablecoin Plans",
+      "summary": "The bank is ramping up technical work on a Korean won stablecoin after trademarks were filed ahead of forthcoming digital asset rules.",
+      "url": "https://decrypt.co/350068/kakaobank-pushes-forward-with-korean-won-backed-stablecoin-plans",
+      "provider": "decrypt",
+      "pub_time": "2025-11-26T11:38:53Z"
+    },
+    {
+      "title": "KakaoBank Plans to Launch Own Won-Pegged Stablecoin, Seeks Fresh Hires",
+      "summary": "South Korea’s KakaoBank has embarked on its planned “Kakao Coin,” a KRW-pegged stablecoin, into the actual development phase.Kakao is reportedly establishing blockchain infrastructure for its own stab",
+      "url": "https://cryptonews.com/news/kakaobank-plans-to-launch-own-won-pegged-stablecoin-seeks-fresh-hires/",
+      "provider": "Cryptonews",
+      "pub_time": "2025-11-26T08:10:39Z"
+    }
+  ]
+}

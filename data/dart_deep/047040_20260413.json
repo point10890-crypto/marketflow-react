@@ -1,0 +1,288 @@
+{
+  "stock_code": "047040",
+  "stock_name": "대우건설",
+  "generated_at": "2026-04-13T14:55:19.871930+00:00",
+  "financials": {
+    "stock_code": "047040",
+    "corp_code": "00124540",
+    "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2016": {
+        "cash": 8167.8,
+        "total_assets": 99702.5,
+        "total_liab": 79003.4,
+        "total_equity": 20699.1,
+        "revenue": 111059.3,
+        "op_profit": -4672.4,
+        "net_income": -190.8
+      },
+      "2017": {
+        "cash": 5170.9,
+        "total_assets": 87763.3,
+        "total_liab": 64982.6,
+        "total_equity": 22780.7,
+        "revenue": 117668.4,
+        "op_profit": 4290.3,
+        "net_income": 2578.9
+      },
+      "2018": {
+        "cash": 7059.5,
+        "total_assets": 87338.5,
+        "total_liab": 64161.2,
+        "total_equity": 23177.2,
+        "revenue": 106054.9,
+        "op_profit": 6287.3,
+        "net_income": -13.6
+      },
+      "2019": {
+        "cash": 7567.6,
+        "total_assets": 96977.0,
+        "total_liab": 72094.5,
+        "total_equity": 24882.5,
+        "revenue": 86518.5,
+        "op_profit": 3640.6,
+        "net_income": 2012.4
+      },
+      "2020": {
+        "cash": 8064.9,
+        "total_assets": 93059.2,
+        "total_liab": 66289.2,
+        "total_equity": 26770.0,
+        "revenue": 81367.1,
+        "op_profit": 5582.6,
+        "net_income": 2826.0
+      },
+      "2021": {
+        "cash": 10610.4,
+        "total_assets": 104579.8,
+        "total_liab": 72416.0,
+        "total_equity": 32163.8,
+        "revenue": 86852.1,
+        "op_profit": 7383.1,
+        "net_income": 2.4
+      },
+      "2022": {
+        "cash": 14230.9,
+        "total_assets": 111403.5,
+        "total_liab": 74157.4,
+        "total_equity": 37246.2,
+        "revenue": 104192.1,
+        "op_profit": 7600.1,
+        "net_income": 5080.1
+      },
+      "2023": {
+        "total_assets": 112431.4,
+        "cash": 9816.5,
+        "total_equity": -4456.1,
+        "short_debt": 6025.3,
+        "total_liab": 71812.2,
+        "long_debt": 7062.5,
+        "op_profit": 6625.2,
+        "net_income": 0.0,
+        "revenue": 116478.0
+      },
+      "2024": {
+        "total_assets": 126584.6,
+        "cash": 11617.9,
+        "total_equity": 5621.8,
+        "total_liab": 83243.6,
+        "op_profit": 4031.3,
+        "net_income": 0.0,
+        "revenue": 105036.1
+      },
+      "2025": {
+        "total_assets": 133585.0,
+        "cash": 18288.8,
+        "total_equity": 5621.8,
+        "total_liab": 98839.0,
+        "op_profit": -8154.3,
+        "net_income": 0.0,
+        "revenue": 80546.3
+      }
+    },
+    "missing_years": [
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2016,
+        "revenue_eok": 111059,
+        "op_profit_eok": -4672,
+        "net_income_eok": -191,
+        "roe_pct": -0.92,
+        "op_margin_pct": -4.21,
+        "debt_ratio_pct": 381.67
+      },
+      {
+        "year": 2017,
+        "revenue_eok": 117668,
+        "op_profit_eok": 4290,
+        "net_income_eok": 2579,
+        "roe_pct": 11.32,
+        "op_margin_pct": 3.65,
+        "debt_ratio_pct": 285.25
+      },
+      {
+        "year": 2018,
+        "revenue_eok": 106055,
+        "op_profit_eok": 6287,
+        "net_income_eok": -14,
+        "roe_pct": -0.06,
+        "op_margin_pct": 5.93,
+        "debt_ratio_pct": 276.83
+      },
+      {
+        "year": 2019,
+        "revenue_eok": 86518,
+        "op_profit_eok": 3641,
+        "net_income_eok": 2012,
+        "roe_pct": 8.09,
+        "op_margin_pct": 4.21,
+        "debt_ratio_pct": 289.74
+      },
+      {
+        "year": 2020,
+        "revenue_eok": 81367,
+        "op_profit_eok": 5583,
+        "net_income_eok": 2826,
+        "roe_pct": 10.56,
+        "op_margin_pct": 6.86,
+        "debt_ratio_pct": 247.62
+      },
+      {
+        "year": 2021,
+        "revenue_eok": 86852,
+        "op_profit_eok": 7383,
+        "net_income_eok": 2,
+        "roe_pct": 0.01,
+        "op_margin_pct": 8.5,
+        "debt_ratio_pct": 225.15
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 104192,
+        "op_profit_eok": 7600,
+        "net_income_eok": 5080,
+        "roe_pct": 13.64,
+        "op_margin_pct": 7.29,
+        "debt_ratio_pct": 199.09
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 116478,
+        "op_profit_eok": 6625,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 5.69,
+        "debt_ratio_pct": -1611.53
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 105036,
+        "op_profit_eok": 4031,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 3.84,
+        "debt_ratio_pct": 1480.68
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 80546,
+        "op_profit_eok": -8154,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": -10.12,
+        "debt_ratio_pct": 1758.07
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": -3.04,
+      "op_profit_cagr_pct": 6.39,
+      "best_year": 2022,
+      "worst_year": 2025,
+      "avg_roe_pct": 4.26
+    },
+    "valuation": {
+      "grade": "D",
+      "strengths": [
+        "2021년부터 2023년까지 매출액이 8조원대에서 11조원대로 회복하며 외형 성장을 시현했습니다.",
+        "2021년과 2022년에는 7천억원 이상의 견조한 영업이익을 기록하며 수익성을 개선했습니다.",
+        "2022년 부채비율이 199.09%로 10년 내 최저치를 기록하며 재무구조 개선 노력을 보였습니다."
+      ],
+      "risks": [
+        "2023년 완전자본잠식에 이어 2024년, 2025년 부채비율이 1,400%를 초과하는 등 심각한 재무 불안정성이 지속되고 있습니다.",
+        "2016년과 2025년에 대규모 영업손실을 기록하며 사업의 높은 변동성과 예측 불가능성을 드러냈습니다.",
+        "10년간 매출액이 연평균 3.04% 감소하고 영업이익은 잦은 등락과 함께 최종적으로 대규모 적자로 전환되어 성장성과 수익성 모두 부진합니다."
+      ],
+      "one_liner": "극심한 재무 불안정성과 높은 사업 변동성으로 인해 투자 매력이 매우 낮은 기업입니다."
+    }
+  },
+  "dcf": {
+    "text": "## 퀀트 애널리스트 보고서: 대우건설 (047040) DCF 적정가치 분석\n\n제공된 데이터를 바탕으로 대우건설의 DCF(할인현금흐름) 적정가치를 계산하고 민감도 분석을 수행했습니다.\n\n### 1. 기본 시나리오 DCF 적정가치 계산\n\n**가정:**\n*   **기준 연도:** 2025년\n*   **최근 재무 (억원):**\n    *   매출액: 80546\n    *   영업이익: -8154\n*   **FCF 계산식:** FCF ≈ 영업이익 × (1 - 0.25) + 감가상각(매출의 10%) - CAPEX(매출의 5%)\n*   **기본 WACC:** 9%\n*   **기본 영구성장률 (g):** 2%\n*   **예측 기간:** 5년 (2025년 ~ 2029년)\n*   **매출액 및 영업이익 성장률:** 별도 가정이 없어 예측 기간 동안 2025년 수준으로 유지된다고 가정합니다.\n\n**FCF 계산:**\n*   감가상각 = 80546 억원 × 10% = 8054.6 억원\n*   CAPEX = 80546 억원 × 5% = 4027.3 억원\n*   연간 FCF = -8154 억원 × (1 - 0.25) + 8054.6 억원 - 4027.3 억원 = -6115.5 + 8054.6 - 4027.3 = -2088.2 억원\n\n**DCF 계산 결과:**\n제공된 영업이익이 음수이므로, 계산된 FCF 또한 음수입니다. 이는 DCF 적정가치가 음수로 산출되는 주요 원인입니다.\n\n\n### 2. DCF 적정가치 민감도 분석 (억원)\n\nWACC와 영구성장률(g) 변화에 따른 DCF 적정가치 민감도 분석 결과는 다음과 같습니다.\n\n|             | g=1%      | g=2%      | g=3%      |\n| :---------- | :-------- | :-------- | :-------- |\n| **WACC=7%** | -33624.47 | -38934.73 | -46900.12 |\n| **WACC=8%** | -28843.37 | -32497.87 | -37614.17 |\n| **WACC=9%** | -25256.85 | -27898.52 | -31420.74 |\n| **WACC=10%**| -22466.74 | -24447.67 | -26994.58 |\n| **WACC=11%**| -20234.15 | -21762.55 | -23673.05 |\n\n**분석 결과 요약:**\n*   WACC가 낮아질수록, 그리고 영구성장률(g)이 높아질수록 적정가치의 절대값(음수이므로 더 큰 음수)이 커지는 경향을 보입니다. 이는 할인율이 낮아지고 미래 현금흐름의 성장률이 높아질수록 기업 가치가 증가하는 일반적인 DCF 모델의 특성과 일치합니다.\n*   그러나 대우건설의 경우, 현재 영업이익이 음수이고 이에 따라 FCF가 음수로 계산되어 모든 시나리오에서 적정가치가 음수로 산출되었습니다. 이는 현재 재무 상태를 바탕으로 한 DCF 모델이 기업의 가치를 마이너스로 평가하고 있음을 의미합니다.\n\n### 3. 최종 요약\n\n적정가치(기본): -27898.52억원\n\n**결론:**\n제공된 재무 데이터(특히 음의 영업이익)와 가정에 따라 대우건설의 DCF 적정가치는 음수로 계산되었습니다. 이는 현재의 수익성으로는 기업이 가치를 창출하지 못하고 있음을 시사합니다. 향후 긍정적인 가치 평가를 위해서는 영업이익 개선을 통한 FCF의 흑자 전환이 필수적입니다.",
+    "executed_code": "import pandas as pd\nimport numpy as np\n\n# Financials (in 100 million KRW)\nrevenue = 80546\noperating_income = -8154\n\n# Assumptions\ntax_rate = 0.25\ndepreciation_rate = 0.10 # 10% of Revenue\ncapex_rate = 0.05      # 5% of Revenue\nforecast_years = 5\n\ndef calculate_dcf(wacc, g, revenue, operating_income, tax_rate, depreciation_rate, capex_rate, forecast_years):\n    # Calculate FCF for each forecast year\n    depreciation = revenue * depreciation_rate\n    capex = revenue * capex_rate\n    fcf_per_year = operating_income * (1 - tax_rate) + depreciation - capex\n\n    # Check for WACC <= g for Terminal Value calculation\n    if wacc <= g:\n        # If WACC <= g, Gordon Growth Model is not applicable.\n        # Given negative FCF, this would lead to incorrect positive TV or division by zero.\n        # Return NaN for these cases.\n        return np.nan\n\n    # Project FCFs for the forecast period\n    fcf_forecast = [fcf_per_year] * forecast_years\n\n    # Calculate Present Value of FCFs\n    pv_fcf = 0\n    for i in range(forecast_years):\n        pv_fcf += fcf_forecast[i] / ((1 + wacc)**(i + 1))\n\n    # Calculate Terminal Value\n    terminal_value = fcf_forecast[-1] * (1 + g) / (wacc - g)\n\n    # Calculate Present Value of Terminal Value\n    pv_terminal_value = terminal_value / ((1 + wacc)**forecast_years)\n\n    # Total DCF Value\n    total_dcf = pv_fcf + pv_terminal_value\n    return total_dcf\n\n# 1. Basic Scenario DCF Calculation\nbase_wacc = 0.09\nbase_g = 0.02\n\nbase_dcf_value = calculate_dcf(base_wacc, base_g, revenue, operating_income, tax_rate, depreciation_rate, capex_rate, forecast_years)\n\n# Print base scenario result\nprint(f\"적정가치(기본): {base_dcf_value:.2f}억원\")\n\n# 2. Sensitivity Grid\nwacc_values = [0.07, 0.08, 0.09, 0.10, 0.11] # 7%, 8%, 9%, 10%, 11%\ng_values = [0.01, 0.02, 0.03]             # 1%, 2%, 3%\n\nsensitivity_results = {}\nfor wacc in wacc_values:\n    wacc_label = f\"WACC={wacc*100:.0f}%\"\n    sensitivity_results[wacc_label] = {}\n    for g in g_values:\n        g_label = f\"g={g*100:.0f}%\"\n        dcf_value = calculate_dcf(wacc, g, revenue, operating_income, tax_rate, depreciation_rate, capex_rate, forecast_years)\n        sensitivity_results[wacc_label][g_label] = dcf_value\n\n# Convert to DataFrame for better display\nsensitivity_df = pd.DataFrame(sensitivity_results).T # Transpose to have WACC as rows and g as columns\n\nprint(\"\\nDCF 적정가치 민감도 분석 (억원):\")\nprint(sensitivity_df.round(2))\n\n# 3. Final Summary Output\nprint(f\"\\n적정가치(기본): {base_dcf_value:.2f}억원\")",
+    "code_output": "적정가치(기본): -27898.52억원\n\nDCF 적정가치 민감도 분석 (억원):\n              g=1%      g=2%      g=3%\nWACC=7%  -33624.47 -38934.73 -46900.12\nWACC=8%  -28843.37 -32497.87 -37614.17\nWACC=9%  -25256.85 -27898.52 -31420.74\nWACC=10% -22466.74 -24447.67 -26994.58\nWACC=11% -20234.15 -21762.55 -23673.05\n\n적정가치(기본): -27898.52억원"
+  },
+  "news": {
+    "text": "## 대우건설(047040) 재무 및 시장 컨센서스 분석\n\n### 1. 재무 데이터 스토리와 현재 시장 컨센서스의 일치/불일치\n\n제공된 대우건설의 10년 재무제표 분석 결과는 '투자등급 D, 극심한 재무 불안정성과 높은 사업 변동성으로 인해 투자 매력이 매우 낮은 기업'으로 요약됩니다. 이는 과거의 부정적인 재무 상태를 강조하는 스토리입니다.\n\n그러나 최근 2주간의 주요 뉴스를 통해 확인된 시장 컨센서스는 이와 **불일치**합니다. 다수의 증권사(LS증권, 유진투자증권, IBK투자증권, KB증권, 키움증권 등)는 대우건설에 대해 '매수' 투자의견과 상향된 목표주가를 제시하고 있습니다. 특히 2025년 4분기 대규모 손실(빅배스)을 선제적으로 반영하여 미분양 및 채권 관련 리스크 등 실적 불확실성을 상당 부분 해소했다는 긍정적인 평가가 지배적입니다. 또한, 원전 사업과 데이터센터 사업을 미래 핵심 성장 동력으로 보고 있으며, 이러한 기대감에 힘입어 주가는 연초 대비 536% 급등하기도 했습니다.\n\n결론적으로, 과거 재무제표가 보여주는 부정적인 스토리와 달리, 현재 시장은 대우건설의 과거 불확실성 해소 노력과 미래 성장 동력 확보에 주목하며 긍정적인 컨센서스를 형성하고 있습니다.\n\n### 2. 재무제표에서 드러나지 않는 리스크 또는 호재\n\n**호재:**\n\n*   **원전 사업 확대 모멘텀:** 대우건설은 체코 두코바니 원전 우선협상대상자 선정에 이어 테믈린 원전, 미국 원전, 베트남 원전 등 수주 파이프라인을 확대하며 '원전주'로서의 재평가 기대감이 커지고 있습니다. 이는 중장기적인 핵심 성장 축으로 재정의되고 있습니다.\n*   **데이터센터 사업 진출 및 강화:** 대우건설은 국내 데이터센터 수요 확대에 대응하고 해외시장 진출을 모색하기 위해 '데이터센터 TFT'를 신설했습니다. 이는 AI 시대의 핵심 인프라 시장을 공략하고 단순 시공을 넘어 투자·개발·운영·관리까지 아우르는 데이터센터 디벨로퍼로 도약하려는 전략입니다. 이미 강남 데이터센터 준공 및 장성 파인데이터센터 참여 경험을 보유하고 있습니다.\n*   **선제적 비용 반영을 통한 불확실성 해소:** 2025년 4분기에 토목 및 플랜트 부문의 예정원가 조정과 미분양 관련 대손상각비 등 대규모 손실을 선제적으로 반영하여, 그동안 시장에서 반복적으로 제기되던 리스크를 보수적으로 정리하고 향후 실적 불확실성을 상당 부분 해소했다는 평가를 받고 있습니다.\n*   **정비사업 수주 성과:** 최근 경기 용인시 기흥1구역과 서울 성산 모아타운3구역 등 주요 정비사업 시공권을 잇따라 확보하며 누적 수주액 2.2조원을 달성, 업계 1위를 기록했습니다.\n\n**리스크:**\n\n*   **단기 차익실현 매물 출회 가능성:** 4월 13일 데이터센터 TFT 신설 소식에 주가가 강세를 보였으나, 장중 차익실현 매물이 출회되며 하락 마감한 사례가 있습니다. 이는 단기적인 주가 과열에 대한 경계심을 보여줄 수 있습니다.\n*   **원전 수주 경쟁 심화:** 대우건설이 '팀 코리아'의 일원으로 원전 사업에 참여하고 있으나, 현대건설, 삼성물산 등 경쟁사들도 원전 사업에 적극적이며, 추가적인 대형 원전 수주 기회 확보가 향후 주가 향방을 가를 중요한 요소로 지적됩니다.\n\n### 3. 최종 판정\n\n**매수**\n\n제공된 10년 재무제표 분석 결과는 과거의 재무 불안정성을 보여주지만, 최근 2주간의 시장 뉴스와 애널리스트 컨센서스는 대우건설이 2025년 4분기 대규모 손실 반영을 통해 과거의 재무 불확실성을 해소하고, 원전 및 데이터센터 사업을 중심으로 새로운 성장 동력을 확보하고 있음을 명확히 보여줍니다. 이러한 미래 성장 기대감은 이미 주가에 긍정적으로 반영되고 있으며, 향후 구체적인 수주 성과와 신사업의 수익성 가시화에 따라 추가적인 기업 가치 상승이 기대됩니다. 단기적인 차익실현 매물 출회 가능성은 있으나, 중장기적인 관점에서 긍정적인 변화에 주목하여 '매수' 의견을 제시합니다.",
+    "citations": [
+      {
+        "title": "hankyung.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEPg4mlzikMQBtZayafue9Ouk3kWhHX_Di_rT15Wj89J1ik_5MBUvSWw_kMFNg77NT-Uq3zNuYjc0OGnBlSEfIJoS6SFOeKciFX71OJvsIwwHiq9o3Vg4g-PW3OyDZ4OQxp4f9JN0Tbg5C_jztz"
+      },
+      {
+        "title": "ibks.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGDt8nvJk5ANPsnZu0QoCulEgBbvME0ozTgMULQfnw-n-CSNXgMgCJvQDG839kB4evXvI7KQHEZYbNtVnZqsytc3Jbqa0yVbzrH4C09Hd6CgSOxd0-PvrxmDZPORToBIv8MrDdvE-94DiVPKa-O6FYYacNE3Qd5Q7v8ynCOsnnYLRFdfQPAUBQy-sNoG5bpGaEBBA=="
+      },
+      {
+        "title": "edaily.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHv-ztKvT2iQMZIatb4SAYR9q8Fa1fyL_CJETtj0nKNQAZMMoC-P5drYJ-lioyshd0yqoR3736yk2WGo-q_swSDQAr1pT-Qv81wPPhGga73RqUfL6zCgmbts5zPiGqB0TdVmWahs-prXHPS9imdYnPf2eDzS1yIm8dOPcE="
+      },
+      {
+        "title": "kbthink.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQErvM9xF-xTBnKpp69CpbcwOEdClnMvVsNMWyZOoj3PJUGukbH4E8_Tbjg-ovJc_SJbV7UczE3ijHFJPC6CP45olDASl9c2IPgnVs00CA7c5cE-cdykmpboQQof6nT2HhEBic2ATSeE8RSbv_7CiOsss4Z-hIGgSINFiIo="
+      },
+      {
+        "title": "kiwoom.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGrYWS7Owif11bWOx0k06VxI6QXFVFY6IM-AR6LPBXUoTJEv9T-ZiHTBxdjD5dm7oolbMf6Lr96Wq5VR-0PMjVB_bU3xW-CHUOIt46YA1EKkzVNGbow_n-mGtI="
+      },
+      {
+        "title": "asiae.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGWlLDauF9uVHb1qfoIx9CaHXNP0kQzVLdTsBPwGacB8D8Hxk1NOfw7vOIw2_Kpju5lqlUr0z1zyCgaELZzVIfCtfdFpiDfA_6_bk3GF4Auvq_Qn7Qtg1BcFPJDejfProzBwUFAheFWRRpwdErv"
+      },
+      {
+        "title": "thedailymoney.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEJ6ijSiP2uEzecVCZycICV7VaAoh-a8tPpxE7kLh_XAofMTvZnQ_dLNmQDDg08AnUYBzfA52Fm6iVKdAxfuAqVrdJQCc39PitPEZNRU0LdyN-UYVxzbRdpjrD2-bY1IaQUYwZtDKj3HBW1baFL1xZDSRNUzS6OF5HhJA=="
+      },
+      {
+        "title": "news1.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGlpaneTq9J0cDs-vlCOs3TAUWS0PHC1y_InT2xXHOyZcXw06AMpqk9PKsObK2DYKOaSrwoCrxhUbjBdghviByeI7pZQAduHik3oiU_ziK24poBQ9VFgaibYIhxizPcEu4IHaDohZ_ilCY="
+      },
+      {
+        "title": "einfomax.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHFEl3Uf10r1RHiEZ79VlAB0ZH7Gk6mBMhFJs0Klv9R21aiB5YPa6Re4ihgIppsFKW7XUz9SbSxYVhDkqYQj3_fSoN-7hvryjLhMPpWEriLpZ1tUl3PC1zVaxHu8SvbiN3lejqiF1QBKQDd1tV4SFhiylWeIWrV_MMX"
+      },
+      {
+        "title": "etoday.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFbEnH0TEDaTCP82ib1rM6soCS3f88xOeiC17rFzzV_uYMKh3lLdfPo8u_ST67nVIkKAXyjmsj2svKri6wTaRA-v_8yIDe6I7koeZZBkn7_aqCi5pxa6mAAiHzXCWDIIFX8cuJ6xlw2Z1XeRz75QnS2LWBfOKjjgNqMXN8vA4w8P0lTuk0="
+      }
+    ]
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=00124540",
+    "summary": "공시 페이지 접근 제한"
+  }
+}

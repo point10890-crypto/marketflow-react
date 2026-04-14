@@ -1,0 +1,52 @@
+{
+  "stock_code": "064400",
+  "corp_code": "00139834",
+  "years": [
+    2023,
+    2024,
+    2025
+  ],
+  "data": {
+    "2023": {
+      "total_assets": 40406.8,
+      "cash": 5045.7,
+      "total_equity": 350.4,
+      "short_debt": 25.6,
+      "total_liab": 21724.2,
+      "long_debt": 5487.5,
+      "op_profit": 4640.5,
+      "net_income": 3323.2
+    },
+    "2024": {
+      "total_assets": 45045.1,
+      "cash": 10765.9,
+      "total_equity": 350.4,
+      "short_debt": 55.2,
+      "total_liab": 23817.0,
+      "long_debt": 3896.9,
+      "op_profit": 5128.6,
+      "net_income": 3645.1
+    },
+    "2025": {
+      "total_assets": 52852.8,
+      "cash": 11409.9,
+      "total_equity": 6240.9,
+      "short_debt": 0.0,
+      "total_liab": 23438.4,
+      "long_debt": 1598.3,
+      "op_profit": 5518.3,
+      "net_income": 0.0
+    }
+  },
+  "missing_years": [
+    2016,
+    2017,
+    2018,
+    2019,
+    2020,
+    2021,
+    2022,
+    2026
+  ],
+  "source": ""
+}

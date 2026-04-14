@@ -1,0 +1,55 @@
+{
+  "stock_code": "088280",
+  "corp_code": "00561723",
+  "years": [
+    2023,
+    2024,
+    2025
+  ],
+  "data": {
+    "2023": {
+      "total_assets": 585.9,
+      "cash": 151.9,
+      "total_equity": -161.7,
+      "short_debt": 20.0,
+      "total_liab": 143.1,
+      "long_debt": 40.3,
+      "op_profit": -51.7,
+      "net_income": -51.2,
+      "revenue": 138.1
+    },
+    "2024": {
+      "total_assets": 569.5,
+      "cash": 180.4,
+      "total_equity": 173.1,
+      "short_debt": 22.0,
+      "total_liab": 150.1,
+      "long_debt": 31.5,
+      "op_profit": -45.4,
+      "net_income": 0.0,
+      "revenue": 169.8
+    },
+    "2025": {
+      "total_assets": 525.6,
+      "cash": 129.9,
+      "total_equity": 431.4,
+      "short_debt": 17.0,
+      "total_liab": 176.3,
+      "long_debt": 39.3,
+      "op_profit": -66.6,
+      "net_income": 0.0,
+      "revenue": 182.1
+    }
+  },
+  "missing_years": [
+    2016,
+    2017,
+    2018,
+    2019,
+    2020,
+    2021,
+    2022,
+    2026
+  ],
+  "source": ""
+}

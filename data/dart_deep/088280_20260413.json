@@ -1,0 +1,154 @@
+{
+  "stock_code": "088280",
+  "stock_name": "쏘닉스",
+  "generated_at": "2026-04-13T14:52:15.414693+00:00",
+  "financials": {
+    "stock_code": "088280",
+    "corp_code": "00561723",
+    "years": [
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2023": {
+        "total_assets": 585.9,
+        "cash": 151.9,
+        "total_equity": -161.7,
+        "short_debt": 20.0,
+        "total_liab": 143.1,
+        "long_debt": 40.3,
+        "op_profit": -51.7,
+        "net_income": -51.2,
+        "revenue": 138.1
+      },
+      "2024": {
+        "total_assets": 569.5,
+        "cash": 180.4,
+        "total_equity": 173.1,
+        "short_debt": 22.0,
+        "total_liab": 150.1,
+        "long_debt": 31.5,
+        "op_profit": -45.4,
+        "net_income": 0.0,
+        "revenue": 169.8
+      },
+      "2025": {
+        "total_assets": 525.6,
+        "cash": 129.9,
+        "total_equity": 431.4,
+        "short_debt": 17.0,
+        "total_liab": 176.3,
+        "long_debt": 39.3,
+        "op_profit": -66.6,
+        "net_income": 0.0,
+        "revenue": 182.1
+      }
+    },
+    "missing_years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2023,
+        "revenue_eok": 138,
+        "op_profit_eok": -52,
+        "net_income_eok": -51,
+        "roe_pct": 31.48,
+        "op_margin_pct": -37.68,
+        "debt_ratio_pct": -88.27
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 170,
+        "op_profit_eok": -45,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": -26.47,
+        "debt_ratio_pct": 86.71
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 182,
+        "op_profit_eok": -67,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": -36.81,
+        "debt_ratio_pct": 40.84
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": 14.84,
+      "op_profit_cagr_pct": 13.53,
+      "best_year": 2024,
+      "worst_year": 2025,
+      "avg_roe_pct": 10.49
+    },
+    "valuation": {
+      "grade": "D",
+      "strengths": [
+        "매출액이 2023년부터 2025년까지 꾸준히 증가하는 추세를 보입니다.",
+        "2023년 완전자본잠식 상태에서 2024년 이후 자본총계가 양전환되어 재무구조 개선 노력이 엿보입니다.",
+        "2024년 영업손실 규모가 2023년 대비 감소하여 일시적인 개선을 보였습니다."
+      ],
+      "risks": [
+        "3개년 연속 영업손실을 기록하고 있으며, 2025년에는 영업손실 규모가 다시 확대되어 수익성 악화가 심화되고 있습니다.",
+        "2023년 완전자본잠식 상태였으며, 2024년과 2025년 당기순이익이 0원으로 지속적인 적자 상태를 벗어나지 못하고 있습니다.",
+        "2023년 부채비율이 음수로 계산되는 등 재무 안정성이 매우 취약하며, 자본잠식 위험이 상존합니다."
+      ],
+      "one_liner": "매출액 성장에도 불구하고 지속적인 영업손실과 불안정한 재무구조, 그리고 수익성 악화 심화로 인해 투자에 매우 신중한 접근이 요구되는 기업입니다."
+    }
+  },
+  "dcf": {
+    "text": "퀀트 애널리스트로서 쏘닉스(088280)의 DCF 적정가치를 계산하겠습니다.\n\n**전제 및 가정:**\n\n주어진 정보에 따라 DCF 모델을 구축합니다. 특히, 현재 영업이익이 음수(-67억원)이므로, 향후 5년간의 영업이익률이 점진적으로 개선되어 양수로 전환된다는 가정을 적용했습니다.\n\n*   **기준 연도:** 2025년 (2024년 재무를 바탕으로 2025년부터 5년간 예측)\n*   **매출액 성장률:** 5% (향후 5년간 매년)\n*   **영업이익률 (OPM) 가정:**\n    *   2024년 (현재): -36.8% (-67억원 / 182억원)\n    *   2025년: -20%\n    *   2026년: -10%\n    *   2027년: 0% (손익분기점)\n    *   2028년: 3%\n    *   2029년: 5%\n    *   영구 성장률 적용 시점의 OPM: 5%\n*   **법인세율:** 25% (FCF 공식에 따라 `영업이익 × (1 - 0.25)` 적용)\n*   **감가상각비:** 매출액의 10%\n*   **CAPEX:** 매출액의 5%\n*   **WACC (기본 시나리오):** 9%\n*   **영구성장률 g (기본 시나리오):** 2%\n*   **예측 기간:** 5년 (2025년 ~ 2029년) + 영구 가치 (Terminal Value)\n\n---\n\n### 1. 기본 시나리오 DCF 적정가치 계산\n\n\n---\n\n### 2. WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 출력\n\n\n---\n\n### 3. 요약 출력\n\n기본 시나리오의 적정가치는 다음과 같습니다.\n\n적정가치(기본): 209.10억원",
+    "executed_code": "import pandas as pd\n\n# --- Input Data ---\ncompany_name = \"쏘닉스 (088280)\"\nbase_year = 2025 # First projection year\ncurrent_revenue = 182 # 억원, for the year prior to base_year (e.g., 2024)\ncurrent_operating_profit = -67 # 억원, for the year prior to base_year (e.g., 2024)\n\n# --- Assumptions (Base Scenario) ---\nprojection_years = 5\nrevenue_growth_rate = 0.05 # 5% per year\ntax_rate = 0.25\ndepreciation_rate_of_revenue = 0.10\ncapex_rate_of_revenue = 0.05\nwacc_base = 0.09 # 9%\ng_base = 0.02 # 2%\n\n# Operating Profit Margin (OPM) trajectory assumption\n# Current OPM = -67 / 182 = -0.3681\nopm_trajectory = {\n    0: current_operating_profit / current_revenue, # For reference, not used in projection directly\n    1: -0.20, # 2025\n    2: -0.10, # 2026\n    3: 0.00,  # 2027\n    4: 0.03,  # 2028\n    5: 0.05   # 2029\n}\nterminal_opm = 0.05 # For terminal value calculation\n\n# --- DCF Calculation Function ---\ndef calculate_dcf(\n    current_rev, current_op,\n    proj_years, rev_growth, opm_traj, terminal_opm,\n    tax_rate, dep_rate, capex_rate,\n    wacc, g\n):\n    years = list(range(1, proj_years + 1))\n    df = pd.DataFrame(index=years)\n\n    # 1. Project Revenue\n    df['Revenue'] = 0.0\n    df.loc[1, 'Revenue'] = current_rev * (1 + rev_growth)\n    for i in range(2, proj_years + 1):\n        df.loc[i, 'Revenue'] = df.loc[i-1, 'Revenue'] * (1 + rev_growth)\n\n    # 2. Project Operating Profit (based on OPM trajectory)\n    df['Operating Profit'] = [df.loc[y, 'Revenue'] * opm_traj[y] for y in years]\n\n    # 3. Calculate Depreciation & CAPEX\n    df['Depreciation'] = df['Revenue'] * dep_rate\n    df['CAPEX'] = df['Revenue'] * capex_rate\n\n    # 4. Calculate FCF\n    # FCF = Operating Profit * (1 - Tax Rate) + Depreciation - CAPEX\n    df['FCF'] = df['Operating Profit'] * (1 - tax_rate) + df['Depreciation'] - df['CAPEX']\n\n    # 5. Discount FCFs\n    df['Discount Factor'] = [(1 / (1 + wacc)**y) for y in years]\n    df['PV of FCF'] = df['FCF'] * df['Discount Factor']\n\n    # Sum of Present Values of FCFs\n    sum_pv_fcf = df['PV of FCF'].sum()\n\n    # 6. Calculate Terminal Value (TV)\n    # FCF for terminal value is FCF in year (proj_years + 1)\n    # We need to calculate Revenue and OP for year (proj_years + 1)\n    terminal_year_revenue = df.loc[proj_years, 'Revenue'] * (1 + rev_growth)\n    terminal_year_op = terminal_year_revenue * terminal_opm\n    terminal_year_dep = terminal_year_revenue * dep_rate\n    terminal_year_capex = terminal_year_revenue * capex_rate\n    \n    # FCF for the year after the last explicit projection year (i.e., Year 6 FCF)\n    fcf_terminal_calc = terminal_year_op * (1 - tax_rate) + terminal_year_dep - terminal_year_capex\n\n    # Check for WACC - g > 0\n    if wacc <= g:\n        raise ValueError(\"WACC must be greater than g for Terminal Value calculation.\")\n\n    terminal_value = fcf_terminal_calc / (wacc - g)\n\n    # 7. Discount Terminal Value\n    pv_terminal_value = terminal_value / ((1 + wacc)**proj_years)\n\n    # 8. Total Enterprise Value\n    enterprise_value = sum_pv_fcf + pv_terminal_value\n\n    return enterprise_value, df\n\n# --- 1. Basic Scenario DCF Calculation ---\nprint(f\"--- 1. 기본 시나리오 DCF 적정가치 계산 ({company_name}) ---\")\nprint(f\"가정: 매출액 성장률 {revenue_growth_rate*100}%, WACC {wacc_base*100}%, 영구성장률 g {g_base*100}%\")\nprint(f\"영업이익률 가정: {opm_trajectory}\")\nprint(\"참고: 현재 영업이익이 음수이므로, 향후 영업이익률이 점진적으로 개선되어 양수로 전환된다는 가정을 적용했습니다.\")\n\ntry:\n    base_enterprise_value, base_df = calculate_dcf(\n        current_revenue, current_operating_profit,\n        projection_years, revenue_growth_rate, opm_trajectory, terminal_opm,\n        tax_rate, depreciation_rate_of_revenue, capex_rate_of_revenue,\n        wacc_base, g_base\n    )\n    print(\"\\n--- 기본 시나리오 FCF 및 PV 상세 (단위: 억원) ---\")\n    print(base_df.round(2))\n    print(f\"\\n적정가치(기본): {base_enterprise_value:.2f}억원\")\nexcept ValueError as e:\n    print(f\"오류: {e}\")\n    base_enterprise_value = None # Set to None if calculation failed\n\n\nimport pandas as pd\n\n# --- Input Data (re-defined for tool execution context) ---\ncompany_name = \"쏘닉스 (088280)\"\ncurrent_revenue = 182 # 억원, for the year prior to base_year (e.g., 2024)\ncurrent_operating_profit = -67 # 억원, for the year prior to base_year (e.g., 2024)\n\n# --- Assumptions (Base Scenario - used for sensitivity) ---\nprojection_years = 5\nrevenue_growth_rate = 0.05 # 5% per year\ntax_rate = 0.25\ndepreciation_rate_of_revenue = 0.10\ncapex_rate_of_revenue = 0.05\n\n# Operating Profit Margin (OPM) trajectory assumption\nopm_trajectory = {\n    0: current_operating_profit / current_revenue,\n    1: -0.20, # 2025\n    2: -0.10, # 2026\n    3: 0.00,  # 2027\n    4: 0.03,  # 2028\n    5: 0.05   # 2029\n}\nterminal_opm = 0.05 # For terminal value calculation\n\n# --- DCF Calculation Function (re-defined for tool execution context) ---\ndef calculate_dcf(\n    current_rev, current_op,\n    proj_years, rev_growth, opm_traj, terminal_opm,\n    tax_rate, dep_rate, capex_rate,\n    wacc, g\n):\n    years = list(range(1, proj_years + 1))\n    df = pd.DataFrame(index=years)\n\n    # 1. Project Revenue\n    df['Revenue'] = 0.0\n    df.loc[1, 'Revenue'] = current_rev * (1 + rev_growth)\n    for i in range(2, proj_years + 1):\n        df.loc[i, 'Revenue'] = df.loc[i-1, 'Revenue'] * (1 + rev_growth)\n\n    # 2. Project Operating Profit (based on OPM trajectory)\n    df['Operating Profit'] = [df.loc[y, 'Revenue'] * opm_traj[y] for y in years]\n\n    # 3. Calculate Depreciation & CAPEX\n    df['Depreciation'] = df['Revenue'] * dep_rate\n    df['CAPEX'] = df['Revenue'] * capex_rate\n\n    # 4. Calculate FCF\n    # FCF = Operating Profit * (1 - Tax Rate) + Depreciation - CAPEX\n    df['FCF'] = df['Operating Profit'] * (1 - tax_rate) + df['Depreciation'] - df['CAPEX']\n\n    # 5. Discount FCFs\n    df['Discount Factor'] = [(1 / (1 + wacc)**y) for y in years]\n    df['PV of FCF'] = df['FCF'] * df['Discount Factor']\n\n    # Sum of Present Values of FCFs\n    sum_pv_fcf = df['PV of FCF'].sum()\n\n    # 6. Calculate Terminal Value (TV)\n    terminal_year_revenue = df.loc[proj_years, 'Revenue'] * (1 + rev_growth)\n    terminal_year_op = terminal_year_revenue * terminal_opm\n    terminal_year_dep = terminal_year_revenue * dep_rate\n    terminal_year_capex = terminal_year_revenue * capex_rate\n    \n    fcf_terminal_calc = terminal_year_op * (1 - tax_rate) + terminal_year_dep - terminal_year_capex\n\n    if wacc <= g:\n        raise ValueError(\"WACC must be greater than g for Terminal Value calculation.\")\n\n    terminal_value = fcf_terminal_calc / (wacc - g)\n\n    # 7. Discount Terminal Value\n    pv_terminal_value = terminal_value / ((1 + wacc)**proj_years)\n\n    # 8. Total Enterprise Value\n    enterprise_value = sum_pv_fcf + pv_terminal_value\n\n    return enterprise_value, df\n\n# --- 2. Sensitivity Grid Output ---\nprint(\"\\n--- 2. WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 출력 (단위: 억원) ---\")\n\nwacc_values = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_values = [0.01, 0.02, 0.03]\n\nsensitivity_results = pd.DataFrame(index=[f'WACC {w*100:.0f}%' for w in wacc_values],\n                                   columns=[f'g {g*100:.0f}%' for g in g_values])\n\nfor wacc in wacc_values:\n    for g in g_values:\n        try:\n            if wacc <= g:\n                sensitivity_results.loc[f'WACC {wacc*100:.0f}%', f'g {g*100:.0f}%'] = \"N/A (WACC<=g)\"\n            else:\n                value, _ = calculate_dcf(\n                    current_revenue, current_operating_profit,\n                    projection_years, revenue_growth_rate, opm_trajectory, terminal_opm,\n                    tax_rate, depreciation_rate_of_revenue, capex_rate_of_revenue,\n                    wacc, g\n                )\n                sensitivity_results.loc[f'WACC {wacc*100:.0f}%', f'g {g*100:.0f}%'] = f\"{value:.2f}\"\n        except ValueError as e:\n            sensitivity_results.loc[f'WACC {wacc*100:.0f}%', f'g {g*100:.0f}%'] = f\"Error: {e}\"\n\nprint(sensitivity_results)",
+    "code_output": "--- 1. 기본 시나리오 DCF 적정가치 계산 (쏘닉스 (088280)) ---\n가정: 매출액 성장률 5.0%, WACC 9.0%, 영구성장률 g 2.0%\n영업이익률 가정: {0: -0.36813186813186816, 1: -0.2, 2: -0.1, 3: 0.0, 4: 0.03, 5: 0.05}\n참고: 현재 영업이익이 음수이므로, 향후 영업이익률이 점진적으로 개선되어 양수로 전환된다는 가정을 적용했습니다.\n\n--- 기본 시나리오 FCF 및 PV 상세 (단위: 억원) ---\n   Revenue  Operating Profit  Depreciation  CAPEX    FCF  Discount Factor  PV of FCF\n1   191.10            -38.22         19.11   9.56 -19.11             0.92     -17.53\n2   200.66            -20.07         20.07  10.03  -5.02             0.84      -4.22\n3   210.69              0.00         21.07  10.53  10.53             0.77       8.13\n4   221.22              6.64         22.12  11.06  16.04             0.71      11.36\n5   232.28             11.61         23.23  11.61  20.32             0.65      13.21\n\n적정가치(기본): 209.10억원\n\n\n--- 2. WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 출력 (단위: 억원) ---\n            g 1%    g 2%    g 3%\nWACC 7%   266.68  317.40  393.48\nWACC 8%   219.48  254.06  302.48\nWACC 9%   184.33  209.10  242.12\nWACC 10%  157.21  175.61  199.27\nWACC 11%  135.69  149.76  167.35"
+  },
+  "news": {
+    "text": "## 쏘닉스(088280) 투자 분석 보고서\n\n### 1. 재무 데이터가 보여주는 스토리와 현재 시장 컨센서스의 일치/불일치\n\n제공된 쏘닉스(088280)의 10년 재무제표 분석 결과는 \"투자등급 D, 매출액 성장에도 불구하고 지속적인 영업손실과 불안정한 재무구조, 그리고 수익성 악화 심화\"로 매우 부정적입니다.\n\n최근 2주간의 시장 컨센서스는 이러한 재무 데이터와 일부 불일치하는 양상을 보입니다. 2026년 4월 8일, 쏘닉스 주가는 AI 시대 필수 인프라 광통신 기대감 및 통신장비/5G 테마 상승에 힘입어 15.61% 급등했습니다. 일부 전문가들은 쏘닉스가 국내 유일의 RF 필터 파운드리 기업으로서 5G, 6G 등 차세대 통신 기술 발전에 필수적인 사업을 영위하고 있으며, 현재 주가가 과거 고점 대비 크게 하락하여 저평가 구간에 있다고 판단하기도 합니다.\n\n그러나 동시에 시장의 경고 신호도 뚜렷합니다. 2026년 3월 30일과 31일에는 공매도 과열종목으로 지정되어 공매도 거래가 금지되었으며, 3월 25일에는 15일간 상승 종목의 당일 소수계좌 매수관여 과다 종목 및 투자경고종목 지정 예고가 있었습니다. 이는 단기적인 투기적 매수세 유입 가능성과 높은 변동성 위험을 시사합니다. 2025년 3분기에도 영업적자 17억원을 기록하는 등 지속적인 영업손실은 재무 데이터의 부정적인 스토리를 뒷받침합니다.\n\n결론적으로, 재무 데이터는 기업의 근본적인 취약성을 보여주지만, 시장은 미래 성장 기대감과 특정 테마에 반응하며 단기적인 주가 상승을 이끌어내고 있어 재무적 현실과 시장 컨센서스 사이에 괴리가 존재합니다.\n\n### 2. 재무제표에서 드러나지 않는 리스크 또는 호재\n\n**호재:**\n*   **독보적인 기술력 및 성장 잠재력:** 쏘닉스는 국내 유일의 6인치 TF-SAW 파운드리 기술을 기반으로 5G 스마트폰용 RF 필터의 소형화, 고성능화에 기여하는 차세대 첨단 RF 필터 파운드리 기술을 보유하고 있습니다.\n*   **전략적 파트너십 및 시장 확장:** 미국의 통신 반도체 선도 기업으로부터 전략적 설비 투자를, 대만의 SAW Device 선도 기업으로부터 지분 투자를 유치하여 안정적인 거래 구조와 공동 기술 개발을 진행 중입니다. 또한, 자율주행, 우주항공, 센서 등 첨단 산업으로 응용 분야를 확대하여 신규 시장 진입을 모색하고 있습니다.\n*   **중국 뉴소닉과의 파운드리 공급계약:** 2026년 2월 4일, 중국 뉴소닉(NEWSONIC)사와 Si-SAW 기술을 중심으로 한 파운드리 공급계약 및 전략적 파트너십을 체결하여 중국 내 스마트폰 제조사로의 공급 기회를 확보했습니다.\n\n**리스크:**\n*   **전방 수요 둔화:** RF 필터 시장의 전방 수요 둔화는 지속적인 영업적자의 주요 원인으로 작용할 수 있습니다.\n*   **기술 개발 투자 부담:** 미래 성장을 위한 기술 개발 투자는 필수적이지만, 단기적으로는 기업의 재무 부담을 가중시키고 적자 폭을 확대할 수 있습니다.\n*   **높은 주가 변동성 및 투기적 요소:** 공매도 과열 종목 지정 및 투자주의 종목 지정 이력은 주가 변동성이 매우 높으며, 단기적인 투기적 매수세에 의해 주가가 움직일 가능성을 시사합니다. 이는 건전한 투자 환경을 저해할 수 있습니다.\n\n### 3. 최종 판정\n\n**관망**\n\n쏘닉스는 차세대 통신 기술에 필수적인 RF 필터 파운드리 기술력을 보유하고 있으며, 전략적 파트너십과 신규 시장 진출을 통해 성장 잠재력을 보여주고 있습니다. 그러나 \"투자등급 D\"가 의미하듯, 지속적인 영업손실과 불안정한 재무구조라는 근본적인 리스크가 해소되지 않았습니다. 최근 주가 상승은 미래 성장 기대감과 AI/5G 테마에 기인한 바가 크지만, 공매도 과열 및 투자주의 종목 지정 등 시장의 경고 신호가 동시에 나타나고 있어 투기적 요소가 강하다고 판단됩니다.\n\n기업의 재무 건전성이 개선되고 실질적인 수익성 턴어라운드가 확인되기 전까지는 투자에 매우 신중하게 접근해야 합니다. 현재로서는 긍정적인 잠재력과 심각한 재무적 리스크가 공존하므로, 추가적인 정보를 기다리며 시장 상황을 **관망**하는 것이 현명한 판단입니다.",
+    "citations": [
+      {
+        "title": "infostockdaily.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFoEMFVUtRYHGiQcCQqwkF4qRI2xjyHy3JhmoCyQW6YaMETs03b7S8zZhMAzeASklvBp38rOMmSapbCpAUulVsT2zDKmgnx-_8G5J7zzPPCzlcgEgGLxlThuHTaJFv0IQ3r_cG-LFaYLVDRAgHXHedza8rbqlPuJSMKHi5RDA=="
+      },
+      {
+        "title": "judal.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEv6S93CtN8hkPtz2x3yFgO9oh6hecDSM09fNcEUwBViZNo--W2nLheNPEnz83ROpvWq5N0yYjBO30N3rZK0U4GAP3akaL0xTOIPBN3uqsvC3jSEb6Ss-P-HLbM1QXzATojxiNmXCQKZIVdENv7RlQxQT_Ns9vVE15Vkl4="
+      },
+      {
+        "title": "stockplus.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQENStkDUYcPTIrL2vY0XS9x9mJRn0PqBau_-wcvKN9aLPQGKZqPrbWrDvw-A_EulW4xbpFELV492wuoKYPeAYYyla4XI964Y4VBMILg-VLeE0oFfvHDVbNvnFca3KoCZqnCFQGWN1HpCIIsX2DJaU5pRrNZ2B2q-T3gAxc0VskF"
+      },
+      {
+        "title": "kbthink.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHMAh_-AJ4WuWILgQ2k4iNE5FlPjozxj8hvaXWB6H3innanvhKaDRwP6vtwmGcxB41Oip0JYfWgKdqfn_5mhw6Mq4gFcLZKomlQeEWwq-9jMg-UuexKgqvd31BvDbjUXjch71gLHovb3_hQcwCUZruvkH62KDDRjy-7wck="
+      },
+      {
+        "title": "alphasquare.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEBiE40xvrOdmLAbwQNPQH4EzESjJjFOA8Rfwvr1sKfgYWYSZdnU89cscdw2iF6tbGTryd0RkLzZLALMGL8UIbOMk7bNR61UgKJdbP1Hp9Gjz20X5HAYGZSSRyV9CC8I3PWk-bBXaBkQxjLa136rH_Vb_0="
+      },
+      {
+        "title": "kbthink.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGDrjumtmzEefp9jbFAgF4vlc3mWVLx2pPyMv4zrY_E0GdAfHRPub5AqVsth012DirkFxtnGwm_2JKrULfJKsRPJqmR9vaucie2qjoTyhNBhcfb7OEt93D8jjSP8q9LYBb0NxNFKdme1HwbNr17J1LrfOSfkcqh75CqWMM="
+      },
+      {
+        "title": "edaily.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEIl-pV8v8QHBcKIZfP5teijIkxRK9KXP0yUXUYt4KqXKNPq5SfLWaoYGMDMvmF88n77iLg3pA8naB-oX43aW51Czjrhed9mR3_CeYdhhI0HMV9B-7GNBTRLAwkrVA4AdW8djVuA4tGxqR5yKcwGejHi2d5FD4KJdw4WFA="
+      }
+    ]
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=00561723",
+    "summary": "공시 페이지 접근 제한"
+  }
+}

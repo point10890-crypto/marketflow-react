@@ -1,0 +1,301 @@
+{
+  "stock_code": "000250",
+  "stock_name": "삼천당제약",
+  "generated_at": "2026-04-13T14:54:18.708382+00:00",
+  "financials": {
+    "stock_code": "000250",
+    "corp_code": "00128546",
+    "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2016": {
+        "cash": 486.2,
+        "total_assets": 2051.1,
+        "short_debt": 69.8,
+        "total_liab": 341.1,
+        "total_equity": 1710.0,
+        "op_profit": 243.6,
+        "net_income": 156.1
+      },
+      "2017": {
+        "cash": 619.1,
+        "total_assets": 2351.4,
+        "short_debt": 23.4,
+        "long_debt": 30.0,
+        "total_liab": 363.9,
+        "total_equity": 1987.6,
+        "revenue": 1611.1,
+        "op_profit": 265.1,
+        "net_income": 230.3
+      },
+      "2018": {
+        "cash": 514.7,
+        "total_assets": 2611.6,
+        "short_debt": 22.1,
+        "long_debt": 0.0,
+        "total_liab": 553.9,
+        "total_equity": 2057.6,
+        "revenue": 1599.6,
+        "op_profit": 155.0,
+        "net_income": 145.9
+      },
+      "2019": {
+        "cash": 602.7,
+        "total_assets": 2901.5,
+        "short_debt": 24.4,
+        "long_debt": 0.0,
+        "total_liab": 669.5,
+        "total_equity": 2232.0,
+        "revenue": 1866.0,
+        "op_profit": 252.1,
+        "net_income": 104.5
+      },
+      "2020": {
+        "cash": 589.4,
+        "total_assets": 3170.8,
+        "short_debt": 20.1,
+        "long_debt": 200.0,
+        "total_liab": 593.8,
+        "total_equity": 2577.0,
+        "revenue": 1668.6,
+        "op_profit": 55.2,
+        "net_income": -9.7
+      },
+      "2021": {
+        "cash": 491.1,
+        "total_assets": 3439.5,
+        "short_debt": 15.8,
+        "long_debt": 0.0,
+        "total_liab": 936.5,
+        "total_equity": 2503.0,
+        "revenue": 1672.7,
+        "op_profit": -152.9,
+        "net_income": 0.0
+      },
+      "2022": {
+        "cash": 221.0,
+        "total_assets": 3732.8,
+        "short_debt": 27.6,
+        "long_debt": 400.0,
+        "total_liab": 1276.3,
+        "total_equity": 2456.4,
+        "revenue": 1773.4,
+        "op_profit": 122.2,
+        "net_income": 0.0
+      },
+      "2023": {
+        "total_assets": 4080.2,
+        "cash": 404.3,
+        "total_equity": 996.4,
+        "total_liab": 1095.6,
+        "long_debt": 160.0,
+        "op_profit": 95.6,
+        "net_income": 0.0,
+        "revenue": 1926.7
+      },
+      "2024": {
+        "total_assets": 5197.7,
+        "cash": 1055.8,
+        "total_equity": 998.5,
+        "total_liab": 1703.7,
+        "long_debt": 170.0,
+        "op_profit": 26.4,
+        "net_income": 0.0,
+        "revenue": 2109.2
+      },
+      "2025": {
+        "total_assets": 5612.3,
+        "cash": 959.4,
+        "total_equity": 1091.5,
+        "total_liab": 1976.4,
+        "long_debt": 0.0,
+        "op_profit": 84.7,
+        "net_income": 0.0,
+        "revenue": 2318.1
+      }
+    },
+    "missing_years": [
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2016,
+        "revenue_eok": 0,
+        "op_profit_eok": 244,
+        "net_income_eok": 156,
+        "roe_pct": 9.12,
+        "op_margin_pct": 0.0,
+        "debt_ratio_pct": 19.94
+      },
+      {
+        "year": 2017,
+        "revenue_eok": 1611,
+        "op_profit_eok": 265,
+        "net_income_eok": 230,
+        "roe_pct": 11.57,
+        "op_margin_pct": 16.45,
+        "debt_ratio_pct": 18.31
+      },
+      {
+        "year": 2018,
+        "revenue_eok": 1600,
+        "op_profit_eok": 155,
+        "net_income_eok": 146,
+        "roe_pct": 7.1,
+        "op_margin_pct": 9.69,
+        "debt_ratio_pct": 26.92
+      },
+      {
+        "year": 2019,
+        "revenue_eok": 1866,
+        "op_profit_eok": 252,
+        "net_income_eok": 104,
+        "roe_pct": 4.66,
+        "op_margin_pct": 13.5,
+        "debt_ratio_pct": 30.02
+      },
+      {
+        "year": 2020,
+        "revenue_eok": 1669,
+        "op_profit_eok": 55,
+        "net_income_eok": -10,
+        "roe_pct": -0.39,
+        "op_margin_pct": 3.29,
+        "debt_ratio_pct": 23.05
+      },
+      {
+        "year": 2021,
+        "revenue_eok": 1673,
+        "op_profit_eok": -153,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": -9.15,
+        "debt_ratio_pct": 37.4
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 1773,
+        "op_profit_eok": 122,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 6.88,
+        "debt_ratio_pct": 51.95
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 1927,
+        "op_profit_eok": 96,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 4.98,
+        "debt_ratio_pct": 110.04
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 2109,
+        "op_profit_eok": 26,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 1.23,
+        "debt_ratio_pct": 170.74
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 2318,
+        "op_profit_eok": 85,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 3.67,
+        "debt_ratio_pct": 181.0
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": 4.59,
+      "op_profit_cagr_pct": -11.22,
+      "best_year": 2017,
+      "worst_year": 2021,
+      "avg_roe_pct": 3.21
+    },
+    "valuation": {
+      "grade": "D",
+      "strengths": [
+        "2017년 이후 매출액은 꾸준히 성장하는 추세입니다.",
+        "2017년에는 16.45%의 높은 영업이익률을 기록한 바 있습니다.",
+        "2024년 현금 보유액이 1,056억원으로 크게 증가하여 유동성 확보에 긍정적입니다."
+      ],
+      "risks": [
+        "영업이익의 극심한 변동성과 2021년 적자 전환, 최근 낮은 수익성은 심각한 문제입니다.",
+        "2021년부터 5년 연속 당기순이익이 0원을 기록하며 수익성 부재가 심화되고 있습니다.",
+        "2023년 이후 부채비율이 100%를 초과하며 재무건전성이 급격히 악화되고 있습니다."
+      ],
+      "one_liner": "매출액은 성장세를 보이나, 극심한 수익성 변동성과 5년 연속 당기순이익 부재, 급증하는 부채로 인해 투자에 매우 신중한 접근이 필요합니다."
+    }
+  },
+  "dcf": {
+    "text": "당신은 퀀트 애널리스트로서 삼천당제약(000250)의 DCF 적정가치를 계산하겠습니다.\n\n**가정 및 데이터 요약:**\n\n*   **기준 연도:** 2025\n*   **최근 재무 (2025년, 억원):**\n    *   매출액: 2318\n    *   영업이익: 85\n*   **FCF 계산식:** 영업이익 × (1 - 0.25) + 감가상각(매출의 10%) - CAPEX(매출의 5%)\n    *   세율: 25% (영업이익에 적용)\n    *   감가상각: 매출의 10%\n    *   CAPEX: 매출의 5%\n*   **DCF 가정:**\n    *   WACC (가중평균자본비용): 9% (기본 시나리오)\n    *   영구성장률 (g): 2% (기본 시나리오)\n    *   예측 기간: 5년 (2026년 ~ 2030년)\n    *   **추가 가정:** 예측 기간 5년 동안 매출액과 영업이익은 2025년 수준으로 유지된다고 가정합니다. (별도 성장률이 제시되지 않았으므로 보수적으로 가정)\n\n---\n\n### 1. 기본 시나리오 DCF 적정가치 계산\n\n먼저, 주어진 데이터를 바탕으로 매년 발생하는 FCF를 계산하고, 이를 WACC로 할인하여 현재가치를 구한 후 터미널 밸류를 합산하여 적정가치를 산출합니다.\n\n**FCF 계산 (매년 동일):**\n*   영업이익 세후 = 85억원 × (1 - 0.25) = 63.75억원\n*   감가상각 = 2318억원 × 0.10 = 231.8억원\n*   CAPEX = 2318억원 × 0.05 = 115.9억원\n*   **연간 FCF = 63.75 + 231.8 - 115.9 = 179.65억원**\n\n이 FCF는 2026년부터 2030년까지 5년간 매년 발생한다고 가정합니다.\n\n\n---\n\n### 2. DCF 적정가치 민감도 분석 (억원)\n\nWACC와 영구성장률(g) 변화에 따른 적정가치 민감도 분석 결과입니다.\n\n\n```\n      WACC=7%  WACC=8%  WACC=9% WACC=10% WACC=11%\ng=1%  2892.75  2481.43  2172.87  1932.84  1740.76\ng=2%  3349.59  2795.83  2400.14  2103.26  1872.25\ng=3%  4034.87  3235.99  2703.16  2322.37  2036.62\n```\n\n\n---\n\n### 3. 요약 출력\n\n적정가치(기본): 2400.14억원",
+    "executed_code": "import pandas as pd\n\ndef calculate_dcf(revenue, operating_profit, tax_rate, dep_rate, capex_rate, wacc, g, forecast_years):\n    # Calculate FCF for each forecast year\n    # Assuming revenue and operating profit remain constant for the forecast period\n    fcf_per_year = operating_profit * (1 - tax_rate) + revenue * dep_rate - revenue * capex_rate\n\n    # Calculate Present Value of FCFs\n    pv_fcf = 0\n    for t in range(1, forecast_years + 1):\n        pv_fcf += fcf_per_year / ((1 + wacc) ** t)\n\n    # Calculate Terminal Value\n    # FCF for the year after the forecast period (FCF_N+1)\n    fcf_terminal_year = fcf_per_year * (1 + g)\n    \n    # Check for WACC <= g condition for TV calculation\n    if wacc <= g:\n        return float('inf') # Invalid TV calculation\n\n    terminal_value = fcf_terminal_year / (wacc - g)\n\n    # Calculate Present Value of Terminal Value\n    pv_terminal_value = terminal_value / ((1 + wacc) ** forecast_years)\n\n    # Calculate Enterprise Value\n    enterprise_value = pv_fcf + pv_terminal_value\n    return enterprise_value\n\n# --- Base Scenario ---\nrevenue_base = 2318\noperating_profit_base = 85\ntax_rate_base = 0.25\ndep_rate_base = 0.10\ncapex_rate_base = 0.05\nwacc_base = 0.09\ng_base = 0.02\nforecast_years_base = 5\n\nbase_dcf_value = calculate_dcf(revenue_base, operating_profit_base, tax_rate_base, dep_rate_base, capex_rate_base, wacc_base, g_base, forecast_years_base)\nprint(f\"적정가치(기본): {base_dcf_value:.2f}억원\")\n\n# --- Sensitivity Analysis ---\nwacc_values = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_values = [0.01, 0.02, 0.03]\n\nsensitivity_results = pd.DataFrame(index=[f'g={g*100:.0f}%' for g in g_values], columns=[f'WACC={wacc*100:.0f}%' for wacc in wacc_values])\n\nfor g_val in g_values:\n    for wacc_val in wacc_values:\n        dcf_value = calculate_dcf(revenue_base, operating_profit_base, tax_rate_base, dep_rate_base, capex_rate_base, wacc_val, g_val, forecast_years_base)\n        sensitivity_results.loc[f'g={g_val*100:.0f}%', f'WACC={wacc_val*100:.0f}%'] = f'{dcf_value:.2f}' if dcf_value != float('inf') else 'N/A'\n\nprint(\"\\n--- DCF 적정가치 민감도 분석 (억원) ---\")\nprint(sensitivity_results.to_string())",
+    "code_output": "적정가치(기본): 2400.14억원\n\n--- DCF 적정가치 민감도 분석 (억원) ---\n      WACC=7%  WACC=8%  WACC=9% WACC=10% WACC=11%\ng=1%  2892.75  2481.43  2172.87  1932.84  1740.76\ng=2%  3349.59  2795.83  2400.14  2103.26  1872.25\ng=3%  4034.87  3235.99  2703.16  2322.37  2036.62"
+  },
+  "news": {
+    "text": "## 삼천당제약(000250) 재무 및 시장 컨센서스 분석 보고서\n\n**투자등급 D, 요약:** 매출액은 성장세를 보이나, 극심한 수익성 변동성과 5년 연속 당기순이익 부재, 급증하는 부채로 인해 투자에 매우 신중한 접근이 필요합니다.\n\n---\n\n### 1. 재무 데이터가 보여주는 스토리와 현재 시장 컨센서스의 일치/불일치\n\n삼천당제약의 재무 데이터는 매출액 성장에도 불구하고 극심한 수익성 변동성, 5년 연속 당기순이익 부재, 급증하는 부채 등 심각한 재무적 취약성을 명확히 보여주고 있습니다. 이는 투자등급 'D'로 요약됩니다.\n\n최근 2주 전까지 시장은 경구용 세마글루타이드(위고비 제네릭) 및 아일리아 바이오시밀러 관련 대규모 계약 기대감과 자체 플랫폼 기술(S-PASS)에 대한 높은 기대로 주가가 급등하며 \"황제주\"로 불릴 정도로 긍정적인 컨센서스를 형성했습니다. 이는 기업의 근본적인 재무적 취약점과는 *불일치*하는 양상이었습니다.\n\n그러나 최근 2주간 미국 라이선스 계약의 신뢰성 논란, S-PASS 특허 소유권 분쟁, 대주주 블록딜 철회 및 세금 문제, 불성실공시 예고 등 각종 의혹이 불거지면서 주가가 급락하고 시장의 신뢰가 크게 훼손되었습니다. 현재 시장 컨센서스는 재무적 취약성과 더불어 기업의 투명성 및 신뢰도에 대한 강한 의구심을 표하며, 이는 *재무 데이터의 경고와 일치하는 방향*으로 전환되었습니다.\n\n### 2. 재무제표에서 드러나지 않는 리스크 또는 호재\n\n**주요 리스크 (뉴스에서 드러남):**\n\n*   **기업 신뢰도 및 투명성 문제:** 과거 \"계약 기대 → 공시 반복 → 협상 결렬\" 패턴 반복, 미국 계약의 구체적인 조건(파트너 비공개, 90% 수익 배분 구조)에 대한 불확실성, 보도자료를 통한 실적 전망 발표 등 불성실공시 논란으로 인한 시장의 신뢰 훼손이 심각합니다.\n*   **핵심 기술(S-PASS) 특허 소유권 분쟁:** 대만 서밋바이오테크와의 S-PASS 특허 소유권에 대한 논란이 제기되었으며, 회사는 모든 연구개발 비용을 지급하여 소유권이 자사에 있다고 반박했으나 여전히 불확실성이 존재합니다.\n*   **지배구조 리스크:** 최대주주 및 대표이사의 대규모 주식 매각(블록딜) 시도와 세금 납부 과정에서 불거진 논란은 지배구조 및 경영진의 의사결정 투명성에 대한 의문을 제기합니다.\n*   **규제 당국의 감시 강화:** 금융감독원이 '제2의 삼천당제약 사태'를 막기 위해 바이오 공시 전면 손질에 나서는 등 규제 당국의 감시가 강화될 예정입니다.\n*   **잠재적 물량 부담 (Dilution Risk):** 리스크 리포트에서 잠재적 물량 부담이 10%로 언급되었습니다.\n\n**잠재적 호재 (불확실성 높음):**\n\n*   **S-PASS 기술의 잠재력:** 경구용 단백질 약물 전달 플랫폼인 S-PASS 기술이 실제로 글로벌 규제 기관의 인정을 받고 대규모 계약이 성공적으로 이행된다면 장기적인 성장 동력이 될 수 있습니다.\n*   **아일리아 바이오시밀러:** 이미 실체를 보여준 파이프라인으로, 향후 매출 기여 가능성이 있습니다.\n*   **GLP-1 시장 성장:** 전 세계적으로 비만 및 당뇨 치료제 시장, 특히 GLP-1 계열 약물의 폭발적인 수요 증가는 관련 기술을 보유한 삼천당제약에 긍정적인 환경입니다.\n\n### 3. 최종 판정\n\n**매도**\n\n**설명:**\n삼천당제약은 재무제표상 이미 심각한 수익성 악화와 부채 증가라는 근본적인 취약점을 안고 있습니다. 최근 2주간의 뉴스는 이러한 재무적 불안정성 위에 기업의 신뢰도와 투명성에 대한 심각한 의문을 더했습니다. 대규모 계약의 불확실성, 핵심 기술 특허 논란, 지배구조 리스크, 불성실공시 예고 등은 투자심리를 극도로 위축시켰으며, 시장은 이미 대규모 주가 하락으로 반응했습니다. 회사의 해명에도 불구하고 투자자들의 신뢰는 회복되지 않고 있으며, 규제 당국의 감시 강화 움직임까지 나타나고 있습니다. 현재로서는 잠재적 호재보다는 재무제표에 드러나지 않았던 심각한 리스크들이 부각되고 있으며, 기업의 가치 평가에 대한 불확실성이 매우 높습니다. 따라서 기존 투자자들에게는 추가적인 손실을 방지하기 위한 '매도' 의견을 제시합니다.",
+    "citations": [
+      {
+        "title": "edaily.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFL0kq636-tAicIml22y-G6CvcUJu8RoFMpW_0fog7kaphGDIUiBf1yd4fiiaeEY8tOQrc91Hpf9MvapqQFng8nC84iGwYCWwKtUoWxqH-P5-xbpShGUvOG196t-UjShtiCdCEhcbGu2ZWfZrWcBsl1kHJaNJ9Lapg="
+      },
+      {
+        "title": "youtube.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEHzlGbUL3J5UKzt_QohOcubuoc3EAVExwnFBylK-Uizzn7x2J_o6gJ22fjgM0O1-fSX6OV-kHf0fnz2bSvnyTGD-e32u-PJ6G5SmnHlGBgLONxT9UFGrZJGg6rwnB2pm-l9Q-5hg=="
+      },
+      {
+        "title": "edaily.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFeVBw8tynoY-b47tg7-xInoAi5Hjv_jJfpF-zXAH9uAi30K0vVIXi-cintEy8K4AFFt-x9tMiNgH7mSP6CDvA3FUf2XTZHqvNOkrDOIZxoj1HuYq3cuT424aYxZfMeO4W9skU3eqBCdcPZgAPM8YbF5OuY7up-2V-tALgHPXbGPimb"
+      },
+      {
+        "title": "asiae.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHbZb7n5QanFyCl-tw_0IhNZgc0xlzf8KBVesqakkKiYEXnQ12kyxRddP-ZXxt8b-ztC0ePK4SWdOwwMXtuw-qrJGtDRP1mIItWjZ9A97SVLavFLjyT-fIl9JROwq9TStRv1zZG48dTUz-BcOgZ5wk="
+      },
+      {
+        "title": "etnews.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGvoE3bxzP8P0hyHuAoOl_lYQPaNQpXV_lASptpIS6yzAcaf64FODBWVsPYBZLhsQ06uIMahIM85qv4zLeHSvyrsZjS6tLLx0-4mgWJkztDOb6cMd3lYijGEHVfWUQITJw="
+      },
+      {
+        "title": "yna.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQERu83VTXKOzaXHPaemA3FHGXih6BNrKXJ_uV3OUzgx4Gltl_fZDsgm5JBOgT6CKdKI759sVIQffebcSB0rDXCOZyF_Tzw6H2CISx_C5HiGoGyUxmx_R9Ck3xaZeM6z59eJZrX5rt5F7yyK"
+      },
+      {
+        "title": "edaily.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEkSjzz2R77QbhQx5O1aiRrXD3l-jhyDz2PyMmtOpja6rCggTZ_1UbRyHawAuPB26TaCVegGhHId_YVF_izZQ1SFpV7DUcc66MVe40v7pr1HZ87ONierO9-vt4GWwT7FO7XXEDEAvNAXX4QgaKb3oODvpNLa34KIRUZvdKB"
+      },
+      {
+        "title": "greened.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQG09vudXtffuAhyBjN2HBj0DBggP8FPpMkKwzD0e9Q8hjRCeytH-MpFI06wzTwtK2-eqpz_oXiMNbLfJx7jv7tEacCiQwrwyLB8rb62zBPY7SjhJUR-McNX7KsTTyK_HwGynUZoPBU9H0P24ZKefoC7NH8mWw=="
+      },
+      {
+        "title": "royalroader.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFHQwGC-3k5uWIgiCINU_b0fkDw8udmtEdKdLbjtHg5yzmIdfJQ2JQelhCWBZ_GDnaEGStieaa_z1yxfKCOX82oWAtKVDkgc4jaPDswZvpBLa5ZwwJqsDnpgEpqeP7NAa3OlkAYM04hd-tLiomLAZ77"
+      },
+      {
+        "title": "news1.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGTy9eN0UQgMIDCqt8RvwnFKD0ZSObj3Q5LnS50k6MtPs0D7Tu-qReAwmrAgpg7qpyBVhdZwBBSizVhP3ccrgX4hejM1xsdBdhJw4xzXdVUIVOdOHVy6VX4uWRjhrHpdUb43ktJZ3_icS4B"
+      }
+    ]
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=00128546",
+    "summary": "공시 페이지 접근 제한"
+  }
+}

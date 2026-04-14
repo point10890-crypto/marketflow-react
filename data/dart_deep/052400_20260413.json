@@ -1,0 +1,255 @@
+{
+  "stock_code": "052400",
+  "stock_name": "코나아이",
+  "generated_at": "2026-04-13T11:55:30.212496+00:00",
+  "financials": {
+    "stock_code": "052400",
+    "corp_code": "00349732",
+    "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2016": {
+        "cash": 886.0,
+        "total_assets": 2533.7,
+        "short_debt": 535.0,
+        "long_debt": 0.0,
+        "total_liab": 671.7,
+        "total_equity": 1862.0,
+        "revenue": 1179.0,
+        "op_profit": -58.4,
+        "net_income": 0.0
+      },
+      "2017": {
+        "cash": 694.4,
+        "total_assets": 1968.3,
+        "short_debt": 453.0,
+        "total_liab": 553.4,
+        "total_equity": 1414.9,
+        "revenue": 1021.4,
+        "op_profit": -97.5,
+        "net_income": 0.0
+      },
+      "2018": {
+        "cash": 172.7,
+        "total_assets": 1536.5,
+        "short_debt": 420.2,
+        "total_liab": 581.5,
+        "total_equity": 955.0,
+        "revenue": 899.4,
+        "op_profit": -318.7,
+        "net_income": 0.5
+      },
+      "2019": {
+        "cash": 1743.0,
+        "total_assets": 2884.6,
+        "short_debt": 380.2,
+        "total_liab": 2025.3,
+        "total_equity": 859.3,
+        "revenue": 1219.6,
+        "op_profit": -26.1,
+        "net_income": 0.0
+      },
+      "2020": {
+        "cash": 5336.9,
+        "total_assets": 6881.3,
+        "short_debt": 360.2,
+        "total_liab": 5912.4,
+        "total_equity": 969.0,
+        "revenue": 1377.8,
+        "op_profit": 190.1,
+        "net_income": 0.0
+      },
+      "2021": {
+        "cash": 8846.5,
+        "total_assets": 10585.0,
+        "short_debt": 265.0,
+        "total_liab": 9234.6,
+        "total_equity": 1350.5,
+        "revenue": 1945.0,
+        "op_profit": 481.5,
+        "net_income": 0.0
+      },
+      "2022": {
+        "cash": 1551.8,
+        "total_assets": 4001.1,
+        "short_debt": 215.0,
+        "total_liab": 2545.0,
+        "total_equity": 1456.1,
+        "revenue": 2421.8,
+        "op_profit": 488.3,
+        "net_income": 342.9
+      },
+      "2023": {
+        "total_assets": 4615.5,
+        "cash": 1496.7,
+        "total_equity": -1.3,
+        "short_debt": 374.2,
+        "total_liab": 2884.4,
+        "op_profit": 336.8,
+        "net_income": 0.0,
+        "revenue": 2802.2
+      },
+      "2024": {
+        "total_assets": 4131.1,
+        "cash": 1498.3,
+        "total_equity": 660.0,
+        "short_debt": 415.7,
+        "total_liab": 2153.1,
+        "op_profit": 334.1,
+        "net_income": 0.0,
+        "revenue": 2363.1
+      },
+      "2025": {
+        "total_assets": 5590.7,
+        "cash": 2411.3,
+        "total_equity": 262.0,
+        "short_debt": 395.7,
+        "total_liab": 3011.8,
+        "op_profit": 889.0,
+        "net_income": 0.0,
+        "revenue": 3091.6
+      }
+    },
+    "missing_years": [
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2016,
+        "revenue_eok": 1179,
+        "op_profit_eok": -58,
+        "net_income_eok": 0,
+        "roe_pct": 0,
+        "op_margin_pct": -4.92,
+        "debt_ratio_pct": 36.09
+      },
+      {
+        "year": 2017,
+        "revenue_eok": 1021,
+        "op_profit_eok": -98,
+        "net_income_eok": 0,
+        "roe_pct": 0,
+        "op_margin_pct": -9.6,
+        "debt_ratio_pct": 39.08
+      },
+      {
+        "year": 2018,
+        "revenue_eok": 899,
+        "op_profit_eok": -319,
+        "net_income_eok": 0,
+        "roe_pct": 0,
+        "op_margin_pct": -35.48,
+        "debt_ratio_pct": 60.94
+      },
+      {
+        "year": 2019,
+        "revenue_eok": 1220,
+        "op_profit_eok": -26,
+        "net_income_eok": 0,
+        "roe_pct": 0,
+        "op_margin_pct": -2.13,
+        "debt_ratio_pct": 235.74
+      },
+      {
+        "year": 2020,
+        "revenue_eok": 1378,
+        "op_profit_eok": 190,
+        "net_income_eok": 0,
+        "roe_pct": 0,
+        "op_margin_pct": 13.79,
+        "debt_ratio_pct": 609.91
+      },
+      {
+        "year": 2021,
+        "revenue_eok": 1945,
+        "op_profit_eok": 482,
+        "net_income_eok": 0,
+        "roe_pct": 0,
+        "op_margin_pct": 24.78,
+        "debt_ratio_pct": 684.07
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 2422,
+        "op_profit_eok": 488,
+        "net_income_eok": 343,
+        "roe_pct": 23.56,
+        "op_margin_pct": 20.15,
+        "debt_ratio_pct": 174.79
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 2802,
+        "op_profit_eok": 337,
+        "net_income_eok": 0,
+        "roe_pct": 0,
+        "op_margin_pct": 12.03,
+        "debt_ratio_pct": -288400.0
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 2363,
+        "op_profit_eok": 334,
+        "net_income_eok": 0,
+        "roe_pct": 0,
+        "op_margin_pct": 14.14,
+        "debt_ratio_pct": 326.21
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 3092,
+        "op_profit_eok": 889,
+        "net_income_eok": 0,
+        "roe_pct": 0,
+        "op_margin_pct": 28.75,
+        "debt_ratio_pct": 1149.62
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": 11.21,
+      "best_year": 2025,
+      "worst_year": 2018,
+      "avg_roe_pct": 2.36
+    },
+    "valuation": {
+      "grade": "D",
+      "strengths": [
+        "매출액의 꾸준한 성장세 (2016년 1,179억에서 2025년 3,092억으로 증가, 10년 CAGR 11.21%).",
+        "영업이익의 흑자 전환 및 큰 폭 개선 (2018년 -319억에서 2025년 889억으로 전환 및 성장).",
+        "2025년 예상 영업이익이 매우 높게 전망됨 (889억)."
+      ],
+      "risks": [
+        "2023년 자본총계가 마이너스(-1억)를 기록하며 완전자본잠식 상태에 빠졌던 점은 심각한 재무적 불안정성을 시사합니다.",
+        "대부분의 연도에 당기순이익이 0으로 기록되어 영업이익이 순이익으로 연결되지 않는 구조적 문제 또는 비경상적 손실 발생 가능성이 있습니다. (2022년 제외)",
+        "부채비율이 매우 높고 변동성이 커 재무 건전성이 취약하며, 특히 2020년, 2021년, 2025년에는 600%를 상회하는 높은 수준을 보입니다."
+      ],
+      "one_liner": "매출액 성장과 영업이익 흑자 전환은 긍정적이나, 2023년 완전자본잠식과 지속적인 당기순이익 부재, 높은 부채비율 등 심각한 재무적 불안정성이 상존하는 기업입니다."
+    }
+  },
+  "dcf": {
+    "text": "퀀트 애널리스트로서 코나아이(052400)의 DCF 적정가치를 계산하겠습니다.\n\n**가정 사항:**\n*   주어진 재무 데이터는 2024년 말 기준입니다.\n*   DCF 예측 기간은 5년 (2025년 ~ 2029년)입니다.\n*   **매출액 성장률에 대한 가정이 주어지지 않아, 5년 예측 기간 동안 연간 5%의 매출액 성장률을 가정하여 계산을 진행하겠습니다.**\n*   **영업이익률은 2024년 수준으로 유지된다고 가정합니다.**\n*   FCF 계산 공식: `FCF = 영업이익 × (1 - 0.25) + 감가상각(매출의 10%) - CAPEX(매출의 5%)`\n    *   이는 `FCF = 영업이익 × 0.75 + 매출액 × 0.05` 와 동일합니다.\n*   WACC (기본 시나리오) = 9%\n*   영구성장률 g (기본 시나리오) = 2%\n\n---\n\n\n---\n\n**분석 결과:**\n\n1.  **기본 시나리오 DCF 적정가치:**\n    *   가정된 매출액 성장률 5%, WACC 9%, 영구성장률 g 2%를 적용한 코나아이의 DCF 적정가치는 **13603.76억원**으로 계산되었습니다.\n\n2.  **WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드:**\n    *   아래 표는 WACC와 영구성장률(g) 변화에 따른 DCF 적정가치(억원)의 민감도를 보여줍니다.\n    *   WACC가 낮아지고 영구성장률 g가 높아질수록 기업의 적정가치는 상승합니다.\n\n|       | WACC=7%  | WACC=8%  | WACC=9%  | WACC=10% | WACC=11% |\n| :---- | :------- | :------- | :------- | :------- | :------- |\n| **g=1%** | 16463.44 | 14070.82 | 12277.64 | 10884.04 | 9770.09  |\n| **g=2%** | 19129.18 | 15905.37 | 13603.76 | 11878.46 | 10537.34 |\n| **g=3%** | 23127.80 | 18473.75 | 15371.91 | 13157.01 | 11496.41 |\n\n3.  **요약:**\n    적정가치(기본): 13603.76억원",
+    "executed_code": "import pandas as pd\n\n# 1. 기본 시나리오 DCF 적정가치 계산\n\n# 초기 데이터 (억원)\nrevenue_2024 = 3092\noperating_income_2024 = 889\n\n# 가정\nrevenue_growth_rate = 0.05 # 5년 예측 기간 동안 연간 5% 매출액 성장률 가정\ntax_rate = 0.25 # FCF 계산에 사용되는 세율 (1 - 0.25)\ndepreciation_rate_of_revenue = 0.10\ncapex_rate_of_revenue = 0.05\nwacc_base = 0.09\ng_base = 0.02\nforecast_years = 5\n\n# 영업이익률 계산 (2024년 기준)\noperating_margin_2024 = operating_income_2024 / revenue_2024\n\n# FCF 계산 함수\ndef calculate_fcf(revenue, operating_income, tax_rate, depreciation_rate, capex_rate):\n    # FCF = 영업이익 * (1 - tax_rate) + 감가상각 - CAPEX\n    # 감가상각 = 매출액 * depreciation_rate\n    # CAPEX = 매출액 * capex_rate\n    # 주어진 FCF 공식: FCF ≈ 영업이익 × (1 - 0.25) + 감가상각(매출의 10%) - CAPEX(매출의 5%)\n    # Simplified: FCF = operating_income * (1 - tax_rate) + revenue * (depreciation_rate - capex_rate)\n    return operating_income * (1 - tax_rate) + revenue * (depreciation_rate - capex_rate)\n\n# DCF 계산 함수\ndef calculate_dcf(revenue_2024, operating_income_2024, revenue_growth_rate, operating_margin_2024,\n                  tax_rate, depreciation_rate_of_revenue, capex_rate_of_revenue,\n                  wacc, g, forecast_years):\n\n    projected_revenues = []\n    projected_operating_incomes = []\n    projected_fcf = []\n\n    current_revenue = revenue_2024\n    current_operating_income = operating_income_2024\n\n    for i in range(1, forecast_years + 1):\n        # 매출액 성장\n        current_revenue *= (1 + revenue_growth_rate)\n        projected_revenues.append(current_revenue)\n\n        # 영업이익 (영업이익률 유지 가정)\n        current_operating_income = current_revenue * operating_margin_2024\n        projected_operating_incomes.append(current_operating_income)\n\n        # FCF 계산\n        fcf = calculate_fcf(current_revenue, current_operating_income, tax_rate,\n                            depreciation_rate_of_revenue, capex_rate_of_revenue)\n        projected_fcf.append(fcf)\n\n    # 예측 기간 FCF의 현재 가치 합계\n    pv_fcf_sum = 0\n    for i, fcf in enumerate(projected_fcf):\n        pv_fcf_sum += fcf / ((1 + wacc) ** (i + 1))\n\n    # 터미널 밸류 계산\n    # 마지막 예측 연도의 FCF (FCF_n)\n    fcf_last_year = projected_fcf[-1]\n    # FCF_n+1 = FCF_n * (1 + g)\n    fcf_terminal_year = fcf_last_year * (1 + g)\n\n    # TV = FCF_n+1 / (WACC - g)\n    if wacc <= g:\n        return float('inf') # WACC가 g보다 작거나 같으면 계산 불가\n    terminal_value = fcf_terminal_year / (wacc - g)\n\n    # 터미널 밸류의 현재 가치\n    pv_terminal_value = terminal_value / ((1 + wacc) ** forecast_years)\n\n    # 적정 가치\n    intrinsic_value = pv_fcf_sum + pv_terminal_value\n    return intrinsic_value\n\n# 1. 기본 시나리오 DCF 적정가치 계산\nbase_intrinsic_value = calculate_dcf(revenue_2024, operating_income_2024, revenue_growth_rate, operating_margin_2024,\n                                     tax_rate, depreciation_rate_of_revenue, capex_rate_of_revenue,\n                                     wacc_base, g_base, forecast_years)\n\nprint(f\"매출액 성장률에 대한 가정이 주어지지 않아, 5년 예측 기간 동안 연간 {revenue_growth_rate*100:.0f}%의 매출액 성장률을 가정하여 계산을 진행하겠습니다. 또한, 영업이익률은 2024년 수준으로 유지된다고 가정합니다.\")\nprint(f\"기본 시나리오 DCF 적정가치: {base_intrinsic_value:.2f}억원\")\n\n# 2. WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 출력\nwacc_scenarios = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_scenarios = [0.01, 0.02, 0.03]\n\nsensitivity_results = pd.DataFrame(index=[f'g={g*100:.0f}%' for g in g_scenarios],\n                                   columns=[f'WACC={wacc*100:.0f}%' for wacc in wacc_scenarios])\n\nfor g_val in g_scenarios:\n    for wacc_val in wacc_scenarios:\n        if wacc_val <= g_val:\n            sensitivity_results.loc[f'g={g_val*100:.0f}%', f'WACC={wacc_val*100:.0f}%'] = \"N/A\"\n        else:\n            value = calculate_dcf(revenue_2024, operating_income_2024, revenue_growth_rate, operating_margin_2024,\n                                  tax_rate, depreciation_rate_of_revenue, capex_rate_of_revenue,\n                                  wacc_val, g_val, forecast_years)\n            sensitivity_results.loc[f'g={g_val*100:.0f}%', f'WACC={wacc_val*100:.0f}%'] = f'{value:.2f}'\n\nprint(\"\\nDCF 적정가치 민감도 분석 (억원):\")\nprint(sensitivity_results)\n\n# 3. 마지막에 '적정가치(기본): {value}억원' 형태로 요약 출력\nprint(f\"\\n적정가치(기본): {base_intrinsic_value:.2f}억원\")",
+    "code_output": "매출액 성장률에 대한 가정이 주어지지 않아, 5년 예측 기간 동안 연간 5%의 매출액 성장률을 가정하여 계산을 진행하겠습니다. 또한, 영업이익률은 2024년 수준으로 유지된다고 가정합니다.\n기본 시나리오 DCF 적정가치: 13603.76억원\n\nDCF 적정가치 민감도 분석 (억원):\n       WACC=7%   WACC=8%   WACC=9%  WACC=10%  WACC=11%\ng=1%  16463.44  14070.82  12277.64  10884.04   9770.09\ng=2%  19129.18  15905.37  13603.76  11878.46  10537.34\ng=3%  23127.80  18473.75  15371.91  13157.01  11496.41\n\n적정가치(기본): 13603.76억원"
+  },
+  "news": {
+    "text": "## 코나아이(052400) 분석 보고서\n\n### 1. 재무 데이터와 시장 컨센서스 일치/불일치\n\n제공된 10년 재무제표 분석 결과에 따르면 코나아이(052400)는 매출액 성장과 영업이익 흑자 전환이라는 긍정적인 측면에도 불구하고, 2023년 완전자본잠식, 지속적인 당기순이익 부재, 높은 부채비율 등 심각한 재무적 불안정성을 안고 있습니다. 투자등급 D는 이러한 재무적 위험을 명확히 반영합니다.\n\n최근 2주간의 뉴스를 종합해 볼 때, 시장의 컨센서스는 코나아이의 재무적 불안정성에 대한 우려를 일정 부분 공유하고 있는 것으로 보입니다. 특히, 자본잠식 상태와 관리종목 지정 가능성 등 재무 건전성 이슈가 지속적으로 언급되고 있습니다.\n\n*   코나아이는 2023년 사업보고서 제출 지연으로 인해 관리종목 지정 우려가 있었으며, 이는 투자자들에게 재무적 불확실성을 가중시키는 요인으로 작용했습니다.\n*   2023년 감사보고서 '의견거절'로 상장폐지 사유가 발생했으나, 이의신청 및 개선계획서 제출로 거래정지가 유지되고 있는 상황입니다. 이는 기업의 존속 가능성에 대한 심각한 우려를 반영하며, 재무제표에서 드러난 불안정성이 시장에서 매우 심각하게 받아들여지고 있음을 보여줍니다.\n\n따라서, 재무 데이터가 보여주는 심각한 재무 불안정성 스토리는 현재 시장 컨센서스와 **일치**하는 것으로 판단됩니다. 시장은 코나아이의 재무 건전성 악화에 대해 매우 부정적인 시각을 가지고 있습니다.\n\n### 2. 재무제표에서 드러나지 않는 리스크 또는 호재\n\n**리스크:**\n\n*   **상장폐지 리스크 현실화:** 2023년 감사보고서에 대한 '의견거절'은 단순한 재무적 불안정성을 넘어 상장폐지라는 기업 존립의 위협으로 이어지고 있습니다. 이는 재무제표상의 수치만으로는 예측하기 어려운 극단적인 리스크입니다.\n*   **사업보고서 제출 지연 및 관리종목 지정 우려:** 사업보고서 제출 지연은 기업의 투명성과 신뢰도에 대한 의문을 제기하며, 관리종목 지정은 투자 심리를 더욱 위축시킬 수 있습니다.\n*   **경영 불확실성 증대:** 감사보고서 의견거절 사유가 해소되지 않을 경우, 경영진의 책임론 및 향후 사업 추진 동력 상실 등 전반적인 경영 불확실성이 증대될 수 있습니다.\n\n**호재:**\n\n*   최근 2주간의 뉴스에서는 재무제표에서 드러나지 않는 뚜렷한 호재성 내용은 발견되지 않았습니다. 오히려 상장폐지 리스크와 관련된 부정적인 뉴스가 지배적입니다.\n\n### 3. 최종 판정\n\n코나아이(052400)는 매출액 성장과 영업이익 흑자 전환에도 불구하고, 2023년 완전자본잠식, 지속적인 당기순이익 부재, 높은 부채비율 등 심각한 재무적 불안정성을 겪고 있습니다. 더욱이 최근 감사보고서 '의견거절'로 인한 상장폐지 사유 발생 및 거래정지 상황은 기업의 존속 자체에 대한 심각한 우려를 야기합니다. 이러한 상황에서 투자자 보호를 위한 뚜렷한 개선책이나 긍정적인 모멘텀이 부재합니다.\n\n따라서, 현재 코나아이에 대한 최종 판정은 **매도** 입니다.",
+    "citations": []
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=00349732",
+    "summary": "공시 페이지 접근 제한"
+  }
+}

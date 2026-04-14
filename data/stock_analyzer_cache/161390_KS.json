@@ -2,7 +2,7 @@
   "name": "한국타이어앤테크놀로지",
   "ticker": "161390.KS",
   "result": "매수",
-  "date": "2026-04-11 13:15:15",
+  "date": "2026-04-14 05:50:27",
   "elapsed": 2.2,
   "consensus_score": 4.0,
   "analyst_count": 17,
@@ -15,32 +15,32 @@
   },
   "recommendation_period": "0m",
   "price_targets": {
-    "current": 65000.0,
+    "current": 61400.0,
     "high": 89000.0,
     "low": 40000.0,
     "mean": 75941.18,
     "median": 79000.0
   },
-  "current_price": 65000.0,
-  "upside_potential": 16.8,
+  "current_price": 61400.0,
+  "upside_potential": 23.7,
   "key_stats": {
     "name": "HANKOOK TIRE & TECHNOLOGY",
     "sector": "Consumer Cyclical",
     "industry": "Auto Parts",
-    "market_cap": 7929268797440,
+    "market_cap": 7490109440000,
     "pe_ratio": null,
-    "forward_pe": 5.1079736,
+    "forward_pe": 4.8250704,
     "dividend_yield": 3.54,
     "beta": 0.51,
     "fifty_two_week_high": 78400.0,
-    "fifty_two_week_low": 37350.0,
+    "fifty_two_week_low": 35661.0,
     "revenue": 21202298994688,
     "profit_margin": 0.05138,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
   "source": "yfinance",
-  "ai_analysis": "한국타이어앤테크놀로지에 대해 17명의 애널리스트가 매수 컨센서스(4.0/5.0)를 제시했습니다. 목표가 평균은 75,941원으로 현재가 대비 16.8% 상승 여력이 있습니다. 이는 애널리스트들이 긍정적인 전망을 가지고 있음을 시사합니다.",
+  "ai_analysis": "한국타이어앤테크놀로지에 대해 17명의 애널리스트가 제시한 컨센서스는 '매수' 의견입니다. 목표가 평균은 75,941원으로, 현재가 61,400원 대비 23.7%의 상승 여력이 있는 것으로 분석됩니다. 이는 전반적으로 긍정적인 투자 전망을 시사합니다.",
   "revenue_quarters": [
     {
       "date": "2025-12",
@@ -77,5 +77,13 @@
       "value": 319693689300
     }
   ],
-  "news": []
+  "news": [
+    {
+      "title": "Top Dividend Stocks In Global For April 2026",
+      "summary": "As global markets rally on the back of a U.S.-Iran ceasefire and optimism around artificial intelligence, investors are eyeing opportunities in dividend stocks that can offer stability amid fluctuatin",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/top-dividend-stocks-global-april-093204895.html",
+      "provider": "Simply Wall St.",
+      "pub_time": "2026-04-13T09:32:04Z"
+    }
+  ]
 }

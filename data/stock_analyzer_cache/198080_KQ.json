@@ -1,35 +1,35 @@
 {
-  "name": "쏘닉스",
-  "ticker": "088280.KQ",
+  "name": "캐프",
+  "ticker": "198080.KQ",
   "result": "데이터 없음",
-  "date": "2026-04-13 23:52:04",
-  "elapsed": 2.3,
+  "date": "2026-04-13 23:53:37",
+  "elapsed": 4.6,
   "consensus_score": null,
   "analyst_count": 0,
   "recommendation_detail": null,
   "recommendation_period": null,
   "price_targets": {
-    "current": 5670.0,
+    "current": 2950.0,
     "high": null,
     "low": null,
     "mean": null,
     "median": null
   },
-  "current_price": 5670.0,
+  "current_price": 2950.0,
   "upside_potential": null,
   "key_stats": {
-    "name": "SAWNICS",
+    "name": "CAP",
     "sector": "Technology",
-    "industry": "Semiconductors",
-    "market_cap": 98127798272,
+    "industry": "Communication Equipment",
+    "market_cap": 63528792064,
     "pe_ratio": null,
     "forward_pe": null,
     "dividend_yield": null,
-    "beta": -1.109,
-    "fifty_two_week_high": 5970.0,
-    "fifty_two_week_low": 1605.0,
-    "revenue": 18205980672,
-    "profit_margin": -0.37887,
+    "beta": 0.338,
+    "fifty_two_week_high": 3110.0,
+    "fifty_two_week_low": 1970.0,
+    "revenue": 295201243136,
+    "profit_margin": 0.06594,
     "currency": "KRW"
   },
   "finnhub_supplement": null,
@@ -38,37 +38,37 @@
   "revenue_quarters": [
     {
       "date": "2025-12",
-      "value": 4703555090
+      "value": 82601831630
     },
     {
       "date": "2025-09",
-      "value": 4421350430
+      "value": 65279117570
     },
     {
       "date": "2025-06",
-      "value": 4488719090
+      "value": 74455708870
     },
     {
       "date": "2025-03",
-      "value": 4592356000
+      "value": 72864569470
     }
   ],
   "net_income_quarters": [
     {
       "date": "2025-12",
-      "value": -1500875050
+      "value": 6183198350
     },
     {
       "date": "2025-09",
-      "value": -1194936730
+      "value": 4622736370
     },
     {
       "date": "2025-06",
-      "value": -2566869380
+      "value": 2791428570
     },
     {
       "date": "2025-03",
-      "value": -1634964150
+      "value": 5869615740
     }
   ],
   "news": []

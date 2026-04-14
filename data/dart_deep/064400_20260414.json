@@ -1,0 +1,155 @@
+{
+  "stock_code": "064400",
+  "stock_name": "LG씨엔에스",
+  "generated_at": "2026-04-13T14:58:17.901370+00:00",
+  "financials": {
+    "stock_code": "064400",
+    "corp_code": "00139834",
+    "years": [
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2023": {
+        "total_assets": 40406.8,
+        "cash": 5045.7,
+        "total_equity": 350.4,
+        "short_debt": 25.6,
+        "total_liab": 21724.2,
+        "long_debt": 5487.5,
+        "op_profit": 4640.5,
+        "net_income": 3323.2
+      },
+      "2024": {
+        "total_assets": 45045.1,
+        "cash": 10765.9,
+        "total_equity": 350.4,
+        "short_debt": 55.2,
+        "total_liab": 23817.0,
+        "long_debt": 3896.9,
+        "op_profit": 5128.6,
+        "net_income": 3645.1
+      },
+      "2025": {
+        "total_assets": 52852.8,
+        "cash": 11409.9,
+        "total_equity": 6240.9,
+        "short_debt": 0.0,
+        "total_liab": 23438.4,
+        "long_debt": 1598.3,
+        "op_profit": 5518.3,
+        "net_income": 0.0
+      }
+    },
+    "missing_years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2023,
+        "revenue_eok": 0,
+        "op_profit_eok": 4640,
+        "net_income_eok": 3323,
+        "roe_pct": 949.43,
+        "op_margin_pct": 0,
+        "debt_ratio_pct": 6206.86
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 0,
+        "op_profit_eok": 5129,
+        "net_income_eok": 3645,
+        "roe_pct": 1041.43,
+        "op_margin_pct": 0,
+        "debt_ratio_pct": 6804.86
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 0,
+        "op_profit_eok": 5518,
+        "net_income_eok": 0,
+        "roe_pct": 0,
+        "op_margin_pct": 0,
+        "debt_ratio_pct": 375.55
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": 0,
+      "op_profit_cagr_pct": 9.05,
+      "best_year": 2025,
+      "worst_year": 2023,
+      "avg_roe_pct": 663.62
+    },
+    "valuation": {
+      "grade": "C",
+      "strengths": [
+        "영업이익이 꾸준히 성장하는 추세를 보입니다.",
+        "2025년 자본총계가 크게 증가하여 재무구조 개선의 가능성을 보여줍니다.",
+        "현금 보유량이 높은 수준을 유지하고 있어 유동성이 양호합니다."
+      ],
+      "risks": [
+        "매출액이 0으로 기재되어 있어 사업 활동의 불확실성이 매우 큽니다.",
+        "2025년 당기순이익이 0으로 기록되어 수익성 악화에 대한 우려가 있습니다.",
+        "2023년과 2024년 매우 높은 부채비율을 기록하여 재무 안정성이 취약합니다."
+      ],
+      "one_liner": "영업이익은 성장세를 보이나, 매출액 0과 2025년 당기순이익 0 등 재무제표의 비정상적인 수치로 인해 투자에 신중한 접근이 필요합니다."
+    }
+  },
+  "dcf": {
+    "text": "주어진 데이터를 바탕으로 LG CNS의 DCF 적정가치를 계산하겠습니다.\n\n**[중요 가정 사항]**\n제공된 데이터에 몇 가지 불분명한 점이 있어, 아래와 같이 가정을 하고 계산을 진행합니다.\n\n1.  **매출액 데이터 처리**: '최근 재무: 매출액: 0'으로 주어져 있습니다. 하지만 FCF 계산식에 '감가상각(매출의 10%)'과 'CAPEX(매출\n의 5%)'가 포함되어 있어 매출액이 0이면 이 두 항목도 0이 됩니다. 따라서 FCF 계산식은 `FCF = 영업이익 × (1 - 0.25)`로 단순화하여 적용합니다.\n2.  **예측 기간 동안의 성장률**: 5년 예측 기간(2025년 이후) 동안 매출액 또는 영업이익의 성장률에 대한 가정이 명시되지 않았습니다. 따라서 영구성장률(g=2%)을 5년 예측 기간 동안의 영업이익 성장률로 동일하게 적용하여 FCF를 예측합니다.\n\n---\n\n\n**[결과 요약]**\n\n1.  **기본 시나리오 DCF 적정가치 계산:**\n    *   예측 기간 FCF 현재가치 합계: 16,697.26 억원\n    *   터미널 밸류 현재가치: 42,424.16 억원\n    *   **총 DCF 적정가치 (기본 시나리오): 59,121.43 억원**\n\n2.  **WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 출력:**\n\n|        | WACC=7%    | WACC=8%    | WACC=9%    | WACC=10%   | WACC=11%   |\n| :----- | :--------- | :--------- | :--------- | :--------- | :--------- |\n| **g=1%** | 68975.00   | 59121.43   | 51731.25   | 45983.33   | 41385.00   |\n| **g=2%** | 82770.00   | 68975.00   | 59121.43   | 51731.25   | 45983.33   |\n| **g=3%** | 103462.50  | 82770.00   | 68975.00   | 59121.43   | 51731.25   |\n\n3.  **최종 요약:**\n    적정가치(기본): 59121.43억원",
+    "executed_code": "import pandas as pd\n\n# --- 1. 기본 시나리오 DCF 적정가치 계산 ---\n\n# 데이터 및 가정\ncompany_name = \"LG씨엔에스\"\nstock_code = \"064400\"\nbase_year = 2025\nop_profit_2025 = 5518  # 억원\nwacc_base = 0.09\ng_base = 0.02\nforecast_years = 5\n\n# 가정된 FCF 계산식\n# FCF = 영업이익 × (1 - 0.25) + 감가상각(매출의 10%) - CAPEX(매출의 5%)\n# 매출액이 0이므로 감가상각(0) - CAPEX(0) = 0\n# 따라서 FCF = 영업이익 × (1 - 0.25)\n\n# 5년 예측 기간 동안 영업이익 성장률 (명시되지 않아 영구성장률 g를 사용)\nop_profit_growth_rate = g_base\n\n# FCF 계산 및 할인\nfcf_list = []\npv_fcf_list = []\ndiscount_factors = []\n\nprint(f\"--- {company_name} ({stock_code}) 기본 시나리오 DCF 계산 ---\")\nprint(f\"기준 영업이익 (2025): {op_profit_2025} 억원\")\nprint(f\"WACC: {wacc_base*100:.0f}%\")\nprint(f\"영구성장률 (g): {g_base*100:.0f}%\")\nprint(f\"예측 기간: {forecast_years}년\")\nprint(f\"예측 기간 영업이익 성장률 (g와 동일하게 가정): {op_profit_growth_rate*100:.0f}%\")\nprint(\"\\n[주의] 매출액 0 가정으로 감가상각 및 CAPEX는 0으로 처리되었으며, 예측 기간 성장률은 영구성장률과 동일하게 가정되었습니다.\")\nprint(\"-\" * 60)\n\ncurrent_op_profit = op_profit_2025\nfor i in range(1, forecast_years + 1):\n    year = base_year + i - 1 # 2025, 2026, ..., 2029\n    \n    # FCF 계산\n    fcf = current_op_profit * (1 - 0.25)\n    fcf_list.append(fcf)\n    \n    # 할인 계수\n    discount_factor = (1 + wacc_base) ** i\n    discount_factors.append(discount_factor)\n    \n    # FCF의 현재 가치\n    pv_fcf = fcf / discount_factor\n    pv_fcf_list.append(pv_fcf)\n    \n    print(f\"Year {year}: 영업이익={current_op_profit:.2f}억원, FCF={fcf:.2f}억원, 할인계수={discount_factor:.4f}, PV(FCF)={pv_fcf:.2f}억원\")\n    \n    # 다음 연도 영업이익 계산\n    current_op_profit *= (1 + op_profit_growth_rate)\n\nsum_pv_fcf = sum(pv_fcf_list)\nprint(f\"\\n예측 기간 FCF 현재가치 합계: {sum_pv_fcf:.2f}억원\")\n\n# 터미널 밸류 (Terminal Value) 계산\n# 마지막 예측 연도 (2029년)의 다음 해 FCF (2030년 FCF)\nfcf_terminal_year = fcf_list[-1] * (1 + g_base) # FCF_2029 * (1+g)\n\n# WACC - g가 0 이하인 경우 오류 방지\nif wacc_base <= g_base:\n    terminal_value_at_end_of_forecast = float('inf') # 또는 오류 처리\n    print(\"\\n[오류] WACC가 영구성장률(g)보다 작거나 같아 터미널 밸류 계산이 불가능합니다.\")\n    pv_terminal_value = 0 # 계산 불가 시 0으로 처리\nelse:\n    terminal_value_at_end_of_forecast = fcf_terminal_year / (wacc_base - g_base)\n    # 터미널 밸류의 현재 가치 (예측 기간 마지막 연도(5년차) 말에 발생한 TV를 현재 시점으로 할인)\n    pv_terminal_value = terminal_value_at_end_of_forecast / discount_factors[-1] # discount_factors[-1] is (1+WACC)^5\n    print(f\"2029년 FCF: {fcf_list[-1]:.2f}억원\")\n    print(f\"2030년 FCF (터미널): {fcf_terminal_year:.2f}억원\")\n    print(f\"터미널 밸류 (2029년 말): {terminal_value_at_end_of_forecast:.2f}억원\")\n    print(f\"터미널 밸류 현재가치: {pv_terminal_value:.2f}억원\")\n\n\n# 총 DCF 적정가치\ndcf_valuation_base = sum_pv_fcf + pv_terminal_value\nprint(\"-\" * 60)\nprint(f\"총 DCF 적정가치 (기본 시나리오): {dcf_valuation_base:.2f}억원\")\nprint(\"-\" * 60)\n\n# --- 2. WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 출력 ---\n\nwacc_scenarios = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_scenarios = [0.01, 0.02, 0.03]\n\nsensitivity_results = pd.DataFrame(index=[f'g={g*100:.0f}%' for g in g_scenarios],\n                                   columns=[f'WACC={wacc*100:.0f}%' for wacc in wacc_scenarios])\n\nprint(\"\\n--- DCF 적정가치 민감도 분석 (억원) ---\")\n\nfor g_val in g_scenarios:\n    for wacc_val in wacc_scenarios:\n        if wacc_val <= g_val: # WACC must be greater than g for TV formula\n            sensitivity_results.loc[f'g={g_val*100:.0f}%', f'WACC={wacc_val*100:.0f}%'] = \"N/A\"\n            continue\n\n        # FCF 계산 및 할인 (WACC와 g에 따라 FCF 성장률도 변경)\n        current_op_profit_sens = op_profit_2025\n        pv_fcf_list_sens = []\n        \n        for i in range(1, forecast_years + 1):\n            fcf_sens = current_op_profit_sens * (1 - 0.25)\n            pv_fcf_sens = fcf_sens / ((1 + wacc_val) ** i)\n            pv_fcf_list_sens.append(pv_fcf_sens)\n            current_op_profit_sens *= (1 + g_val) # Use g_val for explicit forecast growth\n\n        sum_pv_fcf_sens = sum(pv_fcf_list_sens)\n\n        # 터미널 밸류 계산\n        # current_op_profit_sens는 5년 예측 후의 영업이익 (2029년 말)\n        # 2030년 FCF = current_op_profit_sens * (1 - 0.25)\n        fcf_terminal_year_sens = current_op_profit_sens * (1 - 0.25) \n        \n        terminal_value_at_end_of_forecast_sens = fcf_terminal_year_sens / (wacc_val - g_val)\n        pv_terminal_value_sens = terminal_value_at_end_of_forecast_sens / ((1 + wacc_val) ** forecast_years)\n\n        dcf_valuation_sens = sum_pv_fcf_sens + pv_terminal_value_sens\n        sensitivity_results.loc[f'g={g_val*100:.0f}%', f'WACC={wacc_val*100:.0f}%'] = f\"{dcf_valuation_sens:.2f}\"\n\nprint(sensitivity_results)\n\n# --- 3. 마지막에 '적정가치(기본): {value}억원' 형태로 요약 출력 ---\nprint(f\"\\n적정가치(기본): {dcf_valuation_base:.2f}억원\")",
+    "code_output": "--- LG씨엔에스 (064400) 기본 시나리오 DCF 계산 ---\n기준 영업이익 (2025): 5518 억원\nWACC: 9%\n영구성장률 (g): 2%\n예측 기간: 5년\n예측 기간 영업이익 성장률 (g와 동일하게 가정): 2%\n\n[주의] 매출액 0 가정으로 감가상각 및 CAPEX는 0으로 처리되었으며, 예측 기간 성장률은 영구성장률과 동일하게 가정되었습니다.\n------------------------------------------------------------\nYear 2025: 영업이익=5518.00억원, FCF=4138.50억원, 할인계수=1.0900, PV(FCF)=3796.79억원\nYear 2026: 영업이익=5628.36억원, FCF=4221.27억원, 할인계수=1.1881, PV(FCF)=3552.96억원\nYear 2027: 영업이익=5740.93억원, FCF=4305.70억원, 할인계수=1.2950, PV(FCF)=3324.79억원\nYear 2028: 영업이익=5855.75억원, FCF=4391.81억원, 할인계수=1.4116, PV(FCF)=3111.27억원\nYear 2029: 영업이익=5972.86억원, FCF=4479.65억원, 할인계수=1.5386, PV(FCF)=2911.46억원\n\n예측 기간 FCF 현재가치 합계: 16697.26억원\n2029년 FCF: 4479.65억원\n2030년 FCF (터미널): 4569.24억원\n터미널 밸류 (2029년 말): 65274.83억원\n터미널 밸류 현재가치: 42424.16억원\n------------------------------------------------------------\n총 DCF 적정가치 (기본 시나리오): 59121.43억원\n------------------------------------------------------------\n\n--- DCF 적정가치 민감도 분석 (억원) ---\n        WACC=7%   WACC=8%   WACC=9%  WACC=10%  WACC=11%\ng=1%   68975.00  59121.43  51731.25  45983.33  41385.00\ng=2%   82770.00  68975.00  59121.43  51731.25  45983.33\ng=3%  103462.50  82770.00  68975.00  59121.43  51731.25\n\n적정가치(기본): 59121.43억원"
+  },
+  "news": {
+    "text": "## LG CNS (064400) 투자 분석 보고서\n\nLG CNS(064400)에 대한 10년 재무제표 분석 결과와 최근 2주간의 시장 동향을 종합하여 투자 의견을 제시합니다.\n\n### 1. 재무 데이터가 보여주는 스토리와 현재 시장 컨센서스의 일치/불일치\n\n제공된 10년 재무제표 분석 결과에 따르면, LG CNS는 영업이익 성장세를 보이고 있으나, 2025년 매출액 0과 당기순이익 0 등 비정상적인 수치로 인해 투자에 신중한 접근이 필요하다는 의견이 제시되었습니다.\n\n그러나 최근 시장 컨센서스는 이와 상이한 모습을 보입니다. 애널리스트들은 LG CNS에 대해 '매수' 의견을 제시하고 있으며, 평균 목표주가는 현재 주가 대비 +42.31%에서 +51.78%의 상승 여력이 있다고 분석합니다. 특히, 2026년 1월 보고서에 따르면 LG CNS의 2025년 4분기 연결 기준 매출액은 1.94조 원, 영업이익은 2,160억 원을 기록하여 컨센서스에 부합하는 실적을 거둔 것으로 나타났습니다. 이는 제공된 재무제표 요약의 2025년 '0' 수치와는 명확한 불일치를 보이며, 시장은 LG CNS의 2025년 실적을 정상적인 수준으로 인식하고 있음을 시사합니다. 따라서 제공된 재무제표 요약의 2025년 특정 수치는 데이터 오류이거나 시장에 공개되지 않은 특정 비중의 재무 정보일 가능성이 높습니다.\n\n시장 전문가들은 LG CNS의 투자 포인트로 향후 5년간 연평균 13%의 고성장이 예상되는 영업이익을 꼽고 있으며, 이는 기업 고객의 AI 채택 확대에 따른 클라우드 & AI 사업부문 고성장, 스마트 팩토리 수요 증가에 따른 스마트 엔지니어링 부문 성장, 그리고 해외 진출 확대에 따른 매출액 증가에 기인한다고 분석합니다. 다만, Simply Wall St의 분석에 따르면 LG CNS의 연간 매출(6.6%)과 수익(9.6%) 성장률이 한국 시장 평균보다 느릴 것으로 예상되는 점은 일부 상이한 시각을 보여줍니다.\n\n### 2. 재무제표에서 드러나지 않는 리스크 또는 호재\n\n**리스크 요인:**\n*   **보호예수 해제:** 2026년 3월 보호예수가 해제되는 주식이 존재하여 주가에 부담으로 작용할 수 있습니다.\n*   **시장 대비 성장률 둔화 가능성:** 일부 분석에서는 LG CNS의 매출 및 수익 성장률이 한국 시장 평균보다 낮을 수 있다는 전망이 있습니다.\n*   **지정학적 리스크:** 2026년 2월 말 미국-이란 전쟁 개시 이후 주가가 부진한 모습을 보였으며, 이는 외부 지정학적 요인이 주가에 영향을 미칠 수 있음을 보여줍니다.\n\n**호재 요인:**\n*   **AI 기반 ERP 시장 선점 전략:** LG CNS는 최근 SAP와 함께 'SAP 비즈니스 AI' 기반의 차세대 ERP AX(AI 전환) 실행 전략을 발표하며 AI 기반 ERP 시장 선점에 박차를 가하고 있습니다. 이는 기업의 AI 전환 수요 증가에 따른 신규 성장 동력으로 작용할 것으로 기대됩니다.\n*   **경영진의 책임 경영 강화:** 현신균 LG CNS 대표이사가 지난 3월 31일 약 1억 5천만 원 규모의 자사주 2,500주를 취득했습니다. 이는 대표이사의 첫 자사주 매입으로, 기업 가치 제고 및 실적 개선에 대한 자신감과 책임 경영 의지를 시장에 표명한 것으로 해석됩니다.\n*   **배당 증가:** 2026년 1월 보고서에 따르면 주당 배당금은 1,850원으로 전년 대비 10.6% 증가했습니다.\n\n### 3. 최종 판정\n\n제공된 재무제표 요약의 2025년 비정상적인 수치(매출액 0, 당기순이익 0)는 시장 컨센서스와 최근 보고서 내용과 상충되며, 시장은 LG CNS의 실적을 긍정적으로 평가하고 있습니다. LG CNS는 AI 기반 ERP 시장에서의 선도적인 전략과 경영진의 책임 경영 강화 의지를 통해 성장 동력을 확보하고 있습니다. 비록 보호예수 해제 및 일부 시장 대비 성장률 둔화 가능성 등의 리스크 요인이 존재하지만, AI 전환 시대의 핵심 인프라 제공자로서의 역할과 견조한 영업이익 성장세, 그리고 긍정적인 시장 컨센서스를 고려할 때, 현재 시점에서는 긍정적인 투자 관점을 유지하는 것이 합리적이라고 판단합니다.\n\n**최종 판정: 매수**",
+    "citations": [
+      {
+        "title": "investing.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEHEpNtLLXB7ha9rW7w6BJenkQaAyW7YOjnyHt1paHxvS24v2jR7wA2Cor2tf9F3Iv4WJpEDVMITSKsjjTjvDFDRhU2YzZZBti88rv5WMtQysz25729Pv5tMNH8tobcrvU3xMKWd11EBl5jrkeNrBYlC4sbHol4iQ=="
+      },
+      {
+        "title": "marketscreener.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQE5yfgQvzoyIPcKXbdB7YMiqR0kHvGwslw62p2y9pZGAWtKgzJGiniB_7bQwJSx5AAe7rZAU0nbUmXa0nd57jRGmBi3bXmShwqcWtXzgchWuVs-cy0YeP0IwBeLjAIu6U9W67sym6GeVVLv3CAmIglVbLuZ0sX9Ovl41FCJ-Rk="
+      },
+      {
+        "title": "kbthink.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQE67lpKiS84rDD0cH_0QojPAJzqnfdqXsLaicti_Mto6WwAvfkCjkMMmtSQP4uRRZvdPCvjx_OO8iOv8XJxxyErqPHn2x6q52mrApwwThF17VXrHTxZWyJFb3KBH3Jb_5hMaaGs0tXLlKDqtdiIP2jSpYlVeHehJmiDb4vX"
+      },
+      {
+        "title": "simplywall.st",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQH7FybkbowD_4ERkxIzsF1PMaAyxo7D7OsPbem4eLo217XO6Ic2UMjrFBpMZ4Fdt1gaIWYVNZkZIgYULQDBTwyLTc6kXscOVYp_hOqmRLxhqHQL64S6F2vfC0R8zN_XCvI3UbwrPXH55mYXC0D5spsH031gGASgV1zHDnlJpGL2wOJjf1Ajilbc"
+      },
+      {
+        "title": "daum.net",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFUHqKn-yNyx_ghOvA2R_JjHSRU5NAneEHbLnQsMhITUwJR4S98pWctFaSAqs2KkxuqsA1kBX0ttcYAH3sGkSjepWShviEfzd_056fUxA8P2groOsfGjEnDNzF3Zd_g4sVKG-IUOQ4egbv3OOCCMIUXP0YDwQyu-Ry1YMhA-mvmih4="
+      },
+      {
+        "title": "zum.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHzNQrS3dzowbYM6la9knEp-Hjjoqo5wrCgLKhkFJ3oKQBPlAu7fRvogG6Mirn4AVboSfXesMY7X8TE-G7dcMHTBp947bOMNZVuON269N1q8YlEgKEvFgX5nI-MOSWAL235"
+      },
+      {
+        "title": "issuetoday.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHfr4W8tRRH4hHe30uORraAaYVgsilxmKlKd8h96fi5XvFbXn0Y8wkRMe4Yun3A78F1e97v1mQNrz2CiEihhO0x1Nf3o_cQJqXKBPhJfgptVFsint_xUwMJvs67uW5W60pb2_rT_r5A0tbGst4GHlLi1zA="
+      },
+      {
+        "title": "daum.net",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFuvELFZ-Bfgpo_iTAF9TLwgSO12Ac_erDithfvoEhlVe8F-wY_mcj-vllJI--xf1OgbMsntYrqPubUS4YRz_CToRkcgP5AphkvDZ8XMqPmBlWfKFt3puA0ngaObWKQAQgKeaUu_0D7e07t__qZvP7d8wIkXaXyoLB45mZGwg47mcQ="
+      }
+    ]
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=00139834",
+    "summary": "공시 페이지 접근 제한"
+  }
+}

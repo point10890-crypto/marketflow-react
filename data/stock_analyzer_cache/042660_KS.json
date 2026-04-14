@@ -1,0 +1,117 @@
+{
+  "name": "한화오션",
+  "ticker": "042660.KS",
+  "result": "매수",
+  "date": "2026-04-13 23:50:50",
+  "elapsed": 4.7,
+  "consensus_score": 4.19,
+  "analyst_count": 21,
+  "recommendation_detail": {
+    "strongBuy": 7,
+    "buy": 13,
+    "hold": 0,
+    "sell": 0,
+    "strongSell": 1
+  },
+  "recommendation_period": "0m",
+  "price_targets": {
+    "current": 120100.0,
+    "high": 180000.0,
+    "low": 72000.0,
+    "mean": 162142.86,
+    "median": 167000.0
+  },
+  "current_price": 120100.0,
+  "upside_potential": 35.0,
+  "key_stats": {
+    "name": "Hanwha Ocean",
+    "sector": "Industrials",
+    "industry": "Aerospace & Defense",
+    "market_cap": 36798302519296,
+    "pe_ratio": null,
+    "forward_pe": 20.787996,
+    "dividend_yield": null,
+    "beta": 1.067,
+    "fifty_two_week_high": 154800.0,
+    "fifty_two_week_low": 71500.0,
+    "revenue": 12783511928832,
+    "profit_margin": 0.09746,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": "한화오션(042660.KS)에 대해 21명의 애널리스트가 제시한 컨센서스 의견은 '매수'입니다. 목표가 평균은 162,143 KRW으로, 현재가 120,100 KRW 대비 35.0%의 상승 여력이 있습니다. 이는 애널리스트들이 한화오션의 추가적인 주가 상승을 기대하고 있음을 시사합니다.",
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 3322951443950
+    },
+    {
+      "date": "2025-09",
+      "value": 3023357863130
+    },
+    {
+      "date": "2025-06",
+      "value": 3294113466280
+    },
+    {
+      "date": "2025-03",
+      "value": 3143089504960
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 612360818060
+    },
+    {
+      "date": "2025-09",
+      "value": 269352294840
+    },
+    {
+      "date": "2025-06",
+      "value": 148431758710
+    },
+    {
+      "date": "2025-03",
+      "value": 215693628930
+    }
+  ],
+  "news": [
+    {
+      "title": "Asian Stocks Drop After U.S.-Iran Talks Fall Apart",
+      "summary": "Asian equities fell Monday after the collapse of U.S.-Iran peace talks poured cold water on hopes of an end to the fighting that has roiled markets. Japan’s Nikkei Stock Average losing 1.0%, South Kor",
+      "url": "https://www.wsj.com/livecoverage/stock-market-today-dow-sp-500-nasdaq-04-13-2026/card/asian-stocks-fall-after-u-s-iran-talks-fall-apart-qfa22ivOmOzI4YIZM1p0?siteid=yhoof2&yptr=yahoo",
+      "provider": "The Wall Street Journal",
+      "pub_time": "2026-04-13T06:54:28Z"
+    },
+    {
+      "title": "For $3 billion, ocean line expands fleet by 250,000 TEUs",
+      "summary": "A bullish Evergreen Marine has finalized an order for 11 ultra-large container ships worth $3 billion with two Asia builders.",
+      "url": "https://finance.yahoo.com/markets/commodities/articles/3-billion-ocean-line-expands-182757235.html",
+      "provider": "FreightWaves",
+      "pub_time": "2026-04-10T18:27:57Z"
+    },
+    {
+      "title": "Hanwha Ocean secures orders worth $866m for five vessels",
+      "summary": "The company said that two LNG carriers are set to be delivered to an undisclosed client in Africa by May 2029.",
+      "url": "https://www.offshore-technology.com/news/hanwha-ocean-secures-orders-five-vessels/",
+      "provider": "Offshore Technology",
+      "pub_time": "2026-03-26T11:57:21Z"
+    },
+    {
+      "title": "Algoma Steel Group Q4 Earnings Call Highlights",
+      "summary": "Algoma Steel Group (NASDAQ:ASTL) executives said the company is reshaping its business around Canada as the 50% U.S. Section 232 tariff has “effectively closed” the American market to its products, dr",
+      "url": "https://www.marketbeat.com/instant-alerts/algoma-steel-group-q4-earnings-call-highlights-2026-03-12/?utm_source=yahoofinance&utm_medium=yahoofinance",
+      "provider": "MarketBeat",
+      "pub_time": "2026-03-12T20:27:02Z"
+    },
+    {
+      "title": "Chevron awards Leviathan module fabrication contract to Hanwha Ocean",
+      "summary": "Hanwha Ocean has been involved in the Leviathan Expansion Project since Q3 2024.",
+      "url": "https://www.offshore-technology.com/news/chevron-leviathan-module-fabrication-contract/",
+      "provider": "Offshore Technology",
+      "pub_time": "2026-03-02T09:06:40Z"
+    }
+  ]
+}

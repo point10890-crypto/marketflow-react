@@ -1,0 +1,199 @@
+{
+  "stock_code": "203400",
+  "stock_name": "에이비온",
+  "generated_at": "2026-04-13T21:58:10.191648+00:00",
+  "financials": {
+    "stock_code": "203400",
+    "corp_code": "00977377",
+    "years": [
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2021": {
+        "cash": 156.3,
+        "total_assets": 446.2,
+        "short_debt": 21.4,
+        "total_liab": 125.2,
+        "total_equity": 321.0,
+        "revenue": 16.4,
+        "op_profit": -106.7,
+        "net_income": -542.6
+      },
+      "2022": {
+        "cash": 42.9,
+        "total_assets": 241.4,
+        "short_debt": 18.3,
+        "total_liab": 90.4,
+        "total_equity": 151.0,
+        "revenue": 25.1,
+        "op_profit": -251.7,
+        "net_income": -199.3
+      },
+      "2023": {
+        "total_assets": 446.7,
+        "cash": 107.3,
+        "total_equity": 1757.6,
+        "total_liab": 346.9,
+        "long_debt": 42.0,
+        "op_profit": -312.5,
+        "net_income": -292.1,
+        "revenue": 12.7
+      },
+      "2024": {
+        "total_assets": 637.8,
+        "cash": 31.7,
+        "total_equity": 2339.5,
+        "total_liab": 356.5,
+        "op_profit": -340.7,
+        "net_income": -433.8,
+        "revenue": 7.6
+      },
+      "2025": {
+        "total_assets": 805.7,
+        "cash": 343.7,
+        "total_equity": 450.5,
+        "total_liab": 122.1,
+        "op_profit": -193.7,
+        "net_income": -290.6,
+        "revenue": 8.8
+      }
+    },
+    "missing_years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2021,
+        "revenue_eok": 16,
+        "op_profit_eok": -107,
+        "net_income_eok": -543,
+        "roe_pct": -169.16,
+        "op_margin_pct": -668.75,
+        "debt_ratio_pct": 38.94
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 25,
+        "op_profit_eok": -252,
+        "net_income_eok": -199,
+        "roe_pct": -131.79,
+        "op_margin_pct": -1008.0,
+        "debt_ratio_pct": 59.6
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 13,
+        "op_profit_eok": -312,
+        "net_income_eok": -292,
+        "roe_pct": -16.61,
+        "op_margin_pct": -2400.0,
+        "debt_ratio_pct": 19.74
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 8,
+        "op_profit_eok": -341,
+        "net_income_eok": -434,
+        "roe_pct": -18.55,
+        "op_margin_pct": -4262.5,
+        "debt_ratio_pct": 15.21
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 9,
+        "op_profit_eok": -194,
+        "net_income_eok": -291,
+        "roe_pct": -64.67,
+        "op_margin_pct": -2155.56,
+        "debt_ratio_pct": 27.11
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": -13.59,
+      "op_profit_cagr_pct": 16.14,
+      "best_year": 2021,
+      "worst_year": 2024,
+      "avg_roe_pct": -80.16
+    },
+    "valuation": {
+      "grade": "D",
+      "strengths": [
+        "2023년과 2024년에 자본총계가 크게 증가하여 연구개발 자금 조달 여력이 확보된 것으로 보입니다.",
+        "부채비율이 2023년 이후 20% 내외로 안정적인 수준을 유지하고 있어 재무 건전성이 양호합니다.",
+        "2025년 영업손실 규모가 전년 대비 감소하여 손실폭이 줄어들고 있습니다."
+      ],
+      "risks": [
+        "지속적인 매출 감소와 막대한 영업손실 및 당기순손실로 인해 사업의 지속 가능성에 대한 우려가 큽니다.",
+        "매우 높은 마이너스 영업이익률과 ROE는 기업의 수익 창출 능력 부재를 명확히 보여줍니다.",
+        "현금성 자산이 지속적으로 감소하고 있어 추가 자금 조달 없이는 유동성 위험에 직면할 수 있습니다."
+      ],
+      "one_liner": "지속적인 적자와 매출 감소로 사업의 근본적인 수익성 개선이 시급하며, 추가 자금 조달 없이는 재무적 위험이 높은 기업입니다."
+    }
+  },
+  "dcf": {
+    "text": "퀀트 애널리스트로서 에이비온(203400)의 DCF 적정가치를 계산하겠습니다.\n\n**가정 사항:**\n*   주어진 재무 데이터(매출액, 영업이익)는 5년간 동일하게 유지된다고 가정합니다. (성장률에 대한 정보가 없어 보수적으로 가정)\n*   FCF 계산식: `영업이익 × (1 - 0.25) + 감가상각(매출의 10%) - CAPEX(매출의 5%)`\n*   기본 시나리오: WACC = 9%, 영구성장률 g = 2%\n*   예측 기간: 5년 + 영구 가치 (Terminal Value)\n\n**계산 단계:**\n1.  주어진 FCF 공식을 사용하여 5년간의 FCF를 예측합니다.\n2.  예측된 FCF와 영구 가치를 WACC로 할인하여 현재 가치를 계산합니다.\n3.  WACC와 영구성장률(g)의 변화에 따른 민감도 분석을 수행합니다.\n\n---\n**Python 코드 실행 및 결과:**\n\n\n**분석 결과:**\n\n1.  **기본 시나리오 DCF 적정가치:**\n    *   주어진 가정(매출액 9억원, 영업이익 -194억원 고정)에 따라 계산된 에이비온의 적정가치는 **-1937.88억원**입니다.\n    *   이는 기업의 영업이익이 지속적으로 큰 폭의 적자를 기록하고 있어, 미래 현금흐름이 음수이며 이를 할인한 현재 가치 또한 음수로 나타나기 때문입니다. 바이오 기업의 경우 초기 연구개발 단계에서 이러한 음의 가치가 나타날 수 있습니다.\n\n2.  **WACC × g 민감도 그리드:**\n    *   아래 표는 WACC와 영구성장률(g)의 변화에 따른 적정가치(억원)를 보여줍니다.\n    *   WACC가 낮아지고 영구성장률(g)이 높아질수록 적정가치의 음수 폭이 커지는 경향을 보입니다. 이는 미래의 음의 현금흐름이 더 적게 할인되거나 더 큰 폭으로 성장하여 현재 가치에 더 큰 음의 영향을 미치기 때문입니다.\n\n    |       | WACC=7%   | WACC=8%   | WACC=9%   | WACC=10%  | WACC=11%  |\n    | :---- | :-------- | :-------- | :-------- | :-------- | :-------- |\n    | g=1%  | -2335.61  | -2003.51  | -1754.38  | -1560.58  | -1405.50  |\n    | g=2%  | -2704.47  | -2257.36  | -1937.88  | -1698.18  | -1511.66  |\n    | g=3%  | -3257.76  | -2612.75  | -2182.54  | -1875.09  | -1644.37  |\n\n**요약:**\n\n적정가치(기본): -1937.88억원\n\n**참고:**\n이 분석은 매출액과 영업이익이 5년간 변동 없이 유지된다는 보수적인 가정 하에 수행되었습니다. 실제 바이오 기업의 가치 평가는 신약 개발 성공 가능성, 임상 단계, 시장 규모 등 다양한 질적 요인과 미래 성장률에 대한 보다 상세한 가정이 필요합니다. 특히 영업이익이 큰 폭의 적자를 기록하는 기업의 경우, DCF 모델만으로는 기업의 잠재력을 온전히 반영하기 어려울 수 있습니다.",
+    "executed_code": "import pandas as pd\n\n# --- 1. Define Parameters and Financials (in KRW 100M) ---\nrevenue_base = 9 # 억원\noperating_income_base = -194 # 억원\ntax_rate = 0.25 # (1 - 0.25) implies 25% tax rate\ndepreciation_rate = 0.10 # 10% of revenue\ncapex_rate = 0.05 # 5% of revenue\nforecast_years = 5\n\n# Base case assumptions\nwacc_base = 0.09\ng_base = 0.02\n\n# --- 2. DCF Calculation Function ---\ndef calculate_dcf(revenue_base, operating_income_base, tax_rate, depreciation_rate, capex_rate,\n                  forecast_years, wacc, g):\n    \"\"\"\n    Calculates the DCF intrinsic value.\n    Assumes constant revenue and operating income for the forecast period.\n    \"\"\"\n    if wacc <= g:\n        # If WACC is less than or equal to g, the terminal value formula breaks or implies infinite value.\n        # For practical purposes, we return NaN or a very large negative number if FCF is negative.\n        # Given the context of negative operating income, it's more likely to be a very large negative.\n        # However, for consistency with typical DCF models, we'll return a clear indicator.\n        return float('nan') # Not a Number, indicating an invalid scenario for TV calculation\n\n    fcf_list = []\n    pv_fcf_sum = 0\n\n    # Project FCF for forecast years\n    for t in range(1, forecast_years + 1):\n        revenue_t = revenue_base\n        operating_income_t = operating_income_base\n        depreciation_t = revenue_t * depreciation_rate\n        capex_t = revenue_t * capex_rate\n\n        # FCF = Operating Income * (1 - Tax Rate) + Depreciation - CAPEX\n        fcf_t = operating_income_t * (1 - tax_rate) + depreciation_t - capex_t\n        fcf_list.append(fcf_t)\n\n        pv_fcf_sum += fcf_t / ((1 + wacc) ** t)\n\n    # Calculate Terminal Value (TV)\n    fcf_year5 = fcf_list[-1] # FCF at the end of the forecast period (Year 5)\n    fcf_year6 = fcf_year5 * (1 + g) # FCF for the first year of terminal period (Year 6)\n\n    terminal_value = fcf_year6 / (wacc - g)\n    pv_terminal_value = terminal_value / ((1 + wacc) ** forecast_years)\n\n    intrinsic_value = pv_fcf_sum + pv_terminal_value\n    return intrinsic_value\n\n# --- 3. Basic Scenario DCF Calculation ---\nbasic_dcf_value = calculate_dcf(revenue_base, operating_income_base, tax_rate, depreciation_rate, capex_rate,\n                                forecast_years, wacc_base, g_base)\n\nprint(f\"--- 기본 시나리오 DCF 적정가치 ---\")\nprint(f\"적정가치(기본): {basic_dcf_value:.2f}억원\")\nprint(\"\\n\")\n\n# --- 4. Sensitivity Grid Calculation ---\nwacc_range = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_range = [0.01, 0.02, 0.03]\n\nsensitivity_results = pd.DataFrame(index=[f'g={g*100:.0f}%' for g in g_range],\n                                   columns=[f'WACC={wacc*100:.0f}%' for wacc in wacc_range])\n\nfor g_val in g_range:\n    for wacc_val in wacc_range:\n        dcf_val = calculate_dcf(revenue_base, operating_income_base, tax_rate, depreciation_rate, capex_rate,\n                                forecast_years, wacc_val, g_val)\n        sensitivity_results.loc[f'g={g_val*100:.0f}%', f'WACC={wacc_val*100:.0f}%'] = dcf_val\n\nprint(\"--- WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 (단위: 억원) ---\")\n# Format the DataFrame for better readability, especially for negative values\nprint(sensitivity_results.applymap(lambda x: f'{x:.2f}' if isinstance(x, (int, float)) and not pd.isna(x) else 'NaN'))\nprint(\"\\n\")\n\n# --- 5. Final Summary Output ---\nprint(f\"적정가치(기본): {basic_dcf_value:.2f}억원\")",
+    "code_output": "--- 기본 시나리오 DCF 적정가치 ---\n적정가치(기본): -1937.88억원\n\n\n--- WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 (단위: 억원) ---\n       WACC=7%   WACC=8%   WACC=9%  WACC=10%  WACC=11%\ng=1%  -2335.61  -2003.51  -1754.38  -1560.58  -1405.50\ng=2%  -2704.47  -2257.36  -1937.88  -1698.18  -1511.66\ng=3%  -3257.76  -2612.75  -2182.54  -1875.09  -1644.37\n\n\n적정가치(기본): -1937.88억원"
+  },
+  "news": {
+    "text": "## 에이비온(203400) 재무제표 및 최신 뉴스 분석 보고서\n\n### 1. 재무 데이터 스토리와 시장 컨센서스의 일치/불일치\n\n제시된 에이비온의 10년 재무제표 분석 결과는 \"지속적인 적자와 매출 감소로 사업의 근본적인 수익성 개선이 시급하며, 추가 자금 조달 없이는 재무적 위험이 높은 기업\"으로 투자등급 D를 부여했습니다. 이는 과거 실적을 기반으로 한 재무적 취약성을 명확히 보여줍니다.\n\n최근 2주간의 뉴스 및 관련 기사들을 종합해 볼 때, 시장의 컨센서스는 이러한 재무적 취약성을 인지하면서도 미래 성장 동력에 대한 기대감을 동시에 반영하고 있습니다.\n\n*   **일치하는 부분:** 에이비온은 2025년 하반기 대규모 주주배정 유상증자를 통해 약 677억 원(최종 발행가액 3285원)을 조달했으며, 이는 재무구조 안정화 및 주요 신약 파이프라인 임상 개발 가속화를 목표로 한다고 밝혔습니다. 이는 재무제표 분석에서 지적된 \"추가 자금 조달 없이는 재무적 위험이 높은 기업\"이라는 평가와 일치하며, 회사가 재무적 위험을 해소하기 위해 적극적으로 노력하고 있음을 보여줍니다.\n*   **불일치하는 부분:** 과거 재무제표의 \"지속적인 적자와 매출 감소\"와는 달리, 시장은 에이비온의 신약 파이프라인 가치에 주목하고 있습니다. 특히 2025년 6월 미국 ADC 개발사와 1.8조 원 규모의 ABN501 공동개발 및 라이선스 계약을 체결한 점과, 2025년 12월 연속 기술이전 기대감으로 주가가 상한가를 기록했던 점은 재무제표에 아직 반영되지 않은 미래 수익 창출 가능성에 대한 기대감을 나타냅니다. 또한, 최근 ABN202의 전임상 연구에서 TROP2 표적 ADC 대비 월등한 항암 기전 효과를 확인하고 AACR 2026에서 발표 예정이라는 소식도 파이프라인의 잠재력을 부각합니다.\n\n### 2. 재무제표에서 드러나지 않는 리스크 또는 호재\n\n**리스크:**\n\n*   **주주가치 희석:** 2025년 하반기 대규모 유상증자(약 677억 원)는 재무구조 개선에 기여하지만, 발행 주식 수 증가로 인한 기존 주주들의 지분 가치 희석은 불가피합니다.\n*   **신약 개발의 불확실성:** 바이오 기업의 특성상 신약 개발은 오랜 시간과 막대한 비용이 소요되며, 임상 실패 및 상업화 실패의 위험이 상존합니다. 기술이전 계약의 마일스톤 수익은 성공적인 개발 및 상업화에 따라 지급되므로, 그 실현 가능성에는 불확실성이 따릅니다.\n*   **외국인/기관 순매도:** 최근 1주일간 외국인과 기관이 에이비온 주식을 순매도한 기록이 있어, 대형 투자자들의 신중한 접근을 엿볼 수 있습니다.\n\n**호재:**\n\n*   **대규모 기술이전 계약:** ABN501에 대한 1.8조 원 규모의 기술이전 계약은 에이비온의 기술력을 입증하고, 계약금(약 341억 원) 및 향후 마일스톤(최대 1.7조 원)을 통해 장기적인 수익 기반을 마련할 잠재력을 가지고 있습니다.\n*   **활발한 파이프라인 개발:** 비소세포폐암 치료제 ABN401의 임상 2상 진행 및 차세대 면역 항암 신약 후보물질 ABN202의 긍정적인 전임상 결과는 지속적인 연구개발 역량을 보여주며 미래 성장 동력으로 작용할 수 있습니다.\n*   **전략적 파트너십:** AI 기반 디지털 병리 전문기업 딥바이오와의 MOU 체결을 통해 AI 기술을 암 진단 서비스 및 암 치료제 개발 임상에 활용하여 신약 개발 성공률을 높일 계획입니다.\n*   **무상증자:** 유상증자와 함께 1주당 0.8주 비율의 무상증자를 실시하여 주주가치 제고 및 유동성 개선에 긍정적인 영향을 줄 수 있습니다.\n\n### 3. 최종 판정\n\n**관망**\n\n에이비온은 과거 재무제표상 심각한 재무적 위험을 안고 있으나, 최근 대규모 유상증자를 통해 재무구조 개선 및 신약 개발 자금을 확보하고, 1.8조 원 규모의 기술이전 계약 체결 및 유망 파이프라인 개발 진전이라는 긍정적인 소식들이 이어지고 있습니다. 이러한 호재들은 재무제표에 아직 완전히 반영되지 않은 미래 가치를 형성하고 있습니다.\n\n그러나 유상증자로 인한 주주가치 희석, 신약 개발의 본질적인 높은 불확실성, 그리고 마일스톤 수익의 비연속성 등은 여전히 중요한 리스크 요인입니다. 현재 주가는 과거 고점 대비 크게 하락한 상태이며, 외국인 및 기관의 순매도 추세도 관찰됩니다.\n\n따라서 에이비온은 단기적인 투자보다는 중장기적인 관점에서 신약 파이프라인의 임상 결과, 추가 기술이전 성과, 그리고 재무구조 개선의 실제적인 효과를 지속적으로 관찰하며 신중하게 접근하는 **관망** 의견을 제시합니다.",
+    "citations": [
+      {
+        "title": "edaily.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEKdmGNBxwNWfzUZ9_GgWSOX9yzLUsCaxtvFXJJ4Bw0GyyLUVFkhNp7JWRnPeW7iFvqHinUSziAS3OdKB0x-AtVaXrUXfwbn_rahPYSsaYL4jjFuyEeoiFtAi5fFKi3fWfbzD3CYdTjejFPS8nzHsE5zoBgzuUb6nXcclkd"
+      },
+      {
+        "title": "edaily.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEm5krOHNft_7z0tkH-xkxKjT4VuIZ5-hspPBYAG3zkcb7-IbjXu9XI9BFfdozJOysXa6f-P19VvbLwIyBKMYc0T1Y3e5scaSMAMjKWFu-DS3lrG5rUAkDw44OHr7DrGGHsLQ8uxQjQ2eNnLnLhQB8fdKGW5H06BJ_tDDdb"
+      },
+      {
+        "title": "sedaily.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQE9tjqBlmE2u1FV-bsCQ1MxAQldfnJi2vyM9i8_A6GOPTyfzIawCXnI_PKQAu0lA-FuokVDEcQQrErjKTrqf_XbR_3I2ke2nCPAIwuf5OOfPQwBgkpOaU1agpJqvv8ALlN9Kf0aPvX1pv8OAYOAOjM3BA=="
+      },
+      {
+        "title": "biotimes.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHrCffumde2EISab22QHyavWb86T_aWNkFWo_7_s38CGf1lEg_IW2jaV6NdVo0Db-awWsffxEW77m3IFP0fsSd2H5CWGuxNGzm8r8jZDvt6TbNVd-LYxSxlIUvt7bIpqnCgd8WQiXj3-FlovpgKYMJ-SECvClNddw=="
+      },
+      {
+        "title": "alphasquare.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEpPp4DtblASfEf8I2etWWpy05L_iONdvZKL3DiiFubshF7DlUwt4uTIAjf8dvxJsCzkSUj6Wavc7VUsSMdRCKdxsZCdVIEE8qZPDHPtE6obnm9G2PxmibUXOYFzzbCkoq1XcXVs_HEQFHREWYOZyUsg5vQ"
+      },
+      {
+        "title": "aistockinsight.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEXBMveMADw7-Z9blC5q8bM1ZRkweuTiZ3s_GsnxCi1nLz5gglZthcuQeCuPdEbaEAOYYEQ32caXQbQ77SNXgO-RUt1rMRb2Q6wmPwcKWdD0WtBbc1rmAyg9_wxibiCEhM1"
+      },
+      {
+        "title": "chosun.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEkC3_JtXRweksLaUPhZiMp2Jp7apolQJo3eyhXcszi-MapcIiNr0Seii2SLODTtZHiQ_qE_CpGB9KpZ5tDsVDkpeKaPyfG3NNs0yKulnDr2_rpH5fesZdJNex53PXjL6XQAQr1hE7TwVbS54Wwln4m7jTcTeZAhdbG5MLAd2I5to4wfdPCRPGdbDMWGdNsQFkPVwqi2kxi"
+      },
+      {
+        "title": "chosun.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHIcyQJhmczUWxBN6dg64ApvdGscLBRe72EVQXliOCSLlynatgIrS76f09Y38RlaiUh7gTGKnJ-9mc53nAn86w9ojht98VQR8c8FrHjl7_Fl7XaYlrAiToLK6zMipqKBu_2tzCBufk9GBliQgzhNsftKUtK1pzyLoMCVMU5AXjeJJttofcErvqi"
+      },
+      {
+        "title": "abionbio.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQH6vaFhXGijy-RCyxw3_flTm-qb-Rctly9B0Mes-YCJCp3YFz6RqZa9Db0-PEq5EPu3HxVDnqBJU8fOq1Vi2eu-VQN_SR07bnJ4i-ue1jPiDE-qHjp-1ggWK3IIoKxiC8GGWyiqBfE="
+      },
+      {
+        "title": "samsungpop.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFp7dgyLkRZBUf2zCY0vdGOekp4Fx_vrgHUyqlpnFrmLDZ9K4PjW2jdl17l_TegTcZPkXThZzAElkRYz6_ix0aS42jySjkC0ne33fIYzy0_AyWUTlsGH5fNHaQWdR2EOdzQsM2L1KnWZFExt-QD-pvUY11vuHzFukM1w120P1p9WGI8dKR7kMTh8nfxeoWsFd5Pr4XZxe2QoskJoTlzk6_ogxIWyJdP4j0OT3WwkFT5DaTvSsj5l61Jd7jAlgb6fxggfc5Q"
+      }
+    ]
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=00977377",
+    "summary": "공시 페이지 접근 제한"
+  }
+}
