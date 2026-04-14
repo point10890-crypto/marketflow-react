@@ -655,6 +655,28 @@ def _send_screener_hourly_summary(result):
         if b_stocks:
             lines.append(f"\nB등급: {', '.join(b_stocks[:5])}{'...' if len(b_stocks) > 5 else ''}")
 
+        # 🤖 키움 AI전략 테마 TOP (7개 조건식 동시매칭)
+        try:
+            import json as _json
+            theme_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                                      'data', 'kiwoom_ai_theme_latest.json')
+            if os.path.exists(theme_path):
+                with open(theme_path, 'r', encoding='utf-8') as f:
+                    theme_data = _json.load(f)
+                theme_stocks = theme_data.get('stocks', [])
+                if theme_stocks and not theme_data.get('preview_mode'):
+                    lines.append("")
+                    lines.append(f"<b>🤖 AI전략 테마 TOP</b> ({theme_data.get('executed', 0)}/{theme_data.get('total_conditions', 7)}개 조건식)")
+                    for ts in theme_stocks[:5]:
+                        hit = ts.get('hit_count', 0)
+                        total = theme_data.get('total_conditions', 7)
+                        lines.append(
+                            f"  [{hit}/{total}] <b>{ts.get('name')}</b> "
+                            f"{ts.get('change_pct', 0):+.1f}%"
+                        )
+        except Exception as _e:
+            _tg_logger().debug(f"AI theme block skipped: {_e}")
+
         msg = '\n'.join(lines)
         _telegram_post(bot_token, chat_id, msg, label="screener_hourly_main")
         # 채널에도 전송
