@@ -281,8 +281,8 @@ def get_econ_kr_sectors_history():
     if not _init_econ_modules() or _sector_tracker is None:
         return jsonify({'error': 'Sector tracker not available'}), 500
     try:
-        data = _sector_tracker.get_historical_scores()
-        return jsonify(data)
+        df = _sector_tracker.get_sector_history()
+        return jsonify(df.to_dict(orient='records') if hasattr(df, 'to_dict') else [])
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
