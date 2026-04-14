@@ -1,0 +1,265 @@
+{
+  "stock_code": "000390",
+  "stock_name": "삼화페인트",
+  "generated_at": "2026-04-14T00:35:45.680869+00:00",
+  "financials": {
+    "stock_code": "000390",
+    "corp_code": "00129387",
+    "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2016": {
+        "cash": 268.5,
+        "total_assets": 5263.1,
+        "total_liab": 2305.9,
+        "total_equity": 2957.2,
+        "revenue": 4821.9,
+        "op_profit": 188.8,
+        "net_income": 0.0
+      },
+      "2017": {
+        "cash": 245.9,
+        "total_assets": 5423.1,
+        "total_liab": 2498.9,
+        "total_equity": 2924.1,
+        "op_profit": 87.7,
+        "net_income": 0.0
+      },
+      "2018": {
+        "cash": 303.5,
+        "total_assets": 5579.8,
+        "total_liab": 2762.0,
+        "total_equity": 2817.8,
+        "revenue": 5242.2,
+        "op_profit": 78.8,
+        "net_income": 0.0
+      },
+      "2019": {
+        "cash": 377.4,
+        "total_assets": 5606.4,
+        "total_liab": 2784.7,
+        "total_equity": 2821.7,
+        "revenue": 5402.8,
+        "op_profit": 112.5,
+        "net_income": 0.0
+      },
+      "2020": {
+        "cash": 463.2,
+        "total_assets": 5942.9,
+        "total_liab": 3019.8,
+        "total_equity": 2923.2,
+        "revenue": 5517.2,
+        "op_profit": 150.2,
+        "net_income": 0.0
+      },
+      "2021": {
+        "cash": 327.1,
+        "total_assets": 6121.0,
+        "total_liab": 3161.8,
+        "total_equity": 2959.2,
+        "revenue": 6316.1
+      },
+      "2022": {
+        "cash": 322.4,
+        "total_assets": 5871.9,
+        "total_liab": 2874.6,
+        "total_equity": 2997.2,
+        "revenue": 6460.4
+      },
+      "2023": {
+        "total_assets": 5906.1,
+        "cash": 436.1,
+        "total_equity": 10.0,
+        "total_liab": 2815.6,
+        "op_profit": 258.3,
+        "net_income": 0.0,
+        "revenue": 6313.8
+      },
+      "2024": {
+        "total_assets": 6193.2,
+        "cash": 547.4,
+        "total_equity": 176.2,
+        "total_liab": 2897.0,
+        "op_profit": 189.8,
+        "net_income": 0.0,
+        "revenue": 6283.5
+      },
+      "2025": {
+        "total_assets": 6205.3,
+        "cash": 701.0,
+        "total_equity": 317.4,
+        "total_liab": 2800.8,
+        "op_profit": 95.5,
+        "net_income": 76.8,
+        "revenue": 6170.7
+      }
+    },
+    "missing_years": [
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2016,
+        "revenue_eok": 4822,
+        "op_profit_eok": 189,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 3.92,
+        "debt_ratio_pct": 77.99
+      },
+      {
+        "year": 2017,
+        "revenue_eok": 0,
+        "op_profit_eok": 88,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 0.0,
+        "debt_ratio_pct": 85.47
+      },
+      {
+        "year": 2018,
+        "revenue_eok": 5242,
+        "op_profit_eok": 79,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 1.51,
+        "debt_ratio_pct": 98.01
+      },
+      {
+        "year": 2019,
+        "revenue_eok": 5403,
+        "op_profit_eok": 112,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 2.07,
+        "debt_ratio_pct": 98.69
+      },
+      {
+        "year": 2020,
+        "revenue_eok": 5517,
+        "op_profit_eok": 150,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 2.72,
+        "debt_ratio_pct": 103.32
+      },
+      {
+        "year": 2021,
+        "revenue_eok": 6316,
+        "op_profit_eok": 0,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 0.0,
+        "debt_ratio_pct": 106.86
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 6460,
+        "op_profit_eok": 0,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 0.0,
+        "debt_ratio_pct": 95.93
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 6314,
+        "op_profit_eok": 258,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 4.09,
+        "debt_ratio_pct": 28160.0
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 6284,
+        "op_profit_eok": 190,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 3.02,
+        "debt_ratio_pct": 1646.02
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 6171,
+        "op_profit_eok": 96,
+        "net_income_eok": 77,
+        "roe_pct": 24.29,
+        "op_margin_pct": 1.56,
+        "debt_ratio_pct": 883.6
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": 2.87,
+      "op_profit_cagr_pct": -7.45,
+      "best_year": 2023,
+      "worst_year": 2021,
+      "avg_roe_pct": 2.43
+    },
+    "valuation": {
+      "grade": "D",
+      "strengths": [
+        "매출액은 10년간 연평균 2.87% 성장하며 꾸준한 외형 성장을 보였습니다.",
+        "2023년 영업이익이 258억원으로 최근 10년 중 최고치를 기록하며 수익성 개선 가능성을 보여주었습니다.",
+        "2025년 당기순이익이 77억원으로 흑자 전환에 성공하며 ROE 24.29%를 기록했습니다."
+      ],
+      "risks": [
+        "대부분의 연도에 당기순이익이 0원을 기록하여 수익성이 매우 불안정하며, 장기간 ROE가 0%에 머물렀습니다.",
+        "2023년 이후 자본총계가 급격히 감소하여 부채비율이 비정상적으로 높아지는 등 재무구조가 극도로 취약합니다.",
+        "10년간 영업이익 CAGR이 -7.45%로 장기적인 영업 수익성 개선이 부진한 모습을 보였습니다."
+      ],
+      "one_liner": "매출액은 성장했으나, 불안정한 수익성과 극도로 취약해진 재무구조로 인해 투자에 매우 신중한 접근이 필요합니다."
+    }
+  },
+  "dcf": {
+    "text": "알겠습니다. 퀀트 애널리스트로서 삼화페인트(000390)의 DCF 적정가치를 계산하겠습니다.\n\n제공된 정보를 바탕으로 FCF를 계산하고, 5년간의 예측 기간과 영구 가치를 합산하여 적정가치를 도출하겠습니다.\n\n**가정 확인:**\n*   **기준 연도:** 2025년 (제공된 재무 데이터는 2024년 기준이며, 2025년부터 5년간 예측을 시작합니다.)\n*   **매출액 및 영업이익 성장률:** 5년 예측 기간 동안 매출액 및 영업이익에 대한 성장률이 명시되지 않았으므로, 2024년 수준으로 유지된다고 가정하겠습니다. (이는 중요한 가정이므로 실제 분석 시에는 추가적인 성장률 가정이 필요합니다.)\n*   **FCF 계산식:** `FCF = 영업이익 × (1 - 0.25) + 감가상각(매출의 10%) - CAPEX(매출의 5%)`\n    *   여기서 `0.25`는 법인세율로 간주하겠습니다.\n*   **WACC (기본):** 9%\n*   **영구성장률 g (기본):** 2%\n*   **예측 기간:** 5년 (2025년 ~ 2029년)\n\n---\n\n### 1. 기본 시나리오 DCF 적정가치 계산\n\n먼저, 2024년 재무 데이터를 바탕으로 FCF를 계산하고, 이를 5년간 예측 기간에 적용합니다.\n\n**2024년 재무 데이터 (억원):**\n*   매출액 (Revenue): 6171\n*   영업이익 (Operating Profit): 96\n\n**FCF 계산:**\n*   감가상각 (Depreciation) = 매출액 × 10% = 6171 × 0.10 = 617.1 억원\n*   CAPEX = 매출액 × 5% = 6171 × 0.05 = 308.55 억원\n*   FCF = 영업이익 × (1 - 0.25) + 감가상각 - CAPEX\n*   FCF = 96 × 0.75 + 617.1 - 308.55\n*   FCF = 72 + 617.1 - 308.55 = 380.55 억원\n\n이 FCF는 2025년부터 2029년까지 매년 동일하게 발생한다고 가정합니다.\n\n이제 Python 코드를 사용하여 DCF를 계산하겠습니다.\n\n\n---\n\n### 2. WACC(7/8/9/10/11%) × g(1/2/3%) 민감도 그리드 출력\n\n이제 WACC와 영구성장률(g)의 변화에 따른 적정가치 민감도 분석을 수행합니다.\n\n\n---\n\n### 3. 요약 출력\n\n마지막으로 기본 시나리오의 적정가치를 요약하여 출력합니다.\n\n**적정가치(기본): 5084.18억원**",
+    "executed_code": "import numpy as np\n\n# 재무 데이터 (억원)\nrevenue_2024 = 6171\noperating_profit_2024 = 96\n\n# 가정\ntax_rate = 0.25\ndepreciation_rate_of_revenue = 0.10\ncapex_rate_of_revenue = 0.05\nprojection_years = 5\n\n# 기본 시나리오 가정\nwacc_base = 0.09\ng_base = 0.02\n\n# FCF 계산\ndepreciation = revenue_2024 * depreciation_rate_of_revenue\ncapex = revenue_2024 * capex_rate_of_revenue\nfcf_per_year = operating_profit_2024 * (1 - tax_rate) + depreciation - capex\n\nprint(f\"연간 FCF (2025-2029): {fcf_per_year:.2f} 억원\")\n\n# 5년간 FCF 예측\nfcf_forecast = [fcf_per_year] * projection_years\n\n# FCF 할인 및 현재가치 계산 함수\ndef calculate_dcf(fcf_list, wacc, g, projection_years):\n    pv_fcf = 0\n    for i in range(projection_years):\n        pv_fcf += fcf_list[i] / ((1 + wacc)**(i + 1))\n\n    # Terminal Value 계산\n    # 마지막 예측 연도(5년차)의 FCF를 사용하여 영구 성장률 적용\n    terminal_fcf = fcf_list[-1] * (1 + g)\n    terminal_value = terminal_fcf / (wacc - g)\n\n    # Terminal Value의 현재가치\n    pv_terminal_value = terminal_value / ((1 + wacc)**projection_years)\n\n    intrinsic_value = pv_fcf + pv_terminal_value\n    return intrinsic_value\n\n# 기본 시나리오 DCF 계산\ndcf_base_scenario = calculate_dcf(fcf_forecast, wacc_base, g_base, projection_years)\nprint(f\"기본 시나리오 DCF 적정가치: {dcf_base_scenario:.2f} 억원\")\n\nimport numpy as np\nimport pandas as pd\n\n# 재무 데이터 (억원)\nrevenue_2024 = 6171\noperating_profit_2024 = 96\n\n# 가정\ntax_rate = 0.25\ndepreciation_rate_of_revenue = 0.10\ncapex_rate_of_revenue = 0.05\nprojection_years = 5\n\n# FCF 계산 (이전과 동일)\ndepreciation = revenue_2024 * depreciation_rate_of_revenue\ncapex = revenue_2024 * capex_rate_of_revenue\nfcf_per_year = operating_profit_2024 * (1 - tax_rate) + depreciation - capex\nfcf_forecast = [fcf_per_year] * projection_years\n\n# FCF 할인 및 현재가치 계산 함수 (이전과 동일)\ndef calculate_dcf(fcf_list, wacc, g, projection_years):\n    if wacc <= g:\n        return float('inf') # WACC가 g보다 작거나 같으면 무한대 또는 계산 불가\n    \n    pv_fcf = 0\n    for i in range(projection_years):\n        pv_fcf += fcf_list[i] / ((1 + wacc)**(i + 1))\n\n    terminal_fcf = fcf_list[-1] * (1 + g)\n    terminal_value = terminal_fcf / (wacc - g)\n    pv_terminal_value = terminal_value / ((1 + wacc)**projection_years)\n\n    intrinsic_value = pv_fcf + pv_terminal_value\n    return intrinsic_value\n\n# 민감도 분석을 위한 WACC 및 g 범위 설정\nwacc_values = [0.07, 0.08, 0.09, 0.10, 0.11] # 7%, 8%, 9%, 10%, 11%\ng_values = [0.01, 0.02, 0.03] # 1%, 2%, 3%\n\n# 결과를 저장할 데이터프레임 생성\nsensitivity_results = pd.DataFrame(index=[f'WACC={w*100:.0f}%' for w in wacc_values],\n                                   columns=[f'g={g*100:.0f}%' for g in g_values])\n\n# 각 WACC와 g 조합에 대해 DCF 계산\nfor wacc in wacc_values:\n    for g in g_values:\n        if wacc <= g:\n            sensitivity_results.loc[f'WACC={wacc*100:.0f}%', f'g={g*100:.0f}%'] = 'N/A'\n        else:\n            dcf_value = calculate_dcf(fcf_forecast, wacc, g, projection_years)\n            sensitivity_results.loc[f'WACC={wacc*100:.0f}%', f'g={g*100:.0f}%'] = f'{dcf_value:.2f}'\n\nprint(\"\\n--- DCF 적정가치 민감도 그리드 (단위: 억원) ---\")\nprint(sensitivity_results)",
+    "code_output": "연간 FCF (2025-2029): 380.55 억원\n기본 시나리오 DCF 적정가치: 5084.18 억원\n\n\n--- DCF 적정가치 민감도 그리드 (단위: 억원) ---\n             g=1%     g=2%     g=3%\nWACC=7%   6127.67  7095.40  8547.00\nWACC=8%   5256.37  5922.36  6854.74\nWACC=9%   4602.77  5084.18  5726.06\nWACC=10%  4094.30  4455.30  4919.45\nWACC=11%  3687.44  3965.97  4314.14"
+  },
+  "news": {
+    "text": "## 삼화페인트(000390) 투자 분석 보고서\n\n**투자등급 D, 요약: 매출액은 성장했으나, 불안정한 수익성과 극도로 취약해진 재무구조로 인해 투자에 매우 신중한 접근이 필요합니다.**\n\n### 1. 재무 데이터가 보여주는 스토리와 현재 시장 컨센서스의 일치/불일치\n\n제공된 10년 재무제표 분석 결과는 삼화페인트의 불안정한 수익성과 극도로 취약한 재무구조를 지적하며, 투자에 대한 신중한 접근을 권고합니다. 이는 2025년 3분기 누적 실적 코멘트에서 매출액 감소, 영업이익 및 당기순이익의 큰 폭 하락이 언급된 것과 일치합니다. 해당 코멘트는 수입 원재료 비용 상승, 내수 시장 위축, 글로벌 통상환경 불확실성 등을 주요 원인으로 지목했습니다.\n\n최근 시장 컨센서스는 다소 엇갈리는 모습을 보입니다. 2026년 4월 8일 일부 전문가는 삼화페인트에 대해 매수 의견과 함께 목표주가를 제시하기도 했습니다. 그러나 최근 2주간의 주요 뉴스는 페인트 업계 전반의 수익성 악화 위험을 시사하며, 이는 재무 데이터의 부정적인 스토리와 더 일치하는 경향을 보입니다.\n\n### 2. 재무제표에서 드러나지 않는 리스크 또는 호재\n\n**리스크:**\n\n*   **페인트 가격 인상 철회/축소:** 최근 KCC를 포함한 페인트 업계가 가격 인상 계획을 철회하거나 축소하고 있어, 원가 부담을 소비자에게 전가하기 어려워 수익성 악화가 지속될 수 있습니다.\n*   **공정거래위원회 현장조사:** 2026년 3월 30일 공정거래위원회가 KCC, 노루페인트 등 페인트 5개사에 대해 현장조사를 실시한 것은 담합 등 불공정 행위 가능성을 시사하며, 이는 향후 과징금 부과 등 재무적 부담 및 기업 이미지 실추로 이어질 수 있는 중대한 리스크입니다.\n*   **원재료 비용 상승 및 내수 시장 위축 지속:** 2025년 3분기 실적 코멘트에서 언급된 바와 같이, 수입 원재료 비용 상승과 내수 시장 위축, 글로벌 통상 환경의 불확실성은 여전히 수익성 압박 요인으로 작용하고 있습니다.\n\n**호재:**\n\n*   **경영권 분쟁 가능성 (과거 이슈):** 2026년 2월, 김장연 회장 별세 이후 경영권 분쟁 가능성이 제기되면서 주가가 단기적으로 급등한 바 있습니다. 이는 기업의 본질적인 가치와는 무관하나, 시장에서 단기적인 주가 변동성을 유발할 수 있는 요인으로 작용했습니다.\n*   **사업 다각화 및 해외 시장 확대 노력:** 삼화페인트는 IT 서비스, 운송주선업 등으로 사업을 다각화하고 있으며, 중국, 베트남, 인도 등 해외 시장을 확대하고 있습니다. 또한 항바이러스 페인트 등 기능성 도료 개발 및 신제품 출시를 통해 시장 점유율 확대를 꾀하고 있습니다. 이러한 노력은 장기적인 성장 동력이 될 수 있습니다.\n\n### 3. 최종 판정\n\n삼화페인트는 매출액 성장에도 불구하고 불안정한 수익성과 취약한 재무구조라는 근본적인 문제를 안고 있습니다. 최근 페인트 업계의 가격 인상 철회 및 공정위 조사와 같은 부정적인 외부 요인들은 기업의 수익성에 추가적인 압박을 가할 것으로 예상됩니다. 과거 경영권 분쟁 가능성으로 인한 주가 상승은 단기적인 시장의 반응이었을 뿐, 기업의 내재 가치 개선으로 보기는 어렵습니다.\n\n따라서 현재 시점에서 삼화페인트에 대한 투자는 매우 신중해야 합니다. 재무제표가 보여주는 부정적인 스토리와 최근 업계 리스크를 고려할 때, 추가적인 재무 개선이나 리스크 해소의 명확한 신호가 확인되기 전까지는 **관망** 의견을 제시합니다.",
+    "citations": [
+      {
+        "title": "wisereport.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHtPmD2wEfyxuVUTOOQnCVDwwYh9De5J0C5R5RHzUw-j9ViM-MAyvH4TZxn0HolysSuztdxA0ipFEJgtSDpVuHGttJsXFMDMiiOq3cg8fI039ZTQ1PN-plwsuhzj314bcL7Oht0SRdt10huwtmrlDA0EhRtZnR_z0SBcIu6HC4XvA=="
+      },
+      {
+        "title": "littlebproject.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFxzEuuPExL7JTH2aqFWzA1ZxKLMoFxsRzPijGzZw2_HmKRe1aOceKhod2WipgO4MWEOGyCEhokiYn8EG--JKmtpAaPQPiIIuBzdiGQUalxhqzICUc8T3bPSyBCIpX6nKyrh3LNdA3HYwqtkiw="
+      },
+      {
+        "title": "alphasquare.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQG82f8PTbsEZaTcxRiTOQ6r2EE2jbuKQGMNBtjK-Dtj-6c4jmr8Vq_jDI3tcYmecB1L7Qh9rCIKt-P1dnJ132pCP3hNQ_iWtTS1XzJ7iV8pa68Y2G5rrsy7PGHArtHTBN5v5UZDR_A5-Mk_Js2Cj70kk5vY"
+      },
+      {
+        "title": "tistory.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQF4S2DlXjDFZLQTr_KGizGHiH5M1i5CF2X7_GBHbJm2-M2FlM36Lst_OpM33yYM9ainCK3CqmEa34vvcO1_f9QeSjtaGdpCL0Dgd-v-Zmpudh5DrN6mBbRnkLU1mBATRlFyr6Aipy-zwAnYAK04uKZXop9e0vcc5LRBBnZFkf1akHdT1LxqY3MXFOAdNcFhFqktrfbxKZXS9Km8spkQjdx6DYYvOQNaRlSNvu8Sa9lOB8yOwFn4rflUvF4j5Fdq0U6ZS3owi3wqf9XgLik="
+      },
+      {
+        "title": "etnews.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHdzicVVgubgtM0quFdBBxXb4k54A4LxYnsEj-HchE6JCqJBfPIndIHWdBqJGJiQBK1o_3B2h87GN28c-n3eS25f3bKqyD6CXhG-UNuDCjXcX1O4x1UoAUwIQrvKz31VrKzLTUqKP9W9D03CijeIuqAQWy56wFzRw1TEaEtLgm92Pr5KL5kWrVBWCzUtUFK0QOaBtcDgi9vaNIhNGSjFCXqjHz9cHUJdYBu0qoU0AY8O8mK3jhi6t1rG91n72ZVjAc7YXx-Dl1Rqw=="
+      },
+      {
+        "title": "cbci.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQErjPpyG1_GuUVJcN0Qgwambg8shaMD8nuwC9-Ga80r2Nf-a_vtoiu8bubtodhAqw-SFYEmj_whzm_a2vHe74-_JB_7u9RhlC5v4hOr0Y1WFOo5-9vZgoo0rJifOhIZZ0GnYvx-JO8xKPFpgY8XHdmVW0Rhqw=="
+      }
+    ]
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=00129387",
+    "summary": "공시 페이지 접근 제한"
+  }
+}
