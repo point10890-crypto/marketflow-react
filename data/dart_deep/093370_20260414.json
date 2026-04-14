@@ -1,0 +1,285 @@
+{
+  "stock_code": "093370",
+  "stock_name": "후성",
+  "generated_at": "2026-04-14T02:29:52.890058+00:00",
+  "financials": {
+    "stock_code": "093370",
+    "corp_code": "00595191",
+    "years": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "data": {
+      "2016": {
+        "cash": 202.7,
+        "total_assets": 3150.8,
+        "short_debt": 200.0,
+        "long_debt": 627.4,
+        "total_liab": 1517.0,
+        "total_equity": 1633.8,
+        "revenue": 1920.7,
+        "op_profit": 364.3,
+        "net_income": 655.9
+      },
+      "2017": {
+        "cash": 347.6,
+        "total_assets": 3161.1,
+        "short_debt": 150.0,
+        "long_debt": 536.7,
+        "total_liab": 1072.0,
+        "total_equity": 2089.1,
+        "revenue": 2488.4,
+        "op_profit": 354.8,
+        "net_income": 282.2
+      },
+      "2018": {
+        "cash": 327.4,
+        "total_assets": 4414.8,
+        "short_debt": 150.0,
+        "long_debt": 1159.5,
+        "total_liab": 1959.8,
+        "total_equity": 2455.0,
+        "revenue": 2749.3,
+        "op_profit": 395.9,
+        "net_income": 280.5
+      },
+      "2019": {
+        "cash": 401.2,
+        "total_assets": 5289.1,
+        "short_debt": 289.5,
+        "long_debt": 1819.0,
+        "total_liab": 2859.6,
+        "total_equity": 2429.4,
+        "revenue": 2489.4,
+        "op_profit": 134.4,
+        "net_income": 81.0
+      },
+      "2020": {
+        "cash": 498.0,
+        "total_assets": 5361.2,
+        "short_debt": 392.9,
+        "long_debt": 1393.7,
+        "total_liab": 2949.4,
+        "total_equity": 2411.8,
+        "revenue": 2616.0,
+        "op_profit": 28.1,
+        "net_income": -13.3
+      },
+      "2021": {
+        "cash": 393.5,
+        "total_assets": 6163.3,
+        "short_debt": 221.1,
+        "long_debt": 723.8,
+        "total_liab": 3328.8,
+        "total_equity": 2834.6,
+        "revenue": 3812.6,
+        "op_profit": 581.4,
+        "net_income": 312.8
+      },
+      "2022": {
+        "cash": 789.6,
+        "total_assets": 9337.6,
+        "short_debt": 663.1,
+        "long_debt": 1217.7,
+        "total_liab": 5184.6,
+        "total_equity": 4153.0,
+        "revenue": 6105.6,
+        "op_profit": 1053.7,
+        "net_income": 1124.4
+      },
+      "2023": {
+        "total_assets": 8533.8,
+        "cash": 278.0,
+        "total_equity": 189.6,
+        "short_debt": 739.4,
+        "total_liab": 5219.1,
+        "long_debt": 1685.9,
+        "op_profit": -461.1,
+        "net_income": -539.2,
+        "revenue": 5231.9
+      },
+      "2024": {
+        "total_assets": 8262.8,
+        "cash": 549.0,
+        "total_equity": 536.3,
+        "short_debt": 985.0,
+        "total_liab": 4935.3,
+        "op_profit": -95.8,
+        "net_income": -693.6,
+        "revenue": 4378.0
+      },
+      "2025": {
+        "total_assets": 8275.0,
+        "cash": 677.0,
+        "total_equity": 1506.8,
+        "short_debt": 953.9,
+        "total_liab": 4381.4,
+        "long_debt": 1154.1,
+        "op_profit": 253.5,
+        "net_income": 0.0,
+        "revenue": 4715.6
+      }
+    },
+    "missing_years": [
+      2026
+    ],
+    "source": ""
+  },
+  "metrics": {
+    "yearly": [
+      {
+        "year": 2016,
+        "revenue_eok": 1921,
+        "op_profit_eok": 364,
+        "net_income_eok": 656,
+        "roe_pct": 40.16,
+        "op_margin_pct": 18.95,
+        "debt_ratio_pct": 92.84
+      },
+      {
+        "year": 2017,
+        "revenue_eok": 2488,
+        "op_profit_eok": 355,
+        "net_income_eok": 282,
+        "roe_pct": 13.5,
+        "op_margin_pct": 14.27,
+        "debt_ratio_pct": 51.32
+      },
+      {
+        "year": 2018,
+        "revenue_eok": 2749,
+        "op_profit_eok": 396,
+        "net_income_eok": 280,
+        "roe_pct": 11.41,
+        "op_margin_pct": 14.41,
+        "debt_ratio_pct": 79.84
+      },
+      {
+        "year": 2019,
+        "revenue_eok": 2489,
+        "op_profit_eok": 134,
+        "net_income_eok": 81,
+        "roe_pct": 3.33,
+        "op_margin_pct": 5.38,
+        "debt_ratio_pct": 117.74
+      },
+      {
+        "year": 2020,
+        "revenue_eok": 2616,
+        "op_profit_eok": 28,
+        "net_income_eok": -13,
+        "roe_pct": -0.54,
+        "op_margin_pct": 1.07,
+        "debt_ratio_pct": 122.26
+      },
+      {
+        "year": 2021,
+        "revenue_eok": 3813,
+        "op_profit_eok": 581,
+        "net_income_eok": 313,
+        "roe_pct": 11.04,
+        "op_margin_pct": 15.24,
+        "debt_ratio_pct": 117.43
+      },
+      {
+        "year": 2022,
+        "revenue_eok": 6106,
+        "op_profit_eok": 1054,
+        "net_income_eok": 1124,
+        "roe_pct": 27.06,
+        "op_margin_pct": 17.26,
+        "debt_ratio_pct": 124.85
+      },
+      {
+        "year": 2023,
+        "revenue_eok": 5232,
+        "op_profit_eok": -461,
+        "net_income_eok": -539,
+        "roe_pct": -283.68,
+        "op_margin_pct": -8.81,
+        "debt_ratio_pct": 2746.84
+      },
+      {
+        "year": 2024,
+        "revenue_eok": 4378,
+        "op_profit_eok": -96,
+        "net_income_eok": -694,
+        "roe_pct": -129.48,
+        "op_margin_pct": -2.19,
+        "debt_ratio_pct": 920.71
+      },
+      {
+        "year": 2025,
+        "revenue_eok": 4716,
+        "op_profit_eok": 254,
+        "net_income_eok": 0,
+        "roe_pct": 0.0,
+        "op_margin_pct": 5.39,
+        "debt_ratio_pct": 290.71
+      }
+    ],
+    "summary_10yr": {
+      "revenue_cagr_pct": 10.42,
+      "op_profit_cagr_pct": -3.42,
+      "best_year": 2022,
+      "worst_year": 2023,
+      "avg_roe_pct": -30.72
+    },
+    "valuation": {
+      "grade": "D",
+      "strengths": [
+        "매출액은 10년간 연평균 10.42% 성장하며 외형 성장을 지속했습니다.",
+        "2022년에는 매출액 6,106억원, 영업이익 1,054억원으로 사상 최대 실적을 기록한 바 있습니다.",
+        "2025년에는 영업이익이 흑자 전환하며 실적 개선이 예상됩니다."
+      ],
+      "risks": [
+        "2023년과 2024년에 대규모 영업손실과 순손실을 기록하며 수익성이 크게 악화되었습니다.",
+        "2023년과 2024년 자본총계가 급감하여 부채비율이 900% 이상으로 급증, 재무 안정성이 매우 취약합니다.",
+        "영업이익 및 당기순이익의 변동성이 매우 커서 실적 예측이 어렵고 사업의 안정성이 부족합니다."
+      ],
+      "one_liner": "과거 외형 성장을 보였으나 최근 심각한 수익성 악화와 재무 구조 불안정으로 투자에 매우 신중해야 할 기업입니다."
+    }
+  },
+  "dcf": {
+    "text": "퀀트 애널리스트로서 후성(093370)의 DCF 적정가치를 계산하고 민감도 분석을 수행하겠습니다.\n\n**가정 사항 명확화:**\n*   제공된 \"최근 재무\" 데이터는 2025년(기준 연도)의 시작 값으로 사용됩니다.\n*   5년 예측 기간(2025-2029) 동안 매출액, 영업이익 및 이에 기반한 FCF 구성 요소들은 영구성장률 `g = 2%`와 동일한 비율로 성장한다고 가정합니다. (별도의 예측 기간 성장률이 주어지지 않았기 때문에 영구성장률을 따릅니다.)\n*   FCF 계산 시 운전자본 변동은 고려하지 않고, 주어진 공식 `FCF ≈ 영업이익 × (1 - 0.25) + 감가상각(매출의 10%) - CAPEX(매출의 5%)`을 따릅니다.\n\n---\n\n### 1. 기본 시나리오 DCF 적정가치 계산\n\n\n---\n\n### 2. WACC × g 민감도 그리드 출력\n\n\n`f-string` 내 백슬래시 사용으로 인한 오류가 발생했습니다. `WACC \\ g` 대신 `WACC / g`로 표기하여 수정 후 다시 실행합니다.\n\n\n---\n\n### 3. 요약 출력\n\n적정가치(기본): 6090.00억원",
+    "executed_code": "# 필요한 라이브러리 임포트 (여기서는 필요 없음, 순수 계산)\n\n# 재무 데이터 (억원)\nsales_initial = 4716\noperating_income_initial = 254\n\n# 가정\ntax_rate = 0.25\ndepreciation_rate_of_sales = 0.10\ncapex_rate_of_sales = 0.05\nwacc_base = 0.09\ng_base = 0.02\nforecast_years = 5 # 5년 예측 기간 (2025-2029)\n\n# DCF 계산 함수 정의\ndef calculate_dcf(sales_initial, operating_income_initial, tax_rate, depreciation_rate_of_sales, capex_rate_of_sales, wacc, g, forecast_years):\n    if wacc <= g:\n        # WACC가 g보다 작거나 같으면 터미널 밸류 계산이 불가능하거나 무한대가 됨\n        return float('inf')\n\n    # 1. 초기 FCF (2025년, 예측 1년차) 계산\n    nopat_initial = operating_income_initial * (1 - tax_rate)\n    depreciation_initial = sales_initial * depreciation_rate_of_sales\n    capex_initial = sales_initial * capex_rate_of_sales\n    fcf_initial = nopat_initial + depreciation_initial - capex_initial\n\n    # 2. 5년 예측 기간 FCF 계산 (영구성장률 g로 성장 가정)\n    fcf_forecast = []\n    for i in range(forecast_years):\n        fcf_year = fcf_initial * ((1 + g) ** i)\n        fcf_forecast.append(fcf_year)\n\n    # 3. 터미널 밸류 (Terminal Value) 계산\n    # 예측 기간 마지막 해(2029년) 다음 해(2030년)의 FCF\n    fcf_terminal_year = fcf_forecast[-1] * (1 + g)\n    terminal_value = fcf_terminal_year / (wacc - g)\n\n    # 4. FCF와 터미널 밸류의 현재 가치 합산\n    present_value_fcf = 0\n    for i, fcf in enumerate(fcf_forecast):\n        present_value_fcf += fcf / ((1 + wacc) ** (i + 1)) # i+1은 연차 (1년차, 2년차...)\n\n    present_value_tv = terminal_value / ((1 + wacc) ** forecast_years)\n\n    intrinsic_value = present_value_fcf + present_value_tv\n    return intrinsic_value\n\n# 기본 시나리오 계산\nintrinsic_value_base = calculate_dcf(\n    sales_initial, operating_income_initial, tax_rate,\n    depreciation_rate_of_sales, capex_rate_of_sales,\n    wacc_base, g_base, forecast_years\n)\n\nprint(f\"--- DCF 기본 시나리오 계산 ---\")\nprint(f\"초기 매출액 (2025): {sales_initial:.0f} 억원\")\nprint(f\"초기 영업이익 (2025): {operating_income_initial:.0f} 억원\")\nprint(f\"세후 영업이익 (NOPAT, 2025): {operating_income_initial * (1 - tax_rate):.2f} 억원\")\nprint(f\"감가상각 (매출의 10%, 2025): {sales_initial * depreciation_rate_of_sales:.2f} 억원\")\nprint(f\"CAPEX (매출의 5%, 2025): {sales_initial * capex_rate_of_sales:.2f} 억원\")\nprint(f\"초기 FCF (2025): {operating_income_initial * (1 - tax_rate) + sales_initial * depreciation_rate_of_sales - sales_initial * capex_rate_of_sales:.2f} 억원\")\nprint(f\"WACC (기본): {wacc_base*100:.0f}%\")\nprint(f\"영구성장률 g (기본): {g_base*100:.0f}%\")\nprint(f\"DCF 적정가치 (기본 시나리오): {intrinsic_value_base:.2f} 억원\")\n\n\n# 재무 데이터 (억원)\nsales_initial = 4716\noperating_income_initial = 254\n\n# 가정\ntax_rate = 0.25\ndepreciation_rate_of_sales = 0.10\ncapex_rate_of_sales = 0.05\nforecast_years = 5\n\n# DCF 계산 함수 정의 (이전 셀과 동일)\ndef calculate_dcf(sales_initial, operating_income_initial, tax_rate, depreciation_rate_of_sales, capex_rate_of_sales, wacc, g, forecast_years):\n    if wacc <= g:\n        return float('inf')\n\n    nopat_initial = operating_income_initial * (1 - tax_rate)\n    depreciation_initial = sales_initial * depreciation_rate_of_sales\n    capex_initial = sales_initial * capex_rate_of_sales\n    fcf_initial = nopat_initial + depreciation_initial - capex_initial\n\n    fcf_forecast = []\n    for i in range(forecast_years):\n        fcf_year = fcf_initial * ((1 + g) ** i)\n        fcf_forecast.append(fcf_year)\n\n    fcf_terminal_year = fcf_forecast[-1] * (1 + g)\n    terminal_value = fcf_terminal_year / (wacc - g)\n\n    present_value_fcf = 0\n    for i, fcf in enumerate(fcf_forecast):\n        present_value_fcf += fcf / ((1 + wacc) ** (i + 1))\n\n    present_value_tv = terminal_value / ((1 + wacc) ** forecast_years)\n\n    intrinsic_value = present_value_fcf + present_value_tv\n    return intrinsic_value\n\n# 민감도 분석 파라미터\nwacc_values = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_values = [0.01, 0.02, 0.03]\n\nsensitivity_results = {}\nfor wacc_val in wacc_values:\n    sensitivity_results[wacc_val] = {}\n    for g_val in g_values:\n        value = calculate_dcf(sales_initial, operating_income_initial, tax_rate,\n                              depreciation_rate_of_sales, capex_rate_of_sales,\n                              wacc_val, g_val, forecast_years)\n        sensitivity_results[wacc_val][g_val] = value\n\n# 민감도 그리드 출력\nprint(\"\\n--- DCF 민감도 그리드 (적정가치, 억원) ---\")\nprint(f\"{'WACC \\\\ g':<12}\", end=\"\")\nfor g_val in g_values:\n    print(f\"{g_val*100:>8.0f}%\", end=\"\")\nprint()\nprint(\"-\" * (12 + len(g_values) * 8))\n\nfor wacc_val in wacc_values:\n    print(f\"{wacc_val*100:<10.0f}%\", end=\"  \")\n    for g_val in g_values:\n        value = sensitivity_results[wacc_val][g_val]\n        if value == float('inf'):\n            print(f\"{'Inf':>8}\", end=\"\")\n        else:\n            print(f\"{value:>8.0f}\", end=\"\")\n    print()\n\n\n# 재무 데이터 (억원)\nsales_initial = 4716\noperating_income_initial = 254\n\n# 가정\ntax_rate = 0.25\ndepreciation_rate_of_sales = 0.10\ncapex_rate_of_sales = 0.05\nforecast_years = 5\n\n# DCF 계산 함수 정의 (이전 셀과 동일)\ndef calculate_dcf(sales_initial, operating_income_initial, tax_rate, depreciation_rate_of_sales, capex_rate_of_sales, wacc, g, forecast_years):\n    if wacc <= g:\n        return float('inf')\n\n    nopat_initial = operating_income_initial * (1 - tax_rate)\n    depreciation_initial = sales_initial * depreciation_rate_of_sales\n    capex_initial = sales_initial * capex_rate_of_sales\n    fcf_initial = nopat_initial + depreciation_initial - capex_initial\n\n    fcf_forecast = []\n    for i in range(forecast_years):\n        fcf_year = fcf_initial * ((1 + g) ** i)\n        fcf_forecast.append(fcf_year)\n\n    fcf_terminal_year = fcf_forecast[-1] * (1 + g)\n    terminal_value = fcf_terminal_year / (wacc - g)\n\n    present_value_fcf = 0\n    for i, fcf in enumerate(fcf_forecast):\n        present_value_fcf += fcf / ((1 + wacc) ** (i + 1))\n\n    present_value_tv = terminal_value / ((1 + wacc) ** forecast_years)\n\n    intrinsic_value = present_value_fcf + present_value_tv\n    return intrinsic_value\n\n# 민감도 분석 파라미터\nwacc_values = [0.07, 0.08, 0.09, 0.10, 0.11]\ng_values = [0.01, 0.02, 0.03]\n\nsensitivity_results = {}\nfor wacc_val in wacc_values:\n    sensitivity_results[wacc_val] = {}\n    for g_val in g_values:\n        value = calculate_dcf(sales_initial, operating_income_initial, tax_rate,\n                              depreciation_rate_of_sales, capex_rate_of_sales,\n                              wacc_val, g_val, forecast_years)\n        sensitivity_results[wacc_val][g_val] = value\n\n# 민감도 그리드 출력\nprint(\"\\n--- DCF 민감도 그리드 (적정가치, 억원) ---\")\nprint(f\"{'WACC / g':<12}\", end=\"\") # 수정된 부분\nfor g_val in g_values:\n    print(f\"{g_val*100:>8.0f}%\", end=\"\")\nprint()\nprint(\"-\" * (12 + len(g_values) * 8))\n\nfor wacc_val in wacc_values:\n    print(f\"{wacc_val*100:<10.0f}%\", end=\"  \")\n    for g_val in g_values:\n        value = sensitivity_results[wacc_val][g_val]\n        if value == float('inf'):\n            print(f\"{'Inf':>8}\", end=\"\")\n        else:\n            print(f\"{value:>8.0f}\", end=\"\")\n    print()",
+    "code_output": "--- DCF 기본 시나리오 계산 ---\n초기 매출액 (2025): 4716 억원\n초기 영업이익 (2025): 254 억원\n세후 영업이익 (NOPAT, 2025): 190.50 억원\n감가상각 (매출의 10%, 2025): 471.60 억원\nCAPEX (매출의 5%, 2025): 235.80 억원\n초기 FCF (2025): 426.30 억원\nWACC (기본): 9%\n영구성장률 g (기본): 2%\nDCF 적정가치 (기본 시나리오): 6090.00 억원\n\nTraceback (most recent call last):\n  File \"<string>\", line 53\n    print(f\"{'WACC \\\\ g':<12}\", end=\"\")\n                              ^\nSyntaxError: f-string expression part cannot include a backslash\n\n\n--- DCF 민감도 그리드 (적정가치, 억원) ---\nWACC / g           1%       2%       3%\n------------------------------------\n7         %      7105    8526   10657\n8         %      6090    7105    8526\n9         %      5329    6090    7105\n10        %      4737    5329    6090\n11        %      4263    4737    5329"
+  },
+  "news": {
+    "text": "## 후성(093370) 투자 분석: 재무 개선 기대감 속 '관망' 의견 제시\n\n### 1. 재무 데이터와 시장 컨센서스의 일치/불일치\n\n제공된 10년 재무제표 분석 결과는 후성(093370)이 과거 외형 성장을 보였으나 최근 심각한 수익성 악화와 재무 구조 불안정으로 투자등급 D를 받았음을 보여줍니다. 이는 과거의 부정적인 실적 흐름을 반영합니다.\n\n그러나 최근 2주간의 시장 컨센서스는 이러한 재무 데이터와 다소 불일치하는 양상을 보입니다. 2026년 4월 3일, 후성 주가는 외국인과 기관의 순매수세에 힘입어 +28.53%의 폭발적인 상승률을 기록했으며, 이는 주로 2차전지 소재 부문(육불화인산리튬(LiPF₆), 리튬염)에 대한 기대감 때문으로 분석됩니다. 또한, 4월 9일 투자경고 및 단기과열종목 지정 예고에도 불구하고 4월 13일 소폭 상승 마감하며 반도체 특수가스 등 사업 성장성에 대한 시장의 긍정적 전망이 지속되고 있음을 시사했습니다.\n\n2025년 하반기 애널리스트 리포트에서도 후성이 7분기 연속 영업적자에서 벗어나 2025년 반기 영업흑자를 달성하며 턴어라운드를 확인했고, 2026년부터는 폴란드 공장 건설과 미중 디커플링 수혜 등으로 본격적인 실적 개선이 예상된다는 긍정적인 전망이 제시되었습니다. 이는 과거 재무 데이터의 부정적 흐름과 달리 시장은 미래 성장 잠재력과 턴어라운드에 초점을 맞추고 있음을 보여줍니다.\n\n### 2. 재무제표에서 드러나지 않는 리스크 또는 호재\n\n**호재:**\n*   **2차전지 소재 시장 성장 및 독점적 지위:** 후성은 국내 유일의 2차전지 전해질(LiPF₆) 생산 업체이자 세계 최대급 생산능력을 보유하고 있습니다. 최근 리튬염 가격 급등세가 지속되고 있으며, 미국 OBBBA 법안 통과 이후 탈중국 공급망 구축 움직임 속에서 북미 고객 확보 가능성이 부각되고 있습니다. 이는 재무제표에 즉시 반영되지 않는 미래 성장 동력입니다.\n*   **반도체 특수가스 사업 확장:** 반도체 특수가스 부문에서 일본 센트럴글래스와의 합작 공장 양산 임박 및 울산 단독 공장의 낸드향 공정가스 양산이 예정되어 있어, 반도체 소재 매출 비중 증가가 기대됩니다.\n*   **턴어라운드 기대감:** 2025년 반기 영업흑자 전환을 통해 7분기 연속 영업적자에서 벗어났으며, 2026년부터 본격적인 실적 개선이 예상됩니다.\n\n**리스크:**\n*   **높은 금융비용 및 당기순손실 지속:** 영업이익은 흑자 전환되었으나, 높은 금융비용으로 인해 당기순손실은 지속되고 있어 완전한 수익성 회복까지는 시간이 필요해 보입니다.\n*   **투자경고/단기과열종목 지정:** 단기간 주가 급등으로 인해 투자경고 및 단기과열종목으로 지정될 수 있다는 점은 단기적인 주가 변동성 확대 및 투자 심리 위축을 야기할 수 있습니다.\n*   **전방산업 경기 변동성 및 원재료 가격 변동:** 2차전지 및 반도체 산업의 경기 변동과 원재료 가격 변동은 후성의 수익성에 영향을 미칠 수 있습니다.\n\n### 3. 최종 판정\n\n제공된 과거 10년 재무제표 분석 결과는 후성의 심각한 수익성 악화와 재무 구조 불안정을 지적하며 투자등급 D를 제시했습니다. 그러나 최근 2주간의 뉴스 및 2025년 하반기 이후의 애널리스트 리포트를 종합해 보면, 후성은 2차전지 소재 및 반도체 특수가스 사업 부문의 성장 잠재력과 2025년 반기 영업흑자 전환, 2026년 본격적인 실적 개선 전망에 힘입어 시장의 강한 기대감을 받고 있습니다. 국내 유일의 LiPF₆ 생산 업체로서의 독점적 지위와 탈중국 공급망 수혜 가능성 또한 긍정적인 요소입니다.\n\n하지만 여전히 높은 금융비용으로 인한 당기순손실이 지속되고 있으며, 단기적인 주가 급등에 따른 투자경고 및 단기과열종목 지정은 단기적인 변동성 확대를 야기할 수 있는 리스크 요인입니다.\n\n따라서, 과거 재무 데이터는 부정적이지만 미래 성장 동력과 턴어라운드 기대감이 강하게 부각되고 있는 현시점에서, 재무 구조의 완전한 안정화와 단기적인 주가 변동성을 고려하여 **관망** 의견을 제시합니다. 추가적인 실적 개선 추이와 재무 구조 안정화 여부를 확인하며 신중하게 접근할 필요가 있습니다.",
+    "citations": [
+      {
+        "title": "tistory.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHwg-hFtJYVJ2PTMEbbOwvn61BYuz_qBj9r_0b6GOzYDaxU32JaAU0_4EHJB1qEZYbbzVcHBjIE3NCA10Sfhm0xdja7sJ7cvl6VZZZZxUWP9KSEE0Z5-Hq5SQ=="
+      },
+      {
+        "title": "jkn.co.kr",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFyGlBkq9oz9Yx1el5JuReatamTv5KNqE7Il96NumobY6LK5HKTk8DmrH5Uyf2_kMn0tgBybdeMTBWLmC_DofQ91IpvhG9sfLU14e7ORzWXoXm2t_K74e4jLkZfkW0="
+      },
+      {
+        "title": "naver.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQE5HV4OJHGRrWclWTEc8dfyzarT_dgsK78VhOe-tllzt7YeyrDj2ozcjSXgD6CYrLA_urzKRKy-B-jVsYl5os_IoKRc_TsUs81tuR3a5SSOQAeGg0fhTsz1OaD0hc4KAgMuYLjH1PCFEX785TKLiilf02oemSA_SxiT_uFUhEXbRc0lCjTTxZvew_7eRW7L5ycmtw=="
+      },
+      {
+        "title": "samsungpop.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHm-D45whE6-8ZrBl2Tf9AVNh6U1SsX7GGVSBDCeFUZz2_4jj8rDb-PalxnGknmP_GSDhghWqdfNyBEV884d-GiNRBE8aQlprldExBo69P-9AGisW_FI-js1RFZDfYhxRZgHgtb33oyIqU6N03Vd1zi5sUQD363rLnCa1DGIM7VTKBq25ubrguN2RpWpIuxMd3Z1HVmKMC9wvUhGwH9JqslcRRxrUuw3UYo4drblN4oylznnqt1vCZi6MragmLT2O0RWAmFcJTSkbWxdh-6j7w="
+      },
+      {
+        "title": "kbsec.com",
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQH1Q9WsI58mVauPCdOTti8pdEOvJFw00MvmwNcp5PH5wl_fS4V_c1IydeIPYewN9DWprhxD2ISCKNdLR5Rpugq7roaGiS6k-kP8zyX7zPnERQTeRctOBw8jenWoDE-nqG4b4GyW2gqkr_-MZoauHJQmGgo="
+      }
+    ]
+  },
+  "report": {
+    "url": "https://opendart.fss.or.kr/disclosureinfo/public/cp-ann/main.do?corpCode=00595191",
+    "summary": "공시 페이지 접근 제한"
+  }
+}

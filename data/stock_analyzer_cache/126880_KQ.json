@@ -1,0 +1,75 @@
+{
+  "name": "제이엔케이글로벌",
+  "ticker": "126880.KQ",
+  "result": "데이터 없음",
+  "date": "2026-04-14 10:15:30",
+  "elapsed": 1.4,
+  "consensus_score": null,
+  "analyst_count": 0,
+  "recommendation_detail": null,
+  "recommendation_period": null,
+  "price_targets": {
+    "current": 4085.0,
+    "high": null,
+    "low": null,
+    "mean": null,
+    "median": null
+  },
+  "current_price": 4085.0,
+  "upside_potential": null,
+  "key_stats": {
+    "name": "JNK Global",
+    "sector": "",
+    "industry": "",
+    "market_cap": 94641782784,
+    "pe_ratio": null,
+    "forward_pe": null,
+    "dividend_yield": null,
+    "beta": null,
+    "fifty_two_week_high": 5520.0,
+    "fifty_two_week_low": 3315.0,
+    "revenue": null,
+    "profit_margin": null,
+    "currency": "KRW"
+  },
+  "finnhub_supplement": null,
+  "source": "yfinance",
+  "ai_analysis": null,
+  "revenue_quarters": [
+    {
+      "date": "2025-12",
+      "value": 52025746660
+    },
+    {
+      "date": "2025-09",
+      "value": 29275196800
+    },
+    {
+      "date": "2025-06",
+      "value": 29379710310
+    },
+    {
+      "date": "2025-03",
+      "value": 36612638120
+    }
+  ],
+  "net_income_quarters": [
+    {
+      "date": "2025-12",
+      "value": 1491454140
+    },
+    {
+      "date": "2025-09",
+      "value": 1092229000
+    },
+    {
+      "date": "2025-06",
+      "value": -818728000
+    },
+    {
+      "date": "2025-03",
+      "value": 1156009000
+    }
+  ],
+  "news": []
+}
