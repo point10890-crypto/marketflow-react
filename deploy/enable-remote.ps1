@@ -8,19 +8,32 @@
 
 $ErrorActionPreference = 'Continue'
 
+# ===== Self-elevation: UAC auto-request =====
+$isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+if (-not $isAdmin) {
+    Write-Host "[INFO] Not Administrator. Requesting UAC elevation..." -ForegroundColor Yellow
+    Write-Host "       A UAC prompt will appear. Click 'Yes' to continue." -ForegroundColor Yellow
+    Start-Sleep -Seconds 1
+    try {
+        Start-Process powershell.exe -Verb RunAs -ArgumentList @(
+            '-NoProfile',
+            '-ExecutionPolicy', 'Bypass',
+            '-NoExit',
+            '-File', "`"$PSCommandPath`""
+        ) -ErrorAction Stop
+        Write-Host "[OK] New elevated window opened. Check the new window for progress." -ForegroundColor Green
+    } catch {
+        Write-Host "[FATAL] UAC elevation failed: $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "        Current account may not be in Administrators group." -ForegroundColor Red
+        Write-Host "        Check: whoami /groups | findstr Administrators" -ForegroundColor Yellow
+    }
+    exit 0
+}
+
 Write-Host ""
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host " MarketFlow mini PC remote enabler" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
-Write-Host ""
-
-# 1. Admin check
-$isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-if (-not $isAdmin) {
-    Write-Host "[FATAL] Not Administrator." -ForegroundColor Red
-    Write-Host "  Open 'Windows Terminal (Admin)' via Win+X, then rerun." -ForegroundColor Yellow
-    exit 1
-}
 Write-Host "[OK] Administrator confirmed" -ForegroundColor Green
 Write-Host ""
 
