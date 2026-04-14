@@ -54,6 +54,6 @@ if __name__ == '__main__':
     print(f"   Cloud: {'Render' if os.getenv('RENDER') else 'Local'}")
     print(f"{'='*60}\n")
 
-    # Cloud(Render): 0.0.0.0 필수 / 홈서버(Linux): 127.0.0.1 (Cloudflare Tunnel 경유)
-    host = '0.0.0.0' if os.getenv('RENDER') else '127.0.0.1'
+    # Cloud(Render) / 홈서버(HOME_SERVER): 0.0.0.0 / 개발PC: 127.0.0.1
+    host = '0.0.0.0' if os.getenv('RENDER') or os.getenv('HOME_SERVER') else '127.0.0.1'
     app.run(host=host, port=port, debug=False)

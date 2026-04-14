@@ -14,6 +14,7 @@ PROJECT = "C:\bitman_marketfloww"
 PYTHON = PROJECT & "\.venv\Scripts\python.exe"
 
 objShell.Environment("Process")("PYTHONIOENCODING") = "utf-8"
+objShell.Environment("Process")("HOME_SERVER") = "1"
 
 Dim logDir : logDir = PROJECT & "\logs"
 If Not objFSO.FolderExists(logDir) Then objFSO.CreateFolder(logDir)
