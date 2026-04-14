@@ -1,49 +1,49 @@
 {
-  "timestamp": "2026-04-14T09:58:38.119903",
+  "timestamp": "2026-04-14T14:06:51.658908",
   "version": "1.0",
   "market_summary": {
-    "total_market_cap": 2596201660727.0,
-    "total_volume_24h": 122413067167.0,
-    "btc_dominance": 57.2,
+    "total_market_cap": 2601295751731.0,
+    "total_volume_24h": 126745174441.0,
+    "btc_dominance": 57.26,
     "btc_dominance_change_24h": 0,
-    "total_market_cap_change_24h": 3.77,
-    "active_cryptocurrencies": 17659
+    "total_market_cap_change_24h": 4.28,
+    "active_cryptocurrencies": 17662
   },
   "major_coins": {
     "BTC": {
-      "price": 74188,
-      "change_24h": 4.25,
+      "price": 74348,
+      "change_24h": 4.9,
       "change_7d": 0,
-      "volume_24h": 53941693301,
-      "market_cap": 1485032738954
+      "volume_24h": 56521786915,
+      "market_cap": 1488520888549
     },
     "ETH": {
-      "price": 2364.2,
-      "change_24h": 7.2,
+      "price": 2362.86,
+      "change_24h": 7.92,
       "change_7d": 0,
-      "volume_24h": 23418843376,
-      "market_cap": 285362781954
+      "volume_24h": 25828991265,
+      "market_cap": 285312525984
+    },
+    "BNB": {
+      "price": 614.47,
+      "change_24h": 3.14,
+      "change_7d": 0,
+      "volume_24h": 1362037773,
+      "market_cap": 83819499166
     },
     "XRP": {
       "price": 1.36,
-      "change_24h": 2.26,
+      "change_24h": 3.15,
       "change_7d": 0,
-      "volume_24h": 2781802717,
-      "market_cap": 83648503310
-    },
-    "BNB": {
-      "price": 612.78,
-      "change_24h": 2.81,
-      "change_7d": 0,
-      "volume_24h": 1296188185,
-      "market_cap": 83565341099
+      "volume_24h": 2659143796,
+      "market_cap": 83745269988
     },
     "SOL": {
-      "price": 85.88,
-      "change_24h": 4.58,
+      "price": 85.86,
+      "change_24h": 4.82,
       "change_7d": 0,
-      "volume_24h": 4340300829,
-      "market_cap": 49389020819
+      "volume_24h": 4646610321,
+      "market_cap": 49377917117
     }
   },
   "top_movers": {
@@ -51,64 +51,64 @@
       {
         "symbol": "RAVE",
         "name": "RaveDAO",
-        "price": 7.49,
-        "change_24h": 19.33
-      },
-      {
-        "symbol": "AAVE",
-        "name": "Aave",
-        "price": 100.76,
-        "change_24h": 10.65
-      },
-      {
-        "symbol": "ENA",
-        "name": "Ethena",
-        "price": 0.099736,
-        "change_24h": 9.25
-      },
-      {
-        "symbol": "HYPE",
-        "name": "Hyperliquid",
-        "price": 44.64,
-        "change_24h": 8.63
+        "price": 11.23,
+        "change_24h": 74.71
       },
       {
         "symbol": "ALGO",
         "name": "Algorand",
-        "price": 0.110542,
-        "change_24h": 8.04
+        "price": 0.113838,
+        "change_24h": 11.96
+      },
+      {
+        "symbol": "CC",
+        "name": "Canton",
+        "price": 0.158775,
+        "change_24h": 8.94
+      },
+      {
+        "symbol": "HYPE",
+        "name": "Hyperliquid",
+        "price": 44.9,
+        "change_24h": 8.87
+      },
+      {
+        "symbol": "ETH",
+        "name": "Ethereum",
+        "price": 2363.6,
+        "change_24h": 7.95
       }
     ],
     "losers": [
       {
-        "symbol": "M",
-        "name": "MemeCore",
-        "price": 2.72,
-        "change_24h": -4.83
+        "symbol": "STABLE",
+        "name": "​​Stable",
+        "price": 0.02659086,
+        "change_24h": -5.75
       },
       {
-        "symbol": "SIREN",
-        "name": "Siren",
-        "price": 0.775418,
-        "change_24h": -4.55
+        "symbol": "NIGHT",
+        "name": "Midnight",
+        "price": 0.03734452,
+        "change_24h": -3.92
+      },
+      {
+        "symbol": "M",
+        "name": "MemeCore",
+        "price": 2.75,
+        "change_24h": -3.78
       },
       {
         "symbol": "TAO",
         "name": "Bittensor",
-        "price": 255.75,
-        "change_24h": -2.07
+        "price": 256.57,
+        "change_24h": -1.16
       },
       {
-        "symbol": "TON",
-        "name": "Toncoin",
-        "price": 1.43,
-        "change_24h": -1.89
-      },
-      {
-        "symbol": "DOT",
-        "name": "Polkadot",
-        "price": 1.21,
-        "change_24h": -1.46
+        "symbol": "PI",
+        "name": "Pi Network",
+        "price": 0.164954,
+        "change_24h": -0.94
       }
     ]
   },
@@ -126,9 +126,9 @@
   "funding_rates": {
     "BTC": {
       "symbol": "BTCUSDT",
-      "rate": -2.2e-05,
-      "rate_pct": -0.0022,
-      "annualized_pct": -2.44,
+      "rate": 3e-05,
+      "rate_pct": 0.003,
+      "annualized_pct": 3.32,
       "sentiment": "neutral"
     },
     "ETH": {
@@ -156,14 +156,14 @@
       "알트 breadth 약함 (40% > EMA50)"
     ],
     "metrics": {
-      "btc_price": 74165.5078125,
-      "btc_ema50": 70846.19814592045,
-      "btc_ema200": 83313.37817527795,
-      "btc_ema200_slope_pct_20": -3.5586686506634893,
-      "btc_volume_z_50": 0.9998564612815748,
-      "btc_atrp_14_pct": 3.141509258634333,
+      "btc_price": 74374.2109375,
+      "btc_ema50": 70854.38258219497,
+      "btc_ema200": 83315.4548232879,
+      "btc_ema200_slope_pct_20": -3.5562647786418466,
+      "btc_volume_z_50": 0.9503723106373759,
+      "btc_atrp_14_pct": 3.139571873909287,
       "alt_breadth_above_ema50": 0.4,
-      "funding_rate": -2.379e-05,
+      "funding_rate": 3.031e-05,
       "open_interest_delta_z": null,
       "gate_score_components": {
         "trend": 12.0,
@@ -175,7 +175,7 @@
       "fear_greed_index": 21,
       "fear_greed_class": "Extreme Fear"
     },
-    "generated_at": "2026-04-14T09:57:36.949330"
+    "generated_at": "2026-04-14T14:06:31.787608"
   },
   "btc_price_history": [
     {
@@ -532,14 +532,14 @@
     },
     {
       "date": "2026-04-14",
-      "price": 74179.7890625
+      "price": 74360.4609375
     }
   ],
   "sentiment_summary": {
     "overall": "Bullish",
     "factors": [
       "fear_greed: extreme_fear (bullish)",
-      "funding: neutral (neutral)",
+      "funding: positive (neutral)",
       "dominance: btc_high (neutral)",
       "momentum: strong_up (bullish)"
     ]

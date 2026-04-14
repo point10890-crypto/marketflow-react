@@ -1,5 +1,5 @@
 {
-"timestamp": "2026-04-14T14:06:14.480524",
+"timestamp": "2026-04-14T14:07:20.649373",
 "market_status": "open",
 "time_weight": 0.8,
 "total_candidates": 18,
@@ -11,9 +11,9 @@
 "name": "아주IB투자",
 "price": 11330,
 "change_pct": 29.93,
-"trading_value": 342030557155,
-"trading_value_eok": 3420,
-"volume": 31915820,
+"trading_value": 342144095085,
+"trading_value_eok": 3421,
+"volume": 31925841,
 "score": {
 "total": 64,
 "trading_value": 30,
@@ -30,7 +30,7 @@
 "foreign_net": 0,
 "inst_net": 0
 },
-"volume_ratio": 668.4,
+"volume_ratio": 668.6,
 "sector_rising_count": 0,
 "high_52w": {
 "high_52w": 11330,
@@ -60,9 +60,9 @@
 "name": "빛과전자",
 "price": 6390,
 "change_pct": 29.88,
-"trading_value": 250972636770,
+"trading_value": 250995589650,
 "trading_value_eok": 2510,
-"volume": 40400707,
+"volume": 40404299,
 "score": {
 "total": 64,
 "trading_value": 30,
@@ -79,7 +79,7 @@
 "foreign_net": 0,
 "inst_net": 0
 },
-"volume_ratio": 4040070700.0,
+"volume_ratio": 4040429900.0,
 "sector_rising_count": 0,
 "high_52w": {
 "high_52w": 6390,
@@ -104,11 +104,11 @@
 "grade": "A",
 "code": "000660",
 "name": "SK하이닉스",
-"price": 1120000,
-"change_pct": 7.69,
-"trading_value": 4110203396000,
-"trading_value_eok": 41102,
-"volume": 3708117,
+"price": 1119500,
+"change_pct": 7.64,
+"trading_value": 4113950471500,
+"trading_value_eok": 41140,
+"volume": 3711465,
 "score": {
 "total": 50,
 "trading_value": 30,
@@ -125,14 +125,14 @@
 "foreign_net": 0,
 "inst_net": 0
 },
-"volume_ratio": 133.9,
+"volume_ratio": 134.0,
 "sector_rising_count": 0,
 "high_52w": {
 "high_52w": 1128000,
 "low_52w": 647000,
 "high_date": "20260414",
 "days_since": 0,
-"distance_pct": 0.7
+"distance_pct": 0.8
 },
 "market_cap_eok": 7975139,
 "enrichment": {
@@ -153,11 +153,11 @@
 "grade": "A",
 "code": "046970",
 "name": "우리로",
-"price": 12550,
-"change_pct": 25.63,
-"trading_value": 426690423210,
-"trading_value_eok": 4267,
-"volume": 35754061,
+"price": 12610,
+"change_pct": 26.23,
+"trading_value": 428164581340,
+"trading_value_eok": 4282,
+"volume": 35871060,
 "score": {
 "total": 56,
 "trading_value": 30,
@@ -174,16 +174,16 @@
 "foreign_net": 0,
 "inst_net": 0
 },
-"volume_ratio": 104.5,
+"volume_ratio": 104.8,
 "sector_rising_count": 0,
 "high_52w": {
 "high_52w": 12850,
 "low_52w": 1211,
 "high_date": "20260414",
 "days_since": 0,
-"distance_pct": 2.3
+"distance_pct": 1.9
 },
-"market_cap_eok": 5509,
+"market_cap_eok": 5535,
 "enrichment": {
 "ai_score": 1,
 "ai_reason": "퀀텀 점프 기술 부각, 투자 심리 자극 가능성",
@@ -204,9 +204,9 @@
 "name": "미래에셋증권",
 "price": 71900,
 "change_pct": 10.11,
-"trading_value": 656662834600,
-"trading_value_eok": 6567,
-"volume": 9160582,
+"trading_value": 657172741450,
+"trading_value_eok": 6572,
+"volume": 9167673,
 "score": {
 "total": 50,
 "trading_value": 30,
@@ -223,7 +223,7 @@
 "foreign_net": 0,
 "inst_net": 0
 },
-"volume_ratio": 585.8,
+"volume_ratio": 586.3,
 "sector_rising_count": 0,
 "high_52w": {
 "high_52w": 76966,
@@ -232,7 +232,7 @@
 "days_since": 46,
 "distance_pct": 6.6
 },
-"market_cap_eok": 399828,
+"market_cap_eok": 398717,
 "enrichment": {
 "ai_score": 0,
 "ai_reason": "",
@@ -248,11 +248,11 @@
 "grade": "B",
 "code": "375500",
 "name": "DL이앤씨",
-"price": 99850,
-"change_pct": 5.66,
-"trading_value": 265977093450,
-"trading_value_eok": 2660,
-"volume": 2642771,
+"price": 99800,
+"change_pct": 5.61,
+"trading_value": 266398202100,
+"trading_value_eok": 2664,
+"volume": 2646991,
 "score": {
 "total": 48,
 "trading_value": 30,
@@ -269,16 +269,16 @@
 "foreign_net": 0,
 "inst_net": 0
 },
-"volume_ratio": 203.4,
+"volume_ratio": 203.7,
 "sector_rising_count": 0,
 "high_52w": {
 "high_52w": 104700,
 "low_52w": 39350,
 "high_date": "20260414",
 "days_since": 0,
-"distance_pct": 4.6
+"distance_pct": 4.7
 },
-"market_cap_eok": 38597,
+"market_cap_eok": 38578,
 "enrichment": {
 "ai_score": 0,
 "ai_reason": "",
@@ -294,11 +294,11 @@
 "grade": "B",
 "code": "402340",
 "name": "SK스퀘어",
-"price": 644500,
-"change_pct": 11.12,
-"trading_value": 299612063500,
-"trading_value_eok": 2996,
-"volume": 478929,
+"price": 644000,
+"change_pct": 11.03,
+"trading_value": 300575324500,
+"trading_value_eok": 3006,
+"volume": 480424,
 "score": {
 "total": 44,
 "trading_value": 30,
@@ -315,7 +315,7 @@
 "foreign_net": 0,
 "inst_net": 0
 },
-"volume_ratio": 118.5,
+"volume_ratio": 118.9,
 "sector_rising_count": 0,
 "high_52w": {
 "high_52w": 681000,
@@ -340,11 +340,11 @@
 "grade": "B",
 "code": "009150",
 "name": "삼성전기",
-"price": 587000,
-"change_pct": 3.35,
-"trading_value": 230700168500,
-"trading_value_eok": 2307,
-"volume": 393480,
+"price": 588000,
+"change_pct": 3.52,
+"trading_value": 230989852000,
+"trading_value_eok": 2310,
+"volume": 393973,
 "score": {
 "total": 42,
 "trading_value": 30,
@@ -361,14 +361,14 @@
 "foreign_net": 0,
 "inst_net": 0
 },
-"volume_ratio": 76.3,
+"volume_ratio": 76.4,
 "sector_rising_count": 0,
 "high_52w": {
 "high_52w": 603000,
 "low_52w": 253000,
 "high_date": "20260414",
 "days_since": 0,
-"distance_pct": 2.7
+"distance_pct": 2.5
 },
 "market_cap_eok": 438452
 }
@@ -378,5 +378,5 @@
 "B": 4
 },
 "api_calls": 33,
-"elapsed_ms": 75722
+"elapsed_ms": 71884
 }
