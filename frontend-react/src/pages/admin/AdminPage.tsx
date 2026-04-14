@@ -367,9 +367,30 @@ function UsersTab({ apiToken, currentUserId }: { apiToken?: string; currentUserI
         try {
             await adminAPI.deleteUser(deleteTarget.id, apiToken);
             setUsers(prev => prev.filter(u => u.id !== deleteTarget.id));
+            setDuplicates(prev => prev
+                .map(g => ({ ...g, accounts: g.accounts.filter(a => a.id !== deleteTarget.id) }))
+                .filter(g => g.accounts.length >= 2));
             showAction(`${deleteTarget.name} 삭제 완료`);
             setDeleteTarget(null);
         } catch (err: any) { showAction(err.message, true); }
+    };
+
+    // 중복 그룹 일괄 삭제 (주 계정/본인 제외)
+    const handleDeleteDuplicates = async (ids: number[], groupKey: string) => {
+        if (ids.length === 0) return;
+        if (!confirm(`"${groupKey}" 그룹의 중복 계정 ${ids.length}개를 일괄 삭제합니다.\n이 작업은 되돌릴 수 없습니다. 계속하시겠습니까?`)) return;
+        let ok = 0, fail = 0;
+        for (const id of ids) {
+            try {
+                await adminAPI.deleteUser(id, apiToken);
+                ok++;
+            } catch { fail++; }
+        }
+        setUsers(prev => prev.filter(u => !ids.includes(u.id)));
+        setDuplicates(prev => prev
+            .map(g => ({ ...g, accounts: g.accounts.filter(a => !ids.includes(a.id)) }))
+            .filter(g => g.accounts.length >= 2));
+        showAction(fail === 0 ? `${ok}개 중복 계정 삭제 완료` : `삭제 ${ok}건, 실패 ${fail}건`, fail > 0);
     };
 
     const handleExtend = async (user: AdminUser, days: number) => {
@@ -526,21 +547,52 @@ function UsersTab({ apiToken, currentUserId }: { apiToken?: string; currentUserI
                     </p>
                     <div className="space-y-2 max-h-72 overflow-y-auto">
                         {duplicates.map((group, gi) => {
-                            // 주 계정 판별: 가장 최근 로그인한 계정 (로그인 기록 없으면 가입일 기준)
+                            // 주 계정 판별 우선순위:
+                            // 1) 유료 tier (pro/premium) 중 가장 최근 로그인 (로그인 없으면 가장 오래된 가입일)
+                            // 2) 무료 계정이라도 로그인 기록 있는 계정 중 가장 최근
+                            // 3) 로그인 기록 없으면 가장 먼저 가입한 계정
+                            const score = (a: typeof group.accounts[0]): string => {
+                                const tierScore = a.tier === 'premium' ? '3' : a.tier === 'pro' ? '2' : '1';
+                                const loginScore = a.last_login_at ? '1' : '0';
+                                // 로그인 있으면 최근순, 없으면 오래된 가입순(invert created_at)
+                                const timeScore = a.last_login_at
+                                    ? a.last_login_at
+                                    : '~' + (a.created_at || '');  // '~' > 모든 ISO → 로그인 있는게 우선
+                                return `${tierScore}|${loginScore}|${timeScore}`;
+                            };
                             const primaryId = group.accounts.reduce((bestId, acc) => {
                                 const best = group.accounts.find(a => a.id === bestId);
                                 if (!best) return acc.id;
-                                const bestTime = best.last_login_at || best.created_at || '';
-                                const accTime = acc.last_login_at || acc.created_at || '';
-                                return accTime > bestTime ? acc.id : bestId;
+                                // 로그인 기록 없는 경우: 가입일이 빠른 것이 주 계정
+                                if (!best.last_login_at && !acc.last_login_at) {
+                                    const bestTier = best.tier === 'premium' ? 3 : best.tier === 'pro' ? 2 : 1;
+                                    const accTier = acc.tier === 'premium' ? 3 : acc.tier === 'pro' ? 2 : 1;
+                                    if (accTier !== bestTier) return accTier > bestTier ? acc.id : bestId;
+                                    return (acc.created_at || '') < (best.created_at || '') ? acc.id : bestId;
+                                }
+                                return score(acc) > score(best) ? acc.id : bestId;
                             }, group.accounts[0]?.id);
+
+                            // 삭제 대상: 주 계정 + 본인 제외
+                            const deletableIds = group.accounts
+                                .filter(a => a.id !== primaryId && String(a.id) !== String(currentUserId))
+                                .map(a => a.id);
 
                             return (
                                 <div key={gi} className="rounded-lg bg-white/[0.03] border border-white/[0.06] p-3">
-                                    <div className="text-xs text-gray-400 mb-2">
-                                        <span className="text-red-400 font-bold">{group.reason === 'same_name' ? '동일 이름' : '유사 이메일'}</span>
-                                        <span className="ml-1.5 text-white font-medium">{group.key}</span>
-                                        <span className="ml-2 text-gray-600">({group.accounts.length}개 계정)</span>
+                                    <div className="flex items-center justify-between mb-2 gap-2">
+                                        <div className="text-xs text-gray-400 min-w-0">
+                                            <span className="text-red-400 font-bold">{group.reason === 'same_name' ? '동일 이름' : '유사 이메일'}</span>
+                                            <span className="ml-1.5 text-white font-medium">{group.key}</span>
+                                            <span className="ml-2 text-gray-600">({group.accounts.length}개)</span>
+                                        </div>
+                                        {deletableIds.length >= 2 && (
+                                            <button onClick={() => handleDeleteDuplicates(deletableIds, group.key)}
+                                                className="shrink-0 px-2 py-1 rounded text-[10px] font-bold bg-red-500/15 text-red-400 hover:bg-red-500/30 border border-red-500/30 transition-colors"
+                                                title="주 계정 제외한 중복 계정 모두 삭제">
+                                                <i className="fas fa-trash-alt mr-1" />중복 {deletableIds.length}개 일괄 삭제
+                                            </button>
+                                        )}
                                     </div>
                                     <div className="space-y-1">
                                         {group.accounts.map(acc => {
