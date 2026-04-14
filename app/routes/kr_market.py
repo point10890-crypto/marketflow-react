@@ -1531,6 +1531,26 @@ def kr_screener_history():
     return jsonify(result)
 
 
+@kr_bp.route('/screener/leading/ai-theme')
+def kr_screener_ai_theme():
+    """키움 AI전략 테마 TOP — 7개 조건식 동시매칭 강도 순."""
+    path = os.path.join(DATA_DIR, "kiwoom_ai_theme_latest.json")
+    if not os.path.exists(path):
+        return jsonify({
+            "updated_at": "", "total_conditions": 7, "executed": 0,
+            "unique_stocks": 0, "stocks": [],
+            "error": "not_yet_scanned"
+        })
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        resp = jsonify(data)
+        resp.headers['Cache-Control'] = 'public, max-age=30'
+        return resp
+    except Exception as e:
+        return jsonify({"error": str(e), "stocks": []}), 500
+
+
 @kr_bp.route('/screener/leading/status')
 def kr_screener_status():
     """스크리너 상태"""

@@ -388,6 +388,9 @@ export default function KrLeadingStocksPage() {
                 </div>
             )}
 
+            {/* 🤖 AI전략 테마 TOP (키움 7개 조건식 동시매칭) */}
+            <AiThemeCard />
+
             {/* Grade Filter */}
             <div className="flex gap-2 flex-wrap">
                 {grades.map(g => {
@@ -468,6 +471,96 @@ export default function KrLeadingStocksPage() {
                     )}
                 </div>
             )}
+        </div>
+    );
+}
+
+// ─── 🤖 AI전략 테마 TOP (키움 조건검색 기반) ───
+interface AiThemeStock {
+    code: string;
+    name: string;
+    price: string | number;
+    change_pct: number;
+    volume: string | number;
+    hit_count: number;
+    matched_conditions: string[];
+}
+interface AiThemeData {
+    updated_at: string;
+    total_conditions: number;
+    executed: number;
+    unique_stocks: number;
+    preview_mode?: boolean;
+    note?: string;
+    stocks: AiThemeStock[];
+    error?: string;
+}
+
+function AiThemeCard() {
+    const [d, setD] = useState<AiThemeData | null>(null);
+    useEffect(() => {
+        fetchAPI<AiThemeData>('/api/kr/screener/leading/ai-theme')
+            .then(r => r && setD(r))
+            .catch(() => {});
+    }, []);
+    if (!d || !d.stocks || d.stocks.length === 0) return null;
+    const top = d.stocks.slice(0, 10);
+    const maxHit = d.total_conditions || 7;
+
+    return (
+        <div className="rounded-xl border border-purple-500/20 bg-gradient-to-br from-purple-950/30 via-zinc-950 to-blue-950/20 p-3 md:p-4">
+            <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+                <div className="flex items-center gap-2">
+                    <span className="text-lg">🤖</span>
+                    <div>
+                        <h3 className="text-sm md:text-base font-bold text-white">AI전략 테마 TOP</h3>
+                        <p className="text-[10px] text-purple-300/70">
+                            키움 AI 조건식 {d.executed}/{d.total_conditions}개 동시매칭 강도순
+                            {d.preview_mode && <span className="ml-2 px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300">PREVIEW</span>}
+                        </p>
+                    </div>
+                </div>
+                <span className="text-[10px] text-zinc-500 font-mono">
+                    {d.updated_at ? new Date(d.updated_at).toLocaleTimeString('ko-KR') : '—'}
+                </span>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                {top.map((s, i) => {
+                    const pct = s.change_pct || 0;
+                    const color = pct > 0 ? 'text-red-400' : pct < 0 ? 'text-blue-400' : 'text-zinc-400';
+                    const hitDots = '●'.repeat(s.hit_count) + '○'.repeat(Math.max(0, maxHit - s.hit_count));
+                    const priceNum = typeof s.price === 'string' ? parseInt(s.price) || 0 : s.price;
+                    return (
+                        <div key={s.code} className="flex items-center gap-2 rounded-lg bg-white/[0.03] border border-white/5 px-3 py-2 hover:bg-white/[0.06] transition-colors">
+                            <div className="text-xs font-mono text-purple-400 w-6">#{i + 1}</div>
+                            <div className="flex-1 min-w-0">
+                                <div className="flex items-baseline gap-2">
+                                    <span className="text-sm font-bold text-white truncate">{s.name}</span>
+                                    <span className="text-[10px] text-zinc-500 font-mono">{s.code}</span>
+                                </div>
+                                <div className="flex items-center gap-2 text-[10px] text-zinc-400 mt-0.5">
+                                    <span className="font-mono">{priceNum.toLocaleString()}원</span>
+                                    <span className={`font-mono font-bold ${color}`}>{pct >= 0 ? '+' : ''}{pct.toFixed(2)}%</span>
+                                </div>
+                                <div className="flex flex-wrap gap-1 mt-1">
+                                    {s.matched_conditions.slice(0, 2).map((c, j) => (
+                                        <span key={j} className="text-[9px] px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-300 border border-purple-500/20">
+                                            #{c.replace('AI전략', '').replace(/[()]/g, '').trim().slice(0, 10)}
+                                        </span>
+                                    ))}
+                                    {s.matched_conditions.length > 2 && (
+                                        <span className="text-[9px] text-zinc-500">+{s.matched_conditions.length - 2}</span>
+                                    )}
+                                </div>
+                            </div>
+                            <div className="flex flex-col items-end gap-0.5">
+                                <div className="text-[10px] font-mono font-bold text-purple-300">{s.hit_count}/{maxHit}</div>
+                                <div className="text-[8px] font-mono text-purple-500/70 tracking-tighter">{hitDots}</div>
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
         </div>
     );
 }
