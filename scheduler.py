@@ -2283,22 +2283,27 @@ def check_and_run_missed_tasks():
 
         logger.info("🔍 놓친 스케줄 점검 시작...")
 
-        # ── 평일 전용 작업 ──
-        # 등록된 모든 평일 스케줄을 빠짐없이 catch-up 대상에 포함시킨다.
+        # ── 평일/요일별 전용 작업 ──
+        # 등록된 모든 스케줄을 빠짐없이 catch-up 대상에 포함시킨다.
         # 한 작업이라도 빠지면 데몬 사망 시점 이후 그 슬롯은 영영 놓친다.
+        # weekday_filter: None → 월~금 모두, set → 해당 요일에만 (0=Mon, 4=Fri, 5=Sat)
         weekday_tasks = [
-            # (예정시각_분, task_key, 실행함수, 라벨, 마감시각_분)
+            # (예정시각_분, task_key, 실행함수, 라벨, 마감시각_분, weekday_filter)
             # 마감시각: 이 시각 이후에는 실행하지 않음 (다음 작업과 충돌 방지)
-            (4 * 60,       'us_market',        run_us_market_update,        'US 마켓 전체 갱신',  14 * 60),
-            (4 * 60,       'us_ai_chart',      _run_us_ai_chart_analysis,   'US AI Chart 분석',   14 * 60),
-            (9 * 60,       'morning_report',   send_morning_status_report,  '일별 상태 리포트',   14 * 60),
-            (9 * 60 + 5,   'morning_briefing', run_morning_briefing,        'AI 조간 브리핑',     14 * 60),
-            (9 * 60 + 30,  'us_track',         save_us_track_record_snapshot,'US Track Record',   14 * 60),
-            (14 * 60,      'ai_chart',         _run_ai_chart_analysis,      'KR AI Chart 분석',   23 * 60),
-            (15 * 60,      'kr_jongga',        run_kr_full_update,          'KR 종가베팅',        23 * 60),
-            (16 * 60,      'vcp_all',          run_vcp_all_markets,         'VCP 전시장',         23 * 60),
-            (16 * 60 + 5,  'closing_briefing', run_closing_briefing,        'AI 마감 브리핑',     23 * 60),
-            (16 * 60 + 30, 'wave_scan',        _run_wave_scan,              'Wave 패턴 스캔',     23 * 60),
+            (4 * 60,       'us_market',        run_us_market_update,        'US 마켓 전체 갱신',  14 * 60, None),
+            (4 * 60,       'us_ai_chart',      _run_us_ai_chart_analysis,   'US AI Chart 분석',   14 * 60, None),
+            (9 * 60,       'morning_report',   send_morning_status_report,  '일별 상태 리포트',   14 * 60, None),
+            (9 * 60 + 5,   'morning_briefing', run_morning_briefing,        'AI 조간 브리핑',     14 * 60, None),
+            (9 * 60 + 30,  'us_track',         save_us_track_record_snapshot,'US Track Record',   14 * 60, None),
+            (14 * 60,      'ai_chart',         _run_ai_chart_analysis,      'KR AI Chart 분석',   23 * 60, None),
+            (14 * 60 + 50, 'kr_jongga',        run_kr_full_update,          'KR 종가베팅',        23 * 60, None),
+            (16 * 60,      'vcp_all',          run_vcp_all_markets,         'VCP 전시장',         23 * 60, None),
+            (16 * 60 + 5,  'closing_briefing', run_closing_briefing,        'AI 마감 브리핑',     23 * 60, None),
+            (16 * 60 + 30, 'wave_scan',        _run_wave_scan,              'Wave 패턴 스캔',     23 * 60, None),
+            # ── 금요일 전용 ──
+            (17 * 60,      'lotto_analysis',   run_lotto_analysis,          'AI 로또 분석 게시',  23 * 60, {4}),
+            # ── 토요일 전용 ──
+            (10 * 60,      'history',          collect_historical_institutional, '히스토리 수집',  23 * 60, {5}),
         ]
 
         # ── 매일 실행 작업 (Crypto - 주말 포함) ──
@@ -2307,26 +2312,33 @@ def check_and_run_missed_tasks():
 
         recovered = []
 
-        # 평일 작업 복구
-        if weekday < 5:  # Mon-Fri
-            for sched_min, task_key, task_fn, label, deadline_min in weekday_tasks:
-                if hour_min < sched_min:
-                    continue  # 아직 예정 시각 전 (== 시각이면 catch-up 대상에 포함)
-                if hour_min > deadline_min:
-                    logger.info(f"  ⏭️ {label}: 마감 지남 ({deadline_min//60}:{deadline_min%60:02d}), 스킵")
+        # 평일/요일별 작업 복구
+        for sched_min, task_key, task_fn, label, deadline_min, wd_filter in weekday_tasks:
+            # 요일 필터: None=월~금, set={요일번호} 에만 실행
+            if wd_filter is None:
+                if weekday >= 5:  # 주말 제외
                     continue
-                if _was_run_today(task_key):
-                    logger.info(f"  ✅ {label}: 오늘 이미 실행됨, 스킵")
+            else:
+                if weekday not in wd_filter:
                     continue
 
-                logger.info(f"  ⚠️ 놓친 스케줄 감지: {label} (예정 {sched_min//60:02d}:{sched_min%60:02d}) → 즉시 실행")
-                try:
-                    task_fn()
-                    record_task_run(task_key)
-                    recovered.append(label)
-                    logger.info(f"  ✅ 복구 완료: {label}")
-                except Exception as e:
-                    logger.error(f"  ❌ 복구 실패: {label} — {e}", exc_info=True)
+            if hour_min < sched_min:
+                continue  # 아직 예정 시각 전 (== 시각이면 catch-up 대상에 포함)
+            if hour_min > deadline_min:
+                logger.info(f"  ⏭️ {label}: 마감 지남 ({deadline_min//60}:{deadline_min%60:02d}), 스킵")
+                continue
+            if _was_run_today(task_key):
+                logger.info(f"  ✅ {label}: 오늘 이미 실행됨, 스킵")
+                continue
+
+            logger.info(f"  ⚠️ 놓친 스케줄 감지: {label} (예정 {sched_min//60:02d}:{sched_min%60:02d}) → 즉시 실행")
+            try:
+                task_fn()
+                record_task_run(task_key)
+                recovered.append(label)
+                logger.info(f"  ✅ 복구 완료: {label}")
+            except Exception as e:
+                logger.error(f"  ❌ 복구 실패: {label} — {e}", exc_info=True)
 
         # Crypto 복구 (주말 포함)
         # 현재 시각 이전의 가장 최근 crypto 시각 찾기
@@ -2711,7 +2723,7 @@ class Scheduler:
                 self._with_record(_run_us_ai_chart_analysis, 'us_ai_chart',
                                   max_retries=1, retry_delay=600))
 
-        # 금요일 21:30 — AI 로또 분석 게시
+        # 금요일 17:00 — AI 로또 분석 게시
         schedule.every().friday.at(Config.LOTTO_POST_TIME).do(
             self._with_record(run_lotto_analysis, 'lotto_analysis',
                               max_retries=1, retry_delay=1800))
