@@ -1274,6 +1274,25 @@ def _build_vcp_top10_text() -> str:
 
 # ── KR 올업데이트 (14:50 통합) ──
 
+def post_daily_analysis_to_community() -> bool:
+    """종가베팅 V2 결과 → 커뮤니티 종목분석 게시판 자동 게시.
+    주말·빈 결과·중복 → skip (exit 2). 실패해도 파이프라인 방어."""
+    script_path = os.path.join(Config.BASE_DIR, 'scripts', 'post_daily_analysis.py')
+    if not os.path.exists(script_path):
+        logger.warning(f"post_daily_analysis.py 없음 — skip")
+        return True  # 파이프라인 실패로 간주하지 않음
+    try:
+        return run_command(
+            [Config.PYTHON_PATH, script_path],
+            '커뮤니티 종목분석 게시 (자동)',
+            timeout=300,  # 이미지 5장 생성 여유 (30s × 5)
+            env_extra={'MARKETFLOW_API': 'http://localhost:5001'},
+        )
+    except Exception as e:
+        logger.warning(f"post_daily_analysis 예외 (무시): {e}")
+        return True
+
+
 def run_kr_full_update(skip_sync: bool = False):
     """KR 종가베팅 업데이트 (14:50) — 종가베팅V2 + 수급/AI/리포트 → 텔레그램
     ※ VCP 시그널은 16:00 run_vcp_all_markets()에서 별도 실행
@@ -1293,6 +1312,9 @@ def run_kr_full_update(skip_sync: bool = False):
     results.append(('institutional', update_institutional_data()))
     results.append(('ai_analysis', run_ai_analysis_scan()))
     results.append(('daily_report', generate_daily_report()))
+
+    # 3. 커뮤니티 자동 게시 (V2 결과 기반)
+    results.append(('커뮤니티 게시', post_daily_analysis_to_community()))
 
     elapsed = int(time.time() - start_time)
     success_count = sum(1 for _, s in results if s)
