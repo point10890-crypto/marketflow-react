@@ -7,7 +7,7 @@ MarketFlow 통합 스케줄러 — US / KR / Crypto
 ─────────────────────────────────────────────────
   04:00  US Market  전체 데이터 갱신 → Smart Money Top 5 텔레그램
   09:30  US Market  Track Record 스냅샷 + 성과 추적
-  15:00  KR Market  종가베팅 V2 + 수급/AI/리포트 → 텔레그램
+  14:50  KR Market  종가베팅 V2 + 수급/AI/리포트 → 텔레그램
   16:00  전 시장    VCP 시그널 업데이트 (KR + US + Crypto) → 텔레그램
   토 10:00  KR     히스토리 수집 (백업)
 ─────────────────────────────────────────────────
@@ -314,7 +314,7 @@ class Config:
     # 스케줄 시간 (KST)
     US_UPDATE_TIME = os.environ.get('US_MARKET_UPDATE_TIME', '04:00')
     US_TRACK_TIME = os.environ.get('US_MARKET_TRACK_TIME', '09:30')
-    KR_UPDATE_TIME = os.environ.get('KR_MARKET_UPDATE_TIME', '15:00')   # 종가베팅 V2
+    KR_UPDATE_TIME = os.environ.get('KR_MARKET_UPDATE_TIME', '14:50')   # 종가베팅 V2 (14:50 — 장 마감 직전 선제 분석)
     VCP_UPDATE_TIME = os.environ.get('VCP_UPDATE_TIME', '16:00')         # 전 시장 VCP 시그널
     WAVE_SCAN_TIME = os.environ.get('WAVE_SCAN_TIME', '16:30')           # Wave 패턴 스캔
     AI_CHART_TIME = os.environ.get('AI_CHART_TIME', '14:00')             # AI Chart Analysis KR (Gemini Vision)
@@ -1108,11 +1108,14 @@ def update_jongga_v2():
     pre-flight 검증으로 코드 버그 사전 탐지 + 실패 시 텔레그램 즉시 알림.
     """
     # ── Pre-flight: subprocess로 import만 테스트 (최신 디스크 코드 검증) ──
+    # LLMAnalyzer() 실제 인스턴스화로 anthropic/google/openai 의존성까지 검증
     preflight = run_command(
         [Config.PYTHON_PATH, '-c',
          'from engine.generator import run_screener; '
          'from engine.llm_analyzer import LLMAnalyzer; '
          'from engine.scorer import Scorer; '
+         'import anthropic, openai; '  # V2 런타임 필수 SDK
+         'LLMAnalyzer(); '               # Claude/Gemini/OpenAI 클라이언트 초기화 확인
          'print("OK")'],
         'V2 pre-flight 검증',
         timeout=30
@@ -1269,14 +1272,14 @@ def _build_vcp_top10_text() -> str:
     return text
 
 
-# ── KR 올업데이트 (15:00 통합) ──
+# ── KR 올업데이트 (14:50 통합) ──
 
 def run_kr_full_update(skip_sync: bool = False):
-    """KR 종가베팅 업데이트 (15:00) — 종가베팅V2 + 수급/AI/리포트 → 텔레그램
+    """KR 종가베팅 업데이트 (14:50) — 종가베팅V2 + 수급/AI/리포트 → 텔레그램
     ※ VCP 시그널은 16:00 run_vcp_all_markets()에서 별도 실행
     """
     logger.info("=" * 60)
-    logger.info("🇰🇷 KR 종가베팅 업데이트 시작 (15:00)")
+    logger.info("🇰🇷 KR 종가베팅 업데이트 시작 (14:50)")
     logger.info("=" * 60)
 
     start_time = time.time()
@@ -2657,7 +2660,7 @@ class Scheduler:
             getattr(schedule.every(), day).at(Config.US_TRACK_TIME).do(
                 self._with_record(save_us_track_record_snapshot, 'us_track',
                                   max_retries=1, retry_delay=600, verify_fn=us_track_verify))
-            # 15:00 — 종가베팅 V2 + 수급/AI/리포트 (VCP 제외)
+            # 14:50 — 종가베팅 V2 + 수급/AI/리포트 (VCP 제외)
             getattr(schedule.every(), day).at(Config.KR_UPDATE_TIME).do(
                 self._with_record(run_kr_full_update, 'kr_jongga',
                                   max_retries=2, retry_delay=600, verify_fn=jongga_verify))
@@ -2784,7 +2787,7 @@ def main():
     parser.add_argument('--inst', action='store_true', help='KR 수급 데이터만')
     parser.add_argument('--signals', action='store_true', help='KR VCP 시그널만')
     parser.add_argument('--jongga-v2', action='store_true', help='KR 종가베팅 V2만')
-    parser.add_argument('--kr-update', action='store_true', help='KR 종가베팅 업데이트 (15:00)')
+    parser.add_argument('--kr-update', action='store_true', help='KR 종가베팅 업데이트 (14:50)')
     parser.add_argument('--vcp', action='store_true', help='전 시장 VCP 시그널 (KR+US+Crypto, 16:00)')
     parser.add_argument('--history', action='store_true', help='KR 히스토리 수집만')
 
