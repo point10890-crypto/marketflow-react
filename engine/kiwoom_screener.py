@@ -141,14 +141,18 @@ async def fetch_condition_candidates(
     async with websockets.connect(WS_URL, open_timeout=LOGIN_TIMEOUT) as ws:
         await _login(ws, token)
 
+        # CNSRLST 선행 호출 필수 (Kiwoom 서버 요구사항):
+        # ka10171(CNSRLST) 호출 없이 ka10172(CNSRREQ) 단독 호출 시 서버가 무응답.
+        # 매 WebSocket 세션마다 CNSRLST를 먼저 실행해야 CNSRREQ 응답이 옴.
+        await ws.send(json.dumps({"trnm": "CNSRLST"}))
+        lst_msg = await _recv_until(ws, "CNSRLST")
+        data = lst_msg.get("data") or []
+        if not data:
+            logger.warning("[kiwoom_screener] HTS 조건식 0개. PoC 빈 결과")
+            return []
+
         # seq 결정
         if seq is None:
-            await ws.send(json.dumps({"trnm": "CNSRLST"}))
-            lst_msg = await _recv_until(ws, "CNSRLST")
-            data = lst_msg.get("data") or []
-            if not data:
-                logger.warning("[kiwoom_screener] HTS 조건식 0개. PoC 빈 결과")
-                return []
             target = None
             for row in data:
                 row_seq = row[0] if isinstance(row, list) else (row.get("seq") or row.get("Seq"))
@@ -189,12 +193,35 @@ async def fetch_condition_candidates(
             code = _extract_code(r)
             if not code:
                 continue
+            # Kiwoom FID 응답은 zero-padded 정수. 실측 매핑:
+            #   10(현재가): 원 단위 정수 (예: "000019260" → 19260원)
+            #   12(등락률): zero-padded 정수, /1000 으로 정규화 (예: "000005450" → 5.45%, "000030000" → 30.00%)
+            #     * 실측: 산일전기 5450 → 5.45%, 아이씨티케이 29950 → 29.95%(상한가 근처), 삼성전기 8220 → 8.22%
+            #   13(거래량): 정수 그대로
+            price_raw = _extract_field(r, "10", "price", "cur_prc")
+            pct_raw = _extract_field(r, "12", "change_pct", "flu_rt")
+            vol_raw = _extract_field(r, "13", "volume", "trde_qty")
+            sign_raw = _extract_field(r, "25", "sign")  # 25: 대비부호(1:상한 2:상승 3:보합 4:하한 5:하락)
+
+            def _to_int(v):
+                try:
+                    return int(str(v or "0").strip().lstrip("+-"))
+                except (ValueError, TypeError):
+                    return 0
+
+            price_int = _to_int(price_raw)
+            pct_int = _to_int(pct_raw)  # 소수점 3자리 패딩 정수
+            pct_val = pct_int / 1000.0
+            # 부호 적용 (4,5 = 하락)
+            if str(sign_raw or "").strip() in ("4", "5"):
+                pct_val = -pct_val
+
             entry = {
                 "code": code,
                 "name": _extract_field(r, "302", "name", "stk_nm", "Name") or "",
-                "price": _extract_field(r, "10", "price", "cur_prc"),
-                "change_pct": _extract_field(r, "12", "change_pct", "flu_rt"),
-                "volume": _extract_field(r, "13", "volume", "trde_qty"),
+                "price": price_int,
+                "change_pct": pct_val,
+                "volume": _to_int(vol_raw),
                 "raw": r,
             }
             out.append(entry)
