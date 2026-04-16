@@ -80,12 +80,16 @@ def _is_saturday_kst():
 # 텔레그램 유틸리티
 # ============================================================
 
-def _send_telegram(message: str) -> bool:
-    """텔레그램 메시지 전송 (개인 + 채널 동시)"""
+def _send_telegram(message: str, channel: bool = True) -> bool:
+    """텔레그램 메시지 전송.
+
+    channel=True  → 개인 + 채널 (분석 결과)
+    channel=False → 개인 봇만 (시스템 상태/장애/운영 메시지)
+    """
     import requests
     success = False
 
-    # 1) 개인 봇
+    # 1) 개인 봇 (항상)
     token = os.getenv("TELEGRAM_BOT_TOKEN")
     chat_id = os.getenv("TELEGRAM_CHAT_ID")
     if token and chat_id and "your_bot_token" not in token:
@@ -102,29 +106,30 @@ def _send_telegram(message: str) -> bool:
         except Exception as e:
             logger.error(f"텔레그램(개인) 전송 실패: {e}")
 
-    # 2) 채널 봇
-    ch_token = os.getenv("TELEGRAM_CHANNEL_BOT_TOKEN")
-    ch_chat_id = os.getenv("TELEGRAM_CHANNEL_CHAT_ID")
-    if ch_token and ch_chat_id:
-        try:
-            r = requests.post(
-                f"https://api.telegram.org/bot{ch_token}/sendMessage",
-                json={"chat_id": ch_chat_id, "text": message, "parse_mode": "HTML"},
-                timeout=10
-            )
-            if r.status_code == 200:
-                success = True
-        except Exception as e:
-            logger.error(f"텔레그램(채널) 전송 실패: {e}")
+    # 2) 채널 봇 — 분석 결과만 (시스템 메시지는 채널 오염 방지)
+    if channel:
+        ch_token = os.getenv("TELEGRAM_CHANNEL_BOT_TOKEN")
+        ch_chat_id = os.getenv("TELEGRAM_CHANNEL_CHAT_ID")
+        if ch_token and ch_chat_id:
+            try:
+                r = requests.post(
+                    f"https://api.telegram.org/bot{ch_token}/sendMessage",
+                    json={"chat_id": ch_chat_id, "text": message, "parse_mode": "HTML"},
+                    timeout=10
+                )
+                if r.status_code == 200:
+                    success = True
+            except Exception as e:
+                logger.error(f"텔레그램(채널) 전송 실패: {e}")
 
     return success
 
 
-def _send_telegram_long(message: str) -> bool:
+def _send_telegram_long(message: str, channel: bool = True) -> bool:
     """긴 텔레그램 메시지를 4000자 단위로 분할 전송"""
     MAX_LEN = 4000
     if len(message) <= MAX_LEN:
-        return _send_telegram(message)
+        return _send_telegram(message, channel=channel)
 
     chunks = []
     current = ""
@@ -140,7 +145,7 @@ def _send_telegram_long(message: str) -> bool:
 
     ok = True
     for chunk in chunks:
-        if not _send_telegram(chunk):
+        if not _send_telegram(chunk, channel=channel):
             ok = False
         time.sleep(0.5)
     return ok
@@ -192,7 +197,7 @@ def _run_jongga_v2():
     except Exception as e:
         logger.error(f"❌ 종가베팅 V2 실패: {e}")
         traceback.print_exc()
-        _send_telegram(f"❌ 종가베팅 V2 실패: {str(e)[:500]}")
+        _send_telegram(f"❌ 종가베팅 V2 실패: {str(e)[:500]}", channel=False)
         return False
 
 
@@ -527,7 +532,7 @@ def _run_round2():
         f"결과: {success_count}/{total_count}\n"
         + "\n".join(summary_lines)
     )
-    _send_telegram(msg)
+    _send_telegram(msg, channel=False)
     return True
 
 
@@ -615,7 +620,7 @@ def _run_all_update():
         f"결과: {success_count}/{total_count}\n\n"
         + "\n".join(summary_lines)
     )
-    _send_telegram(msg)
+    _send_telegram(msg, channel=False)
 
     logger.info(f"🌐 [ALL UPDATE] 완료: {success_count}/{total_count} ({elapsed:.0f}초)")
     return success_count > 0
@@ -739,7 +744,7 @@ def _cloud_scheduler_loop():
     logger.info(f"   🪙 매일 4시간마다 → Crypto")
     logger.info(f"   🔍 30분마다 → 시스템 자가진단")
 
-    # 시작 알림
+    # 시작 알림 (시스템 메시지 — 채널 제외)
     _send_telegram(
         "<b>⏰ CloudScheduler 시작</b>\n\n"
         f"🌐 매일 07:00 KST → 전체 올 업데이트\n"
@@ -747,7 +752,8 @@ def _cloud_scheduler_loop():
         f"🇰🇷 KR: 15:10, 16:00 KST (평일)\n"
         f"🪙 Crypto: 4시간마다 (24/7)\n"
         f"🔍 자가진단: 30분마다\n"
-        f"📍 {'Render' if is_render else 'Local'}"
+        f"📍 {'Render' if is_render else 'Local'}",
+        channel=False
     )
 
     # ── 시작 시 catch-up: stale 데이터 감지 → 즉시 실행 ──
@@ -822,7 +828,7 @@ def _check_and_catchup():
     # 2. 평일 + 15시 이후 + 데이터 stale → 종가베팅 즉시 실행
     if is_weekday and now.hour >= 15 and jongga_stale:
         logger.info("🚀 [Catch-up] 종가베팅 V2 즉시 실행!")
-        _send_telegram("🔄 <b>Catch-up 실행</b>\n서버 재시작 후 종가베팅 데이터 갱신 시작")
+        _send_telegram("🔄 <b>Catch-up 실행</b>\n서버 재시작 후 종가베팅 데이터 갱신 시작", channel=False)
         threading.Thread(
             target=_safe_run, args=(_run_jongga_v2, 'Catch-up: 종가베팅 V2'),
             daemon=True
@@ -830,7 +836,7 @@ def _check_and_catchup():
     elif jongga_stale:
         # 평일 오전이거나 주말 → 전체 올 업데이트
         logger.info("🚀 [Catch-up] 전체 올 업데이트 즉시 실행!")
-        _send_telegram("🔄 <b>Catch-up 실행</b>\n서버 재시작 후 전체 데이터 갱신 시작")
+        _send_telegram("🔄 <b>Catch-up 실행</b>\n서버 재시작 후 전체 데이터 갱신 시작", channel=False)
         threading.Thread(
             target=_safe_run, args=(_run_all_update, 'Catch-up: ALL UPDATE'),
             daemon=True
@@ -887,7 +893,7 @@ def _safe_run(func, name: str):
         logger.error(f"❌ 실패: {name} — {e}")
         traceback.print_exc()
         try:
-            _send_telegram(f"❌ 스케줄 작업 실패: {name}\n{str(e)[:300]}")
+            _send_telegram(f"❌ 스케줄 작업 실패: {name}\n{str(e)[:300]}", channel=False)
         except Exception:
             pass
 

@@ -410,6 +410,7 @@ def _send_alert(result):
 
     lines.append(f"\n⏰ {result['timestamp']}")
 
-    _send_telegram('\n'.join(lines))
+    # 시스템 자가진단 알림 — 개인 봇만 (채널 오염 방지)
+    _send_telegram('\n'.join(lines), channel=False)
     logger.info(f"[Diagnostics] Alert sent: {overall} "
                 f"(C:{result['critical_count']}, W:{result['warning_count']})")

@@ -1001,7 +1001,8 @@ def send_morning_status_report():
                 lines.append(f"")
                 lines.append(f"✅ <b>Flask 안정</b>: 재시작 없음")
 
-        send_telegram('\n'.join(lines))
+        # 시스템 상태 리포트 — 개인 봇만 (채널은 분석 전용)
+        send_telegram('\n'.join(lines), channel=False)
         logger.info("✅ 아침 상태 리포트 전송 완료")
         return True
 
@@ -1895,7 +1896,8 @@ def _notify_gate_change(gate: str, score: int) -> bool:
         msg += "✅ 공격 모드 진입"
     else:
         msg += "⚡ 주의 모드"
-    return send_telegram(msg)
+    # Gate 전환은 시스템 상태 변화 — 개인 봇만
+    return send_telegram(msg, channel=False)
 
 
 def _notify_crypto_signals(count: int) -> bool:
