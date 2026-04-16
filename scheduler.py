@@ -2230,8 +2230,11 @@ def record_task_run(task_key: str):
     logger.debug(f"📝 작업 기록 업데이트: {task_key}")
 
 
-def _was_run_recently(task_key: str, hours: int = 4) -> bool:
-    """해당 task_key가 최근 N시간 내 실행되었는지 확인 (자정 경계 안전, 락 보호)"""
+def _was_run_recently(task_key: str, hours: float = 4) -> bool:
+    """해당 task_key가 최근 N시간 내 실행되었는지 확인 (자정 경계 안전, 락 보호)
+
+    hours 는 float 허용 — 10분 주기 같은 짧은 쿨다운은 hours=0.17 형태로 지정.
+    """
     with _last_run_lock:
         data = _load_last_run()
     last_run_str = data.get(task_key)
@@ -2618,10 +2621,17 @@ class Scheduler:
         """
         def wrapper():
             # 중복 실행 방지 (catch-up 복구와의 충돌, 워치독 재시작 후 이중 실행 방지)
-            # crypto는 4시간 주기이므로 _was_run_recently 사용, 나머지는 _was_run_today
+            # - crypto: 4시간 주기 → 3시간 쿨다운
+            # - kiwoom_ai_theme: 장중 15분 주기 → 10분 쿨다운 (하루 1회 제한 해제)
+            # - 그 외: 하루 1회 제한
             if task_key == 'crypto':
                 if _was_run_recently(task_key, hours=3):
                     logger.info(f"⏭️ {task_key}: 최근 3시간 내 실행됨, 스킵")
+                    return None
+            elif task_key == 'kiwoom_ai_theme':
+                # 장중 연속 갱신 허용: 10분 이내 재실행만 방지
+                if _was_run_recently(task_key, hours=10/60):
+                    logger.info(f"⏭️ {task_key}: 최근 10분 내 실행됨, 스킵")
                     return None
             elif _was_run_today(task_key):
                 logger.info(f"⏭️ {task_key}: 오늘 이미 실행됨, 스킵")
