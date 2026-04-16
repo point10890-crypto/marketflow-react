@@ -2396,7 +2396,11 @@ def _run_kis_token_warmup() -> bool:
 
 
 def _run_kiwoom_ai_theme() -> bool:
-    """키움 AI전략 테마 랭커 — 장중 15분 주기. 장외엔 자동 skip."""
+    """키움 AI전략 테마 랭커 — 장중 15분 주기. 장외엔 자동 skip.
+
+    성공 시 scripts/send_kiwoom_theme_telegram.py 호출 — 시간당 1회 쿨다운으로
+    TOP 15 를 개인 봇에 전송. 실패해도 랭킹 업데이트 성공 판정 유지.
+    """
     now = datetime.now()
     if now.weekday() >= 5:
         return True
@@ -2408,6 +2412,21 @@ def _run_kiwoom_ai_theme() -> bool:
         from engine.kiwoom_theme_ranker import update_ai_theme_ranking
         result = asyncio.run(update_ai_theme_ranking(top_n=15))
         logger.info(f"🤖 키움 AI전략 테마: executed={result['executed']}/{result['total_conditions']} unique={result['unique_stocks']}")
+
+        # 텔레그램 푸시 (시간당 1회 쿨다운 — 스크립트 내부에서 처리)
+        try:
+            import subprocess
+            tg_script = os.path.join(Config.BASE_DIR, 'scripts', 'send_kiwoom_theme_telegram.py')
+            subprocess.run(
+                [Config.PYTHON_PATH, tg_script],
+                timeout=30,
+                capture_output=True,
+                text=True,
+                env={**os.environ, 'PYTHONIOENCODING': 'utf-8'},
+            )
+        except Exception as tg_err:
+            logger.warning(f"키움 AI 테마 텔레그램 전송 실패(무시): {type(tg_err).__name__}: {tg_err}")
+
         return True
     except Exception as e:
         logger.warning(f"키움 AI전략 테마 폴백: {type(e).__name__}: {e}")
