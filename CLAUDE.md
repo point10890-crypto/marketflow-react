@@ -668,6 +668,56 @@ Investing.com ProPicks 분석 결과(적극 매수/매수/중립/매도/적극 �
 
 ## 14. 변경 이력
 
+### v3.2.0 (2026-04-16) — 자동화 안정화 + 텔레그램 채널 분리 + 키움 장중 연속 갱신 복원
+**scheduler silent death 재발 방지 (b7c3cb4, 7880f70):**
+- `scripts/scheduler_watchdog.ps1` — heartbeat 180s + PID liveness 검사, 자동 재기동
+- `MarketFlow-Scheduler-Watchdog` 작업: SYSTEM 계정 + AtStartup + 5분 주기 (무인 재부팅 보장)
+- 2달 만에 **V2 자동 업데이트 14:50 KST 최초 성공** — 17 signals, OCI홀딩스 S등급 등
+
+**텔레그램 채널/개인 분리 (e5c6e9b):**
+- `app/utils/scheduler.py::_send_telegram()` `channel=True/False` 파라미터 추가
+- 시스템 메시지 9개 call site → `channel=False` (개인봇 전용)
+- 분석 메시지(V2 결과, US Smart Money, 키움 AI 테마)만 채널+개인 동시 전송
+- `app/utils/diagnostics.py` 자가진단 알림도 개인봇만
+
+**키움 AI 테마 TOP 15 텔레그램 + 장중 연속 갱신 (9a05a71, b7c3cb4):**
+- `scripts/send_kiwoom_theme_telegram.py` 신규 — 1시간 쿨다운, --force 우회
+- `_run_kiwoom_ai_theme()` 후속 subprocess 자동 호출
+- `_with_record()` 중복방지 분기 개선: kiwoom_ai_theme 10분 쿨다운(hours=10/60)
+  → 기존 "오늘 이미 실행" 게이트로 1일 1회만 돌던 버그 수정
+- 14:41 → 15:18 갱신 실증 (37분 간격)
+- `_was_run_recently()` hours 파라미터 타입 int → float 확장
+
+**miniPC 운영 스크립트 편입 (e20c2aa):**
+- `deploy/register_cloudflared.ps1`, `register_tasks.ps1`, `start_*.vbs` 3종
+- `run_flask.bat`, `scripts/post_analysis_*.py`, `post_kiwoom_update.py`
+- `scripts/run_v2_oneshot.py` — V2 수동 dry run 도구
+- miniPC 로컬 커밋 → git bundle + scp → 본PC → GitHub 경로로 SSH 무인증 푸시 문제 우회
+
+**운영 원칙 확정:**
+- **miniPC(192.168.55.103)가 운영 기준 머신**, 본PC는 서브
+- V2 스케줄(14:50), 키움 테마(장중 15분 주기), US 마켓(04:00), Crypto(4시간 주기) 전부 miniPC SYSTEM 태스크로 동작
+- 모든 커밋은 miniPC에서 수행 후 GitHub 푸시
+
+### v3.1.0 (2026-04-09 ~ 2026-04-14) — 프론트엔드/백엔드 리뷰 + miniPC SYSTEM 전환
+**miniPC 자동시작 개편 (2026-04-14):**
+- 3개 태스크(Scheduler/Flask/Cloudflared) Interactive/Limited → SYSTEM 계정 + AtStartup 전환
+- 로그아웃/유저 전환/재부팅에도 무인 가동 보장
+
+**코드 리뷰 TOP 10 정리 (2026-04-09):**
+- 프론트엔드: BriefingPortal XSS, react-query 미사용, localStorage 토큰 등
+- 백엔드: atomic writes, yfinance 가드, scheduler filelock, external API retry 등
+- 상세: `project_frontend_review_2026_04_09.md`, `project_backend_review_2026_04_09.md`
+
+**하네스 프로토콜 확립:**
+- Route → Scope → Plan → Implement → Verify → Repair 6단계
+- 3개 역할 프롬프트 (Router/Worker/Repair)
+- 14조 절대 규칙 통합 — 반복 실수 차단, 자기점검 훅
+
+**커뮤니티/관리자 UX:**
+- 관리자 브라우저 검증용 토큰 발급 패턴 정립
+- 커뮤니티 글 HTML 포맷 (Nano Banana 이미지 + 섹션별 hr + 모바일 간결)
+
 ### v3.0.0 (2026-03-24) — 주도주LIVE + 전체 리팩터링
 **주도주LIVE 스크리너:**
 - KIS OpenAPI 연동 (거래대금/등락률/거래량 순위 + 투자자 매매)
