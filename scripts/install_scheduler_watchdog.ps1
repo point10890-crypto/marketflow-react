@@ -1,9 +1,12 @@
 # Register MarketFlow-Scheduler-Watchdog in Windows Task Scheduler.
-# Run this ONCE (no admin needed for current-user task).
+# Run ONCE as Administrator (SYSTEM principal requires elevation to register).
 #
-#   powershell -ExecutionPolicy Bypass -File scripts\install_scheduler_watchdog.ps1
+#   Start-Process powershell -Verb RunAs -ArgumentList '-ExecutionPolicy Bypass -File C:\bitman_marketfloww\scripts\install_scheduler_watchdog.ps1'
 #
 # Idempotent: safe to re-run.
+#
+# Runs as NT AUTHORITY\SYSTEM every 5 minutes (matches other MarketFlow tasks),
+# so it survives logout / user-switch / reboot without needing an interactive session.
 
 $ErrorActionPreference = 'Stop'
 
@@ -28,9 +31,10 @@ $action = New-ScheduledTaskAction `
     -Argument "-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File `"$Script`"" `
     -WorkingDirectory $Project
 
-# Run every 5 minutes for 10 years (Task Scheduler rejects MaxValue).
-# Re-install in 2036 if MarketFlow is still running.
-$trigger = New-ScheduledTaskTrigger -Once -At (Get-Date) `
+# Dual trigger: AtStartup (immediately after reboot) + 5-min repeating (ongoing liveness).
+# RepetitionDuration = 10 years — re-install in 2036 if MarketFlow is still running.
+$trigger1 = New-ScheduledTaskTrigger -AtStartup
+$trigger2 = New-ScheduledTaskTrigger -Once -At (Get-Date) `
     -RepetitionInterval (New-TimeSpan -Minutes 5) `
     -RepetitionDuration (New-TimeSpan -Days 3650)
 
@@ -41,18 +45,20 @@ $settings = New-ScheduledTaskSettingsSet `
     -ExecutionTimeLimit (New-TimeSpan -Minutes 4) `
     -MultipleInstances IgnoreNew
 
+# SYSTEM account: no interactive login required, survives user logout/switch.
+# Matches the other MarketFlow-* tasks (migrated to SYSTEM on 2026-04-14).
 $principal = New-ScheduledTaskPrincipal `
-    -UserId ([System.Security.Principal.WindowsIdentity]::GetCurrent().Name) `
-    -LogonType Interactive `
-    -RunLevel Limited
+    -UserId 'SYSTEM' `
+    -LogonType ServiceAccount `
+    -RunLevel Highest
 
 Register-ScheduledTask `
     -TaskName $TaskName `
     -Action $action `
-    -Trigger $trigger `
+    -Trigger @($trigger1, $trigger2) `
     -Settings $settings `
     -Principal $principal `
-    -Description 'Restarts MarketFlow scheduler.py --daemon when its heartbeat goes stale (>3min) or PID is dead.'
+    -Description 'Restarts MarketFlow scheduler.py --daemon when its heartbeat goes stale (>3min) or PID is dead. Runs as SYSTEM every 5 min + AtStartup.'
 
 Write-Host ""
 Write-Host "Installed: $TaskName" -ForegroundColor Green
