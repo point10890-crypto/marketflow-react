@@ -30,6 +30,10 @@ interface AuthUser {
     role: string;
     status: string;
     pro_expires_at?: string | null;
+    // 만료 여부 (backend 계산값). 프런트 가드가 직접 비교하지 않고 이 값을 본다.
+    is_pro_expired?: boolean;
+    // 가입 시 유저가 선택한 플랜. pending 유저 안내용.
+    requested_tier?: 'pro' | 'premium' | null;
 }
 
 interface AuthContextType {
@@ -61,6 +65,8 @@ function toAuthUser(d: AuthUserData): AuthUser {
         role: d.role,
         status: d.status || 'approved',
         pro_expires_at: d.pro_expires_at || null,
+        is_pro_expired: d.is_pro_expired ?? false,
+        requested_tier: d.requested_tier ?? null,
     };
 }
 
@@ -85,6 +91,8 @@ function synthesizeUserFromToken(token: string): AuthUser | null {
         role: 'user',
         status: 'unknown',
         pro_expires_at: null,
+        is_pro_expired: false,
+        requested_tier: null,
     };
 }
 

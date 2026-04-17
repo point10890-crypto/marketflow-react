@@ -35,6 +35,11 @@ class User(db.Model):
     # 만료일이 갱신되면(extend/tier 변경) NULL 로 리셋해 알림이 다시 발송된다.
     pro_expiry_alert_stage = db.Column(db.String(10), nullable=True)
 
+    # 가입 시 유저가 선택한 구독 플랜 ('pro'|'premium'|NULL).
+    # 관리자가 승인 시 이 값을 기본으로 tier 를 부여한다.
+    # 기존 유저는 NULL 유지 — 마이그레이션에서 채우지 않음.
+    requested_tier = db.Column(db.String(20), nullable=True)
+
     def set_password(self, password: str):
         self.password_hash = bcrypt.hashpw(
             password.encode('utf-8'), bcrypt.gensalt()
@@ -76,6 +81,8 @@ class User(db.Model):
             'tier': self.tier,
             'status': self.status,
             'pro_expires_at': self.pro_expires_at.isoformat() if self.pro_expires_at else None,
+            'is_pro_expired': self.is_pro_expired,
+            'requested_tier': self.requested_tier,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'approved_at': self.approved_at.isoformat() if self.approved_at else None,
             'last_login_at': self.last_login_at.isoformat() if self.last_login_at else None,

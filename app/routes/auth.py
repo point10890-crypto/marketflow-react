@@ -157,6 +157,9 @@ def register():
     email = (data.get('email') or '').strip().lower()
     password = data.get('password') or ''
     name = (data.get('name') or '').strip()
+    # 가입 시 선택한 플랜 ('pro'|'premium'|None). 첫 유저(admin)는 무시.
+    requested_tier_raw = (data.get('requested_tier') or '').strip().lower()
+    requested_tier = requested_tier_raw if requested_tier_raw in ('pro', 'premium') else None
 
     if not email or not password or not name:
         return jsonify({'error': 'email, password, name are required'}), 400
@@ -167,6 +170,11 @@ def register():
 
     if User.query.filter_by(email=email).first():
         return jsonify({'error': 'Email already registered'}), 409
+
+    # 신규 가입자는 플랜 선택 필수 (첫 유저 = admin 생성 시만 예외)
+    is_first_user = User.query.count() == 0
+    if not is_first_user and not requested_tier:
+        return jsonify({'error': '구독 플랜 선택이 필요합니다. (pro 또는 premium)'}), 400
 
     # 동일 이름 중복 가입 경고 (차단은 하지 않음 — 동명이인 가능)
     same_name_users = User.query.filter(db.func.lower(User.name) == name.lower()).all()
@@ -186,22 +194,27 @@ def register():
     # 첫 번째 유저는 자동으로 admin + approved + premium (운영자)
     # 그 외 신규 가입자는 pending 상태 — 관리자가 tier(pro/premium) 부여해야
     # 앱에 접근 가능. 'free' 플랜은 더 이상 존재하지 않음.
-    if User.query.count() == 0:
+    if is_first_user:
         user.role = 'admin'
         user.status = 'approved'
         user.tier = 'premium'
     else:
         user.status = 'pending'
         user.tier = None
+        user.requested_tier = requested_tier
 
     db.session.add(user)
     db.session.commit()
 
-    # 관리자 텔레그램 알림 (신규 가입)
+    # 관리자 텔레그램 알림 (신규 가입 + 요청 플랜)
+    tier_label = {'pro': 'Pro (5만원/30일)', 'premium': 'Ultra Pro (120만원/무기한)'}.get(
+        requested_tier or '', '미선택'
+    )
     _notify_admin_telegram(
         f"👤 <b>신규 회원가입</b>\n\n"
         f"📧 이메일: {user.email}\n"
         f"👤 이름: {user.name}\n"
+        f"📋 요청 플랜: {tier_label}\n"
         f"📅 가입일: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M')}"
     )
 

@@ -349,6 +349,28 @@ function UsersTab({ apiToken, currentUserId }: { apiToken?: string; currentUserI
         } catch (err: any) { showAction(err.message, true); }
     };
 
+    // 가입 시 요청한 플랜으로 원클릭 승인 — tier 부여 + status=approved + 만료일 세팅 일괄 처리.
+    // setUserTier 는 백엔드에서 상기 3개를 원자적으로 처리한다 (admin.py:267).
+    const handleApproveWithRequestedTier = async (user: AdminUser) => {
+        const tier = user.requested_tier;
+        if (!tier) return;
+        const tierLabel = tier === 'pro' ? 'Pro (30일)' : 'Ultra Pro (무기한)';
+        if (!confirm(`${user.name} (${user.email}) 을 ${tierLabel} 로 승인하시겠습니까?\n입금 확인 후 클릭하세요.`)) return;
+        try {
+            const res = await adminAPI.setUserTier(user.id, tier, apiToken);
+            setUsers(prev => prev.map(u => u.id === user.id ? res.user : u));
+            showAction(`${user.name} → ${tierLabel} 승인 완료`);
+        } catch (err: any) { showAction(err.message, true); }
+    };
+
+    // 중복 그룹 — user_id → 그룹 사유/키 매핑 (렌더링 시 O(1) 조회용)
+    const duplicateMap = new Map<number, { reason: string; key: string; count: number }>();
+    for (const group of duplicates) {
+        for (const acc of group.accounts) {
+            duplicateMap.set(acc.id, { reason: group.reason, key: group.key, count: group.accounts.length });
+        }
+    }
+
     const handleResetPassword = async () => {
         if (!resetTarget || !newPassword) return;
         if (newPassword.length < 8 || !/[A-Za-z]/.test(newPassword) || !/\d/.test(newPassword)) return;
@@ -735,6 +757,8 @@ function UsersTab({ apiToken, currentUserId }: { apiToken?: string; currentUserI
                             const isAdmin = user.role === 'admin';
                             const isSuspended = user.status === 'suspended';
                             const tier = TIER_STYLES[user.tier || 'none'] || TIER_STYLES.none;
+                            const dupInfo = duplicateMap.get(user.id);
+                            const canOneClickApprove = user.status === 'pending' && !!user.requested_tier && !isAdmin;
                             return (
                                 <tr key={user.id} className={`border-t border-white/[0.04] hover:bg-white/[0.02] transition-colors ${isSuspended ? 'opacity-50' : ''}`}>
                                     <td className="w-10 px-3 py-3">
@@ -749,11 +773,32 @@ function UsersTab({ apiToken, currentUserId }: { apiToken?: string; currentUserI
                                                 {user.name.charAt(0).toUpperCase()}
                                             </div>
                                             <div className="min-w-0">
-                                                <div className="flex items-center gap-1.5">
+                                                <div className="flex items-center gap-1.5 flex-wrap">
                                                     <button onClick={() => openUserDetail(user.id)} className="text-sm font-medium text-white truncate hover:text-amber-400 transition-colors text-left">{user.name}</button>
                                                     {isAdmin && <span className="text-[9px] px-1 py-0.5 bg-red-500/20 text-red-400 rounded shrink-0">관리자</span>}
                                                     {isSuspended && <span className="text-[9px] px-1 py-0.5 bg-red-500/20 text-red-400 rounded shrink-0">정지</span>}
                                                     {user.status === 'pending' && <span className="text-[9px] px-1 py-0.5 bg-amber-500/20 text-amber-400 rounded shrink-0">대기</span>}
+                                                    {/* 중복 의심 경고 배지 — 승인 전 눈에 띄게 */}
+                                                    {dupInfo && (
+                                                        <span
+                                                            className="text-[9px] px-1 py-0.5 bg-rose-500/20 text-rose-300 rounded shrink-0 cursor-help"
+                                                            title={`${dupInfo.reason === 'same_name' ? '동명이인' : '유사 이메일'} — 그룹 "${dupInfo.key}" 총 ${dupInfo.count}개 계정`}
+                                                        >
+                                                            <i className="fas fa-exclamation-triangle mr-0.5" />
+                                                            중복{dupInfo.count}
+                                                        </span>
+                                                    )}
+                                                    {/* 가입 시 요청 플랜 칩 — pending 유저만 표시 */}
+                                                    {user.status === 'pending' && user.requested_tier === 'pro' && (
+                                                        <span className="text-[9px] px-1 py-0.5 bg-amber-500/15 text-amber-300 rounded shrink-0">
+                                                            📋 Pro 요청
+                                                        </span>
+                                                    )}
+                                                    {user.status === 'pending' && user.requested_tier === 'premium' && (
+                                                        <span className="text-[9px] px-1 py-0.5 bg-purple-500/15 text-purple-300 rounded shrink-0">
+                                                            📋 Ultra Pro 요청
+                                                        </span>
+                                                    )}
                                                 </div>
                                                 <div className="text-xs text-gray-500 truncate">{user.email}</div>
                                             </div>
@@ -792,7 +837,22 @@ function UsersTab({ apiToken, currentUserId }: { apiToken?: string; currentUserI
                                     <td className="px-4 py-3">
                                         {/* Desktop: inline buttons */}
                                         <div className="hidden md:flex items-center justify-end gap-1">
-                                            {user.status === 'pending' && !isAdmin && (
+                                            {/* 요청 플랜 원클릭 승인 — pending + requested_tier 있을 때만 */}
+                                            {canOneClickApprove && (
+                                                <button
+                                                    onClick={() => handleApproveWithRequestedTier(user)}
+                                                    className={`px-2 py-1 rounded-lg text-[10px] font-bold transition-colors ${
+                                                        user.requested_tier === 'premium'
+                                                            ? 'bg-purple-500/20 text-purple-300 hover:bg-purple-500/30'
+                                                            : 'bg-amber-500/20 text-amber-300 hover:bg-amber-500/30'
+                                                    }`}
+                                                    title={`입금 확인 후 클릭 → ${user.requested_tier === 'pro' ? 'Pro 30일' : 'Ultra Pro 무기한'} 승인`}
+                                                >
+                                                    <i className="fas fa-check-double mr-1" />
+                                                    {user.requested_tier === 'pro' ? 'Pro 승인' : 'Ultra 승인'}
+                                                </button>
+                                            )}
+                                            {user.status === 'pending' && !isAdmin && !canOneClickApprove && (
                                                 <button onClick={() => handleApprove(user)}
                                                     className="p-1.5 rounded-lg text-amber-400 hover:bg-amber-500/10 text-xs transition-colors" title="승인">
                                                     <i className="fas fa-check" />
@@ -835,7 +895,13 @@ function UsersTab({ apiToken, currentUserId }: { apiToken?: string; currentUserI
                                                         className="w-full px-4 py-2.5 text-left text-xs text-gray-300 hover:bg-white/5 hover:text-white">
                                                         <i className="fas fa-eye mr-2 text-amber-400" />상세 보기
                                                     </button>
-                                                    {user.status === 'pending' && !isAdmin && (
+                                                    {canOneClickApprove && (
+                                                        <button onClick={() => handleApproveWithRequestedTier(user)}
+                                                            className={`w-full px-4 py-2.5 text-left text-xs hover:bg-white/5 ${user.requested_tier === 'premium' ? 'text-purple-300' : 'text-amber-300'}`}>
+                                                            <i className="fas fa-check-double mr-2" />{user.requested_tier === 'pro' ? 'Pro 승인 (30일)' : 'Ultra Pro 승인'}
+                                                        </button>
+                                                    )}
+                                                    {user.status === 'pending' && !isAdmin && !canOneClickApprove && (
                                                         <button onClick={() => handleApprove(user)}
                                                             className="w-full px-4 py-2.5 text-left text-xs text-gray-300 hover:bg-white/5 hover:text-white">
                                                             <i className="fas fa-check mr-2 text-emerald-400" />승인

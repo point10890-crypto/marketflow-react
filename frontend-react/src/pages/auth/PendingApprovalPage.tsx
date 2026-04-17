@@ -81,7 +81,23 @@ export default function PendingApprovalPage() {
                         <div className="p-3 rounded-lg bg-white/5 mb-6 text-left">
                             <div className="text-[10px] text-gray-500 mb-1">가입 정보</div>
                             <div className="text-sm text-white">{user.name}</div>
-                            <div className="text-xs text-gray-400">{user.email}</div>
+                            <div className="text-xs text-gray-400 mb-2">{user.email}</div>
+                            {user.requested_tier && (
+                                <div className="mt-2 pt-2 border-t border-white/5 flex items-center gap-2">
+                                    <span className="text-[10px] text-gray-500">요청 플랜:</span>
+                                    {user.requested_tier === 'pro' ? (
+                                        <span className="px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 text-[10px] font-bold">
+                                            <i className="fas fa-crown mr-1" />
+                                            Pro · 50,000원/30일
+                                        </span>
+                                    ) : (
+                                        <span className="px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-400 text-[10px] font-bold">
+                                            <i className="fas fa-gem mr-1" />
+                                            Ultra Pro · 1,200,000원
+                                        </span>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     )}
 
@@ -92,10 +108,18 @@ export default function PendingApprovalPage() {
                     )}
 
                     <div className="space-y-3">
+                        {/* 유료 플랜 신청 (입금 안내) — 출구 보장 */}
+                        <button
+                            onClick={() => navigate('/pricing')}
+                            className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-black font-bold transition-all flex items-center justify-center gap-2"
+                        >
+                            <i className="fas fa-credit-card" />
+                            플랜 신청 · 입금 안내 보기
+                        </button>
                         <button
                             onClick={handleCheckStatus}
                             disabled={checking}
-                            className="w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold transition-all disabled:opacity-50"
+                            className="w-full py-3 rounded-xl bg-white/10 hover:bg-white/15 text-white font-medium transition-all disabled:opacity-50"
                         >
                             {checking ? '확인 중...' : '승인 상태 확인'}
                         </button>

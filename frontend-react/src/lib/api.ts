@@ -703,6 +703,8 @@ export interface AdminUser {
     tier: string;
     status: string;
     pro_expires_at: string | null;
+    is_pro_expired?: boolean;
+    requested_tier?: 'pro' | 'premium' | null;
     created_at: string;
     approved_at: string | null;
     last_login_at: string | null;
