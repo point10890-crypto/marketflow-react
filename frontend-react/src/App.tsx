@@ -58,6 +58,9 @@ function ApprovedGuard({ children }: { children: React.ReactNode }) {
     if (user.role === 'admin') return <>{children}</>;
     if (user.status !== 'approved') return <Navigate to="/pending-approval" replace />;
     if (user.tier !== 'pro' && user.tier !== 'premium') return <Navigate to="/pending-approval" replace />;
+    // Pro 만료 시 대시보드 차단 → /pricing 으로 유도해 재구독 신청 가능하게
+    // (premium 은 is_pro_expired 가 항상 false 이므로 영향 없음)
+    if (user.is_pro_expired) return <Navigate to="/pricing" replace />;
     return <>{children}</>;
 }
 
@@ -67,7 +70,10 @@ function ProGuard({ children }: { children: React.ReactNode }) {
     if (!user) return <Navigate to="/login" replace />;
     if (user.status === 'unknown') return <LoadingFallback />;
     if (user.role === 'admin') return <>{children}</>;
-    if (user.tier === 'pro' || user.tier === 'premium') return <>{children}</>;
+    if (user.tier === 'pro' || user.tier === 'premium') {
+        if (user.is_pro_expired) return <Navigate to="/pricing" replace />;
+        return <>{children}</>;
+    }
     return <Navigate to="/pricing" replace />;
 }
 

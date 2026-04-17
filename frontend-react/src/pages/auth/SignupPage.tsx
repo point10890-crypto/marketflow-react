@@ -3,10 +3,13 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { API_BASE } from '@/lib/api';
 
+type PlanTier = 'pro' | 'premium';
+
 export default function SignupPage() {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [requestedTier, setRequestedTier] = useState<PlanTier | null>(null);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const { login } = useAuth();
@@ -15,13 +18,19 @@ export default function SignupPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
+
+        if (!requestedTier) {
+            setError('구독 플랜을 선택해 주세요.');
+            return;
+        }
+
         setLoading(true);
 
         try {
             const res = await fetch(`${API_BASE}/api/auth/register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, email, password }),
+                body: JSON.stringify({ name, email, password, requested_tier: requestedTier }),
             });
 
             const data = await res.json();
@@ -32,7 +41,7 @@ export default function SignupPage() {
                 return;
             }
 
-            // Auto sign-in after registration → pricing page
+            // Auto sign-in after registration → pricing page (바로 입금 안내)
             try {
                 await login(email, password, true);
                 navigate('/pricing');
@@ -47,7 +56,7 @@ export default function SignupPage() {
     };
 
     return (
-        <div className="min-h-screen bg-black flex items-center justify-center p-4">
+        <div className="min-h-screen bg-black flex items-center justify-center p-4 py-8">
             <div className="w-full max-w-md">
                 <div className="text-center mb-8">
                     <h1 className="text-4xl font-bold text-white tracking-tighter mb-2">
@@ -73,12 +82,60 @@ export default function SignupPage() {
                     </div>
                     <div>
                         <label className="block text-xs font-medium text-gray-400 mb-2">Password</label>
-                        <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6}
+                        <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={8}
                             className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-600 focus:outline-none focus:border-[#2997ff] transition-colors"
-                            placeholder="Min 6 characters" />
+                            placeholder="Min 8 characters (letter + number)" />
                     </div>
-                    <button type="submit" disabled={loading}
-                        className="w-full py-3 rounded-xl bg-[#2997ff] hover:bg-[#2997ff]/90 text-white font-bold transition-all disabled:opacity-50">
+
+                    {/* 플랜 선택 (필수) — 가입자의 구독 의지를 먼저 명확히 한다 */}
+                    <div>
+                        <label className="block text-xs font-medium text-gray-400 mb-2">
+                            구독 플랜 선택 <span className="text-red-400">*</span>
+                        </label>
+                        <div className="grid grid-cols-2 gap-3">
+                            <button
+                                type="button"
+                                onClick={() => setRequestedTier('pro')}
+                                className={`p-4 rounded-xl border-2 text-left transition-all ${
+                                    requestedTier === 'pro'
+                                        ? 'border-amber-500 bg-amber-500/10 ring-2 ring-amber-500/30'
+                                        : 'border-white/10 bg-white/5 hover:border-white/20'
+                                }`}
+                            >
+                                <div className="flex items-center gap-1 mb-1">
+                                    <i className="fas fa-crown text-amber-400 text-xs" />
+                                    <span className="text-xs font-bold text-amber-400">추천</span>
+                                </div>
+                                <div className="text-white font-bold text-sm">Pro</div>
+                                <div className="text-white text-lg font-black mt-1">50,000원</div>
+                                <div className="text-gray-500 text-[10px]">30일</div>
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setRequestedTier('premium')}
+                                className={`p-4 rounded-xl border-2 text-left transition-all ${
+                                    requestedTier === 'premium'
+                                        ? 'border-purple-500 bg-purple-500/10 ring-2 ring-purple-500/30'
+                                        : 'border-white/10 bg-white/5 hover:border-white/20'
+                                }`}
+                            >
+                                <div className="flex items-center gap-1 mb-1">
+                                    <i className="fas fa-gem text-purple-400 text-xs" />
+                                    <span className="text-xs font-bold text-purple-400">평생</span>
+                                </div>
+                                <div className="text-white font-bold text-sm">Ultra Pro</div>
+                                <div className="text-white text-lg font-black mt-1">1,200,000원</div>
+                                <div className="text-gray-500 text-[10px]">무기한</div>
+                            </button>
+                        </div>
+                        <p className="text-[11px] text-gray-500 mt-2">
+                            <i className="fas fa-info-circle mr-1" />
+                            가입 후 입금 계좌가 안내됩니다. 관리자 확인 후 활성화됩니다.
+                        </p>
+                    </div>
+
+                    <button type="submit" disabled={loading || !requestedTier}
+                        className="w-full py-3 rounded-xl bg-[#2997ff] hover:bg-[#2997ff]/90 text-white font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed">
                         {loading ? 'Creating account...' : 'Create Account'}
                     </button>
                     <p className="text-center text-sm text-gray-500">

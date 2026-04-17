@@ -46,6 +46,8 @@ export interface AuthUserData {
     role: string;
     status: string;
     pro_expires_at?: string | null;
+    is_pro_expired?: boolean;
+    requested_tier?: 'pro' | 'premium' | null;
 }
 
 export function saveUser(user: AuthUserData): void {
