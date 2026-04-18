@@ -1,11 +1,12 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { subscriptionAPI } from '@/lib/api';
 
 export default function PricingPage() {
     const { user, token } = useAuth();
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
     const userTier = user?.tier ?? null;
     const [requesting, setRequesting] = useState<string | null>(null);
     const [showBank, setShowBank] = useState(false);
@@ -24,6 +25,28 @@ export default function PricingPage() {
         setShowBank(true);
         setRequestSent(false);
     };
+
+    // 가입 직후 /pricing 에 도착하면 요청 플랜으로 계좌 정보 자동 펼치기.
+    // 우선순위: URL ?plan= > user.requested_tier.
+    // 유저가 이미 해당 plan 이거나 premium(상위) 이면 자동펼침 생략.
+    useEffect(() => {
+        if (!user || !token) return;
+        if (showBank) return; // 이미 수동 선택으로 펼쳐져 있으면 유지
+        const qPlan = searchParams.get('plan');
+        const target: 'pro' | 'premium' | null =
+            qPlan === 'pro' || qPlan === 'premium'
+                ? qPlan
+                : (user.requested_tier === 'pro' || user.requested_tier === 'premium'
+                    ? user.requested_tier
+                    : null);
+        if (!target) return;
+        if (userTier === target || userTier === 'premium') return;
+        setSelectedPlan(target);
+        setShowBank(true);
+        // 기본 입금자명 = 가입 시 이름 (수정 가능)
+        if (!depositorName) setDepositorName(user.name || '');
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [user, token]);
 
     const handleSubmitRequest = async () => {
         if (!user || !token || !selectedPlan) return;

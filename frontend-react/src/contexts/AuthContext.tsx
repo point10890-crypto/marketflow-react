@@ -44,6 +44,10 @@ interface AuthContextType {
     logout: () => void;
     isAdmin: () => boolean;
     refreshUser: () => Promise<void>;
+    // register() 응답 등으로 이미 발급된 토큰+유저를 직접 세션에 심을 때 사용.
+    // pending 유저는 login API 에서 401 이 나므로, 가입 직후 대시보드/플랜 페이지로
+    // 바로 진입시키기 위해 이 경로가 필요하다.
+    setSession: (token: string, userData: AuthUserData, remember?: boolean) => void;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -54,6 +58,7 @@ const AuthContext = createContext<AuthContextType>({
     logout: () => {},
     isAdmin: () => false,
     refreshUser: async () => {},
+    setSession: () => {},
 });
 
 function toAuthUser(d: AuthUserData): AuthUser {
@@ -155,6 +160,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
     };
 
+    const setSession = (tok: string, userData: AuthUserData, remember?: boolean) => {
+        if (!tok) return;
+        setToken(tok, remember);
+        setTokenState(tok);
+        setUser(toAuthUser(userData));
+        saveUser(userData);
+    };
+
     const logout = () => {
         clearToken();
         setTokenState(null);
@@ -183,7 +196,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const isAdminFn = () => checkIsAdmin() || user?.role === 'admin';
 
     return (
-        <AuthContext.Provider value={{ user, token, loading, login, logout, isAdmin: isAdminFn, refreshUser }}>
+        <AuthContext.Provider value={{ user, token, loading, login, logout, isAdmin: isAdminFn, refreshUser, setSession }}>
             {children}
         </AuthContext.Provider>
     );
