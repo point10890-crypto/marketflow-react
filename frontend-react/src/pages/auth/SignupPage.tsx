@@ -12,7 +12,7 @@ export default function SignupPage() {
     const [requestedTier, setRequestedTier] = useState<PlanTier | null>(null);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
-    const { login } = useAuth();
+    const { setSession } = useAuth();
     const navigate = useNavigate();
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -41,14 +41,14 @@ export default function SignupPage() {
                 return;
             }
 
-            // Auto sign-in after registration → pricing page (바로 입금 안내)
-            try {
-                await login(email, password, true);
-                navigate('/pricing');
-            } catch {
-                // Login failed but registration succeeded
-                navigate('/login');
+            // register 응답의 token + user 로 바로 세션 수립 (login API 재호출 금지).
+            // pending 상태 유저는 login API 에서 401 을 받아 세션이 수립되지 않으므로
+            // 가입 직후 계좌 안내(/pricing) 로 유도하려면 register 토큰을 직접 써야 한다.
+            if (data.token && data.user) {
+                setSession(data.token, data.user, true);
             }
+            // 선택한 플랜을 쿼리로 넘겨 /pricing 이 바로 해당 플랜의 계좌 정보를 펼침
+            navigate(`/pricing?plan=${requestedTier}`, { replace: true });
         } catch {
             setError('Network error. Please try again.');
             setLoading(false);
