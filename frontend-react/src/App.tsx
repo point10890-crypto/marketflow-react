@@ -50,10 +50,21 @@ const PurchaseAdminPage = lazy(() => import('@/pages/community/PurchaseAdminPage
 // real user info hasn't loaded yet. Show LoadingFallback (do NOT redirect)
 // so existing logged-in users never see a flicker bounce to /login or
 // /pending-approval during page hydration.
+// 미인증 방문자 착지 경로: 이 기기에서 로그인한 이력이 있으면 /login (재로그인 유도),
+// 없으면 랜딩 / (앱 소개 + 가입 유도). 비가입자가 /dashboard 등 아무 보호 경로로
+// 들어와도 가입/로그인 경로로 자연스럽게 흐르게 하는 핵심 분기.
+function unauthRedirect(): string {
+    try {
+        return localStorage.getItem('auth_has_logged_in_before') === 'true' ? '/login' : '/';
+    } catch {
+        return '/';
+    }
+}
+
 function ApprovedGuard({ children }: { children: React.ReactNode }) {
     const { user, loading } = useAuth();
     if (loading) return <LoadingFallback />;
-    if (!user) return <Navigate to="/login" replace />;
+    if (!user) return <Navigate to={unauthRedirect()} replace />;
     if (user.status === 'unknown') return <LoadingFallback />;
     if (user.role === 'admin') return <>{children}</>;
     if (user.status !== 'approved') return <Navigate to="/pending-approval" replace />;
@@ -67,7 +78,7 @@ function ApprovedGuard({ children }: { children: React.ReactNode }) {
 function ProGuard({ children }: { children: React.ReactNode }) {
     const { user, loading } = useAuth();
     if (loading) return <LoadingFallback />;
-    if (!user) return <Navigate to="/login" replace />;
+    if (!user) return <Navigate to={unauthRedirect()} replace />;
     if (user.status === 'unknown') return <LoadingFallback />;
     if (user.role === 'admin') return <>{children}</>;
     if (user.tier === 'pro' || user.tier === 'premium') {
@@ -80,10 +91,32 @@ function ProGuard({ children }: { children: React.ReactNode }) {
 function AdminGuard({ children }: { children: React.ReactNode }) {
     const { user, loading } = useAuth();
     if (loading) return <LoadingFallback />;
-    if (!user) return <Navigate to="/login" replace />;
+    if (!user) return <Navigate to={unauthRedirect()} replace />;
     if (user.status === 'unknown') return <LoadingFallback />;
     if (user.role !== 'admin') return <Navigate to="/dashboard" replace />;
     return <>{children}</>;
+}
+
+// 404 — 미인증 방문자는 랜딩/로그인으로, 인증 유저는 대시보드로 CTA 차별화.
+// 비가입자가 아무 URL 이나 쳐도 가입 플로우로 자연스럽게 흐르게 하기 위함.
+function NotFoundPage() {
+    const { user } = useAuth();
+    const target = user ? '/dashboard' : unauthRedirect();
+    const label = user
+        ? '대시보드로 이동'
+        : (target === '/login' ? '로그인' : '앱 소개 · 가입');
+    return (
+        <div className="flex items-center justify-center min-h-screen bg-[#09090b] text-white">
+            <div className="text-center px-6">
+                <div className="text-6xl font-black text-amber-500 mb-4">404</div>
+                <h1 className="text-xl font-bold mb-2">페이지를 찾을 수 없습니다</h1>
+                <p className="text-gray-500 text-sm mb-6">요청하신 페이지가 존재하지 않거나 이동되었습니다.</p>
+                <a href={target} className="inline-block px-6 py-3 bg-amber-500 text-black font-bold rounded-xl hover:bg-amber-400 transition-colors">
+                    {label}
+                </a>
+            </div>
+        </div>
+    );
 }
 
 function LoadingFallback() {
@@ -151,19 +184,8 @@ export default function App() {
                         <Route path="system" element={<Navigate to="/admin" replace />} />
                     </Route>
 
-                    {/* 404 Not Found */}
-                    <Route path="*" element={
-                        <div className="flex items-center justify-center min-h-screen bg-[#09090b] text-white">
-                            <div className="text-center px-6">
-                                <div className="text-6xl font-black text-amber-500 mb-4">404</div>
-                                <h1 className="text-xl font-bold mb-2">페이지를 찾을 수 없습니다</h1>
-                                <p className="text-gray-500 text-sm mb-6">요청하신 페이지가 존재하지 않거나 이동되었습니다.</p>
-                                <a href="/dashboard" className="inline-block px-6 py-3 bg-amber-500 text-black font-bold rounded-xl hover:bg-amber-400 transition-colors">
-                                    대시보드로 이동
-                                </a>
-                            </div>
-                        </div>
-                    } />
+                    {/* 404 — 미인증자/인증자 분기 CTA */}
+                    <Route path="*" element={<NotFoundPage />} />
                 </Routes>
             </NotificationProvider>
             </AuthProvider>

@@ -64,7 +64,10 @@ export default function LandingPage() {
         if (animState !== 'idle') return;
         setAnimState('ripple');
         setTimeout(() => setAnimState('exit'), 400);
-        setTimeout(() => navigate('/dashboard'), 900);
+        // 미인증 방문자는 /signup 으로, 인증 유저는 /dashboard 로 분기.
+        // (가드가 다시 튕기는 순환 방지 + 비가입자 가입 유도)
+        const target = user ? '/dashboard' : '/signup';
+        setTimeout(() => navigate(target), 900);
     };
 
     return (
@@ -107,9 +110,9 @@ export default function LandingPage() {
                     <button
                         className={`landing-cta ${animState === 'ripple' ? 'landing-cta-ripple' : ''}`}
                         onClick={handleEnter}
-                        aria-label="대시보드 열기"
+                        aria-label={user ? '대시보드 열기' : '가입하고 시작'}
                     >
-                        <span className="landing-cta-text">대시보드 보기</span>
+                        <span className="landing-cta-text">{user ? '대시보드 보기' : '가입하고 시작'}</span>
                         <span className="landing-cta-arrow"><i className="fas fa-arrow-right" /></span>
                         <span className="landing-cta-ripple-bg" />
                     </button>

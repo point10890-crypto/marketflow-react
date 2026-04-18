@@ -147,6 +147,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             .finally(() => setLoading(false));
     }, []);
 
+    // "이 기기에서 한번이라도 로그인/가입한 적 있음" 영구 플래그.
+    // logout 에서는 지우지 않는다 → 방문 이력 있는 기기는 로그아웃 후 재접속 시
+    // /login 으로, 없는 기기는 랜딩(/) 으로 분기해 비가입자에게 가입 유도.
+    const markHasLoggedInBefore = () => {
+        try { localStorage.setItem('auth_has_logged_in_before', 'true'); } catch { /* quota/private mode */ }
+    };
+
     const login = async (email: string, password: string, remember?: boolean): Promise<void> => {
         const data = await postAPI<{ token: string; user?: AuthUserData }>('/api/auth/login', { email, password });
         if (!data.token) throw new Error('No token received from server');
@@ -158,6 +165,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setUser(toAuthUser(data.user));
             saveUser(data.user);
         }
+        markHasLoggedInBefore();
     };
 
     const setSession = (tok: string, userData: AuthUserData, remember?: boolean) => {
@@ -166,12 +174,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setTokenState(tok);
         setUser(toAuthUser(userData));
         saveUser(userData);
+        markHasLoggedInBefore();
     };
 
     const logout = () => {
         clearToken();
         setTokenState(null);
         setUser(null);
+        // auth_has_logged_in_before 플래그는 일부러 유지 → 재접속 시 /login 분기
     };
 
     const refreshUser = async () => {
