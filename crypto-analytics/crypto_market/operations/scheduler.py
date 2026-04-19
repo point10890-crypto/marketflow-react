@@ -175,7 +175,10 @@ def gate_check_job():
     try:
         from market_gate import run_market_gate_sync
         result = run_market_gate_sync()
-        logger.info(f"Gate status: {result.get('signal', 'UNKNOWN')}")
+        # MarketGateResult 는 @dataclass — .gate / .score 속성 접근 (dict 아님).
+        # 과거 `result.get('signal', ...)` 버그로 인해 2025-12-26 부터
+        # orchestrator 게이트 체크가 매 4시간 AttributeError 로 실패하고 있었음.
+        logger.info(f"Gate status: {result.gate} (score: {result.score})")
         return result
     except Exception as e:
         logger.error(f"Gate check failed: {e}")
