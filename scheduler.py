@@ -1597,10 +1597,21 @@ def run_crypto_gate_check() -> bool:
         if path_added:
             sys.path.insert(0, crypto_dir)
 
-        # sys.modules 스냅샷 — crypto 모듈이 루트 모듈(config 등) 덮어쓰기 방지
-        # sklearn/joblib 등 C extension은 재로드 불가하므로 유지
+        # sys.modules 스냅샷 — crypto 모듈이 루트 모듈(config 등) 덮어쓰기 방지.
+        # sklearn/joblib 등 C extension은 재로드 불가하므로 유지.
         _KEEP_PREFIXES = ('sklearn', 'joblib', 'scipy', 'numpy', 'pandas')
         _saved_mods = {k: v for k, v in sys.modules.items()}
+
+        # 네임스페이스 충돌 해결: 루트 market_gate.py(KR용)는 `run_kr_market_gate`
+        # 만 export 하고 `run_market_gate_sync` 는 없음. 반면 crypto_dir 의
+        # market_gate.py 에 해당 심볼이 있음. sys.path 앞에 crypto_dir 을 넣어도
+        # sys.modules 에 기존 루트 `market_gate` 가 이미 캐시되어 있으면 import
+        # 시스템이 그걸 재사용 → ImportError 발생. 따라서 충돌 가능한 모듈을
+        # 명시적으로 pop 한 뒤 import, finally 에서 원본 복원한다.
+        _CONFLICT_MODS = ('market_gate', 'models', 'indicators')
+        for _m in _CONFLICT_MODS:
+            sys.modules.pop(_m, None)
+
         try:
             from market_gate import run_market_gate_sync
             result = run_market_gate_sync()
