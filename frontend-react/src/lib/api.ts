@@ -874,6 +874,7 @@ export const adminAPI = {
     setUserStatus: (id: number, status: string, token?: string) => putAuthAPI<{ user: AdminUser }>(`/api/admin/users/${id}/status`, { status }, token),
     extendPro: (id: number, days: number, token?: string) => postAuthAPI<{ user: AdminUser }>(`/api/admin/users/${id}/extend`, { days }, token),
     setExpiry: (id: number, pro_expires_at: string, token?: string) => putAuthAPI<{ user: AdminUser }>(`/api/admin/users/${id}/expiry`, { pro_expires_at }, token),
+    revokeSubscription: (id: number, note: string | undefined, token?: string) => postAuthAPI<{ user: AdminUser }>(`/api/admin/users/${id}/revoke`, { note: note || '' }, token),
     bulkTier: (user_ids: number[], tier: string, token?: string) => postAuthAPI<{ count: number }>(`/api/admin/users/bulk-tier`, { user_ids, tier }, token),
     bulkApprove: (user_ids: number[], token?: string) => postAuthAPI<{ count: number }>(`/api/admin/users/bulk-approve`, { user_ids }, token),
     resetPassword: (id: number, password: string, token?: string, note?: string) => putAuthAPI<{ message: string; user: AdminUser }>(`/api/admin/users/${id}/reset-password`, { password, note }, token),

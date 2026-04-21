@@ -403,6 +403,57 @@ def set_expiry(user_id):
     return jsonify({'message': f'{user.email} 만료일 변경', 'user': user.to_dict()})
 
 
+@admin_bp.route('/users/<int:user_id>/revoke', methods=['POST'])
+@admin_required
+def revoke_subscription(user_id):
+    """Pro 구독 즉시 만료 처리.
+
+    자동 만료 메커니즘이 실패했거나 관리자가 중도 해제(환불/정책 위반 등)
+    할 필요가 있을 때 사용. pro_expires_at 을 1분 전으로 세팅해서
+    ApprovedGuard 의 is_pro_expired=true 분기가 발동되도록 한다.
+
+    - tier 는 유지 (구독 이력은 남김)
+    - status 유지 (로그인은 계속 가능 — 환불/재구독 협의 여지)
+    - pro_expiry_alert_stage='expired' 로 세팅 (중복 알림 방지)
+    - premium 유저는 무기한이라 revoke 대상 아님 (400)
+    - 이미 만료된 유저도 idempotent (같은 효과)
+    """
+    user = db.session.get(User, user_id)
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+
+    # Ultra Pro 는 무기한 — revoke 대상이 아님
+    if user.tier == 'premium':
+        return jsonify({'error': 'Ultra Pro 는 무기한이라 만료 처리 불가. tier 변경을 사용하세요.'}), 400
+    if user.tier != 'pro':
+        return jsonify({'error': f'Pro 유저가 아닙니다 (tier={user.tier})'}), 400
+
+    data = request.get_json() or {}
+    note = (data.get('note') or '').strip() or 'admin manual revoke'
+
+    before = {
+        'pro_expires_at': user.pro_expires_at.isoformat() if user.pro_expires_at else None,
+        'pro_expiry_alert_stage': user.pro_expiry_alert_stage,
+    }
+
+    # 1분 전으로 세팅해서 즉시 만료 상태로 만듦
+    user.pro_expires_at = datetime.now(timezone.utc) - timedelta(minutes=1)
+    user.pro_expiry_alert_stage = 'expired'   # 중복 알림 방지
+    db.session.commit()
+
+    after = {
+        'pro_expires_at': user.pro_expires_at.isoformat(),
+        'pro_expiry_alert_stage': user.pro_expiry_alert_stage,
+    }
+    _record_audit('revoke_subscription', user, before, after, note=note)
+    _notify_admin('구독 즉시 만료 처리', user, f"사유: {note}")
+
+    return jsonify({
+        'message': f'{user.email} 구독 즉시 만료 처리됨',
+        'user': user.to_dict(),
+    })
+
+
 @admin_bp.route('/users/<int:user_id>/reset-password', methods=['PUT'])
 @admin_required
 def reset_password(user_id):

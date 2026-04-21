@@ -25,6 +25,7 @@ export default function ProExpiryTab({ apiToken }: { apiToken?: string }) {
     const [users, setUsers] = useState<ProUser[]>([]);
     const [loading, setLoading] = useState(true);
     const [extendingId, setExtendingId] = useState<number | null>(null);
+    const [revokingId, setRevokingId] = useState<number | null>(null);
     const [msg, setMsg] = useState<string>('');
     const [filter, setFilter] = useState<'all' | 'expired' | 'd3' | 'd1'>('all');
 
@@ -114,6 +115,28 @@ export default function ProExpiryTab({ apiToken }: { apiToken?: string }) {
             showMsg(err?.message || '연장 실패', true);
         }
         setExtendingId(null);
+    };
+
+    const handleRevoke = async (u: ProUser) => {
+        const ok = window.confirm(
+            `정말 "${u.name}" (${u.email}) 님의 Pro 구독을 즉시 만료 처리하시겠습니까?\n\n` +
+            `- 대시보드 접근 차단 (재구독 페이지로 자동 이동)\n` +
+            `- 로그인은 계속 가능 (환불/재구독 협의용)\n` +
+            `- 이력은 보존, 복구는 "+30일 연장" 으로 가능`
+        );
+        if (!ok) return;
+
+        const note = window.prompt('해제 사유 (감사로그에 기록, 공란 가능):', '') || '';
+
+        setRevokingId(u.id);
+        try {
+            const res = await adminAPI.revokeSubscription(u.id, note || undefined, apiToken);
+            setUsers(prev => prev.map(x => x.id === u.id ? (res.user as ProUser) : x));
+            showMsg(`${u.name} 구독 즉시 만료 처리 완료`);
+        } catch (err: any) {
+            showMsg(err?.message || '해제 실패', true);
+        }
+        setRevokingId(null);
     };
 
     if (loading) {
@@ -238,7 +261,7 @@ export default function ProExpiryTab({ apiToken }: { apiToken?: string }) {
                                             <div className="inline-flex items-center gap-1">
                                                 <button
                                                     onClick={() => handleExtend(u, 30)}
-                                                    disabled={extendingId === u.id}
+                                                    disabled={extendingId === u.id || revokingId === u.id}
                                                     className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25 transition-colors disabled:opacity-50"
                                                     title="+30일 연장"
                                                 >
@@ -246,12 +269,23 @@ export default function ProExpiryTab({ apiToken }: { apiToken?: string }) {
                                                 </button>
                                                 <button
                                                     onClick={() => handleExtend(u, 7)}
-                                                    disabled={extendingId === u.id}
-                                                    className="px-2 py-1 rounded-lg text-[10px] text-gray-500 hover:text-emerald-400 hover:bg-emerald-500/10 transition-colors"
+                                                    disabled={extendingId === u.id || revokingId === u.id}
+                                                    className="px-2 py-1 rounded-lg text-[10px] text-gray-500 hover:text-emerald-400 hover:bg-emerald-500/10 transition-colors disabled:opacity-50"
                                                     title="+7일 연장"
                                                 >
                                                     +7d
                                                 </button>
+                                                {/* 즉시 만료 처리 (관리자 중도 해제) — 만료 아직 안된 유저만 표시 */}
+                                                {b !== 'expired' && (
+                                                    <button
+                                                        onClick={() => handleRevoke(u)}
+                                                        disabled={extendingId === u.id || revokingId === u.id}
+                                                        className="px-2 py-1 rounded-lg text-[10px] font-bold bg-red-500/10 text-red-400 hover:bg-red-500/25 transition-colors disabled:opacity-50 ml-1 border border-red-500/20"
+                                                        title="구독 즉시 만료 처리 (confirm 필요)"
+                                                    >
+                                                        {revokingId === u.id ? <i className="fas fa-spinner fa-spin" /> : '해제'}
+                                                    </button>
+                                                )}
                                             </div>
                                         </td>
                                     </tr>
