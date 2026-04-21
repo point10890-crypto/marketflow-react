@@ -3,13 +3,22 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { API_BASE } from '@/lib/api';
 
-type PlanTier = 'pro' | 'premium';
-
+/**
+ * 가입 폼 — 기본 정보(이름/이메일/비번)만 받는다.
+ * 플랜 선택은 가입 완료 후 /plan-select 에서 진행.
+ *
+ * 플로우:
+ *   /          (랜딩)
+ *     → /signup (이 페이지)
+ *     → /plan-select
+ *     → /payment-request?plan=X
+ *     → /pending-approval
+ *     → /dashboard
+ */
 export default function SignupPage() {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [requestedTier, setRequestedTier] = useState<PlanTier | null>(null);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const { setSession } = useAuth();
@@ -18,39 +27,33 @@ export default function SignupPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
-
-        if (!requestedTier) {
-            setError('구독 플랜을 선택해 주세요.');
-            return;
-        }
-
         setLoading(true);
 
         try {
             const res = await fetch(`${API_BASE}/api/auth/register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, email, password, requested_tier: requestedTier }),
+                body: JSON.stringify({ name, email, password }),
             });
 
             const data = await res.json();
 
             if (!res.ok) {
-                setError(data.error || 'Registration failed');
+                setError(data.error || '가입에 실패했습니다.');
                 setLoading(false);
                 return;
             }
 
             // register 응답의 token + user 로 바로 세션 수립 (login API 재호출 금지).
             // pending 상태 유저는 login API 에서 401 을 받아 세션이 수립되지 않으므로
-            // 가입 직후 계좌 안내(/pricing) 로 유도하려면 register 토큰을 직접 써야 한다.
+            // 가입 직후 플랜 선택 페이지로 유도하려면 register 토큰을 직접 써야 한다.
             if (data.token && data.user) {
                 setSession(data.token, data.user, true);
             }
-            // 선택한 플랜을 쿼리로 넘겨 /pricing 이 바로 해당 플랜의 계좌 정보를 펼침
-            navigate(`/pricing?plan=${requestedTier}`, { replace: true });
+            // 플랜 선택 페이지로
+            navigate('/plan-select', { replace: true });
         } catch {
-            setError('Network error. Please try again.');
+            setError('네트워크 오류입니다. 잠시 후 다시 시도해 주세요.');
             setLoading(false);
         }
     };
@@ -62,85 +65,40 @@ export default function SignupPage() {
                     <h1 className="text-4xl font-bold text-white tracking-tighter mb-2">
                         Market<span className="text-[#2997ff]">Flow</span>
                     </h1>
-                    <p className="text-gray-500">Create your account</p>
+                    <p className="text-gray-500">계정을 만들어 구독을 시작하세요</p>
+                    <p className="text-gray-600 text-xs mt-1">가입 → 플랜 선택 → 입금 안내 순서로 진행됩니다</p>
                 </div>
                 <form onSubmit={handleSubmit} className="p-8 rounded-2xl bg-[#1c1c1e] border border-white/10 space-y-5">
                     {error && (
                         <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">{error}</div>
                     )}
                     <div>
-                        <label className="block text-xs font-medium text-gray-400 mb-2">Name</label>
+                        <label className="block text-xs font-medium text-gray-400 mb-2">이름</label>
                         <input type="text" value={name} onChange={(e) => setName(e.target.value)} required
                             className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-600 focus:outline-none focus:border-[#2997ff] transition-colors"
-                            placeholder="Your name" />
+                            placeholder="이름 (입금자명과 동일하게)" />
                     </div>
                     <div>
-                        <label className="block text-xs font-medium text-gray-400 mb-2">Email</label>
+                        <label className="block text-xs font-medium text-gray-400 mb-2">이메일</label>
                         <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required
                             className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-600 focus:outline-none focus:border-[#2997ff] transition-colors"
                             placeholder="you@example.com" />
                     </div>
                     <div>
-                        <label className="block text-xs font-medium text-gray-400 mb-2">Password</label>
+                        <label className="block text-xs font-medium text-gray-400 mb-2">비밀번호</label>
                         <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={8}
                             className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-600 focus:outline-none focus:border-[#2997ff] transition-colors"
-                            placeholder="Min 8 characters (letter + number)" />
+                            placeholder="영문+숫자 8자 이상" />
                     </div>
 
-                    {/* 플랜 선택 (필수) — 가입자의 구독 의지를 먼저 명확히 한다 */}
-                    <div>
-                        <label className="block text-xs font-medium text-gray-400 mb-2">
-                            구독 플랜 선택 <span className="text-red-400">*</span>
-                        </label>
-                        <div className="grid grid-cols-2 gap-3">
-                            <button
-                                type="button"
-                                onClick={() => setRequestedTier('pro')}
-                                className={`p-4 rounded-xl border-2 text-left transition-all ${
-                                    requestedTier === 'pro'
-                                        ? 'border-amber-500 bg-amber-500/10 ring-2 ring-amber-500/30'
-                                        : 'border-white/10 bg-white/5 hover:border-white/20'
-                                }`}
-                            >
-                                <div className="flex items-center gap-1 mb-1">
-                                    <i className="fas fa-crown text-amber-400 text-xs" />
-                                    <span className="text-xs font-bold text-amber-400">추천</span>
-                                </div>
-                                <div className="text-white font-bold text-sm">Pro</div>
-                                <div className="text-white text-lg font-black mt-1">50,000원</div>
-                                <div className="text-gray-500 text-[10px]">30일</div>
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setRequestedTier('premium')}
-                                className={`p-4 rounded-xl border-2 text-left transition-all ${
-                                    requestedTier === 'premium'
-                                        ? 'border-purple-500 bg-purple-500/10 ring-2 ring-purple-500/30'
-                                        : 'border-white/10 bg-white/5 hover:border-white/20'
-                                }`}
-                            >
-                                <div className="flex items-center gap-1 mb-1">
-                                    <i className="fas fa-gem text-purple-400 text-xs" />
-                                    <span className="text-xs font-bold text-purple-400">평생</span>
-                                </div>
-                                <div className="text-white font-bold text-sm">Ultra Pro</div>
-                                <div className="text-white text-lg font-black mt-1">1,200,000원</div>
-                                <div className="text-gray-500 text-[10px]">무기한</div>
-                            </button>
-                        </div>
-                        <p className="text-[11px] text-gray-500 mt-2">
-                            <i className="fas fa-info-circle mr-1" />
-                            가입 후 입금 계좌가 안내됩니다. 관리자 확인 후 활성화됩니다.
-                        </p>
-                    </div>
-
-                    <button type="submit" disabled={loading || !requestedTier}
+                    <button type="submit" disabled={loading}
                         className="w-full py-3 rounded-xl bg-[#2997ff] hover:bg-[#2997ff]/90 text-white font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed">
-                        {loading ? 'Creating account...' : 'Create Account'}
+                        {loading ? '계정 생성 중…' : '계정 만들기'}
                     </button>
+
                     <p className="text-center text-sm text-gray-500">
-                        Already have an account?{' '}
-                        <Link to="/login" className="text-[#2997ff] hover:underline">Sign In</Link>
+                        이미 계정이 있으신가요?{' '}
+                        <Link to="/login" className="text-[#2997ff] hover:underline">로그인</Link>
                     </p>
                 </form>
             </div>
