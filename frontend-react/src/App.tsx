@@ -5,6 +5,8 @@ import DashboardLayout from '@/components/layout/DashboardLayout';
 import LoginPage from '@/pages/auth/LoginPage';
 import SignupPage from '@/pages/auth/SignupPage';
 import PendingApprovalPage from '@/pages/auth/PendingApprovalPage';
+import PlanSelectPage from '@/pages/auth/PlanSelectPage';
+import PaymentRequestPage from '@/pages/auth/PaymentRequestPage';
 import PricingPage from '@/pages/static/PricingPage';
 import LandingPage from '@/pages/LandingPage';
 
@@ -69,9 +71,9 @@ function ApprovedGuard({ children }: { children: React.ReactNode }) {
     if (user.role === 'admin') return <>{children}</>;
     if (user.status !== 'approved') return <Navigate to="/pending-approval" replace />;
     if (user.tier !== 'pro' && user.tier !== 'premium') return <Navigate to="/pending-approval" replace />;
-    // Pro 만료 시 대시보드 차단 → /pricing 으로 유도해 재구독 신청 가능하게
+    // Pro 만료 시 대시보드 차단 → /plan-select 로 재구독 경로 통합
     // (premium 은 is_pro_expired 가 항상 false 이므로 영향 없음)
-    if (user.is_pro_expired) return <Navigate to="/pricing" replace />;
+    if (user.is_pro_expired) return <Navigate to="/plan-select" replace />;
     return <>{children}</>;
 }
 
@@ -82,10 +84,11 @@ function ProGuard({ children }: { children: React.ReactNode }) {
     if (user.status === 'unknown') return <LoadingFallback />;
     if (user.role === 'admin') return <>{children}</>;
     if (user.tier === 'pro' || user.tier === 'premium') {
-        if (user.is_pro_expired) return <Navigate to="/pricing" replace />;
+        if (user.is_pro_expired) return <Navigate to="/plan-select" replace />;
         return <>{children}</>;
     }
-    return <Navigate to="/pricing" replace />;
+    // 미구독 pending 유저는 플랜 선택 페이지로
+    return <Navigate to="/plan-select" replace />;
 }
 
 function AdminGuard({ children }: { children: React.ReactNode }) {
@@ -140,6 +143,9 @@ export default function App() {
                     <Route path="/" element={<LandingPage />} />
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/signup" element={<SignupPage />} />
+                    {/* 구독 신청 3단계 플로우 — 신규 가입 + 만료 재구독 공용 */}
+                    <Route path="/plan-select" element={<PlanSelectPage />} />
+                    <Route path="/payment-request" element={<PaymentRequestPage />} />
                     <Route path="/pricing" element={<PricingPage />} />
                     <Route path="/pending-approval" element={<PendingApprovalPage />} />
 

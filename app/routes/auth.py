@@ -171,10 +171,9 @@ def register():
     if User.query.filter_by(email=email).first():
         return jsonify({'error': 'Email already registered'}), 409
 
-    # 신규 가입자는 플랜 선택 필수 (첫 유저 = admin 생성 시만 예외)
+    # 가입은 기본 정보만 받는다. 플랜 선택은 /plan-select 페이지에서 별도 진행.
+    # requested_tier 는 하위호환 — 폼에서 보내면 그대로 저장(NULL 허용).
     is_first_user = User.query.count() == 0
-    if not is_first_user and not requested_tier:
-        return jsonify({'error': '구독 플랜 선택이 필요합니다. (pro 또는 premium)'}), 400
 
     # 동일 이름 중복 가입 경고 (차단은 하지 않음 — 동명이인 가능)
     same_name_users = User.query.filter(db.func.lower(User.name) == name.lower()).all()

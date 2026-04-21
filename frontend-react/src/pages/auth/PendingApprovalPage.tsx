@@ -108,13 +108,20 @@ export default function PendingApprovalPage() {
                     )}
 
                     <div className="space-y-3">
-                        {/* 유료 플랜 신청 (입금 안내) — 출구 보장 */}
+                        {/* 유료 플랜 신청 (입금 안내) — 요청 플랜 있으면 바로 결제 페이지로, 없으면 선택 페이지로 */}
                         <button
-                            onClick={() => navigate('/pricing')}
+                            onClick={() => {
+                                const rt = user?.requested_tier;
+                                if (rt === 'pro' || rt === 'premium') {
+                                    navigate(`/payment-request?plan=${rt}`);
+                                } else {
+                                    navigate('/plan-select');
+                                }
+                            }}
                             className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-black font-bold transition-all flex items-center justify-center gap-2"
                         >
                             <i className="fas fa-credit-card" />
-                            플랜 신청 · 입금 안내 보기
+                            {user?.requested_tier ? '입금 안내 다시 보기' : '플랜 선택하기'}
                         </button>
                         <button
                             onClick={handleCheckStatus}
