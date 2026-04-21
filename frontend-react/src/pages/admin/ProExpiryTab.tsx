@@ -148,9 +148,18 @@ export default function ProExpiryTab({ apiToken }: { apiToken?: string }) {
     }
 
     return (
-        <div className="space-y-5">
-            {/* 통계 카드 */}
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+        <div className="space-y-3 sm:space-y-5">
+            {/* 통계 — 모바일: 1줄 compact, 데스크톱: 5개 큰 카드 */}
+            {/* 모바일 (sm 미만): 1줄 요약 */}
+            <div className="sm:hidden flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg bg-[#141416] border border-white/[0.06] text-xs">
+                <span className="text-gray-400">Pro <span className="text-white font-bold">{proUsers.length}</span></span>
+                <span className={counts.expired > 0 ? 'text-red-400 font-bold' : 'text-gray-600'}>만료 {counts.expired}</span>
+                <span className={counts.d1 > 0 ? 'text-red-400 font-bold' : 'text-gray-600'}>D-1 {counts.d1}</span>
+                <span className={counts.d3 > 0 ? 'text-amber-400 font-bold' : 'text-gray-600'}>D-3 {counts.d3}</span>
+                <span className="text-purple-400">Ultra {premiumCount}</span>
+            </div>
+            {/* 데스크톱 (sm+): 5개 카드 */}
+            <div className="hidden sm:grid grid-cols-5 gap-3">
                 <StatCard label="전체 Pro" value={proUsers.length} color="amber" />
                 <StatCard label="만료됨" value={counts.expired} color="red" highlight={counts.expired > 0} />
                 <StatCard label="D-1 이내" value={counts.d1} color="red" highlight={counts.d1 > 0} />
@@ -158,30 +167,29 @@ export default function ProExpiryTab({ apiToken }: { apiToken?: string }) {
                 <StatCard label="일반" value={counts.normal} color="gray" />
             </div>
 
-            <div className="flex items-center justify-between gap-3 flex-wrap">
-                <div className="text-xs text-gray-500">
+            {/* 필터 — 모바일에서도 한줄 유지 (작은 칩) */}
+            <div className="flex items-center gap-1.5 overflow-x-auto">
+                {([
+                    ['all',     `전체 ${proUsers.length}`],
+                    ['d3',      `D-3 ${counts.expired + counts.d1 + counts.d3}`],
+                    ['d1',      `D-1 ${counts.expired + counts.d1}`],
+                    ['expired', `만료 ${counts.expired}`],
+                ] as const).map(([k, label]) => (
+                    <button
+                        key={k}
+                        onClick={() => setFilter(k)}
+                        className={`shrink-0 px-2.5 py-1 rounded-full border text-[11px] transition-colors ${
+                            filter === k
+                                ? 'bg-amber-500/20 border-amber-500/40 text-amber-300'
+                                : 'bg-white/5 border-white/10 text-gray-400 hover:text-white'
+                        }`}
+                    >
+                        {label}
+                    </button>
+                ))}
+                <div className="hidden sm:block ml-auto text-xs text-gray-500">
                     <i className="fas fa-gem text-purple-400 mr-1" />
-                    Ultra Pro <span className="text-purple-400 font-bold">{premiumCount}명</span> (무기한 — 만료 없음)
-                </div>
-                <div className="flex items-center gap-2 text-xs flex-wrap">
-                    {([
-                        ['all',     `전체 ${proUsers.length}`],
-                        ['d3',      `D-3 이내 ${counts.expired + counts.d1 + counts.d3}`],
-                        ['d1',      `D-1 이내 ${counts.expired + counts.d1}`],
-                        ['expired', `만료 ${counts.expired}`],
-                    ] as const).map(([k, label]) => (
-                        <button
-                            key={k}
-                            onClick={() => setFilter(k)}
-                            className={`px-3 py-1 rounded-full border transition-colors ${
-                                filter === k
-                                    ? 'bg-amber-500/20 border-amber-500/40 text-amber-300'
-                                    : 'bg-white/5 border-white/10 text-gray-400 hover:text-white'
-                            }`}
-                        >
-                            {label}
-                        </button>
-                    ))}
+                    Ultra Pro <span className="text-purple-400 font-bold">{premiumCount}명</span> (무기한)
                 </div>
             </div>
 
@@ -195,8 +203,67 @@ export default function ProExpiryTab({ apiToken }: { apiToken?: string }) {
                 </div>
             )}
 
-            {/* 테이블 */}
-            <div className="bg-[#141416] border border-white/[0.06] rounded-xl overflow-hidden">
+            {/* 모바일: 컴팩트 카드 리스트 (sm 미만) */}
+            <div className="sm:hidden space-y-2">
+                {sorted.map(u => {
+                    const exp = fmtExpiry(u.pro_expires_at);
+                    const b = bucket(u);
+                    const cardCls = b === 'expired'
+                        ? 'bg-red-500/[0.06] border-red-500/20'
+                        : b === 'd1'
+                        ? 'bg-red-500/[0.03] border-red-500/15'
+                        : b === 'd3'
+                        ? 'bg-amber-500/[0.03] border-amber-500/15'
+                        : 'bg-[#141416] border-white/[0.06]';
+                    return (
+                        <div key={u.id} className={`p-3 rounded-lg border ${cardCls}`}>
+                            <div className="flex items-start justify-between gap-2">
+                                <div className="min-w-0 flex-1">
+                                    <div className="flex items-center gap-2 mb-0.5">
+                                        <span className="text-sm font-semibold text-white truncate">{u.name}</span>
+                                        {exp.badge && (
+                                            <span className={`shrink-0 text-[10px] px-1.5 py-0.5 rounded-full font-bold ${exp.badgeCls}`}>
+                                                {exp.badge}
+                                            </span>
+                                        )}
+                                    </div>
+                                    <div className="text-[11px] text-gray-500 truncate">{u.email}</div>
+                                    <div className="text-[11px] mt-1">
+                                        <span className="text-gray-600">만료: </span>
+                                        <span className={`font-bold ${exp.cls}`}>{exp.label}</span>
+                                    </div>
+                                </div>
+                                <div className="flex flex-col gap-1 shrink-0">
+                                    <button
+                                        onClick={() => handleExtend(u, 30)}
+                                        disabled={extendingId === u.id || revokingId === u.id}
+                                        className="px-2.5 py-1 rounded-md text-[11px] font-bold bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25 transition-colors disabled:opacity-50 whitespace-nowrap"
+                                    >
+                                        {extendingId === u.id ? <i className="fas fa-spinner fa-spin" /> : '+30일'}
+                                    </button>
+                                    {b !== 'expired' && (
+                                        <button
+                                            onClick={() => handleRevoke(u)}
+                                            disabled={extendingId === u.id || revokingId === u.id}
+                                            className="px-2.5 py-1 rounded-md text-[11px] font-bold bg-red-500/10 text-red-400 hover:bg-red-500/25 transition-colors disabled:opacity-50 border border-red-500/20 whitespace-nowrap"
+                                        >
+                                            {revokingId === u.id ? <i className="fas fa-spinner fa-spin" /> : '해제'}
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    );
+                })}
+                {sorted.length === 0 && (
+                    <div className="text-center py-12 text-gray-500 text-sm bg-[#141416] rounded-lg border border-white/[0.06]">
+                        {filter === 'all' ? 'Pro 구독자가 없습니다' : '해당 구간에 대상자 없음'}
+                    </div>
+                )}
+            </div>
+
+            {/* 데스크톱 (sm+): 테이블 */}
+            <div className="hidden sm:block bg-[#141416] border border-white/[0.06] rounded-xl overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full">
                         <thead className="bg-white/[0.03]">
@@ -275,7 +342,6 @@ export default function ProExpiryTab({ apiToken }: { apiToken?: string }) {
                                                 >
                                                     +7d
                                                 </button>
-                                                {/* 즉시 만료 처리 (관리자 중도 해제) — 만료 아직 안된 유저만 표시 */}
                                                 {b !== 'expired' && (
                                                     <button
                                                         onClick={() => handleRevoke(u)}
