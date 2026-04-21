@@ -3,13 +3,15 @@ import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { adminAPI, AdminDashboard, AdminUser, AdminNotification, SubscriptionRequest, fetchAuthAPI, API_BASE } from '@/lib/api';
+import ProExpiryTab from './ProExpiryTab';
 
-type AdminTab = 'dashboard' | 'users' | 'subscriptions' | 'system';
+type AdminTab = 'dashboard' | 'users' | 'subscriptions' | 'pro' | 'system';
 
 const TABS: { key: AdminTab; label: string; icon: string }[] = [
     { key: 'dashboard', label: '대시보드', icon: 'fa-shield-alt' },
     { key: 'users', label: '사용자', icon: 'fa-users-cog' },
     { key: 'subscriptions', label: '구독', icon: 'fa-credit-card' },
+    { key: 'pro', label: 'Pro 관리', icon: 'fa-hourglass-half' },
     { key: 'system', label: '시스템', icon: 'fa-server' },
 ];
 
@@ -57,7 +59,7 @@ export default function AdminPage() {
             </div>
 
             {/* Tab Navigation */}
-            <div className="grid grid-cols-4 gap-1 bg-white/[0.03] rounded-xl p-1 border border-white/[0.06]">
+            <div className="grid grid-cols-5 gap-1 bg-white/[0.03] rounded-xl p-1 border border-white/[0.06]">
                 {TABS.map(tab => (
                     <button
                         key={tab.key}
@@ -83,6 +85,7 @@ export default function AdminPage() {
             {activeTab === 'dashboard' && <DashboardTab data={dashData} onNavigate={setActiveTab} apiToken={apiToken} />}
             {activeTab === 'users' && <UsersTab apiToken={apiToken} currentUserId={authUser?.id} />}
             {activeTab === 'subscriptions' && <SubscriptionsTab apiToken={apiToken} onCountChange={setPendingCount} />}
+            {activeTab === 'pro' && <ProExpiryTab apiToken={apiToken} />}
             {activeTab === 'system' && <SystemTab token={token} />}
         </div>
     );
