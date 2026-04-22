@@ -42,6 +42,14 @@ KIWOOM_BASE_URL = os.getenv("KIWOOM_BASE_URL", "https://api.kiwoom.com")
 KIWOOM_APP_KEY = os.getenv("KIWOOM_APP_KEY", "")
 KIWOOM_APP_SECRET = os.getenv("KIWOOM_APP_SECRET", "")
 
+# 외부 프로젝트(autotrading_project 등)와 동일 appkey 를 공유할 때 토큰 경합 방지.
+# 우선순위: 자체 캐시 → 외부 캐시 → 신규 발급.
+# 외부 캐시가 유효하면 /oauth2/token 호출을 건너뛰어 상대 프로젝트의 활성 토큰을 무효화하지 않는다.
+EXTERNAL_TOKEN_CACHE = os.getenv(
+    "KIWOOM_EXTERNAL_TOKEN_CACHE",
+    r"C:\autotrading_project\data\token_cache.json"
+)
+
 
 def _load_cached_token() -> dict | None:
     """캐시된 토큰 로드. 만료 1시간 전이면 None 반환."""
@@ -65,6 +73,41 @@ def _load_cached_token() -> dict | None:
         return None
 
 
+def _load_external_token() -> dict | None:
+    """외부 프로젝트(autotrading_project) 의 token_cache.json 에서 유효 토큰 조회.
+
+    포맷: {"<mode>:<appkey_prefix>": {"token": ..., "expires_at": epoch_float, ...}}
+    MarketFlow 자체 포맷 {"token": ..., "expires_dt": "YYYYMMDDHHMMSS"} 로 변환 반환.
+    유효 토큰 없거나 파일 없으면 None.
+    """
+    if not EXTERNAL_TOKEN_CACHE or not os.path.exists(EXTERNAL_TOKEN_CACHE):
+        return None
+    if not KIWOOM_APP_KEY:
+        return None
+    try:
+        with open(EXTERNAL_TOKEN_CACHE, "r", encoding="utf-8") as f:
+            raw = json.load(f)
+        # mode 는 KIWOOM_BASE_URL 로 판정
+        mode = "paper" if "mockapi" in (KIWOOM_BASE_URL or "") else "live"
+        cache_key = f"{mode}:{KIWOOM_APP_KEY[:8]}"
+        entry = raw.get(cache_key)
+        if not entry:
+            return None
+        expires_at = float(entry.get("expires_at", 0))
+        # 만료 5분 전까지만 유효 (autotrading 과 동일 마진)
+        if expires_at - time.time() < 300:
+            return None
+        token = entry.get("token")
+        if not token:
+            return None
+        expires_dt = datetime.fromtimestamp(expires_at).strftime("%Y%m%d%H%M%S")
+        logger.info(f"[kiwoom] 외부 캐시(autotrading) 토큰 재사용 — 만료까지 {int(expires_at - time.time())}s")
+        return {"token": token, "expires_dt": expires_dt, "return_code": 0, "shared_from": EXTERNAL_TOKEN_CACHE}
+    except Exception as e:
+        logger.warning(f"[kiwoom] 외부 토큰 캐시 로드 실패: {e}")
+        return None
+
+
 def _save_token(token_data: dict):
     """토큰을 파일에 저장."""
     try:
@@ -75,17 +118,53 @@ def _save_token(token_data: dict):
         logger.warning(f"[kiwoom] 토큰 저장 실패: {e}")
 
 
+def _expires_dt_to_epoch(expires_dt: str) -> float:
+    """MarketFlow 자체 캐시의 expires_dt ('YYYYMMDDHHMMSS') → epoch float."""
+    try:
+        return datetime.strptime(expires_dt, "%Y%m%d%H%M%S").timestamp()
+    except Exception:
+        return 0.0
+
+
 def get_token() -> str | None:
-    """유효한 토큰 반환. 캐시 우선, 만료 시 재발급."""
+    """유효한 토큰 반환.
+
+    동일 appkey 를 쓰는 외부 프로젝트(autotrading_project)와 경합 방지 —
+    **더 늦게 발급된(expires 가 더 먼) 토큰이 실제로 Kiwoom 에서 유효** 하므로
+    양 캐시를 비교해 최신 토큰을 선택.
+
+    우선순위:
+      1. 외부/자체 캐시 둘 중 expires 가 더 먼 유효 토큰
+      2. 유효 캐시 없으면 /oauth2/token 신규 발급 (자체 캐시에만 저장)
+
+    외부 토큰은 자체 캐시에 저장하지 않음 — autotrading 이 재발급해 stale 된
+    자체 캐시를 덮어쓰지 않도록, 항상 양쪽을 다시 비교.
+    """
     if not KIWOOM_APP_KEY or not KIWOOM_APP_SECRET:
         logger.warning("[kiwoom] KIWOOM_APP_KEY/SECRET 미설정")
         return None
 
-    cached = _load_cached_token()
-    if cached:
-        return cached["token"]
+    external = _load_external_token()
+    own = _load_cached_token()
+
+    ext_exp = _expires_dt_to_epoch(external.get("expires_dt", "")) if external else 0.0
+    own_exp = _expires_dt_to_epoch(own.get("expires_dt", "")) if own else 0.0
+
+    # 둘 중 expires 가 더 먼 토큰 선택 (더 최근 발급 = 실제 활성 토큰)
+    if ext_exp > own_exp and external:
+        logger.info(f"[kiwoom] 외부(autotrading) 토큰 선택 — 만료까지 {int(ext_exp - time.time())}s")
+        return external["token"]
+    if own:
+        return own["token"]
+    if external:  # own 없고 외부만 있을 때
+        return external["token"]
 
     # 신규 발급
+    return _refresh_token()
+
+
+def _refresh_token() -> str | None:
+    """자체 캐시 무시하고 /oauth2/token 신규 발급 후 저장."""
     try:
         resp = requests.post(
             f"{KIWOOM_BASE_URL}/oauth2/token",
@@ -107,6 +186,23 @@ def get_token() -> str | None:
     except Exception as e:
         logger.error(f"[kiwoom] 토큰 발급 에러: {e}")
         return None
+
+
+def force_refresh_token() -> str | None:
+    """캐시 무시하고 강제 재발급. 외부 프로젝트와 토큰 경합으로 인한
+    'Token이 유효하지 않습니다(8005)' 복구용. 호출 후 autotrading 이 다음 call
+    때 자신의 캐시가 유효해도 실패할 수 있지만, autotrading 은 자동 재발급하므로
+    양쪽 자가 복구.
+    """
+    if not KIWOOM_APP_KEY or not KIWOOM_APP_SECRET:
+        return None
+    logger.warning("[kiwoom] 토큰 강제 재발급 — 외부 경합 의심")
+    try:
+        if TOKEN_FILE.exists():
+            TOKEN_FILE.unlink()
+    except Exception:
+        pass
+    return _refresh_token()
 
 
 def _make_headers(api_id: str, cont_yn: str = "N", next_key: str = "") -> dict | None:

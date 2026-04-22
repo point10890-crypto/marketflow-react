@@ -60,6 +60,7 @@ async def fetch_ai_theme_ranking(top_n: int = 15) -> dict:
     # {code: {meta + hit 정보}}
     hits: dict[str, dict] = {}
     executed = 0
+    token_refreshed_once = False  # 외부 경합 복구용 — 한 사이클 당 한번만 재발급
 
     for seq, theme_name in AI_THEMES:
         try:
@@ -82,6 +83,35 @@ async def fetch_ai_theme_ranking(top_n: int = 15) -> dict:
                 hits[code]["hit_count"] += 1
                 hits[code]["matched_conditions"].append(theme_name)
         except (asyncio.TimeoutError, KiwoomScreenerError, OSError) as e:
+            # autotrading_project 등 동일 appkey 공유 시 Kiwoom 가 이전 토큰 무효화 가능 →
+            # 8005/805004 감지 시 1회 강제 재발급 후 해당 seq 재시도
+            err_str = str(e)
+            if (not token_refreshed_once and
+                ("8005" in err_str or "805004" in err_str or "유효하지 않" in err_str)):
+                from engine.kiwoom_client import force_refresh_token
+                new_token = force_refresh_token()
+                token_refreshed_once = True
+                if new_token:
+                    token = new_token
+                    logger.info("[theme_ranker] 토큰 재발급 완료 — seq=%s 재시도", seq)
+                    try:
+                        rows = await fetch_condition_candidates(seq=seq, token=token)
+                        executed += 1
+                        for r in rows:
+                            code = r.get("code")
+                            if not code:
+                                continue
+                            if code not in hits:
+                                hits[code] = {
+                                    "code": code, "name": r.get("name") or "",
+                                    "price": r.get("price"), "change_pct": r.get("change_pct"),
+                                    "volume": r.get("volume"), "hit_count": 0, "matched_conditions": [],
+                                }
+                            hits[code]["hit_count"] += 1
+                            hits[code]["matched_conditions"].append(theme_name)
+                        continue
+                    except Exception as e2:
+                        logger.warning("[theme_ranker] 재발급 후에도 seq=%s 실패: %s", seq, e2)
             logger.warning("[theme_ranker] seq=%s(%s) 실패: %s", seq, theme_name, e)
         except Exception as e:
             logger.warning("[theme_ranker] seq=%s(%s) 예외: %s", seq, theme_name, e)
