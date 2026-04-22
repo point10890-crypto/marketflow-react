@@ -38,7 +38,7 @@ BASE_DIR = Path(os.path.dirname(os.path.abspath(__file__))).parent
 DATA_DIR = BASE_DIR / "data"
 TOKEN_FILE = DATA_DIR / "kiwoom_token.json"
 
-KIWOOM_BASE_URL = "https://api.kiwoom.com"
+KIWOOM_BASE_URL = os.getenv("KIWOOM_BASE_URL", "https://api.kiwoom.com")
 KIWOOM_APP_KEY = os.getenv("KIWOOM_APP_KEY", "")
 KIWOOM_APP_SECRET = os.getenv("KIWOOM_APP_SECRET", "")
 
