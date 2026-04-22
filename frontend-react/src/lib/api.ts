@@ -762,6 +762,14 @@ export interface SubscriptionRequest {
     processed_at: string | null;
 }
 
+export interface PendingSignup {
+    id: number;
+    email: string;
+    name: string;
+    created_at: string | null;
+    requested_tier: string | null;
+}
+
 // ── Authenticated API helpers (Bearer token 포함) ──
 
 function _handle401(status: number) {
@@ -880,7 +888,7 @@ export const adminAPI = {
     resetPassword: (id: number, password: string, token?: string, note?: string) => putAuthAPI<{ message: string; user: AdminUser }>(`/api/admin/users/${id}/reset-password`, { password, note }, token),
     deleteUser: (id: number, token?: string) => deleteAuthAPI<{ message: string }>(`/api/admin/users/${id}`, token),
     getDuplicates: (token?: string) => fetchAuthAPI<{ groups: Array<{ reason: string; key: string; accounts: Array<{ id: number; email: string; name: string; tier: string | null; status: string; created_at: string | null; last_login_at: string | null }> }>; total_groups: number }>('/api/admin/users/duplicates', token),
-    getSubscriptions: (token?: string) => fetchAuthAPI<{ requests: SubscriptionRequest[] }>('/api/admin/subscriptions', token),
+    getSubscriptions: (token?: string) => fetchAuthAPI<{ requests: SubscriptionRequest[]; pending_signups?: PendingSignup[] }>('/api/admin/subscriptions', token),
     approveSubscription: (id: number, token?: string) => putAuthAPI<{ request: SubscriptionRequest }>(`/api/admin/subscriptions/${id}/approve`, undefined, token),
     rejectSubscription: (id: number, note?: string, token?: string) => putAuthAPI<{ request: SubscriptionRequest }>(`/api/admin/subscriptions/${id}/reject`, { note }, token),
     getNotifications: (token?: string, page = 1) => fetchAuthAPI<{ notifications: AdminNotification[]; total: number; page: number; total_pages: number }>(`/api/admin/notifications?page=${page}`, token),

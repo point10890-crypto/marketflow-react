@@ -702,11 +702,31 @@ def bulk_approve():
 @admin_bp.route('/subscriptions')
 @admin_required
 def list_subscriptions():
-    """구독 요청 목록 조회"""
+    """구독 요청 목록 + 플랜 미선택 pending 가입자.
+
+    관리자 사각지대 제거 — 가입만 하고 /payment-request 단계에서 이탈한 유저도
+    목록에 함께 노출해 팔로업(카톡 안내 등) 가능하게 한다.
+    """
     reqs = SubscriptionRequest.query.order_by(
         SubscriptionRequest.created_at.desc()
     ).all()
-    return jsonify({'requests': [r.to_dict() for r in reqs]})
+    pending_req_user_ids = {r.user_id for r in reqs if r.status == 'pending'}
+    signup_only_q = User.query.filter(User.status == 'pending')
+    if pending_req_user_ids:
+        signup_only_q = signup_only_q.filter(~User.id.in_(pending_req_user_ids))
+    signup_only_users = signup_only_q.order_by(User.created_at.desc()).all()
+    return jsonify({
+        'requests': [r.to_dict() for r in reqs],
+        'pending_signups': [
+            {
+                'id': u.id,
+                'email': u.email,
+                'name': u.name,
+                'created_at': u.created_at.isoformat() if u.created_at else None,
+                'requested_tier': u.requested_tier,
+            } for u in signup_only_users
+        ],
+    })
 
 
 @admin_bp.route('/subscriptions/<int:req_id>/approve', methods=['PUT'])

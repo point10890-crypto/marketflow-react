@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { adminAPI, AdminDashboard, AdminUser, AdminNotification, SubscriptionRequest, fetchAuthAPI, API_BASE } from '@/lib/api';
+import { adminAPI, AdminDashboard, AdminUser, AdminNotification, SubscriptionRequest, PendingSignup, fetchAuthAPI, API_BASE } from '@/lib/api';
 import ProExpiryTab from './ProExpiryTab';
 
 type AdminTab = 'dashboard' | 'users' | 'subscriptions' | 'pro' | 'system';
@@ -1141,10 +1141,12 @@ function UsersTab({ apiToken, currentUserId }: { apiToken?: string; currentUserI
 
 function SubscriptionsTab({ apiToken, onCountChange }: { apiToken?: string; onCountChange: (n: number) => void }) {
     const [requests, setRequests] = useState<SubscriptionRequest[]>([]);
+    const [pendingSignups, setPendingSignups] = useState<PendingSignup[]>([]);
     const [loading, setLoading] = useState(true);
     const [actionMsg, setActionMsg] = useState('');
     // 처리 중인 request id 추적 — 같은 row 더블클릭 방지 + 이미 처리된 row 보호
     const [processing, setProcessing] = useState<Set<number>>(new Set());
+    const [grantingUser, setGrantingUser] = useState<Set<number>>(new Set());
 
     // silent=true 이면 스피너를 띄우지 않음 (refresh 버튼용 기본은 스피너 O)
     const loadRequests = useCallback(async (silent = false) => {
@@ -1153,6 +1155,7 @@ function SubscriptionsTab({ apiToken, onCountChange }: { apiToken?: string; onCo
             const res = await adminAPI.getSubscriptions(apiToken);
             const reqs = res.requests || [];
             setRequests(reqs);
+            setPendingSignups(res.pending_signups || []);
             onCountChange(reqs.filter((r: SubscriptionRequest) => r.status === 'pending').length);
         } catch { /* */ }
         if (!silent) setLoading(false);
@@ -1223,6 +1226,21 @@ function SubscriptionsTab({ apiToken, onCountChange }: { apiToken?: string; onCo
             showAction(`❌ ${err.message}`);
         } finally {
             setProcessing(prev => { const n = new Set(prev); n.delete(id); return n; });
+        }
+    };
+
+    // 플랜 미선택 pending 가입자 — tier 부여 (status=approved 자동 승격)
+    const handleGrantTier = async (userId: number, tier: 'pro' | 'premium') => {
+        if (grantingUser.has(userId)) return;
+        setGrantingUser(prev => { const n = new Set(prev); n.add(userId); return n; });
+        try {
+            await adminAPI.setUserTier(userId, tier, apiToken);
+            setPendingSignups(prev => prev.filter(u => u.id !== userId));
+            showAction(`✅ ${tier === 'premium' ? 'Ultra Pro' : 'Pro'} 부여 완료`);
+        } catch (err: any) {
+            showAction(`❌ ${err.message}`);
+        } finally {
+            setGrantingUser(prev => { const n = new Set(prev); n.delete(userId); return n; });
         }
     };
 
@@ -1303,6 +1321,55 @@ function SubscriptionsTab({ apiToken, onCountChange }: { apiToken?: string; onCo
                     </div>
                 )}
             </div>
+
+            {/* 플랜 미선택 — 가입만 한 pending 유저 (승인요청 제출 전/이탈) */}
+            {pendingSignups.length > 0 && (
+                <div>
+                    <h2 className="text-lg font-semibold text-orange-400 mb-3">
+                        <i className="fas fa-user-clock mr-2" />가입만 완료 · 플랜 미선택 ({pendingSignups.length})
+                    </h2>
+                    <div className="space-y-3">
+                        {pendingSignups.map(u => (
+                            <div key={u.id} className="apple-glass rounded-xl p-4 border border-orange-500/20">
+                                <div className="flex items-center justify-between flex-wrap gap-3">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 bg-orange-500/10 rounded-full flex items-center justify-center">
+                                            <i className="fas fa-user-clock text-orange-400" />
+                                        </div>
+                                        <div>
+                                            <div className="text-white font-medium">{u.name || `User #${u.id}`}</div>
+                                            <div className="text-xs text-gray-400">{u.email}</div>
+                                            <div className="text-xs text-gray-500 mt-1 flex flex-wrap items-center gap-1">
+                                                <span className="px-1.5 py-0.5 rounded bg-gray-500/20 text-gray-400">승인요청 미제출</span>
+                                                {u.requested_tier && (
+                                                    <span className="px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400">
+                                                        희망: {u.requested_tier === 'premium' ? 'Ultra Pro' : 'Pro'}
+                                                    </span>
+                                                )}
+                                                {u.created_at && <span className="ml-2 text-gray-600">{new Date(u.created_at).toLocaleString()}</span>}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <button onClick={() => handleGrantTier(u.id, 'pro')}
+                                            disabled={grantingUser.has(u.id)}
+                                            className="px-4 py-2 rounded-lg text-sm font-medium bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                                            <i className={`fas ${grantingUser.has(u.id) ? 'fa-spinner fa-spin' : 'fa-crown'} mr-1`} />
+                                            Pro 부여
+                                        </button>
+                                        <button onClick={() => handleGrantTier(u.id, 'premium')}
+                                            disabled={grantingUser.has(u.id)}
+                                            className="px-4 py-2 rounded-lg text-sm font-medium bg-purple-500/20 text-purple-400 hover:bg-purple-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                                            <i className={`fas ${grantingUser.has(u.id) ? 'fa-spinner fa-spin' : 'fa-gem'} mr-1`} />
+                                            Ultra Pro 부여
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             {/* History */}
             {processed.length > 0 && (

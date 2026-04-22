@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { adminAPI, SubscriptionRequest } from '@/lib/api';
+import { adminAPI, SubscriptionRequest, PendingSignup } from '@/lib/api';
 
 export default function AdminSubscriptionsPage() {
     const { token } = useAuth();
     const apiToken = token ?? undefined;
     const [requests, setRequests] = useState<SubscriptionRequest[]>([]);
+    const [pendingSignups, setPendingSignups] = useState<PendingSignup[]>([]);
     const [loading, setLoading] = useState(true);
     const [actionMsg, setActionMsg] = useState('');
 
@@ -19,6 +20,7 @@ export default function AdminSubscriptionsPage() {
         try {
             const res = await adminAPI.getSubscriptions(apiToken);
             setRequests(res.requests || []);
+            setPendingSignups(res.pending_signups || []);
         } catch (err) {
             console.error('Failed to load subscriptions:', err);
         } finally {
@@ -47,6 +49,17 @@ export default function AdminSubscriptionsPage() {
             await adminAPI.rejectSubscription(id, note || undefined, apiToken);
             setRequests(prev => prev.map(r => r.id === id ? { ...r, status: 'rejected', admin_note: note } : r));
             showAction('Subscription request rejected');
+        } catch (err: any) {
+            showAction(`Error: ${err.message}`);
+        }
+    };
+
+    // 플랜 미선택 pending 가입자 — tier 부여 (status=approved 자동 승격)
+    const handleGrantTier = async (userId: number, tier: 'pro' | 'premium') => {
+        try {
+            await adminAPI.setUserTier(userId, tier, apiToken);
+            setPendingSignups(prev => prev.filter(u => u.id !== userId));
+            showAction(`${tier === 'premium' ? 'Ultra Pro' : 'Pro'} 부여 완료`);
         } catch (err: any) {
             showAction(`Error: ${err.message}`);
         }
@@ -152,6 +165,60 @@ export default function AdminSubscriptionsPage() {
                     </div>
                 )}
             </div>
+
+            {/* 플랜 미선택 — 가입만 한 pending 유저 */}
+            {pendingSignups.length > 0 && (
+                <div>
+                    <h2 className="text-lg font-semibold text-orange-400 mb-3">
+                        <i className="fas fa-user-clock mr-2"></i>
+                        가입만 완료 · 플랜 미선택 ({pendingSignups.length})
+                    </h2>
+                    <div className="space-y-3">
+                        {pendingSignups.map((u) => (
+                            <div key={u.id} className="apple-glass rounded-xl p-4 border border-orange-500/20">
+                                <div className="flex items-center justify-between flex-wrap gap-3">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 bg-orange-500/10 rounded-full flex items-center justify-center">
+                                            <i className="fas fa-user-clock text-orange-400"></i>
+                                        </div>
+                                        <div>
+                                            <div className="text-white font-medium">{u.name || `User #${u.id}`}</div>
+                                            <div className="text-xs text-gray-400">{u.email}</div>
+                                            <div className="text-xs text-gray-500 mt-1 flex flex-wrap items-center gap-1">
+                                                <span className="px-1.5 py-0.5 rounded bg-gray-500/20 text-gray-400">
+                                                    승인요청 미제출
+                                                </span>
+                                                {u.requested_tier && (
+                                                    <span className="px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400">
+                                                        희망: {u.requested_tier === 'premium' ? 'Ultra Pro' : 'Pro'}
+                                                    </span>
+                                                )}
+                                                {u.created_at && (
+                                                    <span className="ml-2 text-gray-600">{new Date(u.created_at).toLocaleString()}</span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={() => handleGrantTier(u.id, 'pro')}
+                                            className="px-4 py-2 rounded-lg text-sm font-medium bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 transition-colors"
+                                        >
+                                            <i className="fas fa-crown mr-1"></i>Pro 부여
+                                        </button>
+                                        <button
+                                            onClick={() => handleGrantTier(u.id, 'premium')}
+                                            className="px-4 py-2 rounded-lg text-sm font-medium bg-purple-500/20 text-purple-400 hover:bg-purple-500/30 transition-colors"
+                                        >
+                                            <i className="fas fa-gem mr-1"></i>Ultra Pro 부여
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             {/* Processed Requests */}
             {processed.length > 0 && (
