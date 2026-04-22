@@ -53,6 +53,34 @@ UPLOAD_DIR = os.path.join(os.path.abspath(os.path.dirname(os.path.dirname(os.pat
                           'data', 'uploads', 'community')
 
 
+def _save_upload_verified(file_data: bytes, filename: str) -> tuple[bool, str]:
+    """업로드 파일 저장 + fsync + 존재/크기 검증.
+
+    dual-tunnel 사고처럼 업로드 요청이 다른 호스트로 라우팅돼 응답은 200 이지만
+    실제 디스크에는 파일이 없는 상황을 방지. 저장 후 동일 프로세스 디스크에
+    실제로 기록됐는지 확인하고 불일치 시 False 반환.
+    """
+    try:
+        os.makedirs(UPLOAD_DIR, exist_ok=True)
+        filepath = os.path.join(UPLOAD_DIR, filename)
+        with open(filepath, 'wb') as f:
+            f.write(file_data)
+            f.flush()
+            os.fsync(f.fileno())
+        if not os.path.exists(filepath):
+            return False, 'file missing after write'
+        actual = os.path.getsize(filepath)
+        if actual != len(file_data):
+            try:
+                os.remove(filepath)
+            except OSError:
+                pass
+            return False, f'size mismatch (expected {len(file_data)}, got {actual})'
+        return True, ''
+    except OSError as e:
+        return False, f'{type(e).__name__}: {e}'
+
+
 def _check_tier(user_tier, required_tier):
     if required_tier == 'admin':
         return False  # Only admin role can pass, checked separately
@@ -520,10 +548,9 @@ def upload_image():
         return jsonify({'error': 'File content does not match extension. Upload rejected.'}), 400
     filename = f"{uuid.uuid4().hex}.{ext}"
 
-    os.makedirs(UPLOAD_DIR, exist_ok=True)
-    filepath = os.path.join(UPLOAD_DIR, filename)
-    with open(filepath, 'wb') as f:
-        f.write(file_data)
+    ok, err = _save_upload_verified(file_data, filename)
+    if not ok:
+        return jsonify({'error': f'파일 저장에 실패했습니다: {err}'}), 500
 
     # Save record (post_id will be linked when post is created)
     img = PostImage(post_id=0, filename=filename, original_name=file.filename, file_size=len(file_data))
@@ -558,10 +585,9 @@ def upload_formula_file():
         return jsonify({'error': 'File too large (max 20MB)'}), 400
 
     filename = f"{uuid.uuid4().hex}.{ext}"
-    os.makedirs(UPLOAD_DIR, exist_ok=True)
-    filepath = os.path.join(UPLOAD_DIR, filename)
-    with open(filepath, 'wb') as f:
-        f.write(file_data)
+    ok, err = _save_upload_verified(file_data, filename)
+    if not ok:
+        return jsonify({'error': f'파일 저장에 실패했습니다: {err}'}), 500
 
     return jsonify({
         'url': f'/api/community/uploads/{filename}',
@@ -589,10 +615,9 @@ def upload_video():
         return jsonify({'error': 'File too large (max 100MB)'}), 400
 
     filename = f"{uuid.uuid4().hex}.{ext}"
-    os.makedirs(UPLOAD_DIR, exist_ok=True)
-    filepath = os.path.join(UPLOAD_DIR, filename)
-    with open(filepath, 'wb') as f:
-        f.write(file_data)
+    ok, err = _save_upload_verified(file_data, filename)
+    if not ok:
+        return jsonify({'error': f'파일 저장에 실패했습니다: {err}'}), 500
 
     return jsonify({
         'url': f'/api/community/uploads/{filename}',

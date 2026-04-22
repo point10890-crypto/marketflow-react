@@ -811,6 +811,40 @@ def reject_subscription(req_id):
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Orphan File Audit — 2026-04-14 dual-tunnel 업로드 실종 재발 감지
+# ─────────────────────────────────────────────────────────────────────────────
+
+@admin_bp.route('/community/orphan-files')
+@admin_required
+def list_orphan_files():
+    """DB 에 file_url 기록됐으나 실제 디스크에 없는 posts 감지.
+
+    dual-tunnel 사고(2026-04-14) 같은 업로드 라우팅 실패를 조기 발견하는 감시용.
+    """
+    from app.models.community import Post
+    base_dir = os.path.abspath(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+    upload_dir = os.path.join(base_dir, 'data', 'uploads', 'community')
+    if not os.path.isdir(upload_dir):
+        return jsonify({'orphans': [], 'total': 0, 'upload_dir': upload_dir, 'scanned': 0})
+    existing = set(os.listdir(upload_dir))
+    orphans = []
+    posts = Post.query.filter(Post.file_url.isnot(None)).order_by(Post.id.desc()).all()
+    for p in posts:
+        stored = p.file_url.rsplit('/', 1)[-1] if p.file_url else None
+        if stored and stored not in existing:
+            orphans.append({
+                'post_id': p.id,
+                'title': p.title,
+                'file_name': p.file_name,
+                'stored_filename': stored,
+                'price': p.price,
+                'created_at': p.created_at.isoformat() if p.created_at else None,
+                'updated_at': p.updated_at.isoformat() if p.updated_at else None,
+            })
+    return jsonify({'orphans': orphans, 'total': len(orphans), 'scanned': len(posts)})
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # 감사 로그 조회
 # ─────────────────────────────────────────────────────────────────────────────
 
