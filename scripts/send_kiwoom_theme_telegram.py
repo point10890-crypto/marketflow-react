@@ -49,8 +49,11 @@ def build_message(data: dict, top_n: int = 15) -> str:
     ]
     for i, s in enumerate(data.get('stocks', [])[:top_n], 1):
         name = s.get('name', '?')
-        chg = s.get('change_pct', 0.0)
-        price = s.get('price', 0)
+        chg = s.get('change_pct', 0.0) or 0.0
+        try:
+            price = int(str(s.get('price', 0)).replace(',', '').strip() or 0)
+        except (ValueError, TypeError):
+            price = 0
         hit = s.get('hit_count', 0)
         lines.append(f"{i:2d}. <b>{name}</b>  [{hit}/7]  {chg:+.2f}%  ({price:,})")
     ts = data.get('generated_at') or data.get('timestamp') or ''
