@@ -159,7 +159,12 @@ def _empty_result(reason: str) -> dict:
 
 
 async def update_ai_theme_ranking(top_n: int = 15) -> dict:
-    """랭킹 실행 + JSON 저장 (비파괴)."""
+    """랭킹 실행 + JSON 저장 (비파괴).
+
+    stocks=0 결과는 저장하지 않음 (기존 유효 스캔 유지) — Kiwoom 모의 API 가
+    장외 시간/시세 공백에 CNSRREQ 를 0건으로 반환하는 구조적 한계 방어.
+    "장 마감 — 마지막 스캔 결과" UI 를 빈 덮어쓰기로 날려버리지 않기 위함.
+    """
     try:
         result = await fetch_ai_theme_ranking(top_n=top_n)
     except Exception as e:
@@ -167,6 +172,17 @@ async def update_ai_theme_ranking(top_n: int = 15) -> dict:
         result = _empty_result(f"{type(e).__name__}: {e}")
 
     os.makedirs(DATA_DIR, exist_ok=True)
+
+    # 빈 결과는 기존 파일 유지 (stocks=0 덮어쓰기 방지)
+    if not result.get("stocks"):
+        prev = load_latest()
+        if prev and prev.get("stocks"):
+            logger.info(
+                "[theme_ranker] stocks=0 — 기존 파일 유지 (prev updated=%s, unique=%s)",
+                prev.get("updated_at"), prev.get("unique_stocks"),
+            )
+            return prev
+
     tmp = OUTPUT_FILE + ".tmp"
     with open(tmp, "w", encoding="utf-8") as f:
         json.dump(result, f, ensure_ascii=False, indent=2)

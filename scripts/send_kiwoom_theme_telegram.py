@@ -4,9 +4,10 @@
 수동으로 즉시 재전송할 때 쓰는 스크립트.
 
 정책:
-- 개인봇으로만 전송 (시스템 상태성 — 채널 노이즈 방지)
+- **분석 결과 → 개인 DM + 채널 양쪽 전송** (feedback_telegram_routing.md)
 - 시간당 1회 쿨다운 (data/.kiwoom_tg_last.txt)
 - --force 플래그로 쿨다운 우회 (수동 검증/재발송용)
+- 한쪽 전송 실패해도 다른 쪽은 계속 시도 — 쿨다운은 어느 한쪽이라도 성공하면 갱신
 """
 import argparse
 import json
@@ -59,6 +60,25 @@ def build_message(data: dict, top_n: int = 15) -> str:
     return "\n".join(lines)
 
 
+def _post(token: str, chat_id: str, text: str, label: str) -> bool:
+    try:
+        r = requests.post(
+            f"https://api.telegram.org/bot{token}/sendMessage",
+            json={'chat_id': chat_id, 'text': text, 'parse_mode': 'HTML', 'disable_web_page_preview': True},
+            timeout=10,
+        )
+        body = r.json() if r.headers.get('content-type', '').startswith('application/json') else {}
+        ok = body.get('ok', False)
+        msg_id = (body.get('result') or {}).get('message_id')
+        print(f"[TG/{label}] status={r.status_code} ok={ok} msg_id={msg_id}")
+        if not ok:
+            print(f"[TG/{label}] body: {r.text[:200]}")
+        return ok and bool(msg_id)
+    except Exception as e:
+        print(f"[TG/{label}] failed: {type(e).__name__}: {e}")
+        return False
+
+
 def send(force: bool = False, top_n: int = 15) -> int:
     if not os.path.exists(DATA_FILE):
         print(f"[ERR] no data file: {DATA_FILE}")
@@ -72,32 +92,33 @@ def send(force: bool = False, top_n: int = 15) -> int:
         return 0
 
     load_dotenv(os.path.join(BASE_DIR, '.env'))
-    token = os.getenv('TELEGRAM_BOT_TOKEN')
-    chat = os.getenv('TELEGRAM_CHAT_ID')
-    if not token or not chat:
-        print("[ERR] telegram creds missing")
+    personal_token = os.getenv('TELEGRAM_BOT_TOKEN')
+    personal_chat = os.getenv('TELEGRAM_CHAT_ID')
+    channel_token = os.getenv('TELEGRAM_CHANNEL_BOT_TOKEN') or personal_token
+    channel_chat = os.getenv('TELEGRAM_CHANNEL_CHAT_ID')
+
+    targets: list[tuple[str, str, str]] = []
+    if personal_token and personal_chat:
+        targets.append(('personal', personal_token, personal_chat))
+    if channel_token and channel_chat:
+        targets.append(('channel', channel_token, channel_chat))
+
+    if not targets:
+        print("[ERR] telegram creds missing (personal/channel 둘 다 설정 안 됨)")
         return 1
 
     with open(DATA_FILE, 'r', encoding='utf-8') as f:
         data = json.load(f)
 
     text = build_message(data, top_n=top_n)
-    try:
-        r = requests.post(
-            f"https://api.telegram.org/bot{token}/sendMessage",
-            json={'chat_id': chat, 'text': text, 'parse_mode': 'HTML', 'disable_web_page_preview': True},
-            timeout=10,
-        )
-        ok = r.json().get('ok', False)
-        print(f"[TG] status={r.status_code} ok={ok}")
-        if ok:
-            _save_cooldown(now)
-            return 0
-        print(f"[TG] body: {r.text[:200]}")
-        return 1
-    except Exception as e:
-        print(f"[TG] failed: {type(e).__name__}: {e}")
-        return 1
+    any_ok = False
+    for label, tok, cid in targets:
+        if _post(tok, cid, text, label):
+            any_ok = True
+    if any_ok:
+        _save_cooldown(now)
+        return 0
+    return 1
 
 
 if __name__ == '__main__':
