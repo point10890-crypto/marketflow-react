@@ -23,6 +23,13 @@ interface PurchaseListResponse {
     total_pages: number;
 }
 
+interface PurchaseSummary {
+    today: { count: number; total: number };
+    month: { count: number; total: number };
+    all: { count: number; total: number };
+    pending_count: number;
+}
+
 function formatKoreanDate(dateStr: string | null) {
     if (!dateStr) return '-';
     const d = new Date(dateStr);
@@ -57,6 +64,7 @@ export default function PurchaseAdminPage() {
     const [loading, setLoading] = useState(true);
     const [statusFilter, setStatusFilter] = useState('');
     const [search, setSearch] = useState('');
+    const [summary, setSummary] = useState<PurchaseSummary | null>(null);
 
     const fetchData = useCallback(async (p: number) => {
         setLoading(true);
@@ -76,7 +84,17 @@ export default function PurchaseAdminPage() {
         }
     }, [statusFilter, search]);
 
+    const fetchSummary = useCallback(async () => {
+        try {
+            const s = await fetchAuthAPI<PurchaseSummary>('/api/community/purchases/summary');
+            setSummary(s);
+        } catch {
+            /* ignore */
+        }
+    }, []);
+
     useEffect(() => { fetchData(1); }, [fetchData]);
+    useEffect(() => { fetchSummary(); }, [fetchSummary]);
 
     const handleStatusChange = async (purchaseId: number, newStatus: string) => {
         // Optimistic update — 즉시 UI 반영 (스피너 없음)
@@ -90,6 +108,7 @@ export default function PurchaseAdminPage() {
             const updated = await putAuthAPI<PurchaseItem>(`/api/community/purchases/${purchaseId}`, { status: newStatus });
             // 서버 응답으로 해당 row만 갱신 (전체 재로드 X)
             setPurchases(ps => ps.map(p => p.id === purchaseId ? updated : p));
+            fetchSummary(); // 매출 합산 갱신
         } catch {
             // 실패 시 롤백
             setPurchases(prev);
@@ -104,11 +123,14 @@ export default function PurchaseAdminPage() {
         setTotal(prev => prev - 1);
         try {
             await deleteAuthAPI(`/api/community/purchases/${purchaseId}`);
+            fetchSummary(); // 매출 합산 갱신
         } catch {
             fetchData(page);
             alert('삭제에 실패했습니다.');
         }
     };
+
+    const formatKRW = (n: number) => `${n.toLocaleString()}원`;
 
     return (
         <div className="p-4 md:p-6 lg:py-8 lg:px-10">
@@ -123,6 +145,44 @@ export default function PurchaseAdminPage() {
                 <h1 className="text-xl md:text-2xl font-bold text-yellow-400">구매 신청 내역</h1>
                 <span className="text-gray-500 text-sm ml-2">총 {total}건</span>
             </div>
+
+            {/* 매출 합산 카드 */}
+            {summary && (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+                    <div className="bg-[#1c1c1e]/80 border border-emerald-500/20 rounded-xl p-4">
+                        <div className="flex items-center gap-2 mb-2">
+                            <i className="fas fa-won-sign text-emerald-400 text-xs" />
+                            <span className="text-[11px] text-gray-400 uppercase tracking-wider font-bold">오늘 매출</span>
+                        </div>
+                        <div className="text-lg md:text-xl font-bold text-white">{formatKRW(summary.today.total)}</div>
+                        <div className="text-[11px] text-gray-500 mt-1">승인 {summary.today.count}건</div>
+                    </div>
+                    <div className="bg-[#1c1c1e]/80 border border-blue-500/20 rounded-xl p-4">
+                        <div className="flex items-center gap-2 mb-2">
+                            <i className="fas fa-calendar-alt text-blue-400 text-xs" />
+                            <span className="text-[11px] text-gray-400 uppercase tracking-wider font-bold">이번 달 매출</span>
+                        </div>
+                        <div className="text-lg md:text-xl font-bold text-white">{formatKRW(summary.month.total)}</div>
+                        <div className="text-[11px] text-gray-500 mt-1">승인 {summary.month.count}건</div>
+                    </div>
+                    <div className="bg-[#1c1c1e]/80 border border-yellow-500/20 rounded-xl p-4">
+                        <div className="flex items-center gap-2 mb-2">
+                            <i className="fas fa-chart-line text-yellow-400 text-xs" />
+                            <span className="text-[11px] text-gray-400 uppercase tracking-wider font-bold">누적 매출</span>
+                        </div>
+                        <div className="text-lg md:text-xl font-bold text-white">{formatKRW(summary.all.total)}</div>
+                        <div className="text-[11px] text-gray-500 mt-1">승인 {summary.all.count}건</div>
+                    </div>
+                    <div className="bg-[#1c1c1e]/80 border border-orange-500/20 rounded-xl p-4">
+                        <div className="flex items-center gap-2 mb-2">
+                            <i className="fas fa-clock text-orange-400 text-xs" />
+                            <span className="text-[11px] text-gray-400 uppercase tracking-wider font-bold">승인 대기</span>
+                        </div>
+                        <div className="text-lg md:text-xl font-bold text-white">{summary.pending_count}건</div>
+                        <div className="text-[11px] text-gray-500 mt-1">처리 필요</div>
+                    </div>
+                </div>
+            )}
 
             {/* Filters */}
             <div className="bg-[#1c1c1e]/80 border border-white/[0.06] rounded-2xl p-4 md:p-5 mb-5 flex flex-col sm:flex-row gap-3">

@@ -393,6 +393,57 @@ def create_purchase(post_id):
     return jsonify(pr.to_dict()), 201
 
 
+@community_bp.route('/purchases/summary', methods=['GET'])
+@admin_required
+def purchases_summary():
+    """승인된 구매의 매출 합산 — 오늘/이번달/전체.
+
+    post.price 는 숫자 문자열('30000', '50000' 등). PurchaseRequest.status='approved'
+    에 해당하는 post.price 합산. 가격 파싱 실패 시 0 처리.
+    """
+    from sqlalchemy import func
+    from datetime import datetime, timezone, timedelta
+
+    now = datetime.now(timezone.utc)
+    # KST 기준 오늘/이번달 (approved_at/created_at 은 UTC)
+    kst_offset = timedelta(hours=9)
+    kst_today_start = (now + kst_offset).replace(hour=0, minute=0, second=0, microsecond=0) - kst_offset
+    kst_month_start = (now + kst_offset).replace(day=1, hour=0, minute=0, second=0, microsecond=0) - kst_offset
+
+    def _sum(since=None):
+        q = db.session.query(Post.price).join(
+            PurchaseRequest, PurchaseRequest.post_id == Post.id
+        ).filter(PurchaseRequest.status == 'approved')
+        if since is not None:
+            # approved_at 은 nullable — null 인 경우 created_at 을 쓴다
+            q = q.filter(db.func.coalesce(PurchaseRequest.approved_at, PurchaseRequest.created_at) >= since)
+        total = 0
+        count = 0
+        for (p,) in q.all():
+            count += 1
+            if not p:
+                continue
+            try:
+                total += int(str(p).replace(',', '').replace('원', '').strip() or 0)
+            except (ValueError, TypeError):
+                pass
+        return {'count': count, 'total': total}
+
+    all_sum = _sum()
+    month_sum = _sum(kst_month_start.replace(tzinfo=None))
+    today_sum = _sum(kst_today_start.replace(tzinfo=None))
+
+    # pending 건수
+    pending_count = PurchaseRequest.query.filter_by(status='pending').count()
+
+    return jsonify({
+        'today': today_sum,
+        'month': month_sum,
+        'all': all_sum,
+        'pending_count': pending_count,
+    })
+
+
 @community_bp.route('/purchases', methods=['GET'])
 @admin_required
 def list_purchases():
