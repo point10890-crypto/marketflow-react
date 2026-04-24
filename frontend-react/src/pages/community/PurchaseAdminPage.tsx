@@ -173,14 +173,24 @@ export default function PurchaseAdminPage() {
                         <div className="text-lg md:text-xl font-bold text-white">{formatKRW(summary.all.total)}</div>
                         <div className="text-[11px] text-gray-500 mt-1">승인 {summary.all.count}건</div>
                     </div>
-                    <div className="bg-[#1c1c1e]/80 border border-orange-500/20 rounded-xl p-4">
+                    <button
+                        type="button"
+                        onClick={() => { setStatusFilter('pending'); setSearch(''); }}
+                        className={`text-left bg-[#1c1c1e]/80 border rounded-xl p-4 transition-colors cursor-pointer ${
+                            statusFilter === 'pending'
+                                ? 'border-orange-500/60 ring-1 ring-orange-500/40'
+                                : 'border-orange-500/20 hover:border-orange-500/50 hover:bg-white/[0.02]'
+                        }`}
+                        title="클릭하면 미처리 내역만 표시"
+                    >
                         <div className="flex items-center gap-2 mb-2">
                             <i className="fas fa-clock text-orange-400 text-xs" />
                             <span className="text-[11px] text-gray-400 uppercase tracking-wider font-bold">승인 대기</span>
+                            <i className="fas fa-arrow-right text-orange-400/60 text-[10px] ml-auto" />
                         </div>
                         <div className="text-lg md:text-xl font-bold text-white">{summary.pending_count}건</div>
-                        <div className="text-[11px] text-gray-500 mt-1">처리 필요</div>
-                    </div>
+                        <div className="text-[11px] text-gray-500 mt-1">클릭하여 미처리 보기</div>
+                    </button>
                 </div>
             )}
 
