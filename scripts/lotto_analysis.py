@@ -16,6 +16,7 @@ import sys
 import time
 import uuid
 from collections import Counter, defaultdict
+from datetime import datetime, timedelta
 
 import requests
 
@@ -26,7 +27,36 @@ DATA_FILE = os.path.join(BASE_DIR, 'data', 'lotto_history.json')
 UPLOAD_DIR = os.path.join(BASE_DIR, 'data', 'uploads', 'community')
 API_URL = "http://localhost:5001"
 ADMIN_EMAIL = "point10890@gmail.com"
-LOTTO_API = 'https://www.dhlottery.co.kr/common.do?method=getLottoNumber&drwNo={}'
+LOTTO_API_HOSTS = [
+    'https://www.dhlottery.co.kr',
+    'https://dhlottery.co.kr',
+]
+LOTTO_UA_POOL = [
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Safari/605.1.15',
+    'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+]
+
+
+class LottoFetchError(RuntimeError):
+    """동행복권 fetch 실패 — 분석 중단 + 알림 트리거"""
+
+
+def _alert_telegram(text: str) -> None:
+    """실패 시 개인 텔레그램 봇으로 알림 (silent fail)."""
+    try:
+        from dotenv import load_dotenv
+        load_dotenv(os.path.join(BASE_DIR, '.env'))
+        token = os.getenv('TELEGRAM_BOT_TOKEN')
+        chat = os.getenv('TELEGRAM_CHAT_ID')
+        if token and chat:
+            requests.post(
+                f'https://api.telegram.org/bot{token}/sendMessage',
+                json={'chat_id': chat, 'text': text, 'parse_mode': 'HTML'},
+                timeout=5,
+            )
+    except Exception:
+        pass
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -43,50 +73,111 @@ def load_history() -> list[dict]:
     return sorted(data, key=lambda x: x['drwNo'])
 
 
+def _parse_draw(data: dict) -> dict:
+    return {
+        'drwNo': data['drwNo'],
+        'drwNoDate': data['drwNoDate'],
+        'drwtNo1': data['drwtNo1'], 'drwtNo2': data['drwtNo2'],
+        'drwtNo3': data['drwtNo3'], 'drwtNo4': data['drwtNo4'],
+        'drwtNo5': data['drwtNo5'], 'drwtNo6': data['drwtNo6'],
+        'bnusNo': data['bnusNo'],
+    }
+
+
 def fetch_draw(drw_no: int) -> dict | None:
-    """동행복권 API에서 단일 회차 데이터 fetch"""
-    try:
-        resp = requests.get(
-            LOTTO_API.format(drw_no),
-            headers={'User-Agent': 'Mozilla/5.0'},
-            timeout=10
-        )
-        if resp.status_code == 200:
-            data = resp.json()
-            if data.get('returnValue') == 'success':
-                return {
-                    'drwNo': data['drwNo'],
-                    'drwNoDate': data['drwNoDate'],
-                    'drwtNo1': data['drwtNo1'], 'drwtNo2': data['drwtNo2'],
-                    'drwtNo3': data['drwtNo3'], 'drwtNo4': data['drwtNo4'],
-                    'drwtNo5': data['drwtNo5'], 'drwtNo6': data['drwtNo6'],
-                    'bnusNo': data['bnusNo'],
-                }
-    except Exception:
-        pass
-    return None
+    """동행복권 API fetch — host/UA 순환 + 세션 priming 재시도.
+    성공 시 draw dict, 회차가 아직 없으면 None, 차단/오류 시 LottoFetchError 전파."""
+    last_err: str | None = None
+    for host in LOTTO_API_HOSTS:
+        for ua in LOTTO_UA_POOL:
+            try:
+                s = requests.Session()
+                s.headers.update({
+                    'User-Agent': ua,
+                    'Accept': 'application/json, text/plain, */*',
+                    'Accept-Language': 'ko-KR,ko;q=0.9,en;q=0.8',
+                    'Referer': f'{host}/gameResult.do?method=byWin',
+                })
+                s.get(f'{host}/common.do?method=main', timeout=8)
+                r = s.get(f'{host}/common.do?method=getLottoNumber&drwNo={drw_no}', timeout=10)
+                ct = (r.headers.get('content-type') or '').lower()
+                if 'application/json' not in ct:
+                    last_err = f'{host}/{ua[:20]} non-json ({ct})'
+                    continue
+                data = r.json()
+                rv = data.get('returnValue')
+                if rv == 'success':
+                    return _parse_draw(data)
+                if rv == 'fail':
+                    return None  # 아직 추첨 전
+                last_err = f'{host} returnValue={rv}'
+            except Exception as e:
+                last_err = f'{host} {type(e).__name__}: {e}'
+                continue
+    raise LottoFetchError(f'fetch_draw({drw_no}) 모든 소스 실패 — last_err={last_err}')
 
 
 def refresh_history(draws: list[dict]) -> list[dict]:
-    """마지막 회차 이후 새 데이터 fetch 시도"""
+    """마지막 회차 이후 새 데이터 fetch — 최대 5회 시도. 네트워크 차단 시 LottoFetchError."""
     if not draws:
         return draws
     last_no = draws[-1]['drwNo']
     new_count = 0
-    for no in range(last_no + 1, last_no + 5):
-        draw = fetch_draw(no)
-        if draw:
-            draws.append(draw)
-            new_count += 1
-            time.sleep(0.3)
-        else:
+    fetch_errors: list[str] = []
+    for no in range(last_no + 1, last_no + 6):
+        try:
+            draw = fetch_draw(no)
+        except LottoFetchError as e:
+            fetch_errors.append(str(e))
+            print(f'[WARN] refresh fail #{no}: {e}')
             break
+        if draw is None:
+            # 아직 추첨 전 → 여기서 중단 (미래 회차 조회 금지)
+            break
+        draws.append(draw)
+        new_count += 1
+        time.sleep(0.3)
     if new_count > 0:
         draws.sort(key=lambda x: x['drwNo'])
         with open(DATA_FILE, 'w', encoding='utf-8') as f:
             json.dump(draws, f, ensure_ascii=False, indent=2)
-        print(f"[DATA] {new_count}개 새 회차 추가 (최신: #{draws[-1]['drwNo']})")
+        print(f'[DATA] {new_count}개 새 회차 추가 (최신: #{draws[-1]["drwNo"]})')
+    if fetch_errors and new_count == 0:
+        # 모든 fetch 가 에러로 끝났음 → 상위에서 staleness guard 가 판단
+        print(f'[WARN] refresh_history 새 회차 확보 실패: {fetch_errors[0]}')
     return draws
+
+
+def _expected_latest_draw_date(today: datetime | None = None) -> datetime:
+    """오늘 기준 가장 최근에 지나간 '토요일'을 다음 예정 추첨일로 본다.
+    토요일이면 오늘. 그 외 요일은 이전 토요일."""
+    today = today or datetime.now()
+    # weekday: Mon=0 ... Sat=5 Sun=6
+    days_since_sat = (today.weekday() - 5) % 7
+    return (today - timedelta(days=days_since_sat)).replace(hour=0, minute=0, second=0, microsecond=0)
+
+
+def ensure_fresh_history(draws: list[dict]) -> None:
+    """lotto_history.json 신선도 검증 — 최근 토요일 대비 7일 이상 뒤처지면 중단."""
+    if not draws:
+        raise LottoFetchError('lotto_history.json 비어있음')
+    last = draws[-1]
+    last_date = datetime.strptime(last['drwNoDate'], '%Y-%m-%d')
+    expected = _expected_latest_draw_date()
+    lag_days = (expected - last_date).days
+    # 일반 실행 (금요일 등) 에서는 아직 이번주 토요일이 안 지났으니 lag 가 <7
+    # lag >= 7 이면 지난 추첨 데이터가 최소 한 주 빠진 상태 → 분석 무의미
+    if lag_days >= 7:
+        msg = (f'[BLOCK] lotto_history 최신 #{last["drwNo"]} ({last["drwNoDate"]}) — '
+               f'예상 최신 토요일 {expected.strftime("%Y-%m-%d")} 대비 {lag_days}일 지연')
+        print(msg)
+        _alert_telegram(
+            f'⚠️ <b>AI 로또 분석 중단</b>\n'
+            f'lotto_history 최신: #{last["drwNo"]} ({last["drwNoDate"]})\n'
+            f'예상 최신: {expected.strftime("%Y-%m-%d")}  (지연 {lag_days}일)\n'
+            f'동행복권 API 차단 가능 — 수동 확인 필요'
+        )
+        raise LottoFetchError(msg)
 
 
 def get_numbers(draw: dict) -> list[int]:
@@ -526,10 +617,11 @@ def pin_notice(token: str, post_id: int):
 def run_lotto_analysis_post(dry_run: bool = False) -> bool:
     """전체 파이프라인 실행"""
     try:
-        # 1. 데이터 로드 + 갱신
+        # 1. 데이터 로드 + 갱신 + 신선도 검증
         print("[1/6] 로또 데이터 로드 중...")
         draws = load_history()
         draws = refresh_history(draws)
+        ensure_fresh_history(draws)  # 오래된 데이터로 분석 방지 (지난 추첨 누락 시 중단)
         print(f"[1/6] 총 {len(draws)}회차 데이터 (#{draws[0]['drwNo']} ~ #{draws[-1]['drwNo']})")
 
         # 2. 통계 계산
