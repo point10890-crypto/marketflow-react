@@ -197,9 +197,13 @@ export interface JonggaV2AIPick {
     rank: number;
     confidence: 'HIGH' | 'MEDIUM' | 'LOW';
     reason: string;
+    reasons?: { gemini?: string; openai?: string; grok?: string };
     risk: string;
     expected_return?: string;
     source?: string;
+    gemini_rank?: number;
+    openai_rank?: number;
+    grok_rank?: number;
 }
 
 export interface JonggaV2Result {
@@ -214,9 +218,15 @@ export interface JonggaV2Result {
     claude_picks?: {
         picks: JonggaV2AIPick[];
         consensus_count?: number;
+        strong_count?: number;
         market_view?: string;
         top_themes?: string[];
         generated_at?: string;
+        consensus_method?: string;
+        models?: string[];
+        models_attempted?: string[];
+        models_succeeded?: string[];
+        total_cost_usd?: number;
     };
 }
 

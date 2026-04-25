@@ -28,11 +28,13 @@ interface AIPick {
     rank: number;
     confidence: 'HIGH' | 'MEDIUM' | 'LOW';
     reason: string;
+    reasons?: { gemini?: string; openai?: string; grok?: string };
     risk: string;
     expected_return: string;
-    source?: string;           // "consensus" | "gemini_only" | "openai_only"
+    source?: string;           // "consensus_strong" | "consensus" | "gemini_only" | "openai_only" | "grok_only"
     gemini_rank?: number;
     openai_rank?: number;
+    grok_rank?: number;
 }
 
 interface AIPicks {
@@ -42,10 +44,15 @@ interface AIPicks {
     generated_at?: string;
     model?: string;
     models?: string[];
+    models_attempted?: string[];
+    models_succeeded?: string[];
     consensus_count?: number;
+    strong_count?: number;
     gemini_count?: number;
     openai_count?: number;
+    grok_count?: number;
     consensus_method?: string;
+    total_cost_usd?: number;
 }
 
 interface ChecklistDetail {
@@ -841,9 +848,11 @@ function AIConsensusSection({ aiPicks }: { aiPicks: AIPicks }) {
     };
 
     const sourceBadge = (source?: string) => {
+        if (source === 'consensus_strong') return { label: '3-OF-3', bg: 'bg-yellow-500/15', text: 'text-yellow-400', border: 'border-yellow-500/25' };
         if (source === 'consensus') return { label: 'CONSENSUS', bg: 'bg-violet-500/15', text: 'text-violet-400', border: 'border-violet-500/25' };
         if (source === 'gemini_only') return { label: 'GEMINI', bg: 'bg-blue-500/15', text: 'text-blue-400', border: 'border-blue-500/25' };
         if (source === 'openai_only') return { label: 'GPT-4o', bg: 'bg-emerald-500/15', text: 'text-emerald-400', border: 'border-emerald-500/25' };
+        if (source === 'grok_only') return { label: 'GROK', bg: 'bg-pink-500/15', text: 'text-pink-400', border: 'border-pink-500/25' };
         return { label: 'AI', bg: 'bg-gray-500/15', text: 'text-gray-400', border: 'border-gray-500/25' };
     };
 
@@ -860,9 +869,14 @@ function AIConsensusSection({ aiPicks }: { aiPicks: AIPicks }) {
                             <span className="w-1.5 h-1.5 rounded-full bg-violet-500 animate-pulse"></span>
                             Multi-AI Consensus Picks
                         </div>
+                        {(aiPicks.strong_count !== undefined && aiPicks.strong_count > 0) && (
+                            <span className="text-[10px] text-yellow-400 font-mono font-bold">
+                                {aiPicks.strong_count} strong
+                            </span>
+                        )}
                         {aiPicks.consensus_count !== undefined && (
                             <span className="text-[10px] text-violet-400 font-mono font-bold">
-                                {aiPicks.consensus_count} consensus
+                                {Math.max(0, aiPicks.consensus_count - (aiPicks.strong_count ?? 0))} consensus
                             </span>
                         )}
                     </div>
@@ -902,7 +916,7 @@ function AIConsensusSection({ aiPicks }: { aiPicks: AIPicks }) {
                         const cs = confidenceStyles[pick.confidence] || confidenceStyles.LOW;
                         const sb = sourceBadge(pick.source);
                         return (
-                            <div key={pick.stock_code} className={`bg-black/20 rounded-xl p-4 border ${pick.source === 'consensus' ? 'border-violet-500/20 hover:border-violet-500/40' : 'border-white/5 hover:border-white/10'} transition-all`}>
+                            <div key={pick.stock_code} className={`bg-black/20 rounded-xl p-4 border ${pick.source === 'consensus_strong' ? 'border-yellow-500/30 hover:border-yellow-500/50' : pick.source === 'consensus' ? 'border-violet-500/20 hover:border-violet-500/40' : 'border-white/5 hover:border-white/10'} transition-all`}>
                                 <div className="flex items-center justify-between mb-2">
                                     <div className="flex items-center gap-2">
                                         <span className="text-violet-400 font-mono text-xs font-bold">#{pick.rank}</span>

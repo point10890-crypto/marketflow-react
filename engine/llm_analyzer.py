@@ -859,36 +859,125 @@ class OpenAIScreener(BaseScreener):
             return {"picks": [], "error": str(e), "generated_at": datetime.now().isoformat(), "model": self.model_name}
 
 
-class MultiAIConsensusScreener:
-    """Multi-AI Consensus 종목 선별기
+class GrokScreener(BaseScreener):
+    """xAI Grok-4 기반 독립적 종목 선별기 (OpenAI 호환 API)
 
-    Gemini + OpenAI 두 AI가 독립적으로 종목을 선별한 뒤,
-    양쪽 모두 선택한 종목(Consensus)을 우선 추천합니다.
+    Multi-AI Consensus 의 3번째 독립 투표자.
+    OpenAI 계열과 다른 학습/정렬 방법론으로 groupthink 위험 완화.
     """
 
-    def __init__(self):
-        self.gemini_screener = GeminiScreener()
-        self.openai_screener = OpenAIScreener()
+    def __init__(self, api_key: str = None):
+        self.api_key = api_key or os.getenv("XAI_API_KEY")
+        self.model_name = os.getenv("XAI_SCREENER_MODEL", "grok-4")
+        self.client = None
+        if self.api_key:
+            from openai import AsyncOpenAI
+            self.client = AsyncOpenAI(api_key=self.api_key, base_url="https://api.x.ai/v1")
 
     async def screen_candidates(self, signals_data: List[Dict]) -> Dict:
-        """두 AI를 병렬 실행하고 Consensus 결과 반환"""
+        if not self.client:
+            return {"picks": [], "error": "No xAI Client", "generated_at": datetime.now().isoformat()}
+        if not signals_data:
+            return {"picks": [], "error": "No signals", "generated_at": datetime.now().isoformat()}
+
+        candidates_text = self._build_candidates_summary(signals_data)
+        prompt = self._build_screening_prompt(candidates_text, len(signals_data))
+
+        try:
+            response = await self.client.chat.completions.create(
+                model=self.model_name,
+                max_tokens=4096,
+                messages=[
+                    {"role": "system", "content": "You are a professional Korean stock market portfolio manager. Respond only in valid JSON. Analyze all candidates comprehensively."},
+                    {"role": "user", "content": prompt}
+                ],
+                response_format={"type": "json_object"}
+            )
+            content = response.choices[0].message.content.strip()
+            result = self._parse_json_response(content)
+            result["generated_at"] = datetime.now().isoformat()
+            result["model"] = self.model_name
+
+            usage = getattr(response, "usage", None)
+            if usage is not None:
+                in_tok = getattr(usage, "prompt_tokens", 0) or 0
+                out_tok = getattr(usage, "completion_tokens", 0) or 0
+                cost_est = (in_tok / 1_000_000) * 3.0 + (out_tok / 1_000_000) * 15.0
+                result["usage"] = {"input_tokens": in_tok, "output_tokens": out_tok, "cost_usd": round(cost_est, 4)}
+                logger.info(f"[Grok] tokens in={in_tok} out={out_tok} cost=${cost_est:.4f}")
+            return result
+        except Exception as e:
+            print(f"[ERROR] Grok Screener Failed: {e}")
+            return {"picks": [], "error": str(e), "generated_at": datetime.now().isoformat(), "model": self.model_name}
+
+
+# Multi-AI 모델 식별자 상수
+MODEL_GEMINI = "gemini"
+MODEL_OPENAI = "openai"
+MODEL_GROK = "grok"
+
+_MODEL_DISPLAY = {
+    MODEL_GEMINI: "Gemini",
+    MODEL_OPENAI: "GPT-4o",
+    MODEL_GROK: "Grok",
+}
+
+_MODEL_DEFAULT = {
+    MODEL_GEMINI: "gemini-2.5-flash",
+    MODEL_OPENAI: "gpt-4o",
+    MODEL_GROK: "grok-4",
+}
+
+
+class MultiAIConsensusScreener:
+    """Multi-AI Consensus 종목 선별기 (N-way, v2)
+
+    Gemini + OpenAI + Grok 세 AI 가 독립적으로 종목을 선별:
+    - 3-of-3 합의 → consensus_strong (confidence 2단계 상향, HIGH 캡)
+    - 2-of-3 합의 → consensus (1단계 상향, 기존 호환)
+    - 1-of-3 단독 → <model>_only (1단계 하향, 기존 호환)
+
+    MULTI_AI_INCLUDE_GROK=0 으로 legacy 2-way 회귀 가능.
+    Grok 실패 시 graceful degradation (자동 2-way 합의).
+    """
+
+    GROK_TIMEOUT = 90    # reasoning 모델은 60s 초과 가능
+    DEFAULT_TIMEOUT = 60
+
+    def __init__(self):
+        self.screeners: Dict[str, "BaseScreener"] = {
+            MODEL_GEMINI: GeminiScreener(),
+            MODEL_OPENAI: OpenAIScreener(),
+        }
+        if os.getenv("MULTI_AI_INCLUDE_GROK", "1") == "1":
+            self.screeners[MODEL_GROK] = GrokScreener()
+
+    async def screen_candidates(self, signals_data: List[Dict]) -> Dict:
+        """활성 스크리너를 병렬 실행 후 N-way 합의 도출"""
         if not signals_data:
             return {
-                "picks": [], "consensus_count": 0,
-                "gemini_count": 0, "openai_count": 0,
+                "picks": [], "consensus_count": 0, "strong_count": 0,
+                "gemini_count": 0, "openai_count": 0, "grok_count": 0,
                 "market_view": "", "top_themes": [],
                 "generated_at": datetime.now().isoformat(),
-                "models": [], "consensus_method": "multi_ai"
+                "models": [], "models_attempted": list(self.screeners.keys()),
+                "models_succeeded": [], "consensus_method": "multi_ai_v2",
             }
 
-        # 1. 병렬 실행
-        gemini_result, openai_result = await asyncio.gather(
-            self._safe_screen(self.gemini_screener, signals_data),
-            self._safe_screen(self.openai_screener, signals_data),
-        )
+        # 1. 활성 스크리너 병렬 실행 (key 순서 보존)
+        names = list(self.screeners.keys())
+        coros = [
+            self._safe_screen(self.screeners[name], signals_data, self._timeout_for(name))
+            for name in names
+        ]
+        gathered = await asyncio.gather(*coros)
+        results: Dict[str, Dict] = dict(zip(names, gathered))
 
-        # 2. 합의 도출
-        return self._build_consensus(gemini_result, openai_result)
+        # 2. N-way 합의 도출
+        return self._build_consensus(results)
+
+    def _timeout_for(self, model_name: str) -> int:
+        return self.GROK_TIMEOUT if model_name == MODEL_GROK else self.DEFAULT_TIMEOUT
 
     async def _safe_screen(self, screener, signals_data: List[Dict], timeout: int = 60) -> Dict:
         """개별 스크리너 (타임아웃 + 에러 핸들링)"""
@@ -907,116 +996,189 @@ class MultiAIConsensusScreener:
             )
             return {"picks": [], "error": str(e), "model": model_name}
 
-    def _build_consensus(self, gemini_result: Dict, openai_result: Dict) -> Dict:
-        """두 AI 결과를 합의 알고리즘으로 병합"""
-        gemini_picks = gemini_result.get("picks", [])
-        openai_picks = openai_result.get("picks", [])
+    def _build_consensus(self, results: Dict[str, Dict]) -> Dict:
+        """N-way 합의 알고리즘.
 
-        # stock_code 기반 매핑
-        gemini_map = {p.get("stock_code", ""): p for p in gemini_picks if p.get("stock_code")}
-        openai_map = {p.get("stock_code", ""): p for p in openai_picks if p.get("stock_code")}
+        results: {MODEL_GEMINI: result, MODEL_OPENAI: result, MODEL_GROK?: result}
+        """
+        # stock_code → pick 매핑 (모델별)
+        maps: Dict[str, Dict[str, Dict]] = {
+            name: {p.get("stock_code", ""): p for p in res.get("picks", []) if p.get("stock_code")}
+            for name, res in results.items()
+        }
+        sets: Dict[str, set] = {name: set(m.keys()) for name, m in maps.items()}
+        active_models = [name for name in sets.keys() if sets[name] or results[name].get("picks") is not None]
 
-        gemini_codes = set(gemini_map.keys())
-        openai_codes = set(openai_map.keys())
+        # 교집합 단계적 차감 (∅ 시 모두 demote 되는 버그 방지)
+        all_codes_strong: set
+        if len(sets) >= 3 and all(s for s in sets.values()):
+            all_codes_strong = set.intersection(*sets.values())
+        elif len(sets) >= 2:
+            # 2-way 모드 (Grok 비활성 또는 빈 결과) → strong = ∅
+            all_codes_strong = set()
+        else:
+            all_codes_strong = set()
 
-        # 교집합 = Consensus
-        consensus_codes = gemini_codes & openai_codes
-        gemini_only_codes = gemini_codes - openai_codes
-        openai_only_codes = openai_codes - gemini_codes
+        # 페어 합의 (∪ 모든 페어) − strong
+        pair_codes: set = set()
+        names = list(sets.keys())
+        for i, a in enumerate(names):
+            for b in names[i + 1:]:
+                pair_codes |= (sets[a] & sets[b])
+        pair_codes -= all_codes_strong
 
-        # Consensus picks (양쪽 합의 → confidence 상향)
-        consensus_picks = []
-        for code in sorted(consensus_codes, key=lambda c: self._consensus_sort_key(gemini_map[c], openai_map[c])):
-            merged = self._merge_pick(gemini_map[code], openai_map[code])
-            consensus_picks.append(merged)
+        # Solo (각 모델 단독)
+        solo_by_model: Dict[str, set] = {}
+        for name in names:
+            others_union = set().union(*(sets[m] for m in names if m != name)) if names else set()
+            solo_by_model[name] = sets[name] - others_union
 
-        # Single-AI picks (한쪽만 → confidence 하향)
-        gemini_only = []
-        for code in sorted(gemini_only_codes, key=lambda c: gemini_map[c].get("rank", 99)):
-            pick = gemini_map[code].copy()
-            pick["source"] = "gemini_only"
-            pick["confidence"] = self._downgrade_confidence(pick.get("confidence", "LOW"))
-            gemini_only.append(pick)
+        # 1) consensus_strong picks (3-of-3)
+        strong_picks = []
+        for code in sorted(all_codes_strong, key=lambda c: self._consensus_sort_key({m: maps[m][c] for m in names if c in maps[m]})):
+            picks_for_code = {m: maps[m][c] for m in names for c in [code] if c in maps[m]}
+            strong_picks.append(self._merge_pick(code, picks_for_code, tier="consensus_strong"))
 
-        openai_only = []
-        for code in sorted(openai_only_codes, key=lambda c: openai_map[c].get("rank", 99)):
-            pick = openai_map[code].copy()
-            pick["source"] = "openai_only"
-            pick["confidence"] = self._downgrade_confidence(pick.get("confidence", "LOW"))
-            openai_only.append(pick)
+        # 2) consensus picks (2-of-3 페어)
+        pair_picks = []
+        for code in sorted(pair_codes, key=lambda c: self._consensus_sort_key({m: maps[m][c] for m in names if c in maps[m]})):
+            picks_for_code = {m: maps[m][code] for m in names if code in maps[m]}
+            pair_picks.append(self._merge_pick(code, picks_for_code, tier="consensus"))
 
-        # 통합 + 재순위
-        all_picks = consensus_picks + gemini_only + openai_only
+        # 3) Solo picks (1-of-N)
+        solo_picks = []
+        for name in names:
+            for code in sorted(solo_by_model[name], key=lambda c: maps[name][c].get("rank", 99)):
+                pick = maps[name][code].copy()
+                pick["source"] = f"{name}_only"
+                pick["confidence"] = self._downgrade_confidence(pick.get("confidence", "LOW"))
+                pick.setdefault("expected_return", "")
+                solo_picks.append(pick)
+
+        # 통합 + 재순위 (strong > pair > solo)
+        all_picks = strong_picks + pair_picks + solo_picks
         for i, p in enumerate(all_picks, 1):
             p["rank"] = i
 
-        # Market views 병합
+        # Market views 병합 (선정 모델만)
         views = []
-        if gemini_result.get("market_view"):
-            views.append(f"[Gemini] {gemini_result['market_view']}")
-        if openai_result.get("market_view"):
-            views.append(f"[GPT-4o] {openai_result['market_view']}")
+        for name in names:
+            mv = results[name].get("market_view")
+            if mv:
+                views.append(f"[{_MODEL_DISPLAY.get(name, name)}] {mv}")
 
         # Themes 병합 (중복 제거)
-        all_themes = []
-        for t in (gemini_result.get("top_themes", []) + openai_result.get("top_themes", [])):
-            if t not in all_themes:
-                all_themes.append(t)
+        all_themes: List[str] = []
+        for name in names:
+            for t in results[name].get("top_themes", []):
+                if t not in all_themes:
+                    all_themes.append(t)
 
-        # 활성 모델
-        models_used = []
-        if gemini_picks:
-            models_used.append(gemini_result.get("model", "gemini-2.5-flash"))
-        if openai_picks:
-            models_used.append(openai_result.get("model", "gpt-4o"))
+        # 활성 모델 (실제 picks 생성한 모델)
+        models_succeeded = [
+            results[name].get("model", _MODEL_DEFAULT.get(name, name))
+            for name in names if maps[name]
+        ]
+        models_attempted = [
+            results[name].get("model", _MODEL_DEFAULT.get(name, name))
+            for name in names
+        ]
+
+        # 모델별 카운트 (FE 호환: gemini_count/openai_count, 신규: grok_count)
+        counts = {f"{name}_count": len(maps[name]) for name in names}
+        # Grok 미활성 시 grok_count 0 고정 (FE 안전성)
+        counts.setdefault("grok_count", 0)
+
+        # 사용 비용 합산 (Grok)
+        total_cost = 0.0
+        for name in names:
+            usage = results[name].get("usage")
+            if isinstance(usage, dict):
+                total_cost += float(usage.get("cost_usd") or 0.0)
 
         return {
             "picks": all_picks,
-            "consensus_count": len(consensus_picks),
-            "gemini_count": len(gemini_picks),
-            "openai_count": len(openai_picks),
+            "consensus_count": len(strong_picks) + len(pair_picks),  # 기존 호환: 합의 통합 카운트
+            "strong_count": len(strong_picks),                        # 신규: 3-of-3 카운트
+            **counts,
             "market_view": " | ".join(views),
             "top_themes": all_themes[:6],
             "generated_at": datetime.now().isoformat(),
-            "models": models_used,
-            "consensus_method": "multi_ai",
+            "models": models_succeeded,
+            "models_attempted": models_attempted,
+            "models_succeeded": models_succeeded,
+            "consensus_method": "multi_ai_v2",
+            "total_cost_usd": round(total_cost, 4) if total_cost else 0.0,
         }
 
-    def _consensus_sort_key(self, gp: Dict, op: Dict) -> tuple:
-        """Consensus 정렬 키 (높은 confidence + 낮은 avg rank 우선)"""
+    def _consensus_sort_key(self, picks_by_model: Dict[str, Dict]) -> tuple:
+        """합의 정렬 키 — 선정한 모델 ranks 만 평균 (1-of-N 페널티 방지)."""
         conf_order = {"HIGH": 0, "MEDIUM": 1, "LOW": 2}
-        avg_rank = (gp.get("rank", 99) + op.get("rank", 99)) / 2
-        best_conf = min(
-            conf_order.get(gp.get("confidence", "LOW"), 2),
-            conf_order.get(op.get("confidence", "LOW"), 2)
-        )
+        ranks = [p.get("rank", 99) for p in picks_by_model.values()]
+        avg_rank = sum(ranks) / len(ranks) if ranks else 99
+        confs = [conf_order.get(p.get("confidence", "LOW"), 2) for p in picks_by_model.values()]
+        best_conf = min(confs) if confs else 2
         return (best_conf, avg_rank)
 
-    def _merge_pick(self, gp: Dict, op: Dict) -> Dict:
-        """양쪽 AI 결과를 하나로 병합 (confidence 상향)"""
+    def _merge_pick(self, code: str, picks_by_model: Dict[str, Dict], tier: str) -> Dict:
+        """N-way 병합. tier ∈ {"consensus_strong", "consensus"}."""
         conf_order = {"HIGH": 0, "MEDIUM": 1, "LOW": 2}
         reverse = {0: "HIGH", 1: "MEDIUM", 2: "LOW"}
 
-        g_conf = conf_order.get(gp.get("confidence", "LOW"), 2)
-        o_conf = conf_order.get(op.get("confidence", "LOW"), 2)
-        best = min(g_conf, o_conf)
-        boosted = max(0, best - 1)  # 1단계 상향
+        # 최고 confidence 기준 boost
+        confs = [conf_order.get(p.get("confidence", "LOW"), 2) for p in picks_by_model.values()]
+        best = min(confs) if confs else 2
+        levels = 2 if tier == "consensus_strong" else 1
+        boosted = self._boost_confidence_index(best, levels)
 
-        return {
-            "stock_code": gp.get("stock_code", ""),
-            "stock_name": gp.get("stock_name", op.get("stock_name", "")),
-            "rank": 0,  # 나중에 재배정
+        # stock_name (첫 비어있지 않은 값)
+        stock_name = ""
+        for p in picks_by_model.values():
+            if p.get("stock_name"):
+                stock_name = p["stock_name"]
+                break
+
+        # 모델별 reason 분리 저장 + concat
+        reasons_dict: Dict[str, str] = {}
+        reason_parts: List[str] = []
+        for name, p in picks_by_model.items():
+            r = p.get("reason", "")
+            if r:
+                reasons_dict[name] = r
+                reason_parts.append(f"[{_MODEL_DISPLAY.get(name, name)}] {r}")
+
+        # rank 필드: 선정 모델만 (placeholder 99 금지)
+        rank_fields = {f"{name}_rank": p.get("rank", 99) for name, p in picks_by_model.items()}
+
+        # risk / expected_return: 첫 비어있지 않은 값
+        risk = ""
+        expected_return = ""
+        for p in picks_by_model.values():
+            if not risk and p.get("risk"):
+                risk = p["risk"]
+            if not expected_return and p.get("expected_return"):
+                expected_return = p["expected_return"]
+
+        merged = {
+            "stock_code": code,
+            "stock_name": stock_name,
+            "rank": 0,  # 추후 재배정
             "confidence": reverse[boosted],
-            "reason": f"[Gemini] {gp.get('reason', '')} [GPT-4o] {op.get('reason', '')}",
-            "risk": gp.get("risk", op.get("risk", "")),
-            "expected_return": gp.get("expected_return", op.get("expected_return", "")),
-            "source": "consensus",
-            "gemini_rank": gp.get("rank", 99),
-            "openai_rank": op.get("rank", 99),
+            "reason": " ".join(reason_parts),
+            "reasons": reasons_dict,
+            "risk": risk,
+            "expected_return": expected_return,
+            "source": tier,
         }
+        merged.update(rank_fields)
+        return merged
+
+    def _boost_confidence_index(self, conf_idx: int, levels: int = 1) -> int:
+        """confidence index 를 N단계 상향 (HIGH=0 캡)."""
+        return max(0, conf_idx - max(0, levels))
 
     def _downgrade_confidence(self, confidence: str) -> str:
-        """Single-AI picks confidence 1단계 하향"""
+        """Solo picks confidence 1단계 하향"""
         downgrades = {"HIGH": "MEDIUM", "MEDIUM": "LOW", "LOW": "LOW"}
         return downgrades.get(confidence, "LOW")
 
