@@ -951,9 +951,17 @@ class MultiAIConsensusScreener:
         }
         if os.getenv("MULTI_AI_INCLUDE_GROK", "1") == "1":
             self.screeners[MODEL_GROK] = GrokScreener()
+        # Devil's Advocate (consensus_strong post-review)
+        self.devil_advocate: Optional["ClaudeDevilAdvocate"] = None
+        if os.getenv("DEVIL_ADVOCATE_ENABLED", "1") == "1":
+            try:
+                self.devil_advocate = ClaudeDevilAdvocate()
+            except Exception as e:
+                logger.warning(f"[DevilAdvocate] init failed: {e}")
+                self.devil_advocate = None
 
     async def screen_candidates(self, signals_data: List[Dict]) -> Dict:
-        """활성 스크리너를 병렬 실행 후 N-way 합의 도출"""
+        """활성 스크리너를 병렬 실행 후 N-way 합의 도출 + (옵션) Devil's Advocate 후검증"""
         if not signals_data:
             return {
                 "picks": [], "consensus_count": 0, "strong_count": 0,
@@ -974,7 +982,58 @@ class MultiAIConsensusScreener:
         results: Dict[str, Dict] = dict(zip(names, gathered))
 
         # 2. N-way 합의 도출
-        return self._build_consensus(results)
+        consensus = self._build_consensus(results)
+
+        # 3. Devil's Advocate 후검증 (consensus_strong 픽만)
+        if self.devil_advocate and self.devil_advocate.client:
+            consensus = await self._review_strong_picks(consensus, signals_data)
+
+        return consensus
+
+    async def _review_strong_picks(self, consensus: Dict, signals_data: List[Dict]) -> Dict:
+        """consensus_strong 픽에 대해 Claude 가 반대 입장으로 리스크 검토.
+
+        실패 시 graceful — 픽은 변경 없이 통과.
+        """
+        strong_picks = [p for p in consensus.get("picks", []) if p.get("source") == "consensus_strong"]
+        if not strong_picks:
+            return consensus
+
+        try:
+            reviewed = await self.devil_advocate.review_strong_picks(strong_picks, signals_data)
+        except Exception as e:
+            logger.warning(f"[DevilAdvocate] review failed: {type(e).__name__}: {e}")
+            return consensus
+
+        # 픽 업데이트 + 비용 합산
+        review_by_code = {r["stock_code"]: r for r in reviewed if r.get("stock_code")}
+        new_picks = []
+        flagged_count = 0
+        for p in consensus["picks"]:
+            if p.get("source") == "consensus_strong" and p.get("stock_code") in review_by_code:
+                review = review_by_code[p["stock_code"]]
+                p["devil_advocate_flags"] = review.get("flags", [])
+                p["review_verdict"] = review.get("verdict", "PASS")
+                p["review_reasoning"] = review.get("reasoning", "")
+                # confidence 강등 (WARN: -1, BLOCK: -2)
+                if review.get("verdict") == "WARN":
+                    p["confidence"] = self._downgrade_confidence(p.get("confidence", "HIGH"))
+                    flagged_count += 1
+                elif review.get("verdict") == "BLOCK":
+                    p["confidence"] = self._downgrade_confidence(self._downgrade_confidence(p.get("confidence", "HIGH")))
+                    flagged_count += 1
+            new_picks.append(p)
+        consensus["picks"] = new_picks
+
+        # 메타 추가
+        review_cost = self.devil_advocate.last_run_cost_usd
+        consensus["devil_advocate_enabled"] = True
+        consensus["devil_advocate_model"] = self.devil_advocate.model_name
+        consensus["devil_advocate_flagged_count"] = flagged_count
+        consensus["devil_advocate_cost_usd"] = round(review_cost, 4)
+        consensus["total_cost_usd"] = round(consensus.get("total_cost_usd", 0.0) + review_cost, 4)
+
+        return consensus
 
     def _timeout_for(self, model_name: str) -> int:
         return self.GROK_TIMEOUT if model_name == MODEL_GROK else self.DEFAULT_TIMEOUT
@@ -1181,6 +1240,185 @@ class MultiAIConsensusScreener:
         """Solo picks confidence 1단계 하향"""
         downgrades = {"HIGH": "MEDIUM", "MEDIUM": "LOW", "LOW": "LOW"}
         return downgrades.get(confidence, "LOW")
+
+
+class ClaudeDevilAdvocate:
+    """Claude 기반 Devil's Advocate 리스크 리뷰어.
+
+    consensus_strong (3-of-3) 픽에 대해 반대 입장으로 함정 신호를 강제 추출.
+    Voter 가 아닌 Critic — groupthink 면역.
+    """
+
+    DEFAULT_MODEL = "claude-haiku-4-5-20251001"
+    DEFAULT_TIMEOUT = 30
+    MAX_PARALLEL = 5
+
+    # claude-haiku-4-5 pricing (per 1M tokens)
+    HAIKU_INPUT_PRICE = 0.80
+    HAIKU_OUTPUT_PRICE = 4.00
+
+    def __init__(self, api_key: Optional[str] = None):
+        self.api_key = api_key or os.getenv("ANTHROPIC_API_KEY")
+        self.model_name = os.getenv("DEVIL_ADVOCATE_MODEL", self.DEFAULT_MODEL)
+        self.timeout = int(os.getenv("DEVIL_ADVOCATE_TIMEOUT", str(self.DEFAULT_TIMEOUT)))
+        self.client = None
+        self.last_run_cost_usd = 0.0
+        if self.api_key:
+            try:
+                import anthropic
+                self.client = anthropic.AsyncAnthropic(api_key=self.api_key)
+            except Exception as e:
+                logger.warning(f"[DevilAdvocate] client init failed: {e}")
+                self.client = None
+
+    async def review_strong_picks(self, strong_picks: List[Dict], signals_data: List[Dict]) -> List[Dict]:
+        """각 strong pick 을 병렬 review. 반환: [{stock_code, flags, verdict, reasoning}]"""
+        if not self.client or not strong_picks:
+            self.last_run_cost_usd = 0.0
+            return []
+
+        # signal_data → code 매핑 (재무/수급 컨텍스트 주입용)
+        sig_by_code = {s.get("stock_code"): s for s in signals_data if s.get("stock_code")}
+
+        # 병렬 실행 (semaphore 제한)
+        sem = asyncio.Semaphore(self.MAX_PARALLEL)
+
+        async def _bounded(pick):
+            async with sem:
+                return await self._review_single(pick, sig_by_code.get(pick.get("stock_code"), {}))
+
+        coros = [_bounded(p) for p in strong_picks]
+        results = await asyncio.gather(*coros, return_exceptions=True)
+
+        # 결과 정규화
+        normalized: List[Dict] = []
+        total_cost = 0.0
+        for pick, res in zip(strong_picks, results):
+            if isinstance(res, Exception):
+                logger.warning(f"[DevilAdvocate] {pick.get('stock_code')} review failed: {res}")
+                continue
+            if not isinstance(res, dict):
+                continue
+            total_cost += res.get("_cost_usd", 0.0)
+            normalized.append({
+                "stock_code": pick.get("stock_code"),
+                "flags": res.get("flags", []),
+                "verdict": res.get("verdict", "PASS"),
+                "reasoning": res.get("reasoning", ""),
+            })
+
+        self.last_run_cost_usd = total_cost
+        return normalized
+
+    async def _review_single(self, pick: Dict, signal: Dict) -> Dict:
+        """단일 픽 review. Claude API 호출 + JSON 파싱."""
+        stock_name = pick.get("stock_name", "")
+        stock_code = pick.get("stock_code", "")
+        reason = pick.get("reason", "")
+
+        # 컨텍스트 패킹 (signal 에서 보강)
+        score = signal.get("score", {}) if signal else {}
+        checklist = signal.get("checklist", {}) if signal else {}
+        context_lines = []
+        if signal:
+            context_lines.append(f"등급: {signal.get('grade', 'N/A')} | 점수: {score.get('total', 0)}/17")
+            context_lines.append(f"등락률: {signal.get('change_pct', 0):+.1f}% | 거래대금: {signal.get('trading_value', 0):,.0f}원")
+            context_lines.append(f"외인5일: {signal.get('foreign_5d', 0):+,}억 | 기관5일: {signal.get('inst_5d', 0):+,}억")
+            context_lines.append(f"거래량배수: {signal.get('volume_ratio', 0):.2f}x | 변동성축소: {checklist.get('has_consolidation', False)}")
+            context_lines.append(f"악재뉴스: {checklist.get('negative_news', False)} | 윗꼬리장대: {checklist.get('upper_wick_long', False)}")
+
+        prompt = f"""당신은 한국 주식시장의 매우 보수적인 리스크 분석가입니다.
+3개 AI(Gemini, GPT-4o, Grok)가 모두 매수 추천한 종목 '{stock_name}({stock_code})'에 대해
+**반대 입장에서** 함정 가능성을 적극적으로 찾아내야 합니다.
+
+[3사 합의 매수 사유]
+{reason}
+
+[정량 데이터]
+{chr(10).join(context_lines) if context_lines else '데이터 부족'}
+
+[검증 카테고리]
+- volume_decay: 거래대금 감소 추세 (5일 평균 vs 당일)
+- chart_trap: 단기 과열/블로우오프 탑/긴 윗꼬리/저항선 진입
+- supply_warning: 외인/기관 매도 전환 시그널
+- theme_bubble: 테마 거품/유사 종목 동시 급등 후 차별화 부재
+- disclosure_risk: 잠재적 악재공시 단서 (소송, 특수관계자 거래, 회계 의심)
+- valuation_overreach: PER/PBR 과열 (재료 대비 가격 과도)
+- news_quality: 단순 추측성/루머 vs 실적/수주 확정
+
+[출력 규칙]
+- 함정 가능성이 명확하면 flags 에 1-3개 항목 (severity: HIGH/MEDIUM/LOW)
+- 각 flag 의 evidence 는 위 [정량 데이터] 또는 [매수 사유] 에서 인용
+- 함정 신호 없으면 flags=[], verdict="PASS"
+- verdict: PASS(문제없음) | WARN(MEDIUM 이상 1개+) | BLOCK(HIGH 2개+)
+
+JSON 형식으로만 응답:
+{{
+  "flags": [
+    {{"category": "volume_decay", "severity": "HIGH", "evidence": "거래량배수 0.7x — 5일 평균 대비 30% 감소"}}
+  ],
+  "verdict": "WARN",
+  "reasoning": "한 문장으로 종합 평가"
+}}"""
+
+        try:
+            response = await asyncio.wait_for(
+                self.client.messages.create(
+                    model=self.model_name,
+                    max_tokens=1024,
+                    system="You are a conservative Korean stock risk analyst. Find traps, not opportunities. Respond only in valid JSON.",
+                    messages=[{"role": "user", "content": prompt}],
+                ),
+                timeout=self.timeout,
+            )
+            content = response.content[0].text.strip()
+
+            # 비용 계산
+            cost = (response.usage.input_tokens / 1_000_000) * self.HAIKU_INPUT_PRICE + \
+                   (response.usage.output_tokens / 1_000_000) * self.HAIKU_OUTPUT_PRICE
+
+            # JSON 파싱 (graceful)
+            try:
+                parsed = json.loads(content)
+            except json.JSONDecodeError:
+                match = re.search(r"\{.*\}", content, re.DOTALL)
+                if not match:
+                    return {"flags": [], "verdict": "PASS", "reasoning": "JSON parse failed", "_cost_usd": cost}
+                parsed = json.loads(match.group())
+
+            # verdict 검증 (스키마 안전)
+            verdict = parsed.get("verdict", "PASS").upper()
+            if verdict not in ("PASS", "WARN", "BLOCK"):
+                verdict = "PASS"
+
+            # flags 정규화
+            raw_flags = parsed.get("flags", []) or []
+            flags = []
+            for f in raw_flags:
+                if not isinstance(f, dict):
+                    continue
+                sev = str(f.get("severity", "LOW")).upper()
+                if sev not in ("HIGH", "MEDIUM", "LOW"):
+                    sev = "LOW"
+                flags.append({
+                    "category": str(f.get("category", "unknown"))[:32],
+                    "severity": sev,
+                    "evidence": str(f.get("evidence", ""))[:200],
+                })
+
+            return {
+                "flags": flags[:5],  # 상한
+                "verdict": verdict,
+                "reasoning": str(parsed.get("reasoning", ""))[:300],
+                "_cost_usd": cost,
+            }
+
+        except asyncio.TimeoutError:
+            logger.warning(f"[DevilAdvocate] {stock_code} timeout after {self.timeout}s")
+            return {"flags": [], "verdict": "PASS", "reasoning": "timeout", "_cost_usd": 0.0}
+        except Exception as e:
+            logger.warning(f"[DevilAdvocate] {stock_code} review error: {type(e).__name__}: {e}")
+            return {"flags": [], "verdict": "PASS", "reasoning": f"error: {e}", "_cost_usd": 0.0}
 
 
 if __name__ == "__main__":

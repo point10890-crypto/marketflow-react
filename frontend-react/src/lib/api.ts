@@ -191,6 +191,12 @@ export interface JonggaV2Signal {
     themes?: string[];
 }
 
+export interface DevilAdvocateFlag {
+    category: string;
+    severity: 'HIGH' | 'MEDIUM' | 'LOW';
+    evidence: string;
+}
+
 export interface JonggaV2AIPick {
     stock_code: string;
     stock_name: string;
@@ -204,6 +210,9 @@ export interface JonggaV2AIPick {
     gemini_rank?: number;
     openai_rank?: number;
     grok_rank?: number;
+    devil_advocate_flags?: DevilAdvocateFlag[];
+    review_verdict?: 'PASS' | 'WARN' | 'BLOCK';
+    review_reasoning?: string;
 }
 
 export interface JonggaV2Result {
@@ -227,6 +236,10 @@ export interface JonggaV2Result {
         models_attempted?: string[];
         models_succeeded?: string[];
         total_cost_usd?: number;
+        devil_advocate_enabled?: boolean;
+        devil_advocate_model?: string;
+        devil_advocate_flagged_count?: number;
+        devil_advocate_cost_usd?: number;
     };
 }
 

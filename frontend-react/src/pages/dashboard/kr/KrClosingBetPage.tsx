@@ -22,6 +22,12 @@ interface ScoreDetail {
     total: number;
 }
 
+interface DevilAdvocateFlag {
+    category: string;
+    severity: 'HIGH' | 'MEDIUM' | 'LOW';
+    evidence: string;
+}
+
 interface AIPick {
     stock_code: string;
     stock_name: string;
@@ -35,6 +41,9 @@ interface AIPick {
     gemini_rank?: number;
     openai_rank?: number;
     grok_rank?: number;
+    devil_advocate_flags?: DevilAdvocateFlag[];
+    review_verdict?: 'PASS' | 'WARN' | 'BLOCK';
+    review_reasoning?: string;
 }
 
 interface AIPicks {
@@ -53,6 +62,10 @@ interface AIPicks {
     grok_count?: number;
     consensus_method?: string;
     total_cost_usd?: number;
+    devil_advocate_enabled?: boolean;
+    devil_advocate_model?: string;
+    devil_advocate_flagged_count?: number;
+    devil_advocate_cost_usd?: number;
 }
 
 interface ChecklistDetail {
@@ -932,6 +945,28 @@ function AIConsensusSection({ aiPicks }: { aiPicks: AIPicks }) {
                                     </div>
                                 </div>
                                 <p className="text-xs text-gray-400 leading-relaxed mb-2 line-clamp-3">{pick.reason}</p>
+                                {pick.devil_advocate_flags && pick.devil_advocate_flags.length > 0 && (
+                                    <div className={`mt-2 mb-2 p-2 rounded border ${pick.review_verdict === 'BLOCK' ? 'bg-red-500/10 border-red-500/30' : 'bg-amber-500/10 border-amber-500/30'}`}>
+                                        <div className="flex items-center gap-1 mb-1">
+                                            <span className={`text-[10px] font-bold ${pick.review_verdict === 'BLOCK' ? 'text-red-400' : 'text-amber-400'}`}>
+                                                ⚠ Devil's Advocate
+                                            </span>
+                                            <span className={`px-1 py-0.5 rounded text-[8px] font-bold ${pick.review_verdict === 'BLOCK' ? 'bg-red-500/30 text-red-300' : 'bg-amber-500/30 text-amber-300'}`}>
+                                                {pick.review_verdict}
+                                            </span>
+                                        </div>
+                                        <ul className="space-y-0.5">
+                                            {pick.devil_advocate_flags.slice(0, 3).map((f, i) => (
+                                                <li key={i} className="text-[10px] text-gray-300 leading-snug">
+                                                    <span className={`font-mono font-bold mr-1 ${f.severity === 'HIGH' ? 'text-red-400' : f.severity === 'MEDIUM' ? 'text-amber-400' : 'text-gray-400'}`}>
+                                                        [{f.severity}]
+                                                    </span>
+                                                    <span className="text-gray-400">{f.category}:</span> {f.evidence}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
                                 <div className="flex items-center justify-between text-[10px]">
                                     <span className="text-gray-500">Risk: <span className="text-amber-400">{pick.risk}</span></span>
                                     <span className="text-gray-500">Return: <span className="text-emerald-400">{pick.expected_return}</span></span>
