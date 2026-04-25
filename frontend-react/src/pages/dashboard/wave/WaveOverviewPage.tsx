@@ -524,7 +524,14 @@ function ChartDetailModal({
     onClose: () => void;
 }) {
     const isMobile = useIsMobile();
-    const chartHeight = isMobile ? 260 : 400;
+    const [vh, setVh] = useState<number>(typeof window !== 'undefined' ? window.innerHeight : 900);
+    useEffect(() => {
+        const onResize = () => setVh(window.innerHeight);
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
+    }, []);
+    // Header(~70) + body padding(~32) + pattern buttons(~40) + safety(~80) = ~220px
+    const chartHeight = isMobile ? 320 : Math.max(520, vh - 220);
 
     // Lock body scroll while modal is open
     useEffect(() => {
@@ -550,7 +557,7 @@ function ChartDetailModal({
             onClick={onClose}
         >
             <div
-                className="bg-[#1c1c1e] rounded-2xl border border-cyan-500/20 w-full max-w-3xl max-h-[92vh] flex flex-col overflow-hidden shadow-2xl"
+                className="bg-[#1c1c1e] rounded-2xl border border-cyan-500/20 w-full max-w-[95vw] max-h-[95vh] flex flex-col overflow-hidden shadow-2xl"
                 onClick={e => e.stopPropagation()}
             >
                 {/* Header */}
