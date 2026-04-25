@@ -531,7 +531,10 @@ function ChartDetailModal({
         return () => window.removeEventListener('resize', onResize);
     }, []);
     // Header(~70) + body padding(~32) + pattern buttons(~40) + safety(~80) = ~220px
-    const chartHeight = isMobile ? 320 : Math.max(520, vh - 220);
+    // 모바일은 헤더 + 패턴 버튼 + 안전여백 더 크게(~280)
+    const chartHeight = isMobile
+        ? Math.max(380, vh - 280)
+        : Math.max(520, vh - 220);
 
     // Lock body scroll while modal is open
     useEffect(() => {
