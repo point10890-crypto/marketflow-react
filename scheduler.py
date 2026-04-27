@@ -316,6 +316,7 @@ class Config:
     US_TRACK_TIME = os.environ.get('US_MARKET_TRACK_TIME', '09:30')
     KR_UPDATE_TIME = os.environ.get('KR_MARKET_UPDATE_TIME', '14:50')   # 종가베팅 V2 (14:50 — 장 마감 직전 선제 분석)
     VCP_UPDATE_TIME = os.environ.get('VCP_UPDATE_TIME', '16:00')         # 전 시장 VCP 시그널
+    KR_VCP_MORNING_TIME = os.environ.get('KR_VCP_MORNING_TIME', '11:00') # 평일 오전 KR VCP refresh (주말 후 stale 방지)
     WAVE_SCAN_TIME = os.environ.get('WAVE_SCAN_TIME', '16:30')           # Wave 패턴 스캔
     AI_CHART_TIME = os.environ.get('AI_CHART_TIME', '14:00')             # AI Chart Analysis KR (Gemini Vision)
     US_AI_CHART_TIME = os.environ.get('US_AI_CHART_TIME', '04:00')       # AI Chart Analysis US (Gemini Vision)
@@ -464,8 +465,16 @@ def run_command(cmd: list, description: str, timeout: int = 600,
         return False
 
 
-def _telegram_post(bot_token: str, chat_id: str, message: str, retries: int = 5) -> bool:
-    """텔레그램 단건 전송 (SSL EOF 대비 — 새 세션 + 지수 백오프 재시도)"""
+def _telegram_post(bot_token: str, chat_id: str, message: str, retries: int = 5,
+                   label: str = "bot") -> bool:
+    """텔레그램 단건 전송 (SSL EOF 대비 — 새 세션 + 지수 백오프 재시도).
+
+    200 응답이어도 반드시 body.ok=true + result.message_id 까지 검증해야
+    "진짜 전송 성공" 으로 인정한다. 과거 silent-drop (200 OK 이지만 실제
+    메시지 미수신) 재발 시 탐지 가능.
+
+    label: 로그 식별자 (예: "personal", "channel")
+    """
     import requests
     from requests.adapters import HTTPAdapter
     for attempt in range(retries):
@@ -481,15 +490,30 @@ def _telegram_post(bot_token: str, chat_id: str, message: str, retries: int = 5)
             )
             session.close()
             if r.status_code == 200:
-                return True
-            logger.warning(f"⚠️ 텔레그램 HTTP {r.status_code}: {r.text[:100]}")
+                # 200 이어도 ok=true + message_id 까지 확인 (Telegram silent-drop 방어)
+                try:
+                    body = r.json()
+                except Exception:
+                    logger.warning(f"⚠️ [tg/{label}] HTTP 200 but non-JSON body: {r.text[:200]}")
+                    body = {}
+                if body.get("ok") is True:
+                    msg_id = body.get("result", {}).get("message_id")
+                    if msg_id:
+                        logger.info(f"✅ [tg/{label}] sent msg_id={msg_id} chat={chat_id}")
+                        return True
+                    logger.warning(f"⚠️ [tg/{label}] ok=true but no message_id: {r.text[:200]}")
+                else:
+                    logger.warning(f"⚠️ [tg/{label}] HTTP 200 but ok=false: {r.text[:200]}")
+                # 200 이지만 검증 실패 → 재시도 루프 계속
+            else:
+                logger.warning(f"⚠️ [tg/{label}] HTTP {r.status_code}: {r.text[:200]}")
         except Exception as e:
             if attempt < retries - 1:
                 wait = 3 * (2 ** attempt)  # 3, 6, 12, 24초
-                logger.debug(f"텔레그램 재시도 {attempt+1}/{retries} ({wait}초 후): {e}")
+                logger.debug(f"[tg/{label}] 재시도 {attempt+1}/{retries} ({wait}초 후): {e}")
                 time.sleep(wait)
             else:
-                logger.error(f"❌ 텔레그램 전송 실패 ({retries}회 시도): {e}")
+                logger.error(f"❌ [tg/{label}] 전송 실패 ({retries}회 시도): {e}")
     return False
 
 
@@ -499,28 +523,37 @@ _TELEGRAM_QUEUE_TTL = 3600  # 1시간 후 폐기
 
 
 def _try_send_telegram(message: str, channel: bool = True) -> bool:
-    """실제 전송 시도.
+    """실제 전송 시도 — 봇별로 독립 추적.
+
     channel=True  → 개인 + 채널 양쪽 (분석 결과)
     channel=False → 개인 봇만 (시스템 메시지)
-    """
-    success = False
 
-    # 1) 개인 봇 (항상)
+    반환: 필요한 대상 봇 **모두** 성공 시 True. 하나라도 실패하면 False 로
+    상위 큐 저장 유도 (과거엔 한쪽만 성공해도 True → 실패 silent 무시).
+    """
+    targets: list[tuple[str, str, str]] = []   # [(label, token, chat_id)]
+
     token = os.getenv("TELEGRAM_BOT_TOKEN")
     chat_id = os.getenv("TELEGRAM_CHAT_ID")
     if token and chat_id and "your_bot_token" not in token:
-        if _telegram_post(token, chat_id, message):
-            success = True
+        targets.append(("personal", token, chat_id))
 
-    # 2) 채널 봇 — 분석 결과만 (시스템 메시지 제외)
     if channel:
         ch_token = os.getenv("TELEGRAM_CHANNEL_BOT_TOKEN")
         ch_chat_id = os.getenv("TELEGRAM_CHANNEL_CHAT_ID")
         if ch_token and ch_chat_id:
-            if _telegram_post(ch_token, ch_chat_id, message):
-                success = True
+            targets.append(("channel", ch_token, ch_chat_id))
 
-    return success
+    if not targets:
+        logger.warning("⚠️ 텔레그램 전송 대상 봇 없음 (TOKEN/CHAT_ID 확인 필요)")
+        return False
+
+    all_ok = True
+    for label, tok, cid in targets:
+        if not _telegram_post(tok, cid, message, label=label):
+            all_ok = False
+            logger.warning(f"⚠️ [tg/{label}] 최종 실패 — 메시지 큐 저장 대상")
+    return all_ok
 
 
 def _flush_telegram_queue():
@@ -1336,6 +1369,30 @@ def run_kr_full_update(skip_sync: bool = False):
         auto_git_push('kr')
 
     return all(r[1] for r in results)
+
+
+def run_kr_vcp_morning_refresh():
+    """평일 오전 KR VCP 단독 refresh (주말 후 stale 방지용).
+
+    16:00 정식 run_vcp_all_markets 와 별개로 KR 만 갱신. signal_tracker 는 백테스트용이라 생략하고
+    enhanced_scanner 로 vcp_kr_latest.json 만 빠르게 새로고침. 텔레그램 알림은 보내지 않음
+    (16:00 알림과 중복 방지). 검증/재시도는 run_vcp_enhanced_scan 내부에서 처리.
+    """
+    logger.info("=" * 60)
+    logger.info(f"📈 KR VCP 오전 Refresh 시작 ({Config.KR_VCP_MORNING_TIME}) — 단독 실행")
+    logger.info("=" * 60)
+    start_time = time.time()
+    ok = run_vcp_enhanced_scan('KR')
+    elapsed = int(time.time() - start_time)
+    if ok:
+        logger.info(f"✅ KR VCP 오전 Refresh 완료 ({elapsed}초)")
+        try:
+            auto_git_push('vcp')
+        except Exception as e:
+            logger.warning(f"⚠️ git push 실패: {e}")
+    else:
+        logger.warning(f"⚠️ KR VCP 오전 Refresh 실패 ({elapsed}초)")
+    return ok
 
 
 def run_vcp_all_markets(skip_sync: bool = False):
@@ -2311,6 +2368,7 @@ def check_and_run_missed_tasks():
             (9 * 60,       'morning_report',   send_morning_status_report,  '일별 상태 리포트',   14 * 60, None),
             (9 * 60 + 5,   'morning_briefing', run_morning_briefing,        'AI 조간 브리핑',     14 * 60, None),
             (9 * 60 + 30,  'us_track',         save_us_track_record_snapshot,'US Track Record',   14 * 60, None),
+            (11 * 60,      'kr_vcp_morning',   run_kr_vcp_morning_refresh,  'KR VCP 오전 Refresh', 14 * 60, None),
             (14 * 60,      'ai_chart',         _run_ai_chart_analysis,      'KR AI Chart 분석',   23 * 60, None),
             (14 * 60 + 50, 'kr_jongga',        run_kr_full_update,          'KR 종가베팅',        23 * 60, None),
             (16 * 60,      'vcp_all',          run_vcp_all_markets,         'VCP 전시장',         23 * 60, None),
@@ -2446,6 +2504,43 @@ def _run_kiwoom_ai_theme() -> bool:
         return True
     except Exception as e:
         logger.warning(f"키움 AI전략 테마 폴백: {type(e).__name__}: {e}")
+        return False
+
+
+def _run_orphan_file_audit() -> bool:
+    """커뮤니티 업로드 orphan 파일 일일 점검.
+
+    DB 에 file_url 이 기록됐으나 실제 디스크에 없는 post 를 감지해 관리자 개인 봇으로
+    알림. 2026-04-14 dual-tunnel 업로드 실종 사고 재발 조기 감지용.
+    """
+    try:
+        import os as _os
+        from app import create_app
+        app = create_app()
+        with app.app_context():
+            from app.models.community import Post
+            upload_dir = _os.path.join(Config.BASE_DIR, 'data', 'uploads', 'community')
+            if not _os.path.isdir(upload_dir):
+                return True
+            existing = set(_os.listdir(upload_dir))
+            orphans = []
+            for p in Post.query.filter(Post.file_url.isnot(None)).all():
+                stored = p.file_url.rsplit('/', 1)[-1] if p.file_url else None
+                if stored and stored not in existing:
+                    orphans.append((p.id, p.title, p.file_name))
+            if orphans:
+                lines = [f"⚠️ <b>업로드 파일 유실 감지</b>", f"", f"총 {len(orphans)}건 orphan file_url:"]
+                for pid, title, fname in orphans[:10]:
+                    lines.append(f"  • #{pid} {str(title or '')[:30]} — {fname or '?'}")
+                if len(orphans) > 10:
+                    lines.append(f"  … 외 {len(orphans) - 10}건")
+                send_telegram("\n".join(lines), channel=False)
+                logger.warning(f"orphan files detected: {len(orphans)}")
+            else:
+                logger.info("✅ 업로드 파일 무결성 OK (orphan 0건)")
+            return True
+    except Exception as e:
+        logger.warning(f"orphan audit 실패: {type(e).__name__}: {e}")
         return False
 
 
@@ -2740,6 +2835,10 @@ class Scheduler:
             getattr(schedule.every(), day).at(Config.KR_UPDATE_TIME).do(
                 self._with_record(run_kr_full_update, 'kr_jongga',
                                   max_retries=2, retry_delay=600, verify_fn=jongga_verify))
+            # 11:00 — KR VCP 오전 Refresh (주말 후 stale 방지, 단독 실행)
+            getattr(schedule.every(), day).at(Config.KR_VCP_MORNING_TIME).do(
+                self._with_record(run_kr_vcp_morning_refresh, 'kr_vcp_morning',
+                                  max_retries=1, retry_delay=600))
             # 16:00 — 전 시장 VCP 시그널 (KR + US + Crypto)
             getattr(schedule.every(), day).at(Config.VCP_UPDATE_TIME).do(
                 self._with_record(run_vcp_all_markets, 'vcp_all',
@@ -2781,12 +2880,18 @@ class Scheduler:
                 self._with_record(run_crypto_pipeline, 'crypto',
                                   max_retries=1, retry_delay=600, verify_fn=crypto_verify))
 
+        # Orphan file audit — 매일 09:00 KST (업로드 파일 유실 감지)
+        schedule.every().day.at('09:00').do(
+            self._with_record(_run_orphan_file_audit, 'orphan_audit',
+                              max_retries=1, retry_delay=300))
+
         logger.info("📅 스케줄 등록 완료:")
         logger.info("   🔑 평일 08:55  KIS 토큰 웜업 (장 시작 전 자격증명 사전 검증)")
         logger.info(f"   🇺🇸 평일 {Config.US_UPDATE_TIME}  US Market 전체 갱신 + Smart Money Top 5")
         logger.info(f"   📋 평일 {Config.MORNING_REPORT_TIME}  일별 상태 리포트 → 텔레그램")
         logger.info(f"   🇺🇸 평일 {Config.US_TRACK_TIME}  US Track Record 스냅샷")
         logger.info(f"   🇰🇷 평일 {Config.KR_UPDATE_TIME}  종가베팅 V2 + 수급/AI/리포트 → 텔레그램")
+        logger.info(f"   📈 평일 {Config.KR_VCP_MORNING_TIME}  KR VCP 오전 Refresh (주말 후 stale 방지)")
         logger.info(f"   📈 평일 {Config.VCP_UPDATE_TIME}  전 시장 VCP 시그널 (KR+US+Crypto) → 텔레그램")
         logger.info(f"   🌊 평일 {Config.WAVE_SCAN_TIME}  Wave 패턴 스캔 (KR)")
         logger.info(f"   🤖 평일 {Config.AI_CHART_TIME}  AI Chart Analysis KR (Gemini Vision)")
