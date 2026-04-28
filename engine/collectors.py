@@ -169,7 +169,8 @@ class KRXCollector:
         
         candidates = []
         try:
-            resp = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'})
+            # timeout=10 — 네이버 응답 지연 시 Flask 워커 무한대기 차단
+            resp = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'}, timeout=10)
             # cp949 decoding
             html = resp.content.decode('cp949', errors='ignore')
             soup = BeautifulSoup(html, 'html.parser')
