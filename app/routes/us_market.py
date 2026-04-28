@@ -13,6 +13,7 @@ from flask import Blueprint, jsonify, request
 
 from app.utils.cache import get_sector
 from app.utils.json_cache import load_json_cached
+from app.utils.atomic_json import write_json_atomic
 from app.utils.paths import BASE_DIR, US_MARKET_DIR, US_OUTPUT_DIR, US_DATA_DIR, US_HISTORY_DIR, US_PREVIEW_DIR
 from app.utils.safety import safe_float, safe_str
 
@@ -68,11 +69,10 @@ def _fetch_portfolio_live():
         except Exception as e:
             logger.warning(f"Error fetching {ticker}: {e}")
     result = {'market_indices': market_indices, 'timestamp': datetime.now().isoformat()}
-    # 스냅샷 저장
+    # 스냅샷 저장 (atomic — 부분쓰기 방지)
     try:
         snap_path = os.path.join(_OUTPUT_DIR, 'portfolio_snapshot.json')
-        with open(snap_path, 'w', encoding='utf-8') as f:
-            json.dump(result, f, ensure_ascii=False, indent=2)
+        write_json_atomic(snap_path, result)
     except Exception as e:
         logger.warning(f"[Portfolio] Snapshot save failed: {e}")
     return result
@@ -213,11 +213,10 @@ def _compute_smart_money_live(sort_by='composite', lang='ko'):
             'sort_by': sort_by,
             'timestamp': datetime.now().isoformat()
         }
-        # 스냅샷 저장
+        # 스냅샷 저장 (atomic)
         try:
             snap_path = os.path.join(_OUTPUT_DIR, 'smart_money_snapshot.json')
-            with open(snap_path, 'w', encoding='utf-8') as f:
-                json.dump(result, f, ensure_ascii=False, indent=2)
+            write_json_atomic(snap_path, result)
         except Exception as e:
             logger.warning(f"[SmartMoney] Snapshot save failed: {e}")
         return jsonify(result)
@@ -659,11 +658,10 @@ def _compute_cumulative_performance_live():
             'picks': all_picks,
             'by_date': by_date,
         }
-        # 스냅샷 저장
+        # 스냅샷 저장 (atomic)
         try:
             snap_path = os.path.join(_OUTPUT_DIR, 'cumulative_perf_snapshot.json')
-            with open(snap_path, 'w', encoding='utf-8') as f:
-                json.dump(result, f, ensure_ascii=False, indent=2)
+            write_json_atomic(snap_path, result)
         except Exception as e:
             logger.warning(f"[CumulativePerf] Snapshot save failed: {e}")
         return jsonify(result)
@@ -1535,8 +1533,7 @@ def _compute_decision_signal_live():
         # 스냅샷 저장
         try:
             snap_path = os.path.join(_OUTPUT_DIR, 'decision_signal_snapshot.json')
-            with open(snap_path, 'w', encoding='utf-8') as f:
-                json.dump(result, f, ensure_ascii=False, indent=2)
+            write_json_atomic(snap_path, result)
         except Exception as e:
             logger.warning(f"[DecisionSignal] Snapshot save failed: {e}")
         return jsonify(result)

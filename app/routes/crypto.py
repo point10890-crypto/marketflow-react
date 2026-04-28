@@ -13,6 +13,7 @@ import logging
 import math
 import threading
 import subprocess
+from app.utils.atomic_json import write_json_atomic
 import traceback
 from datetime import datetime
 from flask import Blueprint, jsonify, request, send_from_directory
@@ -65,9 +66,7 @@ def _fetch_crypto_overview_live():
     # 스냅샷 저장
     try:
         snap_path = os.path.join(CRYPTO_OUTPUT_DIR, 'overview_snapshot.json')
-        os.makedirs(CRYPTO_OUTPUT_DIR, exist_ok=True)
-        with open(snap_path, 'w', encoding='utf-8') as f:
-            json.dump(data, f, ensure_ascii=False, indent=2)
+        write_json_atomic(snap_path, data)
     except Exception as e:
         logger.warning(f"[Crypto] Overview snapshot save failed: {e}")
     return data
@@ -148,9 +147,7 @@ def _compute_crypto_dominance_live():
         # 스냅샷 저장
         try:
             snap_path = os.path.join(_DATA_DIR, 'crypto_dominance_cache.json')
-            os.makedirs(os.path.dirname(snap_path), exist_ok=True)
-            with open(snap_path, 'w', encoding='utf-8') as f:
-                json.dump(result, f, ensure_ascii=False, indent=2)
+            write_json_atomic(snap_path, result)
         except Exception as e:
             logger.warning(f"[Crypto] Dominance snapshot save failed: {e}")
 
@@ -280,9 +277,7 @@ def crypto_briefing():
 
     try:
         briefing = _generate_live_briefing()
-        os.makedirs(CRYPTO_OUTPUT_DIR, exist_ok=True)
-        with open(path, 'w', encoding='utf-8') as f:
-            json.dump(briefing, f, ensure_ascii=False, indent=2)
+        write_json_atomic(path, briefing)
         return jsonify(briefing)
     except Exception as e:
         traceback.print_exc()

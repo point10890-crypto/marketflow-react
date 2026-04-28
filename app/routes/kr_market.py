@@ -894,10 +894,9 @@ def get_kr_cumulative_return():
 
         result = {'signals': processed, 'stats': stats}
 
-        # 파일 캐시 저장
+        # 파일 캐시 저장 (atomic — 부분쓰기 방지)
         try:
-            with open(cache_path, 'w', encoding='utf-8') as f:
-                json.dump(result, f, ensure_ascii=False, indent=2)
+            write_json_atomic(cache_path, result)
         except Exception as e:
             logger.warning(f"[cumulative] Cache save failed: {e}")
 

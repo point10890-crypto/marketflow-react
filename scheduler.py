@@ -319,7 +319,7 @@ class Config:
     KR_VCP_MORNING_TIME = os.environ.get('KR_VCP_MORNING_TIME', '11:00') # 평일 오전 KR VCP refresh (주말 후 stale 방지)
     WAVE_SCAN_TIME = os.environ.get('WAVE_SCAN_TIME', '16:30')           # Wave 패턴 스캔
     AI_CHART_TIME = os.environ.get('AI_CHART_TIME', '14:00')             # AI Chart Analysis KR (Gemini Vision)
-    US_AI_CHART_TIME = os.environ.get('US_AI_CHART_TIME', '04:00')       # AI Chart Analysis US (Gemini Vision)
+    US_AI_CHART_TIME = os.environ.get('US_AI_CHART_TIME', '04:30')       # AI Chart Analysis US (Gemini Vision) — 04:00 US 마켓갱신과 분리하여 리소스 경합 회피
     HISTORY_TIME = os.environ.get('KR_MARKET_HISTORY_TIME', '10:00')
     CRYPTO_TIMES = ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00']  # 매 4시간
     MORNING_REPORT_TIME = os.environ.get('MORNING_REPORT_TIME', '09:00')   # 일별 상태 리포트
@@ -2364,7 +2364,7 @@ def check_and_run_missed_tasks():
             # (예정시각_분, task_key, 실행함수, 라벨, 마감시각_분, weekday_filter)
             # 마감시각: 이 시각 이후에는 실행하지 않음 (다음 작업과 충돌 방지)
             (4 * 60,       'us_market',        run_us_market_update,        'US 마켓 전체 갱신',  14 * 60, None),
-            (4 * 60,       'us_ai_chart',      _run_us_ai_chart_analysis,   'US AI Chart 분석',   14 * 60, None),
+            (4 * 60 + 30,  'us_ai_chart',      _run_us_ai_chart_analysis,   'US AI Chart 분석',   14 * 60, None),  # 04:00 us_market 와 분리
             (9 * 60,       'morning_report',   send_morning_status_report,  '일별 상태 리포트',   14 * 60, None),
             (9 * 60 + 5,   'morning_briefing', run_morning_briefing,        'AI 조간 브리핑',     14 * 60, None),
             (9 * 60 + 30,  'us_track',         save_us_track_record_snapshot,'US Track Record',   14 * 60, None),

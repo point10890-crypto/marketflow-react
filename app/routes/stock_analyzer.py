@@ -739,9 +739,8 @@ def _save_analysis_cache(ticker: str, response: dict):
     """분석 결과를 캐시에 저장"""
     cache_file = os.path.join(_ANALYZE_CACHE_DIR, f'{ticker.replace(".", "_")}.json')
     try:
-        import json
-        with open(cache_file, 'w', encoding='utf-8') as f:
-            json.dump(response, f, ensure_ascii=False, indent=2)
+        from app.utils.atomic_json import write_json_atomic
+        write_json_atomic(cache_file, response)
     except Exception as e:
         logger.warning(f"캐시 저장 실패 ({ticker}): {e}")
 
