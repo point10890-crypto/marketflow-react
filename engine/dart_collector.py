@@ -22,6 +22,11 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# OpenDART rate limit: 1,000 requests/hour. 동시 10개로 제한 → 60초당 10×3-4 호출 = 시간당 ~2,400 가능하나
+# 실제로는 N+1 회피 위해 보수적 cap. 환경변수로 조정 가능.
+_DART_MAX_CONCURRENT = int(os.getenv("DART_MAX_CONCURRENT", "10"))
+_dart_sem = asyncio.Semaphore(_DART_MAX_CONCURRENT)
+
 # ── 호재/악재 공시 분류 ──────────────────────────────────────
 STRONG_POSITIVE = [
     "자기주식취득결정", "자기주식취득",
@@ -274,22 +279,23 @@ class DARTCollector:
             params["pblntf_ty"] = pblntf_ty
 
         try:
-            async with httpx.AsyncClient(timeout=15) as client:
-                resp = await client.get(url, params=params)
-                if resp.status_code != 200:
-                    return []
+            async with _dart_sem:
+                async with httpx.AsyncClient(timeout=15) as client:
+                    resp = await client.get(url, params=params)
+            if resp.status_code != 200:
+                return []
 
-                data = resp.json()
+            data = resp.json()
 
-                # 에러 체크 (status: "000" = 정상)
-                status = data.get("status", "")
-                if status != "000":
-                    # 013 = 조회된 데이터가 없음 (정상)
-                    if status != "013":
-                        print(f"[DART] API 에러: {data.get('message', status)}")
-                    return []
+            # 에러 체크 (status: "000" = 정상)
+            status = data.get("status", "")
+            if status != "000":
+                # 013 = 조회된 데이터가 없음 (정상)
+                if status != "013":
+                    print(f"[DART] API 에러: {data.get('message', status)}")
+                return []
 
-                return data.get("list", [])
+            return data.get("list", [])
 
         except Exception as e:
             print(f"[DART] 공시검색 에러: {e}")
@@ -504,13 +510,14 @@ class DARTCollector:
                 "fs_div": fs_div,
             }
             try:
-                async with httpx.AsyncClient(timeout=15) as client:
-                    resp = await client.get(url, params=params)
-                    if resp.status_code != 200:
-                        continue
-                    data = resp.json()
-                    if data.get("status") == "000":
-                        return data.get("list", [])
+                async with _dart_sem:
+                    async with httpx.AsyncClient(timeout=15) as client:
+                        resp = await client.get(url, params=params)
+                if resp.status_code != 200:
+                    continue
+                data = resp.json()
+                if data.get("status") == "000":
+                    return data.get("list", [])
             except Exception as e:
                 print(f"[DART] fetch_10yr {bsns_year}/{fs_div} 에러: {e}")
                 continue
@@ -558,12 +565,13 @@ class DARTCollector:
         params = {"crtfc_key": self.api_key, "corp_code": corp_code,
                   "bsns_year": bsns_year, "reprt_code": reprt_code}
         try:
-            async with httpx.AsyncClient(timeout=10) as client:
-                resp = await client.get(url, params=params)
-                if resp.status_code != 200:
-                    return None
-                data = resp.json()
-                return data.get("list", []) if data.get("status") == "000" else None
+            async with _dart_sem:
+                async with httpx.AsyncClient(timeout=10) as client:
+                    resp = await client.get(url, params=params)
+            if resp.status_code != 200:
+                return None
+            data = resp.json()
+            return data.get("list", []) if data.get("status") == "000" else None
         except Exception:
             return None
 
