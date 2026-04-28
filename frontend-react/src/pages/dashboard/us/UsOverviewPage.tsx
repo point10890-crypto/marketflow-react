@@ -89,23 +89,31 @@ export default function UsOverviewPage() {
     const [sectorData, setSectorData] = useState<SectorRotationData | null>(null);
     const [smartPicks, setSmartPicks] = useState<BriefingSmartMoneyPick[]>([]);
     const [isRefreshing, setIsRefreshing] = useState(false);
+    // 부분 실패 추적 — 9개 엔드포인트 중 일부 실패 시 사용자에게 알림
+    const [failedEndpoints, setFailedEndpoints] = useState<string[]>([]);
 
     useEffect(() => { loadData(); }, []);
 
     const loadData = async () => {
         setLoading(true);
         setIsRefreshing(true);
+        const failed: string[] = [];
+        const trackErr = (label: string) => (err: unknown) => {
+            failed.push(label);
+            console.warn(`[UsOverview] ${label} fetch failed:`, err);
+            return null;
+        };
         try {
             const [portfolioRes, gateRes, perfRes, dsRes, regimeRes, predRes, riskRes, sectorRes, briefingRes] = await Promise.all([
-                usAPI.getPortfolio().catch(() => null),
-                usAPI.getMarketGate().catch(() => null),
-                usAPI.getCumulativePerformance().catch(() => null),
-                usAPI.getDecisionSignal().catch(() => null),
-                usAPI.getMarketRegime().catch(() => null),
-                usAPI.getIndexPrediction().catch(() => null),
-                usAPI.getRiskAlerts().catch(() => null),
-                usAPI.getSectorRotation().catch(() => null),
-                usAPI.getMarketBriefing().catch(() => null),
+                usAPI.getPortfolio().catch(trackErr('portfolio')),
+                usAPI.getMarketGate().catch(trackErr('market-gate')),
+                usAPI.getCumulativePerformance().catch(trackErr('cumulative-performance')),
+                usAPI.getDecisionSignal().catch(trackErr('decision-signal')),
+                usAPI.getMarketRegime().catch(trackErr('market-regime')),
+                usAPI.getIndexPrediction().catch(trackErr('index-prediction')),
+                usAPI.getRiskAlerts().catch(trackErr('risk-alerts')),
+                usAPI.getSectorRotation().catch(trackErr('sector-rotation')),
+                usAPI.getMarketBriefing().catch(trackErr('market-briefing')),
             ]);
             setIndices(portfolioRes?.market_indices ?? []);
             setGateData(gateRes);
@@ -116,9 +124,11 @@ export default function UsOverviewPage() {
             setRiskData(riskRes);
             setSectorData(sectorRes);
             setSmartPicks(briefingRes?.smart_money?.top_picks?.picks ?? []);
+            setFailedEndpoints(failed);
             setLastUpdated(new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }));
         } catch (err) {
             console.error('Failed to load US Market data:', err);
+            setFailedEndpoints(['전체 로드 실패']);
         } finally {
             setLoading(false);
             setTimeout(() => setIsRefreshing(false), 500);
@@ -194,6 +204,27 @@ export default function UsOverviewPage() {
                     </button>
                 </div>
             </div>
+
+            {/* ── Partial-failure banner: 일부 엔드포인트 실패 시 사용자에게 안내 ── */}
+            {failedEndpoints.length > 0 && !loading && (
+                <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2 flex items-start gap-2">
+                    <span className="text-amber-400 text-base leading-none mt-0.5">⚠</span>
+                    <div className="flex-1 min-w-0">
+                        <div className="text-xs font-bold text-amber-400">
+                            일부 데이터 로드 실패 ({failedEndpoints.length}/9)
+                        </div>
+                        <div className="text-[10px] text-amber-300/70 mt-0.5 break-all">
+                            {failedEndpoints.join(', ')} — 잠시 후 새로고침해 주세요
+                        </div>
+                    </div>
+                    <button
+                        onClick={loadData}
+                        className="px-2 py-1 rounded text-[10px] font-bold bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 transition-colors"
+                    >
+                        재시도
+                    </button>
+                </div>
+            )}
 
             {/* ── Row 1: Gauge + Indices + Quick Nav ──────────────────── */}
             <div className="grid grid-cols-12 gap-3">

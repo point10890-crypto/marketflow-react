@@ -3,42 +3,26 @@ AI Briefing Blueprint — /api/briefing/*
 조간/마감 AI 브리핑 조회 API
 """
 import os
-import json
-import time
 import re
 import logging
 from flask import Blueprint, jsonify
 
 logger = logging.getLogger(__name__)
 from app.utils.paths import BRIEFING_DIR
+from app.utils.json_cache import load_json_cached
 
 briefing_bp = Blueprint('briefing', __name__)
 
 _BRIEFING_DIR = BRIEFING_DIR
 
-# TTL cache (60s — briefings change at most twice daily)
-_cache: dict = {}
-_CACHE_TTL = 60
+# Briefings 는 1일 2회 갱신 (09:05 조간 / 16:05 마감) → 5분 TTL 충분.
+# json_cache 가 mtime-aware 라 파일 변경 즉시 반영 (60s 단순 만료 → 300s mtime-aware).
+_BRIEFING_CACHE_TTL = int(os.getenv("BRIEFING_CACHE_TTL", "300"))
 
 
 def _load(filename: str) -> dict | None:
-    now = time.time()
-    if filename in _cache:
-        data, ts = _cache[filename]
-        if now - ts < _CACHE_TTL:
-            return data
-
     fpath = os.path.join(_BRIEFING_DIR, filename)
-    if not os.path.exists(fpath):
-        return None
-    try:
-        with open(fpath, 'r', encoding='utf-8') as f:
-            data = json.load(f)
-        _cache[filename] = (data, now)
-        return data
-    except (IOError, OSError, json.JSONDecodeError) as e:
-        logger.warning(f"Failed to load briefing {filename}: {e}")
-        return None
+    return load_json_cached(fpath, ttl=_BRIEFING_CACHE_TTL)
 
 
 def _find_latest_of_type(briefing_type: str) -> dict | None:
