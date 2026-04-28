@@ -195,7 +195,16 @@ def create_app(config=None):
         _req.current_user = user
         return None
 
-    # Health check endpoint
+    # ── Liveness probe (watchdog 전용, 최소 응답시간) ──
+    # 외부 의존성 없음. DB/디스크 ping 안 함 → Flask 프로세스 자체가 살아 있는지만 확인.
+    # Flask watchdog (scripts/flask_watchdog.ps1) 가 5분 주기로 호출.
+    # 응답시간 목표: < 50ms.
+    @app.route('/healthz')
+    def healthz():
+        from flask import jsonify as _jsonify
+        return _jsonify({'ok': True}), 200
+
+    # Health check endpoint (자세한 상태 — 운영 진단용)
     @app.route('/api/health')
     def health_check():
         import subprocess
