@@ -237,6 +237,7 @@ def get_kr_signals():
         })
 
     except Exception as e:
+        logger.exception("[get_vcp_signals] failed")
         return jsonify({'error': str(e)}), 500
 
 
@@ -465,6 +466,7 @@ def get_kr_ai_summary(ticker):
         
         return jsonify({'ticker': ticker, 'summary': None})
     except Exception as e:
+        logger.exception("[get_kr_ai_summary] failed")
         return jsonify({'error': str(e)}), 500
 
 
@@ -479,6 +481,7 @@ def get_kr_ai_analysis():
             return jsonify(data)
         return jsonify({'signals': [], 'generated_at': None})
     except Exception as e:
+        logger.exception("[get_kr_ai_analysis] failed")
         return jsonify({'error': str(e)}), 500
 
 
@@ -489,15 +492,16 @@ def get_kr_ai_history_dates():
         history_dir = os.path.join(DATA_DIR, 'history')
         if not os.path.exists(history_dir):
             return jsonify({'dates': []})
-        
+
         dates = sorted([
             f.replace('.json', '')
             for f in os.listdir(history_dir)
             if f.endswith('.json')
         ], reverse=True)
-        
+
         return jsonify({'dates': dates[:30]})
     except Exception as e:
+        logger.exception("[get_kr_ai_history_dates] failed")
         return jsonify({'error': str(e)}), 500
 
 
@@ -512,6 +516,7 @@ def get_kr_ai_history(date):
             return jsonify(data)
         return jsonify({'error': 'Date not found'}), 404
     except Exception as e:
+        logger.exception(f"[get_kr_ai_history] failed for date={date}")
         return jsonify({'error': str(e)}), 500
 
 
