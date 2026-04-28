@@ -1197,9 +1197,13 @@ def get_kr_realtime_prices():
     try:
         data = request.get_json() or {}
         tickers = data.get('tickers', [])
-        
+
         if not tickers:
-            return jsonify({})
+            # 클라이언트 요청 오류 — 빈 200 OK 가 아니라 명시적 400 으로 알림
+            return jsonify({
+                'error': 'tickers list is empty',
+                'data': {},
+            }), 400
 
         # 1. Load Ticker Map
         yahoo_map = {}
@@ -1441,7 +1445,9 @@ def get_kr_vcp_dates():
         dates.sort(reverse=True)
         return jsonify(dates)
     except Exception as e:
-        return jsonify([]), 200
+        # 빈 리스트 200 OK 대신 명시적 500 + 에러 로깅
+        logger.exception("[VCP dates] failed")
+        return jsonify({'error': str(e), 'data': []}), 500
 
 
 @kr_bp.route('/vcp-report/<date>')
@@ -1583,7 +1589,14 @@ def get_ai_chart_analysis():
     try:
         df = pd.read_csv(csv_path, encoding='utf-8-sig')
         if df.empty:
-            return jsonify({"signals": [], "summary": {}, "updated_at": None})
+            # 빈 CSV — 200 OK 이지만 클라이언트가 명확히 인지하도록 empty 플래그 + reason 노출
+            return jsonify({
+                "signals": [],
+                "summary": {},
+                "updated_at": None,
+                "empty": True,
+                "reason": "csv_file_empty",
+            })
 
         # CSV → list[dict]
         signals = []
