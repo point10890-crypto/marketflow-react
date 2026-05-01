@@ -1630,6 +1630,16 @@ _crypto_gate = "YELLOW"
 _crypto_gate_score = 50
 
 
+def _parse_iso_datetime(value: str) -> Optional[datetime]:
+    """Parse ISO datetimes written by pipeline JSON files."""
+    if not value:
+        return None
+    try:
+        return datetime.fromisoformat(str(value).replace('Z', '+00:00')).replace(tzinfo=None)
+    except Exception:
+        return None
+
+
 def _load_json(filepath: str) -> Optional[dict]:
     """JSON 파일 안전 로드"""
     try:
@@ -1640,6 +1650,68 @@ def _load_json(filepath: str) -> Optional[dict]:
     except Exception as e:
         logger.error(f"JSON 로드 실패 ({filepath}): {e}")
         return None
+
+
+def _validate_crypto_gate_output(max_age_minutes: int = 30) -> bool:
+    """Ensure market_gate.json is structurally valid and freshly generated."""
+    output_path = os.path.join(Config.CRYPTO_OUTPUT_DIR, 'market_gate.json')
+    data = _load_json(output_path)
+    if not data:
+        logger.error("Crypto Gate validation failed: market_gate.json missing/unreadable")
+        return False
+
+    gate = str(data.get('gate', '')).upper()
+    score = data.get('score')
+    generated_at = _parse_iso_datetime(data.get('generated_at', ''))
+    if gate not in {'GREEN', 'YELLOW', 'RED'}:
+        logger.error(f"Crypto Gate validation failed: invalid gate={gate!r}")
+        return False
+    if not isinstance(score, (int, float)):
+        logger.error(f"Crypto Gate validation failed: invalid score={score!r}")
+        return False
+    if generated_at is None:
+        logger.error("Crypto Gate validation failed: generated_at missing/invalid")
+        return False
+
+    age_seconds = (datetime.now() - generated_at).total_seconds()
+    if age_seconds > max_age_minutes * 60:
+        logger.error(f"Crypto Gate validation failed: stale output ({age_seconds / 60:.1f}m)")
+        return False
+    return True
+
+
+def _run_crypto_gate_subprocess() -> bool:
+    """Fallback: run the crypto gate script in an isolated Python process."""
+    script_path = os.path.join(Config.CRYPTO_MARKET_DIR, 'market_gate.py')
+    if not os.path.exists(script_path):
+        logger.error(f"Crypto Gate fallback failed: script missing {script_path}")
+        return False
+
+    env = {**os.environ, 'PYTHONIOENCODING': 'utf-8'}
+    try:
+        completed = subprocess.run(
+            [Config.PYTHON_PATH, script_path],
+            cwd=Config.CRYPTO_MARKET_DIR,
+            capture_output=True,
+            text=True,
+            encoding='utf-8',
+            errors='replace',
+            timeout=180,
+            env=env,
+        )
+    except Exception as e:
+        logger.error(f"Crypto Gate fallback execution failed: {e}")
+        return False
+
+    if completed.returncode != 0:
+        logger.error(f"Crypto Gate fallback failed (exit={completed.returncode})")
+        if completed.stderr:
+            logger.error(completed.stderr.strip()[-2000:])
+        return False
+
+    if completed.stdout:
+        logger.info(completed.stdout.strip()[-1000:])
+    return _validate_crypto_gate_output()
 
 
 def run_crypto_gate_check() -> bool:
@@ -1699,6 +1771,8 @@ def run_crypto_gate_check() -> bool:
         }
         output_path = os.path.join(Config.CRYPTO_OUTPUT_DIR, 'market_gate.json')
         write_json_atomic(output_path, gate_json)
+        if not _validate_crypto_gate_output():
+            raise RuntimeError("market_gate.json validation failed")
 
         # History
         history_path = os.path.join(Config.CRYPTO_OUTPUT_DIR, 'gate_history.json')
@@ -1729,6 +1803,16 @@ def run_crypto_gate_check() -> bool:
         logger.error(f"❌ Crypto Gate 체크 실패: {e}")
         import traceback
         traceback.print_exc()
+        logger.warning("Crypto Gate fallback 실행: 별도 Python 프로세스")
+        if _run_crypto_gate_subprocess():
+            data = _load_json(os.path.join(Config.CRYPTO_OUTPUT_DIR, 'market_gate.json')) or {}
+            old_gate = _crypto_gate
+            _crypto_gate = str(data.get('gate', 'YELLOW')).upper()
+            _crypto_gate_score = int(data.get('score', 50))
+            if old_gate != _crypto_gate:
+                _notify_gate_change(_crypto_gate, _crypto_gate_score)
+            logger.info(f"Crypto Gate fallback 성공: {_crypto_gate} (score: {_crypto_gate_score})")
+            return True
         return False
 
 
@@ -2726,6 +2810,14 @@ class Scheduler:
             verify_fn: 결과 검증 함수 (None이면 리턴값만 체크)
         """
         def wrapper():
+            def notify_ops(message: str):
+                try:
+                    return send_telegram(message, channel=False)
+                except TypeError as exc:
+                    if 'channel' not in str(exc):
+                        raise
+                    return send_telegram(message)
+
             # 중복 실행 방지 (catch-up 복구와의 충돌, 워치독 재시작 후 이중 실행 방지)
             # - crypto: 4시간 주기 → 3시간 쿨다운
             # - kiwoom_ai_theme: 장중 15분 주기 → 10분 쿨다운 (하루 1회 제한 해제)
@@ -2766,7 +2858,7 @@ class Scheduler:
                     if success:
                         record_task_run(task_key)
                         if attempt > 0:
-                            send_telegram(f"✅ {task_key} 재시도 {attempt}회 만에 성공", channel=False)
+                            notify_ops(f"✅ {task_key} 재시도 {attempt}회 만에 성공")
                         return result
                     else:
                         logger.warning(f"⚠️ {task_key} 실패 (시도 {attempt + 1}/{1 + max_retries})")
@@ -2776,11 +2868,10 @@ class Scheduler:
 
             # 모든 재시도 실패
             logger.error(f"🚨 {task_key} {1 + max_retries}회 시도 모두 실패!")
-            send_telegram(
+            notify_ops(
                 f"🚨 <b>{task_key} 업데이트 실패</b>\n\n"
                 f"총 {1 + max_retries}회 시도 후 실패\n"
-                f"수동 확인 필요",
-                channel=False
+                f"수동 확인 필요"
             )
             return False
 

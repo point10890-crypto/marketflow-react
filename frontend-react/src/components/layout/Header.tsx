@@ -25,6 +25,7 @@ const PAGE_NAMES: Record<string, string> = {
     '/dashboard/wave': 'W Pattern',
     '/dashboard/briefing': 'Market Briefing',
     '/admin/data-status': 'Data Status',
+    '/admin/endpoints': 'MiroFish x ASCII Brain',
 };
 
 function getPageTitle(pathname: string): string {

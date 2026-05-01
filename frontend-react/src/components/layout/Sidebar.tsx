@@ -262,6 +262,17 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                 {/* Admin Section */}
                 {userRole === 'admin' && (
                     <div className="space-y-1 mt-2">
+                        <Link to="/admin/endpoints" onClick={onNavigate}
+                            className={`mt-2 flex items-center gap-2.5 p-3 rounded-xl text-[13px] font-bold transition-all border ${
+                                pathname === '/admin/endpoints'
+                                    ? 'text-cyan-300 bg-gradient-to-r from-cyan-500/15 to-blue-500/10 border-cyan-500/25'
+                                    : 'text-cyan-400/80 hover:text-cyan-300 bg-gradient-to-r from-cyan-500/10 to-blue-500/5 border-cyan-500/10 hover:border-cyan-500/20'
+                            }`}
+                        >
+                            <i className="fas fa-plug w-5 text-center"></i>
+                            <span>MiroFish x ASCII Brain</span>
+                            <i className="fas fa-chevron-right text-[10px] ml-auto opacity-50"></i>
+                        </Link>
                         <Link to="/admin/data-status" onClick={onNavigate}
                             className={`flex items-center gap-3 px-3 py-2 rounded-xl text-[13px] font-medium transition-all border ${
                                 pathname === '/admin/data-status'

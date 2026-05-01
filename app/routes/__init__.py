@@ -33,6 +33,10 @@ def register_blueprints(app):
     from app.routes.admin import admin_bp
     app.register_blueprint(admin_bp, url_prefix='/api/admin')
 
+    # Admin MiroFish routes
+    from app.routes.admin_mirofish import admin_mirofish_bp
+    app.register_blueprint(admin_mirofish_bp, url_prefix='/api/admin/mirofish')
+
     # Stripe routes
     from app.routes.stripe_routes import stripe_bp
     app.register_blueprint(stripe_bp, url_prefix='/api/stripe')
@@ -53,4 +57,4 @@ def register_blueprints(app):
     from app.routes.community import community_bp
     app.register_blueprint(community_bp, url_prefix='/api/community')
 
-    print("[OK] Blueprints registered (KR + US + Crypto + Econ + Auth + Admin + Stripe + StockAnalyzer + Wave + Briefing + Community)")
+    print("[OK] Blueprints registered (KR + US + Crypto + Econ + Auth + Admin + MiroFish + Stripe + StockAnalyzer + Wave + Briefing + Community)")

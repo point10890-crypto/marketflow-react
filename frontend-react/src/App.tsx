@@ -37,6 +37,7 @@ const BriefingPortalPage = lazy(() => import('@/pages/dashboard/BriefingPortalPa
 const AccountPage = lazy(() => import('@/pages/AccountPage'));
 const DataStatusPage = lazy(() => import('@/pages/dashboard/DataStatusPage'));
 const AdminPage = lazy(() => import('@/pages/admin/AdminPage'));
+const AdminEndpointsPage = lazy(() => import('@/pages/admin/AdminEndpointsPage'));
 const CommunityPage = lazy(() => import('@/pages/community/CommunityPage'));
 const BoardPage = lazy(() => import('@/pages/community/BoardPage'));
 const PostDetailPage = lazy(() => import('@/pages/community/PostDetailPage'));
@@ -185,6 +186,7 @@ export default function App() {
                     <Route path="/admin" element={<AdminGuard><DashboardLayout /></AdminGuard>}>
                         <Route index element={<Suspense fallback={<LoadingFallback />}><AdminPage /></Suspense>} />
                         <Route path="data-status" element={<Suspense fallback={<LoadingFallback />}><DataStatusPage /></Suspense>} />
+                        <Route path="endpoints" element={<Suspense fallback={<LoadingFallback />}><AdminEndpointsPage /></Suspense>} />
                         <Route path="users" element={<Navigate to="/admin" replace />} />
                         <Route path="subscriptions" element={<Navigate to="/admin" replace />} />
                         <Route path="system" element={<Navigate to="/admin" replace />} />

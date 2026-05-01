@@ -302,7 +302,6 @@ def run_market_gate_sync() -> MarketGateResult:
     Fetches BTC candles, Top Alts (Breadth), and Funding Rate.
     """
     import yfinance as yf
-    import ccxt
     from datetime import datetime, timedelta
     
     try:
