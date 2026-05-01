@@ -180,6 +180,21 @@ export default function FormulaWritePage() {
                         </span>
                     </div>
                 </div>
+
+                <div className="flex justify-end border-t border-white/[0.06] px-5 py-4 bg-white/[0.01]">
+                    <button
+                        onClick={handleSubmit}
+                        disabled={submitting}
+                        className="bg-yellow-500 hover:bg-yellow-500/85 text-black font-bold text-sm rounded-xl px-5 py-2.5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 flex items-center gap-2"
+                    >
+                        {submitting ? (
+                            <>
+                                <div className="w-3.5 h-3.5 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                                등록 중...
+                            </>
+                        ) : '등록'}
+                    </button>
+                </div>
             </div>
         </div>
     );
