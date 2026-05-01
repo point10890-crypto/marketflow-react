@@ -244,29 +244,43 @@ def _build_report(run: dict[str, Any]) -> str:
 
 
 def _brain_summary(target: str) -> dict[str, Any]:
-    return {
-        'name': 'MiroFish Brain 13D',
-        'target': target,
-        'dimensions': [
-            'trend',
-            'momentum',
-            'volume',
-            'volatility',
-            'liquidity',
-            'sentiment',
-            'macro',
-            'sector',
-            'correlation',
-            'quality',
-            'risk',
-            'timing',
-            'memory',
-        ],
-        'alignment_score': 0.64,
-        'regime': 'constructive_accumulation',
-        'memory_window': 'mock_90d',
-        'notes': 'Local deterministic snapshot for admin UI integration.',
-    }
+    """Brain 13D 스냅샷 — 실데이터 우선, 실패 시 결정론적 fallback."""
+    try:
+        from app.services.mirofish.brain_loader import load_brain_13d_snapshot
+        snapshot = load_brain_13d_snapshot(target)
+        # 핵심 필드만 유지 (run.json 크기 통제)
+        return {
+            'name': snapshot['name'],
+            'target': snapshot['target'],
+            'dimensions': list(snapshot['dimensions'].keys()),
+            'dimension_scores': {
+                k: {'score': v.get('score'), 'confidence': v.get('confidence'),
+                    'evidence': v.get('evidence')}
+                for k, v in snapshot['dimensions'].items()
+            },
+            'alignment_score': snapshot['alignment_score'],
+            'regime': snapshot['regime'],
+            'memory_window': snapshot['memory_window'],
+            'snapshot_at': snapshot['snapshot_at'],
+            'sources': snapshot['sources'],
+            'notes': snapshot['notes'],
+        }
+    except Exception as e:
+        # Fail-safe: 결정론적 fallback (테스트 + 데이터 누락 시)
+        return {
+            'name': 'MiroFish Brain 13D',
+            'target': target,
+            'dimensions': [
+                'sector_momentum', 'macro_regime', 'options_flow', 'earnings_catalyst',
+                'event_risk', 'ml_prediction', 'reversal_signal', 'crypto_sentiment',
+                'correlation_stability', 'liquidity', 'volatility', 'memory_window',
+                'narrative',
+            ],
+            'alignment_score': 0.64,
+            'regime': 'constructive_accumulation',
+            'memory_window': 'fallback_mock',
+            'notes': f'Brain loader unavailable ({type(e).__name__}); using deterministic fallback.',
+        }
 
 
 def _analysts(agent_count: int) -> list[dict[str, Any]]:
