@@ -192,6 +192,9 @@ def _extract_with_gemini(text: str) -> dict[str, Any] | None:
     try:
         from google import genai
         from google.genai import types as genai_types
+    except ImportError:
+        return None
+    try:
         client = genai.Client(api_key=api_key)
         response = client.models.generate_content(
             model=os.getenv('MIROFISH_GRAPHRAG_MODEL', 'gemini-2.5-flash'),
@@ -199,19 +202,74 @@ def _extract_with_gemini(text: str) -> dict[str, Any] | None:
             config=genai_types.GenerateContentConfig(
                 response_mime_type='application/json',
                 temperature=0.2,
-                max_output_tokens=4096,
+                max_output_tokens=8192,  # 4k → 8k (large entity/relation lists 처리)
             ),
         )
-        raw = response.text or ''
-        data = json.loads(raw)
+        raw = (response.text or '').strip()
+        if not raw:
+            import logging
+            logging.getLogger(__name__).warning('[GraphRAG] Gemini returned empty text')
+            return None
+
+        # truncated JSON 복구 시도: 마지막 완전한 [ 또는 ] 까지만 사용
+        try:
+            data = json.loads(raw)
+        except json.JSONDecodeError as e:
+            import logging
+            logging.getLogger(__name__).warning(
+                f'[GraphRAG] JSON decode failed (truncated?): {e}; attempting partial recovery'
+            )
+            data = _try_partial_json_recovery(raw)
+            if not data:
+                return None
+
         if not isinstance(data, dict):
             return None
         return {
             'entities': _validate_entities(data.get('entities', [])),
             'relations': _validate_relations(data.get('relations', [])),
         }
-    except (ImportError, json.JSONDecodeError, Exception):
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).warning(f'[GraphRAG] Gemini call failed: {type(e).__name__}: {e}')
         return None
+
+
+def _try_partial_json_recovery(raw: str) -> dict | None:
+    """truncated JSON 에서 entities 배열만이라도 살린다."""
+    # entities 배열 추출 시도
+    ent_match = re.search(r'"entities"\s*:\s*\[(.*?)\](?:\s*,|\s*\})', raw, re.DOTALL)
+    rel_match = re.search(r'"relations"\s*:\s*\[(.*?)\](?:\s*,|\s*\})', raw, re.DOTALL)
+    out: dict[str, list] = {'entities': [], 'relations': []}
+
+    for kind, m in (('entities', ent_match), ('relations', rel_match)):
+        if not m:
+            continue
+        body = m.group(1)
+        # 가능한 JSON 객체 단위로 분리 (단순 휴리스틱)
+        depth = 0
+        buf = ''
+        for ch in body:
+            if ch == '{':
+                if depth == 0:
+                    buf = '{'
+                else:
+                    buf += ch
+                depth += 1
+            elif ch == '}':
+                depth -= 1
+                buf += ch
+                if depth == 0 and buf.strip():
+                    try:
+                        out[kind].append(json.loads(buf))
+                    except json.JSONDecodeError:
+                        pass
+                    buf = ''
+            elif depth > 0:
+                buf += ch
+    if not out['entities'] and not out['relations']:
+        return None
+    return out
 
 
 # ─── Rule-based fallback ───────────────────────────────────

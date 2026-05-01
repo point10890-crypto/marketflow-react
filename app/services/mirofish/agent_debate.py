@@ -255,16 +255,78 @@ def _run_with_gemini(target: str, brain: dict, rounds: int) -> list[dict] | None
             config=genai_types.GenerateContentConfig(
                 response_mime_type='application/json',
                 temperature=0.7,
-                max_output_tokens=6000,
+                max_output_tokens=10000,  # 6k → 10k (5명×4라운드 토론 안전 capacity)
             ),
         )
-        data = json.loads(response.text or '{}')
+        raw = (response.text or '').strip()
+        if not raw:
+            return None
+        try:
+            data = json.loads(raw)
+        except json.JSONDecodeError:
+            # truncated JSON 부분 복구 — rounds 배열에서 가능한 만큼 살린다
+            data = _try_recover_debate_json(raw)
+            if not data:
+                return None
         if not isinstance(data, dict):
             return None
         rounds_data = data.get('rounds', [])
         return _validate_debate(rounds_data)
-    except Exception:
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).warning(f'[Debate] Gemini call failed: {type(e).__name__}: {e}')
         return None
+
+
+def _try_recover_debate_json(raw: str) -> dict | None:
+    """truncated debate JSON 에서 완성된 round 만 살린다."""
+    import re as _re
+    rounds_out: list[dict] = []
+    # 'round': N 패턴 + 그 다음 messages 배열 시도
+    # 단순 휴리스틱: { ... } 단위로 객체 추출
+    depth = 0
+    buf = ''
+    in_string = False
+    escape = False
+    for ch in raw:
+        if escape:
+            escape = False
+            buf += ch
+            continue
+        if ch == '\\' and in_string:
+            escape = True
+            buf += ch
+            continue
+        if ch == '"':
+            in_string = not in_string
+            buf += ch
+            continue
+        if in_string:
+            buf += ch
+            continue
+        if ch == '{':
+            if depth == 0:
+                buf = '{'
+            else:
+                buf += ch
+            depth += 1
+        elif ch == '}':
+            depth -= 1
+            buf += ch
+            if depth == 0:
+                try:
+                    obj = json.loads(buf)
+                    # round 객체만 (messages 키 가짐)
+                    if isinstance(obj, dict) and 'messages' in obj:
+                        rounds_out.append(obj)
+                except (json.JSONDecodeError, ValueError):
+                    pass
+                buf = ''
+        elif depth > 0:
+            buf += ch
+    if rounds_out:
+        return {'rounds': rounds_out}
+    return None
 
 
 def _build_gemini_prompt(target: str, brain: dict, rounds: int) -> str:

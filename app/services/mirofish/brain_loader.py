@@ -104,6 +104,9 @@ def load_brain_13d_snapshot(target: str | None = None) -> dict[str, Any]:
         'regime': regime,
         'memory_window': 'rolling_90d',
         'dimensions': dims,
+        # Alias — debate/cio_react 같은 consumer 가 dimension_scores 키를 사용.
+        # 동일 dict 참조 (메모리 중복 0).
+        'dimension_scores': dims,
         'sources': sources,
         'notes': _build_notes(dims, sources),
     }
