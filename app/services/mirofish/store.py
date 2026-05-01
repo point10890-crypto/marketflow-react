@@ -158,50 +158,106 @@ def _build_run(run_id: str, target: str, agent_count: int, mode: str) -> dict[st
 
 
 def _build_graph(run: dict[str, Any]) -> dict[str, Any]:
+    """3-Layer Knowledge Graph: Blue(EKG) / Red(LLM 추론) / Gold(최종 verdict).
+
+    Layer scheme (MD 명세):
+    - Blue (existing_ekg): 기존 사전 지식 — Brain 13D snapshot, target identity, signal categories
+    - Red (llm_inferred): 본 run 에서 LLM(또는 mock)이 추론한 새 인과 관계 — analyst stances
+    - Gold (verdict): 수렴된 최종 결론 — BUY/HOLD/SELL 판정 노드
+    """
     target = run['target']
     run_id = run['id']
-    layers = [
-        {'id': 'brain', 'label': 'Brain 13D Snapshot', 'order': 1},
-        {'id': 'signals', 'label': 'Signal Mesh', 'order': 2},
-        {'id': 'analysts', 'label': 'Analyst Swarm', 'order': 3},
-        {'id': 'decision', 'label': 'Decision', 'order': 4},
-    ]
-    nodes = [
-        {'id': 'target', 'layer': 'brain', 'label': target, 'type': 'target', 'score': 0.64},
-        {'id': 'brain13d', 'layer': 'brain', 'label': '13D Brain', 'type': 'brain', 'score': 0.78},
-        {'id': 'price', 'layer': 'signals', 'label': 'Price Structure', 'type': 'signal', 'score': 0.67},
-        {'id': 'volume', 'layer': 'signals', 'label': 'Volume Flow', 'type': 'signal', 'score': 0.62},
-        {'id': 'sentiment', 'layer': 'signals', 'label': 'Sentiment', 'type': 'signal', 'score': 0.58},
-        {'id': 'risk', 'layer': 'signals', 'label': 'Risk Gate', 'type': 'signal', 'score': 0.54},
-        {'id': 'verdict', 'layer': 'decision', 'label': 'BUY 64%', 'type': 'verdict', 'score': 0.64},
-    ]
-    for analyst in run['analysts'][:6]:
-        nodes.append({
-            'id': analyst['id'],
-            'layer': 'analysts',
-            'label': analyst['name'],
-            'type': 'analyst',
-            'score': analyst['confidence'],
-        })
+    brain = run.get('brain_summary', {})
+    verdict = run.get('verdict', {})
+    verdict_action = verdict.get('action', 'HOLD')
+    verdict_conf = verdict.get('confidence', 0.5)
 
-    edges = [
-        {'source': 'target', 'target': 'brain13d', 'weight': 0.9, 'label': 'frames'},
-        {'source': 'brain13d', 'target': 'price', 'weight': 0.74, 'label': 'extracts'},
-        {'source': 'brain13d', 'target': 'volume', 'weight': 0.68, 'label': 'extracts'},
-        {'source': 'brain13d', 'target': 'sentiment', 'weight': 0.52, 'label': 'extracts'},
-        {'source': 'brain13d', 'target': 'risk', 'weight': 0.61, 'label': 'checks'},
-        {'source': 'price', 'target': 'verdict', 'weight': 0.67, 'label': 'supports'},
-        {'source': 'volume', 'target': 'verdict', 'weight': 0.62, 'label': 'supports'},
-        {'source': 'sentiment', 'target': 'verdict', 'weight': 0.44, 'label': 'tempers'},
-        {'source': 'risk', 'target': 'verdict', 'weight': 0.53, 'label': 'bounds'},
+    layers = [
+        {'id': 'blue', 'label': 'Existing Knowledge (EKG)', 'color': '#3b82f6',
+         'order': 1, 'description': '사전 지식 — Brain 13D + target identity'},
+        {'id': 'red', 'label': 'LLM-Inferred Causal Chains', 'color': '#ef4444',
+         'order': 2, 'description': '본 run 에서 추론한 새 관계'},
+        {'id': 'gold', 'label': 'Final Verdict Convergence', 'color': '#f59e0b',
+         'order': 3, 'description': '수렴된 최종 결론'},
     ]
-    for analyst in run['analysts'][:6]:
-        edges.append({
-            'source': analyst['id'],
-            'target': 'verdict',
-            'weight': analyst['confidence'],
-            'label': analyst['stance'].lower(),
+
+    nodes: list[dict[str, Any]] = []
+    edges: list[dict[str, Any]] = []
+
+    # ─── Blue Layer (EKG) ─────────────────────────────────
+    nodes.append({
+        'id': 'target', 'layer': 'blue', 'label': target,
+        'type': 'target', 'score': 1.0,
+    })
+    nodes.append({
+        'id': 'brain13d', 'layer': 'blue', 'label': 'Brain 13D',
+        'type': 'brain', 'score': brain.get('alignment_score', 0.5),
+    })
+    # 13개 dimension 각각 노드 — score 있는 것만 (clutter 방지: top 6)
+    dim_scores = brain.get('dimension_scores', {}) if isinstance(brain.get('dimension_scores'), dict) else {}
+    all_valid_dims = [(k, v) for k, v in dim_scores.items()
+                      if isinstance(v, dict) and v.get('score') is not None]
+    all_valid_dims.sort(key=lambda x: x[1].get('confidence', 0), reverse=True)
+    visible_dims = all_valid_dims[:6]
+    for dim_name, dim_data in visible_dims:
+        score_norm = (dim_data.get('score') or 0) / 100.0
+        nodes.append({
+            'id': f'dim_{dim_name}', 'layer': 'blue',
+            'label': dim_name.replace('_', ' ').title(),
+            'type': 'dimension', 'score': round(score_norm, 2),
+            'evidence': dim_data.get('evidence', '')[:80],
         })
+        edges.append({
+            'source': 'brain13d', 'target': f'dim_{dim_name}',
+            'weight': dim_data.get('confidence', 0.5),
+            'label': 'measures', 'layer': 'blue',
+        })
+    edges.append({
+        'source': 'target', 'target': 'brain13d',
+        'weight': 0.9, 'label': 'framed_by', 'layer': 'blue',
+    })
+
+    # ─── Red Layer (LLM-Inferred — analyst views as causal chains) ───
+    for analyst in run.get('analysts', [])[:6]:
+        analyst_id = analyst['id']
+        nodes.append({
+            'id': analyst_id, 'layer': 'red',
+            'label': analyst['name'],
+            'type': 'analyst', 'score': analyst.get('confidence', 0.5),
+            'stance': analyst.get('stance', 'NEUTRAL'),
+        })
+        # 각 analyst → 가장 관련된 dimension 으로 edge (visible_dims 만 참조)
+        if visible_dims:
+            target_dim = visible_dims[hash(analyst_id) % len(visible_dims)][0]
+            edges.append({
+                'source': analyst_id, 'target': f'dim_{target_dim}',
+                'weight': analyst.get('confidence', 0.5),
+                'label': analyst.get('stance', 'evaluates').lower(),
+                'layer': 'red',
+            })
+
+    # ─── Gold Layer (Final Verdict) ──────────────────────────
+    verdict_id = 'verdict'
+    nodes.append({
+        'id': verdict_id, 'layer': 'gold',
+        'label': f'{verdict_action} {int(verdict_conf * 100)}%',
+        'type': 'verdict', 'score': verdict_conf,
+        'action': verdict_action,
+    })
+    # Gold 는 모든 analyst 의견을 수렴
+    for analyst in run.get('analysts', [])[:6]:
+        edges.append({
+            'source': analyst['id'], 'target': verdict_id,
+            'weight': analyst.get('confidence', 0.5),
+            'label': analyst.get('stance', 'votes').lower(),
+            'layer': 'red',  # analyst → verdict 도 추론 관계
+        })
+    # Brain 도 verdict 직접 영향 (Blue → Gold)
+    edges.append({
+        'source': 'brain13d', 'target': verdict_id,
+        'weight': brain.get('alignment_score', 0.5),
+        'label': 'aligns_with', 'layer': 'blue',
+    })
 
     return {
         'run_id': run_id,
@@ -210,6 +266,7 @@ def _build_graph(run: dict[str, Any]) -> dict[str, Any]:
         'nodes': nodes,
         'edges': edges,
         'layout': 'layered',
+        'schema_version': 2,  # Phase 2B
     }
 
 
