@@ -84,10 +84,74 @@ def _parse_draw(data: dict) -> dict:
     }
 
 
+def _fetch_draw_from_lottolyzer(drw_no: int) -> dict | None:
+    """lottolyzer.com HTML 미러에서 draw 파싱 — dhlottery 차단 시 fallback.
+
+    페이지 한 번 로드로 최근 N회차 모두 캐시 가능하지만, 인터페이스 호환을 위해
+    단일 회차 반환. 비싼 호출은 모듈 레벨 캐시로 최소화.
+    """
+    cached = _lottolyzer_cache_get(drw_no)
+    if cached is not None:
+        return cached if cached else None
+    # 최신 50회 페이지 한 번에 fetch + 모두 캐시
+    url = "https://en.lottolyzer.com/history/south-korea/6_45-lotto/page/1/per-page/50/winning-number-view"
+    try:
+        r = requests.get(url, headers={'User-Agent': LOTTO_UA_POOL[0]}, timeout=15)
+        if r.status_code != 200:
+            return None
+        html = r.text
+        # <td>회차</td>...<td class="sum-p1">YYYY-MM-DD</td>...<td class="sum-p1">N1,N2,N3,N4,N5,N6</td>...<td class="sum-p1">bonus</td>
+        import re as _re
+        pattern = _re.compile(
+            r'<td>(\d+)</td>\s*<td[^>]*sum-p1[^>]*>([\d-]+)</td>\s*'
+            r'<td[^>]*sum-p1[^>]*>([\d,\s]+?)</td>\s*'
+            r'<td[^>]*sum-p1[^>]*>(\d+)\s*</td>',
+            _re.DOTALL,
+        )
+        for m in pattern.finditer(html):
+            try:
+                d_no = int(m.group(1))
+                d_date = m.group(2).strip()
+                nums = [int(x.strip()) for x in m.group(3).split(',') if x.strip()]
+                bonus = int(m.group(4))
+                if len(nums) != 6:
+                    continue
+                draw = {
+                    'drwNo': d_no,
+                    'drwNoDate': d_date,
+                    'drwtNo1': nums[0], 'drwtNo2': nums[1], 'drwtNo3': nums[2],
+                    'drwtNo4': nums[3], 'drwtNo5': nums[4], 'drwtNo6': nums[5],
+                    'bnusNo': bonus,
+                }
+                _lottolyzer_cache_set(d_no, draw)
+            except (ValueError, IndexError):
+                continue
+        cached = _lottolyzer_cache_get(drw_no)
+        return cached if cached else None
+    except Exception:
+        return None
+
+
+_lottolyzer_cache: dict = {}
+
+
+def _lottolyzer_cache_get(drw_no: int):
+    return _lottolyzer_cache.get(drw_no)
+
+
+def _lottolyzer_cache_set(drw_no: int, draw: dict):
+    _lottolyzer_cache[drw_no] = draw
+
+
 def fetch_draw(drw_no: int) -> dict | None:
-    """동행복권 API fetch — host/UA 순환 + 세션 priming 재시도.
-    성공 시 draw dict, 회차가 아직 없으면 None, 차단/오류 시 LottoFetchError 전파."""
+    """Fetch chain: dhlottery (primary) → lottolyzer (fallback).
+
+    dhlottery 가 일반 GET을 차단(2026-04 이후 302→/error.html)하므로
+    lottolyzer.com HTML 미러를 fallback으로 사용. 모든 소스 실패 시 LottoFetchError.
+    """
     last_err: str | None = None
+
+    # 1) dhlottery 시도 (정상 응답 시 우선)
     for host in LOTTO_API_HOSTS:
         for ua in LOTTO_UA_POOL:
             try:
@@ -109,11 +173,29 @@ def fetch_draw(drw_no: int) -> dict | None:
                 if rv == 'success':
                     return _parse_draw(data)
                 if rv == 'fail':
-                    return None  # 아직 추첨 전
+                    # 회차 없음 또는 추첨 전 — fallback 도 시도
+                    last_err = f'{host} returnValue=fail'
+                    break  # UA 순환 무의미
                 last_err = f'{host} returnValue={rv}'
             except Exception as e:
                 last_err = f'{host} {type(e).__name__}: {e}'
                 continue
+
+    # 2) lottolyzer fallback
+    fallback = _fetch_draw_from_lottolyzer(drw_no)
+    if fallback is not None:
+        return fallback
+
+    # 회차 없음 판정:
+    # (a) dhlottery returnValue=fail
+    # (b) lottolyzer 캐시가 채워졌고 (1회차 이상 성공) drw_no 가 최대 캐시 회차보다 큼 → 아직 추첨 전
+    if last_err and 'returnValue=fail' in last_err:
+        return None
+    if _lottolyzer_cache:
+        max_cached = max(_lottolyzer_cache.keys())
+        if drw_no > max_cached:
+            return None  # 아직 추첨 전 회차
+
     raise LottoFetchError(f'fetch_draw({drw_no}) 모든 소스 실패 — last_err={last_err}')
 
 
