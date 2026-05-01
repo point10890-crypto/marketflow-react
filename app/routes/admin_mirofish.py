@@ -1,9 +1,10 @@
 """Admin-only MiroFish mock endpoints."""
 
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, Response, jsonify, request
 
 from app.auth.decorators import admin_required
 from app.services import mirofish
+from app.services.mirofish import events as mf_events
 
 
 admin_mirofish_bp = Blueprint('admin_mirofish', __name__)
@@ -70,3 +71,41 @@ def get_report(run_id):
     if report is None:
         return jsonify({'error': 'run not found'}), 404
     return jsonify(report)
+
+
+@admin_mirofish_bp.route('/runs/<run_id>/events', methods=['GET'])
+@admin_required
+def get_events(run_id):
+    """Polling-based events tail. ?since=N&limit=M."""
+    try:
+        since = int(request.args.get('since', 0))
+    except (TypeError, ValueError):
+        return jsonify({'error': 'since must be integer'}), 400
+    try:
+        limit = int(request.args.get('limit', 200))
+    except (TypeError, ValueError):
+        return jsonify({'error': 'limit must be integer'}), 400
+    limit = max(1, min(limit, 500))
+    try:
+        result = mf_events.read_events(run_id, since_index=since, max_count=limit)
+    except ValueError as exc:
+        return jsonify({'error': str(exc)}), 400
+    return jsonify(result)
+
+
+@admin_mirofish_bp.route('/runs/<run_id>/events/stream', methods=['GET'])
+@admin_required
+def stream_events(run_id):
+    """SSE stream — generator yields event-stream until idle timeout."""
+    try:
+        since = int(request.args.get('since', 0))
+    except (TypeError, ValueError):
+        return jsonify({'error': 'since must be integer'}), 400
+    return Response(
+        mf_events.stream_events_sse(run_id, since_index=since),
+        mimetype='text/event-stream',
+        headers={
+            'Cache-Control': 'no-cache',
+            'X-Accel-Buffering': 'no',
+        },
+    )
