@@ -332,10 +332,56 @@ def _grade(total):
     return "C"
 
 
+# ─── KRX 휴장일 (Korean Stock Exchange Trading Calendar) ───
+# holidays 패키지 = 한국 공식 공휴일만 (근로자의 날 미포함)
+# → KRX 고유 휴장일 (근로자의 날 / 연말 / 임시휴장) 합집합
+_KRX_RECURRING_CLOSURES = {
+    "05-01",  # 근로자의 날 (매년)
+    "12-31",  # 연말 휴장 (매년)
+}
+# 특정 연도 임시휴장 (선거일 등) — 매년 갱신
+_KRX_TEMP_CLOSURES = {
+    "2024-04-10",  # 제22대 총선
+    # "2026-XX-XX": 8회 지방선거 (확정 시 추가)
+}
+# 한국 공식 공휴일 캐시 (연도별)
+_kr_holidays_cache: dict = {}
+_holidays_lock = Lock()
+
+
+def _kr_official_holidays(year: int):
+    with _holidays_lock:
+        if year not in _kr_holidays_cache:
+            try:
+                import holidays as _holidays_lib
+                _kr_holidays_cache[year] = _holidays_lib.KR(years=[year])
+            except Exception as e:
+                logger.warning(f"[is_market_open] holidays.KR({year}) failed: {e}")
+                _kr_holidays_cache[year] = {}  # fail-open: 공식 공휴일 검사 스킵
+        return _kr_holidays_cache[year]
+
+
+def _is_kr_trading_day(d) -> bool:
+    """KRX 영업일 여부. 공식공휴일 ∪ KRX 고유휴장(근로자의날/연말/임시) 모두 체크."""
+    # 1) 한국 공식 공휴일 (설/추석/대체공휴일 등)
+    key_date = d.date() if hasattr(d, 'date') else d
+    if key_date in _kr_official_holidays(d.year):
+        return False
+    # 2) KRX 매년 반복 휴장 (근로자의 날, 연말)
+    if d.strftime("%m-%d") in _KRX_RECURRING_CLOSURES:
+        return False
+    # 3) KRX 특정 연도 임시휴장
+    if d.strftime("%Y-%m-%d") in _KRX_TEMP_CLOSURES:
+        return False
+    return True
+
+
 def is_market_open():
     now = datetime.now()
     if now.weekday() >= 5:
         return False
+    if not _is_kr_trading_day(now):
+        return False  # KRX 휴장 (근로자의 날, 설/추석, 임시휴장 등)
     t = now.hour + now.minute / 60
     return 9.0 <= t < 15.5
 

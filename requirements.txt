@@ -47,3 +47,4 @@ aiohttp>=3.9.0
 setuptools
 certifi>=2024.0.0
 filelock>=3.0.0
+holidays>=0.50
