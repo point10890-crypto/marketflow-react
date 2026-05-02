@@ -35,6 +35,14 @@ const impactSteps = [
 
 const runSteps = ['입력', 'Brain 13D', 'GraphRAG', '에이전트', '리포트'];
 const runStepEndpoints: EndpointKey[] = ['resolve', 'runDetail', 'graph', 'events', 'report'];
+const phaseNumberById: Record<string, number> = {
+    intake: 1,
+    brain_snapshot: 2,
+    graph_build: 3,
+    analyst_mesh: 4,
+    verdict: 5,
+    report: 5,
+};
 type ApiState = 'checking' | 'ready' | 'error' | 'running';
 type EndpointKey = 'status' | 'dataSources' | 'resolve' | 'history' | 'createRun' | 'runDetail' | 'graph' | 'events' | 'report';
 type EndpointStatus = 'idle' | 'loading' | 'ok' | 'error';
@@ -68,6 +76,27 @@ function endpointStatusTone(state: EndpointStatus) {
     if (state === 'loading') return 'border-cyan-400/20 bg-cyan-400/10 text-cyan-300';
     if (state === 'error') return 'border-rose-400/20 bg-rose-400/10 text-rose-300';
     return 'border-white/10 bg-white/[0.04] text-gray-500';
+}
+
+function phaseFromRunState(run: MiroFishRun): number {
+    if (run.status === 'completed') return 5;
+    const phaseId = run.progress?.current_phase || run.events?.[run.events.length - 1]?.phase;
+    if (phaseId && phaseNumberById[phaseId]) return phaseNumberById[phaseId];
+    const percent = Number(run.progress?.percent || 0);
+    if (percent >= 82) return 5;
+    if (percent >= 62) return 4;
+    if (percent >= 40) return 3;
+    if (percent >= 20) return 2;
+    return 1;
+}
+
+function isTerminalRun(run: MiroFishRun): boolean {
+    return run.status === 'completed' || run.status === 'failed';
+}
+
+function formatElapsed(ms?: number) {
+    const seconds = Math.max(0, Math.round((ms || 0) / 100) / 10);
+    return `${seconds.toFixed(1)}s`;
 }
 
 function visibleLayers(run: MiroFishRun, phase: number): MiroFishLayer[] {
@@ -283,6 +312,49 @@ function FeedPanel({ phase, run }: { phase: number; run: MiroFishRun }) {
     );
 }
 
+function ProgressPerformancePanel({ run, apiState }: { run: MiroFishRun; apiState: ApiState }) {
+    const percent = Math.max(0, Math.min(100, Number(run.progress?.percent || (apiState === 'running' ? 2 : 0))));
+    const elapsed = run.progress?.elapsed_ms || run.performance?.elapsed_ms || 0;
+    const eventCount = run.events?.length || run.logs?.length || run.performance?.events_count || 0;
+    const graphNodes = run.graph_artifact?.nodes?.length || run.performance?.graph_nodes || run.graph_nodes?.length || 0;
+    const graphEdges = run.graph_artifact?.edges?.length || run.performance?.graph_edges || 0;
+    const currentLabel = run.progress?.current_label || run.progress?.current_phase || run.status || 'waiting';
+    const phaseDurations = run.performance?.phase_durations_ms || {};
+
+    return (
+        <section className="rounded-xl border border-white/20 bg-white/[0.88] p-4 text-slate-900 shadow-[0_18px_70px_rgba(59,130,246,0.14)]">
+            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                <div>
+                    <div className="text-[11px] font-black uppercase tracking-[0.22em] text-slate-400">Live Pipeline Performance</div>
+                    <div className="mt-1 text-xl font-black text-slate-900">{currentLabel}</div>
+                </div>
+                <div className="grid grid-cols-4 gap-2 text-center text-xs font-black">
+                    <div className="rounded-lg bg-slate-100 px-3 py-2"><div className="text-slate-400">진행</div><div className="text-blue-600">{percent}%</div></div>
+                    <div className="rounded-lg bg-slate-100 px-3 py-2"><div className="text-slate-400">경과</div><div className="text-violet-600">{formatElapsed(elapsed)}</div></div>
+                    <div className="rounded-lg bg-slate-100 px-3 py-2"><div className="text-slate-400">그래프</div><div className="text-emerald-600">{graphNodes}/{graphEdges}</div></div>
+                    <div className="rounded-lg bg-slate-100 px-3 py-2"><div className="text-slate-400">이벤트</div><div className="text-amber-600">{eventCount}</div></div>
+                </div>
+            </div>
+            <div className="mt-4 h-2.5 overflow-hidden rounded-full bg-slate-200">
+                <div className="h-full rounded-full bg-gradient-to-r from-blue-500 via-violet-500 to-emerald-400 transition-all duration-500" style={{ width: `${percent}%` }} />
+            </div>
+            <div className="mt-3 grid gap-2 md:grid-cols-6">
+                {impactSteps.map((step) => {
+                    const phaseId = Object.keys(phaseNumberById).find((key) => phaseNumberById[key] === Number(step.no));
+                    const duration = phaseId ? phaseDurations[phaseId] : undefined;
+                    const active = phaseFromRunState(run) >= Number(step.no);
+                    return (
+                        <div key={step.no} className={`rounded-lg border px-3 py-2 text-[11px] font-black ${active ? 'border-blue-200 bg-blue-50 text-blue-700' : 'border-slate-200 bg-white/60 text-slate-400'}`}>
+                            <div>{step.ko}</div>
+                            <div className="mt-1 font-mono text-[10px] opacity-70">{duration === undefined ? '--' : formatElapsed(duration)}</div>
+                        </div>
+                    );
+                })}
+            </div>
+        </section>
+    );
+}
+
 function SignalSummaryCard({ run }: { run: MiroFishRun }) {
     const score = run.brain?.score;
     const scoreValue = clampCount(score, 0);
@@ -348,11 +420,12 @@ function FinalVerdictPanel({ run }: { run: MiroFishRun }) {
     );
 }
 
-function ImpactPanel({ phase, run }: { phase: number; run: MiroFishRun }) {
+function ImpactPanel({ phase, run, apiState }: { phase: number; run: MiroFishRun; apiState: ApiState }) {
     const analysts = run.analysts?.length ? run.analysts : [];
     const verdict = run.verdict;
     return (
         <div className="space-y-4">
+            <ProgressPerformancePanel run={run} apiState={apiState} />
             <Stepper phase={phase} />
             <TargetCard run={run} />
             {phase >= 5 && <SignalSummaryCard run={run} />}
@@ -408,6 +481,7 @@ export default function AdminEndpointsPage() {
     const [endpointState, setEndpointState] = useState<Record<EndpointKey, EndpointStatus>>(() => Object.fromEntries(endpointDefinitions.map((item) => [item.key, 'idle'])) as Record<EndpointKey, EndpointStatus>);
     const [apiState, setApiState] = useState<ApiState>('checking');
     const [errorText, setErrorText] = useState<string | null>(null);
+    const [activeRunId, setActiveRunId] = useState<string | null>(null);
 
     function markEndpoint(key: EndpointKey, state: EndpointStatus) {
         setEndpointState((current) => ({ ...current, [key]: state }));
@@ -451,17 +525,55 @@ export default function AdminEndpointsPage() {
     }, []);
 
     useEffect(() => {
-        if (!isAnalyzing) return;
-        setPhase(1);
-        const graphTimer = window.setTimeout(() => setPhase(3), 900);
-        const predictionTimer = window.setTimeout(() => setPhase(4), 1900);
-        const verdictTimer = window.setTimeout(() => setPhase(5), 3000);
+        if (!activeRunId || !isAnalyzing) return;
+        let alive = true;
+        const runId = activeRunId;
+
+        async function refreshRun() {
+            try {
+                const hydrated = await mirofishApi.hydrateRun(runId);
+                if (!alive) return;
+                setRun(hydrated);
+                setPhase(phaseFromRunState(hydrated));
+                markEndpoint('runDetail', 'ok');
+                markEndpoint('graph', 'ok');
+                markEndpoint('events', 'ok');
+                if (hydrated.report?.markdown) markEndpoint('report', 'ok');
+
+                if (hydrated.status === 'failed') {
+                    setApiState('error');
+                    setErrorText(hydrated.progress?.error || 'MiroFish run failed.');
+                    setActiveRunId(null);
+                    markEndpoint('createRun', 'error');
+                    return;
+                }
+
+                if (hydrated.status === 'completed') {
+                    setApiState('ready');
+                    setActiveRunId(null);
+                    setPhase(5);
+                    mirofishApi.listRuns()
+                        .then((data) => {
+                            setRecentRuns(data.runs);
+                            markEndpoint('history', 'ok');
+                        })
+                        .catch(() => markEndpoint('history', 'error'));
+                }
+            } catch (error) {
+                if (!alive) return;
+                setApiState('error');
+                setErrorText(error instanceof Error ? error.message : 'MiroFish run polling failed.');
+                markEndpoint('runDetail', 'error');
+            }
+        }
+
+        refreshRun();
+        const timer = window.setInterval(refreshRun, 1000);
         return () => {
-            window.clearTimeout(graphTimer);
-            window.clearTimeout(predictionTimer);
-            window.clearTimeout(verdictTimer);
+            alive = false;
+            window.clearInterval(timer);
         };
-    }, [isAnalyzing, run.id]);
+    }, [activeRunId, isAnalyzing]);
 
     useEffect(() => {
         const nextTarget = target.trim();
@@ -513,16 +625,19 @@ export default function AdminEndpointsPage() {
         setErrorText(null);
         setIsAnalyzing(true);
         setApiState('running');
-        setRun({ target: nextTarget, display_name: nextTarget, status: 'running' });
+        setActiveRunId(null);
+        setPhase(1);
+        setRun({ ...createEmptyRun(nextTarget), status: 'running', progress: { percent: 1, current_phase: 'intake', current_label: 'Target Intake', elapsed_ms: 0 } });
         markEndpoint('createRun', 'loading');
         markEndpoint('runDetail', 'idle');
         markEndpoint('graph', 'idle');
         markEndpoint('events', 'idle');
         markEndpoint('report', 'idle');
         try {
-            const data = await mirofishApi.startRun({ target: nextTarget, agent_count: agentCount, mode: 'full' });
+            const data = await mirofishApi.startRun({ target: nextTarget, agent_count: agentCount, mode: 'full', async: true });
             const baseRun = { ...data, target: data.target || nextTarget, display_name: data.display_name || data.target || nextTarget };
             setRun(baseRun);
+            setPhase(phaseFromRunState(baseRun));
             markEndpoint('createRun', 'ok');
             markEndpoint('runDetail', 'loading');
             markEndpoint('graph', 'loading');
@@ -530,21 +645,10 @@ export default function AdminEndpointsPage() {
             markEndpoint('report', 'loading');
             const runId = String(baseRun.id || '');
             if (!runId) throw new Error('MiroFish run id was not returned.');
-            const hydrated = await mirofishApi.hydrateRun(runId, baseRun);
-            setRun(hydrated);
-            markEndpoint('runDetail', 'ok');
-            markEndpoint('graph', 'ok');
-            markEndpoint('events', 'ok');
-            markEndpoint('report', 'ok');
-            mirofishApi.listRuns()
-                .then((data) => {
-                    setRecentRuns(data.runs);
-                    markEndpoint('history', 'ok');
-                })
-                .catch(() => markEndpoint('history', 'error'));
-            setApiState('ready');
+            setActiveRunId(runId);
         } catch (error) {
             setIsAnalyzing(false);
+            setActiveRunId(null);
             setRun((current) => ({ ...current, status: 'api_error' }));
             setApiState('error');
             markEndpoint('createRun', 'error');
@@ -654,7 +758,7 @@ export default function AdminEndpointsPage() {
                 </div>
             </section>
 
-            {isAnalyzing && <ImpactPanel phase={phase} run={run} />}
+            {isAnalyzing && <ImpactPanel phase={phase} run={run} apiState={apiState} />}
 
             <div className="grid gap-3 lg:grid-cols-3">
                 {endpointDefinitions.map((endpoint) => {

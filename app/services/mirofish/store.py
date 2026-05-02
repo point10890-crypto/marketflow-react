@@ -6,6 +6,8 @@ import hashlib
 import json
 import os
 import re
+import threading
+import time
 from datetime import datetime, timezone
 from typing import Any
 
@@ -93,6 +95,29 @@ def create_run(payload: dict[str, Any] | None) -> dict[str, Any]:
     run_dir = _run_dir(run_id)
     os.makedirs(run_dir, exist_ok=True)
 
+    if _async_requested(payload):
+        run = _create_running_run(run_id, target, agent_count, mode)
+        graph = _build_graph(run)
+        write_json_atomic(os.path.join(run_dir, 'run.json'), run, sort_keys=False)
+        write_json_atomic(os.path.join(run_dir, 'graph.json'), graph, sort_keys=False)
+        _write_text_atomic(os.path.join(run_dir, 'report.md'), _running_report(run))
+        _append_run_event(
+            run_id,
+            'info',
+            'intake',
+            f'Queued live MiroFish run for {target}.',
+            text=f'대상 입력 대기열 등록: {target}',
+            progress=2,
+        )
+        thread = threading.Thread(
+            target=_complete_run_background,
+            args=(run_id, target, agent_count, mode),
+            name=f'mirofish-{run_id[:24]}',
+            daemon=True,
+        )
+        thread.start()
+        return run
+
     run = _build_run(run_id, target, agent_count, mode)
     graph = _build_graph(run)
     report = _build_report(run, graph)
@@ -150,6 +175,247 @@ def get_report(run_id: str) -> dict[str, Any] | None:
     with open(path, 'r', encoding='utf-8') as f:
         markdown = f.read()
     return {'run_id': safe_id, 'format': 'markdown', 'markdown': markdown}
+
+
+def _create_running_run(run_id: str, target: str, agent_count: int, mode: str) -> dict[str, Any]:
+    created_at = datetime.now(timezone.utc).isoformat()
+    return {
+        'id': run_id,
+        'target': target,
+        'display_name': target,
+        'symbol': None,
+        'market': None,
+        'mode': mode,
+        'source': 'live_file_artifacts',
+        'status': 'running',
+        'created_at': created_at,
+        'started_at': created_at,
+        'deterministic': False,
+        'price': None,
+        'change_pct': 0,
+        'pipeline': {
+            'status': 'running',
+            'graph_links': 0,
+            'similar_events': 0,
+            'agent_count': agent_count,
+        },
+        'pipeline_phases': _phase_states('intake', 2),
+        'progress': {
+            'completed_phases': 0,
+            'total_phases': len(PIPELINE_PHASES),
+            'percent': 2,
+            'current_phase': 'intake',
+            'current_label': 'Target Intake',
+            'started_at': created_at,
+            'updated_at': created_at,
+            'elapsed_ms': 0,
+        },
+        'performance': {
+            'elapsed_ms': 0,
+            'phase_durations_ms': {},
+            'events_count': 1,
+            'graph_nodes': 0,
+            'graph_edges': 0,
+        },
+        'layers': _layers(0, 0, 0, False),
+        'logs': [],
+        'analysts': [],
+        'graph_nodes': [],
+        'prediction_nodes': [],
+        'data_context': {'source_files': [], 'signals': {}, 'briefing_count': 0, 'dart_available': False},
+        'artifacts': _artifact_links(run_id),
+    }
+
+
+def _complete_run_background(run_id: str, target: str, agent_count: int, mode: str) -> None:
+    try:
+        _build_run_progressive(run_id, target, agent_count, mode)
+    except Exception as exc:
+        _mark_run_failed(run_id, exc)
+
+
+def _build_run_progressive(run_id: str, target: str, agent_count: int, mode: str) -> dict[str, Any]:
+    started = time.perf_counter()
+    phase_started = started
+    run = read_run(run_id) or _create_running_run(run_id, target, agent_count, mode)
+    use_llm = _use_llm(mode)
+
+    def save(phase_id: str, percent: int, message: str, *, text: str | None = None,
+             payload: dict[str, Any] | None = None, completed: bool = False) -> None:
+        elapsed_ms = int((time.perf_counter() - started) * 1000)
+        run['status'] = 'completed' if completed else 'running'
+        run['pipeline']['status'] = run['status']
+        run['pipeline_phases'] = _phase_states(phase_id, percent, completed=completed)
+        run['progress'] = {
+            'completed_phases': _completed_phase_count(phase_id, completed),
+            'total_phases': len(PIPELINE_PHASES),
+            'percent': percent,
+            'current_phase': phase_id,
+            'current_label': _phase_label(phase_id),
+            'started_at': run.get('started_at') or run.get('created_at'),
+            'updated_at': datetime.now(timezone.utc).isoformat(),
+            'elapsed_ms': elapsed_ms,
+        }
+        graph = _build_graph(run)
+        event = _append_run_event(run_id, 'info', phase_id, message, text=text, progress=percent, elapsed_ms=elapsed_ms, payload=payload)
+        run.setdefault('logs', []).append(_event_to_log(event, text))
+        run['performance'] = {
+            **(run.get('performance') or {}),
+            'elapsed_ms': elapsed_ms,
+            'events_count': len(run.get('logs') or []) + 1,
+            'graph_nodes': len(graph.get('nodes') or []),
+            'graph_edges': len(graph.get('edges') or []),
+        }
+        write_json_atomic(os.path.join(_run_dir(run_id), 'run.json'), run, sort_keys=False)
+        write_json_atomic(os.path.join(_run_dir(run_id), 'graph.json'), graph, sort_keys=False)
+
+    save('intake', 8, f'Started live target intake for {target}.', text=f'대상 입력: {target}')
+    context = live_data.build_context(target)
+    resolved = context['resolved']
+    price = context.get('price') or {}
+    final_target = resolved.get('display_name') or target
+    run.update({
+        'target': final_target,
+        'display_name': final_target,
+        'symbol': resolved.get('symbol'),
+        'market': resolved.get('market'),
+        'price': price.get('price'),
+        'change_pct': price.get('change_pct', 0),
+        'price_snapshot': price,
+        'data_context': {
+            'source_files': context.get('source_files', []),
+            'signals': context.get('signals', {}),
+            'briefing_count': len(context.get('briefings') or []),
+            'dart_available': bool(context.get('dart')),
+            'built_at': context.get('built_at'),
+        },
+    })
+    _record_phase_duration(run, 'intake', phase_started)
+    phase_started = time.perf_counter()
+    save(
+        'intake',
+        16,
+        f"Resolved {len(context.get('source_files', []))} source files.",
+        text=f"실데이터 소스 {len(context.get('source_files', []))}개 연결",
+        payload={'source_files': context.get('source_files', []), 'symbol': resolved.get('symbol')},
+    )
+
+    brain = _brain_summary(final_target)
+    run['brain_summary'] = brain
+    run['brain'] = _frontend_brain(brain)
+    _record_phase_duration(run, 'brain_snapshot', phase_started)
+    phase_started = time.perf_counter()
+    save(
+        'brain_snapshot',
+        32,
+        'Loaded Brain 13D snapshot.',
+        text=f"Brain 13D 실데이터 스냅샷 적재: {run['brain'].get('score')}점",
+        payload={'brain': run.get('brain')},
+    )
+
+    save(
+        'graph_build',
+        40,
+        'GraphRAG extraction started.',
+        text='GraphRAG 추출 시작',
+        payload={'method': 'llm' if use_llm else 'rule'},
+    )
+    extracted = graphrag_extractor.extract_graph(context.get('corpus', ''), use_llm=use_llm)
+    merge_stats = graphrag_extractor.merge_into_ekg(extracted)
+    graph_nodes = _graph_nodes_from_extraction(extracted, resolved)
+    run['graph_extraction'] = extracted
+    run['graph_merge'] = merge_stats
+    run['graph_nodes'] = graph_nodes
+    run['pipeline'].update({
+        'graph_links': merge_stats.get('total_relations', len(extracted.get('relations', []))),
+        'similar_events': len(context.get('briefings') or []),
+        'graph_method': extracted.get('method'),
+    })
+    run['layers'] = _layers(len(graph_nodes), 0, 0, False)
+    _record_phase_duration(run, 'graph_build', phase_started)
+    phase_started = time.perf_counter()
+    save(
+        'graph_build',
+        54,
+        f"GraphRAG extracted {len(extracted.get('entities', []))} entities and {len(extracted.get('relations', []))} relations.",
+        text=f"GraphRAG 인과 {merge_stats.get('total_relations', 0)}개 연결",
+        payload={'entities': len(extracted.get('entities', [])), 'relations': len(extracted.get('relations', []))},
+    )
+
+    save(
+        'analyst_mesh',
+        62,
+        'Agent debate started.',
+        text=f'에이전트 토론 시작: {agent_count}명',
+        payload={'agent_count': agent_count},
+    )
+    debate = agent_debate.run_debate(final_target, brain, rounds=2, use_llm=use_llm)
+    analysts = _analysts_from_debate(debate, agent_count, brain)
+    prediction_nodes = _prediction_nodes(analysts)
+    run['debate'] = debate
+    run['analysts'] = analysts
+    run['prediction_nodes'] = prediction_nodes
+    run['pipeline']['agent_count'] = len(analysts)
+    run['pipeline']['debate_method'] = debate.get('method')
+    run['layers'] = _layers(len(graph_nodes), len(analysts), len(prediction_nodes), False)
+    _record_phase_duration(run, 'analyst_mesh', phase_started)
+    phase_started = time.perf_counter()
+    save(
+        'analyst_mesh',
+        74,
+        f"Agent debate completed with {len(analysts)} analysts.",
+        text=f"에이전트 토론 완료: {len(analysts)}명",
+        payload={'agent_count': len(analysts), 'method': debate.get('method')},
+    )
+
+    save(
+        'verdict',
+        82,
+        'CIO verdict synthesis started.',
+        text='CIO 판정 합성 시작',
+        payload={'method': 'llm' if use_llm else 'rule'},
+    )
+    cio = cio_react.run_cio(final_target, brain, debate, use_llm=use_llm)
+    verdict = _verdict_from_cio(cio, debate, analysts)
+    run['cio'] = cio
+    run['verdict'] = verdict
+    run['pipeline']['cio_method'] = cio.get('method')
+    run['layers'] = _layers(len(graph_nodes), len(analysts), len(prediction_nodes), True)
+    _record_phase_duration(run, 'verdict', phase_started)
+    phase_started = time.perf_counter()
+    save(
+        'verdict',
+        90,
+        f"CIO verdict={verdict.get('action')} confidence={verdict.get('confidence_pct')}%.",
+        text=f"최종 판정: {verdict.get('action')} {verdict.get('confidence_pct')}%",
+        payload={'verdict': verdict},
+    )
+
+    graph = _build_graph(run)
+    report = _build_report(run, graph)
+    _write_text_atomic(os.path.join(_run_dir(run_id), 'report.md'), report)
+    run['completed_at'] = datetime.now(timezone.utc).isoformat()
+    _record_phase_duration(run, 'report', phase_started)
+    run['progress'] = {
+        'completed_phases': len(PIPELINE_PHASES),
+        'total_phases': len(PIPELINE_PHASES),
+        'percent': 100,
+        'current_phase': 'report',
+        'current_label': 'Markdown Report',
+        'started_at': run.get('started_at') or run.get('created_at'),
+        'updated_at': run['completed_at'],
+        'elapsed_ms': int((time.perf_counter() - started) * 1000),
+    }
+    save(
+        'report',
+        100,
+        'Report and artifacts completed.',
+        text=f"리포트 생성 완료: {len(graph.get('nodes', []))} nodes / {len(graph.get('edges', []))} edges",
+        payload={'report_chars': len(report), 'nodes': len(graph.get('nodes', [])), 'edges': len(graph.get('edges', []))},
+        completed=True,
+    )
+    write_json_atomic(os.path.join(_run_dir(run_id), 'graph.json'), graph, sort_keys=False)
+    return run
 
 
 def _build_run(run_id: str, target: str, agent_count: int, mode: str) -> dict[str, Any]:
@@ -495,6 +761,131 @@ def _logs(target: str, context: dict[str, Any], extracted: dict[str, Any], merge
     ]
 
 
+def _layers(graph_count: int, analyst_count: int, prediction_count: int, verdict_ready: bool) -> list[dict[str, Any]]:
+    return [
+        {'label': 'TARGET', 'count': 1, 'color': 'bg-red-500'},
+        {'label': 'CAUSAL HISTORY', 'count': graph_count, 'color': 'bg-blue-500'},
+        {'label': 'AI ANALYSTS', 'count': analyst_count, 'color': 'bg-violet-500'},
+        {'label': 'PREDICTIONS', 'count': prediction_count, 'color': 'bg-orange-400'},
+        {'label': 'VERDICT', 'count': 1 if verdict_ready else 0, 'color': 'bg-emerald-400'},
+    ]
+
+
+def _phase_states(current_phase: str, percent: int, *, completed: bool = False) -> list[dict[str, Any]]:
+    current_index = _phase_index(current_phase)
+    states = []
+    for idx, phase in enumerate(PIPELINE_PHASES):
+        if completed or idx < current_index:
+            status = 'completed'
+            progress = 1.0
+        elif idx == current_index:
+            status = 'completed' if completed else 'running'
+            progress = 1.0 if completed else max(0.05, min(0.98, percent / 100))
+        else:
+            status = 'pending'
+            progress = 0.0
+        states.append({**phase, 'status': status, 'progress': progress})
+    return states
+
+
+def _phase_index(phase_id: str) -> int:
+    for idx, phase in enumerate(PIPELINE_PHASES):
+        if phase['id'] == phase_id:
+            return idx
+    return 0
+
+
+def _phase_label(phase_id: str) -> str:
+    for phase in PIPELINE_PHASES:
+        if phase['id'] == phase_id:
+            return phase['label']
+    return phase_id
+
+
+def _completed_phase_count(phase_id: str, completed: bool) -> int:
+    if completed:
+        return len(PIPELINE_PHASES)
+    return max(0, _phase_index(phase_id))
+
+
+def _artifact_links(run_id: str) -> dict[str, str]:
+    return {
+        'run': f'/api/admin/mirofish/runs/{run_id}',
+        'graph': f'/api/admin/mirofish/runs/{run_id}/graph',
+        'report': f'/api/admin/mirofish/runs/{run_id}/report',
+        'events': f'/api/admin/mirofish/runs/{run_id}/events',
+    }
+
+
+def _running_report(run: dict[str, Any]) -> str:
+    return (
+        f"# MiroFish Run In Progress: {run.get('target')}\n\n"
+        f"- Run ID: `{run.get('id')}`\n"
+        f"- Status: `{run.get('status')}`\n"
+        f"- Progress: `{(run.get('progress') or {}).get('percent', 0)}%`\n"
+    )
+
+
+def _append_run_event(run_id: str, level: str, phase: str, message: str, *,
+                      text: str | None = None, progress: int | None = None,
+                      elapsed_ms: int | None = None,
+                      payload: dict[str, Any] | None = None) -> dict[str, Any]:
+    from app.services.mirofish import events as mf_events
+    event_payload = dict(payload or {})
+    if text is not None:
+        event_payload['text'] = text
+    if progress is not None:
+        event_payload['progress'] = progress
+    if elapsed_ms is not None:
+        event_payload['elapsed_ms'] = elapsed_ms
+    event_payload['time'] = datetime.now().strftime('%H:%M:%S')
+    return mf_events.append_event(run_id, level, phase, message, payload=event_payload)
+
+
+def _event_to_log(event: dict[str, Any], text: str | None = None) -> dict[str, Any]:
+    payload = event.get('payload') or {}
+    return {
+        'level': event.get('level', 'info'),
+        'phase': event.get('phase', 'run'),
+        'time': payload.get('time') or datetime.now().strftime('%H:%M:%S'),
+        'message': event.get('message', ''),
+        'text': text or payload.get('text') or event.get('message', ''),
+    }
+
+
+def _record_phase_duration(run: dict[str, Any], phase_id: str, phase_started: float) -> None:
+    perf = run.setdefault('performance', {})
+    durations = perf.setdefault('phase_durations_ms', {})
+    durations[phase_id] = int((time.perf_counter() - phase_started) * 1000)
+
+
+def _mark_run_failed(run_id: str, exc: Exception) -> None:
+    try:
+        run = read_run(run_id) or {'id': run_id, 'target': 'unknown', 'created_at': datetime.now(timezone.utc).isoformat()}
+        now = datetime.now(timezone.utc).isoformat()
+        run['status'] = 'failed'
+        run['completed_at'] = now
+        run['pipeline'] = {**(run.get('pipeline') or {}), 'status': 'failed'}
+        run['progress'] = {
+            **(run.get('progress') or {}),
+            'percent': (run.get('progress') or {}).get('percent', 0),
+            'updated_at': now,
+            'error': f'{type(exc).__name__}: {exc}',
+        }
+        event = _append_run_event(
+            run_id,
+            'error',
+            str((run.get('progress') or {}).get('current_phase') or 'run'),
+            f'MiroFish run failed: {type(exc).__name__}: {exc}',
+            text=f'실행 실패: {type(exc).__name__}',
+            payload={'error': str(exc)},
+        )
+        run.setdefault('logs', []).append(_event_to_log(event))
+        write_json_atomic(os.path.join(_run_dir(run_id), 'run.json'), run, sort_keys=False)
+    except Exception:
+        return
+
+
 def _graph_nodes_from_extraction(extracted: dict[str, Any], resolved: dict[str, Any]) -> list[dict[str, Any]]:
     entities = extracted.get('entities') or []
     if not entities:
@@ -566,6 +957,13 @@ def _clean_target(value: Any) -> str:
     if len(target) > 80:
         raise ValueError('target must be 80 characters or fewer')
     return target
+
+
+def _async_requested(payload: dict[str, Any]) -> bool:
+    value = payload.get('async', payload.get('background', payload.get('stream')))
+    if isinstance(value, bool):
+        return value
+    return str(value or '').strip().lower() in {'1', 'true', 'yes', 'on'}
 
 
 def _clean_agent_count(value: Any) -> int:

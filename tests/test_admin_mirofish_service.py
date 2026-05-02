@@ -34,6 +34,42 @@ def test_mirofish_run_writes_readable_artifacts(tmp_path, monkeypatch):
     assert run['display_name'] in report['markdown']
 
 
+def test_mirofish_async_run_streams_progress_artifacts(tmp_path, monkeypatch):
+    monkeypatch.setattr(store, 'RUNS_ROOT', str(tmp_path))
+
+    run = store.create_run({
+        'target': 'Samsung Electronics',
+        'agent_count': 3,
+        'mode': 'fast',
+        'async': True,
+    })
+
+    assert run['status'] == 'running'
+    assert run['progress']['percent'] >= 2
+
+    import time
+    from app.services.mirofish import events as mf_events
+
+    saved = None
+    for _ in range(200):
+        saved = store.read_run(run['id'])
+        if saved and saved.get('status') == 'completed':
+            break
+        time.sleep(0.1)
+
+    assert saved is not None
+    assert saved['status'] == 'completed'
+    assert saved['progress']['percent'] == 100
+    assert saved['performance']['elapsed_ms'] >= 0
+    assert saved['graph_nodes']
+    assert store.get_graph(run['id'])['nodes']
+    assert store.get_report(run['id'])['markdown']
+
+    event_tail = mf_events.read_events(run['id'])
+    assert event_tail['total'] >= 5
+    assert any((event.get('payload') or {}).get('progress') == 100 for event in event_tail['events'])
+
+
 def test_mirofish_target_snapshot_uses_live_artifacts():
     snapshot = store.resolve_target_snapshot('Samsung Electronics')
 

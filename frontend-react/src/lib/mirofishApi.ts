@@ -140,6 +140,24 @@ export interface MiroFishRun {
         debate_method?: string;
         cio_method?: string;
     };
+    progress?: {
+        completed_phases?: number;
+        total_phases?: number;
+        percent?: number;
+        current_phase?: string;
+        current_label?: string;
+        started_at?: string;
+        updated_at?: string;
+        elapsed_ms?: number;
+        error?: string;
+    };
+    performance?: {
+        elapsed_ms?: number;
+        events_count?: number;
+        graph_nodes?: number;
+        graph_edges?: number;
+        phase_durations_ms?: Record<string, number>;
+    };
     artifacts?: Record<string, string>;
     data_context?: {
         source_files?: string[];
@@ -174,6 +192,7 @@ export interface StartMiroFishRunRequest {
     target: string;
     agent_count: number;
     mode: 'full' | string;
+    async?: boolean;
 }
 
 type RawObject = Record<string, any>;
@@ -305,6 +324,7 @@ function normalizeNodes(rawValue: unknown): MiroFishNode[] | undefined {
 
 function normalizeVerdict(rawValue: unknown, analysts: MiroFishAnalyst[]): MiroFishRun['verdict'] {
     const raw = asObject(rawValue);
+    if (Object.keys(raw).length === 0 && analysts.length === 0) return undefined;
     const label = String(raw.label ?? raw.action ?? 'HOLD').toUpperCase() as MiroFishVerdict;
     const bullish = raw.bullish ?? analysts.filter((analyst) => String(analyst.verdict).includes('BULL')).length;
     const bearish = raw.bearish ?? analysts.filter((analyst) => String(analyst.verdict).includes('BEAR')).length;
