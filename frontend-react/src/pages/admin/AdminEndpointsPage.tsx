@@ -99,6 +99,15 @@ function formatElapsed(ms?: number) {
     return `${seconds.toFixed(1)}s`;
 }
 
+function formatPrice(value: unknown): string {
+    const numeric = typeof value === 'number'
+        ? value
+        : typeof value === 'string'
+            ? Number(value.replace(/,/g, ''))
+            : NaN;
+    return Number.isFinite(numeric) ? numeric.toLocaleString('ko-KR') : '--';
+}
+
 function visibleLayers(run: MiroFishRun, phase: number): MiroFishLayer[] {
     const base = run.layers?.length
         ? run.layers
@@ -172,7 +181,7 @@ function Stepper({ phase }: { phase: number }) {
 
 function TargetCard({ run }: { run: MiroFishRun }) {
     const change = Number(run.change_pct ?? 0);
-    const price = run.price ?? '--';
+    const price = formatPrice(run.price);
     return (
         <section className="rounded-xl border border-white/30 bg-white/[0.88] p-6 text-slate-900 shadow-[0_22px_80px_rgba(14,165,233,0.12)]">
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
