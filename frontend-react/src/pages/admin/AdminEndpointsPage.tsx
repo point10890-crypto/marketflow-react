@@ -127,6 +127,18 @@ function visibleLogs(run: MiroFishRun, phase: number): MiroFishLog[] {
     return logs.filter((log) => (log.phase || 1) <= phase);
 }
 
+function feedToneClass(tone?: string): string {
+    if (!tone) return 'text-blue-800';
+    if (tone.includes('cyan')) return 'text-cyan-800';
+    if (tone.includes('teal')) return 'text-teal-800';
+    if (tone.includes('violet')) return 'text-violet-800';
+    if (tone.includes('emerald')) return 'text-emerald-800';
+    if (tone.includes('rose') || tone.includes('red')) return 'text-rose-800';
+    if (tone.includes('amber') || tone.includes('yellow')) return 'text-amber-800';
+    if (tone.includes('blue')) return 'text-blue-800';
+    return 'text-slate-800';
+}
+
 function analystPositions(analysts: MiroFishAnalyst[]): MiroFishNode[] {
     const xs = [31, 43, 55, 67, 76, 83, 89, 24, 50, 71];
     return analysts.map((analyst, index) => ({
@@ -289,21 +301,21 @@ function KnowledgeGraph({ phase, run }: { phase: number; run: MiroFishRun }) {
 function FeedPanel({ phase, run }: { phase: number; run: MiroFishRun }) {
     const logs = visibleLogs(run, phase);
     return (
-        <section className="min-h-[430px] rounded-xl border border-white/25 bg-white/[0.78] p-5 text-slate-900">
+        <section className="min-h-[430px] rounded-xl border border-slate-300/70 bg-white/[0.94] p-5 text-slate-950 shadow-[0_18px_70px_rgba(15,23,42,0.12)]">
             <div className="mb-5 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     <span className="h-3 w-3 rounded-full bg-red-400" />
                     <span className="h-3 w-3 rounded-full bg-yellow-400" />
                     <span className="h-3 w-3 rounded-full bg-emerald-400" />
-                    <span className="ml-2 text-[11px] font-black uppercase tracking-[0.2em] text-slate-300">Feed</span>
+                    <span className="ml-2 text-[11px] font-black uppercase tracking-[0.2em] text-slate-600">Feed</span>
                 </div>
-                <span className="text-xs font-black text-slate-300">{logs.length}</span>
+                <span className="rounded-full bg-slate-900 px-2 py-0.5 text-xs font-black text-white">{logs.length}</span>
             </div>
-            <div className="space-y-4 font-mono text-xs">
+            <div className="space-y-4 font-mono text-sm leading-6">
                 {logs.map((log, index) => (
                     <div key={`${log.time || index}-${log.text}`} className="flex gap-3">
-                        <span className="shrink-0 text-slate-300">{log.time || 'live'}</span>
-                        <span className={`font-bold ${log.tone || 'text-blue-300'}`}>{log.text}</span>
+                        <span className="shrink-0 font-bold text-slate-500">{log.time || 'live'}</span>
+                        <span className={`font-black ${feedToneClass(log.tone)}`}>{log.text}</span>
                     </div>
                 ))}
                 {phase < 5 && <div className="h-5 w-1.5 animate-pulse rounded bg-blue-500" />}
