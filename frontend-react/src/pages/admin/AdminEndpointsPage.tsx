@@ -21,28 +21,28 @@ const fallbackRun: MiroFishRun = {
     brain: { score: 50, regime: 'neutral', crisis: 'Lv.2' },
     pipeline: { graph_links: 39, similar_events: 1, agent_count: 10 },
     layers: [
-        { label: 'TARGET', count: 1 },
-        { label: 'CAUSAL HISTORY', count: 34 },
-        { label: 'AI ANALYSTS', count: 7 },
-        { label: 'PREDICTIONS', count: 7 },
-        { label: 'VERDICT', count: 1 },
+        { label: '대상', count: 1 },
+        { label: '인과 메모리', count: 34 },
+        { label: 'AI 애널리스트', count: 7 },
+        { label: '예측', count: 7 },
+        { label: '판정', count: 1 },
     ],
     logs: [
-        { phase: 1, time: '06:52:26', text: 'Analysis started', tone: 'text-blue-300' },
-        { phase: 1, time: '06:52:27', text: 'Target locked: Samsung Electronics', tone: 'text-emerald-300' },
-        { phase: 3, time: '07:09:32', text: 'GraphRAG linked 39 causal signals', tone: 'text-teal-400' },
-        { phase: 3, time: '07:09:32', text: 'Brain score 50.0, regime neutral', tone: 'text-teal-400' },
-        { phase: 4, time: '07:09:42', text: 'Analyst debate completed: Bull 3 / Bear 0 / Neutral 4', tone: 'text-violet-400' },
-        { phase: 5, time: '07:09:58', text: 'Final verdict synthesized: BUY', tone: 'text-emerald-400' },
+        { phase: 1, time: '06:52:26', text: '분석 시작', tone: 'text-blue-300' },
+        { phase: 1, time: '06:52:27', text: '대상 락온: Samsung Electronics', tone: 'text-emerald-300' },
+        { phase: 3, time: '07:09:32', text: 'GraphRAG 인과 시그널 39개 연결', tone: 'text-teal-400' },
+        { phase: 3, time: '07:09:32', text: 'Brain 점수 50.0, 체제 중립', tone: 'text-teal-400' },
+        { phase: 4, time: '07:09:42', text: '애널리스트 토론 완료: 강세 3 / 약세 0 / 중립 4', tone: 'text-violet-400' },
+        { phase: 5, time: '07:09:58', text: '최종 판정 합성 완료: BUY', tone: 'text-emerald-400' },
     ],
     analysts: [
-        { name: 'Kim Chi', role: 'Semiconductor analyst', verdict: 'NEUTRAL', confidence: 55, icon: 'fa-microscope' },
-        { name: 'Morgan', role: 'Macro strategist', verdict: 'NEUTRAL', confidence: 65, icon: 'fa-chart-line' },
-        { name: 'Emi', role: 'AI infrastructure expert', verdict: 'BULLISH', confidence: 60, icon: 'fa-globe-asia' },
-        { name: 'Park', role: 'Geopolitical risk analyst', verdict: 'NEUTRAL', confidence: 70, icon: 'fa-bolt' },
-        { name: 'Song', role: 'Supply chain specialist', verdict: 'BULLISH', confidence: 68, icon: 'fa-building-columns' },
-        { name: 'Robin', role: 'Quant analyst', verdict: 'BULLISH', confidence: 65, icon: 'fa-calculator' },
-        { name: 'Kang', role: 'Portfolio manager', verdict: 'NEUTRAL', confidence: 65, icon: 'fa-briefcase' },
+        { name: '김치', role: '반도체 애널리스트', verdict: 'NEUTRAL', confidence: 55, icon: 'fa-microscope' },
+        { name: '모건', role: '매크로 전략가', verdict: 'NEUTRAL', confidence: 65, icon: 'fa-chart-line' },
+        { name: '에미', role: 'AI 인프라 전문가', verdict: 'BULLISH', confidence: 60, icon: 'fa-globe-asia' },
+        { name: '박', role: '지정학 리스크 애널리스트', verdict: 'NEUTRAL', confidence: 70, icon: 'fa-bolt' },
+        { name: '송', role: '공급망 스페셜리스트', verdict: 'BULLISH', confidence: 68, icon: 'fa-building-columns' },
+        { name: '로빈', role: '퀀트 애널리스트', verdict: 'BULLISH', confidence: 65, icon: 'fa-calculator' },
+        { name: '강', role: '포트폴리오 매니저', verdict: 'NEUTRAL', confidence: 65, icon: 'fa-briefcase' },
     ],
     graph_nodes: [
         { label: 'hbm', x: 50, y: 39 },
@@ -57,13 +57,13 @@ const fallbackRun: MiroFishRun = {
         { label: 'dc_cooling', x: 35, y: 59 },
     ],
     prediction_nodes: [
-        { label: 'Emi BULLISH', x: 40, y: 65, verdict: 'bull' },
-        { label: 'Kim NEUTRAL', x: 35, y: 70, verdict: 'neutral' },
-        { label: 'Morgan NEUTRAL', x: 43, y: 76, verdict: 'neutral' },
-        { label: 'Park NEUTRAL', x: 56, y: 73, verdict: 'neutral' },
-        { label: 'Song BULLISH', x: 70, y: 65, verdict: 'bull' },
-        { label: 'Robin BULLISH', x: 75, y: 66, verdict: 'bull' },
-        { label: 'Kang NEUTRAL', x: 81, y: 75, verdict: 'neutral' },
+        { label: '에미 강세', x: 40, y: 65, verdict: 'bull' },
+        { label: '김 중립', x: 35, y: 70, verdict: 'neutral' },
+        { label: '모건 중립', x: 43, y: 76, verdict: 'neutral' },
+        { label: '박 중립', x: 56, y: 73, verdict: 'neutral' },
+        { label: '송 강세', x: 70, y: 65, verdict: 'bull' },
+        { label: '로빈 강세', x: 75, y: 66, verdict: 'bull' },
+        { label: '강 중립', x: 81, y: 75, verdict: 'neutral' },
     ],
     verdict: {
         label: 'BUY',
@@ -72,43 +72,43 @@ const fallbackRun: MiroFishRun = {
         bearish: 0,
         neutral: 4,
         horizon: '1M',
-        summary: '3 analysts bullish, 0 bearish, 4 neutral.',
+        summary: '강세 3, 약세 0, 중립 4 — 매수 우위 합의.',
     },
 };
 
 const pipelineCards = [
     {
         title: 'GraphRAG',
-        desc: 'Extracts entities, causal links, and market context from the research memory.',
+        desc: '리서치 메모리에서 엔티티, 인과 관계, 시장 맥락을 자동 추출합니다.',
         icon: 'fa-project-diagram',
         color: 'text-cyan-300',
         metric: 'EKG + LLM',
     },
     {
-        title: 'Agent Debate',
-        desc: 'Runs fixed bull, bear, macro, quant, and risk viewpoints before synthesis.',
+        title: '에이전트 토론',
+        desc: '강세/약세/매크로/퀀트/리스크 5인 페르소나가 토론한 뒤 합의를 도출합니다.',
         icon: 'fa-comments',
         color: 'text-violet-300',
-        metric: '10 agents',
+        metric: '에이전트 10명',
     },
     {
-        title: 'CIO Report',
-        desc: 'Combines ReACT traces, Brain signals, and the debate into a final decision.',
+        title: 'CIO 리포트',
+        desc: 'ReACT 추론 트레이스, Brain 시그널, 에이전트 토론을 종합해 최종 판정을 내립니다.',
         icon: 'fa-brain',
         color: 'text-amber-300',
-        metric: '3-layer view',
+        metric: '3-레이어 그래프',
     },
 ];
 
 const impactSteps = [
-    { no: '01', ko: 'Input', en: 'TARGET', icon: 'fa-search' },
-    { no: '02', ko: 'Brain', en: '13D', icon: 'fa-brain' },
-    { no: '03', ko: 'Graph', en: 'RAG', icon: 'fa-link' },
-    { no: '04', ko: 'Agents', en: 'DEBATE', icon: 'fa-users' },
-    { no: '05', ko: 'Verdict', en: 'CIO', icon: 'fa-gavel' },
+    { no: '01', ko: '대상 입력', en: 'TARGET', icon: 'fa-search' },
+    { no: '02', ko: 'Brain 13D', en: 'BRAIN', icon: 'fa-brain' },
+    { no: '03', ko: '그래프 추출', en: 'GRAPHRAG', icon: 'fa-link' },
+    { no: '04', ko: '에이전트 토론', en: 'DEBATE', icon: 'fa-users' },
+    { no: '05', ko: 'CIO 판정', en: 'VERDICT', icon: 'fa-gavel' },
 ];
 
-const runSteps = ['Input', 'Brain 13D', 'GraphRAG', 'Agents', 'Report'];
+const runSteps = ['입력', 'Brain 13D', 'GraphRAG', '에이전트', '리포트'];
 
 function clampCount(value: unknown, fallback: number) {
     const numberValue = Number(value);
@@ -181,9 +181,9 @@ function TargetCard({ run }: { run: MiroFishRun }) {
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div>
                     <div className="flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.22em] text-slate-400">
-                        Target
+                        분석 대상
                         <span className="h-2 w-2 rounded-full bg-violet-600" />
-                        <span className="text-violet-600">Streaming</span>
+                        <span className="text-violet-600">실시간 스트리밍</span>
                         <i className="fas fa-signal text-violet-500" />
                     </div>
                     <h2 className="mt-2 break-words text-4xl font-black tracking-tight">{run.display_name || run.target}</h2>
@@ -215,7 +215,7 @@ function KnowledgeGraph({ phase, run }: { phase: number; run: MiroFishRun }) {
     return (
         <section className="relative min-h-[430px] overflow-hidden rounded-xl border border-white/25 bg-slate-50/90 p-5 text-slate-900">
             <div className="absolute left-5 top-5 z-20 w-48 rounded-xl bg-white/80 p-4 shadow-xl shadow-slate-300/30">
-                <div className="mb-3 text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">Layers</div>
+                <div className="mb-3 text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">레이어</div>
                 <div className="space-y-3">
                     {layers.map((layer) => (
                         <div key={layer.label} className="flex items-center gap-3 text-xs font-black">
@@ -228,16 +228,16 @@ function KnowledgeGraph({ phase, run }: { phase: number; run: MiroFishRun }) {
             </div>
 
             <div className="absolute left-1/2 top-6 z-20 -translate-x-1/2 rounded-xl bg-white/80 px-4 py-2 text-[11px] font-black uppercase tracking-[0.18em] text-slate-500 shadow">
-                Knowledge Graph <span className="ml-2 inline-block h-2 w-2 rounded-full bg-emerald-400" />
+                지식 그래프 <span className="ml-2 inline-block h-2 w-2 rounded-full bg-emerald-400" />
             </div>
             {isPredictionReady && (
                 <div className="absolute right-40 top-6 z-20 hidden items-center gap-2 rounded-xl bg-white/80 px-4 py-2 text-[11px] font-black uppercase tracking-[0.12em] text-slate-500 shadow lg:flex">
                     <span className="h-2 w-2 rounded-full bg-emerald-400" />
-                    <span>Bull <b className="text-emerald-500">{verdict?.bullish ?? 0}</b></span>
+                    <span>강세 <b className="text-emerald-500">{verdict?.bullish ?? 0}</b></span>
                     <span className="h-2 w-2 rounded-full bg-amber-400" />
-                    <span>Neut <b className="text-amber-500">{verdict?.neutral ?? 0}</b></span>
+                    <span>중립 <b className="text-amber-500">{verdict?.neutral ?? 0}</b></span>
                     <span className="h-2 w-2 rounded-full bg-rose-500" />
-                    <span>Bear <b className="text-rose-500">{verdict?.bearish ?? 0}</b></span>
+                    <span>약세 <b className="text-rose-500">{verdict?.bearish ?? 0}</b></span>
                 </div>
             )}
 
@@ -339,11 +339,11 @@ function SignalSummaryCard({ run }: { run: MiroFishRun }) {
                     </div>
                 </div>
                 <div className="min-w-0 flex-1">
-                    <div className="text-lg font-black text-blue-700">Brain signal summary</div>
+                    <div className="text-lg font-black text-blue-700">Brain 시그널 요약</div>
                     <div className="mt-3 grid grid-cols-2 gap-4 text-xs font-bold text-slate-400 sm:grid-cols-4">
-                        <span>Regime</span>
+                        <span>체제</span>
                         <span className="text-slate-700">{run.brain?.regime || 'neutral'}</span>
-                        <span>Crisis</span>
+                        <span>위기 단계</span>
                         <span className="text-slate-700">{run.brain?.crisis || 'Lv.2'}</span>
                     </div>
                     <div className="mt-5 h-2 rounded-full bg-slate-100">
@@ -362,23 +362,23 @@ function FinalVerdictPanel({ run }: { run: MiroFishRun }) {
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_36%,rgba(255,255,255,0.22),rgba(255,255,255,0)_24%),linear-gradient(135deg,rgba(6,95,70,0.9),rgba(5,150,105,0.95))]" />
             <div className="relative mx-auto flex min-h-[430px] max-w-5xl flex-col items-center justify-center text-center">
                 <div className="mb-6 flex items-center gap-4 text-[11px] font-black uppercase tracking-[0.45em] text-emerald-100/50">
-                    <span>Final Verdict</span>
+                    <span>최종 판정</span>
                     <span className="h-px w-12 bg-emerald-100/30" />
                 </div>
                 <h2 className="text-[76px] font-black leading-none tracking-tight text-white md:text-[152px]">{verdict?.label || 'BUY'}</h2>
-                <p className="mt-7 text-base font-bold text-emerald-50/65 md:text-lg">{verdict?.summary || 'MiroFish debate complete.'}</p>
+                <p className="mt-7 text-base font-bold text-emerald-50/65 md:text-lg">{verdict?.summary || 'MiroFish 토론 완료.'}</p>
                 <div className="mt-10 grid h-36 w-36 place-items-center rounded-full border-[7px] border-white/90 bg-white/5 shadow-[0_0_60px_rgba(255,255,255,0.16)]">
                     <div>
-                        <div className="text-[11px] font-black uppercase tracking-[0.28em] text-emerald-50/45">Confidence</div>
+                        <div className="text-[11px] font-black uppercase tracking-[0.28em] text-emerald-50/45">확신도</div>
                         <div className="text-4xl font-black text-white">{verdict?.confidence ?? 64}%</div>
                     </div>
                 </div>
                 <div className="mt-10 grid w-full max-w-3xl grid-cols-2 gap-3 md:grid-cols-4">
                     {[
-                        { label: 'Bullish', value: verdict?.bullish ?? 0, color: 'text-emerald-100' },
-                        { label: 'Bearish', value: verdict?.bearish ?? 0, color: 'text-rose-200' },
-                        { label: 'Neutral', value: verdict?.neutral ?? 0, color: 'text-white' },
-                        { label: 'Horizon', value: verdict?.horizon || '1M', color: 'text-white' },
+                        { label: '강세', value: verdict?.bullish ?? 0, color: 'text-emerald-100' },
+                        { label: '약세', value: verdict?.bearish ?? 0, color: 'text-rose-200' },
+                        { label: '중립', value: verdict?.neutral ?? 0, color: 'text-white' },
+                        { label: '시계열', value: verdict?.horizon || '1M', color: 'text-white' },
                     ].map((stat) => (
                         <div key={stat.label} className="rounded-xl border border-white/15 bg-white/10 px-5 py-4 backdrop-blur">
                             <div className="text-[10px] font-black uppercase tracking-[0.25em] text-emerald-50/35">{stat.label}</div>
@@ -406,11 +406,11 @@ function ImpactPanel({ phase, run }: { phase: number; run: MiroFishRun }) {
             {phase >= 4 && (
                 <section className="space-y-3">
                     <div className="flex items-center justify-between px-1">
-                        <h2 className="text-sm font-black uppercase tracking-[0.18em] text-white/35">Analysts ({analysts.length})</h2>
+                        <h2 className="text-sm font-black uppercase tracking-[0.18em] text-white/35">애널리스트 ({analysts.length})</h2>
                         <div className="text-xs font-black uppercase tracking-[0.16em]">
-                            <span className="text-emerald-400">Bull {verdict?.bullish ?? 0}</span>
+                            <span className="text-emerald-400">강세 {verdict?.bullish ?? 0}</span>
                             <span className="mx-3 text-white/25">|</span>
-                            <span className="text-red-400">Bear {verdict?.bearish ?? 0}</span>
+                            <span className="text-red-400">약세 {verdict?.bearish ?? 0}</span>
                         </div>
                     </div>
                     <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
@@ -515,11 +515,11 @@ export default function AdminEndpointsPage() {
                     <div className="flex flex-wrap items-center justify-between gap-3">
                         <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-bold text-white/80 backdrop-blur">
                             <i className="fas fa-lock text-red-300" />
-                            Admin Only Research Console
+                            관리자 전용 리서치 콘솔
                         </div>
                         <div className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-bold ${apiState === 'fallback' ? 'border-amber-300/20 bg-amber-300/10 text-amber-200' : 'border-cyan-300/20 bg-cyan-300/10 text-cyan-200'}`}>
                             <i className="fas fa-satellite-dish" />
-                            {apiState === 'checking' ? 'Checking MiroFish' : apiState === 'running' ? 'MiroFish Running' : apiState === 'fallback' ? 'Fallback Mode' : 'MiroFish Ready'}
+                            {apiState === 'checking' ? 'MiroFish 점검 중' : apiState === 'running' ? '분석 실행 중' : apiState === 'fallback' ? '폴백 모드' : 'MiroFish 준비됨'}
                         </div>
                     </div>
 
@@ -531,7 +531,7 @@ export default function AdminEndpointsPage() {
                             </span>
                         </h1>
                         <p className="mt-5 max-w-2xl text-base font-semibold leading-7 text-slate-300 md:text-lg">
-                            Connects Brain signals, causal memory, analyst debate, and a CIO-style verdict through the admin MiroFish API.
+                            Brain 시그널 · 인과 메모리 · 5인 에이전트 토론 · CIO 판정을 관리자 MiroFish API 로 연결합니다.
                         </p>
                     </div>
 
@@ -550,7 +550,7 @@ export default function AdminEndpointsPage() {
                                 <i className="fas fa-search text-lg" />
                                 <input
                                     className="w-full bg-transparent text-base font-bold text-slate-900 outline-none placeholder:text-slate-400"
-                                    placeholder="Samsung Electronics, NVDA, BTC, FOMC..."
+                                    placeholder="삼성전자, NVDA, BTC, FOMC 등 분석 대상 입력"
                                     value={target}
                                     onChange={(event) => setTarget(event.target.value)}
                                 />
@@ -570,7 +570,7 @@ export default function AdminEndpointsPage() {
 
                     <div className="mt-5 flex flex-wrap items-center gap-3">
                         <div className="flex items-center gap-2 rounded-xl border border-white/15 bg-white/75 px-4 py-2 text-xs font-bold text-slate-500 backdrop-blur">
-                            <span>Agents</span>
+                            <span>에이전트</span>
                             <button type="button" className="grid h-8 w-8 place-items-center rounded-lg border border-slate-200 bg-white text-slate-700">-</button>
                             <span className="text-xl font-black text-violet-600">10</span>
                             <button type="button" className="grid h-8 w-8 place-items-center rounded-lg border border-slate-200 bg-white text-slate-700">+</button>
@@ -606,13 +606,13 @@ export default function AdminEndpointsPage() {
             <section className="rounded-xl border border-white/[0.07] bg-[#141416] p-5">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
-                        <h2 className="text-lg font-black text-white">Pipeline Status</h2>
+                        <h2 className="text-lg font-black text-white">파이프라인 상태</h2>
                         <p className="mt-1 text-sm text-gray-500">
-                            {status?.pipeline?.status || 'Status is loaded from /api/admin/mirofish/status when available, with local fallback for development.'}
+                            {status?.pipeline?.status || '/api/admin/mirofish/status 에서 상태를 가져옵니다. 응답 없을 때는 개발용 로컬 폴백을 사용합니다.'}
                         </p>
                     </div>
                     <span className={`rounded-full border px-3 py-1.5 text-xs font-black ${apiState === 'fallback' ? 'border-amber-500/20 bg-amber-500/10 text-amber-300' : 'border-emerald-500/20 bg-emerald-500/10 text-emerald-300'}`}>
-                        {apiState === 'fallback' ? 'Local Fallback' : 'API Backed'}
+                        {apiState === 'fallback' ? '로컬 폴백' : 'API 연결'}
                     </span>
                 </div>
 
@@ -622,11 +622,11 @@ export default function AdminEndpointsPage() {
                         return (
                             <div key={step} className="rounded-lg border border-white/[0.06] bg-black/20 p-3">
                                 <div className="flex items-center justify-between">
-                                    <span className="text-[11px] font-black uppercase tracking-[0.14em] text-gray-600">Step {index + 1}</span>
+                                    <span className="text-[11px] font-black uppercase tracking-[0.14em] text-gray-600">단계 {index + 1}</span>
                                     <span className={`h-2 w-2 rounded-full ${ready ? 'bg-emerald-400' : 'bg-amber-400/70'}`} />
                                 </div>
                                 <div className="mt-3 text-sm font-bold text-white">{step}</div>
-                                <div className="mt-1 text-xs text-gray-500">{ready ? 'ready' : 'planned'}</div>
+                                <div className="mt-1 text-xs text-gray-500">{ready ? '준비됨' : '대기 중'}</div>
                             </div>
                         );
                     })}
