@@ -1,4 +1,4 @@
-"""Admin-only MiroFish mock endpoints."""
+"""Admin-only MiroFish live endpoints."""
 
 from flask import Blueprint, Response, jsonify, request
 
@@ -14,6 +14,23 @@ admin_mirofish_bp = Blueprint('admin_mirofish', __name__)
 @admin_required
 def status():
     return jsonify(mirofish.get_status())
+
+
+@admin_mirofish_bp.route('/data-sources', methods=['GET'])
+@admin_required
+def data_sources():
+    return jsonify(mirofish.get_data_sources())
+
+
+@admin_mirofish_bp.route('/targets/resolve', methods=['GET'])
+@admin_required
+def resolve_target():
+    target = request.args.get('target', '')
+    try:
+        snapshot = mirofish.resolve_target_snapshot(target)
+    except ValueError as exc:
+        return jsonify({'error': str(exc)}), 400
+    return jsonify(snapshot)
 
 
 @admin_mirofish_bp.route('/runs', methods=['POST'])

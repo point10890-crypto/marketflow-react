@@ -59,6 +59,30 @@ def get_status() -> dict[str, Any]:
     }
 
 
+def get_data_sources() -> dict[str, Any]:
+    return live_data.summarize_data_sources()
+
+
+def resolve_target_snapshot(target: str) -> dict[str, Any]:
+    clean_target = _clean_target(target)
+    context = live_data.build_context(clean_target)
+    resolved = context.get('resolved') or {}
+    price = context.get('price') or {}
+    signals = context.get('signals') or {}
+    return {
+        'target': clean_target,
+        'source': 'live_file_artifacts',
+        'resolved': resolved,
+        'price': price,
+        'signals': signals,
+        'signal_count': sum(1 for item in signals.values() if item),
+        'briefing_count': len(context.get('briefings') or []),
+        'dart_available': bool(context.get('dart')),
+        'source_files': context.get('source_files', []),
+        'built_at': context.get('built_at'),
+    }
+
+
 def create_run(payload: dict[str, Any] | None) -> dict[str, Any]:
     payload = payload or {}
     target = _clean_target(payload.get('target'))

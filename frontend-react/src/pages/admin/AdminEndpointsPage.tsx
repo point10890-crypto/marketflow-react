@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
-import { MiroFishAnalyst, MiroFishLayer, MiroFishLog, MiroFishNode, MiroFishRun, MiroFishStatus, mirofishApi } from '@/lib/mirofishApi';
+import { MiroFishAnalyst, MiroFishLayer, MiroFishLog, MiroFishNode, MiroFishRun, MiroFishStatus, MiroFishTargetSnapshot, mirofishApi } from '@/lib/mirofishApi';
 
 const agentCounts = [3, 7, 10, 15];
+const defaultTarget = '삼성전자';
 
 const layerColors: Record<string, string> = {
     TARGET: 'bg-red-500',
@@ -11,94 +12,18 @@ const layerColors: Record<string, string> = {
     VERDICT: 'bg-emerald-400',
 };
 
-const fallbackRun: MiroFishRun = {
-    target: 'Samsung Electronics',
-    display_name: 'Samsung Electronics',
-    price: 216000,
-    change_pct: 0,
-    status: 'local_fallback',
-    mode: 'full',
-    brain: { score: 50, regime: 'neutral', crisis: 'Lv.2' },
-    pipeline: { graph_links: 39, similar_events: 1, agent_count: 10 },
-    layers: [
-        { label: '대상', count: 1 },
-        { label: '인과 메모리', count: 34 },
-        { label: 'AI 애널리스트', count: 7 },
-        { label: '예측', count: 7 },
-        { label: '판정', count: 1 },
-    ],
-    logs: [
-        { phase: 1, time: '06:52:26', text: '분석 시작', tone: 'text-blue-300' },
-        { phase: 1, time: '06:52:27', text: '대상 락온: Samsung Electronics', tone: 'text-emerald-300' },
-        { phase: 3, time: '07:09:32', text: 'GraphRAG 인과 시그널 39개 연결', tone: 'text-teal-400' },
-        { phase: 3, time: '07:09:32', text: 'Brain 점수 50.0, 체제 중립', tone: 'text-teal-400' },
-        { phase: 4, time: '07:09:42', text: '애널리스트 토론 완료: 강세 3 / 약세 0 / 중립 4', tone: 'text-violet-400' },
-        { phase: 5, time: '07:09:58', text: '최종 판정 합성 완료: BUY', tone: 'text-emerald-400' },
-    ],
-    analysts: [
-        { name: '김치', role: '반도체 애널리스트', verdict: 'NEUTRAL', confidence: 55, icon: 'fa-microscope' },
-        { name: '모건', role: '매크로 전략가', verdict: 'NEUTRAL', confidence: 65, icon: 'fa-chart-line' },
-        { name: '에미', role: 'AI 인프라 전문가', verdict: 'BULLISH', confidence: 60, icon: 'fa-globe-asia' },
-        { name: '박', role: '지정학 리스크 애널리스트', verdict: 'NEUTRAL', confidence: 70, icon: 'fa-bolt' },
-        { name: '송', role: '공급망 스페셜리스트', verdict: 'BULLISH', confidence: 68, icon: 'fa-building-columns' },
-        { name: '로빈', role: '퀀트 애널리스트', verdict: 'BULLISH', confidence: 65, icon: 'fa-calculator' },
-        { name: '강', role: '포트폴리오 매니저', verdict: 'NEUTRAL', confidence: 65, icon: 'fa-briefcase' },
-    ],
-    graph_nodes: [
-        { label: 'hbm', x: 50, y: 39 },
-        { label: 'robot_joint', x: 58, y: 37 },
-        { label: 'image_sensor', x: 43, y: 38 },
-        { label: 'sk_hynix', x: 39, y: 40 },
-        { label: 'kospi', x: 70, y: 48 },
-        { label: 'china_pmi', x: 65, y: 55 },
-        { label: 'global_pmi', x: 68, y: 58 },
-        { label: 'networking', x: 59, y: 51 },
-        { label: 'ai_memory', x: 48, y: 55 },
-        { label: 'dc_cooling', x: 35, y: 59 },
-    ],
-    prediction_nodes: [
-        { label: '에미 강세', x: 40, y: 65, verdict: 'bull' },
-        { label: '김 중립', x: 35, y: 70, verdict: 'neutral' },
-        { label: '모건 중립', x: 43, y: 76, verdict: 'neutral' },
-        { label: '박 중립', x: 56, y: 73, verdict: 'neutral' },
-        { label: '송 강세', x: 70, y: 65, verdict: 'bull' },
-        { label: '로빈 강세', x: 75, y: 66, verdict: 'bull' },
-        { label: '강 중립', x: 81, y: 75, verdict: 'neutral' },
-    ],
-    verdict: {
-        label: 'BUY',
-        confidence: 64,
-        bullish: 3,
-        bearish: 0,
-        neutral: 4,
-        horizon: '1M',
-        summary: '강세 3, 약세 0, 중립 4 — 매수 우위 합의.',
-    },
-};
-
-const pipelineCards = [
-    {
-        title: 'GraphRAG',
-        desc: '리서치 메모리에서 엔티티, 인과 관계, 시장 맥락을 자동 추출합니다.',
-        icon: 'fa-project-diagram',
-        color: 'text-cyan-300',
-        metric: 'EKG + LLM',
-    },
-    {
-        title: '에이전트 토론',
-        desc: '강세/약세/매크로/퀀트/리스크 5인 페르소나가 토론한 뒤 합의를 도출합니다.',
-        icon: 'fa-comments',
-        color: 'text-violet-300',
-        metric: '에이전트 10명',
-    },
-    {
-        title: 'CIO 리포트',
-        desc: 'ReACT 추론 트레이스, Brain 시그널, 에이전트 토론을 종합해 최종 판정을 내립니다.',
-        icon: 'fa-brain',
-        color: 'text-amber-300',
-        metric: '3-레이어 그래프',
-    },
-];
+function createEmptyRun(target = defaultTarget): MiroFishRun {
+    return {
+        target,
+        display_name: target,
+        status: 'idle',
+        layers: [],
+        logs: [],
+        analysts: [],
+        graph_nodes: [],
+        prediction_nodes: [],
+    };
+}
 
 const impactSteps = [
     { no: '01', ko: '대상 입력', en: 'TARGET', icon: 'fa-search' },
@@ -109,6 +34,22 @@ const impactSteps = [
 ];
 
 const runSteps = ['입력', 'Brain 13D', 'GraphRAG', '에이전트', '리포트'];
+const runStepEndpoints: EndpointKey[] = ['resolve', 'runDetail', 'graph', 'events', 'report'];
+type ApiState = 'checking' | 'ready' | 'error' | 'running';
+type EndpointKey = 'status' | 'dataSources' | 'resolve' | 'history' | 'createRun' | 'runDetail' | 'graph' | 'events' | 'report';
+type EndpointStatus = 'idle' | 'loading' | 'ok' | 'error';
+
+const endpointDefinitions: Array<{ key: EndpointKey; method: string; path: string; title: string; icon: string; color: string }> = [
+    { key: 'status', method: 'GET', path: '/api/admin/mirofish/status', title: 'Service Status', icon: 'fa-satellite-dish', color: 'text-cyan-300' },
+    { key: 'dataSources', method: 'GET', path: '/api/admin/mirofish/data-sources', title: 'Data Sources', icon: 'fa-database', color: 'text-teal-300' },
+    { key: 'resolve', method: 'GET', path: '/api/admin/mirofish/targets/resolve', title: 'Target Resolve', icon: 'fa-crosshairs', color: 'text-blue-300' },
+    { key: 'history', method: 'GET', path: '/api/admin/mirofish/runs', title: 'Run History', icon: 'fa-clock-rotate-left', color: 'text-slate-300' },
+    { key: 'createRun', method: 'POST', path: '/api/admin/mirofish/runs', title: 'Create Run', icon: 'fa-play', color: 'text-violet-300' },
+    { key: 'runDetail', method: 'GET', path: '/api/admin/mirofish/runs/{id}', title: 'Run Detail', icon: 'fa-file-code', color: 'text-indigo-300' },
+    { key: 'graph', method: 'GET', path: '/api/admin/mirofish/runs/{id}/graph', title: 'Graph Artifact', icon: 'fa-project-diagram', color: 'text-emerald-300' },
+    { key: 'events', method: 'GET', path: '/api/admin/mirofish/runs/{id}/events', title: 'Event Feed', icon: 'fa-stream', color: 'text-amber-300' },
+    { key: 'report', method: 'GET', path: '/api/admin/mirofish/runs/{id}/report', title: 'Report', icon: 'fa-scroll', color: 'text-rose-300' },
+];
 
 function clampCount(value: unknown, fallback: number) {
     const numberValue = Number(value);
@@ -122,8 +63,23 @@ function verdictTone(verdict?: string) {
     return 'border-amber-400 bg-amber-500/10 text-amber-500';
 }
 
+function endpointStatusTone(state: EndpointStatus) {
+    if (state === 'ok') return 'border-emerald-400/20 bg-emerald-400/10 text-emerald-300';
+    if (state === 'loading') return 'border-cyan-400/20 bg-cyan-400/10 text-cyan-300';
+    if (state === 'error') return 'border-rose-400/20 bg-rose-400/10 text-rose-300';
+    return 'border-white/10 bg-white/[0.04] text-gray-500';
+}
+
 function visibleLayers(run: MiroFishRun, phase: number): MiroFishLayer[] {
-    const base = run.layers?.length ? run.layers : fallbackRun.layers || [];
+    const base = run.layers?.length
+        ? run.layers
+        : [
+            { label: 'TARGET', count: run.target ? 1 : 0 },
+            { label: 'CAUSAL HISTORY', count: run.graph_nodes?.length || 0 },
+            { label: 'AI ANALYSTS', count: run.analysts?.length || 0 },
+            { label: 'PREDICTIONS', count: run.prediction_nodes?.length || 0 },
+            { label: 'VERDICT', count: run.verdict ? 1 : 0 },
+        ];
     return base.map((layer) => {
         const label = layer.label.toUpperCase();
         const count = phase < 3 && label !== 'TARGET'
@@ -138,7 +94,7 @@ function visibleLayers(run: MiroFishRun, phase: number): MiroFishLayer[] {
 }
 
 function visibleLogs(run: MiroFishRun, phase: number): MiroFishLog[] {
-    const logs = run.logs?.length ? run.logs : fallbackRun.logs || [];
+    const logs = run.logs?.length ? run.logs : [];
     return logs.filter((log) => (log.phase || 1) <= phase);
 }
 
@@ -206,11 +162,11 @@ function KnowledgeGraph({ phase, run }: { phase: number; run: MiroFishRun }) {
     const isPredictionReady = phase >= 4;
     const isVerdictReady = phase >= 5;
     const layers = visibleLayers(run, phase);
-    const graphNodes = run.graph_nodes?.length ? run.graph_nodes : fallbackRun.graph_nodes || [];
-    const analysts = run.analysts?.length ? run.analysts : fallbackRun.analysts || [];
+    const graphNodes = run.graph_nodes?.length ? run.graph_nodes : [];
+    const analysts = run.analysts?.length ? run.analysts : [];
     const analystNodes = analystPositions(analysts);
-    const predictionNodes = run.prediction_nodes?.length ? run.prediction_nodes : fallbackRun.prediction_nodes || [];
-    const verdict = run.verdict || fallbackRun.verdict;
+    const predictionNodes = run.prediction_nodes?.length ? run.prediction_nodes : [];
+    const verdict = run.verdict;
 
     return (
         <section className="relative min-h-[430px] overflow-hidden rounded-xl border border-white/25 bg-slate-50/90 p-5 text-slate-900">
@@ -287,7 +243,7 @@ function KnowledgeGraph({ phase, run }: { phase: number; run: MiroFishRun }) {
                     {isVerdictReady && (
                         <div className="absolute left-[58%] top-[92%] z-30 -translate-x-1/2 -translate-y-1/2 text-center">
                             <div className="mx-auto h-20 w-20 rounded-full border-4 border-emerald-400 bg-emerald-300/45 shadow-[0_0_0_10px_rgba(16,185,129,0.12),0_0_42px_rgba(16,185,129,0.38)]" />
-                            <div className="-mt-1 rounded border border-emerald-300 bg-white px-3 py-1 text-sm font-black text-emerald-600">{verdict?.label || 'BUY'}</div>
+                            <div className="-mt-1 rounded border border-emerald-300 bg-white px-3 py-1 text-sm font-black text-emerald-600">{verdict?.label || 'HOLD'}</div>
                         </div>
                     )}
                 </>
@@ -328,13 +284,14 @@ function FeedPanel({ phase, run }: { phase: number; run: MiroFishRun }) {
 }
 
 function SignalSummaryCard({ run }: { run: MiroFishRun }) {
-    const score = clampCount(run.brain?.score, 50);
+    const score = run.brain?.score;
+    const scoreValue = clampCount(score, 0);
     return (
         <section className="max-w-3xl rounded-xl border border-white/30 bg-white/90 p-4 text-slate-900 shadow-[0_18px_70px_rgba(124,58,237,0.16)]">
             <div className="flex items-center gap-5">
                 <div className="grid h-24 w-24 shrink-0 place-items-center rounded-full border-4 border-blue-200 bg-blue-50 text-center shadow-inner">
                     <div>
-                        <div className="text-2xl font-black text-blue-600">{score}</div>
+                        <div className="text-2xl font-black text-blue-600">{score === undefined ? '--' : scoreValue}</div>
                         <div className="text-[10px] font-bold text-slate-400">/100</div>
                     </div>
                 </div>
@@ -347,7 +304,7 @@ function SignalSummaryCard({ run }: { run: MiroFishRun }) {
                         <span className="text-slate-700">{run.brain?.crisis || 'Lv.2'}</span>
                     </div>
                     <div className="mt-5 h-2 rounded-full bg-slate-100">
-                        <div className="h-full rounded-full bg-gradient-to-r from-blue-400 via-violet-400 to-emerald-300" style={{ width: `${Math.min(100, Math.max(0, score))}%` }} />
+                        <div className="h-full rounded-full bg-gradient-to-r from-blue-400 via-violet-400 to-emerald-300" style={{ width: `${Math.min(100, Math.max(0, scoreValue))}%` }} />
                     </div>
                 </div>
             </div>
@@ -356,7 +313,7 @@ function SignalSummaryCard({ run }: { run: MiroFishRun }) {
 }
 
 function FinalVerdictPanel({ run }: { run: MiroFishRun }) {
-    const verdict = run.verdict || fallbackRun.verdict;
+    const verdict = run.verdict;
     return (
         <section className="relative overflow-hidden rounded-xl border border-emerald-200/20 bg-emerald-700 p-8 text-white shadow-[0_26px_90px_rgba(16,185,129,0.22)] md:p-12">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_36%,rgba(255,255,255,0.22),rgba(255,255,255,0)_24%),linear-gradient(135deg,rgba(6,95,70,0.9),rgba(5,150,105,0.95))]" />
@@ -365,8 +322,8 @@ function FinalVerdictPanel({ run }: { run: MiroFishRun }) {
                     <span>최종 판정</span>
                     <span className="h-px w-12 bg-emerald-100/30" />
                 </div>
-                <h2 className="text-[76px] font-black leading-none tracking-tight text-white md:text-[152px]">{verdict?.label || 'BUY'}</h2>
-                <p className="mt-7 text-base font-bold text-emerald-50/65 md:text-lg">{verdict?.summary || 'MiroFish 토론 완료.'}</p>
+                <h2 className="text-[76px] font-black leading-none tracking-tight text-white md:text-[152px]">{verdict?.label || 'HOLD'}</h2>
+                <p className="mt-7 text-base font-bold text-emerald-50/65 md:text-lg">{verdict?.summary || 'MiroFish 실데이터 판정이 도착했습니다.'}</p>
                 <div className="mt-10 grid h-36 w-36 place-items-center rounded-full border-[7px] border-white/90 bg-white/5 shadow-[0_0_60px_rgba(255,255,255,0.16)]">
                     <div>
                         <div className="text-[11px] font-black uppercase tracking-[0.28em] text-emerald-50/45">확신도</div>
@@ -392,8 +349,8 @@ function FinalVerdictPanel({ run }: { run: MiroFishRun }) {
 }
 
 function ImpactPanel({ phase, run }: { phase: number; run: MiroFishRun }) {
-    const analysts = run.analysts?.length ? run.analysts : fallbackRun.analysts || [];
-    const verdict = run.verdict || fallbackRun.verdict;
+    const analysts = run.analysts?.length ? run.analysts : [];
+    const verdict = run.verdict;
     return (
         <div className="space-y-4">
             <Stepper phase={phase} />
@@ -441,27 +398,53 @@ function ImpactPanel({ phase, run }: { phase: number; run: MiroFishRun }) {
 export default function AdminEndpointsPage() {
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [phase, setPhase] = useState(1);
-    const [target, setTarget] = useState('삼성전자');
+    const [target, setTarget] = useState(defaultTarget);
     const [agentCount, setAgentCount] = useState(10);
-    const [run, setRun] = useState<MiroFishRun>(fallbackRun);
+    const [run, setRun] = useState<MiroFishRun>(() => createEmptyRun());
     const [status, setStatus] = useState<MiroFishStatus | null>(null);
-    const [apiState, setApiState] = useState<'checking' | 'ready' | 'fallback' | 'running'>('checking');
+    const [targetSnapshot, setTargetSnapshot] = useState<MiroFishTargetSnapshot | null>(null);
+    const [recentRuns, setRecentRuns] = useState<MiroFishRun[]>([]);
+    const [dataSourceCount, setDataSourceCount] = useState(0);
+    const [endpointState, setEndpointState] = useState<Record<EndpointKey, EndpointStatus>>(() => Object.fromEntries(endpointDefinitions.map((item) => [item.key, 'idle'])) as Record<EndpointKey, EndpointStatus>);
+    const [apiState, setApiState] = useState<ApiState>('checking');
     const [errorText, setErrorText] = useState<string | null>(null);
+
+    function markEndpoint(key: EndpointKey, state: EndpointStatus) {
+        setEndpointState((current) => ({ ...current, [key]: state }));
+    }
 
     useEffect(() => {
         let alive = true;
-        mirofishApi.getStatus()
-            .then((data) => {
+        async function boot() {
+            markEndpoint('status', 'loading');
+            markEndpoint('history', 'loading');
+            markEndpoint('dataSources', 'loading');
+            try {
+                const [statusData, historyData, sourcesData] = await Promise.all([
+                    mirofishApi.getStatus(),
+                    mirofishApi.listRuns(),
+                    mirofishApi.getDataSources(),
+                ]);
                 if (!alive) return;
-                setStatus(data);
+                setStatus(statusData);
+                setRecentRuns(historyData.runs);
+                setDataSourceCount(Array.isArray(sourcesData?.files) ? sourcesData.files.filter((file: any) => file.exists).length : 0);
                 setApiState('ready');
-                setRun((current) => ({ ...current, brain: data.brain || current.brain, pipeline: data.pipeline || current.pipeline }));
-            })
-            .catch(() => {
+                markEndpoint('status', 'ok');
+                markEndpoint('history', 'ok');
+                markEndpoint('dataSources', 'ok');
+                setRun((current) => ({ ...current, brain: statusData.brain || current.brain, pipeline: statusData.pipeline || current.pipeline }));
+            } catch (error) {
                 if (!alive) return;
-                setApiState('fallback');
-                setStatus({ ready: false, source: 'api unavailable', brain: fallbackRun.brain, pipeline: fallbackRun.pipeline });
-            });
+                setApiState('error');
+                setStatus({ ready: false, source: 'api unavailable', pipeline: { status: 'unavailable' } });
+                markEndpoint('status', 'error');
+                markEndpoint('history', 'error');
+                markEndpoint('dataSources', 'error');
+                setErrorText(error instanceof Error ? error.message : 'MiroFish API 연결 실패');
+            }
+        }
+        boot();
         return () => {
             alive = false;
         };
@@ -480,29 +463,95 @@ export default function AdminEndpointsPage() {
         };
     }, [isAnalyzing, run.id]);
 
+    useEffect(() => {
+        const nextTarget = target.trim();
+        if (!nextTarget || apiState === 'running') return;
+        let alive = true;
+        markEndpoint('resolve', 'loading');
+        const timer = window.setTimeout(() => {
+            mirofishApi.resolveTarget(nextTarget)
+                .then((snapshot) => {
+                    if (!alive) return;
+                    setTargetSnapshot(snapshot);
+                    markEndpoint('resolve', 'ok');
+                })
+                .catch(() => {
+                    if (!alive) return;
+                    setTargetSnapshot(null);
+                    markEndpoint('resolve', 'error');
+                });
+        }, 450);
+        return () => {
+            alive = false;
+            window.clearTimeout(timer);
+        };
+    }, [target, apiState]);
+
     const brainSignals = useMemo(() => {
-        const brain = status?.brain || run.brain || fallbackRun.brain;
+        const brain = status?.brain || run.brain;
         return [
-            { label: 'BRAIN', value: String(brain?.score ?? 50), tone: 'text-violet-300' },
-            { label: 'REGIME', value: brain?.regime || 'neutral', tone: 'text-slate-200' },
-            { label: 'CRISIS', value: brain?.crisis || 'Lv.2', tone: 'text-amber-300' },
+            { label: 'BRAIN', value: brain?.score === undefined ? '--' : String(brain.score), tone: 'text-violet-300' },
+            { label: 'REGIME', value: brain?.regime || '--', tone: 'text-slate-200' },
+            { label: 'CRISIS', value: brain?.crisis || '--', tone: 'text-amber-300' },
         ];
     }, [run.brain, status]);
 
+    const endpointMetrics = useMemo<Record<EndpointKey, string>>(() => ({
+        status: status?.pipeline?.status || 'not loaded',
+        dataSources: `${dataSourceCount} files`,
+        resolve: targetSnapshot?.resolved?.symbol || targetSnapshot?.resolved?.asset_type || 'waiting',
+        history: `${recentRuns.length} runs`,
+        createRun: run.id ? String(run.status || 'created') : 'idle',
+        runDetail: run.id ? String(run.id).slice(0, 24) : '{id}',
+        graph: `${run.graph_artifact?.nodes?.length || 0} nodes / ${run.graph_artifact?.edges?.length || 0} edges`,
+        events: `${run.events?.length || 0} events`,
+        report: run.report?.markdown ? `${run.report.markdown.length} chars` : 'waiting',
+    }), [dataSourceCount, recentRuns.length, run, status, targetSnapshot]);
+
     async function handleStart() {
-        const nextTarget = target.trim() || fallbackRun.target;
+        const nextTarget = target.trim() || defaultTarget;
         setErrorText(null);
         setIsAnalyzing(true);
         setApiState('running');
         setRun({ target: nextTarget, display_name: nextTarget, status: 'running' });
+        markEndpoint('createRun', 'loading');
+        markEndpoint('runDetail', 'idle');
+        markEndpoint('graph', 'idle');
+        markEndpoint('events', 'idle');
+        markEndpoint('report', 'idle');
         try {
             const data = await mirofishApi.startRun({ target: nextTarget, agent_count: agentCount, mode: 'full' });
-            setRun({ ...data, target: data.target || nextTarget, display_name: data.display_name || data.target || nextTarget });
+            const baseRun = { ...data, target: data.target || nextTarget, display_name: data.display_name || data.target || nextTarget };
+            setRun(baseRun);
+            markEndpoint('createRun', 'ok');
+            markEndpoint('runDetail', 'loading');
+            markEndpoint('graph', 'loading');
+            markEndpoint('events', 'loading');
+            markEndpoint('report', 'loading');
+            const runId = String(baseRun.id || '');
+            if (!runId) throw new Error('MiroFish run id was not returned.');
+            const hydrated = await mirofishApi.hydrateRun(runId, baseRun);
+            setRun(hydrated);
+            markEndpoint('runDetail', 'ok');
+            markEndpoint('graph', 'ok');
+            markEndpoint('events', 'ok');
+            markEndpoint('report', 'ok');
+            mirofishApi.listRuns()
+                .then((data) => {
+                    setRecentRuns(data.runs);
+                    markEndpoint('history', 'ok');
+                })
+                .catch(() => markEndpoint('history', 'error'));
             setApiState('ready');
         } catch (error) {
             setIsAnalyzing(false);
             setRun((current) => ({ ...current, status: 'api_error' }));
-            setApiState('fallback');
+            setApiState('error');
+            markEndpoint('createRun', 'error');
+            markEndpoint('runDetail', 'error');
+            markEndpoint('graph', 'error');
+            markEndpoint('events', 'error');
+            markEndpoint('report', 'error');
             setErrorText(error instanceof Error ? error.message : 'MiroFish API unavailable. Live data was not loaded.');
         }
     }
@@ -519,9 +568,9 @@ export default function AdminEndpointsPage() {
                             <i className="fas fa-lock text-red-300" />
                             관리자 전용 리서치 콘솔
                         </div>
-                        <div className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-bold ${apiState === 'fallback' ? 'border-amber-300/20 bg-amber-300/10 text-amber-200' : 'border-cyan-300/20 bg-cyan-300/10 text-cyan-200'}`}>
+                        <div className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-bold ${apiState === 'error' ? 'border-rose-300/20 bg-rose-300/10 text-rose-200' : 'border-cyan-300/20 bg-cyan-300/10 text-cyan-200'}`}>
                             <i className="fas fa-satellite-dish" />
-                            {apiState === 'checking' ? 'MiroFish 점검 중' : apiState === 'running' ? '분석 실행 중' : apiState === 'fallback' ? '폴백 모드' : 'MiroFish 준비됨'}
+                            {apiState === 'checking' ? 'MiroFish 점검 중' : apiState === 'running' ? '분석 실행 중' : apiState === 'error' ? 'API 오류' : 'MiroFish 준비됨'}
                         </div>
                     </div>
 
@@ -570,6 +619,23 @@ export default function AdminEndpointsPage() {
 
                     {errorText && <div className="mt-3 max-w-4xl rounded-lg border border-amber-300/20 bg-amber-300/10 px-4 py-2 text-xs font-bold text-amber-100">{errorText}</div>}
 
+                    {targetSnapshot && (
+                        <div className="mt-3 flex max-w-4xl flex-wrap gap-2 text-xs font-bold">
+                            <span className="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1.5 text-cyan-100">
+                                {targetSnapshot.resolved?.display_name || targetSnapshot.target}
+                            </span>
+                            <span className="rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-slate-200">
+                                {targetSnapshot.resolved?.symbol || 'keyword'} · {targetSnapshot.resolved?.market || 'UNKNOWN'}
+                            </span>
+                            <span className="rounded-full border border-emerald-300/20 bg-emerald-300/10 px-3 py-1.5 text-emerald-100">
+                                source files {targetSnapshot.source_files?.length || 0}
+                            </span>
+                            <span className="rounded-full border border-violet-300/20 bg-violet-300/10 px-3 py-1.5 text-violet-100">
+                                signals {targetSnapshot.signal_count || 0}
+                            </span>
+                        </div>
+                    )}
+
                     <div className="mt-5 flex flex-wrap items-center gap-3">
                         <div className="flex items-center gap-2 rounded-xl border border-white/15 bg-white/75 px-4 py-2 text-xs font-bold text-slate-500 backdrop-blur">
                             <span>에이전트</span>
@@ -591,18 +657,27 @@ export default function AdminEndpointsPage() {
             {isAnalyzing && <ImpactPanel phase={phase} run={run} />}
 
             <div className="grid gap-3 lg:grid-cols-3">
-                {pipelineCards.map((card) => (
-                    <section key={card.title} className="rounded-xl border border-white/[0.07] bg-[#141416] p-5">
-                        <div className="flex items-start justify-between gap-3">
-                            <span className="grid h-10 w-10 place-items-center rounded-lg bg-white/[0.06]">
-                                <i className={`fas ${card.icon} ${card.color}`} />
-                            </span>
-                            <span className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[11px] font-bold text-gray-400">{card.metric}</span>
-                        </div>
-                        <h2 className="mt-4 text-lg font-black text-white">{card.title}</h2>
-                        <p className="mt-2 text-sm leading-6 text-gray-500">{card.desc}</p>
-                    </section>
-                ))}
+                {endpointDefinitions.map((endpoint) => {
+                    const state = endpointState[endpoint.key];
+                    return (
+                        <section key={endpoint.key} className="rounded-xl border border-white/[0.07] bg-[#141416] p-5">
+                            <div className="flex items-start justify-between gap-3">
+                                <span className="grid h-10 w-10 place-items-center rounded-lg bg-white/[0.06]">
+                                    <i className={`fas ${endpoint.icon} ${endpoint.color}`} />
+                                </span>
+                                <span className={`rounded-full border px-2.5 py-1 text-[11px] font-black ${endpointStatusTone(state)}`}>
+                                    {state.toUpperCase()}
+                                </span>
+                            </div>
+                            <h2 className="mt-4 text-lg font-black text-white">{endpoint.title}</h2>
+                            <div className="mt-2 flex items-center gap-2 font-mono text-[11px] font-bold text-gray-500">
+                                <span className="rounded bg-white/[0.05] px-1.5 py-0.5 text-cyan-200">{endpoint.method}</span>
+                                <span className="truncate">{endpoint.path}</span>
+                            </div>
+                            <p className="mt-3 truncate text-sm font-bold text-gray-400">{endpointMetrics[endpoint.key]}</p>
+                        </section>
+                    );
+                })}
             </div>
 
             <section className="rounded-xl border border-white/[0.07] bg-[#141416] p-5">
@@ -610,25 +685,26 @@ export default function AdminEndpointsPage() {
                     <div>
                         <h2 className="text-lg font-black text-white">파이프라인 상태</h2>
                         <p className="mt-1 text-sm text-gray-500">
-                            {status?.pipeline?.status || '/api/admin/mirofish/status 에서 상태를 가져옵니다. 응답 없을 때는 개발용 로컬 폴백을 사용합니다.'}
+                            {status?.pipeline?.status || '/api/admin/mirofish/status 응답 대기 중'}
                         </p>
                     </div>
-                    <span className={`rounded-full border px-3 py-1.5 text-xs font-black ${apiState === 'fallback' ? 'border-amber-500/20 bg-amber-500/10 text-amber-300' : 'border-emerald-500/20 bg-emerald-500/10 text-emerald-300'}`}>
-                        {apiState === 'fallback' ? '로컬 폴백' : 'API 연결'}
+                    <span className={`rounded-full border px-3 py-1.5 text-xs font-black ${apiState === 'error' ? 'border-rose-500/20 bg-rose-500/10 text-rose-300' : 'border-emerald-500/20 bg-emerald-500/10 text-emerald-300'}`}>
+                        {apiState === 'error' ? 'API 오류' : 'API 연결'}
                     </span>
                 </div>
 
                 <div className="mt-5 grid gap-2 md:grid-cols-5">
                     {runSteps.map((step, index) => {
-                        const ready = !isAnalyzing || index + 1 <= phase;
+                        const linkedState = endpointState[runStepEndpoints[index]];
+                        const ready = linkedState === 'ok' && (!isAnalyzing || index + 1 <= phase);
                         return (
                             <div key={step} className="rounded-lg border border-white/[0.06] bg-black/20 p-3">
                                 <div className="flex items-center justify-between">
                                     <span className="text-[11px] font-black uppercase tracking-[0.14em] text-gray-600">단계 {index + 1}</span>
-                                    <span className={`h-2 w-2 rounded-full ${ready ? 'bg-emerald-400' : 'bg-amber-400/70'}`} />
+                                    <span className={`h-2 w-2 rounded-full ${ready ? 'bg-emerald-400' : linkedState === 'error' ? 'bg-rose-400' : 'bg-amber-400/70'}`} />
                                 </div>
                                 <div className="mt-3 text-sm font-bold text-white">{step}</div>
-                                <div className="mt-1 text-xs text-gray-500">{ready ? '준비됨' : '대기 중'}</div>
+                                <div className="mt-1 text-xs text-gray-500">{ready ? '엔드포인트 확인' : linkedState === 'error' ? '오류' : '대기 중'}</div>
                             </div>
                         );
                     })}

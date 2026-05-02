@@ -31,10 +31,83 @@ export interface MiroFishNode {
     verdict?: string;
 }
 
+export interface MiroFishGraphNode {
+    id?: string;
+    label?: string;
+    type?: string;
+    layer?: string;
+    score?: number;
+    [key: string]: any;
+}
+
+export interface MiroFishGraphEdge {
+    source?: string;
+    target?: string;
+    label?: string;
+    weight?: number;
+    layer?: string;
+    [key: string]: any;
+}
+
+export interface MiroFishGraphArtifact {
+    run_id?: string;
+    target?: string;
+    source?: string;
+    schema_version?: number;
+    nodes: MiroFishGraphNode[];
+    edges: MiroFishGraphEdge[];
+    layers?: Array<Record<string, any>>;
+}
+
+export interface MiroFishReport {
+    run_id?: string;
+    format?: string;
+    markdown: string;
+}
+
+export interface MiroFishEvent {
+    ts?: string;
+    level?: string;
+    phase?: string;
+    message?: string;
+    payload?: Record<string, any>;
+}
+
+export interface MiroFishEventsResponse {
+    run_id?: string;
+    events: MiroFishEvent[];
+    next_index?: number;
+    total?: number;
+    has_more?: boolean;
+}
+
+export interface MiroFishTargetSnapshot {
+    target?: string;
+    source?: string;
+    resolved?: {
+        input?: string;
+        symbol?: string | null;
+        name?: string;
+        display_name?: string;
+        market?: string;
+        asset_type?: string;
+    };
+    price?: Record<string, any>;
+    signals?: Record<string, any>;
+    signal_count?: number;
+    briefing_count?: number;
+    dart_available?: boolean;
+    source_files?: string[];
+    built_at?: string;
+}
+
 export interface MiroFishRun {
     id?: string | number;
     target: string;
     display_name?: string;
+    symbol?: string | null;
+    market?: string | null;
+    source?: string;
     price?: number | string;
     change_pct?: number;
     mode?: string;
@@ -62,7 +135,22 @@ export interface MiroFishRun {
         graph_links?: number;
         similar_events?: number;
         agent_count?: number;
+        status?: string;
+        graph_method?: string;
+        debate_method?: string;
+        cio_method?: string;
     };
+    artifacts?: Record<string, string>;
+    data_context?: {
+        source_files?: string[];
+        signals?: Record<string, any>;
+        briefing_count?: number;
+        dart_available?: boolean;
+        built_at?: string;
+    };
+    graph_artifact?: MiroFishGraphArtifact;
+    report?: MiroFishReport;
+    events?: MiroFishEvent[];
 }
 
 export interface MiroFishStatus {
@@ -277,6 +365,113 @@ function normalizePredictionNodes(rawValue: unknown, analysts: MiroFishAnalyst[]
     });
 }
 
+const graphCoords = [
+    [35, 42], [42, 38], [50, 40], [58, 37], [66, 43], [72, 48],
+    [62, 54], [53, 57], [44, 55], [36, 59], [29, 50], [77, 56],
+    [69, 62], [48, 64], [40, 68], [57, 48], [73, 38], [31, 66],
+];
+
+function normalizeGraph(payload: any): MiroFishGraphArtifact {
+    const raw = asObject(payload);
+    return {
+        ...raw,
+        run_id: raw.run_id,
+        target: raw.target,
+        source: raw.source,
+        schema_version: asNumber(raw.schema_version, 1),
+        nodes: Array.isArray(raw.nodes) ? raw.nodes.map((node) => asObject(node) as MiroFishGraphNode) : [],
+        edges: Array.isArray(raw.edges) ? raw.edges.map((edge) => asObject(edge) as MiroFishGraphEdge) : [],
+        layers: Array.isArray(raw.layers) ? raw.layers.map((layer) => asObject(layer)) : [],
+    };
+}
+
+function nodesFromGraphArtifact(graph?: MiroFishGraphArtifact): MiroFishNode[] {
+    if (!graph?.nodes?.length) return [];
+    return graph.nodes
+        .filter((node) => {
+            const type = String(node.type || '').toLowerCase();
+            return !['target', 'brain', 'verdict', 'analyst'].includes(type);
+        })
+        .slice(0, 24)
+        .map((node, index) => {
+            const coord = graphCoords[index % graphCoords.length] ?? [50, 50];
+            const yOffset = index >= graphCoords.length ? 8 : 0;
+            return {
+                label: String(node.label || node.id || 'node'),
+                x: coord[0],
+                y: Math.min(74, coord[1] + yOffset),
+                kind: 'history',
+            };
+        });
+}
+
+function normalizeReport(payload: any): MiroFishReport {
+    const raw = asObject(payload);
+    return {
+        run_id: raw.run_id,
+        format: String(raw.format || 'markdown'),
+        markdown: String(raw.markdown || ''),
+    };
+}
+
+function normalizeEvent(rawValue: unknown): MiroFishEvent {
+    const raw = asObject(rawValue);
+    return {
+        ts: raw.ts ? String(raw.ts) : undefined,
+        level: raw.level ? String(raw.level) : undefined,
+        phase: raw.phase ? String(raw.phase) : undefined,
+        message: raw.message ? String(raw.message) : undefined,
+        payload: asObject(raw.payload),
+    };
+}
+
+function normalizeEvents(payload: any): MiroFishEventsResponse {
+    const raw = asObject(payload);
+    return {
+        run_id: raw.run_id,
+        events: Array.isArray(raw.events) ? raw.events.map(normalizeEvent) : [],
+        next_index: asNumber(raw.next_index, 0),
+        total: asNumber(raw.total, 0),
+        has_more: Boolean(raw.has_more),
+    };
+}
+
+function timeFromEvent(event: MiroFishEvent): string {
+    const payloadTime = event.payload?.time;
+    if (payloadTime) return String(payloadTime);
+    if (!event.ts) return 'live';
+    const parsed = new Date(event.ts);
+    return Number.isNaN(parsed.getTime()) ? String(event.ts) : parsed.toLocaleTimeString('ko-KR', { hour12: false });
+}
+
+function logFromEvent(event: MiroFishEvent, index: number): MiroFishLog {
+    const phase = normalizePhase(event.phase, Math.min(5, index + 1));
+    return {
+        phase,
+        time: timeFromEvent(event),
+        text: String(event.payload?.text || event.message || 'MiroFish event'),
+        tone: toneByPhase[phase] || 'text-blue-300',
+    };
+}
+
+export function attachMiroFishArtifacts(
+    run: MiroFishRun,
+    graph?: MiroFishGraphArtifact,
+    report?: MiroFishReport,
+    events?: MiroFishEventsResponse,
+): MiroFishRun {
+    const graphNodes = nodesFromGraphArtifact(graph);
+    const eventLogs = events?.events?.length ? events.events.map(logFromEvent) : undefined;
+    return {
+        ...run,
+        graph_artifact: graph || run.graph_artifact,
+        report: report || run.report,
+        events: events?.events || run.events,
+        graph_nodes: graphNodes.length ? graphNodes : run.graph_nodes,
+        logs: eventLogs?.length ? eventLogs : run.logs,
+    };
+}
+
 function normalizeStatus(payload: any): MiroFishStatus {
     const raw = asObject(payload);
     const limits = asObject(raw.limits);
@@ -324,12 +519,28 @@ function unwrapRun(payload: any, target: string): MiroFishRun {
 
 export const mirofishApi = {
     getStatus: async () => normalizeStatus(await fetchAuthAPI<any>('/api/admin/mirofish/status')),
+    getDataSources: async () => fetchAuthAPI<any>('/api/admin/mirofish/data-sources'),
+    resolveTarget: async (target: string) => fetchAuthAPI<MiroFishTargetSnapshot>(`/api/admin/mirofish/targets/resolve?target=${encodeURIComponent(target)}`),
     listRuns: async () => {
         const payload = await fetchAuthAPI<any>('/api/admin/mirofish/runs');
         const runs = Array.isArray(payload?.runs) ? payload.runs.map((run: unknown) => unwrapRun(run, '')) : [];
         return { runs };
     },
     getRun: async (runId: string) => unwrapRun(await fetchAuthAPI<any>(`/api/admin/mirofish/runs/${runId}`), ''),
+    getGraph: async (runId: string) => normalizeGraph(await fetchAuthAPI<any>(`/api/admin/mirofish/runs/${runId}/graph`)),
+    getReport: async (runId: string) => normalizeReport(await fetchAuthAPI<any>(`/api/admin/mirofish/runs/${runId}/report`)),
+    getEvents: async (runId: string, since = 0, limit = 200) => normalizeEvents(
+        await fetchAuthAPI<any>(`/api/admin/mirofish/runs/${runId}/events?since=${since}&limit=${limit}`),
+    ),
+    hydrateRun: async (runId: string, baseRun?: MiroFishRun) => {
+        const [detail, graph, report, events] = await Promise.all([
+            baseRun ? Promise.resolve(baseRun) : mirofishApi.getRun(runId),
+            mirofishApi.getGraph(runId),
+            mirofishApi.getReport(runId),
+            mirofishApi.getEvents(runId),
+        ]);
+        return attachMiroFishArtifacts(detail, graph, report, events);
+    },
     startRun: async (request: StartMiroFishRunRequest) => {
         const payload = await postAuthAPI<any>('/api/admin/mirofish/runs', request);
         return unwrapRun(payload, request.target);
