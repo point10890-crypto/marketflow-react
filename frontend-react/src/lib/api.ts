@@ -802,7 +802,7 @@ function _handle401(status: number) {
     void status;
 }
 
-async function _authFetch(url: string, options: RequestInit): Promise<Response> {
+async function _authFetch(url: string, options: RequestInit, timeoutMs: number = 15000): Promise<Response> {
     // Auto-inject auth token if not already present
     const headers = new Headers(options.headers as HeadersInit);
     if (!headers.has('Authorization')) {
@@ -810,7 +810,7 @@ async function _authFetch(url: string, options: RequestInit): Promise<Response> 
         if (token) headers.set('Authorization', `Bearer ${token}`);
     }
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000);
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
     try {
         const response = await fetch(url, { ...options, headers, signal: controller.signal });
         clearTimeout(timeoutId);
@@ -847,12 +847,12 @@ export async function putAuthAPI<T>(endpoint: string, body?: any, apiToken?: str
     return response.json();
 }
 
-export async function postAuthAPI<T>(endpoint: string, body?: any, apiToken?: string): Promise<T> {
+export async function postAuthAPI<T>(endpoint: string, body?: any, apiToken?: string, timeoutMs?: number): Promise<T> {
     const response = await _authFetch(`${API_BASE}${endpoint}`, {
         method: 'POST',
         headers: withToken({ 'Content-Type': 'application/json' }, apiToken),
         body: body ? JSON.stringify(body) : undefined,
-    });
+    }, timeoutMs ?? 15000);
     return response.json();
 }
 

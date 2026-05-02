@@ -542,7 +542,9 @@ export const mirofishApi = {
         return attachMiroFishArtifacts(detail, graph, report, events);
     },
     startRun: async (request: StartMiroFishRunRequest) => {
-        const payload = await postAuthAPI<any>('/api/admin/mirofish/runs', request);
+        // LLM 모드 create_run 은 백엔드에서 60-120초 소요 (Gemini 호출 + 파이프라인).
+        // fast/rule 모드는 3초 내 완료. 양쪽 다 안전하게 180초 timeout.
+        const payload = await postAuthAPI<any>('/api/admin/mirofish/runs', request, undefined, 180000);
         return unwrapRun(payload, request.target);
     },
 };
