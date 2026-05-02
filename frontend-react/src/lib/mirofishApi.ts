@@ -153,9 +153,9 @@ function normalizeBrain(rawValue: unknown): MiroFishRun['brain'] {
 function normalizePipeline(rawValue: unknown, statusValue?: unknown): MiroFishStatus['pipeline'] {
     const raw = asObject(rawValue);
     return {
-        graph_links: asNumber(raw.graph_links ?? raw.links, 39),
-        similar_events: asNumber(raw.similar_events ?? raw.events, 1),
-        agent_count: asNumber(raw.agent_count ?? raw.max_agent_count, 10),
+        graph_links: asNumber(raw.graph_links ?? raw.links, 0),
+        similar_events: asNumber(raw.similar_events ?? raw.events, 0),
+        agent_count: asNumber(raw.agent_count ?? raw.max_agent_count, 0),
         status: String(raw.status ?? statusValue ?? 'ready'),
     };
 }
@@ -217,14 +217,14 @@ function normalizeNodes(rawValue: unknown): MiroFishNode[] | undefined {
 
 function normalizeVerdict(rawValue: unknown, analysts: MiroFishAnalyst[]): MiroFishRun['verdict'] {
     const raw = asObject(rawValue);
-    const label = String(raw.label ?? raw.action ?? 'BUY').toUpperCase() as MiroFishVerdict;
+    const label = String(raw.label ?? raw.action ?? 'HOLD').toUpperCase() as MiroFishVerdict;
     const bullish = raw.bullish ?? analysts.filter((analyst) => String(analyst.verdict).includes('BULL')).length;
     const bearish = raw.bearish ?? analysts.filter((analyst) => String(analyst.verdict).includes('BEAR')).length;
     const neutral = raw.neutral ?? analysts.filter((analyst) => String(analyst.verdict).includes('NEUT') || analyst.verdict === 'HOLD').length;
 
     return {
         label,
-        confidence: asPercent(raw.confidence ?? raw.confidence_pct, 64),
+        confidence: asPercent(raw.confidence ?? raw.confidence_pct, 50),
         bullish: asNumber(bullish, 3),
         bearish: asNumber(bearish, 0),
         neutral: asNumber(neutral, 4),
@@ -233,7 +233,13 @@ function normalizeVerdict(rawValue: unknown, analysts: MiroFishAnalyst[]): MiroF
     };
 }
 
-function normalizeLayers(rawValue: unknown, analysts: MiroFishAnalyst[], verdict?: MiroFishRun['verdict']): MiroFishLayer[] {
+function normalizeLayers(
+    rawValue: unknown,
+    analysts: MiroFishAnalyst[],
+    verdict?: MiroFishRun['verdict'],
+    graphNodeCount = 0,
+    predictionNodeCount = 0,
+): MiroFishLayer[] {
     if (Array.isArray(rawValue) && rawValue.length > 0) {
         return rawValue.map((layer) => {
             const raw = asObject(layer);
@@ -247,9 +253,9 @@ function normalizeLayers(rawValue: unknown, analysts: MiroFishAnalyst[], verdict
 
     return [
         { label: 'TARGET', count: 1 },
-        { label: 'CAUSAL HISTORY', count: 34 },
-        { label: 'AI ANALYSTS', count: analysts.length || 7 },
-        { label: 'PREDICTIONS', count: analysts.length || 7 },
+        { label: 'CAUSAL HISTORY', count: graphNodeCount },
+        { label: 'AI ANALYSTS', count: analysts.length },
+        { label: 'PREDICTIONS', count: predictionNodeCount },
         { label: 'VERDICT', count: verdict ? 1 : 0 },
     ];
 }
@@ -296,18 +302,20 @@ function unwrapRun(payload: any, target: string): MiroFishRun {
     const analysts = normalizeAnalysts(run?.analysts);
     const verdict = normalizeVerdict(run?.verdict, analysts);
     const pipeline = normalizePipeline(run?.pipeline, run?.status);
+    const graphNodes = normalizeNodes(run?.graph_nodes);
+    const predictionNodes = normalizePredictionNodes(run?.prediction_nodes, analysts);
 
     return {
         ...run,
         target: String(normalizedTarget),
         display_name: String(run?.display_name ?? run?.name ?? run?.target_name ?? normalizedTarget),
-        price: run?.price ?? run?.current_price ?? 216000,
+        price: run?.price ?? run?.current_price,
         change_pct: asNumber(run?.change_pct ?? run?.change_percent, 0),
-        layers: normalizeLayers(run?.layers, analysts, verdict),
+        layers: normalizeLayers(run?.layers, analysts, verdict, graphNodes?.length ?? 0, predictionNodes?.length ?? 0),
         logs: normalizeLogs(run?.logs),
         analysts,
-        graph_nodes: normalizeNodes(run?.graph_nodes),
-        prediction_nodes: normalizePredictionNodes(run?.prediction_nodes, analysts),
+        graph_nodes: graphNodes,
+        prediction_nodes: predictionNodes,
         verdict,
         brain: normalizeBrain(run?.brain ?? run?.brain_summary),
         pipeline,

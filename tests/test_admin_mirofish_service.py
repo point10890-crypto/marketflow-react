@@ -11,10 +11,13 @@ def test_mirofish_run_writes_readable_artifacts(tmp_path, monkeypatch):
     })
 
     assert run['id'].startswith('mf_samsung-electronics_')
-    assert run['target'] == 'Samsung Electronics'
+    assert run['display_name']
+    assert run['symbol'] == '005930'
     assert run['status'] == 'completed'
-    assert run['verdict']['action'] == 'BUY'
+    assert run['source'] == 'live_file_artifacts'
+    assert run['verdict']['action'] in ('BUY', 'HOLD', 'SELL')
     assert len(run['analysts']) == 7
+    assert run['data_context']['source_files']
 
     saved_run = store.read_run(run['id'])
     graph = store.get_graph(run['id'])
@@ -24,10 +27,11 @@ def test_mirofish_run_writes_readable_artifacts(tmp_path, monkeypatch):
     assert saved_run['id'] == run['id']
     assert graph is not None
     assert graph['run_id'] == run['id']
+    assert graph['source'] == 'live_file_artifacts'
     assert graph['nodes']
     assert report is not None
     assert report['format'] == 'markdown'
-    assert 'Samsung Electronics' in report['markdown']
+    assert run['display_name'] in report['markdown']
 
 
 def test_mirofish_rejects_path_traversal_ids(tmp_path, monkeypatch):

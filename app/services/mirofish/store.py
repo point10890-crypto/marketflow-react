@@ -1,4 +1,4 @@
-"""File-backed deterministic mock runs for the admin MiroFish MVP."""
+"""File-backed live MiroFish runs for the admin console."""
 
 from __future__ import annotations
 
@@ -6,43 +6,56 @@ import hashlib
 import json
 import os
 import re
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from typing import Any
 
+from app.services.mirofish import agent_debate, cio_react, graphrag_extractor, live_data
 from app.utils.atomic_json import write_json_atomic
 
 
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 RUNS_ROOT = os.path.join(REPO_ROOT, 'data', 'admin_mirofish', 'runs')
-MAX_AGENT_COUNT = 13
+MAX_AGENT_COUNT = 15
 
 
 PIPELINE_PHASES = [
     {'id': 'intake', 'label': 'Target Intake', 'status': 'ready'},
     {'id': 'brain_snapshot', 'label': 'Brain 13D Snapshot', 'status': 'ready'},
-    {'id': 'analyst_mesh', 'label': 'Analyst Mesh', 'status': 'ready'},
-    {'id': 'graph_build', 'label': 'Graph Build', 'status': 'ready'},
-    {'id': 'verdict', 'label': 'Verdict Synthesis', 'status': 'ready'},
+    {'id': 'graph_build', 'label': 'GraphRAG Build', 'status': 'ready'},
+    {'id': 'analyst_mesh', 'label': 'Agent Debate', 'status': 'ready'},
+    {'id': 'verdict', 'label': 'CIO Verdict', 'status': 'ready'},
     {'id': 'report', 'label': 'Markdown Report', 'status': 'ready'},
 ]
 
 
 def get_status() -> dict[str, Any]:
     os.makedirs(RUNS_ROOT, exist_ok=True)
+    brain = _brain_summary('MiroFish')
+    ekg = graphrag_extractor.get_ekg_stats()
     return {
         'service': 'admin-mirofish',
         'ready': True,
-        'mode': 'deterministic_mock',
+        'mode': 'live_file_artifacts',
+        'source': 'MarketFlow scheduler artifacts',
         'storage': {
             'type': 'filesystem',
             'path': os.path.relpath(RUNS_ROOT, REPO_ROOT).replace('\\', '/'),
         },
-        'brain_summary': _brain_summary('MiroFish'),
+        'brain_summary': brain,
+        'brain': _frontend_brain(brain),
+        'pipeline': {
+            'status': 'ready',
+            'graph_links': ekg.get('total_relations', 0),
+            'similar_events': max(0, min(99, ekg.get('total_entities', 0))),
+            'agent_count': MAX_AGENT_COUNT,
+        },
         'pipeline_phases': PIPELINE_PHASES,
+        'data_sources': live_data.summarize_data_sources(),
         'limits': {
             'max_agent_count': MAX_AGENT_COUNT,
             'external_llm_required': False,
         },
+        'updated_at': datetime.now(timezone.utc).isoformat(),
     }
 
 
@@ -58,11 +71,12 @@ def create_run(payload: dict[str, Any] | None) -> dict[str, Any]:
 
     run = _build_run(run_id, target, agent_count, mode)
     graph = _build_graph(run)
-    report = _build_report(run)
+    report = _build_report(run, graph)
 
-    write_json_atomic(os.path.join(run_dir, 'run.json'), run, sort_keys=True)
-    write_json_atomic(os.path.join(run_dir, 'graph.json'), graph, sort_keys=True)
+    write_json_atomic(os.path.join(run_dir, 'run.json'), run, sort_keys=False)
+    write_json_atomic(os.path.join(run_dir, 'graph.json'), graph, sort_keys=False)
     _write_text_atomic(os.path.join(run_dir, 'report.md'), report)
+    _write_events(run_id, run.get('logs', []))
     return run
 
 
@@ -72,12 +86,15 @@ def list_runs(limit: int = 20) -> list[dict[str, Any]]:
 
     runs: list[dict[str, Any]] = []
     for name in os.listdir(RUNS_ROOT):
-        run_file = os.path.join(RUNS_ROOT, name, 'run.json')
+        try:
+            run_file = os.path.join(_run_dir(name), 'run.json')
+        except ValueError:
+            continue
         if not os.path.isfile(run_file):
             continue
         try:
             run = _read_json(run_file)
-        except (OSError, json.JSONDecodeError):
+        except (OSError, json.JSONDecodeError, ValueError):
             continue
         runs.append(_summary(run))
 
@@ -108,156 +125,169 @@ def get_report(run_id: str) -> dict[str, Any] | None:
         return None
     with open(path, 'r', encoding='utf-8') as f:
         markdown = f.read()
-    return {
-        'run_id': safe_id,
-        'format': 'markdown',
-        'markdown': markdown,
-    }
+    return {'run_id': safe_id, 'format': 'markdown', 'markdown': markdown}
 
 
 def _build_run(run_id: str, target: str, agent_count: int, mode: str) -> dict[str, Any]:
-    seed = _seed(target, agent_count, mode)
-    created_at = _deterministic_timestamp(seed)
-    analysts = _analysts(agent_count)
-    completed = len(PIPELINE_PHASES)
+    created_at = datetime.now(timezone.utc).isoformat()
+    context = live_data.build_context(target)
+    resolved = context['resolved']
+    price = context.get('price') or {}
+    use_llm = _use_llm(mode)
+
+    brain = _brain_summary(resolved.get('display_name') or target)
+    extracted = graphrag_extractor.extract_graph(context.get('corpus', ''), use_llm=use_llm)
+    merge_stats = graphrag_extractor.merge_into_ekg(extracted)
+    debate = agent_debate.run_debate(resolved.get('display_name') or target, brain, rounds=2, use_llm=use_llm)
+    cio = cio_react.run_cio(resolved.get('display_name') or target, brain, debate, use_llm=use_llm)
+
+    analysts = _analysts_from_debate(debate, agent_count, brain)
+    verdict = _verdict_from_cio(cio, debate, analysts)
+    graph_nodes = _graph_nodes_from_extraction(extracted, resolved)
+    prediction_nodes = _prediction_nodes(analysts)
+    layers = [
+        {'label': 'TARGET', 'count': 1, 'color': 'bg-red-500'},
+        {'label': 'CAUSAL HISTORY', 'count': len(graph_nodes), 'color': 'bg-blue-500'},
+        {'label': 'AI ANALYSTS', 'count': len(analysts), 'color': 'bg-violet-500'},
+        {'label': 'PREDICTIONS', 'count': len(prediction_nodes), 'color': 'bg-orange-400'},
+        {'label': 'VERDICT', 'count': 1, 'color': 'bg-emerald-400'},
+    ]
+
+    final_target = resolved.get('display_name') or target
+    logs = _logs(final_target, context, extracted, merge_stats, debate, cio, verdict)
+    pipeline = {
+        'status': 'completed',
+        'graph_links': merge_stats.get('total_relations', len(extracted.get('relations', []))),
+        'similar_events': len(context.get('briefings') or []),
+        'agent_count': len(analysts),
+        'graph_method': extracted.get('method'),
+        'debate_method': debate.get('method'),
+        'cio_method': cio.get('method'),
+    }
+
     return {
         'id': run_id,
-        'target': target,
+        'target': final_target,
+        'display_name': final_target,
+        'symbol': resolved.get('symbol'),
+        'market': resolved.get('market'),
         'mode': mode,
+        'source': 'live_file_artifacts',
         'status': 'completed',
         'created_at': created_at,
-        'completed_at': created_at,
-        'deterministic': True,
-        'seed': seed[:16],
-        'brain_summary': _brain_summary(target),
-        'pipeline_phases': [
-            {**phase, 'status': 'completed', 'progress': 1.0}
-            for phase in PIPELINE_PHASES
-        ],
-        'progress': {
-            'completed_phases': completed,
-            'total_phases': completed,
-            'percent': 100,
-        },
+        'completed_at': datetime.now(timezone.utc).isoformat(),
+        'deterministic': False,
+        'price': price.get('price'),
+        'change_pct': price.get('change_pct', 0),
+        'price_snapshot': price,
+        'brain_summary': brain,
+        'brain': _frontend_brain(brain),
+        'graph_extraction': extracted,
+        'graph_merge': merge_stats,
+        'debate': debate,
+        'cio': cio,
+        'pipeline': pipeline,
+        'pipeline_phases': [{**phase, 'status': 'completed', 'progress': 1.0} for phase in PIPELINE_PHASES],
+        'progress': {'completed_phases': len(PIPELINE_PHASES), 'total_phases': len(PIPELINE_PHASES), 'percent': 100},
+        'layers': layers,
+        'logs': logs,
         'analysts': analysts,
-        'verdict': {
-            'action': 'BUY',
-            'confidence': 0.64,
-            'confidence_label': '64%',
-            'risk': 'moderate',
-            'time_horizon': 'swing',
-            'summary': 'BUY 64%: mock consensus favors accumulation while keeping risk checks active.',
+        'graph_nodes': graph_nodes,
+        'prediction_nodes': prediction_nodes,
+        'verdict': verdict,
+        'data_context': {
+            'source_files': context.get('source_files', []),
+            'signals': context.get('signals', {}),
+            'briefing_count': len(context.get('briefings') or []),
+            'dart_available': bool(context.get('dart')),
+            'built_at': context.get('built_at'),
         },
-        'logs': _logs(target, analysts),
         'artifacts': {
             'run': f'/api/admin/mirofish/runs/{run_id}',
             'graph': f'/api/admin/mirofish/runs/{run_id}/graph',
             'report': f'/api/admin/mirofish/runs/{run_id}/report',
+            'events': f'/api/admin/mirofish/runs/{run_id}/events',
         },
     }
 
 
 def _build_graph(run: dict[str, Any]) -> dict[str, Any]:
-    """3-Layer Knowledge Graph: Blue(EKG) / Red(LLM 추론) / Gold(최종 verdict).
-
-    Layer scheme (MD 명세):
-    - Blue (existing_ekg): 기존 사전 지식 — Brain 13D snapshot, target identity, signal categories
-    - Red (llm_inferred): 본 run 에서 LLM(또는 mock)이 추론한 새 인과 관계 — analyst stances
-    - Gold (verdict): 수렴된 최종 결론 — BUY/HOLD/SELL 판정 노드
-    """
     target = run['target']
     run_id = run['id']
     brain = run.get('brain_summary', {})
-    verdict = run.get('verdict', {})
-    verdict_action = verdict.get('action', 'HOLD')
-    verdict_conf = verdict.get('confidence', 0.5)
+    extracted = run.get('graph_extraction') or {}
+    verdict = run.get('verdict') or {}
 
     layers = [
-        {'id': 'blue', 'label': 'Existing Knowledge (EKG)', 'color': '#3b82f6',
-         'order': 1, 'description': '사전 지식 — Brain 13D + target identity'},
-        {'id': 'red', 'label': 'LLM-Inferred Causal Chains', 'color': '#ef4444',
-         'order': 2, 'description': '본 run 에서 추론한 새 관계'},
-        {'id': 'gold', 'label': 'Final Verdict Convergence', 'color': '#f59e0b',
-         'order': 3, 'description': '수렴된 최종 결론'},
+        {'id': 'blue', 'label': 'Existing Knowledge (EKG + Brain)', 'color': '#3b82f6', 'order': 1},
+        {'id': 'red', 'label': 'Run-Inferred Causal Chains', 'color': '#ef4444', 'order': 2},
+        {'id': 'gold', 'label': 'Final Verdict Convergence', 'color': '#f59e0b', 'order': 3},
+    ]
+    nodes: list[dict[str, Any]] = [
+        {'id': 'target', 'layer': 'blue', 'label': target, 'type': 'target', 'score': 1.0},
+        {'id': 'brain13d', 'layer': 'blue', 'label': 'Brain 13D', 'type': 'brain', 'score': brain.get('alignment_score', 0)},
+    ]
+    edges: list[dict[str, Any]] = [
+        {'source': 'target', 'target': 'brain13d', 'weight': 0.9, 'label': 'framed_by', 'layer': 'blue'},
     ]
 
-    nodes: list[dict[str, Any]] = []
-    edges: list[dict[str, Any]] = []
-
-    # ─── Blue Layer (EKG) ─────────────────────────────────
-    nodes.append({
-        'id': 'target', 'layer': 'blue', 'label': target,
-        'type': 'target', 'score': 1.0,
-    })
-    nodes.append({
-        'id': 'brain13d', 'layer': 'blue', 'label': 'Brain 13D',
-        'type': 'brain', 'score': brain.get('alignment_score', 0.5),
-    })
-    # 13개 dimension 각각 노드 — score 있는 것만 (clutter 방지: top 6)
     dim_scores = brain.get('dimension_scores', {}) if isinstance(brain.get('dimension_scores'), dict) else {}
-    all_valid_dims = [(k, v) for k, v in dim_scores.items()
-                      if isinstance(v, dict) and v.get('score') is not None]
-    all_valid_dims.sort(key=lambda x: x[1].get('confidence', 0), reverse=True)
-    visible_dims = all_valid_dims[:6]
+    visible_dims = sorted(
+        ((k, v) for k, v in dim_scores.items() if isinstance(v, dict) and v.get('score') is not None),
+        key=lambda item: item[1].get('confidence', 0),
+        reverse=True,
+    )[:6]
     for dim_name, dim_data in visible_dims:
-        score_norm = (dim_data.get('score') or 0) / 100.0
+        dim_id = f'dim_{_slug(dim_name)}'
         nodes.append({
-            'id': f'dim_{dim_name}', 'layer': 'blue',
+            'id': dim_id,
+            'layer': 'blue',
             'label': dim_name.replace('_', ' ').title(),
-            'type': 'dimension', 'score': round(score_norm, 2),
-            'evidence': dim_data.get('evidence', '')[:80],
+            'type': 'dimension',
+            'score': round((dim_data.get('score') or 0) / 100, 3),
+            'evidence': str(dim_data.get('evidence', ''))[:160],
         })
-        edges.append({
-            'source': 'brain13d', 'target': f'dim_{dim_name}',
-            'weight': dim_data.get('confidence', 0.5),
-            'label': 'measures', 'layer': 'blue',
-        })
-    edges.append({
-        'source': 'target', 'target': 'brain13d',
-        'weight': 0.9, 'label': 'framed_by', 'layer': 'blue',
-    })
+        edges.append({'source': 'brain13d', 'target': dim_id, 'weight': dim_data.get('confidence', 0.5), 'label': 'measures', 'layer': 'blue'})
 
-    # ─── Red Layer (LLM-Inferred — analyst views as causal chains) ───
-    for analyst in run.get('analysts', [])[:6]:
-        analyst_id = analyst['id']
+    for entity in (extracted.get('entities') or [])[:30]:
+        ent_id = f"ent_{_slug(entity.get('id') or entity.get('name') or 'node')}"
         nodes.append({
-            'id': analyst_id, 'layer': 'red',
-            'label': analyst['name'],
-            'type': 'analyst', 'score': analyst.get('confidence', 0.5),
-            'stance': analyst.get('stance', 'NEUTRAL'),
+            'id': ent_id,
+            'layer': 'red',
+            'label': entity.get('name') or entity.get('id'),
+            'type': entity.get('type', 'entity'),
+            'score': 0.6,
         })
-        # 각 analyst → 가장 관련된 dimension 으로 edge (visible_dims 만 참조)
-        if visible_dims:
-            target_dim = visible_dims[hash(analyst_id) % len(visible_dims)][0]
-            edges.append({
-                'source': analyst_id, 'target': f'dim_{target_dim}',
-                'weight': analyst.get('confidence', 0.5),
-                'label': analyst.get('stance', 'evaluates').lower(),
-                'layer': 'red',
-            })
+        edges.append({'source': 'target', 'target': ent_id, 'weight': 0.45, 'label': 'mentions', 'layer': 'red'})
 
-    # ─── Gold Layer (Final Verdict) ──────────────────────────
-    verdict_id = 'verdict'
-    nodes.append({
-        'id': verdict_id, 'layer': 'gold',
-        'label': f'{verdict_action} {int(verdict_conf * 100)}%',
-        'type': 'verdict', 'score': verdict_conf,
-        'action': verdict_action,
-    })
-    # Gold 는 모든 analyst 의견을 수렴
-    for analyst in run.get('analysts', [])[:6]:
+    for relation in (extracted.get('relations') or [])[:40]:
+        src = f"ent_{_slug(relation.get('source_id') or '')}"
+        dst = f"ent_{_slug(relation.get('target_id') or '')}"
+        if src == 'ent_' or dst == 'ent_':
+            continue
         edges.append({
-            'source': analyst['id'], 'target': verdict_id,
-            'weight': analyst.get('confidence', 0.5),
-            'label': analyst.get('stance', 'votes').lower(),
-            'layer': 'red',  # analyst → verdict 도 추론 관계
+            'source': src,
+            'target': dst,
+            'weight': relation.get('strength', 0.5),
+            'label': relation.get('relation_type', 'related_to'),
+            'layer': 'red',
+            'evidence': str(relation.get('evidence', ''))[:160],
         })
-    # Brain 도 verdict 직접 영향 (Blue → Gold)
-    edges.append({
-        'source': 'brain13d', 'target': verdict_id,
-        'weight': brain.get('alignment_score', 0.5),
-        'label': 'aligns_with', 'layer': 'blue',
+
+    for analyst in run.get('analysts', [])[:MAX_AGENT_COUNT]:
+        aid = f"agent_{_slug(analyst.get('id') or analyst.get('name'))}"
+        nodes.append({'id': aid, 'layer': 'red', 'label': analyst.get('name'), 'type': 'analyst', 'score': analyst.get('confidence', 0.5), 'stance': analyst.get('stance') or analyst.get('verdict')})
+        edges.append({'source': aid, 'target': 'verdict', 'weight': analyst.get('confidence', 0.5), 'label': str(analyst.get('stance') or analyst.get('verdict') or 'votes').lower(), 'layer': 'red'})
+
+    nodes.append({
+        'id': 'verdict',
+        'layer': 'gold',
+        'label': f"{verdict.get('action') or verdict.get('label', 'HOLD')} {int((verdict.get('confidence') or 0) * 100)}%",
+        'type': 'verdict',
+        'score': verdict.get('confidence', 0.5),
+        'action': verdict.get('action') or verdict.get('label', 'HOLD'),
     })
+    edges.append({'source': 'brain13d', 'target': 'verdict', 'weight': brain.get('alignment_score', 0.5), 'label': 'aligns_with', 'layer': 'blue'})
 
     return {
         'run_id': run_id,
@@ -266,53 +296,52 @@ def _build_graph(run: dict[str, Any]) -> dict[str, Any]:
         'nodes': nodes,
         'edges': edges,
         'layout': 'layered',
-        'schema_version': 2,  # Phase 2B
+        'schema_version': 2,
+        'source': 'live_file_artifacts',
     }
 
 
-def _build_report(run: dict[str, Any]) -> str:
+def _build_report(run: dict[str, Any], graph: dict[str, Any]) -> str:
+    verdict = run.get('verdict') or {}
+    price = run.get('price_snapshot') or {}
+    source_lines = '\n'.join(f"- `{src}`" for src in run.get('data_context', {}).get('source_files', [])[:20]) or '- No dedicated source file found'
     analyst_lines = '\n'.join(
-        f"- {a['name']}: {a['stance']} ({int(a['confidence'] * 100)}%) - {a['note']}"
-        for a in run['analysts']
+        f"- {a.get('name')}: {a.get('stance') or a.get('verdict')} ({int((a.get('confidence') or 0) * 100)}%) - {a.get('role', '')}"
+        for a in run.get('analysts', [])
     )
-    phase_lines = '\n'.join(
-        f"- {phase['label']}: {phase['status']}"
-        for phase in run['pipeline_phases']
-    )
-    brain = run['brain_summary']
     return (
-        f"# MiroFish Mock Report: {run['target']}\n\n"
+        f"# MiroFish Live Report: {run['target']}\n\n"
         f"- Run ID: `{run['id']}`\n"
-        f"- Mode: `{run['mode']}`\n"
-        f"- Verdict: **{run['verdict']['action']} {run['verdict']['confidence_label']}**\n"
-        f"- Risk: {run['verdict']['risk']}\n\n"
-        "## Brain 13D Snapshot\n\n"
-        f"- Dimensions: {brain['dimensions']}\n"
-        f"- Alignment: {brain['alignment_score']}\n"
-        f"- Regime: {brain['regime']}\n"
-        f"- Memory Window: {brain['memory_window']}\n\n"
-        "## Pipeline\n\n"
-        f"{phase_lines}\n\n"
+        f"- Source: `{run.get('source')}`\n"
+        f"- Symbol: `{run.get('symbol') or 'N/A'}`\n"
+        f"- Price: `{price.get('price')}` KRW ({price.get('change_pct', 0)}%) as of `{price.get('date')}`\n"
+        f"- Verdict: **{verdict.get('action') or verdict.get('label')} {int((verdict.get('confidence') or 0) * 100)}%**\n"
+        f"- Graph nodes/edges: {len(graph.get('nodes', []))}/{len(graph.get('edges', []))}\n\n"
+        "## Data Sources\n\n"
+        f"{source_lines}\n\n"
+        "## Brain 13D\n\n"
+        f"- Alignment: {run.get('brain_summary', {}).get('alignment_score')}\n"
+        f"- Regime: {run.get('brain_summary', {}).get('regime')}\n"
+        f"- Memory Window: {run.get('brain_summary', {}).get('memory_window')}\n\n"
         "## Analysts\n\n"
         f"{analyst_lines}\n\n"
+        "## CIO Reasoning\n\n"
+        f"{(run.get('cio') or {}).get('final_answer', {}).get('reasoning', '')}\n\n"
         "## Summary\n\n"
-        "Deterministic local mock output. No external LLM, broker, or market data key was used.\n"
+        f"{verdict.get('summary', '')}\n"
     )
 
 
 def _brain_summary(target: str) -> dict[str, Any]:
-    """Brain 13D 스냅샷 — 실데이터 우선, 실패 시 결정론적 fallback."""
     try:
         from app.services.mirofish.brain_loader import load_brain_13d_snapshot
         snapshot = load_brain_13d_snapshot(target)
-        # 핵심 필드만 유지 (run.json 크기 통제)
         return {
             'name': snapshot['name'],
             'target': snapshot['target'],
             'dimensions': list(snapshot['dimensions'].keys()),
             'dimension_scores': {
-                k: {'score': v.get('score'), 'confidence': v.get('confidence'),
-                    'evidence': v.get('evidence')}
+                k: {'score': v.get('score'), 'confidence': v.get('confidence'), 'evidence': v.get('evidence'), 'source': v.get('source')}
                 for k, v in snapshot['dimensions'].items()
             },
             'alignment_score': snapshot['alignment_score'],
@@ -322,73 +351,188 @@ def _brain_summary(target: str) -> dict[str, Any]:
             'sources': snapshot['sources'],
             'notes': snapshot['notes'],
         }
-    except Exception as e:
-        # Fail-safe: 결정론적 fallback (테스트 + 데이터 누락 시)
+    except Exception as exc:
         return {
             'name': 'MiroFish Brain 13D',
             'target': target,
-            'dimensions': [
-                'sector_momentum', 'macro_regime', 'options_flow', 'earnings_catalyst',
-                'event_risk', 'ml_prediction', 'reversal_signal', 'crypto_sentiment',
-                'correlation_stability', 'liquidity', 'volatility', 'memory_window',
-                'narrative',
-            ],
-            'alignment_score': 0.64,
-            'regime': 'constructive_accumulation',
-            'memory_window': 'fallback_mock',
-            'notes': f'Brain loader unavailable ({type(e).__name__}); using deterministic fallback.',
+            'dimensions': [],
+            'dimension_scores': {},
+            'alignment_score': 0.0,
+            'regime': 'data_unavailable',
+            'memory_window': 'unavailable',
+            'notes': f'Brain loader unavailable ({type(exc).__name__}).',
         }
 
 
-def _analysts(agent_count: int) -> list[dict[str, Any]]:
-    base = [
-        ('agent_01', 'Trend Cartographer', 'BUY', 0.68, 'Higher-low structure remains intact.'),
-        ('agent_02', 'Volume Diver', 'BUY', 0.63, 'Accumulation flow is positive but not euphoric.'),
-        ('agent_03', 'Risk Sentinel', 'HOLD', 0.55, 'Position sizing should respect moderate drawdown risk.'),
-        ('agent_04', 'Momentum Scout', 'BUY', 0.66, 'Momentum is improving from a controlled base.'),
-        ('agent_05', 'Macro Lens', 'HOLD', 0.52, 'Macro backdrop is neutral enough for selective exposure.'),
-        ('agent_06', 'Sentiment Reader', 'BUY', 0.61, 'Sentiment is constructive without crowding.'),
-        ('agent_07', 'Liquidity Mapper', 'BUY', 0.65, 'Liquidity supports clean entry and exit paths.'),
-        ('agent_08', 'Correlation Guard', 'HOLD', 0.57, 'Correlation pressure is manageable.'),
-        ('agent_09', 'Quality Auditor', 'BUY', 0.64, 'Quality checks pass the mock threshold.'),
-        ('agent_10', 'Timing Weaver', 'BUY', 0.67, 'Timing favors staged accumulation.'),
-        ('agent_11', 'Volatility Reader', 'HOLD', 0.56, 'Volatility needs a defined stop.'),
-        ('agent_12', 'Sector Compass', 'BUY', 0.62, 'Sector context supports the idea.'),
-        ('agent_13', 'Memory Keeper', 'BUY', 0.66, 'Historical analogs lean bullish.'),
-    ]
-    return [
-        {
-            'id': analyst_id,
-            'name': name,
+def _frontend_brain(brain: dict[str, Any]) -> dict[str, Any]:
+    alignment = brain.get('alignment_score', 0)
+    score = int(round(float(alignment or 0) * 100)) if float(alignment or 0) <= 1 else int(round(float(alignment or 0)))
+    return {'score': score, 'regime': brain.get('regime', 'neutral'), 'crisis': _crisis_label(score)}
+
+
+def _crisis_label(score: int) -> str:
+    if score >= 70:
+        return 'Lv.1'
+    if score >= 45:
+        return 'Lv.2'
+    if score >= 25:
+        return 'Lv.3'
+    return 'Lv.4'
+
+
+def _analysts_from_debate(debate: dict[str, Any], agent_count: int, brain: dict[str, Any]) -> list[dict[str, Any]]:
+    messages = []
+    for round_item in reversed(debate.get('rounds', []) or []):
+        messages = round_item.get('messages', []) or []
+        if messages:
+            break
+
+    analysts: list[dict[str, Any]] = []
+    icons = ['fa-shield-halved', 'fa-chart-line', 'fa-calculator', 'fa-bolt', 'fa-briefcase', 'fa-brain', 'fa-coins', 'fa-water', 'fa-compass', 'fa-link']
+    for idx, msg in enumerate(messages[:agent_count]):
+        stance = msg.get('stance', 'HOLD')
+        analysts.append({
+            'id': msg.get('agent_id') or f'agent_{idx + 1:02d}',
+            'name': msg.get('agent_name') or f'Agent {idx + 1}',
+            'role': msg.get('role') or 'MiroFish analyst',
             'stance': stance,
-            'confidence': confidence,
-            'note': note,
-        }
-        for analyst_id, name, stance, confidence, note in base[:agent_count]
+            'verdict': _display_verdict(stance),
+            'confidence': _clamp_float(msg.get('confidence', 0.5)),
+            'message': msg.get('message', ''),
+            'cited_dimensions': msg.get('cited_dimensions', []),
+            'icon': icons[idx % len(icons)],
+        })
+
+    dim_items = [
+        (name, dim) for name, dim in (brain.get('dimension_scores') or {}).items()
+        if isinstance(dim, dict) and dim.get('score') is not None
     ]
+    dim_items.sort(key=lambda item: item[1].get('confidence', 0), reverse=True)
+    i = 0
+    while len(analysts) < agent_count and dim_items:
+        dim_name, dim = dim_items[i % len(dim_items)]
+        score = float(dim.get('score') or 50)
+        stance = 'BUY' if score >= 60 else 'SELL' if score <= 35 else 'HOLD'
+        analysts.append({
+            'id': f'dim_{_slug(dim_name)}',
+            'name': dim_name.replace('_', ' ').title(),
+            'role': f"Brain dimension reader - {dim.get('source', 'MarketFlow')}",
+            'stance': stance,
+            'verdict': _display_verdict(stance),
+            'confidence': _clamp_float(dim.get('confidence', 0.55)),
+            'message': str(dim.get('evidence', '')),
+            'cited_dimensions': [dim_name],
+            'icon': icons[len(analysts) % len(icons)],
+        })
+        i += 1
+    return analysts[:agent_count]
 
 
-def _logs(target: str, analysts: list[dict[str, Any]]) -> list[dict[str, str]]:
+def _verdict_from_cio(cio: dict[str, Any], debate: dict[str, Any], analysts: list[dict[str, Any]]) -> dict[str, Any]:
+    final = cio.get('final_answer') or {}
+    action = str(final.get('action') or debate.get('final_consensus', {}).get('action') or 'HOLD').upper()
+    if action not in {'BUY', 'SELL', 'HOLD'}:
+        action = 'HOLD'
+    confidence = _clamp_float(final.get('confidence', debate.get('final_consensus', {}).get('confidence', 0.5)))
+    bullish = sum(1 for a in analysts if a.get('stance') == 'BUY')
+    bearish = sum(1 for a in analysts if a.get('stance') == 'SELL')
+    neutral = max(0, len(analysts) - bullish - bearish)
+    return {
+        'action': action,
+        'label': action,
+        'confidence': confidence,
+        'confidence_pct': int(round(confidence * 100)),
+        'bullish': bullish,
+        'bearish': bearish,
+        'neutral': neutral,
+        'horizon': '1M',
+        'allocation_pct': final.get('allocation_pct', 0),
+        'summary': (
+            f"Live CIO verdict {action} with {int(round(confidence * 100))}% confidence. "
+            f"Agent split: bull {bullish}, neutral {neutral}, bear {bearish}."
+        ),
+        'reasoning': final.get('reasoning', ''),
+        'opposing_scenario': final.get('opposing_scenario', ''),
+    }
+
+
+def _logs(target: str, context: dict[str, Any], extracted: dict[str, Any], merge_stats: dict[str, Any],
+          debate: dict[str, Any], cio: dict[str, Any], verdict: dict[str, Any]) -> list[dict[str, Any]]:
+    now = datetime.now().strftime('%H:%M:%S')
+    price = context.get('price') or {}
     return [
-        {'level': 'info', 'phase': 'intake', 'message': f'Accepted target {target}.'},
-        {'level': 'info', 'phase': 'brain_snapshot', 'message': 'Loaded Brain 13D-ish deterministic snapshot.'},
-        {'level': 'info', 'phase': 'analyst_mesh', 'message': f'Activated {len(analysts)} mock analysts.'},
-        {'level': 'info', 'phase': 'graph_build', 'message': 'Built layered graph payload.'},
-        {'level': 'info', 'phase': 'verdict', 'message': 'Synthesized BUY 64% verdict.'},
-        {'level': 'info', 'phase': 'report', 'message': 'Rendered markdown report artifact.'},
+        {'level': 'info', 'phase': 'intake', 'time': now, 'message': f"Accepted live target {target}.", 'text': f"대상 입력: {target}"},
+        {'level': 'info', 'phase': 'intake', 'time': now, 'message': f"Resolved sources: {len(context.get('source_files', []))}.", 'text': f"실데이터 소스 {len(context.get('source_files', []))}개 연결"},
+        {'level': 'info', 'phase': 'brain_snapshot', 'time': now, 'message': 'Loaded Brain 13D from MarketFlow artifacts.', 'text': 'Brain 13D 실데이터 스냅샷 적재'},
+        {'level': 'info', 'phase': 'graph_build', 'time': now, 'message': f"GraphRAG extracted {len(extracted.get('entities', []))} entities and {len(extracted.get('relations', []))} relations.", 'text': f"GraphRAG 인과 {merge_stats.get('total_relations', 0)}개 연결"},
+        {'level': 'info', 'phase': 'analyst_mesh', 'time': now, 'message': f"Debate method={debate.get('method')}.", 'text': f"에이전트 토론 완료: {debate.get('method')}"},
+        {'level': 'info', 'phase': 'verdict', 'time': now, 'message': f"CIO verdict={verdict.get('action')} confidence={verdict.get('confidence_pct')}%.", 'text': f"최종 판정: {verdict.get('action')} {verdict.get('confidence_pct')}%"},
+        {'level': 'info', 'phase': 'report', 'time': now, 'message': f"Price snapshot {price.get('price')} ({price.get('date')}).", 'text': f"가격 스냅샷: {price.get('price')} KRW / {price.get('date')}"},
     ]
+
+
+def _graph_nodes_from_extraction(extracted: dict[str, Any], resolved: dict[str, Any]) -> list[dict[str, Any]]:
+    entities = extracted.get('entities') or []
+    if not entities:
+        return [{'label': resolved.get('display_name') or 'target', 'x': 30, 'y': 38, 'kind': 'history'}]
+    coords = [
+        (35, 42), (42, 38), (50, 40), (58, 37), (66, 43), (72, 48), (62, 54), (53, 57),
+        (44, 55), (36, 59), (29, 50), (77, 56), (69, 62), (48, 64), (40, 68),
+    ]
+    nodes = []
+    for idx, entity in enumerate(entities[:24]):
+        x, y = coords[idx % len(coords)]
+        if idx >= len(coords):
+            y = min(72, y + 8)
+        nodes.append({'label': str(entity.get('name') or entity.get('id')), 'x': x, 'y': y, 'kind': 'history'})
+    return nodes
+
+
+def _prediction_nodes(analysts: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    xs = [38, 44, 50, 56, 62, 68, 74, 34, 80, 46, 58, 70, 82, 30, 52]
+    nodes = []
+    for idx, analyst in enumerate(analysts[:MAX_AGENT_COUNT]):
+        stance = analyst.get('stance', 'HOLD')
+        nodes.append({
+            'label': f"{analyst.get('name')} {stance}",
+            'x': xs[idx % len(xs)],
+            'y': 67 + ((idx % 3) * 5),
+            'kind': 'prediction',
+            'verdict': 'bull' if stance == 'BUY' else 'bear' if stance == 'SELL' else 'neutral',
+        })
+    return nodes
 
 
 def _summary(run: dict[str, Any]) -> dict[str, Any]:
     return {
         'id': run.get('id'),
         'target': run.get('target'),
+        'display_name': run.get('display_name'),
+        'symbol': run.get('symbol'),
         'mode': run.get('mode'),
+        'source': run.get('source'),
         'status': run.get('status'),
         'created_at': run.get('created_at'),
         'agent_count': len(run.get('analysts', [])),
+        'price': run.get('price'),
+        'change_pct': run.get('change_pct'),
         'verdict': run.get('verdict'),
     }
+
+
+def _write_events(run_id: str, logs: list[dict[str, Any]]) -> None:
+    try:
+        from app.services.mirofish import events as mf_events
+        for log in logs:
+            mf_events.append_event(
+                run_id,
+                str(log.get('level', 'info')),
+                str(log.get('phase', 'run')),
+                str(log.get('message') or log.get('text') or ''),
+                payload={'text': log.get('text'), 'time': log.get('time')},
+            )
+    except Exception:
+        return
 
 
 def _clean_target(value: Any) -> str:
@@ -402,7 +546,7 @@ def _clean_target(value: Any) -> str:
 
 def _clean_agent_count(value: Any) -> int:
     if value in (None, ''):
-        return MAX_AGENT_COUNT
+        return 10
     try:
         agent_count = int(value)
     except (TypeError, ValueError) as exc:
@@ -413,31 +557,28 @@ def _clean_agent_count(value: Any) -> int:
 
 
 def _clean_mode(value: Any) -> str:
-    mode = str(value or 'mock').strip().lower()
+    mode = str(value or 'full').strip().lower()
     if not re.fullmatch(r'[a-z0-9_-]{1,32}', mode):
         raise ValueError('mode must contain only letters, numbers, underscores, or hyphens')
     return mode
 
 
+def _use_llm(mode: str) -> bool:
+    if mode in {'fast', 'rule', 'local', 'no-llm'}:
+        return False
+    flag = os.getenv('MIROFISH_USE_LLM', '1').strip().lower()
+    return flag not in {'0', 'false', 'no', 'off'}
+
+
 def _run_id(target: str, agent_count: int, mode: str) -> str:
     slug = re.sub(r'[^a-z0-9]+', '-', target.lower()).strip('-')[:32] or 'target'
-    digest = _seed(target, agent_count, mode)[:12]
-    return f'mf_{slug}_{digest}'
-
-
-def _seed(target: str, agent_count: int, mode: str) -> str:
-    raw = f'{target}|{agent_count}|{mode}'.encode('utf-8')
-    return hashlib.sha256(raw).hexdigest()
-
-
-def _deterministic_timestamp(seed: str) -> str:
-    offset = int(seed[:8], 16) % (86400 * 120)
-    dt = datetime(2026, 1, 1, tzinfo=timezone.utc) + timedelta(seconds=offset)
-    return dt.isoformat().replace('+00:00', 'Z')
+    stamp = datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S')
+    digest = hashlib.sha256(f'{target}|{agent_count}|{mode}|{stamp}|{os.getpid()}'.encode('utf-8')).hexdigest()[:8]
+    return f'mf_{slug}_{stamp}_{digest}'
 
 
 def _safe_run_id(run_id: str) -> str:
-    if not re.fullmatch(r'[A-Za-z0-9_.-]{1,120}', run_id or ''):
+    if not re.fullmatch(r'[A-Za-z0-9_.-]{1,140}', run_id or ''):
         raise ValueError('invalid run_id')
     return run_id
 
@@ -463,3 +604,23 @@ def _write_text_atomic(path: str, content: str) -> None:
         f.flush()
         os.fsync(f.fileno())
     os.replace(tmp_path, path)
+
+
+def _display_verdict(stance: str) -> str:
+    if stance == 'BUY':
+        return 'BULLISH'
+    if stance == 'SELL':
+        return 'BEARISH'
+    return 'NEUTRAL'
+
+
+def _clamp_float(value: Any, fallback: float = 0.5) -> float:
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        number = fallback
+    return max(0.0, min(1.0, number))
+
+
+def _slug(value: Any) -> str:
+    return re.sub(r'[^a-zA-Z0-9가-힣_]+', '_', str(value or '').strip()).strip('_').lower()

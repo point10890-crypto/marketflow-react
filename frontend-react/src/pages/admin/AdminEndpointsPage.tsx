@@ -441,7 +441,8 @@ function ImpactPanel({ phase, run }: { phase: number; run: MiroFishRun }) {
 export default function AdminEndpointsPage() {
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [phase, setPhase] = useState(1);
-    const [target, setTarget] = useState('Samsung Electronics');
+    const [target, setTarget] = useState('삼성전자');
+    const [agentCount, setAgentCount] = useState(10);
     const [run, setRun] = useState<MiroFishRun>(fallbackRun);
     const [status, setStatus] = useState<MiroFishStatus | null>(null);
     const [apiState, setApiState] = useState<'checking' | 'ready' | 'fallback' | 'running'>('checking');
@@ -459,7 +460,7 @@ export default function AdminEndpointsPage() {
             .catch(() => {
                 if (!alive) return;
                 setApiState('fallback');
-                setStatus({ ready: false, source: 'local fallback', brain: fallbackRun.brain, pipeline: fallbackRun.pipeline });
+                setStatus({ ready: false, source: 'api unavailable', brain: fallbackRun.brain, pipeline: fallbackRun.pipeline });
             });
         return () => {
             alive = false;
@@ -492,16 +493,17 @@ export default function AdminEndpointsPage() {
         const nextTarget = target.trim() || fallbackRun.target;
         setErrorText(null);
         setIsAnalyzing(true);
-        setApiState(apiState === 'fallback' ? 'fallback' : 'running');
-        setRun({ ...fallbackRun, target: nextTarget, display_name: nextTarget });
+        setApiState('running');
+        setRun({ target: nextTarget, display_name: nextTarget, status: 'running' });
         try {
-            const data = await mirofishApi.startRun({ target: nextTarget, agent_count: 10, mode: 'full' });
-            setRun({ ...fallbackRun, ...data, target: data.target || nextTarget, display_name: data.display_name || data.target || nextTarget });
+            const data = await mirofishApi.startRun({ target: nextTarget, agent_count: agentCount, mode: 'full' });
+            setRun({ ...data, target: data.target || nextTarget, display_name: data.display_name || data.target || nextTarget });
             setApiState('ready');
         } catch (error) {
-            setRun({ ...fallbackRun, target: nextTarget, display_name: nextTarget });
+            setIsAnalyzing(false);
+            setRun((current) => ({ ...current, status: 'api_error' }));
             setApiState('fallback');
-            setErrorText(error instanceof Error ? error.message : 'MiroFish API unavailable. Using local fallback data.');
+            setErrorText(error instanceof Error ? error.message : 'MiroFish API unavailable. Live data was not loaded.');
         }
     }
 
@@ -571,13 +573,13 @@ export default function AdminEndpointsPage() {
                     <div className="mt-5 flex flex-wrap items-center gap-3">
                         <div className="flex items-center gap-2 rounded-xl border border-white/15 bg-white/75 px-4 py-2 text-xs font-bold text-slate-500 backdrop-blur">
                             <span>에이전트</span>
-                            <button type="button" className="grid h-8 w-8 place-items-center rounded-lg border border-slate-200 bg-white text-slate-700">-</button>
-                            <span className="text-xl font-black text-violet-600">10</span>
-                            <button type="button" className="grid h-8 w-8 place-items-center rounded-lg border border-slate-200 bg-white text-slate-700">+</button>
+                            <button type="button" onClick={() => setAgentCount((value) => Math.max(1, value - 1))} className="grid h-8 w-8 place-items-center rounded-lg border border-slate-200 bg-white text-slate-700">-</button>
+                            <span className="text-xl font-black text-violet-600">{agentCount}</span>
+                            <button type="button" onClick={() => setAgentCount((value) => Math.min(15, value + 1))} className="grid h-8 w-8 place-items-center rounded-lg border border-slate-200 bg-white text-slate-700">+</button>
                         </div>
                         <div className="flex items-center gap-1 rounded-xl border border-white/15 bg-white/45 p-1 backdrop-blur">
                             {agentCounts.map((count) => (
-                                <button key={count} type="button" className={`h-8 min-w-8 rounded-lg px-2 text-xs font-black ${count === 10 ? 'bg-violet-600 text-white shadow-lg shadow-violet-500/30' : 'text-slate-500 hover:bg-white/60'}`}>
+                                <button key={count} type="button" onClick={() => setAgentCount(count)} className={`h-8 min-w-8 rounded-lg px-2 text-xs font-black ${count === agentCount ? 'bg-violet-600 text-white shadow-lg shadow-violet-500/30' : 'text-slate-500 hover:bg-white/60'}`}>
                                     {count}
                                 </button>
                             ))}
