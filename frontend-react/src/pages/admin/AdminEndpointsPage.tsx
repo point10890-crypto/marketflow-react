@@ -217,9 +217,26 @@ function KnowledgeGraph({ phase, run }: { phase: number; run: MiroFishRun }) {
     const analystNodes = analystPositions(analysts);
     const predictionNodes = run.prediction_nodes?.length ? run.prediction_nodes : [];
     const verdict = run.verdict;
+    const progressPercent = Math.max(0, Math.min(100, Number(run.progress?.percent || (isVerdictReady ? 100 : phase * 18))));
+    const elapsedMs = run.progress?.elapsed_ms || run.performance?.elapsed_ms || 0;
+    const elapsedSeconds = Math.max(1, elapsedMs / 1000);
+    const eventCount = run.events?.length || run.logs?.length || run.performance?.events_count || 0;
+    const edgeCount = run.graph_artifact?.edges?.length || run.performance?.graph_edges || 0;
+    const streamRate = Math.max(1, Math.round((graphNodes.length + predictionNodes.length + analysts.length + edgeCount) / elapsedSeconds));
+    const confidence = verdict?.confidence ?? (isVerdictReady ? 64 : Math.min(88, 42 + progressPercent));
+    const activePhase = run.progress?.current_label || (phase >= 5 ? 'Final Verdict' : phase >= 4 ? 'Agent Debate' : phase >= 3 ? 'GraphRAG' : 'Target Intake');
+    const graphLoad = Math.min(100, Math.round(((graphNodes.length + edgeCount) / Math.max(1, graphNodes.length + edgeCount + 8)) * 100));
 
     return (
-        <section className="relative min-h-[430px] overflow-hidden rounded-xl border border-white/25 bg-slate-50/90 p-5 text-slate-900">
+        <section className="relative min-h-[500px] overflow-hidden rounded-xl border border-white/30 bg-[radial-gradient(circle_at_58%_70%,rgba(16,185,129,0.16),transparent_22%),radial-gradient(circle_at_28%_26%,rgba(99,102,241,0.16),transparent_24%),linear-gradient(180deg,rgba(248,250,252,0.96),rgba(226,232,240,0.94))] p-5 text-slate-900 shadow-[0_26px_90px_rgba(15,23,42,0.18)]">
+            <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(148,163,184,0.13)_1px,transparent_1px),linear-gradient(90deg,rgba(148,163,184,0.11)_1px,transparent_1px)] bg-[size:44px_44px]" />
+            <div className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-white/65 to-transparent" />
+            {isGraphReady && (
+                <div
+                    className="pointer-events-none absolute left-0 right-0 z-[1] h-px bg-gradient-to-r from-transparent via-blue-500/70 to-transparent shadow-[0_0_28px_rgba(59,130,246,0.75)] transition-all duration-700"
+                    style={{ top: `${Math.min(88, Math.max(15, progressPercent))}%` }}
+                />
+            )}
             <div className="absolute left-5 top-5 z-20 w-48 rounded-xl bg-white/80 p-4 shadow-xl shadow-slate-300/30">
                 <div className="mb-3 text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">레이어</div>
                 <div className="space-y-3">
@@ -236,6 +253,25 @@ function KnowledgeGraph({ phase, run }: { phase: number; run: MiroFishRun }) {
             <div className="absolute left-1/2 top-6 z-20 -translate-x-1/2 rounded-xl bg-white/80 px-4 py-2 text-[11px] font-black uppercase tracking-[0.18em] text-slate-500 shadow">
                 지식 그래프 <span className="ml-2 inline-block h-2 w-2 rounded-full bg-emerald-400" />
             </div>
+            <div className="absolute right-5 top-20 z-30 w-56 rounded-2xl border border-slate-200/80 bg-white/88 p-4 shadow-2xl shadow-slate-400/20 backdrop-blur">
+                <div className="flex items-center justify-between">
+                    <div className="text-[10px] font-black uppercase tracking-[0.22em] text-slate-400">Live Compute</div>
+                    <span className="flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-black text-emerald-700">
+                        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
+                        STREAM
+                    </span>
+                </div>
+                <div className="mt-3 text-sm font-black text-slate-900">{activePhase}</div>
+                <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-200">
+                    <div className="h-full rounded-full bg-gradient-to-r from-blue-500 via-violet-500 to-emerald-400 transition-all duration-500" style={{ width: `${progressPercent}%` }} />
+                </div>
+                <div className="mt-3 grid grid-cols-2 gap-2 text-[10px] font-black">
+                    <div className="rounded-lg bg-slate-100 px-2 py-2"><div className="text-slate-400">PROGRESS</div><div className="text-blue-700">{progressPercent}%</div></div>
+                    <div className="rounded-lg bg-slate-100 px-2 py-2"><div className="text-slate-400">RATE</div><div className="text-violet-700">{streamRate}/s</div></div>
+                    <div className="rounded-lg bg-slate-100 px-2 py-2"><div className="text-slate-400">GRAPH</div><div className="text-emerald-700">{graphNodes.length}/{edgeCount}</div></div>
+                    <div className="rounded-lg bg-slate-100 px-2 py-2"><div className="text-slate-400">CONF</div><div className="text-amber-700">{Math.round(confidence)}%</div></div>
+                </div>
+            </div>
             {isPredictionReady && (
                 <div className="absolute right-40 top-6 z-20 hidden items-center gap-2 rounded-xl bg-white/80 px-4 py-2 text-[11px] font-black uppercase tracking-[0.12em] text-slate-500 shadow lg:flex">
                     <span className="h-2 w-2 rounded-full bg-emerald-400" />
@@ -249,36 +285,45 @@ function KnowledgeGraph({ phase, run }: { phase: number; run: MiroFishRun }) {
 
             {isGraphReady ? (
                 <>
-                    <svg className="absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                    <svg className="absolute inset-0 z-[2] h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
                         {graphNodes.map((node, index) => (
-                            <line key={`${node.label}-${index}`} x1="30" y1="31" x2={node.x ?? 50} y2={node.y ?? 50} stroke="rgba(99,102,241,0.34)" strokeWidth="0.32" />
+                            <line key={`${node.label}-${index}`} x1="30" y1="31" x2={node.x ?? 50} y2={node.y ?? 50} stroke="rgba(99,102,241,0.42)" strokeWidth="0.34" strokeDasharray="1.1 1.4">
+                                <animate attributeName="stroke-dashoffset" from="0" to="-8" dur={`${2.1 + (index % 5) * 0.18}s`} repeatCount="indefinite" />
+                            </line>
                         ))}
                         {isPredictionReady && predictionNodes.map((node, index) => {
                             const source = analystNodes[index] ?? analystNodes[0];
-                            return <line key={`pred-${node.label}`} x1={source.x} y1={source.y} x2={node.x ?? 50} y2={node.y ?? 65} stroke="rgba(245,158,11,0.36)" strokeWidth="0.36" />;
+                            return (
+                                <line key={`pred-${node.label}`} x1={source.x} y1={source.y} x2={node.x ?? 50} y2={node.y ?? 65} stroke="rgba(245,158,11,0.48)" strokeWidth="0.42" strokeDasharray="1.3 1.6">
+                                    <animate attributeName="stroke-dashoffset" from="0" to="-9" dur={`${1.7 + (index % 4) * 0.16}s`} repeatCount="indefinite" />
+                                </line>
+                            );
                         })}
                         {isVerdictReady && predictionNodes.map((node) => (
-                            <line key={`verdict-${node.label}`} x1={node.x ?? 50} y1={node.y ?? 65} x2="58" y2="92" stroke="rgba(16,185,129,0.36)" strokeWidth="0.38" />
+                            <line key={`verdict-${node.label}`} x1={node.x ?? 50} y1={node.y ?? 65} x2="58" y2="92" stroke="rgba(16,185,129,0.52)" strokeWidth="0.48" strokeDasharray="1.4 1.2">
+                                <animate attributeName="stroke-dashoffset" from="0" to="-10" dur="1.65s" repeatCount="indefinite" />
+                            </line>
                         ))}
                     </svg>
 
                     <div className="absolute left-[30%] top-[31%] z-10 -translate-x-1/2 -translate-y-1/2 text-center">
-                        <div className="grid h-16 w-16 place-items-center rounded-full border-2 border-red-400 bg-red-500/15 text-red-500 shadow-[0_0_0_8px_rgba(248,113,113,0.13)]">
+                        <div className="absolute left-1/2 top-1/2 h-24 w-24 -translate-x-1/2 -translate-y-1/2 animate-ping rounded-full border border-red-400/35" />
+                        <div className="relative grid h-16 w-16 place-items-center rounded-full border-2 border-red-400 bg-red-500/15 text-red-500 shadow-[0_0_0_8px_rgba(248,113,113,0.13),0_0_36px_rgba(248,113,113,0.30)]">
                             <i className="fas fa-warning" />
                         </div>
                         <div className="-mt-1 max-w-[140px] truncate rounded border border-red-300 bg-white px-2 py-0.5 text-[10px] font-black">{run.display_name || run.target}</div>
                     </div>
 
-                    {graphNodes.map((node) => (
+                    {graphNodes.map((node, index) => (
                         <div key={node.label} className="absolute z-10 -translate-x-1/2 -translate-y-1/2 text-center" style={{ left: `${node.x ?? 50}%`, top: `${node.y ?? 50}%` }}>
-                            <div className="mx-auto h-5 w-5 rounded-full border-2 border-indigo-400 bg-indigo-300/35" />
+                            <div className="mx-auto h-5 w-5 animate-pulse rounded-full border-2 border-indigo-400 bg-indigo-300/45 shadow-[0_0_18px_rgba(99,102,241,0.28)]" style={{ animationDelay: `${(index % 6) * 120}ms` }} />
                             <div className="-mt-0.5 max-w-[78px] truncate rounded border border-indigo-200 bg-white px-1.5 py-0.5 text-[9px] font-bold text-slate-500">{node.label}</div>
                         </div>
                     ))}
 
-                    {analystNodes.map((node) => (
+                    {analystNodes.map((node, index) => (
                         <div key={node.label} className="absolute z-10 -translate-x-1/2 -translate-y-1/2 text-center" style={{ left: `${node.x}%`, top: `${node.y}%` }}>
-                            <div className="mx-auto h-8 w-8 rounded-full border-2 border-violet-400 bg-violet-300/35" />
+                            <div className="mx-auto h-8 w-8 animate-pulse rounded-full border-2 border-violet-400 bg-violet-300/45 shadow-[0_0_22px_rgba(139,92,246,0.26)]" style={{ animationDelay: `${(index % 5) * 150}ms` }} />
                             <div className="-mt-0.5 max-w-[84px] truncate rounded border border-violet-200 bg-white px-2 py-0.5 text-[9px] font-bold text-slate-500">{node.label}</div>
                         </div>
                     ))}
@@ -296,6 +341,24 @@ function KnowledgeGraph({ phase, run }: { phase: number; run: MiroFishRun }) {
                             <div className="-mt-1 rounded border border-emerald-300 bg-white px-3 py-1 text-sm font-black text-emerald-600">{verdict?.label || 'HOLD'}</div>
                         </div>
                     )}
+                    <div className="absolute bottom-5 left-5 right-5 z-30 grid gap-2 rounded-2xl border border-white/60 bg-white/80 p-3 shadow-xl shadow-slate-400/20 backdrop-blur md:grid-cols-4">
+                        {[
+                            { label: 'GRAPH LOAD', value: `${graphLoad}%`, bar: graphLoad, color: 'from-blue-500 to-indigo-500' },
+                            { label: 'EVENTS', value: eventCount, bar: Math.min(100, eventCount * 8), color: 'from-cyan-500 to-teal-400' },
+                            { label: 'ANALYST MESH', value: analysts.length, bar: Math.min(100, analysts.length * 10), color: 'from-violet-500 to-fuchsia-500' },
+                            { label: 'VERDICT CONF', value: `${Math.round(confidence)}%`, bar: Math.round(confidence), color: 'from-emerald-500 to-lime-400' },
+                        ].map((metric) => (
+                            <div key={metric.label} className="min-w-0">
+                                <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">
+                                    <span>{metric.label}</span>
+                                    <span className="text-slate-900">{metric.value}</span>
+                                </div>
+                                <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-slate-200">
+                                    <div className={`h-full rounded-full bg-gradient-to-r ${metric.color} transition-all duration-700`} style={{ width: `${metric.bar}%` }} />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
                 </>
             ) : (
                 <>
