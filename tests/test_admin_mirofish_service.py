@@ -80,6 +80,16 @@ def test_mirofish_target_snapshot_uses_live_artifacts():
     assert 'signal_count' in snapshot
 
 
+def test_mirofish_target_snapshot_resolves_chosung_and_normalized_names():
+    samsung = store.resolve_target_snapshot('ㅅㅅㅈㅈ')
+    soil = store.resolve_target_snapshot('soil')
+    soil_chosung = store.resolve_target_snapshot('ㅇㅅㅇㅇ')
+
+    assert samsung['resolved']['symbol'] == '005930'
+    assert soil['resolved']['symbol'] == '010950'
+    assert soil_chosung['resolved']['symbol'] == '010950'
+
+
 def test_mirofish_data_sources_reports_files():
     sources = store.get_data_sources()
 

@@ -1014,8 +1014,19 @@ def _run_dir(run_id: str) -> str:
 
 
 def _read_json(path: str) -> dict[str, Any]:
-    with open(path, 'r', encoding='utf-8') as f:
-        return json.load(f)
+    last_exc: Exception | None = None
+    for attempt in range(5):
+        try:
+            with open(path, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except (PermissionError, OSError, json.JSONDecodeError) as exc:
+            last_exc = exc
+            if attempt == 4:
+                break
+            time.sleep(0.02 * (attempt + 1))
+    if last_exc:
+        raise last_exc
+    raise FileNotFoundError(path)
 
 
 def _write_text_atomic(path: str, content: str) -> None:

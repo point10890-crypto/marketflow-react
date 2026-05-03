@@ -705,6 +705,7 @@ export default function AdminEndpointsPage() {
     }), [dataSourceCount, recentRuns.length, run, status, targetSnapshot]);
 
     async function handleStart() {
+        if (apiState === 'running') return;
         const nextTarget = target.trim() || defaultTarget;
         setErrorText(null);
         setIsAnalyzing(true);
@@ -791,7 +792,16 @@ export default function AdminEndpointsPage() {
                                     className="w-full bg-transparent text-base font-bold text-slate-900 outline-none placeholder:text-slate-400"
                                     placeholder="삼성전자, NVDA, BTC, FOMC 등 분석 대상 입력"
                                     value={target}
-                                    onChange={(event) => setTarget(event.target.value)}
+                                    onChange={(event) => {
+                                        setTarget(event.target.value);
+                                        setTargetSnapshot(null);
+                                        markEndpoint('resolve', 'idle');
+                                    }}
+                                    onKeyDown={(event) => {
+                                        if (event.key !== 'Enter' || event.nativeEvent.isComposing) return;
+                                        event.preventDefault();
+                                        void handleStart();
+                                    }}
                                 />
                             </label>
                             <button

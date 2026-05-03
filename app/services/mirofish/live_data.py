@@ -31,7 +31,16 @@ _ALIASES: dict[str, tuple[str, str]] = {
     '네이버': ('035420', 'NAVER'),
     'kakao': ('035720', 'Kakao'),
     '카카오': ('035720', '카카오'),
+    's-oil': ('010950', 'S-Oil'),
+    'soil': ('010950', 'S-Oil'),
+    '에스오일': ('010950', 'S-Oil'),
+    '에쓰오일': ('010950', 'S-Oil'),
 }
+
+_CHOSEONG = (
+    'ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ',
+    'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ',
+)
 
 
 def build_context(target: str) -> dict[str, Any]:
@@ -116,7 +125,6 @@ def resolve_target(target: str) -> dict[str, Any]:
 
     maps = _load_ticker_map()
     lowered = raw.lower().strip()
-    compact = re.sub(r'\s+', '', lowered)
 
     if raw.isdigit():
         symbol = raw.zfill(6)
@@ -124,14 +132,19 @@ def resolve_target(target: str) -> dict[str, Any]:
         return _resolved(raw, symbol, meta.get('name') or symbol, meta)
 
     for key, (symbol, name) in _ALIASES.items():
-        if key in lowered or key.replace(' ', '') in compact:
+        if _matches_target_query(raw, key):
             meta = maps.get(symbol, {})
             return _resolved(raw, symbol, meta.get('name') or name, meta)
 
     for symbol, meta in maps.items():
         name = str(meta.get('name') or '')
         yahoo = str(meta.get('yahoo_ticker') or '')
-        if lowered in name.lower() or lowered in yahoo.lower() or compact in re.sub(r'\s+', '', name.lower()):
+        digit_query = re.sub(r'\D+', '', raw)
+        if (
+            (digit_query and symbol.startswith(digit_query))
+            or _matches_target_query(raw, name)
+            or _matches_target_query(raw, yahoo)
+        ):
             return _resolved(raw, symbol, name or raw, meta)
 
     return {
@@ -259,6 +272,50 @@ def load_dart_snapshot(resolved: dict[str, Any]) -> dict[str, Any] | None:
         'latest': latest,
         'source_file': _rel(path),
     }
+
+
+def _matches_target_query(query: str, candidate: str) -> bool:
+    q = str(query or '').strip()
+    c = str(candidate or '').strip()
+    if not q or not c:
+        return False
+
+    q_lower = q.lower()
+    c_lower = c.lower()
+    q_compact = re.sub(r'\s+', '', q_lower)
+    c_compact = re.sub(r'\s+', '', c_lower)
+    q_lookup = _normalize_lookup(q)
+    c_lookup = _normalize_lookup(c)
+
+    if q_lower in c_lower or q_compact in c_compact:
+        return True
+    if q_lookup and c_lookup and q_lookup in c_lookup:
+        return True
+
+    q_initials = _hangul_initials(q)
+    c_initials = _hangul_initials(c)
+    return bool(q_initials and c_initials and _is_initial_query(q_initials) and q_initials in c_initials)
+
+
+def _normalize_lookup(value: str) -> str:
+    return re.sub(r'[^0-9a-z가-힣ㄱ-ㅎ]+', '', str(value or '').lower())
+
+
+def _hangul_initials(value: str) -> str:
+    out: list[str] = []
+    for char in str(value or '').strip():
+        code = ord(char)
+        if 0xAC00 <= code <= 0xD7A3:
+            out.append(_CHOSEONG[(code - 0xAC00) // 588])
+        elif 'ㄱ' <= char <= 'ㅎ':
+            out.append(char)
+        elif char.isascii() and char.isalnum():
+            out.append(char.lower())
+    return ''.join(out)
+
+
+def _is_initial_query(value: str) -> bool:
+    return bool(value) and all('ㄱ' <= char <= 'ㅎ' for char in value)
 
 
 def _load_ticker_map() -> dict[str, dict[str, str]]:
