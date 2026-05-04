@@ -25,6 +25,8 @@ def test_mirofish_run_writes_readable_artifacts(tmp_path, monkeypatch):
     assert run['status'] == 'completed'
     assert run['source'] == 'live_file_artifacts'
     assert run['verdict']['action'] in ('BUY', 'HOLD', 'SELL')
+    assert run['verdict']['target'] == run['display_name']
+    assert run['display_name'] in run['verdict']['summary']
     assert len(run['analysts']) == 7
     assert run['data_context']['source_files']
 

@@ -17,7 +17,7 @@ vi.mock('@/lib/mirofishApi', () => ({
   mirofishApi: mockApi,
 }));
 
-function runPayload(target: string, status = 'running') {
+function runPayload(target: string, status = 'running', overrides: Record<string, unknown> = {}) {
   return {
     id: 'mf_test_run',
     target,
@@ -34,6 +34,7 @@ function runPayload(target: string, status = 'running') {
       current_label: status === 'completed' ? 'Markdown Report' : 'Target Intake',
       elapsed_ms: 10,
     },
+    ...overrides,
   };
 }
 
@@ -121,5 +122,35 @@ describe('AdminEndpointsPage analysis start input', () => {
         target: '두산로보틱스',
       }));
     });
+  });
+
+  it('labels the final verdict with the selected target identity', async () => {
+    mockApi.startRun.mockResolvedValueOnce(runPayload('Samsung Electronics', 'running', {
+      symbol: '005930',
+      market: 'KOSPI',
+    }));
+    mockApi.hydrateRun.mockResolvedValueOnce(runPayload('Samsung Electronics', 'completed', {
+      display_name: 'Samsung Electronics',
+      symbol: '005930',
+      market: 'KOSPI',
+      verdict: {
+        label: 'BUY',
+        target: 'Samsung Electronics',
+        confidence: 75,
+        bullish: 5,
+        bearish: 1,
+        neutral: 4,
+        horizon: '1M',
+        summary: 'Live CIO verdict for Samsung Electronics: BUY with 75% confidence.',
+      },
+    }));
+    const input = await renderPage();
+
+    fireEvent.change(input, { target: { value: 'Samsung Electronics' } });
+    fireEvent.keyDown(input, { key: 'Enter', code: 'Enter', keyCode: 13 });
+
+    expect(await screen.findByText('단일 분석 대상 최종판결')).toBeTruthy();
+    expect(await screen.findByText((text) => text.includes('005930') && text.includes('KOSPI'))).toBeTruthy();
+    expect(await screen.findByText(/전체 종목 판정이 아니라/)).toBeTruthy();
   });
 });

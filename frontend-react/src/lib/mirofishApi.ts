@@ -144,6 +144,7 @@ export interface MiroFishRun {
     prediction_nodes?: MiroFishNode[];
     verdict?: {
         label?: MiroFishVerdict | string;
+        target?: string;
         confidence?: number;
         bullish?: number;
         bearish?: number;
@@ -358,6 +359,7 @@ function normalizeVerdict(rawValue: unknown, analysts: MiroFishAnalyst[]): MiroF
 
     return {
         label,
+        target: raw.target === undefined ? undefined : String(raw.target),
         confidence: asPercent(raw.confidence ?? raw.confidence_pct, 50),
         bullish: asNumber(bullish, 3),
         bearish: asNumber(bearish, 0),

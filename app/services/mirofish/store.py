@@ -401,7 +401,7 @@ def _build_run_progressive(run_id: str, target: str, agent_count: int, mode: str
         payload={'method': 'llm' if use_llm else 'rule'},
     )
     cio = cio_react.run_cio(final_target, brain, debate, use_llm=use_llm)
-    verdict = _verdict_from_cio(cio, debate, analysts)
+    verdict = _verdict_from_cio(cio, debate, analysts, final_target)
     run['cio'] = cio
     run['verdict'] = verdict
     run['pipeline']['cio_method'] = cio.get('method')
@@ -450,14 +450,15 @@ def _build_run(run_id: str, target: str, agent_count: int, mode: str) -> dict[st
     price = context.get('price') or {}
     use_llm = _use_llm(mode)
 
-    brain = _brain_summary(resolved.get('display_name') or target)
+    final_target = resolved.get('display_name') or target
+    brain = _brain_summary(final_target)
     extracted = graphrag_extractor.extract_graph(context.get('corpus', ''), use_llm=use_llm)
     merge_stats = graphrag_extractor.merge_into_ekg(extracted)
-    debate = agent_debate.run_debate(resolved.get('display_name') or target, brain, rounds=2, use_llm=use_llm)
-    cio = cio_react.run_cio(resolved.get('display_name') or target, brain, debate, use_llm=use_llm)
+    debate = agent_debate.run_debate(final_target, brain, rounds=2, use_llm=use_llm)
+    cio = cio_react.run_cio(final_target, brain, debate, use_llm=use_llm)
 
     analysts = _analysts_from_debate(debate, agent_count, brain)
-    verdict = _verdict_from_cio(cio, debate, analysts)
+    verdict = _verdict_from_cio(cio, debate, analysts, final_target)
     graph_nodes = _graph_nodes_from_extraction(extracted, resolved)
     prediction_nodes = _prediction_nodes(analysts)
     layers = [
@@ -468,7 +469,6 @@ def _build_run(run_id: str, target: str, agent_count: int, mode: str) -> dict[st
         {'label': 'VERDICT', 'count': 1, 'color': 'bg-emerald-400'},
     ]
 
-    final_target = resolved.get('display_name') or target
     logs = _logs(final_target, context, extracted, merge_stats, debate, cio, verdict)
     pipeline = {
         'status': 'completed',
@@ -744,7 +744,7 @@ def _analysts_from_debate(debate: dict[str, Any], agent_count: int, brain: dict[
     return analysts[:agent_count]
 
 
-def _verdict_from_cio(cio: dict[str, Any], debate: dict[str, Any], analysts: list[dict[str, Any]]) -> dict[str, Any]:
+def _verdict_from_cio(cio: dict[str, Any], debate: dict[str, Any], analysts: list[dict[str, Any]], target: str | None = None) -> dict[str, Any]:
     final = cio.get('final_answer') or {}
     action = str(final.get('action') or debate.get('final_consensus', {}).get('action') or 'HOLD').upper()
     if action not in {'BUY', 'SELL', 'HOLD'}:
@@ -753,9 +753,12 @@ def _verdict_from_cio(cio: dict[str, Any], debate: dict[str, Any], analysts: lis
     bullish = sum(1 for a in analysts if a.get('stance') == 'BUY')
     bearish = sum(1 for a in analysts if a.get('stance') == 'SELL')
     neutral = max(0, len(analysts) - bullish - bearish)
+    target_label = str(target or '').strip()
+    summary_subject = f" for {target_label}" if target_label else ''
     return {
         'action': action,
         'label': action,
+        'target': target_label or None,
         'confidence': confidence,
         'confidence_pct': int(round(confidence * 100)),
         'bullish': bullish,
@@ -764,7 +767,7 @@ def _verdict_from_cio(cio: dict[str, Any], debate: dict[str, Any], analysts: lis
         'horizon': '1M',
         'allocation_pct': final.get('allocation_pct', 0),
         'summary': (
-            f"Live CIO verdict {action} with {int(round(confidence * 100))}% confidence. "
+            f"Live CIO verdict{summary_subject}: {action} with {int(round(confidence * 100))}% confidence. "
             f"Agent split: bull {bullish}, neutral {neutral}, bear {bearish}."
         ),
         'reasoning': final.get('reasoning', ''),

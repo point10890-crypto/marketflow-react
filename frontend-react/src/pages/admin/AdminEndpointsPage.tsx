@@ -489,6 +489,16 @@ function SignalSummaryCard({ run }: { run: MiroFishRun }) {
 
 function FinalVerdictPanel({ run }: { run: MiroFishRun }) {
     const verdict = run.verdict;
+    const targetName = String(run.display_name || verdict?.target || run.target || '분석 대상').trim();
+    const targetMeta = [run.symbol, run.market]
+        .map((part) => String(part || '').trim())
+        .filter(Boolean)
+        .join(' · ');
+    const rawSummary = verdict?.summary || 'MiroFish 실데이터 판정이 도착했습니다.';
+    const scopedSummary = targetName && rawSummary.includes(targetName)
+        ? rawSummary
+        : `${targetName} 단일 분석 기준: ${rawSummary}`;
+
     return (
         <section className="relative overflow-hidden rounded-xl border border-emerald-200/20 bg-emerald-700 p-8 text-white shadow-[0_26px_90px_rgba(16,185,129,0.22)] md:p-12">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_36%,rgba(255,255,255,0.22),rgba(255,255,255,0)_24%),linear-gradient(135deg,rgba(6,95,70,0.9),rgba(5,150,105,0.95))]" />
@@ -497,8 +507,16 @@ function FinalVerdictPanel({ run }: { run: MiroFishRun }) {
                     <span>최종 판정</span>
                     <span className="h-px w-12 bg-emerald-100/30" />
                 </div>
+                <div className="mb-6 flex max-w-full flex-wrap items-center justify-center gap-2 rounded-full border border-white/20 bg-white/[0.12] px-4 py-2 text-xs font-black text-emerald-50 shadow-[0_14px_45px_rgba(0,0,0,0.14)] backdrop-blur">
+                    <span className="uppercase tracking-[0.2em] text-emerald-100/60">단일 분석 대상 최종판결</span>
+                    <span className="max-w-[min(72vw,520px)] truncate text-base text-white md:text-xl">{targetName}</span>
+                    <span className="rounded-full bg-white/15 px-2.5 py-1 font-mono text-[11px] text-emerald-50/80">{targetMeta || 'single target'}</span>
+                </div>
                 <h2 className="text-[76px] font-black leading-none tracking-tight text-white md:text-[152px]">{verdict?.label || 'HOLD'}</h2>
-                <p className="mt-7 text-base font-bold text-emerald-50/65 md:text-lg">{verdict?.summary || 'MiroFish 실데이터 판정이 도착했습니다.'}</p>
+                <p className="mt-7 max-w-4xl text-base font-bold text-emerald-50/75 md:text-lg">{scopedSummary}</p>
+                <p className="mt-3 text-xs font-black uppercase tracking-[0.2em] text-emerald-50/45">
+                    전체 종목 판정이 아니라 현재 선택한 대상 1건의 최종판결입니다.
+                </p>
                 <div className="mt-10 grid h-36 w-36 place-items-center rounded-full border-[7px] border-white/90 bg-white/5 shadow-[0_0_60px_rgba(255,255,255,0.16)]">
                     <div>
                         <div className="text-[11px] font-black uppercase tracking-[0.28em] text-emerald-50/45">확신도</div>
