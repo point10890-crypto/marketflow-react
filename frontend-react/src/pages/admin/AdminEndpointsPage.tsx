@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { MiroFishAnalyst, MiroFishLayer, MiroFishLog, MiroFishNode, MiroFishRun, MiroFishStatus, MiroFishTargetSnapshot, mirofishApi } from '@/lib/mirofishApi';
 
 const agentCounts = [3, 7, 10, 15];
@@ -566,6 +566,8 @@ export default function AdminEndpointsPage() {
     const [apiState, setApiState] = useState<ApiState>('checking');
     const [errorText, setErrorText] = useState<string | null>(null);
     const [activeRunId, setActiveRunId] = useState<string | null>(null);
+    const lastStartAtRef = useRef(0);
+    const resolveRequestRef = useRef(0);
 
     function markEndpoint(key: EndpointKey, state: EndpointStatus) {
         setEndpointState((current) => ({ ...current, [key]: state }));
@@ -663,16 +665,18 @@ export default function AdminEndpointsPage() {
         const nextTarget = target.trim();
         if (!nextTarget || apiState === 'running') return;
         let alive = true;
+        const requestId = resolveRequestRef.current + 1;
+        resolveRequestRef.current = requestId;
         markEndpoint('resolve', 'loading');
         const timer = window.setTimeout(() => {
             mirofishApi.resolveTarget(nextTarget)
                 .then((snapshot) => {
-                    if (!alive) return;
+                    if (!alive || resolveRequestRef.current !== requestId) return;
                     setTargetSnapshot(snapshot);
                     markEndpoint('resolve', 'ok');
                 })
                 .catch(() => {
-                    if (!alive) return;
+                    if (!alive || resolveRequestRef.current !== requestId) return;
                     setTargetSnapshot(null);
                     markEndpoint('resolve', 'error');
                 });
@@ -745,6 +749,13 @@ export default function AdminEndpointsPage() {
         }
     }
 
+    function requestStart() {
+        const now = Date.now();
+        if (apiState === 'running' || now - lastStartAtRef.current < 600) return;
+        lastStartAtRef.current = now;
+        void handleStart();
+    }
+
     return (
         <div className="space-y-5">
             <section className="relative overflow-hidden rounded-xl border border-white/[0.07] bg-[#111113]">
@@ -784,7 +795,13 @@ export default function AdminEndpointsPage() {
                         ))}
                     </div>
 
-                    <div className="mt-8 max-w-4xl rounded-xl border border-cyan-300/40 bg-white/90 p-2 shadow-[0_18px_70px_rgba(34,211,238,0.22)]">
+                    <form
+                        className="mt-8 max-w-4xl rounded-xl border border-cyan-300/40 bg-white/90 p-2 shadow-[0_18px_70px_rgba(34,211,238,0.22)]"
+                        onSubmit={(event) => {
+                            event.preventDefault();
+                            requestStart();
+                        }}
+                    >
                         <div className="flex flex-col gap-2 sm:flex-row">
                             <label className="flex min-h-12 flex-1 items-center gap-3 px-3 text-slate-500">
                                 <i className="fas fa-search text-lg" />
@@ -797,23 +814,22 @@ export default function AdminEndpointsPage() {
                                         setTargetSnapshot(null);
                                         markEndpoint('resolve', 'idle');
                                     }}
-                                    onKeyDown={(event) => {
+                                    onKeyUp={(event) => {
                                         if (event.key !== 'Enter' || event.nativeEvent.isComposing) return;
                                         event.preventDefault();
-                                        void handleStart();
+                                        requestStart();
                                     }}
                                 />
                             </label>
                             <button
-                                type="button"
-                                onClick={handleStart}
+                                type="submit"
                                 disabled={apiState === 'running'}
                                 className="min-h-12 rounded-lg bg-gradient-to-r from-blue-600 to-violet-600 px-6 text-sm font-black text-white shadow-lg shadow-violet-600/25 transition hover:brightness-110 disabled:cursor-wait disabled:opacity-75"
                             >
                                 {apiState === 'running' ? '분석 중' : '분석 시작'}
                             </button>
                         </div>
-                    </div>
+                    </form>
 
                     {errorText && <div className="mt-3 max-w-4xl rounded-lg border border-amber-300/20 bg-amber-300/10 px-4 py-2 text-xs font-bold text-amber-100">{errorText}</div>}
 
