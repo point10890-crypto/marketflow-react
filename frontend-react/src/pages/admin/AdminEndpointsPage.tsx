@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type CompositionEvent as ReactCompositionEvent, type KeyboardEvent as ReactKeyboardEvent } from 'react';
-import { MiroFishAnalyst, MiroFishLayer, MiroFishLog, MiroFishNode, MiroFishRun, MiroFishStatus, MiroFishTargetSnapshot, mirofishApi } from '@/lib/mirofishApi';
+import { MiroFishAlphaCandidate, MiroFishAnalyst, MiroFishLayer, MiroFishLog, MiroFishNode, MiroFishRun, MiroFishScannerRun, MiroFishStatus, MiroFishTargetSnapshot, mirofishApi } from '@/lib/mirofishApi';
 
 const agentCounts = [3, 7, 10, 15];
 const defaultTarget = '삼성전자';
@@ -44,6 +44,7 @@ const phaseNumberById: Record<string, number> = {
     report: 5,
 };
 type ApiState = 'checking' | 'ready' | 'error' | 'running';
+type AlphaScannerState = 'idle' | 'loading' | 'running' | 'ready' | 'error';
 type EndpointKey = 'status' | 'dataSources' | 'resolve' | 'history' | 'createRun' | 'runDetail' | 'graph' | 'events' | 'report';
 type EndpointStatus = 'idle' | 'loading' | 'ok' | 'error';
 type TargetCandidate = NonNullable<MiroFishTargetSnapshot['candidates']>[number];
@@ -165,6 +166,156 @@ function feedToneClass(tone?: string): string {
     if (tone.includes('amber') || tone.includes('yellow')) return 'text-amber-800';
     if (tone.includes('blue')) return 'text-blue-800';
     return 'text-slate-800';
+}
+
+function alphaActionTone(action?: string) {
+    const upper = String(action || '').toUpperCase();
+    if (upper.includes('BUY')) return 'border-emerald-300/25 bg-emerald-300/12 text-emerald-100';
+    if (upper.includes('AVOID') || upper.includes('SELL')) return 'border-rose-300/25 bg-rose-300/12 text-rose-100';
+    if (upper.includes('PULLBACK') || upper.includes('WAIT')) return 'border-amber-300/25 bg-amber-300/12 text-amber-100';
+    return 'border-cyan-300/20 bg-cyan-300/10 text-cyan-100';
+}
+
+function formatCompactNumber(value: unknown) {
+    const numeric = Number(value);
+    if (!Number.isFinite(numeric) || numeric <= 0) return '--';
+    if (numeric >= 100000000) return `${Math.round(numeric / 100000000).toLocaleString('ko-KR')}억`;
+    if (numeric >= 10000) return `${Math.round(numeric / 10000).toLocaleString('ko-KR')}만`;
+    return numeric.toLocaleString('ko-KR');
+}
+
+function formatAlphaEvidence(candidate: MiroFishAlphaCandidate): string {
+    const evidence = candidate.evidence?.[0];
+    if (evidence) {
+        const source = evidence.source || 'artifact';
+        const field = evidence.field || 'signal';
+        const score = evidence.score === undefined ? '' : ` ${Math.round(evidence.score)}`;
+        return `${source} / ${field}${score}`;
+    }
+    return `trading value ${formatCompactNumber(candidate.trading_value)}`;
+}
+
+function AlphaBoardPanel({
+    candidates,
+    scannerRun,
+    state,
+    errorText,
+    onScan,
+    onSelect,
+    onDeepDive,
+}: {
+    candidates: MiroFishAlphaCandidate[];
+    scannerRun: MiroFishScannerRun | null;
+    state: AlphaScannerState;
+    errorText?: string | null;
+    onScan: () => void;
+    onSelect: (candidate: MiroFishAlphaCandidate) => void;
+    onDeepDive: (candidate: MiroFishAlphaCandidate) => void;
+}) {
+    const topCandidates = candidates.slice(0, 5);
+    const scannerBusy = state === 'loading' || state === 'running';
+    return (
+        <section className="mt-8 max-w-6xl rounded-xl border border-emerald-300/15 bg-slate-950/55 p-4 shadow-[0_18px_70px_rgba(16,185,129,0.12)] backdrop-blur">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                <div>
+                    <div className="flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.22em] text-emerald-200/70">
+                        <i className="fas fa-radar text-emerald-300" />
+                        Alpha Board
+                    </div>
+                    <h2 className="mt-1 text-2xl font-black text-white">수익 후보 종목 검출</h2>
+                    <p className="mt-1 text-sm font-semibold text-slate-400">
+                        전체 시장을 스캔해 Alpha Score, Risk Score, 근거 신호로 실행 우선순위를 만듭니다.
+                    </p>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                    <span className={`rounded-full border px-3 py-1.5 text-xs font-black ${state === 'error' ? 'border-rose-300/20 bg-rose-300/10 text-rose-100' : state === 'ready' ? 'border-emerald-300/25 bg-emerald-300/10 text-emerald-100' : 'border-white/15 bg-white/8 text-slate-200'}`}>
+                        {state === 'idle' ? 'IDLE' : state.toUpperCase()}
+                    </span>
+                    <span className="rounded-full border border-white/10 bg-white/8 px-3 py-1.5 text-xs font-bold text-slate-300">
+                        {scannerRun?.candidate_count ?? candidates.length} candidates
+                    </span>
+                    <button
+                        type="button"
+                        onClick={onScan}
+                        disabled={scannerBusy}
+                        className="rounded-lg bg-emerald-400 px-4 py-2 text-xs font-black text-slate-950 shadow-lg shadow-emerald-500/20 transition hover:brightness-110 disabled:cursor-wait disabled:opacity-70"
+                    >
+                        {scannerBusy ? 'Scanning...' : 'Run scanner'}
+                    </button>
+                </div>
+            </div>
+
+            {errorText && (
+                <div className="mt-3 rounded-lg border border-rose-300/20 bg-rose-300/10 px-3 py-2 text-xs font-bold text-rose-100">
+                    {errorText}
+                </div>
+            )}
+
+            <div className="mt-4 grid gap-2">
+                {topCandidates.length ? topCandidates.map((candidate) => (
+                    <button
+                        key={`${candidate.rank}-${candidate.symbol}-${candidate.display_name}`}
+                        type="button"
+                        onClick={() => onSelect(candidate)}
+                        onDoubleClick={() => onDeepDive(candidate)}
+                        className="grid gap-3 rounded-lg border border-white/10 bg-white/[0.06] p-3 text-left transition hover:border-emerald-300/30 hover:bg-white/[0.09] md:grid-cols-[44px_1.4fr_0.8fr_0.8fr_1fr_auto]"
+                    >
+                        <span className="grid h-10 w-10 place-items-center rounded-lg bg-emerald-300/12 text-sm font-black text-emerald-100">
+                            #{candidate.rank}
+                        </span>
+                        <span className="min-w-0">
+                            <span className="block truncate text-base font-black text-white">{candidate.display_name}</span>
+                            <span className="mt-0.5 block font-mono text-[11px] font-bold text-slate-400">{candidate.symbol} · {candidate.market || 'KR'} · {candidate.horizon}</span>
+                        </span>
+                        <span>
+                            <span className="block text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">Alpha</span>
+                            <span className="text-2xl font-black text-emerald-200">{Math.round(candidate.alpha_score)}</span>
+                        </span>
+                        <span>
+                            <span className="block text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">Risk</span>
+                            <span className="text-2xl font-black text-amber-200">{Math.round(candidate.risk_score)}</span>
+                        </span>
+                        <span className="min-w-0">
+                            <span className={`inline-flex rounded-full border px-2.5 py-1 text-[11px] font-black ${alphaActionTone(candidate.action)}`}>
+                                {candidate.action}
+                            </span>
+                            <span className="mt-1 block truncate text-xs font-semibold text-slate-400">
+                                {candidate.strategy_tags.slice(0, 3).join(' · ') || 'multi-signal'}
+                            </span>
+                            <span className="mt-1 block truncate text-xs font-semibold text-slate-500">
+                                {formatAlphaEvidence(candidate)}
+                            </span>
+                        </span>
+                        <span className="flex items-center gap-2 md:justify-end">
+                            <span className="font-mono text-xs font-black text-slate-300">{formatPrice(candidate.price)}</span>
+                            <span
+                                role="button"
+                                tabIndex={0}
+                                onClick={(event) => {
+                                    event.stopPropagation();
+                                    onDeepDive(candidate);
+                                }}
+                                onKeyDown={(event) => {
+                                    if (event.key === 'Enter' || event.key === ' ') {
+                                        event.preventDefault();
+                                        event.stopPropagation();
+                                        onDeepDive(candidate);
+                                    }
+                                }}
+                                className="rounded-lg border border-cyan-300/25 bg-cyan-300/10 px-3 py-2 text-xs font-black text-cyan-100"
+                            >
+                                Deep Dive
+                            </span>
+                        </span>
+                    </button>
+                )) : (
+                    <div className="rounded-lg border border-dashed border-white/12 bg-white/[0.04] px-4 py-6 text-sm font-bold text-slate-400">
+                        아직 검출된 후보가 없습니다. Run scanner로 KR 시장 후보를 먼저 산출하세요.
+                    </div>
+                )}
+            </div>
+        </section>
+    );
 }
 
 function analystPositions(analysts: MiroFishAnalyst[]): MiroFishNode[] {
@@ -602,6 +753,10 @@ export default function AdminEndpointsPage() {
     const [activeCandidateIndex, setActiveCandidateIndex] = useState(0);
     const [recentRuns, setRecentRuns] = useState<MiroFishRun[]>([]);
     const [dataSourceCount, setDataSourceCount] = useState(0);
+    const [alphaScannerState, setAlphaScannerState] = useState<AlphaScannerState>('idle');
+    const [alphaScannerRun, setAlphaScannerRun] = useState<MiroFishScannerRun | null>(null);
+    const [alphaCandidates, setAlphaCandidates] = useState<MiroFishAlphaCandidate[]>([]);
+    const [alphaErrorText, setAlphaErrorText] = useState<string | null>(null);
     const [endpointState, setEndpointState] = useState<Record<EndpointKey, EndpointStatus>>(() => Object.fromEntries(endpointDefinitions.map((item) => [item.key, 'idle'])) as Record<EndpointKey, EndpointStatus>);
     const [apiState, setApiState] = useState<ApiState>('checking');
     const [errorText, setErrorText] = useState<string | null>(null);
@@ -703,6 +858,41 @@ export default function AdminEndpointsPage() {
             window.clearInterval(timer);
         };
     }, [activeRunId, isAnalyzing]);
+
+    useEffect(() => {
+        if (!alphaScannerRun?.id || alphaScannerState !== 'running') return;
+        let alive = true;
+        const scannerRunId = alphaScannerRun.id;
+
+        async function refreshScannerRun() {
+            try {
+                const [scannerRun, candidatePayload] = await Promise.all([
+                    mirofishApi.getScannerRun(scannerRunId),
+                    mirofishApi.getScannerCandidates(scannerRunId),
+                ]);
+                if (!alive) return;
+                setAlphaScannerRun(scannerRun);
+                setAlphaCandidates(candidatePayload.candidates);
+                if (scannerRun.status === 'completed') {
+                    setAlphaScannerState('ready');
+                } else if (scannerRun.status === 'failed') {
+                    setAlphaScannerState('error');
+                    setAlphaErrorText(scannerRun.error || 'Alpha scanner failed.');
+                }
+            } catch (error) {
+                if (!alive) return;
+                setAlphaScannerState('error');
+                setAlphaErrorText(error instanceof Error ? error.message : 'Alpha scanner polling failed.');
+            }
+        }
+
+        refreshScannerRun();
+        const timer = window.setInterval(refreshScannerRun, 1200);
+        return () => {
+            alive = false;
+            window.clearInterval(timer);
+        };
+    }, [alphaScannerRun?.id, alphaScannerState]);
 
     useEffect(() => {
         const nextTarget = target.trim();
@@ -866,6 +1056,53 @@ export default function AdminEndpointsPage() {
         }
     }
 
+    async function handleAlphaScan() {
+        setAlphaScannerState('loading');
+        setAlphaErrorText(null);
+        try {
+            const scannerRun = await mirofishApi.startScannerRun({
+                market: 'KR',
+                horizon: '20D',
+                strategy: 'multi_signal',
+                risk_profile: 'balanced',
+                limit: 20,
+            });
+            setAlphaScannerRun(scannerRun);
+            setAlphaCandidates(scannerRun.candidates || []);
+            setAlphaScannerState(scannerRun.status === 'completed' ? 'ready' : 'running');
+            if (scannerRun.status === 'failed') {
+                setAlphaScannerState('error');
+                setAlphaErrorText(scannerRun.error || 'Alpha scanner failed.');
+            }
+        } catch (error) {
+            setAlphaScannerState('error');
+            setAlphaErrorText(error instanceof Error ? error.message : 'Alpha scanner API unavailable.');
+        }
+    }
+
+    function selectAlphaCandidate(candidate: MiroFishAlphaCandidate) {
+        const nextTarget = candidate.display_name || candidate.symbol;
+        targetValueRef.current = nextTarget;
+        setTarget(nextTarget);
+        setTargetSnapshot({
+            target: nextTarget,
+            source: candidate.source || 'alpha_scanner',
+            resolved: {
+                symbol: candidate.symbol,
+                display_name: candidate.display_name,
+                market: candidate.market || 'KR',
+            },
+            signal_count: candidate.strategy_tags.length,
+            source_files: [candidate.source || 'alpha_scanner'],
+        });
+    }
+
+    function deepDiveAlphaCandidate(candidate: MiroFishAlphaCandidate) {
+        const nextTarget = candidate.display_name || candidate.symbol;
+        selectAlphaCandidate(candidate);
+        requestStart(nextTarget);
+    }
+
     function requestStart(targetOverride?: string) {
         const now = Date.now();
         if (apiState === 'running' || now - lastStartAtRef.current < 600) return;
@@ -921,6 +1158,16 @@ export default function AdminEndpointsPage() {
                             </span>
                         ))}
                     </div>
+
+                    <AlphaBoardPanel
+                        candidates={alphaCandidates}
+                        scannerRun={alphaScannerRun}
+                        state={alphaScannerState}
+                        errorText={alphaErrorText}
+                        onScan={handleAlphaScan}
+                        onSelect={selectAlphaCandidate}
+                        onDeepDive={deepDiveAlphaCandidate}
+                    />
 
                     <form
                         className="mt-8 max-w-4xl rounded-xl border border-cyan-300/40 bg-white/90 p-2 shadow-[0_18px_70px_rgba(34,211,238,0.22)]"

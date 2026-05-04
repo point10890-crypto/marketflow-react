@@ -137,3 +137,37 @@ def stream_events(run_id):
             'X-Accel-Buffering': 'no',
         },
     )
+
+
+@admin_mirofish_bp.route('/scanner/runs', methods=['POST'])
+@admin_required
+def create_scanner_run():
+    try:
+        run = mirofish.create_scanner_run(request.get_json(silent=True) or {})
+    except ValueError as exc:
+        return jsonify({'error': str(exc)}), 400
+    return jsonify(run), 201
+
+
+@admin_mirofish_bp.route('/scanner/runs/<run_id>', methods=['GET'])
+@admin_required
+def get_scanner_run(run_id):
+    try:
+        run = mirofish.read_scanner_run(run_id)
+    except ValueError as exc:
+        return jsonify({'error': str(exc)}), 400
+    if run is None:
+        return jsonify({'error': 'scanner run not found'}), 404
+    return jsonify(run)
+
+
+@admin_mirofish_bp.route('/scanner/runs/<run_id>/candidates', methods=['GET'])
+@admin_required
+def get_scanner_candidates(run_id):
+    try:
+        candidates = mirofish.read_scanner_candidates(run_id)
+    except ValueError as exc:
+        return jsonify({'error': str(exc)}), 400
+    if candidates is None:
+        return jsonify({'error': 'scanner run not found'}), 404
+    return jsonify(candidates)

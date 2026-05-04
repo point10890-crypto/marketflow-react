@@ -11,6 +11,9 @@ const mockApi = vi.hoisted(() => ({
   resolveTarget: vi.fn(),
   startRun: vi.fn(),
   hydrateRun: vi.fn(),
+  startScannerRun: vi.fn(),
+  getScannerRun: vi.fn(),
+  getScannerCandidates: vi.fn(),
 }));
 
 vi.mock('@/lib/mirofishApi', () => ({
@@ -67,6 +70,39 @@ beforeEach(() => {
   });
   mockApi.startRun.mockImplementation(async ({ target }) => runPayload(target));
   mockApi.hydrateRun.mockResolvedValue(runPayload('삼성전자', 'completed'));
+  mockApi.startScannerRun.mockResolvedValue({
+    id: 'mfas_test',
+    status: 'completed',
+    candidate_count: 1,
+    candidates: [
+      {
+        rank: 1,
+        symbol: '000001',
+        display_name: 'Alpha One',
+        market: 'KOSPI',
+        alpha_score: 88,
+        risk_score: 21,
+        action: 'BUY_CANDIDATE',
+        horizon: 'SWING_5_20D',
+        strategy_tags: ['momentum', 'vcp_entry'],
+        evidence: ['daily price momentum confirmed'],
+        price: 108,
+        change_pct: 8,
+        trading_value: 64800000000,
+      },
+    ],
+  });
+  mockApi.getScannerRun.mockResolvedValue({
+    id: 'mfas_test',
+    status: 'completed',
+    candidate_count: 1,
+    candidates: [],
+  });
+  mockApi.getScannerCandidates.mockResolvedValue({
+    run_id: 'mfas_test',
+    status: 'completed',
+    candidates: [],
+  });
 });
 
 describe('AdminEndpointsPage analysis start input', () => {
@@ -152,5 +188,27 @@ describe('AdminEndpointsPage analysis start input', () => {
     expect(await screen.findByText('단일 분석 대상 최종판결')).toBeTruthy();
     expect(await screen.findByText((text) => text.includes('005930') && text.includes('KOSPI'))).toBeTruthy();
     expect(await screen.findByText(/전체 종목 판정이 아니라/)).toBeTruthy();
+  });
+
+  it('runs alpha scanner and starts deep dive from a detected candidate', async () => {
+    await renderPage();
+
+    fireEvent.click(screen.getByRole('button', { name: /Run scanner/i }));
+
+    expect(await screen.findByText('Alpha One')).toBeTruthy();
+    expect(await screen.findByText('BUY_CANDIDATE')).toBeTruthy();
+
+    fireEvent.click(screen.getByText('Deep Dive'));
+
+    await waitFor(() => {
+      expect(mockApi.startScannerRun).toHaveBeenCalledWith(expect.objectContaining({
+        market: 'KR',
+        strategy: 'multi_signal',
+        limit: 20,
+      }));
+      expect(mockApi.startRun).toHaveBeenCalledWith(expect.objectContaining({
+        target: 'Alpha One',
+      }));
+    });
   });
 });

@@ -222,6 +222,78 @@ export interface StartMiroFishRunRequest {
     async?: boolean;
 }
 
+export interface MiroFishScannerRunRequest {
+    market?: 'KR' | 'US' | 'CRYPTO' | string;
+    horizon?: string;
+    strategy?: string;
+    risk_profile?: 'conservative' | 'balanced' | 'aggressive' | string;
+    limit?: number;
+}
+
+export interface MiroFishAlphaEvidence {
+    source?: string;
+    field?: string;
+    score?: number;
+    value?: unknown;
+    confidence?: number;
+}
+
+export interface MiroFishScannerSourceFile {
+    file?: string;
+    exists?: boolean;
+    generated_at?: string | null;
+    modified_at?: string | null;
+    freshness?: string;
+}
+
+export interface MiroFishAlphaCandidate {
+    rank: number;
+    symbol: string;
+    display_name: string;
+    market?: string;
+    alpha_score: number;
+    risk_score: number;
+    action: string;
+    horizon: string;
+    strategy_tags: string[];
+    evidence: MiroFishAlphaEvidence[];
+    risk_flags?: string[];
+    source?: string;
+    generated_at?: string;
+    freshness?: Record<string, any>;
+    freshness_sec?: number;
+    price?: number | string;
+    change_pct?: number;
+    trading_value?: number;
+    ranking_score?: number;
+    score_breakdown?: Record<string, number>;
+}
+
+export interface MiroFishScannerRun {
+    id: string;
+    status: string;
+    market?: string;
+    horizon?: string;
+    strategy?: string;
+    risk_profile?: string;
+    limit?: number;
+    generated_at?: string;
+    updated_at?: string;
+    candidate_count?: number;
+    source_files?: MiroFishScannerSourceFile[];
+    freshness?: Record<string, any>;
+    scoring_schema?: Record<string, any>;
+    candidates?: MiroFishAlphaCandidate[];
+    summary?: Record<string, any>;
+    error?: string;
+}
+
+export interface MiroFishScannerCandidatesResponse {
+    run_id?: string;
+    status?: string;
+    candidates: MiroFishAlphaCandidate[];
+}
+
 type RawObject = Record<string, any>;
 
 const phaseByName: Record<string, number> = {
@@ -267,6 +339,49 @@ function asPercent(value: unknown, fallback = 0): number {
     const numberValue = asNumber(value, fallback);
     if (numberValue > 0 && numberValue <= 1) return Math.round(numberValue * 100);
     return Math.round(numberValue);
+}
+
+function asStringArray(value: unknown): string[] {
+    if (Array.isArray(value)) return value.map((item) => String(item)).filter(Boolean);
+    if (typeof value === 'string' && value.trim()) return [value.trim()];
+    return [];
+}
+
+function normalizeAlphaEvidence(rawValue: unknown): MiroFishAlphaEvidence[] {
+    if (Array.isArray(rawValue)) {
+        return rawValue.map((item) => {
+            if (typeof item === 'string') {
+                return { source: 'alpha_scanner', field: item };
+            }
+            const raw = asObject(item);
+            return {
+                source: raw.source === undefined ? undefined : String(raw.source),
+                field: raw.field === undefined ? undefined : String(raw.field),
+                score: raw.score === undefined ? undefined : asNumber(raw.score, 0),
+                value: raw.value,
+                confidence: raw.confidence === undefined ? undefined : asNumber(raw.confidence, 0),
+            };
+        });
+    }
+    if (typeof rawValue === 'string' && rawValue.trim()) {
+        return [{ source: 'alpha_scanner', field: rawValue.trim() }];
+    }
+    return [];
+}
+
+function normalizeScannerSourceFiles(rawValue: unknown): MiroFishScannerSourceFile[] {
+    if (!Array.isArray(rawValue)) return [];
+    return rawValue.map((item) => {
+        if (typeof item === 'string') return { file: item, exists: true };
+        const raw = asObject(item);
+        return {
+            file: raw.file === undefined ? undefined : String(raw.file),
+            exists: raw.exists === undefined ? undefined : Boolean(raw.exists),
+            generated_at: raw.generated_at === undefined ? undefined : raw.generated_at === null ? null : String(raw.generated_at),
+            modified_at: raw.modified_at === undefined ? undefined : raw.modified_at === null ? null : String(raw.modified_at),
+            freshness: raw.freshness === undefined ? undefined : String(raw.freshness),
+        };
+    });
 }
 
 function normalizePhase(value: unknown, fallback = 1): number {
@@ -565,6 +680,76 @@ function unwrapRun(payload: any, target: string): MiroFishRun {
     };
 }
 
+function normalizeAlphaCandidate(rawValue: unknown, index = 0): MiroFishAlphaCandidate {
+    const raw = asObject(rawValue);
+    const symbol = String(raw.symbol ?? raw.code ?? raw.ticker ?? '');
+    const displayNameSource = raw.display_name ?? raw.name ?? raw.stock_name ?? symbol;
+    const displayName = String(displayNameSource || 'Unknown');
+    return {
+        ...raw,
+        rank: asNumber(raw.rank, index + 1),
+        symbol,
+        display_name: displayName,
+        market: raw.market === undefined ? undefined : String(raw.market),
+        alpha_score: asNumber(raw.alpha_score ?? raw.score ?? raw.total_score, 0),
+        risk_score: asNumber(raw.risk_score ?? raw.risk ?? raw.risk_penalty, 0),
+        ranking_score: asNumber(raw.ranking_score, 0),
+        action: String(raw.action ?? raw.verdict ?? 'WATCH').toUpperCase(),
+        horizon: String(raw.horizon ?? raw.expected_horizon ?? '20D').toUpperCase(),
+        strategy_tags: asStringArray(raw.strategy_tags ?? raw.strategies ?? raw.tags),
+        evidence: normalizeAlphaEvidence(raw.evidence ?? raw.reasons ?? raw.reason),
+        risk_flags: asStringArray(raw.risk_flags ?? raw.risks),
+        source: raw.source === undefined ? undefined : String(raw.source),
+        generated_at: raw.generated_at === undefined ? undefined : String(raw.generated_at),
+        freshness: asObject(raw.freshness),
+        freshness_sec: raw.freshness_sec === undefined ? undefined : asNumber(raw.freshness_sec, 0),
+        price: asObject(raw.price).current_price ?? raw.price ?? raw.current_price,
+        change_pct: raw.change_pct === undefined
+            ? asObject(raw.price).change_rate === undefined ? undefined : asNumber(asObject(raw.price).change_rate, 0)
+            : asNumber(raw.change_pct, 0),
+        trading_value: raw.trading_value === undefined
+            ? asObject(raw.price).trading_value === undefined ? undefined : asNumber(asObject(raw.price).trading_value, 0)
+            : asNumber(raw.trading_value, 0),
+        score_breakdown: asObject(raw.score_breakdown ?? raw.breakdown),
+    };
+}
+
+function normalizeScannerRun(payload: any): MiroFishScannerRun {
+    const raw = asObject(payload?.run ?? payload?.data ?? payload?.result ?? payload);
+    const rawCandidates = Array.isArray(raw.candidates) ? raw.candidates : [];
+    return {
+        ...raw,
+        id: String(raw.id ?? raw.run_id ?? ''),
+        status: String(raw.status ?? 'completed'),
+        market: raw.market === undefined ? undefined : String(raw.market),
+        horizon: raw.horizon === undefined ? undefined : String(raw.horizon).toUpperCase(),
+        strategy: raw.strategy === undefined ? undefined : String(raw.strategy),
+        risk_profile: raw.risk_profile === undefined ? undefined : String(raw.risk_profile),
+        limit: raw.limit === undefined ? undefined : asNumber(raw.limit, 20),
+        candidate_count: asNumber(raw.candidate_count ?? rawCandidates.length, rawCandidates.length),
+        source_files: normalizeScannerSourceFiles(raw.source_files),
+        freshness: asObject(raw.freshness),
+        scoring_schema: asObject(raw.scoring_schema),
+        candidates: rawCandidates.map(normalizeAlphaCandidate),
+        summary: asObject(raw.summary),
+        error: raw.error === undefined ? undefined : String(raw.error),
+    };
+}
+
+function normalizeScannerCandidates(payload: any): MiroFishScannerCandidatesResponse {
+    const raw = asObject(payload);
+    const rawCandidates = Array.isArray(raw.candidates)
+        ? raw.candidates
+        : Array.isArray(raw.results)
+            ? raw.results
+            : [];
+    return {
+        run_id: raw.run_id === undefined ? undefined : String(raw.run_id),
+        status: raw.status === undefined ? undefined : String(raw.status),
+        candidates: rawCandidates.map(normalizeAlphaCandidate),
+    };
+}
+
 export const mirofishApi = {
     getStatus: async () => normalizeStatus(await fetchAuthAPI<any>('/api/admin/mirofish/status')),
     getDataSources: async () => fetchAuthAPI<any>('/api/admin/mirofish/data-sources'),
@@ -596,4 +781,13 @@ export const mirofishApi = {
         const payload = await postAuthAPI<any>('/api/admin/mirofish/runs', request, undefined, 180000);
         return unwrapRun(payload, request.target);
     },
+    startScannerRun: async (request: MiroFishScannerRunRequest = {}) => normalizeScannerRun(
+        await postAuthAPI<any>('/api/admin/mirofish/scanner/runs', request, undefined, 60000),
+    ),
+    getScannerRun: async (runId: string) => normalizeScannerRun(
+        await fetchAuthAPI<any>(`/api/admin/mirofish/scanner/runs/${runId}`),
+    ),
+    getScannerCandidates: async (runId: string) => normalizeScannerCandidates(
+        await fetchAuthAPI<any>(`/api/admin/mirofish/scanner/runs/${runId}/candidates`),
+    ),
 };
