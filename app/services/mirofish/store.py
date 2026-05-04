@@ -65,6 +65,18 @@ def get_data_sources() -> dict[str, Any]:
     return live_data.summarize_data_sources()
 
 
+def search_target_candidates(target: str, limit: int = 16) -> dict[str, Any]:
+    clean_target = str(target or '').strip()
+    if not clean_target:
+        return {'target': '', 'candidates': []}
+    clean_limit = max(1, min(int(limit or 16), 30))
+    return {
+        'target': clean_target,
+        'source': 'ticker_map',
+        'candidates': live_data.search_target_candidates(clean_target, limit=clean_limit),
+    }
+
+
 def resolve_target_snapshot(target: str) -> dict[str, Any]:
     clean_target = _clean_target(target)
     context = live_data.build_context(clean_target)

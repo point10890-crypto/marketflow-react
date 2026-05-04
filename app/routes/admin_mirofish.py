@@ -33,6 +33,17 @@ def resolve_target():
     return jsonify(snapshot)
 
 
+@admin_mirofish_bp.route('/targets/search', methods=['GET'])
+@admin_required
+def search_targets():
+    target = request.args.get('target', '')
+    try:
+        limit = int(request.args.get('limit', 16))
+    except (TypeError, ValueError):
+        return jsonify({'error': 'limit must be an integer'}), 400
+    return jsonify(mirofish.search_target_candidates(target, limit=limit))
+
+
 @admin_mirofish_bp.route('/runs', methods=['POST'])
 @admin_required
 def create_run():

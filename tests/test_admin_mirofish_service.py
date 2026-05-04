@@ -126,6 +126,18 @@ def test_mirofish_target_snapshot_returns_initial_candidates():
     assert doosan_robotics in candidate_names
 
 
+def test_mirofish_target_search_is_lightweight_candidates_only():
+    response = store.search_target_candidates('\ub450\uc0b0', limit=4)
+
+    assert response['source'] == 'ticker_map'
+    assert [item['display_name'] for item in response['candidates'][:2]] == [
+        '\ub450\uc0b0',
+        '\ub450\uc0b0\uc5d0\ub108\ube4c\ub9ac\ud2f0',
+    ]
+    assert 'price' not in response
+    assert 'kis' not in response
+
+
 def test_mirofish_context_can_enrich_graphrag_with_kis_api(monkeypatch):
     monkeypatch.setenv('MIROFISH_USE_KIS', '1')
 

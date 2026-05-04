@@ -120,6 +120,12 @@ export interface MiroFishTargetSnapshot {
     built_at?: string;
 }
 
+export interface MiroFishTargetSearchResponse {
+    target?: string;
+    source?: string;
+    candidates: NonNullable<MiroFishTargetSnapshot['candidates']>;
+}
+
 export interface MiroFishRun {
     id?: string | number;
     target: string;
@@ -560,6 +566,7 @@ function unwrapRun(payload: any, target: string): MiroFishRun {
 export const mirofishApi = {
     getStatus: async () => normalizeStatus(await fetchAuthAPI<any>('/api/admin/mirofish/status')),
     getDataSources: async () => fetchAuthAPI<any>('/api/admin/mirofish/data-sources'),
+    searchTargets: async (target: string, limit = 16) => fetchAuthAPI<MiroFishTargetSearchResponse>(`/api/admin/mirofish/targets/search?target=${encodeURIComponent(target)}&limit=${limit}`),
     resolveTarget: async (target: string) => fetchAuthAPI<MiroFishTargetSnapshot>(`/api/admin/mirofish/targets/resolve?target=${encodeURIComponent(target)}`),
     listRuns: async () => {
         const payload = await fetchAuthAPI<any>('/api/admin/mirofish/runs');

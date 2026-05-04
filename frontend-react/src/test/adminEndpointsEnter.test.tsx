@@ -7,6 +7,7 @@ const mockApi = vi.hoisted(() => ({
   getStatus: vi.fn(),
   getDataSources: vi.fn(),
   listRuns: vi.fn(),
+  searchTargets: vi.fn(),
   resolveTarget: vi.fn(),
   startRun: vi.fn(),
   hydrateRun: vi.fn(),
@@ -52,6 +53,11 @@ beforeEach(() => {
   });
   mockApi.getDataSources.mockResolvedValue({ files: [] });
   mockApi.listRuns.mockResolvedValue({ runs: [] });
+  mockApi.searchTargets.mockResolvedValue({
+    target: 'ㅅㅅㅈㅈ',
+    source: 'ticker_map',
+    candidates: [],
+  });
   mockApi.resolveTarget.mockResolvedValue({
     target: 'ㅅㅅㅈㅈ',
     resolved: { symbol: '005930', display_name: '삼성전자', market: 'KOSPI' },
@@ -92,16 +98,14 @@ describe('AdminEndpointsPage analysis start input', () => {
   });
 
   it('shows ambiguous autocomplete candidates and starts the selected one with Enter', async () => {
-    mockApi.resolveTarget.mockResolvedValueOnce({
+    mockApi.searchTargets.mockResolvedValueOnce({
       target: '두산',
-      resolved: { symbol: '000150', display_name: '두산', market: 'KOSPI' },
+      source: 'ticker_map',
       candidates: [
         { symbol: '000150', display_name: '두산', market: 'KOSPI', yahoo_ticker: '000150.KS', match_type: 'exact' },
         { symbol: '034020', display_name: '두산에너빌리티', market: 'KOSPI', yahoo_ticker: '034020.KS', match_type: 'name_prefix' },
         { symbol: '454910', display_name: '두산로보틱스', market: 'KOSPI', yahoo_ticker: '454910.KS', match_type: 'name_prefix' },
       ],
-      source_files: [],
-      signal_count: 0,
     });
     const input = await renderPage();
 

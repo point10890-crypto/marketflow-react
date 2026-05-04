@@ -579,6 +579,8 @@ export default function AdminEndpointsPage() {
     const [run, setRun] = useState<MiroFishRun>(() => createEmptyRun());
     const [status, setStatus] = useState<MiroFishStatus | null>(null);
     const [targetSnapshot, setTargetSnapshot] = useState<MiroFishTargetSnapshot | null>(null);
+    const [suggestionTarget, setSuggestionTarget] = useState('');
+    const [suggestionCandidates, setSuggestionCandidates] = useState<TargetCandidate[]>([]);
     const [activeCandidateIndex, setActiveCandidateIndex] = useState(0);
     const [recentRuns, setRecentRuns] = useState<MiroFishRun[]>([]);
     const [dataSourceCount, setDataSourceCount] = useState(0);
@@ -588,6 +590,7 @@ export default function AdminEndpointsPage() {
     const [activeRunId, setActiveRunId] = useState<string | null>(null);
     const lastStartAtRef = useRef(0);
     const targetValueRef = useRef(defaultTarget);
+    const suggestRequestRef = useRef(0);
     const resolveRequestRef = useRef(0);
     const pendingCompositionStartRef = useRef(false);
 
@@ -685,26 +688,56 @@ export default function AdminEndpointsPage() {
 
     useEffect(() => {
         const nextTarget = target.trim();
+        if (!nextTarget || apiState === 'running') {
+            setSuggestionTarget('');
+            setSuggestionCandidates([]);
+            setActiveCandidateIndex(0);
+            return;
+        }
+        let alive = true;
+        const requestId = suggestRequestRef.current + 1;
+        suggestRequestRef.current = requestId;
+        markEndpoint('resolve', 'loading');
+        const timer = window.setTimeout(() => {
+            mirofishApi.searchTargets(nextTarget, 16)
+                .then((payload) => {
+                    if (!alive || suggestRequestRef.current !== requestId) return;
+                    setSuggestionTarget(payload.target?.trim() || nextTarget);
+                    setSuggestionCandidates(payload.candidates || []);
+                    setActiveCandidateIndex(0);
+                    markEndpoint('resolve', 'ok');
+                })
+                .catch(() => {
+                    if (!alive || suggestRequestRef.current !== requestId) return;
+                    setSuggestionTarget(nextTarget);
+                    setSuggestionCandidates([]);
+                    setActiveCandidateIndex(0);
+                    markEndpoint('resolve', 'error');
+                });
+        }, 80);
+        return () => {
+            alive = false;
+            window.clearTimeout(timer);
+        };
+    }, [target, apiState]);
+
+    useEffect(() => {
+        const nextTarget = target.trim();
         if (!nextTarget || apiState === 'running') return;
         let alive = true;
         const requestId = resolveRequestRef.current + 1;
         resolveRequestRef.current = requestId;
-        markEndpoint('resolve', 'loading');
         const timer = window.setTimeout(() => {
             mirofishApi.resolveTarget(nextTarget)
                 .then((snapshot) => {
                     if (!alive || resolveRequestRef.current !== requestId) return;
                     setTargetSnapshot(snapshot);
-                    setActiveCandidateIndex(0);
-                    markEndpoint('resolve', 'ok');
                 })
                 .catch(() => {
                     if (!alive || resolveRequestRef.current !== requestId) return;
                     setTargetSnapshot(null);
-                    setActiveCandidateIndex(0);
-                    markEndpoint('resolve', 'error');
                 });
-        }, 450);
+        }, 520);
         return () => {
             alive = false;
             window.clearTimeout(timer);
@@ -734,9 +767,9 @@ export default function AdminEndpointsPage() {
 
     const targetCandidates = useMemo<TargetCandidate[]>(() => {
         const query = target.trim();
-        if (!query || targetSnapshot?.target?.trim() !== query) return [];
-        return (targetSnapshot.candidates || []).filter((candidate) => targetCandidateStartValue(candidate));
-    }, [target, targetSnapshot]);
+        if (!query || suggestionTarget !== query) return [];
+        return suggestionCandidates.filter((candidate) => targetCandidateStartValue(candidate));
+    }, [target, suggestionCandidates, suggestionTarget]);
 
     const activeCandidate = targetCandidates[activeCandidateIndex] || targetCandidates[0] || null;
 
@@ -752,6 +785,8 @@ export default function AdminEndpointsPage() {
         targetValueRef.current = nextTarget;
         setTarget(nextTarget);
         setTargetSnapshot(null);
+        setSuggestionTarget('');
+        setSuggestionCandidates([]);
         setActiveCandidateIndex(0);
         markEndpoint('resolve', 'loading');
         if (shouldStart) requestStart(nextTarget);
@@ -908,6 +943,8 @@ export default function AdminEndpointsPage() {
                                         targetValueRef.current = nextTarget;
                                         setTarget(nextTarget);
                                         setTargetSnapshot(null);
+                                        setSuggestionTarget('');
+                                        setSuggestionCandidates([]);
                                         setActiveCandidateIndex(0);
                                         markEndpoint('resolve', 'idle');
                                     }}

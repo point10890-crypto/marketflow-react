@@ -13,6 +13,7 @@ from app.services.mirofish.store import (
     list_runs,
     read_run,
     resolve_target_snapshot,
+    search_target_candidates,
 )
 
 __all__ = [
@@ -24,6 +25,7 @@ __all__ = [
     'list_runs',
     'read_run',
     'resolve_target_snapshot',
+    'search_target_candidates',
     'load_brain_13d_snapshot',
     'DIMENSIONS',
 ]
