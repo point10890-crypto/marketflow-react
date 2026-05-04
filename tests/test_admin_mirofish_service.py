@@ -90,6 +90,20 @@ def test_mirofish_target_snapshot_resolves_chosung_and_normalized_names():
     assert soil_chosung['resolved']['symbol'] == '010950'
 
 
+def test_mirofish_run_start_resolves_chosung_target(tmp_path, monkeypatch):
+    monkeypatch.setattr(store, 'RUNS_ROOT', str(tmp_path))
+
+    run = store.create_run({
+        'target': 'ㅅㅅㅈㅈ',
+        'agent_count': 3,
+        'mode': 'fast',
+    })
+
+    assert run['symbol'] == '005930'
+    assert run['display_name'] == '삼성전자'
+    assert run['status'] == 'completed'
+
+
 def test_mirofish_data_sources_reports_files():
     sources = store.get_data_sources()
 

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type CompositionEvent as ReactCompositionEvent, type KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { MiroFishAnalyst, MiroFishLayer, MiroFishLog, MiroFishNode, MiroFishRun, MiroFishStatus, MiroFishTargetSnapshot, mirofishApi } from '@/lib/mirofishApi';
 
 const agentCounts = [3, 7, 10, 15];
@@ -567,7 +567,9 @@ export default function AdminEndpointsPage() {
     const [errorText, setErrorText] = useState<string | null>(null);
     const [activeRunId, setActiveRunId] = useState<string | null>(null);
     const lastStartAtRef = useRef(0);
+    const targetValueRef = useRef(defaultTarget);
     const resolveRequestRef = useRef(0);
+    const pendingCompositionStartRef = useRef(false);
 
     function markEndpoint(key: EndpointKey, state: EndpointStatus) {
         setEndpointState((current) => ({ ...current, [key]: state }));
@@ -708,9 +710,9 @@ export default function AdminEndpointsPage() {
         report: run.report?.markdown ? `${run.report.markdown.length} chars` : 'waiting',
     }), [dataSourceCount, recentRuns.length, run, status, targetSnapshot]);
 
-    async function handleStart() {
+    async function handleStart(targetOverride?: string) {
         if (apiState === 'running') return;
-        const nextTarget = target.trim() || defaultTarget;
+        const nextTarget = (targetOverride ?? targetValueRef.current ?? target).trim() || defaultTarget;
         setErrorText(null);
         setIsAnalyzing(true);
         setApiState('running');
@@ -749,11 +751,21 @@ export default function AdminEndpointsPage() {
         }
     }
 
-    function requestStart() {
+    function requestStart(targetOverride?: string) {
         const now = Date.now();
         if (apiState === 'running' || now - lastStartAtRef.current < 600) return;
         lastStartAtRef.current = now;
-        void handleStart();
+        void handleStart(targetOverride);
+    }
+
+    function isEnterKey(event: ReactKeyboardEvent<HTMLInputElement>) {
+        const native = event.nativeEvent as KeyboardEvent & { isComposing?: boolean; keyCode?: number };
+        return event.key === 'Enter' || event.code === 'Enter' || event.key === 'NumpadEnter' || native.keyCode === 13;
+    }
+
+    function isComposing(event: ReactKeyboardEvent<HTMLInputElement> | ReactCompositionEvent<HTMLInputElement>) {
+        const native = event.nativeEvent as KeyboardEvent & { isComposing?: boolean; keyCode?: number };
+        return Boolean(native.isComposing || native.keyCode === 229);
     }
 
     return (
@@ -799,25 +811,44 @@ export default function AdminEndpointsPage() {
                         className="mt-8 max-w-4xl rounded-xl border border-cyan-300/40 bg-white/90 p-2 shadow-[0_18px_70px_rgba(34,211,238,0.22)]"
                         onSubmit={(event) => {
                             event.preventDefault();
-                            requestStart();
+                            const formTarget = new FormData(event.currentTarget).get('target');
+                            requestStart(typeof formTarget === 'string' ? formTarget : targetValueRef.current);
                         }}
                     >
                         <div className="flex flex-col gap-2 sm:flex-row">
                             <label className="flex min-h-12 flex-1 items-center gap-3 px-3 text-slate-500">
                                 <i className="fas fa-search text-lg" />
                                 <input
+                                    name="target"
                                     className="w-full bg-transparent text-base font-bold text-slate-900 outline-none placeholder:text-slate-400"
                                     placeholder="삼성전자, NVDA, BTC, FOMC 등 분석 대상 입력"
                                     value={target}
                                     onChange={(event) => {
-                                        setTarget(event.target.value);
+                                        const nextTarget = event.target.value;
+                                        targetValueRef.current = nextTarget;
+                                        setTarget(nextTarget);
                                         setTargetSnapshot(null);
                                         markEndpoint('resolve', 'idle');
                                     }}
-                                    onKeyUp={(event) => {
-                                        if (event.key !== 'Enter' || event.nativeEvent.isComposing) return;
+                                    onKeyDown={(event) => {
+                                        if (!isEnterKey(event)) return;
+                                        if (isComposing(event)) {
+                                            pendingCompositionStartRef.current = true;
+                                            return;
+                                        }
                                         event.preventDefault();
-                                        requestStart();
+                                        requestStart(event.currentTarget.value);
+                                    }}
+                                    onKeyUp={(event) => {
+                                        if (!isEnterKey(event) || isComposing(event)) return;
+                                        event.preventDefault();
+                                        requestStart(event.currentTarget.value);
+                                    }}
+                                    onCompositionEnd={(event) => {
+                                        if (!pendingCompositionStartRef.current) return;
+                                        pendingCompositionStartRef.current = false;
+                                        const composedTarget = event.currentTarget.value;
+                                        window.setTimeout(() => requestStart(composedTarget), 0);
                                     }}
                                 />
                             </label>
