@@ -11,6 +11,8 @@ import csv
 import json
 import os
 import re
+import threading
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -42,6 +44,10 @@ _CHOSEONG = (
     'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ',
 )
 
+_KIS_CACHE_TTL_SECONDS = int(os.getenv('MIROFISH_KIS_CACHE_TTL_SECONDS', '30'))
+_kis_cache_lock = threading.Lock()
+_kis_snapshot_cache: dict[str, tuple[float, dict[str, Any]]] = {}
+
 
 def build_context(target: str) -> dict[str, Any]:
     """Build a live context from MarketFlow output artifacts."""
@@ -50,6 +56,8 @@ def build_context(target: str) -> dict[str, Any]:
     signals = load_signal_snapshots(resolved)
     briefings = load_briefing_snippets(resolved)
     dart = load_dart_snapshot(resolved)
+    kis = load_kis_snapshot(resolved)
+    price = _apply_kis_price(price, kis)
 
     documents = []
     if price.get('found'):
@@ -63,6 +71,8 @@ def build_context(target: str) -> dict[str, Any]:
             documents.append(f"{source_name}: {json.dumps(item, ensure_ascii=False)[:1200]}")
     if dart:
         documents.append(f"DART financial snapshot: {json.dumps(dart, ensure_ascii=False)[:1600]}")
+    if kis.get('found'):
+        documents.extend(_kis_documents(resolved, kis))
     for item in briefings:
         documents.append(f"{item.get('source')}: {item.get('text')}")
 
@@ -80,6 +90,7 @@ def build_context(target: str) -> dict[str, Any]:
             sources.append(item['source_file'])
     if dart and dart.get('source_file'):
         sources.append(dart['source_file'])
+    sources.extend(kis.get('sources') or [])
 
     return {
         'target': target,
@@ -88,6 +99,7 @@ def build_context(target: str) -> dict[str, Any]:
         'signals': signals,
         'briefings': briefings,
         'dart': dart,
+        'kis': kis,
         'corpus': corpus,
         'source_files': sorted(set(sources)),
         'built_at': datetime.now(timezone.utc).isoformat(),
@@ -102,6 +114,7 @@ def summarize_data_sources() -> dict[str, Any]:
         DATA_DIR / 'jongga_v2_latest.json',
         DATA_DIR / 'vcp_kr_latest.json',
         DATA_DIR / 'kr_ai_analysis.json',
+        DATA_DIR / 'kis_token_cache.json',
         DATA_DIR / 'admin_mirofish' / 'ekg.json',
     ]
     out = []
@@ -115,7 +128,19 @@ def summarize_data_sources() -> dict[str, Any]:
             })
         else:
             out.append({'file': _rel(path), 'exists': False})
-    return {'mode': 'live_file_artifacts', 'files': out}
+    return {
+        'mode': 'live_file_artifacts',
+        'files': out,
+        'live_sources': [
+            {
+                'source': 'KIS API',
+                'enabled': _kis_enabled(),
+                'configured': _kis_configured(),
+                'paper': os.environ.get('KIS_PAPER', 'true').lower() in ('true', '1'),
+                'cache_ttl_seconds': _KIS_CACHE_TTL_SECONDS,
+            },
+        ],
+    }
 
 
 def resolve_target(target: str) -> dict[str, Any]:
@@ -274,6 +299,177 @@ def load_dart_snapshot(resolved: dict[str, Any]) -> dict[str, Any] | None:
     }
 
 
+def load_kis_snapshot(resolved: dict[str, Any]) -> dict[str, Any]:
+    """Fetch optional live KIS quote/investor data for a resolved KR equity."""
+    symbol = str(resolved.get('symbol') or '').zfill(6)
+    if not _kis_enabled():
+        return {'source': 'KIS API', 'enabled': False, 'found': False, 'sources': []}
+    if not symbol or len(symbol) != 6 or not symbol.isdigit() or not symbol.strip('0'):
+        return {'source': 'KIS API', 'enabled': True, 'found': False, 'reason': 'unsupported_target', 'sources': []}
+
+    now = time.time()
+    with _kis_cache_lock:
+        cached = _kis_snapshot_cache.get(symbol)
+        if cached and now - cached[0] < _KIS_CACHE_TTL_SECONDS:
+            return {**cached[1], 'cached': True}
+
+    snapshot = _fetch_kis_snapshot_uncached(symbol)
+    with _kis_cache_lock:
+        _kis_snapshot_cache[symbol] = (now, snapshot)
+    return snapshot
+
+
+def _fetch_kis_snapshot_uncached(symbol: str) -> dict[str, Any]:
+    try:
+        from app.services import kis_screener
+    except Exception as exc:
+        return {
+            'source': 'KIS API',
+            'enabled': True,
+            'found': False,
+            'error': f'import_failed:{type(exc).__name__}',
+            'sources': [],
+        }
+
+    if not _kis_configured():
+        return {'source': 'KIS API', 'enabled': True, 'found': False, 'error': 'credentials_unavailable', 'sources': []}
+
+    try:
+        token = kis_screener.get_token()
+        if not token:
+            return {'source': 'KIS API', 'enabled': True, 'found': False, 'error': 'token_unavailable', 'sources': []}
+        price_detail = kis_screener.fetch_price_detail(token, symbol) or {}
+        investor_rows = kis_screener.fetch_investor(token, symbol) or []
+        quote = _normalize_kis_quote(symbol, price_detail)
+        investor = _normalize_kis_investor(investor_rows)
+        sources = []
+        if quote:
+            sources.append('KIS API: inquire-price')
+        if investor:
+            sources.append('KIS API: inquire-investor')
+        return {
+            'source': 'KIS API',
+            'enabled': True,
+            'found': bool(quote or investor),
+            'symbol': symbol,
+            'quote': quote,
+            'investor': investor,
+            'sources': sources,
+            'fetched_at': datetime.now(timezone.utc).isoformat(),
+        }
+    except Exception as exc:
+        return {
+            'source': 'KIS API',
+            'enabled': True,
+            'found': False,
+            'symbol': symbol,
+            'error': type(exc).__name__,
+            'sources': [],
+            'fetched_at': datetime.now(timezone.utc).isoformat(),
+        }
+
+
+def _normalize_kis_quote(symbol: str, data: dict[str, Any]) -> dict[str, Any]:
+    if not isinstance(data, dict) or not data:
+        return {}
+    price = _int(data.get('stck_prpr'))
+    if price is None:
+        return {}
+    return {
+        'symbol': symbol,
+        'price': price,
+        'change': _int(data.get('prdy_vrss')),
+        'change_pct': _float(data.get('prdy_ctrt')),
+        'open': _int(data.get('stck_oprc')),
+        'high': _int(data.get('stck_hgpr')),
+        'low': _int(data.get('stck_lwpr')),
+        'volume': _int(data.get('acml_vol')),
+        'trading_value': _int(data.get('acml_tr_pbmn')),
+        'market_cap_eok': _int(data.get('hts_avls')),
+        'per': _float(data.get('per')),
+        'pbr': _float(data.get('pbr')),
+        'eps': _float(data.get('eps')),
+        'bps': _float(data.get('bps')),
+        'high_52w': _int(data.get('stck_dryy_hgpr')),
+        'high_52w_date': data.get('dryy_hgpr_date'),
+        'low_52w': _int(data.get('stck_dryy_lwpr')),
+        'low_52w_date': data.get('dryy_lwpr_date'),
+    }
+
+
+def _normalize_kis_investor(rows: Any) -> dict[str, Any]:
+    if not isinstance(rows, list) or not rows:
+        return {}
+    today = rows[0] if isinstance(rows[0], dict) else {}
+    if not today:
+        return {}
+    return {
+        'foreign_net_qty': _int(today.get('frgn_ntby_qty')),
+        'institution_net_qty': _int(today.get('orgn_ntby_qty')),
+        'individual_net_qty': _int(today.get('prsn_ntby_qty')),
+        'foreign_net_value': _int(today.get('frgn_ntby_tr_pbmn')),
+        'institution_net_value': _int(today.get('orgn_ntby_tr_pbmn')),
+        'individual_net_value': _int(today.get('prsn_ntby_tr_pbmn')),
+    }
+
+
+def _apply_kis_price(price: dict[str, Any], kis: dict[str, Any]) -> dict[str, Any]:
+    quote = kis.get('quote') if isinstance(kis, dict) else None
+    if not isinstance(quote, dict) or quote.get('price') is None:
+        return price
+    merged = dict(price or {})
+    merged.update({
+        'found': True,
+        'source': 'kis_api',
+        'symbol': quote.get('symbol') or merged.get('symbol'),
+        'price': quote.get('price'),
+        'change_pct': quote.get('change_pct') if quote.get('change_pct') is not None else merged.get('change_pct', 0),
+        'open': quote.get('open'),
+        'high': quote.get('high'),
+        'low': quote.get('low'),
+        'volume': quote.get('volume'),
+        'trading_value': quote.get('trading_value'),
+        'market_cap_eok': quote.get('market_cap_eok'),
+        'date': datetime.now().strftime('%Y-%m-%d'),
+        'updated_at': kis.get('fetched_at'),
+    })
+    merged['sources'] = sorted(set((price or {}).get('sources', []) + (kis.get('sources') or [])))
+    return merged
+
+
+def _kis_documents(resolved: dict[str, Any], kis: dict[str, Any]) -> list[str]:
+    display = resolved.get('display_name') or resolved.get('name') or resolved.get('symbol') or 'target'
+    quote = kis.get('quote') or {}
+    investor = kis.get('investor') or {}
+    docs: list[str] = []
+    if quote:
+        docs.append(
+            f"KIS API live quote for {display} ({quote.get('symbol')}): "
+            f"price {quote.get('price')} KRW, change {quote.get('change')} KRW "
+            f"({quote.get('change_pct')}%), intraday open/high/low "
+            f"{quote.get('open')}/{quote.get('high')}/{quote.get('low')}, "
+            f"volume {quote.get('volume')}, trading value {quote.get('trading_value')}, "
+            f"market cap {quote.get('market_cap_eok')} eok KRW, "
+            f"52-week high/low {quote.get('high_52w')}/{quote.get('low_52w')}."
+        )
+    if investor:
+        docs.append(
+            f"KIS API investor flow for {display}: foreign net quantity "
+            f"{investor.get('foreign_net_qty')}, institution net quantity "
+            f"{investor.get('institution_net_qty')}, individual net quantity "
+            f"{investor.get('individual_net_qty')}."
+        )
+    return docs
+
+
+def _kis_enabled() -> bool:
+    return os.getenv('MIROFISH_USE_KIS', '1').strip().lower() not in ('0', 'false', 'no', 'off')
+
+
+def _kis_configured() -> bool:
+    return bool(os.getenv('KIS_APP_KEY') and os.getenv('KIS_APP_SECRET'))
+
+
 def _matches_target_query(query: str, candidate: str) -> bool:
     q = str(query or '').strip()
     c = str(candidate or '').strip()
@@ -389,6 +585,8 @@ def _float(value: Any) -> float | None:
     try:
         if value in (None, ''):
             return None
+        if isinstance(value, str):
+            value = value.replace(',', '')
         return float(value)
     except (TypeError, ValueError):
         return None
@@ -398,6 +596,8 @@ def _int(value: Any) -> int | None:
     try:
         if value in (None, ''):
             return None
+        if isinstance(value, str):
+            value = value.replace(',', '')
         return int(float(value))
     except (TypeError, ValueError):
         return None

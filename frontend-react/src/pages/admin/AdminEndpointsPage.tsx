@@ -878,6 +878,11 @@ export default function AdminEndpointsPage() {
                             <span className="rounded-full border border-violet-300/20 bg-violet-300/10 px-3 py-1.5 text-violet-100">
                                 signals {targetSnapshot.signal_count || 0}
                             </span>
+                            {targetSnapshot.kis?.enabled && (
+                                <span className={`rounded-full border px-3 py-1.5 ${targetSnapshot.kis.found ? 'border-cyan-300/20 bg-cyan-300/10 text-cyan-100' : 'border-slate-300/20 bg-white/10 text-slate-200'}`}>
+                                    {targetSnapshot.kis.found ? 'KIS live' : 'KIS standby'}
+                                </span>
+                            )}
                         </div>
                     )}
 

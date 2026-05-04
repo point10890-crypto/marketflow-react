@@ -76,6 +76,7 @@ def resolve_target_snapshot(target: str) -> dict[str, Any]:
         'source': 'live_file_artifacts',
         'resolved': resolved,
         'price': price,
+        'kis': context.get('kis'),
         'signals': signals,
         'signal_count': sum(1 for item in signals.values() if item),
         'briefing_count': len(context.get('briefings') or []),
@@ -287,6 +288,7 @@ def _build_run_progressive(run_id: str, target: str, agent_count: int, mode: str
             'signals': context.get('signals', {}),
             'briefing_count': len(context.get('briefings') or []),
             'dart_available': bool(context.get('dart')),
+            'kis': context.get('kis'),
             'built_at': context.get('built_at'),
         },
     })
@@ -299,6 +301,15 @@ def _build_run_progressive(run_id: str, target: str, agent_count: int, mode: str
         text=f"실데이터 소스 {len(context.get('source_files', []))}개 연결",
         payload={'source_files': context.get('source_files', []), 'symbol': resolved.get('symbol')},
     )
+    kis = context.get('kis') or {}
+    if kis.get('enabled'):
+        save(
+            'intake',
+            20,
+            f"KIS API live source found={bool(kis.get('found'))}.",
+            text='KIS API 실시간 데이터 연결' if kis.get('found') else 'KIS API 실시간 데이터 대기',
+            payload={'kis_found': bool(kis.get('found')), 'sources': kis.get('sources', [])},
+        )
 
     brain = _brain_summary(final_target)
     run['brain_summary'] = brain
@@ -490,6 +501,7 @@ def _build_run(run_id: str, target: str, agent_count: int, mode: str) -> dict[st
             'signals': context.get('signals', {}),
             'briefing_count': len(context.get('briefings') or []),
             'dart_available': bool(context.get('dart')),
+            'kis': context.get('kis'),
             'built_at': context.get('built_at'),
         },
         'artifacts': {
@@ -750,9 +762,12 @@ def _logs(target: str, context: dict[str, Any], extracted: dict[str, Any], merge
           debate: dict[str, Any], cio: dict[str, Any], verdict: dict[str, Any]) -> list[dict[str, Any]]:
     now = datetime.now().strftime('%H:%M:%S')
     price = context.get('price') or {}
+    kis = context.get('kis') or {}
+    kis_text = 'KIS API 연결' if kis.get('found') else 'KIS API 대기'
     return [
         {'level': 'info', 'phase': 'intake', 'time': now, 'message': f"Accepted live target {target}.", 'text': f"대상 입력: {target}"},
         {'level': 'info', 'phase': 'intake', 'time': now, 'message': f"Resolved sources: {len(context.get('source_files', []))}.", 'text': f"실데이터 소스 {len(context.get('source_files', []))}개 연결"},
+        {'level': 'info', 'phase': 'intake', 'time': now, 'message': f"KIS source found={bool(kis.get('found'))}.", 'text': kis_text},
         {'level': 'info', 'phase': 'brain_snapshot', 'time': now, 'message': 'Loaded Brain 13D from MarketFlow artifacts.', 'text': 'Brain 13D 실데이터 스냅샷 적재'},
         {'level': 'info', 'phase': 'graph_build', 'time': now, 'message': f"GraphRAG extracted {len(extracted.get('entities', []))} entities and {len(extracted.get('relations', []))} relations.", 'text': f"GraphRAG 인과 {merge_stats.get('total_relations', 0)}개 연결"},
         {'level': 'info', 'phase': 'analyst_mesh', 'time': now, 'message': f"Debate method={debate.get('method')}.", 'text': f"에이전트 토론 완료: {debate.get('method')}"},

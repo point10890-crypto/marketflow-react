@@ -1,4 +1,13 @@
-from app.services.mirofish import store
+import pytest
+
+from app.services.mirofish import live_data, store
+
+
+@pytest.fixture(autouse=True)
+def disable_live_kis_api(monkeypatch):
+    monkeypatch.setenv('MIROFISH_USE_KIS', '0')
+    with live_data._kis_cache_lock:
+        live_data._kis_snapshot_cache.clear()
 
 
 def test_mirofish_run_writes_readable_artifacts(tmp_path, monkeypatch):
@@ -88,6 +97,50 @@ def test_mirofish_target_snapshot_resolves_chosung_and_normalized_names():
     assert samsung['resolved']['symbol'] == '005930'
     assert soil['resolved']['symbol'] == '010950'
     assert soil_chosung['resolved']['symbol'] == '010950'
+
+
+def test_mirofish_context_can_enrich_graphrag_with_kis_api(monkeypatch):
+    monkeypatch.setenv('MIROFISH_USE_KIS', '1')
+
+    def fake_kis_snapshot(resolved):
+        return {
+            'source': 'KIS API',
+            'enabled': True,
+            'found': True,
+            'symbol': resolved['symbol'],
+            'quote': {
+                'symbol': resolved['symbol'],
+                'price': 202000,
+                'change': 1000,
+                'change_pct': 0.5,
+                'open': 201000,
+                'high': 203000,
+                'low': 200500,
+                'volume': 1234567,
+                'trading_value': 250000000000,
+                'market_cap_eok': 4800000,
+                'high_52w': 210000,
+                'low_52w': 120000,
+            },
+            'investor': {
+                'foreign_net_qty': 12000,
+                'institution_net_qty': -3000,
+                'individual_net_qty': -9000,
+            },
+            'sources': ['KIS API: inquire-price', 'KIS API: inquire-investor'],
+            'fetched_at': '2026-05-04T00:00:00+00:00',
+        }
+
+    monkeypatch.setattr(live_data, 'load_kis_snapshot', fake_kis_snapshot)
+
+    context = live_data.build_context('ㅅㅅㅈㅈ')
+
+    assert context['kis']['found'] is True
+    assert context['price']['source'] == 'kis_api'
+    assert context['price']['price'] == 202000
+    assert 'KIS API live quote' in context['corpus']
+    assert 'KIS API investor flow' in context['corpus']
+    assert 'KIS API: inquire-price' in context['source_files']
 
 
 def test_mirofish_run_start_resolves_chosung_target(tmp_path, monkeypatch):

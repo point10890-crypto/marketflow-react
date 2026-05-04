@@ -93,6 +93,15 @@ export interface MiroFishTargetSnapshot {
         asset_type?: string;
     };
     price?: Record<string, any>;
+    kis?: {
+        enabled?: boolean;
+        found?: boolean;
+        source?: string;
+        error?: string;
+        quote?: Record<string, any>;
+        investor?: Record<string, any>;
+        sources?: string[];
+    };
     signals?: Record<string, any>;
     signal_count?: number;
     briefing_count?: number;
@@ -164,6 +173,7 @@ export interface MiroFishRun {
         signals?: Record<string, any>;
         briefing_count?: number;
         dart_available?: boolean;
+        kis?: Record<string, any>;
         built_at?: string;
     };
     graph_artifact?: MiroFishGraphArtifact;
