@@ -92,6 +92,16 @@ export interface MiroFishTargetSnapshot {
         market?: string;
         asset_type?: string;
     };
+    candidates?: Array<{
+        symbol?: string | null;
+        name?: string;
+        display_name?: string;
+        market?: string;
+        yahoo_ticker?: string;
+        asset_type?: string;
+        score?: number;
+        match_type?: string;
+    }>;
     price?: Record<string, any>;
     kis?: {
         enabled?: boolean;

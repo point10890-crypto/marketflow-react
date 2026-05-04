@@ -71,10 +71,12 @@ def resolve_target_snapshot(target: str) -> dict[str, Any]:
     resolved = context.get('resolved') or {}
     price = context.get('price') or {}
     signals = context.get('signals') or {}
+    candidates = live_data.search_target_candidates(clean_target, limit=16)
     return {
         'target': clean_target,
         'source': 'live_file_artifacts',
         'resolved': resolved,
+        'candidates': candidates,
         'price': price,
         'kis': context.get('kis'),
         'signals': signals,

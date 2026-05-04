@@ -99,6 +99,33 @@ def test_mirofish_target_snapshot_resolves_chosung_and_normalized_names():
     assert soil_chosung['resolved']['symbol'] == '010950'
 
 
+def test_mirofish_target_snapshot_returns_ambiguous_candidates():
+    doosan = '\ub450\uc0b0'
+    doosan_robotics = '\ub450\uc0b0\ub85c\ubcf4\ud2f1\uc2a4'
+
+    snapshot = store.resolve_target_snapshot(doosan)
+    candidate_names = [item['display_name'] for item in snapshot['candidates']]
+
+    assert snapshot['resolved']['symbol'] == '000150'
+    assert candidate_names[0] == doosan
+    assert doosan_robotics in candidate_names
+    assert len(snapshot['candidates']) >= 4
+
+
+def test_mirofish_target_snapshot_returns_initial_candidates():
+    doosan_initials = '\u3137\u3145'
+    doosan = '\ub450\uc0b0'
+    doosan_energy = '\ub450\uc0b0\uc5d0\ub108\ube4c\ub9ac\ud2f0'
+    doosan_robotics = '\ub450\uc0b0\ub85c\ubcf4\ud2f1\uc2a4'
+
+    snapshot = store.resolve_target_snapshot(doosan_initials)
+    candidate_names = [item['display_name'] for item in snapshot['candidates']]
+
+    assert doosan in candidate_names
+    assert doosan_energy in candidate_names
+    assert doosan_robotics in candidate_names
+
+
 def test_mirofish_context_can_enrich_graphrag_with_kis_api(monkeypatch):
     monkeypatch.setenv('MIROFISH_USE_KIS', '1')
 

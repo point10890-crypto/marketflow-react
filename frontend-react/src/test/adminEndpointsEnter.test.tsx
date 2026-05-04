@@ -90,4 +90,32 @@ describe('AdminEndpointsPage analysis start input', () => {
       }));
     });
   });
+
+  it('shows ambiguous autocomplete candidates and starts the selected one with Enter', async () => {
+    mockApi.resolveTarget.mockResolvedValueOnce({
+      target: '두산',
+      resolved: { symbol: '000150', display_name: '두산', market: 'KOSPI' },
+      candidates: [
+        { symbol: '000150', display_name: '두산', market: 'KOSPI', yahoo_ticker: '000150.KS', match_type: 'exact' },
+        { symbol: '034020', display_name: '두산에너빌리티', market: 'KOSPI', yahoo_ticker: '034020.KS', match_type: 'name_prefix' },
+        { symbol: '454910', display_name: '두산로보틱스', market: 'KOSPI', yahoo_ticker: '454910.KS', match_type: 'name_prefix' },
+      ],
+      source_files: [],
+      signal_count: 0,
+    });
+    const input = await renderPage();
+
+    fireEvent.change(input, { target: { value: '두산' } });
+
+    await screen.findByText('두산로보틱스');
+    fireEvent.keyDown(input, { key: 'ArrowDown', code: 'ArrowDown' });
+    fireEvent.keyDown(input, { key: 'ArrowDown', code: 'ArrowDown' });
+    fireEvent.keyDown(input, { key: 'Enter', code: 'Enter', keyCode: 13 });
+
+    await waitFor(() => {
+      expect(mockApi.startRun).toHaveBeenCalledWith(expect.objectContaining({
+        target: '두산로보틱스',
+      }));
+    });
+  });
 });

@@ -46,6 +46,7 @@ const phaseNumberById: Record<string, number> = {
 type ApiState = 'checking' | 'ready' | 'error' | 'running';
 type EndpointKey = 'status' | 'dataSources' | 'resolve' | 'history' | 'createRun' | 'runDetail' | 'graph' | 'events' | 'report';
 type EndpointStatus = 'idle' | 'loading' | 'ok' | 'error';
+type TargetCandidate = NonNullable<MiroFishTargetSnapshot['candidates']>[number];
 
 const endpointDefinitions: Array<{ key: EndpointKey; method: string; path: string; title: string; icon: string; color: string }> = [
     { key: 'status', method: 'GET', path: '/api/admin/mirofish/status', title: 'Service Status', icon: 'fa-satellite-dish', color: 'text-cyan-300' },
@@ -76,6 +77,24 @@ function endpointStatusTone(state: EndpointStatus) {
     if (state === 'loading') return 'border-cyan-400/20 bg-cyan-400/10 text-cyan-300';
     if (state === 'error') return 'border-rose-400/20 bg-rose-400/10 text-rose-300';
     return 'border-white/10 bg-white/[0.04] text-gray-500';
+}
+
+function targetCandidateLabel(candidate?: TargetCandidate | null): string {
+    return String(candidate?.display_name || candidate?.name || candidate?.symbol || '').trim();
+}
+
+function targetCandidateStartValue(candidate?: TargetCandidate | null): string {
+    return targetCandidateLabel(candidate) || String(candidate?.symbol || '').trim();
+}
+
+function targetCandidateMatchLabel(candidate?: TargetCandidate | null): string {
+    const matchType = String(candidate?.match_type || '');
+    if (matchType.includes('initial')) return '초성';
+    if (matchType.includes('exact')) return '정확';
+    if (matchType.includes('prefix')) return '시작';
+    if (matchType.includes('symbol')) return '코드';
+    if (matchType.includes('alias')) return '별칭';
+    return '관련';
 }
 
 function phaseFromRunState(run: MiroFishRun): number {
@@ -560,6 +579,7 @@ export default function AdminEndpointsPage() {
     const [run, setRun] = useState<MiroFishRun>(() => createEmptyRun());
     const [status, setStatus] = useState<MiroFishStatus | null>(null);
     const [targetSnapshot, setTargetSnapshot] = useState<MiroFishTargetSnapshot | null>(null);
+    const [activeCandidateIndex, setActiveCandidateIndex] = useState(0);
     const [recentRuns, setRecentRuns] = useState<MiroFishRun[]>([]);
     const [dataSourceCount, setDataSourceCount] = useState(0);
     const [endpointState, setEndpointState] = useState<Record<EndpointKey, EndpointStatus>>(() => Object.fromEntries(endpointDefinitions.map((item) => [item.key, 'idle'])) as Record<EndpointKey, EndpointStatus>);
@@ -675,11 +695,13 @@ export default function AdminEndpointsPage() {
                 .then((snapshot) => {
                     if (!alive || resolveRequestRef.current !== requestId) return;
                     setTargetSnapshot(snapshot);
+                    setActiveCandidateIndex(0);
                     markEndpoint('resolve', 'ok');
                 })
                 .catch(() => {
                     if (!alive || resolveRequestRef.current !== requestId) return;
                     setTargetSnapshot(null);
+                    setActiveCandidateIndex(0);
                     markEndpoint('resolve', 'error');
                 });
         }, 450);
@@ -709,6 +731,46 @@ export default function AdminEndpointsPage() {
         events: `${run.events?.length || 0} events`,
         report: run.report?.markdown ? `${run.report.markdown.length} chars` : 'waiting',
     }), [dataSourceCount, recentRuns.length, run, status, targetSnapshot]);
+
+    const targetCandidates = useMemo<TargetCandidate[]>(() => {
+        const query = target.trim();
+        if (!query || targetSnapshot?.target?.trim() !== query) return [];
+        return (targetSnapshot.candidates || []).filter((candidate) => targetCandidateStartValue(candidate));
+    }, [target, targetSnapshot]);
+
+    const activeCandidate = targetCandidates[activeCandidateIndex] || targetCandidates[0] || null;
+
+    function getStartTarget(inputValue?: string) {
+        const typedTarget = (inputValue ?? targetValueRef.current ?? target).trim();
+        if (activeCandidate) return targetCandidateStartValue(activeCandidate) || typedTarget || defaultTarget;
+        return typedTarget || defaultTarget;
+    }
+
+    function selectTargetCandidate(candidate: TargetCandidate, shouldStart = false) {
+        const nextTarget = targetCandidateStartValue(candidate);
+        if (!nextTarget) return;
+        targetValueRef.current = nextTarget;
+        setTarget(nextTarget);
+        setTargetSnapshot(null);
+        setActiveCandidateIndex(0);
+        markEndpoint('resolve', 'loading');
+        if (shouldStart) requestStart(nextTarget);
+    }
+
+    function handleTargetKeyNavigation(event: ReactKeyboardEvent<HTMLInputElement>) {
+        if (!targetCandidates.length) return;
+        if (event.key === 'ArrowDown') {
+            event.preventDefault();
+            setActiveCandidateIndex((index) => (index + 1) % targetCandidates.length);
+        } else if (event.key === 'ArrowUp') {
+            event.preventDefault();
+            setActiveCandidateIndex((index) => (index - 1 + targetCandidates.length) % targetCandidates.length);
+        } else if (event.key === 'Escape') {
+            event.preventDefault();
+            setTargetSnapshot(null);
+            setActiveCandidateIndex(0);
+        }
+    }
 
     async function handleStart(targetOverride?: string) {
         if (apiState === 'running') return;
@@ -758,12 +820,12 @@ export default function AdminEndpointsPage() {
         void handleStart(targetOverride);
     }
 
-    function isEnterKey(event: ReactKeyboardEvent<HTMLInputElement>) {
+    function isEnterKey(event: ReactKeyboardEvent<HTMLElement>) {
         const native = event.nativeEvent as KeyboardEvent & { isComposing?: boolean; keyCode?: number };
         return event.key === 'Enter' || event.code === 'Enter' || event.key === 'NumpadEnter' || native.keyCode === 13;
     }
 
-    function isComposing(event: ReactKeyboardEvent<HTMLInputElement> | ReactCompositionEvent<HTMLInputElement>) {
+    function isComposing(event: ReactKeyboardEvent<HTMLElement> | ReactCompositionEvent<HTMLInputElement>) {
         const native = event.nativeEvent as KeyboardEvent & { isComposing?: boolean; keyCode?: number };
         return Boolean(native.isComposing || native.keyCode === 229);
     }
@@ -812,7 +874,25 @@ export default function AdminEndpointsPage() {
                         onSubmit={(event) => {
                             event.preventDefault();
                             const formTarget = new FormData(event.currentTarget).get('target');
-                            requestStart(typeof formTarget === 'string' ? formTarget : targetValueRef.current);
+                            requestStart(getStartTarget(typeof formTarget === 'string' ? formTarget : targetValueRef.current));
+                        }}
+                        onKeyDownCapture={(event) => {
+                            if (!isEnterKey(event)) return;
+                            if (isComposing(event)) {
+                                pendingCompositionStartRef.current = true;
+                                return;
+                            }
+                            event.preventDefault();
+                            event.stopPropagation();
+                            const input = event.currentTarget.elements.namedItem('target') as HTMLInputElement | null;
+                            requestStart(getStartTarget(input?.value));
+                        }}
+                        onKeyUpCapture={(event) => {
+                            if (!isEnterKey(event) || isComposing(event)) return;
+                            event.preventDefault();
+                            event.stopPropagation();
+                            const input = event.currentTarget.elements.namedItem('target') as HTMLInputElement | null;
+                            requestStart(getStartTarget(input?.value));
                         }}
                     >
                         <div className="flex flex-col gap-2 sm:flex-row">
@@ -828,27 +908,18 @@ export default function AdminEndpointsPage() {
                                         targetValueRef.current = nextTarget;
                                         setTarget(nextTarget);
                                         setTargetSnapshot(null);
+                                        setActiveCandidateIndex(0);
                                         markEndpoint('resolve', 'idle');
                                     }}
                                     onKeyDown={(event) => {
-                                        if (!isEnterKey(event)) return;
-                                        if (isComposing(event)) {
-                                            pendingCompositionStartRef.current = true;
-                                            return;
-                                        }
-                                        event.preventDefault();
-                                        requestStart(event.currentTarget.value);
-                                    }}
-                                    onKeyUp={(event) => {
-                                        if (!isEnterKey(event) || isComposing(event)) return;
-                                        event.preventDefault();
-                                        requestStart(event.currentTarget.value);
+                                        handleTargetKeyNavigation(event);
                                     }}
                                     onCompositionEnd={(event) => {
-                                        if (!pendingCompositionStartRef.current) return;
+                                        const shouldStart = pendingCompositionStartRef.current;
                                         pendingCompositionStartRef.current = false;
                                         const composedTarget = event.currentTarget.value;
-                                        window.setTimeout(() => requestStart(composedTarget), 0);
+                                        targetValueRef.current = composedTarget;
+                                        if (shouldStart) window.setTimeout(() => requestStart(composedTarget), 0);
                                     }}
                                 />
                             </label>
@@ -861,6 +932,44 @@ export default function AdminEndpointsPage() {
                             </button>
                         </div>
                     </form>
+
+                    {targetCandidates.length > 0 && (
+                        <div className="mt-2 max-w-4xl overflow-hidden rounded-xl border border-white/15 bg-slate-950/82 text-sm shadow-2xl shadow-black/25 backdrop-blur">
+                            <div className="flex items-center justify-between border-b border-white/10 px-4 py-2 text-[11px] font-black uppercase tracking-[0.18em] text-slate-400">
+                                <span>Autocomplete</span>
+                                <span>{targetCandidates.length} candidates</span>
+                            </div>
+                            <div className="max-h-72 overflow-y-auto p-1">
+                                {targetCandidates.map((candidate, index) => {
+                                    const active = index === activeCandidateIndex;
+                                    const label = targetCandidateLabel(candidate);
+                                    return (
+                                        <button
+                                            key={`${candidate.symbol}-${candidate.display_name}-${index}`}
+                                            type="button"
+                                            onMouseDown={(event) => event.preventDefault()}
+                                            onClick={() => selectTargetCandidate(candidate)}
+                                            onDoubleClick={() => selectTargetCandidate(candidate, true)}
+                                            className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition ${active ? 'bg-cyan-400/[0.14] text-white ring-1 ring-cyan-300/35' : 'text-slate-200 hover:bg-white/[0.08]'}`}
+                                        >
+                                            <span className={`grid h-8 w-8 place-items-center rounded-lg ${active ? 'bg-cyan-300 text-slate-950' : 'bg-white/10 text-cyan-200'}`}>
+                                                <i className="fas fa-magnifying-glass-chart text-xs" />
+                                            </span>
+                                            <span className="min-w-0 flex-1">
+                                                <span className="block truncate font-black">{label}</span>
+                                                <span className="mt-0.5 block truncate font-mono text-[11px] text-slate-400">
+                                                    {candidate.symbol || 'keyword'} · {candidate.market || 'KR'} · {candidate.yahoo_ticker || 'ticker pending'}
+                                                </span>
+                                            </span>
+                                            <span className={`rounded-full border px-2.5 py-1 text-[11px] font-black ${active ? 'border-cyan-200/60 bg-cyan-200/[0.18] text-cyan-50' : 'border-white/10 bg-white/5 text-slate-400'}`}>
+                                                {targetCandidateMatchLabel(candidate)}
+                                            </span>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
 
                     {errorText && <div className="mt-3 max-w-4xl rounded-lg border border-amber-300/20 bg-amber-300/10 px-4 py-2 text-xs font-bold text-amber-100">{errorText}</div>}
 

@@ -148,6 +148,16 @@ def resolve_target(target: str) -> dict[str, Any]:
     if not raw:
         raise ValueError('target is required')
 
+    candidates = search_target_candidates(raw, limit=1)
+    if candidates:
+        candidate = candidates[0]
+        meta = {
+            'market': str(candidate.get('market') or ''),
+            'yahoo_ticker': str(candidate.get('yahoo_ticker') or ''),
+            'name': str(candidate.get('name') or candidate.get('display_name') or candidate.get('symbol') or ''),
+        }
+        return _resolved(raw, str(candidate['symbol']), meta['name'], meta)
+
     maps = _load_ticker_map()
     lowered = raw.lower().strip()
 
@@ -181,6 +191,114 @@ def resolve_target(target: str) -> dict[str, Any]:
         'yahoo_ticker': None,
         'asset_type': 'keyword',
     }
+
+
+def search_target_candidates(target: str, limit: int = 10) -> list[dict[str, Any]]:
+    raw = (target or '').strip()
+    if not raw:
+        return []
+
+    maps = _load_ticker_map()
+    digit_query = re.sub(r'\D+', '', raw)
+    query_lookup = _normalize_lookup(raw)
+    query_initials = _hangul_initials(raw)
+    query_is_initials = _is_initial_query(query_initials)
+    results: dict[str, dict[str, Any]] = {}
+
+    def add(symbol: str, name: str, meta: dict[str, str], score: int, match_type: str, order: int = 0) -> None:
+        symbol = str(symbol or '').strip()
+        if not symbol:
+            return
+        symbol_key = symbol.zfill(6) if symbol.isdigit() else symbol
+        display = str(meta.get('name') or name or symbol_key)
+        current = results.get(symbol_key)
+        if current and (
+            int(current.get('score') or 0) > score
+            or (int(current.get('score') or 0) == score and int(current.get('_order') or 0) <= order)
+        ):
+            return
+        results[symbol_key] = {
+            'symbol': symbol_key,
+            'name': display,
+            'display_name': display,
+            'market': meta.get('market') or 'KR',
+            'yahoo_ticker': meta.get('yahoo_ticker') or (f'{symbol_key}.KS' if symbol_key.isdigit() else symbol_key),
+            'asset_type': 'equity',
+            'score': score,
+            'match_type': match_type,
+            '_order': order,
+        }
+
+    for alias, (symbol, alias_name) in _ALIASES.items():
+        meta = maps.get(symbol, {})
+        if _matches_target_query(raw, alias) or _matches_target_query(raw, alias_name):
+            alias_lookup = _normalize_lookup(alias)
+            name_lookup = _normalize_lookup(alias_name)
+            alias_initials = _hangul_initials(alias)
+            name_initials = _hangul_initials(alias_name)
+            if query_lookup and query_lookup in (alias_lookup, name_lookup):
+                score = 132
+            elif query_is_initials and query_initials in (alias_initials, name_initials):
+                score = 128
+            else:
+                score = 98
+            add(symbol, alias_name, meta, score, 'alias', order=-1000)
+
+    for order, (symbol, meta) in enumerate(maps.items()):
+        name = str(meta.get('name') or symbol)
+        yahoo = str(meta.get('yahoo_ticker') or '')
+        name_lookup = _normalize_lookup(name)
+        yahoo_lookup = _normalize_lookup(yahoo)
+        symbol_lookup = _normalize_lookup(symbol)
+        name_initials = _hangul_initials(name)
+
+        score = 0
+        match_type = ''
+        if digit_query and symbol.startswith(digit_query):
+            score = 120 if symbol == digit_query.zfill(6) else 108
+            match_type = 'symbol'
+        elif query_lookup and query_lookup == name_lookup:
+            score = 125
+            match_type = 'exact'
+        elif query_lookup and name_lookup.startswith(query_lookup):
+            score = 110
+            match_type = 'name_prefix'
+        elif query_lookup and query_lookup in name_lookup:
+            score = 88
+            match_type = 'name_contains'
+        elif query_lookup and yahoo_lookup and query_lookup in yahoo_lookup:
+            score = 82
+            match_type = 'ticker'
+        elif query_lookup and symbol_lookup and query_lookup in symbol_lookup:
+            score = 76
+            match_type = 'symbol'
+        elif query_is_initials and name_initials:
+            if name_initials == query_initials:
+                score = 104
+                match_type = 'initial_exact'
+            elif name_initials.startswith(query_initials):
+                score = 104
+                match_type = 'initial_prefix'
+            elif query_initials in name_initials:
+                score = 72
+                match_type = 'initial_contains'
+
+        if score:
+            add(symbol, name, meta, score, match_type, order=order)
+
+    ordered = sorted(
+        results.values(),
+        key=lambda item: (
+            -int(item.get('score') or 0),
+            int(item.get('_order') or 0),
+            len(str(item.get('display_name') or '')),
+            str(item.get('display_name') or ''),
+            str(item.get('symbol') or ''),
+        ),
+    )[:max(1, limit)]
+    for item in ordered:
+        item.pop('_order', None)
+    return ordered
 
 
 def load_price_snapshot(resolved: dict[str, Any]) -> dict[str, Any]:
