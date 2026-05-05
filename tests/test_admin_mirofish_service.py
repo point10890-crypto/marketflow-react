@@ -128,6 +128,15 @@ def test_mirofish_target_snapshot_returns_initial_candidates():
     assert doosan_robotics in candidate_names
 
 
+def test_mirofish_target_search_ranks_exact_initials_first():
+    response = store.search_target_candidates('\u3137\u3145', limit=12)
+    candidate_names = [item['display_name'] for item in response['candidates']]
+
+    assert candidate_names[0] == '\ub450\uc0b0'
+    assert '\ub450\uc0b0\uc5d0\ub108\ube4c\ub9ac\ud2f0' in candidate_names
+    assert '\ub450\uc0b0\ub85c\ubcf4\ud2f1\uc2a4' in candidate_names
+
+
 def test_mirofish_target_search_is_lightweight_candidates_only():
     response = store.search_target_candidates('\ub450\uc0b0', limit=4)
 

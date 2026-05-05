@@ -202,7 +202,7 @@ def search_target_candidates(target: str, limit: int = 10) -> list[dict[str, Any
     digit_query = re.sub(r'\D+', '', raw)
     query_lookup = _normalize_lookup(raw)
     query_initials = _hangul_initials(raw)
-    query_is_initials = _is_initial_query(query_initials)
+    query_is_initials = _is_initial_query(query_lookup)
     results: dict[str, dict[str, Any]] = {}
 
     def add(symbol: str, name: str, meta: dict[str, str], score: int, match_type: str, order: int = 0) -> None:
@@ -274,7 +274,7 @@ def search_target_candidates(target: str, limit: int = 10) -> list[dict[str, Any
             match_type = 'symbol'
         elif query_is_initials and name_initials:
             if name_initials == query_initials:
-                score = 104
+                score = 112
                 match_type = 'initial_exact'
             elif name_initials.startswith(query_initials):
                 score = 104
@@ -605,6 +605,9 @@ def _matches_target_query(query: str, candidate: str) -> bool:
         return True
     if q_lookup and c_lookup and q_lookup in c_lookup:
         return True
+
+    if not _is_initial_query(q_lookup):
+        return False
 
     q_initials = _hangul_initials(q)
     c_initials = _hangul_initials(c)
