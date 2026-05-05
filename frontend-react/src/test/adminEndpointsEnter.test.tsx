@@ -12,6 +12,8 @@ const mockApi = vi.hoisted(() => ({
   startRun: vi.fn(),
   hydrateRun: vi.fn(),
   startScannerRun: vi.fn(),
+  getScannerStatus: vi.fn(),
+  getLatestScannerRun: vi.fn(),
   getScannerRun: vi.fn(),
   getScannerCandidates: vi.fn(),
   getDeepSeekStatus: vi.fn(),
@@ -82,12 +84,51 @@ beforeEach(() => {
   mockApi.startScannerRun.mockResolvedValue({
     id: 'mfas_test',
     status: 'completed',
+    generated_at: '2026-05-06T10:00:00+09:00',
+    freshness_status: 'fresh',
     candidate_count: 1,
     candidates: [
       {
         rank: 1,
         symbol: '000001',
         display_name: 'Alpha One',
+        market: 'KOSPI',
+        alpha_score: 88,
+        risk_score: 21,
+        action: 'BUY_CANDIDATE',
+        horizon: 'SWING_5_20D',
+        strategy_tags: ['momentum', 'vcp_entry'],
+        evidence: ['daily price momentum confirmed'],
+        price: 108,
+        change_pct: 8,
+        trading_value: 64800000000,
+      },
+    ],
+  });
+  mockApi.getScannerStatus.mockResolvedValue({
+    enabled: true,
+    timezone: 'Asia/Seoul',
+    last_run_id: 'mfas_latest',
+    last_run_at: '2026-05-05T16:10:00+09:00',
+    next_scheduled_at: '2026-05-06T09:20:00+09:00',
+    scheduled_times: ['09:20', '11:20', '14:20', '15:40', '16:10'],
+    freshness_status: 'fresh',
+    freshness: { status: 'fresh' },
+    candidate_count: 1,
+    source_files: [],
+  });
+  mockApi.getLatestScannerRun.mockResolvedValue({
+    id: 'mfas_latest',
+    status: 'completed',
+    generated_at: '2026-05-05T16:10:00+09:00',
+    candidate_count: 1,
+    freshness_status: 'fresh',
+    freshness: { status: 'fresh' },
+    candidates: [
+      {
+        rank: 1,
+        symbol: '000001',
+        display_name: 'Latest Alpha',
         market: 'KOSPI',
         alpha_score: 88,
         risk_score: 21,
@@ -154,6 +195,17 @@ beforeEach(() => {
 });
 
 describe('AdminEndpointsPage analysis start input', () => {
+  it('loads the latest alpha scanner board on page load', async () => {
+    await renderPage();
+
+    await waitFor(() => expect(mockApi.getLatestScannerRun).toHaveBeenCalled());
+    expect(mockApi.getScannerStatus).toHaveBeenCalled();
+    expect(await screen.findByText('Latest Alpha')).toBeTruthy();
+    expect(await screen.findByText(/Last/)).toBeTruthy();
+    expect(await screen.findByText(/Next/)).toBeTruthy();
+    expect(await screen.findByText(/Fresh fresh/i)).toBeTruthy();
+  });
+
   it('starts analysis when Enter is pressed after a chosung query', async () => {
     const input = await renderPage();
 

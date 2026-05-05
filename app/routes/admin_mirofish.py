@@ -139,6 +139,23 @@ def stream_events(run_id):
     )
 
 
+@admin_mirofish_bp.route('/scanner/status', methods=['GET'])
+@admin_required
+def get_scanner_status():
+    return jsonify(mirofish.get_scanner_schedule_status())
+
+
+@admin_mirofish_bp.route('/scanner/runs', methods=['GET'])
+@admin_required
+def list_scanner_runs():
+    try:
+        limit = int(request.args.get('limit', 20))
+    except (TypeError, ValueError):
+        return jsonify({'error': 'limit must be an integer'}), 400
+    limit = max(1, min(limit, 100))
+    return jsonify({'runs': mirofish.list_scanner_runs(limit=limit)})
+
+
 @admin_mirofish_bp.route('/scanner/runs', methods=['POST'])
 @admin_required
 def create_scanner_run():
@@ -147,6 +164,15 @@ def create_scanner_run():
     except ValueError as exc:
         return jsonify({'error': str(exc)}), 400
     return jsonify(run), 201
+
+
+@admin_mirofish_bp.route('/scanner/runs/latest', methods=['GET'])
+@admin_required
+def get_latest_scanner_run():
+    run = mirofish.read_latest_scanner_run()
+    if run is None:
+        return jsonify({'error': 'scanner run not found'}), 404
+    return jsonify(run)
 
 
 @admin_mirofish_bp.route('/scanner/runs/<run_id>', methods=['GET'])

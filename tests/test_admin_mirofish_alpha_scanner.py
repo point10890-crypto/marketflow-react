@@ -1,4 +1,5 @@
 import json
+from datetime import datetime, timedelta, timezone
 
 from flask import Flask
 
@@ -125,6 +126,75 @@ def test_alpha_scanner_can_filter_requested_symbols(tmp_path, monkeypatch):
     assert run['candidates'][0]['symbol'] == '000002'
 
 
+def test_alpha_scanner_latest_run_returns_newest_and_skips_bad_files(tmp_path, monkeypatch):
+    runs_root = tmp_path / 'runs'
+    monkeypatch.setattr(alpha_scanner, 'SCANNER_RUNS_ROOT', str(runs_root))
+    older_dir = runs_root / 'mfas_20260504000000_aaaaaaaaaaaa'
+    newer_dir = runs_root / 'mfas_20260505000000_bbbbbbbbbbbb'
+    bad_dir = runs_root / 'mfas_20260506000000_badbadbadbad'
+    unsafe_dir = runs_root / '..escape'
+    for path in (older_dir, newer_dir, bad_dir, unsafe_dir):
+        path.mkdir(parents=True, exist_ok=True)
+    _write_json(older_dir / 'run.json', {
+        'id': older_dir.name,
+        'status': 'completed',
+        'generated_at': '2026-05-04T00:00:00+00:00',
+        'candidate_count': 1,
+        'candidates': [{'symbol': '000001'}],
+    })
+    _write_json(newer_dir / 'run.json', {
+        'id': newer_dir.name,
+        'status': 'completed',
+        'generated_at': '2026-05-05T00:00:00+00:00',
+        'candidate_count': 2,
+        'candidates': [{'symbol': '000002'}],
+    })
+    (bad_dir / 'run.json').write_text('{bad json', encoding='utf-8')
+
+    latest = alpha_scanner.read_latest_scanner_run()
+    summaries = alpha_scanner.list_scanner_runs(limit=10)
+
+    assert latest['id'] == newer_dir.name
+    assert latest['candidates'][0]['symbol'] == '000002'
+    assert [item['id'] for item in summaries] == [newer_dir.name, older_dir.name]
+    assert 'candidates' not in summaries[0]
+
+
+def test_alpha_scanner_status_without_runs_reports_schedule_and_freshness(tmp_path, monkeypatch):
+    _seed_artifacts(tmp_path)
+    monkeypatch.setattr(alpha_scanner, 'DATA_ROOT', str(tmp_path))
+    monkeypatch.setattr(alpha_scanner, 'SCANNER_RUNS_ROOT', str(tmp_path / 'runs'))
+    monkeypatch.setenv('ALPHA_SCANNER_TIMES', '09:20,bad,16:10')
+
+    status = alpha_scanner.get_scanner_schedule_status(
+        now=datetime(2026, 5, 6, 8, 0, tzinfo=timezone(timedelta(hours=9))),
+    )
+
+    assert status['enabled'] is True
+    assert status['last_run_at'] is None
+    assert status['scheduled_times'] == ['09:20', '16:10']
+    assert status['next_scheduled_at'].startswith('2026-05-06T09:20:00')
+    assert status['freshness']['available_files'] == 5
+    assert status['source_files']
+
+
+def test_alpha_scanner_status_uses_latest_run_metadata(tmp_path, monkeypatch):
+    _seed_artifacts(tmp_path)
+    monkeypatch.setattr(alpha_scanner, 'DATA_ROOT', str(tmp_path))
+    monkeypatch.setattr(alpha_scanner, 'SCANNER_RUNS_ROOT', str(tmp_path / 'runs'))
+
+    run = alpha_scanner.create_scanner_run({'limit': 5})
+    status = alpha_scanner.get_scanner_schedule_status(
+        now=datetime(2026, 5, 6, 17, 0, tzinfo=timezone(timedelta(hours=9))),
+    )
+
+    assert status['last_run_id'] == run['id']
+    assert status['last_run_at'] == run['generated_at']
+    assert status['candidate_count'] == run['candidate_count']
+    assert status['freshness'] == run['freshness']
+    assert status['next_scheduled_at'].startswith('2026-05-07T09:20:00')
+
+
 def test_alpha_scanner_alert_check_only_returns_new_events(tmp_path, monkeypatch):
     _seed_artifacts(tmp_path)
     monkeypatch.setattr(alpha_scanner, 'DATA_ROOT', str(tmp_path))
@@ -171,5 +241,7 @@ def test_admin_mirofish_scanner_routes_are_registered():
     rules = {str(rule) for rule in app.url_map.iter_rules()}
 
     assert '/api/admin/mirofish/scanner/runs' in rules
+    assert '/api/admin/mirofish/scanner/status' in rules
+    assert '/api/admin/mirofish/scanner/runs/latest' in rules
     assert '/api/admin/mirofish/scanner/runs/<run_id>' in rules
     assert '/api/admin/mirofish/scanner/runs/<run_id>/candidates' in rules

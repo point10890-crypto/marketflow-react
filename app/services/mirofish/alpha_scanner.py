@@ -8,7 +8,7 @@ import html
 import json
 import os
 import re
-from datetime import datetime, timezone
+from datetime import datetime, time as dt_time, timedelta, timezone
 from typing import Any
 
 from app.utils.atomic_json import write_json_atomic
@@ -24,6 +24,8 @@ DEFAULT_ALERT_LIMIT = 20
 DEFAULT_ALERT_MIN_ALPHA = 70.0
 DEFAULT_ALERT_MAX_RISK = 45.0
 DEFAULT_ALERT_MAX_EVENTS = 8
+DEFAULT_SCHEDULE_TIMES = '09:20,11:20,14:20,15:40,16:10'
+KST = timezone(timedelta(hours=9))
 
 SCORING_SCHEMA = {
     'alpha_score': {
@@ -109,6 +111,50 @@ def read_scanner_candidates(run_id: str) -> dict[str, Any] | None:
         'freshness': run.get('freshness'),
         'candidate_count': len(run.get('candidates') or []),
         'candidates': run.get('candidates') or [],
+    }
+
+
+def list_scanner_runs(limit: int = 20) -> list[dict[str, Any]]:
+    """Return recent scanner run summaries without loading candidate payloads."""
+    records = _scanner_run_records()
+    clean_limit = max(1, min(_clean_limit(limit, default=20), 100))
+    return [_scanner_run_summary(item['run']) for item in records[:clean_limit]]
+
+
+def read_latest_scanner_run() -> dict[str, Any] | None:
+    """Return the newest persisted scanner run, if one exists."""
+    records = _scanner_run_records()
+    return records[0]['run'] if records else None
+
+
+def get_scanner_schedule_status(now: datetime | None = None) -> dict[str, Any]:
+    """Return alpha scanner schedule, latest run, and source freshness status."""
+    current = (now or datetime.now(KST)).astimezone(KST)
+    scheduled_times = _scanner_schedule_times()
+    latest = read_latest_scanner_run()
+    artifacts = _load_artifacts()
+    source_files = latest.get('source_files') if latest else None
+    if not source_files:
+        source_files = _source_files(artifacts)
+    freshness = latest.get('freshness') if latest else None
+    if not freshness:
+        freshness = _aggregate_freshness(source_files)
+    scheduler_last_run_at = _scheduler_last_run_at()
+    next_scheduled = _next_scheduled_times(current, scheduled_times, count=5)
+    return {
+        'enabled': os.getenv('ALPHA_SCANNER_ENABLED', 'true').strip().lower() == 'true',
+        'timezone': 'Asia/Seoul',
+        'scheduled_times': [item.strftime('%H:%M') for item in scheduled_times],
+        'next_scheduled_times': next_scheduled,
+        'next_scheduled_at': next_scheduled[0] if next_scheduled else None,
+        'last_run_id': latest.get('id') if latest else None,
+        'last_run_at': (latest or {}).get('generated_at') or (latest or {}).get('created_at'),
+        'scheduler_last_run_at': scheduler_last_run_at,
+        'freshness': freshness,
+        'freshness_status': (freshness or {}).get('status'),
+        'source_files': source_files,
+        'candidate_count': latest.get('candidate_count') if latest else 0,
+        'checked_at': current.isoformat(),
     }
 
 
@@ -621,6 +667,99 @@ def _clean_symbols(value: Any) -> set[str]:
     if not isinstance(value, list):
         return set()
     return {_symbol(item) for item in value if _symbol(item)}
+
+
+def _scanner_run_records() -> list[dict[str, Any]]:
+    if not os.path.isdir(SCANNER_RUNS_ROOT):
+        return []
+    records: list[dict[str, Any]] = []
+    for name in os.listdir(SCANNER_RUNS_ROOT):
+        try:
+            safe_id = _safe_run_id(name)
+        except ValueError:
+            continue
+        path = os.path.join(SCANNER_RUNS_ROOT, safe_id, 'run.json')
+        if not os.path.isfile(path):
+            continue
+        try:
+            run = _read_json(path)
+        except (OSError, json.JSONDecodeError, ValueError):
+            continue
+        if not isinstance(run, dict):
+            continue
+        mtime = datetime.fromtimestamp(os.path.getmtime(path), timezone.utc)
+        sort_dt = _parse_dt(run.get('generated_at') or run.get('created_at')) or mtime
+        records.append({'run': run, 'path': path, 'mtime': mtime, 'sort_dt': sort_dt})
+    records.sort(key=lambda item: (item['sort_dt'], item['mtime']), reverse=True)
+    return records
+
+
+def _scanner_run_summary(run: dict[str, Any]) -> dict[str, Any]:
+    return {
+        'id': run.get('id'),
+        'status': run.get('status'),
+        'mode': run.get('mode'),
+        'source': run.get('source'),
+        'generated_at': run.get('generated_at'),
+        'created_at': run.get('created_at'),
+        'limit': run.get('limit'),
+        'candidate_count': run.get('candidate_count'),
+        'freshness': run.get('freshness'),
+        'links': run.get('links'),
+    }
+
+
+def _scanner_schedule_times() -> list[dt_time]:
+    out: list[dt_time] = []
+    raw = os.getenv('ALPHA_SCANNER_TIMES', DEFAULT_SCHEDULE_TIMES)
+    for item in str(raw or '').split(','):
+        text = item.strip()
+        if not re.fullmatch(r'\d{1,2}:\d{2}', text):
+            continue
+        hour_text, minute_text = text.split(':', 1)
+        hour = int(hour_text)
+        minute = int(minute_text)
+        if 0 <= hour <= 23 and 0 <= minute <= 59:
+            out.append(dt_time(hour=hour, minute=minute))
+    return sorted(set(out)) or [dt_time(9, 20), dt_time(11, 20), dt_time(14, 20), dt_time(15, 40), dt_time(16, 10)]
+
+
+def _next_scheduled_times(now: datetime, scheduled_times: list[dt_time], *, count: int = 5) -> list[str]:
+    current = now.astimezone(KST)
+    out: list[str] = []
+    day = current.date()
+    while len(out) < count:
+        if day.weekday() < 5:
+            for scheduled in scheduled_times:
+                candidate = datetime.combine(day, scheduled, tzinfo=KST)
+                if candidate > current:
+                    out.append(candidate.isoformat())
+                    if len(out) >= count:
+                        break
+        day += timedelta(days=1)
+    return out
+
+
+def _scheduler_last_run_at() -> str | None:
+    path = os.path.join(DATA_ROOT, 'scheduler_last_run.json')
+    if not os.path.isfile(path):
+        return None
+    try:
+        data = _read_json(path)
+    except (OSError, json.JSONDecodeError, ValueError):
+        return None
+    if not isinstance(data, dict):
+        return None
+    values = []
+    for key, value in data.items():
+        if not str(key).startswith('alpha_scanner_') and key != 'alpha_scanner':
+            continue
+        parsed = _parse_dt(value)
+        if parsed is not None:
+            values.append(parsed)
+    if not values:
+        return None
+    return max(values).astimezone(KST).isoformat()
 
 
 def _alert_state_path() -> str:

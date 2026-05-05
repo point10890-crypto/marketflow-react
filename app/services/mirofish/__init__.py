@@ -18,7 +18,10 @@ from app.services.mirofish.store import (
 from app.services.mirofish.alpha_scanner import (
     build_scanner_alert_message,
     create_scanner_run,
+    get_scanner_schedule_status,
+    list_scanner_runs,
     read_scanner_candidates,
+    read_latest_scanner_run,
     read_scanner_run,
     run_scanner_alert_check,
 )
@@ -42,9 +45,12 @@ __all__ = [
     'get_deepseek_status',
     'get_graph',
     'get_report',
+    'get_scanner_schedule_status',
     'get_status',
     'list_runs',
+    'list_scanner_runs',
     'list_deepseek_models',
+    'read_latest_scanner_run',
     'read_run',
     'read_scanner_candidates',
     'read_scanner_run',

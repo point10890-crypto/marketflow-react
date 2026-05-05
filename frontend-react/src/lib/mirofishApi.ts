@@ -277,8 +277,12 @@ export interface MiroFishScannerRun {
     strategy?: string;
     risk_profile?: string;
     limit?: number;
+    created_at?: string;
     generated_at?: string;
     updated_at?: string;
+    last_run_at?: string;
+    next_scheduled_at?: string;
+    freshness_status?: string;
     candidate_count?: number;
     source_files?: MiroFishScannerSourceFile[];
     freshness?: Record<string, any>;
@@ -286,6 +290,22 @@ export interface MiroFishScannerRun {
     candidates?: MiroFishAlphaCandidate[];
     summary?: Record<string, any>;
     error?: string;
+}
+
+export interface MiroFishScannerStatus {
+    enabled?: boolean;
+    timezone?: string;
+    scheduled_times?: string[];
+    next_scheduled_times?: string[];
+    next_scheduled_at?: string | null;
+    last_run_id?: string | null;
+    last_run_at?: string | null;
+    scheduler_last_run_at?: string | null;
+    freshness?: Record<string, any>;
+    freshness_status?: string;
+    source_files?: MiroFishScannerSourceFile[];
+    candidate_count?: number;
+    checked_at?: string;
 }
 
 export interface MiroFishScannerCandidatesResponse {
@@ -780,6 +800,12 @@ function normalizeScannerRun(payload: any): MiroFishScannerRun {
         strategy: raw.strategy === undefined ? undefined : String(raw.strategy),
         risk_profile: raw.risk_profile === undefined ? undefined : String(raw.risk_profile),
         limit: raw.limit === undefined ? undefined : asNumber(raw.limit, 20),
+        created_at: raw.created_at === undefined ? undefined : String(raw.created_at),
+        generated_at: raw.generated_at === undefined ? undefined : String(raw.generated_at),
+        updated_at: raw.updated_at === undefined ? undefined : String(raw.updated_at),
+        last_run_at: raw.last_run_at === undefined ? undefined : String(raw.last_run_at),
+        next_scheduled_at: raw.next_scheduled_at === undefined ? undefined : String(raw.next_scheduled_at),
+        freshness_status: raw.freshness_status === undefined ? asObject(raw.freshness).status : String(raw.freshness_status),
         candidate_count: asNumber(raw.candidate_count ?? rawCandidates.length, rawCandidates.length),
         source_files: normalizeScannerSourceFiles(raw.source_files),
         freshness: asObject(raw.freshness),
@@ -787,6 +813,26 @@ function normalizeScannerRun(payload: any): MiroFishScannerRun {
         candidates: rawCandidates.map(normalizeAlphaCandidate),
         summary: asObject(raw.summary),
         error: raw.error === undefined ? undefined : String(raw.error),
+    };
+}
+
+function normalizeScannerStatus(payload: any): MiroFishScannerStatus {
+    const raw = asObject(payload);
+    return {
+        ...raw,
+        enabled: raw.enabled === undefined ? undefined : Boolean(raw.enabled),
+        timezone: raw.timezone === undefined ? undefined : String(raw.timezone),
+        scheduled_times: asStringArray(raw.scheduled_times),
+        next_scheduled_times: asStringArray(raw.next_scheduled_times),
+        next_scheduled_at: raw.next_scheduled_at === undefined || raw.next_scheduled_at === null ? null : String(raw.next_scheduled_at),
+        last_run_id: raw.last_run_id === undefined || raw.last_run_id === null ? null : String(raw.last_run_id),
+        last_run_at: raw.last_run_at === undefined || raw.last_run_at === null ? null : String(raw.last_run_at),
+        scheduler_last_run_at: raw.scheduler_last_run_at === undefined || raw.scheduler_last_run_at === null ? null : String(raw.scheduler_last_run_at),
+        freshness: asObject(raw.freshness),
+        freshness_status: raw.freshness_status === undefined ? asObject(raw.freshness).status : String(raw.freshness_status),
+        source_files: normalizeScannerSourceFiles(raw.source_files),
+        candidate_count: raw.candidate_count === undefined ? undefined : asNumber(raw.candidate_count, 0),
+        checked_at: raw.checked_at === undefined ? undefined : String(raw.checked_at),
     };
 }
 
@@ -837,6 +883,12 @@ export const mirofishApi = {
     },
     startScannerRun: async (request: MiroFishScannerRunRequest = {}) => normalizeScannerRun(
         await postAuthAPI<any>('/api/admin/mirofish/scanner/runs', request, undefined, 60000),
+    ),
+    getScannerStatus: async () => normalizeScannerStatus(
+        await fetchAuthAPI<any>('/api/admin/mirofish/scanner/status'),
+    ),
+    getLatestScannerRun: async () => normalizeScannerRun(
+        await fetchAuthAPI<any>('/api/admin/mirofish/scanner/runs/latest'),
     ),
     getScannerRun: async (runId: string) => normalizeScannerRun(
         await fetchAuthAPI<any>(`/api/admin/mirofish/scanner/runs/${runId}`),

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type CompositionEvent as ReactCompositionEvent, type KeyboardEvent as ReactKeyboardEvent } from 'react';
-import { MiroFishAlphaCandidate, MiroFishAnalyst, MiroFishDeepSeekStatus, MiroFishDeepSeekSummaryResult, MiroFishLayer, MiroFishLog, MiroFishNode, MiroFishRun, MiroFishScannerRun, MiroFishStatus, MiroFishTargetSnapshot, mirofishApi } from '@/lib/mirofishApi';
+import { MiroFishAlphaCandidate, MiroFishAnalyst, MiroFishDeepSeekStatus, MiroFishDeepSeekSummaryResult, MiroFishLayer, MiroFishLog, MiroFishNode, MiroFishRun, MiroFishScannerRun, MiroFishScannerStatus, MiroFishStatus, MiroFishTargetSnapshot, mirofishApi } from '@/lib/mirofishApi';
 
 const agentCounts = [3, 7, 10, 15];
 const defaultTarget = '삼성전자';
@@ -121,6 +121,26 @@ function formatElapsed(ms?: number) {
     return `${seconds.toFixed(1)}s`;
 }
 
+function formatDateTime(value?: string | null): string {
+    if (!value) return '--';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return String(value);
+    return date.toLocaleString('ko-KR', {
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+    });
+}
+
+function scannerRunTimestamp(run?: MiroFishScannerRun | null): number {
+    const raw = run?.generated_at || run?.updated_at || run?.created_at || run?.last_run_at;
+    if (!raw) return 0;
+    const value = new Date(raw).getTime();
+    return Number.isNaN(value) ? 0 : value;
+}
+
 function formatPrice(value: unknown): string {
     const numeric = typeof value === 'number'
         ? value
@@ -205,9 +225,18 @@ function deepSeekStateTone(state: DeepSeekPanelState, configured?: boolean) {
     return 'border-white/10 bg-white/8 text-slate-300';
 }
 
+function freshnessTone(status?: string) {
+    const value = String(status || '').toLowerCase();
+    if (value === 'fresh') return 'border-emerald-300/25 bg-emerald-300/10 text-emerald-100';
+    if (value === 'stale') return 'border-amber-300/25 bg-amber-300/10 text-amber-100';
+    if (value === 'unknown') return 'border-slate-300/20 bg-slate-300/10 text-slate-200';
+    return 'border-white/10 bg-white/8 text-slate-300';
+}
+
 function AlphaBoardPanel({
     candidates,
     scannerRun,
+    scannerStatus,
     state,
     errorText,
     deepSeekStatus,
@@ -222,6 +251,7 @@ function AlphaBoardPanel({
 }: {
     candidates: MiroFishAlphaCandidate[];
     scannerRun: MiroFishScannerRun | null;
+    scannerStatus: MiroFishScannerStatus | null;
     state: AlphaScannerState;
     errorText?: string | null;
     deepSeekStatus?: MiroFishDeepSeekStatus | null;
@@ -239,6 +269,9 @@ function AlphaBoardPanel({
     const deepSeekBusy = deepSeekState === 'checking' || deepSeekState === 'summarizing' || deepSeekState === 'sending';
     const deepSeekConfigured = Boolean(deepSeekStatus?.configured);
     const summaryCandidates = deepSeekSummary?.summary?.candidates || [];
+    const lastRunAt = scannerStatus?.last_run_at || scannerRun?.generated_at || scannerRun?.updated_at || scannerRun?.created_at;
+    const nextRunAt = scannerStatus?.next_scheduled_at || scannerRun?.next_scheduled_at;
+    const freshnessStatus = scannerStatus?.freshness_status || String(scannerStatus?.freshness?.status || scannerRun?.freshness_status || scannerRun?.freshness?.status || scannerRun?.source_files?.[0]?.freshness || 'unknown');
     return (
         <section className="mt-8 max-w-6xl rounded-xl border border-emerald-300/15 bg-slate-950/55 p-4 shadow-[0_18px_70px_rgba(16,185,129,0.12)] backdrop-blur">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -258,6 +291,15 @@ function AlphaBoardPanel({
                     </span>
                     <span className="rounded-full border border-white/10 bg-white/8 px-3 py-1.5 text-xs font-bold text-slate-300">
                         {scannerRun?.candidate_count ?? candidates.length} candidates
+                    </span>
+                    <span className="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1.5 text-xs font-bold text-cyan-100">
+                        Last {formatDateTime(lastRunAt)}
+                    </span>
+                    <span className="rounded-full border border-violet-300/20 bg-violet-300/10 px-3 py-1.5 text-xs font-bold text-violet-100">
+                        Next {formatDateTime(nextRunAt)}
+                    </span>
+                    <span className={`rounded-full border px-3 py-1.5 text-xs font-black ${freshnessTone(freshnessStatus)}`}>
+                        Fresh {freshnessStatus}
                     </span>
                     <span className={`rounded-full border px-3 py-1.5 text-xs font-black ${deepSeekStateTone(deepSeekState, deepSeekConfigured)}`}>
                         DeepSeek {deepSeekConfigured ? (deepSeekStatus?.default_model || 'ready') : 'not set'}
@@ -823,6 +865,8 @@ export default function AdminEndpointsPage() {
     const [dataSourceCount, setDataSourceCount] = useState(0);
     const [alphaScannerState, setAlphaScannerState] = useState<AlphaScannerState>('idle');
     const [alphaScannerRun, setAlphaScannerRun] = useState<MiroFishScannerRun | null>(null);
+    const alphaScannerRunRef = useRef<MiroFishScannerRun | null>(null);
+    const [alphaScannerStatus, setAlphaScannerStatus] = useState<MiroFishScannerStatus | null>(null);
     const [alphaCandidates, setAlphaCandidates] = useState<MiroFishAlphaCandidate[]>([]);
     const [alphaErrorText, setAlphaErrorText] = useState<string | null>(null);
     const [deepSeekStatus, setDeepSeekStatus] = useState<MiroFishDeepSeekStatus | null>(null);
@@ -938,6 +982,51 @@ export default function AdminEndpointsPage() {
     }, [activeRunId, isAnalyzing]);
 
     useEffect(() => {
+        alphaScannerRunRef.current = alphaScannerRun;
+    }, [alphaScannerRun]);
+
+    useEffect(() => {
+        if (alphaScannerState === 'loading' || alphaScannerState === 'running') return;
+        let alive = true;
+
+        async function refreshLatestScanner() {
+            try {
+                const scannerStatus = await mirofishApi.getScannerStatus();
+                if (!alive) return;
+                setAlphaScannerStatus(scannerStatus);
+                try {
+                    const latest = await mirofishApi.getLatestScannerRun();
+                    if (!alive || !latest.id) return;
+                    const currentRun = alphaScannerRunRef.current;
+                    const currentTime = scannerRunTimestamp(currentRun);
+                    const latestTime = scannerRunTimestamp(latest);
+                    if (currentRun?.id && currentRun.id !== latest.id && currentTime > 0 && currentTime >= latestTime) return;
+                    setAlphaScannerRun(latest);
+                    setAlphaCandidates(latest.candidates || []);
+                    setAlphaScannerState(latest.status === 'failed' ? 'error' : latest.status === 'running' ? 'running' : 'ready');
+                    if (latest.status !== 'failed') setAlphaErrorText(null);
+                } catch {
+                    if (!scannerStatus.last_run_id && alphaScannerState === 'idle') {
+                        setAlphaScannerRun(null);
+                        setAlphaCandidates([]);
+                    }
+                }
+            } catch (error) {
+                if (!alive || alphaScannerState !== 'idle') return;
+                setAlphaScannerState('error');
+                setAlphaErrorText(error instanceof Error ? error.message : 'Alpha scanner status unavailable.');
+            }
+        }
+
+        refreshLatestScanner();
+        const timer = window.setInterval(refreshLatestScanner, 45000);
+        return () => {
+            alive = false;
+            window.clearInterval(timer);
+        };
+    }, [alphaScannerState]);
+
+    useEffect(() => {
         if (!alphaScannerRun?.id || alphaScannerState !== 'running') return;
         let alive = true;
         const scannerRunId = alphaScannerRun.id;
@@ -953,6 +1042,7 @@ export default function AdminEndpointsPage() {
                 setAlphaCandidates(candidatePayload.candidates);
                 if (scannerRun.status === 'completed') {
                     setAlphaScannerState('ready');
+                    mirofishApi.getScannerStatus().then(setAlphaScannerStatus).catch(() => undefined);
                 } else if (scannerRun.status === 'failed') {
                     setAlphaScannerState('error');
                     setAlphaErrorText(scannerRun.error || 'Alpha scanner failed.');
@@ -1151,6 +1241,7 @@ export default function AdminEndpointsPage() {
             setAlphaScannerRun(scannerRun);
             setAlphaCandidates(scannerRun.candidates || []);
             setAlphaScannerState(scannerRun.status === 'completed' ? 'ready' : 'running');
+            mirofishApi.getScannerStatus().then(setAlphaScannerStatus).catch(() => undefined);
             if (scannerRun.status === 'failed') {
                 setAlphaScannerState('error');
                 setAlphaErrorText(scannerRun.error || 'Alpha scanner failed.');
@@ -1308,6 +1399,7 @@ export default function AdminEndpointsPage() {
                     <AlphaBoardPanel
                         candidates={alphaCandidates}
                         scannerRun={alphaScannerRun}
+                        scannerStatus={alphaScannerStatus}
                         state={alphaScannerState}
                         errorText={alphaErrorText}
                         deepSeekStatus={deepSeekStatus}
