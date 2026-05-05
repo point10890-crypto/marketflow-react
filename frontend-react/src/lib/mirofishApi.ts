@@ -294,6 +294,60 @@ export interface MiroFishScannerCandidatesResponse {
     candidates: MiroFishAlphaCandidate[];
 }
 
+export interface MiroFishDeepSeekStatus {
+    provider?: string;
+    configured?: boolean;
+    base_url?: string;
+    default_model?: string;
+    recommended_models?: string[];
+    supported_endpoints?: Record<string, string>;
+    project_usage?: Record<string, string>;
+    models?: { data?: Array<{ id?: string; owned_by?: string }> };
+    balance?: { is_available?: boolean; balance_infos?: Array<Record<string, unknown>> };
+    checked_at?: string;
+}
+
+export interface MiroFishDeepSeekSummaryCandidate {
+    rank?: number;
+    symbol?: string;
+    display_name?: string;
+    market?: string;
+    action_ko?: string;
+    thesis_ko?: string;
+    risk_ko?: string;
+    next_check_ko?: string;
+}
+
+export interface MiroFishDeepSeekSummaryResult {
+    provider?: string;
+    model?: string;
+    run_id?: string;
+    candidate_count?: number;
+    thinking?: boolean;
+    summary?: {
+        summary_title_ko?: string;
+        portfolio_note_ko?: string;
+        candidates?: MiroFishDeepSeekSummaryCandidate[];
+    };
+    usage?: Record<string, unknown>;
+    finish_reason?: string;
+    created_at?: string;
+}
+
+export interface MiroFishDeepSeekScannerSummaryResponse {
+    run: MiroFishScannerRun;
+    summary: MiroFishDeepSeekSummaryResult;
+    links?: Record<string, string>;
+}
+
+export interface MiroFishDeepSeekTelegramResponse {
+    ok?: boolean;
+    run_id?: string;
+    provider?: string;
+    message_chars?: number;
+    summary?: MiroFishDeepSeekSummaryResult;
+}
+
 type RawObject = Record<string, any>;
 
 const phaseByName: Record<string, number> = {
@@ -789,5 +843,28 @@ export const mirofishApi = {
     ),
     getScannerCandidates: async (runId: string) => normalizeScannerCandidates(
         await fetchAuthAPI<any>(`/api/admin/mirofish/scanner/runs/${runId}/candidates`),
+    ),
+    getDeepSeekStatus: async (live = false) => fetchAuthAPI<MiroFishDeepSeekStatus>(
+        `/api/admin/mirofish/deepseek/status${live ? '?live=1' : ''}`,
+    ),
+    createDeepSeekScannerSummary: async (request: MiroFishScannerRunRequest & { summary_limit?: number; model?: string; thinking?: boolean } = {}) => {
+        const payload = await postAuthAPI<any>('/api/admin/mirofish/deepseek/scanner-summary', request, undefined, 120000);
+        return {
+            ...payload,
+            run: normalizeScannerRun(payload?.run),
+            summary: payload?.summary as MiroFishDeepSeekSummaryResult,
+        } as MiroFishDeepSeekScannerSummaryResponse;
+    },
+    summarizeScannerRunWithDeepSeek: async (runId: string, request: { limit?: number; model?: string; thinking?: boolean } = {}) => postAuthAPI<MiroFishDeepSeekSummaryResult>(
+        `/api/admin/mirofish/scanner/runs/${encodeURIComponent(runId)}/deepseek-summary`,
+        request,
+        undefined,
+        120000,
+    ),
+    sendScannerDeepSeekSummaryTelegram: async (runId: string, request: { limit?: number; model?: string; thinking?: boolean; channel?: boolean; summary?: MiroFishDeepSeekSummaryResult } = {}) => postAuthAPI<MiroFishDeepSeekTelegramResponse>(
+        `/api/admin/mirofish/scanner/runs/${encodeURIComponent(runId)}/deepseek-summary/telegram`,
+        request,
+        undefined,
+        120000,
     ),
 };

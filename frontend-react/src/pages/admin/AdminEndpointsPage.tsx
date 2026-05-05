@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type CompositionEvent as ReactCompositionEvent, type KeyboardEvent as ReactKeyboardEvent } from 'react';
-import { MiroFishAlphaCandidate, MiroFishAnalyst, MiroFishLayer, MiroFishLog, MiroFishNode, MiroFishRun, MiroFishScannerRun, MiroFishStatus, MiroFishTargetSnapshot, mirofishApi } from '@/lib/mirofishApi';
+import { MiroFishAlphaCandidate, MiroFishAnalyst, MiroFishDeepSeekStatus, MiroFishDeepSeekSummaryResult, MiroFishLayer, MiroFishLog, MiroFishNode, MiroFishRun, MiroFishScannerRun, MiroFishStatus, MiroFishTargetSnapshot, mirofishApi } from '@/lib/mirofishApi';
 
 const agentCounts = [3, 7, 10, 15];
 const defaultTarget = '삼성전자';
@@ -45,7 +45,8 @@ const phaseNumberById: Record<string, number> = {
 };
 type ApiState = 'checking' | 'ready' | 'error' | 'running';
 type AlphaScannerState = 'idle' | 'loading' | 'running' | 'ready' | 'error';
-type EndpointKey = 'status' | 'dataSources' | 'resolve' | 'history' | 'createRun' | 'runDetail' | 'graph' | 'events' | 'report';
+type DeepSeekPanelState = 'idle' | 'checking' | 'summarizing' | 'ready' | 'sending' | 'sent' | 'error';
+type EndpointKey = 'status' | 'dataSources' | 'resolve' | 'history' | 'createRun' | 'runDetail' | 'graph' | 'events' | 'report' | 'deepseek';
 type EndpointStatus = 'idle' | 'loading' | 'ok' | 'error';
 type TargetCandidate = NonNullable<MiroFishTargetSnapshot['candidates']>[number];
 
@@ -59,6 +60,7 @@ const endpointDefinitions: Array<{ key: EndpointKey; method: string; path: strin
     { key: 'graph', method: 'GET', path: '/api/admin/mirofish/runs/{id}/graph', title: 'Graph Artifact', icon: 'fa-project-diagram', color: 'text-emerald-300' },
     { key: 'events', method: 'GET', path: '/api/admin/mirofish/runs/{id}/events', title: 'Event Feed', icon: 'fa-stream', color: 'text-amber-300' },
     { key: 'report', method: 'GET', path: '/api/admin/mirofish/runs/{id}/report', title: 'Report', icon: 'fa-scroll', color: 'text-rose-300' },
+    { key: 'deepseek', method: 'POST', path: '/api/admin/mirofish/deepseek/scanner-summary', title: 'DeepSeek V2', icon: 'fa-wand-magic-sparkles', color: 'text-emerald-300' },
 ];
 
 function clampCount(value: unknown, fallback: number) {
@@ -195,12 +197,26 @@ function formatAlphaEvidence(candidate: MiroFishAlphaCandidate): string {
     return `trading value ${formatCompactNumber(candidate.trading_value)}`;
 }
 
+function deepSeekStateTone(state: DeepSeekPanelState, configured?: boolean) {
+    if (!configured) return 'border-amber-300/25 bg-amber-300/10 text-amber-100';
+    if (state === 'error') return 'border-rose-300/25 bg-rose-300/10 text-rose-100';
+    if (state === 'summarizing' || state === 'sending' || state === 'checking') return 'border-cyan-300/25 bg-cyan-300/10 text-cyan-100';
+    if (state === 'ready' || state === 'sent') return 'border-emerald-300/25 bg-emerald-300/10 text-emerald-100';
+    return 'border-white/10 bg-white/8 text-slate-300';
+}
+
 function AlphaBoardPanel({
     candidates,
     scannerRun,
     state,
     errorText,
+    deepSeekStatus,
+    deepSeekState,
+    deepSeekSummary,
+    deepSeekErrorText,
     onScan,
+    onDeepSeekSummary,
+    onSendDeepSeekTelegram,
     onSelect,
     onDeepDive,
 }: {
@@ -208,12 +224,21 @@ function AlphaBoardPanel({
     scannerRun: MiroFishScannerRun | null;
     state: AlphaScannerState;
     errorText?: string | null;
+    deepSeekStatus?: MiroFishDeepSeekStatus | null;
+    deepSeekState: DeepSeekPanelState;
+    deepSeekSummary?: MiroFishDeepSeekSummaryResult | null;
+    deepSeekErrorText?: string | null;
     onScan: () => void;
+    onDeepSeekSummary: () => void;
+    onSendDeepSeekTelegram: () => void;
     onSelect: (candidate: MiroFishAlphaCandidate) => void;
     onDeepDive: (candidate: MiroFishAlphaCandidate) => void;
 }) {
     const topCandidates = candidates.slice(0, 5);
     const scannerBusy = state === 'loading' || state === 'running';
+    const deepSeekBusy = deepSeekState === 'checking' || deepSeekState === 'summarizing' || deepSeekState === 'sending';
+    const deepSeekConfigured = Boolean(deepSeekStatus?.configured);
+    const summaryCandidates = deepSeekSummary?.summary?.candidates || [];
     return (
         <section className="mt-8 max-w-6xl rounded-xl border border-emerald-300/15 bg-slate-950/55 p-4 shadow-[0_18px_70px_rgba(16,185,129,0.12)] backdrop-blur">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -234,6 +259,9 @@ function AlphaBoardPanel({
                     <span className="rounded-full border border-white/10 bg-white/8 px-3 py-1.5 text-xs font-bold text-slate-300">
                         {scannerRun?.candidate_count ?? candidates.length} candidates
                     </span>
+                    <span className={`rounded-full border px-3 py-1.5 text-xs font-black ${deepSeekStateTone(deepSeekState, deepSeekConfigured)}`}>
+                        DeepSeek {deepSeekConfigured ? (deepSeekStatus?.default_model || 'ready') : 'not set'}
+                    </span>
                     <button
                         type="button"
                         onClick={onScan}
@@ -245,11 +273,51 @@ function AlphaBoardPanel({
                 </div>
             </div>
 
-            {errorText && (
+            {(errorText || deepSeekErrorText) && (
                 <div className="mt-3 rounded-lg border border-rose-300/20 bg-rose-300/10 px-3 py-2 text-xs font-bold text-rose-100">
-                    {errorText}
+                    {errorText || deepSeekErrorText}
                 </div>
             )}
+
+            <div className="mt-4 grid gap-3 rounded-lg border border-white/10 bg-black/20 p-3 md:grid-cols-[1fr_auto]">
+                <div>
+                    <div className="text-[11px] font-black uppercase tracking-[0.18em] text-emerald-200/70">DeepSeek V2 Harness</div>
+                    <div className="mt-1 text-sm font-bold text-slate-200">
+                        스캐너 숫자는 그대로 두고 DeepSeek가 한글 근거 요약만 생성합니다.
+                    </div>
+                    {deepSeekSummary?.summary?.summary_title_ko && (
+                        <div className="mt-2 rounded-lg border border-emerald-300/15 bg-emerald-300/8 p-3">
+                            <div className="text-sm font-black text-emerald-100">{deepSeekSummary.summary.summary_title_ko}</div>
+                            <p className="mt-1 text-xs font-semibold text-slate-300">{deepSeekSummary.summary.portfolio_note_ko}</p>
+                            <div className="mt-2 flex flex-wrap gap-2">
+                                {summaryCandidates.slice(0, 3).map((item) => (
+                                    <span key={`${item.symbol}-${item.rank}`} className="rounded-full border border-white/10 bg-white/8 px-2.5 py-1 text-[11px] font-bold text-slate-200">
+                                        {item.symbol} {item.action_ko || '요약'}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
+                <div className="flex flex-wrap items-start gap-2 md:justify-end">
+                    <button
+                        type="button"
+                        onClick={onDeepSeekSummary}
+                        disabled={deepSeekBusy || (!scannerRun?.id && scannerBusy)}
+                        className="rounded-lg border border-emerald-300/25 bg-emerald-300/12 px-3 py-2 text-xs font-black text-emerald-100 transition hover:bg-emerald-300/18 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                        {deepSeekState === 'summarizing' ? '요약 중...' : 'DeepSeek 요약'}
+                    </button>
+                    <button
+                        type="button"
+                        onClick={onSendDeepSeekTelegram}
+                        disabled={deepSeekBusy || !scannerRun?.id}
+                        className="rounded-lg border border-cyan-300/25 bg-cyan-300/12 px-3 py-2 text-xs font-black text-cyan-100 transition hover:bg-cyan-300/18 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                        {deepSeekState === 'sending' ? '전송 중...' : deepSeekState === 'sent' ? '전송 완료' : '텔레그램 전송'}
+                    </button>
+                </div>
+            </div>
 
             <div className="mt-4 grid gap-2">
                 {topCandidates.length ? topCandidates.map((candidate) => (
@@ -757,6 +825,10 @@ export default function AdminEndpointsPage() {
     const [alphaScannerRun, setAlphaScannerRun] = useState<MiroFishScannerRun | null>(null);
     const [alphaCandidates, setAlphaCandidates] = useState<MiroFishAlphaCandidate[]>([]);
     const [alphaErrorText, setAlphaErrorText] = useState<string | null>(null);
+    const [deepSeekStatus, setDeepSeekStatus] = useState<MiroFishDeepSeekStatus | null>(null);
+    const [deepSeekState, setDeepSeekState] = useState<DeepSeekPanelState>('idle');
+    const [deepSeekSummary, setDeepSeekSummary] = useState<MiroFishDeepSeekSummaryResult | null>(null);
+    const [deepSeekErrorText, setDeepSeekErrorText] = useState<string | null>(null);
     const [endpointState, setEndpointState] = useState<Record<EndpointKey, EndpointStatus>>(() => Object.fromEntries(endpointDefinitions.map((item) => [item.key, 'idle'])) as Record<EndpointKey, EndpointStatus>);
     const [apiState, setApiState] = useState<ApiState>('checking');
     const [errorText, setErrorText] = useState<string | null>(null);
@@ -777,20 +849,25 @@ export default function AdminEndpointsPage() {
             markEndpoint('status', 'loading');
             markEndpoint('history', 'loading');
             markEndpoint('dataSources', 'loading');
+            markEndpoint('deepseek', 'loading');
             try {
-                const [statusData, historyData, sourcesData] = await Promise.all([
+                const [statusData, historyData, sourcesData, deepSeekData] = await Promise.all([
                     mirofishApi.getStatus(),
                     mirofishApi.listRuns(),
                     mirofishApi.getDataSources(),
+                    mirofishApi.getDeepSeekStatus(),
                 ]);
                 if (!alive) return;
                 setStatus(statusData);
+                setDeepSeekStatus(deepSeekData);
+                setDeepSeekState(deepSeekData.configured ? 'ready' : 'idle');
                 setRecentRuns(historyData.runs);
                 setDataSourceCount(Array.isArray(sourcesData?.files) ? sourcesData.files.filter((file: any) => file.exists).length : 0);
                 setApiState('ready');
                 markEndpoint('status', 'ok');
                 markEndpoint('history', 'ok');
                 markEndpoint('dataSources', 'ok');
+                markEndpoint('deepseek', deepSeekData.configured ? 'ok' : 'error');
                 setRun((current) => ({ ...current, brain: statusData.brain || current.brain, pipeline: statusData.pipeline || current.pipeline }));
             } catch (error) {
                 if (!alive) return;
@@ -799,6 +876,7 @@ export default function AdminEndpointsPage() {
                 markEndpoint('status', 'error');
                 markEndpoint('history', 'error');
                 markEndpoint('dataSources', 'error');
+                markEndpoint('deepseek', 'error');
                 setErrorText(error instanceof Error ? error.message : 'MiroFish API 연결 실패');
             }
         }
@@ -971,7 +1049,8 @@ export default function AdminEndpointsPage() {
         graph: `${run.graph_artifact?.nodes?.length || 0} nodes / ${run.graph_artifact?.edges?.length || 0} edges`,
         events: `${run.events?.length || 0} events`,
         report: run.report?.markdown ? `${run.report.markdown.length} chars` : 'waiting',
-    }), [dataSourceCount, recentRuns.length, run, status, targetSnapshot]);
+        deepseek: deepSeekStatus?.configured ? (deepSeekSummary?.model || deepSeekStatus.default_model || 'ready') : 'not configured',
+    }), [dataSourceCount, deepSeekStatus, deepSeekSummary, recentRuns.length, run, status, targetSnapshot]);
 
     const targetCandidates = useMemo<TargetCandidate[]>(() => {
         const query = target.trim();
@@ -1059,6 +1138,8 @@ export default function AdminEndpointsPage() {
     async function handleAlphaScan() {
         setAlphaScannerState('loading');
         setAlphaErrorText(null);
+        setDeepSeekSummary(null);
+        setDeepSeekErrorText(null);
         try {
             const scannerRun = await mirofishApi.startScannerRun({
                 market: 'KR',
@@ -1077,6 +1158,71 @@ export default function AdminEndpointsPage() {
         } catch (error) {
             setAlphaScannerState('error');
             setAlphaErrorText(error instanceof Error ? error.message : 'Alpha scanner API unavailable.');
+        }
+    }
+
+    async function handleDeepSeekSummary() {
+        setDeepSeekState('summarizing');
+        setDeepSeekErrorText(null);
+        try {
+            if (alphaScannerRun?.id) {
+                const summary = await mirofishApi.summarizeScannerRunWithDeepSeek(alphaScannerRun.id, {
+                    limit: 5,
+                    model: deepSeekStatus?.default_model,
+                    thinking: false,
+                });
+                setDeepSeekSummary(summary);
+                setDeepSeekState('ready');
+                markEndpoint('deepseek', 'ok');
+                return;
+            }
+            const payload = await mirofishApi.createDeepSeekScannerSummary({
+                market: 'KR',
+                horizon: '20D',
+                strategy: 'multi_signal',
+                risk_profile: 'balanced',
+                limit: 20,
+                summary_limit: 5,
+                model: deepSeekStatus?.default_model,
+                thinking: false,
+            });
+            setAlphaScannerRun(payload.run);
+            setAlphaCandidates(payload.run.candidates || []);
+            setAlphaScannerState(payload.run.status === 'completed' ? 'ready' : 'running');
+            setDeepSeekSummary(payload.summary);
+            setDeepSeekState('ready');
+            markEndpoint('deepseek', 'ok');
+        } catch (error) {
+            setDeepSeekState('error');
+            markEndpoint('deepseek', 'error');
+            setDeepSeekErrorText(error instanceof Error ? error.message : 'DeepSeek summary failed.');
+        }
+    }
+
+    async function handleSendDeepSeekTelegram() {
+        if (!alphaScannerRun?.id) {
+            setDeepSeekState('error');
+            setDeepSeekErrorText('먼저 scanner run을 생성하세요.');
+            return;
+        }
+        setDeepSeekState('sending');
+        setDeepSeekErrorText(null);
+        try {
+            const result = await mirofishApi.sendScannerDeepSeekSummaryTelegram(alphaScannerRun.id, {
+                summary: deepSeekSummary || undefined,
+                limit: 5,
+                model: deepSeekStatus?.default_model,
+                thinking: false,
+                channel: false,
+            });
+            if (!result.ok) throw new Error('Telegram send failed.');
+            if (result.summary) setDeepSeekSummary(result.summary);
+            setDeepSeekState('sent');
+            markEndpoint('deepseek', 'ok');
+        } catch (error) {
+            setDeepSeekState('error');
+            markEndpoint('deepseek', 'error');
+            setDeepSeekErrorText(error instanceof Error ? error.message : 'DeepSeek Telegram send failed.');
         }
     }
 
@@ -1164,7 +1310,13 @@ export default function AdminEndpointsPage() {
                         scannerRun={alphaScannerRun}
                         state={alphaScannerState}
                         errorText={alphaErrorText}
+                        deepSeekStatus={deepSeekStatus}
+                        deepSeekState={deepSeekState}
+                        deepSeekSummary={deepSeekSummary}
+                        deepSeekErrorText={deepSeekErrorText}
                         onScan={handleAlphaScan}
+                        onDeepSeekSummary={handleDeepSeekSummary}
+                        onSendDeepSeekTelegram={handleSendDeepSeekTelegram}
                         onSelect={selectAlphaCandidate}
                         onDeepDive={deepDiveAlphaCandidate}
                     />

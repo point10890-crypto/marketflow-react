@@ -321,6 +321,16 @@ class Config:
     AI_CHART_TIME = os.environ.get('AI_CHART_TIME', '14:00')             # AI Chart Analysis KR (Gemini Vision)
     US_AI_CHART_TIME = os.environ.get('US_AI_CHART_TIME', '04:30')       # AI Chart Analysis US (Gemini Vision) — 04:00 US 마켓갱신과 분리하여 리소스 경합 회피
     HISTORY_TIME = os.environ.get('KR_MARKET_HISTORY_TIME', '10:00')
+    ALPHA_SCANNER_ENABLED = os.environ.get('ALPHA_SCANNER_ENABLED', 'true').lower() == 'true'
+    ALPHA_SCANNER_TIMES = [
+        item.strip()
+        for item in os.environ.get('ALPHA_SCANNER_TIMES', '09:20,11:20,14:20,15:40,16:10').split(',')
+        if item.strip()
+    ]
+    ALPHA_SCANNER_LIMIT = int(os.environ.get('ALPHA_SCANNER_LIMIT', '20'))
+    ALPHA_SCANNER_MIN_ALPHA = float(os.environ.get('ALPHA_SCANNER_MIN_ALPHA', '70'))
+    ALPHA_SCANNER_MAX_RISK = float(os.environ.get('ALPHA_SCANNER_MAX_RISK', '45'))
+    ALPHA_SCANNER_MAX_EVENTS = int(os.environ.get('ALPHA_SCANNER_MAX_EVENTS', '8'))
     CRYPTO_TIMES = ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00']  # 매 4시간
     MORNING_REPORT_TIME = os.environ.get('MORNING_REPORT_TIME', '09:00')   # 일별 상태 리포트
     MORNING_BRIEFING_TIME = os.environ.get('MORNING_BRIEFING_TIME', '09:05')  # AI 조간 브리핑
@@ -615,6 +625,45 @@ def send_telegram_long(message: str, channel: bool = True) -> bool:
             ok = False
         time.sleep(0.5)
     return ok
+
+
+def run_alpha_scanner_monitor() -> bool:
+    """Run the file-backed MiroFish scanner and Telegram only new events."""
+    try:
+        from app.services.mirofish.alpha_scanner import run_scanner_alert_check
+
+        result = run_scanner_alert_check(
+            {'limit': Config.ALPHA_SCANNER_LIMIT},
+            min_alpha=Config.ALPHA_SCANNER_MIN_ALPHA,
+            max_risk=Config.ALPHA_SCANNER_MAX_RISK,
+            max_events=Config.ALPHA_SCANNER_MAX_EVENTS,
+        )
+        events = result.get('events') or []
+        run = result.get('run') or {}
+        if events:
+            ok = send_telegram_long(result.get('message') or '', channel=False)
+            logger.info(
+                "MiroFish alpha scanner alert sent: %s new events, run=%s",
+                len(events),
+                run.get('id'),
+            )
+            return bool(ok)
+        logger.info(
+            "MiroFish alpha scanner: no new events, candidates=%s, run=%s",
+            run.get('candidate_count'),
+            run.get('id'),
+        )
+        return True
+    except Exception as e:
+        logger.error(f"MiroFish alpha scanner monitor failed: {e}", exc_info=True)
+        try:
+            send_telegram(
+                f"MiroFish alpha scanner failed\n{type(e).__name__}: {e}",
+                channel=False,
+            )
+        except Exception:
+            pass
+        return False
 
 
 # ============================================================
@@ -2954,6 +3003,12 @@ class Scheduler:
             getattr(schedule.every(), day).at(Config.US_AI_CHART_TIME).do(
                 self._with_record(_run_us_ai_chart_analysis, 'us_ai_chart',
                                   max_retries=1, retry_delay=600))
+            if Config.ALPHA_SCANNER_ENABLED:
+                for hm in Config.ALPHA_SCANNER_TIMES:
+                    task_key = f"alpha_scanner_{hm.replace(':', '')}"
+                    getattr(schedule.every(), day).at(hm).do(
+                        self._with_record(run_alpha_scanner_monitor, task_key,
+                                          max_retries=1, retry_delay=120))
 
         # 금요일 17:00 — AI 로또 분석 게시
         schedule.every().friday.at(Config.LOTTO_POST_TIME).do(
@@ -3074,6 +3129,7 @@ def main():
 
     # Wave Pattern
     parser.add_argument('--wave-scan', action='store_true', help='Wave 패턴 스캔 (KR 전 종목)')
+    parser.add_argument('--alpha-scanner', action='store_true', help='MiroFish Alpha Scanner alert check')
     # AI Chart Analysis
     parser.add_argument('--ai-chart', action='store_true', help='AI Chart Analysis KR (Gemini Vision 100종목)')
     parser.add_argument('--us-ai-chart', action='store_true', help='US AI Chart Analysis (Gemini Vision S&P 500)')
@@ -3238,6 +3294,12 @@ def main():
 
     if args.wave_scan:
         _run_wave_scan()
+        ran_any = True
+        if not args.daemon:
+            return
+
+    if args.alpha_scanner:
+        run_alpha_scanner_monitor()
         ran_any = True
         if not args.daemon:
             return

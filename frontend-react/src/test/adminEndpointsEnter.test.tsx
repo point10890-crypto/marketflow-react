@@ -14,6 +14,10 @@ const mockApi = vi.hoisted(() => ({
   startScannerRun: vi.fn(),
   getScannerRun: vi.fn(),
   getScannerCandidates: vi.fn(),
+  getDeepSeekStatus: vi.fn(),
+  createDeepSeekScannerSummary: vi.fn(),
+  summarizeScannerRunWithDeepSeek: vi.fn(),
+  sendScannerDeepSeekSummaryTelegram: vi.fn(),
 }));
 
 vi.mock('@/lib/mirofishApi', () => ({
@@ -56,6 +60,11 @@ beforeEach(() => {
     pipeline: { status: 'ready', graph_links: 0, similar_events: 0, agent_count: 10 },
   });
   mockApi.getDataSources.mockResolvedValue({ files: [] });
+  mockApi.getDeepSeekStatus.mockResolvedValue({
+    provider: 'deepseek',
+    configured: true,
+    default_model: 'deepseek-v4-flash',
+  });
   mockApi.listRuns.mockResolvedValue({ runs: [] });
   mockApi.searchTargets.mockResolvedValue({
     target: 'ㅅㅅㅈㅈ',
@@ -102,6 +111,45 @@ beforeEach(() => {
     run_id: 'mfas_test',
     status: 'completed',
     candidates: [],
+  });
+  const deepSeekSummary = {
+    provider: 'deepseek',
+    model: 'deepseek-v4-flash',
+    run_id: 'mfas_test',
+    candidate_count: 1,
+    summary: {
+      summary_title_ko: '알파 후보 요약',
+      portfolio_note_ko: '스캐너 숫자를 보존한 요약입니다.',
+      candidates: [
+        {
+          rank: 1,
+          symbol: '000001',
+          display_name: 'Alpha One',
+          market: 'KOSPI',
+          action_ko: '매수 후보',
+          thesis_ko: '모멘텀이 확인됩니다.',
+          risk_ko: '리스크 점검 필요.',
+          next_check_ko: '거래대금 확인.',
+        },
+      ],
+    },
+  };
+  mockApi.summarizeScannerRunWithDeepSeek.mockResolvedValue(deepSeekSummary);
+  mockApi.createDeepSeekScannerSummary.mockResolvedValue({
+    run: {
+      id: 'mfas_test',
+      status: 'completed',
+      candidate_count: 1,
+      candidates: [],
+    },
+    summary: deepSeekSummary,
+  });
+  mockApi.sendScannerDeepSeekSummaryTelegram.mockResolvedValue({
+    ok: true,
+    run_id: 'mfas_test',
+    provider: 'deepseek',
+    message_chars: 300,
+    summary: deepSeekSummary,
   });
 });
 
@@ -208,6 +256,29 @@ describe('AdminEndpointsPage analysis start input', () => {
       }));
       expect(mockApi.startRun).toHaveBeenCalledWith(expect.objectContaining({
         target: 'Alpha One',
+      }));
+    });
+  });
+
+  it('summarizes scanner candidates with DeepSeek and sends Telegram', async () => {
+    await renderPage();
+
+    fireEvent.click(screen.getByRole('button', { name: /Run scanner/i }));
+    expect(await screen.findByText('Alpha One')).toBeTruthy();
+
+    fireEvent.click(screen.getByRole('button', { name: 'DeepSeek 요약' }));
+    expect(await screen.findByText('알파 후보 요약')).toBeTruthy();
+    expect(await screen.findByText('000001 매수 후보')).toBeTruthy();
+
+    fireEvent.click(screen.getByRole('button', { name: '텔레그램 전송' }));
+
+    await waitFor(() => {
+      expect(mockApi.summarizeScannerRunWithDeepSeek).toHaveBeenCalledWith('mfas_test', expect.objectContaining({
+        limit: 5,
+        model: 'deepseek-v4-flash',
+      }));
+      expect(mockApi.sendScannerDeepSeekSummaryTelegram).toHaveBeenCalledWith('mfas_test', expect.objectContaining({
+        channel: false,
       }));
     });
   });

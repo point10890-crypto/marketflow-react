@@ -13,6 +13,7 @@ from unittest.mock import patch
 
 import pytest
 
+import scheduler
 from scheduler import Scheduler
 
 
@@ -101,3 +102,27 @@ def test_with_record_verify_fn_can_override_truthy_result():
         result = wrapped()
     assert result is False
     rec.assert_not_called()
+
+
+def test_alpha_scanner_monitor_sends_telegram_for_new_events():
+    result = {
+        "events": [{"event_key": "000001:BUY_CANDIDATE"}],
+        "message": "alpha alert",
+        "run": {"id": "run1", "candidate_count": 1},
+    }
+    with patch("app.services.mirofish.alpha_scanner.run_scanner_alert_check", return_value=result), \
+         patch("scheduler.send_telegram_long", return_value=True) as tg:
+        assert scheduler.run_alpha_scanner_monitor() is True
+    tg.assert_called_once_with("alpha alert", channel=False)
+
+
+def test_alpha_scanner_monitor_skips_telegram_without_new_events():
+    result = {
+        "events": [],
+        "message": "no alert",
+        "run": {"id": "run1", "candidate_count": 20},
+    }
+    with patch("app.services.mirofish.alpha_scanner.run_scanner_alert_check", return_value=result), \
+         patch("scheduler.send_telegram_long") as tg:
+        assert scheduler.run_alpha_scanner_monitor() is True
+    tg.assert_not_called()

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import csv
 import hashlib
+import html
 import json
 import os
 import re
@@ -19,6 +20,10 @@ SCANNER_RUNS_ROOT = os.path.join(DATA_ROOT, 'admin_mirofish', 'scanner_runs')
 
 MAX_CANDIDATES = 100
 DEFAULT_LIMIT = 30
+DEFAULT_ALERT_LIMIT = 20
+DEFAULT_ALERT_MIN_ALPHA = 70.0
+DEFAULT_ALERT_MAX_RISK = 45.0
+DEFAULT_ALERT_MAX_EVENTS = 8
 
 SCORING_SCHEMA = {
     'alpha_score': {
@@ -105,6 +110,95 @@ def read_scanner_candidates(run_id: str) -> dict[str, Any] | None:
         'candidate_count': len(run.get('candidates') or []),
         'candidates': run.get('candidates') or [],
     }
+
+
+def run_scanner_alert_check(
+    payload: dict[str, Any] | None = None,
+    *,
+    state_path: str | None = None,
+    min_alpha: float = DEFAULT_ALERT_MIN_ALPHA,
+    max_risk: float = DEFAULT_ALERT_MAX_RISK,
+    actions: tuple[str, ...] = ('BUY_CANDIDATE',),
+    max_events: int = DEFAULT_ALERT_MAX_EVENTS,
+) -> dict[str, Any]:
+    """Create a scanner run and return only newly-qualified alert events.
+
+    The state file stores stable symbol/action keys so a scheduled job can run
+    repeatedly without spamming Telegram with the same candidate.
+    """
+    run_payload = dict(payload or {})
+    run_payload.setdefault('limit', DEFAULT_ALERT_LIMIT)
+    run = create_scanner_run(run_payload)
+    state_file = state_path or _alert_state_path()
+    state = _read_alert_state(state_file)
+    events = _new_candidate_events(
+        run,
+        state,
+        min_alpha=float(min_alpha),
+        max_risk=float(max_risk),
+        actions=actions,
+        max_events=max_events,
+    )
+    updated_state = _update_alert_state(state, run, events)
+    write_json_atomic(state_file, updated_state, sort_keys=True)
+    return {
+        'run': run,
+        'events': events,
+        'message': build_scanner_alert_message(run, events, min_alpha=min_alpha, max_risk=max_risk),
+        'state_path': state_file,
+        'new_event_count': len(events),
+    }
+
+
+def build_scanner_alert_message(
+    run: dict[str, Any],
+    events: list[dict[str, Any]],
+    *,
+    min_alpha: float = DEFAULT_ALERT_MIN_ALPHA,
+    max_risk: float = DEFAULT_ALERT_MAX_RISK,
+) -> str:
+    generated_at = _escape(run.get('generated_at') or '')
+    run_id = _escape(run.get('id') or '')
+    candidate_count = int(run.get('candidate_count') or 0)
+    lines = [
+        '<b>미로피쉬 알파 스캐너</b>',
+        f'신규 매수 후보: <b>{len(events)}</b>건 / 전체 후보: {candidate_count}건',
+        f'기준: 알파 &gt;= {min_alpha:g}, 리스크 &lt;= {max_risk:g}, 로컬 데이터 기반 결정론 스캔',
+        f'실행 ID: <code>{run_id}</code>',
+        f'생성 시각: {generated_at}',
+    ]
+    if not events:
+        lines.append('이전 알림 이후 새 조건 충족 후보가 없습니다.')
+        return '\n'.join(lines)
+
+    for event in events:
+        candidate = event['candidate']
+        evidence = (candidate.get('evidence') or [{}])[0]
+        tags = ', '.join(_tag_label(tag) for tag in (candidate.get('strategy_tags') or [])[:4])
+        price = candidate.get('price') or {}
+        current_price = _format_number(price.get('current_price'))
+        lines.extend([
+            '',
+            (
+                f"#{candidate.get('rank')} <b>{_escape(candidate.get('display_name'))}</b> "
+                f"(<code>{_escape(candidate.get('symbol'))}</code> {_escape(candidate.get('market'))})"
+            ),
+            (
+                f"알파 <b>{candidate.get('alpha_score')}</b> / "
+                f"리스크 <b>{candidate.get('risk_score')}</b> / "
+                f"순위점수 {candidate.get('ranking_score')}"
+            ),
+            (
+                f"판정: <b>{_escape(_action_label(candidate.get('action')))}</b> / "
+                f"투자기간: {_escape(_horizon_label(candidate.get('horizon')))}"
+            ),
+            f"현재가: {current_price} / 전략태그: {_escape(tags)}",
+            (
+                f"근거: {_escape(evidence.get('source'))} "
+                f"{_escape(_evidence_field_label(evidence.get('field')))}={evidence.get('score')}"
+            ),
+        ])
+    return '\n'.join(lines)
 
 
 def _load_artifacts() -> dict[str, Any]:
@@ -529,6 +623,130 @@ def _clean_symbols(value: Any) -> set[str]:
     return {_symbol(item) for item in value if _symbol(item)}
 
 
+def _alert_state_path() -> str:
+    return os.path.join(DATA_ROOT, 'admin_mirofish', 'alpha_scanner_alert_state.json')
+
+
+def _read_alert_state(path: str) -> dict[str, Any]:
+    if not os.path.isfile(path):
+        return {'version': 1, 'sent_events': {}}
+    try:
+        data = _read_json(path)
+    except (OSError, json.JSONDecodeError, ValueError):
+        return {'version': 1, 'sent_events': {}}
+    if not isinstance(data, dict):
+        return {'version': 1, 'sent_events': {}}
+    sent_events = data.get('sent_events')
+    if not isinstance(sent_events, dict):
+        sent_events = {}
+    data['sent_events'] = sent_events
+    data.setdefault('version', 1)
+    return data
+
+
+def _new_candidate_events(
+    run: dict[str, Any],
+    state: dict[str, Any],
+    *,
+    min_alpha: float,
+    max_risk: float,
+    actions: tuple[str, ...],
+    max_events: int,
+) -> list[dict[str, Any]]:
+    seen = state.get('sent_events') or {}
+    action_set = {str(action) for action in actions}
+    events = []
+    for candidate in run.get('candidates') or []:
+        if candidate.get('action') not in action_set:
+            continue
+        if _float(candidate.get('alpha_score')) < min_alpha:
+            continue
+        if _float(candidate.get('risk_score')) > max_risk:
+            continue
+        event_key = _candidate_event_key(candidate)
+        if event_key in seen:
+            continue
+        events.append({
+            'event_key': event_key,
+            'run_id': run.get('id'),
+            'generated_at': run.get('generated_at'),
+            'candidate': candidate,
+        })
+        if len(events) >= max(1, int(max_events)):
+            break
+    return events
+
+
+def _update_alert_state(
+    state: dict[str, Any],
+    run: dict[str, Any],
+    events: list[dict[str, Any]],
+) -> dict[str, Any]:
+    sent_events = dict(state.get('sent_events') or {})
+    checked_at = run.get('generated_at')
+    for event in events:
+        candidate = event.get('candidate') or {}
+        sent_events[event['event_key']] = {
+            'sent_at': checked_at,
+            'run_id': run.get('id'),
+            'rank': candidate.get('rank'),
+            'symbol': candidate.get('symbol'),
+            'display_name': candidate.get('display_name'),
+            'market': candidate.get('market'),
+            'action': candidate.get('action'),
+            'alpha_score': candidate.get('alpha_score'),
+            'risk_score': candidate.get('risk_score'),
+        }
+    return {
+        'version': 1,
+        'last_checked_at': checked_at,
+        'last_run_id': run.get('id'),
+        'last_candidate_count': run.get('candidate_count'),
+        'sent_events': sent_events,
+    }
+
+
+def _candidate_event_key(candidate: dict[str, Any]) -> str:
+    price_date = (candidate.get('price') or {}).get('date') or str(candidate.get('generated_at') or '')[:10]
+    return f"{candidate.get('symbol')}:{candidate.get('action')}:{price_date}"
+
+
+def _action_label(value: Any) -> str:
+    return {
+        'BUY_CANDIDATE': '매수 후보',
+        'WATCH': '관찰',
+        'REJECT': '제외',
+    }.get(str(value or ''), str(value or ''))
+
+
+def _horizon_label(value: Any) -> str:
+    return {
+        'swing_5_20d': '스윙 5-20일',
+        'avoid_or_recheck': '회피 또는 재점검',
+    }.get(str(value or ''), str(value or ''))
+
+
+def _tag_label(value: Any) -> str:
+    return {
+        'momentum': '모멘텀',
+        'leading_screener': '선도 스크리너',
+        'vcp_entry': 'VCP 진입',
+        'jongga_setup': '종가 셋업',
+        'risk_penalty': '리스크 패널티',
+        'artifact_candidate': '파일 기반 후보',
+    }.get(str(value or ''), str(value or ''))
+
+
+def _evidence_field_label(value: Any) -> str:
+    return {
+        'price_momentum': '가격 모멘텀',
+        'liquidity': '유동성',
+        'screener_leading': '선도 스크리너',
+        'vcp_quality': 'VCP 품질',
+        'jongga_setup': '종가 셋업',
+    }.get(str(value or ''), str(value or ''))
+
+
 def _run_id(generated_at: str, symbols: set[str], limit: int) -> str:
     seed = json.dumps(
         {'generated_at': generated_at, 'symbols': sorted(symbols), 'limit': limit},
@@ -591,6 +809,19 @@ def _truthy(value: Any) -> bool:
 
 def _clamp(value: float, low: float, high: float) -> float:
     return max(low, min(high, float(value)))
+
+
+def _escape(value: Any) -> str:
+    return html.escape(str(value or ''), quote=False)
+
+
+def _format_number(value: Any) -> str:
+    number = _float(value)
+    if number == 0:
+        return '0'
+    if number.is_integer():
+        return f'{int(number):,}'
+    return f'{number:,.2f}'
 
 
 def _parse_dt(value: Any) -> datetime | None:

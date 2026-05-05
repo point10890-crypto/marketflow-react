@@ -171,3 +171,106 @@ def get_scanner_candidates(run_id):
     if candidates is None:
         return jsonify({'error': 'scanner run not found'}), 404
     return jsonify(candidates)
+
+
+@admin_mirofish_bp.route('/deepseek/status', methods=['GET'])
+@admin_required
+def deepseek_status():
+    include_live = request.args.get('live', '').lower() in {'1', 'true', 'yes'}
+    try:
+        return jsonify(mirofish.get_deepseek_status(include_live=include_live))
+    except mirofish.DeepSeekError as exc:
+        return jsonify({'error': str(exc), 'provider': 'deepseek'}), 502
+
+
+@admin_mirofish_bp.route('/deepseek/scanner-summary', methods=['POST'])
+@admin_required
+def create_scanner_run_with_deepseek_summary():
+    payload = request.get_json(silent=True) or {}
+    scanner_payload = payload.get('scanner') if isinstance(payload.get('scanner'), dict) else {}
+    if not scanner_payload:
+        scanner_payload = {
+            key: payload[key]
+            for key in ('limit', 'symbols')
+            if key in payload
+        }
+    try:
+        run = mirofish.create_scanner_run(scanner_payload)
+        summary = mirofish.summarize_scanner_run_with_deepseek(
+            run,
+            limit=payload.get('summary_limit', payload.get('limit', 5)),
+            model=payload.get('model'),
+            thinking=bool(payload.get('thinking', False)),
+        )
+    except ValueError as exc:
+        return jsonify({'error': str(exc)}), 400
+    except mirofish.DeepSeekError as exc:
+        return jsonify({'error': str(exc), 'provider': 'deepseek'}), 502
+    return jsonify({
+        'run': run,
+        'summary': summary,
+        'links': {
+            'run': f"/api/admin/mirofish/scanner/runs/{run['id']}",
+            'candidates': f"/api/admin/mirofish/scanner/runs/{run['id']}/candidates",
+            'telegram': f"/api/admin/mirofish/scanner/runs/{run['id']}/deepseek-summary/telegram",
+        },
+    }), 201
+
+
+@admin_mirofish_bp.route('/scanner/runs/<run_id>/deepseek-summary', methods=['POST'])
+@admin_required
+def summarize_scanner_candidates_with_deepseek(run_id):
+    try:
+        run = mirofish.read_scanner_run(run_id)
+    except ValueError as exc:
+        return jsonify({'error': str(exc)}), 400
+    if run is None:
+        return jsonify({'error': 'scanner run not found'}), 404
+
+    payload = request.get_json(silent=True) or {}
+    try:
+        summary = mirofish.summarize_scanner_run_with_deepseek(
+            run,
+            limit=payload.get('limit', 5),
+            model=payload.get('model'),
+            thinking=bool(payload.get('thinking', False)),
+        )
+    except mirofish.DeepSeekError as exc:
+        return jsonify({'error': str(exc), 'provider': 'deepseek'}), 502
+    return jsonify(summary)
+
+
+@admin_mirofish_bp.route('/scanner/runs/<run_id>/deepseek-summary/telegram', methods=['POST'])
+@admin_required
+def send_scanner_deepseek_summary_to_telegram(run_id):
+    try:
+        run = mirofish.read_scanner_run(run_id)
+    except ValueError as exc:
+        return jsonify({'error': str(exc)}), 400
+    if run is None:
+        return jsonify({'error': 'scanner run not found'}), 404
+
+    payload = request.get_json(silent=True) or {}
+    try:
+        summary = payload.get('summary')
+        if not isinstance(summary, dict):
+            summary = mirofish.summarize_scanner_run_with_deepseek(
+                run,
+                limit=payload.get('limit', 5),
+                model=payload.get('model'),
+                thinking=bool(payload.get('thinking', False)),
+            )
+        message = mirofish.build_summary_telegram_message(summary)
+        from app.utils.scheduler import _send_telegram_long
+        ok = _send_telegram_long(message, channel=False)
+    except mirofish.DeepSeekError as exc:
+        return jsonify({'error': str(exc), 'provider': 'deepseek'}), 502
+    if not ok:
+        return jsonify({'error': 'telegram send failed', 'run_id': run_id}), 502
+    return jsonify({
+        'ok': True,
+        'run_id': run_id,
+        'provider': 'deepseek',
+        'message_chars': len(message),
+        'summary': summary,
+    })

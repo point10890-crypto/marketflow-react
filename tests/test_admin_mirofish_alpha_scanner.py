@@ -125,6 +125,34 @@ def test_alpha_scanner_can_filter_requested_symbols(tmp_path, monkeypatch):
     assert run['candidates'][0]['symbol'] == '000002'
 
 
+def test_alpha_scanner_alert_check_only_returns_new_events(tmp_path, monkeypatch):
+    _seed_artifacts(tmp_path)
+    monkeypatch.setattr(alpha_scanner, 'DATA_ROOT', str(tmp_path))
+    monkeypatch.setattr(alpha_scanner, 'SCANNER_RUNS_ROOT', str(tmp_path / 'runs'))
+    state_path = str(tmp_path / 'alert_state.json')
+
+    first = alpha_scanner.run_scanner_alert_check(
+        {'limit': 5},
+        state_path=state_path,
+        min_alpha=70,
+        max_risk=45,
+    )
+    second = alpha_scanner.run_scanner_alert_check(
+        {'limit': 5},
+        state_path=state_path,
+        min_alpha=70,
+        max_risk=45,
+    )
+
+    assert first['new_event_count'] == 1
+    assert first['events'][0]['candidate']['symbol'] == '000001'
+    assert '미로피쉬 알파 스캐너' in first['message']
+    assert 'Alpha One' in first['message']
+    assert '매수 후보' in first['message']
+    assert second['new_event_count'] == 0
+    assert second['events'] == []
+
+
 def test_alpha_scanner_rejects_unsafe_run_ids(tmp_path, monkeypatch):
     monkeypatch.setattr(alpha_scanner, 'SCANNER_RUNS_ROOT', str(tmp_path / 'runs'))
 
