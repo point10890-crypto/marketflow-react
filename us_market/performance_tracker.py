@@ -10,6 +10,7 @@ Performance Tracker for Smart Money Picks
 
 import os
 import glob
+import json
 import pandas as pd
 import yfinance as yf
 import logging
@@ -27,6 +28,25 @@ class PerformanceTracker:
     def __init__(self, data_dir: str = 'us_market'):
         self.data_dir = data_dir
         self.archive_dir = os.path.join(data_dir, 'archive')
+        self.output_dir = os.path.join(data_dir, 'output')
+
+    @staticmethod
+    def _safe_float(value, default=0.0):
+        try:
+            if value is None or pd.isna(value):
+                return default
+            return float(value)
+        except Exception:
+            return default
+
+    @staticmethod
+    def _safe_str(value, default=''):
+        try:
+            if value is None or pd.isna(value):
+                return default
+            return str(value)
+        except Exception:
+            return default
         
     def load_archives(self) -> pd.DataFrame:
         """Load all archived pick files"""
@@ -140,13 +160,18 @@ class PerformanceTracker:
             
             results.append({
                 'ticker': ticker,
+                'name': self._safe_str(row.get('name'), ticker),
+                'sector': self._safe_str(row.get('sector'), 'Unknown'),
                 'rec_date': rec_date.strftime('%Y-%m-%d'),
                 'strategy': row.get('strategy_type', 'Unknown'),
-                'rec_price': rec_price,
-                'curr_price': curr_price,
-                'return': total_return,
-                'alpha': alpha,
-                'days': days_held
+                'grade': self._safe_str(row.get('grade'), '-'),
+                'recommendation': self._safe_str(row.get('recommendation'), ''),
+                'composite_score': self._safe_float(row.get('composite_score')),
+                'rec_price': self._safe_float(rec_price),
+                'curr_price': self._safe_float(curr_price),
+                'return': self._safe_float(total_return),
+                'alpha': self._safe_float(alpha),
+                'days': int(days_held)
             })
             
         if not results:
@@ -174,9 +199,71 @@ class PerformanceTracker:
         print(f"\n💀 Worst Performers:")
         print(results_df.nsmallest(3, 'return')[['ticker', 'rec_date', 'return', 'alpha']].to_string(index=False))
         
-        # Save report
-        results_df.to_csv(os.path.join(self.data_dir, 'output', 'performance_report.csv'), index=False)
-        logger.info("Saved detailed report to us_market/performance_report.csv")
+        # Save reports used by scheduler verification and /api/us/track-record.
+        os.makedirs(self.output_dir, exist_ok=True)
+        csv_path = os.path.join(self.output_dir, 'performance_report.csv')
+        json_path = os.path.join(self.output_dir, 'performance_report.json')
+        results_df.to_csv(csv_path, index=False)
+
+        returns = results_df['return'].tolist()
+        alphas = results_df['alpha'].tolist()
+        by_date = []
+        for rec_date, group in results_df.groupby('rec_date'):
+            group_returns = group['return'].tolist()
+            win_count = int((group['return'] > 0).sum())
+            by_date.append({
+                'date': rec_date,
+                'picks_count': int(len(group)),
+                'avg_return': round(float(np.mean(group_returns)), 2),
+                'avg_alpha': round(float(group['alpha'].mean()), 2),
+                'win_rate': round(win_count / len(group) * 100, 1),
+                'win_count': win_count,
+                'loss_count': int(len(group) - win_count),
+            })
+        by_date = sorted(by_date, key=lambda x: x['date'], reverse=True)
+
+        best = results_df.loc[results_df['return'].idxmax()]
+        worst = results_df.loc[results_df['return'].idxmin()]
+        report = {
+            'generated_at': datetime.now().isoformat(),
+            'summary': {
+                'total_picks': int(len(results_df)),
+                'unique_tickers': int(results_df['ticker'].nunique()),
+                'snapshots': int(results_df['rec_date'].nunique()),
+                'tracking_period': f"{results_df['rec_date'].min()} ~ {results_df['rec_date'].max()}",
+                'win_rate': round(float((results_df['return'] > 0).mean() * 100), 1),
+                'avg_return': round(float(np.mean(returns)), 2),
+                'avg_alpha': round(float(np.mean(alphas)), 2),
+                'max_gain': {'pct': round(float(best['return']), 2), 'ticker': best['ticker']},
+                'max_loss': {'pct': round(float(worst['return']), 2), 'ticker': worst['ticker']},
+                'total_winners': int((results_df['return'] > 0).sum()),
+                'total_losers': int((results_df['return'] <= 0).sum()),
+            },
+            'snapshots': by_date,
+            'picks': [
+                {
+                    'ticker': row['ticker'],
+                    'name': row['name'],
+                    'sector': row['sector'],
+                    'snapshot_date': row['rec_date'],
+                    'entry_price': round(float(row['rec_price']), 2),
+                    'current_price': round(float(row['curr_price']), 2),
+                    'return_pct': round(float(row['return']), 2),
+                    'alpha': round(float(row['alpha']), 2),
+                    'days': int(row['days']),
+                    'composite_score': round(float(row.get('composite_score', 0)), 1),
+                    'grade': row.get('grade', '-'),
+                    'recommendation': row.get('recommendation', ''),
+                    'strategy': row.get('strategy', ''),
+                }
+                for _, row in results_df.sort_values(['rec_date', 'return'], ascending=[False, False]).iterrows()
+            ],
+            'by_grade': results_df['grade'].fillna('-').value_counts().to_dict(),
+            'by_sector': results_df['sector'].fillna('Unknown').value_counts().to_dict(),
+        }
+        with open(json_path, 'w', encoding='utf-8') as f:
+            json.dump(report, f, ensure_ascii=False, indent=2)
+        logger.info("Saved detailed reports to %s and %s", csv_path, json_path)
 
 if __name__ == "__main__":
     tracker = PerformanceTracker()

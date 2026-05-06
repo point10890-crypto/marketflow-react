@@ -24,8 +24,16 @@ DEFAULT_ALERT_LIMIT = 20
 DEFAULT_ALERT_MIN_ALPHA = 70.0
 DEFAULT_ALERT_MAX_RISK = 45.0
 DEFAULT_ALERT_MAX_EVENTS = 8
+DEFAULT_MONITOR_RETRY_SECONDS = 300
 DEFAULT_SCHEDULE_TIMES = '09:20,11:20,14:20,15:40,16:10'
 KST = timezone(timedelta(hours=9))
+WATCHED_SOURCE_FILES = (
+    'daily_prices.csv',
+    'ticker_to_yahoo_map.csv',
+    'screener_leading_latest.json',
+    'vcp_kr_latest.json',
+    'jongga_v2_latest.json',
+)
 
 SCORING_SCHEMA = {
     'alpha_score': {
@@ -158,6 +166,188 @@ def get_scanner_schedule_status(now: datetime | None = None) -> dict[str, Any]:
     }
 
 
+def read_scanner_alert_state(state_path: str | None = None) -> dict[str, Any]:
+    """Return alpha-scanner alert state for admin diagnostics."""
+    state_file = state_path or _alert_state_path()
+    return _alert_state_summary(_read_alert_state(state_file), state_file)
+
+
+def get_scanner_source_signature() -> dict[str, Any]:
+    """Return a cheap fingerprint for files that feed the alpha scanner."""
+    files = []
+    parts = []
+    for filename in WATCHED_SOURCE_FILES:
+        path = os.path.join(DATA_ROOT, filename)
+        exists = os.path.isfile(path)
+        if exists:
+            try:
+                stat = os.stat(path)
+                modified_at = datetime.fromtimestamp(stat.st_mtime, timezone.utc).isoformat()
+                size = int(stat.st_size)
+                mtime_ns = int(stat.st_mtime_ns)
+            except OSError:
+                exists = False
+                modified_at = None
+                size = 0
+                mtime_ns = 0
+        else:
+            modified_at = None
+            size = 0
+            mtime_ns = 0
+        files.append({
+            'file': f'data/{filename}',
+            'exists': exists,
+            'size': size,
+            'modified_at': modified_at,
+            'mtime_ns': mtime_ns,
+        })
+        parts.append(f'{filename}:{mtime_ns}:{size}:{int(exists)}')
+    fingerprint = hashlib.sha1('|'.join(parts).encode('utf-8')).hexdigest()
+    return {
+        'fingerprint': fingerprint,
+        'files': files,
+        'available_files': sum(1 for item in files if item['exists']),
+        'missing_files': sum(1 for item in files if not item['exists']),
+        'checked_at': datetime.now(timezone.utc).isoformat(),
+    }
+
+
+def read_scanner_monitor_state(state_path: str | None = None) -> dict[str, Any]:
+    """Return realtime monitor state with current source signature."""
+    state_file = state_path or _monitor_state_path()
+    state = _read_monitor_state(state_file)
+    return _monitor_state_summary(state, state_file, get_scanner_source_signature())
+
+
+def run_scanner_realtime_monitor_check(
+    payload: dict[str, Any] | None = None,
+    *,
+    monitor_state_path: str | None = None,
+    alert_state_path: str | None = None,
+    min_alpha: float = DEFAULT_ALERT_MIN_ALPHA,
+    max_risk: float = DEFAULT_ALERT_MAX_RISK,
+    max_events: int = DEFAULT_ALERT_MAX_EVENTS,
+    retry_seconds: int = DEFAULT_MONITOR_RETRY_SECONDS,
+    force: bool = False,
+    send_fn=None,
+) -> dict[str, Any]:
+    """Run alert scan only when source files changed, then send Telegram.
+
+    `send_fn` is injected by Flask/scheduler so tests can validate behavior
+    without touching Telegram. Alert state is committed only after send_fn
+    succeeds, preventing missed retry after Telegram/API failures.
+    """
+    now = datetime.now(timezone.utc)
+    now_iso = now.isoformat()
+    monitor_file = monitor_state_path or _monitor_state_path()
+    state = _read_monitor_state(monitor_file)
+    source = get_scanner_source_signature()
+    fingerprint = source['fingerprint']
+
+    if not force and state.get('last_source_fingerprint') == fingerprint:
+        return {
+            'ok': True,
+            'status': 'unchanged',
+            'source_changed': False,
+            'monitor_state': _monitor_state_summary(state, monitor_file, source),
+            'source': source,
+            'new_event_count': 0,
+            'telegram_sent': False,
+            'state_committed': False,
+        }
+
+    failed_at = _parse_dt(state.get('last_failed_at'))
+    if (
+        not force
+        and state.get('last_failed_source_fingerprint') == fingerprint
+        and failed_at is not None
+        and (now - failed_at).total_seconds() < max(1, int(retry_seconds))
+    ):
+        return {
+            'ok': False,
+            'status': 'retry_wait',
+            'source_changed': True,
+            'monitor_state': _monitor_state_summary(state, monitor_file, source),
+            'source': source,
+            'new_event_count': 0,
+            'telegram_sent': False,
+            'state_committed': False,
+        }
+
+    result = run_scanner_alert_check(
+        payload or {},
+        state_path=alert_state_path,
+        min_alpha=min_alpha,
+        max_risk=max_risk,
+        max_events=max_events,
+        commit_state=False,
+    )
+    events = result.get('events') or []
+    telegram_sent = False
+    state_committed = False
+    alert_state = result.get('state')
+    status = 'no_new_events'
+    error = None
+
+    if events:
+        if send_fn is None:
+            status = 'pending_send'
+        else:
+            try:
+                telegram_sent = bool(send_fn(result.get('message') or ''))
+            except Exception as exc:
+                telegram_sent = False
+                error = f'{type(exc).__name__}: {exc}'
+            if telegram_sent:
+                alert_state = commit_scanner_alert_events(result)
+                state_committed = True
+                status = 'sent'
+            else:
+                status = 'send_failed'
+    else:
+        alert_state = commit_scanner_alert_events(result)
+        state_committed = True
+
+    processed = status in {'sent', 'no_new_events'}
+    next_state = dict(state)
+    next_state.update({
+        'version': 1,
+        'last_checked_at': now_iso,
+        'last_status': status,
+        'last_run_id': (result.get('run') or {}).get('id'),
+        'last_candidate_count': (result.get('run') or {}).get('candidate_count'),
+        'last_new_event_count': len(events),
+        'last_telegram_sent': telegram_sent,
+        'last_error': error,
+        'current_source': source,
+    })
+    if processed:
+        next_state['last_source_fingerprint'] = fingerprint
+        next_state['last_processed_at'] = now_iso
+        next_state.pop('last_failed_source_fingerprint', None)
+        next_state.pop('last_failed_at', None)
+    elif status == 'send_failed':
+        next_state['last_failed_source_fingerprint'] = fingerprint
+        next_state['last_failed_at'] = now_iso
+    write_json_atomic(monitor_file, next_state, sort_keys=True)
+
+    return {
+        'ok': status in {'sent', 'no_new_events', 'pending_send'},
+        'status': status,
+        'source_changed': True,
+        'source': source,
+        'run': result.get('run'),
+        'events': events,
+        'message': result.get('message'),
+        'new_event_count': len(events),
+        'telegram_sent': telegram_sent,
+        'state_committed': state_committed,
+        'alert_state': alert_state,
+        'monitor_state': _monitor_state_summary(next_state, monitor_file, source),
+        'error': error,
+    }
+
+
 def run_scanner_alert_check(
     payload: dict[str, Any] | None = None,
     *,
@@ -166,11 +356,13 @@ def run_scanner_alert_check(
     max_risk: float = DEFAULT_ALERT_MAX_RISK,
     actions: tuple[str, ...] = ('BUY_CANDIDATE',),
     max_events: int = DEFAULT_ALERT_MAX_EVENTS,
+    commit_state: bool = True,
 ) -> dict[str, Any]:
     """Create a scanner run and return only newly-qualified alert events.
 
-    The state file stores stable symbol/action keys so a scheduled job can run
-    repeatedly without spamming Telegram with the same candidate.
+    The state file stores stable symbol/action/date keys so repeated checks do
+    not spam Telegram. Scheduled senders should use commit_state=False and call
+    commit_scanner_alert_events only after Telegram succeeds.
     """
     run_payload = dict(payload or {})
     run_payload.setdefault('limit', DEFAULT_ALERT_LIMIT)
@@ -186,14 +378,28 @@ def run_scanner_alert_check(
         max_events=max_events,
     )
     updated_state = _update_alert_state(state, run, events)
-    write_json_atomic(state_file, updated_state, sort_keys=True)
+    if commit_state:
+        write_json_atomic(state_file, updated_state, sort_keys=True)
     return {
         'run': run,
         'events': events,
         'message': build_scanner_alert_message(run, events, min_alpha=min_alpha, max_risk=max_risk),
         'state_path': state_file,
+        'state_committed': bool(commit_state),
+        'state': _alert_state_summary(updated_state, state_file),
         'new_event_count': len(events),
     }
+
+
+def commit_scanner_alert_events(result: dict[str, Any]) -> dict[str, Any]:
+    """Persist alert state after a scheduler/API sender has handled events."""
+    state_file = str(result.get('state_path') or _alert_state_path())
+    run = result.get('run') or {}
+    events = [event for event in (result.get('events') or []) if isinstance(event, dict)]
+    state = _read_alert_state(state_file)
+    updated_state = _update_alert_state(state, run, events)
+    write_json_atomic(state_file, updated_state, sort_keys=True)
+    return _alert_state_summary(updated_state, state_file)
 
 
 def build_scanner_alert_message(
@@ -207,10 +413,10 @@ def build_scanner_alert_message(
     run_id = _escape(run.get('id') or '')
     candidate_count = int(run.get('candidate_count') or 0)
     lines = [
-        '<b>미로피쉬 알파 스캐너</b>',
+        '<b>MiroFish 알파 스캐너 신규 후보</b>',
         f'신규 매수 후보: <b>{len(events)}</b>건 / 전체 후보: {candidate_count}건',
-        f'기준: 알파 &gt;= {min_alpha:g}, 리스크 &lt;= {max_risk:g}, 로컬 데이터 기반 결정론 스캔',
-        f'실행 ID: <code>{run_id}</code>',
+        f'기준: alpha &gt;= {min_alpha:g}, risk &lt;= {max_risk:g}, 로컬 실데이터 아티팩트 기반',
+        f'Run ID: <code>{run_id}</code>',
         f'생성 시각: {generated_at}',
     ]
     if not events:
@@ -223,6 +429,7 @@ def build_scanner_alert_message(
         tags = ', '.join(_tag_label(tag) for tag in (candidate.get('strategy_tags') or [])[:4])
         price = candidate.get('price') or {}
         current_price = _format_number(price.get('current_price'))
+        change_rate = _format_signed(price.get('change_rate'), suffix='%')
         lines.extend([
             '',
             (
@@ -232,13 +439,13 @@ def build_scanner_alert_message(
             (
                 f"알파 <b>{candidate.get('alpha_score')}</b> / "
                 f"리스크 <b>{candidate.get('risk_score')}</b> / "
-                f"순위점수 {candidate.get('ranking_score')}"
+                f"랭킹 {candidate.get('ranking_score')}"
             ),
             (
                 f"판정: <b>{_escape(_action_label(candidate.get('action')))}</b> / "
-                f"투자기간: {_escape(_horizon_label(candidate.get('horizon')))}"
+                f"기간: {_escape(_horizon_label(candidate.get('horizon')))}"
             ),
-            f"현재가: {current_price} / 전략태그: {_escape(tags)}",
+            f"현재가: {current_price} ({change_rate}) / 태그: {_escape(tags)}",
             (
                 f"근거: {_escape(evidence.get('source'))} "
                 f"{_escape(_evidence_field_label(evidence.get('field')))}={evidence.get('score')}"
@@ -766,6 +973,10 @@ def _alert_state_path() -> str:
     return os.path.join(DATA_ROOT, 'admin_mirofish', 'alpha_scanner_alert_state.json')
 
 
+def _monitor_state_path() -> str:
+    return os.path.join(DATA_ROOT, 'admin_mirofish', 'alpha_scanner_monitor_state.json')
+
+
 def _read_alert_state(path: str) -> dict[str, Any]:
     if not os.path.isfile(path):
         return {'version': 1, 'sent_events': {}}
@@ -779,6 +990,19 @@ def _read_alert_state(path: str) -> dict[str, Any]:
     if not isinstance(sent_events, dict):
         sent_events = {}
     data['sent_events'] = sent_events
+    data.setdefault('version', 1)
+    return data
+
+
+def _read_monitor_state(path: str) -> dict[str, Any]:
+    if not os.path.isfile(path):
+        return {'version': 1}
+    try:
+        data = _read_json(path)
+    except (OSError, json.JSONDecodeError, ValueError):
+        return {'version': 1}
+    if not isinstance(data, dict):
+        return {'version': 1}
     data.setdefault('version', 1)
     return data
 
@@ -868,7 +1092,7 @@ def _horizon_label(value: Any) -> str:
 def _tag_label(value: Any) -> str:
     return {
         'momentum': '모멘텀',
-        'leading_screener': '선도 스크리너',
+        'leading_screener': '리딩 스크리너',
         'vcp_entry': 'VCP 진입',
         'jongga_setup': '종가 셋업',
         'risk_penalty': '리스크 패널티',
@@ -880,10 +1104,59 @@ def _evidence_field_label(value: Any) -> str:
     return {
         'price_momentum': '가격 모멘텀',
         'liquidity': '유동성',
-        'screener_leading': '선도 스크리너',
+        'screener_leading': '리딩 스크리너',
         'vcp_quality': 'VCP 품질',
         'jongga_setup': '종가 셋업',
     }.get(str(value or ''), str(value or ''))
+
+
+def _format_signed(value: Any, suffix: str = '') -> str:
+    number = _float(value)
+    return f'{number:+.2f}{suffix}'
+
+
+def _alert_state_summary(state: dict[str, Any], state_file: str) -> dict[str, Any]:
+    sent_events = state.get('sent_events') if isinstance(state.get('sent_events'), dict) else {}
+    recent = sorted(
+        sent_events.values(),
+        key=lambda item: str(item.get('sent_at') or ''),
+        reverse=True,
+    )[:20]
+    return {
+        'state_path': state_file,
+        'version': state.get('version', 1),
+        'last_checked_at': state.get('last_checked_at'),
+        'last_run_id': state.get('last_run_id'),
+        'last_candidate_count': state.get('last_candidate_count'),
+        'sent_event_count': len(sent_events),
+        'recent_sent_events': recent,
+    }
+
+
+def _monitor_state_summary(
+    state: dict[str, Any],
+    state_file: str,
+    source: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    source = source or state.get('current_source') or {}
+    return {
+        'state_path': state_file,
+        'version': state.get('version', 1),
+        'last_checked_at': state.get('last_checked_at'),
+        'last_processed_at': state.get('last_processed_at'),
+        'last_status': state.get('last_status'),
+        'last_run_id': state.get('last_run_id'),
+        'last_candidate_count': state.get('last_candidate_count'),
+        'last_new_event_count': state.get('last_new_event_count'),
+        'last_telegram_sent': state.get('last_telegram_sent'),
+        'last_error': state.get('last_error'),
+        'last_source_fingerprint': state.get('last_source_fingerprint'),
+        'last_failed_source_fingerprint': state.get('last_failed_source_fingerprint'),
+        'last_failed_at': state.get('last_failed_at'),
+        'current_source_fingerprint': source.get('fingerprint'),
+        'source_changed': state.get('last_source_fingerprint') != source.get('fingerprint'),
+        'source': source,
+    }
 
 
 def _run_id(generated_at: str, symbols: set[str], limit: int) -> str:

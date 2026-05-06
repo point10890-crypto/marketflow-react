@@ -111,9 +111,25 @@ def test_alpha_scanner_monitor_sends_telegram_for_new_events():
         "run": {"id": "run1", "candidate_count": 1},
     }
     with patch("app.services.mirofish.alpha_scanner.run_scanner_alert_check", return_value=result), \
+         patch("app.services.mirofish.alpha_scanner.commit_scanner_alert_events") as commit, \
          patch("scheduler.send_telegram_long", return_value=True) as tg:
         assert scheduler.run_alpha_scanner_monitor() is True
     tg.assert_called_once_with("alpha alert", channel=False)
+    commit.assert_called_once_with(result)
+
+
+def test_alpha_scanner_monitor_keeps_event_pending_when_telegram_fails():
+    result = {
+        "events": [{"event_key": "000001:BUY_CANDIDATE"}],
+        "message": "alpha alert",
+        "run": {"id": "run1", "candidate_count": 1},
+    }
+    with patch("app.services.mirofish.alpha_scanner.run_scanner_alert_check", return_value=result), \
+         patch("app.services.mirofish.alpha_scanner.commit_scanner_alert_events") as commit, \
+         patch("scheduler.send_telegram_long", return_value=False) as tg:
+        assert scheduler.run_alpha_scanner_monitor() is False
+    tg.assert_called_once_with("alpha alert", channel=False)
+    commit.assert_not_called()
 
 
 def test_alpha_scanner_monitor_skips_telegram_without_new_events():
@@ -123,6 +139,8 @@ def test_alpha_scanner_monitor_skips_telegram_without_new_events():
         "run": {"id": "run1", "candidate_count": 20},
     }
     with patch("app.services.mirofish.alpha_scanner.run_scanner_alert_check", return_value=result), \
+         patch("app.services.mirofish.alpha_scanner.commit_scanner_alert_events") as commit, \
          patch("scheduler.send_telegram_long") as tg:
         assert scheduler.run_alpha_scanner_monitor() is True
     tg.assert_not_called()
+    commit.assert_called_once_with(result)

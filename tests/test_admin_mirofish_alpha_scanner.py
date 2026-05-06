@@ -216,11 +216,111 @@ def test_alpha_scanner_alert_check_only_returns_new_events(tmp_path, monkeypatch
 
     assert first['new_event_count'] == 1
     assert first['events'][0]['candidate']['symbol'] == '000001'
-    assert '미로피쉬 알파 스캐너' in first['message']
+    assert 'MiroFish 알파 스캐너 신규 후보' in first['message']
     assert 'Alpha One' in first['message']
     assert '매수 후보' in first['message']
     assert second['new_event_count'] == 0
     assert second['events'] == []
+
+
+def test_alpha_scanner_alert_check_can_defer_state_until_send_success(tmp_path, monkeypatch):
+    _seed_artifacts(tmp_path)
+    monkeypatch.setattr(alpha_scanner, 'DATA_ROOT', str(tmp_path))
+    monkeypatch.setattr(alpha_scanner, 'SCANNER_RUNS_ROOT', str(tmp_path / 'runs'))
+    state_path = str(tmp_path / 'alert_state.json')
+
+    pending = alpha_scanner.run_scanner_alert_check(
+        {'limit': 5},
+        state_path=state_path,
+        min_alpha=70,
+        max_risk=45,
+        commit_state=False,
+    )
+    retry = alpha_scanner.run_scanner_alert_check(
+        {'limit': 5},
+        state_path=state_path,
+        min_alpha=70,
+        max_risk=45,
+        commit_state=False,
+    )
+    state = alpha_scanner.commit_scanner_alert_events(pending)
+    after_commit = alpha_scanner.run_scanner_alert_check(
+        {'limit': 5},
+        state_path=state_path,
+        min_alpha=70,
+        max_risk=45,
+        commit_state=False,
+    )
+
+    assert pending['new_event_count'] == 1
+    assert retry['new_event_count'] == 1
+    assert state['sent_event_count'] == 1
+    assert after_commit['new_event_count'] == 0
+
+
+def test_alpha_scanner_realtime_monitor_sends_after_source_change(tmp_path, monkeypatch):
+    _seed_artifacts(tmp_path)
+    monkeypatch.setattr(alpha_scanner, 'DATA_ROOT', str(tmp_path))
+    monkeypatch.setattr(alpha_scanner, 'SCANNER_RUNS_ROOT', str(tmp_path / 'runs'))
+    monitor_state_path = str(tmp_path / 'monitor_state.json')
+    alert_state_path = str(tmp_path / 'alert_state.json')
+    sent_messages = []
+
+    first = alpha_scanner.run_scanner_realtime_monitor_check(
+        {'limit': 5},
+        monitor_state_path=monitor_state_path,
+        alert_state_path=alert_state_path,
+        min_alpha=70,
+        max_risk=45,
+        send_fn=lambda message: sent_messages.append(message) or True,
+    )
+    second = alpha_scanner.run_scanner_realtime_monitor_check(
+        {'limit': 5},
+        monitor_state_path=monitor_state_path,
+        alert_state_path=alert_state_path,
+        min_alpha=70,
+        max_risk=45,
+        send_fn=lambda message: sent_messages.append(message) or True,
+    )
+
+    assert first['status'] == 'sent'
+    assert first['new_event_count'] == 1
+    assert first['telegram_sent'] is True
+    assert first['state_committed'] is True
+    assert sent_messages and 'Alpha One' in sent_messages[0]
+    assert second['status'] == 'unchanged'
+    assert second['source_changed'] is False
+
+
+def test_alpha_scanner_realtime_monitor_retries_when_telegram_fails(tmp_path, monkeypatch):
+    _seed_artifacts(tmp_path)
+    monkeypatch.setattr(alpha_scanner, 'DATA_ROOT', str(tmp_path))
+    monkeypatch.setattr(alpha_scanner, 'SCANNER_RUNS_ROOT', str(tmp_path / 'runs'))
+    monitor_state_path = str(tmp_path / 'monitor_state.json')
+    alert_state_path = str(tmp_path / 'alert_state.json')
+
+    first = alpha_scanner.run_scanner_realtime_monitor_check(
+        {'limit': 5},
+        monitor_state_path=monitor_state_path,
+        alert_state_path=alert_state_path,
+        min_alpha=70,
+        max_risk=45,
+        retry_seconds=300,
+        send_fn=lambda message: False,
+    )
+    second = alpha_scanner.run_scanner_realtime_monitor_check(
+        {'limit': 5},
+        monitor_state_path=monitor_state_path,
+        alert_state_path=alert_state_path,
+        min_alpha=70,
+        max_risk=45,
+        retry_seconds=300,
+        send_fn=lambda message: True,
+    )
+
+    assert first['status'] == 'send_failed'
+    assert first['state_committed'] is False
+    assert second['status'] == 'retry_wait'
 
 
 def test_alpha_scanner_rejects_unsafe_run_ids(tmp_path, monkeypatch):
@@ -242,6 +342,10 @@ def test_admin_mirofish_scanner_routes_are_registered():
 
     assert '/api/admin/mirofish/scanner/runs' in rules
     assert '/api/admin/mirofish/scanner/status' in rules
+    assert '/api/admin/mirofish/scanner/alerts/check' in rules
+    assert '/api/admin/mirofish/scanner/alerts/state' in rules
+    assert '/api/admin/mirofish/scanner/monitor/check' in rules
+    assert '/api/admin/mirofish/scanner/monitor/status' in rules
     assert '/api/admin/mirofish/scanner/runs/latest' in rules
     assert '/api/admin/mirofish/scanner/runs/<run_id>' in rules
     assert '/api/admin/mirofish/scanner/runs/<run_id>/candidates' in rules

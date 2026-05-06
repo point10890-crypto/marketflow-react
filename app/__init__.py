@@ -314,6 +314,7 @@ def create_app(config=None):
     if not os.getenv('RENDER'):
         _start_precompute_worker(app)
         _start_screener_worker(app)
+        _start_alpha_scanner_monitor_worker(app)
     else:
         print("[INFO] PreCompute/Screener workers disabled on Render (memory limit)")
 
@@ -539,6 +540,80 @@ def _start_screener_worker(app):
     print("[OK] Screener worker started (5s polling during market hours)")
 
 
+def _start_alpha_scanner_monitor_worker(app):
+    """Watch alpha-scanner source artifacts and Telegram new candidates."""
+    import threading
+    import time as _time
+
+    def _env_bool(name: str, default: str = 'true') -> bool:
+        return os.environ.get(name, default).strip().lower() in {'1', 'true', 'yes', 'y', 'on'}
+
+    if not _env_bool('ALPHA_SCANNER_ENABLED', 'true'):
+        print("[AlphaScanner] realtime monitor skipped: ALPHA_SCANNER_ENABLED=false")
+        return
+    if not _env_bool('ALPHA_SCANNER_REALTIME_ENABLED', 'true'):
+        print("[AlphaScanner] realtime monitor skipped: ALPHA_SCANNER_REALTIME_ENABLED=false")
+        return
+
+    interval = max(5, int(os.environ.get('ALPHA_SCANNER_REALTIME_INTERVAL', '30')))
+    initial_delay = max(1, int(os.environ.get('ALPHA_SCANNER_REALTIME_INITIAL_DELAY', '12')))
+    retry_seconds = max(30, int(os.environ.get('ALPHA_SCANNER_ALERT_RETRY_SECONDS', '300')))
+
+    def _alpha_scanner_monitor_loop():
+        _time.sleep(initial_delay)
+        consecutive_errors = 0
+        print(f"[AlphaScanner] realtime monitor ready ({interval}s polling)")
+
+        while True:
+            try:
+                if not _env_bool('ALPHA_SCANNER_REALTIME_ENABLED', 'true'):
+                    _time.sleep(interval)
+                    continue
+
+                from app.services.mirofish.alpha_scanner import run_scanner_realtime_monitor_check
+                from app.utils.scheduler import _send_telegram_long
+
+                limit = int(os.environ.get('ALPHA_SCANNER_LIMIT', '20'))
+                min_alpha = float(os.environ.get('ALPHA_SCANNER_MIN_ALPHA', '70'))
+                max_risk = float(os.environ.get('ALPHA_SCANNER_MAX_RISK', '45'))
+                max_events = int(os.environ.get('ALPHA_SCANNER_MAX_EVENTS', '8'))
+
+                with app.app_context():
+                    result = run_scanner_realtime_monitor_check(
+                        {'limit': limit},
+                        min_alpha=min_alpha,
+                        max_risk=max_risk,
+                        max_events=max_events,
+                        retry_seconds=retry_seconds,
+                        send_fn=lambda message: _send_telegram_long(message, channel=False),
+                    )
+
+                consecutive_errors = 0
+                status = result.get('status')
+                if status in {'sent', 'send_failed', 'no_new_events'}:
+                    print(
+                        "[AlphaScanner] monitor "
+                        f"status={status} events={result.get('new_event_count', 0)} "
+                        f"run={(result.get('run') or {}).get('id')}"
+                    )
+            except Exception as e:
+                consecutive_errors += 1
+                print(f"[AlphaScanner] monitor error #{consecutive_errors}: {type(e).__name__}: {e}")
+                if consecutive_errors >= 3:
+                    _time.sleep(60)
+                    consecutive_errors = 0
+
+            _time.sleep(interval)
+
+    thread = threading.Thread(
+        target=_alpha_scanner_monitor_loop,
+        daemon=True,
+        name='AlphaScannerMonitor',
+    )
+    thread.start()
+    print("[OK] Alpha scanner realtime monitor started")
+
+
 def _send_screener_alert(stock):
     """S등급 주도주 텔레그램 알림"""
     try:
@@ -704,6 +779,7 @@ def _precompute_snapshots(base_dir):
 
     tasks = [
         ('US Portfolio', _precompute_portfolio, base_dir),
+        ('US Market Gate', _precompute_us_market_gate, base_dir),
         ('US Decision Signal', _precompute_decision_signal, base_dir),
         ('US Smart Money', _precompute_smart_money, base_dir),
         ('US Cumulative Perf', _precompute_cumulative_perf, base_dir),
@@ -731,6 +807,12 @@ def _precompute_decision_signal(base_dir):
     """US Decision Signal 스냅샷 프리컴퓨팅"""
     from app.routes.us_market import _compute_decision_signal_live
     _compute_decision_signal_live()  # 내부에서 스냅샷 파일 저장
+
+
+def _precompute_us_market_gate(base_dir):
+    """US Market Gate 스냅샷 프리컴퓨팅"""
+    from app.routes.us_market import _get_us_market_gate_payload
+    _get_us_market_gate_payload(force=True)  # 내부에서 스냅샷 파일 저장
 
 
 def _precompute_kr_market_gate(base_dir):

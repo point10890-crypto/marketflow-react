@@ -630,24 +630,36 @@ def send_telegram_long(message: str, channel: bool = True) -> bool:
 def run_alpha_scanner_monitor() -> bool:
     """Run the file-backed MiroFish scanner and Telegram only new events."""
     try:
-        from app.services.mirofish.alpha_scanner import run_scanner_alert_check
+        from app.services.mirofish.alpha_scanner import (
+            commit_scanner_alert_events,
+            run_scanner_alert_check,
+        )
 
         result = run_scanner_alert_check(
             {'limit': Config.ALPHA_SCANNER_LIMIT},
             min_alpha=Config.ALPHA_SCANNER_MIN_ALPHA,
             max_risk=Config.ALPHA_SCANNER_MAX_RISK,
             max_events=Config.ALPHA_SCANNER_MAX_EVENTS,
+            commit_state=False,
         )
         events = result.get('events') or []
         run = result.get('run') or {}
         if events:
             ok = send_telegram_long(result.get('message') or '', channel=False)
-            logger.info(
-                "MiroFish alpha scanner alert sent: %s new events, run=%s",
-                len(events),
-                run.get('id'),
-            )
+            if ok:
+                commit_scanner_alert_events(result)
+                logger.info(
+                    "MiroFish alpha scanner alert sent: %s new events, run=%s",
+                    len(events),
+                    run.get('id'),
+                )
+            else:
+                logger.warning(
+                    "MiroFish alpha scanner alert send failed; state not committed, run=%s",
+                    run.get('id'),
+                )
             return bool(ok)
+        commit_scanner_alert_events(result)
         logger.info(
             "MiroFish alpha scanner: no new events, candidates=%s, run=%s",
             run.get('candidate_count'),
@@ -1639,34 +1651,21 @@ def build_us_smart_money_top5_msg() -> str:
 
 
 def save_us_track_record_snapshot():
-    """US Track Record 스냅샷 저장 + 성과 추적"""
-    logger.info("📊 US Track Record 스냅샷 저장...")
+    """Run US Smart Money track-record generation for the scheduler."""
+    logger.info("US Track Record snapshot generation...")
 
     try:
-        import urllib.request
-        req = urllib.request.Request(
-            'http://localhost:5001/api/us/track-record/save-snapshot',
-            method='POST',
-            headers={'Content-Type': 'application/json'}
-        )
-        try:
-            resp = urllib.request.urlopen(req, timeout=30)
-            result = json.loads(resp.read().decode('utf-8'))
-            logger.info(f"✅ US 스냅샷: {result.get('date', '?')} ({result.get('picks_count', 0)}종목)")
-        except Exception as e:
-            logger.warning(f"⚠️ US 스냅샷 API 실패: {e}")
-
         tracker_path = os.path.join(Config.BASE_DIR, 'us_market', 'performance_tracker.py')
         if os.path.exists(tracker_path):
             return run_command(
                 [Config.PYTHON_PATH, tracker_path],
-                'US Smart Money 성과 추적',
+                'US Smart Money performance tracking',
                 timeout=300
             )
+        logger.warning("US performance tracker not found: %s", tracker_path)
         return False
-
     except Exception as e:
-        logger.error(f"❌ US Track Record 실패: {e}")
+        logger.error("US Track Record failed: %s", e)
         return False
 
 

@@ -14,7 +14,7 @@ from flask import Blueprint, jsonify, request
 from app.utils.cache import get_sector
 from app.utils.json_cache import load_json_cached
 from app.utils.atomic_json import write_json_atomic
-from app.utils.paths import BASE_DIR, US_MARKET_DIR, US_OUTPUT_DIR, US_DATA_DIR, US_HISTORY_DIR, US_PREVIEW_DIR
+from app.utils.paths import BASE_DIR, DATA_DIR, US_MARKET_DIR, US_OUTPUT_DIR, US_DATA_DIR, US_HISTORY_DIR, US_PREVIEW_DIR
 from app.utils.safety import safe_float, safe_str
 
 logger = logging.getLogger(__name__)
@@ -42,6 +42,8 @@ _OUTPUT_DIR = US_OUTPUT_DIR
 _DATA_DIR = US_DATA_DIR
 _HISTORY_DIR = US_HISTORY_DIR
 _PREVIEW_DIR = US_PREVIEW_DIR
+_US_MARKET_GATE_CACHE = os.path.join(DATA_DIR, 'us_market_gate_cache.json')
+_US_MARKET_GATE_TTL = 300
 
 
 def _fetch_portfolio_live():
@@ -934,88 +936,97 @@ def us_portfolio_performance():
         return jsonify({'error': str(e)}), 500
 
 
+def _serialize_us_market_gate_result(result, *, source='live', stale=False, cache_age_sec=None):
+    """Convert US gate dataclass output into stable API/cache JSON."""
+    sectors_data = []
+    for s in result.sectors[:5]:
+        sectors_data.append({
+            'name': s.name,
+            'ticker': s.ticker,
+            'score': int(s.score),
+            'signal': s.signal,
+            'change_1d': round(safe_float(s.change_1d), 2),
+            'rsi': round(safe_float(s.rsi), 1),
+            'rs_vs_spy': round(safe_float(s.rs_vs_spy), 2),
+        })
+
+    score = int(result.score)
+    return {
+        'gate': result.gate,
+        'score': score,
+        'status': 'RISK_ON' if score >= 70 else ('RISK_OFF' if score < 40 else 'NEUTRAL'),
+        'symbol': 'SPY',
+        'reasons': list(result.reasons or []),
+        'sectors': sectors_data,
+        'metrics': result.metrics or {},
+        'updated_at': datetime.now().isoformat(),
+        'source': source,
+        'stale': bool(stale),
+        'cache_age_sec': cache_age_sec,
+    }
+
+
+def _load_us_market_gate_cache():
+    try:
+        if os.path.exists(_US_MARKET_GATE_CACHE):
+            import time as _time
+            with open(_US_MARKET_GATE_CACHE, 'r', encoding='utf-8') as f:
+                cached = json.load(f)
+            return cached, _time.time() - os.path.getmtime(_US_MARKET_GATE_CACHE)
+    except (OSError, json.JSONDecodeError) as e:
+        logger.warning(f"Failed to load US market gate cache: {e}")
+    return None, None
+
+
+def _compute_us_market_gate_payload():
+    from us_market.market_gate import run_us_market_gate
+
+    future = _yf_executor.submit(run_us_market_gate)
+    result = future.result(timeout=30)
+    payload = _serialize_us_market_gate_result(result)
+    write_json_atomic(_US_MARKET_GATE_CACHE, payload)
+    return payload
+
+
+def _get_us_market_gate_payload(*, force=False):
+    cached, age = _load_us_market_gate_cache()
+    if cached is not None and age is not None and not force and age < _US_MARKET_GATE_TTL:
+        cached['source'] = 'cache'
+        cached['stale'] = False
+        cached['cache_age_sec'] = int(age)
+        return cached
+
+    try:
+        return _compute_us_market_gate_payload()
+    except Exception as e:
+        logger.warning(f"US market gate live failed: {e}; serving stale cache if available")
+        if cached is not None:
+            cached['source'] = 'stale_cache'
+            cached['stale'] = True
+            cached['cache_age_sec'] = int(age) if age is not None else None
+            cached['error'] = str(e)
+            return cached
+        return {
+            'gate': 'YELLOW',
+            'score': 50,
+            'status': 'NEUTRAL',
+            'symbol': 'SPY',
+            'reasons': [str(e)],
+            'sectors': [],
+            'metrics': {'rsi': None, 'vix': None, 'spy_price': None},
+            'updated_at': datetime.now().isoformat(),
+            'source': 'fallback',
+            'stale': True,
+            'cache_age_sec': None,
+            'error': str(e),
+        }
+
+
 @us_bp.route('/market-gate')
 def us_market_gate():
-    """US Market Gate 상태 - Enhanced with RSI, MACD, Volume"""
-    try:
-        try:
-            from us_market.market_gate import run_us_market_gate
-            result = run_us_market_gate()
-            
-            # Convert dataclass to dict
-            sectors_data = []
-            for s in result.sectors[:5]:  # Top 5 sectors
-                sectors_data.append({
-                    'name': s.name,
-                    'ticker': s.ticker,
-                    'score': s.score,
-                    'signal': s.signal,
-                    'change_1d': round(s.change_1d, 2),
-                    'rsi': round(s.rsi, 1),
-                    'rs_vs_spy': round(s.rs_vs_spy, 2)
-                })
-            
-            return jsonify({
-                'gate': result.gate,  # GREEN/YELLOW/RED
-                'score': result.score,
-                'status': 'RISK_ON' if result.score >= 70 else ('RISK_OFF' if result.score < 40 else 'NEUTRAL'),
-                'reasons': result.reasons,
-                'sectors': sectors_data,
-                'metrics': result.metrics
-            })
-        except ImportError as e:
-            # Fallback to simple logic
-            logger.warning(f"Enhanced market_gate not available: {e}")
-            hist = _yf_history_with_timeout('SPY', timeout=15, period='200d')
+    force = request.args.get('refresh') in ('1', 'true', 'yes')
+    return jsonify(_get_us_market_gate_payload(force=force))
 
-            if len(hist) < 200:
-                return jsonify({'status': 'NEUTRAL', 'score': 50, 'gate': 'YELLOW', 'metrics': {'rsi': None, 'vix': None, 'spy_price': None}})
-
-            price = float(hist['Close'].iloc[-1])
-            ma200 = float(hist['Close'].rolling(200).mean().iloc[-1])
-            ma50 = float(hist['Close'].rolling(50).mean().iloc[-1])
-
-            # Calculate RSI for fallback
-            delta = hist['Close'].diff()
-            gain = delta.where(delta > 0, 0).rolling(14).mean()
-            loss = (-delta.where(delta < 0, 0)).rolling(14).mean()
-            rs = gain / loss.replace(0, 0.0001)
-            rsi = float((100 - (100 / (1 + rs))).iloc[-1])
-
-            # Get VIX
-            try:
-                vix_data = _yf_history_with_timeout('^VIX', timeout=10, period='5d')
-                vix = float(vix_data['Close'].iloc[-1]) if not vix_data.empty else None
-            except Exception as e:
-                logger.warning(f"VIX fetch failed: {e}")
-                vix = None
-
-            status = "NEUTRAL"
-            score = 50
-            gate = "YELLOW"
-
-            if price > ma200 and ma50 > ma200:
-                status = "RISK_ON"
-                score = 80
-                gate = "GREEN"
-            elif price < ma200 and ma50 < ma200:
-                status = "RISK_OFF"
-                score = 20
-                gate = "RED"
-
-            return jsonify({
-                'gate': gate,
-                'status': status,
-                'score': score,
-                'price': price,
-                'ma200': ma200,
-                'symbol': 'SPY',
-                'reasons': [f'SPY: ${price:.2f} vs 200MA: ${ma200:.2f}'],
-                'metrics': {'rsi': round(rsi, 1), 'vix': round(vix, 1) if vix else None, 'spy_price': price}
-            })
-    except Exception as e:
-        traceback.print_exc()
-        return jsonify({'error': str(e), 'gate': 'YELLOW', 'score': 50, 'metrics': {'rsi': None, 'vix': None, 'spy_price': None}}), 500
 @us_bp.route('/data-status')
 def get_us_update_status():
     """US Market Data Update Status"""
@@ -1405,9 +1416,8 @@ def _compute_decision_signal_live():
         # 1. Market Gate
         gate_score = 50
         try:
-            from us_market.market_gate import run_us_market_gate
-            gate_result = run_us_market_gate()
-            gate_score = gate_result.score
+            gate_payload = _get_us_market_gate_payload()
+            gate_score = gate_payload.get('score', 50)
         except Exception as e:
             logger.warning(f"[DecisionSignal] Market Gate failed: {e}")
         gate_contribution = round((gate_score - 50) / 50 * 15, 1)

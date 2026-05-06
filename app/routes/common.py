@@ -443,7 +443,7 @@ def _fetch_market_indices():
 def _fetch_performance_data():
     """성과 데이터 조회"""
     performance_data = []
-    perf_csv_path = os.path.join(BASE_DIR, 'us_market', 'data', 'performance_report.csv')
+    perf_csv_path = os.path.join(BASE_DIR, 'us_market', 'output', 'performance_report.csv')
     
     if os.path.exists(perf_csv_path):
         perf_df = pd.read_csv(perf_csv_path, encoding='utf-8-sig')
@@ -582,6 +582,13 @@ def get_data_status():
         {
             'name': 'US Decision Signal',
             'path': os.path.join(US_OUTPUT_DIR, 'decision_signal_snapshot.json'),
+            'link': '/dashboard/us',
+            'menu': 'US Dashboard',
+            'updateType': 'us_market'
+        },
+        {
+            'name': 'US Market Gate',
+            'path': os.path.join(DATA_DIR, 'us_market_gate_cache.json'),
             'link': '/dashboard/us',
             'menu': 'US Dashboard',
             'updateType': 'us_market'

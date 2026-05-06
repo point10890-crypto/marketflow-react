@@ -162,7 +162,7 @@ def run_us_market_gate() -> USMarketGateResult:
     
     all_tickers = ["SPY", "QQQ", "^VIX"] + list(SECTORS.values())
     try:
-        data = yf.download(all_tickers, period="1y", progress=False)
+        data = yf.download(all_tickers, period="1y", progress=False, threads=True, timeout=20)
         if data.empty:
             raise ValueError("No data from yfinance")
         
