@@ -1,5 +1,7 @@
 """Admin-only MiroFish live endpoints."""
 
+import os
+
 from flask import Blueprint, Response, jsonify, request
 
 from app.auth.decorators import admin_required
@@ -8,6 +10,19 @@ from app.services.mirofish import events as mf_events
 
 
 admin_mirofish_bp = Blueprint('admin_mirofish', __name__)
+
+
+def _telegram_config_status() -> dict:
+    personal_token = os.getenv('TELEGRAM_BOT_TOKEN')
+    personal_chat = os.getenv('TELEGRAM_CHAT_ID')
+    channel_token = os.getenv('TELEGRAM_CHANNEL_BOT_TOKEN')
+    channel_chat = os.getenv('TELEGRAM_CHANNEL_CHAT_ID')
+    return {
+        'personal_configured': bool(personal_token and personal_chat and 'your_bot_token' not in personal_token),
+        'channel_configured': bool(channel_token and channel_chat),
+        'personal_chat_present': bool(personal_chat),
+        'channel_chat_present': bool(channel_chat),
+    }
 
 
 def _payload_bool(payload: dict, key: str, default: bool = False) -> bool:
@@ -170,6 +185,12 @@ def get_scanner_status():
     return jsonify(mirofish.get_scanner_schedule_status())
 
 
+@admin_mirofish_bp.route('/scanner/diagnostics', methods=['GET'])
+@admin_required
+def get_scanner_diagnostics():
+    return jsonify(mirofish.get_scanner_diagnostics())
+
+
 @admin_mirofish_bp.route('/scanner/alerts/state', methods=['GET'])
 @admin_required
 def get_scanner_alert_state():
@@ -218,11 +239,14 @@ def check_scanner_monitor():
             max_events=max_events,
             retry_seconds=retry_seconds,
             force=force,
+            commit_monitor_state=not dry_run,
             send_fn=send_fn,
         )
     except ValueError as exc:
         return jsonify({'error': str(exc)}), 400
 
+    if not dry_run:
+        result['telegram_config'] = _telegram_config_status()
     code = 502 if result.get('status') == 'send_failed' else 200
     return jsonify(result), code
 
@@ -281,6 +305,9 @@ def check_scanner_alerts():
                 'events': events,
                 'state_committed': False,
                 'message_chars': len(result.get('message') or ''),
+                'telegram_config': _telegram_config_status(),
+                'alert_blocked': bool(result.get('alert_blocked')),
+                'blocked_reason': result.get('blocked_reason'),
             }), 502
         state = mirofish.commit_scanner_alert_events(result)
         state_committed = True
@@ -304,6 +331,9 @@ def check_scanner_alerts():
         'state': state,
         'message': result.get('message'),
         'message_chars': len(result.get('message') or ''),
+        'telegram_config': _telegram_config_status() if send_telegram else None,
+        'alert_blocked': bool(result.get('alert_blocked')),
+        'blocked_reason': result.get('blocked_reason'),
     })
 
 
@@ -440,25 +470,49 @@ def send_scanner_deepseek_summary_to_telegram(run_id):
 
     payload = request.get_json(silent=True) or {}
     try:
+        limit = _payload_int(payload, 'limit', 5)
+    except ValueError as exc:
+        return jsonify({'error': str(exc)}), 400
+    fallback_reason = None
+    provider = 'deepseek'
+    try:
         summary = payload.get('summary')
         if not isinstance(summary, dict):
-            summary = mirofish.summarize_scanner_run_with_deepseek(
-                run,
-                limit=payload.get('limit', 5),
-                model=payload.get('model'),
-                thinking=bool(payload.get('thinking', False)),
-            )
-        message = mirofish.build_summary_telegram_message(summary)
+            try:
+                summary = mirofish.summarize_scanner_run_with_deepseek(
+                    run,
+                    limit=limit,
+                    model=payload.get('model'),
+                    thinking=bool(payload.get('thinking', False)),
+                )
+            except mirofish.DeepSeekError as exc:
+                fallback_reason = str(exc)
+                provider = 'scanner_fallback'
+                summary = None
+                message = mirofish.build_scanner_run_telegram_message(run, limit=limit)
+            else:
+                message = mirofish.build_summary_telegram_message(summary)
+        else:
+            message = mirofish.build_summary_telegram_message(summary)
         from app.utils.scheduler import _send_telegram_long
         ok = _send_telegram_long(message, channel=False)
-    except mirofish.DeepSeekError as exc:
-        return jsonify({'error': str(exc), 'provider': 'deepseek'}), 502
+    except ValueError as exc:
+        return jsonify({'error': str(exc)}), 400
     if not ok:
-        return jsonify({'error': 'telegram send failed', 'run_id': run_id}), 502
+        return jsonify({
+            'error': 'telegram send failed',
+            'run_id': run_id,
+            'provider': provider,
+            'fallback_reason': fallback_reason,
+            'telegram_config': _telegram_config_status(),
+        }), 502
     return jsonify({
         'ok': True,
         'run_id': run_id,
-        'provider': 'deepseek',
+        'provider': provider,
+        'message_source': provider,
+        'fallback_reason': fallback_reason,
+        'telegram_config': _telegram_config_status(),
         'message_chars': len(message),
         'summary': summary,
     })

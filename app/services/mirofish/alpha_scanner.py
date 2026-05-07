@@ -27,23 +27,48 @@ DEFAULT_ALERT_MAX_EVENTS = 8
 DEFAULT_MONITOR_RETRY_SECONDS = 300
 DEFAULT_SCHEDULE_TIMES = '09:20,11:20,14:20,15:40,16:10'
 KST = timezone(timedelta(hours=9))
-WATCHED_SOURCE_FILES = (
-    'daily_prices.csv',
-    'ticker_to_yahoo_map.csv',
-    'screener_leading_latest.json',
-    'vcp_kr_latest.json',
-    'jongga_v2_latest.json',
-)
+ALERT_BLOCKING_FRESHNESS = {'stale', 'missing', 'partial', 'unknown'}
+SOURCE_FILE_POLICIES = {
+    'daily_prices.csv': {
+        'role': 'price_history',
+        'required': True,
+        'max_age_days': 5,
+    },
+    'ticker_to_yahoo_map.csv': {
+        'role': 'symbol_map',
+        'required': True,
+        'max_age_days': 180,
+    },
+    'screener_leading_latest.json': {
+        'role': 'leading_screener',
+        'required': True,
+        'max_age_days': 7,
+    },
+    'vcp_kr_latest.json': {
+        'role': 'vcp_quality',
+        'required': True,
+        'max_age_days': 7,
+    },
+    'jongga_v2_latest.json': {
+        'role': 'jongga_setup',
+        'required': True,
+        'max_age_days': 7,
+    },
+}
+WATCHED_SOURCE_FILES = tuple(SOURCE_FILE_POLICIES.keys())
 
 SCORING_SCHEMA = {
     'alpha_score': {
         'description': 'Profit-potential score from deterministic local artifacts.',
         'components': {
-            'price_momentum': '0..25 from latest daily change_rate.',
-            'liquidity': '0..15 from trading value or price*volume.',
-            'screener_leading': '0..25 from screener score.total_enriched/total.',
-            'vcp_quality': '0..20 from VCP composite_score and entry-ready flag.',
-            'jongga_setup': '0..15 from jongga_v2 total score and checklist.',
+            'price_momentum': '0..15 from latest daily change_rate, capped to avoid chasing spikes.',
+            'trend_quality': '0..15 from 5/20 day trend, moving-average position, and consistency.',
+            'liquidity': '0..10 from trading value or price*volume.',
+            'volume_accumulation': '0..10 from latest volume versus recent average with positive price confirmation.',
+            'screener_leading': '0..20 from screener score.total_enriched/total.',
+            'vcp_quality': '0..15 from VCP composite_score and entry-ready flag.',
+            'jongga_setup': '0..10 from jongga_v2 total score and checklist.',
+            'source_convergence': '0..5 when independent artifacts agree with price behavior.',
         },
     },
     'risk_score': {
@@ -51,12 +76,14 @@ SCORING_SCHEMA = {
         'components': {
             'overextension': 'Large one-day moves increase risk.',
             'intraday_range': 'Wide high-low range increases execution risk.',
+            'volatility': 'Recent realized volatility and drawdown increase risk.',
             'liquidity_gap': 'Missing or thin trading value increases risk.',
+            'source_gap': 'Missing independent artifacts reduce confidence.',
             'artifact_staleness': 'Older source artifacts increase risk.',
             'negative_flags': 'Negative news, suspicious volume, or long upper wick add risk.',
         },
     },
-    'ranking': 'rank by alpha_score - 0.45 * risk_score, descending.',
+    'ranking': 'rank by alpha_score - 0.55 * risk_score + conviction_adjustment, descending.',
 }
 
 
@@ -141,12 +168,10 @@ def get_scanner_schedule_status(now: datetime | None = None) -> dict[str, Any]:
     scheduled_times = _scanner_schedule_times()
     latest = read_latest_scanner_run()
     artifacts = _load_artifacts()
-    source_files = latest.get('source_files') if latest else None
-    if not source_files:
-        source_files = _source_files(artifacts)
-    freshness = latest.get('freshness') if latest else None
-    if not freshness:
-        freshness = _aggregate_freshness(source_files)
+    source_files = _source_files(artifacts)
+    freshness = _aggregate_freshness(source_files)
+    latest_source_files = latest.get('source_files') if latest else None
+    latest_freshness = latest.get('freshness') if latest else None
     scheduler_last_run_at = _scheduler_last_run_at()
     next_scheduled = _next_scheduled_times(current, scheduled_times, count=5)
     return {
@@ -161,8 +186,80 @@ def get_scanner_schedule_status(now: datetime | None = None) -> dict[str, Any]:
         'freshness': freshness,
         'freshness_status': (freshness or {}).get('status'),
         'source_files': source_files,
+        'latest_run_freshness': latest_freshness,
+        'latest_run_source_files': latest_source_files,
         'candidate_count': latest.get('candidate_count') if latest else 0,
         'checked_at': current.isoformat(),
+    }
+
+
+def get_scanner_diagnostics(now: datetime | None = None) -> dict[str, Any]:
+    """Return an operator-focused health view for scanner data and alerts."""
+    schedule = get_scanner_schedule_status(now=now)
+    source = get_scanner_source_signature()
+    monitor = read_scanner_monitor_state()
+    alert = read_scanner_alert_state()
+    latest = read_latest_scanner_run()
+    telegram = _telegram_config_status()
+    deepseek = {'configured': bool(os.getenv('DEEPSEEK_API_KEY'))}
+    issues: list[dict[str, Any]] = []
+
+    freshness = schedule.get('freshness') or {}
+    source_files = schedule.get('source_files') or []
+    stale_files = [item.get('file') for item in source_files if item.get('freshness') == 'stale']
+    unknown_files = [item.get('file') for item in source_files if item.get('freshness') == 'unknown']
+    if source.get('missing_files'):
+        issues.append({
+            'severity': 'error' if source.get('available_files') == 0 else 'warning',
+            'code': 'missing_source_files',
+            'message': f"{source.get('missing_files')} scanner source files are missing.",
+        })
+    if freshness.get('status') in {'stale', 'missing', 'partial', 'unknown'}:
+        issues.append({
+            'severity': 'warning',
+            'code': 'source_freshness',
+            'message': f"source freshness is {freshness.get('status')}.",
+            'files': stale_files or unknown_files,
+        })
+    if not latest:
+        issues.append({
+            'severity': 'warning',
+            'code': 'no_scanner_run',
+            'message': 'no persisted scanner run is available yet.',
+        })
+    if monitor.get('last_status') == 'send_failed':
+        issues.append({
+            'severity': 'error',
+            'code': 'telegram_send_failed',
+            'message': monitor.get('last_error') or 'last realtime Telegram send failed.',
+        })
+    if not telegram['personal_configured']:
+        issues.append({
+            'severity': 'error',
+            'code': 'telegram_not_configured',
+            'message': 'TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID is missing.',
+        })
+
+    health = 'ok'
+    if any(item['severity'] == 'error' for item in issues):
+        health = 'error'
+    elif issues:
+        health = 'warning'
+
+    return {
+        'ok': health != 'error',
+        'health': health,
+        'checked_at': datetime.now(timezone.utc).isoformat(),
+        'schedule': schedule,
+        'source': source,
+        'source_freshness': freshness,
+        'source_files': source_files,
+        'monitor': monitor,
+        'alert': alert,
+        'latest_run': _scanner_run_summary(latest) if latest else None,
+        'telegram': telegram,
+        'deepseek': deepseek,
+        'issues': issues,
     }
 
 
@@ -194,12 +291,16 @@ def get_scanner_source_signature() -> dict[str, Any]:
             modified_at = None
             size = 0
             mtime_ns = 0
+        policy = SOURCE_FILE_POLICIES.get(filename, {})
         files.append({
             'file': f'data/{filename}',
             'exists': exists,
             'size': size,
             'modified_at': modified_at,
             'mtime_ns': mtime_ns,
+            'role': policy.get('role'),
+            'required': bool(policy.get('required', True)),
+            'max_age_days': policy.get('max_age_days', 7),
         })
         parts.append(f'{filename}:{mtime_ns}:{size}:{int(exists)}')
     fingerprint = hashlib.sha1('|'.join(parts).encode('utf-8')).hexdigest()
@@ -229,6 +330,7 @@ def run_scanner_realtime_monitor_check(
     max_events: int = DEFAULT_ALERT_MAX_EVENTS,
     retry_seconds: int = DEFAULT_MONITOR_RETRY_SECONDS,
     force: bool = False,
+    commit_monitor_state: bool = True,
     send_fn=None,
 ) -> dict[str, Any]:
     """Run alert scan only when source files changed, then send Telegram.
@@ -283,10 +385,11 @@ def run_scanner_realtime_monitor_check(
         commit_state=False,
     )
     events = result.get('events') or []
+    alert_blocked = bool(result.get('alert_blocked'))
     telegram_sent = False
     state_committed = False
     alert_state = result.get('state')
-    status = 'no_new_events'
+    status = 'blocked' if alert_blocked else 'no_new_events'
     error = None
 
     if events:
@@ -299,16 +402,22 @@ def run_scanner_realtime_monitor_check(
                 telegram_sent = False
                 error = f'{type(exc).__name__}: {exc}'
             if telegram_sent:
-                alert_state = commit_scanner_alert_events(result)
-                state_committed = True
+                if commit_monitor_state:
+                    alert_state = commit_scanner_alert_events(result)
+                    state_committed = True
+                else:
+                    alert_state = result.get('state')
                 status = 'sent'
             else:
                 status = 'send_failed'
     else:
-        alert_state = commit_scanner_alert_events(result)
-        state_committed = True
+        if commit_monitor_state:
+            alert_state = commit_scanner_alert_events(result)
+            state_committed = True
+        else:
+            alert_state = result.get('state')
 
-    processed = status in {'sent', 'no_new_events'}
+    processed = status in {'sent', 'no_new_events', 'blocked'}
     next_state = dict(state)
     next_state.update({
         'version': 1,
@@ -329,10 +438,11 @@ def run_scanner_realtime_monitor_check(
     elif status == 'send_failed':
         next_state['last_failed_source_fingerprint'] = fingerprint
         next_state['last_failed_at'] = now_iso
-    write_json_atomic(monitor_file, next_state, sort_keys=True)
+    if commit_monitor_state:
+        write_json_atomic(monitor_file, next_state, sort_keys=True)
 
     return {
-        'ok': status in {'sent', 'no_new_events', 'pending_send'},
+        'ok': status in {'sent', 'no_new_events', 'blocked', 'pending_send'},
         'status': status,
         'source_changed': True,
         'source': source,
@@ -343,7 +453,14 @@ def run_scanner_realtime_monitor_check(
         'telegram_sent': telegram_sent,
         'state_committed': state_committed,
         'alert_state': alert_state,
-        'monitor_state': _monitor_state_summary(next_state, monitor_file, source),
+        'monitor_state': _monitor_state_summary(
+            next_state if commit_monitor_state else state,
+            monitor_file,
+            source,
+        ),
+        'monitor_state_committed': bool(commit_monitor_state),
+        'alert_blocked': alert_blocked,
+        'blocked_reason': result.get('blocked_reason'),
         'error': error,
     }
 
@@ -369,25 +486,39 @@ def run_scanner_alert_check(
     run = create_scanner_run(run_payload)
     state_file = state_path or _alert_state_path()
     state = _read_alert_state(state_file)
-    events = _new_candidate_events(
-        run,
-        state,
-        min_alpha=float(min_alpha),
-        max_risk=float(max_risk),
-        actions=actions,
-        max_events=max_events,
-    )
+    freshness_status = ((run.get('freshness') or {}).get('status') or 'unknown').lower()
+    blocked_reason = None
+    if freshness_status in ALERT_BLOCKING_FRESHNESS:
+        events = []
+        blocked_reason = f'source_freshness:{freshness_status}'
+    else:
+        events = _new_candidate_events(
+            run,
+            state,
+            min_alpha=float(min_alpha),
+            max_risk=float(max_risk),
+            actions=actions,
+            max_events=max_events,
+        )
     updated_state = _update_alert_state(state, run, events)
     if commit_state:
         write_json_atomic(state_file, updated_state, sort_keys=True)
     return {
         'run': run,
         'events': events,
-        'message': build_scanner_alert_message(run, events, min_alpha=min_alpha, max_risk=max_risk),
+        'message': build_scanner_alert_message(
+            run,
+            events,
+            min_alpha=min_alpha,
+            max_risk=max_risk,
+            blocked_reason=blocked_reason,
+        ),
         'state_path': state_file,
         'state_committed': bool(commit_state),
         'state': _alert_state_summary(updated_state, state_file),
         'new_event_count': len(events),
+        'alert_blocked': bool(blocked_reason),
+        'blocked_reason': blocked_reason,
     }
 
 
@@ -408,17 +539,23 @@ def build_scanner_alert_message(
     *,
     min_alpha: float = DEFAULT_ALERT_MIN_ALPHA,
     max_risk: float = DEFAULT_ALERT_MAX_RISK,
+    blocked_reason: str | None = None,
 ) -> str:
+    """Build the production Telegram alert with readable Korean labels."""
     generated_at = _escape(run.get('generated_at') or '')
     run_id = _escape(run.get('id') or '')
     candidate_count = int(run.get('candidate_count') or 0)
     lines = [
         '<b>MiroFish 알파 스캐너 신규 후보</b>',
         f'신규 매수 후보: <b>{len(events)}</b>건 / 전체 후보: {candidate_count}건',
-        f'기준: alpha &gt;= {min_alpha:g}, risk &lt;= {max_risk:g}, 로컬 실데이터 아티팩트 기반',
+        f'기준: alpha &gt;= {min_alpha:g}, risk &lt;= {max_risk:g}, 로컬 데이터 아티팩트 기반',
         f'Run ID: <code>{run_id}</code>',
         f'생성 시각: {generated_at}',
     ]
+    if blocked_reason:
+        freshness_status = _escape((run.get('freshness') or {}).get('status') or 'unknown')
+        lines.append(f'알림 차단: 원천 데이터 freshness={freshness_status}. 데이터 갱신 후 재시도하세요.')
+        return '\n'.join(lines)
     if not events:
         lines.append('이전 알림 이후 새 조건 충족 후보가 없습니다.')
         return '\n'.join(lines)
@@ -454,6 +591,55 @@ def build_scanner_alert_message(
     return '\n'.join(lines)
 
 
+def build_scanner_run_telegram_message(run: dict[str, Any], *, limit: int = 10) -> str:
+    """Build a deterministic Telegram summary directly from scanner candidates."""
+    clean_limit = max(1, min(_clean_limit(limit, default=10), 20))
+    candidates = [item for item in (run.get('candidates') or []) if isinstance(item, dict)]
+    generated_at = _escape(run.get('generated_at') or run.get('created_at') or '')
+    run_id = _escape(run.get('id') or '')
+    freshness = run.get('freshness') or {}
+    freshness_status = freshness.get('status') if isinstance(freshness, dict) else ''
+    lines = [
+        '<b>MiroFish 알파 스캐너 요약</b>',
+        f'Run ID: <code>{run_id}</code>',
+        f'생성 시각: {generated_at}',
+        f'후보 수: <b>{len(candidates)}</b> / freshness: {_escape(freshness_status or "unknown")}',
+        'Source: deterministic scanner artifacts',
+    ]
+    if not candidates:
+        lines.append('이 스캐너 run에는 후보가 없습니다.')
+        return '\n'.join(lines)
+
+    for candidate in candidates[:clean_limit]:
+        evidence = (candidate.get('evidence') or [{}])[0]
+        tags = ', '.join(_tag_label(tag) for tag in (candidate.get('strategy_tags') or [])[:4])
+        price = candidate.get('price') or {}
+        current_price = _format_number(price.get('current_price') or candidate.get('price'))
+        change_rate = _format_signed(price.get('change_rate') or candidate.get('change_pct'), suffix='%')
+        lines.extend([
+            '',
+            (
+                f"#{_escape(candidate.get('rank'))} <b>{_escape(candidate.get('display_name'))}</b> "
+                f"(<code>{_escape(candidate.get('symbol'))}</code> {_escape(candidate.get('market'))})"
+            ),
+            (
+                f"Alpha <b>{_escape(candidate.get('alpha_score'))}</b> / "
+                f"Risk <b>{_escape(candidate.get('risk_score'))}</b> / "
+                f"Rank score {_escape(candidate.get('ranking_score'))}"
+            ),
+            (
+                f"판정: <b>{_escape(_action_label(candidate.get('action')))}</b> / "
+                f"기간: {_escape(_horizon_label(candidate.get('horizon')))}"
+            ),
+            f"현재가: {current_price} ({change_rate}) / 태그: {_escape(tags)}",
+            (
+                f"근거: {_escape(evidence.get('source'))} "
+                f"{_escape(_evidence_field_label(evidence.get('field')))}={_escape(evidence.get('score'))}"
+            ),
+        ])
+    return '\n'.join(lines)
+
+
 def _load_artifacts() -> dict[str, Any]:
     screener = _load_json_artifact('screener_leading_latest.json')
     vcp = _load_json_artifact('vcp_kr_latest.json')
@@ -465,13 +651,19 @@ def _load_artifacts() -> dict[str, Any]:
     candidate_symbols.update(_symbols_from_vcp(vcp.get('data')))
     candidate_symbols.update(_symbols_from_jongga(jongga.get('data')))
 
-    latest_prices = _load_latest_prices(candidate_symbols or None)
+    price_history = _load_price_history(candidate_symbols or None)
+    latest_prices = {
+        symbol: rows[-1]
+        for symbol, rows in price_history.items()
+        if rows
+    }
     if not candidate_symbols:
         candidate_symbols.update(latest_prices.keys())
 
     return {
         'ticker_map': maps,
         'daily_prices': latest_prices,
+        'price_history': price_history,
         'screener': screener,
         'vcp': vcp,
         'jongga': jongga,
@@ -503,6 +695,7 @@ def _build_candidates(
             symbol,
             maps.get(symbol) or {},
             prices.get(symbol) or {},
+            (artifacts.get('price_history') or {}).get(symbol) or [],
             screener_by_symbol.get(symbol),
             vcp_by_symbol.get(symbol),
             jongga_by_symbol.get(symbol),
@@ -529,6 +722,7 @@ def _score_symbol(
     symbol: str,
     mapped: dict[str, Any],
     price: dict[str, Any],
+    price_history: list[dict[str, Any]],
     screener: dict[str, Any] | None,
     vcp: dict[str, Any] | None,
     jongga: dict[str, Any] | None,
@@ -543,10 +737,15 @@ def _score_symbol(
     if not trading_value and current_price and volume:
         trading_value = current_price * volume
 
-    price_momentum = _clamp(change_rate * 2.0 if change_rate > 0 else 0, 0, 25)
-    liquidity = _clamp(trading_value / 20_000_000_000 * 15, 0, 15)
-    alpha = price_momentum + liquidity
+    price_metrics = _price_analysis(price_history, price)
+    price_momentum = _clamp(change_rate * 1.7 if change_rate > 0 else 0, 0, 15)
+    trend_quality = _float(price_metrics.get('trend_score'))
+    volume_accumulation = _float(price_metrics.get('volume_accumulation_score'))
+    liquidity = _clamp(trading_value / 20_000_000_000 * 10, 0, 10)
+    alpha = price_momentum + trend_quality + liquidity + volume_accumulation
     evidence.append(_evidence('daily_prices.csv', 'price_momentum', price_momentum, change_rate))
+    evidence.append(_evidence('daily_prices.csv', 'trend_quality', trend_quality, price_metrics.get('trend_20d_pct')))
+    evidence.append(_evidence('daily_prices.csv', 'volume_accumulation', volume_accumulation, price_metrics.get('volume_ratio')))
     evidence.append(_evidence('daily_prices.csv', 'liquidity', liquidity, trading_value))
 
     screener_score = 0.0
@@ -554,7 +753,7 @@ def _score_symbol(
         raw = _nested_float(screener, ['score', 'total_enriched'])
         if raw <= 0:
             raw = _nested_float(screener, ['score', 'total'])
-        screener_score = _clamp(raw / 100 * 25, 0, 25)
+        screener_score = _clamp(raw / 100 * 20, 0, 20)
         alpha += screener_score
         evidence.append(_evidence('screener_leading_latest.json', 'screener_leading', screener_score, raw))
 
@@ -562,35 +761,62 @@ def _score_symbol(
     if vcp:
         raw = _nested_float(vcp, ['composite', 'composite_score'])
         entry_ready = _truthy(_nested_get(vcp, ['composite', 'entry_ready']))
-        vcp_score = _clamp(raw / 100 * 17, 0, 17) + (3 if entry_ready else 0)
+        vcp_score = _clamp(raw / 100 * 13, 0, 13) + (2 if entry_ready else 0)
         alpha += vcp_score
         evidence.append(_evidence('vcp_kr_latest.json', 'vcp_quality', vcp_score, raw))
 
     jongga_score = 0.0
     if jongga:
         raw = _nested_float(jongga, ['score', 'total'])
-        jongga_score = _clamp(raw / 15 * 15, 0, 15)
+        jongga_score = _clamp(raw / 15 * 10, 0, 10)
         alpha += jongga_score
         evidence.append(_evidence('jongga_v2_latest.json', 'jongga_setup', jongga_score, raw))
+
+    source_count = _source_count(price, screener, vcp, jongga)
+    convergence_score = _source_convergence_score(
+        source_count=source_count,
+        trend_quality=trend_quality,
+        volume_accumulation=volume_accumulation,
+        screener_score=screener_score,
+        vcp_score=vcp_score,
+        jongga_score=jongga_score,
+    )
+    alpha += convergence_score
+    evidence.append(_evidence('source_convergence', 'source_convergence', convergence_score, source_count))
 
     intraday_range = 0.0
     if current_price:
         intraday_range = max(0.0, (_float(price.get('high')) - _float(price.get('low'))) / current_price * 100)
     risk = 0.0
     risk += _clamp(abs(change_rate) - 12, 0, 18)
-    risk += _clamp(intraday_range * 2.0, 0, 22)
+    risk += _clamp(intraday_range * 1.7, 0, 24)
+    risk += _float(price_metrics.get('volatility_risk'))
+    risk += _float(price_metrics.get('drawdown_risk'))
+    risk += _float(price_metrics.get('overextension_risk'))
     if trading_value <= 0:
         risk += 18
     elif trading_value < 2_000_000_000:
         risk += 10
+    risk += _source_gap_penalty(price, screener, vcp, jongga)
     risk += _staleness_penalty(artifacts, generated_at)
     risk += _negative_flag_penalty(jongga)
     risk = round(_clamp(risk, 0, 100), 2)
 
     alpha = round(_clamp(alpha, 0, 100), 2)
-    ranking_score = round(alpha - (0.45 * risk), 2)
+    conviction_adjustment = _conviction_adjustment(alpha, risk, source_count, price_metrics)
+    ranking_score = round(alpha - (0.55 * risk) + conviction_adjustment, 2)
     action = _action(alpha, risk)
-    tags = _strategy_tags(price_momentum, screener_score, vcp_score, jongga_score, risk)
+    tags = _strategy_tags(
+        price_momentum,
+        trend_quality,
+        volume_accumulation,
+        screener_score,
+        vcp_score,
+        jongga_score,
+        risk,
+    )
+    signal_quality = _signal_quality(alpha, risk, source_count, price_metrics)
+    entry_plan = _entry_plan(current_price, risk, price_metrics, action)
 
     display_name = (
         mapped.get('display_name')
@@ -612,8 +838,31 @@ def _score_symbol(
         'ranking_score': ranking_score,
         'action': action,
         'horizon': 'swing_5_20d' if action in ('BUY_CANDIDATE', 'WATCH') else 'avoid_or_recheck',
+        'signal_quality': signal_quality,
         'strategy_tags': tags,
         'evidence': [item for item in evidence if item['score'] > 0 or item['value'] not in (None, 0)],
+        'analysis_profile': {
+            'source_count': source_count,
+            'convergence_score': round(convergence_score, 2),
+            'conviction_adjustment': round(conviction_adjustment, 2),
+            'trend_quality': round(trend_quality, 2),
+            'volume_accumulation': round(volume_accumulation, 2),
+            'volatility_20d_pct': price_metrics.get('volatility_20d_pct'),
+            'trend_5d_pct': price_metrics.get('trend_5d_pct'),
+            'trend_20d_pct': price_metrics.get('trend_20d_pct'),
+            'volume_ratio': price_metrics.get('volume_ratio'),
+            'drawdown_20d_pct': price_metrics.get('drawdown_20d_pct'),
+            'over_ma20_pct': price_metrics.get('over_ma20_pct'),
+            'trend_consistency': price_metrics.get('trend_consistency'),
+            'sample_days': price_metrics.get('sample_days'),
+        },
+        'entry_plan': entry_plan,
+        'replay_context': {
+            'price_date': price.get('date'),
+            'generated_at': generated_at,
+            'data_sources': _candidate_sources(price, screener, vcp, jongga),
+            'lookahead_safe': True,
+        },
         'price': {
             'date': price.get('date'),
             'current_price': current_price,
@@ -648,9 +897,9 @@ def _load_ticker_map() -> dict[str, dict[str, Any]]:
     return rows
 
 
-def _load_latest_prices(symbol_filter: set[str] | None) -> dict[str, dict[str, Any]]:
+def _load_price_history(symbol_filter: set[str] | None) -> dict[str, list[dict[str, Any]]]:
     path = os.path.join(DATA_ROOT, 'daily_prices.csv')
-    rows: dict[str, dict[str, Any]] = {}
+    rows: dict[str, list[dict[str, Any]]] = {}
     if not os.path.isfile(path):
         return rows
     try:
@@ -661,12 +910,9 @@ def _load_latest_prices(symbol_filter: set[str] | None) -> dict[str, dict[str, A
                 if not symbol or (symbol_filter and symbol not in symbol_filter):
                     continue
                 date = str(row.get('date') or '')
-                previous = rows.get(symbol)
-                if previous and str(previous.get('date') or '') > date:
-                    continue
                 current_price = _float(row.get('current_price'))
                 volume = _float(row.get('volume'))
-                rows[symbol] = {
+                rows.setdefault(symbol, []).append({
                     'symbol': symbol,
                     'date': date,
                     'name': row.get('name') or symbol,
@@ -678,9 +924,12 @@ def _load_latest_prices(symbol_filter: set[str] | None) -> dict[str, dict[str, A
                     'volume': volume,
                     'trading_value': current_price * volume if current_price and volume else 0.0,
                     'update_time': row.get('update_time') or '',
-                }
+                })
     except (OSError, csv.Error, UnicodeDecodeError):
         return {}
+    for symbol, history in list(rows.items()):
+        history.sort(key=lambda item: (str(item.get('date') or ''), str(item.get('update_time') or '')))
+        rows[symbol] = history[-120:]
     return rows
 
 
@@ -743,15 +992,107 @@ def _list_from(data: Any, key: str) -> list[dict[str, Any]]:
     return []
 
 
+def _price_analysis(history: list[dict[str, Any]], latest: dict[str, Any]) -> dict[str, Any]:
+    ordered = [item for item in history if _float(item.get('current_price')) > 0]
+    if latest and (not ordered or ordered[-1].get('date') != latest.get('date')):
+        ordered.append(latest)
+    ordered.sort(key=lambda item: (str(item.get('date') or ''), str(item.get('update_time') or '')))
+    closes = [_float(item.get('current_price')) for item in ordered if _float(item.get('current_price')) > 0]
+    volumes = [_float(item.get('volume')) for item in ordered if _float(item.get('volume')) > 0]
+    current_price = _float(latest.get('current_price')) or (closes[-1] if closes else 0.0)
+    change_rate = _float(latest.get('change_rate'))
+    returns = [
+        ((closes[index] / closes[index - 1]) - 1) * 100
+        for index in range(1, len(closes))
+        if closes[index - 1] > 0
+    ]
+    trend_5d = _pct_change(closes, 5)
+    trend_20d = _pct_change(closes, 20)
+    ma5 = _average(closes[-5:])
+    ma20 = _average(closes[-20:])
+    over_ma20 = ((current_price / ma20) - 1) * 100 if current_price and ma20 else 0.0
+    recent_returns = returns[-20:]
+    volatility = _stddev(recent_returns)
+    max_20 = max(closes[-20:]) if closes else 0.0
+    drawdown_20 = ((max_20 - current_price) / max_20 * 100) if max_20 and current_price else 0.0
+    consistency_base = returns[-10:]
+    trend_consistency = (
+        sum(1 for value in consistency_base if value > 0) / len(consistency_base)
+        if consistency_base else 0.0
+    )
+    previous_volumes = volumes[-21:-1] if len(volumes) > 1 else []
+    avg_volume = _average(previous_volumes)
+    latest_volume = _float(latest.get('volume')) or (volumes[-1] if volumes else 0.0)
+    volume_ratio = latest_volume / avg_volume if avg_volume else 0.0
+
+    trend_score = 0.0
+    if current_price and ma20 and current_price >= ma20:
+        trend_score += 3.5
+    if ma5 and ma20 and ma5 >= ma20:
+        trend_score += 3.5
+    trend_score += _clamp(trend_5d * 0.45, 0, 4.0)
+    trend_score += _clamp(trend_20d * 0.18, 0, 3.0)
+    trend_score += _clamp((trend_consistency - 0.5) * 4.0, 0, 1.0)
+    if change_rate > 18 or over_ma20 > 35:
+        trend_score -= 2.0
+    trend_score = _clamp(trend_score, 0, 15)
+
+    volume_score = 0.0
+    if volume_ratio >= 1.15 and change_rate >= 0:
+        volume_score = _clamp((volume_ratio - 1.0) * 4.0, 0, 10)
+    elif volume_ratio >= 2.0 and change_rate < 0:
+        volume_score = 1.0
+
+    volatility_risk = _clamp((volatility - 4.0) * 2.0, 0, 16)
+    drawdown_risk = _clamp(drawdown_20 * 0.55, 0, 16)
+    overextension_risk = _clamp(over_ma20 - 25, 0, 18) + _clamp(change_rate - 18, 0, 12)
+
+    return {
+        'sample_days': len(closes),
+        'trend_5d_pct': round(trend_5d, 2),
+        'trend_20d_pct': round(trend_20d, 2),
+        'ma5': round(ma5, 2) if ma5 else 0.0,
+        'ma20': round(ma20, 2) if ma20 else 0.0,
+        'over_ma20_pct': round(over_ma20, 2),
+        'volatility_20d_pct': round(volatility, 2),
+        'drawdown_20d_pct': round(drawdown_20, 2),
+        'trend_consistency': round(trend_consistency, 2),
+        'volume_ratio': round(volume_ratio, 2),
+        'trend_score': round(trend_score, 2),
+        'volume_accumulation_score': round(volume_score, 2),
+        'volatility_risk': round(volatility_risk, 2),
+        'drawdown_risk': round(drawdown_risk, 2),
+        'overextension_risk': round(overextension_risk, 2),
+    }
+
+
+def _pct_change(values: list[float], periods: int) -> float:
+    if len(values) <= periods:
+        return 0.0
+    previous = values[-periods - 1]
+    latest = values[-1]
+    if previous <= 0:
+        return 0.0
+    return ((latest / previous) - 1) * 100
+
+
+def _average(values: list[float]) -> float:
+    clean = [float(value) for value in values if value not in (None, '')]
+    return sum(clean) / len(clean) if clean else 0.0
+
+
+def _stddev(values: list[float]) -> float:
+    clean = [float(value) for value in values]
+    if len(clean) < 2:
+        return 0.0
+    mean = sum(clean) / len(clean)
+    variance = sum((value - mean) ** 2 for value in clean) / len(clean)
+    return variance ** 0.5
+
+
 def _source_files(artifacts: dict[str, Any]) -> list[dict[str, Any]]:
     files = []
-    for filename in [
-        'daily_prices.csv',
-        'ticker_to_yahoo_map.csv',
-        'screener_leading_latest.json',
-        'vcp_kr_latest.json',
-        'jongga_v2_latest.json',
-    ]:
+    for filename in WATCHED_SOURCE_FILES:
         path = os.path.join(DATA_ROOT, filename)
         exists = os.path.isfile(path)
         mtime = datetime.fromtimestamp(os.path.getmtime(path), timezone.utc).isoformat() if exists else None
@@ -760,12 +1101,19 @@ def _source_files(artifacts: dict[str, Any]) -> list[dict[str, Any]]:
             artifact = artifacts.get(key) or {}
             if artifact.get('filename') == filename:
                 generated_at = artifact.get('generated_at')
+        max_age_days = _freshness_max_age_days(filename)
+        freshness_value = generated_at or mtime
+        policy = SOURCE_FILE_POLICIES.get(filename, {})
         files.append({
             'file': f'data/{filename}',
             'exists': exists,
             'generated_at': generated_at,
             'modified_at': mtime,
-            'freshness': _freshness_label(generated_at or mtime),
+            'freshness': _freshness_label(freshness_value, max_age_days=max_age_days),
+            'age_days': _age_days(freshness_value),
+            'max_age_days': max_age_days,
+            'role': policy.get('role'),
+            'required': bool(policy.get('required', True)),
         })
     return files
 
@@ -773,11 +1121,24 @@ def _source_files(artifacts: dict[str, Any]) -> list[dict[str, Any]]:
 def _aggregate_freshness(source_files: list[dict[str, Any]]) -> dict[str, Any]:
     existing = [item for item in source_files if item.get('exists')]
     stale_count = sum(1 for item in existing if item.get('freshness') == 'stale')
+    unknown_count = sum(1 for item in existing if item.get('freshness') == 'unknown')
+    missing_count = len(source_files) - len(existing)
+    if not existing:
+        status = 'missing'
+    elif stale_count:
+        status = 'stale'
+    elif unknown_count:
+        status = 'unknown'
+    elif missing_count:
+        status = 'partial'
+    else:
+        status = 'fresh'
     return {
-        'status': 'stale' if stale_count else 'fresh',
+        'status': status,
         'available_files': len(existing),
-        'missing_files': len(source_files) - len(existing),
+        'missing_files': missing_count,
         'stale_files': stale_count,
+        'unknown_files': unknown_count,
     }
 
 
@@ -792,7 +1153,11 @@ def _staleness_penalty(artifacts: dict[str, Any], generated_at: str) -> float:
         artifact = artifacts.get(key) or {}
         if not artifact.get('exists'):
             penalty += 2.5
-        elif _freshness_label(artifact.get('generated_at'), generated_at) == 'stale':
+        elif _freshness_label(
+            artifact.get('generated_at'),
+            generated_at,
+            max_age_days=_freshness_max_age_days(artifact.get('filename')),
+        ) == 'stale':
             penalty += 4.0
     return penalty
 
@@ -808,15 +1173,153 @@ def _negative_flag_penalty(jongga: dict[str, Any] | None) -> float:
     return penalty
 
 
-def _freshness_label(value: Any, now_iso: str | None = None) -> str:
+def _source_count(
+    price: dict[str, Any],
+    screener: dict[str, Any] | None,
+    vcp: dict[str, Any] | None,
+    jongga: dict[str, Any] | None,
+) -> int:
+    return sum([
+        1 if _float(price.get('current_price')) > 0 else 0,
+        1 if screener else 0,
+        1 if vcp else 0,
+        1 if jongga else 0,
+    ])
+
+
+def _source_convergence_score(
+    *,
+    source_count: int,
+    trend_quality: float,
+    volume_accumulation: float,
+    screener_score: float,
+    vcp_score: float,
+    jongga_score: float,
+) -> float:
+    score = _clamp((source_count - 1) * 1.2, 0, 3.6)
+    if trend_quality >= 8 and vcp_score >= 8:
+        score += 0.7
+    if volume_accumulation >= 5 and screener_score >= 10:
+        score += 0.4
+    if jongga_score >= 6 and screener_score >= 10:
+        score += 0.3
+    return _clamp(score, 0, 5)
+
+
+def _source_gap_penalty(
+    price: dict[str, Any],
+    screener: dict[str, Any] | None,
+    vcp: dict[str, Any] | None,
+    jongga: dict[str, Any] | None,
+) -> float:
+    penalty = 0.0
+    if _float(price.get('current_price')) <= 0:
+        penalty += 24.0
+    missing_independent = sum(1 for item in (screener, vcp, jongga) if not item)
+    penalty += missing_independent * 4.0
+    return penalty
+
+
+def _conviction_adjustment(
+    alpha: float,
+    risk: float,
+    source_count: int,
+    price_metrics: dict[str, Any],
+) -> float:
+    adjustment = 0.0
+    if source_count >= 4 and alpha >= 65 and risk <= 40:
+        adjustment += 3.0
+    if _float(price_metrics.get('trend_score')) >= 10 and _float(price_metrics.get('volume_accumulation_score')) >= 5:
+        adjustment += 1.5
+    if _float(price_metrics.get('overextension_risk')) >= 12:
+        adjustment -= 3.0
+    if _float(price_metrics.get('drawdown_risk')) >= 10:
+        adjustment -= 2.0
+    return _clamp(adjustment, -6, 5)
+
+
+def _signal_quality(
+    alpha: float,
+    risk: float,
+    source_count: int,
+    price_metrics: dict[str, Any],
+) -> str:
+    if alpha >= 75 and risk <= 35 and source_count >= 4:
+        return 'high_conviction'
+    if alpha >= 65 and risk <= 45 and source_count >= 3:
+        return 'actionable'
+    if alpha >= 50 and risk <= 65:
+        return 'watch'
+    if _float(price_metrics.get('overextension_risk')) >= 12:
+        return 'overextended'
+    return 'weak'
+
+
+def _entry_plan(
+    current_price: float,
+    risk: float,
+    price_metrics: dict[str, Any],
+    action: str,
+) -> dict[str, Any]:
+    if current_price <= 0 or action == 'REJECT':
+        return {
+            'status': 'not_actionable',
+            'reason': 'rejected_or_missing_price',
+        }
+    volatility = _float(price_metrics.get('volatility_20d_pct'))
+    stop_pct = _clamp(max(4.0, volatility * 1.6, risk * 0.10), 4.0, 14.0)
+    target_pct = _clamp(stop_pct * 2.0, 8.0, 28.0)
+    return {
+        'status': 'ready' if action == 'BUY_CANDIDATE' else 'watch',
+        'entry_price': round(current_price, 2),
+        'stop_loss': round(current_price * (1 - stop_pct / 100), 2),
+        'target_1': round(current_price * (1 + target_pct / 100), 2),
+        'target_2': round(current_price * (1 + (target_pct * 1.5) / 100), 2),
+        'stop_pct': round(stop_pct, 2),
+        'target_pct': round(target_pct, 2),
+        'risk_reward': round(target_pct / stop_pct, 2) if stop_pct else 0,
+        'invalidation': 'close_below_stop_or_source_score_drop',
+    }
+
+
+def _candidate_sources(
+    price: dict[str, Any],
+    screener: dict[str, Any] | None,
+    vcp: dict[str, Any] | None,
+    jongga: dict[str, Any] | None,
+) -> list[str]:
+    sources = []
+    if _float(price.get('current_price')) > 0:
+        sources.append('daily_prices.csv')
+    if screener:
+        sources.append('screener_leading_latest.json')
+    if vcp:
+        sources.append('vcp_kr_latest.json')
+    if jongga:
+        sources.append('jongga_v2_latest.json')
+    return sources
+
+
+def _age_days(value: Any, now_iso: str | None = None) -> float | None:
     if not value:
-        return 'unknown'
+        return None
     now = _parse_dt(now_iso) or datetime.now(timezone.utc)
     dt = _parse_dt(value)
     if dt is None:
+        return None
+    return round(max(0, (now - dt).total_seconds() / 86400), 2)
+
+
+def _freshness_label(value: Any, now_iso: str | None = None, *, max_age_days: int = 7) -> str:
+    age_days = _age_days(value, now_iso)
+    if age_days is None:
         return 'unknown'
-    age_days = max(0, (now - dt).total_seconds() / 86400)
-    return 'fresh' if age_days <= 7 else 'stale'
+    return 'fresh' if age_days <= max(1, int(max_age_days)) else 'stale'
+
+
+def _freshness_max_age_days(filename: Any) -> int:
+    policy = SOURCE_FILE_POLICIES.get(str(filename or ''), {})
+    return int(policy.get('max_age_days') or 7)
 
 
 def _evidence(source: str, field: str, score: float, value: Any) -> dict[str, Any]:
@@ -839,6 +1342,8 @@ def _action(alpha: float, risk: float) -> str:
 
 def _strategy_tags(
     price_momentum: float,
+    trend_quality: float,
+    volume_accumulation: float,
     screener_score: float,
     vcp_score: float,
     jongga_score: float,
@@ -847,11 +1352,15 @@ def _strategy_tags(
     tags = []
     if price_momentum >= 12:
         tags.append('momentum')
+    if trend_quality >= 9:
+        tags.append('trend_quality')
+    if volume_accumulation >= 5:
+        tags.append('volume_accumulation')
     if screener_score >= 12:
         tags.append('leading_screener')
-    if vcp_score >= 10:
+    if vcp_score >= 8:
         tags.append('vcp_entry')
-    if jongga_score >= 8:
+    if jongga_score >= 6:
         tags.append('jongga_setup')
     if risk >= 45:
         tags.append('risk_penalty')
@@ -874,6 +1383,19 @@ def _clean_symbols(value: Any) -> set[str]:
     if not isinstance(value, list):
         return set()
     return {_symbol(item) for item in value if _symbol(item)}
+
+
+def _telegram_config_status() -> dict[str, Any]:
+    personal_token = os.getenv('TELEGRAM_BOT_TOKEN')
+    personal_chat = os.getenv('TELEGRAM_CHAT_ID')
+    channel_token = os.getenv('TELEGRAM_CHANNEL_BOT_TOKEN')
+    channel_chat = os.getenv('TELEGRAM_CHANNEL_CHAT_ID')
+    return {
+        'personal_configured': bool(personal_token and personal_chat and 'your_bot_token' not in personal_token),
+        'channel_configured': bool(channel_token and channel_chat),
+        'personal_chat_present': bool(personal_chat),
+        'channel_chat_present': bool(channel_chat),
+    }
 
 
 def _scanner_run_records() -> list[dict[str, Any]]:
@@ -1092,6 +1614,8 @@ def _horizon_label(value: Any) -> str:
 def _tag_label(value: Any) -> str:
     return {
         'momentum': '모멘텀',
+        'trend_quality': '추세 품질',
+        'volume_accumulation': '거래량 축적',
         'leading_screener': '리딩 스크리너',
         'vcp_entry': 'VCP 진입',
         'jongga_setup': '종가 셋업',
@@ -1103,10 +1627,13 @@ def _tag_label(value: Any) -> str:
 def _evidence_field_label(value: Any) -> str:
     return {
         'price_momentum': '가격 모멘텀',
+        'trend_quality': '추세 품질',
+        'volume_accumulation': '거래량 축적',
         'liquidity': '유동성',
         'screener_leading': '리딩 스크리너',
         'vcp_quality': 'VCP 품질',
         'jongga_setup': '종가 셋업',
+        'source_convergence': '소스 수렴도',
     }.get(str(value or ''), str(value or ''))
 
 

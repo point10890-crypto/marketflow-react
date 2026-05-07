@@ -179,3 +179,34 @@ def test_scanner_deepseek_telegram_route_forces_personal_bot(monkeypatch):
 
     assert response.status_code == 200
     assert calls == [{'message': 'message', 'channel': False}]
+
+
+def test_scanner_telegram_route_falls_back_when_deepseek_unconfigured(monkeypatch):
+    import app.routes.admin_mirofish as route_module
+
+    app = Flask(__name__)
+    calls = []
+
+    monkeypatch.setattr('app.services.mirofish.read_scanner_run', lambda run_id: _sample_run())
+    monkeypatch.setattr(
+        'app.services.mirofish.summarize_scanner_run_with_deepseek',
+        lambda *args, **kwargs: (_ for _ in ()).throw(deepseek_client.DeepSeekError('DEEPSEEK_API_KEY is not configured')),
+    )
+
+    def fake_send(message, channel=True):
+        calls.append({'message': message, 'channel': channel})
+        return True
+
+    monkeypatch.setattr('app.utils.scheduler._send_telegram_long', fake_send)
+
+    with app.test_request_context(json={'limit': 1}):
+        response = route_module.send_scanner_deepseek_summary_to_telegram.__wrapped__('mfas_test_123')
+
+    payload = response.get_json()
+    assert response.status_code == 200
+    assert payload['provider'] == 'scanner_fallback'
+    assert payload['message_source'] == 'scanner_fallback'
+    assert payload['fallback_reason'] == 'DEEPSEEK_API_KEY is not configured'
+    assert payload['summary'] is None
+    assert calls[0]['channel'] is False
+    assert '<code>000001</code>' in calls[0]['message']

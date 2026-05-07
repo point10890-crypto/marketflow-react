@@ -17,8 +17,10 @@ from app.services.mirofish.store import (
 )
 from app.services.mirofish.alpha_scanner import (
     build_scanner_alert_message,
+    build_scanner_run_telegram_message,
     commit_scanner_alert_events,
     create_scanner_run,
+    get_scanner_diagnostics,
     get_scanner_source_signature,
     read_scanner_monitor_state,
     get_scanner_schedule_status,
@@ -43,6 +45,7 @@ __all__ = [
     'create_run',
     'create_scanner_run',
     'build_scanner_alert_message',
+    'build_scanner_run_telegram_message',
     'build_summary_telegram_message',
     'commit_scanner_alert_events',
     'DeepSeekError',
@@ -52,6 +55,7 @@ __all__ = [
     'get_graph',
     'get_report',
     'get_scanner_schedule_status',
+    'get_scanner_diagnostics',
     'get_scanner_source_signature',
     'get_status',
     'list_runs',

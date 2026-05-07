@@ -255,8 +255,12 @@ export interface MiroFishAlphaCandidate {
     risk_score: number;
     action: string;
     horizon: string;
+    signal_quality?: string;
     strategy_tags: string[];
     evidence: MiroFishAlphaEvidence[];
+    analysis_profile?: Record<string, any>;
+    entry_plan?: Record<string, any>;
+    replay_context?: Record<string, any>;
     risk_flags?: string[];
     source?: string;
     generated_at?: string;
@@ -306,6 +310,20 @@ export interface MiroFishScannerStatus {
     source_files?: MiroFishScannerSourceFile[];
     candidate_count?: number;
     checked_at?: string;
+}
+
+export interface MiroFishScannerDiagnostics {
+    ok?: boolean;
+    health?: 'ok' | 'warning' | 'error' | string;
+    checked_at?: string;
+    schedule?: MiroFishScannerStatus;
+    source?: Record<string, any>;
+    monitor?: Record<string, any>;
+    alert?: Record<string, any>;
+    latest_run?: Partial<MiroFishScannerRun> | null;
+    telegram?: Record<string, any>;
+    deepseek?: Record<string, any>;
+    issues?: Array<{ severity?: string; code?: string; message?: string }>;
 }
 
 export interface MiroFishScannerCandidatesResponse {
@@ -364,6 +382,8 @@ export interface MiroFishDeepSeekTelegramResponse {
     ok?: boolean;
     run_id?: string;
     provider?: string;
+    message_source?: string;
+    fallback_reason?: string | null;
     message_chars?: number;
     summary?: MiroFishDeepSeekSummaryResult;
 }
@@ -770,8 +790,12 @@ function normalizeAlphaCandidate(rawValue: unknown, index = 0): MiroFishAlphaCan
         ranking_score: asNumber(raw.ranking_score, 0),
         action: String(raw.action ?? raw.verdict ?? 'WATCH').toUpperCase(),
         horizon: String(raw.horizon ?? raw.expected_horizon ?? '20D').toUpperCase(),
+        signal_quality: raw.signal_quality === undefined ? undefined : String(raw.signal_quality),
         strategy_tags: asStringArray(raw.strategy_tags ?? raw.strategies ?? raw.tags),
         evidence: normalizeAlphaEvidence(raw.evidence ?? raw.reasons ?? raw.reason),
+        analysis_profile: asObject(raw.analysis_profile),
+        entry_plan: asObject(raw.entry_plan),
+        replay_context: asObject(raw.replay_context),
         risk_flags: asStringArray(raw.risk_flags ?? raw.risks),
         source: raw.source === undefined ? undefined : String(raw.source),
         generated_at: raw.generated_at === undefined ? undefined : String(raw.generated_at),
@@ -886,6 +910,9 @@ export const mirofishApi = {
     ),
     getScannerStatus: async () => normalizeScannerStatus(
         await fetchAuthAPI<any>('/api/admin/mirofish/scanner/status'),
+    ),
+    getScannerDiagnostics: async () => fetchAuthAPI<MiroFishScannerDiagnostics>(
+        '/api/admin/mirofish/scanner/diagnostics',
     ),
     getLatestScannerRun: async () => normalizeScannerRun(
         await fetchAuthAPI<any>('/api/admin/mirofish/scanner/runs/latest'),

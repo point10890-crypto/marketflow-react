@@ -217,6 +217,17 @@ function formatAlphaEvidence(candidate: MiroFishAlphaCandidate): string {
     return `trading value ${formatCompactNumber(candidate.trading_value)}`;
 }
 
+function formatAlphaAnalysis(candidate: MiroFishAlphaCandidate): string {
+    const profile = candidate.analysis_profile || {};
+    const sourceCount = Number(profile.source_count || 0);
+    const trend20 = Number(profile.trend_20d_pct || 0);
+    const volumeRatio = Number(profile.volume_ratio || 0);
+    const quality = candidate.signal_quality || 'quality';
+    const trendText = Number.isFinite(trend20) ? `${trend20 >= 0 ? '+' : ''}${trend20.toFixed(1)}%` : '--';
+    const volumeText = Number.isFinite(volumeRatio) && volumeRatio > 0 ? `${volumeRatio.toFixed(1)}x` : '--';
+    return `${quality} · src ${sourceCount || '--'} · T20 ${trendText} · Vol ${volumeText}`;
+}
+
 function deepSeekStateTone(state: DeepSeekPanelState, configured?: boolean) {
     if (!configured) return 'border-amber-300/25 bg-amber-300/10 text-amber-100';
     if (state === 'error') return 'border-rose-300/25 bg-rose-300/10 text-rose-100';
@@ -394,6 +405,9 @@ function AlphaBoardPanel({
                             </span>
                             <span className="mt-1 block truncate text-xs font-semibold text-slate-500">
                                 {formatAlphaEvidence(candidate)}
+                            </span>
+                            <span className="mt-1 block truncate font-mono text-[11px] font-black text-emerald-200/80">
+                                {formatAlphaAnalysis(candidate)}
                             </span>
                         </span>
                         <span className="flex items-center gap-2 md:justify-end">

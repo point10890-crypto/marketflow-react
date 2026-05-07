@@ -105,42 +105,84 @@ def test_with_record_verify_fn_can_override_truthy_result():
 
 
 def test_alpha_scanner_monitor_sends_telegram_for_new_events():
-    result = {
-        "events": [{"event_key": "000001:BUY_CANDIDATE"}],
-        "message": "alpha alert",
-        "run": {"id": "run1", "candidate_count": 1},
-    }
-    with patch("app.services.mirofish.alpha_scanner.run_scanner_alert_check", return_value=result), \
-         patch("app.services.mirofish.alpha_scanner.commit_scanner_alert_events") as commit, \
+    def fake_monitor(*args, send_fn=None, **kwargs):
+        assert send_fn("alpha alert") is True
+        return {
+            "status": "sent",
+            "new_event_count": 1,
+            "run": {"id": "run1", "candidate_count": 1},
+        }
+
+    with patch("app.services.mirofish.alpha_scanner.run_scanner_realtime_monitor_check", side_effect=fake_monitor), \
          patch("scheduler.send_telegram_long", return_value=True) as tg:
         assert scheduler.run_alpha_scanner_monitor() is True
     tg.assert_called_once_with("alpha alert", channel=False)
-    commit.assert_called_once_with(result)
 
 
 def test_alpha_scanner_monitor_keeps_event_pending_when_telegram_fails():
-    result = {
-        "events": [{"event_key": "000001:BUY_CANDIDATE"}],
-        "message": "alpha alert",
-        "run": {"id": "run1", "candidate_count": 1},
-    }
-    with patch("app.services.mirofish.alpha_scanner.run_scanner_alert_check", return_value=result), \
-         patch("app.services.mirofish.alpha_scanner.commit_scanner_alert_events") as commit, \
+    def fake_monitor(*args, send_fn=None, **kwargs):
+        assert send_fn("alpha alert") is False
+        return {
+            "status": "send_failed",
+            "new_event_count": 1,
+            "run": {"id": "run1", "candidate_count": 1},
+        }
+
+    with patch("app.services.mirofish.alpha_scanner.run_scanner_realtime_monitor_check", side_effect=fake_monitor), \
          patch("scheduler.send_telegram_long", return_value=False) as tg:
         assert scheduler.run_alpha_scanner_monitor() is False
     tg.assert_called_once_with("alpha alert", channel=False)
-    commit.assert_not_called()
 
 
 def test_alpha_scanner_monitor_skips_telegram_without_new_events():
     result = {
-        "events": [],
-        "message": "no alert",
+        "status": "no_new_events",
+        "new_event_count": 0,
         "run": {"id": "run1", "candidate_count": 20},
     }
-    with patch("app.services.mirofish.alpha_scanner.run_scanner_alert_check", return_value=result), \
-         patch("app.services.mirofish.alpha_scanner.commit_scanner_alert_events") as commit, \
+    with patch("app.services.mirofish.alpha_scanner.run_scanner_realtime_monitor_check", return_value=result), \
          patch("scheduler.send_telegram_long") as tg:
         assert scheduler.run_alpha_scanner_monitor() is True
     tg.assert_not_called()
-    commit.assert_called_once_with(result)
+
+
+def test_alpha_scanner_monitor_skips_scan_when_source_unchanged():
+    result = {
+        "status": "unchanged",
+        "new_event_count": 0,
+        "source_changed": False,
+    }
+    with patch("app.services.mirofish.alpha_scanner.run_scanner_realtime_monitor_check", return_value=result), \
+         patch("scheduler.send_telegram_long") as tg:
+        assert scheduler.run_alpha_scanner_monitor() is True
+    tg.assert_not_called()
+
+
+def test_alpha_scanner_monitor_treats_blocked_stale_sources_as_handled():
+    result = {
+        "status": "blocked",
+        "new_event_count": 0,
+        "blocked_reason": "source_freshness:stale",
+    }
+    with patch("app.services.mirofish.alpha_scanner.run_scanner_realtime_monitor_check", return_value=result), \
+         patch("scheduler.send_telegram_long") as tg:
+        assert scheduler.run_alpha_scanner_monitor() is True
+    tg.assert_not_called()
+
+
+def test_scheduler_registers_single_alpha_realtime_interval(monkeypatch):
+    scheduler.schedule.clear()
+    monkeypatch.setattr(scheduler.Config, "ALPHA_SCANNER_ENABLED", True)
+    monkeypatch.setattr(scheduler.Config, "ALPHA_SCANNER_MONITOR_INTERVAL_MINUTES", 5)
+    monkeypatch.setattr(scheduler.Config, "ALPHA_SCANNER_TIMES", [])
+
+    try:
+        scheduler.Scheduler().setup_schedules()
+
+        interval_jobs = [
+            job for job in scheduler.schedule.jobs
+            if job.unit == "minutes" and job.interval == 5
+        ]
+        assert len(interval_jobs) == 1
+    finally:
+        scheduler.schedule.clear()

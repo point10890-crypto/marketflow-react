@@ -331,6 +331,8 @@ class Config:
     ALPHA_SCANNER_MIN_ALPHA = float(os.environ.get('ALPHA_SCANNER_MIN_ALPHA', '70'))
     ALPHA_SCANNER_MAX_RISK = float(os.environ.get('ALPHA_SCANNER_MAX_RISK', '45'))
     ALPHA_SCANNER_MAX_EVENTS = int(os.environ.get('ALPHA_SCANNER_MAX_EVENTS', '8'))
+    ALPHA_SCANNER_RETRY_SECONDS = int(os.environ.get('ALPHA_SCANNER_RETRY_SECONDS', '300'))
+    ALPHA_SCANNER_MONITOR_INTERVAL_MINUTES = int(os.environ.get('ALPHA_SCANNER_MONITOR_INTERVAL_MINUTES', '5'))
     CRYPTO_TIMES = ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00']  # 매 4시간
     MORNING_REPORT_TIME = os.environ.get('MORNING_REPORT_TIME', '09:00')   # 일별 상태 리포트
     MORNING_BRIEFING_TIME = os.environ.get('MORNING_BRIEFING_TIME', '09:05')  # AI 조간 브리핑
@@ -631,41 +633,54 @@ def run_alpha_scanner_monitor() -> bool:
     """Run the file-backed MiroFish scanner and Telegram only new events."""
     try:
         from app.services.mirofish.alpha_scanner import (
-            commit_scanner_alert_events,
-            run_scanner_alert_check,
+            run_scanner_realtime_monitor_check,
         )
 
-        result = run_scanner_alert_check(
+        result = run_scanner_realtime_monitor_check(
             {'limit': Config.ALPHA_SCANNER_LIMIT},
             min_alpha=Config.ALPHA_SCANNER_MIN_ALPHA,
             max_risk=Config.ALPHA_SCANNER_MAX_RISK,
             max_events=Config.ALPHA_SCANNER_MAX_EVENTS,
-            commit_state=False,
+            retry_seconds=Config.ALPHA_SCANNER_RETRY_SECONDS,
+            send_fn=lambda message: send_telegram_long(message, channel=False),
         )
-        events = result.get('events') or []
+        status = result.get('status')
         run = result.get('run') or {}
-        if events:
-            ok = send_telegram_long(result.get('message') or '', channel=False)
-            if ok:
-                commit_scanner_alert_events(result)
-                logger.info(
-                    "MiroFish alpha scanner alert sent: %s new events, run=%s",
-                    len(events),
-                    run.get('id'),
-                )
-            else:
-                logger.warning(
-                    "MiroFish alpha scanner alert send failed; state not committed, run=%s",
-                    run.get('id'),
-                )
-            return bool(ok)
-        commit_scanner_alert_events(result)
+        if status == 'sent':
+            logger.info(
+                "MiroFish alpha scanner alert sent: %s new events, run=%s",
+                result.get('new_event_count'),
+                run.get('id'),
+            )
+            return True
+        if status == 'send_failed':
+            logger.warning(
+                "MiroFish alpha scanner alert send failed; state not committed, run=%s",
+                run.get('id'),
+            )
+            return False
+        if status == 'retry_wait':
+            logger.warning(
+                "MiroFish alpha scanner retry wait: previous send failure still cooling down"
+            )
+            return True
+        if status == 'unchanged':
+            logger.info("MiroFish alpha scanner: source unchanged, scan skipped")
+            return True
+        if status == 'blocked':
+            logger.warning(
+                "MiroFish alpha scanner alert blocked: %s",
+                result.get('blocked_reason'),
+            )
+            return True
+
         logger.info(
-            "MiroFish alpha scanner: no new events, candidates=%s, run=%s",
+            "MiroFish alpha scanner: %s, candidates=%s, run=%s",
+            status or 'no_new_events',
             run.get('candidate_count'),
             run.get('id'),
         )
-        return True
+        return status in {'no_new_events', 'blocked', 'pending_send'}
     except Exception as e:
         logger.error(f"MiroFish alpha scanner monitor failed: {e}", exc_info=True)
         try:
@@ -2945,6 +2960,13 @@ class Scheduler:
         us_track_verify = _verify_file_today(os.path.join(Config.BASE_DIR, 'us_market', 'output', 'performance_report.json'))
         crypto_verify = _verify_file_today(os.path.join(Config.DATA_DIR, 'vcp_crypto_latest.json'))
 
+        if Config.ALPHA_SCANNER_ENABLED:
+            interval = max(0, int(Config.ALPHA_SCANNER_MONITOR_INTERVAL_MINUTES))
+            if interval:
+                schedule.every(interval).minutes.do(
+                    self._with_record(run_alpha_scanner_monitor, 'alpha_scanner_monitor',
+                                      max_retries=1, retry_delay=120))
+
         for day in weekdays:
             # 08:55 — KIS 토큰 웜업 (장 시작 5분 전 자격증명/네트워크 사전 검증)
             getattr(schedule.every(), day).at('08:55').do(
@@ -3043,6 +3065,11 @@ class Scheduler:
         logger.info(f"   🤖 평일 {Config.US_AI_CHART_TIME}  US AI Chart Analysis (Gemini Vision)")
         logger.info(f"   📰 평일 {Config.MORNING_BRIEFING_TIME}  AI 조간 브리핑 (Gemini)")
         logger.info(f"   📰 평일 {Config.CLOSING_BRIEFING_TIME}  AI 마감 브리핑 (Gemini)")
+        if Config.ALPHA_SCANNER_ENABLED:
+            logger.info(
+                f"   🎯 알파스캐너 {Config.ALPHA_SCANNER_MONITOR_INTERVAL_MINUTES}분 주기 변경 감시"
+                f" + 지정 시각 {', '.join(Config.ALPHA_SCANNER_TIMES)}"
+            )
         logger.info(f"   🎱 금요일 {Config.LOTTO_POST_TIME}  AI 로또 분석 게시")
         logger.info(f"   🇰🇷 토요일 {Config.HISTORY_TIME}  히스토리 수집")
         logger.info(f"   🪙 매 4시간 {', '.join(Config.CRYPTO_TIMES)}  Crypto 전체 파이프라인")
