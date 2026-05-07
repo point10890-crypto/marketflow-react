@@ -140,9 +140,10 @@ def test_alpha_scanner_creates_ranked_deterministic_run(tmp_path, monkeypatch):
     assert run['candidates'][0]['analysis_profile']['source_count'] == 4
     assert run['candidates'][0]['entry_plan']['risk_reward'] >= 2
     assert run['candidates'][0]['replay_context']['lookahead_safe'] is True
+    assert run['candidates'][0]['name'] == run['candidates'][0]['display_name']
     assert run['candidates'][0]['alpha_score'] > run['candidates'][1]['alpha_score']
     assert run['candidates'][1]['risk_score'] > run['candidates'][0]['risk_score']
-    assert {'rank', 'symbol', 'display_name', 'market', 'alpha_score', 'risk_score'} <= set(run['candidates'][0])
+    assert {'rank', 'symbol', 'name', 'display_name', 'market', 'alpha_score', 'risk_score'} <= set(run['candidates'][0])
     assert run['candidates'][0]['evidence']
 
     saved = alpha_scanner.read_scanner_run(run['id'])
@@ -192,6 +193,35 @@ def test_alpha_scanner_handles_missing_optional_artifacts(tmp_path, monkeypatch)
     assert run['freshness']['missing_files'] >= 3
     assert run['candidates'][0]['symbol'] == '000003'
     assert run['candidates'][0]['source'] == 'local_marketflow_artifacts'
+
+
+def test_alpha_scanner_prefers_canonical_stock_name_alias(tmp_path, monkeypatch):
+    _seed_artifacts(tmp_path)
+    (tmp_path / 'ticker_to_yahoo_map.csv').write_text(
+        '\n'.join([
+            'ticker,market,yahoo_ticker,name',
+            '000001,KOSPI,000001.KS,???',
+            '000002,KOSDAQ,000002.KQ,???',
+        ]),
+        encoding='utf-8',
+    )
+    (tmp_path / 'korean_stocks_list.csv').write_text(
+        '\n'.join([
+            'ticker,name,market',
+            '000001,정식알파,KOSPI',
+            '000002,정식베타,KOSDAQ',
+        ]),
+        encoding='utf-8',
+    )
+    monkeypatch.setattr(alpha_scanner, 'DATA_ROOT', str(tmp_path))
+    monkeypatch.setattr(alpha_scanner, 'SCANNER_RUNS_ROOT', str(tmp_path / 'runs'))
+
+    run = alpha_scanner.create_scanner_run({'limit': 5})
+
+    by_symbol = {candidate['symbol']: candidate for candidate in run['candidates']}
+    assert by_symbol['000001']['display_name'] == '정식알파'
+    assert by_symbol['000001']['name'] == '정식알파'
+    assert by_symbol['000001']['market'] == 'KOSPI'
 
 
 def test_alpha_scanner_can_filter_requested_symbols(tmp_path, monkeypatch):
@@ -520,9 +550,10 @@ def test_alpha_scanner_diagnostics_reports_missing_sources(tmp_path, monkeypatch
     )
 
     assert diagnostics['health'] == 'error'
-    assert diagnostics['source']['missing_files'] == 5
+    assert diagnostics['source']['missing_files'] == 6
     assert diagnostics['source_freshness']['status'] == 'missing'
-    assert len(diagnostics['source_files']) == 5
+    assert diagnostics['source_freshness']['missing_required_files'] == 5
+    assert len(diagnostics['source_files']) == 6
     assert diagnostics['schedule']['freshness']['status'] == 'missing'
     assert {issue['code'] for issue in diagnostics['issues']} >= {
         'missing_source_files',

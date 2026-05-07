@@ -249,6 +249,7 @@ export interface MiroFishScannerSourceFile {
 export interface MiroFishAlphaCandidate {
     rank: number;
     symbol: string;
+    name?: string;
     display_name: string;
     market?: string;
     alpha_score: number;

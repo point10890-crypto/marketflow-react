@@ -39,6 +39,11 @@ SOURCE_FILE_POLICIES = {
         'required': True,
         'max_age_days': 180,
     },
+    'korean_stocks_list.csv': {
+        'role': 'canonical_stock_names',
+        'required': False,
+        'max_age_days': 365,
+    },
     'screener_leading_latest.json': {
         'role': 'leading_screener',
         'required': True,
@@ -831,6 +836,7 @@ def _score_symbol(
     return {
         'rank': None,
         'symbol': symbol,
+        'name': display_name,
         'display_name': display_name,
         'market': mapped.get('market') or (jongga or {}).get('market') or (vcp or {}).get('market') or 'KR',
         'alpha_score': alpha,
@@ -879,18 +885,49 @@ def _score_symbol(
 def _load_ticker_map() -> dict[str, dict[str, Any]]:
     path = os.path.join(DATA_ROOT, 'ticker_to_yahoo_map.csv')
     rows: dict[str, dict[str, Any]] = {}
+    if os.path.isfile(path):
+        try:
+            with open(path, 'r', encoding='utf-8-sig', newline='') as f:
+                for row in csv.DictReader(f):
+                    symbol = _symbol(row.get('ticker'))
+                    if symbol:
+                        rows[symbol] = {
+                            'symbol': symbol,
+                            'market': row.get('market') or 'KR',
+                            'yahoo_ticker': row.get('yahoo_ticker') or '',
+                            'display_name': _clean_name(row.get('name')) or symbol,
+                        }
+        except (OSError, csv.Error, UnicodeDecodeError):
+            rows = {}
+
+    for symbol, canonical in _load_canonical_stock_names().items():
+        item = rows.setdefault(symbol, {
+            'symbol': symbol,
+            'market': canonical.get('market') or 'KR',
+            'yahoo_ticker': '',
+            'display_name': symbol,
+        })
+        if canonical.get('display_name'):
+            item['display_name'] = canonical['display_name']
+        if canonical.get('market') and item.get('market') in (None, '', 'KR'):
+            item['market'] = canonical['market']
+    return rows
+
+
+def _load_canonical_stock_names() -> dict[str, dict[str, str]]:
+    path = os.path.join(DATA_ROOT, 'korean_stocks_list.csv')
+    rows: dict[str, dict[str, str]] = {}
     if not os.path.isfile(path):
         return rows
     try:
         with open(path, 'r', encoding='utf-8-sig', newline='') as f:
             for row in csv.DictReader(f):
-                symbol = _symbol(row.get('ticker'))
-                if symbol:
+                symbol = _symbol(row.get('ticker') or row.get('code') or row.get('symbol'))
+                name = _clean_name(row.get('name') or row.get('stock_name') or row.get('display_name'))
+                if symbol and name:
                     rows[symbol] = {
-                        'symbol': symbol,
-                        'market': row.get('market') or 'KR',
-                        'yahoo_ticker': row.get('yahoo_ticker') or '',
-                        'display_name': row.get('name') or symbol,
+                        'display_name': name,
+                        'market': _clean_name(row.get('market')) or 'KR',
                     }
     except (OSError, csv.Error, UnicodeDecodeError):
         return {}
@@ -1122,14 +1159,16 @@ def _aggregate_freshness(source_files: list[dict[str, Any]]) -> dict[str, Any]:
     existing = [item for item in source_files if item.get('exists')]
     stale_count = sum(1 for item in existing if item.get('freshness') == 'stale')
     unknown_count = sum(1 for item in existing if item.get('freshness') == 'unknown')
+    required_files = [item for item in source_files if item.get('required')]
+    missing_required_count = sum(1 for item in required_files if not item.get('exists'))
     missing_count = len(source_files) - len(existing)
-    if not existing:
+    if not required_files or not any(item.get('exists') for item in required_files):
         status = 'missing'
     elif stale_count:
         status = 'stale'
     elif unknown_count:
         status = 'unknown'
-    elif missing_count:
+    elif missing_required_count:
         status = 'partial'
     else:
         status = 'fresh'
@@ -1137,6 +1176,7 @@ def _aggregate_freshness(source_files: list[dict[str, Any]]) -> dict[str, Any]:
         'status': status,
         'available_files': len(existing),
         'missing_files': missing_count,
+        'missing_required_files': missing_required_count,
         'stale_files': stale_count,
         'unknown_files': unknown_count,
     }
@@ -1716,6 +1756,11 @@ def _read_json(path: str) -> Any:
 def _symbol(value: Any) -> str:
     digits = re.sub(r'\D', '', str(value or ''))
     return digits.zfill(6)[-6:] if digits else ''
+
+
+def _clean_name(value: Any) -> str:
+    text = str(value or '').strip()
+    return text if text else ''
 
 
 def _float(value: Any) -> float:
