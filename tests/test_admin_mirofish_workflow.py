@@ -256,14 +256,19 @@ def test_build_workflow_top3_telegram_message_names_exact_targets():
             'graph': {'links': 42},
             'brain': {'score': 63, 'regime': 'neutral'},
             'reason': 'Alpha One final_score=88.5',
+            'outcome': {'status': 'pending', 'available_future_days': 0},
         }],
     })
 
-    assert 'MiroFish MCP Top 3' in message
+    assert 'MiroFish MCP Top 3 자동 분석' in message
     assert 'Alpha One' in message
     assert '000001' in message
-    assert 'Final score' in message
-    assert 'Freshness' in message
+    assert '종합 점수' in message
+    assert '데이터 신선도: <b>최신</b>' in message
+    assert 'CIO 판정: <b>매수</b> 75%' in message
+    assert '사후 검증: 검증 대기 (확보된 미래 거래일 0일)' in message
+    assert 'Completed' not in message
+    assert 'Forward check' not in message
 
 
 def test_commit_workflow_event_state_uses_workflow_state_file(tmp_path, monkeypatch):

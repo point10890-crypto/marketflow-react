@@ -14,7 +14,7 @@ import os
 import re
 import threading
 import time
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Any
 
 from app.services.mirofish import alpha_scanner, outcome_tracker, store
@@ -170,37 +170,37 @@ def run_workflow_monitor_check(payload: dict[str, Any] | None = None) -> dict[st
 
 
 def build_workflow_top3_telegram_message(workflow: dict[str, Any]) -> str:
-    """Build a Telegram summary for the completed scanner -> GraphRAG Top 3."""
+    """Build a Korean Telegram summary for the completed scanner -> GraphRAG Top 3."""
     top3 = [item for item in (workflow.get('top3') or []) if isinstance(item, dict)]
     analysis_runs = workflow.get('analysis_runs') or []
     summary = workflow.get('summary') or {}
     freshness = workflow.get('scanner_freshness') or {}
     freshness_status = freshness.get('status') if isinstance(freshness, dict) else ''
     lines = [
-        '<b>MiroFish MCP Top 3</b>',
-        'New scanner events were analyzed through multi-stock GraphRAG.',
-        f"Workflow: <code>{_escape(workflow.get('id'))}</code>",
-        f"Scanner run: <code>{_escape(workflow.get('scanner_run_id'))}</code>",
+        '<b>MiroFish MCP Top 3 자동 분석</b>',
+        '신규 스캐너 이벤트를 다중 종목 GraphRAG 분석으로 처리했습니다.',
+        f"워크플로우: <code>{_escape(workflow.get('id'))}</code>",
+        f"스캐너 실행: <code>{_escape(workflow.get('scanner_run_id'))}</code>",
         (
-        f"Events: <b>{_escape(workflow.get('event_count') or 0)}</b> / "
-        f"Analyzed: <b>{_escape(len(analysis_runs))}</b> / "
-        f"Top: <b>{_escape(summary.get('top_count') or len(top3))}</b>"
+        f"이벤트: <b>{_escape(workflow.get('event_count') or 0)}</b> / "
+        f"분석 완료: <b>{_escape(len(analysis_runs))}</b> / "
+        f"선별: <b>Top {_escape(summary.get('top_count') or len(top3))}</b>"
         ),
-        f"Freshness: <b>{_escape(freshness_status or 'unknown')}</b>",
+        f"데이터 신선도: <b>{_escape(_korean_freshness(freshness_status))}</b>",
     ]
     filters = workflow.get('filters') or {}
     if filters.get('batch_size') or filters.get('top_n'):
         lines.append(
-            f"Automation: scan batch {_escape(filters.get('batch_size') or workflow.get('event_count') or 0)} "
-            f"-> Top {_escape(filters.get('top_n') or summary.get('top_count') or len(top3))}"
+            f"자동화: 스캔 {_escape(filters.get('batch_size') or workflow.get('event_count') or 0)}종 "
+            f"-> Top {_escape(filters.get('top_n') or summary.get('top_count') or len(top3))} 선별"
         )
     if freshness_status and freshness_status != 'fresh':
-        lines.append('Source warning: cached/stale artifacts were used. Confirm freshness before execution.')
+        lines.append('데이터 경고: 캐시 또는 지연 데이터가 포함되었습니다. 실행 전 신선도를 다시 확인하세요.')
     if workflow.get('completed_at'):
-        lines.append(f"Completed: {_escape(workflow.get('completed_at'))}")
+        lines.append(f"완료 시각: {_escape(_format_kst(workflow.get('completed_at')))}")
     if not top3:
         lines.append('')
-        lines.append('No Top 3 result was produced. Check workflow artifacts before acting.')
+        lines.append('Top 3 결과가 생성되지 않았습니다. 실행 전 워크플로우 산출물을 확인하세요.')
         return '\n'.join(lines)
 
     for index, item in enumerate(top3, start=1):
@@ -218,41 +218,45 @@ def build_workflow_top3_telegram_message(workflow: dict[str, Any]) -> str:
             '',
             f"#{index} <b>{_escape(name)}</b> (<code>{_escape(symbol)}</code> {_escape(market)})",
             (
-                f"Final score: <b>{_format_metric(item.get('final_score'), decimals=2)}</b> / "
-                f"CIO: <b>{_escape(action)}</b> {_format_metric(confidence, suffix='%', decimals=0)}"
+                f"종합 점수: <b>{_format_metric(item.get('final_score'), decimals=2)}</b> / "
+                f"CIO 판정: <b>{_escape(_korean_action(action))}</b> "
+                f"{_format_metric(confidence, suffix='%', decimals=0)}"
             ),
             (
-                f"Scanner alpha/risk: "
+                f"스캐너 알파/리스크: "
                 f"<b>{_format_metric(candidate.get('alpha_score'), decimals=0)}</b> / "
                 f"<b>{_format_metric(candidate.get('risk_score'), decimals=0)}</b>"
             ),
             (
-                f"Graph links: {_format_metric(graph.get('links'), decimals=0)} / "
+                f"GraphRAG 연결: {_format_metric(graph.get('links'), decimals=0)} / "
                 f"Brain: {_format_metric(brain.get('score'), decimals=0)} "
-                f"{_escape(brain.get('regime') or '')}"
+                f"{_escape(_korean_regime(brain.get('regime')))}"
             ),
             (
-                f"Price: {_format_metric(price.get('current_price'), decimals=0)} "
+                f"가격: {_format_metric(price.get('current_price'), decimals=0)} "
                 f"{_escape(price.get('currency') or 'KRW')} / "
-                f"Date: {_escape(price.get('date') or '')}"
+                f"기준일: {_escape(price.get('date') or '')}"
             ),
         ])
-        reason = item.get('reason')
+        reason = _korean_reason(item, candidate, verdict)
         if reason:
-            lines.append(f"Reason: {_escape(reason)}")
+            lines.append(f"핵심 근거: {_escape(reason)}")
         outcome = item.get('outcome') or {}
         if outcome:
             if outcome.get('forward_return_pct') is not None:
-                hit_label = 'HIT' if outcome.get('hit') is True else 'MISS'
+                hit_label = '성공' if outcome.get('hit') is True else '실패'
                 lines.append(
-                    f"Forward check: T{_escape(outcome.get('primary_horizon_days') or '?')} "
+                    f"사후 검증: T{_escape(outcome.get('primary_horizon_days') or '?')} "
                     f"<b>{_format_signed_metric(outcome.get('forward_return_pct'), suffix='%')}</b> "
-                    f"/ {_escape(hit_label)} / lookahead-safe"
+                    f"/ {_escape(hit_label)} / 룩어헤드 방지"
                 )
             else:
+                available_days = outcome.get('available_future_days')
+                if available_days is None:
+                    available_days = 0
                 lines.append(
-                    f"Forward check: {_escape(outcome.get('status') or 'pending')} "
-                    f"({ _escape(outcome.get('available_future_days') or 0) } future days)"
+                    f"사후 검증: {_escape(_korean_outcome_status(outcome.get('status')))} "
+                    f"(확보된 미래 거래일 {_escape(available_days)}일)"
                 )
     return '\n'.join(lines)
 
@@ -757,8 +761,93 @@ def _number(value: Any) -> float:
         return 0.0
 
 
+def _format_kst(value: Any) -> str:
+    if not value:
+        return ''
+    text = str(value)
+    try:
+        normalized = text.replace('Z', '+00:00')
+        dt = datetime.fromisoformat(normalized)
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        kst = dt.astimezone(timezone(timedelta(hours=9)))
+        return kst.strftime('%Y-%m-%d %H:%M KST')
+    except Exception:
+        return text
+
+
+def _korean_freshness(status: Any) -> str:
+    mapping = {
+        'fresh': '최신',
+        'stale': '지연',
+        'unknown': '확인 필요',
+        'missing': '데이터 없음',
+    }
+    key = str(status or 'unknown').strip().lower()
+    return mapping.get(key, key or '확인 필요')
+
+
+def _korean_action(action: Any) -> str:
+    mapping = {
+        'BUY': '매수',
+        'SELL': '매도',
+        'HOLD': '보유',
+        'WATCH': '관망',
+        'BUY_CANDIDATE': '매수 후보',
+    }
+    key = str(action or 'HOLD').strip().upper()
+    return mapping.get(key, key)
+
+
+def _korean_regime(regime: Any) -> str:
+    mapping = {
+        'constructive_accumulation': '건설적 매집',
+        'neutral': '중립',
+        'risk_off': '위험 회피',
+        'risk_on': '위험 선호',
+        'distribution': '분산/매도 우위',
+    }
+    key = str(regime or '').strip().lower()
+    return mapping.get(key, str(regime or ''))
+
+
+def _korean_outcome_status(status: Any) -> str:
+    mapping = {
+        'pending': '검증 대기',
+        'partial': '부분 검증',
+        'evaluated': '검증 완료',
+        'missing_entry': '진입가 없음',
+        'not_evaluated': '미검증',
+        'failed': '검증 실패',
+    }
+    key = str(status or 'pending').strip().lower()
+    return mapping.get(key, key or '검증 대기')
+
+
+def _korean_reason(
+    item: dict[str, Any],
+    candidate: dict[str, Any],
+    verdict: dict[str, Any],
+) -> str:
+    profile = candidate.get('analysis_profile') or {}
+    parts = [
+        f"최종점수 {_format_metric(item.get('final_score'), decimals=2)}",
+        f"알파 {_format_metric(candidate.get('alpha_score'), decimals=0)}",
+        f"리스크 {_format_metric(candidate.get('risk_score'), decimals=0)}",
+        (
+            f"CIO {_korean_action(verdict.get('action') or verdict.get('label'))} "
+            f"{_format_metric(verdict.get('confidence_pct'), suffix='%', decimals=0)}"
+        ),
+    ]
+    if profile.get('trend_20d_pct') is not None:
+        parts.append(f"T20 {_format_signed_metric(profile.get('trend_20d_pct'), suffix='%')}")
+    if profile.get('volume_ratio') is not None:
+        parts.append(f"거래량 {_format_metric(profile.get('volume_ratio'), decimals=2)}배")
+    return ', '.join(parts)
+
+
 def _escape(value: Any) -> str:
-    return html.escape(str(value or ''), quote=False)
+    return html.escape('' if value is None else str(value), quote=False)
 
 
 def _format_metric(value: Any, *, suffix: str = '', decimals: int = 0) -> str:
