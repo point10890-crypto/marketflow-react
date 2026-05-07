@@ -479,6 +479,7 @@ def run_scanner_alert_check(
     actions: tuple[str, ...] = ('BUY_CANDIDATE',),
     max_events: int = DEFAULT_ALERT_MAX_EVENTS,
     commit_state: bool = True,
+    block_on_stale: bool = True,
 ) -> dict[str, Any]:
     """Create a scanner run and return only newly-qualified alert events.
 
@@ -493,7 +494,7 @@ def run_scanner_alert_check(
     state = _read_alert_state(state_file)
     freshness_status = ((run.get('freshness') or {}).get('status') or 'unknown').lower()
     blocked_reason = None
-    if freshness_status in ALERT_BLOCKING_FRESHNESS:
+    if block_on_stale and freshness_status in ALERT_BLOCKING_FRESHNESS:
         events = []
         blocked_reason = f'source_freshness:{freshness_status}'
     else:
@@ -524,6 +525,11 @@ def run_scanner_alert_check(
         'new_event_count': len(events),
         'alert_blocked': bool(blocked_reason),
         'blocked_reason': blocked_reason,
+        'source_warning': (
+            f'source_freshness:{freshness_status}'
+            if not block_on_stale and freshness_status in ALERT_BLOCKING_FRESHNESS
+            else None
+        ),
     }
 
 

@@ -822,6 +822,9 @@ async function _authFetch(url: string, options: RequestInit, timeoutMs: number =
         return response;
     } catch (error) {
         clearTimeout(timeoutId);
+        if (error instanceof DOMException && error.name === 'AbortError') {
+            throw new Error(`API timeout: ${url}`);
+        }
         console.error(`[authFetch Error] ${url}:`, error);
         throw error;
     }

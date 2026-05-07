@@ -391,6 +391,85 @@ def get_scanner_candidates(run_id):
     return jsonify(candidates)
 
 
+@admin_mirofish_bp.route('/workflow/status', methods=['GET'])
+@admin_required
+def get_workflow_status():
+    return jsonify(mirofish.get_workflow_status())
+
+
+@admin_mirofish_bp.route('/workflows', methods=['GET'])
+@admin_required
+def list_workflows():
+    try:
+        limit = int(request.args.get('limit', 20))
+    except (TypeError, ValueError):
+        return jsonify({'error': 'limit must be an integer'}), 400
+    limit = max(1, min(limit, 100))
+    return jsonify({'workflows': mirofish.list_workflows(limit=limit)})
+
+
+@admin_mirofish_bp.route('/workflows/latest', methods=['GET'])
+@admin_required
+def get_latest_workflow():
+    workflow = mirofish.read_latest_workflow()
+    if workflow is None:
+        return jsonify({'error': 'workflow not found'}), 404
+    return jsonify(workflow)
+
+
+@admin_mirofish_bp.route('/workflows/<workflow_id>', methods=['GET'])
+@admin_required
+def get_workflow(workflow_id):
+    try:
+        workflow = mirofish.read_workflow(workflow_id)
+    except ValueError as exc:
+        return jsonify({'error': str(exc)}), 400
+    if workflow is None:
+        return jsonify({'error': 'workflow not found'}), 404
+    return jsonify(workflow)
+
+
+@admin_mirofish_bp.route('/workflows/<workflow_id>/outcomes', methods=['GET'])
+@admin_required
+def get_workflow_outcomes(workflow_id):
+    try:
+        outcomes = mirofish.read_workflow_outcomes(workflow_id)
+        if outcomes is None:
+            outcomes = mirofish.refresh_workflow_outcomes(workflow_id)
+    except ValueError as exc:
+        return jsonify({'error': str(exc)}), 404
+    return jsonify(outcomes)
+
+
+@admin_mirofish_bp.route('/workflows/<workflow_id>/outcomes/refresh', methods=['POST'])
+@admin_required
+def refresh_workflow_outcomes(workflow_id):
+    payload = request.get_json(silent=True) or {}
+    horizons = payload.get('horizons') if isinstance(payload.get('horizons'), list) else None
+    try:
+        outcomes = mirofish.refresh_workflow_outcomes(workflow_id, horizons=horizons)
+    except ValueError as exc:
+        return jsonify({'error': str(exc)}), 404
+    return jsonify(outcomes)
+
+
+@admin_mirofish_bp.route('/workflow/scan-analyze', methods=['POST'])
+@admin_required
+def start_workflow_scan_analyze():
+    payload = request.get_json(silent=True) or {}
+    dry_run = _payload_bool(payload, 'dry_run', False)
+    try:
+        result = mirofish.start_workflow_from_scanner_events(
+            payload,
+            async_mode=not _payload_bool(payload, 'sync', False),
+            commit_event_state=_payload_bool(payload, 'commit_event_state', not dry_run),
+        )
+    except ValueError as exc:
+        return jsonify({'error': str(exc)}), 400
+    code = 202 if result.get('status') in {'queued', 'running'} else 200
+    return jsonify(result), code
+
+
 @admin_mirofish_bp.route('/deepseek/status', methods=['GET'])
 @admin_required
 def deepseek_status():

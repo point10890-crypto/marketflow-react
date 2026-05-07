@@ -427,6 +427,37 @@ def test_alpha_scanner_alert_check_blocks_stale_source_alerts(tmp_path, monkeypa
     assert '알림 차단' in result['message']
 
 
+def test_alpha_scanner_alert_check_can_allow_stale_for_workflow_batches(tmp_path, monkeypatch):
+    _seed_artifacts(tmp_path)
+    monkeypatch.setattr(alpha_scanner, 'DATA_ROOT', str(tmp_path))
+    monkeypatch.setattr(alpha_scanner, 'SCANNER_RUNS_ROOT', str(tmp_path / 'runs'))
+    _write_json(tmp_path / 'vcp_kr_latest.json', {
+        'metadata': {'generated_at': '2026-01-01T00:00:00+00:00'},
+        'signals': [
+            {
+                'symbol': '000001',
+                'name': 'Alpha One',
+                'market': 'KR',
+                'composite': {'composite_score': 90, 'entry_ready': 'True'},
+            },
+        ],
+    })
+
+    result = alpha_scanner.run_scanner_alert_check(
+        {'limit': 5},
+        state_path=str(tmp_path / 'alert_state.json'),
+        min_alpha=70,
+        max_risk=45,
+        commit_state=False,
+        block_on_stale=False,
+    )
+
+    assert result['run']['freshness']['status'] == 'stale'
+    assert result['alert_blocked'] is False
+    assert result['source_warning'] == 'source_freshness:stale'
+    assert result['new_event_count'] == 1
+
+
 def test_alpha_scanner_realtime_monitor_sends_after_source_change(tmp_path, monkeypatch):
     _seed_artifacts(tmp_path)
     monkeypatch.setattr(alpha_scanner, 'DATA_ROOT', str(tmp_path))
@@ -588,3 +619,5 @@ def test_admin_mirofish_scanner_routes_are_registered():
     assert '/api/admin/mirofish/scanner/runs/latest' in rules
     assert '/api/admin/mirofish/scanner/runs/<run_id>' in rules
     assert '/api/admin/mirofish/scanner/runs/<run_id>/candidates' in rules
+    assert '/api/admin/mirofish/workflow/status' in rules
+    assert '/api/admin/mirofish/workflow/scan-analyze' in rules

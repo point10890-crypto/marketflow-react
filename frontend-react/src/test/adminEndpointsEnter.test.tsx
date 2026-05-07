@@ -20,6 +20,12 @@ const mockApi = vi.hoisted(() => ({
   createDeepSeekScannerSummary: vi.fn(),
   summarizeScannerRunWithDeepSeek: vi.fn(),
   sendScannerDeepSeekSummaryTelegram: vi.fn(),
+  getWorkflowStatus: vi.fn(),
+  getWorkflow: vi.fn(),
+  getLatestWorkflow: vi.fn(),
+  getWorkflowOutcomes: vi.fn(),
+  refreshWorkflowOutcomes: vi.fn(),
+  startWorkflowScanAnalyze: vi.fn(),
 }));
 
 vi.mock('@/lib/mirofishApi', () => ({
@@ -66,6 +72,109 @@ beforeEach(() => {
     provider: 'deepseek',
     configured: true,
     default_model: 'deepseek-v4-flash',
+  });
+  mockApi.getWorkflowStatus.mockResolvedValue({
+    ready: true,
+    latest_workflow: {
+      id: 'mcp_test',
+      status: 'completed',
+      outcome_summary: {
+        top3_evaluated_count: 1,
+        top3_hit_rate_pct: 100,
+        average_forward_return_pct: 10,
+        pending_count: 0,
+        lookahead_safe: true,
+      },
+      top3: [{
+        symbol: '000001',
+        target: 'Alpha One',
+        final_score: 91,
+        verdict: { action: 'BUY', confidence_pct: 80 },
+        outcome: {
+          status: 'partial',
+          entry_date: '2026-05-07',
+          primary_horizon_days: 5,
+          forward_return_pct: 10,
+          hit: true,
+          lookahead_safe: true,
+        },
+      }],
+    },
+  });
+  mockApi.getWorkflow.mockResolvedValue({
+    id: 'mcp_test',
+    status: 'completed',
+    outcome_summary: {
+      top3_evaluated_count: 1,
+      top3_hit_rate_pct: 100,
+      average_forward_return_pct: 10,
+      pending_count: 0,
+      lookahead_safe: true,
+    },
+    top3: [{
+      symbol: '000001',
+      target: 'Alpha One',
+      final_score: 91,
+      verdict: { action: 'BUY', confidence_pct: 80 },
+      outcome: {
+        status: 'partial',
+        entry_date: '2026-05-07',
+        primary_horizon_days: 5,
+        forward_return_pct: 10,
+        hit: true,
+        lookahead_safe: true,
+      },
+    }],
+  });
+  mockApi.getLatestWorkflow.mockResolvedValue({
+    id: 'mcp_test',
+    status: 'completed',
+    outcome_summary: {
+      top3_evaluated_count: 1,
+      top3_hit_rate_pct: 100,
+      average_forward_return_pct: 10,
+      pending_count: 0,
+      lookahead_safe: true,
+    },
+    top3: [{
+      symbol: '000001',
+      target: 'Alpha One',
+      final_score: 91,
+      verdict: { action: 'BUY', confidence_pct: 80 },
+      outcome: {
+        status: 'partial',
+        entry_date: '2026-05-07',
+        primary_horizon_days: 5,
+        forward_return_pct: 10,
+        hit: true,
+        lookahead_safe: true,
+      },
+    }],
+  });
+  mockApi.startWorkflowScanAnalyze.mockResolvedValue({
+    id: 'mcp_test',
+    status: 'completed',
+    outcome_summary: {
+      top3_evaluated_count: 1,
+      top3_hit_rate_pct: 100,
+      average_forward_return_pct: 10,
+      pending_count: 0,
+      lookahead_safe: true,
+    },
+    top3: [{
+      symbol: '000001',
+      target: 'Alpha One',
+      final_score: 91,
+      verdict: { action: 'BUY', confidence_pct: 80 },
+      outcome: {
+        status: 'partial',
+        entry_date: '2026-05-07',
+        primary_horizon_days: 5,
+        forward_return_pct: 10,
+        hit: true,
+        lookahead_safe: true,
+      },
+    }],
   });
   mockApi.listRuns.mockResolvedValue({ runs: [] });
   mockApi.searchTargets.mockResolvedValue({
@@ -204,6 +313,10 @@ describe('AdminEndpointsPage analysis start input', () => {
     expect(await screen.findByText(/Last/)).toBeTruthy();
     expect(await screen.findByText(/Next/)).toBeTruthy();
     expect(await screen.findByText(/Fresh fresh/i)).toBeTruthy();
+    expect(await screen.findByText('Forward Return')).toBeTruthy();
+    expect(await screen.findByText('+10.00%')).toBeTruthy();
+    expect(await screen.findByText(/T5 \+10.00%/)).toBeTruthy();
+    expect(await screen.findByText(/replay-safe after 2026-05-07/i)).toBeTruthy();
   });
 
   it('starts analysis when Enter is pressed after a chosung query', async () => {
@@ -308,6 +421,24 @@ describe('AdminEndpointsPage analysis start input', () => {
       }));
       expect(mockApi.startRun).toHaveBeenCalledWith(expect.objectContaining({
         target: 'Alpha One',
+      }));
+    });
+  });
+
+  it('runs MCP Top 3 as a forced batch analysis of current candidates', async () => {
+    await renderPage();
+
+    fireEvent.click(screen.getByRole('button', { name: /Run MCP Top 3/i }));
+
+    await waitFor(() => {
+      expect(mockApi.startWorkflowScanAnalyze).toHaveBeenCalledWith(expect.objectContaining({
+        force: true,
+        min_alpha: 50,
+        max_risk: 65,
+        actions: ['BUY_CANDIDATE', 'WATCH'],
+        max_events: 5,
+        top_n: 3,
+        allow_stale_sources: true,
       }));
     });
   });

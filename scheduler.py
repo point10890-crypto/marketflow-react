@@ -333,6 +333,17 @@ class Config:
     ALPHA_SCANNER_MAX_EVENTS = int(os.environ.get('ALPHA_SCANNER_MAX_EVENTS', '8'))
     ALPHA_SCANNER_RETRY_SECONDS = int(os.environ.get('ALPHA_SCANNER_RETRY_SECONDS', '300'))
     ALPHA_SCANNER_MONITOR_INTERVAL_MINUTES = int(os.environ.get('ALPHA_SCANNER_MONITOR_INTERVAL_MINUTES', '5'))
+    MIROFISH_WORKFLOW_ENABLED = os.environ.get('MIROFISH_WORKFLOW_ENABLED', 'true').lower() == 'true'
+    MIROFISH_WORKFLOW_MIN_ALPHA = float(os.environ.get('MIROFISH_WORKFLOW_MIN_ALPHA', '50'))
+    MIROFISH_WORKFLOW_MAX_RISK = float(os.environ.get('MIROFISH_WORKFLOW_MAX_RISK', '65'))
+    MIROFISH_WORKFLOW_ACTIONS = os.environ.get('MIROFISH_WORKFLOW_ACTIONS', 'BUY_CANDIDATE,WATCH')
+    MIROFISH_WORKFLOW_AGENT_COUNT = int(os.environ.get('MIROFISH_WORKFLOW_AGENT_COUNT', '10'))
+    MIROFISH_WORKFLOW_BATCH_SIZE = int(os.environ.get('MIROFISH_WORKFLOW_BATCH_SIZE', '5'))
+    MIROFISH_WORKFLOW_TOP_N = int(os.environ.get('MIROFISH_WORKFLOW_TOP_N', '3'))
+    MIROFISH_WORKFLOW_MAX_PARALLEL = int(os.environ.get('MIROFISH_WORKFLOW_MAX_PARALLEL', '3'))
+    MIROFISH_WORKFLOW_ALLOW_STALE_SOURCES = os.environ.get('MIROFISH_WORKFLOW_ALLOW_STALE_SOURCES', 'true').lower() == 'true'
+    MIROFISH_WORKFLOW_TELEGRAM_ENABLED = os.environ.get('MIROFISH_WORKFLOW_TELEGRAM_ENABLED', 'true').lower() == 'true'
+    MIROFISH_WORKFLOW_TELEGRAM_CHANNEL = os.environ.get('MIROFISH_WORKFLOW_TELEGRAM_CHANNEL', 'false').lower() == 'true'
     CRYPTO_TIMES = ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00']  # 매 4시간
     MORNING_REPORT_TIME = os.environ.get('MORNING_REPORT_TIME', '09:00')   # 일별 상태 리포트
     MORNING_BRIEFING_TIME = os.environ.get('MORNING_BRIEFING_TIME', '09:05')  # AI 조간 브리핑
@@ -686,6 +697,85 @@ def run_alpha_scanner_monitor() -> bool:
         try:
             send_telegram(
                 f"MiroFish alpha scanner failed\n{type(e).__name__}: {e}",
+                channel=False,
+            )
+        except Exception:
+            pass
+        return False
+
+
+def run_mirofish_workflow_monitor() -> bool:
+    """Run scanner-event -> GraphRAG batch -> Top 3 workflow when new events appear."""
+    try:
+        from app.services.mirofish.workflow import (
+            build_workflow_top3_telegram_message,
+            commit_workflow_event_state,
+            run_workflow_monitor_check,
+        )
+
+        result = run_workflow_monitor_check({
+            'limit': Config.ALPHA_SCANNER_LIMIT,
+            'min_alpha': Config.MIROFISH_WORKFLOW_MIN_ALPHA,
+            'max_risk': Config.MIROFISH_WORKFLOW_MAX_RISK,
+            'actions': Config.MIROFISH_WORKFLOW_ACTIONS,
+            'max_events': Config.MIROFISH_WORKFLOW_BATCH_SIZE,
+            'agent_count': Config.MIROFISH_WORKFLOW_AGENT_COUNT,
+            'top_n': Config.MIROFISH_WORKFLOW_TOP_N,
+            'max_parallel': Config.MIROFISH_WORKFLOW_MAX_PARALLEL,
+            'allow_stale_sources': Config.MIROFISH_WORKFLOW_ALLOW_STALE_SOURCES,
+            'mode': 'full',
+            'sync': True,
+            'commit_event_state': False,
+        })
+        status = result.get('status')
+        if status == 'completed':
+            top3 = result.get('top3') or []
+            if Config.MIROFISH_WORKFLOW_TELEGRAM_ENABLED and top3:
+                message = build_workflow_top3_telegram_message(result)
+                sent = send_telegram_long(
+                    message,
+                    channel=Config.MIROFISH_WORKFLOW_TELEGRAM_CHANNEL,
+                )
+                if not sent:
+                    logger.warning(
+                        "MiroFish MCP workflow Telegram failed; event state not committed, workflow=%s",
+                        result.get('id'),
+                    )
+                    return False
+                result['telegram_sent'] = True
+                result['telegram_sent_at'] = datetime.now().isoformat()
+                logger.info(
+                    "MiroFish MCP workflow Top %s Telegram sent: workflow=%s scanner=%s",
+                    len(top3),
+                    result.get('id'),
+                    result.get('scanner_run_id'),
+                )
+            elif not Config.MIROFISH_WORKFLOW_TELEGRAM_ENABLED:
+                result['telegram_sent'] = False
+                result['telegram_skipped_reason'] = 'disabled'
+            commit_workflow_event_state(result)
+            return True
+        if status in {'queued', 'running'}:
+            logger.info(
+                "MiroFish MCP workflow started: workflow=%s candidates=%s scanner=%s",
+                result.get('id'),
+                result.get('event_count'),
+                result.get('scanner_run_id'),
+            )
+            return True
+        if status == 'no_new_events':
+            logger.info("MiroFish MCP workflow: no new scanner events")
+            return True
+        if status == 'blocked':
+            logger.warning("MiroFish MCP workflow blocked: %s", result.get('blocked_reason'))
+            return True
+        logger.info("MiroFish MCP workflow status=%s", status)
+        return bool(result.get('ok'))
+    except Exception as e:
+        logger.error(f"MiroFish MCP workflow monitor failed: {e}", exc_info=True)
+        try:
+            send_telegram(
+                f"MiroFish MCP workflow failed\n{type(e).__name__}: {e}",
                 channel=False,
             )
         except Exception:
@@ -2966,6 +3056,10 @@ class Scheduler:
                 schedule.every(interval).minutes.do(
                     self._with_record(run_alpha_scanner_monitor, 'alpha_scanner_monitor',
                                       max_retries=1, retry_delay=120))
+                if Config.MIROFISH_WORKFLOW_ENABLED:
+                    schedule.every(interval).minutes.do(
+                        self._with_record(run_mirofish_workflow_monitor, 'mirofish_workflow_monitor',
+                                          max_retries=1, retry_delay=120))
 
         for day in weekdays:
             # 08:55 — KIS 토큰 웜업 (장 시작 5분 전 자격증명/네트워크 사전 검증)
@@ -3070,6 +3164,12 @@ class Scheduler:
                 f"   🎯 알파스캐너 {Config.ALPHA_SCANNER_MONITOR_INTERVAL_MINUTES}분 주기 변경 감시"
                 f" + 지정 시각 {', '.join(Config.ALPHA_SCANNER_TIMES)}"
             )
+            if Config.MIROFISH_WORKFLOW_ENABLED:
+                logger.info(
+                    f"   🧠 MiroFish MCP workflow {Config.ALPHA_SCANNER_MONITOR_INTERVAL_MINUTES}분 주기"
+                    f" 신규 {Config.MIROFISH_WORKFLOW_BATCH_SIZE}종 다중 GraphRAG 분석 + Top {Config.MIROFISH_WORKFLOW_TOP_N}"
+                    f" (alpha>={Config.MIROFISH_WORKFLOW_MIN_ALPHA:g}, risk<={Config.MIROFISH_WORKFLOW_MAX_RISK:g})"
+                )
         logger.info(f"   🎱 금요일 {Config.LOTTO_POST_TIME}  AI 로또 분석 게시")
         logger.info(f"   🇰🇷 토요일 {Config.HISTORY_TIME}  히스토리 수집")
         logger.info(f"   🪙 매 4시간 {', '.join(Config.CRYPTO_TIMES)}  Crypto 전체 파이프라인")

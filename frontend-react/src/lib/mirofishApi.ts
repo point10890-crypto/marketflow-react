@@ -272,6 +272,65 @@ export interface MiroFishAlphaCandidate {
     trading_value?: number;
     ranking_score?: number;
     score_breakdown?: Record<string, number>;
+    outcome?: MiroFishOutcomeItem;
+}
+
+export interface MiroFishOutcomeHorizon {
+    horizon_days?: number;
+    exit_date?: string;
+    exit_price?: number;
+    return_pct?: number;
+}
+
+export interface MiroFishOutcomeItem {
+    symbol?: string;
+    name?: string;
+    rank?: number;
+    status?: string;
+    reason?: string;
+    entry_date?: string;
+    entry_price?: number;
+    available_future_days?: number;
+    primary_horizon_days?: number;
+    forward_return_pct?: number | null;
+    max_forward_return_pct?: number;
+    max_drawdown_pct?: number;
+    hit?: boolean | null;
+    stopped?: boolean;
+    lookahead_safe?: boolean;
+    horizons?: Record<string, MiroFishOutcomeHorizon>;
+}
+
+export interface MiroFishOutcomeSummary {
+    status?: string;
+    evaluated_count?: number;
+    pending_count?: number;
+    hit_count?: number;
+    miss_count?: number;
+    hit_rate_pct?: number | null;
+    top3_evaluated_count?: number;
+    top3_hit_count?: number;
+    top3_hit_rate_pct?: number | null;
+    average_forward_return_pct?: number | null;
+    best_symbol?: string | null;
+    best_return_pct?: number | null;
+    worst_symbol?: string | null;
+    worst_return_pct?: number | null;
+    lookahead_safe?: boolean;
+}
+
+export interface MiroFishWorkflowOutcomes {
+    workflow_id?: string;
+    status?: string;
+    generated_at?: string;
+    lookahead_safe?: boolean;
+    method?: string;
+    horizons?: number[];
+    target_return_pct?: number;
+    stop_loss_pct?: number;
+    price_history?: Record<string, any>;
+    items?: MiroFishOutcomeItem[];
+    summary?: MiroFishOutcomeSummary;
 }
 
 export interface MiroFishScannerRun {
@@ -387,6 +446,68 @@ export interface MiroFishDeepSeekTelegramResponse {
     fallback_reason?: string | null;
     message_chars?: number;
     summary?: MiroFishDeepSeekSummaryResult;
+}
+
+export interface MiroFishWorkflowAnalysisResult {
+    candidate?: Partial<MiroFishAlphaCandidate>;
+    status?: string;
+    run_id?: string;
+    target?: string;
+    symbol?: string;
+    market?: string;
+    verdict?: {
+        action?: string;
+        confidence_pct?: number;
+        bullish?: number;
+        neutral?: number;
+        bearish?: number;
+        target?: string;
+        summary?: string;
+    };
+    graph?: Record<string, any>;
+    brain?: Record<string, any>;
+    final_score?: number;
+    forward_return_pct?: number | null;
+    outcome_status?: string;
+    hit?: boolean | null;
+    outcome?: MiroFishOutcomeItem;
+    reason?: string;
+    artifacts?: Record<string, string>;
+}
+
+export interface MiroFishWorkflow {
+    ok?: boolean;
+    id?: string;
+    status?: string;
+    type?: string;
+    created_at?: string;
+    completed_at?: string;
+    scanner_run_id?: string;
+    scanner_freshness?: Record<string, any>;
+    scanner_candidate_count?: number;
+    event_count?: number;
+    candidate_count?: number;
+    analyzed_count?: number;
+    candidates?: Partial<MiroFishAlphaCandidate>[];
+    analysis_runs?: MiroFishWorkflowAnalysisResult[];
+    top3?: MiroFishWorkflowAnalysisResult[];
+    summary?: Record<string, any>;
+    outcome_status?: string;
+    outcome_summary?: MiroFishOutcomeSummary;
+    outcomes?: MiroFishWorkflowOutcomes;
+    progress?: Record<string, any>;
+    filters?: Record<string, any>;
+    blocked_reason?: string | null;
+    alert_blocked?: boolean;
+    links?: Record<string, string>;
+}
+
+export interface MiroFishWorkflowStatus {
+    service?: string;
+    ready?: boolean;
+    mode?: string;
+    latest_workflow?: MiroFishWorkflow | null;
+    checked_at?: string;
 }
 
 type RawObject = Record<string, any>;
@@ -907,7 +1028,7 @@ export const mirofishApi = {
         return unwrapRun(payload, request.target);
     },
     startScannerRun: async (request: MiroFishScannerRunRequest = {}) => normalizeScannerRun(
-        await postAuthAPI<any>('/api/admin/mirofish/scanner/runs', request, undefined, 60000),
+        await postAuthAPI<any>('/api/admin/mirofish/scanner/runs', request, undefined, 180000),
     ),
     getScannerStatus: async () => normalizeScannerStatus(
         await fetchAuthAPI<any>('/api/admin/mirofish/scanner/status'),
@@ -946,5 +1067,25 @@ export const mirofishApi = {
         request,
         undefined,
         120000,
+    ),
+    getWorkflowStatus: async () => fetchAuthAPI<MiroFishWorkflowStatus>('/api/admin/mirofish/workflow/status'),
+    getLatestWorkflow: async () => fetchAuthAPI<MiroFishWorkflow>('/api/admin/mirofish/workflows/latest'),
+    getWorkflow: async (workflowId: string) => fetchAuthAPI<MiroFishWorkflow>(
+        `/api/admin/mirofish/workflows/${encodeURIComponent(workflowId)}`,
+    ),
+    getWorkflowOutcomes: async (workflowId: string) => fetchAuthAPI<MiroFishWorkflowOutcomes>(
+        `/api/admin/mirofish/workflows/${encodeURIComponent(workflowId)}/outcomes`,
+    ),
+    refreshWorkflowOutcomes: async (workflowId: string, request: { horizons?: number[] } = {}) => postAuthAPI<MiroFishWorkflowOutcomes>(
+        `/api/admin/mirofish/workflows/${encodeURIComponent(workflowId)}/outcomes/refresh`,
+        request,
+        undefined,
+        120000,
+    ),
+    startWorkflowScanAnalyze: async (request: Record<string, any> = {}) => postAuthAPI<MiroFishWorkflow>(
+        '/api/admin/mirofish/workflow/scan-analyze',
+        request,
+        undefined,
+        300000,
     ),
 };

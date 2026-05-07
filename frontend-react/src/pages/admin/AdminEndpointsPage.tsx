@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type CompositionEvent as ReactCompositionEvent, type KeyboardEvent as ReactKeyboardEvent } from 'react';
-import { MiroFishAlphaCandidate, MiroFishAnalyst, MiroFishDeepSeekStatus, MiroFishDeepSeekSummaryResult, MiroFishLayer, MiroFishLog, MiroFishNode, MiroFishRun, MiroFishScannerRun, MiroFishScannerStatus, MiroFishStatus, MiroFishTargetSnapshot, mirofishApi } from '@/lib/mirofishApi';
+import { MiroFishAlphaCandidate, MiroFishAnalyst, MiroFishDeepSeekStatus, MiroFishDeepSeekSummaryResult, MiroFishLayer, MiroFishLog, MiroFishNode, MiroFishRun, MiroFishScannerRun, MiroFishScannerStatus, MiroFishStatus, MiroFishTargetSnapshot, MiroFishWorkflow, mirofishApi } from '@/lib/mirofishApi';
 
 const agentCounts = [3, 7, 10, 15];
 const defaultTarget = '삼성전자';
@@ -46,7 +46,8 @@ const phaseNumberById: Record<string, number> = {
 type ApiState = 'checking' | 'ready' | 'error' | 'running';
 type AlphaScannerState = 'idle' | 'loading' | 'running' | 'ready' | 'error';
 type DeepSeekPanelState = 'idle' | 'checking' | 'summarizing' | 'ready' | 'sending' | 'sent' | 'error';
-type EndpointKey = 'status' | 'dataSources' | 'resolve' | 'history' | 'createRun' | 'runDetail' | 'graph' | 'events' | 'report' | 'deepseek';
+type WorkflowPanelState = 'idle' | 'running' | 'completed' | 'no_new_events' | 'blocked' | 'error';
+type EndpointKey = 'status' | 'dataSources' | 'resolve' | 'history' | 'createRun' | 'runDetail' | 'graph' | 'events' | 'report' | 'deepseek' | 'workflow';
 type EndpointStatus = 'idle' | 'loading' | 'ok' | 'error';
 type TargetCandidate = NonNullable<MiroFishTargetSnapshot['candidates']>[number];
 
@@ -61,6 +62,7 @@ const endpointDefinitions: Array<{ key: EndpointKey; method: string; path: strin
     { key: 'events', method: 'GET', path: '/api/admin/mirofish/runs/{id}/events', title: 'Event Feed', icon: 'fa-stream', color: 'text-amber-300' },
     { key: 'report', method: 'GET', path: '/api/admin/mirofish/runs/{id}/report', title: 'Report', icon: 'fa-scroll', color: 'text-rose-300' },
     { key: 'deepseek', method: 'POST', path: '/api/admin/mirofish/deepseek/scanner-summary', title: 'DeepSeek V2', icon: 'fa-wand-magic-sparkles', color: 'text-emerald-300' },
+    { key: 'workflow', method: 'POST', path: '/api/admin/mirofish/workflow/scan-analyze', title: 'MCP Top 3', icon: 'fa-network-wired', color: 'text-cyan-300' },
 ];
 
 function clampCount(value: unknown, fallback: number) {
@@ -148,6 +150,31 @@ function formatPrice(value: unknown): string {
             ? Number(value.replace(/,/g, ''))
             : NaN;
     return Number.isFinite(numeric) ? numeric.toLocaleString('ko-KR') : '--';
+}
+
+function formatSignedPct(value: unknown): string {
+    const numeric = Number(value);
+    if (!Number.isFinite(numeric)) return '--';
+    return `${numeric >= 0 ? '+' : ''}${numeric.toFixed(2)}%`;
+}
+
+function workflowOutcomeSummary(workflow?: MiroFishWorkflow | null): Record<string, any> {
+    const direct = workflow?.outcome_summary;
+    if (direct && typeof direct === 'object') return direct as Record<string, any>;
+    const nested = workflow?.summary?.outcome;
+    if (nested && typeof nested === 'object') return nested as Record<string, any>;
+    const outcomes = workflow?.outcomes;
+    if (outcomes?.summary && typeof outcomes.summary === 'object') return outcomes.summary as Record<string, any>;
+    return {};
+}
+
+function outcomeTone(status?: string, hit?: boolean | null): string {
+    if (hit === true) return 'border-emerald-300/25 bg-emerald-300/12 text-emerald-100';
+    if (hit === false) return 'border-rose-300/25 bg-rose-300/12 text-rose-100';
+    const normalized = String(status || '').toLowerCase();
+    if (normalized === 'partial') return 'border-cyan-300/25 bg-cyan-300/12 text-cyan-100';
+    if (normalized === 'pending') return 'border-amber-300/25 bg-amber-300/12 text-amber-100';
+    return 'border-white/10 bg-white/8 text-slate-300';
 }
 
 function visibleLayers(run: MiroFishRun, phase: number): MiroFishLayer[] {
@@ -254,7 +281,11 @@ function AlphaBoardPanel({
     deepSeekState,
     deepSeekSummary,
     deepSeekErrorText,
+    workflow,
+    workflowState,
+    workflowErrorText,
     onScan,
+    onWorkflow,
     onDeepSeekSummary,
     onSendDeepSeekTelegram,
     onSelect,
@@ -269,7 +300,11 @@ function AlphaBoardPanel({
     deepSeekState: DeepSeekPanelState;
     deepSeekSummary?: MiroFishDeepSeekSummaryResult | null;
     deepSeekErrorText?: string | null;
+    workflow?: MiroFishWorkflow | null;
+    workflowState: WorkflowPanelState;
+    workflowErrorText?: string | null;
     onScan: () => void;
+    onWorkflow: () => void;
     onDeepSeekSummary: () => void;
     onSendDeepSeekTelegram: () => void;
     onSelect: (candidate: MiroFishAlphaCandidate) => void;
@@ -280,9 +315,29 @@ function AlphaBoardPanel({
     const deepSeekBusy = deepSeekState === 'checking' || deepSeekState === 'summarizing' || deepSeekState === 'sending';
     const deepSeekConfigured = Boolean(deepSeekStatus?.configured);
     const summaryCandidates = deepSeekSummary?.summary?.candidates || [];
+    const workflowBusy = workflowState === 'running';
+    const topWorkflow = workflow?.top3 || [];
+    const workflowProgress = workflow?.progress || {};
+    const workflowPercent = Math.max(0, Math.min(100, Number(workflowProgress.percent || (workflowState === 'completed' ? 100 : 0))));
+    const workflowCompleted = Number(workflowProgress.completed || workflow?.analyzed_count || 0);
+    const workflowTotal = Number(workflowProgress.total || workflow?.event_count || 0);
+    const workflowStageTone = workflowState === 'completed'
+        ? 'border-emerald-300/25 bg-emerald-300/10 text-emerald-100'
+        : workflowState === 'error' || workflowState === 'blocked'
+            ? 'border-rose-300/25 bg-rose-300/10 text-rose-100'
+            : workflowBusy
+                ? 'border-cyan-300/25 bg-cyan-300/10 text-cyan-100'
+                : 'border-white/10 bg-white/8 text-slate-300';
     const lastRunAt = scannerStatus?.last_run_at || scannerRun?.generated_at || scannerRun?.updated_at || scannerRun?.created_at;
     const nextRunAt = scannerStatus?.next_scheduled_at || scannerRun?.next_scheduled_at;
     const freshnessStatus = scannerStatus?.freshness_status || String(scannerStatus?.freshness?.status || scannerRun?.freshness_status || scannerRun?.freshness?.status || scannerRun?.source_files?.[0]?.freshness || 'unknown');
+    const workflowFreshness = String(workflow?.scanner_freshness?.status || freshnessStatus || 'unknown');
+    const scannerPoolCount = workflow?.scanner_candidate_count ?? scannerRun?.candidate_count ?? candidates.length;
+    const outcomeSummary = workflowOutcomeSummary(workflow);
+    const outcomeHitRate = outcomeSummary.top3_hit_rate_pct ?? outcomeSummary.hit_rate_pct;
+    const outcomeAvgReturn = outcomeSummary.average_forward_return_pct;
+    const outcomeEvaluated = Number(outcomeSummary.top3_evaluated_count ?? outcomeSummary.evaluated_count ?? 0);
+    const outcomePending = Number(outcomeSummary.pending_count ?? 0);
     return (
         <section className="mt-8 max-w-6xl rounded-xl border border-emerald-300/15 bg-slate-950/55 p-4 shadow-[0_18px_70px_rgba(16,185,129,0.12)] backdrop-blur">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -326,11 +381,113 @@ function AlphaBoardPanel({
                 </div>
             </div>
 
-            {(errorText || deepSeekErrorText) && (
+            {(errorText || deepSeekErrorText || workflowErrorText) && (
                 <div className="mt-3 rounded-lg border border-rose-300/20 bg-rose-300/10 px-3 py-2 text-xs font-bold text-rose-100">
-                    {errorText || deepSeekErrorText}
+                    {errorText || deepSeekErrorText || workflowErrorText}
                 </div>
             )}
+
+            <div className="mt-4 rounded-lg border border-cyan-300/15 bg-cyan-300/[0.06] p-3">
+                <div>
+                    <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                        <div>
+                            <div className="text-[11px] font-black uppercase tracking-[0.18em] text-cyan-200/80">MiroFish Control Plane</div>
+                            <div className="mt-1 text-sm font-bold text-slate-200">
+                                Auto scan selects 5 new candidates, batch GraphRAG uploads the run, then only the new Top 3 is sent to Telegram.
+                            </div>
+                            <div className="mt-2 flex flex-wrap gap-2">
+                                <span className={`rounded-full border px-2.5 py-1 text-[11px] font-black ${workflowStageTone}`}>
+                                    MCP {workflowState}
+                                </span>
+                                <span className="rounded-full border border-white/10 bg-white/8 px-2.5 py-1 text-[11px] font-bold text-slate-300">
+                                    {workflowCompleted}/{workflowTotal || 0} analyzed
+                                </span>
+                                <span className={`rounded-full border px-2.5 py-1 text-[11px] font-bold ${freshnessTone(workflowFreshness)}`}>
+                                    source {workflowFreshness}
+                                </span>
+                            </div>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={onWorkflow}
+                            disabled={workflowBusy}
+                            className="rounded-lg border border-cyan-300/25 bg-cyan-300/12 px-3 py-2 text-xs font-black text-cyan-100 transition hover:bg-cyan-300/18 disabled:cursor-wait disabled:opacity-60"
+                        >
+                            {workflowBusy ? 'Batch analyzing...' : 'Run MCP Top 3'}
+                        </button>
+                    </div>
+
+                    <div className="mt-4 grid gap-2 md:grid-cols-4">
+                        {[
+                            ['Scanner', scannerPoolCount, 'candidate pool'],
+                            ['Batch 5', workflow?.event_count ?? 0, 'new candidates'],
+                            ['GraphRAG', workflowCompleted, workflowBusy ? 'running' : 'uploaded runs'],
+                            ['Top 3', topWorkflow.length, workflowState === 'completed' ? 'telegram ready' : 'ranking'],
+                        ].map(([label, value, caption], index) => (
+                            <div key={String(label)} className="rounded-lg border border-white/10 bg-black/20 p-3">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">{String(label)}</span>
+                                    <span className={`h-2.5 w-2.5 rounded-full ${workflowBusy && index <= 2 ? 'animate-pulse bg-cyan-300' : index === 3 && topWorkflow.length ? 'bg-emerald-300' : 'bg-white/25'}`} />
+                                </div>
+                                <div className="mt-2 text-xl font-black text-white">{String(value)}</div>
+                                <div className="mt-1 text-[11px] font-bold text-slate-500">{String(caption)}</div>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="mt-3 h-2 overflow-hidden rounded-full bg-black/30">
+                        <div
+                            className="h-full rounded-full bg-gradient-to-r from-cyan-300 via-violet-400 to-emerald-300 transition-all duration-500"
+                            style={{ width: `${workflowPercent}%` }}
+                        />
+                    </div>
+
+                    <div className="mt-3 grid gap-2 md:grid-cols-4">
+                        {[
+                            ['Forward Return', outcomeAvgReturn === undefined || outcomeAvgReturn === null ? '--' : formatSignedPct(outcomeAvgReturn), 'avg verified return'],
+                            ['Hit Rate', outcomeHitRate === undefined || outcomeHitRate === null ? '--' : `${Number(outcomeHitRate).toFixed(1)}%`, 'forward hit/miss'],
+                            ['Verified', outcomeEvaluated, `${outcomePending} pending`],
+                            ['Replay Guard', outcomeSummary.lookahead_safe ? 'ON' : workflow?.outcome_status || '--', 'no look-ahead'],
+                        ].map(([label, value, caption]) => (
+                            <div key={String(label)} className="rounded-lg border border-emerald-300/12 bg-emerald-300/[0.04] p-3">
+                                <div className="text-[10px] font-black uppercase tracking-[0.16em] text-emerald-200/60">{String(label)}</div>
+                                <div className="mt-1 text-lg font-black text-white">{String(value)}</div>
+                                <div className="mt-1 text-[11px] font-bold text-slate-500">{String(caption)}</div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {topWorkflow.length > 0 && (
+                        <div className="mt-3 grid gap-2 md:grid-cols-3">
+                            {topWorkflow.map((item, index) => (
+                                <div key={`${item.symbol}-${item.run_id}-${index}`} className="rounded-lg border border-cyan-300/15 bg-black/25 p-3">
+                                    <div className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-200/70">Top {index + 1}</div>
+                                    <div className="mt-1 truncate text-sm font-black text-white">{item.target || item.candidate?.display_name || item.symbol}</div>
+                                    <div className="mt-1 font-mono text-[11px] font-bold text-slate-400">{item.symbol || item.candidate?.symbol} · score {Math.round(Number(item.final_score || 0))}</div>
+                                    <div className="mt-2 inline-flex rounded-full border border-emerald-300/25 bg-emerald-300/10 px-2 py-1 text-[10px] font-black text-emerald-100">
+                                        {item.verdict?.action || 'HOLD'} {item.verdict?.confidence_pct || 0}%
+                                    </div>
+                                    <div className={`mt-2 inline-flex rounded-full border px-2 py-1 text-[10px] font-black ${outcomeTone(item.outcome?.status, item.outcome?.hit)}`}>
+                                        {item.outcome?.forward_return_pct === undefined || item.outcome?.forward_return_pct === null
+                                            ? String(item.outcome?.status || 'pending')
+                                            : `T${item.outcome.primary_horizon_days || '?'} ${formatSignedPct(item.outcome.forward_return_pct)}`}
+                                        {' '}
+                                        {item.outcome?.hit === true ? 'HIT' : item.outcome?.hit === false ? 'MISS' : 'PENDING'}
+                                    </div>
+                                    {item.outcome?.lookahead_safe && (
+                                        <div className="mt-2 text-[10px] font-bold uppercase tracking-[0.12em] text-emerald-200/60">
+                                            replay-safe after {item.outcome.entry_date}
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                    {workflow?.status === 'no_new_events' && (
+                        <div className="mt-2 text-xs font-bold text-slate-400">No new scanner events for the MCP workflow.</div>
+                    )}
+                </div>
+            </div>
 
             <div className="mt-4 grid gap-3 rounded-lg border border-white/10 bg-black/20 p-3 md:grid-cols-[1fr_auto]">
                 <div>
@@ -887,6 +1044,9 @@ export default function AdminEndpointsPage() {
     const [deepSeekState, setDeepSeekState] = useState<DeepSeekPanelState>('idle');
     const [deepSeekSummary, setDeepSeekSummary] = useState<MiroFishDeepSeekSummaryResult | null>(null);
     const [deepSeekErrorText, setDeepSeekErrorText] = useState<string | null>(null);
+    const [workflowState, setWorkflowState] = useState<WorkflowPanelState>('idle');
+    const [workflow, setWorkflow] = useState<MiroFishWorkflow | null>(null);
+    const [workflowErrorText, setWorkflowErrorText] = useState<string | null>(null);
     const [endpointState, setEndpointState] = useState<Record<EndpointKey, EndpointStatus>>(() => Object.fromEntries(endpointDefinitions.map((item) => [item.key, 'idle'])) as Record<EndpointKey, EndpointStatus>);
     const [apiState, setApiState] = useState<ApiState>('checking');
     const [errorText, setErrorText] = useState<string | null>(null);
@@ -908,17 +1068,23 @@ export default function AdminEndpointsPage() {
             markEndpoint('history', 'loading');
             markEndpoint('dataSources', 'loading');
             markEndpoint('deepseek', 'loading');
+            markEndpoint('workflow', 'loading');
             try {
-                const [statusData, historyData, sourcesData, deepSeekData] = await Promise.all([
+                const [statusData, historyData, sourcesData, deepSeekData, workflowData] = await Promise.all([
                     mirofishApi.getStatus(),
                     mirofishApi.listRuns(),
                     mirofishApi.getDataSources(),
                     mirofishApi.getDeepSeekStatus(),
+                    mirofishApi.getWorkflowStatus().catch(() => null),
                 ]);
                 if (!alive) return;
                 setStatus(statusData);
                 setDeepSeekStatus(deepSeekData);
                 setDeepSeekState(deepSeekData.configured ? 'ready' : 'idle');
+                if (workflowData?.latest_workflow) {
+                    setWorkflow(workflowData.latest_workflow);
+                    setWorkflowState(workflowData.latest_workflow.status === 'completed' ? 'completed' : 'idle');
+                }
                 setRecentRuns(historyData.runs);
                 setDataSourceCount(Array.isArray(sourcesData?.files) ? sourcesData.files.filter((file: any) => file.exists).length : 0);
                 setApiState('ready');
@@ -926,6 +1092,7 @@ export default function AdminEndpointsPage() {
                 markEndpoint('history', 'ok');
                 markEndpoint('dataSources', 'ok');
                 markEndpoint('deepseek', deepSeekData.configured ? 'ok' : 'error');
+                markEndpoint('workflow', workflowData ? 'ok' : 'idle');
                 setRun((current) => ({ ...current, brain: statusData.brain || current.brain, pipeline: statusData.pipeline || current.pipeline }));
             } catch (error) {
                 if (!alive) return;
@@ -935,6 +1102,7 @@ export default function AdminEndpointsPage() {
                 markEndpoint('history', 'error');
                 markEndpoint('dataSources', 'error');
                 markEndpoint('deepseek', 'error');
+                markEndpoint('workflow', 'error');
                 setErrorText(error instanceof Error ? error.message : 'MiroFish API 연결 실패');
             }
         }
@@ -1154,7 +1322,8 @@ export default function AdminEndpointsPage() {
         events: `${run.events?.length || 0} events`,
         report: run.report?.markdown ? `${run.report.markdown.length} chars` : 'waiting',
         deepseek: deepSeekStatus?.configured ? (deepSeekSummary?.model || deepSeekStatus.default_model || 'ready') : 'not configured',
-    }), [dataSourceCount, deepSeekStatus, deepSeekSummary, recentRuns.length, run, status, targetSnapshot]);
+        workflow: workflow?.id ? `${workflow.status || 'running'} · top ${workflow.top3?.length || 0}` : workflowState,
+    }), [dataSourceCount, deepSeekStatus, deepSeekSummary, recentRuns.length, run, status, targetSnapshot, workflow, workflowState]);
 
     const targetCandidates = useMemo<TargetCandidate[]>(() => {
         const query = target.trim();
@@ -1263,6 +1432,72 @@ export default function AdminEndpointsPage() {
         } catch (error) {
             setAlphaScannerState('error');
             setAlphaErrorText(error instanceof Error ? error.message : 'Alpha scanner API unavailable.');
+        }
+    }
+
+    async function handleMcpWorkflow() {
+        setWorkflowState('running');
+        setWorkflowErrorText(null);
+        markEndpoint('workflow', 'loading');
+        try {
+            const result = await mirofishApi.startWorkflowScanAnalyze({
+                market: 'KR',
+                horizon: '20D',
+                strategy: 'multi_signal',
+                risk_profile: 'balanced',
+                limit: 20,
+                min_alpha: 50,
+                max_risk: 65,
+                actions: ['BUY_CANDIDATE', 'WATCH'],
+                max_events: 5,
+                agent_count: agentCount,
+                top_n: 3,
+                max_parallel: 3,
+                allow_stale_sources: true,
+                mode: 'full',
+                force: true,
+            });
+            setWorkflow(result);
+            if (result.status === 'blocked') {
+                setWorkflowState('blocked');
+                setWorkflowErrorText(result.blocked_reason || 'MCP workflow blocked.');
+                markEndpoint('workflow', 'error');
+                return;
+            }
+            if (result.status === 'no_new_events') {
+                setWorkflowState('no_new_events');
+                markEndpoint('workflow', 'ok');
+                return;
+            }
+            if (result.status === 'completed' || result.top3?.length) {
+                setWorkflowState('completed');
+                markEndpoint('workflow', 'ok');
+                return;
+            }
+            setWorkflowState('running');
+            markEndpoint('workflow', 'ok');
+            const workflowId = String(result.id || '');
+            if (workflowId) {
+                for (let attempt = 0; attempt < 60; attempt += 1) {
+                    await new Promise((resolve) => window.setTimeout(resolve, 2500));
+                    const latest = await mirofishApi.getWorkflow(workflowId);
+                    setWorkflow(latest);
+                    if (latest.status === 'completed') {
+                        setWorkflowState('completed');
+                        return;
+                    }
+                    if (latest.status === 'failed') {
+                        setWorkflowState('error');
+                        setWorkflowErrorText('MCP workflow failed.');
+                        markEndpoint('workflow', 'error');
+                        return;
+                    }
+                }
+            }
+        } catch (error) {
+            setWorkflowState('error');
+            markEndpoint('workflow', 'error');
+            setWorkflowErrorText(error instanceof Error ? error.message : 'MCP workflow failed.');
         }
     }
 
@@ -1420,7 +1655,11 @@ export default function AdminEndpointsPage() {
                         deepSeekState={deepSeekState}
                         deepSeekSummary={deepSeekSummary}
                         deepSeekErrorText={deepSeekErrorText}
+                        workflow={workflow}
+                        workflowState={workflowState}
+                        workflowErrorText={workflowErrorText}
                         onScan={handleAlphaScan}
+                        onWorkflow={handleMcpWorkflow}
                         onDeepSeekSummary={handleDeepSeekSummary}
                         onSendDeepSeekTelegram={handleSendDeepSeekTelegram}
                         onSelect={selectAlphaCandidate}
