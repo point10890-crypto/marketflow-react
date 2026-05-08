@@ -54,10 +54,21 @@ def start_workflow_from_scanner_events(
     min_alpha = _float(payload.get('min_alpha'), DEFAULT_MIN_ALPHA)
     max_risk = _float(payload.get('max_risk'), DEFAULT_MAX_RISK)
     actions = _actions(payload.get('actions'))
-    allow_stale_sources = _bool(payload.get('allow_stale_sources', payload.get('allow_stale')), True)
+    allow_stale_sources = _bool(payload.get('allow_stale_sources', payload.get('allow_stale')), False)
 
     if force:
         scanner_run = alpha_scanner.create_scanner_run(scanner_payload)
+        freshness_status = str(((scanner_run.get('freshness') or {}).get('status') or 'unknown')).lower()
+        if not allow_stale_sources and freshness_status in alpha_scanner.ALERT_BLOCKING_FRESHNESS:
+            return {
+                'ok': False,
+                'status': 'blocked',
+                'scanner_run_id': scanner_run.get('id'),
+                'candidate_count': 0,
+                'alert_blocked': True,
+                'blocked_reason': f'source_freshness:{freshness_status}',
+                'scanner_freshness': scanner_run.get('freshness'),
+            }
         candidates = _eligible_candidates(
             scanner_run,
             min_alpha=min_alpha,

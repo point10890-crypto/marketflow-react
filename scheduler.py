@@ -211,16 +211,33 @@ def auto_git_push(scope: str = 'all') -> bool:
                 return True
 
             # 데이터 디렉토리만 스테이징 (소스코드 제외 → GitHub Actions 충돌 방지)
-            data_dirs = [
-                'data/',
+            allowed_paths = [
+                'data/vcp_crypto_latest.json',
+                'data/vcp_kr_latest.json',
+                'data/vcp_us_latest.json',
+                'data/kiwoom_ai_theme_latest.json',
+                'data/screener_leading_latest.json',
+                'us_market/sector_cache.json',
                 'us_market/output/',
                 'crypto-analytics/crypto_market/output/',
-                'us_market/sector_cache.json',
-                'data/wave/',
-                'data/briefing/',
             ]
-            for d in data_dirs:
-                subprocess.run(['git', 'add', d], cwd=project_dir, timeout=30,
+            blocked_fragments = (
+                'kis_token',
+                'admin_mirofish',
+                'uploads/community',
+                'users.db',
+                '.db-wal',
+                '.db-shm',
+            )
+            for path in allowed_paths:
+                normalized = path.replace('\\', '/')
+                if any(fragment in normalized for fragment in blocked_fragments):
+                    logger.warning("Blocked unsafe auto-git path: %s", normalized)
+                    continue
+                absolute_path = os.path.join(project_dir, path)
+                if not os.path.exists(absolute_path):
+                    continue
+                subprocess.run(['git', 'add', path], cwd=project_dir, timeout=30,
                                capture_output=True, text=True, env=git_env)
 
             # 스테이징된 변경사항 확인
@@ -341,7 +358,7 @@ class Config:
     MIROFISH_WORKFLOW_BATCH_SIZE = int(os.environ.get('MIROFISH_WORKFLOW_BATCH_SIZE', '5'))
     MIROFISH_WORKFLOW_TOP_N = int(os.environ.get('MIROFISH_WORKFLOW_TOP_N', '3'))
     MIROFISH_WORKFLOW_MAX_PARALLEL = int(os.environ.get('MIROFISH_WORKFLOW_MAX_PARALLEL', '3'))
-    MIROFISH_WORKFLOW_ALLOW_STALE_SOURCES = os.environ.get('MIROFISH_WORKFLOW_ALLOW_STALE_SOURCES', 'true').lower() == 'true'
+    MIROFISH_WORKFLOW_ALLOW_STALE_SOURCES = os.environ.get('MIROFISH_WORKFLOW_ALLOW_STALE_SOURCES', 'false').lower() == 'true'
     MIROFISH_WORKFLOW_TELEGRAM_ENABLED = os.environ.get('MIROFISH_WORKFLOW_TELEGRAM_ENABLED', 'true').lower() == 'true'
     MIROFISH_WORKFLOW_TELEGRAM_CHANNEL = os.environ.get('MIROFISH_WORKFLOW_TELEGRAM_CHANNEL', 'false').lower() == 'true'
     CRYPTO_TIMES = ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00']  # 매 4시간
@@ -2975,6 +2992,11 @@ class Scheduler:
             # - crypto: 4시간 주기 → 3시간 쿨다운
             # - kiwoom_ai_theme: 장중 15분 주기 → 10분 쿨다운 (하루 1회 제한 해제)
             # - 그 외: 하루 1회 제한
+            interval_cooldowns = {
+                'alpha_scanner_monitor': max(1 / 60, Config.ALPHA_SCANNER_MONITOR_INTERVAL_MINUTES / 60 * 0.8),
+                'mirofish_workflow_monitor': max(1 / 60, Config.ALPHA_SCANNER_MONITOR_INTERVAL_MINUTES / 60 * 0.8),
+            }
+
             if task_key == 'crypto':
                 if _was_run_recently(task_key, hours=3):
                     logger.info(f"⏭️ {task_key}: 최근 3시간 내 실행됨, 스킵")
@@ -2983,6 +3005,11 @@ class Scheduler:
                 # 장중 연속 갱신 허용: 10분 이내 재실행만 방지
                 if _was_run_recently(task_key, hours=10/60):
                     logger.info(f"⏭️ {task_key}: 최근 10분 내 실행됨, 스킵")
+                    return None
+            elif task_key in interval_cooldowns:
+                cooldown_hours = interval_cooldowns[task_key]
+                if _was_run_recently(task_key, hours=cooldown_hours):
+                    logger.info(f"??툘 {task_key}: interval cooldown active, skip")
                     return None
             elif _was_run_today(task_key):
                 logger.info(f"⏭️ {task_key}: 오늘 이미 실행됨, 스킵")

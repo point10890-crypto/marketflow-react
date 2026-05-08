@@ -345,7 +345,11 @@ def delete_post(post_id):
 @admin_required
 def toggle_notice(post_id):
     post = Post.query.get_or_404(post_id)
-    post.is_notice = not post.is_notice
+    data = request.get_json(silent=True) or {}
+    if 'is_notice' in data:
+        post.is_notice = bool(data.get('is_notice'))
+    else:
+        post.is_notice = not post.is_notice
     db.session.commit()
     return jsonify({'is_notice': post.is_notice})
 

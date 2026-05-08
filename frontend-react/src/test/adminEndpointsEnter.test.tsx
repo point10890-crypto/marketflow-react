@@ -368,7 +368,7 @@ describe('AdminEndpointsPage analysis start input', () => {
 
     await waitFor(() => {
       expect(mockApi.startRun).toHaveBeenCalledWith(expect.objectContaining({
-        target: '두산로보틱스',
+        target: '두산로보틱스 454910 KOSPI',
       }));
     });
   });
@@ -420,7 +420,7 @@ describe('AdminEndpointsPage analysis start input', () => {
         limit: 20,
       }));
       expect(mockApi.startRun).toHaveBeenCalledWith(expect.objectContaining({
-        target: 'Alpha One',
+        target: 'Alpha One 000001 KOSPI',
       }));
     });
   });
@@ -438,7 +438,7 @@ describe('AdminEndpointsPage analysis start input', () => {
         actions: ['BUY_CANDIDATE', 'WATCH'],
         max_events: 5,
         top_n: 3,
-        allow_stale_sources: true,
+        allow_stale_sources: false,
       }));
     });
   });

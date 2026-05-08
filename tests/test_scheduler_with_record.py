@@ -104,6 +104,39 @@ def test_with_record_verify_fn_can_override_truthy_result():
     rec.assert_not_called()
 
 
+def test_interval_monitor_uses_cooldown_not_daily_skip(monkeypatch):
+    monkeypatch.setattr(scheduler.Config, "ALPHA_SCANNER_MONITOR_INTERVAL_MINUTES", 5)
+    calls = []
+
+    def task():
+        calls.append("run")
+        return True
+
+    task.__name__ = "interval_task"
+    with patch("scheduler._was_run_recently", return_value=False) as recent, \
+         patch("scheduler._was_run_today", return_value=True) as today:
+        wrapped = Scheduler._with_record(task, "alpha_scanner_monitor", max_retries=0)
+        result = wrapped()
+
+    assert result is True
+    assert calls == ["run"]
+    recent.assert_called_once()
+    today.assert_not_called()
+
+
+def test_interval_monitor_skips_inside_cooldown(monkeypatch):
+    monkeypatch.setattr(scheduler.Config, "ALPHA_SCANNER_MONITOR_INTERVAL_MINUTES", 5)
+    task = _make_task(True, name="interval_task")
+    with patch("scheduler._was_run_recently", return_value=True) as recent, \
+         patch("scheduler._was_run_today") as today:
+        wrapped = Scheduler._with_record(task, "mirofish_workflow_monitor", max_retries=0)
+        result = wrapped()
+
+    assert result is None
+    recent.assert_called_once()
+    today.assert_not_called()
+
+
 def test_alpha_scanner_monitor_sends_telegram_for_new_events():
     def fake_monitor(*args, send_fn=None, **kwargs):
         assert send_fn("alpha alert") is True

@@ -37,11 +37,16 @@ data/*.csv
 !data/signals_log.csv
 !data/ticker_to_yahoo_map.csv
 data/*.db
+data/*.db-wal
+data/*.db-shm
 data/*.json
+data/kis_token_cache.json
 data/history/
 data/backtest/
 data/ai/
 data/institutional/
+data/admin_mirofish/
+data/uploads/community/
 crypto-analytics/crypto_market/signals.sqlite3
 
 # VCP data: allow latest files for cloud deployment

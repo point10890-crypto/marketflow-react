@@ -1,28 +1,36 @@
-$ErrorActionPreference = 'Continue'
+$ErrorActionPreference = "Stop"
 
-'MarketFlow-Flask', 'MarketFlow-Scheduler' | ForEach-Object {
-    Unregister-ScheduledTask -TaskName $_ -Confirm:$false -ErrorAction SilentlyContinue
+$ProjectDir = $env:MARKETFLOW_PROJECT_DIR
+if ([string]::IsNullOrWhiteSpace($ProjectDir)) {
+    $ProjectDir = "C:\bitman_marketfloww"
 }
 
-$settings = New-ScheduledTaskSettingsSet `
-    -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries `
-    -ExecutionTimeLimit (New-TimeSpan -Hours 0) `
-    -RestartCount 3 -RestartInterval (New-TimeSpan -Minutes 2) `
+$TaskNames = @("MarketFlow-Flask", "MarketFlow-Scheduler")
+foreach ($TaskName in $TaskNames) {
+    Unregister-ScheduledTask -TaskName $TaskName -Confirm:$false -ErrorAction SilentlyContinue
+}
+
+$Settings = New-ScheduledTaskSettingsSet `
+    -AllowStartIfOnBatteries `
+    -DontStopIfGoingOnBatteries `
+    -ExecutionTimeLimit (New-TimeSpan -Days 365) `
+    -RestartCount 3 `
+    -RestartInterval (New-TimeSpan -Minutes 1) `
     -StartWhenAvailable
 
-$trigger = New-ScheduledTaskTrigger -AtLogOn
+$Principal = New-ScheduledTaskPrincipal -UserId "SYSTEM" -RunLevel Highest
+$Trigger = New-ScheduledTaskTrigger -AtStartup
 
-$flaskAction = New-ScheduledTaskAction -Execute "wscript.exe" -Argument '"C:\bitman_marketfloww\deploy\start_flask_only.vbs"'
-Register-ScheduledTask -TaskName "MarketFlow-Flask" -Action $flaskAction -Trigger $trigger -Settings $settings -Force | Out-Null
-Write-Host "[OK] Flask registered"
+$FlaskAction = New-ScheduledTaskAction `
+    -Execute "wscript.exe" `
+    -Argument "`"$ProjectDir\deploy\start_flask_only.vbs`"" `
+    -WorkingDirectory $ProjectDir
+Register-ScheduledTask -TaskName "MarketFlow-Flask" -Action $FlaskAction -Trigger $Trigger -Settings $Settings -Principal $Principal -Force | Out-Null
+Write-Host "[OK] MarketFlow-Flask registered at startup as SYSTEM"
 
-$schedAction = New-ScheduledTaskAction -Execute "wscript.exe" -Argument '"C:\bitman_marketfloww\deploy\start_scheduler.vbs"'
-Register-ScheduledTask -TaskName "MarketFlow-Scheduler" -Action $schedAction -Trigger $trigger -Settings $settings -Force | Out-Null
-Write-Host "[OK] Scheduler registered"
-
-Get-ScheduledTask -TaskName "MarketFlow-*" | Select-Object TaskName, State | Format-Table -AutoSize
-
-Start-ScheduledTask -TaskName "MarketFlow-Flask"
-Start-Sleep 5
-Start-ScheduledTask -TaskName "MarketFlow-Scheduler"
-Write-Host "[OK] Both started"
+$SchedulerAction = New-ScheduledTaskAction `
+    -Execute "wscript.exe" `
+    -Argument "`"$ProjectDir\deploy\start_scheduler.vbs`"" `
+    -WorkingDirectory $ProjectDir
+Register-ScheduledTask -TaskName "MarketFlow-Scheduler" -Action $SchedulerAction -Trigger $Trigger -Settings $Settings -Principal $Principal -Force | Out-Null
+Write-Host "[OK] MarketFlow-Scheduler registered at startup as SYSTEM"

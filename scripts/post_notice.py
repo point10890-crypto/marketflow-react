@@ -18,9 +18,16 @@ import requests
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, BASE_DIR)
+try:
+    from dotenv import load_dotenv
+    load_dotenv(os.path.join(BASE_DIR, '.env'))
+except ImportError:
+    pass
 
-API_URL = "http://localhost:5001"
-ADMIN_EMAIL = "point10890@gmail.com"
+API_URL = os.getenv("MARKETFLOW_API_URL") or os.getenv("COMMUNITY_API_URL") or "http://localhost:5001"
+ADMIN_EMAIL = os.getenv("MARKETFLOW_ADMIN_EMAIL") or os.getenv("COMMUNITY_ADMIN_EMAIL") or "point10890@gmail.com"
+ADMIN_TOKEN = os.getenv("MARKETFLOW_ADMIN_TOKEN") or os.getenv("COMMUNITY_ADMIN_TOKEN")
+ADMIN_PASSWORD = os.getenv("MARKETFLOW_ADMIN_PASSWORD") or os.getenv("COMMUNITY_ADMIN_PASSWORD")
 UPLOAD_DIR = os.path.join(BASE_DIR, 'data', 'uploads', 'community')
 
 
@@ -115,13 +122,17 @@ def save_image(image_data: bytes) -> str:
 
 def login() -> str:
     """관리자 로그인하여 토큰 반환"""
-    for pw in ['admin1234', 'Admin1234!', 'admin']:
-        resp = requests.post(f"{API_URL}/api/auth/login", json={
-            "email": ADMIN_EMAIL,
-            "password": pw,
-        })
-        if resp.status_code == 200:
-            return resp.json()['token']
+    if ADMIN_TOKEN:
+        return ADMIN_TOKEN
+    if not ADMIN_PASSWORD:
+        print("[ERROR] MARKETFLOW_ADMIN_TOKEN or MARKETFLOW_ADMIN_PASSWORD is required")
+        sys.exit(1)
+    resp = requests.post(f"{API_URL}/api/auth/login", json={
+        "email": ADMIN_EMAIL,
+        "password": ADMIN_PASSWORD,
+    })
+    if resp.status_code == 200:
+        return resp.json()['token']
 
     print(f"[ERROR] Admin login failed for {ADMIN_EMAIL}")
     sys.exit(1)
@@ -147,6 +158,7 @@ def pin_notice(token: str, post_id: int):
     resp = requests.put(
         f"{API_URL}/api/community/posts/{post_id}/notice",
         headers={"Authorization": f"Bearer {token}"},
+        json={"is_notice": True},
     )
     if resp.status_code == 200:
         print(f"[OK] Notice pinned: id={post_id}")

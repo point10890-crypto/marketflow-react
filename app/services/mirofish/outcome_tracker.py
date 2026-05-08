@@ -251,7 +251,7 @@ def summarize_outcomes(items: list[dict[str, Any]]) -> dict[str, Any]:
 def _workflow_results(workflow: dict[str, Any]) -> list[dict[str, Any]]:
     top3 = workflow.get('top3') if isinstance(workflow.get('top3'), list) else []
     analysis_runs = workflow.get('analysis_runs') if isinstance(workflow.get('analysis_runs'), list) else []
-    results = top3 or analysis_runs
+    results = analysis_runs or top3
     return [item for item in results if isinstance(item, dict)]
 
 
@@ -282,12 +282,20 @@ def _load_price_history(path: str, symbols: list[str]) -> dict[str, list[dict[st
 def _price_history_meta(path: str, history: dict[str, list[dict[str, Any]]]) -> dict[str, Any]:
     exists = os.path.isfile(path)
     modified_at = None
+    dates = [
+        str(row.get('date'))
+        for rows in history.values()
+        for row in rows
+        if row.get('date')
+    ]
     if exists:
         modified_at = datetime.fromtimestamp(os.path.getmtime(path), timezone.utc).isoformat()
     return {
         'path': os.path.relpath(path, REPO_ROOT).replace('\\', '/') if exists else path,
         'exists': exists,
         'modified_at': modified_at,
+        'latest_price_date': max(dates) if dates else None,
+        'earliest_price_date': min(dates) if dates else None,
         'symbols_loaded': len(history),
         'rows_loaded': sum(len(rows) for rows in history.values()),
     }

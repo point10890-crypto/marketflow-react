@@ -146,6 +146,27 @@ def test_workflow_attaches_forward_outcomes_without_lookahead(tmp_path, monkeypa
     assert (tmp_path / 'workflows' / result['id'] / 'outcomes.json').is_file()
 
 
+def test_outcome_tracker_prefers_full_analysis_runs_over_top3():
+    workflow_record = {
+        'analysis_runs': [
+            {'symbol': '000001', 'target': 'Alpha One'},
+            {'symbol': '000002', 'target': 'Beta Two'},
+            {'symbol': '000003', 'target': 'Gamma Three'},
+            {'symbol': '000004', 'target': 'Delta Four'},
+            {'symbol': '000005', 'target': 'Epsilon Five'},
+        ],
+        'top3': [
+            {'symbol': '000001', 'target': 'Alpha One'},
+            {'symbol': '000002', 'target': 'Beta Two'},
+            {'symbol': '000003', 'target': 'Gamma Three'},
+        ],
+    }
+
+    results = outcome_tracker._workflow_results(workflow_record)
+
+    assert [item['symbol'] for item in results] == ['000001', '000002', '000003', '000004', '000005']
+
+
 def test_workflow_defaults_to_five_event_batch_and_top3(tmp_path, monkeypatch):
     candidates = [
         _candidate(f'00000{index}', f'Alpha {index}', 90 - index, 20 + index, index)
@@ -209,6 +230,23 @@ def test_force_workflow_accepts_watch_candidates_for_top3_pipeline(tmp_path, mon
     assert result['filters']['actions'] == ['BUY_CANDIDATE', 'WATCH']
 
 
+def test_force_workflow_blocks_stale_sources_by_default(tmp_path, monkeypatch):
+    candidates = [_candidate('000001', 'Alpha One', 80, 20, 1)]
+    scanner_run = _scanner_result(candidates)['run']
+    scanner_run['freshness'] = {'status': 'stale'}
+    monkeypatch.setattr(workflow, 'WORKFLOWS_ROOT', str(tmp_path / 'workflows'))
+    monkeypatch.setattr(workflow, 'WORKFLOW_STATE_ROOT', str(tmp_path / 'workflows' / '_state'))
+    monkeypatch.setattr(workflow.alpha_scanner, 'create_scanner_run', lambda payload: scanner_run)
+
+    result = workflow.start_workflow_from_scanner_events(
+        {'force': True, 'limit': 20, 'top_n': 1},
+        async_mode=False,
+    )
+
+    assert result['status'] == 'blocked'
+    assert result['blocked_reason'] == 'source_freshness:stale'
+
+
 def test_workflow_monitor_check_can_run_sync_without_committing_event_state(tmp_path, monkeypatch):
     candidates = [_candidate('000001', 'Alpha One', 80, 20, 1)]
     monkeypatch.setattr(workflow, 'WORKFLOWS_ROOT', str(tmp_path / 'workflows'))
@@ -232,7 +270,7 @@ def test_workflow_monitor_check_can_run_sync_without_committing_event_state(tmp_
 
     assert result['status'] == 'completed'
     assert result['event_state_committed'] is False
-    assert scanner_kwargs['block_on_stale'] is False
+    assert scanner_kwargs['block_on_stale'] is True
     assert commit_calls == []
 
 

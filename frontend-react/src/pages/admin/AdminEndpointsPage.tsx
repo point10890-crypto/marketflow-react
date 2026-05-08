@@ -89,7 +89,11 @@ function targetCandidateLabel(candidate?: TargetCandidate | null): string {
 }
 
 function targetCandidateStartValue(candidate?: TargetCandidate | null): string {
-    return targetCandidateLabel(candidate) || String(candidate?.symbol || '').trim();
+    const label = targetCandidateLabel(candidate);
+    const symbol = String(candidate?.symbol || candidate?.yahoo_ticker || '').trim();
+    const market = String(candidate?.market || '').trim();
+    const parts = [label, symbol, market].filter(Boolean);
+    return Array.from(new Set(parts)).join(' ').trim();
 }
 
 function targetCandidateMatchLabel(candidate?: TargetCandidate | null): string {
@@ -328,7 +332,7 @@ function AlphaBoardPanel({
             : workflowBusy
                 ? 'border-cyan-300/25 bg-cyan-300/10 text-cyan-100'
                 : 'border-white/10 bg-white/8 text-slate-300';
-    const lastRunAt = scannerStatus?.last_run_at || scannerRun?.generated_at || scannerRun?.updated_at || scannerRun?.created_at;
+    const lastRunAt = scannerRun?.generated_at || scannerRun?.updated_at || scannerRun?.created_at || scannerStatus?.last_run_at;
     const nextRunAt = scannerStatus?.next_scheduled_at || scannerRun?.next_scheduled_at;
     const freshnessStatus = scannerStatus?.freshness_status || String(scannerStatus?.freshness?.status || scannerRun?.freshness_status || scannerRun?.freshness?.status || scannerRun?.source_files?.[0]?.freshness || 'unknown');
     const workflowFreshness = String(workflow?.scanner_freshness?.status || freshnessStatus || 'unknown');
@@ -338,6 +342,10 @@ function AlphaBoardPanel({
     const outcomeAvgReturn = outcomeSummary.average_forward_return_pct;
     const outcomeEvaluated = Number(outcomeSummary.top3_evaluated_count ?? outcomeSummary.evaluated_count ?? 0);
     const outcomePending = Number(outcomeSummary.pending_count ?? 0);
+    const outcomeStatus = String(outcomeSummary.status || workflow?.outcome_status || '').toLowerCase();
+    const replayGuardValue = outcomeSummary.lookahead_safe && !['failed', 'not_evaluated'].includes(outcomeStatus)
+        ? 'ON'
+        : (workflow?.outcome_status || outcomeStatus || '--');
     return (
         <section className="mt-8 max-w-6xl rounded-xl border border-emerald-300/15 bg-slate-950/55 p-4 shadow-[0_18px_70px_rgba(16,185,129,0.12)] backdrop-blur">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -393,7 +401,7 @@ function AlphaBoardPanel({
                         <div>
                             <div className="text-[11px] font-black uppercase tracking-[0.18em] text-cyan-200/80">MiroFish Control Plane</div>
                             <div className="mt-1 text-sm font-bold text-slate-200">
-                                Auto scan selects 5 new candidates, batch GraphRAG uploads the run, then only the new Top 3 is sent to Telegram.
+                                Auto scan selects 5 new candidates, batch GraphRAG analyzes them, and the scheduler sends only the new Top 3 to Telegram after success.
                             </div>
                             <div className="mt-2 flex flex-wrap gap-2">
                                 <span className={`rounded-full border px-2.5 py-1 text-[11px] font-black ${workflowStageTone}`}>
@@ -422,7 +430,7 @@ function AlphaBoardPanel({
                             ['Scanner', scannerPoolCount, 'candidate pool'],
                             ['Batch 5', workflow?.event_count ?? 0, 'new candidates'],
                             ['GraphRAG', workflowCompleted, workflowBusy ? 'running' : 'uploaded runs'],
-                            ['Top 3', topWorkflow.length, workflowState === 'completed' ? 'telegram ready' : 'ranking'],
+                            ['Top 3', topWorkflow.length, workflowState === 'completed' ? 'ready for alert' : 'ranking'],
                         ].map(([label, value, caption], index) => (
                             <div key={String(label)} className="rounded-lg border border-white/10 bg-black/20 p-3">
                                 <div className="flex items-center justify-between">
@@ -447,7 +455,7 @@ function AlphaBoardPanel({
                             ['Forward Return', outcomeAvgReturn === undefined || outcomeAvgReturn === null ? '--' : formatSignedPct(outcomeAvgReturn), 'avg verified return'],
                             ['Hit Rate', outcomeHitRate === undefined || outcomeHitRate === null ? '--' : `${Number(outcomeHitRate).toFixed(1)}%`, 'forward hit/miss'],
                             ['Verified', outcomeEvaluated, `${outcomePending} pending`],
-                            ['Replay Guard', outcomeSummary.lookahead_safe ? 'ON' : workflow?.outcome_status || '--', 'no look-ahead'],
+                            ['Replay Guard', replayGuardValue, 'no look-ahead'],
                         ].map(([label, value, caption]) => (
                             <div key={String(label)} className="rounded-lg border border-emerald-300/12 bg-emerald-300/[0.04] p-3">
                                 <div className="text-[10px] font-black uppercase tracking-[0.16em] text-emerald-200/60">{String(label)}</div>
@@ -633,6 +641,10 @@ function Stepper({ phase }: { phase: number }) {
 function TargetCard({ run }: { run: MiroFishRun }) {
     const change = Number(run.change_pct ?? 0);
     const price = formatPrice(run.price);
+    const market = String(run.market || '').toUpperCase();
+    const currency = market.includes('NASDAQ') || market.includes('NYSE') || market.includes('AMEX') || market.includes('US')
+        ? 'USD'
+        : 'KRW';
     return (
         <section className="rounded-xl border border-white/30 bg-white/[0.88] p-6 text-slate-900 shadow-[0_22px_80px_rgba(14,165,233,0.12)]">
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -647,7 +659,7 @@ function TargetCard({ run }: { run: MiroFishRun }) {
                     <div className="mt-5 h-1.5 w-72 max-w-full rounded-full bg-gradient-to-r from-blue-500 via-violet-500 to-emerald-400" />
                 </div>
                 <div className="text-left md:text-right">
-                    <div className="text-5xl font-black tracking-tight">{price}<span className="ml-2 text-lg font-bold text-slate-400">KRW</span></div>
+                    <div className="text-5xl font-black tracking-tight">{price}<span className="ml-2 text-lg font-bold text-slate-400">{currency}</span></div>
                     <div className={`mt-2 inline-flex items-center gap-2 rounded-xl px-3 py-1.5 text-sm font-black ${change >= 0 ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'}`}>
                         <i className={`fas ${change >= 0 ? 'fa-caret-up' : 'fa-caret-down'}`} />
                         {change.toFixed(2)}%
@@ -1453,7 +1465,7 @@ export default function AdminEndpointsPage() {
                 agent_count: agentCount,
                 top_n: 3,
                 max_parallel: 3,
-                allow_stale_sources: true,
+                allow_stale_sources: false,
                 mode: 'full',
                 force: true,
             });
@@ -1567,7 +1579,7 @@ export default function AdminEndpointsPage() {
     }
 
     function selectAlphaCandidate(candidate: MiroFishAlphaCandidate) {
-        const nextTarget = candidate.display_name || candidate.symbol;
+        const nextTarget = targetCandidateStartValue(candidate as TargetCandidate) || candidate.display_name || candidate.symbol;
         targetValueRef.current = nextTarget;
         setTarget(nextTarget);
         setTargetSnapshot({
@@ -1584,7 +1596,7 @@ export default function AdminEndpointsPage() {
     }
 
     function deepDiveAlphaCandidate(candidate: MiroFishAlphaCandidate) {
-        const nextTarget = candidate.display_name || candidate.symbol;
+        const nextTarget = targetCandidateStartValue(candidate as TargetCandidate) || candidate.display_name || candidate.symbol;
         selectAlphaCandidate(candidate);
         requestStart(nextTarget);
     }
