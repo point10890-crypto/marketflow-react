@@ -1,23 +1,9 @@
 # MarketFlow Flask Watchdog
-# ------------------------------------------------------------------
-# Purpose : Restart Flask (MarketFlow-Flask scheduled task) when port
-#           5001 is unreachable or /healthz endpoint times out.
-#
-# Schedule: Run every 5 minutes via Task Scheduler
-#           (MarketFlow-Flask-Watchdog).
-#
-# Why this exists:
-#   2026-04-24 20:07: Flask silent death, undetected for 24h+.
-#   The Scheduler watchdog only monitors scheduler.py — Flask had
-#   no liveness check. This closes that gap.
-#
-# Liveness criteria:
-#   1) TCP connect to localhost:5001 succeeds (< 3s)
-#   2) /healthz returns HTTP 200 within 5s
-#   Either failure → restart MarketFlow-Flask scheduled task.
-# ------------------------------------------------------------------
+# Restarts the MarketFlow-Flask task when port 5001 or /healthz is unavailable.
 
 $ErrorActionPreference = 'Continue'
+$OutputEncoding = [System.Text.Encoding]::UTF8
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
 $Project   = 'C:\bitman_marketfloww'
 $LogFile   = Join-Path $Project 'logs\flask_watchdog.log'
@@ -30,30 +16,44 @@ function Write-Log($msg) {
     Add-Content -Path $LogFile -Value $line -Encoding UTF8
 }
 
+function Read-EnvValue($name) {
+    $envFile = Join-Path $Project '.env'
+    if (-not (Test-Path $envFile)) { return $null }
+    foreach ($line in Get-Content $envFile -Encoding UTF8) {
+        if ($line -match ("^" + [regex]::Escape($name) + "=(.+)$")) {
+            $value = $Matches[1].Trim()
+            $value = $value.Trim('"')
+            $value = $value.Trim("'")
+            return $value
+        }
+    }
+    return $null
+}
+
 function Send-Telegram($msg) {
     try {
-        $envFile = Join-Path $Project '.env'
-        if (-not (Test-Path $envFile)) { return }
-        $token = $null; $chat = $null
-        Get-Content $envFile | ForEach-Object {
-            if ($_ -match '^TELEGRAM_BOT_TOKEN=(.+)$') { $token = $Matches[1].Trim() }
-            if ($_ -match '^TELEGRAM_CHAT_ID=(.+)$')   { $chat  = $Matches[1].Trim() }
-        }
+        $token = Read-EnvValue 'TELEGRAM_BOT_TOKEN'
+        $chat = Read-EnvValue 'TELEGRAM_CHAT_ID'
         if (-not $token -or -not $chat) { return }
-        $body = @{
+
+        $payload = @{
             chat_id    = $chat
             text       = $msg
             parse_mode = 'HTML'
-        }
+        } | ConvertTo-Json -Depth 4 -Compress
+        $body = [System.Text.Encoding]::UTF8.GetBytes($payload)
+
         Invoke-RestMethod -Uri "https://api.telegram.org/bot$token/sendMessage" `
-                          -Method Post -Body $body -TimeoutSec 10 | Out-Null
+                          -Method Post `
+                          -ContentType 'application/json; charset=utf-8' `
+                          -Body $body `
+                          -TimeoutSec 10 | Out-Null
     } catch {
         Write-Log ("Telegram send failed: " + $_.Exception.Message)
     }
 }
 
 function Test-FlaskAlive {
-    # 1) TCP probe (faster fail than HTTP)
     $tcp = Test-NetConnection -ComputerName 'localhost' -Port $Port `
                               -WarningAction SilentlyContinue `
                               -InformationLevel Quiet
@@ -61,7 +61,6 @@ function Test-FlaskAlive {
         return @{ Alive = $false; Reason = "tcp_${Port}_unreachable" }
     }
 
-    # 2) /healthz HTTP probe (catches hung-but-listening)
     try {
         $resp = Invoke-WebRequest -Uri $HealthUrl -TimeoutSec 5 `
                                   -UseBasicParsing -ErrorAction Stop
@@ -69,10 +68,8 @@ function Test-FlaskAlive {
             return @{ Alive = $false; Reason = "healthz_status_$($resp.StatusCode)" }
         }
     } catch {
-        # If /healthz not deployed yet, fall back to any TCP listener counts as alive
         $msg = $_.Exception.Message
         if ($msg -match '404') {
-            # Endpoint not deployed — treat TCP success as alive (transitional)
             return @{ Alive = $true; Reason = 'tcp_ok_healthz_404_transitional' }
         }
         return @{ Alive = $false; Reason = "healthz_$($msg -replace '[^a-zA-Z0-9_]','_' | Select-Object -First 50)" }
@@ -86,7 +83,6 @@ function Restart-Flask {
     try {
         Stop-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue
         Start-Sleep -Seconds 3
-        # Kill any orphan Flask processes for this project
         $flaskAppPath = Join-Path $Project 'flask_app.py'
         Get-CimInstance Win32_Process -Filter "Name='python.exe'" `
             | Where-Object {
@@ -105,23 +101,31 @@ function Restart-Flask {
     }
 }
 
-# ── Main ──
 $status = Test-FlaskAlive
 if ($status.Alive) {
-    # Healthy — silent (don't spam logs every 5 min)
     exit 0
 }
 
-Write-Log ("FLASK DOWN: " + $status.Reason + " — restarting")
+Write-Log ("FLASK DOWN: " + $status.Reason + " - restarting")
 Restart-Flask
 
-# Verify
 Start-Sleep -Seconds 3
 $after = Test-FlaskAlive
 if ($after.Alive) {
-    Write-Log "Restart confirmed — Flask healthy."
-    Send-Telegram ("&#x1F501; <b>Flask watchdog</b>`n사유: " + $status.Reason + "`n조치: Flask 재기동 완료")
+    Write-Log "Restart confirmed - Flask healthy."
+    $message = @(
+        "&#x1F501; <b>Flask watchdog</b>"
+        ("사유: " + $status.Reason)
+        "조치: Flask 재기동 완료"
+    ) -join "`n"
+    Send-Telegram $message
 } else {
-    Write-Log ("Restart FAILED — still: " + $after.Reason)
-    Send-Telegram ("&#x1F6A8; <b>Flask watchdog FAILED</b>`n사유: " + $status.Reason + "`n재기동 후에도: " + $after.Reason + "`n수동 확인 필요")
+    Write-Log ("Restart FAILED - still: " + $after.Reason)
+    $message = @(
+        "&#x1F6A8; <b>Flask watchdog FAILED</b>"
+        ("사유: " + $status.Reason)
+        ("재기동 후에도: " + $after.Reason)
+        "수동 확인 필요"
+    ) -join "`n"
+    Send-Telegram $message
 }
