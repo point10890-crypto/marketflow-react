@@ -95,6 +95,8 @@ def resolve_target_snapshot(target: str) -> dict[str, Any]:
         'signal_count': sum(1 for item in signals.values() if item),
         'briefing_count': len(context.get('briefings') or []),
         'dart_available': bool(context.get('dart')),
+        'source_packet_count': len(context.get('source_packets') or []),
+        'hybrid_context': context.get('hybrid_context'),
         'source_files': context.get('source_files', []),
         'built_at': context.get('built_at'),
     }
@@ -237,7 +239,14 @@ def _create_running_run(run_id: str, target: str, agent_count: int, mode: str) -
         'analysts': [],
         'graph_nodes': [],
         'prediction_nodes': [],
-        'data_context': {'source_files': [], 'signals': {}, 'briefing_count': 0, 'dart_available': False},
+        'data_context': {
+            'source_files': [],
+            'source_packets': [],
+            'hybrid_context': None,
+            'signals': {},
+            'briefing_count': 0,
+            'dart_available': False,
+        },
         'artifacts': _artifact_links(run_id),
     }
 
@@ -299,6 +308,8 @@ def _build_run_progressive(run_id: str, target: str, agent_count: int, mode: str
         'price_snapshot': price,
         'data_context': {
             'source_files': context.get('source_files', []),
+            'source_packets': context.get('source_packets', []),
+            'hybrid_context': context.get('hybrid_context'),
             'signals': context.get('signals', {}),
             'briefing_count': len(context.get('briefings') or []),
             'dart_available': bool(context.get('dart')),
@@ -311,9 +322,14 @@ def _build_run_progressive(run_id: str, target: str, agent_count: int, mode: str
     save(
         'intake',
         16,
-        f"Resolved {len(context.get('source_files', []))} source files.",
-        text=f"실데이터 소스 {len(context.get('source_files', []))}개 연결",
-        payload={'source_files': context.get('source_files', []), 'symbol': resolved.get('symbol')},
+        f"Resolved {len(context.get('source_files', []))} source files and {len(context.get('source_packets') or [])} source packets.",
+        text=f"실데이터 소스 {len(context.get('source_files', []))}개, source packet {len(context.get('source_packets') or [])}개 연결",
+        payload={
+            'source_files': context.get('source_files', []),
+            'source_packet_count': len(context.get('source_packets') or []),
+            'hybrid_context': context.get('hybrid_context'),
+            'symbol': resolved.get('symbol'),
+        },
     )
     kis = context.get('kis') or {}
     if kis.get('enabled'):
@@ -512,6 +528,8 @@ def _build_run(run_id: str, target: str, agent_count: int, mode: str) -> dict[st
         'verdict': verdict,
         'data_context': {
             'source_files': context.get('source_files', []),
+            'source_packets': context.get('source_packets', []),
+            'hybrid_context': context.get('hybrid_context'),
             'signals': context.get('signals', {}),
             'briefing_count': len(context.get('briefings') or []),
             'dart_available': bool(context.get('dart')),
@@ -620,7 +638,14 @@ def _build_graph(run: dict[str, Any]) -> dict[str, Any]:
 def _build_report(run: dict[str, Any], graph: dict[str, Any]) -> str:
     verdict = run.get('verdict') or {}
     price = run.get('price_snapshot') or {}
-    source_lines = '\n'.join(f"- `{src}`" for src in run.get('data_context', {}).get('source_files', [])[:20]) or '- No dedicated source file found'
+    data_context = run.get('data_context') or {}
+    source_lines = '\n'.join(f"- `{src}`" for src in data_context.get('source_files', [])[:20]) or '- No dedicated source file found'
+    packets = data_context.get('source_packets') or []
+    packet_lines = '\n'.join(
+        f"- {p.get('source_type')}/{p.get('source')}: {p.get('title')} "
+        f"(freshness={p.get('freshness')}, confidence={p.get('confidence')})"
+        for p in packets[:12]
+    ) or '- No source packets built'
     analyst_lines = '\n'.join(
         f"- {a.get('name')}: {a.get('stance') or a.get('verdict')} ({int((a.get('confidence') or 0) * 100)}%) - {a.get('role', '')}"
         for a in run.get('analysts', [])
@@ -635,6 +660,8 @@ def _build_report(run: dict[str, Any], graph: dict[str, Any]) -> str:
         f"- Graph nodes/edges: {len(graph.get('nodes', []))}/{len(graph.get('edges', []))}\n\n"
         "## Data Sources\n\n"
         f"{source_lines}\n\n"
+        "## Hybrid RAG Source Packets\n\n"
+        f"{packet_lines}\n\n"
         "## Brain 13D\n\n"
         f"- Alignment: {run.get('brain_summary', {}).get('alignment_score')}\n"
         f"- Regime: {run.get('brain_summary', {}).get('regime')}\n"

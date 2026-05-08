@@ -17,6 +17,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from app.services.mirofish import source_hub
+
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 DATA_DIR = REPO_ROOT / 'data'
@@ -58,8 +60,17 @@ def build_context(target: str) -> dict[str, Any]:
     dart = load_dart_snapshot(resolved)
     kis = load_kis_snapshot(resolved)
     price = _apply_kis_price(price, kis)
+    source_packets = source_hub.collect_source_packets(
+        resolved=resolved,
+        price=price,
+        signals=signals,
+        briefings=briefings,
+        dart=dart,
+        kis=kis,
+    )
+    hybrid_context = source_hub.build_hybrid_context(source_packets)
 
-    documents = []
+    documents = [packet['text'] for packet in source_packets if packet.get('text')]
     if price.get('found'):
         documents.append(
             f"{resolved['display_name']} latest cached price is {price.get('price')} "
@@ -91,6 +102,7 @@ def build_context(target: str) -> dict[str, Any]:
     if dart and dart.get('source_file'):
         sources.append(dart['source_file'])
     sources.extend(kis.get('sources') or [])
+    sources.extend(packet.get('source_file') for packet in source_packets if packet.get('source_file'))
 
     return {
         'target': target,
@@ -100,6 +112,8 @@ def build_context(target: str) -> dict[str, Any]:
         'briefings': briefings,
         'dart': dart,
         'kis': kis,
+        'source_packets': source_packets,
+        'hybrid_context': hybrid_context,
         'corpus': corpus,
         'source_files': sorted(set(sources)),
         'built_at': datetime.now(timezone.utc).isoformat(),
@@ -140,6 +154,12 @@ def summarize_data_sources() -> dict[str, Any]:
                 'cache_ttl_seconds': _KIS_CACHE_TTL_SECONDS,
             },
         ],
+        'hybrid_rag': {
+            'mode': 'source_packets',
+            'first_class_sources': ['news', 'filing', 'chart', 'signal', 'api'],
+            'graph_ready': True,
+            'vector_ready': True,
+        },
     }
 
 

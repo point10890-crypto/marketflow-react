@@ -29,6 +29,8 @@ def test_mirofish_run_writes_readable_artifacts(tmp_path, monkeypatch):
     assert run['display_name'] in run['verdict']['summary']
     assert len(run['analysts']) == 7
     assert run['data_context']['source_files']
+    assert run['data_context']['source_packets']
+    assert run['data_context']['hybrid_context']['packet_count'] == len(run['data_context']['source_packets'])
 
     saved_run = store.read_run(run['id'])
     graph = store.get_graph(run['id'])
@@ -87,6 +89,8 @@ def test_mirofish_target_snapshot_uses_live_artifacts():
     assert snapshot['source'] == 'live_file_artifacts'
     assert snapshot['resolved']['symbol'] == '005930'
     assert snapshot['source_files']
+    assert snapshot['source_packet_count'] >= 1
+    assert snapshot['hybrid_context']['mode'] == 'hybrid_rag_source_packets'
     assert 'price' in snapshot
     assert 'signal_count' in snapshot
 
@@ -191,6 +195,7 @@ def test_mirofish_context_can_enrich_graphrag_with_kis_api(monkeypatch):
     assert 'KIS API live quote' in context['corpus']
     assert 'KIS API investor flow' in context['corpus']
     assert 'KIS API: inquire-price' in context['source_files']
+    assert any(packet['source_type'] == 'api' for packet in context['source_packets'])
 
 
 def test_mirofish_run_start_resolves_chosung_target(tmp_path, monkeypatch):
