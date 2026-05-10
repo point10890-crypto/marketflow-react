@@ -429,6 +429,45 @@ def get_workflow(workflow_id):
     return jsonify(workflow)
 
 
+@admin_mirofish_bp.route('/workflows/<workflow_id>/share', methods=['GET'])
+@admin_required
+def get_workflow_share(workflow_id):
+    """카카오톡 공유용 페이로드 — Kakao SDK 'feed' 템플릿에 맞춘 형식.
+
+    Returns:
+        {
+            'title': str,            # KakaoTalk 공유 카드 제목
+            'description': str,      # 설명 (TOP 3 요약)
+            'image_url': str,        # 썸네일
+            'link_url': str,         # 클릭 시 이동
+            'rank': int (선택),       # 단일 종목 공유 시 (?rank=1|2|3)
+            'top_items': list,        # 전체 TOP 3 (UI 사이드용)
+        }
+
+    쿼리 파라미터:
+        rank: 1|2|3 — 특정 종목만 공유 시. 없으면 TOP 3 전체 요약.
+    """
+    try:
+        workflow = mirofish.read_workflow(workflow_id)
+    except ValueError as exc:
+        return jsonify({'error': str(exc)}), 400
+    if workflow is None:
+        return jsonify({'error': 'workflow not found'}), 404
+
+    rank_param = request.args.get('rank')
+    rank = None
+    if rank_param:
+        try:
+            rank = int(rank_param)
+            if rank < 1 or rank > 3:
+                return jsonify({'error': 'rank must be 1, 2, or 3'}), 400
+        except (TypeError, ValueError):
+            return jsonify({'error': 'rank must be integer'}), 400
+
+    payload = mirofish.build_share_payload(workflow, rank=rank)
+    return jsonify(payload)
+
+
 @admin_mirofish_bp.route('/workflows/<workflow_id>/outcomes', methods=['GET'])
 @admin_required
 def get_workflow_outcomes(workflow_id):

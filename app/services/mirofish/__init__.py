@@ -41,6 +41,7 @@ from app.services.mirofish.deepseek_client import (
     summarize_scanner_run as summarize_scanner_run_with_deepseek,
 )
 from app.services.mirofish.workflow import (
+    build_share_payload,
     build_workflow_top3_telegram_message,
     commit_workflow_event_state,
     get_workflow_status,
@@ -61,6 +62,7 @@ __all__ = [
     'build_scanner_alert_message',
     'build_scanner_run_telegram_message',
     'build_summary_telegram_message',
+    'build_share_payload',
     'build_workflow_top3_telegram_message',
     'commit_scanner_alert_events',
     'commit_workflow_event_state',

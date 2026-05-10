@@ -1088,4 +1088,36 @@ export const mirofishApi = {
         undefined,
         300000,
     ),
+    /** 카카오톡 공유 payload — workflow의 TOP 3 또는 단일 rank. */
+    getSharePayload: async (workflowId: string, rank?: number) => {
+        const path = rank
+            ? `/api/admin/mirofish/workflows/${encodeURIComponent(workflowId)}/share?rank=${rank}`
+            : `/api/admin/mirofish/workflows/${encodeURIComponent(workflowId)}/share`;
+        return fetchAuthAPI<MiroFishSharePayload>(path);
+    },
 };
+
+export interface MiroFishShareItem {
+    rank: number;
+    symbol: string;
+    name: string;
+    market: string;
+    score: number;
+    action: 'BUY' | 'HOLD' | 'SELL' | string;
+    confidence_pct: number;
+    outcome_status: string;
+    outcome_hit?: boolean | null;
+    outcome_forward_return_pct?: number | null;
+    replay_safe_after?: string | null;
+}
+
+export interface MiroFishSharePayload {
+    title: string;
+    description: string;
+    image_url: string;
+    link_url: string;
+    rank: number | null;
+    top_items: MiroFishShareItem[];
+    workflow_id: string;
+    completed_at?: string;
+}

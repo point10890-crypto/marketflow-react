@@ -180,6 +180,117 @@ def run_workflow_monitor_check(payload: dict[str, Any] | None = None) -> dict[st
     )
 
 
+def build_share_payload(workflow: dict[str, Any], rank: int | None = None) -> dict[str, Any]:
+    """카카오톡 공유용 payload — Kakao SDK 'feed' 템플릿에 맞춘 형식.
+
+    Args:
+        workflow: workflow dict (read_workflow 결과)
+        rank: 1|2|3 — 단일 종목 공유 시. None이면 TOP 3 전체 요약.
+
+    Returns:
+        {
+            'title': str,
+            'description': str,
+            'image_url': str,
+            'link_url': str,
+            'rank': int|None,
+            'top_items': [{'rank', 'symbol', 'name', 'score', 'action', 'confidence_pct', 'outcome_status'}],
+            'workflow_id': str,
+            'completed_at': str,
+        }
+    """
+    top3 = [item for item in (workflow.get('top3') or []) if isinstance(item, dict)]
+    workflow_id = str(workflow.get('id') or '')
+    completed_at = str(workflow.get('completed_at') or '')
+
+    # 표준 share base URL — production frontend
+    base_url = 'https://bit-man.net/admin/endpoints'
+    fallback_image = 'https://bit-man.net/og/marketflow-mcp-share.png'
+
+    # TOP 3 정규화 (UI 카드와 동일 구조)
+    top_items = []
+    for index, item in enumerate(top3[:3], start=1):
+        candidate = item.get('candidate') or {}
+        verdict = item.get('verdict') or {}
+        outcome = item.get('outcome') or {}
+        top_items.append({
+            'rank': index,
+            'symbol': item.get('symbol') or candidate.get('symbol') or '',
+            'name': item.get('target') or candidate.get('display_name') or candidate.get('name') or '',
+            'market': item.get('market') or candidate.get('market') or 'KR',
+            'score': round(float(item.get('final_score') or 0), 1),
+            'action': verdict.get('action') or 'HOLD',
+            'confidence_pct': int(verdict.get('confidence_pct') or 0),
+            'outcome_status': outcome.get('status') or 'pending',
+            'outcome_hit': outcome.get('hit'),
+            'outcome_forward_return_pct': outcome.get('forward_return_pct'),
+            'replay_safe_after': outcome.get('entry_date') or outcome.get('replay_safe_after'),
+        })
+
+    if not top_items:
+        return {
+            'title': 'MarketFlow MCP TOP 3',
+            'description': 'TOP 3 결과가 아직 준비되지 않았습니다.',
+            'image_url': fallback_image,
+            'link_url': base_url,
+            'rank': None,
+            'top_items': [],
+            'workflow_id': workflow_id,
+            'completed_at': completed_at,
+        }
+
+    # 단일 종목 공유 모드
+    if rank is not None:
+        if rank < 1 or rank > len(top_items):
+            raise ValueError(f'rank {rank} out of range (1-{len(top_items)})')
+        target = top_items[rank - 1]
+        title = f"MarketFlow TOP {rank} — {target['name']}"
+        verdict_label = _share_verdict_label(target['action'])
+        description = (
+            f"{target['symbol']} · score {target['score']:.0f} · "
+            f"{verdict_label} {target['confidence_pct']}%"
+        )
+        if target.get('replay_safe_after'):
+            description += f" · replay-safe {target['replay_safe_after']}"
+        return {
+            'title': title,
+            'description': description,
+            'image_url': fallback_image,
+            'link_url': f"{base_url}?workflow={workflow_id}&top={rank}",
+            'rank': rank,
+            'top_items': top_items,
+            'workflow_id': workflow_id,
+            'completed_at': completed_at,
+        }
+
+    # TOP 3 전체 공유 모드
+    rank_lines = ' / '.join(
+        f"#{item['rank']} {item['name']}({item['symbol']}) {_share_verdict_label(item['action'])} {item['confidence_pct']}%"
+        for item in top_items
+    )
+    title = f"MarketFlow MCP TOP 3 — AI 자동 분석"
+    description = rank_lines if len(rank_lines) <= 200 else rank_lines[:197] + '…'
+    return {
+        'title': title,
+        'description': description,
+        'image_url': fallback_image,
+        'link_url': f"{base_url}?workflow={workflow_id}",
+        'rank': None,
+        'top_items': top_items,
+        'workflow_id': workflow_id,
+        'completed_at': completed_at,
+    }
+
+
+def _share_verdict_label(action: str) -> str:
+    a = (action or '').upper()
+    if a == 'BUY':
+        return '매수'
+    if a == 'SELL':
+        return '매도'
+    return '관망'
+
+
 def build_workflow_top3_telegram_message(workflow: dict[str, Any]) -> str:
     """Build a Korean Telegram summary for the completed scanner -> GraphRAG Top 3."""
     top3 = [item for item in (workflow.get('top3') or []) if isinstance(item, dict)]

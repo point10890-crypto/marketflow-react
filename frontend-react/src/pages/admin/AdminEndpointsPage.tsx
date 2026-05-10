@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type CompositionEvent as ReactCompositionEvent, type KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { MiroFishAlphaCandidate, MiroFishAnalyst, MiroFishDeepSeekStatus, MiroFishDeepSeekSummaryResult, MiroFishLayer, MiroFishLog, MiroFishNode, MiroFishRun, MiroFishScannerRun, MiroFishScannerStatus, MiroFishStatus, MiroFishTargetSnapshot, MiroFishWorkflow, mirofishApi } from '@/lib/mirofishApi';
+import { shareToKakao } from '@/lib/kakaoShare';
 
 const agentCounts = [3, 7, 10, 15];
 const defaultTarget = '삼성전자';
@@ -347,6 +348,48 @@ function AlphaBoardPanel({
     const replayGuardValue = outcomeSummary.lookahead_safe && !['failed', 'not_evaluated'].includes(outcomeStatus)
         ? 'ON'
         : (workflow?.outcome_status || outcomeStatus || '--');
+
+    // 카카오톡 공유 핸들러
+    async function handleShareTop3(workflowId: string) {
+        try {
+            const payload = await mirofishApi.getSharePayload(workflowId);
+            const result = await shareToKakao({
+                title: payload.title,
+                description: payload.description,
+                image_url: payload.image_url,
+                link_url: payload.link_url,
+            });
+            if (result === 'clipboard') {
+                window.alert('공유 링크를 클립보드에 복사했습니다.');
+            } else if (result === 'failed') {
+                window.alert('공유에 실패했습니다. 카카오 SDK 키를 확인해 주세요.');
+            }
+        } catch (err) {
+            console.error('[Share TOP 3] failed', err);
+            window.alert('공유 정보를 가져오지 못했습니다.');
+        }
+    }
+
+    async function handleShareRank(workflowId: string, rank: number) {
+        try {
+            const payload = await mirofishApi.getSharePayload(workflowId, rank);
+            const result = await shareToKakao({
+                title: payload.title,
+                description: payload.description,
+                image_url: payload.image_url,
+                link_url: payload.link_url,
+            });
+            if (result === 'clipboard') {
+                window.alert(`TOP ${rank} 공유 링크를 클립보드에 복사했습니다.`);
+            } else if (result === 'failed') {
+                window.alert('공유에 실패했습니다.');
+            }
+        } catch (err) {
+            console.error(`[Share TOP ${rank}] failed`, err);
+            window.alert('공유 정보를 가져오지 못했습니다.');
+        }
+    }
+
     return (
         <section className="mt-8 max-w-6xl rounded-xl border border-emerald-300/15 bg-slate-950/55 p-4 shadow-[0_18px_70px_rgba(16,185,129,0.12)] backdrop-blur">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -467,29 +510,65 @@ function AlphaBoardPanel({
                     </div>
 
                     {topWorkflow.length > 0 && (
-                        <div className="mt-3 grid gap-2 md:grid-cols-3">
-                            {topWorkflow.map((item, index) => (
-                                <div key={`${item.symbol}-${item.run_id}-${index}`} className="rounded-lg border border-cyan-300/15 bg-black/25 p-3">
-                                    <div className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-200/70">Top {index + 1}</div>
-                                    <div className="mt-1 truncate text-sm font-black text-white">{item.target || item.candidate?.display_name || item.symbol}</div>
-                                    <div className="mt-1 font-mono text-[11px] font-bold text-slate-400">{item.symbol || item.candidate?.symbol} · score {Math.round(Number(item.final_score || 0))}</div>
-                                    <div className="mt-2 inline-flex rounded-full border border-emerald-300/25 bg-emerald-300/10 px-2 py-1 text-[10px] font-black text-emerald-100">
-                                        {item.verdict?.action || 'HOLD'} {item.verdict?.confidence_pct || 0}%
-                                    </div>
-                                    <div className={`mt-2 inline-flex rounded-full border px-2 py-1 text-[10px] font-black ${outcomeTone(item.outcome?.status, item.outcome?.hit)}`}>
-                                        {item.outcome?.forward_return_pct === undefined || item.outcome?.forward_return_pct === null
-                                            ? String(item.outcome?.status || 'pending')
-                                            : `T${item.outcome.primary_horizon_days || '?'} ${formatSignedPct(item.outcome.forward_return_pct)}`}
-                                        {' '}
-                                        {item.outcome?.hit === true ? 'HIT' : item.outcome?.hit === false ? 'MISS' : 'PENDING'}
-                                    </div>
-                                    {item.outcome?.lookahead_safe && (
-                                        <div className="mt-2 text-[10px] font-bold uppercase tracking-[0.12em] text-emerald-200/60">
-                                            replay-safe after {item.outcome.entry_date}
-                                        </div>
-                                    )}
+                        <div className="mt-3 space-y-2">
+                            {/* TOP 3 일괄 공유 버튼 */}
+                            {workflow?.id && (
+                                <div className="flex items-center justify-between gap-2">
+                                    <span className="text-[10px] font-medium uppercase tracking-wider text-anthropic-darkMuted">
+                                        TOP 3 결과
+                                    </span>
+                                    <button
+                                        type="button"
+                                        onClick={() => handleShareTop3(workflow.id!)}
+                                        className="inline-flex items-center gap-1.5 rounded-lg border border-anthropic-darkLine bg-anthropic-dark2 px-3 py-1.5 text-[11px] font-medium text-anthropic-darkText transition-colors hover:border-yellow-400/40 hover:text-yellow-300"
+                                        title="카카오톡으로 TOP 3 공유"
+                                    >
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                                            <path d="M12 3C6.48 3 2 6.48 2 10.8c0 2.78 1.83 5.22 4.6 6.62l-1.12 4.05c-.1.36.31.65.62.45L11 19.2c.33.03.66.05 1 .05 5.52 0 10-3.48 10-7.8S17.52 3 12 3z"/>
+                                        </svg>
+                                        TOP 3 공유
+                                    </button>
                                 </div>
-                            ))}
+                            )}
+                            <div className="grid gap-2 md:grid-cols-3">
+                                {topWorkflow.map((item, index) => (
+                                    <div key={`${item.symbol}-${item.run_id}-${index}`} className="rounded-lg border border-anthropic-darkLine bg-anthropic-dark2 p-3">
+                                        <div className="flex items-center justify-between">
+                                            <div className="text-[10px] font-medium uppercase tracking-wider text-anthropic-orange">TOP {index + 1}</div>
+                                            {workflow?.id && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleShareRank(workflow.id!, index + 1)}
+                                                    className="inline-flex h-6 w-6 items-center justify-center rounded text-anthropic-darkMuted transition-colors hover:bg-yellow-400/10 hover:text-yellow-300"
+                                                    title={`카카오톡으로 TOP ${index + 1} 공유`}
+                                                    aria-label={`Share TOP ${index + 1} to KakaoTalk`}
+                                                >
+                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                                                        <path d="M12 3C6.48 3 2 6.48 2 10.8c0 2.78 1.83 5.22 4.6 6.62l-1.12 4.05c-.1.36.31.65.62.45L11 19.2c.33.03.66.05 1 .05 5.52 0 10-3.48 10-7.8S17.52 3 12 3z"/>
+                                                    </svg>
+                                                </button>
+                                            )}
+                                        </div>
+                                        <div className="mt-1 truncate text-sm font-medium text-anthropic-cream">{item.target || item.candidate?.display_name || item.symbol}</div>
+                                        <div className="mt-1 font-mono text-[11px] text-anthropic-darkMuted">{item.symbol || item.candidate?.symbol} · score {Math.round(Number(item.final_score || 0))}</div>
+                                        <div className="mt-2 inline-flex rounded-full border border-anthropic-darkLine bg-anthropic-dark px-2 py-1 text-[10px] font-medium text-anthropic-cream">
+                                            {item.verdict?.action || 'HOLD'} {item.verdict?.confidence_pct || 0}%
+                                        </div>
+                                        <div className={`mt-2 inline-flex rounded-full border px-2 py-1 text-[10px] font-medium ${outcomeTone(item.outcome?.status, item.outcome?.hit)}`}>
+                                            {item.outcome?.forward_return_pct === undefined || item.outcome?.forward_return_pct === null
+                                                ? String(item.outcome?.status || 'pending')
+                                                : `T${item.outcome.primary_horizon_days || '?'} ${formatSignedPct(item.outcome.forward_return_pct)}`}
+                                            {' '}
+                                            {item.outcome?.hit === true ? 'HIT' : item.outcome?.hit === false ? 'MISS' : 'PENDING'}
+                                        </div>
+                                        {item.outcome?.lookahead_safe && (
+                                            <div className="mt-2 text-[10px] font-medium uppercase tracking-wider text-anthropic-darkMuted">
+                                                replay-safe after {item.outcome.entry_date}
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     )}
                     {workflow?.status === 'no_new_events' && (
