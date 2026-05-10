@@ -619,21 +619,24 @@ function analystPositions(analysts: MiroFishAnalyst[]): MiroFishNode[] {
 
 function Stepper({ phase }: { phase: number }) {
     return (
-        <section className="rounded-xl border border-white/30 bg-white/[0.86] p-5 text-slate-900 shadow-[0_22px_80px_rgba(124,58,237,0.18)]">
-            <div className="relative grid gap-3 md:grid-cols-5">
-                <div className="absolute left-[10%] right-[10%] top-12 hidden h-px bg-slate-300/70 md:block" />
-                {impactSteps.map((step, index) => {
-                    const active = index + 1 <= phase;
-                    return (
-                        <div key={step.no} className="relative flex flex-col items-center text-center">
-                            <div className={`grid h-[72px] w-[72px] place-items-center rounded-2xl border text-sm font-black shadow-lg ${active ? 'border-blue-300 bg-gradient-to-br from-blue-500 to-violet-600 text-white ring-8 ring-blue-300/25' : 'border-slate-200 bg-white/90 text-slate-300'}`}>
-                                {active ? <i className={`fas ${step.icon}`} /> : step.no}
+        <section className="rounded-xl border border-anthropic-darkLine bg-anthropic-dark p-4 sm:p-5">
+            {/* 모바일: 가로 스크롤 — 데스크탑: 5열 grid */}
+            <div className="-mx-4 sm:mx-0 overflow-x-auto sm:overflow-visible px-4 sm:px-0 snap-x snap-mandatory sm:snap-none">
+                <div className="relative flex gap-4 min-w-max sm:min-w-0 sm:grid sm:grid-cols-5 sm:gap-3">
+                    <div className="absolute left-[10%] right-[10%] top-9 sm:top-12 hidden h-px bg-anthropic-darkLine sm:block" />
+                    {impactSteps.map((step, index) => {
+                        const active = index + 1 <= phase;
+                        return (
+                            <div key={step.no} className="relative flex flex-col items-center text-center w-20 sm:w-auto shrink-0 sm:shrink snap-start">
+                                <div className={`grid h-14 w-14 sm:h-[72px] sm:w-[72px] place-items-center rounded-xl border text-sm font-medium transition-colors ${active ? 'border-anthropic-orange bg-anthropic-orange text-white' : 'border-anthropic-darkLine bg-anthropic-dark2 text-anthropic-darkMuted'}`}>
+                                    {active ? <i className={`fas ${step.icon} text-base sm:text-lg`} /> : step.no}
+                                </div>
+                                <div className={`mt-2 sm:mt-3 text-[11px] sm:text-xs font-medium ${active ? 'text-anthropic-cream' : 'text-anthropic-darkMuted'}`}>{step.ko}</div>
+                                <div className={`mt-0.5 text-[9px] sm:text-[10px] font-medium tracking-wider ${active ? 'text-anthropic-orange' : 'text-anthropic-darkMuted'}`}>{step.en}</div>
                             </div>
-                            <div className={`mt-3 text-xs font-black ${active ? 'text-slate-900' : 'text-slate-300'}`}>{step.ko}</div>
-                            <div className={`mt-0.5 text-[10px] font-bold tracking-[0.18em] ${active ? 'text-blue-500' : 'text-slate-300'}`}>{step.en}</div>
-                        </div>
-                    );
-                })}
+                        );
+                    })}
+                </div>
             </div>
         </section>
     );
@@ -1623,13 +1626,13 @@ export default function AdminEndpointsPage() {
         <div className="space-y-5">
             {/* Anthropic-style hero — warm dark, single orange accent, serif headline */}
             <section className="rounded-xl border border-anthropic-darkLine bg-anthropic-dark">
-                <div className="px-5 py-7 md:px-8 md:py-10">
-                    <div className="flex flex-wrap items-center justify-between gap-3">
-                        <div className="inline-flex items-center gap-2 rounded-full border border-anthropic-darkLine bg-anthropic-dark2 px-3 py-1.5 text-xs font-medium text-anthropic-darkText">
+                <div className="px-4 py-5 sm:px-5 sm:py-7 md:px-8 md:py-10">
+                    <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3">
+                        <div className="inline-flex items-center gap-1.5 sm:gap-2 rounded-full border border-anthropic-darkLine bg-anthropic-dark2 px-2.5 sm:px-3 py-1 sm:py-1.5 text-[11px] sm:text-xs font-medium text-anthropic-darkText">
                             <i className="fas fa-lock text-anthropic-orange" />
                             관리자 전용 리서치 콘솔
                         </div>
-                        <div className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium ${
+                        <div className={`inline-flex items-center gap-1.5 sm:gap-2 rounded-full border px-2.5 sm:px-3 py-1 sm:py-1.5 text-[11px] sm:text-xs font-medium ${
                             apiState === 'error'
                                 ? 'border-red-500/30 bg-red-500/[0.08] text-red-300'
                                 : apiState === 'running'
@@ -1645,23 +1648,23 @@ export default function AdminEndpointsPage() {
                         </div>
                     </div>
 
-                    <div className="mt-8 max-w-4xl">
-                        <h1 className="font-serif text-[40px] font-medium leading-[1.05] tracking-tight text-anthropic-cream md:text-[64px]">
+                    <div className="mt-6 sm:mt-8 max-w-4xl">
+                        <h1 className="font-serif text-[28px] sm:text-[40px] md:text-[64px] font-medium leading-[1.1] sm:leading-[1.05] tracking-tight text-anthropic-cream">
                             MiroFish <span className="italic">Market Brain</span>
-                            <span className="block text-anthropic-darkMuted text-[28px] md:text-[40px] mt-1 font-normal">
+                            <span className="block text-anthropic-darkMuted text-[20px] sm:text-[28px] md:text-[40px] mt-1 font-normal">
                                 GraphRAG Analysis
                             </span>
                         </h1>
-                        <p className="mt-5 max-w-2xl text-base font-normal leading-7 text-anthropic-darkText md:text-lg">
+                        <p className="mt-4 sm:mt-5 max-w-2xl text-sm sm:text-base md:text-lg font-normal leading-6 sm:leading-7 text-anthropic-darkText">
                             Brain 시그널 · 인과 메모리 · 5인 에이전트 토론 · CIO 판정을 단일 콘솔에서 연결합니다.
                         </p>
                     </div>
 
-                    <div className="mt-6 flex flex-wrap gap-2">
+                    <div className="mt-4 sm:mt-6 flex flex-wrap gap-1.5 sm:gap-2">
                         {brainSignals.map((signal) => (
-                            <span key={signal.label} className="inline-flex items-center gap-2 rounded-full border border-anthropic-darkLine bg-anthropic-dark2 px-4 py-1.5 text-xs font-medium text-anthropic-darkMuted">
+                            <span key={signal.label} className="inline-flex items-center gap-1.5 sm:gap-2 rounded-full border border-anthropic-darkLine bg-anthropic-dark2 px-2.5 sm:px-4 py-1 sm:py-1.5 text-[11px] sm:text-xs font-medium text-anthropic-darkMuted">
                                 <span className="tracking-wider">{signal.label}</span>
-                                <span className="text-anthropic-cream font-mono text-sm">{signal.value}</span>
+                                <span className="text-anthropic-cream font-mono text-xs sm:text-sm">{signal.value}</span>
                             </span>
                         ))}
                     </div>
@@ -1688,7 +1691,7 @@ export default function AdminEndpointsPage() {
                     />
 
                     <form
-                        className="mt-8 max-w-4xl rounded-xl border border-anthropic-darkLine bg-anthropic-dark2 p-2"
+                        className="mt-6 sm:mt-8 max-w-4xl rounded-xl border border-anthropic-darkLine bg-anthropic-dark2 p-1.5 sm:p-2"
                         onSubmit={(event) => {
                             event.preventDefault();
                             const formTarget = new FormData(event.currentTarget).get('target');
@@ -1835,41 +1838,41 @@ export default function AdminEndpointsPage() {
 
             {isAnalyzing && <ImpactPanel phase={phase} run={run} apiState={apiState} />}
 
-            {/* Anthropic-style endpoint cards — flat warm-dark with single accent */}
-            <div className="grid gap-3 lg:grid-cols-3">
+            {/* Anthropic-style endpoint cards — mobile 2col, desktop 3col */}
+            <div className="grid gap-2 sm:gap-3 grid-cols-2 lg:grid-cols-3">
                 {endpointDefinitions.map((endpoint) => {
                     const state = endpointState[endpoint.key];
                     return (
-                        <section key={endpoint.key} className="rounded-xl border border-anthropic-darkLine bg-anthropic-dark p-5 transition-colors hover:border-anthropic-orange/30">
-                            <div className="flex items-start justify-between gap-3">
-                                <span className="grid h-10 w-10 place-items-center rounded-lg border border-anthropic-darkLine bg-anthropic-dark2">
-                                    <i className={`fas ${endpoint.icon} ${endpoint.color}`} />
+                        <section key={endpoint.key} className="rounded-xl border border-anthropic-darkLine bg-anthropic-dark p-3 sm:p-5 transition-colors hover:border-anthropic-orange/30 min-w-0">
+                            <div className="flex items-start justify-between gap-1.5 sm:gap-2">
+                                <span className="grid h-8 w-8 sm:h-10 sm:w-10 shrink-0 place-items-center rounded-lg border border-anthropic-darkLine bg-anthropic-dark2">
+                                    <i className={`fas ${endpoint.icon} ${endpoint.color} text-xs sm:text-base`} />
                                 </span>
-                                <span className={`rounded-full border px-2.5 py-1 text-[11px] font-medium tracking-wide ${endpointStatusTone(state)}`}>
+                                <span className={`rounded-full border px-1.5 sm:px-2 py-0.5 sm:py-1 text-[9px] sm:text-[11px] font-medium tracking-wide ${endpointStatusTone(state)}`}>
                                     {state.toUpperCase()}
                                 </span>
                             </div>
-                            <h2 className="mt-4 font-serif text-lg font-medium text-anthropic-cream">{endpoint.title}</h2>
-                            <div className="mt-2 flex items-center gap-2 font-mono text-[11px] text-anthropic-darkMuted">
-                                <span className="rounded border border-anthropic-darkLine bg-anthropic-dark2 px-1.5 py-0.5 text-anthropic-orange">{endpoint.method}</span>
+                            <h2 className="mt-2 sm:mt-4 font-serif text-sm sm:text-lg font-medium text-anthropic-cream truncate">{endpoint.title}</h2>
+                            <div className="mt-1 sm:mt-2 flex items-center gap-1 sm:gap-1.5 font-mono text-[9px] sm:text-[11px] text-anthropic-darkMuted min-w-0">
+                                <span className="rounded border border-anthropic-darkLine bg-anthropic-dark2 px-1 sm:px-1.5 py-0.5 text-anthropic-orange shrink-0">{endpoint.method}</span>
                                 <span className="truncate">{endpoint.path}</span>
                             </div>
-                            <p className="mt-3 truncate text-sm text-anthropic-darkText">{endpointMetrics[endpoint.key]}</p>
+                            <p className="mt-1.5 sm:mt-3 truncate text-[11px] sm:text-sm text-anthropic-darkText">{endpointMetrics[endpoint.key]}</p>
                         </section>
                     );
                 })}
             </div>
 
-            {/* Pipeline status */}
-            <section className="rounded-xl border border-anthropic-darkLine bg-anthropic-dark p-5">
+            {/* Pipeline status — mobile horizontal scroll, desktop 5-column grid */}
+            <section className="rounded-xl border border-anthropic-darkLine bg-anthropic-dark p-4 sm:p-5">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
-                        <h2 className="font-serif text-lg font-medium text-anthropic-cream">파이프라인 상태</h2>
-                        <p className="mt-1 text-sm text-anthropic-darkMuted">
+                        <h2 className="font-serif text-base sm:text-lg font-medium text-anthropic-cream">파이프라인 상태</h2>
+                        <p className="mt-1 text-xs sm:text-sm text-anthropic-darkMuted">
                             {status?.pipeline?.status || '/api/admin/mirofish/status 응답 대기 중'}
                         </p>
                     </div>
-                    <span className={`rounded-full border px-3 py-1.5 text-xs font-medium ${
+                    <span className={`rounded-full border px-2.5 sm:px-3 py-1 sm:py-1.5 text-[11px] sm:text-xs font-medium ${
                         apiState === 'error'
                             ? 'border-red-500/30 bg-red-500/[0.08] text-red-400'
                             : 'border-green-500/30 bg-green-500/[0.08] text-green-400'
@@ -1878,28 +1881,31 @@ export default function AdminEndpointsPage() {
                     </span>
                 </div>
 
-                <div className="mt-5 grid gap-2 md:grid-cols-5">
-                    {runSteps.map((step, index) => {
-                        const linkedState = endpointState[runStepEndpoints[index]];
-                        const ready = linkedState === 'ok' && (!isAnalyzing || index + 1 <= phase);
-                        return (
-                            <div key={step} className="rounded-lg border border-anthropic-darkLine bg-anthropic-dark2 p-3">
-                                <div className="flex items-center justify-between">
-                                    <span className="text-[11px] font-medium uppercase tracking-wider text-anthropic-darkMuted">단계 {index + 1}</span>
-                                    <span className={`h-1.5 w-1.5 rounded-full ${
-                                        ready ? 'bg-green-400' :
-                                        linkedState === 'error' ? 'bg-red-400' :
-                                        linkedState === 'loading' ? 'bg-anthropic-orange animate-pulse' :
-                                        'bg-anthropic-darkMuted'
-                                    }`} />
+                {/* 모바일: 가로 스크롤 (snap), 태블릿+: 5열 grid */}
+                <div className="mt-4 sm:mt-5 -mx-4 sm:mx-0 overflow-x-auto sm:overflow-visible px-4 sm:px-0 snap-x snap-mandatory sm:snap-none">
+                    <div className="flex gap-2 min-w-max sm:min-w-0 sm:grid sm:grid-cols-5">
+                        {runSteps.map((step, index) => {
+                            const linkedState = endpointState[runStepEndpoints[index]];
+                            const ready = linkedState === 'ok' && (!isAnalyzing || index + 1 <= phase);
+                            return (
+                                <div key={step} className="rounded-lg border border-anthropic-darkLine bg-anthropic-dark2 p-3 w-36 sm:w-auto shrink-0 sm:shrink snap-start">
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-[10px] sm:text-[11px] font-medium uppercase tracking-wider text-anthropic-darkMuted">단계 {index + 1}</span>
+                                        <span className={`h-1.5 w-1.5 rounded-full ${
+                                            ready ? 'bg-green-400' :
+                                            linkedState === 'error' ? 'bg-red-400' :
+                                            linkedState === 'loading' ? 'bg-anthropic-orange animate-pulse' :
+                                            'bg-anthropic-darkMuted'
+                                        }`} />
+                                    </div>
+                                    <div className="mt-2 sm:mt-3 text-sm font-medium text-anthropic-cream">{step}</div>
+                                    <div className="mt-0.5 sm:mt-1 text-[11px] sm:text-xs text-anthropic-darkMuted">
+                                        {ready ? '엔드포인트 확인' : linkedState === 'error' ? '오류' : linkedState === 'loading' ? '로딩 중' : '대기 중'}
+                                    </div>
                                 </div>
-                                <div className="mt-3 text-sm font-medium text-anthropic-cream">{step}</div>
-                                <div className="mt-1 text-xs text-anthropic-darkMuted">
-                                    {ready ? '엔드포인트 확인' : linkedState === 'error' ? '오류' : linkedState === 'loading' ? '로딩 중' : '대기 중'}
-                                </div>
-                            </div>
-                        );
-                    })}
+                            );
+                        })}
+                    </div>
                 </div>
             </section>
         </div>
