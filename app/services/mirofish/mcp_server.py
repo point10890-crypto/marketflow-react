@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 from typing import Any
 
 import app.services.mirofish.alpha_scanner as alpha_scanner
@@ -15,13 +16,24 @@ except ImportError:  # pragma: no cover - exercised only when dependency is abse
     FastMCP = None  # type: ignore[assignment]
 
 
-def create_mcp_server() -> Any:
+def create_mcp_server(
+    *,
+    host: str | None = None,
+    port: int | None = None,
+    streamable_http_path: str | None = None,
+) -> Any:
     """Create a FastMCP server exposing MiroFish autonomous tools."""
     if FastMCP is None:
         raise RuntimeError('mcp package is not installed. Install requirements.txt first.')
+    clean_host = host or os.getenv('MIROFISH_MCP_HOST', '127.0.0.1')
+    clean_port = int(port or os.getenv('MIROFISH_MCP_PORT', '8765'))
+    clean_path = streamable_http_path or os.getenv('MIROFISH_MCP_PATH', '/mcp')
 
     mcp = FastMCP(
         'MarketFlow MiroFish Autonomous MCP',
+        host=clean_host,
+        port=clean_port,
+        streamable_http_path=clean_path,
         stateless_http=True,
         json_response=True,
     )
