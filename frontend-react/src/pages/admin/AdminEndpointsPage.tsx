@@ -52,17 +52,17 @@ type EndpointStatus = 'idle' | 'loading' | 'ok' | 'error';
 type TargetCandidate = NonNullable<MiroFishTargetSnapshot['candidates']>[number];
 
 const endpointDefinitions: Array<{ key: EndpointKey; method: string; path: string; title: string; icon: string; color: string }> = [
-    { key: 'status', method: 'GET', path: '/api/admin/mirofish/status', title: 'Service Status', icon: 'fa-satellite-dish', color: 'text-cyan-300' },
-    { key: 'dataSources', method: 'GET', path: '/api/admin/mirofish/data-sources', title: 'Data Sources', icon: 'fa-database', color: 'text-teal-300' },
-    { key: 'resolve', method: 'GET', path: '/api/admin/mirofish/targets/resolve', title: 'Target Resolve', icon: 'fa-crosshairs', color: 'text-blue-300' },
-    { key: 'history', method: 'GET', path: '/api/admin/mirofish/runs', title: 'Run History', icon: 'fa-clock-rotate-left', color: 'text-slate-300' },
-    { key: 'createRun', method: 'POST', path: '/api/admin/mirofish/runs', title: 'Create Run', icon: 'fa-play', color: 'text-violet-300' },
-    { key: 'runDetail', method: 'GET', path: '/api/admin/mirofish/runs/{id}', title: 'Run Detail', icon: 'fa-file-code', color: 'text-indigo-300' },
-    { key: 'graph', method: 'GET', path: '/api/admin/mirofish/runs/{id}/graph', title: 'Graph Artifact', icon: 'fa-project-diagram', color: 'text-emerald-300' },
-    { key: 'events', method: 'GET', path: '/api/admin/mirofish/runs/{id}/events', title: 'Event Feed', icon: 'fa-stream', color: 'text-amber-300' },
-    { key: 'report', method: 'GET', path: '/api/admin/mirofish/runs/{id}/report', title: 'Report', icon: 'fa-scroll', color: 'text-rose-300' },
-    { key: 'deepseek', method: 'POST', path: '/api/admin/mirofish/deepseek/scanner-summary', title: 'DeepSeek V2', icon: 'fa-wand-magic-sparkles', color: 'text-emerald-300' },
-    { key: 'workflow', method: 'POST', path: '/api/admin/mirofish/workflow/scan-analyze', title: 'MCP Top 3', icon: 'fa-network-wired', color: 'text-cyan-300' },
+    { key: 'status', method: 'GET', path: '/api/admin/mirofish/status', title: 'Service Status', icon: 'fa-satellite-dish', color: 'text-anthropic-darkText' },
+    { key: 'dataSources', method: 'GET', path: '/api/admin/mirofish/data-sources', title: 'Data Sources', icon: 'fa-database', color: 'text-anthropic-darkText' },
+    { key: 'resolve', method: 'GET', path: '/api/admin/mirofish/targets/resolve', title: 'Target Resolve', icon: 'fa-crosshairs', color: 'text-anthropic-darkText' },
+    { key: 'history', method: 'GET', path: '/api/admin/mirofish/runs', title: 'Run History', icon: 'fa-clock-rotate-left', color: 'text-anthropic-darkText' },
+    { key: 'createRun', method: 'POST', path: '/api/admin/mirofish/runs', title: 'Create Run', icon: 'fa-play', color: 'text-anthropic-orange' },
+    { key: 'runDetail', method: 'GET', path: '/api/admin/mirofish/runs/{id}', title: 'Run Detail', icon: 'fa-file-code', color: 'text-anthropic-darkText' },
+    { key: 'graph', method: 'GET', path: '/api/admin/mirofish/runs/{id}/graph', title: 'Graph Artifact', icon: 'fa-project-diagram', color: 'text-anthropic-darkText' },
+    { key: 'events', method: 'GET', path: '/api/admin/mirofish/runs/{id}/events', title: 'Event Feed', icon: 'fa-stream', color: 'text-anthropic-darkText' },
+    { key: 'report', method: 'GET', path: '/api/admin/mirofish/runs/{id}/report', title: 'Report', icon: 'fa-scroll', color: 'text-anthropic-darkText' },
+    { key: 'deepseek', method: 'POST', path: '/api/admin/mirofish/deepseek/scanner-summary', title: 'DeepSeek V2', icon: 'fa-wand-magic-sparkles', color: 'text-anthropic-orange' },
+    { key: 'workflow', method: 'POST', path: '/api/admin/mirofish/workflow/scan-analyze', title: 'MCP Top 3', icon: 'fa-network-wired', color: 'text-anthropic-orange' },
 ];
 
 function clampCount(value: unknown, fallback: number) {
@@ -78,10 +78,11 @@ function verdictTone(verdict?: string) {
 }
 
 function endpointStatusTone(state: EndpointStatus) {
-    if (state === 'ok') return 'border-emerald-400/20 bg-emerald-400/10 text-emerald-300';
-    if (state === 'loading') return 'border-cyan-400/20 bg-cyan-400/10 text-cyan-300';
-    if (state === 'error') return 'border-rose-400/20 bg-rose-400/10 text-rose-300';
-    return 'border-white/10 bg-white/[0.04] text-gray-500';
+    // Anthropic style: 단일 액센트 + 의미적 색상 최소화
+    if (state === 'ok') return 'border-green-500/30 bg-green-500/[0.08] text-green-400';
+    if (state === 'loading') return 'border-anthropic-orange/30 bg-anthropic-orange/[0.10] text-anthropic-orange';
+    if (state === 'error') return 'border-red-500/30 bg-red-500/[0.08] text-red-400';
+    return 'border-anthropic-darkLine bg-anthropic-dark2 text-anthropic-darkMuted';
 }
 
 function targetCandidateLabel(candidate?: TargetCandidate | null): string {
@@ -1620,39 +1621,47 @@ export default function AdminEndpointsPage() {
 
     return (
         <div className="space-y-5">
-            <section className="relative overflow-hidden rounded-xl border border-white/[0.07] bg-[#111113]">
-                <div className="absolute inset-0 bg-[linear-gradient(120deg,rgba(20,184,166,0.22),rgba(124,58,237,0.24)_46%,rgba(245,158,11,0.16))]" />
-                <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(9,9,11,0.10),rgba(9,9,11,0.74))]" />
-
-                <div className="relative px-5 py-7 md:px-8 md:py-10">
+            {/* Anthropic-style hero — warm dark, single orange accent, serif headline */}
+            <section className="rounded-xl border border-anthropic-darkLine bg-anthropic-dark">
+                <div className="px-5 py-7 md:px-8 md:py-10">
                     <div className="flex flex-wrap items-center justify-between gap-3">
-                        <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-bold text-white/80 backdrop-blur">
-                            <i className="fas fa-lock text-red-300" />
+                        <div className="inline-flex items-center gap-2 rounded-full border border-anthropic-darkLine bg-anthropic-dark2 px-3 py-1.5 text-xs font-medium text-anthropic-darkText">
+                            <i className="fas fa-lock text-anthropic-orange" />
                             관리자 전용 리서치 콘솔
                         </div>
-                        <div className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-bold ${apiState === 'error' ? 'border-rose-300/20 bg-rose-300/10 text-rose-200' : 'border-cyan-300/20 bg-cyan-300/10 text-cyan-200'}`}>
-                            <i className="fas fa-satellite-dish" />
+                        <div className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium ${
+                            apiState === 'error'
+                                ? 'border-red-500/30 bg-red-500/[0.08] text-red-300'
+                                : apiState === 'running'
+                                    ? 'border-anthropic-orange/30 bg-anthropic-orange/[0.10] text-anthropic-orange'
+                                    : 'border-anthropic-darkLine bg-anthropic-dark2 text-anthropic-darkMuted'
+                        }`}>
+                            <span className={`inline-block w-1.5 h-1.5 rounded-full ${
+                                apiState === 'error' ? 'bg-red-400' :
+                                apiState === 'running' ? 'bg-anthropic-orange animate-pulse' :
+                                'bg-anthropic-darkMuted'
+                            }`} />
                             {apiState === 'checking' ? 'MiroFish 점검 중' : apiState === 'running' ? '분석 실행 중' : apiState === 'error' ? 'API 오류' : 'MiroFish 준비됨'}
                         </div>
                     </div>
 
                     <div className="mt-8 max-w-4xl">
-                        <h1 className="text-[40px] font-black leading-[0.98] tracking-tight text-white md:text-[72px]">
-                            MiroFish Market Brain
-                            <span className="block bg-gradient-to-r from-cyan-200 via-violet-300 to-amber-200 bg-clip-text text-transparent">
+                        <h1 className="font-serif text-[40px] font-medium leading-[1.05] tracking-tight text-anthropic-cream md:text-[64px]">
+                            MiroFish <span className="italic">Market Brain</span>
+                            <span className="block text-anthropic-darkMuted text-[28px] md:text-[40px] mt-1 font-normal">
                                 GraphRAG Analysis
                             </span>
                         </h1>
-                        <p className="mt-5 max-w-2xl text-base font-semibold leading-7 text-slate-300 md:text-lg">
-                            Brain 시그널 · 인과 메모리 · 5인 에이전트 토론 · CIO 판정을 관리자 MiroFish API 로 연결합니다.
+                        <p className="mt-5 max-w-2xl text-base font-normal leading-7 text-anthropic-darkText md:text-lg">
+                            Brain 시그널 · 인과 메모리 · 5인 에이전트 토론 · CIO 판정을 단일 콘솔에서 연결합니다.
                         </p>
                     </div>
 
                     <div className="mt-6 flex flex-wrap gap-2">
                         {brainSignals.map((signal) => (
-                            <span key={signal.label} className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/80 px-4 py-2 text-xs font-black text-slate-500 shadow-lg shadow-black/10">
-                                <span className="tracking-[0.18em]">{signal.label}</span>
-                                <span className={`${signal.tone} text-sm`}>{signal.value}</span>
+                            <span key={signal.label} className="inline-flex items-center gap-2 rounded-full border border-anthropic-darkLine bg-anthropic-dark2 px-4 py-1.5 text-xs font-medium text-anthropic-darkMuted">
+                                <span className="tracking-wider">{signal.label}</span>
+                                <span className="text-anthropic-cream font-mono text-sm">{signal.value}</span>
                             </span>
                         ))}
                     </div>
@@ -1679,7 +1688,7 @@ export default function AdminEndpointsPage() {
                     />
 
                     <form
-                        className="mt-8 max-w-4xl rounded-xl border border-cyan-300/40 bg-white/90 p-2 shadow-[0_18px_70px_rgba(34,211,238,0.22)]"
+                        className="mt-8 max-w-4xl rounded-xl border border-anthropic-darkLine bg-anthropic-dark2 p-2"
                         onSubmit={(event) => {
                             event.preventDefault();
                             const formTarget = new FormData(event.currentTarget).get('target');
@@ -1705,11 +1714,11 @@ export default function AdminEndpointsPage() {
                         }}
                     >
                         <div className="flex flex-col gap-2 sm:flex-row">
-                            <label className="flex min-h-12 flex-1 items-center gap-3 px-3 text-slate-500">
-                                <i className="fas fa-search text-lg" />
+                            <label className="flex min-h-12 flex-1 items-center gap-3 px-3 text-anthropic-darkMuted">
+                                <i className="fas fa-search text-base" />
                                 <input
                                     name="target"
-                                    className="w-full bg-transparent text-base font-bold text-slate-900 outline-none placeholder:text-slate-400"
+                                    className="w-full bg-transparent text-base font-medium text-anthropic-cream outline-none placeholder:text-anthropic-darkMuted"
                                     placeholder="삼성전자, NVDA, BTC, FOMC 등 분석 대상 입력"
                                     value={target}
                                     onChange={(event) => {
@@ -1737,9 +1746,9 @@ export default function AdminEndpointsPage() {
                             <button
                                 type="submit"
                                 disabled={apiState === 'running'}
-                                className="min-h-12 rounded-lg bg-gradient-to-r from-blue-600 to-violet-600 px-6 text-sm font-black text-white shadow-lg shadow-violet-600/25 transition hover:brightness-110 disabled:cursor-wait disabled:opacity-75"
+                                className="min-h-12 rounded-lg bg-anthropic-orange px-6 text-sm font-medium text-white transition-colors hover:bg-anthropic-orangeHover disabled:cursor-wait disabled:opacity-50"
                             >
-                                {apiState === 'running' ? '분석 중' : '분석 시작'}
+                                {apiState === 'running' ? '분석 중…' : '분석 시작 →'}
                             </button>
                         </div>
                     </form>
@@ -1808,14 +1817,14 @@ export default function AdminEndpointsPage() {
 
                     <div className="mt-5 flex flex-wrap items-center gap-3">
                         <div className="flex items-center gap-2 rounded-xl border border-white/15 bg-white/75 px-4 py-2 text-xs font-bold text-slate-500 backdrop-blur">
-                            <span>에이전트</span>
-                            <button type="button" onClick={() => setAgentCount((value) => Math.max(1, value - 1))} className="grid h-8 w-8 place-items-center rounded-lg border border-slate-200 bg-white text-slate-700">-</button>
-                            <span className="text-xl font-black text-violet-600">{agentCount}</span>
-                            <button type="button" onClick={() => setAgentCount((value) => Math.min(15, value + 1))} className="grid h-8 w-8 place-items-center rounded-lg border border-slate-200 bg-white text-slate-700">+</button>
+                            <span className="text-anthropic-darkMuted">에이전트</span>
+                            <button type="button" onClick={() => setAgentCount((value) => Math.max(1, value - 1))} className="grid h-8 w-8 place-items-center rounded-lg border border-anthropic-darkLine bg-anthropic-dark text-anthropic-darkText hover:text-anthropic-cream">-</button>
+                            <span className="text-xl font-medium text-anthropic-orange font-mono">{agentCount}</span>
+                            <button type="button" onClick={() => setAgentCount((value) => Math.min(15, value + 1))} className="grid h-8 w-8 place-items-center rounded-lg border border-anthropic-darkLine bg-anthropic-dark text-anthropic-darkText hover:text-anthropic-cream">+</button>
                         </div>
-                        <div className="flex items-center gap-1 rounded-xl border border-white/15 bg-white/45 p-1 backdrop-blur">
+                        <div className="flex items-center gap-1 rounded-xl border border-anthropic-darkLine bg-anthropic-dark2 p-1">
                             {agentCounts.map((count) => (
-                                <button key={count} type="button" onClick={() => setAgentCount(count)} className={`h-8 min-w-8 rounded-lg px-2 text-xs font-black ${count === agentCount ? 'bg-violet-600 text-white shadow-lg shadow-violet-500/30' : 'text-slate-500 hover:bg-white/60'}`}>
+                                <button key={count} type="button" onClick={() => setAgentCount(count)} className={`h-8 min-w-8 rounded-lg px-2 text-xs font-medium transition-colors ${count === agentCount ? 'bg-anthropic-orange text-white' : 'text-anthropic-darkMuted hover:text-anthropic-cream hover:bg-anthropic-dark'}`}>
                                     {count}
                                 </button>
                             ))}
@@ -1826,39 +1835,45 @@ export default function AdminEndpointsPage() {
 
             {isAnalyzing && <ImpactPanel phase={phase} run={run} apiState={apiState} />}
 
+            {/* Anthropic-style endpoint cards — flat warm-dark with single accent */}
             <div className="grid gap-3 lg:grid-cols-3">
                 {endpointDefinitions.map((endpoint) => {
                     const state = endpointState[endpoint.key];
                     return (
-                        <section key={endpoint.key} className="rounded-xl border border-white/[0.07] bg-[#141416] p-5">
+                        <section key={endpoint.key} className="rounded-xl border border-anthropic-darkLine bg-anthropic-dark p-5 transition-colors hover:border-anthropic-orange/30">
                             <div className="flex items-start justify-between gap-3">
-                                <span className="grid h-10 w-10 place-items-center rounded-lg bg-white/[0.06]">
+                                <span className="grid h-10 w-10 place-items-center rounded-lg border border-anthropic-darkLine bg-anthropic-dark2">
                                     <i className={`fas ${endpoint.icon} ${endpoint.color}`} />
                                 </span>
-                                <span className={`rounded-full border px-2.5 py-1 text-[11px] font-black ${endpointStatusTone(state)}`}>
+                                <span className={`rounded-full border px-2.5 py-1 text-[11px] font-medium tracking-wide ${endpointStatusTone(state)}`}>
                                     {state.toUpperCase()}
                                 </span>
                             </div>
-                            <h2 className="mt-4 text-lg font-black text-white">{endpoint.title}</h2>
-                            <div className="mt-2 flex items-center gap-2 font-mono text-[11px] font-bold text-gray-500">
-                                <span className="rounded bg-white/[0.05] px-1.5 py-0.5 text-cyan-200">{endpoint.method}</span>
+                            <h2 className="mt-4 font-serif text-lg font-medium text-anthropic-cream">{endpoint.title}</h2>
+                            <div className="mt-2 flex items-center gap-2 font-mono text-[11px] text-anthropic-darkMuted">
+                                <span className="rounded border border-anthropic-darkLine bg-anthropic-dark2 px-1.5 py-0.5 text-anthropic-orange">{endpoint.method}</span>
                                 <span className="truncate">{endpoint.path}</span>
                             </div>
-                            <p className="mt-3 truncate text-sm font-bold text-gray-400">{endpointMetrics[endpoint.key]}</p>
+                            <p className="mt-3 truncate text-sm text-anthropic-darkText">{endpointMetrics[endpoint.key]}</p>
                         </section>
                     );
                 })}
             </div>
 
-            <section className="rounded-xl border border-white/[0.07] bg-[#141416] p-5">
+            {/* Pipeline status */}
+            <section className="rounded-xl border border-anthropic-darkLine bg-anthropic-dark p-5">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
-                        <h2 className="text-lg font-black text-white">파이프라인 상태</h2>
-                        <p className="mt-1 text-sm text-gray-500">
+                        <h2 className="font-serif text-lg font-medium text-anthropic-cream">파이프라인 상태</h2>
+                        <p className="mt-1 text-sm text-anthropic-darkMuted">
                             {status?.pipeline?.status || '/api/admin/mirofish/status 응답 대기 중'}
                         </p>
                     </div>
-                    <span className={`rounded-full border px-3 py-1.5 text-xs font-black ${apiState === 'error' ? 'border-rose-500/20 bg-rose-500/10 text-rose-300' : 'border-emerald-500/20 bg-emerald-500/10 text-emerald-300'}`}>
+                    <span className={`rounded-full border px-3 py-1.5 text-xs font-medium ${
+                        apiState === 'error'
+                            ? 'border-red-500/30 bg-red-500/[0.08] text-red-400'
+                            : 'border-green-500/30 bg-green-500/[0.08] text-green-400'
+                    }`}>
                         {apiState === 'error' ? 'API 오류' : 'API 연결'}
                     </span>
                 </div>
@@ -1868,13 +1883,20 @@ export default function AdminEndpointsPage() {
                         const linkedState = endpointState[runStepEndpoints[index]];
                         const ready = linkedState === 'ok' && (!isAnalyzing || index + 1 <= phase);
                         return (
-                            <div key={step} className="rounded-lg border border-white/[0.06] bg-black/20 p-3">
+                            <div key={step} className="rounded-lg border border-anthropic-darkLine bg-anthropic-dark2 p-3">
                                 <div className="flex items-center justify-between">
-                                    <span className="text-[11px] font-black uppercase tracking-[0.14em] text-gray-600">단계 {index + 1}</span>
-                                    <span className={`h-2 w-2 rounded-full ${ready ? 'bg-emerald-400' : linkedState === 'error' ? 'bg-rose-400' : 'bg-amber-400/70'}`} />
+                                    <span className="text-[11px] font-medium uppercase tracking-wider text-anthropic-darkMuted">단계 {index + 1}</span>
+                                    <span className={`h-1.5 w-1.5 rounded-full ${
+                                        ready ? 'bg-green-400' :
+                                        linkedState === 'error' ? 'bg-red-400' :
+                                        linkedState === 'loading' ? 'bg-anthropic-orange animate-pulse' :
+                                        'bg-anthropic-darkMuted'
+                                    }`} />
                                 </div>
-                                <div className="mt-3 text-sm font-bold text-white">{step}</div>
-                                <div className="mt-1 text-xs text-gray-500">{ready ? '엔드포인트 확인' : linkedState === 'error' ? '오류' : '대기 중'}</div>
+                                <div className="mt-3 text-sm font-medium text-anthropic-cream">{step}</div>
+                                <div className="mt-1 text-xs text-anthropic-darkMuted">
+                                    {ready ? '엔드포인트 확인' : linkedState === 'error' ? '오류' : linkedState === 'loading' ? '로딩 중' : '대기 중'}
+                                </div>
                             </div>
                         );
                     })}
