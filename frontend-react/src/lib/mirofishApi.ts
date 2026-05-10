@@ -510,6 +510,82 @@ export interface MiroFishWorkflowStatus {
     checked_at?: string;
 }
 
+export interface MiroFishAutonomousLearningFeedback {
+    available?: boolean;
+    service?: string;
+    generated_at?: string;
+    mode?: string;
+    production_weights_mutated?: boolean;
+    lookahead_safe?: boolean;
+    workflow_count?: number;
+    item_count?: number;
+    evaluated_count?: number;
+    hit_count?: number;
+    miss_count?: number;
+    hit_rate_pct?: number | null;
+    average_forward_return_pct?: number | null;
+    recommendation_count?: number;
+    recommendations?: Array<Record<string, any>>;
+    errors?: Array<Record<string, any>>;
+}
+
+export interface MiroFishAutonomousStatus {
+    service?: string;
+    ready?: boolean;
+    mode?: string;
+    mutation_enabled?: boolean;
+    shared_secret_configured?: boolean;
+    send_confirmation_phrase?: string;
+    telegram?: {
+        personal_configured?: boolean;
+        channel_configured?: boolean;
+        personal_chat_present?: boolean;
+        channel_chat_present?: boolean;
+    };
+    scanner?: Record<string, any>;
+    workflow?: MiroFishWorkflowStatus | Record<string, any>;
+    learning?: MiroFishAutonomousLearningFeedback;
+    tools?: string[];
+    resources?: string[];
+    checked_at?: string;
+}
+
+export interface MiroFishAutonomousActionResult {
+    ok?: boolean;
+    status?: string;
+    dry_run?: boolean;
+    run_id?: string;
+    workflow_id?: string;
+    scanner_run_id?: string;
+    candidate_count?: number;
+    new_event_count?: number;
+    event_count?: number;
+    analysis_count?: number;
+    top_count?: number;
+    top_symbols?: string[];
+    top_names?: string[];
+    telegram_sent?: boolean;
+    telegram_sent_at?: string | null;
+    telegram_skipped_reason?: string;
+    state_committed?: boolean;
+    event_state_committed?: boolean;
+    alert_blocked?: boolean;
+    blocked_reason?: string | null;
+    message_chars?: number;
+    outcome_status?: string;
+    learning_feedback?: MiroFishAutonomousLearningFeedback;
+    resource_links?: Record<string, string>;
+    events?: Array<{
+        key?: string;
+        symbol?: string;
+        name?: string;
+        market?: string;
+        alpha_score?: number;
+        risk_score?: number;
+        action?: string;
+    }>;
+}
+
 type RawObject = Record<string, any>;
 
 const phaseByName: Record<string, number> = {
@@ -1087,6 +1163,36 @@ export const mirofishApi = {
         request,
         undefined,
         300000,
+    ),
+    getAutonomousStatus: async () => fetchAuthAPI<MiroFishAutonomousStatus>(
+        '/api/admin/mirofish/autonomous/status',
+    ),
+    getAutonomousLearning: async () => fetchAuthAPI<MiroFishAutonomousLearningFeedback>(
+        '/api/admin/mirofish/autonomous/learning',
+    ),
+    runAutonomousCandidateAlert: async (request: Record<string, any> = {}) => postAuthAPI<MiroFishAutonomousActionResult>(
+        '/api/admin/mirofish/autonomous/candidate-alert',
+        request,
+        undefined,
+        180000,
+    ),
+    runAutonomousScanAnalysis: async (request: Record<string, any> = {}) => postAuthAPI<MiroFishAutonomousActionResult>(
+        '/api/admin/mirofish/autonomous/scan-analysis',
+        request,
+        undefined,
+        300000,
+    ),
+    refreshAutonomousLearning: async (request: Record<string, any> = {}) => postAuthAPI<MiroFishAutonomousLearningFeedback>(
+        '/api/admin/mirofish/autonomous/learning/refresh',
+        request,
+        undefined,
+        180000,
+    ),
+    sendLatestAutonomousWorkflowTelegram: async (request: Record<string, any> = {}) => postAuthAPI<MiroFishAutonomousActionResult>(
+        '/api/admin/mirofish/autonomous/telegram/latest',
+        request,
+        undefined,
+        120000,
     ),
     /** 카카오톡 공유 payload — workflow의 TOP 3 또는 단일 rank. */
     getSharePayload: async (workflowId: string, rank?: number) => {

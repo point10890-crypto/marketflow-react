@@ -1,7 +1,9 @@
 import json
 
 import pytest
+from flask import Flask
 
+from app.routes.admin_mirofish import admin_mirofish_bp
 from app.services.mirofish import autonomous_mcp
 
 
@@ -189,3 +191,17 @@ def test_learning_feedback_is_advisory_and_lookahead_safe(isolated_autonomous_pa
     assert feedback['average_forward_return_pct'] == 2.25
     saved = json.loads((isolated_autonomous_paths / 'learning_feedback.json').read_text(encoding='utf-8'))
     assert saved['mode'] == 'advisory_feedback_only'
+
+
+def test_admin_autonomous_routes_are_registered():
+    app = Flask(__name__)
+    app.register_blueprint(admin_mirofish_bp, url_prefix='/api/admin/mirofish')
+
+    rules = {str(rule) for rule in app.url_map.iter_rules()}
+
+    assert '/api/admin/mirofish/autonomous/status' in rules
+    assert '/api/admin/mirofish/autonomous/learning' in rules
+    assert '/api/admin/mirofish/autonomous/candidate-alert' in rules
+    assert '/api/admin/mirofish/autonomous/scan-analysis' in rules
+    assert '/api/admin/mirofish/autonomous/learning/refresh' in rules
+    assert '/api/admin/mirofish/autonomous/telegram/latest' in rules

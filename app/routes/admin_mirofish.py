@@ -509,6 +509,81 @@ def start_workflow_scan_analyze():
     return jsonify(result), code
 
 
+def _autonomous_error_response(exc: Exception):
+    if isinstance(exc, PermissionError):
+        return jsonify({'error': str(exc), 'service': 'mirofish-autonomous-mcp'}), 403
+    if isinstance(exc, ValueError):
+        return jsonify({'error': str(exc), 'service': 'mirofish-autonomous-mcp'}), 400
+    return jsonify({
+        'error': f'{type(exc).__name__}: {exc}',
+        'service': 'mirofish-autonomous-mcp',
+    }), 500
+
+
+@admin_mirofish_bp.route('/autonomous/status', methods=['GET'])
+@admin_required
+def autonomous_status():
+    return jsonify(mirofish.get_autonomous_status())
+
+
+@admin_mirofish_bp.route('/autonomous/learning', methods=['GET'])
+@admin_required
+def get_autonomous_learning():
+    feedback = mirofish.read_learning_feedback()
+    if feedback is None:
+        return jsonify({'available': False})
+    return jsonify({'available': True, **feedback})
+
+
+@admin_mirofish_bp.route('/autonomous/candidate-alert', methods=['POST'])
+@admin_required
+def run_autonomous_candidate_alert():
+    payload = request.get_json(silent=True) or {}
+    try:
+        result = mirofish.run_candidate_detection_alert(payload)
+    except Exception as exc:
+        return _autonomous_error_response(exc)
+    code = 502 if result.get('status') == 'send_failed' else 200
+    return jsonify(result), code
+
+
+@admin_mirofish_bp.route('/autonomous/scan-analysis', methods=['POST'])
+@admin_required
+def run_autonomous_scan_analysis():
+    payload = request.get_json(silent=True) or {}
+    try:
+        result = mirofish.run_autonomous_scan_analysis(payload)
+    except Exception as exc:
+        return _autonomous_error_response(exc)
+    code = 202 if result.get('status') in {'queued', 'running'} else 200
+    if result.get('status') == 'telegram_send_failed':
+        code = 502
+    return jsonify(result), code
+
+
+@admin_mirofish_bp.route('/autonomous/learning/refresh', methods=['POST'])
+@admin_required
+def refresh_autonomous_learning():
+    payload = request.get_json(silent=True) or {}
+    try:
+        result = mirofish.refresh_learning_feedback(payload)
+    except Exception as exc:
+        return _autonomous_error_response(exc)
+    return jsonify(result)
+
+
+@admin_mirofish_bp.route('/autonomous/telegram/latest', methods=['POST'])
+@admin_required
+def send_latest_autonomous_workflow_telegram():
+    payload = request.get_json(silent=True) or {}
+    try:
+        result = mirofish.send_latest_workflow_telegram(payload)
+    except Exception as exc:
+        return _autonomous_error_response(exc)
+    code = 200 if result.get('ok') else 502
+    return jsonify(result), code
+
+
 @admin_mirofish_bp.route('/deepseek/status', methods=['GET'])
 @admin_required
 def deepseek_status():

@@ -26,6 +26,12 @@ const mockApi = vi.hoisted(() => ({
   getWorkflowOutcomes: vi.fn(),
   refreshWorkflowOutcomes: vi.fn(),
   startWorkflowScanAnalyze: vi.fn(),
+  getAutonomousStatus: vi.fn(),
+  getAutonomousLearning: vi.fn(),
+  runAutonomousCandidateAlert: vi.fn(),
+  runAutonomousScanAnalysis: vi.fn(),
+  refreshAutonomousLearning: vi.fn(),
+  sendLatestAutonomousWorkflowTelegram: vi.fn(),
 }));
 
 vi.mock('@/lib/mirofishApi', () => ({
@@ -56,7 +62,9 @@ function runPayload(target: string, status = 'running', overrides: Record<string
 async function renderPage() {
   render(<AdminEndpointsPage />);
   await waitFor(() => expect(mockApi.getStatus).toHaveBeenCalled());
-  return screen.getByRole('textbox');
+  const input = document.querySelector<HTMLInputElement>('input[name="target"]');
+  expect(input).toBeTruthy();
+  return input!;
 }
 
 beforeEach(() => {
@@ -301,6 +309,98 @@ beforeEach(() => {
     message_chars: 300,
     summary: deepSeekSummary,
   });
+  mockApi.getAutonomousStatus.mockResolvedValue({
+    service: 'mirofish-autonomous-mcp',
+    ready: true,
+    mode: 'scanner_workflow_learning_telegram_control_plane',
+    mutation_enabled: false,
+    shared_secret_configured: false,
+    send_confirmation_phrase: 'SEND_MIROFISH_AUTONOMOUS_ALERT',
+    telegram: {
+      personal_configured: true,
+      channel_configured: false,
+      personal_chat_present: true,
+      channel_chat_present: false,
+    },
+    learning: {
+      available: true,
+      evaluated_count: 2,
+      hit_rate_pct: 50,
+      average_forward_return_pct: 2.25,
+      production_weights_mutated: false,
+      recommendation_count: 1,
+    },
+    tools: [
+      'run_candidate_detection_alert',
+      'run_autonomous_scan_analysis',
+      'refresh_learning_feedback',
+      'send_latest_workflow_telegram',
+    ],
+    resources: ['mirofish://autonomous/status', 'mirofish://autonomous/learning'],
+    checked_at: '2026-05-10T00:00:00+09:00',
+  });
+  mockApi.getAutonomousLearning.mockResolvedValue({ available: false });
+  mockApi.runAutonomousCandidateAlert.mockResolvedValue({
+    ok: true,
+    status: 'dry_run',
+    dry_run: true,
+    run_id: 'mfas_auto',
+    candidate_count: 1,
+    new_event_count: 1,
+    telegram_sent: false,
+    events: [{
+      key: '000001:BUY_CANDIDATE',
+      symbol: '000001',
+      name: 'Alpha One',
+      market: 'KOSPI',
+      alpha_score: 82,
+      risk_score: 24,
+      action: 'BUY_CANDIDATE',
+    }],
+    resource_links: { scanner_run: 'mirofish://scanner/runs/mfas_auto' },
+  });
+  mockApi.runAutonomousScanAnalysis.mockResolvedValue({
+    ok: true,
+    status: 'dry_run',
+    dry_run: true,
+    workflow_id: 'wfmcp_auto',
+    scanner_run_id: 'mfas_auto',
+    event_count: 1,
+    candidate_count: 1,
+    top_count: 1,
+    top_symbols: ['000001'],
+    telegram_sent: false,
+    event_state_committed: false,
+    resource_links: { workflow: 'mirofish://workflows/wfmcp_auto' },
+  });
+  mockApi.refreshAutonomousLearning.mockResolvedValue({
+    service: 'mirofish-autonomous-learning',
+    generated_at: '2026-05-10T00:00:00+09:00',
+    mode: 'advisory_feedback_only',
+    production_weights_mutated: false,
+    lookahead_safe: true,
+    workflow_count: 1,
+    item_count: 2,
+    evaluated_count: 2,
+    hit_count: 1,
+    miss_count: 1,
+    hit_rate_pct: 50,
+    average_forward_return_pct: 2.25,
+    recommendations: [{
+      type: 'keep_current_weights',
+      action: 'monitor',
+      reason: 'recent evaluated outcomes do not require automatic production weight changes',
+    }],
+    errors: [],
+  });
+  mockApi.sendLatestAutonomousWorkflowTelegram.mockResolvedValue({
+    ok: true,
+    status: 'sent',
+    workflow_id: 'wfmcp_auto',
+    telegram_sent: true,
+    event_state_committed: false,
+    message_chars: 240,
+  });
 });
 
 describe('AdminEndpointsPage analysis start input', () => {
@@ -309,6 +409,8 @@ describe('AdminEndpointsPage analysis start input', () => {
 
     await waitFor(() => expect(mockApi.getLatestScannerRun).toHaveBeenCalled());
     expect(mockApi.getScannerStatus).toHaveBeenCalled();
+    expect(mockApi.getAutonomousStatus).toHaveBeenCalled();
+    expect(await screen.findByText('Autonomous MCP Control')).toBeTruthy();
     expect(await screen.findByText('Latest Alpha')).toBeTruthy();
     expect(await screen.findByText(/Last/)).toBeTruthy();
     expect(await screen.findByText(/Next/)).toBeTruthy();
@@ -317,6 +419,48 @@ describe('AdminEndpointsPage analysis start input', () => {
     expect(await screen.findByText('+10.00%')).toBeTruthy();
     expect(await screen.findByText(/T5 \+10.00%/)).toBeTruthy();
     expect(await screen.findByText(/replay-safe after 2026-05-07/i)).toBeTruthy();
+  });
+
+  it('runs autonomous MCP pre-service dry-runs from the admin panel', async () => {
+    await renderPage();
+
+    fireEvent.click(screen.getByRole('button', { name: /Detection dry-run/i }));
+
+    await waitFor(() => {
+      expect(mockApi.runAutonomousCandidateAlert).toHaveBeenCalledWith(expect.objectContaining({
+        dry_run: true,
+        send_telegram: false,
+        min_alpha: 70,
+        max_risk: 45,
+      }));
+    });
+    await waitFor(() => {
+      expect(screen.getAllByText(/mfas_auto/).length).toBeGreaterThan(0);
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: /Analysis dry-run/i }));
+
+    await waitFor(() => {
+      expect(mockApi.runAutonomousScanAnalysis).toHaveBeenCalledWith(expect.objectContaining({
+        dry_run: true,
+        sync: true,
+        send_telegram: false,
+        commit_event_state: false,
+        top_n: 3,
+      }));
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: /Learning preview/i }));
+
+    await waitFor(() => {
+      expect(mockApi.refreshAutonomousLearning).toHaveBeenCalledWith(expect.objectContaining({
+        commit: false,
+        limit: 20,
+      }));
+    });
+    await waitFor(() => {
+      expect(screen.getAllByText(/Learning feedback/i).length).toBeGreaterThan(0);
+    });
   });
 
   it('starts analysis when Enter is pressed after a chosung query', async () => {

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type CompositionEvent as ReactCompositionEvent, type KeyboardEvent as ReactKeyboardEvent } from 'react';
-import { MiroFishAlphaCandidate, MiroFishAnalyst, MiroFishDeepSeekStatus, MiroFishDeepSeekSummaryResult, MiroFishLayer, MiroFishLog, MiroFishNode, MiroFishRun, MiroFishScannerRun, MiroFishScannerStatus, MiroFishStatus, MiroFishTargetSnapshot, MiroFishWorkflow, mirofishApi } from '@/lib/mirofishApi';
+import { MiroFishAlphaCandidate, MiroFishAnalyst, MiroFishAutonomousActionResult, MiroFishAutonomousLearningFeedback, MiroFishAutonomousStatus, MiroFishDeepSeekStatus, MiroFishDeepSeekSummaryResult, MiroFishLayer, MiroFishLog, MiroFishNode, MiroFishRun, MiroFishScannerRun, MiroFishScannerStatus, MiroFishStatus, MiroFishTargetSnapshot, MiroFishWorkflow, mirofishApi } from '@/lib/mirofishApi';
 import { shareToKakao } from '@/lib/kakaoShare';
 
 const agentCounts = [3, 7, 10, 15];
@@ -48,7 +48,8 @@ type ApiState = 'checking' | 'ready' | 'error' | 'running';
 type AlphaScannerState = 'idle' | 'loading' | 'running' | 'ready' | 'error';
 type DeepSeekPanelState = 'idle' | 'checking' | 'summarizing' | 'ready' | 'sending' | 'sent' | 'error';
 type WorkflowPanelState = 'idle' | 'running' | 'completed' | 'no_new_events' | 'blocked' | 'error';
-type EndpointKey = 'status' | 'dataSources' | 'resolve' | 'history' | 'createRun' | 'runDetail' | 'graph' | 'events' | 'report' | 'deepseek' | 'workflow';
+type AutonomousPanelState = 'idle' | 'checking' | 'running' | 'ready' | 'sending' | 'sent' | 'error';
+type EndpointKey = 'status' | 'dataSources' | 'resolve' | 'history' | 'createRun' | 'runDetail' | 'graph' | 'events' | 'report' | 'deepseek' | 'workflow' | 'autonomous';
 type EndpointStatus = 'idle' | 'loading' | 'ok' | 'error';
 type TargetCandidate = NonNullable<MiroFishTargetSnapshot['candidates']>[number];
 
@@ -64,6 +65,7 @@ const endpointDefinitions: Array<{ key: EndpointKey; method: string; path: strin
     { key: 'report', method: 'GET', path: '/api/admin/mirofish/runs/{id}/report', title: 'Report', icon: 'fa-scroll', color: 'text-anthropic-darkText' },
     { key: 'deepseek', method: 'POST', path: '/api/admin/mirofish/deepseek/scanner-summary', title: 'DeepSeek V2', icon: 'fa-wand-magic-sparkles', color: 'text-anthropic-orange' },
     { key: 'workflow', method: 'POST', path: '/api/admin/mirofish/workflow/scan-analyze', title: 'MCP Top 3', icon: 'fa-network-wired', color: 'text-anthropic-orange' },
+    { key: 'autonomous', method: 'POST', path: '/api/admin/mirofish/autonomous/*', title: 'Autonomous MCP', icon: 'fa-robot', color: 'text-anthropic-orange' },
 ];
 
 function clampCount(value: unknown, fallback: number) {
@@ -690,6 +692,208 @@ function AlphaBoardPanel({
     );
 }
 
+function AutonomousMcpPanel({
+    status,
+    state,
+    result,
+    learning,
+    errorText,
+    confirmation,
+    sharedSecret,
+    onConfirmationChange,
+    onSharedSecretChange,
+    onRefresh,
+    onDetectionDryRun,
+    onAnalysisDryRun,
+    onLearningPreview,
+    onSendLatestTelegram,
+}: {
+    status: MiroFishAutonomousStatus | null;
+    state: AutonomousPanelState;
+    result?: MiroFishAutonomousActionResult | null;
+    learning?: MiroFishAutonomousLearningFeedback | null;
+    errorText?: string | null;
+    confirmation: string;
+    sharedSecret: string;
+    onConfirmationChange: (value: string) => void;
+    onSharedSecretChange: (value: string) => void;
+    onRefresh: () => void;
+    onDetectionDryRun: () => void;
+    onAnalysisDryRun: () => void;
+    onLearningPreview: () => void;
+    onSendLatestTelegram: () => void;
+}) {
+    const busy = state === 'checking' || state === 'running' || state === 'sending';
+    const mutationEnabled = Boolean(status?.mutation_enabled);
+    const secretRequired = Boolean(status?.shared_secret_configured);
+    const phrase = status?.send_confirmation_phrase || 'SEND_MIROFISH_AUTONOMOUS_ALERT';
+    const canSend = mutationEnabled && confirmation === phrase && (!secretRequired || sharedSecret.trim().length > 0) && !busy;
+    const learningView = learning || status?.learning || null;
+    const eventItems = result?.events || [];
+    const topSymbols = result?.top_symbols || [];
+    const statusTone = state === 'error'
+        ? 'border-rose-300/25 bg-rose-300/10 text-rose-100'
+        : state === 'ready' || state === 'sent'
+            ? 'border-emerald-300/25 bg-emerald-300/10 text-emerald-100'
+            : busy
+                ? 'border-cyan-300/25 bg-cyan-300/10 text-cyan-100'
+                : 'border-white/10 bg-white/8 text-slate-300';
+
+    return (
+        <section className="mt-4 rounded-xl border border-cyan-300/15 bg-slate-950/50 p-4 shadow-[0_18px_70px_rgba(6,182,212,0.10)]">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                <div>
+                    <div className="flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.22em] text-cyan-200/75">
+                        <i className="fas fa-robot text-cyan-200" />
+                        Autonomous MCP Control
+                    </div>
+                    <h2 className="mt-1 text-xl font-black text-white">Admin pre-service test harness</h2>
+                    <p className="mt-1 max-w-3xl text-sm font-semibold text-slate-400">
+                        Dry-run first: detect candidates, preview scan-analysis, inspect learning feedback, then gated Telegram send for the latest workflow.
+                    </p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                    <span className={`rounded-full border px-3 py-1.5 text-xs font-black ${statusTone}`}>
+                        {state === 'idle' ? 'IDLE' : state.toUpperCase()}
+                    </span>
+                    <span className={`rounded-full border px-3 py-1.5 text-xs font-black ${mutationEnabled ? 'border-amber-300/25 bg-amber-300/10 text-amber-100' : 'border-emerald-300/25 bg-emerald-300/10 text-emerald-100'}`}>
+                        {mutationEnabled ? 'mutation on' : 'dry-run locked'}
+                    </span>
+                    <span className={`rounded-full border px-3 py-1.5 text-xs font-bold ${status?.telegram?.personal_configured ? 'border-emerald-300/25 bg-emerald-300/10 text-emerald-100' : 'border-white/10 bg-white/8 text-slate-300'}`}>
+                        personal Telegram {status?.telegram?.personal_configured ? 'ready' : 'off'}
+                    </span>
+                    <span className={`rounded-full border px-3 py-1.5 text-xs font-bold ${secretRequired ? 'border-cyan-300/25 bg-cyan-300/10 text-cyan-100' : 'border-white/10 bg-white/8 text-slate-300'}`}>
+                        shared secret {secretRequired ? 'required' : 'not set'}
+                    </span>
+                </div>
+            </div>
+
+            {errorText && (
+                <div className="mt-3 rounded-lg border border-rose-300/20 bg-rose-300/10 px-3 py-2 text-xs font-bold text-rose-100">
+                    {errorText}
+                </div>
+            )}
+
+            <div className="mt-4 grid gap-2 md:grid-cols-4">
+                {[
+                    ['Tools', status?.tools?.length ?? 0, 'MCP exposed actions'],
+                    ['Resources', status?.resources?.length ?? 0, 'status and artifacts'],
+                    ['Hit Rate', learningView?.hit_rate_pct === undefined || learningView?.hit_rate_pct === null ? '--' : `${Number(learningView.hit_rate_pct).toFixed(1)}%`, `${learningView?.evaluated_count ?? 0} evaluated`],
+                    ['Avg Return', learningView?.average_forward_return_pct === undefined || learningView?.average_forward_return_pct === null ? '--' : formatSignedPct(learningView.average_forward_return_pct), 'advisory only'],
+                ].map(([label, value, caption]) => (
+                    <div key={String(label)} className="rounded-lg border border-white/10 bg-black/20 p-3">
+                        <div className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">{String(label)}</div>
+                        <div className="mt-1 text-xl font-black text-white">{String(value)}</div>
+                        <div className="mt-1 text-[11px] font-bold text-slate-500">{String(caption)}</div>
+                    </div>
+                ))}
+            </div>
+
+            <div className="mt-4 grid gap-3 lg:grid-cols-[1fr_1fr_auto]">
+                <div className="rounded-lg border border-white/10 bg-white/[0.04] p-3">
+                    <div className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">Mutation gate</div>
+                    <input
+                        value={confirmation}
+                        onChange={(event) => onConfirmationChange(event.target.value)}
+                        placeholder={phrase}
+                        className="mt-2 w-full rounded-lg border border-white/10 bg-black/30 px-3 py-2 font-mono text-xs font-bold text-slate-100 outline-none focus:border-cyan-300/40"
+                    />
+                    <div className="mt-1 text-[11px] font-bold text-slate-500">Required only for real Telegram send.</div>
+                </div>
+                <div className="rounded-lg border border-white/10 bg-white/[0.04] p-3">
+                    <div className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">Shared secret</div>
+                    <input
+                        type="password"
+                        value={sharedSecret}
+                        onChange={(event) => onSharedSecretChange(event.target.value)}
+                        disabled={!secretRequired}
+                        placeholder={secretRequired ? 'required by server' : 'not required'}
+                        className="mt-2 w-full rounded-lg border border-white/10 bg-black/30 px-3 py-2 font-mono text-xs font-bold text-slate-100 outline-none focus:border-cyan-300/40 disabled:opacity-50"
+                    />
+                    <div className="mt-1 text-[11px] font-bold text-slate-500">Never stored; posted only with the send request.</div>
+                </div>
+                <div className="flex flex-wrap items-start gap-2 lg:justify-end">
+                    <button type="button" onClick={onRefresh} disabled={busy} className="rounded-lg border border-white/10 bg-white/8 px-3 py-2 text-xs font-black text-slate-200 transition hover:bg-white/12 disabled:cursor-wait disabled:opacity-60">
+                        Refresh status
+                    </button>
+                    <button type="button" onClick={onDetectionDryRun} disabled={busy} className="rounded-lg border border-emerald-300/25 bg-emerald-300/12 px-3 py-2 text-xs font-black text-emerald-100 transition hover:bg-emerald-300/18 disabled:cursor-wait disabled:opacity-60">
+                        Detection dry-run
+                    </button>
+                    <button type="button" onClick={onAnalysisDryRun} disabled={busy} className="rounded-lg border border-cyan-300/25 bg-cyan-300/12 px-3 py-2 text-xs font-black text-cyan-100 transition hover:bg-cyan-300/18 disabled:cursor-wait disabled:opacity-60">
+                        Analysis dry-run
+                    </button>
+                    <button type="button" onClick={onLearningPreview} disabled={busy} className="rounded-lg border border-violet-300/25 bg-violet-300/12 px-3 py-2 text-xs font-black text-violet-100 transition hover:bg-violet-300/18 disabled:cursor-wait disabled:opacity-60">
+                        Learning preview
+                    </button>
+                    <button type="button" onClick={onSendLatestTelegram} disabled={!canSend} className="rounded-lg border border-amber-300/25 bg-amber-300/12 px-3 py-2 text-xs font-black text-amber-100 transition hover:bg-amber-300/18 disabled:cursor-not-allowed disabled:opacity-45">
+                        {state === 'sending' ? 'Sending...' : 'Send latest Telegram'}
+                    </button>
+                </div>
+            </div>
+
+            {(result || learningView?.recommendations?.length) && (
+                <div className="mt-4 grid gap-3 lg:grid-cols-2">
+                    {result && (
+                        <div className="rounded-lg border border-cyan-300/15 bg-cyan-300/[0.06] p-3">
+                            <div className="flex flex-wrap items-center justify-between gap-2">
+                                <div className="text-[11px] font-black uppercase tracking-[0.18em] text-cyan-100/80">Last action result</div>
+                                <span className="rounded-full border border-white/10 bg-white/8 px-2.5 py-1 text-[11px] font-black text-slate-200">
+                                    {result.status || (result.ok ? 'ok' : 'unknown')}
+                                </span>
+                            </div>
+                            <div className="mt-3 grid gap-2 sm:grid-cols-3">
+                                <div><div className="text-[10px] font-black uppercase text-slate-500">Run</div><div className="truncate font-mono text-xs font-bold text-slate-200">{result.run_id || result.workflow_id || '--'}</div></div>
+                                <div><div className="text-[10px] font-black uppercase text-slate-500">Events</div><div className="text-sm font-black text-white">{result.new_event_count ?? result.event_count ?? 0}</div></div>
+                                <div><div className="text-[10px] font-black uppercase text-slate-500">Telegram</div><div className="text-sm font-black text-white">{result.telegram_sent ? 'sent' : result.telegram_skipped_reason || 'not sent'}</div></div>
+                            </div>
+                            {(eventItems.length > 0 || topSymbols.length > 0) && (
+                                <div className="mt-3 flex flex-wrap gap-2">
+                                    {eventItems.slice(0, 5).map((event) => (
+                                        <span key={event.key || event.symbol} className="rounded-full border border-emerald-300/20 bg-emerald-300/10 px-2.5 py-1 text-[11px] font-bold text-emerald-100">
+                                            {event.symbol} alpha {Math.round(Number(event.alpha_score || 0))}
+                                        </span>
+                                    ))}
+                                    {topSymbols.slice(0, 5).map((symbol, index) => (
+                                        <span key={`${symbol}-${index}`} className="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-2.5 py-1 text-[11px] font-bold text-cyan-100">
+                                            TOP {index + 1} {symbol}
+                                        </span>
+                                    ))}
+                                </div>
+                            )}
+                            {result.resource_links && (
+                                <div className="mt-3 flex flex-wrap gap-2">
+                                    {Object.entries(result.resource_links).map(([key, value]) => (
+                                        <span key={key} className="rounded-full border border-white/10 bg-white/8 px-2.5 py-1 font-mono text-[10px] font-bold text-slate-400">
+                                            {key}: {value}
+                                        </span>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
+                    {learningView?.recommendations?.length ? (
+                        <div className="rounded-lg border border-violet-300/15 bg-violet-300/[0.06] p-3">
+                            <div className="text-[11px] font-black uppercase tracking-[0.18em] text-violet-100/80">Learning feedback</div>
+                            <div className="mt-2 space-y-2">
+                                {learningView.recommendations.slice(0, 4).map((item, index) => (
+                                    <div key={`${item.type}-${index}`} className="rounded-lg border border-white/10 bg-black/20 px-3 py-2">
+                                        <div className="text-xs font-black text-violet-100">{String(item.action || item.type || 'recommendation')}</div>
+                                        <div className="mt-1 text-xs font-semibold text-slate-400">{String(item.reason || item.suggested_change || '')}</div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    ) : null}
+                </div>
+            )}
+
+            <div className="mt-3 text-[11px] font-bold text-slate-500">
+                Checked {formatDateTime(status?.checked_at)} · learning is advisory and does not mutate production scoring weights.
+            </div>
+        </section>
+    );
+}
+
 function analystPositions(analysts: MiroFishAnalyst[]): MiroFishNode[] {
     const xs = [31, 43, 55, 67, 76, 83, 89, 24, 50, 71];
     return analysts.map((analyst, index) => ({
@@ -1145,6 +1349,13 @@ export default function AdminEndpointsPage() {
     const [workflowState, setWorkflowState] = useState<WorkflowPanelState>('idle');
     const [workflow, setWorkflow] = useState<MiroFishWorkflow | null>(null);
     const [workflowErrorText, setWorkflowErrorText] = useState<string | null>(null);
+    const [autonomousStatus, setAutonomousStatus] = useState<MiroFishAutonomousStatus | null>(null);
+    const [autonomousState, setAutonomousState] = useState<AutonomousPanelState>('idle');
+    const [autonomousResult, setAutonomousResult] = useState<MiroFishAutonomousActionResult | null>(null);
+    const [autonomousLearning, setAutonomousLearning] = useState<MiroFishAutonomousLearningFeedback | null>(null);
+    const [autonomousErrorText, setAutonomousErrorText] = useState<string | null>(null);
+    const [autonomousConfirmation, setAutonomousConfirmation] = useState('');
+    const [autonomousSharedSecret, setAutonomousSharedSecret] = useState('');
     const [endpointState, setEndpointState] = useState<Record<EndpointKey, EndpointStatus>>(() => Object.fromEntries(endpointDefinitions.map((item) => [item.key, 'idle'])) as Record<EndpointKey, EndpointStatus>);
     const [apiState, setApiState] = useState<ApiState>('checking');
     const [errorText, setErrorText] = useState<string | null>(null);
@@ -1167,13 +1378,15 @@ export default function AdminEndpointsPage() {
             markEndpoint('dataSources', 'loading');
             markEndpoint('deepseek', 'loading');
             markEndpoint('workflow', 'loading');
+            markEndpoint('autonomous', 'loading');
             try {
-                const [statusData, historyData, sourcesData, deepSeekData, workflowData] = await Promise.all([
+                const [statusData, historyData, sourcesData, deepSeekData, workflowData, autonomousData] = await Promise.all([
                     mirofishApi.getStatus(),
                     mirofishApi.listRuns(),
                     mirofishApi.getDataSources(),
                     mirofishApi.getDeepSeekStatus(),
                     mirofishApi.getWorkflowStatus().catch(() => null),
+                    mirofishApi.getAutonomousStatus().catch(() => null),
                 ]);
                 if (!alive) return;
                 setStatus(statusData);
@@ -1183,6 +1396,11 @@ export default function AdminEndpointsPage() {
                     setWorkflow(workflowData.latest_workflow);
                     setWorkflowState(workflowData.latest_workflow.status === 'completed' ? 'completed' : 'idle');
                 }
+                if (autonomousData) {
+                    setAutonomousStatus(autonomousData);
+                    setAutonomousLearning(autonomousData.learning?.available ? autonomousData.learning : null);
+                    setAutonomousState('ready');
+                }
                 setRecentRuns(historyData.runs);
                 setDataSourceCount(Array.isArray(sourcesData?.files) ? sourcesData.files.filter((file: any) => file.exists).length : 0);
                 setApiState('ready');
@@ -1191,6 +1409,7 @@ export default function AdminEndpointsPage() {
                 markEndpoint('dataSources', 'ok');
                 markEndpoint('deepseek', deepSeekData.configured ? 'ok' : 'error');
                 markEndpoint('workflow', workflowData ? 'ok' : 'idle');
+                markEndpoint('autonomous', autonomousData ? 'ok' : 'idle');
                 setRun((current) => ({ ...current, brain: statusData.brain || current.brain, pipeline: statusData.pipeline || current.pipeline }));
             } catch (error) {
                 if (!alive) return;
@@ -1201,6 +1420,7 @@ export default function AdminEndpointsPage() {
                 markEndpoint('dataSources', 'error');
                 markEndpoint('deepseek', 'error');
                 markEndpoint('workflow', 'error');
+                markEndpoint('autonomous', 'error');
                 setErrorText(error instanceof Error ? error.message : 'MiroFish API 연결 실패');
             }
         }
@@ -1421,7 +1641,8 @@ export default function AdminEndpointsPage() {
         report: run.report?.markdown ? `${run.report.markdown.length} chars` : 'waiting',
         deepseek: deepSeekStatus?.configured ? (deepSeekSummary?.model || deepSeekStatus.default_model || 'ready') : 'not configured',
         workflow: workflow?.id ? `${workflow.status || 'running'} · top ${workflow.top3?.length || 0}` : workflowState,
-    }), [dataSourceCount, deepSeekStatus, deepSeekSummary, recentRuns.length, run, status, targetSnapshot, workflow, workflowState]);
+        autonomous: autonomousStatus ? `${autonomousStatus.mutation_enabled ? 'mutation on' : 'dry-run'} / ${autonomousStatus.telegram?.personal_configured ? 'telegram ok' : 'telegram off'}` : autonomousState,
+    }), [autonomousState, autonomousStatus, dataSourceCount, deepSeekStatus, deepSeekSummary, recentRuns.length, run, status, targetSnapshot, workflow, workflowState]);
 
     const targetCandidates = useMemo<TargetCandidate[]>(() => {
         const query = target.trim();
@@ -1599,6 +1820,125 @@ export default function AdminEndpointsPage() {
         }
     }
 
+    async function refreshAutonomousStatus() {
+        setAutonomousState('checking');
+        setAutonomousErrorText(null);
+        markEndpoint('autonomous', 'loading');
+        try {
+            const nextStatus = await mirofishApi.getAutonomousStatus();
+            setAutonomousStatus(nextStatus);
+            setAutonomousLearning(nextStatus.learning?.available ? nextStatus.learning : null);
+            setAutonomousState('ready');
+            markEndpoint('autonomous', 'ok');
+        } catch (error) {
+            setAutonomousState('error');
+            markEndpoint('autonomous', 'error');
+            setAutonomousErrorText(error instanceof Error ? error.message : 'Autonomous MCP status failed.');
+        }
+    }
+
+    async function handleAutonomousDetectionDryRun() {
+        setAutonomousState('running');
+        setAutonomousErrorText(null);
+        markEndpoint('autonomous', 'loading');
+        try {
+            const result = await mirofishApi.runAutonomousCandidateAlert({
+                dry_run: true,
+                send_telegram: false,
+                limit: 20,
+                min_alpha: 70,
+                max_risk: 45,
+                max_events: 8,
+                allow_stale_sources: false,
+            });
+            setAutonomousResult(result);
+            setAutonomousState('ready');
+            markEndpoint('autonomous', 'ok');
+            void refreshAutonomousStatus();
+        } catch (error) {
+            setAutonomousState('error');
+            markEndpoint('autonomous', 'error');
+            setAutonomousErrorText(error instanceof Error ? error.message : 'Autonomous detection dry-run failed.');
+        }
+    }
+
+    async function handleAutonomousAnalysisDryRun() {
+        setAutonomousState('running');
+        setAutonomousErrorText(null);
+        markEndpoint('autonomous', 'loading');
+        try {
+            const result = await mirofishApi.runAutonomousScanAnalysis({
+                dry_run: true,
+                sync: true,
+                send_telegram: false,
+                commit_event_state: false,
+                market: 'KR',
+                horizon: '20D',
+                strategy: 'multi_signal',
+                risk_profile: 'balanced',
+                limit: 20,
+                min_alpha: 50,
+                max_risk: 65,
+                actions: ['BUY_CANDIDATE', 'WATCH'],
+                max_events: 5,
+                top_n: 3,
+                max_parallel: 3,
+                agent_count: agentCount,
+                allow_stale_sources: false,
+                mode: 'full',
+                force: true,
+            });
+            setAutonomousResult(result);
+            setAutonomousState('ready');
+            markEndpoint('autonomous', 'ok');
+            void refreshAutonomousStatus();
+        } catch (error) {
+            setAutonomousState('error');
+            markEndpoint('autonomous', 'error');
+            setAutonomousErrorText(error instanceof Error ? error.message : 'Autonomous analysis dry-run failed.');
+        }
+    }
+
+    async function handleAutonomousLearningPreview() {
+        setAutonomousState('running');
+        setAutonomousErrorText(null);
+        markEndpoint('autonomous', 'loading');
+        try {
+            const feedback = await mirofishApi.refreshAutonomousLearning({
+                commit: false,
+                limit: 20,
+            });
+            setAutonomousLearning({ available: true, ...feedback });
+            setAutonomousState('ready');
+            markEndpoint('autonomous', 'ok');
+        } catch (error) {
+            setAutonomousState('error');
+            markEndpoint('autonomous', 'error');
+            setAutonomousErrorText(error instanceof Error ? error.message : 'Autonomous learning preview failed.');
+        }
+    }
+
+    async function handleSendLatestAutonomousTelegram() {
+        setAutonomousState('sending');
+        setAutonomousErrorText(null);
+        markEndpoint('autonomous', 'loading');
+        try {
+            const result = await mirofishApi.sendLatestAutonomousWorkflowTelegram({
+                confirmation: autonomousConfirmation,
+                shared_secret: autonomousSharedSecret || undefined,
+                channel: false,
+                commit_event_state: false,
+            });
+            setAutonomousResult(result);
+            setAutonomousState(result.ok ? 'sent' : 'error');
+            markEndpoint('autonomous', result.ok ? 'ok' : 'error');
+        } catch (error) {
+            setAutonomousState('error');
+            markEndpoint('autonomous', 'error');
+            setAutonomousErrorText(error instanceof Error ? error.message : 'Latest workflow Telegram send failed.');
+        }
+    }
+
     async function handleDeepSeekSummary() {
         setDeepSeekState('summarizing');
         setDeepSeekErrorText(null);
@@ -1770,6 +2110,23 @@ export default function AdminEndpointsPage() {
                         onSendDeepSeekTelegram={handleSendDeepSeekTelegram}
                         onSelect={selectAlphaCandidate}
                         onDeepDive={deepDiveAlphaCandidate}
+                    />
+
+                    <AutonomousMcpPanel
+                        status={autonomousStatus}
+                        state={autonomousState}
+                        result={autonomousResult}
+                        learning={autonomousLearning}
+                        errorText={autonomousErrorText}
+                        confirmation={autonomousConfirmation}
+                        sharedSecret={autonomousSharedSecret}
+                        onConfirmationChange={setAutonomousConfirmation}
+                        onSharedSecretChange={setAutonomousSharedSecret}
+                        onRefresh={refreshAutonomousStatus}
+                        onDetectionDryRun={handleAutonomousDetectionDryRun}
+                        onAnalysisDryRun={handleAutonomousAnalysisDryRun}
+                        onLearningPreview={handleAutonomousLearningPreview}
+                        onSendLatestTelegram={handleSendLatestAutonomousTelegram}
                     />
 
                     <form
