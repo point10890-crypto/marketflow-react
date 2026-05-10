@@ -210,6 +210,203 @@ async def list_tools():
 
 ---
 
+## 9. 💰 구독 서비스 시나리오 — 최소 비용 운영 전략
+
+> **시나리오**: 현재 admin 전용 도구를 일반 회원 구독 서비스로 확장. **MarketFlow 기존 tier 체계** (Free / Pro / Ultra Pro) 재활용 + 최소 신규 인프라.
+
+### 9.1 SaaS 적합도 재평가 — 26 후보 → **18 채택 / 8 탈락**
+
+#### ❌ 탈락 (구독화 시 위험)
+
+| # | 도구 | 탈락 사유 | 대체 |
+|---|---|---|---|
+| S2 | Naver 금융 종목토론 스크래퍼 | **TOS 위반 위험** → 유료 서비스 시 차단 | 공식 Naver 검색 API 만 사용 |
+| - | DC인사이드 / 다음 토론 | 동일 | drop |
+| - | Seeking Alpha / MotleyFool transcripts | 비공식 스크래핑 | 공식 SEC EDGAR transcripts |
+| A6 | e2b-dev sandbox | $30/월 고정 + 사용자당 비용 폭발 가능성 | 자체 Python AST validator + restricted exec |
+| - | OpenBB Platform (AGPL-3.0) | **AGPL = SaaS 시 소스 공개 의무** | 별도 docker 격리 또는 drop |
+| - | freqtrade (GPL-3.0) | 동일 | 사용 안 함 |
+| - | vectorbt Pro | 상용 라이선스 필요 (per-server fee) | vectorbt 무료 버전만 |
+| - | mlfinlab community fork | "All Rights Reserved" — SaaS 위험 | 자체 Triple Barrier 구현 |
+
+#### ✅ SaaS 안전 (18개)
+
+**MIT/Apache-2.0 라이선스 — 상업 SaaS 무제한**:
+- Naver 검색 API, FRED, 한국은행 ECOS, SEC EDGAR (모두 공식 무료 API)
+- Tavily / Brave / Exa MCP (commercial 가격대로 사용량 종량제)
+- modelcontextprotocol/servers (Memory, Sequential-Thinking, Fetch)
+- TradingAgents (Apache-2.0), AutoGen, LangGraph, Reflexion (MIT)
+- WorldQuant Alpha101, QLib, vectorbt 무료, FactorVAE, AlphaGen
+- pykrx, FinanceData Reader, PyKis, akshare
+- YouTube transcript-api (무료, 합법)
+- StockTwits, Reddit MCP (공식 OAuth API)
+
+---
+
+### 9.2 비용 폭발 방지 — 4계층 캐싱 전략
+
+> **핵심 가정**: 사용자 100명 중 동일 종목(예: 삼성전자) 분석 요청 80%+ 중복.
+> → 캐시 히트율 90% 만 달성해도 LLM 호출 10배 감소.
+
+```
+┌─────────────────────────────────────────────┐
+│  Layer 1 — Pre-computed (overnight batch)   │  Free tier 전용
+│  KOSPI 200 + S&P 500 + Top 100 crypto       │  비용: $0 marginal
+│  매일 03:00 KST 일괄 LLM 호출 (1회)         │  사용자 → 디스크 read
+└─────────────────────────────────────────────┘
+              ↓ 캐시 미스
+┌─────────────────────────────────────────────┐
+│  Layer 2 — User cache (24h TTL per target)  │  Pro 이상
+│  같은 종목 24h 내 다른 사용자 → 캐시 hit    │  비용: 첫 1명만
+└─────────────────────────────────────────────┘
+              ↓ 캐시 미스
+┌─────────────────────────────────────────────┐
+│  Layer 3 — Quota-limited live LLM           │  Ultra Pro 전용
+│  분당 N회 / 일 M회 quota                     │  비용: 사용자 부담
+└─────────────────────────────────────────────┘
+              ↓ 거부
+┌─────────────────────────────────────────────┐
+│  Layer 4 — Polite fail with cached fallback │  
+│  "1시간 내 재시도" + 캐시 결과만 표시       │
+└─────────────────────────────────────────────┘
+```
+
+**구현 위치**:
+- Layer 1: `scheduler.py` 신규 task `_precompute_top200_mirofish()` 03:00 KST
+- Layer 2: `app/services/mirofish/store.py` 의 `_run_id` deterministic key + 24h TTL 캐시 hit
+- Layer 3: `app/auth/decorators.py` 의 tier 체크 + Redis-free in-memory rate limit (현재 `users.db` audit log 활용)
+
+---
+
+### 9.3 Tier 매핑 — 최소 비용 / 최대 차별화
+
+| Tier | 월 가격 (제안) | MiroFish 권한 | 일일 한도 | 비용 모델 |
+|---|---|---|---|---|
+| **Free** | ₩0 | Layer 1 (pre-computed KOSPI 200, S&P 500) **읽기 전용** | 무제한 (캐시) | 운영자 부담 ~$5/월 |
+| **Pro** | ₩9,900 | Layer 1 + Layer 2 (직접 종목 분석, 24h 캐시 공유) | 5건/일 | 캐시 히트 시 거의 0 |
+| **Ultra Pro** | ₩29,000 | Layer 1+2+3 (실시간 LLM, Reflexion 메모리) | 30건/일 | $0.30~0.50/유저/월 |
+
+**기존 MarketFlow Pro 구독자 자동 매핑** — Pro tier에 자동 포함, 마케팅 비용 0.
+
+---
+
+### 9.4 비용 추정 — 100 사용자 시나리오
+
+#### 가정
+- 50 Free / 30 Pro / 20 Ultra Pro
+- Free: pre-computed 결과만 보기 (LLM 신규 호출 0)
+- Pro: 평균 일 1.5회 분석, 90% 캐시 히트 → 신규 호출 0.15/일
+- Ultra Pro: 평균 일 5회 분석, 70% 캐시 히트 → 신규 호출 1.5/일
+
+#### 일일 신규 LLM 호출 수
+- Pre-compute (Free 공통): KOSPI 200 + S&P 500 = **300회/일**
+- Pro 신규: 30 × 0.15 = **4.5회/일**
+- Ultra Pro 신규: 20 × 1.5 = **30회/일**
+- **합계: ~334.5 LLM 호출/일** = ~10,035회/월
+
+#### 모델별 비용 (Gemini 2.5 Flash 주력 + DeepSeek 보조)
+
+| 모델 | 단가 (1M 토큰) | 평균 호출 토큰 | 1회 비용 |
+|---|---|---|---|
+| Gemini 2.5 Flash | $0.075 input / $0.30 output | 4k input / 1.5k output | ~$0.0007/회 |
+| DeepSeek V3 | $0.27 input / $1.10 output | 4k / 1.5k | ~$0.0027/회 |
+
+**월 LLM 비용 (Gemini 주력)**:
+- 10,035회 × $0.0007 = **$7/월**
+- DeepSeek 일부 사용 시 (스캐너 요약): +$5/월
+- Tavily 검색 (omnisearch): $30/월 (1만 회 plan)
+- **합계: 약 $42-50/월** (100 사용자 운영 시)
+
+#### 사용자당 비용
+- Free: $5/50 = **$0.10/유저/월**
+- Pro: ($42 × 0.3) / 30 = **$0.42/유저/월** ← 9,900원 매출 → 마진 95%+
+- Ultra Pro: ($42 × 0.6) / 20 = **$1.26/유저/월** ← 29,000원 매출 → 마진 96%+
+
+**손익분기점**: 약 5명 Pro 가입 시 운영 비용 회수.
+
+---
+
+### 9.5 신규 인프라 — **0원 추가**
+
+기존 MarketFlow 인프라 100% 재사용:
+
+| 항목 | 기존 | 신규 필요? |
+|---|---|---|
+| Flask backend | miniPC 5001 + Cloudflared tunnel | ✅ 재사용 |
+| Frontend | Cloudflare Pages | ✅ 재사용 |
+| 인증 | tier-based (Free/Pro/Ultra Pro) | ✅ 이미 구현 |
+| DB | SQLite users.db | ✅ 재사용 |
+| 캐시 | atomic_json + json_cache (mtime-aware) | ✅ 재사용 |
+| 결제 | Stripe (이미 통합) | ✅ 재사용 |
+| 스케줄러 | scheduler.py daemon | ✅ 재사용 (1 task 추가만) |
+| 텔레그램 | 채널 + 개인 분리 | ✅ 재사용 |
+
+**Redis / Kubernetes / 별도 worker 등 추가 0**.
+
+---
+
+### 9.6 Phase 별 SaaS launch 로드맵 (최소 비용)
+
+#### Phase 1 (2주, $0 추가 비용) — Free + Pro 베타
+- Layer 1 pre-compute task (`scheduler.py` 03:00 KST KOSPI 200 + S&P 500 분석)
+- Layer 2 캐시 (24h TTL deterministic run_id)
+- AdminEndpointsPage → public read-only 페이지 (`/dashboard/mirofish/{symbol}`)
+- 결과: **Free 50명 운영 가능, 비용 ~$5/월**
+
+#### Phase 2 (1개월, ~$30/월 추가) — Pro tier 정식 출시
+- Pro 회원 자기 종목 분석 (5건/일 quota)
+- Reflexion 패턴 (CIO 자기개선)
+- WorldQuant Alpha101 6개 추가
+- vectorbt 백테스트 결과 표시
+- 결과: **Pro 30명 가입 시 흑자 전환**
+
+#### Phase 3 (2개월, ~$80/월 추가) — Ultra Pro 출시
+- Real-time LLM (Gemini Pro 또는 GPT-4o 옵션)
+- TradingAgents Bull/Bear debate
+- Reddit / SEC EDGAR / FRED 통합
+- YouTube transcript 자동 멘션
+- 결과: **Ultra Pro 20명 가입 시 월 매출 + 50만원**
+
+#### Phase 4 (3-6개월, R&D 검증 후) — AlphaGen / FactorVAE / Online learning
+- 자체 학습된 모델 → MarketFlow 차별화
+- "AI가 새 alpha factor 자동 발굴" — 마케팅 포인트
+- 비용 동일 유지 (모델 자체 학습이라 외부 API 호출 X)
+
+---
+
+### 9.7 SaaS 절대 금기 (라이선스 + 데이터 ToS)
+
+1. **AGPL/GPL 코드 직접 import 금지** — 별도 docker process / drop
+2. **Naver 종목토론 / 다음 / DC갤 스크래퍼 prod 차단** — 약관 위반, 소송 위험
+3. **mlfinlab community 코드 사용 금지** — "All Rights Reserved"
+4. **Seeking Alpha / MotleyFool transcripts** — 비공식 스크래핑, drop
+5. **vectorbt Pro 미사용** — 상용 라이선스 별도 ($0 → $$$$)
+6. **사용자 데이터 외부 LLM 노출 시 사전 고지** — 개인정보처리방침 명시 필수
+7. **DeepSeek 사용 시 — 중국 데이터 정책 사용자 안내**
+8. **Gemini 의 free tier rate limit** 운영 시 paid plan 전환 필수
+
+---
+
+### 9.8 핵심 답변 — "최소 비용으로 구독 서비스 가능?"
+
+**YES, 매우 가능**:
+- 신규 인프라 비용: **$0** (기존 재사용)
+- 신규 LLM 운영비: **~$50/월** (100 사용자 기준)
+- 손익분기점: **Pro 5명** (월 49,500원)
+- Pro 30명 + Ultra 20명 시: **월 매출 ~877,000원, 운영비 50불 → 마진 96%+**
+- Phase 1 (Free + Pro 베타) **2주 만에 출시 가능**
+
+**핵심 수단**:
+1. 4-layer 캐싱 (90%+ 히트율)
+2. Pre-computed batch (KOSPI 200 + S&P 500)
+3. Gemini 2.5 Flash 주력 + DeepSeek 보조
+4. 기존 인프라 100% 재사용
+5. AGPL/GPL/회색지대 후보 모두 drop
+
+**결론**: 추가 자본 투입 없이 기존 시스템에 캐싱 레이어 + tier 권한만 추가해서 **2주 내 Free/Pro 베타, 1-2개월 내 정식 SaaS 출시 가능**.
+
+---
+
 # 📎 부록 — 4팀 원본 조사 결과
 
 ## 부록 A — MCP 서버 카탈로그 (팀 A)
