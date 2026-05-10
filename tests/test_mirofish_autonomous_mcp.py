@@ -85,6 +85,48 @@ def test_candidate_detection_defaults_to_dry_run_without_telegram(isolated_auton
     assert commit_calls == []
 
 
+def test_autonomous_status_exposes_safe_mcp_policy(monkeypatch):
+    monkeypatch.delenv(autonomous_mcp.MUTATION_ENV, raising=False)
+    monkeypatch.delenv(autonomous_mcp.SHARED_SECRET_ENV, raising=False)
+
+    status = autonomous_mcp.get_autonomous_status()
+    policy = autonomous_mcp.get_mcp_security_policy()
+
+    assert 'get_autonomous_status' in status['tools']
+    assert 'get_mcp_security_policy' in status['tools']
+    assert 'get_market_clock' in status['tools']
+    assert 'get_repository_state' in status['tools']
+    assert 'list_safe_artifacts' in status['tools']
+    assert 'read_safe_artifact' in status['tools']
+    assert policy['mutation_enabled'] is False
+    assert policy['shared_secret_configured'] is False
+    assert policy['artifact_allowlist_root'] == 'data/admin_mirofish'
+    assert 'read_safe_artifact' in policy['read_only_tools']
+    assert 'run_autonomous_scan_analysis' in policy['mutating_tools']
+
+
+def test_safe_artifact_reads_are_allowlisted(tmp_path, monkeypatch):
+    safe_root = tmp_path / 'admin_mirofish'
+    run_dir = safe_root / 'scanner_runs' / 'mfas_test'
+    run_dir.mkdir(parents=True)
+    (run_dir / 'run.json').write_text(json.dumps({'id': 'mfas_test'}), encoding='utf-8')
+    (safe_root / 'secret.txt').write_text('not allowed', encoding='utf-8')
+    monkeypatch.setattr(autonomous_mcp, 'SAFE_ARTIFACT_ROOT', safe_root)
+
+    listing = autonomous_mcp.list_safe_artifacts(kind='scanner_runs', limit=10)
+    result = autonomous_mcp.read_safe_artifact('scanner_runs/mfas_test/run.json')
+
+    assert listing['items'][0]['path'] == 'scanner_runs/mfas_test/run.json'
+    assert result['ok'] is True
+    assert result['content']['id'] == 'mfas_test'
+    with pytest.raises(ValueError):
+        autonomous_mcp.read_safe_artifact('../.env')
+    with pytest.raises(ValueError):
+        autonomous_mcp.read_safe_artifact(str(run_dir / 'run.json'))
+    with pytest.raises(ValueError):
+        autonomous_mcp.read_safe_artifact('secret.txt')
+
+
 def test_mutating_tools_require_guard_and_redact_secret(isolated_autonomous_paths, monkeypatch):
     monkeypatch.delenv(autonomous_mcp.MUTATION_ENV, raising=False)
 

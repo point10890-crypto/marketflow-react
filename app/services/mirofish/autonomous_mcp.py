@@ -12,7 +12,8 @@ import hmac
 import json
 import os
 import re
-from datetime import datetime, timezone
+import subprocess
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Callable
 
@@ -26,16 +27,29 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 AUTONOMOUS_ROOT = REPO_ROOT / 'data' / 'admin_mirofish' / 'autonomous_mcp'
 AUDIT_LOG_PATH = AUTONOMOUS_ROOT / 'audit.jsonl'
 LEARNING_FEEDBACK_PATH = AUTONOMOUS_ROOT / 'learning_feedback.json'
+SAFE_ARTIFACT_ROOT = REPO_ROOT / 'data' / 'admin_mirofish'
 
 MUTATION_ENV = 'MIROFISH_MCP_ALLOW_MUTATION'
 SHARED_SECRET_ENV = 'MIROFISH_MCP_SHARED_SECRET'
 CONFIRM_SEND_PHRASE = 'SEND_MIROFISH_AUTONOMOUS_ALERT'
+
+KST = timezone(timedelta(hours=9))
 
 MAX_LIMIT = 100
 MAX_EVENTS = 20
 MAX_TOP_N = 10
 MAX_PARALLEL = 8
 MAX_AGENT_COUNT = 15
+SAFE_ARTIFACT_MAX_BYTES = 256 * 1024
+SAFE_ARTIFACT_LIST_LIMIT = 100
+SAFE_ARTIFACT_EXTENSIONS = {'.json', '.jsonl', '.md', '.txt'}
+SAFE_ARTIFACT_DIRS = {'runs', 'scanner_runs', 'workflows', 'autonomous_mcp'}
+SAFE_ARTIFACT_STATE_FILES = {
+    'alpha_scanner_alert_state.json',
+    'alpha_scanner_monitor_state.json',
+    'ekg.json',
+}
+SAFE_ARTIFACT_KINDS = SAFE_ARTIFACT_DIRS | {'all', 'state'}
 
 SENSITIVE_KEY_PARTS = (
     'api_key',
@@ -67,6 +81,12 @@ def get_autonomous_status() -> dict[str, Any]:
         'workflow': workflow.get_workflow_status(),
         'learning': _learning_summary(read_learning_feedback()),
         'tools': [
+            'get_autonomous_status',
+            'get_mcp_security_policy',
+            'get_market_clock',
+            'get_repository_state',
+            'list_safe_artifacts',
+            'read_safe_artifact',
             'run_candidate_detection_alert',
             'run_autonomous_scan_analysis',
             'refresh_learning_feedback',
@@ -76,10 +96,211 @@ def get_autonomous_status() -> dict[str, Any]:
         ],
         'resources': [
             'mirofish://autonomous/status',
+            'mirofish://autonomous/security',
             'mirofish://autonomous/learning',
+            'mirofish://market/clock',
             'mirofish://scanner/latest',
             'mirofish://workflows/latest',
         ],
+        'checked_at': _now_iso(),
+    }
+
+
+def get_mcp_security_policy() -> dict[str, Any]:
+    """Return the redacted MCP security policy and tool allowlist."""
+    return {
+        'service': 'mirofish-mcp-security-policy',
+        'mode': 'read_only_wrappers_plus_guarded_mutation',
+        'mutation_enabled': _env_bool(MUTATION_ENV, False),
+        'mutation_env': MUTATION_ENV,
+        'shared_secret_configured': bool(os.getenv(SHARED_SECRET_ENV)),
+        'shared_secret_env': SHARED_SECRET_ENV,
+        'send_confirmation_phrase': CONFIRM_SEND_PHRASE,
+        'telegram': _telegram_config_status(),
+        'read_only_tools': [
+            'get_autonomous_status',
+            'get_mcp_security_policy',
+            'get_market_clock',
+            'get_repository_state',
+            'list_recent_scanner_runs',
+            'list_recent_workflows',
+            'list_safe_artifacts',
+            'read_safe_artifact',
+        ],
+        'mutating_tools': [
+            'run_candidate_detection_alert',
+            'run_autonomous_scan_analysis',
+            'refresh_learning_feedback',
+            'send_latest_workflow_telegram',
+        ],
+        'artifact_allowlist_root': 'data/admin_mirofish',
+        'artifact_allowed_dirs': sorted(SAFE_ARTIFACT_DIRS),
+        'artifact_allowed_state_files': sorted(SAFE_ARTIFACT_STATE_FILES),
+        'artifact_allowed_extensions': sorted(SAFE_ARTIFACT_EXTENSIONS),
+        'artifact_max_bytes': SAFE_ARTIFACT_MAX_BYTES,
+        'guards': [
+            'generic filesystem/git/fetch MCP servers are not exposed',
+            'artifact reads are relative-path only and confined to data/admin_mirofish',
+            'artifact reads reject unsupported extensions and oversized files',
+            'mutating tools require mutation env flag',
+            'shared secret is required when configured',
+            'Telegram sends require an explicit confirmation phrase',
+            'audit logs redact token, secret, key, password, KIS, Cloudflare, and Telegram fields',
+        ],
+        'checked_at': _now_iso(),
+    }
+
+
+def get_market_clock(now: datetime | None = None) -> dict[str, Any]:
+    """Return a deterministic KST market-session helper for MCP operators."""
+    current = (now or datetime.now(KST)).astimezone(KST)
+    session_start = current.replace(hour=9, minute=0, second=0, microsecond=0)
+    session_end = current.replace(hour=15, minute=30, second=0, microsecond=0)
+    is_weekday = current.weekday() < 5
+    is_regular = is_weekday and session_start <= current <= session_end
+    if not is_weekday:
+        phase = 'closed_weekend'
+    elif current < session_start:
+        phase = 'pre_open'
+    elif current <= session_end:
+        phase = 'regular_session'
+    else:
+        phase = 'after_close'
+    scanner_status = alpha_scanner.get_scanner_schedule_status(now=current)
+    return {
+        'timezone': 'Asia/Seoul',
+        'now': current.isoformat(),
+        'date': current.date().isoformat(),
+        'is_weekday': is_weekday,
+        'kr_regular_session': is_regular,
+        'session_phase': phase,
+        'session': {
+            'start': session_start.isoformat(),
+            'end': session_end.isoformat(),
+        },
+        'scanner': {
+            'enabled': bool(scanner_status.get('enabled')),
+            'scheduled_times': scanner_status.get('scheduled_times') or [],
+            'next_scheduled_at': scanner_status.get('next_scheduled_at'),
+            'freshness_status': scanner_status.get('freshness_status'),
+            'last_run_id': scanner_status.get('last_run_id'),
+            'last_run_at': scanner_status.get('last_run_at'),
+        },
+        'note': 'holiday calendar is not applied; weekend and regular-session time checks only',
+        'checked_at': _now_iso(),
+    }
+
+
+def get_repository_state() -> dict[str, Any]:
+    """Return a read-only git state summary without exposing file contents."""
+    branch = _git_output(['rev-parse', '--abbrev-ref', 'HEAD'])
+    commit = _git_output(['rev-parse', 'HEAD'])
+    last_commit = _git_output(['log', '-1', '--format=%cI|%s'])
+    status = _git_output(['status', '--short', '--untracked-files=all'], allow_failure=True)
+    status_lines = [line for line in status.splitlines() if line.strip()]
+    last_commit_at = None
+    last_commit_subject = None
+    if '|' in last_commit:
+        last_commit_at, last_commit_subject = last_commit.split('|', 1)
+    return {
+        'ok': bool(branch and commit),
+        'repo_root': str(REPO_ROOT),
+        'branch': branch or None,
+        'head': commit or None,
+        'short_head': commit[:12] if commit else None,
+        'last_commit_at': last_commit_at,
+        'last_commit_subject': last_commit_subject,
+        'dirty': bool(status_lines),
+        'dirty_count': len(status_lines),
+        'dirty_entries': [_safe_dirty_entry(line) for line in status_lines[:80]],
+        'dirty_entries_truncated': len(status_lines) > 80,
+        'checked_at': _now_iso(),
+    }
+
+
+def list_safe_artifacts(kind: str = 'all', limit: int = 50) -> dict[str, Any]:
+    """List read-only artifacts under the explicit MiroFish allowlist."""
+    clean_kind = str(kind or 'all').strip().lower()
+    if clean_kind not in SAFE_ARTIFACT_KINDS:
+        raise ValueError(f'kind must be one of: {", ".join(sorted(SAFE_ARTIFACT_KINDS))}')
+    clean_limit = _int(limit, 50, 1, SAFE_ARTIFACT_LIST_LIMIT)
+    roots = _safe_artifact_roots(clean_kind)
+    items: list[dict[str, Any]] = []
+    for root in roots:
+        if root.is_file():
+            candidate_files = [root]
+        elif root.is_dir():
+            candidate_files = [path for path in root.rglob('*') if path.is_file()]
+        else:
+            continue
+        for path in candidate_files:
+            if path.suffix.lower() not in SAFE_ARTIFACT_EXTENSIONS:
+                continue
+            try:
+                safe_path = _resolve_safe_artifact_path(_safe_artifact_relpath(path))
+                stat = safe_path.stat()
+            except (OSError, ValueError):
+                continue
+            items.append({
+                'path': _safe_artifact_relpath(safe_path),
+                'kind': _artifact_kind(safe_path),
+                'format': safe_path.suffix.lower().lstrip('.'),
+                'size_bytes': stat.st_size,
+                'modified_at': datetime.fromtimestamp(stat.st_mtime, timezone.utc).isoformat(),
+                'readable': stat.st_size <= SAFE_ARTIFACT_MAX_BYTES,
+            })
+    items.sort(key=lambda item: str(item.get('modified_at') or ''), reverse=True)
+    return {
+        'root': 'data/admin_mirofish',
+        'kind': clean_kind,
+        'limit': clean_limit,
+        'count': min(len(items), clean_limit),
+        'total_matched': len(items),
+        'truncated': len(items) > clean_limit,
+        'items': items[:clean_limit],
+        'checked_at': _now_iso(),
+    }
+
+
+def read_safe_artifact(path: str) -> dict[str, Any]:
+    """Read a small allowlisted MiroFish artifact without arbitrary filesystem access."""
+    safe_path = _resolve_safe_artifact_path(path)
+    if not safe_path.is_file():
+        raise ValueError('artifact not found')
+    if safe_path.suffix.lower() not in SAFE_ARTIFACT_EXTENSIONS:
+        raise ValueError('unsupported artifact extension')
+    stat = safe_path.stat()
+    relpath = _safe_artifact_relpath(safe_path)
+    if stat.st_size > SAFE_ARTIFACT_MAX_BYTES:
+        return {
+            'ok': False,
+            'status': 'too_large',
+            'path': relpath,
+            'size_bytes': stat.st_size,
+            'max_bytes': SAFE_ARTIFACT_MAX_BYTES,
+            'checked_at': _now_iso(),
+        }
+    text = safe_path.read_text(encoding='utf-8', errors='replace')
+    suffix = safe_path.suffix.lower()
+    if suffix == '.json':
+        content: Any = json.loads(text)
+    elif suffix == '.jsonl':
+        content = [
+            json.loads(line)
+            for line in text.splitlines()
+            if line.strip()
+        ]
+    else:
+        content = text
+    return {
+        'ok': True,
+        'status': 'ok',
+        'path': relpath,
+        'kind': _artifact_kind(safe_path),
+        'format': suffix.lstrip('.'),
+        'size_bytes': stat.st_size,
+        'modified_at': datetime.fromtimestamp(stat.st_mtime, timezone.utc).isoformat(),
+        'content': content,
         'checked_at': _now_iso(),
     }
 
@@ -320,6 +541,111 @@ def send_latest_workflow_telegram(
         result['event_state_committed'] = True
     _audit('send_latest_workflow_telegram', payload, result, status=str(result['status']))
     return result
+
+
+def _git_output(args: list[str], *, allow_failure: bool = False) -> str:
+    try:
+        completed = subprocess.run(
+            ['git', *args],
+            cwd=str(REPO_ROOT),
+            capture_output=True,
+            text=True,
+            encoding='utf-8',
+            errors='replace',
+            timeout=5,
+            check=False,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return ''
+    if completed.returncode != 0 and not allow_failure:
+        return ''
+    return (completed.stdout or '').strip()
+
+
+def _safe_dirty_entry(entry: str) -> str:
+    clean = entry.strip()
+    lower = clean.lower()
+    if '.env' in lower or any(part in lower for part in SENSITIVE_KEY_PARTS):
+        status = clean[:3].strip()
+        return f'{status} [REDACTED_PATH]'
+    return clean[:300]
+
+
+def _safe_artifact_roots(kind: str) -> list[Path]:
+    if kind == 'all':
+        return [SAFE_ARTIFACT_ROOT / name for name in sorted(SAFE_ARTIFACT_DIRS)] + [
+            SAFE_ARTIFACT_ROOT / name for name in sorted(SAFE_ARTIFACT_STATE_FILES)
+        ]
+    if kind == 'state':
+        return [SAFE_ARTIFACT_ROOT / name for name in sorted(SAFE_ARTIFACT_STATE_FILES)]
+    return [SAFE_ARTIFACT_ROOT / kind]
+
+
+def _resolve_safe_artifact_path(path: str) -> Path:
+    clean = _resource_to_artifact_path(str(path or '').strip()).replace('\\', '/')
+    prefix = 'data/admin_mirofish/'
+    if clean.startswith(prefix):
+        clean = clean[len(prefix):]
+    if not clean:
+        raise ValueError('artifact path is required')
+    if clean.startswith('/') or re.match(r'^[A-Za-z]:', clean):
+        raise ValueError('absolute artifact paths are not allowed')
+    if clean == '..' or clean.startswith('../') or '/..' in clean:
+        raise ValueError('artifact path traversal is not allowed')
+    candidate = (SAFE_ARTIFACT_ROOT / clean).resolve()
+    safe_root = SAFE_ARTIFACT_ROOT.resolve()
+    try:
+        relpath = candidate.relative_to(safe_root)
+    except ValueError:
+        raise ValueError('artifact path outside allowlist')
+    parts = relpath.parts
+    if not parts:
+        raise ValueError('artifact path is required')
+    first = parts[0]
+    if first in SAFE_ARTIFACT_DIRS:
+        return candidate
+    if len(parts) == 1 and first in SAFE_ARTIFACT_STATE_FILES:
+        return candidate
+    raise ValueError('artifact path is outside the MiroFish allowlist')
+
+
+def _resource_to_artifact_path(path: str) -> str:
+    if path == 'mirofish://scanner/latest':
+        latest = alpha_scanner.read_latest_scanner_run() or {}
+        run_id = _safe_identifier(latest.get('id'), 'scanner run id')
+        return f'scanner_runs/{run_id}/run.json'
+    match = re.fullmatch(r'mirofish://scanner/runs/([^/]+)', path)
+    if match:
+        return f'scanner_runs/{_safe_identifier(match.group(1), "scanner run id")}/run.json'
+    if path == 'mirofish://workflows/latest':
+        latest = workflow.read_latest_workflow() or {}
+        workflow_id = _safe_identifier(latest.get('id'), 'workflow id')
+        return f'workflows/{workflow_id}/workflow.json'
+    match = re.fullmatch(r'mirofish://workflows/([^/]+)', path)
+    if match:
+        return f'workflows/{_safe_identifier(match.group(1), "workflow id")}/workflow.json'
+    if path == 'mirofish://autonomous/learning':
+        return 'autonomous_mcp/learning_feedback.json'
+    if path == 'mirofish://autonomous/audit':
+        return 'autonomous_mcp/audit.jsonl'
+    return path
+
+
+def _safe_identifier(value: Any, label: str) -> str:
+    text = str(value or '').strip()
+    if not re.fullmatch(r'[A-Za-z0-9_.-]{1,96}', text):
+        raise ValueError(f'invalid {label}')
+    return text
+
+
+def _safe_artifact_relpath(path: Path) -> str:
+    return str(path.resolve().relative_to(SAFE_ARTIFACT_ROOT.resolve())).replace('\\', '/')
+
+
+def _artifact_kind(path: Path) -> str:
+    relpath = path.resolve().relative_to(SAFE_ARTIFACT_ROOT.resolve())
+    first = relpath.parts[0] if relpath.parts else ''
+    return 'state' if first in SAFE_ARTIFACT_STATE_FILES else first
 
 
 def _build_learning_feedback(

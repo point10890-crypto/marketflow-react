@@ -44,6 +44,21 @@ def create_mcp_server(
         return autonomous_mcp.get_autonomous_status()
 
     @mcp.tool()
+    def get_mcp_security_policy() -> dict[str, Any]:
+        """Return the redacted MCP security policy and allowlist."""
+        return autonomous_mcp.get_mcp_security_policy()
+
+    @mcp.tool()
+    def get_market_clock() -> dict[str, Any]:
+        """Return KST market-session and scanner schedule status."""
+        return autonomous_mcp.get_market_clock()
+
+    @mcp.tool()
+    def get_repository_state() -> dict[str, Any]:
+        """Return a read-only git branch/head/dirty summary."""
+        return autonomous_mcp.get_repository_state()
+
+    @mcp.tool()
     def list_recent_scanner_runs(limit: int = 20) -> dict[str, Any]:
         """List recent deterministic alpha scanner runs."""
         return autonomous_mcp.list_recent_scanner_runs(limit=limit)
@@ -52,6 +67,16 @@ def create_mcp_server(
     def list_recent_workflows(limit: int = 20) -> dict[str, Any]:
         """List recent scanner-to-analysis workflow runs."""
         return autonomous_mcp.list_recent_workflows(limit=limit)
+
+    @mcp.tool()
+    def list_safe_artifacts(kind: str = 'all', limit: int = 50) -> dict[str, Any]:
+        """List small read-only MiroFish artifacts from the safe allowlist."""
+        return autonomous_mcp.list_safe_artifacts(kind=kind, limit=limit)
+
+    @mcp.tool()
+    def read_safe_artifact(path: str) -> dict[str, Any]:
+        """Read one allowlisted MiroFish artifact by relative path or resource link."""
+        return autonomous_mcp.read_safe_artifact(path)
 
     @mcp.tool()
     def run_candidate_detection_alert(
@@ -166,10 +191,20 @@ def create_mcp_server(
         """Redacted autonomous MCP status."""
         return _json(autonomous_mcp.get_autonomous_status())
 
+    @mcp.resource('mirofish://autonomous/security')
+    def autonomous_security_resource() -> str:
+        """Redacted autonomous MCP security policy."""
+        return _json(autonomous_mcp.get_mcp_security_policy())
+
     @mcp.resource('mirofish://autonomous/learning')
     def autonomous_learning_resource() -> str:
         """Latest advisory learning feedback artifact."""
         return _json(autonomous_mcp.read_learning_feedback() or {'available': False})
+
+    @mcp.resource('mirofish://market/clock')
+    def market_clock_resource() -> str:
+        """KST market-session and scanner schedule status."""
+        return _json(autonomous_mcp.get_market_clock())
 
     @mcp.resource('mirofish://scanner/latest')
     def latest_scanner_resource() -> str:
