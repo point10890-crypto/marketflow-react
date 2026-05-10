@@ -1108,7 +1108,25 @@ export interface MiroFishShareItem {
     outcome_status: string;
     outcome_hit?: boolean | null;
     outcome_forward_return_pct?: number | null;
+    outcome_horizon_days?: number | null;
     replay_safe_after?: string | null;
+    analyst_quote?: string;
+    cio_reasoning?: string;
+    cio_opposing?: string;
+    cio_allocation_pct?: number | null;
+    run_id?: string;
+}
+
+export interface MiroFishShareListContent {
+    title: string;
+    description: string;
+    image_url: string;
+    link_url: string;
+}
+
+export interface MiroFishShareButton {
+    title: string;
+    link_url: string;
 }
 
 export interface MiroFishSharePayload {
@@ -1118,6 +1136,11 @@ export interface MiroFishSharePayload {
     link_url: string;
     rank: number | null;
     top_items: MiroFishShareItem[];
+    list_contents?: MiroFishShareListContent[];
+    kakao_buttons?: MiroFishShareButton[];
+    analyst_quote?: string;
+    cio_reasoning?: string;
+    cio_opposing?: string;
     workflow_id: string;
     completed_at?: string;
 }

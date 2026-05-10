@@ -181,38 +181,61 @@ def run_workflow_monitor_check(payload: dict[str, Any] | None = None) -> dict[st
 
 
 def build_share_payload(workflow: dict[str, Any], rank: int | None = None) -> dict[str, Any]:
-    """카카오톡 공유용 payload — Kakao SDK 'feed' 템플릿에 맞춘 형식.
+    """카카오톡 공유용 payload — Kakao SDK 'feed'/'list' 템플릿에 맞춘 풍부한 형식.
+
+    각 TOP 종목별로 run.json 을 읽어 5인 에이전트 토론 핵심 발언 + CIO reasoning +
+    opposing scenario 를 포함시킨다. 기본은 Feed (단일/전체) 형식, list_contents 도
+    동시에 제공해 프론트가 list template 으로 표현 가능.
 
     Args:
         workflow: workflow dict (read_workflow 결과)
-        rank: 1|2|3 — 단일 종목 공유 시. None이면 TOP 3 전체 요약.
+        rank: 1|2|3 — 단일 종목 공유 시. None이면 TOP 3 전체.
 
     Returns:
         {
-            'title': str,
-            'description': str,
-            'image_url': str,
-            'link_url': str,
-            'rank': int|None,
-            'top_items': [{'rank', 'symbol', 'name', 'score', 'action', 'confidence_pct', 'outcome_status'}],
-            'workflow_id': str,
-            'completed_at': str,
+            'title', 'description', 'image_url', 'link_url',
+            'rank', 'top_items',
+            'list_contents': [...]  # Kakao list template 호환 (TOP 3 전체 시),
+            'kakao_buttons': [{'title','link_url'}],
+            'analyst_quote', 'cio_reasoning' (rank 단일일 때),
+            'workflow_id', 'completed_at',
         }
     """
+    from app.services.mirofish import store as _store
+
     top3 = [item for item in (workflow.get('top3') or []) if isinstance(item, dict)]
     workflow_id = str(workflow.get('id') or '')
     completed_at = str(workflow.get('completed_at') or '')
 
-    # 표준 share base URL — production frontend
     base_url = 'https://bit-man.net/admin/endpoints'
     fallback_image = 'https://bit-man.net/og/marketflow-mcp-share.png'
 
-    # TOP 3 정규화 (UI 카드와 동일 구조)
+    # TOP 3 정규화 + run 상세 enrich
     top_items = []
     for index, item in enumerate(top3[:3], start=1):
         candidate = item.get('candidate') or {}
         verdict = item.get('verdict') or {}
         outcome = item.get('outcome') or {}
+        run_id = str(item.get('run_id') or '')
+
+        # run.json 에서 5인 토론 + CIO reasoning enrich
+        analyst_quote = ''
+        cio_reasoning = ''
+        cio_opposing = ''
+        cio_allocation_pct = None
+        try:
+            if run_id:
+                run = _store.read_run(run_id)
+                if isinstance(run, dict):
+                    analyst_quote = _pick_top_analyst_quote(run.get('analysts') or [])
+                    cio = run.get('cio') or {}
+                    fa = cio.get('final_answer') or {}
+                    cio_reasoning = _compress_text(fa.get('reasoning'), 180)
+                    cio_opposing = _compress_text(fa.get('opposing_scenario'), 140)
+                    cio_allocation_pct = fa.get('allocation_pct')
+        except Exception:
+            pass
+
         top_items.append({
             'rank': index,
             'symbol': item.get('symbol') or candidate.get('symbol') or '',
@@ -224,7 +247,13 @@ def build_share_payload(workflow: dict[str, Any], rank: int | None = None) -> di
             'outcome_status': outcome.get('status') or 'pending',
             'outcome_hit': outcome.get('hit'),
             'outcome_forward_return_pct': outcome.get('forward_return_pct'),
+            'outcome_horizon_days': outcome.get('primary_horizon_days'),
             'replay_safe_after': outcome.get('entry_date') or outcome.get('replay_safe_after'),
+            'analyst_quote': analyst_quote,
+            'cio_reasoning': cio_reasoning,
+            'cio_opposing': cio_opposing,
+            'cio_allocation_pct': cio_allocation_pct,
+            'run_id': run_id,
         })
 
     if not top_items:
@@ -235,23 +264,38 @@ def build_share_payload(workflow: dict[str, Any], rank: int | None = None) -> di
             'link_url': base_url,
             'rank': None,
             'top_items': [],
+            'list_contents': [],
+            'kakao_buttons': [{'title': '대시보드 열기', 'link_url': base_url}],
             'workflow_id': workflow_id,
             'completed_at': completed_at,
         }
 
-    # 단일 종목 공유 모드
+    # ── 단일 종목 공유 (Feed) ──────────────────────────
     if rank is not None:
         if rank < 1 or rank > len(top_items):
             raise ValueError(f'rank {rank} out of range (1-{len(top_items)})')
         target = top_items[rank - 1]
-        title = f"MarketFlow TOP {rank} — {target['name']}"
         verdict_label = _share_verdict_label(target['action'])
-        description = (
-            f"{target['symbol']} · score {target['score']:.0f} · "
-            f"{verdict_label} {target['confidence_pct']}%"
-        )
-        if target.get('replay_safe_after'):
-            description += f" · replay-safe {target['replay_safe_after']}"
+        title = f"TOP {rank} {target['name']} — {verdict_label} {target['confidence_pct']}% (score {target['score']:.0f})"
+
+        # description 빌드 (Kakao Feed 200자 제한 — 한글 ~120자 effective)
+        desc_lines = []
+        if target.get('analyst_quote'):
+            desc_lines.append(target['analyst_quote'])
+        if target.get('cio_reasoning'):
+            desc_lines.append(f"CIO: {_compress_text(target['cio_reasoning'], 110)}")
+        # outcome
+        if target.get('outcome_forward_return_pct') is not None and target.get('outcome_horizon_days'):
+            sign = '+' if target['outcome_forward_return_pct'] >= 0 else ''
+            hit_label = '적중' if target.get('outcome_hit') else '미달'
+            desc_lines.append(
+                f"검증 T{target['outcome_horizon_days']} {sign}{target['outcome_forward_return_pct']:.1f}% {hit_label}"
+            )
+        if target.get('cio_opposing'):
+            desc_lines.append(f"리스크: {_compress_text(target['cio_opposing'], 80)}")
+        description = ' / '.join(desc_lines) if desc_lines else f"{target['symbol']} · {verdict_label} {target['confidence_pct']}%"
+        description = _compress_text(description, 200)
+
         return {
             'title': title,
             'description': description,
@@ -259,17 +303,56 @@ def build_share_payload(workflow: dict[str, Any], rank: int | None = None) -> di
             'link_url': f"{base_url}?workflow={workflow_id}&top={rank}",
             'rank': rank,
             'top_items': top_items,
+            'list_contents': [],
+            'kakao_buttons': [
+                {'title': '분석 상세 보기', 'link_url': f"{base_url}?workflow={workflow_id}&top={rank}"},
+                {'title': 'TOP 3 전체 보기', 'link_url': f"{base_url}?workflow={workflow_id}"},
+            ],
+            'analyst_quote': target.get('analyst_quote'),
+            'cio_reasoning': target.get('cio_reasoning'),
+            'cio_opposing': target.get('cio_opposing'),
             'workflow_id': workflow_id,
             'completed_at': completed_at,
         }
 
-    # TOP 3 전체 공유 모드
-    rank_lines = ' / '.join(
-        f"#{item['rank']} {item['name']}({item['symbol']}) {_share_verdict_label(item['action'])} {item['confidence_pct']}%"
-        for item in top_items
-    )
-    title = f"MarketFlow MCP TOP 3 — AI 자동 분석"
-    description = rank_lines if len(rank_lines) <= 200 else rank_lines[:197] + '…'
+    # ── TOP 3 전체 공유 (Feed + List 양쪽 제공) ─────────
+    title = f"MarketFlow MCP TOP 3 — {top_items[0]['name']}외 2종"
+
+    # Feed description: 핵심 한 줄 + 핵심 분석 quote
+    quote_lines = []
+    for it in top_items:
+        verdict_label = _share_verdict_label(it['action'])
+        quote = (it.get('analyst_quote') or '')[:60]
+        if quote:
+            quote_lines.append(f"#{it['rank']} {it['name']}({verdict_label} {it['confidence_pct']}%): {quote}")
+        else:
+            quote_lines.append(f"#{it['rank']} {it['name']}({verdict_label} {it['confidence_pct']}%) score {it['score']:.0f}")
+    description = '\n'.join(quote_lines)
+    description = _compress_text(description, 200)
+
+    # List template — 각 종목별 풍부한 카드
+    list_contents = []
+    for it in top_items:
+        verdict_label = _share_verdict_label(it['action'])
+        card_title = f"#{it['rank']} {it['name']} — {verdict_label} {it['confidence_pct']}% (score {it['score']:.0f})"
+        # 카드 description: analyst quote + 검증 결과 (각 100자)
+        card_lines = []
+        if it.get('analyst_quote'):
+            card_lines.append(it['analyst_quote'])
+        if it.get('cio_reasoning'):
+            card_lines.append(f"CIO: {_compress_text(it['cio_reasoning'], 70)}")
+        if it.get('outcome_forward_return_pct') is not None:
+            sign = '+' if it['outcome_forward_return_pct'] >= 0 else ''
+            hit = '적중' if it.get('outcome_hit') else '미달'
+            card_lines.append(f"T{it.get('outcome_horizon_days') or '?'} {sign}{it['outcome_forward_return_pct']:.1f}% {hit}")
+        card_desc = _compress_text(' / '.join(card_lines) if card_lines else f"{it['symbol']} {verdict_label}", 100)
+        list_contents.append({
+            'title': _compress_text(card_title, 100),
+            'description': card_desc,
+            'image_url': fallback_image,
+            'link_url': f"{base_url}?workflow={workflow_id}&top={it['rank']}",
+        })
+
     return {
         'title': title,
         'description': description,
@@ -277,6 +360,10 @@ def build_share_payload(workflow: dict[str, Any], rank: int | None = None) -> di
         'link_url': f"{base_url}?workflow={workflow_id}",
         'rank': None,
         'top_items': top_items,
+        'list_contents': list_contents,
+        'kakao_buttons': [
+            {'title': 'TOP 3 분석 상세', 'link_url': f"{base_url}?workflow={workflow_id}"},
+        ],
         'workflow_id': workflow_id,
         'completed_at': completed_at,
     }
@@ -289,6 +376,52 @@ def _share_verdict_label(action: str) -> str:
     if a == 'SELL':
         return '매도'
     return '관망'
+
+
+_PERSONA_AGENT_IDS = {'kim_risk', 'park_momentum', 'lee_quant', 'choi_contrarian', 'jung_hedge'}
+_PERSONA_NAMES = {'김리스크', '박모멘텀', '이퀀트', '최역발상', '정헤지'}
+
+
+def _pick_top_analyst_quote(analysts: list[dict]) -> str:
+    """5인 페르소나(김리스크/박모멘텀/이퀀트/최역발상/정헤지) 중 가장 확신도 높은 발언 우선.
+
+    fallback: 다른 모든 analyst 중 confidence 최고.
+
+    예: 박모멘텀(BUY 90%): "sector_momentum 92, ml_prediction 87 모멘텀 강함"
+    """
+    if not analysts:
+        return ''
+    valid = [a for a in analysts if isinstance(a, dict) and a.get('message')]
+    if not valid:
+        return ''
+
+    # 1) 5인 페르소나 우선
+    personas = [
+        a for a in valid
+        if str(a.get('id') or a.get('agent_id') or '') in _PERSONA_AGENT_IDS
+        or str(a.get('name') or a.get('agent_name') or '') in _PERSONA_NAMES
+    ]
+    pool = personas if personas else valid
+
+    # 2) confidence 최고 선택
+    sorted_a = sorted(pool, key=lambda a: a.get('confidence', 0), reverse=True)
+    top = sorted_a[0]
+    name = top.get('name') or top.get('agent_name') or '에이전트'
+    stance = (top.get('stance') or top.get('verdict') or 'HOLD').upper()
+    conf_raw = top.get('confidence') or 0
+    conf = int(round(conf_raw * 100)) if conf_raw <= 1 else int(round(conf_raw))
+    msg = _compress_text(top.get('message') or '', 60)
+    return f"{name}({stance} {conf}%): \"{msg}\""
+
+
+def _compress_text(text: Any, max_len: int) -> str:
+    """텍스트 정규화 + 길이 제한 (한글 끝잘림 방지)."""
+    if not text:
+        return ''
+    s = ' '.join(str(text).split())
+    if len(s) <= max_len:
+        return s
+    return s[: max_len - 1] + '…'
 
 
 def build_workflow_top3_telegram_message(workflow: dict[str, Any]) -> str:

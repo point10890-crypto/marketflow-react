@@ -349,7 +349,7 @@ function AlphaBoardPanel({
         ? 'ON'
         : (workflow?.outcome_status || outcomeStatus || '--');
 
-    // 카카오톡 공유 핸들러
+    // 카카오톡 공유 핸들러 (list template + buttons 포함)
     async function handleShareTop3(workflowId: string) {
         try {
             const payload = await mirofishApi.getSharePayload(workflowId);
@@ -358,9 +358,11 @@ function AlphaBoardPanel({
                 description: payload.description,
                 image_url: payload.image_url,
                 link_url: payload.link_url,
+                list_contents: payload.list_contents,
+                kakao_buttons: payload.kakao_buttons,
             });
             if (result === 'clipboard') {
-                window.alert('공유 링크를 클립보드에 복사했습니다.');
+                window.alert('TOP 3 분석 내용 + 링크를 클립보드에 복사했습니다.');
             } else if (result === 'failed') {
                 window.alert('공유에 실패했습니다. 카카오 SDK 키를 확인해 주세요.');
             }
@@ -378,9 +380,10 @@ function AlphaBoardPanel({
                 description: payload.description,
                 image_url: payload.image_url,
                 link_url: payload.link_url,
+                kakao_buttons: payload.kakao_buttons,
             });
             if (result === 'clipboard') {
-                window.alert(`TOP ${rank} 공유 링크를 클립보드에 복사했습니다.`);
+                window.alert(`TOP ${rank} 분석 내용 + 링크를 클립보드에 복사했습니다.`);
             } else if (result === 'failed') {
                 window.alert('공유에 실패했습니다.');
             }
