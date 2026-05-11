@@ -186,6 +186,73 @@ def create_mcp_server(
             'commit_event_state': commit_event_state,
         })
 
+    @mcp.tool()
+    def get_workflow_share_payload(
+        workflow_id: str = '',
+        rank: int | None = None,
+    ) -> dict[str, Any]:
+        """KakaoTalk 공유용 풍부한 페이로드 (5인 페르소나 인용 + CIO reasoning).
+
+        Args:
+            workflow_id: 빈 문자열이면 최신 workflow 사용.
+            rank: 1|2|3 단일 종목, None 이면 TOP 3 전체.
+
+        Returns:
+            {'title', 'description', 'image_url', 'link_url',
+             'top_items', 'list_contents', 'kakao_buttons',
+             'analyst_quote', 'cio_reasoning', 'cio_opposing'}
+        """
+        wf = workflow.read_workflow(workflow_id) if workflow_id else workflow.read_latest_workflow()
+        if wf is None:
+            return {'error': 'workflow not found', 'workflow_id': workflow_id or 'latest'}
+        try:
+            payload = workflow.build_share_payload(wf, rank=rank)
+            return payload
+        except ValueError as exc:
+            return {'error': str(exc)}
+
+    @mcp.tool()
+    def get_top3_summary(workflow_id: str = '') -> dict[str, Any]:
+        """현재 또는 지정 workflow 의 TOP 3 핵심 요약 — Claude 가 즉시 응답 가능한 형태.
+
+        AI 애널리스트 (5인 페르소나) 의 핵심 인용 + CIO reasoning + 검증 결과를 포함.
+        Claude Desktop 에서 "이번 주 TOP 3 알려줘" 같은 자연어 질의에 답하기 위해 사용.
+
+        Args:
+            workflow_id: 빈 문자열이면 최신 workflow.
+
+        Returns:
+            {'workflow_id', 'completed_at', 'top_count', 'top_items': [{...}], 'one_liner'}
+        """
+        wf = workflow.read_workflow(workflow_id) if workflow_id else workflow.read_latest_workflow()
+        if wf is None:
+            return {'error': 'workflow not found'}
+        payload = workflow.build_share_payload(wf, rank=None)
+        top_items = payload.get('top_items', [])
+        one_liner = ' / '.join(
+            f"#{it['rank']} {it['name']} {it['action']} {it['confidence_pct']}%"
+            for it in top_items
+        )
+        return {
+            'workflow_id': payload.get('workflow_id'),
+            'completed_at': payload.get('completed_at'),
+            'top_count': len(top_items),
+            'top_items': top_items,
+            'one_liner': one_liner,
+            'description': payload.get('description'),
+        }
+
+    @mcp.resource('mirofish://workflows/share')
+    def latest_share_resource() -> str:
+        """최신 workflow 의 카카오톡 공유 페이로드 (5인 인용 + CIO 포함)."""
+        wf = workflow.read_latest_workflow()
+        if wf is None:
+            return _json({'error': 'workflow not found'})
+        try:
+            return _json(workflow.build_share_payload(wf, rank=None))
+        except Exception as exc:
+            return _json({'error': str(exc)})
+
     @mcp.resource('mirofish://autonomous/status')
     def autonomous_status_resource() -> str:
         """Redacted autonomous MCP status."""
