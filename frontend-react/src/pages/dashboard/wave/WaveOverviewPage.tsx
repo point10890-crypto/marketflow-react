@@ -4,6 +4,9 @@ import { useSearchParams } from 'react-router-dom';
 import { fetchAPI, API_BASE, authHeaders } from '@/lib/api';
 import PatternChart, { ChartDataPoint, PatternOverlay, PatternPoint } from '@/components/wave/PatternChart';
 import { useIsMobile } from '@/hooks/useIsMobile';
+import { getJubjubCandidates, JubjubResponse, JubjubCandidate } from '@/lib/jubjubApi';
+import JubjubCard from '@/components/wave/JubjubCard';
+import JubjubBanner from '@/components/wave/JubjubBanner';
 
 /* ── Types ── */
 
@@ -51,7 +54,7 @@ interface WaveDetectResult {
 
 /* ── Filters ── */
 
-type FilterMode = 'all' | 'W' | 'M';
+type FilterMode = 'all' | 'W' | 'M' | 'jubjub';
 type SortMode = 'confidence' | 'neckline' | 'completion';
 
 const MARKET_TABS = [
@@ -67,6 +70,10 @@ export default function WaveOverviewPage() {
     const [screenerLoading, setScreenerLoading] = useState(true);
     const [filter, setFilter] = useState<FilterMode>('all');
     const [sortMode, setSortMode] = useState<SortMode>('confidence');
+    // 🪣 Jubjub state
+    const [jubjub, setJubjub] = useState<JubjubResponse | null>(null);
+    const [jubjubLoading, setJubjubLoading] = useState(false);
+    const [jubjubMinScore, setJubjubMinScore] = useState<number>(60);
 
     // Detail state (when user clicks a signal or searches)
     const [selectedTicker, setSelectedTicker] = useState<string | null>(null);
@@ -98,6 +105,27 @@ export default function WaveOverviewPage() {
             setScreenerLoading(false);
         }
     };
+
+    // 🪣 Jubjub: 점수 변경 시 자동 재로드
+    useEffect(() => {
+        if (filter !== 'jubjub') return;
+        let cancelled = false;
+        async function loadJubjub() {
+            setJubjubLoading(true);
+            try {
+                const data = await getJubjubCandidates({ min_score: jubjubMinScore, limit: 50 });
+                if (!cancelled) setJubjub(data);
+            } catch {
+                // ignore
+            } finally {
+                if (!cancelled) setJubjubLoading(false);
+            }
+        }
+        loadJubjub();
+        return () => {
+            cancelled = true;
+        };
+    }, [filter, jubjubMinScore]);
 
     // Load detail chart for a ticker
     const loadDetail = useCallback(async (ticker: string, mkt: string = 'KR') => {
@@ -150,9 +178,9 @@ export default function WaveOverviewPage() {
         setSearchError('');
     };
 
-    // Filtered & sorted signals
+    // Filtered & sorted signals (jubjub 모드는 별도 처리 — 여기서는 W/M/all 만)
     const filteredSignals = (screener?.signals || [])
-        .filter(s => filter === 'all' || s.best_pattern.pattern_class === filter)
+        .filter(s => filter === 'all' || filter === 'jubjub' || s.best_pattern.pattern_class === filter)
         .sort((a, b) => {
             if (sortMode === 'confidence') return b.best_pattern.confidence - a.best_pattern.confidence;
             if (sortMode === 'neckline') return Math.abs(a.best_pattern.neckline_distance_pct) - Math.abs(b.best_pattern.neckline_distance_pct);
@@ -270,21 +298,24 @@ export default function WaveOverviewPage() {
 
             {/* Filters & Sort */}
             {screener && screener.signals.length > 0 && (
-                <div className="flex items-center justify-between">
-                    <div className="flex gap-1.5">
-                        {(['all', 'W', 'M'] as FilterMode[]).map(f => (
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex flex-wrap gap-1.5">
+                        {(['all', 'W', 'M', 'jubjub'] as FilterMode[]).map(f => (
                             <button
                                 key={f}
                                 onClick={() => setFilter(f)}
-                                className={`px-3 py-1 text-xs font-bold rounded-lg transition-all ${
+                                className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
                                     filter === f
                                         ? f === 'W' ? 'bg-cyan-500/20 text-cyan-400'
                                         : f === 'M' ? 'bg-pink-500/20 text-pink-400'
+                                        : f === 'jubjub' ? 'bg-amber-300/20 text-amber-200 ring-1 ring-amber-300/40'
                                         : 'bg-white/10 text-white'
+                                        : f === 'jubjub'
+                                        ? 'text-amber-300/70 hover:text-amber-200 hover:bg-amber-300/[0.08]'
                                         : 'text-gray-500 hover:text-white hover:bg-white/5'
                                 }`}
                             >
-                                {f === 'all' ? '전체' : f === 'W' ? 'W (Bullish)' : 'M (Bearish)'}
+                                {f === 'all' ? '전체' : f === 'W' ? 'W (Bullish)' : f === 'M' ? 'M (Bearish)' : '🪣 줍줍이'}
                             </button>
                         ))}
                     </div>
@@ -311,8 +342,58 @@ export default function WaveOverviewPage() {
                 </div>
             )}
 
-            {/* Screener Results */}
-            {screenerLoading ? (
+            {/* 🪣 Jubjub Mode — W 패턴 + 저점 매수 시그널 */}
+            {filter === 'jubjub' && (
+                <>
+                    <JubjubBanner
+                        data={jubjub}
+                        minScore={jubjubMinScore}
+                        onMinScoreChange={setJubjubMinScore}
+                        loading={jubjubLoading}
+                    />
+                    {jubjubLoading && !jubjub ? (
+                        <div className="bg-[#1c1c1e] rounded-2xl border border-emerald-300/15 p-12 text-center">
+                            <div className="w-8 h-8 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+                            <p className="text-gray-500 text-sm">🪣 줍줍 후보 검출 중...</p>
+                        </div>
+                    ) : !jubjub?.candidates?.length ? (
+                        <div className="bg-[#1c1c1e] rounded-2xl border border-emerald-300/15 p-12 text-center">
+                            <div className="text-4xl mb-3">🪣</div>
+                            <p className="text-gray-400 text-sm">
+                                현재 줍줍 후보가 없습니다 (최소 점수 ≥ {jubjubMinScore}).
+                            </p>
+                            <p className="text-gray-600 text-xs mt-1">
+                                점수 기준을 낮추거나 다음 스캔까지 기다려 보세요.
+                            </p>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 gap-3 sm:gap-4 lg:grid-cols-2 2xl:grid-cols-3">
+                            {jubjub.candidates.map((c: JubjubCandidate) => (
+                                <JubjubCard
+                                    key={c.ticker}
+                                    candidate={c}
+                                    onChart={(cand) => {
+                                        // 차트 보기 = 기존 detail 로드
+                                        loadDetail(cand.ticker, cand.market || 'KR');
+                                    }}
+                                    onShare={(cand) => {
+                                        const text = `🪣 줍줍 신호 — ${cand.name} (${cand.ticker})\n점수: ${Math.round(cand.jubjub_score)}/100 ${cand.jubjub_badge_label_ko}\n매수가: ${cand.trade_plan.entry_price.toLocaleString()}원\n1차 목표: ${cand.trade_plan.target_1.toLocaleString()}원\n손절가: ${cand.trade_plan.stop_price.toLocaleString()}원\nR/R: 1차 ${cand.trade_plan.rr_1}x`;
+                                        if (navigator.share) {
+                                            navigator.share({ title: `🪣 ${cand.name} 줍줍 신호`, text });
+                                        } else {
+                                            navigator.clipboard.writeText(text);
+                                            alert('복사됨 — 카톡 채팅에 붙여넣기 하세요.');
+                                        }
+                                    }}
+                                />
+                            ))}
+                        </div>
+                    )}
+                </>
+            )}
+
+            {/* Screener Results (기존 W/M 모드 — jubjub 모드 시 숨김) */}
+            {filter !== 'jubjub' && (screenerLoading ? (
                 <div className="bg-[#1c1c1e] rounded-2xl border border-white/5 p-12 text-center">
                     <div className="w-8 h-8 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
                     <p className="text-gray-500 text-sm">스크리너 데이터 로딩중...</p>
@@ -483,7 +564,7 @@ export default function WaveOverviewPage() {
                         <span><i className="fas fa-chart-bar mr-1" />거래량 확인</span>
                     </div>
                 </div>
-            )}
+            ))}
         </div>
     );
 }

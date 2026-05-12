@@ -151,6 +151,67 @@ def screener_latest():
     })
 
 
+@wave_bp.route('/jubjub')
+def jubjub_candidates():
+    """줍줍이 후보 — W (Bullish) + 줍줍 점수 ≥ min_score.
+
+    GET /api/wave/jubjub?min_score=60&limit=50
+    """
+    data = _load_screener_json()
+    if not data:
+        return jsonify({
+            'date': None,
+            'updated_at': None,
+            'market': None,
+            'scan_count': 0,
+            'jubjub_count': 0,
+            'candidates': [],
+            'message': 'No screener data available.',
+        })
+
+    try:
+        min_score = float(request.args.get('min_score', '60'))
+    except (ValueError, TypeError):
+        min_score = 60.0
+    min_score = max(0.0, min(min_score, 100.0))
+    try:
+        limit = int(request.args.get('limit', '50'))
+    except (ValueError, TypeError):
+        limit = 50
+    limit = max(1, min(limit, 200))
+
+    from engine.jubjub_analyzer import filter_and_sort_jubjub
+    candidates = filter_and_sort_jubjub(
+        data.get('signals') or [],
+        min_score=min_score,
+        limit=limit,
+    )
+
+    # 통계
+    imminent = sum(1 for c in candidates if c['jubjub_badge'] == 'imminent')
+    buy_now = sum(1 for c in candidates if c['jubjub_badge'] == 'buy_now')
+    breakout = sum(1 for c in candidates if c['jubjub_badge'] == 'breakout')
+    top_score = candidates[0]['jubjub_score'] if candidates else None
+    top_name = candidates[0]['name'] if candidates else None
+
+    return jsonify({
+        'date': data.get('date'),
+        'updated_at': data.get('updated_at'),
+        'market': data.get('market'),
+        'scan_count': data.get('scan_count', 0),
+        'jubjub_count': len(candidates),
+        'min_score': min_score,
+        'stats': {
+            'imminent': imminent,
+            'buy_now': buy_now,
+            'breakout': breakout,
+            'top_score': top_score,
+            'top_name': top_name,
+        },
+        'candidates': candidates,
+    })
+
+
 @wave_bp.route('/detect/<ticker>')
 def detect_patterns(ticker: str):
     """

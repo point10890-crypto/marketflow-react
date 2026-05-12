@@ -633,6 +633,96 @@ def create_mcp_server(
         except Exception as exc:
             return {'error': f'{type(exc).__name__}: {exc}', 'query': query}
 
+    # =========================================================
+    # 🪣 줍줍이 — W 패턴 + 저점 매수 시그널
+    # =========================================================
+
+    @mcp.tool()
+    def get_jubjub_candidates(min_score: float = 60.0, limit: int = 30) -> dict[str, Any]:
+        """줍줍이 후보 종목 검색 (W 패턴 + 저점 매수 + 매수/목표/손절 자동).
+
+        W (Bullish) 패턴 중 줍줍 점수 ≥ min_score 인 종목들 반환.
+        각 종목에 매수가/1차목표/2차목표/손절/RR/줍줍별 등급 포함.
+
+        Args:
+            min_score: 줍줍 점수 최저값 (기본 60)
+            limit: 최대 후보 수 (기본 30)
+        Returns:
+            {jubjub_count, stats, candidates: [{ticker, name, jubjub_score,
+             jubjub_stars, jubjub_badge_label_ko, trade_plan: {...}, ...}]}
+        """
+        try:
+            import json as _json
+            import os as _os
+            from engine.jubjub_analyzer import filter_and_sort_jubjub
+
+            repo_root = _os.path.abspath(_os.path.join(_os.path.dirname(__file__), '..', '..', '..'))
+            screener_path = _os.path.join(repo_root, 'data', 'wave', 'wave_screener_latest.json')
+            if not _os.path.isfile(screener_path):
+                return {'error': 'screener data not found', 'searched_path': screener_path}
+            with open(screener_path, 'r', encoding='utf-8') as fh:
+                data = _json.load(fh)
+            candidates = filter_and_sort_jubjub(
+                data.get('signals') or [],
+                min_score=float(min_score),
+                limit=int(limit),
+            )
+            imminent = sum(1 for c in candidates if c['jubjub_badge'] == 'imminent')
+            buy_now = sum(1 for c in candidates if c['jubjub_badge'] == 'buy_now')
+            breakout = sum(1 for c in candidates if c['jubjub_badge'] == 'breakout')
+            return {
+                'jubjub_count': len(candidates),
+                'min_score': float(min_score),
+                'stats': {
+                    'imminent': imminent,
+                    'buy_now': buy_now,
+                    'breakout': breakout,
+                    'top_score': candidates[0]['jubjub_score'] if candidates else None,
+                    'top_name': candidates[0]['name'] if candidates else None,
+                },
+                'candidates': candidates,
+                'updated_at': data.get('updated_at'),
+            }
+        except Exception as exc:
+            return {'error': f'{type(exc).__name__}: {exc}'}
+
+    @mcp.tool()
+    def analyze_jubjub(symbol: str) -> dict[str, Any]:
+        """단일 종목 줍줍 분석 — 현재 W 패턴 + 매수/목표/손절 산출.
+
+        Args:
+            symbol: 종목 코드
+        Returns:
+            줍줍 분석 결과 또는 {'error': '...'} (해당 종목이 W 패턴 후보 아님)
+        """
+        try:
+            import json as _json
+            import os as _os
+            from engine.jubjub_analyzer import compute_jubjub
+
+            repo_root = _os.path.abspath(_os.path.join(_os.path.dirname(__file__), '..', '..', '..'))
+            screener_path = _os.path.join(repo_root, 'data', 'wave_pattern_screener.json')
+            if not _os.path.isfile(screener_path):
+                alt = _os.path.join(repo_root, 'data', 'wave', 'wave_pattern_screener.json')
+                if _os.path.isfile(alt):
+                    screener_path = alt
+                else:
+                    return {'error': 'screener data not found'}
+            with open(screener_path, 'r', encoding='utf-8') as fh:
+                data = _json.load(fh)
+            signal = next(
+                (s for s in (data.get('signals') or []) if str(s.get('ticker')) == str(symbol)),
+                None,
+            )
+            if signal is None:
+                return {'error': f'symbol {symbol} not in screener', 'symbol': symbol}
+            result = compute_jubjub(signal)
+            if result is None:
+                return {'error': 'not a valid W (Bullish) candidate', 'symbol': symbol}
+            return result
+        except Exception as exc:
+            return {'error': f'{type(exc).__name__}: {exc}', 'symbol': symbol}
+
     return mcp
 
 
