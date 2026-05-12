@@ -15,7 +15,7 @@
  * 폴링: 15초 (자동 실행기 상태는 빠르게 변하므로)
  */
 import { useEffect, useState } from 'react';
-import { MiroFishAutoRunnerStatus, mirofishApi } from '@/lib/mirofishApi';
+import { MiroFishAutoRunnerStatus, MiroFishAutoRunnerTuneResult, mirofishApi } from '@/lib/mirofishApi';
 
 const POLL_INTERVAL_MS = 15_000;
 
@@ -72,6 +72,8 @@ export default function AutoRunnerCard() {
     const [error, setError] = useState<string | null>(null);
     const [actionStates, setActionStates] = useState<Record<string, ActionState>>({});
     const [actionMessage, setActionMessage] = useState<string | null>(null);
+    const [tuneResult, setTuneResult] = useState<MiroFishAutoRunnerTuneResult | null>(null);
+    const [tuneOpen, setTuneOpen] = useState(false);
 
     useEffect(() => {
         let cancelled = false;
@@ -292,6 +294,106 @@ export default function AutoRunnerCard() {
                     {actionMessage}
                 </div>
             )}
+
+            {/* LLM 임계값 추천 (Open-Claude식 자가 개선) */}
+            <div className="mt-2 rounded-md border border-cyan-300/20 bg-cyan-300/[0.04]">
+                <button
+                    type="button"
+                    disabled={actionStates['tune'] === 'running'}
+                    onClick={async () => {
+                        if (actionStates['tune'] === 'running') return;
+                        setActionStates((prev) => ({ ...prev, tune: 'running' }));
+                        setActionMessage(null);
+                        try {
+                            const res = await mirofishApi.tuneAutoRunner(14, false);
+                            setTuneResult(res);
+                            setTuneOpen(true);
+                            setActionStates((prev) => ({ ...prev, tune: res.ok ? 'ok' : 'failed' }));
+                            if (!res.ok) setActionMessage(`추천 실패: ${res.error || 'unknown'}`);
+                        } catch (err) {
+                            setActionStates((prev) => ({ ...prev, tune: 'failed' }));
+                            setActionMessage(`추천 호출 실패: ${err instanceof Error ? err.message : 'error'}`);
+                        }
+                    }}
+                    className="flex w-full items-center justify-between px-2.5 py-2 text-[11px] font-black text-cyan-200 transition-colors hover:bg-cyan-300/[0.08] disabled:cursor-wait disabled:opacity-60"
+                >
+                    <span>🧠 LLM 임계값 추천 (최근 14d 분석)</span>
+                    <span className="text-[10px] font-bold text-cyan-300/70">
+                        {actionStates['tune'] === 'running' ? '분석중…' : tuneResult ? (tuneOpen ? '접기 ▲' : '펼치기 ▼') : '실행 ▶'}
+                    </span>
+                </button>
+
+                {tuneResult && tuneOpen && (
+                    <div className="border-t border-cyan-300/15 p-2.5 text-[10px] font-bold">
+                        {!tuneResult.ok && (
+                            <div className="rounded-md border border-rose-300/20 bg-rose-300/[0.05] px-2 py-1.5 text-rose-200 leading-snug">
+                                ✗ {tuneResult.error}
+                            </div>
+                        )}
+                        {tuneResult.ok && tuneResult.recommendation && (
+                            <>
+                                <div className="mb-1 flex items-center justify-between">
+                                    <span className="text-slate-400">📊 추천 (confidence: {tuneResult.recommendation.confidence})</span>
+                                    <span className="text-slate-500 tabular-nums">{tuneResult.duration_s}s</span>
+                                </div>
+                                {/* Diff 테이블 */}
+                                <div className="space-y-0.5 rounded border border-white/5 bg-black/30 p-1.5">
+                                    {(tuneResult.diff || []).map((d) => {
+                                        const tone = d.delta === null || d.delta === 0
+                                            ? 'text-slate-500'
+                                            : d.delta > 0 ? 'text-emerald-300' : 'text-amber-300';
+                                        return (
+                                            <div key={d.field} className="flex items-center justify-between text-[10px]">
+                                                <span className="text-slate-400 w-32">{d.field}</span>
+                                                <span className="font-mono tabular-nums text-slate-500">{d.current}</span>
+                                                <span className="font-mono tabular-nums text-slate-600 mx-1">→</span>
+                                                <span className="font-mono tabular-nums text-white">{d.recommended}</span>
+                                                <span className={`font-mono tabular-nums w-12 text-right ${tone}`}>
+                                                    {d.delta !== null && d.delta !== 0 ? (d.delta > 0 ? '+' : '') + d.delta.toFixed(1) : '·'}
+                                                </span>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                                {tuneResult.recommendation.reasoning && (
+                                    <div className="mt-2 rounded border border-cyan-300/15 bg-cyan-300/[0.04] px-2 py-1.5 text-cyan-100 leading-relaxed">
+                                        💡 {tuneResult.recommendation.reasoning}
+                                    </div>
+                                )}
+                                <button
+                                    type="button"
+                                    disabled={actionStates['apply'] === 'running'}
+                                    onClick={async () => {
+                                        if (!tuneResult.recommendation) return;
+                                        setActionStates((prev) => ({ ...prev, apply: 'running' }));
+                                        try {
+                                            const r = await mirofishApi.applyAutoRunnerTune({
+                                                min_alpha: tuneResult.recommendation.min_alpha,
+                                                max_risk: tuneResult.recommendation.max_risk,
+                                                min_new_events: tuneResult.recommendation.min_new_events,
+                                                cooldown_minutes: tuneResult.recommendation.cooldown_minutes,
+                                                force_after_hours: tuneResult.recommendation.force_after_hours,
+                                            });
+                                            setActionStates((prev) => ({ ...prev, apply: r.ok ? 'ok' : 'failed' }));
+                                            setActionMessage(r.ok ? '✓ 추천 임계값 적용 완료 (in-memory)' : '적용 실패');
+                                            setTimeout(() => setActionStates((prev) => ({ ...prev, apply: 'idle' })), 3000);
+                                        } catch (err) {
+                                            setActionStates((prev) => ({ ...prev, apply: 'failed' }));
+                                            setActionMessage(`적용 실패: ${err instanceof Error ? err.message : 'error'}`);
+                                        }
+                                    }}
+                                    className="mt-2 w-full min-h-[36px] rounded-md border border-emerald-300/30 bg-emerald-300/10 px-2 py-1 text-[11px] font-black text-emerald-200 transition-colors hover:bg-emerald-300/15 disabled:cursor-wait disabled:opacity-50"
+                                >
+                                    {actionStates['apply'] === 'running' ? '적용중…' : '✓ 추천값 즉시 적용 (in-memory)'}
+                                </button>
+                                <div className="mt-1 text-[9px] text-slate-500 leading-snug">
+                                    {tuneResult.apply_note}
+                                </div>
+                            </>
+                        )}
+                    </div>
+                )}
+            </div>
 
             {/* 설정 요약 (작게) */}
             {tuning && (

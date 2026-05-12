@@ -114,6 +114,9 @@ def _tunables() -> dict[str, Any]:
         'dry_run': _env_bool('MIROFISH_AUTO_RUNNER_DRY_RUN', False),
         'allow_outside_market_hours': _env_bool('MIROFISH_AUTO_RUNNER_ALLOW_OUTSIDE', False),
         'allow_stale_sources': _env_bool('MIROFISH_AUTO_RUNNER_ALLOW_STALE', False),
+        # 마지막 success 후 N시간 지나면 dedup 우회 자동 force (0 = 비활성).
+        # 쿨다운 + 비용캡은 여전히 적용되므로 폭주 방지.
+        'force_after_hours': _env_int('MIROFISH_AUTO_RUNNER_FORCE_AFTER_HOURS', 4),
     }
 
 
@@ -344,7 +347,11 @@ def _worker_loop() -> None:
 
 
 def _execute_cycle(force: bool = False) -> dict[str, Any]:
-    """One iteration: check gates → trigger if all pass → update state."""
+    """One iteration: check gates → trigger if all pass → update state.
+
+    Auto-force: 마지막 success 후 force_after_hours 경과 시 (또는 success 자체가
+    없을 시) dedup 우회 force=True 활성화. 쿨다운/circuit/cost cap 은 그대로 적용.
+    """
     started = time.perf_counter()
     cycle_record: dict[str, Any] = {'started_at': _now_iso(), 'force': force}
     with _state_lock:
@@ -355,6 +362,28 @@ def _execute_cycle(force: bool = False) -> dict[str, Any]:
         _write_state(state)
 
     tuning = _tunables()
+
+    # === auto-force decision (dedup fallback) ============================
+    if not force:
+        force_after_hours = int(tuning.get('force_after_hours') or 0)
+        if force_after_hours > 0:
+            current = _read_state()
+            # 쿨다운/서킷/일시정지 중에는 auto-force 적용 X (다른 게이트에서 처리)
+            cd_until = _iso_to_dt(current.get('cooldown_until'))
+            in_cooldown = cd_until is not None and cd_until > datetime.now(timezone.utc)
+            blocked_phase = current.get('phase') in {'CIRCUIT_OPEN', 'PAUSED'}
+            if not in_cooldown and not blocked_phase:
+                last_success = _iso_to_dt(current.get('last_success_at'))
+                if last_success is None:
+                    force = True
+                    cycle_record['auto_forced'] = 'no_prior_success'
+                else:
+                    age_hours = (datetime.now(timezone.utc) - last_success).total_seconds() / 3600.0
+                    if age_hours >= force_after_hours:
+                        force = True
+                        cycle_record['auto_forced'] = f'{age_hours:.1f}h_since_last_success'
+    # ====================================================================
+
     gates = _evaluate_gates(force=force, tuning=tuning)
     cycle_record['gates'] = gates
 
@@ -701,4 +730,229 @@ def _gate_result(results: list[dict[str, Any]]) -> dict[str, Any]:
         'all_pass': all_pass,
         'failed_reason': f"{failed['name']}: {failed.get('detail')}" if failed else None,
         'gates': results,
+    }
+
+
+# ---------------------------------------------------------------------------
+# LLM 임계값 추천 (Open-Claude 식 자가 개선 — 최소 도입)
+# ---------------------------------------------------------------------------
+
+
+def recommend_thresholds(window_days: int = 14) -> dict[str, Any]:
+    """최근 outcomes 를 분석해 Gemini 가 새 임계값을 제안.
+
+    결과는 _state.json 의 last_recommendation 에도 저장됨 (admin 대시보드 표시용).
+    실제 적용은 env var 수정 + Flask 재시작 또는 별도 apply 액션 필요 — 자동 적용 X.
+    """
+    import json
+    import os
+    import re
+
+    from app.services.mirofish.pipeline_overview import get_outcomes_board
+
+    started = time.perf_counter()
+    board = get_outcomes_board(days=max(3, min(int(window_days or 14), 60)), limit=200)
+    summary = board.get('summary') or {}
+    current = _tunables()
+
+    summary_lines = [
+        f"- Hit rate: {summary.get('hit_rate_pct')}% (target ≥55%)",
+        f"- Avg forward return: {summary.get('avg_forward_return_pct')}% (target ≥1.5%)",
+        f"- False positive: {summary.get('false_positive_pct')}% (target <20%)",
+        f"- Evaluated sample: {summary.get('evaluated_count', 0)} (pending: {summary.get('pending_count', 0)})",
+        f"- Stopped (loss-cut): {summary.get('stopped_count', 0)}",
+    ]
+
+    prompt = (
+        "당신은 한국 주식 자동 검출 시스템의 임계값을 튜닝하는 분석가입니다.\n\n"
+        f"=== 지난 {window_days}일 성능 ===\n"
+        + '\n'.join(summary_lines)
+        + "\n\n=== 현재 임계값 ===\n"
+        + f"- min_alpha (알파 최소): {current['min_alpha']}\n"
+        + f"- max_risk (리스크 최대): {current['max_risk']}\n"
+        + f"- min_new_events (신규 후보 최소): {current['min_new_events']}\n"
+        + f"- cooldown_minutes (성공 후 쿨다운): {current['cooldown_minutes']}\n"
+        + f"- force_after_hours (dedup 우회 주기): {current.get('force_after_hours', 0)}\n\n"
+        + "=== 지침 ===\n"
+        + "1. hit rate 가 낮으면 → min_alpha 올리거나 max_risk 낮춰 정밀도 ↑\n"
+        + "2. 발사 빈도가 너무 낮으면 → min_alpha/min_new_events 낮춰 재현율 ↑\n"
+        + "3. false positive 가 높으면 → max_risk 낮추거나 cooldown 길게\n"
+        + "4. 표본이 너무 작으면 (<5) → 보수적 조정만\n"
+        + "5. 한 번에 너무 큰 변경 금지 (±10 이내)\n\n"
+        + "=== 응답 형식 (반드시 valid JSON 만, 다른 텍스트 없이) ===\n"
+        + '{\n'
+        + '  "min_alpha": <float 40-80>,\n'
+        + '  "max_risk": <float 30-80>,\n'
+        + '  "min_new_events": <int 1-5>,\n'
+        + '  "cooldown_minutes": <int 5-60>,\n'
+        + '  "force_after_hours": <int 1-24>,\n'
+        + '  "reasoning": "<2-3 문장 한국어 근거>",\n'
+        + '  "confidence": "<low|medium|high>"\n'
+        + '}'
+    )
+
+    api_key = os.getenv('GOOGLE_API_KEY') or os.getenv('GEMINI_API_KEY')
+    if not api_key:
+        return {
+            'ok': False,
+            'error': 'GOOGLE_API_KEY / GEMINI_API_KEY 미설정',
+            'current_thresholds': _current_thresholds_summary(current),
+            'recent_kpi': summary,
+        }
+
+    try:
+        from google import genai
+
+        client = genai.Client(api_key=api_key)
+        response = client.models.generate_content(
+            model=os.getenv('MIROFISH_TUNER_MODEL', 'gemini-2.5-flash'),
+            contents=prompt,
+        )
+        raw = (response.text or '').strip()
+    except Exception as exc:
+        return {
+            'ok': False,
+            'error': f'LLM call failed: {type(exc).__name__}: {exc}',
+            'current_thresholds': _current_thresholds_summary(current),
+            'recent_kpi': summary,
+        }
+
+    # Extract JSON object from response
+    match = re.search(r'\{[\s\S]*\}', raw)
+    if not match:
+        return {
+            'ok': False,
+            'error': 'LLM 응답에서 JSON 추출 실패',
+            'raw_preview': raw[:500],
+            'current_thresholds': _current_thresholds_summary(current),
+            'recent_kpi': summary,
+        }
+    try:
+        rec = json.loads(match.group(0))
+    except Exception as exc:
+        return {
+            'ok': False,
+            'error': f'JSON parse 실패: {exc}',
+            'raw_preview': raw[:500],
+            'current_thresholds': _current_thresholds_summary(current),
+            'recent_kpi': summary,
+        }
+
+    # Bounds clamp (LLM 환각 방지)
+    rec = _clamp_recommendation(rec)
+
+    # Diff
+    diff = _diff_thresholds(current, rec)
+
+    result = {
+        'ok': True,
+        'generated_at': _now_iso(),
+        'window_days': window_days,
+        'current_thresholds': _current_thresholds_summary(current),
+        'recent_kpi': summary,
+        'recommendation': rec,
+        'diff': diff,
+        'duration_s': round(time.perf_counter() - started, 2),
+        'apply_note': (
+            'env var (.env) 에 반영하고 Flask 재시작 시 영구 적용. '
+            'POST /auto-runner/apply-tune 으로 in-memory 적용도 가능 (재시작 시 env 우선).'
+        ),
+    }
+
+    # 상태 파일에도 마지막 추천 기록 (감사 / 대시보드)
+    try:
+        with _state_lock:
+            state = _read_state()
+            state['last_recommendation'] = result
+            _write_state(state)
+    except Exception as exc:
+        logger.debug(f'[auto_runner] persist recommendation failed: {exc}')
+
+    return result
+
+
+def _current_thresholds_summary(tuning: dict[str, Any]) -> dict[str, Any]:
+    return {
+        'min_alpha': tuning.get('min_alpha'),
+        'max_risk': tuning.get('max_risk'),
+        'min_new_events': tuning.get('min_new_events'),
+        'cooldown_minutes': tuning.get('cooldown_minutes'),
+        'force_after_hours': tuning.get('force_after_hours'),
+    }
+
+
+def _clamp_recommendation(rec: dict[str, Any]) -> dict[str, Any]:
+    """LLM 추천을 안전 범위로 clamp."""
+    def _f(v, lo, hi, default):
+        try:
+            x = float(v)
+        except (TypeError, ValueError):
+            return default
+        return max(lo, min(hi, x))
+
+    def _i(v, lo, hi, default):
+        try:
+            x = int(v)
+        except (TypeError, ValueError):
+            return default
+        return max(lo, min(hi, x))
+
+    return {
+        'min_alpha': _f(rec.get('min_alpha'), 40, 80, 60),
+        'max_risk': _f(rec.get('max_risk'), 30, 80, 50),
+        'min_new_events': _i(rec.get('min_new_events'), 1, 5, 2),
+        'cooldown_minutes': _i(rec.get('cooldown_minutes'), 5, 60, 15),
+        'force_after_hours': _i(rec.get('force_after_hours'), 1, 24, 4),
+        'reasoning': str(rec.get('reasoning') or '')[:600],
+        'confidence': str(rec.get('confidence') or 'medium').lower(),
+    }
+
+
+def _diff_thresholds(current: dict[str, Any], rec: dict[str, Any]) -> list[dict[str, Any]]:
+    """현재 vs 추천 차이를 비교용 리스트로."""
+    fields = ['min_alpha', 'max_risk', 'min_new_events', 'cooldown_minutes', 'force_after_hours']
+    out: list[dict[str, Any]] = []
+    for f in fields:
+        cur = current.get(f)
+        new = rec.get(f)
+        try:
+            delta = float(new) - float(cur) if cur is not None and new is not None else None
+        except (TypeError, ValueError):
+            delta = None
+        out.append({
+            'field': f,
+            'current': cur,
+            'recommended': new,
+            'delta': delta,
+        })
+    return out
+
+
+def apply_recommendation_in_memory(rec: dict[str, Any]) -> dict[str, Any]:
+    """LLM 추천을 in-memory 환경변수에 즉시 적용 (Flask 재시작 시 env 우선)."""
+    mapping = {
+        'min_alpha': 'MIROFISH_AUTO_RUNNER_MIN_ALPHA',
+        'max_risk': 'MIROFISH_AUTO_RUNNER_MAX_RISK',
+        'min_new_events': 'MIROFISH_AUTO_RUNNER_MIN_NEW',
+        'cooldown_minutes': 'MIROFISH_AUTO_RUNNER_COOLDOWN_MIN',
+        'force_after_hours': 'MIROFISH_AUTO_RUNNER_FORCE_AFTER_HOURS',
+    }
+    applied = {}
+    for field, env_name in mapping.items():
+        if field in rec and rec[field] is not None:
+            os.environ[env_name] = str(rec[field])
+            applied[field] = rec[field]
+    with _state_lock:
+        state = _read_state()
+        state['last_applied_recommendation'] = {
+            'applied_at': _now_iso(),
+            'values': applied,
+            'reasoning': rec.get('reasoning'),
+        }
+        _write_state(state)
+    return {
+        'ok': True,
+        'applied': applied,
+        'effective_tunables': _tunables(),
+        'note': 'in-memory 적용 완료. 영구화하려면 .env 수정 후 Flask 재시작.',
     }

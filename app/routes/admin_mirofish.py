@@ -222,6 +222,62 @@ def auto_runner_reset():
     return jsonify(mirofish.auto_runner.reset_circuit())
 
 
+@admin_mirofish_bp.route('/auto-runner/tune', methods=['POST'])
+@admin_required
+def auto_runner_tune():
+    """LLM (Gemini) 이 최근 outcomes 분석 → 새 임계값 추천.
+
+    Body (옵션): { "window_days": 14, "apply": false }
+    apply=true 면 즉시 in-memory 적용 (Flask 재시작 시 env 우선).
+    """
+    payload = request.get_json(silent=True) or {}
+    try:
+        window_days = int(payload.get('window_days') or 14)
+    except (TypeError, ValueError):
+        return jsonify({'error': 'window_days must be int'}), 400
+    apply_now = _payload_bool(payload, 'apply', False)
+    try:
+        result = mirofish.auto_runner.recommend_thresholds(window_days=window_days)
+        if apply_now and result.get('ok') and result.get('recommendation'):
+            result['applied'] = mirofish.auto_runner.apply_recommendation_in_memory(result['recommendation'])
+        return jsonify(result)
+    except Exception as exc:
+        return jsonify({
+            'error': f'{type(exc).__name__}: {exc}',
+            'service': 'mirofish-auto-runner-tuner',
+        }), 500
+
+
+@admin_mirofish_bp.route('/auto-runner/apply-tune', methods=['POST'])
+@admin_required
+def auto_runner_apply_tune():
+    """이전 tune 결과 또는 사용자 제공 임계값을 in-memory 적용.
+
+    Body: { "min_alpha": 55, "max_risk": 60, "min_new_events": 2,
+            "cooldown_minutes": 15, "force_after_hours": 4 }
+    필드 부분 적용 OK. 모든 값 누락 시 last_recommendation 사용.
+    """
+    payload = request.get_json(silent=True) or {}
+    rec = {k: v for k, v in payload.items() if k in {
+        'min_alpha', 'max_risk', 'min_new_events',
+        'cooldown_minutes', 'force_after_hours',
+    }}
+    if not rec:
+        # last_recommendation fallback
+        status = mirofish.auto_runner.get_status()
+        last = (status or {}).get('last_recommendation') or {}
+        rec = (last.get('recommendation') or {})
+        if not rec:
+            return jsonify({'error': 'no last_recommendation; provide thresholds in body'}), 400
+    try:
+        return jsonify(mirofish.auto_runner.apply_recommendation_in_memory(rec))
+    except Exception as exc:
+        return jsonify({
+            'error': f'{type(exc).__name__}: {exc}',
+            'service': 'mirofish-auto-runner-apply-tune',
+        }), 500
+
+
 @admin_mirofish_bp.route('/auto-runner/trigger', methods=['POST'])
 @admin_required
 def auto_runner_force_trigger():

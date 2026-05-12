@@ -1284,6 +1284,18 @@ export const mirofishApi = {
         undefined,
         300000,
     ),
+    tuneAutoRunner: async (windowDays: number = 14, apply: boolean = false) => postAuthAPI<MiroFishAutoRunnerTuneResult>(
+        '/api/admin/mirofish/auto-runner/tune',
+        { window_days: windowDays, apply },
+        undefined,
+        90000,
+    ),
+    applyAutoRunnerTune: async (rec: Partial<MiroFishAutoRunnerThresholds>) => postAuthAPI<MiroFishAutoRunnerApplyResult>(
+        '/api/admin/mirofish/auto-runner/apply-tune',
+        rec,
+        undefined,
+        30000,
+    ),
     /** 최근 N일 추천 종목 outcomes 보드 */
     getOutcomesBoard: async (params: { days?: number; limit?: number } = {}) => {
         const search = new URLSearchParams();
@@ -1412,6 +1424,44 @@ export interface MiroFishAutoRunnerGate {
     name: string;
     ok: boolean;
     detail?: any;
+}
+
+export interface MiroFishAutoRunnerThresholds {
+    min_alpha?: number;
+    max_risk?: number;
+    min_new_events?: number;
+    cooldown_minutes?: number;
+    force_after_hours?: number;
+}
+
+export interface MiroFishAutoRunnerTuneResult {
+    ok: boolean;
+    error?: string;
+    generated_at?: string;
+    window_days?: number;
+    current_thresholds?: MiroFishAutoRunnerThresholds;
+    recent_kpi?: Record<string, any>;
+    recommendation?: MiroFishAutoRunnerThresholds & {
+        reasoning?: string;
+        confidence?: 'low' | 'medium' | 'high' | string;
+    };
+    diff?: Array<{
+        field: string;
+        current: number | null;
+        recommended: number | null;
+        delta: number | null;
+    }>;
+    duration_s?: number;
+    apply_note?: string;
+    applied?: MiroFishAutoRunnerApplyResult;
+    raw_preview?: string;
+}
+
+export interface MiroFishAutoRunnerApplyResult {
+    ok: boolean;
+    applied?: Record<string, number>;
+    effective_tunables?: Record<string, any>;
+    note?: string;
 }
 
 export interface MiroFishAutoRunnerStatus {
