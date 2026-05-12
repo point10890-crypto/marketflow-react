@@ -373,10 +373,10 @@ def _execute_cycle(force: bool = False) -> dict[str, Any]:
         return {'fired': False, 'reason': reason, 'gates': gates}
 
     # All gates passed → fire
-    return _fire_workflow(tuning, gates, cycle_record, started)
+    return _fire_workflow(tuning, gates, cycle_record, started, force=force)
 
 
-def _fire_workflow(tuning: dict[str, Any], gates: dict[str, Any], cycle_record: dict[str, Any], started: float) -> dict[str, Any]:
+def _fire_workflow(tuning: dict[str, Any], gates: dict[str, Any], cycle_record: dict[str, Any], started: float, *, force: bool = False) -> dict[str, Any]:
     with _state_lock:
         state = _read_state()
         state['phase'] = 'TRIGGERED'
@@ -402,6 +402,8 @@ def _fire_workflow(tuning: dict[str, Any], gates: dict[str, Any], cycle_record: 
         _write_state(state)
 
     try:
+        # force=True → workflow에 force 플래그 전달해서 dedup 우회 (관리자 강제 트리거 경로)
+        # 일반 폴링은 force=False → workflow가 자체 event_state로 dedup
         result = workflow_svc.start_workflow_from_scanner_events(
             payload={
                 'min_alpha': tuning['min_alpha'],
@@ -410,9 +412,10 @@ def _fire_workflow(tuning: dict[str, Any], gates: dict[str, Any], cycle_record: 
                 'top_n': 3,
                 'agent_count': 5,
                 'allow_stale_sources': bool(tuning['allow_stale_sources']),
+                'force': bool(force),
             },
-            async_mode=False,  # blocking — we want to send telegram after completion
-            commit_event_state=False,  # commit later only on successful telegram
+            async_mode=False,
+            commit_event_state=False,
         )
     except Exception as exc:
         _record_failure(cycle_record, started, f'workflow_error:{type(exc).__name__}:{exc}', tuning)
@@ -651,9 +654,13 @@ def _evaluate_gates(*, force: bool, tuning: dict[str, Any]) -> dict[str, Any]:
     add('cost_cap', True, f'today ${today_cost:.2f} / cap ${daily_cap:.2f}')
 
     # G4 + G5 new events + quality (single scanner_alert_check call serves both)
+    # 중요: workflow의 자체 event_state 와 동일한 경로 사용 — 아니면 게이트가 새 이벤트를 본다고
+    # 판정해도 workflow 가 'no_new_events' 반환할 수 있음 (이중 dedup 미스매치)
     try:
+        from app.services.mirofish.workflow import _event_state_path as _workflow_state_path
         alert = alpha_scanner.run_scanner_alert_check(
             {},
+            state_path=_workflow_state_path(),
             min_alpha=float(tuning['min_alpha']),
             max_risk=float(tuning['max_risk']),
             max_events=8,
