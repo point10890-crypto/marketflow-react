@@ -298,9 +298,10 @@ export default function WaveOverviewPage() {
 
             {/* Filters & Sort */}
             {screener && screener.signals.length > 0 && (
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                    <div className="flex flex-wrap gap-1.5">
-                        {(['all', 'W', 'M', 'jubjub'] as FilterMode[]).map(f => (
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex flex-wrap items-center gap-2">
+                        {/* 일반 패턴 탭 (전체/W/M) */}
+                        {(['all', 'W', 'M'] as FilterMode[]).map(f => (
                             <button
                                 key={f}
                                 onClick={() => setFilter(f)}
@@ -308,16 +309,39 @@ export default function WaveOverviewPage() {
                                     filter === f
                                         ? f === 'W' ? 'bg-cyan-500/20 text-cyan-400'
                                         : f === 'M' ? 'bg-pink-500/20 text-pink-400'
-                                        : f === 'jubjub' ? 'bg-amber-300/20 text-amber-200 ring-1 ring-amber-300/40'
                                         : 'bg-white/10 text-white'
-                                        : f === 'jubjub'
-                                        ? 'text-amber-300/70 hover:text-amber-200 hover:bg-amber-300/[0.08]'
                                         : 'text-gray-500 hover:text-white hover:bg-white/5'
                                 }`}
                             >
-                                {f === 'all' ? '전체' : f === 'W' ? 'W (Bullish)' : f === 'M' ? 'M (Bearish)' : '🪣 줍줍이'}
+                                {f === 'all' ? '전체' : f === 'W' ? 'W (Bullish)' : 'M (Bearish)'}
                             </button>
                         ))}
+
+                        {/* 🪣 줍줍이 — 독보이는 큰 CTA 버튼 */}
+                        <button
+                            onClick={() => setFilter('jubjub')}
+                            className={`group relative overflow-hidden rounded-xl px-5 py-2.5 sm:px-6 sm:py-3 text-sm sm:text-base font-black transition-all transform hover:scale-[1.03] active:scale-[0.98] ${
+                                filter === 'jubjub'
+                                    ? 'bg-gradient-to-r from-amber-400 via-amber-300 to-emerald-300 text-slate-950 shadow-[0_8px_30px_rgba(252,211,77,0.45)] ring-2 ring-amber-300/60'
+                                    : 'bg-gradient-to-r from-amber-400/15 via-amber-300/10 to-emerald-300/15 text-amber-200 ring-1 ring-amber-300/30 hover:ring-amber-300/60 hover:shadow-[0_8px_24px_rgba(252,211,77,0.20)]'
+                            }`}
+                        >
+                            {/* 글로우 펄스 (비활성 시) */}
+                            {filter !== 'jubjub' && (
+                                <span className="pointer-events-none absolute inset-0 rounded-xl bg-gradient-to-r from-amber-300/0 via-amber-300/15 to-amber-300/0 opacity-0 group-hover:opacity-100 transition-opacity" aria-hidden />
+                            )}
+                            <span className="relative flex items-center gap-2">
+                                <span className="text-xl sm:text-2xl leading-none">🪣</span>
+                                <span className="leading-none tracking-tight">줍줍이</span>
+                                <span className={`hidden sm:inline-flex items-center rounded-md px-1.5 py-0.5 text-[10px] font-black tracking-wider ${
+                                    filter === 'jubjub'
+                                        ? 'bg-slate-950/30 text-slate-950'
+                                        : 'bg-amber-300/20 text-amber-200'
+                                }`}>
+                                    HOT
+                                </span>
+                            </span>
+                        </button>
                     </div>
                     <div className="flex items-center gap-1.5 text-xs text-gray-400">
                         <span>정렬</span>
