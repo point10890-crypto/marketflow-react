@@ -166,6 +166,67 @@ def data_sources():
     return jsonify(mirofish.get_data_sources())
 
 
+@admin_mirofish_bp.route('/pipeline/today', methods=['GET'])
+@admin_required
+def pipeline_today():
+    """오늘의 검출 파이프라인 + 시장 컨텍스트 스냅샷.
+
+    Returns:
+        {
+            'generated_at', 'date_kst',
+            'market': {'kr': {...}, 'us': {...}},
+            'funnel': {'scanner_pool', 'scanner_runs_today', 'batch_new_candidates',
+                       'graphrag_uploaded', 'top3_ready', ...},
+            'kpi_7d': {'sample_size', 'hit_rate_pct', 'avg_return_pct', ...},
+            'kpi_30d': {...},
+            'next': {'next_scheduled_scan_at', ...},
+            'alerts_today': {'scanner_alerts_today', ...}
+        }
+    """
+    try:
+        return jsonify(mirofish.get_pipeline_today_snapshot())
+    except Exception as exc:
+        return jsonify({
+            'error': f'{type(exc).__name__}: {exc}',
+            'service': 'mirofish-pipeline-overview',
+        }), 500
+
+
+@admin_mirofish_bp.route('/outcomes/board', methods=['GET'])
+@admin_required
+def outcomes_board():
+    """최근 N일 워크플로우 추천의 forward outcomes 집계.
+
+    Query:
+        days  (int, default 30) — 윈도우 일수
+        limit (int, default 20) — 반환 아이템 최대 개수
+
+    Returns:
+        {
+            'window_days', 'generated_at', 'sample_size', 'workflow_count',
+            'summary': {'hit_rate_pct', 'avg_forward_return_pct',
+                        'false_positive_pct', 'targets', ...},
+            'items': [{'symbol', 'name', 'entry_date', 'status', 'hit',
+                       'forward_return_pct', 'horizons', ...}],
+        }
+    """
+    try:
+        days = int(request.args.get('days', 30))
+    except (TypeError, ValueError):
+        return jsonify({'error': 'days must be an integer'}), 400
+    try:
+        limit = int(request.args.get('limit', 20))
+    except (TypeError, ValueError):
+        return jsonify({'error': 'limit must be an integer'}), 400
+    try:
+        return jsonify(mirofish.get_outcomes_board(days=days, limit=limit))
+    except Exception as exc:
+        return jsonify({
+            'error': f'{type(exc).__name__}: {exc}',
+            'service': 'mirofish-outcomes-board',
+        }), 500
+
+
 @admin_mirofish_bp.route('/targets/resolve', methods=['GET'])
 @admin_required
 def resolve_target():

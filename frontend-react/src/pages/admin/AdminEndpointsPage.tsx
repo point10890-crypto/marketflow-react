@@ -2,6 +2,9 @@ import { useEffect, useMemo, useRef, useState, type CompositionEvent as ReactCom
 import { MiroFishAlphaCandidate, MiroFishAnalyst, MiroFishAutonomousActionResult, MiroFishAutonomousLearningFeedback, MiroFishAutonomousStatus, MiroFishDeepSeekStatus, MiroFishDeepSeekSummaryResult, MiroFishLayer, MiroFishLog, MiroFishNode, MiroFishRun, MiroFishScannerRun, MiroFishScannerStatus, MiroFishStatus, MiroFishTargetSnapshot, MiroFishWorkflow, mirofishApi } from '@/lib/mirofishApi';
 import { shareToKakao } from '@/lib/kakaoShare';
 import MirofishChatPanel from '@/components/admin/MirofishChatPanel';
+import TodaysPipelineCard from '@/components/admin/TodaysPipelineCard';
+import RecentOutcomesBoard from '@/components/admin/RecentOutcomesBoard';
+import QuickActionsFooter from '@/components/admin/QuickActionsFooter';
 
 const agentCounts = [3, 7, 10, 15];
 const defaultTarget = '삼성전자';
@@ -165,6 +168,12 @@ function formatSignedPct(value: unknown): string {
     const numeric = Number(value);
     if (!Number.isFinite(numeric)) return '--';
     return `${numeric >= 0 ? '+' : ''}${numeric.toFixed(2)}%`;
+}
+
+function formatMetricNumber(value: unknown, digits = 1): string {
+    const numeric = Number(value);
+    if (!Number.isFinite(numeric)) return '--';
+    return numeric.toFixed(digits);
 }
 
 function workflowOutcomeSummary(workflow?: MiroFishWorkflow | null): Record<string, any> {
@@ -779,6 +788,10 @@ function AutonomousMcpPanel({
     const strongestMemory = alphaMemory?.strongest_positive || null;
     const weakestMemory = alphaMemory?.weakest_negative || null;
     const memorySampleCount = Number(alphaMemory?.sample_count || 0);
+    const scoreProfile = alphaMemory?.score_profile || {};
+    const strategyCohorts = Array.isArray(alphaMemory?.cohorts?.strategy_tags) ? alphaMemory.cohorts.strategy_tags : [];
+    const signalCohorts = Array.isArray(alphaMemory?.cohorts?.signal_quality) ? alphaMemory.cohorts.signal_quality : [];
+    const visibleCohorts = (strategyCohorts.length ? strategyCohorts : signalCohorts).slice(0, 5);
     const eventItems = result?.events || [];
     const topSymbols = result?.top_symbols || [];
     const statusTone = state === 'error'
@@ -895,6 +908,86 @@ function AutonomousMcpPanel({
                     </div>
                 </div>
             )}
+
+            <div className="mt-3 rounded-lg border border-amber-300/15 bg-amber-300/[0.055] p-3">
+                <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
+                    <div>
+                        <div className="text-[11px] font-black uppercase tracking-[0.18em] text-amber-100/85">성과검증 보드</div>
+                        <div className="mt-1 text-sm font-black text-white">Top 3 추천이 실제 이후 수익으로 이어졌는지 검증합니다.</div>
+                        <div className="mt-1 text-xs font-semibold text-amber-100/70">
+                            검증 기준: 추천일 이후 가격 데이터만 사용, 미래 데이터 누수 없이 hit rate / 평균 수익률 / 실패 신호를 분리합니다.
+                        </div>
+                    </div>
+                    <span className={`rounded-full border px-3 py-1.5 text-xs font-black ${alphaMemory?.available ? 'border-emerald-300/25 bg-emerald-300/10 text-emerald-100' : 'border-amber-300/25 bg-amber-300/10 text-amber-100'}`}>
+                        {alphaMemory?.available ? '검증 샘플 연결됨' : '검증 샘플 대기'}
+                    </span>
+                </div>
+                <div className="mt-3 grid gap-2 md:grid-cols-4">
+                    {[
+                        ['검증 대상', alphaMemory?.available ? `${memorySampleCount}건` : '--', `${learningView?.evaluated_count ?? 0} evaluated`],
+                        ['승률', learningView?.hit_rate_pct === undefined || learningView?.hit_rate_pct === null ? '--' : `${Number(learningView.hit_rate_pct).toFixed(1)}%`, 'BUY/HOLD 결과 hit'],
+                        ['평균 수익률', learningView?.average_forward_return_pct === undefined || learningView?.average_forward_return_pct === null ? '--' : formatSignedPct(learningView.average_forward_return_pct), 'forward return'],
+                        ['Look-ahead', learningView?.lookahead_safe === true ? 'safe' : learningView?.lookahead_safe === false ? '주의' : 'pending', 'entry 이후 데이터만'],
+                    ].map(([label, value, caption]) => (
+                        <div key={String(label)} className="rounded-lg border border-white/10 bg-black/25 p-3">
+                            <div className="text-[10px] font-black uppercase tracking-[0.14em] text-amber-100/55">{String(label)}</div>
+                            <div className="mt-1 text-xl font-black text-white">{String(value)}</div>
+                            <div className="mt-1 text-[11px] font-bold text-slate-400">{String(caption)}</div>
+                        </div>
+                    ))}
+                </div>
+                {alphaMemory?.available ? (
+                    <div className="mt-3 grid gap-3 lg:grid-cols-[1.05fr_1.25fr]">
+                        <div className="rounded-lg border border-white/10 bg-black/20 p-3">
+                            <div className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Hit vs Miss Score Profile</div>
+                            <div className="mt-3 grid gap-2 sm:grid-cols-3">
+                                {[
+                                    ['Alpha', scoreProfile.hit_avg_alpha, scoreProfile.miss_avg_alpha],
+                                    ['Risk', scoreProfile.hit_avg_risk, scoreProfile.miss_avg_risk],
+                                    ['Final', scoreProfile.hit_avg_final_score, scoreProfile.miss_avg_final_score],
+                                ].map(([label, hit, miss]) => (
+                                    <div key={String(label)} className="rounded-lg border border-white/10 bg-white/[0.04] p-2">
+                                        <div className="text-[10px] font-black uppercase tracking-[0.12em] text-slate-500">{String(label)}</div>
+                                        <div className="mt-1 flex items-baseline justify-between gap-2">
+                                            <span className="text-sm font-black text-emerald-100">H {formatMetricNumber(hit)}</span>
+                                            <span className="text-sm font-black text-rose-100">M {formatMetricNumber(miss)}</span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                        <div className="rounded-lg border border-white/10 bg-black/20 p-3">
+                            <div className="flex items-center justify-between gap-2">
+                                <div className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Signal Cohorts</div>
+                                {strongestMemory?.key && (
+                                    <span className="rounded-full border border-emerald-300/20 bg-emerald-300/10 px-2 py-0.5 text-[10px] font-black text-emerald-100">
+                                        strongest {String(strongestMemory.key)}
+                                    </span>
+                                )}
+                            </div>
+                            <div className="mt-2 space-y-2">
+                                {visibleCohorts.length ? visibleCohorts.map((cohort) => (
+                                    <div key={String(cohort.key)} className="grid grid-cols-[1fr_auto_auto] items-center gap-2 rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2">
+                                        <div className="truncate text-xs font-black text-slate-100">{String(cohort.key)}</div>
+                                        <div className="text-[11px] font-black text-emerald-100">{cohort.hit_rate_pct ?? '--'}%</div>
+                                        <div className={`text-[11px] font-black ${Number(cohort.average_forward_return_pct) >= 0 ? 'text-cyan-100' : 'text-rose-100'}`}>
+                                            {formatSignedPct(cohort.average_forward_return_pct)}
+                                        </div>
+                                    </div>
+                                )) : (
+                                    <div className="rounded-lg border border-dashed border-white/10 bg-white/[0.03] px-3 py-2 text-xs font-bold text-slate-400">
+                                        아직 코호트별 성과 샘플이 부족합니다.
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="mt-3 rounded-lg border border-dashed border-amber-300/20 bg-black/20 px-3 py-2 text-xs font-bold text-amber-100/75">
+                        워크플로우 Top 3가 생성되고 이후 가격 데이터가 쌓이면 이 영역에 실제 성과 검증이 표시됩니다.
+                    </div>
+                )}
+            </div>
 
             <div className="mt-4 grid gap-3 lg:grid-cols-[1fr_1fr_auto]">
                 <div className="rounded-lg border border-white/10 bg-white/[0.04] p-3">
@@ -2198,27 +2291,35 @@ export default function AdminEndpointsPage() {
                         ))}
                     </div>
 
-                    <AlphaBoardPanel
-                        candidates={alphaCandidates}
-                        scannerRun={alphaScannerRun}
-                        scannerStatus={alphaScannerStatus}
-                        state={alphaScannerState}
-                        errorText={alphaErrorText}
-                        deepSeekStatus={deepSeekStatus}
-                        deepSeekState={deepSeekState}
-                        deepSeekSummary={deepSeekSummary}
-                        deepSeekErrorText={deepSeekErrorText}
-                        workflow={workflow}
-                        workflowState={workflowState}
-                        workflowErrorText={workflowErrorText}
-                        autonomousStatus={autonomousStatus}
-                        onScan={handleAlphaScan}
-                        onWorkflow={handleMcpWorkflow}
-                        onDeepSeekSummary={handleDeepSeekSummary}
-                        onSendDeepSeekTelegram={handleSendDeepSeekTelegram}
-                        onSelect={selectAlphaCandidate}
-                        onDeepDive={deepDiveAlphaCandidate}
-                    />
+                    <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(360px,420px)] lg:items-start">
+                        <AlphaBoardPanel
+                            candidates={alphaCandidates}
+                            scannerRun={alphaScannerRun}
+                            scannerStatus={alphaScannerStatus}
+                            state={alphaScannerState}
+                            errorText={alphaErrorText}
+                            deepSeekStatus={deepSeekStatus}
+                            deepSeekState={deepSeekState}
+                            deepSeekSummary={deepSeekSummary}
+                            deepSeekErrorText={deepSeekErrorText}
+                            workflow={workflow}
+                            workflowState={workflowState}
+                            workflowErrorText={workflowErrorText}
+                            autonomousStatus={autonomousStatus}
+                            onScan={handleAlphaScan}
+                            onWorkflow={handleMcpWorkflow}
+                            onDeepSeekSummary={handleDeepSeekSummary}
+                            onSendDeepSeekTelegram={handleSendDeepSeekTelegram}
+                            onSelect={selectAlphaCandidate}
+                            onDeepDive={deepDiveAlphaCandidate}
+                        />
+                        {/* 우측 사이드바 — Today's Pipeline + Recent Outcomes + Quick Actions */}
+                        <aside className="mt-8 flex flex-col gap-3 lg:sticky lg:top-4">
+                            <TodaysPipelineCard />
+                            <RecentOutcomesBoard />
+                            <QuickActionsFooter />
+                        </aside>
+                    </div>
 
                     <AutonomousMcpPanel
                         status={autonomousStatus}

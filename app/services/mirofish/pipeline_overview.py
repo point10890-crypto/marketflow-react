@@ -1,0 +1,383 @@
+"""Pipeline overview + outcomes board aggregations for the admin dashboard.
+
+Two read-only aggregations powering the right-side panel on /admin/endpoints:
+
+1. ``get_pipeline_today_snapshot()`` — live market context + today's detection
+   funnel + recent KPI summary (7d).
+2. ``get_outcomes_board(days, limit)`` — recent workflow recommendations and
+   their forward outcomes aggregated for the "Recent Outcomes" board.
+
+Pure read aggregations — no side-effects, no LLM calls. Both endpoints are
+safe to hit at high frequency.
+"""
+
+from __future__ import annotations
+
+import json
+import logging
+import os
+from datetime import datetime, timedelta, timezone
+from typing import Any
+
+from app.services.mirofish import alpha_scanner, outcome_tracker, workflow as workflow_svc
+
+
+logger = logging.getLogger(__name__)
+
+REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
+DATA_ROOT = os.path.join(REPO_ROOT, 'data')
+ADMIN_DATA_ROOT = os.path.join(DATA_ROOT, 'admin_mirofish')
+SCANNER_RUNS_ROOT = os.path.join(ADMIN_DATA_ROOT, 'scanner_runs')
+WORKFLOWS_ROOT = os.path.join(ADMIN_DATA_ROOT, 'workflows')
+MARKET_GATE_CACHE = os.path.join(DATA_ROOT, 'market_gate_cache.json')
+US_MARKET_DATA = os.path.join(REPO_ROOT, 'us_market', 'output', 'market_data.json')
+
+try:  # KST timezone — fall back to UTC+9 if zoneinfo missing
+    from zoneinfo import ZoneInfo
+
+    KST = ZoneInfo('Asia/Seoul')
+except Exception:  # pragma: no cover — best-effort
+    KST = timezone(timedelta(hours=9))
+
+
+# ---------------------------------------------------------------------------
+# Public — Today's Pipeline Snapshot
+# ---------------------------------------------------------------------------
+
+
+def get_pipeline_today_snapshot() -> dict[str, Any]:
+    """Aggregate live market + funnel + 7d KPI for the right-side dashboard."""
+    now_kst = datetime.now(KST)
+    now_utc = datetime.now(timezone.utc)
+    return {
+        'generated_at': now_utc.isoformat(),
+        'date_kst': now_kst.date().isoformat(),
+        'market': _market_pulse(now_kst),
+        'funnel': _funnel_today(now_kst),
+        'kpi_7d': _kpi_window(days=7),
+        'kpi_30d': _kpi_window(days=30),
+        'next': _next_eta(now_kst),
+        'alerts_today': _alerts_today(now_kst),
+    }
+
+
+def _market_pulse(now_kst: datetime) -> dict[str, Any]:
+    kr_gate = _read_json_safe(MARKET_GATE_CACHE) or {}
+    us_data = _read_json_safe(US_MARKET_DATA) or {}
+    is_weekday = now_kst.weekday() < 5
+    session_start = now_kst.replace(hour=9, minute=0, second=0, microsecond=0)
+    session_end = now_kst.replace(hour=15, minute=30, second=0, microsecond=0)
+    is_regular = is_weekday and session_start <= now_kst <= session_end
+    if not is_weekday:
+        kr_phase = 'closed_weekend'
+    elif now_kst < session_start:
+        kr_phase = 'pre_open'
+    elif now_kst <= session_end:
+        kr_phase = 'regular_session'
+    else:
+        kr_phase = 'after_close'
+    us_vix = None
+    try:
+        us_vix = (us_data.get('volatility') or {}).get('^VIX', {}).get('current')
+    except Exception:
+        us_vix = None
+    fear_greed = us_data.get('fear_greed') or {}
+    return {
+        'kr': {
+            'phase': kr_phase,
+            'is_regular_session': is_regular,
+            'gate_label': kr_gate.get('label') or kr_gate.get('status'),
+            'gate_score': kr_gate.get('score'),
+            'kospi_change_pct': kr_gate.get('kospi_change_pct'),
+            'kosdaq_change_pct': kr_gate.get('kosdaq_change_pct'),
+            'updated_at': kr_gate.get('updated_at'),
+        },
+        'us': {
+            'vix': us_vix,
+            'vix_level': _vix_level(us_vix),
+            'fear_greed_score': fear_greed.get('score'),
+            'fear_greed_label': fear_greed.get('level'),
+            'timestamp': us_data.get('timestamp'),
+        },
+    }
+
+
+def _vix_level(vix: float | None) -> str | None:
+    if vix is None:
+        return None
+    try:
+        v = float(vix)
+    except (TypeError, ValueError):
+        return None
+    if v < 15:
+        return 'low'
+    if v < 25:
+        return 'moderate'
+    if v < 35:
+        return 'elevated'
+    return 'high'
+
+
+def _funnel_today(now_kst: datetime) -> dict[str, Any]:
+    """Today's detection funnel counts.
+
+    - scanner_pool       : latest scanner run candidate count (current state)
+    - scanner_runs_today : count of scanner runs since 00:00 KST
+    - batch_new          : event_count from latest workflow
+    - graphrag_uploaded  : analyzed_count from latest workflow
+    - top3_ready         : len(top3) from latest workflow
+    """
+    schedule = alpha_scanner.get_scanner_schedule_status(now=now_kst)
+    latest_run_count = int(schedule.get('candidate_count') or 0)
+    scanner_runs_today = _count_scanner_runs_today(now_kst)
+
+    latest_workflow = None
+    try:
+        latest_workflow = workflow_svc.read_latest_workflow()
+    except Exception as exc:
+        logger.debug(f'read_latest_workflow failed: {exc}')
+
+    workflow_summary = workflow_svc._workflow_summary(latest_workflow) if latest_workflow else None
+    batch_new = int((workflow_summary or {}).get('event_count') or 0)
+    analyzed = int((workflow_summary or {}).get('analyzed_count') or 0)
+    top3_count = len((workflow_summary or {}).get('top3') or [])
+
+    return {
+        'scanner_pool': latest_run_count,
+        'scanner_runs_today': scanner_runs_today,
+        'batch_new_candidates': batch_new,
+        'graphrag_uploaded': analyzed,
+        'top3_ready': top3_count,
+        'latest_workflow_id': (workflow_summary or {}).get('id'),
+        'latest_workflow_status': (workflow_summary or {}).get('status'),
+        'latest_workflow_at': (workflow_summary or {}).get('completed_at') or (workflow_summary or {}).get('created_at'),
+        'latest_scanner_run_at': schedule.get('last_run_at'),
+        'freshness_status': schedule.get('freshness_status'),
+    }
+
+
+def _count_scanner_runs_today(now_kst: datetime) -> int:
+    if not os.path.isdir(SCANNER_RUNS_ROOT):
+        return 0
+    today_prefix = now_kst.strftime('mfas_%Y%m%d')
+    try:
+        return sum(1 for name in os.listdir(SCANNER_RUNS_ROOT) if name.startswith(today_prefix))
+    except OSError as exc:
+        logger.debug(f'list scanner_runs failed: {exc}')
+        return 0
+
+
+def _next_eta(now_kst: datetime) -> dict[str, Any]:
+    schedule = alpha_scanner.get_scanner_schedule_status(now=now_kst)
+    return {
+        'next_scheduled_scan_at': schedule.get('next_scheduled_at'),
+        'next_scheduled_scans': (schedule.get('next_scheduled_times') or [])[:3],
+        'scanner_enabled': schedule.get('enabled'),
+    }
+
+
+def _alerts_today(now_kst: datetime) -> dict[str, Any]:
+    """Today's telegram alert tally — heuristic from alert state file."""
+    state_path = os.path.join(ADMIN_DATA_ROOT, 'alpha_scanner_alert_state.json')
+    state = _read_json_safe(state_path) or {}
+    last_sent_at = state.get('last_sent_at') or state.get('updated_at')
+    events_today = 0
+    history = state.get('history') if isinstance(state.get('history'), list) else []
+    today_iso = now_kst.date().isoformat()
+    for entry in history:
+        if not isinstance(entry, dict):
+            continue
+        ts = str(entry.get('sent_at') or entry.get('timestamp') or '')
+        if ts.startswith(today_iso):
+            events_today += 1
+    return {
+        'scanner_alerts_today': events_today,
+        'scanner_last_alert_at': last_sent_at,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Public — Recent Outcomes Board
+# ---------------------------------------------------------------------------
+
+
+def get_outcomes_board(days: int = 30, limit: int = 20) -> dict[str, Any]:
+    """Aggregate recent workflow outcomes within ``days`` window.
+
+    Iterates the workflows directory, loads each ``outcomes.json``, and
+    builds a flat board of recommendation items + an aggregate KPI summary.
+    """
+    days = max(1, min(int(days or 30), 180))
+    limit = max(1, min(int(limit or 20), 200))
+
+    cutoff = datetime.now(timezone.utc) - timedelta(days=days)
+    workflow_ids = _recent_workflow_ids(cutoff)
+
+    all_items: list[dict[str, Any]] = []
+    horizon_summary = {
+        'evaluated_count': 0,
+        'pending_count': 0,
+        'hit_count': 0,
+        'miss_count': 0,
+        'stopped_count': 0,
+        'forward_returns': [],
+    }
+    workflows_used: list[str] = []
+    for workflow_id in workflow_ids:
+        outcomes = outcome_tracker.read_workflow_outcomes(workflow_id)
+        if not isinstance(outcomes, dict):
+            continue
+        # Try refresh stale/pending ones (cheap — daily_prices.csv read is cached implicitly via file mtime)
+        items = outcomes.get('items') if isinstance(outcomes.get('items'), list) else []
+        if not items:
+            continue
+        workflows_used.append(workflow_id)
+        for item in items:
+            if not isinstance(item, dict):
+                continue
+            flat = _flatten_outcome_item(item, workflow_id=workflow_id)
+            all_items.append(flat)
+            status = item.get('status')
+            if status in {'evaluated', 'partial'}:
+                horizon_summary['evaluated_count'] += 1
+                if item.get('hit') is True:
+                    horizon_summary['hit_count'] += 1
+                elif item.get('hit') is False:
+                    horizon_summary['miss_count'] += 1
+                fr = item.get('forward_return_pct')
+                if isinstance(fr, (int, float)):
+                    horizon_summary['forward_returns'].append(float(fr))
+            else:
+                horizon_summary['pending_count'] += 1
+            if item.get('stopped'):
+                horizon_summary['stopped_count'] += 1
+
+    # Sort items: evaluated/hit-true first, then by entry_date desc
+    all_items.sort(key=lambda r: (
+        0 if r.get('status') in {'evaluated', 'partial'} else 1,
+        # newest entry_date first
+        -(_date_sort_key(r.get('entry_date'))),
+    ))
+    visible = all_items[:limit]
+
+    returns = horizon_summary['forward_returns']
+    evaluated = horizon_summary['evaluated_count']
+    hit_rate = round((horizon_summary['hit_count'] / evaluated) * 100, 1) if evaluated else None
+    avg_return = round(sum(returns) / len(returns), 2) if returns else None
+    false_positive_pct = round((horizon_summary['miss_count'] / evaluated) * 100, 1) if evaluated else None
+
+    return {
+        'window_days': days,
+        'generated_at': datetime.now(timezone.utc).isoformat(),
+        'sample_size': len(all_items),
+        'workflow_count': len(workflows_used),
+        'summary': {
+            'evaluated_count': evaluated,
+            'pending_count': horizon_summary['pending_count'],
+            'hit_count': horizon_summary['hit_count'],
+            'miss_count': horizon_summary['miss_count'],
+            'stopped_count': horizon_summary['stopped_count'],
+            'hit_rate_pct': hit_rate,
+            'avg_forward_return_pct': avg_return,
+            'false_positive_pct': false_positive_pct,
+            'best_return_pct': max(returns) if returns else None,
+            'worst_return_pct': min(returns) if returns else None,
+            'targets': {
+                'hit_rate_pct': 55.0,
+                'avg_return_pct': 1.5,
+                'false_positive_pct': 20.0,
+            },
+        },
+        'items': visible,
+        'items_truncated': len(all_items) > len(visible),
+        'total_items': len(all_items),
+    }
+
+
+def _recent_workflow_ids(cutoff: datetime) -> list[str]:
+    """Return workflow ids whose dir-name datetime stamp is within ``cutoff``."""
+    if not os.path.isdir(WORKFLOWS_ROOT):
+        return []
+    ids: list[tuple[str, str]] = []  # (id, sort_key)
+    for name in os.listdir(WORKFLOWS_ROOT):
+        if name.startswith('_') or name.startswith('.'):
+            continue
+        full = os.path.join(WORKFLOWS_ROOT, name)
+        if not os.path.isdir(full):
+            continue
+        # mtime-based cutoff is safest (dir name has datetime stamp but format may vary)
+        try:
+            mtime = os.path.getmtime(full)
+        except OSError:
+            continue
+        if datetime.fromtimestamp(mtime, tz=timezone.utc) < cutoff:
+            continue
+        ids.append((name, datetime.fromtimestamp(mtime, tz=timezone.utc).isoformat()))
+    ids.sort(key=lambda x: x[1], reverse=True)
+    return [item[0] for item in ids]
+
+
+def _flatten_outcome_item(item: dict[str, Any], *, workflow_id: str) -> dict[str, Any]:
+    horizons = item.get('horizons') if isinstance(item.get('horizons'), dict) else {}
+    flat_horizons = {}
+    for key, payload in horizons.items():
+        if isinstance(payload, dict):
+            flat_horizons[str(key)] = payload.get('return_pct')
+    return {
+        'workflow_id': workflow_id,
+        'symbol': item.get('symbol'),
+        'name': item.get('name'),
+        'rank': item.get('rank'),
+        'entry_date': item.get('entry_date'),
+        'entry_price': item.get('entry_price'),
+        'status': item.get('status'),
+        'hit': item.get('hit'),
+        'stopped': item.get('stopped'),
+        'forward_return_pct': item.get('forward_return_pct'),
+        'max_forward_return_pct': item.get('max_forward_return_pct'),
+        'max_drawdown_pct': item.get('max_drawdown_pct'),
+        'primary_horizon_days': item.get('primary_horizon_days'),
+        'available_future_days': item.get('available_future_days'),
+        'horizons': flat_horizons,
+        'feature_snapshot': item.get('feature_snapshot'),
+    }
+
+
+def _date_sort_key(date_str: Any) -> int:
+    """Numeric date key: YYYY-MM-DD → 20260512, else 0."""
+    if not isinstance(date_str, str):
+        return 0
+    digits = date_str.replace('-', '')[:8]
+    try:
+        return int(digits) if digits.isdigit() else 0
+    except Exception:
+        return 0
+
+
+def _kpi_window(days: int) -> dict[str, Any]:
+    """Compact KPI for the live pulse — small window."""
+    board = get_outcomes_board(days=days, limit=200)
+    return {
+        'window_days': days,
+        'sample_size': board.get('summary', {}).get('evaluated_count', 0),
+        'hit_rate_pct': board.get('summary', {}).get('hit_rate_pct'),
+        'avg_return_pct': board.get('summary', {}).get('avg_forward_return_pct'),
+        'pending_count': board.get('summary', {}).get('pending_count', 0),
+    }
+
+
+# ---------------------------------------------------------------------------
+# Internal helpers
+# ---------------------------------------------------------------------------
+
+
+def _read_json_safe(path: str) -> dict[str, Any] | None:
+    try:
+        if not os.path.isfile(path):
+            return None
+        with open(path, 'r', encoding='utf-8') as fh:
+            data = json.load(fh)
+        return data if isinstance(data, dict) else None
+    except (IOError, OSError, json.JSONDecodeError) as exc:
+        logger.debug(f'read {path} failed: {exc}')
+        return None

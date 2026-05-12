@@ -1,0 +1,238 @@
+/**
+ * Recent Outcomes Board — 우측 하단 카드.
+ *
+ * 지난 N일(기본 30) 추천 종목의 forward outcomes 집계.
+ *
+ * KPI 카드 (Hit rate / Avg R / False positive / Sample size)
+ * + 종목별 테이블 (entry_date / 5d return / status / hit)
+ *
+ * 단일 GET /api/admin/mirofish/outcomes/board 호출.
+ * 60초 폴링 (outcomes 는 일일 1회 refresh 라 빈번한 폴링 불필요).
+ */
+import { useEffect, useMemo, useState } from 'react';
+import { MiroFishBoardItem, MiroFishOutcomesBoard, mirofishApi } from '@/lib/mirofishApi';
+
+const POLL_INTERVAL_MS = 60_000;
+const WINDOW_OPTIONS = [7, 30, 60] as const;
+
+function formatPct(value?: number | null, opts: { withSign?: boolean } = {}): string {
+    if (value === null || value === undefined || Number.isNaN(value)) return '--';
+    const sign = opts.withSign && value >= 0 ? '+' : '';
+    return `${sign}${value.toFixed(1)}%`;
+}
+
+function formatDate(iso?: string | null): string {
+    if (!iso) return '--';
+    const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso);
+    if (!m) return iso;
+    return `${m[2]}-${m[3]}`;
+}
+
+function statusBadge(item: MiroFishBoardItem): { label: string; tone: string } {
+    if (item.status === 'evaluated' || item.status === 'partial') {
+        if (item.hit === true) return { label: '✅ 적중', tone: 'border-emerald-300/30 bg-emerald-300/15 text-emerald-200' };
+        if (item.stopped) return { label: '🛑 손절', tone: 'border-rose-300/30 bg-rose-300/15 text-rose-200' };
+        if (item.hit === false) return { label: '❌ 미달', tone: 'border-amber-300/30 bg-amber-300/15 text-amber-200' };
+        return { label: '~ 평가', tone: 'border-cyan-300/30 bg-cyan-300/15 text-cyan-200' };
+    }
+    if (item.status === 'pending') return { label: '⏳ 진행중', tone: 'border-white/10 bg-white/5 text-slate-300' };
+    if (item.status === 'missing_entry') return { label: '데이터 없음', tone: 'border-white/10 bg-white/5 text-slate-500' };
+    return { label: item.status || '--', tone: 'border-white/10 bg-white/5 text-slate-400' };
+}
+
+function kpiTone(value: number | null | undefined, target: number, higherIsBetter = true): string {
+    if (value === null || value === undefined) return 'text-slate-400';
+    const ok = higherIsBetter ? value >= target : value <= target;
+    return ok ? 'text-emerald-300' : 'text-amber-300';
+}
+
+interface KpiCardProps {
+    label: string;
+    value: string;
+    sub?: string;
+    tone?: string;
+}
+
+function KpiCard({ label, value, sub, tone }: KpiCardProps) {
+    return (
+        <div className="rounded-lg border border-white/10 bg-black/30 p-3">
+            <div className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">{label}</div>
+            <div className={`mt-2 text-xl font-black ${tone ?? 'text-white'}`}>{value}</div>
+            {sub && <div className="mt-1 text-[10px] font-bold text-slate-500">{sub}</div>}
+        </div>
+    );
+}
+
+export default function RecentOutcomesBoard() {
+    const [data, setData] = useState<MiroFishOutcomesBoard | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [windowDays, setWindowDays] = useState<number>(30);
+
+    useEffect(() => {
+        let cancelled = false;
+        async function load() {
+            try {
+                const board = await mirofishApi.getOutcomesBoard({ days: windowDays, limit: 15 });
+                if (cancelled) return;
+                setData(board);
+                setError(null);
+            } catch (err) {
+                if (cancelled) return;
+                setError(err instanceof Error ? err.message : 'load failed');
+            } finally {
+                if (!cancelled) setLoading(false);
+            }
+        }
+        load();
+        const id = setInterval(load, POLL_INTERVAL_MS);
+        return () => {
+            cancelled = true;
+            clearInterval(id);
+        };
+    }, [windowDays]);
+
+    const summary = data?.summary;
+    const items = data?.items || [];
+    const evaluatedCount = summary?.evaluated_count ?? 0;
+    const pendingCount = summary?.pending_count ?? 0;
+
+    const hitTone = useMemo(
+        () => kpiTone(summary?.hit_rate_pct, summary?.targets.hit_rate_pct ?? 55, true),
+        [summary],
+    );
+    const avgTone = useMemo(
+        () => kpiTone(summary?.avg_forward_return_pct, summary?.targets.avg_return_pct ?? 1.5, true),
+        [summary],
+    );
+    const fpTone = useMemo(
+        () => kpiTone(summary?.false_positive_pct, summary?.targets.false_positive_pct ?? 20, false),
+        [summary],
+    );
+
+    return (
+        <section className="rounded-xl border border-emerald-300/15 bg-slate-950/60 p-4 shadow-[0_18px_70px_rgba(16,185,129,0.10)]">
+            <header className="flex items-center justify-between">
+                <div>
+                    <div className="flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.22em] text-emerald-200/70">
+                        <i className="fas fa-chart-line text-emerald-300" />
+                        Recent Outcomes
+                    </div>
+                    <h3 className="mt-1 text-base font-black text-white">추천 종목 실적 추적</h3>
+                </div>
+                <div className="inline-flex overflow-hidden rounded-md border border-white/10 bg-black/30">
+                    {WINDOW_OPTIONS.map((days) => (
+                        <button
+                            key={days}
+                            type="button"
+                            onClick={() => setWindowDays(days)}
+                            className={`px-2.5 py-1 text-[10px] font-black uppercase tracking-wider transition-colors ${
+                                windowDays === days
+                                    ? 'bg-emerald-300/20 text-emerald-100'
+                                    : 'text-slate-500 hover:bg-white/5 hover:text-slate-300'
+                            }`}
+                        >
+                            {days}d
+                        </button>
+                    ))}
+                </div>
+            </header>
+
+            {error && (
+                <div className="mt-3 rounded-lg border border-rose-300/20 bg-rose-300/10 px-3 py-2 text-xs font-bold text-rose-100">
+                    {error}
+                </div>
+            )}
+
+            {/* KPI cards */}
+            <div className="mt-3 grid grid-cols-2 gap-2">
+                <KpiCard
+                    label="Hit Rate"
+                    value={formatPct(summary?.hit_rate_pct)}
+                    sub={`목표 ≥ ${summary?.targets.hit_rate_pct ?? 55}% · 표본 ${evaluatedCount}`}
+                    tone={hitTone}
+                />
+                <KpiCard
+                    label="Avg Return"
+                    value={formatPct(summary?.avg_forward_return_pct, { withSign: true })}
+                    sub={`목표 ≥ +${summary?.targets.avg_return_pct ?? 1.5}%`}
+                    tone={avgTone}
+                />
+                <KpiCard
+                    label="False Positive"
+                    value={formatPct(summary?.false_positive_pct)}
+                    sub={`목표 < ${summary?.targets.false_positive_pct ?? 20}%`}
+                    tone={fpTone}
+                />
+                <KpiCard
+                    label="진행중 / 평가완료"
+                    value={`${pendingCount} / ${evaluatedCount}`}
+                    sub={`${data?.workflow_count ?? 0}개 워크플로우`}
+                />
+            </div>
+
+            {/* 종목 목록 */}
+            <div className="mt-3 rounded-lg border border-white/10 bg-black/30 p-3">
+                <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-400">
+                        추천 이력 ({items.length}{data?.items_truncated ? `/${data?.total_items}` : ''}건)
+                    </span>
+                    {loading && <span className="text-[10px] font-bold uppercase text-slate-500">loading</span>}
+                </div>
+                {items.length === 0 ? (
+                    <div className="mt-2 rounded border border-white/5 bg-white/[0.02] p-4 text-center text-[11px] font-bold text-slate-500">
+                        {loading ? '불러오는 중...' : `최근 ${windowDays}일 추천 이력 없음`}
+                    </div>
+                ) : (
+                    <div className="mt-2 max-h-64 overflow-y-auto">
+                        <table className="w-full text-[11px] font-bold">
+                            <thead className="sticky top-0 bg-slate-950/95 text-slate-500">
+                                <tr className="text-left">
+                                    <th className="px-1 py-1 font-black uppercase tracking-wider">종목</th>
+                                    <th className="px-1 py-1 text-right font-black uppercase tracking-wider">진입일</th>
+                                    <th className="px-1 py-1 text-right font-black uppercase tracking-wider">5D</th>
+                                    <th className="px-1 py-1 text-right font-black uppercase tracking-wider">상태</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {items.map((item, idx) => {
+                                    const badge = statusBadge(item);
+                                    const r5 = item.horizons?.['5'];
+                                    return (
+                                        <tr
+                                            key={`${item.workflow_id}-${item.symbol}-${idx}`}
+                                            className="border-t border-white/5 hover:bg-white/[0.03]"
+                                        >
+                                            <td className="px-1 py-1.5">
+                                                <div className="text-white">{item.name || item.symbol}</div>
+                                                <div className="text-[9px] font-bold text-slate-500">{item.symbol}</div>
+                                            </td>
+                                            <td className="px-1 py-1.5 text-right font-mono text-slate-300">
+                                                {formatDate(item.entry_date)}
+                                            </td>
+                                            <td className={`px-1 py-1.5 text-right font-mono ${
+                                                r5 !== null && r5 !== undefined ? (r5 >= 0 ? 'text-emerald-300' : 'text-rose-300') : 'text-slate-500'
+                                            }`}>
+                                                {r5 !== null && r5 !== undefined ? `${r5 >= 0 ? '+' : ''}${r5.toFixed(1)}%` : '--'}
+                                            </td>
+                                            <td className="px-1 py-1.5 text-right">
+                                                <span className={`inline-block rounded-full border px-1.5 py-0.5 text-[9px] font-black ${badge.tone}`}>
+                                                    {badge.label}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
+                {summary && evaluatedCount === 0 && pendingCount > 0 && (
+                    <div className="mt-2 rounded border border-amber-300/20 bg-amber-300/[0.05] p-2 text-[10px] font-bold text-amber-200">
+                        ⚠ 평가 대기중 — daily_prices.csv 가 추천 진입일 이후 갱신되지 않음. outcomes refresh 필요.
+                    </div>
+                )}
+            </div>
+        </section>
+    );
+}

@@ -55,6 +55,10 @@ from app.services.mirofish.outcome_tracker import (
     read_workflow_outcomes,
     refresh_workflow_outcomes,
 )
+from app.services.mirofish.pipeline_overview import (
+    get_outcomes_board,
+    get_pipeline_today_snapshot,
+)
 from app.services.mirofish.chat_agent import (
     run_chat as run_chat_agent,
 )
@@ -95,6 +99,8 @@ __all__ = [
     'get_autonomous_status',
     'get_market_clock',
     'get_mcp_security_policy',
+    'get_outcomes_board',
+    'get_pipeline_today_snapshot',
     'get_repository_state',
     'get_scanner_schedule_status',
     'get_scanner_diagnostics',

@@ -1262,6 +1262,20 @@ export const mirofishApi = {
         undefined,
         120000,
     ),
+    /** 오늘의 검출 파이프라인 + 시장 컨텍스트 스냅샷 */
+    getPipelineToday: async () => fetchAuthAPI<MiroFishPipelineToday>(
+        '/api/admin/mirofish/pipeline/today',
+    ),
+    /** 최근 N일 추천 종목 outcomes 보드 */
+    getOutcomesBoard: async (params: { days?: number; limit?: number } = {}) => {
+        const search = new URLSearchParams();
+        if (params.days !== undefined) search.set('days', String(params.days));
+        if (params.limit !== undefined) search.set('limit', String(params.limit));
+        const qs = search.toString();
+        return fetchAuthAPI<MiroFishOutcomesBoard>(
+            `/api/admin/mirofish/outcomes/board${qs ? `?${qs}` : ''}`,
+        );
+    },
     /** 카카오톡 공유 payload — workflow의 TOP 3 또는 단일 rank. */
     getSharePayload: async (workflowId: string, rank?: number) => {
         const path = rank
@@ -1296,6 +1310,111 @@ export interface MiroFishChatTelegramResponse {
         channel_chat_present?: boolean;
     };
     error?: string;
+}
+
+export interface MiroFishPipelineMarketKr {
+    phase?: 'pre_open' | 'regular_session' | 'after_close' | 'closed_weekend' | string;
+    is_regular_session?: boolean;
+    gate_label?: string | null;
+    gate_score?: number | null;
+    kospi_change_pct?: number | null;
+    kosdaq_change_pct?: number | null;
+    updated_at?: string | null;
+}
+
+export interface MiroFishPipelineMarketUs {
+    vix?: number | null;
+    vix_level?: 'low' | 'moderate' | 'elevated' | 'high' | null;
+    fear_greed_score?: number | null;
+    fear_greed_label?: string | null;
+    timestamp?: string | null;
+}
+
+export interface MiroFishPipelineKpi {
+    window_days: number;
+    sample_size: number;
+    hit_rate_pct: number | null;
+    avg_return_pct: number | null;
+    pending_count: number;
+}
+
+export interface MiroFishPipelineToday {
+    generated_at: string;
+    date_kst: string;
+    market: {
+        kr: MiroFishPipelineMarketKr;
+        us: MiroFishPipelineMarketUs;
+    };
+    funnel: {
+        scanner_pool: number;
+        scanner_runs_today: number;
+        batch_new_candidates: number;
+        graphrag_uploaded: number;
+        top3_ready: number;
+        latest_workflow_id?: string | null;
+        latest_workflow_status?: string | null;
+        latest_workflow_at?: string | null;
+        latest_scanner_run_at?: string | null;
+        freshness_status?: string | null;
+    };
+    kpi_7d: MiroFishPipelineKpi;
+    kpi_30d: MiroFishPipelineKpi;
+    next: {
+        next_scheduled_scan_at?: string | null;
+        next_scheduled_scans?: string[];
+        scanner_enabled?: boolean;
+    };
+    alerts_today: {
+        scanner_alerts_today: number;
+        scanner_last_alert_at?: string | null;
+    };
+}
+
+export interface MiroFishBoardItem {
+    workflow_id: string;
+    symbol: string;
+    name: string;
+    rank?: number | null;
+    entry_date?: string | null;
+    entry_price?: number | null;
+    status: 'evaluated' | 'partial' | 'pending' | 'missing_entry' | string;
+    hit?: boolean | null;
+    stopped?: boolean | null;
+    forward_return_pct?: number | null;
+    max_forward_return_pct?: number | null;
+    max_drawdown_pct?: number | null;
+    primary_horizon_days?: number | null;
+    available_future_days?: number | null;
+    /** 백엔드에서 horizon 별 return_pct(number) 만 flatten 해서 보냄. null=평가전. */
+    horizons?: Record<string, number | null>;
+    feature_snapshot?: Record<string, any> | null;
+}
+
+export interface MiroFishOutcomesBoard {
+    window_days: number;
+    generated_at: string;
+    sample_size: number;
+    workflow_count: number;
+    summary: {
+        evaluated_count: number;
+        pending_count: number;
+        hit_count: number;
+        miss_count: number;
+        stopped_count: number;
+        hit_rate_pct: number | null;
+        avg_forward_return_pct: number | null;
+        false_positive_pct: number | null;
+        best_return_pct: number | null;
+        worst_return_pct: number | null;
+        targets: {
+            hit_rate_pct: number;
+            avg_return_pct: number;
+            false_positive_pct: number;
+        };
+    };
+    items: MiroFishBoardItem[];
+    items_truncated: boolean;
+    total_items: number;
 }
 
 export interface MiroFishShareItem {
