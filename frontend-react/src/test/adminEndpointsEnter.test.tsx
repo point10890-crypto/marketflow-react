@@ -32,6 +32,8 @@ const mockApi = vi.hoisted(() => ({
   runAutonomousScanAnalysis: vi.fn(),
   refreshAutonomousLearning: vi.fn(),
   sendLatestAutonomousWorkflowTelegram: vi.fn(),
+  getPipelineToday: vi.fn(),
+  getOutcomesBoard: vi.fn(),
 }));
 
 vi.mock('@/lib/mirofishApi', () => ({
@@ -76,6 +78,87 @@ beforeEach(() => {
     pipeline: { status: 'ready', graph_links: 0, similar_events: 0, agent_count: 10 },
   });
   mockApi.getDataSources.mockResolvedValue({ files: [] });
+  mockApi.getPipelineToday.mockResolvedValue({
+    generated_at: '2026-05-12T00:00:00+00:00',
+    date_kst: '2026-05-12',
+    market: {
+      kr: {
+        phase: 'regular_session',
+        is_regular_session: true,
+        gate_label: 'open',
+        gate_score: 72,
+        kospi_change_pct: 0.4,
+        kosdaq_change_pct: -0.2,
+      },
+      us: {
+        vix: 18.2,
+        vix_level: 'moderate',
+        fear_greed_score: 52,
+        fear_greed_label: 'neutral',
+      },
+    },
+    funnel: {
+      scanner_pool: 20,
+      scanner_runs_today: 2,
+      batch_new_candidates: 5,
+      graphrag_uploaded: 5,
+      top3_ready: 3,
+      latest_workflow_id: 'mcp_test',
+      latest_workflow_status: 'completed',
+      latest_workflow_at: '2026-05-12T00:05:00+00:00',
+      latest_scanner_run_at: '2026-05-12T00:00:00+00:00',
+      freshness_status: 'fresh',
+    },
+    operating_workflow: {
+      schema_version: 'mirofish.operating_workflow.v1',
+      generated_at: '2026-05-12T00:00:00+00:00',
+      date_kst: '2026-05-12',
+      workflow_id: 'mcp_test',
+      workflow_status: 'completed',
+      current_stage_id: 'outcomes',
+      overall_status: 'ready',
+      overall_progress_pct: 83,
+      stages: [
+        { id: 'scanner', label: 'Alpha Scanner pool', objective: 'detect candidates', status: 'complete', progress_pct: 100, count: 20, total: null },
+        { id: 'batch', label: 'New-event batch', objective: 'select batch', status: 'complete', progress_pct: 100, count: 5, total: 5 },
+        { id: 'graphrag', label: 'GraphRAG analysis', objective: 'validate evidence', status: 'complete', progress_pct: 100, count: 5, total: 5 },
+        { id: 'top3', label: 'MCP Top3', objective: 'rank final picks', status: 'complete', progress_pct: 100, count: 3, total: 3 },
+        { id: 'telegram', label: 'Telegram handoff', objective: 'send actionable alert', status: 'complete', progress_pct: 100, count: 1, total: 1 },
+        { id: 'outcomes', label: 'Forward outcomes', objective: 'validate returns', status: 'ready', progress_pct: 0, count: 3, total: 3 },
+      ],
+    },
+    kpi_7d: { window_days: 7, sample_size: 1, hit_rate_pct: 100, avg_return_pct: 10, pending_count: 0 },
+    kpi_30d: { window_days: 30, sample_size: 1, hit_rate_pct: 100, avg_return_pct: 10, pending_count: 0 },
+    next: {
+      next_scheduled_scan_at: '2026-05-12T11:20:00+09:00',
+      next_scheduled_scans: ['2026-05-12T11:20:00+09:00'],
+      scanner_enabled: true,
+    },
+    alerts_today: {
+      scanner_alerts_today: 1,
+      scanner_last_alert_at: '2026-05-12T00:06:00+00:00',
+    },
+  });
+  mockApi.getOutcomesBoard.mockResolvedValue({
+    window_days: 30,
+    generated_at: '2026-05-12T00:00:00+00:00',
+    sample_size: 1,
+    workflow_count: 1,
+    summary: {
+      evaluated_count: 1,
+      pending_count: 0,
+      hit_count: 1,
+      miss_count: 0,
+      stopped_count: 0,
+      hit_rate_pct: 100,
+      avg_forward_return_pct: 10,
+      false_positive_pct: 0,
+      targets: { hit_rate_pct: 55, avg_return_pct: 1.5, false_positive_pct: 20 },
+    },
+    items: [],
+    items_truncated: false,
+    total_items: 0,
+  });
   mockApi.getDeepSeekStatus.mockResolvedValue({
     provider: 'deepseek',
     configured: true,
@@ -334,6 +417,20 @@ beforeEach(() => {
         sample_count: 2,
         strongest_positive: { key: 'momentum', hit_rate_pct: 100, average_forward_return_pct: 6.5 },
         weakest_negative: { key: 'event_risk', hit_rate_pct: 0, average_forward_return_pct: -2 },
+        score_profile: {
+          hit_avg_alpha: 82,
+          miss_avg_alpha: 68,
+          hit_avg_risk: 24,
+          miss_avg_risk: 52,
+          hit_avg_final_score: 88,
+          miss_avg_final_score: 54,
+        },
+        cohorts: {
+          strategy_tags: [
+            { key: 'momentum', sample_count: 1, hit_rate_pct: 100, average_forward_return_pct: 6.5 },
+            { key: 'event_risk', sample_count: 1, hit_rate_pct: 0, average_forward_return_pct: -2 },
+          ],
+        },
       },
     },
     runtime: {
@@ -418,6 +515,20 @@ beforeEach(() => {
       sample_count: 2,
       strongest_positive: { key: 'momentum', hit_rate_pct: 100, average_forward_return_pct: 6.5 },
       weakest_negative: { key: 'event_risk', hit_rate_pct: 0, average_forward_return_pct: -2 },
+      score_profile: {
+        hit_avg_alpha: 82,
+        miss_avg_alpha: 68,
+        hit_avg_risk: 24,
+        miss_avg_risk: 52,
+        hit_avg_final_score: 88,
+        miss_avg_final_score: 54,
+      },
+      cohorts: {
+        strategy_tags: [
+          { key: 'momentum', sample_count: 1, hit_rate_pct: 100, average_forward_return_pct: 6.5 },
+          { key: 'event_risk', sample_count: 1, hit_rate_pct: 0, average_forward_return_pct: -2 },
+        ],
+      },
       guidance: [{ type: 'alpha_boost', target: 'momentum', reason: 'strong cohort' }],
     },
     recommendations: [{
@@ -450,13 +561,18 @@ describe('AdminEndpointsPage analysis start input', () => {
     expect(await screen.findByText(/Next/)).toBeTruthy();
     expect(await screen.findByText(/Fresh fresh/i)).toBeTruthy();
     expect(await screen.findByText('Forward Return')).toBeTruthy();
-    expect(await screen.findByText('+10.00%')).toBeTruthy();
+    expect((await screen.findAllByText('+10.00%')).length).toBeGreaterThan(0);
     expect(await screen.findByText(/T5 \+10.00%/)).toBeTruthy();
     expect(await screen.findByText(/replay-safe after 2026-05-07/i)).toBeTruthy();
     expect((await screen.findAllByText(/MCP HTTP online/i)).length).toBeGreaterThan(0);
     expect((await screen.findAllByText(/Watchdog 5m on/i)).length).toBeGreaterThan(0);
     expect((await screen.findAllByText(/Startup Task/i)).length).toBeGreaterThan(0);
+    expect((await screen.findAllByText(/Operating Workflow/i)).length).toBeGreaterThan(0);
+    expect((await screen.findAllByText(/MCP Top3/i)).length).toBeGreaterThan(0);
     expect((await screen.findAllByText(/Alpha Memory/i)).length).toBeGreaterThan(0);
+    expect((await screen.findAllByText(/성과검증 보드/i)).length).toBeGreaterThan(0);
+    expect((await screen.findAllByText(/Hit vs Miss Score Profile/i)).length).toBeGreaterThan(0);
+    expect((await screen.findAllByText(/Signal Cohorts/i)).length).toBeGreaterThan(0);
     expect((await screen.findAllByText(/best momentum/i)).length).toBeGreaterThan(0);
   });
 
@@ -591,7 +707,7 @@ describe('AdminEndpointsPage analysis start input', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /Run scanner/i }));
 
-    expect(await screen.findByText('Alpha One')).toBeTruthy();
+    expect((await screen.findAllByText('Alpha One')).length).toBeGreaterThan(0);
     expect(await screen.findByText('BUY_CANDIDATE')).toBeTruthy();
 
     fireEvent.click(screen.getByText('Deep Dive'));
@@ -630,7 +746,7 @@ describe('AdminEndpointsPage analysis start input', () => {
     await renderPage();
 
     fireEvent.click(screen.getByRole('button', { name: /Run scanner/i }));
-    expect(await screen.findByText('Alpha One')).toBeTruthy();
+    expect((await screen.findAllByText('Alpha One')).length).toBeGreaterThan(0);
 
     fireEvent.click(screen.getByRole('button', { name: 'DeepSeek 요약' }));
     expect(await screen.findByText('알파 후보 요약')).toBeTruthy();

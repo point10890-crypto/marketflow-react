@@ -54,6 +54,11 @@ def create_mcp_server(
         return autonomous_mcp.get_market_clock()
 
     @mcp.tool()
+    def get_pipeline_operating_snapshot() -> dict[str, Any]:
+        """Return scanner -> batch -> GraphRAG -> Top3 -> Telegram -> outcomes state."""
+        return autonomous_mcp.get_pipeline_operating_snapshot()
+
+    @mcp.tool()
     def get_repository_state() -> dict[str, Any]:
         """Return a read-only git branch/head/dirty summary."""
         return autonomous_mcp.get_repository_state()
@@ -272,6 +277,11 @@ def create_mcp_server(
     def market_clock_resource() -> str:
         """KST market-session and scanner schedule status."""
         return _json(autonomous_mcp.get_market_clock())
+
+    @mcp.resource('mirofish://pipeline/operating')
+    def pipeline_operating_resource() -> str:
+        """Machine-readable MiroFish alpha operating workflow state."""
+        return _json(autonomous_mcp.get_pipeline_operating_snapshot())
 
     @mcp.resource('mirofish://scanner/latest')
     def latest_scanner_resource() -> str:

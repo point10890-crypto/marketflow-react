@@ -49,15 +49,121 @@ def get_pipeline_today_snapshot() -> dict[str, Any]:
     """Aggregate live market + funnel + 7d KPI for the right-side dashboard."""
     now_kst = datetime.now(KST)
     now_utc = datetime.now(timezone.utc)
+    operating_workflow = get_pipeline_operating_snapshot(now=now_kst)
     return {
         'generated_at': now_utc.isoformat(),
         'date_kst': now_kst.date().isoformat(),
         'market': _market_pulse(now_kst),
         'funnel': _funnel_today(now_kst),
+        'operating_workflow': operating_workflow,
         'kpi_7d': _kpi_window(days=7),
         'kpi_30d': _kpi_window(days=30),
         'next': _next_eta(now_kst),
         'alerts_today': _alerts_today(now_kst),
+    }
+
+
+def get_pipeline_operating_snapshot(now: datetime | None = None) -> dict[str, Any]:
+    """Return machine-readable scanner -> outcomes operating workflow state."""
+    now_kst = (now or datetime.now(KST)).astimezone(KST)
+    latest_workflow = _latest_workflow_safe()
+    workflow_summary = workflow_svc._workflow_summary(latest_workflow) if latest_workflow else None
+    schedule = alpha_scanner.get_scanner_schedule_status(now=now_kst)
+    alerts = _alerts_today(now_kst)
+    event_count = int((workflow_summary or {}).get('event_count') or 0)
+    analyzed_count = int((workflow_summary or {}).get('analyzed_count') or 0)
+    top3_count = len((workflow_summary or {}).get('top3') or [])
+    outcome_status = str((latest_workflow or {}).get('outcome_status') or 'not_evaluated')
+    workflow_status = str((workflow_summary or {}).get('status') or 'idle')
+    stages = [
+        _stage_snapshot(
+            'scanner',
+            'Alpha Scanner pool',
+            'detect and rank raw alpha candidates',
+            _scanner_stage_status(schedule),
+            _stage_progress(1 if schedule.get('last_run_id') else 0, 1),
+            count=int(schedule.get('candidate_count') or 0),
+            total=None,
+            artifact_id=schedule.get('last_run_id'),
+            updated_at=schedule.get('last_run_at'),
+        ),
+        _stage_snapshot(
+            'batch',
+            'New-event batch',
+            'filter scanner candidates into a replayable analysis batch',
+            _batch_stage_status(workflow_status, event_count),
+            _stage_progress(event_count, max(event_count, 1)),
+            count=event_count,
+            total=max(event_count, 1),
+            artifact_id=(workflow_summary or {}).get('id'),
+            updated_at=(workflow_summary or {}).get('created_at'),
+            requires=['scanner'],
+        ),
+        _stage_snapshot(
+            'graphrag',
+            'GraphRAG analysis',
+            'validate each batched candidate with multi-agent evidence',
+            _analysis_stage_status(workflow_status, event_count, analyzed_count),
+            _stage_progress(analyzed_count, max(event_count, 1)),
+            count=analyzed_count,
+            total=max(event_count, 1),
+            artifact_id=(workflow_summary or {}).get('id'),
+            updated_at=(workflow_summary or {}).get('completed_at') or (workflow_summary or {}).get('created_at'),
+            requires=['batch'],
+        ),
+        _stage_snapshot(
+            'top3',
+            'MCP Top3',
+            'select the highest forward-profit candidates for action',
+            _top3_stage_status(workflow_status, analyzed_count, top3_count),
+            _stage_progress(top3_count, min(max(event_count, 1), 3)),
+            count=top3_count,
+            total=min(max(event_count, 1), 3),
+            artifact_id=(workflow_summary or {}).get('id'),
+            updated_at=(workflow_summary or {}).get('completed_at'),
+            requires=['graphrag'],
+        ),
+        _stage_snapshot(
+            'telegram',
+            'Telegram handoff',
+            'publish actionable Top3 or scanner alerts to the operator',
+            _telegram_stage_status(latest_workflow, top3_count, alerts),
+            _stage_progress(1 if _telegram_was_sent(latest_workflow, alerts) else 0, 1),
+            count=int(alerts.get('scanner_alerts_today') or 0),
+            total=1,
+            artifact_id=(workflow_summary or {}).get('id'),
+            updated_at=(latest_workflow or {}).get('telegram_sent_at') or alerts.get('scanner_last_alert_at'),
+            requires=['top3'],
+        ),
+        _stage_snapshot(
+            'outcomes',
+            'Forward outcomes',
+            'track look-ahead-safe returns and feed learning memory',
+            _outcomes_stage_status(outcome_status, top3_count),
+            _stage_progress(1 if outcome_status in {'evaluated', 'partial'} else 0, 1),
+            count=top3_count,
+            total=top3_count or 1,
+            artifact_id=(workflow_summary or {}).get('id'),
+            updated_at=(workflow_summary or {}).get('completed_at'),
+            requires=['top3'],
+        ),
+    ]
+    current_stage = next((stage for stage in stages if stage['status'] in {'running', 'ready', 'waiting', 'attention'}), stages[-1])
+    return {
+        'schema_version': 'mirofish.operating_workflow.v1',
+        'generated_at': datetime.now(timezone.utc).isoformat(),
+        'date_kst': now_kst.date().isoformat(),
+        'workflow_id': (workflow_summary or {}).get('id'),
+        'workflow_status': workflow_status,
+        'current_stage_id': current_stage['id'],
+        'overall_status': _overall_status(stages),
+        'overall_progress_pct': round(sum(float(stage['progress_pct']) for stage in stages) / len(stages), 1),
+        'stages': stages,
+        'links': {
+            'scanner_latest': 'mirofish://scanner/latest',
+            'workflow_latest': 'mirofish://workflows/latest',
+            'outcomes': 'mirofish://pipeline/outcomes',
+        },
     }
 
 
@@ -364,6 +470,125 @@ def _kpi_window(days: int) -> dict[str, Any]:
         'avg_return_pct': board.get('summary', {}).get('avg_forward_return_pct'),
         'pending_count': board.get('summary', {}).get('pending_count', 0),
     }
+
+
+def _latest_workflow_safe() -> dict[str, Any] | None:
+    try:
+        return workflow_svc.read_latest_workflow()
+    except Exception as exc:
+        logger.debug(f'read_latest_workflow failed: {exc}')
+        return None
+
+
+def _stage_snapshot(
+    stage_id: str,
+    label: str,
+    objective: str,
+    status: str,
+    progress_pct: float,
+    *,
+    count: int,
+    total: int | None,
+    artifact_id: Any,
+    updated_at: Any,
+    requires: list[str] | None = None,
+) -> dict[str, Any]:
+    return {
+        'id': stage_id,
+        'label': label,
+        'objective': objective,
+        'status': status,
+        'progress_pct': progress_pct,
+        'count': count,
+        'total': total,
+        'artifact_id': artifact_id,
+        'updated_at': updated_at,
+        'requires': requires or [],
+    }
+
+
+def _stage_progress(count: int, total: int) -> float:
+    if total <= 0:
+        return 0.0
+    return round(max(0.0, min(100.0, (float(count) / float(total)) * 100.0)), 1)
+
+
+def _scanner_stage_status(schedule: dict[str, Any]) -> str:
+    freshness = str(schedule.get('freshness_status') or '').lower()
+    if freshness in {'stale', 'missing', 'partial', 'unknown'}:
+        return 'attention'
+    return 'complete' if schedule.get('last_run_id') else 'waiting'
+
+
+def _batch_stage_status(workflow_status: str, event_count: int) -> str:
+    if workflow_status in {'queued', 'running'}:
+        return 'running'
+    if event_count > 0:
+        return 'complete'
+    if workflow_status in {'no_new_events', 'idle'}:
+        return 'waiting'
+    return 'attention' if workflow_status in {'failed', 'blocked'} else 'waiting'
+
+
+def _analysis_stage_status(workflow_status: str, event_count: int, analyzed_count: int) -> str:
+    if workflow_status == 'running':
+        return 'running'
+    if event_count > 0 and analyzed_count >= event_count:
+        return 'complete'
+    if analyzed_count > 0:
+        return 'running'
+    return 'attention' if workflow_status == 'failed' else 'waiting'
+
+
+def _top3_stage_status(workflow_status: str, analyzed_count: int, top3_count: int) -> str:
+    if top3_count > 0:
+        return 'complete'
+    if workflow_status in {'queued', 'running'}:
+        return 'waiting'
+    if analyzed_count > 0:
+        return 'attention'
+    return 'waiting'
+
+
+def _telegram_was_sent(latest_workflow: dict[str, Any] | None, alerts: dict[str, Any]) -> bool:
+    workflow_sent = bool((latest_workflow or {}).get('telegram_sent') or (latest_workflow or {}).get('event_state_committed'))
+    scanner_sent = int(alerts.get('scanner_alerts_today') or 0) > 0
+    return workflow_sent or scanner_sent
+
+
+def _telegram_stage_status(
+    latest_workflow: dict[str, Any] | None,
+    top3_count: int,
+    alerts: dict[str, Any],
+) -> str:
+    if _telegram_was_sent(latest_workflow, alerts):
+        return 'complete'
+    if top3_count > 0:
+        return 'ready'
+    return 'waiting'
+
+
+def _outcomes_stage_status(outcome_status: str, top3_count: int) -> str:
+    if outcome_status in {'evaluated', 'partial'}:
+        return 'complete'
+    if outcome_status in {'pending', 'not_evaluated', 'unknown'} and top3_count > 0:
+        return 'ready'
+    if outcome_status == 'failed':
+        return 'attention'
+    return 'waiting'
+
+
+def _overall_status(stages: list[dict[str, Any]]) -> str:
+    statuses = {str(stage.get('status')) for stage in stages}
+    if 'attention' in statuses:
+        return 'attention'
+    if 'running' in statuses:
+        return 'running'
+    if 'ready' in statuses:
+        return 'ready'
+    if statuses == {'complete'}:
+        return 'complete'
+    return 'waiting'
 
 
 # ---------------------------------------------------------------------------

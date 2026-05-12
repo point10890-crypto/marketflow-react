@@ -23,6 +23,7 @@ from typing import Any, Callable
 
 import app.services.mirofish.alpha_scanner as alpha_scanner
 import app.services.mirofish.outcome_tracker as outcome_tracker
+import app.services.mirofish.pipeline_overview as pipeline_overview
 import app.services.mirofish.workflow as workflow
 from app.utils.atomic_json import write_json_atomic
 
@@ -87,6 +88,7 @@ def get_autonomous_status() -> dict[str, Any]:
         'telegram': _telegram_config_status(),
         'scanner': alpha_scanner.get_scanner_schedule_status(),
         'workflow': workflow.get_workflow_status(),
+        'operating_workflow': pipeline_overview.get_pipeline_operating_snapshot(),
         'learning': _learning_summary(read_learning_feedback()),
         'runtime': {
             'mcp_server': _mcp_http_status(),
@@ -97,6 +99,7 @@ def get_autonomous_status() -> dict[str, Any]:
             'get_autonomous_status',
             'get_mcp_security_policy',
             'get_market_clock',
+            'get_pipeline_operating_snapshot',
             'get_repository_state',
             'list_safe_artifacts',
             'read_safe_artifact',
@@ -112,6 +115,7 @@ def get_autonomous_status() -> dict[str, Any]:
             'mirofish://autonomous/security',
             'mirofish://autonomous/learning',
             'mirofish://market/clock',
+            'mirofish://pipeline/operating',
             'mirofish://scanner/latest',
             'mirofish://workflows/latest',
         ],
@@ -134,6 +138,7 @@ def get_mcp_security_policy() -> dict[str, Any]:
             'get_autonomous_status',
             'get_mcp_security_policy',
             'get_market_clock',
+            'get_pipeline_operating_snapshot',
             'get_repository_state',
             'list_recent_scanner_runs',
             'list_recent_workflows',
@@ -202,6 +207,11 @@ def get_market_clock(now: datetime | None = None) -> dict[str, Any]:
         'note': 'holiday calendar is not applied; weekend and regular-session time checks only',
         'checked_at': _now_iso(),
     }
+
+
+def get_pipeline_operating_snapshot() -> dict[str, Any]:
+    """Return scanner -> batch -> GraphRAG -> Top3 -> Telegram -> outcomes state."""
+    return pipeline_overview.get_pipeline_operating_snapshot()
 
 
 def get_repository_state() -> dict[str, Any]:
@@ -1219,6 +1229,8 @@ def _learning_summary(feedback: dict[str, Any] | None) -> dict[str, Any]:
             'sample_count': alpha_memory.get('sample_count') or 0,
             'strongest_positive': alpha_memory.get('strongest_positive'),
             'weakest_negative': alpha_memory.get('weakest_negative'),
+            'score_profile': alpha_memory.get('score_profile') or {},
+            'cohorts': alpha_memory.get('cohorts') or {},
             'guidance': alpha_memory.get('guidance') or [],
         },
         'production_weights_mutated': bool(feedback.get('production_weights_mutated')),

@@ -1368,6 +1368,32 @@ export interface MiroFishPipelineKpi {
     pending_count: number;
 }
 
+export interface MiroFishOperatingStage {
+    id: 'scanner' | 'batch' | 'graphrag' | 'top3' | 'telegram' | 'outcomes' | string;
+    label: string;
+    objective: string;
+    status: 'complete' | 'running' | 'ready' | 'waiting' | 'attention' | string;
+    progress_pct: number;
+    count: number;
+    total?: number | null;
+    artifact_id?: string | null;
+    updated_at?: string | null;
+    requires?: string[];
+}
+
+export interface MiroFishOperatingWorkflow {
+    schema_version: string;
+    generated_at: string;
+    date_kst: string;
+    workflow_id?: string | null;
+    workflow_status?: string | null;
+    current_stage_id?: string | null;
+    overall_status: 'complete' | 'running' | 'ready' | 'waiting' | 'attention' | string;
+    overall_progress_pct: number;
+    stages: MiroFishOperatingStage[];
+    links?: Record<string, string>;
+}
+
 export interface MiroFishPipelineToday {
     generated_at: string;
     date_kst: string;
@@ -1387,6 +1413,7 @@ export interface MiroFishPipelineToday {
         latest_scanner_run_at?: string | null;
         freshness_status?: string | null;
     };
+    operating_workflow?: MiroFishOperatingWorkflow;
     kpi_7d: MiroFishPipelineKpi;
     kpi_30d: MiroFishPipelineKpi;
     next: {

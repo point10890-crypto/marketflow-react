@@ -1,14 +1,5 @@
-/**
- * Today's Pipeline — 우측 상단 카드.
- *
- * Live market context (KR session + gate + VIX) + 오늘의 검출 funnel +
- * 7일 KPI 요약 + 다음 스캔 ETA.
- *
- * 단일 GET /api/admin/mirofish/pipeline/today 호출.
- * 30초 폴링으로 자동 갱신.
- */
 import { useEffect, useMemo, useState } from 'react';
-import { MiroFishPipelineToday, mirofishApi } from '@/lib/mirofishApi';
+import { MiroFishOperatingStage, MiroFishPipelineToday, mirofishApi } from '@/lib/mirofishApi';
 
 const POLL_INTERVAL_MS = 30_000;
 
@@ -32,18 +23,23 @@ function formatDelta(value?: number | null): { label: string; tone: string } {
     return { label: `${sign}${value.toFixed(2)}%`, tone };
 }
 
-function phaseLabel(phase?: string): { ko: string; tone: string } {
+function formatPct(value?: number | null, digits = 0): string {
+    if (value === null || value === undefined || Number.isNaN(value)) return '--';
+    return `${value.toFixed(digits)}%`;
+}
+
+function phaseLabel(phase?: string): { label: string; tone: string } {
     switch (phase) {
         case 'regular_session':
-            return { ko: '🟢 장중', tone: 'border-emerald-300/30 bg-emerald-300/10 text-emerald-200' };
+            return { label: 'KR open', tone: 'border-emerald-300/30 bg-emerald-300/10 text-emerald-200' };
         case 'pre_open':
-            return { ko: '🟡 장 시작전', tone: 'border-amber-300/30 bg-amber-300/10 text-amber-200' };
+            return { label: 'Pre-open', tone: 'border-amber-300/30 bg-amber-300/10 text-amber-200' };
         case 'after_close':
-            return { ko: '⚫ 장 마감', tone: 'border-slate-300/20 bg-slate-300/10 text-slate-300' };
+            return { label: 'Closed', tone: 'border-slate-300/20 bg-slate-300/10 text-slate-300' };
         case 'closed_weekend':
-            return { ko: '⚫ 주말 휴장', tone: 'border-slate-300/20 bg-slate-300/10 text-slate-300' };
+            return { label: 'Weekend', tone: 'border-slate-300/20 bg-slate-300/10 text-slate-300' };
         default:
-            return { ko: phase || '--', tone: 'border-white/10 bg-white/5 text-slate-300' };
+            return { label: phase || '--', tone: 'border-white/10 bg-white/5 text-slate-300' };
     }
 }
 
@@ -58,7 +54,16 @@ function vixTone(level?: string | null): string {
 interface FunnelStep {
     label: string;
     value: number;
-    width: number; // 0..100
+    width: number;
+}
+
+interface OpsStage {
+    id: string;
+    label: string;
+    value: string;
+    detail: string;
+    state: 'done' | 'active' | 'idle' | 'blocked';
+    progress: number;
 }
 
 function buildFunnel(data: MiroFishPipelineToday | null): FunnelStep[] {
@@ -71,6 +76,107 @@ function buildFunnel(data: MiroFishPipelineToday | null): FunnelStep[] {
         { label: 'GraphRAG', value: data.funnel.graphrag_uploaded || 0, width: Math.round(((data.funnel.graphrag_uploaded || 0) / max) * 100) },
         { label: 'Top 3', value: data.funnel.top3_ready || 0, width: Math.round(((data.funnel.top3_ready || 0) / max) * 100) },
     ];
+}
+
+function operatingStageState(status?: string): OpsStage['state'] {
+    if (status === 'complete') return 'done';
+    if (status === 'running' || status === 'ready') return 'active';
+    if (status === 'attention') return 'blocked';
+    return 'idle';
+}
+
+function operatingStageValue(stage: MiroFishOperatingStage): string {
+    if (stage.total === null || stage.total === undefined) return String(stage.count ?? 0);
+    return `${stage.count ?? 0}/${stage.total}`;
+}
+
+function buildOpsStages(data: MiroFishPipelineToday | null): OpsStage[] {
+    const operatingStages = data?.operating_workflow?.stages || [];
+    if (operatingStages.length) {
+        return operatingStages.map((stage) => ({
+            id: stage.id,
+            label: stage.label,
+            value: operatingStageValue(stage),
+            detail: stage.objective || stage.status || '--',
+            state: operatingStageState(stage.status),
+            progress: Number(stage.progress_pct || 0),
+        }));
+    }
+
+    const scannerRuns = data?.funnel.scanner_runs_today ?? 0;
+    const batchCount = data?.funnel.batch_new_candidates ?? 0;
+    const graphCount = data?.funnel.graphrag_uploaded ?? 0;
+    const top3Count = data?.funnel.top3_ready ?? 0;
+    const alertsCount = data?.alerts_today?.scanner_alerts_today ?? 0;
+    const evaluated = data?.kpi_7d?.sample_size ?? 0;
+    const pending = data?.kpi_7d?.pending_count ?? 0;
+    const workflowStatus = String(data?.funnel.latest_workflow_status || '').toLowerCase();
+    const scannerEnabled = data?.next?.scanner_enabled !== false;
+
+    return [
+        {
+            id: 'scanner',
+            label: 'Auto scan',
+            value: scannerEnabled ? `${scannerRuns}` : 'off',
+            detail: `next ${formatTime(data?.next?.next_scheduled_scan_at)}`,
+            state: !scannerEnabled ? 'blocked' : scannerRuns > 0 ? 'done' : 'idle',
+            progress: scannerRuns > 0 ? 100 : 0,
+        },
+        {
+            id: 'batch',
+            label: 'Queue',
+            value: `${Math.min(batchCount, 5)}/5`,
+            detail: `${batchCount} new candidates`,
+            state: batchCount > 0 ? 'active' : scannerRuns > 0 ? 'done' : 'idle',
+            progress: Math.min(100, (batchCount / 5) * 100),
+        },
+        {
+            id: 'graphrag',
+            label: 'GraphRAG',
+            value: `${graphCount}`,
+            detail: workflowStatus || 'await batch',
+            state: graphCount > 0 ? 'done' : batchCount > 0 ? 'active' : 'idle',
+            progress: batchCount > 0 ? Math.min(100, (graphCount / batchCount) * 100) : 0,
+        },
+        {
+            id: 'top3',
+            label: 'Top3',
+            value: `${top3Count}`,
+            detail: data?.funnel.latest_workflow_id ? 'ranked workflow' : 'ranking',
+            state: top3Count > 0 ? 'done' : graphCount > 0 ? 'active' : 'idle',
+            progress: Math.min(100, (top3Count / 3) * 100),
+        },
+        {
+            id: 'telegram',
+            label: 'Telegram',
+            value: `${alertsCount}`,
+            detail: `last ${formatTime(data?.alerts_today?.scanner_last_alert_at)}`,
+            state: alertsCount > 0 ? 'done' : top3Count > 0 ? 'active' : 'idle',
+            progress: alertsCount > 0 ? 100 : 0,
+        },
+        {
+            id: 'outcomes',
+            label: 'Validate',
+            value: formatPct(data?.kpi_7d?.hit_rate_pct),
+            detail: `${evaluated} checked / ${pending} pending`,
+            state: evaluated > 0 ? 'done' : top3Count > 0 ? 'active' : 'idle',
+            progress: evaluated > 0 ? 100 : 0,
+        },
+    ];
+}
+
+function stageTone(state: OpsStage['state']): string {
+    if (state === 'done') return 'border-emerald-300/25 bg-emerald-300/10 text-emerald-100';
+    if (state === 'active') return 'border-cyan-300/25 bg-cyan-300/10 text-cyan-100';
+    if (state === 'blocked') return 'border-rose-300/25 bg-rose-300/10 text-rose-100';
+    return 'border-white/10 bg-white/[0.04] text-slate-300';
+}
+
+function stageDot(state: OpsStage['state']): string {
+    if (state === 'done') return 'bg-emerald-300';
+    if (state === 'active') return 'bg-cyan-300 animate-pulse';
+    if (state === 'blocked') return 'bg-rose-300';
+    return 'bg-white/25';
 }
 
 export default function TodaysPipelineCard() {
@@ -102,9 +208,11 @@ export default function TodaysPipelineCard() {
     }, []);
 
     const funnel = useMemo(() => buildFunnel(data), [data]);
+    const opsStages = useMemo(() => buildOpsStages(data), [data]);
     const phase = phaseLabel(data?.market?.kr?.phase);
     const kospiDelta = formatDelta(data?.market?.kr?.kospi_change_pct);
     const kosdaqDelta = formatDelta(data?.market?.kr?.kosdaq_change_pct);
+    const operating = data?.operating_workflow;
 
     return (
         <section className="rounded-xl border border-cyan-300/15 bg-slate-950/60 p-3 shadow-[0_18px_70px_rgba(34,211,238,0.10)] sm:p-4">
@@ -114,7 +222,7 @@ export default function TodaysPipelineCard() {
                         <i className="fas fa-satellite-dish text-cyan-300" />
                         <span className="truncate">Today&apos;s Pipeline</span>
                     </div>
-                    <h3 className="mt-1 text-sm font-black text-white sm:text-base">시장 + 검출 + KPI</h3>
+                    <h3 className="mt-1 text-sm font-black text-white sm:text-base">Alpha ops lane</h3>
                 </div>
                 {loading && (
                     <span className="shrink-0 text-[10px] font-bold uppercase tracking-wider text-slate-500">loading...</span>
@@ -127,15 +235,44 @@ export default function TodaysPipelineCard() {
                 </div>
             )}
 
-            {/* KR 마켓 펄스 */}
-            <div className="mt-3 rounded-lg border border-white/10 bg-black/30 p-2.5 sm:mt-4 sm:p-3">
+            <div className="mt-3 rounded-lg border border-cyan-300/15 bg-cyan-300/[0.05] p-2.5 sm:mt-4 sm:p-3">
+                <div className="flex items-center justify-between gap-2">
+                    <span className="text-[10px] font-black uppercase tracking-[0.16em] text-cyan-200/80 sm:text-[11px] sm:tracking-[0.18em]">
+                        Operating Workflow
+                    </span>
+                    <span className="text-[10px] font-bold text-slate-500 whitespace-nowrap">
+                        {operating ? `${operating.overall_status} ${formatPct(operating.overall_progress_pct, 0)}` : data?.funnel?.freshness_status || 'source --'}
+                    </span>
+                </div>
+                <div className="mt-2 grid grid-cols-2 gap-1.5 sm:gap-2">
+                    {opsStages.map((stage, index) => (
+                        <div key={stage.id || stage.label} className={`rounded-lg border p-2 ${stageTone(stage.state)}`}>
+                            <div className="flex items-center justify-between gap-2">
+                                <span className="truncate text-[10px] font-black uppercase tracking-[0.12em] text-current/70">
+                                    {index + 1}. {stage.label}
+                                </span>
+                                <span className={`h-2 w-2 shrink-0 rounded-full ${stageDot(stage.state)}`} />
+                            </div>
+                            <div className="mt-1 text-base font-black text-white tabular-nums">{stage.value}</div>
+                            <div className="mt-0.5 truncate text-[10px] font-bold text-slate-500">{stage.detail}</div>
+                            <div className="mt-2 h-1 overflow-hidden rounded-full bg-black/30">
+                                <div
+                                    className="h-full rounded-full bg-current/70 transition-all"
+                                    style={{ width: `${Math.max(2, Math.min(100, stage.progress))}%` }}
+                                />
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            <div className="mt-3 rounded-lg border border-white/10 bg-black/30 p-2.5 sm:p-3">
                 <div className="flex flex-wrap items-center justify-between gap-1.5">
                     <div className="flex items-center gap-1.5">
-                        <span className="text-base">🇰🇷</span>
                         <span className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400 sm:text-[11px] sm:tracking-[0.18em]">KR Market</span>
                     </div>
                     <span className={`rounded-full border px-2 py-0.5 text-[10px] font-black whitespace-nowrap ${phase.tone}`}>
-                        {phase.ko}
+                        {phase.label}
                     </span>
                 </div>
                 <div className="mt-3 grid grid-cols-2 gap-2 text-[11px] font-bold">
@@ -159,7 +296,7 @@ export default function TodaysPipelineCard() {
                         </span>
                     </div>
                 )}
-                {(data?.market?.us?.vix !== null && data?.market?.us?.vix !== undefined) && (
+                {data?.market?.us?.vix !== null && data?.market?.us?.vix !== undefined && (
                     <div className="mt-2 flex items-center justify-between text-[11px] font-bold">
                         <span className="text-slate-500">VIX</span>
                         <span className={vixTone(data.market.us.vix_level)}>
@@ -179,11 +316,12 @@ export default function TodaysPipelineCard() {
                 )}
             </div>
 
-            {/* Detection Funnel */}
             <div className="mt-3 rounded-lg border border-white/10 bg-black/30 p-2.5 sm:p-3">
                 <div className="flex items-center justify-between gap-2">
                     <span className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400 sm:text-[11px] sm:tracking-[0.18em]">Detection Funnel</span>
-                    <span className="text-[10px] font-bold text-slate-500 whitespace-nowrap">오늘 {data?.funnel?.scanner_runs_today ?? 0}회</span>
+                    <span className="text-[10px] font-bold text-slate-500 whitespace-nowrap">
+                        today {data?.funnel?.scanner_runs_today ?? 0} runs
+                    </span>
                 </div>
                 <div className="mt-2 space-y-1.5">
                     {funnel.map((step) => (
@@ -201,7 +339,6 @@ export default function TodaysPipelineCard() {
                 </div>
             </div>
 
-            {/* KPI 7d/30d */}
             <div className="mt-3 grid grid-cols-2 gap-2">
                 {(['kpi_7d', 'kpi_30d'] as const).map((key) => {
                     const kpi = data?.[key];
@@ -225,17 +362,16 @@ export default function TodaysPipelineCard() {
                                 </span>
                             </div>
                             <div className="mt-0.5 flex items-center justify-between text-[10px] font-bold text-slate-500">
-                                <span>샘플</span>
-                                <span className="tabular-nums">{kpi?.sample_size ?? 0}건</span>
+                                <span>sample</span>
+                                <span className="tabular-nums">{kpi?.sample_size ?? 0}</span>
                             </div>
                         </div>
                     );
                 })}
             </div>
 
-            {/* Next ETA */}
             <div className="mt-3 flex items-center justify-between gap-2 rounded-lg border border-white/10 bg-black/30 px-2.5 py-2 text-[11px] font-bold sm:px-3">
-                <span className="text-slate-500 truncate">⏰ 다음 자동 스캔</span>
+                <span className="text-slate-500 truncate">Auto scan ETA</span>
                 <span className="font-mono text-cyan-200 tabular-nums whitespace-nowrap">
                     {formatTime(data?.next?.next_scheduled_scan_at)}
                 </span>

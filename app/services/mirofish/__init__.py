@@ -57,6 +57,7 @@ from app.services.mirofish.outcome_tracker import (
 )
 from app.services.mirofish.pipeline_overview import (
     get_outcomes_board,
+    get_pipeline_operating_snapshot,
     get_pipeline_today_snapshot,
 )
 from app.services.mirofish import auto_runner
@@ -103,6 +104,7 @@ __all__ = [
     'get_mcp_security_policy',
     'get_outcomes_board',
     'get_pipeline_today_snapshot',
+    'get_pipeline_operating_snapshot',
     'get_repository_state',
     'get_scanner_schedule_status',
     'get_scanner_diagnostics',

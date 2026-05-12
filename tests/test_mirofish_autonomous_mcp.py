@@ -4,7 +4,7 @@ import pytest
 from flask import Flask
 
 from app.routes.admin_mirofish import admin_mirofish_bp
-from app.services.mirofish import autonomous_mcp
+from app.services.mirofish import autonomous_mcp, pipeline_overview
 
 
 def _candidate(symbol='000001', name='Alpha One'):
@@ -111,6 +111,15 @@ def test_autonomous_status_exposes_safe_mcp_policy(monkeypatch):
             'checked_at': '2026-05-11T00:00:00+00:00',
         },
     )
+    monkeypatch.setattr(
+        autonomous_mcp.pipeline_overview,
+        'get_pipeline_operating_snapshot',
+        lambda: {
+            'schema_version': 'mirofish.operating_workflow.v1',
+            'current_stage_id': 'top3',
+            'stages': [{'id': 'scanner'}, {'id': 'top3'}],
+        },
+    )
 
     status = autonomous_mcp.get_autonomous_status()
     policy = autonomous_mcp.get_mcp_security_policy()
@@ -118,17 +127,76 @@ def test_autonomous_status_exposes_safe_mcp_policy(monkeypatch):
     assert 'get_autonomous_status' in status['tools']
     assert 'get_mcp_security_policy' in status['tools']
     assert 'get_market_clock' in status['tools']
+    assert 'get_pipeline_operating_snapshot' in status['tools']
     assert 'get_repository_state' in status['tools']
     assert 'list_safe_artifacts' in status['tools']
     assert 'read_safe_artifact' in status['tools']
     assert status['runtime']['mcp_server']['healthy'] is True
+    assert status['operating_workflow']['schema_version'] == 'mirofish.operating_workflow.v1'
+    assert 'mirofish://pipeline/operating' in status['resources']
     assert status['runtime']['startup_task']['registered'] is True
     assert status['runtime']['watchdog_task']['registered'] is True
     assert policy['mutation_enabled'] is False
     assert policy['shared_secret_configured'] is False
     assert policy['artifact_allowlist_root'] == 'data/admin_mirofish'
+    assert 'get_pipeline_operating_snapshot' in policy['read_only_tools']
     assert 'read_safe_artifact' in policy['read_only_tools']
     assert 'run_autonomous_scan_analysis' in policy['mutating_tools']
+
+
+def test_pipeline_operating_snapshot_is_machine_readable(monkeypatch):
+    monkeypatch.setattr(
+        pipeline_overview.alpha_scanner,
+        'get_scanner_schedule_status',
+        lambda now=None: {
+            'last_run_id': 'mfas_test',
+            'last_run_at': '2026-05-12T09:00:00+09:00',
+            'candidate_count': 12,
+            'freshness_status': 'fresh',
+        },
+    )
+    monkeypatch.setattr(
+        pipeline_overview,
+        '_count_scanner_runs_today',
+        lambda now_kst: 1,
+    )
+    monkeypatch.setattr(
+        pipeline_overview,
+        '_alerts_today',
+        lambda now_kst: {
+            'scanner_alerts_today': 0,
+            'scanner_last_alert_at': None,
+        },
+    )
+    monkeypatch.setattr(
+        pipeline_overview.workflow_svc,
+        'read_latest_workflow',
+        lambda: {
+            'id': 'wfmcp_test',
+            'status': 'completed',
+            'created_at': '2026-05-12T00:00:00+00:00',
+            'completed_at': '2026-05-12T00:05:00+00:00',
+            'scanner_run_id': 'mfas_test',
+            'event_count': 5,
+            'analysis_runs': [{'symbol': '000001'} for _ in range(5)],
+            'top3': [{'symbol': '000001'}, {'symbol': '000002'}, {'symbol': '000003'}],
+            'event_state_committed': True,
+            'outcome_status': 'pending',
+        },
+    )
+
+    snapshot = pipeline_overview.get_pipeline_operating_snapshot()
+    stage_ids = [stage['id'] for stage in snapshot['stages']]
+    stages = {stage['id']: stage for stage in snapshot['stages']}
+
+    assert snapshot['schema_version'] == 'mirofish.operating_workflow.v1'
+    assert stage_ids == ['scanner', 'batch', 'graphrag', 'top3', 'telegram', 'outcomes']
+    assert snapshot['workflow_id'] == 'wfmcp_test'
+    assert stages['scanner']['status'] == 'complete'
+    assert stages['graphrag']['progress_pct'] == 100.0
+    assert stages['top3']['count'] == 3
+    assert stages['telegram']['status'] == 'complete'
+    assert stages['outcomes']['status'] == 'ready'
 
 
 def test_safe_artifact_reads_are_allowlisted(tmp_path, monkeypatch):
@@ -292,6 +360,9 @@ def test_learning_feedback_is_advisory_and_lookahead_safe(isolated_autonomous_pa
     saved = json.loads((isolated_autonomous_paths / 'learning_feedback.json').read_text(encoding='utf-8'))
     assert saved['mode'] == 'advisory_feedback_only'
     assert saved['alpha_memory']['score_profile']['hit_avg_alpha'] == 82
+    summary = autonomous_mcp._learning_summary(feedback)
+    assert summary['alpha_memory']['score_profile']['hit_avg_alpha'] == 82
+    assert summary['alpha_memory']['cohorts']['strategy_tags'][0]['key'] in {'momentum', 'trend_quality'}
 
 
 def test_admin_autonomous_routes_are_registered():
