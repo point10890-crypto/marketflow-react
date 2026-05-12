@@ -283,6 +283,187 @@ def create_mcp_server(
         """Latest scanner-to-analysis workflow run."""
         return _json(workflow.read_latest_workflow() or {'error': 'workflow not found'})
 
+    # =========================================================
+    # 금융 분석 도구 (KIS/Kiwoom/DART/수급/차트/통합)
+    # =========================================================
+
+    @mcp.tool()
+    def get_kiwoom_quote(symbol: str) -> dict[str, Any]:
+        """단일 종목 실시간 시세 (키움 OpenAPI).
+
+        Args:
+            symbol: 종목 코드 (예: '005930' 삼성전자)
+        Returns:
+            현재가, 등락률, 거래량, 거래대금, 시고저가
+        """
+        try:
+            from engine.kiwoom_client import get_stock_quote
+            return get_stock_quote(symbol) or {'error': 'no quote', 'symbol': symbol}
+        except Exception as exc:
+            return {'error': f'{type(exc).__name__}: {exc}', 'symbol': symbol}
+
+    @mcp.tool()
+    def get_kiwoom_daily_chart(symbol: str) -> dict[str, Any]:
+        """일봉 차트 데이터 (키움). 약 60일 OHLCV.
+
+        Args:
+            symbol: 종목 코드
+        Returns:
+            일별 OHLCV 배열 (분석/패턴 인식용)
+        """
+        try:
+            from engine.kiwoom_client import get_daily_ohlcv
+            return get_daily_ohlcv(symbol) or {'error': 'no chart', 'symbol': symbol}
+        except Exception as exc:
+            return {'error': f'{type(exc).__name__}: {exc}', 'symbol': symbol}
+
+    @mcp.tool()
+    def get_kiwoom_institution_trend(symbol: str, start_date: str = '', end_date: str = '') -> dict[str, Any]:
+        """기관 매매 누적 추세 (키움).
+
+        Args:
+            symbol: 종목 코드
+            start_date: YYYYMMDD (옵션, 기본 30일 전)
+            end_date: YYYYMMDD (옵션, 기본 오늘)
+        Returns:
+            일별 외인/기관 순매수 누적
+        """
+        try:
+            from engine.kiwoom_client import get_institution_trend
+            return get_institution_trend(symbol, start_date, end_date) or {'error': 'no data', 'symbol': symbol}
+        except Exception as exc:
+            return {'error': f'{type(exc).__name__}: {exc}', 'symbol': symbol}
+
+    @mcp.tool()
+    def get_kiwoom_market_investors(market: str = '000', after_close: bool = False) -> dict[str, Any]:
+        """시장 전체 투자자별 순매수 (키움).
+
+        Args:
+            market: '000'=전체, '001'=KOSPI, '101'=KOSDAQ
+            after_close: True 면 장마감 후 확정치, False 면 장중 추정치
+        Returns:
+            외국인/기관/개인 순매수 (시장 전체)
+        """
+        try:
+            from engine.kiwoom_client import get_investor_trading_market, get_investor_after_close
+            if after_close:
+                return get_investor_after_close(market, '3') or {'error': 'no data'}
+            return get_investor_trading_market(market, '3') or {'error': 'no data'}
+        except Exception as exc:
+            return {'error': f'{type(exc).__name__}: {exc}'}
+
+    @mcp.tool()
+    def get_dart_disclosures(symbol: str) -> dict[str, Any]:
+        """DART 전자공시 (호재/악재 분류 포함, 캐시 우선).
+
+        Args:
+            symbol: 종목 코드
+        Returns:
+            최근 공시 리스트 + 호재공시 유무 + 분류
+        """
+        try:
+            from engine.dart_deep_pipeline import get_cached_result
+            cached = get_cached_result(symbol)
+            if cached:
+                return cached
+            return {'symbol': symbol, 'disclosures': [], 'cached': False, 'note': 'no cache hit'}
+        except Exception as exc:
+            return {'error': f'{type(exc).__name__}: {exc}', 'symbol': symbol}
+
+    @mcp.tool()
+    def get_outcomes_kpi(days: int = 30) -> dict[str, Any]:
+        """추천 종목 실적 KPI (forward outcomes 집계).
+
+        Args:
+            days: 윈도우 일수 (기본 30)
+        Returns:
+            hit_rate, avg_return, false_positive, 표본수, 종목별 outcome
+        """
+        try:
+            from app.services.mirofish.pipeline_overview import get_outcomes_board
+            return get_outcomes_board(days=days, limit=50)
+        except Exception as exc:
+            return {'error': f'{type(exc).__name__}: {exc}'}
+
+    @mcp.tool()
+    def get_pipeline_today_snapshot() -> dict[str, Any]:
+        """오늘 검출 파이프라인 + 시장 컨텍스트 종합 스냅샷.
+
+        Returns:
+            market(KR phase/gate/VIX/F&G) + funnel(scanner→batch→graphrag→top3)
+            + 7d/30d KPI + 다음 자동 스캔 ETA
+        """
+        try:
+            from app.services.mirofish.pipeline_overview import get_pipeline_today_snapshot as _snap
+            return _snap()
+        except Exception as exc:
+            return {'error': f'{type(exc).__name__}: {exc}'}
+
+    @mcp.tool()
+    def analyze_target_comprehensive(symbol: str) -> dict[str, Any]:
+        """단일 종목 종합 분석 — 모든 데이터 소스 1-call 통합.
+
+        시세 + 차트 + 외인/기관 수급 + DART 공시 + 기술적 분석(매수/목표/손절)
+        을 한 번에 수집하여 LLM 분석용 컨텍스트 패키지로 반환.
+
+        Args:
+            symbol: 종목 코드 (예: '005930')
+        Returns:
+            {quote, chart, institution_trend, disclosures, technical_levels}
+        """
+        result: dict[str, Any] = {'symbol': symbol}
+        # 1) 시세
+        try:
+            from engine.kiwoom_client import get_stock_quote
+            result['quote'] = get_stock_quote(symbol) or {}
+        except Exception as exc:
+            result['quote'] = {'error': f'{type(exc).__name__}: {exc}'}
+        # 2) 차트
+        try:
+            from engine.kiwoom_client import get_daily_ohlcv
+            result['chart'] = get_daily_ohlcv(symbol) or {}
+        except Exception as exc:
+            result['chart'] = {'error': f'{type(exc).__name__}: {exc}'}
+        # 3) 기관 수급
+        try:
+            from engine.kiwoom_client import get_institution_trend
+            result['institution_trend'] = get_institution_trend(symbol, '', '') or {}
+        except Exception as exc:
+            result['institution_trend'] = {'error': f'{type(exc).__name__}: {exc}'}
+        # 4) DART 공시
+        try:
+            from engine.dart_deep_pipeline import get_cached_result
+            result['disclosures'] = get_cached_result(symbol) or {'cached': False}
+        except Exception as exc:
+            result['disclosures'] = {'error': f'{type(exc).__name__}: {exc}'}
+        # 5) 기술적 분석 (SMA + ATR + 진입/목표/손절)
+        try:
+            from app.services.mirofish.technical_analysis import analyze_target_with_levels
+            result['technical_levels'] = analyze_target_with_levels(target=symbol)
+        except Exception as exc:
+            result['technical_levels'] = {'error': f'{type(exc).__name__}: {exc}'}
+        # 6) 메타
+        from datetime import datetime as _dt, timezone as _tz
+        result['generated_at'] = _dt.now(_tz.utc).isoformat()
+        return result
+
+    @mcp.tool()
+    def get_alpha_scanner_diagnostics() -> dict[str, Any]:
+        """알파 스캐너 진단 (데이터 신선도/소스 시그니처/이슈 리스트)."""
+        try:
+            return alpha_scanner.get_scanner_diagnostics()
+        except Exception as exc:
+            return {'error': f'{type(exc).__name__}: {exc}'}
+
+    @mcp.tool()
+    def get_auto_runner_status() -> dict[str, Any]:
+        """Stage 2 자동 실행기 상태 (phase/cooldown/today 카운터/recent cycles)."""
+        try:
+            from app.services.mirofish import auto_runner
+            return auto_runner.get_status()
+        except Exception as exc:
+            return {'error': f'{type(exc).__name__}: {exc}'}
+
     return mcp
 
 
