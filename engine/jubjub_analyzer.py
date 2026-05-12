@@ -165,37 +165,61 @@ def filter_and_sort_jubjub(
     return result[:max(1, min(limit, 200))]
 
 
-def _is_halted_or_invalid(ticker: str | None) -> bool:
-    """키움 API quote 호출 — 빈 응답/거래정지/상장폐지 종목 감지.
+_HALTED_CACHE: dict[str, tuple[bool, float]] = {}
+_HALTED_CACHE_TTL_SEC = 3600  # 1시간
 
-    실패 시 (API 키 없거나 네트워크 등) False 반환 — 잘못 거를 위험 회피.
+
+def _is_halted_or_invalid(ticker: str | None) -> bool:
+    """거래정지 / 관리종목 / 상장폐지 감지 — 네이버 금융 스크래핑 기반.
+
+    키움 API 는 rate limit (1700 에러) 위험 커서 사용 불가. 네이버 금융 종목
+    페이지에 '거래정지' / '관리종목' / '정리매매' 텍스트 있으면 제외.
+
+    1시간 캐시로 같은 종목 반복 조회 방지. 실패 시 False (잘못 거를 위험 회피).
     """
     if not ticker:
         return False
+    import time as _time
+    ticker_str = str(ticker).strip()
+    if not ticker_str:
+        return False
+    now = _time.time()
+    cached = _HALTED_CACHE.get(ticker_str)
+    if cached and (now - cached[1]) < _HALTED_CACHE_TTL_SEC:
+        return cached[0]
     try:
-        from engine.kiwoom_client import get_stock_quote
+        import re as _re
+        import requests as _req
+        r = _req.get(
+            f'https://finance.naver.com/item/main.naver?code={ticker_str}',
+            headers={'User-Agent': 'Mozilla/5.0 MiroFish/jubjub'},
+            timeout=5,
+        )
+        if r.status_code != 200:
+            return False
+        html = r.text
+        is_halted = False
+        # 1) 명시적 키워드
+        for kw in ('거래정지', '거래중지', '관리종목', '정리매매', '상장폐지', '투자위험', '투자경고'):
+            if kw in html:
+                is_halted = True
+                break
+        # 2) 가격 시그널 — 시가 0 & 고가 0 = 당일 거래 없음 (거래정지/거래중단)
+        if not is_halted:
+            def _grab(pat: str) -> str | None:
+                m = _re.search(pat, html)
+                return m.group(1).strip() if m else None
+            si = _grab(r'시가\s*(\d[\d,]*|0)')
+            go = _grab(r'고가\s*(\d[\d,]*|0)')
+            if si is not None and go is not None:
+                si_n = si.replace(',', '')
+                go_n = go.replace(',', '')
+                if si_n == '0' and go_n == '0':
+                    is_halted = True
+        _HALTED_CACHE[ticker_str] = (is_halted, now)
+        return is_halted
     except Exception:
         return False
-    try:
-        q = get_stock_quote(str(ticker))
-    except Exception:
-        return False
-    if not isinstance(q, dict):
-        return False
-    # 현재가 필드가 없거나 빈 값 → 거래정지/상장폐지 시사
-    cur = str(q.get('cur_prc') or '').strip()
-    if not cur or cur in {'0', '-', ''}:
-        # 추가 검증: 종목명 있고 현재가만 비어있으면 거래정지 시사
-        stk_nm = str(q.get('stk_nm') or '').strip()
-        if stk_nm and not cur:
-            return True
-        return False  # dict 자체가 비어있으면 (API 실패) 거르지 않음
-    # 거래정지 / 관리종목 / 정리매매 플래그 (키움 응답 명세 기준)
-    for flag_key in ('trde_stop_yn', 'mng_stk_yn', 'liqd_trde_yn', 'invst_caut_yn'):
-        v = str(q.get(flag_key) or '').strip().upper()
-        if v in {'Y', '1', 'TRUE'}:
-            return True
-    return False
 
 
 # ─── 내부 헬퍼 ───────────────────────────────────────────────
