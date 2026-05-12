@@ -146,15 +146,56 @@ def filter_and_sort_jubjub(
     *,
     min_score: float = 60.0,
     limit: int = 50,
+    exclude_halted: bool = True,
 ) -> list[dict[str, Any]]:
-    """Signals → 줍줍 결과 list, 점수 ≥ min_score, 점수 내림차순."""
+    """Signals → 줍줍 결과 list, 점수 ≥ min_score, 점수 내림차순.
+
+    exclude_halted=True 시 키움 quote 가 비어있거나 거래정지 플래그가 있는
+    종목 자동 제외 (screener 데이터가 stale 일 때 안전망).
+    """
     result: list[dict[str, Any]] = []
     for s in signals or []:
         j = compute_jubjub(s)
-        if j and j['jubjub_score'] >= min_score:
-            result.append(j)
+        if not j or j['jubjub_score'] < min_score:
+            continue
+        if exclude_halted and _is_halted_or_invalid(j.get('ticker')):
+            continue
+        result.append(j)
     result.sort(key=lambda r: r['jubjub_score'], reverse=True)
     return result[:max(1, min(limit, 200))]
+
+
+def _is_halted_or_invalid(ticker: str | None) -> bool:
+    """키움 API quote 호출 — 빈 응답/거래정지/상장폐지 종목 감지.
+
+    실패 시 (API 키 없거나 네트워크 등) False 반환 — 잘못 거를 위험 회피.
+    """
+    if not ticker:
+        return False
+    try:
+        from engine.kiwoom_client import get_stock_quote
+    except Exception:
+        return False
+    try:
+        q = get_stock_quote(str(ticker))
+    except Exception:
+        return False
+    if not isinstance(q, dict):
+        return False
+    # 현재가 필드가 없거나 빈 값 → 거래정지/상장폐지 시사
+    cur = str(q.get('cur_prc') or '').strip()
+    if not cur or cur in {'0', '-', ''}:
+        # 추가 검증: 종목명 있고 현재가만 비어있으면 거래정지 시사
+        stk_nm = str(q.get('stk_nm') or '').strip()
+        if stk_nm and not cur:
+            return True
+        return False  # dict 자체가 비어있으면 (API 실패) 거르지 않음
+    # 거래정지 / 관리종목 / 정리매매 플래그 (키움 응답 명세 기준)
+    for flag_key in ('trde_stop_yn', 'mng_stk_yn', 'liqd_trde_yn', 'invst_caut_yn'):
+        v = str(q.get(flag_key) or '').strip().upper()
+        if v in {'Y', '1', 'TRUE'}:
+            return True
+    return False
 
 
 # ─── 내부 헬퍼 ───────────────────────────────────────────────
