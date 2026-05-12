@@ -59,6 +59,7 @@ from app.services.mirofish.pipeline_overview import (
     get_outcomes_board,
     get_pipeline_today_snapshot,
 )
+from app.services.mirofish import auto_runner
 from app.services.mirofish.chat_agent import (
     run_chat as run_chat_agent,
 )
@@ -98,6 +99,7 @@ __all__ = [
     'get_report',
     'get_autonomous_status',
     'get_market_clock',
+    'auto_runner',
     'get_mcp_security_policy',
     'get_outcomes_board',
     'get_pipeline_today_snapshot',

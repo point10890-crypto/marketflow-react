@@ -192,6 +192,50 @@ def pipeline_today():
         }), 500
 
 
+@admin_mirofish_bp.route('/auto-runner/status', methods=['GET'])
+@admin_required
+def auto_runner_status():
+    """MCP Stage 2 자동 실행기 상태 스냅샷."""
+    return jsonify(mirofish.auto_runner.get_status())
+
+
+@admin_mirofish_bp.route('/auto-runner/pause', methods=['POST'])
+@admin_required
+def auto_runner_pause():
+    """자동 실행기 일시정지 토글. Body: { "paused": true|false }"""
+    payload = request.get_json(silent=True) or {}
+    paused = _payload_bool(payload, 'paused', True)
+    return jsonify(mirofish.auto_runner.set_paused(paused))
+
+
+@admin_mirofish_bp.route('/auto-runner/reset', methods=['POST'])
+@admin_required
+def auto_runner_reset():
+    """서킷 브레이커 / 오늘 카운터 리셋. Body: { "scope": "circuit"|"today"|"all" }"""
+    payload = request.get_json(silent=True) or {}
+    scope = str(payload.get('scope') or 'circuit').strip().lower()
+    if scope == 'today':
+        return jsonify(mirofish.auto_runner.reset_today())
+    if scope == 'all':
+        mirofish.auto_runner.reset_circuit()
+        return jsonify(mirofish.auto_runner.reset_today())
+    return jsonify(mirofish.auto_runner.reset_circuit())
+
+
+@admin_mirofish_bp.route('/auto-runner/trigger', methods=['POST'])
+@admin_required
+def auto_runner_force_trigger():
+    """관리자 강제 트리거 — 쿨다운/신규 이벤트 게이트 우회 (시장/freshness는 유지)."""
+    try:
+        result = mirofish.auto_runner.force_trigger()
+        return jsonify(result)
+    except Exception as exc:
+        return jsonify({
+            'error': f'{type(exc).__name__}: {exc}',
+            'service': 'mirofish-auto-runner',
+        }), 500
+
+
 @admin_mirofish_bp.route('/outcomes/board', methods=['GET'])
 @admin_required
 def outcomes_board():

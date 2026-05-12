@@ -613,6 +613,16 @@ def _start_alpha_scanner_monitor_worker(app):
     thread.start()
     print("[OK] Alpha scanner realtime monitor started")
 
+    # MCP Stage 2 자동 실행기 (event-driven state machine)
+    try:
+        from app.services.mirofish import auto_runner as _auto_runner
+        if _auto_runner.start_worker():
+            print("[OK] MCP auto-runner started (event-driven Stage 2 automation)")
+        else:
+            print("[OFF] MCP auto-runner disabled via MIROFISH_AUTO_RUNNER_ENABLED=false")
+    except Exception as _exc:
+        print(f"[WARN] MCP auto-runner failed to start: {type(_exc).__name__}: {_exc}")
+
 
 def _send_screener_alert(stock):
     """S등급 주도주 텔레그램 알림"""

@@ -1266,6 +1266,24 @@ export const mirofishApi = {
     getPipelineToday: async () => fetchAuthAPI<MiroFishPipelineToday>(
         '/api/admin/mirofish/pipeline/today',
     ),
+    /** Auto-runner (Stage 2 자동 실행기) 상태 */
+    getAutoRunnerStatus: async () => fetchAuthAPI<MiroFishAutoRunnerStatus>(
+        '/api/admin/mirofish/auto-runner/status',
+    ),
+    pauseAutoRunner: async (paused: boolean) => postAuthAPI<MiroFishAutoRunnerStatus>(
+        '/api/admin/mirofish/auto-runner/pause',
+        { paused },
+    ),
+    resetAutoRunner: async (scope: 'circuit' | 'today' | 'all' = 'circuit') => postAuthAPI<MiroFishAutoRunnerStatus>(
+        '/api/admin/mirofish/auto-runner/reset',
+        { scope },
+    ),
+    triggerAutoRunner: async () => postAuthAPI<{ fired: boolean; success?: boolean; reason?: string; gates?: any }>(
+        '/api/admin/mirofish/auto-runner/trigger',
+        {},
+        undefined,
+        300000,
+    ),
     /** 최근 N일 추천 종목 outcomes 보드 */
     getOutcomesBoard: async (params: { days?: number; limit?: number } = {}) => {
         const search = new URLSearchParams();
@@ -1388,6 +1406,66 @@ export interface MiroFishBoardItem {
     /** 백엔드에서 horizon 별 return_pct(number) 만 flatten 해서 보냄. null=평가전. */
     horizons?: Record<string, number | null>;
     feature_snapshot?: Record<string, any> | null;
+}
+
+export interface MiroFishAutoRunnerGate {
+    name: string;
+    ok: boolean;
+    detail?: any;
+}
+
+export interface MiroFishAutoRunnerStatus {
+    service: string;
+    phase: 'IDLE' | 'CHECKING' | 'TRIGGERED' | 'ANALYZING' | 'NOTIFYING' | 'COOLDOWN' | 'CIRCUIT_OPEN' | 'PAUSED' | string;
+    paused: boolean;
+    enabled: boolean;
+    dry_run: boolean;
+    worker_running: boolean;
+    next_eligible_check_at?: string | null;
+    last_check_at?: string | null;
+    last_check_reason?: string | null;
+    last_trigger_at?: string | null;
+    last_success_at?: string | null;
+    last_failure_at?: string | null;
+    last_workflow_id?: string | null;
+    last_top3_count: number;
+    consecutive_failures: number;
+    circuit_opened_at?: string | null;
+    circuit_release_at?: string | null;
+    cooldown_until?: string | null;
+    today: {
+        date_kst: string;
+        checks: number;
+        triggers: number;
+        successes: number;
+        failures: number;
+        telegram_sent: number;
+        est_cost_usd: number;
+        skip_reasons?: Record<string, number>;
+    };
+    recent_cycles?: Array<{
+        at: string;
+        outcome: string;
+        reason?: string;
+        top3?: number;
+        duration_s?: number;
+    }>;
+    tuning: {
+        enabled: boolean;
+        poll_seconds: number;
+        cooldown_minutes: number;
+        min_new_events: number;
+        min_alpha: number;
+        max_risk: number;
+        daily_cap_usd: number;
+        monthly_cap_usd?: number;
+        circuit_breaker_failures: number;
+        circuit_open_minutes: number;
+        est_cost_per_trigger_usd: number;
+        dry_run: boolean;
+        allow_outside_market_hours?: boolean;
+    };
+    checked_at?: string;
 }
 
 export interface MiroFishOutcomesBoard {

@@ -6,6 +6,7 @@ import TodaysPipelineCard from '@/components/admin/TodaysPipelineCard';
 import RecentOutcomesBoard from '@/components/admin/RecentOutcomesBoard';
 import QuickActionsFooter from '@/components/admin/QuickActionsFooter';
 import MobileTopPicksHero from '@/components/admin/MobileTopPicksHero';
+import AutoRunnerCard from '@/components/admin/AutoRunnerCard';
 
 const agentCounts = [3, 7, 10, 15];
 const defaultTarget = '삼성전자';
@@ -2322,6 +2323,7 @@ export default function AdminEndpointsPage() {
                         </div>
                         {/* 사이드바 — 모바일: order 1 (TOP picks 직하단) / lg+: 우측 컬럼 sticky */}
                         <aside className="order-1 lg:order-2 mt-4 flex flex-col gap-3 lg:mt-8 lg:sticky lg:top-4">
+                            <AutoRunnerCard />
                             <TodaysPipelineCard />
                             <RecentOutcomesBoard />
                             <QuickActionsFooter />
