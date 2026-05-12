@@ -1,8 +1,9 @@
 /**
- * MiroFish 자연어 채팅 패널 — 우하단 고정 FAB + 펼침 패널.
+ * MiroFish 자연어 채팅 패널 — inline (검색폼 아래) 또는 floating FAB.
  *
  * 사용:
- *   <MirofishChatPanel />
+ *   <MirofishChatPanel />                    // floating FAB
+ *   <MirofishChatPanel variant="inline" />   // 항상 펼침
  *
  * - 백엔드 /api/admin/mirofish/chat 호출 (Gemini function calling)
  * - 안전한 read-only MCP 도구 자동 호출
@@ -11,6 +12,13 @@
  */
 import { useEffect, useRef, useState } from 'react';
 import { MiroFishChatToolCall, mirofishApi } from '@/lib/mirofishApi';
+
+export type MirofishChatVariant = 'floating' | 'inline';
+
+interface MirofishChatPanelProps {
+    variant?: MirofishChatVariant;
+    defaultOpen?: boolean;
+}
 
 interface ChatMessage {
     role: 'user' | 'assistant';
@@ -47,8 +55,12 @@ function saveHistory(messages: ChatMessage[]) {
     }
 }
 
-export default function MirofishChatPanel() {
-    const [open, setOpen] = useState(false);
+export default function MirofishChatPanel({
+    variant = 'floating',
+    defaultOpen = false,
+}: MirofishChatPanelProps = {}) {
+    const inline = variant === 'inline';
+    const [open, setOpen] = useState(inline ? true : defaultOpen);
     const [messages, setMessages] = useState<ChatMessage[]>(() => loadHistory());
     const [input, setInput] = useState('');
     const [busy, setBusy] = useState(false);
@@ -109,6 +121,146 @@ export default function MirofishChatPanel() {
         saveHistory([]);
     }
 
+    // 공통 헤더 (Clear + 닫기 버튼, inline 시 닫기 숨김)
+    const HeaderBlock = (
+        <header className="flex items-center justify-between border-b border-anthropic-darkLine px-4 py-3">
+            <div className="flex items-center gap-2">
+                <span className="inline-flex h-2 w-2 rounded-full bg-anthropic-orange animate-pulse" />
+                <span className="font-serif text-sm font-medium text-anthropic-cream">MiroFish 어시스턴트</span>
+                <span className="text-[10px] uppercase tracking-wider text-anthropic-darkMuted">read-only</span>
+            </div>
+            <div className="flex items-center gap-1">
+                <button
+                    type="button"
+                    onClick={clearHistory}
+                    className="rounded-md px-2 py-1 text-[11px] text-anthropic-darkMuted hover:bg-anthropic-dark2 hover:text-anthropic-cream"
+                    title="대화 기록 지우기"
+                >
+                    Clear
+                </button>
+                {!inline && (
+                    <button
+                        type="button"
+                        onClick={() => setOpen(false)}
+                        className="rounded-md p-1 text-anthropic-darkMuted hover:bg-anthropic-dark2 hover:text-anthropic-cream"
+                        aria-label="닫기"
+                    >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18" />
+                            <line x1="6" y1="6" x2="18" y2="18" />
+                        </svg>
+                    </button>
+                )}
+            </div>
+        </header>
+    );
+
+    // inline 모드 — 검색폼 아래 항상 펼친 패널
+    if (inline) {
+        return (
+            <section className="mt-4 max-w-4xl rounded-xl border border-anthropic-darkLine bg-anthropic-dark">
+                {HeaderBlock}
+                <div className="flex flex-col">
+                    <div ref={scrollRef} className="max-h-[420px] overflow-y-auto px-4 py-3 space-y-3 min-h-[120px]">
+                        {messages.length === 0 && (
+                            <div className="rounded-lg border border-anthropic-darkLine bg-anthropic-dark2 p-3 text-sm text-anthropic-darkText">
+                                <div className="text-anthropic-cream mb-2 font-medium">자연어로 MiroFish 데이터에 질문하세요</div>
+                                <div className="flex flex-wrap gap-1.5">
+                                    {SUGGESTIONS.map((s) => (
+                                        <button
+                                            key={s}
+                                            type="button"
+                                            onClick={() => send(s)}
+                                            className="rounded-md border border-anthropic-darkLine bg-anthropic-dark px-2.5 py-1 text-[11px] text-anthropic-darkText hover:border-anthropic-orange/40 hover:text-anthropic-cream"
+                                        >
+                                            {s}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                        {messages.map((m, idx) => (
+                            <div key={idx} className={m.role === 'user' ? 'flex justify-end' : 'flex justify-start'}>
+                                <div
+                                    className={`max-w-[88%] rounded-lg px-3 py-2 text-[13px] leading-6 ${
+                                        m.role === 'user'
+                                            ? 'bg-anthropic-orange text-white'
+                                            : 'border border-anthropic-darkLine bg-anthropic-dark2 text-anthropic-darkText'
+                                    }`}
+                                >
+                                    <div className="whitespace-pre-wrap break-words">{m.content}</div>
+                                    {m.tool_calls && m.tool_calls.length > 0 && (
+                                        <details className="mt-2 text-[11px] opacity-80">
+                                            <summary className="cursor-pointer hover:opacity-100">
+                                                🔧 도구 호출 {m.tool_calls.length}개
+                                            </summary>
+                                            <div className="mt-1 space-y-1.5">
+                                                {m.tool_calls.map((tc, i) => (
+                                                    <div key={i} className="rounded border border-anthropic-darkLine bg-anthropic-dark/60 p-1.5 font-mono">
+                                                        <div className="text-anthropic-orange">{tc.name}({JSON.stringify(tc.args).slice(1, -1) || ''})</div>
+                                                        <div className="mt-0.5 text-anthropic-darkMuted break-all">{tc.result_preview.slice(0, 200)}</div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </details>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                        {busy && (
+                            <div className="flex justify-start">
+                                <div className="rounded-lg border border-anthropic-darkLine bg-anthropic-dark2 px-3 py-2 text-[13px] text-anthropic-darkMuted">
+                                    <span className="inline-flex items-center gap-1.5">
+                                        <span className="h-1.5 w-1.5 rounded-full bg-anthropic-orange animate-pulse" />
+                                        분석 중...
+                                    </span>
+                                </div>
+                            </div>
+                        )}
+                        {error && (
+                            <div className="rounded-md border border-red-500/30 bg-red-500/[0.08] px-3 py-2 text-[12px] text-red-400">
+                                {error}
+                            </div>
+                        )}
+                    </div>
+                    {/* 입력 */}
+                    <div className="border-t border-anthropic-darkLine bg-anthropic-dark2 p-3">
+                        <div className="flex items-end gap-2">
+                            <textarea
+                                value={input}
+                                onChange={(e) => setInput(e.target.value)}
+                                onCompositionStart={() => (composingRef.current = true)}
+                                onCompositionEnd={() => (composingRef.current = false)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' && !e.shiftKey && !composingRef.current) {
+                                        e.preventDefault();
+                                        send();
+                                    }
+                                }}
+                                placeholder="MiroFish 에게 자연어로 물어보세요 (Enter 전송 · Shift+Enter 줄바꿈)"
+                                rows={2}
+                                className="min-h-10 flex-1 resize-none rounded-lg border border-anthropic-darkLine bg-anthropic-dark px-3 py-2 text-[13px] text-anthropic-cream placeholder:text-anthropic-darkMuted focus:border-anthropic-orange/40 focus:outline-none"
+                                disabled={busy}
+                            />
+                            <button
+                                type="button"
+                                onClick={() => send()}
+                                disabled={busy || !input.trim()}
+                                className="h-10 rounded-lg bg-anthropic-orange px-4 text-sm font-medium text-white hover:bg-anthropic-orangeHover disabled:cursor-not-allowed disabled:opacity-40"
+                            >
+                                전송
+                            </button>
+                        </div>
+                        <div className="mt-1.5 text-[10px] text-anthropic-darkMuted">
+                            Gemini function calling · read-only MCP 도구만 호출 · 대화 기록 로컬 저장
+                        </div>
+                    </div>
+                </div>
+            </section>
+        );
+    }
+
+    // floating 모드 (기본)
     return (
         <>
             {/* FAB (우하단 고정) */}
@@ -129,35 +281,7 @@ export default function MirofishChatPanel() {
             {/* 채팅 패널 */}
             {open && (
                 <div className="fixed bottom-0 right-0 z-40 flex h-[80vh] max-h-[680px] w-full max-w-md flex-col rounded-t-2xl border border-anthropic-darkLine bg-anthropic-dark shadow-2xl sm:bottom-5 sm:right-5 sm:rounded-2xl">
-                    {/* 헤더 */}
-                    <header className="flex items-center justify-between border-b border-anthropic-darkLine px-4 py-3">
-                        <div className="flex items-center gap-2">
-                            <span className="inline-flex h-2 w-2 rounded-full bg-anthropic-orange animate-pulse" />
-                            <span className="font-serif text-sm font-medium text-anthropic-cream">MiroFish 어시스턴트</span>
-                            <span className="text-[10px] uppercase tracking-wider text-anthropic-darkMuted">read-only</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                            <button
-                                type="button"
-                                onClick={clearHistory}
-                                className="rounded-md px-2 py-1 text-[11px] text-anthropic-darkMuted hover:bg-anthropic-dark2 hover:text-anthropic-cream"
-                                title="대화 기록 지우기"
-                            >
-                                Clear
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setOpen(false)}
-                                className="rounded-md p-1 text-anthropic-darkMuted hover:bg-anthropic-dark2 hover:text-anthropic-cream"
-                                aria-label="닫기"
-                            >
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <line x1="18" y1="6" x2="6" y2="18" />
-                                    <line x1="6" y1="6" x2="18" y2="18" />
-                                </svg>
-                            </button>
-                        </div>
-                    </header>
+                    {HeaderBlock}
 
                     {/* 메시지 영역 */}
                     <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-3 space-y-3">

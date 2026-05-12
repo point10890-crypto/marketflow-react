@@ -2347,6 +2347,9 @@ export default function AdminEndpointsPage() {
                             ))}
                         </div>
                     </div>
+
+                    {/* MiroFish 자연어 채팅 — 검색폼 바로 아래 inline 패널 */}
+                    <MirofishChatPanel variant="inline" />
                 </div>
             </section>
 
@@ -2422,9 +2425,6 @@ export default function AdminEndpointsPage() {
                     </div>
                 </div>
             </section>
-
-            {/* MiroFish 자연어 채팅 — 우하단 고정 FAB + 패널 */}
-            <MirofishChatPanel />
         </div>
     );
 }
