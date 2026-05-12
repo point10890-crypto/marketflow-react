@@ -170,17 +170,17 @@ export default function JubjubCard({ candidate, onShare, onChart }: JubjubCardPr
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-emerald-500/[0.03] to-transparent" aria-hidden />
 
             <div className="relative">
-                {/* 헤더 — 점수 + 종목 + 뱃지 */}
+                {/* 헤더 — 점수 + 뱃지 (모바일 큰 점수) */}
                 <header className="flex items-start justify-between gap-2">
                     <div className="flex items-baseline gap-2 min-w-0">
-                        <span className="text-2xl sm:text-3xl font-black text-amber-300 tabular-nums leading-none">
+                        <span className="text-3xl sm:text-3xl font-black text-amber-300 tabular-nums leading-none">
                             {Math.round(candidate.jubjub_score)}
                         </span>
-                        <span className="text-[10px] font-bold text-amber-300/60 leading-none">/100</span>
+                        <span className="text-[11px] sm:text-[10px] font-bold text-amber-300/60 leading-none">/100</span>
                         <Stars count={candidate.jubjub_stars} />
                     </div>
                     <span
-                        className={`shrink-0 inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-black whitespace-nowrap ${tone.border} ${tone.bg} ${tone.text} ${
+                        className={`shrink-0 inline-flex items-center rounded-full border px-2.5 py-1 sm:px-2 sm:py-0.5 text-[11px] sm:text-[10px] font-black whitespace-nowrap ${tone.border} ${tone.bg} ${tone.text} ${
                             isBuyNow ? 'animate-pulse' : ''
                         }`}
                     >
@@ -211,61 +211,62 @@ export default function JubjubCard({ candidate, onShare, onChart }: JubjubCardPr
                     <MiniWChart candidate={candidate} />
                 </div>
 
-                {/* 매매 계획 — 컴팩트 표 */}
-                <div className="mt-3 rounded-xl border border-white/5 bg-black/30 p-2.5">
-                    <div className="text-[9px] font-black uppercase tracking-wider text-slate-500 mb-1.5">
-                        매매 계획
+                {/* 매매 계획 — 모바일: 2x2 grid, sm+: 4 컬럼 */}
+                <div className="mt-3 rounded-xl border border-white/5 bg-black/30 p-2.5 sm:p-3">
+                    <div className="flex items-center justify-between mb-2">
+                        <div className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+                            매매 계획
+                        </div>
+                        {/* R/R 헤더 inline */}
+                        <div className="text-[10px] font-bold tabular-nums">
+                            <span className="text-slate-500 mr-1">R/R</span>
+                            <span className={`${(candidate.trade_plan.rr_1 || 0) >= 1.5 ? 'text-emerald-300' : 'text-amber-300'}`}>
+                                {candidate.trade_plan.rr_1 ?? '--'}x
+                            </span>
+                            <span className="mx-0.5 text-slate-600">/</span>
+                            <span className={`${(candidate.trade_plan.rr_2 || 0) >= 2 ? 'text-emerald-300' : 'text-amber-300'}`}>
+                                {candidate.trade_plan.rr_2 ?? '--'}x
+                            </span>
+                        </div>
                     </div>
-                    <div className="grid grid-cols-4 gap-1.5 text-center text-[10px] font-bold">
-                        <div>
-                            <div className="text-rose-300/70">손절</div>
-                            <div className="mt-0.5 font-mono tabular-nums text-rose-200">
+                    {/* 모바일: 2x2 (큰 글자), sm+: 4-column (컴팩트) */}
+                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-1.5 text-center text-[11px] font-bold sm:text-[10px]">
+                        <div className="rounded-md border border-rose-300/15 bg-rose-300/[0.04] p-2 sm:border-0 sm:bg-transparent sm:p-0">
+                            <div className="text-[10px] text-rose-300/80 font-black uppercase tracking-wider sm:text-[10px] sm:normal-case sm:tracking-normal sm:text-rose-300/70">손절</div>
+                            <div className="mt-1 font-mono tabular-nums text-rose-200 text-sm sm:text-[10px] sm:mt-0.5">
                                 {formatNumber(candidate.trade_plan.stop_price)}
                             </div>
                             <div className="mt-0.5 text-rose-300/60 tabular-nums">
                                 {formatPct(candidate.trade_plan.stop_pct)}
                             </div>
                         </div>
-                        <div className="rounded bg-amber-300/[0.06] -mx-0.5 px-0.5">
-                            <div className="text-amber-300">매수</div>
-                            <div className="mt-0.5 font-mono tabular-nums text-amber-200 font-black">
+                        <div className="rounded-md border border-amber-300/30 bg-amber-300/[0.08] p-2 sm:border-0 sm:bg-amber-300/[0.06] sm:p-0 sm:-mx-0.5 sm:px-0.5 sm:rounded">
+                            <div className="text-[10px] text-amber-300 font-black uppercase tracking-wider sm:text-[10px] sm:normal-case sm:tracking-normal">매수</div>
+                            <div className="mt-1 font-mono tabular-nums text-amber-100 text-sm font-black sm:text-[10px] sm:mt-0.5">
                                 {formatNumber(candidate.trade_plan.entry_price)}
                             </div>
                             <div className="mt-0.5 text-amber-300/70 tabular-nums">
                                 {formatPct(candidate.trade_plan.entry_pct)}
                             </div>
                         </div>
-                        <div>
-                            <div className="text-emerald-300/80">1차</div>
-                            <div className="mt-0.5 font-mono tabular-nums text-emerald-200">
+                        <div className="rounded-md border border-emerald-300/15 bg-emerald-300/[0.04] p-2 sm:border-0 sm:bg-transparent sm:p-0">
+                            <div className="text-[10px] text-emerald-300/90 font-black uppercase tracking-wider sm:text-[10px] sm:normal-case sm:tracking-normal sm:text-emerald-300/80">1차 목표</div>
+                            <div className="mt-1 font-mono tabular-nums text-emerald-200 text-sm sm:text-[10px] sm:mt-0.5">
                                 {formatNumber(candidate.trade_plan.target_1)}
                             </div>
                             <div className="mt-0.5 text-emerald-300/60 tabular-nums">
                                 {formatPct(candidate.trade_plan.target_1_pct)}
                             </div>
                         </div>
-                        <div>
-                            <div className="text-emerald-300/80">2차</div>
-                            <div className="mt-0.5 font-mono tabular-nums text-emerald-200">
+                        <div className="rounded-md border border-emerald-300/15 bg-emerald-300/[0.04] p-2 sm:border-0 sm:bg-transparent sm:p-0">
+                            <div className="text-[10px] text-emerald-300/90 font-black uppercase tracking-wider sm:text-[10px] sm:normal-case sm:tracking-normal sm:text-emerald-300/80">2차 목표</div>
+                            <div className="mt-1 font-mono tabular-nums text-emerald-200 text-sm sm:text-[10px] sm:mt-0.5">
                                 {formatNumber(candidate.trade_plan.target_2)}
                             </div>
                             <div className="mt-0.5 text-emerald-300/60 tabular-nums">
                                 {formatPct(candidate.trade_plan.target_2_pct)}
                             </div>
                         </div>
-                    </div>
-                    {/* R/R */}
-                    <div className="mt-2 flex items-center justify-between text-[9px] font-bold">
-                        <span className="text-slate-500">R/R</span>
-                        <span className="tabular-nums">
-                            <span className={`${(candidate.trade_plan.rr_1 || 0) >= 1.5 ? 'text-emerald-300' : 'text-amber-300'}`}>
-                                1차 {candidate.trade_plan.rr_1 ?? '--'}x
-                            </span>
-                            <span className="mx-1 text-slate-600">·</span>
-                            <span className={`${(candidate.trade_plan.rr_2 || 0) >= 2 ? 'text-emerald-300' : 'text-amber-300'}`}>
-                                2차 {candidate.trade_plan.rr_2 ?? '--'}x
-                            </span>
-                        </span>
                     </div>
                 </div>
 
@@ -274,49 +275,54 @@ export default function JubjubCard({ candidate, onShare, onChart }: JubjubCardPr
                     <TradePlanBar candidate={candidate} />
                 </div>
 
-                {/* 확인 사항 + 액션 */}
-                <div className="mt-3 flex items-center justify-between gap-2">
-                    <div className="flex flex-wrap gap-1.5 text-[9px] font-bold">
-                        {candidate.volume_confirmed && (
-                            <span className="rounded-full bg-emerald-300/10 px-1.5 py-0.5 text-emerald-300">✓ 거래량</span>
-                        )}
-                        <span className="rounded-full bg-cyan-300/10 px-1.5 py-0.5 text-cyan-300 tabular-nums">
-                            넥라인 {formatPct(candidate.neckline_distance_pct)}
+                {/* 확인 사항 칩 (모바일: 큰 글자) */}
+                <div className="mt-3 flex flex-wrap gap-1.5 text-[10px] font-bold sm:text-[9px]">
+                    {candidate.volume_confirmed && (
+                        <span className="rounded-full bg-emerald-300/10 px-2 py-1 text-emerald-300 sm:px-1.5 sm:py-0.5">
+                            ✓ 거래량
                         </span>
-                        <span className="rounded-full bg-violet-300/10 px-1.5 py-0.5 text-violet-300 tabular-nums">
-                            완성 {Math.round(candidate.completion_pct)}%
-                        </span>
-                    </div>
-                    <div className="flex gap-1 shrink-0">
-                        {onChart && (
-                            <button
-                                type="button"
-                                onClick={() => onChart(candidate)}
-                                className="grid h-7 w-7 place-items-center rounded-lg border border-white/10 bg-black/30 text-cyan-300 transition-colors hover:border-cyan-300/40 hover:bg-cyan-300/[0.08] active:bg-cyan-300/[0.12]"
-                                title="차트"
-                            >
-                                📊
-                            </button>
-                        )}
-                        {onShare && (
-                            <button
-                                type="button"
-                                onClick={() => onShare(candidate)}
-                                className="grid h-7 w-7 place-items-center rounded-lg border border-white/10 bg-black/30 text-amber-300 transition-colors hover:border-amber-300/40 hover:bg-amber-300/[0.08] active:bg-amber-300/[0.12]"
-                                title="카톡 공유"
-                            >
-                                📤
-                            </button>
-                        )}
+                    )}
+                    <span className="rounded-full bg-cyan-300/10 px-2 py-1 text-cyan-300 tabular-nums sm:px-1.5 sm:py-0.5">
+                        넥라인 {formatPct(candidate.neckline_distance_pct)}
+                    </span>
+                    <span className="rounded-full bg-violet-300/10 px-2 py-1 text-violet-300 tabular-nums sm:px-1.5 sm:py-0.5">
+                        완성 {Math.round(candidate.completion_pct)}%
+                    </span>
+                </div>
+
+                {/* 액션 버튼 — 모바일 ≥44px 터치 타겟, sm+ 컴팩트 */}
+                <div className="mt-3 flex gap-2 sm:gap-1.5">
+                    {onChart && (
                         <button
                             type="button"
-                            onClick={() => setExpanded((v) => !v)}
-                            className="grid h-7 w-7 place-items-center rounded-lg border border-white/10 bg-black/30 text-slate-300 transition-colors hover:border-slate-300/40"
-                            title={expanded ? '접기' : '점수 분해'}
+                            onClick={() => onChart(candidate)}
+                            className="flex flex-1 sm:flex-initial min-h-[44px] sm:min-h-[32px] items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-black/30 px-3 text-sm sm:text-xs font-black text-cyan-300 transition-colors hover:border-cyan-300/40 hover:bg-cyan-300/[0.08] active:bg-cyan-300/[0.12] sm:flex-none sm:w-9 sm:px-0"
+                            title="차트"
                         >
-                            {expanded ? '▲' : '▼'}
+                            <span className="text-base sm:text-sm">📊</span>
+                            <span className="sm:hidden">차트</span>
                         </button>
-                    </div>
+                    )}
+                    {onShare && (
+                        <button
+                            type="button"
+                            onClick={() => onShare(candidate)}
+                            className="flex flex-1 sm:flex-initial min-h-[44px] sm:min-h-[32px] items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-black/30 px-3 text-sm sm:text-xs font-black text-amber-300 transition-colors hover:border-amber-300/40 hover:bg-amber-300/[0.08] active:bg-amber-300/[0.12] sm:flex-none sm:w-9 sm:px-0"
+                            title="카톡 공유"
+                        >
+                            <span className="text-base sm:text-sm">📤</span>
+                            <span className="sm:hidden">공유</span>
+                        </button>
+                    )}
+                    <button
+                        type="button"
+                        onClick={() => setExpanded((v) => !v)}
+                        className="flex flex-1 sm:flex-initial min-h-[44px] sm:min-h-[32px] items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-black/30 px-3 text-sm sm:text-xs font-black text-slate-300 transition-colors hover:border-slate-300/40 hover:bg-white/[0.05] active:bg-white/[0.08] sm:flex-none sm:w-9 sm:px-0"
+                        title={expanded ? '접기' : '점수 분해'}
+                    >
+                        <span className="text-base sm:text-sm">{expanded ? '▲' : '▼'}</span>
+                        <span className="sm:hidden">{expanded ? '접기' : '점수 분해'}</span>
+                    </button>
                 </div>
 
                 {/* 확장: 점수 분해 */}
