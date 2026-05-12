@@ -55,10 +55,18 @@ interface KpiCardProps {
 
 function KpiCard({ label, value, sub, tone }: KpiCardProps) {
     return (
-        <div className="rounded-lg border border-white/10 bg-black/30 p-3">
-            <div className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">{label}</div>
-            <div className={`mt-2 text-xl font-black ${tone ?? 'text-white'}`}>{value}</div>
-            {sub && <div className="mt-1 text-[10px] font-bold text-slate-500">{sub}</div>}
+        <div className="rounded-lg border border-white/10 bg-black/30 p-2.5 sm:p-3">
+            <div className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-500 sm:tracking-[0.18em]">
+                {label}
+            </div>
+            <div className={`mt-1.5 text-lg font-black tabular-nums sm:mt-2 sm:text-xl ${tone ?? 'text-white'}`}>
+                {value}
+            </div>
+            {sub && (
+                <div className="mt-0.5 text-[10px] font-bold leading-snug text-slate-500 sm:mt-1">
+                    {sub}
+                </div>
+            )}
         </div>
     );
 }
@@ -111,25 +119,25 @@ export default function RecentOutcomesBoard() {
     );
 
     return (
-        <section className="rounded-xl border border-emerald-300/15 bg-slate-950/60 p-4 shadow-[0_18px_70px_rgba(16,185,129,0.10)]">
-            <header className="flex items-center justify-between">
-                <div>
-                    <div className="flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.22em] text-emerald-200/70">
+        <section className="rounded-xl border border-emerald-300/15 bg-slate-950/60 p-3 shadow-[0_18px_70px_rgba(16,185,129,0.10)] sm:p-4">
+            <header className="flex flex-wrap items-center justify-between gap-2">
+                <div className="min-w-0">
+                    <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-emerald-200/70 sm:text-[11px] sm:tracking-[0.22em]">
                         <i className="fas fa-chart-line text-emerald-300" />
-                        Recent Outcomes
+                        <span className="truncate">Recent Outcomes</span>
                     </div>
-                    <h3 className="mt-1 text-base font-black text-white">추천 종목 실적 추적</h3>
+                    <h3 className="mt-1 text-sm font-black text-white sm:text-base">추천 종목 실적 추적</h3>
                 </div>
-                <div className="inline-flex overflow-hidden rounded-md border border-white/10 bg-black/30">
+                <div className="inline-flex shrink-0 overflow-hidden rounded-md border border-white/10 bg-black/30">
                     {WINDOW_OPTIONS.map((days) => (
                         <button
                             key={days}
                             type="button"
                             onClick={() => setWindowDays(days)}
-                            className={`px-2.5 py-1 text-[10px] font-black uppercase tracking-wider transition-colors ${
+                            className={`min-h-[28px] px-2.5 py-1.5 text-[10px] font-black uppercase tracking-wider transition-colors sm:py-1 ${
                                 windowDays === days
                                     ? 'bg-emerald-300/20 text-emerald-100'
-                                    : 'text-slate-500 hover:bg-white/5 hover:text-slate-300'
+                                    : 'text-slate-500 hover:bg-white/5 hover:text-slate-300 active:bg-white/10'
                             }`}
                         >
                             {days}d
@@ -139,7 +147,7 @@ export default function RecentOutcomesBoard() {
             </header>
 
             {error && (
-                <div className="mt-3 rounded-lg border border-rose-300/20 bg-rose-300/10 px-3 py-2 text-xs font-bold text-rose-100">
+                <div className="mt-3 rounded-lg border border-rose-300/20 bg-rose-300/10 px-3 py-2 text-xs font-bold text-rose-100 break-words">
                     {error}
                 </div>
             )}
@@ -149,33 +157,33 @@ export default function RecentOutcomesBoard() {
                 <KpiCard
                     label="Hit Rate"
                     value={formatPct(summary?.hit_rate_pct)}
-                    sub={`목표 ≥ ${summary?.targets.hit_rate_pct ?? 55}% · 표본 ${evaluatedCount}`}
+                    sub={`목표 ≥${summary?.targets.hit_rate_pct ?? 55}% · n=${evaluatedCount}`}
                     tone={hitTone}
                 />
                 <KpiCard
                     label="Avg Return"
                     value={formatPct(summary?.avg_forward_return_pct, { withSign: true })}
-                    sub={`목표 ≥ +${summary?.targets.avg_return_pct ?? 1.5}%`}
+                    sub={`목표 ≥+${summary?.targets.avg_return_pct ?? 1.5}%`}
                     tone={avgTone}
                 />
                 <KpiCard
                     label="False Positive"
                     value={formatPct(summary?.false_positive_pct)}
-                    sub={`목표 < ${summary?.targets.false_positive_pct ?? 20}%`}
+                    sub={`목표 <${summary?.targets.false_positive_pct ?? 20}%`}
                     tone={fpTone}
                 />
                 <KpiCard
-                    label="진행중 / 평가완료"
-                    value={`${pendingCount} / ${evaluatedCount}`}
+                    label="진행중 / 완료"
+                    value={`${pendingCount}/${evaluatedCount}`}
                     sub={`${data?.workflow_count ?? 0}개 워크플로우`}
                 />
             </div>
 
-            {/* 종목 목록 */}
-            <div className="mt-3 rounded-lg border border-white/10 bg-black/30 p-3">
-                <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-400">
-                        추천 이력 ({items.length}{data?.items_truncated ? `/${data?.total_items}` : ''}건)
+            {/* 종목 목록 — mobile: card list / sm+: table */}
+            <div className="mt-3 rounded-lg border border-white/10 bg-black/30 p-2.5 sm:p-3">
+                <div className="flex items-center justify-between gap-2">
+                    <span className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400 sm:text-[11px] sm:tracking-[0.18em]">
+                        추천 이력 ({items.length}{data?.items_truncated ? `/${data?.total_items}` : ''})
                     </span>
                     {loading && <span className="text-[10px] font-bold uppercase text-slate-500">loading</span>}
                 </div>
@@ -184,51 +192,89 @@ export default function RecentOutcomesBoard() {
                         {loading ? '불러오는 중...' : `최근 ${windowDays}일 추천 이력 없음`}
                     </div>
                 ) : (
-                    <div className="mt-2 max-h-64 overflow-y-auto">
-                        <table className="w-full text-[11px] font-bold">
-                            <thead className="sticky top-0 bg-slate-950/95 text-slate-500">
-                                <tr className="text-left">
-                                    <th className="px-1 py-1 font-black uppercase tracking-wider">종목</th>
-                                    <th className="px-1 py-1 text-right font-black uppercase tracking-wider">진입일</th>
-                                    <th className="px-1 py-1 text-right font-black uppercase tracking-wider">5D</th>
-                                    <th className="px-1 py-1 text-right font-black uppercase tracking-wider">상태</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {items.map((item, idx) => {
-                                    const badge = statusBadge(item);
-                                    const r5 = item.horizons?.['5'];
-                                    return (
-                                        <tr
-                                            key={`${item.workflow_id}-${item.symbol}-${idx}`}
-                                            className="border-t border-white/5 hover:bg-white/[0.03]"
-                                        >
-                                            <td className="px-1 py-1.5">
-                                                <div className="text-white">{item.name || item.symbol}</div>
-                                                <div className="text-[9px] font-bold text-slate-500">{item.symbol}</div>
-                                            </td>
-                                            <td className="px-1 py-1.5 text-right font-mono text-slate-300">
-                                                {formatDate(item.entry_date)}
-                                            </td>
-                                            <td className={`px-1 py-1.5 text-right font-mono ${
-                                                r5 !== null && r5 !== undefined ? (r5 >= 0 ? 'text-emerald-300' : 'text-rose-300') : 'text-slate-500'
-                                            }`}>
+                    <>
+                        {/* 모바일: 카드 리스트 (< sm) */}
+                        <div className="mt-2 max-h-72 space-y-1.5 overflow-y-auto pr-1 sm:hidden">
+                            {items.map((item, idx) => {
+                                const badge = statusBadge(item);
+                                const r5 = item.horizons?.['5'];
+                                const r5Tone = r5 !== null && r5 !== undefined
+                                    ? (r5 >= 0 ? 'text-emerald-300' : 'text-rose-300')
+                                    : 'text-slate-500';
+                                return (
+                                    <div
+                                        key={`m-${item.workflow_id}-${item.symbol}-${idx}`}
+                                        className="rounded-md border border-white/5 bg-white/[0.02] px-2.5 py-2 text-[11px] font-bold active:bg-white/[0.05]"
+                                    >
+                                        <div className="flex items-center justify-between gap-2">
+                                            <div className="min-w-0 flex-1">
+                                                <div className="truncate text-white">{item.name || item.symbol}</div>
+                                                <div className="text-[9px] font-bold text-slate-500 tabular-nums">
+                                                    {item.symbol} · {formatDate(item.entry_date)}
+                                                </div>
+                                            </div>
+                                            <span className={`shrink-0 rounded-full border px-1.5 py-0.5 text-[9px] font-black whitespace-nowrap ${badge.tone}`}>
+                                                {badge.label}
+                                            </span>
+                                        </div>
+                                        <div className="mt-1 flex items-center justify-between text-[10px] font-bold">
+                                            <span className="text-slate-500">5D 수익률</span>
+                                            <span className={`font-mono tabular-nums ${r5Tone}`}>
                                                 {r5 !== null && r5 !== undefined ? `${r5 >= 0 ? '+' : ''}${r5.toFixed(1)}%` : '--'}
-                                            </td>
-                                            <td className="px-1 py-1.5 text-right">
-                                                <span className={`inline-block rounded-full border px-1.5 py-0.5 text-[9px] font-black ${badge.tone}`}>
-                                                    {badge.label}
-                                                </span>
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
-                    </div>
+                                            </span>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+
+                        {/* sm+ : 테이블 */}
+                        <div className="mt-2 hidden max-h-64 overflow-y-auto sm:block">
+                            <table className="w-full text-[11px] font-bold">
+                                <thead className="sticky top-0 bg-slate-950/95 text-slate-500">
+                                    <tr className="text-left">
+                                        <th className="px-1 py-1 font-black uppercase tracking-wider">종목</th>
+                                        <th className="px-1 py-1 text-right font-black uppercase tracking-wider">진입일</th>
+                                        <th className="px-1 py-1 text-right font-black uppercase tracking-wider">5D</th>
+                                        <th className="px-1 py-1 text-right font-black uppercase tracking-wider">상태</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {items.map((item, idx) => {
+                                        const badge = statusBadge(item);
+                                        const r5 = item.horizons?.['5'];
+                                        return (
+                                            <tr
+                                                key={`t-${item.workflow_id}-${item.symbol}-${idx}`}
+                                                className="border-t border-white/5 hover:bg-white/[0.03]"
+                                            >
+                                                <td className="px-1 py-1.5">
+                                                    <div className="text-white">{item.name || item.symbol}</div>
+                                                    <div className="text-[9px] font-bold text-slate-500 tabular-nums">{item.symbol}</div>
+                                                </td>
+                                                <td className="px-1 py-1.5 text-right font-mono text-slate-300 tabular-nums">
+                                                    {formatDate(item.entry_date)}
+                                                </td>
+                                                <td className={`px-1 py-1.5 text-right font-mono tabular-nums ${
+                                                    r5 !== null && r5 !== undefined ? (r5 >= 0 ? 'text-emerald-300' : 'text-rose-300') : 'text-slate-500'
+                                                }`}>
+                                                    {r5 !== null && r5 !== undefined ? `${r5 >= 0 ? '+' : ''}${r5.toFixed(1)}%` : '--'}
+                                                </td>
+                                                <td className="px-1 py-1.5 text-right">
+                                                    <span className={`inline-block rounded-full border px-1.5 py-0.5 text-[9px] font-black whitespace-nowrap ${badge.tone}`}>
+                                                        {badge.label}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
+                    </>
                 )}
                 {summary && evaluatedCount === 0 && pendingCount > 0 && (
-                    <div className="mt-2 rounded border border-amber-300/20 bg-amber-300/[0.05] p-2 text-[10px] font-bold text-amber-200">
+                    <div className="mt-2 rounded border border-amber-300/20 bg-amber-300/[0.05] p-2 text-[10px] font-bold text-amber-200 leading-snug">
                         ⚠ 평가 대기중 — daily_prices.csv 가 추천 진입일 이후 갱신되지 않음. outcomes refresh 필요.
                     </div>
                 )}

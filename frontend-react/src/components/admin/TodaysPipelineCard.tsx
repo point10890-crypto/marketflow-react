@@ -107,45 +107,45 @@ export default function TodaysPipelineCard() {
     const kosdaqDelta = formatDelta(data?.market?.kr?.kosdaq_change_pct);
 
     return (
-        <section className="rounded-xl border border-cyan-300/15 bg-slate-950/60 p-4 shadow-[0_18px_70px_rgba(34,211,238,0.10)]">
-            <header className="flex items-center justify-between">
-                <div>
-                    <div className="flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.22em] text-cyan-200/70">
+        <section className="rounded-xl border border-cyan-300/15 bg-slate-950/60 p-3 shadow-[0_18px_70px_rgba(34,211,238,0.10)] sm:p-4">
+            <header className="flex items-center justify-between gap-2">
+                <div className="min-w-0">
+                    <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-cyan-200/70 sm:text-[11px] sm:tracking-[0.22em]">
                         <i className="fas fa-satellite-dish text-cyan-300" />
-                        Today&apos;s Pipeline
+                        <span className="truncate">Today&apos;s Pipeline</span>
                     </div>
-                    <h3 className="mt-1 text-base font-black text-white">시장 + 검출 + KPI</h3>
+                    <h3 className="mt-1 text-sm font-black text-white sm:text-base">시장 + 검출 + KPI</h3>
                 </div>
                 {loading && (
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">loading...</span>
+                    <span className="shrink-0 text-[10px] font-bold uppercase tracking-wider text-slate-500">loading...</span>
                 )}
             </header>
 
             {error && (
-                <div className="mt-3 rounded-lg border border-rose-300/20 bg-rose-300/10 px-3 py-2 text-xs font-bold text-rose-100">
+                <div className="mt-3 rounded-lg border border-rose-300/20 bg-rose-300/10 px-3 py-2 text-xs font-bold text-rose-100 break-words">
                     {error}
                 </div>
             )}
 
             {/* KR 마켓 펄스 */}
-            <div className="mt-4 rounded-lg border border-white/10 bg-black/30 p-3">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                    <div className="flex items-center gap-2">
+            <div className="mt-3 rounded-lg border border-white/10 bg-black/30 p-2.5 sm:mt-4 sm:p-3">
+                <div className="flex flex-wrap items-center justify-between gap-1.5">
+                    <div className="flex items-center gap-1.5">
                         <span className="text-base">🇰🇷</span>
-                        <span className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-400">KR Market</span>
+                        <span className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400 sm:text-[11px] sm:tracking-[0.18em]">KR Market</span>
                     </div>
-                    <span className={`rounded-full border px-2.5 py-0.5 text-[10px] font-black ${phase.tone}`}>
+                    <span className={`rounded-full border px-2 py-0.5 text-[10px] font-black whitespace-nowrap ${phase.tone}`}>
                         {phase.ko}
                     </span>
                 </div>
                 <div className="mt-3 grid grid-cols-2 gap-2 text-[11px] font-bold">
                     <div>
                         <div className="text-slate-500">KOSPI</div>
-                        <div className={`mt-0.5 text-base font-black ${kospiDelta.tone}`}>{kospiDelta.label}</div>
+                        <div className={`mt-0.5 text-sm font-black sm:text-base ${kospiDelta.tone}`}>{kospiDelta.label}</div>
                     </div>
                     <div>
                         <div className="text-slate-500">KOSDAQ</div>
-                        <div className={`mt-0.5 text-base font-black ${kosdaqDelta.tone}`}>{kosdaqDelta.label}</div>
+                        <div className={`mt-0.5 text-sm font-black sm:text-base ${kosdaqDelta.tone}`}>{kosdaqDelta.label}</div>
                     </div>
                 </div>
                 {data?.market?.kr?.gate_label && (
@@ -180,22 +180,22 @@ export default function TodaysPipelineCard() {
             </div>
 
             {/* Detection Funnel */}
-            <div className="mt-3 rounded-lg border border-white/10 bg-black/30 p-3">
-                <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-400">Detection Funnel</span>
-                    <span className="text-[10px] font-bold text-slate-500">오늘 스캔 {data?.funnel?.scanner_runs_today ?? 0}회</span>
+            <div className="mt-3 rounded-lg border border-white/10 bg-black/30 p-2.5 sm:p-3">
+                <div className="flex items-center justify-between gap-2">
+                    <span className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400 sm:text-[11px] sm:tracking-[0.18em]">Detection Funnel</span>
+                    <span className="text-[10px] font-bold text-slate-500 whitespace-nowrap">오늘 {data?.funnel?.scanner_runs_today ?? 0}회</span>
                 </div>
                 <div className="mt-2 space-y-1.5">
                     {funnel.map((step) => (
-                        <div key={step.label} className="flex items-center gap-2 text-[11px] font-bold">
-                            <span className="w-16 shrink-0 text-slate-400">{step.label}</span>
+                        <div key={step.label} className="flex items-center gap-1.5 text-[11px] font-bold sm:gap-2">
+                            <span className="w-14 shrink-0 text-slate-400 sm:w-16">{step.label}</span>
                             <div className="flex-1 overflow-hidden rounded-sm bg-white/[0.04]">
                                 <div
                                     className="h-3 rounded-sm bg-gradient-to-r from-cyan-500/60 via-cyan-400/70 to-emerald-400/80 transition-all"
                                     style={{ width: `${Math.max(2, Math.min(100, step.width))}%` }}
                                 />
                             </div>
-                            <span className="w-8 shrink-0 text-right text-white">{step.value}</span>
+                            <span className="w-7 shrink-0 text-right text-white tabular-nums sm:w-8">{step.value}</span>
                         </div>
                     ))}
                 </div>
@@ -208,25 +208,25 @@ export default function TodaysPipelineCard() {
                     const hit = kpi?.hit_rate_pct;
                     const avg = kpi?.avg_return_pct;
                     return (
-                        <div key={key} className="rounded-lg border border-white/10 bg-black/30 p-3">
-                            <div className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">
+                        <div key={key} className="rounded-lg border border-white/10 bg-black/30 p-2.5 sm:p-3">
+                            <div className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-500 sm:tracking-[0.18em]">
                                 {key === 'kpi_7d' ? '7D' : '30D'} KPI
                             </div>
-                            <div className="mt-2 flex items-baseline gap-1">
-                                <span className="text-xl font-black text-white">
+                            <div className="mt-1.5 flex items-baseline gap-1 sm:mt-2">
+                                <span className="text-lg font-black text-white tabular-nums sm:text-xl">
                                     {hit !== null && hit !== undefined ? `${hit.toFixed(0)}%` : '--'}
                                 </span>
-                                <span className="text-[10px] font-bold text-slate-500">hit rate</span>
+                                <span className="text-[10px] font-bold text-slate-500">hit</span>
                             </div>
                             <div className="mt-1 flex items-center justify-between text-[10px] font-bold">
                                 <span className="text-slate-500">avg R</span>
-                                <span className={avg !== null && avg !== undefined ? (avg >= 0 ? 'text-emerald-300' : 'text-rose-300') : 'text-slate-500'}>
+                                <span className={`tabular-nums ${avg !== null && avg !== undefined ? (avg >= 0 ? 'text-emerald-300' : 'text-rose-300') : 'text-slate-500'}`}>
                                     {avg !== null && avg !== undefined ? `${avg >= 0 ? '+' : ''}${avg.toFixed(2)}%` : '--'}
                                 </span>
                             </div>
                             <div className="mt-0.5 flex items-center justify-between text-[10px] font-bold text-slate-500">
                                 <span>샘플</span>
-                                <span>{kpi?.sample_size ?? 0}건</span>
+                                <span className="tabular-nums">{kpi?.sample_size ?? 0}건</span>
                             </div>
                         </div>
                     );
@@ -234,9 +234,9 @@ export default function TodaysPipelineCard() {
             </div>
 
             {/* Next ETA */}
-            <div className="mt-3 flex items-center justify-between rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-[11px] font-bold">
-                <span className="text-slate-500">⏰ 다음 자동 스캔</span>
-                <span className="font-mono text-cyan-200">
+            <div className="mt-3 flex items-center justify-between gap-2 rounded-lg border border-white/10 bg-black/30 px-2.5 py-2 text-[11px] font-bold sm:px-3">
+                <span className="text-slate-500 truncate">⏰ 다음 자동 스캔</span>
+                <span className="font-mono text-cyan-200 tabular-nums whitespace-nowrap">
                     {formatTime(data?.next?.next_scheduled_scan_at)}
                 </span>
             </div>

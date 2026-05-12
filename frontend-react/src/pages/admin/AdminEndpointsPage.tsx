@@ -2313,8 +2313,8 @@ export default function AdminEndpointsPage() {
                             onSelect={selectAlphaCandidate}
                             onDeepDive={deepDiveAlphaCandidate}
                         />
-                        {/* 우측 사이드바 — Today's Pipeline + Recent Outcomes + Quick Actions */}
-                        <aside className="mt-8 flex flex-col gap-3 lg:sticky lg:top-4">
+                        {/* 우측 사이드바 — lg+: 우측 컬럼 / mobile: AlphaBoard 아래 자연 스택 */}
+                        <aside className="flex flex-col gap-3 lg:mt-8 lg:sticky lg:top-4">
                             <TodaysPipelineCard />
                             <RecentOutcomesBoard />
                             <QuickActionsFooter />
