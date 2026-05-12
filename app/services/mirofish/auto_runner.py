@@ -113,6 +113,7 @@ def _tunables() -> dict[str, Any]:
         'analysis_timeout_seconds': max(60, _env_int('MIROFISH_AUTO_RUNNER_TIMEOUT', 180)),
         'dry_run': _env_bool('MIROFISH_AUTO_RUNNER_DRY_RUN', False),
         'allow_outside_market_hours': _env_bool('MIROFISH_AUTO_RUNNER_ALLOW_OUTSIDE', False),
+        'allow_stale_sources': _env_bool('MIROFISH_AUTO_RUNNER_ALLOW_STALE', False),
     }
 
 
@@ -408,7 +409,7 @@ def _fire_workflow(tuning: dict[str, Any], gates: dict[str, Any], cycle_record: 
                 'max_events': 5,
                 'top_n': 3,
                 'agent_count': 5,
-                'allow_stale_sources': False,
+                'allow_stale_sources': bool(tuning['allow_stale_sources']),
             },
             async_mode=False,  # blocking — we want to send telegram after completion
             commit_event_state=False,  # commit later only on successful telegram
@@ -657,7 +658,7 @@ def _evaluate_gates(*, force: bool, tuning: dict[str, Any]) -> dict[str, Any]:
             max_risk=float(tuning['max_risk']),
             max_events=8,
             commit_state=False,
-            block_on_stale=True,
+            block_on_stale=not bool(tuning['allow_stale_sources']),
         )
     except Exception as exc:
         add('new_events', False, f'scanner_alert_check error: {exc}')
