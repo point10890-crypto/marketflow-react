@@ -86,6 +86,80 @@ def chat():
         return jsonify({'error': str(exc)}), 500
 
 
+@admin_mirofish_bp.route('/chat/telegram', methods=['POST'])
+@admin_required
+def chat_telegram():
+    """채팅 응답 내용을 텔레그램으로 공유.
+
+    HTML/마크다운 혼용된 채팅 응답을 텔레그램 호환 형식으로 정규화 후 전송.
+    개인 봇 전용 — 채널 오염 방지.
+
+    Request body:
+        {
+            "content": "공유할 텍스트 (필수)",
+            "question": "원본 사용자 질문 (선택, 헤더용)",
+            "channel": false  // 기본 false — 개인 봇만
+        }
+    Response:
+        {
+            "ok": bool,
+            "telegram_sent": bool,
+            "message_chars": int,
+            "telegram_config": {...}
+        }
+    """
+    payload = request.get_json(silent=True) or {}
+    content = (payload.get('content') or '').strip()
+    question = (payload.get('question') or '').strip()
+    channel = _payload_bool(payload, 'channel', False)
+
+    if not content:
+        return jsonify({'error': 'content is required'}), 400
+
+    # 마크다운 → 텔레그램 HTML 정규화 (간단 변환)
+    # **bold** → <b>bold</b>
+    import re
+    normalized = re.sub(r'\*\*([^*]+)\*\*', r'<b>\1</b>', content)
+    # 백틱 코드 → <code>
+    normalized = re.sub(r'`([^`]+)`', r'<code>\1</code>', normalized)
+
+    header_parts = ['💬 <b>MiroFish 어시스턴트 공유</b>']
+    if question:
+        # HTML 이스케이프 최소화 — < > & 만
+        q_safe = question.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+        if len(q_safe) > 200:
+            q_safe = q_safe[:197] + '...'
+        header_parts.append(f'🙋 <i>질문:</i> {q_safe}')
+    header = '\n'.join(header_parts)
+
+    body = f'{header}\n\n{normalized}'
+
+    try:
+        from app.utils.scheduler import _send_telegram_long
+        ok = _send_telegram_long(body, channel=channel)
+    except Exception as exc:
+        return jsonify({
+            'error': f'telegram send exception: {type(exc).__name__}: {exc}',
+            'telegram_config': _telegram_config_status(),
+        }), 500
+
+    if not ok:
+        return jsonify({
+            'ok': False,
+            'error': 'telegram send failed',
+            'telegram_sent': False,
+            'message_chars': len(body),
+            'telegram_config': _telegram_config_status(),
+        }), 502
+
+    return jsonify({
+        'ok': True,
+        'telegram_sent': True,
+        'message_chars': len(body),
+        'telegram_config': _telegram_config_status(),
+    })
+
+
 @admin_mirofish_bp.route('/data-sources', methods=['GET'])
 @admin_required
 def data_sources():

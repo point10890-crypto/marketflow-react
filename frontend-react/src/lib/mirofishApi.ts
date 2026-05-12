@@ -525,6 +525,15 @@ export interface MiroFishAutonomousLearningFeedback {
     hit_rate_pct?: number | null;
     average_forward_return_pct?: number | null;
     recommendation_count?: number;
+    alpha_memory?: {
+        available?: boolean;
+        sample_count?: number;
+        strongest_positive?: Record<string, any> | null;
+        weakest_negative?: Record<string, any> | null;
+        score_profile?: Record<string, any>;
+        cohorts?: Record<string, any[]>;
+        guidance?: Array<Record<string, any>>;
+    };
     recommendations?: Array<Record<string, any>>;
     errors?: Array<Record<string, any>>;
 }
@@ -1209,6 +1218,20 @@ export const mirofishApi = {
         undefined,
         90000,
     ),
+    /** 채팅 응답을 텔레그램(개인봇)으로 공유 */
+    sendChatToTelegram: async (
+        content: string,
+        options: { question?: string; channel?: boolean } = {},
+    ) => postAuthAPI<MiroFishChatTelegramResponse>(
+        '/api/admin/mirofish/chat/telegram',
+        {
+            content,
+            question: options.question || '',
+            channel: options.channel ?? false,
+        },
+        undefined,
+        30000,
+    ),
     getAutonomousStatus: async () => fetchAuthAPI<MiroFishAutonomousStatus>(
         '/api/admin/mirofish/autonomous/status',
     ),
@@ -1259,6 +1282,19 @@ export interface MiroFishChatResponse {
     tool_calls: MiroFishChatToolCall[];
     iterations: number;
     method: 'llm' | 'fallback' | 'llm_error';
+    error?: string;
+}
+
+export interface MiroFishChatTelegramResponse {
+    ok: boolean;
+    telegram_sent?: boolean;
+    message_chars?: number;
+    telegram_config?: {
+        personal_configured?: boolean;
+        channel_configured?: boolean;
+        personal_chat_present?: boolean;
+        channel_chat_present?: boolean;
+    };
     error?: string;
 }
 

@@ -57,6 +57,8 @@ function saveHistory(messages: ChatMessage[]) {
     }
 }
 
+type ShareState = 'idle' | 'sending' | 'sent' | 'failed';
+
 export default function MirofishChatPanel({
     variant = 'floating',
     defaultOpen = false,
@@ -67,8 +69,36 @@ export default function MirofishChatPanel({
     const [input, setInput] = useState('');
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    // 메시지 인덱스별 텔레그램 공유 상태
+    const [shareStates, setShareStates] = useState<Record<number, ShareState>>({});
     const scrollRef = useRef<HTMLDivElement | null>(null);
     const composingRef = useRef(false);
+
+    async function shareToTelegram(idx: number) {
+        const msg = messages[idx];
+        if (!msg || msg.role !== 'assistant') return;
+        if (shareStates[idx] === 'sending') return;
+        // 직전 사용자 질문 찾기 (header에 같이 표시)
+        const prevUser = idx > 0 && messages[idx - 1]?.role === 'user' ? messages[idx - 1].content : '';
+        setShareStates((prev) => ({ ...prev, [idx]: 'sending' }));
+        try {
+            const resp = await mirofishApi.sendChatToTelegram(msg.content, { question: prevUser, channel: false });
+            if (resp.ok && resp.telegram_sent) {
+                setShareStates((prev) => ({ ...prev, [idx]: 'sent' }));
+                // 3초 후 idle 복귀
+                setTimeout(() => {
+                    setShareStates((prev) => ({ ...prev, [idx]: 'idle' }));
+                }, 3000);
+            } else {
+                setShareStates((prev) => ({ ...prev, [idx]: 'failed' }));
+                setError(resp.error || '텔레그램 전송 실패 — 봇 설정 확인 필요');
+            }
+        } catch (err) {
+            console.error('[chat] telegram share failed', err);
+            setShareStates((prev) => ({ ...prev, [idx]: 'failed' }));
+            setError(err instanceof Error ? err.message : '텔레그램 전송 실패');
+        }
+    }
 
     useEffect(() => {
         saveHistory(messages);
@@ -121,6 +151,36 @@ export default function MirofishChatPanel({
         if (!confirm('대화 기록을 모두 지웁니다. 계속하시겠어요?')) return;
         setMessages([]);
         saveHistory([]);
+    }
+
+    // 공통: 어시스턴트 메시지 하단의 텔레그램 공유 버튼
+    function renderShareButton(idx: number) {
+        const state = shareStates[idx] || 'idle';
+        const label =
+            state === 'sending' ? '전송 중...' :
+            state === 'sent' ? '✓ 전송됨' :
+            state === 'failed' ? '✗ 실패 (재시도)' :
+            '🔔 텔레그램 공유';
+        const isDisabled = state === 'sending';
+        const colorClass =
+            state === 'sent'
+                ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-300'
+                : state === 'failed'
+                ? 'border-red-500/40 bg-red-500/10 text-red-300 hover:bg-red-500/15'
+                : 'border-anthropic-darkLine bg-anthropic-dark/40 text-anthropic-darkMuted hover:border-anthropic-orange/40 hover:bg-anthropic-orange/[0.08] hover:text-anthropic-cream';
+        return (
+            <div className="mt-2 flex justify-end">
+                <button
+                    type="button"
+                    onClick={() => shareToTelegram(idx)}
+                    disabled={isDisabled}
+                    className={`inline-flex items-center gap-1 rounded-md border px-2 py-1 text-[10px] font-medium transition-colors disabled:cursor-wait ${colorClass}`}
+                    title="이 응답을 텔레그램(개인봇)으로 전송"
+                >
+                    {label}
+                </button>
+            </div>
+        );
     }
 
     // 공통 헤더 (Clear + 닫기 버튼, inline 시 닫기 숨김)
@@ -212,6 +272,7 @@ export default function MirofishChatPanel({
                                     }`}
                                 >
                                     <div className="whitespace-pre-wrap break-words">{m.content}</div>
+                                    {m.role === 'assistant' && m.content && renderShareButton(idx)}
                                     {m.tool_calls && m.tool_calls.length > 0 && (
                                         <details className="mt-2 text-[11px] opacity-80">
                                             <summary className="cursor-pointer hover:opacity-100">
@@ -338,6 +399,7 @@ export default function MirofishChatPanel({
                                     }`}
                                 >
                                     <div className="whitespace-pre-wrap break-words">{m.content}</div>
+                                    {m.role === 'assistant' && m.content && renderShareButton(idx)}
                                     {m.tool_calls && m.tool_calls.length > 0 && (
                                         <details className="mt-2 text-[11px] opacity-80">
                                             <summary className="cursor-pointer hover:opacity-100">
