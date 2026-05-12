@@ -155,23 +155,44 @@ export default function MirofishChatPanel({
         </header>
     );
 
-    // inline 모드 — 검색폼 아래 항상 펼친 패널
+    // inline 모드 — 별도 section, 명확한 orange 보더 + 헤로 라벨
     if (inline) {
         return (
-            <section className="mt-4 max-w-4xl rounded-xl border border-anthropic-darkLine bg-anthropic-dark">
-                {HeaderBlock}
+            <section className="rounded-xl border-2 border-anthropic-orange/40 bg-anthropic-dark shadow-xl shadow-anthropic-orange/[0.06]">
+                {/* 강조 헤더 — 사용자가 즉시 인식하도록 */}
+                <div className="flex items-center justify-between border-b border-anthropic-darkLine bg-gradient-to-r from-anthropic-orange/[0.15] to-transparent px-5 py-3">
+                    <div className="flex items-center gap-3">
+                        <div className="grid h-10 w-10 place-items-center rounded-lg bg-anthropic-orange text-white shadow-lg">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h2 className="font-serif text-lg font-medium text-anthropic-cream">MiroFish 어시스턴트</h2>
+                            <p className="text-xs text-anthropic-darkMuted">자연어로 분석 데이터 물어보기 · read-only · Gemini function calling</p>
+                        </div>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={clearHistory}
+                        className="rounded-md px-3 py-1.5 text-xs text-anthropic-darkMuted hover:bg-anthropic-dark2 hover:text-anthropic-cream"
+                        title="대화 기록 지우기"
+                    >
+                        Clear
+                    </button>
+                </div>
                 <div className="flex flex-col">
-                    <div ref={scrollRef} className="max-h-[420px] overflow-y-auto px-4 py-3 space-y-3 min-h-[120px]">
+                    <div ref={scrollRef} className="max-h-[480px] min-h-[200px] overflow-y-auto px-5 py-4 space-y-3">
                         {messages.length === 0 && (
-                            <div className="rounded-lg border border-anthropic-darkLine bg-anthropic-dark2 p-3 text-sm text-anthropic-darkText">
-                                <div className="text-anthropic-cream mb-2 font-medium">자연어로 MiroFish 데이터에 질문하세요</div>
-                                <div className="flex flex-wrap gap-1.5">
+                            <div className="rounded-lg border border-anthropic-darkLine bg-anthropic-dark2 p-4 text-sm text-anthropic-darkText">
+                                <div className="text-anthropic-cream mb-3 font-medium">💬 예시 질문을 클릭하거나 직접 입력하세요</div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                     {SUGGESTIONS.map((s) => (
                                         <button
                                             key={s}
                                             type="button"
                                             onClick={() => send(s)}
-                                            className="rounded-md border border-anthropic-darkLine bg-anthropic-dark px-2.5 py-1 text-[11px] text-anthropic-darkText hover:border-anthropic-orange/40 hover:text-anthropic-cream"
+                                            className="rounded-lg border border-anthropic-darkLine bg-anthropic-dark px-3 py-2 text-left text-xs text-anthropic-darkText transition-colors hover:border-anthropic-orange/40 hover:bg-anthropic-orange/[0.05] hover:text-anthropic-cream"
                                         >
                                             {s}
                                         </button>

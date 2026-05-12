@@ -2347,11 +2347,11 @@ export default function AdminEndpointsPage() {
                             ))}
                         </div>
                     </div>
-
-                    {/* MiroFish 자연어 채팅 — 검색폼 바로 아래 inline 패널 */}
-                    <MirofishChatPanel variant="inline" />
                 </div>
             </section>
+
+            {/* MiroFish 자연어 채팅 — 별도 section으로 명확히 표시 */}
+            <MirofishChatPanel variant="inline" />
 
             {isAnalyzing && <ImpactPanel phase={phase} run={run} apiState={apiState} />}
 
