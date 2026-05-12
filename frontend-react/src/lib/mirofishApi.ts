@@ -545,6 +545,41 @@ export interface MiroFishAutonomousStatus {
     scanner?: Record<string, any>;
     workflow?: MiroFishWorkflowStatus | Record<string, any>;
     learning?: MiroFishAutonomousLearningFeedback;
+    runtime?: {
+        mcp_server?: {
+            url?: string;
+            healthy?: boolean;
+            status_code?: number | null;
+            server_name?: string | null;
+            server_version?: string | null;
+            error?: string | null;
+            checked_at?: string;
+        };
+        startup_task?: {
+            task_name?: string;
+            registered?: boolean;
+            query_ok?: boolean;
+            platform?: string;
+            state?: string | null;
+            next_run_time?: string | null;
+            last_run_time?: string | null;
+            last_result?: string | null;
+            error?: string | null;
+            checked_at?: string;
+        };
+        watchdog_task?: {
+            task_name?: string;
+            registered?: boolean;
+            query_ok?: boolean;
+            platform?: string;
+            state?: string | null;
+            next_run_time?: string | null;
+            last_run_time?: string | null;
+            last_result?: string | null;
+            error?: string | null;
+            checked_at?: string;
+        };
+    };
     tools?: string[];
     resources?: string[];
     checked_at?: string;
@@ -1164,6 +1199,16 @@ export const mirofishApi = {
         undefined,
         300000,
     ),
+    /** 자연어 채팅 — Gemini function calling 으로 안전한 read-only MCP 도구 호출 */
+    chat: async (
+        message: string,
+        history: Array<{ role: 'user' | 'assistant'; content: string }> = [],
+    ) => postAuthAPI<MiroFishChatResponse>(
+        '/api/admin/mirofish/chat',
+        { message, history },
+        undefined,
+        90000,
+    ),
     getAutonomousStatus: async () => fetchAuthAPI<MiroFishAutonomousStatus>(
         '/api/admin/mirofish/autonomous/status',
     ),
@@ -1202,6 +1247,20 @@ export const mirofishApi = {
         return fetchAuthAPI<MiroFishSharePayload>(path);
     },
 };
+
+export interface MiroFishChatToolCall {
+    name: string;
+    args: Record<string, any>;
+    result_preview: string;
+}
+
+export interface MiroFishChatResponse {
+    reply: string;
+    tool_calls: MiroFishChatToolCall[];
+    iterations: number;
+    method: 'llm' | 'fallback' | 'llm_error';
+    error?: string;
+}
 
 export interface MiroFishShareItem {
     rank: number;

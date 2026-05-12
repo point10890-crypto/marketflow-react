@@ -55,6 +55,9 @@ from app.services.mirofish.outcome_tracker import (
     read_workflow_outcomes,
     refresh_workflow_outcomes,
 )
+from app.services.mirofish.chat_agent import (
+    run_chat as run_chat_agent,
+)
 from app.services.mirofish.autonomous_mcp import (
     CONFIRM_SEND_PHRASE,
     get_autonomous_status,
@@ -122,6 +125,7 @@ __all__ = [
     'run_candidate_detection_alert',
     'run_scanner_realtime_monitor_check',
     'run_autonomous_scan_analysis',
+    'run_chat_agent',
     'run_workflow_monitor_check',
     'send_latest_workflow_telegram',
     'start_workflow_from_scanner_events',

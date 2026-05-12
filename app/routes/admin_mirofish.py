@@ -56,6 +56,36 @@ def status():
     return jsonify(mirofish.get_status())
 
 
+@admin_mirofish_bp.route('/chat', methods=['POST'])
+@admin_required
+def chat():
+    """자연어 채팅 — Gemini function calling 으로 안전한 read-only MCP 도구 호출.
+
+    Request body:
+        {
+            "message": "이번 TOP 3 알려줘",
+            "history": [{"role": "user|assistant", "content": "..."}]  // 옵션
+        }
+    Response:
+        {
+            "reply": "...",
+            "tool_calls": [{"name", "args", "result_preview"}],
+            "iterations": int,
+            "method": "llm" | "fallback" | "llm_error"
+        }
+    """
+    payload = request.get_json(silent=True) or {}
+    message = payload.get('message', '')
+    history = payload.get('history') or []
+    if not isinstance(history, list):
+        history = []
+    try:
+        result = mirofish.run_chat_agent(message, history=history)
+        return jsonify(result)
+    except Exception as exc:
+        return jsonify({'error': str(exc)}), 500
+
+
 @admin_mirofish_bp.route('/data-sources', methods=['GET'])
 @admin_required
 def data_sources():

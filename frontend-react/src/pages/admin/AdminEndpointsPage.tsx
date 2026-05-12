@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type CompositionEvent as ReactCompositionEvent, type KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { MiroFishAlphaCandidate, MiroFishAnalyst, MiroFishAutonomousActionResult, MiroFishAutonomousLearningFeedback, MiroFishAutonomousStatus, MiroFishDeepSeekStatus, MiroFishDeepSeekSummaryResult, MiroFishLayer, MiroFishLog, MiroFishNode, MiroFishRun, MiroFishScannerRun, MiroFishScannerStatus, MiroFishStatus, MiroFishTargetSnapshot, MiroFishWorkflow, mirofishApi } from '@/lib/mirofishApi';
 import { shareToKakao } from '@/lib/kakaoShare';
+import MirofishChatPanel from '@/components/admin/MirofishChatPanel';
 
 const agentCounts = [3, 7, 10, 15];
 const defaultTarget = '삼성전자';
@@ -292,6 +293,7 @@ function AlphaBoardPanel({
     workflow,
     workflowState,
     workflowErrorText,
+    autonomousStatus,
     onScan,
     onWorkflow,
     onDeepSeekSummary,
@@ -311,6 +313,7 @@ function AlphaBoardPanel({
     workflow?: MiroFishWorkflow | null;
     workflowState: WorkflowPanelState;
     workflowErrorText?: string | null;
+    autonomousStatus?: MiroFishAutonomousStatus | null;
     onScan: () => void;
     onWorkflow: () => void;
     onDeepSeekSummary: () => void;
@@ -350,6 +353,18 @@ function AlphaBoardPanel({
     const replayGuardValue = outcomeSummary.lookahead_safe && !['failed', 'not_evaluated'].includes(outcomeStatus)
         ? 'ON'
         : (workflow?.outcome_status || outcomeStatus || '--');
+    const mcpServer = autonomousStatus?.runtime?.mcp_server;
+    const startupTask = autonomousStatus?.runtime?.startup_task;
+    const watchdogTask = autonomousStatus?.runtime?.watchdog_task;
+    const mcpHealthy = Boolean(mcpServer?.healthy);
+    const startupRegistered = Boolean(startupTask?.registered);
+    const watchdogRegistered = Boolean(watchdogTask?.registered);
+    const mcpRuntimeTone = mcpHealthy
+        ? 'border-emerald-300/25 bg-emerald-300/10 text-emerald-100'
+        : 'border-rose-300/25 bg-rose-300/10 text-rose-100';
+    const taskRuntimeTone = startupRegistered && watchdogRegistered
+        ? 'border-emerald-300/25 bg-emerald-300/10 text-emerald-100'
+        : 'border-amber-300/25 bg-amber-300/10 text-amber-100';
 
     // 카카오톡 공유 핸들러 (list template + buttons 포함)
     async function handleShareTop3(workflowId: string) {
@@ -427,6 +442,12 @@ function AlphaBoardPanel({
                     <span className={`rounded-full border px-3 py-1.5 text-xs font-black ${deepSeekStateTone(deepSeekState, deepSeekConfigured)}`}>
                         DeepSeek {deepSeekConfigured ? (deepSeekStatus?.default_model || 'ready') : 'not set'}
                     </span>
+                    <span className={`rounded-full border px-3 py-1.5 text-xs font-black ${mcpRuntimeTone}`}>
+                        MCP HTTP {mcpHealthy ? 'online' : 'offline'}
+                    </span>
+                    <span className={`rounded-full border px-3 py-1.5 text-xs font-black ${taskRuntimeTone}`}>
+                        Watchdog {watchdogRegistered ? '5m on' : 'missing'}
+                    </span>
                     <button
                         type="button"
                         onClick={onScan}
@@ -462,6 +483,15 @@ function AlphaBoardPanel({
                                 <span className={`rounded-full border px-2.5 py-1 text-[11px] font-bold ${freshnessTone(workflowFreshness)}`}>
                                     source {workflowFreshness}
                                 </span>
+                                <span className={`rounded-full border px-2.5 py-1 text-[11px] font-black ${mcpRuntimeTone}`}>
+                                    MCP server {mcpHealthy ? 'online' : 'offline'}
+                                </span>
+                                <span className={`rounded-full border px-2.5 py-1 text-[11px] font-black ${taskRuntimeTone}`}>
+                                    Scheduler watchdog {watchdogRegistered ? 'active' : 'missing'}
+                                </span>
+                                <span className="rounded-full border border-white/10 bg-white/8 px-2.5 py-1 text-[11px] font-bold text-slate-300">
+                                    Scheduler last {formatDateTime(scannerStatus?.scheduler_last_run_at)}
+                                </span>
                             </div>
                         </div>
                         <button
@@ -488,6 +518,22 @@ function AlphaBoardPanel({
                                 </div>
                                 <div className="mt-2 text-xl font-black text-white">{String(value)}</div>
                                 <div className="mt-1 text-[11px] font-bold text-slate-500">{String(caption)}</div>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="mt-3 grid gap-2 md:grid-cols-3">
+                        {[
+                            ['MCP HTTP', mcpHealthy ? 'online' : 'offline', mcpServer?.server_version || mcpServer?.url || '127.0.0.1:8765'],
+                            ['Startup Task', startupRegistered ? 'registered' : 'missing', startupTask?.last_result || startupTask?.state || '--'],
+                            ['Watchdog', watchdogRegistered ? 'active' : 'missing', watchdogTask?.next_run_time || watchdogTask?.last_run_time || 'every 5m'],
+                        ].map(([label, value, caption]) => (
+                            <div key={String(label)} className="rounded-lg border border-white/10 bg-black/20 p-3">
+                                <div className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">{String(label)}</div>
+                                <div className={`mt-1 text-lg font-black ${String(value) === 'online' || String(value) === 'registered' || String(value) === 'active' ? 'text-emerald-100' : 'text-amber-100'}`}>
+                                    {String(value)}
+                                </div>
+                                <div className="mt-1 truncate text-[11px] font-bold text-slate-500">{String(caption)}</div>
                             </div>
                         ))}
                     </div>
@@ -738,6 +784,12 @@ function AutonomousMcpPanel({
             : busy
                 ? 'border-cyan-300/25 bg-cyan-300/10 text-cyan-100'
                 : 'border-white/10 bg-white/8 text-slate-300';
+    const mcpServer = status?.runtime?.mcp_server;
+    const startupTask = status?.runtime?.startup_task;
+    const watchdogTask = status?.runtime?.watchdog_task;
+    const mcpHealthy = Boolean(mcpServer?.healthy);
+    const startupRegistered = Boolean(startupTask?.registered);
+    const watchdogRegistered = Boolean(watchdogTask?.registered);
 
     return (
         <section className="mt-4 rounded-xl border border-cyan-300/15 bg-slate-950/50 p-4 shadow-[0_18px_70px_rgba(6,182,212,0.10)]">
@@ -765,6 +817,12 @@ function AutonomousMcpPanel({
                     <span className={`rounded-full border px-3 py-1.5 text-xs font-bold ${secretRequired ? 'border-cyan-300/25 bg-cyan-300/10 text-cyan-100' : 'border-white/10 bg-white/8 text-slate-300'}`}>
                         shared secret {secretRequired ? 'required' : 'not set'}
                     </span>
+                    <span className={`rounded-full border px-3 py-1.5 text-xs font-black ${mcpHealthy ? 'border-emerald-300/25 bg-emerald-300/10 text-emerald-100' : 'border-rose-300/25 bg-rose-300/10 text-rose-100'}`}>
+                        MCP HTTP {mcpHealthy ? 'online' : 'offline'}
+                    </span>
+                    <span className={`rounded-full border px-3 py-1.5 text-xs font-black ${watchdogRegistered ? 'border-emerald-300/25 bg-emerald-300/10 text-emerald-100' : 'border-amber-300/25 bg-amber-300/10 text-amber-100'}`}>
+                        Watchdog {watchdogRegistered ? '5m on' : 'missing'}
+                    </span>
                 </div>
             </div>
 
@@ -785,6 +843,22 @@ function AutonomousMcpPanel({
                         <div className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">{String(label)}</div>
                         <div className="mt-1 text-xl font-black text-white">{String(value)}</div>
                         <div className="mt-1 text-[11px] font-bold text-slate-500">{String(caption)}</div>
+                    </div>
+                ))}
+            </div>
+
+            <div className="mt-3 grid gap-2 md:grid-cols-3">
+                {[
+                    ['MCP HTTP', mcpHealthy ? 'online' : 'offline', mcpServer?.server_version || mcpServer?.url || 'local probe'],
+                    ['Startup Task', startupRegistered ? 'registered' : 'missing', startupTask?.last_result || startupTask?.state || startupTask?.error || '--'],
+                    ['Watchdog Task', watchdogRegistered ? 'active' : 'missing', watchdogTask?.next_run_time || watchdogTask?.last_run_time || watchdogTask?.error || '--'],
+                ].map(([label, value, caption]) => (
+                    <div key={String(label)} className="rounded-lg border border-cyan-300/12 bg-cyan-300/[0.04] p-3">
+                        <div className="text-[10px] font-black uppercase tracking-[0.16em] text-cyan-200/60">{String(label)}</div>
+                        <div className={`mt-1 text-lg font-black ${String(value) === 'online' || String(value) === 'registered' || String(value) === 'active' ? 'text-emerald-100' : 'text-amber-100'}`}>
+                            {String(value)}
+                        </div>
+                        <div className="mt-1 truncate text-[11px] font-bold text-slate-500">{String(caption)}</div>
                     </div>
                 ))}
             </div>
@@ -2104,6 +2178,7 @@ export default function AdminEndpointsPage() {
                         workflow={workflow}
                         workflowState={workflowState}
                         workflowErrorText={workflowErrorText}
+                        autonomousStatus={autonomousStatus}
                         onScan={handleAlphaScan}
                         onWorkflow={handleMcpWorkflow}
                         onDeepSeekSummary={handleDeepSeekSummary}
@@ -2347,6 +2422,9 @@ export default function AdminEndpointsPage() {
                     </div>
                 </div>
             </section>
+
+            {/* MiroFish 자연어 채팅 — 우하단 고정 FAB + 패널 */}
+            <MirofishChatPanel />
         </div>
     );
 }
