@@ -20,7 +20,7 @@ import logging
 import os
 from typing import Any
 
-from app.services.mirofish import autonomous_mcp, live_data, workflow
+from app.services.mirofish import autonomous_mcp, live_data, technical_analysis, workflow
 
 logger = logging.getLogger(__name__)
 
@@ -82,6 +82,7 @@ TOOL_REGISTRY: dict[str, Any] = {
         workflow_id=workflow_id, rank=int(rank) if rank else None,
     ),
     'resolve_target': lambda target='', **_kw: _resolve_target(target=target),
+    'analyze_levels': lambda target='', **_kw: technical_analysis.analyze_target_with_levels(target=target),
 }
 
 
@@ -158,6 +159,22 @@ FUNCTION_DECLARATIONS = [
             'required': ['target'],
         },
     },
+    {
+        'name': 'analyze_levels',
+        'description': (
+            '한국 종목의 추세 분석 + 매수가/목표가/손절가 자동 제안. '
+            'SMA5/20/60/120 정배열 여부, ATR(14) 변동성, 20일 고/저점을 계산해서 '
+            'Mark Minervini SEPA + swing 트레이딩 규칙으로 entry / target1 / target2 / stop 가격을 산출. '
+            '"삼성전자 매수가 알려줘", "X 종목 손절 어디?", "추세 어때?" 같은 질의에 사용.'
+        ),
+        'parameters': {
+            'type': 'object',
+            'properties': {
+                'target': {'type': 'string', 'description': '한국 종목명 또는 6자리 코드'}
+            },
+            'required': ['target'],
+        },
+    },
 ]
 
 
@@ -177,7 +194,17 @@ SYSTEM_INSTRUCTION = """당신은 MarketFlow MiroFish 의 AI 분석 어시스턴
 - "삼성전자 분석 정보" → resolve_target 으로 심볼 확인 + 최근 분석 있는지 확인
 - "지난 워크플로우 5개" → list_recent_workflows(limit=5)
 - "카톡 공유 정보 줘" → get_workflow_share
+- "삼성전자 매수가 / 목표가 / 손절가 알려줘" → analyze_levels(target='삼성전자')
+  → 답변 시 다음 형식으로 정리:
+    • 추세: <강세/중립/약세> (근거 한 줄)
+    • 매수 진입가: X원
+    • 1차 목표가: X원 (+%)
+    • 2차 목표가: X원
+    • 손절가: X원 (-%)
+    • 손익비: 1 : X
+    • ⚠ 추세별 주의사항
 
+투자 권유는 절대 아님을 한 줄 명시 (예: '참고용 분석이며 투자 권유가 아닙니다').
 도구 호출 후 결과를 반드시 사용자 친화적 한국어로 정리해서 답변하세요.
 """
 
