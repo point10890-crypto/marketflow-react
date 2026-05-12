@@ -511,6 +511,21 @@ def _fire_workflow(tuning: dict[str, Any], gates: dict[str, Any], cycle_record: 
         except Exception as exc:
             logger.warning(f'[auto_runner] commit_workflow_event_state failed: {exc}')
 
+        # Deep enrich — TOP 3 각 종목에 대해 뉴스/공시/네이버 메타 수집해서
+        # follow-up 메시지로 발송 (메인 텔레그램 메시지는 그대로, 추가 보강만)
+        try:
+            enrich_msg = _build_deep_enrich_message(top3)
+            if enrich_msg:
+                try:
+                    from app.utils.scheduler import _send_telegram_long
+                    deep_ok = bool(_send_telegram_long(enrich_msg, channel=True))
+                    cycle_record['deep_enrich_ok'] = deep_ok
+                except Exception as exc:
+                    logger.debug(f'[auto_runner] deep enrich telegram failed: {exc}')
+                    cycle_record['deep_enrich_ok'] = False
+        except Exception as exc:
+            logger.debug(f'[auto_runner] deep enrich build failed: {exc}')
+
     # Mark success/failure + transition
     if telegram_ok:
         _record_success(cycle_record, started, tuning, top3_count=len(top3))
@@ -721,6 +736,127 @@ def _evaluate_gates(*, force: bool, tuning: dict[str, Any]) -> dict[str, Any]:
     add('quality', True, 'thresholds met')
 
     return _gate_result(results)
+
+
+def _build_deep_enrich_message(top3: list[dict[str, Any]]) -> str:
+    """TOP 3 각 종목에 대해 뉴스(perplexity)/네이버 메타/DART 공시 1줄씩 보강.
+
+    실패해도 메인 흐름 영향 X — best-effort. 빈 결과 시 빈 문자열 반환.
+    """
+    if not top3:
+        return ''
+    lines: list[str] = ['📰 <b>TOP 3 심층 컨텍스트</b>', '']
+    has_any_data = False
+
+    for idx, item in enumerate(top3[:3], start=1):
+        candidate = item.get('candidate') if isinstance(item.get('candidate'), dict) else {}
+        symbol = str(item.get('symbol') or candidate.get('symbol') or '')
+        name = str(item.get('target') or candidate.get('display_name') or candidate.get('name') or symbol)
+        if not symbol:
+            continue
+
+        block: list[str] = [f'#{idx} <b>{name}</b> ({symbol})']
+
+        # 1) 네이버 금융 메타 (외국인비, PER) — best effort
+        try:
+            naver = _scrape_naver_finance_lite(symbol)
+            if naver and not naver.get('error'):
+                meta_bits = []
+                if naver.get('foreign_ratio'):
+                    meta_bits.append(f'외인 {naver["foreign_ratio"]}%')
+                if naver.get('per'):
+                    meta_bits.append(f'PER {naver["per"]}')
+                if naver.get('market_cap'):
+                    meta_bits.append(f'시총 {naver["market_cap"]}')
+                if meta_bits:
+                    block.append('· ' + ' / '.join(meta_bits))
+        except Exception as exc:
+            logger.debug(f'[deep_enrich] naver scrape failed {symbol}: {exc}')
+
+        # 2) Perplexity 뉴스 (호재 키워드) — best effort
+        try:
+            news = _perplexity_news_brief(f'{name} 호재 또는 악재 관련 최신 뉴스')
+            if news:
+                block.append(f'· 뉴스: {news[:140]}')
+                has_any_data = True
+        except Exception as exc:
+            logger.debug(f'[deep_enrich] perplexity failed {symbol}: {exc}')
+
+        # 3) DART 공시 (캐시된 호재 있으면)
+        try:
+            from engine.dart_deep_pipeline import get_cached_result
+            dart = get_cached_result(symbol)
+            if isinstance(dart, dict):
+                pos = (dart.get('positive_disclosures') or [])
+                if pos:
+                    block.append(f'· DART 호재: {len(pos)}건')
+                    has_any_data = True
+        except Exception as exc:
+            logger.debug(f'[deep_enrich] dart failed {symbol}: {exc}')
+
+        if len(block) > 1:
+            lines.append('\n'.join(block))
+            lines.append('')
+
+    if not has_any_data:
+        return ''
+    lines.append('🤖 <i>auto_runner deep enrich — MCP 도구 자동 호출 결과</i>')
+    return '\n'.join(lines).strip()
+
+
+def _scrape_naver_finance_lite(symbol: str) -> dict[str, Any]:
+    """네이버 금융 종목 페이지 핵심 메타 (외인비/PER/시총) 가벼운 추출."""
+    import re
+    import requests as _req
+    try:
+        r = _req.get(
+            f'https://finance.naver.com/item/main.naver?code={symbol}',
+            headers={'User-Agent': 'Mozilla/5.0 MiroFish/1.0'},
+            timeout=8,
+        )
+        if r.status_code != 200:
+            return {'error': f'HTTP {r.status_code}'}
+        html = r.text
+        def find(p: str) -> str:
+            m = re.search(p, html)
+            return m.group(1).strip() if m else ''
+        return {
+            'per': find(r'<em id="_per">([^<]+)</em>'),
+            'eps': find(r'<em id="_eps">([^<]+)</em>'),
+            'foreign_ratio': find(r'외국인소진율[\s\S]*?<em[^>]*>([0-9\.]+)</em>'),
+            'market_cap': find(r'시가총액[^<]*</span>[\s\S]*?<em[^>]*>([^<]+)</em>'),
+        }
+    except Exception as exc:
+        return {'error': f'{type(exc).__name__}: {exc}'}
+
+
+def _perplexity_news_brief(query: str) -> str | None:
+    """Perplexity 단일 짧은 한국어 답변 (실패 시 None)."""
+    import requests as _req
+    api_key = os.getenv('PERPLEXITY_API_KEY')
+    if not api_key:
+        return None
+    try:
+        resp = _req.post(
+            'https://api.perplexity.ai/chat/completions',
+            headers={'Authorization': f'Bearer {api_key}', 'Content-Type': 'application/json'},
+            json={
+                'model': os.getenv('PERPLEXITY_MODEL', 'sonar'),
+                'messages': [
+                    {'role': 'system', 'content': '한국어로 1문장만. 최신 뉴스/시장 영향만.'},
+                    {'role': 'user', 'content': query},
+                ],
+                'max_tokens': 200,
+            },
+            timeout=15,
+        )
+        if resp.status_code != 200:
+            return None
+        data = resp.json()
+        text = ((data.get('choices') or [{}])[0].get('message') or {}).get('content') or ''
+        return text.strip() or None
+    except Exception:
+        return None
 
 
 def _gate_result(results: list[dict[str, Any]]) -> dict[str, Any]:

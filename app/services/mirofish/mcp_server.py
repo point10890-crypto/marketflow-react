@@ -464,6 +464,165 @@ def create_mcp_server(
         except Exception as exc:
             return {'error': f'{type(exc).__name__}: {exc}'}
 
+    # =========================================================
+    # 외부 데이터 소스 & 종목 검색 (Phase 3 확장)
+    # =========================================================
+
+    @mcp.tool()
+    def search_news_perplexity(query: str, max_results: int = 5) -> dict[str, Any]:
+        """Perplexity 실시간 뉴스 검색 (한국어 우선).
+
+        Args:
+            query: 검색어 (예: '현대무벡스 호재', 'KOSPI 외국인')
+            max_results: 인용 최대 개수 (기본 5)
+        Returns:
+            {answer, citations[], usage} 또는 {error}
+        """
+        import os
+        import requests as _requests
+        api_key = os.getenv('PERPLEXITY_API_KEY')
+        if not api_key:
+            return {'error': 'PERPLEXITY_API_KEY missing'}
+        try:
+            resp = _requests.post(
+                'https://api.perplexity.ai/chat/completions',
+                headers={'Authorization': f'Bearer {api_key}', 'Content-Type': 'application/json'},
+                json={
+                    'model': os.getenv('PERPLEXITY_MODEL', 'sonar'),
+                    'messages': [
+                        {'role': 'system', 'content': '한국어로 간결히 2-3 문장 + 출처 link 제공.'},
+                        {'role': 'user', 'content': query},
+                    ],
+                    'max_tokens': 600,
+                    'return_citations': True,
+                },
+                timeout=25,
+            )
+            if resp.status_code != 200:
+                return {'error': f'HTTP {resp.status_code}: {resp.text[:200]}'}
+            data = resp.json()
+            choice = (data.get('choices') or [{}])[0]
+            citations = data.get('citations') or choice.get('citations') or []
+            return {
+                'answer': (choice.get('message') or {}).get('content', ''),
+                'citations': citations[:max_results],
+                'model': data.get('model'),
+                'usage': data.get('usage', {}),
+            }
+        except Exception as exc:
+            return {'error': f'{type(exc).__name__}: {exc}'}
+
+    @mcp.tool()
+    def scrape_naver_finance(symbol: str) -> dict[str, Any]:
+        """네이버 금융 종목 페이지 핵심 메타 (시총/PER/EPS/외국인비율/52주).
+
+        Args:
+            symbol: 종목 코드 (예: '005930')
+        Returns:
+            {symbol, name, price, change_pct, market_cap, per, eps, foreign_ratio, week52_high, week52_low}
+        """
+        import re
+        import requests as _requests
+        try:
+            url = f'https://finance.naver.com/item/main.naver?code={symbol}'
+            r = _requests.get(url, headers={'User-Agent': 'Mozilla/5.0 MiroFish/1.0'}, timeout=10)
+            if r.status_code != 200:
+                return {'error': f'HTTP {r.status_code}', 'symbol': symbol}
+            html = r.text
+            def find(pattern: str, default: str = '') -> str:
+                m = re.search(pattern, html)
+                return (m.group(1).strip() if m else default)
+            # 핵심 메트릭 정규식 추출 (네이버 마크업 안정적)
+            name = find(r'<dt class="line_b">([^<]+?)</dt>', '')
+            if not name:
+                name = find(r'<title>([^<]+?)</title>', '').replace(' - 네이버 증권', '').replace(' : 네이버 증권', '').strip()
+            price = find(r'<span class="blind">현재가</span>[\s\S]*?<span class="blind">(\d[\d,]*)</span>', '')
+            change_pct = find(r'<em[^>]*class="no_exday[^"]*">[\s\S]*?<span class="blind">([+-]?\d[\d\.,]*)%?</span>', '')
+            market_cap = find(r'시가총액[^<]*</span>[\s\S]*?<em[^>]*>([^<]+)</em>', '')
+            per = find(r'<em id="_per">([^<]+)</em>', '')
+            eps = find(r'<em id="_eps">([^<]+)</em>', '')
+            foreign_ratio = find(r'외국인소진율[\s\S]*?<em[^>]*>([0-9\.]+)</em>', '')
+            week_52_high = find(r'52주최고[^<]*</th>[\s\S]*?<em[^>]*>([0-9,]+)</em>', '')
+            week_52_low = find(r'52주최저[^<]*</th>[\s\S]*?<em[^>]*>([0-9,]+)</em>', '')
+            return {
+                'symbol': symbol,
+                'name': name,
+                'price': price,
+                'change_pct': change_pct,
+                'market_cap': market_cap,
+                'per': per,
+                'eps': eps,
+                'foreign_ratio': foreign_ratio,
+                'week52_high': week_52_high,
+                'week52_low': week_52_low,
+                'source_url': url,
+            }
+        except Exception as exc:
+            return {'error': f'{type(exc).__name__}: {exc}', 'symbol': symbol}
+
+    @mcp.tool()
+    def get_backtest_summary() -> dict[str, Any]:
+        """저장된 백테스트 결과 CSV 요약 (종가베팅 V2 등 누적 결과).
+
+        Returns:
+            {files: [{name, rows, columns, head, summary}, ...]}
+        """
+        import csv
+        import glob
+        import os
+        repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
+        data_root = os.path.join(repo_root, 'data')
+        candidates = []
+        for path in glob.glob(os.path.join(data_root, '*backtest*.csv')):
+            try:
+                with open(path, 'r', encoding='utf-8') as fh:
+                    rows = list(csv.reader(fh))
+                if not rows:
+                    continue
+                header = rows[0]
+                body = rows[1:]
+                candidates.append({
+                    'name': os.path.basename(path),
+                    'rows': len(body),
+                    'columns': header[:10],
+                    'head': body[:3],
+                })
+            except Exception as exc:
+                candidates.append({
+                    'name': os.path.basename(path),
+                    'error': f'{type(exc).__name__}: {exc}',
+                })
+        return {'files': candidates, 'data_root': data_root}
+
+    @mcp.tool()
+    def resolve_target(query: str) -> dict[str, Any]:
+        """한글 종목명 / 종목코드 → 정규화된 메타 (data sources + KIS 상태 포함).
+
+        Args:
+            query: '삼성전자', '005930', 'NVDA' 등
+        Returns:
+            target_snapshot (resolved + source_files + signal_count + kis 상태)
+        """
+        try:
+            from app.services.mirofish.store import resolve_target_snapshot
+            return resolve_target_snapshot(query)
+        except Exception as exc:
+            return {'error': f'{type(exc).__name__}: {exc}', 'query': query}
+
+    @mcp.tool()
+    def search_targets(query: str, limit: int = 16) -> dict[str, Any]:
+        """종목명/코드 부분 검색 → 후보 목록 (autocomplete 용).
+
+        Args:
+            query: 검색 키워드
+            limit: 최대 후보 수 (기본 16)
+        """
+        try:
+            from app.services.mirofish.store import search_target_candidates
+            return search_target_candidates(query, limit=limit)
+        except Exception as exc:
+            return {'error': f'{type(exc).__name__}: {exc}', 'query': query}
+
     return mcp
 
 
