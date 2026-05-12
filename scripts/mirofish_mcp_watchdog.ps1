@@ -132,20 +132,17 @@ Restart-Mcp
 Start-Sleep -Seconds 3
 $after = Test-McpAlive
 if ($after.Alive) {
-    Write-Log "Restart confirmed - MCP healthy."
-    $message = @(
-        "&#x1F501; <b>MiroFish MCP watchdog</b>"
-        ("사유: " + $status.Reason)
-        "조치: MCP 서버 재기동 완료"
-    ) -join "`n"
-    Send-Telegram $message
+    # SUCCESS notification 비활성화 (사용자 요청 — 깨진 한글 알림 중단)
+    # watchdog 의 재기동 동작 자체는 그대로 유지, 로그만 남김.
+    Write-Log "Restart confirmed - MCP healthy. (telegram suppressed)"
 } else {
     Write-Log ("Restart FAILED - still: " + $after.Reason)
+    # FAILURE 만 영문으로 (인코딩 깨짐 방지) 전송 — 진짜 장애는 알아야 함.
     $message = @(
-        "&#x1F6A8; <b>MiroFish MCP watchdog FAILED</b>"
-        ("사유: " + $status.Reason)
-        ("재기동 후 상태: " + $after.Reason)
-        "수동 확인 필요"
+        "[ALERT] MiroFish MCP watchdog FAILED"
+        ("reason: " + $status.Reason)
+        ("after_restart: " + $after.Reason)
+        "manual check required"
     ) -join "`n"
     Send-Telegram $message
 }
