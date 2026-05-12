@@ -9,10 +9,14 @@ tool-shaped functions around them.
 from __future__ import annotations
 
 import hmac
+import csv
+import io
 import json
 import os
 import re
 import subprocess
+import urllib.error
+import urllib.request
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Callable
@@ -32,6 +36,10 @@ SAFE_ARTIFACT_ROOT = REPO_ROOT / 'data' / 'admin_mirofish'
 MUTATION_ENV = 'MIROFISH_MCP_ALLOW_MUTATION'
 SHARED_SECRET_ENV = 'MIROFISH_MCP_SHARED_SECRET'
 CONFIRM_SEND_PHRASE = 'SEND_MIROFISH_AUTONOMOUS_ALERT'
+MCP_HTTP_URL_ENV = 'MIROFISH_MCP_HTTP_URL'
+DEFAULT_MCP_HTTP_URL = 'http://127.0.0.1:8765/mcp'
+MCP_STARTUP_TASK = 'MarketFlow-MiroFish-MCP'
+MCP_WATCHDOG_TASK = 'MarketFlow-MiroFish-MCP-Watchdog'
 
 KST = timezone(timedelta(hours=9))
 
@@ -80,6 +88,11 @@ def get_autonomous_status() -> dict[str, Any]:
         'scanner': alpha_scanner.get_scanner_schedule_status(),
         'workflow': workflow.get_workflow_status(),
         'learning': _learning_summary(read_learning_feedback()),
+        'runtime': {
+            'mcp_server': _mcp_http_status(),
+            'startup_task': _scheduled_task_status(MCP_STARTUP_TASK),
+            'watchdog_task': _scheduled_task_status(MCP_WATCHDOG_TASK),
+        },
         'tools': [
             'get_autonomous_status',
             'get_mcp_security_policy',
@@ -362,7 +375,16 @@ def run_candidate_detection_alert(
             'state_committed': False,
         })
         if not dry_run and send_telegram and events:
-            ok = _send_message(result.get('message') or '', send_fn=send_fn, channel=channel)
+            scanner_message = result.get('message') or ''
+            ok = _send_message(scanner_message, send_fn=send_fn, channel=channel)
+            # AIbain_bot 병렬 알림 (설정 시) — 신규 5종 후보 알림
+            try:
+                from app.utils.aibain_notify import send_scanner_alert
+                aibain_sent = send_scanner_alert(scanner_message)
+                result['aibain_sent'] = aibain_sent
+            except Exception as exc:
+                result['aibain_sent'] = False
+                result['aibain_error'] = f'{type(exc).__name__}: {exc}'
             result['telegram_sent'] = ok
             result['status'] = 'sent' if ok else 'send_failed'
             result['ok'] = ok
@@ -425,11 +447,20 @@ def run_autonomous_scan_analysis(
                 learning = refresh_learning_feedback({'limit': 20, 'commit': True, 'api_key': payload.get('api_key')})
                 result['learning_feedback'] = _learning_summary(learning)
             if send_telegram and result.get('top3'):
+                top3_message = workflow.build_workflow_top3_telegram_message(result)
                 ok = _send_message(
-                    workflow.build_workflow_top3_telegram_message(result),
+                    top3_message,
                     send_fn=send_fn,
                     channel=_bool(payload.get('channel'), False),
                 )
+                # AIbain_bot 병렬 알림 (설정된 경우만, 실패해도 메인 흐름 무영향)
+                try:
+                    from app.utils.aibain_notify import send_workflow_top3
+                    aibain_sent = send_workflow_top3(top3_message)
+                    result['aibain_sent'] = aibain_sent
+                except Exception as exc:
+                    result['aibain_sent'] = False
+                    result['aibain_error'] = f'{type(exc).__name__}: {exc}'
                 result['telegram_sent'] = ok
                 result['telegram_sent_at'] = _now_iso() if ok else None
                 if ok and commit_event_state:
@@ -527,10 +558,18 @@ def send_latest_workflow_telegram(
         raise ValueError('workflow not found')
     message = workflow.build_workflow_top3_telegram_message(record)
     ok = _send_message(message, send_fn=send_fn, channel=_bool(payload.get('channel'), False))
+    # AIbain_bot 병렬 알림 (설정 시)
+    aibain_sent = False
+    try:
+        from app.utils.aibain_notify import send_workflow_top3
+        aibain_sent = send_workflow_top3(message)
+    except Exception:
+        aibain_sent = False
     result = {
         'ok': ok,
         'status': 'sent' if ok else 'send_failed',
         'workflow_id': record.get('id'),
+        'aibain_sent': aibain_sent,
         'telegram_sent': ok,
         'telegram_sent_at': _now_iso() if ok else None,
         'message_chars': len(message),
@@ -560,6 +599,154 @@ def _git_output(args: list[str], *, allow_failure: bool = False) -> str:
     if completed.returncode != 0 and not allow_failure:
         return ''
     return (completed.stdout or '').strip()
+
+
+def _mcp_http_status() -> dict[str, Any]:
+    """Probe the local MCP HTTP adapter without exposing credentials."""
+    url = str(os.getenv(MCP_HTTP_URL_ENV) or DEFAULT_MCP_HTTP_URL).strip() or DEFAULT_MCP_HTTP_URL
+    payload = {
+        'jsonrpc': '2.0',
+        'id': 'marketflow-status',
+        'method': 'initialize',
+        'params': {
+            'protocolVersion': '2024-11-05',
+            'capabilities': {},
+            'clientInfo': {
+                'name': 'marketflow-status',
+                'version': '1.0',
+            },
+        },
+    }
+    request = urllib.request.Request(
+        url,
+        data=json.dumps(payload).encode('utf-8'),
+        headers={
+            'Accept': 'application/json, text/event-stream',
+            'Content-Type': 'application/json',
+        },
+        method='POST',
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=1.5) as response:
+            raw_body = response.read(64 * 1024).decode('utf-8', errors='replace')
+            body = _json_loads(raw_body)
+            result = body.get('result') if isinstance(body, dict) else {}
+            server_info = result.get('serverInfo') if isinstance(result, dict) else {}
+            return {
+                'url': url,
+                'healthy': 200 <= int(response.status) < 300,
+                'status_code': int(response.status),
+                'server_name': str(server_info.get('name') or '') or None,
+                'server_version': str(server_info.get('version') or '') or None,
+                'checked_at': _now_iso(),
+            }
+    except urllib.error.HTTPError as exc:
+        return {
+            'url': url,
+            'healthy': False,
+            'status_code': int(exc.code),
+            'error': 'http_error',
+            'checked_at': _now_iso(),
+        }
+    except Exception as exc:
+        return {
+            'url': url,
+            'healthy': False,
+            'status_code': None,
+            'error': _safe_error_message(exc),
+            'checked_at': _now_iso(),
+        }
+
+
+def _scheduled_task_status(task_name: str) -> dict[str, Any]:
+    """Return a redacted Windows scheduled-task status summary."""
+    status: dict[str, Any] = {
+        'task_name': task_name,
+        'registered': False,
+        'query_ok': False,
+        'platform': os.name,
+        'checked_at': _now_iso(),
+    }
+    if os.name != 'nt':
+        status['error'] = 'not_windows'
+        return status
+    try:
+        completed = subprocess.run(
+            ['schtasks', '/Query', '/TN', task_name, '/V', '/FO', 'CSV'],
+            capture_output=True,
+            text=True,
+            encoding='mbcs',
+            errors='replace',
+            timeout=5,
+            check=False,
+        )
+    except (OSError, subprocess.SubprocessError) as exc:
+        status['error'] = _safe_error_message(exc)
+        return status
+
+    status['query_ok'] = completed.returncode == 0
+    status['registered'] = completed.returncode == 0
+    status['return_code'] = completed.returncode
+    if completed.returncode != 0:
+        status['error'] = _safe_task_error(completed.stderr or completed.stdout)
+        return status
+
+    row = _first_csv_row(completed.stdout)
+    status.update({
+        'state': _row_value(row, 'Status', '상태'),
+        'next_run_time': _row_value(row, 'Next Run Time', '다음 실행 시간'),
+        'last_run_time': _row_value(row, 'Last Run Time', '마지막 실행 시간'),
+        'last_result': _row_value(row, 'Last Result', '마지막 결과'),
+    })
+    return status
+
+
+def _first_csv_row(raw: str) -> dict[str, str]:
+    clean = (raw or '').strip().lstrip('\ufeff')
+    if not clean:
+        return {}
+    try:
+        reader = csv.DictReader(io.StringIO(clean))
+        for row in reader:
+            return {
+                str(key or '').strip().lstrip('\ufeff'): str(value or '').strip()
+                for key, value in row.items()
+                if key
+            }
+    except csv.Error:
+        return {}
+    return {}
+
+
+def _row_value(row: dict[str, str], *names: str) -> str | None:
+    if not row:
+        return None
+    lower = {str(key).casefold(): value for key, value in row.items()}
+    for name in names:
+        direct = row.get(name)
+        if direct:
+            return direct
+        folded = lower.get(name.casefold())
+        if folded:
+            return folded
+    return None
+
+
+def _json_loads(raw: str) -> dict[str, Any]:
+    try:
+        value = json.loads(raw or '{}')
+    except json.JSONDecodeError:
+        return {}
+    return value if isinstance(value, dict) else {}
+
+
+def _safe_error_message(exc: Exception) -> str:
+    return re.sub(r'\s+', ' ', str(exc))[:200] or exc.__class__.__name__
+
+
+def _safe_task_error(raw: str) -> str:
+    clean = re.sub(r'\s+', ' ', str(raw or '')).strip()
+    return clean[:200] or 'task_query_failed'
 
 
 def _safe_dirty_entry(entry: str) -> str:
