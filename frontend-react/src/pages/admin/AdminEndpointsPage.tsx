@@ -2296,56 +2296,60 @@ export default function AdminEndpointsPage() {
                     {/* 모바일 전용 — 최상단 TOP 3 추천 미리보기 (lg+ 에서는 AlphaBoardPanel 내부 TOP 3 가 보임) */}
                     <MobileTopPicksHero />
 
-                    <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(360px,420px)] lg:items-start">
-                        {/* AlphaBoardPanel — 모바일: order 2 (스택 하단) / lg+: 좌측 컬럼 */}
-                        <div id="alpha-board" className="order-2 lg:order-1 scroll-mt-4">
-                            <AlphaBoardPanel
-                                candidates={alphaCandidates}
-                                scannerRun={alphaScannerRun}
-                                scannerStatus={alphaScannerStatus}
-                                state={alphaScannerState}
-                                errorText={alphaErrorText}
-                                deepSeekStatus={deepSeekStatus}
-                                deepSeekState={deepSeekState}
-                                deepSeekSummary={deepSeekSummary}
-                                deepSeekErrorText={deepSeekErrorText}
-                                workflow={workflow}
-                                workflowState={workflowState}
-                                workflowErrorText={workflowErrorText}
-                                autonomousStatus={autonomousStatus}
-                                onScan={handleAlphaScan}
-                                onWorkflow={handleMcpWorkflow}
-                                onDeepSeekSummary={handleDeepSeekSummary}
-                                onSendDeepSeekTelegram={handleSendDeepSeekTelegram}
-                                onSelect={selectAlphaCandidate}
-                                onDeepDive={deepDiveAlphaCandidate}
+                    {/* 메인 2-column 그리드 — 좌측: AlphaBoard + Autonomous MCP (스택)
+                        우측: status/액션 사이드바 (sticky). 좌측을 충분히 길게 만들어
+                        우측 sticky 가 viewport 안에서 오래 동행하도록 설계. */}
+                    <div className="grid gap-4 lg:grid-cols-[minmax(0,1.05fr)_minmax(380px,440px)] lg:gap-6 lg:items-start">
+                        {/* 좌측 컬럼 — 핵심 콘텐츠 스택 (모바일: order 2) */}
+                        <div className="order-2 lg:order-1 flex flex-col gap-4 lg:gap-6">
+                            <div id="alpha-board" className="scroll-mt-4">
+                                <AlphaBoardPanel
+                                    candidates={alphaCandidates}
+                                    scannerRun={alphaScannerRun}
+                                    scannerStatus={alphaScannerStatus}
+                                    state={alphaScannerState}
+                                    errorText={alphaErrorText}
+                                    deepSeekStatus={deepSeekStatus}
+                                    deepSeekState={deepSeekState}
+                                    deepSeekSummary={deepSeekSummary}
+                                    deepSeekErrorText={deepSeekErrorText}
+                                    workflow={workflow}
+                                    workflowState={workflowState}
+                                    workflowErrorText={workflowErrorText}
+                                    autonomousStatus={autonomousStatus}
+                                    onScan={handleAlphaScan}
+                                    onWorkflow={handleMcpWorkflow}
+                                    onDeepSeekSummary={handleDeepSeekSummary}
+                                    onSendDeepSeekTelegram={handleSendDeepSeekTelegram}
+                                    onSelect={selectAlphaCandidate}
+                                    onDeepDive={deepDiveAlphaCandidate}
+                                />
+                            </div>
+                            <AutonomousMcpPanel
+                                status={autonomousStatus}
+                                state={autonomousState}
+                                result={autonomousResult}
+                                learning={autonomousLearning}
+                                errorText={autonomousErrorText}
+                                confirmation={autonomousConfirmation}
+                                sharedSecret={autonomousSharedSecret}
+                                onConfirmationChange={setAutonomousConfirmation}
+                                onSharedSecretChange={setAutonomousSharedSecret}
+                                onRefresh={refreshAutonomousStatus}
+                                onDetectionDryRun={handleAutonomousDetectionDryRun}
+                                onAnalysisDryRun={handleAutonomousAnalysisDryRun}
+                                onLearningPreview={handleAutonomousLearningPreview}
+                                onSendLatestTelegram={handleSendLatestAutonomousTelegram}
                             />
                         </div>
                         {/* 사이드바 — 모바일: order 1 (TOP picks 직하단) / lg+: 우측 컬럼 sticky */}
-                        <aside className="order-1 lg:order-2 mt-4 flex flex-col gap-3 lg:mt-8 lg:sticky lg:top-4">
+                        <aside className="order-1 lg:order-2 mt-4 flex flex-col gap-3 lg:mt-0 lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto lg:pr-1">
                             <AutoRunnerCard />
                             <TodaysPipelineCard />
                             <RecentOutcomesBoard />
                             <QuickActionsFooter />
                         </aside>
                     </div>
-
-                    <AutonomousMcpPanel
-                        status={autonomousStatus}
-                        state={autonomousState}
-                        result={autonomousResult}
-                        learning={autonomousLearning}
-                        errorText={autonomousErrorText}
-                        confirmation={autonomousConfirmation}
-                        sharedSecret={autonomousSharedSecret}
-                        onConfirmationChange={setAutonomousConfirmation}
-                        onSharedSecretChange={setAutonomousSharedSecret}
-                        onRefresh={refreshAutonomousStatus}
-                        onDetectionDryRun={handleAutonomousDetectionDryRun}
-                        onAnalysisDryRun={handleAutonomousAnalysisDryRun}
-                        onLearningPreview={handleAutonomousLearningPreview}
-                        onSendLatestTelegram={handleSendLatestAutonomousTelegram}
-                    />
 
                     <form
                         className="mt-6 sm:mt-8 max-w-4xl rounded-xl border border-anthropic-darkLine bg-anthropic-dark2 p-1.5 sm:p-2"
