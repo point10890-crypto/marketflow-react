@@ -5,6 +5,7 @@ import MirofishChatPanel from '@/components/admin/MirofishChatPanel';
 import TodaysPipelineCard from '@/components/admin/TodaysPipelineCard';
 import RecentOutcomesBoard from '@/components/admin/RecentOutcomesBoard';
 import QuickActionsFooter from '@/components/admin/QuickActionsFooter';
+import MobileTopPicksHero from '@/components/admin/MobileTopPicksHero';
 
 const agentCounts = [3, 7, 10, 15];
 const defaultTarget = '삼성전자';
@@ -2291,30 +2292,36 @@ export default function AdminEndpointsPage() {
                         ))}
                     </div>
 
+                    {/* 모바일 전용 — 최상단 TOP 3 추천 미리보기 (lg+ 에서는 AlphaBoardPanel 내부 TOP 3 가 보임) */}
+                    <MobileTopPicksHero />
+
                     <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(360px,420px)] lg:items-start">
-                        <AlphaBoardPanel
-                            candidates={alphaCandidates}
-                            scannerRun={alphaScannerRun}
-                            scannerStatus={alphaScannerStatus}
-                            state={alphaScannerState}
-                            errorText={alphaErrorText}
-                            deepSeekStatus={deepSeekStatus}
-                            deepSeekState={deepSeekState}
-                            deepSeekSummary={deepSeekSummary}
-                            deepSeekErrorText={deepSeekErrorText}
-                            workflow={workflow}
-                            workflowState={workflowState}
-                            workflowErrorText={workflowErrorText}
-                            autonomousStatus={autonomousStatus}
-                            onScan={handleAlphaScan}
-                            onWorkflow={handleMcpWorkflow}
-                            onDeepSeekSummary={handleDeepSeekSummary}
-                            onSendDeepSeekTelegram={handleSendDeepSeekTelegram}
-                            onSelect={selectAlphaCandidate}
-                            onDeepDive={deepDiveAlphaCandidate}
-                        />
-                        {/* 우측 사이드바 — lg+: 우측 컬럼 / mobile: AlphaBoard 아래 자연 스택 */}
-                        <aside className="flex flex-col gap-3 lg:mt-8 lg:sticky lg:top-4">
+                        {/* AlphaBoardPanel — 모바일: order 2 (스택 하단) / lg+: 좌측 컬럼 */}
+                        <div id="alpha-board" className="order-2 lg:order-1 scroll-mt-4">
+                            <AlphaBoardPanel
+                                candidates={alphaCandidates}
+                                scannerRun={alphaScannerRun}
+                                scannerStatus={alphaScannerStatus}
+                                state={alphaScannerState}
+                                errorText={alphaErrorText}
+                                deepSeekStatus={deepSeekStatus}
+                                deepSeekState={deepSeekState}
+                                deepSeekSummary={deepSeekSummary}
+                                deepSeekErrorText={deepSeekErrorText}
+                                workflow={workflow}
+                                workflowState={workflowState}
+                                workflowErrorText={workflowErrorText}
+                                autonomousStatus={autonomousStatus}
+                                onScan={handleAlphaScan}
+                                onWorkflow={handleMcpWorkflow}
+                                onDeepSeekSummary={handleDeepSeekSummary}
+                                onSendDeepSeekTelegram={handleSendDeepSeekTelegram}
+                                onSelect={selectAlphaCandidate}
+                                onDeepDive={deepDiveAlphaCandidate}
+                            />
+                        </div>
+                        {/* 사이드바 — 모바일: order 1 (TOP picks 직하단) / lg+: 우측 컬럼 sticky */}
+                        <aside className="order-1 lg:order-2 mt-4 flex flex-col gap-3 lg:mt-8 lg:sticky lg:top-4">
                             <TodaysPipelineCard />
                             <RecentOutcomesBoard />
                             <QuickActionsFooter />
