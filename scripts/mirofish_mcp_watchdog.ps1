@@ -1,15 +1,15 @@
-# MarketFlow Flask Watchdog
-# Restarts the MarketFlow-Flask task when port 5001 or /healthz is unavailable.
+# MarketFlow MiroFish MCP Watchdog
+# Restarts the MarketFlow-MiroFish-MCP task when the local MCP HTTP endpoint is unavailable.
 
 $ErrorActionPreference = 'Continue'
 $OutputEncoding = [System.Text.Encoding]::UTF8
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
 $Project   = 'C:\bitman_marketfloww'
-$LogFile   = Join-Path $Project 'logs\flask_watchdog.log'
-$TaskName  = 'MarketFlow-Flask'
-$Port      = 5001
-$HealthUrl = "http://localhost:$Port/healthz"
+$LogFile   = Join-Path $Project 'logs\mirofish_mcp_watchdog.log'
+$TaskName  = 'MarketFlow-MiroFish-MCP'
+$Port      = 8765
+$McpUrl    = "http://127.0.0.1:$Port/mcp"
 
 function Write-Log($msg) {
     $line = "{0} | {1}" -f (Get-Date -Format 'yyyy-MM-dd HH:mm:ss'), $msg
@@ -53,76 +53,96 @@ function Send-Telegram($msg) {
     }
 }
 
-function Test-FlaskAlive {
-    $tcp = Test-NetConnection -ComputerName 'localhost' -Port $Port `
+function Test-McpAlive {
+    $tcp = Test-NetConnection -ComputerName '127.0.0.1' -Port $Port `
                               -WarningAction SilentlyContinue `
                               -InformationLevel Quiet
     if (-not $tcp) {
         return @{ Alive = $false; Reason = "tcp_${Port}_unreachable" }
     }
 
+    $payload = @{
+        jsonrpc = '2.0'
+        id = 1
+        method = 'initialize'
+        params = @{
+            protocolVersion = '2024-11-05'
+            capabilities = @{}
+            clientInfo = @{
+                name = 'marketflow-mcp-watchdog'
+                version = '1.0'
+            }
+        }
+    } | ConvertTo-Json -Depth 6 -Compress
+
     try {
-        $resp = Invoke-WebRequest -Uri $HealthUrl -TimeoutSec 5 `
-                                  -UseBasicParsing -ErrorAction Stop
+        $resp = Invoke-WebRequest -Uri $McpUrl `
+                                  -Method Post `
+                                  -Headers @{ Accept = 'application/json, text/event-stream' } `
+                                  -ContentType 'application/json; charset=utf-8' `
+                                  -Body ([System.Text.Encoding]::UTF8.GetBytes($payload)) `
+                                  -TimeoutSec 8 `
+                                  -UseBasicParsing `
+                                  -ErrorAction Stop
         if ($resp.StatusCode -ne 200) {
-            return @{ Alive = $false; Reason = "healthz_status_$($resp.StatusCode)" }
+            return @{ Alive = $false; Reason = "mcp_status_$($resp.StatusCode)" }
+        }
+        if ([string]$resp.Content -notmatch 'MarketFlow MiroFish Autonomous MCP') {
+            return @{ Alive = $false; Reason = 'mcp_unexpected_response' }
         }
     } catch {
-        $msg = $_.Exception.Message
-        if ($msg -match '404') {
-            return @{ Alive = $true; Reason = 'tcp_ok_healthz_404_transitional' }
-        }
-        return @{ Alive = $false; Reason = "healthz_$($msg -replace '[^a-zA-Z0-9_]','_' | Select-Object -First 50)" }
+        $msg = $_.Exception.Message -replace '[^a-zA-Z0-9_]', '_'
+        if ($msg.Length -gt 80) { $msg = $msg.Substring(0, 80) }
+        return @{ Alive = $false; Reason = "mcp_http_$msg" }
     }
 
     return @{ Alive = $true; Reason = 'ok' }
 }
 
-function Restart-Flask {
-    Write-Log "Restarting MarketFlow-Flask task..."
+function Restart-Mcp {
+    Write-Log "Restarting MarketFlow-MiroFish-MCP task..."
     try {
         Stop-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue
-        Start-Sleep -Seconds 3
-        $flaskAppPath = Join-Path $Project 'flask_app.py'
+        Start-Sleep -Seconds 2
         Get-CimInstance Win32_Process -Filter "Name='python.exe'" `
             | Where-Object {
-                $_.CommandLine -like ('*' + $flaskAppPath + '*')
+                $_.CommandLine -like '*mirofish_mcp_server.py*'
             } `
             | ForEach-Object {
-                Write-Log ("Killing orphan Flask PID " + $_.ProcessId)
+                Write-Log ("Killing orphan MCP PID " + $_.ProcessId)
                 Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue
             }
         Start-Sleep -Seconds 2
         Start-ScheduledTask -TaskName $TaskName
-        Write-Log "Start-ScheduledTask issued; waiting 8s for boot..."
+        Write-Log "Start-ScheduledTask issued; waiting 8s for MCP boot..."
         Start-Sleep -Seconds 8
     } catch {
         Write-Log ("Restart command failed: " + $_.Exception.Message)
     }
 }
 
-$status = Test-FlaskAlive
+$status = Test-McpAlive
 if ($status.Alive) {
     exit 0
 }
 
-Write-Log ("FLASK DOWN: " + $status.Reason + " - restarting")
-Restart-Flask
+Write-Log ("MCP DOWN: " + $status.Reason + " - restarting")
+Restart-Mcp
 
 Start-Sleep -Seconds 3
-$after = Test-FlaskAlive
+$after = Test-McpAlive
 if ($after.Alive) {
-    Write-Log "Restart confirmed - Flask healthy."
+    Write-Log "Restart confirmed - MCP healthy."
     $message = @(
-        "&#x1F501; <b>Flask watchdog</b>"
+        "&#x1F501; <b>MiroFish MCP watchdog</b>"
         ("사유: " + $status.Reason)
-        "조치: Flask 재기동 완료"
+        "조치: MCP 서버 재기동 완료"
     ) -join "`n"
     Send-Telegram $message
 } else {
     Write-Log ("Restart FAILED - still: " + $after.Reason)
     $message = @(
-        "&#x1F6A8; <b>Flask watchdog FAILED</b>"
+        "&#x1F6A8; <b>MiroFish MCP watchdog FAILED</b>"
         ("사유: " + $status.Reason)
         ("재기동 후 상태: " + $after.Reason)
         "수동 확인 필요"

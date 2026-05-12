@@ -846,6 +846,7 @@ def _build_learning_feedback(
     returns = [_number(item.get('forward_return_pct')) for item in evaluated if item.get('forward_return_pct') is not None]
     hit_rate = round((len(hits) / len(evaluated)) * 100, 1) if evaluated else None
     avg_return = round(sum(returns) / len(returns), 2) if returns else None
+    alpha_memory = _build_alpha_memory(evaluated)
     recommendations: list[dict[str, Any]] = []
     if hit_rate is not None and hit_rate < 40:
         recommendations.append({
@@ -880,10 +881,154 @@ def _build_learning_feedback(
         'miss_count': len(misses),
         'hit_rate_pct': hit_rate,
         'average_forward_return_pct': avg_return,
+        'alpha_memory': alpha_memory,
         'workflows': workflows,
         'recommendations': recommendations,
         'errors': errors,
     }
+
+
+def _build_alpha_memory(items: list[dict[str, Any]]) -> dict[str, Any]:
+    """Summarize which recommendation features actually produced forward returns."""
+    snapshots = [
+        (item, item.get('feature_snapshot'))
+        for item in items
+        if isinstance(item.get('feature_snapshot'), dict)
+    ]
+    if not snapshots:
+        return {
+            'available': False,
+            'sample_count': 0,
+            'note': 'no feature snapshots are available yet',
+        }
+
+    signal_quality = _cohort_memory(snapshots, lambda _item, snap: snap.get('signal_quality'))
+    scanner_action = _cohort_memory(snapshots, lambda _item, snap: snap.get('scanner_action'))
+    cio_action = _cohort_memory(snapshots, lambda _item, snap: snap.get('cio_action'))
+    strategy_tags = _cohort_memory(
+        snapshots,
+        lambda _item, snap: snap.get('strategy_tags') if isinstance(snap.get('strategy_tags'), list) else [],
+        multi=True,
+    )
+    score_profile = _score_memory_profile(snapshots)
+    strongest = _best_cohort(strategy_tags or signal_quality)
+    weakest = _worst_cohort(strategy_tags or signal_quality)
+    guidance: list[dict[str, Any]] = []
+    if weakest and _number(weakest.get('average_forward_return_pct')) < 0:
+        guidance.append({
+            'type': 'risk_penalty',
+            'target': weakest.get('key'),
+            'reason': 'this cohort has negative forward return in recent memory',
+            'suggested_change': 'lower rank unless price/volume confirmation improves',
+        })
+    if strongest and _number(strongest.get('hit_rate_pct')) >= 60:
+        guidance.append({
+            'type': 'alpha_boost',
+            'target': strongest.get('key'),
+            'reason': 'this cohort has the strongest recent hit profile',
+            'suggested_change': 'prefer when source freshness and risk gates are clean',
+        })
+    return {
+        'available': True,
+        'sample_count': len(snapshots),
+        'cohorts': {
+            'signal_quality': signal_quality,
+            'strategy_tags': strategy_tags,
+            'scanner_action': scanner_action,
+            'cio_action': cio_action,
+        },
+        'score_profile': score_profile,
+        'strongest_positive': strongest,
+        'weakest_negative': weakest,
+        'guidance': guidance,
+    }
+
+
+def _cohort_memory(
+    snapshots: list[tuple[dict[str, Any], dict[str, Any]]],
+    key_fn: Callable[[dict[str, Any], dict[str, Any]], Any],
+    *,
+    multi: bool = False,
+) -> list[dict[str, Any]]:
+    buckets: dict[str, list[dict[str, Any]]] = {}
+    for item, snapshot in snapshots:
+        raw_keys = key_fn(item, snapshot)
+        keys = raw_keys if multi and isinstance(raw_keys, list) else [raw_keys]
+        for key in keys:
+            clean_key = str(key or '').strip()
+            if not clean_key:
+                continue
+            buckets.setdefault(clean_key, []).append(item)
+    cohorts = [_cohort_stats(key, values) for key, values in buckets.items()]
+    cohorts.sort(
+        key=lambda cohort: (
+            _number(cohort.get('average_forward_return_pct')),
+            _number(cohort.get('hit_rate_pct')),
+            _number(cohort.get('sample_count')),
+        ),
+        reverse=True,
+    )
+    return cohorts[:8]
+
+
+def _cohort_stats(key: str, items: list[dict[str, Any]]) -> dict[str, Any]:
+    evaluated = [item for item in items if item.get('status') in {'partial', 'evaluated'}]
+    hits = [item for item in evaluated if item.get('hit') is True]
+    returns = [_number(item.get('forward_return_pct')) for item in evaluated if item.get('forward_return_pct') is not None]
+    return {
+        'key': key,
+        'sample_count': len(items),
+        'evaluated_count': len(evaluated),
+        'hit_count': len(hits),
+        'hit_rate_pct': round((len(hits) / len(evaluated)) * 100, 1) if evaluated else None,
+        'average_forward_return_pct': round(sum(returns) / len(returns), 2) if returns else None,
+    }
+
+
+def _score_memory_profile(snapshots: list[tuple[dict[str, Any], dict[str, Any]]]) -> dict[str, Any]:
+    hits = [(item, snap) for item, snap in snapshots if item.get('hit') is True]
+    misses = [(item, snap) for item, snap in snapshots if item.get('hit') is False]
+    return {
+        'hit_avg_alpha': _avg_snapshot(hits, 'alpha_score'),
+        'miss_avg_alpha': _avg_snapshot(misses, 'alpha_score'),
+        'hit_avg_risk': _avg_snapshot(hits, 'risk_score'),
+        'miss_avg_risk': _avg_snapshot(misses, 'risk_score'),
+        'hit_avg_final_score': _avg_snapshot(hits, 'final_score'),
+        'miss_avg_final_score': _avg_snapshot(misses, 'final_score'),
+        'hit_avg_source_count': _avg_snapshot(hits, 'source_count'),
+        'miss_avg_source_count': _avg_snapshot(misses, 'source_count'),
+    }
+
+
+def _avg_snapshot(snapshots: list[tuple[dict[str, Any], dict[str, Any]]], field: str) -> float | None:
+    values = [_number(snapshot.get(field)) for _item, snapshot in snapshots if snapshot.get(field) not in (None, '')]
+    return round(sum(values) / len(values), 2) if values else None
+
+
+def _best_cohort(cohorts: list[dict[str, Any]]) -> dict[str, Any] | None:
+    if not cohorts:
+        return None
+    return max(
+        cohorts,
+        key=lambda item: (
+            _number(item.get('average_forward_return_pct')),
+            _number(item.get('hit_rate_pct')),
+            _number(item.get('sample_count')),
+        ),
+    )
+
+
+def _worst_cohort(cohorts: list[dict[str, Any]]) -> dict[str, Any] | None:
+    if not cohorts:
+        return None
+    return min(
+        cohorts,
+        key=lambda item: (
+            _number(item.get('average_forward_return_pct')),
+            _number(item.get('hit_rate_pct')),
+            -_number(item.get('sample_count')),
+        ),
+    )
 
 
 def _workflow_payload(payload: dict[str, Any]) -> dict[str, Any]:
@@ -1061,6 +1206,7 @@ def _error_result(exc: Exception) -> dict[str, str]:
 def _learning_summary(feedback: dict[str, Any] | None) -> dict[str, Any]:
     if not isinstance(feedback, dict):
         return {'available': False}
+    alpha_memory = feedback.get('alpha_memory') if isinstance(feedback.get('alpha_memory'), dict) else {}
     return {
         'available': True,
         'generated_at': feedback.get('generated_at'),
@@ -1068,6 +1214,13 @@ def _learning_summary(feedback: dict[str, Any] | None) -> dict[str, Any]:
         'evaluated_count': feedback.get('evaluated_count'),
         'hit_rate_pct': feedback.get('hit_rate_pct'),
         'average_forward_return_pct': feedback.get('average_forward_return_pct'),
+        'alpha_memory': {
+            'available': bool(alpha_memory.get('available')),
+            'sample_count': alpha_memory.get('sample_count') or 0,
+            'strongest_positive': alpha_memory.get('strongest_positive'),
+            'weakest_negative': alpha_memory.get('weakest_negative'),
+            'guidance': alpha_memory.get('guidance') or [],
+        },
         'production_weights_mutated': bool(feedback.get('production_weights_mutated')),
         'recommendation_count': len(feedback.get('recommendations') or []),
     }

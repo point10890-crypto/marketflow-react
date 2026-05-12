@@ -775,6 +775,10 @@ function AutonomousMcpPanel({
     const phrase = status?.send_confirmation_phrase || 'SEND_MIROFISH_AUTONOMOUS_ALERT';
     const canSend = mutationEnabled && confirmation === phrase && (!secretRequired || sharedSecret.trim().length > 0) && !busy;
     const learningView = learning || status?.learning || null;
+    const alphaMemory = learningView?.alpha_memory;
+    const strongestMemory = alphaMemory?.strongest_positive || null;
+    const weakestMemory = alphaMemory?.weakest_negative || null;
+    const memorySampleCount = Number(alphaMemory?.sample_count || 0);
     const eventItems = result?.events || [];
     const topSymbols = result?.top_symbols || [];
     const statusTone = state === 'error'
@@ -832,12 +836,13 @@ function AutonomousMcpPanel({
                 </div>
             )}
 
-            <div className="mt-4 grid gap-2 md:grid-cols-4">
+            <div className="mt-4 grid gap-2 md:grid-cols-5">
                 {[
                     ['Tools', status?.tools?.length ?? 0, 'MCP exposed actions'],
                     ['Resources', status?.resources?.length ?? 0, 'status and artifacts'],
                     ['Hit Rate', learningView?.hit_rate_pct === undefined || learningView?.hit_rate_pct === null ? '--' : `${Number(learningView.hit_rate_pct).toFixed(1)}%`, `${learningView?.evaluated_count ?? 0} evaluated`],
                     ['Avg Return', learningView?.average_forward_return_pct === undefined || learningView?.average_forward_return_pct === null ? '--' : formatSignedPct(learningView.average_forward_return_pct), 'advisory only'],
+                    ['Alpha Memory', alphaMemory?.available ? memorySampleCount : '--', strongestMemory?.key ? `best ${String(strongestMemory.key)}` : 'waiting outcomes'],
                 ].map(([label, value, caption]) => (
                     <div key={String(label)} className="rounded-lg border border-white/10 bg-black/20 p-3">
                         <div className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">{String(label)}</div>
@@ -862,6 +867,34 @@ function AutonomousMcpPanel({
                     </div>
                 ))}
             </div>
+
+            {alphaMemory?.available && (
+                <div className="mt-3 rounded-lg border border-emerald-300/15 bg-emerald-300/[0.05] p-3">
+                    <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                        <div>
+                            <div className="text-[11px] font-black uppercase tracking-[0.18em] text-emerald-100/80">Alpha Memory</div>
+                            <div className="mt-1 text-sm font-bold text-slate-200">
+                                Forward outcomes are tied back to the original alpha/risk/tag/CIO feature snapshot.
+                            </div>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                            <span className="rounded-full border border-emerald-300/20 bg-emerald-300/10 px-2.5 py-1 text-[11px] font-black text-emerald-100">
+                                samples {memorySampleCount}
+                            </span>
+                            {strongestMemory?.key && (
+                                <span className="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-2.5 py-1 text-[11px] font-black text-cyan-100">
+                                    best {String(strongestMemory.key)} {strongestMemory.hit_rate_pct ?? '--'}%
+                                </span>
+                            )}
+                            {weakestMemory?.key && (
+                                <span className="rounded-full border border-amber-300/20 bg-amber-300/10 px-2.5 py-1 text-[11px] font-black text-amber-100">
+                                    weak {String(weakestMemory.key)} {weakestMemory.average_forward_return_pct ?? '--'}%
+                                </span>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <div className="mt-4 grid gap-3 lg:grid-cols-[1fr_1fr_auto]">
                 <div className="rounded-lg border border-white/10 bg-white/[0.04] p-3">

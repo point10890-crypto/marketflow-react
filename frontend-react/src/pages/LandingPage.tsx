@@ -441,7 +441,7 @@ export default function LandingPage() {
                                 to="/signup"
                                 className="px-8 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-black font-bold text-sm transition-all"
                             >
-                                시작하기
+                                가입하고 시작
                             </Link>
                             <Link
                                 to="/pricing"

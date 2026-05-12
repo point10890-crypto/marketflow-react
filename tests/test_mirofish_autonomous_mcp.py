@@ -88,6 +88,29 @@ def test_candidate_detection_defaults_to_dry_run_without_telegram(isolated_auton
 def test_autonomous_status_exposes_safe_mcp_policy(monkeypatch):
     monkeypatch.delenv(autonomous_mcp.MUTATION_ENV, raising=False)
     monkeypatch.delenv(autonomous_mcp.SHARED_SECRET_ENV, raising=False)
+    monkeypatch.setattr(
+        autonomous_mcp,
+        '_mcp_http_status',
+        lambda: {
+            'url': 'http://127.0.0.1:8765/mcp',
+            'healthy': True,
+            'status_code': 200,
+            'server_name': 'MarketFlow MiroFish Autonomous MCP',
+            'server_version': 'test',
+            'checked_at': '2026-05-11T00:00:00+00:00',
+        },
+    )
+    monkeypatch.setattr(
+        autonomous_mcp,
+        '_scheduled_task_status',
+        lambda task_name: {
+            'task_name': task_name,
+            'registered': True,
+            'query_ok': True,
+            'last_result': '0',
+            'checked_at': '2026-05-11T00:00:00+00:00',
+        },
+    )
 
     status = autonomous_mcp.get_autonomous_status()
     policy = autonomous_mcp.get_mcp_security_policy()
@@ -98,6 +121,9 @@ def test_autonomous_status_exposes_safe_mcp_policy(monkeypatch):
     assert 'get_repository_state' in status['tools']
     assert 'list_safe_artifacts' in status['tools']
     assert 'read_safe_artifact' in status['tools']
+    assert status['runtime']['mcp_server']['healthy'] is True
+    assert status['runtime']['startup_task']['registered'] is True
+    assert status['runtime']['watchdog_task']['registered'] is True
     assert policy['mutation_enabled'] is False
     assert policy['shared_secret_configured'] is False
     assert policy['artifact_allowlist_root'] == 'data/admin_mirofish'
@@ -218,8 +244,36 @@ def test_learning_feedback_is_advisory_and_lookahead_safe(isolated_autonomous_pa
             'status': 'evaluated',
             'summary': {'hit_rate_pct': 50.0},
             'items': [
-                {'symbol': '000001', 'status': 'evaluated', 'hit': True, 'forward_return_pct': 6.5},
-                {'symbol': '000002', 'status': 'evaluated', 'hit': False, 'forward_return_pct': -2.0},
+                {
+                    'symbol': '000001',
+                    'status': 'evaluated',
+                    'hit': True,
+                    'forward_return_pct': 6.5,
+                    'feature_snapshot': {
+                        'alpha_score': 82,
+                        'risk_score': 24,
+                        'final_score': 88,
+                        'signal_quality': 'high_conviction',
+                        'strategy_tags': ['momentum', 'trend_quality'],
+                        'scanner_action': 'BUY_CANDIDATE',
+                        'cio_action': 'BUY',
+                    },
+                },
+                {
+                    'symbol': '000002',
+                    'status': 'evaluated',
+                    'hit': False,
+                    'forward_return_pct': -2.0,
+                    'feature_snapshot': {
+                        'alpha_score': 68,
+                        'risk_score': 52,
+                        'final_score': 54,
+                        'signal_quality': 'watch',
+                        'strategy_tags': ['event_risk'],
+                        'scanner_action': 'WATCH',
+                        'cio_action': 'HOLD',
+                    },
+                },
             ],
         },
     )
@@ -231,8 +285,13 @@ def test_learning_feedback_is_advisory_and_lookahead_safe(isolated_autonomous_pa
     assert feedback['evaluated_count'] == 2
     assert feedback['hit_rate_pct'] == 50.0
     assert feedback['average_forward_return_pct'] == 2.25
+    assert feedback['alpha_memory']['available'] is True
+    assert feedback['alpha_memory']['sample_count'] == 2
+    assert feedback['alpha_memory']['strongest_positive']['key'] in {'momentum', 'trend_quality'}
+    assert feedback['alpha_memory']['weakest_negative']['key'] == 'event_risk'
     saved = json.loads((isolated_autonomous_paths / 'learning_feedback.json').read_text(encoding='utf-8'))
     assert saved['mode'] == 'advisory_feedback_only'
+    assert saved['alpha_memory']['score_profile']['hit_avg_alpha'] == 82
 
 
 def test_admin_autonomous_routes_are_registered():

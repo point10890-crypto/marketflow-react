@@ -138,6 +138,11 @@ def test_workflow_attaches_forward_outcomes_without_lookahead(tmp_path, monkeypa
     assert outcome['lookahead_safe'] is True
     assert outcome['entry_date'] == '2026-05-07'
     assert outcome['entry_price'] == 1000
+    assert outcome['feature_snapshot']['alpha_score'] == 80
+    assert outcome['feature_snapshot']['risk_score'] == 20
+    assert outcome['feature_snapshot']['signal_quality'] == 'high_conviction'
+    assert outcome['feature_snapshot']['strategy_tags'] == ['momentum', 'trend_quality']
+    assert outcome['feature_snapshot']['cio_action'] == 'BUY'
     assert outcome['horizons']['5']['exit_date'] == '2026-05-14'
     assert outcome['horizons']['5']['return_pct'] == 10.0
     assert outcome['forward_return_pct'] == 10.0

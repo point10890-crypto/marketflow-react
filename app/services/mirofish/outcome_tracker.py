@@ -141,6 +141,7 @@ def evaluate_result_outcome(
         'rank': candidate.get('rank'),
         'entry_date': entry_date,
         'entry_price': entry_price,
+        'feature_snapshot': _feature_snapshot(candidate, result),
         'lookahead_safe': True,
         'rule': 'use rows where price.date > entry_date only',
         'target_return_pct': target_return_pct,
@@ -253,6 +254,27 @@ def _workflow_results(workflow: dict[str, Any]) -> list[dict[str, Any]]:
     analysis_runs = workflow.get('analysis_runs') if isinstance(workflow.get('analysis_runs'), list) else []
     results = analysis_runs or top3
     return [item for item in results if isinstance(item, dict)]
+
+
+def _feature_snapshot(candidate: dict[str, Any], result: dict[str, Any]) -> dict[str, Any]:
+    """Capture the recommendation context used later by Alpha Memory."""
+    profile = candidate.get('analysis_profile') if isinstance(candidate.get('analysis_profile'), dict) else {}
+    verdict = result.get('verdict') if isinstance(result.get('verdict'), dict) else {}
+    tags = candidate.get('strategy_tags') if isinstance(candidate.get('strategy_tags'), list) else []
+    return {
+        'alpha_score': _number(candidate.get('alpha_score')),
+        'risk_score': _number(candidate.get('risk_score')),
+        'ranking_score': _number(candidate.get('ranking_score')),
+        'final_score': _number(result.get('final_score')),
+        'signal_quality': str(candidate.get('signal_quality') or ''),
+        'strategy_tags': [str(tag) for tag in tags if str(tag or '').strip()][:12],
+        'scanner_action': str(candidate.get('action') or ''),
+        'source_count': _number(profile.get('source_count')),
+        'trend_20d_pct': _number(profile.get('trend_20d_pct')),
+        'volume_ratio': _number(profile.get('volume_ratio')),
+        'cio_action': str(verdict.get('action') or verdict.get('label') or ''),
+        'cio_confidence_pct': _number(verdict.get('confidence_pct')),
+    }
 
 
 def _load_price_history(path: str, symbols: list[str]) -> dict[str, list[dict[str, Any]]]:

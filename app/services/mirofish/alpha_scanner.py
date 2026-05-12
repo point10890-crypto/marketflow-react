@@ -1529,12 +1529,29 @@ def _scheduler_last_run_at() -> str | None:
     for key, value in data.items():
         if not str(key).startswith('alpha_scanner_') and key != 'alpha_scanner':
             continue
-        parsed = _parse_dt(value)
+        parsed = _parse_scheduler_last_run_dt(value)
         if parsed is not None:
             values.append(parsed)
     if not values:
         return None
     return max(values).astimezone(KST).isoformat()
+
+
+def _parse_scheduler_last_run_dt(value: Any) -> datetime | None:
+    if not value:
+        return None
+    text = str(value).strip()
+    if not text:
+        return None
+    if text.endswith('Z'):
+        text = f'{text[:-1]}+00:00'
+    try:
+        dt = datetime.fromisoformat(text)
+    except ValueError:
+        return None
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=KST)
+    return dt.astimezone(timezone.utc)
 
 
 def _alert_state_path() -> str:

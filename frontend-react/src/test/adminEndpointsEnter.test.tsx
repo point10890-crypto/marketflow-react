@@ -329,6 +329,33 @@ beforeEach(() => {
       average_forward_return_pct: 2.25,
       production_weights_mutated: false,
       recommendation_count: 1,
+      alpha_memory: {
+        available: true,
+        sample_count: 2,
+        strongest_positive: { key: 'momentum', hit_rate_pct: 100, average_forward_return_pct: 6.5 },
+        weakest_negative: { key: 'event_risk', hit_rate_pct: 0, average_forward_return_pct: -2 },
+      },
+    },
+    runtime: {
+      mcp_server: {
+        url: 'http://127.0.0.1:8765/mcp',
+        healthy: true,
+        status_code: 200,
+        server_name: 'MarketFlow MiroFish Autonomous MCP',
+        server_version: 'test',
+      },
+      startup_task: {
+        task_name: 'MarketFlow-MiroFish-MCP',
+        registered: true,
+        query_ok: true,
+        last_result: '0',
+      },
+      watchdog_task: {
+        task_name: 'MarketFlow-MiroFish-MCP-Watchdog',
+        registered: true,
+        query_ok: true,
+        next_run_time: '10:10',
+      },
     },
     tools: [
       'run_candidate_detection_alert',
@@ -386,6 +413,13 @@ beforeEach(() => {
     miss_count: 1,
     hit_rate_pct: 50,
     average_forward_return_pct: 2.25,
+    alpha_memory: {
+      available: true,
+      sample_count: 2,
+      strongest_positive: { key: 'momentum', hit_rate_pct: 100, average_forward_return_pct: 6.5 },
+      weakest_negative: { key: 'event_risk', hit_rate_pct: 0, average_forward_return_pct: -2 },
+      guidance: [{ type: 'alpha_boost', target: 'momentum', reason: 'strong cohort' }],
+    },
     recommendations: [{
       type: 'keep_current_weights',
       action: 'monitor',
@@ -419,6 +453,11 @@ describe('AdminEndpointsPage analysis start input', () => {
     expect(await screen.findByText('+10.00%')).toBeTruthy();
     expect(await screen.findByText(/T5 \+10.00%/)).toBeTruthy();
     expect(await screen.findByText(/replay-safe after 2026-05-07/i)).toBeTruthy();
+    expect((await screen.findAllByText(/MCP HTTP online/i)).length).toBeGreaterThan(0);
+    expect((await screen.findAllByText(/Watchdog 5m on/i)).length).toBeGreaterThan(0);
+    expect((await screen.findAllByText(/Startup Task/i)).length).toBeGreaterThan(0);
+    expect((await screen.findAllByText(/Alpha Memory/i)).length).toBeGreaterThan(0);
+    expect((await screen.findAllByText(/best momentum/i)).length).toBeGreaterThan(0);
   });
 
   it('runs autonomous MCP pre-service dry-runs from the admin panel', async () => {

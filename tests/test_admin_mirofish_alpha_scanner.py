@@ -30,14 +30,14 @@ def _seed_artifacts(data_dir):
         encoding='utf-8',
     )
     _write_json(data_dir / 'screener_leading_latest.json', {
-        'timestamp': '2026-05-04T00:00:00+00:00',
+        'timestamp': '2026-05-10T00:00:00+00:00',
         'results': [
             {'code': '000001', 'name': 'Alpha One', 'score': {'total_enriched': 80}},
             {'code': '000002', 'name': 'Beta Two', 'score': {'total_enriched': 30}},
         ],
     })
     _write_json(data_dir / 'vcp_kr_latest.json', {
-        'metadata': {'generated_at': '2026-05-04T00:00:00+00:00'},
+        'metadata': {'generated_at': '2026-05-10T00:00:00+00:00'},
         'signals': [
             {
                 'symbol': '000001',
@@ -48,7 +48,7 @@ def _seed_artifacts(data_dir):
         ],
     })
     _write_json(data_dir / 'jongga_v2_latest.json', {
-        'date': '2026-05-04',
+        'date': '2026-05-10',
         'signals': [
             {
                 'stock_code': '000001',
@@ -303,6 +303,23 @@ def test_alpha_scanner_status_uses_latest_run_metadata(tmp_path, monkeypatch):
     assert status['candidate_count'] == run['candidate_count']
     assert status['freshness'] == run['freshness']
     assert status['next_scheduled_at'].startswith('2026-05-07T09:20:00')
+
+
+def test_alpha_scanner_status_treats_scheduler_last_run_as_kst(tmp_path, monkeypatch):
+    _seed_artifacts(tmp_path)
+    monkeypatch.setattr(alpha_scanner, 'DATA_ROOT', str(tmp_path))
+    monkeypatch.setattr(alpha_scanner, 'SCANNER_RUNS_ROOT', str(tmp_path / 'runs'))
+    _write_json(tmp_path / 'scheduler_last_run.json', {
+        'alpha_scanner_0920': '2026-05-11T09:20:30',
+        'alpha_scanner_monitor': '2026-05-11T09:24:30',
+        'crypto': '2026-05-11T12:00:00',
+    })
+
+    status = alpha_scanner.get_scanner_schedule_status(
+        now=datetime(2026, 5, 11, 9, 25, tzinfo=timezone(timedelta(hours=9))),
+    )
+
+    assert status['scheduler_last_run_at'] == '2026-05-11T09:24:30+09:00'
 
 
 def test_alpha_scanner_status_reports_current_source_freshness(tmp_path, monkeypatch):

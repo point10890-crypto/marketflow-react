@@ -130,7 +130,7 @@ if ($after.Alive) {
     $message = @(
         "&#x1F501; <b>Scheduler watchdog</b>"
         ("사유: " + $status.Reason)
-        "조치: 데몬 재기동 완료"
+        "조치: 스케줄러 재기동 완료"
     ) -join "`n"
     Send-Telegram $message
 } else {
@@ -138,7 +138,7 @@ if ($after.Alive) {
     $message = @(
         "&#x1F6A8; <b>Scheduler watchdog FAILED</b>"
         ("사유: " + $status.Reason)
-        ("재기동 후에도: " + $after.Reason)
+        ("재기동 후 상태: " + $after.Reason)
         "수동 확인 필요"
     ) -join "`n"
     Send-Telegram $message
