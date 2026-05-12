@@ -49,6 +49,9 @@ if ($existing) {
 #   -o ServerAliveInterval=30 / CountMax=3 : 90s 무응답 시 SSH 자동 종료 (재시작 트리거)
 #   -o ExitOnForwardFailure=yes : 터널 fail 시 즉시 종료
 #   -o StrictHostKeyChecking=accept-new : 새 호스트 자동 수락
+# NOTE: UserKnownHostsFile 옵션 제거 — Start-Process ArgumentList 분할 시 '='
+# 다음 값이 split 되어 ssh 가 "no argument after keyword" 에러 발생. ssh 기본 경로
+# (~/.ssh/known_hosts) 사용으로 충분.
 $sshArgs = @(
     '-N',
     '-L', "${LocalPort}:127.0.0.1:${RemotePort}",
@@ -56,7 +59,6 @@ $sshArgs = @(
     '-o', 'ServerAliveCountMax=3',
     '-o', 'ExitOnForwardFailure=yes',
     '-o', 'StrictHostKeyChecking=accept-new',
-    '-o', 'UserKnownHostsFile=' + ($env:USERPROFILE + '\.ssh\known_hosts'),
     "${RemoteUser}@${RemoteHost}"
 )
 
