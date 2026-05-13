@@ -2645,30 +2645,52 @@ export default function AdminEndpointsPage() {
 
             {isAnalyzing && <ImpactPanel phase={phase} run={run} apiState={apiState} />}
 
-            {/* Anthropic-style endpoint cards — mobile 2col, desktop 3col */}
-            <div className="grid gap-2 sm:gap-3 grid-cols-2 lg:grid-cols-3">
-                {endpointDefinitions.map((endpoint) => {
-                    const state = endpointState[endpoint.key];
-                    return (
-                        <section key={endpoint.key} className="rounded-xl border border-anthropic-darkLine bg-anthropic-dark p-3 sm:p-5 transition-colors hover:border-anthropic-orange/30 min-w-0">
-                            <div className="flex items-start justify-between gap-1.5 sm:gap-2">
-                                <span className="grid h-8 w-8 sm:h-10 sm:w-10 shrink-0 place-items-center rounded-lg border border-anthropic-darkLine bg-anthropic-dark2">
-                                    <i className={`fas ${endpoint.icon} ${endpoint.color} text-xs sm:text-base`} />
-                                </span>
-                                <span className={`rounded-full border px-1.5 sm:px-2 py-0.5 sm:py-1 text-[9px] sm:text-[11px] font-medium tracking-wide ${endpointStatusTone(state)}`}>
-                                    {state.toUpperCase()}
-                                </span>
-                            </div>
-                            <h2 className="mt-2 sm:mt-4 font-serif text-sm sm:text-lg font-medium text-anthropic-cream truncate">{endpoint.title}</h2>
-                            <div className="mt-1 sm:mt-2 flex items-center gap-1 sm:gap-1.5 font-mono text-[9px] sm:text-[11px] text-anthropic-darkMuted min-w-0">
-                                <span className="rounded border border-anthropic-darkLine bg-anthropic-dark2 px-1 sm:px-1.5 py-0.5 text-anthropic-orange shrink-0">{endpoint.method}</span>
-                                <span className="truncate">{endpoint.path}</span>
-                            </div>
-                            <p className="mt-1.5 sm:mt-3 truncate text-[11px] sm:text-sm text-anthropic-darkText">{endpointMetrics[endpoint.key]}</p>
-                        </section>
-                    );
-                })}
-            </div>
+            {/* API endpoint health grid — collapsible, default hidden. Polling/state still active for downstream UI. */}
+            <details className="group rounded-xl border border-amber-500/15 bg-black/60 overflow-hidden">
+                <summary className="flex cursor-pointer items-center justify-between gap-3 px-4 py-3 list-none [&::-webkit-details-marker]:hidden hover:bg-white/[0.02]">
+                    <div className="flex items-center gap-2 min-w-0">
+                        <span className="text-[10px] font-black uppercase tracking-[0.18em] text-neutral-500">API Endpoints</span>
+                        <span className="text-[10px] font-bold text-neutral-600">·</span>
+                        <span className="text-[11px] font-bold text-neutral-400 truncate">
+                            {(() => {
+                                const states = Object.values(endpointState);
+                                const ok = states.filter((s) => s === 'ok').length;
+                                const err = states.filter((s) => s === 'error').length;
+                                const loading = states.filter((s) => s === 'loading').length;
+                                return `${ok}/${states.length} OK${err ? ` · ${err} error` : ''}${loading ? ` · ${loading} checking` : ''}`;
+                            })()}
+                        </span>
+                    </div>
+                    <span className="shrink-0 text-[10px] font-black uppercase tracking-wider text-neutral-500 transition-transform group-open:rotate-180">
+                        ▼
+                    </span>
+                </summary>
+                <div className="border-t border-amber-500/10 p-3 sm:p-4">
+                    <div className="grid gap-2 sm:gap-3 grid-cols-2 lg:grid-cols-3">
+                        {endpointDefinitions.map((endpoint) => {
+                            const state = endpointState[endpoint.key];
+                            return (
+                                <section key={endpoint.key} className="rounded-xl border border-anthropic-darkLine bg-anthropic-dark p-3 sm:p-5 transition-colors hover:border-anthropic-orange/30 min-w-0">
+                                    <div className="flex items-start justify-between gap-1.5 sm:gap-2">
+                                        <span className="grid h-8 w-8 sm:h-10 sm:w-10 shrink-0 place-items-center rounded-lg border border-anthropic-darkLine bg-anthropic-dark2">
+                                            <i className={`fas ${endpoint.icon} ${endpoint.color} text-xs sm:text-base`} />
+                                        </span>
+                                        <span className={`rounded-full border px-1.5 sm:px-2 py-0.5 sm:py-1 text-[9px] sm:text-[11px] font-medium tracking-wide ${endpointStatusTone(state)}`}>
+                                            {state.toUpperCase()}
+                                        </span>
+                                    </div>
+                                    <h2 className="mt-2 sm:mt-4 font-serif text-sm sm:text-lg font-medium text-anthropic-cream truncate">{endpoint.title}</h2>
+                                    <div className="mt-1 sm:mt-2 flex items-center gap-1 sm:gap-1.5 font-mono text-[9px] sm:text-[11px] text-anthropic-darkMuted min-w-0">
+                                        <span className="rounded border border-anthropic-darkLine bg-anthropic-dark2 px-1 sm:px-1.5 py-0.5 text-anthropic-orange shrink-0">{endpoint.method}</span>
+                                        <span className="truncate">{endpoint.path}</span>
+                                    </div>
+                                    <p className="mt-1.5 sm:mt-3 truncate text-[11px] sm:text-sm text-anthropic-darkText">{endpointMetrics[endpoint.key]}</p>
+                                </section>
+                            );
+                        })}
+                    </div>
+                </div>
+            </details>
 
             {/* Pipeline status — mobile horizontal scroll, desktop 5-column grid */}
             <section className="rounded-xl border border-anthropic-darkLine bg-anthropic-dark p-4 sm:p-5">
