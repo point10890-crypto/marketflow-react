@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { BANK_ACCOUNT, PLAN_PAYMENT_META } from '@/lib/billingInfo';
+import KakaoSupportLink from '@/components/ui/KakaoSupportLink';
 
 export default function LoginPage() {
     const [email, setEmail] = useState('');
@@ -145,6 +146,7 @@ export default function LoginPage() {
                         </div>
                     </div>
                 </div>
+                <KakaoSupportLink className="mt-3" />
             </div>
         </div>
     );

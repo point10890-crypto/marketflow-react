@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { subscriptionAPI } from '@/lib/api';
 import { BANK_ACCOUNT, PLAN_PAYMENT_META, normalizeBillingPlan, type BillingPlanTier } from '@/lib/billingInfo';
+import KakaoSupportLink from '@/components/ui/KakaoSupportLink';
 
 /**
  * 입금 안내 + 승인 신청 페이지.
@@ -190,15 +191,7 @@ export default function PaymentRequestPage() {
                     다른 플랜 선택
                 </button>
 
-                {/* 카카오톡 문의 */}
-                <a
-                    href="https://open.kakao.com/o/sJVLbWUe"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-3 flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-[#FEE500]/10 hover:bg-[#FEE500]/20 text-[#FEE500] font-bold text-sm transition-all border border-[#FEE500]/20"
-                >
-                    <i className="fas fa-comment" />카카오톡 문의
-                </a>
+                <KakaoSupportLink className="mt-3 py-2.5" label="카카오톡 문의" />
 
                 <p className="text-gray-600 text-[11px] text-center mt-4">
                     승인 신청 후 관리자 확인까지 최대 24시간 소요됩니다.

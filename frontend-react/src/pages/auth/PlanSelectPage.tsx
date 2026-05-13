@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import KakaoSupportLink from '@/components/ui/KakaoSupportLink';
 
 /**
  * 플랜 선택 페이지 — 신규 가입자 및 만료 재구독 공용.
@@ -159,6 +160,10 @@ export default function PlanSelectPage() {
                 선택 후 국민은행 계좌로 입금 → 관리자 확인 후 활성화 (최대 24시간).<br />
                 Ultra Pro 는 24개월 이상 이용 시 Pro 대비 절반 이하 비용입니다.
             </p>
+
+            <div className="mt-5 w-full max-w-md">
+                <KakaoSupportLink />
+            </div>
 
             <div className="mt-6 flex items-center gap-4 text-xs">
                 <a href="/" className="text-gray-500 hover:text-white transition-colors">

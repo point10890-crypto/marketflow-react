@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { subscriptionAPI, type SubscriptionRequest } from '@/lib/api';
 import { usePWAInstall } from '@/hooks/usePWAInstall';
 import { InstallGuide } from '@/components/layout/InstallPrompt';
+import KakaoSupportLink from '@/components/ui/KakaoSupportLink';
 
 export default function AccountPage() {
     const { user, token, refreshUser } = useAuth();
@@ -185,6 +186,8 @@ export default function AccountPage() {
                     </div>
                 </div>
             </div>
+
+            <KakaoSupportLink />
 
             {/* Password Change */}
             <div className="p-6 rounded-2xl border border-white/[0.07] bg-[#13151f]">
@@ -383,16 +386,6 @@ export default function AccountPage() {
                         입금자명을 가입 시 이름과 동일하게 입력해 주세요. 확인 후 24시간 내 Pro 플랜이 활성화됩니다.
                     </p>
 
-                    {/* 카카오톡 문의 */}
-                    <a
-                        href="https://open.kakao.com/o/sJVLbWUe"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mt-3 flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-[#FEE500]/10 hover:bg-[#FEE500]/20 text-[#FEE500] font-bold text-sm transition-all border border-[#FEE500]/20"
-                    >
-                        <i className="fas fa-comment" />
-                        카카오톡 문의하기
-                    </a>
                 </div>
             )}
 
@@ -433,16 +426,6 @@ export default function AccountPage() {
                         </div>
                     </div>
 
-                    {/* 카카오톡 문의 */}
-                    <a
-                        href="https://open.kakao.com/o/sJVLbWUe"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mt-4 flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-[#FEE500]/10 hover:bg-[#FEE500]/20 text-[#FEE500] font-bold text-sm transition-all border border-[#FEE500]/20"
-                    >
-                        <i className="fas fa-comment" />
-                        카카오톡 문의하기
-                    </a>
                 </div>
             )}
 

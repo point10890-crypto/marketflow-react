@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { API_BASE } from '@/lib/api';
+import KakaoSupportLink from '@/components/ui/KakaoSupportLink';
 
 /**
  * 가입 폼 — 기본 정보(이름/이메일/비번)만 받는다.
@@ -101,6 +102,7 @@ export default function SignupPage() {
                         <Link to="/login" className="text-[#2997ff] hover:underline">로그인</Link>
                     </p>
                 </form>
+                <KakaoSupportLink className="mt-3" />
             </div>
         </div>
     );

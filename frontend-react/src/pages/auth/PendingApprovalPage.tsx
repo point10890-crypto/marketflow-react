@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { BANK_ACCOUNT, PLAN_PAYMENT_META, normalizeBillingPlan } from '@/lib/billingInfo';
+import KakaoSupportLink from '@/components/ui/KakaoSupportLink';
 
 export default function PendingApprovalPage() {
     const { user, logout, refreshUser } = useAuth();
@@ -196,6 +197,7 @@ export default function PendingApprovalPage() {
                         >
                             로그아웃
                         </button>
+                        <KakaoSupportLink />
                     </div>
                 </div>
             </div>

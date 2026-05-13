@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { subscriptionAPI } from '@/lib/api';
+import KakaoSupportLink from '@/components/ui/KakaoSupportLink';
 
 export default function PricingPage() {
     const { user, token } = useAuth();
@@ -199,6 +200,10 @@ export default function PricingPage() {
                 </div>
             </div>
 
+            <div className="mt-5 w-full max-w-md">
+                <KakaoSupportLink />
+            </div>
+
             {/* Bank Transfer Info */}
             {showBank && (
                 <div className="mt-8 max-w-5xl w-full p-6 rounded-2xl border border-amber-500/20 bg-[#1c1c1e]">
@@ -293,16 +298,6 @@ export default function PricingPage() {
                         </button>
                     )}
 
-                    {/* 카카오톡 문의 */}
-                    <a
-                        href="https://open.kakao.com/o/sJVLbWUe"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mt-3 flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-[#FEE500]/10 hover:bg-[#FEE500]/20 text-[#FEE500] font-bold text-sm transition-all border border-[#FEE500]/20"
-                    >
-                        <i className="fas fa-comment" />
-                        카카오톡 문의하기
-                    </a>
                 </div>
             )}
 
