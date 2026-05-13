@@ -216,16 +216,16 @@ export default function WaveOverviewPage() {
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-amber-500/12 flex items-center justify-center">
-                        <i className="fas fa-wave-square text-amber-300" />
+                    <div className="w-10 h-10 rounded-xl bg-white/[0.04] border border-white/8 flex items-center justify-center">
+                        <i className="fas fa-wave-square text-neutral-400" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-black text-white">W Pattern</h1>
-                        <p className="text-sm text-gray-400">AI 차트 패턴 자동 인식 · M&W 파동 분석</p>
+                        <h1 className="text-2xl font-black text-neutral-100">W Pattern</h1>
+                        <p className="text-sm text-neutral-500">AI 차트 패턴 자동 인식 · M&W 파동 분석</p>
                     </div>
                 </div>
                 {screener?.updated_at && (
-                    <div className="text-xs text-gray-500">
+                    <div className="text-xs text-neutral-600">
                         Updated: {screener.updated_at}
                     </div>
                 )}
@@ -239,10 +239,10 @@ export default function WaveOverviewPage() {
                             <button
                                 key={tab.key}
                                 onClick={() => setMarket(tab.key)}
-                                className={`px-2.5 py-1 text-xs font-bold rounded-md transition-all ${
+                                className={`px-2.5 py-1 text-xs font-bold rounded-md transition-colors ${
                                     market === tab.key
-                                        ? 'bg-amber-400 text-black'
-                                        : 'text-gray-500 hover:text-white'
+                                        ? 'bg-white/[0.06] text-neutral-200'
+                                        : 'text-neutral-600 hover:text-neutral-300'
                                 }`}
                             >
                                 {tab.label}
@@ -264,11 +264,11 @@ export default function WaveOverviewPage() {
                     <button
                         onClick={handleSearch}
                         disabled={detailLoading || !searchTicker.trim()}
-                        className="px-3 py-1.5 bg-amber-400 text-black font-bold text-xs rounded-lg hover:bg-amber-300 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                        className="px-3 py-1.5 bg-white/[0.06] border border-white/10 text-neutral-200 font-bold text-xs rounded-lg hover:bg-white/[0.10] hover:border-white/20 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                     >
                         {detailLoading ? (
                             <span className="flex items-center gap-1.5">
-                                <div className="w-3 h-3 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                                <div className="w-3 h-3 border-2 border-neutral-400 border-t-transparent rounded-full animate-spin" />
                                 분석중
                             </span>
                         ) : '검색'}
@@ -278,7 +278,7 @@ export default function WaveOverviewPage() {
 
             {/* Error */}
             {searchError && (
-                <div className="bg-rose-500/8 border border-rose-500/15 rounded-xl p-3 text-rose-300 text-sm">
+                <div className="bg-rose-500/5 border border-rose-500/15 rounded-xl p-3 text-rose-300/85 text-sm">
                     {searchError}
                 </div>
             )}
@@ -299,18 +299,20 @@ export default function WaveOverviewPage() {
             {screener && screener.date && (
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     <StatCard label="스캔 종목" value={screener.scan_count.toLocaleString()} icon="fa-search" />
-                    <StatCard label="패턴 감지" value={`${screener.total_signal_count}개`} icon="fa-wave-square" color="text-amber-300" />
+                    <StatCard label="패턴 감지" value={`${screener.total_signal_count}개`} icon="fa-wave-square" color="text-neutral-100" />
                     <StatCard
                         label="W (Bullish)"
                         value={`${(screener.signals || []).filter(s => s.best_pattern.pattern_class === 'W').length}개`}
                         icon="fa-arrow-up"
-                        color="text-emerald-300"
+                        color="text-neutral-100"
+                        accentDot="bg-emerald-400/50"
                     />
                     <StatCard
                         label="M (Bearish)"
                         value={`${(screener.signals || []).filter(s => s.best_pattern.pattern_class === 'M').length}개`}
                         icon="fa-arrow-down"
-                        color="text-rose-300"
+                        color="text-neutral-100"
+                        accentDot="bg-rose-400/50"
                     />
                 </div>
             )}
@@ -324,37 +326,28 @@ export default function WaveOverviewPage() {
                             <button
                                 key={f}
                                 onClick={() => setFilter(f)}
-                                className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
+                                className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-colors ${
                                     filter === f
-                                        ? f === 'W' ? 'bg-amber-500/12 text-amber-300'
-                                        : f === 'M' ? 'bg-rose-500/10 text-rose-300'
-                                        : 'bg-white/10 text-white'
-                                        : 'text-gray-500 hover:text-white hover:bg-white/5'
+                                        ? 'bg-white/[0.06] text-neutral-200 ring-1 ring-white/10'
+                                        : 'text-neutral-500 hover:text-neutral-300 hover:bg-white/[0.03]'
                                 }`}
                             >
                                 {f === 'all' ? '전체' : f === 'W' ? 'W (Bullish)' : 'M (Bearish)'}
                             </button>
                         ))}
 
-                        {/* 🪣 줍줍이 — Quant Terminal CTA */}
+                        {/* 🪣 줍줍이 — 톤다운 CTA */}
                         <button
                             onClick={() => setFilter('jubjub')}
                             className={`group relative overflow-hidden rounded-lg px-4 py-2 sm:px-5 sm:py-2.5 text-sm sm:text-[15px] font-black transition-colors ${
                                 filter === 'jubjub'
-                                    ? 'bg-amber-400 text-black ring-1 ring-amber-300/50'
-                                    : 'bg-amber-400/10 text-amber-300 ring-1 ring-amber-400/25 hover:bg-amber-400/15 hover:ring-amber-400/40'
+                                    ? 'bg-white/[0.08] text-neutral-100 ring-1 ring-white/15'
+                                    : 'bg-white/[0.03] text-neutral-400 ring-1 ring-white/8 hover:bg-white/[0.05] hover:text-neutral-300'
                             }`}
                         >
                             <span className="relative flex items-center gap-2">
-                                <span className="text-lg sm:text-xl leading-none">🪣</span>
+                                <span className="text-lg sm:text-xl leading-none opacity-80">🪣</span>
                                 <span className="leading-none tracking-tight">줍줍이</span>
-                                <span className={`hidden sm:inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-black tracking-wider ${
-                                    filter === 'jubjub'
-                                        ? 'bg-black/25 text-black'
-                                        : 'bg-amber-400/15 text-amber-200'
-                                }`}>
-                                    HOT
-                                </span>
                             </span>
                         </button>
                     </div>
@@ -414,10 +407,10 @@ export default function WaveOverviewPage() {
                         return (
                         <div ref={jubjubGridRef} className="scroll-mt-4">
                           {jubjubBadgeFilter !== 'all' && (
-                            <div className="mb-3 flex items-center justify-between rounded-lg border border-amber-400/25 bg-amber-400/[0.06] px-3 py-2">
-                              <div className="text-[11px] font-bold text-amber-200">
-                                <span className="opacity-70">필터: </span>
-                                <span className="font-black">
+                            <div className="mb-3 flex items-center justify-between rounded-lg border border-white/8 bg-white/[0.03] px-3 py-2">
+                              <div className="text-[11px] font-medium text-neutral-400">
+                                <span className="text-neutral-600">필터: </span>
+                                <span className="font-bold text-neutral-200">
                                   {jubjubBadgeFilter === 'imminent' ? '🎯 진입 임박'
                                     : jubjubBadgeFilter === 'buy_now' ? '🔥 매수 타이밍'
                                     : jubjubBadgeFilter === 'breakout' ? '🚀 막 돌파'
@@ -425,12 +418,12 @@ export default function WaveOverviewPage() {
                                     : jubjubBadgeFilter === 'watching' ? '👀 관찰 중'
                                     : jubjubBadgeFilter}
                                 </span>
-                                <span className="ml-2 text-neutral-400">· {visibleCandidates.length}개</span>
+                                <span className="ml-2 text-neutral-600">· {visibleCandidates.length}개</span>
                               </div>
                               <button
                                 type="button"
                                 onClick={() => setJubjubBadgeFilter('all')}
-                                className="text-[10px] font-black uppercase tracking-wider text-amber-300 hover:text-amber-200"
+                                className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 hover:text-neutral-300"
                               >
                                 전체 보기 ×
                               </button>
@@ -480,7 +473,7 @@ export default function WaveOverviewPage() {
                 <div className="bg-black/60 rounded-2xl border border-white/5 overflow-hidden">
                     <div className="px-4 py-3 border-b border-white/5 flex items-center justify-between">
                         <h3 className="text-base font-bold text-white">
-                            감지된 패턴 <span className="text-amber-300">{filteredSignals.length}개</span>
+                            감지된 패턴 <span className="text-neutral-300">{filteredSignals.length}개</span>
                         </h3>
                         <span className="text-xs text-gray-500">{screener?.date}</span>
                     </div>
@@ -521,21 +514,21 @@ export default function WaveOverviewPage() {
                                             <td className="text-center px-2 py-3">
                                                 <span className={`px-2 py-0.5 rounded text-xs font-bold ${
                                                     bp.pattern_class === 'W'
-                                                        ? 'bg-amber-500/12 text-amber-300'
-                                                        : 'bg-rose-500/10 text-rose-300'
+                                                        ? 'bg-white/[0.05] text-neutral-300'
+                                                        : 'bg-white/[0.05] text-neutral-400'
                                                 }`}>{bp.wave_label}</span>
                                             </td>
                                             <td className="text-center px-2 py-3">
                                                 <span className={`text-xs font-bold ${
-                                                    bp.bullish_bias > 0 ? 'text-emerald-300' : 'text-rose-300'
+                                                    bp.bullish_bias > 0 ? 'text-emerald-400/80' : 'text-rose-400/80'
                                                 }`}>
                                                     {bp.bullish_bias > 0 ? 'Bullish' : 'Bearish'}
                                                 </span>
                                             </td>
                                             <td className="text-center px-2 py-3">
                                                 <span className={`font-bold text-sm ${
-                                                    bp.confidence >= 70 ? 'text-emerald-300' :
-                                                    bp.confidence >= 50 ? 'text-amber-300' : 'text-gray-400'
+                                                    bp.confidence >= 70 ? 'text-emerald-400/80' :
+                                                    bp.confidence >= 50 ? 'text-neutral-300' : 'text-gray-400'
                                                 }`}>{bp.confidence}</span>
                                             </td>
                                             <td className="text-center px-2 py-3">
@@ -557,14 +550,14 @@ export default function WaveOverviewPage() {
                                             </td>
                                             <td className="text-right px-3 py-3">
                                                 <span className={`font-mono text-sm font-bold ${
-                                                    bp.neckline_distance_pct > 0 ? 'text-emerald-300' : 'text-rose-300'
+                                                    bp.neckline_distance_pct > 0 ? 'text-emerald-400/80' : 'text-rose-400/80'
                                                 }`}>
                                                     {bp.neckline_distance_pct > 0 ? '+' : ''}{bp.neckline_distance_pct.toFixed(1)}%
                                                 </span>
                                             </td>
                                             <td className="text-center px-2 py-3">
                                                 {bp.volume_confirmed ? (
-                                                    <i className="fas fa-check-circle text-emerald-300 text-sm" />
+                                                    <i className="fas fa-check-circle text-emerald-400/80 text-sm" />
                                                 ) : (
                                                     <i className="fas fa-minus-circle text-gray-600 text-sm" />
                                                 )}
@@ -595,22 +588,22 @@ export default function WaveOverviewPage() {
                                             <span className="text-gray-500 text-[10px]">{s.market}</span>
                                             <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
                                                 bp.pattern_class === 'W'
-                                                    ? 'bg-amber-500/12 text-amber-300'
-                                                    : 'bg-rose-500/10 text-rose-300'
+                                                    ? 'bg-white/[0.05] text-neutral-300'
+                                                    : 'bg-white/[0.05] text-neutral-400'
                                             }`}>{bp.wave_label}</span>
                                             <span className={`text-xs font-black ${
-                                                bp.confidence >= 70 ? 'text-emerald-300' :
-                                                bp.confidence >= 50 ? 'text-amber-300' : 'text-gray-400'
+                                                bp.confidence >= 70 ? 'text-emerald-400/80' :
+                                                bp.confidence >= 50 ? 'text-neutral-300' : 'text-gray-400'
                                             }`}>{bp.confidence}점</span>
                                         </div>
                                         <span className="text-white font-mono font-bold text-sm">{s.price.toLocaleString()}원</span>
                                     </div>
                                     <div className="flex items-center gap-2 mb-1">
                                         <span className={`text-[10px] font-bold ${
-                                            bp.bullish_bias > 0 ? 'text-emerald-300' : 'text-rose-300'
+                                            bp.bullish_bias > 0 ? 'text-emerald-400/80' : 'text-rose-400/80'
                                         }`}>{bp.bullish_bias > 0 ? 'Bullish' : 'Bearish'}</span>
                                         {bp.volume_confirmed && (
-                                            <span className="text-[9px] text-emerald-300">
+                                            <span className="text-[9px] text-emerald-400/80">
                                                 <i className="fas fa-check-circle mr-0.5" />Vol
                                             </span>
                                         )}
@@ -618,7 +611,7 @@ export default function WaveOverviewPage() {
                                     <div className="flex items-center gap-3 text-[10px] text-gray-500">
                                         <span>완성도 {bp.completion_pct}%</span>
                                         <span>넥라인 {bp.neckline_price.toLocaleString()}</span>
-                                        <span className={bp.neckline_distance_pct > 0 ? 'text-emerald-300' : 'text-rose-300'}>
+                                        <span className={bp.neckline_distance_pct > 0 ? 'text-emerald-400/80' : 'text-rose-400/80'}>
                                             {bp.neckline_distance_pct > 0 ? '+' : ''}{bp.neckline_distance_pct.toFixed(1)}%
                                         </span>
                                     </div>
@@ -630,7 +623,7 @@ export default function WaveOverviewPage() {
             ) : screenerError === 'auth' ? (
                 <div className="bg-black/60 rounded-2xl border border-amber-500/20 p-10 text-center">
                     <div className="w-14 h-14 mx-auto mb-3 rounded-2xl bg-amber-500/12 flex items-center justify-center">
-                        <i className="fas fa-lock text-amber-300 text-xl" />
+                        <i className="fas fa-lock text-neutral-300 text-xl" />
                     </div>
                     <h3 className="text-white font-bold mb-1.5">로그인이 필요합니다</h3>
                     <p className="text-neutral-400 text-xs max-w-md mx-auto mb-4">
@@ -655,7 +648,7 @@ export default function WaveOverviewPage() {
             ) : screenerError === 'server' ? (
                 <div className="bg-black/60 rounded-2xl border border-rose-500/20 p-10 text-center">
                     <div className="w-14 h-14 mx-auto mb-3 rounded-2xl bg-rose-500/10 flex items-center justify-center">
-                        <i className="fas fa-circle-exclamation text-rose-300 text-xl" />
+                        <i className="fas fa-circle-exclamation text-rose-400/80 text-xl" />
                     </div>
                     <h3 className="text-white font-bold mb-1.5">서버 연결 실패</h3>
                     <p className="text-neutral-400 text-xs max-w-md mx-auto mb-4">
@@ -672,7 +665,7 @@ export default function WaveOverviewPage() {
             ) : !screenerLoading && (
                 <div className="bg-black/60 rounded-2xl border border-white/5 p-10 text-center">
                     <div className="w-14 h-14 mx-auto mb-3 rounded-2xl bg-amber-500/8 flex items-center justify-center">
-                        <i className="fas fa-wave-square text-amber-300 text-xl" />
+                        <i className="fas fa-wave-square text-neutral-300 text-xl" />
                     </div>
                     <h3 className="text-white font-bold mb-1.5">아직 스캔 데이터가 없습니다</h3>
                     <p className="text-gray-500 text-xs max-w-md mx-auto mb-4">
@@ -692,14 +685,18 @@ export default function WaveOverviewPage() {
 
 /* ── Stat Card ── */
 
-function StatCard({ label, value, icon, color = 'text-white' }: {
-    label: string; value: string; icon: string; color?: string;
+function StatCard({ label, value, icon, color = 'text-neutral-100', accentDot }: {
+    label: string; value: string; icon: string; color?: string; accentDot?: string;
 }) {
     return (
-        <div className="bg-black/60 rounded-xl border border-white/5 p-3">
+        <div className="bg-black/40 rounded-xl border border-white/8 p-3">
             <div className="flex items-center gap-2 mb-1">
-                <i className={`fas ${icon} text-xs text-gray-500`} />
-                <span className="text-xs text-gray-400">{label}</span>
+                {accentDot ? (
+                    <span className={`inline-block h-1 w-1 rounded-full ${accentDot}`} aria-hidden />
+                ) : (
+                    <i className={`fas ${icon} text-xs text-neutral-600`} />
+                )}
+                <span className="text-xs text-neutral-500">{label}</span>
             </div>
             <div className={`text-xl font-black ${color}`}>{value}</div>
         </div>
@@ -773,20 +770,20 @@ function ChartDetailModal({
                         {pat && (
                             <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
                                 pat.pattern_class === 'W'
-                                    ? 'bg-amber-500/12 text-amber-300'
-                                    : 'bg-rose-500/10 text-rose-300'
+                                    ? 'bg-white/[0.05] text-neutral-300'
+                                    : 'bg-white/[0.05] text-neutral-400'
                             }`}>{pat.wave_label}</span>
                         )}
                         {pat && (
                             <span className={`text-xs font-bold ${
-                                pat.confidence >= 70 ? 'text-emerald-300' :
-                                pat.confidence >= 50 ? 'text-amber-300' : 'text-gray-400'
+                                pat.confidence >= 70 ? 'text-emerald-400/80' :
+                                pat.confidence >= 50 ? 'text-neutral-300' : 'text-gray-400'
                             }`}>{pat.confidence}점</span>
                         )}
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
                         {screenerSignal && (
-                            <span className="text-amber-300 font-mono font-bold text-base sm:text-lg">
+                            <span className="text-neutral-300 font-mono font-bold text-base sm:text-lg">
                                 {screenerSignal.price.toLocaleString()}<span className="text-xs sm:text-sm">원</span>
                             </span>
                         )}

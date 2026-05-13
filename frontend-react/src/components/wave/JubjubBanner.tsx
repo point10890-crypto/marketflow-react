@@ -17,25 +17,25 @@ interface JubjubBannerProps {
 export default function JubjubBanner({ data, minScore, onMinScoreChange, badgeFilter = 'all', onBadgeFilterChange, loading }: JubjubBannerProps) {
     const stats = data?.stats;
     return (
-        <section className="mb-4 overflow-hidden rounded-2xl border border-amber-500/15 bg-black/60 p-4 backdrop-blur-md sm:p-5">
+        <section className="mb-4 overflow-hidden rounded-2xl border border-white/8 bg-neutral-950/80 p-4 sm:p-5">
             <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                        <span className="text-2xl">🪣</span>
-                        <h2 className="text-xl font-black text-white sm:text-2xl">
+                        <span className="text-2xl opacity-80">🪣</span>
+                        <h2 className="text-xl font-black text-neutral-100 sm:text-2xl">
                             줍줍이
                         </h2>
-                        <span className="rounded-full border border-emerald-300/30 bg-emerald-300/10 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-emerald-200">
+                        <span className="rounded-full border border-white/10 bg-white/[0.03] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
                             저점 매수
                         </span>
                     </div>
-                    <p className="mt-1.5 text-xs font-bold leading-relaxed text-neutral-400 sm:text-sm">
+                    <p className="mt-1.5 text-xs font-medium leading-relaxed text-neutral-500 sm:text-sm">
                         W 패턴 + 거래량 확인 + 외인 매수 + 넥라인 근접 = 줍줍 시그널.
                         진입가/목표가/손절가 자동 산출.
                     </p>
                 </div>
                 {loading ? (
-                    <div className="text-[10px] font-bold uppercase text-neutral-500">loading...</div>
+                    <div className="text-[10px] font-bold uppercase text-neutral-600">loading...</div>
                 ) : null}
             </div>
 
@@ -78,31 +78,31 @@ export default function JubjubBanner({ data, minScore, onMinScoreChange, badgeFi
             {/* 최고 점수 + 점수 필터 슬라이더 */}
             <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
                 {stats?.top_score && stats?.top_name ? (
-                    <div className="text-[11px] font-bold text-neutral-400">
+                    <div className="text-[11px] font-medium text-neutral-500">
                         최고 점수:{' '}
-                        <span className="font-mono tabular-nums text-amber-300 font-black">
+                        <span className="font-mono tabular-nums text-neutral-200 font-bold">
                             {Math.round(stats.top_score)}
                         </span>
-                        <span className="mx-1 text-neutral-600">·</span>
-                        <span className="text-white">{stats.top_name}</span>
+                        <span className="mx-1 text-neutral-700">·</span>
+                        <span className="text-neutral-300">{stats.top_name}</span>
                     </div>
                 ) : (
-                    <div className="text-[11px] font-bold text-neutral-500">표본 없음</div>
+                    <div className="text-[11px] font-medium text-neutral-600">표본 없음</div>
                 )}
                 <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-black uppercase tracking-wider text-neutral-500">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-600">
                         최소 점수
                     </span>
-                    <div className="inline-flex overflow-hidden rounded-md border border-white/10 bg-black/30">
+                    <div className="inline-flex overflow-hidden rounded-md border border-white/8 bg-black/40">
                         {[60, 70, 80, 90].map((s) => (
                             <button
                                 key={s}
                                 type="button"
                                 onClick={() => onMinScoreChange(s)}
-                                className={`min-h-[28px] px-2.5 py-1 text-[10px] font-black transition-colors ${
+                                className={`min-h-[28px] px-2.5 py-1 text-[10px] font-bold transition-colors ${
                                     minScore === s
-                                        ? 'bg-amber-300/20 text-amber-200'
-                                        : 'text-neutral-500 hover:bg-white/5 hover:text-neutral-300 active:bg-white/10'
+                                        ? 'bg-white/[0.06] text-neutral-200'
+                                        : 'text-neutral-600 hover:bg-white/[0.03] hover:text-neutral-400'
                                 }`}
                             >
                                 ≥{s}
@@ -123,30 +123,32 @@ function Stat({ label, value, suffix, tone, active, onClick }: {
     active?: boolean;
     onClick?: () => void;
 }) {
-    const toneClasses = {
-        emerald: 'text-emerald-300',
-        amber: 'text-amber-300',
-        rose: 'text-rose-300',
+    // 톤 표시는 좌측 미세한 dot 으로만 — 숫자는 통일된 뉴트럴 (Bloomberg 스타일)
+    const toneDot = {
+        emerald: 'bg-emerald-400/50',
+        amber: 'bg-amber-400/50',
+        rose: 'bg-rose-400/50',
     }[tone];
     const activeRing = active
-        ? 'border-amber-400/60 bg-amber-400/[0.08] ring-1 ring-amber-400/30'
-        : 'border-white/10 bg-black/30 hover:border-amber-400/30 hover:bg-amber-400/[0.04]';
+        ? 'border-white/20 bg-white/[0.04]'
+        : 'border-white/8 bg-black/30 hover:border-white/15 hover:bg-white/[0.02]';
     const interactive = onClick
         ? `cursor-pointer transition-colors text-left w-full ${activeRing}`
-        : 'border-white/10 bg-black/30';
+        : 'border-white/8 bg-black/30';
     const content = (
         <>
-            <div className="flex items-center justify-between gap-1">
-                <div className="text-[9px] font-black uppercase tracking-wider text-neutral-500 truncate">
+            <div className="flex items-center gap-1.5">
+                <span className={`inline-block h-1 w-1 rounded-full ${toneDot}`} aria-hidden />
+                <div className="text-[9px] font-bold uppercase tracking-wider text-neutral-500 truncate">
                     {label}
                 </div>
                 {active && (
-                    <span className="shrink-0 text-[8px] font-black uppercase tracking-wider text-amber-300">●</span>
+                    <span className="ml-auto shrink-0 text-[8px] font-bold uppercase tracking-wider text-neutral-400">ON</span>
                 )}
             </div>
-            <div className={`mt-1 text-xl font-black tabular-nums sm:text-2xl ${toneClasses}`}>
+            <div className="mt-1 text-xl font-black tabular-nums text-neutral-100 sm:text-2xl">
                 {value}
-                {suffix && <span className="ml-0.5 text-[10px] font-bold opacity-70">{suffix}</span>}
+                {suffix && <span className="ml-0.5 text-[10px] font-medium text-neutral-500">{suffix}</span>}
             </div>
         </>
     );
@@ -156,14 +158,14 @@ function Stat({ label, value, suffix, tone, active, onClick }: {
                 type="button"
                 onClick={onClick}
                 aria-pressed={active}
-                className={`rounded-xl border px-3 py-2 backdrop-blur-md ${interactive}`}
+                className={`rounded-xl border px-3 py-2 ${interactive}`}
             >
                 {content}
             </button>
         );
     }
     return (
-        <div className={`rounded-xl border px-3 py-2 backdrop-blur-md ${interactive}`}>
+        <div className={`rounded-xl border px-3 py-2 ${interactive}`}>
             {content}
         </div>
     );
