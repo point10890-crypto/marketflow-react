@@ -427,15 +427,32 @@ def run_scanner_realtime_monitor_check(
         and state_version >= MONITOR_STATE_VERSION
         and state.get('last_source_fingerprint') == fingerprint
     ):
+        next_state = dict(state)
+        next_state.update({
+            'version': MONITOR_STATE_VERSION,
+            'last_checked_at': now_iso,
+            'last_status': 'unchanged',
+            'last_new_event_count': 0,
+            'last_telegram_sent': False,
+            'last_error': None,
+            'current_source': source,
+        })
+        if commit_monitor_state:
+            write_json_atomic(monitor_file, next_state, sort_keys=True)
         return {
             'ok': True,
             'status': 'unchanged',
             'source_changed': False,
-            'monitor_state': _monitor_state_summary(state, monitor_file, source),
+            'monitor_state': _monitor_state_summary(
+                next_state if commit_monitor_state else state,
+                monitor_file,
+                source,
+            ),
             'source': source,
             'new_event_count': 0,
             'telegram_sent': False,
             'state_committed': False,
+            'monitor_state_committed': bool(commit_monitor_state),
         }
 
     failed_at = _parse_dt(state.get('last_failed_at'))

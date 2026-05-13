@@ -629,6 +629,11 @@ def test_alpha_scanner_realtime_monitor_sends_after_source_change(tmp_path, monk
     assert sent_messages and 'Alpha One' in sent_messages[0]
     assert second['status'] == 'unchanged'
     assert second['source_changed'] is False
+    assert second['monitor_state_committed'] is True
+    assert second['monitor_state']['last_status'] == 'unchanged'
+    saved_state = json.loads((tmp_path / 'monitor_state.json').read_text(encoding='utf-8'))
+    assert saved_state['last_status'] == 'unchanged'
+    assert saved_state['last_checked_at']
 
 
 def test_alpha_scanner_realtime_monitor_rechecks_legacy_blocked_state(tmp_path, monkeypatch):
