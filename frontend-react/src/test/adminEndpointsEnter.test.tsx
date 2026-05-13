@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import AdminEndpointsPage from '@/pages/admin/AdminEndpointsPage';
@@ -597,6 +597,40 @@ describe('AdminEndpointsPage analysis start input', () => {
     expect((await screen.findAllByText(/Hit vs Miss Score Profile/i)).length).toBeGreaterThan(0);
     expect((await screen.findAllByText(/Signal Cohorts/i)).length).toBeGreaterThan(0);
     expect((await screen.findAllByText(/best momentum/i)).length).toBeGreaterThan(0);
+  });
+
+  it('keeps core endpoint cards healthy when an optional provider fails', async () => {
+    mockApi.getDeepSeekStatus.mockRejectedValueOnce(new Error('deepseek unavailable'));
+
+    await renderPage();
+
+    const serviceCard = screen.getByText('Service Status').closest('section');
+    const dataSourcesCard = screen.getByText('Data Sources').closest('section');
+    const deepSeekCard = screen.getByText('DeepSeek V2').closest('section');
+
+    expect(serviceCard).toBeTruthy();
+    expect(dataSourcesCard).toBeTruthy();
+    expect(deepSeekCard).toBeTruthy();
+    expect(within(serviceCard!).queryByText('ERROR')).toBeNull();
+    expect(within(dataSourcesCard!).queryByText('ERROR')).toBeNull();
+    expect(within(serviceCard!).getByText('OK')).toBeTruthy();
+    expect(within(dataSourcesCard!).getByText('OK')).toBeTruthy();
+    expect(within(deepSeekCard!).getByText('ERROR')).toBeTruthy();
+  });
+
+  it('shows DeepSeek not configured as idle rather than failed', async () => {
+    mockApi.getDeepSeekStatus.mockResolvedValueOnce({
+      provider: 'deepseek',
+      configured: false,
+      default_model: 'deepseek-v4-flash',
+    });
+
+    await renderPage();
+
+    const deepSeekCard = screen.getByText('DeepSeek V2').closest('section');
+    expect(deepSeekCard).toBeTruthy();
+    expect(within(deepSeekCard!).queryByText('ERROR')).toBeNull();
+    expect(within(deepSeekCard!).getByText('IDLE')).toBeTruthy();
   });
 
   it('runs autonomous MCP pre-service dry-runs from the admin panel', async () => {

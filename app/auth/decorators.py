@@ -154,5 +154,13 @@ def admin_required(f):
             return jsonify({'error': 'Admin access denied'}), 403
 
         request.current_user = user
+        if (request.path or '').startswith('/api/admin/mirofish'):
+            request.current_user_id = user.id
+            request.current_user_email = user.email
+            try:
+                db.session.expunge(user)
+            except Exception:
+                pass
+            db.session.remove()
         return f(*args, **kwargs)
     return decorated

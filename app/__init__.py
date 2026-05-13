@@ -80,6 +80,20 @@ def create_app(config=None):
     if config:
         app.config.update(config)
 
+    if not app.config.get('SQLALCHEMY_ENGINE_OPTIONS'):
+        db_uri = app.config.get('SQLALCHEMY_DATABASE_URI', '')
+        engine_options = {'pool_pre_ping': True}
+        if ':memory:' not in db_uri:
+            engine_options.update({
+                'pool_size': int(os.getenv('SQLALCHEMY_POOL_SIZE', '20')),
+                'max_overflow': int(os.getenv('SQLALCHEMY_MAX_OVERFLOW', '40')),
+                'pool_timeout': int(os.getenv('SQLALCHEMY_POOL_TIMEOUT', '10')),
+                'pool_recycle': int(os.getenv('SQLALCHEMY_POOL_RECYCLE', '1800')),
+            })
+            if db_uri.startswith('sqlite:///'):
+                engine_options['connect_args'] = {'check_same_thread': False}
+        app.config['SQLALCHEMY_ENGINE_OPTIONS'] = engine_options
+
     # Database
     from app.models import db
     db.init_app(app)

@@ -1664,40 +1664,94 @@ export default function AdminEndpointsPage() {
             markEndpoint('workflow', 'loading');
             markEndpoint('autonomous', 'loading');
             try {
-                const [statusData, historyData, sourcesData, deepSeekData, tradingViewData, workflowData, autonomousData] = await Promise.all([
+                const [statusResult, historyResult, sourcesResult, deepSeekResult, tradingViewResult, workflowResult, autonomousResult] = await Promise.allSettled([
                     mirofishApi.getStatus(),
                     mirofishApi.listRuns(),
                     mirofishApi.getDataSources(),
                     mirofishApi.getDeepSeekStatus(),
-                    mirofishApi.getTradingViewStatus().catch(() => null),
-                    mirofishApi.getWorkflowStatus().catch(() => null),
-                    mirofishApi.getAutonomousStatus().catch(() => null),
+                    mirofishApi.getTradingViewStatus(),
+                    mirofishApi.getWorkflowStatus(),
+                    mirofishApi.getAutonomousStatus(),
                 ]);
                 if (!alive) return;
-                setStatus(statusData);
-                setDeepSeekStatus(deepSeekData);
-                setTradingViewStatus(tradingViewData);
-                setDeepSeekState(deepSeekData.configured ? 'ready' : 'idle');
-                if (workflowData?.latest_workflow) {
-                    setWorkflow(workflowData.latest_workflow);
-                    setWorkflowState(workflowData.latest_workflow.status === 'completed' ? 'completed' : 'idle');
+                const failures: string[] = [];
+                const noteFailure = (key: EndpointKey, label: string, reason: unknown) => {
+                    markEndpoint(key, 'error');
+                    const detail = reason instanceof Error ? reason.message : String(reason || 'failed');
+                    failures.push(`${label}: ${detail}`);
+                };
+
+                if (statusResult.status === 'fulfilled') {
+                    const statusData = statusResult.value as MiroFishStatus;
+                    setStatus(statusData);
+                    setRun((current) => ({ ...current, brain: statusData.brain || current.brain, pipeline: statusData.pipeline || current.pipeline }));
+                    markEndpoint('status', 'ok');
+                } else {
+                    setStatus({ ready: false, source: 'api unavailable', pipeline: { status: 'unavailable' } });
+                    noteFailure('status', 'Service Status', statusResult.reason);
                 }
-                if (autonomousData) {
+
+                if (historyResult.status === 'fulfilled') {
+                    const historyData = historyResult.value as { runs?: MiroFishRun[] };
+                    setRecentRuns(Array.isArray(historyData.runs) ? historyData.runs : []);
+                    markEndpoint('history', 'ok');
+                } else {
+                    noteFailure('history', 'Run History', historyResult.reason);
+                }
+
+                if (sourcesResult.status === 'fulfilled') {
+                    const sourcesData = sourcesResult.value as { files?: Array<{ exists?: boolean }> };
+                    setDataSourceCount(Array.isArray(sourcesData?.files) ? sourcesData.files.filter((file) => file.exists).length : 0);
+                    markEndpoint('dataSources', 'ok');
+                } else {
+                    setDataSourceCount(0);
+                    noteFailure('dataSources', 'Data Sources', sourcesResult.reason);
+                }
+
+                if (deepSeekResult.status === 'fulfilled') {
+                    const deepSeekData = deepSeekResult.value as MiroFishDeepSeekStatus;
+                    setDeepSeekStatus(deepSeekData);
+                    setDeepSeekState(deepSeekData.configured ? 'ready' : 'idle');
+                    markEndpoint('deepseek', deepSeekData.configured ? 'ok' : 'idle');
+                } else {
+                    setDeepSeekState('error');
+                    noteFailure('deepseek', 'DeepSeek V2', deepSeekResult.reason);
+                }
+
+                if (tradingViewResult.status === 'fulfilled') {
+                    const tradingViewData = tradingViewResult.value as MiroFishTradingViewStatus;
+                    setTradingViewStatus(tradingViewData);
+                    markEndpoint('tradingview', tradingViewData.enabled || tradingViewData.cache_available || tradingViewData.mcp_url_configured ? 'ok' : 'idle');
+                } else {
+                    noteFailure('tradingview', 'TradingView MCP', tradingViewResult.reason);
+                }
+
+                if (workflowResult.status === 'fulfilled') {
+                    const workflowData = workflowResult.value as { latest_workflow?: MiroFishWorkflow };
+                    if (workflowData?.latest_workflow) {
+                        setWorkflow(workflowData.latest_workflow);
+                        setWorkflowState(workflowData.latest_workflow.status === 'completed' ? 'completed' : 'idle');
+                    }
+                    markEndpoint('workflow', workflowData ? 'ok' : 'idle');
+                } else {
+                    setWorkflowState('error');
+                    noteFailure('workflow', 'MCP Top 3', workflowResult.reason);
+                }
+
+                if (autonomousResult.status === 'fulfilled') {
+                    const autonomousData = autonomousResult.value as MiroFishAutonomousStatus;
                     setAutonomousStatus(autonomousData);
                     setAutonomousLearning(autonomousData.learning?.available ? autonomousData.learning : null);
                     setAutonomousState('ready');
+                    markEndpoint('autonomous', 'ok');
+                } else {
+                    setAutonomousState('error');
+                    noteFailure('autonomous', 'Autonomous MCP', autonomousResult.reason);
                 }
-                setRecentRuns(historyData.runs);
-                setDataSourceCount(Array.isArray(sourcesData?.files) ? sourcesData.files.filter((file: any) => file.exists).length : 0);
-                setApiState('ready');
-                markEndpoint('status', 'ok');
-                markEndpoint('history', 'ok');
-                markEndpoint('dataSources', 'ok');
-                markEndpoint('deepseek', deepSeekData.configured ? 'ok' : 'error');
-                markEndpoint('tradingview', tradingViewData ? 'ok' : 'idle');
-                markEndpoint('workflow', workflowData ? 'ok' : 'idle');
-                markEndpoint('autonomous', autonomousData ? 'ok' : 'idle');
-                setRun((current) => ({ ...current, brain: statusData.brain || current.brain, pipeline: statusData.pipeline || current.pipeline }));
+
+                const hasCoreData = statusResult.status === 'fulfilled' || historyResult.status === 'fulfilled' || sourcesResult.status === 'fulfilled';
+                setApiState(hasCoreData ? 'ready' : 'error');
+                setErrorText(failures.length ? `Partial endpoint check failed: ${failures.map((item) => item.split(':')[0]).join(', ')}` : null);
             } catch (error) {
                 if (!alive) return;
                 setApiState('error');
