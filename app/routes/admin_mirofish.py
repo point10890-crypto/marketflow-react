@@ -859,6 +859,16 @@ def deepseek_status():
         return jsonify({'error': str(exc), 'provider': 'deepseek'}), 502
 
 
+@admin_mirofish_bp.route('/tradingview/status', methods=['GET'])
+@admin_required
+def tradingview_status():
+    include_live = request.args.get('live', '').lower() in {'1', 'true', 'yes', 'on'}
+    try:
+        return jsonify(mirofish.get_tradingview_status(include_live=include_live))
+    except Exception as exc:
+        return jsonify({'error': str(exc), 'provider': 'tradingview_mcp'}), 502
+
+
 @admin_mirofish_bp.route('/deepseek/scanner-summary', methods=['POST'])
 @admin_required
 def create_scanner_run_with_deepseek_summary():

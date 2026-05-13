@@ -40,6 +40,11 @@ from app.services.mirofish.deepseek_client import (
     list_models as list_deepseek_models,
     summarize_scanner_run as summarize_scanner_run_with_deepseek,
 )
+from app.services.mirofish.tradingview_provider import (
+    get_status as get_tradingview_status,
+    load_enrichment_for_symbols as load_tradingview_enrichment,
+    score_signal as score_tradingview_signal,
+)
 from app.services.mirofish.workflow import (
     build_share_payload,
     build_workflow_top3_telegram_message,
@@ -110,6 +115,7 @@ __all__ = [
     'get_scanner_diagnostics',
     'get_scanner_source_signature',
     'get_status',
+    'get_tradingview_status',
     'get_workflow_status',
     'list_runs',
     'list_scanner_runs',
@@ -143,5 +149,7 @@ __all__ = [
     'resolve_target_snapshot',
     'search_target_candidates',
     'load_brain_13d_snapshot',
+    'load_tradingview_enrichment',
+    'score_tradingview_signal',
     'DIMENSIONS',
 ]

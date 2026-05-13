@@ -24,6 +24,7 @@ from typing import Any, Callable
 import app.services.mirofish.alpha_scanner as alpha_scanner
 import app.services.mirofish.outcome_tracker as outcome_tracker
 import app.services.mirofish.pipeline_overview as pipeline_overview
+import app.services.mirofish.tradingview_provider as tradingview_provider
 import app.services.mirofish.workflow as workflow
 from app.utils.atomic_json import write_json_atomic
 
@@ -87,6 +88,7 @@ def get_autonomous_status() -> dict[str, Any]:
         'send_confirmation_phrase': CONFIRM_SEND_PHRASE,
         'telegram': _telegram_config_status(),
         'scanner': alpha_scanner.get_scanner_schedule_status(),
+        'tradingview': tradingview_provider.get_status(include_live=False),
         'workflow': workflow.get_workflow_status(),
         'operating_workflow': pipeline_overview.get_pipeline_operating_snapshot(),
         'learning': _learning_summary(read_learning_feedback()),
@@ -101,6 +103,7 @@ def get_autonomous_status() -> dict[str, Any]:
             'get_market_clock',
             'get_pipeline_operating_snapshot',
             'get_repository_state',
+            'get_tradingview_provider_status',
             'list_safe_artifacts',
             'read_safe_artifact',
             'run_candidate_detection_alert',
@@ -144,6 +147,7 @@ def get_mcp_security_policy() -> dict[str, Any]:
             'list_recent_workflows',
             'list_safe_artifacts',
             'read_safe_artifact',
+            'get_tradingview_provider_status',
         ],
         'mutating_tools': [
             'run_candidate_detection_alert',
@@ -167,6 +171,11 @@ def get_mcp_security_policy() -> dict[str, Any]:
         ],
         'checked_at': _now_iso(),
     }
+
+
+def get_tradingview_provider_status(include_live: bool = False) -> dict[str, Any]:
+    """Return redacted optional TradingView MCP provider status."""
+    return tradingview_provider.get_status(include_live=include_live)
 
 
 def get_market_clock(now: datetime | None = None) -> dict[str, Any]:

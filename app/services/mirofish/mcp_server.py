@@ -8,6 +8,7 @@ from typing import Any
 
 import app.services.mirofish.alpha_scanner as alpha_scanner
 import app.services.mirofish.autonomous_mcp as autonomous_mcp
+import app.services.mirofish.tradingview_provider as tradingview_provider
 import app.services.mirofish.workflow as workflow
 
 try:
@@ -464,6 +465,14 @@ def create_mcp_server(
             return alpha_scanner.get_scanner_diagnostics()
         except Exception as exc:
             return {'error': f'{type(exc).__name__}: {exc}'}
+
+    @mcp.tool()
+    def get_tradingview_provider_status(include_live: bool = False) -> dict[str, Any]:
+        """Return redacted optional TradingView MCP provider status."""
+        try:
+            return tradingview_provider.get_status(include_live=include_live)
+        except Exception as exc:
+            return {'error': f'{type(exc).__name__}: {exc}', 'provider': 'tradingview_mcp'}
 
     @mcp.tool()
     def get_auto_runner_status() -> dict[str, Any]:

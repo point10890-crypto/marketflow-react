@@ -1,10 +1,18 @@
 import json
 from datetime import datetime, timedelta, timezone
 
+import pytest
 from flask import Flask
 
 from app.routes.admin_mirofish import admin_mirofish_bp
 from app.services.mirofish import alpha_scanner
+
+
+@pytest.fixture(autouse=True)
+def _disable_tradingview_provider_by_default(monkeypatch):
+    monkeypatch.setenv('TRADINGVIEW_MCP_MODE', 'disabled')
+    monkeypatch.delenv('TRADINGVIEW_CACHE_PATH', raising=False)
+    monkeypatch.delenv('TRADINGVIEW_LIVE_IN_SCANNER', raising=False)
 
 
 def _write_json(path, payload):
@@ -152,6 +160,76 @@ def test_alpha_scanner_creates_ranked_deterministic_run(tmp_path, monkeypatch):
     assert saved['id'] == run['id']
     assert candidate_payload['candidate_count'] == 2
     assert candidate_payload['candidates'][0]['symbol'] == '000001'
+
+
+def test_alpha_scanner_applies_tradingview_cached_confirmation(tmp_path, monkeypatch):
+    _seed_artifacts(tmp_path)
+    cache_path = tmp_path / 'tradingview_signals.json'
+    _write_json(cache_path, {
+        'signals': [
+            {
+                'symbol': '000001',
+                'recommendation': 'STRONG_BUY',
+                'timeframes': {'1D': 'BUY', '1W': 'STRONG_BUY'},
+                'relative_volume': 1.8,
+                'fetched_at': '2026-05-10T00:00:00+00:00',
+            },
+        ],
+    })
+    monkeypatch.setattr(alpha_scanner, 'DATA_ROOT', str(tmp_path))
+    monkeypatch.setattr(alpha_scanner, 'SCANNER_RUNS_ROOT', str(tmp_path / 'runs'))
+    monkeypatch.setenv('TRADINGVIEW_MCP_MODE', 'cache')
+    monkeypatch.setenv('TRADINGVIEW_CACHE_PATH', str(cache_path))
+    monkeypatch.setenv('TRADINGVIEW_CACHE_TTL_SEC', '99999999')
+
+    run = alpha_scanner.create_scanner_run({'limit': 5})
+    by_symbol = {candidate['symbol']: candidate for candidate in run['candidates']}
+    candidate = by_symbol['000001']
+
+    assert run['providers']['tradingview']['provider'] == 'tradingview_mcp'
+    assert run['providers']['tradingview']['enabled'] is True
+    assert candidate['analysis_profile']['base_source_count'] == 4
+    assert candidate['analysis_profile']['source_count'] == 5
+    assert candidate['analysis_profile']['tradingview_adjustment']['applied'] is True
+    assert candidate['analysis_profile']['tradingview_adjustment']['recommendation'] == 'STRONG_BUY'
+    assert candidate['tradingview']['applied'] is True
+    assert candidate['alpha_score'] > candidate['analysis_profile']['base_alpha_score']
+    assert candidate['risk_score'] <= candidate['analysis_profile']['base_risk_score']
+    assert 'tradingview_mcp' in candidate['replay_context']['data_sources']
+    assert any(item['source'] == 'tradingview_mcp' for item in candidate['evidence'])
+    assert 'tradingview_confirmed' in candidate['strategy_tags']
+
+
+def test_alpha_scanner_applies_tradingview_warning_filter(tmp_path, monkeypatch):
+    _seed_artifacts(tmp_path)
+    cache_path = tmp_path / 'tradingview_signals.json'
+    _write_json(cache_path, {
+        'signals': [
+            {
+                'symbol': '000001',
+                'recommendation': 'SELL',
+                'timeframes': {'1D': 'SELL', '1W': 'NEUTRAL'},
+                'relative_volume': 0.6,
+                'fetched_at': '2026-05-10T00:00:00+00:00',
+            },
+        ],
+    })
+    monkeypatch.setattr(alpha_scanner, 'DATA_ROOT', str(tmp_path))
+    monkeypatch.setattr(alpha_scanner, 'SCANNER_RUNS_ROOT', str(tmp_path / 'runs'))
+    monkeypatch.setenv('TRADINGVIEW_MCP_MODE', 'cache')
+    monkeypatch.setenv('TRADINGVIEW_CACHE_PATH', str(cache_path))
+    monkeypatch.setenv('TRADINGVIEW_CACHE_TTL_SEC', '99999999')
+
+    run = alpha_scanner.create_scanner_run({'limit': 5})
+    candidate = {item['symbol']: item for item in run['candidates']}['000001']
+    adjustment = candidate['analysis_profile']['tradingview_adjustment']
+
+    assert adjustment['applied'] is True
+    assert adjustment['alpha_delta'] < 0
+    assert adjustment['risk_delta'] > 0
+    assert candidate['alpha_score'] < candidate['analysis_profile']['base_alpha_score']
+    assert candidate['risk_score'] > candidate['analysis_profile']['base_risk_score']
+    assert 'tradingview_warning' in candidate['strategy_tags']
 
 
 def test_alpha_scanner_advanced_analysis_penalizes_single_day_spikes(tmp_path, monkeypatch):
@@ -688,5 +766,6 @@ def test_admin_mirofish_scanner_routes_are_registered():
     assert '/api/admin/mirofish/scanner/runs/latest' in rules
     assert '/api/admin/mirofish/scanner/runs/<run_id>' in rules
     assert '/api/admin/mirofish/scanner/runs/<run_id>/candidates' in rules
+    assert '/api/admin/mirofish/tradingview/status' in rules
     assert '/api/admin/mirofish/workflow/status' in rules
     assert '/api/admin/mirofish/workflow/scan-analyze' in rules

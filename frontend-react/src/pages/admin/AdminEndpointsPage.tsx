@@ -275,6 +275,50 @@ function formatAlphaAnalysis(candidate: MiroFishAlphaCandidate): string {
     return `${quality} · src ${sourceCount || '--'} · T20 ${trendText} · Vol ${volumeText}`;
 }
 
+function tradingViewSignal(candidate: MiroFishAlphaCandidate): Record<string, any> {
+    const direct = candidate.tradingview && typeof candidate.tradingview === 'object'
+        ? candidate.tradingview
+        : {};
+    if (Object.keys(direct).length) return direct;
+    const profileSignal = candidate.analysis_profile?.tradingview_adjustment;
+    return profileSignal && typeof profileSignal === 'object'
+        ? profileSignal as Record<string, any>
+        : {};
+}
+
+function formatTradingViewSignal(candidate: MiroFishAlphaCandidate): string | null {
+    const signal = tradingViewSignal(candidate);
+    if (!signal.available && !signal.applied) return null;
+    const recommendation = String(signal.recommendation || 'UNKNOWN').replace(/_/g, ' ');
+    const alphaDelta = Number(signal.alpha_delta ?? 0);
+    const alphaText = Number.isFinite(alphaDelta)
+        ? `${alphaDelta >= 0 ? '+' : ''}${alphaDelta.toFixed(1)}`
+        : '--';
+    const freshness = signal.freshness && typeof signal.freshness === 'object'
+        ? String(signal.freshness.status || '')
+        : '';
+    const source = String(signal.source || '');
+    const suffix = freshness && freshness !== 'unknown'
+        ? ` - ${freshness}`
+        : source
+            ? ` - ${source}`
+            : '';
+    return `TradingView ${recommendation} ${alphaText}${suffix}`;
+}
+
+function tradingViewSignalTone(candidate: MiroFishAlphaCandidate): string {
+    const signal = tradingViewSignal(candidate);
+    const recommendation = String(signal.recommendation || '').toUpperCase();
+    const alphaDelta = Number(signal.alpha_delta ?? 0);
+    const freshness = signal.freshness && typeof signal.freshness === 'object'
+        ? String(signal.freshness.status || '').toLowerCase()
+        : '';
+    if (freshness === 'stale') return 'border-amber-300/25 bg-amber-300/10 text-amber-100';
+    if (recommendation.includes('SELL') || alphaDelta < 0) return 'border-rose-300/25 bg-rose-300/10 text-rose-100';
+    if (recommendation.includes('BUY') || alphaDelta > 0) return 'border-cyan-300/25 bg-cyan-300/10 text-cyan-100';
+    return 'border-slate-300/20 bg-slate-300/10 text-slate-200';
+}
+
 function deepSeekStateTone(state: DeepSeekPanelState, configured?: boolean) {
     if (!configured) return 'border-amber-300/25 bg-amber-300/10 text-amber-100';
     if (state === 'error') return 'border-rose-300/25 bg-rose-300/10 text-rose-100';
@@ -289,6 +333,12 @@ function freshnessTone(status?: string) {
     if (value === 'stale') return 'border-amber-300/25 bg-amber-300/10 text-amber-100';
     if (value === 'unknown') return 'border-slate-300/20 bg-slate-300/10 text-slate-200';
     return 'border-white/10 bg-white/8 text-slate-300';
+}
+
+function providerStatus(record?: Record<string, any>, key?: string): Record<string, any> {
+    if (!record || typeof record !== 'object' || !key) return {};
+    const value = record[key];
+    return value && typeof value === 'object' ? value as Record<string, any> : {};
 }
 
 function AlphaBoardPanel({
@@ -376,6 +426,22 @@ function AlphaBoardPanel({
     const taskRuntimeTone = startupRegistered && watchdogRegistered
         ? 'border-emerald-300/25 bg-emerald-300/10 text-emerald-100'
         : 'border-amber-300/25 bg-amber-300/10 text-amber-100';
+    const runTradingViewProvider = providerStatus(scannerRun?.providers, 'tradingview');
+    const statusTradingViewProvider = providerStatus(scannerStatus?.providers, 'tradingview');
+    const tradingViewProvider = Object.keys(runTradingViewProvider).length ? runTradingViewProvider : statusTradingViewProvider;
+    const tradingViewEnabled = Boolean(tradingViewProvider.enabled);
+    const tradingViewConfigured = Boolean(tradingViewProvider.configured || tradingViewProvider.cache_available || tradingViewProvider.mcp_url_configured);
+    const tradingViewMode = String(tradingViewProvider.mode || (tradingViewConfigured ? 'cache' : 'off'));
+    const tradingViewTone = tradingViewEnabled
+        ? 'border-cyan-300/25 bg-cyan-300/10 text-cyan-100'
+        : tradingViewConfigured
+            ? 'border-amber-300/25 bg-amber-300/10 text-amber-100'
+            : 'border-white/10 bg-white/8 text-slate-300';
+    const tradingViewLabel = tradingViewEnabled
+        ? `TradingView ${tradingViewMode}`
+        : tradingViewConfigured
+            ? 'TradingView cache only'
+            : 'TradingView off';
 
     // 카카오톡 공유 핸들러 (list template + buttons 포함)
     async function handleShareTop3(workflowId: string) {
@@ -453,6 +519,9 @@ function AlphaBoardPanel({
                     <span className={`rounded-full border px-3 py-1.5 text-xs font-black ${deepSeekStateTone(deepSeekState, deepSeekConfigured)}`}>
                         DeepSeek {deepSeekConfigured ? (deepSeekStatus?.default_model || 'ready') : 'not set'}
                     </span>
+                    <span className={`rounded-full border px-3 py-1.5 text-xs font-black ${tradingViewTone}`}>
+                        {tradingViewLabel}
+                    </span>
                     <span className={`rounded-full border px-3 py-1.5 text-xs font-black ${mcpRuntimeTone}`}>
                         MCP HTTP {mcpHealthy ? 'online' : 'offline'}
                     </span>
@@ -502,6 +571,9 @@ function AlphaBoardPanel({
                                 </span>
                                 <span className="rounded-full border border-white/10 bg-white/8 px-2.5 py-1 text-[11px] font-bold text-slate-300">
                                     Scheduler last {formatDateTime(scannerStatus?.scheduler_last_run_at)}
+                                </span>
+                                <span className={`rounded-full border px-2.5 py-1 text-[11px] font-black ${tradingViewTone}`}>
+                                    TV technical {tradingViewConfigured ? tradingViewMode : 'not configured'}
                                 </span>
                             </div>
                         </div>
@@ -716,6 +788,11 @@ function AlphaBoardPanel({
                             <span className="mt-1 block truncate font-mono text-[11px] font-black text-emerald-200/80">
                                 {formatAlphaAnalysis(candidate)}
                             </span>
+                            {formatTradingViewSignal(candidate) && (
+                                <span className={`mt-1 inline-flex max-w-full rounded-full border px-2 py-0.5 text-[10px] font-black ${tradingViewSignalTone(candidate)}`}>
+                                    <span className="truncate">{formatTradingViewSignal(candidate)}</span>
+                                </span>
+                            )}
                         </span>
                         <span className="flex items-center gap-2 md:justify-end">
                             <span className="font-mono text-xs font-black text-slate-300">{formatPrice(candidate.price)}</span>

@@ -11,6 +11,7 @@ import re
 from datetime import datetime, time as dt_time, timedelta, timezone
 from typing import Any
 
+import app.services.mirofish.tradingview_provider as tradingview_provider
 from app.utils.atomic_json import write_json_atomic
 
 
@@ -81,6 +82,7 @@ SCORING_SCHEMA = {
             'vcp_quality': '0..15 from VCP composite_score and entry-ready flag.',
             'jongga_setup': '0..10 from jongga_v2 total score and checklist.',
             'source_convergence': '0..5 when independent artifacts agree with price behavior.',
+            'tradingview_mcp': 'Optional TradingView MCP technical confirmation adjustment, fail-open.',
         },
     },
     'risk_score': {
@@ -126,6 +128,9 @@ def create_scanner_run(payload: dict[str, Any] | None = None) -> dict[str, Any]:
         'universe_size': len(artifacts['candidate_symbols']),
         'candidate_count': len(candidates),
         'scoring_schema': SCORING_SCHEMA,
+        'providers': {
+            'tradingview': artifacts.get('tradingview', {}).get('status') or tradingview_provider.get_status(include_live=False),
+        },
         'source_files': source_files,
         'freshness': _aggregate_freshness(source_files),
         'candidates': candidates,
@@ -197,6 +202,9 @@ def get_scanner_schedule_status(now: datetime | None = None) -> dict[str, Any]:
         'scheduler_last_run_at': scheduler_last_run_at,
         'freshness': freshness,
         'freshness_status': (freshness or {}).get('status'),
+        'providers': {
+            'tradingview': tradingview_provider.get_status(include_live=False),
+        },
         'source_files': source_files,
         'latest_run_freshness': latest_freshness,
         'latest_run_source_files': latest_source_files,
@@ -214,6 +222,7 @@ def get_scanner_diagnostics(now: datetime | None = None) -> dict[str, Any]:
     latest = read_latest_scanner_run()
     telegram = _telegram_config_status()
     deepseek = {'configured': bool(os.getenv('DEEPSEEK_API_KEY'))}
+    tradingview = tradingview_provider.get_status(include_live=False)
     issues: list[dict[str, Any]] = []
 
     freshness = schedule.get('freshness') or {}
@@ -271,6 +280,7 @@ def get_scanner_diagnostics(now: datetime | None = None) -> dict[str, Any]:
         'latest_run': _scanner_run_summary(latest) if latest else None,
         'telegram': telegram,
         'deepseek': deepseek,
+        'tradingview': tradingview,
         'issues': issues,
     }
 
@@ -685,6 +695,10 @@ def _load_artifacts() -> dict[str, Any]:
     }
     if not candidate_symbols:
         candidate_symbols.update(latest_prices.keys())
+    tradingview = tradingview_provider.load_enrichment_for_symbols(
+        candidate_symbols,
+        generated_at=datetime.now(timezone.utc).isoformat(),
+    )
 
     return {
         'ticker_map': maps,
@@ -693,6 +707,7 @@ def _load_artifacts() -> dict[str, Any]:
         'screener': screener,
         'vcp': vcp,
         'jongga': jongga,
+        'tradingview': tradingview,
         'candidate_symbols': candidate_symbols,
     }
 
@@ -709,6 +724,7 @@ def _build_candidates(
     screener_by_symbol = _index_screener(artifacts['screener'].get('data'))
     vcp_by_symbol = _index_vcp(artifacts['vcp'].get('data'))
     jongga_by_symbol = _index_jongga(artifacts['jongga'].get('data'))
+    tradingview_by_symbol = (artifacts.get('tradingview') or {}).get('signals_by_symbol') or {}
 
     symbols = set(artifacts['candidate_symbols'])
     if requested_symbols:
@@ -725,6 +741,7 @@ def _build_candidates(
             screener_by_symbol.get(symbol),
             vcp_by_symbol.get(symbol),
             jongga_by_symbol.get(symbol),
+            tradingview_by_symbol.get(symbol),
             artifacts,
             generated_at,
         )
@@ -752,6 +769,7 @@ def _score_symbol(
     screener: dict[str, Any] | None,
     vcp: dict[str, Any] | None,
     jongga: dict[str, Any] | None,
+    tradingview: dict[str, Any] | None,
     artifacts: dict[str, Any],
     generated_at: str,
 ) -> dict[str, Any]:
@@ -826,10 +844,24 @@ def _score_symbol(
     risk += _source_gap_penalty(price, screener, vcp, jongga)
     risk += _staleness_penalty(artifacts, generated_at)
     risk += _negative_flag_penalty(jongga)
+
+    base_alpha = alpha
+    base_risk = risk
+    tradingview_adjustment = tradingview_provider.score_signal(tradingview, price_metrics)
+    if tradingview_adjustment.get('applied'):
+        alpha += _float(tradingview_adjustment.get('alpha_delta'))
+        risk += _float(tradingview_adjustment.get('risk_delta'))
+        evidence.append(_evidence(
+            'tradingview_mcp',
+            'technical_alignment',
+            tradingview_adjustment.get('alpha_delta'),
+            tradingview_adjustment.get('recommendation'),
+        ))
     risk = round(_clamp(risk, 0, 100), 2)
 
     alpha = round(_clamp(alpha, 0, 100), 2)
-    conviction_adjustment = _conviction_adjustment(alpha, risk, source_count, price_metrics)
+    effective_source_count = source_count + (1 if tradingview_adjustment.get('applied') else 0)
+    conviction_adjustment = _conviction_adjustment(alpha, risk, effective_source_count, price_metrics)
     ranking_score = round(alpha - (0.55 * risk) + conviction_adjustment, 2)
     action = _action(alpha, risk)
     tags = _strategy_tags(
@@ -841,7 +873,9 @@ def _score_symbol(
         jongga_score,
         risk,
     )
-    signal_quality = _signal_quality(alpha, risk, source_count, price_metrics)
+    if tradingview_adjustment.get('applied'):
+        tags.append('tradingview_confirmed' if _float(tradingview_adjustment.get('alpha_delta')) >= 0 else 'tradingview_warning')
+    signal_quality = _signal_quality(alpha, risk, effective_source_count, price_metrics)
     entry_plan = _entry_plan(current_price, risk, price_metrics, action)
 
     display_name = (
@@ -869,9 +903,13 @@ def _score_symbol(
         'strategy_tags': tags,
         'evidence': [item for item in evidence if item['score'] > 0 or item['value'] not in (None, 0)],
         'analysis_profile': {
-            'source_count': source_count,
+            'source_count': effective_source_count,
+            'base_source_count': source_count,
+            'base_alpha_score': round(base_alpha, 2),
+            'base_risk_score': round(base_risk, 2),
             'convergence_score': round(convergence_score, 2),
             'conviction_adjustment': round(conviction_adjustment, 2),
+            'tradingview_adjustment': tradingview_adjustment if tradingview_adjustment.get('available') else {'available': False},
             'trend_quality': round(trend_quality, 2),
             'volume_accumulation': round(volume_accumulation, 2),
             'volatility_20d_pct': price_metrics.get('volatility_20d_pct'),
@@ -887,7 +925,7 @@ def _score_symbol(
         'replay_context': {
             'price_date': price.get('date'),
             'generated_at': generated_at,
-            'data_sources': _candidate_sources(price, screener, vcp, jongga),
+            'data_sources': _candidate_sources(price, screener, vcp, jongga, tradingview_adjustment),
             'lookahead_safe': True,
         },
         'price': {
@@ -900,6 +938,7 @@ def _score_symbol(
         'generated_at': generated_at,
         'source': 'local_marketflow_artifacts',
         'freshness': _symbol_freshness(artifacts),
+        'tradingview': tradingview_adjustment,
     }
 
 
@@ -1379,6 +1418,7 @@ def _candidate_sources(
     screener: dict[str, Any] | None,
     vcp: dict[str, Any] | None,
     jongga: dict[str, Any] | None,
+    tradingview_adjustment: dict[str, Any] | None = None,
 ) -> list[str]:
     sources = []
     if _float(price.get('current_price')) > 0:
@@ -1389,6 +1429,8 @@ def _candidate_sources(
         sources.append('vcp_kr_latest.json')
     if jongga:
         sources.append('jongga_v2_latest.json')
+    if tradingview_adjustment and tradingview_adjustment.get('applied'):
+        sources.append('tradingview_mcp')
     return sources
 
 

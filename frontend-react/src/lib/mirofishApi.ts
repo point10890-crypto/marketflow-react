@@ -272,6 +272,7 @@ export interface MiroFishAlphaCandidate {
     trading_value?: number;
     ranking_score?: number;
     score_breakdown?: Record<string, number>;
+    tradingview?: Record<string, any>;
     outcome?: MiroFishOutcomeItem;
 }
 
@@ -351,6 +352,7 @@ export interface MiroFishScannerRun {
     source_files?: MiroFishScannerSourceFile[];
     freshness?: Record<string, any>;
     scoring_schema?: Record<string, any>;
+    providers?: Record<string, any>;
     candidates?: MiroFishAlphaCandidate[];
     summary?: Record<string, any>;
     error?: string;
@@ -370,6 +372,7 @@ export interface MiroFishScannerStatus {
     source_files?: MiroFishScannerSourceFile[];
     candidate_count?: number;
     checked_at?: string;
+    providers?: Record<string, any>;
 }
 
 export interface MiroFishScannerDiagnostics {
@@ -402,6 +405,23 @@ export interface MiroFishDeepSeekStatus {
     project_usage?: Record<string, string>;
     models?: { data?: Array<{ id?: string; owned_by?: string }> };
     balance?: { is_available?: boolean; balance_infos?: Array<Record<string, unknown>> };
+    checked_at?: string;
+}
+
+export interface MiroFishTradingViewStatus {
+    provider?: string;
+    mode?: string;
+    enabled?: boolean;
+    configured?: boolean;
+    mcp_url_configured?: boolean;
+    credentials_present?: boolean;
+    cache_path?: string;
+    cache_available?: boolean;
+    cache_ttl_sec?: number;
+    score_weight?: number;
+    live_checked?: boolean;
+    healthy?: boolean | null;
+    error?: string;
     checked_at?: string;
 }
 
@@ -1051,6 +1071,7 @@ function normalizeAlphaCandidate(rawValue: unknown, index = 0): MiroFishAlphaCan
             ? asObject(raw.price).trading_value === undefined ? undefined : asNumber(asObject(raw.price).trading_value, 0)
             : asNumber(raw.trading_value, 0),
         score_breakdown: asObject(raw.score_breakdown ?? raw.breakdown),
+        tradingview: asObject(raw.tradingview),
     };
 }
 
@@ -1076,6 +1097,7 @@ function normalizeScannerRun(payload: any): MiroFishScannerRun {
         source_files: normalizeScannerSourceFiles(raw.source_files),
         freshness: asObject(raw.freshness),
         scoring_schema: asObject(raw.scoring_schema),
+        providers: asObject(raw.providers),
         candidates: rawCandidates.map(normalizeAlphaCandidate),
         summary: asObject(raw.summary),
         error: raw.error === undefined ? undefined : String(raw.error),
@@ -1099,6 +1121,7 @@ function normalizeScannerStatus(payload: any): MiroFishScannerStatus {
         source_files: normalizeScannerSourceFiles(raw.source_files),
         candidate_count: raw.candidate_count === undefined ? undefined : asNumber(raw.candidate_count, 0),
         checked_at: raw.checked_at === undefined ? undefined : String(raw.checked_at),
+        providers: asObject(raw.providers),
     };
 }
 
@@ -1167,6 +1190,9 @@ export const mirofishApi = {
     ),
     getDeepSeekStatus: async (live = false) => fetchAuthAPI<MiroFishDeepSeekStatus>(
         `/api/admin/mirofish/deepseek/status${live ? '?live=1' : ''}`,
+    ),
+    getTradingViewStatus: async (live = false) => fetchAuthAPI<MiroFishTradingViewStatus>(
+        `/api/admin/mirofish/tradingview/status${live ? '?live=1' : ''}`,
     ),
     createDeepSeekScannerSummary: async (request: MiroFishScannerRunRequest & { summary_limit?: number; model?: string; thinking?: boolean } = {}) => {
         const payload = await postAuthAPI<any>('/api/admin/mirofish/deepseek/scanner-summary', request, undefined, 120000);
