@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 
 /**
@@ -17,6 +17,8 @@ import { useAuth } from '@/contexts/AuthContext';
 export default function PlanSelectPage() {
     const { user, token, loading } = useAuth();
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const isResubscribe = searchParams.get('resubscribe') === '1' || searchParams.get('from') === 'expired';
 
     // 가드 — loading 끝난 뒤에만 판정 (AuthContext 초기화 중 user=null 찰나 보호)
     useEffect(() => {
@@ -40,8 +42,10 @@ export default function PlanSelectPage() {
         }
     }, [user, token, loading, navigate]);
 
-    const isExpired = !!user?.is_pro_expired;
+    const isExpired = !!user?.is_pro_expired || user?.status === 'expired' || isResubscribe;
     const isPending = user?.status === 'pending';
+    // 만료된 user 의 expired_at 표시용
+    const expiredAt = user?.pro_expires_at ? new Date(user.pro_expires_at) : null;
 
     const select = (plan: 'pro' | 'premium') => {
         navigate(`/payment-request?plan=${plan}`);
@@ -49,13 +53,42 @@ export default function PlanSelectPage() {
 
     return (
         <div className="fixed inset-0 bg-[#09090b] flex flex-col items-center overflow-y-auto p-6 sm:p-8">
-            <div className="text-center mt-8 sm:mt-16 mb-10">
+            {/* 만료 = 계정 정지 안내 (강조 배너) */}
+            {isExpired && (
+                <div className="w-full max-w-4xl mt-4 mb-6 rounded-2xl border-2 border-rose-500/40 bg-gradient-to-br from-rose-500/[0.12] via-amber-500/[0.05] to-slate-950/60 p-5 sm:p-6 backdrop-blur-md shadow-[0_8px_40px_rgba(244,63,94,0.18)]">
+                    <div className="flex items-start gap-3">
+                        <div className="grid h-10 w-10 sm:h-12 sm:w-12 shrink-0 place-items-center rounded-full bg-rose-500/20 text-rose-300 text-xl">
+                            ⚠️
+                        </div>
+                        <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2 flex-wrap">
+                                <h2 className="text-lg sm:text-xl font-black text-rose-200">
+                                    Pro 구독 만료 — 계정이 정지되었습니다
+                                </h2>
+                                <span className="inline-flex items-center rounded-full border border-rose-400/40 bg-rose-500/15 px-2 py-0.5 text-[10px] font-black text-rose-200 uppercase tracking-wider">
+                                    EXPIRED
+                                </span>
+                            </div>
+                            <p className="mt-2 text-sm text-rose-100/80 leading-relaxed">
+                                구독이 만료되어 데이터 페이지 접근이 차단되었습니다. 아래 플랜을 다시 선택해 재구독 신청해 주세요.
+                            </p>
+                            {expiredAt && (
+                                <p className="mt-1 text-xs text-rose-200/60 tabular-nums">
+                                    만료일: {expiredAt.toLocaleDateString('ko-KR')} {expiredAt.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
+                                </p>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            <div className="text-center mt-2 sm:mt-6 mb-10">
                 <h1 className="text-4xl sm:text-5xl font-black text-white tracking-tight mb-4">
-                    플랜을 선택해 주세요
+                    {isExpired ? '재구독 플랜' : '플랜을 선택해 주세요'}
                 </h1>
                 <p className="text-gray-400 text-base sm:text-lg max-w-md mx-auto">
                     {isExpired
-                        ? '구독이 만료되었습니다. 재구독 플랜을 선택하세요.'
+                        ? '서비스 재개를 위해 플랜을 다시 신청해 주세요.'
                         : isPending
                         ? '계정이 생성되었습니다. 구독 플랜을 선택하세요.'
                         : '원하시는 구독 플랜을 선택하세요.'}

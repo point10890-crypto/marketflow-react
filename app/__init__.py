@@ -186,12 +186,48 @@ def create_app(config=None):
         if user.is_admin:
             _req.current_user = user
             return None
+
+        # status 가 이미 'expired' 면 즉시 재구독 페이지로 안내
+        if user.status == 'expired':
+            return _jsonify({
+                'error': 'Subscription expired',
+                'status': 'expired',
+                'expired': True,
+                'redirect_to': '/plan-select?resubscribe=1&from=expired',
+                'message': 'Pro 구독 만료 — 재구독이 필요합니다.',
+            }), 403
+
         if user.status != 'approved':
-            return _jsonify({'error': 'Account not approved', 'status': user.status}), 403
+            return _jsonify({
+                'error': 'Account not approved',
+                'status': user.status,
+                'redirect_to': '/pending-approval',
+            }), 403
+
         if user.tier not in ('pro', 'premium'):
-            return _jsonify({'error': 'Pro subscription required', 'tier': user.tier}), 403
+            return _jsonify({
+                'error': 'Pro subscription required',
+                'tier': user.tier,
+                'redirect_to': '/plan-select',
+            }), 403
+
+        # Pro 만료 자동 처리 — DB status 'expired' 로 변경 (계정 정지 효과)
         if user.is_pro_expired:
-            return _jsonify({'error': 'Pro subscription expired', 'expired': True}), 403
+            try:
+                from app.models import db as _db
+                user.status = 'expired'
+                user.pro_expiry_alert_stage = 'expired'
+                _db.session.commit()
+            except Exception as _exc:
+                _db.session.rollback() if hasattr(_db, 'session') else None
+            return _jsonify({
+                'error': 'Pro subscription expired',
+                'status': 'expired',
+                'expired': True,
+                'redirect_to': '/plan-select?resubscribe=1&from=expired',
+                'message': 'Pro 구독 만료로 계정이 정지되었습니다. 재구독해 주세요.',
+            }), 403
+
         _req.current_user = user
         return None
 
@@ -509,7 +545,7 @@ def _start_screener_worker(app):
                             continue
                         alert_cooldown[code] = now
                         try:
-                            _send_screener_alert(stock)
+                            _send_screener_alert(stock, result)
                         except Exception:
                             pass
 
@@ -624,7 +660,79 @@ def _start_alpha_scanner_monitor_worker(app):
         print(f"[WARN] MCP auto-runner failed to start: {type(_exc).__name__}: {_exc}")
 
 
-def _send_screener_alert(stock):
+def _telegram_html(value) -> str:
+    import html
+    return html.escape(str(value or ""), quote=False)
+
+
+def _format_screener_timestamp(result) -> str:
+    from datetime import datetime as _dt
+
+    raw_ts = (result or {}).get('timestamp')
+    if not raw_ts:
+        return _dt.now().strftime('%m/%d %H:%M:%S')
+    try:
+        stamp = _dt.fromisoformat(str(raw_ts).replace('Z', '+00:00'))
+        return stamp.strftime('%m/%d %H:%M:%S')
+    except Exception:
+        return str(raw_ts)
+
+
+def _quote_mode_label(result=None) -> str:
+    mode = str((result or {}).get('quote_mode') or '').lower()
+    if not mode:
+        mode = 'paper' if os.environ.get('KIS_PAPER', 'true').lower() in {'1', 'true', 'yes', 'on'} else 'real'
+    return 'KIS 실전' if mode == 'real' else 'KIS 모의'
+
+
+def _quote_mode_warning(result=None) -> str:
+    return (
+        "\n⚠️ 모의투자 시세 기준입니다. 실전 HTS/증권사 현재가와 차이가 날 수 있습니다."
+        if _quote_mode_label(result) == 'KIS 모의' else ""
+    )
+
+
+def _screener_source_label(result=None) -> str:
+    status = (result or {}).get('market_status') or 'unknown'
+    served_from = (result or {}).get('served_from')
+    if served_from:
+        return f"{status} · {served_from}"
+    return status
+
+
+def _build_screener_alert_message(stock, result=None):
+    score = stock.get('score', {})
+    enrich = stock.get('enrichment', {})
+    ai_reason = enrich.get('ai_reason', '')
+    themes = enrich.get('themes', [])
+    consecutive = enrich.get('consecutive_days', 0)
+    cap_tier = enrich.get('market_cap_tier', '')
+    total_score = score.get('total_enriched')
+    if total_score is None:
+        total_score = score.get('total', 0)
+
+    msg = (
+        f"<b>🔥 주도주 S등급 발견</b>\n\n"
+        f"<b>{_telegram_html(stock.get('name'))}</b> ({_telegram_html(stock.get('code'))})\n"
+        f"기준: {_format_screener_timestamp(result)} · {_quote_mode_label(result)} · {_screener_source_label(result)}"
+        f"{_quote_mode_warning(result)}\n"
+        f"현재가: {stock.get('price', 0):,}원 ({stock.get('change_pct', 0):+.1f}%)\n"
+        f"거래대금: {stock.get('trading_value_eok', 0):,}억\n"
+        f"점수: {total_score}/100 "
+        f"(거래{score.get('trading_value', 0)} 모멘{score.get('momentum', 0)} "
+        f"수급{score.get('smart_money', 0)} 급증{score.get('volume_surge', 0)} "
+        f"섹터{score.get('sector', 0)} 신고{score.get('new_high', 0)})"
+        + (f"\n👑 52주 신고가 근접 ({stock.get('high_52w', {}).get('distance_pct', 0)}%)"
+           if score.get('new_high', 0) >= 10 else "")
+        + (f"\n🤖 AI: {_telegram_html(ai_reason)}" if ai_reason else "")
+        + (f"\n🏷️ {' '.join(f'#{_telegram_html(t)}' for t in themes)}" if themes else "")
+        + (f"\n🔥 {consecutive}일 연속 주도주!" if consecutive >= 2 else "")
+        + (f"\n📊 {_telegram_html(cap_tier)}주" if cap_tier and cap_tier != "미분류" else "")
+    )
+    return msg
+
+
+def _send_screener_alert(stock, result=None):
     """S등급 주도주 텔레그램 알림"""
     try:
         import requests
@@ -632,29 +740,7 @@ def _send_screener_alert(stock):
         chat_id = os.environ.get('TELEGRAM_CHAT_ID')
         if not bot_token or not chat_id:
             return
-        score = stock.get('score', {})
-        enrich = stock.get('enrichment', {})
-        ai_reason = enrich.get('ai_reason', '')
-        themes = enrich.get('themes', [])
-        consecutive = enrich.get('consecutive_days', 0)
-        cap_tier = enrich.get('market_cap_tier', '')
-
-        msg = (
-            f"<b>🔥 주도주 S등급 발견</b>\n\n"
-            f"<b>{stock.get('name')}</b> ({stock.get('code')})\n"
-            f"현재가: {stock.get('price', 0):,}원 ({stock.get('change_pct', 0):+.1f}%)\n"
-            f"거래대금: {stock.get('trading_value_eok', 0):,}억\n"
-            f"점수: {score.get('total', 0)}/100 "
-            f"(거래{score.get('trading_value', 0)} 모멘{score.get('momentum', 0)} "
-            f"수급{score.get('smart_money', 0)} 급증{score.get('volume_surge', 0)} "
-            f"섹터{score.get('sector', 0)} 신고{score.get('new_high', 0)})"
-            + (f"\n👑 52주 신고가 근접 ({stock.get('high_52w', {}).get('distance_pct', 0)}%)"
-               if score.get('new_high', 0) >= 10 else "")
-            + (f"\n🤖 AI: {ai_reason}" if ai_reason else "")
-            + (f"\n🏷️ {' '.join(f'#{t}' for t in themes)}" if themes else "")
-            + (f"\n🔥 {consecutive}일 연속 주도주!" if consecutive >= 2 else "")
-            + (f"\n📊 {cap_tier}주" if cap_tier and cap_tier != "미분류" else "")
-        )
+        msg = _build_screener_alert_message(stock, result)
         _telegram_post(bot_token, chat_id, msg, label="screener_alert_main")
         # 채널에도 전송
         ch_token = os.environ.get('TELEGRAM_CHANNEL_BOT_TOKEN')
@@ -700,78 +786,12 @@ def _send_screener_hourly_summary(result):
     """주도주LIVE 1시간 간격 전체 종목 요약 텔레그램"""
     try:
         import requests
-        from datetime import datetime as _dt
         bot_token = os.environ.get('TELEGRAM_BOT_TOKEN')
         chat_id = os.environ.get('TELEGRAM_CHAT_ID')
         if not bot_token or not chat_id:
             return
 
-        stocks = result.get('results', [])
-        by_grade = result.get('by_grade', {})
-        now_str = _dt.now().strftime('%H:%M')
-
-        # 헤더
-        lines = [
-            f"<b>📊 주도주LIVE 현황 ({now_str})</b>",
-            f"S:{by_grade.get('S', 0)} A:{by_grade.get('A', 0)} B:{by_grade.get('B', 0)} | 총 {len(stocks)}종목",
-            "",
-        ]
-
-        # S/A등급 종목 리스트
-        for stock in stocks:
-            grade = stock.get('grade', '')
-            if grade not in ('S', 'A'):
-                continue
-            score = stock.get('score', {})
-            enrich = stock.get('enrichment', {})
-            ai_reason = enrich.get('ai_reason', '')
-            consecutive = enrich.get('consecutive_days', 0)
-            cap_tier = enrich.get('market_cap_tier', '')
-            line = (
-                f"{'🔥' if grade == 'S' else '🟡'} <b>{stock.get('name')}</b> "
-                f"{stock.get('change_pct', 0):+.1f}% "
-                f"({score.get('total', 0)}점) "
-                f"{stock.get('trading_value_eok', 0):,}억"
-            )
-            extras = []
-            if ai_reason:
-                extras.append(f"💡{ai_reason}")
-            if consecutive >= 2:
-                extras.append(f"🔥{consecutive}연속")
-            if cap_tier and cap_tier != "미분류":
-                extras.append(cap_tier)
-            if extras:
-                line += f"\n   └ {' · '.join(extras)}"
-            lines.append(line)
-
-        # B등급은 종목명만
-        b_stocks = [s.get('name', '') for s in stocks if s.get('grade') == 'B']
-        if b_stocks:
-            lines.append(f"\nB등급: {', '.join(b_stocks[:5])}{'...' if len(b_stocks) > 5 else ''}")
-
-        # 🤖 키움 AI전략 테마 TOP (7개 조건식 동시매칭)
-        try:
-            import json as _json
-            theme_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-                                      'data', 'kiwoom_ai_theme_latest.json')
-            if os.path.exists(theme_path):
-                with open(theme_path, 'r', encoding='utf-8') as f:
-                    theme_data = _json.load(f)
-                theme_stocks = theme_data.get('stocks', [])
-                if theme_stocks and not theme_data.get('preview_mode'):
-                    lines.append("")
-                    lines.append(f"<b>🤖 AI전략 테마 TOP</b> ({theme_data.get('executed', 0)}/{theme_data.get('total_conditions', 7)}개 조건식)")
-                    for ts in theme_stocks[:5]:
-                        hit = ts.get('hit_count', 0)
-                        total = theme_data.get('total_conditions', 7)
-                        lines.append(
-                            f"  [{hit}/{total}] <b>{ts.get('name')}</b> "
-                            f"{ts.get('change_pct', 0):+.1f}%"
-                        )
-        except Exception as _e:
-            _tg_logger().debug(f"AI theme block skipped: {_e}")
-
-        msg = '\n'.join(lines)
+        msg = _build_screener_hourly_message(result)
         _telegram_post(bot_token, chat_id, msg, label="screener_hourly_main")
         # 채널에도 전송
         ch_token = os.environ.get('TELEGRAM_CHANNEL_BOT_TOKEN')
@@ -780,6 +800,80 @@ def _send_screener_hourly_summary(result):
             _telegram_post(ch_token, ch_id, msg, label="screener_hourly_channel")
     except Exception as e:
         _tg_logger().warning(f"_send_screener_hourly_summary failed: {type(e).__name__}: {e}")
+
+
+def _build_screener_hourly_message(result):
+    stocks = result.get('results', [])
+    by_grade = result.get('by_grade', {})
+    now_str = _format_screener_timestamp(result)
+
+    lines = [
+        f"<b>📊 주도주LIVE 현황 ({now_str})</b>",
+        f"시세: {_quote_mode_label(result)} · {_screener_source_label(result)}",
+        f"S:{by_grade.get('S', 0)} A:{by_grade.get('A', 0)} B:{by_grade.get('B', 0)} | 총 {len(stocks)}종목",
+    ]
+    warning = _quote_mode_warning(result).strip()
+    if warning:
+        lines.append(warning)
+    lines.append("")
+
+    for stock in stocks:
+        grade = stock.get('grade', '')
+        if grade not in ('S', 'A'):
+            continue
+        score = stock.get('score', {})
+        enrich = stock.get('enrichment', {})
+        ai_reason = enrich.get('ai_reason', '')
+        consecutive = enrich.get('consecutive_days', 0)
+        cap_tier = enrich.get('market_cap_tier', '')
+        total_score = score.get('total_enriched')
+        if total_score is None:
+            total_score = score.get('total', 0)
+        line = (
+            f"{'🔥' if grade == 'S' else '🟡'} <b>{_telegram_html(stock.get('name'))}</b> "
+            f"{stock.get('price', 0):,}원 "
+            f"{stock.get('change_pct', 0):+.1f}% "
+            f"({total_score}점) "
+            f"{stock.get('trading_value_eok', 0):,}억"
+        )
+        extras = []
+        if ai_reason:
+            extras.append(f"💡{_telegram_html(ai_reason)}")
+        if consecutive >= 2:
+            extras.append(f"🔥{consecutive}연속")
+        if cap_tier and cap_tier != "미분류":
+            extras.append(_telegram_html(cap_tier))
+        if extras:
+            line += f"\n   └ {' · '.join(extras)}"
+        lines.append(line)
+
+    b_stocks = [s.get('name', '') for s in stocks if s.get('grade') == 'B']
+    if b_stocks:
+        names = [_telegram_html(name) for name in b_stocks[:5]]
+        lines.append(f"\nB등급: {', '.join(names)}{'...' if len(b_stocks) > 5 else ''}")
+
+    try:
+        import json as _json
+        theme_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                                  'data', 'kiwoom_ai_theme_latest.json')
+        if os.path.exists(theme_path):
+            with open(theme_path, 'r', encoding='utf-8') as f:
+                theme_data = _json.load(f)
+            theme_stocks = theme_data.get('stocks', [])
+            if theme_stocks and not theme_data.get('preview_mode'):
+                lines.append("")
+                lines.append(f"<b>🤖 AI전략 테마 TOP</b> ({theme_data.get('executed', 0)}/{theme_data.get('total_conditions', 7)}개 조건식)")
+                for ts in theme_stocks[:5]:
+                    hit = ts.get('hit_count', 0)
+                    total = theme_data.get('total_conditions', 7)
+                    lines.append(
+                        f"  [{hit}/{total}] <b>{_telegram_html(ts.get('name'))}</b> "
+                        f"{ts.get('change_pct', 0):+.1f}%"
+                    )
+    except Exception as e:
+        _tg_logger().debug(f"AI theme block skipped: {e}")
+
+    return '\n'.join(lines)
 
 
 def _precompute_snapshots(base_dir):

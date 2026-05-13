@@ -16,6 +16,29 @@ export function authHeaders(extra?: Record<string, string>): Record<string, stri
     return headers;
 }
 
+/** 만료/계정정지 응답 자동 처리 — 모든 fetchAPI / postAPI 공통 사용 */
+async function _handleAuthGate(response: Response, url: string): Promise<void> {
+    if (response.status !== 401 && response.status !== 403) return;
+    let body: any = null;
+    try {
+        body = await response.clone().json();
+    } catch {
+        return;
+    }
+    if (!body || typeof body !== 'object') return;
+    // 만료/계정정지 시 자동 redirect (data 페이지에서 발생 시)
+    if (body.expired || body.status === 'expired') {
+        try {
+            // 무한 루프 방지: 이미 /plan-select 에 있으면 skip
+            if (typeof window !== 'undefined' && !window.location.pathname.includes('/plan-select')) {
+                console.warn('[fetchAPI] subscription expired — redirect to plan-select', url);
+                window.location.replace(body.redirect_to || '/plan-select?resubscribe=1&from=expired');
+            }
+        } catch { /* ignore */ }
+    }
+}
+
+
 export async function fetchAPI<T>(endpoint: string, timeoutMs = 10000): Promise<T> {
     const url = `${API_BASE}${endpoint}`;
     const controller = new AbortController();
@@ -28,6 +51,7 @@ export async function fetchAPI<T>(endpoint: string, timeoutMs = 10000): Promise<
         });
         clearTimeout(timeoutId);
         if (!response.ok) {
+            await _handleAuthGate(response, url);
             throw new Error(`API Error: ${endpoint} (${response.status})`);
         }
         return await response.json();
@@ -52,6 +76,7 @@ export async function postAPI<T>(endpoint: string, body?: any): Promise<T> {
         });
         clearTimeout(timeoutId);
         if (!response.ok) {
+            await _handleAuthGate(response, url);
             const err = await response.json().catch(() => ({ error: `HTTP ${response.status}` }));
             throw new Error(err.error || `API Error: ${endpoint} (${response.status})`);
         }

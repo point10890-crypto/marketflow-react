@@ -70,11 +70,12 @@ function ApprovedGuard({ children }: { children: React.ReactNode }) {
     if (!user) return <Navigate to={unauthRedirect()} replace />;
     if (user.status === 'unknown') return <LoadingFallback />;
     if (user.role === 'admin') return <>{children}</>;
+    // Pro 만료 → 계정 정지 상태. 재구독 페이지로 안내.
+    if (user.status === 'expired' || user.is_pro_expired) {
+        return <Navigate to="/plan-select?resubscribe=1&from=expired" replace />;
+    }
     if (user.status !== 'approved') return <Navigate to="/pending-approval" replace />;
     if (user.tier !== 'pro' && user.tier !== 'premium') return <Navigate to="/pending-approval" replace />;
-    // Pro 만료 시 대시보드 차단 → /plan-select 로 재구독 경로 통합
-    // (premium 은 is_pro_expired 가 항상 false 이므로 영향 없음)
-    if (user.is_pro_expired) return <Navigate to="/plan-select" replace />;
     return <>{children}</>;
 }
 
@@ -84,8 +85,11 @@ function ProGuard({ children }: { children: React.ReactNode }) {
     if (!user) return <Navigate to={unauthRedirect()} replace />;
     if (user.status === 'unknown') return <LoadingFallback />;
     if (user.role === 'admin') return <>{children}</>;
+    // 만료 우선 — 계정 정지 상태로 간주 → 재구독
+    if (user.status === 'expired' || user.is_pro_expired) {
+        return <Navigate to="/plan-select?resubscribe=1&from=expired" replace />;
+    }
     if (user.tier === 'pro' || user.tier === 'premium') {
-        if (user.is_pro_expired) return <Navigate to="/plan-select" replace />;
         return <>{children}</>;
     }
     // 미구독 pending 유저는 플랜 선택 페이지로
