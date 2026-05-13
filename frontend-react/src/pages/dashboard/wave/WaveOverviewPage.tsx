@@ -197,8 +197,8 @@ export default function WaveOverviewPage() {
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-cyan-500/20 flex items-center justify-center">
-                        <i className="fas fa-wave-square text-cyan-400" />
+                    <div className="w-10 h-10 rounded-xl bg-amber-500/12 flex items-center justify-center">
+                        <i className="fas fa-wave-square text-amber-300" />
                     </div>
                     <div>
                         <h1 className="text-2xl font-black text-white">W Pattern</h1>
@@ -213,7 +213,7 @@ export default function WaveOverviewPage() {
             </div>
 
             {/* Search Bar */}
-            <div className="bg-[#1c1c1e] rounded-2xl border border-white/5 p-3">
+            <div className="bg-black/60 rounded-2xl border border-white/5 p-3">
                 <div className="flex items-center gap-2">
                     <div className="flex bg-black/40 rounded-lg p-0.5">
                         {MARKET_TABS.map(tab => (
@@ -222,7 +222,7 @@ export default function WaveOverviewPage() {
                                 onClick={() => setMarket(tab.key)}
                                 className={`px-2.5 py-1 text-xs font-bold rounded-md transition-all ${
                                     market === tab.key
-                                        ? 'bg-cyan-500 text-black'
+                                        ? 'bg-amber-400 text-black'
                                         : 'text-gray-500 hover:text-white'
                                 }`}
                             >
@@ -240,12 +240,12 @@ export default function WaveOverviewPage() {
                         }}
                         onKeyDown={handleKeyDown}
                         placeholder={MARKET_TABS.find(t => t.key === market)?.placeholder}
-                        className="flex-1 bg-black/40 border border-white/10 rounded-lg px-3 py-1.5 text-white text-sm placeholder:text-gray-600 focus:outline-none focus:border-cyan-500/50"
+                        className="flex-1 bg-black/40 border border-white/10 rounded-lg px-3 py-1.5 text-white text-sm placeholder:text-gray-600 focus:outline-none focus:border-amber-400/40"
                     />
                     <button
                         onClick={handleSearch}
                         disabled={detailLoading || !searchTicker.trim()}
-                        className="px-3 py-1.5 bg-cyan-500 text-black font-bold text-xs rounded-lg hover:bg-cyan-400 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                        className="px-3 py-1.5 bg-amber-400 text-black font-bold text-xs rounded-lg hover:bg-amber-300 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
                     >
                         {detailLoading ? (
                             <span className="flex items-center gap-1.5">
@@ -259,7 +259,7 @@ export default function WaveOverviewPage() {
 
             {/* Error */}
             {searchError && (
-                <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3 text-red-400 text-sm">
+                <div className="bg-rose-500/8 border border-rose-500/15 rounded-xl p-3 text-rose-300 text-sm">
                     {searchError}
                 </div>
             )}
@@ -280,18 +280,18 @@ export default function WaveOverviewPage() {
             {screener && screener.date && (
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     <StatCard label="스캔 종목" value={screener.scan_count.toLocaleString()} icon="fa-search" />
-                    <StatCard label="패턴 감지" value={`${screener.total_signal_count}개`} icon="fa-wave-square" color="text-cyan-400" />
+                    <StatCard label="패턴 감지" value={`${screener.total_signal_count}개`} icon="fa-wave-square" color="text-amber-300" />
                     <StatCard
                         label="W (Bullish)"
                         value={`${(screener.signals || []).filter(s => s.best_pattern.pattern_class === 'W').length}개`}
                         icon="fa-arrow-up"
-                        color="text-green-400"
+                        color="text-emerald-300"
                     />
                     <StatCard
                         label="M (Bearish)"
                         value={`${(screener.signals || []).filter(s => s.best_pattern.pattern_class === 'M').length}개`}
                         icon="fa-arrow-down"
-                        color="text-red-400"
+                        color="text-rose-300"
                     />
                 </div>
             )}
@@ -307,8 +307,8 @@ export default function WaveOverviewPage() {
                                 onClick={() => setFilter(f)}
                                 className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
                                     filter === f
-                                        ? f === 'W' ? 'bg-cyan-500/20 text-cyan-400'
-                                        : f === 'M' ? 'bg-pink-500/20 text-pink-400'
+                                        ? f === 'W' ? 'bg-amber-500/12 text-amber-300'
+                                        : f === 'M' ? 'bg-rose-500/10 text-rose-300'
                                         : 'bg-white/10 text-white'
                                         : 'text-gray-500 hover:text-white hover:bg-white/5'
                                 }`}
@@ -317,26 +317,22 @@ export default function WaveOverviewPage() {
                             </button>
                         ))}
 
-                        {/* 🪣 줍줍이 — 독보이는 큰 CTA 버튼 */}
+                        {/* 🪣 줍줍이 — Quant Terminal CTA */}
                         <button
                             onClick={() => setFilter('jubjub')}
-                            className={`group relative overflow-hidden rounded-xl px-5 py-2.5 sm:px-6 sm:py-3 text-sm sm:text-base font-black transition-all transform hover:scale-[1.03] active:scale-[0.98] ${
+                            className={`group relative overflow-hidden rounded-lg px-4 py-2 sm:px-5 sm:py-2.5 text-sm sm:text-[15px] font-black transition-colors ${
                                 filter === 'jubjub'
-                                    ? 'bg-gradient-to-r from-amber-400 via-amber-300 to-emerald-300 text-slate-950 shadow-[0_8px_30px_rgba(252,211,77,0.45)] ring-2 ring-amber-300/60'
-                                    : 'bg-gradient-to-r from-amber-400/15 via-amber-300/10 to-emerald-300/15 text-amber-200 ring-1 ring-amber-300/30 hover:ring-amber-300/60 hover:shadow-[0_8px_24px_rgba(252,211,77,0.20)]'
+                                    ? 'bg-amber-400 text-black ring-1 ring-amber-300/50'
+                                    : 'bg-amber-400/10 text-amber-300 ring-1 ring-amber-400/25 hover:bg-amber-400/15 hover:ring-amber-400/40'
                             }`}
                         >
-                            {/* 글로우 펄스 (비활성 시) */}
-                            {filter !== 'jubjub' && (
-                                <span className="pointer-events-none absolute inset-0 rounded-xl bg-gradient-to-r from-amber-300/0 via-amber-300/15 to-amber-300/0 opacity-0 group-hover:opacity-100 transition-opacity" aria-hidden />
-                            )}
                             <span className="relative flex items-center gap-2">
-                                <span className="text-xl sm:text-2xl leading-none">🪣</span>
+                                <span className="text-lg sm:text-xl leading-none">🪣</span>
                                 <span className="leading-none tracking-tight">줍줍이</span>
-                                <span className={`hidden sm:inline-flex items-center rounded-md px-1.5 py-0.5 text-[10px] font-black tracking-wider ${
+                                <span className={`hidden sm:inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-black tracking-wider ${
                                     filter === 'jubjub'
-                                        ? 'bg-slate-950/30 text-slate-950'
-                                        : 'bg-amber-300/20 text-amber-200'
+                                        ? 'bg-black/25 text-black'
+                                        : 'bg-amber-400/15 text-amber-200'
                                 }`}>
                                     HOT
                                 </span>
@@ -376,12 +372,12 @@ export default function WaveOverviewPage() {
                         loading={jubjubLoading}
                     />
                     {jubjubLoading && !jubjub ? (
-                        <div className="bg-[#1c1c1e] rounded-2xl border border-emerald-300/15 p-12 text-center">
-                            <div className="w-8 h-8 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+                        <div className="bg-black/60 rounded-2xl border border-amber-500/15 p-12 text-center">
+                            <div className="w-8 h-8 border-2 border-amber-400 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
                             <p className="text-gray-500 text-sm">🪣 줍줍 후보 검출 중...</p>
                         </div>
                     ) : !jubjub?.candidates?.length ? (
-                        <div className="bg-[#1c1c1e] rounded-2xl border border-emerald-300/15 p-12 text-center">
+                        <div className="bg-black/60 rounded-2xl border border-amber-500/15 p-12 text-center">
                             <div className="text-4xl mb-3">🪣</div>
                             <p className="text-gray-400 text-sm">
                                 현재 줍줍 후보가 없습니다 (최소 점수 ≥ {jubjubMinScore}).
@@ -418,15 +414,15 @@ export default function WaveOverviewPage() {
 
             {/* Screener Results (기존 W/M 모드 — jubjub 모드 시 숨김) */}
             {filter !== 'jubjub' && (screenerLoading ? (
-                <div className="bg-[#1c1c1e] rounded-2xl border border-white/5 p-12 text-center">
-                    <div className="w-8 h-8 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+                <div className="bg-black/60 rounded-2xl border border-white/5 p-12 text-center">
+                    <div className="w-8 h-8 border-2 border-amber-400 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
                     <p className="text-gray-500 text-sm">스크리너 데이터 로딩중...</p>
                 </div>
             ) : filteredSignals.length > 0 ? (
-                <div className="bg-[#1c1c1e] rounded-2xl border border-white/5 overflow-hidden">
+                <div className="bg-black/60 rounded-2xl border border-white/5 overflow-hidden">
                     <div className="px-4 py-3 border-b border-white/5 flex items-center justify-between">
                         <h3 className="text-base font-bold text-white">
-                            감지된 패턴 <span className="text-cyan-400">{filteredSignals.length}개</span>
+                            감지된 패턴 <span className="text-amber-300">{filteredSignals.length}개</span>
                         </h3>
                         <span className="text-xs text-gray-500">{screener?.date}</span>
                     </div>
@@ -455,7 +451,7 @@ export default function WaveOverviewPage() {
                                             key={`${s.ticker}-${i}`}
                                             onClick={() => loadDetail(s.ticker, s.market)}
                                             className={`border-b border-white/5 cursor-pointer transition-colors ${
-                                                selectedTicker === s.ticker ? 'bg-cyan-500/10' : 'hover:bg-white/5'
+                                                selectedTicker === s.ticker ? 'bg-amber-500/8' : 'hover:bg-white/5'
                                             }`}
                                         >
                                             <td className="px-4 py-3">
@@ -467,28 +463,28 @@ export default function WaveOverviewPage() {
                                             <td className="text-center px-2 py-3">
                                                 <span className={`px-2 py-0.5 rounded text-xs font-bold ${
                                                     bp.pattern_class === 'W'
-                                                        ? 'bg-cyan-500/20 text-cyan-400'
-                                                        : 'bg-pink-500/20 text-pink-400'
+                                                        ? 'bg-amber-500/12 text-amber-300'
+                                                        : 'bg-rose-500/10 text-rose-300'
                                                 }`}>{bp.wave_label}</span>
                                             </td>
                                             <td className="text-center px-2 py-3">
                                                 <span className={`text-xs font-bold ${
-                                                    bp.bullish_bias > 0 ? 'text-green-400' : 'text-red-400'
+                                                    bp.bullish_bias > 0 ? 'text-emerald-300' : 'text-rose-300'
                                                 }`}>
                                                     {bp.bullish_bias > 0 ? 'Bullish' : 'Bearish'}
                                                 </span>
                                             </td>
                                             <td className="text-center px-2 py-3">
                                                 <span className={`font-bold text-sm ${
-                                                    bp.confidence >= 70 ? 'text-green-400' :
-                                                    bp.confidence >= 50 ? 'text-yellow-400' : 'text-gray-400'
+                                                    bp.confidence >= 70 ? 'text-emerald-300' :
+                                                    bp.confidence >= 50 ? 'text-amber-300' : 'text-gray-400'
                                                 }`}>{bp.confidence}</span>
                                             </td>
                                             <td className="text-center px-2 py-3">
                                                 <div className="flex items-center justify-center gap-1.5">
                                                     <div className="w-12 h-2 bg-gray-700 rounded-full overflow-hidden">
                                                         <div
-                                                            className="h-full bg-cyan-500 rounded-full"
+                                                            className="h-full bg-amber-400/70 rounded-full"
                                                             style={{ width: `${bp.completion_pct}%` }}
                                                         />
                                                     </div>
@@ -503,14 +499,14 @@ export default function WaveOverviewPage() {
                                             </td>
                                             <td className="text-right px-3 py-3">
                                                 <span className={`font-mono text-sm font-bold ${
-                                                    bp.neckline_distance_pct > 0 ? 'text-green-400' : 'text-red-400'
+                                                    bp.neckline_distance_pct > 0 ? 'text-emerald-300' : 'text-rose-300'
                                                 }`}>
                                                     {bp.neckline_distance_pct > 0 ? '+' : ''}{bp.neckline_distance_pct.toFixed(1)}%
                                                 </span>
                                             </td>
                                             <td className="text-center px-2 py-3">
                                                 {bp.volume_confirmed ? (
-                                                    <i className="fas fa-check-circle text-green-400 text-sm" />
+                                                    <i className="fas fa-check-circle text-emerald-300 text-sm" />
                                                 ) : (
                                                     <i className="fas fa-minus-circle text-gray-600 text-sm" />
                                                 )}
@@ -531,7 +527,7 @@ export default function WaveOverviewPage() {
                                     key={`${s.ticker}-${i}`}
                                     onClick={() => loadDetail(s.ticker, s.market)}
                                     className={`p-3.5 cursor-pointer transition-colors ${
-                                        selectedTicker === s.ticker ? 'bg-cyan-500/10' : ''
+                                        selectedTicker === s.ticker ? 'bg-amber-500/8' : ''
                                     }`}
                                 >
                                     <div className="flex items-center justify-between mb-1.5">
@@ -541,22 +537,22 @@ export default function WaveOverviewPage() {
                                             <span className="text-gray-500 text-[10px]">{s.market}</span>
                                             <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
                                                 bp.pattern_class === 'W'
-                                                    ? 'bg-cyan-500/20 text-cyan-400'
-                                                    : 'bg-pink-500/20 text-pink-400'
+                                                    ? 'bg-amber-500/12 text-amber-300'
+                                                    : 'bg-rose-500/10 text-rose-300'
                                             }`}>{bp.wave_label}</span>
                                             <span className={`text-xs font-black ${
-                                                bp.confidence >= 70 ? 'text-green-400' :
-                                                bp.confidence >= 50 ? 'text-yellow-400' : 'text-gray-400'
+                                                bp.confidence >= 70 ? 'text-emerald-300' :
+                                                bp.confidence >= 50 ? 'text-amber-300' : 'text-gray-400'
                                             }`}>{bp.confidence}점</span>
                                         </div>
                                         <span className="text-white font-mono font-bold text-sm">{s.price.toLocaleString()}원</span>
                                     </div>
                                     <div className="flex items-center gap-2 mb-1">
                                         <span className={`text-[10px] font-bold ${
-                                            bp.bullish_bias > 0 ? 'text-green-400' : 'text-red-400'
+                                            bp.bullish_bias > 0 ? 'text-emerald-300' : 'text-rose-300'
                                         }`}>{bp.bullish_bias > 0 ? 'Bullish' : 'Bearish'}</span>
                                         {bp.volume_confirmed && (
-                                            <span className="text-[9px] text-green-400">
+                                            <span className="text-[9px] text-emerald-300">
                                                 <i className="fas fa-check-circle mr-0.5" />Vol
                                             </span>
                                         )}
@@ -564,7 +560,7 @@ export default function WaveOverviewPage() {
                                     <div className="flex items-center gap-3 text-[10px] text-gray-500">
                                         <span>완성도 {bp.completion_pct}%</span>
                                         <span>넥라인 {bp.neckline_price.toLocaleString()}</span>
-                                        <span className={bp.neckline_distance_pct > 0 ? 'text-green-400' : 'text-red-400'}>
+                                        <span className={bp.neckline_distance_pct > 0 ? 'text-emerald-300' : 'text-rose-300'}>
                                             {bp.neckline_distance_pct > 0 ? '+' : ''}{bp.neckline_distance_pct.toFixed(1)}%
                                         </span>
                                     </div>
@@ -574,9 +570,9 @@ export default function WaveOverviewPage() {
                     </div>
                 </div>
             ) : !screenerLoading && (
-                <div className="bg-[#1c1c1e] rounded-2xl border border-white/5 p-10 text-center">
-                    <div className="w-14 h-14 mx-auto mb-3 rounded-2xl bg-cyan-500/10 flex items-center justify-center">
-                        <i className="fas fa-wave-square text-cyan-400 text-xl" />
+                <div className="bg-black/60 rounded-2xl border border-white/5 p-10 text-center">
+                    <div className="w-14 h-14 mx-auto mb-3 rounded-2xl bg-amber-500/8 flex items-center justify-center">
+                        <i className="fas fa-wave-square text-amber-300 text-xl" />
                     </div>
                     <h3 className="text-white font-bold mb-1.5">아직 스캔 데이터가 없습니다</h3>
                     <p className="text-gray-500 text-xs max-w-md mx-auto mb-4">
@@ -600,7 +596,7 @@ function StatCard({ label, value, icon, color = 'text-white' }: {
     label: string; value: string; icon: string; color?: string;
 }) {
     return (
-        <div className="bg-[#1c1c1e] rounded-xl border border-white/5 p-3">
+        <div className="bg-black/60 rounded-xl border border-white/5 p-3">
             <div className="flex items-center gap-2 mb-1">
                 <i className={`fas ${icon} text-xs text-gray-500`} />
                 <span className="text-xs text-gray-400">{label}</span>
@@ -665,7 +661,7 @@ function ChartDetailModal({
             onClick={onClose}
         >
             <div
-                className="bg-[#1c1c1e] rounded-2xl border border-cyan-500/20 w-full max-w-[95vw] max-h-[95vh] flex flex-col overflow-hidden shadow-2xl"
+                className="bg-black/60 rounded-2xl border border-amber-500/15 w-full max-w-[95vw] max-h-[95vh] flex flex-col overflow-hidden shadow-2xl"
                 onClick={e => e.stopPropagation()}
             >
                 {/* Header */}
@@ -677,20 +673,20 @@ function ChartDetailModal({
                         {pat && (
                             <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
                                 pat.pattern_class === 'W'
-                                    ? 'bg-cyan-500/20 text-cyan-400'
-                                    : 'bg-pink-500/20 text-pink-400'
+                                    ? 'bg-amber-500/12 text-amber-300'
+                                    : 'bg-rose-500/10 text-rose-300'
                             }`}>{pat.wave_label}</span>
                         )}
                         {pat && (
                             <span className={`text-xs font-bold ${
-                                pat.confidence >= 70 ? 'text-green-400' :
-                                pat.confidence >= 50 ? 'text-yellow-400' : 'text-gray-400'
+                                pat.confidence >= 70 ? 'text-emerald-300' :
+                                pat.confidence >= 50 ? 'text-amber-300' : 'text-gray-400'
                             }`}>{pat.confidence}점</span>
                         )}
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
                         {screenerSignal && (
-                            <span className="text-yellow-400 font-mono font-bold text-base sm:text-lg">
+                            <span className="text-amber-300 font-mono font-bold text-base sm:text-lg">
                                 {screenerSignal.price.toLocaleString()}<span className="text-xs sm:text-sm">원</span>
                             </span>
                         )}
@@ -724,7 +720,7 @@ function ChartDetailModal({
                                     onClick={() => setSelectedIdx(i)}
                                     className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
                                         selectedIdx === i
-                                            ? 'bg-cyan-500 text-black'
+                                            ? 'bg-amber-400 text-black'
                                             : 'bg-white/5 text-gray-400 hover:bg-white/10'
                                     }`}
                                 >
