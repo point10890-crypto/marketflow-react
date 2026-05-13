@@ -1,16 +1,20 @@
 /**
  * 🪣 줍줍이 컨텍스트 배너 — 페이지 상단 안내 + 통계.
  */
-import { JubjubResponse } from '@/lib/jubjubApi';
+import { JubjubBadge, JubjubResponse } from '@/lib/jubjubApi';
+
+export type JubjubBadgeFilter = 'all' | JubjubBadge;
 
 interface JubjubBannerProps {
     data: JubjubResponse | null;
     minScore: number;
     onMinScoreChange: (v: number) => void;
+    badgeFilter?: JubjubBadgeFilter;
+    onBadgeFilterChange?: (f: JubjubBadgeFilter) => void;
     loading?: boolean;
 }
 
-export default function JubjubBanner({ data, minScore, onMinScoreChange, loading }: JubjubBannerProps) {
+export default function JubjubBanner({ data, minScore, onMinScoreChange, badgeFilter = 'all', onBadgeFilterChange, loading }: JubjubBannerProps) {
     const stats = data?.stats;
     return (
         <section className="mb-4 overflow-hidden rounded-2xl border border-amber-500/15 bg-black/60 p-4 backdrop-blur-md sm:p-5">
@@ -35,31 +39,39 @@ export default function JubjubBanner({ data, minScore, onMinScoreChange, loading
                 ) : null}
             </div>
 
-            {/* 통계 + 점수 필터 */}
+            {/* 통계 + 점수 필터 (각 타일은 클릭 시 해당 카테고리로 필터 + 스크롤) */}
             <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
                 <Stat
                     label="줍줍 후보"
                     value={data?.jubjub_count ?? 0}
                     suffix="개"
                     tone="emerald"
+                    active={badgeFilter === 'all'}
+                    onClick={onBadgeFilterChange ? () => onBadgeFilterChange('all') : undefined}
                 />
                 <Stat
                     label="🎯 진입 임박"
                     value={stats?.imminent ?? 0}
                     suffix="개"
                     tone="amber"
+                    active={badgeFilter === 'imminent'}
+                    onClick={onBadgeFilterChange ? () => onBadgeFilterChange('imminent') : undefined}
                 />
                 <Stat
                     label="🔥 매수 타이밍"
                     value={stats?.buy_now ?? 0}
                     suffix="개"
                     tone="rose"
+                    active={badgeFilter === 'buy_now'}
+                    onClick={onBadgeFilterChange ? () => onBadgeFilterChange('buy_now') : undefined}
                 />
                 <Stat
                     label="🚀 막 돌파"
                     value={stats?.breakout ?? 0}
                     suffix="개"
                     tone="emerald"
+                    active={badgeFilter === 'breakout'}
+                    onClick={onBadgeFilterChange ? () => onBadgeFilterChange('breakout') : undefined}
                 />
             </div>
 
@@ -103,21 +115,56 @@ export default function JubjubBanner({ data, minScore, onMinScoreChange, loading
     );
 }
 
-function Stat({ label, value, suffix, tone }: { label: string; value: number; suffix?: string; tone: 'emerald' | 'amber' | 'rose' }) {
+function Stat({ label, value, suffix, tone, active, onClick }: {
+    label: string;
+    value: number;
+    suffix?: string;
+    tone: 'emerald' | 'amber' | 'rose';
+    active?: boolean;
+    onClick?: () => void;
+}) {
     const toneClasses = {
         emerald: 'text-emerald-300',
         amber: 'text-amber-300',
         rose: 'text-rose-300',
     }[tone];
-    return (
-        <div className="rounded-xl border border-white/10 bg-black/30 px-3 py-2 backdrop-blur-md">
-            <div className="text-[9px] font-black uppercase tracking-wider text-neutral-500 truncate">
-                {label}
+    const activeRing = active
+        ? 'border-amber-400/60 bg-amber-400/[0.08] ring-1 ring-amber-400/30'
+        : 'border-white/10 bg-black/30 hover:border-amber-400/30 hover:bg-amber-400/[0.04]';
+    const interactive = onClick
+        ? `cursor-pointer transition-colors text-left w-full ${activeRing}`
+        : 'border-white/10 bg-black/30';
+    const content = (
+        <>
+            <div className="flex items-center justify-between gap-1">
+                <div className="text-[9px] font-black uppercase tracking-wider text-neutral-500 truncate">
+                    {label}
+                </div>
+                {active && (
+                    <span className="shrink-0 text-[8px] font-black uppercase tracking-wider text-amber-300">●</span>
+                )}
             </div>
             <div className={`mt-1 text-xl font-black tabular-nums sm:text-2xl ${toneClasses}`}>
                 {value}
                 {suffix && <span className="ml-0.5 text-[10px] font-bold opacity-70">{suffix}</span>}
             </div>
+        </>
+    );
+    if (onClick) {
+        return (
+            <button
+                type="button"
+                onClick={onClick}
+                aria-pressed={active}
+                className={`rounded-xl border px-3 py-2 backdrop-blur-md ${interactive}`}
+            >
+                {content}
+            </button>
+        );
+    }
+    return (
+        <div className={`rounded-xl border px-3 py-2 backdrop-blur-md ${interactive}`}>
+            {content}
         </div>
     );
 }

@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useSearchParams } from 'react-router-dom';
 import { fetchAPI, API_BASE, authHeaders } from '@/lib/api';
@@ -6,7 +6,7 @@ import PatternChart, { ChartDataPoint, PatternOverlay, PatternPoint } from '@/co
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { getJubjubCandidates, JubjubResponse, JubjubCandidate } from '@/lib/jubjubApi';
 import JubjubCard from '@/components/wave/JubjubCard';
-import JubjubBanner from '@/components/wave/JubjubBanner';
+import JubjubBanner, { JubjubBadgeFilter } from '@/components/wave/JubjubBanner';
 
 /* ── Types ── */
 
@@ -74,6 +74,19 @@ export default function WaveOverviewPage() {
     const [jubjub, setJubjub] = useState<JubjubResponse | null>(null);
     const [jubjubLoading, setJubjubLoading] = useState(false);
     const [jubjubMinScore, setJubjubMinScore] = useState<number>(60);
+    const [jubjubBadgeFilter, setJubjubBadgeFilter] = useState<JubjubBadgeFilter>('all');
+    const jubjubGridRef = useRef<HTMLDivElement | null>(null);
+
+    const handleBadgeFilterChange = useCallback((next: JubjubBadgeFilter) => {
+        setJubjubBadgeFilter((prev) => {
+            // 같은 탭 재클릭 시 토글로 전체 해제
+            return prev === next && next !== 'all' ? 'all' : next;
+        });
+        // 다음 paint 후 스크롤 — 모바일 우선
+        requestAnimationFrame(() => {
+            jubjubGridRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+    }, []);
 
     // Detail state (when user clicks a signal or searches)
     const [selectedTicker, setSelectedTicker] = useState<string | null>(null);
@@ -369,6 +382,8 @@ export default function WaveOverviewPage() {
                         data={jubjub}
                         minScore={jubjubMinScore}
                         onMinScoreChange={setJubjubMinScore}
+                        badgeFilter={jubjubBadgeFilter}
+                        onBadgeFilterChange={handleBadgeFilterChange}
                         loading={jubjubLoading}
                     />
                     {jubjubLoading && !jubjub ? (
@@ -386,9 +401,43 @@ export default function WaveOverviewPage() {
                                 점수 기준을 낮추거나 다음 스캔까지 기다려 보세요.
                             </p>
                         </div>
-                    ) : (
-                        <div className="grid grid-cols-1 gap-3 sm:gap-4 lg:grid-cols-2 2xl:grid-cols-3">
-                            {jubjub.candidates.map((c: JubjubCandidate) => (
+                    ) : (() => {
+                        const visibleCandidates = jubjubBadgeFilter === 'all'
+                            ? jubjub.candidates
+                            : jubjub.candidates.filter((c) => c.jubjub_badge === jubjubBadgeFilter);
+                        return (
+                        <div ref={jubjubGridRef} className="scroll-mt-4">
+                          {jubjubBadgeFilter !== 'all' && (
+                            <div className="mb-3 flex items-center justify-between rounded-lg border border-amber-400/25 bg-amber-400/[0.06] px-3 py-2">
+                              <div className="text-[11px] font-bold text-amber-200">
+                                <span className="opacity-70">필터: </span>
+                                <span className="font-black">
+                                  {jubjubBadgeFilter === 'imminent' ? '🎯 진입 임박'
+                                    : jubjubBadgeFilter === 'buy_now' ? '🔥 매수 타이밍'
+                                    : jubjubBadgeFilter === 'breakout' ? '🚀 막 돌파'
+                                    : jubjubBadgeFilter === 'late' ? '⏰ 늦은 진입'
+                                    : jubjubBadgeFilter === 'watching' ? '👀 관찰 중'
+                                    : jubjubBadgeFilter}
+                                </span>
+                                <span className="ml-2 text-neutral-400">· {visibleCandidates.length}개</span>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => setJubjubBadgeFilter('all')}
+                                className="text-[10px] font-black uppercase tracking-wider text-amber-300 hover:text-amber-200"
+                              >
+                                전체 보기 ×
+                              </button>
+                            </div>
+                          )}
+                          {visibleCandidates.length === 0 ? (
+                            <div className="bg-black/60 rounded-2xl border border-amber-500/15 p-10 text-center">
+                              <div className="text-3xl mb-2">🪣</div>
+                              <p className="text-gray-400 text-sm">선택한 카테고리에 해당하는 종목이 없습니다.</p>
+                            </div>
+                          ) : (
+                          <div className="grid grid-cols-1 gap-3 sm:gap-4 lg:grid-cols-2 2xl:grid-cols-3">
+                            {visibleCandidates.map((c: JubjubCandidate) => (
                                 <JubjubCard
                                     key={c.ticker}
                                     candidate={c}
@@ -407,8 +456,11 @@ export default function WaveOverviewPage() {
                                     }}
                                 />
                             ))}
+                          </div>
+                          )}
                         </div>
-                    )}
+                        );
+                    })()}
                 </>
             )}
 
