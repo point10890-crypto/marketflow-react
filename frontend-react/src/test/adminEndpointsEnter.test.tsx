@@ -17,6 +17,7 @@ const mockApi = vi.hoisted(() => ({
   getScannerRun: vi.fn(),
   getScannerCandidates: vi.fn(),
   getDeepSeekStatus: vi.fn(),
+  getTradingViewStatus: vi.fn(),
   createDeepSeekScannerSummary: vi.fn(),
   summarizeScannerRunWithDeepSeek: vi.fn(),
   sendScannerDeepSeekSummaryTelegram: vi.fn(),
@@ -163,6 +164,14 @@ beforeEach(() => {
     provider: 'deepseek',
     configured: true,
     default_model: 'deepseek-v4-flash',
+  });
+  mockApi.getTradingViewStatus.mockResolvedValue({
+    provider: 'tradingview_mcp',
+    mode: 'disabled',
+    enabled: false,
+    configured: false,
+    cache_available: false,
+    mcp_url_configured: false,
   });
   mockApi.getWorkflowStatus.mockResolvedValue({
     ready: true,

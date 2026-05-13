@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type CompositionEvent as ReactCompositionEvent, type KeyboardEvent as ReactKeyboardEvent } from 'react';
-import { MiroFishAlphaCandidate, MiroFishAnalyst, MiroFishAutonomousActionResult, MiroFishAutonomousLearningFeedback, MiroFishAutonomousStatus, MiroFishDeepSeekStatus, MiroFishDeepSeekSummaryResult, MiroFishLayer, MiroFishLog, MiroFishNode, MiroFishRun, MiroFishScannerRun, MiroFishScannerStatus, MiroFishStatus, MiroFishTargetSnapshot, MiroFishWorkflow, mirofishApi } from '@/lib/mirofishApi';
+import { MiroFishAlphaCandidate, MiroFishAnalyst, MiroFishAutonomousActionResult, MiroFishAutonomousLearningFeedback, MiroFishAutonomousStatus, MiroFishDeepSeekStatus, MiroFishDeepSeekSummaryResult, MiroFishLayer, MiroFishLog, MiroFishNode, MiroFishRun, MiroFishScannerRun, MiroFishScannerStatus, MiroFishStatus, MiroFishTargetSnapshot, MiroFishTradingViewStatus, MiroFishWorkflow, mirofishApi } from '@/lib/mirofishApi';
 import { shareToKakao } from '@/lib/kakaoShare';
 import MirofishChatPanel from '@/components/admin/MirofishChatPanel';
 import TodaysPipelineCard from '@/components/admin/TodaysPipelineCard';
@@ -55,7 +55,7 @@ type AlphaScannerState = 'idle' | 'loading' | 'running' | 'ready' | 'error';
 type DeepSeekPanelState = 'idle' | 'checking' | 'summarizing' | 'ready' | 'sending' | 'sent' | 'error';
 type WorkflowPanelState = 'idle' | 'running' | 'completed' | 'no_new_events' | 'blocked' | 'error';
 type AutonomousPanelState = 'idle' | 'checking' | 'running' | 'ready' | 'sending' | 'sent' | 'error';
-type EndpointKey = 'status' | 'dataSources' | 'resolve' | 'history' | 'createRun' | 'runDetail' | 'graph' | 'events' | 'report' | 'deepseek' | 'workflow' | 'autonomous';
+type EndpointKey = 'status' | 'dataSources' | 'resolve' | 'history' | 'createRun' | 'runDetail' | 'graph' | 'events' | 'report' | 'deepseek' | 'tradingview' | 'workflow' | 'autonomous';
 type EndpointStatus = 'idle' | 'loading' | 'ok' | 'error';
 type TargetCandidate = NonNullable<MiroFishTargetSnapshot['candidates']>[number];
 
@@ -70,6 +70,7 @@ const endpointDefinitions: Array<{ key: EndpointKey; method: string; path: strin
     { key: 'events', method: 'GET', path: '/api/admin/mirofish/runs/{id}/events', title: 'Event Feed', icon: 'fa-stream', color: 'text-anthropic-darkText' },
     { key: 'report', method: 'GET', path: '/api/admin/mirofish/runs/{id}/report', title: 'Report', icon: 'fa-scroll', color: 'text-anthropic-darkText' },
     { key: 'deepseek', method: 'POST', path: '/api/admin/mirofish/deepseek/scanner-summary', title: 'DeepSeek V2', icon: 'fa-wand-magic-sparkles', color: 'text-anthropic-orange' },
+    { key: 'tradingview', method: 'GET', path: '/api/admin/mirofish/tradingview/status', title: 'TradingView MCP', icon: 'fa-chart-simple', color: 'text-anthropic-darkText' },
     { key: 'workflow', method: 'POST', path: '/api/admin/mirofish/workflow/scan-analyze', title: 'MCP Top 3', icon: 'fa-network-wired', color: 'text-anthropic-orange' },
     { key: 'autonomous', method: 'POST', path: '/api/admin/mirofish/autonomous/*', title: 'Autonomous MCP', icon: 'fa-robot', color: 'text-anthropic-orange' },
 ];
@@ -1622,6 +1623,7 @@ export default function AdminEndpointsPage() {
     const [alphaCandidates, setAlphaCandidates] = useState<MiroFishAlphaCandidate[]>([]);
     const [alphaErrorText, setAlphaErrorText] = useState<string | null>(null);
     const [deepSeekStatus, setDeepSeekStatus] = useState<MiroFishDeepSeekStatus | null>(null);
+    const [tradingViewStatus, setTradingViewStatus] = useState<MiroFishTradingViewStatus | null>(null);
     const [deepSeekState, setDeepSeekState] = useState<DeepSeekPanelState>('idle');
     const [deepSeekSummary, setDeepSeekSummary] = useState<MiroFishDeepSeekSummaryResult | null>(null);
     const [deepSeekErrorText, setDeepSeekErrorText] = useState<string | null>(null);
@@ -1656,20 +1658,23 @@ export default function AdminEndpointsPage() {
             markEndpoint('history', 'loading');
             markEndpoint('dataSources', 'loading');
             markEndpoint('deepseek', 'loading');
+            markEndpoint('tradingview', 'loading');
             markEndpoint('workflow', 'loading');
             markEndpoint('autonomous', 'loading');
             try {
-                const [statusData, historyData, sourcesData, deepSeekData, workflowData, autonomousData] = await Promise.all([
+                const [statusData, historyData, sourcesData, deepSeekData, tradingViewData, workflowData, autonomousData] = await Promise.all([
                     mirofishApi.getStatus(),
                     mirofishApi.listRuns(),
                     mirofishApi.getDataSources(),
                     mirofishApi.getDeepSeekStatus(),
+                    mirofishApi.getTradingViewStatus().catch(() => null),
                     mirofishApi.getWorkflowStatus().catch(() => null),
                     mirofishApi.getAutonomousStatus().catch(() => null),
                 ]);
                 if (!alive) return;
                 setStatus(statusData);
                 setDeepSeekStatus(deepSeekData);
+                setTradingViewStatus(tradingViewData);
                 setDeepSeekState(deepSeekData.configured ? 'ready' : 'idle');
                 if (workflowData?.latest_workflow) {
                     setWorkflow(workflowData.latest_workflow);
@@ -1687,6 +1692,7 @@ export default function AdminEndpointsPage() {
                 markEndpoint('history', 'ok');
                 markEndpoint('dataSources', 'ok');
                 markEndpoint('deepseek', deepSeekData.configured ? 'ok' : 'error');
+                markEndpoint('tradingview', tradingViewData ? 'ok' : 'idle');
                 markEndpoint('workflow', workflowData ? 'ok' : 'idle');
                 markEndpoint('autonomous', autonomousData ? 'ok' : 'idle');
                 setRun((current) => ({ ...current, brain: statusData.brain || current.brain, pipeline: statusData.pipeline || current.pipeline }));
@@ -1698,6 +1704,7 @@ export default function AdminEndpointsPage() {
                 markEndpoint('history', 'error');
                 markEndpoint('dataSources', 'error');
                 markEndpoint('deepseek', 'error');
+                markEndpoint('tradingview', 'error');
                 markEndpoint('workflow', 'error');
                 markEndpoint('autonomous', 'error');
                 setErrorText(error instanceof Error ? error.message : 'MiroFish API 연결 실패');
@@ -1920,8 +1927,11 @@ export default function AdminEndpointsPage() {
         report: run.report?.markdown ? `${run.report.markdown.length} chars` : 'waiting',
         deepseek: deepSeekStatus?.configured ? (deepSeekSummary?.model || deepSeekStatus.default_model || 'ready') : 'not configured',
         workflow: workflow?.id ? `${workflow.status || 'running'} · top ${workflow.top3?.length || 0}` : workflowState,
+        tradingview: tradingViewStatus
+            ? `${tradingViewStatus.enabled ? tradingViewStatus.mode || 'enabled' : 'off'} / ${tradingViewStatus.cache_available ? 'cache' : tradingViewStatus.mcp_url_configured ? 'mcp url' : 'no source'}`
+            : 'not loaded',
         autonomous: autonomousStatus ? `${autonomousStatus.mutation_enabled ? 'mutation on' : 'dry-run'} / ${autonomousStatus.telegram?.personal_configured ? 'telegram ok' : 'telegram off'}` : autonomousState,
-    }), [autonomousState, autonomousStatus, dataSourceCount, deepSeekStatus, deepSeekSummary, recentRuns.length, run, status, targetSnapshot, workflow, workflowState]);
+    }), [autonomousState, autonomousStatus, dataSourceCount, deepSeekStatus, deepSeekSummary, recentRuns.length, run, status, targetSnapshot, tradingViewStatus, workflow, workflowState]);
 
     const targetCandidates = useMemo<TargetCandidate[]>(() => {
         const query = target.trim();
