@@ -27,36 +27,43 @@ DEFAULT_ALERT_MAX_EVENTS = 8
 DEFAULT_MONITOR_RETRY_SECONDS = 300
 DEFAULT_SCHEDULE_TIMES = '09:20,11:20,14:20,15:40,16:10'
 KST = timezone(timedelta(hours=9))
+MONITOR_STATE_VERSION = 2
 ALERT_BLOCKING_FRESHNESS = {'stale', 'missing', 'partial', 'unknown'}
 SOURCE_FILE_POLICIES = {
     'daily_prices.csv': {
         'role': 'price_history',
         'required': True,
+        'alert_required': True,
         'max_age_days': 5,
     },
     'ticker_to_yahoo_map.csv': {
         'role': 'symbol_map',
         'required': True,
+        'alert_required': True,
         'max_age_days': 180,
     },
     'korean_stocks_list.csv': {
         'role': 'canonical_stock_names',
         'required': False,
+        'alert_required': False,
         'max_age_days': 365,
     },
     'screener_leading_latest.json': {
         'role': 'leading_screener',
         'required': True,
+        'alert_required': True,
         'max_age_days': 7,
     },
     'vcp_kr_latest.json': {
         'role': 'vcp_quality',
         'required': True,
+        'alert_required': False,
         'max_age_days': 7,
     },
     'jongga_v2_latest.json': {
         'role': 'jongga_setup',
         'required': True,
+        'alert_required': False,
         'max_age_days': 7,
     },
 }
@@ -305,6 +312,7 @@ def get_scanner_source_signature() -> dict[str, Any]:
             'mtime_ns': mtime_ns,
             'role': policy.get('role'),
             'required': bool(policy.get('required', True)),
+            'alert_required': bool(policy.get('alert_required', policy.get('required', True))),
             'max_age_days': policy.get('max_age_days', 7),
         })
         parts.append(f'{filename}:{mtime_ns}:{size}:{int(exists)}')
@@ -323,6 +331,11 @@ def read_scanner_monitor_state(state_path: str | None = None) -> dict[str, Any]:
     state_file = state_path or _monitor_state_path()
     state = _read_monitor_state(state_file)
     return _monitor_state_summary(state, state_file, get_scanner_source_signature())
+
+
+def get_alert_block_reason(run: dict[str, Any]) -> str | None:
+    """Return the production alert block reason for a scanner run, if any."""
+    return _alert_block_reason(run)
 
 
 def run_scanner_realtime_monitor_check(
@@ -351,7 +364,12 @@ def run_scanner_realtime_monitor_check(
     source = get_scanner_source_signature()
     fingerprint = source['fingerprint']
 
-    if not force and state.get('last_source_fingerprint') == fingerprint:
+    state_version = int(state.get('version') or 0)
+    if (
+        not force
+        and state_version >= MONITOR_STATE_VERSION
+        and state.get('last_source_fingerprint') == fingerprint
+    ):
         return {
             'ok': True,
             'status': 'unchanged',
@@ -425,7 +443,7 @@ def run_scanner_realtime_monitor_check(
     processed = status in {'sent', 'no_new_events', 'blocked'}
     next_state = dict(state)
     next_state.update({
-        'version': 1,
+        'version': MONITOR_STATE_VERSION,
         'last_checked_at': now_iso,
         'last_status': status,
         'last_run_id': (result.get('run') or {}).get('id'),
@@ -494,9 +512,10 @@ def run_scanner_alert_check(
     state = _read_alert_state(state_file)
     freshness_status = ((run.get('freshness') or {}).get('status') or 'unknown').lower()
     blocked_reason = None
-    if block_on_stale and freshness_status in ALERT_BLOCKING_FRESHNESS:
+    if block_on_stale:
+        blocked_reason = _alert_block_reason(run)
+    if blocked_reason:
         events = []
-        blocked_reason = f'source_freshness:{freshness_status}'
     else:
         events = _new_candidate_events(
             run,
@@ -525,11 +544,7 @@ def run_scanner_alert_check(
         'new_event_count': len(events),
         'alert_blocked': bool(blocked_reason),
         'blocked_reason': blocked_reason,
-        'source_warning': (
-            f'source_freshness:{freshness_status}'
-            if not block_on_stale and freshness_status in ALERT_BLOCKING_FRESHNESS
-            else None
-        ),
+        'source_warning': _source_warning(run, blocked_reason),
     }
 
 
@@ -1157,6 +1172,7 @@ def _source_files(artifacts: dict[str, Any]) -> list[dict[str, Any]]:
             'max_age_days': max_age_days,
             'role': policy.get('role'),
             'required': bool(policy.get('required', True)),
+            'alert_required': bool(policy.get('alert_required', policy.get('required', True))),
         })
     return files
 
@@ -1186,6 +1202,36 @@ def _aggregate_freshness(source_files: list[dict[str, Any]]) -> dict[str, Any]:
         'stale_files': stale_count,
         'unknown_files': unknown_count,
     }
+
+
+def _alert_block_reason(run: dict[str, Any]) -> str | None:
+    source_files = [item for item in (run.get('source_files') or []) if isinstance(item, dict)]
+    alert_required = [item for item in source_files if item.get('alert_required')]
+    if alert_required:
+        existing_required = [item for item in alert_required if item.get('exists')]
+        if not existing_required:
+            return 'source_freshness:missing'
+        if any(str(item.get('freshness') or '').lower() == 'stale' for item in existing_required):
+            return 'source_freshness:stale'
+        if any(str(item.get('freshness') or '').lower() == 'unknown' for item in existing_required):
+            return 'source_freshness:unknown'
+        if len(existing_required) < len(alert_required):
+            return 'source_freshness:partial'
+        return None
+
+    freshness_status = ((run.get('freshness') or {}).get('status') or 'unknown').lower()
+    if freshness_status in ALERT_BLOCKING_FRESHNESS:
+        return f'source_freshness:{freshness_status}'
+    return None
+
+
+def _source_warning(run: dict[str, Any], blocked_reason: str | None) -> str | None:
+    if blocked_reason:
+        return None
+    freshness_status = ((run.get('freshness') or {}).get('status') or 'unknown').lower()
+    if freshness_status in ALERT_BLOCKING_FRESHNESS:
+        return f'source_freshness:{freshness_status}'
+    return None
 
 
 def _symbol_freshness(artifacts: dict[str, Any]) -> dict[str, Any]:

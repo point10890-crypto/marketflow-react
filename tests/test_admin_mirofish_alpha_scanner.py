@@ -413,7 +413,34 @@ def test_alpha_scanner_alert_check_can_defer_state_until_send_success(tmp_path, 
     assert after_commit['new_event_count'] == 0
 
 
-def test_alpha_scanner_alert_check_blocks_stale_source_alerts(tmp_path, monkeypatch):
+def test_alpha_scanner_alert_check_blocks_stale_core_source_alerts(tmp_path, monkeypatch):
+    _seed_artifacts(tmp_path)
+    monkeypatch.setattr(alpha_scanner, 'DATA_ROOT', str(tmp_path))
+    monkeypatch.setattr(alpha_scanner, 'SCANNER_RUNS_ROOT', str(tmp_path / 'runs'))
+    _write_json(tmp_path / 'screener_leading_latest.json', {
+        'timestamp': '2026-01-01T00:00:00+00:00',
+        'results': [
+            {'code': '000001', 'name': 'Alpha One', 'score': {'total_enriched': 80}},
+            {'code': '000002', 'name': 'Beta Two', 'score': {'total_enriched': 30}},
+        ],
+    })
+
+    result = alpha_scanner.run_scanner_alert_check(
+        {'limit': 5},
+        state_path=str(tmp_path / 'alert_state.json'),
+        min_alpha=70,
+        max_risk=45,
+        commit_state=False,
+    )
+
+    assert result['run']['freshness']['status'] == 'stale'
+    assert result['alert_blocked'] is True
+    assert result['blocked_reason'] == 'source_freshness:stale'
+    assert result['new_event_count'] == 0
+    assert '알림 차단' in result['message']
+
+
+def test_alpha_scanner_alert_check_allows_stale_supporting_sources(tmp_path, monkeypatch):
     _seed_artifacts(tmp_path)
     monkeypatch.setattr(alpha_scanner, 'DATA_ROOT', str(tmp_path))
     monkeypatch.setattr(alpha_scanner, 'SCANNER_RUNS_ROOT', str(tmp_path / 'runs'))
@@ -438,25 +465,20 @@ def test_alpha_scanner_alert_check_blocks_stale_source_alerts(tmp_path, monkeypa
     )
 
     assert result['run']['freshness']['status'] == 'stale'
-    assert result['alert_blocked'] is True
-    assert result['blocked_reason'] == 'source_freshness:stale'
-    assert result['new_event_count'] == 0
-    assert '알림 차단' in result['message']
+    assert result['alert_blocked'] is False
+    assert result['source_warning'] == 'source_freshness:stale'
+    assert result['new_event_count'] == 1
 
 
-def test_alpha_scanner_alert_check_can_allow_stale_for_workflow_batches(tmp_path, monkeypatch):
+def test_alpha_scanner_alert_check_can_allow_stale_core_for_workflow_batches(tmp_path, monkeypatch):
     _seed_artifacts(tmp_path)
     monkeypatch.setattr(alpha_scanner, 'DATA_ROOT', str(tmp_path))
     monkeypatch.setattr(alpha_scanner, 'SCANNER_RUNS_ROOT', str(tmp_path / 'runs'))
-    _write_json(tmp_path / 'vcp_kr_latest.json', {
-        'metadata': {'generated_at': '2026-01-01T00:00:00+00:00'},
-        'signals': [
-            {
-                'symbol': '000001',
-                'name': 'Alpha One',
-                'market': 'KR',
-                'composite': {'composite_score': 90, 'entry_ready': 'True'},
-            },
+    _write_json(tmp_path / 'screener_leading_latest.json', {
+        'timestamp': '2026-01-01T00:00:00+00:00',
+        'results': [
+            {'code': '000001', 'name': 'Alpha One', 'score': {'total_enriched': 80}},
+            {'code': '000002', 'name': 'Beta Two', 'score': {'total_enriched': 30}},
         ],
     })
 
@@ -507,6 +529,36 @@ def test_alpha_scanner_realtime_monitor_sends_after_source_change(tmp_path, monk
     assert sent_messages and 'Alpha One' in sent_messages[0]
     assert second['status'] == 'unchanged'
     assert second['source_changed'] is False
+
+
+def test_alpha_scanner_realtime_monitor_rechecks_legacy_blocked_state(tmp_path, monkeypatch):
+    _seed_artifacts(tmp_path)
+    monkeypatch.setattr(alpha_scanner, 'DATA_ROOT', str(tmp_path))
+    monkeypatch.setattr(alpha_scanner, 'SCANNER_RUNS_ROOT', str(tmp_path / 'runs'))
+    monitor_state_path = tmp_path / 'monitor_state.json'
+    alert_state_path = str(tmp_path / 'alert_state.json')
+    source = alpha_scanner.get_scanner_source_signature()
+    _write_json(monitor_state_path, {
+        'version': 1,
+        'last_status': 'blocked',
+        'last_source_fingerprint': source['fingerprint'],
+        'last_processed_at': '2026-05-10T00:00:00+00:00',
+    })
+    sent_messages = []
+
+    result = alpha_scanner.run_scanner_realtime_monitor_check(
+        {'limit': 5},
+        monitor_state_path=str(monitor_state_path),
+        alert_state_path=alert_state_path,
+        min_alpha=70,
+        max_risk=45,
+        send_fn=lambda message: sent_messages.append(message) or True,
+    )
+
+    assert result['status'] == 'sent'
+    assert result['source_changed'] is True
+    assert result['monitor_state']['version'] == alpha_scanner.MONITOR_STATE_VERSION
+    assert sent_messages and 'Alpha One' in sent_messages[0]
 
 
 def test_alpha_scanner_realtime_monitor_retries_when_telegram_fails(tmp_path, monkeypatch):
