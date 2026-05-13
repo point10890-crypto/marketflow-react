@@ -1,8 +1,19 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { BANK_ACCOUNT, PLAN_PAYMENT_META } from '@/lib/billingInfo';
 import KakaoSupportLink from '@/components/ui/KakaoSupportLink';
+
+function safeNextPath(value: string | null): string | null {
+    if (!value) return null;
+    try {
+        const decoded = decodeURIComponent(value);
+        if (!decoded.startsWith('/') || decoded.startsWith('//')) return null;
+        return decoded;
+    } catch {
+        return null;
+    }
+}
 
 export default function LoginPage() {
     const [email, setEmail] = useState('');
@@ -12,6 +23,8 @@ export default function LoginPage() {
     const [loading, setLoading] = useState(false);
     const { login, user, loading: authLoading } = useAuth();
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const nextPath = safeNextPath(searchParams.get('next'));
 
     // 이미 로그인 상태면 적절한 페이지로 리다이렉트.
     // authLoading=true 인 동안에는 hydration 중이므로 절대 리다이렉트하지 않음
@@ -21,15 +34,15 @@ export default function LoginPage() {
         if (!user) return;
         if (user.status === 'unknown') return;
         if (user.role === 'admin') {
-            navigate('/admin', { replace: true });
+            navigate(nextPath && nextPath.startsWith('/admin') ? nextPath : '/admin', { replace: true });
             return;
         }
         if (user.status !== 'approved' || (user.tier !== 'pro' && user.tier !== 'premium')) {
             navigate('/pending-approval', { replace: true });
             return;
         }
-        navigate('/dashboard', { replace: true });
-    }, [user, authLoading, navigate]);
+        navigate(nextPath && nextPath.startsWith('/dashboard') ? nextPath : '/dashboard', { replace: true });
+    }, [user, authLoading, navigate, nextPath]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -42,6 +55,10 @@ export default function LoginPage() {
             if (stored) {
                 try {
                     const parsed = JSON.parse(stored);
+                    if (parsed.role === 'admin') {
+                        navigate(nextPath && nextPath.startsWith('/admin') ? nextPath : '/admin');
+                        return;
+                    }
                     if (parsed.status && parsed.status !== 'approved' && parsed.role !== 'admin') {
                         navigate('/pending-approval');
                         return;
@@ -50,7 +67,7 @@ export default function LoginPage() {
                     // corrupted storage — proceed to dashboard
                 }
             }
-            navigate('/dashboard');
+            navigate(nextPath && nextPath.startsWith('/dashboard') ? nextPath : '/dashboard');
         } catch (err) {
             setError((err as Error).message || 'Invalid email or password');
         } finally {

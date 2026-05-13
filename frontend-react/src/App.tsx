@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { NotificationProvider } from '@/contexts/NotificationContext';
 import DashboardLayout from '@/components/layout/DashboardLayout';
@@ -98,8 +98,10 @@ function ProGuard({ children }: { children: React.ReactNode }) {
 
 function AdminGuard({ children }: { children: React.ReactNode }) {
     const { user, loading } = useAuth();
+    const location = useLocation();
+    const next = `${location.pathname}${location.search || ''}`;
     if (loading) return <LoadingFallback />;
-    if (!user) return <Navigate to={unauthRedirect()} replace />;
+    if (!user) return <Navigate to={`/login?next=${encodeURIComponent(next)}`} replace />;
     if (user.status === 'unknown') return <LoadingFallback />;
     if (user.role !== 'admin') return <Navigate to="/dashboard" replace />;
     return <>{children}</>;
