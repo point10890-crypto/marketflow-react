@@ -869,6 +869,19 @@ def tradingview_status():
         return jsonify({'error': str(exc), 'provider': 'tradingview_mcp'}), 502
 
 
+@admin_mirofish_bp.route('/price-chart/<symbol>', methods=['GET'])
+@admin_required
+def price_chart(symbol):
+    try:
+        limit = int(request.args.get('limit', 120))
+    except (TypeError, ValueError):
+        limit = 120
+    try:
+        return jsonify(mirofish.read_price_chart(symbol, limit=limit))
+    except ValueError as exc:
+        return jsonify({'error': str(exc), 'service': 'mirofish-price-chart'}), 400
+
+
 @admin_mirofish_bp.route('/deepseek/scanner-summary', methods=['POST'])
 @admin_required
 def create_scanner_run_with_deepseek_summary():

@@ -530,6 +530,27 @@ export interface MiroFishWorkflowStatus {
     checked_at?: string;
 }
 
+export interface MiroFishPriceChartPoint {
+    date: string;
+    open: number;
+    high: number;
+    low: number;
+    close: number;
+    volume?: number;
+    change_rate?: number;
+    update_time?: string;
+}
+
+export interface MiroFishPriceChartResponse {
+    symbol: string;
+    target?: string;
+    source?: string;
+    count: number;
+    limit?: number;
+    chart: MiroFishPriceChartPoint[];
+    latest?: MiroFishPriceChartPoint | null;
+}
+
 export interface MiroFishAutonomousLearningFeedback {
     available?: boolean;
     service?: string;
@@ -1193,6 +1214,9 @@ export const mirofishApi = {
     ),
     getTradingViewStatus: async (live = false) => fetchAuthAPI<MiroFishTradingViewStatus>(
         `/api/admin/mirofish/tradingview/status${live ? '?live=1' : ''}`,
+    ),
+    getPriceChart: async (symbol: string, limit = 120) => fetchAuthAPI<MiroFishPriceChartResponse>(
+        `/api/admin/mirofish/price-chart/${encodeURIComponent(symbol)}?limit=${limit}`,
     ),
     createDeepSeekScannerSummary: async (request: MiroFishScannerRunRequest & { summary_limit?: number; model?: string; thinking?: boolean } = {}) => {
         const payload = await postAuthAPI<any>('/api/admin/mirofish/deepseek/scanner-summary', request, undefined, 120000);

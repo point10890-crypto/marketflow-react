@@ -7,6 +7,7 @@ import RecentOutcomesBoard from '@/components/admin/RecentOutcomesBoard';
 import QuickActionsFooter from '@/components/admin/QuickActionsFooter';
 import MobileTopPicksHero from '@/components/admin/MobileTopPicksHero';
 import AutoRunnerCard from '@/components/admin/AutoRunnerCard';
+import Top3TradingViewCharts from '@/components/admin/Top3TradingViewCharts';
 
 const agentCounts = [3, 7, 10, 15];
 const defaultTarget = '삼성전자';
@@ -704,6 +705,7 @@ function AlphaBoardPanel({
                                     </div>
                                 ))}
                             </div>
+                            <Top3TradingViewCharts items={topWorkflow} />
                         </div>
                     )}
                     {workflow?.status === 'no_new_events' && (

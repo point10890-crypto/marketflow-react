@@ -18,6 +18,7 @@ const mockApi = vi.hoisted(() => ({
   getScannerCandidates: vi.fn(),
   getDeepSeekStatus: vi.fn(),
   getTradingViewStatus: vi.fn(),
+  getPriceChart: vi.fn(),
   createDeepSeekScannerSummary: vi.fn(),
   summarizeScannerRunWithDeepSeek: vi.fn(),
   sendScannerDeepSeekSummaryTelegram: vi.fn(),
@@ -172,6 +173,17 @@ beforeEach(() => {
     configured: false,
     cache_available: false,
     mcp_url_configured: false,
+  });
+  mockApi.getPriceChart.mockResolvedValue({
+    symbol: '000001',
+    target: 'Alpha One',
+    source: 'daily_prices.csv',
+    count: 2,
+    chart: [
+      { date: '2026-05-06', open: 100, high: 105, low: 98, close: 102, volume: 1000000 },
+      { date: '2026-05-07', open: 102, high: 112, low: 101, close: 110, volume: 1400000 },
+    ],
+    latest: { date: '2026-05-07', open: 102, high: 112, low: 101, close: 110, volume: 1400000 },
   });
   mockApi.getWorkflowStatus.mockResolvedValue({
     ready: true,
@@ -578,6 +590,8 @@ describe('AdminEndpointsPage analysis start input', () => {
     expect((await screen.findAllByText(/Startup Task/i)).length).toBeGreaterThan(0);
     expect((await screen.findAllByText(/Operating Workflow/i)).length).toBeGreaterThan(0);
     expect((await screen.findAllByText(/MCP Top3/i)).length).toBeGreaterThan(0);
+    expect(await screen.findByText(/TradingView charts/i)).toBeTruthy();
+    expect(mockApi.getPriceChart).toHaveBeenCalledWith('000001', 120);
     expect((await screen.findAllByText(/Alpha Memory/i)).length).toBeGreaterThan(0);
     expect((await screen.findAllByText(/성과검증 보드/i)).length).toBeGreaterThan(0);
     expect((await screen.findAllByText(/Hit vs Miss Score Profile/i)).length).toBeGreaterThan(0);

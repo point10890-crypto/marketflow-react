@@ -162,6 +162,28 @@ def test_alpha_scanner_creates_ranked_deterministic_run(tmp_path, monkeypatch):
     assert candidate_payload['candidates'][0]['symbol'] == '000001'
 
 
+def test_alpha_scanner_reads_price_chart_from_daily_prices(tmp_path, monkeypatch):
+    _seed_artifacts(tmp_path)
+    monkeypatch.setattr(alpha_scanner, 'DATA_ROOT', str(tmp_path))
+
+    chart = alpha_scanner.read_price_chart('000001', limit=20)
+
+    assert chart['symbol'] == '000001'
+    assert chart['source'] == 'daily_prices.csv'
+    assert chart['count'] == 2
+    assert chart['target'] == 'Alpha One'
+    assert chart['chart'][-1] == {
+        'date': '2026-05-03',
+        'open': 101.0,
+        'high': 110.0,
+        'low': 100.0,
+        'close': 108.0,
+        'volume': 600000000,
+        'change_rate': 8.0,
+        'update_time': '2026-05-03 16:00:00',
+    }
+
+
 def test_alpha_scanner_applies_tradingview_cached_confirmation(tmp_path, monkeypatch):
     _seed_artifacts(tmp_path)
     cache_path = tmp_path / 'tradingview_signals.json'
@@ -767,5 +789,6 @@ def test_admin_mirofish_scanner_routes_are_registered():
     assert '/api/admin/mirofish/scanner/runs/<run_id>' in rules
     assert '/api/admin/mirofish/scanner/runs/<run_id>/candidates' in rules
     assert '/api/admin/mirofish/tradingview/status' in rules
+    assert '/api/admin/mirofish/price-chart/<symbol>' in rules
     assert '/api/admin/mirofish/workflow/status' in rules
     assert '/api/admin/mirofish/workflow/scan-analyze' in rules

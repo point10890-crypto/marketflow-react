@@ -179,6 +179,53 @@ def read_latest_scanner_run() -> dict[str, Any] | None:
     return records[0]['run'] if records else None
 
 
+def read_price_chart(symbol: str, limit: int = 120) -> dict[str, Any]:
+    """Return deterministic OHLCV chart data for a scanner symbol."""
+    clean_symbol = _symbol(symbol)
+    if not clean_symbol:
+        raise ValueError('invalid symbol')
+    try:
+        clean_limit = int(limit)
+    except (TypeError, ValueError):
+        clean_limit = 120
+    clean_limit = max(20, min(clean_limit, 250))
+
+    history = _load_price_history({clean_symbol}).get(clean_symbol, [])
+    by_date: dict[str, dict[str, Any]] = {}
+    for row in history:
+        date = str(row.get('date') or '').strip()
+        close = _float(row.get('current_price'))
+        if not date or close <= 0:
+            continue
+        open_price = _float(row.get('open')) or close
+        high = _float(row.get('high')) or max(open_price, close)
+        low = _float(row.get('low')) or min(open_price, close)
+        high = max(high, open_price, close)
+        low = min(low, open_price, close)
+        by_date[date] = {
+            'date': date,
+            'open': round(open_price, 4),
+            'high': round(high, 4),
+            'low': round(low, 4),
+            'close': round(close, 4),
+            'volume': int(_float(row.get('volume'))),
+            'change_rate': round(_float(row.get('change_rate')), 4),
+            'update_time': row.get('update_time') or '',
+        }
+
+    chart = [by_date[date] for date in sorted(by_date)][-clean_limit:]
+    latest = history[-1] if history else {}
+    return {
+        'symbol': clean_symbol,
+        'target': latest.get('name') or clean_symbol,
+        'source': 'daily_prices.csv',
+        'count': len(chart),
+        'limit': clean_limit,
+        'chart': chart,
+        'latest': chart[-1] if chart else None,
+    }
+
+
 def get_scanner_schedule_status(now: datetime | None = None) -> dict[str, Any]:
     """Return alpha scanner schedule, latest run, and source freshness status."""
     current = (now or datetime.now(KST)).astimezone(KST)
