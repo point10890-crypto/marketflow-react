@@ -66,8 +66,10 @@ function unauthRedirect(): string {
 
 function ApprovedGuard({ children }: { children: React.ReactNode }) {
     const { user, loading } = useAuth();
+    const location = useLocation();
+    const next = `${location.pathname}${location.search || ''}`;
     if (loading) return <LoadingFallback />;
-    if (!user) return <Navigate to={unauthRedirect()} replace />;
+    if (!user) return <Navigate to={`/login?next=${encodeURIComponent(next)}`} replace />;
     if (user.status === 'unknown') return <LoadingFallback />;
     if (user.role === 'admin') return <>{children}</>;
     // Pro 만료 → 계정 정지 상태. 재구독 페이지로 안내.
@@ -81,8 +83,10 @@ function ApprovedGuard({ children }: { children: React.ReactNode }) {
 
 function ProGuard({ children }: { children: React.ReactNode }) {
     const { user, loading } = useAuth();
+    const location = useLocation();
+    const next = `${location.pathname}${location.search || ''}`;
     if (loading) return <LoadingFallback />;
-    if (!user) return <Navigate to={unauthRedirect()} replace />;
+    if (!user) return <Navigate to={`/login?next=${encodeURIComponent(next)}`} replace />;
     if (user.status === 'unknown') return <LoadingFallback />;
     if (user.role === 'admin') return <>{children}</>;
     // 만료 우선 — 계정 정지 상태로 간주 → 재구독
@@ -179,13 +183,13 @@ export default function App() {
                         <Route path="wave" element={<ProGuard><Suspense fallback={<LoadingFallback />}><WaveOverviewPage /></Suspense></ProGuard>} />
                         <Route path="briefing" element={<ProGuard><Suspense fallback={<LoadingFallback />}><BriefingPortalPage /></Suspense></ProGuard>} />
                         <Route path="community" element={<Suspense fallback={<LoadingFallback />}><CommunityPage /></Suspense>} />
-                        <Route path="community/:boardSlug" element={<Suspense fallback={<LoadingFallback />}><BoardPage /></Suspense>} />
                         <Route path="community/formula-market" element={<Suspense fallback={<LoadingFallback />}><FormulaListPage /></Suspense>} />
                         <Route path="community/formula-market/purchases" element={<Suspense fallback={<LoadingFallback />}><PurchaseAdminPage /></Suspense>} />
                         <Route path="community/formula-market/write" element={<Suspense fallback={<LoadingFallback />}><FormulaWritePage /></Suspense>} />
-                        <Route path="community/:boardSlug/write" element={<Suspense fallback={<LoadingFallback />}><PostWritePage /></Suspense>} />
                         <Route path="community/post/:postId" element={<Suspense fallback={<LoadingFallback />}><PostDetailPage /></Suspense>} />
                         <Route path="community/post/:postId/edit" element={<Suspense fallback={<LoadingFallback />}><PostWritePage /></Suspense>} />
+                        <Route path="community/:boardSlug" element={<Suspense fallback={<LoadingFallback />}><BoardPage /></Suspense>} />
+                        <Route path="community/:boardSlug/write" element={<Suspense fallback={<LoadingFallback />}><PostWritePage /></Suspense>} />
                     </Route>
 
                     {/* Admin routes */}

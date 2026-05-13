@@ -133,6 +133,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         })
             .then((r) => {
                 clearTimeout(timeoutId);
+                if (r.status === 401) {
+                    clearToken();
+                    setTokenState(null);
+                    setUser(null);
+                    return null;
+                }
                 return r.ok ? r.json() : null;
             })
             .then((data) => {
