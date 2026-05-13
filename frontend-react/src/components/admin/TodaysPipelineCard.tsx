@@ -16,7 +16,7 @@ function formatTime(iso?: string | null): string {
 
 function formatDelta(value?: number | null): { label: string; tone: string } {
     if (value === null || value === undefined || Number.isNaN(value)) {
-        return { label: '--', tone: 'text-slate-500' };
+        return { label: '--', tone: 'text-neutral-500' };
     }
     const sign = value >= 0 ? '+' : '';
     const tone = value >= 0 ? 'text-emerald-300' : 'text-rose-300';
@@ -35,20 +35,20 @@ function phaseLabel(phase?: string): { label: string; tone: string } {
         case 'pre_open':
             return { label: 'Pre-open', tone: 'border-amber-300/30 bg-amber-300/10 text-amber-200' };
         case 'after_close':
-            return { label: 'Closed', tone: 'border-slate-300/20 bg-slate-300/10 text-slate-300' };
+            return { label: 'Closed', tone: 'border-neutral-300/20 bg-neutral-300/10 text-neutral-300' };
         case 'closed_weekend':
-            return { label: 'Weekend', tone: 'border-slate-300/20 bg-slate-300/10 text-slate-300' };
+            return { label: 'Weekend', tone: 'border-neutral-300/20 bg-neutral-300/10 text-neutral-300' };
         default:
-            return { label: phase || '--', tone: 'border-white/10 bg-white/5 text-slate-300' };
+            return { label: phase || '--', tone: 'border-white/10 bg-white/5 text-neutral-300' };
     }
 }
 
 function vixTone(level?: string | null): string {
     if (level === 'low') return 'text-emerald-300';
-    if (level === 'moderate') return 'text-cyan-200';
+    if (level === 'moderate') return 'text-amber-300';
     if (level === 'elevated') return 'text-amber-300';
     if (level === 'high') return 'text-rose-300';
-    return 'text-slate-300';
+    return 'text-neutral-300';
 }
 
 interface FunnelStep {
@@ -167,14 +167,14 @@ function buildOpsStages(data: MiroFishPipelineToday | null): OpsStage[] {
 
 function stageTone(state: OpsStage['state']): string {
     if (state === 'done') return 'border-emerald-300/25 bg-emerald-300/10 text-emerald-100';
-    if (state === 'active') return 'border-cyan-300/25 bg-cyan-300/10 text-cyan-100';
+    if (state === 'active') return 'border-amber-400/25 bg-amber-400/10 text-amber-100';
     if (state === 'blocked') return 'border-rose-300/25 bg-rose-300/10 text-rose-100';
-    return 'border-white/10 bg-white/[0.04] text-slate-300';
+    return 'border-white/10 bg-white/[0.04] text-neutral-300';
 }
 
 function stageDot(state: OpsStage['state']): string {
     if (state === 'done') return 'bg-emerald-300';
-    if (state === 'active') return 'bg-cyan-300 animate-pulse';
+    if (state === 'active') return 'bg-amber-400 animate-pulse';
     if (state === 'blocked') return 'bg-rose-300';
     return 'bg-white/25';
 }
@@ -215,17 +215,17 @@ export default function TodaysPipelineCard() {
     const operating = data?.operating_workflow;
 
     return (
-        <section className="rounded-xl border border-cyan-300/15 bg-slate-950/60 p-3 shadow-[0_18px_70px_rgba(34,211,238,0.10)] sm:p-4">
+        <section className="rounded-xl border border-amber-400/15 bg-black/60 p-3  sm:p-4">
             <header className="flex items-center justify-between gap-2">
                 <div className="min-w-0">
-                    <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-cyan-200/70 sm:text-[11px] sm:tracking-[0.22em]">
-                        <i className="fas fa-satellite-dish text-cyan-300" />
+                    <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-amber-300/70 sm:text-[11px] sm:tracking-[0.22em]">
+                        <i className="fas fa-satellite-dish text-amber-400" />
                         <span className="truncate">Today&apos;s Pipeline</span>
                     </div>
                     <h3 className="mt-1 text-sm font-black text-white sm:text-base">Alpha ops lane</h3>
                 </div>
                 {loading && (
-                    <span className="shrink-0 text-[10px] font-bold uppercase tracking-wider text-slate-500">loading...</span>
+                    <span className="shrink-0 text-[10px] font-bold uppercase tracking-wider text-neutral-500">loading...</span>
                 )}
             </header>
 
@@ -235,12 +235,12 @@ export default function TodaysPipelineCard() {
                 </div>
             )}
 
-            <div className="mt-3 rounded-lg border border-cyan-300/15 bg-cyan-300/[0.05] p-2.5 sm:mt-4 sm:p-3">
+            <div className="mt-3 rounded-lg border border-amber-400/15 bg-amber-400/[0.05] p-2.5 sm:mt-4 sm:p-3">
                 <div className="flex items-center justify-between gap-2">
-                    <span className="text-[10px] font-black uppercase tracking-[0.16em] text-cyan-200/80 sm:text-[11px] sm:tracking-[0.18em]">
+                    <span className="text-[10px] font-black uppercase tracking-[0.16em] text-amber-300/80 sm:text-[11px] sm:tracking-[0.18em]">
                         Operating Workflow
                     </span>
-                    <span className="text-[10px] font-bold text-slate-500 whitespace-nowrap">
+                    <span className="text-[10px] font-bold text-neutral-500 whitespace-nowrap">
                         {operating ? `${operating.overall_status} ${formatPct(operating.overall_progress_pct, 0)}` : data?.funnel?.freshness_status || 'source --'}
                     </span>
                 </div>
@@ -254,7 +254,7 @@ export default function TodaysPipelineCard() {
                                 <span className={`h-2 w-2 shrink-0 rounded-full ${stageDot(stage.state)}`} />
                             </div>
                             <div className="mt-1 text-base font-black text-white tabular-nums">{stage.value}</div>
-                            <div className="mt-0.5 truncate text-[10px] font-bold text-slate-500">{stage.detail}</div>
+                            <div className="mt-0.5 truncate text-[10px] font-bold text-neutral-500">{stage.detail}</div>
                             <div className="mt-2 h-1 overflow-hidden rounded-full bg-black/30">
                                 <div
                                     className="h-full rounded-full bg-current/70 transition-all"
@@ -269,7 +269,7 @@ export default function TodaysPipelineCard() {
             <div className="mt-3 rounded-lg border border-white/10 bg-black/30 p-2.5 sm:p-3">
                 <div className="flex flex-wrap items-center justify-between gap-1.5">
                     <div className="flex items-center gap-1.5">
-                        <span className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400 sm:text-[11px] sm:tracking-[0.18em]">KR Market</span>
+                        <span className="text-[10px] font-black uppercase tracking-[0.16em] text-neutral-400 sm:text-[11px] sm:tracking-[0.18em]">KR Market</span>
                     </div>
                     <span className={`rounded-full border px-2 py-0.5 text-[10px] font-black whitespace-nowrap ${phase.tone}`}>
                         {phase.label}
@@ -277,40 +277,40 @@ export default function TodaysPipelineCard() {
                 </div>
                 <div className="mt-3 grid grid-cols-2 gap-2 text-[11px] font-bold">
                     <div>
-                        <div className="text-slate-500">KOSPI</div>
+                        <div className="text-neutral-500">KOSPI</div>
                         <div className={`mt-0.5 text-sm font-black sm:text-base ${kospiDelta.tone}`}>{kospiDelta.label}</div>
                     </div>
                     <div>
-                        <div className="text-slate-500">KOSDAQ</div>
+                        <div className="text-neutral-500">KOSDAQ</div>
                         <div className={`mt-0.5 text-sm font-black sm:text-base ${kosdaqDelta.tone}`}>{kosdaqDelta.label}</div>
                     </div>
                 </div>
                 {data?.market?.kr?.gate_label && (
                     <div className="mt-2 flex items-center justify-between text-[11px] font-bold">
-                        <span className="text-slate-500">Gate</span>
-                        <span className="text-cyan-200">
+                        <span className="text-neutral-500">Gate</span>
+                        <span className="text-amber-300">
                             {data.market.kr.gate_label}{' '}
                             {data.market.kr.gate_score !== null && data.market.kr.gate_score !== undefined && (
-                                <span className="text-slate-500">({data.market.kr.gate_score})</span>
+                                <span className="text-neutral-500">({data.market.kr.gate_score})</span>
                             )}
                         </span>
                     </div>
                 )}
                 {data?.market?.us?.vix !== null && data?.market?.us?.vix !== undefined && (
                     <div className="mt-2 flex items-center justify-between text-[11px] font-bold">
-                        <span className="text-slate-500">VIX</span>
+                        <span className="text-neutral-500">VIX</span>
                         <span className={vixTone(data.market.us.vix_level)}>
                             {Number(data.market.us.vix).toFixed(1)}
-                            <span className="ml-1 text-slate-500">({data.market.us.vix_level || '--'})</span>
+                            <span className="ml-1 text-neutral-500">({data.market.us.vix_level || '--'})</span>
                         </span>
                     </div>
                 )}
                 {data?.market?.us?.fear_greed_score !== null && data?.market?.us?.fear_greed_score !== undefined && (
                     <div className="mt-2 flex items-center justify-between text-[11px] font-bold">
-                        <span className="text-slate-500">Fear &amp; Greed</span>
+                        <span className="text-neutral-500">Fear &amp; Greed</span>
                         <span className="text-amber-200">
                             {data.market.us.fear_greed_score}{' '}
-                            <span className="text-slate-500">{data.market.us.fear_greed_label || ''}</span>
+                            <span className="text-neutral-500">{data.market.us.fear_greed_label || ''}</span>
                         </span>
                     </div>
                 )}
@@ -318,18 +318,18 @@ export default function TodaysPipelineCard() {
 
             <div className="mt-3 rounded-lg border border-white/10 bg-black/30 p-2.5 sm:p-3">
                 <div className="flex items-center justify-between gap-2">
-                    <span className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400 sm:text-[11px] sm:tracking-[0.18em]">Detection Funnel</span>
-                    <span className="text-[10px] font-bold text-slate-500 whitespace-nowrap">
+                    <span className="text-[10px] font-black uppercase tracking-[0.16em] text-neutral-400 sm:text-[11px] sm:tracking-[0.18em]">Detection Funnel</span>
+                    <span className="text-[10px] font-bold text-neutral-500 whitespace-nowrap">
                         today {data?.funnel?.scanner_runs_today ?? 0} runs
                     </span>
                 </div>
                 <div className="mt-2 space-y-1.5">
                     {funnel.map((step) => (
                         <div key={step.label} className="flex items-center gap-1.5 text-[11px] font-bold sm:gap-2">
-                            <span className="w-14 shrink-0 text-slate-400 sm:w-16">{step.label}</span>
+                            <span className="w-14 shrink-0 text-neutral-400 sm:w-16">{step.label}</span>
                             <div className="flex-1 overflow-hidden rounded-sm bg-white/[0.04]">
                                 <div
-                                    className="h-3 rounded-sm bg-gradient-to-r from-cyan-500/60 via-cyan-400/70 to-emerald-400/80 transition-all"
+                                    className="h-3 rounded-sm bg-gradient-to-r from-amber-500/60 via-amber-400/70 to-emerald-400/80 transition-all"
                                     style={{ width: `${Math.max(2, Math.min(100, step.width))}%` }}
                                 />
                             </div>
@@ -346,22 +346,22 @@ export default function TodaysPipelineCard() {
                     const avg = kpi?.avg_return_pct;
                     return (
                         <div key={key} className="rounded-lg border border-white/10 bg-black/30 p-2.5 sm:p-3">
-                            <div className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-500 sm:tracking-[0.18em]">
+                            <div className="text-[10px] font-black uppercase tracking-[0.16em] text-neutral-500 sm:tracking-[0.18em]">
                                 {key === 'kpi_7d' ? '7D' : '30D'} KPI
                             </div>
                             <div className="mt-1.5 flex items-baseline gap-1 sm:mt-2">
                                 <span className="text-lg font-black text-white tabular-nums sm:text-xl">
                                     {hit !== null && hit !== undefined ? `${hit.toFixed(0)}%` : '--'}
                                 </span>
-                                <span className="text-[10px] font-bold text-slate-500">hit</span>
+                                <span className="text-[10px] font-bold text-neutral-500">hit</span>
                             </div>
                             <div className="mt-1 flex items-center justify-between text-[10px] font-bold">
-                                <span className="text-slate-500">avg R</span>
-                                <span className={`tabular-nums ${avg !== null && avg !== undefined ? (avg >= 0 ? 'text-emerald-300' : 'text-rose-300') : 'text-slate-500'}`}>
+                                <span className="text-neutral-500">avg R</span>
+                                <span className={`tabular-nums ${avg !== null && avg !== undefined ? (avg >= 0 ? 'text-emerald-300' : 'text-rose-300') : 'text-neutral-500'}`}>
                                     {avg !== null && avg !== undefined ? `${avg >= 0 ? '+' : ''}${avg.toFixed(2)}%` : '--'}
                                 </span>
                             </div>
-                            <div className="mt-0.5 flex items-center justify-between text-[10px] font-bold text-slate-500">
+                            <div className="mt-0.5 flex items-center justify-between text-[10px] font-bold text-neutral-500">
                                 <span>sample</span>
                                 <span className="tabular-nums">{kpi?.sample_size ?? 0}</span>
                             </div>
@@ -371,8 +371,8 @@ export default function TodaysPipelineCard() {
             </div>
 
             <div className="mt-3 flex items-center justify-between gap-2 rounded-lg border border-white/10 bg-black/30 px-2.5 py-2 text-[11px] font-bold sm:px-3">
-                <span className="text-slate-500 truncate">Auto scan ETA</span>
-                <span className="font-mono text-cyan-200 tabular-nums whitespace-nowrap">
+                <span className="text-neutral-500 truncate">Auto scan ETA</span>
+                <span className="font-mono text-amber-300 tabular-nums whitespace-nowrap">
                     {formatTime(data?.next?.next_scheduled_scan_at)}
                 </span>
             </div>

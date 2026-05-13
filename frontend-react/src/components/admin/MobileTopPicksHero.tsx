@@ -26,9 +26,9 @@ function outcomeChip(status?: string, hit?: boolean | null): { label: string; to
     if (hit === true) return { label: '✅ HIT', tone: 'border-emerald-300/30 bg-emerald-300/10 text-emerald-200' };
     if (hit === false) return { label: '❌ MISS', tone: 'border-rose-300/30 bg-rose-300/10 text-rose-200' };
     if (status === 'pending' || status === 'partial') {
-        return { label: '⏳ 진행중', tone: 'border-white/10 bg-white/5 text-slate-400' };
+        return { label: '⏳ 진행중', tone: 'border-white/10 bg-white/5 text-neutral-400' };
     }
-    return { label: '신규', tone: 'border-cyan-300/30 bg-cyan-300/10 text-cyan-200' };
+    return { label: '신규', tone: 'border-amber-400/30 bg-amber-400/10 text-amber-300' };
 }
 
 export default function MobileTopPicksHero() {
@@ -61,7 +61,7 @@ export default function MobileTopPicksHero() {
     // 로딩중이거나 TOP 3 없으면 영역 자체 숨김 (스켈레톤 노이즈 방지)
     if (loading) {
         return (
-            <section className="mt-6 rounded-xl border border-anthropic-orange/20 bg-slate-950/60 p-3 lg:hidden">
+            <section className="mt-6 rounded-xl border border-amber-400/20 bg-black/60 p-3 lg:hidden">
                 <div className="h-4 w-32 animate-pulse rounded bg-white/5" />
                 <div className="mt-3 space-y-2">
                     <div className="h-16 animate-pulse rounded-lg bg-white/[0.03]" />
@@ -77,13 +77,13 @@ export default function MobileTopPicksHero() {
 
     return (
         <section
-            className="mt-6 rounded-xl border border-anthropic-orange/25 bg-gradient-to-b from-anthropic-orange/[0.08] to-slate-950/60 p-3 shadow-[0_18px_70px_rgba(204,120,92,0.10)] lg:hidden"
+            className="mt-6 rounded-xl border border-amber-500/15 bg-black/60 p-3 lg:hidden"
             aria-label="오늘의 TOP 추천 미리보기"
         >
             <header className="flex items-center justify-between gap-2">
                 <div className="min-w-0">
-                    <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-anthropic-orange">
-                        <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-anthropic-orange" />
+                    <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-amber-400">
+                        <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-amber-400" />
                         Today&apos;s Top Picks
                     </div>
                     <h2 className="mt-1 text-base font-black text-white">
@@ -92,7 +92,7 @@ export default function MobileTopPicksHero() {
                 </div>
                 <a
                     href={`#${ANCHOR_ID}`}
-                    className="shrink-0 rounded-md border border-white/10 bg-black/30 px-2.5 py-1.5 text-[10px] font-black uppercase tracking-wider text-slate-300 transition-colors active:bg-anthropic-orange/15 active:text-anthropic-orange"
+                    className="shrink-0 rounded-md border border-white/10 bg-black/30 px-2.5 py-1.5 text-[10px] font-black uppercase tracking-wider text-neutral-300 transition-colors active:bg-amber-400/15 active:text-amber-400"
                     title="AlphaBoard 전체 분석 보기"
                 >
                     자세히 ▼
@@ -100,7 +100,7 @@ export default function MobileTopPicksHero() {
             </header>
 
             {workflow?.status && workflow.status !== 'completed' && (
-                <div className="mt-2 rounded-md border border-cyan-300/20 bg-cyan-300/[0.05] px-2 py-1 text-[10px] font-bold leading-snug text-cyan-200">
+                <div className="mt-2 rounded-md border border-amber-400/20 bg-amber-400/[0.05] px-2 py-1 text-[10px] font-bold leading-snug text-amber-300">
                     ⏳ 워크플로우 상태: {workflow.status} (진행중)
                 </div>
             )}
@@ -123,15 +123,15 @@ export default function MobileTopPicksHero() {
                         >
                             <div className="flex items-center gap-2">
                                 {/* Rank 뱃지 */}
-                                <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full border-2 border-anthropic-orange/40 bg-anthropic-orange/15 text-sm font-black text-anthropic-orange">
+                                <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full border-2 border-amber-400/40 bg-amber-400/15 text-sm font-black text-amber-400">
                                     {index + 1}
                                 </div>
                                 {/* 종목명 + 코드 */}
                                 <div className="min-w-0 flex-1">
                                     <div className="truncate text-sm font-black text-white">{name}</div>
-                                    <div className="mt-0.5 flex items-center gap-1.5 text-[10px] font-bold text-slate-400">
+                                    <div className="mt-0.5 flex items-center gap-1.5 text-[10px] font-bold text-neutral-400">
                                         <span className="font-mono tabular-nums">{symbol}</span>
-                                        <span className="text-slate-600">·</span>
+                                        <span className="text-neutral-600">·</span>
                                         <span>score <span className="text-white tabular-nums">{score}</span></span>
                                     </div>
                                 </div>
@@ -151,7 +151,7 @@ export default function MobileTopPicksHero() {
                                         T{horizon || '?'} {forwardPct >= 0 ? '+' : ''}{Number(forwardPct).toFixed(1)}%
                                     </span>
                                 ) : (
-                                    <span className="text-slate-500">평가 대기중</span>
+                                    <span className="text-neutral-500">평가 대기중</span>
                                 )}
                             </div>
                         </div>
@@ -159,7 +159,7 @@ export default function MobileTopPicksHero() {
                 })}
             </div>
 
-            <div className="mt-2 text-center text-[10px] font-bold text-slate-500 leading-snug">
+            <div className="mt-2 text-center text-[10px] font-bold text-neutral-500 leading-snug">
                 컴팩트 미리보기 · 카톡 공유 + 상세 분석은 아래 AlphaBoard 참고
             </div>
         </section>

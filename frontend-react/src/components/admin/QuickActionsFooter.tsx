@@ -111,11 +111,11 @@ export default function QuickActionsFooter() {
     }
 
     return (
-        <section className="rounded-xl border border-violet-300/15 bg-slate-950/60 p-3 shadow-[0_18px_70px_rgba(167,139,250,0.10)] sm:p-4">
+        <section className="rounded-xl border border-neutral-400/15 bg-black/60 p-3  sm:p-4">
             <header className="flex items-center justify-between">
                 <div className="min-w-0">
-                    <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-violet-200/70 sm:text-[11px] sm:tracking-[0.22em]">
-                        <i className="fas fa-bolt text-violet-300" />
+                    <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-neutral-300/70 sm:text-[11px] sm:tracking-[0.22em]">
+                        <i className="fas fa-bolt text-neutral-400" />
                         <span className="truncate">Quick Actions</span>
                     </div>
                     <h3 className="mt-1 text-sm font-black text-white sm:text-base">빠른 액션 콘솔</h3>
@@ -127,10 +127,10 @@ export default function QuickActionsFooter() {
                 {actions.map((action) => {
                     const state = states[action.key] || 'idle';
                     const tone =
-                        state === 'running' ? 'border-violet-300/30 bg-violet-300/10 text-violet-100' :
+                        state === 'running' ? 'border-neutral-400/30 bg-neutral-400/10 text-neutral-100' :
                         state === 'ok' ? 'border-emerald-300/30 bg-emerald-300/10 text-emerald-100' :
                         state === 'failed' ? 'border-rose-300/30 bg-rose-300/10 text-rose-100' :
-                        'border-white/10 bg-black/30 text-slate-200 hover:border-violet-300/30 hover:bg-violet-300/[0.08] active:bg-violet-300/[0.12]';
+                        'border-white/10 bg-black/30 text-neutral-200 hover:border-neutral-400/30 hover:bg-neutral-400/[0.08] active:bg-neutral-400/[0.12]';
                     return (
                         <button
                             key={action.key}
@@ -153,7 +153,7 @@ export default function QuickActionsFooter() {
                     );
                 })}
             </div>
-            <div className="mt-2 text-[10px] font-bold leading-snug text-slate-500">
+            <div className="mt-2 text-[10px] font-bold leading-snug text-neutral-500">
                 액션 결과는 우측 카드 자동 폴링에 반영됩니다. dry-run은 텔레그램 전송 없이 검사만 합니다.
             </div>
         </section>

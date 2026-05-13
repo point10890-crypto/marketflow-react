@@ -24,12 +24,12 @@ type ActionState = 'idle' | 'running' | 'ok' | 'failed';
 function phaseTone(phase: string): { tone: string; emoji: string } {
     switch (phase) {
         case 'IDLE':
-            return { tone: 'border-slate-300/20 bg-slate-300/10 text-slate-200', emoji: '⚪' };
+            return { tone: 'border-neutral-300/20 bg-neutral-300/10 text-neutral-200', emoji: '⚪' };
         case 'CHECKING':
-            return { tone: 'border-cyan-300/30 bg-cyan-300/10 text-cyan-200', emoji: '🔍' };
+            return { tone: 'border-amber-400/30 bg-amber-400/10 text-amber-300', emoji: '🔍' };
         case 'TRIGGERED':
         case 'ANALYZING':
-            return { tone: 'border-anthropic-orange/40 bg-anthropic-orange/15 text-anthropic-orange', emoji: '⚙️' };
+            return { tone: 'border-amber-400/40 bg-amber-400/15 text-amber-400', emoji: '⚙️' };
         case 'NOTIFYING':
             return { tone: 'border-blue-300/30 bg-blue-300/10 text-blue-200', emoji: '📤' };
         case 'COOLDOWN':
@@ -37,9 +37,9 @@ function phaseTone(phase: string): { tone: string; emoji: string } {
         case 'CIRCUIT_OPEN':
             return { tone: 'border-rose-300/40 bg-rose-300/15 text-rose-200', emoji: '⛔' };
         case 'PAUSED':
-            return { tone: 'border-slate-300/30 bg-slate-300/10 text-slate-400', emoji: '⏸️' };
+            return { tone: 'border-neutral-300/30 bg-neutral-300/10 text-neutral-400', emoji: '⏸️' };
         default:
-            return { tone: 'border-white/10 bg-white/5 text-slate-300', emoji: '•' };
+            return { tone: 'border-white/10 bg-white/5 text-neutral-300', emoji: '•' };
     }
 }
 
@@ -130,12 +130,12 @@ export default function AutoRunnerCard() {
         : [];
 
     return (
-        <section className="rounded-xl border border-anthropic-orange/30 bg-gradient-to-b from-anthropic-orange/[0.08] to-slate-950/60 p-3 shadow-[0_18px_70px_rgba(204,120,92,0.10)] sm:p-4">
+        <section className="rounded-lg border border-amber-500/15 bg-black/60 p-3 sm:p-4">
             <header className="flex items-center justify-between gap-2">
                 <div className="min-w-0">
-                    <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-anthropic-orange sm:text-[11px] sm:tracking-[0.22em]">
+                    <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-amber-400 sm:text-[11px] sm:tracking-[0.22em]">
                         <span className={`inline-block h-1.5 w-1.5 rounded-full ${
-                            status?.worker_running ? 'animate-pulse bg-anthropic-orange' : 'bg-slate-500'
+                            status?.worker_running ? 'animate-pulse bg-amber-400' : 'bg-neutral-600'
                         }`} />
                         <span className="truncate">Auto Runner</span>
                     </div>
@@ -155,13 +155,13 @@ export default function AutoRunnerCard() {
             {/* 오늘 카운터 그리드 */}
             <div className="mt-3 grid grid-cols-4 gap-1.5">
                 {[
-                    { label: '체크', value: today?.checks ?? 0, color: 'text-slate-200' },
-                    { label: '발사', value: today?.triggers ?? 0, color: 'text-anthropic-orange' },
+                    { label: '체크', value: today?.checks ?? 0, color: 'text-neutral-200' },
+                    { label: '발사', value: today?.triggers ?? 0, color: 'text-amber-400' },
                     { label: '성공', value: today?.successes ?? 0, color: 'text-emerald-300' },
                     { label: '실패', value: today?.failures ?? 0, color: 'text-rose-300' },
                 ].map((c) => (
                     <div key={c.label} className="rounded-md border border-white/10 bg-black/30 px-2 py-1.5 text-center">
-                        <div className="text-[9px] font-black uppercase tracking-wider text-slate-500">{c.label}</div>
+                        <div className="text-[9px] font-black uppercase tracking-wider text-neutral-500">{c.label}</div>
                         <div className={`mt-0.5 text-base font-black tabular-nums ${c.color}`}>{c.value}</div>
                     </div>
                 ))}
@@ -171,8 +171,8 @@ export default function AutoRunnerCard() {
             {today && tuning && (
                 <div className="mt-2 rounded-md border border-white/10 bg-black/30 p-2">
                     <div className="flex items-center justify-between text-[10px] font-bold">
-                        <span className="text-slate-500">오늘 LLM 비용</span>
-                        <span className="font-mono tabular-nums text-slate-200">
+                        <span className="text-neutral-500">오늘 LLM 비용</span>
+                        <span className="font-mono tabular-nums text-neutral-200">
                             ${Number(today.est_cost_usd || 0).toFixed(2)} / ${Number(tuning.daily_cap_usd).toFixed(2)}
                         </span>
                     </div>
@@ -202,18 +202,18 @@ export default function AutoRunnerCard() {
                     </div>
                 )}
                 {status?.last_check_reason && phase !== 'CIRCUIT_OPEN' && (
-                    <div className="rounded-md border border-white/5 bg-white/[0.02] px-2 py-1.5 text-slate-400 leading-snug">
-                        <span className="text-slate-500">최근 체크:</span>{' '}
+                    <div className="rounded-md border border-white/5 bg-white/[0.02] px-2 py-1.5 text-neutral-400 leading-snug">
+                        <span className="text-neutral-500">최근 체크:</span>{' '}
                         <span className="break-words">{status.last_check_reason}</span>
                     </div>
                 )}
                 {topSkipReasons.length > 0 && (
                     <div className="rounded-md border border-white/5 bg-white/[0.02] px-2 py-1.5">
-                        <div className="text-[9px] font-black uppercase tracking-wider text-slate-500">오늘 스킵 사유 TOP {topSkipReasons.length}</div>
+                        <div className="text-[9px] font-black uppercase tracking-wider text-neutral-500">오늘 스킵 사유 TOP {topSkipReasons.length}</div>
                         {topSkipReasons.map(([reason, count]) => (
-                            <div key={reason} className="mt-0.5 flex items-center justify-between text-slate-400">
+                            <div key={reason} className="mt-0.5 flex items-center justify-between text-neutral-400">
                                 <span className="truncate pr-2">{reason.split(':')[0]}</span>
-                                <span className="font-mono tabular-nums text-slate-300">×{count}</span>
+                                <span className="font-mono tabular-nums text-neutral-300">×{count}</span>
                             </div>
                         ))}
                     </div>
@@ -240,7 +240,7 @@ export default function AutoRunnerCard() {
                     className={`min-h-[40px] rounded-lg border px-2 py-1.5 text-[11px] font-black transition-colors disabled:cursor-wait ${
                         status?.paused
                             ? 'border-emerald-300/30 bg-emerald-300/10 text-emerald-200 hover:bg-emerald-300/15'
-                            : 'border-white/10 bg-black/30 text-slate-200 hover:border-amber-300/30 hover:bg-amber-300/[0.08]'
+                            : 'border-white/10 bg-black/30 text-neutral-200 hover:border-amber-300/30 hover:bg-amber-300/[0.08]'
                     }`}
                 >
                     {status?.paused ? '▶ 재개' : '⏸ 일시정지'}
@@ -255,7 +255,7 @@ export default function AutoRunnerCard() {
                         () => mirofishApi.triggerAutoRunner(),
                         '강제 트리거',
                     )}
-                    className="min-h-[40px] rounded-lg border border-anthropic-orange/30 bg-anthropic-orange/10 px-2 py-1.5 text-[11px] font-black text-anthropic-orange transition-colors hover:bg-anthropic-orange/15 active:bg-anthropic-orange/20 disabled:cursor-wait disabled:opacity-50"
+                    className="min-h-[40px] rounded-lg border border-amber-400/30 bg-amber-400/10 px-2 py-1.5 text-[11px] font-black text-amber-400 transition-colors hover:bg-amber-400/15 active:bg-amber-400/20 disabled:cursor-wait disabled:opacity-50"
                 >
                     {actionStates['trigger'] === 'running' ? '실행중...' : '🚀 강제 발사'}
                 </button>
@@ -269,7 +269,7 @@ export default function AutoRunnerCard() {
                         () => mirofishApi.resetAutoRunner('circuit'),
                         '서킷 리셋',
                     )}
-                    className="min-h-[40px] rounded-lg border border-white/10 bg-black/30 px-2 py-1.5 text-[11px] font-black text-slate-200 transition-colors hover:border-cyan-300/30 hover:bg-cyan-300/[0.08]"
+                    className="min-h-[40px] rounded-lg border border-white/10 bg-black/30 px-2 py-1.5 text-[11px] font-black text-neutral-200 transition-colors hover:border-amber-400/30 hover:bg-amber-400/[0.08]"
                 >
                     ♻ 서킷 리셋
                 </button>
@@ -283,20 +283,20 @@ export default function AutoRunnerCard() {
                         () => mirofishApi.resetAutoRunner('today'),
                         '카운터 리셋',
                     )}
-                    className="min-h-[40px] rounded-lg border border-white/10 bg-black/30 px-2 py-1.5 text-[11px] font-black text-slate-200 transition-colors hover:border-violet-300/30 hover:bg-violet-300/[0.08]"
+                    className="min-h-[40px] rounded-lg border border-white/10 bg-black/30 px-2 py-1.5 text-[11px] font-black text-neutral-200 transition-colors hover:border-neutral-400/30 hover:bg-neutral-400/[0.08]"
                 >
                     🔄 카운터 리셋
                 </button>
             </div>
 
             {actionMessage && (
-                <div className="mt-2 rounded-md border border-white/10 bg-white/[0.03] px-2 py-1.5 text-[10px] font-bold text-slate-300">
+                <div className="mt-2 rounded-md border border-white/10 bg-white/[0.03] px-2 py-1.5 text-[10px] font-bold text-neutral-300">
                     {actionMessage}
                 </div>
             )}
 
             {/* LLM 임계값 추천 (Open-Claude식 자가 개선) */}
-            <div className="mt-2 rounded-md border border-cyan-300/20 bg-cyan-300/[0.04]">
+            <div className="mt-2 rounded-md border border-amber-400/20 bg-amber-400/[0.04]">
                 <button
                     type="button"
                     disabled={actionStates['tune'] === 'running'}
@@ -315,16 +315,16 @@ export default function AutoRunnerCard() {
                             setActionMessage(`추천 호출 실패: ${err instanceof Error ? err.message : 'error'}`);
                         }
                     }}
-                    className="flex w-full items-center justify-between px-2.5 py-2 text-[11px] font-black text-cyan-200 transition-colors hover:bg-cyan-300/[0.08] disabled:cursor-wait disabled:opacity-60"
+                    className="flex w-full items-center justify-between px-2.5 py-2 text-[11px] font-black text-amber-300 transition-colors hover:bg-amber-400/[0.08] disabled:cursor-wait disabled:opacity-60"
                 >
                     <span>🧠 LLM 임계값 추천 (최근 14d 분석)</span>
-                    <span className="text-[10px] font-bold text-cyan-300/70">
+                    <span className="text-[10px] font-bold text-amber-400/70">
                         {actionStates['tune'] === 'running' ? '분석중…' : tuneResult ? (tuneOpen ? '접기 ▲' : '펼치기 ▼') : '실행 ▶'}
                     </span>
                 </button>
 
                 {tuneResult && tuneOpen && (
-                    <div className="border-t border-cyan-300/15 p-2.5 text-[10px] font-bold">
+                    <div className="border-t border-amber-400/15 p-2.5 text-[10px] font-bold">
                         {!tuneResult.ok && (
                             <div className="rounded-md border border-rose-300/20 bg-rose-300/[0.05] px-2 py-1.5 text-rose-200 leading-snug">
                                 ✗ {tuneResult.error}
@@ -333,20 +333,20 @@ export default function AutoRunnerCard() {
                         {tuneResult.ok && tuneResult.recommendation && (
                             <>
                                 <div className="mb-1 flex items-center justify-between">
-                                    <span className="text-slate-400">📊 추천 (confidence: {tuneResult.recommendation.confidence})</span>
-                                    <span className="text-slate-500 tabular-nums">{tuneResult.duration_s}s</span>
+                                    <span className="text-neutral-400">📊 추천 (confidence: {tuneResult.recommendation.confidence})</span>
+                                    <span className="text-neutral-500 tabular-nums">{tuneResult.duration_s}s</span>
                                 </div>
                                 {/* Diff 테이블 */}
                                 <div className="space-y-0.5 rounded border border-white/5 bg-black/30 p-1.5">
                                     {(tuneResult.diff || []).map((d) => {
                                         const tone = d.delta === null || d.delta === 0
-                                            ? 'text-slate-500'
+                                            ? 'text-neutral-500'
                                             : d.delta > 0 ? 'text-emerald-300' : 'text-amber-300';
                                         return (
                                             <div key={d.field} className="flex items-center justify-between text-[10px]">
-                                                <span className="text-slate-400 w-32">{d.field}</span>
-                                                <span className="font-mono tabular-nums text-slate-500">{d.current}</span>
-                                                <span className="font-mono tabular-nums text-slate-600 mx-1">→</span>
+                                                <span className="text-neutral-400 w-32">{d.field}</span>
+                                                <span className="font-mono tabular-nums text-neutral-500">{d.current}</span>
+                                                <span className="font-mono tabular-nums text-neutral-600 mx-1">→</span>
                                                 <span className="font-mono tabular-nums text-white">{d.recommended}</span>
                                                 <span className={`font-mono tabular-nums w-12 text-right ${tone}`}>
                                                     {d.delta !== null && d.delta !== 0 ? (d.delta > 0 ? '+' : '') + d.delta.toFixed(1) : '·'}
@@ -356,7 +356,7 @@ export default function AutoRunnerCard() {
                                     })}
                                 </div>
                                 {tuneResult.recommendation.reasoning && (
-                                    <div className="mt-2 rounded border border-cyan-300/15 bg-cyan-300/[0.04] px-2 py-1.5 text-cyan-100 leading-relaxed">
+                                    <div className="mt-2 rounded border border-amber-400/15 bg-amber-400/[0.04] px-2 py-1.5 text-amber-100 leading-relaxed">
                                         💡 {tuneResult.recommendation.reasoning}
                                     </div>
                                 )}
@@ -386,7 +386,7 @@ export default function AutoRunnerCard() {
                                 >
                                     {actionStates['apply'] === 'running' ? '적용중…' : '✓ 추천값 즉시 적용 (in-memory)'}
                                 </button>
-                                <div className="mt-1 text-[9px] text-slate-500 leading-snug">
+                                <div className="mt-1 text-[9px] text-neutral-500 leading-snug">
                                     {tuneResult.apply_note}
                                 </div>
                             </>
@@ -397,7 +397,7 @@ export default function AutoRunnerCard() {
 
             {/* 설정 요약 (작게) */}
             {tuning && (
-                <div className="mt-2 flex flex-wrap gap-1 text-[9px] font-bold text-slate-500">
+                <div className="mt-2 flex flex-wrap gap-1 text-[9px] font-bold text-neutral-500">
                     <span>쿨다운 {tuning.cooldown_minutes}분</span>
                     <span>·</span>
                     <span>신규 ≥{tuning.min_new_events}</span>

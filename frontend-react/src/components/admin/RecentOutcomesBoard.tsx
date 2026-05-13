@@ -33,15 +33,15 @@ function statusBadge(item: MiroFishBoardItem): { label: string; tone: string } {
         if (item.hit === true) return { label: '✅ 적중', tone: 'border-emerald-300/30 bg-emerald-300/15 text-emerald-200' };
         if (item.stopped) return { label: '🛑 손절', tone: 'border-rose-300/30 bg-rose-300/15 text-rose-200' };
         if (item.hit === false) return { label: '❌ 미달', tone: 'border-amber-300/30 bg-amber-300/15 text-amber-200' };
-        return { label: '~ 평가', tone: 'border-cyan-300/30 bg-cyan-300/15 text-cyan-200' };
+        return { label: '~ 평가', tone: 'border-amber-400/30 bg-amber-400/15 text-amber-300' };
     }
-    if (item.status === 'pending') return { label: '⏳ 진행중', tone: 'border-white/10 bg-white/5 text-slate-300' };
-    if (item.status === 'missing_entry') return { label: '데이터 없음', tone: 'border-white/10 bg-white/5 text-slate-500' };
-    return { label: item.status || '--', tone: 'border-white/10 bg-white/5 text-slate-400' };
+    if (item.status === 'pending') return { label: '⏳ 진행중', tone: 'border-white/10 bg-white/5 text-neutral-300' };
+    if (item.status === 'missing_entry') return { label: '데이터 없음', tone: 'border-white/10 bg-white/5 text-neutral-500' };
+    return { label: item.status || '--', tone: 'border-white/10 bg-white/5 text-neutral-400' };
 }
 
 function kpiTone(value: number | null | undefined, target: number, higherIsBetter = true): string {
-    if (value === null || value === undefined) return 'text-slate-400';
+    if (value === null || value === undefined) return 'text-neutral-400';
     const ok = higherIsBetter ? value >= target : value <= target;
     return ok ? 'text-emerald-300' : 'text-amber-300';
 }
@@ -56,14 +56,14 @@ interface KpiCardProps {
 function KpiCard({ label, value, sub, tone }: KpiCardProps) {
     return (
         <div className="rounded-lg border border-white/10 bg-black/30 p-2.5 sm:p-3">
-            <div className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-500 sm:tracking-[0.18em]">
+            <div className="text-[10px] font-black uppercase tracking-[0.16em] text-neutral-500 sm:tracking-[0.18em]">
                 {label}
             </div>
             <div className={`mt-1.5 text-lg font-black tabular-nums sm:mt-2 sm:text-xl ${tone ?? 'text-white'}`}>
                 {value}
             </div>
             {sub && (
-                <div className="mt-0.5 text-[10px] font-bold leading-snug text-slate-500 sm:mt-1">
+                <div className="mt-0.5 text-[10px] font-bold leading-snug text-neutral-500 sm:mt-1">
                     {sub}
                 </div>
             )}
@@ -119,7 +119,7 @@ export default function RecentOutcomesBoard() {
     );
 
     return (
-        <section className="rounded-xl border border-emerald-300/15 bg-slate-950/60 p-3 shadow-[0_18px_70px_rgba(16,185,129,0.10)] sm:p-4">
+        <section className="rounded-xl border border-emerald-300/15 bg-black/60 p-3  sm:p-4">
             <header className="flex flex-wrap items-center justify-between gap-2">
                 <div className="min-w-0">
                     <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-emerald-200/70 sm:text-[11px] sm:tracking-[0.22em]">
@@ -137,7 +137,7 @@ export default function RecentOutcomesBoard() {
                             className={`min-h-[28px] px-2.5 py-1.5 text-[10px] font-black uppercase tracking-wider transition-colors sm:py-1 ${
                                 windowDays === days
                                     ? 'bg-emerald-300/20 text-emerald-100'
-                                    : 'text-slate-500 hover:bg-white/5 hover:text-slate-300 active:bg-white/10'
+                                    : 'text-neutral-500 hover:bg-white/5 hover:text-neutral-300 active:bg-white/10'
                             }`}
                         >
                             {days}d
@@ -182,13 +182,13 @@ export default function RecentOutcomesBoard() {
             {/* 종목 목록 — mobile: card list / sm+: table */}
             <div className="mt-3 rounded-lg border border-white/10 bg-black/30 p-2.5 sm:p-3">
                 <div className="flex items-center justify-between gap-2">
-                    <span className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400 sm:text-[11px] sm:tracking-[0.18em]">
+                    <span className="text-[10px] font-black uppercase tracking-[0.16em] text-neutral-400 sm:text-[11px] sm:tracking-[0.18em]">
                         추천 이력 ({items.length}{data?.items_truncated ? `/${data?.total_items}` : ''})
                     </span>
-                    {loading && <span className="text-[10px] font-bold uppercase text-slate-500">loading</span>}
+                    {loading && <span className="text-[10px] font-bold uppercase text-neutral-500">loading</span>}
                 </div>
                 {items.length === 0 ? (
-                    <div className="mt-2 rounded border border-white/5 bg-white/[0.02] p-4 text-center text-[11px] font-bold text-slate-500">
+                    <div className="mt-2 rounded border border-white/5 bg-white/[0.02] p-4 text-center text-[11px] font-bold text-neutral-500">
                         {loading ? '불러오는 중...' : `최근 ${windowDays}일 추천 이력 없음`}
                     </div>
                 ) : (
@@ -200,7 +200,7 @@ export default function RecentOutcomesBoard() {
                                 const r5 = item.horizons?.['5'];
                                 const r5Tone = r5 !== null && r5 !== undefined
                                     ? (r5 >= 0 ? 'text-emerald-300' : 'text-rose-300')
-                                    : 'text-slate-500';
+                                    : 'text-neutral-500';
                                 return (
                                     <div
                                         key={`m-${item.workflow_id}-${item.symbol}-${idx}`}
@@ -209,7 +209,7 @@ export default function RecentOutcomesBoard() {
                                         <div className="flex items-center justify-between gap-2">
                                             <div className="min-w-0 flex-1">
                                                 <div className="truncate text-white">{item.name || item.symbol}</div>
-                                                <div className="text-[9px] font-bold text-slate-500 tabular-nums">
+                                                <div className="text-[9px] font-bold text-neutral-500 tabular-nums">
                                                     {item.symbol} · {formatDate(item.entry_date)}
                                                 </div>
                                             </div>
@@ -218,7 +218,7 @@ export default function RecentOutcomesBoard() {
                                             </span>
                                         </div>
                                         <div className="mt-1 flex items-center justify-between text-[10px] font-bold">
-                                            <span className="text-slate-500">5D 수익률</span>
+                                            <span className="text-neutral-500">5D 수익률</span>
                                             <span className={`font-mono tabular-nums ${r5Tone}`}>
                                                 {r5 !== null && r5 !== undefined ? `${r5 >= 0 ? '+' : ''}${r5.toFixed(1)}%` : '--'}
                                             </span>
@@ -231,7 +231,7 @@ export default function RecentOutcomesBoard() {
                         {/* sm+ : 테이블 */}
                         <div className="mt-2 hidden max-h-64 overflow-y-auto sm:block">
                             <table className="w-full text-[11px] font-bold">
-                                <thead className="sticky top-0 bg-slate-950/95 text-slate-500">
+                                <thead className="sticky top-0 bg-black/95 text-neutral-500">
                                     <tr className="text-left">
                                         <th className="px-1 py-1 font-black uppercase tracking-wider">종목</th>
                                         <th className="px-1 py-1 text-right font-black uppercase tracking-wider">진입일</th>
@@ -250,13 +250,13 @@ export default function RecentOutcomesBoard() {
                                             >
                                                 <td className="px-1 py-1.5">
                                                     <div className="text-white">{item.name || item.symbol}</div>
-                                                    <div className="text-[9px] font-bold text-slate-500 tabular-nums">{item.symbol}</div>
+                                                    <div className="text-[9px] font-bold text-neutral-500 tabular-nums">{item.symbol}</div>
                                                 </td>
-                                                <td className="px-1 py-1.5 text-right font-mono text-slate-300 tabular-nums">
+                                                <td className="px-1 py-1.5 text-right font-mono text-neutral-300 tabular-nums">
                                                     {formatDate(item.entry_date)}
                                                 </td>
                                                 <td className={`px-1 py-1.5 text-right font-mono tabular-nums ${
-                                                    r5 !== null && r5 !== undefined ? (r5 >= 0 ? 'text-emerald-300' : 'text-rose-300') : 'text-slate-500'
+                                                    r5 !== null && r5 !== undefined ? (r5 >= 0 ? 'text-emerald-300' : 'text-rose-300') : 'text-neutral-500'
                                                 }`}>
                                                     {r5 !== null && r5 !== undefined ? `${r5 >= 0 ? '+' : ''}${r5.toFixed(1)}%` : '--'}
                                                 </td>

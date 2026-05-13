@@ -13,7 +13,7 @@ interface JubjubBannerProps {
 export default function JubjubBanner({ data, minScore, onMinScoreChange, loading }: JubjubBannerProps) {
     const stats = data?.stats;
     return (
-        <section className="mb-4 overflow-hidden rounded-2xl border border-emerald-300/20 bg-gradient-to-br from-emerald-500/[0.08] via-slate-950/60 to-amber-300/[0.05] p-4 backdrop-blur-md shadow-[0_8px_40px_rgba(16,185,129,0.10)] sm:p-5">
+        <section className="mb-4 overflow-hidden rounded-2xl border border-amber-500/15 bg-black/60 p-4 backdrop-blur-md sm:p-5">
             <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
@@ -25,13 +25,13 @@ export default function JubjubBanner({ data, minScore, onMinScoreChange, loading
                             저점 매수
                         </span>
                     </div>
-                    <p className="mt-1.5 text-xs font-bold leading-relaxed text-slate-400 sm:text-sm">
+                    <p className="mt-1.5 text-xs font-bold leading-relaxed text-neutral-400 sm:text-sm">
                         W 패턴 + 거래량 확인 + 외인 매수 + 넥라인 근접 = 줍줍 시그널.
                         진입가/목표가/손절가 자동 산출.
                     </p>
                 </div>
                 {loading ? (
-                    <div className="text-[10px] font-bold uppercase text-slate-500">loading...</div>
+                    <div className="text-[10px] font-bold uppercase text-neutral-500">loading...</div>
                 ) : null}
             </div>
 
@@ -66,19 +66,19 @@ export default function JubjubBanner({ data, minScore, onMinScoreChange, loading
             {/* 최고 점수 + 점수 필터 슬라이더 */}
             <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
                 {stats?.top_score && stats?.top_name ? (
-                    <div className="text-[11px] font-bold text-slate-400">
+                    <div className="text-[11px] font-bold text-neutral-400">
                         최고 점수:{' '}
                         <span className="font-mono tabular-nums text-amber-300 font-black">
                             {Math.round(stats.top_score)}
                         </span>
-                        <span className="mx-1 text-slate-600">·</span>
+                        <span className="mx-1 text-neutral-600">·</span>
                         <span className="text-white">{stats.top_name}</span>
                     </div>
                 ) : (
-                    <div className="text-[11px] font-bold text-slate-500">표본 없음</div>
+                    <div className="text-[11px] font-bold text-neutral-500">표본 없음</div>
                 )}
                 <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-neutral-500">
                         최소 점수
                     </span>
                     <div className="inline-flex overflow-hidden rounded-md border border-white/10 bg-black/30">
@@ -90,7 +90,7 @@ export default function JubjubBanner({ data, minScore, onMinScoreChange, loading
                                 className={`min-h-[28px] px-2.5 py-1 text-[10px] font-black transition-colors ${
                                     minScore === s
                                         ? 'bg-amber-300/20 text-amber-200'
-                                        : 'text-slate-500 hover:bg-white/5 hover:text-slate-300 active:bg-white/10'
+                                        : 'text-neutral-500 hover:bg-white/5 hover:text-neutral-300 active:bg-white/10'
                                 }`}
                             >
                                 ≥{s}
@@ -111,7 +111,7 @@ function Stat({ label, value, suffix, tone }: { label: string; value: number; su
     }[tone];
     return (
         <div className="rounded-xl border border-white/10 bg-black/30 px-3 py-2 backdrop-blur-md">
-            <div className="text-[9px] font-black uppercase tracking-wider text-slate-500 truncate">
+            <div className="text-[9px] font-black uppercase tracking-wider text-neutral-500 truncate">
                 {label}
             </div>
             <div className={`mt-1 text-xl font-black tabular-nums sm:text-2xl ${toneClasses}`}>

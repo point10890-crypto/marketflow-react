@@ -45,9 +45,9 @@ function toneStyles(tone: JubjubBadgeTone): { border: string; bg: string; text: 
         case 'slate':
         default:
             return {
-                border: 'border-slate-300/20',
-                bg: 'bg-slate-300/5',
-                text: 'text-slate-300',
+                border: 'border-neutral-300/20',
+                bg: 'bg-neutral-300/5',
+                text: 'text-neutral-300',
             };
     }
 }
@@ -73,7 +73,7 @@ function TradePlanBar({ candidate }: { candidate: JubjubCandidate }) {
             {/* 바 */}
             <div className="relative h-7">
                 {/* 배경 그라데이션: 손절(rose) → 현재가 → 목표(emerald) */}
-                <div className="absolute inset-0 rounded-full bg-gradient-to-r from-rose-500/20 via-slate-700/30 to-emerald-500/20" />
+                <div className="absolute inset-0 rounded-full bg-gradient-to-r from-rose-500/20 via-neutral-700/30 to-emerald-500/20" />
                 {/* 손절 마커 */}
                 <div
                     className="absolute top-0 h-7 w-0.5 bg-rose-400"
@@ -82,7 +82,7 @@ function TradePlanBar({ candidate }: { candidate: JubjubCandidate }) {
                 />
                 {/* 현재가 마커 */}
                 <div
-                    className="absolute top-0 h-7 w-0.5 bg-cyan-300"
+                    className="absolute top-0 h-7 w-0.5 bg-amber-400"
                     style={{ left: `${pos(current)}%` }}
                     title={`현재 ${formatNumber(current)}`}
                 />
@@ -160,10 +160,10 @@ export default function JubjubCard({ candidate, onShare, onChart }: JubjubCardPr
 
     return (
         <article
-            className={`group relative overflow-hidden rounded-2xl border bg-slate-950/60 p-3 backdrop-blur-md transition-all hover:scale-[1.01] sm:p-4 ${
-                isElite ? 'border-amber-300/40 shadow-[0_8px_40px_rgba(252,211,77,0.10)]' :
-                isBuyNow ? 'border-rose-300/40 shadow-[0_8px_40px_rgba(244,114,182,0.10)]' :
-                'border-emerald-300/15 shadow-[0_8px_40px_rgba(16,185,129,0.06)]'
+            className={`group relative overflow-hidden rounded-2xl border bg-black/60 p-3 backdrop-blur-md transition-all hover:scale-[1.01] sm:p-4 ${
+                isElite ? 'border-amber-300/40 ' :
+                isBuyNow ? 'border-rose-300/40 ' :
+                'border-emerald-300/15 '
             }`}
         >
             {/* glassmorphism background tint */}
@@ -194,15 +194,15 @@ export default function JubjubCard({ candidate, onShare, onChart }: JubjubCardPr
                         <h3 className="truncate text-base font-black text-white sm:text-lg">
                             {candidate.name}
                         </h3>
-                        <p className="mt-0.5 text-[10px] font-bold text-slate-500 tabular-nums">
+                        <p className="mt-0.5 text-[10px] font-bold text-neutral-500 tabular-nums">
                             🪣 {candidate.ticker} · {candidate.wave_label || '역헤드앤숄더'} · 신뢰 {Math.round(candidate.confidence)}
                         </p>
                     </div>
                     <div className="shrink-0 text-right">
-                        <div className="text-sm font-black text-cyan-200 tabular-nums sm:text-base">
+                        <div className="text-sm font-black text-amber-300 tabular-nums sm:text-base">
                             {formatNumber(candidate.current_price)}
                         </div>
-                        <div className="text-[10px] font-bold text-slate-500">현재가</div>
+                        <div className="text-[10px] font-bold text-neutral-500">현재가</div>
                     </div>
                 </div>
 
@@ -214,16 +214,16 @@ export default function JubjubCard({ candidate, onShare, onChart }: JubjubCardPr
                 {/* 매매 계획 — 모바일: 2x2 grid, sm+: 4 컬럼 */}
                 <div className="mt-3 rounded-xl border border-white/5 bg-black/30 p-2.5 sm:p-3">
                     <div className="flex items-center justify-between mb-2">
-                        <div className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+                        <div className="text-[10px] font-black uppercase tracking-wider text-neutral-500">
                             매매 계획
                         </div>
                         {/* R/R 헤더 inline */}
                         <div className="text-[10px] font-bold tabular-nums">
-                            <span className="text-slate-500 mr-1">R/R</span>
+                            <span className="text-neutral-500 mr-1">R/R</span>
                             <span className={`${(candidate.trade_plan.rr_1 || 0) >= 1.5 ? 'text-emerald-300' : 'text-amber-300'}`}>
                                 {candidate.trade_plan.rr_1 ?? '--'}x
                             </span>
-                            <span className="mx-0.5 text-slate-600">/</span>
+                            <span className="mx-0.5 text-neutral-600">/</span>
                             <span className={`${(candidate.trade_plan.rr_2 || 0) >= 2 ? 'text-emerald-300' : 'text-amber-300'}`}>
                                 {candidate.trade_plan.rr_2 ?? '--'}x
                             </span>
@@ -282,10 +282,10 @@ export default function JubjubCard({ candidate, onShare, onChart }: JubjubCardPr
                             ✓ 거래량
                         </span>
                     )}
-                    <span className="rounded-full bg-cyan-300/10 px-2 py-1 text-cyan-300 tabular-nums sm:px-1.5 sm:py-0.5">
+                    <span className="rounded-full bg-amber-400/10 px-2 py-1 text-amber-400 tabular-nums sm:px-1.5 sm:py-0.5">
                         넥라인 {formatPct(candidate.neckline_distance_pct)}
                     </span>
-                    <span className="rounded-full bg-violet-300/10 px-2 py-1 text-violet-300 tabular-nums sm:px-1.5 sm:py-0.5">
+                    <span className="rounded-full bg-neutral-400/10 px-2 py-1 text-neutral-400 tabular-nums sm:px-1.5 sm:py-0.5">
                         완성 {Math.round(candidate.completion_pct)}%
                     </span>
                 </div>
@@ -296,7 +296,7 @@ export default function JubjubCard({ candidate, onShare, onChart }: JubjubCardPr
                         <button
                             type="button"
                             onClick={() => onChart(candidate)}
-                            className="flex flex-1 sm:flex-initial min-h-[44px] sm:min-h-[32px] items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-black/30 px-3 text-sm sm:text-xs font-black text-cyan-300 transition-colors hover:border-cyan-300/40 hover:bg-cyan-300/[0.08] active:bg-cyan-300/[0.12] sm:flex-none sm:w-9 sm:px-0"
+                            className="flex flex-1 sm:flex-initial min-h-[44px] sm:min-h-[32px] items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-black/30 px-3 text-sm sm:text-xs font-black text-amber-400 transition-colors hover:border-amber-400/40 hover:bg-amber-400/[0.08] active:bg-amber-400/[0.12] sm:flex-none sm:w-9 sm:px-0"
                             title="차트"
                         >
                             <span className="text-base sm:text-sm">📊</span>
@@ -317,7 +317,7 @@ export default function JubjubCard({ candidate, onShare, onChart }: JubjubCardPr
                     <button
                         type="button"
                         onClick={() => setExpanded((v) => !v)}
-                        className="flex flex-1 sm:flex-initial min-h-[44px] sm:min-h-[32px] items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-black/30 px-3 text-sm sm:text-xs font-black text-slate-300 transition-colors hover:border-slate-300/40 hover:bg-white/[0.05] active:bg-white/[0.08] sm:flex-none sm:w-9 sm:px-0"
+                        className="flex flex-1 sm:flex-initial min-h-[44px] sm:min-h-[32px] items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-black/30 px-3 text-sm sm:text-xs font-black text-neutral-300 transition-colors hover:border-neutral-300/40 hover:bg-white/[0.05] active:bg-white/[0.08] sm:flex-none sm:w-9 sm:px-0"
                         title={expanded ? '접기' : '점수 분해'}
                     >
                         <span className="text-base sm:text-sm">{expanded ? '▲' : '▼'}</span>
@@ -328,7 +328,7 @@ export default function JubjubCard({ candidate, onShare, onChart }: JubjubCardPr
                 {/* 확장: 점수 분해 */}
                 {expanded && (
                     <div className="mt-3 rounded-xl border border-white/5 bg-black/40 p-2.5 space-y-1 text-[10px] font-bold">
-                        <div className="text-slate-500 font-black uppercase tracking-wider mb-1">점수 분해</div>
+                        <div className="text-neutral-500 font-black uppercase tracking-wider mb-1">점수 분해</div>
                         {[
                             ['신뢰도 (40%)', candidate.score_breakdown.confidence, 40],
                             ['완성도 (20%)', candidate.score_breakdown.completion, 20],
@@ -339,7 +339,7 @@ export default function JubjubCard({ candidate, onShare, onChart }: JubjubCardPr
                             const pct = ((value as number) / (max as number)) * 100;
                             return (
                                 <div key={label as string} className="flex items-center gap-2">
-                                    <span className="w-28 shrink-0 text-slate-400 truncate">{label}</span>
+                                    <span className="w-28 shrink-0 text-neutral-400 truncate">{label}</span>
                                     <div className="flex-1 overflow-hidden rounded-full bg-white/5">
                                         <div
                                             className="h-1.5 rounded-full bg-gradient-to-r from-emerald-400 to-amber-300"
