@@ -137,7 +137,7 @@ export default function PurchaseAdminPage() {
             {/* Header */}
             <div className="flex items-center gap-3 mb-6">
                 <button
-                    onClick={() => navigate('/dashboard/community/formula-market')}
+                    onClick={() => navigate('/admin')}
                     className="w-8 h-8 rounded-lg bg-white/[0.06] flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
                 >
                     <i className="fas fa-arrow-left text-sm" />
