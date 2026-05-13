@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useSearchParams } from 'react-router-dom';
-import { fetchAPI, API_BASE, authHeaders } from '@/lib/api';
+import { fetchAPI, API_BASE, authHeaders, ApiError } from '@/lib/api';
 import PatternChart, { ChartDataPoint, PatternOverlay, PatternPoint } from '@/components/wave/PatternChart';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { getJubjubCandidates, JubjubResponse, JubjubCandidate } from '@/lib/jubjubApi';
@@ -68,6 +68,7 @@ export default function WaveOverviewPage() {
     // Screener state
     const [screener, setScreener] = useState<ScreenerResult | null>(null);
     const [screenerLoading, setScreenerLoading] = useState(true);
+    const [screenerError, setScreenerError] = useState<'auth' | 'server' | null>(null);
     const [filter, setFilter] = useState<FilterMode>('all');
     const [sortMode, setSortMode] = useState<SortMode>('confidence');
     // 🪣 Jubjub state
@@ -109,11 +110,16 @@ export default function WaveOverviewPage() {
 
     const loadScreener = async () => {
         setScreenerLoading(true);
+        setScreenerError(null);
         try {
             const data = await fetchAPI<ScreenerResult>('/api/wave/screener/latest');
             setScreener(data);
-        } catch {
-            // No data yet — acceptable
+        } catch (err) {
+            if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
+                setScreenerError('auth');
+            } else {
+                setScreenerError('server');
+            }
         } finally {
             setScreenerLoading(false);
         }
@@ -620,6 +626,48 @@ export default function WaveOverviewPage() {
                             );
                         })}
                     </div>
+                </div>
+            ) : screenerError === 'auth' ? (
+                <div className="bg-black/60 rounded-2xl border border-amber-500/20 p-10 text-center">
+                    <div className="w-14 h-14 mx-auto mb-3 rounded-2xl bg-amber-500/12 flex items-center justify-center">
+                        <i className="fas fa-lock text-amber-300 text-xl" />
+                    </div>
+                    <h3 className="text-white font-bold mb-1.5">로그인이 필요합니다</h3>
+                    <p className="text-neutral-400 text-xs max-w-md mx-auto mb-4">
+                        W Pattern 스크리너는 Pro / Ultra Pro 회원 전용 기능입니다. 로그인 후 다시 시도해 주세요.
+                    </p>
+                    <div className="flex items-center justify-center gap-2">
+                        <a
+                            href="/login"
+                            className="inline-flex items-center gap-1.5 rounded-lg bg-amber-400 px-4 py-2 text-xs font-black text-black hover:bg-amber-300 transition-colors"
+                        >
+                            <i className="fas fa-sign-in-alt" /> 로그인
+                        </a>
+                        <button
+                            type="button"
+                            onClick={loadScreener}
+                            className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-xs font-bold text-neutral-300 hover:bg-white/10 transition-colors"
+                        >
+                            <i className="fas fa-rotate-right" /> 재시도
+                        </button>
+                    </div>
+                </div>
+            ) : screenerError === 'server' ? (
+                <div className="bg-black/60 rounded-2xl border border-rose-500/20 p-10 text-center">
+                    <div className="w-14 h-14 mx-auto mb-3 rounded-2xl bg-rose-500/10 flex items-center justify-center">
+                        <i className="fas fa-circle-exclamation text-rose-300 text-xl" />
+                    </div>
+                    <h3 className="text-white font-bold mb-1.5">서버 연결 실패</h3>
+                    <p className="text-neutral-400 text-xs max-w-md mx-auto mb-4">
+                        스크리너 API 호출 중 오류가 발생했습니다. 잠시 후 다시 시도하거나 관리자에게 문의해 주세요.
+                    </p>
+                    <button
+                        type="button"
+                        onClick={loadScreener}
+                        className="inline-flex items-center gap-1.5 rounded-lg bg-amber-400 px-4 py-2 text-xs font-black text-black hover:bg-amber-300 transition-colors"
+                    >
+                        <i className="fas fa-rotate-right" /> 재시도
+                    </button>
                 </div>
             ) : !screenerLoading && (
                 <div className="bg-black/60 rounded-2xl border border-white/5 p-10 text-center">

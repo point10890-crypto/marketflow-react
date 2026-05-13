@@ -39,6 +39,16 @@ async function _handleAuthGate(response: Response, url: string): Promise<void> {
 }
 
 
+/** fetchAPI 가 throw 하는 Error — status 속성으로 호출자가 분기 가능 */
+export class ApiError extends Error {
+    status: number;
+    constructor(message: string, status: number) {
+        super(message);
+        this.name = 'ApiError';
+        this.status = status;
+    }
+}
+
 export async function fetchAPI<T>(endpoint: string, timeoutMs = 10000): Promise<T> {
     const url = `${API_BASE}${endpoint}`;
     const controller = new AbortController();
@@ -52,7 +62,7 @@ export async function fetchAPI<T>(endpoint: string, timeoutMs = 10000): Promise<
         clearTimeout(timeoutId);
         if (!response.ok) {
             await _handleAuthGate(response, url);
-            throw new Error(`API Error: ${endpoint} (${response.status})`);
+            throw new ApiError(`API Error: ${endpoint} (${response.status})`, response.status);
         }
         return await response.json();
     } catch (error) {
@@ -841,6 +851,7 @@ async function _authFetch(url: string, options: RequestInit, timeoutMs: number =
         clearTimeout(timeoutId);
         if (!response.ok) {
             _handle401(response.status);
+            await _handleAuthGate(response, url);
             const err = await response.json().catch(() => ({ error: `HTTP ${response.status}` }));
             throw new Error(err.error || `API Error: ${url} (${response.status})`);
         }
