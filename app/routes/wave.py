@@ -130,12 +130,22 @@ def screener_latest():
     pattern_class = request.args.get('pattern_class', '').upper()  # W or M
 
     signals = data.get('signals', [])
+    total_before = len(signals)
 
     # 필터
     if min_conf > 0:
         signals = [s for s in signals if s['best_pattern']['confidence'] >= min_conf]
     if pattern_class in ('W', 'M'):
         signals = [s for s in signals if s['best_pattern']['pattern_class'] == pattern_class]
+
+    # 거래정지/관리종목 자동 제외 (네이버 금융 기반, 1시간 메모리 캐시)
+    # exclude_halted=0 쿼리로 의도적 비활성 가능 (디버그용)
+    if request.args.get('exclude_halted', '1') != '0':
+        try:
+            from engine.jubjub_analyzer import _is_halted_or_invalid
+            signals = [s for s in signals if not _is_halted_or_invalid(s.get('ticker'))]
+        except Exception as exc:
+            logger.warning(f"halted filter failed: {exc}")
 
     signals = signals[:limit]
 
@@ -146,6 +156,7 @@ def screener_latest():
         'scan_count': data.get('scan_count', 0),
         'signal_count': len(signals),
         'total_signal_count': data.get('signal_count', 0),
+        'total_before_filter': total_before,
         'processing_time_sec': data.get('processing_time_sec'),
         'signals': signals,
     })
