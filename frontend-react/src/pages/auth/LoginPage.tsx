@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { BANK_ACCOUNT, PLAN_PAYMENT_META } from '@/lib/billingInfo';
 
 export default function LoginPage() {
     const [email, setEmail] = useState('');
@@ -99,6 +100,51 @@ export default function LoginPage() {
                         <Link to="/signup" className="text-[#2997ff] hover:underline">Sign Up</Link>
                     </p>
                 </form>
+
+                <div className="mt-4 p-4 rounded-2xl bg-[#13151f] border border-amber-500/20">
+                    <div className="flex items-center gap-3 mb-3">
+                        <div className="w-9 h-9 rounded-xl bg-amber-500/10 flex items-center justify-center">
+                            <i className="fas fa-university text-amber-400" />
+                        </div>
+                        <div>
+                            <h2 className="text-white font-bold text-sm">결제 계좌 정보</h2>
+                            <p className="text-gray-500 text-xs">신규 가입·재구독 입금 확인용</p>
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                        <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+                            <span className="text-[10px] text-gray-500 uppercase tracking-wider">은행</span>
+                            <p className="text-white font-bold mt-1 text-sm">{BANK_ACCOUNT.bank}</p>
+                        </div>
+                        <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+                            <span className="text-[10px] text-gray-500 uppercase tracking-wider">예금주</span>
+                            <p className="text-white font-bold mt-1 text-sm">{BANK_ACCOUNT.holder}</p>
+                        </div>
+                        <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06] col-span-2">
+                            <div className="flex items-center justify-between gap-3">
+                                <span className="text-[10px] text-gray-500 uppercase tracking-wider">계좌번호</span>
+                                <button
+                                    type="button"
+                                    onClick={() => navigator.clipboard?.writeText(BANK_ACCOUNT.account.replace(/-/g, ''))}
+                                    className="text-[10px] text-gray-400 hover:text-white transition-colors"
+                                >
+                                    <i className="fas fa-copy mr-1" />복사
+                                </button>
+                            </div>
+                            <p className="text-white font-bold mt-1 font-mono text-lg tracking-wider">{BANK_ACCOUNT.account}</p>
+                        </div>
+                        <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+                            <span className="text-[10px] text-gray-500 uppercase tracking-wider">Pro</span>
+                            <p className="text-amber-400 font-bold mt-1 text-sm">{PLAN_PAYMENT_META.pro.amount}</p>
+                            <p className="text-gray-500 text-[10px] mt-0.5">{PLAN_PAYMENT_META.pro.period}</p>
+                        </div>
+                        <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+                            <span className="text-[10px] text-gray-500 uppercase tracking-wider">Ultra Pro</span>
+                            <p className="text-purple-400 font-bold mt-1 text-sm">{PLAN_PAYMENT_META.premium.amount}</p>
+                            <p className="text-gray-500 text-[10px] mt-0.5">{PLAN_PAYMENT_META.premium.period}</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     );

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { BANK_ACCOUNT, PLAN_PAYMENT_META, normalizeBillingPlan } from '@/lib/billingInfo';
 
 export default function PendingApprovalPage() {
     const { user, logout, refreshUser } = useAuth();
@@ -60,9 +61,13 @@ export default function PendingApprovalPage() {
         navigate('/login');
     };
 
+    const requestedPlan = normalizeBillingPlan(user?.requested_tier);
+    const requestedMeta = requestedPlan ? PLAN_PAYMENT_META[requestedPlan] : null;
+    const amountColor = requestedMeta?.color === 'purple' ? 'text-purple-400' : 'text-amber-400';
+
     return (
         <div className="min-h-screen bg-black flex items-center justify-center p-4">
-            <div className="w-full max-w-md text-center">
+            <div className="w-full max-w-lg text-center">
                 <div className="p-8 rounded-2xl bg-[#1c1c1e] border border-white/10">
                     <div className="w-16 h-16 mx-auto mb-6 bg-amber-500/10 rounded-full flex items-center justify-center">
                         <i className="fas fa-hourglass-half text-2xl text-amber-400"></i>
@@ -100,6 +105,61 @@ export default function PendingApprovalPage() {
                             )}
                         </div>
                     )}
+
+                    <div className="p-4 rounded-xl bg-amber-500/[0.06] border border-amber-500/20 mb-6 text-left">
+                        <div className="flex items-start gap-3 mb-4">
+                            <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center shrink-0">
+                                <i className="fas fa-university text-amber-400" />
+                            </div>
+                            <div>
+                                <h2 className="text-white font-bold text-sm">입금 계좌 정보</h2>
+                                <p className="text-gray-400 text-xs mt-0.5">
+                                    입금 확인 후 관리자가 구독을 활성화합니다.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div className="p-3 rounded-lg bg-black/20 border border-white/[0.06]">
+                                <span className="text-[10px] text-gray-500 uppercase tracking-wider">은행</span>
+                                <p className="text-white font-bold mt-1 text-sm">{BANK_ACCOUNT.bank}</p>
+                            </div>
+                            <div className="p-3 rounded-lg bg-black/20 border border-white/[0.06]">
+                                <span className="text-[10px] text-gray-500 uppercase tracking-wider">예금주</span>
+                                <p className="text-white font-bold mt-1 text-sm">{BANK_ACCOUNT.holder}</p>
+                            </div>
+                            <div className="p-3 rounded-lg bg-black/20 border border-white/[0.06] sm:col-span-2">
+                                <div className="flex items-center justify-between gap-3">
+                                    <span className="text-[10px] text-gray-500 uppercase tracking-wider">계좌번호</span>
+                                    <button
+                                        type="button"
+                                        onClick={() => navigator.clipboard?.writeText(BANK_ACCOUNT.account.replace(/-/g, ''))}
+                                        className="text-[10px] text-gray-400 hover:text-white transition-colors"
+                                    >
+                                        <i className="fas fa-copy mr-1" />복사
+                                    </button>
+                                </div>
+                                <p className="text-white font-bold mt-1 font-mono text-lg tracking-wider">{BANK_ACCOUNT.account}</p>
+                            </div>
+                            <div className="p-3 rounded-lg bg-black/20 border border-white/[0.06]">
+                                <span className="text-[10px] text-gray-500 uppercase tracking-wider">입금 금액</span>
+                                <p className={`font-bold mt-1 text-sm ${amountColor}`}>
+                                    {requestedMeta ? requestedMeta.amount : '플랜 선택 후 확정'}
+                                </p>
+                            </div>
+                            <div className="p-3 rounded-lg bg-black/20 border border-white/[0.06]">
+                                <span className="text-[10px] text-gray-500 uppercase tracking-wider">입금자명</span>
+                                <p className="text-white font-bold mt-1 text-sm">{user?.name || '가입 시 입력한 이름'}</p>
+                            </div>
+                        </div>
+
+                        <p className="mt-3 text-[11px] leading-relaxed text-gray-400">
+                            입금자명은 가입 이름과 동일하게 보내 주세요.
+                            {requestedMeta
+                                ? ` 현재 요청 플랜은 ${requestedMeta.label} · ${requestedMeta.period}입니다.`
+                                : ' 아직 플랜을 선택하지 않았다면 아래 버튼에서 먼저 플랜을 선택해 주세요.'}
+                        </p>
+                    </div>
 
                     {message && (
                         <div className={`p-3 rounded-lg mb-4 text-sm ${message.includes('승인되었습니다') ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-white/5 text-gray-400'}`}>

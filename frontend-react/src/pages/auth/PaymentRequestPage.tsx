@@ -2,19 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { subscriptionAPI } from '@/lib/api';
-
-type PlanTier = 'pro' | 'premium';
-
-const BANK = {
-    bank: '국민은행',
-    account: '2259-02-04-057670',
-    holder: '이종민',
-};
-
-const PLAN_META: Record<PlanTier, { label: string; amount: string; color: string; period: string }> = {
-    pro:     { label: 'Pro',       amount: '50,000원',    color: 'amber',  period: '30일 이용권' },
-    premium: { label: 'Ultra Pro', amount: '1,200,000원', color: 'purple', period: '평생 무기한' },
-};
+import { BANK_ACCOUNT, PLAN_PAYMENT_META, normalizeBillingPlan, type BillingPlanTier } from '@/lib/billingInfo';
 
 /**
  * 입금 안내 + 승인 신청 페이지.
@@ -34,7 +22,7 @@ export default function PaymentRequestPage() {
     const [searchParams] = useSearchParams();
 
     const rawPlan = searchParams.get('plan');
-    const plan: PlanTier | null = rawPlan === 'pro' || rawPlan === 'premium' ? rawPlan : null;
+    const plan: BillingPlanTier | null = normalizeBillingPlan(rawPlan);
 
     const [depositorName, setDepositorName] = useState('');
     const [submitting, setSubmitting] = useState(false);
@@ -75,7 +63,7 @@ export default function PaymentRequestPage() {
         return null;
     }
 
-    const meta = PLAN_META[plan];
+    const meta = PLAN_PAYMENT_META[plan];
 
     const colorMap = {
         amber:  { ring: 'ring-amber-500/30',  bg: 'bg-amber-500/10',  text: 'text-amber-400',  btn: 'from-amber-500 to-orange-500', btnText: 'text-black' },
@@ -127,11 +115,11 @@ export default function PaymentRequestPage() {
                     <div className="grid grid-cols-2 gap-3">
                         <div className="p-3 rounded-lg bg-white/[0.03]">
                             <span className="text-[10px] text-gray-500 uppercase tracking-wider">은행</span>
-                            <p className="text-white font-bold mt-0.5">{BANK.bank}</p>
+                            <p className="text-white font-bold mt-0.5">{BANK_ACCOUNT.bank}</p>
                         </div>
                         <div className="p-3 rounded-lg bg-white/[0.03]">
                             <span className="text-[10px] text-gray-500 uppercase tracking-wider">예금주</span>
-                            <p className="text-white font-bold mt-0.5">{BANK.holder}</p>
+                            <p className="text-white font-bold mt-0.5">{BANK_ACCOUNT.holder}</p>
                         </div>
                     </div>
                     <div className="p-3 rounded-lg bg-white/[0.03]">
@@ -140,14 +128,14 @@ export default function PaymentRequestPage() {
                             <button
                                 type="button"
                                 onClick={() => {
-                                    navigator.clipboard?.writeText(BANK.account.replace(/-/g, ''));
+                                    navigator.clipboard?.writeText(BANK_ACCOUNT.account.replace(/-/g, ''));
                                 }}
                                 className="text-[10px] text-gray-400 hover:text-white"
                             >
                                 <i className="fas fa-copy mr-1" />복사
                             </button>
                         </div>
-                        <p className="text-white font-bold mt-0.5 font-mono text-lg tracking-wider">{BANK.account}</p>
+                        <p className="text-white font-bold mt-0.5 font-mono text-lg tracking-wider">{BANK_ACCOUNT.account}</p>
                     </div>
                     <div className={`p-3 rounded-lg ${colorMap.bg}`}>
                         <span className="text-[10px] text-gray-500 uppercase tracking-wider">입금 금액</span>
