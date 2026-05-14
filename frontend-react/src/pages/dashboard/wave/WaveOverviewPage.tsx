@@ -112,7 +112,10 @@ export default function WaveOverviewPage() {
         setScreenerLoading(true);
         setScreenerError(null);
         try {
-            const data = await fetchAPI<ScreenerResult>('/api/wave/screener/latest');
+            // halted filter (네이버 스크래핑 17 종목) 가 cache miss 시 20-25s 소요.
+            // fetchAPI 기본 10s timeout 으로는 매번 abort → "서버 연결 실패" 표시.
+            // 35s 로 늘려 첫 호출 cold cache build 도 완주 가능.
+            const data = await fetchAPI<ScreenerResult>('/api/wave/screener/latest', 35000);
             setScreener(data);
         } catch (err) {
             if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
