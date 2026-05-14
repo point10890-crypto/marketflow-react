@@ -135,23 +135,39 @@ def _read_json(path: str) -> dict[str, Any] | None:
         return None
 
 
-def _iter_recent_scanner_runs(days: int):
-    """최근 N일 분 scanner run.json 경로 yield."""
+def _iter_recent_scanner_runs(days: int, limit_runs: int = 300):
+    """최근 N일 분 scanner run.json 경로 yield (최신 우선, 최대 limit_runs).
+
+    scanner_runs/ 가 7,000+ 디렉토리로 누적된 환경에서 매 호출마다
+    전체 stat + JSON read 는 100s 초과 위험. 디렉토리명이
+    ``mfas_YYYYMMDDhhmmss_*`` 패턴이라 string sort reverse 만으로 최신순
+    순회 가능. limit_runs (기본 300) 도달 시 break.
+    """
     if not os.path.isdir(SCANNER_RUNS_ROOT):
         return
     try:
         entries = os.listdir(SCANNER_RUNS_ROOT)
     except OSError:
         return
+    # 최신 디렉토리부터 처리 (string sort reverse 가 곧 날짜 reverse)
+    entries.sort(reverse=True)
+    yielded = 0
     for name in entries:
         if not name.startswith('mfas_'):
             continue
         dir_date = _scanner_dir_date(name)
-        if not _within_days(dir_date, days):
+        if not dir_date:
             continue
+        if not _within_days(dir_date, days):
+            # 정렬된 순회에서 처음으로 윈도우 벗어났다면 그 이후도 모두 벗어남
+            # → 안전한 조기 종료 (정규식 미매치 디렉토리만 위에서 continue 됨)
+            break
         path = os.path.join(SCANNER_RUNS_ROOT, name, 'run.json')
         if os.path.isfile(path):
             yield name, dir_date, path
+            yielded += 1
+            if yielded >= limit_runs:
+                break
 
 
 def _iter_recent_workflows(days: int):
