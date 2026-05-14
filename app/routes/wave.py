@@ -140,10 +140,29 @@ def screener_latest():
 
     # 거래정지/관리종목 자동 제외 (네이버 금융 기반, 1시간 메모리 캐시)
     # exclude_halted=0 쿼리로 의도적 비활성 가능 (디버그용)
-    if request.args.get('exclude_halted', '1') != '0':
+    # Cold cache 상황(Flask 재시작 직후 등)에서 sequential 호출이 17 종목 ×
+    # 5초 ≈ 85초로 frontend timeout 을 넘기는 문제 회피:
+    #   - ThreadPoolExecutor 로 병렬화 (max_workers=10)
+    #   - 종목당 timeout 3초 (네이버 평균 ~500ms)
+    #   - 전체 처리 timeout 도 8초로 상한
+    #   - 어떤 단계에서든 실패하면 best-effort: 필터링 안 하고 전체 반환
+    if request.args.get('exclude_halted', '1') != '0' and signals:
         try:
             from engine.jubjub_analyzer import _is_halted_or_invalid
-            signals = [s for s in signals if not _is_halted_or_invalid(s.get('ticker'))]
+            from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeout
+            import time as _time
+            t0 = _time.time()
+            tickers = [s.get('ticker') for s in signals if s.get('ticker')]
+            halted_map: dict[str, bool] = {}
+            with ThreadPoolExecutor(max_workers=10, thread_name_prefix='wave-halted') as ex:
+                futures = {t: ex.submit(_is_halted_or_invalid, t) for t in tickers}
+                for ticker, fut in futures.items():
+                    remaining = max(0.1, 8.0 - (_time.time() - t0))
+                    try:
+                        halted_map[ticker] = bool(fut.result(timeout=min(3.0, remaining)))
+                    except (FuturesTimeout, Exception):
+                        halted_map[ticker] = False
+            signals = [s for s in signals if not halted_map.get(s.get('ticker'), False)]
         except Exception as exc:
             logger.warning(f"halted filter failed: {exc}")
 
