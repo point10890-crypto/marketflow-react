@@ -120,10 +120,28 @@ function Restart-Flask {
             }
         Start-Sleep -Seconds 3
         Start-ScheduledTask -TaskName $TaskName
-        # Phase A-G 추가로 startup 15-25s 필요 (graphrag entities.db 로드 등).
-        # 8s -> 30s 로 늘려 가짜 FAILED 알람 차단.
-        Write-Log "Start-ScheduledTask issued; waiting 30s for boot..."
-        Start-Sleep -Seconds 30
+        # Phase A-G 추가 + tracemalloc + entities.db (2760 row) 로드로
+        # cold start 30-60s 가능. 60s 까지 polling 으로 기다려 가짜 FAILED 방지.
+        Write-Log "Start-ScheduledTask issued; polling up to 60s for boot..."
+        $deadline = (Get-Date).AddSeconds(60)
+        $booted = $false
+        while ((Get-Date) -lt $deadline) {
+            Start-Sleep -Seconds 5
+            try {
+                $resp = Invoke-WebRequest -Uri $HealthUrl -TimeoutSec 3 `
+                                          -UseBasicParsing -ErrorAction Stop
+                if ($resp.StatusCode -eq 200) {
+                    $booted = $true
+                    Write-Log "Flask responded healthy during boot wait"
+                    break
+                }
+            } catch {
+                # 아직 안 올라옴 — 계속 대기
+            }
+        }
+        if (-not $booted) {
+            Write-Log "60s boot wait elapsed without healthz; falling through to recheck"
+        }
     } catch {
         Write-Log ("Restart command failed: " + $_.Exception.Message)
     }
