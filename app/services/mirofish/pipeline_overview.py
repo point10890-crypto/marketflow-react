@@ -37,7 +37,7 @@ _PIPELINE_TODAY_BUILDING = False
 _PIPELINE_TODAY_BUILD_STARTED_AT = 0.0
 _PIPELINE_TODAY_TTL = 30.0
 _PIPELINE_TODAY_BUILD_STALE_AFTER = 300.0
-_PIPELINE_TODAY_MAX_WAIT = 3.0
+_PIPELINE_TODAY_MAX_WAIT = 0.75
 
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 DATA_ROOT = os.path.join(REPO_ROOT, 'data')
@@ -179,14 +179,45 @@ def _fallback_pipeline_today_snapshot(*, reason: str) -> dict[str, Any]:
             'freshness_status': schedule.get('freshness_status'),
         },
         'operating_workflow': None,
-        'kpi_7d': _safe_fallback_call(_kpi_window, days=7),
-        'kpi_30d': _safe_fallback_call(_kpi_window, days=30),
+        'kpi_7d': _cached_kpi_window(days=7),
+        'kpi_30d': _cached_kpi_window(days=30),
         'next': {
             'next_scheduled_scan_at': schedule.get('next_scheduled_at'),
             'next_scheduled_scans': (schedule.get('next_scheduled_times') or [])[:3],
             'scanner_enabled': schedule.get('enabled'),
         },
         'alerts_today': _safe_fallback_call(_alerts_today, now_kst),
+    }
+
+
+def _cached_kpi_window(days: int) -> dict[str, Any]:
+    """Return KPI from an existing board cache only.
+
+    The fail-open pipeline response must stay cheap even during a cold start.
+    If the board cache is cold, the background refresh will fill it later.
+    """
+    cache_key = f'board:{int(days)}:50'
+    now_ts = _time.time()
+    with _PIPELINE_TODAY_LOCK:
+        slot = _PIPELINE_TODAY_CACHE.get(cache_key)
+        if slot is not None and now_ts - slot[0] < _PIPELINE_TODAY_TTL:
+            board = slot[1]
+            summary = board.get('summary', {}) if isinstance(board, dict) else {}
+            return {
+                'window_days': int(days),
+                'sample_size': summary.get('evaluated_count', 0),
+                'hit_rate_pct': summary.get('hit_rate_pct'),
+                'avg_return_pct': summary.get('avg_forward_return_pct'),
+                'pending_count': summary.get('pending_count', 0),
+                'source': 'cache',
+            }
+    return {
+        'window_days': int(days),
+        'sample_size': 0,
+        'hit_rate_pct': None,
+        'avg_return_pct': None,
+        'pending_count': 0,
+        'source': 'pending_refresh',
     }
 
 

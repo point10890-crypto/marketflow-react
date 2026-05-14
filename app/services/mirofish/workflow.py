@@ -548,10 +548,37 @@ def read_workflow(workflow_id: str) -> dict[str, Any] | None:
 
 
 def read_latest_workflow() -> dict[str, Any] | None:
-    workflows = list_workflows(limit=1)
-    if not workflows:
+    latest_id = _latest_workflow_id()
+    return read_workflow(latest_id) if latest_id else None
+
+
+def _latest_workflow_id() -> str | None:
+    """Return the newest workflow directory without reading every JSON file."""
+    if not os.path.isdir(WORKFLOWS_ROOT):
         return None
-    return read_workflow(workflows[0]['id'])
+    candidates: list[tuple[str, str]] = []
+    try:
+        names = os.listdir(WORKFLOWS_ROOT)
+    except OSError:
+        return None
+    for name in names:
+        if name.startswith('_') or name.startswith('.'):
+            continue
+        full = os.path.join(WORKFLOWS_ROOT, name)
+        if not os.path.isdir(full):
+            continue
+        if name.startswith('mcp_'):
+            sort_key = name
+        else:
+            try:
+                sort_key = datetime.fromtimestamp(os.path.getmtime(full), tz=timezone.utc).isoformat()
+            except OSError:
+                continue
+        candidates.append((sort_key, name))
+    if not candidates:
+        return None
+    candidates.sort(reverse=True)
+    return candidates[0][1]
 
 
 def list_workflows(limit: int = 20) -> list[dict[str, Any]]:

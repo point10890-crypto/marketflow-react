@@ -65,12 +65,17 @@ def test_pipeline_today_snapshot_fails_open_when_refresh_is_slow(monkeypatch):
         time.sleep(0.08)
         return {'generated_at': 'done'}
 
+    def fail_kpi_window(days):
+        raise AssertionError('fallback response must not build outcome KPI synchronously')
+
     monkeypatch.setattr(pipeline_overview, '_build_pipeline_today_snapshot', slow_build)
+    monkeypatch.setattr(pipeline_overview, '_kpi_window', fail_kpi_window)
 
     snapshot = pipeline_overview.get_pipeline_today_snapshot(max_wait_seconds=0.01)
 
     assert snapshot['degraded'] is True
     assert snapshot['degraded_reason'] == 'refreshing'
+    assert snapshot['kpi_7d']['source'] == 'pending_refresh'
     time.sleep(0.1)
     pipeline_overview._PIPELINE_TODAY_CACHE.clear()
 

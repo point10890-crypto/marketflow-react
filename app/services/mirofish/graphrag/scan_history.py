@@ -28,7 +28,6 @@ from typing import Any
 
 from app.services.mirofish.outcome_tracker import (
     WORKFLOWS_ROOT,
-    read_workflow_outcomes,
     _infer_market,
 )
 
@@ -193,6 +192,7 @@ def _iter_recent_workflows(days: int):
         entries = os.listdir(WORKFLOWS_ROOT)
     except OSError:
         return
+    entries.sort(reverse=True)
     for name in entries:
         if name.startswith('_'):
             continue
@@ -273,12 +273,14 @@ def _build_outcome_map_for_workflow(wf_id: str) -> dict[str, dict[str, Any]]:
     scan_history 는 best-effort aggregation 이므로 outcome 누락은 빈 dict
     으로 처리하고 계속 진행 (Cloudflare 100s timeout 회피).
     """
-    try:
-        outcomes = read_workflow_outcomes(wf_id)
-    except (ValueError, OSError, KeyError, RuntimeError):
+    safe_id = os.path.basename(str(wf_id or ''))
+    if not safe_id or safe_id in {'.', '..'}:
         return {}
-    except Exception:
+    root = os.path.abspath(WORKFLOWS_ROOT)
+    path = os.path.abspath(os.path.join(root, safe_id, 'outcomes.json'))
+    if not path.startswith(root):
         return {}
+    outcomes = _read_json(path)
     if not isinstance(outcomes, dict):
         return {}
     out: dict[str, dict[str, Any]] = {}
