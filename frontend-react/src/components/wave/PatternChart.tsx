@@ -163,21 +163,21 @@ export default function PatternChart({
                 { time: pat.points[4].date as Time, value: pat.neckline_price },
             ];
             const necklineSeries = chart.addSeries(LineSeries, {
-                color: '#f97316',
-                lineWidth: 2,
-                lineStyle: 2, // dashed
+                color: '#fb923c',     // 더 진한 amber-400, 검은 배경에서 가독성 ↑
+                lineWidth: 3,          // 2 → 3 (네크라인 가시성 강화)
+                lineStyle: 2,          // dashed
                 crosshairMarkerVisible: false,
             });
             necklineSeries.setData(necklineData);
 
-            // P1-P5 connecting line
+            // P1-P5 connecting line — W 는 청록, M 은 핑크. 굵기 강화로 라인 가시성 ↑
             const patternLine: LineData<Time>[] = pat.points.map(p => ({
                 time: p.date as Time,
                 value: p.price,
             }));
             const patLineSeries = chart.addSeries(LineSeries, {
                 color: pat.pattern_class === 'W' ? '#22d3ee' : '#f472b6',
-                lineWidth: 2,
+                lineWidth: 4,          // 2 → 4 (가장 두드러지게)
                 crosshairMarkerVisible: false,
             });
             patLineSeries.setData(patternLine);
