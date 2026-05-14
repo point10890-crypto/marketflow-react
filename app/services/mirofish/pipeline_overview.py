@@ -38,6 +38,10 @@ _PIPELINE_TODAY_BUILD_STARTED_AT = 0.0
 _PIPELINE_TODAY_TTL = 30.0
 _PIPELINE_TODAY_BUILD_STALE_AFTER = 300.0
 _PIPELINE_TODAY_MAX_WAIT = 0.75
+_PIPELINE_TODAY_BACKGROUND_REFRESH = os.getenv(
+    'MIROFISH_PIPELINE_BACKGROUND_REFRESH',
+    '0',
+).strip().lower() in {'1', 'true', 'yes', 'y', 'on'}
 
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 DATA_ROOT = os.path.join(REPO_ROOT, 'data')
@@ -96,6 +100,11 @@ def _get_pipeline_today_snapshot_nonblocking(max_wait_seconds: float | None = No
             stale_data = data
         else:
             stale_data = None
+
+    if not _PIPELINE_TODAY_BACKGROUND_REFRESH:
+        if stale_data is not None:
+            return _mark_pipeline_snapshot_stale(stale_data, reason='cache_stale')
+        return _fallback_pipeline_today_snapshot(reason='fast_path')
 
     done = threading.Event()
     started = _start_pipeline_today_refresh(done)

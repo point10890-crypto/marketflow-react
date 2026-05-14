@@ -68,6 +68,7 @@ def test_pipeline_today_snapshot_fails_open_when_refresh_is_slow(monkeypatch):
     def fail_kpi_window(days):
         raise AssertionError('fallback response must not build outcome KPI synchronously')
 
+    monkeypatch.setattr(pipeline_overview, '_PIPELINE_TODAY_BACKGROUND_REFRESH', True)
     monkeypatch.setattr(pipeline_overview, '_build_pipeline_today_snapshot', slow_build)
     monkeypatch.setattr(pipeline_overview, '_kpi_window', fail_kpi_window)
 
@@ -78,6 +79,22 @@ def test_pipeline_today_snapshot_fails_open_when_refresh_is_slow(monkeypatch):
     assert snapshot['kpi_7d']['source'] == 'pending_refresh'
     time.sleep(0.1)
     pipeline_overview._PIPELINE_TODAY_CACHE.clear()
+
+
+def test_pipeline_today_snapshot_fast_path_does_not_start_refresh(monkeypatch):
+    pipeline_overview._PIPELINE_TODAY_CACHE.clear()
+
+    def fail_build():
+        raise AssertionError('fast path should not start background refresh')
+
+    monkeypatch.setattr(pipeline_overview, '_PIPELINE_TODAY_BACKGROUND_REFRESH', False)
+    monkeypatch.setattr(pipeline_overview, '_build_pipeline_today_snapshot', fail_build)
+
+    snapshot = pipeline_overview.get_pipeline_today_snapshot()
+
+    assert snapshot['degraded'] is True
+    assert snapshot['degraded_reason'] == 'fast_path'
+    assert 'funnel' in snapshot
 
 
 def test_scanner_schedule_status_uses_light_source_metadata(tmp_path, monkeypatch):
