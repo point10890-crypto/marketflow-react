@@ -40,14 +40,19 @@ SCANNER_RUNS_ROOT = os.path.join(REPO_ROOT, 'data', 'admin_mirofish', 'scanner_r
 
 
 # ── Cache ─────────────────────────────────────────────────────────────
+#
+# 7,307 scanner_runs + 64 workflows 환경에서 cold cache build 가 ~70s 소요.
+# 첫 호출은 build 비용 부담, 후속 호출은 30s TTL 만료 전에 반드시 hit 해야
+# UI 폴링 (60s 간격) 에서 매번 새로 build 하는 것을 막을 수 있다.
+# TTL 600초 (10분) — UI 가 자주 토글 (30/60/90일) 해도 캐시 hit 가능.
 
-_CACHE_TTL_SEC = 30.0
+_CACHE_TTL_SEC = 600.0  # 10 minutes; ~70s cold build cost amortized
 _cache: dict[str, tuple[float, Any]] = {}
 _cache_lock = threading.Lock()
 
 
 def _cached(key: str, builder):
-    """단순 TTL 캐시. 같은 key 의 동시 미스는 lock 으로 직렬화."""
+    """단순 TTL 캐시. 동시 미스는 lock 으로 직렬화 (동일 build 중복 방지)."""
     now = time.time()
     with _cache_lock:
         slot = _cache.get(key)
