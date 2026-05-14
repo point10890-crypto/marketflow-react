@@ -21,7 +21,7 @@ import time as _time
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
-from app.services.mirofish import alpha_scanner, outcome_tracker, workflow as workflow_svc
+from app.services.mirofish import alpha_scanner, workflow as workflow_svc
 
 
 logger = logging.getLogger(__name__)
@@ -363,9 +363,6 @@ def get_outcomes_board(days: int = 30, limit: int = 20) -> dict[str, Any]:
     days = max(1, min(int(days or 30), 180))
     limit = max(1, min(int(limit or 20), 200))
 
-    cutoff = datetime.now(timezone.utc) - timedelta(days=days)
-    workflow_ids = _recent_workflow_ids(cutoff)
-
     # outcomes_board 30s 캐시 — get_pipeline_today 가 이 함수를 7d/30d 두 번
     # 호출하고, 사용자 화면 60s 폴링도 매번 build 하면 95s+ hang 으로 이어짐.
     cache_key = f'board:{days}:{limit}'
@@ -374,6 +371,9 @@ def get_outcomes_board(days: int = 30, limit: int = 20) -> dict[str, Any]:
         slot = _PIPELINE_TODAY_CACHE.get(cache_key)
         if slot is not None and now_ts - slot[0] < _PIPELINE_TODAY_TTL:
             return slot[1]
+
+    cutoff = datetime.now(timezone.utc) - timedelta(days=days)
+    workflow_ids = _recent_workflow_ids(cutoff)
 
     all_items: list[dict[str, Any]] = []
     horizon_summary = {
@@ -386,14 +386,9 @@ def get_outcomes_board(days: int = 30, limit: int = 20) -> dict[str, Any]:
     }
     workflows_used: list[str] = []
     for workflow_id in workflow_ids:
-        # read_workflow_outcomes 가 invalid id 에서 ValueError 또는 lazy
-        # recompute 로 daily_prices.csv 재로딩 → 95s+ hang. graceful skip.
-        try:
-            outcomes = outcome_tracker.read_workflow_outcomes(workflow_id)
-        except (ValueError, OSError, KeyError, RuntimeError):
-            continue
-        except Exception:
-            continue
+        # Admin dashboard reads must never trigger lazy outcome recomputation.
+        # Recompute can pull daily_prices.csv and block Flask request threads.
+        outcomes = _read_outcomes_artifact(workflow_id)
         if not isinstance(outcomes, dict):
             continue
         # Try refresh stale/pending ones (cheap — daily_prices.csv read is cached implicitly via file mtime)
@@ -488,6 +483,13 @@ def _recent_workflow_ids(cutoff: datetime) -> list[str]:
         ids.append((name, datetime.fromtimestamp(mtime, tz=timezone.utc).isoformat()))
     ids.sort(key=lambda x: x[1], reverse=True)
     return [item[0] for item in ids]
+
+
+def _read_outcomes_artifact(workflow_id: str) -> dict[str, Any] | None:
+    safe_id = os.path.basename(str(workflow_id or ''))
+    if not safe_id or safe_id in {'.', '..'}:
+        return None
+    return _read_json_safe(os.path.join(WORKFLOWS_ROOT, safe_id, 'outcomes.json'))
 
 
 def _flatten_outcome_item(item: dict[str, Any], *, workflow_id: str) -> dict[str, Any]:
