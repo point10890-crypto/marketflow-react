@@ -175,6 +175,23 @@ def _tracemalloc_top(n: int = 15) -> Any:
         return {'error': str(exc)}
 
 
+@admin_mirofish_debug_bp.route('/memory-lite', methods=['GET'])
+@admin_required
+def debug_memory_lite():
+    """경량 메모리 진단 — gc.get_objects() 미사용 (큰 메모리에서 timeout 회피).
+
+    process info + cache inventory + tracemalloc top 만 반환.
+    누수가 가속 중일 때 빠르게 호출 가능.
+    """
+    response: dict[str, Any] = {
+        'process': _process_info(),
+        'caches': _cache_inventory(),
+        'tracemalloc': _tracemalloc_top(20),
+        'asof': time.strftime('%Y-%m-%dT%H:%M:%S+09:00', time.localtime()),
+    }
+    return jsonify(response), 200
+
+
 @admin_mirofish_debug_bp.route('/memory', methods=['GET'])
 @admin_required
 def debug_memory():
