@@ -22,24 +22,36 @@ _LOGIN_MAX_FAILURES = 10
 _LOGIN_WINDOW_SEC = 300  # 5 minutes
 
 
-def _check_login_rate_limit(ip: str) -> bool:
+def _login_rate_key(ip: str, email: str = '') -> str:
+    """Scope login throttling to an account on a client IP.
+
+    Cloudflare Tunnel and local reverse proxies can collapse many users onto
+    one remote_addr. IP-only throttling can lock out unrelated members after
+    another user mistypes a password several times.
+    """
+    clean_ip = (ip or '0.0.0.0').strip() or '0.0.0.0'
+    clean_email = (email or '').strip().lower()
+    return f'{clean_ip}|{clean_email}' if clean_email else clean_ip
+
+
+def _check_login_rate_limit(key: str) -> bool:
     """Returns True if IP is currently blocked due to too many failures."""
     now = time.time()
     cutoff = now - _LOGIN_WINDOW_SEC
     with _login_lock:
-        failures = [t for t in _login_failures.get(ip, []) if t > cutoff]
-        _login_failures[ip] = failures
+        failures = [t for t in _login_failures.get(key, []) if t > cutoff]
+        _login_failures[key] = failures
         return len(failures) >= _LOGIN_MAX_FAILURES
 
 
-def _record_login_failure(ip: str):
+def _record_login_failure(key: str):
     """Record a failed login attempt."""
     now = time.time()
     cutoff = now - _LOGIN_WINDOW_SEC
     with _login_lock:
-        failures = [t for t in _login_failures.get(ip, []) if t > cutoff]
+        failures = [t for t in _login_failures.get(key, []) if t > cutoff]
         failures.append(now)
-        _login_failures[ip] = failures
+        _login_failures[key] = failures
         # 주기적 cleanup
         if len(_login_failures) > 200:
             expired = [k for k, v in _login_failures.items() if not v or max(v) < cutoff]
@@ -47,10 +59,10 @@ def _record_login_failure(ip: str):
                 del _login_failures[k]
 
 
-def _reset_login_failures(ip: str):
+def _reset_login_failures(key: str):
     """Reset failures on successful login."""
     with _login_lock:
-        _login_failures.pop(ip, None)
+        _login_failures.pop(key, None)
 
 
 # ═══════════════════════════════════════════════════════
@@ -234,8 +246,6 @@ def register():
 def login():
     # Rate limit check (Cloudflare Tunnel: real IP from Cf-Connecting-IP)
     client_ip = request.headers.get('Cf-Connecting-IP') or request.headers.get('X-Forwarded-For', '').split(',')[0].strip() or request.remote_addr or '0.0.0.0'
-    if _check_login_rate_limit(client_ip):
-        return jsonify({'error': 'Too many login attempts. Please try again later.'}), 429
 
     data = request.get_json()
     if not data:
@@ -247,9 +257,13 @@ def login():
     if not email or not password:
         return jsonify({'error': 'email and password are required'}), 400
 
+    rate_key = _login_rate_key(client_ip, email)
+    if _check_login_rate_limit(rate_key):
+        return jsonify({'error': 'Too many login attempts. Please try again later.'}), 429
+
     user = User.query.filter_by(email=email).first()
     if not user or not user.check_password(password):
-        _record_login_failure(client_ip)
+        _record_login_failure(rate_key)
         return jsonify({'error': 'Invalid email or password'}), 401
 
     # 계정 상태 검증 (admin은 상태 무관 허용)
@@ -262,7 +276,7 @@ def login():
             return jsonify({'error': '가입이 거절되었습니다.', 'status': 'rejected'}), 403
 
     # 로그인 성공 — 실패 카운터 리셋
-    _reset_login_failures(client_ip)
+    _reset_login_failures(rate_key)
 
     # 마지막 로그인 시간 업데이트
     user.last_login_at = datetime.now(timezone.utc)
