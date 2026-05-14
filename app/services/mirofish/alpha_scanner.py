@@ -8,6 +8,8 @@ import html
 import json
 import os
 import re
+import threading
+import time as time_mod
 from datetime import datetime, time as dt_time, timedelta, timezone
 from typing import Any
 
@@ -190,7 +192,9 @@ def read_price_chart(symbol: str, limit: int = 120) -> dict[str, Any]:
         clean_limit = 120
     clean_limit = max(20, min(clean_limit, 250))
 
-    history = _load_price_history({clean_symbol}).get(clean_symbol, [])
+    # 단일 종목 조회라도 _load_price_history 는 CSV 전체를 훑어서 ~40s 가 걸린다.
+    # 메모리 캐시(_load_price_history_cached)에서 dict lookup 으로 끝낸다.
+    history = _load_price_history_cached().get(clean_symbol, [])
     by_date: dict[str, dict[str, Any]] = {}
     for row in history:
         date = str(row.get('date') or '').strip()
@@ -1092,6 +1096,66 @@ def _load_price_history(symbol_filter: set[str] | None) -> dict[str, list[dict[s
         history.sort(key=lambda item: (str(item.get('date') or ''), str(item.get('update_time') or '')))
         rows[symbol] = history[-120:]
     return rows
+
+
+# ──────────────────────────────────────────────────────────────────────
+# 가격 히스토리 메모리 캐시
+# daily_prices.csv 가 ~150MB 이고 csv.DictReader는 매 호출마다 전체 파일을
+# 스트리밍하기 때문에 단일 종목 조회만 해도 ~40초가 걸린다.
+# 전체 dict 을 한 번 메모리에 적재하고 TTL 동안 재사용한다.
+# - TTL 기본 1시간 (PRICE_HISTORY_CACHE_TTL env 로 오버라이드)
+# - mtime 변경 감지로 CSV 가 갱신되면 자동 무효화
+# - threading.Lock 으로 동시 호출 시 thundering herd 방지
+# ──────────────────────────────────────────────────────────────────────
+_PRICE_HISTORY_LOCK = threading.Lock()
+_PRICE_HISTORY_CACHE: dict[str, Any] = {
+    'data': None,       # dict[symbol, list[row]]
+    'ts': 0.0,          # 캐시 적재 시각
+    'mtime': 0.0,       # 적재 시점의 CSV mtime
+}
+try:
+    _PRICE_HISTORY_CACHE_TTL = float(os.getenv('PRICE_HISTORY_CACHE_TTL', '3600'))
+except (TypeError, ValueError):
+    _PRICE_HISTORY_CACHE_TTL = 3600.0
+
+
+def _price_history_csv_mtime() -> float:
+    path = os.path.join(DATA_ROOT, 'daily_prices.csv')
+    try:
+        return os.path.getmtime(path)
+    except OSError:
+        return 0.0
+
+
+def _load_price_history_cached() -> dict[str, list[dict[str, Any]]]:
+    """전체 가격 히스토리 dict 을 메모리 캐시로 반환.
+
+    호출 1회 만에 모든 종목을 적재해두기 때문에 첫 호출 비용을 후속 호출 전체가 공유한다.
+    """
+    now = time_mod.time()
+    current_mtime = _price_history_csv_mtime()
+    cached = _PRICE_HISTORY_CACHE
+    if (
+        cached['data'] is not None
+        and (now - cached['ts']) < _PRICE_HISTORY_CACHE_TTL
+        and cached['mtime'] == current_mtime
+    ):
+        return cached['data']  # type: ignore[return-value]
+    with _PRICE_HISTORY_LOCK:
+        # 락 진입 후 한 번 더 검사 (다른 스레드가 이미 빌드해뒀을 수 있음)
+        now = time_mod.time()
+        current_mtime = _price_history_csv_mtime()
+        if (
+            cached['data'] is not None
+            and (now - cached['ts']) < _PRICE_HISTORY_CACHE_TTL
+            and cached['mtime'] == current_mtime
+        ):
+            return cached['data']  # type: ignore[return-value]
+        data = _load_price_history(None)
+        cached['data'] = data
+        cached['ts'] = now
+        cached['mtime'] = current_mtime
+        return data
 
 
 def _load_json_artifact(filename: str) -> dict[str, Any]:
