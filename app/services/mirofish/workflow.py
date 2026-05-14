@@ -148,12 +148,8 @@ def start_workflow_from_scanner_events(
             'allow_stale_sources': allow_stale_sources,
         },
     )
+    workflow['event_state_commit_requested'] = bool(commit_event_state and not force)
     _write_workflow(workflow)
-
-    if commit_event_state and not force:
-        alpha_scanner.commit_scanner_alert_events(scanner_result)
-        workflow['event_state_committed'] = True
-        _write_workflow(workflow)
 
     if async_mode:
         thread = threading.Thread(
@@ -683,6 +679,16 @@ def _complete_workflow(
             'lookahead_safe': True,
         }
         summary['outcome'] = outcome_summary
+    # Phase C: workflow-level graphrag + source_freshness 보강
+    # scanner_run 의 freshness 는 workflow record 의 scanner_freshness 에 기록되어 있음.
+    scanner_run_proxy = {
+        'freshness': workflow.get('scanner_freshness') or {},
+        'generated_at': workflow.get('created_at'),
+        'created_at': workflow.get('created_at'),
+    }
+    graphrag_summary = _workflow_graphrag_summary(top3, scanner_run_proxy)
+    source_freshness = _workflow_source_freshness(scanner_run_proxy, graphrag_summary)
+
     workflow.update({
         'status': 'completed',
         'completed_at': datetime.now(timezone.utc).isoformat(),
@@ -698,7 +704,15 @@ def _complete_workflow(
             'percent': 100,
         },
         'summary': summary,
+        # ── Phase C: GraphRAG enrichment + source freshness ────────────
+        'graphrag': graphrag_summary,
+        'source_freshness': source_freshness,
     })
+    if workflow.get('event_state_commit_requested') and not workflow.get('event_state_committed'):
+        try:
+            commit_workflow_event_state(workflow)
+        except Exception as exc:
+            workflow['event_state_commit_error'] = f'{type(exc).__name__}: {exc}'
     _write_workflow(workflow)
     return workflow
 
@@ -720,6 +734,32 @@ def _analysis_result(candidate: dict[str, Any], run: dict[str, Any]) -> dict[str
     pipeline = run.get('pipeline') or {}
     brain = run.get('brain') or run.get('brain_summary') or {}
     final_score = _final_score(candidate, run)
+
+    # Phase C: per-top3 graphrag mini-dict
+    extraction = run.get('graph_extraction') or {}
+    merge_stats = run.get('graph_merge') or {}
+    graph_links = pipeline.get('graph_links')
+    if graph_links is None:
+        graph_links = merge_stats.get('total_relations') or len(extraction.get('relations') or [])
+    graphrag_item = {
+        'links': graph_links,
+        'entities': len(extraction.get('entities') or []),
+        'relations': len(extraction.get('relations') or []),
+        'method': pipeline.get('graph_method') or extraction.get('method') or 'ascii_brain_v1',
+    }
+
+    # Phase C: P0 #4 verdict identity 보강 (run.verdict 가 4필드를 못 채웠을 때 candidate 로 fallback)
+    verdict_symbol = verdict.get('symbol') or run.get('symbol') or candidate.get('symbol')
+    verdict_market = verdict.get('market') or run.get('market') or candidate.get('market')
+    verdict_target_label = verdict.get('target') or run.get('display_name') or candidate.get('display_name') or candidate.get('name')
+    verdict_reference_date = verdict.get('reference_date') or run.get('created_at') or (candidate.get('price') or {}).get('date')
+    verdict_target_display = verdict.get('target_display')
+    if not verdict_target_display:
+        if verdict_symbol and verdict_market and verdict_target_label:
+            verdict_target_display = f"{verdict_target_label} ({verdict_symbol} {verdict_market})"
+        else:
+            verdict_target_display = verdict_target_label or verdict_symbol or '(unknown target)'
+
     return {
         'candidate': _candidate_summary(candidate),
         'status': run.get('status', 'completed'),
@@ -733,14 +773,21 @@ def _analysis_result(candidate: dict[str, Any], run: dict[str, Any]) -> dict[str
             'bullish': verdict.get('bullish'),
             'neutral': verdict.get('neutral'),
             'bearish': verdict.get('bearish'),
-            'target': verdict.get('target') or run.get('display_name') or candidate.get('display_name'),
+            'target': verdict_target_label,
             'summary': verdict.get('summary'),
+            # ── P0 #4: 종목 식별 + 분석 기준일 (UI/Telegram 직접 사용) ──
+            'symbol': verdict_symbol,
+            'market': verdict_market,
+            'reference_date': verdict_reference_date,
+            'target_display': verdict_target_display,
         },
         'graph': {
             'links': pipeline.get('graph_links'),
             'similar_events': pipeline.get('similar_events'),
             'method': pipeline.get('graph_method'),
         },
+        # Phase C: per-top3 graphrag mini-dict
+        'graphrag': graphrag_item,
         'brain': {
             'score': brain.get('score') or brain.get('alignment_score'),
             'regime': brain.get('regime'),
@@ -794,6 +841,124 @@ def _ranking_reason(candidate: dict[str, Any], run: dict[str, Any], final_score:
         f"CIO={action} {verdict.get('confidence_pct')}%; "
         f"T20={profile.get('trend_20d_pct')} volume={profile.get('volume_ratio')}"
     )
+
+
+def _workflow_graphrag_summary(top3: list[dict[str, Any]], scanner_run: dict[str, Any]) -> dict[str, Any]:
+    """Phase C: workflow-level GraphRAG 요약.
+
+    - entity_count / edge_count: top3 의 graphrag.entities / graphrag.links 합산
+    - source_coverage: 5개 운영 데이터 소스(scanner/kis/tradingview/dart/news)의 status 분류
+    """
+    entity_count = 0
+    edge_count = 0
+    for item in top3 or []:
+        if not isinstance(item, dict):
+            continue
+        gr = item.get('graphrag') or {}
+        try:
+            entity_count += int(gr.get('entities') or 0)
+        except (TypeError, ValueError):
+            pass
+        try:
+            edge_count += int(gr.get('links') or 0)
+        except (TypeError, ValueError):
+            pass
+
+    # source_coverage: scanner_run.freshness + 각 top3 candidate 의 data sources 종합
+    scanner_freshness = scanner_run.get('freshness') or {}
+    scanner_status_raw = str(scanner_freshness.get('status') or '').lower()
+    scanner_status = {
+        'fresh': 'live',
+        'partial': 'cached',
+        'unknown': 'stale',
+        'stale': 'stale',
+        'missing': 'unavailable',
+    }.get(scanner_status_raw, scanner_status_raw or 'unavailable')
+
+    # KIS / DART / news 가용성 — top3 candidate 의 replay_context + run-side data_context 합산
+    kis_seen = False
+    dart_seen = False
+    news_seen = False
+    tv_seen = False
+    for item in top3 or []:
+        if not isinstance(item, dict):
+            continue
+        candidate = item.get('candidate') or {}
+        # candidate.replay_context.data_sources 만 안전하게 사용 (workflow.json 페이로드에 항상 있음)
+        sources = (candidate.get('replay_context') or {}).get('data_sources') or []
+        for src in sources:
+            src_lower = str(src or '').lower()
+            if 'kis' in src_lower:
+                kis_seen = True
+            if 'dart' in src_lower:
+                dart_seen = True
+            if 'news' in src_lower or 'briefing' in src_lower:
+                news_seen = True
+            if 'tradingview' in src_lower or 'tv' in src_lower:
+                tv_seen = True
+
+    return {
+        'mode': 'hybrid_temporal',
+        'entity_count': entity_count,
+        'edge_count': edge_count,
+        'source_coverage': {
+            'scanner': scanner_status,
+            'kis': 'cached' if kis_seen else 'unavailable',
+            'tradingview': 'cached' if tv_seen else 'unavailable',
+            'dart': 'cached' if dart_seen else 'unavailable',
+            'news': 'cached' if news_seen else 'unavailable',
+        },
+    }
+
+
+def _workflow_source_freshness(scanner_run: dict[str, Any], graphrag_summary: dict[str, Any]) -> dict[str, Any]:
+    """Phase C: workflow-level source_freshness 요약.
+
+    scanner_run.freshness (status, stale_files, available_files) +
+    graphrag.source_coverage 를 단일 'fresh|partial|stale' 상태로 통합.
+    """
+    scanner_freshness = scanner_run.get('freshness') or {}
+    scanner_status_raw = str(scanner_freshness.get('status') or '').lower()
+    # last_update / data_age_hours 계산
+    last_update = scanner_run.get('generated_at') or scanner_run.get('created_at')
+    data_age_hours: float | None = None
+    if last_update:
+        try:
+            normalized = str(last_update).replace('Z', '+00:00')
+            dt = datetime.fromisoformat(normalized)
+            if dt.tzinfo is None:
+                dt = dt.replace(tzinfo=timezone.utc)
+            delta = datetime.now(timezone.utc) - dt
+            data_age_hours = round(delta.total_seconds() / 3600.0, 2)
+        except (ValueError, TypeError):
+            data_age_hours = None
+
+    # 통합 status — scanner status + source_coverage 결합
+    if scanner_status_raw == 'fresh':
+        status = 'fresh'
+    elif scanner_status_raw in {'stale', 'missing'}:
+        status = 'stale'
+    elif scanner_status_raw in {'partial', 'unknown'}:
+        status = 'partial'
+    else:
+        status = 'partial'
+
+    coverage = (graphrag_summary or {}).get('source_coverage') or {}
+    return {
+        'status': status,
+        'last_update': last_update,
+        'data_age_hours': data_age_hours,
+        'sources': {
+            'scanner_freshness': scanner_status_raw or 'unknown',
+            'stale_files': scanner_freshness.get('stale_files'),
+            'available_files': scanner_freshness.get('available_files'),
+            'missing_required_files': scanner_freshness.get('missing_required_files'),
+            'kis_freshness': coverage.get('kis'),
+            'tradingview_freshness': coverage.get('tradingview'),
+            'dart_freshness': coverage.get('dart'),
+            'news_freshness': coverage.get('news'),
+        },
+    }
 
 
 def _workflow_decision_summary(top3: list[dict[str, Any]], ranked: list[dict[str, Any]]) -> dict[str, Any]:
@@ -935,6 +1100,9 @@ def _workflow_summary(workflow: dict[str, Any] | None) -> dict[str, Any] | None:
         'progress': workflow.get('progress') or {},
         'filters': workflow.get('filters') or {},
         'links': workflow.get('links') or {},
+        # ── Phase C: workflow summary 에도 GraphRAG/freshness 노출 ─────
+        'graphrag': workflow.get('graphrag'),
+        'source_freshness': workflow.get('source_freshness'),
     }
 
 

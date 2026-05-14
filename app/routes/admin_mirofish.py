@@ -766,7 +766,7 @@ def start_workflow_scan_analyze():
         result = mirofish.start_workflow_from_scanner_events(
             payload,
             async_mode=not _payload_bool(payload, 'sync', False),
-            commit_event_state=_payload_bool(payload, 'commit_event_state', not dry_run),
+            commit_event_state=_payload_bool(payload, 'commit_event_state', False),
         )
     except ValueError as exc:
         return jsonify({'error': str(exc)}), 400

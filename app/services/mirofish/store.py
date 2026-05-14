@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import logging
 import os
 import re
 import threading
@@ -13,6 +14,8 @@ from typing import Any
 
 from app.services.mirofish import agent_debate, cio_react, graphrag_extractor, live_data
 from app.utils.atomic_json import write_json_atomic
+
+_log = logging.getLogger(__name__)
 
 
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
@@ -417,7 +420,21 @@ def _build_run_progressive(run_id: str, target: str, agent_count: int, mode: str
         payload={'method': 'llm' if use_llm else 'rule'},
     )
     cio = cio_react.run_cio(final_target, brain, debate, use_llm=use_llm)
-    verdict = _verdict_from_cio(cio, debate, analysts, final_target)
+    # P0 #4: verdict 에 종목 식별 + 분석 기준일 명시 전달
+    verdict_reference_date = (
+        (price.get('date') if isinstance(price, dict) else None)
+        or run.get('created_at')
+        or datetime.now(timezone.utc).isoformat()
+    )
+    verdict = _verdict_from_cio(
+        cio,
+        debate,
+        analysts,
+        final_target,
+        symbol=resolved.get('symbol'),
+        market=resolved.get('market'),
+        reference_date=verdict_reference_date,
+    )
     run['cio'] = cio
     run['verdict'] = verdict
     run['pipeline']['cio_method'] = cio.get('method')
@@ -474,7 +491,20 @@ def _build_run(run_id: str, target: str, agent_count: int, mode: str) -> dict[st
     cio = cio_react.run_cio(final_target, brain, debate, use_llm=use_llm)
 
     analysts = _analysts_from_debate(debate, agent_count, brain)
-    verdict = _verdict_from_cio(cio, debate, analysts, final_target)
+    # P0 #4: verdict 에 종목 식별 + 분석 기준일 명시 전달
+    verdict_reference_date = (
+        (price.get('date') if isinstance(price, dict) else None)
+        or created_at
+    )
+    verdict = _verdict_from_cio(
+        cio,
+        debate,
+        analysts,
+        final_target,
+        symbol=resolved.get('symbol'),
+        market=resolved.get('market'),
+        reference_date=verdict_reference_date,
+    )
     graph_nodes = _graph_nodes_from_extraction(extracted, resolved)
     prediction_nodes = _prediction_nodes(analysts)
     layers = [
@@ -771,7 +801,22 @@ def _analysts_from_debate(debate: dict[str, Any], agent_count: int, brain: dict[
     return analysts[:agent_count]
 
 
-def _verdict_from_cio(cio: dict[str, Any], debate: dict[str, Any], analysts: list[dict[str, Any]], target: str | None = None) -> dict[str, Any]:
+def _verdict_from_cio(
+    cio: dict[str, Any],
+    debate: dict[str, Any],
+    analysts: list[dict[str, Any]],
+    target: str | None = None,
+    *,
+    symbol: str | None = None,
+    market: str | None = None,
+    reference_date: str | None = None,
+) -> dict[str, Any]:
+    """CIO final_answer + agent 합의를 운영 표준 verdict 객체로 변환.
+
+    P0 #4: symbol/market/reference_date/target_display 4개 필드를 필수화한다.
+    호출자는 candidate 또는 run 의 created_at 에서 명시적으로 넘긴다.
+    누락 시 sentinel 값 + 경고 로깅 (KeyError 던지지 않음 — 하위 호환).
+    """
     final = cio.get('final_answer') or {}
     action = str(final.get('action') or debate.get('final_consensus', {}).get('action') or 'HOLD').upper()
     if action not in {'BUY', 'SELL', 'HOLD'}:
@@ -782,6 +827,35 @@ def _verdict_from_cio(cio: dict[str, Any], debate: dict[str, Any], analysts: lis
     neutral = max(0, len(analysts) - bullish - bearish)
     target_label = str(target or '').strip()
     summary_subject = f" for {target_label}" if target_label else ''
+
+    # P0 #4: 종목 식별 + 분석 기준일 필수화
+    symbol_clean = str(symbol or '').strip()
+    market_clean = str(market or '').strip()
+    ref_date_clean = str(reference_date or '').strip()
+    if not symbol_clean or not market_clean or not ref_date_clean or not target_label:
+        # 4개 필드 누락 → 경고만 로깅, verdict 생성 자체는 진행 (하위 호환)
+        missing_fields = [
+            name for name, val in (
+                ('symbol', symbol_clean),
+                ('market', market_clean),
+                ('reference_date', ref_date_clean),
+                ('target', target_label),
+            ) if not val
+        ]
+        _log.warning(
+            'mirofish._verdict_from_cio missing identity fields: %s '
+            '(target=%s symbol=%s market=%s reference_date=%s)',
+            missing_fields, target_label, symbol_clean, market_clean, ref_date_clean,
+        )
+
+    # target_display: UI/Telegram 표시 — "이름 (CODE MARKET)" 패턴
+    if symbol_clean and market_clean and target_label:
+        target_display = f"{target_label} ({symbol_clean} {market_clean})"
+    elif symbol_clean and target_label:
+        target_display = f"{target_label} ({symbol_clean})"
+    else:
+        target_display = target_label or symbol_clean or '(unknown target)'
+
     return {
         'action': action,
         'label': action,
@@ -799,6 +873,11 @@ def _verdict_from_cio(cio: dict[str, Any], debate: dict[str, Any], analysts: lis
         ),
         'reasoning': final.get('reasoning', ''),
         'opposing_scenario': final.get('opposing_scenario', ''),
+        # ── P0 #4 추가 필드 (하위 호환 — 기존 키는 모두 유지) ───────────────
+        'symbol': symbol_clean or None,
+        'market': market_clean or None,
+        'reference_date': ref_date_clean or None,
+        'target_display': target_display,
     }
 
 
