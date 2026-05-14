@@ -351,6 +351,15 @@ def get_outcomes_board(days: int = 30, limit: int = 20) -> dict[str, Any]:
     cutoff = datetime.now(timezone.utc) - timedelta(days=days)
     workflow_ids = _recent_workflow_ids(cutoff)
 
+    # outcomes_board 30s 캐시 — get_pipeline_today 가 이 함수를 7d/30d 두 번
+    # 호출하고, 사용자 화면 60s 폴링도 매번 build 하면 95s+ hang 으로 이어짐.
+    cache_key = f'board:{days}:{limit}'
+    now_ts = _time.time()
+    with _PIPELINE_TODAY_LOCK:
+        slot = _PIPELINE_TODAY_CACHE.get(cache_key)
+        if slot is not None and now_ts - slot[0] < _PIPELINE_TODAY_TTL:
+            return slot[1]
+
     all_items: list[dict[str, Any]] = []
     horizon_summary = {
         'evaluated_count': 0,
@@ -362,7 +371,14 @@ def get_outcomes_board(days: int = 30, limit: int = 20) -> dict[str, Any]:
     }
     workflows_used: list[str] = []
     for workflow_id in workflow_ids:
-        outcomes = outcome_tracker.read_workflow_outcomes(workflow_id)
+        # read_workflow_outcomes 가 invalid id 에서 ValueError 또는 lazy
+        # recompute 로 daily_prices.csv 재로딩 → 95s+ hang. graceful skip.
+        try:
+            outcomes = outcome_tracker.read_workflow_outcomes(workflow_id)
+        except (ValueError, OSError, KeyError, RuntimeError):
+            continue
+        except Exception:
+            continue
         if not isinstance(outcomes, dict):
             continue
         # Try refresh stale/pending ones (cheap — daily_prices.csv read is cached implicitly via file mtime)
@@ -404,7 +420,7 @@ def get_outcomes_board(days: int = 30, limit: int = 20) -> dict[str, Any]:
     avg_return = round(sum(returns) / len(returns), 2) if returns else None
     false_positive_pct = round((horizon_summary['miss_count'] / evaluated) * 100, 1) if evaluated else None
 
-    return {
+    result = {
         'window_days': days,
         'generated_at': datetime.now(timezone.utc).isoformat(),
         'sample_size': len(all_items),
@@ -430,6 +446,10 @@ def get_outcomes_board(days: int = 30, limit: int = 20) -> dict[str, Any]:
         'items_truncated': len(all_items) > len(visible),
         'total_items': len(all_items),
     }
+    # 캐시 저장
+    with _PIPELINE_TODAY_LOCK:
+        _PIPELINE_TODAY_CACHE[cache_key] = (_time.time(), result)
+    return result
 
 
 def _recent_workflow_ids(cutoff: datetime) -> list[str]:
