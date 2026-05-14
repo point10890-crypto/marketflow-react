@@ -1,26 +1,20 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import {
-    createChart,
-    CandlestickSeries,
-    HistogramSeries,
-    type CandlestickData,
-    type HistogramData,
-    type IChartApi,
-    type Time,
-} from 'lightweight-charts';
+/**
+ * Top3 차트 패널 — 네이버 금융 차트 이미지 기반.
+ *
+ * 이전엔 TradingView Lightweight Charts + 백엔드 /price-chart API (150MB
+ * daily_prices.csv) 를 사용했지만 cold cache 시 fetch timeout 으로 차트가
+ * 표시 안 되는 문제 반복. 네이버 금융의 공개 차트 이미지로 전환하면:
+ *   - 백엔드 의존성 제거 (즉시 응답)
+ *   - 네이버 CDN 인프라 활용 (빠름)
+ *   - 일/주/월봉 탭 즉시 전환
+ *   - 코드 단순 (Lightweight Charts SDK 제거)
+ *
+ * 컴포넌트 이름은 import 호환 위해 유지.
+ */
+import { useState } from 'react';
+import { type MiroFishWorkflowAnalysisResult } from '@/lib/mirofishApi';
 
-import {
-    type MiroFishPriceChartPoint,
-    type MiroFishPriceChartResponse,
-    type MiroFishWorkflowAnalysisResult,
-    mirofishApi,
-} from '@/lib/mirofishApi';
-
-type ChartLoadState = {
-    status: 'loading' | 'ready' | 'error';
-    data?: MiroFishPriceChartResponse;
-    error?: string;
-};
+type ChartPeriod = 'day' | 'week' | 'month';
 
 interface Top3TradingViewChartsProps {
     items: MiroFishWorkflowAnalysisResult[];
@@ -34,246 +28,139 @@ function workflowName(item: MiroFishWorkflowAnalysisResult): string {
     return String(item.target || item.candidate?.display_name || item.symbol || 'TOP candidate');
 }
 
-function uniqueChartPoints(points: MiroFishPriceChartPoint[]): MiroFishPriceChartPoint[] {
-    const byDate = new Map<string, MiroFishPriceChartPoint>();
-    points
-        .filter((point) => point?.date && Number.isFinite(Number(point.close)))
-        .sort((a, b) => String(a.date).localeCompare(String(b.date)))
-        .forEach((point) => byDate.set(String(point.date), point));
-    return Array.from(byDate.values());
-}
-
 function formatScore(value?: number): string {
-    const numberValue = Number(value);
-    return Number.isFinite(numberValue) ? numberValue.toFixed(1) : '--';
-}
-
-function formatPrice(value?: number): string {
-    const numberValue = Number(value);
-    return Number.isFinite(numberValue) ? numberValue.toLocaleString('ko-KR') : '--';
+    const n = Number(value);
+    return Number.isFinite(n) ? n.toFixed(1) : '--';
 }
 
 function verdictTone(action?: string): string {
-    const normalized = String(action || '').toUpperCase();
-    if (normalized.includes('BUY')) return 'border-emerald-300/25 bg-emerald-300/10 text-emerald-100';
-    if (normalized.includes('SELL')) return 'border-rose-300/25 bg-rose-300/10 text-rose-100';
+    const a = String(action || '').toUpperCase();
+    if (a.includes('BUY')) return 'border-emerald-300/25 bg-emerald-300/10 text-emerald-100';
+    if (a.includes('SELL')) return 'border-rose-300/25 bg-rose-300/10 text-rose-100';
     return 'border-amber-300/25 bg-amber-300/10 text-amber-100';
 }
 
-function MiniTradingViewChart({ points, height = 220 }: { points: MiroFishPriceChartPoint[]; height?: number }) {
-    const containerRef = useRef<HTMLDivElement | null>(null);
-    const chartRef = useRef<IChartApi | null>(null);
-    const chartPoints = useMemo(() => uniqueChartPoints(points), [points]);
+/**
+ * 네이버 금융 차트 이미지 URL.
+ *
+ * 패턴:
+ *   - 일봉 캔들: https://ssl.pstatic.net/imgfinance/chart/item/candle/day/{code}.png
+ *   - 주봉 캔들: https://ssl.pstatic.net/imgfinance/chart/item/candle/week/{code}.png
+ *   - 월봉 캔들: https://ssl.pstatic.net/imgfinance/chart/item/candle/month/{code}.png
+ *
+ * 6자리 KR ticker 기준. US 등 타 시장은 별도 처리 필요 (현재 미지원).
+ * Cache-busting 을 위해 분 단위 timestamp 를 query 로 부착.
+ */
+function naverChartUrl(symbol: string, period: ChartPeriod, cacheBust: number): string {
+    const code = String(symbol || '').replace(/\D/g, '').padStart(6, '0');
+    return `https://ssl.pstatic.net/imgfinance/chart/item/candle/${period}/${code}.png?t=${cacheBust}`;
+}
 
-    useEffect(() => {
-        const container = containerRef.current;
-        if (!container || chartPoints.length === 0) return;
+/** 네이버 종목 상세 페이지 — 차트 클릭 시 새 탭 */
+function naverFinanceUrl(symbol: string): string {
+    const code = String(symbol || '').replace(/\D/g, '').padStart(6, '0');
+    return `https://finance.naver.com/item/main.naver?code=${code}`;
+}
 
-        if (typeof navigator !== 'undefined' && /jsdom/i.test(navigator.userAgent)) {
-            return;
-        }
+function NaverChartImage({ symbol, period }: { symbol: string; period: ChartPeriod }) {
+    const [imgError, setImgError] = useState(false);
+    // 1분 단위 cache-bust — 동일 1분 안엔 같은 URL 사용
+    const cacheBust = Math.floor(Date.now() / 60000);
+    const url = naverChartUrl(symbol, period, cacheBust);
 
-        if (chartRef.current) {
-            chartRef.current.remove();
-            chartRef.current = null;
-        }
-
-        const width = Math.max(container.clientWidth || 360, 280);
-        let chart: IChartApi | null = null;
-        try {
-            chart = createChart(container, {
-                width,
-                height,
-                layout: {
-                    background: { color: '#0f172a' },
-                    textColor: '#cbd5e1',
-                },
-                grid: {
-                    vertLines: { color: 'rgba(148,163,184,0.12)' },
-                    horzLines: { color: 'rgba(148,163,184,0.12)' },
-                },
-                crosshair: { mode: 1 },
-                rightPriceScale: { borderColor: 'rgba(148,163,184,0.25)' },
-                timeScale: {
-                    borderColor: 'rgba(148,163,184,0.25)',
-                    timeVisible: false,
-                    secondsVisible: false,
-                },
-                handleScroll: {
-                    vertTouchDrag: false,
-                    horzTouchDrag: true,
-                    mouseWheel: true,
-                    pressedMouseMove: true,
-                },
-                handleScale: {
-                    pinch: true,
-                    axisPressedMouseMove: true,
-                    mouseWheel: true,
-                },
-            });
-        } catch (error) {
-            console.warn('[MiroFish] TradingView chart render skipped', error);
-            return;
-        }
-
-        chartRef.current = chart;
-        const candleSeries = chart.addSeries(CandlestickSeries, {
-            upColor: '#ef4444',
-            downColor: '#3b82f6',
-            borderUpColor: '#ef4444',
-            borderDownColor: '#3b82f6',
-            wickUpColor: '#f87171',
-            wickDownColor: '#60a5fa',
-        });
-        const candleData: CandlestickData<Time>[] = chartPoints.map((point) => ({
-            time: point.date as Time,
-            open: Number(point.open),
-            high: Number(point.high),
-            low: Number(point.low),
-            close: Number(point.close),
-        }));
-        candleSeries.setData(candleData);
-
-        const volumeSeries = chart.addSeries(HistogramSeries, {
-            priceFormat: { type: 'volume' },
-            priceScaleId: 'volume',
-        });
-        chart.priceScale('volume').applyOptions({
-            scaleMargins: { top: 0.8, bottom: 0 },
-        });
-        const volumeData: HistogramData<Time>[] = chartPoints.map((point) => ({
-            time: point.date as Time,
-            value: Number(point.volume || 0),
-            color: Number(point.close) >= Number(point.open)
-                ? 'rgba(239,68,68,0.24)'
-                : 'rgba(59,130,246,0.24)',
-        }));
-        volumeSeries.setData(volumeData);
-        chart.timeScale().fitContent();
-
-        const handleResize = () => {
-            if (!containerRef.current || !chartRef.current) return;
-            chartRef.current.applyOptions({
-                width: Math.max(containerRef.current.clientWidth || 360, 280),
-                height,
-            });
-        };
-        window.addEventListener('resize', handleResize);
-
-        return () => {
-            window.removeEventListener('resize', handleResize);
-            chartRef.current?.remove();
-            chartRef.current = null;
-        };
-    }, [chartPoints, height]);
-
-    if (chartPoints.length === 0) {
+    if (imgError) {
         return (
-            <div className="flex h-[220px] items-center justify-center rounded-lg border border-dashed border-white/15 bg-slate-950/55 text-xs font-bold text-slate-500">
-                price history waiting
+            <div className="flex h-[220px] items-center justify-center rounded-lg border border-rose-300/20 bg-rose-300/10 px-3 text-center text-xs font-bold text-rose-100">
+                네이버 차트 로딩 실패 — 종목 코드 확인
             </div>
         );
     }
 
     return (
-        <div
-            ref={containerRef}
-            data-no-swipe
-            data-chart-points={chartPoints.length}
-            className="h-[220px] w-full overflow-hidden rounded-lg border border-cyan-300/15 bg-slate-950"
-            style={{ height, touchAction: 'none' }}
-        />
+        <a
+            href={naverFinanceUrl(symbol)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block overflow-hidden rounded-lg border border-amber-500/15 bg-black/40 transition-transform hover:scale-[1.01]"
+            title="네이버 금융 종목 페이지 새 탭 열기"
+        >
+            <img
+                src={url}
+                alt={`${symbol} ${period} chart`}
+                loading="lazy"
+                className="block h-auto w-full"
+                style={{ minHeight: 180 }}
+                onError={() => setImgError(true)}
+            />
+        </a>
     );
 }
 
 export default function Top3TradingViewCharts({ items }: Top3TradingViewChartsProps) {
-    const topItems = useMemo(() => items.slice(0, 3).filter((item) => workflowSymbol(item)), [items]);
-    const symbolsKey = topItems.map(workflowSymbol).join('|');
-    const [charts, setCharts] = useState<Record<string, ChartLoadState>>({});
-
-    useEffect(() => {
-        if (!symbolsKey) {
-            setCharts({});
-            return;
-        }
-        let cancelled = false;
-        const symbols = symbolsKey.split('|').filter(Boolean);
-        setCharts((previous) => {
-            const next: Record<string, ChartLoadState> = {};
-            symbols.forEach((symbol) => {
-                next[symbol] = previous[symbol]?.status === 'ready'
-                    ? previous[symbol]
-                    : { status: 'loading' };
-            });
-            return next;
-        });
-
-        Promise.all(symbols.map(async (symbol) => {
-            try {
-                const data = await mirofishApi.getPriceChart(symbol, 120);
-                return [symbol, { status: 'ready', data } satisfies ChartLoadState] as const;
-            } catch (error) {
-                return [symbol, {
-                    status: 'error',
-                    error: error instanceof Error ? error.message : String(error),
-                } satisfies ChartLoadState] as const;
-            }
-        })).then((results) => {
-            if (cancelled) return;
-            setCharts((previous) => {
-                const next = { ...previous };
-                results.forEach(([symbol, state]) => {
-                    next[symbol] = state;
-                });
-                return next;
-            });
-        });
-
-        return () => {
-            cancelled = true;
-        };
-    }, [symbolsKey]);
+    const topItems = items.slice(0, 3).filter((i) => workflowSymbol(i));
+    const [period, setPeriod] = useState<ChartPeriod>('day');
 
     if (topItems.length === 0) return null;
 
+    const periods: { key: ChartPeriod; label: string }[] = [
+        { key: 'day', label: '일봉' },
+        { key: 'week', label: '주봉' },
+        { key: 'month', label: '월봉' },
+    ];
+
     return (
-        <div className="mt-4 rounded-lg border border-cyan-300/15 bg-slate-950/65 p-3">
+        <div className="mt-4 rounded-lg border border-amber-500/15 bg-black/60 p-3">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                 <div>
-                    <div className="text-[10px] font-black uppercase tracking-[0.22em] text-cyan-200/70">
-                        TradingView charts
+                    <div className="text-[10px] font-black uppercase tracking-[0.22em] text-neutral-500">
+                        NAVER CHARTS
                     </div>
-                    <div className="mt-1 text-sm font-black text-white">
+                    <div className="mt-1 text-sm font-black text-neutral-100">
                         TOP3 차트 확인
                     </div>
                 </div>
-                <div className="text-[11px] font-bold text-slate-500">
-                    source: daily_prices.csv / TradingView Lightweight
+                <div className="flex items-center gap-2">
+                    <div className="inline-flex overflow-hidden rounded-md border border-white/8 bg-black/40">
+                        {periods.map((p) => (
+                            <button
+                                key={p.key}
+                                type="button"
+                                onClick={() => setPeriod(p.key)}
+                                className={`min-h-[28px] px-2.5 py-1 text-[10px] font-black transition-colors ${
+                                    period === p.key
+                                        ? 'bg-white/[0.06] text-neutral-200'
+                                        : 'text-neutral-600 hover:bg-white/[0.03] hover:text-neutral-300'
+                                }`}
+                            >
+                                {p.label}
+                            </button>
+                        ))}
+                    </div>
+                    <div className="text-[10px] font-medium text-neutral-600 hidden sm:block">
+                        source: Naver Finance
+                    </div>
                 </div>
             </div>
 
             <div className="mt-3 grid gap-3 xl:grid-cols-3">
                 {topItems.map((item, index) => {
                     const symbol = workflowSymbol(item);
-                    const chartState = charts[symbol] || { status: 'loading' };
-                    const chart = chartState.data;
-                    const latest = chart?.latest || chart?.chart?.[chart.chart.length - 1];
                     const action = item.verdict?.action || 'HOLD';
                     const confidence = item.verdict?.confidence_pct || 0;
                     return (
                         <article
                             key={`${symbol}-${item.run_id || index}`}
-                            className="overflow-hidden rounded-lg border border-white/10 bg-black/25 shadow-[0_18px_50px_rgba(15,23,42,0.28)]"
+                            className="overflow-hidden rounded-lg border border-white/8 bg-black/40"
                         >
-                            <div className="flex items-start justify-between gap-3 border-b border-white/10 p-3">
+                            <div className="flex items-start justify-between gap-3 border-b border-white/8 p-3">
                                 <div className="min-w-0">
-                                    <div className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-200/65">
+                                    <div className="text-[10px] font-black uppercase tracking-[0.18em] text-neutral-500">
                                         TOP {index + 1} chart target
                                     </div>
-                                    <div className="mt-1 truncate text-base font-black text-white">
+                                    <div className="mt-1 truncate text-base font-black text-neutral-100">
                                         {workflowName(item)}
                                     </div>
-                                    <div className="mt-1 font-mono text-[11px] font-bold text-slate-500">
+                                    <div className="mt-1 font-mono text-[11px] font-bold text-neutral-500">
                                         {symbol} · {item.market || item.candidate?.market || 'KR'} · score {formatScore(item.final_score)}
                                     </div>
                                 </div>
@@ -283,31 +170,10 @@ export default function Top3TradingViewCharts({ items }: Top3TradingViewChartsPr
                             </div>
 
                             <div className="p-3">
-                                <div className="mb-2 flex flex-wrap items-center gap-2 text-[11px] font-bold">
-                                    <span className="rounded-full border border-white/10 bg-white/8 px-2 py-1 text-slate-300">
-                                        close {formatPrice(latest?.close)}
-                                    </span>
-                                    <span className="rounded-full border border-white/10 bg-white/8 px-2 py-1 text-slate-300">
-                                        candles {chart?.count ?? '--'}
-                                    </span>
-                                    <span className="rounded-full border border-white/10 bg-white/8 px-2 py-1 text-slate-300">
-                                        {latest?.date || '--'}
-                                    </span>
+                                <NaverChartImage symbol={symbol} period={period} />
+                                <div className="mt-2 text-center text-[10px] font-bold text-neutral-600">
+                                    클릭 → 네이버 금융 상세 페이지
                                 </div>
-
-                                {chartState.status === 'loading' && (
-                                    <div className="flex h-[220px] items-center justify-center rounded-lg border border-white/10 bg-slate-950/70 text-xs font-black text-cyan-200">
-                                        loading chart...
-                                    </div>
-                                )}
-                                {chartState.status === 'error' && (
-                                    <div className="flex h-[220px] items-center justify-center rounded-lg border border-rose-300/20 bg-rose-300/10 px-3 text-center text-xs font-bold text-rose-100">
-                                        {chartState.error || 'chart request failed'}
-                                    </div>
-                                )}
-                                {chartState.status === 'ready' && (
-                                    <MiniTradingViewChart points={chart?.chart || []} />
-                                )}
                             </div>
                         </article>
                     );
