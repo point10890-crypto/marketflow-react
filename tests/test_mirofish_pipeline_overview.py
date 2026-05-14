@@ -1,4 +1,5 @@
 import json
+import os
 import time
 
 from app.services.mirofish import alpha_scanner, pipeline_overview
@@ -94,3 +95,28 @@ def test_scanner_schedule_status_uses_light_source_metadata(tmp_path, monkeypatc
     assert {item['file'] for item in status['source_files']} == {
         f'data/{filename}' for filename in alpha_scanner.WATCHED_SOURCE_FILES
     }
+
+
+def test_read_latest_scanner_run_reads_only_newest_file(tmp_path, monkeypatch):
+    root = tmp_path / 'scanner_runs'
+    old_dir = root / 'mfas_20260514090000_old'
+    new_dir = root / 'mfas_20260515090000_new'
+    old_dir.mkdir(parents=True)
+    new_dir.mkdir(parents=True)
+    old_path = old_dir / 'run.json'
+    new_path = new_dir / 'run.json'
+    old_path.write_text(json.dumps({'id': old_dir.name, 'candidate_count': 1}), encoding='utf-8')
+    new_path.write_text(json.dumps({'id': new_dir.name, 'candidate_count': 7}), encoding='utf-8')
+    os.utime(old_path, (time.time() - 3600, time.time() - 3600))
+    os.utime(new_path, None)
+
+    def fail_full_records_scan():
+        raise AssertionError('latest scanner run should not load every run json')
+
+    monkeypatch.setattr(alpha_scanner, 'SCANNER_RUNS_ROOT', str(root))
+    monkeypatch.setattr(alpha_scanner, '_scanner_run_records', fail_full_records_scan)
+
+    latest = alpha_scanner.read_latest_scanner_run()
+
+    assert latest['id'] == new_dir.name
+    assert latest['candidate_count'] == 7

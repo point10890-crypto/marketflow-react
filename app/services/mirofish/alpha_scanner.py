@@ -177,8 +177,48 @@ def list_scanner_runs(limit: int = 20) -> list[dict[str, Any]]:
 
 def read_latest_scanner_run() -> dict[str, Any] | None:
     """Return the newest persisted scanner run, if one exists."""
-    records = _scanner_run_records()
-    return records[0]['run'] if records else None
+    for path in _latest_scanner_run_paths():
+        try:
+            run = _read_json(path)
+        except (OSError, json.JSONDecodeError, ValueError):
+            continue
+        if isinstance(run, dict):
+            return run
+    return None
+
+
+def _latest_scanner_run_path() -> str | None:
+    paths = _latest_scanner_run_paths()
+    return paths[0] if paths else None
+
+
+def _latest_scanner_run_paths() -> list[str]:
+    if not os.path.isdir(SCANNER_RUNS_ROOT):
+        return []
+    candidates: list[tuple[float, str, str]] = []
+    try:
+        entries = list(os.scandir(SCANNER_RUNS_ROOT))
+    except OSError:
+        return []
+    for entry in entries:
+        if not entry.is_dir():
+            continue
+        try:
+            safe_id = _safe_run_id(entry.name)
+        except ValueError:
+            continue
+        path = os.path.join(SCANNER_RUNS_ROOT, safe_id, 'run.json')
+        if not os.path.isfile(path):
+            continue
+        try:
+            mtime = os.path.getmtime(path)
+        except OSError:
+            continue
+        candidates.append((mtime, safe_id, path))
+    if not candidates:
+        return []
+    candidates.sort(key=lambda item: (item[0], item[1]), reverse=True)
+    return [item[2] for item in candidates]
 
 
 def read_price_chart(symbol: str, limit: int = 120) -> dict[str, Any]:
