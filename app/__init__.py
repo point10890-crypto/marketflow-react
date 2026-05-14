@@ -349,6 +349,15 @@ def create_app(config=None):
             )
 
     # ── Pro 구독 만료 자동 다운그레이드 (1시간 간격) ──
+    background_workers_enabled = (
+        not app.config.get('TESTING')
+        and os.getenv('MARKETFLOW_BACKGROUND_WORKERS', 'true').strip().lower()
+        not in {'0', 'false', 'no', 'off'}
+    )
+    if not background_workers_enabled:
+        print("[INFO] Background workers disabled for this app instance")
+        return app
+
     _start_expiry_checker(app)
 
     # ── 클라우드 스케줄러 자동 시작 (Render 또는 SCHEDULER_ENABLED) ──
@@ -361,10 +370,24 @@ def create_app(config=None):
             print(f"[WARN] Cloud scheduler failed to start: {e}")
 
     # ── 프리컴퓨팅 스냅샷 워커 (느린 엔드포인트 백그라운드 갱신) ──
+    # 누수 진단 또는 응급 시 개별 토글 가능:
+    #   WORKER_PRECOMPUTE_ENABLED=0
+    #   WORKER_SCREENER_ENABLED=0
+    #   WORKER_ALPHA_MONITOR_ENABLED=0
+    # 기본은 모두 활성 (운영 호환). 진단 후 원인 격리 시 끔.
     if not os.getenv('RENDER'):
-        _start_precompute_worker(app)
-        _start_screener_worker(app)
-        _start_alpha_scanner_monitor_worker(app)
+        if os.getenv('WORKER_PRECOMPUTE_ENABLED', '1') != '0':
+            _start_precompute_worker(app)
+        else:
+            print("[OFF] PreCompute worker disabled via WORKER_PRECOMPUTE_ENABLED=0")
+        if os.getenv('WORKER_SCREENER_ENABLED', '1') != '0':
+            _start_screener_worker(app)
+        else:
+            print("[OFF] Screener worker disabled via WORKER_SCREENER_ENABLED=0")
+        if os.getenv('WORKER_ALPHA_MONITOR_ENABLED', '1') != '0':
+            _start_alpha_scanner_monitor_worker(app)
+        else:
+            print("[OFF] Alpha scanner monitor disabled via WORKER_ALPHA_MONITOR_ENABLED=0")
     else:
         print("[INFO] PreCompute/Screener workers disabled on Render (memory limit)")
 
