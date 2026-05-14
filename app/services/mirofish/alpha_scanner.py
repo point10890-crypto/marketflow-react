@@ -235,8 +235,7 @@ def get_scanner_schedule_status(now: datetime | None = None) -> dict[str, Any]:
     current = (now or datetime.now(KST)).astimezone(KST)
     scheduled_times = _scanner_schedule_times()
     latest = read_latest_scanner_run()
-    artifacts = _load_artifacts()
-    source_files = _source_files(artifacts)
+    source_files = _source_files(_load_source_artifacts())
     freshness = _aggregate_freshness(source_files)
     latest_source_files = latest.get('source_files') if latest else None
     latest_freshness = latest.get('freshness') if latest else None
@@ -745,9 +744,10 @@ def build_scanner_run_telegram_message(run: dict[str, Any], *, limit: int = 10) 
 
 
 def _load_artifacts() -> dict[str, Any]:
-    screener = _load_json_artifact('screener_leading_latest.json')
-    vcp = _load_json_artifact('vcp_kr_latest.json')
-    jongga = _load_json_artifact('jongga_v2_latest.json')
+    source_artifacts = _load_source_artifacts()
+    screener = source_artifacts['screener']
+    vcp = source_artifacts['vcp']
+    jongga = source_artifacts['jongga']
 
     maps = _load_ticker_map()
     candidate_symbols = set()
@@ -777,6 +777,14 @@ def _load_artifacts() -> dict[str, Any]:
         'jongga': jongga,
         'tradingview': tradingview,
         'candidate_symbols': candidate_symbols,
+    }
+
+
+def _load_source_artifacts() -> dict[str, Any]:
+    return {
+        'screener': _load_json_artifact('screener_leading_latest.json'),
+        'vcp': _load_json_artifact('vcp_kr_latest.json'),
+        'jongga': _load_json_artifact('jongga_v2_latest.json'),
     }
 
 
