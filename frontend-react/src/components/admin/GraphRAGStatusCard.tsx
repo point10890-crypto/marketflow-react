@@ -77,6 +77,9 @@ export default function GraphRAGStatusCard() {
     const shadowMode = Boolean(data?.flags?.shadow_mode);
     const cacheTtl = data?.flags?.cache_ttl_sec ?? 0;
     const phase = data?.phase || {};
+    const mcp = data?.mcp || {};
+    const mcpRegistered = Boolean(mcp.registered);
+    const mcpModuleAvailable = Boolean(mcp.module_available);
 
     return (
         <section className="rounded-xl border border-amber-500/15 bg-black/60 p-3 sm:p-4">
@@ -98,6 +101,16 @@ export default function GraphRAGStatusCard() {
                     {error}
                 </div>
             )}
+            {data?.entities?.error && (
+                <div className="mt-3 rounded-lg border border-amber-400/20 bg-amber-400/10 px-3 py-2 text-xs font-bold text-amber-100 break-words">
+                    Entity DB: {data.entities.error}
+                </div>
+            )}
+            {mcp.error && (
+                <div className="mt-3 rounded-lg border border-rose-400/20 bg-rose-400/10 px-3 py-2 text-xs font-bold text-rose-100 break-words">
+                    MCP: {mcp.error}
+                </div>
+            )}
 
             <div className="mt-3 grid grid-cols-3 gap-2">
                 <div className="rounded-lg border border-white/10 bg-black/30 p-2">
@@ -116,6 +129,23 @@ export default function GraphRAGStatusCard() {
                     <div className="text-[10px] font-black uppercase tracking-[0.14em] text-neutral-500">Cache TTL</div>
                     <div className="mt-1 text-base font-black text-white tabular-nums">{cacheTtl ? Math.round(cacheTtl / 60) : '--'}</div>
                     <div className="text-[10px] font-bold text-neutral-500">minutes</div>
+                </div>
+            </div>
+
+            <div className="mt-2 grid grid-cols-2 gap-2">
+                <div className="rounded-lg border border-white/10 bg-black/30 p-2">
+                    <div className="text-[10px] font-black uppercase tracking-[0.14em] text-neutral-500">MCP Tools</div>
+                    <div className={`mt-1 text-sm font-black ${mcpRegistered ? 'text-emerald-300' : mcpModuleAvailable ? 'text-amber-300' : 'text-rose-300'}`}>
+                        {mcpRegistered ? `${mcp.tool_count || 0} registered` : mcpModuleAvailable ? 'module ready' : 'missing'}
+                    </div>
+                    <div className="text-[10px] font-bold text-neutral-500">{mcp.state || 'not_seen'}</div>
+                </div>
+                <div className="rounded-lg border border-white/10 bg-black/30 p-2">
+                    <div className="text-[10px] font-black uppercase tracking-[0.14em] text-neutral-500">Resolver</div>
+                    <div className={`mt-1 text-sm font-black ${data?.endpoints_live?.entities_resolve ? 'text-emerald-300' : 'text-amber-300'}`}>
+                        {data?.endpoints_live?.entities_resolve ? 'online' : 'needs index'}
+                    </div>
+                    <div className="text-[10px] font-bold text-neutral-500">entities/resolve</div>
                 </div>
             </div>
 

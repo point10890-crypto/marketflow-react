@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import os
 from typing import Any
 
@@ -10,6 +11,8 @@ import app.services.mirofish.alpha_scanner as alpha_scanner
 import app.services.mirofish.autonomous_mcp as autonomous_mcp
 import app.services.mirofish.tradingview_provider as tradingview_provider
 import app.services.mirofish.workflow as workflow
+
+logger = logging.getLogger(__name__)
 
 try:
     from mcp.server.fastmcp import FastMCP
@@ -739,10 +742,17 @@ def create_mcp_server(
     # =========================================================
     try:
         from app.services.mirofish.graphrag.mcp_tools import register_graphrag_tools
-        register_graphrag_tools(mcp)
-    except Exception:
+        from app.services.mirofish.graphrag.storage import record_mcp_registration_status
+        tool_count = register_graphrag_tools(mcp)
+        record_mcp_registration_status(ok=True, tool_count=tool_count)
+    except Exception as exc:
         # graphrag 모듈 적재 실패해도 기존 MCP tools 는 정상 동작 보존
-        pass
+        logger.warning('GraphRAG MCP tool registration failed: %s', exc, exc_info=True)
+        try:
+            from app.services.mirofish.graphrag.storage import record_mcp_registration_status
+            record_mcp_registration_status(ok=False, tool_count=0, error=f'{type(exc).__name__}: {exc}')
+        except Exception:
+            logger.warning('Failed to persist GraphRAG MCP registration status', exc_info=True)
 
     return mcp
 

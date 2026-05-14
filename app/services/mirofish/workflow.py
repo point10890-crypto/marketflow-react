@@ -733,7 +733,8 @@ def _analysis_result(candidate: dict[str, Any], run: dict[str, Any]) -> dict[str
     verdict = run.get('verdict') or {}
     pipeline = run.get('pipeline') or {}
     brain = run.get('brain') or run.get('brain_summary') or {}
-    final_score = _final_score(candidate, run)
+    score_breakdown = _score_breakdown(candidate, run)
+    final_score = score_breakdown['score']
 
     # Phase C: per-top3 graphrag mini-dict
     extraction = run.get('graph_extraction') or {}
@@ -794,17 +795,18 @@ def _analysis_result(candidate: dict[str, Any], run: dict[str, Any]) -> dict[str
             'crisis': brain.get('crisis_level') or brain.get('crisis'),
         },
         'final_score': final_score,
+        'score_formula_version': score_breakdown['version'],
+        'score_breakdown': score_breakdown,
         'reason': _ranking_reason(candidate, run, final_score),
         'artifacts': run.get('artifacts') or {},
     }
 
 
-def _final_score(candidate: dict[str, Any], run: dict[str, Any]) -> float:
+def _score_breakdown(candidate: dict[str, Any], run: dict[str, Any]) -> dict[str, Any]:
     verdict = run.get('verdict') or {}
     pipeline = run.get('pipeline') or {}
     brain = run.get('brain') or run.get('brain_summary') or {}
     action = str(verdict.get('action') or verdict.get('label') or 'HOLD').upper()
-    action_bonus = {'BUY': 20.0, 'HOLD': 4.0, 'SELL': -30.0}.get(action, 0.0)
     confidence_pct = _number(verdict.get('confidence_pct'))
     if confidence_pct <= 0:
         confidence_pct = _number(verdict.get('confidence')) * 100
@@ -813,22 +815,50 @@ def _final_score(candidate: dict[str, Any], run: dict[str, Any]) -> float:
     graph_links = min(_number(pipeline.get('graph_links')), 120.0)
     brain_score = _number(brain.get('score') or brain.get('alignment_score'))
     source_count = _number((candidate.get('analysis_profile') or {}).get('source_count'))
+    action_bonus = {'BUY': 20.0, 'HOLD': 4.0, 'SELL': -30.0}.get(action, 0.0)
     quality_bonus = {
         'high_conviction': 6.0,
         'actionable': 3.0,
         'watch': 1.0,
     }.get(str(candidate.get('signal_quality') or '').lower(), 0.0)
-    score = (
-        alpha * 0.46
-        - risk * 0.32
-        + confidence_pct * 0.24
-        + action_bonus
-        + brain_score * 0.08
-        + graph_links * 0.05
-        + source_count * 1.6
-        + quality_bonus
-    )
-    return round(score, 2)
+    components = {
+        'alpha': round(alpha * 0.46, 4),
+        'risk_penalty': round(-risk * 0.32, 4),
+        'cio_confidence': round(confidence_pct * 0.24, 4),
+        'action_bonus': round(action_bonus, 4),
+        'brain': round(brain_score * 0.08, 4),
+        'graph_links': round(graph_links * 0.05, 4),
+        'source_count': round(source_count * 1.6, 4),
+        'quality_bonus': round(quality_bonus, 4),
+    }
+    score = round(sum(components.values()), 2)
+    return {
+        'version': 'alpha_top3_v2_explainable',
+        'score': score,
+        'inputs': {
+            'alpha_score': alpha,
+            'risk_score': risk,
+            'cio_action': action,
+            'cio_confidence_pct': confidence_pct,
+            'brain_score': brain_score,
+            'graph_links_capped': graph_links,
+            'source_count': source_count,
+            'signal_quality': candidate.get('signal_quality'),
+        },
+        'weights': {
+            'alpha': 0.46,
+            'risk': -0.32,
+            'cio_confidence': 0.24,
+            'brain': 0.08,
+            'graph_link': 0.05,
+            'source_count': 1.6,
+        },
+        'components': components,
+    }
+
+
+def _final_score(candidate: dict[str, Any], run: dict[str, Any]) -> float:
+    return float(_score_breakdown(candidate, run)['score'])
 
 
 def _ranking_reason(candidate: dict[str, Any], run: dict[str, Any], final_score: float) -> str:
@@ -880,6 +910,7 @@ def _workflow_graphrag_summary(top3: list[dict[str, Any]], scanner_run: dict[str
     dart_seen = False
     news_seen = False
     tv_seen = False
+    deepseek_seen = False
     for item in top3 or []:
         if not isinstance(item, dict):
             continue
@@ -896,18 +927,34 @@ def _workflow_graphrag_summary(top3: list[dict[str, Any]], scanner_run: dict[str
                 news_seen = True
             if 'tradingview' in src_lower or 'tv' in src_lower:
                 tv_seen = True
+            if 'deepseek' in src_lower:
+                deepseek_seen = True
+        if item.get('score_breakdown'):
+            deepseek_seen = deepseek_seen or bool(os.getenv('DEEPSEEK_API_KEY'))
+
+    coverage = {
+        'scanner': scanner_status,
+        'kis': 'cached' if kis_seen else 'unavailable',
+        'tradingview': 'cached' if tv_seen else 'unavailable',
+        'dart': 'cached' if dart_seen else 'unavailable',
+        'news': 'cached' if news_seen else 'unavailable',
+        'deepseek': 'live' if deepseek_seen and os.getenv('DEEPSEEK_API_KEY') else ('cached' if deepseek_seen else 'unavailable'),
+    }
+    details = {
+        key: {
+            'status': value,
+            'freshness': value,
+            'required_for_alpha': key in {'scanner', 'kis'},
+        }
+        for key, value in coverage.items()
+    }
 
     return {
         'mode': 'hybrid_temporal',
         'entity_count': entity_count,
         'edge_count': edge_count,
-        'source_coverage': {
-            'scanner': scanner_status,
-            'kis': 'cached' if kis_seen else 'unavailable',
-            'tradingview': 'cached' if tv_seen else 'unavailable',
-            'dart': 'cached' if dart_seen else 'unavailable',
-            'news': 'cached' if news_seen else 'unavailable',
-        },
+        'source_coverage': coverage,
+        'source_details': details,
     }
 
 
@@ -957,6 +1004,8 @@ def _workflow_source_freshness(scanner_run: dict[str, Any], graphrag_summary: di
             'tradingview_freshness': coverage.get('tradingview'),
             'dart_freshness': coverage.get('dart'),
             'news_freshness': coverage.get('news'),
+            'deepseek_freshness': coverage.get('deepseek'),
+            'source_details': (graphrag_summary or {}).get('source_details') or {},
         },
     }
 

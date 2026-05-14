@@ -499,6 +499,14 @@ export interface MiroFishWorkflowAnalysisResult {
         method?: string;
     };
     final_score?: number;
+    score_formula_version?: string;
+    score_breakdown?: {
+        version?: string;
+        score?: number;
+        inputs?: Record<string, any>;
+        weights?: Record<string, number>;
+        components?: Record<string, number>;
+    };
     forward_return_pct?: number | null;
     outcome_status?: string;
     hit?: boolean | null;
@@ -521,6 +529,12 @@ export interface MiroFishWorkflowGraphRAG {
         deepseek?: string;
         [key: string]: string | undefined;
     };
+    source_details?: Record<string, {
+        status?: string;
+        freshness?: string;
+        required_for_alpha?: boolean;
+        [key: string]: any;
+    }>;
 }
 
 export interface MiroFishWorkflowSourceFreshness {
@@ -632,6 +646,14 @@ export interface MiroFishGraphRAGStatus {
     storage: Record<string, MiroFishGraphRAGStoragePath>;
     entities: MiroFishGraphRAGEntities;
     flags: MiroFishGraphRAGFlags;
+    mcp?: {
+        state?: string;
+        module_available?: boolean;
+        registered?: boolean;
+        tool_count?: number;
+        error?: string | null;
+        recorded_at?: string;
+    };
     base_dir?: string;
     data_dir?: string;
     asof?: string;

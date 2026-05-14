@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type CompositionEvent as ReactCompositionEvent, type KeyboardEvent as ReactKeyboardEvent } from 'react';
-import { MiroFishAlphaCandidate, MiroFishAnalyst, MiroFishAutonomousActionResult, MiroFishAutonomousLearningFeedback, MiroFishAutonomousStatus, MiroFishDeepSeekStatus, MiroFishDeepSeekSummaryResult, MiroFishLayer, MiroFishLog, MiroFishNode, MiroFishRun, MiroFishScannerRun, MiroFishScannerStatus, MiroFishStatus, MiroFishTargetSnapshot, MiroFishTradingViewStatus, MiroFishWorkflow, mirofishApi } from '@/lib/mirofishApi';
+import { MiroFishAlphaCandidate, MiroFishAnalyst, MiroFishAutonomousActionResult, MiroFishAutonomousLearningFeedback, MiroFishAutonomousStatus, MiroFishDeepSeekStatus, MiroFishDeepSeekSummaryResult, MiroFishGraphRAGEntityMatch, MiroFishLayer, MiroFishLog, MiroFishNode, MiroFishRun, MiroFishScannerRun, MiroFishScannerStatus, MiroFishStatus, MiroFishTargetSnapshot, MiroFishTradingViewStatus, MiroFishWorkflow, mirofishApi } from '@/lib/mirofishApi';
 import { shareToKakao } from '@/lib/kakaoShare';
 import MirofishChatPanel from '@/components/admin/MirofishChatPanel';
 import TodaysPipelineCard from '@/components/admin/TodaysPipelineCard';
@@ -113,8 +113,24 @@ function targetCandidateStartValue(candidate?: TargetCandidate | null): string {
     return Array.from(new Set(parts)).join(' ').trim();
 }
 
+function graphragMatchToTargetCandidate(match: MiroFishGraphRAGEntityMatch): TargetCandidate {
+    const symbol = String(match.symbol || match.ids?.ticker_kr || '').trim();
+    const displayName = String(match.name_ko || match.name || match.name_en || symbol || match.entity_id).trim();
+    return {
+        symbol: symbol || null,
+        name: displayName,
+        display_name: displayName,
+        market: match.market || match.exchange || undefined,
+        yahoo_ticker: match.ids?.yahoo_ticker || undefined,
+        asset_type: match.type || 'equity',
+        score: Math.round((Number(match.confidence) || 0) * 100),
+        match_type: `graphrag_${match.match_reason || 'entity'}`,
+    };
+}
+
 function targetCandidateMatchLabel(candidate?: TargetCandidate | null): string {
     const matchType = String(candidate?.match_type || '');
+    if (matchType.startsWith('graphrag')) return 'GraphRAG';
     if (matchType.includes('initial')) return '초성';
     if (matchType.includes('exact')) return '정확';
     if (matchType.includes('prefix')) return '시작';
@@ -364,6 +380,7 @@ function AlphaBoardPanel({
     autonomousStatus,
     onScan,
     onWorkflow,
+    onForceWorkflow,
     onDeepSeekSummary,
     onSendDeepSeekTelegram,
     onSelect,
@@ -384,6 +401,7 @@ function AlphaBoardPanel({
     autonomousStatus?: MiroFishAutonomousStatus | null;
     onScan: () => void;
     onWorkflow: () => void;
+    onForceWorkflow: () => void;
     onDeepSeekSummary: () => void;
     onSendDeepSeekTelegram: () => void;
     onSelect: (candidate: MiroFishAlphaCandidate) => void;
@@ -584,14 +602,24 @@ function AlphaBoardPanel({
                                 </span>
                             </div>
                         </div>
-                        <button
-                            type="button"
-                            onClick={onWorkflow}
-                            disabled={workflowBusy}
-                            className="rounded-lg border border-cyan-300/25 bg-cyan-300/12 px-3 py-2 text-xs font-black text-cyan-100 transition hover:bg-cyan-300/18 disabled:cursor-wait disabled:opacity-60"
-                        >
-                            {workflowBusy ? 'Batch analyzing...' : 'Run MCP Top 3'}
-                        </button>
+                        <div className="flex flex-wrap gap-2">
+                            <button
+                                type="button"
+                                onClick={onWorkflow}
+                                disabled={workflowBusy}
+                                className="rounded-lg border border-cyan-300/25 bg-cyan-300/12 px-3 py-2 text-xs font-black text-cyan-100 transition hover:bg-cyan-300/18 disabled:cursor-wait disabled:opacity-60"
+                            >
+                                {workflowBusy ? 'Batch analyzing...' : 'New events Top 3'}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={onForceWorkflow}
+                                disabled={workflowBusy}
+                                className="rounded-lg border border-amber-300/25 bg-amber-300/12 px-3 py-2 text-xs font-black text-amber-100 transition hover:bg-amber-300/18 disabled:cursor-wait disabled:opacity-60"
+                            >
+                                Run MCP Top 3 Force refresh
+                            </button>
+                        </div>
                     </div>
 
                     <div className="mt-4 grid gap-2 md:grid-cols-4">
@@ -1955,21 +1983,40 @@ export default function AdminEndpointsPage() {
         suggestRequestRef.current = requestId;
         markEndpoint('resolve', 'loading');
         const timer = window.setTimeout(() => {
-            mirofishApi.searchTargets(nextTarget, 16)
-                .then((payload) => {
+            (async () => {
+                try {
+                    const [graphragResult, legacyResult] = await Promise.allSettled([
+                        mirofishApi.graphrag?.resolveEntity
+                            ? mirofishApi.graphrag.resolveEntity(nextTarget, { limit: 16 })
+                            : Promise.reject(new Error('GraphRAG resolver unavailable')),
+                        mirofishApi.searchTargets(nextTarget, 16),
+                    ]);
                     if (!alive || suggestRequestRef.current !== requestId) return;
-                    setSuggestionTarget(payload.target?.trim() || nextTarget);
-                    setSuggestionCandidates(payload.candidates || []);
+                    const graphCandidates = graphragResult.status === 'fulfilled'
+                        ? ((graphragResult.value as any)?.matches || []).map(graphragMatchToTargetCandidate)
+                        : [];
+                    const legacyCandidates = legacyResult.status === 'fulfilled'
+                        ? (legacyResult.value as any)?.candidates || []
+                        : [];
+                    const seen = new Set<string>();
+                    const candidates = [...graphCandidates, ...legacyCandidates].filter((candidate) => {
+                        const key = `${candidate.symbol || ''}|${candidate.yahoo_ticker || ''}|${targetCandidateLabel(candidate)}`.toLowerCase();
+                        if (seen.has(key)) return false;
+                        seen.add(key);
+                        return true;
+                    }).slice(0, 16);
+                    setSuggestionTarget(nextTarget);
+                    setSuggestionCandidates(candidates);
                     setActiveCandidateIndex(0);
-                    markEndpoint('resolve', 'ok');
-                })
-                .catch(() => {
+                    markEndpoint('resolve', candidates.length || graphragResult.status === 'fulfilled' || legacyResult.status === 'fulfilled' ? 'ok' : 'error');
+                } catch {
                     if (!alive || suggestRequestRef.current !== requestId) return;
                     setSuggestionTarget(nextTarget);
                     setSuggestionCandidates([]);
                     setActiveCandidateIndex(0);
                     markEndpoint('resolve', 'error');
-                });
+                }
+            })();
         }, 80);
         return () => {
             alive = false;
@@ -2137,7 +2184,7 @@ export default function AdminEndpointsPage() {
         }
     }
 
-    async function handleMcpWorkflow() {
+    async function handleMcpWorkflow(force = false) {
         setWorkflowState('running');
         setWorkflowErrorText(null);
         markEndpoint('workflow', 'loading');
@@ -2157,7 +2204,7 @@ export default function AdminEndpointsPage() {
                 max_parallel: 3,
                 allow_stale_sources: false,
                 mode: 'full',
-                force: true,
+                force,
             });
             setWorkflow(result);
             if (result.status === 'blocked') {
@@ -2410,6 +2457,11 @@ export default function AdminEndpointsPage() {
         requestStart(nextTarget);
     }
 
+    function submitAnalysisForm(form: HTMLFormElement) {
+        const formTarget = new FormData(form).get('target');
+        requestStart(getStartTarget(typeof formTarget === 'string' ? formTarget : targetValueRef.current));
+    }
+
     function requestStart(targetOverride?: string) {
         const now = Date.now();
         if (apiState === 'running' || now - lastStartAtRef.current < 600) return;
@@ -2499,7 +2551,8 @@ export default function AdminEndpointsPage() {
                                     workflowErrorText={workflowErrorText}
                                     autonomousStatus={autonomousStatus}
                                     onScan={handleAlphaScan}
-                                    onWorkflow={handleMcpWorkflow}
+                                    onWorkflow={() => handleMcpWorkflow(false)}
+                                    onForceWorkflow={() => handleMcpWorkflow(true)}
                                     onDeepSeekSummary={handleDeepSeekSummary}
                                     onSendDeepSeekTelegram={handleSendDeepSeekTelegram}
                                     onSelect={selectAlphaCandidate}
@@ -2540,8 +2593,7 @@ export default function AdminEndpointsPage() {
                         className="mt-6 sm:mt-8 max-w-4xl rounded-xl border border-anthropic-darkLine bg-anthropic-dark2 p-1.5 sm:p-2"
                         onSubmit={(event) => {
                             event.preventDefault();
-                            const formTarget = new FormData(event.currentTarget).get('target');
-                            requestStart(getStartTarget(typeof formTarget === 'string' ? formTarget : targetValueRef.current));
+                            submitAnalysisForm(event.currentTarget);
                         }}
                         onKeyDownCapture={(event) => {
                             if (!isEnterKey(event)) return;
@@ -2551,15 +2603,7 @@ export default function AdminEndpointsPage() {
                             }
                             event.preventDefault();
                             event.stopPropagation();
-                            const input = event.currentTarget.elements.namedItem('target') as HTMLInputElement | null;
-                            requestStart(getStartTarget(input?.value));
-                        }}
-                        onKeyUpCapture={(event) => {
-                            if (!isEnterKey(event) || isComposing(event)) return;
-                            event.preventDefault();
-                            event.stopPropagation();
-                            const input = event.currentTarget.elements.namedItem('target') as HTMLInputElement | null;
-                            requestStart(getStartTarget(input?.value));
+                            event.currentTarget.requestSubmit();
                         }}
                     >
                         <div className="flex flex-col gap-2 sm:flex-row">

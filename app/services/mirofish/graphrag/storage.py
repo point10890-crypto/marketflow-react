@@ -5,6 +5,8 @@
 from __future__ import annotations
 
 import glob
+import importlib.util
+import json
 import os
 import sqlite3
 import time
@@ -25,6 +27,7 @@ COMMUNITIES_DIR = os.path.join(GRAPHRAG_ROOT, 'communities')
 RESEARCH_RUNS_DIR = os.path.join(GRAPHRAG_ROOT, 'research_runs')
 EVAL_DIR = os.path.join(GRAPHRAG_ROOT, 'eval')
 AUDIT_DIR = os.path.join(GRAPHRAG_ROOT, 'audit')
+MCP_REGISTRATION_JSON = os.path.join(GRAPHRAG_ROOT, 'mcp_registration.json')
 
 
 def ensure_dirs() -> None:
@@ -54,6 +57,7 @@ def get_storage_paths() -> dict[str, Any]:
         'research_runs_dir': RESEARCH_RUNS_DIR,
         'eval_dir': EVAL_DIR,
         'audit_dir': AUDIT_DIR,
+        'mcp_registration': MCP_REGISTRATION_JSON,
     }
     inventory: dict[str, dict[str, Any]] = {}
     for key, path in paths.items():
@@ -72,6 +76,70 @@ def get_storage_paths() -> dict[str, Any]:
             'size_bytes': size_bytes,
         }
     return inventory
+
+
+def record_mcp_registration_status(*, ok: bool, tool_count: int = 0, error: str | None = None) -> dict[str, Any]:
+    """Persist the latest GraphRAG MCP registration result for operator status."""
+    ensure_dirs()
+    payload = {
+        'ok': bool(ok),
+        'tool_count': int(tool_count or 0),
+        'error': str(error) if error else None,
+        'recorded_at': time.strftime('%Y-%m-%dT%H:%M:%S+09:00', time.localtime()),
+    }
+    tmp_path = f'{MCP_REGISTRATION_JSON}.tmp'
+    with open(tmp_path, 'w', encoding='utf-8') as f:
+        json.dump(payload, f, ensure_ascii=False, indent=2, sort_keys=True)
+    os.replace(tmp_path, MCP_REGISTRATION_JSON)
+    return payload
+
+
+def _read_mcp_registration_status() -> dict[str, Any]:
+    module_available = importlib.util.find_spec('app.services.mirofish.graphrag.mcp_tools') is not None
+    payload: dict[str, Any] = {
+        'module_available': module_available,
+        'registered': False,
+        'tool_count': 0,
+        'error': None,
+    }
+    if not os.path.isfile(MCP_REGISTRATION_JSON):
+        payload['state'] = 'not_seen'
+        return payload
+    try:
+        with open(MCP_REGISTRATION_JSON, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+    except (OSError, json.JSONDecodeError) as exc:
+        payload.update({'state': 'error', 'error': str(exc)})
+        return payload
+    payload.update({
+        'state': 'registered' if data.get('ok') else 'failed',
+        'registered': bool(data.get('ok')),
+        'tool_count': int(data.get('tool_count') or 0),
+        'error': data.get('error'),
+        'recorded_at': data.get('recorded_at'),
+    })
+    return payload
+
+
+def _workflow_enrichment_available() -> bool:
+    try:
+        from app.services.mirofish import workflow as workflow_service
+        return all(hasattr(workflow_service, name) for name in (
+            '_workflow_graphrag_summary',
+            '_workflow_source_freshness',
+            '_analysis_result',
+        ))
+    except Exception:
+        return False
+
+
+def _ui_available() -> bool:
+    frontend_root = os.path.join(BASE_DIR, 'frontend-react', 'src')
+    return all(os.path.isfile(path) for path in (
+        os.path.join(frontend_root, 'pages', 'admin', 'AdminEndpointsPage.tsx'),
+        os.path.join(frontend_root, 'components', 'admin', 'GraphRAGStatusCard.tsx'),
+        os.path.join(frontend_root, 'components', 'admin', 'GraphRAGEntityResolverCard.tsx'),
+    ))
 
 
 # ── Feature flags (청사진 §12 Phase A 완료 조건) ──────────────────────
@@ -158,8 +226,12 @@ def get_subsystem_status() -> dict[str, Any]:
     db_stats = _entities_db_stats()
     flags = get_feature_flags()
     state = _overall_state(inventory, db_stats)
+    mcp_status = _read_mcp_registration_status()
 
     b_resolver_done = bool(db_stats.get('entity_count', 0))
+    c_workflow_done = _workflow_enrichment_available()
+    d_ui_done = _ui_available()
+    e_mcp_done = bool(mcp_status.get('module_available'))
     # F_eval: eval 디렉토리에 eval_*.json 결과가 1개 이상 있으면 True
     try:
         f_eval_done = bool(glob.glob(os.path.join(EVAL_DIR, 'eval_*.json')))
@@ -172,16 +244,20 @@ def get_subsystem_status() -> dict[str, Any]:
         'phase': {
             'A_skeleton': True,
             'B_resolver': b_resolver_done,
-            'C_workflow_enrichment': False,
-            'D_ui': False,
-            'E_mcp': False,
+            'C_workflow_enrichment': c_workflow_done,
+            'D_ui': d_ui_done,
+            'E_mcp': e_mcp_done,
             'F_eval': f_eval_done,
         },
         'endpoints_live': {
             'status': True,
             'entities_resolve': b_resolver_done,
             'entities_get': b_resolver_done,
+            'scan_history': True,
+            'eval': True,
+            'mcp_tools_module': e_mcp_done,
         },
+        'mcp': mcp_status,
         'storage': inventory,
         'entities': db_stats,
         'flags': flags,
