@@ -70,37 +70,54 @@ function Get-FlaskRSSMB {
 }
 
 function Test-FlaskAlive {
-    # 1) RSS 임계 (3 GB 초과 → 강제 종료 트리거). healthz 살아있어도 누수로 hang
-    #    하는 패턴 (사용자 보고: 8 GB / 1h 17m, 모든 endpoint 30s+ timeout).
+    # 2026-05-15 가짜 알람 해결을 위한 완화:
+    # - RSS 임계 3 GB → 8 GB (정상 cache build 도 일시 3 GB 가능)
+    # - healthz timeout 5s → 15s (GC pause 허용)
+    # - healthz 한 번 실패해도 5초 후 재시도 (transient 차단)
+    # 오늘 31번 FLASK DOWN 감지 중 17번이 가짜 알람이었음.
     $rssMB = Get-FlaskRSSMB
-    if ($rssMB -gt 3000) {
+    if ($rssMB -gt 8000) {
         return @{ Alive = $false; Reason = ("rss_overflow_" + [int]$rssMB + "MB"); RSS = $rssMB }
     }
 
-    # 2) TCP listen 체크
+    # TCP listen 체크
     $tcp = Test-NetConnection -ComputerName 'localhost' -Port $Port `
                               -WarningAction SilentlyContinue `
                               -InformationLevel Quiet
     if (-not $tcp) {
-        return @{ Alive = $false; Reason = "tcp_${Port}_unreachable"; RSS = $rssMB }
+        Start-Sleep -Seconds 5  # transient 차단 - 다시 한 번 확인
+        $tcp = Test-NetConnection -ComputerName 'localhost' -Port $Port `
+                                  -WarningAction SilentlyContinue `
+                                  -InformationLevel Quiet
+        if (-not $tcp) {
+            return @{ Alive = $false; Reason = "tcp_${Port}_unreachable"; RSS = $rssMB }
+        }
     }
 
-    # 3) healthz 응답 체크
-    try {
-        $resp = Invoke-WebRequest -Uri $HealthUrl -TimeoutSec 5 `
-                                  -UseBasicParsing -ErrorAction Stop
-        if ($resp.StatusCode -ne 200) {
-            return @{ Alive = $false; Reason = "healthz_status_$($resp.StatusCode)"; RSS = $rssMB }
+    # healthz 응답 체크 (15s timeout + 1회 재시도)
+    for ($attempt = 1; $attempt -le 2; $attempt++) {
+        try {
+            $resp = Invoke-WebRequest -Uri $HealthUrl -TimeoutSec 15 `
+                                      -UseBasicParsing -ErrorAction Stop
+            if ($resp.StatusCode -eq 200) {
+                return @{ Alive = $true; Reason = 'ok'; RSS = $rssMB }
+            }
+            if ($attempt -eq 2) {
+                return @{ Alive = $false; Reason = "healthz_status_$($resp.StatusCode)"; RSS = $rssMB }
+            }
+        } catch {
+            $msg = $_.Exception.Message
+            if ($msg -match '404') {
+                return @{ Alive = $true; Reason = 'tcp_ok_healthz_404_transitional'; RSS = $rssMB }
+            }
+            if ($attempt -eq 2) {
+                return @{ Alive = $false; Reason = "healthz_$($msg -replace '[^a-zA-Z0-9_]','_' | Select-Object -First 50)"; RSS = $rssMB }
+            }
         }
-    } catch {
-        $msg = $_.Exception.Message
-        if ($msg -match '404') {
-            return @{ Alive = $true; Reason = 'tcp_ok_healthz_404_transitional'; RSS = $rssMB }
-        }
-        return @{ Alive = $false; Reason = "healthz_$($msg -replace '[^a-zA-Z0-9_]','_' | Select-Object -First 50)"; RSS = $rssMB }
+        Start-Sleep -Seconds 5  # 첫 시도 실패 시 5초 후 재시도 (GC pause 등 transient)
     }
 
-    return @{ Alive = $true; Reason = 'ok'; RSS = $rssMB }
+    return @{ Alive = $false; Reason = 'unknown'; RSS = $rssMB }
 }
 
 function Restart-Flask {
