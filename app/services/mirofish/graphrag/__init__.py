@@ -23,6 +23,10 @@ from app.services.mirofish.graphrag.resolver import (
     yahoo_to_entity_id,
     entity_id_to_kr_ticker,
 )
+from app.services.mirofish.graphrag.eval import (
+    run_jongga_v2_replay,
+    get_eval_history,
+)
 
 __all__ = [
     'get_storage_paths',
@@ -33,4 +37,6 @@ __all__ = [
     'populate_from_sources',
     'yahoo_to_entity_id',
     'entity_id_to_kr_ticker',
+    'run_jongga_v2_replay',
+    'get_eval_history',
 ]

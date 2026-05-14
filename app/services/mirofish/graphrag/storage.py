@@ -4,6 +4,7 @@
 """
 from __future__ import annotations
 
+import glob
 import os
 import sqlite3
 import time
@@ -159,6 +160,11 @@ def get_subsystem_status() -> dict[str, Any]:
     state = _overall_state(inventory, db_stats)
 
     b_resolver_done = bool(db_stats.get('entity_count', 0))
+    # F_eval: eval 디렉토리에 eval_*.json 결과가 1개 이상 있으면 True
+    try:
+        f_eval_done = bool(glob.glob(os.path.join(EVAL_DIR, 'eval_*.json')))
+    except OSError:
+        f_eval_done = False
     return {
         'service': 'mirofish-graphrag',
         'state': state,
@@ -169,7 +175,7 @@ def get_subsystem_status() -> dict[str, Any]:
             'C_workflow_enrichment': False,
             'D_ui': False,
             'E_mcp': False,
-            'F_eval': False,
+            'F_eval': f_eval_done,
         },
         'endpoints_live': {
             'status': True,

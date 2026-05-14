@@ -116,6 +116,158 @@ def workflow_outcome_summary(outcomes: dict[str, Any] | None) -> dict[str, Any]:
     return summary if isinstance(summary, dict) else {}
 
 
+def get_advisory_feedback(
+    *,
+    horizon_days: int = 5,
+    limit_workflows: int = 200,
+) -> dict[str, Any]:
+    """과거 workflow outcomes 통계로부터 향후 시그널 점수 조정 advisory 반환.
+
+    청사진 §10.6 Phase F: replay-safe outcome 이 Top3 점수에 advisory 로 반영되도록
+    pure-read aggregation 만 수행. 새 write 동작 없음.
+
+    Args:
+        horizon_days: forward 기준 (현재는 outcome.primary_horizon 값을 그대로 사용).
+        limit_workflows: 스캔할 최신 workflow 개수.
+
+    Returns:
+        dict — evaluated_count / hit_rate_recent / by_strategy_tag / by_market /
+        recommendations.tag_score_adjust / asof.
+        호출자는 채택 여부를 자유롭게 결정 (advisory only, 강제 X).
+    """
+    horizon_days = max(1, int(horizon_days or 5))
+    workflow_ids = _recent_workflow_ids(limit_workflows)
+    if not workflow_ids:
+        return {
+            'evaluated_count': 0,
+            'hit_rate_recent': None,
+            'by_strategy_tag': {},
+            'by_market': {},
+            'recommendations': {'tag_score_adjust': {}},
+            'asof': datetime.now(timezone.utc).isoformat(),
+            'note': 'no workflows available',
+        }
+
+    items: list[dict[str, Any]] = []
+    for wf_id in workflow_ids:
+        outcomes = read_workflow_outcomes(wf_id)
+        if not isinstance(outcomes, dict):
+            continue
+        for item in (outcomes.get('items') or []):
+            if not isinstance(item, dict):
+                continue
+            if item.get('status') in {'evaluated', 'partial'}:
+                items.append(item)
+
+    if not items:
+        return {
+            'evaluated_count': 0,
+            'hit_rate_recent': None,
+            'by_strategy_tag': {},
+            'by_market': {},
+            'recommendations': {'tag_score_adjust': {}},
+            'asof': datetime.now(timezone.utc).isoformat(),
+            'note': 'no evaluated items',
+        }
+
+    hits = [it for it in items if it.get('hit') is True]
+    hit_rate_recent = round(len(hits) / len(items), 4) if items else None
+
+    # strategy_tag / market 별 집계
+    by_tag: dict[str, dict[str, int]] = {}
+    by_market: dict[str, dict[str, int]] = {}
+    for it in items:
+        feature = it.get('feature_snapshot') if isinstance(it.get('feature_snapshot'), dict) else {}
+        tags = feature.get('strategy_tags') if isinstance(feature.get('strategy_tags'), list) else []
+        market = _infer_market(it.get('symbol') or '')
+        hit = bool(it.get('hit') is True)
+        for tag in tags:
+            tag_key = str(tag).strip()
+            if not tag_key:
+                continue
+            slot = by_tag.setdefault(tag_key, {'hit': 0, 'n': 0})
+            slot['n'] += 1
+            if hit:
+                slot['hit'] += 1
+        if market:
+            slot = by_market.setdefault(market, {'hit': 0, 'n': 0})
+            slot['n'] += 1
+            if hit:
+                slot['hit'] += 1
+
+    by_tag_rate = {
+        tag: {
+            'hit_rate': round(s['hit'] / s['n'], 4) if s['n'] else 0.0,
+            'n': s['n'],
+        }
+        for tag, s in by_tag.items()
+        if s['n'] >= 3  # 표본 부족 태그 제외
+    }
+    by_market_rate = {
+        mkt: {
+            'hit_rate': round(s['hit'] / s['n'], 4) if s['n'] else 0.0,
+            'n': s['n'],
+        }
+        for mkt, s in by_market.items()
+        if s['n'] >= 3
+    }
+
+    # recommendations: 전체 baseline 대비 가산/감산. baseline ± 0.15 이내는 0.
+    baseline = hit_rate_recent or 0.0
+    tag_adjust: dict[str, float] = {}
+    for tag, info in by_tag_rate.items():
+        delta = info['hit_rate'] - baseline
+        if abs(delta) < 0.10:
+            continue
+        # ±2점 범위로 클립 (advisory 의도)
+        adjust = round(max(-2.0, min(2.0, delta * 4.0)), 2)
+        if adjust != 0:
+            tag_adjust[tag] = adjust
+
+    return {
+        'evaluated_count': len(items),
+        'workflow_count_scanned': len(workflow_ids),
+        'hit_rate_recent': hit_rate_recent,
+        'horizon_days': horizon_days,
+        'by_strategy_tag': by_tag_rate,
+        'by_market': by_market_rate,
+        'recommendations': {
+            'tag_score_adjust': tag_adjust,
+            'baseline_hit_rate': baseline,
+            'note': 'advisory only — caller decides adoption',
+        },
+        'lookahead_safe': True,
+        'asof': datetime.now(timezone.utc).isoformat(),
+    }
+
+
+def _recent_workflow_ids(limit: int) -> list[str]:
+    if not os.path.isdir(WORKFLOWS_ROOT):
+        return []
+    try:
+        entries = [
+            (entry.name, entry.stat().st_mtime)
+            for entry in os.scandir(WORKFLOWS_ROOT)
+            if entry.is_dir()
+        ]
+    except OSError:
+        return []
+    entries.sort(key=lambda t: t[1], reverse=True)
+    return [name for name, _ in entries[: max(1, int(limit))]]
+
+
+def _infer_market(symbol: str) -> str:
+    s = str(symbol or '').strip()
+    digits = ''.join(ch for ch in s if ch.isdigit())
+    if len(digits) == 6:
+        return 'KR'
+    if not s:
+        return ''
+    if '-' in s or s.endswith('USDT') or s.endswith('USD'):
+        return 'CRYPTO'
+    return 'US'
+
+
 def evaluate_result_outcome(
     result: dict[str, Any],
     price_rows: list[dict[str, Any]] | None,

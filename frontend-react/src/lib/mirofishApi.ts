@@ -483,9 +483,21 @@ export interface MiroFishWorkflowAnalysisResult {
         bearish?: number;
         target?: string;
         summary?: string;
+        // ── Phase C (P0 #4): 종목 식별 + 분석 기준일 ──
+        symbol?: string;
+        market?: string;
+        reference_date?: string | null;
+        target_display?: string;
     };
     graph?: Record<string, any>;
     brain?: Record<string, any>;
+    // ── Phase C: per-top3 GraphRAG mini-dict ──
+    graphrag?: {
+        links?: number;
+        entities?: number;
+        relations?: number;
+        method?: string;
+    };
     final_score?: number;
     forward_return_pct?: number | null;
     outcome_status?: string;
@@ -493,6 +505,40 @@ export interface MiroFishWorkflowAnalysisResult {
     outcome?: MiroFishOutcomeItem;
     reason?: string;
     artifacts?: Record<string, string>;
+}
+
+// ── Phase C: workflow-level GraphRAG summary ──
+export interface MiroFishWorkflowGraphRAG {
+    mode?: string;
+    entity_count?: number;
+    edge_count?: number;
+    source_coverage?: {
+        scanner?: string;
+        kis?: string;
+        tradingview?: string;
+        dart?: string;
+        news?: string;
+        deepseek?: string;
+        [key: string]: string | undefined;
+    };
+}
+
+export interface MiroFishWorkflowSourceFreshness {
+    status?: 'fresh' | 'partial' | 'stale' | string;
+    last_update?: string | null;
+    data_age_hours?: number | null;
+    sources?: {
+        scanner_freshness?: string;
+        stale_files?: string[] | number;
+        available_files?: string[] | number;
+        missing_required_files?: string[] | number;
+        kis_freshness?: string;
+        tradingview_freshness?: string;
+        dart_freshness?: string;
+        news_freshness?: string;
+        deepseek_freshness?: string;
+        [key: string]: any;
+    };
 }
 
 export interface MiroFishWorkflow {
@@ -520,6 +566,9 @@ export interface MiroFishWorkflow {
     blocked_reason?: string | null;
     alert_blocked?: boolean;
     links?: Record<string, string>;
+    // ── Phase C: workflow-level GraphRAG + source freshness ──
+    graphrag?: MiroFishWorkflowGraphRAG;
+    source_freshness?: MiroFishWorkflowSourceFreshness;
 }
 
 export interface MiroFishWorkflowStatus {
@@ -528,6 +577,120 @@ export interface MiroFishWorkflowStatus {
     mode?: string;
     latest_workflow?: MiroFishWorkflow | null;
     checked_at?: string;
+}
+
+// ── Phase A/B/D: GraphRAG subsystem ──────────────────────────────────
+
+export interface MiroFishGraphRAGPhase {
+    A_skeleton?: boolean;
+    B_resolver?: boolean;
+    C_workflow_enrichment?: boolean;
+    D_ui?: boolean;
+    E_mcp?: boolean;
+    F_eval?: boolean;
+}
+
+export interface MiroFishGraphRAGEndpointsLive {
+    status?: boolean;
+    entities_resolve?: boolean;
+    entities_get?: boolean;
+    [key: string]: boolean | undefined;
+}
+
+export interface MiroFishGraphRAGStoragePath {
+    path?: string;
+    exists?: boolean;
+    is_dir?: boolean;
+    size_bytes?: number;
+}
+
+export interface MiroFishGraphRAGEntities {
+    present?: boolean;
+    entity_count?: number;
+    alias_count?: number;
+    external_id_count?: number;
+    error?: string;
+}
+
+export interface MiroFishGraphRAGFlags {
+    shadow_mode?: boolean;
+    devil_advocate_enabled?: boolean;
+    multi_ai_include_grok?: boolean;
+    gdelt_enabled?: boolean;
+    cache_ttl_sec?: number;
+    vector_backend?: string;
+    embedding_model?: string;
+    keys_present?: Record<string, boolean>;
+}
+
+export interface MiroFishGraphRAGStatus {
+    service?: string;
+    state: 'not_initialized' | 'degraded' | 'ready' | 'error' | string;
+    ready: boolean;
+    phase: MiroFishGraphRAGPhase;
+    endpoints_live: MiroFishGraphRAGEndpointsLive;
+    storage: Record<string, MiroFishGraphRAGStoragePath>;
+    entities: MiroFishGraphRAGEntities;
+    flags: MiroFishGraphRAGFlags;
+    base_dir?: string;
+    data_dir?: string;
+    asof?: string;
+    error?: string;
+}
+
+export type MiroFishGraphRAGMatchReason =
+    | 'ticker_direct'
+    | 'yahoo_ticker'
+    | 'corp_code_reverse'
+    | 'exact_alias'
+    | 'exact_name'
+    | 'chosung_exact'
+    | 'chosung_prefix'
+    | 'prefix_name'
+    | 'fuzzy'
+    | string;
+
+export interface MiroFishGraphRAGEntityIds {
+    ticker_kr?: string | null;
+    yahoo_ticker?: string | null;
+    corp_code?: string | null;
+    figi?: string | null;
+    isin?: string | null;
+    [key: string]: string | null | undefined;
+}
+
+export interface MiroFishGraphRAGEntityMatch {
+    entity_id: string;
+    type?: string;
+    name: string;
+    name_ko?: string | null;
+    name_en?: string | null;
+    symbol: string | null;
+    market: string | null;
+    exchange?: string | null;
+    country?: string | null;
+    confidence: number;
+    match_reason: MiroFishGraphRAGMatchReason;
+    ids?: MiroFishGraphRAGEntityIds;
+}
+
+export interface MiroFishGraphRAGResolveResponse {
+    query: string;
+    normalized?: string;
+    matches: MiroFishGraphRAGEntityMatch[];
+    asof?: string;
+    source?: string;
+    error?: string;
+}
+
+export interface MiroFishGraphRAGEntityDetail extends MiroFishGraphRAGEntityMatch {
+    aliases?: Array<{
+        alias: string;
+        lang?: string;
+        source?: string;
+        confidence?: number;
+    }>;
+    [key: string]: any;
 }
 
 export interface MiroFishPriceChartPoint {
@@ -1362,6 +1525,32 @@ export const mirofishApi = {
             ? `/api/admin/mirofish/workflows/${encodeURIComponent(workflowId)}/share?rank=${rank}`
             : `/api/admin/mirofish/workflows/${encodeURIComponent(workflowId)}/share`;
         return fetchAuthAPI<MiroFishSharePayload>(path);
+    },
+    /** Phase A–D: GraphRAG subsystem control plane.
+     *
+     * Backend prefix: `/api/admin/mirofish/graphrag`.
+     * - status: subsystem state + phase + flags + entities + endpoints_live
+     * - resolveEntity: 한글/티커/초성/yahoo/corp_code 입력을 표준 entity 로 변환
+     * - getEntity: 단일 entity 상세 (entity_id 예: `kr:005930`)
+     */
+    graphrag: {
+        getStatus: async () => fetchAuthAPI<MiroFishGraphRAGStatus>(
+            '/api/admin/mirofish/graphrag/status',
+        ),
+        resolveEntity: async (
+            q: string,
+            options: { hint_market?: string; limit?: number } = {},
+        ) => {
+            const search = new URLSearchParams({ q });
+            if (options.hint_market) search.set('hint_market', options.hint_market);
+            if (options.limit !== undefined) search.set('limit', String(options.limit));
+            return fetchAuthAPI<MiroFishGraphRAGResolveResponse>(
+                `/api/admin/mirofish/graphrag/entities/resolve?${search.toString()}`,
+            );
+        },
+        getEntity: async (entityId: string) => fetchAuthAPI<MiroFishGraphRAGEntityDetail>(
+            `/api/admin/mirofish/graphrag/entities/${encodeURIComponent(entityId)}`,
+        ),
     },
 };
 

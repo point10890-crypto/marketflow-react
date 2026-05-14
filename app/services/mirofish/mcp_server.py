@@ -732,6 +732,18 @@ def create_mcp_server(
         except Exception as exc:
             return {'error': f'{type(exc).__name__}: {exc}', 'symbol': symbol}
 
+    # =========================================================
+    # Phase E: GraphRAG read-only tools (graphrag_* prefix)
+    # 청사진 §8.1 — status / resolve / get_entity 만 노출.
+    # §8.3 의 ingest / eval_run 은 의도적 제외.
+    # =========================================================
+    try:
+        from app.services.mirofish.graphrag.mcp_tools import register_graphrag_tools
+        register_graphrag_tools(mcp)
+    except Exception:
+        # graphrag 모듈 적재 실패해도 기존 MCP tools 는 정상 동작 보존
+        pass
+
     return mcp
 
 

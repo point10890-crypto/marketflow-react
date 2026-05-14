@@ -8,6 +8,9 @@ import QuickActionsFooter from '@/components/admin/QuickActionsFooter';
 import MobileTopPicksHero from '@/components/admin/MobileTopPicksHero';
 import AutoRunnerCard from '@/components/admin/AutoRunnerCard';
 import Top3TradingViewCharts from '@/components/admin/Top3TradingViewCharts';
+import GraphRAGStatusCard from '@/components/admin/GraphRAGStatusCard';
+import GraphRAGEntityResolverCard from '@/components/admin/GraphRAGEntityResolverCard';
+import SourceFreshnessMatrix from '@/components/admin/SourceFreshnessMatrix';
 
 const agentCounts = [3, 7, 10, 15];
 const defaultTarget = '삼성전자';
@@ -645,6 +648,15 @@ function AlphaBoardPanel({
                         ))}
                     </div>
 
+                    {(workflow?.graphrag || workflow?.source_freshness) && (
+                        <div className="mt-3">
+                            <SourceFreshnessMatrix
+                                sourceFreshness={workflow.source_freshness}
+                                graphrag={workflow.graphrag}
+                            />
+                        </div>
+                    )}
+
                     {topWorkflow.length > 0 && (
                         <div className="mt-3 space-y-2">
                             {/* TOP 3 일괄 공유 버튼 */}
@@ -685,11 +697,35 @@ function AlphaBoardPanel({
                                                 </button>
                                             )}
                                         </div>
-                                        <div className="mt-1 truncate text-sm font-medium text-anthropic-cream">{item.target || item.candidate?.display_name || item.symbol}</div>
-                                        <div className="mt-1 font-mono text-[11px] text-anthropic-darkMuted">{item.symbol || item.candidate?.symbol} · score {Math.round(Number(item.final_score || 0))}</div>
+                                        <div className="mt-1 truncate text-sm font-medium text-anthropic-cream">
+                                            {item.verdict?.target_display || item.target || item.candidate?.display_name || item.symbol}
+                                        </div>
+                                        <div className="mt-1 font-mono text-[11px] text-anthropic-darkMuted">
+                                            {item.verdict?.symbol || item.symbol || item.candidate?.symbol}
+                                            {item.verdict?.market && <span className="ml-1 text-anthropic-darkMuted/80">· {item.verdict.market}</span>}
+                                            <span className="ml-1">· score {Math.round(Number(item.final_score || 0))}</span>
+                                        </div>
+                                        {item.verdict?.reference_date && (
+                                            <div className="mt-0.5 font-mono text-[10px] text-anthropic-darkMuted/70">
+                                                ref {String(item.verdict.reference_date).slice(0, 10)}
+                                            </div>
+                                        )}
                                         <div className="mt-2 inline-flex rounded-full border border-anthropic-darkLine bg-anthropic-dark px-2 py-1 text-[10px] font-medium text-anthropic-cream">
                                             {item.verdict?.action || 'HOLD'} {item.verdict?.confidence_pct || 0}%
                                         </div>
+                                        {item.graphrag && (
+                                            <div className="mt-2 flex flex-wrap gap-1 text-[9px] font-bold text-anthropic-darkMuted">
+                                                <span className="rounded border border-amber-400/15 bg-amber-400/[0.06] px-1.5 py-0.5 text-amber-200/80">
+                                                    L {item.graphrag.links ?? 0}
+                                                </span>
+                                                <span className="rounded border border-amber-400/15 bg-amber-400/[0.06] px-1.5 py-0.5 text-amber-200/80">
+                                                    E {item.graphrag.entities ?? 0}
+                                                </span>
+                                                <span className="rounded border border-amber-400/15 bg-amber-400/[0.06] px-1.5 py-0.5 text-amber-200/80">
+                                                    R {item.graphrag.relations ?? 0}
+                                                </span>
+                                            </div>
+                                        )}
                                         <div className={`mt-2 inline-flex rounded-full border px-2 py-1 text-[10px] font-medium ${outcomeTone(item.outcome?.status, item.outcome?.hit)}`}>
                                             {item.outcome?.forward_return_pct === undefined || item.outcome?.forward_return_pct === null
                                                 ? String(item.outcome?.status || 'pending')
@@ -2489,6 +2525,8 @@ export default function AdminEndpointsPage() {
                         <aside className="order-1 lg:order-2 mt-4 flex flex-col gap-3 lg:mt-0 lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto lg:pr-1">
                             <AutoRunnerCard />
                             <TodaysPipelineCard />
+                            <GraphRAGStatusCard />
+                            <GraphRAGEntityResolverCard />
                             <RecentOutcomesBoard />
                             <QuickActionsFooter />
                         </aside>
