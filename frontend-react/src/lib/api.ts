@@ -872,8 +872,12 @@ function withToken(extra: Record<string, string> | undefined, apiToken?: string)
     return authHeaders(extra);
 }
 
-export async function fetchAuthAPI<T>(endpoint: string, apiToken?: string): Promise<T> {
-    const response = await _authFetch(`${API_BASE}${endpoint}`, { headers: withToken(undefined, apiToken) });
+export async function fetchAuthAPI<T>(endpoint: string, apiToken?: string, timeoutMs?: number): Promise<T> {
+    const response = await _authFetch(
+        `${API_BASE}${endpoint}`,
+        { headers: withToken(undefined, apiToken) },
+        timeoutMs,
+    );
     return response.json();
 }
 

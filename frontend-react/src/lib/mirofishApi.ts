@@ -1651,12 +1651,19 @@ export const mirofishApi = {
         120000,
     ),
     /** 오늘의 검출 파이프라인 + 시장 컨텍스트 스냅샷 */
+    // 백엔드 cold 첫 호출 60s 이상 가능 (워크플로우 + scanner 통합 집계).
+    // 60s timeout 부여, 추후 백엔드 캐시 추가 시 단축.
     getPipelineToday: async () => fetchAuthAPI<MiroFishPipelineToday>(
         '/api/admin/mirofish/pipeline/today',
+        undefined,
+        90000,
     ),
     /** Auto-runner (Stage 2 자동 실행기) 상태 */
+    // 백엔드 21s+ — recent_cycles 등 무거운 응답. 45s timeout.
     getAutoRunnerStatus: async () => fetchAuthAPI<MiroFishAutoRunnerStatus>(
         '/api/admin/mirofish/auto-runner/status',
+        undefined,
+        45000,
     ),
     pauseAutoRunner: async (paused: boolean) => postAuthAPI<MiroFishAutoRunnerStatus>(
         '/api/admin/mirofish/auto-runner/pause',
