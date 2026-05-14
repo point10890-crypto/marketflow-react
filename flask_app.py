@@ -43,6 +43,14 @@ for d in ['data', 'logs', 'us_market/output']:
 # ── 메모리 누수 진단 모드 (운영 진단용, 평소 OFF) ──
 # GRAPHRAG_TRACEMALLOC=1 으로 시작하면 tracemalloc 활성화. RSS 누수 발생 시
 # /api/admin/mirofish/_debug/memory?tracemalloc=1 로 top allocations 확인 가능.
+# .env 파일이 create_app() 안에서 load_dotenv 되므로 그 전에 .env 를 직접 읽어
+# GRAPHRAG_TRACEMALLOC 환경변수를 적용한다.
+try:
+    from dotenv import load_dotenv as _load_dotenv
+    _load_dotenv(os.path.join(BASE_DIR, '.env'), override=False)
+except ImportError:
+    pass
+
 if os.getenv('GRAPHRAG_TRACEMALLOC', '0') == '1':
     import tracemalloc
     tracemalloc.start(25)  # 25 frame deep — 충분히 호출자 traceback 확보
