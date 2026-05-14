@@ -81,4 +81,59 @@ def register_graphrag_tools(mcp: Any) -> int:
         return graphrag_service.get_entity(entity_id)
     count += 1
 
+    @mcp.tool()
+    def graphrag_get_scan_history(
+        days: int = 30,
+        limit_symbols: int = 100,
+        min_alpha: float = 0.0,
+    ) -> dict[str, Any]:
+        """All scanner runs + workflow outcomes aggregated per symbol.
+
+        HTTP 대응: ``GET /api/admin/mirofish/graphrag/scan-history``.
+
+        Args:
+            days: window in days (1-365).
+            limit_symbols: top N symbols by scan_count (1-1000).
+            min_alpha: filter symbols with alpha_avg < min_alpha.
+
+        Returns:
+            window_days, total_unique_symbols, total_scans, total_workflows,
+            items[]: symbol/scan_count/alpha_avg/workflow_count/outcome,
+            summary: evaluated_count/hit_rate/avg_return_pct.
+        """
+        return graphrag_service.get_scan_history(
+            days=int(days or 30),
+            limit_symbols=int(limit_symbols or 100),
+            min_alpha=float(min_alpha or 0),
+        )
+    count += 1
+
+    @mcp.tool()
+    def graphrag_get_symbol_history(
+        symbol: str,
+        days: int = 180,
+    ) -> dict[str, Any]:
+        """Single-symbol scan + workflow + outcome history.
+
+        HTTP 대응: ``GET /api/admin/mirofish/graphrag/scan-history/<symbol>``.
+
+        Args:
+            symbol: KR 6-digit code or US/Crypto ticker.
+            days: window in days (1-730).
+
+        Returns:
+            symbol, display_name, market, scans[], workflows[],
+            aggregate: total_scans/total_workflows/outcome_hit_rate/avg_forward_return_pct.
+
+        Note:
+            Performance summary (`graphrag_get_scan_performance`) is intentionally
+            NOT exposed via MCP — it scans the full data window and can be expensive.
+            Caller should use the HTTP endpoint directly when needed.
+        """
+        return graphrag_service.get_symbol_history(
+            symbol,
+            limit_days=int(days or 180),
+        )
+    count += 1
+
     return count

@@ -198,3 +198,89 @@ def graphrag_metrics():
         'advisory_feedback': advisory,
         'asof': time.strftime('%Y-%m-%dT%H:%M:%S+09:00', time.localtime()),
     }), 200
+
+
+# ── Phase G: MCP scan history + performance ───────────────────────────
+
+@admin_mirofish_graphrag_bp.route('/scan-history', methods=['GET'])
+@admin_required
+def graphrag_scan_history():
+    """모든 scanner runs + workflow outcomes 를 symbol 단위로 집계.
+
+    Query params:
+      - days (int, default 30, max 365): 조회 윈도우.
+      - limit (int, default 100, max 1000): 상위 N 종목.
+      - min_alpha (float, default 0): alpha_avg 필터.
+
+    Response 핵심 필드:
+      window_days, total_unique_symbols, total_scans, total_workflows,
+      items: [{symbol, display_name, scan_count, alpha_avg, workflow_count,
+               outcome: {hit_count, miss_count, hit_rate, avg_forward_return_pct}}],
+      summary: {evaluated_count, hit_rate, avg_return_pct}.
+    """
+    try:
+        days = int(request.args.get('days', '30'))
+    except (TypeError, ValueError):
+        days = 30
+    try:
+        limit = int(request.args.get('limit', '100'))
+    except (TypeError, ValueError):
+        limit = 100
+    try:
+        min_alpha = float(request.args.get('min_alpha', '0'))
+    except (TypeError, ValueError):
+        min_alpha = 0.0
+    try:
+        return jsonify(graphrag_service.get_scan_history(
+            days=days,
+            limit_symbols=limit,
+            min_alpha=min_alpha,
+        )), 200
+    except Exception as exc:  # pragma: no cover — defensive
+        return jsonify({
+            'error': str(exc),
+            'items': [],
+            'summary': {},
+        }), 500
+
+
+@admin_mirofish_graphrag_bp.route('/scan-history-performance', methods=['GET'])
+@admin_required
+def graphrag_scan_performance():
+    """전체 통계 + 그룹별 breakdown (KPI/IC/by_market/by_tag/top_performers).
+
+    별도 path (``/scan-history-performance``) 로 분리한 이유:
+      `/scan-history/<symbol>` 의 path converter 와 충돌 회피.
+
+    Query params:
+      - days (int, default 60, max 365): 조회 윈도우.
+    """
+    try:
+        days = int(request.args.get('days', '60'))
+    except (TypeError, ValueError):
+        days = 60
+    try:
+        return jsonify(graphrag_service.get_performance_summary(days=days)), 200
+    except Exception as exc:
+        return jsonify({'error': str(exc)}), 500
+
+
+@admin_mirofish_graphrag_bp.route('/scan-history/<path:symbol>', methods=['GET'])
+@admin_required
+def graphrag_symbol_history(symbol: str):
+    """단일 종목 history (모든 scanner 등장 + workflow top3 진입 + outcome).
+
+    Query params:
+      - days (int, default 180, max 730).
+    """
+    try:
+        days = int(request.args.get('days', '180'))
+    except (TypeError, ValueError):
+        days = 180
+    if not symbol:
+        return jsonify({'error': 'symbol required'}), 400
+    try:
+        data = graphrag_service.get_symbol_history(symbol, limit_days=days)
+        return jsonify(data), 200
+    except Exception as exc:
+        return jsonify({'error': str(exc), 'symbol': symbol}), 500

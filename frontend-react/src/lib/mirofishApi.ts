@@ -693,6 +693,159 @@ export interface MiroFishGraphRAGEntityDetail extends MiroFishGraphRAGEntityMatc
     [key: string]: any;
 }
 
+// ── Phase G: scan history + performance ─────────────────────────────
+
+export interface MiroFishScanHistoryOutcome {
+    hit_count: number;
+    miss_count: number;
+    pending_count: number;
+    neutral_count: number;
+    evaluated_count: number;
+    hit_rate: number | null;
+    avg_forward_return_pct: number | null;
+    best_return_pct: number | null;
+    worst_return_pct: number | null;
+}
+
+export interface MiroFishScanHistoryItem {
+    symbol: string;
+    display_name: string;
+    market: string;
+    scan_count: number;
+    scan_first_date: string;
+    scan_last_date: string;
+    alpha_avg: number;
+    alpha_max: number;
+    alpha_min: number;
+    risk_avg: number;
+    strategy_tags: string[];
+    workflow_count: number;
+    verdict_actions: Record<string, number>;
+    outcome: MiroFishScanHistoryOutcome;
+    last_target_display?: string | null;
+}
+
+export interface MiroFishScanHistorySummary {
+    evaluated_count: number;
+    hit_count: number;
+    miss_count: number;
+    hit_rate: number | null;
+    avg_return_pct: number | null;
+}
+
+export interface MiroFishScanHistoryResponse {
+    window_days: number;
+    min_alpha: number;
+    generated_at: string;
+    total_unique_symbols: number;
+    total_scans: number;
+    total_workflows: number;
+    returned_items: number;
+    items: MiroFishScanHistoryItem[];
+    summary: MiroFishScanHistorySummary;
+    lookahead_safe?: boolean;
+}
+
+export interface MiroFishScanHistoryScanEntry {
+    date: string;
+    scanner_run_id: string;
+    run_date?: string;
+    rank?: number | null;
+    symbol: string;
+    display_name: string;
+    market: string;
+    alpha_score: number;
+    risk_score: number;
+    ranking_score: number;
+    action: string;
+    signal_quality?: string;
+    strategy_tags: string[];
+}
+
+export interface MiroFishScanHistoryWorkflowOutcome {
+    status: string;
+    hit: boolean | null;
+    forward_return_pct: number | null;
+    entry_date?: string | null;
+    primary_horizon_days?: number | null;
+    max_forward_return_pct?: number | null;
+    max_drawdown_pct?: number | null;
+    stopped?: boolean | null;
+}
+
+export interface MiroFishScanHistoryWorkflowEntry {
+    date: string;
+    workflow_id: string;
+    symbol: string;
+    display_name: string;
+    market: string;
+    rank?: number | null;
+    final_score: number;
+    verdict: {
+        action: string;
+        confidence_pct: number;
+        target_display: string;
+    };
+    outcome: MiroFishScanHistoryWorkflowOutcome;
+}
+
+export interface MiroFishSymbolHistoryResponse {
+    symbol: string;
+    display_name: string;
+    market: string;
+    window_days: number;
+    scans: MiroFishScanHistoryScanEntry[];
+    workflows: MiroFishScanHistoryWorkflowEntry[];
+    aggregate: {
+        total_scans: number;
+        total_workflows: number;
+        evaluated_count: number;
+        hit_count: number;
+        outcome_hit_rate: number | null;
+        avg_forward_return_pct: number | null;
+    };
+    generated_at: string;
+    lookahead_safe?: boolean;
+    error?: string;
+}
+
+export interface MiroFishScanPerformanceGroupStat {
+    n: number;
+    hit_rate: number | null;
+    avg_return_pct: number | null;
+}
+
+export interface MiroFishScanPerformanceTopPerformer {
+    symbol: string;
+    display_name: string;
+    market: string;
+    n: number;
+    hit_rate: number;
+    avg_return_pct: number;
+}
+
+export interface MiroFishScanPerformanceResponse {
+    service?: string;
+    window_days: number;
+    generated_at: string;
+    total_signals: number;
+    evaluated: number;
+    pending: number;
+    hit_count: number;
+    miss_count: number;
+    hit_rate: number | null;
+    avg_return_pct: number | null;
+    ic_signal_to_return: number | null;
+    workflow_count_scanned: number;
+    scanner_runs_scanned: number;
+    by_market: Record<string, MiroFishScanPerformanceGroupStat>;
+    by_strategy_tag: Record<string, MiroFishScanPerformanceGroupStat>;
+    by_verdict_action: Record<string, MiroFishScanPerformanceGroupStat>;
+    by_alpha_bucket: Record<string, MiroFishScanPerformanceGroupStat>;
+    top_performers: MiroFishScanPerformanceTopPerformer[];
+    lookahead_safe?: boolean;
+}
+
 export interface MiroFishPriceChartPoint {
     date: string;
     open: number;
@@ -1551,6 +1704,33 @@ export const mirofishApi = {
         getEntity: async (entityId: string) => fetchAuthAPI<MiroFishGraphRAGEntityDetail>(
             `/api/admin/mirofish/graphrag/entities/${encodeURIComponent(entityId)}`,
         ),
+        /** Phase G: 전체 종목 스캔 히스토리 + outcome 집계. */
+        getScanHistory: async (options: { days?: number; limit?: number; min_alpha?: number } = {}) => {
+            const search = new URLSearchParams();
+            if (options.days !== undefined) search.set('days', String(options.days));
+            if (options.limit !== undefined) search.set('limit', String(options.limit));
+            if (options.min_alpha !== undefined) search.set('min_alpha', String(options.min_alpha));
+            const qs = search.toString();
+            return fetchAuthAPI<MiroFishScanHistoryResponse>(
+                qs
+                    ? `/api/admin/mirofish/graphrag/scan-history?${qs}`
+                    : '/api/admin/mirofish/graphrag/scan-history',
+            );
+        },
+        /** Phase G: 단일 종목의 모든 scan 등장 + workflow 진입 상세. */
+        getSymbolHistory: async (symbol: string, days?: number) => {
+            const qs = days !== undefined ? `?days=${days}` : '';
+            return fetchAuthAPI<MiroFishSymbolHistoryResponse>(
+                `/api/admin/mirofish/graphrag/scan-history/${encodeURIComponent(symbol)}${qs}`,
+            );
+        },
+        /** Phase G: 전체 성과 통계 (KPI/IC/by_market/by_tag/top_performers). */
+        getScanPerformance: async (days?: number) => {
+            const qs = days !== undefined ? `?days=${days}` : '';
+            return fetchAuthAPI<MiroFishScanPerformanceResponse>(
+                `/api/admin/mirofish/graphrag/scan-history-performance${qs}`,
+            );
+        },
     },
 };
 

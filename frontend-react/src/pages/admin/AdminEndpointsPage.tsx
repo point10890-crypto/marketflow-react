@@ -10,6 +10,8 @@ import AutoRunnerCard from '@/components/admin/AutoRunnerCard';
 import Top3TradingViewCharts from '@/components/admin/Top3TradingViewCharts';
 import GraphRAGStatusCard from '@/components/admin/GraphRAGStatusCard';
 import GraphRAGEntityResolverCard from '@/components/admin/GraphRAGEntityResolverCard';
+import ScanPerformanceCard from '@/components/admin/ScanPerformanceCard';
+import ScanHistoryCard from '@/components/admin/ScanHistoryCard';
 import SourceFreshnessMatrix from '@/components/admin/SourceFreshnessMatrix';
 
 const agentCounts = [3, 7, 10, 15];
@@ -2527,6 +2529,8 @@ export default function AdminEndpointsPage() {
                             <TodaysPipelineCard />
                             <GraphRAGStatusCard />
                             <GraphRAGEntityResolverCard />
+                            <ScanPerformanceCard />
+                            <ScanHistoryCard />
                             <RecentOutcomesBoard />
                             <QuickActionsFooter />
                         </aside>

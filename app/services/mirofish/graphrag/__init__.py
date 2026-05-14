@@ -27,6 +27,11 @@ from app.services.mirofish.graphrag.eval import (
     run_jongga_v2_replay,
     get_eval_history,
 )
+from app.services.mirofish.graphrag.scan_history import (
+    get_scan_history,
+    get_symbol_history,
+    get_performance_summary,
+)
 
 __all__ = [
     'get_storage_paths',
@@ -39,4 +44,7 @@ __all__ = [
     'entity_id_to_kr_ticker',
     'run_jongga_v2_replay',
     'get_eval_history',
+    'get_scan_history',
+    'get_symbol_history',
+    'get_performance_summary',
 ]
