@@ -70,22 +70,25 @@ function Get-FlaskRSSMB {
 }
 
 function Test-FlaskAlive {
-    # 2026-05-15 가짜 알람 해결을 위한 완화:
-    # - RSS 임계 3 GB → 8 GB (정상 cache build 도 일시 3 GB 가능)
-    # - healthz timeout 5s → 15s (GC pause 허용)
-    # - healthz 한 번 실패해도 5초 후 재시도 (transient 차단)
-    # 오늘 31번 FLASK DOWN 감지 중 17번이 가짜 알람이었음.
+    # 2026-05-15 miniPC 홈서버 운영 시점 — watchdog 역할 최소화.
+    # 본PC 잦은 재부팅 시대의 공격적 감시 정책 폐기. 진짜 OOM 또는
+    # 완전 hang 만 잡고, 평소는 손대지 않는다.
+    #
+    # - RSS 임계 12 GB (정말 OOM 직전만 — miniPC 16 GB 기준)
+    # - healthz timeout 30s (cold cache build + GC pause 충분 허용)
+    # - 30초 timeout 2회 연속 실패 + 30초 간격 = 진짜 hang 일 때만 죽임
+    # - TCP listen 도 같은 패턴
     $rssMB = Get-FlaskRSSMB
-    if ($rssMB -gt 8000) {
+    if ($rssMB -gt 12000) {
         return @{ Alive = $false; Reason = ("rss_overflow_" + [int]$rssMB + "MB"); RSS = $rssMB }
     }
 
-    # TCP listen 체크
+    # TCP listen 체크 (1차)
     $tcp = Test-NetConnection -ComputerName 'localhost' -Port $Port `
                               -WarningAction SilentlyContinue `
                               -InformationLevel Quiet
     if (-not $tcp) {
-        Start-Sleep -Seconds 5  # transient 차단 - 다시 한 번 확인
+        Start-Sleep -Seconds 30  # 진짜 hang 확정 위해 30초 대기
         $tcp = Test-NetConnection -ComputerName 'localhost' -Port $Port `
                                   -WarningAction SilentlyContinue `
                                   -InformationLevel Quiet
@@ -94,10 +97,10 @@ function Test-FlaskAlive {
         }
     }
 
-    # healthz 응답 체크 (15s timeout + 1회 재시도)
+    # healthz 응답 체크 (30s timeout, 2번 연속 실패 시만 죽임)
     for ($attempt = 1; $attempt -le 2; $attempt++) {
         try {
-            $resp = Invoke-WebRequest -Uri $HealthUrl -TimeoutSec 15 `
+            $resp = Invoke-WebRequest -Uri $HealthUrl -TimeoutSec 30 `
                                       -UseBasicParsing -ErrorAction Stop
             if ($resp.StatusCode -eq 200) {
                 return @{ Alive = $true; Reason = 'ok'; RSS = $rssMB }
@@ -114,7 +117,7 @@ function Test-FlaskAlive {
                 return @{ Alive = $false; Reason = "healthz_$($msg -replace '[^a-zA-Z0-9_]','_' | Select-Object -First 50)"; RSS = $rssMB }
             }
         }
-        Start-Sleep -Seconds 5  # 첫 시도 실패 시 5초 후 재시도 (GC pause 등 transient)
+        Start-Sleep -Seconds 30  # 진짜 hang 인지 30초 후 재확인
     }
 
     return @{ Alive = $false; Reason = 'unknown'; RSS = $rssMB }
