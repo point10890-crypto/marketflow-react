@@ -1691,7 +1691,7 @@ export const mirofishApi = {
         undefined,
         30000,
     ),
-    /** 최근 N일 추천 종목 outcomes 보드 */
+    /** 최근 N일 추천 종목 outcomes 보드 — 64 워크플로우 + outcome 통합으로 cold 30s+ */
     getOutcomesBoard: async (params: { days?: number; limit?: number } = {}) => {
         const search = new URLSearchParams();
         if (params.days !== undefined) search.set('days', String(params.days));
@@ -1699,6 +1699,8 @@ export const mirofishApi = {
         const qs = search.toString();
         return fetchAuthAPI<MiroFishOutcomesBoard>(
             `/api/admin/mirofish/outcomes/board${qs ? `?${qs}` : ''}`,
+            undefined,
+            60000,
         );
     },
     /** 카카오톡 공유 payload — workflow의 TOP 3 또는 단일 rank. */
@@ -1733,7 +1735,7 @@ export const mirofishApi = {
         getEntity: async (entityId: string) => fetchAuthAPI<MiroFishGraphRAGEntityDetail>(
             `/api/admin/mirofish/graphrag/entities/${encodeURIComponent(entityId)}`,
         ),
-        /** Phase G: 전체 종목 스캔 히스토리 + outcome 집계. */
+        /** Phase G: 전체 종목 스캔 히스토리 + outcome 집계. cold 9-15s (캐시 후 < 1s). */
         getScanHistory: async (options: { days?: number; limit?: number; min_alpha?: number } = {}) => {
             const search = new URLSearchParams();
             if (options.days !== undefined) search.set('days', String(options.days));
@@ -1744,20 +1746,26 @@ export const mirofishApi = {
                 qs
                     ? `/api/admin/mirofish/graphrag/scan-history?${qs}`
                     : '/api/admin/mirofish/graphrag/scan-history',
+                undefined,
+                90000,
             );
         },
-        /** Phase G: 단일 종목의 모든 scan 등장 + workflow 진입 상세. */
+        /** Phase G: 단일 종목의 모든 scan 등장 + workflow 진입 상세. cold 20s. */
         getSymbolHistory: async (symbol: string, days?: number) => {
             const qs = days !== undefined ? `?days=${days}` : '';
             return fetchAuthAPI<MiroFishSymbolHistoryResponse>(
                 `/api/admin/mirofish/graphrag/scan-history/${encodeURIComponent(symbol)}${qs}`,
+                undefined,
+                60000,
             );
         },
-        /** Phase G: 전체 성과 통계 (KPI/IC/by_market/by_tag/top_performers). */
+        /** Phase G: 전체 성과 통계 (KPI/IC/by_market/by_tag/top_performers). cold 8-15s. */
         getScanPerformance: async (days?: number) => {
             const qs = days !== undefined ? `?days=${days}` : '';
             return fetchAuthAPI<MiroFishScanPerformanceResponse>(
                 `/api/admin/mirofish/graphrag/scan-history-performance${qs}`,
+                undefined,
+                60000,
             );
         },
     },
