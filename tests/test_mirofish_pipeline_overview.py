@@ -58,6 +58,23 @@ def test_outcomes_board_reads_existing_artifact_only(tmp_path, monkeypatch):
     assert board['items'][0]['entry_price'] == 201000
 
 
+def test_pipeline_today_snapshot_fails_open_when_refresh_is_slow(monkeypatch):
+    pipeline_overview._PIPELINE_TODAY_CACHE.clear()
+
+    def slow_build():
+        time.sleep(0.08)
+        return {'generated_at': 'done'}
+
+    monkeypatch.setattr(pipeline_overview, '_build_pipeline_today_snapshot', slow_build)
+
+    snapshot = pipeline_overview.get_pipeline_today_snapshot(max_wait_seconds=0.01)
+
+    assert snapshot['degraded'] is True
+    assert snapshot['degraded_reason'] == 'refreshing'
+    time.sleep(0.1)
+    pipeline_overview._PIPELINE_TODAY_CACHE.clear()
+
+
 def test_scanner_schedule_status_uses_light_source_metadata(tmp_path, monkeypatch):
     for filename in alpha_scanner.WATCHED_SOURCE_FILES:
         path = tmp_path / filename

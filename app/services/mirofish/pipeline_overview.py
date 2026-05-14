@@ -32,7 +32,12 @@ logger = logging.getLogger(__name__)
 # 합산 95s+ 걸림. 30초 TTL 메모리 캐시로 첫 호출만 비싸고 후속 즉시.
 _PIPELINE_TODAY_CACHE: dict[str, Any] = {}
 _PIPELINE_TODAY_LOCK = threading.Lock()
+_PIPELINE_TODAY_BUILD_LOCK = threading.Lock()
+_PIPELINE_TODAY_BUILDING = False
+_PIPELINE_TODAY_BUILD_STARTED_AT = 0.0
 _PIPELINE_TODAY_TTL = 30.0
+_PIPELINE_TODAY_BUILD_STALE_AFTER = 300.0
+_PIPELINE_TODAY_MAX_WAIT = 3.0
 
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 DATA_ROOT = os.path.join(REPO_ROOT, 'data')
@@ -55,12 +60,14 @@ except Exception:  # pragma: no cover — best-effort
 # ---------------------------------------------------------------------------
 
 
-def get_pipeline_today_snapshot() -> dict[str, Any]:
+def get_pipeline_today_snapshot(max_wait_seconds: float | None = None) -> dict[str, Any]:
     """Aggregate live market + funnel + 7d KPI for the right-side dashboard.
 
     30초 TTL 메모리 캐시 — cold build ~95s 이므로 후속 폴링은 즉시 hit.
     builder() 는 lock 밖에서 실행해 동시 호출이 서로 차단되지 않게 한다.
     """
+    return _get_pipeline_today_snapshot_nonblocking(max_wait_seconds)
+
     now_ts = _time.time()
     # 1) lock 안에서 hit check 만
     with _PIPELINE_TODAY_LOCK:
@@ -75,6 +82,87 @@ def get_pipeline_today_snapshot() -> dict[str, Any]:
     with _PIPELINE_TODAY_LOCK:
         _PIPELINE_TODAY_CACHE['snapshot'] = (_time.time(), data)
     return data
+
+
+def _get_pipeline_today_snapshot_nonblocking(max_wait_seconds: float | None = None) -> dict[str, Any]:
+    now_ts = _time.time()
+    max_wait = _PIPELINE_TODAY_MAX_WAIT if max_wait_seconds is None else max(0.05, float(max_wait_seconds))
+    with _PIPELINE_TODAY_LOCK:
+        slot = _PIPELINE_TODAY_CACHE.get('snapshot')
+        if slot is not None:
+            ts, data = slot
+            if now_ts - ts < _PIPELINE_TODAY_TTL:
+                return data
+            stale_data = data
+        else:
+            stale_data = None
+
+    done = threading.Event()
+    started = _start_pipeline_today_refresh(done)
+    if stale_data is not None:
+        return _mark_pipeline_snapshot_stale(stale_data, reason='refreshing')
+    if started and done.wait(timeout=max_wait):
+        with _PIPELINE_TODAY_LOCK:
+            slot = _PIPELINE_TODAY_CACHE.get('snapshot')
+            if slot is not None:
+                return slot[1]
+    return _fallback_pipeline_today_snapshot(reason='refreshing')
+
+
+def _start_pipeline_today_refresh(done: threading.Event | None = None) -> bool:
+    global _PIPELINE_TODAY_BUILDING, _PIPELINE_TODAY_BUILD_STARTED_AT
+    now_ts = _time.time()
+    with _PIPELINE_TODAY_BUILD_LOCK:
+        if (
+            _PIPELINE_TODAY_BUILDING
+            and now_ts - _PIPELINE_TODAY_BUILD_STARTED_AT < _PIPELINE_TODAY_BUILD_STALE_AFTER
+        ):
+            return False
+        _PIPELINE_TODAY_BUILDING = True
+        _PIPELINE_TODAY_BUILD_STARTED_AT = now_ts
+
+    def _worker():
+        global _PIPELINE_TODAY_BUILDING, _PIPELINE_TODAY_BUILD_STARTED_AT
+        try:
+            data = _build_pipeline_today_snapshot()
+            with _PIPELINE_TODAY_LOCK:
+                _PIPELINE_TODAY_CACHE['snapshot'] = (_time.time(), data)
+        except Exception as exc:  # pragma: no cover - fail-open operator endpoint
+            logger.warning(f'pipeline_today refresh failed: {exc}')
+        finally:
+            with _PIPELINE_TODAY_BUILD_LOCK:
+                _PIPELINE_TODAY_BUILDING = False
+                _PIPELINE_TODAY_BUILD_STARTED_AT = 0.0
+            if done is not None:
+                done.set()
+
+    threading.Thread(target=_worker, name='mirofish-pipeline-today-refresh', daemon=True).start()
+    return True
+
+
+def _mark_pipeline_snapshot_stale(data: dict[str, Any], *, reason: str) -> dict[str, Any]:
+    snapshot = dict(data)
+    snapshot['degraded'] = True
+    snapshot['degraded_reason'] = reason
+    snapshot['served_at'] = datetime.now(timezone.utc).isoformat()
+    return snapshot
+
+
+def _fallback_pipeline_today_snapshot(*, reason: str) -> dict[str, Any]:
+    now_kst = datetime.now(KST)
+    return {
+        'generated_at': datetime.now(timezone.utc).isoformat(),
+        'date_kst': now_kst.date().isoformat(),
+        'degraded': True,
+        'degraded_reason': reason,
+        'market': None,
+        'funnel': None,
+        'operating_workflow': None,
+        'kpi_7d': None,
+        'kpi_30d': None,
+        'next': None,
+        'alerts_today': None,
+    }
 
 
 def _build_pipeline_today_snapshot() -> dict[str, Any]:
