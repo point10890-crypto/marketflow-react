@@ -158,17 +158,23 @@ def get_subsystem_status() -> dict[str, Any]:
     flags = get_feature_flags()
     state = _overall_state(inventory, db_stats)
 
+    b_resolver_done = bool(db_stats.get('entity_count', 0))
     return {
         'service': 'mirofish-graphrag',
         'state': state,
         'ready': state == 'ready',
         'phase': {
             'A_skeleton': True,
-            'B_resolver': bool(db_stats.get('entity_count', 0)),
+            'B_resolver': b_resolver_done,
             'C_workflow_enrichment': False,
             'D_ui': False,
             'E_mcp': False,
             'F_eval': False,
+        },
+        'endpoints_live': {
+            'status': True,
+            'entities_resolve': b_resolver_done,
+            'entities_get': b_resolver_done,
         },
         'storage': inventory,
         'entities': db_stats,

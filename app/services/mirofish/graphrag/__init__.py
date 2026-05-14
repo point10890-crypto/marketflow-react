@@ -16,9 +16,21 @@ from app.services.mirofish.graphrag.storage import (
     get_feature_flags,
     get_subsystem_status,
 )
+from app.services.mirofish.graphrag.resolver import (
+    resolve as resolve_entity,
+    get_entity,
+    populate_from_sources,
+    yahoo_to_entity_id,
+    entity_id_to_kr_ticker,
+)
 
 __all__ = [
     'get_storage_paths',
     'get_feature_flags',
     'get_subsystem_status',
+    'resolve_entity',
+    'get_entity',
+    'populate_from_sources',
+    'yahoo_to_entity_id',
+    'entity_id_to_kr_ticker',
 ]

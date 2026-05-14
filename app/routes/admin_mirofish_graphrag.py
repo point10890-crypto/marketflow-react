@@ -16,7 +16,7 @@ Phase A–F 를 단계적으로 노출한다.
 """
 from __future__ import annotations
 
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
 
 from app.auth.decorators import admin_required
 from app.services.mirofish import graphrag as graphrag_service
@@ -54,3 +54,52 @@ def graphrag_status():
             'ready': False,
             'error': str(exc),
         }), 500
+
+
+# ── Phase B: entity resolver ──────────────────────────────────────────
+
+@admin_mirofish_graphrag_bp.route('/entities/resolve', methods=['GET'])
+@admin_required
+def graphrag_resolve_entity():
+    """엔티티 resolve.
+
+    Query params:
+      - q (required): 입력 (한글명, 약어, 초성, ticker, yahoo, corp_code)
+      - hint_market (optional): KR / US / CRYPTO — 동점일 때 가산점
+      - limit (optional): 기본 5, 최대 20
+
+    Response::
+
+        {"query": "두산", "matches": [{...}], "asof": "...", "source": "..."}
+    """
+    q = (request.args.get('q') or '').strip()
+    if not q:
+        return jsonify({'error': 'query parameter "q" required', 'matches': []}), 400
+    hint = request.args.get('hint_market')
+    try:
+        limit = int(request.args.get('limit', '5'))
+    except (TypeError, ValueError):
+        limit = 5
+    limit = max(1, min(limit, 20))
+    try:
+        return jsonify(graphrag_service.resolve_entity(q, hint_market=hint, limit=limit)), 200
+    except Exception as exc:
+        return jsonify({'error': str(exc), 'matches': []}), 500
+
+
+@admin_mirofish_graphrag_bp.route('/entities/<path:entity_id>', methods=['GET'])
+@admin_required
+def graphrag_get_entity(entity_id: str):
+    """단일 entity 상세 조회.
+
+    ``entity_id`` 는 ``kr:005930`` 같은 표준 형식.
+    """
+    if not entity_id:
+        return jsonify({'error': 'entity_id required'}), 400
+    try:
+        data = graphrag_service.get_entity(entity_id)
+        if not data:
+            return jsonify({'error': 'entity not found', 'entity_id': entity_id}), 404
+        return jsonify(data), 200
+    except Exception as exc:
+        return jsonify({'error': str(exc), 'entity_id': entity_id}), 500
