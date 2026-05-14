@@ -52,17 +52,27 @@ _cache_lock = threading.Lock()
 
 
 def _cached(key: str, builder):
-    """단순 TTL 캐시. 동시 미스는 lock 으로 직렬화 (동일 build 중복 방지)."""
+    """TTL 캐시 — double-check 패턴. builder() 는 lock 밖에서 실행.
+
+    이전 구현은 lock 안에서 builder() 실행 → 70s build 동안 모든 다른
+    호출 (동일 key 또는 다른 key 모두) 차단 → 외부 timeout 누적되면서
+    사용자 화면 전체 hang. lock 안에서는 캐시 hit 검사 / 결과 저장만,
+    실제 build 는 lock 밖에서 → 동시 호출 시 잠깐 낭비는 있지만 hang 없음.
+    """
     now = time.time()
+    # 1) lock 안에서 hit check 만
     with _cache_lock:
         slot = _cache.get(key)
         if slot is not None:
             ts, data = slot
             if now - ts < _CACHE_TTL_SEC:
                 return data
-        data = builder()
-        _cache[key] = (now, data)
-        return data
+    # 2) lock 밖에서 build (다른 요청 처리 가능)
+    data = builder()
+    # 3) lock 안에서 결과 저장
+    with _cache_lock:
+        _cache[key] = (time.time(), data)
+    return data
 
 
 def invalidate_cache() -> None:

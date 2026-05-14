@@ -53,29 +53,54 @@ function Send-Telegram($msg) {
     }
 }
 
+function Get-FlaskRSSMB {
+    # Flask process RSS 측정 (MB). 미발견 시 0.
+    try {
+        $flaskAppPath = Join-Path $Project 'flask_app.py'
+        $proc = Get-CimInstance Win32_Process -Filter "Name='python.exe'" `
+            | Where-Object { $_.CommandLine -like ('*' + $flaskAppPath + '*') } `
+            | Select-Object -First 1
+        if (-not $proc) { return 0 }
+        $p = Get-Process -Id $proc.ProcessId -ErrorAction SilentlyContinue
+        if (-not $p) { return 0 }
+        return [math]::Round($p.WorkingSet64 / 1MB, 1)
+    } catch {
+        return 0
+    }
+}
+
 function Test-FlaskAlive {
+    # 1) RSS 임계 (3 GB 초과 → 강제 종료 트리거). healthz 살아있어도 누수로 hang
+    #    하는 패턴 (사용자 보고: 8 GB / 1h 17m, 모든 endpoint 30s+ timeout).
+    $rssMB = Get-FlaskRSSMB
+    if ($rssMB -gt 3000) {
+        return @{ Alive = $false; Reason = ("rss_overflow_" + [int]$rssMB + "MB"); RSS = $rssMB }
+    }
+
+    # 2) TCP listen 체크
     $tcp = Test-NetConnection -ComputerName 'localhost' -Port $Port `
                               -WarningAction SilentlyContinue `
                               -InformationLevel Quiet
     if (-not $tcp) {
-        return @{ Alive = $false; Reason = "tcp_${Port}_unreachable" }
+        return @{ Alive = $false; Reason = "tcp_${Port}_unreachable"; RSS = $rssMB }
     }
 
+    # 3) healthz 응답 체크
     try {
         $resp = Invoke-WebRequest -Uri $HealthUrl -TimeoutSec 5 `
                                   -UseBasicParsing -ErrorAction Stop
         if ($resp.StatusCode -ne 200) {
-            return @{ Alive = $false; Reason = "healthz_status_$($resp.StatusCode)" }
+            return @{ Alive = $false; Reason = "healthz_status_$($resp.StatusCode)"; RSS = $rssMB }
         }
     } catch {
         $msg = $_.Exception.Message
         if ($msg -match '404') {
-            return @{ Alive = $true; Reason = 'tcp_ok_healthz_404_transitional' }
+            return @{ Alive = $true; Reason = 'tcp_ok_healthz_404_transitional'; RSS = $rssMB }
         }
-        return @{ Alive = $false; Reason = "healthz_$($msg -replace '[^a-zA-Z0-9_]','_' | Select-Object -First 50)" }
+        return @{ Alive = $false; Reason = "healthz_$($msg -replace '[^a-zA-Z0-9_]','_' | Select-Object -First 50)"; RSS = $rssMB }
     }
 
-    return @{ Alive = $true; Reason = 'ok' }
+    return @{ Alive = $true; Reason = 'ok'; RSS = $rssMB }
 }
 
 function Restart-Flask {
@@ -83,19 +108,22 @@ function Restart-Flask {
     try {
         Stop-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue
         Start-Sleep -Seconds 3
+        # taskkill /F /T 로 부모+자식 모두 강제 종료 (orphan 방지)
         $flaskAppPath = Join-Path $Project 'flask_app.py'
         Get-CimInstance Win32_Process -Filter "Name='python.exe'" `
             | Where-Object {
                 $_.CommandLine -like ('*' + $flaskAppPath + '*')
             } `
             | ForEach-Object {
-                Write-Log ("Killing orphan Flask PID " + $_.ProcessId)
-                Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue
+                Write-Log ("taskkill /F /T PID " + $_.ProcessId)
+                & taskkill.exe /F /T /PID $_.ProcessId 2>&1 | Out-Null
             }
-        Start-Sleep -Seconds 2
+        Start-Sleep -Seconds 3
         Start-ScheduledTask -TaskName $TaskName
-        Write-Log "Start-ScheduledTask issued; waiting 8s for boot..."
-        Start-Sleep -Seconds 8
+        # Phase A-G 추가로 startup 15-25s 필요 (graphrag entities.db 로드 등).
+        # 8s -> 30s 로 늘려 가짜 FAILED 알람 차단.
+        Write-Log "Start-ScheduledTask issued; waiting 30s for boot..."
+        Start-Sleep -Seconds 30
     } catch {
         Write-Log ("Restart command failed: " + $_.Exception.Message)
     }
