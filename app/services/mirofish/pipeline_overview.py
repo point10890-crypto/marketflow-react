@@ -150,19 +150,52 @@ def _mark_pipeline_snapshot_stale(data: dict[str, Any], *, reason: str) -> dict[
 
 def _fallback_pipeline_today_snapshot(*, reason: str) -> dict[str, Any]:
     now_kst = datetime.now(KST)
+    now_utc = datetime.now(timezone.utc)
+    schedule = _safe_fallback_call(alpha_scanner.get_scanner_schedule_status, now=now_kst) or {}
+    latest_workflow = _safe_fallback_call(_latest_workflow_safe)
+    workflow_summary = None
+    if latest_workflow:
+        workflow_summary = _safe_fallback_call(workflow_svc._workflow_summary, latest_workflow)
+    workflow_summary = workflow_summary or {}
+    event_count = int(workflow_summary.get('event_count') or 0)
+    analyzed_count = int(workflow_summary.get('analyzed_count') or 0)
+    top3_count = len(workflow_summary.get('top3') or [])
     return {
-        'generated_at': datetime.now(timezone.utc).isoformat(),
+        'generated_at': now_utc.isoformat(),
         'date_kst': now_kst.date().isoformat(),
         'degraded': True,
         'degraded_reason': reason,
-        'market': None,
-        'funnel': None,
+        'market': _safe_fallback_call(_market_pulse, now_kst),
+        'funnel': {
+            'scanner_pool': int(schedule.get('candidate_count') or 0),
+            'scanner_runs_today': _safe_fallback_call(_count_scanner_runs_today, now_kst) or 0,
+            'batch_new_candidates': event_count,
+            'graphrag_uploaded': analyzed_count,
+            'top3_ready': top3_count,
+            'latest_workflow_id': workflow_summary.get('id'),
+            'latest_workflow_status': workflow_summary.get('status'),
+            'latest_workflow_at': workflow_summary.get('completed_at') or workflow_summary.get('created_at'),
+            'latest_scanner_run_at': schedule.get('last_run_at'),
+            'freshness_status': schedule.get('freshness_status'),
+        },
         'operating_workflow': None,
-        'kpi_7d': None,
-        'kpi_30d': None,
-        'next': None,
-        'alerts_today': None,
+        'kpi_7d': _safe_fallback_call(_kpi_window, days=7),
+        'kpi_30d': _safe_fallback_call(_kpi_window, days=30),
+        'next': {
+            'next_scheduled_scan_at': schedule.get('next_scheduled_at'),
+            'next_scheduled_scans': (schedule.get('next_scheduled_times') or [])[:3],
+            'scanner_enabled': schedule.get('enabled'),
+        },
+        'alerts_today': _safe_fallback_call(_alerts_today, now_kst),
     }
+
+
+def _safe_fallback_call(fn, *args, **kwargs):
+    try:
+        return fn(*args, **kwargs)
+    except Exception as exc:
+        logger.debug(f'pipeline_today fallback {getattr(fn, "__name__", "call")} failed: {exc}')
+        return None
 
 
 def _build_pipeline_today_snapshot() -> dict[str, Any]:
