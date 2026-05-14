@@ -385,14 +385,14 @@ def resolve(query: str, hint_market: str | None = None, limit: int = 5) -> dict[
             ).fetchall()
             _add(rows, 0.99, 'corp_code_reverse')
 
-        # 4) exact alias 매치
+        # 4) exact alias 매치 (lang='chosung' 은 별도 단계에서 처리하므로 제외)
         if len(candidates) < limit:
             rows = conn.execute(
                 """
                 SELECT e.*, a.confidence AS alias_confidence
                 FROM entities e
                 JOIN entity_aliases a ON a.entity_id = e.entity_id
-                WHERE LOWER(a.alias) = LOWER(?)
+                WHERE LOWER(a.alias) = LOWER(?) AND a.lang != 'chosung'
                 LIMIT ?
                 """,
                 (norm, limit - len(candidates)),
