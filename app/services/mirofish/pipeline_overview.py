@@ -78,21 +78,47 @@ def get_pipeline_today_snapshot() -> dict[str, Any]:
 
 
 def _build_pipeline_today_snapshot() -> dict[str, Any]:
-    """실제 snapshot 생성 — 캐시 미스 시 호출."""
+    """실제 snapshot 생성 — 캐시 미스 시 호출.
+
+    sub-call 7개를 ThreadPoolExecutor 로 병렬 + 각각 8초 timeout. 어떤 함수가
+    느리거나 hang 해도 부분 응답 반환 (None). 직렬 95s+ -> 병렬 max 8s.
+    """
+    from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeout
+
     now_kst = datetime.now(KST)
     now_utc = datetime.now(timezone.utc)
-    operating_workflow = get_pipeline_operating_snapshot(now=now_kst)
-    return {
-        'generated_at': now_utc.isoformat(),
-        'date_kst': now_kst.date().isoformat(),
-        'market': _market_pulse(now_kst),
-        'funnel': _funnel_today(now_kst),
-        'operating_workflow': operating_workflow,
-        'kpi_7d': _kpi_window(days=7),
-        'kpi_30d': _kpi_window(days=30),
-        'next': _next_eta(now_kst),
-        'alerts_today': _alerts_today(now_kst),
-    }
+    SUB_TIMEOUT = 8.0
+
+    def _safe_result(future, label: str):
+        try:
+            return future.result(timeout=SUB_TIMEOUT)
+        except FuturesTimeout:
+            logger.warning(f'pipeline_today sub-call {label} timed out ({SUB_TIMEOUT}s)')
+            return None
+        except Exception as exc:
+            logger.warning(f'pipeline_today sub-call {label} failed: {exc}')
+            return None
+
+    with ThreadPoolExecutor(max_workers=7, thread_name_prefix='pipeline-today') as ex:
+        f_market = ex.submit(_market_pulse, now_kst)
+        f_funnel = ex.submit(_funnel_today, now_kst)
+        f_ops = ex.submit(get_pipeline_operating_snapshot, now=now_kst)
+        f_k7 = ex.submit(_kpi_window, days=7)
+        f_k30 = ex.submit(_kpi_window, days=30)
+        f_next = ex.submit(_next_eta, now_kst)
+        f_alerts = ex.submit(_alerts_today, now_kst)
+
+        return {
+            'generated_at': now_utc.isoformat(),
+            'date_kst': now_kst.date().isoformat(),
+            'market': _safe_result(f_market, 'market'),
+            'funnel': _safe_result(f_funnel, 'funnel'),
+            'operating_workflow': _safe_result(f_ops, 'operating_workflow'),
+            'kpi_7d': _safe_result(f_k7, 'kpi_7d'),
+            'kpi_30d': _safe_result(f_k30, 'kpi_30d'),
+            'next': _safe_result(f_next, 'next'),
+            'alerts_today': _safe_result(f_alerts, 'alerts_today'),
+        }
 
 
 def get_pipeline_operating_snapshot(now: datetime | None = None) -> dict[str, Any]:
