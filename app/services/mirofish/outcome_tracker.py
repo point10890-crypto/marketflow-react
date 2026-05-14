@@ -150,7 +150,12 @@ def get_advisory_feedback(
 
     items: list[dict[str, Any]] = []
     for wf_id in workflow_ids:
-        outcomes = read_workflow_outcomes(wf_id)
+        try:
+            outcomes = read_workflow_outcomes(wf_id)
+        except (ValueError, OSError, KeyError):
+            # invalid id / 디스크 손상 / 키 누락 등은 advisory 집계에서 건너뛴다.
+            # advisory 는 best-effort 이므로 일부 wf 실패가 전체 응답을 깨선 안 된다.
+            continue
         if not isinstance(outcomes, dict):
             continue
         for item in (outcomes.get('items') or []):
