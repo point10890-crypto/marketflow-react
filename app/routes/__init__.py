@@ -41,6 +41,10 @@ def register_blueprints(app):
     from app.routes.admin_mirofish_graphrag import admin_mirofish_graphrag_bp
     app.register_blueprint(admin_mirofish_graphrag_bp, url_prefix='/api/admin/mirofish/graphrag')
 
+    # Admin MiroFish memory leak diagnostics (admin only, _debug prefix)
+    from app.routes.admin_mirofish_debug import admin_mirofish_debug_bp
+    app.register_blueprint(admin_mirofish_debug_bp, url_prefix='/api/admin/mirofish/_debug')
+
     # Stripe routes
     from app.routes.stripe_routes import stripe_bp
     app.register_blueprint(stripe_bp, url_prefix='/api/stripe')

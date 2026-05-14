@@ -40,6 +40,14 @@ if BASE_DIR not in sys.path:
 for d in ['data', 'logs', 'us_market/output']:
     os.makedirs(os.path.join(BASE_DIR, d), exist_ok=True)
 
+# ── 메모리 누수 진단 모드 (운영 진단용, 평소 OFF) ──
+# GRAPHRAG_TRACEMALLOC=1 으로 시작하면 tracemalloc 활성화. RSS 누수 발생 시
+# /api/admin/mirofish/_debug/memory?tracemalloc=1 로 top allocations 확인 가능.
+if os.getenv('GRAPHRAG_TRACEMALLOC', '0') == '1':
+    import tracemalloc
+    tracemalloc.start(25)  # 25 frame deep — 충분히 호출자 traceback 확보
+    print('[DEBUG] tracemalloc enabled (25 frames)')
+
 from app import create_app
 
 # Create the Flask app (gunicorn imports this as flask_app:app)
