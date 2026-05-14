@@ -235,8 +235,19 @@ def _workflow_entry(top_item: dict[str, Any], wf_id: str, wf_date: str,
 
 
 def _build_outcome_map_for_workflow(wf_id: str) -> dict[str, dict[str, Any]]:
-    """워크플로우의 outcomes.json items 를 symbol → item 으로 map."""
-    outcomes = read_workflow_outcomes(wf_id)
+    """워크플로우의 outcomes.json items 를 symbol → item 으로 map.
+
+    read_workflow_outcomes 는 일부 invalid id 에서 ValueError, 또는 lazy
+    recompute 로 daily_prices.csv (150MB) 재로딩 → 100s 초과 사례 있음.
+    scan_history 는 best-effort aggregation 이므로 outcome 누락은 빈 dict
+    으로 처리하고 계속 진행 (Cloudflare 100s timeout 회피).
+    """
+    try:
+        outcomes = read_workflow_outcomes(wf_id)
+    except (ValueError, OSError, KeyError, RuntimeError):
+        return {}
+    except Exception:
+        return {}
     if not isinstance(outcomes, dict):
         return {}
     out: dict[str, dict[str, Any]] = {}
