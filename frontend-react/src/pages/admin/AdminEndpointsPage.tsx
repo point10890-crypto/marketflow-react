@@ -2547,7 +2547,9 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
                         우측 sticky 가 viewport 안에서 오래 동행하도록 설계. */}
                     <div className="grid gap-4 lg:grid-cols-[minmax(0,1.05fr)_minmax(380px,440px)] lg:gap-6 lg:items-start">
                         {/* 좌측 컬럼 — 핵심 콘텐츠 스택 (모바일: order 2) */}
-                        <div className="order-2 lg:order-1 flex flex-col gap-4 lg:gap-6">
+                        {/* min-w-0 필수: ScanHistoryCard / Top3TradingViewCharts 등 내부에 fixed/min-w 가 있어
+                            그리드 자식이 줄어들지 않으면 컨테이너가 viewport 보다 넓어져 가로 오버플로우 발생. */}
+                        <div className="order-2 lg:order-1 min-w-0 flex flex-col gap-4 lg:gap-6">
                             <div id="alpha-board" className="scroll-mt-4">
                                 <AlphaBoardPanel
                                     candidates={alphaCandidates}
@@ -2590,7 +2592,7 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
                             />
                         </div>
                         {/* 사이드바 — 모바일: order 1 (TOP picks 직하단) / lg+: 우측 컬럼 sticky */}
-                        <aside className="order-1 lg:order-2 mt-4 flex flex-col gap-3 lg:mt-0 lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto lg:pr-1">
+                        <aside className="order-1 lg:order-2 min-w-0 mt-4 flex flex-col gap-3 lg:mt-0 lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto lg:pr-1">
                             {/* AutoRunner / QuickActions 는 admin 전용 (자동검출 강제발사·일시정지·서킷리셋 등). subscriberMode 에서는 숨김. */}
                             {!subscriberMode && <AutoRunnerCard />}
                             <TodaysPipelineCard />
