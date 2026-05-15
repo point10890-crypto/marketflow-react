@@ -1671,7 +1671,16 @@ function ImpactPanel({ phase, run, apiState }: { phase: number; run: MiroFishRun
     );
 }
 
-export default function AdminEndpointsPage() {
+interface AdminEndpointsPageProps {
+    /**
+     * Pro + AI Bain 구독자 모드 — admin 전용 컨트롤 (AutoRunner / QuickActions) 숨김
+     * + 헤더 라벨 "구독자 콘솔" 로 변경.
+     * 동일한 데이터/렌더 로직을 구독자에게 노출하기 위한 토글.
+     */
+    subscriberMode?: boolean;
+}
+
+export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndpointsPageProps = {}) {
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [phase, setPhase] = useState(1);
     const [target, setTarget] = useState(defaultTarget);
@@ -2485,9 +2494,13 @@ export default function AdminEndpointsPage() {
             <section className="rounded-xl border border-anthropic-darkLine bg-anthropic-dark">
                 <div className="px-4 py-5 sm:px-5 sm:py-7 md:px-8 md:py-10">
                     <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3">
-                        <div className="inline-flex items-center gap-1.5 sm:gap-2 rounded-full border border-anthropic-darkLine bg-anthropic-dark2 px-2.5 sm:px-3 py-1 sm:py-1.5 text-[11px] sm:text-xs font-medium text-anthropic-darkText">
-                            <i className="fas fa-lock text-anthropic-orange" />
-                            관리자 전용 리서치 콘솔
+                        <div className={`inline-flex items-center gap-1.5 sm:gap-2 rounded-full border px-2.5 sm:px-3 py-1 sm:py-1.5 text-[11px] sm:text-xs font-medium ${
+                            subscriberMode
+                                ? 'border-cyan-500/30 bg-cyan-500/[0.06] text-cyan-300'
+                                : 'border-anthropic-darkLine bg-anthropic-dark2 text-anthropic-darkText'
+                        }`}>
+                            <i className={`fas ${subscriberMode ? 'fa-robot text-cyan-400' : 'fa-lock text-anthropic-orange'}`} />
+                            {subscriberMode ? 'Pro + AI Bain 구독자 콘솔' : '관리자 전용 리서치 콘솔'}
                         </div>
                         <div className={`inline-flex items-center gap-1.5 sm:gap-2 rounded-full border px-2.5 sm:px-3 py-1 sm:py-1.5 text-[11px] sm:text-xs font-medium ${
                             apiState === 'error'
@@ -2578,14 +2591,15 @@ export default function AdminEndpointsPage() {
                         </div>
                         {/* 사이드바 — 모바일: order 1 (TOP picks 직하단) / lg+: 우측 컬럼 sticky */}
                         <aside className="order-1 lg:order-2 mt-4 flex flex-col gap-3 lg:mt-0 lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto lg:pr-1">
-                            <AutoRunnerCard />
+                            {/* AutoRunner / QuickActions 는 admin 전용 (자동검출 강제발사·일시정지·서킷리셋 등). subscriberMode 에서는 숨김. */}
+                            {!subscriberMode && <AutoRunnerCard />}
                             <TodaysPipelineCard />
                             <GraphRAGStatusCard />
                             <GraphRAGEntityResolverCard />
                             <ScanPerformanceCard />
                             <ScanHistoryCard />
                             <RecentOutcomesBoard />
-                            <QuickActionsFooter />
+                            {!subscriberMode && <QuickActionsFooter />}
                         </aside>
                     </div>
 
