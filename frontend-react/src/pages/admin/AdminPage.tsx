@@ -139,7 +139,7 @@ function DashboardTab({ data, onNavigate, apiToken }: { data: AdminDashboard | n
         { label: 'Total Users', value: data?.total_users || 0, icon: 'fa-users', color: 'text-blue-400', bg: 'bg-blue-500/10', tab: 'users' as AdminTab },
         { label: 'Pro Users', value: data?.pro_users || 0, icon: 'fa-crown', color: 'text-yellow-400', bg: 'bg-yellow-500/10', tab: 'users' as AdminTab },
         { label: 'Ultra Pro', value: data?.premium_users || 0, icon: 'fa-gem', color: 'text-purple-400', bg: 'bg-purple-500/10', tab: 'users' as AdminTab },
-        { label: 'AI Bain 활성', value: aibainActive, icon: 'fa-robot', color: 'text-cyan-300', bg: 'bg-cyan-500/10', tab: 'subscriptions' as AdminTab },
+        { label: 'AI Brain 활성', value: aibainActive, icon: 'fa-robot', color: 'text-cyan-300', bg: 'bg-cyan-500/10', tab: 'subscriptions' as AdminTab },
         { label: 'No Tier', value: data?.no_tier_users || 0, icon: 'fa-user-clock', color: 'text-gray-400', bg: 'bg-gray-500/10', tab: 'users' as AdminTab },
         { label: 'Pending Subs', value: data?.pending_subscriptions || 0, icon: 'fa-clock', color: 'text-orange-400', bg: 'bg-orange-500/10', tab: 'subscriptions' as AdminTab },
     ];
@@ -147,7 +147,7 @@ function DashboardTab({ data, onNavigate, apiToken }: { data: AdminDashboard | n
     const subDesc = (() => {
         const parts: string[] = [];
         if (data?.pending_subscriptions) parts.push(`${data.pending_subscriptions}건 승인 대기`);
-        if (pendingAibainSubs) parts.push(`AI Bain ${pendingAibainSubs}건`);
+        if (pendingAibainSubs) parts.push(`AI Brain ${pendingAibainSubs}건`);
         return parts.length ? parts.join(' · ') : '대기 중인 요청 없음';
     })();
 
@@ -156,13 +156,13 @@ function DashboardTab({ data, onNavigate, apiToken }: { data: AdminDashboard | n
         if (aibainActive) parts.push(`활성 ${aibainActive}명`);
         if (aibainExpiring) parts.push(`D-3 만료 ${aibainExpiring}건`);
         if (pendingAibainSubs) parts.push(`신청 대기 ${pendingAibainSubs}건`);
-        return parts.length ? parts.join(' · ') : 'AI Bain 구독자 없음';
+        return parts.length ? parts.join(' · ') : 'AI Brain 구독자 없음';
     })();
 
     const links = [
         { tab: 'users' as AdminTab, icon: 'fa-users-cog', label: '사용자 관리', desc: '역할, 등급, 권한 관리' },
         { tab: 'subscriptions' as AdminTab, icon: 'fa-credit-card', label: '구독 관리', desc: subDesc },
-        { tab: 'subscriptions' as AdminTab, icon: 'fa-robot', label: 'AI Bain 관리', desc: aibainDesc, highlight: 'cyan' as const },
+        { tab: 'subscriptions' as AdminTab, icon: 'fa-robot', label: 'AI Brain 관리', desc: aibainDesc, highlight: 'cyan' as const },
         { tab: 'system' as AdminTab, icon: 'fa-server', label: '시스템 모니터', desc: '서버 상태, 데이터 현황' },
     ];
 
@@ -829,15 +829,15 @@ function UsersTab({ apiToken, currentUserId }: { apiToken?: string; currentUserI
                                                             📋 Ultra Pro 요청
                                                         </span>
                                                     )}
-                                                    {/* AI Bain 활성 상태 배지 — 백엔드 is_aibain_active=true */}
+                                                    {/* AI Brain 활성 상태 배지 — 백엔드 is_aibain_active=true */}
                                                     {user.is_aibain_active && (
                                                         <span
                                                             className="text-[9px] px-1 py-0.5 bg-cyan-500/15 text-cyan-300 border border-cyan-500/25 rounded shrink-0 font-bold"
                                                             title={user.aibain_days_remaining != null
-                                                                ? `AI Bain 활성 — D-${user.aibain_days_remaining} 만료`
-                                                                : 'AI Bain 활성'}
+                                                                ? `AI Brain 활성 — D-${user.aibain_days_remaining} 만료`
+                                                                : 'AI Brain 활성'}
                                                         >
-                                                            🤖 AI Bain{user.aibain_days_remaining != null && user.aibain_days_remaining <= 3 ? ` D-${user.aibain_days_remaining}` : ''}
+                                                            🤖 AI Brain{user.aibain_days_remaining != null && user.aibain_days_remaining <= 3 ? ` D-${user.aibain_days_remaining}` : ''}
                                                         </span>
                                                     )}
                                                 </div>
@@ -1314,7 +1314,7 @@ function SubscriptionsTab({ apiToken, onCountChange }: { apiToken?: string; onCo
                     <div className="space-y-3">
                         {pending.map(req => {
                             const isAibainAddon = req.request_type === 'aibain_addon';
-                            const includesAibain = isAibainAddon || !!(req.admin_note && req.admin_note.includes('AI Bain'));
+                            const includesAibain = isAibainAddon || !!(req.admin_note && req.admin_note.includes('AI Brain'));
                             const cardBorder = isAibainAddon ? 'border-cyan-500/30' : 'border-yellow-500/20';
                             const iconBg = isAibainAddon ? 'bg-cyan-500/15' : 'bg-yellow-500/10';
                             const iconColor = isAibainAddon ? 'text-cyan-300' : 'text-yellow-400';
@@ -1324,11 +1324,11 @@ function SubscriptionsTab({ apiToken, onCountChange }: { apiToken?: string; onCo
                             let btnIcon = req.to_tier === 'premium' ? 'fa-gem' : 'fa-crown';
                             let btnColor = req.to_tier === 'premium' ? 'bg-purple-500/20 text-purple-400 hover:bg-purple-500/30' : 'bg-amber-500/20 text-amber-400 hover:bg-amber-500/30';
                             if (isAibainAddon) {
-                                btnLabel = 'AI Bain 활성화';
+                                btnLabel = 'AI Brain 활성화';
                                 btnIcon = 'fa-bolt';
                                 btnColor = 'bg-cyan-500/20 text-cyan-300 hover:bg-cyan-500/30';
                             } else if (includesAibain) {
-                                btnLabel = req.to_tier === 'premium' ? 'Ultra Pro + AI Bain 승인' : 'Pro + AI Bain 승인';
+                                btnLabel = req.to_tier === 'premium' ? 'Ultra Pro + AI Brain 승인' : 'Pro + AI Brain 승인';
                                 btnIcon = 'fa-robot';
                                 btnColor = 'bg-cyan-500/20 text-cyan-300 hover:bg-cyan-500/30';
                             }
@@ -1360,7 +1360,7 @@ function SubscriptionsTab({ apiToken, onCountChange }: { apiToken?: string; onCo
                                                     <span className={`px-1.5 py-0.5 rounded ${req.from_tier === 'none' ? 'bg-gray-500/20 text-gray-400' : 'bg-amber-500/20 text-amber-400'}`}>{req.from_tier}</span>
                                                     <span className="mx-1">&rarr;</span>
                                                     <span className={`px-1.5 py-0.5 rounded font-bold ${isAibainAddon ? 'bg-cyan-500/20 text-cyan-300' : req.to_tier === 'premium' ? 'bg-purple-500/20 text-purple-400' : 'bg-amber-500/20 text-amber-400'}`}>
-                                                        {isAibainAddon ? '+AI Bain' : req.to_tier === 'premium' ? 'Ultra Pro' : 'Pro'}
+                                                        {isAibainAddon ? '+AI Brain' : req.to_tier === 'premium' ? 'Ultra Pro' : 'Pro'}
                                                     </span>
                                                     {req.depositor_name && (
                                                         <span className="ml-2 px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400">

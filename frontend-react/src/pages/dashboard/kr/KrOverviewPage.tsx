@@ -657,7 +657,7 @@ export default function KRMarketOverview() {
                         price: best.signal_price || 0,
                         changePct: 0,
                         score: `${(best.confidence ?? 0).toFixed(0)}%`,
-                        link: '/dashboard/kr/wave', color: 'cyan',
+                        link: '/dashboard/wave', color: 'cyan',
                     });
                 }
 
@@ -686,7 +686,7 @@ export default function KRMarketOverview() {
                         price: best.current_price || best.price || 0,
                         changePct: best.change_pct ?? 0,
                         score: `${best.total_score ?? 0}점`,
-                        link: '/dashboard/kr/leading', color: 'amber',
+                        link: '/dashboard/kr/leading-stocks', color: 'amber',
                     });
                 }
 

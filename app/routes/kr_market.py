@@ -1479,43 +1479,75 @@ def get_kr_vcp_report(date):
 def kr_screener_leading():
     """주도주 실시간 스크리닝 — 장중: 라이브 스캔, 장 마감: 마지막 유효 결과"""
     try:
-        from app.services.kis_screener import run_screening, load_latest, is_market_open, _result_cache, _result_lock
+        from app.services.kis_screener import (
+            get_live_file_ttl_seconds,
+            get_quote_mode,
+            is_live_result_fresh,
+            is_market_open,
+            load_latest,
+            result_age_seconds,
+            run_screening,
+            _result_cache,
+            _result_lock,
+        )
+        import copy
         import time as _time
 
         market_open = is_market_open()
+        live_ttl = get_live_file_ttl_seconds()
+
+        def _serve(payload, served_from, stale_reason=None, live_refresh=False):
+            data = copy.deepcopy(payload) if isinstance(payload, dict) else payload
+            if isinstance(data, dict):
+                age = result_age_seconds(data)
+                data["served_from"] = served_from
+                data["quote_mode"] = data.get("quote_mode") or get_quote_mode()
+                data["live_refresh_recommended"] = bool(live_refresh)
+                data["freshness"] = {
+                    "age_seconds": round(age, 1) if age is not None else None,
+                    "live_ttl_seconds": live_ttl,
+                }
+                if stale_reason:
+                    data["stale_reason"] = stale_reason
+            resp = jsonify(data)
+            resp.headers['Cache-Control'] = 'no-cache, no-store'
+            return resp
 
         # 1. 메모리 캐시 (3초 TTL)
         with _result_lock:
             cached_data = _result_cache["data"]
             cached_ts = _result_cache["ts"]
         if cached_data and (_time.time() - cached_ts) < 3:
-            resp = jsonify(cached_data)
-            resp.headers['Cache-Control'] = 'no-cache, no-store'
-            return resp
+            if not market_open or is_live_result_fresh(cached_data, max_age_seconds=live_ttl):
+                return _serve(cached_data, "memory_cache", live_refresh=market_open)
 
         # 2. 장 마감 시 → 파일 캐시만 반환 (새 스캔 안 함)
         if not market_open:
             latest = load_latest()
             if latest:
                 latest["market_status"] = "closed"
-                resp = jsonify(latest)
-                resp.headers['Cache-Control'] = 'no-cache, no-store'
-                return resp
+                return _serve(latest, "latest_file", live_refresh=False)
 
         # 3. 장중 — 파일 캐시 반환 + 백그라운드 스캔 트리거
         latest = load_latest()
         if latest:
-            resp = jsonify(latest)
-            resp.headers['Cache-Control'] = 'no-cache, no-store'
-            import threading
-            threading.Thread(target=run_screening, daemon=True).start()
-            return resp
+            if is_live_result_fresh(latest, max_age_seconds=live_ttl):
+                return _serve(latest, "fresh_file", live_refresh=True)
 
         # 4. 캐시 없음 — 라이브 실행 (첫 호출)
         result = run_screening()
-        resp = jsonify(result)
-        resp.headers['Cache-Control'] = 'no-cache, no-store'
-        return resp
+        if result and result.get("results"):
+            return _serve(result, "live_scan", live_refresh=True)
+
+        if latest:
+            return _serve(
+                latest,
+                "stale_file_fallback",
+                stale_reason=(result or {}).get("error") or "live_scan_failed",
+                live_refresh=True,
+            )
+
+        return _serve(result, "live_scan_error", live_refresh=True)
     except Exception as e:
         logger.warning(f"스크리너 에러: {e}")
         return jsonify({"error": str(e), "results": [], "timestamp": "", "market_status": "error",

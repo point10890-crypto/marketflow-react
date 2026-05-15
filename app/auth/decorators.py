@@ -167,7 +167,7 @@ def admin_required(f):
 
 
 def admin_or_aibain_required(f):
-    """관리자 OR AI Bain 활성 구독자 허용 — read-only 분석 데이터 전용.
+    """관리자 OR AI Brain 활성 구독자 허용 — read-only 분석 데이터 전용.
 
     토큰 검증 후 다음 둘 중 하나여야 통과:
       1) user.is_admin == True
@@ -181,7 +181,7 @@ def admin_or_aibain_required(f):
             return jsonify({'error': 'Authentication required'}), 401
         if not (user.is_admin or user.is_aibain_active):
             return jsonify({
-                'error': 'AI Bain 구독자 또는 관리자만 접근 가능합니다.'
+                'error': 'AI Brain 구독자 또는 관리자만 접근 가능합니다.'
             }), 403
 
         request.current_user = user

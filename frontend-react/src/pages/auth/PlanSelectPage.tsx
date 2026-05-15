@@ -106,7 +106,7 @@ export default function PlanSelectPage() {
                 <PlanCard plan="pro" onSelect={select} badgeIcon="fa-crown" badgeText="기본" />
                 <PlanCard plan="pro_aibain" onSelect={select} badgeIcon="fa-robot" badgeText="추천" highlighted />
                 <PlanCard plan="premium" onSelect={select} badgeIcon="fa-gem" badgeText="평생 이용" />
-                <PlanCard plan="premium_aibain" onSelect={select} badgeIcon="fa-crown" badgeText="평생 + AI Bain" />
+                <PlanCard plan="premium_aibain" onSelect={select} badgeIcon="fa-crown" badgeText="평생 + AI Brain" />
             </div>
 
             <p className="text-gray-500 text-xs mt-8 text-center max-w-md">
@@ -213,7 +213,7 @@ function PlanCard({ plan, onSelect, badgeIcon, badgeText, highlighted }: PlanCar
     const meta = PLAN_PAYMENT_META[plan];
     const c = COLOR_STYLES[plan];
 
-    // 가격 표시 분리: AI Bain 포함 시 베이스/AI Bain 분리 표기
+    // 가격 표시 분리: AI Brain 포함 시 베이스/AI Brain 분리 표기
     const priceMajor = meta.amountNumber.toLocaleString();
     const priceUnit = plan === 'premium' ? '원' : '원/30일';
 

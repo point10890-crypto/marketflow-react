@@ -1673,7 +1673,7 @@ function ImpactPanel({ phase, run, apiState }: { phase: number; run: MiroFishRun
 
 interface AdminEndpointsPageProps {
     /**
-     * Pro + AI Bain 구독자 모드 — admin 전용 컨트롤 (AutoRunner / QuickActions) 숨김
+     * Pro + AI Brain 구독자 모드 — admin 전용 컨트롤 (AutoRunner / QuickActions) 숨김
      * + 헤더 라벨 "구독자 콘솔" 로 변경.
      * 동일한 데이터/렌더 로직을 구독자에게 노출하기 위한 토글.
      */
@@ -2500,7 +2500,7 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
                                 : 'border-anthropic-darkLine bg-anthropic-dark2 text-anthropic-darkText'
                         }`}>
                             <i className={`fas ${subscriberMode ? 'fa-robot text-cyan-400' : 'fa-lock text-anthropic-orange'}`} />
-                            {subscriberMode ? 'Pro + AI Bain 구독자 콘솔' : '관리자 전용 리서치 콘솔'}
+                            {subscriberMode ? 'Pro + AI Brain 구독자 콘솔' : '관리자 전용 리서치 콘솔'}
                         </div>
                         <div className={`inline-flex items-center gap-1.5 sm:gap-2 rounded-full border px-2.5 sm:px-3 py-1 sm:py-1.5 text-[11px] sm:text-xs font-medium ${
                             apiState === 'error'

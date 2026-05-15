@@ -6,12 +6,12 @@ import { subscriptionAPI, type SubscriptionRequest } from '@/lib/api';
 import KakaoSupportLink from '@/components/ui/KakaoSupportLink';
 
 /**
- * 승인 대기 페이지 — 모든 sub_req (신규 가입 + AI Bain 애드온 + 업그레이드) 공통.
+ * 승인 대기 페이지 — 모든 sub_req (신규 가입 + AI Brain 애드온 + 업그레이드) 공통.
  *
  * 동작:
  * - 마운트 + 30s 폴링: subscriptionAPI.getStatus() 로 최신 sub_req fetch
- * - 실제 sub_req.amount + admin_note (AI Bain 마커) 표시
- * - 활성 회원 (Pro/Premium) 도 pending sub_req 가 있으면 페이지 유지 (예: AI Bain 애드온 신청)
+ * - 실제 sub_req.amount + admin_note (AI Brain 마커) 표시
+ * - 활성 회원 (Pro/Premium) 도 pending sub_req 가 있으면 페이지 유지 (예: AI Brain 애드온 신청)
  * - sub_req 가 approved 되거나 없어지면 대시보드로 자동 이동
  */
 export default function PendingApprovalPage() {
@@ -102,10 +102,10 @@ export default function PendingApprovalPage() {
 
     // sub_req 로부터 표시 정보 도출
     const isAibainAddon = pendingSubReq?.request_type === 'aibain_addon';
-    const includesAibain = !!pendingSubReq?.admin_note?.includes('AI Bain');
+    const includesAibain = !!pendingSubReq?.admin_note?.includes('AI Brain');
     const subReqAmount = pendingSubReq?.amount || null;
 
-    // 색상 테마 — AI Bain 포함이면 cyan, 아니면 amber
+    // 색상 테마 — AI Brain 포함이면 cyan, 아니면 amber
     const themeColor = includesAibain
         ? { border: 'border-cyan-500/30', bg: 'bg-cyan-500/10', text: 'text-cyan-300', accentBg: 'bg-cyan-500/[0.06]', accentBorder: 'border-cyan-500/20' }
         : { border: 'border-amber-500/20', bg: 'bg-amber-500/10', text: 'text-amber-400', accentBg: 'bg-amber-500/[0.06]', accentBorder: 'border-amber-500/20' };
@@ -115,8 +115,8 @@ export default function PendingApprovalPage() {
     let headerTitle = '승인 대기 중';
     let headerSubtitle = '회원가입이 완료되었습니다. 관리자가 Pro 또는 Ultra Pro 등급을 부여하면 서비스를 이용하실 수 있습니다.';
     if (isAibainAddon) {
-        headerTitle = 'AI Bain 활성화 대기 중';
-        headerSubtitle = '입금 확인 후 관리자가 AI Bain 알파 스캐너 서비스를 활성화합니다. 그 동안 기존 구독은 그대로 이용 가능합니다.';
+        headerTitle = 'AI Brain 활성화 대기 중';
+        headerSubtitle = '입금 확인 후 관리자가 AI Brain 알파 스캐너 서비스를 활성화합니다. 그 동안 기존 구독은 그대로 이용 가능합니다.';
     } else if (isUpgradeFromActive) {
         headerTitle = '업그레이드 대기 중';
         headerSubtitle = '입금 확인 후 관리자가 새 플랜으로 업그레이드합니다.';
@@ -148,9 +148,9 @@ export default function PendingApprovalPage() {
                                         <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${themeColor.bg} ${themeColor.text}`}>
                                             <i className={`${isAibainAddon ? 'fas fa-robot' : pendingSubReq.to_tier === 'premium' ? 'fas fa-gem' : 'fas fa-crown'} mr-1`} />
                                             {isAibainAddon
-                                                ? `${pendingSubReq.from_tier === 'premium' ? 'Ultra Pro' : 'Pro'} → +AI Bain 애드온`
+                                                ? `${pendingSubReq.from_tier === 'premium' ? 'Ultra Pro' : 'Pro'} → +AI Brain 애드온`
                                                 : includesAibain
-                                                ? `${pendingSubReq.to_tier === 'premium' ? 'Ultra Pro' : 'Pro'} + AI Bain`
+                                                ? `${pendingSubReq.to_tier === 'premium' ? 'Ultra Pro' : 'Pro'} + AI Brain`
                                                 : pendingSubReq.to_tier === 'premium' ? 'Ultra Pro' : 'Pro'}
                                         </span>
                                     </div>
@@ -174,7 +174,7 @@ export default function PendingApprovalPage() {
                                 <h2 className="text-white font-bold text-sm">입금 계좌 정보</h2>
                                 <p className="text-gray-400 text-xs mt-0.5">
                                     {isAibainAddon
-                                        ? '입금 확인 후 AI Bain 알파 스캐너가 30일간 활성화됩니다.'
+                                        ? '입금 확인 후 AI Brain 알파 스캐너가 30일간 활성화됩니다.'
                                         : '입금 확인 후 관리자가 구독을 활성화합니다.'}
                                 </p>
                             </div>
@@ -208,7 +208,7 @@ export default function PendingApprovalPage() {
                                     {subReqAmount || '플랜 선택 후 확정'}
                                 </p>
                                 {isAibainAddon && (
-                                    <p className="text-[10px] text-gray-500 mt-0.5">AI Bain 30일 갱신</p>
+                                    <p className="text-[10px] text-gray-500 mt-0.5">AI Brain 30일 갱신</p>
                                 )}
                             </div>
                             <div className="p-3 rounded-lg bg-black/20 border border-white/[0.06]">
@@ -222,9 +222,9 @@ export default function PendingApprovalPage() {
                         <p className="mt-3 text-[11px] leading-relaxed text-gray-400">
                             입금자명은 가입 이름과 동일하게 보내 주세요.
                             {isAibainAddon
-                                ? ' AI Bain 만료 시 별도 갱신 없으면 자동으로 기존 베이스 플랜으로 회귀합니다.'
+                                ? ' AI Brain 만료 시 별도 갱신 없으면 자동으로 기존 베이스 플랜으로 회귀합니다.'
                                 : pendingSubReq && includesAibain
-                                ? ' AI Bain 알파 스캐너 알림이 30일간 활성화됩니다.'
+                                ? ' AI Brain 알파 스캐너 알림이 30일간 활성화됩니다.'
                                 : !pendingSubReq
                                 ? ' 아직 플랜을 선택하지 않았다면 아래 버튼에서 먼저 플랜을 선택해 주세요.'
                                 : ''}

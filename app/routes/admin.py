@@ -118,12 +118,12 @@ def dashboard():
     """관리자 대시보드 통계"""
     users = User.query.all()
     pending_subs = SubscriptionRequest.query.filter_by(status='pending').count()
-    # AI Bain 애드온 전용 pending 카운트 (sub_req.request_type 기반)
+    # AI Brain 애드온 전용 pending 카운트 (sub_req.request_type 기반)
     pending_aibain_subs = SubscriptionRequest.query.filter_by(
         status='pending', request_type='aibain_addon'
     ).count()
 
-    # AI Bain 활성 유저 + 만료 임박 (D-3 이내)
+    # AI Brain 활성 유저 + 만료 임박 (D-3 이내)
     from datetime import datetime, timezone, timedelta
     now_naive = datetime.utcnow()
     soon_threshold = now_naive + timedelta(days=3)
@@ -154,7 +154,7 @@ def dashboard():
         'approved_users': sum(1 for u in users if u.status == 'approved'),
         'suspended_users': sum(1 for u in users if u.status == 'suspended'),
         'pending_subscriptions': pending_subs,
-        # AI Bain 알파 스캐너 (애드온)
+        # AI Brain 알파 스캐너 (애드온)
         'aibain_active_users': aibain_active_count,
         'aibain_expiring_soon': aibain_expiring_count,  # D-3 이내 만료
         'pending_aibain_subs': pending_aibain_subs,
@@ -483,12 +483,12 @@ def revoke_subscription(user_id):
     })
 
 
-# ── AI Bain 알파 스캐너 애드온 (별도 30일 갱신 구독) ────────────────────────
+# ── AI Brain 알파 스캐너 애드온 (별도 30일 갱신 구독) ────────────────────────
 
 @admin_bp.route('/users/<int:user_id>/aibain/enable', methods=['POST'])
 @admin_required
 def enable_aibain(user_id):
-    """AI Bain 알파 스캐너 활성화 (+30일 연장 가능).
+    """AI Brain 알파 스캐너 활성화 (+30일 연장 가능).
 
     payload:
       - days: int (default 30) — 추가 일수. 0 = 무기한 (NULL 만료일).
@@ -502,9 +502,9 @@ def enable_aibain(user_id):
     user = db.session.get(User, user_id)
     if not user:
         return jsonify({'error': 'User not found'}), 404
-    # AI Bain 은 활성 베이스 (Pro/Premium) 회원에게만 의미 있음
+    # AI Brain 은 활성 베이스 (Pro/Premium) 회원에게만 의미 있음
     if user.tier not in ('pro', 'premium'):
-        return jsonify({'error': f'AI Bain 은 Pro/Ultra Pro 회원에게만 부여 가능 (tier={user.tier})'}), 400
+        return jsonify({'error': f'AI Brain 은 Pro/Ultra Pro 회원에게만 부여 가능 (tier={user.tier})'}), 400
 
     data = request.get_json() or {}
     try:
@@ -534,7 +534,7 @@ def enable_aibain(user_id):
                 base = existing
         user.aibain_expires_at = base + timedelta(days=days)
     user.aibain_alert_stage = None
-    # Pro 일시정지 트리거 (활성 Pro 회원이 처음 AI Bain 활성화될 때만)
+    # Pro 일시정지 트리거 (활성 Pro 회원이 처음 AI Brain 활성화될 때만)
     if user.tier == 'pro' and user.pro_expires_at is not None and user.pro_paused_at is None:
         user.pro_paused_at = datetime.now(timezone.utc)
         user.pro_expiry_alert_stage = None
@@ -546,11 +546,11 @@ def enable_aibain(user_id):
         'pro_paused_at': user.pro_paused_at.isoformat() if user.pro_paused_at else None,
     }
     _record_audit('enable_aibain', user, before, after, note=note)
-    _notify_admin('AI Bain 활성화', user,
+    _notify_admin('AI Brain 활성화', user,
                   f"{days}일 (만료: {after['aibain_expires_at'] or '무기한'})")
 
     return jsonify({
-        'message': f'{user.email} AI Bain 활성화 ({days}일)',
+        'message': f'{user.email} AI Brain 활성화 ({days}일)',
         'user': user.to_dict(),
     })
 
@@ -558,7 +558,7 @@ def enable_aibain(user_id):
 @admin_bp.route('/users/<int:user_id>/aibain/revoke', methods=['POST'])
 @admin_required
 def revoke_aibain(user_id):
-    """AI Bain 알파 스캐너 즉시 해제. 베이스 tier 는 유지."""
+    """AI Brain 알파 스캐너 즉시 해제. 베이스 tier 는 유지."""
     user = db.session.get(User, user_id)
     if not user:
         return jsonify({'error': 'User not found'}), 404
@@ -600,10 +600,10 @@ def revoke_aibain(user_id):
         'pro_expires_at': user.pro_expires_at.isoformat() if user.pro_expires_at else None,
     }
     _record_audit('revoke_aibain', user, before, after, note=note)
-    _notify_admin('AI Bain 해제', user, f"사유: {note}")
+    _notify_admin('AI Brain 해제', user, f"사유: {note}")
 
     return jsonify({
-        'message': f'{user.email} AI Bain 즉시 해제',
+        'message': f'{user.email} AI Brain 즉시 해제',
         'user': user.to_dict(),
     })
 
@@ -611,12 +611,12 @@ def revoke_aibain(user_id):
 @admin_bp.route('/users/<int:user_id>/aibain/extend', methods=['POST'])
 @admin_required
 def extend_aibain(user_id):
-    """AI Bain 만료일 연장 (+N일). enable 의 alias — 활성 상태에서만 작동."""
+    """AI Brain 만료일 연장 (+N일). enable 의 alias — 활성 상태에서만 작동."""
     user = db.session.get(User, user_id)
     if not user:
         return jsonify({'error': 'User not found'}), 404
     if not user.aibain_enabled:
-        return jsonify({'error': 'AI Bain 이 활성화되지 않았습니다. enable 사용.'}), 400
+        return jsonify({'error': 'AI Brain 이 활성화되지 않았습니다. enable 사용.'}), 400
 
     data = request.get_json() or {}
     try:
@@ -642,10 +642,10 @@ def extend_aibain(user_id):
 
     after = {'aibain_expires_at': user.aibain_expires_at.isoformat()}
     _record_audit('extend_aibain', user, before, after, note=note)
-    _notify_admin('AI Bain 연장', user, f"+{days}일 → 만료: {after['aibain_expires_at']}")
+    _notify_admin('AI Brain 연장', user, f"+{days}일 → 만료: {after['aibain_expires_at']}")
 
     return jsonify({
-        'message': f'{user.email} AI Bain +{days}일',
+        'message': f'{user.email} AI Brain +{days}일',
         'user': user.to_dict(),
     })
 
@@ -931,10 +931,10 @@ def approve_subscription(req_id):
     """구독 요청 승인.
 
     request_type 별로 처리 분기:
-      - 'aibain_addon': 베이스 tier 유지 + AI Bain 활성화 (+30일). 활성 회원이 AI Bain 만 추가.
+      - 'aibain_addon': 베이스 tier 유지 + AI Brain 활성화 (+30일). 활성 회원이 AI Brain 만 추가.
       - 'upgrade' / 'downgrade': 기존 동작 — tier 변경 + 만료일 재설정 + status 승급.
 
-    AI Bain 애드온은 베이스 구독을 건드리지 않으므로 pro_expires_at / pro_expiry_alert_stage 유지.
+    AI Brain 애드온은 베이스 구독을 건드리지 않으므로 pro_expires_at / pro_expiry_alert_stage 유지.
     """
     sub_req = db.session.get(SubscriptionRequest, req_id)
     if not sub_req:
@@ -965,18 +965,18 @@ def approve_subscription(req_id):
         }
 
         if is_aibain_addon:
-            # AI Bain 만 활성화 — 베이스 tier 그대로
+            # AI Brain 만 활성화 — 베이스 tier 그대로
             user.aibain_enabled = True
             user.aibain_expires_at = datetime.now(timezone.utc) + timedelta(days=30)
             user.aibain_alert_stage = None
             # ── Pro 만료 카운터 일시정지 (Pro tier 회원만, premium 은 무기한이라 영향 X) ──
-            # Pro 회원이 AI Bain 추가 시 AI Bain 기간 동안 Pro 카운터 freeze.
-            # AI Bain 만료/해제 시 흐른 paused 기간만큼 pro_expires_at 연장 후 NULL 처리.
+            # Pro 회원이 AI Brain 추가 시 AI Brain 기간 동안 Pro 카운터 freeze.
+            # AI Brain 만료/해제 시 흐른 paused 기간만큼 pro_expires_at 연장 후 NULL 처리.
             if user.tier == 'pro' and user.pro_expires_at is not None and user.pro_paused_at is None:
                 user.pro_paused_at = datetime.now(timezone.utc)
                 user.pro_expiry_alert_stage = None  # paused 동안 알림 보류
             audit_action = 'activate_aibain'
-            summary_text = f"AI Bain 활성화 (+30d, base={user.tier} 유지, Pro 카운터 일시정지)"
+            summary_text = f"AI Brain 활성화 (+30d, base={user.tier} 유지, Pro 카운터 일시정지)"
         else:
             # 기존 동작 — 베이스 tier 변경
             user.tier = sub_req.to_tier
@@ -990,12 +990,12 @@ def approve_subscription(req_id):
                 user.approved_by = admin.id if admin else None
             user.pro_expiry_alert_stage = None
 
-            # 신규 가입자가 AI Bain 포함 신청한 경우 (admin_note 마커로 판단)
-            if sub_req.admin_note and 'AI Bain' in sub_req.admin_note and 'aibain_addon' not in (sub_req.request_type or ''):
+            # 신규 가입자가 AI Brain 포함 신청한 경우 (admin_note 마커로 판단)
+            if sub_req.admin_note and 'AI Brain' in sub_req.admin_note and 'aibain_addon' not in (sub_req.request_type or ''):
                 user.aibain_enabled = True
                 user.aibain_expires_at = datetime.now(timezone.utc) + timedelta(days=30)
                 user.aibain_alert_stage = None
-                summary_text += " + AI Bain 활성화 (+30d)"
+                summary_text += " + AI Brain 활성화 (+30d)"
 
         after = {
             'tier': user.tier,

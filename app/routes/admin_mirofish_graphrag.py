@@ -14,7 +14,7 @@ Phase A–F 를 단계적으로 노출한다.
 
 대부분 route 는 ``@admin_required`` 적용.
 일부 read-only 분석 데이터 (status, scan-history, scan-history-performance) 는
-``@admin_or_aibain_required`` — AI Bain 알파 스캐너 구독자도 조회 가능.
+``@admin_or_aibain_required`` — AI Brain 알파 스캐너 구독자도 조회 가능.
 """
 from __future__ import annotations
 

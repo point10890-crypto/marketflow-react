@@ -533,7 +533,7 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                 )}
             </div>
 
-            {/* ── AI Bain 업그레이드 배너 (활성 Pro/Premium 회원, admin/AI Bain 활성자 제외) ── */}
+            {/* ── AI Brain 업그레이드 배너 (활성 Pro/Premium 회원, admin/AI Brain 활성자 제외) ── */}
             {(() => {
                 const tier = user?.tier ?? null;
                 const role = user?.role ?? 'user';
@@ -554,13 +554,13 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                             </div>
                             <div className="min-w-0 flex-1">
                                 <div className="flex items-center gap-1.5 flex-wrap">
-                                    <span className="text-white font-bold text-sm">AI Bain 알파 스캐너 추가</span>
+                                    <span className="text-white font-bold text-sm">AI Brain 알파 스캐너 추가</span>
                                     <span className="text-[8px] font-bold tracking-wider px-1.5 py-0.5 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-500/25 animate-pulse" style={{ animationDuration: '2s' }}>
                                         NEW
                                     </span>
                                 </div>
                                 <p className="text-[11px] sm:text-xs text-gray-400 mt-0.5 leading-tight">
-                                    <span className="text-cyan-300/90">{tierLabel} 구독 유지 + AI Bain</span> · MCP TOP 3 / 신규 5종 시그널 · <span className="text-cyan-200 font-semibold">+40,000원/30일</span>
+                                    <span className="text-cyan-300/90">{tierLabel} 구독 유지 + AI Brain</span> · MCP TOP 3 / 신규 5종 시그널 · <span className="text-cyan-200 font-semibold">+40,000원/30일</span>
                                 </p>
                             </div>
                             <div className="shrink-0 flex items-center gap-2">
@@ -988,7 +988,7 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                 </Link>
             )}
 
-            {/* ── AI Bain 알파 스캐너 Section (Pro + AI Bain 구독자 진입점) ── */}
+            {/* ── AI Brain 알파 스캐너 Section (Pro + AI Brain 구독자 진입점) ── */}
             {(() => {
                 const tier = user?.tier ?? null;
                 const role = user?.role ?? 'user';
@@ -1008,7 +1008,7 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                                 </div>
                                 <div>
                                     <div className="flex items-center gap-1.5">
-                                        <h3 className="text-base font-bold text-white">AI Bain 알파 스캐너</h3>
+                                        <h3 className="text-base font-bold text-white">AI Brain 알파 스캐너</h3>
                                         <span className="text-[8px] font-bold tracking-wider px-1.5 py-0.5 rounded-full bg-cyan-500/15 text-cyan-400 border border-cyan-500/25 animate-pulse" style={{ animationDuration: '2s' }}>
                                             NEW
                                         </span>
@@ -1051,7 +1051,7 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                                 <p className="text-xs text-gray-300 leading-relaxed">
                                     {hasProAccess
                                         ? '실시간 알파 스캐너 결과와 MCP TOP 3 이벤트를 한 곳에서 확인.'
-                                        : 'Pro + AI Bain 구독으로 실시간 시그널 서비스를 받아보세요.'}
+                                        : 'Pro + AI Brain 구독으로 실시간 시그널 서비스를 받아보세요.'}
                                 </p>
                                 <span className={`shrink-0 text-[11px] font-bold ${hasProAccess ? 'text-cyan-300' : 'text-amber-300'}`}>
                                     {hasProAccess ? '전체 보기 →' : '구독 신청 →'}

@@ -431,7 +431,7 @@ def _start_expiry_checker(app):
                     d3_window = now + timedelta(days=3)
                     d1_window = now + timedelta(days=1)
 
-                    # 1) 만료된 유저 처리 — paused 유저 skip (AI Bain 활성 중 일시정지)
+                    # 1) 만료된 유저 처리 — paused 유저 skip (AI Brain 활성 중 일시정지)
                     expired = User.query.filter(
                         User.tier == 'pro',
                         User.pro_expires_at.isnot(None),
@@ -488,7 +488,7 @@ def _start_expiry_checker(app):
 
 
 def _start_aibain_expiry_checker(app):
-    """AI Bain 알파 스캐너 만료 자동 비활성화 + D-3/D-1/만료 텔레그램 알림 (1시간 간격).
+    """AI Brain 알파 스캐너 만료 자동 비활성화 + D-3/D-1/만료 텔레그램 알림 (1시간 간격).
 
     Pro 만료와 분리된 차원으로 독립 처리:
     - 베이스 tier 는 그대로 (Pro / Ultra Pro 유지)
@@ -507,10 +507,10 @@ def _start_aibain_expiry_checker(app):
             label_map = {'d3': 'D-3 만료 임박', 'd1': 'D-1 만료 임박', 'expired': '만료 처리'}
             tier_label = 'Ultra Pro' if user.tier == 'premium' else 'Pro' if user.tier == 'pro' else 'No Tier'
             msg = (
-                f"🤖 <b>AI Bain {label_map.get(stage, stage)}</b>\n\n"
+                f"🤖 <b>AI Brain {label_map.get(stage, stage)}</b>\n\n"
                 f"👤 {user.name} ({user.email})\n"
                 f"📋 베이스: {tier_label}\n"
-                f"📅 AI Bain 만료일: {when}\n"
+                f"📅 AI Brain 만료일: {when}\n"
                 f"🆔 user_id={user.id}"
             )
             _telegram_post(bot_token, chat_id, msg, label=f"aibain_expiry_{stage}")
@@ -526,8 +526,8 @@ def _start_aibain_expiry_checker(app):
             tier_label = 'Ultra Pro' if user.tier == 'premium' else 'Pro' if user.tier == 'pro' else 'No Tier'
             create_admin_notification(
                 'aibain_expired',
-                f'AI Bain 만료: {user.name}',
-                f'{user.email} (베이스 {tier_label}) — AI Bain 자동 비활성화',
+                f'AI Brain 만료: {user.name}',
+                f'{user.email} (베이스 {tier_label}) — AI Brain 자동 비활성화',
                 related_id=user.id,
             )
         except Exception as e:
@@ -546,7 +546,7 @@ def _start_aibain_expiry_checker(app):
                     d3_window = now + timedelta(days=3)
                     d1_window = now + timedelta(days=1)
 
-                    # 1) AI Bain 만료된 유저 — 자동 비활성화
+                    # 1) AI Brain 만료된 유저 — 자동 비활성화
                     expired = User.query.filter(
                         User.aibain_enabled == True,
                         User.aibain_expires_at.isnot(None),
@@ -562,7 +562,7 @@ def _start_aibain_expiry_checker(app):
                         # aibain_expires_at 은 보존 (이력 추적용)
                         user.aibain_alert_stage = 'expired'
                         # ── Pro 일시정지 재개 ─────────────────────────────────
-                        # AI Bain 만료 시점 = Pro 카운터 재개. paused 기간만큼 pro_expires_at 연장.
+                        # AI Brain 만료 시점 = Pro 카운터 재개. paused 기간만큼 pro_expires_at 연장.
                         # 정상 시나리오: aibain_expires_at - pro_paused_at = 30일 → Pro 30일 연장.
                         # Pro 회원 only (premium 은 pro_expires_at=NULL 이라 영향 X)
                         if user.pro_paused_at is not None and user.tier == 'pro' and user.pro_expires_at is not None:
@@ -613,7 +613,7 @@ def _start_aibain_expiry_checker(app):
 
     thread = threading.Thread(target=_aibain_loop, daemon=True, name='AibainExpiryChecker')
     thread.start()
-    print("[OK] AI Bain expiry checker started (1h interval, D-3/D-1/expired alerts)")
+    print("[OK] AI Brain expiry checker started (1h interval, D-3/D-1/expired alerts)")
 
 
 def _start_precompute_worker(app):

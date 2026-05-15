@@ -187,6 +187,7 @@ function MenuBar({ editor, onImageUpload, onVideoUpload, uploading }: {
 export default function TipTapEditor({ content, onChange, placeholder = '내용을 입력하세요...' }: TipTapEditorProps) {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const videoInputRef = useRef<HTMLInputElement>(null);
+    const lastExternalContentRef = useRef(content || '');
     const [videoUploading, setVideoUploading] = useState(false);
 
     const editor = useEditor({
@@ -209,7 +210,9 @@ export default function TipTapEditor({ content, onChange, placeholder = '내용�
         ],
         content: content || '',
         onUpdate: ({ editor: ed }) => {
-            onChange(ed.getHTML());
+            const html = ed.getHTML();
+            lastExternalContentRef.current = html;
+            onChange(html);
         },
         editorProps: {
             attributes: {
@@ -256,12 +259,14 @@ export default function TipTapEditor({ content, onChange, placeholder = '내용�
 
     // Sync external content changes (e.g., loading existing post for edit)
     useEffect(() => {
-        if (editor && content && !editor.getHTML().includes(content.substring(0, 20))) {
-            editor.commands.setContent(content);
+        if (!editor) return;
+        const nextContent = content || '';
+        if (nextContent === lastExternalContentRef.current) return;
+        if (nextContent !== editor.getHTML()) {
+            editor.commands.setContent(nextContent);
         }
-        // Only run when content prop changes from outside, not from typing
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+        lastExternalContentRef.current = nextContent;
+    }, [editor, content]);
 
     const uploadAndInsertImage = useCallback(async (file: File, _pos?: number) => {
         if (!editor) return;

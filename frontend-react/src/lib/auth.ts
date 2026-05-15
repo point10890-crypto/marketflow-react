@@ -48,12 +48,12 @@ export interface AuthUserData {
     pro_expires_at?: string | null;
     is_pro_expired?: boolean;
     requested_tier?: 'pro' | 'premium' | null;
-    // AI Bain 알파 스캐너 (애드온) — backend /api/auth/me 응답 포함
+    // AI Brain 알파 스캐너 (애드온) — backend /api/auth/me 응답 포함
     aibain_enabled?: boolean;
     aibain_expires_at?: string | null;
     is_aibain_active?: boolean;
     aibain_days_remaining?: number | null;
-    // Pro 만료 일시정지 (AI Bain 활성 중)
+    // Pro 만료 일시정지 (AI Brain 활성 중)
     pro_paused_at?: string | null;
     is_pro_paused?: boolean;
 }

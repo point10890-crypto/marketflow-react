@@ -1074,6 +1074,7 @@ from {mod} import {func}
 
 
 @common_bp.route('/system/update-data-stream')
+@admin_required
 def stream_update_data():
     """데이터 업데이트 프로세스 스트리밍 실행"""
     def generate():

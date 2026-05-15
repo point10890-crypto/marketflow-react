@@ -766,7 +766,7 @@ export interface AdminUser {
     created_at: string;
     approved_at: string | null;
     last_login_at: string | null;
-    // AI Bain 알파 스캐너 (애드온)
+    // AI Brain 알파 스캐너 (애드온)
     aibain_enabled?: boolean;
     aibain_expires_at?: string | null;
     is_aibain_active?: boolean;
@@ -806,7 +806,7 @@ export interface AdminDashboard {
     approved_users: number;
     suspended_users: number;
     pending_subscriptions: number;
-    // AI Bain 알파 스캐너 (애드온) 통계
+    // AI Brain 알파 스캐너 (애드온) 통계
     aibain_active_users?: number;
     aibain_expiring_soon?: number;   // D-3 이내 만료 임박
     pending_aibain_subs?: number;     // sub_req request_type='aibain_addon' pending 카운트
@@ -958,7 +958,7 @@ export const adminAPI = {
     extendPro: (id: number, days: number, token?: string) => postAuthAPI<{ user: AdminUser }>(`/api/admin/users/${id}/extend`, { days }, token),
     setExpiry: (id: number, pro_expires_at: string, token?: string) => putAuthAPI<{ user: AdminUser }>(`/api/admin/users/${id}/expiry`, { pro_expires_at }, token),
     revokeSubscription: (id: number, note: string | undefined, token?: string) => postAuthAPI<{ user: AdminUser }>(`/api/admin/users/${id}/revoke`, { note: note || '' }, token),
-    // AI Bain 알파 스캐너 애드온 관리 (별도 30일 갱신 구독)
+    // AI Brain 알파 스캐너 애드온 관리 (별도 30일 갱신 구독)
     enableAibain: (id: number, days?: number, note?: string, token?: string) =>
         postAuthAPI<{ user: AdminUser; message: string }>(`/api/admin/users/${id}/aibain/enable`, { days: days ?? 30, note }, token),
     extendAibain: (id: number, days?: number, note?: string, token?: string) =>

@@ -489,7 +489,7 @@ def _fire_workflow(tuning: dict[str, Any], gates: dict[str, Any], cycle_record: 
     aibain_ok = False
     if message and top3:
         try:
-            # AI Bain 알파 스캐너 TOP 3 메세지 — 개인봇만, 채널 발송 금지
+            # AI Brain 알파 스캐너 TOP 3 메세지 — 개인봇만, 채널 발송 금지
             # (사용자 요청: t.me/+gC5JgpGLsPJhZWJl 채널에는 알파 스캐너 메세지 보내지 않음)
             from app.utils.scheduler import _send_telegram_long
             telegram_ok = bool(_send_telegram_long(message, channel=False))

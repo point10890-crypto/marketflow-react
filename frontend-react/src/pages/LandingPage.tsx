@@ -430,9 +430,9 @@ export default function LandingPage() {
                             <div className="hidden sm:block w-px h-16 bg-white/10" />
                             <div className="sm:hidden w-24 h-px bg-white/10" />
                             <div>
-                                <div className="text-cyan-400 text-xs mb-1 font-bold">Pro + AI Bain <i className="fas fa-robot text-[10px]" /></div>
+                                <div className="text-cyan-400 text-xs mb-1 font-bold">Pro + AI Brain <i className="fas fa-robot text-[10px]" /></div>
                                 <div className="text-2xl font-black text-white">90,000<span className="text-base text-gray-400">원/30일</span></div>
-                                <div className="text-gray-600 text-xs mt-1">Pro + AI Bain 알파 스캐너</div>
+                                <div className="text-gray-600 text-xs mt-1">Pro + AI Brain 알파 스캐너</div>
                             </div>
                             <div className="hidden sm:block w-px h-16 bg-white/10" />
                             <div className="sm:hidden w-24 h-px bg-white/10" />

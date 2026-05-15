@@ -632,6 +632,7 @@ def _run_all_update():
 
 _scheduler_started = False
 _scheduler_lock = threading.Lock()
+_scheduler_file_lock = None
 
 
 def start_cloud_scheduler():
@@ -643,7 +644,7 @@ def start_cloud_scheduler():
     - 시작 시 stale 데이터 감지 → 즉시 catch-up 실행
     - keep-alive self-ping으로 Render sleep 방지
     """
-    global _scheduler_started
+    global _scheduler_started, _scheduler_file_lock
 
     with _scheduler_lock:
         if _scheduler_started:
@@ -657,8 +658,12 @@ def start_cloud_scheduler():
         lock = FileLock(lock_path, timeout=1)
         lock.acquire(timeout=1)
     except Exception:
+        with _scheduler_lock:
+            _scheduler_started = False
         logger.info("[CloudScheduler] 다른 워커가 이미 실행 중 — 스킵")
         return
+
+    _scheduler_file_lock = lock
 
     thread = threading.Thread(target=_cloud_scheduler_loop, daemon=True, name='CloudScheduler')
     thread.start()

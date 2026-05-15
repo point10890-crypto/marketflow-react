@@ -34,12 +34,12 @@ interface AuthUser {
     is_pro_expired?: boolean;
     // 가입 시 유저가 선택한 플랜. pending 유저 안내용.
     requested_tier?: 'pro' | 'premium' | null;
-    // ── AI Bain 알파 스캐너 애드온 (별도 30일 갱신 구독) ───────────────────
+    // ── AI Brain 알파 스캐너 애드온 (별도 30일 갱신 구독) ───────────────────
     aibain_enabled?: boolean;
     aibain_expires_at?: string | null;
     is_aibain_active?: boolean;        // backend 계산값 (만료 체크 포함)
     aibain_days_remaining?: number | null;
-    // Pro 만료 카운터 일시정지 (AI Bain 활성 중)
+    // Pro 만료 카운터 일시정지 (AI Brain 활성 중)
     pro_paused_at?: string | null;
     is_pro_paused?: boolean;
 }
@@ -80,13 +80,13 @@ function toAuthUser(d: AuthUserData): AuthUser {
         pro_expires_at: d.pro_expires_at || null,
         is_pro_expired: d.is_pro_expired ?? false,
         requested_tier: d.requested_tier ?? null,
-        // AI Bain 알파 스캐너 (애드온) — 빠뜨리면 Summary 배너 숨김 / AiBainPage 풀 콘솔 조건이
+        // AI Brain 알파 스캐너 (애드온) — 빠뜨리면 Summary 배너 숨김 / AiBainPage 풀 콘솔 조건이
         // React 상태에서 항상 false 로 보임 (백엔드는 정상 반환하지만 frontend 가 strip).
         aibain_enabled: d.aibain_enabled ?? false,
         aibain_expires_at: d.aibain_expires_at ?? null,
         is_aibain_active: d.is_aibain_active ?? false,
         aibain_days_remaining: d.aibain_days_remaining ?? null,
-        // Pro 일시정지 (AI Bain 활성 중)
+        // Pro 일시정지 (AI Brain 활성 중)
         pro_paused_at: d.pro_paused_at ?? null,
         is_pro_paused: d.is_pro_paused ?? false,
     };

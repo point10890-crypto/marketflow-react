@@ -114,7 +114,7 @@ export default function PaymentRequestPage() {
                     </p>
                 </div>
 
-                {/* AI Bain 포함 시 가격 분해 안내 */}
+                {/* AI Brain 포함 시 가격 분해 안내 */}
                 {meta.includesAibain && meta.baseAmount && meta.aibainAmount && (
                     <div className={`p-4 rounded-2xl ${colorMap.bg} border border-cyan-400/15 mb-4`}>
                         <h4 className="text-cyan-300 font-bold text-xs mb-2 flex items-center gap-1.5">
@@ -136,7 +136,7 @@ export default function PaymentRequestPage() {
                         </div>
                         <p className="mt-2 text-[10px] text-gray-500">
                             <i className="fas fa-info-circle mr-1" />
-                            AI Bain 은 30일 갱신 구독 — 만료 시 별도 갱신 없으면 자동으로 베이스 플랜으로 회귀합니다.
+                            AI Brain 은 30일 갱신 구독 — 만료 시 별도 갱신 없으면 자동으로 베이스 플랜으로 회귀합니다.
                         </p>
                     </div>
                 )}

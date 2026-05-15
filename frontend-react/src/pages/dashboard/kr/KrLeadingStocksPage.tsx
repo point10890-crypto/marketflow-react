@@ -58,6 +58,14 @@ interface LeadingStock {
 interface ScreenerResult {
     timestamp: string;
     market_status: string;
+    quote_mode?: 'paper' | 'real' | string;
+    served_from?: string;
+    live_refresh_recommended?: boolean;
+    stale_reason?: string;
+    freshness?: {
+        age_seconds?: number | null;
+        live_ttl_seconds?: number;
+    };
     time_weight: number;
     total_candidates: number;
     results: LeadingStock[];
@@ -312,8 +320,11 @@ export default function KrLeadingStocksPage() {
 
     useEffect(() => { loadDates(); }, [loadDates]);
     useEffect(() => { setLoading(true); loadData(); }, [loadData]);
+    const isLiveMode = selectedDate === 'latest' && (
+        data?.market_status === 'open' || data?.live_refresh_recommended === true
+    );
     const isOpen = data?.market_status === 'open' && selectedDate === 'latest';
-    useAutoRefresh(loadData, isOpen ? 5000 : 60000, selectedDate === 'latest');
+    useAutoRefresh(loadData, isLiveMode ? 5000 : 60000, selectedDate === 'latest');
     usePullToRefreshRegister(loadData);
 
     const filtered = data?.results?.filter(r =>
@@ -389,6 +400,23 @@ export default function KrLeadingStocksPage() {
             )}
 
             {/* 🤖 AI전략 테마 TOP (키움 7개 조건식 동시매칭) */}
+            {data?.served_from === 'stale_file_fallback' && (
+                <div className="rounded-xl border border-amber-400/20 bg-amber-400/10 px-3 py-2 text-xs font-bold text-amber-200">
+                    Live quote refresh is retrying. Showing the last saved screen until KIS returns a fresh scan.
+                    {data.freshness?.age_seconds != null && (
+                        <span className="ml-2 text-amber-100/70">
+                            age {Math.round(data.freshness.age_seconds)}s
+                        </span>
+                    )}
+                </div>
+            )}
+
+            {data?.quote_mode === 'paper' && (
+                <div className="rounded-xl border border-sky-400/20 bg-sky-400/10 px-3 py-2 text-xs font-bold text-sky-200">
+                    KIS paper mode is active. Prices can differ from real-market quote screens.
+                </div>
+            )}
+
             <AiThemeCard />
 
             {/* Grade Filter */}
@@ -410,7 +438,7 @@ export default function KrLeadingStocksPage() {
             </div>
 
             {/* Market Closed State */}
-            {data && !isOpen && (
+            {data && !isLiveMode && (
                 <div className="flex flex-col items-center justify-center py-6 gap-2 bg-[#1c1c1e] rounded-2xl border border-white/5">
                     <div className="w-10 h-10 rounded-full bg-zinc-800/60 flex items-center justify-center">
                         <i className="fas fa-moon text-zinc-600 text-base" />

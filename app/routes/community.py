@@ -515,8 +515,14 @@ def delete_purchase(purchase_id):
 @community_bp.route('/posts/<int:post_id>/comments', methods=['GET'])
 @approved_required
 def list_comments(post_id):
+    user = _get_current_user()
     post = Post.query.get_or_404(post_id)
-    comments = Comment.query.filter_by(post_id=post.id)\
+    if post.is_hidden and user.role != 'admin':
+        return jsonify({'error': 'Post not found'}), 404
+    board = post.board
+    if user.role != 'admin' and not _check_tier(user.tier, board.min_tier):
+        return jsonify({'error': 'Tier upgrade required'}), 403
+    comments = Comment.query.filter_by(post_id=post.id, is_hidden=False)\
         .order_by(Comment.created_at.asc()).all()
     return jsonify([c.to_dict() for c in comments])
 
@@ -549,10 +555,18 @@ def create_comment(post_id):
 
 
 @community_bp.route('/comments/<int:comment_id>', methods=['PUT'])
-@login_required
+@approved_required
 def update_comment(comment_id):
     user = _get_current_user()
     comment = Comment.query.get_or_404(comment_id)
+    if comment.is_hidden and user.role != 'admin':
+        return jsonify({'error': 'Comment not found'}), 404
+    post = Post.query.get_or_404(comment.post_id)
+    if post.is_hidden and user.role != 'admin':
+        return jsonify({'error': 'Post not found'}), 404
+    board = post.board
+    if user.role != 'admin' and not _check_tier(user.tier, board.min_tier):
+        return jsonify({'error': 'Tier upgrade required'}), 403
     if user.role != 'admin' and comment.author_id != user.id:
         return jsonify({'error': 'Permission denied'}), 403
 
@@ -566,16 +580,22 @@ def update_comment(comment_id):
 
 
 @community_bp.route('/comments/<int:comment_id>', methods=['DELETE'])
-@login_required
+@approved_required
 def delete_comment(comment_id):
     user = _get_current_user()
     comment = Comment.query.get_or_404(comment_id)
+    if comment.is_hidden and user.role != 'admin':
+        return jsonify({'error': 'Comment not found'}), 404
+    post = Post.query.get_or_404(comment.post_id)
+    if post.is_hidden and user.role != 'admin':
+        return jsonify({'error': 'Post not found'}), 404
+    board = post.board
+    if user.role != 'admin' and not _check_tier(user.tier, board.min_tier):
+        return jsonify({'error': 'Tier upgrade required'}), 403
     if user.role != 'admin' and comment.author_id != user.id:
         return jsonify({'error': 'Permission denied'}), 403
     comment.is_hidden = True
-    post = Post.query.get(comment.post_id)
-    if post:
-        post.comment_count = max(0, Comment.query.filter_by(post_id=post.id, is_hidden=False).count() - 1)
+    post.comment_count = Comment.query.filter_by(post_id=post.id, is_hidden=False).count()
     db.session.commit()
     return jsonify({'ok': True})
 
@@ -683,6 +703,9 @@ def upload_video():
 
 @community_bp.route('/uploads/<filename>', methods=['GET'])
 def serve_upload(filename):
+    ext = filename.rsplit('.', 1)[-1].lower() if '.' in filename else ''
+    if ext in FORMULA_FILE_EXTENSIONS:
+        return jsonify({'error': 'Use the protected download endpoint'}), 403
     if not os.path.exists(os.path.join(UPLOAD_DIR, filename)):
         return jsonify({'error': 'Not found'}), 404
     response = send_from_directory(UPLOAD_DIR, filename)

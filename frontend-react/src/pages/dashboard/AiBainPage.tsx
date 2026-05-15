@@ -8,13 +8,13 @@ import { subscriptionAPI } from '@/lib/api';
 const AdminEndpointsPage = lazy(() => import('@/pages/admin/AdminEndpointsPage'));
 
 /**
- * Pro + AI Bain 구독자 전용 페이지.
+ * Pro + AI Brain 구독자 전용 페이지.
  *
  * 라우트: /dashboard/ai-bain (ProGuard 보호)
  *
  * 가시성 분기:
- *  - admin (또는 활성 AI Bain) → 관리자 콘솔의 풀 그래프RAG Analysis 렌더 (subscriberMode)
- *  - 활성 Pro/Ultra Pro 비AI Bain → "AI Bain 구독 업그레이드" 안내 (+40,000원/30일)
+ *  - admin (또는 활성 AI Brain) → 관리자 콘솔의 풀 그래프RAG Analysis 렌더 (subscriberMode)
+ *  - 활성 Pro/Ultra Pro 비AI Brain → "AI Brain 구독 업그레이드" 안내 (+40,000원/30일)
  *  - 그 외 → "구독 신청" CTA → /pricing
  *
  * 본 페이지는 admin 페이지(/admin/endpoints) 의 분석 컨텐츠 (Alpha Board, Brain Signal,
@@ -29,12 +29,12 @@ export default function AiBainPage() {
     const isAdmin = role === 'admin';
     const hasProBase = tier === 'pro' || tier === 'premium';
     const isAibainActive = !!user?.is_aibain_active;
-    // admin 또는 AI Bain 활성 구독자 → 풀 콘솔
+    // admin 또는 AI Brain 활성 구독자 → 풀 콘솔
     const showFullDashboard = isAdmin || isAibainActive;
-    // Pro/Premium 인데 AI Bain 미활성 → 업그레이드 신청 폼
+    // Pro/Premium 인데 AI Brain 미활성 → 업그레이드 신청 폼
     const showUpgradeFlow = !isAdmin && hasProBase && !isAibainActive;
 
-    // ── admin (또는 활성 AI Bain) → 풀 콘솔 ─────────────────────────────────────
+    // ── admin (또는 활성 AI Brain) → 풀 콘솔 ─────────────────────────────────────
     if (showFullDashboard) {
         return (
             <Suspense fallback={<DashboardLoading />}>
@@ -59,7 +59,7 @@ function DashboardLoading() {
         <div className="min-h-screen bg-[#09090b] flex items-center justify-center">
             <div className="text-center">
                 <i className="fas fa-spinner fa-spin text-cyan-400 text-2xl mb-3" />
-                <p className="text-sm text-gray-400">AI Bain 알파 스캐너 콘솔 불러오는 중...</p>
+                <p className="text-sm text-gray-400">AI Brain 알파 스캐너 콘솔 불러오는 중...</p>
             </div>
         </div>
     );
@@ -78,7 +78,7 @@ function PageShell({ children }: { children: React.ReactNode }) {
                         </div>
                         <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-2 flex-wrap">
-                                <h1 className="text-2xl sm:text-3xl font-black tracking-tight">AI Bain 알파 스캐너</h1>
+                                <h1 className="text-2xl sm:text-3xl font-black tracking-tight">AI Brain 알파 스캐너</h1>
                                 <span className="inline-flex items-center gap-1 rounded-full border border-cyan-400/30 bg-cyan-500/10 px-2 py-0.5 text-[10px] font-black text-cyan-300 uppercase tracking-wider">
                                     <i className="fas fa-bolt text-[10px]" />
                                     ALPHA SCAN
@@ -138,7 +138,7 @@ function UpgradePrompt({ tier }: { tier: string | null }) {
         }
         setSubmitting(true);
         try {
-            // 같은 tier + AI Bain 만 추가 → 백엔드가 aibain_addon 으로 분류 (40,000원/30일)
+            // 같은 tier + AI Brain 만 추가 → 백엔드가 aibain_addon 으로 분류 (40,000원/30일)
             await subscriptionAPI.requestUpgrade(tier, token, depositorName.trim(), true);
             navigate('/pending-approval', { replace: true });
         } catch (err: any) {
@@ -147,7 +147,7 @@ function UpgradePrompt({ tier }: { tier: string | null }) {
                 navigate('/pending-approval', { replace: true });
                 return;
             }
-            setError('AI Bain 신청 중 오류가 발생했습니다. 잠시 후 다시 시도하세요.');
+            setError('AI Brain 신청 중 오류가 발생했습니다. 잠시 후 다시 시도하세요.');
             setSubmitting(false);
         }
     };
@@ -164,9 +164,9 @@ function UpgradePrompt({ tier }: { tier: string | null }) {
                             <i className="fas fa-arrow-up" />
                         </div>
                         <div className="min-w-0 flex-1">
-                            <h3 className="text-xl sm:text-2xl font-black text-white">AI Bain 구독 업그레이드 신청</h3>
+                            <h3 className="text-xl sm:text-2xl font-black text-white">AI Brain 구독 업그레이드 신청</h3>
                             <p className="mt-1 text-sm text-gray-300">
-                                현재 <span className="text-cyan-300 font-bold">{tierLabel}</span> 구독에 AI Bain 알파 스캐너만 추가합니다.
+                                현재 <span className="text-cyan-300 font-bold">{tierLabel}</span> 구독에 AI Brain 알파 스캐너만 추가합니다.
                                 기존 베이스 구독은 그대로 유지됩니다.
                             </p>
                         </div>
@@ -184,7 +184,7 @@ function UpgradePrompt({ tier }: { tier: string | null }) {
                                 <span className="text-gray-500">유지</span>
                             </div>
                             <div className="flex justify-between">
-                                <span>AI Bain 알파 스캐너 (30일)</span>
+                                <span>AI Brain 알파 스캐너 (30일)</span>
                                 <span className="font-mono text-white">+40,000원</span>
                             </div>
                             <div className="h-px bg-cyan-400/20 my-2" />
@@ -227,12 +227,12 @@ function UpgradePrompt({ tier }: { tier: string | null }) {
                         {submitting ? (
                             <><i className="fas fa-spinner fa-spin" />처리 중...</>
                         ) : (
-                            <><i className="fas fa-paper-plane" />AI Bain 구독 신청 (+40,000원/30일)</>
+                            <><i className="fas fa-paper-plane" />AI Brain 구독 신청 (+40,000원/30일)</>
                         )}
                     </button>
 
                     <p className="text-gray-600 text-[11px] text-center mt-3">
-                        신청 후 입금 → 관리자 확인 (최대 24시간) → AI Bain 활성화
+                        신청 후 입금 → 관리자 확인 (최대 24시간) → AI Brain 활성화
                     </p>
                 </div>
             </div>
@@ -267,7 +267,7 @@ function SubscribePrompt() {
                     구독 안내
                 </h3>
                 <p className="text-sm text-gray-300 mb-4">
-                    Pro + AI Bain 구독자만 이용 가능합니다. 가격 페이지에서 구독을 신청해 주세요.
+                    Pro + AI Brain 구독자만 이용 가능합니다. 가격 페이지에서 구독을 신청해 주세요.
                 </p>
                 <Link
                     to="/pricing"

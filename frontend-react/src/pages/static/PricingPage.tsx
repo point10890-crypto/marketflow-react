@@ -116,7 +116,7 @@ export default function PricingPage() {
                 </p>
             </div>
 
-            {/* Plans Grid — 3 columns (Pro / Pro + AI Bain / Ultra Pro) */}
+            {/* Plans Grid — 3 columns (Pro / Pro + AI Brain / Ultra Pro) */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-6xl w-full">
                 {/* Pro Plan */}
                 <div className="p-6 rounded-2xl border border-amber-500/30 bg-[#1c1c1e] ring-1 ring-amber-500/20 relative">
@@ -155,21 +155,21 @@ export default function PricingPage() {
                     )}
                 </div>
 
-                {/* Pro + AI Bain Plan (신규) */}
+                {/* Pro + AI Brain Plan (신규) */}
                 <div className="p-6 rounded-2xl border border-cyan-500/30 bg-[#1c1c1e] ring-1 ring-cyan-500/20 relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-cyan-500/10 to-transparent rounded-bl-full pointer-events-none" />
                     <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-cyan-500/10 text-cyan-400 text-xs font-bold mb-3">
                         <i className="fas fa-robot" /> 추천
                     </div>
                     <h3 className="text-xl font-bold text-white mb-1">
-                        Pro + AI Bain
+                        Pro + AI Brain
                     </h3>
                     <div className="flex items-baseline gap-1 mb-1">
                         <span className="text-3xl font-black text-white">90,000</span>
                         <span className="text-gray-400">원/30일</span>
                     </div>
                     <p className="text-cyan-400/70 text-xs font-semibold mb-1">
-                        Pro 50,000원 + AI Bain 40,000원
+                        Pro 50,000원 + AI Brain 40,000원
                     </p>
                     <p className="text-gray-500 text-[11px] mb-5">
                         구독 만료일: {getExpiryDate()}까지
@@ -181,7 +181,7 @@ export default function PricingPage() {
                         </li>
                         <li className="flex items-start gap-2 text-sm text-cyan-200 font-semibold">
                             <i className="fas fa-bolt text-cyan-400 text-xs mt-1 shrink-0" />
-                            AI Bain 알파 스캐너 — 신규 5종 자동 알림
+                            AI Brain 알파 스캐너 — 신규 5종 자동 알림
                         </li>
                         <li className="flex items-start gap-2 text-sm text-gray-300">
                             <i className="fas fa-trophy text-cyan-400 text-xs mt-1 shrink-0" />
@@ -195,7 +195,7 @@ export default function PricingPage() {
 
                     {isProOrAbove ? (
                         <div className="w-full py-3 rounded-xl bg-cyan-500/10 text-cyan-400 font-bold text-center text-sm">
-                            <i className="fas fa-info-circle mr-2" />AI Bain 추가는 카카오 문의
+                            <i className="fas fa-info-circle mr-2" />AI Brain 추가는 카카오 문의
                         </div>
                     ) : (
                         <button
@@ -203,7 +203,7 @@ export default function PricingPage() {
                             disabled={requesting !== null}
                             className="w-full py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-sky-500 hover:from-cyan-400 hover:to-sky-400 text-black font-bold transition-all text-sm disabled:opacity-50"
                         >
-                            {requesting === 'pro' ? '처리 중...' : 'Pro + AI Bain 신청'}
+                            {requesting === 'pro' ? '처리 중...' : 'Pro + AI Brain 신청'}
                         </button>
                     )}
                 </div>
@@ -253,7 +253,7 @@ export default function PricingPage() {
                 </div>
             </div>
 
-            {/* AI Bain 상세 설명 섹션 */}
+            {/* AI Brain 상세 설명 섹션 */}
             <section className="mt-12 max-w-5xl w-full">
                 <div className="rounded-2xl border border-cyan-500/25 bg-gradient-to-br from-cyan-500/[0.04] via-[#13151f] to-[#1c1c1e] p-6 sm:p-8 relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-cyan-500/10 to-transparent rounded-bl-full pointer-events-none" />
@@ -264,14 +264,14 @@ export default function PricingPage() {
                         </div>
                         <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-2 flex-wrap">
-                                <h2 className="text-2xl sm:text-3xl font-black text-white">AI Bain 이란?</h2>
+                                <h2 className="text-2xl sm:text-3xl font-black text-white">AI Brain 이란?</h2>
                                 <span className="inline-flex items-center gap-1 rounded-full border border-cyan-400/30 bg-cyan-500/10 px-2 py-0.5 text-[10px] font-black text-cyan-300 uppercase tracking-wider">
                                     <i className="fas fa-bolt text-[10px]" />
                                     ALPHA SCAN
                                 </span>
                             </div>
                             <p className="mt-2 text-sm sm:text-base text-gray-300 leading-relaxed">
-                                <strong className="text-cyan-300">AI Bain 알파 스캐너</strong> 전용 실시간 시그널 서비스.
+                                <strong className="text-cyan-300">AI Brain 알파 스캐너</strong> 전용 실시간 시그널 서비스.
                                 Pro 구독에 추가하면 마켓 신호를 <strong className="text-white">실시간 자동 푸시</strong>로 받습니다.
                                 기존 시스템과 독립된 사일로로 운영되어 다른 알림과 섞이지 않습니다.
                             </p>
@@ -309,7 +309,7 @@ export default function PricingPage() {
                             </div>
                             <p className="text-gray-400 text-xs leading-relaxed">
                                 개인봇 / 채널봇과 분리된 별도 봇. 다른 알림 흐름과 섞이지 않고
-                                <strong className="text-cyan-300"> AI Bain 만의 시그널</strong>만 한 곳에서 받습니다.
+                                <strong className="text-cyan-300"> AI Brain 만의 시그널</strong>만 한 곳에서 받습니다.
                             </p>
                         </div>
 
@@ -337,7 +337,7 @@ export default function PricingPage() {
                                 <span className="font-mono">50,000원</span>
                             </div>
                             <div className="flex justify-between">
-                                <span>AI Bain 알림 (30일)</span>
+                                <span>AI Brain 알림 (30일)</span>
                                 <span className="font-mono">40,000원</span>
                             </div>
                             <div className="h-px bg-cyan-400/20 my-2" />
@@ -348,7 +348,7 @@ export default function PricingPage() {
                         </div>
                         <p className="mt-3 text-[11px] text-gray-500">
                             <i className="fas fa-info-circle mr-1" />
-                            Pro 구독 결제 후 카카오 채널로 입금자명 + "AI Bain 추가" 문의 시 운영자가 AI Bain 알파 스캐너를 활성화합니다.
+                            Pro 구독 결제 후 카카오 채널로 입금자명 + "AI Brain 추가" 문의 시 운영자가 AI Brain 알파 스캐너를 활성화합니다.
                         </p>
                     </div>
                 </div>

@@ -405,6 +405,46 @@ _price_details_lock = Lock()
 _CACHE_TTL = 3
 
 
+def get_live_file_ttl_seconds():
+    return max(5, _safe_int(os.environ.get("KIS_SCREENER_LIVE_TTL_SECONDS", "15"), 15))
+
+
+def get_quote_mode():
+    return "paper" if _paper else "real"
+
+
+def result_age_seconds(result, now=None):
+    if not isinstance(result, dict):
+        return None
+    raw_ts = result.get("timestamp")
+    if not raw_ts:
+        return None
+    try:
+        ts = str(raw_ts).strip().replace("Z", "+00:00")
+        stamp = datetime.fromisoformat(ts)
+        if stamp.tzinfo is not None:
+            base_now = now or datetime.now(stamp.tzinfo)
+            if base_now.tzinfo is None:
+                base_now = base_now.replace(tzinfo=stamp.tzinfo)
+            return max(0.0, (base_now.astimezone(stamp.tzinfo) - stamp).total_seconds())
+        base_now = now or datetime.now()
+        if base_now.tzinfo is not None:
+            base_now = base_now.replace(tzinfo=None)
+        return max(0.0, (base_now - stamp).total_seconds())
+    except Exception:
+        return None
+
+
+def is_live_result_fresh(result, now=None, max_age_seconds=None):
+    if not isinstance(result, dict) or result.get("market_status") != "open":
+        return False
+    age = result_age_seconds(result, now=now)
+    if age is None:
+        return False
+    ttl = get_live_file_ttl_seconds() if max_age_seconds is None else max_age_seconds
+    return age <= ttl
+
+
 def run_screening():
     now = time.time()
     with _result_lock:
@@ -590,6 +630,7 @@ def run_screening():
     output = {
         "timestamp": datetime.now().isoformat(),
         "market_status": get_market_status(),
+        "quote_mode": get_quote_mode(),
         "time_weight": tw,
         "total_candidates": len(candidates),
         "results": results,

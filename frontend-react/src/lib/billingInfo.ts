@@ -3,14 +3,14 @@
  *
  * 백엔드 tier 차원 (BillingPlanTier) 과 UI 플랜 차원 (BillingPlan) 을 분리:
  *  - BillingPlanTier: 백엔드가 인식하는 tier = 'pro' | 'premium'
- *  - BillingPlan:     UI 가 노출하는 4종 옵션 (베이스 × AI Bain on/off)
+ *  - BillingPlan:     UI 가 노출하는 4종 옵션 (베이스 × AI Brain on/off)
  *
- * AI Bain 은 별도 30일 갱신 구독제. tier 만료와는 별도 차원.
+ * AI Brain 은 별도 30일 갱신 구독제. tier 만료와는 별도 차원.
  */
 
 export type BillingPlanTier = 'pro' | 'premium';
 
-/** UI 플랜 키 — 4종 (베이스 × AI Bain 토글) */
+/** UI 플랜 키 — 4종 (베이스 × AI Brain 토글) */
 export type BillingPlan = 'pro' | 'pro_aibain' | 'premium' | 'premium_aibain';
 
 export const BANK_ACCOUNT = {
@@ -22,13 +22,13 @@ export const BANK_ACCOUNT = {
 export interface PlanMeta {
     label: string;
     tier: BillingPlanTier;       // 백엔드로 전송할 tier
-    includesAibain: boolean;     // AI Bain 포함 여부
+    includesAibain: boolean;     // AI Brain 포함 여부
     amount: string;              // 표시용 (예: "90,000원")
     amountNumber: number;        // 비교/계산용 (예: 90000)
     color: 'amber' | 'cyan' | 'purple' | 'fuchsia';
     period: string;
-    baseAmount?: string;         // 베이스 분리 표시 (Pro+AI Bain 등)
-    aibainAmount?: string;       // AI Bain 분리 표시
+    baseAmount?: string;         // 베이스 분리 표시 (Pro+AI Brain 등)
+    aibainAmount?: string;       // AI Brain 분리 표시
     description: string;
     features: string[];
 }
@@ -51,19 +51,19 @@ export const PLAN_PAYMENT_META: Record<BillingPlan, PlanMeta> = {
         ],
     },
     pro_aibain: {
-        label: 'Pro + AI Bain',
+        label: 'Pro + AI Brain',
         tier: 'pro',
         includesAibain: true,
         amount: '90,000원',
         amountNumber: 90_000,
         color: 'cyan',
-        period: '30일 이용권 (Pro 30일 + AI Bain 30일)',
+        period: '30일 이용권 (Pro 30일 + AI Brain 30일)',
         baseAmount: 'Pro 50,000원',
-        aibainAmount: 'AI Bain 40,000원',
-        description: 'Pro 50,000원 + AI Bain 40,000원 (30일 갱신)',
+        aibainAmount: 'AI Brain 40,000원',
+        description: 'Pro 50,000원 + AI Brain 40,000원 (30일 갱신)',
         features: [
             'Pro 전체 기능 포함',
-            'AI Bain 알파 스캐너 시그널',
+            'AI Brain 알파 스캐너 시그널',
             'MCP TOP 3 자동 알림',
             '그래프RAG 분석 + 스캔 성과',
         ],
@@ -85,21 +85,21 @@ export const PLAN_PAYMENT_META: Record<BillingPlan, PlanMeta> = {
         ],
     },
     premium_aibain: {
-        label: 'Ultra Pro + AI Bain',
+        label: 'Ultra Pro + AI Brain',
         tier: 'premium',
         includesAibain: true,
         amount: '1,240,000원',
         amountNumber: 1_240_000,
         color: 'fuchsia',
-        period: 'Ultra Pro 평생 + AI Bain 30일 갱신',
+        period: 'Ultra Pro 평생 + AI Brain 30일 갱신',
         baseAmount: 'Ultra Pro 1,200,000원 (평생)',
-        aibainAmount: 'AI Bain 40,000원/30일',
-        description: 'Ultra Pro 평생 + AI Bain 30일 갱신',
+        aibainAmount: 'AI Brain 40,000원/30일',
+        description: 'Ultra Pro 평생 + AI Brain 30일 갱신',
         features: [
             'Ultra Pro 평생 이용',
-            'AI Bain 알파 스캐너 시그널',
+            'AI Brain 알파 스캐너 시그널',
             'MCP TOP 3 자동 알림',
-            'AI Bain 만료 시 자동 회귀',
+            'AI Brain 만료 시 자동 회귀',
         ],
     },
 };

@@ -285,7 +285,7 @@ export default function AccountPage() {
                             {user.is_pro_paused && (
                                 <p className="text-cyan-300/80 text-[11px] mt-1 leading-relaxed">
                                     <i className="fas fa-info-circle mr-1" />
-                                    AI Bain 활성 중 — Pro 만료 카운터 일시정지. AI Bain 만료 시 자동 재개되어 남은 기간 보존됩니다.
+                                    AI Brain 활성 중 — Pro 만료 카운터 일시정지. AI Brain 만료 시 자동 재개되어 남은 기간 보존됩니다.
                                 </p>
                             )}
                         </div>
@@ -303,7 +303,7 @@ export default function AccountPage() {
                 </div>
             )}
 
-            {/* AI Bain 알파 스캐너 (애드온) 상태 — 활성 Pro/Premium 회원에게만 노출 */}
+            {/* AI Brain 알파 스캐너 (애드온) 상태 — 활성 Pro/Premium 회원에게만 노출 */}
             {isPro && (
                 <div className="p-6 rounded-2xl border border-cyan-500/20 bg-[#13151f]">
                     <div className="flex items-center gap-3 mb-4">
@@ -312,7 +312,7 @@ export default function AccountPage() {
                         </div>
                         <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-2 flex-wrap">
-                                <h3 className="text-white font-bold">AI Bain 알파 스캐너</h3>
+                                <h3 className="text-white font-bold">AI Brain 알파 스캐너</h3>
                                 {user.is_aibain_active ? (
                                     <span className="text-[10px] font-bold tracking-wider px-2 py-0.5 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-500/25 uppercase">
                                         <i className="fas fa-bolt text-[9px] mr-0.5" /> 활성
@@ -348,7 +348,7 @@ export default function AccountPage() {
                             className="w-full py-3 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/15 text-cyan-300 font-bold text-center text-sm transition-all flex items-center justify-center gap-2"
                         >
                             <i className="fas fa-arrow-right text-xs" />
-                            AI Bain 콘솔 열기
+                            AI Brain 콘솔 열기
                         </Link>
                     ) : (
                         <Link
@@ -356,7 +356,7 @@ export default function AccountPage() {
                             className="w-full py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-sky-500 text-black font-bold text-center text-sm transition-all flex items-center justify-center gap-2"
                         >
                             <i className="fas fa-paper-plane text-xs" />
-                            AI Bain 구독 신청 (+40,000원/30일)
+                            AI Brain 구독 신청 (+40,000원/30일)
                         </Link>
                     )}
                 </div>
