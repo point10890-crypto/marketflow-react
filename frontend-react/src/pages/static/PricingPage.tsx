@@ -180,12 +180,8 @@ export default function PricingPage() {
                             Pro 전체 기능 포함
                         </li>
                         <li className="flex items-start gap-2 text-sm text-cyan-200 font-semibold">
-                            <i className="fab fa-telegram text-cyan-400 text-xs mt-1 shrink-0" />
-                            AIbain_bot 텔레그램 실시간 알림
-                        </li>
-                        <li className="flex items-start gap-2 text-sm text-gray-300">
                             <i className="fas fa-bolt text-cyan-400 text-xs mt-1 shrink-0" />
-                            신규 5종 스캐너 자동 알림
+                            AI Bain 알파 스캐너 — 신규 5종 자동 알림
                         </li>
                         <li className="flex items-start gap-2 text-sm text-gray-300">
                             <i className="fas fa-trophy text-cyan-400 text-xs mt-1 shrink-0" />
