@@ -116,12 +116,12 @@ export default function PricingPage() {
                 </p>
             </div>
 
-            {/* Plans Grid — 2 columns (Free plan removed — pro/ultra pro only) */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-4xl w-full">
+            {/* Plans Grid — 3 columns (Pro / Pro + AI Bain / Ultra Pro) */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-6xl w-full">
                 {/* Pro Plan */}
                 <div className="p-6 rounded-2xl border border-amber-500/30 bg-[#1c1c1e] ring-1 ring-amber-500/20 relative">
                     <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-amber-500/10 text-amber-400 text-xs font-bold mb-3">
-                        <i className="fas fa-crown" /> 추천
+                        <i className="fas fa-crown" /> 기본
                     </div>
                     <h3 className="text-xl font-bold text-white mb-1">Pro</h3>
                     <div className="flex items-baseline gap-1 mb-1">
@@ -151,6 +151,63 @@ export default function PricingPage() {
                             className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-black font-bold transition-all text-sm disabled:opacity-50"
                         >
                             {requesting === 'pro' ? '처리 중...' : 'Pro 구독 신청'}
+                        </button>
+                    )}
+                </div>
+
+                {/* Pro + AI Bain Plan (신규) */}
+                <div className="p-6 rounded-2xl border border-cyan-500/30 bg-[#1c1c1e] ring-1 ring-cyan-500/20 relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-cyan-500/10 to-transparent rounded-bl-full pointer-events-none" />
+                    <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-cyan-500/10 text-cyan-400 text-xs font-bold mb-3">
+                        <i className="fas fa-robot" /> 추천
+                    </div>
+                    <h3 className="text-xl font-bold text-white mb-1">
+                        Pro + AI Bain
+                    </h3>
+                    <div className="flex items-baseline gap-1 mb-1">
+                        <span className="text-3xl font-black text-white">90,000</span>
+                        <span className="text-gray-400">원/30일</span>
+                    </div>
+                    <p className="text-cyan-400/70 text-xs font-semibold mb-1">
+                        Pro 50,000원 + AI Bain 40,000원
+                    </p>
+                    <p className="text-gray-500 text-[11px] mb-5">
+                        구독 만료일: {getExpiryDate()}까지
+                    </p>
+                    <ul className="space-y-2.5 mb-6">
+                        <li className="flex items-start gap-2 text-sm text-gray-300">
+                            <i className="fas fa-check text-cyan-400 text-xs mt-1 shrink-0" />
+                            Pro 전체 기능 포함
+                        </li>
+                        <li className="flex items-start gap-2 text-sm text-cyan-200 font-semibold">
+                            <i className="fab fa-telegram text-cyan-400 text-xs mt-1 shrink-0" />
+                            AIbain_bot 텔레그램 실시간 알림
+                        </li>
+                        <li className="flex items-start gap-2 text-sm text-gray-300">
+                            <i className="fas fa-bolt text-cyan-400 text-xs mt-1 shrink-0" />
+                            신규 5종 스캐너 자동 알림
+                        </li>
+                        <li className="flex items-start gap-2 text-sm text-gray-300">
+                            <i className="fas fa-trophy text-cyan-400 text-xs mt-1 shrink-0" />
+                            TOP 3 신규 이벤트 즉시 알림
+                        </li>
+                        <li className="flex items-start gap-2 text-sm text-gray-300">
+                            <i className="fas fa-shield-halved text-cyan-400 text-xs mt-1 shrink-0" />
+                            개인봇 사일로 (다른 채널과 분리)
+                        </li>
+                    </ul>
+
+                    {isProOrAbove ? (
+                        <div className="w-full py-3 rounded-xl bg-cyan-500/10 text-cyan-400 font-bold text-center text-sm">
+                            <i className="fas fa-info-circle mr-2" />AI Bain 추가는 카카오 문의
+                        </div>
+                    ) : (
+                        <button
+                            onClick={() => handleSelectPlan('pro')}
+                            disabled={requesting !== null}
+                            className="w-full py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-sky-500 hover:from-cyan-400 hover:to-sky-400 text-black font-bold transition-all text-sm disabled:opacity-50"
+                        >
+                            {requesting === 'pro' ? '처리 중...' : 'Pro + AI Bain 신청'}
                         </button>
                     )}
                 </div>
@@ -199,6 +256,106 @@ export default function PricingPage() {
                     )}
                 </div>
             </div>
+
+            {/* AI Bain 상세 설명 섹션 */}
+            <section className="mt-12 max-w-5xl w-full">
+                <div className="rounded-2xl border border-cyan-500/25 bg-gradient-to-br from-cyan-500/[0.04] via-[#13151f] to-[#1c1c1e] p-6 sm:p-8 relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-cyan-500/10 to-transparent rounded-bl-full pointer-events-none" />
+
+                    <div className="relative flex items-start gap-4 mb-6">
+                        <div className="grid h-12 w-12 sm:h-14 sm:w-14 shrink-0 place-items-center rounded-2xl bg-cyan-500/15 text-cyan-300 text-2xl">
+                            <i className="fas fa-robot" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2 flex-wrap">
+                                <h2 className="text-2xl sm:text-3xl font-black text-white">AI Bain 이란?</h2>
+                                <span className="inline-flex items-center gap-1 rounded-full border border-cyan-400/30 bg-cyan-500/10 px-2 py-0.5 text-[10px] font-black text-cyan-300 uppercase tracking-wider">
+                                    <i className="fab fa-telegram text-[10px]" />
+                                    AIbain_bot
+                                </span>
+                            </div>
+                            <p className="mt-2 text-sm sm:text-base text-gray-300 leading-relaxed">
+                                <strong className="text-cyan-300">t.me/AIbain_bot</strong> 전용 텔레그램 알림 채널.
+                                Pro 구독에 추가해 마켓 신호를 <strong className="text-white">실시간 자동 푸시</strong>로 받습니다.
+                                기존 시스템과 독립된 사일로로 운영되어 다른 알림과 섞이지 않습니다.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                        <div className="rounded-xl border border-cyan-400/15 bg-black/30 p-4">
+                            <div className="flex items-center gap-2 mb-2">
+                                <i className="fas fa-bolt text-cyan-400" />
+                                <h3 className="text-white font-bold text-sm">신규 5종 스캐너 알림</h3>
+                            </div>
+                            <p className="text-gray-400 text-xs leading-relaxed">
+                                매 시장 시각마다 알파 스캐너가 발견한 <strong className="text-cyan-300">신규 후보 종목 최대 5개</strong>를
+                                즉시 푸시. 진입가/리스크 점수 포함. 시장 흐름이 빨라도 놓치지 않습니다.
+                            </p>
+                        </div>
+
+                        <div className="rounded-xl border border-cyan-400/15 bg-black/30 p-4">
+                            <div className="flex items-center gap-2 mb-2">
+                                <i className="fas fa-trophy text-cyan-400" />
+                                <h3 className="text-white font-bold text-sm">TOP 3 신규 이벤트 알림</h3>
+                            </div>
+                            <p className="text-gray-400 text-xs leading-relaxed">
+                                MCP 워크플로우가 선정한 <strong className="text-cyan-300">TOP 3 종목</strong>의
+                                CIO 판정 변동·외인 매수·공시 등 핵심 이벤트를 즉시 전송.
+                                각 이벤트는 종목명·코드·시장·기준일 포함 (정직한 식별 정책).
+                            </p>
+                        </div>
+
+                        <div className="rounded-xl border border-cyan-400/15 bg-black/30 p-4">
+                            <div className="flex items-center gap-2 mb-2">
+                                <i className="fas fa-shield-halved text-cyan-400" />
+                                <h3 className="text-white font-bold text-sm">독립 사일로</h3>
+                            </div>
+                            <p className="text-gray-400 text-xs leading-relaxed">
+                                개인봇 / 채널봇과 분리된 별도 봇. 다른 알림 흐름과 섞이지 않고
+                                <strong className="text-cyan-300"> AI Bain 만의 시그널</strong>만 한 곳에서 받습니다.
+                            </p>
+                        </div>
+
+                        <div className="rounded-xl border border-cyan-400/15 bg-black/30 p-4">
+                            <div className="flex items-center gap-2 mb-2">
+                                <i className="fas fa-mobile-screen text-cyan-400" />
+                                <h3 className="text-white font-bold text-sm">텔레그램만 있으면 끝</h3>
+                            </div>
+                            <p className="text-gray-400 text-xs leading-relaxed">
+                                추가 앱 설치 불필요. 텔레그램으로 <strong className="text-cyan-300">@AIbain_bot</strong> 검색 후
+                                Pro+AI Bain 신청 시 운영자가 채널 초대를 보냅니다.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="rounded-xl bg-cyan-500/[0.06] border border-cyan-400/15 p-4">
+                        <h3 className="text-cyan-300 font-bold text-sm mb-2 flex items-center gap-2">
+                            <i className="fas fa-receipt" />
+                            요금 안내
+                        </h3>
+                        <div className="text-sm text-gray-300 space-y-1">
+                            <div className="flex justify-between">
+                                <span>Pro 구독 (30일)</span>
+                                <span className="font-mono">50,000원</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span>AI Bain 알림 (30일)</span>
+                                <span className="font-mono">40,000원</span>
+                            </div>
+                            <div className="h-px bg-cyan-400/20 my-2" />
+                            <div className="flex justify-between font-bold text-white">
+                                <span>합계 / 30일</span>
+                                <span className="font-mono text-cyan-300">90,000원</span>
+                            </div>
+                        </div>
+                        <p className="mt-3 text-[11px] text-gray-500">
+                            <i className="fas fa-info-circle mr-1" />
+                            Pro 구독 결제 후 카카오 채널로 입금자명 + "AI Bain 추가" 문의 시 운영자가 알림 채널을 활성화합니다.
+                        </p>
+                    </div>
+                </div>
+            </section>
 
             <div className="mt-5 w-full max-w-md">
                 <KakaoSupportLink />
