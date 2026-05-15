@@ -156,10 +156,22 @@ export default function LoginPage() {
                             <p className="text-amber-400 font-bold mt-1 text-sm">{PLAN_PAYMENT_META.pro.amount}</p>
                             <p className="text-gray-500 text-[10px] mt-0.5">{PLAN_PAYMENT_META.pro.period}</p>
                         </div>
+                        <div className="p-3 rounded-xl bg-cyan-500/[0.04] border border-cyan-500/20 relative">
+                            <span className="absolute -top-1.5 right-1.5 text-[8px] font-bold tracking-wider px-1.5 py-0.5 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-500/25">NEW</span>
+                            <span className="text-[10px] text-cyan-300/80 uppercase tracking-wider">Pro + AI Bain</span>
+                            <p className="text-cyan-300 font-bold mt-1 text-sm">{PLAN_PAYMENT_META.pro_aibain.amount}</p>
+                            <p className="text-gray-500 text-[10px] mt-0.5">Pro 50,000 + AI Bain 40,000</p>
+                        </div>
                         <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]">
                             <span className="text-[10px] text-gray-500 uppercase tracking-wider">Ultra Pro</span>
                             <p className="text-purple-400 font-bold mt-1 text-sm">{PLAN_PAYMENT_META.premium.amount}</p>
                             <p className="text-gray-500 text-[10px] mt-0.5">{PLAN_PAYMENT_META.premium.period}</p>
+                        </div>
+                        <div className="p-3 rounded-xl bg-fuchsia-500/[0.04] border border-fuchsia-500/20 relative">
+                            <span className="absolute -top-1.5 right-1.5 text-[8px] font-bold tracking-wider px-1.5 py-0.5 rounded-full bg-fuchsia-500/15 text-fuchsia-300 border border-fuchsia-500/25">NEW</span>
+                            <span className="text-[10px] text-fuchsia-300/80 uppercase tracking-wider">Ultra Pro + AI Bain</span>
+                            <p className="text-fuchsia-300 font-bold mt-1 text-sm">{PLAN_PAYMENT_META.premium_aibain.amount}</p>
+                            <p className="text-gray-500 text-[10px] mt-0.5">평생 + AI Bain 30일 갱신</p>
                         </div>
                     </div>
                 </div>
