@@ -161,7 +161,7 @@ def chat_telegram():
 
 
 @admin_mirofish_bp.route('/data-sources', methods=['GET'])
-@admin_required
+@admin_or_aibain_required
 def data_sources():
     return jsonify(mirofish.get_data_sources())
 
@@ -328,7 +328,7 @@ def outcomes_board():
 
 
 @admin_mirofish_bp.route('/targets/resolve', methods=['GET'])
-@admin_required
+@admin_or_aibain_required
 def resolve_target():
     target = request.args.get('target', '')
     try:
@@ -339,7 +339,7 @@ def resolve_target():
 
 
 @admin_mirofish_bp.route('/targets/search', methods=['GET'])
-@admin_required
+@admin_or_aibain_required
 def search_targets():
     target = request.args.get('target', '')
     try:
@@ -445,7 +445,7 @@ def stream_events(run_id):
 
 
 @admin_mirofish_bp.route('/scanner/status', methods=['GET'])
-@admin_required
+@admin_or_aibain_required
 def get_scanner_status():
     return jsonify(mirofish.get_scanner_schedule_status())
 
@@ -657,7 +657,7 @@ def get_scanner_candidates(run_id):
 
 
 @admin_mirofish_bp.route('/workflow/status', methods=['GET'])
-@admin_required
+@admin_or_aibain_required
 def get_workflow_status():
     return jsonify(mirofish.get_workflow_status())
 
@@ -786,7 +786,7 @@ def _autonomous_error_response(exc: Exception):
 
 
 @admin_mirofish_bp.route('/autonomous/status', methods=['GET'])
-@admin_required
+@admin_or_aibain_required
 def autonomous_status():
     return jsonify(mirofish.get_autonomous_status())
 
@@ -850,7 +850,7 @@ def send_latest_autonomous_workflow_telegram():
 
 
 @admin_mirofish_bp.route('/deepseek/status', methods=['GET'])
-@admin_required
+@admin_or_aibain_required
 def deepseek_status():
     include_live = request.args.get('live', '').lower() in {'1', 'true', 'yes'}
     try:

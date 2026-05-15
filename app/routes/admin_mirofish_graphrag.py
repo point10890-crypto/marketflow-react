@@ -63,7 +63,7 @@ def graphrag_status():
 # ── Phase B: entity resolver ──────────────────────────────────────────
 
 @admin_mirofish_graphrag_bp.route('/entities/resolve', methods=['GET'])
-@admin_required
+@admin_or_aibain_required
 def graphrag_resolve_entity():
     """엔티티 resolve.
 
