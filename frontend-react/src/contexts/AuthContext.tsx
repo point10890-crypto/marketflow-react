@@ -77,6 +77,12 @@ function toAuthUser(d: AuthUserData): AuthUser {
         pro_expires_at: d.pro_expires_at || null,
         is_pro_expired: d.is_pro_expired ?? false,
         requested_tier: d.requested_tier ?? null,
+        // AI Bain 알파 스캐너 (애드온) — 빠뜨리면 Summary 배너 숨김 / AiBainPage 풀 콘솔 조건이
+        // React 상태에서 항상 false 로 보임 (백엔드는 정상 반환하지만 frontend 가 strip).
+        aibain_enabled: d.aibain_enabled ?? false,
+        aibain_expires_at: d.aibain_expires_at ?? null,
+        is_aibain_active: d.is_aibain_active ?? false,
+        aibain_days_remaining: d.aibain_days_remaining ?? null,
     };
 }
 

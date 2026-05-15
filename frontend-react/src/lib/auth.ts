@@ -48,6 +48,11 @@ export interface AuthUserData {
     pro_expires_at?: string | null;
     is_pro_expired?: boolean;
     requested_tier?: 'pro' | 'premium' | null;
+    // AI Bain 알파 스캐너 (애드온) — backend /api/auth/me 응답 포함
+    aibain_enabled?: boolean;
+    aibain_expires_at?: string | null;
+    is_aibain_active?: boolean;
+    aibain_days_remaining?: number | null;
 }
 
 export function saveUser(user: AuthUserData): void {
