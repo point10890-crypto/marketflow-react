@@ -131,18 +131,38 @@ function DashboardTab({ data, onNavigate, apiToken }: { data: AdminDashboard | n
             setUnreadCount(0);
         } catch { /* */ }
     };
+    const aibainExpiring = data?.aibain_expiring_soon || 0;
+    const aibainActive = data?.aibain_active_users || 0;
+    const pendingAibainSubs = data?.pending_aibain_subs || 0;
+
     const stats = [
         { label: 'Total Users', value: data?.total_users || 0, icon: 'fa-users', color: 'text-blue-400', bg: 'bg-blue-500/10', tab: 'users' as AdminTab },
         { label: 'Pro Users', value: data?.pro_users || 0, icon: 'fa-crown', color: 'text-yellow-400', bg: 'bg-yellow-500/10', tab: 'users' as AdminTab },
         { label: 'Ultra Pro', value: data?.premium_users || 0, icon: 'fa-gem', color: 'text-purple-400', bg: 'bg-purple-500/10', tab: 'users' as AdminTab },
+        { label: 'AI Bain 활성', value: aibainActive, icon: 'fa-robot', color: 'text-cyan-300', bg: 'bg-cyan-500/10', tab: 'subscriptions' as AdminTab },
         { label: 'No Tier', value: data?.no_tier_users || 0, icon: 'fa-user-clock', color: 'text-gray-400', bg: 'bg-gray-500/10', tab: 'users' as AdminTab },
         { label: 'Pending Subs', value: data?.pending_subscriptions || 0, icon: 'fa-clock', color: 'text-orange-400', bg: 'bg-orange-500/10', tab: 'subscriptions' as AdminTab },
-        { label: '구매 승인', value: '—', icon: 'fa-receipt', color: 'text-yellow-400', bg: 'bg-yellow-500/10', tab: null as any, route: '/dashboard/community/formula-market/purchases' },
     ];
+
+    const subDesc = (() => {
+        const parts: string[] = [];
+        if (data?.pending_subscriptions) parts.push(`${data.pending_subscriptions}건 승인 대기`);
+        if (pendingAibainSubs) parts.push(`AI Bain ${pendingAibainSubs}건`);
+        return parts.length ? parts.join(' · ') : '대기 중인 요청 없음';
+    })();
+
+    const aibainDesc = (() => {
+        const parts: string[] = [];
+        if (aibainActive) parts.push(`활성 ${aibainActive}명`);
+        if (aibainExpiring) parts.push(`D-3 만료 ${aibainExpiring}건`);
+        if (pendingAibainSubs) parts.push(`신청 대기 ${pendingAibainSubs}건`);
+        return parts.length ? parts.join(' · ') : 'AI Bain 구독자 없음';
+    })();
 
     const links = [
         { tab: 'users' as AdminTab, icon: 'fa-users-cog', label: '사용자 관리', desc: '역할, 등급, 권한 관리' },
-        { tab: 'subscriptions' as AdminTab, icon: 'fa-credit-card', label: '구독 관리', desc: data?.pending_subscriptions ? `${data.pending_subscriptions}건 승인 대기` : '대기 중인 요청 없음' },
+        { tab: 'subscriptions' as AdminTab, icon: 'fa-credit-card', label: '구독 관리', desc: subDesc },
+        { tab: 'subscriptions' as AdminTab, icon: 'fa-robot', label: 'AI Bain 관리', desc: aibainDesc, highlight: 'cyan' as const },
         { tab: 'system' as AdminTab, icon: 'fa-server', label: '시스템 모니터', desc: '서버 상태, 데이터 현황' },
     ];
 
@@ -152,7 +172,7 @@ function DashboardTab({ data, onNavigate, apiToken }: { data: AdminDashboard | n
                 {stats.map(s => (
                     <button
                         key={s.label}
-                        onClick={() => s.route ? navigate(s.route) : onNavigate(s.tab)}
+                        onClick={() => onNavigate(s.tab)}
                         className="apple-glass rounded-xl p-4 text-left hover:bg-white/5 hover:border-white/10 transition-all group cursor-pointer"
                     >
                         <div className={`w-10 h-10 ${s.bg} rounded-lg flex items-center justify-center mb-3 group-hover:scale-110 transition-transform`}>
@@ -164,22 +184,29 @@ function DashboardTab({ data, onNavigate, apiToken }: { data: AdminDashboard | n
                 ))}
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {links.map(l => (
-                    <button
-                        key={l.tab}
-                        onClick={() => onNavigate(l.tab)}
-                        className="apple-glass rounded-xl p-4 md:p-6 hover:bg-white/5 transition-colors group text-left"
-                    >
-                        <div className="flex items-center gap-2 md:gap-3">
-                            <i className={`fas ${l.icon} text-red-400 text-lg md:text-xl`} />
-                            <div className="flex-1 min-w-0">
-                                <div className="text-sm md:text-base text-white font-semibold group-hover:text-red-400 transition-colors truncate">{l.label}</div>
-                                <div className="text-[10px] md:text-xs text-gray-500 truncate">{l.desc}</div>
+                {links.map((l, i) => {
+                    const isCyan = (l as any).highlight === 'cyan';
+                    const iconColor = isCyan ? 'text-cyan-300' : 'text-red-400';
+                    const hoverColor = isCyan ? 'group-hover:text-cyan-300' : 'group-hover:text-red-400';
+                    const chevronHover = isCyan ? 'group-hover:text-cyan-300' : 'group-hover:text-red-400';
+                    const cardBorder = isCyan ? 'border-cyan-500/20 hover:border-cyan-500/40' : 'hover:border-white/10';
+                    return (
+                        <button
+                            key={`${l.tab}-${i}`}
+                            onClick={() => onNavigate(l.tab)}
+                            className={`apple-glass rounded-xl p-4 md:p-6 border ${cardBorder} hover:bg-white/5 transition-colors group text-left`}
+                        >
+                            <div className="flex items-center gap-2 md:gap-3">
+                                <i className={`fas ${l.icon} ${iconColor} text-lg md:text-xl`} />
+                                <div className="flex-1 min-w-0">
+                                    <div className={`text-sm md:text-base text-white font-semibold ${hoverColor} transition-colors truncate`}>{l.label}</div>
+                                    <div className="text-[10px] md:text-xs text-gray-500 truncate">{l.desc}</div>
+                                </div>
+                                <i className={`fas fa-chevron-right text-gray-600 ${chevronHover} transition-colors text-xs`} />
                             </div>
-                            <i className="fas fa-chevron-right text-gray-600 group-hover:text-red-400 transition-colors text-xs" />
-                        </div>
-                    </button>
-                ))}
+                        </button>
+                    );
+                })}
                 <button
                     onClick={() => navigate('/dashboard/community/formula-market/purchases')}
                     className="apple-glass rounded-xl p-4 md:p-6 hover:bg-white/5 transition-colors group text-left"

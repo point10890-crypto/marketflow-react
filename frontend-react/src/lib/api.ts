@@ -806,6 +806,10 @@ export interface AdminDashboard {
     approved_users: number;
     suspended_users: number;
     pending_subscriptions: number;
+    // AI Bain 알파 스캐너 (애드온) 통계
+    aibain_active_users?: number;
+    aibain_expiring_soon?: number;   // D-3 이내 만료 임박
+    pending_aibain_subs?: number;     // sub_req request_type='aibain_addon' pending 카운트
 }
 
 export interface SubscriptionRequest {

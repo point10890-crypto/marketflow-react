@@ -118,6 +118,31 @@ def dashboard():
     """관리자 대시보드 통계"""
     users = User.query.all()
     pending_subs = SubscriptionRequest.query.filter_by(status='pending').count()
+    # AI Bain 애드온 전용 pending 카운트 (sub_req.request_type 기반)
+    pending_aibain_subs = SubscriptionRequest.query.filter_by(
+        status='pending', request_type='aibain_addon'
+    ).count()
+
+    # AI Bain 활성 유저 + 만료 임박 (D-3 이내)
+    from datetime import datetime, timezone, timedelta
+    now_naive = datetime.utcnow()
+    soon_threshold = now_naive + timedelta(days=3)
+    aibain_active_count = 0
+    aibain_expiring_count = 0
+    for u in users:
+        if not u.aibain_enabled:
+            continue
+        if u.aibain_expires_at is None:
+            # NULL 만료 = 무기한 활성
+            aibain_active_count += 1
+            continue
+        expires = u.aibain_expires_at
+        if expires.tzinfo is not None:
+            expires = expires.astimezone(timezone.utc).replace(tzinfo=None)
+        if expires > now_naive:
+            aibain_active_count += 1
+            if expires <= soon_threshold:
+                aibain_expiring_count += 1
 
     return jsonify({
         'total_users': len(users),
@@ -129,6 +154,10 @@ def dashboard():
         'approved_users': sum(1 for u in users if u.status == 'approved'),
         'suspended_users': sum(1 for u in users if u.status == 'suspended'),
         'pending_subscriptions': pending_subs,
+        # AI Bain 알파 스캐너 (애드온)
+        'aibain_active_users': aibain_active_count,
+        'aibain_expiring_soon': aibain_expiring_count,  # D-3 이내 만료
+        'pending_aibain_subs': pending_aibain_subs,
     })
 
 
