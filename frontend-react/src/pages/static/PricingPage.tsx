@@ -266,13 +266,13 @@ export default function PricingPage() {
                             <div className="flex items-center gap-2 flex-wrap">
                                 <h2 className="text-2xl sm:text-3xl font-black text-white">AI Bain 이란?</h2>
                                 <span className="inline-flex items-center gap-1 rounded-full border border-cyan-400/30 bg-cyan-500/10 px-2 py-0.5 text-[10px] font-black text-cyan-300 uppercase tracking-wider">
-                                    <i className="fab fa-telegram text-[10px]" />
-                                    AIbain_bot
+                                    <i className="fas fa-bolt text-[10px]" />
+                                    ALPHA SCAN
                                 </span>
                             </div>
                             <p className="mt-2 text-sm sm:text-base text-gray-300 leading-relaxed">
-                                <strong className="text-cyan-300">t.me/AIbain_bot</strong> 전용 텔레그램 알림 채널.
-                                Pro 구독에 추가해 마켓 신호를 <strong className="text-white">실시간 자동 푸시</strong>로 받습니다.
+                                <strong className="text-cyan-300">AI Bain 알파 스캐너</strong> 전용 실시간 시그널 서비스.
+                                Pro 구독에 추가하면 마켓 신호를 <strong className="text-white">실시간 자동 푸시</strong>로 받습니다.
                                 기존 시스템과 독립된 사일로로 운영되어 다른 알림과 섞이지 않습니다.
                             </p>
                         </div>
@@ -315,12 +315,13 @@ export default function PricingPage() {
 
                         <div className="rounded-xl border border-cyan-400/15 bg-black/30 p-4">
                             <div className="flex items-center gap-2 mb-2">
-                                <i className="fas fa-mobile-screen text-cyan-400" />
-                                <h3 className="text-white font-bold text-sm">텔레그램만 있으면 끝</h3>
+                                <i className="fas fa-clock text-cyan-400" />
+                                <h3 className="text-white font-bold text-sm">즉시 푸시 · 지연 없음</h3>
                             </div>
                             <p className="text-gray-400 text-xs leading-relaxed">
-                                추가 앱 설치 불필요. 텔레그램으로 <strong className="text-cyan-300">@AIbain_bot</strong> 검색 후
-                                Pro+AI Bain 신청 시 운영자가 채널 초대를 보냅니다.
+                                알파 스캐너 워크플로우가 신호를 발견하는 즉시
+                                <strong className="text-cyan-300"> 자동 푸시</strong>. 별도 로그인이나 대시보드 확인 없이
+                                바로 시그널을 받아 진입 타이밍을 놓치지 않습니다.
                             </p>
                         </div>
                     </div>
@@ -347,7 +348,7 @@ export default function PricingPage() {
                         </div>
                         <p className="mt-3 text-[11px] text-gray-500">
                             <i className="fas fa-info-circle mr-1" />
-                            Pro 구독 결제 후 카카오 채널로 입금자명 + "AI Bain 추가" 문의 시 운영자가 알림 채널을 활성화합니다.
+                            Pro 구독 결제 후 카카오 채널로 입금자명 + "AI Bain 추가" 문의 시 운영자가 AI Bain 알파 스캐너를 활성화합니다.
                         </p>
                     </div>
                 </div>
