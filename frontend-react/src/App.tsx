@@ -77,6 +77,9 @@ function ApprovedGuard({ children }: { children: React.ReactNode }) {
     if (user.status === 'expired' || user.is_pro_expired) {
         return <Navigate to="/plan-select?resubscribe=1&from=expired" replace />;
     }
+    // tier=null = 플랜 미선택 신규 가입자 → /plan-select 로 직진 (UX 개선)
+    // /pending-approval 은 sub_req 제출 후 단계라 amount 표시 불가능 → 사용자 혼란 방지
+    if (!user.tier) return <Navigate to="/plan-select" replace />;
     if (user.status !== 'approved') return <Navigate to="/pending-approval" replace />;
     if (user.tier !== 'pro' && user.tier !== 'premium') return <Navigate to="/pending-approval" replace />;
     return <>{children}</>;

@@ -829,6 +829,17 @@ function UsersTab({ apiToken, currentUserId }: { apiToken?: string; currentUserI
                                                             📋 Ultra Pro 요청
                                                         </span>
                                                     )}
+                                                    {/* AI Bain 활성 상태 배지 — 백엔드 is_aibain_active=true */}
+                                                    {user.is_aibain_active && (
+                                                        <span
+                                                            className="text-[9px] px-1 py-0.5 bg-cyan-500/15 text-cyan-300 border border-cyan-500/25 rounded shrink-0 font-bold"
+                                                            title={user.aibain_days_remaining != null
+                                                                ? `AI Bain 활성 — D-${user.aibain_days_remaining} 만료`
+                                                                : 'AI Bain 활성'}
+                                                        >
+                                                            🤖 AI Bain{user.aibain_days_remaining != null && user.aibain_days_remaining <= 3 ? ` D-${user.aibain_days_remaining}` : ''}
+                                                        </span>
+                                                    )}
                                                 </div>
                                                 <div className="text-xs text-gray-500 truncate">{user.email}</div>
                                             </div>
