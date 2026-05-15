@@ -533,14 +533,14 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                 )}
             </div>
 
-            {/* ── AI Bain 업그레이드 배너 (활성 Pro/Premium 회원, admin 제외) ── */}
+            {/* ── AI Bain 업그레이드 배너 (활성 Pro/Premium 회원, admin/AI Bain 활성자 제외) ── */}
             {(() => {
                 const tier = user?.tier ?? null;
                 const role = user?.role ?? 'user';
                 const isAdmin = role === 'admin';
                 const isActivePaid = (tier === 'pro' || tier === 'premium') && user?.status === 'approved' && !user?.is_pro_expired;
-                // TODO Stage 5: user.is_aibain_active 도 체크해서 이미 활성이면 숨김
-                if (isAdmin || !isActivePaid) return null;
+                const alreadyAibainActive = !!user?.is_aibain_active;
+                if (isAdmin || !isActivePaid || alreadyAibainActive) return null;
                 const tierLabel = tier === 'pro' ? 'Pro' : 'Ultra Pro';
                 return (
                     <Link

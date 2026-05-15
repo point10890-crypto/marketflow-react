@@ -40,6 +40,12 @@ class User(db.Model):
     # 기존 유저는 NULL 유지 — 마이그레이션에서 채우지 않음.
     requested_tier = db.Column(db.String(20), nullable=True)
 
+    # ── AI Bain 알파 스캐너 애드온 (별도 30일 갱신 구독, 베이스 tier 와 독립) ───
+    aibain_enabled = db.Column(db.Boolean, default=False, nullable=False)
+    aibain_expires_at = db.Column(db.DateTime, nullable=True)
+    # AI Bain 만료 D-3/D-1 알림 stage: 'd3' | 'd1' | 'expired' | NULL
+    aibain_alert_stage = db.Column(db.String(10), nullable=True)
+
     def set_password(self, password: str):
         self.password_hash = bcrypt.hashpw(
             password.encode('utf-8'), bcrypt.gensalt()
@@ -72,6 +78,29 @@ class User(db.Model):
             expires = expires.astimezone(timezone.utc).replace(tzinfo=None)
         return datetime.utcnow() > expires
 
+    @property
+    def is_aibain_active(self) -> bool:
+        """AI Bain 알파 스캐너 활성 여부 (베이스 tier 와 무관)"""
+        if not self.aibain_enabled:
+            return False
+        if self.aibain_expires_at is None:
+            return True  # NULL = 무기한 (운영자가 수동 설정한 경우)
+        expires = self.aibain_expires_at
+        if expires.tzinfo is not None:
+            expires = expires.astimezone(timezone.utc).replace(tzinfo=None)
+        return datetime.utcnow() < expires
+
+    @property
+    def aibain_days_remaining(self) -> int | None:
+        """AI Bain 만료까지 남은 일수 (None = 활성 안 됨 또는 만료)"""
+        if not self.is_aibain_active or self.aibain_expires_at is None:
+            return None
+        expires = self.aibain_expires_at
+        if expires.tzinfo is not None:
+            expires = expires.astimezone(timezone.utc).replace(tzinfo=None)
+        delta = expires - datetime.utcnow()
+        return max(0, delta.days)
+
     def to_dict(self):
         return {
             'id': self.id,
@@ -86,6 +115,11 @@ class User(db.Model):
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'approved_at': self.approved_at.isoformat() if self.approved_at else None,
             'last_login_at': self.last_login_at.isoformat() if self.last_login_at else None,
+            # AI Bain 알파 스캐너 (애드온)
+            'aibain_enabled': self.aibain_enabled,
+            'aibain_expires_at': self.aibain_expires_at.isoformat() if self.aibain_expires_at else None,
+            'is_aibain_active': self.is_aibain_active,
+            'aibain_days_remaining': self.aibain_days_remaining,
         }
 
 

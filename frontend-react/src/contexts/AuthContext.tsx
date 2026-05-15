@@ -34,6 +34,11 @@ interface AuthUser {
     is_pro_expired?: boolean;
     // 가입 시 유저가 선택한 플랜. pending 유저 안내용.
     requested_tier?: 'pro' | 'premium' | null;
+    // ── AI Bain 알파 스캐너 애드온 (별도 30일 갱신 구독) ───────────────────
+    aibain_enabled?: boolean;
+    aibain_expires_at?: string | null;
+    is_aibain_active?: boolean;        // backend 계산값 (만료 체크 포함)
+    aibain_days_remaining?: number | null;
 }
 
 interface AuthContextType {

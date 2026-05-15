@@ -454,6 +454,148 @@ def revoke_subscription(user_id):
     })
 
 
+# ── AI Bain 알파 스캐너 애드온 (별도 30일 갱신 구독) ────────────────────────
+
+@admin_bp.route('/users/<int:user_id>/aibain/enable', methods=['POST'])
+@admin_required
+def enable_aibain(user_id):
+    """AI Bain 알파 스캐너 활성화 (+30일 연장 가능).
+
+    payload:
+      - days: int (default 30) — 추가 일수. 0 = 무기한 (NULL 만료일).
+
+    동작:
+      - aibain_enabled=True
+      - aibain_expires_at = now + days (또는 NULL 시 무기한)
+      - 이미 활성이면 expires_at 에 days 추가 (연장)
+      - aibain_alert_stage 리셋 (만료 알림 재발송 가능하게)
+    """
+    user = db.session.get(User, user_id)
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+    # AI Bain 은 활성 베이스 (Pro/Premium) 회원에게만 의미 있음
+    if user.tier not in ('pro', 'premium'):
+        return jsonify({'error': f'AI Bain 은 Pro/Ultra Pro 회원에게만 부여 가능 (tier={user.tier})'}), 400
+
+    data = request.get_json() or {}
+    try:
+        days = int(data.get('days', 30))
+    except (TypeError, ValueError):
+        days = 30
+    note = (data.get('note') or '').strip() or None
+
+    before = {
+        'aibain_enabled': user.aibain_enabled,
+        'aibain_expires_at': user.aibain_expires_at.isoformat() if user.aibain_expires_at else None,
+    }
+
+    user.aibain_enabled = True
+    if days <= 0:
+        # 0 = 무기한
+        user.aibain_expires_at = None
+    else:
+        base = datetime.now(timezone.utc)
+        # 이미 활성 + 만료일 미래 → 연장
+        if user.aibain_expires_at:
+            existing = user.aibain_expires_at
+            if existing.tzinfo is None:
+                existing = existing.replace(tzinfo=timezone.utc)
+            if existing > base:
+                base = existing
+        user.aibain_expires_at = base + timedelta(days=days)
+    user.aibain_alert_stage = None
+    db.session.commit()
+
+    after = {
+        'aibain_enabled': user.aibain_enabled,
+        'aibain_expires_at': user.aibain_expires_at.isoformat() if user.aibain_expires_at else None,
+    }
+    _record_audit('enable_aibain', user, before, after, note=note)
+    _notify_admin('AI Bain 활성화', user,
+                  f"{days}일 (만료: {after['aibain_expires_at'] or '무기한'})")
+
+    return jsonify({
+        'message': f'{user.email} AI Bain 활성화 ({days}일)',
+        'user': user.to_dict(),
+    })
+
+
+@admin_bp.route('/users/<int:user_id>/aibain/revoke', methods=['POST'])
+@admin_required
+def revoke_aibain(user_id):
+    """AI Bain 알파 스캐너 즉시 해제. 베이스 tier 는 유지."""
+    user = db.session.get(User, user_id)
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+
+    data = request.get_json() or {}
+    note = (data.get('note') or '').strip() or 'admin manual aibain revoke'
+
+    before = {
+        'aibain_enabled': user.aibain_enabled,
+        'aibain_expires_at': user.aibain_expires_at.isoformat() if user.aibain_expires_at else None,
+    }
+
+    user.aibain_enabled = False
+    user.aibain_expires_at = datetime.now(timezone.utc) - timedelta(minutes=1)
+    user.aibain_alert_stage = 'expired'
+    db.session.commit()
+
+    after = {
+        'aibain_enabled': user.aibain_enabled,
+        'aibain_expires_at': user.aibain_expires_at.isoformat(),
+    }
+    _record_audit('revoke_aibain', user, before, after, note=note)
+    _notify_admin('AI Bain 해제', user, f"사유: {note}")
+
+    return jsonify({
+        'message': f'{user.email} AI Bain 즉시 해제',
+        'user': user.to_dict(),
+    })
+
+
+@admin_bp.route('/users/<int:user_id>/aibain/extend', methods=['POST'])
+@admin_required
+def extend_aibain(user_id):
+    """AI Bain 만료일 연장 (+N일). enable 의 alias — 활성 상태에서만 작동."""
+    user = db.session.get(User, user_id)
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+    if not user.aibain_enabled:
+        return jsonify({'error': 'AI Bain 이 활성화되지 않았습니다. enable 사용.'}), 400
+
+    data = request.get_json() or {}
+    try:
+        days = int(data.get('days', 30))
+    except (TypeError, ValueError):
+        days = 30
+    note = (data.get('note') or '').strip() or None
+
+    before = {
+        'aibain_expires_at': user.aibain_expires_at.isoformat() if user.aibain_expires_at else None,
+    }
+
+    base = datetime.now(timezone.utc)
+    if user.aibain_expires_at:
+        existing = user.aibain_expires_at
+        if existing.tzinfo is None:
+            existing = existing.replace(tzinfo=timezone.utc)
+        if existing > base:
+            base = existing
+    user.aibain_expires_at = base + timedelta(days=days)
+    user.aibain_alert_stage = None
+    db.session.commit()
+
+    after = {'aibain_expires_at': user.aibain_expires_at.isoformat()}
+    _record_audit('extend_aibain', user, before, after, note=note)
+    _notify_admin('AI Bain 연장', user, f"+{days}일 → 만료: {after['aibain_expires_at']}")
+
+    return jsonify({
+        'message': f'{user.email} AI Bain +{days}일',
+        'user': user.to_dict(),
+    })
+
+
 @admin_bp.route('/users/<int:user_id>/reset-password', methods=['PUT'])
 @admin_required
 def reset_password(user_id):
@@ -732,7 +874,14 @@ def list_subscriptions():
 @admin_bp.route('/subscriptions/<int:req_id>/approve', methods=['PUT'])
 @admin_required
 def approve_subscription(req_id):
-    """구독 요청 승인"""
+    """구독 요청 승인.
+
+    request_type 별로 처리 분기:
+      - 'aibain_addon': 베이스 tier 유지 + AI Bain 활성화 (+30일). 활성 회원이 AI Bain 만 추가.
+      - 'upgrade' / 'downgrade': 기존 동작 — tier 변경 + 만료일 재설정 + status 승급.
+
+    AI Bain 애드온은 베이스 구독을 건드리지 않으므로 pro_expires_at / pro_expiry_alert_stage 유지.
+    """
     sub_req = db.session.get(SubscriptionRequest, req_id)
     if not sub_req:
         return jsonify({'error': 'Request not found'}), 404
@@ -740,6 +889,7 @@ def approve_subscription(req_id):
         return jsonify({'error': f'Request already {sub_req.status}'}), 400
 
     admin = _admin_user()
+    is_aibain_addon = sub_req.request_type == 'aibain_addon'
 
     sub_req.status = 'approved'
     sub_req.processed_at = datetime.now(timezone.utc)
@@ -747,36 +897,64 @@ def approve_subscription(req_id):
 
     user = db.session.get(User, sub_req.user_id)
     before = None
+    after = None
+    audit_action = 'approve_subscription'
+    summary_text = f"{sub_req.from_tier} → {sub_req.to_tier}"
+
     if user:
         before = {
             'tier': user.tier,
             'status': user.status,
             'pro_expires_at': user.pro_expires_at.isoformat() if user.pro_expires_at else None,
+            'aibain_enabled': user.aibain_enabled,
+            'aibain_expires_at': user.aibain_expires_at.isoformat() if user.aibain_expires_at else None,
         }
-        user.tier = sub_req.to_tier
-        if sub_req.to_tier == 'pro':
-            user.pro_expires_at = datetime.now(timezone.utc) + timedelta(days=30)
-        elif sub_req.to_tier == 'premium':
-            user.pro_expires_at = None
-        if user.status == 'pending':
-            user.status = 'approved'
-            user.approved_at = datetime.now(timezone.utc)
-            user.approved_by = admin.id if admin else None
-        user.pro_expiry_alert_stage = None
+
+        if is_aibain_addon:
+            # AI Bain 만 활성화 — 베이스 tier / pro_expires_at 그대로
+            user.aibain_enabled = True
+            user.aibain_expires_at = datetime.now(timezone.utc) + timedelta(days=30)
+            user.aibain_alert_stage = None
+            audit_action = 'activate_aibain'
+            summary_text = f"AI Bain 활성화 (+30d, base={user.tier} 유지)"
+        else:
+            # 기존 동작 — 베이스 tier 변경
+            user.tier = sub_req.to_tier
+            if sub_req.to_tier == 'pro':
+                user.pro_expires_at = datetime.now(timezone.utc) + timedelta(days=30)
+            elif sub_req.to_tier == 'premium':
+                user.pro_expires_at = None
+            if user.status == 'pending':
+                user.status = 'approved'
+                user.approved_at = datetime.now(timezone.utc)
+                user.approved_by = admin.id if admin else None
+            user.pro_expiry_alert_stage = None
+
+            # 신규 가입자가 AI Bain 포함 신청한 경우 (admin_note 마커로 판단)
+            if sub_req.admin_note and 'AI Bain' in sub_req.admin_note and 'aibain_addon' not in (sub_req.request_type or ''):
+                user.aibain_enabled = True
+                user.aibain_expires_at = datetime.now(timezone.utc) + timedelta(days=30)
+                user.aibain_alert_stage = None
+                summary_text += " + AI Bain 활성화 (+30d)"
+
+        after = {
+            'tier': user.tier,
+            'status': user.status,
+            'pro_expires_at': user.pro_expires_at.isoformat() if user.pro_expires_at else None,
+            'aibain_enabled': user.aibain_enabled,
+            'aibain_expires_at': user.aibain_expires_at.isoformat() if user.aibain_expires_at else None,
+        }
 
     db.session.commit()
 
     if user:
-        _record_audit('approve_subscription', user, before, {
-            'tier': user.tier,
-            'status': user.status,
-            'pro_expires_at': user.pro_expires_at.isoformat() if user.pro_expires_at else None,
-        })
-        _notify_admin('구독 요청 승인', user, f"{sub_req.from_tier} → {sub_req.to_tier}")
+        _record_audit(audit_action, user, before, after)
+        _notify_admin('구독 요청 승인', user, summary_text)
 
     return jsonify({
-        'message': f'Subscription approved: {sub_req.from_tier} → {sub_req.to_tier}',
+        'message': f'Subscription approved: {summary_text}',
         'request': sub_req.to_dict(),
+        'user': user.to_dict() if user else None,
     })
 
 

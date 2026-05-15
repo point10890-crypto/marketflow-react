@@ -28,8 +28,11 @@ export default function AiBainPage() {
     const role = user?.role ?? 'user';
     const isAdmin = role === 'admin';
     const hasProBase = tier === 'pro' || tier === 'premium';
-    const showFullDashboard = isAdmin; // TODO Stage 5: || user.is_aibain_active
-    const showUpgradeFlow = !isAdmin && hasProBase;
+    const isAibainActive = !!user?.is_aibain_active;
+    // admin 또는 AI Bain 활성 구독자 → 풀 콘솔
+    const showFullDashboard = isAdmin || isAibainActive;
+    // Pro/Premium 인데 AI Bain 미활성 → 업그레이드 신청 폼
+    const showUpgradeFlow = !isAdmin && hasProBase && !isAibainActive;
 
     // ── admin (또는 활성 AI Bain) → 풀 콘솔 ─────────────────────────────────────
     if (showFullDashboard) {

@@ -766,6 +766,11 @@ export interface AdminUser {
     created_at: string;
     approved_at: string | null;
     last_login_at: string | null;
+    // AI Bain 알파 스캐너 (애드온)
+    aibain_enabled?: boolean;
+    aibain_expires_at?: string | null;
+    is_aibain_active?: boolean;
+    aibain_days_remaining?: number | null;
 }
 
 export interface AdminAuditLogEntry {
@@ -949,6 +954,13 @@ export const adminAPI = {
     extendPro: (id: number, days: number, token?: string) => postAuthAPI<{ user: AdminUser }>(`/api/admin/users/${id}/extend`, { days }, token),
     setExpiry: (id: number, pro_expires_at: string, token?: string) => putAuthAPI<{ user: AdminUser }>(`/api/admin/users/${id}/expiry`, { pro_expires_at }, token),
     revokeSubscription: (id: number, note: string | undefined, token?: string) => postAuthAPI<{ user: AdminUser }>(`/api/admin/users/${id}/revoke`, { note: note || '' }, token),
+    // AI Bain 알파 스캐너 애드온 관리 (별도 30일 갱신 구독)
+    enableAibain: (id: number, days?: number, note?: string, token?: string) =>
+        postAuthAPI<{ user: AdminUser; message: string }>(`/api/admin/users/${id}/aibain/enable`, { days: days ?? 30, note }, token),
+    extendAibain: (id: number, days?: number, note?: string, token?: string) =>
+        postAuthAPI<{ user: AdminUser; message: string }>(`/api/admin/users/${id}/aibain/extend`, { days: days ?? 30, note }, token),
+    revokeAibain: (id: number, note?: string, token?: string) =>
+        postAuthAPI<{ user: AdminUser; message: string }>(`/api/admin/users/${id}/aibain/revoke`, { note }, token),
     bulkTier: (user_ids: number[], tier: string, token?: string) => postAuthAPI<{ count: number }>(`/api/admin/users/bulk-tier`, { user_ids, tier }, token),
     bulkApprove: (user_ids: number[], token?: string) => postAuthAPI<{ count: number }>(`/api/admin/users/bulk-approve`, { user_ids }, token),
     resetPassword: (id: number, password: string, token?: string, note?: string) => putAuthAPI<{ message: string; user: AdminUser }>(`/api/admin/users/${id}/reset-password`, { password, note }, token),

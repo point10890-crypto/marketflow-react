@@ -1274,50 +1274,93 @@ function SubscriptionsTab({ apiToken, onCountChange }: { apiToken?: string; onCo
                     </div>
                 ) : (
                     <div className="space-y-3">
-                        {pending.map(req => (
-                            <div key={req.id} className="apple-glass rounded-xl p-4 border border-yellow-500/20">
-                                <div className="flex items-center justify-between flex-wrap gap-3">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 bg-yellow-500/10 rounded-full flex items-center justify-center">
-                                            <i className="fas fa-arrow-up text-yellow-400" />
-                                        </div>
-                                        <div>
-                                            <div className="text-white font-medium">{req.user_name || `User #${req.user_id}`}</div>
-                                            <div className="text-xs text-gray-400">{req.user_email || ''}</div>
-                                            <div className="text-xs text-gray-500 mt-1 flex flex-wrap items-center gap-1">
-                                                <span className={`px-1.5 py-0.5 rounded ${req.from_tier === 'none' ? 'bg-gray-500/20 text-gray-400' : 'bg-amber-500/20 text-amber-400'}`}>{req.from_tier}</span>
-                                                <span className="mx-1">&rarr;</span>
-                                                <span className={`px-1.5 py-0.5 rounded font-bold ${req.to_tier === 'premium' ? 'bg-purple-500/20 text-purple-400' : 'bg-amber-500/20 text-amber-400'}`}>
-                                                    {req.to_tier === 'premium' ? 'Ultra Pro' : 'Pro'}
-                                                </span>
-                                                {req.depositor_name && (
-                                                    <span className="ml-2 px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400">
-                                                        <i className="fas fa-user text-[10px] mr-1" />{req.depositor_name}
+                        {pending.map(req => {
+                            const isAibainAddon = req.request_type === 'aibain_addon';
+                            const includesAibain = isAibainAddon || !!(req.admin_note && req.admin_note.includes('AI Bain'));
+                            const cardBorder = isAibainAddon ? 'border-cyan-500/30' : 'border-yellow-500/20';
+                            const iconBg = isAibainAddon ? 'bg-cyan-500/15' : 'bg-yellow-500/10';
+                            const iconColor = isAibainAddon ? 'text-cyan-300' : 'text-yellow-400';
+                            const iconClass = isAibainAddon ? 'fa-robot' : 'fa-arrow-up';
+                            // 승인 버튼 색상/라벨 분기
+                            let btnLabel = req.to_tier === 'premium' ? 'Ultra Pro 승인' : 'Pro 승인';
+                            let btnIcon = req.to_tier === 'premium' ? 'fa-gem' : 'fa-crown';
+                            let btnColor = req.to_tier === 'premium' ? 'bg-purple-500/20 text-purple-400 hover:bg-purple-500/30' : 'bg-amber-500/20 text-amber-400 hover:bg-amber-500/30';
+                            if (isAibainAddon) {
+                                btnLabel = 'AI Bain 활성화';
+                                btnIcon = 'fa-bolt';
+                                btnColor = 'bg-cyan-500/20 text-cyan-300 hover:bg-cyan-500/30';
+                            } else if (includesAibain) {
+                                btnLabel = req.to_tier === 'premium' ? 'Ultra Pro + AI Bain 승인' : 'Pro + AI Bain 승인';
+                                btnIcon = 'fa-robot';
+                                btnColor = 'bg-cyan-500/20 text-cyan-300 hover:bg-cyan-500/30';
+                            }
+                            return (
+                                <div key={req.id} className={`apple-glass rounded-xl p-4 border ${cardBorder}`}>
+                                    <div className="flex items-center justify-between flex-wrap gap-3">
+                                        <div className="flex items-center gap-3">
+                                            <div className={`w-10 h-10 ${iconBg} rounded-full flex items-center justify-center`}>
+                                                <i className={`fas ${iconClass} ${iconColor}`} />
+                                            </div>
+                                            <div>
+                                                <div className="text-white font-medium flex items-center gap-2 flex-wrap">
+                                                    {req.user_name || `User #${req.user_id}`}
+                                                    {isAibainAddon && (
+                                                        <span className="text-[9px] font-bold tracking-wider px-1.5 py-0.5 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-500/25 uppercase">
+                                                            <i className="fas fa-robot text-[8px] mr-0.5" />
+                                                            AI BAIN ADDON
+                                                        </span>
+                                                    )}
+                                                    {!isAibainAddon && includesAibain && (
+                                                        <span className="text-[9px] font-bold tracking-wider px-1.5 py-0.5 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-500/25 uppercase">
+                                                            <i className="fas fa-robot text-[8px] mr-0.5" />
+                                                            +AI BAIN
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <div className="text-xs text-gray-400">{req.user_email || ''}</div>
+                                                <div className="text-xs text-gray-500 mt-1 flex flex-wrap items-center gap-1">
+                                                    <span className={`px-1.5 py-0.5 rounded ${req.from_tier === 'none' ? 'bg-gray-500/20 text-gray-400' : 'bg-amber-500/20 text-amber-400'}`}>{req.from_tier}</span>
+                                                    <span className="mx-1">&rarr;</span>
+                                                    <span className={`px-1.5 py-0.5 rounded font-bold ${isAibainAddon ? 'bg-cyan-500/20 text-cyan-300' : req.to_tier === 'premium' ? 'bg-purple-500/20 text-purple-400' : 'bg-amber-500/20 text-amber-400'}`}>
+                                                        {isAibainAddon ? '+AI Bain' : req.to_tier === 'premium' ? 'Ultra Pro' : 'Pro'}
                                                     </span>
+                                                    {req.depositor_name && (
+                                                        <span className="ml-2 px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400">
+                                                            <i className="fas fa-user text-[10px] mr-1" />{req.depositor_name}
+                                                        </span>
+                                                    )}
+                                                    {req.amount && (
+                                                        <span className={`px-1.5 py-0.5 rounded font-bold ${isAibainAddon ? 'bg-cyan-500/15 text-cyan-300' : 'bg-green-500/10 text-green-400'}`}>
+                                                            {req.amount}
+                                                        </span>
+                                                    )}
+                                                    <span className="ml-2 text-gray-600">{new Date(req.created_at).toLocaleString()}</span>
+                                                </div>
+                                                {req.admin_note && (
+                                                    <p className="text-[11px] text-cyan-300/80 mt-1.5 leading-relaxed">
+                                                        <i className="fas fa-info-circle text-cyan-400/70 mr-1" />
+                                                        {req.admin_note}
+                                                    </p>
                                                 )}
-                                                {req.amount && <span className="px-1.5 py-0.5 rounded bg-green-500/10 text-green-400">{req.amount}</span>}
-                                                <span className="ml-2 text-gray-600">{new Date(req.created_at).toLocaleString()}</span>
                                             </div>
                                         </div>
-                                    </div>
-                                    <div className="flex gap-2">
-                                        <button onClick={() => handleApprove(req.id)}
-                                            disabled={processing.has(req.id)}
-                                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
-                                                req.to_tier === 'premium' ? 'bg-purple-500/20 text-purple-400 hover:bg-purple-500/30' : 'bg-amber-500/20 text-amber-400 hover:bg-amber-500/30'
-                                            }`}>
-                                            <i className={`fas ${processing.has(req.id) ? 'fa-spinner fa-spin' : (req.to_tier === 'premium' ? 'fa-gem' : 'fa-crown')} mr-1`} />
-                                            {req.to_tier === 'premium' ? 'Ultra Pro 승인' : 'Pro 승인'}
-                                        </button>
-                                        <button onClick={() => handleReject(req.id)}
-                                            disabled={processing.has(req.id)}
-                                            className="px-4 py-2 bg-red-500/20 text-red-400 rounded-lg text-sm font-medium hover:bg-red-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                                            <i className="fas fa-times mr-1" /> 거절
-                                        </button>
+                                        <div className="flex gap-2">
+                                            <button onClick={() => handleApprove(req.id)}
+                                                disabled={processing.has(req.id)}
+                                                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${btnColor}`}>
+                                                <i className={`fas ${processing.has(req.id) ? 'fa-spinner fa-spin' : btnIcon} mr-1`} />
+                                                {btnLabel}
+                                            </button>
+                                            <button onClick={() => handleReject(req.id)}
+                                                disabled={processing.has(req.id)}
+                                                className="px-4 py-2 bg-red-500/20 text-red-400 rounded-lg text-sm font-medium hover:bg-red-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                                                <i className="fas fa-times mr-1" /> 거절
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 )}
             </div>
