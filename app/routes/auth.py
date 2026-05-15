@@ -352,16 +352,20 @@ def request_subscription():
 
     data = request.get_json() or {}
     to_tier = (data.get('to_tier') or '').strip().lower()
+    # AI Bain 알파 스캐너 애드온 포함 여부 (별도 30일 갱신 구독 +40,000원/30일)
+    includes_aibain = bool(data.get('includes_aibain'))
 
     # 'free' 플랜은 폐지 — 구독 가능한 tier는 pro / premium 뿐
     if to_tier not in ('pro', 'premium'):
         return jsonify({'error': 'Invalid tier. Use: pro, premium'}), 400
 
-    if to_tier == user.tier:
+    # 같은 tier 요청은 AI Bain 애드온인 경우에만 허용
+    # (예: 활성 Pro 회원이 AI Bain 만 추가 신청, 활성 Ultra Pro 회원이 AI Bain 만 추가 신청)
+    if to_tier == user.tier and not includes_aibain:
         return jsonify({'error': f'Already on {to_tier} tier'}), 400
 
-    # premium(Ultra Pro)은 최상위 — 다운그레이드 불가
-    if user.tier == 'premium':
+    # premium(Ultra Pro)은 최상위 — 베이스 다운그레이드 불가 (AI Bain 추가는 같은 tier 라 위 체크에서 통과)
+    if user.tier == 'premium' and to_tier == 'pro':
         return jsonify({'error': 'Ultra Pro는 최상위 플랜입니다. 다운그레이드할 수 없습니다.'}), 400
 
     # 이미 pending 요청이 있는지 확인
@@ -371,26 +375,40 @@ def request_subscription():
     if existing:
         return jsonify({'error': 'You already have a pending subscription request'}), 409
 
-    # tier가 없는(None) 신규 가입자나 pro 유저가 상위 tier 신청 = upgrade
-    req_type = 'upgrade' if (
-        user.tier is None or
-        (user.tier == 'pro' and to_tier == 'premium')
-    ) else 'downgrade'
+    # 요청 종류 판정
+    # - aibain_addon: 같은 tier + AI Bain 만 추가 (활성 회원의 업그레이드 시나리오)
+    # - upgrade:      신규 가입자 + tier 상승
+    # - downgrade:    하향 (현재 비활성)
+    is_aibain_addon = (to_tier == user.tier and includes_aibain)
+    if is_aibain_addon:
+        req_type = 'aibain_addon'
+    elif user.tier is None or (user.tier == 'pro' and to_tier == 'premium'):
+        req_type = 'upgrade'
+    else:
+        req_type = 'downgrade'
 
     depositor_name = (data.get('depositor_name') or '').strip() or None
-    # AI Bain 알파 스캐너 애드온 포함 여부 (별도 30일 갱신 구독 +40,000원/30일)
-    includes_aibain = bool(data.get('includes_aibain'))
 
-    # 입금 금액 — 베이스 + AI Bain 애드온 합산
+    # 입금 금액 계산
+    # - aibain_addon: 40,000원 (AI Bain 만)
+    # - else + aibain: 베이스 + 40,000 (전체)
+    # - else:         베이스 (50k 또는 1.2M)
     base_amount_map = {'pro': 50_000, 'premium': 1_200_000}
-    base_amount = base_amount_map.get(to_tier, 0)
-    aibain_amount = 40_000 if includes_aibain else 0
-    total_amount = base_amount + aibain_amount
-    # 표시용 문자열 ("90,000원" / "1,240,000원" 형식)
+    if is_aibain_addon:
+        total_amount = 40_000
+    else:
+        base_amount = base_amount_map.get(to_tier, 0)
+        aibain_amount = 40_000 if includes_aibain else 0
+        total_amount = base_amount + aibain_amount
     amount = f"{total_amount:,}원" if total_amount else None
 
-    # admin 패널에서 보이는 비고 (DB 신규 column 없이 admin_note 활용)
-    admin_note = 'AI Bain 알파 스캐너 포함 요청 (+40,000원/30일)' if includes_aibain else None
+    # admin 패널 비고 (DB 신규 column 없이 admin_note 활용)
+    if is_aibain_addon:
+        admin_note = 'AI Bain 알파 스캐너 애드온 신청 (+40,000원/30일, 베이스 tier 유지)'
+    elif includes_aibain:
+        admin_note = 'AI Bain 알파 스캐너 포함 요청 (+40,000원/30일)'
+    else:
+        admin_note = None
 
     sub_request = SubscriptionRequest(
         user_id=user.id,
@@ -407,9 +425,18 @@ def request_subscription():
 
     # 관리자 텔레그램 + 인앱 알림
     tier_label = {'pro': 'Pro', 'premium': 'Ultra Pro'}.get(to_tier, to_tier)
-    full_label = f"{tier_label} + AI Bain" if includes_aibain else tier_label
+    if is_aibain_addon:
+        # 같은 tier 에 AI Bain 만 추가 (예: 활성 Pro 회원 → +AI Bain)
+        full_label = f"{tier_label} → +AI Bain 애드온"
+        header_emoji = "🤖"
+    elif includes_aibain:
+        full_label = f"{tier_label} + AI Bain"
+        header_emoji = "💳"
+    else:
+        full_label = tier_label
+        header_emoji = "💳"
     _notify_admin_telegram(
-        f"💳 <b>구독 업그레이드 요청</b>\n\n"
+        f"{header_emoji} <b>구독 요청</b>\n\n"
         f"👤 {user.name} ({user.email})\n"
         f"📋 {user.tier or 'none'} → {full_label}\n"
         f"💰 {amount or '-'}" +

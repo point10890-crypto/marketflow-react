@@ -533,6 +533,48 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                 )}
             </div>
 
+            {/* ── AI Bain 업그레이드 배너 (활성 Pro/Premium 회원, admin 제외) ── */}
+            {(() => {
+                const tier = user?.tier ?? null;
+                const role = user?.role ?? 'user';
+                const isAdmin = role === 'admin';
+                const isActivePaid = (tier === 'pro' || tier === 'premium') && user?.status === 'approved' && !user?.is_pro_expired;
+                // TODO Stage 5: user.is_aibain_active 도 체크해서 이미 활성이면 숨김
+                if (isAdmin || !isActivePaid) return null;
+                const tierLabel = tier === 'pro' ? 'Pro' : 'Ultra Pro';
+                return (
+                    <Link
+                        to="/dashboard/ai-bain"
+                        className="group block rounded-2xl border border-cyan-500/30 bg-gradient-to-r from-cyan-500/[0.08] via-[#13151f] to-[#1c1c1e] p-3.5 sm:p-4 overflow-hidden transition-all duration-200 active:scale-[0.99] hover:border-cyan-500/50 relative"
+                    >
+                        <div className="absolute -top-6 -right-6 w-28 h-28 rounded-full blur-3xl opacity-[0.10] group-hover:opacity-[0.16] transition-opacity bg-gradient-to-br from-cyan-400 to-sky-500" />
+                        <div className="relative flex items-center gap-3">
+                            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center shrink-0">
+                                <i className="fas fa-robot text-cyan-300 text-lg" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                    <span className="text-white font-bold text-sm">AI Bain 알파 스캐너 추가</span>
+                                    <span className="text-[8px] font-bold tracking-wider px-1.5 py-0.5 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-500/25 animate-pulse" style={{ animationDuration: '2s' }}>
+                                        NEW
+                                    </span>
+                                </div>
+                                <p className="text-[11px] sm:text-xs text-gray-400 mt-0.5 leading-tight">
+                                    <span className="text-cyan-300/90">{tierLabel} 구독 유지 + AI Bain</span> · MCP TOP 3 / 신규 5종 시그널 · <span className="text-cyan-200 font-semibold">+40,000원/30일</span>
+                                </p>
+                            </div>
+                            <div className="shrink-0 flex items-center gap-2">
+                                <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-cyan-500/15 text-cyan-200 font-bold text-xs border border-cyan-400/30">
+                                    <i className="fas fa-paper-plane text-[10px]" />
+                                    업그레이드 신청
+                                </span>
+                                <i className="fas fa-chevron-right text-[11px] text-cyan-400/70 group-hover:text-cyan-300 transition-colors" />
+                            </div>
+                        </div>
+                    </Link>
+                );
+            })()}
+
             {/* ── AI Briefing Highlight Widget ── */}
             <Link to={`/dashboard/briefing?tab=${aiBriefing?.type || 'morning'}`}
                 className="group block rounded-2xl border border-amber-500/20 bg-gradient-to-br from-[#1a1520] via-[#161320] to-[#13151f] overflow-hidden hover:border-amber-500/40 transition-all duration-300 active:scale-[0.995] relative"

@@ -1,54 +1,92 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { BANK_ACCOUNT, PLAN_PAYMENT_META, normalizeBillingPlan } from '@/lib/billingInfo';
+import { BANK_ACCOUNT } from '@/lib/billingInfo';
+import { subscriptionAPI, type SubscriptionRequest } from '@/lib/api';
 import KakaoSupportLink from '@/components/ui/KakaoSupportLink';
 
+/**
+ * 승인 대기 페이지 — 모든 sub_req (신규 가입 + AI Bain 애드온 + 업그레이드) 공통.
+ *
+ * 동작:
+ * - 마운트 + 30s 폴링: subscriptionAPI.getStatus() 로 최신 sub_req fetch
+ * - 실제 sub_req.amount + admin_note (AI Bain 마커) 표시
+ * - 활성 회원 (Pro/Premium) 도 pending sub_req 가 있으면 페이지 유지 (예: AI Bain 애드온 신청)
+ * - sub_req 가 approved 되거나 없어지면 대시보드로 자동 이동
+ */
 export default function PendingApprovalPage() {
-    const { user, logout, refreshUser } = useAuth();
+    const { user, token, logout, refreshUser } = useAuth();
     const navigate = useNavigate();
     const [checking, setChecking] = useState(false);
     const [message, setMessage] = useState('');
+    const [pendingSubReq, setPendingSubReq] = useState<SubscriptionRequest | null>(null);
+    const [subReqLoaded, setSubReqLoaded] = useState(false);
     const pollRef = useRef<number | null>(null);
 
-    // user 가 승인 + tier 부여 상태가 되면 즉시 대시보드로
+    const fetchSubReq = useCallback(async () => {
+        if (!token) return null;
+        try {
+            const resp = await subscriptionAPI.getStatus(token);
+            const pending = (resp.requests || []).find((r) => r.status === 'pending') || null;
+            setPendingSubReq(pending);
+            return pending;
+        } catch {
+            return null;
+        } finally {
+            setSubReqLoaded(true);
+        }
+    }, [token]);
+
+    // 초기 1회 sub_req fetch
     useEffect(() => {
-        if (!user) return;
+        fetchSubReq();
+    }, [fetchSubReq]);
+
+    // 자동 리다이렉트 — admin / 활성 회원 + pending sub_req 없을 때만 이동
+    useEffect(() => {
+        if (!user || !subReqLoaded) return;
         if (user.role === 'admin') {
             navigate('/admin', { replace: true });
             return;
         }
-        if (user.status === 'approved' && (user.tier === 'pro' || user.tier === 'premium')) {
+        const isActive = user.status === 'approved' && (user.tier === 'pro' || user.tier === 'premium');
+        if (isActive && !pendingSubReq) {
+            // 활성 회원인데 pending sub_req 가 없음 → 대시보드로
             navigate('/dashboard', { replace: true });
         }
-    }, [user, navigate]);
+    }, [user, navigate, pendingSubReq, subReqLoaded]);
 
-    // 30초마다 자동 폴링 — 관리자가 승인하면 자동으로 대시보드 진입
+    // 30초 폴링 — user 상태 + sub_req 둘 다 refresh
     useEffect(() => {
-        const tick = () => { refreshUser().catch(() => {}); };
+        const tick = () => {
+            refreshUser().catch(() => {});
+            fetchSubReq();
+        };
         pollRef.current = window.setInterval(tick, 30000);
         return () => {
             if (pollRef.current) window.clearInterval(pollRef.current);
         };
-    }, [refreshUser]);
+    }, [refreshUser, fetchSubReq]);
 
     const handleCheckStatus = async () => {
         setChecking(true);
         setMessage('');
         try {
             await refreshUser();
+            const sr = await fetchSubReq();
             setTimeout(() => {
                 const stored = localStorage.getItem('auth_user') || sessionStorage.getItem('auth_user');
                 if (stored) {
                     const parsed = JSON.parse(stored);
                     const hasAccess = parsed.status === 'approved' && (parsed.tier === 'pro' || parsed.tier === 'premium');
-                    if (hasAccess || parsed.role === 'admin') {
+                    // 활성 + sub_req 없음 = 승인 완료
+                    if ((hasAccess && !sr) || parsed.role === 'admin') {
                         setMessage('승인되었습니다! 대시보드로 이동합니다.');
                         setTimeout(() => navigate('/dashboard'), 1000);
                         return;
                     }
                 }
-                setMessage('아직 승인 대기 중입니다. (Pro 이상 등급 부여 필요)');
+                setMessage('아직 승인 대기 중입니다.');
                 setChecking(false);
             }, 500);
         } catch {
@@ -62,23 +100,38 @@ export default function PendingApprovalPage() {
         navigate('/login');
     };
 
-    const requestedPlan = normalizeBillingPlan(user?.requested_tier);
-    const requestedMeta = requestedPlan ? PLAN_PAYMENT_META[requestedPlan] : null;
-    const amountColor = requestedMeta?.color === 'purple' ? 'text-purple-400' : 'text-amber-400';
+    // sub_req 로부터 표시 정보 도출
+    const isAibainAddon = pendingSubReq?.request_type === 'aibain_addon';
+    const includesAibain = !!pendingSubReq?.admin_note?.includes('AI Bain');
+    const subReqAmount = pendingSubReq?.amount || null;
+
+    // 색상 테마 — AI Bain 포함이면 cyan, 아니면 amber
+    const themeColor = includesAibain
+        ? { border: 'border-cyan-500/30', bg: 'bg-cyan-500/10', text: 'text-cyan-300', accentBg: 'bg-cyan-500/[0.06]', accentBorder: 'border-cyan-500/20' }
+        : { border: 'border-amber-500/20', bg: 'bg-amber-500/10', text: 'text-amber-400', accentBg: 'bg-amber-500/[0.06]', accentBorder: 'border-amber-500/20' };
+
+    // 헤더 / 안내 문구 분기
+    const isUpgradeFromActive = user?.status === 'approved' && (user.tier === 'pro' || user.tier === 'premium');
+    let headerTitle = '승인 대기 중';
+    let headerSubtitle = '회원가입이 완료되었습니다. 관리자가 Pro 또는 Ultra Pro 등급을 부여하면 서비스를 이용하실 수 있습니다.';
+    if (isAibainAddon) {
+        headerTitle = 'AI Bain 활성화 대기 중';
+        headerSubtitle = '입금 확인 후 관리자가 AI Bain 알파 스캐너 서비스를 활성화합니다. 그 동안 기존 구독은 그대로 이용 가능합니다.';
+    } else if (isUpgradeFromActive) {
+        headerTitle = '업그레이드 대기 중';
+        headerSubtitle = '입금 확인 후 관리자가 새 플랜으로 업그레이드합니다.';
+    }
 
     return (
         <div className="min-h-screen bg-black flex items-center justify-center p-4">
             <div className="w-full max-w-lg text-center">
-                <div className="p-8 rounded-2xl bg-[#1c1c1e] border border-white/10">
-                    <div className="w-16 h-16 mx-auto mb-6 bg-amber-500/10 rounded-full flex items-center justify-center">
-                        <i className="fas fa-hourglass-half text-2xl text-amber-400"></i>
+                <div className={`p-8 rounded-2xl bg-[#1c1c1e] border ${themeColor.border}`}>
+                    <div className={`w-16 h-16 mx-auto mb-6 ${themeColor.bg} rounded-full flex items-center justify-center`}>
+                        <i className={`${isAibainAddon ? 'fas fa-robot' : 'fas fa-hourglass-half'} text-2xl ${themeColor.text}`}></i>
                     </div>
 
-                    <h1 className="text-2xl font-bold text-white mb-2">승인 대기 중</h1>
-                    <p className="text-gray-400 text-sm mb-6">
-                        회원가입이 완료되었습니다.<br />
-                        관리자가 Pro 또는 Ultra Pro 등급을 부여하면 서비스를 이용하실 수 있습니다.
-                    </p>
+                    <h1 className="text-2xl font-bold text-white mb-2">{headerTitle}</h1>
+                    <p className="text-gray-400 text-sm mb-6 leading-relaxed">{headerSubtitle}</p>
                     <p className="text-gray-600 text-[11px] mb-4">
                         30초마다 자동으로 승인 상태를 확인합니다.
                     </p>
@@ -88,34 +141,41 @@ export default function PendingApprovalPage() {
                             <div className="text-[10px] text-gray-500 mb-1">가입 정보</div>
                             <div className="text-sm text-white">{user.name}</div>
                             <div className="text-xs text-gray-400 mb-2">{user.email}</div>
-                            {user.requested_tier && (
-                                <div className="mt-2 pt-2 border-t border-white/5 flex items-center gap-2">
-                                    <span className="text-[10px] text-gray-500">요청 플랜:</span>
-                                    {user.requested_tier === 'pro' ? (
-                                        <span className="px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 text-[10px] font-bold">
-                                            <i className="fas fa-crown mr-1" />
-                                            Pro · 50,000원/30일
+                            {pendingSubReq && (
+                                <div className="mt-2 pt-2 border-t border-white/5 space-y-1.5">
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                        <span className="text-[10px] text-gray-500">요청:</span>
+                                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${themeColor.bg} ${themeColor.text}`}>
+                                            <i className={`${isAibainAddon ? 'fas fa-robot' : pendingSubReq.to_tier === 'premium' ? 'fas fa-gem' : 'fas fa-crown'} mr-1`} />
+                                            {isAibainAddon
+                                                ? `${pendingSubReq.from_tier === 'premium' ? 'Ultra Pro' : 'Pro'} → +AI Bain 애드온`
+                                                : includesAibain
+                                                ? `${pendingSubReq.to_tier === 'premium' ? 'Ultra Pro' : 'Pro'} + AI Bain`
+                                                : pendingSubReq.to_tier === 'premium' ? 'Ultra Pro' : 'Pro'}
                                         </span>
-                                    ) : (
-                                        <span className="px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-400 text-[10px] font-bold">
-                                            <i className="fas fa-gem mr-1" />
-                                            Ultra Pro · 1,200,000원
-                                        </span>
+                                    </div>
+                                    {pendingSubReq.admin_note && (
+                                        <p className="text-[11px] text-gray-400 leading-relaxed pl-1">
+                                            <i className="fas fa-info-circle mr-1 text-cyan-400/70" />
+                                            {pendingSubReq.admin_note}
+                                        </p>
                                     )}
                                 </div>
                             )}
                         </div>
                     )}
 
-                    <div className="p-4 rounded-xl bg-amber-500/[0.06] border border-amber-500/20 mb-6 text-left">
+                    <div className={`p-4 rounded-xl ${themeColor.accentBg} border ${themeColor.accentBorder} mb-6 text-left`}>
                         <div className="flex items-start gap-3 mb-4">
-                            <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center shrink-0">
-                                <i className="fas fa-university text-amber-400" />
+                            <div className={`w-10 h-10 rounded-xl ${themeColor.bg} flex items-center justify-center shrink-0`}>
+                                <i className={`fas fa-university ${themeColor.text}`} />
                             </div>
                             <div>
                                 <h2 className="text-white font-bold text-sm">입금 계좌 정보</h2>
                                 <p className="text-gray-400 text-xs mt-0.5">
-                                    입금 확인 후 관리자가 구독을 활성화합니다.
+                                    {isAibainAddon
+                                        ? '입금 확인 후 AI Bain 알파 스캐너가 30일간 활성화됩니다.'
+                                        : '입금 확인 후 관리자가 구독을 활성화합니다.'}
                                 </p>
                             </div>
                         </div>
@@ -142,23 +202,32 @@ export default function PendingApprovalPage() {
                                 </div>
                                 <p className="text-white font-bold mt-1 font-mono text-lg tracking-wider">{BANK_ACCOUNT.account}</p>
                             </div>
-                            <div className="p-3 rounded-lg bg-black/20 border border-white/[0.06]">
+                            <div className={`p-3 rounded-lg ${themeColor.accentBg} border ${themeColor.accentBorder}`}>
                                 <span className="text-[10px] text-gray-500 uppercase tracking-wider">입금 금액</span>
-                                <p className={`font-bold mt-1 text-sm ${amountColor}`}>
-                                    {requestedMeta ? requestedMeta.amount : '플랜 선택 후 확정'}
+                                <p className={`font-bold mt-1 text-base ${themeColor.text}`}>
+                                    {subReqAmount || '플랜 선택 후 확정'}
                                 </p>
+                                {isAibainAddon && (
+                                    <p className="text-[10px] text-gray-500 mt-0.5">AI Bain 30일 갱신</p>
+                                )}
                             </div>
                             <div className="p-3 rounded-lg bg-black/20 border border-white/[0.06]">
                                 <span className="text-[10px] text-gray-500 uppercase tracking-wider">입금자명</span>
-                                <p className="text-white font-bold mt-1 text-sm">{user?.name || '가입 시 입력한 이름'}</p>
+                                <p className="text-white font-bold mt-1 text-sm">
+                                    {pendingSubReq?.depositor_name || user?.name || '가입 시 이름'}
+                                </p>
                             </div>
                         </div>
 
                         <p className="mt-3 text-[11px] leading-relaxed text-gray-400">
                             입금자명은 가입 이름과 동일하게 보내 주세요.
-                            {requestedMeta
-                                ? ` 현재 요청 플랜은 ${requestedMeta.label} · ${requestedMeta.period}입니다.`
-                                : ' 아직 플랜을 선택하지 않았다면 아래 버튼에서 먼저 플랜을 선택해 주세요.'}
+                            {isAibainAddon
+                                ? ' AI Bain 만료 시 별도 갱신 없으면 자동으로 기존 베이스 플랜으로 회귀합니다.'
+                                : pendingSubReq && includesAibain
+                                ? ' AI Bain 알파 스캐너 알림이 30일간 활성화됩니다.'
+                                : !pendingSubReq
+                                ? ' 아직 플랜을 선택하지 않았다면 아래 버튼에서 먼저 플랜을 선택해 주세요.'
+                                : ''}
                         </p>
                     </div>
 
@@ -169,21 +238,24 @@ export default function PendingApprovalPage() {
                     )}
 
                     <div className="space-y-3">
-                        {/* 유료 플랜 신청 (입금 안내) — 요청 플랜 있으면 바로 결제 페이지로, 없으면 선택 페이지로 */}
-                        <button
-                            onClick={() => {
-                                const rt = user?.requested_tier;
-                                if (rt === 'pro' || rt === 'premium') {
-                                    navigate(`/payment-request?plan=${rt}`);
-                                } else {
-                                    navigate('/plan-select');
-                                }
-                            }}
-                            className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-black font-bold transition-all flex items-center justify-center gap-2"
-                        >
-                            <i className="fas fa-credit-card" />
-                            {user?.requested_tier ? '입금 안내 다시 보기' : '플랜 선택하기'}
-                        </button>
+                        {!pendingSubReq && !isUpgradeFromActive && (
+                            <button
+                                onClick={() => navigate('/plan-select')}
+                                className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-black font-bold transition-all flex items-center justify-center gap-2"
+                            >
+                                <i className="fas fa-credit-card" />
+                                플랜 선택하기
+                            </button>
+                        )}
+                        {isUpgradeFromActive && (
+                            <button
+                                onClick={() => navigate('/dashboard')}
+                                className="w-full py-3 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 font-medium transition-all"
+                            >
+                                <i className="fas fa-arrow-left mr-2" />
+                                대시보드로 돌아가기
+                            </button>
+                        )}
                         <button
                             onClick={handleCheckStatus}
                             disabled={checking}
@@ -191,12 +263,14 @@ export default function PendingApprovalPage() {
                         >
                             {checking ? '확인 중...' : '승인 상태 확인'}
                         </button>
-                        <button
-                            onClick={handleLogout}
-                            className="w-full py-3 rounded-xl bg-white/5 hover:bg-white/10 text-gray-400 font-medium transition-all"
-                        >
-                            로그아웃
-                        </button>
+                        {!isUpgradeFromActive && (
+                            <button
+                                onClick={handleLogout}
+                                className="w-full py-3 rounded-xl bg-white/5 hover:bg-white/10 text-gray-400 font-medium transition-all"
+                            >
+                                로그아웃
+                            </button>
+                        )}
                         <KakaoSupportLink />
                     </div>
                 </div>

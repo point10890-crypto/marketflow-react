@@ -1,6 +1,7 @@
-import { lazy, Suspense } from 'react';
-import { Link } from 'react-router-dom';
+import { lazy, Suspense, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { subscriptionAPI } from '@/lib/api';
 
 // 관리자 페이지의 MiroFish Market Brain GraphRAG Analysis 콘솔을 그대로 재사용.
 // AutoRunner / QuickActions 만 subscriberMode 로 자동 숨김 (admin 전용 컨트롤).
@@ -114,38 +115,141 @@ function FeatureCard({ icon, title, desc }: { icon: string; title: string; desc:
 }
 
 function UpgradePrompt({ tier }: { tier: string | null }) {
+    const { user, token } = useAuth();
+    const navigate = useNavigate();
+    const [submitting, setSubmitting] = useState(false);
+    const [error, setError] = useState('');
+    const [depositorName, setDepositorName] = useState(user?.name || '');
+
+    const tierLabel = tier === 'pro' ? 'Pro' : 'Ultra Pro';
+
+    const handleSubmit = async () => {
+        setError('');
+        if (!tier || !token) {
+            setError('로그인 정보를 확인할 수 없습니다.');
+            return;
+        }
+        if (!depositorName.trim()) {
+            setError('입금자명을 입력해 주세요.');
+            return;
+        }
+        setSubmitting(true);
+        try {
+            // 같은 tier + AI Bain 만 추가 → 백엔드가 aibain_addon 으로 분류 (40,000원/30일)
+            await subscriptionAPI.requestUpgrade(tier, token, depositorName.trim(), true);
+            navigate('/pending-approval', { replace: true });
+        } catch (err: any) {
+            const msg = err?.message || '';
+            if (msg.toLowerCase().includes('pending')) {
+                navigate('/pending-approval', { replace: true });
+                return;
+            }
+            setError('AI Bain 신청 중 오류가 발생했습니다. 잠시 후 다시 시도하세요.');
+            setSubmitting(false);
+        }
+    };
+
     return (
         <PageShell>
-            <div className="rounded-2xl border border-cyan-500/30 bg-gradient-to-br from-cyan-500/[0.04] to-[#13151f] p-6">
-                <h3 className="text-lg font-bold text-white mb-2">
-                    <i className="fas fa-arrow-up text-cyan-400 mr-2" />
-                    AI Bain 구독 업그레이드
-                </h3>
-                <p className="text-sm text-gray-300 mb-4">
-                    현재 <span className="text-cyan-300 font-bold">{tier === 'pro' ? 'Pro' : 'Ultra Pro'}</span> 구독을 이용 중입니다.
-                    기존 구독은 그대로 유지하고 <span className="text-cyan-300 font-bold">+40,000원/30일</span> 만 추가하면
-                    AI Bain 알파 스캐너 서비스가 활성화됩니다.
-                </p>
-                <p className="text-xs text-gray-500 mb-4">
-                    만료 시 별도 갱신 신청 없으면 자동으로 기존 {tier === 'pro' ? 'Pro' : 'Ultra Pro'} 버전으로 회귀합니다.
-                    카카오 채널로 입금자명 + "AI Bain 추가" 문의 시 운영자가 활성화합니다.
-                </p>
-                <div className="flex flex-wrap gap-2">
-                    <Link
-                        to="/pricing"
-                        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-cyan-400/30 bg-cyan-500/10 text-cyan-300 font-bold text-sm hover:bg-cyan-500/15 transition-all"
+            {/* 메인 업그레이드 신청 카드 */}
+            <div className="rounded-2xl border border-cyan-500/40 bg-gradient-to-br from-cyan-500/[0.08] via-[#13151f] to-[#1c1c1e] p-6 sm:p-8 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-cyan-500/15 to-transparent rounded-bl-full pointer-events-none" />
+
+                <div className="relative">
+                    <div className="flex items-start gap-3 mb-4">
+                        <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-cyan-500/15 text-cyan-300 text-2xl">
+                            <i className="fas fa-arrow-up" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                            <h3 className="text-xl sm:text-2xl font-black text-white">AI Bain 구독 업그레이드 신청</h3>
+                            <p className="mt-1 text-sm text-gray-300">
+                                현재 <span className="text-cyan-300 font-bold">{tierLabel}</span> 구독에 AI Bain 알파 스캐너만 추가합니다.
+                                기존 베이스 구독은 그대로 유지됩니다.
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* 가격 요약 박스 */}
+                    <div className="rounded-xl border border-cyan-400/20 bg-cyan-500/[0.06] p-4 mb-5">
+                        <h4 className="text-cyan-300 font-bold text-xs mb-2 flex items-center gap-1.5">
+                            <i className="fas fa-receipt" />
+                            요금 안내
+                        </h4>
+                        <div className="text-sm text-gray-300 space-y-1">
+                            <div className="flex justify-between">
+                                <span>현재 {tierLabel} 구독</span>
+                                <span className="text-gray-500">유지</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span>AI Bain 알파 스캐너 (30일)</span>
+                                <span className="font-mono text-white">+40,000원</span>
+                            </div>
+                            <div className="h-px bg-cyan-400/20 my-2" />
+                            <div className="flex justify-between font-bold text-white">
+                                <span>이번 입금 금액</span>
+                                <span className="font-mono text-cyan-300 text-base">40,000원</span>
+                            </div>
+                        </div>
+                        <p className="mt-2 text-[10px] text-gray-500">
+                            <i className="fas fa-info-circle mr-1" />
+                            30일 후 자동 만료 — 별도 갱신 없으면 기존 {tierLabel} 버전으로 자동 회귀.
+                        </p>
+                    </div>
+
+                    {/* 입금자명 입력 */}
+                    <div className="mb-4">
+                        <label className="block text-xs font-medium text-gray-400 mb-2">입금자명 *</label>
+                        <input
+                            type="text"
+                            value={depositorName}
+                            onChange={(e) => setDepositorName(e.target.value)}
+                            placeholder="입금자명 (가입 이름과 동일하게)"
+                            className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-600 focus:outline-none focus:border-cyan-400/50"
+                        />
+                    </div>
+
+                    {error && (
+                        <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm mb-4">
+                            {error}
+                        </div>
+                    )}
+
+                    {/* 신청 버튼 */}
+                    <button
+                        type="button"
+                        onClick={handleSubmit}
+                        disabled={submitting || !depositorName.trim()}
+                        className="w-full py-4 rounded-xl bg-gradient-to-r from-cyan-500 to-sky-500 text-black font-bold text-sm hover:from-cyan-400 hover:to-sky-400 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     >
-                        <i className="fas fa-info-circle" />
-                        요금 자세히
-                    </Link>
-                    <Link
-                        to="/dashboard/account"
-                        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-white/10 bg-white/5 text-gray-300 font-bold text-sm hover:bg-white/10 transition-all"
-                    >
-                        <i className="fas fa-user-circle" />
-                        내 구독 보기
-                    </Link>
+                        {submitting ? (
+                            <><i className="fas fa-spinner fa-spin" />처리 중...</>
+                        ) : (
+                            <><i className="fas fa-paper-plane" />AI Bain 구독 신청 (+40,000원/30일)</>
+                        )}
+                    </button>
+
+                    <p className="text-gray-600 text-[11px] text-center mt-3">
+                        신청 후 입금 → 관리자 확인 (최대 24시간) → AI Bain 활성화
+                    </p>
                 </div>
+            </div>
+
+            {/* 보조 링크 */}
+            <div className="flex flex-wrap gap-2 justify-center">
+                <Link
+                    to="/pricing"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-white/10 bg-white/5 text-gray-300 font-medium text-xs hover:bg-white/10 transition-all"
+                >
+                    <i className="fas fa-info-circle" />
+                    가격 페이지
+                </Link>
+                <Link
+                    to="/dashboard/account"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-white/10 bg-white/5 text-gray-300 font-medium text-xs hover:bg-white/10 transition-all"
+                >
+                    <i className="fas fa-user-circle" />
+                    내 구독 보기
+                </Link>
             </div>
         </PageShell>
     );
