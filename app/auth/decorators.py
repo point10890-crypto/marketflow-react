@@ -164,3 +164,35 @@ def admin_required(f):
             db.session.remove()
         return f(*args, **kwargs)
     return decorated
+
+
+def admin_or_aibain_required(f):
+    """관리자 OR AI Bain 활성 구독자 허용 — read-only 분석 데이터 전용.
+
+    토큰 검증 후 다음 둘 중 하나여야 통과:
+      1) user.is_admin == True
+      2) user.is_aibain_active == True (aibain_enabled + 미만료)
+    그 외 403. mutation/제어 엔드포인트에는 사용 금지.
+    """
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        user = _get_current_user()
+        if user is None:
+            return jsonify({'error': 'Authentication required'}), 401
+        if not (user.is_admin or user.is_aibain_active):
+            return jsonify({
+                'error': 'AI Bain 구독자 또는 관리자만 접근 가능합니다.'
+            }), 403
+
+        request.current_user = user
+        # admin_required 와 동일한 세션 정리 (mirofish 경로용)
+        if (request.path or '').startswith('/api/admin/mirofish'):
+            request.current_user_id = user.id
+            request.current_user_email = user.email
+            try:
+                db.session.expunge(user)
+            except Exception:
+                pass
+            db.session.remove()
+        return f(*args, **kwargs)
+    return decorated

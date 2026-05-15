@@ -4,7 +4,7 @@ import os
 
 from flask import Blueprint, Response, jsonify, request
 
-from app.auth.decorators import admin_required
+from app.auth.decorators import admin_required, admin_or_aibain_required
 from app.services import mirofish
 from app.services.mirofish import events as mf_events
 
@@ -51,7 +51,7 @@ def _payload_int(payload: dict, key: str, default: int) -> int:
 
 
 @admin_mirofish_bp.route('/status', methods=['GET'])
-@admin_required
+@admin_or_aibain_required
 def status():
     return jsonify(mirofish.get_status())
 
@@ -167,7 +167,7 @@ def data_sources():
 
 
 @admin_mirofish_bp.route('/pipeline/today', methods=['GET'])
-@admin_required
+@admin_or_aibain_required
 def pipeline_today():
     """오늘의 검출 파이프라인 + 시장 컨텍스트 스냅샷.
 
@@ -293,7 +293,7 @@ def auto_runner_force_trigger():
 
 
 @admin_mirofish_bp.route('/outcomes/board', methods=['GET'])
-@admin_required
+@admin_or_aibain_required
 def outcomes_board():
     """최근 N일 워크플로우 추천의 forward outcomes 집계.
 
@@ -360,7 +360,7 @@ def create_run():
 
 
 @admin_mirofish_bp.route('/runs', methods=['GET'])
-@admin_required
+@admin_or_aibain_required
 def list_runs():
     try:
         limit = int(request.args.get('limit', 20))
@@ -371,7 +371,7 @@ def list_runs():
 
 
 @admin_mirofish_bp.route('/runs/<run_id>', methods=['GET'])
-@admin_required
+@admin_or_aibain_required
 def get_run(run_id):
     try:
         run = mirofish.read_run(run_id)
@@ -407,7 +407,7 @@ def get_report(run_id):
 
 
 @admin_mirofish_bp.route('/runs/<run_id>/events', methods=['GET'])
-@admin_required
+@admin_or_aibain_required
 def get_events(run_id):
     """Polling-based events tail. ?since=N&limit=M."""
     try:
@@ -624,7 +624,7 @@ def create_scanner_run():
 
 
 @admin_mirofish_bp.route('/scanner/runs/latest', methods=['GET'])
-@admin_required
+@admin_or_aibain_required
 def get_latest_scanner_run():
     run = mirofish.read_latest_scanner_run()
     if run is None:
@@ -645,7 +645,7 @@ def get_scanner_run(run_id):
 
 
 @admin_mirofish_bp.route('/scanner/runs/<run_id>/candidates', methods=['GET'])
-@admin_required
+@admin_or_aibain_required
 def get_scanner_candidates(run_id):
     try:
         candidates = mirofish.read_scanner_candidates(run_id)
@@ -674,7 +674,7 @@ def list_workflows():
 
 
 @admin_mirofish_bp.route('/workflows/latest', methods=['GET'])
-@admin_required
+@admin_or_aibain_required
 def get_latest_workflow():
     workflow = mirofish.read_latest_workflow()
     if workflow is None:
@@ -860,7 +860,7 @@ def deepseek_status():
 
 
 @admin_mirofish_bp.route('/tradingview/status', methods=['GET'])
-@admin_required
+@admin_or_aibain_required
 def tradingview_status():
     include_live = request.args.get('live', '').lower() in {'1', 'true', 'yes', 'on'}
     try:

@@ -12,7 +12,9 @@ Phase A–F 를 단계적으로 노출한다.
 - research run (Phase D+)
 - metrics (Phase F+)
 
-모든 route 는 ``@admin_required`` 적용.
+대부분 route 는 ``@admin_required`` 적용.
+일부 read-only 분석 데이터 (status, scan-history, scan-history-performance) 는
+``@admin_or_aibain_required`` — AI Bain 알파 스캐너 구독자도 조회 가능.
 """
 from __future__ import annotations
 
@@ -20,7 +22,7 @@ import time
 
 from flask import Blueprint, jsonify, request
 
-from app.auth.decorators import admin_required
+from app.auth.decorators import admin_required, admin_or_aibain_required
 from app.services.mirofish import graphrag as graphrag_service
 
 
@@ -30,7 +32,7 @@ admin_mirofish_graphrag_bp = Blueprint('admin_mirofish_graphrag', __name__)
 # ── Phase A: status ──────────────────────────────────────────────────
 
 @admin_mirofish_graphrag_bp.route('/status', methods=['GET'])
-@admin_required
+@admin_or_aibain_required
 def graphrag_status():
     """GraphRAG subsystem 상태 조회.
 
@@ -203,7 +205,7 @@ def graphrag_metrics():
 # ── Phase G: MCP scan history + performance ───────────────────────────
 
 @admin_mirofish_graphrag_bp.route('/scan-history', methods=['GET'])
-@admin_required
+@admin_or_aibain_required
 def graphrag_scan_history():
     """모든 scanner runs + workflow outcomes 를 symbol 단위로 집계.
 
@@ -245,7 +247,7 @@ def graphrag_scan_history():
 
 
 @admin_mirofish_graphrag_bp.route('/scan-history-performance', methods=['GET'])
-@admin_required
+@admin_or_aibain_required
 def graphrag_scan_performance():
     """전체 통계 + 그룹별 breakdown (KPI/IC/by_market/by_tag/top_performers).
 
