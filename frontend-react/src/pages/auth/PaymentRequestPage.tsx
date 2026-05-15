@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { subscriptionAPI } from '@/lib/api';
-import { BANK_ACCOUNT, PLAN_PAYMENT_META, normalizeBillingPlan, type BillingPlanTier } from '@/lib/billingInfo';
+import { BANK_ACCOUNT, PLAN_PAYMENT_META, planFromQuery, type BillingPlan } from '@/lib/billingInfo';
 import KakaoSupportLink from '@/components/ui/KakaoSupportLink';
 
 /**
@@ -23,7 +23,8 @@ export default function PaymentRequestPage() {
     const [searchParams] = useSearchParams();
 
     const rawPlan = searchParams.get('plan');
-    const plan: BillingPlanTier | null = normalizeBillingPlan(rawPlan);
+    const rawAibain = searchParams.get('aibain');
+    const plan: BillingPlan | null = planFromQuery(rawPlan, rawAibain);
 
     const [depositorName, setDepositorName] = useState('');
     const [submitting, setSubmitting] = useState(false);
@@ -67,9 +68,11 @@ export default function PaymentRequestPage() {
     const meta = PLAN_PAYMENT_META[plan];
 
     const colorMap = {
-        amber:  { ring: 'ring-amber-500/30',  bg: 'bg-amber-500/10',  text: 'text-amber-400',  btn: 'from-amber-500 to-orange-500', btnText: 'text-black' },
-        purple: { ring: 'ring-purple-500/30', bg: 'bg-purple-500/10', text: 'text-purple-400', btn: 'from-purple-500 to-fuchsia-500', btnText: 'text-white' },
-    }[meta.color as 'amber' | 'purple'];
+        amber:    { ring: 'ring-amber-500/30',    bg: 'bg-amber-500/10',    text: 'text-amber-400',   btn: 'from-amber-500 to-orange-500',          btnText: 'text-black',  icon: 'fas fa-crown' },
+        cyan:     { ring: 'ring-cyan-500/30',     bg: 'bg-cyan-500/10',     text: 'text-cyan-300',    btn: 'from-cyan-500 to-sky-500',              btnText: 'text-black',  icon: 'fas fa-robot' },
+        purple:   { ring: 'ring-purple-500/30',   bg: 'bg-purple-500/10',   text: 'text-purple-400',  btn: 'from-purple-500 to-fuchsia-500',        btnText: 'text-white',  icon: 'fas fa-gem' },
+        fuchsia:  { ring: 'ring-fuchsia-500/30',  bg: 'bg-fuchsia-500/10',  text: 'text-fuchsia-300', btn: 'from-fuchsia-500 via-purple-500 to-cyan-500', btnText: 'text-white',  icon: 'fas fa-crown' },
+    }[meta.color];
 
     const handleSubmit = async () => {
         setError('');
@@ -79,7 +82,7 @@ export default function PaymentRequestPage() {
         }
         setSubmitting(true);
         try {
-            await subscriptionAPI.requestUpgrade(plan, token, depositorName.trim());
+            await subscriptionAPI.requestUpgrade(meta.tier, token, depositorName.trim(), meta.includesAibain);
             navigate('/pending-approval', { replace: true });
         } catch (err: any) {
             const msg = err?.message || '';
@@ -99,7 +102,7 @@ export default function PaymentRequestPage() {
                 {/* Header */}
                 <div className="text-center mb-6">
                     <div className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full ${colorMap.bg} ${colorMap.text} text-xs font-bold mb-3`}>
-                        <i className={plan === 'premium' ? 'fas fa-gem' : 'fas fa-crown'} />
+                        <i className={colorMap.icon} />
                         선택한 플랜: {meta.label}
                     </div>
                     <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight mb-2">
@@ -110,6 +113,33 @@ export default function PaymentRequestPage() {
                         승인 신청 버튼을 눌러주세요.
                     </p>
                 </div>
+
+                {/* AI Bain 포함 시 가격 분해 안내 */}
+                {meta.includesAibain && meta.baseAmount && meta.aibainAmount && (
+                    <div className={`p-4 rounded-2xl ${colorMap.bg} border border-cyan-400/15 mb-4`}>
+                        <h4 className="text-cyan-300 font-bold text-xs mb-2 flex items-center gap-1.5">
+                            <i className="fas fa-receipt" />
+                            요금 분해
+                        </h4>
+                        <div className="text-xs text-gray-300 space-y-1">
+                            <div className="flex justify-between">
+                                <span>{meta.baseAmount}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span>{meta.aibainAmount}</span>
+                            </div>
+                            <div className="h-px bg-cyan-400/20 my-2" />
+                            <div className="flex justify-between font-bold text-white">
+                                <span>합계 (30일)</span>
+                                <span className={`font-mono ${colorMap.text}`}>{meta.amount}</span>
+                            </div>
+                        </div>
+                        <p className="mt-2 text-[10px] text-gray-500">
+                            <i className="fas fa-info-circle mr-1" />
+                            AI Bain 은 30일 갱신 구독 — 만료 시 별도 갱신 없으면 자동으로 베이스 플랜으로 회귀합니다.
+                        </p>
+                    </div>
+                )}
 
                 {/* 계좌 박스 */}
                 <div className={`p-5 rounded-2xl bg-[#1c1c1e] ring-1 ${colorMap.ring} mb-4 space-y-3`}>

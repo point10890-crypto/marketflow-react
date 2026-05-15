@@ -378,8 +378,19 @@ def request_subscription():
     ) else 'downgrade'
 
     depositor_name = (data.get('depositor_name') or '').strip() or None
-    amount_map = {'pro': '50,000원', 'premium': '1,200,000원'}
-    amount = amount_map.get(to_tier)
+    # AI Bain 알파 스캐너 애드온 포함 여부 (별도 30일 갱신 구독 +40,000원/30일)
+    includes_aibain = bool(data.get('includes_aibain'))
+
+    # 입금 금액 — 베이스 + AI Bain 애드온 합산
+    base_amount_map = {'pro': 50_000, 'premium': 1_200_000}
+    base_amount = base_amount_map.get(to_tier, 0)
+    aibain_amount = 40_000 if includes_aibain else 0
+    total_amount = base_amount + aibain_amount
+    # 표시용 문자열 ("90,000원" / "1,240,000원" 형식)
+    amount = f"{total_amount:,}원" if total_amount else None
+
+    # admin 패널에서 보이는 비고 (DB 신규 column 없이 admin_note 활용)
+    admin_note = 'AI Bain 알파 스캐너 포함 요청 (+40,000원/30일)' if includes_aibain else None
 
     sub_request = SubscriptionRequest(
         user_id=user.id,
@@ -389,23 +400,27 @@ def request_subscription():
         to_tier=to_tier,
         depositor_name=depositor_name,
         amount=amount,
+        admin_note=admin_note,
     )
     db.session.add(sub_request)
     db.session.commit()
 
     # 관리자 텔레그램 + 인앱 알림
     tier_label = {'pro': 'Pro', 'premium': 'Ultra Pro'}.get(to_tier, to_tier)
+    full_label = f"{tier_label} + AI Bain" if includes_aibain else tier_label
     _notify_admin_telegram(
         f"💳 <b>구독 업그레이드 요청</b>\n\n"
         f"👤 {user.name} ({user.email})\n"
-        f"📋 {user.tier or 'none'} → {to_tier}\n"
-        f"💰 {amount or '-'}"
+        f"📋 {user.tier or 'none'} → {full_label}\n"
+        f"💰 {amount or '-'}" +
+        (f"\n🤖 <b>AI Bain 알파 스캐너 포함</b> (+40,000원/30일)" if includes_aibain else '')
     )
     from app.routes.admin import create_admin_notification
     create_admin_notification(
         'subscription_request',
-        f'구독 요청: {tier_label}',
-        f'{user.name} ({user.email}) — {user.tier or "none"} → {to_tier}',
+        f'구독 요청: {full_label}',
+        f'{user.name} ({user.email}) — {user.tier or "none"} → {to_tier}'
+        + (' [AI Bain 포함]' if includes_aibain else ''),
         related_id=sub_request.id,
     )
 

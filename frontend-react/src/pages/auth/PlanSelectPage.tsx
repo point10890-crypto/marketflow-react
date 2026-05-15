@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import KakaoSupportLink from '@/components/ui/KakaoSupportLink';
+import { PLAN_PAYMENT_META, planToQuery, type BillingPlan } from '@/lib/billingInfo';
 
 /**
  * 플랜 선택 페이지 — 신규 가입자 및 만료 재구독 공용.
@@ -48,8 +49,8 @@ export default function PlanSelectPage() {
     // 만료된 user 의 expired_at 표시용
     const expiredAt = user?.pro_expires_at ? new Date(user.pro_expires_at) : null;
 
-    const select = (plan: 'pro' | 'premium') => {
-        navigate(`/payment-request?plan=${plan}`);
+    const select = (plan: BillingPlan) => {
+        navigate(`/payment-request?${planToQuery(plan)}`);
     };
 
     return (
@@ -101,59 +102,11 @@ export default function PlanSelectPage() {
                 )}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-4xl w-full">
-                {/* Pro */}
-                <button
-                    type="button"
-                    onClick={() => select('pro')}
-                    className="p-6 rounded-2xl border border-amber-500/30 bg-[#1c1c1e] ring-1 ring-amber-500/20 hover:ring-2 hover:ring-amber-500/50 transition-all text-left relative"
-                >
-                    <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-amber-500/10 text-amber-400 text-xs font-bold mb-3">
-                        <i className="fas fa-crown" /> 추천
-                    </div>
-                    <h3 className="text-xl font-bold text-white mb-1">Pro</h3>
-                    <div className="flex items-baseline gap-1 mb-1">
-                        <span className="text-3xl font-black text-white">50,000</span>
-                        <span className="text-gray-400">원/30일</span>
-                    </div>
-                    <p className="text-amber-400/70 text-xs font-semibold mb-5">월 갱신 · 30일 이용</p>
-                    <ul className="space-y-2 mb-6 text-sm text-gray-300">
-                        <li className="flex items-start gap-2"><i className="fas fa-check text-amber-400 text-xs mt-1" />모든 기능 풀 접근</li>
-                        <li className="flex items-start gap-2"><i className="fas fa-check text-amber-400 text-xs mt-1" />KR / US / Crypto 시그널</li>
-                        <li className="flex items-start gap-2"><i className="fas fa-check text-amber-400 text-xs mt-1" />AI 챗봇 + 차트 분석</li>
-                        <li className="flex items-start gap-2"><i className="fas fa-check text-amber-400 text-xs mt-1" />텔레그램 실시간 알림</li>
-                    </ul>
-                    <div className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-black font-bold text-center text-sm">
-                        Pro 선택 →
-                    </div>
-                </button>
-
-                {/* Ultra Pro */}
-                <button
-                    type="button"
-                    onClick={() => select('premium')}
-                    className="p-6 rounded-2xl border border-purple-500/30 bg-[#1c1c1e] ring-1 ring-purple-500/20 hover:ring-2 hover:ring-purple-500/50 transition-all text-left relative overflow-hidden"
-                >
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-purple-500/10 to-transparent rounded-bl-full pointer-events-none" />
-                    <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-purple-500/10 text-purple-400 text-xs font-bold mb-3">
-                        <i className="fas fa-gem" /> 평생 이용
-                    </div>
-                    <h3 className="text-xl font-bold text-white mb-1">Ultra Pro</h3>
-                    <div className="flex items-baseline gap-1 mb-1">
-                        <span className="text-3xl font-black text-white">1,200,000</span>
-                        <span className="text-gray-400">원</span>
-                    </div>
-                    <p className="text-purple-400/70 text-xs font-semibold mb-5">1회 결제 · 무기한 이용</p>
-                    <ul className="space-y-2 mb-6 text-sm text-gray-300">
-                        <li className="flex items-start gap-2"><i className="fas fa-check text-purple-400 text-xs mt-1" />Pro 전체 기능 포함</li>
-                        <li className="flex items-start gap-2"><i className="fas fa-infinity text-purple-400 text-xs mt-1" />평생 무기한 이용</li>
-                        <li className="flex items-start gap-2"><i className="fas fa-sync text-purple-400 text-xs mt-1" />향후 업데이트 전부 포함</li>
-                        <li className="flex items-start gap-2"><i className="fas fa-headset text-purple-400 text-xs mt-1" />우선 고객 지원</li>
-                    </ul>
-                    <div className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-500 to-fuchsia-500 text-white font-bold text-center text-sm">
-                        Ultra Pro 선택 →
-                    </div>
-                </button>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 max-w-4xl w-full">
+                <PlanCard plan="pro" onSelect={select} badgeIcon="fa-crown" badgeText="기본" />
+                <PlanCard plan="pro_aibain" onSelect={select} badgeIcon="fa-robot" badgeText="추천" highlighted />
+                <PlanCard plan="premium" onSelect={select} badgeIcon="fa-gem" badgeText="평생 이용" />
+                <PlanCard plan="premium_aibain" onSelect={select} badgeIcon="fa-crown" badgeText="평생 + AI Bain" />
             </div>
 
             <p className="text-gray-500 text-xs mt-8 text-center max-w-md">
@@ -186,5 +139,118 @@ export default function PlanSelectPage() {
                 )}
             </div>
         </div>
+    );
+}
+
+// ── PlanCard component ─────────────────────────────────────────────────────
+
+interface PlanCardProps {
+    plan: BillingPlan;
+    onSelect: (plan: BillingPlan) => void;
+    badgeIcon: string;
+    badgeText: string;
+    highlighted?: boolean;
+}
+
+const COLOR_STYLES: Record<NonNullable<PlanCardProps['plan']>, {
+    border: string;
+    ring: string;
+    hoverRing: string;
+    badgeBg: string;
+    badgeText: string;
+    accent: string;
+    btn: string;
+    btnText: string;
+    bgOverlay: string;
+}> = {
+    pro: {
+        border: 'border-amber-500/30',
+        ring: 'ring-amber-500/20',
+        hoverRing: 'hover:ring-amber-500/50',
+        badgeBg: 'bg-amber-500/10',
+        badgeText: 'text-amber-400',
+        accent: 'text-amber-400',
+        btn: 'from-amber-500 to-orange-500',
+        btnText: 'text-black',
+        bgOverlay: 'from-amber-500/10 to-transparent',
+    },
+    pro_aibain: {
+        border: 'border-cyan-500/40',
+        ring: 'ring-cyan-500/25',
+        hoverRing: 'hover:ring-cyan-500/60',
+        badgeBg: 'bg-cyan-500/10',
+        badgeText: 'text-cyan-300',
+        accent: 'text-cyan-300',
+        btn: 'from-cyan-500 to-sky-500',
+        btnText: 'text-black',
+        bgOverlay: 'from-cyan-500/10 to-transparent',
+    },
+    premium: {
+        border: 'border-purple-500/30',
+        ring: 'ring-purple-500/20',
+        hoverRing: 'hover:ring-purple-500/50',
+        badgeBg: 'bg-purple-500/10',
+        badgeText: 'text-purple-400',
+        accent: 'text-purple-400',
+        btn: 'from-purple-500 to-fuchsia-500',
+        btnText: 'text-white',
+        bgOverlay: 'from-purple-500/10 to-transparent',
+    },
+    premium_aibain: {
+        border: 'border-fuchsia-500/40',
+        ring: 'ring-fuchsia-500/25',
+        hoverRing: 'hover:ring-fuchsia-500/60',
+        badgeBg: 'bg-fuchsia-500/10',
+        badgeText: 'text-fuchsia-300',
+        accent: 'text-fuchsia-300',
+        btn: 'from-fuchsia-500 via-purple-500 to-cyan-500',
+        btnText: 'text-white',
+        bgOverlay: 'from-fuchsia-500/10 to-transparent',
+    },
+};
+
+function PlanCard({ plan, onSelect, badgeIcon, badgeText, highlighted }: PlanCardProps) {
+    const meta = PLAN_PAYMENT_META[plan];
+    const c = COLOR_STYLES[plan];
+
+    // 가격 표시 분리: AI Bain 포함 시 베이스/AI Bain 분리 표기
+    const priceMajor = meta.amountNumber.toLocaleString();
+    const priceUnit = plan === 'premium' ? '원' : '원/30일';
+
+    return (
+        <button
+            type="button"
+            onClick={() => onSelect(plan)}
+            className={`p-6 rounded-2xl border ${c.border} bg-[#1c1c1e] ring-1 ${c.ring} hover:ring-2 ${c.hoverRing} transition-all text-left relative overflow-hidden ${highlighted ? 'sm:scale-[1.02]' : ''}`}
+        >
+            <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl ${c.bgOverlay} rounded-bl-full pointer-events-none`} />
+
+            <div className={`inline-flex items-center gap-1 px-3 py-1 rounded-full ${c.badgeBg} ${c.badgeText} text-xs font-bold mb-3`}>
+                <i className={`fas ${badgeIcon}`} /> {badgeText}
+            </div>
+            <h3 className="text-xl font-bold text-white mb-1">{meta.label}</h3>
+            <div className="flex items-baseline gap-1 mb-1">
+                <span className="text-3xl font-black text-white">{priceMajor}</span>
+                <span className="text-gray-400">{priceUnit}</span>
+            </div>
+            {meta.includesAibain && meta.baseAmount && meta.aibainAmount ? (
+                <p className={`${c.accent} text-[11px] font-semibold mb-5 leading-tight`}>
+                    {meta.baseAmount} + <strong className="text-white">{meta.aibainAmount}</strong>
+                </p>
+            ) : (
+                <p className={`${c.accent}/70 text-xs font-semibold mb-5`}>{meta.description}</p>
+            )}
+            <ul className="space-y-2 mb-6 text-sm text-gray-300">
+                {meta.features.map((feature, i) => (
+                    <li key={i} className="flex items-start gap-2">
+                        <i className={`fas fa-check ${c.accent} text-xs mt-1`} />
+                        {feature}
+                    </li>
+                ))}
+            </ul>
+            <div className={`w-full py-3 rounded-xl bg-gradient-to-r ${c.btn} ${c.btnText} font-bold text-center text-sm`}>
+                {meta.label} 선택 →
+            </div>
+        </button>
     );
 }
