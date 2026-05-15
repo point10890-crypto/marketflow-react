@@ -289,6 +289,65 @@ export default function AccountPage() {
                 </div>
             )}
 
+            {/* AI Bain 알파 스캐너 (애드온) 상태 — 활성 Pro/Premium 회원에게만 노출 */}
+            {isPro && (
+                <div className="p-6 rounded-2xl border border-cyan-500/20 bg-[#13151f]">
+                    <div className="flex items-center gap-3 mb-4">
+                        <div className="w-10 h-10 rounded-xl bg-cyan-500/10 flex items-center justify-center">
+                            <i className="fas fa-robot text-cyan-300" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2 flex-wrap">
+                                <h3 className="text-white font-bold">AI Bain 알파 스캐너</h3>
+                                {user.is_aibain_active ? (
+                                    <span className="text-[10px] font-bold tracking-wider px-2 py-0.5 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-500/25 uppercase">
+                                        <i className="fas fa-bolt text-[9px] mr-0.5" /> 활성
+                                    </span>
+                                ) : (
+                                    <span className="text-[10px] font-bold tracking-wider px-2 py-0.5 rounded-full bg-gray-500/15 text-gray-400 border border-gray-500/25 uppercase">
+                                        미활성
+                                    </span>
+                                )}
+                            </div>
+                            {user.is_aibain_active && user.aibain_expires_at && (
+                                <p className="text-cyan-300/80 text-xs font-semibold mt-1">
+                                    만료일: {new Date(user.aibain_expires_at).toLocaleDateString('ko-KR')}
+                                    {typeof user.aibain_days_remaining === 'number' && (
+                                        <span className={`ml-2 ${user.aibain_days_remaining <= 3 ? 'text-red-400' : user.aibain_days_remaining <= 7 ? 'text-yellow-400' : ''}`}>
+                                            (D-{user.aibain_days_remaining})
+                                        </span>
+                                    )}
+                                </p>
+                            )}
+                            {user.is_aibain_active && !user.aibain_expires_at && (
+                                <p className="text-cyan-300/80 text-xs font-semibold mt-1">무기한</p>
+                            )}
+                            {!user.is_aibain_active && (
+                                <p className="text-gray-500 text-xs mt-1">MCP TOP 3 · 신규 5종 스캐너 · 그래프RAG 분석</p>
+                            )}
+                        </div>
+                    </div>
+
+                    {user.is_aibain_active ? (
+                        <Link
+                            to="/dashboard/ai-bain"
+                            className="w-full py-3 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/15 text-cyan-300 font-bold text-center text-sm transition-all flex items-center justify-center gap-2"
+                        >
+                            <i className="fas fa-arrow-right text-xs" />
+                            AI Bain 콘솔 열기
+                        </Link>
+                    ) : (
+                        <Link
+                            to="/dashboard/ai-bain"
+                            className="w-full py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-sky-500 text-black font-bold text-center text-sm transition-all flex items-center justify-center gap-2"
+                        >
+                            <i className="fas fa-paper-plane text-xs" />
+                            AI Bain 구독 신청 (+40,000원/30일)
+                        </Link>
+                    )}
+                </div>
+            )}
+
             {/* Subscription Action */}
             {!isPro && (
                 <div className="p-6 rounded-2xl border border-amber-500/20 bg-[#13151f]">
