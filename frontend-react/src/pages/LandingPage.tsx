@@ -458,8 +458,8 @@ export default function LandingPage() {
                             </Link>
                         </div>
 
-                        <p className="text-gray-600 text-xs mt-6">
-                            이미 계정이 있으신가요? <Link to="/login" className="text-amber-400/70 hover:text-amber-400">로그인</Link>
+                        <p className="text-gray-400 text-base sm:text-lg mt-6">
+                            이미 계정이 있으신가요? <Link to="/login" className="text-amber-400 hover:text-amber-300 font-semibold">로그인</Link>
                         </p>
                     </div>
                 </section>
