@@ -29,6 +29,7 @@ const UsOverviewPage = lazy(() => import('@/pages/dashboard/us/UsOverviewPage'))
 const UsVcpPage = lazy(() => import('@/pages/dashboard/us/UsVcpPage'));
 const UsEtfPage = lazy(() => import('@/pages/dashboard/us/UsEtfPage'));
 const UsAIChartPage = lazy(() => import('@/pages/dashboard/us/UsAIChartPage'));
+const AiBainPage = lazy(() => import('@/pages/dashboard/AiBainPage'));
 const CryptoOverviewPage = lazy(() => import('@/pages/dashboard/crypto/CryptoOverviewPage'));
 const CryptoSignalsPage = lazy(() => import('@/pages/dashboard/crypto/CryptoSignalsPage'));
 const StockAnalyzerPage = lazy(() => import('@/pages/dashboard/StockAnalyzerPage'));
@@ -70,7 +71,7 @@ function ApprovedGuard({ children }: { children: React.ReactNode }) {
     const next = `${location.pathname}${location.search || ''}`;
     if (loading) return <LoadingFallback />;
     if (!user) return <Navigate to={`/login?next=${encodeURIComponent(next)}`} replace />;
-    if (user.status === 'unknown') return <LoadingFallback />;
+    if (user.status === 'unknown') return <Navigate to={`/login?next=${encodeURIComponent(next)}`} replace />;
     if (user.role === 'admin') return <>{children}</>;
     // Pro 만료 → 계정 정지 상태. 재구독 페이지로 안내.
     if (user.status === 'expired' || user.is_pro_expired) {
@@ -87,7 +88,7 @@ function ProGuard({ children }: { children: React.ReactNode }) {
     const next = `${location.pathname}${location.search || ''}`;
     if (loading) return <LoadingFallback />;
     if (!user) return <Navigate to={`/login?next=${encodeURIComponent(next)}`} replace />;
-    if (user.status === 'unknown') return <LoadingFallback />;
+    if (user.status === 'unknown') return <Navigate to={`/login?next=${encodeURIComponent(next)}`} replace />;
     if (user.role === 'admin') return <>{children}</>;
     // 만료 우선 — 계정 정지 상태로 간주 → 재구독
     if (user.status === 'expired' || user.is_pro_expired) {
@@ -106,7 +107,7 @@ function AdminGuard({ children }: { children: React.ReactNode }) {
     const next = `${location.pathname}${location.search || ''}`;
     if (loading) return <LoadingFallback />;
     if (!user) return <Navigate to={`/login?next=${encodeURIComponent(next)}`} replace />;
-    if (user.status === 'unknown') return <LoadingFallback />;
+    if (user.status === 'unknown') return <Navigate to={`/login?next=${encodeURIComponent(next)}`} replace />;
     if (user.role !== 'admin') return <Navigate to="/dashboard" replace />;
     return <>{children}</>;
 }
@@ -177,6 +178,7 @@ export default function App() {
                         <Route path="us/vcp" element={<ProGuard><Suspense fallback={<LoadingFallback />}><UsVcpPage /></Suspense></ProGuard>} />
                         <Route path="us/etf" element={<ProGuard><Suspense fallback={<LoadingFallback />}><UsEtfPage /></Suspense></ProGuard>} />
                         <Route path="us/ai-chart" element={<ProGuard><Suspense fallback={<LoadingFallback />}><UsAIChartPage /></Suspense></ProGuard>} />
+                        <Route path="ai-bain" element={<ProGuard><Suspense fallback={<LoadingFallback />}><AiBainPage /></Suspense></ProGuard>} />
                         <Route path="crypto" element={<ProGuard><Suspense fallback={<LoadingFallback />}><CryptoOverviewPage /></Suspense></ProGuard>} />
                         <Route path="crypto/signals" element={<ProGuard><Suspense fallback={<LoadingFallback />}><CryptoSignalsPage /></Suspense></ProGuard>} />
                         <Route path="stock-analyzer" element={<ProGuard><Suspense fallback={<LoadingFallback />}><StockAnalyzerPage /></Suspense></ProGuard>} />
@@ -184,7 +186,7 @@ export default function App() {
                         <Route path="briefing" element={<ProGuard><Suspense fallback={<LoadingFallback />}><BriefingPortalPage /></Suspense></ProGuard>} />
                         <Route path="community" element={<Suspense fallback={<LoadingFallback />}><CommunityPage /></Suspense>} />
                         <Route path="community/formula-market" element={<Suspense fallback={<LoadingFallback />}><FormulaListPage /></Suspense>} />
-                        <Route path="community/formula-market/purchases" element={<Suspense fallback={<LoadingFallback />}><PurchaseAdminPage /></Suspense>} />
+                        <Route path="community/formula-market/purchases" element={<AdminGuard><Suspense fallback={<LoadingFallback />}><PurchaseAdminPage /></Suspense></AdminGuard>} />
                         <Route path="community/formula-market/write" element={<Suspense fallback={<LoadingFallback />}><FormulaWritePage /></Suspense>} />
                         <Route path="community/post/:postId" element={<Suspense fallback={<LoadingFallback />}><PostDetailPage /></Suspense>} />
                         <Route path="community/post/:postId/edit" element={<Suspense fallback={<LoadingFallback />}><PostWritePage /></Suspense>} />

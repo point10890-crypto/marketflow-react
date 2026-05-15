@@ -28,6 +28,7 @@ const globalTools: NavItem[] = [
     { name: 'Briefing', href: '/dashboard/briefing', icon: 'fa-newspaper', color: 'text-amber-400', bg: 'from-amber-500/15 to-amber-600/5' },
     { name: 'VCP Enhanced', href: '/dashboard/vcp-enhanced', icon: 'fa-bolt', color: 'text-yellow-400', bg: 'from-yellow-500/15 to-yellow-600/5' },
     { name: 'W Pattern', href: '/dashboard/wave', icon: 'fa-wave-square', color: 'text-pink-400', bg: 'from-pink-500/15 to-pink-600/5', glow: true, badge: 'AI' },
+    { name: 'AI Bain', href: '/dashboard/ai-bain', icon: 'fa-robot', color: 'text-cyan-400', bg: 'from-cyan-500/15 to-cyan-600/5', badge: 'NEW' },
 ];
 
 // 시장별 카드
@@ -145,7 +146,14 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                                 )}
                                 <span>{item.name}</span>
                                 {item.badge && (
-                                    <span className="ml-auto text-[8px] font-bold tracking-wider px-1.5 py-0.5 rounded-full bg-pink-500/15 text-pink-400 border border-pink-500/20 animate-pulse" style={{ animationDuration: '2s' }}>
+                                    <span
+                                        className={`ml-auto text-[8px] font-bold tracking-wider px-1.5 py-0.5 rounded-full border animate-pulse ${
+                                            item.badge === 'NEW'
+                                                ? 'bg-cyan-500/15 text-cyan-400 border-cyan-500/25'
+                                                : 'bg-pink-500/15 text-pink-400 border-pink-500/20'
+                                        }`}
+                                        style={{ animationDuration: '2s' }}
+                                    >
                                         {item.badge}
                                     </span>
                                 )}

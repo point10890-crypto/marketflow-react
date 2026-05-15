@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import { usAPI, krAPI, cryptoAPI, jonggaAPI, waveAPI, briefingAPI, commonAPI, communityAPI, type AIBriefing, type MarketIndexItem, type KRAIChartAnalysisResponse, type USAIChartAnalysisResponse, type CommunitySummary } from '@/lib/api';
 import { usePullToRefreshRegister } from '@/components/layout/PullToRefreshProvider';
+import { useAuth } from '@/contexts/AuthContext';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -333,6 +334,7 @@ function LiveDot() {
 
 export default function DashboardClient({ initialData }: { initialData: InitialData }) {
     const navigate = useNavigate();
+    const { user } = useAuth();
     const [briefing, setBriefing] = useState<any>(initialData.briefing);
     const [krGate, setKrGate] = useState<any>(initialData.krGate);
     const [cryptoDom, setCryptoDom] = useState<any>(initialData.cryptoDom);
@@ -943,6 +945,80 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                     })()}
                 </Link>
             )}
+
+            {/* ── AI Bain 알파 스캐너 Section (Pro + AI Bain 구독자 진입점) ── */}
+            {(() => {
+                const tier = user?.tier ?? null;
+                const role = user?.role ?? 'user';
+                const isAdmin = role === 'admin';
+                const hasProAccess = isAdmin || tier === 'pro' || tier === 'premium';
+                return (
+                    <Link
+                        to="/dashboard/ai-bain"
+                        className="group relative rounded-2xl border border-cyan-500/20 bg-[#13151f] p-4 overflow-hidden transition-all duration-200 active:scale-[0.98] hover:border-cyan-500/40"
+                    >
+                        <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full blur-3xl opacity-[0.08] group-hover:opacity-[0.14] transition-opacity bg-gradient-to-br from-cyan-400 to-sky-500" />
+
+                        <div className="relative flex items-center justify-between mb-3">
+                            <div className="flex items-center gap-2.5">
+                                <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-cyan-500/10 border border-cyan-500/25">
+                                    <i className="fas fa-robot text-lg text-cyan-400" />
+                                </div>
+                                <div>
+                                    <div className="flex items-center gap-1.5">
+                                        <h3 className="text-base font-bold text-white">AI Bain 알파 스캐너</h3>
+                                        <span className="text-[8px] font-bold tracking-wider px-1.5 py-0.5 rounded-full bg-cyan-500/15 text-cyan-400 border border-cyan-500/25 animate-pulse" style={{ animationDuration: '2s' }}>
+                                            NEW
+                                        </span>
+                                    </div>
+                                    <p className="text-[10px] text-gray-500">MCP TOP 3 · 신규 5종 · 실시간 시그널</p>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                {hasProAccess ? (
+                                    <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-cyan-500/10 text-cyan-300 tabular-nums">
+                                        이용 가능
+                                    </span>
+                                ) : (
+                                    <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-300 border border-amber-500/20">
+                                        구독 필요
+                                    </span>
+                                )}
+                                <i className="fas fa-chevron-right text-[10px] text-gray-600 group-hover:text-cyan-400 transition-colors" />
+                            </div>
+                        </div>
+
+                        <div className="relative flex items-center gap-3 mb-3 flex-wrap">
+                            <span className="flex items-center gap-1.5 text-[10px] font-semibold">
+                                <span className="w-2 h-2 rounded-full bg-cyan-400" />
+                                <span className="text-gray-400">알파 스캐너</span>
+                            </span>
+                            <span className="flex items-center gap-1.5 text-[10px] font-semibold">
+                                <span className="w-2 h-2 rounded-full bg-sky-400" />
+                                <span className="text-gray-400">MCP 워크플로우</span>
+                            </span>
+                            <span className="flex items-center gap-1.5 text-[10px] font-semibold">
+                                <span className="w-2 h-2 rounded-full bg-blue-400" />
+                                <span className="text-gray-400">그래프RAG 분석</span>
+                            </span>
+                            <span className="ml-auto text-[9px] text-gray-600">90,000원/30일</span>
+                        </div>
+
+                        <div className="relative border-t border-white/[0.06] pt-2.5">
+                            <div className="flex items-center justify-between gap-3">
+                                <p className="text-xs text-gray-300 leading-relaxed">
+                                    {hasProAccess
+                                        ? '실시간 알파 스캐너 결과와 MCP TOP 3 이벤트를 한 곳에서 확인.'
+                                        : 'Pro + AI Bain 구독으로 실시간 시그널 서비스를 받아보세요.'}
+                                </p>
+                                <span className={`shrink-0 text-[11px] font-bold ${hasProAccess ? 'text-cyan-300' : 'text-amber-300'}`}>
+                                    {hasProAccess ? '전체 보기 →' : '구독 신청 →'}
+                                </span>
+                            </div>
+                        </div>
+                    </Link>
+                );
+            })()}
 
             {/* ── Market Cards Grid ── */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
