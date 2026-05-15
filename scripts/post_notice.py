@@ -168,12 +168,20 @@ def pin_notice(token: str, post_id: int):
 
 def main():
     parser = argparse.ArgumentParser(description="커뮤니티 글 자동 생성 (Gemini AI + Nano Banana 이미지)")
-    parser.add_argument('--topic', required=True, help='글 주제/키워드')
+    parser.add_argument('--topic', help='글 주제/키워드 (인라인)')
+    parser.add_argument('--topic-file', help='글 주제 UTF-8 파일 경로 (PowerShell 한글 인코딩 회피)')
     parser.add_argument('--board', default='notice', help='게시판 slug (default: notice)')
     parser.add_argument('--no-pin', action='store_true', help='공지 고정 안 함')
     parser.add_argument('--no-image', action='store_true', help='이미지 생성 안 함')
     parser.add_argument('--dry-run', action='store_true', help='생성만 하고 게시하지 않음')
     args = parser.parse_args()
+
+    # --topic-file 우선 (인코딩 안전 경로)
+    if args.topic_file:
+        from pathlib import Path as _P
+        args.topic = _P(args.topic_file).read_text(encoding='utf-8').strip()
+    if not args.topic:
+        parser.error('--topic 또는 --topic-file 필수')
 
     client = get_gemini_client()
 
