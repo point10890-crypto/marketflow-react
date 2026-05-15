@@ -516,6 +516,7 @@ def enable_aibain(user_id):
     before = {
         'aibain_enabled': user.aibain_enabled,
         'aibain_expires_at': user.aibain_expires_at.isoformat() if user.aibain_expires_at else None,
+        'pro_paused_at': user.pro_paused_at.isoformat() if user.pro_paused_at else None,
     }
 
     user.aibain_enabled = True
@@ -533,11 +534,16 @@ def enable_aibain(user_id):
                 base = existing
         user.aibain_expires_at = base + timedelta(days=days)
     user.aibain_alert_stage = None
+    # Pro 일시정지 트리거 (활성 Pro 회원이 처음 AI Bain 활성화될 때만)
+    if user.tier == 'pro' and user.pro_expires_at is not None and user.pro_paused_at is None:
+        user.pro_paused_at = datetime.now(timezone.utc)
+        user.pro_expiry_alert_stage = None
     db.session.commit()
 
     after = {
         'aibain_enabled': user.aibain_enabled,
         'aibain_expires_at': user.aibain_expires_at.isoformat() if user.aibain_expires_at else None,
+        'pro_paused_at': user.pro_paused_at.isoformat() if user.pro_paused_at else None,
     }
     _record_audit('enable_aibain', user, before, after, note=note)
     _notify_admin('AI Bain 활성화', user,
@@ -563,16 +569,35 @@ def revoke_aibain(user_id):
     before = {
         'aibain_enabled': user.aibain_enabled,
         'aibain_expires_at': user.aibain_expires_at.isoformat() if user.aibain_expires_at else None,
+        'pro_paused_at': user.pro_paused_at.isoformat() if user.pro_paused_at else None,
+        'pro_expires_at': user.pro_expires_at.isoformat() if user.pro_expires_at else None,
     }
 
     user.aibain_enabled = False
-    user.aibain_expires_at = datetime.now(timezone.utc) - timedelta(minutes=1)
+    now_utc = datetime.now(timezone.utc)
+    user.aibain_expires_at = now_utc - timedelta(minutes=1)
     user.aibain_alert_stage = 'expired'
+
+    # Pro 일시정지 재개 — paused 기간만큼 pro_expires_at 연장 후 NULL 처리
+    if user.pro_paused_at is not None and user.tier == 'pro' and user.pro_expires_at is not None:
+        paused_at = user.pro_paused_at
+        if paused_at.tzinfo is None:
+            paused_at = paused_at.replace(tzinfo=timezone.utc)
+        elapsed = now_utc - paused_at
+        if elapsed.total_seconds() > 0:
+            pro_expires = user.pro_expires_at
+            if pro_expires.tzinfo is None:
+                pro_expires = pro_expires.replace(tzinfo=timezone.utc)
+            user.pro_expires_at = pro_expires + elapsed
+        user.pro_paused_at = None
+        user.pro_expiry_alert_stage = None
     db.session.commit()
 
     after = {
         'aibain_enabled': user.aibain_enabled,
         'aibain_expires_at': user.aibain_expires_at.isoformat(),
+        'pro_paused_at': user.pro_paused_at.isoformat() if user.pro_paused_at else None,
+        'pro_expires_at': user.pro_expires_at.isoformat() if user.pro_expires_at else None,
     }
     _record_audit('revoke_aibain', user, before, after, note=note)
     _notify_admin('AI Bain 해제', user, f"사유: {note}")
@@ -940,12 +965,18 @@ def approve_subscription(req_id):
         }
 
         if is_aibain_addon:
-            # AI Bain 만 활성화 — 베이스 tier / pro_expires_at 그대로
+            # AI Bain 만 활성화 — 베이스 tier 그대로
             user.aibain_enabled = True
             user.aibain_expires_at = datetime.now(timezone.utc) + timedelta(days=30)
             user.aibain_alert_stage = None
+            # ── Pro 만료 카운터 일시정지 (Pro tier 회원만, premium 은 무기한이라 영향 X) ──
+            # Pro 회원이 AI Bain 추가 시 AI Bain 기간 동안 Pro 카운터 freeze.
+            # AI Bain 만료/해제 시 흐른 paused 기간만큼 pro_expires_at 연장 후 NULL 처리.
+            if user.tier == 'pro' and user.pro_expires_at is not None and user.pro_paused_at is None:
+                user.pro_paused_at = datetime.now(timezone.utc)
+                user.pro_expiry_alert_stage = None  # paused 동안 알림 보류
             audit_action = 'activate_aibain'
-            summary_text = f"AI Bain 활성화 (+30d, base={user.tier} 유지)"
+            summary_text = f"AI Bain 활성화 (+30d, base={user.tier} 유지, Pro 카운터 일시정지)"
         else:
             # 기존 동작 — 베이스 tier 변경
             user.tier = sub_req.to_tier

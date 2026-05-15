@@ -53,6 +53,9 @@ export interface AuthUserData {
     aibain_expires_at?: string | null;
     is_aibain_active?: boolean;
     aibain_days_remaining?: number | null;
+    // Pro 만료 일시정지 (AI Bain 활성 중)
+    pro_paused_at?: string | null;
+    is_pro_paused?: boolean;
 }
 
 export function saveUser(user: AuthUserData): void {

@@ -45,6 +45,11 @@ class User(db.Model):
     aibain_expires_at = db.Column(db.DateTime, nullable=True)
     # AI Bain 만료 D-3/D-1 알림 stage: 'd3' | 'd1' | 'expired' | NULL
     aibain_alert_stage = db.Column(db.String(10), nullable=True)
+    # Pro 만료 카운터 일시정지 시각 (AI Bain 활성 중 Pro 기간 보존용).
+    # 활성: AI Bain 활성화 시점부터 만료/해제 시까지 NULL 이 아님.
+    # AI Bain 만료/해제 시: now - pro_paused_at 만큼 pro_expires_at 연장 후 NULL 처리.
+    # pro_expiry_checker 는 paused 유저 skip (D-3/D-1/expired 알림 보류).
+    pro_paused_at = db.Column(db.DateTime, nullable=True)
 
     def set_password(self, password: str):
         self.password_hash = bcrypt.hashpw(
@@ -67,16 +72,28 @@ class User(db.Model):
 
     @property
     def is_pro_expired(self) -> bool:
-        """Pro 구독 만료 여부 (premium은 만료 없음)"""
+        """Pro 구독 만료 여부 (premium은 만료 없음).
+
+        AI Bain 활성 중 pro_paused_at 이 세팅된 paused 유저는 만료 처리 안 함.
+        AI Bain 만료/해제 시 expiry checker 가 paused 기간만큼 pro_expires_at 연장 후 paused 해제.
+        """
         if self.tier != 'pro':
             return False
         if self.pro_expires_at is None:
+            return False
+        # Pro 일시정지 중 (AI Bain 활성) → 만료 처리 안 함
+        if self.pro_paused_at is not None:
             return False
         # SQLAlchemy stores naive datetimes; normalize both sides to naive UTC for comparison.
         expires = self.pro_expires_at
         if expires.tzinfo is not None:
             expires = expires.astimezone(timezone.utc).replace(tzinfo=None)
         return datetime.utcnow() > expires
+
+    @property
+    def is_pro_paused(self) -> bool:
+        """Pro 만료 카운터가 AI Bain 활성으로 일시정지 상태인지."""
+        return self.pro_paused_at is not None
 
     @property
     def is_aibain_active(self) -> bool:
@@ -120,6 +137,9 @@ class User(db.Model):
             'aibain_expires_at': self.aibain_expires_at.isoformat() if self.aibain_expires_at else None,
             'is_aibain_active': self.is_aibain_active,
             'aibain_days_remaining': self.aibain_days_remaining,
+            # Pro 일시정지 상태 (AI Bain 활성 중 Pro 만료 카운터 보존)
+            'pro_paused_at': self.pro_paused_at.isoformat() if self.pro_paused_at else None,
+            'is_pro_paused': self.is_pro_paused,
         }
 
 

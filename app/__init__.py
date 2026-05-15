@@ -431,11 +431,12 @@ def _start_expiry_checker(app):
                     d3_window = now + timedelta(days=3)
                     d1_window = now + timedelta(days=1)
 
-                    # 1) 만료된 유저 처리
+                    # 1) 만료된 유저 처리 — paused 유저 skip (AI Bain 활성 중 일시정지)
                     expired = User.query.filter(
                         User.tier == 'pro',
                         User.pro_expires_at.isnot(None),
                         User.pro_expires_at < now,
+                        User.pro_paused_at.is_(None),
                     ).all()
                     for user in expired:
                         when = user.pro_expires_at.isoformat() if user.pro_expires_at else '?'
@@ -447,12 +448,13 @@ def _start_expiry_checker(app):
                         user.status = 'suspended'
                         user.pro_expiry_alert_stage = 'expired'
 
-                    # 2) D-1 임박 (이미 d1 알림 보낸 유저는 스킵)
+                    # 2) D-1 임박 (이미 d1 알림 보낸 유저는 스킵, paused 유저 skip)
                     d1_users = User.query.filter(
                         User.tier == 'pro',
                         User.pro_expires_at.isnot(None),
                         User.pro_expires_at >= now,
                         User.pro_expires_at < d1_window,
+                        User.pro_paused_at.is_(None),
                     ).all()
                     for user in d1_users:
                         if user.pro_expiry_alert_stage in ('d1', 'expired'):
@@ -460,12 +462,13 @@ def _start_expiry_checker(app):
                         _alert(user, 'd1', user.pro_expires_at.isoformat())
                         user.pro_expiry_alert_stage = 'd1'
 
-                    # 3) D-3 임박
+                    # 3) D-3 임박 (paused 유저 skip)
                     d3_users = User.query.filter(
                         User.tier == 'pro',
                         User.pro_expires_at.isnot(None),
                         User.pro_expires_at >= d1_window,
                         User.pro_expires_at < d3_window,
+                        User.pro_paused_at.is_(None),
                     ).all()
                     for user in d3_users:
                         if user.pro_expiry_alert_stage in ('d3', 'd1', 'expired'):
@@ -558,6 +561,23 @@ def _start_aibain_expiry_checker(app):
                         user.aibain_enabled = False
                         # aibain_expires_at 은 보존 (이력 추적용)
                         user.aibain_alert_stage = 'expired'
+                        # ── Pro 일시정지 재개 ─────────────────────────────────
+                        # AI Bain 만료 시점 = Pro 카운터 재개. paused 기간만큼 pro_expires_at 연장.
+                        # 정상 시나리오: aibain_expires_at - pro_paused_at = 30일 → Pro 30일 연장.
+                        # Pro 회원 only (premium 은 pro_expires_at=NULL 이라 영향 X)
+                        if user.pro_paused_at is not None and user.tier == 'pro' and user.pro_expires_at is not None:
+                            paused_at = user.pro_paused_at
+                            if paused_at.tzinfo is None:
+                                paused_at = paused_at.replace(tzinfo=timezone.utc)
+                            elapsed = now - paused_at
+                            if elapsed.total_seconds() > 0:
+                                pro_existing = user.pro_expires_at
+                                if pro_existing.tzinfo is None:
+                                    pro_existing = pro_existing.replace(tzinfo=timezone.utc)
+                                user.pro_expires_at = pro_existing + elapsed
+                                print(f"[AIbain expiry] {user.email}: pro_expires_at extended +{elapsed.days}d (paused → resumed)")
+                            user.pro_paused_at = None
+                            user.pro_expiry_alert_stage = None  # 새 만료일 기준으로 알림 재계산
 
                     # 2) D-1 임박 (이미 d1 알림 보낸 유저 스킵)
                     d1_users = User.query.filter(

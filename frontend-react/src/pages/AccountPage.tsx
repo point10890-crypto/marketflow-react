@@ -260,18 +260,32 @@ export default function AccountPage() {
                         <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${user.tier === 'premium' ? 'bg-purple-500/10' : 'bg-amber-500/10'}`}>
                             <i className={`fas fa-calendar-alt ${user.tier === 'premium' ? 'text-purple-400' : 'text-amber-400'}`} />
                         </div>
-                        <div>
-                            <h3 className="text-white font-bold">구독 기간</h3>
+                        <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2 flex-wrap">
+                                <h3 className="text-white font-bold">구독 기간</h3>
+                                {user.is_pro_paused && (
+                                    <span className="inline-flex items-center gap-1 text-[10px] font-bold tracking-wider px-2 py-0.5 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-500/25 uppercase">
+                                        <i className="fas fa-pause text-[8px]" />
+                                        일시정지
+                                    </span>
+                                )}
+                            </div>
                             {user.tier === 'premium' ? (
                                 <p className="text-purple-400 text-sm font-semibold">무기한 (평생 이용)</p>
                             ) : (
                                 <p className="text-amber-400 text-sm font-semibold">
                                     만료일: {getExpiryDate()}
-                                    {daysLeft !== null && (
+                                    {daysLeft !== null && !user.is_pro_paused && (
                                         <span className={`ml-2 ${daysLeft <= 7 ? 'text-red-400' : daysLeft <= 14 ? 'text-yellow-400' : ''}`}>
                                             (D-{daysLeft})
                                         </span>
                                     )}
+                                </p>
+                            )}
+                            {user.is_pro_paused && (
+                                <p className="text-cyan-300/80 text-[11px] mt-1 leading-relaxed">
+                                    <i className="fas fa-info-circle mr-1" />
+                                    AI Bain 활성 중 — Pro 만료 카운터 일시정지. AI Bain 만료 시 자동 재개되어 남은 기간 보존됩니다.
                                 </p>
                             )}
                         </div>
