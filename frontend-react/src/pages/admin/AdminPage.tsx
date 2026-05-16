@@ -506,8 +506,13 @@ function UsersTab({ apiToken, currentUserId }: { apiToken?: string; currentUserI
 
     const filtered = users.filter(u => {
         if (filterTier !== 'all') {
-            const tierKey = u.tier || 'none';
-            if (tierKey !== filterTier) return false;
+            // 'aibain' = AI Brain 활성 (베이스 tier 무관), 그 외는 베이스 tier 필터
+            if (filterTier === 'aibain') {
+                if (!u.is_aibain_active) return false;
+            } else {
+                const tierKey = u.tier || 'none';
+                if (tierKey !== filterTier) return false;
+            }
         }
         if (filterStatus !== 'all' && u.status !== filterStatus) return false;
         if (searchDebounced) {
@@ -519,6 +524,10 @@ function UsersTab({ apiToken, currentUserId }: { apiToken?: string; currentUserI
 
     const tierCount = (t: string) => users.filter(u => (u.tier || 'none') === t).length;
     const statusCount = (s: string) => users.filter(u => u.status === s).length;
+    const aibainActiveCount = users.filter(u => u.is_aibain_active).length;
+    const aibainExpiringSoonCount = users.filter(u =>
+        u.is_aibain_active && typeof u.aibain_days_remaining === 'number' && u.aibain_days_remaining <= 3
+    ).length;
 
     const formatExpiry = (iso: string | null): { label: string; cls: string } => {
         if (!iso) return { label: '—', cls: 'text-gray-600' };
@@ -563,6 +572,18 @@ function UsersTab({ apiToken, currentUserId }: { apiToken?: string; currentUserI
                     <span className="text-amber-400">{tierCount('pro')} Pro</span>
                     <span className="text-purple-400">{tierCount('premium')} Ultra</span>
                     <span>{tierCount('none')} No Tier</span>
+                    {aibainActiveCount > 0 && (
+                        <span
+                            className="text-cyan-300"
+                            title={aibainExpiringSoonCount > 0 ? `D-3 이내 만료 임박 ${aibainExpiringSoonCount}명` : 'AI Brain 활성 구독자'}
+                        >
+                            <i className="fas fa-robot text-[10px] mr-1" />
+                            {aibainActiveCount} AI Brain
+                            {aibainExpiringSoonCount > 0 && (
+                                <span className="ml-1 text-rose-300 font-bold">(D-3↓ {aibainExpiringSoonCount})</span>
+                            )}
+                        </span>
+                    )}
                     {statusCount('pending') > 0 && (
                         <span className="px-2 py-0.5 rounded bg-amber-500/15 text-amber-400 font-bold">
                             승인 대기 {statusCount('pending')}
@@ -736,9 +757,14 @@ function UsersTab({ apiToken, currentUserId }: { apiToken?: string; currentUserI
                     )}
                 </div>
                 <div className="flex gap-1">
-                    {[{ key: 'all', label: '전체' }, { key: 'premium', label: 'Ultra Pro' }, { key: 'pro', label: 'Pro' }, { key: 'none', label: 'No Tier' }].map(tab => (
+                    {[{ key: 'all', label: '전체' }, { key: 'premium', label: 'Ultra Pro' }, { key: 'pro', label: 'Pro' }, { key: 'aibain', label: 'AI Brain' }, { key: 'none', label: 'No Tier' }].map(tab => (
                         <button key={tab.key} onClick={() => setFilterTier(tab.key)}
-                            className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors ${filterTier === tab.key ? 'bg-white/10 text-white' : 'text-gray-500 hover:text-white hover:bg-white/5'}`}>
+                            className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
+                                filterTier === tab.key
+                                    ? (tab.key === 'aibain' ? 'bg-cyan-500/15 text-cyan-300' : 'bg-white/10 text-white')
+                                    : (tab.key === 'aibain' ? 'text-cyan-300/70 hover:text-cyan-300 hover:bg-cyan-500/10' : 'text-gray-500 hover:text-white hover:bg-white/5')
+                            }`}>
+                            {tab.key === 'aibain' && <i className="fas fa-robot text-[10px] mr-1" />}
                             {tab.label}
                         </button>
                     ))}
