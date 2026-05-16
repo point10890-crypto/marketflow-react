@@ -57,7 +57,7 @@ def status():
 
 
 @admin_mirofish_bp.route('/chat', methods=['POST'])
-@admin_required
+@admin_or_aibain_required
 def chat():
     """자연어 채팅 — Gemini function calling 으로 안전한 read-only MCP 도구 호출.
 
@@ -383,7 +383,7 @@ def get_run(run_id):
 
 
 @admin_mirofish_bp.route('/runs/<run_id>/graph', methods=['GET'])
-@admin_required
+@admin_or_aibain_required
 def get_graph(run_id):
     try:
         graph = mirofish.get_graph(run_id)
@@ -395,7 +395,7 @@ def get_graph(run_id):
 
 
 @admin_mirofish_bp.route('/runs/<run_id>/report', methods=['GET'])
-@admin_required
+@admin_or_aibain_required
 def get_report(run_id):
     try:
         report = mirofish.get_report(run_id)
@@ -427,7 +427,7 @@ def get_events(run_id):
 
 
 @admin_mirofish_bp.route('/runs/<run_id>/events/stream', methods=['GET'])
-@admin_required
+@admin_or_aibain_required
 def stream_events(run_id):
     """SSE stream — generator yields event-stream until idle timeout."""
     try:
@@ -451,19 +451,19 @@ def get_scanner_status():
 
 
 @admin_mirofish_bp.route('/scanner/diagnostics', methods=['GET'])
-@admin_required
+@admin_or_aibain_required
 def get_scanner_diagnostics():
     return jsonify(mirofish.get_scanner_diagnostics())
 
 
 @admin_mirofish_bp.route('/scanner/alerts/state', methods=['GET'])
-@admin_required
+@admin_or_aibain_required
 def get_scanner_alert_state():
     return jsonify(mirofish.read_scanner_alert_state())
 
 
 @admin_mirofish_bp.route('/scanner/monitor/status', methods=['GET'])
-@admin_required
+@admin_or_aibain_required
 def get_scanner_monitor_status():
     return jsonify(mirofish.read_scanner_monitor_state())
 
@@ -603,7 +603,7 @@ def check_scanner_alerts():
 
 
 @admin_mirofish_bp.route('/scanner/runs', methods=['GET'])
-@admin_required
+@admin_or_aibain_required
 def list_scanner_runs():
     try:
         limit = int(request.args.get('limit', 20))
@@ -633,7 +633,7 @@ def get_latest_scanner_run():
 
 
 @admin_mirofish_bp.route('/scanner/runs/<run_id>', methods=['GET'])
-@admin_required
+@admin_or_aibain_required
 def get_scanner_run(run_id):
     try:
         run = mirofish.read_scanner_run(run_id)
@@ -663,7 +663,7 @@ def get_workflow_status():
 
 
 @admin_mirofish_bp.route('/workflows', methods=['GET'])
-@admin_required
+@admin_or_aibain_required
 def list_workflows():
     try:
         limit = int(request.args.get('limit', 20))
@@ -683,7 +683,7 @@ def get_latest_workflow():
 
 
 @admin_mirofish_bp.route('/workflows/<workflow_id>', methods=['GET'])
-@admin_required
+@admin_or_aibain_required
 def get_workflow(workflow_id):
     try:
         workflow = mirofish.read_workflow(workflow_id)
@@ -695,7 +695,7 @@ def get_workflow(workflow_id):
 
 
 @admin_mirofish_bp.route('/workflows/<workflow_id>/share', methods=['GET'])
-@admin_required
+@admin_or_aibain_required
 def get_workflow_share(workflow_id):
     """카카오톡 공유용 페이로드 — Kakao SDK 'feed' 템플릿에 맞춘 형식.
 
@@ -734,7 +734,7 @@ def get_workflow_share(workflow_id):
 
 
 @admin_mirofish_bp.route('/workflows/<workflow_id>/outcomes', methods=['GET'])
-@admin_required
+@admin_or_aibain_required
 def get_workflow_outcomes(workflow_id):
     try:
         outcomes = mirofish.read_workflow_outcomes(workflow_id)
@@ -792,7 +792,7 @@ def autonomous_status():
 
 
 @admin_mirofish_bp.route('/autonomous/learning', methods=['GET'])
-@admin_required
+@admin_or_aibain_required
 def get_autonomous_learning():
     feedback = mirofish.read_learning_feedback()
     if feedback is None:
