@@ -26,30 +26,54 @@
         window.__pwaInstallPrompt = e;
       });
 
-      // v3.1.0 — Service Worker 영구 제거 + 캐시 정리 (1회 자동 reload)
+      // v4.0.0 — PWA installable SW 활성화.
+      // 과거 v3.1.0 kill-switch SW 사용자는 1회 unregister + cache 정리 후 신규 SW 등록.
+      // 신규 유저는 바로 SW 등록 → 브라우저 install prompt 자동 발동.
       (function() {
-        var CACHE_VER = 'v3.1.0';
-        var hadSW = false;
-        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-          hadSW = true;
+        var CACHE_VER = 'v4.0.0';
+        var prevVer = localStorage.getItem('cache_ver');
+        var hadOldSW = 'serviceWorker' in navigator && !!navigator.serviceWorker.controller;
+
+        function registerNewSW() {
+          if (!('serviceWorker' in navigator)) return;
+          navigator.serviceWorker.register('/sw.js')
+            .then(function(reg) {
+              // 업데이트 발견 시 자동으로 새 SW 로 교체
+              reg.addEventListener('updatefound', function() {
+                var nw = reg.installing;
+                if (nw) nw.addEventListener('statechange', function() {
+                  if (nw.state === 'installed' && navigator.serviceWorker.controller) {
+                    nw.postMessage({ type: 'SKIP_WAITING' });
+                  }
+                });
+              });
+            })
+            .catch(function() { /* ignore */ });
         }
-        if ('serviceWorker' in navigator) {
-          navigator.serviceWorker.getRegistrations().then(function(regs) {
-            regs.forEach(function(r) { r.unregister(); });
-          }).catch(function(){});
-        }
-        if ('caches' in window) {
-          caches.keys().then(function(names) {
-            names.forEach(function(name) { caches.delete(name); });
-          }).catch(function(){});
-        }
-        // 기존 SW가 통제 중이었으면 1회만 강제 새로고침해서 깨끗한 상태로 진입
-        if (hadSW && localStorage.getItem('cache_ver') !== CACHE_VER) {
+
+        if (prevVer !== CACHE_VER) {
+          // Migration: 이전 SW (있다면) unregister + caches 비우기 → reload (있을 때만)
+          if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(function(regs) {
+              regs.forEach(function(r) { r.unregister(); });
+            }).catch(function(){});
+          }
+          if ('caches' in window) {
+            caches.keys().then(function(names) {
+              names.forEach(function(name) { caches.delete(name); });
+            }).catch(function(){});
+          }
           localStorage.setItem('cache_ver', CACHE_VER);
-          setTimeout(function() { window.location.reload(); }, 100);
-        } else {
-          localStorage.setItem('cache_ver', CACHE_VER);
+          if (hadOldSW) {
+            // 기존 SW 가 통제 중이었으면 1회 reload → 다음 로드에서 신규 SW 등록
+            setTimeout(function() { window.location.reload(); }, 150);
+            return;
+          }
         }
+
+        // 정상 경로: 신규 SW 등록 (PWA install prompt 활성화)
+        if (document.readyState === 'complete') registerNewSW();
+        else window.addEventListener('load', registerNewSW);
       })();
     </script>
     <script type="module" src="/src/main.tsx"></script>
