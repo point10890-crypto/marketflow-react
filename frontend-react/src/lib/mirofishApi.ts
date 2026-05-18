@@ -196,6 +196,18 @@ export interface MiroFishRun {
     graph_artifact?: MiroFishGraphArtifact;
     report?: MiroFishReport;
     events?: MiroFishEvent[];
+    subscriber_policy?: {
+        role?: string;
+        daily_limit?: number;
+        used_today?: number;
+        remaining_today?: number;
+        concurrent_limit?: number;
+        active_count?: number;
+        cache_minutes?: number;
+        reused_cached_run?: boolean;
+        message?: string;
+        date_kst?: string;
+    };
 }
 
 export interface MiroFishStatus {

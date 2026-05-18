@@ -350,13 +350,26 @@ def search_targets():
 
 
 @admin_mirofish_bp.route('/runs', methods=['POST'])
-@admin_required
+@admin_or_aibain_required
 def create_run():
     try:
-        run = mirofish.create_run(request.get_json(silent=True) or {})
+        payload = request.get_json(silent=True) or {}
+        current_user = getattr(request, 'current_user', None)
+        if bool(getattr(current_user, 'is_admin', False)):
+            run = mirofish.create_run(payload)
+            return jsonify(run), 201
+
+        run = mirofish.create_aibain_run_for_user(
+            payload,
+            user_id=getattr(request, 'current_user_id', None),
+            user_email=getattr(request, 'current_user_email', None),
+        )
     except ValueError as exc:
         return jsonify({'error': str(exc)}), 400
-    return jsonify(run), 201
+    except mirofish.AIBainRunLimitError as exc:
+        return jsonify({'error': str(exc), 'subscriber_policy': exc.policy}), exc.status_code
+    status_code = 200 if (run.get('subscriber_policy') or {}).get('reused_cached_run') else 202
+    return jsonify(run), status_code
 
 
 @admin_mirofish_bp.route('/runs', methods=['GET'])

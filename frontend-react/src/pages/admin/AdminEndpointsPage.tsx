@@ -201,6 +201,19 @@ function formatMetricNumber(value: unknown, digits = 1): string {
     return numeric.toFixed(digits);
 }
 
+function formatSubscriberPolicy(policy?: MiroFishRun['subscriber_policy'] | null): string {
+    if (!policy) {
+        return 'AI Brain 구독자 분석은 일일 횟수 제한, 동시 실행 제한, 최근 동일 분석 재사용 캐시가 적용됩니다.';
+    }
+    const used = Number(policy.used_today ?? 0);
+    const daily = Number(policy.daily_limit ?? 0);
+    const active = Number(policy.active_count ?? 0);
+    const concurrent = Number(policy.concurrent_limit ?? 0);
+    const cacheMinutes = Number(policy.cache_minutes ?? 0);
+    const prefix = policy.reused_cached_run ? '최근 동일 분석 run을 재사용했습니다.' : '구독자 분석 run이 생성되었습니다.';
+    return `${prefix} 오늘 ${used}/${daily}회 사용, 실행 중 ${active}/${concurrent}개, 캐시 ${cacheMinutes}분.`;
+}
+
 function workflowOutcomeSummary(workflow?: MiroFishWorkflow | null): Record<string, any> {
     const direct = workflow?.outcome_summary;
     if (direct && typeof direct === 'object') return direct as Record<string, any>;
@@ -1717,6 +1730,7 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
     const [endpointState, setEndpointState] = useState<Record<EndpointKey, EndpointStatus>>(() => Object.fromEntries(endpointDefinitions.map((item) => [item.key, 'idle'])) as Record<EndpointKey, EndpointStatus>);
     const [apiState, setApiState] = useState<ApiState>('checking');
     const [errorText, setErrorText] = useState<string | null>(null);
+    const [subscriberPolicy, setSubscriberPolicy] = useState<MiroFishRun['subscriber_policy'] | null>(null);
     const [activeRunId, setActiveRunId] = useState<string | null>(null);
     const lastStartAtRef = useRef(0);
     const targetValueRef = useRef(defaultTarget);
@@ -2129,6 +2143,7 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
         if (apiState === 'running') return;
         const nextTarget = (targetOverride ?? targetValueRef.current ?? target).trim() || defaultTarget;
         setErrorText(null);
+        setSubscriberPolicy(null);
         setIsAnalyzing(true);
         setApiState('running');
         setActiveRunId(null);
@@ -2142,6 +2157,7 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
         try {
             const data = await mirofishApi.startRun({ target: nextTarget, agent_count: agentCount, mode: 'full', async: true });
             const baseRun = { ...data, target: data.target || nextTarget, display_name: data.display_name || data.target || nextTarget };
+            setSubscriberPolicy(baseRun.subscriber_policy || null);
             setRun(baseRun);
             setPhase(phaseFromRunState(baseRun));
             markEndpoint('createRun', 'ok');
@@ -2661,6 +2677,12 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
                             </button>
                         </div>
                     </form>
+
+                    {subscriberMode && (
+                        <div className="mt-3 max-w-4xl rounded-lg border border-cyan-300/20 bg-cyan-300/10 px-4 py-2 text-xs font-bold text-cyan-50">
+                            {formatSubscriberPolicy(subscriberPolicy)}
+                        </div>
+                    )}
 
                     {targetCandidates.length > 0 && (
                         <div className="mt-2 max-w-4xl overflow-hidden rounded-xl border border-white/15 bg-slate-950/82 text-sm shadow-2xl shadow-black/25 backdrop-blur">
