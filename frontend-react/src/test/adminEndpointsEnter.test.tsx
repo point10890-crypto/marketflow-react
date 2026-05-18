@@ -590,8 +590,9 @@ describe('AdminEndpointsPage analysis start input', () => {
     expect((await screen.findAllByText(/Startup Task/i)).length).toBeGreaterThan(0);
     expect((await screen.findAllByText(/Operating Workflow/i)).length).toBeGreaterThan(0);
     expect((await screen.findAllByText(/MCP Top3/i)).length).toBeGreaterThan(0);
-    expect(await screen.findByText(/TradingView charts/i)).toBeTruthy();
-    expect(mockApi.getPriceChart).toHaveBeenCalledWith('000001', 120);
+    expect(await screen.findByText(/NAVER CHARTS/i)).toBeTruthy();
+    expect(await screen.findByText(/TOP3 차트 확인/i)).toBeTruthy();
+    expect(mockApi.getPriceChart).not.toHaveBeenCalled();
     expect((await screen.findAllByText(/Alpha Memory/i)).length).toBeGreaterThan(0);
     expect((await screen.findAllByText(/성과검증 보드/i)).length).toBeGreaterThan(0);
     expect((await screen.findAllByText(/Hit vs Miss Score Profile/i)).length).toBeGreaterThan(0);

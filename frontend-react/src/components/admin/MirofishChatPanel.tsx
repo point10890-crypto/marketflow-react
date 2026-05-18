@@ -5,7 +5,7 @@
  *   <MirofishChatPanel />                    // floating FAB
  *   <MirofishChatPanel variant="inline" />   // 항상 펼침
  *
- * - 백엔드 /api/admin/mirofish/chat 호출 (Gemini function calling)
+ * - 백엔드 /api/admin/mirofish/chat 호출 (fixed 6-Agent prompt + Gemini function calling)
  * - 안전한 read-only MCP 도구 자동 호출
  * - 히스토리 최근 10턴 유지
  * - Anthropic warm dark + orange 액센트
@@ -28,11 +28,12 @@ interface ChatMessage {
 }
 
 const SUGGESTIONS = [
-    '삼성전자 매수가 목표가 손절가 알려줘',
+    '삼성전자 6-Agent 통합 분석',
     '이번 TOP 3 알려줘',
-    'SK하이닉스 추세 분석',
+    'SK하이닉스 수급과 파생 충돌 분석',
     '지금 한국 장 열려 있어?',
     '카카오 매수 진입가 분석',
+    '고정 시스템 프롬프트 상태',
     'TOP 1 카톡 공유 정보 줘',
 ];
 
@@ -231,7 +232,7 @@ export default function MirofishChatPanel({
                         </div>
                         <div>
                             <h2 className="font-serif text-lg font-medium text-anthropic-cream">MiroFish 어시스턴트</h2>
-                            <p className="text-xs text-anthropic-darkMuted">자연어로 분석 데이터 물어보기 · read-only · Gemini function calling</p>
+                            <p className="text-xs text-anthropic-darkMuted">6-Agent 고정 프롬프트 · read-only MCP · Gemini function calling</p>
                         </div>
                     </div>
                     <button
@@ -336,7 +337,7 @@ export default function MirofishChatPanel({
                             </button>
                         </div>
                         <div className="mt-1.5 text-[10px] text-anthropic-darkMuted">
-                            Gemini function calling · read-only MCP 도구만 호출 · 대화 기록 로컬 저장
+                            6-Agent 고정 프롬프트 · read-only MCP 도구만 호출 · 대화 기록 로컬 저장
                         </div>
                     </div>
                 </div>
@@ -464,7 +465,7 @@ export default function MirofishChatPanel({
                             </button>
                         </div>
                         <div className="mt-1.5 text-[10px] text-anthropic-darkMuted">
-                            Gemini function calling · read-only MCP 도구만 호출 · 대화 기록 로컬 저장
+                            6-Agent 고정 프롬프트 · read-only MCP 도구만 호출 · 대화 기록 로컬 저장
                         </div>
                     </div>
                 </div>

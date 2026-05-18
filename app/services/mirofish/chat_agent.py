@@ -21,12 +21,27 @@ import os
 from typing import Any
 
 from app.services.mirofish import autonomous_mcp, live_data, technical_analysis, workflow
+from app.services.mirofish.llm_system_prompt import (
+    SYSTEM_INSTRUCTION,
+    SYSTEM_PROMPT_SHA256,
+    SYSTEM_PROMPT_VERSION,
+    get_system_prompt_status,
+)
 
 logger = logging.getLogger(__name__)
 
 MAX_ITERATIONS = 5
-MAX_OUTPUT_TOKENS = 2048
 MODEL_DEFAULT = 'gemini-2.5-flash'
+
+
+def _int_env(name: str, default: int) -> int:
+    try:
+        return int(os.getenv(name, str(default)))
+    except (TypeError, ValueError):
+        return default
+
+
+MAX_OUTPUT_TOKENS = max(2048, _int_env('MIROFISH_CHAT_MAX_OUTPUT_TOKENS', 4096))
 
 
 # ─── Tool registry — 안전한 read-only 도구 ──────────────────────────
@@ -83,6 +98,7 @@ TOOL_REGISTRY: dict[str, Any] = {
     ),
     'resolve_target': lambda target='', **_kw: _resolve_target(target=target),
     'analyze_levels': lambda target='', **_kw: technical_analysis.analyze_target_with_levels(target=target),
+    'get_llm_system_prompt_status': lambda **_kw: get_system_prompt_status(),
 }
 
 
@@ -175,38 +191,22 @@ FUNCTION_DECLARATIONS = [
             'required': ['target'],
         },
     },
+    {
+        'name': 'get_llm_system_prompt_status',
+        'description': (
+            'MiroFish LLM MCP 고정 시스템 프롬프트의 버전, 해시, 6-Agent 모드 상태를 확인. '
+            '전체 프롬프트 원문은 노출하지 않음.'
+        ),
+        'parameters': {'type': 'object', 'properties': {}},
+    },
 ]
 
 
-SYSTEM_INSTRUCTION = """당신은 MarketFlow MiroFish 의 AI 분석 어시스턴트입니다.
-
-응답 규칙:
-- 한국어로 자연스럽게 답변합니다 (존댓말).
-- 데이터가 필요한 질문은 제공된 도구를 호출해 실제 결과를 가져와 답변합니다.
-- 도구 결과에 데이터가 없으면 솔직하게 "아직 분석이 없습니다" 같은 안내.
-- 결과는 간결하게 요약 — 긴 JSON 그대로 노출 X.
-- 시장 데이터 / 종목 추천 / 예측 같은 질문에는 항상 도구로 사실 확인.
-- 사용자 인사 / 기능 안내 등은 도구 호출 없이 직접 답변.
-
-추천 사용 패턴:
-- "오늘 TOP 3 알려줘" → get_top3_summary 호출 후 한 줄 요약
-- "시장 열려?" → get_market_clock
-- "삼성전자 분석 정보" → resolve_target 으로 심볼 확인 + 최근 분석 있는지 확인
-- "지난 워크플로우 5개" → list_recent_workflows(limit=5)
-- "카톡 공유 정보 줘" → get_workflow_share
-- "삼성전자 매수가 / 목표가 / 손절가 알려줘" → analyze_levels(target='삼성전자')
-  → 답변 시 다음 형식으로 정리:
-    • 추세: <강세/중립/약세> (근거 한 줄)
-    • 매수 진입가: X원
-    • 1차 목표가: X원 (+%)
-    • 2차 목표가: X원
-    • 손절가: X원 (-%)
-    • 손익비: 1 : X
-    • ⚠ 추세별 주의사항
-
-투자 권유는 절대 아님을 한 줄 명시 (예: '참고용 분석이며 투자 권유가 아닙니다').
-도구 호출 후 결과를 반드시 사용자 친화적 한국어로 정리해서 답변하세요.
-"""
+def _response_metadata() -> dict[str, str]:
+    return {
+        'prompt_version': SYSTEM_PROMPT_VERSION,
+        'prompt_hash': SYSTEM_PROMPT_SHA256[:12],
+    }
 
 
 def run_chat(user_message: str, history: list[dict] | None = None) -> dict[str, Any]:
@@ -221,7 +221,13 @@ def run_chat(user_message: str, history: list[dict] | None = None) -> dict[str, 
     """
     user_message = (user_message or '').strip()
     if not user_message:
-        return {'reply': '메시지를 입력해 주세요.', 'tool_calls': [], 'iterations': 0, 'method': 'fallback'}
+        return {
+            'reply': '메시지를 입력해 주세요.',
+            'tool_calls': [],
+            'iterations': 0,
+            'method': 'fallback',
+            **_response_metadata(),
+        }
 
     api_key = os.getenv('GEMINI_API_KEY') or os.getenv('GOOGLE_API_KEY')
     if not api_key:
@@ -230,6 +236,7 @@ def run_chat(user_message: str, history: list[dict] | None = None) -> dict[str, 
             'tool_calls': [],
             'iterations': 0,
             'method': 'fallback',
+            **_response_metadata(),
         }
 
     try:
@@ -238,7 +245,7 @@ def run_chat(user_message: str, history: list[dict] | None = None) -> dict[str, 
     except ImportError as exc:
         logger.warning(f'[chat_agent] google-genai 미설치: {exc}')
         return {'reply': 'google-genai 패키지 미설치. requirements.txt 확인 필요.', 'tool_calls': [],
-                'iterations': 0, 'method': 'fallback'}
+                'iterations': 0, 'method': 'fallback', **_response_metadata()}
 
     client = genai.Client(api_key=api_key)
     model_name = os.getenv('MIROFISH_CHAT_MODEL', MODEL_DEFAULT)
@@ -282,6 +289,7 @@ def run_chat(user_message: str, history: list[dict] | None = None) -> dict[str, 
                 'tool_calls': tool_calls_log,
                 'iterations': iterations,
                 'method': 'llm_error',
+                **_response_metadata(),
             }
 
         final_response = response
@@ -347,4 +355,5 @@ def run_chat(user_message: str, history: list[dict] | None = None) -> dict[str, 
         'tool_calls': tool_calls_log,
         'iterations': iterations,
         'method': 'llm',
+        **_response_metadata(),
     }

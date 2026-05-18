@@ -1782,6 +1782,8 @@ export interface MiroFishChatResponse {
     tool_calls: MiroFishChatToolCall[];
     iterations: number;
     method: 'llm' | 'fallback' | 'llm_error';
+    prompt_version?: string;
+    prompt_hash?: string;
     error?: string;
 }
 
