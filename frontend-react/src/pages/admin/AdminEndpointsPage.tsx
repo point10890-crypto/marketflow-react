@@ -480,6 +480,14 @@ function AlphaBoardPanel({
         : tradingViewConfigured
             ? 'TradingView cache only'
             : 'TradingView off';
+    const scannerAdvisory = scannerRun?.performance_advisory || {};
+    const advisoryHitRaw = Number(scannerAdvisory.hit_rate_recent);
+    const advisoryHitRate = Number.isFinite(advisoryHitRaw)
+        ? `${(advisoryHitRaw <= 1 ? advisoryHitRaw * 100 : advisoryHitRaw).toFixed(1)}%`
+        : '--';
+    const topEvidenceGrade = String(candidates[0]?.analysis_profile?.evidence_quality?.grade || '--');
+    const topConfidenceCap = Number(candidates[0]?.analysis_profile?.confidence_cap);
+    const analysisArtifactsReady = Boolean(scannerRun?.analysis_artifacts?.feature_vectors && scannerRun?.analysis_artifacts?.evidence_ledger);
 
     // 카카오톡 공유 핸들러 (list template + buttons 포함)
     async function handleShareTop3(workflowId: string) {
@@ -687,6 +695,21 @@ function AlphaBoardPanel({
                                 <div className="text-[10px] font-black uppercase tracking-[0.16em] text-emerald-200/60">{String(label)}</div>
                                 <div className="mt-1 text-lg font-black text-white">{String(value)}</div>
                                 <div className="mt-1 text-[11px] font-bold text-slate-500">{String(caption)}</div>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="mt-3 grid gap-2 md:grid-cols-4">
+                        {[
+                            ['Evidence Grade', topEvidenceGrade, 'top candidate quality'],
+                            ['Confidence Cap', Number.isFinite(topConfidenceCap) ? `${Math.round(topConfidenceCap * 100)}%` : '--', 'source/freshness bound'],
+                            ['Reject Ledger', scannerRun?.rejected_candidate_count ?? 0, `${scannerRun?.screened_count ?? scannerPoolCount} screened`],
+                            ['Outcome Advisory', advisoryHitRate, `${scannerAdvisory.evaluated_count ?? 0} evaluated · ${analysisArtifactsReady ? 'artifacts ready' : 'artifacts pending'}`],
+                        ].map(([label, value, caption]) => (
+                            <div key={String(label)} className="rounded-lg border border-cyan-300/12 bg-cyan-300/[0.04] p-3">
+                                <div className="text-[10px] font-black uppercase tracking-[0.16em] text-cyan-200/60">{String(label)}</div>
+                                <div className="mt-1 text-lg font-black text-white">{String(value)}</div>
+                                <div className="mt-1 truncate text-[11px] font-bold text-slate-500">{String(caption)}</div>
                             </div>
                         ))}
                     </div>

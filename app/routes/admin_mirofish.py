@@ -669,6 +669,34 @@ def get_scanner_candidates(run_id):
     return jsonify(candidates)
 
 
+def _scanner_artifact_response(run_id: str, filename: str):
+    try:
+        artifact = mirofish.read_scanner_run_artifact(run_id, filename)
+    except ValueError as exc:
+        return jsonify({'error': str(exc)}), 400
+    if artifact is None:
+        return jsonify({'error': 'scanner artifact not found'}), 404
+    return jsonify(artifact)
+
+
+@admin_mirofish_bp.route('/scanner/runs/<run_id>/feature-vectors', methods=['GET'])
+@admin_or_aibain_required
+def get_scanner_feature_vectors(run_id):
+    return _scanner_artifact_response(run_id, 'feature_vectors.json')
+
+
+@admin_mirofish_bp.route('/scanner/runs/<run_id>/evidence', methods=['GET'])
+@admin_or_aibain_required
+def get_scanner_evidence_ledger(run_id):
+    return _scanner_artifact_response(run_id, 'evidence_ledger.json')
+
+
+@admin_mirofish_bp.route('/scanner/runs/<run_id>/rejects', methods=['GET'])
+@admin_or_aibain_required
+def get_scanner_rejected_candidates(run_id):
+    return _scanner_artifact_response(run_id, 'rejected_candidates.json')
+
+
 @admin_mirofish_bp.route('/workflow/status', methods=['GET'])
 @admin_or_aibain_required
 def get_workflow_status():

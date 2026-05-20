@@ -111,13 +111,17 @@ def create_scanner_run(payload: dict[str, Any] | None = None) -> dict[str, Any]:
     run_id = _run_id(generated_at, requested_symbols, limit)
 
     artifacts = _load_artifacts()
-    candidates = _build_candidates(
+    candidate_pool = _build_candidate_pool(
         artifacts,
         generated_at=generated_at,
-        limit=limit,
         requested_symbols=requested_symbols,
     )
+    candidates = _select_candidates(candidate_pool, limit)
+    rejected_candidates = _rejected_candidates(candidate_pool, selected_count=len(candidates), limit=limit)
+    feature_vectors = _feature_vectors(candidates)
+    evidence_ledger = _evidence_ledger(candidates, rejected_candidates)
     source_files = _source_files(artifacts)
+    performance_advisory = _performance_advisory()
     run = {
         'id': run_id,
         'status': 'completed',
@@ -129,13 +133,21 @@ def create_scanner_run(payload: dict[str, Any] | None = None) -> dict[str, Any]:
         'requested_symbols': sorted(requested_symbols),
         'universe_size': len(artifacts['candidate_symbols']),
         'candidate_count': len(candidates),
+        'screened_count': len(candidate_pool),
+        'rejected_candidate_count': len(rejected_candidates),
         'scoring_schema': SCORING_SCHEMA,
+        'performance_advisory': performance_advisory,
         'providers': {
             'tradingview': artifacts.get('tradingview', {}).get('status') or tradingview_provider.get_status(include_live=False),
         },
         'source_files': source_files,
         'freshness': _aggregate_freshness(source_files),
         'candidates': candidates,
+        'analysis_artifacts': {
+            'feature_vectors': f'/api/admin/mirofish/scanner/runs/{run_id}/feature-vectors',
+            'evidence_ledger': f'/api/admin/mirofish/scanner/runs/{run_id}/evidence',
+            'rejected_candidates': f'/api/admin/mirofish/scanner/runs/{run_id}/rejects',
+        },
         'links': {
             'self': f'/api/admin/mirofish/scanner/runs/{run_id}',
             'candidates': f'/api/admin/mirofish/scanner/runs/{run_id}/candidates',
@@ -143,6 +155,28 @@ def create_scanner_run(payload: dict[str, Any] | None = None) -> dict[str, Any]:
     }
 
     write_json_atomic(_run_path(run_id), run, sort_keys=False)
+    write_json_atomic(_run_artifact_path(run_id, 'feature_vectors.json'), {
+        'run_id': run_id,
+        'generated_at': generated_at,
+        'feature_count': len(feature_vectors),
+        'features': feature_vectors,
+        'lookahead_safe': True,
+    }, sort_keys=False)
+    write_json_atomic(_run_artifact_path(run_id, 'evidence_ledger.json'), {
+        'run_id': run_id,
+        'generated_at': generated_at,
+        'candidate_count': len(candidates),
+        'rejected_candidate_count': len(rejected_candidates),
+        'items': evidence_ledger,
+        'lookahead_safe': True,
+    }, sort_keys=False)
+    write_json_atomic(_run_artifact_path(run_id, 'rejected_candidates.json'), {
+        'run_id': run_id,
+        'generated_at': generated_at,
+        'rejected_candidate_count': len(rejected_candidates),
+        'candidates': rejected_candidates,
+        'lookahead_safe': True,
+    }, sort_keys=False)
     return run
 
 
@@ -166,6 +200,17 @@ def read_scanner_candidates(run_id: str) -> dict[str, Any] | None:
         'candidate_count': len(run.get('candidates') or []),
         'candidates': run.get('candidates') or [],
     }
+
+
+def read_scanner_run_artifact(run_id: str, filename: str) -> dict[str, Any] | None:
+    safe_id = _safe_run_id(run_id)
+    safe_filename = str(filename or '').strip()
+    if safe_filename not in {'feature_vectors.json', 'evidence_ledger.json', 'rejected_candidates.json'}:
+        raise ValueError('invalid scanner artifact')
+    path = _run_artifact_path(safe_id, safe_filename)
+    if not os.path.isfile(path):
+        return None
+    return _read_json(path)
 
 
 def list_scanner_runs(limit: int = 20) -> list[dict[str, Any]]:
@@ -685,6 +730,13 @@ def build_scanner_alert_message(
     blocked_reason: str | None = None,
 ) -> str:
     """Build the production Telegram alert with readable Korean labels."""
+    return _build_scanner_alert_message_ko(
+        run,
+        events,
+        min_alpha=min_alpha,
+        max_risk=max_risk,
+        blocked_reason=blocked_reason,
+    )
     generated_at = _escape(run.get('generated_at') or '')
     run_id = _escape(run.get('id') or '')
     candidate_count = int(run.get('candidate_count') or 0)
@@ -736,6 +788,7 @@ def build_scanner_alert_message(
 
 def build_scanner_run_telegram_message(run: dict[str, Any], *, limit: int = 10) -> str:
     """Build a deterministic Telegram summary directly from scanner candidates."""
+    return _build_scanner_run_telegram_message_ko(run, limit=limit)
     clean_limit = max(1, min(_clean_limit(limit, default=10), 20))
     candidates = [item for item in (run.get('candidates') or []) if isinstance(item, dict)]
     generated_at = _escape(run.get('generated_at') or run.get('created_at') or '')
@@ -751,6 +804,113 @@ def build_scanner_run_telegram_message(run: dict[str, Any], *, limit: int = 10) 
     ]
     if not candidates:
         lines.append('이 스캐너 run에는 후보가 없습니다.')
+        return '\n'.join(lines)
+
+    for candidate in candidates[:clean_limit]:
+        evidence = (candidate.get('evidence') or [{}])[0]
+        tags = ', '.join(_tag_label(tag) for tag in (candidate.get('strategy_tags') or [])[:4])
+        price = candidate.get('price') or {}
+        current_price = _format_number(price.get('current_price') or candidate.get('price'))
+        change_rate = _format_signed(price.get('change_rate') or candidate.get('change_pct'), suffix='%')
+        lines.extend([
+            '',
+            (
+                f"#{_escape(candidate.get('rank'))} <b>{_escape(candidate.get('display_name'))}</b> "
+                f"(<code>{_escape(candidate.get('symbol'))}</code> {_escape(candidate.get('market'))})"
+            ),
+            (
+                f"Alpha <b>{_escape(candidate.get('alpha_score'))}</b> / "
+                f"Risk <b>{_escape(candidate.get('risk_score'))}</b> / "
+                f"Rank score {_escape(candidate.get('ranking_score'))}"
+            ),
+            (
+                f"판정: <b>{_escape(_action_label(candidate.get('action')))}</b> / "
+                f"기간: {_escape(_horizon_label(candidate.get('horizon')))}"
+            ),
+            f"현재가: {current_price} ({change_rate}) / 태그: {_escape(tags)}",
+            (
+                f"근거: {_escape(evidence.get('source'))} "
+                f"{_escape(_evidence_field_label(evidence.get('field')))}={_escape(evidence.get('score'))}"
+            ),
+        ])
+    return '\n'.join(lines)
+
+
+def _build_scanner_alert_message_ko(
+    run: dict[str, Any],
+    events: list[dict[str, Any]],
+    *,
+    min_alpha: float = DEFAULT_ALERT_MIN_ALPHA,
+    max_risk: float = DEFAULT_ALERT_MAX_RISK,
+    blocked_reason: str | None = None,
+) -> str:
+    """Build the production Telegram alert with readable Korean labels."""
+    generated_at = _escape(run.get('generated_at') or '')
+    run_id = _escape(run.get('id') or '')
+    candidate_count = int(run.get('candidate_count') or 0)
+    lines = [
+        '<b>MiroFish 알파 스캐너 신규 후보</b>',
+        f'신규 매수 후보: <b>{len(events)}</b>건 / 전체 후보: {candidate_count}건',
+        f'기준: alpha &gt;= {min_alpha:g}, risk &lt;= {max_risk:g}, 로컬 데이터 아티팩트 기반',
+        f'Run ID: <code>{run_id}</code>',
+        f'생성 시각: {generated_at}',
+    ]
+    if blocked_reason:
+        freshness_status = _escape((run.get('freshness') or {}).get('status') or 'unknown')
+        lines.append(f'알림 차단: 원천 데이터 freshness={freshness_status}. 데이터 갱신 후 재시도하세요.')
+        return '\n'.join(lines)
+    if not events:
+        lines.append('이전 알림 이후 새 조건 충족 후보가 없습니다.')
+        return '\n'.join(lines)
+
+    for event in events:
+        candidate = event['candidate']
+        evidence = (candidate.get('evidence') or [{}])[0]
+        tags = ', '.join(_tag_label(tag) for tag in (candidate.get('strategy_tags') or [])[:4])
+        price = candidate.get('price') or {}
+        current_price = _format_number(price.get('current_price'))
+        change_rate = _format_signed(price.get('change_rate'), suffix='%')
+        lines.extend([
+            '',
+            (
+                f"#{candidate.get('rank')} <b>{_escape(candidate.get('display_name'))}</b> "
+                f"(<code>{_escape(candidate.get('symbol'))}</code> {_escape(candidate.get('market'))})"
+            ),
+            (
+                f"알파 <b>{candidate.get('alpha_score')}</b> / "
+                f"리스크 <b>{candidate.get('risk_score')}</b> / "
+                f"랭킹 {candidate.get('ranking_score')}"
+            ),
+            (
+                f"판정: <b>{_escape(_action_label(candidate.get('action')))}</b> / "
+                f"기간: {_escape(_horizon_label(candidate.get('horizon')))}"
+            ),
+            f"현재가: {current_price} ({change_rate}) / 태그: {_escape(tags)}",
+            (
+                f"근거: {_escape(evidence.get('source'))} "
+                f"{_escape(_evidence_field_label(evidence.get('field')))}={evidence.get('score')}"
+            ),
+        ])
+    return '\n'.join(lines)
+
+
+def _build_scanner_run_telegram_message_ko(run: dict[str, Any], *, limit: int = 10) -> str:
+    """Build a deterministic Telegram summary directly from scanner candidates."""
+    clean_limit = max(1, min(_clean_limit(limit, default=10), 20))
+    candidates = [item for item in (run.get('candidates') or []) if isinstance(item, dict)]
+    generated_at = _escape(run.get('generated_at') or run.get('created_at') or '')
+    run_id = _escape(run.get('id') or '')
+    freshness = run.get('freshness') or {}
+    freshness_status = freshness.get('status') if isinstance(freshness, dict) else ''
+    lines = [
+        '<b>MiroFish 알파 스캐너 요약</b>',
+        f'Run ID: <code>{run_id}</code>',
+        f'생성 시각: {generated_at}',
+        f'후보 수: <b>{len(candidates)}</b> / freshness: {_escape(freshness_status or "unknown")}',
+        'Source: deterministic scanner artifacts',
+    ]
+    if not candidates:
+        lines.append('이번 scanner run에는 후보가 없습니다.')
         return '\n'.join(lines)
 
     for candidate in candidates[:clean_limit]:
@@ -835,6 +995,22 @@ def _build_candidates(
     limit: int,
     requested_symbols: set[str],
 ) -> list[dict[str, Any]]:
+    return _select_candidates(
+        _build_candidate_pool(
+            artifacts,
+            generated_at=generated_at,
+            requested_symbols=requested_symbols,
+        ),
+        limit,
+    )
+
+
+def _build_candidate_pool(
+    artifacts: dict[str, Any],
+    *,
+    generated_at: str,
+    requested_symbols: set[str],
+) -> list[dict[str, Any]]:
     maps = artifacts['ticker_map']
     prices = artifacts['daily_prices']
     screener_by_symbol = _index_screener(artifacts['screener'].get('data'))
@@ -872,9 +1048,76 @@ def _build_candidates(
         ),
         reverse=True,
     )
-    for index, item in enumerate(rows[:limit], start=1):
+    for index, item in enumerate(rows, start=1):
+        item['pool_rank'] = index
+    return rows
+
+
+def _select_candidates(rows: list[dict[str, Any]], limit: int) -> list[dict[str, Any]]:
+    selected = rows[:limit]
+    for index, item in enumerate(selected, start=1):
         item['rank'] = index
-    return rows[:limit]
+    return selected
+
+
+def _rejected_candidates(
+    rows: list[dict[str, Any]],
+    *,
+    selected_count: int,
+    limit: int,
+) -> list[dict[str, Any]]:
+    rejected = []
+    for index, candidate in enumerate(rows, start=1):
+        reasons = _rejection_reasons(candidate, index=index, selected_count=selected_count, limit=limit)
+        if not reasons:
+            continue
+        rejected.append({
+            'pool_rank': candidate.get('pool_rank') or index,
+            'symbol': candidate.get('symbol'),
+            'name': candidate.get('name') or candidate.get('display_name'),
+            'display_name': candidate.get('display_name') or candidate.get('name'),
+            'market': candidate.get('market'),
+            'action': candidate.get('action'),
+            'alpha_score': candidate.get('alpha_score'),
+            'risk_score': candidate.get('risk_score'),
+            'ranking_score': candidate.get('ranking_score'),
+            'signal_quality': candidate.get('signal_quality'),
+            'strategy_tags': candidate.get('strategy_tags') or [],
+            'rejection_reasons': reasons,
+            'feature_vector': _feature_vector(candidate),
+            'evidence': candidate.get('evidence') or [],
+            'evidence_quality': (candidate.get('analysis_profile') or {}).get('evidence_quality'),
+            'freshness': candidate.get('freshness'),
+            'price': candidate.get('price'),
+            'replay_context': candidate.get('replay_context'),
+        })
+    return rejected
+
+
+def _rejection_reasons(
+    candidate: dict[str, Any],
+    *,
+    index: int,
+    selected_count: int,
+    limit: int,
+) -> list[str]:
+    reasons = []
+    if index > max(0, int(limit)):
+        reasons.append('outside_requested_limit')
+    if str(candidate.get('action') or '') == 'REJECT':
+        reasons.append('scanner_action_reject')
+    if _float(candidate.get('alpha_score')) < 50:
+        reasons.append('alpha_below_watch_threshold')
+    if _float(candidate.get('risk_score')) > 65:
+        reasons.append('risk_above_watch_threshold')
+    profile = candidate.get('analysis_profile') if isinstance(candidate.get('analysis_profile'), dict) else {}
+    if _float(profile.get('source_count')) < 3:
+        reasons.append('insufficient_source_confirmation')
+    if str(((candidate.get('freshness') or {}).get('status') or '')).lower() in ALERT_BLOCKING_FRESHNESS:
+        reasons.append('source_freshness_not_confirmed')
+    if index > selected_count and 'outside_requested_limit' not in reasons:
+        reasons.append('not_selected')
+    return reasons
 
 
 def _score_symbol(
@@ -958,7 +1201,8 @@ def _score_symbol(
     elif trading_value < 2_000_000_000:
         risk += 10
     risk += _source_gap_penalty(price, screener, vcp, jongga)
-    risk += _staleness_penalty(artifacts, generated_at)
+    staleness_penalty = _staleness_penalty(artifacts, generated_at)
+    risk += staleness_penalty
     risk += _negative_flag_penalty(jongga)
 
     base_alpha = alpha
@@ -993,6 +1237,19 @@ def _score_symbol(
         tags.append('tradingview_confirmed' if _float(tradingview_adjustment.get('alpha_delta')) >= 0 else 'tradingview_warning')
     signal_quality = _signal_quality(alpha, risk, effective_source_count, price_metrics)
     entry_plan = _entry_plan(current_price, risk, price_metrics, action)
+    source_freshness = _symbol_freshness(artifacts)
+    clean_evidence = [item for item in evidence if item['score'] > 0 or item['value'] not in (None, 0)]
+    evidence_quality = _evidence_quality(
+        clean_evidence,
+        source_count=effective_source_count,
+        freshness=source_freshness,
+        risk=risk,
+    )
+    confidence_cap = _confidence_cap(
+        source_count=effective_source_count,
+        freshness=source_freshness,
+        risk=risk,
+    )
 
     display_name = (
         mapped.get('display_name')
@@ -1017,7 +1274,7 @@ def _score_symbol(
         'horizon': 'swing_5_20d' if action in ('BUY_CANDIDATE', 'WATCH') else 'avoid_or_recheck',
         'signal_quality': signal_quality,
         'strategy_tags': tags,
-        'evidence': [item for item in evidence if item['score'] > 0 or item['value'] not in (None, 0)],
+        'evidence': clean_evidence,
         'analysis_profile': {
             'source_count': effective_source_count,
             'base_source_count': source_count,
@@ -1036,6 +1293,10 @@ def _score_symbol(
             'over_ma20_pct': price_metrics.get('over_ma20_pct'),
             'trend_consistency': price_metrics.get('trend_consistency'),
             'sample_days': price_metrics.get('sample_days'),
+            'evidence_quality': evidence_quality,
+            'confidence_cap': confidence_cap,
+            'freshness_penalty': round(staleness_penalty, 2),
+            'freshness_status': source_freshness.get('status'),
         },
         'entry_plan': entry_plan,
         'replay_context': {
@@ -1053,7 +1314,7 @@ def _score_symbol(
         },
         'generated_at': generated_at,
         'source': 'local_marketflow_artifacts',
-        'freshness': _symbol_freshness(artifacts),
+        'freshness': source_freshness,
         'tradingview': tradingview_adjustment,
     }
 
@@ -1610,6 +1871,181 @@ def _candidate_sources(
     return sources
 
 
+def _feature_vectors(candidates: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    return [_feature_vector(candidate) for candidate in candidates]
+
+
+def _feature_vector(candidate: dict[str, Any]) -> dict[str, Any]:
+    profile = candidate.get('analysis_profile') if isinstance(candidate.get('analysis_profile'), dict) else {}
+    price = candidate.get('price') if isinstance(candidate.get('price'), dict) else {}
+    replay = candidate.get('replay_context') if isinstance(candidate.get('replay_context'), dict) else {}
+    freshness = candidate.get('freshness') if isinstance(candidate.get('freshness'), dict) else {}
+    return {
+        'symbol': candidate.get('symbol'),
+        'name': candidate.get('name') or candidate.get('display_name'),
+        'market': candidate.get('market'),
+        'pool_rank': candidate.get('pool_rank'),
+        'rank': candidate.get('rank'),
+        'action': candidate.get('action'),
+        'horizon': candidate.get('horizon'),
+        'alpha_score': candidate.get('alpha_score'),
+        'risk_score': candidate.get('risk_score'),
+        'ranking_score': candidate.get('ranking_score'),
+        'signal_quality': candidate.get('signal_quality'),
+        'strategy_tags': candidate.get('strategy_tags') or [],
+        'source_count': profile.get('source_count'),
+        'base_source_count': profile.get('base_source_count'),
+        'evidence_quality': profile.get('evidence_quality'),
+        'confidence_cap': profile.get('confidence_cap'),
+        'freshness_status': profile.get('freshness_status') or freshness.get('status'),
+        'freshness_penalty': profile.get('freshness_penalty'),
+        'data_sources': replay.get('data_sources') or [],
+        'lookahead_safe': bool(replay.get('lookahead_safe', True)),
+        'price_date': replay.get('price_date') or price.get('date'),
+        'current_price': price.get('current_price'),
+        'change_rate': price.get('change_rate'),
+        'volume': price.get('volume'),
+        'trading_value': price.get('trading_value'),
+        'trend_quality': profile.get('trend_quality'),
+        'volume_accumulation': profile.get('volume_accumulation'),
+        'trend_5d_pct': profile.get('trend_5d_pct'),
+        'trend_20d_pct': profile.get('trend_20d_pct'),
+        'volume_ratio': profile.get('volume_ratio'),
+        'volatility_20d_pct': profile.get('volatility_20d_pct'),
+        'drawdown_20d_pct': profile.get('drawdown_20d_pct'),
+        'over_ma20_pct': profile.get('over_ma20_pct'),
+        'trend_consistency': profile.get('trend_consistency'),
+        'sample_days': profile.get('sample_days'),
+        'tradingview': profile.get('tradingview_adjustment'),
+    }
+
+
+def _evidence_ledger(
+    candidates: list[dict[str, Any]],
+    rejected_candidates: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    items = [
+        _evidence_ledger_entry(candidate, selection_status='selected')
+        for candidate in candidates
+    ]
+    for candidate in rejected_candidates:
+        items.append(_evidence_ledger_entry(
+            candidate,
+            selection_status='rejected',
+            rejection_reasons=candidate.get('rejection_reasons') or [],
+        ))
+    return items
+
+
+def _evidence_ledger_entry(
+    candidate: dict[str, Any],
+    *,
+    selection_status: str,
+    rejection_reasons: list[str] | None = None,
+) -> dict[str, Any]:
+    profile = candidate.get('analysis_profile') if isinstance(candidate.get('analysis_profile'), dict) else {}
+    feature_vector = candidate.get('feature_vector') if isinstance(candidate.get('feature_vector'), dict) else None
+    return {
+        'symbol': candidate.get('symbol'),
+        'name': candidate.get('name') or candidate.get('display_name'),
+        'market': candidate.get('market'),
+        'rank': candidate.get('rank'),
+        'pool_rank': candidate.get('pool_rank'),
+        'selection_status': selection_status,
+        'rejection_reasons': rejection_reasons or [],
+        'action': candidate.get('action'),
+        'alpha_score': candidate.get('alpha_score'),
+        'risk_score': candidate.get('risk_score'),
+        'ranking_score': candidate.get('ranking_score'),
+        'signal_quality': candidate.get('signal_quality'),
+        'strategy_tags': candidate.get('strategy_tags') or [],
+        'evidence_quality': candidate.get('evidence_quality') or profile.get('evidence_quality'),
+        'confidence_cap': profile.get('confidence_cap') or (feature_vector or {}).get('confidence_cap'),
+        'freshness': candidate.get('freshness'),
+        'data_sources': ((candidate.get('replay_context') or {}).get('data_sources') if isinstance(candidate.get('replay_context'), dict) else None)
+            or (feature_vector or {}).get('data_sources')
+            or [],
+        'evidence': candidate.get('evidence') or [],
+        'feature_vector': feature_vector or _feature_vector(candidate),
+    }
+
+
+def _evidence_quality(
+    evidence: list[dict[str, Any]],
+    *,
+    source_count: int,
+    freshness: dict[str, Any],
+    risk: float,
+) -> dict[str, Any]:
+    freshness_status = str((freshness or {}).get('status') or 'unknown').lower()
+    confidence_values = [_float(item.get('confidence')) for item in evidence if isinstance(item, dict)]
+    avg_confidence = _average(confidence_values) if confidence_values else 0.0
+    if freshness_status == 'fresh' and source_count >= 4 and len(evidence) >= 6 and risk <= 45:
+        grade = 'strong'
+    elif freshness_status in {'fresh', 'stale'} and source_count >= 3 and len(evidence) >= 4 and risk <= 65:
+        grade = 'moderate'
+    else:
+        grade = 'weak'
+    return {
+        'grade': grade,
+        'source_count': int(source_count),
+        'evidence_count': len(evidence),
+        'freshness_status': freshness_status,
+        'average_confidence': round(avg_confidence, 3),
+    }
+
+
+def _confidence_cap(
+    *,
+    source_count: int,
+    freshness: dict[str, Any],
+    risk: float,
+) -> float:
+    status = str((freshness or {}).get('status') or 'unknown').lower()
+    cap = 0.95
+    if source_count < 4:
+        cap = min(cap, 0.82)
+    if source_count < 3:
+        cap = min(cap, 0.68)
+    if status != 'fresh':
+        cap = min(cap, 0.70 if status == 'stale' else 0.58)
+    if risk > 65:
+        cap = min(cap, 0.55)
+    elif risk > 45:
+        cap = min(cap, 0.78)
+    return round(cap, 2)
+
+
+def _performance_advisory() -> dict[str, Any]:
+    try:
+        from app.services.mirofish import outcome_tracker
+
+        advisory = outcome_tracker.get_advisory_feedback(horizon_days=5, limit_workflows=200)
+    except Exception as exc:
+        return {
+            'available': False,
+            'applied_to_scoring': False,
+            'source': 'workflow_outcomes',
+            'lookahead_safe': True,
+            'error': f'{type(exc).__name__}: {exc}',
+        }
+    if not isinstance(advisory, dict):
+        advisory = {}
+    return {
+        'available': bool(advisory.get('evaluated_count')),
+        'applied_to_scoring': False,
+        'source': 'workflow_outcomes',
+        'lookahead_safe': bool(advisory.get('lookahead_safe', True)),
+        'evaluated_count': advisory.get('evaluated_count', 0),
+        'workflow_count_scanned': advisory.get('workflow_count_scanned', 0),
+        'hit_rate_recent': advisory.get('hit_rate_recent'),
+        'horizon_days': advisory.get('horizon_days'),
+        'recommendations': advisory.get('recommendations') or {'tag_score_adjust': {}},
+        'asof': advisory.get('asof'),
+        'note': 'advisory only; scanner ranking is unchanged in P0',
+    }
+
+
 def _age_days(value: Any, now_iso: str | None = None) -> float | None:
     if not value:
         return None
@@ -1924,6 +2360,14 @@ def _candidate_event_key(candidate: dict[str, Any]) -> str:
 
 
 def _action_label(value: Any) -> str:
+    labels = {
+        'BUY_CANDIDATE': '매수 후보',
+        'WATCH': '관찰',
+        'REJECT': '제외',
+    }
+    key = str(value or '')
+    if key in labels:
+        return labels[key]
     return {
         'BUY_CANDIDATE': '매수 후보',
         'WATCH': '관찰',
@@ -1932,6 +2376,13 @@ def _action_label(value: Any) -> str:
 
 
 def _horizon_label(value: Any) -> str:
+    labels = {
+        'swing_5_20d': '스윙 5-20일',
+        'avoid_or_recheck': '회피 또는 재점검',
+    }
+    key = str(value or '')
+    if key in labels:
+        return labels[key]
     return {
         'swing_5_20d': '스윙 5-20일',
         'avoid_or_recheck': '회피 또는 재점검',
@@ -1939,6 +2390,19 @@ def _horizon_label(value: Any) -> str:
 
 
 def _tag_label(value: Any) -> str:
+    labels = {
+        'momentum': '모멘텀',
+        'trend_quality': '추세 품질',
+        'volume_accumulation': '거래량 축적',
+        'leading_screener': '리딩 스크리너',
+        'vcp_entry': 'VCP 진입',
+        'jongga_setup': '종가 셋업',
+        'risk_penalty': '리스크 패널티',
+        'artifact_candidate': '파일 기반 후보',
+    }
+    key = str(value or '')
+    if key in labels:
+        return labels[key]
     return {
         'momentum': '모멘텀',
         'trend_quality': '추세 품질',
@@ -1952,6 +2416,19 @@ def _tag_label(value: Any) -> str:
 
 
 def _evidence_field_label(value: Any) -> str:
+    labels = {
+        'price_momentum': '가격 모멘텀',
+        'trend_quality': '추세 품질',
+        'volume_accumulation': '거래량 축적',
+        'liquidity': '유동성',
+        'screener_leading': '리딩 스크리너',
+        'vcp_quality': 'VCP 품질',
+        'jongga_setup': '종가 셋업',
+        'source_convergence': '소스 수렴도',
+    }
+    key = str(value or '')
+    if key in labels:
+        return labels[key]
     return {
         'price_momentum': '가격 모멘텀',
         'trend_quality': '추세 품질',
@@ -2026,6 +2503,14 @@ def _run_id(generated_at: str, symbols: set[str], limit: int) -> str:
 def _run_path(run_id: str) -> str:
     safe_id = _safe_run_id(run_id)
     return os.path.join(SCANNER_RUNS_ROOT, safe_id, 'run.json')
+
+
+def _run_artifact_path(run_id: str, filename: str) -> str:
+    safe_id = _safe_run_id(run_id)
+    safe_filename = str(filename or '').strip()
+    if safe_filename not in {'feature_vectors.json', 'evidence_ledger.json', 'rejected_candidates.json'}:
+        raise ValueError('invalid scanner artifact')
+    return os.path.join(SCANNER_RUNS_ROOT, safe_id, safe_filename)
 
 
 def _safe_run_id(run_id: str) -> str:

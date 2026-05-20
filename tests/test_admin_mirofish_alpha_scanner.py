@@ -19,7 +19,13 @@ def _write_json(path, payload):
     path.write_text(json.dumps(payload, ensure_ascii=False), encoding='utf-8')
 
 
+def _fresh_artifact_timestamp() -> str:
+    return datetime.now(timezone.utc).isoformat()
+
+
 def _seed_artifacts(data_dir):
+    fresh_at = _fresh_artifact_timestamp()
+    fresh_date = fresh_at[:10]
     (data_dir / 'ticker_to_yahoo_map.csv').write_text(
         '\n'.join([
             'ticker,market,yahoo_ticker,name',
@@ -38,14 +44,14 @@ def _seed_artifacts(data_dir):
         encoding='utf-8',
     )
     _write_json(data_dir / 'screener_leading_latest.json', {
-        'timestamp': '2026-05-10T00:00:00+00:00',
+        'timestamp': fresh_at,
         'results': [
             {'code': '000001', 'name': 'Alpha One', 'score': {'total_enriched': 80}},
             {'code': '000002', 'name': 'Beta Two', 'score': {'total_enriched': 30}},
         ],
     })
     _write_json(data_dir / 'vcp_kr_latest.json', {
-        'metadata': {'generated_at': '2026-05-10T00:00:00+00:00'},
+        'metadata': {'generated_at': fresh_at},
         'signals': [
             {
                 'symbol': '000001',
@@ -56,7 +62,7 @@ def _seed_artifacts(data_dir):
         ],
     })
     _write_json(data_dir / 'jongga_v2_latest.json', {
-        'date': '2026-05-10',
+        'date': fresh_date,
         'signals': [
             {
                 'stock_code': '000001',
@@ -77,6 +83,8 @@ def _seed_artifacts(data_dir):
 
 
 def _seed_advanced_artifacts(data_dir):
+    fresh_at = _fresh_artifact_timestamp()
+    fresh_date = fresh_at[:10]
     (data_dir / 'ticker_to_yahoo_map.csv').write_text(
         '\n'.join([
             'ticker,market,yahoo_ticker,name',
@@ -105,24 +113,24 @@ def _seed_advanced_artifacts(data_dir):
         price_rows.append(
             f"000020,2026-05-{index + 1:02d},Single Day Spike,{close},0,{change_rate:.2f},"
             f"{high:.2f},{low:.2f},{previous},{spike_volumes[index]},2026-05-{index + 1:02d} 16:00:00"
-        )
+    )
     (data_dir / 'daily_prices.csv').write_text('\n'.join(price_rows), encoding='utf-8')
     _write_json(data_dir / 'screener_leading_latest.json', {
-        'timestamp': '2026-05-10T00:00:00+00:00',
+        'timestamp': fresh_at,
         'results': [
             {'code': '000010', 'name': 'Steady Accumulator', 'score': {'total_enriched': 88}},
             {'code': '000020', 'name': 'Single Day Spike', 'score': {'total_enriched': 90}},
         ],
     })
     _write_json(data_dir / 'vcp_kr_latest.json', {
-        'metadata': {'generated_at': '2026-05-10T00:00:00+00:00'},
+        'metadata': {'generated_at': fresh_at},
         'signals': [
             {'symbol': '000010', 'name': 'Steady Accumulator', 'market': 'KR', 'composite': {'composite_score': 91, 'entry_ready': 'True'}},
             {'symbol': '000020', 'name': 'Single Day Spike', 'market': 'KR', 'composite': {'composite_score': 92, 'entry_ready': 'True'}},
         ],
     })
     _write_json(data_dir / 'jongga_v2_latest.json', {
-        'date': '2026-05-10',
+        'date': fresh_date,
         'signals': [
             {'stock_code': '000010', 'stock_name': 'Steady Accumulator', 'market': 'KOSPI', 'score': {'total': 13}, 'checklist': {'negative_news': False, 'upper_wick_long': False}},
             {'stock_code': '000020', 'stock_name': 'Single Day Spike', 'market': 'KOSPI', 'score': {'total': 13}, 'checklist': {'negative_news': False, 'upper_wick_long': True}},
@@ -160,6 +168,41 @@ def test_alpha_scanner_creates_ranked_deterministic_run(tmp_path, monkeypatch):
     assert saved['id'] == run['id']
     assert candidate_payload['candidate_count'] == 2
     assert candidate_payload['candidates'][0]['symbol'] == '000001'
+
+
+def test_alpha_scanner_persists_analysis_artifacts(tmp_path, monkeypatch):
+    _seed_artifacts(tmp_path)
+    monkeypatch.setattr(alpha_scanner, 'DATA_ROOT', str(tmp_path))
+    monkeypatch.setattr(alpha_scanner, 'SCANNER_RUNS_ROOT', str(tmp_path / 'runs'))
+
+    run = alpha_scanner.create_scanner_run({'limit': 1})
+
+    assert run['candidate_count'] == 1
+    assert run['screened_count'] == 2
+    assert run['rejected_candidate_count'] >= 1
+    assert run['performance_advisory']['applied_to_scoring'] is False
+    assert run['performance_advisory']['source'] == 'workflow_outcomes'
+    assert run['analysis_artifacts']['feature_vectors'].endswith('/feature-vectors')
+    assert run['analysis_artifacts']['evidence_ledger'].endswith('/evidence')
+    assert run['analysis_artifacts']['rejected_candidates'].endswith('/rejects')
+    assert run['candidates'][0]['analysis_profile']['evidence_quality']['grade'] in {'strong', 'moderate', 'weak'}
+    assert run['candidates'][0]['analysis_profile']['confidence_cap'] <= 0.95
+
+    features = alpha_scanner.read_scanner_run_artifact(run['id'], 'feature_vectors.json')
+    ledger = alpha_scanner.read_scanner_run_artifact(run['id'], 'evidence_ledger.json')
+    rejected = alpha_scanner.read_scanner_run_artifact(run['id'], 'rejected_candidates.json')
+
+    assert features['run_id'] == run['id']
+    assert features['feature_count'] == 1
+    assert features['features'][0]['symbol'] == run['candidates'][0]['symbol']
+    assert features['features'][0]['lookahead_safe'] is True
+    assert features['features'][0]['data_sources']
+    assert ledger['candidate_count'] == 1
+    assert any(item['selection_status'] == 'selected' for item in ledger['items'])
+    assert any(item['selection_status'] == 'rejected' for item in ledger['items'])
+    assert rejected['rejected_candidate_count'] >= 1
+    assert rejected['candidates'][0]['rejection_reasons']
+    assert rejected['candidates'][0]['feature_vector']['symbol'] == rejected['candidates'][0]['symbol']
 
 
 def test_alpha_scanner_reads_price_chart_from_daily_prices(tmp_path, monkeypatch):
@@ -793,6 +836,9 @@ def test_admin_mirofish_scanner_routes_are_registered():
     assert '/api/admin/mirofish/scanner/runs/latest' in rules
     assert '/api/admin/mirofish/scanner/runs/<run_id>' in rules
     assert '/api/admin/mirofish/scanner/runs/<run_id>/candidates' in rules
+    assert '/api/admin/mirofish/scanner/runs/<run_id>/feature-vectors' in rules
+    assert '/api/admin/mirofish/scanner/runs/<run_id>/evidence' in rules
+    assert '/api/admin/mirofish/scanner/runs/<run_id>/rejects' in rules
     assert '/api/admin/mirofish/tradingview/status' in rules
     assert '/api/admin/mirofish/price-chart/<symbol>' in rules
     assert '/api/admin/mirofish/workflow/status' in rules

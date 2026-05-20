@@ -361,11 +361,28 @@ export interface MiroFishScannerRun {
     next_scheduled_at?: string;
     freshness_status?: string;
     candidate_count?: number;
+    screened_count?: number;
+    rejected_candidate_count?: number;
     source_files?: MiroFishScannerSourceFile[];
     freshness?: Record<string, any>;
     scoring_schema?: Record<string, any>;
     providers?: Record<string, any>;
     candidates?: MiroFishAlphaCandidate[];
+    analysis_artifacts?: Record<string, string>;
+    performance_advisory?: {
+        available?: boolean;
+        applied_to_scoring?: boolean;
+        source?: string;
+        lookahead_safe?: boolean;
+        evaluated_count?: number;
+        workflow_count_scanned?: number;
+        hit_rate_recent?: number | null;
+        horizon_days?: number | null;
+        recommendations?: Record<string, any>;
+        asof?: string;
+        note?: string;
+        error?: string;
+    };
     summary?: Record<string, any>;
     error?: string;
 }
@@ -1465,11 +1482,15 @@ function normalizeScannerRun(payload: any): MiroFishScannerRun {
         next_scheduled_at: raw.next_scheduled_at === undefined ? undefined : String(raw.next_scheduled_at),
         freshness_status: raw.freshness_status === undefined ? asObject(raw.freshness).status : String(raw.freshness_status),
         candidate_count: asNumber(raw.candidate_count ?? rawCandidates.length, rawCandidates.length),
+        screened_count: raw.screened_count === undefined ? undefined : asNumber(raw.screened_count, 0),
+        rejected_candidate_count: raw.rejected_candidate_count === undefined ? undefined : asNumber(raw.rejected_candidate_count, 0),
         source_files: normalizeScannerSourceFiles(raw.source_files),
         freshness: asObject(raw.freshness),
         scoring_schema: asObject(raw.scoring_schema),
         providers: asObject(raw.providers),
         candidates: rawCandidates.map(normalizeAlphaCandidate),
+        analysis_artifacts: asObject(raw.analysis_artifacts),
+        performance_advisory: asObject(raw.performance_advisory) as MiroFishScannerRun['performance_advisory'],
         summary: asObject(raw.summary),
         error: raw.error === undefined ? undefined : String(raw.error),
     };
@@ -1558,6 +1579,15 @@ export const mirofishApi = {
     ),
     getScannerCandidates: async (runId: string) => normalizeScannerCandidates(
         await fetchAuthAPI<any>(`/api/admin/mirofish/scanner/runs/${runId}/candidates`),
+    ),
+    getScannerFeatureVectors: async (runId: string) => fetchAuthAPI<Record<string, any>>(
+        `/api/admin/mirofish/scanner/runs/${encodeURIComponent(runId)}/feature-vectors`,
+    ),
+    getScannerEvidenceLedger: async (runId: string) => fetchAuthAPI<Record<string, any>>(
+        `/api/admin/mirofish/scanner/runs/${encodeURIComponent(runId)}/evidence`,
+    ),
+    getScannerRejectedCandidates: async (runId: string) => fetchAuthAPI<Record<string, any>>(
+        `/api/admin/mirofish/scanner/runs/${encodeURIComponent(runId)}/rejects`,
     ),
     getDeepSeekStatus: async (live = false) => fetchAuthAPI<MiroFishDeepSeekStatus>(
         `/api/admin/mirofish/deepseek/status${live ? '?live=1' : ''}`,
