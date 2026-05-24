@@ -267,9 +267,12 @@ def login():
         return jsonify({'error': 'Invalid email or password'}), 401
 
     # 계정 상태 검증 (admin은 상태 무관 허용)
+    #
+    # pending 사용자는 로그인 자체를 막지 않는다.
+    # 가입 직후 브라우저를 닫았거나 승인 대기 중 다시 방문한 사용자가
+    # /pending-approval 또는 /plan-select 에서 결제/승인 흐름을 계속 이어갈 수
+    # 있어야 한다. 실제 서비스 접근은 프론트 가드와 pro_required 에서 막는다.
     if not user.is_admin:
-        if user.status == 'pending':
-            return jsonify({'error': '관리자 승인 대기 중입니다. 승인 후 로그인 가능합니다.', 'status': 'pending'}), 403
         if user.status == 'suspended':
             return jsonify({'error': '계정이 정지되었습니다. 관리자에게 문의하세요.', 'status': 'suspended'}), 403
         if user.status == 'rejected':
@@ -359,13 +362,16 @@ def request_subscription():
     if to_tier not in ('pro', 'premium'):
         return jsonify({'error': 'Invalid tier. Use: pro, premium'}), 400
 
-    # 같은 tier 요청은 AI Brain 애드온인 경우에만 허용
-    # (예: 활성 Pro 회원이 AI Brain 만 추가 신청, 활성 Ultra Pro 회원이 AI Brain 만 추가 신청)
-    if to_tier == user.tier and not includes_aibain:
+    is_expired_resubscribe = bool(user.status == 'expired' or user.is_pro_expired)
+
+    # 같은 tier 요청은 AI Brain 애드온 또는 만료 재구독일 때만 허용.
+    # 만료 Pro 회원은 tier 값이 여전히 'pro' 이므로 이 예외가 없으면
+    # "Already on pro tier" 로 재구독 신청이 막힌다.
+    if to_tier == user.tier and not includes_aibain and not is_expired_resubscribe:
         return jsonify({'error': f'Already on {to_tier} tier'}), 400
 
     # premium(Ultra Pro)은 최상위 — 베이스 다운그레이드 불가 (AI Brain 추가는 같은 tier 라 위 체크에서 통과)
-    if user.tier == 'premium' and to_tier == 'pro':
+    if user.tier == 'premium' and to_tier == 'pro' and not is_expired_resubscribe:
         return jsonify({'error': 'Ultra Pro는 최상위 플랜입니다. 다운그레이드할 수 없습니다.'}), 400
 
     # 이미 pending 요청이 있는지 확인
@@ -382,10 +388,15 @@ def request_subscription():
     is_aibain_addon = (to_tier == user.tier and includes_aibain)
     if is_aibain_addon:
         req_type = 'aibain_addon'
+    elif is_expired_resubscribe:
+        req_type = 'renewal'
     elif user.tier is None or (user.tier == 'pro' and to_tier == 'premium'):
         req_type = 'upgrade'
     else:
         req_type = 'downgrade'
+
+    if user.status == 'pending':
+        user.requested_tier = to_tier
 
     depositor_name = (data.get('depositor_name') or '').strip() or None
 
@@ -405,6 +416,10 @@ def request_subscription():
     # admin 패널 비고 (DB 신규 column 없이 admin_note 활용)
     if is_aibain_addon:
         admin_note = 'AI Brain 알파 스캐너 애드온 신청 (+40,000원/30일, 베이스 tier 유지)'
+    elif is_expired_resubscribe and includes_aibain:
+        admin_note = '만료 회원 재구독 신청 + AI Brain 알파 스캐너 포함 요청 (+40,000원/30일)'
+    elif is_expired_resubscribe:
+        admin_note = '만료 회원 재구독 신청'
     elif includes_aibain:
         admin_note = 'AI Brain 알파 스캐너 포함 요청 (+40,000원/30일)'
     else:

@@ -984,7 +984,7 @@ def approve_subscription(req_id):
                 user.pro_expires_at = datetime.now(timezone.utc) + timedelta(days=30)
             elif sub_req.to_tier == 'premium':
                 user.pro_expires_at = None
-            if user.status == 'pending':
+            if user.status != 'approved':
                 user.status = 'approved'
                 user.approved_at = datetime.now(timezone.utc)
                 user.approved_by = admin.id if admin else None

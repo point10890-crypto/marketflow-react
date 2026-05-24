@@ -1,8 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { BANK_ACCOUNT, PLAN_PAYMENT_META } from '@/lib/billingInfo';
 import KakaoSupportLink from '@/components/ui/KakaoSupportLink';
+
+type LoginUser = {
+    role?: string;
+    status?: string;
+    tier?: string | null;
+    is_pro_expired?: boolean;
+};
 
 function safeNextPath(value: string | null): string | null {
     if (!value) return null;
@@ -13,6 +20,25 @@ function safeNextPath(value: string | null): string | null {
     } catch {
         return null;
     }
+}
+
+function nextPathForUser(user: LoginUser, nextPath: string | null): string {
+    if (user.role === 'admin') {
+        return nextPath?.startsWith('/admin') ? nextPath : '/admin';
+    }
+    if (user.status === 'expired' || user.is_pro_expired) {
+        return '/plan-select?resubscribe=1&from=expired';
+    }
+    if (!user.tier) {
+        return '/plan-select';
+    }
+    if (user.status !== 'approved') {
+        return '/pending-approval';
+    }
+    if (user.tier !== 'pro' && user.tier !== 'premium') {
+        return '/plan-select';
+    }
+    return nextPath?.startsWith('/dashboard') ? nextPath : '/dashboard';
 }
 
 export default function LoginPage() {
@@ -26,22 +52,9 @@ export default function LoginPage() {
     const [searchParams] = useSearchParams();
     const nextPath = safeNextPath(searchParams.get('next'));
 
-    // 이미 로그인 상태면 적절한 페이지로 리다이렉트.
-    // authLoading=true 인 동안에는 hydration 중이므로 절대 리다이렉트하지 않음
-    // (synthesized status='unknown' 단계에서 잘못된 위치로 튀는 것을 막는다).
     useEffect(() => {
-        if (authLoading) return;
-        if (!user) return;
-        if (user.status === 'unknown') return;
-        if (user.role === 'admin') {
-            navigate(nextPath && nextPath.startsWith('/admin') ? nextPath : '/admin', { replace: true });
-            return;
-        }
-        if (user.status !== 'approved' || (user.tier !== 'pro' && user.tier !== 'premium')) {
-            navigate('/pending-approval', { replace: true });
-            return;
-        }
-        navigate(nextPath && nextPath.startsWith('/dashboard') ? nextPath : '/dashboard', { replace: true });
+        if (authLoading || !user || user.status === 'unknown') return;
+        navigate(nextPathForUser(user, nextPath), { replace: true });
     }, [user, authLoading, navigate, nextPath]);
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -50,55 +63,60 @@ export default function LoginPage() {
         setLoading(true);
         try {
             await login(email, password, remember);
-            // pending 유저는 승인 대기 페이지로
             const stored = localStorage.getItem('auth_user') || sessionStorage.getItem('auth_user');
             if (stored) {
                 try {
-                    const parsed = JSON.parse(stored);
-                    if (parsed.role === 'admin') {
-                        navigate(nextPath && nextPath.startsWith('/admin') ? nextPath : '/admin');
-                        return;
-                    }
-                    if (parsed.status && parsed.status !== 'approved' && parsed.role !== 'admin') {
-                        navigate('/pending-approval');
-                        return;
-                    }
+                    navigate(nextPathForUser(JSON.parse(stored), nextPath), { replace: true });
+                    return;
                 } catch {
-                    // corrupted storage — proceed to dashboard
+                    // corrupted storage: fall through to dashboard
                 }
             }
-            navigate(nextPath && nextPath.startsWith('/dashboard') ? nextPath : '/dashboard');
+            navigate(nextPath?.startsWith('/dashboard') ? nextPath : '/dashboard', { replace: true });
         } catch (err) {
-            setError((err as Error).message || 'Invalid email or password');
+            setError((err as Error).message || '이메일 또는 비밀번호를 확인해 주세요.');
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div className="min-h-screen bg-black flex items-center justify-center p-4">
+        <div className="min-h-screen bg-black flex items-center justify-center p-4 py-8">
             <div className="w-full max-w-md">
                 <div className="text-center mb-8">
                     <h1 className="text-4xl font-bold text-white tracking-tighter mb-2">
                         Market<span className="text-[#2997ff]">Flow</span>
                     </h1>
-                    <p className="text-gray-500">Sign in to your account</p>
+                    <p className="text-gray-400 font-semibold">로그인 후 상태에 맞는 다음 단계로 이동합니다.</p>
+                    <p className="text-gray-600 text-xs mt-1">승인 대기, 구독 만료, 재구독 신청도 같은 계정으로 이어집니다.</p>
                 </div>
+
                 <form onSubmit={handleSubmit} className="p-8 rounded-2xl bg-[#1c1c1e] border border-white/10 space-y-5">
                     {error && (
-                        <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">{error}</div>
+                        <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-300 text-sm">{error}</div>
                     )}
                     <div>
-                        <label className="block text-xs font-medium text-gray-400 mb-2">Email</label>
-                        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required
+                        <label className="block text-xs font-medium text-gray-400 mb-2">이메일</label>
+                        <input
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
                             className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-600 focus:outline-none focus:border-[#2997ff] transition-colors"
-                            placeholder="you@example.com" />
+                            placeholder="you@example.com"
+                        />
                     </div>
                     <div>
-                        <label className="block text-xs font-medium text-gray-400 mb-2">Password</label>
-                        <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6}
+                        <label className="block text-xs font-medium text-gray-400 mb-2">비밀번호</label>
+                        <input
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                            minLength={6}
                             className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-600 focus:outline-none focus:border-[#2997ff] transition-colors"
-                            placeholder="Min 6 characters" />
+                            placeholder="비밀번호"
+                        />
                     </div>
                     <label className="flex items-center gap-2 cursor-pointer select-none">
                         <input
@@ -109,13 +127,16 @@ export default function LoginPage() {
                         />
                         <span className="text-sm text-gray-400">로그인 유지</span>
                     </label>
-                    <button type="submit" disabled={loading}
-                        className="w-full py-3 rounded-xl bg-[#2997ff] hover:bg-[#2997ff]/90 text-white font-bold transition-all disabled:opacity-50">
-                        {loading ? 'Signing in...' : 'Sign In'}
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="w-full py-3 rounded-xl bg-[#2997ff] hover:bg-[#2997ff]/90 text-white font-bold transition-all disabled:opacity-50"
+                    >
+                        {loading ? '로그인 중...' : '로그인'}
                     </button>
                     <p className="text-center text-sm text-gray-500">
-                        Don&apos;t have an account?{' '}
-                        <Link to="/signup" className="text-[#2997ff] hover:underline">Sign Up</Link>
+                        처음 오셨나요?{' '}
+                        <Link to="/signup" className="text-[#2997ff] hover:underline">가입하고 구독 시작</Link>
                     </p>
                 </form>
 
@@ -126,18 +147,12 @@ export default function LoginPage() {
                         </div>
                         <div>
                             <h2 className="text-white font-bold text-sm">결제 계좌 정보</h2>
-                            <p className="text-gray-500 text-xs">신규 가입·재구독 입금 확인용</p>
+                            <p className="text-gray-500 text-xs">가입, 구독 신청, 재구독 입금 확인용</p>
                         </div>
                     </div>
                     <div className="grid grid-cols-2 gap-3">
-                        <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-                            <span className="text-[10px] text-gray-500 uppercase tracking-wider">은행</span>
-                            <p className="text-white font-bold mt-1 text-sm">{BANK_ACCOUNT.bank}</p>
-                        </div>
-                        <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-                            <span className="text-[10px] text-gray-500 uppercase tracking-wider">예금주</span>
-                            <p className="text-white font-bold mt-1 text-sm">{BANK_ACCOUNT.holder}</p>
-                        </div>
+                        <InfoBox label="은행" value={BANK_ACCOUNT.bank} />
+                        <InfoBox label="예금주" value={BANK_ACCOUNT.holder} />
                         <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06] col-span-2">
                             <div className="flex items-center justify-between gap-3">
                                 <span className="text-[10px] text-gray-500 uppercase tracking-wider">계좌번호</span>
@@ -151,32 +166,34 @@ export default function LoginPage() {
                             </div>
                             <p className="text-white font-bold mt-1 font-mono text-lg tracking-wider">{BANK_ACCOUNT.account}</p>
                         </div>
-                        <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-                            <span className="text-[10px] text-gray-500 uppercase tracking-wider">Pro</span>
-                            <p className="text-amber-400 font-bold mt-1 text-sm">{PLAN_PAYMENT_META.pro.amount}</p>
-                            <p className="text-gray-500 text-[10px] mt-0.5">{PLAN_PAYMENT_META.pro.period}</p>
-                        </div>
-                        <div className="p-3 rounded-xl bg-cyan-500/[0.04] border border-cyan-500/20 relative">
-                            <span className="absolute -top-1.5 right-1.5 text-[8px] font-bold tracking-wider px-1.5 py-0.5 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-500/25">NEW</span>
-                            <span className="text-[10px] text-cyan-300/80 uppercase tracking-wider">Pro + AI Brain</span>
-                            <p className="text-cyan-300 font-bold mt-1 text-sm">{PLAN_PAYMENT_META.pro_aibain.amount}</p>
-                            <p className="text-gray-500 text-[10px] mt-0.5">Pro 50,000 + AI Brain 40,000</p>
-                        </div>
-                        <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-                            <span className="text-[10px] text-gray-500 uppercase tracking-wider">Ultra Pro</span>
-                            <p className="text-purple-400 font-bold mt-1 text-sm">{PLAN_PAYMENT_META.premium.amount}</p>
-                            <p className="text-gray-500 text-[10px] mt-0.5">{PLAN_PAYMENT_META.premium.period}</p>
-                        </div>
-                        <div className="p-3 rounded-xl bg-fuchsia-500/[0.04] border border-fuchsia-500/20 relative">
-                            <span className="absolute -top-1.5 right-1.5 text-[8px] font-bold tracking-wider px-1.5 py-0.5 rounded-full bg-fuchsia-500/15 text-fuchsia-300 border border-fuchsia-500/25">NEW</span>
-                            <span className="text-[10px] text-fuchsia-300/80 uppercase tracking-wider">Ultra Pro + AI Brain</span>
-                            <p className="text-fuchsia-300 font-bold mt-1 text-sm">{PLAN_PAYMENT_META.premium_aibain.amount}</p>
-                            <p className="text-gray-500 text-[10px] mt-0.5">평생 + AI Brain 30일 갱신</p>
-                        </div>
+                        <InfoBox label="Pro" value={PLAN_PAYMENT_META.pro.amount} sub={PLAN_PAYMENT_META.pro.period} valueClass="text-amber-400" />
+                        <InfoBox label="Pro + AI Brain" value={PLAN_PAYMENT_META.pro_aibain.amount} sub="Pro + AI Brain 30일" valueClass="text-cyan-300" />
+                        <InfoBox label="Ultra Pro" value={PLAN_PAYMENT_META.premium.amount} sub={PLAN_PAYMENT_META.premium.period} valueClass="text-purple-300" />
+                        <InfoBox label="Ultra + AI Brain" value={PLAN_PAYMENT_META.premium_aibain.amount} sub="평생 + AI Brain 30일" valueClass="text-fuchsia-300" />
                     </div>
                 </div>
                 <KakaoSupportLink className="mt-3" />
             </div>
+        </div>
+    );
+}
+
+function InfoBox({
+    label,
+    value,
+    sub,
+    valueClass = 'text-white',
+}: {
+    label: string;
+    value: string;
+    sub?: string;
+    valueClass?: string;
+}) {
+    return (
+        <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+            <span className="text-[10px] text-gray-500 uppercase tracking-wider">{label}</span>
+            <p className={`${valueClass} font-bold mt-1 text-sm`}>{value}</p>
+            {sub && <p className="text-gray-500 text-[10px] mt-0.5">{sub}</p>}
         </div>
     );
 }

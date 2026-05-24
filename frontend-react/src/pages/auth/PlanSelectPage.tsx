@@ -4,145 +4,158 @@ import { useAuth } from '@/contexts/AuthContext';
 import KakaoSupportLink from '@/components/ui/KakaoSupportLink';
 import { PLAN_PAYMENT_META, planToQuery, type BillingPlan } from '@/lib/billingInfo';
 
-/**
- * 플랜 선택 페이지 — 신규 가입자 및 만료 재구독 공용.
- *
- * 진입 경로:
- *   - /signup 완료 직후
- *   - /pending-approval 의 "플랜 신청" 버튼
- *   - ApprovedGuard: is_pro_expired=true 인 유저 (만료 재구독)
- *   - /dashboard 상단 재구독 배너
- *
- * 선택 시 /payment-request?plan=X 로 이동.
- * 로그인 안 된 상태로 들어오면 /signup 으로 유도.
- */
+const FLOW_STEPS = ['계정 생성', '플랜 선택', '입금 정보', '승인 대기'];
+
 export default function PlanSelectPage() {
     const { user, token, loading } = useAuth();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const isResubscribe = searchParams.get('resubscribe') === '1' || searchParams.get('from') === 'expired';
+    const allowChange = searchParams.get('change') === '1';
 
-    // 가드 — loading 끝난 뒤에만 판정 (AuthContext 초기화 중 user=null 찰나 보호)
     useEffect(() => {
         if (loading) return;
-        // 비인증 유저는 /signup 으로
         if (!user || !token) {
             navigate('/signup', { replace: true });
             return;
         }
-        // admin 은 대시보드 (플랜 UI 노출 방지)
         if (user.role === 'admin') {
             navigate('/dashboard', { replace: true });
             return;
         }
-        // 활성 구독 유저는 대시보드
         const isActive = (user.tier === 'pro' || user.tier === 'premium')
             && user.status === 'approved'
             && !user.is_pro_expired;
-        if (isActive) {
+        if (isActive && !allowChange) {
             navigate('/dashboard', { replace: true });
         }
-    }, [user, token, loading, navigate]);
+    }, [user, token, loading, navigate, allowChange]);
+
+    if (loading) {
+        return (
+            <div className="fixed inset-0 bg-[#09090b] grid place-items-center text-gray-400">
+                플랜 정보를 불러오는 중...
+            </div>
+        );
+    }
 
     const isExpired = !!user?.is_pro_expired || user?.status === 'expired' || isResubscribe;
     const isPending = user?.status === 'pending';
-    // 만료된 user 의 expired_at 표시용
     const expiredAt = user?.pro_expires_at ? new Date(user.pro_expires_at) : null;
 
     const select = (plan: BillingPlan) => {
-        navigate(`/payment-request?${planToQuery(plan)}`);
+        navigate(`/payment-request?${planToQuery(plan)}${isExpired ? '&resubscribe=1' : ''}`);
     };
 
     return (
         <div className="fixed inset-0 bg-[#09090b] flex flex-col items-center overflow-y-auto p-6 sm:p-8">
-            {/* 만료 = 계정 정지 안내 (강조 배너) */}
-            {isExpired && (
-                <div className="w-full max-w-4xl mt-4 mb-6 rounded-2xl border-2 border-rose-500/40 bg-gradient-to-br from-rose-500/[0.12] via-amber-500/[0.05] to-slate-950/60 p-5 sm:p-6 backdrop-blur-md shadow-[0_8px_40px_rgba(244,63,94,0.18)]">
-                    <div className="flex items-start gap-3">
-                        <div className="grid h-10 w-10 sm:h-12 sm:w-12 shrink-0 place-items-center rounded-full bg-rose-500/20 text-rose-300 text-xl">
-                            ⚠️
-                        </div>
-                        <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-2 flex-wrap">
-                                <h2 className="text-lg sm:text-xl font-black text-rose-200">
-                                    Pro 구독 만료 — 계정이 정지되었습니다
-                                </h2>
-                                <span className="inline-flex items-center rounded-full border border-rose-400/40 bg-rose-500/15 px-2 py-0.5 text-[10px] font-black text-rose-200 uppercase tracking-wider">
-                                    EXPIRED
-                                </span>
+            <div className="w-full max-w-5xl">
+                {isExpired && (
+                    <div className="mb-6 rounded-2xl border-2 border-rose-500/40 bg-gradient-to-br from-rose-500/[0.12] via-amber-500/[0.05] to-slate-950/60 p-5 sm:p-6 shadow-[0_8px_40px_rgba(244,63,94,0.18)]">
+                        <div className="flex items-start gap-3">
+                            <div className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-rose-500/20 text-rose-200">
+                                <i className="fas fa-rotate-right" />
                             </div>
-                            <p className="mt-2 text-sm text-rose-100/80 leading-relaxed">
-                                구독이 만료되어 데이터 페이지 접근이 차단되었습니다. 아래 플랜을 다시 선택해 재구독 신청해 주세요.
-                            </p>
-                            {expiredAt && (
-                                <p className="mt-1 text-xs text-rose-200/60 tabular-nums">
-                                    만료일: {expiredAt.toLocaleDateString('ko-KR')} {expiredAt.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
+                            <div className="min-w-0 flex-1">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                    <h2 className="text-lg sm:text-xl font-black text-rose-100">구독이 만료되었습니다. 재구독 신청을 진행하세요.</h2>
+                                    <span className="inline-flex items-center rounded-full border border-rose-400/40 bg-rose-500/15 px-2 py-0.5 text-[10px] font-black text-rose-100 uppercase tracking-wider">
+                                        재구독
+                                    </span>
+                                </div>
+                                <p className="mt-2 text-sm text-rose-100/75 leading-relaxed">
+                                    기존 계정은 유지됩니다. 원하는 플랜을 선택하고 입금자명만 확인하면 승인 대기 단계로 넘어갑니다.
                                 </p>
-                            )}
+                                {expiredAt && (
+                                    <p className="mt-1 text-xs text-rose-200/60 tabular-nums">
+                                        만료일: {expiredAt.toLocaleDateString('ko-KR')} {expiredAt.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
+                                    </p>
+                                )}
+                            </div>
                         </div>
                     </div>
+                )}
+
+                <div className="mb-5 grid grid-cols-4 gap-2">
+                    {FLOW_STEPS.map((step, index) => (
+                        <div
+                            key={step}
+                            className={`rounded-xl border px-2 py-2 text-center text-[10px] font-bold ${
+                                index === 1
+                                    ? 'border-amber-400/40 bg-amber-500/15 text-amber-200'
+                                    : index < 1
+                                    ? 'border-emerald-400/30 bg-emerald-500/10 text-emerald-200'
+                                    : 'border-white/10 bg-white/[0.03] text-gray-500'
+                            }`}
+                        >
+                            <div className="mb-1 text-[11px]">{index + 1}</div>
+                            {step}
+                        </div>
+                    ))}
                 </div>
-            )}
 
-            <div className="text-center mt-2 sm:mt-6 mb-10">
-                <h1 className="text-4xl sm:text-5xl font-black text-white tracking-tight mb-4">
-                    {isExpired ? '재구독 플랜' : '플랜을 선택해 주세요'}
-                </h1>
-                <p className="text-gray-400 text-base sm:text-lg max-w-md mx-auto">
-                    {isExpired
-                        ? '서비스 재개를 위해 플랜을 다시 신청해 주세요.'
-                        : isPending
-                        ? '계정이 생성되었습니다. 구독 플랜을 선택하세요.'
-                        : '원하시는 구독 플랜을 선택하세요.'}
-                </p>
-                {user && (
-                    <p className="text-gray-600 text-xs mt-2">
-                        로그인: <span className="text-gray-400">{user.email}</span>
+                <div className="text-center mb-8">
+                    <h1 className="text-4xl sm:text-5xl font-black text-white tracking-tight mb-4">
+                        {isExpired ? '재구독 플랜 선택' : '플랜을 선택해 주세요'}
+                    </h1>
+                    <p className="text-gray-400 text-base sm:text-lg max-w-xl mx-auto">
+                        {isExpired
+                            ? '서비스 재개를 위해 다시 이용할 플랜을 선택하세요.'
+                            : isPending
+                            ? '계정 생성이 끝났습니다. 이제 이용할 플랜을 선택하면 됩니다.'
+                            : '구독 신청을 진행할 플랜을 선택하세요.'}
                     </p>
-                )}
-            </div>
+                    {user && (
+                        <p className="text-gray-600 text-xs mt-2">
+                            로그인 계정: <span className="text-gray-400">{user.email}</span>
+                        </p>
+                    )}
+                </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 max-w-4xl w-full">
-                <PlanCard plan="pro" onSelect={select} badgeIcon="fa-crown" badgeText="기본" />
-                <PlanCard plan="pro_aibain" onSelect={select} badgeIcon="fa-robot" badgeText="추천" highlighted />
-                <PlanCard plan="premium" onSelect={select} badgeIcon="fa-gem" badgeText="평생 이용" />
-                <PlanCard plan="premium_aibain" onSelect={select} badgeIcon="fa-crown" badgeText="평생 + AI Brain" />
-            </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <PlanCard plan="pro" onSelect={select} badgeIcon="fa-crown" badgeText="기본" />
+                    <PlanCard plan="pro_aibain" onSelect={select} badgeIcon="fa-robot" badgeText="추천" highlighted />
+                    <PlanCard plan="premium" onSelect={select} badgeIcon="fa-gem" badgeText="평생 이용" />
+                    <PlanCard plan="premium_aibain" onSelect={select} badgeIcon="fa-crown" badgeText="평생 + AI Brain" />
+                </div>
 
-            <p className="text-gray-500 text-xs mt-8 text-center max-w-md">
-                선택 후 국민은행 계좌로 입금 → 관리자 확인 후 활성화 (최대 24시간).<br />
-                Ultra Pro 는 24개월 이상 이용 시 Pro 대비 절반 이하 비용입니다.
-            </p>
+                <div className="mt-8 rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-sm text-gray-400 leading-relaxed">
+                    <div className="flex items-start gap-3">
+                        <i className="fas fa-circle-info text-amber-400 mt-1" />
+                        <p>
+                            플랜 선택 후 계좌번호와 입금 금액이 자동으로 표시됩니다. 입금자명은 가입 이름과 같게 입력하면 승인 확인이 빨라집니다.
+                        </p>
+                    </div>
+                </div>
 
-            <div className="mt-5 w-full max-w-md">
-                <KakaoSupportLink />
-            </div>
+                <div className="mt-5 w-full max-w-md mx-auto">
+                    <KakaoSupportLink />
+                </div>
 
-            <div className="mt-6 flex items-center gap-4 text-xs">
-                <a href="/" className="text-gray-500 hover:text-white transition-colors">
-                    <i className="fas fa-arrow-left mr-1" />홈으로
-                </a>
-                {user && (
-                    <button
-                        type="button"
-                        onClick={() => {
-                            localStorage.removeItem('auth_token');
-                            sessionStorage.removeItem('auth_token');
-                            localStorage.removeItem('auth_user');
-                            sessionStorage.removeItem('auth_user');
-                            navigate('/login', { replace: true });
-                        }}
-                        className="text-gray-500 hover:text-red-400 transition-colors"
-                    >
-                        <i className="fas fa-sign-out-alt mr-1" />로그아웃
+                <div className="mt-6 flex items-center justify-center gap-4 text-xs">
+                    <button type="button" onClick={() => navigate('/')} className="text-gray-500 hover:text-white transition-colors">
+                        <i className="fas fa-arrow-left mr-1" />처음으로
                     </button>
-                )}
+                    {user && (
+                        <button
+                            type="button"
+                            onClick={() => {
+                                localStorage.removeItem('auth_token');
+                                sessionStorage.removeItem('auth_token');
+                                localStorage.removeItem('auth_user');
+                                sessionStorage.removeItem('auth_user');
+                                navigate('/login', { replace: true });
+                            }}
+                            className="text-gray-500 hover:text-red-400 transition-colors"
+                        >
+                            <i className="fas fa-sign-out-alt mr-1" />로그아웃
+                        </button>
+                    )}
+                </div>
             </div>
         </div>
     );
 }
-
-// ── PlanCard component ─────────────────────────────────────────────────────
 
 interface PlanCardProps {
     plan: BillingPlan;
@@ -152,7 +165,7 @@ interface PlanCardProps {
     highlighted?: boolean;
 }
 
-const COLOR_STYLES: Record<NonNullable<PlanCardProps['plan']>, {
+const COLOR_STYLES: Record<BillingPlan, {
     border: string;
     ring: string;
     hoverRing: string;
@@ -212,10 +225,8 @@ const COLOR_STYLES: Record<NonNullable<PlanCardProps['plan']>, {
 function PlanCard({ plan, onSelect, badgeIcon, badgeText, highlighted }: PlanCardProps) {
     const meta = PLAN_PAYMENT_META[plan];
     const c = COLOR_STYLES[plan];
-
-    // 가격 표시 분리: AI Brain 포함 시 베이스/AI Brain 분리 표기
     const priceMajor = meta.amountNumber.toLocaleString();
-    const priceUnit = plan === 'premium' ? '원' : '원/30일';
+    const priceUnit = plan === 'premium' ? '원' : '원 / 30일';
 
     return (
         <button
@@ -224,7 +235,6 @@ function PlanCard({ plan, onSelect, badgeIcon, badgeText, highlighted }: PlanCar
             className={`p-6 rounded-2xl border ${c.border} bg-[#1c1c1e] ring-1 ${c.ring} hover:ring-2 ${c.hoverRing} transition-all text-left relative overflow-hidden ${highlighted ? 'sm:scale-[1.02]' : ''}`}
         >
             <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl ${c.bgOverlay} rounded-bl-full pointer-events-none`} />
-
             <div className={`inline-flex items-center gap-1 px-3 py-1 rounded-full ${c.badgeBg} ${c.badgeText} text-xs font-bold mb-3`}>
                 <i className={`fas ${badgeIcon}`} /> {badgeText}
             </div>
@@ -238,7 +248,7 @@ function PlanCard({ plan, onSelect, badgeIcon, badgeText, highlighted }: PlanCar
                     {meta.baseAmount} + <strong className="text-white">{meta.aibainAmount}</strong>
                 </p>
             ) : (
-                <p className={`${c.accent}/70 text-xs font-semibold mb-5`}>{meta.description}</p>
+                <p className={`${c.accent} text-xs font-semibold mb-5`}>{meta.description}</p>
             )}
             <ul className="space-y-2 mb-6 text-sm text-gray-300">
                 {meta.features.map((feature, i) => (
@@ -249,7 +259,7 @@ function PlanCard({ plan, onSelect, badgeIcon, badgeText, highlighted }: PlanCar
                 ))}
             </ul>
             <div className={`w-full py-3 rounded-xl bg-gradient-to-r ${c.btn} ${c.btnText} font-bold text-center text-sm`}>
-                {meta.label} 선택 →
+                {meta.label} 선택
             </div>
         </button>
     );

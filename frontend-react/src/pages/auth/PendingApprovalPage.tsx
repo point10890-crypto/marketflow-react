@@ -5,6 +5,8 @@ import { BANK_ACCOUNT } from '@/lib/billingInfo';
 import { subscriptionAPI, type SubscriptionRequest } from '@/lib/api';
 import KakaoSupportLink from '@/components/ui/KakaoSupportLink';
 
+const FLOW_STEPS = ['계정 생성', '플랜 선택', '입금 정보', '승인 대기'];
+
 /**
  * 승인 대기 페이지 — 모든 sub_req (신규 가입 + AI Brain 애드온 + 업그레이드) 공통.
  *
@@ -113,7 +115,11 @@ export default function PendingApprovalPage() {
     // 헤더 / 안내 문구 분기
     const isUpgradeFromActive = user?.status === 'approved' && (user.tier === 'pro' || user.tier === 'premium');
     let headerTitle = '승인 대기 중';
-    let headerSubtitle = '회원가입이 완료되었습니다. 관리자가 Pro 또는 Ultra Pro 등급을 부여하면 서비스를 이용하실 수 있습니다.';
+    let headerSubtitle = '구독 신청이 접수되었습니다. 입금 확인 후 관리자가 서비스를 활성화합니다.';
+    if (!pendingSubReq && !isUpgradeFromActive) {
+        headerTitle = '플랜 선택이 필요합니다';
+        headerSubtitle = '계정은 만들어졌지만 아직 구독 신청이 접수되지 않았습니다. 플랜을 선택하면 입금 안내와 승인 신청이 이어집니다.';
+    }
     if (isAibainAddon) {
         headerTitle = 'AI Brain 활성화 대기 중';
         headerSubtitle = '입금 확인 후 관리자가 AI Brain 알파 스캐너 서비스를 활성화합니다. 그 동안 기존 구독은 그대로 이용 가능합니다.';
@@ -125,9 +131,24 @@ export default function PendingApprovalPage() {
     return (
         <div className="min-h-screen bg-black flex items-center justify-center p-4">
             <div className="w-full max-w-lg text-center">
+                <div className="mb-4 grid grid-cols-4 gap-2">
+                    {FLOW_STEPS.map((step, index) => (
+                        <div
+                            key={step}
+                            className={`rounded-xl border px-2 py-2 text-center text-[10px] font-bold ${
+                                index === 3
+                                    ? 'border-emerald-400/40 bg-emerald-500/15 text-emerald-200'
+                                    : 'border-emerald-400/25 bg-emerald-500/10 text-emerald-200'
+                            }`}
+                        >
+                            <div className="mb-1 text-[11px]">{index + 1}</div>
+                            {step}
+                        </div>
+                    ))}
+                </div>
                 <div className={`p-8 rounded-2xl bg-[#1c1c1e] border ${themeColor.border}`}>
                     <div className={`w-16 h-16 mx-auto mb-6 ${themeColor.bg} rounded-full flex items-center justify-center`}>
-                        <i className={`${isAibainAddon ? 'fas fa-robot' : 'fas fa-hourglass-half'} text-2xl ${themeColor.text}`}></i>
+                        <i className={`${!pendingSubReq && !isUpgradeFromActive ? 'fas fa-credit-card' : isAibainAddon ? 'fas fa-robot' : 'fas fa-hourglass-half'} text-2xl ${themeColor.text}`}></i>
                     </div>
 
                     <h1 className="text-2xl font-bold text-white mb-2">{headerTitle}</h1>

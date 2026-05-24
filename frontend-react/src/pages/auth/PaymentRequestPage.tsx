@@ -25,6 +25,7 @@ export default function PaymentRequestPage() {
     const rawPlan = searchParams.get('plan');
     const rawAibain = searchParams.get('aibain');
     const plan: BillingPlan | null = planFromQuery(rawPlan, rawAibain);
+    const selectedMeta = plan ? PLAN_PAYMENT_META[plan] : null;
 
     const [depositorName, setDepositorName] = useState('');
     const [submitting, setSubmitting] = useState(false);
@@ -41,16 +42,21 @@ export default function PaymentRequestPage() {
             navigate('/dashboard', { replace: true });
             return;
         }
+        if (!plan) {
+            navigate('/plan-select', { replace: true });
+            return;
+        }
+        const meta = PLAN_PAYMENT_META[plan];
         const isActive = (user.tier === 'pro' || user.tier === 'premium')
             && user.status === 'approved'
             && !user.is_pro_expired;
         if (isActive) {
-            navigate('/dashboard', { replace: true });
-            return;
-        }
-        if (!plan) {
-            navigate('/plan-select', { replace: true });
-            return;
+            const sameBaseTier = meta.tier === user.tier;
+            const aiBrainAddonOnly = sameBaseTier && meta.includesAibain && !user.is_aibain_active;
+            const tierUpgrade = user.tier === 'pro' && meta.tier === 'premium';
+            if (!aiBrainAddonOnly && !tierUpgrade) {
+                navigate('/dashboard', { replace: true });
+            }
         }
     }, [user, token, plan, loading, navigate]);
 
@@ -61,11 +67,19 @@ export default function PaymentRequestPage() {
         }
     }, [user?.name]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    if (!user || !token || !plan) {
+    if (!user || !token || !selectedMeta) {
         return null;
     }
 
-    const meta = PLAN_PAYMENT_META[plan];
+    const meta = selectedMeta;
+    const isAiBrainAddonOnly = user.status === 'approved'
+        && !user.is_pro_expired
+        && meta.includesAibain
+        && meta.tier === user.tier
+        && !user.is_aibain_active;
+    const displayLabel = isAiBrainAddonOnly ? 'AI Brain 애드온' : meta.label;
+    const displayAmount = isAiBrainAddonOnly ? '40,000원' : meta.amount;
+    const displayPeriod = isAiBrainAddonOnly ? 'AI Brain 30일 갱신' : meta.period;
 
     const colorMap = {
         amber:    { ring: 'ring-amber-500/30',    bg: 'bg-amber-500/10',    text: 'text-amber-400',   btn: 'from-amber-500 to-orange-500',          btnText: 'text-black',  icon: 'fas fa-crown' },
@@ -103,19 +117,35 @@ export default function PaymentRequestPage() {
                 <div className="text-center mb-6">
                     <div className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full ${colorMap.bg} ${colorMap.text} text-xs font-bold mb-3`}>
                         <i className={colorMap.icon} />
-                        선택한 플랜: {meta.label}
+                        선택한 플랜: {displayLabel}
                     </div>
                     <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight mb-2">
                         입금 안내
                     </h1>
                     <p className="text-gray-500 text-sm">
-                        아래 계좌로 <span className={`font-bold ${colorMap.text}`}>{meta.amount}</span> 입금 후<br />
+                        아래 계좌로 <span className={`font-bold ${colorMap.text}`}>{displayAmount}</span> 입금 후<br />
                         승인 신청 버튼을 눌러주세요.
                     </p>
                 </div>
 
                 {/* AI Brain 포함 시 가격 분해 안내 */}
-                {meta.includesAibain && meta.baseAmount && meta.aibainAmount && (
+                {isAiBrainAddonOnly ? (
+                    <div className={`p-4 rounded-2xl ${colorMap.bg} border border-cyan-400/15 mb-4`}>
+                        <h4 className="text-cyan-300 font-bold text-xs mb-2 flex items-center gap-1.5">
+                            <i className="fas fa-robot" />
+                            AI Brain 추가 신청
+                        </h4>
+                        <div className="text-xs text-gray-300 space-y-1">
+                            <div className="flex justify-between">
+                                <span>기존 {user.tier === 'premium' ? 'Ultra Pro' : 'Pro'} 구독은 유지</span>
+                            </div>
+                            <div className="flex justify-between font-bold text-white">
+                                <span>AI Brain 30일</span>
+                                <span className={`font-mono ${colorMap.text}`}>40,000원</span>
+                            </div>
+                        </div>
+                    </div>
+                ) : meta.includesAibain && meta.baseAmount && meta.aibainAmount && (
                     <div className={`p-4 rounded-2xl ${colorMap.bg} border border-cyan-400/15 mb-4`}>
                         <h4 className="text-cyan-300 font-bold text-xs mb-2 flex items-center gap-1.5">
                             <i className="fas fa-receipt" />
@@ -171,8 +201,8 @@ export default function PaymentRequestPage() {
                     <div className={`p-3 rounded-lg ${colorMap.bg}`}>
                         <span className="text-[10px] text-gray-500 uppercase tracking-wider">입금 금액</span>
                         <div className="flex items-baseline justify-between mt-0.5">
-                            <p className={`font-black text-2xl ${colorMap.text}`}>{meta.amount}</p>
-                            <span className="text-xs text-gray-500">{meta.period}</span>
+                            <p className={`font-black text-2xl ${colorMap.text}`}>{displayAmount}</p>
+                            <span className="text-xs text-gray-500">{displayPeriod}</span>
                         </div>
                     </div>
                 </div>
@@ -209,7 +239,7 @@ export default function PaymentRequestPage() {
                     {submitting ? (
                         <><i className="fas fa-spinner fa-spin" />처리 중...</>
                     ) : (
-                        <><i className="fas fa-paper-plane" />{meta.label} 승인 신청</>
+                        <><i className="fas fa-paper-plane" />{displayLabel} 승인 신청</>
                     )}
                 </button>
 
