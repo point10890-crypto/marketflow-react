@@ -9,6 +9,7 @@ AI 로또 분석 — 매주 금요일 자동 게시 스크립트
 
 import argparse
 import json
+import logging
 import math
 import os
 import random
@@ -19,6 +20,15 @@ from collections import Counter, defaultdict
 from datetime import datetime, timedelta
 
 import requests
+
+logger = logging.getLogger('lotto_analysis')
+# scheduler 데몬에서 호출되는 경우 부모 logger (`marketflow_scheduler` 또는 root) 에 propagate
+# 단독 실행 (`python scripts/lotto_analysis.py`) 시 stdout 으로도 출력되도록 핸들러 추가
+if not logger.handlers and not logging.getLogger().handlers:
+    _h = logging.StreamHandler(sys.stdout)
+    _h.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+    logger.addHandler(_h)
+    logger.setLevel(logging.INFO)
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, BASE_DIR)
@@ -73,7 +83,7 @@ def _alert_telegram(text: str) -> None:
 def load_history() -> list[dict]:
     """로또 당첨번호 히스토리 로드"""
     if not os.path.exists(DATA_FILE):
-        print(f"[ERROR] {DATA_FILE} not found")
+        logger.error(f"{DATA_FILE} not found")
         sys.exit(1)
     with open(DATA_FILE, 'r', encoding='utf-8') as f:
         data = json.load(f)
@@ -218,7 +228,7 @@ def refresh_history(draws: list[dict]) -> list[dict]:
             draw = fetch_draw(no)
         except LottoFetchError as e:
             fetch_errors.append(str(e))
-            print(f'[WARN] refresh fail #{no}: {e}')
+            logger.warning(f'refresh fail #{no}: {e}')
             break
         if draw is None:
             # 아직 추첨 전 → 여기서 중단 (미래 회차 조회 금지)
@@ -230,10 +240,10 @@ def refresh_history(draws: list[dict]) -> list[dict]:
         draws.sort(key=lambda x: x['drwNo'])
         with open(DATA_FILE, 'w', encoding='utf-8') as f:
             json.dump(draws, f, ensure_ascii=False, indent=2)
-        print(f'[DATA] {new_count}개 새 회차 추가 (최신: #{draws[-1]["drwNo"]})')
+        logger.info(f'{new_count}개 새 회차 추가 (최신: #{draws[-1]["drwNo"]})')
     if fetch_errors and new_count == 0:
         # 모든 fetch 가 에러로 끝났음 → 상위에서 staleness guard 가 판단
-        print(f'[WARN] refresh_history 새 회차 확보 실패: {fetch_errors[0]}')
+        logger.warning(f'refresh_history 새 회차 확보 실패: {fetch_errors[0]}')
     return draws
 
 
@@ -259,7 +269,7 @@ def ensure_fresh_history(draws: list[dict]) -> None:
     if lag_days >= 7:
         msg = (f'[BLOCK] lotto_history 최신 #{last["drwNo"]} ({last["drwNoDate"]}) — '
                f'예상 최신 토요일 {expected.strftime("%Y-%m-%d")} 대비 {lag_days}일 지연')
-        print(msg)
+        logger.error(msg)
         _alert_telegram(
             f'⚠️ <b>AI 로또 분석 중단</b>\n'
             f'lotto_history 최신: #{last["drwNo"]} ({last["drwNoDate"]})\n'
@@ -538,7 +548,7 @@ def get_gemini_client():
     load_dotenv(os.path.join(BASE_DIR, '.env'))
     api_key = os.getenv('GEMINI_API_KEY') or os.getenv('GOOGLE_API_KEY')
     if not api_key:
-        print("[ERROR] GEMINI_API_KEY not found in .env")
+        logger.error("GEMINI_API_KEY not found in .env")
         sys.exit(1)
     from google import genai
     return genai.Client(api_key=api_key)
@@ -646,7 +656,7 @@ def generate_image(client, prompt: str) -> bytes | None:
             if part.inline_data and part.inline_data.data:
                 return part.inline_data.data
     except Exception as e:
-        print(f"[WARN] Image generation failed: {e}")
+        logger.warning(f"Image generation failed: {e}")
     return None
 
 
@@ -665,14 +675,14 @@ def login() -> str:
     if ADMIN_TOKEN:
         return ADMIN_TOKEN
     if not ADMIN_PASSWORD:
-        print("[ERROR] MARKETFLOW_ADMIN_TOKEN or MARKETFLOW_ADMIN_PASSWORD is required")
+        logger.error("MARKETFLOW_ADMIN_TOKEN or MARKETFLOW_ADMIN_PASSWORD is required")
         sys.exit(1)
     resp = requests.post(f"{API_URL}/api/auth/login", json={
         "email": ADMIN_EMAIL, "password": ADMIN_PASSWORD,
     })
     if resp.status_code == 200:
         return resp.json()['token']
-    print(f"[ERROR] Admin login failed for {ADMIN_EMAIL}")
+    logger.error(f"Admin login failed for {ADMIN_EMAIL}")
     sys.exit(1)
 
 
@@ -684,10 +694,10 @@ def create_post(token: str, board: str, title: str, content: str) -> int:
         json={"title": title, "content": content},
     )
     if resp.status_code not in (200, 201):
-        print(f"[ERROR] Post creation failed: {resp.status_code} {resp.text[:200]}")
+        logger.error(f"Post creation failed: {resp.status_code} {resp.text[:200]}")
         sys.exit(1)
     post_id = resp.json()['id']
-    print(f"[OK] Post created: id={post_id}")
+    logger.info(f"Post created: id={post_id}")
     return post_id
 
 
@@ -699,9 +709,9 @@ def pin_notice(token: str, post_id: int):
         json={"is_notice": True},
     )
     if resp.status_code == 200:
-        print(f"[OK] Notice pinned: id={post_id}")
+        logger.info(f"Notice pinned: id={post_id}")
     else:
-        print(f"[WARN] Pin failed: {resp.status_code}")
+        logger.warning(f"Pin failed: {resp.status_code}")
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -712,77 +722,75 @@ def run_lotto_analysis_post(dry_run: bool = False) -> bool:
     """전체 파이프라인 실행"""
     try:
         # 1. 데이터 로드 + 갱신 + 신선도 검증
-        print("[1/6] 로또 데이터 로드 중...")
+        logger.info("[1/6] 로또 데이터 로드 중...")
         draws = load_history()
         draws = refresh_history(draws)
         ensure_fresh_history(draws)  # 오래된 데이터로 분석 방지 (지난 추첨 누락 시 중단)
-        print(f"[1/6] 총 {len(draws)}회차 데이터 (#{draws[0]['drwNo']} ~ #{draws[-1]['drwNo']})")
+        logger.info(f"[1/6] 총 {len(draws)}회차 데이터 (#{draws[0]['drwNo']} ~ #{draws[-1]['drwNo']})")
 
         # 2. 통계 계산
-        print("[2/6] 통계 분석 중...")
+        logger.info("[2/6] 통계 분석 중...")
         stats = compute_stats(draws)
-        print(f"[2/6] 핫넘버(10회): {stats['hot_10'][:6]}")
-        print(f"[2/6] 콜드넘버(10회): {stats['cold_10'][:6]}")
+        logger.info(f"[2/6] 핫넘버(10회): {stats['hot_10'][:6]}")
+        logger.info(f"[2/6] 콜드넘버(10회): {stats['cold_10'][:6]}")
 
         # 3. 후보 생성
-        print("[3/6] AI 후보 생성 중...")
+        logger.info("[3/6] AI 후보 생성 중...")
         candidates = generate_candidates(stats, n_sets=4)
         for style, data in candidates.items():
             best = data['sets'][0] if data['sets'] else None
             if best:
-                print(f"[3/6] {style}: {best['numbers']} (점수: {best['score']})")
+                logger.info(f"[3/6] {style}: {best['numbers']} (점수: {best['score']})")
 
         if dry_run:
-            print("\n--- DRY RUN ---")
-            print(f"Stats Summary:\n{build_stats_summary(stats)}")
-            print(f"\nCandidates:\n{build_candidates_text(candidates)}")
+            logger.info("--- DRY RUN ---")
+            logger.info("Stats Summary:\n%s", build_stats_summary(stats))
+            logger.info("Candidates:\n%s", build_candidates_text(candidates))
             return True
 
         # 4. Gemini 글 생성
-        print("[4/6] Gemini로 분석 글 작성 중...")
+        logger.info("[4/6] Gemini로 분석 글 작성 중...")
         client = get_gemini_client()
         result = generate_lotto_post(client, stats, candidates)
         title = result['title']
         content = result['content']
         image_prompt = result.get('image_prompt', '')
-        print(f"[4/6] 제목: {title}")
-        print(f"[4/6] 본문: {len(content)}자")
+        logger.info(f"[4/6] 제목: {title}")
+        logger.info(f"[4/6] 본문: {len(content)}자")
 
         # 5. 이미지 생성
         if image_prompt and '{{IMAGE}}' in content:
-            print("[5/6] Nano Banana로 이미지 생성 중...")
+            logger.info("[5/6] Nano Banana로 이미지 생성 중...")
             image_data = generate_image(client, image_prompt)
             if image_data:
                 image_url = save_image(image_data)
                 img_tag = f'<img src="{image_url}" alt="AI 로또 분석 일러스트" style="width:100%;max-width:680px;border-radius:12px;margin:16px auto;display:block;" />'
                 content = content.replace('{{IMAGE}}', img_tag, 1)
                 content = content.replace('{{IMAGE}}', '')
-                print(f"[5/6] 이미지 생성 완료: {image_url}")
+                logger.info(f"[5/6] 이미지 생성 완료: {image_url}")
             else:
                 content = content.replace('{{IMAGE}}', '')
-                print("[5/6] 이미지 생성 실패 — 텍스트만 게시")
+                logger.warning("[5/6] 이미지 생성 실패 — 텍스트만 게시")
         else:
             content = content.replace('{{IMAGE}}', '')
-            print("[5/6] 이미지 플레이스홀더 없음 — 스킵")
+            logger.info("[5/6] 이미지 플레이스홀더 없음 — 스킵")
 
         # 6. 게시
-        print("[6/6] 관리자 로그인 + 게시...")
+        logger.info("[6/6] 관리자 로그인 + 게시...")
         token = login()
         post_id = create_post(token, 'lotto-ai', title, content)
         pin_notice(token, post_id)
 
-        print(f"\n=== 완료 ===")
-        print(f"URL: /dashboard/community/post/{post_id}")
+        logger.info("=== 완료 ===")
+        logger.info(f"URL: /dashboard/community/post/{post_id}")
         return {
             'post_id': post_id,
             'title': title,
             'candidates': candidates,
         }
 
-    except Exception as e:
-        print(f"[ERROR] 로또 분석 실패: {e}")
-        import traceback
-        traceback.print_exc()
+    except Exception:
+        logger.exception("로또 분석 실패")  # exc_info=True 자동 포함
         return False
 
 
