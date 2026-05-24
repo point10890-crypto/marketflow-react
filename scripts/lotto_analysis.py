@@ -240,7 +240,7 @@ def refresh_history(draws: list[dict]) -> list[dict]:
         draws.sort(key=lambda x: x['drwNo'])
         with open(DATA_FILE, 'w', encoding='utf-8') as f:
             json.dump(draws, f, ensure_ascii=False, indent=2)
-        logger.info(f'{new_count}개 새 회차 추가 (최신: #{draws[-1]["drwNo"]})')
+        logger.info(f'[DATA] {new_count}개 새 회차 추가 (최신: #{draws[-1]["drwNo"]})')
     if fetch_errors and new_count == 0:
         # 모든 fetch 가 에러로 끝났음 → 상위에서 staleness guard 가 판단
         logger.warning(f'refresh_history 새 회차 확보 실패: {fetch_errors[0]}')

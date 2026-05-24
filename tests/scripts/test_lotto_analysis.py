@@ -2,8 +2,6 @@
 import logging
 from unittest.mock import MagicMock
 
-import pytest
-
 
 def test_logger_used_for_errors(caplog, clean_env, monkeypatch):
     """run_lotto_analysis_post 에서 예외 발생 시 traceback 이 logger 로 기록되어야 함.
