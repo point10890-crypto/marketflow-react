@@ -40,6 +40,8 @@ except ImportError:
 
 DATA_FILE = os.path.join(BASE_DIR, 'data', 'lotto_history.json')
 DB_FILE = os.path.join(BASE_DIR, 'data', 'users.db')
+LOTTO_BOARD_SLUG = 'lotto-ai'
+LOTTO_BOARD_ID = 7  # boards.slug='lotto-ai' 의 id (스키마 변경 시 helper 가 자동 fallback)
 UPLOAD_DIR = os.path.join(BASE_DIR, 'data', 'uploads', 'community')
 API_URL = os.getenv("MARKETFLOW_API_URL") or os.getenv("COMMUNITY_API_URL") or "http://localhost:5001"
 ADMIN_EMAIL = os.getenv("MARKETFLOW_ADMIN_EMAIL") or os.getenv("COMMUNITY_ADMIN_EMAIL") or "point10890@gmail.com"
@@ -695,18 +697,19 @@ def _local_admin_token() -> str | None:
         logger.warning("Local admin token: users.db not found at %s", DB_FILE)
         return None
 
-    # 1) admin user_id 조회 — ADMIN_EMAIL 우선, 없으면 첫 is_admin
+    # 1) admin user_id 조회 — ADMIN_EMAIL 우선, 없으면 첫 admin role
+    # users 테이블은 `role` 컬럼 사용 ('admin' / 'user' 등). `is_admin` 은 User 모델의 property 이므로 SQL 에서 직접 못 씀.
     try:
         with sqlite3.connect(DB_FILE, timeout=5) as con:
             cur = con.cursor()
             cur.execute(
-                "SELECT id FROM users WHERE email = ? AND is_admin = 1 LIMIT 1",
+                "SELECT id FROM users WHERE email = ? AND role = 'admin' LIMIT 1",
                 (ADMIN_EMAIL,)
             )
             row = cur.fetchone()
             if not row:
                 cur.execute(
-                    "SELECT id FROM users WHERE is_admin = 1 ORDER BY id ASC LIMIT 1"
+                    "SELECT id FROM users WHERE role = 'admin' ORDER BY id ASC LIMIT 1"
                 )
                 row = cur.fetchone()
             if not row:

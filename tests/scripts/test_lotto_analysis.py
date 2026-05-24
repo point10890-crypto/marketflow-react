@@ -1,6 +1,7 @@
 """lotto_analysis 단위 테스트."""
 import logging
 import time
+from datetime import datetime
 from unittest.mock import MagicMock
 
 
@@ -90,11 +91,11 @@ def test_local_admin_token_no_create_app(monkeypatch, clean_env, tmp_db):
     cur = con.cursor()
     cur.execute("""
         CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY, email TEXT, is_admin INTEGER
+            id INTEGER PRIMARY KEY, email TEXT, role TEXT
         )
     """)
     cur.execute(
-        "INSERT INTO users (id, email, is_admin) VALUES (3, ?, 1)",
+        "INSERT INTO users (id, email, role) VALUES (3, ?, 'admin')",
         ('point10890@gmail.com',)
     )
     con.commit()
@@ -130,7 +131,7 @@ def test_local_admin_token_returns_none_without_admin(monkeypatch, clean_env, tm
     cur = con.cursor()
     cur.execute("""
         CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY, email TEXT, is_admin INTEGER
+            id INTEGER PRIMARY KEY, email TEXT, role TEXT
         )
     """)
     con.commit()
@@ -156,10 +157,10 @@ def test_local_admin_token_signature_matches_flask(monkeypatch, clean_env, tmp_d
     cur = con.cursor()
     cur.execute("""
         CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY, email TEXT, is_admin INTEGER
+            id INTEGER PRIMARY KEY, email TEXT, role TEXT
         )
     """)
-    cur.execute("INSERT INTO users (id, email, is_admin) VALUES (3, 'a@b', 1)")
+    cur.execute("INSERT INTO users (id, email, role) VALUES (3, 'a@b', 'admin')")
     con.commit()
     con.close()
 
@@ -188,10 +189,10 @@ def test_login_falls_back_to_local_token_when_no_env(monkeypatch, clean_env, tmp
     cur = con.cursor()
     cur.execute("""
         CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY, email TEXT, is_admin INTEGER
+            id INTEGER PRIMARY KEY, email TEXT, role TEXT
         )
     """)
-    cur.execute("INSERT INTO users (id, email, is_admin) VALUES (3, 'admin@test', 1)")
+    cur.execute("INSERT INTO users (id, email, role) VALUES (3, 'admin@test', 'admin')")
     con.commit()
     con.close()
 
