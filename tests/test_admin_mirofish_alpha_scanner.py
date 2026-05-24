@@ -5,7 +5,7 @@ import pytest
 from flask import Flask
 
 from app.routes.admin_mirofish import admin_mirofish_bp
-from app.services.mirofish import alpha_scanner
+from app.services.mirofish import alpha_research, alpha_scanner
 
 
 @pytest.fixture(autouse=True)
@@ -149,11 +149,15 @@ def test_alpha_scanner_creates_ranked_deterministic_run(tmp_path, monkeypatch):
     assert run['source'] == 'local_marketflow_artifacts'
     assert run['candidate_count'] == 2
     assert run['scoring_schema']['ranking'] == 'rank by alpha_score - 0.55 * risk_score + conviction_adjustment, descending.'
+    assert run['goal_harness']['primary_objective'] == 'detect profitable stock candidates from reliable data'
+    assert run['goal_harness']['ranking_effect'] == 'none_advisory_only'
     assert run['candidates'][0]['symbol'] == '000001'
     assert run['candidates'][0]['rank'] == 1
     assert run['candidates'][0]['action'] == 'BUY_CANDIDATE'
     assert run['candidates'][0]['signal_quality'] in {'actionable', 'high_conviction'}
     assert run['candidates'][0]['analysis_profile']['source_count'] == 4
+    assert run['candidates'][0]['analysis_profile']['profitability_scorecard']['goal_fit_score'] > 0
+    assert run['candidates'][0]['analysis_profile']['profitability_scorecard']['mcp_role'] == 'supporting_data_confirmation_only'
     assert run['candidates'][0]['entry_plan']['risk_reward'] >= 2
     assert run['candidates'][0]['replay_context']['lookahead_safe'] is True
     assert run['candidates'][0]['name'] == run['candidates'][0]['display_name']
@@ -196,6 +200,8 @@ def test_alpha_scanner_persists_analysis_artifacts(tmp_path, monkeypatch):
     assert features['feature_count'] == 1
     assert features['features'][0]['symbol'] == run['candidates'][0]['symbol']
     assert features['features'][0]['lookahead_safe'] is True
+    assert features['features'][0]['profitability_scorecard']['ranking_effect'] == 'none_advisory_only'
+    assert features['features'][0]['goal_fit_score'] == features['features'][0]['profitability_scorecard']['goal_fit_score']
     assert features['features'][0]['data_sources']
     assert ledger['candidate_count'] == 1
     assert any(item['selection_status'] == 'selected' for item in ledger['items'])
@@ -203,6 +209,37 @@ def test_alpha_scanner_persists_analysis_artifacts(tmp_path, monkeypatch):
     assert rejected['rejected_candidate_count'] >= 1
     assert rejected['candidates'][0]['rejection_reasons']
     assert rejected['candidates'][0]['feature_vector']['symbol'] == rejected['candidates'][0]['symbol']
+
+
+def test_alpha_research_snapshot_recommends_mcp_evidence_clusters(tmp_path, monkeypatch):
+    _seed_artifacts(tmp_path)
+    monkeypatch.setattr(alpha_scanner, 'DATA_ROOT', str(tmp_path))
+    monkeypatch.setattr(alpha_scanner, 'SCANNER_RUNS_ROOT', str(tmp_path / 'runs'))
+
+    run = alpha_scanner.create_scanner_run({'limit': 1})
+    snapshot = alpha_research.build_alpha_research_snapshot(run['id'])
+
+    assert snapshot['ok'] is True
+    assert snapshot['schema_version'] == 'mirofish.alpha_research.v1'
+    assert snapshot['run']['id'] == run['id']
+    assert 'highest forward profit potential' in snapshot['mission']['primary_objective']
+    assert snapshot['mission']['mcp_role'].startswith('supporting')
+    assert snapshot['lookahead_safe'] is True
+    assert snapshot['mutates_scanner_scores'] is False
+    assert snapshot['profit_detection_scorecard']['primary_objective'] == 'detect profitable stock candidates from reliable data'
+    assert snapshot['profit_detection_scorecard']['ranking_effect'] == 'none_advisory_only'
+    assert snapshot['candidate_diagnostics'][0]['symbol'] == run['candidates'][0]['symbol']
+    assert snapshot['candidate_diagnostics'][0]['goal_fit_score'] > 0
+    assert snapshot['candidate_diagnostics'][0]['profitability_scorecard']['goal'] == 'detect profitable stock candidates from reliable data'
+    assert any(
+        item['code'] == 'capital_flow_confirmation_missing'
+        for item in snapshot['research_findings']
+    )
+    assert any(
+        call['tool'] == 'get_kiwoom_institution_trend'
+        for call in snapshot['candidate_diagnostics'][0]['recommended_mcp_calls']
+    )
+    assert snapshot['automation_mcp_blueprint']['implemented_tools'][0]['name'] == 'get_alpha_research_snapshot'
 
 
 def test_alpha_scanner_reads_price_chart_from_daily_prices(tmp_path, monkeypatch):
@@ -309,6 +346,8 @@ def test_alpha_scanner_advanced_analysis_penalizes_single_day_spikes(tmp_path, m
     spike = by_symbol['000020']
     assert run['candidates'][0]['symbol'] == '000010'
     assert steady['ranking_score'] > spike['ranking_score']
+    assert steady['analysis_profile']['profitability_scorecard']['goal_fit_score'] > spike['analysis_profile']['profitability_scorecard']['goal_fit_score']
+    assert spike['analysis_profile']['profitability_scorecard']['goal_verdict'] in {'watch_only', 'reject_for_now', 'blocked_by_guardrail'}
     assert steady['analysis_profile']['trend_quality'] > 0
     assert steady['analysis_profile']['volume_accumulation'] > 0
     assert steady['analysis_profile']['volume_ratio'] > 1
@@ -834,11 +873,13 @@ def test_admin_mirofish_scanner_routes_are_registered():
     assert '/api/admin/mirofish/scanner/monitor/check' in rules
     assert '/api/admin/mirofish/scanner/monitor/status' in rules
     assert '/api/admin/mirofish/scanner/runs/latest' in rules
+    assert '/api/admin/mirofish/scanner/research' in rules
     assert '/api/admin/mirofish/scanner/runs/<run_id>' in rules
     assert '/api/admin/mirofish/scanner/runs/<run_id>/candidates' in rules
     assert '/api/admin/mirofish/scanner/runs/<run_id>/feature-vectors' in rules
     assert '/api/admin/mirofish/scanner/runs/<run_id>/evidence' in rules
     assert '/api/admin/mirofish/scanner/runs/<run_id>/rejects' in rules
+    assert '/api/admin/mirofish/scanner/runs/<run_id>/research' in rules
     assert '/api/admin/mirofish/tradingview/status' in rules
     assert '/api/admin/mirofish/price-chart/<symbol>' in rules
     assert '/api/admin/mirofish/workflow/status' in rules

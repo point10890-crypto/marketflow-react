@@ -22,6 +22,7 @@ from pathlib import Path
 from typing import Any, Callable
 
 import app.services.mirofish.alpha_scanner as alpha_scanner
+import app.services.mirofish.alpha_research as alpha_research
 import app.services.mirofish.outcome_tracker as outcome_tracker
 import app.services.mirofish.pipeline_overview as pipeline_overview
 import app.services.mirofish.tradingview_provider as tradingview_provider
@@ -103,6 +104,7 @@ def get_autonomous_status() -> dict[str, Any]:
             'get_market_clock',
             'get_pipeline_operating_snapshot',
             'get_repository_state',
+            'get_alpha_research_snapshot',
             'get_tradingview_provider_status',
             'list_safe_artifacts',
             'read_safe_artifact',
@@ -120,6 +122,7 @@ def get_autonomous_status() -> dict[str, Any]:
             'mirofish://market/clock',
             'mirofish://pipeline/operating',
             'mirofish://scanner/latest',
+            'mirofish://scanner/research',
             'mirofish://workflows/latest',
         ],
         'checked_at': _now_iso(),
@@ -143,6 +146,7 @@ def get_mcp_security_policy() -> dict[str, Any]:
             'get_market_clock',
             'get_pipeline_operating_snapshot',
             'get_repository_state',
+            'get_alpha_research_snapshot',
             'list_recent_scanner_runs',
             'list_recent_workflows',
             'list_safe_artifacts',
@@ -176,6 +180,13 @@ def get_mcp_security_policy() -> dict[str, Any]:
 def get_tradingview_provider_status(include_live: bool = False) -> dict[str, Any]:
     """Return redacted optional TradingView MCP provider status."""
     return tradingview_provider.get_status(include_live=include_live)
+
+
+def get_alpha_research_snapshot(run_id: str = '', limit: int = 20) -> dict[str, Any]:
+    """Return a read-only alpha scanner research diagnostic snapshot."""
+    clean_run_id = str(run_id or '').strip() or None
+    clean_limit = _int(limit, 20, 1, MAX_LIMIT)
+    return alpha_research.build_alpha_research_snapshot(clean_run_id, limit=clean_limit)
 
 
 def get_market_clock(now: datetime | None = None) -> dict[str, Any]:

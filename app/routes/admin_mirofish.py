@@ -645,6 +645,20 @@ def get_latest_scanner_run():
     return jsonify(run)
 
 
+@admin_mirofish_bp.route('/scanner/research', methods=['GET'])
+@admin_or_aibain_required
+def get_latest_scanner_research():
+    try:
+        limit = int(request.args.get('limit', 20))
+    except (TypeError, ValueError):
+        return jsonify({'error': 'limit must be an integer'}), 400
+    run_id = request.args.get('run_id') or ''
+    snapshot = mirofish.build_alpha_research_snapshot(run_id or None, limit=max(1, min(limit, 100)))
+    if snapshot.get('status') == 'scanner_run_not_found':
+        return jsonify(snapshot), 404
+    return jsonify(snapshot)
+
+
 @admin_mirofish_bp.route('/scanner/runs/<run_id>', methods=['GET'])
 @admin_or_aibain_required
 def get_scanner_run(run_id):
@@ -695,6 +709,22 @@ def get_scanner_evidence_ledger(run_id):
 @admin_or_aibain_required
 def get_scanner_rejected_candidates(run_id):
     return _scanner_artifact_response(run_id, 'rejected_candidates.json')
+
+
+@admin_mirofish_bp.route('/scanner/runs/<run_id>/research', methods=['GET'])
+@admin_or_aibain_required
+def get_scanner_run_research(run_id):
+    try:
+        limit = int(request.args.get('limit', 20))
+    except (TypeError, ValueError):
+        return jsonify({'error': 'limit must be an integer'}), 400
+    try:
+        snapshot = mirofish.build_alpha_research_snapshot(run_id, limit=max(1, min(limit, 100)))
+    except ValueError as exc:
+        return jsonify({'error': str(exc)}), 400
+    if snapshot.get('status') == 'scanner_run_not_found':
+        return jsonify(snapshot), 404
+    return jsonify(snapshot)
 
 
 @admin_mirofish_bp.route('/workflow/status', methods=['GET'])

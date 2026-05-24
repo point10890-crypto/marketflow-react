@@ -73,6 +73,11 @@ def create_mcp_server(
         return autonomous_mcp.list_recent_scanner_runs(limit=limit)
 
     @mcp.tool()
+    def get_alpha_research_snapshot(run_id: str = '', limit: int = 20) -> dict[str, Any]:
+        """Return read-only alpha scanner research diagnostics for MCP automation."""
+        return autonomous_mcp.get_alpha_research_snapshot(run_id=run_id, limit=limit)
+
+    @mcp.tool()
     def list_recent_workflows(limit: int = 20) -> dict[str, Any]:
         """List recent scanner-to-analysis workflow runs."""
         return autonomous_mcp.list_recent_workflows(limit=limit)
@@ -291,6 +296,11 @@ def create_mcp_server(
     def latest_scanner_resource() -> str:
         """Latest deterministic alpha scanner run."""
         return _json(alpha_scanner.read_latest_scanner_run() or {'error': 'scanner run not found'})
+
+    @mcp.resource('mirofish://scanner/research')
+    def latest_scanner_research_resource() -> str:
+        """Read-only alpha scanner research diagnostics for the latest run."""
+        return _json(autonomous_mcp.get_alpha_research_snapshot())
 
     @mcp.resource('mirofish://workflows/latest')
     def latest_workflow_resource() -> str:

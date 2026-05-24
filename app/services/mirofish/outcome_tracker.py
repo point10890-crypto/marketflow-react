@@ -418,10 +418,21 @@ def _feature_snapshot(candidate: dict[str, Any], result: dict[str, Any]) -> dict
     profile = candidate.get('analysis_profile') if isinstance(candidate.get('analysis_profile'), dict) else {}
     verdict = result.get('verdict') if isinstance(result.get('verdict'), dict) else {}
     tags = candidate.get('strategy_tags') if isinstance(candidate.get('strategy_tags'), list) else []
+    scorecard = profile.get('profitability_scorecard') if isinstance(profile.get('profitability_scorecard'), dict) else {}
     return {
         'alpha_score': _number(candidate.get('alpha_score')),
         'risk_score': _number(candidate.get('risk_score')),
         'ranking_score': _number(candidate.get('ranking_score')),
+        'goal_fit_score': _number(scorecard.get('goal_fit_score')),
+        'goal_verdict': str(scorecard.get('goal_verdict') or ''),
+        'goal_hard_blockers': [
+            str(item) for item in (scorecard.get('hard_blockers') or [])
+            if str(item or '').strip()
+        ][:12],
+        'goal_missing_confirmations': [
+            str(item) for item in (scorecard.get('missing_confirmations') or [])
+            if str(item or '').strip()
+        ][:12],
         'final_score': _number(result.get('final_score')),
         'signal_quality': str(candidate.get('signal_quality') or ''),
         'strategy_tags': [str(tag) for tag in tags if str(tag or '').strip()][:12],

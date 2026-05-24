@@ -10,6 +10,7 @@ import os
 import re
 import threading
 import time as time_mod
+from collections import Counter
 from datetime import datetime, time as dt_time, timedelta, timezone
 from typing import Any
 
@@ -122,6 +123,7 @@ def create_scanner_run(payload: dict[str, Any] | None = None) -> dict[str, Any]:
     evidence_ledger = _evidence_ledger(candidates, rejected_candidates)
     source_files = _source_files(artifacts)
     performance_advisory = _performance_advisory()
+    goal_harness = _profitability_run_summary(candidates, rejected_candidates)
     run = {
         'id': run_id,
         'status': 'completed',
@@ -136,6 +138,7 @@ def create_scanner_run(payload: dict[str, Any] | None = None) -> dict[str, Any]:
         'screened_count': len(candidate_pool),
         'rejected_candidate_count': len(rejected_candidates),
         'scoring_schema': SCORING_SCHEMA,
+        'goal_harness': goal_harness,
         'performance_advisory': performance_advisory,
         'providers': {
             'tradingview': artifacts.get('tradingview', {}).get('status') or tradingview_provider.get_status(include_live=False),
@@ -1250,6 +1253,21 @@ def _score_symbol(
         freshness=source_freshness,
         risk=risk,
     )
+    data_sources = _candidate_sources(price, screener, vcp, jongga, tradingview_adjustment)
+    profitability_scorecard = _profitability_scorecard(
+        alpha=alpha,
+        risk=risk,
+        action=action,
+        source_count=effective_source_count,
+        data_sources=data_sources,
+        evidence_quality=evidence_quality,
+        confidence_cap=confidence_cap,
+        freshness=source_freshness,
+        entry_plan=entry_plan,
+        price_metrics=price_metrics,
+        trading_value=trading_value,
+        current_price=current_price,
+    )
 
     display_name = (
         mapped.get('display_name')
@@ -1295,6 +1313,7 @@ def _score_symbol(
             'sample_days': price_metrics.get('sample_days'),
             'evidence_quality': evidence_quality,
             'confidence_cap': confidence_cap,
+            'profitability_scorecard': profitability_scorecard,
             'freshness_penalty': round(staleness_penalty, 2),
             'freshness_status': source_freshness.get('status'),
         },
@@ -1302,7 +1321,7 @@ def _score_symbol(
         'replay_context': {
             'price_date': price.get('date'),
             'generated_at': generated_at,
-            'data_sources': _candidate_sources(price, screener, vcp, jongga, tradingview_adjustment),
+            'data_sources': data_sources,
             'lookahead_safe': True,
         },
         'price': {
@@ -1897,6 +1916,11 @@ def _feature_vector(candidate: dict[str, Any]) -> dict[str, Any]:
         'base_source_count': profile.get('base_source_count'),
         'evidence_quality': profile.get('evidence_quality'),
         'confidence_cap': profile.get('confidence_cap'),
+        'profitability_scorecard': profile.get('profitability_scorecard'),
+        'goal_fit_score': (profile.get('profitability_scorecard') or {}).get('goal_fit_score')
+            if isinstance(profile.get('profitability_scorecard'), dict) else None,
+        'goal_verdict': (profile.get('profitability_scorecard') or {}).get('goal_verdict')
+            if isinstance(profile.get('profitability_scorecard'), dict) else None,
         'freshness_status': profile.get('freshness_status') or freshness.get('status'),
         'freshness_penalty': profile.get('freshness_penalty'),
         'data_sources': replay.get('data_sources') or [],
@@ -2014,6 +2038,145 @@ def _confidence_cap(
     elif risk > 45:
         cap = min(cap, 0.78)
     return round(cap, 2)
+
+
+def _profitability_scorecard(
+    *,
+    alpha: float,
+    risk: float,
+    action: str,
+    source_count: int,
+    data_sources: list[str],
+    evidence_quality: dict[str, Any],
+    confidence_cap: float,
+    freshness: dict[str, Any],
+    entry_plan: dict[str, Any],
+    price_metrics: dict[str, Any],
+    trading_value: float,
+    current_price: float,
+) -> dict[str, Any]:
+    """Goal harness for profitable stock-candidate detection.
+
+    This is a deterministic scorecard, not a live ranking mutation. It keeps the
+    scanner focused on data quality, risk control, and replayable outcomes.
+    """
+    source_text = ' '.join(str(source).lower() for source in data_sources)
+    freshness_status = str((freshness or {}).get('status') or 'unknown').lower()
+    evidence_grade = str((evidence_quality or {}).get('grade') or 'unknown').lower()
+    risk_reward = _float((entry_plan or {}).get('risk_reward'))
+    trend_quality = _float(price_metrics.get('trend_score'))
+    volume_quality = _float(price_metrics.get('volume_accumulation_score'))
+    has_capital_flow = any(token in source_text for token in ('flow', 'investor', 'institution', 'foreigner', 'kis', 'krx', 'kiwoom'))
+    has_disclosure = any(token in source_text for token in ('dart', 'disclosure', 'filing'))
+    has_technical = any(token in source_text for token in ('tradingview', 'technical'))
+
+    gates = [
+        _goal_gate('candidate_action', 10, action in {'BUY_CANDIDATE', 'WATCH'}, action == 'REJECT', action),
+        _goal_gate('price_liquidity', 12, current_price > 0 and trading_value >= 2_000_000_000, current_price <= 0 or trading_value <= 0, trading_value),
+        _goal_gate('evidence_depth', 16, source_count >= 4 and evidence_grade in {'strong', 'moderate'}, source_count < 3 or evidence_grade == 'weak', f'{evidence_grade}:{source_count}'),
+        _goal_gate('risk_control', 18, risk <= 45, risk > 65, risk),
+        _goal_gate('freshness', 12, freshness_status == 'fresh', freshness_status in ALERT_BLOCKING_FRESHNESS, freshness_status),
+        _goal_gate('trend_volume_quality', 12, trend_quality >= 8 and volume_quality >= 4, trend_quality < 4 and volume_quality < 2, f'{trend_quality}/{volume_quality}'),
+        _goal_gate('entry_plan', 10, (entry_plan or {}).get('status') == 'ready' and risk_reward >= 2, risk_reward <= 0, risk_reward),
+        _goal_gate('capital_flow_confirmation', 6, has_capital_flow, False, 'present' if has_capital_flow else 'missing'),
+        _goal_gate('event_risk_review', 4, has_disclosure, False, 'present' if has_disclosure else 'missing'),
+    ]
+    score = round(sum(_float(gate.get('contribution')) for gate in gates), 2)
+    hard_blockers = [
+        gate['gate']
+        for gate in gates
+        if gate.get('hard_blocker')
+    ]
+    missing_confirmations = []
+    if not has_capital_flow:
+        missing_confirmations.append('capital_flow')
+    if not has_disclosure:
+        missing_confirmations.append('disclosure_event')
+    if not has_technical:
+        missing_confirmations.append('technical_confirmation')
+    if hard_blockers:
+        verdict = 'blocked_by_guardrail'
+    elif score >= 74 and action == 'BUY_CANDIDATE' and not missing_confirmations:
+        verdict = 'prime_profit_candidate'
+    elif score >= 62 and action in {'BUY_CANDIDATE', 'WATCH'}:
+        verdict = 'candidate_needs_confirmation'
+    elif score >= 48:
+        verdict = 'watch_only'
+    else:
+        verdict = 'reject_for_now'
+    return {
+        'schema_version': 'mirofish.profitability_goal.v1',
+        'goal': 'detect profitable stock candidates from reliable data',
+        'goal_fit_score': score,
+        'goal_verdict': verdict,
+        'hard_blockers': hard_blockers,
+        'missing_confirmations': missing_confirmations,
+        'confidence_cap': confidence_cap,
+        'alpha_score': alpha,
+        'risk_score': risk,
+        'ranking_effect': 'none_advisory_only',
+        'mcp_role': 'supporting_data_confirmation_only',
+        'gates': gates,
+        'lookahead_safe': True,
+    }
+
+
+def _goal_gate(name: str, weight: float, passed: bool, failed: bool, value: Any) -> dict[str, Any]:
+    if passed:
+        status = 'pass'
+        contribution = weight
+        hard_blocker = False
+    elif failed:
+        status = 'fail'
+        contribution = 0.0
+        hard_blocker = name in {'candidate_action', 'price_liquidity', 'freshness'}
+    else:
+        status = 'partial'
+        contribution = round(weight * 0.5, 2)
+        hard_blocker = False
+    return {
+        'gate': name,
+        'status': status,
+        'weight': weight,
+        'contribution': contribution,
+        'hard_blocker': hard_blocker,
+        'value': value,
+    }
+
+
+def _profitability_run_summary(
+    candidates: list[dict[str, Any]],
+    rejected_candidates: list[dict[str, Any]],
+) -> dict[str, Any]:
+    scorecards = []
+    for candidate in candidates:
+        profile = candidate.get('analysis_profile') if isinstance(candidate.get('analysis_profile'), dict) else {}
+        scorecard = profile.get('profitability_scorecard')
+        if isinstance(scorecard, dict):
+            scorecards.append(scorecard)
+    verdict_counts = Counter(str(card.get('goal_verdict') or 'unknown') for card in scorecards)
+    blocker_counts = Counter()
+    missing_counts = Counter()
+    for card in scorecards:
+        for blocker in card.get('hard_blockers') or []:
+            blocker_counts[str(blocker)] += 1
+        for missing in card.get('missing_confirmations') or []:
+            missing_counts[str(missing)] += 1
+    scores = [_float(card.get('goal_fit_score')) for card in scorecards]
+    return {
+        'schema_version': 'mirofish.profitability_goal.run.v1',
+        'primary_objective': 'detect profitable stock candidates from reliable data',
+        'mcp_role': 'supporting data confirmation only',
+        'candidate_count': len(candidates),
+        'rejected_candidate_count': len(rejected_candidates),
+        'average_goal_fit_score': round(_average(scores) or 0.0, 2),
+        'top_goal_fit_score': round(max(scores), 2) if scores else None,
+        'verdict_counts': dict(verdict_counts),
+        'hard_blocker_counts': dict(blocker_counts),
+        'missing_confirmation_counts': dict(missing_counts),
+        'ranking_effect': 'none_advisory_only',
+        'lookahead_safe': True,
+    }
 
 
 def _performance_advisory() -> dict[str, Any]:

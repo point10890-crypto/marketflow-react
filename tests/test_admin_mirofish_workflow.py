@@ -19,7 +19,18 @@ def _candidate(symbol, name, alpha, risk, rank=1, action='BUY_CANDIDATE'):
         'ranking_score': alpha - risk * 0.5,
         'signal_quality': 'high_conviction' if alpha >= 80 else 'actionable',
         'strategy_tags': ['momentum', 'trend_quality'],
-        'analysis_profile': {'source_count': 4, 'trend_20d_pct': 20 + rank, 'volume_ratio': 1.5},
+        'analysis_profile': {
+            'source_count': 4,
+            'trend_20d_pct': 20 + rank,
+            'volume_ratio': 1.5,
+            'profitability_scorecard': {
+                'goal_fit_score': 78,
+                'goal_verdict': 'candidate_needs_confirmation',
+                'hard_blockers': [],
+                'missing_confirmations': ['capital_flow'],
+                'ranking_effect': 'none_advisory_only',
+            },
+        },
         'entry_plan': {'status': 'ready'},
         'price': {'date': '2026-05-07', 'current_price': 1000 * rank},
     }
@@ -140,6 +151,9 @@ def test_workflow_attaches_forward_outcomes_without_lookahead(tmp_path, monkeypa
     assert outcome['entry_price'] == 1000
     assert outcome['feature_snapshot']['alpha_score'] == 80
     assert outcome['feature_snapshot']['risk_score'] == 20
+    assert outcome['feature_snapshot']['goal_fit_score'] == 78
+    assert outcome['feature_snapshot']['goal_verdict'] == 'candidate_needs_confirmation'
+    assert outcome['feature_snapshot']['goal_missing_confirmations'] == ['capital_flow']
     assert outcome['feature_snapshot']['signal_quality'] == 'high_conviction'
     assert outcome['feature_snapshot']['strategy_tags'] == ['momentum', 'trend_quality']
     assert outcome['feature_snapshot']['cio_action'] == 'BUY'

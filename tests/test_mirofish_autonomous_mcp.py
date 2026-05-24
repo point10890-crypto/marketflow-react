@@ -129,19 +129,42 @@ def test_autonomous_status_exposes_safe_mcp_policy(monkeypatch):
     assert 'get_market_clock' in status['tools']
     assert 'get_pipeline_operating_snapshot' in status['tools']
     assert 'get_repository_state' in status['tools']
+    assert 'get_alpha_research_snapshot' in status['tools']
     assert 'list_safe_artifacts' in status['tools']
     assert 'read_safe_artifact' in status['tools']
     assert status['runtime']['mcp_server']['healthy'] is True
     assert status['operating_workflow']['schema_version'] == 'mirofish.operating_workflow.v1'
     assert 'mirofish://pipeline/operating' in status['resources']
+    assert 'mirofish://scanner/research' in status['resources']
     assert status['runtime']['startup_task']['registered'] is True
     assert status['runtime']['watchdog_task']['registered'] is True
     assert policy['mutation_enabled'] is False
     assert policy['shared_secret_configured'] is False
     assert policy['artifact_allowlist_root'] == 'data/admin_mirofish'
     assert 'get_pipeline_operating_snapshot' in policy['read_only_tools']
+    assert 'get_alpha_research_snapshot' in policy['read_only_tools']
     assert 'read_safe_artifact' in policy['read_only_tools']
     assert 'run_autonomous_scan_analysis' in policy['mutating_tools']
+
+
+def test_alpha_research_snapshot_tool_is_read_only(monkeypatch):
+    calls = []
+    monkeypatch.setattr(
+        autonomous_mcp.alpha_research,
+        'build_alpha_research_snapshot',
+        lambda run_id=None, limit=20: calls.append((run_id, limit)) or {
+            'ok': True,
+            'status': 'ready',
+            'schema_version': 'mirofish.alpha_research.v1',
+            'run': {'id': run_id or 'latest'},
+        },
+    )
+
+    snapshot = autonomous_mcp.get_alpha_research_snapshot(run_id='mfas_test', limit=5)
+
+    assert snapshot['ok'] is True
+    assert snapshot['run']['id'] == 'mfas_test'
+    assert calls == [('mfas_test', 5)]
 
 
 def test_pipeline_operating_snapshot_is_machine_readable(monkeypatch):

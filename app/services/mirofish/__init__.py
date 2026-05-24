@@ -20,6 +20,9 @@ from app.services.mirofish.subscriber_runs import (
     create_aibain_run_for_user,
     get_aibain_run_policy_snapshot,
 )
+from app.services.mirofish.alpha_research import (
+    build_alpha_research_snapshot,
+)
 from app.services.mirofish.alpha_scanner import (
     build_scanner_alert_message,
     build_scanner_run_telegram_message,
@@ -79,6 +82,7 @@ from app.services.mirofish.chat_agent import (
 from app.services.mirofish.autonomous_mcp import (
     CONFIRM_SEND_PHRASE,
     get_autonomous_status,
+    get_alpha_research_snapshot,
     get_market_clock,
     get_mcp_security_policy,
     get_repository_state,
@@ -98,6 +102,7 @@ __all__ = [
     'create_aibain_run_for_user',
     'create_scanner_run',
     'build_scanner_alert_message',
+    'build_alpha_research_snapshot',
     'build_scanner_run_telegram_message',
     'build_summary_telegram_message',
     'build_share_payload',
@@ -114,6 +119,7 @@ __all__ = [
     'get_graph',
     'get_report',
     'get_autonomous_status',
+    'get_alpha_research_snapshot',
     'get_market_clock',
     'auto_runner',
     'get_mcp_security_policy',
