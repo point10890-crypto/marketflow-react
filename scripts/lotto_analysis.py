@@ -39,11 +39,16 @@ except ImportError:
     pass
 
 DATA_FILE = os.path.join(BASE_DIR, 'data', 'lotto_history.json')
+DB_FILE = os.path.join(BASE_DIR, 'data', 'users.db')
 UPLOAD_DIR = os.path.join(BASE_DIR, 'data', 'uploads', 'community')
 API_URL = os.getenv("MARKETFLOW_API_URL") or os.getenv("COMMUNITY_API_URL") or "http://localhost:5001"
 ADMIN_EMAIL = os.getenv("MARKETFLOW_ADMIN_EMAIL") or os.getenv("COMMUNITY_ADMIN_EMAIL") or "point10890@gmail.com"
 ADMIN_TOKEN = os.getenv("MARKETFLOW_ADMIN_TOKEN") or os.getenv("COMMUNITY_ADMIN_TOKEN")
 ADMIN_PASSWORD = os.getenv("MARKETFLOW_ADMIN_PASSWORD") or os.getenv("COMMUNITY_ADMIN_PASSWORD")
+ALLOW_LOCAL_ADMIN_TOKEN = (
+    os.getenv("MARKETFLOW_ALLOW_LOCAL_ADMIN_TOKEN", "1").strip().lower()
+    not in ("0", "false", "no", "off")
+)
 LOTTO_API_HOSTS = [
     'https://www.dhlottery.co.kr',
     'https://dhlottery.co.kr',
@@ -670,20 +675,103 @@ def save_image(image_data: bytes) -> str:
     return f"/api/community/uploads/{filename}"
 
 
+def _local_admin_token() -> str | None:
+    """관리자 토큰을 sqlite3 + HMAC-SHA256 으로 직접 발급 (경량화).
+
+    v4 변경 — 과거에는 `from app import create_app; create_app()` 으로 Flask 인스턴스를
+    매번 새로 만들어 background worker (Pro/AI Brain expiry, screener, alpha scanner,
+    MCP auto-runner 등) 가 데몬 안에서 폭증하던 결함 ⑤ 를 일으켰음. 이제는 단일
+    sqlite3 SELECT + 1개 HMAC 계산으로 동일 효과 달성, worker spawn 0건.
+
+    Token 포맷은 `app/auth/decorators.py:generate_token()` 과 비트-동일.
+    SECRET_KEY 는 같은 env var 를 읽으므로 Flask 측의 validate_token 이 그대로 통과.
+    """
+    if not ALLOW_LOCAL_ADMIN_TOKEN:
+        return None
+
+    import sqlite3
+    import hmac
+    import hashlib
+    import time as _time
+
+    if not os.path.exists(DB_FILE):
+        logger.warning("Local admin token: users.db not found at %s", DB_FILE)
+        return None
+
+    # 1) admin user_id 조회 — ADMIN_EMAIL 우선, 없으면 첫 is_admin
+    try:
+        with sqlite3.connect(DB_FILE, timeout=5) as con:
+            cur = con.cursor()
+            cur.execute(
+                "SELECT id FROM users WHERE email = ? AND is_admin = 1 LIMIT 1",
+                (ADMIN_EMAIL,)
+            )
+            row = cur.fetchone()
+            if not row:
+                cur.execute(
+                    "SELECT id FROM users WHERE is_admin = 1 ORDER BY id ASC LIMIT 1"
+                )
+                row = cur.fetchone()
+            if not row:
+                logger.warning("Local admin token: no admin user found in DB")
+                return None
+            user_id = row[0]
+    except Exception as e:
+        logger.warning(f"Local admin token: DB query failed: {type(e).__name__}: {e}")
+        return None
+
+    # 2) Token 생성 — Flask 의 generate_token 과 동일 알고리즘
+    secret = os.getenv("SECRET_KEY", "marketflow-secret-key-change-in-production")
+    expiry = int(_time.time()) + 86400 * 30  # TOKEN_EXPIRY = 30 days
+    payload = f"{user_id}:{expiry}"
+    sig = hmac.new(secret.encode(), payload.encode(), hashlib.sha256).hexdigest()[:32]
+    token = f"{payload}:{sig}"
+
+    logger.debug(f"Local admin token issued for user_id={user_id}")
+    return token
+
+
 def login() -> str:
-    """관리자 로그인"""
-    if ADMIN_TOKEN:
-        return ADMIN_TOKEN
-    if not ADMIN_PASSWORD:
-        logger.error("MARKETFLOW_ADMIN_TOKEN or MARKETFLOW_ADMIN_PASSWORD is required")
-        sys.exit(1)
-    resp = requests.post(f"{API_URL}/api/auth/login", json={
-        "email": ADMIN_EMAIL, "password": ADMIN_PASSWORD,
-    })
-    if resp.status_code == 200:
-        return resp.json()['token']
-    logger.error(f"Admin login failed for {ADMIN_EMAIL}")
-    sys.exit(1)
+    """관리자 로그인 — 3단 fallback.
+
+    1) ADMIN_TOKEN env (static, 운영 비추) → 즉시 반환
+    2) ADMIN_PASSWORD env → Flask HTTP /api/auth/login → JWT 토큰
+    3) _local_admin_token() → sqlite3 + HMAC 직접 발급 (경량, 기본 경로)
+    """
+    # 1) Static token from env
+    token = ADMIN_TOKEN or os.getenv("MARKETFLOW_ADMIN_TOKEN") or os.getenv("COMMUNITY_ADMIN_TOKEN")
+    if token:
+        logger.debug("Admin auth: using static token from env")
+        return token
+
+    # 2) HTTP password login (only if password is set)
+    password = ADMIN_PASSWORD or os.getenv("MARKETFLOW_ADMIN_PASSWORD") or os.getenv("COMMUNITY_ADMIN_PASSWORD")
+    if password:
+        try:
+            resp = requests.post(
+                f"{API_URL}/api/auth/login",
+                json={"email": ADMIN_EMAIL, "password": password},
+                timeout=15,
+            )
+        except requests.RequestException as e:
+            raise RuntimeError(f"Admin login HTTP request failed: {e}") from e
+        if resp.status_code == 200:
+            logger.debug("Admin auth: HTTP login succeeded")
+            return resp.json()['token']
+        raise RuntimeError(
+            f"Admin login failed for {ADMIN_EMAIL}: {resp.status_code} {resp.text[:200]}"
+        )
+
+    # 3) Local admin token (경량화 — create_app 호출 없음)
+    local_token = _local_admin_token()
+    if local_token:
+        logger.debug("Admin auth: local token via sqlite+HMAC")
+        return local_token
+
+    raise RuntimeError(
+        "Admin auth 실패: ADMIN_TOKEN/ADMIN_PASSWORD 미설정 + local admin token 발급 실패 "
+        "(DB 또는 admin user 누락 추정)"
+    )
 
 
 def create_post(token: str, board: str, title: str, content: str) -> int:
@@ -692,10 +780,11 @@ def create_post(token: str, board: str, title: str, content: str) -> int:
         f"{API_URL}/api/community/boards/{board}/posts",
         headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
         json={"title": title, "content": content},
+        timeout=30,
     )
     if resp.status_code not in (200, 201):
         logger.error(f"Post creation failed: {resp.status_code} {resp.text[:200]}")
-        sys.exit(1)
+        raise RuntimeError(f"Post creation failed: {resp.status_code}")
     post_id = resp.json()['id']
     logger.info(f"Post created: id={post_id}")
     return post_id
@@ -707,6 +796,7 @@ def pin_notice(token: str, post_id: int):
         f"{API_URL}/api/community/posts/{post_id}/notice",
         headers={"Authorization": f"Bearer {token}"},
         json={"is_notice": True},
+        timeout=15,
     )
     if resp.status_code == 200:
         logger.info(f"Notice pinned: id={post_id}")
