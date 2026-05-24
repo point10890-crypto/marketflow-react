@@ -45,10 +45,6 @@ API_URL = os.getenv("MARKETFLOW_API_URL") or os.getenv("COMMUNITY_API_URL") or "
 ADMIN_EMAIL = os.getenv("MARKETFLOW_ADMIN_EMAIL") or os.getenv("COMMUNITY_ADMIN_EMAIL") or "point10890@gmail.com"
 ADMIN_TOKEN = os.getenv("MARKETFLOW_ADMIN_TOKEN") or os.getenv("COMMUNITY_ADMIN_TOKEN")
 ADMIN_PASSWORD = os.getenv("MARKETFLOW_ADMIN_PASSWORD") or os.getenv("COMMUNITY_ADMIN_PASSWORD")
-ALLOW_LOCAL_ADMIN_TOKEN = (
-    os.getenv("MARKETFLOW_ALLOW_LOCAL_ADMIN_TOKEN", "1").strip().lower()
-    not in ("0", "false", "no", "off")
-)
 LOTTO_API_HOSTS = [
     'https://www.dhlottery.co.kr',
     'https://dhlottery.co.kr',
@@ -686,13 +682,14 @@ def _local_admin_token() -> str | None:
     Token 포맷은 `app/auth/decorators.py:generate_token()` 과 비트-동일.
     SECRET_KEY 는 같은 env var 를 읽으므로 Flask 측의 validate_token 이 그대로 통과.
     """
-    if not ALLOW_LOCAL_ADMIN_TOKEN:
+    # Kill-switch — runtime 평가 (env 토글이 daemon 재시작 없이 즉시 반영되도록).
+    if os.getenv("MARKETFLOW_ALLOW_LOCAL_ADMIN_TOKEN", "1").strip().lower() in ("0", "false", "no", "off"):
+        logger.warning("Local admin token: disabled via MARKETFLOW_ALLOW_LOCAL_ADMIN_TOKEN=0")
         return None
 
     import sqlite3
     import hmac
     import hashlib
-    import time as _time
 
     if not os.path.exists(DB_FILE):
         logger.warning("Local admin token: users.db not found at %s", DB_FILE)
@@ -722,7 +719,7 @@ def _local_admin_token() -> str | None:
 
     # 2) Token 생성 — Flask 의 generate_token 과 동일 알고리즘
     secret = os.getenv("SECRET_KEY", "marketflow-secret-key-change-in-production")
-    expiry = int(_time.time()) + 86400 * 30  # TOKEN_EXPIRY = 30 days
+    expiry = int(time.time()) + 86400 * 30  # TOKEN_EXPIRY = 30 days
     payload = f"{user_id}:{expiry}"
     sig = hmac.new(secret.encode(), payload.encode(), hashlib.sha256).hexdigest()[:32]
     token = f"{payload}:{sig}"
@@ -738,15 +735,14 @@ def login() -> str:
     2) ADMIN_PASSWORD env → Flask HTTP /api/auth/login → JWT 토큰
     3) _local_admin_token() → sqlite3 + HMAC 직접 발급 (경량, 기본 경로)
     """
-    # 1) Static token from env
-    token = ADMIN_TOKEN or os.getenv("MARKETFLOW_ADMIN_TOKEN") or os.getenv("COMMUNITY_ADMIN_TOKEN")
-    if token:
+    # 1) Static token from env (모듈 로드 시 캡쳐 — daemon 재시작으로 갱신)
+    if ADMIN_TOKEN:
         logger.debug("Admin auth: using static token from env")
-        return token
+        return ADMIN_TOKEN
 
     # 2) HTTP password login (only if password is set)
-    password = ADMIN_PASSWORD or os.getenv("MARKETFLOW_ADMIN_PASSWORD") or os.getenv("COMMUNITY_ADMIN_PASSWORD")
-    if password:
+    if ADMIN_PASSWORD:
+        password = ADMIN_PASSWORD
         try:
             resp = requests.post(
                 f"{API_URL}/api/auth/login",
