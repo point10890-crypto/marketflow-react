@@ -249,6 +249,74 @@ def test_force_workflow_accepts_watch_candidates_for_top3_pipeline(tmp_path, mon
     assert result['filters']['actions'] == ['BUY_CANDIDATE', 'WATCH']
 
 
+def test_workflow_dual_kalman_gate_blocks_spike_and_scores_pass(tmp_path, monkeypatch):
+    candidates = [
+        _candidate('000001', 'Stable Alpha', 82, 20, 1),
+        _candidate('000002', 'Noisy Spike', 90, 18, 2),
+    ]
+    monkeypatch.setattr(workflow, 'WORKFLOWS_ROOT', str(tmp_path / 'workflows'))
+    monkeypatch.setattr(workflow, 'WORKFLOW_STATE_ROOT', str(tmp_path / 'workflows' / '_state'))
+    monkeypatch.setattr(workflow.alpha_scanner, 'run_scanner_alert_check', lambda *args, **kwargs: _scanner_result(candidates))
+    monkeypatch.setattr(workflow.alpha_scanner, 'commit_scanner_alert_events', lambda result: {'committed': True})
+
+    def fake_kalman(scanner_run, selected, **kwargs):
+        return {
+            'id': 'dkf_test',
+            'status': 'completed',
+            'profile': kwargs.get('profile'),
+            'candidate_count': len(selected),
+            'signal_count': len(selected),
+            'lookahead_safe': True,
+            'summary': {'gate_counts': {'pass': 1, 'watch': 0, 'block': 1}, 'avg_score_delta': -2.0},
+            'links': {'signals': '/api/admin/mirofish/kalman/runs/dkf_test/signals'},
+            'signals': [
+                {
+                    'symbol': '000001',
+                    'gate': 'pass',
+                    'score_delta': 3.5,
+                    'shadow_alpha_score': 85.5,
+                    'reason': 'stable',
+                    'kalman': {
+                        'signal_confidence': 0.72,
+                        'latent_return_z': 1.2,
+                        'innovation_z': 0.4,
+                        'fair_value_gap_z': 0.7,
+                        'volatility_state': 'normal',
+                    },
+                },
+                {
+                    'symbol': '000002',
+                    'gate': 'block',
+                    'score_delta': -7.5,
+                    'shadow_alpha_score': 82.5,
+                    'reason': 'spike',
+                    'kalman': {'signal_confidence': 0.25},
+                },
+            ],
+        }
+
+    monkeypatch.setattr(workflow.dual_kalman, 'run_dual_kalman_signal_gate', fake_kalman)
+    monkeypatch.setattr(workflow, '_create_analysis_run', lambda candidate, agent_count, mode: _analysis_run(candidate, action='BUY', confidence=75))
+
+    result = workflow.start_workflow_from_scanner_events(
+        {
+            'limit': 20,
+            'top_n': 1,
+            'max_parallel': 1,
+            'quality_gate': 'dual_kalman',
+        },
+        async_mode=False,
+    )
+
+    assert result['status'] == 'completed'
+    assert result['event_count'] == 1
+    assert result['kalman_gate']['gate_counts']['block'] == 1
+    assert result['analysis_runs'][0]['symbol'] == '000001'
+    assert result['analysis_runs'][0]['candidate']['analysis_profile']['dual_kalman_gate']['gate'] == 'pass'
+    assert result['analysis_runs'][0]['score_breakdown']['components']['dual_kalman'] == 3.5
+    assert result['filters']['quality_gate'] == 'dual_kalman'
+
+
 def test_force_workflow_blocks_stale_sources_by_default(tmp_path, monkeypatch):
     candidates = [_candidate('000001', 'Alpha One', 80, 20, 1)]
     scanner_run = _scanner_result(candidates)['run']

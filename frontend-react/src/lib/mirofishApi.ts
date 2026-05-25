@@ -1595,6 +1595,9 @@ export const mirofishApi = {
     getTradingViewStatus: async (live = false) => fetchAuthAPI<MiroFishTradingViewStatus>(
         `/api/admin/mirofish/tradingview/status${live ? '?live=1' : ''}`,
     ),
+    getDualKalmanStatus: async () => fetchAuthAPI<Record<string, any>>(
+        '/api/admin/mirofish/kalman/status',
+    ),
     getPriceChart: async (symbol: string, limit = 120) => fetchAuthAPI<MiroFishPriceChartResponse>(
         `/api/admin/mirofish/price-chart/${encodeURIComponent(symbol)}?limit=${limit}`,
     ),

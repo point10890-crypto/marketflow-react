@@ -940,6 +940,53 @@ def tradingview_status():
         return jsonify({'error': str(exc), 'provider': 'tradingview_mcp'}), 502
 
 
+@admin_mirofish_bp.route('/kalman/status', methods=['GET'])
+@admin_or_aibain_required
+def dual_kalman_status():
+    return jsonify(mirofish.get_dual_kalman_status())
+
+
+@admin_mirofish_bp.route('/kalman/runs', methods=['POST'])
+@admin_required
+def create_dual_kalman_run():
+    payload = request.get_json(silent=True) or {}
+    try:
+        run = mirofish.create_dual_kalman_run(payload)
+    except ValueError as exc:
+        return jsonify({'error': str(exc), 'service': 'mirofish-dual-kalman'}), 400
+    except Exception as exc:
+        return jsonify({
+            'error': f'{type(exc).__name__}: {exc}',
+            'service': 'mirofish-dual-kalman',
+        }), 500
+    status_code = 404 if run.get('status') == 'scanner_run_not_found' else 201
+    return jsonify(run), status_code
+
+
+@admin_mirofish_bp.route('/kalman/runs/<run_id>', methods=['GET'])
+@admin_or_aibain_required
+def get_dual_kalman_run(run_id):
+    try:
+        run = mirofish.read_dual_kalman_run(run_id)
+    except ValueError as exc:
+        return jsonify({'error': str(exc), 'service': 'mirofish-dual-kalman'}), 400
+    if run is None:
+        return jsonify({'error': 'kalman run not found'}), 404
+    return jsonify(run)
+
+
+@admin_mirofish_bp.route('/kalman/runs/<run_id>/signals', methods=['GET'])
+@admin_or_aibain_required
+def get_dual_kalman_signals(run_id):
+    try:
+        signals = mirofish.read_dual_kalman_signals(run_id)
+    except ValueError as exc:
+        return jsonify({'error': str(exc), 'service': 'mirofish-dual-kalman'}), 400
+    if signals is None:
+        return jsonify({'error': 'kalman run not found'}), 404
+    return jsonify(signals)
+
+
 @admin_mirofish_bp.route('/price-chart/<symbol>', methods=['GET'])
 @admin_required
 def price_chart(symbol):

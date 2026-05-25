@@ -61,7 +61,7 @@ type AlphaScannerState = 'idle' | 'loading' | 'running' | 'ready' | 'error';
 type DeepSeekPanelState = 'idle' | 'checking' | 'summarizing' | 'ready' | 'sending' | 'sent' | 'error';
 type WorkflowPanelState = 'idle' | 'running' | 'completed' | 'no_new_events' | 'blocked' | 'error';
 type AutonomousPanelState = 'idle' | 'checking' | 'running' | 'ready' | 'sending' | 'sent' | 'error';
-type EndpointKey = 'status' | 'dataSources' | 'resolve' | 'history' | 'createRun' | 'runDetail' | 'graph' | 'events' | 'report' | 'deepseek' | 'tradingview' | 'workflow' | 'autonomous';
+type EndpointKey = 'status' | 'dataSources' | 'resolve' | 'history' | 'createRun' | 'runDetail' | 'graph' | 'events' | 'report' | 'deepseek' | 'tradingview' | 'kalman' | 'workflow' | 'autonomous';
 type EndpointStatus = 'idle' | 'loading' | 'ok' | 'error';
 type TargetCandidate = NonNullable<MiroFishTargetSnapshot['candidates']>[number];
 
@@ -77,6 +77,7 @@ const endpointDefinitions: Array<{ key: EndpointKey; method: string; path: strin
     { key: 'report', method: 'GET', path: '/api/admin/mirofish/runs/{id}/report', title: 'Report', icon: 'fa-scroll', color: 'text-anthropic-darkText' },
     { key: 'deepseek', method: 'POST', path: '/api/admin/mirofish/deepseek/scanner-summary', title: 'DeepSeek V2', icon: 'fa-wand-magic-sparkles', color: 'text-anthropic-orange' },
     { key: 'tradingview', method: 'GET', path: '/api/admin/mirofish/tradingview/status', title: 'TradingView MCP', icon: 'fa-chart-simple', color: 'text-anthropic-darkText' },
+    { key: 'kalman', method: 'POST', path: '/api/admin/mirofish/kalman/runs', title: 'Dual Kalman Gate', icon: 'fa-wave-square', color: 'text-cyan-200' },
     { key: 'workflow', method: 'POST', path: '/api/admin/mirofish/workflow/scan-analyze', title: 'MCP Top 3', icon: 'fa-network-wired', color: 'text-anthropic-orange' },
     { key: 'autonomous', method: 'POST', path: '/api/admin/mirofish/autonomous/*', title: 'Autonomous MCP', icon: 'fa-robot', color: 'text-anthropic-orange' },
 ];
@@ -1737,6 +1738,7 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
     const [alphaErrorText, setAlphaErrorText] = useState<string | null>(null);
     const [deepSeekStatus, setDeepSeekStatus] = useState<MiroFishDeepSeekStatus | null>(null);
     const [tradingViewStatus, setTradingViewStatus] = useState<MiroFishTradingViewStatus | null>(null);
+    const [dualKalmanStatus, setDualKalmanStatus] = useState<Record<string, any> | null>(null);
     const [deepSeekState, setDeepSeekState] = useState<DeepSeekPanelState>('idle');
     const [deepSeekSummary, setDeepSeekSummary] = useState<MiroFishDeepSeekSummaryResult | null>(null);
     const [deepSeekErrorText, setDeepSeekErrorText] = useState<string | null>(null);
@@ -1773,15 +1775,17 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
             markEndpoint('dataSources', 'loading');
             markEndpoint('deepseek', 'loading');
             markEndpoint('tradingview', 'loading');
+            markEndpoint('kalman', 'loading');
             markEndpoint('workflow', 'loading');
             markEndpoint('autonomous', 'loading');
             try {
-                const [statusResult, historyResult, sourcesResult, deepSeekResult, tradingViewResult, workflowResult, autonomousResult] = await Promise.allSettled([
+                const [statusResult, historyResult, sourcesResult, deepSeekResult, tradingViewResult, kalmanResult, workflowResult, autonomousResult] = await Promise.allSettled([
                     mirofishApi.getStatus(),
                     mirofishApi.listRuns(),
                     mirofishApi.getDataSources(),
                     mirofishApi.getDeepSeekStatus(),
                     mirofishApi.getTradingViewStatus(),
+                    mirofishApi.getDualKalmanStatus(),
                     mirofishApi.getWorkflowStatus(),
                     mirofishApi.getAutonomousStatus(),
                 ]);
@@ -1838,6 +1842,14 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
                     noteFailure('tradingview', 'TradingView MCP', tradingViewResult.reason);
                 }
 
+                if (kalmanResult.status === 'fulfilled') {
+                    const kalmanData = kalmanResult.value as Record<string, any>;
+                    setDualKalmanStatus(kalmanData);
+                    markEndpoint('kalman', kalmanData?.ready ? 'ok' : 'idle');
+                } else {
+                    noteFailure('kalman', 'Dual Kalman Gate', kalmanResult.reason);
+                }
+
                 if (workflowResult.status === 'fulfilled') {
                     const workflowData = workflowResult.value as { latest_workflow?: MiroFishWorkflow };
                     if (workflowData?.latest_workflow) {
@@ -1873,6 +1885,7 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
                 markEndpoint('dataSources', 'error');
                 markEndpoint('deepseek', 'error');
                 markEndpoint('tradingview', 'error');
+                markEndpoint('kalman', 'error');
                 markEndpoint('workflow', 'error');
                 markEndpoint('autonomous', 'error');
                 setErrorText(error instanceof Error ? error.message : 'MiroFish API 연결 실패');
@@ -2117,8 +2130,11 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
         tradingview: tradingViewStatus
             ? `${tradingViewStatus.enabled ? tradingViewStatus.mode || 'enabled' : 'off'} / ${tradingViewStatus.cache_available ? 'cache' : tradingViewStatus.mcp_url_configured ? 'mcp url' : 'no source'}`
             : 'not loaded',
+        kalman: dualKalmanStatus
+            ? `${dualKalmanStatus.mode || 'shadow'} / ${dualKalmanStatus.latest_run_id ? 'latest' : 'ready'}`
+            : 'not loaded',
         autonomous: autonomousStatus ? `${autonomousStatus.mutation_enabled ? 'mutation on' : 'dry-run'} / ${autonomousStatus.telegram?.personal_configured ? 'telegram ok' : 'telegram off'}` : autonomousState,
-    }), [autonomousState, autonomousStatus, dataSourceCount, deepSeekStatus, deepSeekSummary, recentRuns.length, run, status, targetSnapshot, tradingViewStatus, workflow, workflowState]);
+    }), [autonomousState, autonomousStatus, dataSourceCount, deepSeekStatus, deepSeekSummary, dualKalmanStatus, recentRuns.length, run, status, targetSnapshot, tradingViewStatus, workflow, workflowState]);
 
     const targetCandidates = useMemo<TargetCandidate[]>(() => {
         const query = target.trim();
@@ -2250,6 +2266,10 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
                 agent_count: agentCount,
                 top_n: 3,
                 max_parallel: 3,
+                quality_gate: 'dual_kalman',
+                kalman_profile: 'linear_dkf_shadow_v1',
+                min_kalman_confidence: 0.55,
+                block_high_innovation: true,
                 allow_stale_sources: false,
                 mode: 'full',
                 force,

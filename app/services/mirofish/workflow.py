@@ -18,6 +18,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Any
 
 from app.services.mirofish import alpha_scanner, outcome_tracker, store
+import app.services.mirofish.dual_kalman as dual_kalman
 from app.utils.atomic_json import write_json_atomic
 
 
@@ -55,6 +56,11 @@ def start_workflow_from_scanner_events(
     max_risk = _float(payload.get('max_risk'), DEFAULT_MAX_RISK)
     actions = _actions(payload.get('actions'))
     allow_stale_sources = _bool(payload.get('allow_stale_sources', payload.get('allow_stale')), False)
+    quality_gate = str(payload.get('quality_gate') or '').strip().lower()
+    use_dual_kalman_gate = quality_gate in {'dual_kalman', 'kalman', 'dkf'}
+    kalman_profile = str(payload.get('kalman_profile') or dual_kalman.DEFAULT_PROFILE)
+    min_kalman_confidence = _float(payload.get('min_kalman_confidence'), dual_kalman.DEFAULT_MIN_CONFIDENCE)
+    block_high_innovation = _bool(payload.get('block_high_innovation'), True)
 
     if force:
         scanner_run = alpha_scanner.create_scanner_run(scanner_payload)
@@ -101,6 +107,22 @@ def start_workflow_from_scanner_events(
             if isinstance(event, dict) and isinstance(event.get('candidate'), dict)
         ]
 
+    kalman_gate_result: dict[str, Any] | None = None
+    if use_dual_kalman_gate and candidates:
+        kalman_gate_result = dual_kalman.run_dual_kalman_signal_gate(
+            scanner_result.get('run') or {},
+            candidates,
+            profile=kalman_profile,
+            min_confidence=min_kalman_confidence,
+            block_high_innovation=block_high_innovation,
+            persist=True,
+        )
+        candidates = dual_kalman.apply_dual_kalman_gate_to_candidates(
+            candidates,
+            kalman_gate_result,
+            drop_blocked=True,
+        )
+
     if dry_run:
         return {
             'ok': True,
@@ -110,6 +132,7 @@ def start_workflow_from_scanner_events(
             'candidates': [_candidate_summary(candidate) for candidate in candidates],
             'alert_blocked': bool(scanner_result.get('alert_blocked')),
             'blocked_reason': scanner_result.get('blocked_reason'),
+            'kalman_gate': _workflow_kalman_gate_summary(kalman_gate_result),
         }
 
     if scanner_result.get('alert_blocked'):
@@ -125,10 +148,11 @@ def start_workflow_from_scanner_events(
     if not candidates:
         return {
             'ok': True,
-            'status': 'no_new_events',
+            'status': 'kalman_blocked_all' if kalman_gate_result else 'no_new_events',
             'scanner_run_id': (scanner_result.get('run') or {}).get('id'),
             'candidate_count': 0,
             'event_state_committed': False,
+            'kalman_gate': _workflow_kalman_gate_summary(kalman_gate_result),
         }
 
     workflow = _create_workflow_record(
@@ -146,8 +170,13 @@ def start_workflow_from_scanner_events(
             'batch_size': max_events,
             'top_n': top_n,
             'allow_stale_sources': allow_stale_sources,
+            'quality_gate': quality_gate or None,
+            'kalman_profile': kalman_profile if use_dual_kalman_gate else None,
+            'min_kalman_confidence': min_kalman_confidence if use_dual_kalman_gate else None,
         },
     )
+    if kalman_gate_result:
+        workflow['kalman_gate'] = _workflow_kalman_gate_summary(kalman_gate_result)
     workflow['event_state_commit_requested'] = bool(commit_event_state and not force)
     _write_workflow(workflow)
 
@@ -833,6 +862,8 @@ def _score_breakdown(candidate: dict[str, Any], run: dict[str, Any]) -> dict[str
     verdict = run.get('verdict') or {}
     pipeline = run.get('pipeline') or {}
     brain = run.get('brain') or run.get('brain_summary') or {}
+    profile = candidate.get('analysis_profile') or {}
+    kalman_gate = profile.get('dual_kalman_gate') if isinstance(profile.get('dual_kalman_gate'), dict) else {}
     action = str(verdict.get('action') or verdict.get('label') or 'HOLD').upper()
     confidence_pct = _number(verdict.get('confidence_pct'))
     if confidence_pct <= 0:
@@ -841,13 +872,14 @@ def _score_breakdown(candidate: dict[str, Any], run: dict[str, Any]) -> dict[str
     risk = _number(candidate.get('risk_score'))
     graph_links = min(_number(pipeline.get('graph_links')), 120.0)
     brain_score = _number(brain.get('score') or brain.get('alignment_score'))
-    source_count = _number((candidate.get('analysis_profile') or {}).get('source_count'))
+    source_count = _number(profile.get('source_count'))
     action_bonus = {'BUY': 20.0, 'HOLD': 4.0, 'SELL': -30.0}.get(action, 0.0)
     quality_bonus = {
         'high_conviction': 6.0,
         'actionable': 3.0,
         'watch': 1.0,
     }.get(str(candidate.get('signal_quality') or '').lower(), 0.0)
+    kalman_delta = max(-8.0, min(8.0, _number(kalman_gate.get('score_delta'))))
     components = {
         'alpha': round(alpha * 0.46, 4),
         'risk_penalty': round(-risk * 0.32, 4),
@@ -857,6 +889,7 @@ def _score_breakdown(candidate: dict[str, Any], run: dict[str, Any]) -> dict[str
         'graph_links': round(graph_links * 0.05, 4),
         'source_count': round(source_count * 1.6, 4),
         'quality_bonus': round(quality_bonus, 4),
+        'dual_kalman': round(kalman_delta, 4),
     }
     score = round(sum(components.values()), 2)
     return {
@@ -871,6 +904,7 @@ def _score_breakdown(candidate: dict[str, Any], run: dict[str, Any]) -> dict[str
             'graph_links_capped': graph_links,
             'source_count': source_count,
             'signal_quality': candidate.get('signal_quality'),
+            'dual_kalman': kalman_gate or None,
         },
         'weights': {
             'alpha': 0.46,
@@ -879,6 +913,7 @@ def _score_breakdown(candidate: dict[str, Any], run: dict[str, Any]) -> dict[str
             'brain': 0.08,
             'graph_link': 0.05,
             'source_count': 1.6,
+            'dual_kalman': 'bounded -8..+8 shadow gate delta',
         },
         'components': components,
     }
@@ -892,11 +927,16 @@ def _ranking_reason(candidate: dict[str, Any], run: dict[str, Any], final_score:
     verdict = run.get('verdict') or {}
     profile = candidate.get('analysis_profile') or {}
     action = verdict.get('action') or verdict.get('label') or 'HOLD'
+    kalman = profile.get('dual_kalman_gate') if isinstance(profile.get('dual_kalman_gate'), dict) else {}
+    kalman_text = ''
+    if kalman:
+        kalman_text = f"; DKF={kalman.get('gate')} {kalman.get('score_delta')}"
     return (
         f"{candidate.get('display_name') or candidate.get('symbol')} final_score={final_score}; "
         f"scanner alpha={candidate.get('alpha_score')} risk={candidate.get('risk_score')}; "
         f"CIO={action} {verdict.get('confidence_pct')}%; "
         f"T20={profile.get('trend_20d_pct')} volume={profile.get('volume_ratio')}"
+        f"{kalman_text}"
     )
 
 
@@ -1034,6 +1074,24 @@ def _workflow_source_freshness(scanner_run: dict[str, Any], graphrag_summary: di
             'deepseek_freshness': coverage.get('deepseek'),
             'source_details': (graphrag_summary or {}).get('source_details') or {},
         },
+    }
+
+
+def _workflow_kalman_gate_summary(kalman_run: dict[str, Any] | None) -> dict[str, Any] | None:
+    if not kalman_run:
+        return None
+    summary = kalman_run.get('summary') or {}
+    return {
+        'enabled': True,
+        'run_id': kalman_run.get('id'),
+        'profile': kalman_run.get('profile'),
+        'status': kalman_run.get('status'),
+        'candidate_count': kalman_run.get('candidate_count'),
+        'signal_count': kalman_run.get('signal_count'),
+        'gate_counts': summary.get('gate_counts') or {},
+        'avg_score_delta': summary.get('avg_score_delta'),
+        'lookahead_safe': kalman_run.get('lookahead_safe', True),
+        'links': kalman_run.get('links') or {},
     }
 
 

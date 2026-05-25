@@ -18,6 +18,7 @@ const mockApi = vi.hoisted(() => ({
   getScannerCandidates: vi.fn(),
   getDeepSeekStatus: vi.fn(),
   getTradingViewStatus: vi.fn(),
+  getDualKalmanStatus: vi.fn(),
   getPriceChart: vi.fn(),
   createDeepSeekScannerSummary: vi.fn(),
   summarizeScannerRunWithDeepSeek: vi.fn(),
@@ -173,6 +174,12 @@ beforeEach(() => {
     configured: false,
     cache_available: false,
     mcp_url_configured: false,
+  });
+  mockApi.getDualKalmanStatus.mockResolvedValue({
+    service: 'mirofish-dual-kalman',
+    ready: true,
+    mode: 'scanner_signal_shadow_gate',
+    latest_run_id: null,
   });
   mockApi.getPriceChart.mockResolvedValue({
     symbol: '000001',
