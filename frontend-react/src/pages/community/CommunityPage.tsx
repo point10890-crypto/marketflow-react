@@ -23,6 +23,42 @@ const BOARD_ICONS: Record<string, string> = {
     'lotto-ai': 'fa-dice',
 };
 
+const BOARD_SEEN_STORAGE_KEY = 'marketflow.community.boardSeen.v1';
+const NEW_POST_RECENT_WINDOW_MS = 48 * 60 * 60 * 1000;
+
+function getLatestPostStamp(board: CommunityBoard) {
+    if (!board.latest_post_at) return 0;
+    const stamp = Date.parse(board.latest_post_at);
+    return Number.isFinite(stamp) ? stamp : 0;
+}
+
+function readBoardSeenStamps(): Record<string, number> {
+    try {
+        const raw = window.localStorage.getItem(BOARD_SEEN_STORAGE_KEY);
+        if (!raw) return {};
+        const parsed = JSON.parse(raw);
+        return parsed && typeof parsed === 'object' ? parsed : {};
+    } catch {
+        return {};
+    }
+}
+
+function writeBoardSeenStamps(value: Record<string, number>) {
+    try {
+        window.localStorage.setItem(BOARD_SEEN_STORAGE_KEY, JSON.stringify(value));
+    } catch {
+        // Storage can be unavailable in private or restricted browser contexts.
+    }
+}
+
+function hasBoardSeenBaseline() {
+    try {
+        return window.localStorage.getItem(BOARD_SEEN_STORAGE_KEY) !== null;
+    } catch {
+        return false;
+    }
+}
+
 function tierLabel(tier: string) {
     if (tier === 'pro') return { text: 'Pro', cls: 'bg-indigo-500/25 text-indigo-300 border-indigo-500/30' };
     if (tier === 'premium') return { text: 'Premium', cls: 'bg-purple-500/25 text-purple-300 border-purple-500/30' };
@@ -33,12 +69,37 @@ export default function CommunityPage() {
     const { user } = useAuth();
     const navigate = useNavigate();
     const [boards, setBoards] = useState<CommunityBoard[]>([]);
+    const [newBoards, setNewBoards] = useState<Record<string, boolean>>({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
     useEffect(() => {
         communityAPI.getBoards()
-            .then(setBoards)
+            .then(data => {
+                setBoards(data);
+
+                const hasSeenBaseline = hasBoardSeenBaseline();
+                const seenStamps = readBoardSeenStamps();
+                const nextNewBoards: Record<string, boolean> = {};
+                const now = Date.now();
+
+                data.forEach(board => {
+                    const latestStamp = getLatestPostStamp(board);
+                    if (!latestStamp) return;
+                    const seenStamp = Number(seenStamps[board.slug] || 0);
+                    const recentlyUpdated = now - latestStamp <= NEW_POST_RECENT_WINDOW_MS;
+                    if ((hasSeenBaseline && latestStamp > seenStamp) || (!hasSeenBaseline && recentlyUpdated)) {
+                        nextNewBoards[board.slug] = true;
+                    } else if (!hasSeenBaseline || !seenStamp) {
+                        seenStamps[board.slug] = latestStamp;
+                    }
+                });
+
+                if (!hasSeenBaseline || Object.keys(nextNewBoards).length > 0) {
+                    writeBoardSeenStamps(seenStamps);
+                }
+                setNewBoards(nextNewBoards);
+            })
             .catch(err => setError(err.message || '게시판 목록을 불러올 수 없습니다.'))
             .finally(() => setLoading(false));
     }, []);
@@ -46,6 +107,15 @@ export default function CommunityPage() {
     const canAccess = (board: CommunityBoard) => {
         if (!user) return false;
         return board.can_read !== false;
+    };
+
+    const markBoardSeen = (board: CommunityBoard) => {
+        const latestStamp = getLatestPostStamp(board);
+        if (!latestStamp) return;
+        const seenStamps = readBoardSeenStamps();
+        seenStamps[board.slug] = latestStamp;
+        writeBoardSeenStamps(seenStamps);
+        setNewBoards(prev => ({ ...prev, [board.slug]: false }));
     };
 
     if (loading) {
@@ -79,11 +149,16 @@ export default function CommunityPage() {
                     const badge = tierLabel(board.min_tier);
                     const colors = BOARD_COLORS[board.slug] || BOARD_COLORS['free-talk'];
                     const iconClass = BOARD_ICONS[board.slug] || board.icon || 'fa-comments';
+                    const isNew = Boolean(newBoards[board.slug]);
 
                     return (
                         <button
                             key={board.id}
-                            onClick={() => !locked && navigate(`/dashboard/community/${board.slug}`)}
+                            onClick={() => {
+                                if (locked) return;
+                                markBoardSeen(board);
+                                navigate(`/dashboard/community/${board.slug}`);
+                            }}
                             disabled={locked}
                             className={`group text-left w-full rounded-2xl transition-all duration-200 overflow-hidden ${
                                 locked
@@ -91,7 +166,16 @@ export default function CommunityPage() {
                                     : 'cursor-pointer hover:scale-[1.02] hover:shadow-lg active:scale-[0.98]'
                             } ${colors.glow}`}
                         >
-                            <div className={`bg-gradient-to-br ${colors.bg} border border-white/[0.06] rounded-2xl p-5 md:p-6 h-full backdrop-blur-sm`}>
+                            <div className={`relative bg-gradient-to-br ${colors.bg} border border-white/[0.06] rounded-2xl p-5 md:p-6 h-full backdrop-blur-sm`}>
+                                {isNew && (
+                                    <span
+                                        className="community-new-badge absolute right-14 top-6 rounded-full border border-rose-300/60 bg-rose-500 px-2.5 py-1 text-[10px] font-black tracking-[0.18em] text-white shadow-[0_0_18px_rgba(244,63,94,0.45)]"
+                                        aria-label={`${board.name} new post`}
+                                        title={board.latest_post_title || 'New post'}
+                                    >
+                                        NEW
+                                    </span>
+                                )}
                                 {/* Icon + Badge row */}
                                 <div className="flex items-center justify-between mb-4">
                                     <div className={`w-11 h-11 rounded-xl bg-white/[0.06] flex items-center justify-center ${

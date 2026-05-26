@@ -21,12 +21,20 @@ class Board(db.Model):
     posts = db.relationship('Post', backref='board', lazy='dynamic')
 
     def to_dict(self):
+        latest_post = (
+            self.posts.filter_by(is_hidden=False)
+            .order_by(Post.updated_at.desc(), Post.created_at.desc())
+            .first()
+        )
         return {
             'id': self.id, 'slug': self.slug, 'name': self.name,
             'description': self.description, 'icon': self.icon,
             'sort_order': self.sort_order, 'min_tier': self.min_tier,
             'write_tier': self.write_tier, 'is_active': self.is_active,
             'post_count': self.posts.filter_by(is_hidden=False).count(),
+            'latest_post_id': latest_post.id if latest_post else None,
+            'latest_post_title': latest_post.title if latest_post else None,
+            'latest_post_at': latest_post.updated_at.isoformat() if latest_post and latest_post.updated_at else None,
             'created_at': self.created_at.isoformat() if self.created_at else None,
         }
 

@@ -101,6 +101,21 @@ body {
 }
 .animate-pulse-slow { animation: pulse-slow 2s ease-in-out infinite; }
 
+@keyframes community-new-blink {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.28;
+    transform: scale(0.94);
+  }
+}
+
+.community-new-badge {
+  animation: community-new-blink 1.05s ease-in-out infinite;
+}
+
 @keyframes spin-slow {
   to { transform: rotate(360deg); }
 }

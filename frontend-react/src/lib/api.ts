@@ -1084,6 +1084,9 @@ export interface CommunityBoard {
     write_tier: string;
     is_active: boolean;
     post_count: number;
+    latest_post_id?: number | null;
+    latest_post_title?: string | null;
+    latest_post_at?: string | null;
     can_read?: boolean;
     can_write?: boolean;
     created_at: string;
