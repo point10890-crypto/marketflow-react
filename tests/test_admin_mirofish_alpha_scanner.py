@@ -5,7 +5,7 @@ import pytest
 from flask import Flask
 
 from app.routes.admin_mirofish import admin_mirofish_bp
-from app.services.mirofish import alpha_research, alpha_scanner
+from app.services.mirofish import alpha_research, alpha_scanner, deepseek_client
 
 
 @pytest.fixture(autouse=True)
@@ -148,16 +148,16 @@ def test_alpha_scanner_creates_ranked_deterministic_run(tmp_path, monkeypatch):
     assert run['status'] == 'completed'
     assert run['source'] == 'local_marketflow_artifacts'
     assert run['candidate_count'] == 2
-    assert run['scoring_schema']['ranking'] == 'rank by alpha_score - 0.55 * risk_score + conviction_adjustment, descending.'
+    assert run['scoring_schema']['ranking'] == 'rank by alpha_score - 0.55 * risk_score + conviction_adjustment + bounded MCP/outcome adjustments, descending.'
     assert run['goal_harness']['primary_objective'] == 'detect profitable stock candidates from reliable data'
-    assert run['goal_harness']['ranking_effect'] == 'none_advisory_only'
+    assert run['goal_harness']['ranking_effect'] == 'direct_bounded_quality_adjustment'
     assert run['candidates'][0]['symbol'] == '000001'
     assert run['candidates'][0]['rank'] == 1
     assert run['candidates'][0]['action'] == 'BUY_CANDIDATE'
     assert run['candidates'][0]['signal_quality'] in {'actionable', 'high_conviction'}
     assert run['candidates'][0]['analysis_profile']['source_count'] == 4
     assert run['candidates'][0]['analysis_profile']['profitability_scorecard']['goal_fit_score'] > 0
-    assert run['candidates'][0]['analysis_profile']['profitability_scorecard']['mcp_role'] == 'supporting_data_confirmation_only'
+    assert run['candidates'][0]['analysis_profile']['profitability_scorecard']['mcp_role'] == 'score_risk_confirmation_with_supporting_signal_limits'
     assert run['candidates'][0]['entry_plan']['risk_reward'] >= 2
     assert run['candidates'][0]['replay_context']['lookahead_safe'] is True
     assert run['candidates'][0]['name'] == run['candidates'][0]['display_name']
@@ -172,6 +172,320 @@ def test_alpha_scanner_creates_ranked_deterministic_run(tmp_path, monkeypatch):
     assert saved['id'] == run['id']
     assert candidate_payload['candidate_count'] == 2
     assert candidate_payload['candidates'][0]['symbol'] == '000001'
+
+
+def test_alpha_scanner_applies_deepseek_v4_bounded_rerank(tmp_path, monkeypatch):
+    _seed_artifacts(tmp_path)
+    monkeypatch.setattr(alpha_scanner, 'DATA_ROOT', str(tmp_path))
+    monkeypatch.setattr(alpha_scanner, 'SCANNER_RUNS_ROOT', str(tmp_path / 'runs'))
+    monkeypatch.setenv('MIROFISH_DEEPSEEK_RERANK_ENABLED', '1')
+
+    calls = []
+
+    def fake_rerank(candidates, **kwargs):
+        calls.append({'candidates': candidates, 'kwargs': kwargs})
+        return {
+            'provider': 'deepseek',
+            'model': 'deepseek-v4-pro',
+            'candidate_count': len(candidates),
+            'thinking': True,
+            'reasoning_effort': 'max',
+            'max_abs_adjustment': kwargs.get('max_adjustment', 8),
+            'overlay': {
+                'portfolio_note_ko': '품질 좋은 후보를 상향합니다.',
+                'items': [{
+                    'symbol': '000001',
+                    'deepseek_conviction': 91,
+                    'ranking_adjustment': 5,
+                    'risk_flags': [],
+                    'positive_evidence': ['다중 소스 확인'],
+                    'rationale_ko': '가격, 거래대금, VCP 근거가 동시 확인됩니다.',
+                }],
+            },
+            'usage': {'total_tokens': 42},
+            'finish_reason': 'stop',
+            'created_at': '2026-05-05T00:00:00+00:00',
+        }
+
+    monkeypatch.setattr(deepseek_client, 'rerank_scanner_candidates', fake_rerank)
+
+    run = alpha_scanner.create_scanner_run({'limit': 2})
+    first = next(item for item in run['candidates'] if item['symbol'] == '000001')
+    artifact = alpha_scanner.read_scanner_run_artifact(run['id'], 'deepseek_rerank.json')
+
+    assert calls
+    assert calls[0]['kwargs']['max_adjustment'] == 8
+    assert run['providers']['deepseek_rerank']['status'] == 'applied'
+    assert run['providers']['deepseek_rerank']['model'] == 'deepseek-v4-pro'
+    assert first['analysis_profile']['deepseek_rerank']['ranking_adjustment'] == 5
+    assert 'deepseek_v4_confirmed' in first['strategy_tags']
+    assert artifact['status'] == 'applied'
+    assert artifact['items'][0]['symbol'] == '000001'
+
+
+def test_alpha_scanner_retries_deepseek_rerank_with_compact_limit(tmp_path, monkeypatch):
+    _seed_artifacts(tmp_path)
+    monkeypatch.setattr(alpha_scanner, 'DATA_ROOT', str(tmp_path))
+    monkeypatch.setattr(alpha_scanner, 'SCANNER_RUNS_ROOT', str(tmp_path / 'runs'))
+    monkeypatch.setenv('MIROFISH_DEEPSEEK_RERANK_ENABLED', '1')
+    attempts = []
+
+    def fake_rerank(candidates, **kwargs):
+        attempts.append(kwargs.get('limit'))
+        if len(attempts) == 1:
+            raise deepseek_client.DeepSeekError('DeepSeek response content is not valid JSON')
+        return {
+            'provider': 'deepseek',
+            'model': 'deepseek-v4-pro',
+            'candidate_count': len(candidates[:kwargs.get('limit', 5)]),
+            'overlay': {'items': []},
+        }
+
+    monkeypatch.setattr(deepseek_client, 'rerank_scanner_candidates', fake_rerank)
+
+    run = alpha_scanner.create_scanner_run({'limit': 2})
+    artifact = alpha_scanner.read_scanner_run_artifact(run['id'], 'deepseek_rerank.json')
+
+    assert attempts[0] > attempts[1]
+    assert artifact['status'] == 'empty_overlay_retry_compact'
+    assert artifact['initial_error'].startswith('DeepSeekError:')
+
+
+def test_alpha_scanner_plan_a_blocks_kind_blacklist(tmp_path, monkeypatch):
+    _seed_artifacts(tmp_path)
+    _write_json(tmp_path / 'kind_blacklist_latest.json', {
+        'schema_version': 'mirofish.kind_blacklist.v1',
+        'source': 'KIND/KRX public disclosure risk cache',
+        'status': 'fresh',
+        'fetched_at': _fresh_artifact_timestamp(),
+        'entry_count': 1,
+        'entries': {
+            '000001': {
+                'symbol': '000001',
+                'categories': ['관리종목'],
+                'risk_level': 'hard_block',
+            },
+        },
+        'lookahead_safe': True,
+    })
+    monkeypatch.setattr(alpha_scanner, 'DATA_ROOT', str(tmp_path))
+    monkeypatch.setattr(alpha_scanner, 'SCANNER_RUNS_ROOT', str(tmp_path / 'runs'))
+
+    run = alpha_scanner.create_scanner_run({'symbols': ['000001'], 'limit': 5})
+
+    candidate = run['candidates'][0]
+    gates = candidate['analysis_profile']['false_signal_gates']
+    assert candidate['symbol'] == '000001'
+    assert candidate['action'] == 'REJECT'
+    assert candidate['alpha_score'] == 0.0
+    assert 'kind_blacklist' in candidate['strategy_tags']
+    assert 'kind_blacklist' in gates['hard_blockers']
+    assert candidate['analysis_profile']['profitability_scorecard']['goal_verdict'] == 'blocked_by_guardrail'
+
+    rejected = alpha_scanner.read_scanner_run_artifact(run['id'], 'rejected_candidates.json')
+    reasons = rejected['candidates'][0]['rejection_reasons']
+    assert 'false_signal:kind_blacklist' in reasons
+
+
+def test_alpha_scanner_plan_a_adds_dual_flow_confirmation(tmp_path, monkeypatch):
+    _seed_artifacts(tmp_path)
+    (tmp_path / 'all_institutional_trend_data.csv').write_text(
+        '\n'.join([
+            'ticker,scrape_date,institutional_net_buy_20d,institutional_net_buy_5d,foreign_net_buy_20d,foreign_net_buy_5d',
+            '000001,2026-05-03,200000000,80000000,300000000,90000000',
+        ]),
+        encoding='utf-8',
+    )
+    monkeypatch.setattr(alpha_scanner, 'DATA_ROOT', str(tmp_path))
+    monkeypatch.setattr(alpha_scanner, 'SCANNER_RUNS_ROOT', str(tmp_path / 'runs'))
+
+    run = alpha_scanner.create_scanner_run({'symbols': ['000001'], 'limit': 5})
+
+    candidate = run['candidates'][0]
+    profile = candidate['analysis_profile']
+    scorecard = profile['profitability_scorecard']
+    assert profile['capital_flow_confirmation']['passed'] is True
+    assert profile['source_count'] == 5
+    assert candidate['alpha_score'] > profile['base_alpha_score']
+    assert 'dual_flow_buy' in candidate['strategy_tags']
+    assert 'all_institutional_trend_data.csv' in candidate['replay_context']['data_sources']
+    assert 'capital_flow' not in scorecard['missing_confirmations']
+
+
+def test_alpha_scanner_applies_kis_live_price_flow_to_scores(tmp_path, monkeypatch):
+    _seed_artifacts(tmp_path)
+    fresh_at = _fresh_artifact_timestamp()
+    _write_json(tmp_path / 'kis_live_snapshot_latest.json', {
+        'generated_at': fresh_at,
+        'entries': {
+            '000001': {
+                'symbol': '000001',
+                'source': 'KIS API',
+                'fetched_at': fresh_at,
+                'confidence': 0.96,
+                'quote': {
+                    'price': 112,
+                    'change_pct': 9.0,
+                    'trading_value': 220_000_000_000,
+                    'volume': 3_500_000,
+                },
+                'investor': {
+                    'foreign_net_qty': 12000,
+                    'institution_net_qty': 8000,
+                    'foreign_net_value': 4_500_000_000,
+                    'institution_net_value': 3_000_000_000,
+                },
+            },
+        },
+    })
+    monkeypatch.setattr(alpha_scanner, 'DATA_ROOT', str(tmp_path))
+    monkeypatch.setattr(alpha_scanner, 'SCANNER_RUNS_ROOT', str(tmp_path / 'runs'))
+
+    run = alpha_scanner.create_scanner_run({'symbols': ['000001'], 'limit': 5})
+
+    candidate = run['candidates'][0]
+    profile = candidate['analysis_profile']
+    adjustment = profile['mcp_quality_adjustment']
+    assert profile['kis_live_overlay']['applied'] is True
+    assert adjustment['alpha_delta'] > 0
+    assert 'kis_live_dual_flow' in candidate['strategy_tags']
+    assert candidate['price']['current_price'] == 112
+    assert candidate['price']['trading_value'] == 220_000_000_000
+    assert 'KIS API: live price/investor flow' in candidate['replay_context']['data_sources']
+
+
+def test_alpha_scanner_applies_dart_event_as_risk_filter(tmp_path, monkeypatch):
+    _seed_artifacts(tmp_path)
+    fresh_at = _fresh_artifact_timestamp()
+    _write_json(tmp_path / 'dart_event_latest.json', {
+        'generated_at': fresh_at,
+        'entries': {
+            '000001': {
+                'symbol': '000001',
+                'risk_level': 'high',
+                'risk_flags': ['audit_opinion'],
+                'summary': 'audit_opinion review required',
+                'source_grade': 'S',
+            },
+        },
+    })
+    monkeypatch.setattr(alpha_scanner, 'DATA_ROOT', str(tmp_path))
+    monkeypatch.setattr(alpha_scanner, 'SCANNER_RUNS_ROOT', str(tmp_path / 'runs'))
+
+    run = alpha_scanner.create_scanner_run({'symbols': ['000001'], 'limit': 5})
+
+    candidate = run['candidates'][0]
+    adjustment = candidate['analysis_profile']['mcp_quality_adjustment']
+    assert adjustment['risk_delta'] > 0
+    assert 'dart_hard_risk' in candidate['strategy_tags']
+    assert candidate['risk_score'] > candidate['analysis_profile']['base_risk_score']
+    assert 'dart_event_latest.json' in candidate['replay_context']['data_sources']
+
+
+def test_alpha_scanner_limits_news_theme_social_to_supporting_signal(tmp_path, monkeypatch):
+    _seed_artifacts(tmp_path)
+    fresh_at = _fresh_artifact_timestamp()
+    _write_json(tmp_path / 'news_theme_social_latest.json', {
+        'generated_at': fresh_at,
+        'entries': {
+            '000001': {
+                'symbol': '000001',
+                'sentiment_score': 95,
+                'social_heat': 92,
+                'source_grade': 'C',
+            },
+        },
+    })
+    monkeypatch.setattr(alpha_scanner, 'DATA_ROOT', str(tmp_path))
+    monkeypatch.setattr(alpha_scanner, 'SCANNER_RUNS_ROOT', str(tmp_path / 'runs'))
+
+    run = alpha_scanner.create_scanner_run({'symbols': ['000001'], 'limit': 5})
+
+    candidate = run['candidates'][0]
+    adjustment = candidate['analysis_profile']['mcp_quality_adjustment']
+    assert adjustment['alpha_delta'] < 0
+    assert adjustment['risk_delta'] > 0
+    assert 'news_theme_social_supporting_only' in candidate['strategy_tags']
+    assert 'support_signal_without_core_confirmation' in candidate['strategy_tags']
+    assert 'news_theme_social_latest.json' in candidate['replay_context']['data_sources']
+
+
+def test_alpha_scanner_applies_replay_safe_outcome_memory(tmp_path, monkeypatch):
+    _seed_artifacts(tmp_path)
+    monkeypatch.setattr(alpha_scanner, 'DATA_ROOT', str(tmp_path))
+    monkeypatch.setattr(alpha_scanner, 'SCANNER_RUNS_ROOT', str(tmp_path / 'runs'))
+    monkeypatch.setattr(alpha_scanner, '_performance_advisory', lambda: {
+        'available': True,
+        'applied_to_scoring': True,
+        'source': 'workflow_outcomes',
+        'lookahead_safe': True,
+        'evaluated_count': 20,
+        'hit_rate_recent': 0.72,
+        'recommendations': {
+            'baseline_hit_rate': 0.50,
+            'tag_score_adjust': {'leading_screener': 1.4},
+        },
+    })
+
+    run = alpha_scanner.create_scanner_run({'symbols': ['000001'], 'limit': 5})
+
+    candidate = run['candidates'][0]
+    profile = candidate['analysis_profile']
+    assert profile['mcp_ranking_delta'] > 0
+    assert profile['performance_memory']['applied'] is True
+    assert profile['performance_memory']['tag_adjustment']['matched_tags']['leading_screener'] == 1.4
+    assert 'outcome_tag_memory_adjusted' in candidate['strategy_tags']
+
+
+def test_alpha_scanner_plan_a_blocks_credit_pressure_cache(tmp_path, monkeypatch):
+    _seed_artifacts(tmp_path)
+    _write_json(tmp_path / 'credit_balance_latest.json', {
+        'schema_version': 'mirofish.credit_balance.v1',
+        'source': 'KRX credit balance cache',
+        'status': 'fresh',
+        'fetched_at': _fresh_artifact_timestamp(),
+        'entry_count': 1,
+        'entries': {
+            '000001': {
+                'symbol': '000001',
+                'balance_shares': 6000000,
+                'listed_shares': 100000000,
+                'credit_ratio_pct': 6.0,
+            },
+        },
+        'lookahead_safe': True,
+    })
+    monkeypatch.setattr(alpha_scanner, 'DATA_ROOT', str(tmp_path))
+    monkeypatch.setattr(alpha_scanner, 'SCANNER_RUNS_ROOT', str(tmp_path / 'runs'))
+
+    run = alpha_scanner.create_scanner_run({'symbols': ['000001'], 'limit': 5})
+
+    candidate = run['candidates'][0]
+    assert candidate['action'] == 'REJECT'
+    assert 'credit_pressure' in candidate['analysis_profile']['false_signal_gates']['hard_blockers']
+    assert 'credit_balance_latest.json' in candidate['replay_context']['data_sources']
+
+
+def test_alpha_scanner_plan_a_env_toggle_disables_gates(tmp_path, monkeypatch):
+    _seed_artifacts(tmp_path)
+    _write_json(tmp_path / 'kind_blacklist_latest.json', {
+        'schema_version': 'mirofish.kind_blacklist.v1',
+        'source': 'KIND/KRX public disclosure risk cache',
+        'status': 'fresh',
+        'fetched_at': _fresh_artifact_timestamp(),
+        'entry_count': 1,
+        'entries': {'000001': {'symbol': '000001', 'categories': ['관리종목']}},
+        'lookahead_safe': True,
+    })
+    monkeypatch.setenv('ENABLE_ALPHA_PHASE_1_GATES', '0')
+    monkeypatch.setattr(alpha_scanner, 'DATA_ROOT', str(tmp_path))
+    monkeypatch.setattr(alpha_scanner, 'SCANNER_RUNS_ROOT', str(tmp_path / 'runs'))
+
+    run = alpha_scanner.create_scanner_run({'symbols': ['000001'], 'limit': 5})
+
+    candidate = run['candidates'][0]
+    assert candidate['analysis_profile']['false_signal_gates']['enabled'] is False
+    assert candidate['action'] != 'REJECT'
 
 
 def test_alpha_scanner_persists_analysis_artifacts(tmp_path, monkeypatch):
@@ -200,7 +514,7 @@ def test_alpha_scanner_persists_analysis_artifacts(tmp_path, monkeypatch):
     assert features['feature_count'] == 1
     assert features['features'][0]['symbol'] == run['candidates'][0]['symbol']
     assert features['features'][0]['lookahead_safe'] is True
-    assert features['features'][0]['profitability_scorecard']['ranking_effect'] == 'none_advisory_only'
+    assert features['features'][0]['profitability_scorecard']['ranking_effect'] == 'direct_bounded_quality_adjustment'
     assert features['features'][0]['goal_fit_score'] == features['features'][0]['profitability_scorecard']['goal_fit_score']
     assert features['features'][0]['data_sources']
     assert ledger['candidate_count'] == 1
@@ -227,7 +541,7 @@ def test_alpha_research_snapshot_recommends_mcp_evidence_clusters(tmp_path, monk
     assert snapshot['lookahead_safe'] is True
     assert snapshot['mutates_scanner_scores'] is False
     assert snapshot['profit_detection_scorecard']['primary_objective'] == 'detect profitable stock candidates from reliable data'
-    assert snapshot['profit_detection_scorecard']['ranking_effect'] == 'none_advisory_only'
+    assert snapshot['profit_detection_scorecard']['ranking_effect'] == 'direct_bounded_quality_adjustment'
     assert snapshot['candidate_diagnostics'][0]['symbol'] == run['candidates'][0]['symbol']
     assert snapshot['candidate_diagnostics'][0]['goal_fit_score'] > 0
     assert snapshot['candidate_diagnostics'][0]['profitability_scorecard']['goal'] == 'detect profitable stock candidates from reliable data'
@@ -837,10 +1151,10 @@ def test_alpha_scanner_diagnostics_reports_missing_sources(tmp_path, monkeypatch
     )
 
     assert diagnostics['health'] == 'error'
-    assert diagnostics['source']['missing_files'] == 6
+    assert diagnostics['source']['missing_files'] == 12
     assert diagnostics['source_freshness']['status'] == 'missing'
     assert diagnostics['source_freshness']['missing_required_files'] == 5
-    assert len(diagnostics['source_files']) == 6
+    assert len(diagnostics['source_files']) == 12
     assert diagnostics['schedule']['freshness']['status'] == 'missing'
     assert {issue['code'] for issue in diagnostics['issues']} >= {
         'missing_source_files',
@@ -881,6 +1195,10 @@ def test_admin_mirofish_scanner_routes_are_registered():
     assert '/api/admin/mirofish/scanner/runs/<run_id>/rejects' in rules
     assert '/api/admin/mirofish/scanner/runs/<run_id>/research' in rules
     assert '/api/admin/mirofish/tradingview/status' in rules
+    assert '/api/admin/mirofish/kalman/status' in rules
+    assert '/api/admin/mirofish/kalman/runs' in rules
+    assert '/api/admin/mirofish/kalman/runs/<run_id>' in rules
+    assert '/api/admin/mirofish/kalman/runs/<run_id>/signals' in rules
     assert '/api/admin/mirofish/price-chart/<symbol>' in rules
     assert '/api/admin/mirofish/workflow/status' in rules
     assert '/api/admin/mirofish/workflow/scan-analyze' in rules

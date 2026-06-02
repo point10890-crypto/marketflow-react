@@ -403,8 +403,8 @@ def _fallback_profitability_scorecard(
         'goal_verdict': verdict,
         'hard_blockers': hard_blockers,
         'missing_confirmations': missing,
-        'ranking_effect': 'none_advisory_only',
-        'mcp_role': 'supporting_data_confirmation_only',
+        'ranking_effect': 'direct_bounded_quality_adjustment',
+        'mcp_role': 'score_risk_confirmation_with_supporting_signal_limits',
         'lookahead_safe': True,
         'historical_fallback': True,
     }
@@ -489,7 +489,7 @@ def _research_goal_summary(candidate_diagnostics: list[dict[str, Any]]) -> dict[
         'verdict_counts': dict(verdicts),
         'missing_confirmation_counts': dict(missing),
         'hard_blocker_counts': dict(blockers),
-        'ranking_effect': 'none_advisory_only',
+        'ranking_effect': 'direct_bounded_quality_adjustment',
         'lookahead_safe': True,
     }
 

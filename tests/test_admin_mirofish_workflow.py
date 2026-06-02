@@ -28,7 +28,7 @@ def _candidate(symbol, name, alpha, risk, rank=1, action='BUY_CANDIDATE'):
                 'goal_verdict': 'candidate_needs_confirmation',
                 'hard_blockers': [],
                 'missing_confirmations': ['capital_flow'],
-                'ranking_effect': 'none_advisory_only',
+                'ranking_effect': 'direct_bounded_quality_adjustment',
             },
         },
         'entry_plan': {'status': 'ready'},
@@ -116,6 +116,52 @@ def test_workflow_runs_multi_target_graphrag_and_selects_top3(tmp_path, monkeypa
     assert result['top3'][0]['symbol'] == '000003'
     assert all(item['verdict']['target'] for item in result['top3'])
     assert result['summary']['top_symbols'] == [item['symbol'] for item in result['top3']]
+    assert result['summary']['quality']['recommendation'] == 'send'
+    assert result['top3'][0]['score_formula_version'] == 'alpha_top3_v3_quality_weighted'
+
+
+def test_workflow_quality_score_penalizes_weak_evidence_and_rewards_memory():
+    strong = _candidate('000001', 'Strong Memory', 78, 25, 1)
+    strong['analysis_profile']['evidence_quality'] = {'grade': 'strong'}
+    strong['analysis_profile']['performance_memory'] = {'hit_rate_pct': 75, 'sample_size': 20}
+    strong['analysis_profile']['profitability_scorecard']['goal_fit_score'] = 85
+
+    weak = _candidate('000002', 'Weak Source', 78, 25, 2)
+    weak['analysis_profile']['source_count'] = 1
+    weak['analysis_profile']['evidence_quality'] = {'grade': 'weak'}
+    weak['analysis_profile']['performance_memory'] = {'hit_rate_pct': 20, 'sample_size': 20}
+    weak['analysis_profile']['profitability_scorecard']['hard_blockers'] = ['dilution_risk']
+    weak['replay_context'] = {'lookahead_safe': False}
+
+    strong_score = workflow._score_breakdown(strong, _analysis_run(strong, action='BUY', confidence=70))
+    weak_score = workflow._score_breakdown(weak, _analysis_run(weak, action='BUY', confidence=70))
+
+    assert strong_score['components']['evidence_quality'] == 5.0
+    assert strong_score['components']['performance_memory'] > 0
+    assert weak_score['components']['source_penalty'] == -6.0
+    assert weak_score['components']['hard_blocker_penalty'] == -10.0
+    assert strong_score['score'] > weak_score['score'] + 20
+
+
+def test_workflow_quality_summary_holds_low_confidence_top3():
+    weak = _candidate('000002', 'Weak Source', 55, 60, 2)
+    weak['analysis_profile']['source_count'] = 1
+    weak['analysis_profile']['evidence_quality'] = {'grade': 'weak'}
+    item = {
+        'candidate': weak,
+        'symbol': weak['symbol'],
+        'target': weak['display_name'],
+        'final_score': 42.0,
+        'verdict': {'action': 'HOLD'},
+    }
+
+    summary = workflow._workflow_decision_summary([item], [item])
+
+    assert summary['quality']['recommendation'] == 'hold'
+    assert 'best_score_below_floor' in summary['quality']['reasons']
+    ok, reason = workflow.should_send_workflow_top3({'top3': [item], 'summary': summary})
+    assert ok is False
+    assert 'best_score_below_floor' in reason
 
 
 def test_workflow_attaches_forward_outcomes_without_lookahead(tmp_path, monkeypatch):

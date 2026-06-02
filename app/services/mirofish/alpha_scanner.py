@@ -14,6 +14,9 @@ from collections import Counter
 from datetime import datetime, time as dt_time, timedelta, timezone
 from typing import Any
 
+import app.services.mirofish.blacklist as blacklist_service
+import app.services.mirofish.credit_balance as credit_balance_service
+import app.services.mirofish.live_data as live_data
 import app.services.mirofish.tradingview_provider as tradingview_provider
 from app.utils.atomic_json import write_json_atomic
 
@@ -70,8 +73,50 @@ SOURCE_FILE_POLICIES = {
         'alert_required': False,
         'max_age_days': 7,
     },
+    'all_institutional_trend_data.csv': {
+        'role': 'capital_flow_confirmation',
+        'required': False,
+        'alert_required': False,
+        'max_age_days': 30,
+    },
+    'kind_blacklist_latest.json': {
+        'role': 'risk_blacklist',
+        'required': False,
+        'alert_required': False,
+        'max_age_days': 7,
+    },
+    'credit_balance_latest.json': {
+        'role': 'credit_balance_risk',
+        'required': False,
+        'alert_required': False,
+        'max_age_days': 7,
+    },
+    'kis_live_snapshot_latest.json': {
+        'role': 'kis_live_price_flow',
+        'required': False,
+        'alert_required': False,
+        'max_age_days': 1,
+    },
+    'dart_event_latest.json': {
+        'role': 'dart_disclosure_risk',
+        'required': False,
+        'alert_required': False,
+        'max_age_days': 7,
+    },
+    'news_theme_social_latest.json': {
+        'role': 'supporting_news_theme_social',
+        'required': False,
+        'alert_required': False,
+        'max_age_days': 2,
+    },
 }
 WATCHED_SOURCE_FILES = tuple(SOURCE_FILE_POLICIES.keys())
+SCANNER_ARTIFACT_FILENAMES = {
+    'feature_vectors.json',
+    'evidence_ledger.json',
+    'rejected_candidates.json',
+    'deepseek_rerank.json',
+}
 
 SCORING_SCHEMA = {
     'alpha_score': {
@@ -86,6 +131,8 @@ SCORING_SCHEMA = {
             'jongga_setup': '0..10 from jongga_v2 total score and checklist.',
             'source_convergence': '0..5 when independent artifacts agree with price behavior.',
             'tradingview_mcp': 'Optional TradingView MCP technical confirmation adjustment, fail-open.',
+            'plan_a_flow_confirmation': 'Optional +2 when foreigner and institution 5-day flows are both positive.',
+            'mcp_quality_adjustment': 'Bounded KIS/live flow, source freshness, disclosure-risk, and outcome-memory adjustment.',
         },
     },
     'risk_score': {
@@ -98,9 +145,11 @@ SCORING_SCHEMA = {
             'source_gap': 'Missing independent artifacts reduce confidence.',
             'artifact_staleness': 'Older source artifacts increase risk.',
             'negative_flags': 'Negative news, suspicious volume, or long upper wick add risk.',
+            'plan_a_false_signal_gates': 'KIND hard blocks, upper-wick risk, credit pressure, and thin-liquidity spike guards.',
+            'mcp_resource_quality': 'Stale or low-confidence MCP resources increase risk; DART/event risk can hard-filter candidates.',
         },
     },
-    'ranking': 'rank by alpha_score - 0.55 * risk_score + conviction_adjustment, descending.',
+    'ranking': 'rank by alpha_score - 0.55 * risk_score + conviction_adjustment + bounded MCP/outcome adjustments, descending.',
 }
 
 
@@ -112,17 +161,26 @@ def create_scanner_run(payload: dict[str, Any] | None = None) -> dict[str, Any]:
     run_id = _run_id(generated_at, requested_symbols, limit)
 
     artifacts = _load_artifacts()
+    performance_advisory = _performance_advisory()
     candidate_pool = _build_candidate_pool(
         artifacts,
         generated_at=generated_at,
         requested_symbols=requested_symbols,
+        performance_advisory=performance_advisory,
     )
+    deepseek_rerank = _maybe_deepseek_rerank_candidates(
+        candidate_pool,
+        payload=payload,
+        generated_at=generated_at,
+        requested_symbols=requested_symbols,
+        limit=limit,
+    )
+    candidate_pool = _apply_deepseek_rerank_overlay(candidate_pool, deepseek_rerank)
     candidates = _select_candidates(candidate_pool, limit)
     rejected_candidates = _rejected_candidates(candidate_pool, selected_count=len(candidates), limit=limit)
     feature_vectors = _feature_vectors(candidates)
     evidence_ledger = _evidence_ledger(candidates, rejected_candidates)
     source_files = _source_files(artifacts)
-    performance_advisory = _performance_advisory()
     goal_harness = _profitability_run_summary(candidates, rejected_candidates)
     run = {
         'id': run_id,
@@ -142,6 +200,7 @@ def create_scanner_run(payload: dict[str, Any] | None = None) -> dict[str, Any]:
         'performance_advisory': performance_advisory,
         'providers': {
             'tradingview': artifacts.get('tradingview', {}).get('status') or tradingview_provider.get_status(include_live=False),
+            'deepseek_rerank': _deepseek_rerank_provider_status(deepseek_rerank),
         },
         'source_files': source_files,
         'freshness': _aggregate_freshness(source_files),
@@ -150,6 +209,7 @@ def create_scanner_run(payload: dict[str, Any] | None = None) -> dict[str, Any]:
             'feature_vectors': f'/api/admin/mirofish/scanner/runs/{run_id}/feature-vectors',
             'evidence_ledger': f'/api/admin/mirofish/scanner/runs/{run_id}/evidence',
             'rejected_candidates': f'/api/admin/mirofish/scanner/runs/{run_id}/rejects',
+            'deepseek_rerank': f'/api/admin/mirofish/scanner/runs/{run_id}/artifacts/deepseek_rerank.json',
         },
         'links': {
             'self': f'/api/admin/mirofish/scanner/runs/{run_id}',
@@ -180,6 +240,12 @@ def create_scanner_run(payload: dict[str, Any] | None = None) -> dict[str, Any]:
         'candidates': rejected_candidates,
         'lookahead_safe': True,
     }, sort_keys=False)
+    write_json_atomic(_run_artifact_path(run_id, 'deepseek_rerank.json'), {
+        'run_id': run_id,
+        'generated_at': generated_at,
+        **deepseek_rerank,
+        'lookahead_safe': True,
+    }, sort_keys=False)
     return run
 
 
@@ -208,7 +274,7 @@ def read_scanner_candidates(run_id: str) -> dict[str, Any] | None:
 def read_scanner_run_artifact(run_id: str, filename: str) -> dict[str, Any] | None:
     safe_id = _safe_run_id(run_id)
     safe_filename = str(filename or '').strip()
-    if safe_filename not in {'feature_vectors.json', 'evidence_ledger.json', 'rejected_candidates.json'}:
+    if safe_filename not in SCANNER_ARTIFACT_FILENAMES:
         raise ValueError('invalid scanner artifact')
     path = _run_artifact_path(safe_id, safe_filename)
     if not os.path.isfile(path):
@@ -970,6 +1036,18 @@ def _load_artifacts() -> dict[str, Any]:
         candidate_symbols,
         generated_at=datetime.now(timezone.utc).isoformat(),
     )
+    institutional_trend = _load_institutional_trend_data()
+    kind_blacklist = blacklist_service.get_kind_blacklist(
+        data_root=DATA_ROOT,
+        allow_fetch=_kind_live_fetch_enabled(),
+    )
+    credit_balance = credit_balance_service.get_credit_balance_snapshot(
+        data_root=DATA_ROOT,
+        allow_fetch=_credit_live_fetch_enabled(),
+    )
+    kis_live = _load_indexed_resource_artifact('kis_live_snapshot_latest.json')
+    dart_events = _load_indexed_resource_artifact('dart_event_latest.json')
+    news_theme_social = _load_indexed_resource_artifact('news_theme_social_latest.json')
 
     return {
         'ticker_map': maps,
@@ -979,6 +1057,12 @@ def _load_artifacts() -> dict[str, Any]:
         'vcp': vcp,
         'jongga': jongga,
         'tradingview': tradingview,
+        'institutional_trend': institutional_trend,
+        'kind_blacklist': kind_blacklist,
+        'credit_balance': credit_balance,
+        'kis_live': kis_live,
+        'dart_events': dart_events,
+        'news_theme_social': news_theme_social,
         'candidate_symbols': candidate_symbols,
     }
 
@@ -988,6 +1072,11 @@ def _load_source_artifacts() -> dict[str, Any]:
         'screener': _load_json_artifact('screener_leading_latest.json'),
         'vcp': _load_json_artifact('vcp_kr_latest.json'),
         'jongga': _load_json_artifact('jongga_v2_latest.json'),
+        'kind_blacklist': _load_json_artifact('kind_blacklist_latest.json'),
+        'credit_balance': _load_json_artifact('credit_balance_latest.json'),
+        'kis_live': _load_json_artifact('kis_live_snapshot_latest.json'),
+        'dart_events': _load_json_artifact('dart_event_latest.json'),
+        'news_theme_social': _load_json_artifact('news_theme_social_latest.json'),
     }
 
 
@@ -997,12 +1086,14 @@ def _build_candidates(
     generated_at: str,
     limit: int,
     requested_symbols: set[str],
+    performance_advisory: dict[str, Any] | None = None,
 ) -> list[dict[str, Any]]:
     return _select_candidates(
         _build_candidate_pool(
             artifacts,
             generated_at=generated_at,
             requested_symbols=requested_symbols,
+            performance_advisory=performance_advisory,
         ),
         limit,
     )
@@ -1013,6 +1104,7 @@ def _build_candidate_pool(
     *,
     generated_at: str,
     requested_symbols: set[str],
+    performance_advisory: dict[str, Any] | None = None,
 ) -> list[dict[str, Any]]:
     maps = artifacts['ticker_map']
     prices = artifacts['daily_prices']
@@ -1020,6 +1112,13 @@ def _build_candidate_pool(
     vcp_by_symbol = _index_vcp(artifacts['vcp'].get('data'))
     jongga_by_symbol = _index_jongga(artifacts['jongga'].get('data'))
     tradingview_by_symbol = (artifacts.get('tradingview') or {}).get('signals_by_symbol') or {}
+    institutional_by_symbol = artifacts.get('institutional_trend') or {}
+    kind_blacklist_by_symbol = (artifacts.get('kind_blacklist') or {}).get('entries') or {}
+    credit_balance_by_symbol = (artifacts.get('credit_balance') or {}).get('entries') or {}
+    kis_live_by_symbol = artifacts.get('kis_live') or {}
+    dart_events_by_symbol = artifacts.get('dart_events') or {}
+    news_theme_social_by_symbol = artifacts.get('news_theme_social') or {}
+    allow_live_kis = _scanner_kis_live_enabled() and bool(requested_symbols) and len(requested_symbols) <= 10
 
     symbols = set(artifacts['candidate_symbols'])
     if requested_symbols:
@@ -1028,17 +1127,28 @@ def _build_candidate_pool(
 
     rows = []
     for symbol in sorted(symbols):
+        mapped = maps.get(symbol) or {}
+        kis_live = kis_live_by_symbol.get(symbol)
+        if not kis_live and allow_live_kis and symbol in requested_symbols:
+            kis_live = _fetch_kis_live_snapshot_for_symbol(symbol, mapped)
         candidate = _score_symbol(
             symbol,
-            maps.get(symbol) or {},
+            mapped,
             prices.get(symbol) or {},
             (artifacts.get('price_history') or {}).get(symbol) or [],
             screener_by_symbol.get(symbol),
             vcp_by_symbol.get(symbol),
             jongga_by_symbol.get(symbol),
             tradingview_by_symbol.get(symbol),
+            institutional_by_symbol.get(symbol),
+            kind_blacklist_by_symbol.get(symbol),
+            credit_balance_by_symbol.get(symbol),
+            kis_live,
+            dart_events_by_symbol.get(symbol),
+            news_theme_social_by_symbol.get(symbol),
             artifacts,
             generated_at,
+            performance_advisory or {},
         )
         rows.append(candidate)
 
@@ -1054,6 +1164,210 @@ def _build_candidate_pool(
     for index, item in enumerate(rows, start=1):
         item['pool_rank'] = index
     return rows
+
+
+def _maybe_deepseek_rerank_candidates(
+    rows: list[dict[str, Any]],
+    *,
+    payload: dict[str, Any],
+    generated_at: str,
+    requested_symbols: set[str],
+    limit: int,
+) -> dict[str, Any]:
+    enabled = _payload_bool(payload, 'deepseek_rerank', _deepseek_rerank_enabled())
+    max_items = _clean_limit(
+        payload.get('deepseek_rerank_limit') or os.getenv('MIROFISH_DEEPSEEK_RERANK_LIMIT'),
+        default=max(20, min(60, limit * 3)),
+        max_value=60,
+    )
+    max_adjustment = _float(payload.get('deepseek_max_adjustment') or os.getenv('MIROFISH_DEEPSEEK_MAX_ADJUSTMENT', '8'))
+    max_adjustment = _clamp(max_adjustment, 0, 12)
+    model = str(payload.get('deepseek_model') or os.getenv('MIROFISH_DEEPSEEK_RERANK_MODEL') or '').strip() or None
+    base = {
+        'enabled': bool(enabled),
+        'applied': False,
+        'status': 'disabled',
+        'provider': 'deepseek',
+        'model': model or os.getenv('MIROFISH_DEEPSEEK_MODEL', 'deepseek-v4-pro'),
+        'candidate_count': 0,
+        'adjusted_count': 0,
+        'max_abs_adjustment': max_adjustment,
+        'schema_version': 'mirofish.deepseek_rerank.v1',
+    }
+    if not enabled:
+        return base
+    if not rows:
+        return {**base, 'status': 'empty_candidate_pool'}
+    try:
+        from app.services.mirofish import deepseek_client
+
+        result = deepseek_client.rerank_scanner_candidates(
+            rows,
+            run_context={
+                'generated_at': generated_at,
+                'requested_symbols': sorted(requested_symbols),
+                'base_ranking': 'alpha_score - 0.55*risk_score + deterministic conviction_adjustment',
+                'lookahead_safe': True,
+            },
+            limit=max_items,
+            model=model,
+            max_adjustment=max_adjustment,
+        )
+    except Exception as exc:
+        retry_limit = max(1, min(max_items, max(limit, 5)))
+        if retry_limit < max_items:
+            try:
+                result = deepseek_client.rerank_scanner_candidates(
+                    rows,
+                    run_context={
+                        'generated_at': generated_at,
+                        'requested_symbols': sorted(requested_symbols),
+                        'base_ranking': 'alpha_score - 0.55*risk_score + deterministic conviction_adjustment',
+                        'lookahead_safe': True,
+                        'retry_reason': f'{type(exc).__name__}: {exc}',
+                        'retry_mode': 'compact_limit',
+                    },
+                    limit=retry_limit,
+                    model=model,
+                    max_adjustment=max_adjustment,
+                )
+            except Exception as retry_exc:
+                return {
+                    **base,
+                    'status': 'error',
+                    'error': f'{type(retry_exc).__name__}: {retry_exc}',
+                    'initial_error': f'{type(exc).__name__}: {exc}',
+                }
+            else:
+                base['status'] = 'applied_retry_compact'
+                base['initial_error'] = f'{type(exc).__name__}: {exc}'
+        else:
+            return {
+                **base,
+                'status': 'error',
+                'error': f'{type(exc).__name__}: {exc}',
+            }
+    overlay = result.get('overlay') if isinstance(result, dict) else {}
+    items = overlay.get('items') if isinstance(overlay, dict) else []
+    if not isinstance(items, list):
+        items = []
+    return {
+        **base,
+        'applied': bool(items),
+        'status': (
+            'applied_retry_compact'
+            if base.get('status') == 'applied_retry_compact' and items
+            else 'empty_overlay_retry_compact'
+            if base.get('status') == 'applied_retry_compact'
+            else 'applied'
+            if items
+            else 'empty_overlay'
+        ),
+        'model': result.get('model') or base['model'],
+        'candidate_count': result.get('candidate_count') or len(rows[:max_items]),
+        'adjusted_count': len(items),
+        'usage': result.get('usage'),
+        'finish_reason': result.get('finish_reason'),
+        'created_at': result.get('created_at'),
+        'initial_error': base.get('initial_error'),
+        'portfolio_note_ko': (overlay or {}).get('portfolio_note_ko') or '',
+        'items': items,
+    }
+
+
+def _apply_deepseek_rerank_overlay(
+    rows: list[dict[str, Any]],
+    overlay: dict[str, Any],
+) -> list[dict[str, Any]]:
+    if not overlay.get('applied'):
+        return rows
+    max_adjustment = _float(overlay.get('max_abs_adjustment') or 8)
+    by_symbol = {}
+    for item in overlay.get('items') or []:
+        if not isinstance(item, dict):
+            continue
+        symbol = _symbol(item.get('symbol'))
+        if symbol:
+            by_symbol[symbol] = item
+    if not by_symbol:
+        overlay['applied'] = False
+        overlay['status'] = 'no_matching_symbols'
+        return rows
+
+    adjusted = 0
+    for candidate in rows:
+        symbol = _symbol(candidate.get('symbol'))
+        item = by_symbol.get(symbol)
+        if not item:
+            continue
+        adjustment = _clamp(_float(item.get('ranking_adjustment')), -max_adjustment, max_adjustment)
+        conviction = _clamp(_float(item.get('deepseek_conviction')), 0, 100)
+        risk_flags = [str(flag)[:80] for flag in (item.get('risk_flags') or []) if isinstance(flag, (str, int, float))][:6]
+        positive_evidence = [
+            str(value)[:100]
+            for value in (item.get('positive_evidence') or [])
+            if isinstance(value, (str, int, float))
+        ][:6]
+        rationale = str(item.get('rationale_ko') or '').strip()[:240]
+        candidate['ranking_score'] = round(_float(candidate.get('ranking_score')) + adjustment, 2)
+        candidate.setdefault('strategy_tags', [])
+        if adjustment > 0 and 'deepseek_v4_confirmed' not in candidate['strategy_tags']:
+            candidate['strategy_tags'].append('deepseek_v4_confirmed')
+        elif adjustment < 0 and 'deepseek_v4_risk_flag' not in candidate['strategy_tags']:
+            candidate['strategy_tags'].append('deepseek_v4_risk_flag')
+        candidate['evidence'] = list(candidate.get('evidence') or []) + [
+            _evidence('deepseek_v4', 'rerank_adjustment', adjustment, {
+                'conviction': conviction,
+                'risk_flags': risk_flags,
+                'positive_evidence': positive_evidence,
+                'rationale_ko': rationale,
+            })
+        ]
+        profile = candidate.get('analysis_profile') if isinstance(candidate.get('analysis_profile'), dict) else {}
+        profile['deepseek_rerank'] = {
+            'applied': True,
+            'model': overlay.get('model'),
+            'ranking_adjustment': round(adjustment, 2),
+            'deepseek_conviction': round(conviction, 2),
+            'risk_flags': risk_flags,
+            'positive_evidence': positive_evidence,
+            'rationale_ko': rationale,
+            'lookahead_safe': True,
+        }
+        candidate['analysis_profile'] = profile
+        adjusted += 1
+
+    rows.sort(
+        key=lambda item: (
+            item['ranking_score'],
+            item['alpha_score'],
+            -item['risk_score'],
+            item['symbol'],
+        ),
+        reverse=True,
+    )
+    for index, item in enumerate(rows, start=1):
+        item['pool_rank'] = index
+    overlay['adjusted_count'] = adjusted
+    return rows
+
+
+def _deepseek_rerank_provider_status(overlay: dict[str, Any]) -> dict[str, Any]:
+    return {
+        'provider': 'deepseek',
+        'enabled': bool(overlay.get('enabled')),
+        'status': overlay.get('status') or 'unknown',
+        'applied': bool(overlay.get('applied')),
+        'model': overlay.get('model'),
+        'candidate_count': overlay.get('candidate_count'),
+        'adjusted_count': overlay.get('adjusted_count'),
+        'max_abs_adjustment': overlay.get('max_abs_adjustment'),
+        'error': overlay.get('error'),
+    }
+
+
+def _deepseek_rerank_enabled() -> bool:
+    return _truthy(os.getenv('MIROFISH_DEEPSEEK_RERANK_ENABLED', '0'))
 
 
 def _select_candidates(rows: list[dict[str, Any]], limit: int) -> list[dict[str, Any]]:
@@ -1114,6 +1428,9 @@ def _rejection_reasons(
     if _float(candidate.get('risk_score')) > 65:
         reasons.append('risk_above_watch_threshold')
     profile = candidate.get('analysis_profile') if isinstance(candidate.get('analysis_profile'), dict) else {}
+    false_signal_gates = profile.get('false_signal_gates') if isinstance(profile.get('false_signal_gates'), dict) else {}
+    for blocker in false_signal_gates.get('hard_blockers') or []:
+        reasons.append(f'false_signal:{blocker}')
     if _float(profile.get('source_count')) < 3:
         reasons.append('insufficient_source_confirmation')
     if str(((candidate.get('freshness') or {}).get('status') or '')).lower() in ALERT_BLOCKING_FRESHNESS:
@@ -1132,10 +1449,20 @@ def _score_symbol(
     vcp: dict[str, Any] | None,
     jongga: dict[str, Any] | None,
     tradingview: dict[str, Any] | None,
+    institutional: dict[str, Any] | None,
+    kind_blacklist: dict[str, Any] | None,
+    credit_balance: dict[str, Any] | None,
+    kis_live: dict[str, Any] | None,
+    dart_event: dict[str, Any] | None,
+    news_theme_social: dict[str, Any] | None,
     artifacts: dict[str, Any],
     generated_at: str,
+    performance_advisory: dict[str, Any],
 ) -> dict[str, Any]:
     evidence = []
+    kis_overlay = _kis_live_overlay(price, kis_live)
+    if kis_overlay.get('applied'):
+        price = kis_overlay['price']
     change_rate = _float(price.get('change_rate'))
     trading_value = _float(price.get('trading_value'))
     current_price = _float(price.get('current_price'))
@@ -1220,12 +1547,40 @@ def _score_symbol(
             tradingview_adjustment.get('alpha_delta'),
             tradingview_adjustment.get('recommendation'),
         ))
+    flow_confirmation = _institutional_flow_confirmation(institutional)
+    if flow_confirmation.get('passed'):
+        alpha += 2.0
+        evidence.append(_evidence(
+            'all_institutional_trend_data.csv',
+            'foreign_institution_dual_buy_5d',
+            2.0,
+            flow_confirmation.get('value'),
+        ))
+    source_freshness = _symbol_freshness(artifacts)
+    mcp_adjustment = _mcp_quality_adjustment(
+        price=price,
+        kis_live=kis_live,
+        kis_overlay=kis_overlay,
+        institutional=institutional,
+        flow_confirmation=flow_confirmation,
+        dart_event=dart_event,
+        news_theme_social=news_theme_social,
+        freshness=source_freshness,
+        performance_advisory=performance_advisory,
+    )
+    alpha += _float(mcp_adjustment.get('alpha_delta'))
+    risk += _float(mcp_adjustment.get('risk_delta'))
+    evidence.extend(mcp_adjustment.get('evidence') or [])
     risk = round(_clamp(risk, 0, 100), 2)
 
     alpha = round(_clamp(alpha, 0, 100), 2)
-    effective_source_count = source_count + (1 if tradingview_adjustment.get('applied') else 0)
+    effective_source_count = (
+        source_count
+        + (1 if tradingview_adjustment.get('applied') else 0)
+        + (1 if institutional else 0)
+        + int(_float(mcp_adjustment.get('source_count_delta')))
+    )
     conviction_adjustment = _conviction_adjustment(alpha, risk, effective_source_count, price_metrics)
-    ranking_score = round(alpha - (0.55 * risk) + conviction_adjustment, 2)
     action = _action(alpha, risk)
     tags = _strategy_tags(
         price_momentum,
@@ -1238,9 +1593,25 @@ def _score_symbol(
     )
     if tradingview_adjustment.get('applied'):
         tags.append('tradingview_confirmed' if _float(tradingview_adjustment.get('alpha_delta')) >= 0 else 'tradingview_warning')
+    if flow_confirmation.get('passed'):
+        tags.append('dual_flow_buy')
+    for tag in mcp_adjustment.get('tags') or []:
+        if tag not in tags:
+            tags.append(tag)
+    tag_memory = _performance_tag_memory_adjustment(performance_advisory, tags)
+    if tag_memory.get('applied'):
+        mcp_adjustment['ranking_delta'] = round(_float(mcp_adjustment.get('ranking_delta')) + _float(tag_memory.get('ranking_delta')), 2)
+        perf_memory = mcp_adjustment.get('performance_memory') if isinstance(mcp_adjustment.get('performance_memory'), dict) else {}
+        perf_memory['tag_adjustment'] = tag_memory
+        perf_memory['applied'] = True
+        mcp_adjustment['performance_memory'] = perf_memory
+        evidence.append(_evidence('workflow_outcomes', 'tag_hit_rate_adjustment', tag_memory['ranking_delta'], tag_memory))
+        if 'outcome_tag_memory_adjusted' not in tags:
+            tags.append('outcome_tag_memory_adjusted')
+    mcp_ranking_delta = _float(mcp_adjustment.get('ranking_delta'))
+    ranking_score = round(alpha - (0.55 * risk) + conviction_adjustment + mcp_ranking_delta, 2)
     signal_quality = _signal_quality(alpha, risk, effective_source_count, price_metrics)
     entry_plan = _entry_plan(current_price, risk, price_metrics, action)
-    source_freshness = _symbol_freshness(artifacts)
     clean_evidence = [item for item in evidence if item['score'] > 0 or item['value'] not in (None, 0)]
     evidence_quality = _evidence_quality(
         clean_evidence,
@@ -1253,7 +1624,19 @@ def _score_symbol(
         freshness=source_freshness,
         risk=risk,
     )
-    data_sources = _candidate_sources(price, screener, vcp, jongga, tradingview_adjustment)
+    data_sources = _candidate_sources(
+        price,
+        screener,
+        vcp,
+        jongga,
+        tradingview_adjustment,
+        institutional,
+        kind_blacklist,
+        credit_balance,
+        kis_live,
+        dart_event,
+        news_theme_social,
+    )
     profitability_scorecard = _profitability_scorecard(
         alpha=alpha,
         risk=risk,
@@ -1279,7 +1662,7 @@ def _score_symbol(
         or symbol
     )
 
-    return {
+    candidate = {
         'rank': None,
         'symbol': symbol,
         'name': display_name,
@@ -1300,7 +1683,12 @@ def _score_symbol(
             'base_risk_score': round(base_risk, 2),
             'convergence_score': round(convergence_score, 2),
             'conviction_adjustment': round(conviction_adjustment, 2),
+            'mcp_ranking_delta': round(mcp_ranking_delta, 2),
             'tradingview_adjustment': tradingview_adjustment if tradingview_adjustment.get('available') else {'available': False},
+            'capital_flow_confirmation': flow_confirmation,
+            'kis_live_overlay': kis_overlay,
+            'mcp_quality_adjustment': mcp_adjustment,
+            'performance_memory': mcp_adjustment.get('performance_memory'),
             'trend_quality': round(trend_quality, 2),
             'volume_accumulation': round(volume_accumulation, 2),
             'volatility_20d_pct': price_metrics.get('volatility_20d_pct'),
@@ -1336,6 +1724,15 @@ def _score_symbol(
         'freshness': source_freshness,
         'tradingview': tradingview_adjustment,
     }
+    return _apply_false_signal_gates(
+        candidate,
+        price=price,
+        price_metrics=price_metrics,
+        jongga=jongga,
+        institutional=institutional,
+        blacklist_entry=kind_blacklist,
+        credit_entry=credit_balance,
+    )
 
 
 def _load_ticker_map() -> dict[str, dict[str, Any]]:
@@ -1424,6 +1821,117 @@ def _load_price_history(symbol_filter: set[str] | None) -> dict[str, list[dict[s
         history.sort(key=lambda item: (str(item.get('date') or ''), str(item.get('update_time') or '')))
         rows[symbol] = history[-120:]
     return rows
+
+
+def _load_institutional_trend_data() -> dict[str, dict[str, Any]]:
+    path = os.path.join(DATA_ROOT, 'all_institutional_trend_data.csv')
+    rows: dict[str, dict[str, Any]] = {}
+    if not os.path.isfile(path):
+        return rows
+    try:
+        with open(path, 'r', encoding='utf-8-sig', newline='') as f:
+            for row in csv.DictReader(f):
+                symbol = _symbol(row.get('ticker') or row.get('symbol') or row.get('code'))
+                if not symbol:
+                    continue
+                previous = rows.get(symbol)
+                if previous and str(previous.get('scrape_date') or '') > str(row.get('scrape_date') or ''):
+                    continue
+                rows[symbol] = dict(row)
+    except (OSError, csv.Error, UnicodeDecodeError):
+        return {}
+    return rows
+
+
+def _load_indexed_resource_artifact(filename: str) -> dict[str, dict[str, Any]]:
+    artifact = _load_json_artifact(filename)
+    data = artifact.get('data') if isinstance(artifact, dict) else None
+    entries = _extract_resource_entries(data)
+    indexed: dict[str, dict[str, Any]] = {}
+    for item in entries:
+        symbol = _symbol(
+            item.get('symbol')
+            or item.get('ticker')
+            or item.get('code')
+            or item.get('stock_code')
+            or item.get('isu_cd')
+        )
+        if not symbol:
+            continue
+        enriched = dict(item)
+        enriched.setdefault('symbol', symbol)
+        enriched.setdefault('source_file', filename)
+        if artifact.get('generated_at') and not _resource_observed_at(enriched):
+            enriched['generated_at'] = artifact.get('generated_at')
+        indexed[symbol] = enriched
+    return indexed
+
+
+def _extract_resource_entries(data: Any) -> list[dict[str, Any]]:
+    if isinstance(data, list):
+        return [dict(item) for item in data if isinstance(item, dict)]
+    if not isinstance(data, dict):
+        return []
+    for key in ('entries', 'items', 'results', 'signals', 'snapshots', 'candidates'):
+        value = data.get(key)
+        if isinstance(value, list):
+            return [dict(item) for item in value if isinstance(item, dict)]
+        if isinstance(value, dict):
+            rows = []
+            for symbol, item in value.items():
+                if isinstance(item, dict):
+                    row = dict(item)
+                    row.setdefault('symbol', symbol)
+                    rows.append(row)
+            return rows
+    if any(key in data for key in ('symbol', 'ticker', 'code', 'stock_code', 'quote', 'investor')):
+        return [dict(data)]
+    rows = []
+    for symbol, item in data.items():
+        if isinstance(item, dict):
+            row = dict(item)
+            row.setdefault('symbol', symbol)
+            rows.append(row)
+    return rows
+
+
+def _scanner_kis_live_enabled() -> bool:
+    return _truthy(os.getenv('MIROFISH_ALPHA_SCANNER_LIVE_KIS', '0'))
+
+
+def _fetch_kis_live_snapshot_for_symbol(symbol: str, mapped: dict[str, Any]) -> dict[str, Any] | None:
+    try:
+        resolved = {
+            'symbol': symbol,
+            'name': mapped.get('name') or mapped.get('display_name') or symbol,
+            'display_name': mapped.get('display_name') or mapped.get('name') or symbol,
+            'market': mapped.get('market') or 'KR',
+            'asset_type': 'equity',
+        }
+        snapshot = live_data.load_kis_snapshot(resolved)
+    except Exception:
+        return None
+    if not isinstance(snapshot, dict) or not snapshot.get('found'):
+        return None
+    return {
+        'symbol': symbol,
+        'source': 'KIS API',
+        'source_file': 'KIS API: live scanner fetch',
+        'fetched_at': snapshot.get('fetched_at'),
+        'quote': snapshot.get('quote') or {},
+        'investor': snapshot.get('investor') or {},
+        'sources': snapshot.get('sources') or [],
+        'confidence': 0.94,
+        'live_fetch': True,
+    }
+
+
+def _kind_live_fetch_enabled() -> bool:
+    return str(os.getenv('KIND_BLACKLIST_LIVE_FETCH', 'false')).strip().lower() in {'1', 'true', 'yes', 'y'}
+
+
+def _credit_live_fetch_enabled() -> bool:
+    return str(os.getenv('CREDIT_BALANCE_LIVE_FETCH', 'false')).strip().lower() in {'1', 'true', 'yes', 'y'}
 
 
 # ──────────────────────────────────────────────────────────────────────
@@ -1650,8 +2158,9 @@ def _source_files(artifacts: dict[str, Any]) -> list[dict[str, Any]]:
         exists = os.path.isfile(path)
         mtime = datetime.fromtimestamp(os.path.getmtime(path), timezone.utc).isoformat() if exists else None
         generated_at = None
-        for key in ['screener', 'vcp', 'jongga']:
-            artifact = artifacts.get(key) or {}
+        for artifact in (artifacts or {}).values():
+            if not isinstance(artifact, dict):
+                continue
             if artifact.get('filename') == filename:
                 generated_at = artifact.get('generated_at')
         max_age_days = _freshness_max_age_days(filename)
@@ -1807,6 +2316,566 @@ def _source_gap_penalty(
     return penalty
 
 
+def _institutional_flow_confirmation(institutional: dict[str, Any] | None) -> dict[str, Any]:
+    if not institutional:
+        return {
+            'status': 'missing',
+            'passed': False,
+            'source': 'all_institutional_trend_data.csv',
+        }
+    foreign_5d = _float(institutional.get('foreign_net_buy_5d'))
+    institutional_5d = _float(institutional.get('institutional_net_buy_5d'))
+    foreign_20d = _float(institutional.get('foreign_net_buy_20d'))
+    institutional_20d = _float(institutional.get('institutional_net_buy_20d'))
+    passed = foreign_5d > 0 and institutional_5d > 0
+    return {
+        'status': 'pass' if passed else 'fail',
+        'passed': passed,
+        'source': 'all_institutional_trend_data.csv',
+        'value': {
+            'foreign_5d': foreign_5d,
+            'institutional_5d': institutional_5d,
+            'foreign_20d': foreign_20d,
+            'institutional_20d': institutional_20d,
+            'scrape_date': institutional.get('scrape_date'),
+        },
+    }
+
+
+def _kis_live_overlay(price: dict[str, Any], kis_live: dict[str, Any] | None) -> dict[str, Any]:
+    if not isinstance(kis_live, dict) or not kis_live:
+        return {'applied': False, 'available': False}
+    quote = kis_live.get('quote') if isinstance(kis_live.get('quote'), dict) else kis_live
+    if not isinstance(quote, dict):
+        return {'applied': False, 'available': False}
+    live_price = _float(quote.get('price') or quote.get('current_price') or quote.get('stck_prpr'))
+    if live_price <= 0:
+        return {'applied': False, 'available': True, 'reason': 'price_missing'}
+    merged = dict(price or {})
+    if live_price:
+        merged['current_price'] = live_price
+    change_pct = quote.get('change_pct')
+    if change_pct is None:
+        change_pct = quote.get('prdy_ctrt')
+    if change_pct is not None:
+        merged['change_rate'] = _float(change_pct)
+    for src, dst in (
+        ('open', 'open'),
+        ('high', 'high'),
+        ('low', 'low'),
+        ('volume', 'volume'),
+        ('trading_value', 'trading_value'),
+        ('stck_oprc', 'open'),
+        ('stck_hgpr', 'high'),
+        ('stck_lwpr', 'low'),
+        ('acml_vol', 'volume'),
+        ('acml_tr_pbmn', 'trading_value'),
+    ):
+        value = quote.get(src)
+        if value not in (None, ''):
+            merged[dst] = _float(value)
+    merged['source'] = 'kis_live'
+    merged['kis_fetched_at'] = kis_live.get('fetched_at') or kis_live.get('updated_at') or kis_live.get('generated_at')
+    return {
+        'applied': True,
+        'available': True,
+        'source': kis_live.get('source') or 'KIS API',
+        'fetched_at': merged.get('kis_fetched_at'),
+        'price': merged,
+        'quote': quote,
+        'weight': _resource_weight(kis_live, default_confidence=0.94, max_age_days=1),
+    }
+
+
+def _mcp_quality_adjustment(
+    *,
+    price: dict[str, Any],
+    kis_live: dict[str, Any] | None,
+    kis_overlay: dict[str, Any],
+    institutional: dict[str, Any] | None,
+    flow_confirmation: dict[str, Any],
+    dart_event: dict[str, Any] | None,
+    news_theme_social: dict[str, Any] | None,
+    freshness: dict[str, Any],
+    performance_advisory: dict[str, Any],
+) -> dict[str, Any]:
+    alpha_delta = 0.0
+    risk_delta = 0.0
+    ranking_delta = 0.0
+    source_count_delta = 0
+    tags: list[str] = []
+    evidence: list[dict[str, Any]] = []
+    resource_weights: dict[str, Any] = {}
+
+    kis_weight = _resource_weight(kis_live, default_confidence=0.94, max_age_days=1) if kis_live else _resource_weight(None)
+    if kis_live and kis_overlay.get('applied'):
+        quote = kis_overlay.get('quote') or {}
+        investor = kis_live.get('investor') if isinstance(kis_live.get('investor'), dict) else {}
+        trading_value = _float((kis_overlay.get('price') or {}).get('trading_value') or quote.get('trading_value'))
+        change_pct = _float((kis_overlay.get('price') or {}).get('change_rate') or quote.get('change_pct'))
+        live_liquidity_delta = _clamp(trading_value / 100_000_000_000 * 2.2, 0, 3.0) * kis_weight['score_weight']
+        foreign_value = _float(investor.get('foreign_net_value') or investor.get('foreign_net_qty'))
+        institution_value = _float(investor.get('institution_net_value') or investor.get('institution_net_qty'))
+        flow_delta = 0.0
+        if foreign_value > 0 and institution_value > 0:
+            flow_delta = 3.0
+            tags.append('kis_live_dual_flow')
+        elif foreign_value > 0 or institution_value > 0:
+            flow_delta = 1.2
+            tags.append('kis_live_partial_flow')
+        elif foreign_value < 0 and institution_value < 0 and change_pct > 0:
+            flow_delta = -2.5
+            risk_delta += 2.0 * kis_weight['risk_weight']
+            tags.append('price_flow_divergence')
+        alpha_delta += (live_liquidity_delta + flow_delta) * kis_weight['score_weight']
+        source_count_delta += 1
+        evidence.append(_evidence('KIS API', 'live_price_trading_value', live_liquidity_delta, {
+            'trading_value': trading_value,
+            'change_pct': change_pct,
+            'freshness': kis_weight['freshness'],
+        }))
+        if investor:
+            evidence.append(_evidence('KIS API', 'live_investor_flow', flow_delta, {
+                'foreign_net': foreign_value,
+                'institution_net': institution_value,
+                'freshness': kis_weight['freshness'],
+            }))
+    elif kis_live and kis_weight['freshness'] in {'stale', 'unknown'}:
+        risk_delta += 1.5 * kis_weight['risk_weight']
+    resource_weights['kis_live'] = kis_weight
+
+    if flow_confirmation.get('passed') and institutional:
+        flow_weight = _resource_weight(institutional, default_confidence=0.82, max_age_days=30)
+        alpha_delta += 1.5 * flow_weight['score_weight']
+        evidence.append(_evidence('all_institutional_trend_data.csv', 'flow_quality_weight', 1.5, flow_weight['freshness']))
+        resource_weights['capital_flow'] = flow_weight
+
+    dart_weight = _resource_weight(dart_event, default_confidence=0.86, max_age_days=7) if dart_event else _resource_weight(None)
+    if dart_event:
+        dart_result = _dart_event_risk_adjustment(dart_event, dart_weight)
+        alpha_delta += dart_result['alpha_delta']
+        risk_delta += dart_result['risk_delta']
+        source_count_delta += 1
+        tags.extend(dart_result['tags'])
+        evidence.extend(dart_result['evidence'])
+    resource_weights['dart_event'] = dart_weight
+
+    nts_weight = _resource_weight(news_theme_social, default_confidence=0.58, max_age_days=2) if news_theme_social else _resource_weight(None)
+    if news_theme_social:
+        support = _news_theme_social_adjustment(news_theme_social, nts_weight, has_core_confirmation=bool(kis_live or institutional or flow_confirmation.get('passed')))
+        alpha_delta += support['alpha_delta']
+        risk_delta += support['risk_delta']
+        source_count_delta += 1
+        tags.extend(support['tags'])
+        evidence.extend(support['evidence'])
+    resource_weights['news_theme_social'] = nts_weight
+
+    perf = _performance_memory_adjustment(performance_advisory)
+    ranking_delta += perf.get('ranking_delta', 0.0)
+    if perf.get('applied'):
+        tags.append('outcome_memory_adjusted')
+        evidence.append(_evidence('workflow_outcomes', 'recent_hit_rate_adjustment', perf['ranking_delta'], perf))
+
+    freshness_status = str((freshness or {}).get('status') or 'unknown').lower()
+    if freshness_status in {'stale', 'unknown', 'missing', 'partial'}:
+        risk_delta += {'partial': 1.5, 'stale': 3.0, 'unknown': 2.5, 'missing': 4.0}.get(freshness_status, 2.0)
+        tags.append('source_freshness_capped')
+
+    alpha_delta = _clamp(alpha_delta, -12.0, 12.0)
+    risk_delta = _clamp(risk_delta, -5.0, 18.0)
+    ranking_delta = _clamp(ranking_delta, -4.0, 4.0)
+    return {
+        'schema_version': 'mirofish.mcp_quality_adjustment.v1',
+        'alpha_delta': round(alpha_delta, 2),
+        'risk_delta': round(risk_delta, 2),
+        'ranking_delta': round(ranking_delta, 2),
+        'source_count_delta': int(max(0, source_count_delta)),
+        'tags': sorted(set(tags)),
+        'evidence': evidence,
+        'resource_weights': resource_weights,
+        'performance_memory': perf,
+        'lookahead_safe': True,
+    }
+
+
+def _dart_event_risk_adjustment(dart_event: dict[str, Any], weight: dict[str, Any]) -> dict[str, Any]:
+    risk_level = str(dart_event.get('risk_level') or dart_event.get('severity') or dart_event.get('status') or '').lower()
+    flags = [str(item).lower() for item in (dart_event.get('risk_flags') or dart_event.get('flags') or dart_event.get('categories') or [])]
+    text = ' '.join([risk_level, *flags, str(dart_event.get('event_type') or ''), str(dart_event.get('summary') or '')]).lower()
+    hard_terms = ('trading_halt', 'delisting', 'audit_opinion', 'capital_impairment', 'embezzlement', 'management_issue')
+    caution_terms = ('lawsuit', 'cb', 'bw', 'capital_increase', 'refinancing', 'earnings_miss', 'warning')
+    alpha_delta = 0.0
+    risk_delta = 0.0
+    tags: list[str] = []
+    if any(term in text for term in hard_terms) or risk_level in {'hard_block', 'critical', 'high'}:
+        alpha_delta -= 8.0 * weight['score_weight']
+        risk_delta += 14.0 * weight['risk_weight']
+        tags.append('dart_hard_risk')
+    elif any(term in text for term in caution_terms) or risk_level in {'medium', 'caution'}:
+        alpha_delta -= 2.0 * weight['score_weight']
+        risk_delta += 5.0 * weight['risk_weight']
+        tags.append('dart_event_caution')
+    elif text.strip():
+        risk_delta += 0.8 * weight['risk_weight']
+        tags.append('dart_reviewed')
+    return {
+        'alpha_delta': round(alpha_delta, 2),
+        'risk_delta': round(risk_delta, 2),
+        'tags': tags,
+        'evidence': [_evidence('OpenDART/KRX filing', 'disclosure_risk_filter', alpha_delta - risk_delta, {
+            'risk_level': risk_level or None,
+            'flags': flags,
+            'freshness': weight['freshness'],
+        })],
+    }
+
+
+def _news_theme_social_adjustment(
+    news_theme_social: dict[str, Any],
+    weight: dict[str, Any],
+    *,
+    has_core_confirmation: bool,
+) -> dict[str, Any]:
+    sentiment = _first_number(
+        news_theme_social,
+        ('sentiment_score', 'news_sentiment', 'theme_score', 'social_score', 'score', 'heat_score'),
+    )
+    heat = _first_number(news_theme_social, ('social_heat', 'theme_heat', 'buzz', 'search_interest', 'attention_score'))
+    risk_flag = _truthy(news_theme_social.get('unverified') or news_theme_social.get('rumor') or news_theme_social.get('hype_flag'))
+    source_grade = str(news_theme_social.get('source_grade') or news_theme_social.get('grade') or '').upper()
+    alpha_delta = 0.0
+    risk_delta = 0.0
+    tags = ['news_theme_social_supporting_only']
+    if has_core_confirmation and not risk_flag:
+        alpha_delta += _clamp(sentiment / 100 * 1.5, -1.0, 1.5) * weight['score_weight']
+    elif sentiment > 0 or heat > 0:
+        alpha_delta -= 1.5
+        risk_delta += 3.0
+        tags.append('support_signal_without_core_confirmation')
+    if heat >= 80 or risk_flag or source_grade in {'C', 'D'}:
+        risk_delta += 2.5
+        tags.append('unverified_or_hot_theme_risk')
+    return {
+        'alpha_delta': round(alpha_delta, 2),
+        'risk_delta': round(risk_delta * weight['risk_weight'], 2),
+        'tags': tags,
+        'evidence': [_evidence('news_theme_social_latest.json', 'supporting_signal_only', alpha_delta - risk_delta, {
+            'sentiment': sentiment,
+            'heat': heat,
+            'source_grade': source_grade or None,
+            'has_core_confirmation': has_core_confirmation,
+            'freshness': weight['freshness'],
+        })],
+    }
+
+
+def _performance_memory_adjustment(performance_advisory: dict[str, Any]) -> dict[str, Any]:
+    if not isinstance(performance_advisory, dict) or not performance_advisory.get('available'):
+        return {'applied': False, 'ranking_delta': 0.0, 'source': 'workflow_outcomes'}
+    baseline = _float((performance_advisory.get('recommendations') or {}).get('baseline_hit_rate'))
+    hit_rate = _float(performance_advisory.get('hit_rate_recent'))
+    evaluated = int(_float(performance_advisory.get('evaluated_count')))
+    if evaluated < 9 or hit_rate <= 0:
+        return {
+            'applied': False,
+            'ranking_delta': 0.0,
+            'source': 'workflow_outcomes',
+            'evaluated_count': evaluated,
+            'reason': 'insufficient_evaluated_outcomes',
+        }
+    center = baseline if baseline > 0 else 0.50
+    delta = _clamp((hit_rate - center) * 10.0, -3.0, 3.0)
+    return {
+        'applied': bool(delta),
+        'ranking_delta': round(delta, 2),
+        'source': 'workflow_outcomes',
+        'evaluated_count': evaluated,
+        'hit_rate_recent': hit_rate,
+        'baseline_hit_rate': center,
+        'lookahead_safe': bool(performance_advisory.get('lookahead_safe', True)),
+    }
+
+
+def _performance_tag_memory_adjustment(performance_advisory: dict[str, Any], tags: list[str]) -> dict[str, Any]:
+    if not isinstance(performance_advisory, dict) or not performance_advisory.get('available'):
+        return {'applied': False, 'ranking_delta': 0.0, 'source': 'workflow_outcomes'}
+    tag_adjust = ((performance_advisory.get('recommendations') or {}).get('tag_score_adjust') or {})
+    if not isinstance(tag_adjust, dict) or not tag_adjust:
+        return {'applied': False, 'ranking_delta': 0.0, 'source': 'workflow_outcomes'}
+    matched = {
+        tag: _float(tag_adjust.get(tag))
+        for tag in tags or []
+        if tag in tag_adjust and _float(tag_adjust.get(tag)) != 0
+    }
+    if not matched:
+        return {'applied': False, 'ranking_delta': 0.0, 'source': 'workflow_outcomes'}
+    delta = _clamp(sum(matched.values()), -2.0, 2.0)
+    return {
+        'applied': True,
+        'ranking_delta': round(delta, 2),
+        'source': 'workflow_outcomes',
+        'matched_tags': matched,
+        'lookahead_safe': bool(performance_advisory.get('lookahead_safe', True)),
+    }
+
+
+def _apply_false_signal_gates(
+    candidate: dict[str, Any],
+    *,
+    price: dict[str, Any],
+    price_metrics: dict[str, Any],
+    jongga: dict[str, Any] | None,
+    institutional: dict[str, Any] | None,
+    blacklist_entry: dict[str, Any] | None,
+    credit_entry: dict[str, Any] | None,
+) -> dict[str, Any]:
+    profile = candidate.get('analysis_profile') if isinstance(candidate.get('analysis_profile'), dict) else {}
+    if not _false_signal_gates_enabled():
+        profile['false_signal_gates'] = {'enabled': False, 'lookahead_safe': True}
+        candidate['analysis_profile'] = profile
+        return candidate
+
+    gates = []
+    hard_blockers: list[str] = []
+    alpha_delta = 0.0
+    risk_delta = 0.0
+    tag_additions: list[str] = []
+    evidence = list(candidate.get('evidence') or [])
+    trading_value = _float((candidate.get('price') or {}).get('trading_value'))
+    current_price = _float((candidate.get('price') or {}).get('current_price'))
+    change_rate = _float((candidate.get('price') or {}).get('change_rate'))
+
+    if blacklist_entry:
+        categories = blacklist_entry.get('categories') or ['listed']
+        gates.append(_false_signal_gate(
+            'kind_blacklist',
+            'fail',
+            'KIND/KRX risk blacklist matched',
+            {'categories': categories},
+            hard_block=True,
+        ))
+        hard_blockers.append('kind_blacklist')
+        tag_additions.append('kind_blacklist')
+        evidence.append(_evidence('kind_blacklist_latest.json', 'kind_blacklist', 0.0, categories))
+    else:
+        gates.append(_false_signal_gate('kind_blacklist', 'pass', 'no local KIND/KRX risk match', None))
+
+    flow_gate = _institutional_flow_confirmation(institutional)
+    gates.append(_false_signal_gate(
+        'foreign_institution_dual_buy_5d',
+        'pass' if flow_gate.get('passed') else ('unknown' if flow_gate.get('status') == 'missing' else 'partial'),
+        'foreign and institution five-day flow confirmation',
+        flow_gate.get('value'),
+    ))
+
+    wick_ratio = _upper_wick_ratio(price, jongga)
+    if wick_ratio >= 0.5:
+        gates.append(_false_signal_gate(
+            'upper_wick_exhaustion',
+            'fail',
+            'long upper wick suggests intraday supply or chase risk',
+            round(wick_ratio, 3),
+        ))
+        alpha_delta -= 5.0
+        risk_delta += 5.0
+        tag_additions.append('upper_wick_risk')
+    else:
+        gates.append(_false_signal_gate('upper_wick_exhaustion', 'pass', 'upper wick below risk threshold', round(wick_ratio, 3)))
+
+    credit_pct = _credit_pressure_pct(jongga, credit_entry)
+    if credit_pct is None:
+        gates.append(_false_signal_gate('credit_pressure', 'unknown', 'credit balance data not available', None))
+    elif credit_pct >= 5.0:
+        gates.append(_false_signal_gate(
+            'credit_pressure',
+            'fail',
+            'credit balance ratio exceeds hard-block threshold',
+            round(credit_pct, 2),
+            hard_block=True,
+        ))
+        hard_blockers.append('credit_pressure')
+        tag_additions.append('credit_pressure')
+    else:
+        gates.append(_false_signal_gate('credit_pressure', 'pass', 'credit balance below hard-block threshold', round(credit_pct, 2)))
+
+    if trading_value and trading_value < 10_000_000_000 and change_rate >= 15:
+        gates.append(_false_signal_gate(
+            'thin_liquidity_spike',
+            'fail',
+            'large move on sub-10B KRW trading value',
+            {'trading_value': trading_value, 'change_rate': change_rate},
+        ))
+        alpha_delta -= 10.0
+        risk_delta += 5.0
+        tag_additions.append('thin_liquidity_spike')
+    else:
+        gates.append(_false_signal_gate(
+            'thin_liquidity_spike',
+            'pass',
+            'liquidity and latest move do not match thin-spike guard',
+            {'trading_value': trading_value, 'change_rate': change_rate},
+        ))
+
+    if hard_blockers:
+        candidate['alpha_score'] = 0.0
+        candidate['risk_score'] = round(max(_float(candidate.get('risk_score')) + risk_delta, 90.0), 2)
+    else:
+        candidate['alpha_score'] = round(_clamp(_float(candidate.get('alpha_score')) + alpha_delta, 0, 100), 2)
+        candidate['risk_score'] = round(_clamp(_float(candidate.get('risk_score')) + risk_delta, 0, 100), 2)
+
+    tags = list(dict.fromkeys(list(candidate.get('strategy_tags') or []) + tag_additions))
+    candidate['strategy_tags'] = tags
+    candidate['action'] = _action(_float(candidate.get('alpha_score')), _float(candidate.get('risk_score')))
+    candidate['horizon'] = 'swing_5_20d' if candidate['action'] in ('BUY_CANDIDATE', 'WATCH') else 'avoid_or_recheck'
+    source_count = int(_float(profile.get('source_count')))
+    conviction_adjustment = _conviction_adjustment(
+        _float(candidate.get('alpha_score')),
+        _float(candidate.get('risk_score')),
+        source_count,
+        price_metrics,
+    )
+    mcp_ranking_delta = _float((profile.get('mcp_quality_adjustment') or {}).get('ranking_delta'))
+    candidate['ranking_score'] = round(
+        _float(candidate.get('alpha_score')) - (0.55 * _float(candidate.get('risk_score'))) + conviction_adjustment + mcp_ranking_delta,
+        2,
+    )
+    candidate['signal_quality'] = _signal_quality(
+        _float(candidate.get('alpha_score')),
+        _float(candidate.get('risk_score')),
+        source_count,
+        price_metrics,
+    )
+    candidate['entry_plan'] = _entry_plan(
+        current_price,
+        _float(candidate.get('risk_score')),
+        price_metrics,
+        candidate['action'],
+    )
+    clean_evidence = [item for item in evidence if item.get('score', 0) > 0 or item.get('value') not in (None, 0)]
+    candidate['evidence'] = clean_evidence
+    source_freshness = candidate.get('freshness') if isinstance(candidate.get('freshness'), dict) else {}
+    evidence_quality = _evidence_quality(
+        clean_evidence,
+        source_count=source_count,
+        freshness=source_freshness,
+        risk=_float(candidate.get('risk_score')),
+    )
+    confidence_cap = _confidence_cap(
+        source_count=source_count,
+        freshness=source_freshness,
+        risk=_float(candidate.get('risk_score')),
+    )
+    profile['conviction_adjustment'] = round(conviction_adjustment, 2)
+    profile['mcp_ranking_delta'] = round(mcp_ranking_delta, 2)
+    profile['evidence_quality'] = evidence_quality
+    profile['confidence_cap'] = confidence_cap
+    profile['false_signal_gates'] = {
+        'enabled': True,
+        'schema_version': 'mirofish.plan_a_false_signal_gates.v1',
+        'gates': gates,
+        'alpha_delta': round(alpha_delta, 2),
+        'risk_delta': round(risk_delta, 2),
+        'hard_blockers': hard_blockers,
+        'lookahead_safe': True,
+    }
+    scorecard = _profitability_scorecard(
+        alpha=_float(candidate.get('alpha_score')),
+        risk=_float(candidate.get('risk_score')),
+        action=candidate['action'],
+        source_count=source_count,
+        data_sources=(candidate.get('replay_context') or {}).get('data_sources') or [],
+        evidence_quality=evidence_quality,
+        confidence_cap=confidence_cap,
+        freshness=source_freshness,
+        entry_plan=candidate.get('entry_plan') or {},
+        price_metrics=price_metrics,
+        trading_value=trading_value,
+        current_price=current_price,
+    )
+    if hard_blockers:
+        scorecard['hard_blockers'] = sorted(set(list(scorecard.get('hard_blockers') or []) + [f'false_signal:{item}' for item in hard_blockers]))
+        scorecard['goal_verdict'] = 'blocked_by_guardrail'
+    profile['profitability_scorecard'] = scorecard
+    candidate['analysis_profile'] = profile
+    return candidate
+
+
+def _false_signal_gate(
+    gate: str,
+    status: str,
+    reason: str,
+    value: Any,
+    *,
+    hard_block: bool = False,
+) -> dict[str, Any]:
+    return {
+        'gate': gate,
+        'status': status,
+        'reason': reason,
+        'value': value,
+        'hard_blocker': hard_block,
+    }
+
+
+def _upper_wick_ratio(price: dict[str, Any], jongga: dict[str, Any] | None) -> float:
+    checklist = (jongga or {}).get('checklist') if isinstance((jongga or {}).get('checklist'), dict) else {}
+    if checklist.get('upper_wick_long') is True:
+        return 1.0
+    high = _float(price.get('high'))
+    low = _float(price.get('low'))
+    close = _float(price.get('current_price'))
+    if high <= 0 or low <= 0 or close <= 0 or high <= low:
+        return 0.0
+    return _clamp((high - close) / (high - low), 0, 1)
+
+
+def _credit_pressure_pct(jongga: dict[str, Any] | None, credit_entry: dict[str, Any] | None = None) -> float | None:
+    if credit_entry:
+        ratio = _float(credit_entry.get('credit_ratio_pct') or credit_entry.get('credit_ratio') or credit_entry.get('credit_balance_ratio'))
+        if ratio:
+            return ratio * 100 if 0 < ratio <= 1 else ratio
+        balance = _float(credit_entry.get('balance_shares'))
+        listed = _float(credit_entry.get('listed_shares'))
+        if listed > 0:
+            return balance / listed * 100
+    if not jongga:
+        return None
+    keys = [
+        'credit_balance_ratio',
+        'credit_ratio',
+        'margin_debt_ratio',
+        'credit_balance_pct',
+        '신용잔고율',
+    ]
+    nested_paths = [
+        ['risk', 'credit_balance_ratio'],
+        ['risk', 'credit_ratio'],
+        ['metrics', 'credit_balance_ratio'],
+        ['checklist', 'credit_balance_ratio'],
+    ]
+    value = None
+    for key in keys:
+        if key in jongga:
+            value = _float(jongga.get(key))
+            break
+    if value is None:
+        for path in nested_paths:
+            found = _nested_get(jongga, path)
+            if found not in (None, ''):
+                value = _float(found)
+                break
+    if value is None:
+        return None
+    return value * 100 if 0 < value <= 1 else value
+
+
+def _false_signal_gates_enabled() -> bool:
+    preferred = os.getenv('ENABLE_ALPHA_PHASE_1_GATES')
+    if preferred is not None:
+        return str(preferred).strip().lower() in {'1', 'true', 'yes', 'y'}
+    return str(os.getenv('ALPHA_FALSE_SIGNAL_GATES_ENABLED', 'true')).strip().lower() in {'1', 'true', 'yes', 'y'}
+
+
 def _conviction_adjustment(
     alpha: float,
     risk: float,
@@ -1875,6 +2944,12 @@ def _candidate_sources(
     vcp: dict[str, Any] | None,
     jongga: dict[str, Any] | None,
     tradingview_adjustment: dict[str, Any] | None = None,
+    institutional: dict[str, Any] | None = None,
+    kind_blacklist: dict[str, Any] | None = None,
+    credit_balance: dict[str, Any] | None = None,
+    kis_live: dict[str, Any] | None = None,
+    dart_event: dict[str, Any] | None = None,
+    news_theme_social: dict[str, Any] | None = None,
 ) -> list[str]:
     sources = []
     if _float(price.get('current_price')) > 0:
@@ -1887,6 +2962,18 @@ def _candidate_sources(
         sources.append('jongga_v2_latest.json')
     if tradingview_adjustment and tradingview_adjustment.get('applied'):
         sources.append('tradingview_mcp')
+    if institutional:
+        sources.append('all_institutional_trend_data.csv')
+    if kind_blacklist:
+        sources.append('kind_blacklist_latest.json')
+    if credit_balance:
+        sources.append('credit_balance_latest.json')
+    if kis_live:
+        sources.append('KIS API: live price/investor flow')
+    if dart_event:
+        sources.append('dart_event_latest.json')
+    if news_theme_social:
+        sources.append('news_theme_social_latest.json')
     return sources
 
 
@@ -1917,6 +3004,10 @@ def _feature_vector(candidate: dict[str, Any]) -> dict[str, Any]:
         'evidence_quality': profile.get('evidence_quality'),
         'confidence_cap': profile.get('confidence_cap'),
         'profitability_scorecard': profile.get('profitability_scorecard'),
+        'false_signal_gates': profile.get('false_signal_gates'),
+        'capital_flow_confirmation': profile.get('capital_flow_confirmation'),
+        'mcp_quality_adjustment': profile.get('mcp_quality_adjustment'),
+        'performance_memory': profile.get('performance_memory'),
         'goal_fit_score': (profile.get('profitability_scorecard') or {}).get('goal_fit_score')
             if isinstance(profile.get('profitability_scorecard'), dict) else None,
         'goal_verdict': (profile.get('profitability_scorecard') or {}).get('goal_verdict')
@@ -2114,8 +3205,8 @@ def _profitability_scorecard(
         'confidence_cap': confidence_cap,
         'alpha_score': alpha,
         'risk_score': risk,
-        'ranking_effect': 'none_advisory_only',
-        'mcp_role': 'supporting_data_confirmation_only',
+        'ranking_effect': 'direct_bounded_quality_adjustment',
+        'mcp_role': 'score_risk_confirmation_with_supporting_signal_limits',
         'gates': gates,
         'lookahead_safe': True,
     }
@@ -2166,7 +3257,7 @@ def _profitability_run_summary(
     return {
         'schema_version': 'mirofish.profitability_goal.run.v1',
         'primary_objective': 'detect profitable stock candidates from reliable data',
-        'mcp_role': 'supporting data confirmation only',
+        'mcp_role': 'score/risk confirmation with supporting-signal limits',
         'candidate_count': len(candidates),
         'rejected_candidate_count': len(rejected_candidates),
         'average_goal_fit_score': round(_average(scores) or 0.0, 2),
@@ -2174,7 +3265,7 @@ def _profitability_run_summary(
         'verdict_counts': dict(verdict_counts),
         'hard_blocker_counts': dict(blocker_counts),
         'missing_confirmation_counts': dict(missing_counts),
-        'ranking_effect': 'none_advisory_only',
+        'ranking_effect': 'direct_bounded_quality_adjustment',
         'lookahead_safe': True,
     }
 
@@ -2196,7 +3287,7 @@ def _performance_advisory() -> dict[str, Any]:
         advisory = {}
     return {
         'available': bool(advisory.get('evaluated_count')),
-        'applied_to_scoring': False,
+        'applied_to_scoring': bool(_float(advisory.get('evaluated_count')) >= 9),
         'source': 'workflow_outcomes',
         'lookahead_safe': bool(advisory.get('lookahead_safe', True)),
         'evaluated_count': advisory.get('evaluated_count', 0),
@@ -2205,8 +3296,84 @@ def _performance_advisory() -> dict[str, Any]:
         'horizon_days': advisory.get('horizon_days'),
         'recommendations': advisory.get('recommendations') or {'tag_score_adjust': {}},
         'asof': advisory.get('asof'),
-        'note': 'advisory only; scanner ranking is unchanged in P0',
+        'note': 'bounded ranking adjustment when enough replay-safe outcomes exist',
     }
+
+
+def _resource_weight(
+    item: dict[str, Any] | None,
+    *,
+    default_confidence: float = 0.60,
+    max_age_days: int = 7,
+) -> dict[str, Any]:
+    if not isinstance(item, dict) or not item:
+        return {
+            'available': False,
+            'freshness': 'missing',
+            'confidence': 0.0,
+            'score_weight': 0.0,
+            'risk_weight': 1.0,
+        }
+    observed_at = _resource_observed_at(item)
+    age = _age_days(observed_at)
+    if age is None:
+        freshness = 'unknown'
+        freshness_weight = 0.45
+    elif age <= max_age_days:
+        freshness = 'fresh'
+        freshness_weight = 1.0
+    elif age <= max_age_days * 3:
+        freshness = 'stale'
+        freshness_weight = 0.45
+    else:
+        freshness = 'stale'
+        freshness_weight = 0.20
+    confidence = _float(item.get('confidence'))
+    if confidence <= 0:
+        grade = str(item.get('source_grade') or item.get('grade') or '').upper()
+        confidence = {'S': 0.96, 'A': 0.90, 'B': 0.78, 'C': 0.48, 'D': 0.25}.get(grade, default_confidence)
+    confidence = _clamp(confidence, 0.0, 1.0)
+    score_weight = _clamp(confidence * freshness_weight, 0.0, 1.0)
+    risk_weight = _clamp(1.0 + (1.0 - score_weight) * 0.75, 0.8, 1.75)
+    return {
+        'available': True,
+        'freshness': freshness,
+        'observed_at': observed_at,
+        'age_days': age,
+        'confidence': round(confidence, 3),
+        'score_weight': round(score_weight, 3),
+        'risk_weight': round(risk_weight, 3),
+    }
+
+
+def _resource_observed_at(item: dict[str, Any]) -> Any:
+    for key in ('fetched_at', 'updated_at', 'generated_at', 'timestamp', 'date', 'scrape_date', 'observed_at'):
+        value = item.get(key)
+        if value:
+            return value
+    for key in ('quote', 'investor', 'metadata'):
+        nested = item.get(key)
+        if isinstance(nested, dict):
+            value = _resource_observed_at(nested)
+            if value:
+                return value
+    return None
+
+
+def _first_number(item: dict[str, Any], keys: tuple[str, ...]) -> float:
+    if not isinstance(item, dict):
+        return 0.0
+    for key in keys:
+        value = item.get(key)
+        if value not in (None, ''):
+            return _float(value)
+    for nested_key in ('score', 'metrics', 'summary'):
+        nested = item.get(nested_key)
+        if isinstance(nested, dict):
+            value = _first_number(nested, keys)
+            if value:
+                return value
+    return 0.0
 
 
 def _age_days(value: Any, now_iso: str | None = None) -> float | None:
@@ -2276,12 +3443,18 @@ def _strategy_tags(
     return tags or ['artifact_candidate']
 
 
-def _clean_limit(value: Any, *, default: int) -> int:
+def _clean_limit(value: Any, *, default: int, max_value: int = MAX_CANDIDATES) -> int:
     try:
         limit = int(value)
     except (TypeError, ValueError):
         return default
-    return max(1, min(limit, MAX_CANDIDATES))
+    return max(1, min(limit, max(1, int(max_value))))
+
+
+def _payload_bool(payload: dict[str, Any], key: str, default: bool = False) -> bool:
+    if not isinstance(payload, dict) or key not in payload:
+        return bool(default)
+    return _truthy(payload.get(key))
 
 
 def _clean_symbols(value: Any) -> set[str]:
@@ -2671,7 +3844,7 @@ def _run_path(run_id: str) -> str:
 def _run_artifact_path(run_id: str, filename: str) -> str:
     safe_id = _safe_run_id(run_id)
     safe_filename = str(filename or '').strip()
-    if safe_filename not in {'feature_vectors.json', 'evidence_ledger.json', 'rejected_candidates.json'}:
+    if safe_filename not in SCANNER_ARTIFACT_FILENAMES:
         raise ValueError('invalid scanner artifact')
     return os.path.join(SCANNER_RUNS_ROOT, safe_id, safe_filename)
 
