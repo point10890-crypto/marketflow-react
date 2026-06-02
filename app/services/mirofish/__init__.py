@@ -84,6 +84,12 @@ from app.services.mirofish.pipeline_overview import (
     get_pipeline_operating_snapshot,
     get_pipeline_today_snapshot,
 )
+from app.services.mirofish.mcp_resource_catalog import (
+    build_mcp_resource_snapshot,
+    evaluate_mcp_source_gaps,
+    get_mcp_resource,
+    list_mcp_resource_catalog,
+)
 from app.services.mirofish import auto_runner
 from app.services.mirofish.chat_agent import (
     run_chat as run_chat_agent,
@@ -132,6 +138,9 @@ __all__ = [
     'get_alpha_research_snapshot',
     'get_market_clock',
     'auto_runner',
+    'build_mcp_resource_snapshot',
+    'evaluate_mcp_source_gaps',
+    'get_mcp_resource',
     'get_mcp_security_policy',
     'get_outcomes_board',
     'get_pipeline_today_snapshot',
@@ -148,6 +157,7 @@ __all__ = [
     'list_recent_scanner_runs',
     'list_recent_workflows',
     'list_safe_artifacts',
+    'list_mcp_resource_catalog',
     'list_deepseek_models',
     'list_workflows',
     'read_latest_scanner_run',

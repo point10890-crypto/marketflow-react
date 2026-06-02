@@ -9,6 +9,7 @@ from typing import Any
 
 import app.services.mirofish.alpha_scanner as alpha_scanner
 import app.services.mirofish.autonomous_mcp as autonomous_mcp
+import app.services.mirofish.mcp_resource_catalog as mcp_resource_catalog
 import app.services.mirofish.tradingview_provider as tradingview_provider
 import app.services.mirofish.workflow as workflow
 
@@ -61,6 +62,14 @@ def create_mcp_server(
     def get_pipeline_operating_snapshot() -> dict[str, Any]:
         """Return scanner -> batch -> GraphRAG -> Top3 -> Telegram -> outcomes state."""
         return autonomous_mcp.get_pipeline_operating_snapshot()
+
+    @mcp.tool()
+    def get_mcp_resource_snapshot(include_deferred: bool = True, category: str = '') -> dict[str, Any]:
+        """Return alpha-relevant MCP resource catalog and latest source-gap evaluation."""
+        return mcp_resource_catalog.build_mcp_resource_snapshot(
+            include_deferred=include_deferred,
+            category=category or None,
+        )
 
     @mcp.tool()
     def get_repository_state() -> dict[str, Any]:
@@ -291,6 +300,11 @@ def create_mcp_server(
     def pipeline_operating_resource() -> str:
         """Machine-readable MiroFish alpha operating workflow state."""
         return _json(autonomous_mcp.get_pipeline_operating_snapshot())
+
+    @mcp.resource('mirofish://mcp/resources')
+    def mcp_resources_resource() -> str:
+        """Alpha-relevant MCP resource catalog and source-gap evaluation."""
+        return _json(mcp_resource_catalog.build_mcp_resource_snapshot())
 
     @mcp.resource('mirofish://scanner/latest')
     def latest_scanner_resource() -> str:

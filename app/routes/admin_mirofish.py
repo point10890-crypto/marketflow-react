@@ -871,6 +871,26 @@ def get_autonomous_learning():
     return jsonify({'available': True, **feedback})
 
 
+@admin_mirofish_bp.route('/mcp/resources', methods=['GET'])
+@admin_or_aibain_required
+def get_mcp_resources():
+    include_deferred = request.args.get('include_deferred', '1').strip().lower() not in {'0', 'false', 'no'}
+    category = request.args.get('category') or None
+    return jsonify(mirofish.build_mcp_resource_snapshot(
+        include_deferred=include_deferred,
+        category=category,
+    ))
+
+
+@admin_mirofish_bp.route('/mcp/resources/<resource_id>', methods=['GET'])
+@admin_or_aibain_required
+def get_mcp_resource(resource_id):
+    resource = mirofish.get_mcp_resource(resource_id)
+    if resource is None:
+        return jsonify({'error': 'mcp resource not found'}), 404
+    return jsonify(resource)
+
+
 @admin_mirofish_bp.route('/autonomous/candidate-alert', methods=['POST'])
 @admin_required
 def run_autonomous_candidate_alert():
