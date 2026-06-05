@@ -44,7 +44,7 @@ try {
 # 프로덕션 확인 (MarketFlow 전용 호스트만 — api.bit-man.net 은 별도 프로젝트 JUST BUY 소속이므로 점검 안 함)
 Write-Host "`n[Production]" -ForegroundColor Yellow
 try {
-    $resp = Invoke-WebRequest -Uri "https://marketflow-api.bit-man.net/api/kr/market-gate" -UseBasicParsing -TimeoutSec 5 -ErrorAction Stop
+    $resp = Invoke-WebRequest -Uri "https://marketflow-api.bit-man.net/healthz" -UseBasicParsing -TimeoutSec 5 -ErrorAction Stop
     Write-Host "  marketflow-api.bit-man.net: $($resp.StatusCode) OK" -ForegroundColor Green
 } catch {
     Write-Host "  marketflow-api.bit-man.net: FAILED" -ForegroundColor Red
