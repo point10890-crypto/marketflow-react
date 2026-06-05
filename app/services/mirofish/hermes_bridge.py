@@ -344,7 +344,7 @@ def _stdio_server_config() -> dict[str, Any]:
         ],
         'env': {
             'PYTHONIOENCODING': 'utf-8',
-            'HOME_SERVER': '1',
+            'HOME_SERVER': 'marketflow',
         },
     }
 
