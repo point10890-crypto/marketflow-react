@@ -1,4 +1,4 @@
-cd C:\bitman_marketfloww
+Set-Location -LiteralPath C:\bitman_marketfloww
 
 Write-Host "=== Identify scheduler.py process ==="
 $schedProcs = Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -like "*scheduler.py*--daemon*" }
@@ -35,9 +35,20 @@ Start-Sleep -Seconds 8
 
 Write-Host ""
 Write-Host "=== Verify new schedule registered ==="
-$content = Get-Content C:\bitman_marketfloww\logs\scheduler.log -Encoding UTF8 -Tail 200
-$content | Select-String -Pattern "kr_vcp_morning|VCP 오전|11:00.*KR VCP|KR_VCP_MORNING_TIME" | Select-Object -Last 10 | ForEach-Object { Write-Host $_.Line }
+$logPath = "C:\bitman_marketfloww\logs\scheduler.log"
+if (Test-Path $logPath) {
+    $content = Get-Content $logPath -Encoding UTF8 -Tail 200
+    $content |
+        Select-String -SimpleMatch -Pattern @("kr_vcp_morning", "KR VCP", "KR_VCP_MORNING_TIME", "11:00") |
+        Select-Object -Last 10 |
+        ForEach-Object { Write-Host $_.Line }
 
-Write-Host ""
-Write-Host "=== Schedule registration log (last 50 lines) ==="
-$content | Select-String -Pattern "스케줄러 시작|스케줄 등록|평일.*VCP" | Select-Object -Last 15 | ForEach-Object { Write-Host $_.Line }
+    Write-Host ""
+    Write-Host "=== Schedule registration log (last 50 lines) ==="
+    $content |
+        Select-String -SimpleMatch -Pattern @("scheduler", "schedule", "registered", "VCP", "MarketFlow-Scheduler") |
+        Select-Object -Last 15 |
+        ForEach-Object { Write-Host $_.Line }
+} else {
+    Write-Host "Scheduler log not found: $logPath"
+}
