@@ -1,23 +1,16 @@
-# Context
+# Context — [작업명]
 
-## Repository
+<!-- 현재 시점 스냅샷만. 히스토리는 log.md 역할. -->
+<!-- 크기 제한: 1500자(한글) / 300단어(영문) 이하. -->
+<!-- 측정: wc -m (한글 글자수) / wc -w (영문 단어수) -->
+<!-- 긴 자료는 sources/에 두고 경로로만 참조. brief.md/context.md에 inline 금지. -->
 
-`C:/bitman_marketfloww`
+## 현재 상태
 
-## Current State
+<!-- 지금 무엇이 끝났고 무엇이 진행 중인지 한두 줄. -->
 
-- Branch:
-- Commit:
-- Dirty files:
+## 핵심 정보
 
-## Relevant Docs
-
-- `AGENTS.md`
-- `INFRASTRUCTURE.md`
-- MiroFish docs:
-
-## Known Risks
-
-- Generated data is often dirty.
-- MiniPC is the home-server production target.
-- Port 8080 belongs to another project.
+<!-- 작업 판단에 필요한 사실만. 배경·동기는 task.md 역할. -->
+- 정보 1
+- 정보 2

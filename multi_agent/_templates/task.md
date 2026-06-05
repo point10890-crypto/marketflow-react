@@ -1,28 +1,42 @@
-# Task
+# [작업명]
 
-## Objective
+## 메타
 
-Describe the concrete MarketFlow outcome.
+```yaml
+status: pending
+# 가능한 값:
+#   pending          작업 정의 완료, 시작 전
+#   in_progress      orchestrator 작업 진행 중
+#   waiting_<role>   특정 worker 응답 대기 (예: waiting_codex-main)
+#   reviewing        worker 결과 검증 중 (사용자 확인 단계)
+#   done             완료
+created: <YYYY-MM-DD>
+updated: <YYYY-MM-DD>
+priority: medium  # high | medium | low
+```
 
-## Alpha Relevance
+## Goal
 
-Explain how this improves candidate detection, risk filtering, timing,
-evidence quality, replayability, or outcome feedback.
-
-## Scope
-
-- Files:
-- Endpoints:
-- Data sources:
+한 문장으로. 무엇을 완료 상태로 볼 것인가. (예: 오늘 시장 종료 후 종가베팅 대상 Top 3 선정 완료)
 
 ## Constraints
 
-- No secrets.
-- No broker/order execution.
-- Preserve unrelated dirty files.
+- 제약 1
+- 제약 2
 
-## Validation
+## Acceptance Criteria
 
-- Focused tests:
-- Smoke checks:
-- Deploy checks:
+- [ ] 기준 1
+- [ ] 기준 2
+
+## Worker Plan
+
+```yaml
+# 모든 worker는 사용 전 승인 필요. 비어있으면 호출 금지.
+workers_approved: []
+# 승인 예시:
+# - worker: claude-main
+#   approved_at: <YYYY-MM-DD>
+#   purpose: 구체적 목적
+#   approved_by: user
+```

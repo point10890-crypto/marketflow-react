@@ -1,13 +1,15 @@
-# Learnings
+# Multi-Agent Shared Learnings
 
-Append-only notes for MarketFlow agent operations.
+이 파일은 에이전트들이 주식을 분석하고 검출하면서 얻은 일반적인 주식 시장의 패턴, 리스크 필터링 예외, 백엔드 연동 관련 문제 해결 방법 등을 누적하여 저장하는 공간입니다. 
 
-## 2026-06-05
+에이전트는 새로운 태스크를 시작할 때 이 파일의 내용을 참조하여 과거의 실수나 오판을 피하도록 작동해야 합니다.
 
-- Hermes should be attached as an MCP sidecar, not embedded as the alpha scoring
-  engine.
-- MarketFlow's Hermes config should use `~/.hermes/config.yaml` with
-  `mcp_servers`, not `mcpServers`.
-- The first Hermes integration should be read-only and dry-run first.
-- Any Top 3 automation must preserve the main objective: profitable candidate
-  detection backed by fresh, source-graded, replayable data.
+## 지식 추가 형식
+* `[YYYY-MM-DD] [카테고리] 지식 한 줄 요약 및 상세 내용`
+
+---
+
+## 📈 수집된 지식 리스트
+
+* `2026-06-05` `[RISK]` 바이오/제약 종목 분석 시 임상 실패나 유상증자 등 악재 공시 여부를 DART API를 통해 최우선으로 검사해야 함.
+* `2026-06-05` `[TECHNICAL]` 거래대금이 50억 미만인 급등 종목은 호재가 있더라도 변동성이 매우 크기 때문에 S/A 등급에서 가급적 제외하거나 Stop Loss 범위를 ATR 대비 넓게 잡아야 함.
