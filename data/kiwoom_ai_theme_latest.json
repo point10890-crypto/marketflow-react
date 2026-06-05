@@ -1,22 +1,7 @@
 {
-  "updated_at": "2026-04-14T21:30:00",
+  "updated_at": "2026-04-23T08:44:27",
   "total_conditions": 7,
-  "executed": 7,
-  "unique_stocks": 12,
-  "preview_mode": true,
-  "note": "장외 시간 샘플 데이터 (실제 장중에는 라이브 CNSRREQ 결과)",
-  "stocks": [
-    {"code": "005930", "name": "삼성전자", "price": "72500", "change_pct": 3.45, "volume": "12345678", "hit_count": 5, "matched_conditions": ["AI전략(종가매매)", "AI전략(BNF 강력매수)", "AI전략 스윙매매", "AI전략(올라운드 단기)", "AI전략(Super Agent)"]},
-    {"code": "000660", "name": "SK하이닉스", "price": "195000", "change_pct": 2.80, "volume": "3456789", "hit_count": 4, "matched_conditions": ["AI전략(종가매매)", "AI전략(종가매매2)", "AI전략(올라운드 단기)", "AI전략(Super Agent)"]},
-    {"code": "035420", "name": "NAVER", "price": "218500", "change_pct": 1.92, "volume": "987654", "hit_count": 3, "matched_conditions": ["AI전략(BNF 강력매수)", "AI전략 스윙매매", "AI가만든(노스트라다무스)"]},
-    {"code": "373220", "name": "LG에너지솔루션", "price": "412000", "change_pct": 4.12, "volume": "1234567", "hit_count": 3, "matched_conditions": ["AI전략(종가매매)", "AI전략 스윙매매", "AI전략(Super Agent)"]},
-    {"code": "207940", "name": "삼성바이오로직스", "price": "865000", "change_pct": 2.15, "volume": "345678", "hit_count": 3, "matched_conditions": ["AI전략(종가매매2)", "AI전략(BNF 강력매수)", "AI전략(올라운드 단기)"]},
-    {"code": "068270", "name": "셀트리온", "price": "178300", "change_pct": 5.67, "volume": "2345678", "hit_count": 3, "matched_conditions": ["AI전략(Super Agent)", "AI전략 스윙매매", "AI가만든(노스트라다무스)"]},
-    {"code": "005380", "name": "현대차", "price": "245000", "change_pct": 1.45, "volume": "876543", "hit_count": 2, "matched_conditions": ["AI전략(종가매매)", "AI전략(올라운드 단기)"]},
-    {"code": "051910", "name": "LG화학", "price": "392000", "change_pct": 2.34, "volume": "567890", "hit_count": 2, "matched_conditions": ["AI전략(BNF 강력매수)", "AI전략(Super Agent)"]},
-    {"code": "035720", "name": "카카오", "price": "48950", "change_pct": 3.12, "volume": "3456789", "hit_count": 2, "matched_conditions": ["AI전략(종가매매2)", "AI전략 스윙매매"]},
-    {"code": "028260", "name": "삼성물산", "price": "156500", "change_pct": 1.78, "volume": "432109", "hit_count": 2, "matched_conditions": ["AI전략(종가매매)", "AI가만든(노스트라다무스)"]},
-    {"code": "006400", "name": "삼성SDI", "price": "345000", "change_pct": 2.56, "volume": "654321", "hit_count": 2, "matched_conditions": ["AI전략(올라운드 단기)", "AI전략(Super Agent)"]},
-    {"code": "323410", "name": "카카오뱅크", "price": "28450", "change_pct": 4.89, "volume": "5678901", "hit_count": 2, "matched_conditions": ["AI전략(BNF 강력매수)", "AI전략 스윙매매"]}
-  ]
+  "executed": 0,
+  "unique_stocks": 0,
+  "stocks": []
 }
