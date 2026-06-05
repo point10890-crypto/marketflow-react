@@ -9,6 +9,7 @@ from typing import Any
 
 import app.services.mirofish.alpha_scanner as alpha_scanner
 import app.services.mirofish.autonomous_mcp as autonomous_mcp
+import app.services.mirofish.hermes_bridge as hermes_bridge
 import app.services.mirofish.mcp_resource_catalog as mcp_resource_catalog
 import app.services.mirofish.tradingview_provider as tradingview_provider
 import app.services.mirofish.workflow as workflow
@@ -70,6 +71,21 @@ def create_mcp_server(
             include_deferred=include_deferred,
             category=category or None,
         )
+
+    @mcp.tool()
+    def get_hermes_bridge_status() -> dict[str, Any]:
+        """Return readiness and safety status for attaching Hermes Agent as an MCP sidecar."""
+        return hermes_bridge.build_hermes_bridge_status()
+
+    @mcp.tool()
+    def get_hermes_bridge_manifest() -> dict[str, Any]:
+        """Return the Hermes MCP config manifest for MarketFlow MiroFish."""
+        return hermes_bridge.build_hermes_mcp_manifest()
+
+    @mcp.tool()
+    def preview_hermes_sidecar_task(task: str = 'top3_dry_run') -> dict[str, Any]:
+        """Preview the tool-call plan Hermes should use without executing it."""
+        return hermes_bridge.preview_hermes_task({'task': task})
 
     @mcp.tool()
     def get_repository_state() -> dict[str, Any]:
@@ -305,6 +321,16 @@ def create_mcp_server(
     def mcp_resources_resource() -> str:
         """Alpha-relevant MCP resource catalog and source-gap evaluation."""
         return _json(mcp_resource_catalog.build_mcp_resource_snapshot())
+
+    @mcp.resource('mirofish://integrations/hermes/manifest')
+    def hermes_manifest_resource() -> str:
+        """Hermes Agent MCP sidecar manifest for MarketFlow MiroFish."""
+        return _json(hermes_bridge.build_hermes_mcp_manifest())
+
+    @mcp.resource('mirofish://integrations/hermes/runbook')
+    def hermes_runbook_resource() -> str:
+        """Operator runbook for using Hermes as a safe MiroFish sidecar."""
+        return _json(hermes_bridge.build_hermes_runbook())
 
     @mcp.resource('mirofish://scanner/latest')
     def latest_scanner_resource() -> str:
