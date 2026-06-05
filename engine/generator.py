@@ -447,8 +447,12 @@ async def run_screener(
     claude_picks = {}  # 키 이름 유지 (하위 호환)
     try:
         screener = MultiAIConsensusScreener()
-        if screener.gemini_screener.client or screener.openai_screener.client:
-            print("🤖 Multi-AI Consensus 스크리닝 시작 (Gemini + GPT-4o)...", flush=True)
+        active_clients = [
+            name for name, model_screener in screener.screeners.items()
+            if getattr(model_screener, "client", None)
+        ]
+        if active_clients:
+            print(f"🤖 Multi-AI Consensus 스크리닝 시작 ({', '.join(active_clients)})...", flush=True)
             signals_data = [s.to_dict() for s in signals]
             claude_picks = await screener.screen_candidates(signals_data)
             pick_count = len(claude_picks.get("picks", []))

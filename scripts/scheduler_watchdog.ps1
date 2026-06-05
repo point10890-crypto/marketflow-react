@@ -1,5 +1,5 @@
 # MarketFlow Scheduler Watchdog
-# Restarts scheduler.py --daemon when heartbeat is stale or the recorded PID is dead.
+# MiniPC-only liveness guard for scheduler.py --daemon.
 
 $ErrorActionPreference = 'Continue'
 $OutputEncoding = [System.Text.Encoding]::UTF8
@@ -12,10 +12,18 @@ $HeartbeatFile = Join-Path $Project 'data\scheduler_heartbeat.json'
 $PidFile       = Join-Path $Project 'logs\scheduler.pid'
 $LogFile       = Join-Path $Project 'logs\scheduler_watchdog.log'
 $StaleSeconds  = 180
+$AllowedHosts  = @('MINIPC-NQYLP')
 
 function Write-Log($msg) {
     $line = "{0} | {1}" -f (Get-Date -Format 'yyyy-MM-dd HH:mm:ss'), $msg
     Add-Content -Path $LogFile -Value $line -Encoding UTF8
+}
+
+function Test-MiniPcHost {
+    if ($env:MARKETFLOW_ALLOW_SCHEDULER_WATCHDOG -eq '1') {
+        return $true
+    }
+    return $AllowedHosts -contains $env:COMPUTERNAME
 }
 
 function Read-EnvValue($name) {
@@ -115,6 +123,11 @@ function Start-Daemon {
     Write-Log "Daemon start command issued."
 }
 
+if (-not (Test-MiniPcHost)) {
+    Write-Log ("SKIP: scheduler watchdog is MiniPC-only. host=" + $env:COMPUTERNAME)
+    exit 0
+}
+
 $status = Test-DaemonAlive
 if ($status.Alive) {
     exit 0
@@ -130,7 +143,7 @@ if ($after.Alive) {
     $message = @(
         "&#x1F501; <b>Scheduler watchdog</b>"
         ("사유: " + $status.Reason)
-        "조치: 스케줄러 재기동 완료"
+        "조치: MiniPC 스케줄러 재시작 완료"
     ) -join "`n"
     Send-Telegram $message
 } else {
@@ -138,7 +151,7 @@ if ($after.Alive) {
     $message = @(
         "&#x1F6A8; <b>Scheduler watchdog FAILED</b>"
         ("사유: " + $status.Reason)
-        ("재기동 후 상태: " + $after.Reason)
+        ("재시작 후 상태: " + $after.Reason)
         "수동 확인 필요"
     ) -join "`n"
     Send-Telegram $message

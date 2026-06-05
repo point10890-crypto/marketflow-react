@@ -88,6 +88,40 @@ except ImportError:
     FileLock = None
     FileLockTimeout = None
 
+
+def _kr_non_trading_override_enabled() -> bool:
+    """Allow a manual KR-market run on holidays only when explicitly requested."""
+    return os.environ.get('ALLOW_KR_NON_TRADING_RUN', '').strip().lower() in {
+        '1', 'true', 'yes', 'y', 'on',
+    }
+
+
+def _is_kr_trading_day_for_scheduler(now: datetime | None = None) -> bool:
+    """Return whether the current KST date is an actual KRX trading day."""
+    current = now or datetime.now()
+    try:
+        from app.services.kis_screener import _is_kr_trading_day
+        return bool(_is_kr_trading_day(current))
+    except Exception as exc:
+        logger.warning("KR trading-day check failed, weekday fallback used: %s", exc)
+        return current.weekday() < 5
+
+
+def _kr_market_task_allowed(task_name: str, now: datetime | None = None) -> bool:
+    """Guard KR market jobs from running on KRX holidays/non-trading days."""
+    current = now or datetime.now()
+    if _kr_non_trading_override_enabled():
+        logger.warning("KR non-trading override enabled; running %s", task_name)
+        return True
+    if _is_kr_trading_day_for_scheduler(current):
+        return True
+    logger.info(
+        "KR market task skipped on non-trading day: %s (%s)",
+        task_name,
+        current.strftime('%Y-%m-%d %H:%M'),
+    )
+    return False
+
 # 선택적 import (배포 시 설치 필요)
 try:
     import schedule
@@ -350,6 +384,10 @@ class Config:
     ALPHA_SCANNER_MAX_EVENTS = int(os.environ.get('ALPHA_SCANNER_MAX_EVENTS', '8'))
     ALPHA_SCANNER_RETRY_SECONDS = int(os.environ.get('ALPHA_SCANNER_RETRY_SECONDS', '300'))
     ALPHA_SCANNER_MONITOR_INTERVAL_MINUTES = int(os.environ.get('ALPHA_SCANNER_MONITOR_INTERVAL_MINUTES', '5'))
+    ALPHA_BACKTEST_ENABLED = os.environ.get('ALPHA_BACKTEST_ENABLED', 'true').lower() == 'true'
+    ALPHA_BACKTEST_TIME = os.environ.get('ALPHA_BACKTEST_TIME', '23:00')
+    ALPHA_BACKTEST_HORIZON_DAYS = int(os.environ.get('ALPHA_BACKTEST_HORIZON_DAYS', '5'))
+    ALPHA_BACKTEST_LIMIT_RUNS = int(os.environ.get('ALPHA_BACKTEST_LIMIT_RUNS', '8000'))
     MIROFISH_WORKFLOW_ENABLED = os.environ.get('MIROFISH_WORKFLOW_ENABLED', 'true').lower() == 'true'
     MIROFISH_WORKFLOW_MIN_ALPHA = float(os.environ.get('MIROFISH_WORKFLOW_MIN_ALPHA', '50'))
     MIROFISH_WORKFLOW_MAX_RISK = float(os.environ.get('MIROFISH_WORKFLOW_MAX_RISK', '65'))
@@ -719,6 +757,46 @@ def run_alpha_scanner_monitor() -> bool:
         except Exception:
             pass
         return False
+
+
+def run_alpha_backtest_daily() -> bool:
+    """Run the daily Plan A alpha-scanner backtest report."""
+    script = os.path.join(Config.BASE_DIR, 'scripts', 'backtest_alpha_signals.py')
+    output = os.path.join(Config.DATA_DIR, 'admin_mirofish', 'alpha_backtest_daily.json')
+    rolling_output = os.path.join(Config.DATA_DIR, 'admin_mirofish', 'alpha_backtest_rolling_7d.json')
+    if not os.path.isfile(script):
+        logger.error("Alpha backtest script not found: %s", script)
+        return False
+    cmd = [
+        Config.PYTHON_PATH,
+        script,
+        '--output',
+        output,
+        '--rolling-output',
+        rolling_output,
+        '--horizon-days',
+        str(Config.ALPHA_BACKTEST_HORIZON_DAYS),
+        '--limit-runs',
+        str(Config.ALPHA_BACKTEST_LIMIT_RUNS),
+    ]
+    try:
+        result = subprocess.run(
+            cmd,
+            cwd=Config.BASE_DIR,
+            capture_output=True,
+            text=True,
+            encoding='utf-8',
+            errors='replace',
+            timeout=300,
+        )
+    except Exception as exc:
+        logger.error("Alpha backtest execution failed: %s", exc, exc_info=True)
+        return False
+    if result.returncode != 0:
+        logger.error("Alpha backtest failed rc=%s stderr=%s", result.returncode, result.stderr[-1000:])
+        return False
+    logger.info("Alpha backtest completed: %s", (result.stdout or '').strip())
+    return os.path.isfile(output) and os.path.isfile(rolling_output)
 
 
 def run_mirofish_workflow_monitor() -> bool:
@@ -1326,6 +1404,9 @@ def update_jongga_v2():
     """
     # ── Pre-flight: subprocess로 import만 테스트 (최신 디스크 코드 검증) ──
     # LLMAnalyzer() 실제 인스턴스화로 anthropic/google/openai 의존성까지 검증
+    if not _kr_market_task_allowed('jongga_v2'):
+        return True
+
     preflight = run_command(
         [Config.PYTHON_PATH, '-c',
          'from engine.generator import run_screener; '
@@ -1514,6 +1595,9 @@ def run_kr_full_update(skip_sync: bool = False):
     """KR 종가베팅 업데이트 (14:50) — 종가베팅V2 + 수급/AI/리포트 → 텔레그램
     ※ VCP 시그널은 16:00 run_vcp_all_markets()에서 별도 실행
     """
+    if not _kr_market_task_allowed('kr_full_update'):
+        return True
+
     logger.info("=" * 60)
     logger.info("🇰🇷 KR 종가베팅 업데이트 시작 (14:50)")
     logger.info("=" * 60)
@@ -2655,6 +2739,8 @@ def check_and_run_missed_tasks():
             if hour_min > deadline_min:
                 logger.info(f"  ⏭️ {label}: 마감 지남 ({deadline_min//60}:{deadline_min%60:02d}), 스킵")
                 continue
+            if task_key == 'kr_jongga' and not _kr_market_task_allowed('kr_jongga_missed_recovery', now):
+                continue
             if _was_run_today(task_key):
                 logger.info(f"  ✅ {label}: 오늘 이미 실행됨, 스킵")
                 continue
@@ -3087,6 +3173,10 @@ class Scheduler:
                     schedule.every(interval).minutes.do(
                         self._with_record(run_mirofish_workflow_monitor, 'mirofish_workflow_monitor',
                                           max_retries=1, retry_delay=120))
+        if Config.ALPHA_BACKTEST_ENABLED:
+            schedule.every().day.at(Config.ALPHA_BACKTEST_TIME).do(
+                self._with_record(run_alpha_backtest_daily, 'alpha_backtest_daily',
+                                  max_retries=1, retry_delay=300))
 
         for day in weekdays:
             # 08:55 — KIS 토큰 웜업 (장 시작 5분 전 자격증명/네트워크 사전 검증)

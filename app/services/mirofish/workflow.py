@@ -34,6 +34,7 @@ DEFAULT_AGENT_COUNT = 10
 DEFAULT_TOP_N = 3
 DEFAULT_MAX_PARALLEL = 3
 DEFAULT_ACTIONS = ('BUY_CANDIDATE', 'WATCH')
+DEFAULT_MIN_TOP3_SCORE = 50.0
 
 
 def start_workflow_from_scanner_events(
@@ -864,6 +865,10 @@ def _score_breakdown(candidate: dict[str, Any], run: dict[str, Any]) -> dict[str
     brain = run.get('brain') or run.get('brain_summary') or {}
     profile = candidate.get('analysis_profile') or {}
     kalman_gate = profile.get('dual_kalman_gate') if isinstance(profile.get('dual_kalman_gate'), dict) else {}
+    evidence_quality = profile.get('evidence_quality') if isinstance(profile.get('evidence_quality'), dict) else {}
+    profitability = profile.get('profitability_scorecard') if isinstance(profile.get('profitability_scorecard'), dict) else {}
+    perf_memory = profile.get('performance_memory') if isinstance(profile.get('performance_memory'), dict) else {}
+    replay_context = candidate.get('replay_context') if isinstance(candidate.get('replay_context'), dict) else {}
     action = str(verdict.get('action') or verdict.get('label') or 'HOLD').upper()
     confidence_pct = _number(verdict.get('confidence_pct'))
     if confidence_pct <= 0:
@@ -880,6 +885,12 @@ def _score_breakdown(candidate: dict[str, Any], run: dict[str, Any]) -> dict[str
         'watch': 1.0,
     }.get(str(candidate.get('signal_quality') or '').lower(), 0.0)
     kalman_delta = max(-8.0, min(8.0, _number(kalman_gate.get('score_delta'))))
+    evidence_delta = _evidence_quality_delta(evidence_quality)
+    profitability_delta = _profitability_delta(profitability)
+    outcome_delta = _performance_memory_delta(perf_memory)
+    replay_delta = 2.0 if replay_context.get('lookahead_safe') is True else -4.0
+    source_penalty = -6.0 if source_count < 2 else 0.0
+    hard_blocker_penalty = -10.0 if profitability.get('hard_blockers') else 0.0
     components = {
         'alpha': round(alpha * 0.46, 4),
         'risk_penalty': round(-risk * 0.32, 4),
@@ -890,10 +901,16 @@ def _score_breakdown(candidate: dict[str, Any], run: dict[str, Any]) -> dict[str
         'source_count': round(source_count * 1.6, 4),
         'quality_bonus': round(quality_bonus, 4),
         'dual_kalman': round(kalman_delta, 4),
+        'evidence_quality': round(evidence_delta, 4),
+        'profitability_fit': round(profitability_delta, 4),
+        'performance_memory': round(outcome_delta, 4),
+        'replay_safety': round(replay_delta, 4),
+        'source_penalty': round(source_penalty, 4),
+        'hard_blocker_penalty': round(hard_blocker_penalty, 4),
     }
     score = round(sum(components.values()), 2)
     return {
-        'version': 'alpha_top3_v2_explainable',
+        'version': 'alpha_top3_v3_quality_weighted',
         'score': score,
         'inputs': {
             'alpha_score': alpha,
@@ -905,6 +922,10 @@ def _score_breakdown(candidate: dict[str, Any], run: dict[str, Any]) -> dict[str
             'source_count': source_count,
             'signal_quality': candidate.get('signal_quality'),
             'dual_kalman': kalman_gate or None,
+            'evidence_quality': evidence_quality or None,
+            'profitability_scorecard': profitability or None,
+            'performance_memory': perf_memory or None,
+            'lookahead_safe': replay_context.get('lookahead_safe'),
         },
         'weights': {
             'alpha': 0.46,
@@ -914,6 +935,11 @@ def _score_breakdown(candidate: dict[str, Any], run: dict[str, Any]) -> dict[str
             'graph_link': 0.05,
             'source_count': 1.6,
             'dual_kalman': 'bounded -8..+8 shadow gate delta',
+            'evidence_quality': 'strong +5, moderate +2, weak -3',
+            'profitability_fit': 'goal_fit_score centered at 60, bounded -6..+8',
+            'performance_memory': 'historical hit-rate centered at 50%, bounded -8..+8',
+            'source_penalty': 'source_count < 2 => -6',
+            'hard_blocker_penalty': 'any hard blocker => -10',
         },
         'components': components,
     }
@@ -921,6 +947,108 @@ def _score_breakdown(candidate: dict[str, Any], run: dict[str, Any]) -> dict[str
 
 def _final_score(candidate: dict[str, Any], run: dict[str, Any]) -> float:
     return float(_score_breakdown(candidate, run)['score'])
+
+
+def _evidence_quality_delta(evidence_quality: dict[str, Any]) -> float:
+    grade = str(evidence_quality.get('grade') or '').strip().lower()
+    if grade == 'strong':
+        return 5.0
+    if grade == 'moderate':
+        return 2.0
+    if grade == 'weak':
+        return -3.0
+    return 0.0
+
+
+def _profitability_delta(scorecard: dict[str, Any]) -> float:
+    score = _number(scorecard.get('goal_fit_score'))
+    if score <= 0:
+        return 0.0
+    return max(-6.0, min(8.0, (score - 60.0) * 0.18))
+
+
+def _performance_memory_delta(memory: dict[str, Any]) -> float:
+    hit_rate = _number(
+        memory.get('hit_rate_pct')
+        or memory.get('top3_hit_rate_pct')
+        or memory.get('forward_hit_rate_pct')
+    )
+    sample_size = _number(memory.get('sample_size') or memory.get('evaluated_count'))
+    if hit_rate <= 0 or sample_size <= 0:
+        return 0.0
+    confidence = min(1.0, sample_size / 20.0)
+    return max(-8.0, min(8.0, ((hit_rate - 50.0) / 50.0) * 8.0 * confidence))
+
+
+def _workflow_quality_summary(top3: list[dict[str, Any]], ranked: list[dict[str, Any]]) -> dict[str, Any]:
+    top_scores = [_number(item.get('final_score')) for item in top3]
+    analyzed_scores = [_number(item.get('final_score')) for item in ranked if _number(item.get('final_score')) > -900]
+    buy_count = sum(1 for item in top3 if str((item.get('verdict') or {}).get('action') or '').upper() == 'BUY')
+    hard_blocker_count = 0
+    weak_evidence_count = 0
+    source_shortfall_count = 0
+    for item in top3:
+        candidate = item.get('candidate') or {}
+        profile = candidate.get('analysis_profile') if isinstance(candidate.get('analysis_profile'), dict) else {}
+        scorecard = profile.get('profitability_scorecard') if isinstance(profile.get('profitability_scorecard'), dict) else {}
+        evidence = profile.get('evidence_quality') if isinstance(profile.get('evidence_quality'), dict) else {}
+        if scorecard.get('hard_blockers'):
+            hard_blocker_count += 1
+        if str(evidence.get('grade') or '').lower() == 'weak':
+            weak_evidence_count += 1
+        if _number(profile.get('source_count')) < 2:
+            source_shortfall_count += 1
+
+    avg_top_score = round(sum(top_scores) / len(top_scores), 2) if top_scores else 0.0
+    spread = round(top_scores[0] - top_scores[-1], 2) if len(top_scores) >= 2 else 0.0
+    recommendation = 'send'
+    reasons: list[str] = []
+    if not top3:
+        recommendation = 'hold'
+        reasons.append('top3_empty')
+    if top3 and top_scores[0] < DEFAULT_MIN_TOP3_SCORE:
+        recommendation = 'hold'
+        reasons.append('best_score_below_floor')
+    if hard_blocker_count:
+        recommendation = 'hold'
+        reasons.append('hard_blocker_present')
+    if source_shortfall_count >= max(1, len(top3) // 2 + 1):
+        recommendation = 'hold'
+        reasons.append('source_shortfall_majority')
+    if weak_evidence_count == len(top3) and top3:
+        recommendation = 'hold'
+        reasons.append('all_weak_evidence')
+
+    return {
+        'recommendation': recommendation,
+        'reasons': reasons,
+        'min_required_top_score': DEFAULT_MIN_TOP3_SCORE,
+        'best_score': top_scores[0] if top_scores else 0.0,
+        'avg_top_score': avg_top_score,
+        'score_spread': spread,
+        'buy_count_top3': buy_count,
+        'hard_blocker_count': hard_blocker_count,
+        'weak_evidence_count': weak_evidence_count,
+        'source_shortfall_count': source_shortfall_count,
+        'analyzed_score_avg': round(sum(analyzed_scores) / len(analyzed_scores), 2) if analyzed_scores else 0.0,
+    }
+
+
+def should_send_workflow_top3(workflow: dict[str, Any], *, min_top_score: float | None = None) -> tuple[bool, str]:
+    """Return whether an automated workflow result is strong enough to notify."""
+    top3 = [item for item in (workflow.get('top3') or []) if isinstance(item, dict)]
+    if not top3:
+        return False, 'top3_empty'
+    summary = workflow.get('summary') if isinstance(workflow.get('summary'), dict) else {}
+    quality = summary.get('quality') if isinstance(summary.get('quality'), dict) else {}
+    if quality.get('recommendation') == 'hold':
+        reasons = quality.get('reasons') or ['quality_hold']
+        return False, ','.join(str(reason) for reason in reasons)
+    floor = DEFAULT_MIN_TOP3_SCORE if min_top_score is None else float(min_top_score)
+    best_score = _number(top3[0].get('final_score'))
+    if best_score < floor:
+        return False, f'best_score_below_{floor:g}'
+    return True, 'ok'
 
 
 def _ranking_reason(candidate: dict[str, Any], run: dict[str, Any], final_score: float) -> str:
@@ -1097,6 +1225,7 @@ def _workflow_kalman_gate_summary(kalman_run: dict[str, Any] | None) -> dict[str
 
 def _workflow_decision_summary(top3: list[dict[str, Any]], ranked: list[dict[str, Any]]) -> dict[str, Any]:
     buy_count = sum(1 for item in ranked if (item.get('verdict') or {}).get('action') == 'BUY')
+    quality = _workflow_quality_summary(top3, ranked)
     return {
         'title': 'MiroFish MCP Top 3',
         'top_count': len(top3),
@@ -1105,6 +1234,7 @@ def _workflow_decision_summary(top3: list[dict[str, Any]], ranked: list[dict[str
         'top_symbols': [item.get('symbol') for item in top3],
         'top_names': [item.get('target') for item in top3],
         'generated_at': datetime.now(timezone.utc).isoformat(),
+        'quality': quality,
     }
 
 

@@ -1,0 +1,132 @@
+{
+  "timestamp": "2026-05-15T07:59:25.984Z",
+  "totalChecks": 12,
+  "passed": 12,
+  "failed": 0,
+  "overflowIssues": [],
+  "findings": [
+    {
+      "scenario": "Landing",
+      "path": "/",
+      "overflow": 0,
+      "checks": {
+        "90,000": true,
+        "Pro + AI Bain": true,
+        "Ultra Pro": true
+      },
+      "ok": true
+    },
+    {
+      "scenario": "Pricing 상세",
+      "path": "/pricing",
+      "overflow": 0,
+      "checks": {
+        "AI Bain 이란": true,
+        "ALPHA SCAN": true,
+        "90,000": true
+      },
+      "ok": true
+    },
+    {
+      "scenario": "Login 결제 패널",
+      "path": "/login",
+      "overflow": 0,
+      "checks": {
+        "PRO + AI BAIN": true,
+        "ULTRA PRO + AI BAIN": true,
+        "90,000": true,
+        "1,240,000": true
+      },
+      "ok": true
+    },
+    {
+      "scenario": "Newbie /dashboard → /plan-select 리다이렉트",
+      "path": "/pending-approval",
+      "overflow": 0,
+      "checks": {
+        "플랜을 선택해 주세요": true,
+        "Pro + AI Bain": true
+      },
+      "ok": true
+    },
+    {
+      "scenario": "Pro Summary - 업그레이드 배너 노출",
+      "path": "/dashboard",
+      "overflow": 0,
+      "checks": {
+        "AI Bain 알파 스캐너 추가": true,
+        "+40,000원/30일": true
+      },
+      "ok": true
+    },
+    {
+      "scenario": "Pro /dashboard/ai-bain - 업그레이드 폼",
+      "path": "/dashboard/ai-bain",
+      "overflow": 0,
+      "checks": {
+        "AI Bain 구독 업그레이드 신청": true,
+        "40,000원": true
+      },
+      "ok": true
+    },
+    {
+      "scenario": "Ultra Summary - 업그레이드 배너 (Ultra Pro)",
+      "path": "/dashboard",
+      "overflow": 0,
+      "checks": {
+        "AI Bain 알파 스캐너 추가": true,
+        "Ultra Pro 구독 유지": true
+      },
+      "ok": true
+    },
+    {
+      "scenario": "Ultra /dashboard/ai-bain - 업그레이드 폼 (Ultra Pro 유지)",
+      "path": "/dashboard/ai-bain",
+      "overflow": 0,
+      "checks": {
+        "AI Bain 구독 업그레이드 신청": true,
+        "Ultra Pro": true,
+        "40,000원": true
+      },
+      "ok": true
+    },
+    {
+      "scenario": "Expired /dashboard → 강제 리다이렉트",
+      "path": "/plan-select",
+      "overflow": 0,
+      "checks": {
+        "플랜을 선택": true
+      },
+      "ok": true
+    },
+    {
+      "scenario": "Admin 대시보드",
+      "path": "/admin",
+      "overflow": 0,
+      "checks": {
+        "AI Bain 활성": true,
+        "AI Bain 관리": true,
+        "Pending Subs": true
+      },
+      "ok": true
+    },
+    {
+      "scenario": "Admin 구독 탭",
+      "path": "/admin",
+      "overflow": 0,
+      "checks": {
+        "대기 중": true
+      },
+      "ok": true
+    },
+    {
+      "scenario": "Admin 사용자 탭",
+      "path": "/admin",
+      "overflow": 0,
+      "checks": {
+        "Pro": true
+      },
+      "ok": true
+    }
+  ]
+}

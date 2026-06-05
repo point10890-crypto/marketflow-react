@@ -71,6 +71,17 @@ def _is_weekday_kst():
     return now.weekday() < 5
 
 
+def _is_kr_trading_day_for_scheduler(day_value=None) -> bool:
+    """Return whether the given KST date is an actual KRX trading day."""
+    day_value = day_value or _get_kst_now()
+    try:
+        from app.services.kis_screener import _is_kr_trading_day
+        return bool(_is_kr_trading_day(day_value))
+    except Exception as exc:
+        logger.warning("KR trading-day check failed, weekday fallback used: %s", exc)
+        return day_value.weekday() < 5
+
+
 def _is_saturday_kst():
     """KST 기준 토요일인지 확인"""
     return _get_kst_now().weekday() == 5
@@ -787,10 +798,15 @@ def _check_and_catchup():
     now = _get_kst_now()
     today = now.date()
     is_weekday = now.weekday() < 5
+    is_kr_trading_day = _is_kr_trading_day_for_scheduler(now)
 
     logger.info(f"🔍 Catch-up 확인 중... KST: {now.strftime('%Y-%m-%d %H:%M')} ({'평일' if is_weekday else '주말'})")
 
     # 1. 종가베팅 V2 — 가장 최근 영업일의 데이터가 있는지 확인
+    if not is_kr_trading_day:
+        logger.info("Catch-up skipped on KRX non-trading day: %s", now.strftime('%Y-%m-%d'))
+        return
+
     latest_path = os.path.join(DATA_DIR, 'jongga_v2_latest.json')
     jongga_stale = False
 

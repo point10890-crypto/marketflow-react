@@ -1,5 +1,8 @@
 # Environment & Secrets
 .env
+.env.backup*
+scripts/add_aibain_env.ps1
+scripts/add_deepseek_env.ps1
 *.pem
 
 # Python

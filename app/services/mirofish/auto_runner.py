@@ -114,6 +114,7 @@ def _tunables() -> dict[str, Any]:
         'dry_run': _env_bool('MIROFISH_AUTO_RUNNER_DRY_RUN', False),
         'allow_outside_market_hours': _env_bool('MIROFISH_AUTO_RUNNER_ALLOW_OUTSIDE', False),
         'allow_stale_sources': _env_bool('MIROFISH_AUTO_RUNNER_ALLOW_STALE', False),
+        'min_top_score': _env_float('MIROFISH_AUTO_RUNNER_MIN_TOP_SCORE', 50.0),
         # 마지막 success 후 N시간 지나면 dedup 우회 자동 force (0 = 비활성).
         # 쿨다운 + 비용캡은 여전히 적용되므로 폭주 방지.
         'force_after_hours': _env_int('MIROFISH_AUTO_RUNNER_FORCE_AFTER_HOURS', 4),
@@ -471,6 +472,33 @@ def _fire_workflow(tuning: dict[str, Any], gates: dict[str, Any], cycle_record: 
     cycle_record['workflow_id'] = workflow_id
     cycle_record['top3_count'] = len(top3)
 
+    should_notify, notify_reason = workflow_svc.should_send_workflow_top3(
+        result,
+        min_top_score=tuning['min_top_score'],
+    )
+    cycle_record['top3_quality_gate'] = {
+        'ok': should_notify,
+        'reason': notify_reason,
+        'min_top_score': tuning['min_top_score'],
+    }
+
+    if not should_notify:
+        if workflow_id:
+            try:
+                workflow_svc.commit_workflow_event_state(result)
+            except Exception as exc:
+                logger.warning(f'[auto_runner] commit low-quality workflow state failed: {exc}')
+        _record_quality_hold(cycle_record, started, notify_reason, tuning, top3_count=len(top3))
+        return {
+            'fired': True,
+            'success': True,
+            'workflow_id': workflow_id,
+            'top3_count': len(top3),
+            'telegram_ok': False,
+            'quality_hold': True,
+            'quality_reason': notify_reason,
+        }
+
     # Phase: NOTIFYING — send to channel + AIbain in parallel
     with _state_lock:
         state = _read_state()
@@ -571,6 +599,44 @@ def _record_success(cycle_record: dict[str, Any], started: float, tuning: dict[s
     _append_history(cycle_record)
 
 
+def _record_quality_hold(
+    cycle_record: dict[str, Any],
+    started: float,
+    reason: str,
+    tuning: dict[str, Any],
+    *,
+    top3_count: int,
+) -> None:
+    duration = round(time.perf_counter() - started, 2)
+    cooldown_until = datetime.now(timezone.utc) + timedelta(minutes=tuning['cooldown_minutes'])
+    with _state_lock:
+        state = _read_state()
+        state['phase'] = 'COOLDOWN'
+        state['last_check_reason'] = f'top3_quality_hold:{reason}'
+        state['last_workflow_id'] = cycle_record.get('workflow_id')
+        state['last_top3_count'] = top3_count
+        state['cooldown_until'] = cooldown_until.isoformat()
+        state['consecutive_failures'] = 0
+        state['today']['successes'] = int(state['today'].get('successes', 0)) + 1
+        skips = state['today'].setdefault('skip_reasons', {})
+        skips['top3_quality_hold'] = int(skips.get('top3_quality_hold') or 0) + 1
+        _trim_recent({
+            'at': _now_iso(),
+            'outcome': 'quality_hold',
+            'reason': reason,
+            'top3': top3_count,
+            'duration_s': duration,
+        }, state)
+        _write_state(state)
+    cycle_record.update({
+        'outcome': 'quality_hold',
+        'reason': reason,
+        'duration_s': duration,
+        'top3_count': top3_count,
+    })
+    _append_history(cycle_record)
+
+
 def _record_failure(cycle_record: dict[str, Any], started: float, reason: str, tuning: dict[str, Any]) -> None:
     duration = round(time.perf_counter() - started, 2)
     cb_threshold = int(tuning['circuit_breaker_failures'])
@@ -617,6 +683,13 @@ def _next_eligible_time(state: dict[str, Any], tuning: dict[str, Any]) -> dateti
         # Default: next poll tick
         candidates.append(datetime.now(timezone.utc) + timedelta(seconds=int(tuning['poll_seconds'])))
     return min(candidates)
+
+
+def _scanner_freshness_max_age_seconds(tuning: dict[str, Any]) -> int:
+    """Allowed scanner/monitor freshness age for event-driven automation."""
+    poll_seconds = max(15, int(tuning.get('poll_seconds') or 60))
+    monitor_minutes = max(1, _env_int('ALPHA_SCANNER_MONITOR_INTERVAL_MINUTES', 5))
+    return max(300, poll_seconds * 2 + 30, monitor_minutes * 60 * 2 + 60)
 
 
 # ---------------------------------------------------------------------------
@@ -671,17 +744,50 @@ def _evaluate_gates(*, force: bool, tuning: dict[str, Any]) -> dict[str, Any]:
         return _gate_result(results)
     add('market_open', True, 'regular_session' if is_regular else 'forced/allowed_outside')
 
-    # G3 scanner freshness (last_run age < 5 min)
+    # G3 scanner freshness.
+    # If source files are unchanged, the realtime scanner intentionally skips a
+    # new run. A fresh monitor heartbeat with fresh source status is enough.
     schedule = alpha_scanner.get_scanner_schedule_status(now=now_kst)
     last_run_at = _iso_to_dt(schedule.get('last_run_at'))
-    if not last_run_at:
-        add('scanner_freshness', False, 'no scanner runs yet')
-        return _gate_result(results)
-    age = (now_utc - last_run_at.astimezone(timezone.utc)).total_seconds()
-    if age > 300:
-        add('scanner_freshness', False, f'scanner stale ({age:.0f}s)')
-        return _gate_result(results)
-    add('scanner_freshness', True, f'{age:.0f}s ago')
+    source_freshness = str(schedule.get('freshness_status') or '').lower()
+    max_scanner_age = _scanner_freshness_max_age_seconds(tuning)
+    if last_run_at:
+        age = (now_utc - last_run_at.astimezone(timezone.utc)).total_seconds()
+        if age <= max_scanner_age:
+            add('scanner_freshness', True, f'run {age:.0f}s ago')
+        else:
+            monitor = alpha_scanner.read_scanner_monitor_state()
+            monitor_at = _iso_to_dt(monitor.get('last_checked_at'))
+            monitor_age = (now_utc - monitor_at.astimezone(timezone.utc)).total_seconds() if monitor_at else None
+            if (
+                monitor_age is not None
+                and monitor_age <= max_scanner_age
+                and source_freshness not in {'stale', 'missing', 'partial', 'unknown'}
+            ):
+                add(
+                    'scanner_freshness',
+                    True,
+                    f'monitor {monitor_age:.0f}s ago; latest run {age:.0f}s ago; source {source_freshness or "fresh"}',
+                )
+            else:
+                detail = f'scanner stale ({age:.0f}s)'
+                if source_freshness:
+                    detail += f', source {source_freshness}'
+                add('scanner_freshness', False, detail)
+                return _gate_result(results)
+    else:
+        monitor = alpha_scanner.read_scanner_monitor_state()
+        monitor_at = _iso_to_dt(monitor.get('last_checked_at'))
+        monitor_age = (now_utc - monitor_at.astimezone(timezone.utc)).total_seconds() if monitor_at else None
+        if (
+            monitor_age is not None
+            and monitor_age <= max_scanner_age
+            and source_freshness not in {'stale', 'missing', 'partial', 'unknown'}
+        ):
+            add('scanner_freshness', True, f'monitor {monitor_age:.0f}s ago; no persisted run yet')
+        else:
+            add('scanner_freshness', False, 'no scanner runs yet')
+            return _gate_result(results)
 
     # G6 cooldown (unless force)
     if not force:

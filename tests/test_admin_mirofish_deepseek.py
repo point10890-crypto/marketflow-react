@@ -121,6 +121,68 @@ def test_deepseek_summarizes_scanner_run_as_json(monkeypatch):
     assert '000001' in captured['payload']['messages'][1]['content']
 
 
+def test_deepseek_rerank_uses_v4_reasoning_overlay(monkeypatch):
+    monkeypatch.setenv('DEEPSEEK_API_KEY', 'sk-test')
+    captured = {}
+
+    def fake_request(method, url, **kwargs):
+        captured.update({'method': method, 'url': url, 'payload': kwargs.get('json')})
+        return _FakeResponse(payload={
+            'model': 'deepseek-v4-pro',
+            'choices': [{
+                'finish_reason': 'stop',
+                'message': {
+                    'content': json.dumps({
+                        'portfolio_note_ko': '증거 충돌이 낮은 후보를 우선합니다.',
+                        'items': [{
+                            'symbol': '000001',
+                            'deepseek_conviction': 88,
+                            'ranking_adjustment': 6,
+                            'risk_flags': ['낮은 과열'],
+                            'positive_evidence': ['다중 소스 확인'],
+                            'rationale_ko': '수급과 가격 근거가 동시에 확인됩니다.',
+                        }],
+                    }, ensure_ascii=False)
+                },
+            }],
+            'usage': {'total_tokens': 321},
+        })
+
+    monkeypatch.setattr(deepseek_client.requests, 'request', fake_request)
+
+    result = deepseek_client.rerank_scanner_candidates(_sample_run()['candidates'], limit=1)
+
+    assert result['model'] == 'deepseek-v4-pro'
+    assert result['overlay']['items'][0]['symbol'] == '000001'
+    assert result['reasoning_effort'] == 'max'
+    assert captured['method'] == 'POST'
+    assert captured['payload']['temperature'] == 0.0
+    assert captured['payload']['thinking'] == {'type': 'enabled'}
+    assert captured['payload']['response_format'] == {'type': 'json_object'}
+    assert 'bounded KR stock scanner rerank overlay' in captured['payload']['messages'][1]['content']
+
+
+def test_deepseek_json_parser_accepts_fenced_object(monkeypatch):
+    monkeypatch.setenv('DEEPSEEK_API_KEY', 'sk-test')
+
+    def fake_request(method, url, **kwargs):
+        return _FakeResponse(payload={
+            'model': 'deepseek-v4-pro',
+            'choices': [{
+                'finish_reason': 'stop',
+                'message': {
+                    'content': '```json\n{"portfolio_note_ko":"ok","items":[]}\n```'
+                },
+            }],
+        })
+
+    monkeypatch.setattr(deepseek_client.requests, 'request', fake_request)
+
+    result = deepseek_client.rerank_scanner_candidates(_sample_run()['candidates'], limit=1)
+
+    assert result['overlay']['portfolio_note_ko'] == 'ok'
+
+
 def test_deepseek_summary_telegram_message_preserves_ticker_and_escapes_html():
     message = deepseek_client.build_summary_telegram_message({
         'run_id': 'mfas_test_123',
@@ -157,6 +219,7 @@ def test_admin_mirofish_deepseek_routes_are_registered():
     assert '/api/admin/mirofish/deepseek/scanner-summary' in rules
     assert '/api/admin/mirofish/scanner/runs/<run_id>/deepseek-summary' in rules
     assert '/api/admin/mirofish/scanner/runs/<run_id>/deepseek-summary/telegram' in rules
+    assert '/api/admin/mirofish/scanner/runs/<run_id>/artifacts/deepseek_rerank.json' in rules
 
 
 def test_scanner_deepseek_telegram_route_forces_personal_bot(monkeypatch):

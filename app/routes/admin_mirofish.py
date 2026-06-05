@@ -711,6 +711,12 @@ def get_scanner_rejected_candidates(run_id):
     return _scanner_artifact_response(run_id, 'rejected_candidates.json')
 
 
+@admin_mirofish_bp.route('/scanner/runs/<run_id>/artifacts/deepseek_rerank.json', methods=['GET'])
+@admin_or_aibain_required
+def get_scanner_deepseek_rerank_artifact(run_id):
+    return _scanner_artifact_response(run_id, 'deepseek_rerank.json')
+
+
 @admin_mirofish_bp.route('/scanner/runs/<run_id>/research', methods=['GET'])
 @admin_or_aibain_required
 def get_scanner_run_research(run_id):

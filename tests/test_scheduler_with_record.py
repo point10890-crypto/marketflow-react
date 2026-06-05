@@ -309,3 +309,22 @@ def test_scheduler_registers_mcp_workflow_interval_when_enabled(monkeypatch):
         }
     finally:
         scheduler.schedule.clear()
+
+
+def test_scheduler_registers_alpha_backtest_daily(monkeypatch):
+    scheduler.schedule.clear()
+    monkeypatch.setattr(scheduler.Config, "ALPHA_BACKTEST_ENABLED", True)
+    monkeypatch.setattr(scheduler.Config, "ALPHA_BACKTEST_TIME", "23:11")
+    monkeypatch.setattr(scheduler.Config, "ALPHA_SCANNER_ENABLED", False)
+
+    try:
+        scheduler.Scheduler().setup_schedules()
+
+        jobs = [
+            job for job in scheduler.schedule.jobs
+            if job.job_func.__name__ == "run_alpha_backtest_daily[alpha_backtest_daily]"
+        ]
+        assert len(jobs) == 1
+        assert str(jobs[0].at_time) == "23:11:00"
+    finally:
+        scheduler.schedule.clear()

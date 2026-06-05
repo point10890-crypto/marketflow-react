@@ -1,7 +1,8 @@
 """DeepSeek API adapter for MiroFish analysis enrichment.
 
 Numeric alpha/risk scores stay deterministic in the scanner. DeepSeek is used
-only to explain and structure the already-computed evidence for operators.
+to explain evidence and, when explicitly enabled, to provide a bounded
+second-pass quality overlay for candidate ranking.
 """
 
 from __future__ import annotations
@@ -9,6 +10,7 @@ from __future__ import annotations
 import json
 import os
 import html
+import re
 from datetime import datetime, timezone
 from typing import Any
 
@@ -16,7 +18,7 @@ import requests
 
 
 DEFAULT_BASE_URL = 'https://api.deepseek.com'
-DEFAULT_MODEL = 'deepseek-v4-flash'
+DEFAULT_MODEL = 'deepseek-v4-pro'
 DEFAULT_TIMEOUT_SECONDS = 45
 
 DOCS = {
@@ -46,6 +48,7 @@ def get_deepseek_status(*, include_live: bool = False) -> dict[str, Any]:
         },
         'project_usage': {
             'scanner_summary': 'Explain deterministic Alpha/Risk candidates in Korean.',
+            'scanner_rerank': 'Bounded second-pass quality overlay for already-computed scanner candidates.',
             'deep_dive': 'Summarize local evidence without inventing numeric values.',
             'operator_health': 'Check model availability and account balance before scheduled calls.',
         },
@@ -138,6 +141,98 @@ def summarize_scanner_run(
         'candidate_count': len(candidates),
         'thinking': thinking,
         'summary': parsed,
+        'usage': raw.get('usage'),
+        'finish_reason': _finish_reason(raw),
+        'created_at': datetime.now(timezone.utc).isoformat(),
+    }
+
+
+def rerank_scanner_candidates(
+    candidates: list[dict[str, Any]],
+    *,
+    run_context: dict[str, Any] | None = None,
+    limit: int = 30,
+    model: str | None = None,
+    max_adjustment: float = 8.0,
+) -> dict[str, Any]:
+    """Return a bounded DeepSeek V4 quality overlay for scanner candidates.
+
+    The model is never allowed to invent new candidates or raw market values.
+    Alpha/risk remain deterministic; this function only asks for a small
+    confidence adjustment and qualitative risk flags using supplied evidence.
+    """
+    compact_candidates = _compact_rerank_candidates(candidates[:_clean_limit(limit, max_value=60)])
+    if not compact_candidates:
+        raise DeepSeekError('scanner candidate pool is empty')
+
+    clean_max_adjustment = max(0.0, min(float(max_adjustment or 0), 12.0))
+    payload = {
+        'model': model or _default_model(),
+        'messages': [
+            {
+                'role': 'system',
+                'content': (
+                    'You are an institutional Korean equity alpha-quality reviewer for MiroFish. '
+                    'Review only the supplied scanner candidates. Do not add symbols, prices, scores, '
+                    'or facts that are not present in the JSON. Your job is to identify false positives, '
+                    'evidence conflicts, and candidates whose evidence quality justifies a small bounded '
+                    'ranking adjustment. Preserve ticker symbols exactly.'
+                ),
+            },
+            {
+                'role': 'user',
+                'content': json.dumps({
+                    'task': 'bounded KR stock scanner rerank overlay',
+                    'required_language': 'ko',
+                    'max_abs_adjustment': clean_max_adjustment,
+                    'rules': [
+                        'Do not create or remove candidates.',
+                        'Use only candidate JSON evidence.',
+                        'Return adjustment between -max_abs_adjustment and +max_abs_adjustment.',
+                        'Penalize thin liquidity spikes, single-day overextension, stale/missing sources, and evidence conflict.',
+                        'Reward multi-source confirmation, capital-flow support, controlled risk, and replay-safe evidence.',
+                    ],
+                    'output_contract': {
+                        'portfolio_note_ko': 'string',
+                        'items': [
+                            {
+                                'symbol': 'same ticker string from input',
+                                'deepseek_conviction': 'number 0..100',
+                                'ranking_adjustment': f'number between -{clean_max_adjustment} and +{clean_max_adjustment}',
+                                'risk_flags': ['string'],
+                                'positive_evidence': ['string'],
+                                'rationale_ko': 'one concise sentence',
+                            },
+                        ],
+                    },
+                    'run_context': run_context or {},
+                    'candidates': compact_candidates,
+                }, ensure_ascii=False),
+            },
+        ],
+        'temperature': 0.0,
+        'max_tokens': _deepseek_int_env('MIROFISH_DEEPSEEK_RERANK_MAX_TOKENS', 9000, minimum=2000, maximum=16000),
+        'response_format': {'type': 'json_object'},
+        'thinking': {'type': 'enabled'},
+        'reasoning_effort': 'max',
+        'user_id': 'marketflow_alpha_scanner',
+    }
+
+    raw = _request_json('POST', '/chat/completions', payload=payload)
+    content = _message_content(raw)
+    parsed = _parse_json_content(content)
+    items = parsed.get('items') if isinstance(parsed.get('items'), list) else []
+    return {
+        'provider': 'deepseek',
+        'model': raw.get('model') or payload['model'],
+        'candidate_count': len(compact_candidates),
+        'thinking': True,
+        'reasoning_effort': 'max',
+        'max_abs_adjustment': clean_max_adjustment,
+        'overlay': {
+            'portfolio_note_ko': parsed.get('portfolio_note_ko') or '',
+            'items': items,
+        },
         'usage': raw.get('usage'),
         'finish_reason': _finish_reason(raw),
         'created_at': datetime.now(timezone.utc).isoformat(),
@@ -248,6 +343,70 @@ def _compact_candidates(candidates: list[dict[str, Any]]) -> list[dict[str, Any]
     return compact
 
 
+def _compact_rerank_candidates(candidates: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    compact = []
+    for candidate in candidates:
+        profile = candidate.get('analysis_profile') if isinstance(candidate.get('analysis_profile'), dict) else {}
+        scorecard = profile.get('profitability_scorecard') if isinstance(profile.get('profitability_scorecard'), dict) else {}
+        price = candidate.get('price') if isinstance(candidate.get('price'), dict) else {}
+        entry = candidate.get('entry_plan') if isinstance(candidate.get('entry_plan'), dict) else {}
+        compact.append({
+            'pool_rank': candidate.get('pool_rank'),
+            'symbol': candidate.get('symbol'),
+            'display_name': candidate.get('display_name'),
+            'market': candidate.get('market'),
+            'alpha_score': candidate.get('alpha_score'),
+            'risk_score': candidate.get('risk_score'),
+            'ranking_score': candidate.get('ranking_score'),
+            'action': candidate.get('action'),
+            'signal_quality': candidate.get('signal_quality'),
+            'strategy_tags': candidate.get('strategy_tags') or [],
+            'price': {
+                'date': price.get('date'),
+                'current_price': price.get('current_price'),
+                'change_rate': price.get('change_rate'),
+                'volume': price.get('volume'),
+                'trading_value': price.get('trading_value'),
+            },
+            'entry_plan': {
+                'entry_zone': entry.get('entry_zone'),
+                'stop_loss': entry.get('stop_loss'),
+                'risk_note': entry.get('risk_note'),
+            },
+            'analysis_profile': {
+                'source_count': profile.get('source_count'),
+                'evidence_quality': profile.get('evidence_quality'),
+                'confidence_cap': profile.get('confidence_cap'),
+                'capital_flow_confirmation': profile.get('capital_flow_confirmation'),
+                'false_signal_gates': profile.get('false_signal_gates'),
+                'trend_5d_pct': profile.get('trend_5d_pct'),
+                'trend_20d_pct': profile.get('trend_20d_pct'),
+                'volume_ratio': profile.get('volume_ratio'),
+                'drawdown_20d_pct': profile.get('drawdown_20d_pct'),
+                'over_ma20_pct': profile.get('over_ma20_pct'),
+                'profitability_scorecard': {
+                    'goal_verdict': scorecard.get('goal_verdict'),
+                    'confidence_score': scorecard.get('confidence_score'),
+                    'hard_blockers': scorecard.get('hard_blockers') or [],
+                    'warnings': scorecard.get('warnings') or [],
+                },
+            },
+            'freshness': candidate.get('freshness'),
+            'evidence': [
+                {
+                    'source': item.get('source'),
+                    'field': item.get('field'),
+                    'score': item.get('score'),
+                    'value': item.get('value'),
+                    'confidence': item.get('confidence'),
+                }
+                for item in (candidate.get('evidence') or [])[:8]
+                if isinstance(item, dict)
+            ],
+        })
+    return compact
+
+
 def _message_content(raw: dict[str, Any]) -> str:
     choices = raw.get('choices') or []
     if not choices or not isinstance(choices[0], dict):
@@ -263,10 +422,28 @@ def _parse_json_content(content: str) -> dict[str, Any]:
     try:
         parsed = json.loads(content)
     except json.JSONDecodeError as exc:
-        raise DeepSeekError('DeepSeek response content is not valid JSON') from exc
+        extracted = _extract_json_object(content)
+        if extracted is None:
+            raise DeepSeekError('DeepSeek response content is not valid JSON') from exc
+        try:
+            parsed = json.loads(extracted)
+        except json.JSONDecodeError as nested_exc:
+            raise DeepSeekError('DeepSeek response content is not valid JSON') from nested_exc
     if not isinstance(parsed, dict):
         raise DeepSeekError('DeepSeek JSON response must be an object')
     return parsed
+
+
+def _extract_json_object(content: str) -> str | None:
+    text = str(content or '').strip()
+    if text.startswith('```'):
+        text = re.sub(r'^```(?:json)?\s*', '', text, flags=re.IGNORECASE)
+        text = re.sub(r'\s*```$', '', text)
+    start = text.find('{')
+    end = text.rfind('}')
+    if start < 0 or end <= start:
+        return None
+    return text[start:end + 1]
 
 
 def _finish_reason(raw: dict[str, Any]) -> str | None:
@@ -292,9 +469,17 @@ def _default_model() -> str:
     return os.getenv('MIROFISH_DEEPSEEK_MODEL', DEFAULT_MODEL).strip() or DEFAULT_MODEL
 
 
-def _clean_limit(value: Any) -> int:
+def _deepseek_int_env(name: str, default: int, *, minimum: int, maximum: int) -> int:
+    try:
+        value = int(os.getenv(name, str(default)))
+    except (TypeError, ValueError):
+        value = default
+    return max(minimum, min(value, maximum))
+
+
+def _clean_limit(value: Any, *, max_value: int = 20) -> int:
     try:
         limit = int(value)
     except (TypeError, ValueError):
         return 5
-    return max(1, min(limit, 20))
+    return max(1, min(limit, max(1, int(max_value))))

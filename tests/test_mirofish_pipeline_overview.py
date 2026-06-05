@@ -1,6 +1,7 @@
 import json
 import os
 import time
+from datetime import datetime, timezone
 
 from app.services.mirofish import alpha_scanner, pipeline_overview
 
@@ -134,6 +135,44 @@ def test_scanner_schedule_status_uses_light_source_metadata(tmp_path, monkeypatc
     assert {item['file'] for item in status['source_files']} == {
         f'data/{filename}' for filename in alpha_scanner.WATCHED_SOURCE_FILES
     }
+
+
+def test_pipeline_counts_scanner_runs_by_kst_trading_day(tmp_path, monkeypatch):
+    root = tmp_path / 'scanner_runs'
+    root.mkdir()
+    (root / 'mfas_20260517143000_prev_kst').mkdir()
+    (root / 'mfas_20260517234334_today_kst').mkdir()
+    (root / 'mfas_20260518150000_next_kst').mkdir()
+    monkeypatch.setattr(pipeline_overview, 'SCANNER_RUNS_ROOT', str(root))
+
+    now_kst = datetime(2026, 5, 18, 8, 50, tzinfo=pipeline_overview.KST)
+
+    assert pipeline_overview._count_scanner_runs_today(now_kst) == 1
+
+
+def test_alerts_today_counts_utc_events_by_kst_day(tmp_path, monkeypatch):
+    admin_root = tmp_path / 'admin_mirofish'
+    admin_root.mkdir()
+    (admin_root / 'alpha_scanner_alert_state.json').write_text(
+        json.dumps(
+            {
+                'last_sent_at': '2026-05-17T23:50:00+00:00',
+                'history': [
+                    {'sent_at': '2026-05-17T14:59:00+00:00'},
+                    {'sent_at': '2026-05-17T23:50:00+00:00'},
+                    {'sent_at': '2026-05-18T14:59:59+00:00'},
+                    {'sent_at': '2026-05-18T15:00:00+00:00'},
+                ],
+            },
+            ensure_ascii=False,
+        ),
+        encoding='utf-8',
+    )
+    monkeypatch.setattr(pipeline_overview, 'ADMIN_DATA_ROOT', str(admin_root))
+
+    now_kst = datetime(2026, 5, 18, 12, 0, tzinfo=pipeline_overview.KST)
+
+    assert pipeline_overview._alerts_today(now_kst)['scanner_alerts_today'] == 2
 
 
 def test_read_latest_scanner_run_reads_only_newest_file(tmp_path, monkeypatch):

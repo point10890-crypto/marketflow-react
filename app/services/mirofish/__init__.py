@@ -48,6 +48,7 @@ from app.services.mirofish.deepseek_client import (
     get_balance as get_deepseek_balance,
     get_deepseek_status,
     list_models as list_deepseek_models,
+    rerank_scanner_candidates as rerank_scanner_candidates_with_deepseek,
     summarize_scanner_run as summarize_scanner_run_with_deepseek,
 )
 from app.services.mirofish.tradingview_provider import (
@@ -73,6 +74,7 @@ from app.services.mirofish.workflow import (
     read_latest_workflow,
     read_workflow,
     run_workflow_monitor_check,
+    should_send_workflow_top3,
     start_workflow_from_scanner_events,
 )
 from app.services.mirofish.outcome_tracker import (
@@ -186,7 +188,9 @@ __all__ = [
     'run_chat_agent',
     'run_workflow_monitor_check',
     'send_latest_workflow_telegram',
+    'should_send_workflow_top3',
     'start_workflow_from_scanner_events',
+    'rerank_scanner_candidates_with_deepseek',
     'summarize_scanner_run_with_deepseek',
     'apply_dual_kalman_gate_to_candidates',
     'create_dual_kalman_run',

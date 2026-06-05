@@ -473,9 +473,19 @@ def _funnel_today(now_kst: datetime) -> dict[str, Any]:
 def _count_scanner_runs_today(now_kst: datetime) -> int:
     if not os.path.isdir(SCANNER_RUNS_ROOT):
         return 0
-    today_prefix = now_kst.strftime('mfas_%Y%m%d')
+    today_kst = now_kst.astimezone(KST).date()
+    count = 0
     try:
-        return sum(1 for name in os.listdir(SCANNER_RUNS_ROOT) if name.startswith(today_prefix))
+        for name in os.listdir(SCANNER_RUNS_ROOT):
+            if not name.startswith('mfas_'):
+                continue
+            run_at = _scanner_run_datetime_from_id(name)
+            if run_at is None:
+                run = _read_json_safe(os.path.join(SCANNER_RUNS_ROOT, name, 'run.json')) or {}
+                run_at = _parse_timestamp(run.get('generated_at') or run.get('created_at'))
+            if run_at and run_at.astimezone(KST).date() == today_kst:
+                count += 1
+        return count
     except OSError as exc:
         logger.debug(f'list scanner_runs failed: {exc}')
         return 0
@@ -502,7 +512,10 @@ def _alerts_today(now_kst: datetime) -> dict[str, Any]:
         if not isinstance(entry, dict):
             continue
         ts = str(entry.get('sent_at') or entry.get('timestamp') or '')
-        if ts.startswith(today_iso):
+        sent_at = _parse_timestamp(ts)
+        if sent_at and sent_at.astimezone(KST).date().isoformat() == today_iso:
+            events_today += 1
+        elif not sent_at and ts.startswith(today_iso):
             events_today += 1
     return {
         'scanner_alerts_today': events_today,
@@ -840,3 +853,28 @@ def _read_json_safe(path: str) -> dict[str, Any] | None:
     except (IOError, OSError, json.JSONDecodeError) as exc:
         logger.debug(f'read {path} failed: {exc}')
         return None
+
+
+def _scanner_run_datetime_from_id(name: str) -> datetime | None:
+    parts = str(name or '').split('_')
+    if len(parts) < 2:
+        return None
+    stamp = parts[1][:14]
+    if len(stamp) != 14 or not stamp.isdigit():
+        return None
+    try:
+        return datetime.strptime(stamp, '%Y%m%d%H%M%S').replace(tzinfo=timezone.utc)
+    except ValueError:
+        return None
+
+
+def _parse_timestamp(value: Any) -> datetime | None:
+    if not value:
+        return None
+    try:
+        parsed = datetime.fromisoformat(str(value).replace('Z', '+00:00'))
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        return parsed.replace(tzinfo=timezone.utc)
+    return parsed

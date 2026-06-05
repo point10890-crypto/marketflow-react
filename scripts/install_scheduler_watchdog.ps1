@@ -13,6 +13,13 @@ $ErrorActionPreference = 'Stop'
 $TaskName  = 'MarketFlow-Scheduler-Watchdog'
 $Project   = 'C:\bitman_marketfloww'
 $Script    = Join-Path $Project 'scripts\scheduler_watchdog.ps1'
+$AllowedHosts = @('MINIPC-NQYLP')
+
+if (($AllowedHosts -notcontains $env:COMPUTERNAME) -and ($env:MARKETFLOW_ALLOW_SCHEDULER_WATCHDOG -ne '1')) {
+    Write-Host "Skip: $TaskName is MiniPC-only. Current host: $env:COMPUTERNAME" -ForegroundColor Yellow
+    Write-Host "Set MARKETFLOW_ALLOW_SCHEDULER_WATCHDOG=1 only for an intentional MiniPC host migration."
+    exit 0
+}
 
 if (-not (Test-Path $Script)) {
     Write-Error "Watchdog script not found: $Script"

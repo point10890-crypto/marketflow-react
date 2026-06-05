@@ -630,6 +630,49 @@ Config.LOG_DIR      = /c/bitman_marketfloww/logs
 
 ---
 
+## 12-A. 회원관리 워크플로우 (표준 패턴)
+
+> **상세 설계 문서:** [`.claude/skills/member-workflow.md`](.claude/skills/member-workflow.md)
+> 회원/구독 관련 기능 추가·수정 시 **반드시** 이 스킬을 먼저 읽고 패턴을 따를 것.
+
+### 5단계 유저 여정
+```
+/signup → /plan-select → /payment-request?plan=X → /pending-approval → /dashboard
+```
+
+### 핵심 원칙: 관리자 사각지대 제로
+`GET /api/admin/subscriptions` 응답은 **두 갈래** 를 함께 반환해야 한다:
+- `requests`: subscription_request 를 제출한 유저
+- `pending_signups`: 가입만 하고 이탈한 pending 유저 (subscription_request 없음)
+
+프론트 `SubscriptionsTab` 은 "대기 중 / **가입만 완료 · 플랜 미선택** / 처리 이력" 3섹션 고정.
+두 번째 섹션에서 **Pro 부여 / Ultra Pro 부여** 버튼 (`PUT /api/admin/users/:id/tier`) 으로 즉시 승격 가능.
+
+### 관리자 액션 API (전부 `@admin_required`)
+| 액션 | 엔드포인트 | 효과 |
+|------|----------|------|
+| 구독요청 승인 | `PUT /api/admin/subscriptions/<id>/approve` | tier 설정 + pending→approved + +30d |
+| 구독요청 거절 | `PUT /api/admin/subscriptions/<id>/reject` | sub_req 만 갱신 |
+| tier 직접 부여 | `PUT /api/admin/users/<id>/tier` | tier + pending→approved 자동 |
+| Pro 연장 | `POST /api/admin/users/<id>/extend` | +N일 |
+| Pro 즉시 revoke | `POST /api/admin/users/<id>/revoke` | pro_expires_at=now |
+
+### 금기 (§9)
+- ❌ register 응답 없이 login API 로 세션 수립 (pending 유저 401)
+- ❌ admin/subscriptions 를 subscription_requests 만으로 반환
+- ❌ tier 설정 시 status 건드리지 않음
+- ❌ tier 변경 후 `pro_expiry_alert_stage` 리셋 누락
+
+### 확장 체크리스트 (회원 관련 변경 시 필수)
+1. 유저 중간 이탈 시 admin 에 뜨는가?
+2. `setSession()` 이 register 응답으로 즉시 호출되는가?
+3. 가드 순서 `loading → 비인증 → admin → 활성 Pro → 그 외` 지켰는가?
+4. `_record_audit()` 호출 + 텔레그램/AdminNotification 알림 양쪽?
+5. 프론트 TS 인터페이스와 백엔드 `to_dict()` 동기화?
+6. tier 부여 시 pending→approved 자동 + pro_expires_at 설정 + alert_stage 리셋?
+
+---
+
 ## 13. Stock Analyzer / ProPicks (Investing.com 스크래핑)
 
 ### 개요
