@@ -68,13 +68,14 @@ interface OpsStage {
 
 function buildFunnel(data: MiroFishPipelineToday | null): FunnelStep[] {
     if (!data) return [];
-    const pool = data.funnel.scanner_pool || 0;
+    const funnel: Partial<MiroFishPipelineToday['funnel']> = data.funnel || {};
+    const pool = funnel.scanner_pool || 0;
     const max = Math.max(pool, 1);
     return [
         { label: 'Scanner', value: pool, width: 100 },
-        { label: 'Batch 5', value: data.funnel.batch_new_candidates || 0, width: Math.round(((data.funnel.batch_new_candidates || 0) / max) * 100) },
-        { label: 'GraphRAG', value: data.funnel.graphrag_uploaded || 0, width: Math.round(((data.funnel.graphrag_uploaded || 0) / max) * 100) },
-        { label: 'Top 3', value: data.funnel.top3_ready || 0, width: Math.round(((data.funnel.top3_ready || 0) / max) * 100) },
+        { label: 'Batch 5', value: funnel.batch_new_candidates || 0, width: Math.round(((funnel.batch_new_candidates || 0) / max) * 100) },
+        { label: 'GraphRAG', value: funnel.graphrag_uploaded || 0, width: Math.round(((funnel.graphrag_uploaded || 0) / max) * 100) },
+        { label: 'Top 3', value: funnel.top3_ready || 0, width: Math.round(((funnel.top3_ready || 0) / max) * 100) },
     ];
 }
 
@@ -103,14 +104,15 @@ function buildOpsStages(data: MiroFishPipelineToday | null): OpsStage[] {
         }));
     }
 
-    const scannerRuns = data?.funnel.scanner_runs_today ?? 0;
-    const batchCount = data?.funnel.batch_new_candidates ?? 0;
-    const graphCount = data?.funnel.graphrag_uploaded ?? 0;
-    const top3Count = data?.funnel.top3_ready ?? 0;
+    const funnel: Partial<MiroFishPipelineToday['funnel']> = data?.funnel || {};
+    const scannerRuns = funnel.scanner_runs_today ?? 0;
+    const batchCount = funnel.batch_new_candidates ?? 0;
+    const graphCount = funnel.graphrag_uploaded ?? 0;
+    const top3Count = funnel.top3_ready ?? 0;
     const alertsCount = data?.alerts_today?.scanner_alerts_today ?? 0;
     const evaluated = data?.kpi_7d?.sample_size ?? 0;
     const pending = data?.kpi_7d?.pending_count ?? 0;
-    const workflowStatus = String(data?.funnel.latest_workflow_status || '').toLowerCase();
+    const workflowStatus = String(funnel.latest_workflow_status || '').toLowerCase();
     const scannerEnabled = data?.next?.scanner_enabled !== false;
 
     return [
@@ -142,7 +144,7 @@ function buildOpsStages(data: MiroFishPipelineToday | null): OpsStage[] {
             id: 'top3',
             label: 'Top3',
             value: `${top3Count}`,
-            detail: data?.funnel.latest_workflow_id ? 'ranked workflow' : 'ranking',
+            detail: funnel.latest_workflow_id ? 'ranked workflow' : 'ranking',
             state: top3Count > 0 ? 'done' : graphCount > 0 ? 'active' : 'idle',
             progress: Math.min(100, (top3Count / 3) * 100),
         },

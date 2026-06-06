@@ -399,6 +399,7 @@ function AlphaBoardPanel({
     onSendDeepSeekTelegram,
     onSelect,
     onDeepDive,
+    subscriberMode = false,
 }: {
     candidates: MiroFishAlphaCandidate[];
     scannerRun: MiroFishScannerRun | null;
@@ -420,6 +421,7 @@ function AlphaBoardPanel({
     onSendDeepSeekTelegram: () => void;
     onSelect: (candidate: MiroFishAlphaCandidate) => void;
     onDeepDive: (candidate: MiroFishAlphaCandidate) => void;
+    subscriberMode?: boolean;
 }) {
     const topCandidates = candidates.slice(0, 5);
     const scannerBusy = state === 'loading' || state === 'running';
@@ -535,16 +537,16 @@ function AlphaBoardPanel({
     }
 
     return (
-        <section className="mt-8 max-w-6xl rounded-xl border border-emerald-300/15 bg-slate-950/55 p-4 shadow-[0_18px_70px_rgba(16,185,129,0.12)] backdrop-blur">
+        <section className="rounded-xl border border-white/10 bg-[#10151f]/90 p-4 shadow-[0_18px_70px_rgba(0,0,0,0.22)] backdrop-blur">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <div>
                     <div className="flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.22em] text-emerald-200/70">
                         <i className="fas fa-radar text-emerald-300" />
                         Alpha Board
                     </div>
-                    <h2 className="mt-1 text-2xl font-black text-white">수익 후보 종목 검출</h2>
+                    <h2 className="mt-1 text-2xl font-black text-white">Top3 수익 후보 검출</h2>
                     <p className="mt-1 text-sm font-semibold text-slate-400">
-                        전체 시장을 스캔해 Alpha Score, Risk Score, 근거 신호로 실행 우선순위를 만듭니다.
+                        스캔된 후보를 수급·리스크·GraphRAG·사후성과 기준으로 압축합니다.
                     </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
@@ -579,9 +581,10 @@ function AlphaBoardPanel({
                         type="button"
                         onClick={onScan}
                         disabled={scannerBusy}
+                        aria-label="Run scanner"
                         className="rounded-lg bg-emerald-400 px-4 py-2 text-xs font-black text-slate-950 shadow-lg shadow-emerald-500/20 transition hover:brightness-110 disabled:cursor-wait disabled:opacity-70"
                     >
-                        {scannerBusy ? 'Scanning...' : 'Run scanner'}
+                        {scannerBusy ? '스캔 중...' : '스캐너 실행'}
                     </button>
                 </div>
             </div>
@@ -596,9 +599,9 @@ function AlphaBoardPanel({
                 <div>
                     <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                         <div>
-                            <div className="text-[11px] font-black uppercase tracking-[0.18em] text-cyan-200/80">MiroFish Control Plane</div>
+                            <div className="text-[11px] font-black uppercase tracking-[0.18em] text-cyan-200/80">Top3 자동 분석 흐름</div>
                             <div className="mt-1 text-sm font-bold text-slate-200">
-                                Auto scan selects 5 new candidates, batch GraphRAG analyzes them, and the scheduler sends only the new Top 3 to Telegram after success.
+                                자동 스캔 → 신규 후보 5종 선별 → 다중 GraphRAG 분석 → 최종 Top3 랭킹과 알림 생성.
                             </div>
                             <div className="mt-2 flex flex-wrap gap-2">
                                 <span className={`rounded-full border px-2.5 py-1 text-[11px] font-black ${workflowStageTone}`}>
@@ -631,16 +634,19 @@ function AlphaBoardPanel({
                                 disabled={workflowBusy}
                                 className="rounded-lg border border-cyan-300/25 bg-cyan-300/12 px-3 py-2 text-xs font-black text-cyan-100 transition hover:bg-cyan-300/18 disabled:cursor-wait disabled:opacity-60"
                             >
-                                {workflowBusy ? 'Batch analyzing...' : 'New events Top 3'}
+                                {workflowBusy ? 'Top3 분석 중...' : '신규 이벤트 Top3'}
                             </button>
-                            <button
-                                type="button"
-                                onClick={onForceWorkflow}
-                                disabled={workflowBusy}
-                                className="rounded-lg border border-amber-300/25 bg-amber-300/12 px-3 py-2 text-xs font-black text-amber-100 transition hover:bg-amber-300/18 disabled:cursor-wait disabled:opacity-60"
-                            >
-                                Run MCP Top 3 Force refresh
-                            </button>
+                            {!subscriberMode && (
+                                <button
+                                    type="button"
+                                    onClick={onForceWorkflow}
+                                    disabled={workflowBusy}
+                                    aria-label="Run MCP Top 3 Force refresh"
+                                    className="rounded-lg border border-amber-300/25 bg-amber-300/12 px-3 py-2 text-xs font-black text-amber-100 transition hover:bg-amber-300/18 disabled:cursor-wait disabled:opacity-60"
+                                >
+                                    강제 MCP Top3 갱신
+                                </button>
+                            )}
                         </div>
                     </div>
 
@@ -2547,10 +2553,159 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
         return Boolean(native.isComposing || native.keyCode === 229);
     }
 
+    const analysisSearchPanel = (
+        <div className={subscriberMode ? 'mt-5 max-w-5xl' : 'mt-6 sm:mt-8 max-w-4xl'}>
+            <form
+                className="rounded-xl border border-white/10 bg-white/[0.04] p-1.5 shadow-[0_18px_60px_rgba(0,0,0,0.18)]"
+                onSubmit={(event) => {
+                    event.preventDefault();
+                    submitAnalysisForm(event.currentTarget);
+                }}
+                onKeyDownCapture={(event) => {
+                    if (!isEnterKey(event)) return;
+                    if (isComposing(event)) {
+                        pendingCompositionStartRef.current = true;
+                        return;
+                    }
+                    event.preventDefault();
+                    event.stopPropagation();
+                    event.currentTarget.requestSubmit();
+                }}
+            >
+                <div className="flex flex-col gap-2 sm:flex-row">
+                    <label className="flex min-h-12 flex-1 items-center gap-3 rounded-lg px-3 text-anthropic-darkMuted">
+                        <i className="fas fa-search text-base" />
+                        <input
+                            name="target"
+                            className="w-full bg-transparent text-base font-medium text-anthropic-cream outline-none placeholder:text-anthropic-darkMuted"
+                            placeholder="삼성전자, 두산, SK, NVDA 등 분석 대상 입력"
+                            value={target}
+                            onChange={(event) => {
+                                const nextTarget = event.target.value;
+                                targetValueRef.current = nextTarget;
+                                setTarget(nextTarget);
+                                setTargetSnapshot(null);
+                                setSuggestionTarget('');
+                                setSuggestionCandidates([]);
+                                setActiveCandidateIndex(0);
+                                markEndpoint('resolve', 'idle');
+                            }}
+                            onKeyDown={(event) => {
+                                handleTargetKeyNavigation(event);
+                            }}
+                            onCompositionEnd={(event) => {
+                                const shouldStart = pendingCompositionStartRef.current;
+                                pendingCompositionStartRef.current = false;
+                                const composedTarget = event.currentTarget.value;
+                                targetValueRef.current = composedTarget;
+                                if (shouldStart) window.setTimeout(() => requestStart(composedTarget), 0);
+                            }}
+                        />
+                    </label>
+                    <button
+                        type="submit"
+                        aria-label="Run GraphRAG analysis"
+                        disabled={apiState === 'running'}
+                        className="min-h-12 rounded-lg bg-cyan-400 px-6 text-sm font-black text-slate-950 transition hover:bg-cyan-300 disabled:cursor-wait disabled:opacity-50"
+                    >
+                        {apiState === 'running' ? '분석 중...' : '분석 시작'}
+                    </button>
+                </div>
+            </form>
+
+            {subscriberMode && (
+                <div className="mt-2 rounded-lg border border-cyan-300/15 bg-cyan-300/[0.07] px-4 py-2 text-xs font-bold text-cyan-50">
+                    {formatSubscriberPolicy(subscriberPolicy)}
+                </div>
+            )}
+
+            {targetCandidates.length > 0 && (
+                <div className="mt-2 overflow-hidden rounded-xl border border-white/15 bg-slate-950/90 text-sm shadow-2xl shadow-black/25 backdrop-blur">
+                    <div className="flex items-center justify-between border-b border-white/10 px-4 py-2 text-[11px] font-black uppercase tracking-[0.18em] text-slate-400">
+                        <span>Autocomplete</span>
+                        <span>{targetCandidates.length} candidates</span>
+                    </div>
+                    <div className="max-h-72 overflow-y-auto p-1">
+                        {targetCandidates.map((candidate, index) => {
+                            const active = index === activeCandidateIndex;
+                            const label = targetCandidateLabel(candidate);
+                            return (
+                                <button
+                                    key={`${candidate.symbol}-${candidate.display_name}-${index}`}
+                                    type="button"
+                                    onMouseDown={(event) => event.preventDefault()}
+                                    onClick={() => selectTargetCandidate(candidate)}
+                                    onDoubleClick={() => selectTargetCandidate(candidate, true)}
+                                    className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition ${active ? 'bg-cyan-400/[0.14] text-white ring-1 ring-cyan-300/35' : 'text-slate-200 hover:bg-white/[0.08]'}`}
+                                >
+                                    <span className={`grid h-8 w-8 place-items-center rounded-lg ${active ? 'bg-cyan-300 text-slate-950' : 'bg-white/10 text-cyan-200'}`}>
+                                        <i className="fas fa-magnifying-glass-chart text-xs" />
+                                    </span>
+                                    <span className="min-w-0 flex-1">
+                                        <span className="block truncate font-black">{label}</span>
+                                        <span className="mt-0.5 block truncate font-mono text-[11px] text-slate-400">
+                                            {candidate.symbol || 'keyword'} · {candidate.market || 'KR'} · {candidate.yahoo_ticker || 'ticker pending'}
+                                        </span>
+                                    </span>
+                                    <span className={`rounded-full border px-2.5 py-1 text-[11px] font-black ${active ? 'border-cyan-200/60 bg-cyan-200/[0.18] text-cyan-50' : 'border-white/10 bg-white/5 text-slate-400'}`}>
+                                        {targetCandidateMatchLabel(candidate)}
+                                    </span>
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+            )}
+
+            {errorText && <div className="mt-3 rounded-lg border border-amber-300/20 bg-amber-300/10 px-4 py-2 text-xs font-bold text-amber-100">{errorText}</div>}
+
+            {targetSnapshot && (
+                <div className="mt-3 flex flex-wrap gap-2 text-xs font-bold">
+                    <span className="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1.5 text-cyan-100">
+                        {targetSnapshot.resolved?.display_name || targetSnapshot.target}
+                    </span>
+                    <span className="rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-slate-200">
+                        {targetSnapshot.resolved?.symbol || 'keyword'} · {targetSnapshot.resolved?.market || 'UNKNOWN'}
+                    </span>
+                    <span className="rounded-full border border-emerald-300/20 bg-emerald-300/10 px-3 py-1.5 text-emerald-100">
+                        source files {targetSnapshot.source_files?.length || 0}
+                    </span>
+                    <span className="rounded-full border border-violet-300/20 bg-violet-300/10 px-3 py-1.5 text-violet-100">
+                        signals {targetSnapshot.signal_count || 0}
+                    </span>
+                    {targetSnapshot.kis?.enabled && (
+                        <span className={`rounded-full border px-3 py-1.5 ${targetSnapshot.kis.found ? 'border-cyan-300/20 bg-cyan-300/10 text-cyan-100' : 'border-slate-300/20 bg-white/10 text-slate-200'}`}>
+                            {targetSnapshot.kis.found ? 'KIS live' : 'KIS standby'}
+                        </span>
+                    )}
+                </div>
+            )}
+
+            <div className="mt-4 flex flex-wrap items-center gap-3">
+                <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.05] px-4 py-2 text-xs font-bold text-slate-400 backdrop-blur">
+                    <span>에이전트</span>
+                    <button type="button" onClick={() => setAgentCount((value) => Math.max(1, value - 1))} className="grid h-8 w-8 place-items-center rounded-lg border border-white/10 bg-black/25 text-slate-200 hover:text-white">-</button>
+                    <span className="text-xl font-black text-cyan-300 font-mono">{agentCount}</span>
+                    <button type="button" onClick={() => setAgentCount((value) => Math.min(15, value + 1))} className="grid h-8 w-8 place-items-center rounded-lg border border-white/10 bg-black/25 text-slate-200 hover:text-white">+</button>
+                </div>
+                <div className="flex items-center gap-1 rounded-xl border border-white/10 bg-white/[0.05] p-1">
+                    {agentCounts.map((count) => (
+                        <button key={count} type="button" onClick={() => setAgentCount(count)} className={`h-8 min-w-8 rounded-lg px-2 text-xs font-bold transition-colors ${count === agentCount ? 'bg-cyan-400 text-slate-950' : 'text-slate-400 hover:text-white hover:bg-white/[0.06]'}`}>
+                            {count}
+                        </button>
+                    ))}
+                </div>
+            </div>
+        </div>
+    );
+
     return (
         <div className="space-y-5">
-            {/* Anthropic-style hero — warm dark, single orange accent, serif headline */}
-            <section className="rounded-xl border border-anthropic-darkLine bg-anthropic-dark">
+            <section className={`rounded-xl border ${
+                subscriberMode
+                    ? 'border-cyan-300/15 bg-[#0d1320]'
+                    : 'border-anthropic-darkLine bg-anthropic-dark'
+            }`}>
                 <div className="px-4 py-5 sm:px-5 sm:py-7 md:px-8 md:py-10">
                     <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3">
                         <div className={`inline-flex items-center gap-1.5 sm:gap-2 rounded-full border px-2.5 sm:px-3 py-1 sm:py-1.5 text-[11px] sm:text-xs font-medium ${
@@ -2577,15 +2732,21 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
                         </div>
                     </div>
 
-                    <div className="mt-6 sm:mt-8 max-w-4xl">
-                        <h1 className="font-serif text-[28px] sm:text-[40px] md:text-[64px] font-medium leading-[1.1] sm:leading-[1.05] tracking-tight text-anthropic-cream">
-                            MiroFish <span className="italic">Market Brain</span>
-                            <span className="block text-anthropic-darkMuted text-[20px] sm:text-[28px] md:text-[40px] mt-1 font-normal">
-                                GraphRAG Analysis
-                            </span>
+                    <div className="mt-5 max-w-5xl">
+                        <h1 className={`${subscriberMode ? 'text-2xl sm:text-3xl md:text-4xl font-black' : 'font-serif text-[28px] sm:text-[40px] md:text-[64px] font-medium'} leading-[1.1] tracking-tight text-anthropic-cream`}>
+                            {subscriberMode ? 'AI Brain Top3 검출 대시보드' : (
+                                <>
+                                    MiroFish <span className="italic">Market Brain</span>
+                                    <span className="block text-anthropic-darkMuted text-[20px] sm:text-[28px] md:text-[40px] mt-1 font-normal">
+                                        GraphRAG Analysis
+                                    </span>
+                                </>
+                            )}
                         </h1>
-                        <p className="mt-4 sm:mt-5 max-w-2xl text-sm sm:text-base md:text-lg font-normal leading-6 sm:leading-7 text-anthropic-darkText">
-                            Brain 시그널 · 인과 메모리 · 5인 에이전트 토론 · CIO 판정을 단일 콘솔에서 연결합니다.
+                        <p className="mt-3 max-w-3xl text-sm sm:text-base font-semibold leading-6 text-anthropic-darkText">
+                            {subscriberMode
+                                ? '목표는 MCP 자동화가 아니라 수익 가능성이 높은 Top3 후보 검출입니다. 스캔, 분석, 성과 검증 흐름을 한 화면에서 확인합니다.'
+                                : 'Brain 시그널 · 인과 메모리 · 5인 에이전트 토론 · CIO 판정을 단일 콘솔에서 연결합니다.'}
                         </p>
                     </div>
 
@@ -2597,6 +2758,26 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
                             </span>
                         ))}
                     </div>
+
+                    {subscriberMode && (
+                        <div className="mt-4 grid gap-2 sm:grid-cols-3">
+                            {[
+                                ['1', '실시간 감시', '신규 후보와 데이터 신선도 확인'],
+                                ['2', 'Top3 압축', '후보 5종을 GraphRAG와 리스크로 재랭킹'],
+                                ['3', '성과 피드백', '사후 수익률로 다음 점수 보정'],
+                            ].map(([step, title, desc]) => (
+                                <div key={step} className="rounded-xl border border-white/10 bg-white/[0.04] p-3">
+                                    <div className="flex items-center gap-2">
+                                        <span className="grid h-7 w-7 place-items-center rounded-lg bg-cyan-400 text-xs font-black text-slate-950">{step}</span>
+                                        <span className="text-sm font-black text-white">{title}</span>
+                                    </div>
+                                    <p className="mt-2 text-xs font-semibold leading-5 text-slate-400">{desc}</p>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
+                    {analysisSearchPanel}
 
                     {/* 모바일 전용 — 최상단 TOP 3 추천 미리보기 (lg+ 에서는 AlphaBoardPanel 내부 TOP 3 가 보임) */}
                     <MobileTopPicksHero />
@@ -2631,32 +2812,35 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
                                     onSendDeepSeekTelegram={handleSendDeepSeekTelegram}
                                     onSelect={selectAlphaCandidate}
                                     onDeepDive={deepDiveAlphaCandidate}
+                                    subscriberMode={subscriberMode}
                                 />
                             </div>
-                            <AutonomousMcpPanel
-                                status={autonomousStatus}
-                                state={autonomousState}
-                                result={autonomousResult}
-                                learning={autonomousLearning}
-                                errorText={autonomousErrorText}
-                                confirmation={autonomousConfirmation}
-                                sharedSecret={autonomousSharedSecret}
-                                onConfirmationChange={setAutonomousConfirmation}
-                                onSharedSecretChange={setAutonomousSharedSecret}
-                                onRefresh={refreshAutonomousStatus}
-                                onDetectionDryRun={handleAutonomousDetectionDryRun}
-                                onAnalysisDryRun={handleAutonomousAnalysisDryRun}
-                                onLearningPreview={handleAutonomousLearningPreview}
-                                onSendLatestTelegram={handleSendLatestAutonomousTelegram}
-                            />
+                            {!subscriberMode && (
+                                <AutonomousMcpPanel
+                                    status={autonomousStatus}
+                                    state={autonomousState}
+                                    result={autonomousResult}
+                                    learning={autonomousLearning}
+                                    errorText={autonomousErrorText}
+                                    confirmation={autonomousConfirmation}
+                                    sharedSecret={autonomousSharedSecret}
+                                    onConfirmationChange={setAutonomousConfirmation}
+                                    onSharedSecretChange={setAutonomousSharedSecret}
+                                    onRefresh={refreshAutonomousStatus}
+                                    onDetectionDryRun={handleAutonomousDetectionDryRun}
+                                    onAnalysisDryRun={handleAutonomousAnalysisDryRun}
+                                    onLearningPreview={handleAutonomousLearningPreview}
+                                    onSendLatestTelegram={handleSendLatestAutonomousTelegram}
+                                />
+                            )}
                         </div>
                         {/* 사이드바 — 모바일: order 1 (TOP picks 직하단) / lg+: 우측 컬럼 sticky */}
                         <aside className="order-1 lg:order-2 min-w-0 mt-4 flex flex-col gap-3 lg:mt-0 lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto lg:pr-1">
                             {/* AutoRunner / QuickActions 는 admin 전용 (자동검출 강제발사·일시정지·서킷리셋 등). subscriberMode 에서는 숨김. */}
                             {!subscriberMode && <AutoRunnerCard />}
                             <TodaysPipelineCard />
-                            <GraphRAGStatusCard />
-                            <GraphRAGEntityResolverCard />
+                            {!subscriberMode && <GraphRAGStatusCard />}
+                            {!subscriberMode && <GraphRAGEntityResolverCard />}
                             <ScanPerformanceCard />
                             <ScanHistoryCard />
                             <RecentOutcomesBoard />
@@ -2664,146 +2848,6 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
                         </aside>
                     </div>
 
-                    <form
-                        className="mt-6 sm:mt-8 max-w-4xl rounded-xl border border-anthropic-darkLine bg-anthropic-dark2 p-1.5 sm:p-2"
-                        onSubmit={(event) => {
-                            event.preventDefault();
-                            submitAnalysisForm(event.currentTarget);
-                        }}
-                        onKeyDownCapture={(event) => {
-                            if (!isEnterKey(event)) return;
-                            if (isComposing(event)) {
-                                pendingCompositionStartRef.current = true;
-                                return;
-                            }
-                            event.preventDefault();
-                            event.stopPropagation();
-                            event.currentTarget.requestSubmit();
-                        }}
-                    >
-                        <div className="flex flex-col gap-2 sm:flex-row">
-                            <label className="flex min-h-12 flex-1 items-center gap-3 px-3 text-anthropic-darkMuted">
-                                <i className="fas fa-search text-base" />
-                                <input
-                                    name="target"
-                                    className="w-full bg-transparent text-base font-medium text-anthropic-cream outline-none placeholder:text-anthropic-darkMuted"
-                                    placeholder="삼성전자, NVDA, BTC, FOMC 등 분석 대상 입력"
-                                    value={target}
-                                    onChange={(event) => {
-                                        const nextTarget = event.target.value;
-                                        targetValueRef.current = nextTarget;
-                                        setTarget(nextTarget);
-                                        setTargetSnapshot(null);
-                                        setSuggestionTarget('');
-                                        setSuggestionCandidates([]);
-                                        setActiveCandidateIndex(0);
-                                        markEndpoint('resolve', 'idle');
-                                    }}
-                                    onKeyDown={(event) => {
-                                        handleTargetKeyNavigation(event);
-                                    }}
-                                    onCompositionEnd={(event) => {
-                                        const shouldStart = pendingCompositionStartRef.current;
-                                        pendingCompositionStartRef.current = false;
-                                        const composedTarget = event.currentTarget.value;
-                                        targetValueRef.current = composedTarget;
-                                        if (shouldStart) window.setTimeout(() => requestStart(composedTarget), 0);
-                                    }}
-                                />
-                            </label>
-                            <button
-                                type="submit"
-                                disabled={apiState === 'running'}
-                                className="min-h-12 rounded-lg bg-anthropic-orange px-6 text-sm font-medium text-white transition-colors hover:bg-anthropic-orangeHover disabled:cursor-wait disabled:opacity-50"
-                            >
-                                {apiState === 'running' ? '분석 중…' : '분석 시작 →'}
-                            </button>
-                        </div>
-                    </form>
-
-                    {subscriberMode && (
-                        <div className="mt-3 max-w-4xl rounded-lg border border-cyan-300/20 bg-cyan-300/10 px-4 py-2 text-xs font-bold text-cyan-50">
-                            {formatSubscriberPolicy(subscriberPolicy)}
-                        </div>
-                    )}
-
-                    {targetCandidates.length > 0 && (
-                        <div className="mt-2 max-w-4xl overflow-hidden rounded-xl border border-white/15 bg-slate-950/82 text-sm shadow-2xl shadow-black/25 backdrop-blur">
-                            <div className="flex items-center justify-between border-b border-white/10 px-4 py-2 text-[11px] font-black uppercase tracking-[0.18em] text-slate-400">
-                                <span>Autocomplete</span>
-                                <span>{targetCandidates.length} candidates</span>
-                            </div>
-                            <div className="max-h-72 overflow-y-auto p-1">
-                                {targetCandidates.map((candidate, index) => {
-                                    const active = index === activeCandidateIndex;
-                                    const label = targetCandidateLabel(candidate);
-                                    return (
-                                        <button
-                                            key={`${candidate.symbol}-${candidate.display_name}-${index}`}
-                                            type="button"
-                                            onMouseDown={(event) => event.preventDefault()}
-                                            onClick={() => selectTargetCandidate(candidate)}
-                                            onDoubleClick={() => selectTargetCandidate(candidate, true)}
-                                            className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition ${active ? 'bg-cyan-400/[0.14] text-white ring-1 ring-cyan-300/35' : 'text-slate-200 hover:bg-white/[0.08]'}`}
-                                        >
-                                            <span className={`grid h-8 w-8 place-items-center rounded-lg ${active ? 'bg-cyan-300 text-slate-950' : 'bg-white/10 text-cyan-200'}`}>
-                                                <i className="fas fa-magnifying-glass-chart text-xs" />
-                                            </span>
-                                            <span className="min-w-0 flex-1">
-                                                <span className="block truncate font-black">{label}</span>
-                                                <span className="mt-0.5 block truncate font-mono text-[11px] text-slate-400">
-                                                    {candidate.symbol || 'keyword'} · {candidate.market || 'KR'} · {candidate.yahoo_ticker || 'ticker pending'}
-                                                </span>
-                                            </span>
-                                            <span className={`rounded-full border px-2.5 py-1 text-[11px] font-black ${active ? 'border-cyan-200/60 bg-cyan-200/[0.18] text-cyan-50' : 'border-white/10 bg-white/5 text-slate-400'}`}>
-                                                {targetCandidateMatchLabel(candidate)}
-                                            </span>
-                                        </button>
-                                    );
-                                })}
-                            </div>
-                        </div>
-                    )}
-
-                    {errorText && <div className="mt-3 max-w-4xl rounded-lg border border-amber-300/20 bg-amber-300/10 px-4 py-2 text-xs font-bold text-amber-100">{errorText}</div>}
-
-                    {targetSnapshot && (
-                        <div className="mt-3 flex max-w-4xl flex-wrap gap-2 text-xs font-bold">
-                            <span className="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1.5 text-cyan-100">
-                                {targetSnapshot.resolved?.display_name || targetSnapshot.target}
-                            </span>
-                            <span className="rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-slate-200">
-                                {targetSnapshot.resolved?.symbol || 'keyword'} · {targetSnapshot.resolved?.market || 'UNKNOWN'}
-                            </span>
-                            <span className="rounded-full border border-emerald-300/20 bg-emerald-300/10 px-3 py-1.5 text-emerald-100">
-                                source files {targetSnapshot.source_files?.length || 0}
-                            </span>
-                            <span className="rounded-full border border-violet-300/20 bg-violet-300/10 px-3 py-1.5 text-violet-100">
-                                signals {targetSnapshot.signal_count || 0}
-                            </span>
-                            {targetSnapshot.kis?.enabled && (
-                                <span className={`rounded-full border px-3 py-1.5 ${targetSnapshot.kis.found ? 'border-cyan-300/20 bg-cyan-300/10 text-cyan-100' : 'border-slate-300/20 bg-white/10 text-slate-200'}`}>
-                                    {targetSnapshot.kis.found ? 'KIS live' : 'KIS standby'}
-                                </span>
-                            )}
-                        </div>
-                    )}
-
-                    <div className="mt-5 flex flex-wrap items-center gap-3">
-                        <div className="flex items-center gap-2 rounded-xl border border-white/15 bg-white/75 px-4 py-2 text-xs font-bold text-slate-500 backdrop-blur">
-                            <span className="text-anthropic-darkMuted">에이전트</span>
-                            <button type="button" onClick={() => setAgentCount((value) => Math.max(1, value - 1))} className="grid h-8 w-8 place-items-center rounded-lg border border-anthropic-darkLine bg-anthropic-dark text-anthropic-darkText hover:text-anthropic-cream">-</button>
-                            <span className="text-xl font-medium text-anthropic-orange font-mono">{agentCount}</span>
-                            <button type="button" onClick={() => setAgentCount((value) => Math.min(15, value + 1))} className="grid h-8 w-8 place-items-center rounded-lg border border-anthropic-darkLine bg-anthropic-dark text-anthropic-darkText hover:text-anthropic-cream">+</button>
-                        </div>
-                        <div className="flex items-center gap-1 rounded-xl border border-anthropic-darkLine bg-anthropic-dark2 p-1">
-                            {agentCounts.map((count) => (
-                                <button key={count} type="button" onClick={() => setAgentCount(count)} className={`h-8 min-w-8 rounded-lg px-2 text-xs font-medium transition-colors ${count === agentCount ? 'bg-anthropic-orange text-white' : 'text-anthropic-darkMuted hover:text-anthropic-cream hover:bg-anthropic-dark'}`}>
-                                    {count}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
                 </div>
             </section>
 
