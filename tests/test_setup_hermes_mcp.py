@@ -18,6 +18,9 @@ def test_build_server_config_uses_marketflow_mcp_entrypoint(tmp_path):
     assert config['tools']['resources'] is True
     assert config['tools']['prompts'] is False
     assert 'get_hermes_bridge_manifest' in config['tools']['include']
+    assert 'get_hermes_learning_task_pack' in config['tools']['include']
+    assert 'get_outcomes_kpi' in config['tools']['include']
+    assert 'graphrag_get_scan_history' in config['tools']['include']
 
 
 def test_default_config_path_matches_native_windows(monkeypatch, tmp_path):

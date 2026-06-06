@@ -14,4 +14,5 @@ def test_hermes_routes_are_registered():
     assert '/api/admin/mirofish/hermes/manifest' in rules
     assert '/api/admin/mirofish/hermes/runbook' in rules
     assert '/api/admin/mirofish/hermes/prompt-pack' in rules
+    assert '/api/admin/mirofish/hermes/learning-task-pack' in rules
     assert '/api/admin/mirofish/hermes/preview' in rules

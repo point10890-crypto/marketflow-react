@@ -83,6 +83,19 @@ def create_mcp_server(
         return hermes_bridge.build_hermes_mcp_manifest()
 
     @mcp.tool()
+    def get_hermes_learning_task_pack(
+        mode: str = 'daily_post_close',
+        horizon_days: int = 5,
+        limit_workflows: int = 30,
+    ) -> dict[str, Any]:
+        """Return a read-only Hermes learning-loop task pack for scanner post-mortems."""
+        return hermes_bridge.build_hermes_learning_task_pack({
+            'mode': mode,
+            'horizon_days': horizon_days,
+            'limit_workflows': limit_workflows,
+        })
+
+    @mcp.tool()
     def preview_hermes_sidecar_task(task: str = 'top3_dry_run') -> dict[str, Any]:
         """Preview the tool-call plan Hermes should use without executing it."""
         return hermes_bridge.preview_hermes_task({'task': task})
@@ -331,6 +344,11 @@ def create_mcp_server(
     def hermes_runbook_resource() -> str:
         """Operator runbook for using Hermes as a safe MiroFish sidecar."""
         return _json(hermes_bridge.build_hermes_runbook())
+
+    @mcp.resource('mirofish://integrations/hermes/learning-task-pack')
+    def hermes_learning_task_pack_resource() -> str:
+        """Read-only Hermes learning-loop task pack for outcome feedback."""
+        return _json(hermes_bridge.build_hermes_learning_task_pack())
 
     @mcp.resource('mirofish://scanner/latest')
     def latest_scanner_resource() -> str:

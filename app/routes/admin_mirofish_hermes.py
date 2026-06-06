@@ -38,6 +38,20 @@ def hermes_prompt_pack():
     return jsonify(hermes_bridge.build_hermes_prompt_pack()), 200
 
 
+@admin_mirofish_hermes_bp.route('/hermes/learning-task-pack', methods=['GET', 'POST'])
+@admin_required
+def hermes_learning_task_pack():
+    if request.method == 'POST':
+        payload = request.get_json(silent=True) or {}
+    else:
+        payload = {
+            'mode': request.args.get('mode'),
+            'horizon_days': request.args.get('horizon_days'),
+            'limit_workflows': request.args.get('limit_workflows'),
+        }
+    return jsonify(hermes_bridge.build_hermes_learning_task_pack(payload)), 200
+
+
 @admin_mirofish_hermes_bp.route('/hermes/preview', methods=['POST'])
 @admin_required
 def hermes_preview():

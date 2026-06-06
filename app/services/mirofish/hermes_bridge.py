@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
@@ -27,8 +27,14 @@ READ_ONLY_TOOLS = [
     'get_workflow_share_payload',
     'get_alpha_scanner_diagnostics',
     'get_tradingview_provider_status',
+    'get_outcomes_kpi',
+    'get_pipeline_today_snapshot',
+    'get_backtest_summary',
+    'graphrag_get_scan_history',
+    'graphrag_get_symbol_history',
     'resolve_target',
     'search_targets',
+    'get_hermes_learning_task_pack',
 ]
 
 GUARDED_MUTATION_TOOLS = [
@@ -132,7 +138,7 @@ def build_hermes_mcp_manifest() -> dict[str, Any]:
     """Return a machine-readable integration manifest for Hermes MCP config."""
     include_tools = READ_ONLY_TOOLS + GUARDED_MUTATION_TOOLS
     return {
-        'schema_version': '2026-06-05.hermes-marketflow.v1',
+        'schema_version': '2026-06-06.hermes-marketflow.v2',
         'name': 'marketflow-mirofish',
         'title': 'MarketFlow MiroFish MCP',
         'description': (
@@ -170,10 +176,16 @@ def build_hermes_mcp_manifest() -> dict[str, Any]:
         },
         'tool_surface': build_hermes_security_policy()['tool_policy'],
         'cron_recipes': _cron_recipes(),
+        'learning_task_pack': build_hermes_learning_task_pack({
+            'mode': 'daily_post_close',
+            'horizon_days': 5,
+            'limit_workflows': 30,
+        }),
         'validation_checks': [
             'hermes mcp test marketflow_mirofish',
             'Call get_autonomous_status and verify service is mirofish-autonomous-mcp.',
             'Call get_pipeline_operating_snapshot and verify scanner/workflow state is readable.',
+            'Call get_hermes_learning_task_pack and verify dry_run_only is true.',
             'Run preview task top3_dry_run before enabling any mutation.',
         ],
         'generated_at': _now_iso(),
@@ -223,6 +235,15 @@ def build_hermes_runbook() -> dict[str, Any]:
                     'Keep all broker/order functions disabled.',
                 ],
             },
+            {
+                'phase': 'learning_loop',
+                'actions': [
+                    'Generate a Hermes learning task pack before post-close analysis.',
+                    'Have Hermes read outcomes, backtests, and GraphRAG history before writing result.md.',
+                    'Append only reusable failure lessons to multi_agent/_shared/learnings.md.',
+                    'Never let the sidecar adjust scanner weights without an explicit MarketFlow backend change.',
+                ],
+            },
         ],
         'rollback': [
             'Set mcp_servers.marketflow_mirofish.enabled=false in Hermes config.',
@@ -233,7 +254,7 @@ def build_hermes_runbook() -> dict[str, Any]:
     }
 
 
-def build_hermes_prompt_pack() -> dict[str, Any]:
+def _build_hermes_prompt_pack_legacy() -> dict[str, Any]:
     """Return Korean operating prompts for Hermes when attached to MarketFlow."""
     system_prompt = (
         '너는 MarketFlow MiroFish 알파 검출 보조 에이전트다. 목적은 MCP 자동화가 아니라 '
@@ -269,6 +290,183 @@ def build_hermes_prompt_pack() -> dict[str, Any]:
                 '최신 Top 3 텔레그램 메시지를 전송하지 말고 한국어 운영자 검토용으로 미리보기만 작성해라.'
             ),
         },
+        'generated_at': _now_iso(),
+    }
+
+
+def build_hermes_prompt_pack() -> dict[str, Any]:
+    """Return Korean operating prompts for Hermes when attached to MarketFlow."""
+    system_prompt = (
+        '너는 MarketFlow MiroFish 알파 검출을 보조하는 Hermes MCP 사이드카다. '
+        '목적은 자동화 자체가 아니라, 정확한 데이터 기반으로 수익 가능성이 높은 Top 3 후보를 더 잘 찾고, '
+        '나쁜 후보를 더 빨리 걸러내며, 사후 성과 피드백으로 검출 규칙을 개선하는 것이다.\n\n'
+        '원칙:\n'
+        '1. 숫자는 MarketFlow MCP 도구, API, 파일, 결정적 계산에서만 가져온다.\n'
+        '2. 뉴스/테마/소셜 신호는 단독 매수 근거가 아니다. 가격, 거래대금, 수급, 공시, 리스크와 결합한다.\n'
+        '3. 모든 최종 판단에는 종목명, 종목코드, 시장, 분석 시점, 데이터 신선도, 부족 데이터를 표시한다.\n'
+        '4. 주문 실행, 계좌 작업, 비밀 조회, 파괴적 파일 작업은 금지한다.\n'
+        '5. Telegram 전송과 workflow 실행은 운영자가 승인한 mutation gate를 통과한 경우에만 수행한다.\n'
+        '6. 결론은 확률적 언어로 표현하고 과장 표현을 제한한다.'
+    )
+    return {
+        'name': 'marketflow-mirofish-hermes-prompts',
+        'language': 'ko',
+        'system_prompt': system_prompt,
+        'task_prompts': {
+            'scanner_health': (
+                'MarketFlow MCP에서 get_autonomous_status, get_market_clock, '
+                'get_pipeline_operating_snapshot, get_mcp_resource_snapshot을 읽고 '
+                '오늘 알파 스캐너가 지속 감시 가능한 상태인지 평가하라.'
+            ),
+            'top3_dry_run': (
+                '새 스캐너 이벤트를 실제 전송 없이 dry-run으로 Top 3 분석 계획까지 평가하라. '
+                '후보 종목별 데이터 신선도, 리스크 필터, GraphRAG 근거, 사후 검증 가능성을 표시하라.'
+            ),
+            'post_close_learning': (
+                '최근 workflow의 사후 성과 피드백을 look-ahead bias 없이 평가하고, '
+                '알파 점수 보정에 유효한 신호와 무효 신호를 분리하라.'
+            ),
+            'telegram_preview': (
+                '최신 Top 3 텔레그램 메시지를 전송하지 말고 한국어 운영자 검토용으로 미리보기만 작성하라.'
+            ),
+        },
+        'generated_at': _now_iso(),
+    }
+
+
+def build_hermes_learning_task_pack(payload: dict[str, Any] | None = None) -> dict[str, Any]:
+    """Return a read-only Hermes task pack for outcome learning and post-mortems."""
+    payload = payload or {}
+    mode = _clean_mode(payload.get('mode'))
+    horizon_days = _int_between(payload.get('horizon_days'), default=5, minimum=1, maximum=60)
+    limit_workflows = _int_between(payload.get('limit_workflows'), default=30, minimum=1, maximum=200)
+    generated_date = _kst_date()
+    task_id = f'hermes-{mode}-{generated_date}'
+
+    planned_tool_calls = [
+        {'phase': 'preflight', 'tool': 'get_market_clock', 'args': {}},
+        {'phase': 'preflight', 'tool': 'get_pipeline_operating_snapshot', 'args': {}},
+        {'phase': 'preflight', 'tool': 'get_mcp_resource_snapshot', 'args': {'include_deferred': True}},
+        {'phase': 'preflight', 'tool': 'get_alpha_scanner_diagnostics', 'args': {}},
+        {'phase': 'recent_evidence', 'tool': 'list_recent_workflows', 'args': {'limit': limit_workflows}},
+        {'phase': 'recent_evidence', 'tool': 'get_top3_summary', 'args': {}},
+        {'phase': 'recent_evidence', 'tool': 'get_outcomes_kpi', 'args': {'days': max(7, horizon_days * 6)}},
+        {'phase': 'recent_evidence', 'tool': 'get_backtest_summary', 'args': {}},
+        {'phase': 'graph_history', 'tool': 'graphrag_get_scan_history', 'args': {
+            'days': max(30, horizon_days * 12),
+            'limit_symbols': 100,
+            'min_alpha': 0.0,
+        }},
+        {'phase': 'learning_dry_run', 'tool': 'refresh_learning_feedback', 'args': {
+            'limit': limit_workflows,
+            'commit': False,
+        }},
+    ]
+
+    if mode == 'weekly_post_mortem':
+        planned_tool_calls.append({
+            'phase': 'weekly_deep_dive',
+            'tool': 'get_pipeline_today_snapshot',
+            'args': {},
+        })
+    elif mode == 'pre_market_readiness':
+        planned_tool_calls.insert(4, {
+            'phase': 'pre_market_readiness',
+            'tool': 'list_recent_scanner_runs',
+            'args': {'limit': 10},
+        })
+
+    return {
+        'service': 'mirofish-hermes-learning-task-pack',
+        'task_pack_version': '2026-06-06.hermes-learning-loop.v1',
+        'task_id': task_id,
+        'mode': mode,
+        'dry_run_only': True,
+        'executes_tools': False,
+        'alpha_objective': (
+            'Use Hermes to preserve predictions, audit outcomes, identify repeatable failure modes, '
+            'and feed better alpha/risk filters back to the human-reviewed MiroFish pipeline.'
+        ),
+        'workdir': str(REPO_ROOT),
+        'hermes_runtime_guidance': {
+            'mcp_server': 'marketflow_mirofish',
+            'transport': 'stdio',
+            'cron_workdir_required': True,
+            'required_tools': [step['tool'] for step in planned_tool_calls],
+            'do_not_use_for': [
+                'broker_order_execution',
+                'secret_lookup',
+                'live_weight_mutation',
+                'telegram_send_without_gate',
+            ],
+        },
+        'planned_tool_calls': planned_tool_calls,
+        'result_artifact_contract': {
+            'path_template': 'multi_agent/tasks/{YYYY-MM-DD}/result.md',
+            'format': 'markdown_with_json_code_block',
+            'json_schema': {
+                'task_id': 'string',
+                'generated_at': 'iso8601',
+                'cutoff': 'iso8601 or market session label',
+                'predictions': [
+                    {
+                        'rank': 'integer',
+                        'symbol': 'string',
+                        'name': 'string',
+                        'market': 'string',
+                        'entry_price': 'number|null',
+                        'horizon_days': horizon_days,
+                        'verdict': 'BUY|HOLD|WATCH|AVOID',
+                        'confidence_pct': 'number',
+                        'evidence_clusters': ['price_volume', 'flow', 'risk', 'graphrag', 'backtest'],
+                        'invalidating_conditions': ['string'],
+                    },
+                ],
+                'post_mortems': [
+                    {
+                        'symbol': 'string',
+                        'original_workflow_id': 'string',
+                        'forward_return_pct': 'number|null',
+                        'hit': 'boolean|null',
+                        'failure_mode': 'string|null',
+                        'lesson': 'string',
+                    },
+                ],
+                'scanner_rule_candidates': ['string'],
+            },
+        },
+        'learning_append_contract': {
+            'path': 'multi_agent/_shared/learnings.md',
+            'append_only': True,
+            'entry_template': (
+                f'## {generated_date} Hermes learning\n'
+                '- Evidence observed:\n'
+                '- Failure mode:\n'
+                '- Proposed scanner/risk filter change:\n'
+                '- Backtest needed:\n'
+            ),
+        },
+        'failure_taxonomy': [
+            'freshness_gap',
+            'volume_spike_without_follow_through',
+            'news_theme_without_flow_confirmation',
+            'resistance_overhead_ignored',
+            'dart_or_fundamental_risk_missed',
+            'macro_fx_headwind_underweighted',
+            'lookahead_or_replay_bias',
+        ],
+        'acceptance_checks': [
+            'Every Top 3 item identifies symbol, name, market, cutoff, and data freshness.',
+            'Any news/social/theme signal is marked as supporting evidence only.',
+            'refresh_learning_feedback is previewed with commit=false unless operator explicitly approves.',
+            'Lessons are specific enough to become a future scanner/risk/backtest rule.',
+        ],
+        'hermes_prompt': _learning_task_prompt(mode, horizon_days, limit_workflows),
+        'hermes_cron_examples': _learning_cron_examples(mode),
+        'operator_note': (
+            'This endpoint returns a task pack only. It does not execute MCP tools, write files, '
+            'send Telegram messages, or change MarketFlow scanner state.'
+        ),
         'generated_at': _now_iso(),
     }
 
@@ -413,3 +611,57 @@ def _command_path_exists(command: Path | str) -> bool:
 
 def _now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
+
+
+def _kst_date() -> str:
+    return datetime.now(timezone(timedelta(hours=9))).date().isoformat()
+
+
+def _clean_mode(value: Any) -> str:
+    allowed = {'daily_post_close', 'weekly_post_mortem', 'pre_market_readiness'}
+    mode = str(value or 'daily_post_close').strip()
+    return mode if mode in allowed else 'daily_post_close'
+
+
+def _int_between(value: Any, *, default: int, minimum: int, maximum: int) -> int:
+    try:
+        clean = int(value)
+    except (TypeError, ValueError):
+        clean = default
+    return max(minimum, min(maximum, clean))
+
+
+def _learning_task_prompt(mode: str, horizon_days: int, limit_workflows: int) -> str:
+    return (
+        'MarketFlow MiroFish MCP를 사용해 자율 학습형 알파 스캐너 사후검증을 수행하라.\n'
+        f'- mode: {mode}\n'
+        f'- horizon_days: {horizon_days}\n'
+        f'- recent workflow limit: {limit_workflows}\n'
+        '순서: 시장/파이프라인 상태 확인 -> 최근 Top 3와 성과 KPI 확인 -> 백테스트/GraphRAG 히스토리 확인 -> '
+        'refresh_learning_feedback(commit=false) 결과 검토 -> result.md JSON 초안과 learnings.md append 항목 작성.\n'
+        '금지: 주문 실행, 비밀 조회, 실제 텔레그램 전송, scanner weight 즉시 변경, 뉴스/테마 단독 매수 판단.\n'
+        '목표: 다음 스캔에서 수익 후보 검출률을 높일 수 있는 구체적 필터/리스크/백테스트 개선 후보만 남겨라.'
+    )
+
+
+def _learning_cron_examples(mode: str) -> list[dict[str, Any]]:
+    return [
+        {
+            'name': 'mflow_post_close_learning_pack',
+            'schedule_kst': '16:20 market days',
+            'workdir': str(REPO_ROOT),
+            'prompt': 'Call get_hermes_learning_task_pack(mode="daily_post_close") and execute the returned read-only plan.',
+        },
+        {
+            'name': 'mflow_weekend_post_mortem_pack',
+            'schedule_kst': 'Saturday 10:00 KST',
+            'workdir': str(REPO_ROOT),
+            'prompt': 'Call get_hermes_learning_task_pack(mode="weekly_post_mortem", horizon_days=20) and write failure lessons.',
+        },
+        {
+            'name': f'mflow_selected_mode_{mode}',
+            'schedule_kst': 'operator triggered',
+            'workdir': str(REPO_ROOT),
+            'prompt': f'Call get_hermes_learning_task_pack(mode="{mode}") and keep mutation gates disabled.',
+        },
+    ]

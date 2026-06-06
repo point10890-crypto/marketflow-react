@@ -28,9 +28,13 @@ def test_hermes_manifest_whitelists_read_tools_and_guards_mutations():
     assert config['command']
     assert 'mirofish_mcp_server.py' in ' '.join(config['args'])
     assert 'get_autonomous_status' in include
+    assert 'get_hermes_learning_task_pack' in include
+    assert 'get_outcomes_kpi' in include
+    assert 'graphrag_get_scan_history' in include
     assert 'run_autonomous_scan_analysis' in include
     assert manifest['tool_surface']['guarded_mutation_include'] == hermes_bridge.GUARDED_MUTATION_TOOLS
     assert config['supports_parallel_tool_calls'] is False
+    assert manifest['learning_task_pack']['dry_run_only'] is True
 
 
 def test_hermes_preview_does_not_execute_mutating_tools():
@@ -57,4 +61,31 @@ def test_hermes_prompt_pack_keeps_alpha_goal_and_forbids_hype():
     assert 'Top 3' in prompt
     assert '뉴스/테마/소셜 신호는 단독 매수 근거가 아니다' in prompt
     assert '주문 실행' in prompt
-    assert '과장 표현을 피한다' in prompt
+    assert '과장 표현을 제한' in prompt
+
+
+def test_hermes_learning_task_pack_is_read_only_and_replay_safe():
+    pack = hermes_bridge.build_hermes_learning_task_pack({
+        'mode': 'weekly_post_mortem',
+        'horizon_days': 20,
+        'limit_workflows': 500,
+    })
+
+    assert pack['service'] == 'mirofish-hermes-learning-task-pack'
+    assert pack['mode'] == 'weekly_post_mortem'
+    assert pack['dry_run_only'] is True
+    assert pack['executes_tools'] is False
+    assert pack['workdir'].endswith('bitman_marketfloww')
+    assert pack['result_artifact_contract']['path_template'] == 'multi_agent/tasks/{YYYY-MM-DD}/result.md'
+    assert pack['learning_append_contract']['append_only'] is True
+
+    tools = {step['tool']: step for step in pack['planned_tool_calls']}
+    assert 'get_outcomes_kpi' in tools
+    assert 'get_backtest_summary' in tools
+    assert 'graphrag_get_scan_history' in tools
+    assert tools['refresh_learning_feedback']['args']['commit'] is False
+    assert tools['refresh_learning_feedback']['args']['limit'] == 200
+
+    rendered = str(pack).lower()
+    assert 'telegram_bot_token' not in rendered
+    assert 'xai-' not in rendered

@@ -31,8 +31,14 @@ DEFAULT_INCLUDE_TOOLS = [
     'read_safe_artifact',
     'get_top3_summary',
     'get_workflow_share_payload',
+    'get_outcomes_kpi',
+    'get_pipeline_today_snapshot',
+    'get_backtest_summary',
+    'graphrag_get_scan_history',
+    'graphrag_get_symbol_history',
     'get_hermes_bridge_status',
     'get_hermes_bridge_manifest',
+    'get_hermes_learning_task_pack',
     'preview_hermes_sidecar_task',
 ]
 
