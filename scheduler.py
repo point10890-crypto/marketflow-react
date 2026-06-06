@@ -2884,6 +2884,69 @@ def _run_orphan_file_audit() -> bool:
         return False
 
 
+def _run_orphan_file_audit() -> bool:
+    """Run community upload orphan audit in a fresh subprocess.
+
+    The older in-process implementation called create_app() inside the
+    long-lived scheduler. On the MiniPC this can trip PyO3 reinitialization
+    errors after other analytics modules have already been imported. Running
+    the DB/file audit in a short-lived child process keeps the scheduler stable.
+    """
+    try:
+        script = os.path.join(Config.BASE_DIR, 'scripts', 'orphan_file_audit.py')
+        env = {**os.environ, 'PYTHONPATH': Config.BASE_DIR, 'PYTHONIOENCODING': 'utf-8'}
+        result = subprocess.run(
+            [Config.PYTHON_PATH, script, '--json', '--max-orphans', '10'],
+            capture_output=True,
+            text=True,
+            encoding='utf-8',
+            errors='replace',
+            timeout=180,
+            cwd=Config.BASE_DIR,
+            env=env,
+        )
+        output = (result.stdout or '').strip()
+        if result.returncode != 0:
+            logger.warning(
+                'orphan audit subprocess failed rc=%s stdout=%s stderr=%s',
+                result.returncode,
+                output[-500:],
+                (result.stderr or '').strip()[-500:],
+            )
+            return False
+        try:
+            payload = json.loads(output)
+        except json.JSONDecodeError as exc:
+            logger.warning('orphan audit JSON parse failed: %s stdout=%s', exc, output[-500:])
+            return False
+        if not payload.get('ok'):
+            logger.warning('orphan audit payload failed: %s', payload)
+            return False
+
+        total = int(payload.get('total') or 0)
+        if total:
+            lines = ["⚠️ <b>업로드 파일 유실 감지</b>", "", f"총 {total}건 orphan file_url:"]
+            orphan_items = payload.get('orphans', [])[:10]
+            for item in orphan_items:
+                pid = item.get('post_id')
+                title = str(item.get('title') or '')[:30]
+                fname = item.get('file_name') or item.get('stored_filename') or '?'
+                lines.append(f"  • #{pid} {title} → {fname}")
+            if total > len(orphan_items):
+                lines.append(f"  … 외 {total - len(orphan_items)}건")
+            send_telegram("\n".join(lines), channel=False)
+            logger.warning('orphan files detected: %s', total)
+        else:
+            logger.info(
+                'community upload file integrity OK: orphan 0, scanned=%s',
+                payload.get('scanned', 0),
+            )
+        return True
+    except Exception as e:
+        logger.warning(f"orphan audit failed: {type(e).__name__}: {e}")
+        return False
+
+
 def _run_wave_scan() -> bool:
     """Wave 패턴 전 종목 스캔 (KR)"""
     logger.info("=" * 60)

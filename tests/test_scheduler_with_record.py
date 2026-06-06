@@ -9,6 +9,8 @@ return is always a bug — it must be treated as a failure so the retry
 These tests pin the corrected behavior so a future refactor cannot
 re-introduce the silent-success regression.
 """
+import json
+from types import SimpleNamespace
 from unittest.mock import patch
 
 import pytest
@@ -201,6 +203,36 @@ def test_alpha_scanner_monitor_treats_blocked_stale_sources_as_handled():
          patch("scheduler.send_telegram_long") as tg:
         assert scheduler.run_alpha_scanner_monitor() is True
     tg.assert_not_called()
+
+
+def test_orphan_file_audit_runs_in_isolated_subprocess(monkeypatch):
+    calls = []
+
+    def fake_run(cmd, **kwargs):
+        calls.append((cmd, kwargs))
+        payload = {'ok': True, 'total': 0, 'scanned': 7, 'orphans': []}
+        return SimpleNamespace(returncode=0, stdout=json.dumps(payload), stderr='')
+
+    monkeypatch.setattr(scheduler.subprocess, 'run', fake_run)
+    monkeypatch.setattr(scheduler.Config, 'PYTHON_PATH', 'python-test')
+
+    assert scheduler._run_orphan_file_audit() is True
+    assert calls
+    cmd, kwargs = calls[0]
+    assert cmd[0] == 'python-test'
+    assert cmd[1].endswith('scripts\\orphan_file_audit.py') or cmd[1].endswith('scripts/orphan_file_audit.py')
+    assert '--json' in cmd
+    assert kwargs['cwd'] == scheduler.Config.BASE_DIR
+    assert kwargs['env']['PYTHONPATH'] == scheduler.Config.BASE_DIR
+
+
+def test_orphan_file_audit_reports_subprocess_failure(monkeypatch):
+    def fake_run(cmd, **kwargs):
+        return SimpleNamespace(returncode=2, stdout='{"ok":false}', stderr='boom')
+
+    monkeypatch.setattr(scheduler.subprocess, 'run', fake_run)
+
+    assert scheduler._run_orphan_file_audit() is False
 
 
 def test_mirofish_workflow_monitor_starts_on_new_events():
