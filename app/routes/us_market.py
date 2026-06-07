@@ -16,6 +16,7 @@ from app.utils.json_cache import load_json_cached
 from app.utils.atomic_json import write_json_atomic
 from app.utils.paths import BASE_DIR, DATA_DIR, US_MARKET_DIR, US_OUTPUT_DIR, US_DATA_DIR, US_HISTORY_DIR, US_PREVIEW_DIR
 from app.utils.safety import safe_float, safe_str
+from app.utils.freshness import attach_freshness
 
 logger = logging.getLogger(__name__)
 
@@ -1936,8 +1937,10 @@ def get_us_vcp_enhanced():
         if os.path.exists(cached_path):
             with open(cached_path, 'r', encoding='utf-8') as f:
                 data = json.load(f)
+            data = attach_freshness(data, cached_path, max_age_hours=96)
             resp = jsonify(data)
-            resp.headers['Cache-Control'] = 'public, max-age=300'
+            freshness = data.get('metadata', {}).get('freshness', {})
+            resp.headers['Cache-Control'] = 'no-store' if freshness.get('is_stale') else 'public, max-age=60'
             return resp
         return jsonify({"metadata": {"market": "US"}, "summary": {}, "signals": []}), 200
     except Exception as e:

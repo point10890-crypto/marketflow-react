@@ -1298,20 +1298,27 @@ def data_version():
     모바일·로컬 동시 갱신의 핵심: 프론트엔드가 이 엔드포인트를 polling하여
     파일 변경을 감지하면 실제 데이터를 refetch한다.
     """
-    from app.utils.paths import DATA_DIR
     _data_dir = DATA_DIR
 
-    target_files = [
-        'jongga_v2_latest.json',
-        'signals_log.csv',
-        'daily_prices.csv',
-        'kr_ai_analysis.json',
-        'daily_report.json',
-        'briefing/latest.json',
-    ]
+    target_files = {
+        'jongga_v2_latest.json': os.path.join(_data_dir, 'jongga_v2_latest.json'),
+        'signals_log.csv': os.path.join(_data_dir, 'signals_log.csv'),
+        'daily_prices.csv': os.path.join(_data_dir, 'daily_prices.csv'),
+        'kr_ai_analysis.json': os.path.join(_data_dir, 'kr_ai_analysis.json'),
+        'daily_report.json': os.path.join(_data_dir, 'daily_report.json'),
+        'briefing/latest.json': os.path.join(_data_dir, 'briefing', 'latest.json'),
+        'market_gate_cache.json': os.path.join(_data_dir, 'market_gate_cache.json'),
+        'crypto_dominance_cache.json': os.path.join(_data_dir, 'crypto_dominance_cache.json'),
+        'vcp_kr_latest.json': os.path.join(_data_dir, 'vcp_kr_latest.json'),
+        'vcp_us_latest.json': os.path.join(_data_dir, 'vcp_us_latest.json'),
+        'vcp_crypto_latest.json': os.path.join(_data_dir, 'vcp_crypto_latest.json'),
+        'screener_leading_latest.json': os.path.join(_data_dir, 'screener_leading_latest.json'),
+        'wave_screener_latest.json': os.path.join(_data_dir, 'wave', 'wave_screener_latest.json'),
+        'market_briefing.json': os.path.join(US_OUTPUT_DIR, 'market_briefing.json'),
+        'crypto_briefing.json': os.path.join(CRYPTO_OUTPUT_DIR, 'crypto_briefing.json'),
+    }
     versions = {}
-    for fname in target_files:
-        fpath = os.path.join(_data_dir, fname)
+    for fname, fpath in target_files.items():
         if os.path.exists(fpath):
             versions[fname] = os.path.getmtime(fpath)
         else:

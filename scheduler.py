@@ -81,6 +81,11 @@ except ImportError:
         with open(path, 'w', encoding='utf-8') as f:
             json.dump(data, f, ensure_ascii=False, indent=kw.get('indent', 2))
 
+try:
+    from app.utils.freshness import build_freshness
+except ImportError:
+    build_freshness = None
+
 # Process-level filelock
 try:
     from filelock import FileLock, Timeout as FileLockTimeout
@@ -1741,6 +1746,21 @@ def run_vcp_enhanced_scan(market: str) -> bool:
                     if attempt < max_retries:
                         time.sleep(10)
                     continue
+                if build_freshness:
+                    max_age_hours = 12 if market_upper == 'CRYPTO' else 96
+                    freshness = build_freshness(result_file, data, max_age_hours=max_age_hours)
+                    if freshness.get('is_stale'):
+                        logger.warning("%s VCP freshness verify failed: %s", market_upper, freshness)
+                        if attempt < max_retries:
+                            time.sleep(10)
+                            continue
+                        send_telegram(
+                            f"🚨 {market_upper} VCP freshness 검증 실패\n"
+                            f"사유: {', '.join(freshness.get('stale_reasons') or [])}\n"
+                            f"content: {freshness.get('content_timestamp')}",
+                            channel=False
+                        )
+                        return False
                 # self-verify: stage2==0 또는 signals 비어있으면 이상 징후 (yfinance 일시 장애 의심)
                 if total_screened > 0 and stage2_passed == 0 and len(signals) == 0:
                     logger.warning(
@@ -3220,6 +3240,34 @@ class Scheduler:
                 return datetime.fromtimestamp(mtime).date() == datetime.now().date()
             return check
 
+        def _verify_json_recent(filepath, max_age_hours=72):
+            def check():
+                if not os.path.exists(filepath):
+                    return False
+                if not build_freshness:
+                    mtime = os.path.getmtime(filepath)
+                    return datetime.fromtimestamp(mtime).date() == datetime.now().date()
+                try:
+                    with open(filepath, 'r', encoding='utf-8') as f:
+                        data = json.load(f)
+                    freshness = build_freshness(filepath, data, max_age_hours=max_age_hours)
+                    if freshness.get('is_stale'):
+                        logger.warning("freshness verify failed for %s: %s", filepath, freshness)
+                        return False
+                    return True
+                except Exception as e:
+                    logger.warning("freshness verify read failed for %s: %s", filepath, e)
+                    return False
+            return check
+
+        def _verify_vcp_all_recent():
+            checks = [
+                _verify_json_recent(os.path.join(Config.DATA_DIR, 'vcp_kr_latest.json'), 96),
+                _verify_json_recent(os.path.join(Config.DATA_DIR, 'vcp_us_latest.json'), 96),
+                _verify_json_recent(os.path.join(Config.DATA_DIR, 'vcp_crypto_latest.json'), 12),
+            ]
+            return all(check() for check in checks)
+
         def _verify_briefing_today(briefing_type):
             def check():
                 today = datetime.now().strftime('%Y%m%d')
@@ -3254,10 +3302,10 @@ class Scheduler:
             return check
 
         jongga_verify = _verify_file_today(os.path.join(Config.DATA_DIR, 'jongga_v2_latest.json'))
-        vcp_kr_verify = _verify_file_today(os.path.join(Config.DATA_DIR, 'vcp_kr_latest.json'))
+        vcp_kr_verify = _verify_json_recent(os.path.join(Config.DATA_DIR, 'vcp_kr_latest.json'), 96)
         us_verify = _verify_file_today(os.path.join(Config.BASE_DIR, 'us_market', 'output', 'market_briefing.json'))
         us_track_verify = _verify_file_today(os.path.join(Config.BASE_DIR, 'us_market', 'output', 'performance_report.json'))
-        crypto_verify = _verify_file_today(os.path.join(Config.DATA_DIR, 'vcp_crypto_latest.json'))
+        crypto_verify = _verify_json_recent(os.path.join(Config.DATA_DIR, 'vcp_crypto_latest.json'), 12)
         morning_briefing_verify = _verify_briefing_today('morning')
         closing_briefing_verify = _verify_briefing_today('closing')
 
@@ -3312,7 +3360,7 @@ class Scheduler:
             # 16:00 — 전 시장 VCP 시그널 (KR + US + Crypto)
             getattr(schedule.every(), day).at(Config.VCP_UPDATE_TIME).do(
                 self._with_record(run_vcp_all_markets, 'vcp_all',
-                                  max_retries=1, retry_delay=600, verify_fn=vcp_kr_verify))
+                                  max_retries=1, retry_delay=600, verify_fn=_verify_vcp_all_recent))
             # 16:30 — Wave 패턴 스캔 (KR)
             getattr(schedule.every(), day).at(Config.WAVE_SCAN_TIME).do(
                 self._with_record(_run_wave_scan, 'wave_scan',

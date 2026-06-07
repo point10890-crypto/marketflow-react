@@ -21,6 +21,7 @@ from app.auth.decorators import pro_required, admin_required
 
 from app.utils.paths import BASE_DIR, DATA_DIR, CRYPTO_MARKET_DIR, CRYPTO_OUTPUT_DIR
 from app.utils.safety import safe_float, load_json_file
+from app.utils.freshness import attach_freshness
 
 logger = logging.getLogger(__name__)
 
@@ -864,8 +865,10 @@ def get_crypto_vcp_enhanced():
         if os.path.exists(cached_path):
             with open(cached_path, 'r', encoding='utf-8') as f:
                 data = json.load(f)
+            data = attach_freshness(data, cached_path, max_age_hours=12)
             resp = jsonify(data)
-            resp.headers['Cache-Control'] = 'public, max-age=300'
+            freshness = data.get('metadata', {}).get('freshness', {})
+            resp.headers['Cache-Control'] = 'no-store' if freshness.get('is_stale') else 'public, max-age=60'
             return resp
         return jsonify({"metadata": {"market": "CRYPTO"}, "summary": {}, "signals": []}), 200
     except Exception as e:

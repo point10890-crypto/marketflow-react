@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { usAPI, krAPI, cryptoAPI, jonggaAPI, waveAPI, briefingAPI, commonAPI, communityAPI, type AIBriefing, type MarketIndexItem, type KRAIChartAnalysisResponse, type USAIChartAnalysisResponse, type CommunitySummary } from '@/lib/api';
 import { usePullToRefreshRegister } from '@/components/layout/PullToRefreshProvider';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSmartRefresh } from '@/hooks/useAutoRefresh';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -20,6 +21,72 @@ interface VCPSummary {
     us: number;
     crypto: number;
     topSignals: Array<{ name: string; market: string; score: number }>;
+}
+
+const SUMMARY_WATCH_FILES = [
+    'briefing/latest.json',
+    'market_briefing.json',
+    'market_gate_cache.json',
+    'crypto_dominance_cache.json',
+    'jongga_v2_latest.json',
+    'screener_leading_latest.json',
+    'wave_screener_latest.json',
+    'vcp_kr_latest.json',
+    'vcp_us_latest.json',
+    'vcp_crypto_latest.json',
+];
+
+function isPayloadFresh(data: any): boolean {
+    const freshness = data?.metadata?.freshness ?? data?.freshness;
+    return !freshness?.is_stale;
+}
+
+function dedupSignals(signals: any[] = []) {
+    const seen = new Set();
+    return signals.filter((s: any) => {
+        const key = s.symbol || s.name || s.ticker;
+        if (!key || seen.has(key)) return false;
+        seen.add(key);
+        return true;
+    });
+}
+
+function vcpSignalScore(signal: any): number {
+    const composite = signal?.composite;
+    if (typeof composite === 'object') {
+        return Number(composite?.composite_score ?? 0);
+    }
+    return Number(composite ?? signal?.score ?? 0);
+}
+
+function buildVcpSummary(vcpKr: any, vcpUs: any, vcpCrypto: any): VCPSummary {
+    const marketPayloads: Array<[string, any]> = [
+        ['KR', vcpKr],
+        ['US', vcpUs],
+        ['CRYPTO', vcpCrypto],
+    ];
+    const counts: Record<string, number> = { KR: 0, US: 0, CRYPTO: 0 };
+    const allSignals: Array<{ name: string; market: string; score: number }> = [];
+
+    marketPayloads.forEach(([market, data]) => {
+        if (!isPayloadFresh(data)) return;
+        const unique = dedupSignals(Array.isArray(data?.signals) ? data.signals : []);
+        counts[market] = unique.length;
+        unique.slice(0, 3).forEach((s: any) => {
+            allSignals.push({
+                name: s.name || s.ticker || s.symbol || '?',
+                market,
+                score: vcpSignalScore(s),
+            });
+        });
+    });
+
+    return {
+        kr: counts.KR,
+        us: counts.US,
+        crypto: counts.CRYPTO,
+        topSignals: allSignals.sort((a, b) => b.score - a.score).slice(0, 5),
+    };
 }
 
 // ── Compact Stat Pill ─────────────────────────────────────────────────────────
@@ -378,37 +445,7 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
             if (usAiChartRes) setUsAiChart(usAiChartRes);
             if (communitySum) setCommunitySummary(communitySum);
 
-            // VCP summary — 중복 제거 (symbol 기준)
-            const dedup = (signals: any[]) => {
-                const seen = new Set();
-                return signals.filter((s: any) => {
-                    const key = s.symbol || s.name || s.ticker;
-                    if (seen.has(key)) return false;
-                    seen.add(key);
-                    return true;
-                });
-            };
-            const allSignals: Array<{ name: string; market: string; score: number }> = [];
-            const addSignals = (data: any, market: string) => {
-                if (data?.signals) {
-                    dedup(data.signals).slice(0, 3).forEach((s: any) => {
-                        const score = typeof s.composite === 'object'
-                            ? (s.composite?.composite_score ?? 0)
-                            : (s.composite ?? s.score ?? 0);
-                        allSignals.push({ name: s.name || s.ticker || '?', market, score });
-                    });
-                }
-            };
-            addSignals(vcpKr, 'KR');
-            addSignals(vcpUs, 'US');
-            addSignals(vcpCrypto, 'CRYPTO');
-
-            setVcpData({
-                kr: vcpKr?.signals ? dedup(vcpKr.signals).length : 0,
-                us: vcpUs?.signals ? dedup(vcpUs.signals).length : 0,
-                crypto: vcpCrypto?.signals ? dedup(vcpCrypto.signals).length : 0,
-                topSignals: allSignals.sort((a, b) => b.score - a.score).slice(0, 5),
-            });
+            setVcpData(buildVcpSummary(vcpKr, vcpUs, vcpCrypto));
         } catch { /* ignore */ }
     }, []);
 
@@ -422,40 +459,13 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                 usAPI.getVCPEnhanced().catch(() => null),
                 cryptoAPI.getVCPEnhanced().catch(() => null),
             ]).then(([vcpKr, vcpUs, vcpCrypto]) => {
-                const dedup = (signals: any[]) => {
-                    const seen = new Set();
-                    return signals.filter((s: any) => {
-                        const key = s.symbol || s.name || s.ticker;
-                        if (seen.has(key)) return false;
-                        seen.add(key);
-                        return true;
-                    });
-                };
-                const allSignals: Array<{ name: string; market: string; score: number }> = [];
-                const addSignals = (data: any, market: string) => {
-                    if (data?.signals) {
-                        dedup(data.signals).slice(0, 3).forEach((s: any) => {
-                            const score = typeof s.composite === 'object'
-                                ? (s.composite?.composite_score ?? 0)
-                                : (s.composite ?? s.score ?? 0);
-                            allSignals.push({ name: s.name || s.ticker || '?', market, score });
-                        });
-                    }
-                };
-                addSignals(vcpKr, 'KR');
-                addSignals(vcpUs, 'US');
-                addSignals(vcpCrypto, 'CRYPTO');
-                setVcpData({
-                    kr: vcpKr?.signals ? dedup(vcpKr.signals).length : 0,
-                    us: vcpUs?.signals ? dedup(vcpUs.signals).length : 0,
-                    crypto: vcpCrypto?.signals ? dedup(vcpCrypto.signals).length : 0,
-                    topSignals: allSignals.sort((a, b) => b.score - a.score).slice(0, 5),
-                });
+                setVcpData(buildVcpSummary(vcpKr, vcpUs, vcpCrypto));
             });
         }
     }, [initialData, loadData]);
 
     usePullToRefreshRegister(loadData);
+    useSmartRefresh(loadData, SUMMARY_WATCH_FILES, 15000, true);
 
     // ── Derived values ─────────────────────────────────────────────────────────
 

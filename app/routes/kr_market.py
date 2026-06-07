@@ -20,6 +20,7 @@ from app.utils.paths import BASE_DIR, DATA_DIR
 from app.auth.decorators import admin_required
 from app.utils.json_cache import load_json_cached
 from app.utils.atomic_json import write_json_atomic
+from app.utils.freshness import attach_freshness
 
 # market_gate 임포트를 위한 경로 등록
 if BASE_DIR not in sys.path:
@@ -1424,8 +1425,10 @@ def get_kr_vcp_enhanced():
         if os.path.exists(cached_path):
             with open(cached_path, 'r', encoding='utf-8') as f:
                 data = json.load(f)
+            data = attach_freshness(data, cached_path, max_age_hours=96)
             resp = jsonify(data)
-            resp.headers['Cache-Control'] = 'public, max-age=300'
+            freshness = data.get('metadata', {}).get('freshness', {})
+            resp.headers['Cache-Control'] = 'no-store' if freshness.get('is_stale') else 'public, max-age=60'
             return resp
         return jsonify({"metadata": {"market": "KR"}, "summary": {}, "signals": []}), 200
     except Exception as e:
