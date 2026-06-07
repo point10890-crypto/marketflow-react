@@ -80,3 +80,25 @@ def test_leading_endpoint_serves_fresh_live_file_without_rescan(monkeypatch):
     assert data["served_from"] == "fresh_file"
     assert data["live_refresh_recommended"] is True
     assert data["results"][0]["price"] == 222
+
+
+def test_leading_endpoint_marks_closed_market_stale_file(monkeypatch):
+    stale = {
+        "timestamp": (datetime.now() - timedelta(days=30)).isoformat(),
+        "market_status": "closed",
+        "results": [{"code": "000001", "name": "Old", "price": 100}],
+        "by_grade": {},
+    }
+
+    monkeypatch.setattr(kis_screener, "is_market_open", lambda: False)
+    monkeypatch.setattr(kis_screener, "load_latest", lambda: stale)
+    _reset_cache(None, 0)
+
+    response = _client().get("/api/kr/screener/leading")
+
+    assert response.status_code == 200
+    data = response.get_json()
+    assert data["served_from"] == "latest_file"
+    assert data["freshness"]["is_stale"] is True
+    assert data["stale_reason"] == "stale_result"
+    assert data["live_refresh_recommended"] is False

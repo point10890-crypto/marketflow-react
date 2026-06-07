@@ -437,7 +437,7 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
             setKrGate(kr);
             setCryptoDom(crypto);
             setTodaySummary(jongga);
-            setLeadingData(leading);
+            setLeadingData(isPayloadFresh(leading) ? leading : null);
             setWaveData(wave);
             setAiBriefing(aiBrf);
             if (indices?.indices) setMarketIndices(indices.indices);

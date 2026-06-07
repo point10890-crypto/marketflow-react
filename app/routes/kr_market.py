@@ -1503,15 +1503,19 @@ def kr_screener_leading():
             data = copy.deepcopy(payload) if isinstance(payload, dict) else payload
             if isinstance(data, dict):
                 age = result_age_seconds(data)
+                max_age_seconds = live_ttl if market_open else 96 * 3600
+                is_stale = age is None or age > max_age_seconds
                 data["served_from"] = served_from
                 data["quote_mode"] = data.get("quote_mode") or get_quote_mode()
                 data["live_refresh_recommended"] = bool(live_refresh)
                 data["freshness"] = {
                     "age_seconds": round(age, 1) if age is not None else None,
                     "live_ttl_seconds": live_ttl,
+                    "max_age_seconds": max_age_seconds,
+                    "is_stale": is_stale,
                 }
-                if stale_reason:
-                    data["stale_reason"] = stale_reason
+                if stale_reason or is_stale:
+                    data["stale_reason"] = stale_reason or "stale_result"
             resp = jsonify(data)
             resp.headers['Cache-Control'] = 'no-cache, no-store'
             return resp
