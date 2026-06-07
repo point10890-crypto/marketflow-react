@@ -3220,11 +3220,46 @@ class Scheduler:
                 return datetime.fromtimestamp(mtime).date() == datetime.now().date()
             return check
 
+        def _verify_briefing_today(briefing_type):
+            def check():
+                today = datetime.now().strftime('%Y%m%d')
+                dated_path = os.path.join(
+                    Config.DATA_DIR, 'briefing', f'{briefing_type}_{today}.json'
+                )
+                latest_path = os.path.join(Config.DATA_DIR, 'briefing', 'latest.json')
+
+                if not os.path.exists(dated_path) or not os.path.exists(latest_path):
+                    return False
+
+                dated_mtime = datetime.fromtimestamp(os.path.getmtime(dated_path)).date()
+                latest_mtime = datetime.fromtimestamp(os.path.getmtime(latest_path)).date()
+                if dated_mtime != datetime.now().date() or latest_mtime != datetime.now().date():
+                    return False
+
+                try:
+                    with open(dated_path, 'r', encoding='utf-8') as f:
+                        dated = json.load(f)
+                    with open(latest_path, 'r', encoding='utf-8') as f:
+                        latest = json.load(f)
+                except Exception:
+                    return False
+
+                return (
+                    dated.get('date') == today
+                    and dated.get('type') == briefing_type
+                    and latest.get('date') == today
+                    and latest.get('type') == briefing_type
+                    and bool(dated.get('sections'))
+                )
+            return check
+
         jongga_verify = _verify_file_today(os.path.join(Config.DATA_DIR, 'jongga_v2_latest.json'))
         vcp_kr_verify = _verify_file_today(os.path.join(Config.DATA_DIR, 'vcp_kr_latest.json'))
         us_verify = _verify_file_today(os.path.join(Config.BASE_DIR, 'us_market', 'output', 'market_briefing.json'))
         us_track_verify = _verify_file_today(os.path.join(Config.BASE_DIR, 'us_market', 'output', 'performance_report.json'))
         crypto_verify = _verify_file_today(os.path.join(Config.DATA_DIR, 'vcp_crypto_latest.json'))
+        morning_briefing_verify = _verify_briefing_today('morning')
+        closing_briefing_verify = _verify_briefing_today('closing')
 
         if Config.ALPHA_SCANNER_ENABLED:
             interval = max(0, int(Config.ALPHA_SCANNER_MONITOR_INTERVAL_MINUTES))
@@ -3285,11 +3320,13 @@ class Scheduler:
             # 09:05 — AI 조간 브리핑 (US 시장 중심)
             getattr(schedule.every(), day).at(Config.MORNING_BRIEFING_TIME).do(
                 self._with_record(run_morning_briefing, 'morning_briefing',
-                                  max_retries=1, retry_delay=300))
+                                  max_retries=1, retry_delay=300,
+                                  verify_fn=morning_briefing_verify))
             # 16:05 — AI 마감 브리핑 (KR 시장 중심)
             getattr(schedule.every(), day).at(Config.CLOSING_BRIEFING_TIME).do(
                 self._with_record(run_closing_briefing, 'closing_briefing',
-                                  max_retries=1, retry_delay=300))
+                                  max_retries=1, retry_delay=300,
+                                  verify_fn=closing_briefing_verify))
             # 14:00 — AI Chart Analysis KR (Gemini Vision 100종목)
             getattr(schedule.every(), day).at(Config.AI_CHART_TIME).do(
                 self._with_record(_run_ai_chart_analysis, 'ai_chart',

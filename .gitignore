@@ -49,6 +49,8 @@ data/backtest/
 data/ai/
 data/institutional/
 data/admin_mirofish/
+data/briefing/*.json
+!data/briefing/.gitkeep
 data/uploads/community/
 crypto-analytics/crypto_market/signals.sqlite3
 
