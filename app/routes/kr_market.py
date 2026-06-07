@@ -1499,6 +1499,12 @@ def kr_screener_leading():
         market_open = is_market_open()
         live_ttl = get_live_file_ttl_seconds()
 
+        def _run_fresh_scan():
+            try:
+                return run_screening(force=True)
+            except TypeError:
+                return run_screening()
+
         def _serve(payload, served_from, stale_reason=None, live_refresh=False):
             data = copy.deepcopy(payload) if isinstance(payload, dict) else payload
             if isinstance(data, dict):
@@ -1528,12 +1534,33 @@ def kr_screener_leading():
             if not market_open or is_live_result_fresh(cached_data, max_age_seconds=live_ttl):
                 return _serve(cached_data, "memory_cache", live_refresh=market_open)
 
-        # 2. 장 마감 시 → 파일 캐시만 반환 (새 스캔 안 함)
+        # 2. 장 마감 시에도 stale 파일이면 KIS로 1회 재생성 시도
         if not market_open:
             latest = load_latest()
             if latest:
                 latest["market_status"] = "closed"
-                return _serve(latest, "latest_file", live_refresh=False)
+                age = result_age_seconds(latest)
+                max_age_seconds = 96 * 3600
+                if age is not None and age <= max_age_seconds:
+                    return _serve(latest, "latest_file", live_refresh=False)
+
+                result = _run_fresh_scan()
+                if result and result.get("results"):
+                    result["market_status"] = "closed"
+                    return _serve(result, "offhours_refresh", live_refresh=False)
+
+                return _serve(
+                    latest,
+                    "stale_file_fallback",
+                    stale_reason=(result or {}).get("error") or "offhours_refresh_failed",
+                    live_refresh=False,
+                )
+
+            result = _run_fresh_scan()
+            if result and result.get("results"):
+                result["market_status"] = "closed"
+                return _serve(result, "offhours_refresh", live_refresh=False)
+            return _serve(result, "offhours_refresh_error", live_refresh=False)
 
         # 3. 장중 — 파일 캐시 반환 + 백그라운드 스캔 트리거
         latest = load_latest()
@@ -1542,7 +1569,7 @@ def kr_screener_leading():
                 return _serve(latest, "fresh_file", live_refresh=True)
 
         # 4. 캐시 없음 — 라이브 실행 (첫 호출)
-        result = run_screening()
+        result = _run_fresh_scan()
         if result and result.get("results"):
             return _serve(result, "live_scan", live_refresh=True)
 

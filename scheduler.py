@@ -383,6 +383,11 @@ class Config:
         for item in os.environ.get('ALPHA_SCANNER_TIMES', '09:20,11:20,14:20,15:40,16:10').split(',')
         if item.strip()
     ]
+    LEADING_SCREENER_TIMES = [
+        item.strip()
+        for item in os.environ.get('LEADING_SCREENER_TIMES', '09:07,10:07,11:07,13:07,14:07,15:07,15:35').split(',')
+        if item.strip()
+    ]
     ALPHA_SCANNER_LIMIT = int(os.environ.get('ALPHA_SCANNER_LIMIT', '20'))
     ALPHA_SCANNER_MIN_ALPHA = float(os.environ.get('ALPHA_SCANNER_MIN_ALPHA', '70'))
     ALPHA_SCANNER_MAX_RISK = float(os.environ.get('ALPHA_SCANNER_MAX_RISK', '45'))
@@ -761,6 +766,35 @@ def run_alpha_scanner_monitor() -> bool:
             )
         except Exception:
             pass
+        return False
+
+
+def run_leading_screener_refresh() -> bool:
+    """Refresh KIS leading-stock screener and persist only real non-empty results."""
+    try:
+        from app.services.kis_screener import run_screening
+
+        result = run_screening(force=True)
+        count = len((result or {}).get('results') or [])
+        if count <= 0:
+            logger.warning(
+                "leading_screener refresh empty: error=%s source_counts=%s status=%s",
+                (result or {}).get('error'),
+                (result or {}).get('source_counts'),
+                (result or {}).get('market_status'),
+            )
+            return False
+
+        logger.info(
+            "leading_screener refresh ok: count=%s by_grade=%s status=%s source_counts=%s",
+            count,
+            result.get('by_grade'),
+            result.get('market_status'),
+            result.get('source_counts'),
+        )
+        return True
+    except Exception as e:
+        logger.error("leading_screener refresh failed: %s: %s", type(e).__name__, e, exc_info=True)
         return False
 
 
@@ -3302,6 +3336,7 @@ class Scheduler:
             return check
 
         jongga_verify = _verify_file_today(os.path.join(Config.DATA_DIR, 'jongga_v2_latest.json'))
+        leading_verify = _verify_json_recent(os.path.join(Config.DATA_DIR, 'screener_leading_latest.json'), 2)
         vcp_kr_verify = _verify_json_recent(os.path.join(Config.DATA_DIR, 'vcp_kr_latest.json'), 96)
         us_verify = _verify_file_today(os.path.join(Config.BASE_DIR, 'us_market', 'output', 'market_briefing.json'))
         us_track_verify = _verify_file_today(os.path.join(Config.BASE_DIR, 'us_market', 'output', 'performance_report.json'))
@@ -3337,6 +3372,11 @@ class Scheduler:
                 getattr(schedule.every(), day).at(hm).do(
                     self._with_record(_run_kiwoom_ai_theme, 'kiwoom_ai_theme',
                                       max_retries=1, retry_delay=60))
+            for hm in Config.LEADING_SCREENER_TIMES:
+                task_key = f"leading_screener_{hm.replace(':', '')}"
+                getattr(schedule.every(), day).at(hm).do(
+                    self._with_record(run_leading_screener_refresh, task_key,
+                                      max_retries=1, retry_delay=120, verify_fn=leading_verify))
             # 04:00 — US Market 전체 데이터 갱신 + Smart Money Top 5 텔레그램
             getattr(schedule.every(), day).at(Config.US_UPDATE_TIME).do(
                 self._with_record(run_us_market_update, 'us_market',

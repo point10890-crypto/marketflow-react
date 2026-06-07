@@ -92,13 +92,73 @@ def test_leading_endpoint_marks_closed_market_stale_file(monkeypatch):
 
     monkeypatch.setattr(kis_screener, "is_market_open", lambda: False)
     monkeypatch.setattr(kis_screener, "load_latest", lambda: stale)
+    monkeypatch.setattr(
+        kis_screener,
+        "run_screening",
+        lambda **kwargs: {"error": "kis_upstream_empty", "results": []},
+    )
     _reset_cache(None, 0)
 
     response = _client().get("/api/kr/screener/leading")
 
     assert response.status_code == 200
     data = response.get_json()
-    assert data["served_from"] == "latest_file"
+    assert data["served_from"] == "stale_file_fallback"
     assert data["freshness"]["is_stale"] is True
-    assert data["stale_reason"] == "stale_result"
+    assert data["stale_reason"] == "kis_upstream_empty"
     assert data["live_refresh_recommended"] is False
+
+
+def test_leading_endpoint_refreshes_stale_closed_market_file(monkeypatch):
+    stale = {
+        "timestamp": (datetime.now() - timedelta(days=30)).isoformat(),
+        "market_status": "closed",
+        "results": [{"code": "000001", "name": "Old", "price": 100}],
+        "by_grade": {},
+    }
+    refreshed = {
+        "timestamp": datetime.now().isoformat(),
+        "market_status": "closed",
+        "results": [{"code": "000002", "name": "Refresh", "price": 300}],
+        "by_grade": {"A": 1},
+        "total_candidates": 1,
+        "time_weight": 1.0,
+        "api_calls": 3,
+        "elapsed_ms": 2,
+    }
+    calls = []
+
+    monkeypatch.setattr(kis_screener, "is_market_open", lambda: False)
+    monkeypatch.setattr(kis_screener, "load_latest", lambda: stale)
+    monkeypatch.setattr(kis_screener, "run_screening", lambda **kwargs: calls.append(kwargs) or refreshed)
+    _reset_cache(None, 0)
+
+    response = _client().get("/api/kr/screener/leading")
+
+    assert response.status_code == 200
+    data = response.get_json()
+    assert calls == [{"force": True}]
+    assert data["served_from"] == "offhours_refresh"
+    assert data["results"][0]["name"] == "Refresh"
+    assert data["freshness"]["is_stale"] is False
+
+
+def test_run_screening_returns_error_without_overwriting_when_kis_sources_empty(monkeypatch):
+    saved = []
+
+    monkeypatch.setattr(kis_screener, "get_token", lambda: "token")
+    monkeypatch.setattr(kis_screener, "fetch_volume_rank", lambda token, blng_code="3": [])
+    monkeypatch.setattr(kis_screener, "fetch_fluctuation_rank", lambda token: [])
+    monkeypatch.setattr(kis_screener, "_save_result", lambda result: saved.append(result))
+    _reset_cache(None, 0)
+
+    result = kis_screener.run_screening(force=True)
+
+    assert result["error"] == "kis_upstream_empty"
+    assert result["source_counts"] == {
+        "volume_by_amount": 0,
+        "fluctuation": 0,
+        "volume_by_surge": 0,
+    }
+    assert result["results"] == []
+    assert saved == []

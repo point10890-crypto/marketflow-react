@@ -18,6 +18,19 @@ logger = logging.getLogger(__name__)
 from app.utils.paths import DATA_DIR
 from app.utils.atomic_json import write_json_atomic
 
+
+def _load_runtime_env():
+    """Load repo .env when this module is invoked outside Flask/scheduler."""
+    try:
+        from dotenv import load_dotenv
+        root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+        load_dotenv(os.path.join(root_dir, ".env"), override=False)
+    except Exception as e:
+        logger.debug("kis_screener dotenv load skipped: %s", e)
+
+
+_load_runtime_env()
+
 # ─── 설정 ───
 _paper = os.environ.get("KIS_PAPER", "true").lower() in ("true", "1")
 BASE_URL = "https://openapivts.koreainvestment.com:29443" if _paper else "https://openapi.koreainvestment.com:9443"
@@ -139,7 +152,21 @@ def _api_get(token, path, tr_id, params, retry=True):
             new_token = get_token()
             if new_token:
                 return _api_get(new_token, path, tr_id, params, retry=False)
-        return res.json().get("output", [])
+        try:
+            body = res.json()
+        except Exception:
+            logger.warning("KIS API %s HTTP %s non-json body=%s", path, res.status_code, res.text[:160])
+            return []
+        if res.status_code != 200:
+            logger.warning(
+                "KIS API %s HTTP %s msg_cd=%s msg=%s",
+                path, res.status_code, body.get("msg_cd"), body.get("msg1"),
+            )
+            return []
+        if body.get("rt_cd") not in (None, "0"):
+            logger.warning("KIS API %s rt_cd=%s msg=%s", path, body.get("rt_cd"), body.get("msg1"))
+        output = body.get("output", [])
+        return output if isinstance(output, list) else []
     except Exception as e:
         logger.warning(f"KIS API 호출 실패 {path}: {e}")
         return []
@@ -445,11 +472,12 @@ def is_live_result_fresh(result, now=None, max_age_seconds=None):
     return age <= ttl
 
 
-def run_screening():
+def run_screening(force=False):
     now = time.time()
-    with _result_lock:
-        if _result_cache["data"] and (now - _result_cache["ts"]) < _CACHE_TTL:
-            return _result_cache["data"]
+    if not force:
+        with _result_lock:
+            if _result_cache["data"] and (now - _result_cache["ts"]) < _CACHE_TTL:
+                return _result_cache["data"]
 
     t_start = time.time()
     token = get_token()
@@ -461,6 +489,26 @@ def run_screening():
     volume_by_amt = fetch_volume_rank(token, "3")
     fluct_data = fetch_fluctuation_rank(token)
     volume_by_surge = fetch_volume_rank(token, "1")
+    source_counts = {
+        "volume_by_amount": len(volume_by_amt or []),
+        "fluctuation": len(fluct_data or []),
+        "volume_by_surge": len(volume_by_surge or []),
+    }
+    if not any(source_counts.values()):
+        return {
+            "error": "kis_upstream_empty",
+            "error_detail": "KIS ranking APIs returned no rows; stale latest was not overwritten.",
+            "timestamp": datetime.now().isoformat(),
+            "market_status": get_market_status(),
+            "quote_mode": get_quote_mode(),
+            "source_counts": source_counts,
+            "results": [],
+            "by_grade": {},
+            "total_candidates": 0,
+            "time_weight": 1.0,
+            "api_calls": 3,
+            "elapsed_ms": round((time.time() - t_start) * 1000),
+        }
 
     candidates = {}
     for item in volume_by_amt:
@@ -633,6 +681,7 @@ def run_screening():
         "quote_mode": get_quote_mode(),
         "time_weight": tw,
         "total_candidates": len(candidates),
+        "source_counts": source_counts,
         "results": results,
         "by_grade": by_grade,
         "api_calls": 3 + len(pre_scored) * 2,
