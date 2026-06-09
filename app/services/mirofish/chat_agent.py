@@ -274,6 +274,7 @@ def _run_chat_deepseek(user_message: str, history: list[dict] | None) -> dict[st
     tools = [{'type': 'function', 'function': spec} for spec in FUNCTION_DECLARATIONS]
 
     tool_calls_log: list[dict[str, Any]] = []
+    tool_results_log: list[dict[str, Any]] = []
     reply = ''
     iterations = 0
 
@@ -343,6 +344,11 @@ def _run_chat_deepseek(user_message: str, history: list[dict] | None) -> dict[st
                 'args': fn_args,
                 'result_preview': preview[:600],
             })
+            tool_results_log.append({
+                'name': fn_name,
+                'args': fn_args,
+                'result': tool_result,
+            })
             messages.append({
                 'role': 'tool',
                 'tool_call_id': tc.id,
@@ -351,6 +357,7 @@ def _run_chat_deepseek(user_message: str, history: list[dict] | None) -> dict[st
 
     if not reply:
         reply = '도구는 호출했지만 응답이 비어 있습니다.' if tool_calls_log else '응답이 없습니다.'
+    reply = _append_grounded_tool_summary(reply, tool_results_log)
 
     return {
         'reply': reply,
@@ -405,6 +412,7 @@ def _run_chat_gemini(user_message: str, history: list[dict] | None) -> dict[str,
     )
 
     tool_calls_log: list[dict[str, Any]] = []
+    tool_results_log: list[dict[str, Any]] = []
     final_response = None
     iterations = 0
 
@@ -464,6 +472,11 @@ def _run_chat_gemini(user_message: str, history: list[dict] | None) -> dict[str,
             'args': fn_args,
             'result_preview': preview[:600],
         })
+        tool_results_log.append({
+            'name': fn_name,
+            'args': fn_args,
+            'result': tool_result,
+        })
 
         # 다음 턴에 function call + response 전달
         contents.append(candidate_content)
@@ -483,6 +496,7 @@ def _run_chat_gemini(user_message: str, history: list[dict] | None) -> dict[str,
     reply = ''.join(text_chunks).strip()
     if not reply:
         reply = '도구는 호출했지만 응답이 비어 있습니다.' if tool_calls_log else '응답이 없습니다.'
+    reply = _append_grounded_tool_summary(reply, tool_results_log)
 
     return {
         'reply': reply,
@@ -491,3 +505,21 @@ def _run_chat_gemini(user_message: str, history: list[dict] | None) -> dict[str,
         'method': 'llm',
         **_response_metadata(),
     }
+
+
+def _append_grounded_tool_summary(reply: str, tool_results_log: list[dict[str, Any]]) -> str:
+    """Append deterministic MCP price/level numbers after model prose."""
+    level_results = [
+        item.get('result')
+        for item in tool_results_log
+        if item.get('name') == 'analyze_levels'
+        and isinstance(item.get('result'), dict)
+        and not item.get('result', {}).get('error')
+    ]
+    if not level_results:
+        return reply
+
+    summary = technical_analysis.format_grounded_levels_summary(level_results[-1])
+    if not summary or '### MCP 가격 기준' in reply:
+        return reply
+    return f'{reply.rstrip()}\n\n---\n{summary}'
