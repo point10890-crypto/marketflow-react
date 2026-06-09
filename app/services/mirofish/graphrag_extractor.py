@@ -51,7 +51,7 @@ def extract_graph(text: str, *, use_llm: bool = True) -> dict[str, Any]:
 
     if use_llm:
         try:
-            llm_result = _extract_with_gemini(text)
+            llm_result = _extract_with_llm(text)
             if llm_result and llm_result.get('entities'):
                 entities = llm_result.get('entities', [])
                 relations = llm_result.get('relations', [])
@@ -185,30 +185,19 @@ _GEMINI_PROMPT = """당신은 금융 뉴스/문서에서 지식 그래프를 추
 """
 
 
-def _extract_with_gemini(text: str) -> dict[str, Any] | None:
-    api_key = os.getenv('GEMINI_API_KEY') or os.getenv('GOOGLE_API_KEY')
-    if not api_key:
-        return None
+def _extract_with_llm(text: str) -> dict[str, Any] | None:
     try:
-        from google import genai
-        from google.genai import types as genai_types
-    except ImportError:
-        return None
-    try:
-        client = genai.Client(api_key=api_key)
-        response = client.models.generate_content(
-            model=os.getenv('MIROFISH_GRAPHRAG_MODEL', 'gemini-2.5-flash'),
-            contents=_GEMINI_PROMPT + text,
-            config=genai_types.GenerateContentConfig(
-                response_mime_type='application/json',
-                temperature=0.2,
-                max_output_tokens=8192,  # 4k → 8k (large entity/relation lists 처리)
-            ),
+        from app.services.mirofish.llm_client import generate_text
+        raw = generate_text(
+            _GEMINI_PROMPT + text,
+            model_env='MIROFISH_GRAPHRAG_MODEL',
+            temperature=0.2,
+            max_tokens=8192,  # large entity/relation lists 처리
+            json_mode=True,
         )
-        raw = (response.text or '').strip()
         if not raw:
             import logging
-            logging.getLogger(__name__).warning('[GraphRAG] Gemini returned empty text')
+            logging.getLogger(__name__).warning('[GraphRAG] LLM returned empty text')
             return None
 
         # truncated JSON 복구 시도: 마지막 완전한 [ 또는 ] 까지만 사용
@@ -231,7 +220,7 @@ def _extract_with_gemini(text: str) -> dict[str, Any] | None:
         }
     except Exception as e:
         import logging
-        logging.getLogger(__name__).warning(f'[GraphRAG] Gemini call failed: {type(e).__name__}: {e}')
+        logging.getLogger(__name__).warning(f'[GraphRAG] LLM call failed: {type(e).__name__}: {e}')
         return None
 
 

@@ -87,7 +87,7 @@ def run_debate(
 
     if use_llm:
         try:
-            llm_rounds = _run_with_gemini(target, brain_snapshot, rounds)
+            llm_rounds = _run_with_llm(target, brain_snapshot, rounds)
             if llm_rounds:
                 debate_rounds = llm_rounds
                 method = 'llm'
@@ -236,29 +236,21 @@ def _persona_message(profile: dict, target: str, cited: list[tuple[str, int, str
     return f"{intro} {cited_text}이며, 이를 근거로 {target} 에 대해 {stance} 입장입니다."
 
 
-# ─── Gemini multi-agent (compact prompting) ────────────────
+# ─── LLM multi-agent (compact prompting — DeepSeek V4 기본, llm_client 라우팅) ─
 
-def _run_with_gemini(target: str, brain: dict, rounds: int) -> list[dict] | None:
-    api_key = os.getenv('GEMINI_API_KEY') or os.getenv('GOOGLE_API_KEY')
-    if not api_key:
-        return None
+def _run_with_llm(target: str, brain: dict, rounds: int) -> list[dict] | None:
     try:
-        from google import genai
-        from google.genai import types as genai_types
-        client = genai.Client(api_key=api_key)
+        from app.services.mirofish.llm_client import generate_text
 
         # 한 번의 호출로 모든 라운드 + 모든 에이전트 생성 (비용 절감)
         prompt = _build_gemini_prompt(target, brain, rounds)
-        response = client.models.generate_content(
-            model=os.getenv('MIROFISH_DEBATE_MODEL', 'gemini-2.5-flash'),
-            contents=prompt,
-            config=genai_types.GenerateContentConfig(
-                response_mime_type='application/json',
-                temperature=0.7,
-                max_output_tokens=10000,  # 6k → 10k (5명×4라운드 토론 안전 capacity)
-            ),
+        raw = generate_text(
+            prompt,
+            model_env='MIROFISH_DEBATE_MODEL',
+            temperature=0.7,
+            max_tokens=10000,  # 5명×4라운드 토론 안전 capacity
+            json_mode=True,
         )
-        raw = (response.text or '').strip()
         if not raw:
             return None
         try:
@@ -274,7 +266,7 @@ def _run_with_gemini(target: str, brain: dict, rounds: int) -> list[dict] | None
         return _validate_debate(rounds_data)
     except Exception as e:
         import logging
-        logging.getLogger(__name__).warning(f'[Debate] Gemini call failed: {type(e).__name__}: {e}')
+        logging.getLogger(__name__).warning(f'[Debate] LLM call failed: {type(e).__name__}: {e}')
         return None
 
 

@@ -1036,24 +1036,23 @@ def recommend_thresholds(window_days: int = 14) -> dict[str, Any]:
         + '}'
     )
 
-    api_key = os.getenv('GOOGLE_API_KEY') or os.getenv('GEMINI_API_KEY')
-    if not api_key:
-        return {
-            'ok': False,
-            'error': 'GOOGLE_API_KEY / GEMINI_API_KEY 미설정',
-            'current_thresholds': _current_thresholds_summary(current),
-            'recent_kpi': summary,
-        }
-
     try:
-        from google import genai
+        from app.services.mirofish.llm_client import generate_text
 
-        client = genai.Client(api_key=api_key)
-        response = client.models.generate_content(
-            model=os.getenv('MIROFISH_TUNER_MODEL', 'gemini-2.5-flash'),
-            contents=prompt,
+        raw = generate_text(
+            prompt,
+            model_env='MIROFISH_TUNER_MODEL',
+            temperature=0.3,
+            max_tokens=2048,
         )
-        raw = (response.text or '').strip()
+        raw = (raw or '').strip()
+        if not raw:
+            return {
+                'ok': False,
+                'error': 'LLM 응답 없음 (API 키 미설정 또는 호출 실패 — 로그 확인)',
+                'current_thresholds': _current_thresholds_summary(current),
+                'recent_kpi': summary,
+            }
     except Exception as exc:
         return {
             'ok': False,

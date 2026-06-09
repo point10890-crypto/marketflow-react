@@ -52,7 +52,7 @@ def run_cio(
 
     if use_llm:
         try:
-            llm_trace, llm_final = _run_with_gemini(target, brain_snapshot, debate_result, tools)
+            llm_trace, llm_final = _run_with_llm(target, brain_snapshot, debate_result, tools)
             if llm_final:
                 trace = llm_trace
                 final_answer = llm_final
@@ -309,32 +309,25 @@ def _pick_top_confidence_agent(debate: dict) -> str | None:
     return sorted_msgs[0].get('agent_id') if sorted_msgs else None
 
 
-# ─── Gemini LLM ReACT (function-calling style — simulated) ─
+# ─── LLM ReACT (function-calling style — simulated, DeepSeek V4 기본) ─
 
-def _run_with_gemini(target: str, brain: dict, debate: dict,
-                     tools: dict[str, Callable]) -> tuple[list[dict], dict | None]:
-    """Gemini structured output — Thought/Action/Observation 시퀀스 생성.
+def _run_with_llm(target: str, brain: dict, debate: dict,
+                  tools: dict[str, Callable]) -> tuple[list[dict], dict | None]:
+    """LLM structured output — Thought/Action/Observation 시퀀스 생성.
 
     실제 function calling 대신 single-shot JSON 으로 trace 생성 후 tool 실행.
     """
-    api_key = os.getenv('GEMINI_API_KEY') or os.getenv('GOOGLE_API_KEY')
-    if not api_key:
-        return [], None
     try:
-        from google import genai
-        from google.genai import types as genai_types
-        client = genai.Client(api_key=api_key)
+        from app.services.mirofish.llm_client import generate_text
         prompt = _build_react_prompt(target, brain, debate)
-        response = client.models.generate_content(
-            model=os.getenv('MIROFISH_REACT_MODEL', 'gemini-2.5-flash'),
-            contents=prompt,
-            config=genai_types.GenerateContentConfig(
-                response_mime_type='application/json',
-                temperature=0.4,
-                max_output_tokens=4000,
-            ),
+        raw = generate_text(
+            prompt,
+            model_env='MIROFISH_REACT_MODEL',
+            temperature=0.4,
+            max_tokens=4000,
+            json_mode=True,
         )
-        plan = json.loads(response.text or '{}')
+        plan = json.loads(raw or '{}')
         steps = plan.get('steps', [])
         if not isinstance(steps, list) or len(steps) < MIN_LOOPS:
             return [], None

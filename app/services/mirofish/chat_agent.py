@@ -1,4 +1,6 @@
-"""MiroFish 자연어 채팅 에이전트 — Gemini function calling 으로 안전한 read-only MCP 도구 호출.
+"""MiroFish 자연어 채팅 에이전트 — DeepSeek V4 function calling 으로 안전한 read-only MCP 도구 호출.
+
+2026-06-10 Gemini 선불 크레딧 소진으로 DeepSeek V4 전환 (MIROFISH_LLM_PROVIDER=gemini 회귀 가능).
 
 설계 원칙:
 - 안전성 우선: 14개 MCP tool 중 read-only 8개만 채팅에 노출 (run_*, send_*, refresh_* 제외)
@@ -210,7 +212,7 @@ def _response_metadata() -> dict[str, str]:
 
 
 def run_chat(user_message: str, history: list[dict] | None = None) -> dict[str, Any]:
-    """Gemini function-calling 채팅 한 턴 실행.
+    """LLM function-calling 채팅 한 턴 실행 (DeepSeek V4 기본, provider 토글).
 
     Args:
         user_message: 사용자 입력
@@ -229,6 +231,138 @@ def run_chat(user_message: str, history: list[dict] | None = None) -> dict[str, 
             **_response_metadata(),
         }
 
+    from app.services.mirofish.llm_client import get_provider
+
+    if get_provider() == 'gemini':
+        return _run_chat_gemini(user_message, history)
+    return _run_chat_deepseek(user_message, history)
+
+
+def _run_chat_deepseek(user_message: str, history: list[dict] | None) -> dict[str, Any]:
+    """DeepSeek V4 function-calling 채팅 루프 (OpenAI 호환 tools 포맷).
+
+    2026-06-10 Gemini 크레딧 소진으로 전환. FUNCTION_DECLARATIONS 는 JSON Schema
+    포맷이라 OpenAI tools 로 그대로 래핑 가능.
+    """
+    from app.services.mirofish.llm_client import (
+        deepseek_extra_body,
+        deepseek_model,
+        get_deepseek_client,
+    )
+
+    client = get_deepseek_client()
+    if client is None:
+        return {
+            'reply': 'DEEPSEEK_API_KEY 가 설정되지 않아 채팅을 사용할 수 없습니다. 관리자에게 문의해 주세요.',
+            'tool_calls': [],
+            'iterations': 0,
+            'method': 'fallback',
+            **_response_metadata(),
+        }
+
+    model_name = deepseek_model('MIROFISH_CHAT_MODEL')
+
+    # ── Build messages ──
+    messages: list[dict[str, Any]] = [{'role': 'system', 'content': SYSTEM_INSTRUCTION}]
+    for msg in (history or [])[-10:]:  # 최근 10턴만
+        role = 'user' if msg.get('role') == 'user' else 'assistant'
+        text = str(msg.get('content', ''))
+        if text:
+            messages.append({'role': role, 'content': text})
+    messages.append({'role': 'user', 'content': user_message})
+
+    tools = [{'type': 'function', 'function': spec} for spec in FUNCTION_DECLARATIONS]
+
+    tool_calls_log: list[dict[str, Any]] = []
+    reply = ''
+    iterations = 0
+
+    for it in range(MAX_ITERATIONS):
+        iterations = it + 1
+        try:
+            response = client.chat.completions.create(
+                model=model_name,
+                messages=messages,
+                tools=tools,
+                temperature=0.3,
+                max_tokens=MAX_OUTPUT_TOKENS,
+                extra_body=deepseek_extra_body(),
+            )
+        except Exception as exc:
+            logger.exception('[chat_agent] DeepSeek 호출 실패')
+            return {
+                'reply': f'AI 호출에 실패했습니다: {type(exc).__name__}',
+                'tool_calls': tool_calls_log,
+                'iterations': iterations,
+                'method': 'llm_error',
+                **_response_metadata(),
+            }
+
+        msg = response.choices[0].message
+
+        if not msg.tool_calls:
+            reply = (msg.content or '').strip()
+            break
+
+        # assistant tool_calls 메시지를 대화에 추가 (OpenAI 프로토콜 요구)
+        messages.append({
+            'role': 'assistant',
+            'content': msg.content or '',
+            'tool_calls': [
+                {
+                    'id': tc.id,
+                    'type': 'function',
+                    'function': {'name': tc.function.name, 'arguments': tc.function.arguments or '{}'},
+                }
+                for tc in msg.tool_calls
+            ],
+        })
+
+        # 모든 tool_call 실행 + tool 응답 메시지 추가 (각 tool_call_id 마다 필수)
+        for tc in msg.tool_calls:
+            fn_name = tc.function.name
+            try:
+                fn_args = json.loads(tc.function.arguments or '{}')
+            except json.JSONDecodeError:
+                fn_args = {}
+            if fn_name not in TOOL_REGISTRY:
+                tool_result: Any = {'error': f'unknown_tool: {fn_name}'}
+            else:
+                try:
+                    tool_result = TOOL_REGISTRY[fn_name](**fn_args)
+                except Exception as exc:
+                    logger.exception(f'[chat_agent] tool {fn_name} failed')
+                    tool_result = {'error': f'{type(exc).__name__}: {exc}'}
+
+            try:
+                preview = json.dumps(tool_result, ensure_ascii=False, default=str)
+            except Exception:
+                preview = str(tool_result)
+            tool_calls_log.append({
+                'name': fn_name,
+                'args': fn_args,
+                'result_preview': preview[:600],
+            })
+            messages.append({
+                'role': 'tool',
+                'tool_call_id': tc.id,
+                'content': preview[:8000],
+            })
+
+    if not reply:
+        reply = '도구는 호출했지만 응답이 비어 있습니다.' if tool_calls_log else '응답이 없습니다.'
+
+    return {
+        'reply': reply,
+        'tool_calls': tool_calls_log,
+        'iterations': iterations,
+        'method': 'llm',
+        **_response_metadata(),
+    }
+
+
+def _run_chat_gemini(user_message: str, history: list[dict] | None) -> dict[str, Any]:
+    """Gemini function-calling 채팅 루프 (MIROFISH_LLM_PROVIDER=gemini 회귀용)."""
     api_key = os.getenv('GEMINI_API_KEY') or os.getenv('GOOGLE_API_KEY')
     if not api_key:
         return {
