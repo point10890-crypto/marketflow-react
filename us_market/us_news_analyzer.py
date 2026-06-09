@@ -193,13 +193,13 @@ JSON만 출력하세요.
                 asyncio.to_thread(self.model.generate_content, prompt),
                 timeout=30
             )
-            
+
             text = response.text.strip()
             if text.startswith("```"):
                 text = text.split("```")[1]
                 if text.startswith("json"):
                     text = text[4:]
-            
+
             result = json.loads(text)
             return {
                 "score": int(result.get("score", 0)),
@@ -208,13 +208,39 @@ JSON만 출력하세요.
                 "catalysts": result.get("catalysts", []),
                 "risk": result.get("risk", "")
             }
-        
+
         except asyncio.TimeoutError:
             print(f"[Gemini] Timeout for {ticker}")
-            return {"score": 0, "reason": "분석 타임아웃", "action": "HOLD"}
+            return await self._analyze_with_fallback(ticker, prompt)
         except Exception as e:
             print(f"[Gemini Error] {e}")
-            return {"score": 0, "reason": str(e), "action": "HOLD"}
+            return await self._analyze_with_fallback(ticker, prompt)
+
+    async def _analyze_with_fallback(self, ticker: str, prompt: str) -> Dict:
+        """Gemini 소진/실패 시 DeepSeek V4 → OpenAI 폴백 (2026-06-10 크레딧 소진 대응)."""
+        try:
+            import sys as _sys
+            from pathlib import Path as _Path
+            _root = str(_Path(__file__).resolve().parent.parent)
+            if _root not in _sys.path:
+                _sys.path.insert(0, _root)
+            from llm_fallback import generate_json_fallback
+
+            result, provider = await asyncio.to_thread(
+                generate_json_fallback, prompt, max_tokens=1024, temperature=0.3,
+            )
+            if result:
+                print(f"[Fallback OK] {ticker} via {provider}")
+                return {
+                    "score": int(result.get("score", 0)),
+                    "reason": result.get("reason", ""),
+                    "action": result.get("action", "HOLD"),
+                    "catalysts": result.get("catalysts", []),
+                    "risk": result.get("risk", ""),
+                }
+        except Exception as e:
+            print(f"[Fallback Error] {ticker}: {e}")
+        return {"score": 0, "reason": "모든 LLM 실패", "action": "HOLD"}
 
 
 class USNewsAnalyzer:

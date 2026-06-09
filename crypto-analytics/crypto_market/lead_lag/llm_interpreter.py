@@ -24,23 +24,57 @@ def get_gemini_model():
     try:
         import google.generativeai as genai
         from dotenv import load_dotenv
-        
+
         load_dotenv()
         api_key = os.getenv("GOOGLE_API_KEY")
-        
+
         if not api_key:
             logger.error("GOOGLE_API_KEY not found in environment")
             return None
-        
+
         genai.configure(api_key=api_key)
         return genai.GenerativeModel("gemini-3-flash-preview")
-        
+
     except ImportError:
         logger.error("google-generativeai not installed")
         return None
     except Exception as e:
         logger.error(f"Failed to initialize Gemini: {e}")
         return None
+
+
+def _generate_with_fallback(prompt: str) -> Optional[str]:
+    """LLM 텍스트 생성 — Gemini 우선, 소진/실패 시 DeepSeek V4 → OpenAI 폴백.
+
+    2026-06-10 Gemini 선불 크레딧 소진 (429) 대응. 모든 provider 실패 시 None
+    반환 — 호출부는 기존 정적 fallback 사용.
+    """
+    model = get_gemini_model()
+    if model is not None:
+        try:
+            response = model.generate_content(prompt)
+            text = (response.text or '').strip()
+            if text:
+                return text
+        except Exception as e:
+            logger.warning(f"Gemini failed, trying fallback chain: {e}")
+
+    try:
+        import sys as _sys
+        from pathlib import Path as _Path
+        # crypto-analytics/crypto_market/lead_lag/ → 프로젝트 루트
+        _root = str(_Path(__file__).resolve().parents[3])
+        if _root not in _sys.path:
+            _sys.path.insert(0, _root)
+        from llm_fallback import generate_text_fallback
+
+        text, provider = generate_text_fallback(prompt, max_tokens=4096, temperature=0.5)
+        if text:
+            logger.info(f"Fallback LLM succeeded via {provider}")
+            return text
+    except Exception as e:
+        logger.error(f"Fallback chain failed: {e}")
+    return None
 
 
 def interpret_lead_lag_results(
@@ -61,12 +95,7 @@ def interpret_lead_lag_results(
     Returns:
         LLM-generated interpretation
     """
-    model = get_gemini_model()
-    
-    if model is None:
-        return _fallback_interpretation(results, target, lang)
-    
-    # Format results for LLM
+    # Format results for LLM (provider 선택/폴백은 _generate_with_fallback 이 처리)
     results_text = json.dumps(results, indent=2, ensure_ascii=False)
     
     if lang == "ko":
@@ -112,13 +141,11 @@ Interpret the following Lead-Lag correlation analysis results and provide invest
 Please provide concise, actionable insights.
 """
     
-    try:
-        response = model.generate_content(prompt)
-        return response.text
-        
-    except Exception as e:
-        logger.error(f"LLM interpretation failed: {e}")
-        return _fallback_interpretation(results, target, lang)
+    text = _generate_with_fallback(prompt)
+    if text:
+        return text
+    logger.error("All LLM providers failed for lead-lag interpretation")
+    return _fallback_interpretation(results, target, lang)
 
 
 def interpret_granger_results(
@@ -129,11 +156,6 @@ def interpret_granger_results(
     """
     Use LLM to interpret Granger causality results.
     """
-    model = get_gemini_model()
-    
-    if model is None:
-        return _fallback_granger_interpretation(granger_results, target, lang)
-    
     results_text = json.dumps(granger_results, indent=2, ensure_ascii=False)
     
     if lang == "ko":
@@ -183,13 +205,11 @@ Interpret the following Granger causality test results.
 Please provide concise, practical insights.
 """
     
-    try:
-        response = model.generate_content(prompt)
-        return response.text
-        
-    except Exception as e:
-        logger.error(f"LLM interpretation failed: {e}")
-        return _fallback_granger_interpretation(granger_results, target, lang)
+    text = _generate_with_fallback(prompt)
+    if text:
+        return text
+    logger.error("All LLM providers failed for Granger interpretation")
+    return _fallback_granger_interpretation(granger_results, target, lang)
 
 
 def generate_trading_signal_interpretation(
@@ -201,11 +221,6 @@ def generate_trading_signal_interpretation(
     """
     Generate trading signal based on current leading indicator values.
     """
-    model = get_gemini_model()
-    
-    if model is None:
-        return "LLM unavailable for signal generation"
-    
     if lang == "ko":
         prompt = f"""
 당신은 퀀트 트레이더입니다.
@@ -261,13 +276,11 @@ Reply in JSON format:
 }}
 """
     
-    try:
-        response = model.generate_content(prompt)
-        return response.text
-        
-    except Exception as e:
-        logger.error(f"Signal generation failed: {e}")
-        return '{"signal": "NEUTRAL", "confidence": 1, "error": "LLM unavailable"}'
+    text = _generate_with_fallback(prompt)
+    if text:
+        return text
+    logger.error("All LLM providers failed for signal generation")
+    return '{"signal": "NEUTRAL", "confidence": 1, "error": "LLM unavailable"}'
 
 
 def _fallback_interpretation(results: List[Dict], target: str, lang: str) -> str:

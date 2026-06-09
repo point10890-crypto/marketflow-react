@@ -25,6 +25,7 @@ load_dotenv()
 API_STATUS = {
     'gemini_grounding': {'available': True, 'last_error': None, 'error_count': 0},
     'gemini': {'available': True, 'last_error': None, 'error_count': 0},
+    'deepseek': {'available': True, 'last_error': None, 'error_count': 0},
     'claude': {'available': True, 'last_error': None, 'error_count': 0},
     'openai': {'available': True, 'last_error': None, 'error_count': 0},
     'xai': {'available': True, 'last_error': None, 'error_count': 0}
@@ -386,6 +387,86 @@ JSON Format: {{"score": 2, "reason": "...", "themes": ["...", "..."]}}"""
             return {"score": 0, "reason": f"Claude Error: {e}", "themes": []}
 
 
+class DeepSeekAnalyzer:
+    """DeepSeek V4 기반 뉴스 분석 (OpenAI 호환 API).
+
+    2026-06-10 Gemini 선불 크레딧 소진 대응 — Gemini 실패 시 1차 폴백.
+    가장 저렴한 폴백이므로 Claude/OpenAI 보다 먼저 시도.
+    """
+
+    def __init__(self, api_key: str = None):
+        self.api_key = api_key or os.getenv("DEEPSEEK_API_KEY")
+        self.model_name = os.getenv("DEEPSEEK_MODEL", "deepseek-v4-flash")
+        self.client = None
+        if self.api_key:
+            from openai import AsyncOpenAI
+            self.client = AsyncOpenAI(
+                api_key=self.api_key,
+                base_url=os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com"),
+            )
+
+    async def analyze_news(self, stock_name: str, news_context: str, traditional_news: List[Dict] = None, dart_text: str = "") -> Dict:
+        if not self.client:
+            return {"score": 0, "reason": "No DeepSeek Client", "themes": []}
+
+        if not API_STATUS['deepseek']['available']:
+            return {"score": 0, "reason": f"Rate Limited: {API_STATUS['deepseek']['last_error']}", "themes": []}
+
+        trad_text = ""
+        if traditional_news:
+            for i, item in enumerate(traditional_news[:5], 1):
+                trad_text += f"[{i}] {item.get('title')} - {item.get('summary', '')[:100]}\n"
+
+        dart_section = ""
+        if dart_text:
+            dart_section = f"\n[공식 공시 정보 (DART 전자공시)]\n{dart_text}\n"
+
+        prompt = f"""당신은 주식 투자 전문가입니다. 다음 '{stock_name}' 종목의 정보를 분석하여 호재 강도와 테마를 추출하세요.
+
+[실시간 검색 결과]
+{news_context}
+
+[기존 뉴스 정보]
+{trad_text}
+{dart_section}
+위 정보를 종합 분석하여 아래 형식을 따르는 JSON 객체로만 출력하세요.
+- score: 0~3점 (3:확실한 호재/수주/실적, 2:긍정 기대감, 1:중립, 0:악재/무소식)
+- reason: 분석 핵심 이유 (한 문장)
+- themes: 핵심 투자 테마 1~3개 (리스트 형식)
+* 공식 공시(DART)가 있으면 뉴스보다 높은 신뢰도로 반영하세요
+
+JSON Format: {{"score": 2, "reason": "...", "themes": ["...", "..."]}}"""
+
+        try:
+            response = await self.client.chat.completions.create(
+                model=self.model_name,
+                messages=[
+                    {"role": "system", "content": "You are a helpful financial analyst. Respond only in JSON."},
+                    {"role": "user", "content": prompt}
+                ],
+                max_tokens=512,
+                response_format={"type": "json_object"},
+                extra_body={"thinking": {"type": "disabled"}},
+            )
+            content = response.choices[0].message.content.strip()
+            try:
+                return json.loads(content)
+            except json.JSONDecodeError:
+                match = re.search(r"\{.*\}", content, re.DOTALL)
+                if match:
+                    return json.loads(match.group())
+                return {"score": 0, "reason": f"JSON Decode Failed: {content[:50]}", "themes": []}
+        except Exception as e:
+            error_msg = str(e).lower()
+            print(f"[ERROR] DeepSeek Analysis Failed: {e}")
+
+            if 'rate' in error_msg or 'limit' in error_msg or '429' in error_msg or 'quota' in error_msg or 'insufficient' in error_msg:
+                await _mark_unavailable('deepseek', 'Rate Limit')
+                print("[WARN] DeepSeek Rate Limit - 임시 비활성화")
+
+            return {"score": 0, "reason": f"DeepSeek Error: {e}", "themes": []}
+
+
 class XAIAnalyzer:
     """xAI Grok 기반 뉴스 분석 (OpenAI 호환 API)"""
 
@@ -458,19 +539,21 @@ JSON Format: {{"score": 2, "reason": "...", "themes": ["...", "..."]}}"""
 
 
 class LLMAnalyzer:
-    """통합 뉴스 분석 오케스트레이터 (Gemini Grounding -> Claude -> OpenAI -> xAI -> Fallback)
+    """통합 뉴스 분석 오케스트레이터 (Gemini Grounding -> DeepSeek -> Claude -> OpenAI -> xAI -> Fallback)
 
-    5중 API 폴백 시스템:
-    1. Gemini + Google Search Grounding (검색+분석 통합) - Rate Limit 시 스킵
-    2. Claude (분석) - Rate Limit 시 OpenAI로 폴백
-    3. OpenAI (분석) - Rate Limit 시 xAI로 폴백
-    4. xAI Grok (분석) - Rate Limit 시 키워드 분석으로 폴백
-    5. Keyword (최종 폴백)
+    6중 API 폴백 시스템:
+    1. Gemini + Google Search Grounding (검색+분석 통합) - Rate Limit/크레딧 소진 시 스킵
+    2. DeepSeek V4 (분석, 최저가 폴백) - 실패 시 Claude 로 폴백
+    3. Claude (분석) - Rate Limit 시 OpenAI로 폴백
+    4. OpenAI (분석) - Rate Limit 시 xAI로 폴백
+    5. xAI Grok (분석) - Rate Limit 시 키워드 분석으로 폴백
+    6. Keyword (최종 폴백)
     """
 
     def __init__(self):
         self.grounding = GeminiGroundingClient()
         self.gemini = GeminiAnalyzer()
+        self.deepseek = DeepSeekAnalyzer()
         self.claude = ClaudeAnalyzer()
         self.openai = OpenAIAnalyzer()
         self.xai = XAIAnalyzer()
@@ -480,6 +563,7 @@ class LLMAnalyzer:
         return {
             'gemini_grounding': 'active' if API_STATUS['gemini_grounding']['available'] else 'rate_limited',
             'gemini': 'active' if API_STATUS['gemini']['available'] else 'rate_limited',
+            'deepseek': 'active' if API_STATUS['deepseek']['available'] else 'rate_limited',
             'claude': 'active' if API_STATUS['claude']['available'] else 'rate_limited',
             'openai': 'active' if API_STATUS['openai']['available'] else 'rate_limited',
             'xai': 'active' if API_STATUS['xai']['available'] else 'rate_limited',
@@ -505,9 +589,20 @@ class LLMAnalyzer:
         # 분석 대상 데이터가 없고 Grounding도 실패하면 빠른 종료 체크
         news_context = analysis.get("news_summary", "") if analysis else ""
 
-        # 2. Claude Fallback (Grounding 실패 시)
+        # 2. DeepSeek V4 Fallback (Grounding 실패 시 — 최저가 폴백 우선)
+        if analysis is None and API_STATUS['deepseek']['available']:
+            print(f"[FALLBACK] Gemini Grounding Failed for {stock_name}, trying DeepSeek...")
+            analysis = await self.deepseek.analyze_news(stock_name, news_context, news_items, dart_text)
+            if analysis.get("score", 0) > 0 or "Error" not in analysis.get("reason", ""):
+                analysis["source"] = "deepseek_fallback"
+            else:
+                analysis = None
+        elif analysis is None and not API_STATUS['deepseek']['available']:
+            print(f"[SKIP] DeepSeek Rate Limited - {stock_name}")
+
+        # 3. Claude Fallback
         if analysis is None and API_STATUS['claude']['available']:
-            print(f"[FALLBACK] Gemini Grounding Failed for {stock_name}, trying Claude...")
+            print(f"[FALLBACK] DeepSeek Failed for {stock_name}, trying Claude...")
             analysis = await self.claude.analyze_news(stock_name, news_context, news_items, dart_text)
             if analysis.get("score", 0) > 0 or "Error" not in analysis.get("reason", ""):
                 analysis["source"] = "claude_fallback"
@@ -516,7 +611,7 @@ class LLMAnalyzer:
         elif analysis is None and not API_STATUS['claude']['available']:
             print(f"[SKIP] Claude Rate Limited - {stock_name}")
 
-        # 3. OpenAI Fallback
+        # 4. OpenAI Fallback
         if analysis is None and API_STATUS['openai']['available']:
             print(f"[FALLBACK] Claude Failed for {stock_name}, trying OpenAI...")
             analysis = await self.openai.analyze_news(stock_name, news_context, news_items, dart_text)
@@ -527,7 +622,7 @@ class LLMAnalyzer:
         elif analysis is None and not API_STATUS['openai']['available']:
             print(f"[SKIP] OpenAI Rate Limited - {stock_name}")
 
-        # 4. xAI Grok Fallback
+        # 5. xAI Grok Fallback
         if analysis is None and API_STATUS['xai']['available']:
             print(f"[FALLBACK] OpenAI Failed for {stock_name}, trying xAI Grok...")
             analysis = await self.xai.analyze_news(stock_name, news_context, news_items, dart_text)
@@ -538,7 +633,7 @@ class LLMAnalyzer:
         elif analysis is None and not API_STATUS['xai']['available']:
             print(f"[SKIP] xAI Rate Limited - {stock_name}")
 
-        # 5. Final Fallback (Keyword) - 모든 LLM 실패 시
+        # 6. Final Fallback (Keyword) - 모든 LLM 실패 시
         if analysis is None or (analysis.get("score") == 0 and ("Error" in analysis.get("reason", "") or "Rate" in analysis.get("reason", ""))):
             print(f"[FALLBACK] All LLMs failed for {stock_name}, using keywords...")
             return self._keyword_fallback(stock_name, news_items)
