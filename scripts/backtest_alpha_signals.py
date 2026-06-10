@@ -34,7 +34,13 @@ def evaluate_runs(
     horizon_days: int = 5,
     limit_runs: int | None = None,
 ) -> dict[str, Any]:
-    runs = _load_runs(scanner_root, limit_runs=limit_runs)
+    price_dates = _load_price_dates(prices_path)
+    mature_cutoff_date = _mature_cutoff_date(price_dates, horizon_days)
+    runs = _load_runs(
+        scanner_root,
+        limit_runs=limit_runs,
+        mature_cutoff_date=mature_cutoff_date,
+    )
     candidates = []
     needed_symbols: set[str] = set()
     for run in runs:
@@ -86,6 +92,8 @@ def evaluate_runs(
         'schema_version': 'mirofish.alpha_backtest.v1',
         'generated_at': datetime.now(timezone.utc).isoformat(),
         'horizon_days': int(horizon_days),
+        'mature_cutoff_date': mature_cutoff_date,
+        'price_date_count': len(price_dates),
         'run_count': len(runs),
         'skipped_pending_or_missing': skipped,
         'baseline': baseline_metrics,
@@ -158,6 +166,27 @@ def _daily_report_paths(root: str) -> list[str]:
     ]
 
 
+def _load_price_dates(path: str) -> list[str]:
+    dates = set()
+    if not os.path.isfile(path):
+        return []
+    with open(path, 'r', encoding='utf-8-sig', newline='') as f:
+        for row in csv.DictReader(f):
+            date = str(row.get('date') or '').strip()
+            if date:
+                dates.add(date)
+    return sorted(dates)
+
+
+def _mature_cutoff_date(price_dates: list[str], horizon_days: int) -> str | None:
+    if not price_dates:
+        return None
+    forward = max(1, int(horizon_days))
+    if len(price_dates) <= forward:
+        return None
+    return price_dates[-(forward + 1)]
+
+
 def _load_prices(path: str, symbols: set[str] | None = None) -> dict[str, list[dict[str, Any]]]:
     by_symbol: dict[str, list[dict[str, Any]]] = {}
     if not os.path.isfile(path):
@@ -182,25 +211,33 @@ def _load_prices(path: str, symbols: set[str] | None = None) -> dict[str, list[d
     return by_symbol
 
 
-def _load_runs(root: str, *, limit_runs: int | None) -> list[dict[str, Any]]:
+def _load_runs(
+    root: str,
+    *,
+    limit_runs: int | None,
+    mature_cutoff_date: str | None = None,
+) -> list[dict[str, Any]]:
     if not os.path.isdir(root):
         return []
-    paths: list[tuple[float, str]] = []
+    paths: list[tuple[str, float, str]] = []
     for dirpath, _dirnames, filenames in os.walk(root):
         if 'run.json' not in filenames:
             continue
         path = os.path.join(dirpath, 'run.json')
+        run_date = _run_path_date(path)
+        if mature_cutoff_date and run_date and run_date > mature_cutoff_date:
+            continue
         try:
             mtime = os.path.getmtime(path)
         except OSError:
             continue
-        paths.append((mtime, path))
-    paths.sort(key=lambda item: (item[0], item[1]), reverse=True)
+        paths.append((run_date or '', mtime, path))
+    paths.sort(key=lambda item: (item[0], item[1], item[2]), reverse=True)
     if limit_runs:
         paths = paths[:max(0, int(limit_runs))]
 
     records = []
-    for _mtime, path in paths:
+    for _run_date, _mtime, path in paths:
         try:
             with open(path, 'r', encoding='utf-8-sig') as f:
                 run = json.load(f)
@@ -213,6 +250,17 @@ def _load_runs(root: str, *, limit_runs: int | None) -> list[dict[str, Any]]:
     records.sort(key=lambda item: (item[0], item[1]), reverse=True)
     runs = [item[2] for item in records]
     return runs[:limit_runs] if limit_runs else runs
+
+
+def _run_path_date(path: str) -> str | None:
+    name = os.path.basename(os.path.dirname(path))
+    parts = name.split('_')
+    if len(parts) < 2 or len(parts[1]) < 8:
+        return None
+    stamp = parts[1][:8]
+    if not stamp.isdigit():
+        return None
+    return f'{stamp[:4]}-{stamp[4:6]}-{stamp[6:8]}'
 
 
 def _sample(candidate: dict[str, Any], prices: dict[str, list[dict[str, Any]]], horizon_days: int) -> dict[str, Any] | None:

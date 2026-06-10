@@ -132,6 +132,64 @@ def test_load_runs_applies_limit_before_json_load(tmp_path, monkeypatch):
     assert len(opened) == 2
 
 
+def test_load_runs_filters_runs_newer_than_mature_cutoff(tmp_path):
+    root = tmp_path / 'scanner_runs'
+    for name in [
+        'mfas_20260510000000_recent',
+        'mfas_20260503000000_mature',
+        'mfas_20260502000000_older',
+    ]:
+        run_dir = root / name
+        run_dir.mkdir(parents=True)
+        (run_dir / 'run.json').write_text(json.dumps({'id': name, 'candidates': []}), encoding='utf-8')
+
+    runs = backtest_alpha_signals._load_runs(
+        str(root),
+        limit_runs=10,
+        mature_cutoff_date='2026-05-03',
+    )
+
+    assert [run['id'] for run in runs] == [
+        'mfas_20260503000000_mature',
+        'mfas_20260502000000_older',
+    ]
+
+
+def test_evaluate_runs_reports_mature_cutoff(tmp_path):
+    prices = tmp_path / 'daily_prices.csv'
+    prices.write_text(
+        '\n'.join([
+            'ticker,date,current_price',
+            '000001,2026-05-01,100',
+            '000001,2026-05-02,102',
+            '000001,2026-05-03,104',
+        ]),
+        encoding='utf-8',
+    )
+    run_dir = tmp_path / 'scanner_runs' / 'mfas_20260501000000_test'
+    run_dir.mkdir(parents=True)
+    (run_dir / 'run.json').write_text(json.dumps({
+        'id': 'mfas_20260501000000_test',
+        'generated_at': '2026-05-01T00:00:00+00:00',
+        'candidates': [{
+            'symbol': '000001',
+            'action': 'BUY_CANDIDATE',
+            'ranking_score': 70,
+            'replay_context': {'price_date': '2026-05-01'},
+            'entry_plan': {'stop_pct': 5},
+        }],
+    }), encoding='utf-8')
+
+    report = backtest_alpha_signals.evaluate_runs(
+        scanner_root=str(tmp_path / 'scanner_runs'),
+        prices_path=str(prices),
+        horizon_days=2,
+    )
+
+    assert report['mature_cutoff_date'] == '2026-05-01'
+    assert report['baseline']['sample_count'] == 1
+
+
 def test_load_prices_filters_to_requested_symbols(tmp_path):
     prices = tmp_path / 'daily_prices.csv'
     prices.write_text(
