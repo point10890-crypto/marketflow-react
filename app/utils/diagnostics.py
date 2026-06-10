@@ -182,11 +182,21 @@ def _check_data_freshness():
     # us_market/output/ = 실제 업데이트 출력 경로 (update_all.py)
     _us_out = os.path.join(_BASE_DIR, 'us_market', 'output')
     files_config = [
-        ('kr_jongga', os.path.join(_DATA_DIR, 'jongga_v2_latest.json'), 24 if is_weekday else 72),
-        ('us_market_briefing', os.path.join(_us_out, 'market_briefing.json'), 24 if is_weekday else 72),
-        ('us_sector_heatmap', os.path.join(_us_out, 'sector_heatmap.json'), 24 if is_weekday else 72),
-        ('us_earnings', os.path.join(_us_out, 'earnings_impact.json'), 24 if is_weekday else 72),
-        ('crypto_overview', os.path.join(_CRYPTO_OUTPUT, 'overview_snapshot.json'), 5),
+        {'name': 'kr_jongga', 'path': os.path.join(_DATA_DIR, 'jongga_v2_latest.json'), 'threshold_hours': 24 if is_weekday else 72},
+        {'name': 'us_market_briefing', 'path': os.path.join(_us_out, 'market_briefing.json'), 'threshold_hours': 24 if is_weekday else 72},
+        {'name': 'us_sector_heatmap', 'path': os.path.join(_us_out, 'sector_heatmap.json'), 'threshold_hours': 24 if is_weekday else 72},
+        {'name': 'us_earnings', 'path': os.path.join(_us_out, 'earnings_impact.json'), 'threshold_hours': 24 if is_weekday else 72},
+        {
+            'name': 'crypto_overview',
+            'path': os.path.join(_CRYPTO_OUTPUT, 'overview_snapshot.json'),
+            'threshold_hours': 5,
+            'max_status': 'WARNING',
+            'note': 'live_endpoint_refreshes_on_demand',
+        },
+        {'name': 'crypto_market_gate', 'path': os.path.join(_CRYPTO_OUTPUT, 'market_gate.json'), 'threshold_hours': 5},
+        {'name': 'crypto_briefing', 'path': os.path.join(_CRYPTO_OUTPUT, 'crypto_briefing.json'), 'threshold_hours': 5},
+        {'name': 'crypto_prediction', 'path': os.path.join(_CRYPTO_OUTPUT, 'btc_prediction.json'), 'threshold_hours': 5},
+        {'name': 'crypto_risk', 'path': os.path.join(_CRYPTO_OUTPUT, 'crypto_risk.json'), 'threshold_hours': 5},
     ]
 
     details = []
@@ -194,7 +204,11 @@ def _check_data_freshness():
 
     is_render = bool(os.getenv('RENDER'))
 
-    for name, path, threshold_hours in files_config:
+    for item in files_config:
+        name = item['name']
+        path = item['path']
+        threshold_hours = item['threshold_hours']
+        note = item.get('note')
         if not os.path.exists(path):
             # Render에서는 데이터 파일이 없을 수 있음 (스케줄러가 생성 전)
             status = 'WARNING' if is_render else 'CRITICAL'
@@ -209,13 +223,20 @@ def _check_data_freshness():
             else:
                 status = 'OK'
 
-        details.append({
+        if status == 'CRITICAL' and item.get('max_status') == 'WARNING':
+            status = 'WARNING'
+            note = note or 'critical_downgraded_by_policy'
+
+        detail = {
             'name': name,
             'path': os.path.basename(path),
             'status': status,
             'age_hours': age_hours,
             'threshold_hours': threshold_hours,
-        })
+        }
+        if note:
+            detail['note'] = note
+        details.append(detail)
 
         if status == 'CRITICAL':
             worst = 'CRITICAL'
@@ -230,13 +251,16 @@ def _check_scheduler():
     try:
         from app.utils.scheduler import get_scheduler_status
         info = get_scheduler_status()
-        running = info.get('running', False)
-        jobs = info.get('jobs_count', 0)
+        external = _check_external_scheduler_daemon()
+        running = bool(info.get('running', False)) or external['healthy']
+        jobs = int(info.get('jobs_count') or 0)
 
         if not running:
             status = 'CRITICAL'
-        elif jobs == 0:
+        elif external['healthy'] and external.get('duplicate_processes', 0):
             status = 'WARNING'
+        elif jobs == 0:
+            status = 'OK' if external['healthy'] else 'WARNING'
         else:
             status = 'OK'
 
@@ -246,10 +270,130 @@ def _check_scheduler():
                 'running': running,
                 'jobs_count': jobs,
                 'environment': info.get('environment', 'unknown'),
+                'mode': (
+                    'cloud_scheduler' if info.get('running', False)
+                    else ('external_daemon' if external['healthy'] else 'not_running')
+                ),
+                'internal_running': bool(info.get('running', False)),
+                'external': external,
             }
         }
     except Exception as e:
         return {'status': 'WARNING', 'details': {'error': str(e)}}
+
+
+def _check_external_scheduler_daemon(max_heartbeat_age_seconds=180):
+    heartbeat_path = os.path.join(_DATA_DIR, 'scheduler_heartbeat.json')
+    pid_path = os.path.join(_BASE_DIR, 'logs', 'scheduler.pid')
+    heartbeat = _load_scheduler_heartbeat(heartbeat_path)
+    pid_file_pid = _read_int_file(pid_path)
+    heartbeat_pid = heartbeat.get('pid')
+    heartbeat_age = heartbeat.get('age_seconds')
+    heartbeat_fresh = heartbeat_age is not None and heartbeat_age <= max_heartbeat_age_seconds
+    heartbeat_pid_alive = _is_pid_alive(heartbeat_pid)
+    pid_file_alive = _is_pid_alive(pid_file_pid)
+    processes = _scheduler_daemon_processes()
+    process_count = len(processes)
+    pid_consistent = (
+        heartbeat_pid is None or pid_file_pid is None or int(heartbeat_pid) == int(pid_file_pid)
+    )
+    healthy = bool(heartbeat_fresh and (heartbeat_pid_alive or pid_file_alive or process_count > 0))
+
+    return {
+        'healthy': healthy,
+        'heartbeat_path': os.path.basename(heartbeat_path),
+        'heartbeat_age_seconds': heartbeat_age,
+        'heartbeat_pid': heartbeat_pid,
+        'heartbeat_pid_alive': heartbeat_pid_alive,
+        'pid_file_path': os.path.basename(pid_path),
+        'pid_file_pid': pid_file_pid,
+        'pid_file_alive': pid_file_alive,
+        'pid_consistent': pid_consistent,
+        'process_count': process_count,
+        'duplicate_processes': max(0, process_count - 1),
+        'process_pids': processes[:10],
+    }
+
+
+def _load_scheduler_heartbeat(path):
+    if not os.path.exists(path):
+        return {}
+    try:
+        with open(path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        ts = data.get('ts')
+        age_seconds = None
+        if ts:
+            parsed = datetime.fromisoformat(str(ts).replace('Z', '+00:00')).replace(tzinfo=None)
+            age_seconds = round((datetime.now() - parsed).total_seconds(), 1)
+        return {
+            'pid': _coerce_int(data.get('pid')),
+            'ts': ts,
+            'age_seconds': age_seconds,
+        }
+    except Exception as e:
+        return {'error': str(e)}
+
+
+def _read_int_file(path):
+    try:
+        if not os.path.exists(path):
+            return None
+        with open(path, 'r', encoding='utf-8') as f:
+            return _coerce_int(f.read().strip())
+    except Exception:
+        return None
+
+
+def _coerce_int(value):
+    try:
+        if value in (None, ''):
+            return None
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _is_pid_alive(pid):
+    pid = _coerce_int(pid)
+    if not pid or pid <= 0:
+        return False
+    try:
+        import psutil
+        return psutil.pid_exists(pid) and psutil.Process(pid).is_running()
+    except Exception:
+        if os.name == 'nt':
+            try:
+                import subprocess
+                result = subprocess.run(
+                    ['tasklist', '/FI', f'PID eq {pid}', '/NH', '/FO', 'CSV'],
+                    capture_output=True,
+                    text=True,
+                    timeout=5,
+                )
+                return str(pid) in result.stdout
+            except Exception:
+                return False
+        return os.path.exists(f'/proc/{pid}')
+
+
+def _scheduler_daemon_processes():
+    try:
+        import psutil
+    except Exception:
+        return []
+
+    pids = []
+    for proc in psutil.process_iter(['pid', 'cmdline']):
+        try:
+            cmdline = proc.info.get('cmdline') or []
+            cmd = ' '.join(str(part) for part in cmdline)
+            normalized = cmd.replace('\\', '/').lower()
+            if 'scheduler.py' in normalized and '--daemon' in normalized:
+                pids.append(int(proc.info['pid']))
+        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess, KeyError, TypeError):
+            continue
+    return sorted(set(pids))
 
 
 def _check_memory():
