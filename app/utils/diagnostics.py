@@ -156,8 +156,8 @@ def _check_endpoints(port=None):
         details.append({
             'endpoint': ep,
             'status': status,
-            'http_code': r.status_code if r else 0,
-            'response_ms': int(r.elapsed.total_seconds() * 1000) if r else -1,
+            'http_code': r.status_code if r is not None else 0,
+            'response_ms': int(r.elapsed.total_seconds() * 1000) if r is not None else -1,
             'protected': protected,
             **({'note': note} if note else {}),
         })

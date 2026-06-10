@@ -12,6 +12,9 @@ class _FakeResponse:
     def json(self):
         return self._payload
 
+    def __bool__(self):
+        return self.status_code < 400
+
 
 def test_endpoint_diagnostics_treats_pro_gate_as_liveness_ok(monkeypatch):
     def fake_get(url, timeout):
