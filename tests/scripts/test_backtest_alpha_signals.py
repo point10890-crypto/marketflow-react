@@ -101,3 +101,50 @@ def test_backtest_alpha_signals_writes_rolling_report(tmp_path):
     assert output.is_file()
     assert rolling['avg_expectancy_r'] == 0.4
     assert rolling['avg_information_coefficient'] == 0.12
+
+
+def test_load_runs_applies_limit_before_json_load(tmp_path, monkeypatch):
+    root = tmp_path / 'scanner_runs'
+    for idx in range(5):
+        run_dir = root / f'mfas_20260501000{idx}_test'
+        run_dir.mkdir(parents=True)
+        run_path = run_dir / 'run.json'
+        run_path.write_text(json.dumps({'id': f'run_{idx}', 'candidates': []}), encoding='utf-8')
+        ts = 1_700_000_000 + idx
+        run_path.touch()
+        import os
+        os.utime(run_path, (ts, ts))
+
+    opened = []
+    import builtins
+    real_open = builtins.open
+
+    def counting_open(path, *args, **kwargs):
+        if str(path).endswith('run.json'):
+            opened.append(str(path))
+        return real_open(path, *args, **kwargs)
+
+    monkeypatch.setattr(backtest_alpha_signals, 'open', counting_open, raising=False)
+
+    runs = backtest_alpha_signals._load_runs(str(root), limit_runs=2)
+
+    assert [run['id'] for run in runs] == ['run_4', 'run_3']
+    assert len(opened) == 2
+
+
+def test_load_prices_filters_to_requested_symbols(tmp_path):
+    prices = tmp_path / 'daily_prices.csv'
+    prices.write_text(
+        '\n'.join([
+            'ticker,date,current_price',
+            '000001,2026-05-01,100',
+            '000002,2026-05-01,200',
+            '000003,2026-05-01,300',
+        ]),
+        encoding='utf-8',
+    )
+
+    rows = backtest_alpha_signals._load_prices(str(prices), symbols={'000002'})
+
+    assert set(rows) == {'000002'}
+    assert rows['000002'][0]['price'] == 200.0

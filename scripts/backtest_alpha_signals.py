@@ -34,35 +34,44 @@ def evaluate_runs(
     horizon_days: int = 5,
     limit_runs: int | None = None,
 ) -> dict[str, Any]:
-    prices = _load_prices(prices_path)
     runs = _load_runs(scanner_root, limit_runs=limit_runs)
-    baseline = []
-    plan_a = []
-    skipped = 0
-    seen_signals: set[tuple[str, str, str]] = set()
+    candidates = []
+    needed_symbols: set[str] = set()
     for run in runs:
         for candidate in run.get('candidates') or []:
             if not isinstance(candidate, dict):
                 continue
             if candidate.get('action') not in {'BUY_CANDIDATE', 'WATCH'}:
                 continue
-            sample = _sample(candidate, prices, horizon_days)
-            if not sample:
-                skipped += 1
+            symbol = _symbol(candidate.get('symbol'))
+            if not symbol:
                 continue
-            signal_key = (
-                str(sample.get('symbol') or ''),
-                str(sample.get('entry_date') or ''),
-                str(candidate.get('action') or ''),
-            )
-            if signal_key in seen_signals:
-                continue
-            seen_signals.add(signal_key)
-            sample['run_id'] = run.get('id')
-            sample['generated_at'] = run.get('generated_at') or run.get('created_at')
-            baseline.append(sample)
-            if _passes_plan_a(candidate):
-                plan_a.append(sample)
+            candidates.append((run, candidate))
+            needed_symbols.add(symbol)
+
+    prices = _load_prices(prices_path, symbols=needed_symbols)
+    baseline = []
+    plan_a = []
+    skipped = 0
+    seen_signals: set[tuple[str, str, str]] = set()
+    for run, candidate in candidates:
+        sample = _sample(candidate, prices, horizon_days)
+        if not sample:
+            skipped += 1
+            continue
+        signal_key = (
+            str(sample.get('symbol') or ''),
+            str(sample.get('entry_date') or ''),
+            str(candidate.get('action') or ''),
+        )
+        if signal_key in seen_signals:
+            continue
+        seen_signals.add(signal_key)
+        sample['run_id'] = run.get('id')
+        sample['generated_at'] = run.get('generated_at') or run.get('created_at')
+        baseline.append(sample)
+        if _passes_plan_a(candidate):
+            plan_a.append(sample)
 
     baseline_metrics = _metrics(baseline)
     plan_a_metrics = _metrics(plan_a)
@@ -149,13 +158,16 @@ def _daily_report_paths(root: str) -> list[str]:
     ]
 
 
-def _load_prices(path: str) -> dict[str, list[dict[str, Any]]]:
+def _load_prices(path: str, symbols: set[str] | None = None) -> dict[str, list[dict[str, Any]]]:
     by_symbol: dict[str, list[dict[str, Any]]] = {}
     if not os.path.isfile(path):
         return by_symbol
+    symbol_filter = set(symbols or [])
     with open(path, 'r', encoding='utf-8-sig', newline='') as f:
         for row in csv.DictReader(f):
             symbol = _symbol(row.get('ticker') or row.get('symbol') or row.get('code'))
+            if symbol_filter and symbol not in symbol_filter:
+                continue
             date = str(row.get('date') or '').strip()
             price = _float(row.get('current_price') or row.get('close'))
             if not symbol or not date or price <= 0:
@@ -171,13 +183,24 @@ def _load_prices(path: str) -> dict[str, list[dict[str, Any]]]:
 
 
 def _load_runs(root: str, *, limit_runs: int | None) -> list[dict[str, Any]]:
-    records = []
     if not os.path.isdir(root):
         return []
+    paths: list[tuple[float, str]] = []
     for dirpath, _dirnames, filenames in os.walk(root):
         if 'run.json' not in filenames:
             continue
         path = os.path.join(dirpath, 'run.json')
+        try:
+            mtime = os.path.getmtime(path)
+        except OSError:
+            continue
+        paths.append((mtime, path))
+    paths.sort(key=lambda item: (item[0], item[1]), reverse=True)
+    if limit_runs:
+        paths = paths[:max(0, int(limit_runs))]
+
+    records = []
+    for _mtime, path in paths:
         try:
             with open(path, 'r', encoding='utf-8-sig') as f:
                 run = json.load(f)
