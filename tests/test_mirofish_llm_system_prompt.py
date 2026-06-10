@@ -45,6 +45,8 @@ def test_chat_agent_registers_prompt_status_tool_and_response_metadata(monkeypat
 
     monkeypatch.delenv('GEMINI_API_KEY', raising=False)
     monkeypatch.delenv('GOOGLE_API_KEY', raising=False)
+    monkeypatch.delenv('DEEPSEEK_API_KEY', raising=False)
+    monkeypatch.delenv('OPENAI_API_KEY', raising=False)
     response = chat_agent.run_chat('이번 TOP 3 알려줘', history=[])
 
     assert response['method'] == 'fallback'

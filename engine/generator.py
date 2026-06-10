@@ -304,7 +304,7 @@ class SignalGenerator:
             # 4. LLM 뉴스 분석 (Rate Limit 방지 Sleep) + DART 공시 정보 포함
             llm_result = None
             dart_text = self.dart_collector.format_for_llm(dart_result) if dart_result else ""
-            if (news_list or dart_text) and self.llm_analyzer.gemini.client:
+            if news_list or dart_text:
                 print(f"    [LLM] Analyzing {stock.name} news...")
                 news_dicts = [{"title": n.title, "summary": n.summary} for n in news_list]
                 llm_result = await self.llm_analyzer.analyze_news_sentiment(stock.name, news_dicts, dart_text)

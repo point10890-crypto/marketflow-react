@@ -570,6 +570,44 @@ class LLMAnalyzer:
             'errors': {k: v['error_count'] for k, v in API_STATUS.items()}
         }
 
+    @staticmethod
+    def _is_usable_analysis(result: Dict | None) -> bool:
+        """True only when a result is actual analysis, not an API failure.
+
+        A real no-catalyst analysis can legitimately have score=0. Operational
+        failures are identified through explicit source/reason markers so the
+        pipeline can continue to DeepSeek/OpenAI instead of stopping early.
+        """
+        if not isinstance(result, dict):
+            return False
+        if str(result.get('source', '')).lower() == 'none':
+            return False
+
+        reason = str(result.get('reason', '')).lower()
+        failure_markers = (
+            'error',
+            'rate limit',
+            'rate limited',
+            '429',
+            'quota',
+            'resource_exhausted',
+            'resource exhausted',
+            'api key',
+            'no gemini',
+            'no deepseek',
+            'no claude',
+            'no openai',
+            'no xai',
+            'no client',
+            'no model',
+            'decode failed',
+            'json decode failed',
+            'invalid response',
+            'invalid json',
+            'empty response',
+        )
+        return not any(marker in reason for marker in failure_markers)
+
     async def analyze_news_sentiment(self, stock_name: str, news_items: List[Dict] = None, dart_text: str = "") -> Dict:
         """뉴스 감성 분석 통합 프로세스 (5중 폴백 시스템) + DART 공시 정보"""
         analysis = None
@@ -578,7 +616,7 @@ class LLMAnalyzer:
         # 1. Gemini + Google Search Grounding (검색+분석 통합)
         if API_STATUS['gemini_grounding']['available']:
             result = await self.grounding.search_and_analyze(stock_name, news_items, dart_text)
-            if result.get("score", 0) > 0 or ("Error" not in result.get("reason", "") and "Decode" not in result.get("reason", "")):
+            if self._is_usable_analysis(result):
                 citations = result.pop("citations", [])
                 analysis = result
                 # Rate Limit 방지
@@ -593,7 +631,7 @@ class LLMAnalyzer:
         if analysis is None and API_STATUS['deepseek']['available']:
             print(f"[FALLBACK] Gemini Grounding Failed for {stock_name}, trying DeepSeek...")
             analysis = await self.deepseek.analyze_news(stock_name, news_context, news_items, dart_text)
-            if analysis.get("score", 0) > 0 or "Error" not in analysis.get("reason", ""):
+            if self._is_usable_analysis(analysis):
                 analysis["source"] = "deepseek_fallback"
             else:
                 analysis = None
@@ -604,7 +642,7 @@ class LLMAnalyzer:
         if analysis is None and API_STATUS['claude']['available']:
             print(f"[FALLBACK] DeepSeek Failed for {stock_name}, trying Claude...")
             analysis = await self.claude.analyze_news(stock_name, news_context, news_items, dart_text)
-            if analysis.get("score", 0) > 0 or "Error" not in analysis.get("reason", ""):
+            if self._is_usable_analysis(analysis):
                 analysis["source"] = "claude_fallback"
             else:
                 analysis = None
@@ -615,7 +653,7 @@ class LLMAnalyzer:
         if analysis is None and API_STATUS['openai']['available']:
             print(f"[FALLBACK] Claude Failed for {stock_name}, trying OpenAI...")
             analysis = await self.openai.analyze_news(stock_name, news_context, news_items, dart_text)
-            if analysis.get("score", 0) > 0 or "Error" not in analysis.get("reason", ""):
+            if self._is_usable_analysis(analysis):
                 analysis["source"] = "openai_fallback"
             else:
                 analysis = None
@@ -626,7 +664,7 @@ class LLMAnalyzer:
         if analysis is None and API_STATUS['xai']['available']:
             print(f"[FALLBACK] OpenAI Failed for {stock_name}, trying xAI Grok...")
             analysis = await self.xai.analyze_news(stock_name, news_context, news_items, dart_text)
-            if analysis.get("score", 0) > 0 or "Error" not in analysis.get("reason", ""):
+            if self._is_usable_analysis(analysis):
                 analysis["source"] = "xai_fallback"
             else:
                 analysis = None
