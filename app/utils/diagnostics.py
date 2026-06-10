@@ -383,17 +383,24 @@ def _scheduler_daemon_processes():
     except Exception:
         return []
 
-    pids = []
+    matches = {}
     for proc in psutil.process_iter(['pid', 'cmdline']):
         try:
             cmdline = proc.info.get('cmdline') or []
             cmd = ' '.join(str(part) for part in cmdline)
             normalized = cmd.replace('\\', '/').lower()
             if 'scheduler.py' in normalized and '--daemon' in normalized:
-                pids.append(int(proc.info['pid']))
+                pid = int(proc.info['pid'])
+                try:
+                    parent_pid = int(proc.ppid())
+                except Exception:
+                    parent_pid = None
+                matches[pid] = parent_pid
         except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess, KeyError, TypeError):
             continue
-    return sorted(set(pids))
+    if not matches:
+        return []
+    return sorted(pid for pid, parent_pid in matches.items() if parent_pid not in matches)
 
 
 def _check_memory():
