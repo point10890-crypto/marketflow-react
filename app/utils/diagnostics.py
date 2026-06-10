@@ -118,17 +118,20 @@ def _check_endpoints(port=None):
         port = int(os.environ.get('PORT', os.environ.get('FLASK_PORT', 5001)))
 
     endpoints = [
-        '/api/health',
-        '/api/us/market-briefing',
-        '/api/kr/market-gate',
-        '/api/crypto/dominance',
-        '/api/kr/jongga-v2/latest',
+        {'path': '/api/health', 'protected': False},
+        {'path': '/api/us/market-briefing', 'protected': True},
+        {'path': '/api/kr/market-gate', 'protected': True},
+        {'path': '/api/crypto/dominance', 'protected': True},
+        {'path': '/api/kr/jongga-v2/latest', 'protected': True},
     ]
 
     details = []
     worst = 'OK'
 
-    for ep in endpoints:
+    for item in endpoints:
+        ep = item['path']
+        protected = bool(item.get('protected'))
+        note = None
         try:
             r = requests.get(f'http://localhost:{port}{ep}', timeout=5)
             if r.status_code == 200:
@@ -136,17 +139,27 @@ def _check_endpoints(port=None):
                 data = r.json()
                 has_data = bool(data) and not (isinstance(data, dict) and data.get('error'))
                 status = 'OK' if has_data else 'WARNING'
+            elif protected and r.status_code in (401, 403):
+                # Pro/API auth gate is alive. Data freshness is checked by
+                # _check_data_freshness; endpoint liveness should not mark a
+                # healthy protected route as down just because diagnostics has
+                # no subscriber token.
+                status = 'OK'
+                note = 'protected_endpoint_auth_gate'
             else:
                 status = 'CRITICAL'
         except Exception as e:
             status = 'CRITICAL'
             r = None
+            note = f'{type(e).__name__}: {e}'
 
         details.append({
             'endpoint': ep,
             'status': status,
             'http_code': r.status_code if r else 0,
             'response_ms': int(r.elapsed.total_seconds() * 1000) if r else -1,
+            'protected': protected,
+            **({'note': note} if note else {}),
         })
 
         if status == 'CRITICAL':

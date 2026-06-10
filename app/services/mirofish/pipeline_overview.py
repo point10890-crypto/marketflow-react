@@ -40,7 +40,7 @@ _PIPELINE_TODAY_BUILD_STALE_AFTER = 300.0
 _PIPELINE_TODAY_MAX_WAIT = 0.75
 _PIPELINE_TODAY_BACKGROUND_REFRESH = os.getenv(
     'MIROFISH_PIPELINE_BACKGROUND_REFRESH',
-    '0',
+    '1',
 ).strip().lower() in {'1', 'true', 'yes', 'y', 'on'}
 
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
@@ -68,24 +68,10 @@ def get_pipeline_today_snapshot(max_wait_seconds: float | None = None) -> dict[s
     """Aggregate live market + funnel + 7d KPI for the right-side dashboard.
 
     30초 TTL 메모리 캐시 — cold build ~95s 이므로 후속 폴링은 즉시 hit.
-    builder() 는 lock 밖에서 실행해 동시 호출이 서로 차단되지 않게 한다.
+    Cold requests fail open with a cheap degraded response, then a background
+    refresh fills the cache so the next poll receives the full snapshot.
     """
     return _get_pipeline_today_snapshot_nonblocking(max_wait_seconds)
-
-    now_ts = _time.time()
-    # 1) lock 안에서 hit check 만
-    with _PIPELINE_TODAY_LOCK:
-        slot = _PIPELINE_TODAY_CACHE.get('snapshot')
-        if slot is not None:
-            ts, data = slot
-            if now_ts - ts < _PIPELINE_TODAY_TTL:
-                return data
-    # 2) lock 밖에서 build
-    data = _build_pipeline_today_snapshot()
-    # 3) lock 안에서 저장
-    with _PIPELINE_TODAY_LOCK:
-        _PIPELINE_TODAY_CACHE['snapshot'] = (_time.time(), data)
-    return data
 
 
 def _get_pipeline_today_snapshot_nonblocking(max_wait_seconds: float | None = None) -> dict[str, Any]:
