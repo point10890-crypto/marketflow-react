@@ -437,6 +437,40 @@ def test_alpha_scanner_applies_replay_safe_outcome_memory(tmp_path, monkeypatch)
     assert 'outcome_tag_memory_adjusted' in candidate['strategy_tags']
 
 
+def test_alpha_scanner_blocks_outcome_memory_when_learning_policy_observes_only(tmp_path, monkeypatch):
+    _seed_artifacts(tmp_path)
+    monkeypatch.setattr(alpha_scanner, 'DATA_ROOT', str(tmp_path))
+    monkeypatch.setattr(alpha_scanner, 'SCANNER_RUNS_ROOT', str(tmp_path / 'runs'))
+    monkeypatch.setattr(alpha_scanner, '_performance_advisory', lambda: {
+        'available': True,
+        'applied_to_scoring': False,
+        'source': 'workflow_outcomes',
+        'lookahead_safe': True,
+        'evaluated_count': 20,
+        'hit_rate_recent': 0.72,
+        'recommendations': {
+            'baseline_hit_rate': 0.50,
+            'tag_score_adjust': {'leading_screener': 1.4},
+        },
+        'learning_policy': {
+            'score_control': {
+                'outcome_memory_enabled': False,
+                'status': 'observe_only',
+                'reason': 'backtest sample is below the minimum learning gate',
+            },
+        },
+    })
+
+    run = alpha_scanner.create_scanner_run({'symbols': ['000001'], 'limit': 5})
+
+    candidate = run['candidates'][0]
+    profile = candidate['analysis_profile']
+    assert profile['mcp_ranking_delta'] == 0
+    assert profile['performance_memory']['applied'] is False
+    assert profile['performance_memory']['reason'] == 'backtest sample is below the minimum learning gate'
+    assert 'outcome_tag_memory_adjusted' not in candidate['strategy_tags']
+
+
 def test_alpha_scanner_plan_a_blocks_credit_pressure_cache(tmp_path, monkeypatch):
     _seed_artifacts(tmp_path)
     _write_json(tmp_path / 'credit_balance_latest.json', {

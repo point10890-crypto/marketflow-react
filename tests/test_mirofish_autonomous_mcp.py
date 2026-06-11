@@ -381,11 +381,14 @@ def test_learning_feedback_is_advisory_and_lookahead_safe(isolated_autonomous_pa
     assert feedback['alpha_memory']['strongest_positive']['key'] in {'momentum', 'trend_quality'}
     assert feedback['alpha_memory']['weakest_negative']['key'] == 'event_risk'
     saved = json.loads((isolated_autonomous_paths / 'learning_feedback.json').read_text(encoding='utf-8'))
-    assert saved['mode'] == 'advisory_feedback_only'
+    assert saved['mode'] == 'bounded_adaptive_policy_preview'
+    assert saved['learning_policy']['primary_objective'] == 'improve Top3 alpha candidate detection from replay-safe outcomes'
+    assert saved['learning_policy']['production_weights_mutated'] is False
     assert saved['alpha_memory']['score_profile']['hit_avg_alpha'] == 82
     summary = autonomous_mcp._learning_summary(feedback)
     assert summary['alpha_memory']['score_profile']['hit_avg_alpha'] == 82
     assert summary['alpha_memory']['cohorts']['strategy_tags'][0]['key'] in {'momentum', 'trend_quality'}
+    assert summary['learning_policy']['available'] is True
 
 
 def test_admin_autonomous_routes_are_registered():

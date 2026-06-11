@@ -24,6 +24,7 @@ from typing import Any, Callable
 import app.services.mirofish.alpha_scanner as alpha_scanner
 import app.services.mirofish.alpha_research as alpha_research
 import app.services.mirofish.outcome_tracker as outcome_tracker
+import app.services.mirofish.learning_policy as learning_policy
 import app.services.mirofish.pipeline_overview as pipeline_overview
 import app.services.mirofish.tradingview_provider as tradingview_provider
 import app.services.mirofish.workflow as workflow
@@ -901,10 +902,18 @@ def _build_learning_feedback(
             'action': 'monitor',
             'reason': 'recent evaluated outcomes do not require automatic production weight changes',
         })
+    policy = learning_policy.build_learning_policy({
+        'available': bool(evaluated),
+        'evaluated_count': len(evaluated),
+        'hit_rate_recent': (len(hits) / len(evaluated)) if evaluated else None,
+        'horizon_days': 5,
+        'lookahead_safe': True,
+        'source': 'workflow_outcomes',
+    })
     return {
         'service': 'mirofish-autonomous-learning',
         'generated_at': _now_iso(),
-        'mode': 'advisory_feedback_only',
+        'mode': 'bounded_adaptive_policy_preview',
         'production_weights_mutated': False,
         'lookahead_safe': True,
         'workflow_count': len(workflows),
@@ -915,6 +924,7 @@ def _build_learning_feedback(
         'hit_rate_pct': hit_rate,
         'average_forward_return_pct': avg_return,
         'alpha_memory': alpha_memory,
+        'learning_policy': policy,
         'workflows': workflows,
         'recommendations': recommendations,
         'errors': errors,
@@ -1240,6 +1250,9 @@ def _learning_summary(feedback: dict[str, Any] | None) -> dict[str, Any]:
     if not isinstance(feedback, dict):
         return {'available': False}
     alpha_memory = feedback.get('alpha_memory') if isinstance(feedback.get('alpha_memory'), dict) else {}
+    policy = feedback.get('learning_policy') if isinstance(feedback.get('learning_policy'), dict) else {}
+    score_control = policy.get('score_control') if isinstance(policy.get('score_control'), dict) else {}
+    backtest_gate = policy.get('backtest_gate') if isinstance(policy.get('backtest_gate'), dict) else {}
     return {
         'available': True,
         'generated_at': feedback.get('generated_at'),
@@ -1255,6 +1268,16 @@ def _learning_summary(feedback: dict[str, Any] | None) -> dict[str, Any]:
             'score_profile': alpha_memory.get('score_profile') or {},
             'cohorts': alpha_memory.get('cohorts') or {},
             'guidance': alpha_memory.get('guidance') or [],
+        },
+        'learning_policy': {
+            'available': bool(policy),
+            'status': score_control.get('status'),
+            'outcome_memory_enabled': bool(score_control.get('outcome_memory_enabled')),
+            'reason': score_control.get('reason'),
+            'backtest_status': backtest_gate.get('status'),
+            'backtest_sample_count': backtest_gate.get('sample_count'),
+            'backtest_expectancy_r': backtest_gate.get('expectancy_r'),
+            'backtest_information_coefficient': backtest_gate.get('information_coefficient'),
         },
         'production_weights_mutated': bool(feedback.get('production_weights_mutated')),
         'recommendation_count': len(feedback.get('recommendations') or []),

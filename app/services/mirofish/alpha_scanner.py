@@ -2572,6 +2572,15 @@ def _news_theme_social_adjustment(
 def _performance_memory_adjustment(performance_advisory: dict[str, Any]) -> dict[str, Any]:
     if not isinstance(performance_advisory, dict) or not performance_advisory.get('available'):
         return {'applied': False, 'ranking_delta': 0.0, 'source': 'workflow_outcomes'}
+    learning_gate = _learning_score_control(performance_advisory)
+    if learning_gate and not learning_gate.get('outcome_memory_enabled'):
+        return {
+            'applied': False,
+            'ranking_delta': 0.0,
+            'source': 'workflow_outcomes',
+            'reason': learning_gate.get('reason') or 'learning_policy_disabled',
+            'learning_policy_status': learning_gate.get('status'),
+        }
     baseline = _float((performance_advisory.get('recommendations') or {}).get('baseline_hit_rate'))
     hit_rate = _float(performance_advisory.get('hit_rate_recent'))
     evaluated = int(_float(performance_advisory.get('evaluated_count')))
@@ -2584,7 +2593,9 @@ def _performance_memory_adjustment(performance_advisory: dict[str, Any]) -> dict
             'reason': 'insufficient_evaluated_outcomes',
         }
     center = baseline if baseline > 0 else 0.50
-    delta = _clamp((hit_rate - center) * 10.0, -3.0, 3.0)
+    default_bounds = (-3.0, 3.0)
+    lower, upper = _learning_global_delta_bounds(performance_advisory, default_bounds)
+    delta = _clamp((hit_rate - center) * 10.0, lower, upper)
     return {
         'applied': bool(delta),
         'ranking_delta': round(delta, 2),
@@ -2592,6 +2603,7 @@ def _performance_memory_adjustment(performance_advisory: dict[str, Any]) -> dict
         'evaluated_count': evaluated,
         'hit_rate_recent': hit_rate,
         'baseline_hit_rate': center,
+        'learning_policy_status': learning_gate.get('status') if learning_gate else None,
         'lookahead_safe': bool(performance_advisory.get('lookahead_safe', True)),
     }
 
@@ -2599,6 +2611,15 @@ def _performance_memory_adjustment(performance_advisory: dict[str, Any]) -> dict
 def _performance_tag_memory_adjustment(performance_advisory: dict[str, Any], tags: list[str]) -> dict[str, Any]:
     if not isinstance(performance_advisory, dict) or not performance_advisory.get('available'):
         return {'applied': False, 'ranking_delta': 0.0, 'source': 'workflow_outcomes'}
+    learning_gate = _learning_score_control(performance_advisory)
+    if learning_gate and not learning_gate.get('outcome_memory_enabled'):
+        return {
+            'applied': False,
+            'ranking_delta': 0.0,
+            'source': 'workflow_outcomes',
+            'reason': learning_gate.get('reason') or 'learning_policy_disabled',
+            'learning_policy_status': learning_gate.get('status'),
+        }
     tag_adjust = ((performance_advisory.get('recommendations') or {}).get('tag_score_adjust') or {})
     if not isinstance(tag_adjust, dict) or not tag_adjust:
         return {'applied': False, 'ranking_delta': 0.0, 'source': 'workflow_outcomes'}
@@ -2609,14 +2630,52 @@ def _performance_tag_memory_adjustment(performance_advisory: dict[str, Any], tag
     }
     if not matched:
         return {'applied': False, 'ranking_delta': 0.0, 'source': 'workflow_outcomes'}
-    delta = _clamp(sum(matched.values()), -2.0, 2.0)
+    lower, upper = _learning_tag_delta_bounds(performance_advisory, (-2.0, 2.0))
+    delta = _clamp(sum(matched.values()), lower, upper)
     return {
-        'applied': True,
+        'applied': bool(delta),
         'ranking_delta': round(delta, 2),
         'source': 'workflow_outcomes',
         'matched_tags': matched,
+        'learning_policy_status': learning_gate.get('status') if learning_gate else None,
         'lookahead_safe': bool(performance_advisory.get('lookahead_safe', True)),
     }
+
+
+def _learning_score_control(performance_advisory: dict[str, Any]) -> dict[str, Any]:
+    policy = performance_advisory.get('learning_policy') if isinstance(performance_advisory, dict) else None
+    control = policy.get('score_control') if isinstance(policy, dict) else None
+    return control if isinstance(control, dict) else {}
+
+
+def _learning_global_delta_bounds(
+    performance_advisory: dict[str, Any],
+    default: tuple[float, float],
+) -> tuple[float, float]:
+    policy = performance_advisory.get('learning_policy') if isinstance(performance_advisory, dict) else None
+    if not isinstance(policy, dict):
+        return default
+    try:
+        from app.services.mirofish import learning_policy as policy_helpers
+
+        return policy_helpers.global_delta_bounds(policy, default=default)
+    except Exception:
+        return default
+
+
+def _learning_tag_delta_bounds(
+    performance_advisory: dict[str, Any],
+    default: tuple[float, float],
+) -> tuple[float, float]:
+    policy = performance_advisory.get('learning_policy') if isinstance(performance_advisory, dict) else None
+    if not isinstance(policy, dict):
+        return default
+    try:
+        from app.services.mirofish import learning_policy as policy_helpers
+
+        return policy_helpers.tag_delta_bounds(policy, default=default)
+    except Exception:
+        return default
 
 
 def _apply_false_signal_gates(
@@ -3285,7 +3344,7 @@ def _performance_advisory() -> dict[str, Any]:
         }
     if not isinstance(advisory, dict):
         advisory = {}
-    return {
+    base = {
         'available': bool(advisory.get('evaluated_count')),
         'applied_to_scoring': bool(_float(advisory.get('evaluated_count')) >= 9),
         'source': 'workflow_outcomes',
@@ -3297,6 +3356,20 @@ def _performance_advisory() -> dict[str, Any]:
         'recommendations': advisory.get('recommendations') or {'tag_score_adjust': {}},
         'asof': advisory.get('asof'),
         'note': 'bounded ranking adjustment when enough replay-safe outcomes exist',
+    }
+    try:
+        from app.services.mirofish import learning_policy
+
+        base['learning_policy'] = learning_policy.build_learning_policy(base)
+        control = (base['learning_policy'].get('score_control') or {})
+        base['applied_to_scoring'] = bool(control.get('outcome_memory_enabled'))
+    except Exception as exc:
+        base['learning_policy'] = {
+            'available': False,
+            'error': f'{type(exc).__name__}: {exc}',
+        }
+    return {
+        **base,
     }
 
 
