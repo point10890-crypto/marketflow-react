@@ -171,6 +171,16 @@ def test_admin_telegram_dedupe_suppresses_identical_message(tmp_path, monkeypatc
     assert admin_routes._admin_notify_recently_sent(message, now=4601.1) is False
 
 
+def test_admin_telegram_suppresses_reserved_example_targets(monkeypatch):
+    monkeypatch.setenv('TELEGRAM_BOT_TOKEN', 'dummy-token')
+    monkeypatch.setenv('TELEGRAM_CHAT_ID', '123')
+    monkeypatch.setattr(admin_routes, '_admin_notify_recently_sent', lambda message: (_ for _ in ()).throw(AssertionError('dedupe should not run')))
+
+    target = type('Target', (), {'id': 2, 'email': 'expired@example.com', 'name': '만료회원'})()
+
+    admin_routes._notify_admin('구독 요청 승인', target, 'pro -> pro')
+
+
 def test_duplicate_active_renewal_approval_does_not_send_admin_notice(monkeypatch):
     app = _app()
     future_at = datetime.now(timezone.utc) + timedelta(days=20)

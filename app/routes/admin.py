@@ -69,6 +69,9 @@ def _notify_admin(action: str, target_user: User, detail: str = ''):
     chat_id = os.environ.get('TELEGRAM_CHAT_ID')
     if not bot_token or not chat_id:
         return
+    if _is_reserved_admin_notify_target(target_user):
+        print(f"[AdminNotify] reserved test target suppressed action={action} user_id={target_user.id}")
+        return
 
     # 요청 컨텍스트 안에서 admin email 미리 스냅샷 (스레드에선 request 접근 불가)
     admin = _admin_user()
@@ -98,6 +101,13 @@ def _notify_admin(action: str, target_user: User, detail: str = ''):
             print(f"[AdminNotify] {type(e).__name__}: {e}")
 
     threading.Thread(target=_send, daemon=True).start()
+
+
+def _is_reserved_admin_notify_target(target_user: User | None) -> bool:
+    email = (getattr(target_user, 'email', '') or '').strip().lower()
+    if not email:
+        return False
+    return email == 'expired@example.com' or email.startswith('audit_') or email.endswith('@example.com')
 
 
 def _admin_notify_dedupe_path() -> Path:
