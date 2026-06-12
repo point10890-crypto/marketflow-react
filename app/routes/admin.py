@@ -10,6 +10,10 @@ Wave 2-4 추가:
 
 import os
 import json
+import hashlib
+import time
+import threading
+from pathlib import Path
 from datetime import datetime, timezone, timedelta
 from flask import Blueprint, request, jsonify
 from app.models import db
@@ -17,6 +21,10 @@ from app.models.user import User, SubscriptionRequest, AdminAuditLog, AdminNotif
 from app.auth.decorators import admin_required
 
 admin_bp = Blueprint('admin', __name__)
+
+_ADMIN_NOTIFY_DEDUPE_LOCK = threading.Lock()
+_ADMIN_NOTIFY_DEDUPE_TTL_SECONDS = int(os.getenv('ADMIN_NOTIFY_DEDUPE_TTL_SECONDS', str(24 * 60 * 60)))
+_ADMIN_NOTIFY_DEDUPE_MAX_KEYS = int(os.getenv('ADMIN_NOTIFY_DEDUPE_MAX_KEYS', '500'))
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -74,6 +82,10 @@ def _notify_admin(action: str, target_user: User, detail: str = ''):
     if detail:
         msg += f"\n\n{detail}"
 
+    if _admin_notify_recently_sent(msg):
+        print(f"[AdminNotify] duplicate suppressed action={action} user_id={target_user.id}")
+        return
+
     def _send():
         try:
             import requests as _rq
@@ -85,8 +97,60 @@ def _notify_admin(action: str, target_user: User, detail: str = ''):
         except Exception as e:
             print(f"[AdminNotify] {type(e).__name__}: {e}")
 
-    import threading
     threading.Thread(target=_send, daemon=True).start()
+
+
+def _admin_notify_dedupe_path() -> Path:
+    root = Path(os.path.abspath(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))))
+    return root / 'data' / 'admin_notify_dedupe.json'
+
+
+def _admin_notify_recently_sent(message: str, now: float | None = None) -> bool:
+    """Return True when an identical admin Telegram message was sent recently."""
+    if _ADMIN_NOTIFY_DEDUPE_TTL_SECONDS <= 0:
+        return False
+
+    now = time.time() if now is None else float(now)
+    key = hashlib.sha256(message.encode('utf-8')).hexdigest()
+    path = _admin_notify_dedupe_path()
+
+    with _ADMIN_NOTIFY_DEDUPE_LOCK:
+        try:
+            if path.exists():
+                data = json.loads(path.read_text(encoding='utf-8'))
+            else:
+                data = {}
+            if not isinstance(data, dict):
+                data = {}
+        except Exception:
+            data = {}
+
+        cutoff = now - _ADMIN_NOTIFY_DEDUPE_TTL_SECONDS
+        cleaned = {
+            str(k): float(v)
+            for k, v in data.items()
+            if isinstance(v, (int, float)) and float(v) >= cutoff
+        }
+
+        if key in cleaned:
+            try:
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text(json.dumps(cleaned, ensure_ascii=False, indent=2), encoding='utf-8')
+            except Exception as e:
+                print(f"[AdminNotify] dedupe prune failed: {type(e).__name__}: {e}")
+            return True
+
+        cleaned[key] = now
+        if len(cleaned) > _ADMIN_NOTIFY_DEDUPE_MAX_KEYS:
+            cleaned = dict(sorted(cleaned.items(), key=lambda item: item[1])[-_ADMIN_NOTIFY_DEDUPE_MAX_KEYS:])
+        try:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            tmp = path.with_suffix(path.suffix + '.tmp')
+            tmp.write_text(json.dumps(cleaned, ensure_ascii=False, indent=2), encoding='utf-8')
+            os.replace(tmp, path)
+        except Exception as e:
+            print(f"[AdminNotify] dedupe write failed: {type(e).__name__}: {e}")
+        return False
 
 
 def create_admin_notification(noti_type: str, title: str, message: str, related_id: int | None = None):

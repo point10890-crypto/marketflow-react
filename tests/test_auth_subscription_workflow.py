@@ -159,6 +159,18 @@ def test_subscription_approval_is_idempotent_and_sends_admin_notice_once(monkeyp
     assert len(sent) == 1
 
 
+def test_admin_telegram_dedupe_suppresses_identical_message(tmp_path, monkeypatch):
+    dedupe_file = tmp_path / 'admin_notify_dedupe.json'
+    monkeypatch.setattr(admin_routes, '_admin_notify_dedupe_path', lambda: dedupe_file)
+    monkeypatch.setattr(admin_routes, '_ADMIN_NOTIFY_DEDUPE_TTL_SECONDS', 3600)
+
+    message = 'admin approval: expired@example.com pro -> pro'
+
+    assert admin_routes._admin_notify_recently_sent(message, now=1000.0) is False
+    assert admin_routes._admin_notify_recently_sent(message, now=1001.0) is True
+    assert admin_routes._admin_notify_recently_sent(message, now=4601.1) is False
+
+
 def test_duplicate_active_renewal_approval_does_not_send_admin_notice(monkeypatch):
     app = _app()
     future_at = datetime.now(timezone.utc) + timedelta(days=20)
