@@ -56,6 +56,14 @@ def status():
     return jsonify(mirofish.get_status())
 
 
+@admin_mirofish_bp.route('/agent/status', methods=['GET'])
+@admin_or_aibain_required
+def agent_status():
+    from app.services.mirofish import alpha_brain_agent
+
+    return jsonify(alpha_brain_agent.get_agent_status())
+
+
 @admin_mirofish_bp.route('/chat', methods=['POST'])
 @admin_or_aibain_required
 def chat():

@@ -3358,6 +3358,22 @@ def _performance_advisory() -> dict[str, Any]:
         'note': 'bounded ranking adjustment when enough replay-safe outcomes exist',
     }
     try:
+        from app.services.mirofish import agent_actions
+
+        overlay = agent_actions.scoring_overlay_deltas()
+    except Exception:
+        overlay = {}
+    if overlay:
+        merged = dict((base.get('recommendations') or {}).get('tag_score_adjust') or {})
+        for tag, delta in overlay.items():
+            merged[tag] = round(max(-2.0, min(2.0, _float(merged.get(tag)) + delta)), 2)
+        base['recommendations'] = {
+            **(base.get('recommendations') or {}),
+            'tag_score_adjust': merged,
+            'agent_overlay_applied': True,
+            'agent_overlay_source': 'alpha_brain_agent',
+        }
+    try:
         from app.services.mirofish import learning_policy
 
         base['learning_policy'] = learning_policy.build_learning_policy(base)

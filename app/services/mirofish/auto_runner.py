@@ -45,7 +45,7 @@ import time
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
-from app.services.mirofish import alpha_scanner, workflow as workflow_svc
+from app.services.mirofish import agent_actions, alpha_scanner, workflow as workflow_svc
 from app.utils.atomic_json import write_json_atomic
 
 
@@ -103,8 +103,14 @@ def _tunables() -> dict[str, Any]:
         'poll_seconds': max(15, _env_int('MIROFISH_AUTO_RUNNER_POLL_SECONDS', 60)),
         'cooldown_minutes': max(1, _env_int('MIROFISH_AUTO_RUNNER_COOLDOWN_MIN', 15)),
         'min_new_events': max(1, _env_int('MIROFISH_AUTO_RUNNER_MIN_NEW', 3)),
-        'min_alpha': _env_float('MIROFISH_AUTO_RUNNER_MIN_ALPHA', 70.0),
-        'max_risk': _env_float('MIROFISH_AUTO_RUNNER_MAX_RISK', 45.0),
+        'min_alpha': _env_float(
+            'MIROFISH_AUTO_RUNNER_MIN_ALPHA',
+            agent_actions.param_value('min_alpha', 70.0),
+        ),
+        'max_risk': _env_float(
+            'MIROFISH_AUTO_RUNNER_MAX_RISK',
+            agent_actions.param_value('max_risk', 45.0),
+        ),
         'daily_cap_usd': _env_float('MIROFISH_AUTO_RUNNER_DAILY_CAP_USD', 5.0),
         'monthly_cap_usd': _env_float('MIROFISH_AUTO_RUNNER_MONTHLY_CAP_USD', 50.0),
         'circuit_breaker_failures': max(2, _env_int('MIROFISH_AUTO_RUNNER_CB_FAILS', 3)),
@@ -114,7 +120,10 @@ def _tunables() -> dict[str, Any]:
         'dry_run': _env_bool('MIROFISH_AUTO_RUNNER_DRY_RUN', False),
         'allow_outside_market_hours': _env_bool('MIROFISH_AUTO_RUNNER_ALLOW_OUTSIDE', False),
         'allow_stale_sources': _env_bool('MIROFISH_AUTO_RUNNER_ALLOW_STALE', False),
-        'min_top_score': _env_float('MIROFISH_AUTO_RUNNER_MIN_TOP_SCORE', 50.0),
+        'min_top_score': _env_float(
+            'MIROFISH_AUTO_RUNNER_MIN_TOP_SCORE',
+            agent_actions.param_value('min_top_score', 50.0),
+        ),
         # 마지막 success 후 N시간 지나면 dedup 우회 자동 force (0 = 비활성).
         # 쿨다운 + 비용캡은 여전히 적용되므로 폭주 방지.
         'force_after_hours': _env_int('MIROFISH_AUTO_RUNNER_FORCE_AFTER_HOURS', 4),

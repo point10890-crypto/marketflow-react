@@ -471,6 +471,65 @@ def test_alpha_scanner_blocks_outcome_memory_when_learning_policy_observes_only(
     assert 'outcome_tag_memory_adjusted' not in candidate['strategy_tags']
 
 
+def test_performance_advisory_merges_agent_overlay(monkeypatch):
+    from app.services.mirofish import agent_actions, outcome_tracker
+
+    monkeypatch.setattr(
+        outcome_tracker,
+        'get_advisory_feedback',
+        lambda **_kw: {
+            'evaluated_count': 20,
+            'hit_rate_recent': 0.6,
+            'horizon_days': 5,
+            'lookahead_safe': True,
+            'asof': '2026-06-12T00:00:00+00:00',
+            'workflow_count_scanned': 10,
+            'recommendations': {
+                'tag_score_adjust': {'volume_surge': 0.5},
+                'baseline_hit_rate': 0.5,
+            },
+        },
+    )
+    monkeypatch.setattr(
+        agent_actions,
+        'scoring_overlay_deltas',
+        lambda: {'volume_surge': 1.0, 'agent_only_tag': -1.5},
+    )
+
+    advisory = alpha_scanner._performance_advisory()
+    adjust = advisory['recommendations']['tag_score_adjust']
+
+    assert adjust['volume_surge'] == 1.5
+    assert adjust['agent_only_tag'] == -1.5
+    assert advisory['recommendations']['agent_overlay_applied'] is True
+
+
+def test_performance_advisory_clamps_merged_overlay(monkeypatch):
+    from app.services.mirofish import agent_actions, outcome_tracker
+
+    monkeypatch.setattr(
+        outcome_tracker,
+        'get_advisory_feedback',
+        lambda **_kw: {
+            'evaluated_count': 20,
+            'hit_rate_recent': 0.6,
+            'horizon_days': 5,
+            'lookahead_safe': True,
+            'asof': '2026-06-12T00:00:00+00:00',
+            'workflow_count_scanned': 10,
+            'recommendations': {
+                'tag_score_adjust': {'volume_surge': 1.8},
+                'baseline_hit_rate': 0.5,
+            },
+        },
+    )
+    monkeypatch.setattr(agent_actions, 'scoring_overlay_deltas', lambda: {'volume_surge': 1.8})
+
+    advisory = alpha_scanner._performance_advisory()
+
+    assert advisory['recommendations']['tag_score_adjust']['volume_surge'] == 2.0
+
+
 def test_alpha_scanner_plan_a_blocks_credit_pressure_cache(tmp_path, monkeypatch):
     _seed_artifacts(tmp_path)
     _write_json(tmp_path / 'credit_balance_latest.json', {

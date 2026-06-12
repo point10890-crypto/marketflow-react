@@ -567,6 +567,52 @@ def refresh_learning_feedback(payload: dict[str, Any] | None = None) -> dict[str
     return feedback
 
 
+def refresh_learning_feedback_trusted(*, limit: int = 20) -> dict[str, Any]:
+    """Refresh workflow outcome feedback from an in-process trusted scheduler path.
+
+    External MCP callers still go through ``refresh_learning_feedback`` and its
+    mutation gate. The Alpha Brain scheduler loop uses this helper so it can
+    update outcome files without passing an API key through local process
+    boundaries.
+    """
+    clean_limit = _int(limit, 20, 1, MAX_LIMIT)
+    workflows = workflow.list_workflows(limit=clean_limit)
+    refreshed: list[dict[str, Any]] = []
+    all_items: list[dict[str, Any]] = []
+    errors: list[dict[str, str]] = []
+
+    for summary in workflows:
+        workflow_id = str(summary.get('id') or '')
+        if not workflow_id:
+            continue
+        record = workflow.read_workflow(workflow_id)
+        if not isinstance(record, dict) or record.get('status') != 'completed':
+            continue
+        try:
+            outcomes = outcome_tracker.refresh_workflow_outcomes(workflow_id, workflow=record)
+        except Exception as exc:
+            errors.append({'workflow_id': workflow_id, 'error': f'{type(exc).__name__}: {exc}'})
+            continue
+        if not isinstance(outcomes, dict):
+            continue
+        refreshed.append({
+            'workflow_id': workflow_id,
+            'status': outcomes.get('status'),
+            'summary': outcomes.get('summary') or {},
+        })
+        all_items.extend([item for item in (outcomes.get('items') or []) if isinstance(item, dict)])
+
+    feedback = _build_learning_feedback(refreshed, all_items, errors)
+    write_json_atomic(str(LEARNING_FEEDBACK_PATH), feedback, sort_keys=False)
+    _audit(
+        'refresh_learning_feedback_trusted',
+        {'limit': clean_limit},
+        _learning_summary(feedback),
+        status='completed',
+    )
+    return feedback
+
+
 def read_learning_feedback() -> dict[str, Any] | None:
     if not LEARNING_FEEDBACK_PATH.is_file():
         return None

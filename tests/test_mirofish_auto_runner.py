@@ -127,3 +127,21 @@ def test_auto_runner_quality_hold_commits_events_without_telegram(monkeypatch):
     assert result['quality_reason'] == 'best_score_below_floor'
     assert commit_calls
     assert any(item.get('history', {}).get('outcome') == 'quality_hold' for item in writes)
+
+
+def test_tunables_use_agent_override_when_env_unset(monkeypatch):
+    from app.services.mirofish import agent_actions
+
+    monkeypatch.delenv('MIROFISH_AUTO_RUNNER_MIN_ALPHA', raising=False)
+    monkeypatch.setattr(agent_actions, 'param_override', lambda name: 73.0 if name == 'min_alpha' else None)
+
+    assert auto_runner._tunables()['min_alpha'] == 73.0
+
+
+def test_tunables_env_beats_agent_override(monkeypatch):
+    from app.services.mirofish import agent_actions
+
+    monkeypatch.setenv('MIROFISH_AUTO_RUNNER_MIN_ALPHA', '68')
+    monkeypatch.setattr(agent_actions, 'param_override', lambda _name: 73.0)
+
+    assert auto_runner._tunables()['min_alpha'] == 68.0

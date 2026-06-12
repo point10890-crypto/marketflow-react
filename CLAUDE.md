@@ -711,6 +711,13 @@ Investing.com ProPicks 분석 결과(적극 매수/매수/중립/매도/적극 �
 
 ## 14. 변경 이력
 
+### v3.3.0 (2026-06-12) — Alpha Brain Agent 자율 학습 사이클
+- `alpha_brain_agent.py`: Sense -> Think -> Act -> Learn 루프 추가. 기본 dry-run으로 저널/제안 먼저 축적.
+- `edge_map.py` + `hypothesis_replay.py`: outcome 버킷 통계와 lookahead-safe tag delta 리플레이 검증.
+- `agent_actions.py`: whitelist 실행기, 하드 바운드, replay gate, 2회 연속 악화 시 자동 rollback.
+- `auto_runner`, `scheduler`, `alpha_scanner`: env > agent override > default 순서로 안전한 override/overlay 소비.
+- `GET /api/admin/mirofish/agent/status`, MCP `get_agent_brain_status`: active overrides, scoring overlay, journal 상태 조회.
+
 ### v3.2.0 (2026-04-16) — 자동화 안정화 + 텔레그램 채널 분리 + 키움 장중 연속 갱신 복원
 **scheduler silent death 재발 방지 (b7c3cb4, 7880f70):**
 - `scripts/scheduler_watchdog.ps1` — heartbeat 180s + PID liveness 검사, 자동 재기동

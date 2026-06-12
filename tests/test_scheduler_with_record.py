@@ -235,6 +235,29 @@ def test_orphan_file_audit_reports_subprocess_failure(monkeypatch):
     assert scheduler._run_orphan_file_audit() is False
 
 
+def test_run_alpha_brain_agent_cycles_invoke_agent(monkeypatch):
+    calls = []
+    import app.services.mirofish.alpha_brain_agent as agent_mod
+
+    monkeypatch.setattr(
+        agent_mod,
+        'run_agent_cycle',
+        lambda cycle, **_kw: calls.append(cycle) or {'status': 'completed'},
+    )
+
+    assert scheduler.run_alpha_brain_agent_evening() is True
+    assert scheduler.run_alpha_brain_agent_night() is True
+    assert calls == ['evening', 'post_backtest']
+
+
+def test_run_alpha_brain_agent_reports_failure(monkeypatch):
+    import app.services.mirofish.alpha_brain_agent as agent_mod
+
+    monkeypatch.setattr(agent_mod, 'run_agent_cycle', lambda cycle, **_kw: {'status': 'failed'})
+
+    assert scheduler.run_alpha_brain_agent_evening() is False
+
+
 def test_mirofish_workflow_monitor_starts_on_new_events():
     result = {
         "status": "queued",

@@ -398,6 +398,9 @@ class Config:
     ALPHA_BACKTEST_TIME = os.environ.get('ALPHA_BACKTEST_TIME', '23:00')
     ALPHA_BACKTEST_HORIZON_DAYS = int(os.environ.get('ALPHA_BACKTEST_HORIZON_DAYS', '5'))
     ALPHA_BACKTEST_LIMIT_RUNS = int(os.environ.get('ALPHA_BACKTEST_LIMIT_RUNS', '8000'))
+    MIROFISH_AGENT_ENABLED = os.environ.get('MIROFISH_AGENT_ENABLED', 'true').lower() == 'true'
+    MIROFISH_AGENT_EVENING_TIME = os.environ.get('MIROFISH_AGENT_EVENING_TIME', '16:30')
+    MIROFISH_AGENT_NIGHT_TIME = os.environ.get('MIROFISH_AGENT_NIGHT_TIME', '23:30')
     MIROFISH_WORKFLOW_ENABLED = os.environ.get('MIROFISH_WORKFLOW_ENABLED', 'true').lower() == 'true'
     MIROFISH_WORKFLOW_MIN_ALPHA = float(os.environ.get('MIROFISH_WORKFLOW_MIN_ALPHA', '50'))
     MIROFISH_WORKFLOW_MAX_RISK = float(os.environ.get('MIROFISH_WORKFLOW_MAX_RISK', '65'))
@@ -711,11 +714,19 @@ def run_alpha_scanner_monitor() -> bool:
         from app.services.mirofish.alpha_scanner import (
             run_scanner_realtime_monitor_check,
         )
+        from app.services.mirofish.agent_actions import param_value
+
+        min_alpha = Config.ALPHA_SCANNER_MIN_ALPHA
+        if os.environ.get('ALPHA_SCANNER_MIN_ALPHA') is None:
+            min_alpha = param_value('min_alpha', min_alpha)
+        max_risk = Config.ALPHA_SCANNER_MAX_RISK
+        if os.environ.get('ALPHA_SCANNER_MAX_RISK') is None:
+            max_risk = param_value('max_risk', max_risk)
 
         result = run_scanner_realtime_monitor_check(
             {'limit': Config.ALPHA_SCANNER_LIMIT},
-            min_alpha=Config.ALPHA_SCANNER_MIN_ALPHA,
-            max_risk=Config.ALPHA_SCANNER_MAX_RISK,
+            min_alpha=min_alpha,
+            max_risk=max_risk,
             max_events=Config.ALPHA_SCANNER_MAX_EVENTS,
             retry_seconds=Config.ALPHA_SCANNER_RETRY_SECONDS,
             send_fn=lambda message: send_telegram_long(message, channel=False),
@@ -836,6 +847,28 @@ def run_alpha_backtest_daily() -> bool:
         return False
     logger.info("Alpha backtest completed: %s", (result.stdout or '').strip())
     return os.path.isfile(output) and os.path.isfile(rolling_output)
+
+
+def _run_alpha_brain_agent(cycle: str) -> bool:
+    """Run one Alpha Brain Agent cycle through the trusted in-process path."""
+    try:
+        from app.services.mirofish import alpha_brain_agent
+
+        result = alpha_brain_agent.run_agent_cycle(cycle)
+        status = result.get('status')
+        logger.info("Alpha brain agent cycle=%s status=%s", cycle, status)
+        return status in {'completed', 'skipped_circuit_open'}
+    except Exception as exc:
+        logger.error("Alpha brain agent cycle failed: %s", exc, exc_info=True)
+        return False
+
+
+def run_alpha_brain_agent_evening() -> bool:
+    return _run_alpha_brain_agent('evening')
+
+
+def run_alpha_brain_agent_night() -> bool:
+    return _run_alpha_brain_agent('post_backtest')
 
 
 def run_mirofish_workflow_monitor() -> bool:
@@ -3357,6 +3390,14 @@ class Scheduler:
         if Config.ALPHA_BACKTEST_ENABLED:
             schedule.every().day.at(Config.ALPHA_BACKTEST_TIME).do(
                 self._with_record(run_alpha_backtest_daily, 'alpha_backtest_daily',
+                                  max_retries=1, retry_delay=300))
+        if Config.MIROFISH_AGENT_ENABLED:
+            for day in weekdays:
+                getattr(schedule.every(), day).at(Config.MIROFISH_AGENT_EVENING_TIME).do(
+                    self._with_record(run_alpha_brain_agent_evening, 'alpha_brain_agent_evening',
+                                      max_retries=1, retry_delay=300))
+            schedule.every().day.at(Config.MIROFISH_AGENT_NIGHT_TIME).do(
+                self._with_record(run_alpha_brain_agent_night, 'alpha_brain_agent_night',
                                   max_retries=1, retry_delay=300))
 
         for day in weekdays:

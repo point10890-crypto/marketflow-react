@@ -78,6 +78,13 @@ def create_mcp_server(
         return mcp_resource_catalog.build_alpha_endpoint_blueprint()
 
     @mcp.tool()
+    def get_agent_brain_status() -> dict[str, Any]:
+        """Return Alpha Brain Agent state, active overlays, and recent journal."""
+        from app.services.mirofish import alpha_brain_agent
+
+        return alpha_brain_agent.get_agent_status()
+
+    @mcp.tool()
     def get_hermes_bridge_status() -> dict[str, Any]:
         """Return readiness and safety status for attaching Hermes Agent as an MCP sidecar."""
         return hermes_bridge.build_hermes_bridge_status()
