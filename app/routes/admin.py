@@ -112,6 +112,20 @@ def create_admin_notification(noti_type: str, title: str, message: str, related_
 # 대시보드 통계
 # ─────────────────────────────────────────────────────────────────────────────
 
+def _has_active_same_tier(user: User | None, tier: str | None) -> bool:
+    """Return True when a duplicate renewal approval would not change access."""
+    if not user or user.status != 'approved' or user.tier != tier:
+        return False
+    if tier == 'premium':
+        return True
+    if tier != 'pro' or user.pro_expires_at is None:
+        return False
+    expires = user.pro_expires_at
+    if expires.tzinfo is None:
+        expires = expires.replace(tzinfo=timezone.utc)
+    return expires > datetime.now(timezone.utc)
+
+
 @admin_bp.route('/dashboard')
 @admin_required
 def dashboard():
@@ -939,15 +953,33 @@ def approve_subscription(req_id):
     sub_req = db.session.get(SubscriptionRequest, req_id)
     if not sub_req:
         return jsonify({'error': 'Request not found'}), 404
-    if sub_req.status != 'pending':
-        return jsonify({'error': f'Request already {sub_req.status}'}), 400
 
     admin = _admin_user()
-    is_aibain_addon = sub_req.request_type == 'aibain_addon'
+    processed_at = datetime.now(timezone.utc)
+    claimed = SubscriptionRequest.query.filter(
+        SubscriptionRequest.id == req_id,
+        SubscriptionRequest.status == 'pending',
+    ).update({
+        SubscriptionRequest.status: 'approved',
+        SubscriptionRequest.processed_at: processed_at,
+        SubscriptionRequest.processed_by: admin.id if admin else None,
+    }, synchronize_session=False)
+    if claimed != 1:
+        db.session.rollback()
+        current = db.session.get(SubscriptionRequest, req_id)
+        if current and current.status == 'approved':
+            user = db.session.get(User, current.user_id)
+            return jsonify({
+                'message': 'Subscription request already approved',
+                'already_processed': True,
+                'request': current.to_dict(),
+                'user': user.to_dict() if user else None,
+            }), 200
+        return jsonify({'error': f'Request already {current.status if current else "processed"}'}), 400
 
-    sub_req.status = 'approved'
-    sub_req.processed_at = datetime.now(timezone.utc)
-    sub_req.processed_by = admin.id if admin else None
+    db.session.expire_all()
+    sub_req = db.session.get(SubscriptionRequest, req_id)
+    is_aibain_addon = sub_req.request_type == 'aibain_addon'
 
     user = db.session.get(User, sub_req.user_id)
     before = None
@@ -963,6 +995,23 @@ def approve_subscription(req_id):
             'aibain_enabled': user.aibain_enabled,
             'aibain_expires_at': user.aibain_expires_at.isoformat() if user.aibain_expires_at else None,
         }
+
+        if sub_req.request_type == 'renewal' and _has_active_same_tier(user, sub_req.to_tier):
+            db.session.commit()
+            _record_audit(
+                'approve_subscription_duplicate_ignored',
+                user,
+                before,
+                before,
+                note=f'request_id={req_id}: duplicate active renewal ignored',
+            )
+            return jsonify({
+                'message': 'Subscription request already satisfied; duplicate approval ignored',
+                'already_processed': True,
+                'duplicate_ignored': True,
+                'request': sub_req.to_dict(),
+                'user': user.to_dict(),
+            }), 200
 
         if is_aibain_addon:
             # AI Brain 만 활성화 — 베이스 tier 그대로

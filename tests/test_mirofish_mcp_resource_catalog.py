@@ -8,7 +8,7 @@ def test_mcp_resource_catalog_prioritizes_alpha_relevant_sources():
     catalog = mcp_resource_catalog.list_mcp_resource_catalog(include_deferred=False)
     resource_ids = [item['id'] for item in catalog]
 
-    assert resource_ids[:3] == ['kis_mcp', 'korea_stock_mcp', 'alpha_vantage_mcp']
+    assert resource_ids[:3] == ['kis_mcp', 'korea_stock_mcp', 'krx_short_credit_mcp']
     assert catalog[0]['recommended_for_alpha'] is True
     assert catalog[0]['read_only_required'] is True
     assert 'order' in catalog[0]['blocked_capabilities']
@@ -24,6 +24,8 @@ def test_mcp_source_gap_evaluation_detects_required_coverage():
             'KIS API investor flow',
             'all_institutional_trend_data.csv',
             'OpenDART filing cache',
+            'credit_balance_risk',
+            'kind_blacklist_latest.json',
         ],
         'candidates': [
             {
@@ -60,6 +62,7 @@ def test_mcp_source_gap_evaluation_detects_required_coverage():
     assert requirements['kr_live_price']['status'] == 'covered'
     assert requirements['capital_flow']['status'] == 'covered'
     assert requirements['filing_fundamental']['status'] == 'covered'
+    assert requirements['short_credit_risk']['status'] == 'covered'
     assert requirements['outcome_memory']['status'] == 'covered'
 
 
@@ -78,6 +81,51 @@ def test_mcp_source_gap_evaluation_blocks_when_required_roles_are_missing():
     assert any(item['id'] == 'korea_stock_mcp' for item in plan['immediate'])
 
 
+def test_mcp_source_gap_evaluation_reads_real_source_file_objects():
+    scanner_run = {
+        'id': 'mfas_real',
+        'source_files': [
+            {'file': 'data/daily_prices.csv', 'role': 'price_history', 'freshness': 'fresh', 'exists': True},
+            {'file': 'data/kis_live_snapshot_latest.json', 'role': 'kis_live_price_flow', 'freshness': 'fresh', 'exists': True},
+            {'file': 'data/all_institutional_trend_data.csv', 'role': 'capital_flow_confirmation', 'freshness': 'fresh', 'exists': True},
+            {'file': 'data/dart_event_latest.json', 'role': 'dart_disclosure_risk', 'freshness': 'fresh', 'exists': True},
+            {'file': 'data/credit_balance_latest.json', 'role': 'credit_balance_risk', 'freshness': 'fresh', 'exists': True},
+        ],
+        'performance_advisory': {'source': 'workflow_outcomes', 'hit_rate_pct': 60.0},
+    }
+    workflow = {
+        'id': 'mcp_real',
+        'outcome_summary': {'hit_rate_pct': 60.0},
+    }
+
+    gaps = mcp_resource_catalog.evaluate_mcp_source_gaps(scanner_run=scanner_run, workflow=workflow)
+
+    assert gaps['readiness'] == 'ready'
+    requirements = {item['id']: item for item in gaps['requirements']}
+    assert requirements['kr_live_price']['status'] == 'covered'
+    assert requirements['capital_flow']['status'] == 'covered'
+    assert requirements['filing_fundamental']['status'] == 'covered'
+    assert requirements['short_credit_risk']['status'] == 'covered'
+    assert requirements['outcome_memory']['status'] == 'covered'
+
+
+def test_alpha_endpoint_blueprint_prioritizes_profit_detection_endpoints():
+    snapshot = mcp_resource_catalog.build_alpha_endpoint_blueprint(
+        scanner_run=False,
+        workflow=False,
+    )
+
+    assert snapshot['schema_version'] == mcp_resource_catalog.ALPHA_ENDPOINT_BLUEPRINT_VERSION
+    assert snapshot['objective'].startswith('improve profitable Top 3')
+    assert snapshot['p0_count'] >= 3
+    assert [item['priority'] for item in snapshot['endpoints'][:3]] == ['P0', 'P0', 'P0']
+    first = snapshot['endpoints'][0]
+    assert first['read_only_required'] is True
+    assert first['orders_blocked'] is True
+    assert first['implementation_contract']['llm_may_explain_not_invent'] is True
+    assert any(action['priority'] == 'P0' for action in snapshot['next_actions'])
+
+
 def test_mcp_resource_snapshot_is_redacted_and_machine_readable():
     snapshot = mcp_resource_catalog.build_mcp_resource_snapshot(
         scanner_run=False,
@@ -90,6 +138,7 @@ def test_mcp_resource_snapshot_is_redacted_and_machine_readable():
     assert snapshot['rules']['secrets_redacted'] is True
     assert snapshot['catalog_count'] >= 6
     assert snapshot['source_gaps']['readiness'] == 'unknown'
+    assert snapshot['alpha_endpoint_blueprint']['schema_version'] == mcp_resource_catalog.ALPHA_ENDPOINT_BLUEPRINT_VERSION
     assert 'api_key' not in str(snapshot).lower()
 
 
@@ -100,4 +149,5 @@ def test_admin_mirofish_mcp_resource_routes_are_registered():
     rules = {str(rule) for rule in app.url_map.iter_rules()}
 
     assert '/api/admin/mirofish/mcp/resources' in rules
+    assert '/api/admin/mirofish/mcp/alpha-endpoints' in rules
     assert '/api/admin/mirofish/mcp/resources/<resource_id>' in rules

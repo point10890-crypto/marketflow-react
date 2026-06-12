@@ -888,6 +888,12 @@ def get_mcp_resources():
     ))
 
 
+@admin_mirofish_bp.route('/mcp/alpha-endpoints', methods=['GET'])
+@admin_or_aibain_required
+def get_mcp_alpha_endpoints():
+    return jsonify(mirofish.build_alpha_endpoint_blueprint())
+
+
 @admin_mirofish_bp.route('/mcp/resources/<resource_id>', methods=['GET'])
 @admin_or_aibain_required
 def get_mcp_resource(resource_id):

@@ -73,6 +73,11 @@ def create_mcp_server(
         )
 
     @mcp.tool()
+    def get_alpha_endpoint_blueprint() -> dict[str, Any]:
+        """Return endpoint contracts that improve Top 3 alpha detection quality."""
+        return mcp_resource_catalog.build_alpha_endpoint_blueprint()
+
+    @mcp.tool()
     def get_hermes_bridge_status() -> dict[str, Any]:
         """Return readiness and safety status for attaching Hermes Agent as an MCP sidecar."""
         return hermes_bridge.build_hermes_bridge_status()
@@ -334,6 +339,11 @@ def create_mcp_server(
     def mcp_resources_resource() -> str:
         """Alpha-relevant MCP resource catalog and source-gap evaluation."""
         return _json(mcp_resource_catalog.build_mcp_resource_snapshot())
+
+    @mcp.resource('mirofish://mcp/alpha-endpoints')
+    def alpha_endpoint_blueprint_resource() -> str:
+        """Implementation-grade endpoint blueprint for Top 3 alpha detection."""
+        return _json(mcp_resource_catalog.build_alpha_endpoint_blueprint())
 
     @mcp.resource('mirofish://integrations/hermes/manifest')
     def hermes_manifest_resource() -> str:

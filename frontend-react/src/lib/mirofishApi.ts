@@ -1038,6 +1038,66 @@ export interface MiroFishAutonomousActionResult {
     }>;
 }
 
+export interface MiroFishMcpRequirementStatus {
+    id?: string;
+    label?: string;
+    required_for_top3?: boolean;
+    status?: string;
+    evidence_hits?: string[];
+    recommended_resource_ids?: string[];
+}
+
+export interface MiroFishAlphaEndpointContract {
+    id: string;
+    priority: 'P0' | 'P1' | 'P2' | 'P3' | string;
+    name: string;
+    http_method?: string;
+    internal_path?: string;
+    mcp_tool?: string;
+    current_status?: string;
+    source_grade?: string;
+    alpha_impact?: string;
+    pipeline_position?: string;
+    requirements?: MiroFishMcpRequirementStatus[];
+    resources?: Array<Record<string, any>>;
+    risk_controls?: string[];
+    read_only_required?: boolean;
+    orders_blocked?: boolean;
+}
+
+export interface MiroFishAlphaEndpointBlueprint {
+    schema_version?: string;
+    objective?: string;
+    generated_at?: string;
+    scanner_run_id?: string | null;
+    workflow_id?: string | null;
+    source_readiness?: {
+        status?: string;
+        required_total?: number;
+        required_covered?: number;
+        required_partial?: number;
+        required_missing?: number;
+        summary?: string;
+    };
+    endpoint_count?: number;
+    p0_count?: number;
+    endpoints: MiroFishAlphaEndpointContract[];
+    next_actions?: Array<Record<string, any>>;
+    non_goals?: string[];
+}
+
+export interface MiroFishMcpResourceSnapshot {
+    schema_version?: string;
+    mode?: string;
+    generated_at?: string;
+    catalog_count?: number;
+    catalog?: Array<Record<string, any>>;
+    source_gaps?: Record<string, any>;
+    adoption_plan?: Record<string, any>;
+    alpha_endpoint_blueprint?: MiroFishAlphaEndpointBlueprint;
+    rules?: Record<string, any>;
+}
+
 type RawObject = Record<string, any>;
 
 const phaseByName: Record<string, number> = {
@@ -1667,6 +1727,16 @@ export const mirofishApi = {
     ),
     getAutonomousStatus: async () => fetchAuthAPI<MiroFishAutonomousStatus>(
         '/api/admin/mirofish/autonomous/status',
+    ),
+    getMcpResources: async () => fetchAuthAPI<MiroFishMcpResourceSnapshot>(
+        '/api/admin/mirofish/mcp/resources',
+        undefined,
+        60000,
+    ),
+    getAlphaEndpointBlueprint: async () => fetchAuthAPI<MiroFishAlphaEndpointBlueprint>(
+        '/api/admin/mirofish/mcp/alpha-endpoints',
+        undefined,
+        60000,
     ),
     getAutonomousLearning: async () => fetchAuthAPI<MiroFishAutonomousLearningFeedback>(
         '/api/admin/mirofish/autonomous/learning',

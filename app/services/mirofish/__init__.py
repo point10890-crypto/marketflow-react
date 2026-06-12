@@ -87,6 +87,7 @@ from app.services.mirofish.pipeline_overview import (
     get_pipeline_today_snapshot,
 )
 from app.services.mirofish.mcp_resource_catalog import (
+    build_alpha_endpoint_blueprint,
     build_mcp_resource_snapshot,
     evaluate_mcp_source_gaps,
     get_mcp_resource,
@@ -141,6 +142,7 @@ __all__ = [
     'get_market_clock',
     'auto_runner',
     'build_mcp_resource_snapshot',
+    'build_alpha_endpoint_blueprint',
     'evaluate_mcp_source_gaps',
     'get_mcp_resource',
     'get_mcp_security_policy',

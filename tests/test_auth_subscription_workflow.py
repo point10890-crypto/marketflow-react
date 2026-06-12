@@ -3,7 +3,8 @@ from datetime import datetime, timedelta, timezone
 from app import create_app
 from app.auth.decorators import generate_token
 from app.models import db
-from app.models.user import User
+from app.models.user import SubscriptionRequest, User
+import app.routes.admin as admin_routes
 
 
 def _app():
@@ -109,3 +110,94 @@ def test_expired_pro_user_can_request_same_tier_renewal_and_approval_reactivates
         if expires.tzinfo is None:
             expires = expires.replace(tzinfo=timezone.utc)
         assert expires > datetime.now(timezone.utc)
+
+
+def test_subscription_approval_is_idempotent_and_sends_admin_notice_once(monkeypatch):
+    app = _app()
+    expired_at = datetime.now(timezone.utc) - timedelta(days=1)
+    sent = []
+    monkeypatch.setattr(admin_routes, '_notify_admin', lambda action, user, detail='': sent.append((action, user.email, detail)))
+
+    with app.app_context():
+        admin = _user('admin@example.com', 'admin', 'Admin1234!', status='approved', tier='premium', role='admin')
+        member = _user(
+            'expired@example.com',
+            'expired',
+            'Pass1234!',
+            status='expired',
+            tier='pro',
+            pro_expires_at=expired_at,
+        )
+        db.session.add_all([admin, member])
+        db.session.flush()
+        request = SubscriptionRequest(
+            user_id=member.id,
+            request_type='renewal',
+            from_tier='pro',
+            to_tier='pro',
+            status='pending',
+            amount='50,000원',
+        )
+        db.session.add(request)
+        db.session.commit()
+        admin_token = generate_token(admin.id)
+        request_id = request.id
+
+    client = app.test_client()
+    first = client.put(
+        f'/api/admin/subscriptions/{request_id}/approve',
+        headers={'Authorization': f'Bearer {admin_token}'},
+    )
+    second = client.put(
+        f'/api/admin/subscriptions/{request_id}/approve',
+        headers={'Authorization': f'Bearer {admin_token}'},
+    )
+
+    assert first.status_code == 200
+    assert second.status_code == 200
+    assert second.get_json()['already_processed'] is True
+    assert len(sent) == 1
+
+
+def test_duplicate_active_renewal_approval_does_not_send_admin_notice(monkeypatch):
+    app = _app()
+    future_at = datetime.now(timezone.utc) + timedelta(days=20)
+    sent = []
+    monkeypatch.setattr(admin_routes, '_notify_admin', lambda action, user, detail='': sent.append((action, user.email, detail)))
+
+    with app.app_context():
+        admin = _user('admin@example.com', 'admin', 'Admin1234!', status='approved', tier='premium', role='admin')
+        member = _user(
+            'active@example.com',
+            'active',
+            'Pass1234!',
+            status='approved',
+            tier='pro',
+            pro_expires_at=future_at,
+        )
+        db.session.add_all([admin, member])
+        db.session.flush()
+        request = SubscriptionRequest(
+            user_id=member.id,
+            request_type='renewal',
+            from_tier='pro',
+            to_tier='pro',
+            status='pending',
+            amount='50,000원',
+        )
+        db.session.add(request)
+        db.session.commit()
+        admin_token = generate_token(admin.id)
+        request_id = request.id
+
+    client = app.test_client()
+    approved = client.put(
+        f'/api/admin/subscriptions/{request_id}/approve',
+        headers={'Authorization': f'Bearer {admin_token}'},
+    )
+
+    assert approved.status_code == 200
+    body = approved.get_json()
+    assert body['already_processed'] is True
+    assert body['duplicate_ignored'] is True
+    assert sent == []

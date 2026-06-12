@@ -13,6 +13,7 @@ from typing import Any
 
 
 CATALOG_VERSION = 'mirofish.mcp_resource_catalog.v1'
+ALPHA_ENDPOINT_BLUEPRINT_VERSION = 'mirofish.alpha_endpoint_blueprint.v1'
 
 
 _RESOURCE_CATALOG: tuple[dict[str, Any], ...] = (
@@ -60,6 +61,28 @@ _RESOURCE_CATALOG: tuple[dict[str, Any], ...] = (
         'notes': 'High value for Korean equity evidence and risk filtering.',
     },
     {
+        'id': 'krx_short_credit_mcp',
+        'name': 'KRX Short/Credit Risk MCP',
+        'category': 'risk_gate',
+        'adoption_phase': 'now',
+        'alpha_value_score': 88,
+        'source_grade': 'S',
+        'data_roles': ['short_selling', 'credit_balance', 'investment_warning', 'trading_halt'],
+        'alpha_use': [
+            'remove short/credit crowding traps before Top 3 ranking',
+            'separate healthy momentum from leverage-driven blow-off risk',
+            'hard-block management, halt, and investment-warning candidates',
+        ],
+        'risk_controls': [
+            'read_only_only',
+            'hard_blocker_before_llm',
+            'freshness_required_for_telegram',
+            'do_not_use_as_buy_signal',
+        ],
+        'blocked_capabilities': ['order', 'account', 'balance'],
+        'notes': 'High false-positive reduction value; should sit before GraphRAG and LLM debate.',
+    },
+    {
         'id': 'alpha_vantage_mcp',
         'name': 'Alpha Vantage MCP',
         'category': 'global_regime',
@@ -78,6 +101,27 @@ _RESOURCE_CATALOG: tuple[dict[str, Any], ...] = (
         ],
         'blocked_capabilities': [],
         'notes': 'Useful for regime and cross-market confirmation, not a Korean stock detector by itself.',
+    },
+    {
+        'id': 'bok_fred_macro_mcp',
+        'name': 'BOK ECOS + FRED Macro Regime MCP',
+        'category': 'global_regime',
+        'adoption_phase': 'pilot',
+        'alpha_value_score': 76,
+        'source_grade': 'S',
+        'data_roles': ['usd_krw', 'rates', 'dxy_proxy', 'macro_liquidity', 'risk_regime'],
+        'alpha_use': [
+            'cap confidence when macro/FX regime conflicts with Korean flow',
+            'raise sustainability score when liquidity, FX, and flow align',
+            'prevent Top 3 overconfidence during risk-off sessions',
+        ],
+        'risk_controls': [
+            'regime_context_only',
+            'no_single_factor_buy_signal',
+            'source_timestamp_required',
+        ],
+        'blocked_capabilities': [],
+        'notes': 'Useful for confidence caps and regime labels; not a standalone stock picker.',
     },
     {
         'id': 'exa_search_mcp',
@@ -118,6 +162,27 @@ _RESOURCE_CATALOG: tuple[dict[str, Any], ...] = (
         ],
         'blocked_capabilities': [],
         'notes': 'Useful only when paired with official price/filing/flow data.',
+    },
+    {
+        'id': 'naver_attention_mcp',
+        'name': 'Naver DataLab/Search Attention MCP',
+        'category': 'news_research',
+        'adoption_phase': 'pilot',
+        'alpha_value_score': 62,
+        'source_grade': 'C',
+        'data_roles': ['search_attention', 'news_frequency', 'theme_attention'],
+        'alpha_use': [
+            'detect attention expansion after official flow and price confirmation',
+            'flag crowded attention as overheating risk',
+            'collect Korean keyword evidence for GraphRAG source packets',
+        ],
+        'risk_controls': [
+            'secondary_evidence_only',
+            'never_buy_from_attention_alone',
+            'crowding_can_increase_risk',
+        ],
+        'blocked_capabilities': [],
+        'notes': 'Helpful as a supporting signal, but C-grade attention data must not drive Top 3 alone.',
     },
     {
         'id': 'neo4j_mcp',
@@ -208,7 +273,7 @@ _SOURCE_REQUIREMENTS: tuple[dict[str, Any], ...] = (
         'label': 'KR live price and liquidity',
         'required_for_top3': True,
         'resource_ids': ['kis_mcp'],
-        'primary_patterns': ['kis api', 'kis_quote', 'inquire-price', 'live quote'],
+        'primary_patterns': ['kis api', 'kis_quote', 'kis_live_price_flow', 'kis_live_snapshot_latest.json', 'inquire-price', 'live quote'],
         'fallback_patterns': ['daily_prices.csv', 'price_history'],
     },
     {
@@ -234,11 +299,28 @@ _SOURCE_REQUIREMENTS: tuple[dict[str, Any], ...] = (
         'fallback_patterns': ['korean_stocks_list.csv', 'ticker_to_yahoo_map.csv'],
     },
     {
+        'id': 'short_credit_risk',
+        'label': 'Short selling, credit balance, and market-warning risk gates',
+        'required_for_top3': True,
+        'resource_ids': ['krx_short_credit_mcp', 'korea_stock_mcp'],
+        'primary_patterns': [
+            'credit_balance',
+            'credit_balance_risk',
+            'short_selling',
+            'short sale',
+            'risk_blacklist',
+            'kind_blacklist',
+            'investment_warning',
+            'trading_halt',
+        ],
+        'fallback_patterns': ['kind_blacklist_latest.json', 'credit_balance_latest.json'],
+    },
+    {
         'id': 'global_regime',
         'label': 'Global macro, FX, ETF, and regime context',
         'required_for_top3': False,
-        'resource_ids': ['alpha_vantage_mcp'],
-        'primary_patterns': ['dxy', 'usd-krw', 'usd_krw', 'treasury', 'etf', 'global_index'],
+        'resource_ids': ['bok_fred_macro_mcp', 'alpha_vantage_mcp'],
+        'primary_patterns': ['dxy', 'usd-krw', 'usd_krw', 'treasury', 'rates', 'ecos', 'fred', 'etf', 'global_index'],
         'fallback_patterns': ['market_gate', 'fear_greed'],
     },
     {
@@ -248,6 +330,14 @@ _SOURCE_REQUIREMENTS: tuple[dict[str, Any], ...] = (
         'resource_ids': ['exa_search_mcp', 'firecrawl_mcp'],
         'primary_patterns': ['news', 'briefing', 'policy_event', 'theme_validation', 'web_extract'],
         'fallback_patterns': ['market_briefing'],
+    },
+    {
+        'id': 'attention_secondary',
+        'label': 'Search/news/social attention as secondary signal only',
+        'required_for_top3': False,
+        'resource_ids': ['naver_attention_mcp', 'exa_search_mcp', 'firecrawl_mcp'],
+        'primary_patterns': ['search_attention', 'datalab', 'naver', 'news_theme_social', 'theme_attention'],
+        'fallback_patterns': ['news_theme_social_latest.json', 'market_briefing'],
     },
     {
         'id': 'graph_memory',
@@ -264,6 +354,88 @@ _SOURCE_REQUIREMENTS: tuple[dict[str, Any], ...] = (
         'resource_ids': ['qdrant_mcp'],
         'primary_patterns': ['outcome', 'performance_memory', 'forward_return', 'hit_rate'],
         'fallback_patterns': ['performance_advisory', 'backtest'],
+    },
+)
+
+
+_ALPHA_ENDPOINT_BLUEPRINTS: tuple[dict[str, Any], ...] = (
+    {
+        'id': 'kr_flow_batch',
+        'priority': 'P0',
+        'name': 'KR capital-flow confirmation batch',
+        'http_method': 'GET',
+        'internal_path': '/api/admin/mirofish/sources/kr-flow/batch',
+        'mcp_tool': 'get_kr_investor_flow_batch',
+        'resource_ids': ['kis_mcp'],
+        'requirement_ids': ['capital_flow', 'kr_live_price'],
+        'source_grade': 'S',
+        'alpha_impact': 'Boost only when price, liquidity, and foreigner/institution flow align; penalize price-up/flow-out divergence.',
+        'pipeline_position': 'before_rank_and_before_telegram',
+    },
+    {
+        'id': 'kr_disclosure_risk_batch',
+        'priority': 'P0',
+        'name': 'DART/KIND disclosure risk batch',
+        'http_method': 'GET',
+        'internal_path': '/api/admin/mirofish/sources/disclosure-risk/batch',
+        'mcp_tool': 'get_disclosure_risk_batch',
+        'resource_ids': ['korea_stock_mcp'],
+        'requirement_ids': ['filing_fundamental', 'short_credit_risk'],
+        'source_grade': 'S',
+        'alpha_impact': 'Hard-filter capital impairment, trading halt, audit, dilution, and management-risk events before Top 3.',
+        'pipeline_position': 'risk_gate_before_graphrag',
+    },
+    {
+        'id': 'kr_short_credit_pressure',
+        'priority': 'P0',
+        'name': 'Short/credit pressure gate',
+        'http_method': 'GET',
+        'internal_path': '/api/admin/mirofish/sources/kr-risk/short-credit',
+        'mcp_tool': 'get_short_credit_pressure',
+        'resource_ids': ['krx_short_credit_mcp'],
+        'requirement_ids': ['short_credit_risk'],
+        'source_grade': 'S',
+        'alpha_impact': 'Remove leverage/crowding traps and raise risk when credit or short pressure is stale or adverse.',
+        'pipeline_position': 'false_positive_gate',
+    },
+    {
+        'id': 'macro_regime_cap',
+        'priority': 'P1',
+        'name': 'BOK/FRED macro and FX regime cap',
+        'http_method': 'GET',
+        'internal_path': '/api/admin/mirofish/sources/macro-regime',
+        'mcp_tool': 'get_macro_regime_snapshot',
+        'resource_ids': ['bok_fred_macro_mcp', 'alpha_vantage_mcp'],
+        'requirement_ids': ['global_regime'],
+        'source_grade': 'S/A',
+        'alpha_impact': 'Cap conviction when USD/KRW, rates, volatility, or global risk regime conflicts with KR flow.',
+        'pipeline_position': 'confidence_cap_after_rank',
+    },
+    {
+        'id': 'attention_secondary_signal',
+        'priority': 'P2',
+        'name': 'Naver/news attention secondary signal',
+        'http_method': 'GET',
+        'internal_path': '/api/admin/mirofish/sources/attention',
+        'mcp_tool': 'get_attention_secondary_signal',
+        'resource_ids': ['naver_attention_mcp', 'exa_search_mcp', 'firecrawl_mcp'],
+        'requirement_ids': ['attention_secondary', 'news_issue_validation'],
+        'source_grade': 'B/C',
+        'alpha_impact': 'Use only as supporting evidence or overheating warning after official flow/price/disclosure checks pass.',
+        'pipeline_position': 'supporting_context_only',
+    },
+    {
+        'id': 'outcome_memory_similar_cases',
+        'priority': 'P1',
+        'name': 'Outcome-memory similar-case search',
+        'http_method': 'GET',
+        'internal_path': '/api/admin/mirofish/learning/similar-cases',
+        'mcp_tool': 'get_similar_outcome_cases',
+        'resource_ids': ['qdrant_mcp'],
+        'requirement_ids': ['outcome_memory'],
+        'source_grade': 'infra',
+        'alpha_impact': 'Compare each candidate with past winners/false positives without look-ahead leakage and adjust ranking bounds.',
+        'pipeline_position': 'after_feature_vector_before_top3',
     },
 )
 
@@ -319,6 +491,12 @@ def build_mcp_resource_snapshot(
         workflow=loaded_workflow if isinstance(loaded_workflow, dict) else None,
     )
     adoption_plan = build_mcp_adoption_plan(source_gaps=source_gaps, catalog=catalog)
+    endpoint_blueprint = build_alpha_endpoint_blueprint(
+        scanner_run=loaded_scanner if isinstance(loaded_scanner, dict) else None,
+        workflow=loaded_workflow if isinstance(loaded_workflow, dict) else None,
+        source_gaps=source_gaps,
+        catalog=catalog,
+    )
     return {
         'schema_version': CATALOG_VERSION,
         'mode': 'alpha_detection_resource_planning',
@@ -327,6 +505,7 @@ def build_mcp_resource_snapshot(
         'catalog': catalog,
         'source_gaps': source_gaps,
         'adoption_plan': adoption_plan,
+        'alpha_endpoint_blueprint': endpoint_blueprint,
         'rules': {
             'primary_goal': 'detect, rank, validate, and monitor forward-profit candidates',
             'no_direct_scanner_coupling': True,
@@ -334,6 +513,93 @@ def build_mcp_resource_snapshot(
             'news_social_secondary_only': True,
             'secrets_redacted': True,
         },
+    }
+
+
+def build_alpha_endpoint_blueprint(
+    *,
+    scanner_run: dict[str, Any] | None | bool = None,
+    workflow: dict[str, Any] | None | bool = None,
+    source_gaps: dict[str, Any] | None = None,
+    catalog: list[dict[str, Any]] | None = None,
+) -> dict[str, Any]:
+    """Return implementation-grade endpoint contracts focused on Top 3 quality."""
+    loaded_scanner = _latest_scanner_run() if scanner_run is None else None if scanner_run is False else scanner_run
+    loaded_workflow = _latest_workflow() if workflow is None else None if workflow is False else workflow
+    resources = {item['id']: item for item in (catalog or list_mcp_resource_catalog())}
+    gaps = source_gaps or evaluate_mcp_source_gaps(
+        scanner_run=loaded_scanner if isinstance(loaded_scanner, dict) else None,
+        workflow=loaded_workflow if isinstance(loaded_workflow, dict) else None,
+    )
+    requirements = {item['id']: item for item in gaps.get('requirements') or []}
+    endpoints: list[dict[str, Any]] = []
+    for blueprint in _ALPHA_ENDPOINT_BLUEPRINTS:
+        requirement_rows = [
+            requirements.get(requirement_id, {
+                'id': requirement_id,
+                'status': 'unknown',
+                'required_for_top3': False,
+                'evidence_hits': [],
+            })
+            for requirement_id in blueprint['requirement_ids']
+        ]
+        resource_rows = [
+            resources.get(resource_id) or get_mcp_resource(resource_id)
+            for resource_id in blueprint['resource_ids']
+        ]
+        endpoints.append({
+            **blueprint,
+            'current_status': _endpoint_status(requirement_rows),
+            'requirements': requirement_rows,
+            'resources': [
+                {
+                    'id': resource['id'],
+                    'name': resource['name'],
+                    'category': resource['category'],
+                    'alpha_value_score': resource['alpha_value_score'],
+                    'adoption_phase': resource['adoption_phase'],
+                    'source_grade': resource['source_grade'],
+                }
+                for resource in resource_rows
+                if isinstance(resource, dict)
+            ],
+            'risk_controls': _merge_resource_controls(resource_rows),
+            'read_only_required': True,
+            'orders_blocked': True,
+            'implementation_contract': {
+                'facts_must_be_deterministic': True,
+                'store_source_grade': True,
+                'store_fetched_at': True,
+                'store_freshness': True,
+                'llm_may_explain_not_invent': True,
+            },
+        })
+
+    priority_order = {'P0': 0, 'P1': 1, 'P2': 2, 'P3': 3}
+    endpoints.sort(key=lambda item: (priority_order.get(item['priority'], 9), item['id']))
+    return {
+        'schema_version': ALPHA_ENDPOINT_BLUEPRINT_VERSION,
+        'objective': 'improve profitable Top 3 candidate detection, not MCP automation for its own sake',
+        'generated_at': _now_iso(),
+        'scanner_run_id': (loaded_scanner or {}).get('id') if isinstance(loaded_scanner, dict) else None,
+        'workflow_id': (loaded_workflow or {}).get('id') if isinstance(loaded_workflow, dict) else None,
+        'source_readiness': {
+            'status': gaps.get('readiness'),
+            'required_total': gaps.get('required_total'),
+            'required_covered': gaps.get('required_covered'),
+            'required_partial': gaps.get('required_partial'),
+            'required_missing': gaps.get('required_missing'),
+            'summary': gaps.get('summary'),
+        },
+        'endpoint_count': len(endpoints),
+        'p0_count': sum(1 for item in endpoints if item['priority'] == 'P0'),
+        'endpoints': endpoints,
+        'next_actions': _next_endpoint_actions(endpoints),
+        'non_goals': [
+            'do not add order/account/balance tools',
+            'do not promote news/social/search attention to standalone buy evidence',
+            'do not allow an LLM to create tickers, prices, or disclosures',
+        ],
     }
 
 
@@ -458,6 +724,66 @@ def build_mcp_adoption_plan(
     }
 
 
+def _endpoint_status(requirements: list[dict[str, Any]]) -> str:
+    statuses = {str(item.get('status') or 'unknown').lower() for item in requirements}
+    required = [item for item in requirements if item.get('required_for_top3')]
+    required_statuses = {str(item.get('status') or 'unknown').lower() for item in required}
+    if required and required_statuses <= {'covered'}:
+        return 'ready'
+    if 'missing' in required_statuses:
+        return 'blocked'
+    if 'partial' in required_statuses:
+        return 'limited'
+    if statuses and statuses <= {'covered'}:
+        return 'ready'
+    if 'covered' in statuses and not required:
+        return 'optional_ready'
+    if 'partial' in statuses:
+        return 'optional_limited'
+    if 'missing' in statuses:
+        return 'planned'
+    return 'unknown'
+
+
+def _merge_resource_controls(resources: list[dict[str, Any] | None]) -> list[str]:
+    controls: set[str] = set()
+    for resource in resources or []:
+        if not isinstance(resource, dict):
+            continue
+        controls.update(str(item) for item in resource.get('risk_controls') or [])
+    return sorted(controls)
+
+
+def _next_endpoint_actions(endpoints: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    priority_order = {'P0': 0, 'P1': 1, 'P2': 2, 'P3': 3}
+    rows = []
+    for endpoint in endpoints:
+        if endpoint.get('current_status') in {'ready', 'optional_ready'}:
+            continue
+        rows.append({
+            'id': endpoint.get('id'),
+            'priority': endpoint.get('priority'),
+            'name': endpoint.get('name'),
+            'current_status': endpoint.get('current_status'),
+            'reason': _endpoint_action_reason(endpoint),
+            'internal_path': endpoint.get('internal_path'),
+            'mcp_tool': endpoint.get('mcp_tool'),
+        })
+    rows.sort(key=lambda row: (priority_order.get(str(row.get('priority')), 9), str(row.get('id'))))
+    return rows[:6]
+
+
+def _endpoint_action_reason(endpoint: dict[str, Any]) -> str:
+    missing = [
+        str(item.get('label') or item.get('id'))
+        for item in endpoint.get('requirements') or []
+        if str(item.get('status') or '').lower() in {'missing', 'partial', 'unknown'}
+    ]
+    if not missing:
+        return 'Endpoint contract is ready; attach live adapter only if it improves freshness.'
+    return 'Needs fresh deterministic source coverage: ' + ', '.join(missing)
+
+
 def _resource_view(item: dict[str, Any]) -> dict[str, Any]:
     view = dict(item)
     view['recommended_for_alpha'] = float(item['alpha_value_score']) >= 70 and item['adoption_phase'] != 'defer'
@@ -477,6 +803,8 @@ def _searchable_text(scanner_run: dict[str, Any] | None, workflow: dict[str, Any
 
 
 def _compact(value: Any, *, depth: int) -> Any:
+    if isinstance(value, (str, int, float, bool)) or value is None:
+        return value
     if depth <= 0:
         return None
     if isinstance(value, dict):
@@ -501,13 +829,27 @@ def _compact(value: Any, *, depth: int) -> Any:
                 'source_freshness',
                 'analysis_runs',
                 'data_context',
+                'file',
+                'exists',
+                'generated_at',
+                'modified_at',
+                'freshness',
+                'role',
+                'required',
+                'alert_required',
+                'evidence',
+                'source',
+                'field',
+                'value',
+                'confidence',
+                'data_sources',
+                'replay_context',
+                'analysis_profile',
             }:
                 keep[str(key)] = _compact(item, depth=depth - 1)
         return keep
     if isinstance(value, list):
         return [_compact(item, depth=depth - 1) for item in value[:8]]
-    if isinstance(value, (str, int, float, bool)) or value is None:
-        return value
     return str(value)
 
 

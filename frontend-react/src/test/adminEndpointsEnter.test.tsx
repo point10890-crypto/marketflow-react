@@ -37,6 +37,8 @@ const mockApi = vi.hoisted(() => ({
   sendLatestAutonomousWorkflowTelegram: vi.fn(),
   getPipelineToday: vi.fn(),
   getOutcomesBoard: vi.fn(),
+  getMcpResources: vi.fn(),
+  getAlphaEndpointBlueprint: vi.fn(),
 }));
 
 vi.mock('@/lib/mirofishApi', () => ({
@@ -81,6 +83,65 @@ beforeEach(() => {
     pipeline: { status: 'ready', graph_links: 0, similar_events: 0, agent_count: 10 },
   });
   mockApi.getDataSources.mockResolvedValue({ files: [] });
+  const alphaEndpointBlueprint = {
+    schema_version: 'mirofish.alpha_endpoint_blueprint.v1',
+    objective: 'Improve profitable Top 3 candidate detection with evidence-first endpoint gates.',
+    source_readiness: {
+      status: 'ready',
+      required_total: 5,
+      required_covered: 5,
+      required_partial: 0,
+      required_missing: 0,
+      summary: '5/5 required evidence clusters covered',
+    },
+    endpoint_count: 3,
+    p0_count: 2,
+    endpoints: [
+      {
+        id: 'kr_flow_batch',
+        priority: 'P0',
+        name: 'KR capital-flow confirmation batch',
+        current_status: 'ready',
+        mcp_tool: 'get_kr_investor_flow_batch',
+        internal_path: '/api/admin/mirofish/sources/kr-flow/batch',
+        alpha_impact: 'Confirms whether scanner momentum has actual foreign/institution flow support.',
+      },
+      {
+        id: 'kr_disclosure_risk_batch',
+        priority: 'P0',
+        name: 'KR disclosure and event-risk batch',
+        current_status: 'ready',
+        mcp_tool: 'get_disclosure_risk_batch',
+        internal_path: '/api/admin/mirofish/sources/disclosure-risk/batch',
+        alpha_impact: 'Filters out candidates with unresolved filings, dilution, or event risk.',
+      },
+      {
+        id: 'outcome_memory_similar_cases',
+        priority: 'P1',
+        name: 'Outcome memory similar-case retrieval',
+        current_status: 'ready',
+        mcp_tool: 'get_similar_outcome_cases',
+        internal_path: '/api/admin/mirofish/learning/similar-cases',
+        alpha_impact: 'Uses past outcomes to adjust rank when a candidate resembles prior wins or failures.',
+      },
+    ],
+    next_actions: [],
+  };
+  mockApi.getMcpResources.mockResolvedValue({
+    schema_version: 'mirofish.mcp_resource_catalog.v1',
+    catalog_count: 3,
+    alpha_endpoint_blueprint: alphaEndpointBlueprint,
+    source_gaps: {
+      readiness: 'ready',
+      required_total: 5,
+      required_covered: 5,
+      required_partial: 0,
+      required_missing: 0,
+      requirements: [],
+      next_actions: [],
+    },
+  });
+  mockApi.getAlphaEndpointBlueprint.mockResolvedValue(alphaEndpointBlueprint);
   mockApi.getPipelineToday.mockResolvedValue({
     generated_at: '2026-05-12T00:00:00+00:00',
     date_kst: '2026-05-12',

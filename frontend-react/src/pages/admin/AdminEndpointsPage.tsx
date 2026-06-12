@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type CompositionEvent as ReactCompositionEvent, type KeyboardEvent as ReactKeyboardEvent } from 'react';
-import { MiroFishAlphaCandidate, MiroFishAnalyst, MiroFishAutonomousActionResult, MiroFishAutonomousLearningFeedback, MiroFishAutonomousStatus, MiroFishDeepSeekStatus, MiroFishDeepSeekSummaryResult, MiroFishGraphRAGEntityMatch, MiroFishLayer, MiroFishLog, MiroFishNode, MiroFishRun, MiroFishScannerRun, MiroFishScannerStatus, MiroFishStatus, MiroFishTargetSnapshot, MiroFishTradingViewStatus, MiroFishWorkflow, mirofishApi } from '@/lib/mirofishApi';
+import { MiroFishAlphaCandidate, MiroFishAlphaEndpointBlueprint, MiroFishAnalyst, MiroFishAutonomousActionResult, MiroFishAutonomousLearningFeedback, MiroFishAutonomousStatus, MiroFishDeepSeekStatus, MiroFishDeepSeekSummaryResult, MiroFishGraphRAGEntityMatch, MiroFishLayer, MiroFishLog, MiroFishMcpResourceSnapshot, MiroFishNode, MiroFishRun, MiroFishScannerRun, MiroFishScannerStatus, MiroFishStatus, MiroFishTargetSnapshot, MiroFishTradingViewStatus, MiroFishWorkflow, mirofishApi } from '@/lib/mirofishApi';
 import { shareToKakao } from '@/lib/kakaoShare';
 import MirofishChatPanel from '@/components/admin/MirofishChatPanel';
 import TodaysPipelineCard from '@/components/admin/TodaysPipelineCard';
@@ -61,7 +61,7 @@ type AlphaScannerState = 'idle' | 'loading' | 'running' | 'ready' | 'error';
 type DeepSeekPanelState = 'idle' | 'checking' | 'summarizing' | 'ready' | 'sending' | 'sent' | 'error';
 type WorkflowPanelState = 'idle' | 'running' | 'completed' | 'no_new_events' | 'blocked' | 'error';
 type AutonomousPanelState = 'idle' | 'checking' | 'running' | 'ready' | 'sending' | 'sent' | 'error';
-type EndpointKey = 'status' | 'dataSources' | 'resolve' | 'history' | 'createRun' | 'runDetail' | 'graph' | 'events' | 'report' | 'deepseek' | 'tradingview' | 'kalman' | 'workflow' | 'autonomous';
+type EndpointKey = 'status' | 'dataSources' | 'resolve' | 'history' | 'createRun' | 'runDetail' | 'graph' | 'events' | 'report' | 'deepseek' | 'tradingview' | 'kalman' | 'workflow' | 'autonomous' | 'mcpResources' | 'alphaEndpoints';
 type EndpointStatus = 'idle' | 'loading' | 'ok' | 'error';
 type TargetCandidate = NonNullable<MiroFishTargetSnapshot['candidates']>[number];
 
@@ -80,6 +80,8 @@ const endpointDefinitions: Array<{ key: EndpointKey; method: string; path: strin
     { key: 'kalman', method: 'POST', path: '/api/admin/mirofish/kalman/runs', title: 'Dual Kalman Gate', icon: 'fa-wave-square', color: 'text-cyan-200' },
     { key: 'workflow', method: 'POST', path: '/api/admin/mirofish/workflow/scan-analyze', title: 'MCP Top 3', icon: 'fa-network-wired', color: 'text-anthropic-orange' },
     { key: 'autonomous', method: 'POST', path: '/api/admin/mirofish/autonomous/*', title: 'Autonomous MCP', icon: 'fa-robot', color: 'text-anthropic-orange' },
+    { key: 'mcpResources', method: 'GET', path: '/api/admin/mirofish/mcp/resources', title: 'MCP Resources', icon: 'fa-plug-circle-check', color: 'text-cyan-200' },
+    { key: 'alphaEndpoints', method: 'GET', path: '/api/admin/mirofish/mcp/alpha-endpoints', title: 'Alpha Evidence Gates', icon: 'fa-shield-halved', color: 'text-emerald-200' },
 ];
 
 function clampCount(value: unknown, fallback: number) {
@@ -938,6 +940,100 @@ function AlphaBoardPanel({
     );
 }
 
+function alphaEndpointTone(status?: string): string {
+    const value = String(status || '').toLowerCase();
+    if (value === 'ready' || value === 'optional_ready') return 'border-emerald-300/25 bg-emerald-300/10 text-emerald-100';
+    if (value === 'limited' || value === 'optional_limited') return 'border-amber-300/25 bg-amber-300/10 text-amber-100';
+    if (value === 'blocked') return 'border-rose-300/25 bg-rose-300/10 text-rose-100';
+    return 'border-cyan-300/20 bg-cyan-300/10 text-cyan-100';
+}
+
+function AlphaEndpointBlueprintCard({ blueprint, resourceSnapshot }: {
+    blueprint: MiroFishAlphaEndpointBlueprint | null;
+    resourceSnapshot: MiroFishMcpResourceSnapshot | null;
+}) {
+    const readiness = blueprint?.source_readiness || {};
+    const endpoints = (blueprint?.endpoints || []).filter((endpoint) => ['P0', 'P1'].includes(String(endpoint.priority))).slice(0, 5);
+    const nextActions = (blueprint?.next_actions || []).slice(0, 3);
+    const covered = Number(readiness.required_covered || 0);
+    const total = Number(readiness.required_total || 0);
+    const status = String(readiness.status || 'unknown');
+    const statusTone = alphaEndpointTone(status === 'ready' ? 'ready' : status === 'limited' ? 'limited' : status === 'blocked' ? 'blocked' : 'planned');
+
+    return (
+        <section className="rounded-xl border border-cyan-300/15 bg-slate-950/55 p-4 shadow-[0_18px_60px_rgba(14,165,233,0.08)]">
+            <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                    <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-cyan-200/75">
+                        <i className="fas fa-shield-halved text-cyan-200" />
+                        Alpha Evidence
+                    </div>
+                    <h2 className="mt-1 text-lg font-black text-white">Top3 검출 데이터 게이트</h2>
+                    <p className="mt-1 text-xs font-semibold leading-5 text-slate-400">
+                        수급, 공시, 공매도/신용, 레짐, 성과메모리 엔드포인트가 Top3 판단에 붙을 준비 상태입니다.
+                    </p>
+                </div>
+                <span className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-black ${statusTone}`}>
+                    {status.toUpperCase()} {total ? `${covered}/${total}` : ''}
+                </span>
+            </div>
+
+            <div className="mt-3 grid grid-cols-3 gap-2">
+                {[
+                    ['P0', blueprint?.p0_count ?? 0, 'core gates'],
+                    ['Resources', resourceSnapshot?.catalog_count ?? '--', 'catalog'],
+                    ['Missing', readiness.required_missing ?? '--', 'required'],
+                ].map(([label, value, caption]) => (
+                    <div key={String(label)} className="rounded-lg border border-white/10 bg-black/20 p-3">
+                        <div className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">{String(label)}</div>
+                        <div className="mt-1 text-xl font-black text-white">{String(value)}</div>
+                        <div className="mt-1 text-[11px] font-bold text-slate-500">{String(caption)}</div>
+                    </div>
+                ))}
+            </div>
+
+            <div className="mt-3 space-y-2">
+                {endpoints.length ? endpoints.map((endpoint) => (
+                    <div key={endpoint.id} className="rounded-lg border border-white/10 bg-white/[0.04] p-3">
+                        <div className="flex items-center justify-between gap-2">
+                            <div className="min-w-0">
+                                <div className="flex items-center gap-2">
+                                    <span className="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-2 py-0.5 text-[10px] font-black text-cyan-100">{endpoint.priority}</span>
+                                    <span className="truncate text-sm font-black text-white">{endpoint.name}</span>
+                                </div>
+                                <div className="mt-1 truncate font-mono text-[10px] font-semibold text-slate-500">
+                                    {endpoint.mcp_tool || endpoint.internal_path}
+                                </div>
+                            </div>
+                            <span className={`shrink-0 rounded-full border px-2 py-1 text-[10px] font-black ${alphaEndpointTone(endpoint.current_status)}`}>
+                                {String(endpoint.current_status || 'planned').toUpperCase()}
+                            </span>
+                        </div>
+                        <p className="mt-2 text-[11px] font-semibold leading-4 text-slate-400">{endpoint.alpha_impact}</p>
+                    </div>
+                )) : (
+                    <div className="rounded-lg border border-dashed border-white/12 bg-white/[0.04] px-3 py-4 text-xs font-bold text-slate-400">
+                        Alpha endpoint blueprint 대기 중입니다.
+                    </div>
+                )}
+            </div>
+
+            {nextActions.length > 0 && (
+                <div className="mt-3 rounded-lg border border-amber-300/15 bg-amber-300/8 p-3">
+                    <div className="text-[10px] font-black uppercase tracking-[0.16em] text-amber-100/80">Next Attach</div>
+                    <div className="mt-2 space-y-1">
+                        {nextActions.map((action) => (
+                            <div key={String(action.id)} className="truncate text-[11px] font-bold text-amber-50/90">
+                                {String(action.priority || '')} {String(action.name || action.id || '')}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+        </section>
+    );
+}
+
 function AutonomousMcpPanel({
     status,
     state,
@@ -1756,6 +1852,8 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
     const [autonomousResult, setAutonomousResult] = useState<MiroFishAutonomousActionResult | null>(null);
     const [autonomousLearning, setAutonomousLearning] = useState<MiroFishAutonomousLearningFeedback | null>(null);
     const [autonomousErrorText, setAutonomousErrorText] = useState<string | null>(null);
+    const [mcpResourceSnapshot, setMcpResourceSnapshot] = useState<MiroFishMcpResourceSnapshot | null>(null);
+    const [alphaEndpointBlueprint, setAlphaEndpointBlueprint] = useState<MiroFishAlphaEndpointBlueprint | null>(null);
     const [autonomousConfirmation, setAutonomousConfirmation] = useState('');
     const [autonomousSharedSecret, setAutonomousSharedSecret] = useState('');
     const [endpointState, setEndpointState] = useState<Record<EndpointKey, EndpointStatus>>(() => Object.fromEntries(endpointDefinitions.map((item) => [item.key, 'idle'])) as Record<EndpointKey, EndpointStatus>);
@@ -1784,8 +1882,10 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
             markEndpoint('kalman', 'loading');
             markEndpoint('workflow', 'loading');
             markEndpoint('autonomous', 'loading');
+            markEndpoint('mcpResources', 'loading');
+            markEndpoint('alphaEndpoints', 'loading');
             try {
-                const [statusResult, historyResult, sourcesResult, deepSeekResult, tradingViewResult, kalmanResult, workflowResult, autonomousResult] = await Promise.allSettled([
+                const [statusResult, historyResult, sourcesResult, deepSeekResult, tradingViewResult, kalmanResult, workflowResult, autonomousResult, mcpResourcesResult, alphaEndpointsResult] = await Promise.allSettled([
                     mirofishApi.getStatus(),
                     mirofishApi.listRuns(),
                     mirofishApi.getDataSources(),
@@ -1794,6 +1894,8 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
                     mirofishApi.getDualKalmanStatus(),
                     mirofishApi.getWorkflowStatus(),
                     mirofishApi.getAutonomousStatus(),
+                    mirofishApi.getMcpResources(),
+                    mirofishApi.getAlphaEndpointBlueprint(),
                 ]);
                 if (!alive) return;
                 const failures: string[] = [];
@@ -1879,6 +1981,25 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
                     noteFailure('autonomous', 'Autonomous MCP', autonomousResult.reason);
                 }
 
+                if (mcpResourcesResult.status === 'fulfilled') {
+                    const resourceData = mcpResourcesResult.value as MiroFishMcpResourceSnapshot;
+                    setMcpResourceSnapshot(resourceData);
+                    markEndpoint('mcpResources', 'ok');
+                    if (resourceData.alpha_endpoint_blueprint) {
+                        setAlphaEndpointBlueprint(resourceData.alpha_endpoint_blueprint);
+                    }
+                } else {
+                    noteFailure('mcpResources', 'MCP Resources', mcpResourcesResult.reason);
+                }
+
+                if (alphaEndpointsResult.status === 'fulfilled') {
+                    const endpointData = alphaEndpointsResult.value as MiroFishAlphaEndpointBlueprint;
+                    setAlphaEndpointBlueprint(endpointData);
+                    markEndpoint('alphaEndpoints', endpointData.endpoints?.length ? 'ok' : 'idle');
+                } else {
+                    noteFailure('alphaEndpoints', 'Alpha Evidence Gates', alphaEndpointsResult.reason);
+                }
+
                 const hasCoreData = statusResult.status === 'fulfilled' || historyResult.status === 'fulfilled' || sourcesResult.status === 'fulfilled';
                 setApiState(hasCoreData ? 'ready' : 'error');
                 setErrorText(failures.length ? `Partial endpoint check failed: ${failures.map((item) => item.split(':')[0]).join(', ')}` : null);
@@ -1894,6 +2015,8 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
                 markEndpoint('kalman', 'error');
                 markEndpoint('workflow', 'error');
                 markEndpoint('autonomous', 'error');
+                markEndpoint('mcpResources', 'error');
+                markEndpoint('alphaEndpoints', 'error');
                 setErrorText(error instanceof Error ? error.message : 'MiroFish API 연결 실패');
             }
         }
@@ -2140,7 +2263,13 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
             ? `${dualKalmanStatus.mode || 'shadow'} / ${dualKalmanStatus.latest_run_id ? 'latest' : 'ready'}`
             : 'not loaded',
         autonomous: autonomousStatus ? `${autonomousStatus.mutation_enabled ? 'mutation on' : 'dry-run'} / ${autonomousStatus.telegram?.personal_configured ? 'telegram ok' : 'telegram off'}` : autonomousState,
-    }), [autonomousState, autonomousStatus, dataSourceCount, deepSeekStatus, deepSeekSummary, dualKalmanStatus, recentRuns.length, run, status, targetSnapshot, tradingViewStatus, workflow, workflowState]);
+        mcpResources: mcpResourceSnapshot
+            ? `${mcpResourceSnapshot.catalog_count || 0} resources`
+            : 'not loaded',
+        alphaEndpoints: alphaEndpointBlueprint
+            ? `${alphaEndpointBlueprint.source_readiness?.status || 'unknown'} / P0 ${alphaEndpointBlueprint.p0_count || 0}`
+            : 'not loaded',
+    }), [alphaEndpointBlueprint, autonomousState, autonomousStatus, dataSourceCount, deepSeekStatus, deepSeekSummary, dualKalmanStatus, mcpResourceSnapshot, recentRuns.length, run, status, targetSnapshot, tradingViewStatus, workflow, workflowState]);
 
     const targetCandidates = useMemo<TargetCandidate[]>(() => {
         const query = target.trim();
@@ -2838,6 +2967,12 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
                         <aside className="order-1 lg:order-2 min-w-0 mt-4 flex flex-col gap-3 lg:mt-0 lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto lg:pr-1">
                             {/* AutoRunner / QuickActions 는 admin 전용 (자동검출 강제발사·일시정지·서킷리셋 등). subscriberMode 에서는 숨김. */}
                             {!subscriberMode && <AutoRunnerCard />}
+                            {!subscriberMode && (
+                                <AlphaEndpointBlueprintCard
+                                    blueprint={alphaEndpointBlueprint}
+                                    resourceSnapshot={mcpResourceSnapshot}
+                                />
+                            )}
                             <TodaysPipelineCard />
                             {!subscriberMode && <GraphRAGStatusCard />}
                             {!subscriberMode && <GraphRAGEntityResolverCard />}
