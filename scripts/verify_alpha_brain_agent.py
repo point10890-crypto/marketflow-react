@@ -10,7 +10,16 @@ import json
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0, REPO_ROOT)
+
+# Mirror production runtime: scheduler.py / flask_app.py load .env with override.
+try:
+    from dotenv import load_dotenv
+
+    load_dotenv(os.path.join(REPO_ROOT, '.env'), override=True)
+except Exception:
+    pass
 
 os.environ['MIROFISH_AGENT_DRY_RUN'] = '1'
 os.environ['MIROFISH_AGENT_BRIEF_ENABLED'] = '0'
@@ -31,6 +40,14 @@ def main() -> int:
         callable(hypothesis_replay.replay_tag_delta),
         callable(agent_actions.execute_decisions),
     ]))
+
+    from app.services.mirofish import llm_client  # noqa: E402
+
+    provider_probe = llm_client.generate_text(
+        'Reply with the single word OK.', max_tokens=8, temperature=0.0,
+    )
+    print('[1b] LLM provider reachable:', bool(provider_probe),
+          '| order=%s' % llm_client.provider_order())
 
     status = alpha_brain_agent.get_agent_status()
     print('[2] status: enabled=%s dry_run=%s circuit_open=%s overrides=%s overlay=%s' % (
