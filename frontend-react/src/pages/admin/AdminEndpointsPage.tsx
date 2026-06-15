@@ -2723,7 +2723,7 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
     }
 
     const analysisSearchPanel = (
-        <div className={subscriberMode ? 'mt-5 max-w-5xl' : 'mt-6 sm:mt-8 max-w-4xl'}>
+        <div className={subscriberMode ? 'max-w-5xl' : 'max-w-4xl'}>
             <form
                 className="rounded-lg border border-white/10 bg-white/[0.035] p-1"
                 onSubmit={(event) => {
@@ -2925,8 +2925,6 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
                         </div>
                     )}
 
-                    {analysisSearchPanel}
-
                     <div className="mt-5 grid gap-5 2xl:grid-cols-[minmax(0,1.65fr)_minmax(400px,0.72fr)] 2xl:items-start">
                         <section className="min-w-0 rounded-2xl border border-cyan-300/15 bg-cyan-300/[0.035] p-3 shadow-[0_18px_70px_rgba(8,145,178,0.10)]">
                             <div className="mb-3 flex flex-col gap-3 rounded-xl border border-cyan-300/12 bg-black/20 px-4 py-3 md:flex-row md:items-center md:justify-between">
@@ -2956,6 +2954,14 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
                                     </button>
                                 </div>
                             </div>
+                            <div className="mb-4">
+                                {analysisSearchPanel}
+                            </div>
+                            {isAnalyzing && (
+                                <div className="mb-4">
+                                    <ImpactPanel phase={phase} run={run} apiState={apiState} />
+                                </div>
+                            )}
                             <div id="alpha-board" className="scroll-mt-4">
                                 <AlphaBoardPanel
                                     candidates={alphaCandidates}
@@ -3062,8 +3068,6 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
 
                 </div>
             </section>
-
-            {isAnalyzing && <ImpactPanel phase={phase} run={run} apiState={apiState} />}
 
             {/* API endpoint health grid — collapsible, default hidden. Polling/state still active for downstream UI. */}
             <details className="group rounded-xl border border-amber-500/15 bg-black/60 overflow-hidden">
