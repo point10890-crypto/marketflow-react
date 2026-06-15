@@ -221,7 +221,7 @@ export default function MirofishChatPanel({
     // inline 모드 — 별도 section, 명확한 orange 보더 + 헤로 라벨
     if (inline) {
         return (
-            <section className="rounded-xl border-2 border-anthropic-orange/40 bg-anthropic-dark shadow-xl shadow-anthropic-orange/[0.06]">
+            <section className="min-h-[700px] overflow-hidden rounded-2xl border-2 border-anthropic-orange/40 bg-anthropic-dark shadow-xl shadow-anthropic-orange/[0.06]">
                 {/* 강조 헤더 — 사용자가 즉시 인식하도록 */}
                 <div className="flex items-center justify-between border-b border-anthropic-darkLine bg-gradient-to-r from-anthropic-orange/[0.15] to-transparent px-5 py-3">
                     <div className="flex items-center gap-3">
@@ -244,8 +244,8 @@ export default function MirofishChatPanel({
                         Clear
                     </button>
                 </div>
-                <div className="flex flex-col">
-                    <div ref={scrollRef} className="max-h-[480px] min-h-[200px] overflow-y-auto px-5 py-4 space-y-3">
+                <div className="flex min-h-[636px] flex-col">
+                    <div ref={scrollRef} className="max-h-[620px] min-h-[500px] flex-1 overflow-y-auto px-5 py-5 space-y-4">
                         {messages.length === 0 && (
                             <div className="rounded-lg border border-anthropic-darkLine bg-anthropic-dark2 p-4 text-sm text-anthropic-darkText">
                                 <div className="text-anthropic-cream mb-3 font-medium">💬 예시 질문을 클릭하거나 직접 입력하세요</div>
@@ -266,10 +266,10 @@ export default function MirofishChatPanel({
                         {messages.map((m, idx) => (
                             <div key={idx} className={m.role === 'user' ? 'flex justify-end' : 'flex justify-start'}>
                                 <div
-                                    className={`max-w-[88%] rounded-lg px-3 py-2 text-[13px] leading-6 ${
+                                    className={`rounded-lg px-4 py-3 text-[13px] leading-6 ${
                                         m.role === 'user'
-                                            ? 'bg-anthropic-orange text-white'
-                                            : 'border border-anthropic-darkLine bg-anthropic-dark2 text-anthropic-darkText'
+                                            ? 'max-w-[72%] bg-anthropic-orange text-white'
+                                            : 'w-full max-w-none border border-anthropic-darkLine bg-anthropic-dark2 text-anthropic-darkText'
                                     }`}
                                 >
                                     <div className="whitespace-pre-wrap break-words">{m.content}</div>
@@ -309,8 +309,8 @@ export default function MirofishChatPanel({
                         )}
                     </div>
                     {/* 입력 */}
-                    <div className="border-t border-anthropic-darkLine bg-anthropic-dark2 p-3">
-                        <div className="flex items-end gap-2">
+                    <div className="border-t border-anthropic-darkLine bg-anthropic-dark2 p-4">
+                        <div className="flex items-end gap-3">
                             <textarea
                                 value={input}
                                 onChange={(e) => setInput(e.target.value)}
@@ -324,14 +324,14 @@ export default function MirofishChatPanel({
                                 }}
                                 placeholder="MiroFish 에게 자연어로 물어보세요 (Enter 전송 · Shift+Enter 줄바꿈)"
                                 rows={2}
-                                className="min-h-10 flex-1 resize-none rounded-lg border border-anthropic-darkLine bg-anthropic-dark px-3 py-2 text-[13px] text-anthropic-cream placeholder:text-anthropic-darkMuted focus:border-anthropic-orange/40 focus:outline-none"
+                                className="min-h-12 flex-1 resize-none rounded-lg border border-anthropic-darkLine bg-anthropic-dark px-4 py-3 text-[13px] text-anthropic-cream placeholder:text-anthropic-darkMuted focus:border-anthropic-orange/40 focus:outline-none"
                                 disabled={busy}
                             />
                             <button
                                 type="button"
                                 onClick={() => send()}
                                 disabled={busy || !input.trim()}
-                                className="h-10 rounded-lg bg-anthropic-orange px-4 text-sm font-medium text-white hover:bg-anthropic-orangeHover disabled:cursor-not-allowed disabled:opacity-40"
+                                className="h-12 rounded-lg bg-anthropic-orange px-5 text-sm font-medium text-white hover:bg-anthropic-orangeHover disabled:cursor-not-allowed disabled:opacity-40"
                             >
                                 전송
                             </button>
