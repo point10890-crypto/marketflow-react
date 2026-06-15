@@ -1,11 +1,8 @@
-import { lazy, Suspense, useState } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { subscriptionAPI } from '@/lib/api';
-
-// 관리자 페이지의 MiroFish Market Brain GraphRAG Analysis 콘솔을 그대로 재사용.
-// AutoRunner / QuickActions 만 subscriberMode 로 자동 숨김 (admin 전용 컨트롤).
-const AdminEndpointsPage = lazy(() => import('@/pages/admin/AdminEndpointsPage'));
+import AiBainDashboard from '@/pages/dashboard/aibain/AiBainDashboard';
 
 /**
  * Pro + AI Brain 구독자 전용 페이지.
@@ -34,13 +31,9 @@ export default function AiBainPage() {
     // Pro/Premium 인데 AI Brain 미활성 → 업그레이드 신청 폼
     const showUpgradeFlow = !isAdmin && hasProBase && !isAibainActive;
 
-    // ── admin (또는 활성 AI Brain) → 풀 콘솔 ─────────────────────────────────────
+    // ── admin (또는 활성 AI Brain) → 전용 구독자 대시보드 ──────────────────────────
     if (showFullDashboard) {
-        return (
-            <Suspense fallback={<DashboardLoading />}>
-                <AdminEndpointsPage subscriberMode />
-            </Suspense>
-        );
+        return <AiBainDashboard />;
     }
 
     // ── 활성 Pro / Ultra Pro → 업그레이드 안내 ─────────────────────────────────
@@ -53,17 +46,6 @@ export default function AiBainPage() {
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
-
-function DashboardLoading() {
-    return (
-        <div className="min-h-screen bg-[#09090b] flex items-center justify-center">
-            <div className="text-center">
-                <i className="fas fa-spinner fa-spin text-cyan-400 text-2xl mb-3" />
-                <p className="text-sm text-gray-400">AI Brain 알파 스캐너 콘솔 불러오는 중...</p>
-            </div>
-        </div>
-    );
-}
 
 function PageShell({ children }: { children: React.ReactNode }) {
     return (

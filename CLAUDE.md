@@ -711,6 +711,13 @@ Investing.com ProPicks 분석 결과(적극 매수/매수/중립/매도/적극 �
 
 ## 14. 변경 이력
 
+### v3.5.0 (2026-06-15) — AI Brain 구독자 대시보드 분리 (admin/구독자 페이지 격리)
+- `/dashboard/ai-bain` 구독자 화면이 admin 콘솔(`AdminEndpointsPage subscriberMode`) 재사용을 끊고 **전용 심플 대시보드**로 분리. admin 콘솔은 `/admin/endpoints` 전용 페이지 그대로 보존.
+- 신규 구독자 집계 엔드포인트 `GET /api/admin/mirofish/aibain/overview` (`@admin_or_aibain_required`) — 기존 서비스 조합(read-only, 섹션별 try/except 격리). `pipeline_overview.get_aibain_overview()`.
+- 3섹션 심플 레이아웃: **검출(Top3)** + **성과검증**(적중률/평균수익/평가표본 + 검증된 픽) + **학습 피드백**(잘 맞은/주의 패턴 = interaction_map, 레짐 분포). 성과 데이터가 분석에 재사용됨을 가시화.
+- FE: `frontend-react/src/pages/dashboard/aibain/{AiBainDashboard,DetectionsCard,PerformanceCard,LearningCard}.tsx`. 구독 게이팅·업그레이드 플로우·admin 페이지 회귀 0.
+- 하네스 준수(FE/BE 팀 분리): `docs/superpowers/harness/2026-06-15-aibain-dashboard-harness.md`. 서비스 무중단.
+
 ### v3.4.0 (2026-06-15) — Alpha Intelligence Foundation (L0/L1/L2)
 - 신규 서브패키지 `app/services/mirofish/intelligence/` — 결정론·lookahead-safe·읽기전용 분석 강화 계층.
 - `regime.py` (L1): entry_date 시점 시장폭(breadth) 기반 레짐 분류기(RISK_ON/NEUTRAL/RISK_OFF). 지수 데이터 없이 daily_prices.csv 유니버스 MA로 산출.

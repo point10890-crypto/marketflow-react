@@ -82,6 +82,7 @@ from app.services.mirofish.outcome_tracker import (
     refresh_workflow_outcomes,
 )
 from app.services.mirofish.pipeline_overview import (
+    get_aibain_overview,
     get_outcomes_board,
     get_pipeline_operating_snapshot,
     get_pipeline_today_snapshot,
@@ -146,6 +147,7 @@ __all__ = [
     'evaluate_mcp_source_gaps',
     'get_mcp_resource',
     'get_mcp_security_policy',
+    'get_aibain_overview',
     'get_outcomes_board',
     'get_pipeline_today_snapshot',
     'get_pipeline_operating_snapshot',
