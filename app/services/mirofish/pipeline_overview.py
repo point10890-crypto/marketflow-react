@@ -825,6 +825,93 @@ def _overall_status(stages: list[dict[str, Any]]) -> str:
 
 
 # ---------------------------------------------------------------------------
+# Public — Subscriber-facing AIBain Overview
+# ---------------------------------------------------------------------------
+
+
+def get_aibain_overview(*, perf_days: int = 30) -> dict:
+    """Subscriber-facing aggregation: detections + performance + learning.
+
+    Read-only. Composes existing services. Each section is isolated so one
+    failing source never breaks the whole response.
+    """
+    out = {
+        'generated_at': datetime.now(timezone.utc).isoformat(),
+        'detections': {'as_of': None, 'items': []},
+        'performance': {'window_days': perf_days, 'hit_rate_pct': None,
+                        'avg_forward_return_pct': None, 'false_positive_pct': None,
+                        'evaluated_count': 0, 'verified': []},
+        'learning': {'regime_distribution': {}, 'top_positive': [], 'top_negative': [], 'updated_at': None},
+    }
+    # detections
+    try:
+        import app.services.mirofish.workflow as _wf
+        wf = _wf.read_latest_workflow()
+        if isinstance(wf, dict):
+            out['detections']['as_of'] = wf.get('completed_at') or wf.get('generated_at')
+            payload = _wf.build_share_payload(wf, rank=None) or {}
+            items = []
+            for it in (payload.get('top_items') or [])[:3]:
+                if not isinstance(it, dict):
+                    continue
+                items.append({
+                    'symbol': it.get('symbol'),
+                    'name': it.get('name'),
+                    'action': it.get('action'),
+                    'alpha_score': it.get('alpha_score'),
+                    'risk_score': it.get('risk_score'),
+                    'entry_date': it.get('entry_date'),
+                })
+            out['detections']['items'] = items
+    except Exception as exc:
+        out['detections']['error'] = f'{type(exc).__name__}: {exc}'
+    # performance
+    try:
+        board = get_outcomes_board(days=perf_days, limit=8)
+        summary = (board or {}).get('summary') or {}
+        out['performance'].update({
+            'window_days': (board or {}).get('window_days', perf_days),
+            'hit_rate_pct': summary.get('hit_rate_pct'),
+            'avg_forward_return_pct': summary.get('avg_forward_return_pct'),
+            'false_positive_pct': summary.get('false_positive_pct'),
+            'evaluated_count': summary.get('evaluated_count') or 0,
+        })
+        verified = []
+        items = (board or {}).get('items') or []
+        # evaluated/partial first
+        ordered = [i for i in items if isinstance(i, dict) and i.get('status') in {'evaluated', 'partial'}]
+        ordered += [i for i in items if isinstance(i, dict) and i.get('status') not in {'evaluated', 'partial'}]
+        for it in ordered[:8]:
+            verified.append({
+                'symbol': it.get('symbol'), 'name': it.get('name'),
+                'entry_date': it.get('entry_date'),
+                'forward_return_pct': it.get('forward_return_pct'),
+                'hit': it.get('hit'), 'status': it.get('status'),
+            })
+        out['performance']['verified'] = verified
+    except Exception as exc:
+        out['performance'] = {'window_days': perf_days, 'evaluated_count': 0, 'verified': [],
+                              'error': f'{type(exc).__name__}: {exc}'}
+    # learning
+    try:
+        import app.services.mirofish.alpha_brain_agent as _agent
+        obs = _agent.build_agent_observation() or {}
+        imap = obs.get('interaction_map') or {}
+        out['learning']['top_positive'] = (imap.get('top_positive') or [])[:5]
+        out['learning']['top_negative'] = (imap.get('top_negative') or [])[:5]
+        out['learning']['regime_distribution'] = obs.get('regime_distribution') or {}
+        try:
+            status = _agent.get_agent_status() or {}
+            out['learning']['updated_at'] = status.get('edge_map_generated_at')
+        except Exception:
+            pass
+    except Exception as exc:
+        out['learning'] = {'regime_distribution': {}, 'top_positive': [], 'top_negative': [],
+                           'updated_at': None, 'error': f'{type(exc).__name__}: {exc}'}
+    return out
+
+
+# ---------------------------------------------------------------------------
 # Internal helpers
 # ---------------------------------------------------------------------------
 
