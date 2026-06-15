@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { subscriptionAPI } from '@/lib/api';
-import AiBainDashboard from '@/pages/dashboard/aibain/AiBainDashboard';
+import AdminEndpointsPage from '@/pages/admin/AdminEndpointsPage';
 
 /**
  * Pro + AI Brain 구독자 전용 페이지.
@@ -33,7 +33,7 @@ export default function AiBainPage() {
 
     // ── admin (또는 활성 AI Brain) → 전용 구독자 대시보드 ──────────────────────────
     if (showFullDashboard) {
-        return <AiBainDashboard />;
+        return <AdminEndpointsPage subscriberMode />;
     }
 
     // ── 활성 Pro / Ultra Pro → 업그레이드 안내 ─────────────────────────────────

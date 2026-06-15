@@ -83,6 +83,8 @@ const endpointDefinitions: Array<{ key: EndpointKey; method: string; path: strin
     { key: 'alphaEndpoints', method: 'GET', path: '/api/admin/mirofish/mcp/alpha-endpoints', title: 'Alpha Evidence Gates', icon: 'fa-shield-halved', color: 'text-emerald-200' },
 ];
 
+const adminOnlyEndpointKeys = new Set<EndpointKey>(['deepseek', 'kalman', 'workflow', 'autonomous']);
+
 function clampCount(value: unknown, fallback: number) {
     const numberValue = Number(value);
     return Number.isFinite(numberValue) ? numberValue : fallback;
@@ -578,15 +580,21 @@ function AlphaBoardPanel({
                     <span className={`rounded-full border px-3 py-1.5 text-xs font-black ${taskRuntimeTone}`}>
                         Watchdog {watchdogRegistered ? '5m on' : 'missing'}
                     </span>
-                    <button
-                        type="button"
-                        onClick={onScan}
-                        disabled={scannerBusy}
-                        aria-label="Run scanner"
-                        className="rounded-lg bg-emerald-400 px-4 py-2 text-xs font-black text-slate-950 shadow-lg shadow-emerald-500/20 transition hover:brightness-110 disabled:cursor-wait disabled:opacity-70"
-                    >
-                        {scannerBusy ? '스캔 중...' : '스캐너 실행'}
-                    </button>
+                    {!subscriberMode ? (
+                        <button
+                            type="button"
+                            onClick={onScan}
+                            disabled={scannerBusy}
+                            aria-label="Run scanner"
+                            className="rounded-lg bg-emerald-400 px-4 py-2 text-xs font-black text-slate-950 shadow-lg shadow-emerald-500/20 transition hover:brightness-110 disabled:cursor-wait disabled:opacity-70"
+                        >
+                            {scannerBusy ? '스캔 중...' : '스캐너 실행'}
+                        </button>
+                    ) : (
+                        <span className="rounded-lg border border-cyan-300/18 bg-cyan-300/[0.08] px-3 py-2 text-xs font-black text-cyan-100">
+                            구독자 읽기 전용
+                        </span>
+                    )}
                 </div>
             </div>
 
@@ -629,14 +637,16 @@ function AlphaBoardPanel({
                             </div>
                         </div>
                         <div className="flex flex-wrap gap-2">
-                            <button
-                                type="button"
-                                onClick={onWorkflow}
-                                disabled={workflowBusy}
-                                className="rounded-lg border border-cyan-300/25 bg-cyan-300/12 px-3 py-2 text-xs font-black text-cyan-100 transition hover:bg-cyan-300/18 disabled:cursor-wait disabled:opacity-60"
-                            >
-                                {workflowBusy ? 'Top3 분석 중...' : '신규 이벤트 Top3'}
-                            </button>
+                            {!subscriberMode && (
+                                <button
+                                    type="button"
+                                    onClick={onWorkflow}
+                                    disabled={workflowBusy}
+                                    className="rounded-lg border border-cyan-300/25 bg-cyan-300/12 px-3 py-2 text-xs font-black text-cyan-100 transition hover:bg-cyan-300/18 disabled:cursor-wait disabled:opacity-60"
+                                >
+                                    {workflowBusy ? 'Top3 분석 중...' : '신규 이벤트 Top3'}
+                                </button>
+                            )}
                             {!subscriberMode && (
                                 <button
                                     type="button"
@@ -844,24 +854,26 @@ function AlphaBoardPanel({
                         </div>
                     )}
                 </div>
-                <div className="flex flex-wrap items-start gap-2 md:justify-end">
-                    <button
-                        type="button"
-                        onClick={onDeepSeekSummary}
-                        disabled={deepSeekBusy || (!scannerRun?.id && scannerBusy)}
-                        className="rounded-lg border border-emerald-300/25 bg-emerald-300/12 px-3 py-2 text-xs font-black text-emerald-100 transition hover:bg-emerald-300/18 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                        {deepSeekState === 'summarizing' ? '요약 중...' : 'DeepSeek 요약'}
-                    </button>
-                    <button
-                        type="button"
-                        onClick={onSendDeepSeekTelegram}
-                        disabled={deepSeekBusy || !scannerRun?.id}
-                        className="rounded-lg border border-cyan-300/25 bg-cyan-300/12 px-3 py-2 text-xs font-black text-cyan-100 transition hover:bg-cyan-300/18 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                        {deepSeekState === 'sending' ? '전송 중...' : deepSeekState === 'sent' ? '전송 완료' : '텔레그램 전송'}
-                    </button>
-                </div>
+                {!subscriberMode && (
+                    <div className="flex flex-wrap items-start gap-2 md:justify-end">
+                        <button
+                            type="button"
+                            onClick={onDeepSeekSummary}
+                            disabled={deepSeekBusy || (!scannerRun?.id && scannerBusy)}
+                            className="rounded-lg border border-emerald-300/25 bg-emerald-300/12 px-3 py-2 text-xs font-black text-emerald-100 transition hover:bg-emerald-300/18 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                            {deepSeekState === 'summarizing' ? '요약 중...' : 'DeepSeek 요약'}
+                        </button>
+                        <button
+                            type="button"
+                            onClick={onSendDeepSeekTelegram}
+                            disabled={deepSeekBusy || !scannerRun?.id}
+                            className="rounded-lg border border-cyan-300/25 bg-cyan-300/12 px-3 py-2 text-xs font-black text-cyan-100 transition hover:bg-cyan-300/18 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                            {deepSeekState === 'sending' ? '전송 중...' : deepSeekState === 'sent' ? '전송 완료' : '텔레그램 전송'}
+                        </button>
+                    </div>
+                )}
             </div>
 
             <div className="mt-4 grid gap-2">
@@ -1864,6 +1876,9 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
     const [opsLaneRefreshKey, setOpsLaneRefreshKey] = useState(0);
     const [opsLaneState, setOpsLaneState] = useState<'idle' | 'refreshing'>('idle');
     const [endpointState, setEndpointState] = useState<Record<EndpointKey, EndpointStatus>>(() => Object.fromEntries(endpointDefinitions.map((item) => [item.key, 'idle'])) as Record<EndpointKey, EndpointStatus>);
+    const visibleEndpointDefinitions = subscriberMode
+        ? endpointDefinitions.filter((endpoint) => !adminOnlyEndpointKeys.has(endpoint.key))
+        : endpointDefinitions;
     const [apiState, setApiState] = useState<ApiState>('checking');
     const [errorText, setErrorText] = useState<string | null>(null);
     const [subscriberPolicy, setSubscriberPolicy] = useState<MiroFishRun['subscriber_policy'] | null>(null);
@@ -2364,6 +2379,7 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
     }
 
     async function handleAlphaScan() {
+        if (subscriberMode) return;
         setAlphaScannerState('loading');
         setAlphaErrorText(null);
         setDeepSeekSummary(null);
@@ -2391,6 +2407,7 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
     }
 
     async function handleMcpWorkflow(force = false) {
+        if (subscriberMode) return;
         setWorkflowState('running');
         setWorkflowErrorText(null);
         markEndpoint('workflow', 'loading');
@@ -2613,6 +2630,7 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
     }
 
     async function handleDeepSeekSummary() {
+        if (subscriberMode) return;
         setDeepSeekState('summarizing');
         setDeepSeekErrorText(null);
         try {
@@ -2651,6 +2669,7 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
     }
 
     async function handleSendDeepSeekTelegram() {
+        if (subscriberMode) return;
         if (!alphaScannerRun?.id) {
             setDeepSeekState('error');
             setDeepSeekErrorText('먼저 scanner run을 생성하세요.');
@@ -2935,24 +2954,26 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
                                         스캐너 실행, 신규 이벤트 Top3, DeepSeek 요약은 이 레인에서 독립 실행합니다.
                                     </p>
                                 </div>
-                                <div className="flex flex-wrap gap-2">
-                                    <button
-                                        type="button"
-                                        onClick={handleAlphaScan}
-                                        disabled={alphaScannerState === 'loading' || alphaScannerState === 'running'}
-                                        className="rounded-lg border border-emerald-300/25 bg-emerald-300/12 px-3 py-2 text-xs font-black text-emerald-100 transition hover:bg-emerald-300/18 disabled:cursor-wait disabled:opacity-60"
-                                    >
-                                        {alphaScannerState === 'loading' || alphaScannerState === 'running' ? '스캔 중...' : '스캐너 실행'}
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => handleMcpWorkflow(false)}
-                                        disabled={workflowState === 'running'}
-                                        className="rounded-lg border border-cyan-300/25 bg-cyan-300/12 px-3 py-2 text-xs font-black text-cyan-100 transition hover:bg-cyan-300/18 disabled:cursor-wait disabled:opacity-60"
-                                    >
-                                        {workflowState === 'running' ? 'Top3 분석 중...' : 'MCP Top3 실행'}
-                                    </button>
-                                </div>
+                                {!subscriberMode && (
+                                    <div className="flex flex-wrap gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={handleAlphaScan}
+                                            disabled={alphaScannerState === 'loading' || alphaScannerState === 'running'}
+                                            className="rounded-lg border border-emerald-300/25 bg-emerald-300/12 px-3 py-2 text-xs font-black text-emerald-100 transition hover:bg-emerald-300/18 disabled:cursor-wait disabled:opacity-60"
+                                        >
+                                            {alphaScannerState === 'loading' || alphaScannerState === 'running' ? '스캔 중...' : '스캐너 실행'}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => handleMcpWorkflow(false)}
+                                            disabled={workflowState === 'running'}
+                                            className="rounded-lg border border-cyan-300/25 bg-cyan-300/12 px-3 py-2 text-xs font-black text-cyan-100 transition hover:bg-cyan-300/18 disabled:cursor-wait disabled:opacity-60"
+                                        >
+                                            {workflowState === 'running' ? 'Top3 분석 중...' : 'MCP Top3 실행'}
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                             <div className="mb-4">
                                 {analysisSearchPanel}
@@ -2988,7 +3009,7 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
                                 />
                             </div>
                             <div className="mt-4">
-                                <MirofishChatPanel variant="inline" />
+                                <MirofishChatPanel variant="inline" allowTelegramShare={!subscriberMode} />
                             </div>
                         </section>
                         <aside className="min-w-0 2xl:sticky 2xl:top-4">
@@ -3011,6 +3032,7 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
                                             >
                                                 {opsLaneState === 'refreshing' ? '갱신 중...' : '운영 현황 새로고침'}
                                             </button>
+                                            {!subscriberMode && (
                                             <button
                                                 type="button"
                                                 onClick={() => handleMcpWorkflow(false)}
@@ -3019,6 +3041,7 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
                                             >
                                                 {workflowState === 'running' ? '실행 중...' : '우측 Top3 실행'}
                                             </button>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
@@ -3077,7 +3100,7 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
                         <span className="text-[10px] font-bold text-neutral-600">·</span>
                         <span className="text-[11px] font-bold text-neutral-400 truncate">
                             {(() => {
-                                const states = Object.values(endpointState);
+                                const states = visibleEndpointDefinitions.map((endpoint) => endpointState[endpoint.key]);
                                 const ok = states.filter((s) => s === 'ok').length;
                                 const err = states.filter((s) => s === 'error').length;
                                 const loading = states.filter((s) => s === 'loading').length;
@@ -3091,7 +3114,7 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
                 </summary>
                 <div className="border-t border-amber-500/10 p-3 sm:p-4">
                     <div className="grid gap-2 sm:gap-3 grid-cols-2 lg:grid-cols-3">
-                        {endpointDefinitions.map((endpoint) => {
+                        {visibleEndpointDefinitions.map((endpoint) => {
                             const state = endpointState[endpoint.key];
                             return (
                                 <section key={endpoint.key} className="rounded-xl border border-anthropic-darkLine bg-anthropic-dark p-3 sm:p-5 transition-colors hover:border-anthropic-orange/30 min-w-0">

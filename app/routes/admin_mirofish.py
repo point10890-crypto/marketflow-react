@@ -1045,7 +1045,7 @@ def get_dual_kalman_signals(run_id):
 
 
 @admin_mirofish_bp.route('/price-chart/<symbol>', methods=['GET'])
-@admin_required
+@admin_or_aibain_required
 def price_chart(symbol):
     try:
         limit = int(request.args.get('limit', 120))

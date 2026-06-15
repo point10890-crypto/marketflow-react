@@ -18,6 +18,7 @@ export type MirofishChatVariant = 'floating' | 'inline';
 interface MirofishChatPanelProps {
     variant?: MirofishChatVariant;
     defaultOpen?: boolean;
+    allowTelegramShare?: boolean;
 }
 
 interface ChatMessage {
@@ -63,6 +64,7 @@ type ShareState = 'idle' | 'sending' | 'sent' | 'failed';
 export default function MirofishChatPanel({
     variant = 'floating',
     defaultOpen = false,
+    allowTelegramShare = true,
 }: MirofishChatPanelProps = {}) {
     const inline = variant === 'inline';
     const [open, setOpen] = useState(inline ? true : defaultOpen);
@@ -156,6 +158,7 @@ export default function MirofishChatPanel({
 
     // 공통: 어시스턴트 메시지 하단의 텔레그램 공유 버튼
     function renderShareButton(idx: number) {
+        if (!allowTelegramShare) return null;
         const state = shareStates[idx] || 'idle';
         const label =
             state === 'sending' ? '전송 중...' :

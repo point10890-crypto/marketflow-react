@@ -74,6 +74,14 @@ async function renderPage() {
   return input!;
 }
 
+async function renderSubscriberPage() {
+  render(<AdminEndpointsPage subscriberMode />);
+  await waitFor(() => expect(mockApi.getStatus).toHaveBeenCalled());
+  const input = document.querySelector<HTMLInputElement>('input[name="target"]');
+  expect(input).toBeTruthy();
+  return input!;
+}
+
 beforeEach(() => {
   vi.clearAllMocks();
   mockApi.getStatus.mockResolvedValue({
@@ -666,6 +674,23 @@ describe('AdminEndpointsPage analysis start input', () => {
     expect((await screen.findAllByText(/Hit vs Miss Score Profile/i)).length).toBeGreaterThan(0);
     expect((await screen.findAllByText(/Signal Cohorts/i)).length).toBeGreaterThan(0);
     expect((await screen.findAllByText(/best momentum/i)).length).toBeGreaterThan(0);
+  });
+
+  it('reuses the endpoints console in subscriber mode without admin-only mutation controls', async () => {
+    await renderSubscriberPage();
+
+    expect(await screen.findByText('AI Brain 검출 대시보드')).toBeTruthy();
+    expect(await screen.findByText('Pro + AI Brain 구독자 콘솔')).toBeTruthy();
+    expect(await screen.findByText('Latest Alpha')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /Run scanner/i })).toBeNull();
+    expect(screen.queryByRole('button', { name: /Run MCP Top 3 Force refresh/i })).toBeNull();
+    expect(screen.queryByRole('button', { name: /Detection dry-run/i })).toBeNull();
+    expect(screen.queryByRole('button', { name: /Analysis dry-run/i })).toBeNull();
+    expect(screen.queryByText('Autonomous MCP Control')).toBeNull();
+    expect(screen.queryByText('/api/admin/mirofish/deepseek/scanner-summary')).toBeNull();
+    expect(screen.queryByText('/api/admin/mirofish/workflow/scan-analyze')).toBeNull();
+    expect(screen.queryByText('/api/admin/mirofish/autonomous/*')).toBeNull();
+    expect(screen.getAllByText('/api/admin/mirofish/runs').length).toBeGreaterThan(0);
   });
 
   it('keeps core endpoint cards healthy when an optional provider fails', async () => {
