@@ -2981,6 +2981,9 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
                                     subscriberMode={subscriberMode}
                                 />
                             </div>
+                            <div className="mt-4">
+                                <MirofishChatPanel variant="inline" />
+                            </div>
                         </section>
                         <aside className="min-w-0 2xl:sticky 2xl:top-4">
                             <section className="rounded-2xl border border-amber-300/18 bg-amber-300/[0.035] p-3 shadow-[0_18px_70px_rgba(245,158,11,0.09)]">
@@ -3059,16 +3062,6 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
 
                 </div>
             </section>
-
-            <details className="group rounded-xl border border-anthropic-darkLine bg-anthropic-dark/70">
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-sm font-black text-anthropic-cream [&::-webkit-details-marker]:hidden">
-                    <span>MiroFish 어시스턴트</span>
-                    <span className="text-[10px] uppercase tracking-wider text-anthropic-darkMuted transition-transform group-open:rotate-180">▼</span>
-                </summary>
-                <div className="border-t border-anthropic-darkLine">
-                    <MirofishChatPanel variant="inline" />
-                </div>
-            </details>
 
             {isAnalyzing && <ImpactPanel phase={phase} run={run} apiState={apiState} />}
 
