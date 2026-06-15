@@ -1095,35 +1095,35 @@ function AutonomousMcpPanel({
     const watchdogRegistered = Boolean(watchdogTask?.registered);
 
     return (
-        <section className="mt-4 rounded-xl border border-cyan-300/15 bg-slate-950/50 p-4 shadow-[0_18px_70px_rgba(6,182,212,0.10)]">
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <section className="rounded-lg border border-cyan-300/10 bg-slate-950/45 p-3">
+            <div className="flex flex-col gap-3">
                 <div>
-                    <div className="flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.22em] text-cyan-200/75">
+                    <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-cyan-200/70">
                         <i className="fas fa-robot text-cyan-200" />
                         Autonomous MCP Control
                     </div>
-                    <h2 className="mt-1 text-xl font-black text-white">Admin pre-service test harness</h2>
-                    <p className="mt-1 max-w-3xl text-sm font-semibold text-slate-400">
+                    <h2 className="mt-1 text-base font-black text-white">Admin pre-service test harness</h2>
+                    <p className="mt-1 text-xs font-semibold leading-relaxed text-slate-400">
                         Dry-run first: detect candidates, preview scan-analysis, inspect learning feedback, then gated Telegram send for the latest workflow.
                     </p>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                    <span className={`rounded-full border px-3 py-1.5 text-xs font-black ${statusTone}`}>
+                    <span className={`rounded-full border px-2.5 py-1 text-[11px] font-black ${statusTone}`}>
                         {state === 'idle' ? 'IDLE' : state.toUpperCase()}
                     </span>
-                    <span className={`rounded-full border px-3 py-1.5 text-xs font-black ${mutationEnabled ? 'border-amber-300/25 bg-amber-300/10 text-amber-100' : 'border-emerald-300/25 bg-emerald-300/10 text-emerald-100'}`}>
+                    <span className={`rounded-full border px-2.5 py-1 text-[11px] font-black ${mutationEnabled ? 'border-amber-300/25 bg-amber-300/10 text-amber-100' : 'border-emerald-300/25 bg-emerald-300/10 text-emerald-100'}`}>
                         {mutationEnabled ? 'mutation on' : 'dry-run locked'}
                     </span>
-                    <span className={`rounded-full border px-3 py-1.5 text-xs font-bold ${status?.telegram?.personal_configured ? 'border-emerald-300/25 bg-emerald-300/10 text-emerald-100' : 'border-white/10 bg-white/8 text-slate-300'}`}>
+                    <span className={`rounded-full border px-2.5 py-1 text-[11px] font-bold ${status?.telegram?.personal_configured ? 'border-emerald-300/25 bg-emerald-300/10 text-emerald-100' : 'border-white/10 bg-white/8 text-slate-300'}`}>
                         personal Telegram {status?.telegram?.personal_configured ? 'ready' : 'off'}
                     </span>
-                    <span className={`rounded-full border px-3 py-1.5 text-xs font-bold ${secretRequired ? 'border-cyan-300/25 bg-cyan-300/10 text-cyan-100' : 'border-white/10 bg-white/8 text-slate-300'}`}>
+                    <span className={`rounded-full border px-2.5 py-1 text-[11px] font-bold ${secretRequired ? 'border-cyan-300/25 bg-cyan-300/10 text-cyan-100' : 'border-white/10 bg-white/8 text-slate-300'}`}>
                         shared secret {secretRequired ? 'required' : 'not set'}
                     </span>
-                    <span className={`rounded-full border px-3 py-1.5 text-xs font-black ${mcpHealthy ? 'border-emerald-300/25 bg-emerald-300/10 text-emerald-100' : 'border-rose-300/25 bg-rose-300/10 text-rose-100'}`}>
+                    <span className={`rounded-full border px-2.5 py-1 text-[11px] font-black ${mcpHealthy ? 'border-emerald-300/25 bg-emerald-300/10 text-emerald-100' : 'border-rose-300/25 bg-rose-300/10 text-rose-100'}`}>
                         MCP HTTP {mcpHealthy ? 'online' : 'offline'}
                     </span>
-                    <span className={`rounded-full border px-3 py-1.5 text-xs font-black ${watchdogRegistered ? 'border-emerald-300/25 bg-emerald-300/10 text-emerald-100' : 'border-amber-300/25 bg-amber-300/10 text-amber-100'}`}>
+                    <span className={`rounded-full border px-2.5 py-1 text-[11px] font-black ${watchdogRegistered ? 'border-emerald-300/25 bg-emerald-300/10 text-emerald-100' : 'border-amber-300/25 bg-amber-300/10 text-amber-100'}`}>
                         Watchdog {watchdogRegistered ? '5m on' : 'missing'}
                     </span>
                 </div>
@@ -1275,47 +1275,53 @@ function AutonomousMcpPanel({
                 )}
             </div>
 
-            <div className="mt-4 grid gap-3 lg:grid-cols-[1fr_1fr_auto]">
-                <div className="rounded-lg border border-white/10 bg-white/[0.04] p-3">
-                    <div className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">Mutation gate</div>
-                    <input
-                        value={confirmation}
-                        onChange={(event) => onConfirmationChange(event.target.value)}
-                        placeholder={phrase}
-                        className="mt-2 w-full rounded-lg border border-white/10 bg-black/30 px-3 py-2 font-mono text-xs font-bold text-slate-100 outline-none focus:border-cyan-300/40"
-                    />
-                    <div className="mt-1 text-[11px] font-bold text-slate-500">Required only for real Telegram send.</div>
+            <details className="group mt-3 rounded-lg border border-white/10 bg-white/[0.03]">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-3 py-2 text-xs font-black text-slate-200 [&::-webkit-details-marker]:hidden">
+                    <span>전송/실행 제어</span>
+                    <span className="text-[10px] uppercase tracking-wider text-slate-500 transition-transform group-open:rotate-180">▼</span>
+                </summary>
+                <div className="grid gap-3 border-t border-white/10 p-3 lg:grid-cols-2">
+                    <div className="rounded-lg border border-white/10 bg-black/20 p-3">
+                        <div className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">Mutation gate</div>
+                        <input
+                            value={confirmation}
+                            onChange={(event) => onConfirmationChange(event.target.value)}
+                            placeholder={phrase}
+                            className="mt-2 w-full rounded-lg border border-white/10 bg-black/30 px-3 py-2 font-mono text-xs font-bold text-slate-100 outline-none focus:border-cyan-300/40"
+                        />
+                        <div className="mt-1 text-[11px] font-bold text-slate-500">Required only for real Telegram send.</div>
+                    </div>
+                    <div className="rounded-lg border border-white/10 bg-black/20 p-3">
+                        <div className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">Shared secret</div>
+                        <input
+                            type="password"
+                            value={sharedSecret}
+                            onChange={(event) => onSharedSecretChange(event.target.value)}
+                            disabled={!secretRequired}
+                            placeholder={secretRequired ? 'required by server' : 'not required'}
+                            className="mt-2 w-full rounded-lg border border-white/10 bg-black/30 px-3 py-2 font-mono text-xs font-bold text-slate-100 outline-none focus:border-cyan-300/40 disabled:opacity-50"
+                        />
+                        <div className="mt-1 text-[11px] font-bold text-slate-500">Never stored; posted only with the send request.</div>
+                    </div>
+                    <div className="flex flex-wrap items-start gap-2 lg:col-span-2">
+                        <button type="button" onClick={onRefresh} disabled={busy} className="rounded-lg border border-white/10 bg-white/8 px-3 py-2 text-xs font-black text-slate-200 transition hover:bg-white/12 disabled:cursor-wait disabled:opacity-60">
+                            Refresh status
+                        </button>
+                        <button type="button" onClick={onDetectionDryRun} disabled={busy} className="rounded-lg border border-emerald-300/25 bg-emerald-300/12 px-3 py-2 text-xs font-black text-emerald-100 transition hover:bg-emerald-300/18 disabled:cursor-wait disabled:opacity-60">
+                            Detection dry-run
+                        </button>
+                        <button type="button" onClick={onAnalysisDryRun} disabled={busy} className="rounded-lg border border-cyan-300/25 bg-cyan-300/12 px-3 py-2 text-xs font-black text-cyan-100 transition hover:bg-cyan-300/18 disabled:cursor-wait disabled:opacity-60">
+                            Analysis dry-run
+                        </button>
+                        <button type="button" onClick={onLearningPreview} disabled={busy} className="rounded-lg border border-violet-300/25 bg-violet-300/12 px-3 py-2 text-xs font-black text-violet-100 transition hover:bg-violet-300/18 disabled:cursor-wait disabled:opacity-60">
+                            Learning preview
+                        </button>
+                        <button type="button" onClick={onSendLatestTelegram} disabled={!canSend} className="rounded-lg border border-amber-300/25 bg-amber-300/12 px-3 py-2 text-xs font-black text-amber-100 transition hover:bg-amber-300/18 disabled:cursor-not-allowed disabled:opacity-45">
+                            {state === 'sending' ? 'Sending...' : 'Send latest Telegram'}
+                        </button>
+                    </div>
                 </div>
-                <div className="rounded-lg border border-white/10 bg-white/[0.04] p-3">
-                    <div className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">Shared secret</div>
-                    <input
-                        type="password"
-                        value={sharedSecret}
-                        onChange={(event) => onSharedSecretChange(event.target.value)}
-                        disabled={!secretRequired}
-                        placeholder={secretRequired ? 'required by server' : 'not required'}
-                        className="mt-2 w-full rounded-lg border border-white/10 bg-black/30 px-3 py-2 font-mono text-xs font-bold text-slate-100 outline-none focus:border-cyan-300/40 disabled:opacity-50"
-                    />
-                    <div className="mt-1 text-[11px] font-bold text-slate-500">Never stored; posted only with the send request.</div>
-                </div>
-                <div className="flex flex-wrap items-start gap-2 lg:justify-end">
-                    <button type="button" onClick={onRefresh} disabled={busy} className="rounded-lg border border-white/10 bg-white/8 px-3 py-2 text-xs font-black text-slate-200 transition hover:bg-white/12 disabled:cursor-wait disabled:opacity-60">
-                        Refresh status
-                    </button>
-                    <button type="button" onClick={onDetectionDryRun} disabled={busy} className="rounded-lg border border-emerald-300/25 bg-emerald-300/12 px-3 py-2 text-xs font-black text-emerald-100 transition hover:bg-emerald-300/18 disabled:cursor-wait disabled:opacity-60">
-                        Detection dry-run
-                    </button>
-                    <button type="button" onClick={onAnalysisDryRun} disabled={busy} className="rounded-lg border border-cyan-300/25 bg-cyan-300/12 px-3 py-2 text-xs font-black text-cyan-100 transition hover:bg-cyan-300/18 disabled:cursor-wait disabled:opacity-60">
-                        Analysis dry-run
-                    </button>
-                    <button type="button" onClick={onLearningPreview} disabled={busy} className="rounded-lg border border-violet-300/25 bg-violet-300/12 px-3 py-2 text-xs font-black text-violet-100 transition hover:bg-violet-300/18 disabled:cursor-wait disabled:opacity-60">
-                        Learning preview
-                    </button>
-                    <button type="button" onClick={onSendLatestTelegram} disabled={!canSend} className="rounded-lg border border-amber-300/25 bg-amber-300/12 px-3 py-2 text-xs font-black text-amber-100 transition hover:bg-amber-300/18 disabled:cursor-not-allowed disabled:opacity-45">
-                        {state === 'sending' ? 'Sending...' : 'Send latest Telegram'}
-                    </button>
-                </div>
-            </div>
+            </details>
 
             {(result || learningView?.recommendations?.length) && (
                 <div className="mt-4 grid gap-3 lg:grid-cols-2">
@@ -2913,13 +2919,20 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
                                     subscriberMode={subscriberMode}
                                 />
                             </div>
+                        </div>
+                        <aside className="min-w-0 flex flex-col gap-3 xl:sticky xl:top-4">
+                            <TodaysPipelineCard />
+                            <ScanPerformanceCard />
+                            <ScanHistoryCard />
+                            <RecentOutcomesBoard />
                             {!subscriberMode && (
                                 <details className="group rounded-xl border border-white/10 bg-white/[0.03]">
                                     <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-sm font-black text-slate-200 [&::-webkit-details-marker]:hidden">
-                                        <span>자율 MCP 테스트 하네스</span>
+                                        <span>운영 진단</span>
                                         <span className="text-[10px] uppercase tracking-wider text-slate-500 transition-transform group-open:rotate-180">▼</span>
                                     </summary>
-                                    <div className="border-t border-white/10 px-3 pb-3">
+                                    <div className="flex flex-col gap-3 border-t border-white/10 p-3">
+                                        <AutoRunnerCard />
                                         <AutonomousMcpPanel
                                             status={autonomousStatus}
                                             state={autonomousState}
@@ -2936,23 +2949,6 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
                                             onLearningPreview={handleAutonomousLearningPreview}
                                             onSendLatestTelegram={handleSendLatestAutonomousTelegram}
                                         />
-                                    </div>
-                                </details>
-                            )}
-                        </div>
-                        <aside className="min-w-0 flex flex-col gap-3 xl:sticky xl:top-4">
-                            <TodaysPipelineCard />
-                            <ScanPerformanceCard />
-                            <ScanHistoryCard />
-                            <RecentOutcomesBoard />
-                            {!subscriberMode && (
-                                <details className="group rounded-xl border border-white/10 bg-white/[0.03]">
-                                    <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-sm font-black text-slate-200 [&::-webkit-details-marker]:hidden">
-                                        <span>운영 진단</span>
-                                        <span className="text-[10px] uppercase tracking-wider text-slate-500 transition-transform group-open:rotate-180">▼</span>
-                                    </summary>
-                                    <div className="flex flex-col gap-3 border-t border-white/10 p-3">
-                                        <AutoRunnerCard />
                                         <AlphaEndpointBlueprintCard
                                             blueprint={alphaEndpointBlueprint}
                                             resourceSnapshot={mcpResourceSnapshot}
