@@ -123,6 +123,18 @@ def create_app(config=None):
                     conn.execute(text('ALTER TABLE users ADD COLUMN pro_expires_at DATETIME'))
                 if 'pro_expiry_alert_stage' not in user_cols:
                     conn.execute(text('ALTER TABLE users ADD COLUMN pro_expiry_alert_stage VARCHAR(10)'))
+                # AI Brain add-on columns are required by User.to_dict(),
+                # access guards, expiry checker, and admin approval workflow.
+                # Keep this startup migration idempotent so restored MiniPC DBs
+                # do not need manual one-off scripts before the app can boot.
+                if 'aibain_enabled' not in user_cols:
+                    conn.execute(text('ALTER TABLE users ADD COLUMN aibain_enabled BOOLEAN NOT NULL DEFAULT 0'))
+                if 'aibain_expires_at' not in user_cols:
+                    conn.execute(text('ALTER TABLE users ADD COLUMN aibain_expires_at DATETIME'))
+                if 'aibain_alert_stage' not in user_cols:
+                    conn.execute(text('ALTER TABLE users ADD COLUMN aibain_alert_stage VARCHAR(10)'))
+                if 'pro_paused_at' not in user_cols:
+                    conn.execute(text('ALTER TABLE users ADD COLUMN pro_paused_at DATETIME'))
         except Exception:
             pass  # table may not exist yet (create_all handles it)
 

@@ -200,6 +200,20 @@ def _has_active_same_tier(user: User | None, tier: str | None) -> bool:
     return expires > datetime.now(timezone.utc)
 
 
+def _extend_aibain_expiry(user: User, days: int = 30) -> None:
+    """Enable AI Brain and extend from the later of now or current expiry."""
+    user.aibain_enabled = True
+    base = datetime.now(timezone.utc)
+    if user.aibain_expires_at:
+        existing = user.aibain_expires_at
+        if existing.tzinfo is None:
+            existing = existing.replace(tzinfo=timezone.utc)
+        if existing > base:
+            base = existing
+    user.aibain_expires_at = base + timedelta(days=days)
+    user.aibain_alert_stage = None
+
+
 @admin_bp.route('/dashboard')
 @admin_required
 def dashboard():
@@ -1090,8 +1104,7 @@ def approve_subscription(req_id):
         if is_aibain_addon:
             # AI Brain 만 활성화 — 베이스 tier 그대로
             user.aibain_enabled = True
-            user.aibain_expires_at = datetime.now(timezone.utc) + timedelta(days=30)
-            user.aibain_alert_stage = None
+            _extend_aibain_expiry(user, 30)
             # ── Pro 만료 카운터 일시정지 (Pro tier 회원만, premium 은 무기한이라 영향 X) ──
             # Pro 회원이 AI Brain 추가 시 AI Brain 기간 동안 Pro 카운터 freeze.
             # AI Brain 만료/해제 시 흐른 paused 기간만큼 pro_expires_at 연장 후 NULL 처리.
@@ -1115,9 +1128,7 @@ def approve_subscription(req_id):
 
             # 신규 가입자가 AI Brain 포함 신청한 경우 (admin_note 마커로 판단)
             if sub_req.admin_note and 'AI Brain' in sub_req.admin_note and 'aibain_addon' not in (sub_req.request_type or ''):
-                user.aibain_enabled = True
-                user.aibain_expires_at = datetime.now(timezone.utc) + timedelta(days=30)
-                user.aibain_alert_stage = None
+                _extend_aibain_expiry(user, 30)
                 summary_text += " + AI Brain 활성화 (+30d)"
 
         after = {

@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone
+import sqlite3
 
 from app import create_app
 from app.auth.decorators import generate_token
@@ -20,6 +21,62 @@ def _user(email: str, name: str, password: str, *, status='pending', tier=None, 
     user = User(email=email, name=name, status=status, tier=tier, role=role, pro_expires_at=pro_expires_at)
     user.set_password(password)
     return user
+
+
+def test_startup_migration_adds_aibain_columns_to_legacy_db(tmp_path):
+    db_path = tmp_path / 'legacy-users.db'
+    conn = sqlite3.connect(db_path)
+    conn.execute("""
+        CREATE TABLE users (
+            id INTEGER PRIMARY KEY,
+            email VARCHAR(255) UNIQUE NOT NULL,
+            password_hash VARCHAR(255) NOT NULL,
+            name VARCHAR(100) NOT NULL,
+            role VARCHAR(20) NOT NULL DEFAULT 'user',
+            tier VARCHAR(20),
+            status VARCHAR(20) NOT NULL DEFAULT 'pending',
+            pro_expires_at DATETIME,
+            stripe_customer_id VARCHAR(255),
+            created_at DATETIME,
+            approved_at DATETIME,
+            approved_by INTEGER,
+            last_login_at DATETIME,
+            pro_expiry_alert_stage VARCHAR(10),
+            requested_tier VARCHAR(20)
+        )
+    """)
+    conn.execute("""
+        CREATE TABLE subscription_requests (
+            id INTEGER PRIMARY KEY,
+            user_id INTEGER NOT NULL,
+            request_type VARCHAR(50) NOT NULL,
+            from_tier VARCHAR(20) NOT NULL,
+            to_tier VARCHAR(20) NOT NULL,
+            status VARCHAR(20),
+            payment_id VARCHAR(255),
+            admin_note TEXT,
+            created_at DATETIME,
+            processed_at DATETIME,
+            processed_by INTEGER
+        )
+    """)
+    conn.commit()
+    conn.close()
+
+    create_app({
+        'TESTING': True,
+        'SECRET_KEY': 'migration-test-secret',
+        'SQLALCHEMY_DATABASE_URI': f"sqlite:///{db_path.as_posix()}",
+        'SQLALCHEMY_ENGINE_OPTIONS': {},
+    })
+
+    conn = sqlite3.connect(db_path)
+    user_cols = {row[1] for row in conn.execute('PRAGMA table_info(users)').fetchall()}
+    request_cols = {row[1] for row in conn.execute('PRAGMA table_info(subscription_requests)').fetchall()}
+    conn.close()
+
+    assert {'aibain_enabled', 'aibain_expires_at', 'aibain_alert_stage', 'pro_paused_at'} <= user_cols
+    assert {'depositor_name', 'amount'} <= request_cols
 
 
 def test_pending_user_can_login_and_submit_subscription_request():
@@ -223,3 +280,54 @@ def test_duplicate_active_renewal_approval_does_not_send_admin_notice(monkeypatc
     assert body['already_processed'] is True
     assert body['duplicate_ignored'] is True
     assert sent == []
+
+
+def test_aibain_addon_approval_extends_existing_future_expiry(monkeypatch):
+    app = _app()
+    now = datetime.now(timezone.utc)
+    current_aibain_expiry = now + timedelta(days=10)
+    sent = []
+    monkeypatch.setattr(admin_routes, '_notify_admin', lambda action, user, detail='': sent.append((action, user.email, detail)))
+
+    with app.app_context():
+        admin = _user('admin@example.com', 'admin', 'Admin1234!', status='approved', tier='premium', role='admin')
+        member = _user(
+            'aibain@example.com',
+            'aibain',
+            'Pass1234!',
+            status='approved',
+            tier='pro',
+            pro_expires_at=now + timedelta(days=20),
+        )
+        member.aibain_enabled = True
+        member.aibain_expires_at = current_aibain_expiry
+        db.session.add_all([admin, member])
+        db.session.flush()
+        request = SubscriptionRequest(
+            user_id=member.id,
+            request_type='aibain_addon',
+            from_tier='pro',
+            to_tier='pro',
+            status='pending',
+            amount='40,000원',
+            admin_note='AI Brain 알파 스캐너 애드온 신청',
+        )
+        db.session.add(request)
+        db.session.commit()
+        admin_token = generate_token(admin.id)
+        request_id = request.id
+
+    client = app.test_client()
+    approved = client.put(
+        f'/api/admin/subscriptions/{request_id}/approve',
+        headers={'Authorization': f'Bearer {admin_token}'},
+    )
+
+    assert approved.status_code == 200
+    with app.app_context():
+        member = User.query.filter_by(email='aibain@example.com').first()
+        assert member.aibain_enabled is True
+        expires = member.aibain_expires_at
+        if expires.tzinfo is None:
+            expires = expires.replace(tzinfo=timezone.utc)
+        assert expires >= current_aibain_expiry + timedelta(days=29, hours=23)
