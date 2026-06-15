@@ -335,6 +335,23 @@ def outcomes_board():
         }), 500
 
 
+@admin_mirofish_bp.route('/aibain/overview', methods=['GET'])
+@admin_or_aibain_required
+def aibain_overview():
+    """Subscriber AI Brain dashboard aggregation (detections/performance/learning)."""
+    try:
+        days = int(request.args.get('days', 30))
+    except (TypeError, ValueError):
+        return jsonify({'error': 'days must be an integer'}), 400
+    try:
+        return jsonify(mirofish.get_aibain_overview(perf_days=days))
+    except Exception as exc:
+        return jsonify({
+            'error': f'{type(exc).__name__}: {exc}',
+            'service': 'mirofish-aibain-overview',
+        }), 500
+
+
 @admin_mirofish_bp.route('/targets/resolve', methods=['GET'])
 @admin_or_aibain_required
 def resolve_target():
