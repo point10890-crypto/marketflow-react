@@ -1861,6 +1861,8 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
     const [alphaEndpointBlueprint, setAlphaEndpointBlueprint] = useState<MiroFishAlphaEndpointBlueprint | null>(null);
     const [autonomousConfirmation, setAutonomousConfirmation] = useState('');
     const [autonomousSharedSecret, setAutonomousSharedSecret] = useState('');
+    const [opsLaneRefreshKey, setOpsLaneRefreshKey] = useState(0);
+    const [opsLaneState, setOpsLaneState] = useState<'idle' | 'refreshing'>('idle');
     const [endpointState, setEndpointState] = useState<Record<EndpointKey, EndpointStatus>>(() => Object.fromEntries(endpointDefinitions.map((item) => [item.key, 'idle'])) as Record<EndpointKey, EndpointStatus>);
     const [apiState, setApiState] = useState<ApiState>('checking');
     const [errorText, setErrorText] = useState<string | null>(null);
@@ -2475,6 +2477,39 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
         }
     }
 
+    async function refreshOpsLane() {
+        if (opsLaneState === 'refreshing') return;
+        setOpsLaneState('refreshing');
+        setOpsLaneRefreshKey((key) => key + 1);
+        markEndpoint('workflow', 'loading');
+        try {
+            const [workflowResult, scannerStatusResult] = await Promise.allSettled([
+                mirofishApi.getWorkflowStatus(),
+                mirofishApi.getScannerStatus(),
+                refreshAutonomousStatus(),
+            ]);
+
+            if (workflowResult.status === 'fulfilled') {
+                const workflowData = workflowResult.value as { latest_workflow?: MiroFishWorkflow };
+                if (workflowData?.latest_workflow) {
+                    setWorkflow(workflowData.latest_workflow);
+                    setWorkflowState(workflowData.latest_workflow.status === 'completed' ? 'completed' : 'idle');
+                }
+                markEndpoint('workflow', 'ok');
+            } else {
+                setWorkflowState('error');
+                markEndpoint('workflow', 'error');
+                setWorkflowErrorText(workflowResult.reason instanceof Error ? workflowResult.reason.message : 'Workflow status refresh failed.');
+            }
+
+            if (scannerStatusResult.status === 'fulfilled') {
+                setAlphaScannerStatus(scannerStatusResult.value as MiroFishScannerStatus);
+            }
+        } finally {
+            setOpsLaneState('idle');
+        }
+    }
+
     async function handleAutonomousDetectionDryRun() {
         setAutonomousState('running');
         setAutonomousErrorText(null);
@@ -2892,8 +2927,35 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
 
                     {analysisSearchPanel}
 
-                    <div className="mt-5 grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px] xl:items-start">
-                        <div className="min-w-0 flex flex-col gap-4">
+                    <div className="mt-5 grid gap-5 2xl:grid-cols-[minmax(0,1.65fr)_minmax(400px,0.72fr)] 2xl:items-start">
+                        <section className="min-w-0 rounded-2xl border border-cyan-300/15 bg-cyan-300/[0.035] p-3 shadow-[0_18px_70px_rgba(8,145,178,0.10)]">
+                            <div className="mb-3 flex flex-col gap-3 rounded-xl border border-cyan-300/12 bg-black/20 px-4 py-3 md:flex-row md:items-center md:justify-between">
+                                <div>
+                                    <div className="text-[10px] font-black uppercase tracking-[0.22em] text-cyan-200/75">Left Format</div>
+                                    <h2 className="mt-1 text-lg font-black text-white">검출·분석 실행 레인</h2>
+                                    <p className="mt-1 text-xs font-semibold text-slate-400">
+                                        스캐너 실행, 신규 이벤트 Top3, DeepSeek 요약은 이 레인에서 독립 실행합니다.
+                                    </p>
+                                </div>
+                                <div className="flex flex-wrap gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={handleAlphaScan}
+                                        disabled={alphaScannerState === 'loading' || alphaScannerState === 'running'}
+                                        className="rounded-lg border border-emerald-300/25 bg-emerald-300/12 px-3 py-2 text-xs font-black text-emerald-100 transition hover:bg-emerald-300/18 disabled:cursor-wait disabled:opacity-60"
+                                    >
+                                        {alphaScannerState === 'loading' || alphaScannerState === 'running' ? '스캔 중...' : '스캐너 실행'}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => handleMcpWorkflow(false)}
+                                        disabled={workflowState === 'running'}
+                                        className="rounded-lg border border-cyan-300/25 bg-cyan-300/12 px-3 py-2 text-xs font-black text-cyan-100 transition hover:bg-cyan-300/18 disabled:cursor-wait disabled:opacity-60"
+                                    >
+                                        {workflowState === 'running' ? 'Top3 분석 중...' : 'MCP Top3 실행'}
+                                    </button>
+                                </div>
+                            </div>
                             <div id="alpha-board" className="scroll-mt-4">
                                 <AlphaBoardPanel
                                     candidates={alphaCandidates}
@@ -2919,46 +2981,79 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
                                     subscriberMode={subscriberMode}
                                 />
                             </div>
-                        </div>
-                        <aside className="min-w-0 flex flex-col gap-3 xl:sticky xl:top-4">
-                            <TodaysPipelineCard />
-                            <ScanPerformanceCard />
-                            <ScanHistoryCard />
-                            <RecentOutcomesBoard />
-                            {!subscriberMode && (
-                                <details className="group rounded-xl border border-white/10 bg-white/[0.03]">
-                                    <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-sm font-black text-slate-200 [&::-webkit-details-marker]:hidden">
-                                        <span>운영 진단</span>
-                                        <span className="text-[10px] uppercase tracking-wider text-slate-500 transition-transform group-open:rotate-180">▼</span>
-                                    </summary>
-                                    <div className="flex flex-col gap-3 border-t border-white/10 p-3">
-                                        <AutoRunnerCard />
-                                        <AutonomousMcpPanel
-                                            status={autonomousStatus}
-                                            state={autonomousState}
-                                            result={autonomousResult}
-                                            learning={autonomousLearning}
-                                            errorText={autonomousErrorText}
-                                            confirmation={autonomousConfirmation}
-                                            sharedSecret={autonomousSharedSecret}
-                                            onConfirmationChange={setAutonomousConfirmation}
-                                            onSharedSecretChange={setAutonomousSharedSecret}
-                                            onRefresh={refreshAutonomousStatus}
-                                            onDetectionDryRun={handleAutonomousDetectionDryRun}
-                                            onAnalysisDryRun={handleAutonomousAnalysisDryRun}
-                                            onLearningPreview={handleAutonomousLearningPreview}
-                                            onSendLatestTelegram={handleSendLatestAutonomousTelegram}
-                                        />
-                                        <AlphaEndpointBlueprintCard
-                                            blueprint={alphaEndpointBlueprint}
-                                            resourceSnapshot={mcpResourceSnapshot}
-                                        />
-                                        <GraphRAGStatusCard />
-                                        <GraphRAGEntityResolverCard />
-                                        <QuickActionsFooter />
+                        </section>
+                        <aside className="min-w-0 2xl:sticky 2xl:top-4">
+                            <section className="rounded-2xl border border-amber-300/18 bg-amber-300/[0.035] p-3 shadow-[0_18px_70px_rgba(245,158,11,0.09)]">
+                                <div className="mb-3 rounded-xl border border-amber-300/12 bg-black/25 px-4 py-3">
+                                    <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                                        <div>
+                                            <div className="text-[10px] font-black uppercase tracking-[0.22em] text-amber-200/75">Right Format</div>
+                                            <h2 className="mt-1 text-lg font-black text-white">운영·성과 모니터 레인</h2>
+                                            <p className="mt-1 text-xs font-semibold text-slate-400">
+                                                파이프라인, 성과검증, 히스토리, 운영 진단을 별도 갱신합니다.
+                                            </p>
+                                        </div>
+                                        <div className="flex flex-wrap gap-2">
+                                            <button
+                                                type="button"
+                                                onClick={refreshOpsLane}
+                                                disabled={opsLaneState === 'refreshing'}
+                                                className="rounded-lg border border-amber-300/25 bg-amber-300/12 px-3 py-2 text-xs font-black text-amber-100 transition hover:bg-amber-300/18 disabled:cursor-wait disabled:opacity-60"
+                                            >
+                                                {opsLaneState === 'refreshing' ? '갱신 중...' : '운영 현황 새로고침'}
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => handleMcpWorkflow(false)}
+                                                disabled={workflowState === 'running'}
+                                                className="rounded-lg border border-cyan-300/25 bg-cyan-300/12 px-3 py-2 text-xs font-black text-cyan-100 transition hover:bg-cyan-300/18 disabled:cursor-wait disabled:opacity-60"
+                                            >
+                                                {workflowState === 'running' ? '실행 중...' : '우측 Top3 실행'}
+                                            </button>
+                                        </div>
                                     </div>
-                                </details>
-                            )}
+                                </div>
+                                <div key={`ops-lane-${opsLaneRefreshKey}`} className="flex flex-col gap-3">
+                                    <TodaysPipelineCard />
+                                    <ScanPerformanceCard />
+                                    <ScanHistoryCard />
+                                    <RecentOutcomesBoard />
+                                    {!subscriberMode && (
+                                        <details className="group rounded-xl border border-white/10 bg-white/[0.03]">
+                                            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-sm font-black text-slate-200 [&::-webkit-details-marker]:hidden">
+                                                <span>운영 진단</span>
+                                                <span className="text-[10px] uppercase tracking-wider text-slate-500 transition-transform group-open:rotate-180">▼</span>
+                                            </summary>
+                                            <div className="flex flex-col gap-3 border-t border-white/10 p-3">
+                                                <AutoRunnerCard />
+                                                <AutonomousMcpPanel
+                                                    status={autonomousStatus}
+                                                    state={autonomousState}
+                                                    result={autonomousResult}
+                                                    learning={autonomousLearning}
+                                                    errorText={autonomousErrorText}
+                                                    confirmation={autonomousConfirmation}
+                                                    sharedSecret={autonomousSharedSecret}
+                                                    onConfirmationChange={setAutonomousConfirmation}
+                                                    onSharedSecretChange={setAutonomousSharedSecret}
+                                                    onRefresh={refreshAutonomousStatus}
+                                                    onDetectionDryRun={handleAutonomousDetectionDryRun}
+                                                    onAnalysisDryRun={handleAutonomousAnalysisDryRun}
+                                                    onLearningPreview={handleAutonomousLearningPreview}
+                                                    onSendLatestTelegram={handleSendLatestAutonomousTelegram}
+                                                />
+                                                <AlphaEndpointBlueprintCard
+                                                    blueprint={alphaEndpointBlueprint}
+                                                    resourceSnapshot={mcpResourceSnapshot}
+                                                />
+                                                <GraphRAGStatusCard />
+                                                <GraphRAGEntityResolverCard />
+                                                <QuickActionsFooter />
+                                            </div>
+                                        </details>
+                                    )}
+                                </div>
+                            </section>
                         </aside>
                     </div>
 
