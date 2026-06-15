@@ -711,6 +711,15 @@ Investing.com ProPicks 분석 결과(적극 매수/매수/중립/매도/적극 �
 
 ## 14. 변경 이력
 
+### v3.4.0 (2026-06-15) — Alpha Intelligence Foundation (L0/L1/L2)
+- 신규 서브패키지 `app/services/mirofish/intelligence/` — 결정론·lookahead-safe·읽기전용 분석 강화 계층.
+- `regime.py` (L1): entry_date 시점 시장폭(breadth) 기반 레짐 분류기(RISK_ON/NEUTRAL/RISK_OFF). 지수 데이터 없이 daily_prices.csv 유니버스 MA로 산출.
+- `dataset.py` (L0): 평가 완료 outcome → 버전관리 학습 행렬(feature/categorical/tags/label + regime 태깅). 이후 L3 모델 기반.
+- `interactions.py` (L2): 엣지맵을 다축 조합(태그×점수대×레짐×수급)으로 확장, 상호작용 수익 패턴 발견(MIN_COMBO_SAMPLES 게이트).
+- `alpha_brain_agent.build_agent_observation`에 `interaction_map`+`regime_distribution` 첨부 (try/except 격리, 스코어 미변경). LLM Think가 단일축을 넘어 조합·레짐 증거 활용.
+- 하네스 준수 실행: `docs/superpowers/harness/2026-06-15-alpha-intelligence-harness.md` (Router/Worker/Repair, 14조 절대규칙, Route→Scope→Plan→Implement→Verify→Repair).
+- 다음(미구현): L3 학습형 수익 예측 모델(표본 게이트), L4 심층 추론 강화.
+
 ### v3.3.0 (2026-06-12) — Alpha Brain Agent 자율 학습 사이클
 - `alpha_brain_agent.py`: Sense -> Think -> Act -> Learn 루프 추가. 기본 dry-run으로 저널/제안 먼저 축적.
 - `edge_map.py` + `hypothesis_replay.py`: outcome 버킷 통계와 lookahead-safe tag delta 리플레이 검증.
