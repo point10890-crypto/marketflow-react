@@ -190,3 +190,25 @@ def test_dry_run_cycle_marks_mutations_proposed_only(agent_env, monkeypatch):
     result = agent.run_agent_cycle('post_backtest', llm_call=_llm_returning(payload))
 
     assert [item['status'] for item in result['act']['llm_results']] == ['proposed_only']
+
+
+def test_observation_includes_interaction_map_and_regime(agent_env, monkeypatch):
+    from app.services.mirofish import alpha_brain_agent as agent
+    from app.services.mirofish.intelligence import interactions as ix
+    from app.services.mirofish.intelligence import dataset as ds
+
+    monkeypatch.setattr(ix, 'read_interaction_map', lambda: {
+        'evaluated_count': 10,
+        'top_positive': [{'combo': 'regime:RISK_ON & tag:foreign_buy', 'n': 6, 'hit_rate': 1.0, 'expectancy_pct': 8.0}],
+        'top_negative': [],
+    })
+    monkeypatch.setattr(ds, 'dataset_summary', lambda: {
+        'row_count': 10, 'hit_count': 7, 'hit_rate': 0.7,
+        'regime_distribution': {'RISK_ON': 7, 'NEUTRAL': 3},
+    })
+    obs = agent.build_agent_observation(now_iso='2026-06-15T08:00:00+00:00')
+    assert obs['interaction_map']['evaluated_count'] == 10
+    assert obs['interaction_map']['top_positive'][0]['combo'].startswith('regime:RISK_ON')
+    assert obs['regime_distribution']['RISK_ON'] == 7
+    # existing keys preserved
+    assert 'edge_map' in obs and 'backtest' in obs and 'active_scoring_overlay' in obs and 'recent_journal' in obs

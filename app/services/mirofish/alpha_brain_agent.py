@@ -61,6 +61,7 @@ def build_agent_observation(*, now_iso: str | None = None) -> dict[str, Any]:
     age_hours = _age_hours(generated_at, now_dt)
     edge = edge_map.build_edge_map(write=True)
     advisory = _advisory_summary()
+    intelligence = _intelligence_summary()
     return {
         'observed_at': now_dt.isoformat(),
         'objective': 'improve Top3 forward-return expectancy with lookahead-safe evidence',
@@ -84,6 +85,8 @@ def build_agent_observation(*, now_iso: str | None = None) -> dict[str, Any]:
         'active_overrides': _active_overrides(),
         'active_scoring_overlay': agent_actions.scoring_overlay(),
         'recent_journal': read_journal_tail(JOURNAL_TAIL_FOR_PROMPT),
+        'interaction_map': intelligence['interaction_map'],
+        'regime_distribution': intelligence['regime_distribution'],
     }
 
 
@@ -362,6 +365,35 @@ def _advisory_summary() -> dict[str, Any]:
         'baseline_hit_rate': recommendations.get('baseline_hit_rate'),
         'lookahead_safe': bool(advisory.get('lookahead_safe', True)),
     }
+
+
+def _intelligence_summary() -> dict[str, Any]:
+    """Attach L2 interaction edges and regime distribution (read-only, isolated)."""
+    interaction_map: dict[str, Any] = {}
+    regime_distribution: dict[str, Any] = {}
+    try:
+        from app.services.mirofish.intelligence import interactions as _interactions
+
+        imap = _interactions.read_interaction_map()
+        if imap is None:
+            imap = _interactions.build_interaction_map(write=True)
+        if isinstance(imap, dict):
+            interaction_map = {
+                'evaluated_count': imap.get('evaluated_count', 0),
+                'top_positive': (imap.get('top_positive') or [])[:10],
+                'top_negative': (imap.get('top_negative') or [])[:10],
+            }
+    except Exception as exc:  # never break the observation
+        logger.warning('[alpha_brain_agent] interaction map unavailable: %s', exc)
+    try:
+        from app.services.mirofish.intelligence import dataset as _dataset
+
+        summary = _dataset.dataset_summary()
+        if isinstance(summary, dict):
+            regime_distribution = summary.get('regime_distribution') or {}
+    except Exception as exc:
+        logger.warning('[alpha_brain_agent] regime distribution unavailable: %s', exc)
+    return {'interaction_map': interaction_map, 'regime_distribution': regime_distribution}
 
 
 def _active_overrides() -> dict[str, Any]:
