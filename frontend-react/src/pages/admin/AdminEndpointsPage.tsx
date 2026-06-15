@@ -5,7 +5,6 @@ import MirofishChatPanel from '@/components/admin/MirofishChatPanel';
 import TodaysPipelineCard from '@/components/admin/TodaysPipelineCard';
 import RecentOutcomesBoard from '@/components/admin/RecentOutcomesBoard';
 import QuickActionsFooter from '@/components/admin/QuickActionsFooter';
-import MobileTopPicksHero from '@/components/admin/MobileTopPicksHero';
 import AutoRunnerCard from '@/components/admin/AutoRunnerCard';
 import Top3TradingViewCharts from '@/components/admin/Top3TradingViewCharts';
 import GraphRAGStatusCard from '@/components/admin/GraphRAGStatusCard';
@@ -2685,7 +2684,7 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
     const analysisSearchPanel = (
         <div className={subscriberMode ? 'mt-5 max-w-5xl' : 'mt-6 sm:mt-8 max-w-4xl'}>
             <form
-                className="rounded-xl border border-white/10 bg-white/[0.04] p-1.5 shadow-[0_18px_60px_rgba(0,0,0,0.18)]"
+                className="rounded-lg border border-white/10 bg-white/[0.035] p-1"
                 onSubmit={(event) => {
                     event.preventDefault();
                     submitAnalysisForm(event.currentTarget);
@@ -2735,7 +2734,7 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
                         type="submit"
                         aria-label="Run GraphRAG analysis"
                         disabled={apiState === 'running'}
-                        className="min-h-12 rounded-lg bg-cyan-400 px-6 text-sm font-black text-slate-950 transition hover:bg-cyan-300 disabled:cursor-wait disabled:opacity-50"
+                        className="min-h-12 rounded-md bg-cyan-400 px-6 text-sm font-black text-slate-950 transition hover:bg-cyan-300 disabled:cursor-wait disabled:opacity-50"
                     >
                         {apiState === 'running' ? '분석 중...' : '분석 시작'}
                     </button>
@@ -2749,7 +2748,7 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
             )}
 
             {targetCandidates.length > 0 && (
-                <div className="mt-2 overflow-hidden rounded-xl border border-white/15 bg-slate-950/90 text-sm shadow-2xl shadow-black/25 backdrop-blur">
+                <div className="mt-2 overflow-hidden rounded-lg border border-white/15 bg-slate-950/95 text-sm">
                     <div className="flex items-center justify-between border-b border-white/10 px-4 py-2 text-[11px] font-black uppercase tracking-[0.18em] text-slate-400">
                         <span>Autocomplete</span>
                         <span>{targetCandidates.length} candidates</span>
@@ -2811,13 +2810,13 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
             )}
 
             <div className="mt-4 flex flex-wrap items-center gap-3">
-                <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.05] px-4 py-2 text-xs font-bold text-slate-400 backdrop-blur">
+                <div className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-xs font-bold text-slate-400">
                     <span>에이전트</span>
                     <button type="button" onClick={() => setAgentCount((value) => Math.max(1, value - 1))} className="grid h-8 w-8 place-items-center rounded-lg border border-white/10 bg-black/25 text-slate-200 hover:text-white">-</button>
                     <span className="text-xl font-black text-cyan-300 font-mono">{agentCount}</span>
                     <button type="button" onClick={() => setAgentCount((value) => Math.min(15, value + 1))} className="grid h-8 w-8 place-items-center rounded-lg border border-white/10 bg-black/25 text-slate-200 hover:text-white">+</button>
                 </div>
-                <div className="flex items-center gap-1 rounded-xl border border-white/10 bg-white/[0.05] p-1">
+                <div className="flex items-center gap-1 rounded-lg border border-white/10 bg-white/[0.04] p-1">
                     {agentCounts.map((count) => (
                         <button key={count} type="button" onClick={() => setAgentCount(count)} className={`h-8 min-w-8 rounded-lg px-2 text-xs font-bold transition-colors ${count === agentCount ? 'bg-cyan-400 text-slate-950' : 'text-slate-400 hover:text-white hover:bg-white/[0.06]'}`}>
                             {count}
@@ -2830,10 +2829,10 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
 
     return (
         <div className="space-y-5">
-            <section className={`rounded-xl border ${
+            <section className={`border-b ${
                 subscriberMode
-                    ? 'border-cyan-300/15 bg-[#0d1320]'
-                    : 'border-anthropic-darkLine bg-anthropic-dark'
+                    ? 'border-cyan-300/15 bg-[#0d1320]/80'
+                    : 'border-anthropic-darkLine bg-transparent'
             }`}>
                 <div className="px-4 py-5 sm:px-5 sm:py-7 md:px-8 md:py-10">
                     <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3">
@@ -2861,64 +2860,34 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
                         </div>
                     </div>
 
-                    <div className="mt-5 max-w-5xl">
-                        <h1 className={`${subscriberMode ? 'text-2xl sm:text-3xl md:text-4xl font-black' : 'font-serif text-[28px] sm:text-[40px] md:text-[64px] font-medium'} leading-[1.1] tracking-tight text-anthropic-cream`}>
-                            {subscriberMode ? 'AI Brain Top3 검출 대시보드' : (
-                                <>
-                                    MiroFish <span className="italic">Market Brain</span>
-                                    <span className="block text-anthropic-darkMuted text-[20px] sm:text-[28px] md:text-[40px] mt-1 font-normal">
-                                        GraphRAG Analysis
-                                    </span>
-                                </>
+                    <div className="mt-4 max-w-4xl">
+                        <h1 className={`${subscriberMode ? 'text-2xl sm:text-3xl' : 'font-serif text-[26px] sm:text-[34px] md:text-[42px] font-medium'} leading-[1.15] tracking-tight text-anthropic-cream`}>
+                            {subscriberMode ? 'AI Brain 검출 대시보드' : (
+                                <>MiroFish <span className="italic">Market Brain</span></>
                             )}
                         </h1>
-                        <p className="mt-3 max-w-3xl text-sm sm:text-base font-semibold leading-6 text-anthropic-darkText">
+                        <p className="mt-2 max-w-3xl text-sm font-medium leading-6 text-anthropic-darkMuted">
                             {subscriberMode
-                                ? '목표는 MCP 자동화가 아니라 수익 가능성이 높은 Top3 후보 검출입니다. 스캔, 분석, 성과 검증 흐름을 한 화면에서 확인합니다.'
-                                : 'Brain 시그널 · 인과 메모리 · 5인 에이전트 토론 · CIO 판정을 단일 콘솔에서 연결합니다.'}
+                                ? '오늘의 검출 · 성과 검증 · 학습 피드백을 한 화면에서.'
+                                : '검출 · 분석 · 성과 검증 · 운영을 단일 콘솔에서.'}
                         </p>
                     </div>
 
-                    <div className="mt-4 sm:mt-6 flex flex-wrap gap-1.5 sm:gap-2">
-                        {brainSignals.map((signal) => (
-                            <span key={signal.label} className="inline-flex items-center gap-1.5 sm:gap-2 rounded-full border border-anthropic-darkLine bg-anthropic-dark2 px-2.5 sm:px-4 py-1 sm:py-1.5 text-[11px] sm:text-xs font-medium text-anthropic-darkMuted">
-                                <span className="tracking-wider">{signal.label}</span>
-                                <span className="text-anthropic-cream font-mono text-xs sm:text-sm">{signal.value}</span>
-                            </span>
-                        ))}
-                    </div>
-
-                    {subscriberMode && (
-                        <div className="mt-4 grid gap-2 sm:grid-cols-3">
-                            {[
-                                ['1', '실시간 감시', '신규 후보와 데이터 신선도 확인'],
-                                ['2', 'Top3 압축', '후보 5종을 GraphRAG와 리스크로 재랭킹'],
-                                ['3', '성과 피드백', '사후 수익률로 다음 점수 보정'],
-                            ].map(([step, title, desc]) => (
-                                <div key={step} className="rounded-xl border border-white/10 bg-white/[0.04] p-3">
-                                    <div className="flex items-center gap-2">
-                                        <span className="grid h-7 w-7 place-items-center rounded-lg bg-cyan-400 text-xs font-black text-slate-950">{step}</span>
-                                        <span className="text-sm font-black text-white">{title}</span>
-                                    </div>
-                                    <p className="mt-2 text-xs font-semibold leading-5 text-slate-400">{desc}</p>
-                                </div>
+                    {brainSignals.length > 0 && (
+                        <div className="mt-4 flex flex-wrap gap-1.5 sm:gap-2">
+                            {brainSignals.map((signal) => (
+                                <span key={signal.label} className="inline-flex items-center gap-2 rounded-lg border border-anthropic-darkLine bg-anthropic-dark2 px-3 py-1.5 text-[11px] font-medium text-anthropic-darkMuted">
+                                    <span className="tracking-wide">{signal.label}</span>
+                                    <span className="text-anthropic-cream font-mono text-xs">{signal.value}</span>
+                                </span>
                             ))}
                         </div>
                     )}
 
                     {analysisSearchPanel}
 
-                    {/* 모바일 전용 — 최상단 TOP 3 추천 미리보기 (lg+ 에서는 AlphaBoardPanel 내부 TOP 3 가 보임) */}
-                    <MobileTopPicksHero />
-
-                    {/* 메인 2-column 그리드 — 좌측: AlphaBoard + Autonomous MCP (스택)
-                        우측: status/액션 사이드바 (sticky). 좌측을 충분히 길게 만들어
-                        우측 sticky 가 viewport 안에서 오래 동행하도록 설계. */}
-                    <div className="grid gap-4 lg:grid-cols-[minmax(0,1.05fr)_minmax(380px,440px)] lg:gap-6 lg:items-start">
-                        {/* 좌측 컬럼 — 핵심 콘텐츠 스택 (모바일: order 2) */}
-                        {/* min-w-0 필수: ScanHistoryCard / Top3TradingViewCharts 등 내부에 fixed/min-w 가 있어
-                            그리드 자식이 줄어들지 않으면 컨테이너가 viewport 보다 넓어져 가로 오버플로우 발생. */}
-                        <div className="order-2 lg:order-1 min-w-0 flex flex-col gap-4 lg:gap-6">
+                    <div className="mt-5 grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px] xl:items-start">
+                        <div className="min-w-0 flex flex-col gap-4">
                             <div id="alpha-board" className="scroll-mt-4">
                                 <AlphaBoardPanel
                                     candidates={alphaCandidates}
@@ -2945,49 +2914,70 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
                                 />
                             </div>
                             {!subscriberMode && (
-                                <AutonomousMcpPanel
-                                    status={autonomousStatus}
-                                    state={autonomousState}
-                                    result={autonomousResult}
-                                    learning={autonomousLearning}
-                                    errorText={autonomousErrorText}
-                                    confirmation={autonomousConfirmation}
-                                    sharedSecret={autonomousSharedSecret}
-                                    onConfirmationChange={setAutonomousConfirmation}
-                                    onSharedSecretChange={setAutonomousSharedSecret}
-                                    onRefresh={refreshAutonomousStatus}
-                                    onDetectionDryRun={handleAutonomousDetectionDryRun}
-                                    onAnalysisDryRun={handleAutonomousAnalysisDryRun}
-                                    onLearningPreview={handleAutonomousLearningPreview}
-                                    onSendLatestTelegram={handleSendLatestAutonomousTelegram}
-                                />
+                                <details className="group rounded-xl border border-white/10 bg-white/[0.03]">
+                                    <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-sm font-black text-slate-200 [&::-webkit-details-marker]:hidden">
+                                        <span>자율 MCP 테스트 하네스</span>
+                                        <span className="text-[10px] uppercase tracking-wider text-slate-500 transition-transform group-open:rotate-180">▼</span>
+                                    </summary>
+                                    <div className="border-t border-white/10 px-3 pb-3">
+                                        <AutonomousMcpPanel
+                                            status={autonomousStatus}
+                                            state={autonomousState}
+                                            result={autonomousResult}
+                                            learning={autonomousLearning}
+                                            errorText={autonomousErrorText}
+                                            confirmation={autonomousConfirmation}
+                                            sharedSecret={autonomousSharedSecret}
+                                            onConfirmationChange={setAutonomousConfirmation}
+                                            onSharedSecretChange={setAutonomousSharedSecret}
+                                            onRefresh={refreshAutonomousStatus}
+                                            onDetectionDryRun={handleAutonomousDetectionDryRun}
+                                            onAnalysisDryRun={handleAutonomousAnalysisDryRun}
+                                            onLearningPreview={handleAutonomousLearningPreview}
+                                            onSendLatestTelegram={handleSendLatestAutonomousTelegram}
+                                        />
+                                    </div>
+                                </details>
                             )}
                         </div>
-                        {/* 사이드바 — 모바일: order 1 (TOP picks 직하단) / lg+: 우측 컬럼 sticky */}
-                        <aside className="order-1 lg:order-2 min-w-0 mt-4 flex flex-col gap-3 lg:mt-0 lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto lg:pr-1">
-                            {/* AutoRunner / QuickActions 는 admin 전용 (자동검출 강제발사·일시정지·서킷리셋 등). subscriberMode 에서는 숨김. */}
-                            {!subscriberMode && <AutoRunnerCard />}
-                            {!subscriberMode && (
-                                <AlphaEndpointBlueprintCard
-                                    blueprint={alphaEndpointBlueprint}
-                                    resourceSnapshot={mcpResourceSnapshot}
-                                />
-                            )}
+                        <aside className="min-w-0 flex flex-col gap-3 xl:sticky xl:top-4">
                             <TodaysPipelineCard />
-                            {!subscriberMode && <GraphRAGStatusCard />}
-                            {!subscriberMode && <GraphRAGEntityResolverCard />}
                             <ScanPerformanceCard />
                             <ScanHistoryCard />
                             <RecentOutcomesBoard />
-                            {!subscriberMode && <QuickActionsFooter />}
+                            {!subscriberMode && (
+                                <details className="group rounded-xl border border-white/10 bg-white/[0.03]">
+                                    <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-sm font-black text-slate-200 [&::-webkit-details-marker]:hidden">
+                                        <span>운영 진단</span>
+                                        <span className="text-[10px] uppercase tracking-wider text-slate-500 transition-transform group-open:rotate-180">▼</span>
+                                    </summary>
+                                    <div className="flex flex-col gap-3 border-t border-white/10 p-3">
+                                        <AutoRunnerCard />
+                                        <AlphaEndpointBlueprintCard
+                                            blueprint={alphaEndpointBlueprint}
+                                            resourceSnapshot={mcpResourceSnapshot}
+                                        />
+                                        <GraphRAGStatusCard />
+                                        <GraphRAGEntityResolverCard />
+                                        <QuickActionsFooter />
+                                    </div>
+                                </details>
+                            )}
                         </aside>
                     </div>
 
                 </div>
             </section>
 
-            {/* MiroFish 자연어 채팅 — 별도 section으로 명확히 표시 */}
-            <MirofishChatPanel variant="inline" />
+            <details className="group rounded-xl border border-anthropic-darkLine bg-anthropic-dark/70">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-sm font-black text-anthropic-cream [&::-webkit-details-marker]:hidden">
+                    <span>MiroFish 어시스턴트</span>
+                    <span className="text-[10px] uppercase tracking-wider text-anthropic-darkMuted transition-transform group-open:rotate-180">▼</span>
+                </summary>
+                <div className="border-t border-anthropic-darkLine">
+                    <MirofishChatPanel variant="inline" />
+                </div>
+            </details>
 
             {isAnalyzing && <ImpactPanel phase={phase} run={run} apiState={apiState} />}
 
@@ -3038,51 +3028,53 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
                 </div>
             </details>
 
-            {/* Pipeline status — mobile horizontal scroll, desktop 5-column grid */}
-            <section className="rounded-xl border border-anthropic-darkLine bg-anthropic-dark p-4 sm:p-5">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div>
-                        <h2 className="font-serif text-base sm:text-lg font-medium text-anthropic-cream">파이프라인 상태</h2>
-                        <p className="mt-1 text-xs sm:text-sm text-anthropic-darkMuted">
+            <details className="group rounded-xl border border-anthropic-darkLine bg-anthropic-dark/70">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 [&::-webkit-details-marker]:hidden">
+                    <div className="min-w-0">
+                        <h2 className="text-sm font-black text-anthropic-cream">파이프라인 상태</h2>
+                        <p className="mt-0.5 truncate text-xs text-anthropic-darkMuted">
                             {status?.pipeline?.status || '/api/admin/mirofish/status 응답 대기 중'}
                         </p>
                     </div>
-                    <span className={`rounded-full border px-2.5 sm:px-3 py-1 sm:py-1.5 text-[11px] sm:text-xs font-medium ${
-                        apiState === 'error'
-                            ? 'border-red-500/30 bg-red-500/[0.08] text-red-400'
-                            : 'border-green-500/30 bg-green-500/[0.08] text-green-400'
-                    }`}>
-                        {apiState === 'error' ? 'API 오류' : 'API 연결'}
-                    </span>
-                </div>
-
-                {/* 모바일: 가로 스크롤 (snap), 태블릿+: 5열 grid */}
-                <div className="mt-4 sm:mt-5 -mx-4 sm:mx-0 overflow-x-auto sm:overflow-visible px-4 sm:px-0 snap-x snap-mandatory sm:snap-none">
-                    <div className="flex gap-2 min-w-max sm:min-w-0 sm:grid sm:grid-cols-5">
-                        {runSteps.map((step, index) => {
-                            const linkedState = endpointState[runStepEndpoints[index]];
-                            const ready = linkedState === 'ok' && (!isAnalyzing || index + 1 <= phase);
-                            return (
-                                <div key={step} className="rounded-lg border border-anthropic-darkLine bg-anthropic-dark2 p-3 w-36 sm:w-auto shrink-0 sm:shrink snap-start">
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-[10px] sm:text-[11px] font-medium uppercase tracking-wider text-anthropic-darkMuted">단계 {index + 1}</span>
-                                        <span className={`h-1.5 w-1.5 rounded-full ${
-                                            ready ? 'bg-green-400' :
-                                            linkedState === 'error' ? 'bg-red-400' :
-                                            linkedState === 'loading' ? 'bg-anthropic-orange animate-pulse' :
-                                            'bg-anthropic-darkMuted'
-                                        }`} />
+                    <div className="flex shrink-0 items-center gap-2">
+                        <span className={`rounded-full border px-2.5 py-1 text-[11px] font-medium ${
+                            apiState === 'error'
+                                ? 'border-red-500/30 bg-red-500/[0.08] text-red-400'
+                                : 'border-green-500/30 bg-green-500/[0.08] text-green-400'
+                        }`}>
+                            {apiState === 'error' ? 'API 오류' : 'API 연결'}
+                        </span>
+                        <span className="text-[10px] uppercase tracking-wider text-anthropic-darkMuted transition-transform group-open:rotate-180">▼</span>
+                    </div>
+                </summary>
+                <div className="border-t border-anthropic-darkLine p-4">
+                    <div className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:overflow-visible sm:px-0">
+                        <div className="flex min-w-max gap-2 sm:grid sm:min-w-0 sm:grid-cols-5">
+                            {runSteps.map((step, index) => {
+                                const linkedState = endpointState[runStepEndpoints[index]];
+                                const ready = linkedState === 'ok' && (!isAnalyzing || index + 1 <= phase);
+                                return (
+                                    <div key={step} className="w-36 shrink-0 rounded-lg border border-anthropic-darkLine bg-anthropic-dark2 p-3 sm:w-auto sm:shrink">
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-[10px] font-medium uppercase tracking-wider text-anthropic-darkMuted">단계 {index + 1}</span>
+                                            <span className={`h-1.5 w-1.5 rounded-full ${
+                                                ready ? 'bg-green-400' :
+                                                linkedState === 'error' ? 'bg-red-400' :
+                                                linkedState === 'loading' ? 'bg-anthropic-orange animate-pulse' :
+                                                'bg-anthropic-darkMuted'
+                                            }`} />
+                                        </div>
+                                        <div className="mt-2 text-sm font-medium text-anthropic-cream">{step}</div>
+                                        <div className="mt-0.5 text-xs text-anthropic-darkMuted">
+                                            {ready ? '엔드포인트 확인' : linkedState === 'error' ? '오류' : linkedState === 'loading' ? '로딩 중' : '대기 중'}
+                                        </div>
                                     </div>
-                                    <div className="mt-2 sm:mt-3 text-sm font-medium text-anthropic-cream">{step}</div>
-                                    <div className="mt-0.5 sm:mt-1 text-[11px] sm:text-xs text-anthropic-darkMuted">
-                                        {ready ? '엔드포인트 확인' : linkedState === 'error' ? '오류' : linkedState === 'loading' ? '로딩 중' : '대기 중'}
-                                    </div>
-                                </div>
-                            );
-                        })}
+                                );
+                            })}
+                        </div>
                     </div>
                 </div>
-            </section>
+            </details>
         </div>
     );
 }
