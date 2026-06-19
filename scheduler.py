@@ -1439,6 +1439,9 @@ def run_lotto_analysis():
         from lotto_analysis import run_lotto_analysis_post
         result = run_lotto_analysis_post()
         if result:
+            if isinstance(result, dict) and result.get('skipped'):
+                logger.info("AI lotto analysis already posted; duplicate run skipped")
+                return True
             logger.info("✅ AI 로또 분석 게시 완료")
 
             # 텔레그램 상세 메시지

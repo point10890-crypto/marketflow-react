@@ -701,6 +701,38 @@ def save_image(image_data: bytes) -> str:
     return f"/api/community/uploads/{filename}"
 
 
+def _existing_lotto_post_for_draw(draw_no: int) -> dict | None:
+    """Return an existing visible lotto post for the draw, if one already exists."""
+    if not os.path.exists(DB_FILE):
+        return None
+    try:
+        import sqlite3
+        with sqlite3.connect(DB_FILE, timeout=5) as con:
+            cur = con.cursor()
+            cur.execute("PRAGMA table_info(posts)")
+            post_columns = {row[1] for row in cur.fetchall()}
+            hidden_clause = "AND COALESCE(p.is_hidden, 0) = 0" if 'is_hidden' in post_columns else ""
+            cur.execute(
+                f"""
+                SELECT p.id, p.title
+                FROM posts p
+                JOIN boards b ON p.board_id = b.id
+                WHERE b.slug = ?
+                  {hidden_clause}
+                  AND p.title LIKE ?
+                ORDER BY p.created_at DESC
+                LIMIT 1
+                """,
+                (LOTTO_BOARD_SLUG, f"%{draw_no}%"),
+            )
+            row = cur.fetchone()
+            if row:
+                return {'post_id': row[0], 'title': row[1]}
+    except Exception as e:
+        logger.warning("Lotto duplicate guard failed: %s: %s", type(e).__name__, e)
+    return None
+
+
 def _local_admin_token() -> str | None:
     """관리자 토큰을 sqlite3 + HMAC-SHA256 으로 직접 발급 (경량화).
 
@@ -848,6 +880,21 @@ def run_lotto_analysis_post(dry_run: bool = False) -> bool:
         # 2. 통계 계산
         logger.info("[2/6] 통계 분석 중...")
         stats = compute_stats(draws)
+        if not dry_run:
+            next_drw = stats['last_draw']['drwNo'] + 1
+            existing = _existing_lotto_post_for_draw(next_drw)
+            if existing:
+                logger.info(
+                    "[GUARD] Lotto draw #%s already posted as id=%s; skipping duplicate post.",
+                    next_drw,
+                    existing.get('post_id'),
+                )
+                return {
+                    'post_id': existing.get('post_id'),
+                    'title': existing.get('title', f'Lotto draw #{next_drw}'),
+                    'candidates': {},
+                    'skipped': True,
+                }
         logger.info(f"[2/6] 핫넘버(10회): {stats['hot_10'][:6]}")
         logger.info(f"[2/6] 콜드넘버(10회): {stats['cold_10'][:6]}")
 

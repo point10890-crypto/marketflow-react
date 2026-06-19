@@ -16,6 +16,25 @@ def test_parse_llm_json_allows_raw_newlines_in_content():
     assert parsed["content"] == "<p>a\nb</p>"
 
 
+def test_existing_lotto_post_for_draw_detects_visible_duplicate(monkeypatch, tmp_db):
+    import sqlite3
+    import lotto_analysis
+
+    con = sqlite3.connect(str(tmp_db))
+    cur = con.cursor()
+    cur.execute(
+        "INSERT INTO posts (id, board_id, title, content, is_notice, created_at) VALUES (133, 7, '제1229회 AI 로또 분석', '', 1, '2026-06-19')"
+    )
+    con.commit()
+    con.close()
+
+    monkeypatch.setattr(lotto_analysis, 'DB_FILE', str(tmp_db))
+
+    existing = lotto_analysis._existing_lotto_post_for_draw(1229)
+
+    assert existing == {'post_id': 133, 'title': '제1229회 AI 로또 분석'}
+
+
 def test_logger_used_for_errors(caplog, clean_env, monkeypatch):
     """run_lotto_analysis_post 에서 예외 발생 시 traceback 이 logger 로 기록되어야 함.
 
