@@ -590,6 +590,34 @@ def build_candidates_text(candidates: dict) -> str:
     return '\n'.join(lines)
 
 
+def _parse_llm_json(text: str) -> dict:
+    """Parse LLM JSON output even when HTML content includes raw control chars."""
+    cleaned = (text or '').strip()
+    if cleaned.startswith('```'):
+        cleaned = cleaned.split('\n', 1)[1] if '\n' in cleaned else cleaned[3:]
+    if cleaned.endswith('```'):
+        cleaned = cleaned[:-3]
+    if cleaned.startswith('json'):
+        cleaned = cleaned[4:]
+    cleaned = cleaned.strip()
+
+    try:
+        return json.loads(cleaned)
+    except json.JSONDecodeError as first_error:
+        try:
+            return json.loads(cleaned, strict=False)
+        except json.JSONDecodeError:
+            start = cleaned.find('{')
+            end = cleaned.rfind('}')
+            if start >= 0 and end > start:
+                try:
+                    return json.loads(cleaned[start:end + 1], strict=False)
+                except json.JSONDecodeError:
+                    pass
+            logger.error("LLM JSON parse failed: %s", first_error)
+            raise
+
+
 def generate_lotto_post(client, stats: dict, candidates: dict) -> dict:
     """Gemini로 분석 글 생성"""
     stats_summary = build_stats_summary(stats)
@@ -641,7 +669,7 @@ def generate_lotto_post(client, stats: dict, candidates: dict) -> dict:
         text = text[4:]
     text = text.strip()
 
-    return json.loads(text)
+    return _parse_llm_json(text)
 
 
 def generate_image(client, prompt: str) -> bytes | None:

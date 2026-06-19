@@ -5,6 +5,17 @@ from datetime import datetime
 from unittest.mock import MagicMock
 
 
+def test_parse_llm_json_allows_raw_newlines_in_content():
+    import lotto_analysis
+
+    raw = '{"title":"t","content":"<p>a\nb</p>","image_prompt":"balls"}'
+
+    parsed = lotto_analysis._parse_llm_json(raw)
+
+    assert parsed["title"] == "t"
+    assert parsed["content"] == "<p>a\nb</p>"
+
+
 def test_logger_used_for_errors(caplog, clean_env, monkeypatch):
     """run_lotto_analysis_post 에서 예외 발생 시 traceback 이 logger 로 기록되어야 함.
 
