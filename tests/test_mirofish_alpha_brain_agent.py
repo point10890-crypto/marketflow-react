@@ -212,3 +212,38 @@ def test_observation_includes_interaction_map_and_regime(agent_env, monkeypatch)
     assert obs['regime_distribution']['RISK_ON'] == 7
     # existing keys preserved
     assert 'edge_map' in obs and 'backtest' in obs and 'active_scoring_overlay' in obs and 'recent_journal' in obs
+
+
+def test_observation_includes_top3_metrics(agent_env, monkeypatch):
+    from app.services.mirofish import alpha_brain_agent as agent
+    from app.services.mirofish.intelligence import top3_metrics as t3
+
+    monkeypatch.setattr(t3, 'top3_metrics_summary', lambda: {
+        'evaluated_runs': 4, 'qualified_runs': 3, 'total_evaluated_items': 24,
+        'insufficient': True,
+        'pooled': {'top3_hit_rate': 0.66, 'baseline_hit_rate': 0.5, 'top3_hit_lift': 0.16},
+        'macro': {'precision_at_3': 0.66, 'rank_ic_mean': 0.21, 'run_count': 3},
+    })
+
+    obs = agent.build_agent_observation(now_iso='2026-06-20T08:00:00+00:00')
+
+    assert obs['top3_metrics']['evaluated_runs'] == 4
+    assert obs['top3_metrics']['pooled']['top3_hit_lift'] == 0.16
+    assert obs['top3_metrics']['macro']['rank_ic_mean'] == 0.21
+    # existing observation surface preserved
+    assert 'interaction_map' in obs and 'regime_distribution' in obs and 'edge_map' in obs
+
+
+def test_observation_survives_top3_metrics_failure(agent_env, monkeypatch):
+    from app.services.mirofish import alpha_brain_agent as agent
+    from app.services.mirofish.intelligence import top3_metrics as t3
+
+    def boom():
+        raise RuntimeError('top3 exploded')
+
+    monkeypatch.setattr(t3, 'top3_metrics_summary', boom)
+
+    obs = agent.build_agent_observation(now_iso='2026-06-20T08:00:00+00:00')
+
+    assert obs['top3_metrics'] == {}  # isolated: empty, not a crash
+    assert 'edge_map' in obs and 'regime_distribution' in obs

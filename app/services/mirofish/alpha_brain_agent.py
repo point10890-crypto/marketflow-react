@@ -87,6 +87,7 @@ def build_agent_observation(*, now_iso: str | None = None) -> dict[str, Any]:
         'recent_journal': read_journal_tail(JOURNAL_TAIL_FOR_PROMPT),
         'interaction_map': intelligence['interaction_map'],
         'regime_distribution': intelligence['regime_distribution'],
+        'top3_metrics': intelligence.get('top3_metrics', {}),
     }
 
 
@@ -393,7 +394,20 @@ def _intelligence_summary() -> dict[str, Any]:
             regime_distribution = summary.get('regime_distribution') or {}
     except Exception as exc:
         logger.warning('[alpha_brain_agent] regime distribution unavailable: %s', exc)
-    return {'interaction_map': interaction_map, 'regime_distribution': regime_distribution}
+    top3_metrics: dict[str, Any] = {}
+    try:
+        from app.services.mirofish.intelligence import top3_metrics as _top3_metrics
+
+        summary = _top3_metrics.top3_metrics_summary()
+        if isinstance(summary, dict):
+            top3_metrics = summary
+    except Exception as exc:
+        logger.warning('[alpha_brain_agent] top3 metrics unavailable: %s', exc)
+    return {
+        'interaction_map': interaction_map,
+        'regime_distribution': regime_distribution,
+        'top3_metrics': top3_metrics,
+    }
 
 
 def _active_overrides() -> dict[str, Any]:
