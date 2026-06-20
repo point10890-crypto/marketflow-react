@@ -169,3 +169,154 @@ def _compute_run_metrics(items, *, workflow_id='', entry_date=''):
         'rank_ic': rank_ic,
         'insufficient': n < MIN_RUN_SAMPLES,
     }
+
+
+def _pooled_block(all_items, top1, top3, top5):
+    return {
+        'top1_hit_rate': _hit_rate(top1),
+        'top3_hit_rate': _hit_rate(top3),
+        'top5_hit_rate': _hit_rate(top5),
+        'baseline_hit_rate': _hit_rate(all_items),
+        'top3_mean_return_pct': _mean_return(top3),
+        'overall_mean_return_pct': _mean_return(all_items),
+        'top3_hit_lift': _lift(_hit_rate(top3), _hit_rate(all_items)),
+        'top3_return_lift': _lift(_mean_return(top3), _mean_return(all_items)),
+        'top3_item_count': len(top3),
+        'baseline_item_count': len(all_items),
+    }
+
+
+def _macro_block(run_records):
+    qualified = [r for r in run_records if not r['insufficient']]
+
+    def avg(key):
+        vals = [r[key] for r in qualified if r.get(key) is not None]
+        return round(sum(vals) / len(vals), 4) if vals else None
+
+    rank_ics = [r['rank_ic'] for r in qualified if r.get('rank_ic') is not None]
+    return {
+        'precision_at_1': avg('precision_at_1'),
+        'precision_at_3': avg('precision_at_3'),
+        'precision_at_5': avg('precision_at_5'),
+        'ndcg_at_3': avg('ndcg_at_3'),
+        'map_at_3': avg('map_at_3'),
+        'rank_ic_mean': round(sum(rank_ics) / len(rank_ics), 4) if rank_ics else None,
+        'rank_ic_run_count': len(rank_ics),
+        'run_count': len(qualified),
+    }
+
+
+def _aggregate_runs(runs):
+    """runs: list of {'workflow_id','entry_date','items'(list)}. Pure, deterministic."""
+    run_records = []
+    pooled_all, pooled_top1, pooled_top3, pooled_top5 = [], [], [], []
+    evaluated_runs = 0
+    qualified_runs = 0
+    total_items = 0
+    for run in (runs or []):
+        if not isinstance(run, dict):
+            continue
+        ordered = _ordered_items(run.get('items'))
+        if not ordered:
+            continue
+        evaluated_runs += 1
+        total_items += len(ordered)
+        record = _compute_run_metrics(
+            run.get('items'),
+            workflow_id=run.get('workflow_id'),
+            entry_date=run.get('entry_date'),
+        )
+        run_records.append(record)
+        if not record['insufficient']:
+            qualified_runs += 1
+        pooled_all.extend(ordered)
+        pooled_top1.extend(ordered[:1])
+        pooled_top3.extend(ordered[:3])
+        pooled_top5.extend(ordered[:5])
+
+    run_records.sort(key=lambda r: (r.get('entry_date') or '', r.get('workflow_id') or ''), reverse=True)
+    return {
+        'evaluated_runs': evaluated_runs,
+        'qualified_runs': qualified_runs,
+        'total_evaluated_items': total_items,
+        'insufficient': qualified_runs < MIN_RUNS,
+        'pooled': _pooled_block(pooled_all, pooled_top1, pooled_top3, pooled_top5),
+        'macro': _macro_block(run_records),
+        'runs': run_records[:MAX_RUN_RECORDS],
+    }
+
+
+def _load_runs(limit_workflows):
+    runs = []
+    try:
+        wf_ids = outcome_tracker._recent_workflow_ids(limit_workflows)
+    except Exception:
+        return runs
+    for wf_id in wf_ids:
+        try:
+            outcomes = outcome_tracker.read_workflow_outcomes(wf_id)
+        except Exception:
+            continue
+        if not isinstance(outcomes, dict):
+            continue
+        items = outcomes.get('items')
+        if not isinstance(items, list):
+            continue
+        runs.append({
+            'workflow_id': str(wf_id),
+            'entry_date': str(outcomes.get('entry_date') or ''),
+            'items': items,
+        })
+    return runs
+
+
+def build_top3_metrics(*, limit_workflows=200, runs=None, write=True):
+    if runs is None:
+        runs = _load_runs(limit_workflows)
+    aggregate = _aggregate_runs(runs)
+    envelope = {
+        'schema_version': SCHEMA_VERSION,
+        'generated_at': datetime.now(timezone.utc).isoformat(),
+        'lookahead_safe': True,
+        'min_run_samples': MIN_RUN_SAMPLES,
+        'min_runs': MIN_RUNS,
+        **aggregate,
+    }
+    if write:
+        try:
+            os.makedirs(os.path.dirname(TOP3_METRICS_PATH), exist_ok=True)
+            write_json_atomic(TOP3_METRICS_PATH, envelope, sort_keys=False)
+        except Exception:
+            pass
+    return envelope
+
+
+def read_top3_metrics():
+    if not os.path.isfile(TOP3_METRICS_PATH):
+        return None
+    try:
+        with open(TOP3_METRICS_PATH, 'r', encoding='utf-8-sig') as f:
+            return json.load(f)
+    except Exception:
+        return None
+
+
+def top3_metrics_summary():
+    """Compact, observation-friendly view. Builds+persists if file is missing."""
+    data = read_top3_metrics()
+    if not isinstance(data, dict):
+        try:
+            data = build_top3_metrics(write=True)
+        except Exception:
+            data = None
+    if not isinstance(data, dict):
+        return {'evaluated_runs': 0, 'qualified_runs': 0, 'total_evaluated_items': 0,
+                'insufficient': True, 'pooled': {}, 'macro': {}}
+    return {
+        'evaluated_runs': data.get('evaluated_runs', 0),
+        'qualified_runs': data.get('qualified_runs', 0),
+        'total_evaluated_items': data.get('total_evaluated_items', 0),
+        'insufficient': data.get('insufficient', True),
+        'pooled': data.get('pooled') or {},
+        'macro': data.get('macro') or {},
+    }

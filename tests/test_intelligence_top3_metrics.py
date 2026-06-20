@@ -53,3 +53,56 @@ def test_small_run_marks_insufficient_and_null_rank_ic():
     assert m['insufficient'] is True
     assert m['rank_ic'] is None
     assert m['precision_at_1'] == 1.0
+
+
+def _run(wf, triples):
+    # triples: list of (rank, ret, hit)
+    return {'workflow_id': wf, 'entry_date': '2026-06-10',
+            'items': [_item(r, ret, hit) for (r, ret, hit) in triples]}
+
+
+def test_aggregate_pooled_and_macro():
+    runs = [
+        _run('wf1', [(1, 10.0, True), (2, 6.0, True), (3, 4.0, True), (4, -2.0, False)]),
+        _run('wf2', [(1, 8.0, True), (2, -1.0, False), (3, 3.0, True), (4, -5.0, False)]),
+    ]
+    agg = top3_metrics._aggregate_runs(runs)
+    assert agg['evaluated_runs'] == 2
+    assert agg['qualified_runs'] == 2
+    assert agg['total_evaluated_items'] == 8
+    # pooled top3 = 6 items (3 per run), 5 hits → 0.8333
+    assert agg['pooled']['top3_item_count'] == 6
+    assert agg['pooled']['top3_hit_rate'] == round(5 / 6, 4)
+    assert agg['pooled']['baseline_item_count'] == 8
+    assert agg['pooled']['top3_hit_lift'] is not None
+    assert agg['macro']['run_count'] == 2
+    assert agg['macro']['precision_at_3'] is not None
+
+
+def test_build_envelope_empty_is_safe(tmp_path, monkeypatch):
+    monkeypatch.setattr(top3_metrics, 'TOP3_METRICS_PATH', str(tmp_path / 't3.json'))
+    env = top3_metrics.build_top3_metrics(runs=[], write=True)
+    assert env['schema_version'] == 'mirofish.top3_metrics.v1'
+    assert env['evaluated_runs'] == 0
+    assert env['insufficient'] is True
+    assert env['pooled']['top3_hit_rate'] is None
+    assert env['macro']['precision_at_3'] is None
+    # round-trips from disk
+    assert top3_metrics.read_top3_metrics()['evaluated_runs'] == 0
+
+
+def test_min_runs_gate_flags_insufficient(tmp_path, monkeypatch):
+    monkeypatch.setattr(top3_metrics, 'TOP3_METRICS_PATH', str(tmp_path / 't3.json'))
+    runs = [_run(f'wf{i}', [(1, 5.0, True), (2, 3.0, True), (3, 1.0, False)]) for i in range(3)]
+    env = top3_metrics.build_top3_metrics(runs=runs, write=False)
+    assert env['qualified_runs'] == 3
+    assert env['insufficient'] is True  # 3 < MIN_RUNS (5)
+    assert len(env['runs']) == 3
+
+
+def test_summary_compact_shape(tmp_path, monkeypatch):
+    monkeypatch.setattr(top3_metrics, 'TOP3_METRICS_PATH', str(tmp_path / 't3.json'))
+    top3_metrics.build_top3_metrics(runs=[_run('wf1', [(1, 5.0, True), (2, 3.0, True), (3, 1.0, False)])], write=True)
+    s = top3_metrics.top3_metrics_summary()
+    assert set(['evaluated_runs', 'qualified_runs', 'insufficient', 'pooled', 'macro']).issubset(s.keys())
+    assert 'runs' not in s
