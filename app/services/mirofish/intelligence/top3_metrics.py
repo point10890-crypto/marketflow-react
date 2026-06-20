@@ -86,6 +86,8 @@ def _ndcg_at_k(items, k):
 
 
 def _map_at_k(items, k):
+    """Average precision over hits discovered within the top-k, normalized by
+    the number of top-k hits (not by k)."""
     top = items[:k]
     if not top:
         return None
@@ -262,9 +264,17 @@ def _load_runs(limit_workflows):
         items = outcomes.get('items')
         if not isinstance(items, list):
             continue
+        # Workflow outcomes carry no top-level entry_date; it lives on each
+        # item (outcome_tracker.evaluate_result_outcome). Derive it from the
+        # first item so the run record's entry_date is load-bearing.
+        entry_date = ''
+        for it in items:
+            if isinstance(it, dict) and it.get('entry_date'):
+                entry_date = str(it.get('entry_date'))
+                break
         runs.append({
             'workflow_id': str(wf_id),
-            'entry_date': str(outcomes.get('entry_date') or ''),
+            'entry_date': entry_date,
             'items': items,
         })
     return runs
