@@ -15,6 +15,15 @@ def _disable_tradingview_provider_by_default(monkeypatch):
     monkeypatch.delenv('TRADINGVIEW_LIVE_IN_SCANNER', raising=False)
 
 
+@pytest.fixture(autouse=True)
+def _isolate_learning_policy_artifacts(tmp_path, monkeypatch):
+    monkeypatch.setattr(learning_policy, 'ALPHA_BACKTEST_DAILY_PATH', tmp_path / 'alpha_backtest_daily.json')
+    monkeypatch.setattr(learning_policy, 'ALPHA_BACKTEST_ROLLING_PATH', tmp_path / 'alpha_backtest_rolling_7d.json')
+    monkeypatch.setattr(learning_policy, 'TOP3_METRICS_PATH', tmp_path / 'top3_metrics.json')
+    monkeypatch.setattr(learning_policy, 'LEARNING_GUARD_PATH', tmp_path / 'learning_guard.json')
+    monkeypatch.delenv('MIROFISH_LEARNING_DISABLED', raising=False)
+
+
 def _write_json(path, payload):
     path.write_text(json.dumps(payload, ensure_ascii=False), encoding='utf-8')
 
