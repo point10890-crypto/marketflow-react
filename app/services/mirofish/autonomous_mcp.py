@@ -955,7 +955,7 @@ def _build_learning_feedback(
         'horizon_days': 5,
         'lookahead_safe': True,
         'source': 'workflow_outcomes',
-    })
+    }, persist_guard=True)
     return {
         'service': 'mirofish-autonomous-learning',
         'generated_at': _now_iso(),
@@ -971,6 +971,7 @@ def _build_learning_feedback(
         'average_forward_return_pct': avg_return,
         'alpha_memory': alpha_memory,
         'learning_policy': policy,
+        'learning_readiness': policy.get('learning_readiness'),
         'workflows': workflows,
         'recommendations': recommendations,
         'errors': errors,
@@ -1299,6 +1300,8 @@ def _learning_summary(feedback: dict[str, Any] | None) -> dict[str, Any]:
     policy = feedback.get('learning_policy') if isinstance(feedback.get('learning_policy'), dict) else {}
     score_control = policy.get('score_control') if isinstance(policy.get('score_control'), dict) else {}
     backtest_gate = policy.get('backtest_gate') if isinstance(policy.get('backtest_gate'), dict) else {}
+    readiness = feedback.get('learning_readiness') if isinstance(feedback.get('learning_readiness'), dict) else policy.get('learning_readiness')
+    readiness = readiness if isinstance(readiness, dict) else {}
     return {
         'available': True,
         'generated_at': feedback.get('generated_at'),
@@ -1320,10 +1323,12 @@ def _learning_summary(feedback: dict[str, Any] | None) -> dict[str, Any]:
             'status': score_control.get('status'),
             'outcome_memory_enabled': bool(score_control.get('outcome_memory_enabled')),
             'reason': score_control.get('reason'),
+            'disable_code': score_control.get('disable_code'),
             'backtest_status': backtest_gate.get('status'),
             'backtest_sample_count': backtest_gate.get('sample_count'),
             'backtest_expectancy_r': backtest_gate.get('expectancy_r'),
             'backtest_information_coefficient': backtest_gate.get('information_coefficient'),
+            'readiness': readiness,
         },
         'production_weights_mutated': bool(feedback.get('production_weights_mutated')),
         'recommendation_count': len(feedback.get('recommendations') or []),

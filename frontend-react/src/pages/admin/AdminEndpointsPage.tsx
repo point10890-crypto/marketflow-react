@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type CompositionEvent as ReactCompositionEvent, type KeyboardEvent as ReactKeyboardEvent } from 'react';
-import { MiroFishAlphaCandidate, MiroFishAlphaEndpointBlueprint, MiroFishAnalyst, MiroFishAutonomousActionResult, MiroFishAutonomousLearningFeedback, MiroFishAutonomousStatus, MiroFishDeepSeekStatus, MiroFishDeepSeekSummaryResult, MiroFishGraphRAGEntityMatch, MiroFishLayer, MiroFishLog, MiroFishMcpResourceSnapshot, MiroFishNode, MiroFishRun, MiroFishScannerRun, MiroFishScannerStatus, MiroFishStatus, MiroFishTargetSnapshot, MiroFishTradingViewStatus, MiroFishWorkflow, mirofishApi } from '@/lib/mirofishApi';
+import { MiroFishAlphaCandidate, MiroFishAlphaEndpointBlueprint, MiroFishAnalyst, MiroFishAutonomousActionResult, MiroFishAutonomousLearningFeedback, MiroFishAutonomousStatus, MiroFishDeepSeekStatus, MiroFishDeepSeekSummaryResult, MiroFishGraphRAGEntityMatch, MiroFishLayer, MiroFishLearningReadiness, MiroFishLog, MiroFishMcpResourceSnapshot, MiroFishNode, MiroFishRun, MiroFishScannerRun, MiroFishScannerStatus, MiroFishStatus, MiroFishTargetSnapshot, MiroFishTradingViewStatus, MiroFishWorkflow, mirofishApi } from '@/lib/mirofishApi';
 import { shareToKakao } from '@/lib/kakaoShare';
 import MirofishChatPanel from '@/components/admin/MirofishChatPanel';
 import TodaysPipelineCard from '@/components/admin/TodaysPipelineCard';
@@ -60,7 +60,7 @@ type AlphaScannerState = 'idle' | 'loading' | 'running' | 'ready' | 'error';
 type DeepSeekPanelState = 'idle' | 'checking' | 'summarizing' | 'ready' | 'sending' | 'sent' | 'error';
 type WorkflowPanelState = 'idle' | 'running' | 'completed' | 'no_new_events' | 'blocked' | 'error';
 type AutonomousPanelState = 'idle' | 'checking' | 'running' | 'ready' | 'sending' | 'sent' | 'error';
-type EndpointKey = 'status' | 'dataSources' | 'resolve' | 'history' | 'createRun' | 'runDetail' | 'graph' | 'events' | 'report' | 'deepseek' | 'tradingview' | 'kalman' | 'workflow' | 'autonomous' | 'mcpResources' | 'alphaEndpoints';
+type EndpointKey = 'status' | 'dataSources' | 'resolve' | 'history' | 'createRun' | 'runDetail' | 'graph' | 'events' | 'report' | 'deepseek' | 'tradingview' | 'kalman' | 'workflow' | 'autonomous' | 'learningReadiness' | 'mcpResources' | 'alphaEndpoints';
 type EndpointStatus = 'idle' | 'loading' | 'ok' | 'error';
 type TargetCandidate = NonNullable<MiroFishTargetSnapshot['candidates']>[number];
 
@@ -79,6 +79,7 @@ const endpointDefinitions: Array<{ key: EndpointKey; method: string; path: strin
     { key: 'kalman', method: 'POST', path: '/api/admin/mirofish/kalman/runs', title: 'Dual Kalman Gate', icon: 'fa-wave-square', color: 'text-cyan-200' },
     { key: 'workflow', method: 'POST', path: '/api/admin/mirofish/workflow/scan-analyze', title: 'MCP Top 3', icon: 'fa-network-wired', color: 'text-anthropic-orange' },
     { key: 'autonomous', method: 'POST', path: '/api/admin/mirofish/autonomous/*', title: 'Autonomous MCP', icon: 'fa-robot', color: 'text-anthropic-orange' },
+    { key: 'learningReadiness', method: 'GET', path: '/api/admin/mirofish/learning/readiness', title: 'Learning Readiness', icon: 'fa-brain', color: 'text-emerald-200' },
     { key: 'mcpResources', method: 'GET', path: '/api/admin/mirofish/mcp/resources', title: 'MCP Resources', icon: 'fa-plug-circle-check', color: 'text-cyan-200' },
     { key: 'alphaEndpoints', method: 'GET', path: '/api/admin/mirofish/mcp/alpha-endpoints', title: 'Alpha Evidence Gates', icon: 'fa-shield-halved', color: 'text-emerald-200' },
 ];
@@ -1869,6 +1870,7 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
     const [autonomousResult, setAutonomousResult] = useState<MiroFishAutonomousActionResult | null>(null);
     const [autonomousLearning, setAutonomousLearning] = useState<MiroFishAutonomousLearningFeedback | null>(null);
     const [autonomousErrorText, setAutonomousErrorText] = useState<string | null>(null);
+    const [learningReadiness, setLearningReadiness] = useState<MiroFishLearningReadiness | null>(null);
     const [mcpResourceSnapshot, setMcpResourceSnapshot] = useState<MiroFishMcpResourceSnapshot | null>(null);
     const [alphaEndpointBlueprint, setAlphaEndpointBlueprint] = useState<MiroFishAlphaEndpointBlueprint | null>(null);
     const [autonomousConfirmation, setAutonomousConfirmation] = useState('');
@@ -1904,10 +1906,11 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
             markEndpoint('kalman', 'loading');
             markEndpoint('workflow', 'loading');
             markEndpoint('autonomous', 'loading');
+            markEndpoint('learningReadiness', 'loading');
             markEndpoint('mcpResources', 'loading');
             markEndpoint('alphaEndpoints', 'loading');
             try {
-                const [statusResult, historyResult, sourcesResult, deepSeekResult, tradingViewResult, kalmanResult, workflowResult, autonomousResult, mcpResourcesResult, alphaEndpointsResult] = await Promise.allSettled([
+                const [statusResult, historyResult, sourcesResult, deepSeekResult, tradingViewResult, kalmanResult, workflowResult, autonomousResult, learningReadinessResult, mcpResourcesResult, alphaEndpointsResult] = await Promise.allSettled([
                     mirofishApi.getStatus(),
                     mirofishApi.listRuns(),
                     mirofishApi.getDataSources(),
@@ -1916,6 +1919,7 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
                     mirofishApi.getDualKalmanStatus(),
                     mirofishApi.getWorkflowStatus(),
                     mirofishApi.getAutonomousStatus(),
+                    mirofishApi.getLearningReadiness(),
                     mirofishApi.getMcpResources(),
                     mirofishApi.getAlphaEndpointBlueprint(),
                 ]);
@@ -2003,6 +2007,15 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
                     noteFailure('autonomous', 'Autonomous MCP', autonomousResult.reason);
                 }
 
+                if (learningReadinessResult.status === 'fulfilled') {
+                    const readinessData = learningReadinessResult.value as MiroFishLearningReadiness;
+                    setLearningReadiness(readinessData);
+                    markEndpoint('learningReadiness', readinessData.learning_active || readinessData.ready ? 'ok' : 'idle');
+                } else {
+                    setLearningReadiness(null);
+                    noteFailure('learningReadiness', 'Learning Readiness', learningReadinessResult.reason);
+                }
+
                 if (mcpResourcesResult.status === 'fulfilled') {
                     const resourceData = mcpResourcesResult.value as MiroFishMcpResourceSnapshot;
                     setMcpResourceSnapshot(resourceData);
@@ -2037,6 +2050,7 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
                 markEndpoint('kalman', 'error');
                 markEndpoint('workflow', 'error');
                 markEndpoint('autonomous', 'error');
+                markEndpoint('learningReadiness', 'error');
                 markEndpoint('mcpResources', 'error');
                 markEndpoint('alphaEndpoints', 'error');
                 setErrorText(error instanceof Error ? error.message : 'MiroFish API 연결 실패');
@@ -2285,13 +2299,16 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
             ? `${dualKalmanStatus.mode || 'shadow'} / ${dualKalmanStatus.latest_run_id ? 'latest' : 'ready'}`
             : 'not loaded',
         autonomous: autonomousStatus ? `${autonomousStatus.mutation_enabled ? 'mutation on' : 'dry-run'} / ${autonomousStatus.telegram?.personal_configured ? 'telegram ok' : 'telegram off'}` : autonomousState,
+        learningReadiness: learningReadiness
+            ? `${learningReadiness.learning_active ? 'active' : 'observe'} / ${learningReadiness.status || 'unknown'}`
+            : 'not loaded',
         mcpResources: mcpResourceSnapshot
             ? `${mcpResourceSnapshot.catalog_count || 0} resources`
             : 'not loaded',
         alphaEndpoints: alphaEndpointBlueprint
             ? `${alphaEndpointBlueprint.source_readiness?.status || 'unknown'} / P0 ${alphaEndpointBlueprint.p0_count || 0}`
             : 'not loaded',
-    }), [alphaEndpointBlueprint, autonomousState, autonomousStatus, dataSourceCount, deepSeekStatus, deepSeekSummary, dualKalmanStatus, mcpResourceSnapshot, recentRuns.length, run, status, targetSnapshot, tradingViewStatus, workflow, workflowState]);
+    }), [alphaEndpointBlueprint, autonomousState, autonomousStatus, dataSourceCount, deepSeekStatus, deepSeekSummary, dualKalmanStatus, learningReadiness, mcpResourceSnapshot, recentRuns.length, run, status, targetSnapshot, tradingViewStatus, workflow, workflowState]);
 
     const targetCandidates = useMemo<TargetCandidate[]>(() => {
         const query = target.trim();

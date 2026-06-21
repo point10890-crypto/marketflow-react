@@ -946,6 +946,26 @@ export interface MiroFishAutonomousLearningFeedback {
     errors?: Array<Record<string, any>>;
 }
 
+export interface MiroFishLearningReadiness {
+    schema_version?: string;
+    service?: string;
+    generated_at?: string;
+    ready?: boolean;
+    learning_active?: boolean;
+    status?: string;
+    mode?: string;
+    primary_objective?: string;
+    lookahead_safe?: boolean;
+    production_weights_mutated?: boolean;
+    blockers?: string[];
+    outcome_memory?: Record<string, any>;
+    backtest_gate?: Record<string, any>;
+    score_control?: Record<string, any>;
+    learning_guard?: Record<string, any>;
+    top3_metrics?: Record<string, any>;
+    links?: Record<string, string>;
+}
+
 export interface MiroFishAutonomousStatus {
     service?: string;
     ready?: boolean;
@@ -1740,6 +1760,9 @@ export const mirofishApi = {
     ),
     getAutonomousLearning: async () => fetchAuthAPI<MiroFishAutonomousLearningFeedback>(
         '/api/admin/mirofish/autonomous/learning',
+    ),
+    getLearningReadiness: async () => fetchAuthAPI<MiroFishLearningReadiness>(
+        '/api/admin/mirofish/learning/readiness',
     ),
     runAutonomousCandidateAlert: async (request: Record<string, any> = {}) => postAuthAPI<MiroFishAutonomousActionResult>(
         '/api/admin/mirofish/autonomous/candidate-alert',

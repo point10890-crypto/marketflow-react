@@ -77,6 +77,8 @@ def test_backtest_alpha_signals_compares_plan_a_filter(tmp_path):
     assert 'expectancy_r' in report['baseline']
     assert 'information_coefficient' in report['baseline']
     assert 'thresholds_met' in report['enhanced']
+    assert report['enhanced']['thresholds_met']['sample_count'] is False
+    assert report['plan_a_success'] is False
     assert report['delta']['sample_count'] == -1
     assert report['lookahead_safe'] is True
 

@@ -31,6 +31,7 @@ const mockApi = vi.hoisted(() => ({
   startWorkflowScanAnalyze: vi.fn(),
   getAutonomousStatus: vi.fn(),
   getAutonomousLearning: vi.fn(),
+  getLearningReadiness: vi.fn(),
   runAutonomousCandidateAlert: vi.fn(),
   runAutonomousScanAnalysis: vi.fn(),
   refreshAutonomousLearning: vi.fn(),
@@ -561,6 +562,45 @@ beforeEach(() => {
     checked_at: '2026-05-10T00:00:00+09:00',
   });
   mockApi.getAutonomousLearning.mockResolvedValue({ available: false });
+  mockApi.getLearningReadiness.mockResolvedValue({
+    schema_version: 'mirofish.learning_readiness.v1',
+    service: 'mirofish-learning-readiness',
+    ready: true,
+    learning_active: true,
+    status: 'bounded_maturing',
+    mode: 'bounded_outcome_memory',
+    lookahead_safe: true,
+    production_weights_mutated: false,
+    blockers: [],
+    pending_recommendations: [],
+    outcome_memory: {
+      available: true,
+      ready: true,
+      evaluated_count: 20,
+      min_evaluated_count: 9,
+    },
+    backtest_gate: {
+      available: true,
+      ready: true,
+      status: 'maturing',
+      sample_count: 52,
+      min_sample_count_bounded: 40,
+      min_sample_count_full: 100,
+    },
+    score_control: {
+      outcome_memory_enabled: true,
+      status: 'bounded_maturing',
+      caps: { tag: { positive: 0.75, negative: -1.5 }, global: { positive: 1.0, negative: -2.0 } },
+    },
+    learning_guard: {
+      status: 'insufficient_top3_metrics',
+      disabled: false,
+    },
+    top3_metrics: {
+      available: true,
+      qualified: false,
+    },
+  });
   mockApi.runAutonomousCandidateAlert.mockResolvedValue({
     ok: true,
     status: 'dry_run',

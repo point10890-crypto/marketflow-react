@@ -5,7 +5,7 @@ import pytest
 from flask import Flask
 
 from app.routes.admin_mirofish import admin_mirofish_bp
-from app.services.mirofish import alpha_research, alpha_scanner, deepseek_client
+from app.services.mirofish import alpha_research, alpha_scanner, deepseek_client, learning_policy
 
 
 @pytest.fixture(autouse=True)
@@ -435,6 +435,50 @@ def test_alpha_scanner_applies_replay_safe_outcome_memory(tmp_path, monkeypatch)
     assert profile['performance_memory']['applied'] is True
     assert profile['performance_memory']['tag_adjustment']['matched_tags']['leading_screener'] == 1.4
     assert 'outcome_tag_memory_adjusted' in candidate['strategy_tags']
+
+
+def test_alpha_scanner_applies_maturing_learning_caps_to_outcome_memory(tmp_path, monkeypatch):
+    _seed_artifacts(tmp_path)
+    policy = learning_policy.build_learning_policy(
+        {
+            'available': True,
+            'evaluated_count': 20,
+            'hit_rate_recent': 0.72,
+            'lookahead_safe': True,
+        },
+        daily_report={
+            'generated_at': _fresh_artifact_timestamp(),
+            'lookahead_safe': True,
+            'enhanced': {
+                'sample_count': 52,
+                'expectancy_r': 0.19,
+                'information_coefficient': 0.09,
+            },
+        },
+        rolling_report={},
+    )
+    monkeypatch.setattr(alpha_scanner, 'DATA_ROOT', str(tmp_path))
+    monkeypatch.setattr(alpha_scanner, 'SCANNER_RUNS_ROOT', str(tmp_path / 'runs'))
+    monkeypatch.setattr(alpha_scanner, '_performance_advisory', lambda: {
+        'available': True,
+        'applied_to_scoring': True,
+        'source': 'workflow_outcomes',
+        'lookahead_safe': True,
+        'evaluated_count': 20,
+        'hit_rate_recent': 0.72,
+        'recommendations': {
+            'baseline_hit_rate': 0.50,
+            'tag_score_adjust': {'leading_screener': 1.4},
+        },
+        'learning_policy': policy,
+    })
+
+    run = alpha_scanner.create_scanner_run({'symbols': ['000001'], 'limit': 5})
+
+    profile = run['candidates'][0]['analysis_profile']
+    assert profile['performance_memory']['learning_policy_status'] == 'bounded_maturing'
+    assert profile['performance_memory']['tag_adjustment']['ranking_delta'] == 0.75
+    assert profile['performance_memory']['tag_adjustment']['learning_policy_status'] == 'bounded_maturing'
 
 
 def test_alpha_scanner_blocks_outcome_memory_when_learning_policy_observes_only(tmp_path, monkeypatch):
@@ -1295,3 +1339,4 @@ def test_admin_mirofish_scanner_routes_are_registered():
     assert '/api/admin/mirofish/price-chart/<symbol>' in rules
     assert '/api/admin/mirofish/workflow/status' in rules
     assert '/api/admin/mirofish/workflow/scan-analyze' in rules
+    assert '/api/admin/mirofish/learning/readiness' in rules

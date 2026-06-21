@@ -3376,9 +3376,10 @@ def _performance_advisory() -> dict[str, Any]:
     try:
         from app.services.mirofish import learning_policy
 
-        base['learning_policy'] = learning_policy.build_learning_policy(base)
+        base['learning_policy'] = learning_policy.build_learning_policy(base, persist_guard=True)
         control = (base['learning_policy'].get('score_control') or {})
         base['applied_to_scoring'] = bool(control.get('outcome_memory_enabled'))
+        base['learning_readiness'] = base['learning_policy'].get('learning_readiness')
     except Exception as exc:
         base['learning_policy'] = {
             'available': False,

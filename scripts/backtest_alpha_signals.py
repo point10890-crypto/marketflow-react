@@ -85,6 +85,7 @@ def evaluate_runs(
     plan_a_success = (
         plan_a_metrics['thresholds_met']['expectancy_r']
         and plan_a_metrics['thresholds_met']['information_coefficient']
+        and plan_a_metrics['thresholds_met']['sample_count']
         and delta['expectancy_r'] >= SUCCESS_THRESHOLDS['delta_expectancy_r_min']
         and delta['information_coefficient'] >= SUCCESS_THRESHOLDS['delta_information_coefficient_min']
     )

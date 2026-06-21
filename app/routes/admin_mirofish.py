@@ -902,6 +902,12 @@ def get_autonomous_learning():
     return jsonify({'available': True, **feedback})
 
 
+@admin_mirofish_bp.route('/learning/readiness', methods=['GET'])
+@admin_or_aibain_required
+def get_learning_readiness():
+    return jsonify(mirofish.build_learning_readiness_snapshot(persist_guard=False))
+
+
 @admin_mirofish_bp.route('/mcp/resources', methods=['GET'])
 @admin_or_aibain_required
 def get_mcp_resources():
