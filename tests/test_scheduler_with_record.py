@@ -106,6 +106,57 @@ def test_with_record_verify_fn_can_override_truthy_result():
     rec.assert_not_called()
 
 
+def test_with_record_can_skip_verify_for_explicit_no_candidate_success():
+    result_payload = {
+        "ok": True,
+        "status": "no_candidates",
+        "_scheduler_skip_verify": True,
+    }
+    verify_calls = []
+    rec_calls = []
+
+    with patch("scheduler.record_task_run", side_effect=lambda k: rec_calls.append(k)), \
+         patch("scheduler.send_telegram"), \
+         patch("scheduler.time.sleep"):
+        wrapped = Scheduler._with_record(
+            _make_task(result_payload),
+            "leading_screener_1507",
+            max_retries=0,
+            verify_fn=lambda: verify_calls.append("verify") or False,
+        )
+        result = wrapped()
+
+    assert result == result_payload
+    assert verify_calls == []
+    assert rec_calls == ["leading_screener_1507"]
+
+
+def test_leading_screener_refresh_treats_below_threshold_empty_as_handled(monkeypatch):
+    payload = {
+        "results": [],
+        "source_counts": {
+            "volume_by_amount": 30,
+            "fluctuation": 30,
+            "volume_by_surge": 30,
+        },
+        "market_status": "open",
+        "empty_reason": "below_grade_threshold",
+        "filter_summary": {
+            "scored_candidates": 11,
+            "filtered_grade_c": 11,
+            "min_grade": "B",
+        },
+    }
+
+    monkeypatch.setattr("app.services.kis_screener.run_screening", lambda force=True: payload)
+
+    result = scheduler.run_leading_screener_refresh()
+
+    assert result["ok"] is True
+    assert result["status"] == "no_candidates"
+    assert result["_scheduler_skip_verify"] is True
+
+
 def test_interval_monitor_uses_cooldown_not_daily_skip(monkeypatch):
     monkeypatch.setattr(scheduler.Config, "ALPHA_SCANNER_MONITOR_INTERVAL_MINUTES", 5)
     calls = []

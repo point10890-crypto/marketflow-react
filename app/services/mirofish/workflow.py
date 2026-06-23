@@ -671,7 +671,9 @@ def _complete_workflow_background(
 
 def _verdict_is_buy(run: dict[str, Any]) -> bool:
     """True when the CIO verdict action for this analysis run is BUY."""
-    return str(((run or {}).get('verdict') or {}).get('action') or '').upper() == 'BUY'
+    verdict = (run or {}).get('verdict') or {}
+    action = verdict.get('action') or verdict.get('label')
+    return str(action or '').strip().upper() == 'BUY'
 
 
 def _require_buy(workflow: dict[str, Any] | None = None) -> bool:
@@ -1022,7 +1024,7 @@ def _performance_memory_delta(memory: dict[str, Any]) -> float:
 def _workflow_quality_summary(top3: list[dict[str, Any]], ranked: list[dict[str, Any]]) -> dict[str, Any]:
     top_scores = [_number(item.get('final_score')) for item in top3]
     analyzed_scores = [_number(item.get('final_score')) for item in ranked if _number(item.get('final_score')) > -900]
-    buy_count = sum(1 for item in top3 if str((item.get('verdict') or {}).get('action') or '').upper() == 'BUY')
+    buy_count = sum(1 for item in top3 if _verdict_is_buy(item))
     hard_blocker_count = 0
     weak_evidence_count = 0
     source_shortfall_count = 0
@@ -1263,7 +1265,7 @@ def _workflow_kalman_gate_summary(kalman_run: dict[str, Any] | None) -> dict[str
 
 
 def _workflow_decision_summary(top3: list[dict[str, Any]], ranked: list[dict[str, Any]]) -> dict[str, Any]:
-    buy_count = sum(1 for item in ranked if (item.get('verdict') or {}).get('action') == 'BUY')
+    buy_count = sum(1 for item in ranked if _verdict_is_buy(item))
     quality = _workflow_quality_summary(top3, ranked)
     return {
         'title': 'MiroFish MCP Top 3',

@@ -162,3 +162,47 @@ def test_run_screening_returns_error_without_overwriting_when_kis_sources_empty(
     }
     assert result["results"] == []
     assert saved == []
+
+
+def test_run_screening_marks_empty_when_candidates_are_below_grade_threshold(monkeypatch):
+    saved = []
+    raw = {
+        "mksc_shrn_iscd": "000001",
+        "hts_kor_isnm": "테스트",
+        "stck_prpr": "1000",
+        "prdy_ctrt": "1.0",
+        "acml_tr_pbmn": str(20_0000_0000),
+        "acml_vol": "10000",
+        "prdy_vol": "10000",
+        "bstp_cls_code": "T",
+    }
+
+    monkeypatch.setattr(kis_screener, "get_token", lambda: "token")
+    monkeypatch.setattr(
+        kis_screener,
+        "fetch_volume_rank",
+        lambda token, blng_code="3": [raw] if blng_code == "3" else [raw],
+    )
+    monkeypatch.setattr(kis_screener, "fetch_fluctuation_rank", lambda token: [])
+    monkeypatch.setattr(kis_screener, "fetch_investor", lambda token, code: [])
+    monkeypatch.setattr(kis_screener, "fetch_price_detail", lambda token, code: {})
+    monkeypatch.setattr(kis_screener, "_time_weight", lambda: 0.8)
+    monkeypatch.setattr(kis_screener, "_save_result", lambda result: saved.append(result))
+    _reset_cache(None, 0)
+
+    result = kis_screener.run_screening(force=True)
+
+    assert result.get("error") is None
+    assert result["empty_reason"] == "below_grade_threshold"
+    assert result["filter_summary"] == {
+        "scored_candidates": 1,
+        "filtered_grade_c": 1,
+        "min_grade": "B",
+    }
+    assert result["source_counts"] == {
+        "volume_by_amount": 1,
+        "fluctuation": 0,
+        "volume_by_surge": 1,
+    }
+    assert result["results"] == []
+    assert saved and saved[0]["empty_reason"] == "below_grade_threshold"

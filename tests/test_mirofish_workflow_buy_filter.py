@@ -6,6 +6,10 @@ def _run(action, score):
     return {'verdict': {'action': action}, 'final_score': score, 'symbol': f'{action}{score}'}
 
 
+def _run_with_label(label, score):
+    return {'verdict': {'label': label}, 'final_score': score, 'symbol': f'{label}{score}'}
+
+
 def test_select_top3_buy_only():
     ranked = [_run('BUY', 90), _run('SELL', 85), _run('HOLD', 80), _run('BUY', 70)]
     top3 = wf._select_top3(ranked, top_n=3, require_buy=True)
@@ -26,8 +30,20 @@ def test_select_top3_require_buy_false_keeps_all():
 
 def test_verdict_is_buy_case_insensitive():
     assert wf._verdict_is_buy({'verdict': {'action': 'buy'}}) is True
+    assert wf._verdict_is_buy({'verdict': {'action': ' BUY '}}) is True
     assert wf._verdict_is_buy({'verdict': {'action': 'SELL'}}) is False
     assert wf._verdict_is_buy({}) is False
+
+
+def test_verdict_is_buy_uses_cio_label_but_not_scanner_action():
+    assert wf._verdict_is_buy({'verdict': {'label': 'BUY'}}) is True
+    assert wf._verdict_is_buy({'action': 'BUY_CANDIDATE', 'verdict': {}}) is False
+
+
+def test_select_top3_buy_only_accepts_verdict_label_fallback():
+    ranked = [_run('HOLD', 90), _run_with_label('BUY', 80), _run('SELL', 70)]
+    top3 = wf._select_top3(ranked, top_n=3, require_buy=True)
+    assert top3 == [ranked[1]]
 
 
 def test_require_buy_env_override(monkeypatch):

@@ -583,6 +583,8 @@ def run_screening(force=False):
 
     tw = _time_weight()
     results = []
+    scored_candidates = 0
+    filtered_grade_c = 0
     for c in candidates.values():
         s1 = _score_trading_value(c["tr_amt"])
         s2 = _score_change_pct(c["change_pct"])
@@ -594,7 +596,9 @@ def run_screening(force=False):
         raw_total = s1 + s2 + s3 + s4 + s5 + s6
         total = min(100, round(raw_total * tw))
         grade = _grade(total)
+        scored_candidates += 1
         if grade == "C":
+            filtered_grade_c += 1
             continue
 
         result_item = {
@@ -681,6 +685,16 @@ def run_screening(force=False):
         "quote_mode": get_quote_mode(),
         "time_weight": tw,
         "total_candidates": len(candidates),
+        "filter_summary": {
+            "scored_candidates": scored_candidates,
+            "filtered_grade_c": filtered_grade_c,
+            "min_grade": "B",
+        },
+        "empty_reason": (
+            "below_grade_threshold"
+            if len(candidates) > 0 and scored_candidates > 0 and not results
+            else None
+        ),
         "source_counts": source_counts,
         "results": results,
         "by_grade": by_grade,

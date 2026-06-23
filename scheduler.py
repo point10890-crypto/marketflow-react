@@ -780,7 +780,7 @@ def run_alpha_scanner_monitor() -> bool:
         return False
 
 
-def run_leading_screener_refresh() -> bool:
+def run_leading_screener_refresh():
     """Refresh KIS leading-stock screener and persist only real non-empty results."""
     try:
         from app.services.kis_screener import run_screening
@@ -788,10 +788,27 @@ def run_leading_screener_refresh() -> bool:
         result = run_screening(force=True)
         count = len((result or {}).get('results') or [])
         if count <= 0:
+            source_counts = (result or {}).get('source_counts') or {}
+            upstream_count = sum(int(v or 0) for v in source_counts.values())
+            empty_reason = (result or {}).get('empty_reason')
+            if not (result or {}).get('error') and upstream_count > 0 and empty_reason == 'below_grade_threshold':
+                logger.info(
+                    "leading_screener refresh no candidates after filters: "
+                    "source_counts=%s status=%s filter_summary=%s",
+                    source_counts,
+                    (result or {}).get('market_status'),
+                    (result or {}).get('filter_summary'),
+                )
+                return {
+                    'ok': True,
+                    'status': 'no_candidates',
+                    'empty_reason': empty_reason,
+                    '_scheduler_skip_verify': True,
+                }
             logger.warning(
                 "leading_screener refresh empty: error=%s source_counts=%s status=%s",
                 (result or {}).get('error'),
-                (result or {}).get('source_counts'),
+                source_counts,
                 (result or {}).get('market_status'),
             )
             return False
@@ -3265,9 +3282,13 @@ class Scheduler:
                     # 1차: 리턴값 체크 — 모든 task 함수는 명시적 bool 을 반환해야 함.
                     # `None` 은 "return 누락" 버그이므로 실패로 간주 (verify_fn 이 있으면 거기서 한 번 더 검증).
                     success = bool(result)
+                    skip_verify = (
+                        isinstance(result, dict)
+                        and result.get('_scheduler_skip_verify') is True
+                    )
 
                     # 2차: 검증 함수 체크 (파일 존재/데이터 유효성)
-                    if success and verify_fn:
+                    if success and verify_fn and not skip_verify:
                         try:
                             success = verify_fn()
                         except Exception as ve:
