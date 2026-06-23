@@ -35,6 +35,7 @@ DEFAULT_TOP_N = 3
 DEFAULT_MAX_PARALLEL = 3
 DEFAULT_ACTIONS = ('BUY_CANDIDATE', 'WATCH')
 DEFAULT_MIN_TOP3_SCORE = 50.0
+DEFAULT_REQUIRE_BUY = True
 
 
 def start_workflow_from_scanner_events(
@@ -168,6 +169,7 @@ def start_workflow_from_scanner_events(
             'min_alpha': min_alpha,
             'max_risk': max_risk,
             'actions': list(actions),
+            'require_buy': _payload_require_buy(payload),
             'batch_size': max_events,
             'top_n': top_n,
             'allow_stale_sources': allow_stale_sources,
@@ -481,7 +483,13 @@ def build_workflow_top3_telegram_message(workflow: dict[str, Any]) -> str:
         lines.append(f"완료 시각: {_escape(_format_kst(workflow.get('completed_at')))}")
     if not top3:
         lines.append('')
-        lines.append('Top 3 결과가 생성되지 않았습니다. 실행 전 워크플로우 산출물을 확인하세요.')
+        analyzed = len(analysis_runs)
+        require_buy = bool((workflow.get('filters') or {}).get('require_buy', True))
+        buy_count = int(summary.get('buy_count') or 0)
+        if require_buy and analyzed > 0 and buy_count == 0:
+            lines.append(f'오늘 매수 판정 종목 없음 (분석 {_escape(analyzed)}개, 매수 0)')
+        else:
+            lines.append('Top 3 결과가 생성되지 않았습니다. 실행 전 워크플로우 산출물을 확인하세요.')
         return '\n'.join(lines)
 
     for index, item in enumerate(top3, start=1):
@@ -661,6 +669,37 @@ def _complete_workflow_background(
         _write_workflow(workflow)
 
 
+def _verdict_is_buy(run: dict[str, Any]) -> bool:
+    """True when the CIO verdict action for this analysis run is BUY."""
+    return str(((run or {}).get('verdict') or {}).get('action') or '').upper() == 'BUY'
+
+
+def _require_buy(workflow: dict[str, Any] | None = None) -> bool:
+    """Resolve BUY-only TOP3 policy: workflow.filters > env > default True."""
+    if isinstance(workflow, dict):
+        filters = workflow.get('filters') or {}
+        if isinstance(filters, dict) and filters.get('require_buy') is not None:
+            return bool(filters.get('require_buy'))
+    env = os.environ.get('MIROFISH_TOP3_REQUIRE_BUY')
+    if env is not None and env.strip() != '':
+        return env.strip().lower() != 'false'
+    return DEFAULT_REQUIRE_BUY
+
+
+def _payload_require_buy(payload: dict[str, Any] | None) -> bool:
+    """Resolve require_buy from a request payload, falling back to env/default."""
+    val = (payload or {}).get('require_buy')
+    if val is None:
+        return _require_buy(None)
+    return _bool(val, True)
+
+
+def _select_top3(ranked: list[dict[str, Any]], *, top_n: int, require_buy: bool) -> list[dict[str, Any]]:
+    """Pick the surfaced TOP picks. When require_buy, only CIO BUY verdicts qualify."""
+    eligible = [r for r in ranked if _verdict_is_buy(r)] if require_buy else list(ranked)
+    return eligible[:top_n]
+
+
 def _complete_workflow(
     workflow_id: str,
     candidates: list[dict[str, Any]],
@@ -712,7 +751,7 @@ def _complete_workflow(
             _write_workflow(workflow)
 
     ranked = sorted(results, key=lambda item: item.get('final_score', -999), reverse=True)
-    top3 = ranked[:top_n]
+    top3 = _select_top3(ranked, top_n=top_n, require_buy=_require_buy(workflow))
     summary = _workflow_decision_summary(top3, ranked)
     outcome_summary: dict[str, Any] = {}
     outcome_status = 'not_evaluated'

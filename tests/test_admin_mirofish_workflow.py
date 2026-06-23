@@ -105,7 +105,9 @@ def test_workflow_runs_multi_target_graphrag_and_selects_top3(tmp_path, monkeypa
     monkeypatch.setattr(workflow, '_create_analysis_run', fake_create)
 
     result = workflow.start_workflow_from_scanner_events(
-        {'limit': 20, 'agent_count': 10, 'top_n': 3, 'max_parallel': 2},
+        # require_buy=False: this test exercises the ranking pipeline across mixed
+        # verdicts (HOLD/SELL/BUY); the BUY-only filter is covered separately.
+        {'limit': 20, 'agent_count': 10, 'top_n': 3, 'max_parallel': 2, 'require_buy': False},
         async_mode=False,
     )
 
@@ -285,7 +287,9 @@ def test_force_workflow_accepts_watch_candidates_for_top3_pipeline(tmp_path, mon
     monkeypatch.setattr(workflow, '_create_analysis_run', lambda candidate, agent_count, mode: _analysis_run(candidate, action='HOLD', confidence=65))
 
     result = workflow.start_workflow_from_scanner_events(
-        {'force': True, 'limit': 20, 'top_n': 1, 'max_parallel': 1},
+        # require_buy=False: this test verifies WATCH candidates enter the pipeline;
+        # the BUY-only TOP3 filter is covered by test_mirofish_workflow_buy_filter.
+        {'force': True, 'limit': 20, 'top_n': 1, 'max_parallel': 1, 'require_buy': False},
         async_mode=False,
     )
 
