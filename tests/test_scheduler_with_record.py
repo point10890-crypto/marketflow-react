@@ -232,6 +232,30 @@ def test_alpha_scanner_monitor_skips_telegram_without_new_events():
     tg.assert_not_called()
 
 
+def test_alpha_scanner_monitor_sends_current_top5_when_scan_has_candidates(monkeypatch):
+    monkeypatch.setattr(scheduler.Config, "ALPHA_SCANNER_CURRENT_TELEGRAM_ENABLED", True)
+    monkeypatch.setattr(scheduler.Config, "ALPHA_SCANNER_CURRENT_TELEGRAM_LIMIT", 5)
+    result = {
+        "status": "no_new_events",
+        "new_event_count": 0,
+        "run": {
+            "id": "run1",
+            "candidate_count": 5,
+            "candidates": [
+                {"rank": 1, "symbol": "000001", "display_name": "Alpha One"},
+                {"rank": 2, "symbol": "000002", "display_name": "Alpha Two"},
+            ],
+        },
+    }
+    with patch("app.services.mirofish.alpha_scanner.run_scanner_realtime_monitor_check", return_value=result), \
+         patch("app.services.mirofish.alpha_scanner.build_scanner_run_telegram_message", return_value="current top5") as build_msg, \
+         patch("scheduler.send_telegram_long", return_value=True) as tg:
+        assert scheduler.run_alpha_scanner_monitor() is True
+
+    build_msg.assert_called_once_with(result["run"], limit=5)
+    tg.assert_called_once_with("current top5", channel=False)
+
+
 def test_alpha_scanner_monitor_skips_scan_when_source_unchanged():
     result = {
         "status": "unchanged",

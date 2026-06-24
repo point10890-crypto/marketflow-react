@@ -394,6 +394,8 @@ class Config:
     ALPHA_SCANNER_MAX_EVENTS = int(os.environ.get('ALPHA_SCANNER_MAX_EVENTS', '8'))
     ALPHA_SCANNER_RETRY_SECONDS = int(os.environ.get('ALPHA_SCANNER_RETRY_SECONDS', '300'))
     ALPHA_SCANNER_MONITOR_INTERVAL_MINUTES = int(os.environ.get('ALPHA_SCANNER_MONITOR_INTERVAL_MINUTES', '5'))
+    ALPHA_SCANNER_CURRENT_TELEGRAM_ENABLED = os.environ.get('ALPHA_SCANNER_CURRENT_TELEGRAM_ENABLED', 'true').lower() == 'true'
+    ALPHA_SCANNER_CURRENT_TELEGRAM_LIMIT = int(os.environ.get('ALPHA_SCANNER_CURRENT_TELEGRAM_LIMIT', '5'))
     ALPHA_BACKTEST_ENABLED = os.environ.get('ALPHA_BACKTEST_ENABLED', 'true').lower() == 'true'
     ALPHA_BACKTEST_TIME = os.environ.get('ALPHA_BACKTEST_TIME', '23:00')
     ALPHA_BACKTEST_HORIZON_DAYS = int(os.environ.get('ALPHA_BACKTEST_HORIZON_DAYS', '5'))
@@ -712,6 +714,7 @@ def run_alpha_scanner_monitor() -> bool:
     """Run the file-backed MiroFish scanner and Telegram only new events."""
     try:
         from app.services.mirofish.alpha_scanner import (
+            build_scanner_run_telegram_message,
             run_scanner_realtime_monitor_check,
         )
         from app.services.mirofish.agent_actions import param_value
@@ -733,6 +736,36 @@ def run_alpha_scanner_monitor() -> bool:
         )
         status = result.get('status')
         run = result.get('run') or {}
+        if (
+            Config.ALPHA_SCANNER_CURRENT_TELEGRAM_ENABLED
+            and status in {'sent', 'no_new_events'}
+            and (run.get('candidates') or [])
+        ):
+            try:
+                summary_message = build_scanner_run_telegram_message(
+                    run,
+                    limit=Config.ALPHA_SCANNER_CURRENT_TELEGRAM_LIMIT,
+                )
+                summary_sent = send_telegram_long(summary_message, channel=False)
+                if summary_sent:
+                    logger.info(
+                        "MiroFish alpha scanner current Top%s summary sent: run=%s",
+                        Config.ALPHA_SCANNER_CURRENT_TELEGRAM_LIMIT,
+                        run.get('id'),
+                    )
+                else:
+                    logger.warning(
+                        "MiroFish alpha scanner current Top%s summary send failed: run=%s",
+                        Config.ALPHA_SCANNER_CURRENT_TELEGRAM_LIMIT,
+                        run.get('id'),
+                    )
+            except Exception as summary_exc:
+                logger.warning(
+                    "MiroFish alpha scanner current candidate summary failed: %s: %s",
+                    type(summary_exc).__name__,
+                    summary_exc,
+                    exc_info=True,
+                )
         if status == 'sent':
             logger.info(
                 "MiroFish alpha scanner alert sent: %s new events, run=%s",
