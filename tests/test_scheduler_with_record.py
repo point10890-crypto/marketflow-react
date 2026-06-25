@@ -232,9 +232,12 @@ def test_alpha_scanner_monitor_skips_telegram_without_new_events():
     tg.assert_not_called()
 
 
-def test_alpha_scanner_monitor_sends_current_top5_when_scan_has_candidates(monkeypatch):
+def test_alpha_scanner_monitor_sends_current_top5_when_scan_has_candidates(monkeypatch, tmp_path):
     monkeypatch.setattr(scheduler.Config, "ALPHA_SCANNER_CURRENT_TELEGRAM_ENABLED", True)
     monkeypatch.setattr(scheduler.Config, "ALPHA_SCANNER_CURRENT_TELEGRAM_LIMIT", 5)
+    monkeypatch.setattr(scheduler.Config, "ALPHA_SCANNER_CURRENT_TELEGRAM_MIN_INTERVAL_MINUTES", 120)
+    state_path = tmp_path / "alpha_scanner_current_summary_state.json"
+    monkeypatch.setattr(scheduler, "_alpha_current_summary_state_path", lambda: str(state_path))
     result = {
         "status": "no_new_events",
         "new_event_count": 0,
@@ -254,6 +257,66 @@ def test_alpha_scanner_monitor_sends_current_top5_when_scan_has_candidates(monke
 
     build_msg.assert_called_once_with(result["run"], limit=5)
     tg.assert_called_once_with("current top5", channel=False)
+    assert json.loads(state_path.read_text(encoding="utf-8"))["last_run_id"] == "run1"
+
+
+def test_alpha_scanner_monitor_throttles_duplicate_current_top5(monkeypatch, tmp_path):
+    monkeypatch.setattr(scheduler.Config, "ALPHA_SCANNER_CURRENT_TELEGRAM_ENABLED", True)
+    monkeypatch.setattr(scheduler.Config, "ALPHA_SCANNER_CURRENT_TELEGRAM_LIMIT", 5)
+    monkeypatch.setattr(scheduler.Config, "ALPHA_SCANNER_CURRENT_TELEGRAM_MIN_INTERVAL_MINUTES", 120)
+    state_path = tmp_path / "alpha_scanner_current_summary_state.json"
+    monkeypatch.setattr(scheduler, "_alpha_current_summary_state_path", lambda: str(state_path))
+    result = {
+        "status": "no_new_events",
+        "new_event_count": 0,
+        "run": {
+            "id": "run1",
+            "candidate_count": 5,
+            "candidates": [
+                {"rank": 1, "symbol": "000001", "market": "KOSPI", "action": "WATCH", "horizon": "SWING_5_20D"},
+                {"rank": 2, "symbol": "000002", "market": "KOSPI", "action": "WATCH", "horizon": "SWING_5_20D"},
+            ],
+        },
+    }
+    with patch("app.services.mirofish.alpha_scanner.run_scanner_realtime_monitor_check", return_value=result), \
+         patch("app.services.mirofish.alpha_scanner.build_scanner_run_telegram_message", return_value="current top5") as build_msg, \
+         patch("scheduler.send_telegram_long", return_value=True) as tg:
+        assert scheduler.run_alpha_scanner_monitor() is True
+        assert scheduler.run_alpha_scanner_monitor() is True
+
+    build_msg.assert_called_once_with(result["run"], limit=5)
+    tg.assert_called_once_with("current top5", channel=False)
+
+
+def test_alpha_scanner_monitor_sends_changed_top5_after_cooldown(monkeypatch, tmp_path):
+    monkeypatch.setattr(scheduler.Config, "ALPHA_SCANNER_CURRENT_TELEGRAM_ENABLED", True)
+    monkeypatch.setattr(scheduler.Config, "ALPHA_SCANNER_CURRENT_TELEGRAM_LIMIT", 5)
+    monkeypatch.setattr(scheduler.Config, "ALPHA_SCANNER_CURRENT_TELEGRAM_MIN_INTERVAL_MINUTES", 120)
+    state_path = tmp_path / "alpha_scanner_current_summary_state.json"
+    monkeypatch.setattr(scheduler, "_alpha_current_summary_state_path", lambda: str(state_path))
+    state_path.write_text(json.dumps({
+        "last_sent_at": "2000-01-01T00:00:00",
+        "last_sent_date": "2000-01-01",
+        "last_fingerprint": "older",
+    }), encoding="utf-8")
+    result = {
+        "status": "no_new_events",
+        "new_event_count": 0,
+        "run": {
+            "id": "run2",
+            "candidate_count": 5,
+            "candidates": [
+                {"rank": 1, "symbol": "000003", "market": "KOSPI", "action": "WATCH", "horizon": "SWING_5_20D"},
+            ],
+        },
+    }
+    with patch("app.services.mirofish.alpha_scanner.run_scanner_realtime_monitor_check", return_value=result), \
+         patch("app.services.mirofish.alpha_scanner.build_scanner_run_telegram_message", return_value="changed top5") as build_msg, \
+         patch("scheduler.send_telegram_long", return_value=True) as tg:
+        assert scheduler.run_alpha_scanner_monitor() is True
+
+    build_msg.assert_called_once_with(result["run"], limit=5)
+    tg.assert_called_once_with("changed top5", channel=False)
 
 
 def test_alpha_scanner_monitor_skips_scan_when_source_unchanged():

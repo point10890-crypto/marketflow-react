@@ -54,6 +54,7 @@ import signal as signal_module
 import argparse
 import atexit
 from datetime import datetime
+import hashlib
 from pathlib import Path
 from typing import Optional
 import json
@@ -396,6 +397,7 @@ class Config:
     ALPHA_SCANNER_MONITOR_INTERVAL_MINUTES = int(os.environ.get('ALPHA_SCANNER_MONITOR_INTERVAL_MINUTES', '5'))
     ALPHA_SCANNER_CURRENT_TELEGRAM_ENABLED = os.environ.get('ALPHA_SCANNER_CURRENT_TELEGRAM_ENABLED', 'true').lower() == 'true'
     ALPHA_SCANNER_CURRENT_TELEGRAM_LIMIT = int(os.environ.get('ALPHA_SCANNER_CURRENT_TELEGRAM_LIMIT', '5'))
+    ALPHA_SCANNER_CURRENT_TELEGRAM_MIN_INTERVAL_MINUTES = int(os.environ.get('ALPHA_SCANNER_CURRENT_TELEGRAM_MIN_INTERVAL_MINUTES', '120'))
     ALPHA_BACKTEST_ENABLED = os.environ.get('ALPHA_BACKTEST_ENABLED', 'true').lower() == 'true'
     ALPHA_BACKTEST_TIME = os.environ.get('ALPHA_BACKTEST_TIME', '23:00')
     ALPHA_BACKTEST_HORIZON_DAYS = int(os.environ.get('ALPHA_BACKTEST_HORIZON_DAYS', '5'))
@@ -710,6 +712,116 @@ def send_telegram_long(message: str, channel: bool = True) -> bool:
     return ok
 
 
+def _alpha_current_summary_state_path() -> str:
+    return os.path.join(
+        Config.DATA_DIR,
+        'admin_mirofish',
+        'alpha_scanner_current_summary_state.json',
+    )
+
+
+def _load_alpha_current_summary_state(path: str | None = None) -> dict:
+    state_path = path or _alpha_current_summary_state_path()
+    if not os.path.isfile(state_path):
+        return {}
+    try:
+        with safe_read(state_path):
+            with open(state_path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+        return data if isinstance(data, dict) else {}
+    except Exception as exc:
+        logger.warning(
+            "MiroFish alpha scanner current summary state read failed: %s: %s",
+            type(exc).__name__,
+            exc,
+        )
+        return {}
+
+
+def _parse_alpha_summary_dt(value) -> datetime | None:
+    if not value:
+        return None
+    try:
+        parsed = datetime.fromisoformat(str(value).replace('Z', '+00:00'))
+        return parsed.replace(tzinfo=None)
+    except Exception:
+        return None
+
+
+def _alpha_current_summary_fingerprint(run: dict, *, limit: int | None = None) -> str:
+    clean_limit = max(1, int(limit or Config.ALPHA_SCANNER_CURRENT_TELEGRAM_LIMIT or 5))
+    candidates = [item for item in (run.get('candidates') or []) if isinstance(item, dict)]
+    parts = []
+    for index, candidate in enumerate(candidates[:clean_limit], start=1):
+        parts.append(':'.join([
+            str(index),
+            str(candidate.get('symbol') or ''),
+            str(candidate.get('market') or ''),
+            str(candidate.get('action') or ''),
+            str(candidate.get('horizon') or ''),
+        ]))
+    basis = '|'.join(parts) or str(run.get('id') or '')
+    return hashlib.sha1(basis.encode('utf-8')).hexdigest()
+
+
+def _should_send_alpha_current_summary(run: dict, *, now: datetime | None = None) -> tuple[bool, dict]:
+    if not Config.ALPHA_SCANNER_CURRENT_TELEGRAM_ENABLED:
+        return False, {'reason': 'disabled'}
+    candidates = [item for item in (run.get('candidates') or []) if isinstance(item, dict)]
+    if not candidates:
+        return False, {'reason': 'no_candidates'}
+
+    current = now or datetime.now()
+    limit = max(1, int(Config.ALPHA_SCANNER_CURRENT_TELEGRAM_LIMIT or 5))
+    min_interval = max(0, int(Config.ALPHA_SCANNER_CURRENT_TELEGRAM_MIN_INTERVAL_MINUTES or 0))
+    fingerprint = _alpha_current_summary_fingerprint(run, limit=limit)
+    state = _load_alpha_current_summary_state()
+    last_sent = _parse_alpha_summary_dt(state.get('last_sent_at'))
+    last_fingerprint = str(state.get('last_fingerprint') or '')
+    last_sent_date = str(state.get('last_sent_date') or '')
+    today = current.date().isoformat()
+
+    if last_sent is not None and min_interval > 0:
+        age_minutes = (current - last_sent).total_seconds() / 60
+        if age_minutes < min_interval:
+            return False, {
+                'reason': 'cooldown',
+                'fingerprint': fingerprint,
+                'age_minutes': round(age_minutes, 2),
+                'min_interval_minutes': min_interval,
+            }
+
+    if fingerprint == last_fingerprint and last_sent_date == today:
+        return False, {
+            'reason': 'duplicate_today',
+            'fingerprint': fingerprint,
+            'min_interval_minutes': min_interval,
+        }
+
+    return True, {
+        'reason': 'send',
+        'fingerprint': fingerprint,
+        'limit': limit,
+        'min_interval_minutes': min_interval,
+    }
+
+
+def _record_alpha_current_summary_sent(run: dict, meta: dict, *, sent_at: datetime | None = None) -> None:
+    current = sent_at or datetime.now()
+    state_path = _alpha_current_summary_state_path()
+    state = {
+        'last_sent_at': current.isoformat(),
+        'last_sent_date': current.date().isoformat(),
+        'last_run_id': run.get('id'),
+        'last_fingerprint': meta.get('fingerprint') or _alpha_current_summary_fingerprint(run),
+        'limit': meta.get('limit') or Config.ALPHA_SCANNER_CURRENT_TELEGRAM_LIMIT,
+        'min_interval_minutes': meta.get('min_interval_minutes') or Config.ALPHA_SCANNER_CURRENT_TELEGRAM_MIN_INTERVAL_MINUTES,
+        'candidate_count': len([item for item in (run.get('candidates') or []) if isinstance(item, dict)]),
+    }
+    os.makedirs(os.path.dirname(state_path), exist_ok=True)
+    write_json_atomic(state_path, state, sort_keys=True)
+
+
 def run_alpha_scanner_monitor() -> bool:
     """Run the file-backed MiroFish scanner and Telegram only new events."""
     try:
@@ -742,21 +854,31 @@ def run_alpha_scanner_monitor() -> bool:
             and (run.get('candidates') or [])
         ):
             try:
-                summary_message = build_scanner_run_telegram_message(
-                    run,
-                    limit=Config.ALPHA_SCANNER_CURRENT_TELEGRAM_LIMIT,
-                )
-                summary_sent = send_telegram_long(summary_message, channel=False)
-                if summary_sent:
-                    logger.info(
-                        "MiroFish alpha scanner current Top%s summary sent: run=%s",
-                        Config.ALPHA_SCANNER_CURRENT_TELEGRAM_LIMIT,
-                        run.get('id'),
+                should_send_summary, summary_meta = _should_send_alpha_current_summary(run)
+                if should_send_summary:
+                    summary_message = build_scanner_run_telegram_message(
+                        run,
+                        limit=Config.ALPHA_SCANNER_CURRENT_TELEGRAM_LIMIT,
                     )
+                    summary_sent = send_telegram_long(summary_message, channel=False)
+                    if summary_sent:
+                        _record_alpha_current_summary_sent(run, summary_meta)
+                        logger.info(
+                            "MiroFish alpha scanner current Top%s summary sent: run=%s",
+                            Config.ALPHA_SCANNER_CURRENT_TELEGRAM_LIMIT,
+                            run.get('id'),
+                        )
+                    else:
+                        logger.warning(
+                            "MiroFish alpha scanner current Top%s summary send failed: run=%s",
+                            Config.ALPHA_SCANNER_CURRENT_TELEGRAM_LIMIT,
+                            run.get('id'),
+                        )
                 else:
-                    logger.warning(
-                        "MiroFish alpha scanner current Top%s summary send failed: run=%s",
+                    logger.info(
+                        "MiroFish alpha scanner current Top%s summary skipped: reason=%s run=%s",
                         Config.ALPHA_SCANNER_CURRENT_TELEGRAM_LIMIT,
+                        summary_meta.get('reason'),
                         run.get('id'),
                     )
             except Exception as summary_exc:
