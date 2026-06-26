@@ -490,9 +490,10 @@ def _alerts_today(now_kst: datetime) -> dict[str, Any]:
     """Today's telegram alert tally — heuristic from alert state file."""
     state_path = os.path.join(ADMIN_DATA_ROOT, 'alpha_scanner_alert_state.json')
     state = _read_json_safe(state_path) or {}
-    last_sent_at = state.get('last_sent_at') or state.get('updated_at')
+    history = _scanner_alert_entries(state)
+    last_sent_at = state.get('last_sent_at') or _latest_alert_sent_at(history) or state.get('updated_at')
     events_today = 0
-    history = state.get('history') if isinstance(state.get('history'), list) else []
+    today_entries: list[dict[str, Any]] = []
     today_iso = now_kst.date().isoformat()
     for entry in history:
         if not isinstance(entry, dict):
@@ -501,12 +502,58 @@ def _alerts_today(now_kst: datetime) -> dict[str, Any]:
         sent_at = _parse_timestamp(ts)
         if sent_at and sent_at.astimezone(KST).date().isoformat() == today_iso:
             events_today += 1
+            today_entries.append(entry)
         elif not sent_at and ts.startswith(today_iso):
             events_today += 1
+            today_entries.append(entry)
+    recent = today_entries or history
     return {
         'scanner_alerts_today': events_today,
         'scanner_last_alert_at': last_sent_at,
+        'recent_scanner_alerts': recent[:5],
     }
+
+
+def _scanner_alert_entries(state: dict[str, Any]) -> list[dict[str, Any]]:
+    entries: list[dict[str, Any]] = []
+    sent_events = state.get('sent_events') if isinstance(state.get('sent_events'), dict) else {}
+    for key, value in sent_events.items():
+        if isinstance(value, dict):
+            item = dict(value)
+            item.setdefault('event_key', str(key))
+            entries.append(item)
+    persisted_history = state.get('history') if isinstance(state.get('history'), list) else []
+    for value in persisted_history:
+        if isinstance(value, dict):
+            entries.append(dict(value))
+
+    by_key: dict[str, dict[str, Any]] = {}
+    for entry in entries:
+        key = str(
+            entry.get('event_key')
+            or f"{entry.get('symbol')}:{entry.get('action')}:{entry.get('sent_at')}:{entry.get('run_id')}"
+        )
+        current = by_key.get(key)
+        if current is None or str(entry.get('sent_at') or '') >= str(current.get('sent_at') or ''):
+            merged = dict(current or {})
+            merged.update(entry)
+            merged.setdefault('event_key', key)
+            by_key[key] = merged
+    items = list(by_key.values())
+    items.sort(key=lambda item: str(item.get('sent_at') or item.get('timestamp') or ''), reverse=True)
+    return items
+
+
+def _latest_alert_sent_at(entries: list[dict[str, Any]]) -> str | None:
+    latest: str | None = None
+    for entry in entries:
+        value = entry.get('sent_at') or entry.get('timestamp')
+        if not value:
+            continue
+        text = str(value)
+        if latest is None or text > latest:
+            latest = text
+    return latest
 
 
 # ---------------------------------------------------------------------------

@@ -210,6 +210,20 @@ beforeEach(() => {
     alerts_today: {
       scanner_alerts_today: 1,
       scanner_last_alert_at: '2026-05-12T00:06:00+00:00',
+      recent_scanner_alerts: [
+        {
+          event_key: '079650:WATCH:2026-05-12',
+          sent_at: '2026-05-12T00:06:00+00:00',
+          run_id: 'mfas_test',
+          symbol: '079650',
+          display_name: '서산',
+          market: 'KOSDAQ',
+          action: 'WATCH',
+          alpha_score: 40,
+          risk_score: 19,
+          price: { current_price: 5760, change_rate: 3.2, date: '2026-05-12' },
+        },
+      ],
     },
   });
   mockApi.getOutcomesBoard.mockResolvedValue({
@@ -705,6 +719,9 @@ describe('AdminEndpointsPage analysis start input', () => {
     expect((await screen.findAllByText(/Watchdog 5m on/i)).length).toBeGreaterThan(0);
     expect((await screen.findAllByText(/Startup Task/i)).length).toBeGreaterThan(0);
     expect((await screen.findAllByText(/Operating Workflow/i)).length).toBeGreaterThan(0);
+    expect((await screen.findAllByText(/Scanner Alerts/i)).length).toBeGreaterThan(0);
+    expect(await screen.findByText('서산')).toBeTruthy();
+    expect(await screen.findByText(/079650 · KOSDAQ/)).toBeTruthy();
     expect((await screen.findAllByText(/MCP Top3/i)).length).toBeGreaterThan(0);
     expect(await screen.findByText(/NAVER CHARTS/i)).toBeTruthy();
     expect(await screen.findByText(/TOP3 차트 확인/i)).toBeTruthy();

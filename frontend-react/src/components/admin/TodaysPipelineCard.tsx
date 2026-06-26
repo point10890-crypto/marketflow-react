@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { MiroFishOperatingStage, MiroFishPipelineToday, mirofishApi } from '@/lib/mirofishApi';
+import { MiroFishOperatingStage, MiroFishPipelineToday, MiroFishScannerAlertEvent, mirofishApi } from '@/lib/mirofishApi';
 
 const POLL_INTERVAL_MS = 30_000;
 
@@ -12,6 +12,34 @@ function formatTime(iso?: string | null): string {
     } catch {
         return '--';
     }
+}
+
+function formatNumber(value?: number | string | null): string {
+    if (value === null || value === undefined || value === '') return '--';
+    const number = Number(value);
+    if (!Number.isFinite(number)) return String(value);
+    return number.toLocaleString('ko-KR');
+}
+
+function formatAlertScore(value?: number | null): string {
+    if (value === null || value === undefined || Number.isNaN(value)) return '--';
+    return Number(value).toFixed(0);
+}
+
+function alertActionLabel(action?: string | null): { label: string; tone: string } {
+    if (action === 'BUY_CANDIDATE') return { label: 'BUY 후보', tone: 'border-emerald-300/25 bg-emerald-300/10 text-emerald-200' };
+    if (action === 'WATCH') return { label: '관찰', tone: 'border-amber-300/25 bg-amber-300/10 text-amber-200' };
+    if (action === 'REJECT') return { label: '제외', tone: 'border-rose-300/25 bg-rose-300/10 text-rose-200' };
+    return { label: action || '--', tone: 'border-white/10 bg-white/[0.05] text-neutral-300' };
+}
+
+function alertChangeLabel(value?: number | null): { label: string; tone: string } {
+    if (value === null || value === undefined || Number.isNaN(value)) return { label: '--', tone: 'text-neutral-500' };
+    const sign = value >= 0 ? '+' : '';
+    return {
+        label: `${sign}${Number(value).toFixed(2)}%`,
+        tone: value >= 0 ? 'text-emerald-300' : 'text-rose-300',
+    };
 }
 
 function formatDelta(value?: number | null): { label: string; tone: string } {
@@ -215,6 +243,10 @@ export default function TodaysPipelineCard() {
     const kospiDelta = formatDelta(data?.market?.kr?.kospi_change_pct);
     const kosdaqDelta = formatDelta(data?.market?.kr?.kosdaq_change_pct);
     const operating = data?.operating_workflow;
+    const alertEvents = useMemo<MiroFishScannerAlertEvent[]>(
+        () => (data?.alerts_today?.recent_scanner_alerts || []).slice(0, 4),
+        [data],
+    );
 
     return (
         <section className="rounded-xl border border-amber-400/15 bg-black/60 p-3  sm:p-4">
@@ -266,6 +298,52 @@ export default function TodaysPipelineCard() {
                         </div>
                     ))}
                 </div>
+            </div>
+
+            <div className="mt-3 rounded-lg border border-cyan-300/15 bg-cyan-300/[0.055] p-2.5 sm:p-3">
+                <div className="flex items-center justify-between gap-2">
+                    <span className="text-[10px] font-black uppercase tracking-[0.16em] text-cyan-200/80 sm:text-[11px] sm:tracking-[0.18em]">
+                        Scanner Alerts
+                    </span>
+                    <span className="text-[10px] font-bold text-neutral-500 whitespace-nowrap">
+                        today {data?.alerts_today?.scanner_alerts_today ?? 0}
+                    </span>
+                </div>
+                {alertEvents.length > 0 ? (
+                    <div className="mt-2 space-y-1.5">
+                        {alertEvents.map((event, index) => {
+                            const action = alertActionLabel(event.action);
+                            const change = alertChangeLabel(event.price?.change_rate ?? null);
+                            return (
+                                <div key={event.event_key || `${event.symbol}-${event.sent_at}-${index}`} className="rounded-lg border border-white/10 bg-black/25 px-2.5 py-2">
+                                    <div className="flex items-center justify-between gap-2">
+                                        <div className="min-w-0">
+                                            <div className="truncate text-xs font-black text-white">
+                                                {event.display_name || event.symbol || '--'}
+                                            </div>
+                                            <div className="mt-0.5 truncate font-mono text-[10px] text-neutral-500">
+                                                {event.symbol || '--'} · {event.market || 'KR'} · {formatTime(event.sent_at)}
+                                            </div>
+                                        </div>
+                                        <span className={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-black ${action.tone}`}>
+                                            {action.label}
+                                        </span>
+                                    </div>
+                                    <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] font-bold">
+                                        <span className="text-neutral-500">가격 <span className="font-mono text-neutral-200">{formatNumber(event.price?.current_price)}</span></span>
+                                        <span className={`font-mono ${change.tone}`}>{change.label}</span>
+                                        <span className="text-neutral-500">A <span className="font-mono text-cyan-200">{formatAlertScore(event.alpha_score)}</span></span>
+                                        <span className="text-neutral-500">R <span className="font-mono text-amber-200">{formatAlertScore(event.risk_score)}</span></span>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                ) : (
+                    <div className="mt-2 rounded-lg border border-white/10 bg-black/20 px-2.5 py-2 text-[11px] font-bold text-neutral-500">
+                        신규 이벤트가 발생하면 이 영역에 즉시 표시됩니다.
+                    </div>
+                )}
             </div>
 
             <div className="mt-3 rounded-lg border border-white/10 bg-black/30 p-2.5 sm:p-3">

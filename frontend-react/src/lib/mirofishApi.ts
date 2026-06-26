@@ -2020,7 +2020,30 @@ export interface MiroFishPipelineToday {
     alerts_today: {
         scanner_alerts_today: number;
         scanner_last_alert_at?: string | null;
+        recent_scanner_alerts?: MiroFishScannerAlertEvent[];
     };
+}
+
+export interface MiroFishScannerAlertEvent {
+    event_key?: string;
+    sent_at?: string | null;
+    run_id?: string | null;
+    rank?: number | null;
+    symbol?: string | null;
+    display_name?: string | null;
+    market?: string | null;
+    action?: string | null;
+    horizon?: string | null;
+    alpha_score?: number | null;
+    risk_score?: number | null;
+    ranking_score?: number | null;
+    signal_quality?: string | null;
+    strategy_tags?: string[];
+    price?: {
+        current_price?: number | string | null;
+        change_rate?: number | null;
+        date?: string | null;
+    } | null;
 }
 
 export interface MiroFishBoardItem {

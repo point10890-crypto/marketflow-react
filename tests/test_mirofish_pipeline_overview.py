@@ -172,7 +172,50 @@ def test_alerts_today_counts_utc_events_by_kst_day(tmp_path, monkeypatch):
 
     now_kst = datetime(2026, 5, 18, 12, 0, tzinfo=pipeline_overview.KST)
 
-    assert pipeline_overview._alerts_today(now_kst)['scanner_alerts_today'] == 2
+    summary = pipeline_overview._alerts_today(now_kst)
+    assert summary['scanner_alerts_today'] == 2
+    assert summary['recent_scanner_alerts'][0]['sent_at'] == '2026-05-18T14:59:59+00:00'
+
+
+def test_alerts_today_counts_legacy_sent_events_without_history(tmp_path, monkeypatch):
+    admin_root = tmp_path / 'admin_mirofish'
+    admin_root.mkdir()
+    (admin_root / 'alpha_scanner_alert_state.json').write_text(
+        json.dumps(
+            {
+                'last_checked_at': '2026-06-26T01:49:51+00:00',
+                'sent_events': {
+                    '079650:WATCH:2026-06-26': {
+                        'sent_at': '2026-06-26T01:49:51+00:00',
+                        'run_id': 'mfas_test',
+                        'symbol': '079650',
+                        'display_name': '서산',
+                        'market': 'KOSDAQ',
+                        'action': 'WATCH',
+                        'alpha_score': 40,
+                        'risk_score': 20,
+                        'price': {'current_price': 5760, 'change_rate': 3.2},
+                    },
+                    '000001:WATCH:2026-06-25': {
+                        'sent_at': '2026-06-25T01:49:51+00:00',
+                        'symbol': '000001',
+                        'display_name': 'Old',
+                    },
+                },
+            },
+            ensure_ascii=False,
+        ),
+        encoding='utf-8',
+    )
+    monkeypatch.setattr(pipeline_overview, 'ADMIN_DATA_ROOT', str(admin_root))
+
+    now_kst = datetime(2026, 6, 26, 10, 55, tzinfo=pipeline_overview.KST)
+    summary = pipeline_overview._alerts_today(now_kst)
+
+    assert summary['scanner_alerts_today'] == 1
+    assert summary['scanner_last_alert_at'] == '2026-06-26T01:49:51+00:00'
+    assert summary['recent_scanner_alerts'][0]['symbol'] == '079650'
+    assert summary['recent_scanner_alerts'][0]['price']['current_price'] == 5760
 
 
 def test_read_latest_scanner_run_reads_only_newest_file(tmp_path, monkeypatch):

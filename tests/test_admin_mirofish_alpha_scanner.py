@@ -1052,6 +1052,12 @@ def test_alpha_scanner_alert_check_can_defer_state_until_send_success(tmp_path, 
     assert pending['new_event_count'] == 1
     assert retry['new_event_count'] == 1
     assert state['sent_event_count'] == 1
+    assert state['version'] == 2
+    assert state['last_sent_at'] == state['recent_sent_events'][0]['sent_at']
+    assert state['recent_sent_events'][0]['symbol'] == '000001'
+    assert state['recent_sent_events'][0]['price']['current_price'] == 108.0
+    persisted = json.loads((tmp_path / 'alert_state.json').read_text(encoding='utf-8'))
+    assert persisted['history'][0]['event_key'] == state['recent_sent_events'][0]['event_key']
     assert after_commit['new_event_count'] == 0
 
 

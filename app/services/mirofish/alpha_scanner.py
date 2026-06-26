@@ -3758,9 +3758,13 @@ def _update_alert_state(
 ) -> dict[str, Any]:
     sent_events = dict(state.get('sent_events') or {})
     checked_at = run.get('generated_at')
+    history = [item for item in (state.get('history') or []) if isinstance(item, dict)]
+    new_history: list[dict[str, Any]] = []
     for event in events:
         candidate = event.get('candidate') or {}
-        sent_events[event['event_key']] = {
+        event_key = str(event.get('event_key') or _candidate_event_key(candidate))
+        snapshot = _alert_event_snapshot(event, run, sent_at=checked_at)
+        sent_events[event_key] = {
             'sent_at': checked_at,
             'run_id': run.get('id'),
             'rank': candidate.get('rank'),
@@ -3768,21 +3772,114 @@ def _update_alert_state(
             'display_name': candidate.get('display_name'),
             'market': candidate.get('market'),
             'action': candidate.get('action'),
+            'horizon': candidate.get('horizon'),
             'alpha_score': candidate.get('alpha_score'),
             'risk_score': candidate.get('risk_score'),
+            'ranking_score': candidate.get('ranking_score'),
+            'price': snapshot.get('price'),
+            'strategy_tags': snapshot.get('strategy_tags'),
+            'signal_quality': candidate.get('signal_quality'),
         }
+        new_history.append(snapshot)
+    history = _merge_alert_history(history, new_history)
+    last_sent_at = _latest_alert_sent_at(list(sent_events.values()) + history)
     return {
-        'version': 1,
+        'version': max(2, int(state.get('version') or 1)),
         'last_checked_at': checked_at,
+        'last_sent_at': last_sent_at,
         'last_run_id': run.get('id'),
         'last_candidate_count': run.get('candidate_count'),
         'sent_events': sent_events,
+        'history': history,
     }
 
 
 def _candidate_event_key(candidate: dict[str, Any]) -> str:
     price_date = (candidate.get('price') or {}).get('date') or str(candidate.get('generated_at') or '')[:10]
     return f"{candidate.get('symbol')}:{candidate.get('action')}:{price_date}"
+
+
+def _alert_event_snapshot(event: dict[str, Any], run: dict[str, Any], *, sent_at: str | None) -> dict[str, Any]:
+    candidate = event.get('candidate') or {}
+    price = candidate.get('price') if isinstance(candidate.get('price'), dict) else {}
+    evidence = candidate.get('evidence') if isinstance(candidate.get('evidence'), list) else []
+    event_key = str(event.get('event_key') or _candidate_event_key(candidate))
+    return {
+        'event_key': event_key,
+        'sent_at': sent_at,
+        'run_id': run.get('id') or event.get('run_id'),
+        'generated_at': event.get('generated_at') or run.get('generated_at'),
+        'rank': candidate.get('rank'),
+        'symbol': candidate.get('symbol'),
+        'display_name': candidate.get('display_name'),
+        'market': candidate.get('market'),
+        'action': candidate.get('action'),
+        'horizon': candidate.get('horizon'),
+        'alpha_score': candidate.get('alpha_score'),
+        'risk_score': candidate.get('risk_score'),
+        'ranking_score': candidate.get('ranking_score'),
+        'signal_quality': candidate.get('signal_quality'),
+        'strategy_tags': list(candidate.get('strategy_tags') or [])[:8],
+        'price': {
+            'current_price': price.get('current_price'),
+            'change_rate': price.get('change_rate'),
+            'date': price.get('date'),
+        },
+        'evidence': evidence[:2],
+    }
+
+
+def _merge_alert_history(
+    history: list[dict[str, Any]],
+    new_entries: list[dict[str, Any]],
+    *,
+    limit: int = 200,
+) -> list[dict[str, Any]]:
+    by_key: dict[str, dict[str, Any]] = {}
+    for entry in history + new_entries:
+        if not isinstance(entry, dict):
+            continue
+        key = str(
+            entry.get('event_key')
+            or f"{entry.get('symbol')}:{entry.get('action')}:{entry.get('sent_at')}:{entry.get('run_id')}"
+        )
+        current = by_key.get(key)
+        if current is None or str(entry.get('sent_at') or '') >= str(current.get('sent_at') or ''):
+            next_entry = dict(current or {})
+            next_entry.update(entry)
+            next_entry.setdefault('event_key', key)
+            by_key[key] = next_entry
+    items = list(by_key.values())
+    items.sort(key=lambda item: str(item.get('sent_at') or item.get('generated_at') or ''), reverse=True)
+    return items[: max(1, int(limit))]
+
+
+def _alert_state_entries(state: dict[str, Any]) -> list[dict[str, Any]]:
+    entries: list[dict[str, Any]] = []
+    sent_events = state.get('sent_events') if isinstance(state.get('sent_events'), dict) else {}
+    for key, value in sent_events.items():
+        if isinstance(value, dict):
+            item = dict(value)
+            item.setdefault('event_key', str(key))
+            entries.append(item)
+    for value in state.get('history') or []:
+        if isinstance(value, dict):
+            entries.append(dict(value))
+    return _merge_alert_history([], entries, limit=200)
+
+
+def _latest_alert_sent_at(entries: list[dict[str, Any]]) -> str | None:
+    latest: str | None = None
+    for entry in entries:
+        if not isinstance(entry, dict):
+            continue
+        value = entry.get('sent_at') or entry.get('timestamp')
+        if not value:
+            continue
+        text = str(value)
+        if latest is None or text > latest:
+            latest = text
+    return latest
 
 
 def _action_label(value: Any) -> str:
@@ -3874,15 +3971,12 @@ def _format_signed(value: Any, suffix: str = '') -> str:
 
 def _alert_state_summary(state: dict[str, Any], state_file: str) -> dict[str, Any]:
     sent_events = state.get('sent_events') if isinstance(state.get('sent_events'), dict) else {}
-    recent = sorted(
-        sent_events.values(),
-        key=lambda item: str(item.get('sent_at') or ''),
-        reverse=True,
-    )[:20]
+    recent = _alert_state_entries(state)[:20]
     return {
         'state_path': state_file,
         'version': state.get('version', 1),
         'last_checked_at': state.get('last_checked_at'),
+        'last_sent_at': state.get('last_sent_at') or _latest_alert_sent_at(recent),
         'last_run_id': state.get('last_run_id'),
         'last_candidate_count': state.get('last_candidate_count'),
         'sent_event_count': len(sent_events),
