@@ -17,6 +17,7 @@ from typing import Any
 import app.services.mirofish.blacklist as blacklist_service
 import app.services.mirofish.credit_balance as credit_balance_service
 import app.services.mirofish.live_data as live_data
+import app.services.mirofish.sector_rs as sector_rs_service
 import app.services.mirofish.tradingview_provider as tradingview_provider
 from app.utils.atomic_json import write_json_atomic
 
@@ -1045,6 +1046,7 @@ def _load_artifacts() -> dict[str, Any]:
         data_root=DATA_ROOT,
         allow_fetch=_credit_live_fetch_enabled(),
     )
+    rs_ratings = sector_rs_service.get_rs_ratings(data_root=DATA_ROOT)
     kis_live = _load_indexed_resource_artifact('kis_live_snapshot_latest.json')
     dart_events = _load_indexed_resource_artifact('dart_event_latest.json')
     news_theme_social = _load_indexed_resource_artifact('news_theme_social_latest.json')
@@ -1060,6 +1062,7 @@ def _load_artifacts() -> dict[str, Any]:
         'institutional_trend': institutional_trend,
         'kind_blacklist': kind_blacklist,
         'credit_balance': credit_balance,
+        'rs_ratings': rs_ratings,
         'kis_live': kis_live,
         'dart_events': dart_events,
         'news_theme_social': news_theme_social,
@@ -1074,6 +1077,7 @@ def _load_source_artifacts() -> dict[str, Any]:
         'jongga': _load_json_artifact('jongga_v2_latest.json'),
         'kind_blacklist': _load_json_artifact('kind_blacklist_latest.json'),
         'credit_balance': _load_json_artifact('credit_balance_latest.json'),
+        'rs_ratings': _load_json_artifact('alpha_rs_ratings.json'),
         'kis_live': _load_json_artifact('kis_live_snapshot_latest.json'),
         'dart_events': _load_json_artifact('dart_event_latest.json'),
         'news_theme_social': _load_json_artifact('news_theme_social_latest.json'),
@@ -1115,6 +1119,7 @@ def _build_candidate_pool(
     institutional_by_symbol = artifacts.get('institutional_trend') or {}
     kind_blacklist_by_symbol = (artifacts.get('kind_blacklist') or {}).get('entries') or {}
     credit_balance_by_symbol = (artifacts.get('credit_balance') or {}).get('entries') or {}
+    rs_by_symbol = (artifacts.get('rs_ratings') or {}).get('entries') or {}
     kis_live_by_symbol = artifacts.get('kis_live') or {}
     dart_events_by_symbol = artifacts.get('dart_events') or {}
     news_theme_social_by_symbol = artifacts.get('news_theme_social') or {}
@@ -1149,6 +1154,7 @@ def _build_candidate_pool(
             artifacts,
             generated_at,
             performance_advisory or {},
+            rs_rating=rs_by_symbol.get(symbol),
         )
         rows.append(candidate)
 
@@ -1458,6 +1464,8 @@ def _score_symbol(
     artifacts: dict[str, Any],
     generated_at: str,
     performance_advisory: dict[str, Any],
+    *,
+    rs_rating: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     evidence = []
     kis_overlay = _kis_live_overlay(price, kis_live)
@@ -1556,6 +1564,15 @@ def _score_symbol(
             2.0,
             flow_confirmation.get('value'),
         ))
+    rs_adjustment = sector_rs_service.score_rs_adjustment(rs_rating)
+    if rs_adjustment.get('alpha_delta'):
+        alpha += _float(rs_adjustment.get('alpha_delta'))
+        evidence.append(_evidence(
+            'alpha_rs_ratings.json',
+            'relative_strength',
+            rs_adjustment.get('alpha_delta'),
+            rs_adjustment.get('rs_rating'),
+        ))
     source_freshness = _symbol_freshness(artifacts)
     mcp_adjustment = _mcp_quality_adjustment(
         price=price,
@@ -1595,6 +1612,8 @@ def _score_symbol(
         tags.append('tradingview_confirmed' if _float(tradingview_adjustment.get('alpha_delta')) >= 0 else 'tradingview_warning')
     if flow_confirmation.get('passed'):
         tags.append('dual_flow_buy')
+    if rs_adjustment.get('tag') and rs_adjustment['tag'] not in tags:
+        tags.append(rs_adjustment['tag'])
     for tag in mcp_adjustment.get('tags') or []:
         if tag not in tags:
             tags.append(tag)

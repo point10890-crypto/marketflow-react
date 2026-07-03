@@ -1303,10 +1303,10 @@ def test_alpha_scanner_diagnostics_reports_missing_sources(tmp_path, monkeypatch
     )
 
     assert diagnostics['health'] == 'error'
-    assert diagnostics['source']['missing_files'] == 12
+    assert diagnostics['source']['missing_files'] == len(alpha_scanner.WATCHED_SOURCE_FILES)
     assert diagnostics['source_freshness']['status'] == 'missing'
     assert diagnostics['source_freshness']['missing_required_files'] == 5
-    assert len(diagnostics['source_files']) == 12
+    assert len(diagnostics['source_files']) == len(alpha_scanner.WATCHED_SOURCE_FILES)
     assert diagnostics['schedule']['freshness']['status'] == 'missing'
     assert {issue['code'] for issue in diagnostics['issues']} >= {
         'missing_source_files',
