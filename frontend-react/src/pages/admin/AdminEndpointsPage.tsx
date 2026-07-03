@@ -294,6 +294,17 @@ function formatCompactNumber(value: unknown) {
     return numeric.toLocaleString('ko-KR');
 }
 
+function rsRatingBadge(candidate: MiroFishAlphaCandidate): { rating: number; label: string; tone: string } | null {
+    // O'Neil 상대강도 (1~99 백분위) — 백엔드 evidence field 'relative_strength' 의 value
+    const entry = (candidate.evidence || []).find((item) => item.field === 'relative_strength');
+    const rating = Number(entry?.value);
+    if (!Number.isFinite(rating) || rating < 1 || rating > 99) return null;
+    if (rating >= 85) return { rating, label: '주도주', tone: 'border-yellow-300/40 bg-yellow-300/15 text-yellow-100' };
+    if (rating >= 70) return { rating, label: '강세', tone: 'border-sky-300/30 bg-sky-300/12 text-sky-100' };
+    if (rating <= 30) return { rating, label: '후행', tone: 'border-rose-300/30 bg-rose-300/12 text-rose-100' };
+    return { rating, label: 'RS', tone: 'border-white/15 bg-white/[0.08] text-slate-300' };
+}
+
 function formatAlphaEvidence(candidate: MiroFishAlphaCandidate): string {
     const evidence = candidate.evidence?.[0];
     if (evidence) {
@@ -902,8 +913,18 @@ function AlphaBoardPanel({
                             <span className="text-2xl font-black text-amber-200">{Math.round(candidate.risk_score)}</span>
                         </span>
                         <span className="min-w-0">
-                            <span className={`inline-flex rounded-full border px-2.5 py-1 text-[11px] font-black ${alphaActionTone(candidate.action)}`}>
-                                {candidate.action}
+                            <span className="flex flex-wrap items-center gap-1.5">
+                                <span className={`inline-flex rounded-full border px-2.5 py-1 text-[11px] font-black ${alphaActionTone(candidate.action)}`}>
+                                    {candidate.action}
+                                </span>
+                                {(() => {
+                                    const rs = rsRatingBadge(candidate);
+                                    return rs ? (
+                                        <span className={`inline-flex rounded-full border px-2 py-1 text-[10px] font-black ${rs.tone}`}>
+                                            RS {rs.rating} · {rs.label}
+                                        </span>
+                                    ) : null;
+                                })()}
                             </span>
                             <span className="mt-1 block truncate text-xs font-semibold text-slate-400">
                                 {candidate.strategy_tags.slice(0, 3).join(' · ') || 'multi-signal'}
