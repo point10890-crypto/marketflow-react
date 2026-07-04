@@ -623,8 +623,7 @@ def generate_lotto_post_fallback(stats: dict, candidates: dict, reason: str = ""
     gap_text = ', '.join(f"{num}번({gap}회 미출현)" for num, gap in top_gap)
     fallback_note = (
         "<p style=\"color:#64748b;\">"
-        f"LLM 문장 생성기는 일시적으로 사용할 수 없어 통계 엔진 산출물을 기반으로 자동 게시했습니다."
-        f"{' 사유: ' + escape(reason[:180]) if reason else ''}"
+        "LLM 문장 생성기는 일시적으로 사용할 수 없어 통계 엔진 산출물을 기반으로 자동 게시했습니다."
         "</p>"
     )
 
