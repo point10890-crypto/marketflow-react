@@ -487,3 +487,33 @@ def test_admin_mirofish_workflow_routes_are_registered():
     assert '/api/admin/mirofish/workflows/<workflow_id>' in rules
     assert '/api/admin/mirofish/workflows/<workflow_id>/outcomes' in rules
     assert '/api/admin/mirofish/workflows/<workflow_id>/outcomes/refresh' in rules
+
+
+def test_candidate_summary_promotes_rs_rating_from_evidence():
+    candidate = _candidate('005930', '삼성전자', 82, 30)
+    candidate['evidence'] = [
+        {'source': 'daily_prices.csv', 'field': 'price_momentum', 'score': 10, 'value': 3.2},
+        {'source': 'alpha_rs_ratings.json', 'field': 'relative_strength', 'score': 4.0, 'value': 95},
+    ]
+
+    summary = workflow._candidate_summary(candidate)
+
+    assert summary['rs_rating'] == 95
+    assert 'evidence' not in summary  # 용량 절약 정책 유지
+
+
+def test_candidate_summary_rs_rating_none_when_absent():
+    candidate = _candidate('000660', 'SK하이닉스', 75, 40)
+
+    summary = workflow._candidate_summary(candidate)
+
+    assert summary['rs_rating'] is None
+
+
+def test_extract_rs_rating_prefers_direct_key_over_evidence():
+    candidate = {
+        'rs_rating': 88,
+        'evidence': [{'field': 'relative_strength', 'value': 12}],
+    }
+
+    assert workflow._extract_rs_rating(candidate) == 88

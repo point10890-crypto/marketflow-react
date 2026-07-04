@@ -264,15 +264,7 @@ def build_share_payload(workflow: dict[str, Any], rank: int | None = None) -> di
         except Exception:
             pass
 
-        # O'Neil 상대강도 — 스캐너 evidence field 'relative_strength' 의 value (1~99)
-        rs_rating = None
-        for ev in (candidate.get('evidence') or []):
-            if isinstance(ev, dict) and ev.get('field') == 'relative_strength':
-                try:
-                    rs_rating = int(ev.get('value'))
-                except (TypeError, ValueError):
-                    rs_rating = None
-                break
+        rs_rating = _extract_rs_rating(candidate)
 
         top_items.append({
             'rank': index,
@@ -1369,6 +1361,27 @@ def _candidate_event(candidate: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _extract_rs_rating(candidate: dict[str, Any]) -> int | None:
+    """O'Neil 상대강도 (1~99) 추출 — summary 의 rs_rating 우선, 원본 evidence 폴백.
+
+    _candidate_summary 는 저장 용량을 위해 evidence 를 제외하므로, summary 생성
+    시점에 수치를 승격시켜 두고 이후 소비자는 rs_rating 키만 읽는다.
+    """
+    direct = candidate.get('rs_rating')
+    if direct is not None:
+        try:
+            return int(direct)
+        except (TypeError, ValueError):
+            pass
+    for ev in (candidate.get('evidence') or []):
+        if isinstance(ev, dict) and ev.get('field') == 'relative_strength':
+            try:
+                return int(ev.get('value'))
+            except (TypeError, ValueError):
+                return None
+    return None
+
+
 def _candidate_summary(candidate: dict[str, Any]) -> dict[str, Any]:
     return {
         'rank': candidate.get('rank'),
@@ -1379,6 +1392,7 @@ def _candidate_summary(candidate: dict[str, Any]) -> dict[str, Any]:
         'action': candidate.get('action'),
         'alpha_score': candidate.get('alpha_score'),
         'risk_score': candidate.get('risk_score'),
+        'rs_rating': _extract_rs_rating(candidate),
         'ranking_score': candidate.get('ranking_score'),
         'signal_quality': candidate.get('signal_quality'),
         'strategy_tags': candidate.get('strategy_tags') or [],
