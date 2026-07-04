@@ -62,6 +62,13 @@ def test_generate_lotto_post_fallback_contains_draw_and_candidates():
     assert "LLM 문장 생성기" in post["content"]
 
 
+def test_extract_safe_svg_blocks_script_payloads():
+    import lotto_analysis
+
+    assert lotto_analysis._extract_safe_svg("```svg\n<svg><circle /></svg>\n```") == "<svg><circle /></svg>"
+    assert lotto_analysis._extract_safe_svg("<svg><script>alert(1)</script></svg>") is None
+
+
 def test_existing_lotto_post_for_draw_detects_visible_duplicate(monkeypatch, tmp_db):
     import sqlite3
     import lotto_analysis

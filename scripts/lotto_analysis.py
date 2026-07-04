@@ -807,6 +807,67 @@ def generate_openai_image(prompt: str) -> bytes | None:
     return None
 
 
+def _extract_safe_svg(text: str) -> str | None:
+    """Extract a simple self-contained SVG from OpenAI text output."""
+    raw = (text or '').strip()
+    if raw.startswith('```'):
+        raw = raw.split('\n', 1)[1] if '\n' in raw else raw[3:]
+    if raw.endswith('```'):
+        raw = raw[:-3]
+    if raw.lstrip().startswith('svg'):
+        raw = raw.lstrip()[3:].lstrip()
+    start = raw.find('<svg')
+    end = raw.rfind('</svg>')
+    if start < 0 or end < start:
+        return None
+    svg = raw[start:end + len('</svg>')].strip()
+    lowered = svg.lower()
+    blocked = ('<script', 'javascript:', ' onload=', ' onclick=', ' onerror=', '<foreignobject')
+    if any(token in lowered for token in blocked):
+        return None
+    return svg
+
+
+def generate_openai_svg_image(prompt: str) -> str | None:
+    """Use an accessible OpenAI text model to generate a safe SVG illustration."""
+    try:
+        from dotenv import load_dotenv
+        load_dotenv(os.path.join(BASE_DIR, '.env'))
+        api_key = os.getenv('OPENAI_API_KEY')
+        if not api_key:
+            return None
+
+        from openai import OpenAI
+        client = OpenAI(api_key=api_key)
+        model = os.getenv('OPENAI_SVG_MODEL', os.getenv('OPENAI_FALLBACK_MODEL', 'gpt-5.5'))
+        instruction = (
+            "Return only one complete self-contained SVG image. No markdown. "
+            "Canvas 1280x720. No text, no logos, no watermark, no external hrefs, no scripts. "
+            "Use gradients, circles, sparkles, and lottery-ball motifs. "
+            f"Design brief: {prompt}"
+        )
+        text = ''
+        if hasattr(client, 'responses'):
+            response = client.responses.create(model=model, input=instruction)
+            text = getattr(response, 'output_text', '') or str(response)
+        else:
+            response = client.chat.completions.create(
+                model=model,
+                messages=[
+                    {'role': 'system', 'content': 'You generate safe self-contained SVG only.'},
+                    {'role': 'user', 'content': instruction},
+                ],
+            )
+            text = response.choices[0].message.content or ''
+        svg = _extract_safe_svg(text)
+        if svg:
+            logger.info("OpenAI SVG image generated with %s", model)
+        return svg
+    except Exception as e:
+        logger.warning("OpenAI SVG image generation failed: %s: %s", type(e).__name__, e)
+        return None
+
+
 def save_image(image_data: bytes) -> str:
     """이미지 저장 후 URL 반환"""
     os.makedirs(UPLOAD_DIR, exist_ok=True)
@@ -814,6 +875,16 @@ def save_image(image_data: bytes) -> str:
     filepath = os.path.join(UPLOAD_DIR, filename)
     with open(filepath, 'wb') as f:
         f.write(image_data)
+    return f"/api/community/uploads/{filename}"
+
+
+def save_svg_image(svg_text: str) -> str:
+    """Save an SVG illustration and return its community URL."""
+    os.makedirs(UPLOAD_DIR, exist_ok=True)
+    filename = f"{uuid.uuid4().hex}.svg"
+    filepath = os.path.join(UPLOAD_DIR, filename)
+    with open(filepath, 'w', encoding='utf-8') as f:
+        f.write(svg_text)
     return f"/api/community/uploads/{filename}"
 
 
