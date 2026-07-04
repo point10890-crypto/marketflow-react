@@ -153,6 +153,46 @@ def _fetch_draw_from_lottolyzer(drw_no: int) -> dict | None:
         return None
 
 
+def _fetch_draw_from_lotteryextreme(drw_no: int) -> dict | None:
+    """Fallback parser for recent South Korea Lotto 6/45 draw history."""
+    try:
+        import re as _re
+
+        url = 'https://www.lotteryextreme.com/southkorea/lotto645/results'
+        r = requests.get(url, headers={'User-Agent': LOTTO_UA_POOL[0]}, timeout=20)
+        if r.status_code != 200:
+            return None
+        pattern = _re.compile(
+            r"<tr class='cy'><td class='cx'>(\d{4}-\d{2}-\d{2}).*?\((\d+)\).*?</tr>"
+            r"\s*<TR><TD class='c1'><ul class='displayball'[^>]*>(.*?)</ul>",
+            _re.DOTALL | _re.IGNORECASE,
+        )
+        for date_text, draw_no_text, balls_html in pattern.findall(r.text):
+            try:
+                draw_no = int(draw_no_text)
+                if draw_no != drw_no:
+                    continue
+                numbers = [int(x) for x in _re.findall(r'<li(?:\s+class="dbx")?[^>]*>\s*(\d+)', balls_html)]
+                if len(numbers) < 7:
+                    continue
+                main = numbers[:6]
+                bonus = numbers[6]
+                if any(n < 1 or n > 45 for n in main + [bonus]):
+                    continue
+                return {
+                    'drwNo': draw_no,
+                    'drwNoDate': date_text,
+                    'drwtNo1': main[0], 'drwtNo2': main[1], 'drwtNo3': main[2],
+                    'drwtNo4': main[3], 'drwtNo5': main[4], 'drwtNo6': main[5],
+                    'bnusNo': bonus,
+                }
+            except (TypeError, ValueError, IndexError):
+                continue
+    except Exception:
+        return None
+    return None
+
+
 _lottolyzer_cache: dict = {}
 
 
@@ -204,6 +244,10 @@ def fetch_draw(drw_no: int) -> dict | None:
 
     # 2) lottolyzer fallback
     fallback = _fetch_draw_from_lottolyzer(drw_no)
+    if fallback is not None:
+        return fallback
+
+    fallback = _fetch_draw_from_lotteryextreme(drw_no)
     if fallback is not None:
         return fallback
 
@@ -562,6 +606,27 @@ def get_gemini_client():
     return genai.Client(api_key=api_key)
 
 
+def get_openai_client():
+    from dotenv import load_dotenv
+    load_dotenv(os.path.join(BASE_DIR, '.env'))
+    api_key = os.getenv('OPENAI_API_KEY')
+    if not api_key:
+        logger.error("OPENAI_API_KEY not found in .env")
+        raise RuntimeError("OPENAI_API_KEY not found")
+    from openai import OpenAI
+    return OpenAI(api_key=api_key)
+
+
+def lotto_openai_model() -> str:
+    return (
+        os.getenv('LOTTO_OPENAI_MODEL')
+        or os.getenv('OPENAI_LOTTO_MODEL')
+        or os.getenv('OPENAI_FALLBACK_MODEL')
+        or os.getenv('OPENAI_MODEL')
+        or 'gpt-5.5'
+    )
+
+
 def build_stats_summary(stats: dict) -> str:
     """통계 요약 텍스트 생성 (Gemini 프롬프트용)"""
     ld = stats['last_draw']
@@ -686,6 +751,102 @@ def _parse_llm_json(text: str) -> dict:
                     pass
             logger.error("LLM JSON parse failed: %s", first_error)
             raise
+
+
+def _openai_response_text(client, model: str, prompt: str) -> str:
+    if hasattr(client, 'responses'):
+        response = client.responses.create(model=model, input=prompt)
+        text = getattr(response, 'output_text', '') or ''
+        if text:
+            return text
+        try:
+            chunks = []
+            for item in getattr(response, 'output', []) or []:
+                for part in getattr(item, 'content', []) or []:
+                    value = getattr(part, 'text', None)
+                    if value:
+                        chunks.append(value)
+            if chunks:
+                return '\n'.join(chunks)
+        except Exception:
+            pass
+        return str(response)
+
+    response = client.chat.completions.create(
+        model=model,
+        messages=[
+            {
+                'role': 'system',
+                'content': (
+                    'You write Korean community posts from deterministic lotto '
+                    'statistics. Return strict JSON only.'
+                ),
+            },
+            {'role': 'user', 'content': prompt},
+        ],
+    )
+    return response.choices[0].message.content or ''
+
+
+def generate_lotto_post_openai(stats: dict, candidates: dict) -> dict:
+    """Generate the weekly lotto analysis post with GPT-5.5 first."""
+    stats_summary = build_stats_summary(stats)
+    candidates_text = build_candidates_text(candidates)
+    next_drw = stats['last_draw']['drwNo'] + 1
+    model = lotto_openai_model()
+    client = get_openai_client()
+
+    prompt = f"""
+You are MarketFlow's weekly Korean Lotto 6/45 analysis writer.
+Use the deterministic statistics and candidate sets below. Do not invent draw data.
+Write in Korean for a community board. Keep the tone friendly, clear, and cautious.
+
+Return only valid JSON:
+{{
+  "title": "post title",
+  "content": "HTML body",
+  "image_prompt": "English image prompt"
+}}
+
+Title requirement:
+- Include draw number {next_drw}.
+
+HTML body requirements:
+- Include a greeting.
+- Include exactly one {{{{IMAGE}}}} placeholder near the top.
+- Include the latest draw summary, hot/cold numbers, distribution notes, and all candidate styles.
+- Format recommended number sets with <strong>number, number, ...</strong>.
+- Include a clear responsible-use disclaimer: statistical reference only, no winning guarantee, avoid excessive purchase.
+- Do not include markdown fences outside JSON.
+
+Statistics:
+{stats_summary}
+
+Candidate sets:
+{candidates_text}
+""".strip()
+
+    logger.info("[4/6] OpenAI %s lotto analysis request", model)
+    parsed = _parse_llm_json(_openai_response_text(client, model, prompt))
+    if not isinstance(parsed, dict):
+        raise ValueError("OpenAI lotto response is not a JSON object")
+    parsed.setdefault(
+        'title',
+        f"\uc81c{next_drw}\ud68c AI \ub85c\ub610 \ubd84\uc11d - \uc774\ubc88 \uc8fc \ucd94\ucc9c \ubc88\ud638",
+    )
+    parsed.setdefault(
+        'image_prompt',
+        'Bright cheerful Korean Lotto 6/45 lottery balls floating with soft sparkles, clean modern digital art, no text, no logo, no watermark',
+    )
+    content = str(parsed.get('content') or '').strip()
+    if not content:
+        raise ValueError("OpenAI lotto response content is empty")
+    if '{{IMAGE}}' not in content:
+        content = content + '\n{{IMAGE}}'
+    parsed['content'] = content
+    parsed['provider'] = 'openai'
+    parsed['model'] = model
+    return parsed
 
 
 def generate_lotto_post(client, stats: dict, candidates: dict) -> dict:
@@ -1099,19 +1260,31 @@ def run_lotto_analysis_post(dry_run: bool = False) -> bool:
             logger.info("Candidates:\n%s", build_candidates_text(candidates))
             return True
 
-        # 4. Gemini 글 생성
-        logger.info("[4/6] Gemini로 분석 글 작성 중...")
+        # 4. LLM post generation: GPT-5.5 first, Gemini second, deterministic fallback last.
+        logger.info("[4/6] OpenAI GPT-5.5로 분석 글 작성 중...")
         client = None
         try:
-            client = get_gemini_client()
-            result = generate_lotto_post(client, stats, candidates)
-        except Exception as e:
+            result = generate_lotto_post_openai(stats, candidates)
+        except Exception as openai_error:
             logger.warning(
-                "[4/6] LLM post generation failed; using deterministic fallback: %s: %s",
-                type(e).__name__,
-                e,
+                "[4/6] OpenAI lotto post generation failed; trying Gemini: %s: %s",
+                type(openai_error).__name__,
+                openai_error,
             )
-            result = generate_lotto_post_fallback(stats, candidates, reason=f"{type(e).__name__}: {e}")
+            try:
+                client = get_gemini_client()
+                result = generate_lotto_post(client, stats, candidates)
+            except Exception as gemini_error:
+                logger.warning(
+                    "[4/6] LLM post generation failed; using deterministic fallback: %s: %s",
+                    type(gemini_error).__name__,
+                    gemini_error,
+                )
+                result = generate_lotto_post_fallback(
+                    stats,
+                    candidates,
+                    reason=f"{type(gemini_error).__name__}: {gemini_error}",
+                )
         title = result['title']
         content = result['content']
         image_prompt = result.get('image_prompt', '')
@@ -1132,8 +1305,16 @@ def run_lotto_analysis_post(dry_run: bool = False) -> bool:
                 content = content.replace('{{IMAGE}}', '')
                 logger.info(f"[5/6] 이미지 생성 완료: {image_url}")
             else:
-                content = content.replace('{{IMAGE}}', '')
-                logger.warning("[5/6] 이미지 생성 실패 — 텍스트만 게시")
+                svg_text = generate_openai_svg_image(image_prompt)
+                if svg_text:
+                    image_url = save_svg_image(svg_text)
+                    img_tag = f'<img src="{image_url}" alt="AI 로또 분석 일러스트" style="width:100%;max-width:680px;border-radius:12px;margin:16px auto;display:block;" />'
+                    content = content.replace('{{IMAGE}}', img_tag, 1)
+                    content = content.replace('{{IMAGE}}', '')
+                    logger.info(f"[5/6] OpenAI SVG 이미지 생성 완료: {image_url}")
+                else:
+                    content = content.replace('{{IMAGE}}', '')
+                    logger.warning("[5/6] 이미지 생성 실패 — 텍스트만 게시")
         else:
             content = content.replace('{{IMAGE}}', '')
             logger.info("[5/6] 이미지 플레이스홀더 없음 — 스킵")

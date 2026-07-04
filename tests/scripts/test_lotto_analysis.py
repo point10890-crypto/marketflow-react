@@ -1,4 +1,5 @@
 """lotto_analysis 단위 테스트."""
+import json
 import logging
 import time
 from datetime import datetime
@@ -16,6 +17,66 @@ def test_parse_llm_json_allows_raw_newlines_in_content():
     assert parsed["content"] == "<p>a\nb</p>"
 
 
+def test_generate_lotto_post_openai_uses_configured_model(monkeypatch):
+    import lotto_analysis
+
+    class FakeResponses:
+        def __init__(self):
+            self.model = None
+            self.input = None
+
+        def create(self, model, input):
+            self.model = model
+            self.input = input
+            payload = {
+                "title": "제1231회 AI 로또 분석",
+                "content": "<p>안녕하세요.</p>",
+                "image_prompt": "lotto balls, no text",
+            }
+            return type("Response", (), {"output_text": json.dumps(payload)})()
+
+    class FakeClient:
+        def __init__(self):
+            self.responses = FakeResponses()
+
+    fake_client = FakeClient()
+    monkeypatch.setenv("LOTTO_OPENAI_MODEL", "gpt-5.5")
+    monkeypatch.setattr(lotto_analysis, "get_openai_client", lambda: fake_client)
+
+    stats = {
+        "total_draws": 1230,
+        "last_draw": {
+            "drwNo": 1230,
+            "date": "2026-06-27",
+            "numbers": [1, 2, 3, 4, 5, 6],
+            "bonus": 7,
+        },
+        "hot_10": [13, 18, 28, 41, 9, 44],
+        "cold_10": [3, 2, 5, 7, 10, 15],
+        "hot_30": [11, 22, 33, 44, 5, 16],
+        "cold_30": [1, 4, 8, 12, 19, 27],
+        "odd_even": {"odd_pct": 50.0, "even_pct": 50.0},
+        "sum_stats": {"mean": 135.0, "stddev": 20.0},
+        "section_dist": {"1-10": 1.0},
+        "consecutive_pct": 20.0,
+        "gap": {1: 3, 2: 7, 3: 1, 4: 9},
+    }
+    candidates = {
+        "balanced": {
+            "desc": "balanced set",
+            "sets": [{"numbers": [1, 10, 14, 20, 38, 39], "score": 100.0}],
+        }
+    }
+
+    post = lotto_analysis.generate_lotto_post_openai(stats, candidates)
+
+    assert fake_client.responses.model == "gpt-5.5"
+    assert "draw number 1231" in fake_client.responses.input
+    assert post["provider"] == "openai"
+    assert post["model"] == "gpt-5.5"
+    assert "{{IMAGE}}" in post["content"]
+
+
 def test_expected_latest_draw_date_uses_previous_draw_before_saturday_cutoff():
     import lotto_analysis
 
@@ -30,6 +91,39 @@ def test_expected_latest_draw_date_uses_current_saturday_after_draw_cutoff():
     expected = lotto_analysis._expected_latest_draw_date(datetime(2026, 7, 4, 21, 1))
 
     assert expected.strftime("%Y-%m-%d") == "2026-07-04"
+
+
+def test_lotteryextreme_recent_history_parser(monkeypatch):
+    import lotto_analysis
+
+    html = """
+    <TABLE class='results3'>
+    <tr class='cy'><td class='cx'>2026-06-27 (2026년 06월 27일) (1230) &nbsp;</tr>
+    <TR><TD class='c1'><ul class='displayball' style='justify-content:center'><li>3<li>8<li>9<li>22<li>28<li>42<li class="dbx"> <li>45</ul></tr>
+    <tr class='cy'><td class='cx'>2026-06-20 (2026년 06월 20일) (1229) &nbsp;</tr>
+    <TR><TD class='c1'><ul class='displayball' style='justify-content:center'><li>12<li>13<li>29<li>34<li>37<li>42<li class="dbx"> <li>16</ul></tr>
+    </TABLE>
+    """
+
+    class FakeResponse:
+        status_code = 200
+        text = html
+
+    monkeypatch.setattr(lotto_analysis.requests, "get", lambda *args, **kwargs: FakeResponse())
+
+    draw = lotto_analysis._fetch_draw_from_lotteryextreme(1229)
+
+    assert draw == {
+        "drwNo": 1229,
+        "drwNoDate": "2026-06-20",
+        "drwtNo1": 12,
+        "drwtNo2": 13,
+        "drwtNo3": 29,
+        "drwtNo4": 34,
+        "drwtNo5": 37,
+        "drwtNo6": 42,
+        "bnusNo": 16,
+    }
 
 
 def test_generate_lotto_post_fallback_contains_draw_and_candidates():
