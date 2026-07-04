@@ -16,6 +16,7 @@ import random
 import sys
 import time
 import uuid
+import base64
 from collections import Counter, defaultdict
 from datetime import datetime, timedelta
 
@@ -630,6 +631,7 @@ def generate_lotto_post_fallback(stats: dict, candidates: dict, reason: str = ""
     content = f"""
 <p>안녕하세요, MarketFlow AI 로또 분석입니다.</p>
 {fallback_note}
+{{IMAGE}}
 <h2>🎯 AI 추천 번호 (제{next_drw}회)</h2>
 {''.join(style_blocks)}
 <h2>📌 최근 당첨 복기</h2>
@@ -653,7 +655,7 @@ def generate_lotto_post_fallback(stats: dict, candidates: dict, reason: str = ""
     return {
         'title': title,
         'content': content,
-        'image_prompt': '',
+        'image_prompt': 'Bright cheerful illustration of Korean Lotto 6/45 lottery balls floating with soft sparkles, clean modern digital art, no text, no logo, no watermark',
         'fallback': True,
     }
 
@@ -756,6 +758,52 @@ def generate_image(client, prompt: str) -> bytes | None:
                 return part.inline_data.data
     except Exception as e:
         logger.warning(f"Image generation failed: {e}")
+    return None
+
+
+def generate_openai_image(prompt: str) -> bytes | None:
+    """Generate a community illustration with the OpenAI Images API."""
+    try:
+        from dotenv import load_dotenv
+        load_dotenv(os.path.join(BASE_DIR, '.env'))
+        api_key = os.getenv('OPENAI_API_KEY')
+        if not api_key:
+            logger.warning("OpenAI image generation skipped: OPENAI_API_KEY is not configured")
+            return None
+
+        from openai import OpenAI
+        client = OpenAI(api_key=api_key)
+        preferred_model = os.getenv('OPENAI_IMAGE_MODEL', '').strip()
+        models = [m for m in [preferred_model, 'gpt-image-1', 'dall-e-3'] if m]
+        seen = set()
+        for model in models:
+            if model in seen:
+                continue
+            seen.add(model)
+            try:
+                response = client.images.generate(
+                    model=model,
+                    prompt=prompt,
+                    size=os.getenv('OPENAI_IMAGE_SIZE', '1024x1024'),
+                )
+                item = response.data[0] if response.data else None
+                if item is None:
+                    continue
+                b64_data = getattr(item, 'b64_json', None)
+                if b64_data:
+                    logger.info("OpenAI image generated with %s", model)
+                    return base64.b64decode(b64_data)
+                image_url = getattr(item, 'url', None)
+                if image_url:
+                    resp = requests.get(image_url, timeout=30)
+                    if resp.status_code == 200:
+                        logger.info("OpenAI image generated with %s", model)
+                        return resp.content
+                    logger.warning("OpenAI image download failed: %s", resp.status_code)
+            except Exception as e:
+                logger.warning("OpenAI image model %s failed: %s: %s", model, type(e).__name__, e)
+    except Exception as e:
+        logger.warning("OpenAI image generation failed: %s: %s", type(e).__name__, e)
     return None
 
 
@@ -1000,9 +1048,12 @@ def run_lotto_analysis_post(dry_run: bool = False) -> bool:
         logger.info(f"[4/6] 본문: {len(content)}자")
 
         # 5. 이미지 생성
-        if client and image_prompt and '{{IMAGE}}' in content:
+        if image_prompt and '{{IMAGE}}' in content:
             logger.info("[5/6] Nano Banana로 이미지 생성 중...")
-            image_data = generate_image(client, image_prompt)
+            image_data = generate_image(client, image_prompt) if client else None
+            if not image_data:
+                logger.info("[5/6] OpenAI image fallback 생성 중...")
+                image_data = generate_openai_image(image_prompt)
             if image_data:
                 image_url = save_image(image_data)
                 img_tag = f'<img src="{image_url}" alt="AI 로또 분석 일러스트" style="width:100%;max-width:680px;border-radius:12px;margin:16px auto;display:block;" />'
