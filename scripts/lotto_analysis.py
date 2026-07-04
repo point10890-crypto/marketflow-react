@@ -556,7 +556,7 @@ def get_gemini_client():
     api_key = os.getenv('GEMINI_API_KEY') or os.getenv('GOOGLE_API_KEY')
     if not api_key:
         logger.error("GEMINI_API_KEY not found in .env")
-        sys.exit(1)
+        raise RuntimeError("GEMINI_API_KEY not found")
     from google import genai
     return genai.Client(api_key=api_key)
 
@@ -592,6 +592,71 @@ def build_candidates_text(candidates: dict) -> str:
             nums_str = ', '.join(str(n) for n in s['numbers'])
             lines.append(f"  세트 {i}: {nums_str}  [점수: {s['score']}]")
     return '\n'.join(lines)
+
+
+def generate_lotto_post_fallback(stats: dict, candidates: dict, reason: str = "") -> dict:
+    """Build a deterministic lotto post when the LLM provider is unavailable."""
+    from html import escape
+
+    last = stats['last_draw']
+    next_drw = last['drwNo'] + 1
+    title = f"제{next_drw}회 AI 로또 분석 — 이번 주 추천 번호"
+
+    style_blocks = []
+    for style_name, data in candidates.items():
+        rows = []
+        for idx, item in enumerate(data.get('sets', [])[:4], 1):
+            numbers = ', '.join(str(n) for n in item.get('numbers', []))
+            score = item.get('score', 0)
+            rows.append(
+                "<li>"
+                f"<strong>{escape(numbers)}</strong>"
+                f" <span style=\"color:#64748b;\">({idx}세트 · 점수 {score})</span>"
+                "</li>"
+            )
+        style_blocks.append(
+            f"<h3>{escape(style_name)} — {escape(data.get('desc', ''))}</h3>"
+            f"<ul>{''.join(rows)}</ul>"
+        )
+
+    top_gap = sorted(stats['gap'].items(), key=lambda x: x[1], reverse=True)[:8]
+    gap_text = ', '.join(f"{num}번({gap}회 미출현)" for num, gap in top_gap)
+    fallback_note = (
+        "<p style=\"color:#64748b;\">"
+        f"LLM 문장 생성기는 일시적으로 사용할 수 없어 통계 엔진 산출물을 기반으로 자동 게시했습니다."
+        f"{' 사유: ' + escape(reason[:180]) if reason else ''}"
+        "</p>"
+    )
+
+    content = f"""
+<p>안녕하세요, MarketFlow AI 로또 분석입니다.</p>
+{fallback_note}
+<h2>🎯 AI 추천 번호 (제{next_drw}회)</h2>
+{''.join(style_blocks)}
+<h2>📌 최근 당첨 복기</h2>
+<p>최근 회차는 <strong>제{last['drwNo']}회 ({escape(str(last['date']))})</strong>이며,
+당첨 번호는 <strong>{', '.join(str(n) for n in last['numbers'])}</strong>,
+보너스 번호는 <strong>{last['bonus']}</strong>입니다.</p>
+<h2>🔥 핫넘버 / ❄️ 콜드넘버</h2>
+<p>최근 10회 핫넘버: <strong>{', '.join(str(n) for n in stats['hot_10'][:6])}</strong></p>
+<p>최근 10회 콜드넘버: <strong>{', '.join(str(n) for n in stats['cold_10'][:6])}</strong></p>
+<h2>📊 번호 분포 패턴</h2>
+<p>홀짝 비율: 홀수 <strong>{stats['odd_even']['odd_pct']}%</strong> /
+짝수 <strong>{stats['odd_even']['even_pct']}%</strong></p>
+<p>번호 합계 평균: <strong>{stats['sum_stats']['mean']}</strong>,
+표준편차: <strong>{stats['sum_stats']['stddev']}</strong></p>
+<p>장기 미출현 번호: <strong>{escape(gap_text)}</strong></p>
+<h2>⚠️ 면책 고지</h2>
+<p><strong>본 분석은 통계 기반 참고용이며 당첨을 보장하지 않습니다. 로또는 완전한 확률 게임으로,
+어떤 분석도 당첨을 예측할 수 없습니다. 과도한 구매를 삼가해 주세요.</strong></p>
+""".strip()
+
+    return {
+        'title': title,
+        'content': content,
+        'image_prompt': '',
+        'fallback': True,
+    }
 
 
 def _parse_llm_json(text: str) -> dict:
@@ -918,8 +983,17 @@ def run_lotto_analysis_post(dry_run: bool = False) -> bool:
 
         # 4. Gemini 글 생성
         logger.info("[4/6] Gemini로 분석 글 작성 중...")
-        client = get_gemini_client()
-        result = generate_lotto_post(client, stats, candidates)
+        client = None
+        try:
+            client = get_gemini_client()
+            result = generate_lotto_post(client, stats, candidates)
+        except Exception as e:
+            logger.warning(
+                "[4/6] LLM post generation failed; using deterministic fallback: %s: %s",
+                type(e).__name__,
+                e,
+            )
+            result = generate_lotto_post_fallback(stats, candidates, reason=f"{type(e).__name__}: {e}")
         title = result['title']
         content = result['content']
         image_prompt = result.get('image_prompt', '')
@@ -927,7 +1001,7 @@ def run_lotto_analysis_post(dry_run: bool = False) -> bool:
         logger.info(f"[4/6] 본문: {len(content)}자")
 
         # 5. 이미지 생성
-        if image_prompt and '{{IMAGE}}' in content:
+        if client and image_prompt and '{{IMAGE}}' in content:
             logger.info("[5/6] Nano Banana로 이미지 생성 중...")
             image_data = generate_image(client, image_prompt)
             if image_data:

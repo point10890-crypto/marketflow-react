@@ -32,6 +32,36 @@ def test_expected_latest_draw_date_uses_current_saturday_after_draw_cutoff():
     assert expected.strftime("%Y-%m-%d") == "2026-07-04"
 
 
+def test_generate_lotto_post_fallback_contains_draw_and_candidates():
+    import lotto_analysis
+
+    stats = {
+        "last_draw": {
+            "drwNo": 1230,
+            "date": "2026-06-27",
+            "numbers": [1, 2, 3, 4, 5, 6],
+            "bonus": 7,
+        },
+        "hot_10": [13, 18, 28, 41, 9, 44],
+        "cold_10": [3, 2, 5, 7, 10, 15],
+        "odd_even": {"odd_pct": 50.0, "even_pct": 50.0},
+        "sum_stats": {"mean": 135.0, "stddev": 20.0},
+        "gap": {1: 3, 2: 7, 3: 1, 4: 9},
+    }
+    candidates = {
+        "안정형": {
+            "desc": "분산형",
+            "sets": [{"numbers": [1, 10, 14, 20, 38, 39], "score": 100.0}],
+        }
+    }
+
+    post = lotto_analysis.generate_lotto_post_fallback(stats, candidates, reason="unit test")
+
+    assert "제1231회" in post["title"]
+    assert "1, 10, 14, 20, 38, 39" in post["content"]
+    assert "LLM 문장 생성기" in post["content"]
+
+
 def test_existing_lotto_post_for_draw_detects_visible_duplicate(monkeypatch, tmp_db):
     import sqlite3
     import lotto_analysis
