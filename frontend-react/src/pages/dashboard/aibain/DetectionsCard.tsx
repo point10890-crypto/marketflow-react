@@ -4,7 +4,17 @@ interface DetectionItem {
     action: string | null;
     alpha_score: number | null;
     risk_score: number | null;
+    rs_rating: number | null;
     entry_date: string | null;
+}
+
+function rsBadge(rating: number | null | undefined): { label: string; tone: string } | null {
+    // O'Neil 상대강도 (1~99 백분위) — 시장 주도주/후행주 구분
+    if (rating == null || !Number.isFinite(rating) || rating < 1 || rating > 99) return null;
+    if (rating >= 85) return { label: `RS ${rating} 주도주`, tone: 'border-yellow-400/40 bg-yellow-500/10 text-yellow-300' };
+    if (rating >= 70) return { label: `RS ${rating} 강세`, tone: 'border-sky-400/30 bg-sky-500/10 text-sky-300' };
+    if (rating <= 30) return { label: `RS ${rating} 후행`, tone: 'border-rose-400/30 bg-rose-500/10 text-rose-300' };
+    return { label: `RS ${rating}`, tone: 'border-white/15 bg-white/[0.06] text-gray-300' };
 }
 
 interface DetectionsCardProps {
@@ -65,6 +75,14 @@ export default function DetectionsCard({ data }: DetectionsCardProps) {
                                         Risk {item.risk_score}
                                     </span>
                                 )}
+                                {(() => {
+                                    const rs = rsBadge(item.rs_rating);
+                                    return rs ? (
+                                        <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-bold ${rs.tone}`}>
+                                            {rs.label}
+                                        </span>
+                                    ) : null;
+                                })()}
                             </div>
                         </div>
                     ))}

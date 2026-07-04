@@ -907,7 +907,8 @@ def get_aibain_overview(*, perf_days: int = 30) -> dict:
                     'action': it.get('action'),
                     'alpha_score': it.get('alpha_score'),
                     'risk_score': it.get('risk_score'),
-                    'entry_date': it.get('entry_date'),
+                    'rs_rating': it.get('rs_rating'),
+                    'entry_date': it.get('entry_date') or it.get('replay_safe_after'),
                 })
             out['detections']['items'] = items
     except Exception as exc:

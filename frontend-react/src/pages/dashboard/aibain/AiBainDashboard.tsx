@@ -15,6 +15,7 @@ interface AiBainOverview {
             action: string | null;
             alpha_score: number | null;
             risk_score: number | null;
+            rs_rating: number | null;
             entry_date: string | null;
         }[];
     };

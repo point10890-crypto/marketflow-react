@@ -264,12 +264,25 @@ def build_share_payload(workflow: dict[str, Any], rank: int | None = None) -> di
         except Exception:
             pass
 
+        # O'Neil 상대강도 — 스캐너 evidence field 'relative_strength' 의 value (1~99)
+        rs_rating = None
+        for ev in (candidate.get('evidence') or []):
+            if isinstance(ev, dict) and ev.get('field') == 'relative_strength':
+                try:
+                    rs_rating = int(ev.get('value'))
+                except (TypeError, ValueError):
+                    rs_rating = None
+                break
+
         top_items.append({
             'rank': index,
             'symbol': item.get('symbol') or candidate.get('symbol') or '',
             'name': item.get('target') or candidate.get('display_name') or candidate.get('name') or '',
             'market': item.get('market') or candidate.get('market') or 'KR',
             'score': round(float(item.get('final_score') or 0), 1),
+            'alpha_score': candidate.get('alpha_score'),
+            'risk_score': candidate.get('risk_score'),
+            'rs_rating': rs_rating,
             'action': verdict.get('action') or 'HOLD',
             'confidence_pct': int(verdict.get('confidence_pct') or 0),
             'outcome_status': outcome.get('status') or 'pending',
