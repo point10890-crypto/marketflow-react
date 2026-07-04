@@ -3,6 +3,7 @@ import { MiroFishAlphaCandidate, MiroFishAlphaEndpointBlueprint, MiroFishAnalyst
 import { shareToKakao } from '@/lib/kakaoShare';
 import MirofishChatPanel from '@/components/admin/MirofishChatPanel';
 import TodaysPipelineCard from '@/components/admin/TodaysPipelineCard';
+import MiroFishFearIndexCard from '@/components/mirofish/MiroFishFearIndexCard';
 import RecentOutcomesBoard from '@/components/admin/RecentOutcomesBoard';
 import QuickActionsFooter from '@/components/admin/QuickActionsFooter';
 import AutoRunnerCard from '@/components/admin/AutoRunnerCard';
@@ -2998,6 +2999,8 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
                             ))}
                         </div>
                     )}
+
+                    <MiroFishFearIndexCard className="mt-5" variant="compact" />
 
                     <div className="mt-5 grid gap-5 2xl:grid-cols-[minmax(0,1.65fr)_minmax(400px,0.72fr)] 2xl:items-start">
                         <section className="min-w-0 rounded-2xl border border-cyan-300/15 bg-cyan-300/[0.035] p-3 shadow-[0_18px_70px_rgba(8,145,178,0.10)]">

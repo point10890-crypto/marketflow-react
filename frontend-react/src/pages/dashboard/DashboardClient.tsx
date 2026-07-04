@@ -7,6 +7,7 @@ import { usAPI, krAPI, cryptoAPI, jonggaAPI, waveAPI, briefingAPI, commonAPI, co
 import { usePullToRefreshRegister } from '@/components/layout/PullToRefreshProvider';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSmartRefresh } from '@/hooks/useAutoRefresh';
+import MiroFishFearIndexCard from '@/components/mirofish/MiroFishFearIndexCard';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -655,6 +656,9 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
 
             {/* ── Opportunity Score + Top Signal ── */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="sm:col-span-2">
+                    <MiroFishFearIndexCard variant="compact" />
+                </div>
                 <OpportunityScoreCard
                     score={opportunityScore}
                     krScore={krScore}

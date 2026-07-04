@@ -1,0 +1,130 @@
+import { useEffect, useMemo, useState } from 'react';
+import { mirofishApi, type MiroFishFearIndex } from '@/lib/mirofishApi';
+
+type Variant = 'default' | 'compact';
+
+interface MiroFishFearIndexCardProps {
+    className?: string;
+    variant?: Variant;
+}
+
+function toneColor(tone?: string | null) {
+    if (tone === 'danger') return 'text-rose-300';
+    if (tone === 'warning') return 'text-amber-300';
+    if (tone === 'calm') return 'text-emerald-300';
+    if (tone === 'risk') return 'text-sky-300';
+    return 'text-slate-200';
+}
+
+function toneBorder(tone?: string | null) {
+    if (tone === 'danger') return 'border-rose-300/30 bg-rose-500/[0.07]';
+    if (tone === 'warning') return 'border-amber-300/30 bg-amber-500/[0.07]';
+    if (tone === 'calm') return 'border-emerald-300/25 bg-emerald-500/[0.06]';
+    if (tone === 'risk') return 'border-sky-300/25 bg-sky-500/[0.06]';
+    return 'border-cyan-300/20 bg-cyan-500/[0.05]';
+}
+
+function formatTime(value?: string | null) {
+    if (!value) return '--';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return '--';
+    return date.toLocaleString('ko-KR', {
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+    });
+}
+
+export default function MiroFishFearIndexCard({ className = '', variant = 'default' }: MiroFishFearIndexCardProps) {
+    const [data, setData] = useState<MiroFishFearIndex | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+
+    useEffect(() => {
+        let active = true;
+        setLoading(true);
+        setError('');
+        mirofishApi.getFearIndex()
+            .then((snapshot) => {
+                if (!active) return;
+                setData(snapshot);
+            })
+            .catch((err) => {
+                if (!active) return;
+                const message = err instanceof Error ? err.message : String(err);
+                setError(message.includes('401') || message.includes('403') ? 'AI Brain 또는 관리자 권한 필요' : '공포지수 연결 대기');
+            })
+            .finally(() => {
+                if (active) setLoading(false);
+            });
+        return () => {
+            active = false;
+        };
+    }, []);
+
+    const score = typeof data?.score === 'number' ? Math.round(data.score) : null;
+    const level = data?.level_label || data?.level || (loading ? '불러오는 중' : '확인 필요');
+    const summary = data?.summary || error || 'VIX, Fear & Greed, 환율, 지수 압력을 묶어 Top3 신뢰도 보정에 사용합니다.';
+    const driver = data?.dashboard?.primary_driver || data?.dashboard?.primary_detail || 'market stress';
+    const coverage = typeof data?.coverage_pct === 'number' ? `${data.coverage_pct.toFixed(0)}%` : '--';
+    const componentCount = useMemo(() => data?.components?.filter((item) => item.status === 'ok').length ?? 0, [data]);
+    const compact = variant === 'compact';
+
+    return (
+        <section
+            data-testid="mirofish-fear-index-card"
+            className={`relative overflow-hidden rounded-2xl border ${toneBorder(data?.tone)} p-4 ${compact ? 'sm:p-4' : 'sm:p-5'} ${className}`}
+        >
+            <div className="absolute -right-10 -top-10 h-28 w-28 rounded-full bg-cyan-300/10 blur-3xl" />
+            <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                        <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-black/25 text-cyan-200">
+                            <i className="fas fa-heart-pulse text-sm" />
+                        </span>
+                        <div>
+                            <div className="text-[10px] font-black uppercase tracking-[0.22em] text-cyan-200/75">
+                                MiroFish Risk Context
+                            </div>
+                            <h3 className="text-base font-black text-white sm:text-lg">MiroFish 공포지수</h3>
+                        </div>
+                    </div>
+                    <p className="mt-3 max-w-3xl text-xs font-semibold leading-5 text-slate-300 sm:text-sm">
+                        {summary}
+                    </p>
+                    <div className="mt-3 flex flex-wrap gap-2 text-[11px] font-black">
+                        <span className="rounded-full border border-white/10 bg-black/20 px-3 py-1 text-slate-300">
+                            coverage {coverage}
+                        </span>
+                        <span className="rounded-full border border-white/10 bg-black/20 px-3 py-1 text-slate-300">
+                            sources {componentCount || '--'}
+                        </span>
+                        <span className="rounded-full border border-white/10 bg-black/20 px-3 py-1 text-slate-300">
+                            {formatTime(data?.generated_at)}
+                        </span>
+                    </div>
+                </div>
+                <div className="flex shrink-0 items-center gap-3 sm:min-w-[230px] sm:justify-end">
+                    <div className="text-right">
+                        <div className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">Fear Score</div>
+                        <div className={`mt-1 text-4xl font-black tabular-nums ${toneColor(data?.tone)}`}>
+                            {loading ? '--' : score ?? '--'}
+                        </div>
+                        <div className="mt-1 text-xs font-black text-slate-400">{level}</div>
+                    </div>
+                    <div className="h-20 w-2 overflow-hidden rounded-full bg-white/10">
+                        <div
+                            className="w-full rounded-full bg-gradient-to-t from-emerald-300 via-amber-300 to-rose-400 transition-all"
+                            style={{ height: `${Math.max(8, Math.min(100, score ?? 0))}%`, marginTop: `${100 - Math.max(8, Math.min(100, score ?? 0))}%` }}
+                        />
+                    </div>
+                </div>
+            </div>
+            <div className="relative mt-4 flex items-center justify-between rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-[11px] font-bold text-slate-400">
+                <span>Top3 confidence cap input</span>
+                <span className="truncate pl-3 text-right text-cyan-100">{driver}</span>
+            </div>
+        </section>
+    );
+}
