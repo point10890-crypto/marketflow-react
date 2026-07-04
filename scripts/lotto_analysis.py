@@ -256,6 +256,10 @@ def _expected_latest_draw_date(today: datetime | None = None) -> datetime:
     today = today or datetime.now()
     # weekday: Mon=0 ... Sat=5 Sun=6
     days_since_sat = (today.weekday() - 5) % 7
+    # Lotto draws are finalized on Saturday evening. Before that cutoff, the
+    # newest reliable history is still the previous Saturday's draw.
+    if today.weekday() == 5 and (today.hour, today.minute) < (21, 0):
+        days_since_sat = 7
     return (today - timedelta(days=days_since_sat)).replace(hour=0, minute=0, second=0, microsecond=0)
 
 

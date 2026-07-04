@@ -16,6 +16,22 @@ def test_parse_llm_json_allows_raw_newlines_in_content():
     assert parsed["content"] == "<p>a\nb</p>"
 
 
+def test_expected_latest_draw_date_uses_previous_draw_before_saturday_cutoff():
+    import lotto_analysis
+
+    expected = lotto_analysis._expected_latest_draw_date(datetime(2026, 7, 4, 11, 0))
+
+    assert expected.strftime("%Y-%m-%d") == "2026-06-27"
+
+
+def test_expected_latest_draw_date_uses_current_saturday_after_draw_cutoff():
+    import lotto_analysis
+
+    expected = lotto_analysis._expected_latest_draw_date(datetime(2026, 7, 4, 21, 1))
+
+    assert expected.strftime("%Y-%m-%d") == "2026-07-04"
+
+
 def test_existing_lotto_post_for_draw_detects_visible_duplicate(monkeypatch, tmp_db):
     import sqlite3
     import lotto_analysis
