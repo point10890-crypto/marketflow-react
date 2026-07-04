@@ -22,6 +22,8 @@ from datetime import datetime, timedelta, timezone
 from typing import Any
 
 from app.services.mirofish import alpha_scanner, workflow as workflow_svc
+import app.services.mirofish.crash_rebound_gate as crash_rebound_gate
+import app.services.mirofish.fear_index as fear_index
 
 
 logger = logging.getLogger(__name__)
@@ -161,6 +163,8 @@ def _fallback_pipeline_today_snapshot(*, reason: str) -> dict[str, Any]:
         'degraded': True,
         'degraded_reason': reason,
         'market': _safe_fallback_call(_market_pulse, now_kst),
+        'crash_rebound_gate': _safe_fallback_call(_crash_rebound_gate_summary),
+        'fear_index': _safe_fallback_call(_fear_index_summary),
         'funnel': {
             'scanner_pool': int(schedule.get('candidate_count') or 0),
             'scanner_runs_today': _safe_fallback_call(_count_scanner_runs_today, now_kst) or 0,
@@ -248,6 +252,8 @@ def _build_pipeline_today_snapshot() -> dict[str, Any]:
         'generated_at': now_utc.isoformat(),
         'date_kst': now_kst.date().isoformat(),
         'market': _safe('market', _market_pulse, now_kst),
+        'crash_rebound_gate': _safe('crash_rebound_gate', _crash_rebound_gate_summary),
+        'fear_index': _safe('fear_index', _fear_index_summary),
         'funnel': _safe('funnel', _funnel_today, now_kst),
         'operating_workflow': _safe('operating_workflow', get_pipeline_operating_snapshot, now=now_kst),
         'kpi_7d': _safe('kpi_7d', _kpi_window, days=7),
@@ -400,6 +406,14 @@ def _market_pulse(now_kst: datetime) -> dict[str, Any]:
             'timestamp': us_data.get('timestamp'),
         },
     }
+
+
+def _crash_rebound_gate_summary() -> dict[str, Any]:
+    return crash_rebound_gate.compact_crash_rebound_gate()
+
+
+def _fear_index_summary() -> dict[str, Any]:
+    return fear_index.compact_fear_index()
 
 
 def _vix_level(vix: float | None) -> str | None:

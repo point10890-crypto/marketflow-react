@@ -97,6 +97,18 @@ from app.services.mirofish.mcp_resource_catalog import (
 from app.services.mirofish.learning_policy import (
     build_learning_readiness_snapshot,
 )
+from app.services.mirofish.crash_rebound_gate import (
+    compact_crash_rebound_gate,
+    get_crash_rebound_schema,
+    read_latest_crash_rebound_gate,
+    run_crash_rebound_gate,
+)
+from app.services.mirofish.fear_index import (
+    compact_fear_index,
+    get_fear_index_schema,
+    read_latest_fear_index,
+    run_fear_index,
+)
 from app.services.mirofish import auto_runner
 from app.services.mirofish.chat_agent import (
     run_chat as run_chat_agent,
@@ -148,9 +160,13 @@ __all__ = [
     'build_mcp_resource_snapshot',
     'build_alpha_endpoint_blueprint',
     'build_learning_readiness_snapshot',
+    'compact_crash_rebound_gate',
+    'compact_fear_index',
     'evaluate_mcp_source_gaps',
     'get_mcp_resource',
     'get_mcp_security_policy',
+    'get_crash_rebound_schema',
+    'get_fear_index_schema',
     'get_aibain_overview',
     'get_outcomes_board',
     'get_pipeline_today_snapshot',
@@ -174,6 +190,8 @@ __all__ = [
     'read_latest_dual_kalman_run',
     'read_latest_workflow',
     'read_learning_feedback',
+    'read_latest_crash_rebound_gate',
+    'read_latest_fear_index',
     'read_price_chart',
     'read_safe_artifact',
     'read_run',
@@ -193,6 +211,8 @@ __all__ = [
     'run_dual_kalman_signal_gate',
     'run_scanner_realtime_monitor_check',
     'run_autonomous_scan_analysis',
+    'run_crash_rebound_gate',
+    'run_fear_index',
     'run_chat_agent',
     'run_workflow_monitor_check',
     'send_latest_workflow_telegram',

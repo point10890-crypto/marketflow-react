@@ -285,7 +285,81 @@ export interface MiroFishAlphaCandidate {
     ranking_score?: number;
     score_breakdown?: Record<string, number>;
     tradingview?: Record<string, any>;
+    crash_rebound_gate?: MiroFishCrashReboundGate | null;
     outcome?: MiroFishOutcomeItem;
+}
+
+export interface MiroFishCrashReboundSignal {
+    id?: string;
+    label?: string;
+    state?: 'pass' | 'fail' | 'unknown' | string;
+    status?: 'ok' | 'limited' | 'unknown' | string;
+    weight?: number;
+    detail?: string;
+    source_grade?: string;
+    source?: string | null;
+    fetched_at?: string | null;
+    freshness?: 'fresh' | 'recent' | 'stale' | 'unknown' | string;
+    confidence?: 'high' | 'medium' | 'low' | string;
+}
+
+export interface MiroFishCrashReboundGate {
+    schema_version?: string;
+    generated_at?: string;
+    status?: 'recovery_confirmed' | 'rebound_confirmed' | 'rebound_watch' | 'neutral' | 'caution' | 'risk_off' | 'crash_risk' | 'unknown' | string;
+    label?: string;
+    score?: number | null;
+    confidence?: 'high' | 'medium' | 'low' | string;
+    data_coverage_pct?: number | null;
+    summary?: string;
+    signals?: MiroFishCrashReboundSignal[];
+    counts?: Record<string, number>;
+    scanner_policy?: {
+        mode?: string;
+        alpha_multiplier?: number;
+        risk_multiplier?: number;
+        confidence_cap_pct?: number;
+        telegram_level?: string;
+        reason?: string;
+    };
+    source_packet?: Record<string, any>;
+    non_goals?: string[];
+}
+
+export interface MiroFishFearIndexComponent {
+    id?: string;
+    label?: string;
+    score?: number | null;
+    weight?: number;
+    status?: 'ok' | 'limited' | 'unknown' | string;
+    detail?: string;
+    source?: string | null;
+    source_grade?: string;
+    fetched_at?: string | null;
+    freshness?: 'fresh' | 'recent' | 'stale' | 'unknown' | string;
+    confidence?: 'high' | 'medium' | 'low' | string;
+}
+
+export interface MiroFishFearIndex {
+    schema_version?: string;
+    generated_at?: string;
+    score?: number | null;
+    level?: 'extreme_fear' | 'fear' | 'neutral' | 'low_fear' | 'complacent' | 'unknown' | string;
+    level_label?: string;
+    tone?: 'danger' | 'warning' | 'neutral' | 'calm' | 'risk' | 'unknown' | string;
+    confidence?: 'high' | 'medium' | 'low' | string;
+    coverage_pct?: number | null;
+    summary?: string;
+    components?: MiroFishFearIndexComponent[];
+    dashboard?: {
+        display_score?: string;
+        display_label?: string;
+        color?: string;
+        primary_driver?: string | null;
+        primary_detail?: string | null;
+    };
+    source_packet?: Record<string, any>;
+    non_goals?: string[];
 }
 
 export interface MiroFishOutcomeHorizon {
@@ -1540,6 +1614,7 @@ function normalizeAlphaCandidate(rawValue: unknown, index = 0): MiroFishAlphaCan
             : asNumber(raw.trading_value, 0),
         score_breakdown: asObject(raw.score_breakdown ?? raw.breakdown),
         tradingview: asObject(raw.tradingview),
+        crash_rebound_gate: asObject(raw.crash_rebound_gate) as MiroFishCrashReboundGate,
     };
 }
 
@@ -1796,6 +1871,38 @@ export const mirofishApi = {
         undefined,
         90000,
     ),
+    getCrashReboundGate: async () => fetchAuthAPI<MiroFishCrashReboundGate>(
+        '/api/admin/mirofish/market/crash-rebound/latest',
+        undefined,
+        30000,
+    ),
+    runCrashReboundGate: async (request: Record<string, any> = {}) => postAuthAPI<MiroFishCrashReboundGate>(
+        '/api/admin/mirofish/market/crash-rebound/run',
+        request,
+        undefined,
+        60000,
+    ),
+    getCrashReboundGateSchema: async () => fetchAuthAPI<Record<string, any>>(
+        '/api/admin/mirofish/market/crash-rebound/schema',
+        undefined,
+        30000,
+    ),
+    getFearIndex: async () => fetchAuthAPI<MiroFishFearIndex>(
+        '/api/admin/mirofish/market/fear-index/latest',
+        undefined,
+        30000,
+    ),
+    runFearIndex: async (request: Record<string, any> = {}) => postAuthAPI<MiroFishFearIndex>(
+        '/api/admin/mirofish/market/fear-index/run',
+        request,
+        undefined,
+        60000,
+    ),
+    getFearIndexSchema: async () => fetchAuthAPI<Record<string, any>>(
+        '/api/admin/mirofish/market/fear-index/schema',
+        undefined,
+        30000,
+    ),
     /** Auto-runner (Stage 2 자동 실행기) 상태 */
     // 백엔드 21s+ — recent_cycles 등 무거운 응답. 45s timeout.
     getAutoRunnerStatus: async () => fetchAuthAPI<MiroFishAutoRunnerStatus>(
@@ -1997,6 +2104,8 @@ export interface MiroFishPipelineToday {
         kr: MiroFishPipelineMarketKr;
         us: MiroFishPipelineMarketUs;
     };
+    crash_rebound_gate?: MiroFishCrashReboundGate | null;
+    fear_index?: MiroFishFearIndex | null;
     funnel: {
         scanner_pool: number;
         scanner_runs_today: number;

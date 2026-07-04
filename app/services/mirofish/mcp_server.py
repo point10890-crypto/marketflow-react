@@ -9,6 +9,8 @@ from typing import Any
 
 import app.services.mirofish.alpha_scanner as alpha_scanner
 import app.services.mirofish.autonomous_mcp as autonomous_mcp
+import app.services.mirofish.crash_rebound_gate as crash_rebound_gate
+import app.services.mirofish.fear_index as fear_index
 import app.services.mirofish.hermes_bridge as hermes_bridge
 import app.services.mirofish.mcp_resource_catalog as mcp_resource_catalog
 import app.services.mirofish.tradingview_provider as tradingview_provider
@@ -63,6 +65,20 @@ def create_mcp_server(
     def get_pipeline_operating_snapshot() -> dict[str, Any]:
         """Return scanner -> batch -> GraphRAG -> Top3 -> Telegram -> outcomes state."""
         return autonomous_mcp.get_pipeline_operating_snapshot()
+
+    @mcp.tool()
+    def get_market_crash_rebound_gate(run_live_check: bool = False) -> dict[str, Any]:
+        """Return deterministic crash/rebound market gate for alpha risk context."""
+        if run_live_check:
+            return crash_rebound_gate.run_crash_rebound_gate({'live': True})
+        return crash_rebound_gate.read_latest_crash_rebound_gate()
+
+    @mcp.tool()
+    def get_market_fear_index(run_live_check: bool = False) -> dict[str, Any]:
+        """Return deterministic market fear index for dashboard and alpha risk context."""
+        if run_live_check:
+            return fear_index.run_fear_index({'live': True})
+        return fear_index.read_latest_fear_index()
 
     @mcp.tool()
     def get_mcp_resource_snapshot(include_deferred: bool = True, category: str = '') -> dict[str, Any]:
@@ -336,6 +352,16 @@ def create_mcp_server(
     def market_clock_resource() -> str:
         """KST market-session and scanner schedule status."""
         return _json(autonomous_mcp.get_market_clock())
+
+    @mcp.resource('mirofish://market/crash-rebound')
+    def market_crash_rebound_resource() -> str:
+        """Latest deterministic crash/rebound market gate."""
+        return _json(crash_rebound_gate.read_latest_crash_rebound_gate())
+
+    @mcp.resource('mirofish://market/fear-index')
+    def market_fear_index_resource() -> str:
+        """Latest deterministic market fear index."""
+        return _json(fear_index.read_latest_fear_index())
 
     @mcp.resource('mirofish://pipeline/operating')
     def pipeline_operating_resource() -> str:

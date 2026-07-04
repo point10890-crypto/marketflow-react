@@ -124,6 +124,8 @@ def test_alpha_endpoint_blueprint_prioritizes_profit_detection_endpoints():
     assert first['orders_blocked'] is True
     assert first['implementation_contract']['llm_may_explain_not_invent'] is True
     assert any(action['priority'] == 'P0' for action in snapshot['next_actions'])
+    assert any(item['id'] == 'crash_rebound_gate' for item in snapshot['endpoints'])
+    assert any(item['id'] == 'market_fear_index' for item in snapshot['endpoints'])
 
 
 def test_mcp_resource_snapshot_is_redacted_and_machine_readable():
@@ -151,3 +153,9 @@ def test_admin_mirofish_mcp_resource_routes_are_registered():
     assert '/api/admin/mirofish/mcp/resources' in rules
     assert '/api/admin/mirofish/mcp/alpha-endpoints' in rules
     assert '/api/admin/mirofish/mcp/resources/<resource_id>' in rules
+    assert '/api/admin/mirofish/market/crash-rebound/latest' in rules
+    assert '/api/admin/mirofish/market/crash-rebound/run' in rules
+    assert '/api/admin/mirofish/market/crash-rebound/schema' in rules
+    assert '/api/admin/mirofish/market/fear-index/latest' in rules
+    assert '/api/admin/mirofish/market/fear-index/run' in rules
+    assert '/api/admin/mirofish/market/fear-index/schema' in rules

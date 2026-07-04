@@ -40,6 +40,7 @@ const mockApi = vi.hoisted(() => ({
   getOutcomesBoard: vi.fn(),
   getMcpResources: vi.fn(),
   getAlphaEndpointBlueprint: vi.fn(),
+  getFearIndex: vi.fn(),
 }));
 
 vi.mock('@/lib/mirofishApi', () => ({
@@ -151,6 +152,17 @@ beforeEach(() => {
     },
   });
   mockApi.getAlphaEndpointBlueprint.mockResolvedValue(alphaEndpointBlueprint);
+  mockApi.getFearIndex.mockResolvedValue({
+    schema_version: 'mirofish.fear_index.v1',
+    generated_at: '2026-05-12T00:00:00+00:00',
+    score: 46.5,
+    level: 'neutral',
+    level_label: '중립',
+    tone: 'neutral',
+    confidence: 'high',
+    coverage_pct: 100,
+    summary: '공포지수 46.5 (중립).',
+  });
   mockApi.getPipelineToday.mockResolvedValue({
     generated_at: '2026-05-12T00:00:00+00:00',
     date_kst: '2026-05-12',
@@ -169,6 +181,17 @@ beforeEach(() => {
         fear_greed_score: 52,
         fear_greed_label: 'neutral',
       },
+    },
+    fear_index: {
+      schema_version: 'mirofish.fear_index.v1',
+      generated_at: '2026-05-12T00:00:00+00:00',
+      score: 46.5,
+      level: 'neutral',
+      level_label: '중립',
+      tone: 'neutral',
+      confidence: 'high',
+      coverage_pct: 100,
+      summary: '공포지수 46.5 (중립).',
     },
     funnel: {
       scanner_pool: 20,

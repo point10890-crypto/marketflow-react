@@ -79,6 +79,14 @@ function vixTone(level?: string | null): string {
     return 'text-neutral-300';
 }
 
+function fearIndexTone(tone?: string | null): string {
+    if (tone === 'danger') return 'text-rose-300';
+    if (tone === 'warning') return 'text-amber-300';
+    if (tone === 'calm') return 'text-emerald-300';
+    if (tone === 'risk') return 'text-cyan-300';
+    return 'text-neutral-300';
+}
+
 interface FunnelStep {
     label: string;
     value: number;
@@ -391,6 +399,15 @@ export default function TodaysPipelineCard() {
                         <span className="text-amber-200">
                             {data.market.us.fear_greed_score}{' '}
                             <span className="text-neutral-500">{data.market.us.fear_greed_label || ''}</span>
+                        </span>
+                    </div>
+                )}
+                {data?.fear_index && (
+                    <div className="mt-2 flex items-center justify-between gap-2 rounded-lg border border-white/10 bg-white/[0.03] px-2 py-1.5 text-[11px] font-bold">
+                        <span className="text-neutral-500">공포지수</span>
+                        <span className={`text-right ${fearIndexTone(data.fear_index.tone)}`}>
+                            {data.fear_index.score !== null && data.fear_index.score !== undefined ? Number(data.fear_index.score).toFixed(0) : '--'}
+                            <span className="ml-1 text-neutral-500">{data.fear_index.level_label || data.fear_index.level || ''}</span>
                         </span>
                     </div>
                 )}

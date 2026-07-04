@@ -200,6 +200,74 @@ def pipeline_today():
         }), 500
 
 
+@admin_mirofish_bp.route('/market/crash-rebound/latest', methods=['GET'])
+@admin_or_aibain_required
+def market_crash_rebound_latest():
+    """Latest deterministic crash/rebound market gate snapshot."""
+    try:
+        return jsonify(mirofish.read_latest_crash_rebound_gate())
+    except Exception as exc:
+        return jsonify({
+            'error': f'{type(exc).__name__}: {exc}',
+            'service': 'mirofish-crash-rebound-gate',
+        }), 500
+
+
+@admin_mirofish_bp.route('/market/crash-rebound/run', methods=['POST'])
+@admin_required
+def market_crash_rebound_run():
+    """Run and persist the deterministic crash/rebound market gate."""
+    payload = request.get_json(silent=True) or {}
+    try:
+        return jsonify(mirofish.run_crash_rebound_gate(payload))
+    except Exception as exc:
+        return jsonify({
+            'error': f'{type(exc).__name__}: {exc}',
+            'service': 'mirofish-crash-rebound-gate',
+        }), 500
+
+
+@admin_mirofish_bp.route('/market/crash-rebound/schema', methods=['GET'])
+@admin_or_aibain_required
+def market_crash_rebound_schema():
+    """Signal contract for the crash/rebound market gate."""
+    return jsonify(mirofish.get_crash_rebound_schema())
+
+
+@admin_mirofish_bp.route('/market/fear-index/latest', methods=['GET'])
+@admin_or_aibain_required
+def market_fear_index_latest():
+    """Latest deterministic market fear-index snapshot."""
+    try:
+        return jsonify(mirofish.read_latest_fear_index())
+    except Exception as exc:
+        return jsonify({
+            'error': f'{type(exc).__name__}: {exc}',
+            'service': 'mirofish-fear-index',
+        }), 500
+
+
+@admin_mirofish_bp.route('/market/fear-index/run', methods=['POST'])
+@admin_required
+def market_fear_index_run():
+    """Run and persist the deterministic market fear index."""
+    payload = request.get_json(silent=True) or {}
+    try:
+        return jsonify(mirofish.run_fear_index(payload))
+    except Exception as exc:
+        return jsonify({
+            'error': f'{type(exc).__name__}: {exc}',
+            'service': 'mirofish-fear-index',
+        }), 500
+
+
+@admin_mirofish_bp.route('/market/fear-index/schema', methods=['GET'])
+@admin_or_aibain_required
+def market_fear_index_schema():
+    """Signal contract for the deterministic market fear index."""
+    return jsonify(mirofish.get_fear_index_schema())
+
+
 @admin_mirofish_bp.route('/auto-runner/status', methods=['GET'])
 @admin_required
 def auto_runner_status():

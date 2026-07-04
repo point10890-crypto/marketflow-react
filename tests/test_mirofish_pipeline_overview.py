@@ -98,6 +98,29 @@ def test_pipeline_today_snapshot_fast_path_does_not_start_refresh(monkeypatch):
     assert 'funnel' in snapshot
 
 
+def test_pipeline_today_snapshot_includes_crash_rebound_gate(monkeypatch):
+    pipeline_overview._PIPELINE_TODAY_CACHE.clear()
+
+    monkeypatch.setattr(pipeline_overview, '_PIPELINE_TODAY_BACKGROUND_REFRESH', False)
+    monkeypatch.setattr(
+        pipeline_overview,
+        '_crash_rebound_gate_summary',
+        lambda: {'status': 'rebound_watch', 'score': 42.0},
+    )
+    monkeypatch.setattr(
+        pipeline_overview,
+        '_fear_index_summary',
+        lambda: {'level': 'fear', 'score': 68.0},
+    )
+
+    snapshot = pipeline_overview.get_pipeline_today_snapshot()
+
+    assert snapshot['crash_rebound_gate']['status'] == 'rebound_watch'
+    assert snapshot['crash_rebound_gate']['score'] == 42.0
+    assert snapshot['fear_index']['level'] == 'fear'
+    assert snapshot['fear_index']['score'] == 68.0
+
+
 def test_scanner_schedule_status_uses_light_source_metadata(tmp_path, monkeypatch):
     for filename in alpha_scanner.WATCHED_SOURCE_FILES:
         path = tmp_path / filename

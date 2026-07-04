@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type CompositionEvent as ReactCompositionEvent, type KeyboardEvent as ReactKeyboardEvent } from 'react';
-import { MiroFishAlphaCandidate, MiroFishAlphaEndpointBlueprint, MiroFishAnalyst, MiroFishAutonomousActionResult, MiroFishAutonomousLearningFeedback, MiroFishAutonomousStatus, MiroFishDeepSeekStatus, MiroFishDeepSeekSummaryResult, MiroFishGraphRAGEntityMatch, MiroFishLayer, MiroFishLearningReadiness, MiroFishLog, MiroFishMcpResourceSnapshot, MiroFishNode, MiroFishRun, MiroFishScannerRun, MiroFishScannerStatus, MiroFishStatus, MiroFishTargetSnapshot, MiroFishTradingViewStatus, MiroFishWorkflow, mirofishApi } from '@/lib/mirofishApi';
+import { MiroFishAlphaCandidate, MiroFishAlphaEndpointBlueprint, MiroFishAnalyst, MiroFishAutonomousActionResult, MiroFishAutonomousLearningFeedback, MiroFishAutonomousStatus, MiroFishDeepSeekStatus, MiroFishDeepSeekSummaryResult, MiroFishFearIndex, MiroFishGraphRAGEntityMatch, MiroFishLayer, MiroFishLearningReadiness, MiroFishLog, MiroFishMcpResourceSnapshot, MiroFishNode, MiroFishRun, MiroFishScannerRun, MiroFishScannerStatus, MiroFishStatus, MiroFishTargetSnapshot, MiroFishTradingViewStatus, MiroFishWorkflow, mirofishApi } from '@/lib/mirofishApi';
 import { shareToKakao } from '@/lib/kakaoShare';
 import MirofishChatPanel from '@/components/admin/MirofishChatPanel';
 import TodaysPipelineCard from '@/components/admin/TodaysPipelineCard';
@@ -60,7 +60,7 @@ type AlphaScannerState = 'idle' | 'loading' | 'running' | 'ready' | 'error';
 type DeepSeekPanelState = 'idle' | 'checking' | 'summarizing' | 'ready' | 'sending' | 'sent' | 'error';
 type WorkflowPanelState = 'idle' | 'running' | 'completed' | 'no_new_events' | 'blocked' | 'error';
 type AutonomousPanelState = 'idle' | 'checking' | 'running' | 'ready' | 'sending' | 'sent' | 'error';
-type EndpointKey = 'status' | 'dataSources' | 'resolve' | 'history' | 'createRun' | 'runDetail' | 'graph' | 'events' | 'report' | 'deepseek' | 'tradingview' | 'kalman' | 'workflow' | 'autonomous' | 'learningReadiness' | 'mcpResources' | 'alphaEndpoints';
+type EndpointKey = 'status' | 'dataSources' | 'resolve' | 'history' | 'createRun' | 'runDetail' | 'graph' | 'events' | 'report' | 'deepseek' | 'tradingview' | 'kalman' | 'workflow' | 'autonomous' | 'learningReadiness' | 'mcpResources' | 'alphaEndpoints' | 'fearIndex';
 type EndpointStatus = 'idle' | 'loading' | 'ok' | 'error';
 type TargetCandidate = NonNullable<MiroFishTargetSnapshot['candidates']>[number];
 
@@ -82,6 +82,7 @@ const endpointDefinitions: Array<{ key: EndpointKey; method: string; path: strin
     { key: 'learningReadiness', method: 'GET', path: '/api/admin/mirofish/learning/readiness', title: 'Learning Readiness', icon: 'fa-brain', color: 'text-emerald-200' },
     { key: 'mcpResources', method: 'GET', path: '/api/admin/mirofish/mcp/resources', title: 'MCP Resources', icon: 'fa-plug-circle-check', color: 'text-cyan-200' },
     { key: 'alphaEndpoints', method: 'GET', path: '/api/admin/mirofish/mcp/alpha-endpoints', title: 'Alpha Evidence Gates', icon: 'fa-shield-halved', color: 'text-emerald-200' },
+    { key: 'fearIndex', method: 'GET', path: '/api/admin/mirofish/market/fear-index/latest', title: 'Fear Index', icon: 'fa-heart-pulse', color: 'text-amber-200' },
 ];
 
 const adminOnlyEndpointKeys = new Set<EndpointKey>(['deepseek', 'kalman', 'workflow', 'autonomous']);
@@ -1894,6 +1895,7 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
     const [learningReadiness, setLearningReadiness] = useState<MiroFishLearningReadiness | null>(null);
     const [mcpResourceSnapshot, setMcpResourceSnapshot] = useState<MiroFishMcpResourceSnapshot | null>(null);
     const [alphaEndpointBlueprint, setAlphaEndpointBlueprint] = useState<MiroFishAlphaEndpointBlueprint | null>(null);
+    const [fearIndex, setFearIndex] = useState<MiroFishFearIndex | null>(null);
     const [autonomousConfirmation, setAutonomousConfirmation] = useState('');
     const [autonomousSharedSecret, setAutonomousSharedSecret] = useState('');
     const [opsLaneRefreshKey, setOpsLaneRefreshKey] = useState(0);
@@ -1930,8 +1932,9 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
             markEndpoint('learningReadiness', 'loading');
             markEndpoint('mcpResources', 'loading');
             markEndpoint('alphaEndpoints', 'loading');
+            markEndpoint('fearIndex', 'loading');
             try {
-                const [statusResult, historyResult, sourcesResult, deepSeekResult, tradingViewResult, kalmanResult, workflowResult, autonomousResult, learningReadinessResult, mcpResourcesResult, alphaEndpointsResult] = await Promise.allSettled([
+                const [statusResult, historyResult, sourcesResult, deepSeekResult, tradingViewResult, kalmanResult, workflowResult, autonomousResult, learningReadinessResult, mcpResourcesResult, alphaEndpointsResult, fearIndexResult] = await Promise.allSettled([
                     mirofishApi.getStatus(),
                     mirofishApi.listRuns(),
                     mirofishApi.getDataSources(),
@@ -1943,6 +1946,7 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
                     mirofishApi.getLearningReadiness(),
                     mirofishApi.getMcpResources(),
                     mirofishApi.getAlphaEndpointBlueprint(),
+                    mirofishApi.getFearIndex(),
                 ]);
                 if (!alive) return;
                 const failures: string[] = [];
@@ -2056,6 +2060,15 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
                     noteFailure('alphaEndpoints', 'Alpha Evidence Gates', alphaEndpointsResult.reason);
                 }
 
+                if (fearIndexResult.status === 'fulfilled') {
+                    const fearData = fearIndexResult.value as MiroFishFearIndex;
+                    setFearIndex(fearData);
+                    markEndpoint('fearIndex', fearData.score !== null && fearData.score !== undefined ? 'ok' : 'idle');
+                } else {
+                    setFearIndex(null);
+                    noteFailure('fearIndex', 'Fear Index', fearIndexResult.reason);
+                }
+
                 const hasCoreData = statusResult.status === 'fulfilled' || historyResult.status === 'fulfilled' || sourcesResult.status === 'fulfilled';
                 setApiState(hasCoreData ? 'ready' : 'error');
                 setErrorText(failures.length ? `Partial endpoint check failed: ${failures.map((item) => item.split(':')[0]).join(', ')}` : null);
@@ -2074,6 +2087,7 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
                 markEndpoint('learningReadiness', 'error');
                 markEndpoint('mcpResources', 'error');
                 markEndpoint('alphaEndpoints', 'error');
+                markEndpoint('fearIndex', 'error');
                 setErrorText(error instanceof Error ? error.message : 'MiroFish API 연결 실패');
             }
         }
@@ -2329,7 +2343,10 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
         alphaEndpoints: alphaEndpointBlueprint
             ? `${alphaEndpointBlueprint.source_readiness?.status || 'unknown'} / P0 ${alphaEndpointBlueprint.p0_count || 0}`
             : 'not loaded',
-    }), [alphaEndpointBlueprint, autonomousState, autonomousStatus, dataSourceCount, deepSeekStatus, deepSeekSummary, dualKalmanStatus, learningReadiness, mcpResourceSnapshot, recentRuns.length, run, status, targetSnapshot, tradingViewStatus, workflow, workflowState]);
+        fearIndex: fearIndex
+            ? `${fearIndex.score ?? '--'} / ${fearIndex.level_label || fearIndex.level || 'unknown'}`
+            : 'not loaded',
+    }), [alphaEndpointBlueprint, autonomousState, autonomousStatus, dataSourceCount, deepSeekStatus, deepSeekSummary, dualKalmanStatus, fearIndex, learningReadiness, mcpResourceSnapshot, recentRuns.length, run, status, targetSnapshot, tradingViewStatus, workflow, workflowState]);
 
     const targetCandidates = useMemo<TargetCandidate[]>(() => {
         const query = target.trim();
