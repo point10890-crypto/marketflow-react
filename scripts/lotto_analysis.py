@@ -774,7 +774,7 @@ def generate_openai_image(prompt: str) -> bytes | None:
         from openai import OpenAI
         client = OpenAI(api_key=api_key)
         preferred_model = os.getenv('OPENAI_IMAGE_MODEL', '').strip()
-        models = [m for m in [preferred_model, 'gpt-image-1', 'dall-e-3'] if m]
+        models = [m for m in [preferred_model, 'chatgpt-image-latest', 'gpt-image-2', 'gpt-image-1'] if m]
         seen = set()
         for model in models:
             if model in seen:
