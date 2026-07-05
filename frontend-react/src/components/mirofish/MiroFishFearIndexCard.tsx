@@ -6,6 +6,7 @@ type Variant = 'default' | 'compact';
 interface MiroFishFearIndexCardProps {
     className?: string;
     variant?: Variant;
+    href?: string;
 }
 
 function toneColor(tone?: string | null) {
@@ -36,7 +37,7 @@ function formatTime(value?: string | null) {
     });
 }
 
-export default function MiroFishFearIndexCard({ className = '', variant = 'default' }: MiroFishFearIndexCardProps) {
+export default function MiroFishFearIndexCard({ className = '', variant = 'default', href = '/dashboard/ai-bain' }: MiroFishFearIndexCardProps) {
     const [data, setData] = useState<MiroFishFearIndex | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -72,9 +73,11 @@ export default function MiroFishFearIndexCard({ className = '', variant = 'defau
     const compact = variant === 'compact';
 
     return (
-        <section
+        <a
+            href={href}
+            aria-label="AI Brain 세션으로 이동"
             data-testid="mirofish-fear-index-card"
-            className={`relative overflow-hidden rounded-2xl border ${toneBorder(data?.tone)} p-4 ${compact ? 'sm:p-4' : 'sm:p-5'} ${className}`}
+            className={`group block relative overflow-hidden rounded-2xl border ${toneBorder(data?.tone)} p-4 ${compact ? 'sm:p-4' : 'sm:p-5'} ${className} cursor-pointer transition hover:-translate-y-0.5 hover:border-cyan-200/45 hover:shadow-[0_18px_70px_rgba(34,211,238,0.14)] focus:outline-none focus:ring-2 focus:ring-cyan-300/45`}
         >
             <div className="absolute -right-10 -top-10 h-28 w-28 rounded-full bg-cyan-300/10 blur-3xl" />
             <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -87,7 +90,12 @@ export default function MiroFishFearIndexCard({ className = '', variant = 'defau
                             <div className="text-[10px] font-black uppercase tracking-[0.22em] text-cyan-200/75">
                                 MiroFish Risk Context
                             </div>
-                            <h3 className="text-base font-black text-white sm:text-lg">MiroFish 공포지수</h3>
+                            <div className="flex flex-wrap items-center gap-2">
+                                <h3 className="text-base font-black text-white sm:text-lg">MiroFish 공포지수</h3>
+                                <span className="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-2 py-0.5 text-[10px] font-black text-cyan-100 opacity-80 transition group-hover:opacity-100">
+                                    AI Brain 열기
+                                </span>
+                            </div>
                         </div>
                     </div>
                     <p className="mt-3 max-w-3xl text-xs font-semibold leading-5 text-slate-300 sm:text-sm">
@@ -123,8 +131,11 @@ export default function MiroFishFearIndexCard({ className = '', variant = 'defau
             </div>
             <div className="relative mt-4 flex items-center justify-between rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-[11px] font-bold text-slate-400">
                 <span>Top3 confidence cap input</span>
-                <span className="truncate pl-3 text-right text-cyan-100">{driver}</span>
+                <span className="flex min-w-0 items-center gap-2 pl-3 text-right text-cyan-100">
+                    <span className="truncate">{driver}</span>
+                    <i className="fas fa-arrow-right text-[10px] opacity-60 transition group-hover:translate-x-0.5 group-hover:opacity-100" />
+                </span>
             </div>
-        </section>
+        </a>
     );
 }
