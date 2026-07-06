@@ -7,6 +7,7 @@ interface ManualRunSummary {
     created_at: string;
     record_count: number;
     source_kind: string;
+    status?: string;
     summary: Record<string, number>;
 }
 
@@ -109,6 +110,8 @@ export default function ManualStockAnalysisPage() {
         () => runs.find((run) => run.run_id === selectedRunId) || null,
         [runs, selectedRunId],
     );
+    const isSelectedLoopRun = !!loopStatus?.last_run_id && selectedRunId === loopStatus.last_run_id;
+    const shouldStreamSelectedRun = isSelectedLoopRun || selectedRun?.status === 'running' || detail?.status === 'running';
 
     const fetchRuns = useCallback(async (preferredRunId?: string) => {
         setLoading(true);
@@ -137,17 +140,20 @@ export default function ManualStockAnalysisPage() {
         }
     }, [selectedRunId]);
 
-    const fetchRunDetail = useCallback(async () => {
+    const fetchRunDetail = useCallback(async (options?: { silent?: boolean }) => {
         if (!selectedRunId) {
             setDetail(null);
             return;
         }
-        setLoading(true);
-        setMessage('');
+        const silent = !!options?.silent;
+        if (!silent) {
+            setLoading(true);
+            setMessage('');
+        }
         const params = new URLSearchParams();
         params.set('result', selectedResult);
         if (query.trim()) params.set('q', query.trim());
-        if (loopStatus?.running && loopStatus.last_run_id && selectedRunId === loopStatus.last_run_id) {
+        if (shouldStreamSelectedRun) {
             params.set('live', '1');
         }
         try {
@@ -157,11 +163,15 @@ export default function ManualStockAnalysisPage() {
             if (!res.ok) throw new Error(`분석 목록 조회 실패 (${res.status})`);
             setDetail(await res.json());
         } catch (err) {
-            setMessage(err instanceof Error ? err.message : '분석 목록 조회 실패');
+            if (!silent) {
+                setMessage(err instanceof Error ? err.message : '분석 목록 조회 실패');
+            }
         } finally {
-            setLoading(false);
+            if (!silent) {
+                setLoading(false);
+            }
         }
-    }, [loopStatus?.last_run_id, loopStatus?.running, query, selectedResult, selectedRunId]);
+    }, [query, selectedResult, selectedRunId, shouldStreamSelectedRun]);
 
     const fetchLoopStatus = useCallback(async () => {
         try {
@@ -201,10 +211,10 @@ export default function ManualStockAnalysisPage() {
     useEffect(() => {
         const id = window.setInterval(() => {
             fetchLoopStatus();
-            if (loopStatus?.running) fetchRunDetail();
-        }, loopStatus?.running ? 1000 : 2500);
+            if (loopStatus?.running || shouldStreamSelectedRun) fetchRunDetail({ silent: true });
+        }, loopStatus?.running || shouldStreamSelectedRun ? 1000 : 2500);
         return () => window.clearInterval(id);
-    }, [fetchLoopStatus, fetchRunDetail, loopStatus?.running]);
+    }, [fetchLoopStatus, fetchRunDetail, loopStatus?.running, shouldStreamSelectedRun]);
 
     const handleUpload = async (file: File | null) => {
         if (!file) return;
@@ -315,7 +325,7 @@ export default function ManualStockAnalysisPage() {
     const loopProcessed = loopStatus?.processed || 0;
     const loopProgress = loopTotal > 0 ? Math.min(100, Math.round((loopProcessed / loopTotal) * 100)) : 0;
     const isLoopRunning = !!loopStatus?.running;
-    const isLiveRunSelected = isLoopRunning && !!loopStatus?.last_run_id && selectedRunId === loopStatus.last_run_id;
+    const isLiveRunSelected = shouldStreamSelectedRun;
 
     const applyResultFilter = (result: string) => {
         setSelectedResult(result);
@@ -561,7 +571,7 @@ export default function ManualStockAnalysisPage() {
                     </div>
                     <div className="text-right text-xs font-bold text-slate-500">
                         {isLiveRunSelected
-                            ? `실시간 루프 갱신 중 · ${loopProcessed}/${loopTotal} · ${loopStatus?.current_stock || '대기'}`
+                            ? `${isLoopRunning ? '실시간 루프 갱신 중' : '최근 루프 결과 출력 중'} · ${loopProcessed}/${loopTotal} · ${loopStatus?.current_stock || '대기'}`
                             : hiddenRecordCount > 0
                             ? `화면 ${visibleRecords.length.toLocaleString('ko-KR')}건 표시 · 추가 ${hiddenRecordCount.toLocaleString('ko-KR')}건은 엑셀 다운로드`
                             : detail?.created_at || selectedRun?.created_at || '--'}
