@@ -12,6 +12,8 @@ import hashlib
 import json
 import os
 import re
+import shutil
+import tempfile
 import threading
 import time
 from datetime import datetime, timedelta
@@ -421,12 +423,19 @@ def _create_selenium_driver():
     except ImportError as exc:
         raise RuntimeError("Selenium 스크래퍼 실행에는 selenium, webdriver-manager 패키지가 필요합니다.") from exc
 
+    user_data_dir = tempfile.mkdtemp(prefix="marketflow_manual_scrape_")
     chrome_options = Options()
     chrome_options.add_argument("--headless=new")
     chrome_options.add_argument("--window-size=375,812")
     chrome_options.add_argument("--disable-gpu")
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--disable-dev-shm-usage")
+    chrome_options.add_argument("--disable-extensions")
+    chrome_options.add_argument("--disable-background-networking")
+    chrome_options.add_argument("--disable-software-rasterizer")
+    chrome_options.add_argument("--no-first-run")
+    chrome_options.add_argument("--remote-debugging-port=0")
+    chrome_options.add_argument(f"--user-data-dir={user_data_dir}")
     chrome_options.add_argument(
         "user-agent=Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) "
         "AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1"
@@ -434,7 +443,23 @@ def _create_selenium_driver():
     chrome_options.add_experimental_option("excludeSwitches", ["enable-logging"])
     chrome_options.page_load_strategy = "eager"
     service = Service(ChromeDriverManager().install())
-    return webdriver.Chrome(service=service, options=chrome_options)
+    try:
+        driver = webdriver.Chrome(service=service, options=chrome_options)
+    except Exception:
+        shutil.rmtree(user_data_dir, ignore_errors=True)
+        raise
+    setattr(driver, "_marketflow_user_data_dir", user_data_dir)
+    return driver
+
+
+def _close_selenium_driver(driver: Any) -> None:
+    user_data_dir = getattr(driver, "_marketflow_user_data_dir", "")
+    try:
+        driver.quit()
+    except Exception:
+        pass
+    if user_data_dir:
+        shutil.rmtree(user_data_dir, ignore_errors=True)
 
 
 def _extract_industry_from_text(text: str) -> str:
@@ -650,10 +675,7 @@ def scrape_source_run(
         raise
     finally:
         if driver is not None:
-            try:
-                driver.quit()
-            except Exception:
-                pass
+            _close_selenium_driver(driver)
 
     return _persist_scrape_run(run, records=records, status="completed")
 
