@@ -55,6 +55,23 @@ def test_pending_source_uses_analysis_in_progress_filter(monkeypatch, tmp_path):
     assert {record["result"] for record in run["records"]} == {"분석중"}
 
 
+def test_recommendation_parser_uses_anchored_fallback():
+    text = """
+    Company Profile
+    Technical Summary
+    Moving Averages Strong Buy
+    Oscillators Neutral
+    """
+
+    assert svc._extract_recommendation_from_text(text) == "적극 매수"
+
+
+def test_recommendation_parser_ignores_unanchored_ad_copy():
+    text = "Subscribe now. Buy premium access today. Company profile only."
+
+    assert svc._extract_recommendation_from_text(text) == ""
+
+
 def test_scraper_loop_status_tracks_progress(monkeypatch, tmp_path):
     _isolate_storage(monkeypatch, tmp_path)
 

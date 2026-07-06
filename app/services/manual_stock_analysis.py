@@ -119,6 +119,73 @@ def _normalise_label(raw: str) -> str:
     return _clean_text(raw) or "미분류"
 
 
+_RECOMMENDATION_PATTERNS: list[tuple[re.Pattern[str], str]] = [
+    (re.compile(r"적극\s*매수|STRONG\s*_?\s*BUY", re.IGNORECASE), "적극 매수"),
+    (re.compile(r"적극\s*매도|STRONG\s*_?\s*SELL", re.IGNORECASE), "적극 매도"),
+    (re.compile(r"\bBUY\b|매수", re.IGNORECASE), "매수"),
+    (re.compile(r"\bSELL\b|매도", re.IGNORECASE), "매도"),
+    (re.compile(r"\bHOLD\b|\bNEUTRAL\b|중립", re.IGNORECASE), "중립"),
+]
+
+_RECOMMENDATION_ANCHORS = (
+    "pro score",
+    "pro-score",
+    "technical",
+    "summary",
+    "recommendation",
+    "signal",
+    "consensus",
+    "analysis",
+    "기술적",
+    "요약",
+    "분석",
+    "추천",
+    "판정",
+)
+
+
+def _extract_recommendation_from_text(text: str) -> str:
+    raw_text = _clean_text(text)
+    visible_text = re.sub(r"\s+", " ", raw_text)
+    if not visible_text:
+        return ""
+
+    lower = visible_text.lower()
+    windows: list[str] = []
+    for anchor in _RECOMMENDATION_ANCHORS:
+        start = lower.find(anchor.lower())
+        if start >= 0:
+            windows.append(visible_text[max(0, start - 160): start + 420])
+
+    for window in windows:
+        for pattern, label in _RECOMMENDATION_PATTERNS:
+            if pattern.search(window):
+                return label
+    for line in re.split(r"[\n\r\t|•]+", raw_text):
+        candidate = _clean_text(line)
+        if not candidate or len(candidate) > 80:
+            continue
+        compact = re.sub(r"\s+", " ", candidate).strip()
+        if re.search(r"^(적극\s*매수|적극\s*매도|매수|매도|중립|STRONG\s+BUY|STRONG\s+SELL|BUY|SELL|HOLD|NEUTRAL)$", compact, re.IGNORECASE):
+            return _normalise_label(compact)
+    return ""
+
+
+def _blocked_page_reason(text: str) -> str:
+    visible_text = _clean_text(text).lower()
+    if not visible_text:
+        return ""
+    blocked_markers = (
+        "access denied",
+        "403 forbidden",
+        "verify you are human",
+        "are you a robot",
+        "unusual traffic",
+        "captcha",
+    )
+    return next((marker for marker in blocked_markers if marker in visible_text), "")
+
+
 def _ticker_lookup() -> dict[str, dict[str, str]]:
     try:
         df = pd.read_csv(TICKER_MAP_PATH, dtype=str, encoding="utf-8-sig").fillna("")
@@ -394,16 +461,32 @@ def _scrape_page_fields(driver: Any, url: str, xpath: str, *, timeout_sec: int) 
     from selenium.webdriver.support.ui import WebDriverWait
 
     driver.get(url)
-    element = WebDriverWait(driver, timeout_sec).until(
-        EC.presence_of_element_located((By.XPATH, xpath))
-    )
     visible_text = ""
     try:
+        WebDriverWait(driver, timeout_sec).until(
+            EC.presence_of_element_located((By.TAG_NAME, "body"))
+        )
         visible_text = driver.execute_script("return document.body ? document.body.innerText : '';") or ""
     except Exception:
         visible_text = ""
+
+    block_reason = _blocked_page_reason(visible_text)
+    if block_reason:
+        raise RuntimeError(f"target page blocked: {block_reason}")
+
+    result_text = ""
+    if xpath:
+        try:
+            element = WebDriverWait(driver, min(timeout_sec, 4)).until(
+                EC.presence_of_element_located((By.XPATH, xpath))
+            )
+            result_text = _clean_text(element.text)
+        except Exception:
+            result_text = ""
+    if not result_text:
+        result_text = _extract_recommendation_from_text(visible_text)
     return {
-        "result": _clean_text(element.text),
+        "result": result_text,
         "industry": _extract_industry_from_text(visible_text),
     }
 
@@ -524,8 +607,8 @@ def scrape_source_run(
             try:
                 scraped_fields = _scrape_page_fields(driver, url, xpath, timeout_sec=timeout_sec)
                 scraped = scraped_fields.get("result", "")
-                record["raw_result"] = scraped or "오류"
-                record["result"] = _normalise_label(scraped)
+                record["raw_result"] = scraped or "분석중"
+                record["result"] = _normalise_label(record["raw_result"])
                 scraped_industry = scraped_fields.get("industry", "")
                 if not _is_missing_industry(scraped_industry):
                     record["industry"] = scraped_industry
