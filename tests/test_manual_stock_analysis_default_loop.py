@@ -66,6 +66,70 @@ def test_scrape_source_run_zero_max_rows_uses_entire_default_source(monkeypatch,
     assert all(record["analyzed_at"] >= run["created_at"] for record in run["records"])
 
 
+def test_scrape_source_run_persists_cycle_history_metadata(monkeypatch, tmp_path):
+    _isolate_manual_service(monkeypatch, tmp_path)
+    _write_source(tmp_path / "stock_data.xlsx", rows=1)
+
+    class FakeDriver:
+        def quit(self):
+            return None
+
+    monkeypatch.setattr(svc, "_create_selenium_driver", lambda: FakeDriver())
+    monkeypatch.setattr(
+        svc,
+        "_scrape_page_fields",
+        lambda driver, url, xpath, *, timeout_sec: {"result": "BUY", "industry": "LiveIndustry"},
+    )
+
+    run = svc.scrape_source_run(
+        max_rows=1,
+        run_id="manual_cycle_history",
+        persist_progress=True,
+        delay_sec=0,
+        cycle_date="2026-07-07",
+        cycle_number=3,
+        cycle_label="2026-07-07 - 3회차",
+    )
+
+    assert run["title"] == "2026-07-07 - 3회차"
+    assert run["cycle_date"] == "2026-07-07"
+    assert run["cycle_number"] == 3
+    assert run["cycle_label"] == "2026-07-07 - 3회차"
+
+    rows = svc.list_runs()
+    assert rows[0]["cycle_label"] == "2026-07-07 - 3회차"
+
+
+def test_scraper_loop_status_auto_starts_when_requested(monkeypatch, tmp_path):
+    _isolate_manual_service(monkeypatch, tmp_path)
+    _write_source(tmp_path / "stock_data.xlsx", rows=2)
+    monkeypatch.setattr(svc, "AUTO_LOOP_ENABLED", True)
+    monkeypatch.setattr(svc, "AUTO_LOOP_MAX_ROWS", 0)
+    monkeypatch.setattr(svc, "AUTO_LOOP_INTERVAL_SEC", 0)
+    monkeypatch.setattr(svc, "AUTO_LOOP_TIMEOUT_SEC", 10)
+
+    captured = {}
+
+    def fake_start_scraper_loop(**kwargs):
+        captured.update(kwargs)
+        return {
+            "running": True,
+            "state": "starting",
+            "max_rows": kwargs["max_rows"],
+            "interval_sec": kwargs["interval_sec"],
+            "timeout_sec": kwargs["timeout_sec"],
+        }
+
+    monkeypatch.setattr(svc, "start_scraper_loop", fake_start_scraper_loop)
+
+    status = svc.get_scraper_loop_status(auto_start=True)
+
+    assert status["running"] is True
+    assert captured["max_rows"] == 0
+    assert captured["interval_sec"] == 0
+    assert captured["timeout_sec"] == 10
+
+
 def test_list_runs_exposes_history_metadata(monkeypatch, tmp_path):
     _isolate_manual_service(monkeypatch, tmp_path)
     run = {

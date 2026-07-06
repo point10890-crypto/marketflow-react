@@ -10,6 +10,9 @@ interface ManualRunSummary {
     source_record_count?: number;
     source_path?: string;
     source_kind: string;
+    cycle_date?: string;
+    cycle_number?: number | null;
+    cycle_label?: string;
     status?: string;
     summary: Record<string, number>;
 }
@@ -50,6 +53,10 @@ interface ScraperLoopStatus {
     source_path: string;
     source_record_count: number;
     cycle: number;
+    mode?: string;
+    auto_start?: boolean;
+    current_cycle_label?: string;
+    cycle_started_at?: string;
     iterations: number;
     processed: number;
     total: number;
@@ -92,6 +99,7 @@ function resultClass(result: string) {
 
 function buildRunLabel(run: ManualRunSummary) {
     const created = run.created_at ? run.created_at.slice(0, 10) : '';
+    if (run.cycle_label) return run.cycle_label;
     return `${created} · ${run.title || run.run_id}`;
 }
 
@@ -121,7 +129,8 @@ function summaryPreview(summary: Record<string, number> = {}) {
 }
 
 function formatSeconds(seconds: number) {
-    if (!Number.isFinite(seconds) || seconds <= 0) return '--';
+    if (!Number.isFinite(seconds)) return '--';
+    if (seconds <= 0) return 'immediate';
     if (seconds < 60) return `${seconds}s`;
     const minutes = Math.round(seconds / 60);
     if (minutes < 60) return `${minutes}m`;
@@ -137,10 +146,7 @@ export default function ManualStockAnalysisPage() {
     const [detail, setDetail] = useState<ManualRunDetail | null>(null);
     const [loopStatus, setLoopStatus] = useState<ScraperLoopStatus | null>(null);
     const [loading, setLoading] = useState(false);
-    const [busy, setBusy] = useState(false);
     const [message, setMessage] = useState('');
-    const [loopInterval, setLoopInterval] = useState(1);
-    const fileRef = useRef<HTMLInputElement | null>(null);
     const loopRunRef = useRef('');
 
     const selectedRun = useMemo(
@@ -269,98 +275,6 @@ export default function ManualStockAnalysisPage() {
         return () => window.clearInterval(id);
     }, [fetchLoopStatus, fetchRunDetail, loopStatus?.running, shouldStreamSelectedRun]);
 
-    const handleUpload = async (file: File | null) => {
-        if (!file) return;
-        setBusy(true);
-        setMessage('');
-        const form = new FormData();
-        form.append('file', file);
-        try {
-            const res = await fetch(`${API_BASE}/api/manual-stock-analysis/runs/upload`, {
-                method: 'POST',
-                headers: authHeaders(),
-                body: form,
-            });
-            const data = await res.json().catch(() => ({}));
-            if (!res.ok) throw new Error(data.error || `업로드 실패 (${res.status})`);
-            setSelectedRunId(data.run?.run_id || '');
-            setMessage('결과 Excel 업로드가 완료되었습니다.');
-            await fetchRuns(data.run?.run_id);
-        } catch (err) {
-            setMessage(err instanceof Error ? err.message : '업로드 실패');
-        } finally {
-            setBusy(false);
-            if (fileRef.current) fileRef.current.value = '';
-        }
-    };
-
-    const runScraper = async () => {
-        setBusy(true);
-        setMessage('');
-        try {
-            const res = await fetch(`${API_BASE}/api/manual-stock-analysis/runs/scrape`, {
-                method: 'POST',
-                headers: authHeaders({ 'Content-Type': 'application/json' }),
-                body: JSON.stringify({ max_rows: 0, timeout_sec: 10 }),
-            });
-            const data = await res.json().catch(() => ({}));
-            if (!res.ok) throw new Error(data.error || `스크래퍼 실행 실패 (${res.status})`);
-            setSelectedRunId(data.run?.run_id || '');
-            setMessage(`전체 스크래프 완료: ${data.run?.record_count || 0}건`);
-            await fetchRuns(data.run?.run_id);
-        } catch (err) {
-            setMessage(err instanceof Error ? err.message : '스크래퍼 실행 실패');
-        } finally {
-            setBusy(false);
-            fetchLoopStatus();
-        }
-    };
-
-    const startLoop = async () => {
-        setBusy(true);
-        setMessage('');
-        try {
-            const res = await fetch(`${API_BASE}/api/manual-stock-analysis/scraper-loop/start`, {
-                method: 'POST',
-                headers: authHeaders({ 'Content-Type': 'application/json' }),
-                body: JSON.stringify({
-                    max_rows: 0,
-                    interval_sec: loopInterval * 60,
-                    timeout_sec: 10,
-                }),
-            });
-            const data = await res.json().catch(() => ({}));
-            if (!res.ok) throw new Error(data.error || `루프 시작 실패 (${res.status})`);
-            loopRunRef.current = '';
-            setLoopStatus(data);
-            setMessage('실시간 스크래퍼 루프가 시작되었습니다.');
-            await fetchLoopStatus();
-        } catch (err) {
-            setMessage(err instanceof Error ? err.message : '루프 시작 실패');
-        } finally {
-            setBusy(false);
-        }
-    };
-
-    const stopLoop = async () => {
-        setBusy(true);
-        setMessage('');
-        try {
-            const res = await fetch(`${API_BASE}/api/manual-stock-analysis/scraper-loop/stop`, {
-                method: 'POST',
-                headers: authHeaders({ 'Content-Type': 'application/json' }),
-            });
-            const data = await res.json().catch(() => ({}));
-            if (!res.ok) throw new Error(data.error || `루프 중지 실패 (${res.status})`);
-            setLoopStatus(data);
-            setMessage('실시간 스크래퍼 루프를 중지했습니다.');
-        } catch (err) {
-            setMessage(err instanceof Error ? err.message : '루프 중지 실패');
-        } finally {
-            setBusy(false);
-        }
-    };
-
     const exportUrl = useMemo(() => {
         if (!selectedRunId) return '';
         const params = new URLSearchParams();
@@ -407,58 +321,20 @@ export default function ManualStockAnalysisPage() {
                             기본 소스는 E:\다운로드\stock_data.xlsx이며, 스크래퍼 루프가 전체 종목을 순번대로 반복 분석합니다.
                         </p>
                     </div>
-                    <div className="flex flex-wrap gap-2">
-                        <label className="flex h-10 items-center gap-2 rounded-xl border border-white/10 bg-black/25 px-3 text-xs font-black text-slate-300">
-                            cycle delay
-                            <input
-                                type="number"
-                                min={1}
-                                max={1440}
-                                value={loopInterval}
-                                onChange={(event) => setLoopInterval(Math.max(1, Math.min(1440, Number(event.target.value) || 15)))}
-                                className="h-7 w-16 rounded-lg border border-white/10 bg-black/40 px-2 text-right text-white outline-none"
-                            />
-                            min
-                        </label>
-                        <button
-                            type="button"
-                            onClick={runScraper}
-                            disabled={busy}
-                            className="rounded-xl border border-rose-400/25 bg-rose-500/10 px-4 py-2 text-sm font-black text-rose-200 transition hover:bg-rose-500/20 disabled:opacity-50"
-                        >
-                            1회 전체 스크래프
-                        </button>
-                        <button
-                            type="button"
-                            onClick={startLoop}
-                            disabled={busy || isLoopRunning}
-                            className="rounded-xl border border-emerald-400/25 bg-emerald-500/10 px-4 py-2 text-sm font-black text-emerald-200 transition hover:bg-emerald-500/20 disabled:opacity-50"
-                        >
-                            무한 루프 시작
-                        </button>
-                        <button
-                            type="button"
-                            onClick={stopLoop}
-                            disabled={busy || !isLoopRunning}
-                            className="rounded-xl border border-slate-500/40 bg-white/5 px-4 py-2 text-sm font-black text-slate-200 transition hover:bg-white/10 disabled:opacity-50"
-                        >
-                            루프 중지
-                        </button>
-                        <input
-                            ref={fileRef}
-                            type="file"
-                            accept=".xlsx,.xls"
-                            className="hidden"
-                            onChange={(event) => handleUpload(event.target.files?.[0] || null)}
-                        />
-                        <button
-                            type="button"
-                            onClick={() => fileRef.current?.click()}
-                            disabled={busy}
-                            className="rounded-xl border border-orange-400/25 bg-orange-500/10 px-4 py-2 text-sm font-black text-orange-200 transition hover:bg-orange-500/20 disabled:opacity-50"
-                        >
-                            결과 Excel 업로드
-                        </button>
+                    <div className="flex flex-wrap items-start gap-2">
+                        <span className={`rounded-xl border px-4 py-2 text-sm font-black ${
+                            isLoopRunning
+                                ? 'animate-pulse border-emerald-400/30 bg-emerald-500/15 text-emerald-100'
+                                : 'border-cyan-400/25 bg-cyan-500/10 text-cyan-100'
+                        }`}>
+                            자동 무한 루프 {isLoopRunning ? '작동 중' : '준비 중'}
+                        </span>
+                        <span className="rounded-xl border border-white/10 bg-black/25 px-4 py-2 text-sm font-black text-slate-200">
+                            한 사이클 완료 후 즉시 다음 사이클
+                        </span>
+                        <span className="rounded-xl border border-cyan-400/20 bg-cyan-500/10 px-4 py-2 text-sm font-black text-cyan-100">
+                            {loopStatus?.current_cycle_label || '분석일자/회차 자동 기록'}
+                        </span>
                         {exportUrl && (
                             <a
                                 href={exportUrl}
@@ -486,7 +362,7 @@ export default function ManualStockAnalysisPage() {
                                     {LOOP_LABELS[loopStatus?.state || 'stopped'] || loopStatus?.state || '중지됨'}
                                 </span>
                                 <span className="rounded-full border border-white/10 bg-black/20 px-3 py-1 text-xs font-black text-slate-300">
-                                    {formatSeconds(loopStatus?.interval_sec || loopInterval * 60)} interval
+                                    {formatSeconds(loopStatus?.interval_sec ?? 0)} interval
                                 </span>
                                 <span className="rounded-full border border-cyan-400/20 bg-cyan-500/10 px-3 py-1 text-xs font-black text-cyan-100">
                                     source {loopStatus?.source_record_count || unfilteredTotal || 0}
@@ -503,7 +379,7 @@ export default function ManualStockAnalysisPage() {
                             </div>
                             <div className="rounded-xl border border-white/10 bg-black/20 px-3 py-2">
                                 <div className="text-slate-500">회차</div>
-                                <div className="text-lg text-white">{loopStatus?.iterations || 0}</div>
+                                <div className="text-lg text-white">{loopStatus?.cycle || loopStatus?.iterations || 0}</div>
                             </div>
                             <div className="rounded-xl border border-white/10 bg-black/20 px-3 py-2">
                                 <div className="text-slate-500">최근</div>
@@ -633,7 +509,7 @@ export default function ManualStockAnalysisPage() {
                         })}
                         {runHistory.length === 0 && (
                             <div className="rounded-2xl border border-dashed border-white/15 bg-white/[0.03] p-5 text-sm font-bold text-slate-500">
-                                아직 저장된 분석회차가 없습니다. 무한 루프를 시작하면 회차별 히스토리가 자동으로 쌓입니다.
+                                아직 저장된 분석회차가 없습니다. 페이지가 열리면 자동 루프가 시작되고 회차별 히스토리가 자동으로 쌓입니다.
                             </div>
                         )}
                     </div>
@@ -805,7 +681,7 @@ export default function ManualStockAnalysisPage() {
                             {!loading && (!detail?.records || detail.records.length === 0) && (
                                 <tr>
                                     <td colSpan={5} className="px-6 py-16 text-center text-sm font-bold text-slate-500">
-                                        표시할 AI 주식 분석 결과가 없습니다. 무한 루프 시작으로 기본 소스 전체를 순차 분석해 주세요.
+                                        표시할 AI 주식 분석 결과가 없습니다. 자동 루프가 기본 소스 전체를 순차 분석하면 이 표에 실시간으로 출력됩니다.
                                     </td>
                                 </tr>
                             )}

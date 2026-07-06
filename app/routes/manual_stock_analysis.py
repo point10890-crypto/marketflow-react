@@ -62,7 +62,7 @@ def scrape_manual_run():
 @manual_stock_analysis_bp.route("/scraper-loop", methods=["GET"])
 @pro_required
 def get_scraper_loop():
-    return jsonify(service.get_scraper_loop_status())
+    return jsonify(service.get_scraper_loop_status(auto_start=True))
 
 
 @manual_stock_analysis_bp.route("/scraper-loop/start", methods=["POST"])

@@ -41,7 +41,26 @@ def _env_float(name: str, default: float) -> float:
         return default
 
 
+def _env_int(name: str, default: int) -> int:
+    try:
+        return int(float(os.getenv(name, str(default))))
+    except Exception:
+        return default
+
+
+def _env_bool(name: str, default: bool) -> bool:
+    value = os.getenv(name)
+    if value is None:
+        return default
+    return value.strip().lower() not in {"0", "false", "no", "off"}
+
+
 DEFAULT_SCRAPE_DELAY_SEC = _env_float("MANUAL_STOCK_ANALYSIS_DELAY_SEC", 1.2)
+AUTO_LOOP_ENABLED = _env_bool("MANUAL_STOCK_ANALYSIS_AUTO_LOOP", True)
+AUTO_LOOP_MAX_ROWS = max(0, min(_env_int("MANUAL_STOCK_ANALYSIS_LOOP_MAX_ROWS", 0), MAX_SOURCE_ROWS))
+AUTO_LOOP_INTERVAL_SEC = max(0, min(_env_int("MANUAL_STOCK_ANALYSIS_LOOP_INTERVAL_SEC", 0), 86400))
+AUTO_LOOP_TIMEOUT_SEC = max(3, min(_env_int("MANUAL_STOCK_ANALYSIS_LOOP_TIMEOUT_SEC", 10), 30))
+AUTO_LOOP_ERROR_BACKOFF_SEC = max(5, min(_env_int("MANUAL_STOCK_ANALYSIS_LOOP_ERROR_BACKOFF_SEC", 30), 3600))
 
 DEFAULT_SOURCE_PATHS = [
     Path(os.getenv("MANUAL_STOCK_ANALYSIS_SOURCE_FILE", "")),
@@ -62,6 +81,8 @@ _LOOP_THREAD: threading.Thread | None = None
 _LOOP_STATE: dict[str, Any] = {
     "running": False,
     "state": "stopped",
+    "mode": "auto",
+    "auto_start": AUTO_LOOP_ENABLED,
     "max_rows": 0,
     "interval_sec": 60,
     "timeout_sec": 10,
@@ -80,6 +101,8 @@ _LOOP_STATE: dict[str, Any] = {
     "last_started_at": "",
     "last_finished_at": "",
     "next_run_at": "",
+    "current_cycle_label": "",
+    "cycle_started_at": "",
     "last_error": "",
 }
 
@@ -646,6 +669,22 @@ def _read_run(path: Path) -> dict[str, Any] | None:
         return None
 
 
+def _next_cycle_number_for_date(cycle_date: str) -> int:
+    ensure_storage()
+    highest = 0
+    for path in RUNS_DIR.glob("*.json"):
+        run = _read_run(path)
+        if not run:
+            continue
+        if run.get("cycle_date") != cycle_date:
+            continue
+        try:
+            highest = max(highest, int(run.get("cycle_number") or 0))
+        except Exception:
+            continue
+    return highest + 1
+
+
 def import_result_file(path: str | os.PathLike[str], *, original_name: str | None = None) -> dict[str, Any]:
     """Import a legacy result workbook into a durable manual run JSON."""
     ensure_storage()
@@ -880,10 +919,16 @@ def _build_scrape_run(
     timeout_sec: int,
     status: str,
     created_at: str,
+    cycle_date: str = "",
+    cycle_number: int | None = None,
+    cycle_label: str = "",
 ) -> dict[str, Any]:
     return {
         "run_id": run_id,
-        "title": f"{datetime.now().strftime('%Y년%m월%d일 %H:%M:%S')} - 실시간 스크래퍼 {max_rows}건",
+        "title": cycle_label or f"{datetime.now().strftime('%Y년%m월%d일 %H:%M:%S')} - 실시간 스크래퍼 {max_rows}건",
+        "cycle_date": cycle_date,
+        "cycle_number": cycle_number,
+        "cycle_label": cycle_label,
         "source_kind": "selenium_scrape",
         "source_path": str(source),
         "source_fingerprint": _file_fingerprint(source),
@@ -921,6 +966,9 @@ def scrape_source_run(
     progress_callback: Callable[[int, int, dict[str, Any]], None] | None = None,
     run_id: str | None = None,
     persist_progress: bool = False,
+    cycle_date: str = "",
+    cycle_number: int | None = None,
+    cycle_label: str = "",
 ) -> dict[str, Any]:
     """Run the legacy Investing.com-style scraper and persist a manual run.
 
@@ -949,6 +997,9 @@ def scrape_source_run(
         timeout_sec=timeout_sec,
         status="running",
         created_at=created_at,
+        cycle_date=cycle_date,
+        cycle_number=cycle_number,
+        cycle_label=cycle_label,
     )
     if persist_progress:
         _write_run(run)
@@ -1057,6 +1108,9 @@ def _scraper_loop_worker(
 ) -> None:
     while not _LOOP_STOP.is_set():
         started_at = _now()
+        cycle_date = datetime.now().strftime("%Y-%m-%d")
+        cycle_number = _next_cycle_number_for_date(cycle_date)
+        cycle_label = f"{cycle_date} - {cycle_number}회차"
         live_run_hash = hashlib.sha1(f"{started_at}:{max_rows}:{time.time()}".encode("utf-8", "ignore")).hexdigest()[:12]
         live_run_id = f"manual_scrape_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{live_run_hash}"
         try:
@@ -1079,21 +1133,23 @@ def _scraper_loop_worker(
                     last_started_at=started_at,
                     last_finished_at=_now(),
                     last_error=f"{type(exc).__name__}: {str(exc)[:220]}",
-                    next_run_at=(datetime.now() + timedelta(seconds=interval_sec)).strftime("%Y-%m-%d %H:%M:%S"),
+                    next_run_at=(datetime.now() + timedelta(seconds=AUTO_LOOP_ERROR_BACKOFF_SEC)).strftime("%Y-%m-%d %H:%M:%S"),
                 )
-                if _LOOP_STOP.wait(interval_sec):
+                if _LOOP_STOP.wait(AUTO_LOOP_ERROR_BACKOFF_SEC):
                     break
                 continue
 
         _loop_set(
             running=True,
             state="scraping",
+            mode="auto",
+            auto_start=AUTO_LOOP_ENABLED,
             max_rows=max_rows,
             interval_sec=interval_sec,
             timeout_sec=timeout_sec,
             source_path=source_path,
             source_record_count=source_record_count,
-            cycle=int(_LOOP_STATE.get("cycle") or 0) + 1,
+            cycle=cycle_number,
             processed=0,
             total=loop_total,
             current_rank=None,
@@ -1103,6 +1159,8 @@ def _scraper_loop_worker(
             last_run_id=live_run_id,
             last_record_count=0,
             last_started_at=started_at,
+            cycle_started_at=started_at,
+            current_cycle_label=cycle_label,
             next_run_at="",
             last_error="",
         )
@@ -1126,6 +1184,9 @@ def _scraper_loop_worker(
                 progress_callback=on_progress,
                 run_id=live_run_id,
                 persist_progress=True,
+                cycle_date=cycle_date,
+                cycle_number=cycle_number,
+                cycle_label=cycle_label,
             )
             with _LOOP_LOCK:
                 iterations = int(_LOOP_STATE.get("iterations") or 0) + 1
@@ -1151,14 +1212,33 @@ def _scraper_loop_worker(
 
         if _LOOP_STOP.is_set():
             break
-        next_run_at = (datetime.now() + timedelta(seconds=interval_sec)).strftime("%Y-%m-%d %H:%M:%S")
+        with _LOOP_LOCK:
+            last_state = str(_LOOP_STATE.get("state") or "")
+        wait_sec = AUTO_LOOP_ERROR_BACKOFF_SEC if interval_sec <= 0 and last_state == "error_waiting" else interval_sec
+        next_run_at = "immediate" if wait_sec <= 0 else (datetime.now() + timedelta(seconds=wait_sec)).strftime("%Y-%m-%d %H:%M:%S")
         _loop_set(next_run_at=next_run_at)
-        _LOOP_STOP.wait(interval_sec)
+        _LOOP_STOP.wait(wait_sec)
 
     _loop_set(running=False, state="stopped", next_run_at="")
 
 
-def get_scraper_loop_status() -> dict[str, Any]:
+def ensure_scraper_loop_started() -> dict[str, Any]:
+    snapshot = _loop_snapshot()
+    if snapshot.get("running") or not AUTO_LOOP_ENABLED:
+        return snapshot
+    return start_scraper_loop(
+        max_rows=AUTO_LOOP_MAX_ROWS,
+        interval_sec=AUTO_LOOP_INTERVAL_SEC,
+        timeout_sec=AUTO_LOOP_TIMEOUT_SEC,
+        xpath=DEFAULT_INVESTING_XPATH,
+    )
+
+
+def get_scraper_loop_status(*, auto_start: bool = False) -> dict[str, Any]:
+    if auto_start:
+        snapshot = ensure_scraper_loop_started()
+        if snapshot.get("running"):
+            return snapshot
     snapshot = _loop_snapshot()
     if snapshot.get("running") or int(snapshot.get("source_record_count") or 0) > 0:
         return snapshot
@@ -1185,7 +1265,7 @@ def start_scraper_loop(
     global _LOOP_THREAD
     requested_rows = int(max_rows or 0)
     safe_max_rows = 0 if requested_rows <= 0 else max(1, min(requested_rows, MAX_SOURCE_ROWS))
-    safe_interval = max(60, min(int(interval_sec or 900), 86400))
+    safe_interval = max(0, min(int(interval_sec or 0), 86400))
     safe_timeout = max(3, min(int(timeout_sec or 10), 30))
     source_path = ""
     source_record_count = 0
@@ -1205,6 +1285,8 @@ def start_scraper_loop(
         _LOOP_STATE.update({
             "running": True,
             "state": "starting",
+            "mode": "auto" if AUTO_LOOP_ENABLED and safe_interval == AUTO_LOOP_INTERVAL_SEC else "manual",
+            "auto_start": AUTO_LOOP_ENABLED,
             "max_rows": safe_max_rows,
             "interval_sec": safe_interval,
             "timeout_sec": safe_timeout,
@@ -1218,6 +1300,8 @@ def start_scraper_loop(
             "last_run_id": "",
             "last_record_count": 0,
             "next_run_at": "",
+            "current_cycle_label": "",
+            "cycle_started_at": "",
         })
         _LOOP_THREAD = threading.Thread(
             target=_scraper_loop_worker,
@@ -1270,6 +1354,9 @@ def list_runs() -> list[dict[str, Any]]:
             "title": run.get("title"),
             "created_at": run.get("created_at"),
             "updated_at": run.get("updated_at") or run.get("created_at"),
+            "cycle_date": run.get("cycle_date") or "",
+            "cycle_number": run.get("cycle_number"),
+            "cycle_label": run.get("cycle_label") or "",
             "status": _public_run_status(run, active_run_id),
             "record_count": run.get("record_count", len(run.get("records") or [])),
             "source_record_count": run.get("source_record_count") or run.get("record_count", len(run.get("records") or [])),
