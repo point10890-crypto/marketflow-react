@@ -82,3 +82,45 @@ def test_scraper_loop_status_tracks_progress(monkeypatch, tmp_path):
 
     stopped = svc.stop_scraper_loop()
     assert stopped["running"] is False
+
+
+def test_scrape_source_run_persists_live_progress_with_industry(monkeypatch, tmp_path):
+    _isolate_storage(monkeypatch, tmp_path)
+    source_file = tmp_path / "stock_data.xlsx"
+    pd.DataFrame([
+        {"순번": 1, "종목": "삼성전자 (005930)", "url": "https://example.com/a"},
+        {"순번": 2, "종목": "현대차 (005380)", "url": "https://example.com/b"},
+    ]).to_excel(source_file, index=False)
+
+    class FakeDriver:
+        def quit(self):
+            return None
+
+    calls = []
+
+    def fake_scrape_page_fields(driver, url, xpath, *, timeout_sec):
+        calls.append(url)
+        if url.endswith("/a"):
+            return {"result": "적극 매수", "industry": "반도체"}
+        return {"result": "중립", "industry": "자동차"}
+
+    monkeypatch.setattr(svc, "_create_selenium_driver", lambda: FakeDriver())
+    monkeypatch.setattr(svc, "_scrape_page_fields", fake_scrape_page_fields)
+
+    run = svc.scrape_source_run(
+        max_rows=2,
+        run_id="manual_scrape_live_test",
+        persist_progress=True,
+        delay_sec=0,
+    )
+
+    assert calls == ["https://example.com/a", "https://example.com/b"]
+    assert run["run_id"] == "manual_scrape_live_test"
+    assert run["status"] == "completed"
+    assert run["summary"] == {"적극 매수": 1, "중립": 1}
+
+    saved = svc.get_run("manual_scrape_live_test")
+    assert saved["records"][0]["result"] == "적극 매수"
+    assert saved["records"][0]["industry"] == "반도체"
+    assert saved["records"][0]["analyzed_at"] >= run["created_at"]
+    assert saved["records"][1]["industry"] == "자동차"

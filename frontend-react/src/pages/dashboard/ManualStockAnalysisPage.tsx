@@ -38,6 +38,7 @@ interface ScraperLoopStatus {
     total: number;
     current_rank: number | null;
     current_stock: string;
+    current_industry: string;
     current_result: string;
     last_run_id: string;
     last_record_count: number;
@@ -118,8 +119,14 @@ export default function ManualStockAnalysisPage() {
             const nextRuns: ManualRunSummary[] = data.runs || [];
             setRuns(nextRuns);
             setFilters((data.result_filters || DEFAULT_FILTERS).filter((filter: string) => filter !== '미분류'));
-            const nextSelected = preferredRunId || selectedRunId || nextRuns[0]?.run_id || '';
-            if (nextSelected) setSelectedRunId(nextSelected);
+            const preferredExists = preferredRunId && nextRuns.some((run) => run.run_id === preferredRunId);
+            const selectedExists = selectedRunId && nextRuns.some((run) => run.run_id === selectedRunId);
+            const nextSelected = preferredExists
+                ? preferredRunId
+                : selectedExists
+                    ? selectedRunId
+                    : nextRuns[0]?.run_id || '';
+            setSelectedRunId(nextSelected);
         } catch (err) {
             setMessage(err instanceof Error ? err.message : '회차 목록 조회 실패');
         } finally {
@@ -272,8 +279,10 @@ export default function ManualStockAnalysisPage() {
             });
             const data = await res.json().catch(() => ({}));
             if (!res.ok) throw new Error(data.error || `루프 시작 실패 (${res.status})`);
+            loopRunRef.current = '';
             setLoopStatus(data);
             setMessage('실시간 스크래퍼 루프가 시작되었습니다.');
+            await fetchLoopStatus();
         } catch (err) {
             setMessage(err instanceof Error ? err.message : '루프 시작 실패');
         } finally {
@@ -308,14 +317,20 @@ export default function ManualStockAnalysisPage() {
         return `${API_BASE}/api/manual-stock-analysis/runs/${selectedRunId}/export?${params.toString()}`;
     }, [query, selectedResult, selectedRunId]);
 
-    const summary = selectedRun?.summary || detail?.summary || {};
+    const summary = detail?.summary || selectedRun?.summary || {};
     const total = detail?.filtered_count ?? selectedRun?.record_count ?? 0;
+    const unfilteredTotal = detail?.record_count ?? selectedRun?.record_count ?? total;
     const visibleRecords = (detail?.records || []).slice(0, 500);
     const hiddenRecordCount = Math.max(0, (detail?.records?.length || 0) - visibleRecords.length);
     const loopTotal = loopStatus?.total || loopStatus?.max_rows || scrapeRows;
     const loopProcessed = loopStatus?.processed || 0;
     const loopProgress = loopTotal > 0 ? Math.min(100, Math.round((loopProcessed / loopTotal) * 100)) : 0;
     const isLoopRunning = !!loopStatus?.running;
+    const isLiveRunSelected = isLoopRunning && !!loopStatus?.last_run_id && selectedRunId === loopStatus.last_run_id;
+
+    const applyResultFilter = (result: string) => {
+        setSelectedResult(result);
+    };
 
     return (
         <div className="space-y-5">
@@ -464,10 +479,14 @@ export default function ManualStockAnalysisPage() {
                         />
                     </div>
 
-                    <div className="mt-4 grid gap-3 text-sm font-bold text-slate-300 lg:grid-cols-4">
+                    <div className="mt-4 grid gap-3 text-sm font-bold text-slate-300 md:grid-cols-2 xl:grid-cols-5">
                         <div className="rounded-xl border border-white/10 bg-black/20 p-3">
                             <div className="text-[10px] uppercase tracking-[0.18em] text-slate-500">현재 종목</div>
                             <div className="mt-1 text-white">{loopStatus?.current_stock || '--'}</div>
+                        </div>
+                        <div className="rounded-xl border border-white/10 bg-black/20 p-3">
+                            <div className="text-[10px] uppercase tracking-[0.18em] text-slate-500">산업</div>
+                            <div className="mt-1 text-white">{loopStatus?.current_industry || '--'}</div>
                         </div>
                         <div className="rounded-xl border border-white/10 bg-black/20 p-3">
                             <div className="text-[10px] uppercase tracking-[0.18em] text-slate-500">현재 판정</div>
@@ -528,16 +547,30 @@ export default function ManualStockAnalysisPage() {
                 </div>
 
                 <div className="mt-5 flex flex-wrap items-center gap-2">
-                    <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-black text-slate-300">
-                        {total.toLocaleString('ko-KR')} rows
-                    </span>
+                    <button
+                        type="button"
+                        onClick={() => applyResultFilter('all')}
+                        className={`rounded-full border px-3 py-1.5 text-xs font-black transition ${
+                            selectedResult === 'all'
+                                ? 'border-cyan-300/50 bg-cyan-400/15 text-cyan-100 shadow-lg shadow-cyan-950/30'
+                                : 'border-white/10 bg-white/5 text-slate-300 hover:border-cyan-300/40 hover:bg-cyan-400/10'
+                        }`}
+                    >
+                        전체 {unfilteredTotal.toLocaleString('ko-KR')}
+                    </button>
                     {Object.entries(summary).map(([label, count]) => (
-                        <span
+                        <button
+                            type="button"
                             key={label}
-                            className={`rounded-full border px-3 py-1.5 text-xs font-black ${resultClass(label)}`}
+                            onClick={() => applyResultFilter(label)}
+                            className={`rounded-full border px-3 py-1.5 text-xs font-black transition ${resultClass(label)} ${
+                                selectedResult === label
+                                    ? 'ring-2 ring-white/50 shadow-lg shadow-black/20'
+                                    : 'hover:ring-1 hover:ring-white/30'
+                            }`}
                         >
                             {label} {Number(count).toLocaleString('ko-KR')}
-                        </span>
+                        </button>
                     ))}
                     {loading && <span className="text-xs font-bold text-slate-500">loading...</span>}
                     {message && <span className="text-xs font-bold text-amber-300">{message}</span>}
@@ -551,7 +584,9 @@ export default function ManualStockAnalysisPage() {
                         <h2 className="text-lg font-black">AI 주식 분석 결과</h2>
                     </div>
                     <div className="text-right text-xs font-bold text-slate-500">
-                        {hiddenRecordCount > 0
+                        {isLiveRunSelected
+                            ? `실시간 루프 갱신 중 · ${loopProcessed}/${loopTotal} · ${loopStatus?.current_stock || '대기'}`
+                            : hiddenRecordCount > 0
                             ? `화면 ${visibleRecords.length.toLocaleString('ko-KR')}건 표시 · 추가 ${hiddenRecordCount.toLocaleString('ko-KR')}건은 엑셀 다운로드`
                             : detail?.created_at || selectedRun?.created_at || '--'}
                     </div>

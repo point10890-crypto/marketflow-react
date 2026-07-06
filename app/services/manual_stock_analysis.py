@@ -28,6 +28,7 @@ from app.utils.paths import DATA_DIR, TICKER_MAP_PATH
 SERVICE_ROOT = Path(DATA_DIR) / "manual_stock_analysis"
 RUNS_DIR = SERVICE_ROOT / "runs"
 UPLOADS_DIR = SERVICE_ROOT / "uploads"
+STOCK_ANALYZER_CACHE_DIR = Path(DATA_DIR) / "stock_analyzer_cache"
 
 DEFAULT_SOURCE_PATHS = [
     Path(os.getenv("MANUAL_STOCK_ANALYSIS_SOURCE_FILE", "")),
@@ -56,6 +57,7 @@ _LOOP_STATE: dict[str, Any] = {
     "total": 0,
     "current_rank": None,
     "current_stock": "",
+    "current_industry": "",
     "current_result": "",
     "last_run_id": "",
     "last_record_count": 0,
@@ -148,6 +150,55 @@ def _coalesce(row: pd.Series, names: list[str], default: str = "") -> str:
     return default
 
 
+def _is_missing_industry(value: Any) -> bool:
+    text = _clean_text(value)
+    return not text or text in {"미분류", "-", "N/A", "na", "None"}
+
+
+def _cached_industry_for(ticker: str, market: str = "") -> str:
+    code = _clean_text(ticker).replace(".KS", "").replace(".KQ", "").zfill(6)
+    if not code or code == "000000":
+        return ""
+    suffixes = []
+    market_text = _clean_text(market).upper()
+    if market_text == "KOSPI":
+        suffixes.append("KS")
+    elif market_text == "KOSDAQ":
+        suffixes.append("KQ")
+    suffixes.extend(["KS", "KQ", ""])
+    seen: set[str] = set()
+    for suffix in suffixes:
+        cache_name = f"{code}_{suffix}.json" if suffix else f"{code}.json"
+        if cache_name in seen:
+            continue
+        seen.add(cache_name)
+        path = STOCK_ANALYZER_CACHE_DIR / cache_name
+        if not path.is_file():
+            continue
+        try:
+            with path.open("r", encoding="utf-8") as f:
+                data = json.load(f)
+        except Exception:
+            continue
+        key_stats = data.get("key_stats") if isinstance(data.get("key_stats"), dict) else {}
+        for candidate in (
+            data.get("industry"),
+            key_stats.get("industry"),
+            data.get("sector"),
+            key_stats.get("sector"),
+        ):
+            if not _is_missing_industry(candidate):
+                return _clean_text(candidate)
+    return ""
+
+
+def _resolve_industry(row: pd.Series, ticker: str, market: str) -> str:
+    direct = _coalesce(row, ["산업", "업종", "industry", "sector"], "")
+    if not _is_missing_industry(direct):
+        return direct
+    return _cached_industry_for(ticker, market) or "미분류"
+
+
 def _read_excel_records(path: Path, *, pending: bool = False) -> list[dict[str, Any]]:
     df = pd.read_excel(path)
     lookup = _ticker_lookup()
@@ -155,6 +206,7 @@ def _read_excel_records(path: Path, *, pending: bool = False) -> list[dict[str, 
     for idx, row in df.iterrows():
         raw_name = _coalesce(row, ["종목", "종목명", "name", "stock"], f"row-{idx + 1}")
         stock_name, ticker, market = _split_stock_name(raw_name, lookup)
+        industry = _resolve_industry(row, ticker, market)
         raw_result = "분석중" if pending else _coalesce(row, ["분석 결과", "분석결과", "result", "recommendation"], "미분류")
         analyzed_at = _coalesce(row, ["분석일시", "오늘 날짜", "date", "created_at"], "")
         records.append({
@@ -162,7 +214,7 @@ def _read_excel_records(path: Path, *, pending: bool = False) -> list[dict[str, 
             "stock_name": stock_name,
             "ticker": ticker,
             "market": market,
-            "industry": _coalesce(row, ["산업", "industry", "sector"], "미분류"),
+            "industry": industry,
             "source_url": _coalesce(row, ["url", "URL", "source_url"], ""),
             "raw_result": raw_result,
             "result": _normalise_label(raw_result),
@@ -301,7 +353,25 @@ def _create_selenium_driver():
     return webdriver.Chrome(service=service, options=chrome_options)
 
 
-def _scrape_element_text(driver: Any, url: str, xpath: str, *, timeout_sec: int) -> str:
+def _extract_industry_from_text(text: str) -> str:
+    visible_text = _clean_text(text)
+    if not visible_text:
+        return ""
+    patterns = [
+        r"(?:산업|업종)\s*[:：]?\s*([^\n\r]{2,50})",
+        r"(?:Industry|Sector)\s*[:：]?\s*([^\n\r]{2,70})",
+    ]
+    for pattern in patterns:
+        match = re.search(pattern, visible_text, flags=re.IGNORECASE)
+        if not match:
+            continue
+        candidate = re.split(r"\s{2,}|\t|[|]", match.group(1).strip())[0].strip()
+        if not _is_missing_industry(candidate):
+            return candidate[:70]
+    return ""
+
+
+def _scrape_page_fields(driver: Any, url: str, xpath: str, *, timeout_sec: int) -> dict[str, str]:
     from selenium.webdriver.common.by import By
     from selenium.webdriver.support import expected_conditions as EC
     from selenium.webdriver.support.ui import WebDriverWait
@@ -310,7 +380,55 @@ def _scrape_element_text(driver: Any, url: str, xpath: str, *, timeout_sec: int)
     element = WebDriverWait(driver, timeout_sec).until(
         EC.presence_of_element_located((By.XPATH, xpath))
     )
-    return _clean_text(element.text)
+    visible_text = ""
+    try:
+        visible_text = driver.execute_script("return document.body ? document.body.innerText : '';") or ""
+    except Exception:
+        visible_text = ""
+    return {
+        "result": _clean_text(element.text),
+        "industry": _extract_industry_from_text(visible_text),
+    }
+
+
+def _build_scrape_run(
+    *,
+    run_id: str,
+    source: Path,
+    records: list[dict[str, Any]],
+    xpath: str,
+    max_rows: int,
+    timeout_sec: int,
+    status: str,
+    created_at: str,
+) -> dict[str, Any]:
+    return {
+        "run_id": run_id,
+        "title": f"{datetime.now().strftime('%Y년%m월%d일 %H:%M:%S')} - 실시간 스크래퍼 {max_rows}건",
+        "source_kind": "selenium_scrape",
+        "source_path": str(source),
+        "source_fingerprint": _file_fingerprint(source),
+        "created_at": created_at,
+        "updated_at": _now(),
+        "status": status,
+        "record_count": len(records),
+        "summary": _summary(records),
+        "records": records,
+        "scraper": {
+            "xpath": xpath,
+            "max_rows": max_rows,
+            "timeout_sec": timeout_sec,
+        },
+    }
+
+
+def _persist_scrape_run(run: dict[str, Any], *, records: list[dict[str, Any]], status: str) -> dict[str, Any]:
+    run["records"] = records
+    run["record_count"] = len(records)
+    run["summary"] = _summary(records)
+    run["updated_at"] = _now()
+    run["status"] = status
+    return _write_run(run)
 
 
 def scrape_source_run(
@@ -320,6 +438,8 @@ def scrape_source_run(
     timeout_sec: int = 10,
     delay_sec: float = 0.15,
     progress_callback: Callable[[int, int, dict[str, Any]], None] | None = None,
+    run_id: str | None = None,
+    persist_progress: bool = False,
 ) -> dict[str, Any]:
     """Run the legacy Investing.com-style scraper and persist a manual run.
 
@@ -330,9 +450,26 @@ def scrape_source_run(
     source = _find_source_workbook()
     safe_max_rows = max(1, min(int(max_rows or 20), 200))
     timeout_sec = max(3, min(int(timeout_sec or 10), 30))
+    created_at = _now()
+    fingerprint = hashlib.sha1(f"{source.resolve()}:{created_at}:{safe_max_rows}".encode("utf-8", "ignore")).hexdigest()[:16]
+    current_run_id = run_id or f"manual_scrape_{fingerprint}"
     records = _read_excel_records(source, pending=True)[:safe_max_rows]
-    driver = _create_selenium_driver()
+    run = _build_scrape_run(
+        run_id=current_run_id,
+        source=source,
+        records=records,
+        xpath=xpath,
+        max_rows=safe_max_rows,
+        timeout_sec=timeout_sec,
+        status="running",
+        created_at=created_at,
+    )
+    if persist_progress:
+        _write_run(run)
+
+    driver = None
     try:
+        driver = _create_selenium_driver()
         total = len(records)
         for index, record in enumerate(records, start=1):
             url = _clean_text(record.get("source_url"))
@@ -343,46 +480,44 @@ def scrape_source_run(
                 record["analyzed_at"] = _now()
                 if progress_callback:
                     progress_callback(index, total, dict(record))
+                if persist_progress:
+                    _persist_scrape_run(run, records=records, status="running")
                 if delay_sec > 0:
                     time.sleep(min(delay_sec, 2.0))
                 continue
             try:
-                scraped = _scrape_element_text(driver, url, xpath, timeout_sec=timeout_sec)
+                scraped_fields = _scrape_page_fields(driver, url, xpath, timeout_sec=timeout_sec)
+                scraped = scraped_fields.get("result", "")
                 record["raw_result"] = scraped or "오류"
                 record["result"] = _normalise_label(scraped)
+                scraped_industry = scraped_fields.get("industry", "")
+                if not _is_missing_industry(scraped_industry):
+                    record["industry"] = scraped_industry
             except Exception as exc:
                 record["raw_result"] = "오류"
                 record["result"] = "오류"
                 record["error"] = f"{type(exc).__name__}: {str(exc)[:160]}"
+            if _is_missing_industry(record.get("industry")):
+                record["industry"] = _cached_industry_for(record.get("ticker", ""), record.get("market", "")) or "미분류"
             record["analyzed_at"] = _now()
             if progress_callback:
                 progress_callback(index, total, dict(record))
+            if persist_progress:
+                _persist_scrape_run(run, records=records, status="running")
             if delay_sec > 0:
                 time.sleep(min(delay_sec, 2.0))
+    except Exception:
+        if persist_progress:
+            _persist_scrape_run(run, records=records, status="error")
+        raise
     finally:
-        try:
-            driver.quit()
-        except Exception:
-            pass
+        if driver is not None:
+            try:
+                driver.quit()
+            except Exception:
+                pass
 
-    fingerprint = hashlib.sha1(f"{source.resolve()}:{_now()}:{safe_max_rows}".encode("utf-8", "ignore")).hexdigest()[:16]
-    run = {
-        "run_id": f"manual_scrape_{fingerprint}",
-        "title": f"{datetime.now().strftime('%Y년%m월%d일')} - 스크래퍼 {safe_max_rows}건",
-        "source_kind": "selenium_scrape",
-        "source_path": str(source),
-        "source_fingerprint": fingerprint,
-        "created_at": _now(),
-        "record_count": len(records),
-        "summary": _summary(records),
-        "records": records,
-        "scraper": {
-            "xpath": xpath,
-            "max_rows": safe_max_rows,
-            "timeout_sec": timeout_sec,
-        },
-    }
-    return _write_run(run)
+    return _persist_scrape_run(run, records=records, status="completed")
 
 
 def _scraper_loop_worker(
@@ -394,6 +529,8 @@ def _scraper_loop_worker(
 ) -> None:
     while not _LOOP_STOP.is_set():
         started_at = _now()
+        live_run_hash = hashlib.sha1(f"{started_at}:{max_rows}:{time.time()}".encode("utf-8", "ignore")).hexdigest()[:12]
+        live_run_id = f"manual_scrape_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{live_run_hash}"
         _loop_set(
             running=True,
             state="scraping",
@@ -404,7 +541,10 @@ def _scraper_loop_worker(
             total=max_rows,
             current_rank=None,
             current_stock="",
+            current_industry="",
             current_result="",
+            last_run_id=live_run_id,
+            last_record_count=0,
             last_started_at=started_at,
             next_run_at="",
             last_error="",
@@ -417,6 +557,7 @@ def _scraper_loop_worker(
                 total=total,
                 current_rank=record.get("rank"),
                 current_stock=record.get("stock_name") or "",
+                current_industry=record.get("industry") or "",
                 current_result=record.get("result") or record.get("raw_result") or "",
             )
 
@@ -426,6 +567,8 @@ def _scraper_loop_worker(
                 xpath=xpath,
                 timeout_sec=timeout_sec,
                 progress_callback=on_progress,
+                run_id=live_run_id,
+                persist_progress=True,
             )
             with _LOOP_LOCK:
                 iterations = int(_LOOP_STATE.get("iterations") or 0) + 1
