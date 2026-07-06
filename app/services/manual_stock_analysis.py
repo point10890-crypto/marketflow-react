@@ -133,6 +133,7 @@ _RECOMMENDATION_ANCHORS = (
     "pro score",
     "pro-score",
     "technical",
+    "technical analysis",
     "summary",
     "recommendation",
     "signal",
@@ -143,7 +144,13 @@ _RECOMMENDATION_ANCHORS = (
     "분석",
     "추천",
     "판정",
+    "기술적 분석",
+    "기술 분석",
+    "애널리스트 센티멘트",
+    "애널리스트 센티먼트",
 )
+
+_INVESTING_SIGNAL_LABELS = {"적극 매수", "매수", "중립", "매도", "적극 매도"}
 
 
 def _extract_recommendation_from_text(text: str) -> str:
@@ -171,6 +178,174 @@ def _extract_recommendation_from_text(text: str) -> str:
         if re.search(r"^(적극\s*매수|적극\s*매도|매수|매도|중립|STRONG\s+BUY|STRONG\s+SELL|BUY|SELL|HOLD|NEUTRAL)$", compact, re.IGNORECASE):
             return _normalise_label(compact)
     return ""
+
+
+def _visible_lines(text: str) -> list[str]:
+    return [
+        _clean_text(line)
+        for line in re.split(r"[\n\r\t]+", _clean_text(text))
+        if _clean_text(line)
+    ]
+
+
+def _strip_anchor_value(line: str, anchor: str) -> str:
+    if anchor not in line:
+        return ""
+    return line.split(anchor, 1)[1].strip(" :：›>.-")
+
+
+def _extract_signal_after_anchor(lines: list[str], anchors: tuple[str, ...], *, scan_ahead: int = 10) -> str:
+    for index, line in enumerate(lines):
+        if not any(anchor in line for anchor in anchors):
+            continue
+        candidates = []
+        for anchor in anchors:
+            after = _strip_anchor_value(line, anchor)
+            if after:
+                candidates.append(after)
+        candidates.extend(lines[index + 1: index + 1 + scan_ahead])
+        for candidate in candidates:
+            if "잠금" in candidate or "확인" in candidate:
+                continue
+            label = _normalise_label(candidate)
+            if label in _INVESTING_SIGNAL_LABELS:
+                return label
+    return ""
+
+
+def _extract_text_after_anchor(
+    lines: list[str],
+    anchors: tuple[str, ...],
+    *,
+    scan_ahead: int = 4,
+    allow_numeric: bool = True,
+) -> str:
+    for index, line in enumerate(lines):
+        if not any(anchor in line for anchor in anchors):
+            continue
+        candidates = []
+        for anchor in anchors:
+            after = _strip_anchor_value(line, anchor)
+            if after:
+                candidates.append(after)
+        candidates.extend(lines[index + 1: index + 1 + scan_ahead])
+        for candidate in candidates:
+            value = _clean_text(candidate)
+            if not value or "잠금" in value or "확인" in value:
+                continue
+            if not allow_numeric and re.fullmatch(r"[-+.,%0-9]+", value):
+                continue
+            return value[:80]
+    return ""
+
+
+def _extract_numeric_after_anchor(lines: list[str], anchors: tuple[str, ...], *, scan_ahead: int = 5) -> str:
+    for index, line in enumerate(lines):
+        if not any(anchor in line for anchor in anchors):
+            continue
+        candidates = []
+        for anchor in anchors:
+            after = _strip_anchor_value(line, anchor)
+            if after:
+                candidates.append(after)
+        candidates.extend(lines[index + 1: index + 1 + scan_ahead])
+        for candidate in candidates:
+            value = _clean_text(candidate)
+            if re.search(r"[-+]?\d[\d,.]*(?:\.\d+)?%?", value):
+                return value[:80]
+    return ""
+
+
+def _extract_text_after_exact_label(
+    lines: list[str],
+    labels: tuple[str, ...],
+    *,
+    scan_ahead: int = 4,
+    allow_numeric: bool = True,
+    reverse: bool = False,
+) -> str:
+    label_set = {label.lower() for label in labels}
+    indexed_lines = list(enumerate(lines))
+    if reverse:
+        indexed_lines.reverse()
+    for index, line in indexed_lines:
+        if line.strip().lower() not in label_set:
+            continue
+        for candidate in lines[index + 1: index + 1 + scan_ahead]:
+            value = _clean_text(candidate)
+            if not value or "잠금" in value or "확인" in value:
+                continue
+            if not allow_numeric and re.fullmatch(r"[-+.,%0-9]+", value):
+                continue
+            return value[:80]
+    return ""
+
+
+def _extract_numeric_after_exact_label(lines: list[str], labels: tuple[str, ...], *, scan_ahead: int = 5) -> str:
+    label_set = {label.lower() for label in labels}
+    for index, line in enumerate(lines):
+        if line.strip().lower() not in label_set:
+            continue
+        for candidate in lines[index + 1: index + 1 + scan_ahead]:
+            value = _clean_text(candidate)
+            if re.fullmatch(r"[-+]?\d[\d,.]*(?:\.\d+)?%?", value):
+                return value[:80]
+    return ""
+
+
+def _extract_profile_market_country(lines: list[str]) -> str:
+    for index, line in enumerate(lines):
+        if line.strip().lower() not in {"시장", "market"}:
+            continue
+        previous = {item.strip().lower() for item in lines[max(0, index - 8):index]}
+        if not ({"직원", "employees"} & previous):
+            continue
+        for candidate in lines[index + 1:index + 5]:
+            value = _clean_text(candidate)
+            if value and not re.fullmatch(r"[-+.,%0-9]+", value):
+                return value[:80]
+    return ""
+
+
+def _extract_investing_snapshot_fields(text: str) -> dict[str, str]:
+    lines = _visible_lines(text)
+    if not lines:
+        return {}
+
+    technical_result = _extract_signal_after_anchor(lines, ("기술적 분석", "기술 분석", "Technical Analysis"))
+    analyst_sentiment = _extract_signal_after_anchor(
+        lines,
+        ("애널리스트 센티멘트", "애널리스트 센티먼트", "Analyst Sentiment"),
+    )
+    industry = (
+        _extract_text_after_exact_label(lines, ("산업", "Industry"), allow_numeric=False, reverse=True)
+        or _extract_text_after_anchor(lines, ("산업", "Industry"), allow_numeric=False)
+    )
+    sector = _extract_text_after_exact_label(lines, ("부문", "Sector"), allow_numeric=False, reverse=True)
+    employees = _extract_text_after_exact_label(lines, ("직원", "Employees"), reverse=True)
+    market_country = (
+        _extract_profile_market_country(lines)
+        or _extract_text_after_exact_label(lines, ("시장", "Market"), allow_numeric=False, reverse=True)
+    )
+    target_price = _extract_text_after_exact_label(lines, ("목표 주가", "Target Price"))
+    upside_potential = _extract_numeric_after_exact_label(lines, ("상승 여력 있음", "Upside"))
+
+    result = analyst_sentiment or technical_result
+    return {
+        key: value
+        for key, value in {
+            "result": result,
+            "technical_result": technical_result,
+            "analyst_sentiment": analyst_sentiment,
+            "industry": industry,
+            "sector": sector,
+            "employees": employees,
+            "market_country": market_country,
+            "target_price": target_price,
+            "upside_potential": upside_potential,
+        }.items()
+        if value
+    }
 
 
 def _blocked_page_reason(text: str) -> str:
@@ -530,6 +705,7 @@ def _scrape_page_fields(driver: Any, url: str, xpath: str, *, timeout_sec: int) 
     if block_reason:
         raise RuntimeError(f"target page blocked: {block_reason}")
 
+    snapshot_fields = _extract_investing_snapshot_fields(visible_text)
     result_text = ""
     if xpath:
         try:
@@ -539,13 +715,21 @@ def _scrape_page_fields(driver: Any, url: str, xpath: str, *, timeout_sec: int) 
             result_text = _clean_text(element.text)
         except Exception:
             result_text = ""
+    result_text = snapshot_fields.get("result") or result_text
     if not result_text:
         result_text = _extract_recommendation_from_text(visible_text)
     if load_error is not None and not visible_text and not result_text:
         raise RuntimeError(f"page load failed: {type(load_error).__name__}: {str(load_error)[:120]}")
     return {
         "result": result_text,
-        "industry": _extract_industry_from_text(visible_text),
+        "industry": snapshot_fields.get("industry") or _extract_industry_from_text(visible_text),
+        "technical_result": snapshot_fields.get("technical_result", ""),
+        "analyst_sentiment": snapshot_fields.get("analyst_sentiment", ""),
+        "sector": snapshot_fields.get("sector", ""),
+        "employees": snapshot_fields.get("employees", ""),
+        "market_country": snapshot_fields.get("market_country", ""),
+        "target_price": snapshot_fields.get("target_price", ""),
+        "upside_potential": snapshot_fields.get("upside_potential", ""),
     }
 
 
@@ -670,6 +854,18 @@ def scrape_source_run(
                 scraped_industry = scraped_fields.get("industry", "")
                 if not _is_missing_industry(scraped_industry):
                     record["industry"] = scraped_industry
+                for field in (
+                    "technical_result",
+                    "analyst_sentiment",
+                    "sector",
+                    "employees",
+                    "market_country",
+                    "target_price",
+                    "upside_potential",
+                ):
+                    value = _clean_text(scraped_fields.get(field))
+                    if value:
+                        record[field] = value
                 record["scrape_state"] = "completed"
             except Exception as exc:
                 # A third-party page timeout/block is a data-collection gap, not

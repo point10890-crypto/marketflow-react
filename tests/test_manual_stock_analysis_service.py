@@ -101,7 +101,38 @@ def test_scrape_page_fields_uses_partial_dom_after_load_timeout(monkeypatch):
 
     fields = svc._scrape_page_fields(FakeDriver(), "https://example.com", "//missing", timeout_sec=5)
 
-    assert fields == {"result": "적극 매수", "industry": "Semiconductors"}
+    assert fields["result"] == "적극 매수"
+    assert fields["industry"] == "Semiconductors"
+
+
+def test_investing_snapshot_prefers_analyst_sentiment_over_technical():
+    fields = svc._extract_investing_snapshot_fields("""
+    005935 점수
+    기술적 분석
+    중립
+    애널리스트 센티멘트
+    적극 매수
+    목표 주가
+    348,450
+    상승 여력 있음
+    +63.98%
+    산업
+    컴퓨터, 전화 및 가전제품
+    부문
+    기술
+    직원
+    128735
+    시장
+    한국
+    """)
+
+    assert fields["result"] == "적극 매수"
+    assert fields["technical_result"] == "중립"
+    assert fields["analyst_sentiment"] == "적극 매수"
+    assert fields["target_price"] == "348,450"
+    assert fields["upside_potential"] == "+63.98%"
+    assert fields["industry"] == "컴퓨터, 전화 및 가전제품"
+    assert fields["sector"] == "기술"
 
 
 def test_scraper_loop_status_tracks_progress(monkeypatch, tmp_path):
@@ -173,6 +204,49 @@ def test_scrape_source_run_persists_live_progress_with_industry(monkeypatch, tmp
     assert saved["records"][0]["industry"] == "반도체"
     assert saved["records"][0]["analyzed_at"] >= run["created_at"]
     assert saved["records"][1]["industry"] == "자동차"
+
+
+def test_scrape_source_run_persists_investing_snapshot_fields(monkeypatch, tmp_path):
+    _isolate_storage(monkeypatch, tmp_path)
+    source_file = tmp_path / "stock_data.xlsx"
+    pd.DataFrame([
+        {"순번": 1, "종목": "삼성전자우 (005935)", "산업": "컴퓨터", "url": "https://example.com/pref"},
+    ]).to_excel(source_file, index=False)
+
+    class FakeDriver:
+        def quit(self):
+            return None
+
+    def fake_scrape_page_fields(driver, url, xpath, *, timeout_sec):
+        return {
+            "result": "적극 매수",
+            "technical_result": "중립",
+            "analyst_sentiment": "적극 매수",
+            "industry": "컴퓨터, 전화 및 가전제품",
+            "sector": "기술",
+            "target_price": "348,450",
+            "upside_potential": "+63.98%",
+        }
+
+    monkeypatch.setattr(svc, "_create_selenium_driver", lambda: FakeDriver())
+    monkeypatch.setattr(svc, "_scrape_page_fields", fake_scrape_page_fields)
+
+    run = svc.scrape_source_run(
+        max_rows=1,
+        run_id="manual_scrape_snapshot_fields",
+        persist_progress=True,
+        delay_sec=0,
+    )
+
+    saved = svc.get_run(run["run_id"])
+    record = saved["records"][0]
+    assert record["result"] == "적극 매수"
+    assert record["technical_result"] == "중립"
+    assert record["analyst_sentiment"] == "적극 매수"
+    assert record["industry"] == "컴퓨터, 전화 및 가전제품"
+    assert record["sector"] == "기술"
+    assert record["target_price"] == "348,450"
+    assert record["upside_potential"] == "+63.98%"
 
 
 def test_scrape_source_run_marks_collection_gap_as_analysis_pending(monkeypatch, tmp_path):

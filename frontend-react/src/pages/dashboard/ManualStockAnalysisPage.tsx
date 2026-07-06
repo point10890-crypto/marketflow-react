@@ -25,6 +25,14 @@ interface ManualRecord {
     result: string;
     analyzed_at: string;
     scrape_state?: 'pending' | 'scraping' | 'completed' | 'error';
+    scrape_fallback?: string;
+    technical_result?: string;
+    analyst_sentiment?: string;
+    sector?: string;
+    employees?: string;
+    market_country?: string;
+    target_price?: string;
+    upside_potential?: string;
 }
 
 interface ManualRunDetail extends ManualRunSummary {
@@ -740,11 +748,45 @@ export default function ManualStockAnalysisPage() {
                                         <div>{record.stock_name}{record.ticker ? ` (${record.ticker})` : ''}</div>
                                         {record.market && <div className="text-[11px] font-black uppercase tracking-widest text-slate-400">{record.market}</div>}
                                     </td>
-                                    <td className="border-b border-r border-slate-200 px-4 py-3 text-center">{record.industry || '미분류'}</td>
+                                    <td className="border-b border-r border-slate-200 px-4 py-3 text-center">
+                                        <div className="font-semibold">{record.industry || '미분류'}</div>
+                                        {record.sector && (
+                                            <div className="mt-1 text-[11px] font-black uppercase tracking-widest text-blue-700">
+                                                부문 {record.sector}
+                                            </div>
+                                        )}
+                                    </td>
                                     <td className="border-b border-r border-slate-200 px-4 py-3 text-center">
                                         <span className={`inline-flex rounded-full border px-3 py-1 text-xs font-black ${resultClass(record.result)}`}>
                                             {record.result}
                                         </span>
+                                        <div className="mt-2 flex flex-wrap justify-center gap-1.5 text-[10px] font-black">
+                                            {record.analyst_sentiment && (
+                                                <span className="rounded-full border border-red-200 bg-red-50 px-2 py-1 text-red-600">
+                                                    애널 {record.analyst_sentiment}
+                                                </span>
+                                            )}
+                                            {record.technical_result && (
+                                                <span className="rounded-full border border-slate-200 bg-white px-2 py-1 text-slate-600">
+                                                    기술 {record.technical_result}
+                                                </span>
+                                            )}
+                                            {record.target_price && (
+                                                <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-1 text-emerald-700">
+                                                    목표 {record.target_price}
+                                                </span>
+                                            )}
+                                            {record.upside_potential && (
+                                                <span className="rounded-full border border-orange-200 bg-orange-50 px-2 py-1 text-orange-700">
+                                                    여력 {record.upside_potential}
+                                                </span>
+                                            )}
+                                            {record.scrape_fallback && (
+                                                <span className="rounded-full border border-violet-200 bg-violet-50 px-2 py-1 text-violet-700">
+                                                    fallback
+                                                </span>
+                                            )}
+                                        </div>
                                         {record.scrape_state === 'scraping' && (
                                             <span className="ml-2 inline-flex animate-pulse rounded-full border border-cyan-300 bg-cyan-100 px-2 py-1 text-[10px] font-black text-cyan-700">
                                                 진행중
