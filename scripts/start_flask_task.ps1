@@ -57,6 +57,7 @@ $flaskProcess = Start-Process `
 
 Add-Content -Path $ControlLog -Encoding UTF8 -Value "$(Get-Date -Format o) started flask_app.py pid=$($flaskProcess.Id)"
 
+$healthy = $false
 for ($attempt = 1; $attempt -le 30; $attempt++) {
     Start-Sleep -Seconds 2
 
@@ -70,7 +71,8 @@ for ($attempt = 1; $attempt -le 30; $attempt++) {
         $response = Invoke-WebRequest -UseBasicParsing -TimeoutSec 3 -Uri "http://127.0.0.1:5001/healthz"
         if ($response.StatusCode -ge 200 -and $response.StatusCode -lt 500) {
             Add-Content -Path $ControlLog -Encoding UTF8 -Value "$(Get-Date -Format o) flask healthz reachable status=$($response.StatusCode)"
-            exit 0
+            $healthy = $true
+            break
         }
     } catch {
         if ($attempt -eq 30) {
@@ -78,4 +80,10 @@ for ($attempt = 1; $attempt -le 30; $attempt++) {
             exit 1
         }
     }
+}
+
+if ($healthy) {
+    Wait-Process -Id $flaskProcess.Id
+    Add-Content -Path $ControlLog -Encoding UTF8 -Value "$(Get-Date -Format o) flask_app.py exited pid=$($flaskProcess.Id)"
+    exit 0
 }
