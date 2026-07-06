@@ -460,7 +460,22 @@ def _scrape_page_fields(driver: Any, url: str, xpath: str, *, timeout_sec: int) 
     from selenium.webdriver.support import expected_conditions as EC
     from selenium.webdriver.support.ui import WebDriverWait
 
-    driver.get(url)
+    load_error: Exception | None = None
+    try:
+        driver.set_page_load_timeout(max(3, int(timeout_sec or 10)))
+    except Exception:
+        pass
+    try:
+        driver.get(url)
+    except Exception as exc:
+        # Investing.com often leaves enough DOM/text behind after a slow page
+        # load. Stop pending assets and still try the deterministic fallback
+        # parser before marking the row as a real scrape error.
+        load_error = exc
+        try:
+            driver.execute_script("window.stop();")
+        except Exception:
+            pass
     visible_text = ""
     try:
         WebDriverWait(driver, timeout_sec).until(
@@ -485,6 +500,8 @@ def _scrape_page_fields(driver: Any, url: str, xpath: str, *, timeout_sec: int) 
             result_text = ""
     if not result_text:
         result_text = _extract_recommendation_from_text(visible_text)
+    if load_error is not None and not visible_text and not result_text:
+        raise RuntimeError(f"page load failed: {type(load_error).__name__}: {str(load_error)[:120]}")
     return {
         "result": result_text,
         "industry": _extract_industry_from_text(visible_text),

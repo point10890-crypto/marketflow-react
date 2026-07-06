@@ -72,6 +72,38 @@ def test_recommendation_parser_ignores_unanchored_ad_copy():
     assert svc._extract_recommendation_from_text(text) == ""
 
 
+def test_scrape_page_fields_uses_partial_dom_after_load_timeout(monkeypatch):
+    class FakeElement:
+        text = ""
+
+    class FakeWait:
+        def __init__(self, driver, timeout):
+            self.driver = driver
+            self.timeout = timeout
+
+        def until(self, condition):
+            return FakeElement()
+
+    class FakeDriver:
+        def set_page_load_timeout(self, timeout):
+            self.timeout = timeout
+
+        def get(self, url):
+            raise TimeoutError("slow investing page")
+
+        def execute_script(self, script):
+            if "window.stop" in script:
+                self.stopped = True
+                return None
+            return "Technical Summary Strong Buy\nIndustry: Semiconductors"
+
+    monkeypatch.setattr("selenium.webdriver.support.ui.WebDriverWait", FakeWait)
+
+    fields = svc._scrape_page_fields(FakeDriver(), "https://example.com", "//missing", timeout_sec=5)
+
+    assert fields == {"result": "적극 매수", "industry": "Semiconductors"}
+
+
 def test_scraper_loop_status_tracks_progress(monkeypatch, tmp_path):
     _isolate_storage(monkeypatch, tmp_path)
 
