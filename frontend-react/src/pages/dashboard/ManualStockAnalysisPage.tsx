@@ -5,7 +5,10 @@ interface ManualRunSummary {
     run_id: string;
     title: string;
     created_at: string;
+    updated_at?: string;
     record_count: number;
+    source_record_count?: number;
+    source_path?: string;
     source_kind: string;
     status?: string;
     summary: Record<string, number>;
@@ -81,6 +84,31 @@ function resultClass(result: string) {
 function buildRunLabel(run: ManualRunSummary) {
     const created = run.created_at ? run.created_at.slice(0, 10) : '';
     return `${created} · ${run.title || run.run_id}`;
+}
+
+function formatRunTimestamp(value?: string) {
+    if (!value) return '--';
+    return value.replace('T', ' ').slice(0, 16);
+}
+
+function runStatusLabel(status?: string) {
+    if (status === 'running') return '진행중';
+    if (status === 'error') return '오류';
+    if (status === 'completed') return '완료';
+    return status || '기록';
+}
+
+function runStatusClass(status?: string) {
+    if (status === 'running') return 'border-cyan-300/40 bg-cyan-400/15 text-cyan-100';
+    if (status === 'error') return 'border-rose-300/40 bg-rose-500/15 text-rose-100';
+    if (status === 'completed') return 'border-emerald-300/35 bg-emerald-500/12 text-emerald-100';
+    return 'border-slate-500/30 bg-white/5 text-slate-300';
+}
+
+function summaryPreview(summary: Record<string, number> = {}) {
+    return Object.entries(summary)
+        .filter(([, count]) => Number(count) > 0)
+        .slice(0, 3);
 }
 
 function formatSeconds(seconds: number) {
@@ -326,6 +354,13 @@ export default function ManualStockAnalysisPage() {
     const loopProgress = loopTotal > 0 ? Math.min(100, Math.round((loopProcessed / loopTotal) * 100)) : 0;
     const isLoopRunning = !!loopStatus?.running;
     const isLiveRunSelected = shouldStreamSelectedRun;
+    const runHistory = runs.slice(0, 18);
+
+    const selectHistoryRun = (runId: string) => {
+        setSelectedRunId(runId);
+        setSelectedResult('all');
+        setQuery('');
+    };
 
     const applyResultFilter = (result: string) => {
         setSelectedResult(result);
@@ -492,6 +527,91 @@ export default function ManualStockAnalysisPage() {
                             {loopStatus.last_error}
                         </div>
                     )}
+                </div>
+
+                <div className="mt-6 rounded-2xl border border-white/10 bg-black/20 p-4">
+                    <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+                        <div>
+                            <div className="text-[11px] font-black uppercase tracking-[0.22em] text-orange-300">
+                                Analysis Round History
+                            </div>
+                            <h2 className="mt-1 text-xl font-black text-white">분석회차 히스토리</h2>
+                            <p className="mt-1 text-xs font-bold text-slate-500">
+                                저장된 회차를 클릭하면 해당 분석 결과로 즉시 전환합니다. 실시간 루프 회차도 완료 전까지 계속 갱신됩니다.
+                            </p>
+                        </div>
+                        <div className="flex flex-wrap gap-2 text-xs font-black">
+                            <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-slate-300">
+                                {runs.length.toLocaleString('ko-KR')} rounds
+                            </span>
+                            <span className="rounded-full border border-cyan-300/20 bg-cyan-500/10 px-3 py-1.5 text-cyan-100">
+                                selected {selectedRun ? formatRunTimestamp(selectedRun.created_at) : '--'}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div className="mt-4 grid max-h-[260px] gap-2 overflow-y-auto pr-1 md:grid-cols-2 xl:grid-cols-3">
+                        {runHistory.map((run, index) => {
+                            const active = run.run_id === selectedRunId;
+                            const preview = summaryPreview(run.summary);
+                            return (
+                                <button
+                                    type="button"
+                                    key={run.run_id}
+                                    onClick={() => selectHistoryRun(run.run_id)}
+                                    className={`group rounded-2xl border p-3 text-left transition ${
+                                        active
+                                            ? 'border-cyan-300/55 bg-cyan-500/15 shadow-lg shadow-cyan-950/30'
+                                            : 'border-white/10 bg-white/[0.03] hover:border-cyan-300/35 hover:bg-cyan-500/10'
+                                    }`}
+                                >
+                                    <div className="flex items-start justify-between gap-3">
+                                        <div className="min-w-0">
+                                            <div className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">
+                                                #{index + 1} · {formatRunTimestamp(run.created_at)}
+                                            </div>
+                                            <div className="mt-1 truncate text-sm font-black text-white">
+                                                {run.title || run.run_id}
+                                            </div>
+                                        </div>
+                                        <span className={`shrink-0 rounded-full border px-2.5 py-1 text-[10px] font-black ${runStatusClass(run.status)}`}>
+                                            {runStatusLabel(run.status)}
+                                        </span>
+                                    </div>
+                                    <div className="mt-3 grid grid-cols-3 gap-2 text-xs font-black">
+                                        <div className="rounded-xl border border-white/10 bg-black/20 px-2 py-2">
+                                            <div className="text-[9px] uppercase tracking-widest text-slate-500">rows</div>
+                                            <div className="mt-1 text-white">{Number(run.record_count || 0).toLocaleString('ko-KR')}</div>
+                                        </div>
+                                        <div className="rounded-xl border border-white/10 bg-black/20 px-2 py-2">
+                                            <div className="text-[9px] uppercase tracking-widest text-slate-500">source</div>
+                                            <div className="mt-1 text-white">{Number(run.source_record_count || run.record_count || 0).toLocaleString('ko-KR')}</div>
+                                        </div>
+                                        <div className="rounded-xl border border-white/10 bg-black/20 px-2 py-2">
+                                            <div className="text-[9px] uppercase tracking-widest text-slate-500">updated</div>
+                                            <div className="mt-1 truncate text-white">{formatRunTimestamp(run.updated_at || run.created_at)}</div>
+                                        </div>
+                                    </div>
+                                    <div className="mt-3 flex min-h-7 flex-wrap gap-1.5">
+                                        {preview.length > 0 ? preview.map(([label, count]) => (
+                                            <span key={label} className={`rounded-full border px-2 py-1 text-[10px] font-black ${resultClass(label)}`}>
+                                                {label} {Number(count).toLocaleString('ko-KR')}
+                                            </span>
+                                        )) : (
+                                            <span className="rounded-full border border-white/10 bg-white/5 px-2 py-1 text-[10px] font-black text-slate-500">
+                                                no summary
+                                            </span>
+                                        )}
+                                    </div>
+                                </button>
+                            );
+                        })}
+                        {runHistory.length === 0 && (
+                            <div className="rounded-2xl border border-dashed border-white/15 bg-white/[0.03] p-5 text-sm font-bold text-slate-500">
+                                아직 저장된 분석회차가 없습니다. 무한 루프를 시작하면 회차별 히스토리가 자동으로 쌓입니다.
+                            </div>
+                        )}
+                    </div>
                 </div>
 
                 <div className="mt-6 grid gap-3 lg:grid-cols-[1.1fr_0.7fr_0.8fr]">

@@ -66,6 +66,32 @@ def test_scrape_source_run_zero_max_rows_uses_entire_default_source(monkeypatch,
     assert all(record["analyzed_at"] >= run["created_at"] for record in run["records"])
 
 
+def test_list_runs_exposes_history_metadata(monkeypatch, tmp_path):
+    _isolate_manual_service(monkeypatch, tmp_path)
+    run = {
+        "run_id": "manual_history_meta",
+        "title": "history meta",
+        "source_kind": "selenium_scrape",
+        "source_path": str(tmp_path / "stock_data.xlsx"),
+        "created_at": "2026-07-06 10:00:00",
+        "updated_at": "2026-07-06 10:00:05",
+        "status": "running",
+        "record_count": 2,
+        "source_record_count": 7,
+        "summary": {"BUY": 1, "SELL": 1},
+        "records": [{"rank": 1}, {"rank": 2}],
+    }
+    svc._write_run(run)
+
+    rows = svc.list_runs()
+
+    assert rows[0]["run_id"] == "manual_history_meta"
+    assert rows[0]["status"] == "running"
+    assert rows[0]["updated_at"] == "2026-07-06 10:00:05"
+    assert rows[0]["source_record_count"] == 7
+    assert rows[0]["source_path"].endswith("stock_data.xlsx")
+
+
 def test_scraper_loop_zero_max_rows_tracks_source_total(monkeypatch, tmp_path):
     _isolate_manual_service(monkeypatch, tmp_path)
     _write_source(tmp_path / "stock_data.xlsx", rows=4)

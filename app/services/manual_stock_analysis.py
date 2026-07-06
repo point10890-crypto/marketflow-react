@@ -778,7 +778,11 @@ def list_runs() -> list[dict[str, Any]]:
             "run_id": run.get("run_id"),
             "title": run.get("title"),
             "created_at": run.get("created_at"),
+            "updated_at": run.get("updated_at") or run.get("created_at"),
+            "status": run.get("status") or "completed",
             "record_count": run.get("record_count", len(run.get("records") or [])),
+            "source_record_count": run.get("source_record_count") or run.get("record_count", len(run.get("records") or [])),
+            "source_path": run.get("source_path"),
             "summary": run.get("summary") or {},
             "source_kind": run.get("source_kind"),
         })
