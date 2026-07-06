@@ -5,6 +5,12 @@ if ([string]::IsNullOrWhiteSpace($ProjectDir)) {
     $ProjectDir = "C:\bitman_marketfloww"
 }
 
+$PrincipalIdentity = [Security.Principal.WindowsIdentity]::GetCurrent()
+$PrincipalRole = New-Object Security.Principal.WindowsPrincipal($PrincipalIdentity)
+if (-not $PrincipalRole.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+    throw "register_tasks.ps1 must be run from an elevated PowerShell session because it replaces SYSTEM startup tasks."
+}
+
 $TaskNames = @("MarketFlow-Flask", "MarketFlow-Scheduler")
 foreach ($TaskName in $TaskNames) {
     Unregister-ScheduledTask -TaskName $TaskName -Confirm:$false -ErrorAction SilentlyContinue
