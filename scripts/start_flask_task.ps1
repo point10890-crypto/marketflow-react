@@ -4,8 +4,9 @@ $Root = "C:\bitman_marketfloww"
 $Python = Join-Path $Root ".venv\Scripts\python.exe"
 $LogDir = Join-Path $Root "logs"
 $ControlLog = Join-Path $LogDir "flask_task.control.log"
-$OutLog = Join-Path $LogDir "flask_server.out.log"
-$ErrLog = Join-Path $LogDir "flask_server.err.log"
+$RunStamp = Get-Date -Format "yyyyMMdd_HHmmss"
+$OutLog = Join-Path $LogDir "flask_server.$RunStamp.out.log"
+$ErrLog = Join-Path $LogDir "flask_server.$RunStamp.err.log"
 
 New-Item -ItemType Directory -Force -Path $LogDir | Out-Null
 Set-Location $Root
@@ -44,7 +45,7 @@ foreach ($ownerPid in $portOwner) {
 
 Start-Sleep -Seconds 1
 
-Add-Content -Path $ControlLog -Encoding UTF8 -Value "$(Get-Date -Format o) starting flask_app.py detached via start_flask_task.ps1"
+Add-Content -Path $ControlLog -Encoding UTF8 -Value "$(Get-Date -Format o) starting flask_app.py detached via start_flask_task.ps1 stdout=$OutLog stderr=$ErrLog"
 
 $flaskProcess = Start-Process `
     -FilePath $Python `
