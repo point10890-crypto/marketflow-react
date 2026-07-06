@@ -105,6 +105,62 @@ def test_scrape_page_fields_uses_partial_dom_after_load_timeout(monkeypatch):
     assert fields["industry"] == "Semiconductors"
 
 
+def test_scrape_page_fields_waits_for_dynamic_investing_snapshot(monkeypatch):
+    class FakeElement:
+        text = ""
+
+    class FakeWait:
+        def __init__(self, driver, timeout):
+            self.driver = driver
+            self.timeout = timeout
+
+        def until(self, condition):
+            return FakeElement()
+
+    class FakeDriver:
+        def __init__(self):
+            self.calls = 0
+
+        def set_page_load_timeout(self, timeout):
+            self.timeout = timeout
+
+        def get(self, url):
+            self.url = url
+
+        def execute_script(self, script):
+            self.calls += 1
+            if self.calls == 1:
+                return "시장\n기술적 분석\n기술적 요약"
+            return """
+            삼성전자우 (005935)
+            기술적 분석
+            중립
+            애널리스트 센티멘트
+            적극 매수
+            목표 주가
+            348,450
+            상승 여력 있음
+            +63.98%
+            산업
+            컴퓨터, 전화 및 가전제품
+            부문
+            기술
+            """
+
+    monkeypatch.setattr("selenium.webdriver.support.ui.WebDriverWait", FakeWait)
+    monkeypatch.setattr(svc.time, "sleep", lambda *_args, **_kwargs: None)
+
+    fields = svc._scrape_page_fields(FakeDriver(), "https://example.com", "//missing", timeout_sec=3)
+
+    assert fields["result"] == "적극 매수"
+    assert fields["technical_result"] == "중립"
+    assert fields["analyst_sentiment"] == "적극 매수"
+    assert fields["target_price"] == "348,450"
+    assert fields["upside_potential"] == "+63.98%"
+    assert fields["industry"] == "컴퓨터, 전화 및 가전제품"
+    assert fields["sector"] == "기술"
+
+
 def test_investing_snapshot_prefers_analyst_sentiment_over_technical():
     fields = svc._extract_investing_snapshot_fields("""
     005935 점수
@@ -249,7 +305,104 @@ def test_scrape_source_run_persists_investing_snapshot_fields(monkeypatch, tmp_p
     assert record["upside_potential"] == "+63.98%"
 
 
-def test_scrape_source_run_marks_collection_gap_as_analysis_pending(monkeypatch, tmp_path):
+def test_scrape_source_run_retries_blocked_page_with_fresh_session(monkeypatch, tmp_path):
+    _isolate_storage(monkeypatch, tmp_path)
+    source_file = tmp_path / "stock_data.xlsx"
+    pd.DataFrame([
+        {"순번": 1, "종목": "SK하이닉스 (000660)", "산업": "반도체", "url": "https://example.com/sk"},
+    ]).to_excel(source_file, index=False)
+
+    class FakeDriver:
+        def __init__(self, name):
+            self.name = name
+            self.closed = False
+
+        def quit(self):
+            self.closed = True
+
+    drivers = [FakeDriver("first"), FakeDriver("second")]
+    calls = []
+
+    def fake_create_driver():
+        return drivers[len(calls)]
+
+    def fake_scrape_page_fields(driver, url, xpath, *, timeout_sec):
+        calls.append(driver.name)
+        if driver.name == "first":
+            raise RuntimeError("target page blocked: cloudflare")
+        return {
+            "result": "적극 매수",
+            "industry": "반도체 및 반도체 장비",
+            "analyst_sentiment": "적극 매수",
+            "technical_result": "매도",
+        }
+
+    monkeypatch.setattr(svc, "_create_selenium_driver", fake_create_driver)
+    monkeypatch.setattr(svc, "_scrape_page_fields", fake_scrape_page_fields)
+
+    run = svc.scrape_source_run(
+        max_rows=1,
+        run_id="manual_scrape_retry_blocked",
+        persist_progress=True,
+        delay_sec=0,
+    )
+
+    record = run["records"][0]
+    assert calls == ["first", "second"]
+    assert drivers[0].closed is True
+    assert record["result"] == "적극 매수"
+    assert record["scrape_state"] == "completed"
+    assert record["scrape_fallback"] == "retry_fresh_session"
+    assert record["industry"] == "반도체 및 반도체 장비"
+
+
+def test_scrape_source_run_does_not_replace_industry_with_country_label(monkeypatch, tmp_path):
+    _isolate_storage(monkeypatch, tmp_path)
+    source_file = tmp_path / "stock_data.xlsx"
+    pd.DataFrame([
+        {"순번": 1, "종목": "LG에너지솔루션 (373220)", "산업": "Electrical Equipment & Parts", "url": "https://example.com/lg"},
+    ]).to_excel(source_file, index=False)
+
+    class FakeDriver:
+        def quit(self):
+            return None
+
+    def fake_scrape_page_fields(driver, url, xpath, *, timeout_sec):
+        return {"result": "매수", "industry": "한국", "market_country": "한국"}
+
+    monkeypatch.setattr(svc, "_create_selenium_driver", lambda: FakeDriver())
+    monkeypatch.setattr(svc, "_scrape_page_fields", fake_scrape_page_fields)
+
+    run = svc.scrape_source_run(
+        max_rows=1,
+        run_id="manual_scrape_country_not_industry",
+        persist_progress=True,
+        delay_sec=0,
+    )
+
+    record = run["records"][0]
+    assert record["result"] == "매수"
+    assert record["industry"] == "Electrical Equipment & Parts"
+    assert record["market_country"] == "한국"
+
+
+def test_investing_snapshot_discards_non_country_market_value():
+    fields = svc._extract_investing_snapshot_fields("""
+    현대차2우B
+    애널리스트 센티멘트
+    매수
+    시장
+    WarrenAI에 물어보기
+    산업
+    자동차 및 자동차 부품
+    """)
+
+    assert fields["result"] == "매수"
+    assert fields["industry"] == "자동차 및 자동차 부품"
+    assert "market_country" not in fields
+
+
+def test_scrape_source_run_marks_collection_gap_as_error(monkeypatch, tmp_path):
     _isolate_storage(monkeypatch, tmp_path)
     source_file = tmp_path / "stock_data.xlsx"
     pd.DataFrame([
@@ -274,11 +427,11 @@ def test_scrape_source_run_marks_collection_gap_as_analysis_pending(monkeypatch,
     )
 
     assert run["status"] == "completed"
-    assert run["summary"] == {"분석중": 1}
+    assert run["summary"] == {"오류": 1}
     saved = svc.get_run("manual_scrape_collection_gap")
     record = saved["records"][0]
-    assert record["result"] == "분석중"
-    assert record["raw_result"] == "분석중"
-    assert record["scrape_state"] == "completed"
+    assert record["result"] == "오류"
+    assert record["raw_result"] == "오류"
+    assert record["scrape_state"] == "error"
     assert record["scrape_fallback"] == "collection_gap"
     assert "TimeoutError" in record["error"]

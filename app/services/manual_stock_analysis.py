@@ -33,6 +33,16 @@ UPLOADS_DIR = SERVICE_ROOT / "uploads"
 STOCK_ANALYZER_CACHE_DIR = Path(DATA_DIR) / "stock_analyzer_cache"
 MAX_SOURCE_ROWS = 5000
 
+
+def _env_float(name: str, default: float) -> float:
+    try:
+        return float(os.getenv(name, str(default)))
+    except Exception:
+        return default
+
+
+DEFAULT_SCRAPE_DELAY_SEC = _env_float("MANUAL_STOCK_ANALYSIS_DELAY_SEC", 1.2)
+
 DEFAULT_SOURCE_PATHS = [
     Path(os.getenv("MANUAL_STOCK_ANALYSIS_SOURCE_FILE", "")),
     Path("E:/다운로드/stock_data.xlsx"),
@@ -152,6 +162,46 @@ _RECOMMENDATION_ANCHORS = (
 
 _INVESTING_SIGNAL_LABELS = {"적극 매수", "매수", "중립", "매도", "적극 매도"}
 
+_INVESTING_READY_MARKERS = (
+    "애널리스트 센티멘트",
+    "애널리스트 센티먼트",
+    "Analyst Sentiment",
+    "목표 주가",
+    "Target Price",
+    "기술적 분석",
+    "Technical Analysis",
+)
+
+_INVESTING_VALUE_LABELS = {
+    "산업",
+    "업종",
+    "부문",
+    "직원",
+    "시장",
+    "industry",
+    "sector",
+    "employees",
+    "market",
+}
+
+_COUNTRY_ONLY_VALUES = {
+    "한국",
+    "대한민국",
+    "미국",
+    "중국",
+    "일본",
+    "korea",
+    "south korea",
+    "usa",
+    "united states",
+    "china",
+    "japan",
+}
+
+
+def _is_country_value(value: Any) -> bool:
+    return _clean_text(value).strip().lower() in _COUNTRY_ONLY_VALUES
+
 
 def _extract_recommendation_from_text(text: str) -> str:
     raw_text = _clean_text(text)
@@ -233,6 +283,8 @@ def _extract_text_after_anchor(
             value = _clean_text(candidate)
             if not value or "잠금" in value or "확인" in value:
                 continue
+            if value.strip().lower() in _INVESTING_VALUE_LABELS:
+                continue
             if not allow_numeric and re.fullmatch(r"[-+.,%0-9]+", value):
                 continue
             return value[:80]
@@ -275,6 +327,8 @@ def _extract_text_after_exact_label(
             value = _clean_text(candidate)
             if not value or "잠금" in value or "확인" in value:
                 continue
+            if value.strip().lower() in _INVESTING_VALUE_LABELS:
+                continue
             if not allow_numeric and re.fullmatch(r"[-+.,%0-9]+", value):
                 continue
             return value[:80]
@@ -302,7 +356,7 @@ def _extract_profile_market_country(lines: list[str]) -> str:
             continue
         for candidate in lines[index + 1:index + 5]:
             value = _clean_text(candidate)
-            if value and not re.fullmatch(r"[-+.,%0-9]+", value):
+            if value and _is_country_value(value) and not re.fullmatch(r"[-+.,%0-9]+", value):
                 return value[:80]
     return ""
 
@@ -327,6 +381,8 @@ def _extract_investing_snapshot_fields(text: str) -> dict[str, str]:
         _extract_profile_market_country(lines)
         or _extract_text_after_exact_label(lines, ("시장", "Market"), allow_numeric=False, reverse=True)
     )
+    if market_country and not _is_country_value(market_country):
+        market_country = ""
     target_price = _extract_text_after_exact_label(lines, ("목표 주가", "Target Price"))
     upside_potential = _extract_numeric_after_exact_label(lines, ("상승 여력 있음", "Upside"))
 
@@ -357,10 +413,66 @@ def _blocked_page_reason(text: str) -> str:
         "403 forbidden",
         "verify you are human",
         "are you a robot",
+        "just a moment",
+        "checking your browser",
+        "cloudflare",
         "unusual traffic",
         "captcha",
     )
     return next((marker for marker in blocked_markers if marker in visible_text), "")
+
+
+def _read_body_text(driver: Any) -> str:
+    try:
+        return driver.execute_script("return document.body ? document.body.innerText : '';") or ""
+    except Exception:
+        return ""
+
+
+def _wait_for_investing_text(driver: Any, timeout_sec: int) -> str:
+    """Wait until Investing's dynamic body contains an actionable verdict.
+
+    The body element appears much earlier than the Pro/technical panels.  Reading
+    it immediately often captures only menus and leaves rows stuck as "분석중".
+    This loop waits for either a parsed signal, a block page, or the best text we
+    can collect before timeout.
+    """
+    deadline = time.time() + max(2.0, float(timeout_sec or 8))
+    best_text = ""
+    while time.time() < deadline:
+        text = _read_body_text(driver)
+        if len(text) > len(best_text):
+            best_text = text
+        if _blocked_page_reason(text):
+            return text
+        snapshot = _extract_investing_snapshot_fields(text)
+        if snapshot.get("result") or _extract_recommendation_from_text(text):
+            return text
+        if any(marker in text for marker in _INVESTING_READY_MARKERS) and len(text) > 2500:
+            # Give the analyst/technical cards one more short paint cycle before
+            # accepting that the visible page has no usable signal yet.
+            time.sleep(0.35)
+            text = _read_body_text(driver)
+            if len(text) > len(best_text):
+                best_text = text
+            snapshot = _extract_investing_snapshot_fields(text)
+            if snapshot.get("result") or _extract_recommendation_from_text(text):
+                return text
+        time.sleep(0.25)
+    return best_text
+
+
+def _is_retryable_scrape_error(exc: Exception) -> bool:
+    text = f"{type(exc).__name__}: {exc}".lower()
+    retry_markers = (
+        "target page blocked",
+        "cloudflare",
+        "captcha",
+        "empty investing verdict",
+        "timeout",
+        "page load failed",
+    )
+    return any(marker in text for marker in retry_markers)
 
 
 def _ticker_lookup() -> dict[str, dict[str, str]]:
@@ -400,7 +512,13 @@ def _coalesce(row: pd.Series, names: list[str], default: str = "") -> str:
 
 def _is_missing_industry(value: Any) -> bool:
     text = _clean_text(value)
-    return not text or text in {"미분류", "-", "N/A", "na", "None"}
+    lowered = text.strip().lower()
+    return (
+        not text
+        or text in {"미분류", "-", "N/A", "na", "None"}
+        or lowered in _INVESTING_VALUE_LABELS
+        or _is_country_value(text)
+    )
 
 
 def _cached_industry_for(ticker: str, market: str = "") -> str:
@@ -617,21 +735,26 @@ def _create_selenium_driver():
     user_data_dir = tempfile.mkdtemp(prefix="marketflow_manual_scrape_")
     chrome_options = Options()
     chrome_options.add_argument("--headless=new")
-    chrome_options.add_argument("--window-size=375,812")
+    chrome_options.add_argument("--window-size=1365,1400")
     chrome_options.add_argument("--disable-gpu")
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--disable-dev-shm-usage")
     chrome_options.add_argument("--disable-extensions")
     chrome_options.add_argument("--disable-background-networking")
     chrome_options.add_argument("--disable-software-rasterizer")
+    chrome_options.add_argument("--disable-blink-features=AutomationControlled")
+    chrome_options.add_argument("--lang=ko-KR")
     chrome_options.add_argument("--no-first-run")
     chrome_options.add_argument("--remote-debugging-port=0")
     chrome_options.add_argument(f"--user-data-dir={user_data_dir}")
     chrome_options.add_argument(
-        "user-agent=Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) "
-        "AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1"
+        "user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/149.0.0.0 Safari/537.36"
     )
+    chrome_options.add_experimental_option("useAutomationExtension", False)
     chrome_options.add_experimental_option("excludeSwitches", ["enable-logging"])
+    chrome_options.add_experimental_option("prefs", {"intl.accept_languages": "ko-KR,ko,en-US,en"})
     chrome_options.page_load_strategy = "eager"
     service = Service(ChromeDriverManager().install())
     try:
@@ -639,6 +762,19 @@ def _create_selenium_driver():
     except Exception:
         shutil.rmtree(user_data_dir, ignore_errors=True)
         raise
+    try:
+        driver.execute_cdp_cmd(
+            "Page.addScriptToEvaluateOnNewDocument",
+            {
+                "source": """
+                    Object.defineProperty(navigator, 'webdriver', {get: () => undefined});
+                    Object.defineProperty(navigator, 'languages', {get: () => ['ko-KR', 'ko', 'en-US', 'en']});
+                    Object.defineProperty(navigator, 'platform', {get: () => 'Win32'});
+                """
+            },
+        )
+    except Exception:
+        pass
     setattr(driver, "_marketflow_user_data_dir", user_data_dir)
     return driver
 
@@ -697,9 +833,9 @@ def _scrape_page_fields(driver: Any, url: str, xpath: str, *, timeout_sec: int) 
         WebDriverWait(driver, timeout_sec).until(
             EC.presence_of_element_located((By.TAG_NAME, "body"))
         )
-        visible_text = driver.execute_script("return document.body ? document.body.innerText : '';") or ""
+        visible_text = _wait_for_investing_text(driver, timeout_sec)
     except Exception:
-        visible_text = ""
+        visible_text = _read_body_text(driver)
 
     block_reason = _blocked_page_reason(visible_text)
     if block_reason:
@@ -781,7 +917,7 @@ def scrape_source_run(
     max_rows: int = 0,
     xpath: str = DEFAULT_INVESTING_XPATH,
     timeout_sec: int = 10,
-    delay_sec: float = 0.15,
+    delay_sec: float = DEFAULT_SCRAPE_DELAY_SEC,
     progress_callback: Callable[[int, int, dict[str, Any]], None] | None = None,
     run_id: str | None = None,
     persist_progress: bool = False,
@@ -847,10 +983,24 @@ def scrape_source_run(
                     time.sleep(min(delay_sec, 2.0))
                 continue
             try:
-                scraped_fields = _scrape_page_fields(driver, url, xpath, timeout_sec=timeout_sec)
+                retry_fallback = ""
+                try:
+                    scraped_fields = _scrape_page_fields(driver, url, xpath, timeout_sec=timeout_sec)
+                except Exception as first_exc:
+                    if not _is_retryable_scrape_error(first_exc):
+                        raise
+                    if driver is not None:
+                        _close_selenium_driver(driver)
+                    if delay_sec > 0:
+                        time.sleep(max(0.75, min(float(delay_sec), 3.0)))
+                    driver = _create_selenium_driver()
+                    scraped_fields = _scrape_page_fields(driver, url, xpath, timeout_sec=timeout_sec)
+                    retry_fallback = "retry_fresh_session"
                 scraped = scraped_fields.get("result", "")
-                record["raw_result"] = scraped or "분석중"
-                record["result"] = _normalise_label(record["raw_result"])
+                if not scraped:
+                    raise RuntimeError("empty investing verdict after render wait")
+                record["raw_result"] = scraped
+                record["result"] = _normalise_label(scraped)
                 scraped_industry = scraped_fields.get("industry", "")
                 if not _is_missing_industry(scraped_industry):
                     record["industry"] = scraped_industry
@@ -867,14 +1017,15 @@ def scrape_source_run(
                     if value:
                         record[field] = value
                 record["scrape_state"] = "completed"
+                if retry_fallback:
+                    record["scrape_fallback"] = retry_fallback
             except Exception as exc:
                 # A third-party page timeout/block is a data-collection gap, not
-                # an analyst verdict. Keep the row visible as in-progress so the
-                # loop can continue filling the table without turning transient
-                # scraper failures into permanent "오류" signals.
-                record["raw_result"] = "분석중"
-                record["result"] = "분석중"
-                record["scrape_state"] = "completed"
+                # an analyst verdict. Close the row explicitly so the live table
+                # does not keep completed failures stuck as "분석중".
+                record["raw_result"] = "오류"
+                record["result"] = "오류"
+                record["scrape_state"] = "error"
                 record["scrape_fallback"] = "collection_gap"
                 record["error"] = f"{type(exc).__name__}: {str(exc)[:160]}"
             if _is_missing_industry(record.get("industry")):

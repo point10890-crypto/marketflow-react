@@ -26,6 +26,7 @@ interface ManualRecord {
     analyzed_at: string;
     scrape_state?: 'pending' | 'scraping' | 'completed' | 'error';
     scrape_fallback?: string;
+    error?: string;
     technical_result?: string;
     analyst_sentiment?: string;
     sector?: string;
@@ -783,10 +784,15 @@ export default function ManualStockAnalysisPage() {
                                             )}
                                             {record.scrape_fallback && (
                                                 <span className="rounded-full border border-violet-200 bg-violet-50 px-2 py-1 text-violet-700">
-                                                    fallback
+                                                    {record.scrape_fallback}
                                                 </span>
                                             )}
                                         </div>
+                                        {record.error && (
+                                            <div className="mx-auto mt-2 max-w-md truncate rounded-lg border border-rose-200 bg-rose-50 px-2 py-1 text-[10px] font-bold text-rose-600">
+                                                {record.error}
+                                            </div>
+                                        )}
                                         {record.scrape_state === 'scraping' && (
                                             <span className="ml-2 inline-flex animate-pulse rounded-full border border-cyan-300 bg-cyan-100 px-2 py-1 text-[10px] font-black text-cyan-700">
                                                 진행중
