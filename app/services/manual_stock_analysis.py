@@ -329,6 +329,22 @@ def _loop_snapshot() -> dict[str, Any]:
         return dict(_LOOP_STATE)
 
 
+def _active_loop_run_id() -> str:
+    snapshot = _loop_snapshot()
+    if snapshot.get("running"):
+        return _clean_text(snapshot.get("last_run_id"))
+    return ""
+
+
+def _public_run_status(run: dict[str, Any], active_loop_run_id: str | None = None) -> str:
+    status = _clean_text(run.get("status")) or "completed"
+    if status != "running":
+        return status
+    run_id = _clean_text(run.get("run_id"))
+    active_run_id = active_loop_run_id if active_loop_run_id is not None else _active_loop_run_id()
+    return "running" if active_run_id and active_run_id == run_id else "stale"
+
+
 def _read_run(path: Path) -> dict[str, Any] | None:
     try:
         with path.open("r", encoding="utf-8") as f:
@@ -892,6 +908,7 @@ def auto_import_known_results() -> None:
 def list_runs() -> list[dict[str, Any]]:
     auto_import_known_results()
     runs: list[dict[str, Any]] = []
+    active_run_id = _active_loop_run_id()
     for path in sorted(RUNS_DIR.glob("*.json"), reverse=True):
         run = _read_run(path)
         if not run:
@@ -901,7 +918,7 @@ def list_runs() -> list[dict[str, Any]]:
             "title": run.get("title"),
             "created_at": run.get("created_at"),
             "updated_at": run.get("updated_at") or run.get("created_at"),
-            "status": run.get("status") or "completed",
+            "status": _public_run_status(run, active_run_id),
             "record_count": run.get("record_count", len(run.get("records") or [])),
             "source_record_count": run.get("source_record_count") or run.get("record_count", len(run.get("records") or [])),
             "source_path": run.get("source_path"),
@@ -933,8 +950,10 @@ def get_run(run_id: str, *, result: str = "all", q: str = "", live_only: bool = 
             or q in _clean_text(r.get("ticker")).lower()
             or q in _clean_text(r.get("industry")).lower()
         ]
+    public_run = {k: v for k, v in run.items() if k != "records"}
+    public_run["status"] = _public_run_status(run)
     return {
-        **{k: v for k, v in run.items() if k != "records"},
+        **public_run,
         "records": records,
         "filtered_count": len(records),
     }

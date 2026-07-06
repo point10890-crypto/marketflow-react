@@ -86,10 +86,34 @@ def test_list_runs_exposes_history_metadata(monkeypatch, tmp_path):
     rows = svc.list_runs()
 
     assert rows[0]["run_id"] == "manual_history_meta"
-    assert rows[0]["status"] == "running"
+    assert rows[0]["status"] == "stale"
     assert rows[0]["updated_at"] == "2026-07-06 10:00:05"
     assert rows[0]["source_record_count"] == 7
     assert rows[0]["source_path"].endswith("stock_data.xlsx")
+
+
+def test_list_runs_keeps_active_loop_run_running(monkeypatch, tmp_path):
+    _isolate_manual_service(monkeypatch, tmp_path)
+    run = {
+        "run_id": "manual_active_loop",
+        "title": "active loop",
+        "source_kind": "selenium_scrape",
+        "source_path": str(tmp_path / "stock_data.xlsx"),
+        "created_at": "2026-07-06 10:00:00",
+        "updated_at": "2026-07-06 10:00:05",
+        "status": "running",
+        "record_count": 1,
+        "source_record_count": 1,
+        "summary": {"BUY": 1},
+        "records": [{"rank": 1}],
+    }
+    svc._write_run(run)
+    monkeypatch.setattr(svc, "_active_loop_run_id", lambda: "manual_active_loop")
+
+    rows = svc.list_runs()
+
+    assert rows[0]["run_id"] == "manual_active_loop"
+    assert rows[0]["status"] == "running"
 
 
 def test_scraper_loop_zero_max_rows_tracks_source_total(monkeypatch, tmp_path):
