@@ -29,11 +29,12 @@ SERVICE_ROOT = Path(DATA_DIR) / "manual_stock_analysis"
 RUNS_DIR = SERVICE_ROOT / "runs"
 UPLOADS_DIR = SERVICE_ROOT / "uploads"
 STOCK_ANALYZER_CACHE_DIR = Path(DATA_DIR) / "stock_analyzer_cache"
+MAX_SOURCE_ROWS = 5000
 
 DEFAULT_SOURCE_PATHS = [
     Path(os.getenv("MANUAL_STOCK_ANALYSIS_SOURCE_FILE", "")),
-    SERVICE_ROOT / "stock_data.xlsx",
     Path("E:/다운로드/stock_data.xlsx"),
+    SERVICE_ROOT / "stock_data.xlsx",
 ]
 DEFAULT_RESULT_PATHS = [
     SERVICE_ROOT / "results",
@@ -49,9 +50,12 @@ _LOOP_THREAD: threading.Thread | None = None
 _LOOP_STATE: dict[str, Any] = {
     "running": False,
     "state": "stopped",
-    "max_rows": 20,
-    "interval_sec": 900,
+    "max_rows": 0,
+    "interval_sec": 60,
     "timeout_sec": 10,
+    "source_path": "",
+    "source_record_count": 0,
+    "cycle": 0,
     "iterations": 0,
     "processed": 0,
     "total": 0,
@@ -305,11 +309,11 @@ def create_pending_run_from_source(*, max_rows: int = 2500) -> dict[str, Any]:
     source = _find_source_workbook()
     if source is None:
         raise FileNotFoundError("stock_data.xlsx 원본을 찾을 수 없습니다.")
-    records = _read_excel_records(source, pending=True)[: max(1, min(max_rows, 5000))]
+    records = _read_excel_records(source, pending=True)[: max(1, min(max_rows, MAX_SOURCE_ROWS))]
     fingerprint = hashlib.sha1(f"{source.resolve()}:{_now()}:{len(records)}".encode("utf-8", "ignore")).hexdigest()[:16]
     run = {
         "run_id": f"manual_pending_{fingerprint}",
-        "title": f"{datetime.now().strftime('%Y년%m월%d일')} - 수동 목록",
+        "title": f"{datetime.now().strftime('%Y년%m월%d일')} - 기본 자동 목록",
         "source_kind": "source_excel",
         "source_path": str(source),
         "source_fingerprint": fingerprint,
@@ -324,8 +328,21 @@ def create_pending_run_from_source(*, max_rows: int = 2500) -> dict[str, Any]:
 def _find_source_workbook() -> Path:
     source = next((p for p in DEFAULT_SOURCE_PATHS if str(p) and p.is_file()), None)
     if source is None:
-        raise FileNotFoundError("stock_data.xlsx 원본을 찾을 수 없습니다.")
+        raise FileNotFoundError("E:\\다운로드\\stock_data.xlsx 원본을 찾을 수 없습니다.")
     return source
+
+
+def _read_source_records(*, pending: bool = True) -> tuple[Path, list[dict[str, Any]]]:
+    source = _find_source_workbook()
+    records = _read_excel_records(source, pending=pending)[:MAX_SOURCE_ROWS]
+    return source, records
+
+
+def _requested_record_count(max_rows: int, source_count: int) -> int:
+    requested = int(max_rows or 0)
+    if requested <= 0:
+        return min(source_count, MAX_SOURCE_ROWS)
+    return max(1, min(requested, source_count, MAX_SOURCE_ROWS))
 
 
 def _create_selenium_driver():
@@ -396,6 +413,7 @@ def _build_scrape_run(
     run_id: str,
     source: Path,
     records: list[dict[str, Any]],
+    source_record_count: int,
     xpath: str,
     max_rows: int,
     timeout_sec: int,
@@ -412,11 +430,13 @@ def _build_scrape_run(
         "updated_at": _now(),
         "status": status,
         "record_count": len(records),
+        "source_record_count": source_record_count,
         "summary": _summary(records),
         "records": records,
         "scraper": {
             "xpath": xpath,
             "max_rows": max_rows,
+            "source_record_count": source_record_count,
             "timeout_sec": timeout_sec,
         },
     }
@@ -433,7 +453,7 @@ def _persist_scrape_run(run: dict[str, Any], *, records: list[dict[str, Any]], s
 
 def scrape_source_run(
     *,
-    max_rows: int = 20,
+    max_rows: int = 0,
     xpath: str = DEFAULT_INVESTING_XPATH,
     timeout_sec: int = 10,
     delay_sec: float = 0.15,
@@ -447,17 +467,19 @@ def scrape_source_run(
     talks to a third-party web page.  Large all-market batches should be moved
     to a background worker before production use.
     """
-    source = _find_source_workbook()
-    safe_max_rows = max(1, min(int(max_rows or 20), 200))
+    source, source_records = _read_source_records(pending=True)
+    source_record_count = len(source_records)
+    safe_max_rows = _requested_record_count(int(max_rows or 0), source_record_count)
     timeout_sec = max(3, min(int(timeout_sec or 10), 30))
     created_at = _now()
     fingerprint = hashlib.sha1(f"{source.resolve()}:{created_at}:{safe_max_rows}".encode("utf-8", "ignore")).hexdigest()[:16]
     current_run_id = run_id or f"manual_scrape_{fingerprint}"
-    records = _read_excel_records(source, pending=True)[:safe_max_rows]
+    records = source_records[:safe_max_rows]
     run = _build_scrape_run(
         run_id=current_run_id,
         source=source,
         records=records,
+        source_record_count=source_record_count,
         xpath=xpath,
         max_rows=safe_max_rows,
         timeout_sec=timeout_sec,
@@ -466,6 +488,9 @@ def scrape_source_run(
     )
     if persist_progress:
         _write_run(run)
+
+    if not records:
+        return _persist_scrape_run(run, records=records, status="completed")
 
     driver = None
     try:
@@ -531,14 +556,43 @@ def _scraper_loop_worker(
         started_at = _now()
         live_run_hash = hashlib.sha1(f"{started_at}:{max_rows}:{time.time()}".encode("utf-8", "ignore")).hexdigest()[:12]
         live_run_id = f"manual_scrape_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{live_run_hash}"
+        try:
+            source, source_records = _read_source_records(pending=True)
+            source_record_count = len(source_records)
+            loop_total = _requested_record_count(max_rows, source_record_count)
+            source_path = str(source)
+        except Exception as exc:
+            source_record_count = 0
+            loop_total = max_rows if max_rows > 0 else 0
+            source_path = ""
+            if max_rows <= 0:
+                _loop_set(
+                    running=True,
+                    state="error_waiting",
+                    source_path=source_path,
+                    source_record_count=source_record_count,
+                    processed=0,
+                    total=0,
+                    last_started_at=started_at,
+                    last_finished_at=_now(),
+                    last_error=f"{type(exc).__name__}: {str(exc)[:220]}",
+                    next_run_at=(datetime.now() + timedelta(seconds=interval_sec)).strftime("%Y-%m-%d %H:%M:%S"),
+                )
+                if _LOOP_STOP.wait(interval_sec):
+                    break
+                continue
+
         _loop_set(
             running=True,
             state="scraping",
             max_rows=max_rows,
             interval_sec=interval_sec,
             timeout_sec=timeout_sec,
+            source_path=source_path,
+            source_record_count=source_record_count,
+            cycle=int(_LOOP_STATE.get("cycle") or 0) + 1,
             processed=0,
-            total=max_rows,
+            total=loop_total,
             current_rank=None,
             current_stock="",
             current_industry="",
@@ -576,7 +630,7 @@ def _scraper_loop_worker(
                 state="waiting",
                 iterations=iterations,
                 processed=run.get("record_count", 0),
-                total=run.get("record_count", max_rows),
+                total=run.get("record_count", loop_total),
                 last_run_id=run.get("run_id") or "",
                 last_record_count=run.get("record_count", 0),
                 last_finished_at=_now(),
@@ -602,20 +656,45 @@ def _scraper_loop_worker(
 
 
 def get_scraper_loop_status() -> dict[str, Any]:
-    return _loop_snapshot()
+    snapshot = _loop_snapshot()
+    if snapshot.get("running") or int(snapshot.get("source_record_count") or 0) > 0:
+        return snapshot
+    try:
+        source, source_records = _read_source_records(pending=True)
+    except Exception:
+        return snapshot
+    source_count = len(source_records)
+    total = _requested_record_count(int(snapshot.get("max_rows") or 0), source_count)
+    return _loop_set(
+        source_path=str(source),
+        source_record_count=source_count,
+        total=total,
+    )
 
 
 def start_scraper_loop(
     *,
-    max_rows: int = 20,
-    interval_sec: int = 900,
+    max_rows: int = 0,
+    interval_sec: int = 60,
     timeout_sec: int = 10,
     xpath: str = DEFAULT_INVESTING_XPATH,
 ) -> dict[str, Any]:
     global _LOOP_THREAD
-    safe_max_rows = max(1, min(int(max_rows or 20), 200))
+    requested_rows = int(max_rows or 0)
+    safe_max_rows = 0 if requested_rows <= 0 else max(1, min(requested_rows, MAX_SOURCE_ROWS))
     safe_interval = max(60, min(int(interval_sec or 900), 86400))
     safe_timeout = max(3, min(int(timeout_sec or 10), 30))
+    source_path = ""
+    source_record_count = 0
+    initial_total = safe_max_rows
+    try:
+        source, source_records = _read_source_records(pending=True)
+        source_path = str(source)
+        source_record_count = len(source_records)
+        initial_total = _requested_record_count(safe_max_rows, source_record_count)
+    except Exception:
+        if safe_max_rows <= 0:
+            initial_total = 0
     with _LOOP_LOCK:
         if _LOOP_THREAD is not None and _LOOP_THREAD.is_alive() and not _LOOP_STOP.is_set():
             return dict(_LOOP_STATE)
@@ -626,9 +705,15 @@ def start_scraper_loop(
             "max_rows": safe_max_rows,
             "interval_sec": safe_interval,
             "timeout_sec": safe_timeout,
+            "source_path": source_path,
+            "source_record_count": source_record_count,
+            "cycle": 0,
+            "iterations": 0,
             "processed": 0,
-            "total": safe_max_rows,
+            "total": initial_total,
             "last_error": "",
+            "last_run_id": "",
+            "last_record_count": 0,
             "next_run_at": "",
         })
         _LOOP_THREAD = threading.Thread(

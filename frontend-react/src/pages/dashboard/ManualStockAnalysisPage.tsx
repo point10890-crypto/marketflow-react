@@ -33,6 +33,9 @@ interface ScraperLoopStatus {
     max_rows: number;
     interval_sec: number;
     timeout_sec: number;
+    source_path: string;
+    source_record_count: number;
+    cycle: number;
     iterations: number;
     processed: number;
     total: number;
@@ -97,8 +100,7 @@ export default function ManualStockAnalysisPage() {
     const [loading, setLoading] = useState(false);
     const [busy, setBusy] = useState(false);
     const [message, setMessage] = useState('');
-    const [scrapeRows, setScrapeRows] = useState(20);
-    const [loopInterval, setLoopInterval] = useState(15);
+    const [loopInterval, setLoopInterval] = useState(1);
     const fileRef = useRef<HTMLInputElement | null>(null);
     const loopRunRef = useRef('');
 
@@ -221,27 +223,6 @@ export default function ManualStockAnalysisPage() {
         }
     };
 
-    const createPendingRun = async () => {
-        setBusy(true);
-        setMessage('');
-        try {
-            const res = await fetch(`${API_BASE}/api/manual-stock-analysis/runs/source`, {
-                method: 'POST',
-                headers: authHeaders({ 'Content-Type': 'application/json' }),
-                body: JSON.stringify({ max_rows: 2500 }),
-            });
-            const data = await res.json().catch(() => ({}));
-            if (!res.ok) throw new Error(data.error || `목록 생성 실패 (${res.status})`);
-            setSelectedRunId(data.run?.run_id || '');
-            setMessage('수동 분석 대기 목록이 생성되었습니다.');
-            await fetchRuns(data.run?.run_id);
-        } catch (err) {
-            setMessage(err instanceof Error ? err.message : '목록 생성 실패');
-        } finally {
-            setBusy(false);
-        }
-    };
-
     const runScraper = async () => {
         setBusy(true);
         setMessage('');
@@ -249,12 +230,12 @@ export default function ManualStockAnalysisPage() {
             const res = await fetch(`${API_BASE}/api/manual-stock-analysis/runs/scrape`, {
                 method: 'POST',
                 headers: authHeaders({ 'Content-Type': 'application/json' }),
-                body: JSON.stringify({ max_rows: scrapeRows, timeout_sec: 10 }),
+                body: JSON.stringify({ max_rows: 0, timeout_sec: 10 }),
             });
             const data = await res.json().catch(() => ({}));
             if (!res.ok) throw new Error(data.error || `스크래퍼 실행 실패 (${res.status})`);
             setSelectedRunId(data.run?.run_id || '');
-            setMessage(`스크래퍼 실행 완료: ${data.run?.record_count || scrapeRows}건`);
+            setMessage(`전체 스크래프 완료: ${data.run?.record_count || 0}건`);
             await fetchRuns(data.run?.run_id);
         } catch (err) {
             setMessage(err instanceof Error ? err.message : '스크래퍼 실행 실패');
@@ -272,7 +253,7 @@ export default function ManualStockAnalysisPage() {
                 method: 'POST',
                 headers: authHeaders({ 'Content-Type': 'application/json' }),
                 body: JSON.stringify({
-                    max_rows: scrapeRows,
+                    max_rows: 0,
                     interval_sec: loopInterval * 60,
                     timeout_sec: 10,
                 }),
@@ -322,7 +303,7 @@ export default function ManualStockAnalysisPage() {
     const unfilteredTotal = detail?.record_count ?? selectedRun?.record_count ?? total;
     const visibleRecords = (detail?.records || []).slice(0, 500);
     const hiddenRecordCount = Math.max(0, (detail?.records?.length || 0) - visibleRecords.length);
-    const loopTotal = loopStatus?.total || loopStatus?.max_rows || scrapeRows;
+    const loopTotal = loopStatus?.total || loopStatus?.source_record_count || 0;
     const loopProcessed = loopStatus?.processed || 0;
     const loopProgress = loopTotal > 0 ? Math.min(100, Math.round((loopProcessed / loopTotal) * 100)) : 0;
     const isLoopRunning = !!loopStatus?.running;
@@ -345,23 +326,12 @@ export default function ManualStockAnalysisPage() {
                         </h1>
                         <p className="mt-2 max-w-3xl text-sm font-semibold leading-6 text-slate-400">
                             외부 보드형 AI 분석 결과를 MarketFlow 안에서 별도 서비스로 조회합니다.
-                            수동 Excel 업로드와 실시간 스크래퍼 루프를 분리해 운영하며, 이 데이터는 알파 Top3 자동 랭킹에 직접 섞이지 않습니다.
+                            기본 소스는 E:\다운로드\stock_data.xlsx이며, 스크래퍼 루프가 전체 종목을 순번대로 반복 분석합니다.
                         </p>
                     </div>
                     <div className="flex flex-wrap gap-2">
                         <label className="flex h-10 items-center gap-2 rounded-xl border border-white/10 bg-black/25 px-3 text-xs font-black text-slate-300">
-                            rows
-                            <input
-                                type="number"
-                                min={1}
-                                max={200}
-                                value={scrapeRows}
-                                onChange={(event) => setScrapeRows(Math.max(1, Math.min(200, Number(event.target.value) || 20)))}
-                                className="h-7 w-16 rounded-lg border border-white/10 bg-black/40 px-2 text-right text-white outline-none"
-                            />
-                        </label>
-                        <label className="flex h-10 items-center gap-2 rounded-xl border border-white/10 bg-black/25 px-3 text-xs font-black text-slate-300">
-                            loop
+                            cycle delay
                             <input
                                 type="number"
                                 min={1}
@@ -378,7 +348,7 @@ export default function ManualStockAnalysisPage() {
                             disabled={busy}
                             className="rounded-xl border border-rose-400/25 bg-rose-500/10 px-4 py-2 text-sm font-black text-rose-200 transition hover:bg-rose-500/20 disabled:opacity-50"
                         >
-                            1회 스크래프
+                            1회 전체 스크래프
                         </button>
                         <button
                             type="button"
@@ -386,7 +356,7 @@ export default function ManualStockAnalysisPage() {
                             disabled={busy || isLoopRunning}
                             className="rounded-xl border border-emerald-400/25 bg-emerald-500/10 px-4 py-2 text-sm font-black text-emerald-200 transition hover:bg-emerald-500/20 disabled:opacity-50"
                         >
-                            루프 시작
+                            무한 루프 시작
                         </button>
                         <button
                             type="button"
@@ -410,14 +380,6 @@ export default function ManualStockAnalysisPage() {
                             className="rounded-xl border border-orange-400/25 bg-orange-500/10 px-4 py-2 text-sm font-black text-orange-200 transition hover:bg-orange-500/20 disabled:opacity-50"
                         >
                             결과 Excel 업로드
-                        </button>
-                        <button
-                            type="button"
-                            onClick={createPendingRun}
-                            disabled={busy}
-                            className="rounded-xl border border-cyan-400/25 bg-cyan-500/10 px-4 py-2 text-sm font-black text-cyan-200 transition hover:bg-cyan-500/20 disabled:opacity-50"
-                        >
-                            수동 목록 생성
                         </button>
                         {exportUrl && (
                             <a
@@ -448,6 +410,12 @@ export default function ManualStockAnalysisPage() {
                                 <span className="rounded-full border border-white/10 bg-black/20 px-3 py-1 text-xs font-black text-slate-300">
                                     {formatSeconds(loopStatus?.interval_sec || loopInterval * 60)} interval
                                 </span>
+                                <span className="rounded-full border border-cyan-400/20 bg-cyan-500/10 px-3 py-1 text-xs font-black text-cyan-100">
+                                    source {loopStatus?.source_record_count || unfilteredTotal || 0}
+                                </span>
+                            </div>
+                            <div className="mt-2 text-xs font-bold text-slate-500">
+                                {loopStatus?.source_path || 'E:\\다운로드\\stock_data.xlsx'}
                             </div>
                         </div>
                         <div className="grid grid-cols-2 gap-2 text-right text-xs font-black text-slate-400 sm:grid-cols-4">
@@ -623,7 +591,7 @@ export default function ManualStockAnalysisPage() {
                             {!loading && (!detail?.records || detail.records.length === 0) && (
                                 <tr>
                                     <td colSpan={5} className="px-6 py-16 text-center text-sm font-bold text-slate-500">
-                                        표시할 AI 주식 분석 결과가 없습니다. 결과 Excel을 업로드하거나 수동 목록을 생성해 주세요.
+                                        표시할 AI 주식 분석 결과가 없습니다. 무한 루프 시작으로 기본 소스 전체를 순차 분석해 주세요.
                                     </td>
                                 </tr>
                             )}

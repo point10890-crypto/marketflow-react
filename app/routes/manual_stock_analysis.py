@@ -44,7 +44,7 @@ def scrape_manual_run():
     payload = request.get_json(silent=True) or {}
     try:
         run = service.scrape_source_run(
-            max_rows=int(payload.get("max_rows") or 20),
+            max_rows=int(payload.get("max_rows") or 0),
             xpath=(payload.get("xpath") or service.DEFAULT_INVESTING_XPATH),
             timeout_sec=int(payload.get("timeout_sec") or 10),
         )
@@ -71,8 +71,8 @@ def start_scraper_loop():
     payload = request.get_json(silent=True) or {}
     try:
         return jsonify(service.start_scraper_loop(
-            max_rows=int(payload.get("max_rows") or 20),
-            interval_sec=int(payload.get("interval_sec") or 900),
+            max_rows=int(payload.get("max_rows") or 0),
+            interval_sec=int(payload.get("interval_sec") or 60),
             timeout_sec=int(payload.get("timeout_sec") or 10),
             xpath=(payload.get("xpath") or service.DEFAULT_INVESTING_XPATH),
         ))
