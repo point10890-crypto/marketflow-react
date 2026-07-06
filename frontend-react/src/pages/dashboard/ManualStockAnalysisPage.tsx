@@ -318,7 +318,7 @@ export default function ManualStockAnalysisPage() {
                         </h1>
                         <p className="mt-2 max-w-3xl text-sm font-semibold leading-6 text-slate-400">
                             외부 보드형 AI 분석 결과를 MarketFlow 안에서 별도 서비스로 조회합니다.
-                            기본 소스는 E:\다운로드\stock_data.xlsx이며, 스크래퍼 루프가 전체 종목을 순번대로 반복 분석합니다.
+                            기본 소스는 E:\다운로드\stock_data_final.xlsx이며, 우선주·상폐 종목을 제외한 최신 목록을 순번대로 반복 분석합니다.
                         </p>
                     </div>
                     <div className="flex flex-wrap items-start gap-2">
@@ -369,7 +369,7 @@ export default function ManualStockAnalysisPage() {
                                 </span>
                             </div>
                             <div className="mt-2 text-xs font-bold text-slate-500">
-                                {loopStatus?.source_path || 'E:\\다운로드\\stock_data.xlsx'}
+                                {loopStatus?.source_path || 'E:\\다운로드\\stock_data_final.xlsx'}
                             </div>
                         </div>
                         <div className="grid grid-cols-2 gap-2 text-right text-xs font-black text-slate-400 sm:grid-cols-4">

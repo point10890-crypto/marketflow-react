@@ -64,6 +64,8 @@ AUTO_LOOP_ERROR_BACKOFF_SEC = max(5, min(_env_int("MANUAL_STOCK_ANALYSIS_LOOP_ER
 
 DEFAULT_SOURCE_PATHS = [
     Path(os.getenv("MANUAL_STOCK_ANALYSIS_SOURCE_FILE", "")),
+    Path("E:/다운로드/stock_data_final.xlsx"),
+    SERVICE_ROOT / "stock_data_final.xlsx",
     Path("E:/다운로드/stock_data.xlsx"),
     SERVICE_ROOT / "stock_data.xlsx",
 ]
@@ -725,7 +727,7 @@ def create_pending_run_from_source(*, max_rows: int = 2500) -> dict[str, Any]:
     """Create a pending manual run from the configured stock source workbook."""
     source = _find_source_workbook()
     if source is None:
-        raise FileNotFoundError("stock_data.xlsx 원본을 찾을 수 없습니다.")
+        raise FileNotFoundError("stock_data_final.xlsx 원본을 찾을 수 없습니다.")
     records = _read_excel_records(source, pending=True)[: max(1, min(max_rows, MAX_SOURCE_ROWS))]
     fingerprint = hashlib.sha1(f"{source.resolve()}:{_now()}:{len(records)}".encode("utf-8", "ignore")).hexdigest()[:16]
     run = {
@@ -745,7 +747,7 @@ def create_pending_run_from_source(*, max_rows: int = 2500) -> dict[str, Any]:
 def _find_source_workbook() -> Path:
     source = next((p for p in DEFAULT_SOURCE_PATHS if str(p) and p.is_file()), None)
     if source is None:
-        raise FileNotFoundError("E:\\다운로드\\stock_data.xlsx 원본을 찾을 수 없습니다.")
+        raise FileNotFoundError("E:\\다운로드\\stock_data_final.xlsx 원본을 찾을 수 없습니다.")
     return source
 
 
