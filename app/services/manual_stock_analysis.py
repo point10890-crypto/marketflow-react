@@ -672,9 +672,14 @@ def scrape_source_run(
                     record["industry"] = scraped_industry
                 record["scrape_state"] = "completed"
             except Exception as exc:
-                record["raw_result"] = "오류"
-                record["result"] = "오류"
-                record["scrape_state"] = "error"
+                # A third-party page timeout/block is a data-collection gap, not
+                # an analyst verdict. Keep the row visible as in-progress so the
+                # loop can continue filling the table without turning transient
+                # scraper failures into permanent "오류" signals.
+                record["raw_result"] = "분석중"
+                record["result"] = "분석중"
+                record["scrape_state"] = "completed"
+                record["scrape_fallback"] = "collection_gap"
                 record["error"] = f"{type(exc).__name__}: {str(exc)[:160]}"
             if _is_missing_industry(record.get("industry")):
                 record["industry"] = _cached_industry_for(record.get("ticker", ""), record.get("market", "")) or "미분류"

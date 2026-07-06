@@ -138,8 +138,11 @@ export default function ManualStockAnalysisPage() {
         () => runs.find((run) => run.run_id === selectedRunId) || null,
         [runs, selectedRunId],
     );
-    const isSelectedLoopRun = !!loopStatus?.last_run_id && selectedRunId === loopStatus.last_run_id;
-    const shouldStreamSelectedRun = isSelectedLoopRun || selectedRun?.status === 'running' || detail?.status === 'running';
+    const selectedMatchesLoopRun = !!loopStatus?.last_run_id && selectedRunId === loopStatus.last_run_id;
+    const isSelectedLoopRun = !!loopStatus?.running && selectedMatchesLoopRun;
+    const isStoppedLoopRunSelection = selectedMatchesLoopRun && !loopStatus?.running;
+    const shouldStreamSelectedRun = isSelectedLoopRun
+        || (!isStoppedLoopRunSelection && (selectedRun?.status === 'running' || detail?.status === 'running'));
 
     const fetchRuns = useCallback(async (preferredRunId?: string) => {
         setLoading(true);
@@ -153,20 +156,31 @@ export default function ManualStockAnalysisPage() {
             const nextRuns: ManualRunSummary[] = data.runs || [];
             setRuns(nextRuns);
             setFilters((data.result_filters || DEFAULT_FILTERS).filter((filter: string) => filter !== '미분류'));
-            const preferredExists = preferredRunId && nextRuns.some((run) => run.run_id === preferredRunId);
-            const selectedExists = selectedRunId && nextRuns.some((run) => run.run_id === selectedRunId);
-            const nextSelected = preferredExists
-                ? preferredRunId
-                : selectedExists
-                    ? selectedRunId
-                    : nextRuns[0]?.run_id || '';
+            const preferredRun = preferredRunId
+                ? nextRuns.find((run) => run.run_id === preferredRunId && run.status !== 'stale')
+                : null;
+            const selectedRunCandidate = selectedRunId
+                ? nextRuns.find((run) => run.run_id === selectedRunId)
+                : null;
+            const selectedIsStoppedLoopRun = !!selectedRunCandidate
+                && selectedRunCandidate.run_id === loopStatus?.last_run_id
+                && !loopStatus?.running;
+            const selectedIsUsable = !!selectedRunCandidate
+                && selectedRunCandidate.status !== 'stale'
+                && !selectedIsStoppedLoopRun;
+            const fallbackRun = nextRuns.find((run) => run.status !== 'stale');
+            const nextSelected = preferredRun
+                ? preferredRun.run_id
+                : selectedIsUsable
+                    ? selectedRunCandidate.run_id
+                    : fallbackRun?.run_id || '';
             setSelectedRunId(nextSelected);
         } catch (err) {
             setMessage(err instanceof Error ? err.message : '회차 목록 조회 실패');
         } finally {
             setLoading(false);
         }
-    }, [selectedRunId]);
+    }, [loopStatus?.last_run_id, loopStatus?.running, selectedRunId]);
 
     const fetchRunDetail = useCallback(async (options?: { silent?: boolean }) => {
         if (!selectedRunId) {
@@ -213,9 +227,11 @@ export default function ManualStockAnalysisPage() {
                 setSelectedResult('all');
                 setQuery('');
             }
-            if (data.last_run_id && (data.last_run_id !== loopRunRef.current || selectedRunId !== data.last_run_id)) {
+            if (data.running && data.last_run_id && (data.last_run_id !== loopRunRef.current || selectedRunId !== data.last_run_id)) {
                 await fetchRuns(data.last_run_id);
                 loopRunRef.current = data.last_run_id;
+            } else if (!data.running) {
+                loopRunRef.current = '';
             }
         } catch {
             // Keep the table usable even if the loop endpoint is temporarily unavailable.

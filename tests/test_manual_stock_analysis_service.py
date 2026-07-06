@@ -173,3 +173,38 @@ def test_scrape_source_run_persists_live_progress_with_industry(monkeypatch, tmp
     assert saved["records"][0]["industry"] == "반도체"
     assert saved["records"][0]["analyzed_at"] >= run["created_at"]
     assert saved["records"][1]["industry"] == "자동차"
+
+
+def test_scrape_source_run_marks_collection_gap_as_analysis_pending(monkeypatch, tmp_path):
+    _isolate_storage(monkeypatch, tmp_path)
+    source_file = tmp_path / "stock_data.xlsx"
+    pd.DataFrame([
+        {"순번": 1, "종목": "삼성전자 (005930)", "산업": "반도체", "url": "https://example.com/a"},
+    ]).to_excel(source_file, index=False)
+
+    class FakeDriver:
+        def quit(self):
+            return None
+
+    def fake_scrape_page_fields(driver, url, xpath, *, timeout_sec):
+        raise TimeoutError("slow investing page")
+
+    monkeypatch.setattr(svc, "_create_selenium_driver", lambda: FakeDriver())
+    monkeypatch.setattr(svc, "_scrape_page_fields", fake_scrape_page_fields)
+
+    run = svc.scrape_source_run(
+        max_rows=1,
+        run_id="manual_scrape_collection_gap",
+        persist_progress=True,
+        delay_sec=0,
+    )
+
+    assert run["status"] == "completed"
+    assert run["summary"] == {"분석중": 1}
+    saved = svc.get_run("manual_scrape_collection_gap")
+    record = saved["records"][0]
+    assert record["result"] == "분석중"
+    assert record["raw_result"] == "분석중"
+    assert record["scrape_state"] == "completed"
+    assert record["scrape_fallback"] == "collection_gap"
+    assert "TimeoutError" in record["error"]
