@@ -61,6 +61,10 @@ def register_blueprints(app):
     from app.routes.stock_analyzer import stock_analyzer_bp
     app.register_blueprint(stock_analyzer_bp, url_prefix='/api/stock-analyzer')
 
+    # Manual Stock Analysis routes (legacy Excel workflow as a service)
+    from app.routes.manual_stock_analysis import manual_stock_analysis_bp
+    app.register_blueprint(manual_stock_analysis_bp, url_prefix='/api/manual-stock-analysis')
+
     # Wave Pattern Detection routes
     from app.routes.wave import wave_bp
     app.register_blueprint(wave_bp, url_prefix='/api/wave')
@@ -73,4 +77,4 @@ def register_blueprints(app):
     from app.routes.community import community_bp
     app.register_blueprint(community_bp, url_prefix='/api/community')
 
-    print("[OK] Blueprints registered (KR + US + Crypto + Econ + Auth + Admin + MiroFish + Stripe + StockAnalyzer + Wave + Briefing + Community)")
+    print("[OK] Blueprints registered (KR + US + Crypto + Econ + Auth + Admin + MiroFish + Stripe + StockAnalyzer + ManualStockAnalysis + Wave + Briefing + Community)")

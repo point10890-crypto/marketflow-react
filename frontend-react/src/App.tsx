@@ -33,6 +33,7 @@ const AiBainPage = lazy(() => import('@/pages/dashboard/AiBainPage'));
 const CryptoOverviewPage = lazy(() => import('@/pages/dashboard/crypto/CryptoOverviewPage'));
 const CryptoSignalsPage = lazy(() => import('@/pages/dashboard/crypto/CryptoSignalsPage'));
 const StockAnalyzerPage = lazy(() => import('@/pages/dashboard/StockAnalyzerPage'));
+const ManualStockAnalysisPage = lazy(() => import('@/pages/dashboard/ManualStockAnalysisPage'));
 const WaveOverviewPage = lazy(() => import('@/pages/dashboard/wave/WaveOverviewPage'));
 const BriefingPortalPage = lazy(() => import('@/pages/dashboard/BriefingPortalPage'));
 const AccountPage = lazy(() => import('@/pages/AccountPage'));
@@ -185,6 +186,7 @@ export default function App() {
                         <Route path="crypto" element={<ProGuard><Suspense fallback={<LoadingFallback />}><CryptoOverviewPage /></Suspense></ProGuard>} />
                         <Route path="crypto/signals" element={<ProGuard><Suspense fallback={<LoadingFallback />}><CryptoSignalsPage /></Suspense></ProGuard>} />
                         <Route path="stock-analyzer" element={<ProGuard><Suspense fallback={<LoadingFallback />}><StockAnalyzerPage /></Suspense></ProGuard>} />
+                        <Route path="manual-stock-analysis" element={<ProGuard><Suspense fallback={<LoadingFallback />}><ManualStockAnalysisPage /></Suspense></ProGuard>} />
                         <Route path="wave" element={<ProGuard><Suspense fallback={<LoadingFallback />}><WaveOverviewPage /></Suspense></ProGuard>} />
                         <Route path="briefing" element={<ProGuard><Suspense fallback={<LoadingFallback />}><BriefingPortalPage /></Suspense></ProGuard>} />
                         <Route path="community" element={<Suspense fallback={<LoadingFallback />}><CommunityPage /></Suspense>} />

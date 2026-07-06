@@ -49,6 +49,7 @@ data/backtest/
 data/ai/
 data/institutional/
 data/admin_mirofish/
+data/manual_stock_analysis/
 data/briefing/*.json
 !data/briefing/.gitkeep
 data/uploads/community/
@@ -136,6 +137,7 @@ nul
 
 # Trading skills reports (generated output)
 reports/
+manual_stock_analysis_*preview*.png
 
 # Temp scripts
 fix_path_issue.bat

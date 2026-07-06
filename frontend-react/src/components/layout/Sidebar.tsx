@@ -29,6 +29,7 @@ const globalTools: NavItem[] = [
     { name: 'VCP Enhanced', href: '/dashboard/vcp-enhanced', icon: 'fa-bolt', color: 'text-yellow-400', bg: 'from-yellow-500/15 to-yellow-600/5' },
     { name: 'W Pattern', href: '/dashboard/wave', icon: 'fa-wave-square', color: 'text-pink-400', bg: 'from-pink-500/15 to-pink-600/5', glow: true, badge: 'AI' },
     { name: 'AI Brain', href: '/dashboard/ai-bain', icon: 'fa-robot', color: 'text-cyan-400', bg: 'from-cyan-500/15 to-cyan-600/5', badge: 'NEW' },
+    { name: 'AI 주식분석', href: '/dashboard/manual-stock-analysis', icon: 'fa-table-list', color: 'text-orange-300', bg: 'from-orange-500/15 to-rose-600/5', badge: 'LIVE' },
 ];
 
 // 시장별 카드
@@ -66,6 +67,7 @@ const marketCards: NavItem[] = [
 // 하단 도구
 const toolItems: NavItem[] = [
     { name: 'ProPicks', href: '/dashboard/stock-analyzer', icon: 'fa-crosshairs', color: 'text-orange-400', bg: 'from-orange-500/15 to-orange-600/5' },
+    { name: 'AI 주식분석', href: '/dashboard/manual-stock-analysis', icon: 'fa-table-list', color: 'text-rose-400', bg: 'from-rose-500/15 to-rose-600/5' },
     { name: 'DART 심층분석', href: '/dashboard/stock-analyzer?panel=dart-deep#dart-deep', icon: 'fa-file-invoice-dollar', color: 'text-cyan-400', bg: 'from-cyan-500/15 to-cyan-600/5' },
 ];
 

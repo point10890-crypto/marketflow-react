@@ -1,0 +1,601 @@
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { API_BASE, authHeaders } from '@/lib/api';
+
+interface ManualRunSummary {
+    run_id: string;
+    title: string;
+    created_at: string;
+    record_count: number;
+    source_kind: string;
+    summary: Record<string, number>;
+}
+
+interface ManualRecord {
+    rank: number;
+    stock_name: string;
+    ticker: string;
+    market: string;
+    industry: string;
+    source_url: string;
+    raw_result: string;
+    result: string;
+    analyzed_at: string;
+}
+
+interface ManualRunDetail extends ManualRunSummary {
+    filtered_count: number;
+    records: ManualRecord[];
+}
+
+interface ScraperLoopStatus {
+    running: boolean;
+    state: string;
+    max_rows: number;
+    interval_sec: number;
+    timeout_sec: number;
+    iterations: number;
+    processed: number;
+    total: number;
+    current_rank: number | null;
+    current_stock: string;
+    current_result: string;
+    last_run_id: string;
+    last_record_count: number;
+    last_started_at: string;
+    last_finished_at: string;
+    next_run_at: string;
+    last_error: string;
+}
+
+const DEFAULT_FILTERS = ['적극 매수', '매수', '중립', '매도', '적극 매도', '분석중', '오류'];
+
+const RESULT_COLORS: Record<string, string> = {
+    '적극 매수': 'text-red-500 bg-red-500/10 border-red-400/30',
+    '매수': 'text-orange-400 bg-orange-500/10 border-orange-400/30',
+    '중립': 'text-yellow-500 bg-yellow-500/10 border-yellow-400/30',
+    '매도': 'text-blue-500 bg-blue-500/10 border-blue-400/30',
+    '적극 매도': 'text-indigo-500 bg-indigo-500/10 border-indigo-400/30',
+    '분석중': 'text-violet-400 bg-violet-500/10 border-violet-400/30',
+    '오류': 'text-rose-400 bg-rose-500/10 border-rose-400/30',
+};
+
+const LOOP_LABELS: Record<string, string> = {
+    starting: '시작 중',
+    scraping: '스크래핑 중',
+    waiting: '대기 중',
+    error_waiting: '오류 후 대기',
+    stopping: '중지 중',
+    stopped: '중지됨',
+};
+
+function resultClass(result: string) {
+    return RESULT_COLORS[result] || 'text-slate-500 bg-slate-500/10 border-slate-300';
+}
+
+function buildRunLabel(run: ManualRunSummary) {
+    const created = run.created_at ? run.created_at.slice(0, 10) : '';
+    return `${created} · ${run.title || run.run_id}`;
+}
+
+function formatSeconds(seconds: number) {
+    if (!Number.isFinite(seconds) || seconds <= 0) return '--';
+    if (seconds < 60) return `${seconds}s`;
+    const minutes = Math.round(seconds / 60);
+    if (minutes < 60) return `${minutes}m`;
+    return `${Math.round(minutes / 60)}h`;
+}
+
+export default function ManualStockAnalysisPage() {
+    const [runs, setRuns] = useState<ManualRunSummary[]>([]);
+    const [filters, setFilters] = useState<string[]>([]);
+    const [selectedRunId, setSelectedRunId] = useState('');
+    const [selectedResult, setSelectedResult] = useState('all');
+    const [query, setQuery] = useState('');
+    const [detail, setDetail] = useState<ManualRunDetail | null>(null);
+    const [loopStatus, setLoopStatus] = useState<ScraperLoopStatus | null>(null);
+    const [loading, setLoading] = useState(false);
+    const [busy, setBusy] = useState(false);
+    const [message, setMessage] = useState('');
+    const [scrapeRows, setScrapeRows] = useState(20);
+    const [loopInterval, setLoopInterval] = useState(15);
+    const fileRef = useRef<HTMLInputElement | null>(null);
+    const loopRunRef = useRef('');
+
+    const selectedRun = useMemo(
+        () => runs.find((run) => run.run_id === selectedRunId) || null,
+        [runs, selectedRunId],
+    );
+
+    const fetchRuns = useCallback(async (preferredRunId?: string) => {
+        setLoading(true);
+        setMessage('');
+        try {
+            const res = await fetch(`${API_BASE}/api/manual-stock-analysis/runs`, {
+                headers: authHeaders(),
+            });
+            if (!res.ok) throw new Error(`회차 목록 조회 실패 (${res.status})`);
+            const data = await res.json();
+            const nextRuns: ManualRunSummary[] = data.runs || [];
+            setRuns(nextRuns);
+            setFilters((data.result_filters || DEFAULT_FILTERS).filter((filter: string) => filter !== '미분류'));
+            const nextSelected = preferredRunId || selectedRunId || nextRuns[0]?.run_id || '';
+            if (nextSelected) setSelectedRunId(nextSelected);
+        } catch (err) {
+            setMessage(err instanceof Error ? err.message : '회차 목록 조회 실패');
+        } finally {
+            setLoading(false);
+        }
+    }, [selectedRunId]);
+
+    const fetchRunDetail = useCallback(async () => {
+        if (!selectedRunId) {
+            setDetail(null);
+            return;
+        }
+        setLoading(true);
+        setMessage('');
+        const params = new URLSearchParams();
+        params.set('result', selectedResult);
+        if (query.trim()) params.set('q', query.trim());
+        try {
+            const res = await fetch(`${API_BASE}/api/manual-stock-analysis/runs/${selectedRunId}?${params.toString()}`, {
+                headers: authHeaders(),
+            });
+            if (!res.ok) throw new Error(`분석 목록 조회 실패 (${res.status})`);
+            setDetail(await res.json());
+        } catch (err) {
+            setMessage(err instanceof Error ? err.message : '분석 목록 조회 실패');
+        } finally {
+            setLoading(false);
+        }
+    }, [query, selectedResult, selectedRunId]);
+
+    const fetchLoopStatus = useCallback(async () => {
+        try {
+            const res = await fetch(`${API_BASE}/api/manual-stock-analysis/scraper-loop`, {
+                headers: authHeaders(),
+            });
+            if (!res.ok) return;
+            const data: ScraperLoopStatus = await res.json();
+            setLoopStatus(data);
+            if (data.last_run_id && data.last_run_id !== loopRunRef.current) {
+                loopRunRef.current = data.last_run_id;
+                await fetchRuns(data.last_run_id);
+            }
+        } catch {
+            // Keep the table usable even if the loop endpoint is temporarily unavailable.
+        }
+    }, [fetchRuns]);
+
+    useEffect(() => {
+        fetchRuns();
+        fetchLoopStatus();
+    }, [fetchLoopStatus, fetchRuns]);
+
+    useEffect(() => {
+        fetchRunDetail();
+    }, [fetchRunDetail]);
+
+    useEffect(() => {
+        const id = window.setTimeout(() => fetchRunDetail(), 250);
+        return () => window.clearTimeout(id);
+    }, [fetchRunDetail, query]);
+
+    useEffect(() => {
+        const id = window.setInterval(() => {
+            fetchLoopStatus();
+            if (loopStatus?.running) fetchRunDetail();
+        }, 2500);
+        return () => window.clearInterval(id);
+    }, [fetchLoopStatus, fetchRunDetail, loopStatus?.running]);
+
+    const handleUpload = async (file: File | null) => {
+        if (!file) return;
+        setBusy(true);
+        setMessage('');
+        const form = new FormData();
+        form.append('file', file);
+        try {
+            const res = await fetch(`${API_BASE}/api/manual-stock-analysis/runs/upload`, {
+                method: 'POST',
+                headers: authHeaders(),
+                body: form,
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) throw new Error(data.error || `업로드 실패 (${res.status})`);
+            setSelectedRunId(data.run?.run_id || '');
+            setMessage('결과 Excel 업로드가 완료되었습니다.');
+            await fetchRuns(data.run?.run_id);
+        } catch (err) {
+            setMessage(err instanceof Error ? err.message : '업로드 실패');
+        } finally {
+            setBusy(false);
+            if (fileRef.current) fileRef.current.value = '';
+        }
+    };
+
+    const createPendingRun = async () => {
+        setBusy(true);
+        setMessage('');
+        try {
+            const res = await fetch(`${API_BASE}/api/manual-stock-analysis/runs/source`, {
+                method: 'POST',
+                headers: authHeaders({ 'Content-Type': 'application/json' }),
+                body: JSON.stringify({ max_rows: 2500 }),
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) throw new Error(data.error || `목록 생성 실패 (${res.status})`);
+            setSelectedRunId(data.run?.run_id || '');
+            setMessage('수동 분석 대기 목록이 생성되었습니다.');
+            await fetchRuns(data.run?.run_id);
+        } catch (err) {
+            setMessage(err instanceof Error ? err.message : '목록 생성 실패');
+        } finally {
+            setBusy(false);
+        }
+    };
+
+    const runScraper = async () => {
+        setBusy(true);
+        setMessage('');
+        try {
+            const res = await fetch(`${API_BASE}/api/manual-stock-analysis/runs/scrape`, {
+                method: 'POST',
+                headers: authHeaders({ 'Content-Type': 'application/json' }),
+                body: JSON.stringify({ max_rows: scrapeRows, timeout_sec: 10 }),
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) throw new Error(data.error || `스크래퍼 실행 실패 (${res.status})`);
+            setSelectedRunId(data.run?.run_id || '');
+            setMessage(`스크래퍼 실행 완료: ${data.run?.record_count || scrapeRows}건`);
+            await fetchRuns(data.run?.run_id);
+        } catch (err) {
+            setMessage(err instanceof Error ? err.message : '스크래퍼 실행 실패');
+        } finally {
+            setBusy(false);
+            fetchLoopStatus();
+        }
+    };
+
+    const startLoop = async () => {
+        setBusy(true);
+        setMessage('');
+        try {
+            const res = await fetch(`${API_BASE}/api/manual-stock-analysis/scraper-loop/start`, {
+                method: 'POST',
+                headers: authHeaders({ 'Content-Type': 'application/json' }),
+                body: JSON.stringify({
+                    max_rows: scrapeRows,
+                    interval_sec: loopInterval * 60,
+                    timeout_sec: 10,
+                }),
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) throw new Error(data.error || `루프 시작 실패 (${res.status})`);
+            setLoopStatus(data);
+            setMessage('실시간 스크래퍼 루프가 시작되었습니다.');
+        } catch (err) {
+            setMessage(err instanceof Error ? err.message : '루프 시작 실패');
+        } finally {
+            setBusy(false);
+        }
+    };
+
+    const stopLoop = async () => {
+        setBusy(true);
+        setMessage('');
+        try {
+            const res = await fetch(`${API_BASE}/api/manual-stock-analysis/scraper-loop/stop`, {
+                method: 'POST',
+                headers: authHeaders({ 'Content-Type': 'application/json' }),
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) throw new Error(data.error || `루프 중지 실패 (${res.status})`);
+            setLoopStatus(data);
+            setMessage('실시간 스크래퍼 루프를 중지했습니다.');
+        } catch (err) {
+            setMessage(err instanceof Error ? err.message : '루프 중지 실패');
+        } finally {
+            setBusy(false);
+        }
+    };
+
+    const exportUrl = useMemo(() => {
+        if (!selectedRunId) return '';
+        const params = new URLSearchParams();
+        params.set('result', selectedResult);
+        if (query.trim()) params.set('q', query.trim());
+        return `${API_BASE}/api/manual-stock-analysis/runs/${selectedRunId}/export?${params.toString()}`;
+    }, [query, selectedResult, selectedRunId]);
+
+    const summary = selectedRun?.summary || detail?.summary || {};
+    const total = detail?.filtered_count ?? selectedRun?.record_count ?? 0;
+    const visibleRecords = (detail?.records || []).slice(0, 500);
+    const hiddenRecordCount = Math.max(0, (detail?.records?.length || 0) - visibleRecords.length);
+    const loopTotal = loopStatus?.total || loopStatus?.max_rows || scrapeRows;
+    const loopProcessed = loopStatus?.processed || 0;
+    const loopProgress = loopTotal > 0 ? Math.min(100, Math.round((loopProcessed / loopTotal) * 100)) : 0;
+    const isLoopRunning = !!loopStatus?.running;
+
+    return (
+        <div className="space-y-5">
+            <section className="rounded-2xl border border-white/10 bg-[#101114] p-5 shadow-2xl shadow-black/20">
+                <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
+                    <div>
+                        <div className="mb-2 text-[11px] font-black uppercase tracking-[0.22em] text-orange-400">
+                            Manual Scraper Service
+                        </div>
+                        <h1 className="text-2xl font-black tracking-tight text-white md:text-4xl">
+                            AI 주식 분석 목록
+                        </h1>
+                        <p className="mt-2 max-w-3xl text-sm font-semibold leading-6 text-slate-400">
+                            외부 보드형 AI 분석 결과를 MarketFlow 안에서 별도 서비스로 조회합니다.
+                            수동 Excel 업로드와 실시간 스크래퍼 루프를 분리해 운영하며, 이 데이터는 알파 Top3 자동 랭킹에 직접 섞이지 않습니다.
+                        </p>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                        <label className="flex h-10 items-center gap-2 rounded-xl border border-white/10 bg-black/25 px-3 text-xs font-black text-slate-300">
+                            rows
+                            <input
+                                type="number"
+                                min={1}
+                                max={200}
+                                value={scrapeRows}
+                                onChange={(event) => setScrapeRows(Math.max(1, Math.min(200, Number(event.target.value) || 20)))}
+                                className="h-7 w-16 rounded-lg border border-white/10 bg-black/40 px-2 text-right text-white outline-none"
+                            />
+                        </label>
+                        <label className="flex h-10 items-center gap-2 rounded-xl border border-white/10 bg-black/25 px-3 text-xs font-black text-slate-300">
+                            loop
+                            <input
+                                type="number"
+                                min={1}
+                                max={1440}
+                                value={loopInterval}
+                                onChange={(event) => setLoopInterval(Math.max(1, Math.min(1440, Number(event.target.value) || 15)))}
+                                className="h-7 w-16 rounded-lg border border-white/10 bg-black/40 px-2 text-right text-white outline-none"
+                            />
+                            min
+                        </label>
+                        <button
+                            type="button"
+                            onClick={runScraper}
+                            disabled={busy}
+                            className="rounded-xl border border-rose-400/25 bg-rose-500/10 px-4 py-2 text-sm font-black text-rose-200 transition hover:bg-rose-500/20 disabled:opacity-50"
+                        >
+                            1회 스크래프
+                        </button>
+                        <button
+                            type="button"
+                            onClick={startLoop}
+                            disabled={busy || isLoopRunning}
+                            className="rounded-xl border border-emerald-400/25 bg-emerald-500/10 px-4 py-2 text-sm font-black text-emerald-200 transition hover:bg-emerald-500/20 disabled:opacity-50"
+                        >
+                            루프 시작
+                        </button>
+                        <button
+                            type="button"
+                            onClick={stopLoop}
+                            disabled={busy || !isLoopRunning}
+                            className="rounded-xl border border-slate-500/40 bg-white/5 px-4 py-2 text-sm font-black text-slate-200 transition hover:bg-white/10 disabled:opacity-50"
+                        >
+                            루프 중지
+                        </button>
+                        <input
+                            ref={fileRef}
+                            type="file"
+                            accept=".xlsx,.xls"
+                            className="hidden"
+                            onChange={(event) => handleUpload(event.target.files?.[0] || null)}
+                        />
+                        <button
+                            type="button"
+                            onClick={() => fileRef.current?.click()}
+                            disabled={busy}
+                            className="rounded-xl border border-orange-400/25 bg-orange-500/10 px-4 py-2 text-sm font-black text-orange-200 transition hover:bg-orange-500/20 disabled:opacity-50"
+                        >
+                            결과 Excel 업로드
+                        </button>
+                        <button
+                            type="button"
+                            onClick={createPendingRun}
+                            disabled={busy}
+                            className="rounded-xl border border-cyan-400/25 bg-cyan-500/10 px-4 py-2 text-sm font-black text-cyan-200 transition hover:bg-cyan-500/20 disabled:opacity-50"
+                        >
+                            수동 목록 생성
+                        </button>
+                        {exportUrl && (
+                            <a
+                                href={exportUrl}
+                                className="rounded-xl border border-yellow-400/25 bg-yellow-500/10 px-4 py-2 text-sm font-black text-yellow-100 transition hover:bg-yellow-500/20"
+                            >
+                                엑셀 다운로드
+                            </a>
+                        )}
+                    </div>
+                </div>
+
+                <div className="mt-6 rounded-2xl border border-cyan-400/15 bg-cyan-950/15 p-4">
+                    <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                        <div>
+                            <div className="text-[11px] font-black uppercase tracking-[0.22em] text-cyan-300">
+                                Realtime Scraper Loop
+                            </div>
+                            <div className="mt-1 flex flex-wrap items-center gap-2">
+                                <h2 className="text-xl font-black text-white">실시간 스크래퍼 루프</h2>
+                                <span className={`rounded-full border px-3 py-1 text-xs font-black ${
+                                    isLoopRunning
+                                        ? 'animate-pulse border-emerald-400/30 bg-emerald-500/15 text-emerald-200'
+                                        : 'border-slate-500/30 bg-white/5 text-slate-400'
+                                }`}>
+                                    {LOOP_LABELS[loopStatus?.state || 'stopped'] || loopStatus?.state || '중지됨'}
+                                </span>
+                                <span className="rounded-full border border-white/10 bg-black/20 px-3 py-1 text-xs font-black text-slate-300">
+                                    {formatSeconds(loopStatus?.interval_sec || loopInterval * 60)} interval
+                                </span>
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 text-right text-xs font-black text-slate-400 sm:grid-cols-4">
+                            <div className="rounded-xl border border-white/10 bg-black/20 px-3 py-2">
+                                <div className="text-slate-500">진행</div>
+                                <div className="text-lg text-white">{loopProcessed}/{loopTotal}</div>
+                            </div>
+                            <div className="rounded-xl border border-white/10 bg-black/20 px-3 py-2">
+                                <div className="text-slate-500">회차</div>
+                                <div className="text-lg text-white">{loopStatus?.iterations || 0}</div>
+                            </div>
+                            <div className="rounded-xl border border-white/10 bg-black/20 px-3 py-2">
+                                <div className="text-slate-500">최근</div>
+                                <div className="text-lg text-white">{loopStatus?.last_record_count || 0}</div>
+                            </div>
+                            <div className="rounded-xl border border-white/10 bg-black/20 px-3 py-2">
+                                <div className="text-slate-500">상태</div>
+                                <div className={isLoopRunning ? 'text-lg text-emerald-300' : 'text-lg text-slate-300'}>
+                                    {isLoopRunning ? 'LIVE' : 'IDLE'}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="mt-4 h-2 overflow-hidden rounded-full bg-black/35">
+                        <div
+                            className="h-full rounded-full bg-gradient-to-r from-cyan-400 via-violet-400 to-emerald-400 transition-all duration-500"
+                            style={{ width: `${loopProgress}%` }}
+                        />
+                    </div>
+
+                    <div className="mt-4 grid gap-3 text-sm font-bold text-slate-300 lg:grid-cols-4">
+                        <div className="rounded-xl border border-white/10 bg-black/20 p-3">
+                            <div className="text-[10px] uppercase tracking-[0.18em] text-slate-500">현재 종목</div>
+                            <div className="mt-1 text-white">{loopStatus?.current_stock || '--'}</div>
+                        </div>
+                        <div className="rounded-xl border border-white/10 bg-black/20 p-3">
+                            <div className="text-[10px] uppercase tracking-[0.18em] text-slate-500">현재 판정</div>
+                            <div className="mt-1 text-white">{loopStatus?.current_result || '--'}</div>
+                        </div>
+                        <div className="rounded-xl border border-white/10 bg-black/20 p-3">
+                            <div className="text-[10px] uppercase tracking-[0.18em] text-slate-500">최근 완료</div>
+                            <div className="mt-1 text-white">{loopStatus?.last_finished_at || '--'}</div>
+                        </div>
+                        <div className="rounded-xl border border-white/10 bg-black/20 p-3">
+                            <div className="text-[10px] uppercase tracking-[0.18em] text-slate-500">다음 실행</div>
+                            <div className="mt-1 text-white">{loopStatus?.next_run_at || '--'}</div>
+                        </div>
+                    </div>
+                    {loopStatus?.last_error && (
+                        <div className="mt-3 rounded-xl border border-rose-400/25 bg-rose-500/10 px-4 py-3 text-xs font-bold text-rose-200">
+                            {loopStatus.last_error}
+                        </div>
+                    )}
+                </div>
+
+                <div className="mt-6 grid gap-3 lg:grid-cols-[1.1fr_0.7fr_0.8fr]">
+                    <label className="block">
+                        <span className="mb-2 block text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">회차</span>
+                        <select
+                            value={selectedRunId}
+                            onChange={(event) => setSelectedRunId(event.target.value)}
+                            className="h-12 w-full rounded-xl border border-white/10 bg-black/30 px-4 text-sm font-bold text-white outline-none focus:border-orange-400/50"
+                        >
+                            {runs.length === 0 && <option value="">등록된 회차 없음</option>}
+                            {runs.map((run) => (
+                                <option key={run.run_id} value={run.run_id}>{buildRunLabel(run)}</option>
+                            ))}
+                        </select>
+                    </label>
+                    <label className="block">
+                        <span className="mb-2 block text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">판정</span>
+                        <select
+                            value={selectedResult}
+                            onChange={(event) => setSelectedResult(event.target.value)}
+                            className="h-12 w-full rounded-xl border border-white/10 bg-black/30 px-4 text-sm font-bold text-white outline-none focus:border-orange-400/50"
+                        >
+                            <option value="all">전체</option>
+                            {(filters.length ? filters : DEFAULT_FILTERS).map((filter) => (
+                                <option key={filter} value={filter}>{filter}</option>
+                            ))}
+                        </select>
+                    </label>
+                    <label className="block">
+                        <span className="mb-2 block text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">검색</span>
+                        <input
+                            value={query}
+                            onChange={(event) => setQuery(event.target.value)}
+                            placeholder="종목명, 코드, 산업"
+                            className="h-12 w-full rounded-xl border border-white/10 bg-black/30 px-4 text-sm font-bold text-white outline-none placeholder:text-slate-600 focus:border-orange-400/50"
+                        />
+                    </label>
+                </div>
+
+                <div className="mt-5 flex flex-wrap items-center gap-2">
+                    <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-black text-slate-300">
+                        {total.toLocaleString('ko-KR')} rows
+                    </span>
+                    {Object.entries(summary).map(([label, count]) => (
+                        <span
+                            key={label}
+                            className={`rounded-full border px-3 py-1.5 text-xs font-black ${resultClass(label)}`}
+                        >
+                            {label} {Number(count).toLocaleString('ko-KR')}
+                        </span>
+                    ))}
+                    {loading && <span className="text-xs font-bold text-slate-500">loading...</span>}
+                    {message && <span className="text-xs font-bold text-amber-300">{message}</span>}
+                </div>
+            </section>
+
+            <section className="overflow-hidden rounded-2xl border border-white/10 bg-[#f4f4f5] text-slate-950 shadow-2xl shadow-black/20">
+                <div className="flex items-center justify-between border-b border-slate-300/70 bg-white px-5 py-4">
+                    <div>
+                        <div className="text-xs font-black uppercase tracking-[0.2em] text-orange-600">Analysis Table</div>
+                        <h2 className="text-lg font-black">AI 주식 분석 결과</h2>
+                    </div>
+                    <div className="text-right text-xs font-bold text-slate-500">
+                        {hiddenRecordCount > 0
+                            ? `화면 ${visibleRecords.length.toLocaleString('ko-KR')}건 표시 · 추가 ${hiddenRecordCount.toLocaleString('ko-KR')}건은 엑셀 다운로드`
+                            : detail?.created_at || selectedRun?.created_at || '--'}
+                    </div>
+                </div>
+
+                <div className="max-h-[calc(100vh-380px)] min-h-[460px] overflow-auto">
+                    <table className="min-w-full border-collapse text-sm">
+                        <thead className="sticky top-0 z-10 bg-slate-100 text-xs uppercase tracking-[0.14em] text-slate-600">
+                            <tr>
+                                <th className="border-b border-r border-slate-300 px-4 py-3 text-center">순번</th>
+                                <th className="border-b border-r border-slate-300 px-4 py-3 text-center">종목명</th>
+                                <th className="border-b border-r border-slate-300 px-4 py-3 text-center">산업</th>
+                                <th className="border-b border-r border-slate-300 px-4 py-3 text-center">분석결과</th>
+                                <th className="border-b border-slate-300 px-4 py-3 text-center">분석일시</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {visibleRecords.map((record) => (
+                                <tr key={`${record.rank}-${record.stock_name}-${record.ticker}`} className="odd:bg-white even:bg-slate-50 hover:bg-orange-50">
+                                    <td className="border-b border-r border-slate-200 px-4 py-3 text-center font-bold">{record.rank}</td>
+                                    <td className="border-b border-r border-slate-200 px-4 py-3 text-center font-bold">
+                                        <div>{record.stock_name}{record.ticker ? ` (${record.ticker})` : ''}</div>
+                                        {record.market && <div className="text-[11px] font-black uppercase tracking-widest text-slate-400">{record.market}</div>}
+                                    </td>
+                                    <td className="border-b border-r border-slate-200 px-4 py-3 text-center">{record.industry || '미분류'}</td>
+                                    <td className="border-b border-r border-slate-200 px-4 py-3 text-center">
+                                        <span className={`inline-flex rounded-full border px-3 py-1 text-xs font-black ${resultClass(record.result)}`}>
+                                            {record.result}
+                                        </span>
+                                    </td>
+                                    <td className="border-b border-slate-200 px-4 py-3 text-center font-medium">{record.analyzed_at}</td>
+                                </tr>
+                            ))}
+                            {!loading && (!detail?.records || detail.records.length === 0) && (
+                                <tr>
+                                    <td colSpan={5} className="px-6 py-16 text-center text-sm font-bold text-slate-500">
+                                        표시할 AI 주식 분석 결과가 없습니다. 결과 Excel을 업로드하거나 수동 목록을 생성해 주세요.
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    );
+}
