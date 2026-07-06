@@ -10,6 +10,7 @@ New-Item -ItemType Directory -Force -Path $LogDir | Out-Null
 Set-Location $Root
 
 $env:PYTHONIOENCODING = "utf-8"
+$env:PYTHONUNBUFFERED = "1"
 $env:HOME_SERVER = "1"
 $env:FLASK_PORT = "5001"
 $env:WERKZEUG_RUN_MAIN = $null
@@ -42,12 +43,6 @@ foreach ($ownerPid in $portOwner) {
 
 Start-Sleep -Seconds 1
 
-Start-Process `
-    -FilePath $Python `
-    -ArgumentList "flask_app.py" `
-    -WorkingDirectory $Root `
-    -WindowStyle Hidden `
-    -RedirectStandardOutput $OutLog `
-    -RedirectStandardError $ErrLog
+Add-Content -Path $OutLog -Encoding UTF8 -Value "$(Get-Date -Format o) starting flask_app.py foreground via start_flask_task.ps1"
 
-Add-Content -Path $OutLog -Encoding UTF8 -Value "$(Get-Date -Format o) started flask_app.py via start_flask_task.ps1"
+& $Python "flask_app.py" >> $OutLog 2>> $ErrLog
