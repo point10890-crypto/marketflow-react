@@ -111,6 +111,7 @@ def get_manual_run(run_id: str):
             run_id,
             result=request.args.get("result", "all"),
             q=request.args.get("q", ""),
+            live_only=(request.args.get("live", "").lower() in {"1", "true", "yes"}),
         ))
     except FileNotFoundError:
         return jsonify({"error": "manual run not found"}), 404

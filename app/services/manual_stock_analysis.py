@@ -475,6 +475,9 @@ def scrape_source_run(
     fingerprint = hashlib.sha1(f"{source.resolve()}:{created_at}:{safe_max_rows}".encode("utf-8", "ignore")).hexdigest()[:16]
     current_run_id = run_id or f"manual_scrape_{fingerprint}"
     records = source_records[:safe_max_rows]
+    for record in records:
+        record["scrape_state"] = "pending"
+        record["analyzed_at"] = ""
     run = _build_scrape_run(
         run_id=current_run_id,
         source=source,
@@ -497,10 +500,18 @@ def scrape_source_run(
         driver = _create_selenium_driver()
         total = len(records)
         for index, record in enumerate(records, start=1):
+            record["scrape_state"] = "scraping"
+            record["analyzed_at"] = _now()
+            if persist_progress:
+                _persist_scrape_run(run, records=records, status="running")
+            if progress_callback:
+                progress_callback(index, total, dict(record))
+
             url = _clean_text(record.get("source_url"))
             if not url:
                 record["raw_result"] = "오류"
                 record["result"] = "오류"
+                record["scrape_state"] = "error"
                 record["error"] = "missing source_url"
                 record["analyzed_at"] = _now()
                 if progress_callback:
@@ -518,9 +529,11 @@ def scrape_source_run(
                 scraped_industry = scraped_fields.get("industry", "")
                 if not _is_missing_industry(scraped_industry):
                     record["industry"] = scraped_industry
+                record["scrape_state"] = "completed"
             except Exception as exc:
                 record["raw_result"] = "오류"
                 record["result"] = "오류"
+                record["scrape_state"] = "error"
                 record["error"] = f"{type(exc).__name__}: {str(exc)[:160]}"
             if _is_missing_industry(record.get("industry")):
                 record["industry"] = _cached_industry_for(record.get("ticker", ""), record.get("market", "")) or "미분류"
@@ -773,11 +786,16 @@ def list_runs() -> list[dict[str, Any]]:
     return runs
 
 
-def get_run(run_id: str, *, result: str = "all", q: str = "") -> dict[str, Any]:
+def get_run(run_id: str, *, result: str = "all", q: str = "", live_only: bool = False) -> dict[str, Any]:
     run = _read_run(_run_path(run_id))
     if not run:
         raise FileNotFoundError(run_id)
     records = list(run.get("records") or [])
+    if live_only:
+        records = [
+            r for r in records
+            if r.get("scrape_state") in {"scraping", "completed", "error"}
+        ]
     result = _clean_text(result)
     q = _clean_text(q).lower()
     if result and result != "all":

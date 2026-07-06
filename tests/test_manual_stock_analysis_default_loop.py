@@ -62,6 +62,7 @@ def test_scrape_source_run_zero_max_rows_uses_entire_default_source(monkeypatch,
     assert run["source_record_count"] == 3
     assert run["scraper"]["max_rows"] == 3
     assert run["status"] == "completed"
+    assert {record["scrape_state"] for record in run["records"]} == {"completed"}
     assert all(record["analyzed_at"] >= run["created_at"] for record in run["records"])
 
 
@@ -99,3 +100,63 @@ def test_scraper_loop_zero_max_rows_tracks_source_total(monkeypatch, tmp_path):
 
     stopped = svc.stop_scraper_loop()
     assert stopped["running"] is False
+
+
+def test_live_run_detail_filters_pending_rows(monkeypatch, tmp_path):
+    _isolate_manual_service(monkeypatch, tmp_path)
+    run = {
+        "run_id": "manual_live_filter_test",
+        "title": "live filter",
+        "source_kind": "selenium_scrape",
+        "source_path": "source.xlsx",
+        "source_fingerprint": "abc",
+        "created_at": "2026-07-06 10:00:00",
+        "updated_at": "2026-07-06 10:00:02",
+        "status": "running",
+        "record_count": 3,
+        "summary": {"분석중": 1, "매수": 1, "오류": 1},
+        "records": [
+            {
+                "rank": 1,
+                "stock_name": "Pending",
+                "ticker": "000001",
+                "market": "KOSPI",
+                "industry": "Test",
+                "source_url": "https://example.com/pending",
+                "raw_result": "분석중",
+                "result": "분석중",
+                "analyzed_at": "",
+                "scrape_state": "pending",
+            },
+            {
+                "rank": 2,
+                "stock_name": "Running",
+                "ticker": "000002",
+                "market": "KOSPI",
+                "industry": "Test",
+                "source_url": "https://example.com/running",
+                "raw_result": "분석중",
+                "result": "분석중",
+                "analyzed_at": "2026-07-06 10:00:01",
+                "scrape_state": "scraping",
+            },
+            {
+                "rank": 3,
+                "stock_name": "Done",
+                "ticker": "000003",
+                "market": "KOSPI",
+                "industry": "Test",
+                "source_url": "https://example.com/done",
+                "raw_result": "BUY",
+                "result": "매수",
+                "analyzed_at": "2026-07-06 10:00:02",
+                "scrape_state": "completed",
+            },
+        ],
+    }
+    svc._write_run(run)
+
+    detail = svc.get_run("manual_live_filter_test", live_only=True)
+
+    assert [record["rank"] for record in detail["records"]] == [2, 3]
+    assert detail["filtered_count"] == 2

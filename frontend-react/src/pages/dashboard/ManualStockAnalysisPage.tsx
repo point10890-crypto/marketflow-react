@@ -20,6 +20,7 @@ interface ManualRecord {
     raw_result: string;
     result: string;
     analyzed_at: string;
+    scrape_state?: 'pending' | 'scraping' | 'completed' | 'error';
 }
 
 interface ManualRunDetail extends ManualRunSummary {
@@ -146,6 +147,9 @@ export default function ManualStockAnalysisPage() {
         const params = new URLSearchParams();
         params.set('result', selectedResult);
         if (query.trim()) params.set('q', query.trim());
+        if (loopStatus?.running && loopStatus.last_run_id && selectedRunId === loopStatus.last_run_id) {
+            params.set('live', '1');
+        }
         try {
             const res = await fetch(`${API_BASE}/api/manual-stock-analysis/runs/${selectedRunId}?${params.toString()}`, {
                 headers: authHeaders(),
@@ -157,7 +161,7 @@ export default function ManualStockAnalysisPage() {
         } finally {
             setLoading(false);
         }
-    }, [query, selectedResult, selectedRunId]);
+    }, [loopStatus?.last_run_id, loopStatus?.running, query, selectedResult, selectedRunId]);
 
     const fetchLoopStatus = useCallback(async () => {
         try {
@@ -167,14 +171,18 @@ export default function ManualStockAnalysisPage() {
             if (!res.ok) return;
             const data: ScraperLoopStatus = await res.json();
             setLoopStatus(data);
-            if (data.last_run_id && data.last_run_id !== loopRunRef.current) {
-                loopRunRef.current = data.last_run_id;
+            if (data.running && data.last_run_id && selectedRunId !== data.last_run_id) {
+                setSelectedResult('all');
+                setQuery('');
+            }
+            if (data.last_run_id && (data.last_run_id !== loopRunRef.current || selectedRunId !== data.last_run_id)) {
                 await fetchRuns(data.last_run_id);
+                loopRunRef.current = data.last_run_id;
             }
         } catch {
             // Keep the table usable even if the loop endpoint is temporarily unavailable.
         }
-    }, [fetchRuns]);
+    }, [fetchRuns, selectedRunId]);
 
     useEffect(() => {
         fetchRuns();
@@ -194,7 +202,7 @@ export default function ManualStockAnalysisPage() {
         const id = window.setInterval(() => {
             fetchLoopStatus();
             if (loopStatus?.running) fetchRunDetail();
-        }, 2500);
+        }, loopStatus?.running ? 1000 : 2500);
         return () => window.clearInterval(id);
     }, [fetchLoopStatus, fetchRunDetail, loopStatus?.running]);
 
@@ -573,7 +581,14 @@ export default function ManualStockAnalysisPage() {
                         </thead>
                         <tbody>
                             {visibleRecords.map((record) => (
-                                <tr key={`${record.rank}-${record.stock_name}-${record.ticker}`} className="odd:bg-white even:bg-slate-50 hover:bg-orange-50">
+                                <tr
+                                    key={`${record.rank}-${record.stock_name}-${record.ticker}`}
+                                    className={`hover:bg-orange-50 ${
+                                        record.scrape_state === 'scraping'
+                                            ? 'bg-cyan-50 ring-1 ring-inset ring-cyan-300'
+                                            : 'odd:bg-white even:bg-slate-50'
+                                    }`}
+                                >
                                     <td className="border-b border-r border-slate-200 px-4 py-3 text-center font-bold">{record.rank}</td>
                                     <td className="border-b border-r border-slate-200 px-4 py-3 text-center font-bold">
                                         <div>{record.stock_name}{record.ticker ? ` (${record.ticker})` : ''}</div>
@@ -584,6 +599,11 @@ export default function ManualStockAnalysisPage() {
                                         <span className={`inline-flex rounded-full border px-3 py-1 text-xs font-black ${resultClass(record.result)}`}>
                                             {record.result}
                                         </span>
+                                        {record.scrape_state === 'scraping' && (
+                                            <span className="ml-2 inline-flex animate-pulse rounded-full border border-cyan-300 bg-cyan-100 px-2 py-1 text-[10px] font-black text-cyan-700">
+                                                진행중
+                                            </span>
+                                        )}
                                     </td>
                                     <td className="border-b border-slate-200 px-4 py-3 text-center font-medium">{record.analyzed_at}</td>
                                 </tr>
