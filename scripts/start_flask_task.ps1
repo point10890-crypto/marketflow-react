@@ -3,8 +3,9 @@ $ErrorActionPreference = "Stop"
 $Root = "C:\bitman_marketfloww"
 $Python = Join-Path $Root ".venv\Scripts\python.exe"
 $LogDir = Join-Path $Root "logs"
-$OutLog = Join-Path $LogDir "flask_task.out.log"
-$ErrLog = Join-Path $LogDir "flask_task.err.log"
+$ControlLog = Join-Path $LogDir "flask_task.control.log"
+$OutLog = Join-Path $LogDir "flask_server.out.log"
+$ErrLog = Join-Path $LogDir "flask_server.err.log"
 
 New-Item -ItemType Directory -Force -Path $LogDir | Out-Null
 Set-Location $Root
@@ -43,6 +44,38 @@ foreach ($ownerPid in $portOwner) {
 
 Start-Sleep -Seconds 1
 
-Add-Content -Path $OutLog -Encoding UTF8 -Value "$(Get-Date -Format o) starting flask_app.py foreground via start_flask_task.ps1"
+Add-Content -Path $ControlLog -Encoding UTF8 -Value "$(Get-Date -Format o) starting flask_app.py detached via start_flask_task.ps1"
 
-& $Python "flask_app.py" >> $OutLog 2>> $ErrLog
+$flaskProcess = Start-Process `
+    -FilePath $Python `
+    -ArgumentList @("flask_app.py") `
+    -WorkingDirectory $Root `
+    -WindowStyle Hidden `
+    -RedirectStandardOutput $OutLog `
+    -RedirectStandardError $ErrLog `
+    -PassThru
+
+Add-Content -Path $ControlLog -Encoding UTF8 -Value "$(Get-Date -Format o) started flask_app.py pid=$($flaskProcess.Id)"
+
+for ($attempt = 1; $attempt -le 30; $attempt++) {
+    Start-Sleep -Seconds 2
+
+    $current = Get-Process -Id $flaskProcess.Id -ErrorAction SilentlyContinue
+    if ($null -eq $current) {
+        Add-Content -Path $ControlLog -Encoding UTF8 -Value "$(Get-Date -Format o) flask_app.py exited before health check attempt=$attempt"
+        exit 1
+    }
+
+    try {
+        $response = Invoke-WebRequest -UseBasicParsing -TimeoutSec 3 -Uri "http://127.0.0.1:5001/healthz"
+        if ($response.StatusCode -ge 200 -and $response.StatusCode -lt 500) {
+            Add-Content -Path $ControlLog -Encoding UTF8 -Value "$(Get-Date -Format o) flask healthz reachable status=$($response.StatusCode)"
+            exit 0
+        }
+    } catch {
+        if ($attempt -eq 30) {
+            Add-Content -Path $ControlLog -Encoding UTF8 -Value "$(Get-Date -Format o) flask healthz failed after attempts: $($_.Exception.Message)"
+            exit 1
+        }
+    }
+}
