@@ -22,11 +22,11 @@ $Principal = New-ScheduledTaskPrincipal -UserId "SYSTEM" -RunLevel Highest
 $Trigger = New-ScheduledTaskTrigger -AtStartup
 
 $FlaskAction = New-ScheduledTaskAction `
-    -Execute "wscript.exe" `
-    -Argument "`"$ProjectDir\deploy\start_flask_only.vbs`"" `
+    -Execute "powershell.exe" `
+    -Argument "-NoProfile -ExecutionPolicy Bypass -File `"$ProjectDir\scripts\start_flask_task.ps1`"" `
     -WorkingDirectory $ProjectDir
 Register-ScheduledTask -TaskName "MarketFlow-Flask" -Action $FlaskAction -Trigger $Trigger -Settings $Settings -Principal $Principal -Force | Out-Null
-Write-Host "[OK] MarketFlow-Flask registered at startup as SYSTEM"
+Write-Host "[OK] MarketFlow-Flask registered at startup as SYSTEM via PowerShell"
 
 $SchedulerAction = New-ScheduledTaskAction `
     -Execute "wscript.exe" `
