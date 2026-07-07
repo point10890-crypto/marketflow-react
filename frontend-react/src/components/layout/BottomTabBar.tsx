@@ -2,67 +2,76 @@ import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 
 const tabs = [
-    { name: 'Summary', href: '/dashboard', icon: 'fa-tachometer-alt', color: 'purple' },
+    { name: 'Summary', href: '/dashboard', icon: 'fas fa-tachometer-alt', color: 'purple' },
+    { name: 'AI Brain', href: '/dashboard/ai-bain', icon: 'fa-robot', color: 'cyan' },
     { name: 'KR', href: '/dashboard/kr', icon: 'fa-chart-line', color: 'rose' },
     { name: 'US', href: '/dashboard/us', icon: 'fa-globe-americas', color: 'green' },
-    { name: 'Crypto', href: '/dashboard/crypto', icon: 'fa-bitcoin', color: 'yellow' },
-    { name: 'ProPicks', href: '/dashboard/stock-analyzer', icon: 'fa-crosshairs', color: 'orange' },
+    { name: 'Crypto', href: '/dashboard/crypto', icon: 'fab fa-bitcoin', color: 'yellow' },
+    { name: 'AI 분석', href: '/dashboard/manual-stock-analysis', icon: 'fa-table-list', color: 'orange' },
+    { name: 'Briefing', href: '/dashboard/briefing', icon: 'fa-newspaper', color: 'blue' },
     { name: '커뮤니티', href: '/dashboard/community', icon: 'fa-comments', color: 'cyan' },
 ];
 
 const activeColors: Record<string, string> = {
-    purple: 'text-purple-400',
-    rose: 'text-rose-400',
-    green: 'text-green-400',
-    yellow: 'text-yellow-400',
-    cyan: 'text-cyan-400',
-    orange: 'text-orange-400',
+    purple: 'text-purple-300',
+    rose: 'text-rose-300',
+    green: 'text-green-300',
+    yellow: 'text-yellow-300',
+    cyan: 'text-cyan-300',
+    orange: 'text-orange-300',
+    blue: 'text-blue-300',
 };
 
 const activeDots: Record<string, string> = {
-    purple: 'bg-purple-400',
-    rose: 'bg-rose-400',
-    green: 'bg-green-400',
-    yellow: 'bg-yellow-400',
-    cyan: 'bg-cyan-400',
-    orange: 'bg-orange-400',
+    purple: 'bg-purple-300',
+    rose: 'bg-rose-300',
+    green: 'bg-green-300',
+    yellow: 'bg-yellow-300',
+    cyan: 'bg-cyan-300',
+    orange: 'bg-orange-300',
+    blue: 'bg-blue-300',
 };
+
+function isActive(pathname: string, href: string) {
+    if (href === '/dashboard') return pathname === '/dashboard';
+    return pathname === href || pathname.startsWith(href + '/');
+}
+
+function iconClass(icon: string) {
+    return icon.includes(' ') ? icon : `fas ${icon}`;
+}
 
 export default function BottomTabBar() {
     const location = useLocation();
     const pathname = location.pathname ?? '';
     const { user } = useAuth();
-    // Guards ensure only pro/premium/admin reach the dashboard; locked state is vestigial.
     const isLocked = !!user && user.tier !== 'pro' && user.tier !== 'premium' && user.role !== 'admin';
 
     return (
         <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 mobile-safe-bottom">
-            <div className="bg-[#0a0a0a]/90 backdrop-blur-xl border-t border-white/5">
-                <div className="flex items-center justify-around px-0.5 py-1.5">
+            <div className="border-t border-white/5 bg-[#0a0a0a]/92 backdrop-blur-xl">
+                <div className="mobile-bottom-tabs flex items-center gap-1 overflow-x-auto px-2 py-1.5">
                     {tabs.map((tab) => {
-                        const isActive = tab.href === '/dashboard'
-                            ? pathname === '/dashboard'
-                            : pathname.startsWith(tab.href);
-
+                        const selected = isActive(pathname, tab.href);
                         return (
                             <Link
                                 key={tab.href}
                                 to={tab.href}
-                                className={`flex flex-col items-center justify-center gap-0.5 py-2 px-2 rounded-xl transition-all min-w-[50px] ${
-                                    isActive
-                                        ? `${activeColors[tab.color]}`
+                                className={`relative flex min-h-[58px] min-w-[64px] shrink-0 flex-col items-center justify-center gap-0.5 rounded-xl px-2 transition-all active:scale-95 ${
+                                    selected
+                                        ? `${activeColors[tab.color]} bg-white/[0.06]`
                                         : 'text-zinc-600'
                                 }`}
                             >
                                 <span className="relative">
-                                    <i className={`fas ${tab.icon} text-base`}></i>
+                                    <i className={`${iconClass(tab.icon)} text-base`} />
                                     {isLocked && tab.href !== '/dashboard' && (
-                                        <i className="fas fa-lock absolute -top-1 -right-2 text-[7px] text-gray-600" />
+                                        <i className="fas fa-lock absolute -right-2 -top-1 text-[7px] text-slate-600" />
                                     )}
                                 </span>
-                                <span className="text-[9px] font-bold tracking-wide">{tab.name}</span>
-                                {isActive && (
-                                    <span className={`w-1 h-1 rounded-full ${activeDots[tab.color]} mt-0.5`}></span>
+                                <span className="max-w-[58px] truncate text-[9px] font-black tracking-wide">{tab.name}</span>
+                                {selected && (
+                                    <span className={`mt-0.5 h-1 w-1 rounded-full ${activeDots[tab.color]}`} />
                                 )}
                             </Link>
                         );

@@ -116,6 +116,98 @@ body {
   animation: community-new-blink 1.05s ease-in-out infinite;
 }
 
+/* ========================================
+   Dashboard Mobile Publishing System
+   Shared portrait rules for all dashboard menus
+   ======================================== */
+
+.mobile-dashboard-rail-scroll,
+.mobile-bottom-tabs,
+.mobile-sub-nav-scroll {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.mobile-dashboard-rail-scroll::-webkit-scrollbar,
+.mobile-bottom-tabs::-webkit-scrollbar,
+.mobile-sub-nav-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .dashboard-mobile-page {
+    width: 100%;
+    min-width: 0;
+    overflow-x: hidden;
+  }
+
+  .dashboard-mobile-page :where(h1) {
+    font-size: 1.55rem;
+    line-height: 1.12;
+    letter-spacing: 0;
+  }
+
+  .dashboard-mobile-page :where(h2) {
+    font-size: 1.2rem;
+    line-height: 1.18;
+    letter-spacing: 0;
+  }
+
+  .dashboard-mobile-page :where(h3) {
+    line-height: 1.22;
+    letter-spacing: 0;
+  }
+
+  .dashboard-mobile-page :where(.grid) {
+    gap: 0.625rem;
+  }
+
+  .dashboard-mobile-page :where(.rounded-3xl) {
+    border-radius: 1rem;
+  }
+
+  .dashboard-mobile-page :where(.rounded-2xl) {
+    border-radius: 0.875rem;
+  }
+
+  .dashboard-mobile-page :where(button, a, input, select, textarea) {
+    touch-action: manipulation;
+  }
+
+  .dashboard-mobile-page :where(input, select, textarea) {
+    font-size: 16px;
+  }
+
+  .dashboard-mobile-page :where(button:not(.no-mobile-min-target), a:not(.no-mobile-min-target)) {
+    min-height: 2.25rem;
+  }
+
+  .dashboard-mobile-page :where(.overflow-x-auto, .overflow-auto) {
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+
+  .dashboard-mobile-page :where(table) {
+    width: max-content;
+    min-width: 100%;
+    font-size: 0.78rem;
+  }
+
+  .dashboard-mobile-page :where(th, td) {
+    padding: 0.65rem 0.75rem;
+    white-space: nowrap;
+  }
+
+  .dashboard-mobile-page :where(canvas, svg, img) {
+    max-width: 100%;
+  }
+
+  .dashboard-mobile-page :where(.sticky) {
+    top: 0;
+  }
+}
+
 @keyframes spin-slow {
   to { transform: rotate(360deg); }
 }

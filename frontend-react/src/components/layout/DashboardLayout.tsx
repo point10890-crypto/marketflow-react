@@ -4,6 +4,7 @@ import Sidebar from './Sidebar';
 import Header from './Header';
 import BottomTabBar from './BottomTabBar';
 import MobileSubNav from './MobileSubNav';
+import MobileDashboardRail from './MobileDashboardRail';
 import { PullToRefreshProvider, PullIndicator } from './PullToRefreshProvider';
 import InstallPrompt from './InstallPrompt';
 import NotificationToast from '@/components/ui/NotificationToast';
@@ -84,6 +85,7 @@ export default function DashboardLayout() {
                     <Header
                         onMenuClick={() => setSidebarOpen(true)}
                     />
+                    <MobileDashboardRail />
                     <MobileSubNav />
                     <div
                         ref={scrollRef}
@@ -97,7 +99,7 @@ export default function DashboardLayout() {
                                 : { transition: 'transform 0.3s ease' }}
                         >
                             <PageErrorBoundary resetKey={pathname}>
-                                <div key={pathname} className={`page-enter ${isWavePage ? 'h-full' : ''}`}>
+                                <div key={pathname} className={`page-enter dashboard-mobile-page ${isWavePage ? 'h-full' : ''}`}>
                                     <Outlet />
                                 </div>
                             </PageErrorBoundary>
