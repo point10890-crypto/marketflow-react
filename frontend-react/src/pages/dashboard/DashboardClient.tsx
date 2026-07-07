@@ -400,6 +400,127 @@ function LiveDot() {
 
 // ── Main Client Component ──────────────────────────────────────────────────────
 
+function MobileMetricTile({ label, value, tone }: { label: string; value: string; tone: string }) {
+    return (
+        <div className="rounded-xl border border-white/[0.07] bg-white/[0.035] px-3 py-2.5">
+            <div className="text-[9px] font-black uppercase tracking-[0.18em] text-slate-500">{label}</div>
+            <div className={`mt-1 text-lg font-black tabular-nums leading-none ${tone}`}>{value}</div>
+        </div>
+    );
+}
+
+function MobileQuickLink({ to, icon, label, meta, tone }: { to: string; icon: string; label: string; meta: string; tone: string }) {
+    return (
+        <Link
+            to={to}
+            className="group flex min-h-[74px] items-center gap-3 rounded-xl border border-white/[0.08] bg-[#11141c] px-3.5 py-3 active:scale-[0.98]"
+        >
+            <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${tone}`}>
+                <i className={`fas ${icon} text-sm`} />
+            </span>
+            <span className="min-w-0 flex-1">
+                <span className="block truncate text-sm font-black text-white">{label}</span>
+                <span className="mt-0.5 block truncate text-[10px] font-bold text-slate-500">{meta}</span>
+            </span>
+            <i className="fas fa-chevron-right text-[10px] text-slate-600 group-active:text-slate-300" />
+        </Link>
+    );
+}
+
+function MobileDashboardConsole({
+    opportunityScore,
+    krScore,
+    usScore,
+    cryptoScore,
+    gateLabel,
+    vixVal,
+    fgScore,
+    totalVCP,
+    todaySummary,
+    leadingData,
+    aiBriefing,
+    marketIndices,
+}: {
+    opportunityScore: number;
+    krScore: number;
+    usScore: number;
+    cryptoScore: number;
+    gateLabel: string;
+    vixVal: string;
+    fgScore: number | null;
+    totalVCP: number;
+    todaySummary: any;
+    leadingData: any;
+    aiBriefing: AIBriefing | null;
+    marketIndices: MarketIndexItem[];
+}) {
+    const topSignal = todaySummary?.top_signal;
+    const leadingTop = leadingData?.results?.[0];
+    const topName = topSignal?.name ?? leadingTop?.name ?? '스캔 대기';
+    const topGrade = topSignal?.grade ?? leadingTop?.grade ?? 'LIVE';
+    const briefingTitle = aiBriefing?.title ?? '시장 데이터 동기화 중';
+    const score = Math.round(opportunityScore);
+    const kospi = marketIndices.find((item) => /kospi|코스피/i.test(item.name)) ?? marketIndices[0];
+    const kosdaq = marketIndices.find((item) => /kosdaq|코스닥/i.test(item.name));
+
+    return (
+        <section className="md:hidden flex flex-col gap-2.5">
+            <div className="rounded-2xl border border-cyan-400/15 bg-[#0f151d] p-4 shadow-[0_16px_42px_rgba(0,0,0,0.35)]">
+                <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                        <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.22em] text-cyan-300">
+                            <LiveDot />
+                            Mobile Console
+                        </div>
+                        <h2 className="mt-1 text-2xl font-black leading-tight text-white">오늘의 시장</h2>
+                        <p className="mt-1 line-clamp-2 text-xs font-semibold leading-relaxed text-slate-400">{briefingTitle}</p>
+                    </div>
+                    <div className="shrink-0 rounded-2xl border border-emerald-400/25 bg-emerald-400/10 px-3 py-2 text-right">
+                        <div className="text-[9px] font-black uppercase tracking-[0.18em] text-emerald-200/70">Score</div>
+                        <div className="text-3xl font-black leading-none text-emerald-300">{score}</div>
+                    </div>
+                </div>
+
+                <div className="mt-4 grid grid-cols-3 gap-2">
+                    <MobileMetricTile label="KR" value={String(Math.round(krScore))} tone="text-sky-300" />
+                    <MobileMetricTile label="US" value={String(Math.round(usScore))} tone="text-emerald-300" />
+                    <MobileMetricTile label="Crypto" value={String(Math.round(cryptoScore))} tone="text-amber-300" />
+                </div>
+
+                <div className="mt-3 grid grid-cols-2 gap-2 text-[11px] font-bold">
+                    <div className="rounded-xl border border-white/[0.07] bg-black/20 px-3 py-2">
+                        <div className="text-slate-500">Top Signal</div>
+                        <div className="mt-1 flex items-center gap-2 text-white">
+                            <span className="rounded-md bg-cyan-400/15 px-1.5 py-0.5 text-[9px] text-cyan-200">{topGrade}</span>
+                            <span className="truncate">{topName}</span>
+                        </div>
+                    </div>
+                    <div className="rounded-xl border border-white/[0.07] bg-black/20 px-3 py-2">
+                        <div className="text-slate-500">Risk Context</div>
+                        <div className="mt-1 truncate text-white">Gate {gateLabel} · VIX {vixVal}</div>
+                    </div>
+                </div>
+
+                {(kospi || kosdaq || fgScore != null) && (
+                    <div className="mt-3 flex gap-2 overflow-x-auto pb-0.5">
+                        {kospi && <span className="shrink-0 rounded-full border border-white/[0.08] bg-white/[0.04] px-3 py-1.5 text-[10px] font-black text-slate-300">{kospi.name} {kospi.change_pct >= 0 ? '+' : ''}{kospi.change_pct.toFixed(2)}%</span>}
+                        {kosdaq && <span className="shrink-0 rounded-full border border-white/[0.08] bg-white/[0.04] px-3 py-1.5 text-[10px] font-black text-slate-300">{kosdaq.name} {kosdaq.change_pct >= 0 ? '+' : ''}{kosdaq.change_pct.toFixed(2)}%</span>}
+                        {fgScore != null && <span className="shrink-0 rounded-full border border-white/[0.08] bg-white/[0.04] px-3 py-1.5 text-[10px] font-black text-slate-300">F&G {fgScore}</span>}
+                        <span className="shrink-0 rounded-full border border-white/[0.08] bg-white/[0.04] px-3 py-1.5 text-[10px] font-black text-slate-300">VCP {totalVCP}</span>
+                    </div>
+                )}
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+                <MobileQuickLink to="/dashboard/ai-bain" icon="fa-robot" label="AI Brain" meta="GraphRAG 분석" tone="bg-cyan-400/15 text-cyan-300" />
+                <MobileQuickLink to="/dashboard/manual-stock-analysis" icon="fa-table-list" label="AI 분석 목록" meta="루프 스크래퍼" tone="bg-orange-400/15 text-orange-300" />
+                <MobileQuickLink to="/dashboard/kr/leading-stocks" icon="fa-bolt" label="주도주 LIVE" meta="실시간 후보" tone="bg-emerald-400/15 text-emerald-300" />
+                <MobileQuickLink to="/dashboard/kr/closing-bet" icon="fa-chart-simple" label="종가베팅" meta="S/A 후보" tone="bg-violet-400/15 text-violet-300" />
+            </div>
+        </section>
+    );
+}
+
 export default function DashboardClient({ initialData }: { initialData: InitialData }) {
     const navigate = useNavigate();
     const { user } = useAuth();
@@ -513,10 +634,24 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
     // ── Render ────────────────────────────────────────────────────────────────
 
     return (
-        <div className="flex flex-col gap-3 md:gap-4 pb-4">
+        <div className="flex flex-col gap-2.5 md:gap-4 pb-4">
+            <MobileDashboardConsole
+                opportunityScore={opportunityScore}
+                krScore={krScore}
+                usScore={usScore}
+                cryptoScore={cryptoScore}
+                gateLabel={gateLabel}
+                vixVal={vixVal}
+                fgScore={fgScore}
+                totalVCP={totalVCP}
+                todaySummary={todaySummary}
+                leadingData={leadingData}
+                aiBriefing={aiBriefing}
+                marketIndices={marketIndices}
+            />
 
             {/* ── Header + Scrolling Market Ticker ── */}
-            <div className="flex items-center gap-2">
+            <div className="hidden md:flex items-center gap-2">
                 <LiveDot />
                 <h2 className="text-lg md:text-xl font-extrabold tracking-tight text-white leading-none shrink-0">
                     Market{' '}

@@ -87,7 +87,7 @@ export default function DashboardLayout() {
                     <MobileSubNav />
                     <div
                         ref={scrollRef}
-                        className={`flex-1 ${isWavePage ? 'overflow-hidden p-0' : 'overflow-y-auto p-3 md:p-6 pb-36 md:pb-6'} scroll-smooth overscroll-contain relative`}
+                        className={`flex-1 ${isWavePage ? 'overflow-hidden p-0' : 'overflow-y-auto px-2.5 pt-2.5 pb-32 sm:p-3 md:p-6 md:pb-6'} scroll-smooth overscroll-contain relative`}
                     >
                         <PullIndicator pullDistance={pullDistance} isRefreshing={isRefreshing} />
                         <div
