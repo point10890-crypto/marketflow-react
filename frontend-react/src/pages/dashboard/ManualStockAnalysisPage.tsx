@@ -306,22 +306,22 @@ export default function ManualStockAnalysisPage() {
     };
 
     return (
-        <div className="space-y-5">
-            <section className="rounded-2xl border border-white/10 bg-[#101114] p-5 shadow-2xl shadow-black/20">
+        <div className="space-y-4 md:space-y-5">
+            <section className="rounded-2xl border border-white/10 bg-[#101114] p-4 shadow-2xl shadow-black/20 md:p-5">
                 <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
                     <div>
-                        <div className="mb-2 text-[11px] font-black uppercase tracking-[0.22em] text-orange-400">
+                        <div className="mb-2 text-[10px] font-black uppercase tracking-[0.2em] text-orange-400 md:text-[11px]">
                             Manual Scraper Service
                         </div>
-                        <h1 className="text-2xl font-black tracking-tight text-white md:text-4xl">
+                        <h1 className="text-[1.7rem] font-black leading-tight tracking-tight text-white md:text-4xl">
                             AI 주식 분석 목록
                         </h1>
-                        <p className="mt-2 max-w-3xl text-sm font-semibold leading-6 text-slate-400">
+                        <p className="mt-2 max-w-3xl text-[13px] font-semibold leading-6 text-slate-400 md:text-sm">
                             외부 보드형 AI 분석 결과를 MarketFlow 안에서 별도 서비스로 조회합니다.
                             기본 소스는 E:\다운로드\stock_data_final.xlsx이며, 우선주·상폐 종목을 제외한 최신 목록을 순번대로 반복 분석합니다.
                         </p>
                     </div>
-                    <div className="flex flex-wrap items-start gap-2">
+                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:flex xl:flex-wrap xl:items-start">
                         <span className={`rounded-xl border px-4 py-2 text-sm font-black ${
                             isLoopRunning
                                 ? 'animate-pulse border-emerald-400/30 bg-emerald-500/15 text-emerald-100'
@@ -346,14 +346,14 @@ export default function ManualStockAnalysisPage() {
                     </div>
                 </div>
 
-                <div className="mt-6 rounded-2xl border border-cyan-400/15 bg-cyan-950/15 p-4">
+                <div className="mt-5 rounded-2xl border border-cyan-400/15 bg-cyan-950/15 p-3 md:mt-6 md:p-4">
                     <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                         <div>
-                            <div className="text-[11px] font-black uppercase tracking-[0.22em] text-cyan-300">
+                            <div className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-300 md:text-[11px]">
                                 Realtime Scraper Loop
                             </div>
                             <div className="mt-1 flex flex-wrap items-center gap-2">
-                                <h2 className="text-xl font-black text-white">실시간 스크래퍼 루프</h2>
+                                <h2 className="text-lg font-black text-white md:text-xl">실시간 스크래퍼 루프</h2>
                                 <span className={`rounded-full border px-3 py-1 text-xs font-black ${
                                     isLoopRunning
                                         ? 'animate-pulse border-emerald-400/30 bg-emerald-500/15 text-emerald-200'
@@ -401,7 +401,7 @@ export default function ManualStockAnalysisPage() {
                         />
                     </div>
 
-                    <div className="mt-4 grid gap-3 text-sm font-bold text-slate-300 md:grid-cols-2 xl:grid-cols-5">
+                    <div className="mt-4 grid gap-2 text-[13px] font-bold text-slate-300 md:grid-cols-2 md:gap-3 md:text-sm xl:grid-cols-5">
                         <div className="rounded-xl border border-white/10 bg-black/20 p-3">
                             <div className="text-[10px] uppercase tracking-[0.18em] text-slate-500">현재 종목</div>
                             <div className="mt-1 text-white">{loopStatus?.current_stock || '--'}</div>
@@ -430,13 +430,13 @@ export default function ManualStockAnalysisPage() {
                     )}
                 </div>
 
-                <div className="mt-6 rounded-2xl border border-white/10 bg-black/20 p-4">
+                <div className="mt-5 rounded-2xl border border-white/10 bg-black/20 p-3 md:mt-6 md:p-4">
                     <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
                         <div>
-                            <div className="text-[11px] font-black uppercase tracking-[0.22em] text-orange-300">
+                            <div className="text-[10px] font-black uppercase tracking-[0.2em] text-orange-300 md:text-[11px]">
                                 Analysis Round History
                             </div>
-                            <h2 className="mt-1 text-xl font-black text-white">분석회차 히스토리</h2>
+                            <h2 className="mt-1 text-lg font-black text-white md:text-xl">분석회차 히스토리</h2>
                             <p className="mt-1 text-xs font-bold text-slate-500">
                                 저장된 회차를 클릭하면 해당 분석 결과로 즉시 전환합니다. 실시간 루프 회차도 완료 전까지 계속 갱신됩니다.
                             </p>
@@ -451,7 +451,7 @@ export default function ManualStockAnalysisPage() {
                         </div>
                     </div>
 
-                    <div className="mt-4 grid max-h-[260px] gap-2 overflow-y-auto pr-1 md:grid-cols-2 xl:grid-cols-3">
+                    <div className="mt-4 grid max-h-[220px] gap-2 overflow-y-auto pr-1 md:max-h-[260px] md:grid-cols-2 xl:grid-cols-3">
                         {runHistory.map((run, index) => {
                             const active = run.run_id === selectedRunId;
                             const preview = summaryPreview(run.summary);
@@ -515,7 +515,7 @@ export default function ManualStockAnalysisPage() {
                     </div>
                 </div>
 
-                <div className="mt-6 grid gap-3 lg:grid-cols-[1.1fr_0.7fr_0.8fr]">
+                <div className="mt-5 grid gap-3 md:mt-6 lg:grid-cols-[1.1fr_0.7fr_0.8fr]">
                     <label className="block">
                         <span className="mb-2 block text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">회차</span>
                         <select
@@ -553,11 +553,11 @@ export default function ManualStockAnalysisPage() {
                     </label>
                 </div>
 
-                <div className="mt-5 flex flex-wrap items-center gap-2">
+                <div className="mt-5 flex flex-nowrap items-center gap-2 overflow-x-auto pb-1 md:flex-wrap md:overflow-visible md:pb-0">
                     <button
                         type="button"
                         onClick={() => applyResultFilter('all')}
-                        className={`rounded-full border px-3 py-1.5 text-xs font-black transition ${
+                        className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-black transition ${
                             selectedResult === 'all'
                                 ? 'border-cyan-300/50 bg-cyan-400/15 text-cyan-100 shadow-lg shadow-cyan-950/30'
                                 : 'border-white/10 bg-white/5 text-slate-300 hover:border-cyan-300/40 hover:bg-cyan-400/10'
@@ -570,7 +570,7 @@ export default function ManualStockAnalysisPage() {
                             type="button"
                             key={label}
                             onClick={() => applyResultFilter(label)}
-                            className={`rounded-full border px-3 py-1.5 text-xs font-black transition ${resultClass(label)} ${
+                            className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-black transition ${resultClass(label)} ${
                                 selectedResult === label
                                     ? 'ring-2 ring-white/50 shadow-lg shadow-black/20'
                                     : 'hover:ring-1 hover:ring-white/30'
@@ -585,12 +585,12 @@ export default function ManualStockAnalysisPage() {
             </section>
 
             <section className="overflow-hidden rounded-2xl border border-white/10 bg-[#f4f4f5] text-slate-950 shadow-2xl shadow-black/20">
-                <div className="flex items-center justify-between border-b border-slate-300/70 bg-white px-5 py-4">
+                <div className="flex flex-col gap-2 border-b border-slate-300/70 bg-white px-4 py-4 md:flex-row md:items-center md:justify-between md:px-5">
                     <div>
                         <div className="text-xs font-black uppercase tracking-[0.2em] text-orange-600">Analysis Table</div>
                         <h2 className="text-lg font-black">AI 주식 분석 결과</h2>
                     </div>
-                    <div className="text-right text-xs font-bold text-slate-500">
+                    <div className="text-left text-xs font-bold leading-5 text-slate-500 md:text-right">
                         {isLiveRunSelected
                             ? `${isLoopRunning ? '실시간 루프 갱신 중' : '최근 루프 결과 출력 중'} · ${loopProcessed}/${loopTotal} · ${loopStatus?.current_stock || '대기'}`
                             : hiddenRecordCount > 0
@@ -599,7 +599,96 @@ export default function ManualStockAnalysisPage() {
                     </div>
                 </div>
 
-                <div className="max-h-[calc(100vh-380px)] min-h-[460px] overflow-auto">
+                <div className="block bg-slate-100 px-3 py-3 md:hidden">
+                    <div className="max-h-[calc(100vh-280px)] min-h-[420px] space-y-3 overflow-y-auto pr-1">
+                        {visibleRecords.map((record) => (
+                            <article
+                                key={`mobile-${record.rank}-${record.stock_name}-${record.ticker}`}
+                                className={`rounded-2xl border bg-white p-4 shadow-sm ${
+                                    record.scrape_state === 'scraping'
+                                        ? 'border-cyan-300 ring-2 ring-cyan-100'
+                                        : 'border-slate-200'
+                                }`}
+                            >
+                                <div className="flex items-start justify-between gap-3">
+                                    <div className="min-w-0">
+                                        <div className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-400">
+                                            #{record.rank} · {record.market || 'MARKET'}
+                                        </div>
+                                        <h3 className="mt-1 truncate text-base font-black text-slate-950">
+                                            {record.stock_name}
+                                        </h3>
+                                        {record.ticker && (
+                                            <div className="mt-0.5 text-xs font-black text-slate-500">{record.ticker}</div>
+                                        )}
+                                    </div>
+                                    <span className={`shrink-0 rounded-full border px-3 py-1 text-xs font-black ${resultClass(record.result)}`}>
+                                        {record.result}
+                                    </span>
+                                </div>
+
+                                <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
+                                    <div className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">산업</div>
+                                    <div className="mt-1 text-sm font-bold text-slate-800">{record.industry || '미분류'}</div>
+                                    {record.sector && (
+                                        <div className="mt-1 text-[11px] font-black text-blue-700">부문 {record.sector}</div>
+                                    )}
+                                </div>
+
+                                <div className="mt-3 flex flex-wrap gap-1.5 text-[10px] font-black">
+                                    {record.analyst_sentiment && (
+                                        <span className="rounded-full border border-red-200 bg-red-50 px-2 py-1 text-red-600">
+                                            애널 {record.analyst_sentiment}
+                                        </span>
+                                    )}
+                                    {record.technical_result && (
+                                        <span className="rounded-full border border-slate-200 bg-white px-2 py-1 text-slate-600">
+                                            기술 {record.technical_result}
+                                        </span>
+                                    )}
+                                    {record.target_price && (
+                                        <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-1 text-emerald-700">
+                                            목표 {record.target_price}
+                                        </span>
+                                    )}
+                                    {record.upside_potential && (
+                                        <span className="rounded-full border border-orange-200 bg-orange-50 px-2 py-1 text-orange-700">
+                                            여력 {record.upside_potential}
+                                        </span>
+                                    )}
+                                    {record.scrape_fallback && (
+                                        <span className="rounded-full border border-violet-200 bg-violet-50 px-2 py-1 text-violet-700">
+                                            {record.scrape_fallback}
+                                        </span>
+                                    )}
+                                    {record.scrape_state === 'scraping' && (
+                                        <span className="animate-pulse rounded-full border border-cyan-300 bg-cyan-100 px-2 py-1 text-cyan-700">
+                                            진행중
+                                        </span>
+                                    )}
+                                </div>
+
+                                {record.error && (
+                                    <div className="mt-3 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-bold text-rose-600">
+                                        {record.error}
+                                    </div>
+                                )}
+
+                                <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-3 text-[11px] font-bold text-slate-500">
+                                    <span>분석일시</span>
+                                    <span className="text-right text-slate-700">{record.analyzed_at}</span>
+                                </div>
+                            </article>
+                        ))}
+                        {!loading && (!detail?.records || detail.records.length === 0) && (
+                            <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-5 py-12 text-center text-sm font-bold text-slate-500">
+                                표시할 AI 주식 분석 결과가 없습니다. 자동 루프가 기본 소스 전체를 순차 분석하면 이 영역에 실시간으로 출력됩니다.
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                <div className="hidden max-h-[calc(100vh-380px)] min-h-[460px] overflow-auto md:block">
                     <table className="min-w-full border-collapse text-sm">
                         <thead className="sticky top-0 z-10 bg-slate-100 text-xs uppercase tracking-[0.14em] text-slate-600">
                             <tr>
