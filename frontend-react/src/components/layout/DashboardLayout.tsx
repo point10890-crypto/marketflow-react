@@ -63,7 +63,8 @@ export default function DashboardLayout() {
 
     const { pullDistance, isRefreshing } = usePullToRefresh(scrollRef, refreshFnRef.current);
     const isWavePage = location.pathname.startsWith('/dashboard/wave');
-    useSwipeNavigation(scrollRef, SWIPE_TABS, isWavePage);
+    const isSwipeTabPage = SWIPE_TABS.some((tab) => pathname === tab.href);
+    useSwipeNavigation(scrollRef, SWIPE_TABS, isWavePage || !isSwipeTabPage);
 
     return (
         <PullToRefreshProvider onRefreshRef={refreshFnRef}>
@@ -81,7 +82,7 @@ export default function DashboardLayout() {
                 />
 
                 {/* Main Content */}
-                <main className="flex-1 flex flex-col h-full overflow-hidden bg-[#09090b] relative">
+                <main className="flex-1 min-w-0 flex flex-col h-full overflow-hidden bg-[#09090b] relative">
                     <Header
                         onMenuClick={() => setSidebarOpen(true)}
                     />
@@ -89,7 +90,7 @@ export default function DashboardLayout() {
                     <MobileSubNav />
                     <div
                         ref={scrollRef}
-                        className={`flex-1 ${isWavePage ? 'overflow-hidden p-0' : 'overflow-y-auto px-2.5 pt-2.5 pb-32 sm:p-3 md:p-6 md:pb-6'} scroll-smooth overscroll-contain relative`}
+                        className={`dashboard-shell-scroll flex-1 min-w-0 ${isWavePage ? 'overflow-hidden p-0' : 'overflow-x-hidden overflow-y-auto px-2.5 pt-2.5 pb-32 sm:p-3 md:p-6 md:pb-6'} scroll-smooth overscroll-contain relative`}
                     >
                         <PullIndicator pullDistance={pullDistance} isRefreshing={isRefreshing} />
                         <div

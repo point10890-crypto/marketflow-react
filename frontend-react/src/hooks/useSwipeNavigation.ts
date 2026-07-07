@@ -54,9 +54,7 @@ export function useSwipeNavigation(
             if (Math.abs(deltaX) < minSwipeDistance) return;
 
             // Find current tab index
-            const currentIndex = tabs.findIndex(
-                (t) => pathname === t.href || pathname.startsWith(t.href + '/')
-            );
+            const currentIndex = tabs.findIndex((t) => pathname === t.href);
             if (currentIndex === -1) return;
 
             if (deltaX < 0 && currentIndex < tabs.length - 1) {
