@@ -86,6 +86,19 @@ def stop_scraper_loop():
     return jsonify(service.stop_scraper_loop())
 
 
+@manual_stock_analysis_bp.route("/history", methods=["GET"])
+@pro_required
+def search_manual_stock_history():
+    try:
+        limit = int(request.args.get("limit") or 500)
+    except Exception:
+        limit = 500
+    return jsonify(service.search_stock_history(
+        request.args.get("q", ""),
+        limit=limit,
+    ))
+
+
 @manual_stock_analysis_bp.route("/runs/upload", methods=["POST"])
 @pro_required
 def upload_manual_result():

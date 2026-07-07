@@ -44,6 +44,40 @@ interface ManualRunDetail extends ManualRunSummary {
     records: ManualRecord[];
 }
 
+interface ManualStockHistoryItem {
+    run_id: string;
+    cycle_label: string;
+    run_title?: string;
+    created_at: string;
+    updated_at: string;
+    rank?: number;
+    stock_name: string;
+    ticker: string;
+    market: string;
+    industry: string;
+    result: string;
+    raw_result?: string;
+    analyzed_at: string;
+    scrape_state?: string;
+    technical_result?: string;
+    analyst_sentiment?: string;
+    target_price?: string;
+    upside_potential?: string;
+}
+
+interface ManualStockHistory {
+    query: string;
+    target: {
+        stock_name: string;
+        ticker: string;
+        market: string;
+        industry: string;
+    } | null;
+    items: ManualStockHistoryItem[];
+    count: number;
+    truncated: boolean;
+}
+
 interface ScraperLoopStatus {
     running: boolean;
     state: string;
@@ -144,6 +178,9 @@ export default function ManualStockAnalysisPage() {
     const [selectedResult, setSelectedResult] = useState('all');
     const [query, setQuery] = useState('');
     const [detail, setDetail] = useState<ManualRunDetail | null>(null);
+    const [stockHistory, setStockHistory] = useState<ManualStockHistory | null>(null);
+    const [historyLoading, setHistoryLoading] = useState(false);
+    const [historyMessage, setHistoryMessage] = useState('');
     const [loopStatus, setLoopStatus] = useState<ScraperLoopStatus | null>(null);
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState('');
@@ -253,6 +290,32 @@ export default function ManualStockAnalysisPage() {
         }
     }, [fetchRuns, selectedRunId]);
 
+    const fetchStockHistory = useCallback(async (value: string) => {
+        const cleanQuery = value.trim();
+        if (!cleanQuery) {
+            setStockHistory(null);
+            setHistoryMessage('');
+            setHistoryLoading(false);
+            return;
+        }
+        setHistoryLoading(true);
+        setHistoryMessage('');
+        try {
+            const params = new URLSearchParams();
+            params.set('q', cleanQuery);
+            params.set('limit', '1000');
+            const res = await fetch(`${API_BASE}/api/manual-stock-analysis/history?${params.toString()}`, {
+                headers: authHeaders(),
+            });
+            if (!res.ok) throw new Error(`분석 이력 조회 실패 (${res.status})`);
+            setStockHistory(await res.json());
+        } catch (err) {
+            setHistoryMessage(err instanceof Error ? err.message : '분석 이력 조회 실패');
+        } finally {
+            setHistoryLoading(false);
+        }
+    }, []);
+
     useEffect(() => {
         fetchRuns();
         fetchLoopStatus();
@@ -266,6 +329,18 @@ export default function ManualStockAnalysisPage() {
         const id = window.setTimeout(() => fetchRunDetail(), 250);
         return () => window.clearTimeout(id);
     }, [fetchRunDetail, query]);
+
+    useEffect(() => {
+        const cleanQuery = query.trim();
+        if (!cleanQuery) {
+            setStockHistory(null);
+            setHistoryMessage('');
+            setHistoryLoading(false);
+            return undefined;
+        }
+        const id = window.setTimeout(() => fetchStockHistory(cleanQuery), 300);
+        return () => window.clearTimeout(id);
+    }, [fetchStockHistory, query]);
 
     useEffect(() => {
         const id = window.setInterval(() => {
@@ -294,6 +369,12 @@ export default function ManualStockAnalysisPage() {
     const isLoopRunning = !!loopStatus?.running;
     const isLiveRunSelected = shouldStreamSelectedRun;
     const runHistory = runs.slice(0, 18);
+    const stockHistoryItems = stockHistory?.items || [];
+    const showStockHistory = !!query.trim();
+    const stockHistoryTarget = stockHistory?.target;
+    const stockHistoryTitle = stockHistoryTarget?.stock_name
+        ? `${stockHistoryTarget.stock_name}${stockHistoryTarget.ticker ? ` (${stockHistoryTarget.ticker})` : ''}`
+        : query.trim();
 
     const selectHistoryRun = (runId: string) => {
         setSelectedRunId(runId);
@@ -430,7 +511,58 @@ export default function ManualStockAnalysisPage() {
                     )}
                 </div>
 
-                <div className="mt-5 rounded-2xl border border-white/10 bg-black/20 p-3 md:mt-6 md:p-4">
+                <div className="mt-5 rounded-2xl border border-orange-300/20 bg-orange-500/10 p-3 md:hidden">
+                    <div className="flex items-center justify-between gap-3">
+                        <div className="min-w-0">
+                            <div className="text-[10px] font-black uppercase tracking-[0.2em] text-orange-200">
+                                Analysis History
+                            </div>
+                            <h2 className="mt-1 text-base font-black text-white">최근 분석이력</h2>
+                        </div>
+                        <span className="shrink-0 rounded-full border border-white/10 bg-black/25 px-3 py-1 text-[11px] font-black text-slate-200">
+                            {runs.length.toLocaleString('ko-KR')}회차
+                        </span>
+                    </div>
+                    <select
+                        value={selectedRunId}
+                        onChange={(event) => selectHistoryRun(event.target.value)}
+                        className="mt-3 h-11 w-full rounded-xl border border-white/10 bg-black/35 px-3 text-sm font-bold text-white outline-none focus:border-orange-300/50"
+                    >
+                        {runs.length === 0 && <option value="">저장된 분석이력 없음</option>}
+                        {runs.map((run) => (
+                            <option key={run.run_id} value={run.run_id}>{buildRunLabel(run)}</option>
+                        ))}
+                    </select>
+                    <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+                        {runHistory.slice(0, 8).map((run, index) => {
+                            const active = run.run_id === selectedRunId;
+                            return (
+                                <button
+                                    type="button"
+                                    key={`mobile-history-${run.run_id}`}
+                                    onClick={() => selectHistoryRun(run.run_id)}
+                                    className={`shrink-0 rounded-xl border px-3 py-2 text-left transition ${
+                                        active
+                                            ? 'border-cyan-300/60 bg-cyan-400/15 text-white'
+                                            : 'border-white/10 bg-black/25 text-slate-300'
+                                    }`}
+                                >
+                                    <div className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">
+                                        #{index + 1}
+                                    </div>
+                                    <div className="mt-1 max-w-[9rem] truncate text-xs font-black">
+                                        {run.cycle_label || run.title || formatRunTimestamp(run.created_at)}
+                                    </div>
+                                    <div className="mt-1 text-[10px] font-bold text-slate-500">
+                                        {Number(run.record_count || 0).toLocaleString('ko-KR')} rows
+                                    </div>
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+
+                <div className="mt-5 hidden rounded-2xl border border-white/10 bg-black/20 p-3 md:mt-6 md:block md:p-4">
                     <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
                         <div>
                             <div className="text-[10px] font-black uppercase tracking-[0.2em] text-orange-300 md:text-[11px]">
@@ -520,7 +652,7 @@ export default function ManualStockAnalysisPage() {
                         <span className="mb-2 block text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">회차</span>
                         <select
                             value={selectedRunId}
-                            onChange={(event) => setSelectedRunId(event.target.value)}
+                            onChange={(event) => selectHistoryRun(event.target.value)}
                             className="h-12 w-full rounded-xl border border-white/10 bg-black/30 px-4 text-sm font-bold text-white outline-none focus:border-orange-400/50"
                         >
                             {runs.length === 0 && <option value="">등록된 회차 없음</option>}
@@ -583,6 +715,106 @@ export default function ManualStockAnalysisPage() {
                     {message && <span className="text-xs font-bold text-amber-300">{message}</span>}
                 </div>
             </section>
+
+            {showStockHistory && (
+                <section className="overflow-hidden rounded-2xl border border-orange-200 bg-[#f7f7f8] text-slate-950 shadow-2xl shadow-black/20">
+                    <div className="flex flex-col gap-2 border-b border-slate-300 bg-white px-4 py-4 md:flex-row md:items-center md:justify-between md:px-5">
+                        <div>
+                            <div className="text-xs font-black uppercase tracking-[0.2em] text-orange-600">Search History</div>
+                            <h2 className="text-lg font-black">{stockHistoryTitle} 분석 이력</h2>
+                        </div>
+                        <div className="text-left text-xs font-bold leading-5 text-slate-500 md:text-right">
+                            {historyLoading
+                                ? '분석이력 조회 중'
+                                : `${Number(stockHistory?.count || 0).toLocaleString('ko-KR')}건`}
+                            {stockHistory?.truncated ? ' · 일부 표시' : ''}
+                        </div>
+                    </div>
+
+                    {historyMessage && (
+                        <div className="border-b border-amber-200 bg-amber-50 px-4 py-3 text-xs font-bold text-amber-700 md:px-5">
+                            {historyMessage}
+                        </div>
+                    )}
+
+                    {!historyLoading && stockHistoryItems.length === 0 && !historyMessage && (
+                        <div className="px-4 py-6 text-sm font-bold text-slate-500 md:px-5">
+                            해당 종목명 또는 티커로 저장된 분석이력이 아직 없습니다.
+                        </div>
+                    )}
+
+                    {stockHistoryItems.length > 0 && (
+                        <>
+                            <div className="block bg-white px-3 py-3 md:hidden">
+                                <div className="space-y-2">
+                                    {stockHistoryItems.map((item, index) => (
+                                        <article
+                                            key={`stock-history-mobile-${item.run_id}-${item.rank}-${item.analyzed_at}`}
+                                            className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
+                                        >
+                                            <div className="flex items-start justify-between gap-3">
+                                                <div className="min-w-0">
+                                                    <div className="text-[11px] font-black uppercase tracking-[0.16em] text-slate-400">
+                                                        #{index + 1} · {item.market || 'MARKET'}
+                                                    </div>
+                                                    <div className="mt-1 text-sm font-black text-slate-950">
+                                                        {item.cycle_label || item.run_title || formatRunTimestamp(item.created_at)}
+                                                    </div>
+                                                    <div className="mt-1 text-xs font-bold text-slate-500">
+                                                        {item.analyzed_at || '--'}
+                                                    </div>
+                                                </div>
+                                                <span className={`shrink-0 rounded-full border px-3 py-1 text-xs font-black ${resultClass(item.result)}`}>
+                                                    {item.result}
+                                                </span>
+                                            </div>
+                                            <div className="mt-3 grid grid-cols-2 gap-2 text-[11px] font-bold text-slate-600">
+                                                <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
+                                                    순번 <b className="ml-1 text-slate-950">{item.rank ?? '-'}</b>
+                                                </div>
+                                                <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
+                                                    산업 <b className="ml-1 text-slate-950">{item.industry || '-'}</b>
+                                                </div>
+                                            </div>
+                                        </article>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="hidden overflow-auto md:block">
+                                <table className="min-w-full border-collapse text-sm">
+                                    <thead className="bg-slate-100 text-slate-600">
+                                        <tr>
+                                            <th className="w-24 border border-slate-300 px-4 py-3 text-center font-black">순번</th>
+                                            <th className="border border-slate-300 px-4 py-3 text-center font-black">분석회차</th>
+                                            <th className="w-44 border border-slate-300 px-4 py-3 text-center font-black">분석결과</th>
+                                            <th className="w-80 border border-slate-300 px-4 py-3 text-center font-black">분석일시</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {stockHistoryItems.map((item, index) => (
+                                            <tr key={`stock-history-${item.run_id}-${item.rank}-${item.analyzed_at}`} className="odd:bg-white even:bg-slate-50">
+                                                <td className="border border-slate-300 px-4 py-3 text-center font-bold">{index + 1}</td>
+                                                <td className="border border-slate-300 px-4 py-3 text-center font-medium">
+                                                    {item.cycle_label || item.run_title || formatRunTimestamp(item.created_at)}
+                                                </td>
+                                                <td className="border border-slate-300 px-4 py-3 text-center">
+                                                    <span className={`inline-flex rounded-full border px-3 py-1 text-xs font-black ${resultClass(item.result)}`}>
+                                                        {item.result}
+                                                    </span>
+                                                </td>
+                                                <td className="border border-slate-300 px-4 py-3 text-center font-medium">
+                                                    {item.analyzed_at || '--'}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </>
+                    )}
+                </section>
+            )}
 
             <section className="overflow-hidden rounded-2xl border border-white/10 bg-[#f4f4f5] text-slate-950 shadow-2xl shadow-black/20">
                 <div className="flex flex-col gap-2 border-b border-slate-300/70 bg-white px-4 py-4 md:flex-row md:items-center md:justify-between md:px-5">

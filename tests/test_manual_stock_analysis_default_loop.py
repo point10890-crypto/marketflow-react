@@ -274,3 +274,73 @@ def test_live_run_detail_filters_pending_rows(monkeypatch, tmp_path):
 
     assert [record["rank"] for record in detail["records"]] == [2, 3]
     assert detail["filtered_count"] == 2
+
+
+def test_search_stock_history_collects_ticker_across_runs(monkeypatch, tmp_path):
+    _isolate_manual_service(monkeypatch, tmp_path)
+    svc._write_run({
+        "run_id": "manual_history_old",
+        "title": "2026-07-06 - 1회차",
+        "source_kind": "selenium_scrape",
+        "created_at": "2026-07-06 07:00:00",
+        "updated_at": "2026-07-06 07:02:42",
+        "cycle_date": "2026-07-06",
+        "cycle_number": 1,
+        "cycle_label": "2026-07-06 - 1회차",
+        "record_count": 2,
+        "summary": {"중립": 1, "매수": 1},
+        "records": [
+            {
+                "rank": 1,
+                "stock_name": "SK하이닉스",
+                "ticker": "000660",
+                "market": "KOSPI",
+                "industry": "반도체 및 반도체 장비",
+                "result": "중립",
+                "raw_result": "중립",
+                "analyzed_at": "2026-07-06 07:02:42",
+            },
+            {
+                "rank": 2,
+                "stock_name": "삼성전자",
+                "ticker": "005930",
+                "market": "KOSPI",
+                "industry": "컴퓨터, 전화 및 가전제품",
+                "result": "매수",
+                "raw_result": "매수",
+                "analyzed_at": "2026-07-06 07:03:00",
+            },
+        ],
+    })
+    svc._write_run({
+        "run_id": "manual_history_new",
+        "title": "2026-07-07 - 2회차",
+        "source_kind": "selenium_scrape",
+        "created_at": "2026-07-07 14:00:00",
+        "updated_at": "2026-07-07 14:02:31",
+        "cycle_date": "2026-07-07",
+        "cycle_number": 2,
+        "cycle_label": "2026-07-07 - 2회차",
+        "record_count": 1,
+        "summary": {"매도": 1},
+        "records": [
+            {
+                "rank": 1,
+                "stock_name": "SK하이닉스",
+                "ticker": "000660",
+                "market": "KOSPI",
+                "industry": "Semiconductors",
+                "result": "매도",
+                "raw_result": "매도",
+                "analyzed_at": "2026-07-07 14:02:31",
+            },
+        ],
+    })
+
+    history = svc.search_stock_history("SK하이닉스 (000660)")
+
+    assert history["count"] == 2
+    assert history["target"]["ticker"] == "000660"
+    assert [item["run_id"] for item in history["items"]] == ["manual_history_new", "manual_history_old"]
+    assert [item["result"] for item in history["items"]] == ["매도", "중립"]
+    assert history["items"][0]["cycle_label"] == "2026-07-07 - 2회차"

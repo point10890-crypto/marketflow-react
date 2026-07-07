@@ -1400,6 +1400,102 @@ def get_run(run_id: str, *, result: str = "all", q: str = "", live_only: bool = 
     }
 
 
+def _compact_search_text(value: Any) -> str:
+    return re.sub(r"\s+", "", _clean_text(value).lower())
+
+
+def _record_matches_history_query(record: dict[str, Any], query: str) -> bool:
+    query_text = _clean_text(query).lower()
+    query_compact = _compact_search_text(query)
+    query_digits = re.sub(r"\D+", "", query_text)
+    if not query_compact and not query_digits:
+        return False
+
+    stock_name = _clean_text(record.get("stock_name")).lower()
+    stock_compact = _compact_search_text(stock_name)
+    ticker = _clean_text(record.get("ticker"))
+
+    if query_digits and ticker and query_digits in ticker:
+        return True
+    if query_compact and stock_compact:
+        return query_compact in stock_compact or stock_compact in query_compact
+    return False
+
+
+def _run_cycle_label(run: dict[str, Any]) -> str:
+    if run.get("cycle_label"):
+        return _clean_text(run.get("cycle_label"))
+    if run.get("cycle_date") and run.get("cycle_number"):
+        return f"{run.get('cycle_date')} - {run.get('cycle_number')}회차"
+    return _clean_text(run.get("title")) or _clean_text(run.get("created_at")) or _clean_text(run.get("run_id"))
+
+
+def search_stock_history(q: str, *, limit: int = 500) -> dict[str, Any]:
+    """Return all saved manual-analysis records for a stock name or ticker.
+
+    This deliberately searches across run files instead of only the selected
+    run so users can audit how one ticker's recommendation changed by cycle.
+    """
+    ensure_storage()
+    query = _clean_text(q)
+    clean_limit = max(1, min(int(limit or 500), 5000))
+    if not query:
+        return {"query": "", "target": None, "items": [], "count": 0, "truncated": False}
+
+    items: list[dict[str, Any]] = []
+    target: dict[str, Any] | None = None
+    active_run_id = _active_loop_run_id()
+    for path in sorted(RUNS_DIR.glob("*.json"), reverse=True):
+        run = _read_run(path)
+        if not run:
+            continue
+        run_status = _public_run_status(run, active_run_id)
+        for record in run.get("records") or []:
+            if not _record_matches_history_query(record, query):
+                continue
+            if target is None:
+                target = {
+                    "stock_name": record.get("stock_name") or "",
+                    "ticker": record.get("ticker") or "",
+                    "market": record.get("market") or "",
+                    "industry": record.get("industry") or "",
+                }
+            items.append({
+                "run_id": run.get("run_id"),
+                "run_title": run.get("title"),
+                "cycle_label": _run_cycle_label(run),
+                "cycle_date": run.get("cycle_date") or "",
+                "cycle_number": run.get("cycle_number"),
+                "run_status": run_status,
+                "created_at": run.get("created_at") or "",
+                "updated_at": run.get("updated_at") or run.get("created_at") or "",
+                "rank": record.get("rank"),
+                "stock_name": record.get("stock_name") or "",
+                "ticker": record.get("ticker") or "",
+                "market": record.get("market") or "",
+                "industry": record.get("industry") or "",
+                "result": record.get("result") or "미분류",
+                "raw_result": record.get("raw_result") or "",
+                "analyzed_at": record.get("analyzed_at") or run.get("updated_at") or run.get("created_at") or "",
+                "scrape_state": record.get("scrape_state") or "",
+                "technical_result": record.get("technical_result") or "",
+                "analyst_sentiment": record.get("analyst_sentiment") or "",
+                "target_price": record.get("target_price") or "",
+                "upside_potential": record.get("upside_potential") or "",
+                "source_url": record.get("source_url") or "",
+            })
+
+    items.sort(key=lambda item: item.get("analyzed_at") or item.get("updated_at") or item.get("created_at") or "", reverse=True)
+    total = len(items)
+    return {
+        "query": query,
+        "target": target,
+        "items": items[:clean_limit],
+        "count": total,
+        "truncated": total > clean_limit,
+    }
+
+
 def run_to_excel_bytes(run_id: str, *, result: str = "all", q: str = "") -> tuple[bytes, str]:
     run = get_run(run_id, result=result, q=q)
     records = run.get("records") or []
