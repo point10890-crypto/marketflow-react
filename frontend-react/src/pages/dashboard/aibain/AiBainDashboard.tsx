@@ -4,6 +4,7 @@ import { fetchAuthAPI } from '@/lib/api';
 import DetectionsCard from './DetectionsCard';
 import PerformanceCard from './PerformanceCard';
 import LearningCard from './LearningCard';
+import ScannerEventsCard from './ScannerEventsCard';
 
 interface AiBainOverview {
     generated_at: string;
@@ -69,6 +70,8 @@ export default function AiBainDashboard() {
         <div className="min-h-screen bg-[#09090b] text-white p-4 sm:p-6 lg:p-8">
             <div className="max-w-5xl mx-auto space-y-6">
                 <Header />
+
+                <ScannerEventsCard token={token ?? undefined} />
 
                 {loading && <LoadingState />}
 
