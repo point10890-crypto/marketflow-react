@@ -140,19 +140,22 @@ Start-Sleep -Seconds 5
 $after = Test-DaemonAlive
 if ($after.Alive) {
     Write-Log "Restart confirmed - daemon healthy."
-    $message = @(
-        "&#x1F501; <b>Scheduler watchdog</b>"
-        ("사유: " + $status.Reason)
-        "조치: MiniPC 스케줄러 재시작 완료"
-    ) -join "`n"
-    Send-Telegram $message
+    # 텔레그램 알림 비활성화 (사용자 요청 2026-07-09 — watchdog 알림 기능 전체 중단).
+    # watchdog 의 재기동 동작 자체는 그대로 유지, 로그만 남김.
+    # $message = @(
+    #     "&#x1F501; <b>Scheduler watchdog</b>"
+    #     ("사유: " + $status.Reason)
+    #     "조치: MiniPC 스케줄러 재시작 완료"
+    # ) -join "`n"
+    # Send-Telegram $message
 } else {
     Write-Log ("Restart FAILED - still: " + $after.Reason)
-    $message = @(
-        "&#x1F6A8; <b>Scheduler watchdog FAILED</b>"
-        ("사유: " + $status.Reason)
-        ("재시작 후 상태: " + $after.Reason)
-        "수동 확인 필요"
-    ) -join "`n"
-    Send-Telegram $message
+    # 텔레그램 알림 비활성화 (사용자 요청 2026-07-09).
+    # $message = @(
+    #     "&#x1F6A8; <b>Scheduler watchdog FAILED</b>"
+    #     ("사유: " + $status.Reason)
+    #     ("재시작 후 상태: " + $after.Reason)
+    #     "수동 확인 필요"
+    # ) -join "`n"
+    # Send-Telegram $message
 }

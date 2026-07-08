@@ -137,12 +137,12 @@ if ($after.Alive) {
     Write-Log "Restart confirmed - MCP healthy. (telegram suppressed)"
 } else {
     Write-Log ("Restart FAILED - still: " + $after.Reason)
-    # FAILURE 만 영문으로 (인코딩 깨짐 방지) 전송 — 진짜 장애는 알아야 함.
-    $message = @(
-        "[ALERT] MiroFish MCP watchdog FAILED"
-        ("reason: " + $status.Reason)
-        ("after_restart: " + $after.Reason)
-        "manual check required"
-    ) -join "`n"
-    Send-Telegram $message
+    # FAILURE 텔레그램 알림도 비활성화 (사용자 요청 2026-07-09 — watchdog 알림 기능 전체 중단).
+    # $message = @(
+    #     "[ALERT] MiroFish MCP watchdog FAILED"
+    #     ("reason: " + $status.Reason)
+    #     ("after_restart: " + $after.Reason)
+    #     "manual check required"
+    # ) -join "`n"
+    # Send-Telegram $message
 }
