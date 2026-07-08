@@ -85,6 +85,48 @@ def test_candidate_detection_defaults_to_dry_run_without_telegram(isolated_auton
     assert commit_calls == []
 
 
+def test_candidate_detection_commits_when_aibain_send_succeeds(isolated_autonomous_paths, monkeypatch):
+    monkeypatch.setenv(autonomous_mcp.MUTATION_ENV, 'true')
+    monkeypatch.setenv(autonomous_mcp.SHARED_SECRET_ENV, 'secret-1')
+    monkeypatch.setattr(
+        autonomous_mcp.alpha_scanner,
+        'run_scanner_alert_check',
+        lambda *args, **kwargs: {
+            'run': {'id': 'mfas_test', 'candidate_count': 1},
+            'events': [_event()],
+            'message': '<b>scanner event</b>',
+            'alert_blocked': False,
+            'blocked_reason': None,
+        },
+    )
+    commit_calls = []
+    monkeypatch.setattr(
+        autonomous_mcp.alpha_scanner,
+        'commit_scanner_alert_events',
+        lambda result: commit_calls.append(result) or {'committed': True},
+    )
+    from app.utils import aibain_notify
+    monkeypatch.setattr(aibain_notify, 'send_scanner_alert', lambda message: True)
+
+    result = autonomous_mcp.run_candidate_detection_alert(
+        {
+            'dry_run': False,
+            'send_telegram': True,
+            'confirmation': autonomous_mcp.CONFIRM_SEND_PHRASE,
+            'api_key': 'secret-1',
+            'commit_state': True,
+        },
+        send_fn=lambda message: False,
+    )
+
+    assert result['status'] == 'sent'
+    assert result['telegram_sent'] is False
+    assert result['aibain_sent'] is True
+    assert result['ok'] is True
+    assert result['state_committed'] is True
+    assert len(commit_calls) == 1
+
+
 def test_autonomous_status_exposes_safe_mcp_policy(monkeypatch):
     monkeypatch.delenv(autonomous_mcp.MUTATION_ENV, raising=False)
     monkeypatch.delenv(autonomous_mcp.SHARED_SECRET_ENV, raising=False)

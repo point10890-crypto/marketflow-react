@@ -419,10 +419,12 @@ def run_candidate_detection_alert(
             except Exception as exc:
                 result['aibain_sent'] = False
                 result['aibain_error'] = f'{type(exc).__name__}: {exc}'
+                aibain_sent = False
+            delivered = bool(ok or aibain_sent)
             result['telegram_sent'] = ok
-            result['status'] = 'sent' if ok else 'send_failed'
-            result['ok'] = ok
-            if ok and commit_state:
+            result['status'] = 'sent' if delivered else 'send_failed'
+            result['ok'] = delivered
+            if delivered and commit_state:
                 result['state'] = alpha_scanner.commit_scanner_alert_events(result)
                 result['state_committed'] = True
         elif not dry_run and commit_state:
@@ -1187,6 +1189,7 @@ def _summarize_detection_result(result: dict[str, Any]) -> dict[str, Any]:
         'candidate_count': run.get('candidate_count'),
         'new_event_count': len(events),
         'telegram_sent': bool(result.get('telegram_sent')),
+        'aibain_sent': bool(result.get('aibain_sent')),
         'state_committed': bool(result.get('state_committed')),
         'alert_blocked': bool(result.get('alert_blocked')),
         'blocked_reason': result.get('blocked_reason'),
