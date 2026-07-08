@@ -13,6 +13,7 @@ import GraphRAGEntityResolverCard from '@/components/admin/GraphRAGEntityResolve
 import ScanPerformanceCard from '@/components/admin/ScanPerformanceCard';
 import ScanHistoryCard from '@/components/admin/ScanHistoryCard';
 import SourceFreshnessMatrix from '@/components/admin/SourceFreshnessMatrix';
+import ScannerEventsCard from '@/components/admin/ScannerEventsCard';
 
 const agentCounts = [3, 7, 10, 15];
 const defaultTarget = '삼성전자';
@@ -2976,29 +2977,31 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
                         </div>
                     </div>
 
-                    <div className="mt-4 max-w-4xl">
-                        <h1 className={`${subscriberMode ? 'text-2xl sm:text-3xl' : 'font-serif text-[26px] sm:text-[34px] md:text-[42px] font-medium'} leading-[1.15] tracking-tight text-anthropic-cream`}>
-                            {subscriberMode ? 'AI Brain 검출 대시보드' : (
-                                <>MiroFish <span className="italic">Market Brain</span></>
+                    <div className={subscriberMode ? 'mt-4 grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(420px,520px)] xl:items-start' : 'mt-4 max-w-4xl'}>
+                        <div className="min-w-0">
+                            <h1 className={`${subscriberMode ? 'text-2xl sm:text-3xl' : 'font-serif text-[26px] sm:text-[34px] md:text-[42px] font-medium'} leading-[1.15] tracking-tight text-anthropic-cream`}>
+                                {subscriberMode ? 'AI Brain 검출 대시보드' : (
+                                    <>MiroFish <span className="italic">Market Brain</span></>
+                                )}
+                            </h1>
+                            <p className="mt-2 max-w-3xl text-sm font-medium leading-6 text-anthropic-darkMuted">
+                                {subscriberMode
+                                    ? '오늘의 검출 · 성과 검증 · 학습 피드백을 한 화면에서.'
+                                    : '검출 · 분석 · 성과 검증 · 운영을 단일 콘솔에서.'}
+                            </p>
+                            {brainSignals.length > 0 && (
+                                <div className="mt-4 flex flex-wrap gap-1.5 sm:gap-2">
+                                    {brainSignals.map((signal) => (
+                                        <span key={signal.label} className="inline-flex items-center gap-2 rounded-lg border border-anthropic-darkLine bg-anthropic-dark2 px-3 py-1.5 text-[11px] font-medium text-anthropic-darkMuted">
+                                            <span className="tracking-wide">{signal.label}</span>
+                                            <span className="text-anthropic-cream font-mono text-xs">{signal.value}</span>
+                                        </span>
+                                    ))}
+                                </div>
                             )}
-                        </h1>
-                        <p className="mt-2 max-w-3xl text-sm font-medium leading-6 text-anthropic-darkMuted">
-                            {subscriberMode
-                                ? '오늘의 검출 · 성과 검증 · 학습 피드백을 한 화면에서.'
-                                : '검출 · 분석 · 성과 검증 · 운영을 단일 콘솔에서.'}
-                        </p>
-                    </div>
-
-                    {brainSignals.length > 0 && (
-                        <div className="mt-4 flex flex-wrap gap-1.5 sm:gap-2">
-                            {brainSignals.map((signal) => (
-                                <span key={signal.label} className="inline-flex items-center gap-2 rounded-lg border border-anthropic-darkLine bg-anthropic-dark2 px-3 py-1.5 text-[11px] font-medium text-anthropic-darkMuted">
-                                    <span className="tracking-wide">{signal.label}</span>
-                                    <span className="text-anthropic-cream font-mono text-xs">{signal.value}</span>
-                                </span>
-                            ))}
                         </div>
-                    )}
+                        {subscriberMode && <ScannerEventsCard compact maxEvents={3} className="xl:-mt-4" />}
+                    </div>
 
                     <MiroFishFearIndexCard className="mt-5" variant="compact" />
 

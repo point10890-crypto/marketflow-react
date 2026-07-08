@@ -1726,6 +1726,12 @@ export const mirofishApi = {
     getScannerDiagnostics: async () => fetchAuthAPI<MiroFishScannerDiagnostics>(
         '/api/admin/mirofish/scanner/diagnostics',
     ),
+    getScannerAlertState: async () => fetchAuthAPI<MiroFishScannerAlertState>(
+        '/api/admin/mirofish/scanner/alerts/state',
+    ),
+    getScannerMonitorStatus: async () => fetchAuthAPI<MiroFishScannerMonitorState>(
+        '/api/admin/mirofish/scanner/monitor/status',
+    ),
     getLatestScannerRun: async () => normalizeScannerRun(
         await fetchAuthAPI<any>('/api/admin/mirofish/scanner/runs/latest'),
     ),
@@ -2153,6 +2159,36 @@ export interface MiroFishScannerAlertEvent {
         change_rate?: number | null;
         date?: string | null;
     } | null;
+}
+
+export interface MiroFishScannerAlertState {
+    state_path?: string;
+    version?: number;
+    last_checked_at?: string | null;
+    last_sent_at?: string | null;
+    last_run_id?: string | null;
+    last_candidate_count?: number | null;
+    sent_event_count?: number | null;
+    recent_sent_events?: MiroFishScannerAlertEvent[];
+}
+
+export interface MiroFishScannerMonitorState {
+    state_path?: string;
+    version?: number;
+    last_checked_at?: string | null;
+    last_processed_at?: string | null;
+    last_status?: string | null;
+    last_run_id?: string | null;
+    last_candidate_count?: number | null;
+    last_new_event_count?: number | null;
+    last_telegram_sent?: boolean | null;
+    last_error?: string | null;
+    last_source_fingerprint?: string | null;
+    last_failed_source_fingerprint?: string | null;
+    last_failed_at?: string | null;
+    current_source_fingerprint?: string | null;
+    source_changed?: boolean | null;
+    source?: Record<string, any>;
 }
 
 export interface MiroFishBoardItem {

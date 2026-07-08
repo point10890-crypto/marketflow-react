@@ -13,6 +13,8 @@ const mockApi = vi.hoisted(() => ({
   hydrateRun: vi.fn(),
   startScannerRun: vi.fn(),
   getScannerStatus: vi.fn(),
+  getScannerAlertState: vi.fn(),
+  getScannerMonitorStatus: vi.fn(),
   getLatestScannerRun: vi.fn(),
   getScannerRun: vi.fn(),
   getScannerCandidates: vi.fn(),
@@ -452,6 +454,35 @@ beforeEach(() => {
     candidate_count: 1,
     source_files: [],
   });
+  mockApi.getScannerMonitorStatus.mockResolvedValue({
+    last_checked_at: '2026-07-08T10:38:20.679750+09:00',
+    last_status: 'sent',
+    last_run_id: 'mfas_latest',
+    last_candidate_count: 9,
+    last_new_event_count: 1,
+    last_telegram_sent: true,
+  });
+  mockApi.getScannerAlertState.mockResolvedValue({
+    last_checked_at: '2026-07-08T10:38:20.679750+09:00',
+    last_sent_at: '2026-07-08T10:38:20.679750+09:00',
+    last_run_id: 'mfas_latest',
+    last_candidate_count: 9,
+    sent_event_count: 1,
+    recent_sent_events: [{
+      event_key: '037710:BUY_CANDIDATE:2026-07-08',
+      sent_at: '2026-07-08T10:38:20.679750+09:00',
+      run_id: 'mfas_latest',
+      rank: 1,
+      symbol: '037710',
+      display_name: '광주신세계',
+      market: 'KOSPI',
+      action: 'BUY_CANDIDATE',
+      signal_quality: 'B',
+      alpha_score: 72,
+      risk_score: 40,
+      price: { current_price: 45900, change_rate: 1.2, date: '2026-07-08' },
+    }],
+  });
   mockApi.getLatestScannerRun.mockResolvedValue({
     id: 'mfas_latest',
     status: 'completed',
@@ -761,6 +792,12 @@ describe('AdminEndpointsPage analysis start input', () => {
 
     expect(await screen.findByText('AI Brain 검출 대시보드')).toBeTruthy();
     expect(await screen.findByText('Pro + AI Brain 구독자 콘솔')).toBeTruthy();
+    expect(await screen.findByText('알파 스캐너 신규 이벤트')).toBeTruthy();
+    expect(await screen.findByText('광주신세계')).toBeTruthy();
+    expect(await screen.findByText('037710')).toBeTruthy();
+    expect(await screen.findByText('@45,900')).toBeTruthy();
+    expect(await screen.findByText('등급 B')).toBeTruthy();
+    expect(await screen.findByText('리스크 40')).toBeTruthy();
     expect(await screen.findByText('Latest Alpha')).toBeTruthy();
     expect(screen.queryByRole('button', { name: /Run scanner/i })).toBeNull();
     expect(screen.queryByRole('button', { name: /Run MCP Top 3 Force refresh/i })).toBeNull();

@@ -7,8 +7,17 @@ const mockApi = vi.hoisted(() => ({
   fetchAuthAPI: vi.fn(),
 }));
 
+const mockMirofishApi = vi.hoisted(() => ({
+  getScannerMonitorStatus: vi.fn(),
+  getScannerAlertState: vi.fn(),
+}));
+
 vi.mock('@/lib/api', () => ({
   fetchAuthAPI: mockApi.fetchAuthAPI,
+}));
+
+vi.mock('@/lib/mirofishApi', () => ({
+  mirofishApi: mockMirofishApi,
 }));
 
 vi.mock('@/contexts/AuthContext', () => ({
@@ -84,6 +93,27 @@ const emptyOverview = {
 describe('AiBainDashboard', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockMirofishApi.getScannerMonitorStatus.mockResolvedValue({
+      last_checked_at: '2026-07-08T10:38:20.679750+09:00',
+      last_status: 'sent',
+      last_candidate_count: 9,
+      last_new_event_count: 1,
+    });
+    mockMirofishApi.getScannerAlertState.mockResolvedValue({
+      last_sent_at: '2026-07-08T10:38:20.679750+09:00',
+      last_candidate_count: 9,
+      recent_sent_events: [{
+        event_key: '037710:BUY_CANDIDATE:2026-07-08',
+        sent_at: '2026-07-08T10:38:20.679750+09:00',
+        symbol: '037710',
+        display_name: '광주신세계',
+        market: 'KOSPI',
+        action: 'BUY_CANDIDATE',
+        signal_quality: 'B',
+        risk_score: 40,
+        price: { current_price: 45900, change_rate: 1.2 },
+      }],
+    });
   });
 
   it('renders detections, performance and learning data after load', async () => {
@@ -94,6 +124,7 @@ describe('AiBainDashboard', () => {
     await waitFor(() => expect(mockApi.fetchAuthAPI).toHaveBeenCalled());
 
     expect(await screen.findByText(/46.2/)).toBeTruthy();
+    expect(await screen.findByText('광주신세계')).toBeTruthy();
     expect((await screen.findAllByText(/Alpha One/)).length).toBeGreaterThan(0);
     expect(await screen.findByText(/momentum\+RISK_ON/)).toBeTruthy();
   });
