@@ -33,6 +33,11 @@ DEFAULT_ALERT_MIN_ALPHA = 70.0
 DEFAULT_ALERT_MAX_RISK = 45.0
 DEFAULT_ALERT_MAX_EVENTS = 8
 DEFAULT_MONITOR_RETRY_SECONDS = 300
+# Dashboard "신규 이벤트" feed only surfaces alerts sent within this window. Without
+# this, feed_events was sliced by count (top-20) only, so on quiet weeks a handful
+# of days-old alerts stayed pinned at the top indefinitely, looking like fresh
+# detections. 0 (or unset via env) disables the filter.
+SCANNER_FEED_MAX_AGE_HOURS = float(os.getenv('MIROFISH_SCANNER_FEED_MAX_AGE_HOURS', '') or 48)
 DEFAULT_SCHEDULE_TIMES = '09:20,11:20,14:20,15:40,16:10'
 KST = timezone(timedelta(hours=9))
 MONITOR_STATE_VERSION = 2
@@ -4049,6 +4054,22 @@ def _format_signed(value: Any, suffix: str = '') -> str:
     return f'{number:+.2f}{suffix}'
 
 
+def _entry_recent_enough(
+    entry: dict[str, Any],
+    *,
+    max_age_hours: float,
+    now: datetime | None = None,
+) -> bool:
+    if max_age_hours <= 0:
+        return True
+    ts = _parse_dt(entry.get('sent_at') or entry.get('generated_at'))
+    if ts is None:
+        return False
+    reference = now or datetime.now(timezone.utc)
+    age_hours = (reference - ts).total_seconds() / 3600.0
+    return age_hours <= max_age_hours
+
+
 def _alert_state_summary(
     state: dict[str, Any],
     state_file: str,
@@ -4059,7 +4080,15 @@ def _alert_state_summary(
     recent = _alert_state_entries(state)[:20]
     latest = _latest_run_candidate_events(latest_run, limit=20)
     latest_new = _latest_run_new_events(latest_run, state, limit=20)
-    feed = _merge_alert_history(recent, latest_new, limit=20)
+    # feed_events must reflect *actually recent* alerts, not just the top-20 by
+    # count — see SCANNER_FEED_MAX_AGE_HOURS. recent_sent_events itself stays
+    # unfiltered (full audit trail) for any other/diagnostic consumer.
+    now = datetime.now(timezone.utc)
+    recent_for_feed = [
+        entry for entry in recent
+        if _entry_recent_enough(entry, max_age_hours=SCANNER_FEED_MAX_AGE_HOURS, now=now)
+    ]
+    feed = _merge_alert_history(recent_for_feed, latest_new, limit=20)
     return {
         'state_path': state_file,
         'version': state.get('version', 1),

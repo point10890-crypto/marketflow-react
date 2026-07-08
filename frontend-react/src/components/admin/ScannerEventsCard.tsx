@@ -135,6 +135,10 @@ export default function ScannerEventsCard({ className = '', compact = false, max
     }, [load]);
 
     const events = useMemo(() => {
+        // feed_events / latest_new_events are recency-windowed server-side (see
+        // SCANNER_FEED_MAX_AGE_HOURS in alpha_scanner.py) so this only reaches
+        // recent_sent_events — the full unfiltered audit trail — on a genuine dry
+        // spell where nothing has fired within the window.
         const list = alerts?.feed_events?.length
             ? alerts.feed_events
             : alerts?.latest_new_events?.length

@@ -1109,14 +1109,17 @@ def test_scanner_alert_state_keeps_recent_cache_without_recreating_sent_latest_r
     monkeypatch.setattr(alpha_scanner, 'SCANNER_RUNS_ROOT', str(tmp_path / 'runs'))
     state_path = tmp_path / 'alert_state.json'
     latest_run = alpha_scanner.create_scanner_run({'limit': 5})
+    # Sent a couple of hours ago — still within SCANNER_FEED_MAX_AGE_HOURS, so the
+    # feed should keep showing it even though this run found no brand-new events.
+    sent_at = (datetime.now(timezone.utc) - timedelta(hours=2)).isoformat()
     _write_json(state_path, {
         'version': 2,
-        'last_checked_at': '2026-05-03T16:05:00+09:00',
-        'last_sent_at': '2026-05-03T16:05:00+09:00',
+        'last_checked_at': sent_at,
+        'last_sent_at': sent_at,
         'last_candidate_count': 1,
         'sent_events': {
             '000001:BUY_CANDIDATE:2026-05-03': {
-                'sent_at': '2026-05-03T16:05:00+09:00',
+                'sent_at': sent_at,
                 'run_id': latest_run['id'],
                 'rank': 1,
                 'symbol': '000001',
@@ -1138,6 +1141,52 @@ def test_scanner_alert_state_keeps_recent_cache_without_recreating_sent_latest_r
     assert state['recent_sent_events'][0]['symbol'] == '000001'
     assert state['feed_events'][0]['symbol'] == '000001'
     assert state['feed_events'][0].get('pending_commit') is None
+
+
+def test_scanner_alert_state_excludes_stale_events_from_feed(tmp_path, monkeypatch):
+    """Regression test: a sent event past SCANNER_FEED_MAX_AGE_HOURS must not
+    linger in feed_events forever just because it's still within the top-20
+    count-based slice. recent_sent_events (the raw audit trail) stays unfiltered.
+    """
+    _seed_artifacts(tmp_path)
+    monkeypatch.setattr(alpha_scanner, 'DATA_ROOT', str(tmp_path))
+    monkeypatch.setattr(alpha_scanner, 'SCANNER_RUNS_ROOT', str(tmp_path / 'runs'))
+    state_path = tmp_path / 'alert_state.json'
+    latest_run = alpha_scanner.create_scanner_run({'limit': 5})
+    stale_sent_at = (datetime.now(timezone.utc) - timedelta(days=5)).isoformat()
+    _write_json(state_path, {
+        'version': 2,
+        'last_checked_at': stale_sent_at,
+        'last_sent_at': stale_sent_at,
+        'last_candidate_count': 1,
+        'sent_events': {
+            # Key must match the scanner's real _candidate_event_key format
+            # (symbol:action:price_date) so this run's candidate for 000001 is
+            # correctly recognized as "already sent" (latest_new_event_count stays
+            # 0) — only the recency of the sent_at timestamp is under test here.
+            '000001:BUY_CANDIDATE:2026-05-03': {
+                'sent_at': stale_sent_at,
+                'run_id': 'mfas_stale_run',
+                'rank': 1,
+                'symbol': '000001',
+                'display_name': 'Alpha One',
+                'market': 'KOSPI',
+                'action': 'BUY_CANDIDATE',
+                'alpha_score': 80,
+                'risk_score': 20,
+                'price': {'current_price': 108, 'change_rate': 8.0, 'date': '2026-05-03'},
+            },
+        },
+    })
+
+    state = alpha_scanner.read_scanner_alert_state(str(state_path))
+
+    assert state['latest_run_id'] == latest_run['id']
+    assert state['latest_new_event_count'] == 0
+    # Raw audit trail still reports the stale event...
+    assert state['recent_sent_events'][0]['symbol'] == '000001'
+    # ...but the dashboard feed must not present it as if it were a fresh detection.
+    assert state['feed_events'] == []
 
 
 def test_alpha_scanner_alert_check_blocks_stale_core_source_alerts(tmp_path, monkeypatch):
