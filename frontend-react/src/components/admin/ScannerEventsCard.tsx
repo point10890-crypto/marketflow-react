@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
     MiroFishScannerAlertEvent,
     MiroFishScannerAlertState,
@@ -22,6 +22,8 @@ const STATUS_LABELS: Record<string, string> = {
     pending_send: '전송 대기',
     retry_wait: '재시도 대기',
 };
+
+const POLL_INTERVAL_MS = 30000;
 
 function actionLabel(action?: string | null) {
     if (!action) return '';
@@ -90,30 +92,46 @@ export default function ScannerEventsCard({ className = '', compact = false, max
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [error, setError] = useState('');
+    const [lastUpdatedAt, setLastUpdatedAt] = useState<string | null>(null);
+    const inFlightRef = useRef(false);
 
     const load = useCallback(async (opts?: { silent?: boolean }) => {
+        if (inFlightRef.current) return;
+        inFlightRef.current = true;
         if (opts?.silent) setRefreshing(true);
         else setLoading(true);
         try {
             const [monitorState, alertState] = await Promise.all([
-                mirofishApi.getScannerMonitorStatus(),
-                mirofishApi.getScannerAlertState(),
+                mirofishApi.getScannerMonitorStatus(true),
+                mirofishApi.getScannerAlertState(true),
             ]);
             setMonitor(monitorState);
             setAlerts(alertState);
+            setLastUpdatedAt(new Date().toISOString());
             setError('');
         } catch {
             setError('스캐너 이벤트를 불러오지 못했습니다.');
         } finally {
             setLoading(false);
             setRefreshing(false);
+            inFlightRef.current = false;
         }
     }, []);
 
     useEffect(() => {
         void load();
-        const id = window.setInterval(() => void load({ silent: true }), 30000);
-        return () => window.clearInterval(id);
+        const refresh = () => void load({ silent: true });
+        const handleVisibilityChange = () => {
+            if (!document.hidden) refresh();
+        };
+        const id = window.setInterval(refresh, POLL_INTERVAL_MS);
+        window.addEventListener('focus', refresh);
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        return () => {
+            window.clearInterval(id);
+            window.removeEventListener('focus', refresh);
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+        };
     }, [load]);
 
     const events = useMemo(() => {
@@ -169,6 +187,11 @@ export default function ScannerEventsCard({ className = '', compact = false, max
                         {STATUS_LABELS[monitor.last_status] || monitor.last_status}
                     </span>
                 )}
+                {lastUpdatedAt && (
+                    <span className="col-span-2 min-w-0 rounded-full border border-cyan-300/15 bg-cyan-300/[0.06] px-3 py-1 text-xs font-bold text-cyan-100 sm:col-span-1">
+                        갱신 <span className="font-mono">{fmtKST(lastUpdatedAt)}</span>
+                    </span>
+                )}
             </div>
 
             {loading ? (
@@ -193,7 +216,7 @@ export default function ScannerEventsCard({ className = '', compact = false, max
             )}
 
             <p className="mt-3 text-[11px] font-semibold text-slate-500">
-                텔레그램으로 전송되는 알파 스캐너 신규 후보와 같은 피드입니다. 30초마다 자동 갱신합니다.
+                텔레그램으로 전송되는 알파 스캐너 신규 후보와 같은 피드입니다. 30초마다 자동 갱신하며, 탭 복귀 시 즉시 다시 확인합니다.
             </p>
         </section>
     );

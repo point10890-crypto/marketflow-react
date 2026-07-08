@@ -1726,11 +1726,11 @@ export const mirofishApi = {
     getScannerDiagnostics: async () => fetchAuthAPI<MiroFishScannerDiagnostics>(
         '/api/admin/mirofish/scanner/diagnostics',
     ),
-    getScannerAlertState: async () => fetchAuthAPI<MiroFishScannerAlertState>(
-        '/api/admin/mirofish/scanner/alerts/state',
+    getScannerAlertState: async (fresh = false) => fetchAuthAPI<MiroFishScannerAlertState>(
+        `/api/admin/mirofish/scanner/alerts/state${fresh ? `?t=${Date.now()}` : ''}`,
     ),
-    getScannerMonitorStatus: async () => fetchAuthAPI<MiroFishScannerMonitorState>(
-        '/api/admin/mirofish/scanner/monitor/status',
+    getScannerMonitorStatus: async (fresh = false) => fetchAuthAPI<MiroFishScannerMonitorState>(
+        `/api/admin/mirofish/scanner/monitor/status${fresh ? `?t=${Date.now()}` : ''}`,
     ),
     getLatestScannerRun: async () => normalizeScannerRun(
         await fetchAuthAPI<any>('/api/admin/mirofish/scanner/runs/latest'),
