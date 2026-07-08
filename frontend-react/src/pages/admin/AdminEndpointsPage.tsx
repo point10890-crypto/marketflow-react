@@ -2978,7 +2978,7 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
                     </div>
 
                     <div className={subscriberMode ? 'mt-4 grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(420px,520px)] xl:items-start' : 'mt-4 max-w-4xl'}>
-                        <div className="min-w-0">
+                        <div className={`min-w-0 ${subscriberMode ? 'xl:col-start-1 xl:row-start-1' : ''}`}>
                             <h1 className={`${subscriberMode ? 'text-2xl sm:text-3xl' : 'font-serif text-[26px] sm:text-[34px] md:text-[42px] font-medium'} leading-[1.15] tracking-tight text-anthropic-cream`}>
                                 {subscriberMode ? 'AI Brain 검출 대시보드' : (
                                     <>MiroFish <span className="italic">Market Brain</span></>
@@ -3000,10 +3000,11 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
                                 </div>
                             )}
                         </div>
-                        {subscriberMode && <ScannerEventsCard compact maxEvents={3} className="xl:-mt-4" />}
+                        {subscriberMode && <ScannerEventsCard compact maxEvents={3} className="xl:col-start-2 xl:row-span-2 xl:row-start-1 xl:-mt-4" />}
+                        {subscriberMode && <MiroFishFearIndexCard className="min-w-0 xl:col-start-1 xl:row-start-2" variant="compact" />}
                     </div>
 
-                    <MiroFishFearIndexCard className="mt-5" variant="compact" />
+                    {!subscriberMode && <MiroFishFearIndexCard className="mt-5" variant="compact" />}
 
                     <div className="mt-5 grid gap-5 2xl:grid-cols-[minmax(0,1.65fr)_minmax(400px,0.72fr)] 2xl:items-start">
                         <section className="min-w-0 rounded-2xl border border-cyan-300/15 bg-cyan-300/[0.035] p-3 shadow-[0_18px_70px_rgba(8,145,178,0.10)]">
