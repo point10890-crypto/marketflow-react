@@ -565,13 +565,17 @@ def get_scanner_diagnostics():
 @admin_mirofish_bp.route('/scanner/alerts/state', methods=['GET'])
 @admin_or_aibain_required
 def get_scanner_alert_state():
-    return jsonify(mirofish.read_scanner_alert_state())
+    response = jsonify(mirofish.read_scanner_alert_state())
+    response.headers['Cache-Control'] = 'no-store, max-age=0'
+    return response
 
 
 @admin_mirofish_bp.route('/scanner/monitor/status', methods=['GET'])
 @admin_or_aibain_required
 def get_scanner_monitor_status():
-    return jsonify(mirofish.read_scanner_monitor_state())
+    response = jsonify(mirofish.read_scanner_monitor_state())
+    response.headers['Cache-Control'] = 'no-store, max-age=0'
+    return response
 
 
 @admin_mirofish_bp.route('/scanner/monitor/check', methods=['POST'])

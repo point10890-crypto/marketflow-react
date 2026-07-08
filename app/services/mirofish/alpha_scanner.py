@@ -3879,6 +3879,36 @@ def _latest_run_candidate_events(run: dict[str, Any] | None, *, limit: int = 20)
     return items
 
 
+def _latest_run_new_events(
+    run: dict[str, Any] | None,
+    state: dict[str, Any],
+    *,
+    min_alpha: float = DEFAULT_ALERT_MIN_ALPHA,
+    max_risk: float = DEFAULT_ALERT_MAX_RISK,
+    actions: tuple[str, ...] = ('BUY_CANDIDATE',),
+    limit: int = 20,
+) -> list[dict[str, Any]]:
+    """Return latest-run events that are not yet in the committed alert cache."""
+    if not isinstance(run, dict):
+        return []
+    generated_at = run.get('generated_at') or run.get('created_at')
+    pending = _new_candidate_events(
+        run,
+        state,
+        min_alpha=float(min_alpha),
+        max_risk=float(max_risk),
+        actions=actions,
+        max_events=max(1, int(limit)),
+    )
+    items: list[dict[str, Any]] = []
+    for event in pending:
+        item = _alert_event_snapshot(event, run, sent_at=generated_at)
+        item['source'] = 'latest_run_new'
+        item['pending_commit'] = True
+        items.append(item)
+    return items
+
+
 def _merge_alert_history(
     history: list[dict[str, Any]],
     new_entries: list[dict[str, Any]],
@@ -4028,7 +4058,8 @@ def _alert_state_summary(
     sent_events = state.get('sent_events') if isinstance(state.get('sent_events'), dict) else {}
     recent = _alert_state_entries(state)[:20]
     latest = _latest_run_candidate_events(latest_run, limit=20)
-    feed = _merge_alert_history(recent, latest, limit=20)
+    latest_new = _latest_run_new_events(latest_run, state, limit=20)
+    feed = _merge_alert_history(recent, latest_new, limit=20)
     return {
         'state_path': state_file,
         'version': state.get('version', 1),
@@ -4042,6 +4073,8 @@ def _alert_state_summary(
         'latest_run_at': (latest_run or {}).get('generated_at') or (latest_run or {}).get('created_at'),
         'latest_candidate_count': (latest_run or {}).get('candidate_count'),
         'latest_candidate_events': latest,
+        'latest_new_event_count': len(latest_new),
+        'latest_new_events': latest_new,
         'feed_event_count': len(feed),
         'feed_events': feed,
     }
