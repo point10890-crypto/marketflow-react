@@ -29,6 +29,7 @@ interface ManualRecord {
     analyzed_at: string;
     scrape_state?: 'pending' | 'scraping' | 'completed' | 'error';
     scrape_fallback?: string;
+    stale_from?: string;
     error?: string;
     technical_result?: string;
     analyst_sentiment?: string;
@@ -127,9 +128,35 @@ const LOOP_LABELS: Record<string, string> = {
     scraping: '스크래핑 중',
     waiting: '대기 중',
     error_waiting: '오류 후 대기',
+    blocked_waiting: '차단 감지 · 회복 대기',
     stopping: '중지 중',
     stopped: '중지됨',
 };
+
+// Friendly labels for internal scrape_fallback codes (avoid raw jargon in the UI).
+const FALLBACK_LABELS: Record<string, string> = {
+    collection_gap: '수집 지연',
+    stale_cache: '직전값 유지',
+    retry_fresh_session: '재시도 성공',
+};
+
+function fallbackLabel(code?: string) {
+    if (!code) return '';
+    return FALLBACK_LABELS[code] || code;
+}
+
+// Soften raw scraper exceptions (e.g. "RuntimeError: target page blocked: cloudflare").
+function friendlyError(err?: string) {
+    if (!err) return '';
+    const lower = err.toLowerCase();
+    if (lower.includes('cloudflare') || lower.includes('blocked') || lower.includes('captcha')) {
+        return '일시적 수집 차단 (Cloudflare) · 잠시 후 자동 재수집';
+    }
+    if (lower.includes('timeout') || lower.includes('page load')) {
+        return '페이지 응답 지연 · 자동 재수집';
+    }
+    return err;
+}
 
 function resultBadge(result: string) {
     return RESULT_STYLES[result]?.badge || 'text-slate-300 bg-white/5 border-white/10';
@@ -975,9 +1002,13 @@ export default function ManualStockAnalysisPage() {
                                             여력 {record.upside_potential}
                                         </span>
                                     )}
-                                    {record.scrape_fallback && (
+                                    {record.scrape_fallback === 'stale_cache' ? (
+                                        <span className="rounded-full border border-amber-400/30 bg-amber-500/10 px-2 py-1 text-amber-200">
+                                            직전값 유지{record.stale_from ? ` · ${record.stale_from}` : ''}
+                                        </span>
+                                    ) : record.scrape_fallback && (
                                         <span className="rounded-full border border-violet-400/25 bg-violet-500/10 px-2 py-1 text-violet-200">
-                                            {record.scrape_fallback}
+                                            {fallbackLabel(record.scrape_fallback)}
                                         </span>
                                     )}
                                     {record.scrape_state === 'scraping' && (
@@ -989,7 +1020,7 @@ export default function ManualStockAnalysisPage() {
 
                                 {record.error && (
                                     <div className="mt-3 rounded-lg border border-rose-400/25 bg-rose-500/10 px-3 py-2 text-xs font-medium text-rose-200">
-                                        {record.error}
+                                        {friendlyError(record.error)}
                                     </div>
                                 )}
 
@@ -1070,15 +1101,19 @@ export default function ManualStockAnalysisPage() {
                                                     여력 {record.upside_potential}
                                                 </span>
                                             )}
-                                            {record.scrape_fallback && (
+                                            {record.scrape_fallback === 'stale_cache' ? (
+                                                <span className="rounded-full border border-amber-400/30 bg-amber-500/10 px-2 py-0.5 text-amber-200">
+                                                    직전값 유지{record.stale_from ? ` · ${record.stale_from}` : ''}
+                                                </span>
+                                            ) : record.scrape_fallback && (
                                                 <span className="rounded-full border border-violet-400/25 bg-violet-500/10 px-2 py-0.5 text-violet-200">
-                                                    {record.scrape_fallback}
+                                                    {fallbackLabel(record.scrape_fallback)}
                                                 </span>
                                             )}
                                         </div>
                                         {record.error && (
                                             <div className="mx-auto mt-2 max-w-md truncate rounded-lg border border-rose-400/25 bg-rose-500/10 px-2 py-1 text-[10px] font-medium text-rose-200">
-                                                {record.error}
+                                                {friendlyError(record.error)}
                                             </div>
                                         )}
                                         {record.scrape_state === 'scraping' && (

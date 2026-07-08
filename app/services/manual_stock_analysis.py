@@ -11,6 +11,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import random
 import re
 import shutil
 import tempfile
@@ -58,9 +59,47 @@ def _env_bool(name: str, default: bool) -> bool:
 DEFAULT_SCRAPE_DELAY_SEC = _env_float("MANUAL_STOCK_ANALYSIS_DELAY_SEC", 1.2)
 AUTO_LOOP_ENABLED = _env_bool("MANUAL_STOCK_ANALYSIS_AUTO_LOOP", True)
 AUTO_LOOP_MAX_ROWS = max(0, min(_env_int("MANUAL_STOCK_ANALYSIS_LOOP_MAX_ROWS", 0), MAX_SOURCE_ROWS))
-AUTO_LOOP_INTERVAL_SEC = max(0, min(_env_int("MANUAL_STOCK_ANALYSIS_LOOP_INTERVAL_SEC", 0), 86400))
+# Cooldown between full cycles. Default 600s (was 0 = immediate re-loop) so a single
+# residential IP is not hammering the Cloudflare-protected target 24/7. env-overridable.
+AUTO_LOOP_INTERVAL_SEC = max(0, min(_env_int("MANUAL_STOCK_ANALYSIS_LOOP_INTERVAL_SEC", 600), 86400))
+# Random extra seconds (0..N) added to each cycle wait so the cadence is not perfectly periodic.
+AUTO_LOOP_JITTER_SEC = max(0, min(_env_int("MANUAL_STOCK_ANALYSIS_LOOP_JITTER_SEC", 300), 3600))
 AUTO_LOOP_TIMEOUT_SEC = max(3, min(_env_int("MANUAL_STOCK_ANALYSIS_LOOP_TIMEOUT_SEC", 10), 30))
 AUTO_LOOP_ERROR_BACKOFF_SEC = max(5, min(_env_int("MANUAL_STOCK_ANALYSIS_LOOP_ERROR_BACKOFF_SEC", 30), 3600))
+
+# --- Cloudflare block resilience (2026-07-08) ---
+# Consecutive block responses that trip the circuit breaker and abort the current
+# cycle (0 disables). Prevents the loop from hammering an already-blocked IP for a
+# whole 2,300-row cycle, which sustains the block and stops reputation recovery.
+BLOCK_CIRCUIT_THRESHOLD = max(0, min(_env_int("MANUAL_STOCK_ANALYSIS_BLOCK_CIRCUIT", 5), 500))
+# Long cool-off applied after the circuit opens, letting the IP reputation recover.
+BLOCK_BACKOFF_SEC = max(60, min(_env_int("MANUAL_STOCK_ANALYSIS_BLOCK_BACKOFF_SEC", 1200), 7200))
+# Per-row retry attempts on retryable (block/timeout) errors, with exponential backoff.
+RETRY_MAX = max(0, min(_env_int("MANUAL_STOCK_ANALYSIS_RETRY_MAX", 2), 5))
+RETRY_BASE_SEC = max(0.5, min(_env_float("MANUAL_STOCK_ANALYSIS_RETRY_BASE_SEC", 5.0), 60.0))
+# On a collection gap, carry the most recent successful verdict forward (marked stale)
+# instead of overwriting a blue-chip's real verdict with "오류".
+CARRY_LAST_GOOD = _env_bool("MANUAL_STOCK_ANALYSIS_CARRY_LAST_GOOD", True)
+
+_SUCCESS_LABELS = {"적극 매수", "매수", "중립", "매도", "적극 매도"}
+
+
+class ScraperCircuitOpen(RuntimeError):
+    """Raised when consecutive Cloudflare blocks trip the circuit breaker mid-cycle."""
+
+
+def _is_block_error(exc: Exception) -> bool:
+    text = f"{type(exc).__name__}: {exc}".lower()
+    return any(
+        marker in text
+        for marker in ("target page blocked", "cloudflare", "captcha", "verify you are human", "just a moment")
+    )
+
+
+def _jittered(base: float, jitter: float) -> float:
+    if jitter <= 0:
+        return max(0.0, float(base))
+    return max(0.0, float(base) + random.uniform(0, float(jitter)))
 
 DEFAULT_SOURCE_PATHS = [
     Path(os.getenv("MANUAL_STOCK_ANALYSIS_SOURCE_FILE", "")),
@@ -671,6 +710,43 @@ def _read_run(path: Path) -> dict[str, Any] | None:
         return None
 
 
+def _build_last_good_lookup(exclude_run_id: str = "", depth: int = 2) -> dict[str, dict[str, str]]:
+    """Map source_url/ticker -> most recent successful verdict from prior runs.
+
+    Used to carry a blue-chip's last real verdict forward when the current cycle
+    hits a transient Cloudflare collection gap, instead of showing "오류".
+    Scans only the newest ``depth`` completed runs so this stays cheap.
+    """
+    if not CARRY_LAST_GOOD:
+        return {}
+    ensure_storage()
+    try:
+        paths = sorted(RUNS_DIR.glob("*.json"), key=lambda p: p.stat().st_mtime, reverse=True)
+    except Exception:
+        return {}
+    lookup: dict[str, dict[str, str]] = {}
+    scanned = 0
+    for path in paths:
+        if scanned >= max(1, depth):
+            break
+        run = _read_run(path)
+        if not run or _clean_text(run.get("run_id")) == _clean_text(exclude_run_id):
+            continue
+        scanned += 1
+        for rec in run.get("records", []) or []:
+            if rec.get("result") not in _SUCCESS_LABELS:
+                continue
+            key = _clean_text(rec.get("source_url")) or _clean_text(rec.get("ticker"))
+            if key and key not in lookup:
+                lookup[key] = {
+                    "result": _clean_text(rec.get("result")),
+                    "raw_result": _clean_text(rec.get("raw_result")) or _clean_text(rec.get("result")),
+                    "analyzed_at": _clean_text(rec.get("analyzed_at")),
+                    "cycle_label": _clean_text(run.get("cycle_label")) or _clean_text(run.get("title")),
+                }
+    return lookup
+
+
 def _next_cycle_number_for_date(cycle_date: str) -> int:
     ensure_storage()
     highest = 0
@@ -1010,10 +1086,14 @@ def scrape_source_run(
         return _persist_scrape_run(run, records=records, status="completed")
 
     driver = None
+    last_good_lookup = _build_last_good_lookup(exclude_run_id=current_run_id)
+    consecutive_blocks = 0
     try:
         driver = _create_selenium_driver()
         total = len(records)
         for index, record in enumerate(records, start=1):
+            if driver is None:
+                driver = _create_selenium_driver()
             record["scrape_state"] = "scraping"
             record["analyzed_at"] = _now()
             if persist_progress:
@@ -1037,18 +1117,25 @@ def scrape_source_run(
                 continue
             try:
                 retry_fallback = ""
-                try:
-                    scraped_fields = _scrape_page_fields(driver, url, xpath, timeout_sec=timeout_sec)
-                except Exception as first_exc:
-                    if not _is_retryable_scrape_error(first_exc):
-                        raise
-                    if driver is not None:
-                        _close_selenium_driver(driver)
-                    if delay_sec > 0:
-                        time.sleep(max(0.75, min(float(delay_sec), 3.0)))
-                    driver = _create_selenium_driver()
-                    scraped_fields = _scrape_page_fields(driver, url, xpath, timeout_sec=timeout_sec)
-                    retry_fallback = "retry_fresh_session"
+                attempt = 0
+                while True:
+                    try:
+                        scraped_fields = _scrape_page_fields(driver, url, xpath, timeout_sec=timeout_sec)
+                        break
+                    except Exception as scrape_exc:
+                        if attempt >= RETRY_MAX or not _is_retryable_scrape_error(scrape_exc):
+                            raise
+                        attempt += 1
+                        # Fresh session + exponential backoff with jitter. A same-fingerprint
+                        # retry ~1s later almost always hits the same Cloudflare challenge;
+                        # backing off (5s, 15s, ...) gives the block a chance to lift.
+                        if driver is not None:
+                            _close_selenium_driver(driver)
+                            driver = None
+                        backoff = _jittered(RETRY_BASE_SEC * (3 ** (attempt - 1)), RETRY_BASE_SEC)
+                        time.sleep(min(backoff, 45.0))
+                        driver = _create_selenium_driver()
+                        retry_fallback = "retry_fresh_session"
                 scraped = scraped_fields.get("result", "")
                 if not scraped:
                     raise RuntimeError("empty investing verdict after render wait")
@@ -1070,17 +1157,47 @@ def scrape_source_run(
                     if value:
                         record[field] = value
                 record["scrape_state"] = "completed"
+                record.pop("stale_from", None)
+                consecutive_blocks = 0
                 if retry_fallback:
                     record["scrape_fallback"] = retry_fallback
+            except ScraperCircuitOpen:
+                raise
             except Exception as exc:
-                # A third-party page timeout/block is a data-collection gap, not
-                # an analyst verdict. Close the row explicitly so the live table
-                # does not keep completed failures stuck as "분석중".
-                record["raw_result"] = "오류"
-                record["result"] = "오류"
-                record["scrape_state"] = "error"
-                record["scrape_fallback"] = "collection_gap"
-                record["error"] = f"{type(exc).__name__}: {str(exc)[:160]}"
+                # A third-party page timeout/block is a data-collection gap, not an
+                # analyst verdict. Carry the last known-good verdict forward (marked
+                # stale) when available so a Cloudflare burst does not overwrite a
+                # blue-chip's real verdict with "오류"; otherwise record the gap.
+                is_block = _is_block_error(exc)
+                key = _clean_text(record.get("source_url")) or _clean_text(record.get("ticker"))
+                carried = last_good_lookup.get(key) if key else None
+                if carried:
+                    record["result"] = carried.get("result") or "오류"
+                    record["raw_result"] = carried.get("raw_result") or record["result"]
+                    record["scrape_state"] = "completed"
+                    record["scrape_fallback"] = "stale_cache"
+                    record["stale_from"] = carried.get("cycle_label") or carried.get("analyzed_at") or ""
+                    record["error"] = ""
+                else:
+                    record["raw_result"] = "오류"
+                    record["result"] = "오류"
+                    record["scrape_state"] = "error"
+                    record["scrape_fallback"] = "collection_gap"
+                    record["error"] = f"{type(exc).__name__}: {str(exc)[:160]}"
+                    record.pop("stale_from", None)
+                # Circuit breaker: a run of consecutive blocks means the IP is being
+                # challenged. Abort the cycle so the loop enters a long cool-off instead
+                # of hammering ~2,300 more rows and sustaining the block.
+                consecutive_blocks = consecutive_blocks + 1 if is_block else 0
+                if BLOCK_CIRCUIT_THRESHOLD > 0 and consecutive_blocks >= BLOCK_CIRCUIT_THRESHOLD:
+                    record["analyzed_at"] = _now()
+                    if progress_callback:
+                        progress_callback(index, total, dict(record))
+                    if persist_progress:
+                        _persist_scrape_run(run, records=records, status="running")
+                    raise ScraperCircuitOpen(
+                        f"{consecutive_blocks} consecutive blocks; aborting cycle at rank {record.get('rank')}"
+                    )
             if _is_missing_industry(record.get("industry")):
                 record["industry"] = _cached_industry_for(record.get("ticker", ""), record.get("market", "")) or "미분류"
             record["analyzed_at"] = _now()
@@ -1202,6 +1319,18 @@ def _scraper_loop_worker(
                 last_finished_at=_now(),
                 last_error="",
             )
+        except ScraperCircuitOpen as exc:
+            # Consecutive-block circuit tripped mid-cycle. Keep the partial run's good
+            # rows and enter a long cool-off so the IP reputation can recover.
+            with _LOOP_LOCK:
+                iterations = int(_LOOP_STATE.get("iterations") or 0) + 1
+            _loop_set(
+                state="blocked_waiting",
+                iterations=iterations,
+                last_run_id=live_run_id,
+                last_finished_at=_now(),
+                last_error=f"circuit open (Cloudflare): {str(exc)[:200]}",
+            )
         except Exception as exc:
             with _LOOP_LOCK:
                 iterations = int(_LOOP_STATE.get("iterations") or 0) + 1
@@ -1216,7 +1345,14 @@ def _scraper_loop_worker(
             break
         with _LOOP_LOCK:
             last_state = str(_LOOP_STATE.get("state") or "")
-        wait_sec = AUTO_LOOP_ERROR_BACKOFF_SEC if interval_sec <= 0 and last_state == "error_waiting" else interval_sec
+        if last_state == "blocked_waiting":
+            wait_sec = _jittered(BLOCK_BACKOFF_SEC, BLOCK_BACKOFF_SEC * 0.25)
+        elif last_state == "error_waiting":
+            wait_sec = AUTO_LOOP_ERROR_BACKOFF_SEC if interval_sec <= 0 else interval_sec
+        elif interval_sec > 0:
+            wait_sec = _jittered(interval_sec, AUTO_LOOP_JITTER_SEC)
+        else:
+            wait_sec = 0
         next_run_at = "immediate" if wait_sec <= 0 else (datetime.now() + timedelta(seconds=wait_sec)).strftime("%Y-%m-%d %H:%M:%S")
         _loop_set(next_run_at=next_run_at)
         _LOOP_STOP.wait(wait_sec)
