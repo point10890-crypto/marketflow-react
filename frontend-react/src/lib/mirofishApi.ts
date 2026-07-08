@@ -2159,6 +2159,7 @@ export interface MiroFishScannerAlertEvent {
         change_rate?: number | null;
         date?: string | null;
     } | null;
+    source?: string | null;
 }
 
 export interface MiroFishScannerAlertState {
@@ -2170,6 +2171,12 @@ export interface MiroFishScannerAlertState {
     last_candidate_count?: number | null;
     sent_event_count?: number | null;
     recent_sent_events?: MiroFishScannerAlertEvent[];
+    latest_run_id?: string | null;
+    latest_run_at?: string | null;
+    latest_candidate_count?: number | null;
+    latest_candidate_events?: MiroFishScannerAlertEvent[];
+    feed_event_count?: number | null;
+    feed_events?: MiroFishScannerAlertEvent[];
 }
 
 export interface MiroFishScannerMonitorState {

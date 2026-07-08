@@ -1061,6 +1061,44 @@ def test_alpha_scanner_alert_check_can_defer_state_until_send_success(tmp_path, 
     assert after_commit['new_event_count'] == 0
 
 
+def test_scanner_alert_state_feed_includes_latest_run_candidates(tmp_path, monkeypatch):
+    _seed_artifacts(tmp_path)
+    monkeypatch.setattr(alpha_scanner, 'DATA_ROOT', str(tmp_path))
+    monkeypatch.setattr(alpha_scanner, 'SCANNER_RUNS_ROOT', str(tmp_path / 'runs'))
+    state_path = tmp_path / 'alert_state.json'
+    _write_json(state_path, {
+        'version': 2,
+        'last_checked_at': '2026-05-01T09:00:00+09:00',
+        'last_sent_at': '2026-05-01T09:00:00+09:00',
+        'last_candidate_count': 1,
+        'sent_events': {
+            '999999:BUY_CANDIDATE:2026-05-01': {
+                'sent_at': '2026-05-01T09:00:00+09:00',
+                'run_id': 'old_run',
+                'rank': 1,
+                'symbol': '999999',
+                'display_name': 'Old Event',
+                'market': 'KOSPI',
+                'action': 'BUY_CANDIDATE',
+                'alpha_score': 71,
+                'risk_score': 21,
+                'price': {'current_price': 1000, 'change_rate': 1.0, 'date': '2026-05-01'},
+            },
+        },
+    })
+
+    latest_run = alpha_scanner.create_scanner_run({'limit': 5})
+    state = alpha_scanner.read_scanner_alert_state(str(state_path))
+
+    assert state['recent_sent_events'][0]['symbol'] == '999999'
+    assert state['latest_run_id'] == latest_run['id']
+    assert state['latest_candidate_count'] == latest_run['candidate_count']
+    assert state['latest_candidate_events'][0]['symbol'] == '000001'
+    assert state['latest_candidate_events'][0]['source'] == 'latest_run'
+    assert state['feed_events'][0]['symbol'] == '000001'
+    assert state['feed_events'][0]['run_id'] == latest_run['id']
+
+
 def test_alpha_scanner_alert_check_blocks_stale_core_source_alerts(tmp_path, monkeypatch):
     _seed_artifacts(tmp_path)
     monkeypatch.setattr(alpha_scanner, 'DATA_ROOT', str(tmp_path))

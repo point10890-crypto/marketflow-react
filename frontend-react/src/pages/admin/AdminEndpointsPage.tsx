@@ -2977,7 +2977,7 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
                         </div>
                     </div>
 
-                    <div className={subscriberMode ? 'mt-4 grid min-w-0 gap-4 xl:grid-cols-[minmax(340px,0.72fr)_minmax(440px,0.92fr)_minmax(500px,620px)] xl:items-start' : 'mt-4 max-w-4xl'}>
+                    <div className={subscriberMode ? 'mt-4 grid min-w-0 gap-4 xl:grid-cols-[minmax(260px,0.6fr)_minmax(0,1fr)_minmax(0,1fr)] xl:items-stretch' : 'mt-4 max-w-4xl'}>
                         <div className={`min-w-0 ${subscriberMode ? 'xl:col-start-1 xl:row-start-1' : ''}`}>
                             <h1 className={`${subscriberMode ? 'text-2xl sm:text-3xl' : 'font-serif text-[26px] sm:text-[34px] md:text-[42px] font-medium'} leading-[1.15] tracking-tight text-anthropic-cream`}>
                                 {subscriberMode ? 'AI Brain 검출 대시보드' : (
@@ -3000,8 +3000,8 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
                                 </div>
                             )}
                         </div>
-                        {subscriberMode && <ScannerEventsCard compact maxEvents={3} className="xl:col-start-3 xl:row-start-1" />}
-                        {subscriberMode && <MiroFishFearIndexCard className="min-w-0 xl:col-start-2 xl:row-start-1" variant="compact" />}
+                        {subscriberMode && <ScannerEventsCard compact maxEvents={3} className="h-full xl:col-start-3 xl:row-start-1" />}
+                        {subscriberMode && <MiroFishFearIndexCard className="h-full min-w-0 xl:col-start-2 xl:row-start-1" variant="compact" />}
                     </div>
 
                     {!subscriberMode && <MiroFishFearIndexCard className="mt-5" variant="compact" />}

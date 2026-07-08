@@ -135,15 +135,17 @@ export default function ScannerEventsCard({ className = '', compact = false, max
     }, [load]);
 
     const events = useMemo(() => {
-        const list = alerts?.recent_sent_events ?? [];
+        const list = alerts?.feed_events?.length ? alerts.feed_events : alerts?.recent_sent_events ?? [];
         return [...list]
             .sort((left, right) => String(right.sent_at ?? '').localeCompare(String(left.sent_at ?? '')))
             .slice(0, maxEvents);
     }, [alerts, maxEvents]);
 
-    const eventTime = monitor?.last_checked_at || alerts?.last_sent_at || events[0]?.sent_at || null;
-    const candidateCount = monitor?.last_candidate_count ?? alerts?.last_candidate_count ?? null;
-    const newCount = monitor?.last_new_event_count ?? events.length;
+    const eventTime = events[0]?.sent_at || alerts?.latest_run_at || monitor?.last_checked_at || alerts?.last_sent_at || null;
+    const candidateCount = alerts?.latest_candidate_count ?? monitor?.last_candidate_count ?? alerts?.last_candidate_count ?? null;
+    const monitorNewCount = Number(monitor?.last_new_event_count ?? 0);
+    const feedNewCount = Math.min(events.length, maxEvents);
+    const newCount = monitorNewCount > 0 ? monitorNewCount : feedNewCount;
     const hasNew = Number(newCount) > 0;
 
     return (
