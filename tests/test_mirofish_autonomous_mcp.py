@@ -357,6 +357,60 @@ def test_autonomous_scan_sends_telegram_then_commits_state(isolated_autonomous_p
     assert len(commit_calls) == 1
 
 
+def test_autonomous_scan_commits_state_when_aibain_delivery_succeeds(isolated_autonomous_paths, monkeypatch):
+    monkeypatch.setenv(autonomous_mcp.MUTATION_ENV, 'true')
+    monkeypatch.setenv(autonomous_mcp.SHARED_SECRET_ENV, 'secret-1')
+    monkeypatch.setattr(
+        autonomous_mcp.workflow,
+        'start_workflow_from_scanner_events',
+        lambda *args, **kwargs: _workflow_result(),
+    )
+    monkeypatch.setattr(
+        autonomous_mcp.workflow,
+        'build_workflow_top3_telegram_message',
+        lambda result: '<b>MiroFish Top 1</b>',
+    )
+    commit_calls = []
+    monkeypatch.setattr(
+        autonomous_mcp.workflow,
+        'commit_workflow_event_state',
+        lambda result: commit_calls.append(result) or {'committed': True},
+    )
+    monkeypatch.setattr(
+        autonomous_mcp,
+        'refresh_learning_feedback',
+        lambda payload: {
+            'generated_at': '2026-05-10T00:00:00+00:00',
+            'workflow_count': 1,
+            'evaluated_count': 1,
+            'hit_rate_pct': 100.0,
+            'average_forward_return_pct': 8.0,
+            'production_weights_mutated': False,
+            'recommendations': [],
+        },
+    )
+    from app.utils import aibain_notify
+    monkeypatch.setattr(aibain_notify, 'send_workflow_top3', lambda message: True)
+
+    result = autonomous_mcp.run_autonomous_scan_analysis(
+        {
+            'dry_run': False,
+            'sync': True,
+            'send_telegram': True,
+            'confirmation': autonomous_mcp.CONFIRM_SEND_PHRASE,
+            'api_key': 'secret-1',
+            'commit_event_state': True,
+        },
+        send_fn=lambda message: False,
+    )
+
+    assert result['status'] == 'completed'
+    assert result['telegram_sent'] is False
+    assert result['aibain_sent'] is True
+    assert result['event_state_committed'] is True
+    assert len(commit_calls) == 1
+
+
 def test_learning_feedback_is_advisory_and_lookahead_safe(isolated_autonomous_paths, monkeypatch):
     monkeypatch.setenv(autonomous_mcp.MUTATION_ENV, 'true')
     monkeypatch.setattr(

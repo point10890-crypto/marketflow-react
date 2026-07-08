@@ -446,14 +446,14 @@ def test_build_workflow_top3_telegram_message_names_exact_targets():
     assert 'Forward check' not in message
 
 
-def test_commit_workflow_event_state_uses_workflow_state_file(tmp_path, monkeypatch):
+def test_commit_workflow_event_state_mirrors_dashboard_alert_state(tmp_path, monkeypatch):
     candidate = _candidate('000001', 'Alpha One', 80, 20, 1)
     monkeypatch.setattr(workflow, 'WORKFLOWS_ROOT', str(tmp_path / 'workflows'))
     monkeypatch.setattr(workflow, 'WORKFLOW_STATE_ROOT', str(tmp_path / 'workflows' / '_state'))
-    captured = {}
+    captured = []
 
     def fake_commit(result):
-        captured.update(result)
+        captured.append(result)
         return {'sent_event_count': len(result['events'])}
 
     monkeypatch.setattr(workflow.alpha_scanner, 'commit_scanner_alert_events', fake_commit)
@@ -469,9 +469,42 @@ def test_commit_workflow_event_state_uses_workflow_state_file(tmp_path, monkeypa
     })
 
     assert state == {'sent_event_count': 1}
-    assert captured['state_path'].endswith('scanner_event_state.json')
-    assert captured['run']['id'] == 'mfas_test'
-    assert captured['events'][0]['event_key'] == '000001:BUY_CANDIDATE:2026-05-07'
+    assert len(captured) == 2
+    assert captured[0]['state_path'].endswith('scanner_event_state.json')
+    assert 'state_path' not in captured[1]
+    assert captured[0]['run']['id'] == 'mfas_test'
+    assert captured[1]['run']['id'] == 'mfas_test'
+    assert captured[0]['events'][0]['event_key'] == '000001:BUY_CANDIDATE:2026-05-07'
+    assert captured[1]['events'][0]['event_key'] == '000001:BUY_CANDIDATE:2026-05-07'
+
+
+def test_commit_workflow_event_state_can_skip_dashboard_sync(tmp_path, monkeypatch):
+    candidate = _candidate('000001', 'Alpha One', 80, 20, 1)
+    monkeypatch.setattr(workflow, 'WORKFLOWS_ROOT', str(tmp_path / 'workflows'))
+    monkeypatch.setattr(workflow, 'WORKFLOW_STATE_ROOT', str(tmp_path / 'workflows' / '_state'))
+    captured = []
+
+    def fake_commit(result):
+        captured.append(result)
+        return {'sent_event_count': len(result['events'])}
+
+    monkeypatch.setattr(workflow.alpha_scanner, 'commit_scanner_alert_events', fake_commit)
+
+    workflow.commit_workflow_event_state(
+        {
+            'id': 'mcp_test123',
+            'created_at': '2026-05-07T12:00:00+00:00',
+            'scanner_run_id': 'mfas_test',
+            'scanner_candidate_count': 1,
+            'event_count': 1,
+            'candidates': [candidate],
+            'top3': [],
+        },
+        sync_dashboard=False,
+    )
+
+    assert len(captured) == 1
+    assert captured[0]['state_path'].endswith('scanner_event_state.json')
 
 
 def test_admin_mirofish_workflow_routes_are_registered():

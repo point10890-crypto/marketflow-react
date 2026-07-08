@@ -555,8 +555,18 @@ def build_workflow_top3_telegram_message(workflow: dict[str, Any]) -> str:
     return '\n'.join(lines)
 
 
-def commit_workflow_event_state(workflow: dict[str, Any] | str) -> dict[str, Any]:
-    """Commit scanner-event state after a workflow result is successfully handled."""
+def commit_workflow_event_state(
+    workflow: dict[str, Any] | str,
+    *,
+    sync_dashboard: bool = True,
+) -> dict[str, Any]:
+    """Commit scanner-event state after a workflow result is successfully handled.
+
+    Workflow automation uses its own dedupe state so GraphRAG Top3 processing
+    does not re-trigger on the same candidates. The AI Brain dashboard, however,
+    reads the alpha-scanner alert state. When a workflow alert is actually
+    delivered, mirror the same event snapshots into that dashboard state too.
+    """
     record = read_workflow(workflow) if isinstance(workflow, str) else workflow
     if not isinstance(record, dict):
         raise ValueError('workflow not found')
@@ -565,8 +575,7 @@ def commit_workflow_event_state(workflow: dict[str, Any] | str) -> dict[str, Any
         for candidate in (record.get('candidates') or [])
         if isinstance(candidate, dict)
     ]
-    result = {
-        'state_path': _event_state_path(),
+    base_result = {
         'run': {
             'id': record.get('scanner_run_id'),
             'generated_at': record.get('created_at'),
@@ -574,10 +583,25 @@ def commit_workflow_event_state(workflow: dict[str, Any] | str) -> dict[str, Any
         },
         'events': [_candidate_event(candidate) for candidate in candidates],
     }
-    state = alpha_scanner.commit_scanner_alert_events(result)
+    workflow_state_result = {
+        **base_result,
+        'state_path': _event_state_path(),
+    }
+    state = alpha_scanner.commit_scanner_alert_events(workflow_state_result)
     record['event_state_committed'] = True
     record['event_state_committed_at'] = datetime.now(timezone.utc).isoformat()
     record['event_state'] = state
+    if sync_dashboard:
+        dashboard_state = alpha_scanner.commit_scanner_alert_events(base_result)
+        record['dashboard_event_state_committed'] = True
+        record['dashboard_event_state_committed_at'] = datetime.now(timezone.utc).isoformat()
+        record['dashboard_event_state'] = {
+            'sent_event_count': dashboard_state.get('sent_event_count'),
+            'feed_event_count': dashboard_state.get('feed_event_count'),
+            'last_sent_at': dashboard_state.get('last_sent_at'),
+        }
+    else:
+        record['dashboard_event_state_committed'] = False
     _write_workflow(record)
     return state
 

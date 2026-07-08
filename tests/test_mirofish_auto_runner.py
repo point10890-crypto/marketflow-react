@@ -110,7 +110,11 @@ def test_auto_runner_quality_hold_commits_events_without_telegram(monkeypatch):
         },
     )
     commit_calls = []
-    monkeypatch.setattr(auto_runner.workflow_svc, 'commit_workflow_event_state', lambda result: commit_calls.append(result) or {})
+    monkeypatch.setattr(
+        auto_runner.workflow_svc,
+        'commit_workflow_event_state',
+        lambda result, **kwargs: commit_calls.append((result, kwargs)) or {},
+    )
     monkeypatch.setattr(
         auto_runner.workflow_svc,
         'build_workflow_top3_telegram_message',
@@ -126,6 +130,7 @@ def test_auto_runner_quality_hold_commits_events_without_telegram(monkeypatch):
     assert result['telegram_ok'] is False
     assert result['quality_reason'] == 'best_score_below_floor'
     assert commit_calls
+    assert commit_calls[0][1] == {'sync_dashboard': False}
     assert any(item.get('history', {}).get('outcome') == 'quality_hold' for item in writes)
 
 

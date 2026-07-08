@@ -494,7 +494,7 @@ def _fire_workflow(tuning: dict[str, Any], gates: dict[str, Any], cycle_record: 
     if not should_notify:
         if workflow_id:
             try:
-                workflow_svc.commit_workflow_event_state(result)
+                workflow_svc.commit_workflow_event_state(result, sync_dashboard=False)
             except Exception as exc:
                 logger.warning(f'[auto_runner] commit low-quality workflow state failed: {exc}')
         _record_quality_hold(cycle_record, started, notify_reason, tuning, top3_count=len(top3))
@@ -543,7 +543,9 @@ def _fire_workflow(tuning: dict[str, Any], gates: dict[str, Any], cycle_record: 
     cycle_record['telegram_ok'] = telegram_ok
     cycle_record['aibain_ok'] = aibain_ok
 
-    if telegram_ok and workflow_id:
+    delivered = bool(telegram_ok or aibain_ok)
+
+    if delivered and workflow_id:
         # Commit event state so the same candidates don't trigger again
         try:
             workflow_svc.commit_workflow_event_state(result)
@@ -567,14 +569,14 @@ def _fire_workflow(tuning: dict[str, Any], gates: dict[str, Any], cycle_record: 
             logger.debug(f'[auto_runner] deep enrich build failed: {exc}')
 
     # Mark success/failure + transition
-    if telegram_ok:
+    if delivered:
         _record_success(cycle_record, started, tuning, top3_count=len(top3))
     else:
         _record_failure(cycle_record, started, 'telegram_send_failed', tuning)
 
     return {
         'fired': True,
-        'success': telegram_ok,
+        'success': delivered,
         'workflow_id': workflow_id,
         'top3_count': len(top3),
         'telegram_ok': telegram_ok,

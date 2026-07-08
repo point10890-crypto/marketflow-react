@@ -497,12 +497,14 @@ def run_autonomous_scan_analysis(
                 except Exception as exc:
                     result['aibain_sent'] = False
                     result['aibain_error'] = f'{type(exc).__name__}: {exc}'
+                    aibain_sent = False
+                delivered = bool(ok or aibain_sent)
                 result['telegram_sent'] = ok
-                result['telegram_sent_at'] = _now_iso() if ok else None
-                if ok and commit_event_state:
+                result['telegram_sent_at'] = _now_iso() if delivered else None
+                if delivered and commit_event_state:
                     result['event_state'] = workflow.commit_workflow_event_state(result)
                     result['event_state_committed'] = True
-                elif not ok:
+                elif not delivered:
                     result['ok'] = False
                     result['status'] = 'telegram_send_failed'
             elif commit_event_state:
@@ -1213,6 +1215,7 @@ def _summarize_workflow_result(result: dict[str, Any]) -> dict[str, Any]:
         'top_symbols': [item.get('symbol') for item in top3],
         'top_names': [item.get('target') for item in top3],
         'telegram_sent': bool(result.get('telegram_sent')),
+        'aibain_sent': bool(result.get('aibain_sent')),
         'telegram_skipped_reason': result.get('telegram_skipped_reason'),
         'event_state_committed': bool(result.get('event_state_committed')),
         'outcome_status': result.get('outcome_status'),
