@@ -2977,7 +2977,7 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
                         </div>
                     </div>
 
-                    <div className={subscriberMode ? 'mt-4 grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(420px,520px)] xl:items-start' : 'mt-4 max-w-4xl'}>
+                    <div className={subscriberMode ? 'mt-4 grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(420px,520px)] xl:items-start' : 'mt-4 max-w-4xl'}>
                         <div className="min-w-0">
                             <h1 className={`${subscriberMode ? 'text-2xl sm:text-3xl' : 'font-serif text-[26px] sm:text-[34px] md:text-[42px] font-medium'} leading-[1.15] tracking-tight text-anthropic-cream`}>
                                 {subscriberMode ? 'AI Brain 검출 대시보드' : (

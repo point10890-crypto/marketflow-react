@@ -129,7 +129,7 @@ export default function ScannerEventsCard({ className = '', compact = false, max
     const hasNew = Number(newCount) > 0;
 
     return (
-        <section className={`rounded-2xl border border-cyan-300/18 bg-[#0d1824] ${compact ? 'p-3' : 'p-4'} shadow-[0_18px_70px_rgba(8,145,178,0.09)] ${className}`}>
+        <section className={`w-full min-w-0 overflow-hidden rounded-2xl border border-cyan-300/18 bg-[#0d1824] ${compact ? 'p-3' : 'p-4'} shadow-[0_18px_70px_rgba(8,145,178,0.09)] ${className}`}>
             <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                     <div className="text-[10px] font-black uppercase tracking-[0.22em] text-cyan-200/75">Alpha Scanner Feed</div>
@@ -154,18 +154,18 @@ export default function ScannerEventsCard({ className = '', compact = false, max
                 </button>
             </div>
 
-            <div className="mt-3 flex flex-wrap gap-2">
-                <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs font-bold text-slate-200">
+            <div className="mt-3 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+                <span className="col-span-2 min-w-0 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs font-bold text-slate-200 sm:col-span-1">
                     시각 <span className="font-mono text-white">{fmtKST(eventTime)}</span>
                 </span>
-                <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs font-bold text-slate-200">
+                <span className="min-w-0 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs font-bold text-slate-200">
                     최종 후보 <span className="font-mono text-white">{candidateCount ?? '--'}</span>개
                 </span>
-                <span className={`rounded-full border px-3 py-1 text-xs font-bold ${hasNew ? 'border-emerald-300/30 bg-emerald-300/12 text-emerald-200' : 'border-white/10 bg-white/[0.04] text-slate-300'}`}>
+                <span className={`min-w-0 rounded-full border px-3 py-1 text-xs font-bold ${hasNew ? 'border-emerald-300/30 bg-emerald-300/12 text-emerald-200' : 'border-white/10 bg-white/[0.04] text-slate-300'}`}>
                     신규 <span className="font-mono">{newCount ?? 0}</span>개
                 </span>
                 {monitor?.last_status && (
-                    <span className={`rounded-full border px-3 py-1 text-xs font-bold ${statusTone(monitor.last_status)}`}>
+                    <span className={`col-span-2 min-w-0 rounded-full border px-3 py-1 text-xs font-bold sm:col-span-1 ${statusTone(monitor.last_status)}`}>
                         {STATUS_LABELS[monitor.last_status] || monitor.last_status}
                     </span>
                 )}
@@ -210,7 +210,7 @@ function ScannerEventRow({ event, compact = false }: { event: MiroFishScannerAle
                 <div className="min-w-0">
                     <div className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-1">
                         <span className="font-mono text-xs font-black text-cyan-200">{event.symbol || '--'}</span>
-                        <span className="truncate text-sm font-black text-white">{event.display_name || event.symbol || '이름 없음'}</span>
+                        <span className="min-w-0 max-w-full flex-1 truncate text-sm font-black text-white">{event.display_name || event.symbol || '이름 없음'}</span>
                         {event.market && <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">{event.market}</span>}
                     </div>
                     <div className="mt-1 flex flex-wrap items-center gap-2 text-xs font-bold">
