@@ -183,12 +183,13 @@ if ($after.Alive) {
     Write-Log "Restart confirmed - Flask healthy. (telegram suppressed)"
 } else {
     Write-Log ("Restart FAILED - still: " + $after.Reason)
-    # FAILURE 만 영문으로 (인코딩 깨짐 방지) 전송 — 진짜 장애는 알아야 함.
-    $message = @(
-        "[ALERT] Flask watchdog FAILED"
-        ("reason: " + $status.Reason)
-        ("after_restart: " + $after.Reason)
-        "manual check required"
-    ) -join "`n"
-    Send-Telegram $message
+    # FAILURE 텔레그램 알림 비활성화 (사용자 요청 2026-07-09 — 반복 알림 중단).
+    # watchdog 의 재기동 시도 자체는 그대로 유지, 로그만 남김.
+    # $message = @(
+    #     "[ALERT] Flask watchdog FAILED"
+    #     ("reason: " + $status.Reason)
+    #     ("after_restart: " + $after.Reason)
+    #     "manual check required"
+    # ) -join "`n"
+    # Send-Telegram $message
 }
