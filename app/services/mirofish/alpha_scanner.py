@@ -3813,6 +3813,7 @@ def _update_alert_state(
         'last_sent_at': last_sent_at,
         'last_run_id': run.get('id'),
         'last_candidate_count': run.get('candidate_count'),
+        'last_new_event_count': len(events),
         'sent_events': sent_events,
         'history': history,
     }
@@ -4096,6 +4097,7 @@ def _alert_state_summary(
         'last_sent_at': state.get('last_sent_at') or _latest_alert_sent_at(recent),
         'last_run_id': state.get('last_run_id'),
         'last_candidate_count': state.get('last_candidate_count'),
+        'last_new_event_count': state.get('last_new_event_count'),
         'sent_event_count': len(sent_events),
         'recent_sent_events': recent,
         'latest_run_id': (latest_run or {}).get('id'),

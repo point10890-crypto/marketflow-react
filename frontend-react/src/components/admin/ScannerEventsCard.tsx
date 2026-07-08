@@ -150,8 +150,8 @@ export default function ScannerEventsCard({ className = '', compact = false, max
     }, [alerts, maxEvents]);
 
     const eventTime = events[0]?.sent_at || alerts?.latest_run_at || monitor?.last_checked_at || alerts?.last_sent_at || null;
-    const candidateCount = alerts?.latest_candidate_count ?? monitor?.last_candidate_count ?? alerts?.last_candidate_count ?? null;
-    const newCount = alerts?.latest_new_event_count ?? monitor?.last_new_event_count ?? 0;
+    const candidateCount = alerts?.last_candidate_count ?? monitor?.last_candidate_count ?? alerts?.latest_candidate_count ?? null;
+    const newCount = alerts?.last_new_event_count ?? alerts?.latest_new_event_count ?? monitor?.last_new_event_count ?? 0;
     const hasNew = Number(newCount) > 0;
 
     return (
