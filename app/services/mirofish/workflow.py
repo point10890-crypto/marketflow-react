@@ -592,14 +592,26 @@ def commit_workflow_event_state(
     record['event_state_committed_at'] = datetime.now(timezone.utc).isoformat()
     record['event_state'] = state
     if sync_dashboard:
-        dashboard_state = alpha_scanner.commit_scanner_alert_events(base_result)
-        record['dashboard_event_state_committed'] = True
-        record['dashboard_event_state_committed_at'] = datetime.now(timezone.utc).isoformat()
-        record['dashboard_event_state'] = {
-            'sent_event_count': dashboard_state.get('sent_event_count'),
-            'feed_event_count': dashboard_state.get('feed_event_count'),
-            'last_sent_at': dashboard_state.get('last_sent_at'),
-        }
+        dashboard_events = [
+            event for event in base_result['events']
+            if str((event.get('candidate') or {}).get('action') or '').upper() == 'BUY_CANDIDATE'
+        ]
+        if dashboard_events:
+            dashboard_result = {
+                **base_result,
+                'events': dashboard_events,
+            }
+            dashboard_state = alpha_scanner.commit_scanner_alert_events(dashboard_result)
+            record['dashboard_event_state_committed'] = True
+            record['dashboard_event_state_committed_at'] = datetime.now(timezone.utc).isoformat()
+            record['dashboard_event_state'] = {
+                'sent_event_count': dashboard_state.get('sent_event_count'),
+                'feed_event_count': dashboard_state.get('feed_event_count'),
+                'last_sent_at': dashboard_state.get('last_sent_at'),
+            }
+        else:
+            record['dashboard_event_state_committed'] = False
+            record['dashboard_event_state_skipped_reason'] = 'no_buy_candidate_events'
     else:
         record['dashboard_event_state_committed'] = False
     _write_workflow(record)

@@ -135,15 +135,11 @@ export default function ScannerEventsCard({ className = '', compact = false, max
     }, [load]);
 
     const events = useMemo(() => {
-        // feed_events / latest_new_events are recency-windowed server-side (see
-        // SCANNER_FEED_MAX_AGE_HOURS in alpha_scanner.py) so this only reaches
-        // recent_sent_events — the full unfiltered audit trail — on a genuine dry
-        // spell where nothing has fired within the window.
-        const list = alerts?.feed_events?.length
+        // feed_events is the server-filtered, delivered BUY event feed. Only use
+        // recent_sent_events for older API payloads that do not expose feed_events.
+        const list = Array.isArray(alerts?.feed_events)
             ? alerts.feed_events
-            : alerts?.latest_new_events?.length
-                ? alerts.latest_new_events
-                : alerts?.recent_sent_events ?? [];
+            : alerts?.recent_sent_events ?? [];
         return [...list]
             .sort((left, right) => String(right.sent_at ?? '').localeCompare(String(left.sent_at ?? '')))
             .slice(0, maxEvents);

@@ -478,6 +478,69 @@ def test_commit_workflow_event_state_mirrors_dashboard_alert_state(tmp_path, mon
     assert captured[1]['events'][0]['event_key'] == '000001:BUY_CANDIDATE:2026-05-07'
 
 
+def test_commit_workflow_event_state_keeps_watch_out_of_dashboard_alert_state(tmp_path, monkeypatch):
+    buy = _candidate('000001', 'Alpha One', 80, 20, 1)
+    watch = _candidate('000002', 'Watch Two', 74, 45, 2, action='WATCH')
+    monkeypatch.setattr(workflow, 'WORKFLOWS_ROOT', str(tmp_path / 'workflows'))
+    monkeypatch.setattr(workflow, 'WORKFLOW_STATE_ROOT', str(tmp_path / 'workflows' / '_state'))
+    captured = []
+
+    def fake_commit(result):
+        captured.append(result)
+        return {'sent_event_count': len(result['events'])}
+
+    monkeypatch.setattr(workflow.alpha_scanner, 'commit_scanner_alert_events', fake_commit)
+
+    workflow.commit_workflow_event_state({
+        'id': 'mcp_test123',
+        'created_at': '2026-05-07T12:00:00+00:00',
+        'scanner_run_id': 'mfas_test',
+        'scanner_candidate_count': 2,
+        'event_count': 2,
+        'candidates': [buy, watch],
+        'top3': [],
+    })
+
+    assert len(captured) == 2
+    assert [event['event_key'] for event in captured[0]['events']] == [
+        '000001:BUY_CANDIDATE:2026-05-07',
+        '000002:WATCH:2026-05-07',
+    ]
+    assert [event['event_key'] for event in captured[1]['events']] == [
+        '000001:BUY_CANDIDATE:2026-05-07',
+    ]
+
+
+def test_commit_workflow_event_state_skips_dashboard_sync_for_watch_only(tmp_path, monkeypatch):
+    watch = _candidate('000002', 'Watch Two', 74, 45, 1, action='WATCH')
+    monkeypatch.setattr(workflow, 'WORKFLOWS_ROOT', str(tmp_path / 'workflows'))
+    monkeypatch.setattr(workflow, 'WORKFLOW_STATE_ROOT', str(tmp_path / 'workflows' / '_state'))
+    captured = []
+
+    def fake_commit(result):
+        captured.append(result)
+        return {'sent_event_count': len(result['events'])}
+
+    monkeypatch.setattr(workflow.alpha_scanner, 'commit_scanner_alert_events', fake_commit)
+
+    workflow.commit_workflow_event_state({
+        'id': 'mcp_test123',
+        'created_at': '2026-05-07T12:00:00+00:00',
+        'scanner_run_id': 'mfas_test',
+        'scanner_candidate_count': 1,
+        'event_count': 1,
+        'candidates': [watch],
+        'top3': [],
+    })
+
+    persisted = workflow.read_workflow('mcp_test123')
+
+    assert len(captured) == 1
+    assert captured[0]['state_path'].endswith('scanner_event_state.json')
+    assert persisted['dashboard_event_state_committed'] is False
+    assert persisted['dashboard_event_state_skipped_reason'] == 'no_buy_candidate_events'
+
+
 def test_commit_workflow_event_state_can_skip_dashboard_sync(tmp_path, monkeypatch):
     candidate = _candidate('000001', 'Alpha One', 80, 20, 1)
     monkeypatch.setattr(workflow, 'WORKFLOWS_ROOT', str(tmp_path / 'workflows'))

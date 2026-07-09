@@ -1061,19 +1061,20 @@ def test_alpha_scanner_alert_check_can_defer_state_until_send_success(tmp_path, 
     assert after_commit['new_event_count'] == 0
 
 
-def test_scanner_alert_state_feed_includes_latest_run_candidates(tmp_path, monkeypatch):
+def test_scanner_alert_state_keeps_pending_latest_run_out_of_feed(tmp_path, monkeypatch):
     _seed_artifacts(tmp_path)
     monkeypatch.setattr(alpha_scanner, 'DATA_ROOT', str(tmp_path))
     monkeypatch.setattr(alpha_scanner, 'SCANNER_RUNS_ROOT', str(tmp_path / 'runs'))
     state_path = tmp_path / 'alert_state.json'
+    sent_at = (datetime.now(timezone.utc) - timedelta(hours=2)).isoformat()
     _write_json(state_path, {
         'version': 2,
-        'last_checked_at': '2026-05-01T09:00:00+09:00',
-        'last_sent_at': '2026-05-01T09:00:00+09:00',
+        'last_checked_at': sent_at,
+        'last_sent_at': sent_at,
         'last_candidate_count': 1,
         'sent_events': {
             '999999:BUY_CANDIDATE:2026-05-01': {
-                'sent_at': '2026-05-01T09:00:00+09:00',
+                'sent_at': sent_at,
                 'run_id': 'old_run',
                 'rank': 1,
                 'symbol': '999999',
@@ -1099,8 +1100,8 @@ def test_scanner_alert_state_feed_includes_latest_run_candidates(tmp_path, monke
     assert state['latest_new_events'][0]['symbol'] == '000001'
     assert state['latest_new_events'][0]['source'] == 'latest_run_new'
     assert state['latest_new_events'][0]['pending_commit'] is True
-    assert state['feed_events'][0]['symbol'] == '000001'
-    assert state['feed_events'][0]['run_id'] == latest_run['id']
+    assert state['feed_events'][0]['symbol'] == '999999'
+    assert state['feed_events'][0]['run_id'] == 'old_run'
 
 
 def test_scanner_alert_state_keeps_recent_cache_without_recreating_sent_latest_run(tmp_path, monkeypatch):
@@ -1141,6 +1142,52 @@ def test_scanner_alert_state_keeps_recent_cache_without_recreating_sent_latest_r
     assert state['recent_sent_events'][0]['symbol'] == '000001'
     assert state['feed_events'][0]['symbol'] == '000001'
     assert state['feed_events'][0].get('pending_commit') is None
+
+
+def test_scanner_alert_state_feed_excludes_recent_watch_events(tmp_path, monkeypatch):
+    _seed_artifacts(tmp_path)
+    monkeypatch.setattr(alpha_scanner, 'DATA_ROOT', str(tmp_path))
+    monkeypatch.setattr(alpha_scanner, 'SCANNER_RUNS_ROOT', str(tmp_path / 'runs'))
+    state_path = tmp_path / 'alert_state.json'
+    buy_sent_at = (datetime.now(timezone.utc) - timedelta(hours=2)).isoformat()
+    watch_sent_at = (datetime.now(timezone.utc) - timedelta(minutes=10)).isoformat()
+    _write_json(state_path, {
+        'version': 2,
+        'last_checked_at': watch_sent_at,
+        'last_sent_at': watch_sent_at,
+        'last_candidate_count': 2,
+        'sent_events': {
+            '000001:BUY_CANDIDATE:2026-05-03': {
+                'sent_at': buy_sent_at,
+                'run_id': 'mfas_buy_run',
+                'rank': 1,
+                'symbol': '000001',
+                'display_name': 'Alpha One',
+                'market': 'KOSPI',
+                'action': 'BUY_CANDIDATE',
+                'alpha_score': 80,
+                'risk_score': 20,
+                'price': {'current_price': 108, 'change_rate': 8.0, 'date': '2026-05-03'},
+            },
+            '000002:WATCH:2026-05-03': {
+                'sent_at': watch_sent_at,
+                'run_id': 'mfas_watch_run',
+                'rank': 2,
+                'symbol': '000002',
+                'display_name': 'Watch Two',
+                'market': 'KOSPI',
+                'action': 'WATCH',
+                'alpha_score': 74,
+                'risk_score': 55,
+                'price': {'current_price': 205, 'change_rate': 4.0, 'date': '2026-05-03'},
+            },
+        },
+    })
+
+    state = alpha_scanner.read_scanner_alert_state(str(state_path))
+
+    assert state['recent_sent_events'][0]['symbol'] == '000002'
+    assert [event['symbol'] for event in state['feed_events']] == ['000001']
 
 
 def test_scanner_alert_state_excludes_stale_events_from_feed(tmp_path, monkeypatch):

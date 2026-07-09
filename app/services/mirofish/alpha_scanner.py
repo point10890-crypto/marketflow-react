@@ -3855,12 +3855,7 @@ def _alert_event_snapshot(event: dict[str, Any], run: dict[str, Any], *, sent_at
 
 
 def _latest_run_candidate_events(run: dict[str, Any] | None, *, limit: int = 20) -> list[dict[str, Any]]:
-    """Expose latest scanner-run candidates as dashboard feed rows.
-
-    Alert state only records committed Telegram-send events. The dashboard feed
-    also needs to reflect the newest scanner run so a successful alert sender
-    cannot leave the widget pinned to older sent-event snapshots.
-    """
+    """Expose latest scanner-run candidates as dashboard diagnostics."""
     if not isinstance(run, dict):
         return []
     generated_at = run.get('generated_at') or run.get('created_at')
@@ -4071,6 +4066,11 @@ def _entry_recent_enough(
     return age_hours <= max_age_hours
 
 
+def _is_dashboard_feed_event(entry: dict[str, Any]) -> bool:
+    """Return whether a committed alert should appear in the subscriber feed."""
+    return str(entry.get('action') or '').upper() == 'BUY_CANDIDATE'
+
+
 def _alert_state_summary(
     state: dict[str, Any],
     state_file: str,
@@ -4088,8 +4088,9 @@ def _alert_state_summary(
     recent_for_feed = [
         entry for entry in recent
         if _entry_recent_enough(entry, max_age_hours=SCANNER_FEED_MAX_AGE_HOURS, now=now)
+        and _is_dashboard_feed_event(entry)
     ]
-    feed = _merge_alert_history(recent_for_feed, latest_new, limit=20)
+    feed = _merge_alert_history(recent_for_feed, [], limit=20)
     return {
         'state_path': state_file,
         'version': state.get('version', 1),
