@@ -1643,6 +1643,37 @@ def run_lotto_analysis():
         return False
 
 
+def run_lotto_analysis_bounded():
+    """Run lotto posting in a child process so provider hangs cannot block the scheduler."""
+    logger.info("Starting bounded AI lotto analysis post")
+    try:
+        script_path = os.path.join(Config.BASE_DIR, 'scripts', 'lotto_analysis.py')
+        timeout_sec = int(os.environ.get('LOTTO_JOB_TIMEOUT_SEC', '1200'))
+        completed = subprocess.run(
+            [Config.PYTHON_PATH, script_path],
+            cwd=Config.BASE_DIR,
+            timeout=timeout_sec,
+            check=False,
+        )
+        if completed.returncode == 0:
+            logger.info("AI lotto analysis completed or an existing post was confirmed")
+            send_telegram("AI lotto analysis task completed. Check the community post.", channel=False)
+            return True
+        logger.warning("AI lotto analysis failed (exit=%s)", completed.returncode)
+        return False
+    except subprocess.TimeoutExpired:
+        logger.error("AI lotto analysis timed out; the child process was terminated")
+        send_telegram(
+            "AI lotto analysis timed out. Automatic retry and Saturday recovery are enabled.",
+            channel=False,
+        )
+        return False
+    except Exception as e:
+        logger.error("AI lotto analysis failed: %s", e, exc_info=True)
+        send_telegram(f"AI lotto analysis failed: {str(e)[:200]}", channel=False)
+        return False
+
+
 def update_jongga_v2():
     """종가베팅 V2 데이터 업데이트 + S/A급 텔레그램 전송
 
@@ -3652,8 +3683,11 @@ class Scheduler:
 
         # 금요일 17:00 — AI 로또 분석 게시
         schedule.every().friday.at(Config.LOTTO_POST_TIME).do(
-            self._with_record(run_lotto_analysis, 'lotto_analysis',
+            self._with_record(run_lotto_analysis_bounded, 'lotto_analysis',
                               max_retries=1, retry_delay=1800))
+        schedule.every().saturday.at('09:00').do(
+            self._with_record(run_lotto_analysis_bounded, 'lotto_analysis_recovery',
+                              max_retries=2, retry_delay=900))
 
         # 토요일 히스토리 수집
         schedule.every().saturday.at(Config.HISTORY_TIME).do(

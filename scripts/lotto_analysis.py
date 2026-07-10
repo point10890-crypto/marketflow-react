@@ -1342,8 +1342,9 @@ def main():
     parser = argparse.ArgumentParser(description="AI 로또 분석 — 통계 기반 추천 + Gemini 해석 + 자동 게시")
     parser.add_argument('--dry-run', action='store_true', help='분석만 하고 게시하지 않음')
     args = parser.parse_args()
-    run_lotto_analysis_post(dry_run=args.dry_run)
+    result = run_lotto_analysis_post(dry_run=args.dry_run)
+    return 0 if result else 1
 
 
 if __name__ == '__main__':
-    main()
+    raise SystemExit(main())

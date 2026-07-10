@@ -521,3 +521,39 @@ def test_scheduler_registers_alpha_backtest_daily(monkeypatch):
         assert str(jobs[0].at_time) == "23:11:00"
     finally:
         scheduler.schedule.clear()
+
+
+def test_lotto_runner_uses_bounded_subprocess(monkeypatch):
+    completed = SimpleNamespace(returncode=0)
+    run_calls = []
+
+    def fake_run(cmd, **kwargs):
+        run_calls.append((cmd, kwargs))
+        return completed
+
+    monkeypatch.setattr(scheduler.subprocess, "run", fake_run)
+    monkeypatch.setattr(scheduler, "send_telegram", lambda *args, **kwargs: True)
+    monkeypatch.setattr(scheduler.Config, "PYTHON_PATH", "python-test")
+
+    assert scheduler.run_lotto_analysis_bounded() is True
+    cmd, kwargs = run_calls[0]
+    assert cmd[0] == "python-test"
+    assert cmd[1].endswith("scripts\\lotto_analysis.py") or cmd[1].endswith("scripts/lotto_analysis.py")
+    assert kwargs["timeout"] == 1200
+    assert kwargs["check"] is False
+
+
+def test_scheduler_registers_saturday_lotto_recovery(monkeypatch):
+    scheduler.schedule.clear()
+    monkeypatch.setattr(scheduler.Config, "ALPHA_SCANNER_ENABLED", False)
+
+    try:
+        scheduler.Scheduler().setup_schedules()
+        jobs = [
+            job for job in scheduler.schedule.jobs
+            if job.job_func.__name__ == "run_lotto_analysis_bounded[lotto_analysis_recovery]"
+        ]
+        assert len(jobs) == 1
+        assert str(jobs[0].at_time) == "09:00:00"
+    finally:
+        scheduler.schedule.clear()
