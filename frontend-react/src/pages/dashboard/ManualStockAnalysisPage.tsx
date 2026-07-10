@@ -220,6 +220,7 @@ export default function ManualStockAnalysisPage() {
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState('');
     const loopRunRef = useRef('');
+    const hasManualRunSelectionRef = useRef(false);
 
     const selectedRun = useMemo(
         () => runs.find((run) => run.run_id === selectedRunId) || null,
@@ -310,11 +311,12 @@ export default function ManualStockAnalysisPage() {
             if (!res.ok) return;
             const data: ScraperLoopStatus = await res.json();
             setLoopStatus(data);
-            if (data.running && data.last_run_id && selectedRunId !== data.last_run_id) {
+            if (data.running && data.last_run_id && !hasManualRunSelectionRef.current && selectedRunId !== data.last_run_id) {
                 setSelectedResult('all');
                 setQuery('');
             }
-            if (data.running && data.last_run_id && (data.last_run_id !== loopRunRef.current || selectedRunId !== data.last_run_id)) {
+            if (data.running && data.last_run_id && !hasManualRunSelectionRef.current
+                && (data.last_run_id !== loopRunRef.current || selectedRunId !== data.last_run_id)) {
                 await fetchRuns(data.last_run_id);
                 loopRunRef.current = data.last_run_id;
             } else if (!data.running) {
@@ -425,6 +427,7 @@ export default function ManualStockAnalysisPage() {
     }, [summary]);
 
     const selectHistoryRun = (runId: string) => {
+        hasManualRunSelectionRef.current = true;
         setSelectedRunId(runId);
         setSelectedResult('all');
         setQuery('');
