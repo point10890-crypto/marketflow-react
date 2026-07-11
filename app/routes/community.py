@@ -134,9 +134,42 @@ def _validate_image_content(file_data: bytes, claimed_ext: str) -> bool:
 def list_boards():
     user = _get_current_user()
     boards = Board.query.filter_by(is_active=True).order_by(Board.sort_order).all()
+    board_ids = [board.id for board in boards]
+    visible_posts = (
+        Post.query
+        .with_entities(Post.id, Post.board_id, Post.title, Post.created_at, Post.updated_at)
+        .filter(Post.board_id.in_(board_ids), Post.is_hidden.is_(False))
+        .order_by(Post.board_id, Post.updated_at.desc(), Post.created_at.desc())
+        .all()
+    ) if board_ids else []
+    post_counts = {}
+    latest_posts = {}
+    for post in visible_posts:
+        post_counts[post.board_id] = post_counts.get(post.board_id, 0) + 1
+        latest_posts.setdefault(post.board_id, post)
+
     result = []
     for b in boards:
-        d = b.to_dict()
+        latest_post = latest_posts.get(b.id)
+        d = {
+            'id': b.id,
+            'slug': b.slug,
+            'name': b.name,
+            'description': b.description,
+            'icon': b.icon,
+            'sort_order': b.sort_order,
+            'min_tier': b.min_tier,
+            'write_tier': b.write_tier,
+            'is_active': b.is_active,
+            'post_count': post_counts.get(b.id, 0),
+            'latest_post_id': latest_post.id if latest_post else None,
+            'latest_post_title': latest_post.title if latest_post else None,
+            'latest_post_at': (
+                latest_post.updated_at.isoformat()
+                if latest_post and latest_post.updated_at else None
+            ),
+            'created_at': b.created_at.isoformat() if b.created_at else None,
+        }
         d['can_read'] = (user.role == 'admin') or _check_tier(user.tier, b.min_tier)
         d['can_write'] = (user.role == 'admin') or _check_tier(user.tier, b.write_tier)
         result.append(d)

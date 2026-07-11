@@ -221,6 +221,7 @@ export default function ManualStockAnalysisPage() {
     const [message, setMessage] = useState('');
     const loopRunRef = useRef('');
     const hasManualRunSelectionRef = useRef(false);
+    const selectedRunIdRef = useRef('');
 
     const selectedRun = useMemo(
         () => runs.find((run) => run.run_id === selectedRunId) || null,
@@ -230,7 +231,7 @@ export default function ManualStockAnalysisPage() {
     const isSelectedLoopRun = !!loopStatus?.running && selectedMatchesLoopRun;
     const isStoppedLoopRunSelection = selectedMatchesLoopRun && !loopStatus?.running;
     const shouldStreamSelectedRun = isSelectedLoopRun
-        || (!isStoppedLoopRunSelection && (selectedRun?.status === 'running' || detail?.status === 'running'));
+        || (!isStoppedLoopRunSelection && selectedRun?.status === 'running');
 
     const fetchRuns = useCallback(async (preferredRunId?: string) => {
         setLoading(true);
@@ -262,6 +263,7 @@ export default function ManualStockAnalysisPage() {
                 : selectedIsUsable
                     ? selectedRunCandidate.run_id
                     : fallbackRun?.run_id || '';
+            selectedRunIdRef.current = nextSelected;
             setSelectedRunId(nextSelected);
         } catch (err) {
             setMessage(err instanceof Error ? err.message : '회차 목록 조회 실패');
@@ -275,6 +277,7 @@ export default function ManualStockAnalysisPage() {
             setDetail(null);
             return;
         }
+        const requestedRunId = selectedRunId;
         const silent = !!options?.silent;
         if (!silent) {
             setLoading(true);
@@ -287,11 +290,14 @@ export default function ManualStockAnalysisPage() {
             params.set('live', '1');
         }
         try {
-            const res = await fetch(`${API_BASE}/api/manual-stock-analysis/runs/${selectedRunId}?${params.toString()}`, {
+            const res = await fetch(`${API_BASE}/api/manual-stock-analysis/runs/${requestedRunId}?${params.toString()}`, {
                 headers: authHeaders(),
             });
             if (!res.ok) throw new Error(`분석 목록 조회 실패 (${res.status})`);
-            setDetail(await res.json());
+            const nextDetail: ManualRunDetail = await res.json();
+            if (selectedRunIdRef.current === requestedRunId) {
+                setDetail(nextDetail);
+            }
         } catch (err) {
             if (!silent) {
                 setMessage(err instanceof Error ? err.message : '분석 목록 조회 실패');
@@ -428,6 +434,7 @@ export default function ManualStockAnalysisPage() {
 
     const selectHistoryRun = (runId: string) => {
         hasManualRunSelectionRef.current = true;
+        selectedRunIdRef.current = runId;
         setSelectedRunId(runId);
         setSelectedResult('all');
         setQuery('');
