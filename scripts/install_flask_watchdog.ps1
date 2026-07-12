@@ -13,7 +13,7 @@ $ErrorActionPreference = 'Stop'
 
 $TaskName  = 'MarketFlow-Flask-Watchdog'
 $Project   = 'C:\bitman_marketfloww'
-$Script    = Join-Path $Project 'scripts\flask_watchdog.ps1'
+$Script    = Join-Path $Project 'scripts\flask_watchdog_v2.ps1'
 $ProductionHost = 'MINIPC-NQYLP'
 
 if ($env:COMPUTERNAME -ne $ProductionHost) {
