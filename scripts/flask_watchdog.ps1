@@ -10,6 +10,14 @@ $LogFile   = Join-Path $Project 'logs\flask_watchdog.log'
 $TaskName  = 'MarketFlow-Flask'
 $Port      = 5001
 $HealthUrl = "http://localhost:$Port/healthz"
+$ProductionHost = 'MINIPC-NQYLP'
+$StateFile = Join-Path $Project 'data\flask_watchdog_state.json'
+$RebootFailureThreshold = 3
+
+if ($env:COMPUTERNAME -ne $ProductionHost) {
+    # Hard boundary: the main PC is development-only and must never operate services.
+    exit 0
+}
 
 function Write-Log($msg) {
     $line = "{0} | {1}" -f (Get-Date -Format 'yyyy-MM-dd HH:mm:ss'), $msg
@@ -50,6 +58,34 @@ function Send-Telegram($msg) {
                           -TimeoutSec 10 | Out-Null
     } catch {
         Write-Log ("Telegram send failed: " + $_.Exception.Message)
+    }
+}
+
+function Read-WatchdogState {
+    try {
+        if (Test-Path $StateFile) {
+            $state = Get-Content $StateFile -Raw -Encoding UTF8 | ConvertFrom-Json
+            if ($null -ne $state.consecutive_failures) { return $state }
+        }
+    } catch {
+        Write-Log ("State read failed: " + $_.Exception.Message)
+    }
+    return [pscustomobject]@{ consecutive_failures = 0; reboot_requested_at = $null }
+}
+
+function Write-WatchdogState($failures, $rebootRequestedAt = $null) {
+    try {
+        $dir = Split-Path $StateFile -Parent
+        New-Item -ItemType Directory -Path $dir -Force | Out-Null
+        $tmp = $StateFile + '.tmp'
+        @{
+            consecutive_failures = [int]$failures
+            updated_at = (Get-Date).ToString('s')
+            reboot_requested_at = $rebootRequestedAt
+        } | ConvertTo-Json | Set-Content $tmp -Encoding UTF8
+        Move-Item $tmp $StateFile -Force
+    } catch {
+        Write-Log ("State write failed: " + $_.Exception.Message)
     }
 }
 
@@ -120,6 +156,7 @@ function Test-FlaskAlive {
         Start-Sleep -Seconds 30  # 진짜 hang 인지 30초 후 재확인
     }
 
+    }
     return @{ Alive = $false; Reason = 'unknown'; RSS = $rssMB }
 }
 
@@ -156,6 +193,7 @@ function Restart-Flask {
                     break
                 }
             } catch {
+            }
                 # 아직 안 올라옴 — 계속 대기
             }
         }
@@ -169,6 +207,7 @@ function Restart-Flask {
 
 $status = Test-FlaskAlive
 if ($status.Alive) {
+    Write-WatchdogState 0
     exit 0
 }
 
@@ -181,8 +220,25 @@ if ($after.Alive) {
     # SUCCESS notification 비활성화 (사용자 요청 — 깨진 한글 알림 중단)
     # watchdog 의 재기동 동작 자체는 그대로 유지, 로그만 남김.
     Write-Log "Restart confirmed - Flask healthy. (telegram suppressed)"
+    Write-WatchdogState 0
 } else {
     Write-Log ("Restart FAILED - still: " + $after.Reason)
+    $state = Read-WatchdogState
+    $failures = [int]$state.consecutive_failures + 1
+    Write-WatchdogState $failures
+    Write-Log ("Consecutive recovery failures: " + $failures)
+
+    if ($failures -ge $RebootFailureThreshold) {
+        $requestedAt = (Get-Date).ToString('s')
+        Write-WatchdogState $failures $requestedAt
+        Write-Log "Recovery threshold reached; scheduling MiniPC reboot in 60 seconds"
+        Send-Telegram @"
+[ALERT] MarketFlow MiniPC automatic recovery
+Flask recovery failed $failures consecutive times.
+The MiniPC will reboot in 60 seconds to clear the stuck port.
+"@
+        & shutdown.exe /r /t 60 /f /c "MarketFlow Flask watchdog recovery"
+    }
     # FAILURE 텔레그램 알림 비활성화 (사용자 요청 2026-07-09 — 반복 알림 중단).
     # watchdog 의 재기동 시도 자체는 그대로 유지, 로그만 남김.
     # $message = @(

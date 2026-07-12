@@ -14,6 +14,12 @@ $ErrorActionPreference = 'Stop'
 $TaskName  = 'MarketFlow-Flask-Watchdog'
 $Project   = 'C:\bitman_marketfloww'
 $Script    = Join-Path $Project 'scripts\flask_watchdog.ps1'
+$ProductionHost = 'MINIPC-NQYLP'
+
+if ($env:COMPUTERNAME -ne $ProductionHost) {
+    Write-Error "This task is MiniPC-only. Current host: $env:COMPUTERNAME"
+    exit 1
+}
 
 if (-not (Test-Path $Script)) {
     Write-Error "Watchdog script not found: $Script"
