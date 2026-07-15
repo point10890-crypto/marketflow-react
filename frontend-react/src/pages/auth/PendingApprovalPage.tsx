@@ -103,7 +103,8 @@ export default function PendingApprovalPage() {
     };
 
     // sub_req 로부터 표시 정보 도출
-    const isAibainAddon = pendingSubReq?.request_type === 'aibain_addon';
+    const isAibainRenewal = pendingSubReq?.request_type === 'aibain_renewal';
+    const isAibainAddon = pendingSubReq?.request_type === 'aibain_addon' || isAibainRenewal;
     const includesAibain = !!pendingSubReq?.admin_note?.includes('AI Brain');
     const subReqAmount = pendingSubReq?.amount || null;
 
@@ -121,8 +122,8 @@ export default function PendingApprovalPage() {
         headerSubtitle = '계정은 만들어졌지만 아직 구독 신청이 접수되지 않았습니다. 플랜을 선택하면 입금 안내와 승인 신청이 이어집니다.';
     }
     if (isAibainAddon) {
-        headerTitle = 'AI Brain 활성화 대기 중';
-        headerSubtitle = '입금 확인 후 관리자가 AI Brain 알파 스캐너 서비스를 활성화합니다. 그 동안 기존 구독은 그대로 이용 가능합니다.';
+        headerTitle = isAibainRenewal ? 'AI Brain 재구독 승인 대기 중' : 'AI Brain 활성화 대기 중';
+        headerSubtitle = `입금 확인 후 관리자가 AI Brain 알파 스캐너를 ${isAibainRenewal ? '30일 재활성화' : '활성화'}합니다. 그 동안 기존 구독은 그대로 이용 가능합니다.`;
     } else if (isUpgradeFromActive) {
         headerTitle = '업그레이드 대기 중';
         headerSubtitle = '입금 확인 후 관리자가 새 플랜으로 업그레이드합니다.';
@@ -169,7 +170,7 @@ export default function PendingApprovalPage() {
                                         <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${themeColor.bg} ${themeColor.text}`}>
                                             <i className={`${isAibainAddon ? 'fas fa-robot' : pendingSubReq.to_tier === 'premium' ? 'fas fa-gem' : 'fas fa-crown'} mr-1`} />
                                             {isAibainAddon
-                                                ? `${pendingSubReq.from_tier === 'premium' ? 'Ultra Pro' : 'Pro'} → +AI Brain 애드온`
+                                                ? `${pendingSubReq.from_tier === 'premium' ? 'Ultra Pro' : 'Pro'} → ${isAibainRenewal ? 'AI Brain 재구독' : '+AI Brain 애드온'}`
                                                 : includesAibain
                                                 ? `${pendingSubReq.to_tier === 'premium' ? 'Ultra Pro' : 'Pro'} + AI Brain`
                                                 : pendingSubReq.to_tier === 'premium' ? 'Ultra Pro' : 'Pro'}

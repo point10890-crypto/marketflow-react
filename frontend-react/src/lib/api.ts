@@ -822,6 +822,7 @@ export interface AdminUser {
     aibain_enabled?: boolean;
     aibain_expires_at?: string | null;
     is_aibain_active?: boolean;
+    is_aibain_expired?: boolean;
     aibain_days_remaining?: number | null;
 }
 
@@ -861,7 +862,7 @@ export interface AdminDashboard {
     // AI Brain 알파 스캐너 (애드온) 통계
     aibain_active_users?: number;
     aibain_expiring_soon?: number;   // D-3 이내 만료 임박
-    pending_aibain_subs?: number;     // sub_req request_type='aibain_addon' pending 카운트
+    pending_aibain_subs?: number;     // AI Brain 최초/재구독 pending 카운트
 }
 
 export interface SubscriptionRequest {
@@ -879,6 +880,16 @@ export interface SubscriptionRequest {
     amount: string | null;
     created_at: string;
     processed_at: string | null;
+}
+
+export interface AibainSubscriptionStatus {
+    state: 'active' | 'expired' | 'available' | 'unavailable' | 'activation_pending' | 'renewal_pending';
+    is_active: boolean;
+    is_expired: boolean;
+    renewal_eligible: boolean;
+    expires_at: string | null;
+    pending_request: SubscriptionRequest | null;
+    has_other_pending_request: boolean;
 }
 
 export interface PendingSignup {
@@ -1070,7 +1081,17 @@ export const subscriptionAPI = {
             depositor_name: depositorName,
             includes_aibain: !!includesAibain,
         }, token),
-    getStatus: (token?: string) => fetchAuthAPI<{ user: AdminUser; requests: SubscriptionRequest[] }>('/api/auth/subscription/status', token),
+    requestAibain: (tier: string, token?: string, depositorName?: string) =>
+        postAuthAPI<{ request: SubscriptionRequest }>('/api/auth/subscription/request', {
+            to_tier: tier,
+            depositor_name: depositorName,
+            includes_aibain: true,
+        }, token),
+    getStatus: (token?: string) => fetchAuthAPI<{
+        user: AdminUser;
+        requests: SubscriptionRequest[];
+        aibain_subscription?: AibainSubscriptionStatus;
+    }>('/api/auth/subscription/status', token),
     updateProfile: (name: string, token?: string) => putAuthAPI<{ user: AdminUser }>('/api/auth/profile', { name }, token),
     changePassword: (currentPassword: string, newPassword: string, token?: string) => putAuthAPI<{ message: string }>('/api/auth/change-password', { current_password: currentPassword, new_password: newPassword }, token),
 };

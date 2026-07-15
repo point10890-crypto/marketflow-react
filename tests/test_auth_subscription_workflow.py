@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 import sqlite3
 
-from app import create_app
+from app import create_app, _apply_aibain_expiry_state
 from app.auth.decorators import generate_token
 from app.models import db
 from app.models.user import SubscriptionRequest, User
@@ -408,3 +408,279 @@ def test_aibain_addon_approval_extends_existing_future_expiry(monkeypatch):
         if expires.tzinfo is None:
             expires = expires.replace(tzinfo=timezone.utc)
         assert expires >= current_aibain_expiry + timedelta(days=29, hours=23)
+
+
+def test_expired_aibain_user_gets_renewal_workflow_without_changing_base_period(monkeypatch):
+    app = _app()
+    now = datetime.now(timezone.utc)
+    base_expiry = now + timedelta(days=17)
+    monkeypatch.setattr(admin_routes, '_notify_admin', lambda *args, **kwargs: None)
+
+    with app.app_context():
+        admin = _user('renew-admin@example.com', '관리자', 'Admin1234!', status='approved', tier='premium', role='admin')
+        member = _user(
+            'renew-aibain@example.com',
+            '재구독회원',
+            'Pass1234!',
+            status='approved',
+            tier='pro',
+            pro_expires_at=base_expiry,
+        )
+        member.aibain_enabled = False
+        member.aibain_expires_at = now - timedelta(days=2)
+        member.aibain_alert_stage = 'expired'
+        db.session.add_all([admin, member])
+        db.session.commit()
+        admin_token = generate_token(admin.id)
+
+    client = app.test_client()
+    token = client.post('/api/auth/login', json={
+        'email': 'renew-aibain@example.com',
+        'password': 'Pass1234!',
+    }).get_json()['token']
+
+    before_request = client.get(
+        '/api/auth/subscription/status',
+        headers={'Authorization': f'Bearer {token}'},
+    ).get_json()
+    assert before_request['user']['tier'] == 'pro'
+    assert before_request['user']['status'] == 'approved'
+    assert before_request['user']['is_pro_paused'] is False
+    assert before_request['aibain_subscription']['state'] == 'expired'
+    assert before_request['aibain_subscription']['renewal_eligible'] is True
+
+    renewal = client.post(
+        '/api/auth/subscription/request',
+        json={'to_tier': 'pro', 'depositor_name': '재구독회원', 'includes_aibain': True},
+        headers={'Authorization': f'Bearer {token}'},
+    )
+    assert renewal.status_code == 201
+    req = renewal.get_json()['request']
+    assert req['request_type'] == 'aibain_renewal'
+    assert req['amount'] == '40,000원'
+
+    status = client.get(
+        '/api/auth/subscription/status',
+        headers={'Authorization': f'Bearer {token}'},
+    )
+    assert status.status_code == 200
+    state = status.get_json()['aibain_subscription']
+    assert state['state'] == 'renewal_pending'
+    assert state['pending_request']['id'] == req['id']
+    assert state['renewal_eligible'] is False
+
+    approved = client.put(
+        f"/api/admin/subscriptions/{req['id']}/approve",
+        headers={'Authorization': f'Bearer {admin_token}'},
+    )
+    assert approved.status_code == 200
+
+    with app.app_context():
+        member = User.query.filter_by(email='renew-aibain@example.com').first()
+        assert member.status == 'approved'
+        assert member.tier == 'pro'
+        assert member.aibain_enabled is True
+        assert member.aibain_alert_stage is None
+        assert member.pro_paused_at is not None
+        saved_base_expiry = member.pro_expires_at
+        if saved_base_expiry.tzinfo is None:
+            saved_base_expiry = saved_base_expiry.replace(tzinfo=timezone.utc)
+        assert abs((saved_base_expiry - base_expiry).total_seconds()) < 1
+        aibain_expiry = member.aibain_expires_at
+        if aibain_expiry.tzinfo is None:
+            aibain_expiry = aibain_expiry.replace(tzinfo=timezone.utc)
+        assert aibain_expiry > now + timedelta(days=29)
+
+
+def test_pro_aibain_expiry_resumes_preserved_base_period_without_downgrade():
+    now = datetime.now(timezone.utc)
+    original_pro_expiry = now + timedelta(days=12)
+    paused_at = now - timedelta(days=30)
+    member = _user(
+        'pro-expiry@example.com',
+        'Pro만료회원',
+        'Pass1234!',
+        status='approved',
+        tier='pro',
+        pro_expires_at=original_pro_expiry,
+    )
+    member.aibain_enabled = True
+    member.aibain_expires_at = now - timedelta(minutes=1)
+    member.aibain_alert_stage = 'd1'
+    member.pro_paused_at = paused_at
+    member.pro_expiry_alert_stage = 'd3'
+
+    elapsed = _apply_aibain_expiry_state(member, now)
+
+    assert elapsed is not None
+    assert abs((elapsed - timedelta(days=30)).total_seconds()) < 1
+    assert member.aibain_enabled is False
+    assert member.aibain_alert_stage == 'expired'
+    assert member.aibain_expires_at == now - timedelta(minutes=1)
+    assert member.tier == 'pro'
+    assert member.status == 'approved'
+    assert member.pro_paused_at is None
+    assert member.pro_expiry_alert_stage is None
+    assert abs((member.pro_expires_at - (original_pro_expiry + timedelta(days=30))).total_seconds()) < 1
+
+
+def test_ultra_pro_returns_to_ultra_after_aibain_expiry_and_can_renew(monkeypatch):
+    app = _app()
+    now = datetime.now(timezone.utc)
+    monkeypatch.setattr(admin_routes, '_notify_admin', lambda *args, **kwargs: None)
+
+    with app.app_context():
+        admin = _user('ultra-admin@example.com', '관리자', 'Admin1234!', status='approved', tier='premium', role='admin')
+        member = _user(
+            'ultra-renew@example.com',
+            '울트라재구독',
+            'Pass1234!',
+            status='approved',
+            tier='premium',
+            pro_expires_at=None,
+        )
+        member.aibain_enabled = False
+        member.aibain_expires_at = now - timedelta(days=1)
+        member.aibain_alert_stage = 'expired'
+        # 과거 Pro → Ultra Pro 변경에서 남을 수 있는 marker도 응답상 pause로 취급하면 안 된다.
+        member.pro_paused_at = now - timedelta(days=31)
+        db.session.add_all([admin, member])
+        db.session.commit()
+        admin_token = generate_token(admin.id)
+
+    client = app.test_client()
+    token = client.post('/api/auth/login', json={
+        'email': 'ultra-renew@example.com',
+        'password': 'Pass1234!',
+    }).get_json()['token']
+
+    status = client.get(
+        '/api/auth/subscription/status',
+        headers={'Authorization': f'Bearer {token}'},
+    )
+    assert status.status_code == 200
+    status_body = status.get_json()
+    assert status_body['user']['tier'] == 'premium'
+    assert status_body['user']['status'] == 'approved'
+    assert status_body['user']['pro_expires_at'] is None
+    assert status_body['user']['is_pro_paused'] is False
+    assert status_body['aibain_subscription']['state'] == 'expired'
+    assert status_body['aibain_subscription']['renewal_eligible'] is True
+
+    renewal = client.post(
+        '/api/auth/subscription/request',
+        json={'to_tier': 'premium', 'depositor_name': '울트라재구독', 'includes_aibain': True},
+        headers={'Authorization': f'Bearer {token}'},
+    )
+    assert renewal.status_code == 201
+    req = renewal.get_json()['request']
+    assert req['request_type'] == 'aibain_renewal'
+    assert req['from_tier'] == 'premium'
+    assert req['to_tier'] == 'premium'
+    assert req['amount'] == '40,000원'
+
+    approved = client.put(
+        f"/api/admin/subscriptions/{req['id']}/approve",
+        headers={'Authorization': f'Bearer {admin_token}'},
+    )
+    assert approved.status_code == 200
+
+    with app.app_context():
+        member = User.query.filter_by(email='ultra-renew@example.com').first()
+        assert member.tier == 'premium'
+        assert member.status == 'approved'
+        assert member.pro_expires_at is None
+        assert member.aibain_enabled is True
+        assert member.is_aibain_active is True
+        # Ultra Pro에서는 Pro 기간 pause가 새로 생성되지 않는다.
+        assert member.pro_paused_at is None
+        assert member.is_pro_paused is False
+
+
+def test_expired_pro_with_aibain_is_full_base_renewal_not_addon(monkeypatch):
+    app = _app()
+    now = datetime.now(timezone.utc)
+    monkeypatch.setattr(admin_routes, '_notify_admin', lambda *args, **kwargs: None)
+
+    with app.app_context():
+        admin = _user('full-admin@example.com', '관리자', 'Admin1234!', status='approved', tier='premium', role='admin')
+        member = _user(
+            'expired-full@example.com',
+            '전체재구독',
+            'Pass1234!',
+            status='expired',
+            tier='pro',
+            pro_expires_at=now - timedelta(days=3),
+        )
+        member.aibain_enabled = False
+        member.aibain_expires_at = now - timedelta(days=3)
+        db.session.add_all([admin, member])
+        db.session.commit()
+        admin_token = generate_token(admin.id)
+
+    client = app.test_client()
+    token = client.post('/api/auth/login', json={
+        'email': 'expired-full@example.com',
+        'password': 'Pass1234!',
+    }).get_json()['token']
+    renewal = client.post(
+        '/api/auth/subscription/request',
+        json={'to_tier': 'pro', 'depositor_name': '전체재구독', 'includes_aibain': True},
+        headers={'Authorization': f'Bearer {token}'},
+    )
+    assert renewal.status_code == 201
+    req = renewal.get_json()['request']
+    assert req['request_type'] == 'renewal'
+    assert req['amount'] == '90,000원'
+
+    approved = client.put(
+        f"/api/admin/subscriptions/{req['id']}/approve",
+        headers={'Authorization': f'Bearer {admin_token}'},
+    )
+    assert approved.status_code == 200
+    body = approved.get_json()['user']
+    assert body['status'] == 'approved'
+    assert body['is_pro_expired'] is False
+    assert body['is_aibain_active'] is True
+
+
+def test_admin_user_search_is_server_side_paginated_and_supports_expired_aibain_filter():
+    app = _app()
+    now = datetime.now(timezone.utc)
+
+    with app.app_context():
+        admin = _user('search-admin@example.com', '검색관리자', 'Admin1234!', status='approved', tier='premium', role='admin')
+        alpha = _user('alpha.member@example.com', '김알파', 'Pass1234!', status='approved', tier='pro', pro_expires_at=now + timedelta(days=10))
+        beta = _user('beta.member@example.com', '박베타', 'Pass1234!', status='approved', tier='premium')
+        percent = _user('literal@example.com', '수익률 100%', 'Pass1234!', status='approved', tier='pro', pro_expires_at=now + timedelta(days=10))
+        expired_ai = _user('expired.ai@example.com', '만료브레인', 'Pass1234!', status='approved', tier='premium')
+        expired_ai.aibain_enabled = False
+        expired_ai.aibain_expires_at = now - timedelta(days=1)
+        db.session.add_all([admin, alpha, beta, percent, expired_ai])
+        db.session.commit()
+        admin_token = generate_token(admin.id)
+        alpha_id = alpha.id
+
+    client = app.test_client()
+    headers = {'Authorization': f'Bearer {admin_token}'}
+
+    by_name = client.get('/api/admin/users?q=김알파&page=1&per_page=50', headers=headers)
+    assert by_name.status_code == 200
+    assert [u['email'] for u in by_name.get_json()['users']] == ['alpha.member@example.com']
+
+    by_id = client.get(f'/api/admin/users?q={alpha_id}&page=1&per_page=50', headers=headers)
+    assert by_id.status_code == 200
+    assert any(u['id'] == alpha_id for u in by_id.get_json()['users'])
+
+    literal_wildcard = client.get('/api/admin/users?q=%25&page=1&per_page=50', headers=headers)
+    assert literal_wildcard.status_code == 200
+    assert [u['email'] for u in literal_wildcard.get_json()['users']] == ['literal@example.com']
+
+    expired = client.get('/api/admin/users?tier=aibain_expired&page=1&per_page=50', headers=headers)
+    assert expired.status_code == 200
+    assert [u['email'] for u in expired.get_json()['users']] == ['expired.ai@example.com']
+
+    page = client.get('/api/admin/users?page=1&per_page=2', headers=headers).get_json()
+    assert page['total'] == 5
+    assert len(page['users']) == 2
+    assert page['total_pages'] == 3

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { subscriptionAPI } from '@/lib/api';
@@ -105,8 +105,28 @@ function UpgradePrompt({ tier }: { tier: string | null }) {
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState('');
     const [depositorName, setDepositorName] = useState(user?.name || '');
+    const [pendingRequest, setPendingRequest] = useState<Awaited<ReturnType<typeof subscriptionAPI.getStatus>>['requests'][number] | null>(null);
+    const [checkingStatus, setCheckingStatus] = useState(true);
 
     const tierLabel = tier === 'pro' ? 'Pro' : 'Ultra Pro';
+    const isRenewal = !!user?.is_aibain_expired || (!!user?.aibain_expires_at && !user?.is_aibain_active);
+    const pendingIsAibain = pendingRequest?.request_type === 'aibain_addon' || pendingRequest?.request_type === 'aibain_renewal';
+
+    useEffect(() => {
+        let active = true;
+        if (!token) {
+            setCheckingStatus(false);
+            return () => { active = false; };
+        }
+        subscriptionAPI.getStatus(token)
+            .then(data => {
+                if (!active) return;
+                setPendingRequest(data.requests.find(req => req.status === 'pending') || null);
+            })
+            .catch(() => {})
+            .finally(() => { if (active) setCheckingStatus(false); });
+        return () => { active = false; };
+    }, [token]);
 
     const handleSubmit = async () => {
         setError('');
@@ -120,8 +140,8 @@ function UpgradePrompt({ tier }: { tier: string | null }) {
         }
         setSubmitting(true);
         try {
-            // 같은 tier + AI Brain 만 추가 → 백엔드가 aibain_addon 으로 분류 (40,000원/30일)
-            await subscriptionAPI.requestUpgrade(tier, token, depositorName.trim(), true);
+            // 서버가 이용 이력에 따라 최초 추가(aibain_addon)와 만료 재구독(aibain_renewal)을 분류한다.
+            await subscriptionAPI.requestAibain(tier, token, depositorName.trim());
             navigate('/pending-approval', { replace: true });
         } catch (err: any) {
             const msg = err?.message || '';
@@ -129,10 +149,50 @@ function UpgradePrompt({ tier }: { tier: string | null }) {
                 navigate('/pending-approval', { replace: true });
                 return;
             }
-            setError('AI Brain 신청 중 오류가 발생했습니다. 잠시 후 다시 시도하세요.');
+            setError(msg || 'AI Brain 신청 중 오류가 발생했습니다. 잠시 후 다시 시도하세요.');
             setSubmitting(false);
         }
     };
+
+    if (checkingStatus) {
+        return (
+            <PageShell>
+                <div className="rounded-2xl border border-cyan-500/25 bg-[#13151f] p-10 text-center text-cyan-300">
+                    <i className="fas fa-spinner fa-spin mr-2" />구독 상태를 확인하고 있습니다
+                </div>
+            </PageShell>
+        );
+    }
+
+    if (pendingRequest) {
+        const renewalPending = pendingRequest.request_type === 'aibain_renewal';
+        return (
+            <PageShell>
+                <div className="rounded-2xl border border-yellow-500/25 bg-gradient-to-br from-yellow-500/[0.07] to-[#13151f] p-6 sm:p-8 text-center">
+                    <div className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-2xl bg-yellow-500/10 text-yellow-300 text-2xl">
+                        <i className="fas fa-hourglass-half" />
+                    </div>
+                    <h3 className="text-xl sm:text-2xl font-black text-white">
+                        {pendingIsAibain ? (renewalPending ? 'AI Brain 재구독 승인 대기 중' : 'AI Brain 활성화 승인 대기 중') : '다른 구독 신청 승인 대기 중'}
+                    </h3>
+                    <p className="mt-2 text-sm text-gray-300">
+                        입금 확인 후 관리자가 처리합니다. 중복 신청 없이 현재 요청 상태를 바로 확인할 수 있습니다.
+                    </p>
+                    <div className="mt-4 inline-flex items-center gap-2 rounded-xl bg-white/5 px-4 py-2 text-sm text-gray-300">
+                        <span>{pendingRequest.amount || '입금액 확인 중'}</span>
+                        <span className="text-gray-600">·</span>
+                        <span>{pendingRequest.depositor_name || user?.name}</span>
+                    </div>
+                    <Link
+                        to="/pending-approval"
+                        className="mt-5 w-full py-3 rounded-xl bg-yellow-500/15 hover:bg-yellow-500/25 text-yellow-300 font-bold text-sm transition-all flex items-center justify-center gap-2"
+                    >
+                        <i className="fas fa-search" />승인 상태 확인
+                    </Link>
+                </div>
+            </PageShell>
+        );
+    }
 
     return (
         <PageShell>
@@ -143,14 +203,34 @@ function UpgradePrompt({ tier }: { tier: string | null }) {
                 <div className="relative">
                     <div className="flex items-start gap-3 mb-4">
                         <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-cyan-500/15 text-cyan-300 text-2xl">
-                            <i className="fas fa-arrow-up" />
+                            <i className={`fas ${isRenewal ? 'fa-redo' : 'fa-arrow-up'}`} />
                         </div>
                         <div className="min-w-0 flex-1">
-                            <h3 className="text-xl sm:text-2xl font-black text-white">AI Brain 구독 업그레이드 신청</h3>
+                            <h3 className="text-xl sm:text-2xl font-black text-white">AI Brain {isRenewal ? '재구독' : '구독 업그레이드'} 신청</h3>
                             <p className="mt-1 text-sm text-gray-300">
-                                현재 <span className="text-cyan-300 font-bold">{tierLabel}</span> 구독에 AI Brain 알파 스캐너만 추가합니다.
+                                {isRenewal ? (
+                                    <>만료된 AI Brain을 30일 다시 활성화합니다.</>
+                                ) : (
+                                    <>현재 <span className="text-cyan-300 font-bold">{tierLabel}</span> 구독에 AI Brain 알파 스캐너만 추가합니다.</>
+                                )}
+                                {' '}
                                 기존 베이스 구독은 그대로 유지됩니다.
                             </p>
+                            {isRenewal && user?.aibain_expires_at && (
+                                <p className="mt-2 text-xs text-rose-300">
+                                    이전 이용 만료일: {new Date(user.aibain_expires_at).toLocaleDateString('ko-KR')}
+                                </p>
+                            )}
+                            {isRenewal && tier === 'premium' && (
+                                <p className="mt-2 text-xs text-purple-300">
+                                    <i className="fas fa-gem mr-1" />AI Brain만 만료되었으며 Ultra Pro 무기한 이용권은 계속 유지됩니다.
+                                </p>
+                            )}
+                            {isRenewal && tier === 'pro' && (
+                                <p className="mt-2 text-xs text-amber-300">
+                                    <i className="fas fa-crown mr-1" />AI Brain만 만료되었으며 Pro 잔여기간 카운터는 자동으로 재개됩니다.
+                                </p>
+                            )}
                         </div>
                     </div>
 
@@ -209,7 +289,7 @@ function UpgradePrompt({ tier }: { tier: string | null }) {
                         {submitting ? (
                             <><i className="fas fa-spinner fa-spin" />처리 중...</>
                         ) : (
-                            <><i className="fas fa-paper-plane" />AI Brain 구독 신청 (+40,000원/30일)</>
+                            <><i className={`fas ${isRenewal ? 'fa-redo' : 'fa-paper-plane'}`} />AI Brain {isRenewal ? '재구독' : '구독'} 신청 (+40,000원/30일)</>
                         )}
                     </button>
 

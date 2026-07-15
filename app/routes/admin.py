@@ -16,6 +16,7 @@ import threading
 from pathlib import Path
 from datetime import datetime, timezone, timedelta
 from flask import Blueprint, request, jsonify
+from sqlalchemy import or_
 from app.models import db
 from app.models.user import User, SubscriptionRequest, AdminAuditLog, AdminNotification
 from app.auth.decorators import admin_required
@@ -221,8 +222,9 @@ def dashboard():
     users = User.query.all()
     pending_subs = SubscriptionRequest.query.filter_by(status='pending').count()
     # AI Brain 애드온 전용 pending 카운트 (sub_req.request_type 기반)
-    pending_aibain_subs = SubscriptionRequest.query.filter_by(
-        status='pending', request_type='aibain_addon'
+    pending_aibain_subs = SubscriptionRequest.query.filter(
+        SubscriptionRequest.status == 'pending',
+        SubscriptionRequest.request_type.in_(('aibain_addon', 'aibain_renewal')),
     ).count()
 
     # AI Brain 활성 유저 + 만료 임박 (D-3 이내)
@@ -274,8 +276,8 @@ def list_users():
 
     Query params (모두 선택):
         status: pending|approved|rejected|suspended
-        tier:   pro|premium|none
-        q:      이름/이메일 부분일치
+        tier:   pro|premium|none|aibain|aibain_expired
+        q:      회원 ID(정확히) 또는 이름/이메일 부분일치
         page:   1부터 (없으면 페이지네이션 없이 전체 반환 — 기존 동작)
         per_page: 50 기본
     응답: { users: [...], total, page?, per_page?, total_pages? }
@@ -287,15 +289,34 @@ def list_users():
         q = q.filter(User.status == status)
 
     tier = (request.args.get('tier') or '').strip().lower()
+    now_naive = datetime.utcnow()
     if tier == 'none':
         q = q.filter(User.tier.is_(None))
     elif tier in ('pro', 'premium'):
         q = q.filter(User.tier == tier)
+    elif tier == 'aibain':
+        q = q.filter(
+            User.aibain_enabled.is_(True),
+            or_(User.aibain_expires_at.is_(None), User.aibain_expires_at > now_naive),
+        )
+    elif tier == 'aibain_expired':
+        q = q.filter(
+            User.aibain_expires_at.isnot(None),
+            or_(User.aibain_enabled.is_(False), User.aibain_expires_at <= now_naive),
+        )
 
-    search = (request.args.get('q') or '').strip()
+    search = (request.args.get('q') or '').strip()[:100]
     if search:
-        like = f'%{search}%'
-        q = q.filter((User.email.ilike(like)) | (User.name.ilike(like)))
+        # %/_ 를 검색 와일드카드로 해석하지 않고 사용자가 입력한 문자 그대로 찾는다.
+        escaped = search.replace('\\', '\\\\').replace('%', '\\%').replace('_', '\\_')
+        like = f'%{escaped}%'
+        conditions = [
+            User.email.ilike(like, escape='\\'),
+            User.name.ilike(like, escape='\\'),
+        ]
+        if search.isdigit():
+            conditions.append(User.id == int(search))
+        q = q.filter(or_(*conditions))
 
     q = q.order_by(User.created_at.desc())
 
@@ -410,6 +431,8 @@ def set_tier(user_id):
         user.pro_expires_at = datetime.now(timezone.utc) + timedelta(days=30)
     elif tier == 'premium':
         user.pro_expires_at = None
+        # Ultra Pro는 무기한 베이스 이용권이므로 Pro 카운터 정지 marker를 보존하지 않는다.
+        user.pro_paused_at = None
     # tier 변경 → 만료 알림 stage 리셋 (재발송 가능)
     user.pro_expiry_alert_stage = None
     db.session.commit()
@@ -1042,6 +1065,7 @@ def approve_subscription(req_id):
 
     request_type 별로 처리 분기:
       - 'aibain_addon': 베이스 tier 유지 + AI Brain 활성화 (+30일). 활성 회원이 AI Brain 만 추가.
+      - 'aibain_renewal': 만료된 AI Brain 재활성화 (+30일). 베이스 tier 유지.
       - 'upgrade' / 'downgrade': 기존 동작 — tier 변경 + 만료일 재설정 + status 승급.
 
     AI Brain 애드온은 베이스 구독을 건드리지 않으므로 pro_expires_at / pro_expiry_alert_stage 유지.
@@ -1075,7 +1099,7 @@ def approve_subscription(req_id):
 
     db.session.expire_all()
     sub_req = db.session.get(SubscriptionRequest, req_id)
-    is_aibain_addon = sub_req.request_type == 'aibain_addon'
+    is_aibain_addon = sub_req.request_type in ('aibain_addon', 'aibain_renewal')
 
     user = db.session.get(User, sub_req.user_id)
     before = None
@@ -1119,8 +1143,12 @@ def approve_subscription(req_id):
             if user.tier == 'pro' and user.pro_expires_at is not None and user.pro_paused_at is None:
                 user.pro_paused_at = datetime.now(timezone.utc)
                 user.pro_expiry_alert_stage = None  # paused 동안 알림 보류
-            audit_action = 'activate_aibain'
-            summary_text = f"AI Brain 활성화 (+30d, base={user.tier} 유지, Pro 카운터 일시정지)"
+            elif user.tier == 'premium':
+                # Ultra Pro는 무기한 베이스 이용권이라 Pro pause marker가 필요 없다.
+                user.pro_paused_at = None
+            audit_action = 'renew_aibain' if sub_req.request_type == 'aibain_renewal' else 'activate_aibain'
+            action_label = '재구독' if sub_req.request_type == 'aibain_renewal' else '활성화'
+            summary_text = f"AI Brain {action_label} (+30d, base={user.tier} 유지, Pro 카운터 일시정지)"
         else:
             # 기존 동작 — 베이스 tier 변경
             user.tier = sub_req.to_tier
@@ -1128,6 +1156,7 @@ def approve_subscription(req_id):
                 user.pro_expires_at = datetime.now(timezone.utc) + timedelta(days=30)
             elif sub_req.to_tier == 'premium':
                 user.pro_expires_at = None
+                user.pro_paused_at = None
             if user.status != 'approved':
                 user.status = 'approved'
                 user.approved_at = datetime.now(timezone.utc)

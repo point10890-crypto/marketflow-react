@@ -52,6 +52,7 @@ export interface AuthUserData {
     aibain_enabled?: boolean;
     aibain_expires_at?: string | null;
     is_aibain_active?: boolean;
+    is_aibain_expired?: boolean;
     aibain_days_remaining?: number | null;
     // Pro 만료 일시정지 (AI Brain 활성 중)
     pro_paused_at?: string | null;

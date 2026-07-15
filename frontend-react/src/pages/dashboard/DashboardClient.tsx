@@ -685,6 +685,7 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                 const isAdmin = role === 'admin';
                 const isActivePaid = (tier === 'pro' || tier === 'premium') && user?.status === 'approved' && !user?.is_pro_expired;
                 const alreadyAibainActive = !!user?.is_aibain_active;
+                const aibainExpired = !!user?.is_aibain_expired || (!!user?.aibain_expires_at && !alreadyAibainActive);
                 if (isAdmin || !isActivePaid || alreadyAibainActive) return null;
                 const tierLabel = tier === 'pro' ? 'Pro' : 'Ultra Pro';
                 return (
@@ -699,9 +700,9 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                             </div>
                             <div className="min-w-0 flex-1">
                                 <div className="flex items-center gap-1.5 flex-wrap">
-                                    <span className="text-white font-bold text-sm">AI Brain 알파 스캐너 추가</span>
+                                    <span className="text-white font-bold text-sm">AI Brain 알파 스캐너 {aibainExpired ? '재구독' : '추가'}</span>
                                     <span className="text-[8px] font-bold tracking-wider px-1.5 py-0.5 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-500/25 animate-pulse" style={{ animationDuration: '2s' }}>
-                                        NEW
+                                        {aibainExpired ? 'EXPIRED' : 'NEW'}
                                     </span>
                                 </div>
                                 <p className="text-[11px] sm:text-xs text-gray-400 mt-0.5 leading-tight">
@@ -710,8 +711,8 @@ export default function DashboardClient({ initialData }: { initialData: InitialD
                             </div>
                             <div className="shrink-0 flex items-center gap-2">
                                 <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-cyan-500/15 text-cyan-200 font-bold text-xs border border-cyan-400/30">
-                                    <i className="fas fa-paper-plane text-[10px]" />
-                                    업그레이드 신청
+                                    <i className={`fas ${aibainExpired ? 'fa-redo' : 'fa-paper-plane'} text-[10px]`} />
+                                    {aibainExpired ? '재구독 신청' : '업그레이드 신청'}
                                 </span>
                                 <i className="fas fa-chevron-right text-[11px] text-cyan-400/70 group-hover:text-cyan-300 transition-colors" />
                             </div>

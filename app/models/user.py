@@ -93,7 +93,9 @@ class User(db.Model):
     @property
     def is_pro_paused(self) -> bool:
         """Pro 만료 카운터가 AI Brain 활성으로 일시정지 상태인지."""
-        return self.pro_paused_at is not None
+        # Ultra Pro는 무기한이므로 만료 카운터/일시정지 개념이 없다. 과거 Pro에서
+        # 등급 변경된 레거시 행에 marker가 남아 있어도 Ultra Pro UI를 오염시키지 않는다.
+        return self.tier == 'pro' and self.pro_paused_at is not None
 
     @property
     def is_aibain_active(self) -> bool:
@@ -106,6 +108,11 @@ class User(db.Model):
         if expires.tzinfo is not None:
             expires = expires.astimezone(timezone.utc).replace(tzinfo=None)
         return datetime.utcnow() < expires
+
+    @property
+    def is_aibain_expired(self) -> bool:
+        """과거 AI Brain 구독 이력이 있고 현재는 만료된 상태인지."""
+        return self.aibain_expires_at is not None and not self.is_aibain_active
 
     @property
     def aibain_days_remaining(self) -> int | None:
@@ -136,6 +143,7 @@ class User(db.Model):
             'aibain_enabled': self.aibain_enabled,
             'aibain_expires_at': self.aibain_expires_at.isoformat() if self.aibain_expires_at else None,
             'is_aibain_active': self.is_aibain_active,
+            'is_aibain_expired': self.is_aibain_expired,
             'aibain_days_remaining': self.aibain_days_remaining,
             # Pro 일시정지 상태 (AI Brain 활성 중 Pro 만료 카운터 보존)
             'pro_paused_at': self.pro_paused_at.isoformat() if self.pro_paused_at else None,
@@ -204,7 +212,8 @@ class SubscriptionRequest(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    request_type = db.Column(db.String(50), nullable=False)  # 'upgrade', 'downgrade'
+    # upgrade | downgrade | renewal | aibain_addon | aibain_renewal
+    request_type = db.Column(db.String(50), nullable=False)
     from_tier = db.Column(db.String(20), nullable=False)
     to_tier = db.Column(db.String(20), nullable=False)
     status = db.Column(db.String(20), default='pending')  # 'pending', 'approved', 'rejected'

@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -295,7 +295,7 @@ const TIER_STYLES: Record<string, { label: string; cls: string }> = {
     premium: { label: 'Ultra Pro', cls: 'bg-purple-500/20 text-purple-400' },
 };
 
-function UsersTab({ apiToken, currentUserId }: { apiToken?: string; currentUserId?: number | string }) {
+export function UsersTab({ apiToken, currentUserId }: { apiToken?: string; currentUserId?: number | string }) {
     const [users, setUsers] = useState<AdminUser[]>([]);
     const [loading, setLoading] = useState(true);
     const [actionMsg, setActionMsg] = useState('');
@@ -303,6 +303,10 @@ function UsersTab({ apiToken, currentUserId }: { apiToken?: string; currentUserI
     const [filterStatus, setFilterStatus] = useState('all');
     const [search, setSearch] = useState('');
     const [searchDebounced, setSearchDebounced] = useState('');
+    const [page, setPage] = useState(1);
+    const [total, setTotal] = useState(0);
+    const [totalPages, setTotalPages] = useState(1);
+    const loadSequence = useRef(0);
     const [resetTarget, setResetTarget] = useState<AdminUser | null>(null);
     const [newPassword, setNewPassword] = useState('');
     const [resetNote, setResetNote] = useState('');
@@ -318,11 +322,12 @@ function UsersTab({ apiToken, currentUserId }: { apiToken?: string; currentUserI
 
     // Search debounce (300ms)
     useEffect(() => {
-        const timer = setTimeout(() => setSearchDebounced(search), 300);
+        const timer = setTimeout(() => {
+            setSearchDebounced(search.trim());
+            setPage(1);
+        }, 300);
         return () => clearTimeout(timer);
     }, [search]);
-
-    useEffect(() => { loadUsers(); loadDuplicates(); }, [apiToken]);
 
     const loadDuplicates = async () => {
         try {
@@ -340,14 +345,29 @@ function UsersTab({ apiToken, currentUserId }: { apiToken?: string; currentUserI
         setDetailLoading(false);
     };
 
-    const loadUsers = async () => {
+    const loadUsers = useCallback(async () => {
+        const sequence = ++loadSequence.current;
         setLoading(true);
         try {
-            const res = await adminAPI.getUsers(apiToken);
-            setUsers(res.users || []);
+            const res = await adminAPI.getUsers(apiToken, {
+                q: searchDebounced || undefined,
+                tier: filterTier === 'all' ? undefined : filterTier,
+                status: filterStatus === 'all' ? undefined : filterStatus,
+                page,
+                per_page: 50,
+            });
+            if (sequence === loadSequence.current) {
+                setUsers(res.users || []);
+                setTotal(res.total ?? res.users?.length ?? 0);
+                setTotalPages(Math.max(1, res.total_pages ?? 1));
+            }
         } catch { /* */ }
-        setLoading(false);
-    };
+        if (sequence === loadSequence.current) setLoading(false);
+    }, [apiToken, filterStatus, filterTier, page, searchDebounced]);
+
+    useEffect(() => { void loadUsers(); }, [loadUsers]);
+    useEffect(() => { void loadDuplicates(); }, [apiToken]);
+    useEffect(() => { setSelectedIds(new Set()); }, [filterStatus, filterTier, page, searchDebounced]);
 
     const showAction = (msg: string, isError = false) => {
         setActionMsg(isError ? `error:${msg}` : `ok:${msg}`);
@@ -504,23 +524,8 @@ function UsersTab({ apiToken, currentUserId }: { apiToken?: string; currentUserI
         }
     };
 
-    const filtered = users.filter(u => {
-        if (filterTier !== 'all') {
-            // 'aibain' = AI Brain 활성 (베이스 tier 무관), 그 외는 베이스 tier 필터
-            if (filterTier === 'aibain') {
-                if (!u.is_aibain_active) return false;
-            } else {
-                const tierKey = u.tier || 'none';
-                if (tierKey !== filterTier) return false;
-            }
-        }
-        if (filterStatus !== 'all' && u.status !== filterStatus) return false;
-        if (searchDebounced) {
-            const q = searchDebounced.toLowerCase();
-            return u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q);
-        }
-        return true;
-    });
+    // 검색/필터는 전체 회원 DB를 대상으로 서버에서 수행한다. 현재 배열은 현재 페이지 결과다.
+    const filtered = users;
 
     const tierCount = (t: string) => users.filter(u => (u.tier || 'none') === t).length;
     const statusCount = (s: string) => users.filter(u => u.status === s).length;
@@ -561,14 +566,15 @@ function UsersTab({ apiToken, currentUserId }: { apiToken?: string; currentUserI
 
     const pwValid = newPassword.length >= 8 && /[A-Za-z]/.test(newPassword) && /\d/.test(newPassword);
 
-    if (loading) return <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-500" /></div>;
+    if (loading && users.length === 0) return <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-500" /></div>;
 
     return (
         <>
             {/* 요약 바 */}
             <div className="flex items-center justify-between mb-1 flex-wrap gap-2">
                 <div className="flex items-center gap-3 text-xs text-gray-500 flex-wrap">
-                    <span>{users.length}명</span>
+                    <span className="text-white font-semibold">{total}명 검색됨</span>
+                    <span>현재 페이지 {users.length}명</span>
                     <span className="text-amber-400">{tierCount('pro')} Pro</span>
                     <span className="text-purple-400">{tierCount('premium')} Ultra</span>
                     <span>{tierCount('none')} No Tier</span>
@@ -745,8 +751,8 @@ function UsersTab({ apiToken, currentUserId }: { apiToken?: string; currentUserI
             <div className="flex items-center gap-3 flex-wrap">
                 <div className="relative flex-1 min-w-[200px]">
                     <input
-                        type="text" value={search} onChange={e => setSearch(e.target.value)}
-                        placeholder="이름 또는 이메일 검색..."
+                        type="search" value={search} onChange={e => setSearch(e.target.value)}
+                        placeholder="회원 ID, 이름 또는 이메일 검색..."
                         className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-amber-500/50"
                     />
                     {search && (
@@ -757,8 +763,8 @@ function UsersTab({ apiToken, currentUserId }: { apiToken?: string; currentUserI
                     )}
                 </div>
                 <div className="flex gap-1">
-                    {[{ key: 'all', label: '전체' }, { key: 'premium', label: 'Ultra Pro' }, { key: 'pro', label: 'Pro' }, { key: 'aibain', label: 'AI Brain' }, { key: 'none', label: 'No Tier' }].map(tab => (
-                        <button key={tab.key} onClick={() => setFilterTier(tab.key)}
+                    {[{ key: 'all', label: '전체' }, { key: 'premium', label: 'Ultra Pro' }, { key: 'pro', label: 'Pro' }, { key: 'aibain', label: 'AI Brain' }, { key: 'aibain_expired', label: 'AI 만료' }, { key: 'none', label: 'No Tier' }].map(tab => (
+                        <button key={tab.key} onClick={() => { setFilterTier(tab.key); setPage(1); }}
                             className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
                                 filterTier === tab.key
                                     ? (tab.key === 'aibain' ? 'bg-cyan-500/15 text-cyan-300' : 'bg-white/10 text-white')
@@ -776,14 +782,14 @@ function UsersTab({ apiToken, currentUserId }: { apiToken?: string; currentUserI
                         { key: 'approved', label: '승인', cls: 'text-emerald-400' },
                         { key: 'suspended', label: '정지', cls: 'text-red-400' },
                     ].map(tab => (
-                        <button key={tab.key} onClick={() => setFilterStatus(tab.key)}
+                        <button key={tab.key} onClick={() => { setFilterStatus(tab.key); setPage(1); }}
                             className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors ${filterStatus === tab.key ? `bg-white/10 ${tab.cls}` : `${tab.cls} hover:text-white hover:bg-white/5`}`}>
                             {tab.label}
                         </button>
                     ))}
                 </div>
                 {(filterTier !== 'all' || filterStatus !== 'all' || search) && (
-                    <button onClick={() => { setFilterTier('all'); setFilterStatus('all'); setSearch(''); }}
+                    <button onClick={() => { setFilterTier('all'); setFilterStatus('all'); setSearch(''); setPage(1); }}
                         className="px-3 py-2 rounded-lg text-xs font-medium text-gray-500 hover:text-white hover:bg-white/5 transition-colors">
                         <i className="fas fa-undo mr-1" />초기화
                     </button>
@@ -1002,6 +1008,28 @@ function UsersTab({ apiToken, currentUserId }: { apiToken?: string; currentUserI
                 </table>
                 {filtered.length === 0 && <div className="text-center py-12 text-gray-500 text-sm">검색 결과가 없습니다</div>}
             </div>
+
+            {totalPages > 1 && (
+                <div className="flex items-center justify-center gap-3 pt-1">
+                    <button
+                        type="button"
+                        onClick={() => setPage(p => Math.max(1, p - 1))}
+                        disabled={page <= 1 || loading}
+                        className="px-3 py-2 rounded-lg bg-white/5 text-gray-300 text-xs hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed"
+                    >
+                        <i className="fas fa-chevron-left mr-1" />이전
+                    </button>
+                    <span className="text-xs text-gray-400">{page} / {totalPages} 페이지</span>
+                    <button
+                        type="button"
+                        onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                        disabled={page >= totalPages || loading}
+                        className="px-3 py-2 rounded-lg bg-white/5 text-gray-300 text-xs hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed"
+                    >
+                        다음<i className="fas fa-chevron-right ml-1" />
+                    </button>
+                </div>
+            )}
 
             {/* 비밀번호 리셋 모달 */}
             {resetTarget && createPortal(
@@ -1339,18 +1367,19 @@ function SubscriptionsTab({ apiToken, onCountChange }: { apiToken?: string; onCo
                 ) : (
                     <div className="space-y-3">
                         {pending.map(req => {
-                            const isAibainAddon = req.request_type === 'aibain_addon';
-                            const includesAibain = isAibainAddon || !!(req.admin_note && req.admin_note.includes('AI Brain'));
-                            const cardBorder = isAibainAddon ? 'border-cyan-500/30' : 'border-yellow-500/20';
-                            const iconBg = isAibainAddon ? 'bg-cyan-500/15' : 'bg-yellow-500/10';
-                            const iconColor = isAibainAddon ? 'text-cyan-300' : 'text-yellow-400';
-                            const iconClass = isAibainAddon ? 'fa-robot' : 'fa-arrow-up';
+                            const isAibainRenewal = req.request_type === 'aibain_renewal';
+                            const isAibainOnly = req.request_type === 'aibain_addon' || isAibainRenewal;
+                            const includesAibain = isAibainOnly || !!(req.admin_note && req.admin_note.includes('AI Brain'));
+                            const cardBorder = isAibainOnly ? 'border-cyan-500/30' : 'border-yellow-500/20';
+                            const iconBg = isAibainOnly ? 'bg-cyan-500/15' : 'bg-yellow-500/10';
+                            const iconColor = isAibainOnly ? 'text-cyan-300' : 'text-yellow-400';
+                            const iconClass = isAibainOnly ? 'fa-robot' : 'fa-arrow-up';
                             // 승인 버튼 색상/라벨 분기
                             let btnLabel = req.to_tier === 'premium' ? 'Ultra Pro 승인' : 'Pro 승인';
                             let btnIcon = req.to_tier === 'premium' ? 'fa-gem' : 'fa-crown';
                             let btnColor = req.to_tier === 'premium' ? 'bg-purple-500/20 text-purple-400 hover:bg-purple-500/30' : 'bg-amber-500/20 text-amber-400 hover:bg-amber-500/30';
-                            if (isAibainAddon) {
-                                btnLabel = 'AI Brain 활성화';
+                            if (isAibainOnly) {
+                                btnLabel = isAibainRenewal ? 'AI Brain 재구독 승인' : 'AI Brain 활성화';
                                 btnIcon = 'fa-bolt';
                                 btnColor = 'bg-cyan-500/20 text-cyan-300 hover:bg-cyan-500/30';
                             } else if (includesAibain) {
@@ -1368,13 +1397,13 @@ function SubscriptionsTab({ apiToken, onCountChange }: { apiToken?: string; onCo
                                             <div>
                                                 <div className="text-white font-medium flex items-center gap-2 flex-wrap">
                                                     {req.user_name || `User #${req.user_id}`}
-                                                    {isAibainAddon && (
+                                                    {isAibainOnly && (
                                                         <span className="text-[9px] font-bold tracking-wider px-1.5 py-0.5 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-500/25 uppercase">
                                                             <i className="fas fa-robot text-[8px] mr-0.5" />
-                                                            AI BAIN ADDON
+                                                            {isAibainRenewal ? 'AI BRAIN RENEWAL' : 'AI BRAIN ADDON'}
                                                         </span>
                                                     )}
-                                                    {!isAibainAddon && includesAibain && (
+                                                    {!isAibainOnly && includesAibain && (
                                                         <span className="text-[9px] font-bold tracking-wider px-1.5 py-0.5 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-500/25 uppercase">
                                                             <i className="fas fa-robot text-[8px] mr-0.5" />
                                                             +AI BAIN
@@ -1385,8 +1414,8 @@ function SubscriptionsTab({ apiToken, onCountChange }: { apiToken?: string; onCo
                                                 <div className="text-xs text-gray-500 mt-1 flex flex-wrap items-center gap-1">
                                                     <span className={`px-1.5 py-0.5 rounded ${req.from_tier === 'none' ? 'bg-gray-500/20 text-gray-400' : 'bg-amber-500/20 text-amber-400'}`}>{req.from_tier}</span>
                                                     <span className="mx-1">&rarr;</span>
-                                                    <span className={`px-1.5 py-0.5 rounded font-bold ${isAibainAddon ? 'bg-cyan-500/20 text-cyan-300' : req.to_tier === 'premium' ? 'bg-purple-500/20 text-purple-400' : 'bg-amber-500/20 text-amber-400'}`}>
-                                                        {isAibainAddon ? '+AI Brain' : req.to_tier === 'premium' ? 'Ultra Pro' : 'Pro'}
+                                                    <span className={`px-1.5 py-0.5 rounded font-bold ${isAibainOnly ? 'bg-cyan-500/20 text-cyan-300' : req.to_tier === 'premium' ? 'bg-purple-500/20 text-purple-400' : 'bg-amber-500/20 text-amber-400'}`}>
+                                                        {isAibainOnly ? (isAibainRenewal ? 'AI Brain 재구독' : '+AI Brain') : req.to_tier === 'premium' ? 'Ultra Pro' : 'Pro'}
                                                     </span>
                                                     {req.depositor_name && (
                                                         <span className="ml-2 px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400">
@@ -1394,7 +1423,7 @@ function SubscriptionsTab({ apiToken, onCountChange }: { apiToken?: string; onCo
                                                         </span>
                                                     )}
                                                     {req.amount && (
-                                                        <span className={`px-1.5 py-0.5 rounded font-bold ${isAibainAddon ? 'bg-cyan-500/15 text-cyan-300' : 'bg-green-500/10 text-green-400'}`}>
+                                                        <span className={`px-1.5 py-0.5 rounded font-bold ${isAibainOnly ? 'bg-cyan-500/15 text-cyan-300' : 'bg-green-500/10 text-green-400'}`}>
                                                             {req.amount}
                                                         </span>
                                                     )}

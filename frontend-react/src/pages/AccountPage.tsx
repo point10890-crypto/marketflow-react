@@ -59,6 +59,10 @@ export default function AccountPage() {
 
     const isPro = user?.tier === 'pro' || user?.tier === 'premium';
     const hasPending = requests.some(r => r.status === 'pending');
+    const pendingAibain = requests.find(r =>
+        r.status === 'pending' && (r.request_type === 'aibain_addon' || r.request_type === 'aibain_renewal')
+    );
+    const isAibainExpired = !!user?.is_aibain_expired || (!!user?.aibain_expires_at && !user?.is_aibain_active);
 
     useEffect(() => {
         if (!token) return;
@@ -313,9 +317,17 @@ export default function AccountPage() {
                         <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-2 flex-wrap">
                                 <h3 className="text-white font-bold">AI Brain 알파 스캐너</h3>
-                                {user.is_aibain_active ? (
+                                {pendingAibain ? (
+                                    <span className="text-[10px] font-bold tracking-wider px-2 py-0.5 rounded-full bg-yellow-500/15 text-yellow-300 border border-yellow-500/25 uppercase">
+                                        <i className="fas fa-hourglass-half text-[9px] mr-0.5" /> 승인 대기
+                                    </span>
+                                ) : user.is_aibain_active ? (
                                     <span className="text-[10px] font-bold tracking-wider px-2 py-0.5 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-500/25 uppercase">
                                         <i className="fas fa-bolt text-[9px] mr-0.5" /> 활성
+                                    </span>
+                                ) : isAibainExpired ? (
+                                    <span className="text-[10px] font-bold tracking-wider px-2 py-0.5 rounded-full bg-rose-500/15 text-rose-300 border border-rose-500/25 uppercase">
+                                        <i className="fas fa-calendar-times text-[9px] mr-0.5" /> 만료
                                     </span>
                                 ) : (
                                     <span className="text-[10px] font-bold tracking-wider px-2 py-0.5 rounded-full bg-gray-500/15 text-gray-400 border border-gray-500/25 uppercase">
@@ -336,13 +348,36 @@ export default function AccountPage() {
                             {user.is_aibain_active && !user.aibain_expires_at && (
                                 <p className="text-cyan-300/80 text-xs font-semibold mt-1">무기한</p>
                             )}
-                            {!user.is_aibain_active && (
+                            {isAibainExpired && user.aibain_expires_at && (
+                                <p className="text-rose-300/90 text-xs mt-1">
+                                    {new Date(user.aibain_expires_at).toLocaleDateString('ko-KR')} AI Brain 만료 · 재구독하면 30일 다시 이용
+                                </p>
+                            )}
+                            {isAibainExpired && user.tier === 'premium' && (
+                                <p className="text-purple-300/90 text-[11px] mt-1">
+                                    <i className="fas fa-gem mr-1" />Ultra Pro 무기한 이용권은 정상 유지 중입니다.
+                                </p>
+                            )}
+                            {isAibainExpired && user.tier === 'pro' && (
+                                <p className="text-amber-300/90 text-[11px] mt-1">
+                                    <i className="fas fa-crown mr-1" />Pro 잔여기간은 보존되며 만료 시점부터 다시 차감됩니다.
+                                </p>
+                            )}
+                            {!user.is_aibain_active && !isAibainExpired && (
                                 <p className="text-gray-500 text-xs mt-1">MCP TOP 3 · 신규 5종 스캐너 · 그래프RAG 분석</p>
                             )}
                         </div>
                     </div>
 
-                    {user.is_aibain_active ? (
+                    {pendingAibain ? (
+                        <Link
+                            to="/pending-approval"
+                            className="w-full py-3 rounded-xl bg-yellow-500/10 hover:bg-yellow-500/15 text-yellow-300 font-bold text-center text-sm transition-all flex items-center justify-center gap-2"
+                        >
+                            <i className="fas fa-search text-xs" />
+                            AI Brain {pendingAibain.request_type === 'aibain_renewal' ? '재구독' : '활성화'} 승인 상태 확인
+                        </Link>
+                    ) : user.is_aibain_active ? (
                         <Link
                             to="/dashboard/ai-bain"
                             className="w-full py-3 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/15 text-cyan-300 font-bold text-center text-sm transition-all flex items-center justify-center gap-2"
@@ -355,8 +390,8 @@ export default function AccountPage() {
                             to="/dashboard/ai-bain"
                             className="w-full py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-sky-500 text-black font-bold text-center text-sm transition-all flex items-center justify-center gap-2"
                         >
-                            <i className="fas fa-paper-plane text-xs" />
-                            AI Brain 구독 신청 (+40,000원/30일)
+                            <i className={`fas ${isAibainExpired ? 'fa-redo' : 'fa-paper-plane'} text-xs`} />
+                            AI Brain {isAibainExpired ? '재구독' : '구독'} 신청 (+40,000원/30일)
                         </Link>
                     )}
                 </div>

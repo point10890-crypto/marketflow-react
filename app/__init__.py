@@ -543,6 +543,40 @@ def _start_expiry_checker(app):
     print("[OK] Pro expiry checker started (1h interval, D-3/D-1/expired alerts)")
 
 
+def _apply_aibain_expiry_state(user, now):
+    """AI Brain 만료 상태를 적용하고 Pro 베이스 카운터를 재개한다.
+
+    반환값은 Pro 카운터가 일시정지됐던 기간(timedelta)이며, 베이스 tier/status와
+    AI Brain 만료 이력(aibain_expires_at)은 변경하지 않는다.
+    """
+    from datetime import timezone
+
+    user.aibain_enabled = False
+    user.aibain_alert_stage = 'expired'
+
+    if user.pro_paused_at is None:
+        return None
+
+    elapsed = None
+    if user.tier == 'pro' and user.pro_expires_at is not None:
+        paused_at = user.pro_paused_at
+        if paused_at.tzinfo is None:
+            paused_at = paused_at.replace(tzinfo=timezone.utc)
+        normalized_now = now if now.tzinfo is not None else now.replace(tzinfo=timezone.utc)
+        candidate_elapsed = normalized_now - paused_at
+        if candidate_elapsed.total_seconds() > 0:
+            pro_existing = user.pro_expires_at
+            if pro_existing.tzinfo is None:
+                pro_existing = pro_existing.replace(tzinfo=timezone.utc)
+            user.pro_expires_at = pro_existing + candidate_elapsed
+            elapsed = candidate_elapsed
+
+    # Pro는 새 만료일로 카운터 재개. Ultra Pro/비정상 레거시 marker도 안전하게 정리.
+    user.pro_paused_at = None
+    user.pro_expiry_alert_stage = None
+    return elapsed
+
+
 def _start_aibain_expiry_checker(app):
     """AI Brain 알파 스캐너 만료 자동 비활성화 + D-3/D-1/만료 텔레그램 알림 (1시간 간격).
 
@@ -614,26 +648,10 @@ def _start_aibain_expiry_checker(app):
                         if user.aibain_alert_stage != 'expired':
                             _alibain_alert(user, 'expired', when)
                             _aibain_create_admin_notification(user, 'expired')
-                        user.aibain_enabled = False
-                        # aibain_expires_at 은 보존 (이력 추적용)
-                        user.aibain_alert_stage = 'expired'
-                        # ── Pro 일시정지 재개 ─────────────────────────────────
-                        # AI Brain 만료 시점 = Pro 카운터 재개. paused 기간만큼 pro_expires_at 연장.
-                        # 정상 시나리오: aibain_expires_at - pro_paused_at = 30일 → Pro 30일 연장.
-                        # Pro 회원 only (premium 은 pro_expires_at=NULL 이라 영향 X)
-                        if user.pro_paused_at is not None and user.tier == 'pro' and user.pro_expires_at is not None:
-                            paused_at = user.pro_paused_at
-                            if paused_at.tzinfo is None:
-                                paused_at = paused_at.replace(tzinfo=timezone.utc)
-                            elapsed = now - paused_at
-                            if elapsed.total_seconds() > 0:
-                                pro_existing = user.pro_expires_at
-                                if pro_existing.tzinfo is None:
-                                    pro_existing = pro_existing.replace(tzinfo=timezone.utc)
-                                user.pro_expires_at = pro_existing + elapsed
-                                print(f"[AIbain expiry] {user.email}: pro_expires_at extended +{elapsed.days}d (paused → resumed)")
-                            user.pro_paused_at = None
-                            user.pro_expiry_alert_stage = None  # 새 만료일 기준으로 알림 재계산
+                        # aibain_expires_at 은 이력 추적을 위해 보존한다.
+                        elapsed = _apply_aibain_expiry_state(user, now)
+                        if elapsed is not None:
+                            print(f"[AIbain expiry] {user.email}: pro_expires_at extended +{elapsed.days}d (paused → resumed)")
 
                     # 2) D-1 임박 (이미 d1 알림 보낸 유저 스킵)
                     d1_users = User.query.filter(

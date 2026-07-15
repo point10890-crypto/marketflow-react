@@ -438,12 +438,23 @@ def request_subscription():
         return jsonify({'error': 'Invalid tier. Use: pro, premium'}), 400
 
     is_expired_resubscribe = bool(user.status == 'expired' or user.is_pro_expired)
+    has_active_base = bool(
+        user.status == 'approved'
+        and user.tier in ('pro', 'premium')
+        and not user.is_pro_expired
+    )
 
     # 같은 tier 요청은 AI Brain 애드온 또는 만료 재구독일 때만 허용.
     # 만료 Pro 회원은 tier 값이 여전히 'pro' 이므로 이 예외가 없으면
     # "Already on pro tier" 로 재구독 신청이 막힌다.
     if to_tier == user.tier and not includes_aibain and not is_expired_resubscribe:
         return jsonify({'error': f'Already on {to_tier} tier'}), 400
+
+    # AI Brain 단독 추가/재구독은 활성 베이스 구독이 있어야 한다. 만료된 Pro가
+    # AI Brain 포함으로 신청한 경우에는 단독 애드온이 아니라 베이스 재구독으로
+    # 처리해야 50,000원 구독 기간까지 함께 정상 복구된다.
+    if to_tier == user.tier and includes_aibain and not has_active_base and not is_expired_resubscribe:
+        return jsonify({'error': 'AI Brain 재구독에는 활성 Pro 또는 Ultra Pro 구독이 필요합니다.'}), 400
 
     # premium(Ultra Pro)은 최상위 — 베이스 다운그레이드 불가 (AI Brain 추가는 같은 tier 라 위 체크에서 통과)
     if user.tier == 'premium' and to_tier == 'pro' and not is_expired_resubscribe:
@@ -457,11 +468,19 @@ def request_subscription():
         return jsonify({'error': 'You already have a pending subscription request'}), 409
 
     # 요청 종류 판정
-    # - aibain_addon: 같은 tier + AI Brain 만 추가 (활성 회원의 업그레이드 시나리오)
+    # - aibain_addon: 같은 tier + AI Brain 최초/활성 연장 신청
+    # - aibain_renewal: 같은 tier + 만료된 AI Brain 재구독 신청
     # - upgrade:      신규 가입자 + tier 상승
     # - downgrade:    하향 (현재 비활성)
-    is_aibain_addon = (to_tier == user.tier and includes_aibain)
-    if is_aibain_addon:
+    is_aibain_only = bool(to_tier == user.tier and includes_aibain and has_active_base)
+    is_aibain_renewal = bool(
+        is_aibain_only
+        and user.aibain_expires_at is not None
+        and not user.is_aibain_active
+    )
+    if is_aibain_renewal:
+        req_type = 'aibain_renewal'
+    elif is_aibain_only:
         req_type = 'aibain_addon'
     elif is_expired_resubscribe:
         req_type = 'renewal'
@@ -480,7 +499,7 @@ def request_subscription():
     # - else + aibain: 베이스 + 40,000 (전체)
     # - else:         베이스 (50k 또는 1.2M)
     base_amount_map = {'pro': 50_000, 'premium': 1_200_000}
-    if is_aibain_addon:
+    if is_aibain_only:
         total_amount = 40_000
     else:
         base_amount = base_amount_map.get(to_tier, 0)
@@ -489,7 +508,9 @@ def request_subscription():
     amount = f"{total_amount:,}원" if total_amount else None
 
     # admin 패널 비고 (DB 신규 column 없이 admin_note 활용)
-    if is_aibain_addon:
+    if is_aibain_renewal:
+        admin_note = 'AI Brain 알파 스캐너 재구독 신청 (+40,000원/30일, 베이스 tier 유지)'
+    elif is_aibain_only:
         admin_note = 'AI Brain 알파 스캐너 애드온 신청 (+40,000원/30일, 베이스 tier 유지)'
     elif is_expired_resubscribe and includes_aibain:
         admin_note = '만료 회원 재구독 신청 + AI Brain 알파 스캐너 포함 요청 (+40,000원/30일)'
@@ -515,7 +536,10 @@ def request_subscription():
 
     # 관리자 텔레그램 + 인앱 알림
     tier_label = {'pro': 'Pro', 'premium': 'Ultra Pro'}.get(to_tier, to_tier)
-    if is_aibain_addon:
+    if is_aibain_renewal:
+        full_label = f"{tier_label} → AI Brain 재구독"
+        header_emoji = "🤖"
+    elif is_aibain_only:
         # 같은 tier 에 AI Brain 만 추가 (예: 활성 Pro 회원 → +AI Brain)
         full_label = f"{tier_label} → +AI Brain 애드온"
         header_emoji = "🤖"
@@ -557,9 +581,40 @@ def subscription_status():
         user_id=user.id
     ).order_by(SubscriptionRequest.created_at.desc()).limit(10).all()
 
+    pending_request = next((r for r in requests_list if r.status == 'pending'), None)
+    pending_aibain = next((
+        r for r in requests_list
+        if r.status == 'pending' and r.request_type in ('aibain_addon', 'aibain_renewal')
+    ), None)
+    if pending_aibain:
+        aibain_state = 'renewal_pending' if pending_aibain.request_type == 'aibain_renewal' else 'activation_pending'
+    elif user.is_aibain_active:
+        aibain_state = 'active'
+    elif user.is_aibain_expired:
+        aibain_state = 'expired'
+    elif user.status == 'approved' and user.tier in ('pro', 'premium') and not user.is_pro_expired:
+        aibain_state = 'available'
+    else:
+        aibain_state = 'unavailable'
+
     return jsonify({
         'user': user.to_dict(),
         'requests': [r.to_dict() for r in requests_list],
+        'aibain_subscription': {
+            'state': aibain_state,
+            'is_active': user.is_aibain_active,
+            'is_expired': user.is_aibain_expired,
+            'renewal_eligible': bool(
+                user.is_aibain_expired
+                and user.status == 'approved'
+                and user.tier in ('pro', 'premium')
+                and not user.is_pro_expired
+                and pending_request is None
+            ),
+            'expires_at': user.aibain_expires_at.isoformat() if user.aibain_expires_at else None,
+            'pending_request': pending_aibain.to_dict() if pending_aibain else None,
+            'has_other_pending_request': bool(pending_request and pending_aibain is None),
+        },
     })
 
 
