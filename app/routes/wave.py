@@ -78,6 +78,7 @@ _WAVE_DIR = WAVE_DATA_DIR
 # 스크리너 결과 캐시 (30초 TTL)
 _screener_cache: dict = {}
 _CACHE_TTL = 30
+_HALTED_FILTER_BUDGET_SEC = 7.0
 
 
 def _load_screener_json():
@@ -146,24 +147,50 @@ def screener_latest():
     #   - 종목당 timeout 3초 (네이버 평균 ~500ms)
     #   - 전체 처리 timeout 도 8초로 상한
     #   - 어떤 단계에서든 실패하면 best-effort: 필터링 안 하고 전체 반환
+    halted_filter_complete = True
+    halted_filter_checked = 0
     if request.args.get('exclude_halted', '1') != '0' and signals:
         try:
             from engine.jubjub_analyzer import _is_halted_or_invalid
-            from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeout
-            import time as _time
-            t0 = _time.time()
-            tickers = [s.get('ticker') for s in signals if s.get('ticker')]
+            from concurrent.futures import ThreadPoolExecutor, wait
+            # Never make a read endpoint wait for every external Naver request.
+            # Only candidates that can appear in this response need checking.
+            candidate_signals = signals[:limit]
+            tickers = list(dict.fromkeys(
+                s.get('ticker') for s in candidate_signals if s.get('ticker')
+            ))
             halted_map: dict[str, bool] = {}
-            with ThreadPoolExecutor(max_workers=10, thread_name_prefix='wave-halted') as ex:
-                futures = {t: ex.submit(_is_halted_or_invalid, t) for t in tickers}
-                for ticker, fut in futures.items():
-                    remaining = max(0.1, 8.0 - (_time.time() - t0))
+            executor = ThreadPoolExecutor(max_workers=10, thread_name_prefix='wave-halted')
+            try:
+                futures = {
+                    executor.submit(_is_halted_or_invalid, ticker): ticker
+                    for ticker in tickers
+                }
+                done, pending = wait(
+                    futures,
+                    timeout=max(0.01, float(_HALTED_FILTER_BUDGET_SEC)),
+                )
+                halted_filter_complete = not pending
+                halted_filter_checked = len(done)
+                for future in done:
+                    ticker = futures[future]
                     try:
-                        halted_map[ticker] = bool(fut.result(timeout=min(3.0, remaining)))
-                    except (FuturesTimeout, Exception):
+                        halted_map[ticker] = bool(future.result())
+                    except Exception:
                         halted_map[ticker] = False
-            signals = [s for s in signals if not halted_map.get(s.get('ticker'), False)]
+                for future in pending:
+                    future.cancel()
+            finally:
+                # Context-manager shutdown waits for every queued request and
+                # defeats the endpoint deadline. Running calls have their own
+                # HTTP timeout; queued calls are cancelled above.
+                executor.shutdown(wait=False, cancel_futures=True)
+            signals = [
+                s for s in signals
+                if not halted_map.get(s.get('ticker'), False)
+            ]
         except Exception as exc:
+            halted_filter_complete = False
             logger.warning(f"halted filter failed: {exc}")
 
     signals = signals[:limit]
@@ -176,6 +203,8 @@ def screener_latest():
         'signal_count': len(signals),
         'total_signal_count': data.get('signal_count', 0),
         'total_before_filter': total_before,
+        'halted_filter_complete': halted_filter_complete,
+        'halted_filter_checked': halted_filter_checked,
         'processing_time_sec': data.get('processing_time_sec'),
         'signals': signals,
     })
