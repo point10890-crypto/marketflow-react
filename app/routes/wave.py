@@ -102,6 +102,43 @@ def _load_screener_json():
         return None
 
 
+def _bounded_halted_map(rows: list[dict]) -> tuple[dict[str, bool], bool, int]:
+    """Best-effort halted-stock lookup with a hard endpoint time budget."""
+    from concurrent.futures import ThreadPoolExecutor, wait
+    from engine.jubjub_analyzer import _is_halted_or_invalid
+
+    tickers = list(dict.fromkeys(
+        row.get('ticker') for row in rows if row.get('ticker')
+    ))
+    if not tickers:
+        return {}, True, 0
+
+    executor = ThreadPoolExecutor(max_workers=10, thread_name_prefix='wave-halted')
+    try:
+        futures = {
+            executor.submit(_is_halted_or_invalid, ticker): ticker
+            for ticker in tickers
+        }
+        done, pending = wait(
+            futures,
+            timeout=max(0.01, float(_HALTED_FILTER_BUDGET_SEC)),
+        )
+        halted_map: dict[str, bool] = {}
+        for future in done:
+            ticker = futures[future]
+            try:
+                halted_map[ticker] = bool(future.result())
+            except Exception:
+                halted_map[ticker] = False
+        for future in pending:
+            future.cancel()
+        return halted_map, not pending, len(done)
+    finally:
+        # Context-manager shutdown waits for every queued request and defeats
+        # the deadline. Running calls have their own HTTP timeout; queued calls
+        # are cancelled above.
+        executor.shutdown(wait=False, cancel_futures=True)
+
 @wave_bp.route('/screener/latest')
 def screener_latest():
     """
@@ -151,40 +188,11 @@ def screener_latest():
     halted_filter_checked = 0
     if request.args.get('exclude_halted', '1') != '0' and signals:
         try:
-            from engine.jubjub_analyzer import _is_halted_or_invalid
-            from concurrent.futures import ThreadPoolExecutor, wait
             # Never make a read endpoint wait for every external Naver request.
             # Only candidates that can appear in this response need checking.
-            candidate_signals = signals[:limit]
-            tickers = list(dict.fromkeys(
-                s.get('ticker') for s in candidate_signals if s.get('ticker')
-            ))
-            halted_map: dict[str, bool] = {}
-            executor = ThreadPoolExecutor(max_workers=10, thread_name_prefix='wave-halted')
-            try:
-                futures = {
-                    executor.submit(_is_halted_or_invalid, ticker): ticker
-                    for ticker in tickers
-                }
-                done, pending = wait(
-                    futures,
-                    timeout=max(0.01, float(_HALTED_FILTER_BUDGET_SEC)),
-                )
-                halted_filter_complete = not pending
-                halted_filter_checked = len(done)
-                for future in done:
-                    ticker = futures[future]
-                    try:
-                        halted_map[ticker] = bool(future.result())
-                    except Exception:
-                        halted_map[ticker] = False
-                for future in pending:
-                    future.cancel()
-            finally:
-                # Context-manager shutdown waits for every queued request and
-                # defeats the endpoint deadline. Running calls have their own
-                # HTTP timeout; queued calls are cancelled above.
-                executor.shutdown(wait=False, cancel_futures=True)
+            halted_map, halted_filter_complete, halted_filter_checked = (
+                _bounded_halted_map(signals[:limit])
+            )
             signals = [
                 s for s in signals
                 if not halted_map.get(s.get('ticker'), False)
@@ -244,7 +252,23 @@ def jubjub_candidates():
         data.get('signals') or [],
         min_score=min_score,
         limit=limit,
+        exclude_halted=False,
     )
+
+    halted_filter_complete = True
+    halted_filter_checked = 0
+    if request.args.get('exclude_halted', '1') != '0' and candidates:
+        try:
+            halted_map, halted_filter_complete, halted_filter_checked = (
+                _bounded_halted_map(candidates)
+            )
+            candidates = [
+                candidate for candidate in candidates
+                if not halted_map.get(candidate.get('ticker'), False)
+            ]
+        except Exception as exc:
+            halted_filter_complete = False
+            logger.warning(f"jubjub halted filter failed: {exc}")
 
     # 통계
     imminent = sum(1 for c in candidates if c['jubjub_badge'] == 'imminent')
@@ -260,6 +284,8 @@ def jubjub_candidates():
         'scan_count': data.get('scan_count', 0),
         'jubjub_count': len(candidates),
         'min_score': min_score,
+        'halted_filter_complete': halted_filter_complete,
+        'halted_filter_checked': halted_filter_checked,
         'stats': {
             'imminent': imminent,
             'buy_now': buy_now,
