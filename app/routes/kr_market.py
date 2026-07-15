@@ -6,6 +6,7 @@ import sys
 import json
 import time
 import logging
+import re
 import traceback
 from datetime import datetime, date
 import pandas as pd
@@ -510,6 +511,14 @@ def get_kr_ai_history_dates():
 def get_kr_ai_history(date):
     """특정 날짜 AI 분석"""
     try:
+        # On Windows a backslash in this route parameter is a filesystem path
+        # separator even though Flask does not treat it as a URL separator.
+        # Restrict the value before joining it to the history directory.
+        if not re.fullmatch(
+            r'(?:kr_ai_analysis_)?(?:\d{8}|\d{4}-\d{2}-\d{2})',
+            date or '',
+        ):
+            return jsonify({'error': 'Invalid date format.'}), 400
         history_file = os.path.join(DATA_DIR, 'history', f'{date}.json')
         if os.path.exists(history_file):
             with open(history_file, 'r', encoding='utf-8') as f:

@@ -957,7 +957,10 @@ def get_aibain_overview(*, perf_days: int = 30) -> dict:
     # learning
     try:
         import app.services.mirofish.alpha_brain_agent as _agent
-        obs = _agent.build_agent_observation() or {}
+        # This subscriber dashboard is read-only.  Building a complete agent
+        # observation here used to rebuild/persist the edge map on every GET
+        # and made the endpoint take roughly ten seconds in production.
+        obs = _agent.get_learning_summary() or {}
         imap = obs.get('interaction_map') or {}
         out['learning']['top_positive'] = (imap.get('top_positive') or [])[:5]
         out['learning']['top_negative'] = (imap.get('top_negative') or [])[:5]

@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback, Suspense } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
-import { API_BASE, authHeaders } from '@/lib/api';
+import { API_BASE, authHeaders, fetchWithTimeout } from '@/lib/api';
 import DartDeepSection from '@/components/stock-analyzer/DartDeepSection';
 
 /* ── 타입 정의 ── */
@@ -215,6 +215,13 @@ function StockAnalyzerContent() {
     // AbortController for in-flight analyze request — cancels on re-submit so
     // a slow first response can't clobber a fast second one (race fix).
     const analyzeAbortRef = useRef<AbortController | null>(null);
+    const searchAbortRef = useRef<AbortController | null>(null);
+
+    useEffect(() => () => {
+        analyzeAbortRef.current?.abort();
+        searchAbortRef.current?.abort();
+        if (debounceRef.current) clearTimeout(debounceRef.current);
+    }, []);
 
     const showToast = useCallback((message: string, isError: boolean) => {
         setToast({ message, isError });
@@ -231,12 +238,12 @@ function StockAnalyzerContent() {
             const controller = new AbortController();
             analyzeAbortRef.current = controller;
 
-            const res = await fetch(`${API_BASE}/api/stock-analyzer/analyze`, {
+            const res = await fetchWithTimeout(`${API_BASE}/api/stock-analyzer/analyze`, {
                 method: 'POST',
                 headers: { ...authHeaders({ 'Content-Type': 'application/json' }) },
                 body: JSON.stringify({ ticker: stock.ticker, name: stock.name }),
                 signal: controller.signal,
-            });
+            }, 60000);
             if (!res.ok) {
                 const data = await res.json().catch(() => ({}));
                 throw new Error(data.error || '분석 실패');
@@ -291,16 +298,30 @@ function StockAnalyzerContent() {
 
     // Search stocks with debounce
     const searchStocks = useCallback(async (q: string) => {
+        searchAbortRef.current?.abort();
         if (!q.trim()) { setSearchResults([]); setShowDropdown(false); return; }
+        const controller = new AbortController();
+        searchAbortRef.current = controller;
         try {
-            const res = await fetch(`${API_BASE}/api/stock-analyzer/search?q=${encodeURIComponent(q)}`, { headers: authHeaders() });
+            const res = await fetchWithTimeout(
+                `${API_BASE}/api/stock-analyzer/search?q=${encodeURIComponent(q)}`,
+                { headers: authHeaders(), signal: controller.signal },
+                10000,
+            );
             if (res.ok) {
                 const data = await res.json();
                 setSearchResults(data);
                 setSelectedIndex(0);
                 setShowDropdown(data.length > 0);
             }
-        } catch { setSearchResults([]); setShowDropdown(false); }
+        } catch (error) {
+            if (!(error instanceof DOMException && error.name === 'AbortError')) {
+                setSearchResults([]);
+                setShowDropdown(false);
+            }
+        } finally {
+            if (searchAbortRef.current === controller) searchAbortRef.current = null;
+        }
     }, []);
 
     const handleInput = (val: string) => {
@@ -315,6 +336,7 @@ function StockAnalyzerContent() {
         setQuery(stock.name);
         setSearchResults([]);
         setShowDropdown(false);
+        searchAbortRef.current?.abort();
         analyzeMutation.reset();
     };
 
@@ -366,11 +388,11 @@ function StockAnalyzerContent() {
             '조회시간': h.date
         }));
         try {
-            const res = await fetch(`${API_BASE}/api/stock-analyzer/export`, {
+            const res = await fetchWithTimeout(`${API_BASE}/api/stock-analyzer/export`, {
                 method: 'POST',
                 headers: { ...authHeaders({ 'Content-Type': 'application/json' }) },
                 body: JSON.stringify({ records })
-            });
+            }, 30000);
             if (res.ok) {
                 const blob = await res.blob();
                 const url = URL.createObjectURL(blob);

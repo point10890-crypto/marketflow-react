@@ -9,8 +9,8 @@ import { usePullToRefreshRegister } from '@/components/layout/PullToRefreshProvi
 interface BacktestStats {
     status: string;
     count: number;
-    win_rate: number;
-    avg_return: number;
+    win_rate: number | null;
+    avg_return: number | null;
     profit_factor?: number;
     message?: string;
 }
@@ -253,13 +253,15 @@ export default function KRMarketOverview() {
     const hasSectors = (gateData?.sectors?.length ?? 0) > 0;
     const totalSignals = signalsData?.signals?.length ?? 0;
 
-    const vcpWinRate = backtestData?.vcp?.win_rate ?? 0;
-    const vcpAvgReturn = backtestData?.vcp?.avg_return ?? 0;
+    const vcpAvailable = backtestData?.vcp?.status === 'OK';
+    const vcpWinRate = backtestData?.vcp?.win_rate;
+    const vcpAvgReturn = backtestData?.vcp?.avg_return;
     const vcpCount = backtestData?.vcp?.count ?? 0;
-    const cbWinRate = backtestData?.closing_bet?.win_rate ?? 0;
-    const cbAvgReturn = backtestData?.closing_bet?.avg_return ?? 0;
+    const cbAvailable = backtestData?.closing_bet?.status === 'OK';
+    const cbWinRate = backtestData?.closing_bet?.win_rate;
+    const cbAvgReturn = backtestData?.closing_bet?.avg_return;
     const cbCount = backtestData?.closing_bet?.count ?? 0;
-    const cbAccumulating = backtestData?.closing_bet?.status === 'Accumulating';
+    const cbAccumulating = !cbAvailable;
 
     return (
         <div className="flex flex-col gap-3 md:gap-4 animate-fade-in font-sans text-zinc-200 h-full">
@@ -522,18 +524,18 @@ export default function KRMarketOverview() {
                         </div>
                         <div className="flex items-baseline gap-1.5">
                             <span className="text-3xl font-bold text-white group-hover:text-amber-400 transition-colors">
-                                {loading ? '--' : vcpWinRate}
+                                {loading || !vcpAvailable ? '--' : vcpWinRate}
                             </span>
-                            <span className="text-sm text-zinc-600">%</span>
-                            {!loading && vcpAvgReturn !== 0 && (
+                            {vcpAvailable && <span className="text-sm text-zinc-600">%</span>}
+                            {!loading && vcpAvailable && vcpAvgReturn != null && vcpAvgReturn !== 0 && (
                                 <span className={`text-[10px] font-bold px-1 py-0.5 rounded ${vcpAvgReturn >= 0 ? 'bg-rose-500/10 text-rose-400' : 'bg-blue-500/10 text-blue-400'}`}>
                                     {vcpAvgReturn >= 0 ? '+' : ''}{vcpAvgReturn}%
                                 </span>
                             )}
                         </div>
                         <div className="mt-2 flex items-center gap-1.5">
-                            <span className="text-[10px] text-zinc-600">{vcpCount}건 거래</span>
-                            {backtestData?.vcp?.status === 'OK' && (
+                            <span className="text-[10px] text-zinc-600">{vcpAvailable ? `${vcpCount}건 거래` : '검증 데이터 없음'}</span>
+                            {vcpAvailable && (
                                 <i className="fas fa-circle-check text-[9px] text-emerald-600"></i>
                             )}
                         </div>
@@ -556,18 +558,18 @@ export default function KRMarketOverview() {
                             <div>
                                 <div className="flex items-center gap-2 text-sm font-bold text-amber-400">
                                     <i className="fas fa-database animate-pulse"></i>
-                                    <span>수집 중...</span>
+                                    <span>검증 대기</span>
                                 </div>
-                                <div className="mt-2 text-[10px] text-zinc-600">2일 이상 데이터 필요</div>
+                                <div className="mt-2 text-[10px] text-zinc-600">미래 OHLCV 성과 데이터 필요</div>
                             </div>
                         ) : (
                             <>
                                 <div className="flex items-baseline gap-1.5">
                                     <span className="text-3xl font-bold text-white group-hover:text-emerald-400 transition-colors">
-                                        {loading ? '--' : cbWinRate}
+                                        {loading || cbWinRate == null ? '--' : cbWinRate}
                                     </span>
                                     <span className="text-sm text-zinc-600">%</span>
-                                    {!loading && cbAvgReturn !== 0 && (
+                                    {!loading && cbAvgReturn != null && cbAvgReturn !== 0 && (
                                         <span className={`text-[10px] font-bold px-1 py-0.5 rounded ${cbAvgReturn >= 0 ? 'bg-rose-500/10 text-rose-400' : 'bg-blue-500/10 text-blue-400'}`}>
                                             {cbAvgReturn >= 0 ? '+' : ''}{cbAvgReturn}%
                                         </span>

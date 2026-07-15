@@ -6,6 +6,7 @@ from app.auth.decorators import generate_token
 from app.models import db
 from app.models.user import SubscriptionRequest, User
 import app.routes.admin as admin_routes
+import app.routes.auth as auth_routes
 
 
 def _app():
@@ -236,6 +237,82 @@ def test_admin_telegram_suppresses_reserved_example_targets(monkeypatch):
     target = type('Target', (), {'id': 2, 'email': 'expired@example.com', 'name': '만료회원'})()
 
     admin_routes._notify_admin('구독 요청 승인', target, 'pro -> pro')
+
+
+class _TrapThread:
+    """텔레그램 전송 스레드가 생성되면 기록 — 억제 검증용."""
+    spawned: list
+
+    def __init__(self, *args, **kwargs):
+        type(self).spawned.append(kwargs)
+
+    def start(self):
+        pass
+
+
+def test_auth_telegram_suppresses_reserved_example_targets(monkeypatch):
+    monkeypatch.setenv('TELEGRAM_BOT_TOKEN', 'dummy-token')
+    monkeypatch.setenv('TELEGRAM_CHAT_ID', '123')
+    _TrapThread.spawned = []
+    monkeypatch.setattr(auth_routes.threading, 'Thread', _TrapThread)
+
+    auth_routes._notify_admin_telegram(
+        '💳 구독 요청 (테스트)', target_email='expired@example.com'
+    )
+
+    assert _TrapThread.spawned == []
+
+
+def test_auth_telegram_skipped_in_testing_app(monkeypatch):
+    app = _app()
+    monkeypatch.setenv('TELEGRAM_BOT_TOKEN', 'dummy-token')
+    monkeypatch.setenv('TELEGRAM_CHAT_ID', '123')
+    _TrapThread.spawned = []
+    monkeypatch.setattr(auth_routes.threading, 'Thread', _TrapThread)
+
+    with app.app_context():
+        auth_routes._notify_admin_telegram(
+            '💳 구독 요청', target_email='real-member@gmail.com'
+        )
+
+    assert _TrapThread.spawned == []
+
+
+def test_subscription_request_passes_target_email_to_telegram(monkeypatch):
+    app = _app()
+    expired_at = datetime.now(timezone.utc) - timedelta(days=1)
+    captured = []
+    monkeypatch.setattr(
+        auth_routes, '_notify_admin_telegram',
+        lambda message, target_email=None: captured.append(target_email),
+    )
+
+    with app.app_context():
+        member = _user(
+            'expired@example.com',
+            '만료회원',
+            'Pass1234!',
+            status='expired',
+            tier='pro',
+            pro_expires_at=expired_at,
+        )
+        db.session.add(member)
+        db.session.commit()
+
+    client = app.test_client()
+    token = client.post('/api/auth/login', json={
+        'email': 'expired@example.com',
+        'password': 'Pass1234!',
+    }).get_json()['token']
+
+    renewal = client.post(
+        '/api/auth/subscription/request',
+        json={'to_tier': 'pro', 'depositor_name': '만료회원'},
+        headers={'Authorization': f'Bearer {token}'},
+    )
+
+    assert renewal.status_code == 201
+    assert captured == ['expired@example.com']
 
 
 def test_duplicate_active_renewal_approval_does_not_send_admin_notice(monkeypatch):

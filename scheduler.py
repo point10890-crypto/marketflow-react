@@ -1681,7 +1681,9 @@ def update_jongga_v2():
     pre-flight 검증으로 코드 버그 사전 탐지 + 실패 시 텔레그램 즉시 알림.
     """
     # ── Pre-flight: subprocess로 import만 테스트 (최신 디스크 코드 검증) ──
-    # LLMAnalyzer() 실제 인스턴스화로 anthropic/google/openai 의존성까지 검증
+    # Keep this a true import pre-flight. Constructing LLMAnalyzer here can
+    # perform slow provider initialization and turn host load into a false
+    # "code import bug" alert before the engine itself is even attempted.
     if not _kr_market_task_allowed('jongga_v2'):
         return True
 
@@ -1691,16 +1693,15 @@ def update_jongga_v2():
          'from engine.llm_analyzer import LLMAnalyzer; '
          'from engine.scorer import Scorer; '
          'import anthropic, openai; '  # V2 런타임 필수 SDK
-         'LLMAnalyzer(); '               # Claude/Gemini/OpenAI 클라이언트 초기화 확인
          'print("OK")'],
         'V2 pre-flight 검증',
-        timeout=30
+        timeout=60
     )
     if not preflight:
         send_telegram(
             "<b>🚨 종가베팅 V2 코드 버그</b>\n\n"
-            "엔진 import 실패 — 코드 수정 필요!\n"
-            "scheduler 로그를 확인하세요.",
+            "V2 pre-flight 실패 — import 오류 또는 실행 지연 가능.\n"
+            "scheduler 로그에서 Exit Code/타임아웃을 확인하세요.",
             channel=False
         )
         return False
@@ -2965,6 +2966,27 @@ def _was_run_today(task_key: str) -> bool:
         return False
 
 
+def _jongga_artifact_is_today(now=None) -> bool:
+    """Use the durable V2 artifact as an idempotency signal after restarts.
+
+    The manifest is recorded after the entire KR follow-up pipeline. If the
+    scheduler restarts after V2 persisted its result but before that later
+    record, catch-up must not rerun the costly engine or resend its alerts.
+    """
+    current = now or datetime.now()
+    path = os.path.join(Config.DATA_DIR, 'jongga_v2_latest.json')
+    try:
+        with open(path, 'r', encoding='utf-8') as handle:
+            payload = json.load(handle)
+        raw_date = str(payload.get('date') or '').strip()
+        if raw_date:
+            normalized = raw_date[:10].replace('.', '-').replace('/', '-')
+            return normalized == current.strftime('%Y-%m-%d')
+        return datetime.fromtimestamp(os.path.getmtime(path)).date() == current.date()
+    except (OSError, ValueError, TypeError, json.JSONDecodeError):
+        return False
+
+
 # ============================================================
 # 놓친 스케줄 복구 (Missed Schedule Recovery)
 # ============================================================
@@ -3033,6 +3055,10 @@ def check_and_run_missed_tasks():
                 logger.info(f"  ⏭️ {label}: 마감 지남 ({deadline_min//60}:{deadline_min%60:02d}), 스킵")
                 continue
             if task_key == 'kr_jongga' and not _kr_market_task_allowed('kr_jongga_missed_recovery', now):
+                continue
+            if task_key == 'kr_jongga' and _jongga_artifact_is_today(now):
+                logger.info("  KR closing-bet artifact already updated today; repairing manifest and skipping catch-up")
+                record_task_run(task_key)
                 continue
             if _was_run_today(task_key):
                 logger.info(f"  ✅ {label}: 오늘 이미 실행됨, 스킵")

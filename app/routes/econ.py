@@ -6,6 +6,7 @@ import json
 import traceback
 from datetime import datetime
 from flask import Blueprint, jsonify, request
+from app.auth.decorators import admin_required
 
 econ_bp = Blueprint('econ', __name__)
 
@@ -288,6 +289,7 @@ def get_econ_kr_sectors_history():
 
 
 @econ_bp.route('/kr/sectors/score', methods=['POST'])
+@admin_required
 def update_econ_kr_sector_score():
     """Update Korean Sector Score"""
     if not _init_econ_modules() or _sector_tracker is None:

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useCallback } from 'react';
-import { API_BASE, authHeaders } from '@/lib/api';
+import { API_BASE, authHeaders, fetchWithTimeout } from '@/lib/api';
 
 /**
  * 자동 데이터 갱신 훅 (Page Visibility API 기반)
@@ -14,18 +14,29 @@ export function useAutoRefresh(
 ) {
     const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const fetchRef = useRef(fetchFn);
+    const inFlightRef = useRef(false);
 
     // 항상 최신 fetchFn 참조 유지
     useEffect(() => {
         fetchRef.current = fetchFn;
     }, [fetchFn]);
 
+    const runFetch = useCallback(async () => {
+        if (inFlightRef.current) return;
+        inFlightRef.current = true;
+        try {
+            await fetchRef.current();
+        } catch {
+            // The page owns error presentation; keep the poller alive.
+        } finally {
+            inFlightRef.current = false;
+        }
+    }, []);
+
     const startPolling = useCallback(() => {
         if (intervalRef.current) return;
-        intervalRef.current = setInterval(() => {
-            fetchRef.current();
-        }, intervalMs);
-    }, [intervalMs]);
+        intervalRef.current = setInterval(runFetch, intervalMs);
+    }, [intervalMs, runFetch]);
 
     const stopPolling = useCallback(() => {
         if (intervalRef.current) {
@@ -44,7 +55,7 @@ export function useAutoRefresh(
         const handleVisibility = () => {
             if (document.visibilityState === 'visible') {
                 // 포그라운드 복귀 → 즉시 1회 fetch + polling 재개
-                fetchRef.current();
+                void runFetch();
                 startPolling();
             } else {
                 // 백그라운드 → polling 중단
@@ -60,7 +71,7 @@ export function useAutoRefresh(
             stopPolling();
             document.removeEventListener('visibilitychange', handleVisibility);
         };
-    }, [enabled, startPolling, stopPolling]);
+    }, [enabled, runFetch, startPolling, stopPolling]);
 }
 
 
@@ -87,6 +98,9 @@ export function useSmartRefresh(
     const onDataChangedRef = useRef(onDataChanged);
     const versionsRef = useRef<Record<string, number>>({});
     const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+    const inFlightRef = useRef(false);
+    const watchFilesRef = useRef(watchFiles);
+    const watchFilesKey = watchFiles.join('\u0000');
 
     useEffect(() => {
         fetchRef.current = fetchFn;
@@ -96,17 +110,19 @@ export function useSmartRefresh(
         onDataChangedRef.current = onDataChanged;
     }, [onDataChanged]);
 
+    useEffect(() => {
+        watchFilesRef.current = watchFiles;
+    }, [watchFilesKey]);
+
     const checkVersion = useCallback(async () => {
+        if (inFlightRef.current) return;
+        inFlightRef.current = true;
         try {
             // API_BASE가 있으면 Tunnel/Flask로, 없으면 로컬 proxy로
             const versionUrl = `${API_BASE}/api/data-version`;
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 5000);
-            const res = await fetch(versionUrl, {
+            const res = await fetchWithTimeout(versionUrl, {
                 headers: authHeaders(),
-                signal: controller.signal,
-            });
-            clearTimeout(timeoutId);
+            }, 5000);
             if (!res.ok) {
                 // API 오프라인 시 _meta.json 폴백
                 const metaRes = await fetch('/data/_meta.json');
@@ -116,7 +132,7 @@ export function useSmartRefresh(
                     const oldMeta = versionsRef.current['_meta'] || 0;
                     if (oldMeta > 0 && metaTime > oldMeta) {
                         versionsRef.current['_meta'] = metaTime;
-                        fetchRef.current();
+                        await fetchRef.current();
                     } else {
                         versionsRef.current['_meta'] = metaTime;
                     }
@@ -129,7 +145,7 @@ export function useSmartRefresh(
             // 감시 대상 파일 중 변경된 것이 있는지 체크
             let changed = false;
             const changedFiles: string[] = [];
-            for (const file of watchFiles) {
+            for (const file of watchFilesRef.current) {
                 const oldMtime = versionsRef.current[file] || 0;
                 const newMtime = newVersions[file] || 0;
                 if (oldMtime > 0 && newMtime > oldMtime) {
@@ -143,13 +159,15 @@ export function useSmartRefresh(
 
             // 변경 감지 → 실제 데이터 refetch + 알림 콜백
             if (changed) {
-                fetchRef.current();
+                await fetchRef.current();
                 onDataChangedRef.current?.(changedFiles);
             }
         } catch {
             // 네트워크 오류 무시 (다음 polling에서 재시도)
+        } finally {
+            inFlightRef.current = false;
         }
-    }, [watchFiles]);
+    }, [watchFilesKey]);
 
     const startPolling = useCallback(() => {
         if (intervalRef.current) return;

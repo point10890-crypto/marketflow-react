@@ -216,7 +216,6 @@ export default function DartDeepSection({ stockCode, stockName }: Props) {
             setExpanded(true);
             startAnalyze();
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [stockCode]);
 
     const handleToggle = useCallback(() => {

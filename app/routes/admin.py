@@ -364,6 +364,11 @@ def set_role(user_id):
     role = (data.get('role') or '').strip().lower()
     if role not in ('user', 'admin'):
         return jsonify({'error': 'Role must be user or admin'}), 400
+    actor = _admin_user()
+    if actor and actor.id == user.id and role != 'admin':
+        return jsonify({'error': 'Cannot demote your own admin account'}), 400
+    if user.is_admin and role != 'admin' and User.query.filter_by(role='admin').count() <= 1:
+        return jsonify({'error': 'Cannot demote the last admin account'}), 409
 
     before = {'role': user.role}
     user.role = role
@@ -435,6 +440,9 @@ def set_status(user_id):
     status = (data.get('status') or '').strip().lower()
     if status not in ('pending', 'approved', 'rejected', 'suspended'):
         return jsonify({'error': 'Status must be pending, approved, rejected, or suspended'}), 400
+    actor = _admin_user()
+    if actor and actor.id == user.id and status in {'rejected', 'suspended'}:
+        return jsonify({'error': 'Cannot block your own admin account'}), 400
 
     before = {'status': user.status}
     user.status = status

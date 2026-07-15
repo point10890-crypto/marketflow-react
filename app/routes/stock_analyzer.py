@@ -11,6 +11,7 @@ v2: 버그수정 (iloc[-1]→iloc[0], 52wk low=0, np.int64, yf1.1 news)
 """
 
 import os
+import re
 import time
 import logging
 import pandas as pd
@@ -757,6 +758,8 @@ def analyze_stock():
 
     if not ticker:
         return jsonify({'error': '티커가 없습니다.'}), 400
+    if not re.fullmatch(r'[A-Za-z0-9^=.-]{1,24}', ticker):
+        return jsonify({'error': 'Invalid ticker format.'}), 400
 
     # 캐시 확인 (6시간 TTL)
     cached = _get_cached_analysis(ticker)

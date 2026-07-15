@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { communityAPI, type CommunityBoard } from '@/lib/api';
@@ -73,8 +73,10 @@ export default function CommunityPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
-    useEffect(() => {
-        communityAPI.getBoards()
+    const loadBoards = useCallback(() => {
+        setLoading(true);
+        setError('');
+        return communityAPI.getBoards()
             .then(data => {
                 setBoards(data);
 
@@ -104,6 +106,10 @@ export default function CommunityPage() {
             .finally(() => setLoading(false));
     }, []);
 
+    useEffect(() => {
+        void loadBoards();
+    }, [loadBoards]);
+
     const canAccess = (board: CommunityBoard) => {
         if (!user) return false;
         return board.can_read !== false;
@@ -129,7 +135,16 @@ export default function CommunityPage() {
     if (error) {
         return (
             <div className="p-4 md:p-6">
-                <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 text-red-400 text-sm">{error}</div>
+                <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 text-red-400 text-sm">
+                    <p>{error}</p>
+                    <button
+                        type="button"
+                        onClick={() => void loadBoards()}
+                        className="mt-3 rounded-lg border border-red-400/30 bg-red-500/10 px-3 py-2 font-semibold text-red-200 hover:bg-red-500/20"
+                    >
+                        다시 시도
+                    </button>
+                </div>
             </div>
         );
     }

@@ -1129,7 +1129,13 @@ def _local_admin_token() -> str | None:
         return None
 
     # 2) Token 생성 — Flask 의 generate_token 과 동일 알고리즘
-    secret = os.getenv("SECRET_KEY", "marketflow-secret-key-change-in-production")
+    secret = os.getenv("SECRET_KEY", "").strip()
+    if not secret:
+        # Flask intentionally uses a process-local random key when SECRET_KEY is
+        # absent.  A separate process cannot reproduce that key, and using the
+        # old repository-known fallback would reintroduce token forgery.
+        logger.warning("Local admin token: SECRET_KEY is not configured")
+        return None
     expiry = int(time.time()) + 86400 * 30  # TOKEN_EXPIRY = 30 days
     payload = f"{user_id}:{expiry}"
     sig = hmac.new(secret.encode(), payload.encode(), hashlib.sha256).hexdigest()[:32]

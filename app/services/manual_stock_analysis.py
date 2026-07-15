@@ -58,6 +58,7 @@ def _env_bool(name: str, default: bool) -> bool:
 
 DEFAULT_SCRAPE_DELAY_SEC = _env_float("MANUAL_STOCK_ANALYSIS_DELAY_SEC", 1.2)
 AUTO_LOOP_ENABLED = _env_bool("MANUAL_STOCK_ANALYSIS_AUTO_LOOP", True)
+AUTO_IMPORT_KNOWN_RESULTS = _env_bool("MANUAL_STOCK_ANALYSIS_AUTO_IMPORT", True)
 AUTO_LOOP_MAX_ROWS = max(0, min(_env_int("MANUAL_STOCK_ANALYSIS_LOOP_MAX_ROWS", 0), MAX_SOURCE_ROWS))
 # Cooldown between full cycles. Default 600s (was 0 = immediate re-loop) so a single
 # residential IP is not hammering the Cloudflare-protected target 24/7. env-overridable.
@@ -662,7 +663,14 @@ def _summary(records: list[dict[str, Any]]) -> dict[str, int]:
 
 
 def _run_path(run_id: str) -> Path:
-    return RUNS_DIR / f"{run_id}.json"
+    clean_run_id = _clean_text(run_id)
+    if not re.fullmatch(r"[A-Za-z0-9_.-]{1,160}", clean_run_id):
+        raise ValueError("invalid run_id")
+    path = (RUNS_DIR / f"{clean_run_id}.json").resolve()
+    root = RUNS_DIR.resolve()
+    if path.parent != root:
+        raise ValueError("invalid run_id")
+    return path
 
 
 def _write_run(run: dict[str, Any]) -> dict[str, Any]:
@@ -1468,6 +1476,8 @@ def auto_import_known_results() -> None:
     This is intentionally best-effort. Production hosts without E: drives simply
     skip it, while the developer machine can immediately see the old output.
     """
+    if not AUTO_IMPORT_KNOWN_RESULTS:
+        return
     ensure_storage()
     for root in DEFAULT_RESULT_PATHS:
         if not root.exists() or not root.is_dir():

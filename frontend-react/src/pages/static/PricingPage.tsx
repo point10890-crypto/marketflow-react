@@ -46,7 +46,6 @@ export default function PricingPage() {
         setShowBank(true);
         // 기본 입금자명 = 가입 시 이름 (수정 가능)
         if (!depositorName) setDepositorName(user.name || '');
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user, token]);
 
     const handleSubmitRequest = async () => {

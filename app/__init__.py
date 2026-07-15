@@ -2,6 +2,8 @@
 """Flask 애플리케이션 팩토리 (KR Market + Auth + Stripe)"""
 
 import os
+import logging
+import secrets
 import sys
 from flask import Flask, make_response, request
 from flask.json.provider import DefaultJSONProvider
@@ -70,11 +72,26 @@ def create_app(config=None):
         pass
 
     # 기본 설정
-    app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'marketflow-secret-key-change-in-production')
+    configured_secret = os.getenv('SECRET_KEY', '').strip()
+    if configured_secret:
+        app.config['SECRET_KEY'] = configured_secret
+    else:
+        # Never fall back to a repository-known signing key.  A known key lets
+        # anyone mint a valid Bearer token for an arbitrary user id.  The
+        # process-local key keeps an accidentally misconfigured instance safe;
+        # production must still configure SECRET_KEY so tokens survive restarts.
+        app.config['SECRET_KEY'] = secrets.token_urlsafe(48)
+        logging.getLogger(__name__).critical(
+            'SECRET_KEY is not configured; using a process-local random key. '
+            'Existing auth tokens will be invalid after restart.'
+        )
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(
         os.path.abspath(os.path.dirname(os.path.dirname(__file__))), 'data', 'users.db'
     ).replace('\\', '/')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config['MAX_CONTENT_LENGTH'] = 110 * 1024 * 1024
+    app.config['MAX_FORM_MEMORY_SIZE'] = 1024 * 1024
+    app.config['MAX_JSON_CONTENT_LENGTH'] = 1024 * 1024
 
     # 설정 적용
     if config:
@@ -142,6 +159,15 @@ def create_app(config=None):
     from app.routes import register_blueprints
     register_blueprints(app)
 
+    @app.before_request
+    def reject_oversized_json():
+        """Reject oversized JSON before Flask materializes it in memory."""
+        content_length = request.content_length
+        max_json = int(app.config.get('MAX_JSON_CONTENT_LENGTH', 1024 * 1024))
+        if request.is_json and content_length is not None and content_length > max_json:
+            return make_response({'error': 'JSON request body too large'}, 413)
+        return None
+
     # ── API Cache-Control 정책 ──
     @app.after_request
     def add_cache_headers(response):
@@ -152,11 +178,29 @@ def create_app(config=None):
         """
         if response.content_type and 'application/json' in response.content_type:
             path = (request.path or '')
-            if path.startswith('/api/admin/') or path.startswith('/api/auth/'):
+            has_credentials = bool(
+                request.headers.get('Authorization')
+                or request.headers.get('Cookie')
+            )
+            sensitive_prefixes = (
+                '/api/admin/',
+                '/api/auth/',
+                '/api/community/',
+                '/api/stripe/',
+            )
+            if (
+                has_credentials
+                or request.method != 'GET'
+                or response.status_code >= 400
+                or path.startswith(sensitive_prefixes)
+            ):
                 response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
                 response.headers['Pragma'] = 'no-cache'
             elif not response.headers.get('Cache-Control'):
-                response.headers['Cache-Control'] = 'public, max-age=30'
+                # API responses may become user-specific as access rules evolve.
+                # Browser-private caching preserves the short TTL optimization
+                # without allowing Cloudflare/shared proxies to mix users.
+                response.headers['Cache-Control'] = 'private, max-age=30'
 
         # Security headers (all responses)
         response.headers['X-Content-Type-Options'] = 'nosniff'

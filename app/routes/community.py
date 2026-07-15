@@ -1,13 +1,16 @@
 """Community bulletin board routes"""
 
 import os
+import re
 import uuid
 import threading
 import requests as http_requests
 from flask import Blueprint, request, jsonify, send_from_directory, current_app
+from sqlalchemy import func
+from sqlalchemy.orm import joinedload
 from app.models import db
 from app.models.community import Board, Post, PostImage, Comment, PurchaseRequest
-from app.auth.decorators import login_required, approved_required, admin_required, _get_current_user
+from app.auth.decorators import approved_required, admin_required, _get_current_user
 
 
 def _notify_admin_telegram(message: str):
@@ -48,6 +51,9 @@ VIDEO_EXTENSIONS = {'mp4', 'mov', 'webm'}
 MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
 MAX_FORMULA_FILE_SIZE = 20 * 1024 * 1024  # 20MB
 MAX_VIDEO_SIZE = 100 * 1024 * 1024  # 100MB
+MAX_POST_TITLE_LENGTH = 200
+MAX_POST_CONTENT_LENGTH = 200_000
+MAX_COMMENT_LENGTH = 10_000
 
 UPLOAD_DIR = os.path.join(os.path.abspath(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))),
                           'data', 'uploads', 'community')
@@ -79,6 +85,12 @@ def _save_upload_verified(file_data: bytes, filename: str) -> tuple[bool, str]:
         return True, ''
     except OSError as e:
         return False, f'{type(e).__name__}: {e}'
+
+
+def _read_upload_limited(file_storage, max_bytes: int) -> bytes | None:
+    """Read at most ``max_bytes + 1`` so oversized uploads cannot exhaust RAM."""
+    data = file_storage.read(max_bytes + 1)
+    return None if len(data) > max_bytes else data
 
 
 def _check_tier(user_tier, required_tier):
@@ -127,6 +139,15 @@ def _validate_image_content(file_data: bytes, claimed_ext: str) -> bool:
     return detected_type == claimed_type
 
 
+def _validate_video_content(file_data: bytes, claimed_ext: str) -> bool:
+    """Perform a small container-signature check before public video serving."""
+    if claimed_ext in {'mp4', 'mov'}:
+        return len(file_data) >= 12 and file_data[4:8] == b'ftyp'
+    if claimed_ext == 'webm':
+        return len(file_data) >= 4 and file_data[:4] == b'\x1aE\xdf\xa3'
+    return False
+
+
 # ── Boards ──
 
 @community_bp.route('/boards', methods=['GET'])
@@ -135,22 +156,56 @@ def list_boards():
     user = _get_current_user()
     boards = Board.query.filter_by(is_active=True).order_by(Board.sort_order).all()
     board_ids = [board.id for board in boards]
-    visible_posts = (
-        Post.query
-        .with_entities(Post.id, Post.board_id, Post.title, Post.created_at, Post.updated_at)
-        .filter(Post.board_id.in_(board_ids), Post.is_hidden.is_(False))
-        .order_by(Post.board_id, Post.updated_at.desc(), Post.created_at.desc())
-        .all()
-    ) if board_ids else []
     post_counts = {}
     latest_posts = {}
-    for post in visible_posts:
-        post_counts[post.board_id] = post_counts.get(post.board_id, 0) + 1
-        latest_posts.setdefault(post.board_id, post)
+    if board_ids:
+        # Keep response work proportional to the number of boards, not posts.
+        # The previous implementation materialized every visible post merely to
+        # count rows and select one latest row.  On the production SQLite DB this
+        # made /api/community/boards increasingly slow and prone to proxy timeout.
+        post_counts = dict(
+            db.session.query(Post.board_id, func.count(Post.id))
+            .filter(Post.board_id.in_(board_ids), Post.is_hidden.is_(False))
+            .group_by(Post.board_id)
+            .all()
+        )
+
+        visible_at = func.coalesce(Post.updated_at, Post.created_at)
+        latest_at = (
+            db.session.query(
+                Post.board_id.label('board_id'),
+                func.max(visible_at).label('latest_at'),
+            )
+            .filter(Post.board_id.in_(board_ids), Post.is_hidden.is_(False))
+            .group_by(Post.board_id)
+            .subquery()
+        )
+        latest_rows = (
+            db.session.query(
+                Post.id,
+                Post.board_id,
+                Post.title,
+                Post.created_at,
+                Post.updated_at,
+            )
+            .join(
+                latest_at,
+                (Post.board_id == latest_at.c.board_id)
+                & (visible_at == latest_at.c.latest_at),
+            )
+            .filter(Post.is_hidden.is_(False))
+            .order_by(Post.board_id, Post.id.desc())
+            .all()
+        )
+        # A timestamp tie can return multiple rows; the deterministic id order
+        # above makes setdefault select exactly one row per board.
+        for post in latest_rows:
+            latest_posts.setdefault(post.board_id, post)
 
     result = []
     for b in boards:
-        latest_post = latest_posts.get(b.id)
+        can_read = (user.role == 'admin') or _check_tier(user.tier, b.min_tier)
+        latest_post = latest_posts.get(b.id) if can_read else None
         d = {
             'id': b.id,
             'slug': b.slug,
@@ -161,7 +216,7 @@ def list_boards():
             'min_tier': b.min_tier,
             'write_tier': b.write_tier,
             'is_active': b.is_active,
-            'post_count': post_counts.get(b.id, 0),
+            'post_count': post_counts.get(b.id, 0) if can_read else 0,
             'latest_post_id': latest_post.id if latest_post else None,
             'latest_post_title': latest_post.title if latest_post else None,
             'latest_post_at': (
@@ -170,7 +225,7 @@ def list_boards():
             ),
             'created_at': b.created_at.isoformat() if b.created_at else None,
         }
-        d['can_read'] = (user.role == 'admin') or _check_tier(user.tier, b.min_tier)
+        d['can_read'] = can_read
         d['can_write'] = (user.role == 'admin') or _check_tier(user.tier, b.write_tier)
         result.append(d)
     return jsonify(result)
@@ -232,19 +287,21 @@ def list_posts(slug):
     if user.role != 'admin' and not _check_tier(user.tier, board.min_tier):
         return jsonify({'error': 'Tier upgrade required'}), 403
 
-    page = request.args.get('page', 1, type=int)
-    per_page = request.args.get('per_page', 20, type=int)
-    per_page = min(per_page, 50)
+    page = max(1, request.args.get('page', 1, type=int) or 1)
+    per_page = request.args.get('per_page', 20, type=int) or 20
+    per_page = max(1, min(per_page, 50))
 
     # Notices (only page 1)
     notices = []
     if page == 1:
-        notice_q = Post.query.filter_by(board_id=board.id, is_hidden=False, is_notice=True)\
-            .order_by(Post.created_at.desc()).all()
+        notice_q = Post.query.options(joinedload(Post.author))\
+            .filter_by(board_id=board.id, is_hidden=False, is_notice=True)\
+            .order_by(Post.created_at.desc()).limit(50).all()
         notices = [p.to_dict() for p in notice_q]
 
     # Regular posts
-    query = Post.query.filter_by(board_id=board.id, is_hidden=False, is_notice=False)\
+    query = Post.query.options(joinedload(Post.author))\
+        .filter_by(board_id=board.id, is_hidden=False, is_notice=False)\
         .order_by(Post.created_at.desc())
     pagination = query.paginate(page=page, per_page=per_page, error_out=False)
 
@@ -309,6 +366,10 @@ def create_post(slug):
     content = data.get('content', '').strip()
     if not title or not content:
         return jsonify({'error': 'Title and content required'}), 400
+    if len(title) > MAX_POST_TITLE_LENGTH:
+        return jsonify({'error': f'Title too long (max {MAX_POST_TITLE_LENGTH} characters)'}), 400
+    if len(content) > MAX_POST_CONTENT_LENGTH:
+        return jsonify({'error': f'Content too long (max {MAX_POST_CONTENT_LENGTH} characters)'}), 400
 
     post = Post(board_id=board.id, author_id=user.id, title=title, content=content)
 
@@ -333,7 +394,7 @@ def create_post(slug):
 
 
 @community_bp.route('/posts/<int:post_id>', methods=['PUT'])
-@login_required
+@approved_required
 def update_post(post_id):
     user = _get_current_user()
     post = Post.query.get_or_404(post_id)
@@ -342,9 +403,19 @@ def update_post(post_id):
 
     data = request.get_json() or {}
     if 'title' in data:
-        post.title = data['title'].strip()
+        title = str(data['title'] or '').strip()
+        if not title:
+            return jsonify({'error': 'Title required'}), 400
+        if len(title) > MAX_POST_TITLE_LENGTH:
+            return jsonify({'error': f'Title too long (max {MAX_POST_TITLE_LENGTH} characters)'}), 400
+        post.title = title
     if 'content' in data:
-        post.content = data['content'].strip()
+        content = str(data['content'] or '').strip()
+        if not content:
+            return jsonify({'error': 'Content required'}), 400
+        if len(content) > MAX_POST_CONTENT_LENGTH:
+            return jsonify({'error': f'Content too long (max {MAX_POST_CONTENT_LENGTH} characters)'}), 400
+        post.content = content
 
     # Formula market: allow editing price (포인트 금액) + 식파일
     if post.board and post.board.slug == 'formula-market':
@@ -363,7 +434,7 @@ def update_post(post_id):
 
 
 @community_bp.route('/posts/<int:post_id>', methods=['DELETE'])
-@login_required
+@approved_required
 def delete_post(post_id):
     user = _get_current_user()
     post = Post.query.get_or_404(post_id)
@@ -555,8 +626,11 @@ def list_comments(post_id):
     board = post.board
     if user.role != 'admin' and not _check_tier(user.tier, board.min_tier):
         return jsonify({'error': 'Tier upgrade required'}), 403
-    comments = Comment.query.filter_by(post_id=post.id, is_hidden=False)\
-        .order_by(Comment.created_at.asc()).all()
+    limit = request.args.get('limit', 200, type=int) or 200
+    limit = max(1, min(limit, 500))
+    comments = Comment.query.options(joinedload(Comment.author))\
+        .filter_by(post_id=post.id, is_hidden=False)\
+        .order_by(Comment.created_at.asc()).limit(limit).all()
     return jsonify([c.to_dict() for c in comments])
 
 
@@ -573,6 +647,8 @@ def create_comment(post_id):
     content = data.get('content', '').strip()
     if not content:
         return jsonify({'error': 'Content required'}), 400
+    if len(content) > MAX_COMMENT_LENGTH:
+        return jsonify({'error': f'Content too long (max {MAX_COMMENT_LENGTH} characters)'}), 400
 
     parent_id = data.get('parent_id')
     if parent_id:
@@ -607,6 +683,8 @@ def update_comment(comment_id):
     content = data.get('content', '').strip()
     if not content:
         return jsonify({'error': 'Content required'}), 400
+    if len(content) > MAX_COMMENT_LENGTH:
+        return jsonify({'error': f'Content too long (max {MAX_COMMENT_LENGTH} characters)'}), 400
     comment.content = content
     db.session.commit()
     return jsonify(comment.to_dict())
@@ -645,8 +723,8 @@ def upload_image():
         return jsonify({'error': 'Invalid file type. Allowed: jpg, png, gif, webp'}), 400
 
     # Read and check size
-    file_data = file.read()
-    if len(file_data) > MAX_FILE_SIZE:
+    file_data = _read_upload_limited(file, MAX_FILE_SIZE)
+    if file_data is None:
         return jsonify({'error': 'File too large (max 5MB)'}), 400
 
     ext = file.filename.rsplit('.', 1)[1].lower()
@@ -688,8 +766,8 @@ def upload_formula_file():
     if ext not in FORMULA_FILE_EXTENSIONS:
         return jsonify({'error': f'Invalid file type. Allowed: {", ".join(sorted(FORMULA_FILE_EXTENSIONS))}'}), 400
 
-    file_data = file.read()
-    if len(file_data) > MAX_FORMULA_FILE_SIZE:
+    file_data = _read_upload_limited(file, MAX_FORMULA_FILE_SIZE)
+    if file_data is None:
         return jsonify({'error': 'File too large (max 20MB)'}), 400
 
     filename = f"{uuid.uuid4().hex}.{ext}"
@@ -718,9 +796,12 @@ def upload_video():
     if ext not in VIDEO_EXTENSIONS:
         return jsonify({'error': f'Invalid file type. Allowed: {", ".join(sorted(VIDEO_EXTENSIONS))}'}), 400
 
-    file_data = file.read()
-    if len(file_data) > MAX_VIDEO_SIZE:
+    file_data = _read_upload_limited(file, MAX_VIDEO_SIZE)
+    if file_data is None:
         return jsonify({'error': 'File too large (max 100MB)'}), 400
+
+    if not _validate_video_content(file_data, ext):
+        return jsonify({'error': 'File content does not match extension. Upload rejected.'}), 400
 
     filename = f"{uuid.uuid4().hex}.{ext}"
     ok, err = _save_upload_verified(file_data, filename)
@@ -739,7 +820,10 @@ def serve_upload(filename):
     ext = filename.rsplit('.', 1)[-1].lower() if '.' in filename else ''
     if ext in FORMULA_FILE_EXTENSIONS:
         return jsonify({'error': 'Use the protected download endpoint'}), 403
-    if not os.path.exists(os.path.join(UPLOAD_DIR, filename)):
+    if (
+        ext not in ALLOWED_EXTENSIONS | VIDEO_EXTENSIONS
+        or not re.fullmatch(r'[0-9a-f]{32}\.[a-z0-9]+', filename or '')
+    ):
         return jsonify({'error': 'Not found'}), 404
     response = send_from_directory(UPLOAD_DIR, filename)
     response.headers['Cache-Control'] = 'public, max-age=86400'
@@ -766,6 +850,12 @@ def download_formula_file(post_id):
 
     # Extract stored filename from url like /api/community/uploads/xxxx.ext
     stored_filename = post.file_url.rsplit('/', 1)[-1]
+    ext = stored_filename.rsplit('.', 1)[-1].lower() if '.' in stored_filename else ''
+    if (
+        ext not in FORMULA_FILE_EXTENSIONS
+        or not re.fullmatch(r'[0-9a-f]{32}\.[a-z0-9]+', stored_filename or '')
+    ):
+        return jsonify({'error': 'Invalid stored file reference'}), 400
     filepath = os.path.join(UPLOAD_DIR, stored_filename)
     if not os.path.exists(filepath):
         return jsonify({'error': '파일을 찾을 수 없습니다.'}), 404
@@ -781,19 +871,38 @@ def download_formula_file(post_id):
 # ── Search ──
 
 @community_bp.route('/summary', methods=['GET'])
+@approved_required
 def community_summary():
-    """Public summary stats for dashboard card (no auth required)"""
-    from datetime import datetime, timedelta
-    from sqlalchemy import func
+    """Summary stats limited to boards the authenticated member can read."""
+    from datetime import datetime
 
-    total_posts = Post.query.filter_by(is_hidden=False).count()
-    total_comments = Comment.query.count()
+    user = _get_current_user()
+    boards = Board.query.filter_by(is_active=True).all()
+    accessible_board_ids = [
+        board.id for board in boards
+        if user.role == 'admin' or _check_tier(user.tier, board.min_tier)
+    ]
+    visible_posts = Post.query.filter(
+        Post.board_id.in_(accessible_board_ids),
+        Post.is_hidden.is_(False),
+    )
+    total_posts = visible_posts.count()
+    total_comments = (
+        Comment.query.join(Post, Comment.post_id == Post.id)
+        .filter(
+            Post.board_id.in_(accessible_board_ids),
+            Post.is_hidden.is_(False),
+            Comment.is_hidden.is_(False),
+        )
+        .count()
+    )
 
     today = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
-    today_posts = Post.query.filter(Post.created_at >= today, Post.is_hidden == False).count()
+    today_posts = visible_posts.filter(Post.created_at >= today).count()
 
     # Recent posts (latest 3)
-    recent = Post.query.filter_by(is_hidden=False).order_by(Post.created_at.desc()).limit(3).all()
+    recent = visible_posts.options(joinedload(Post.board))\
+        .order_by(Post.created_at.desc()).limit(3).all()
     recent_posts = [{
         'id': p.id,
         'title': p.title[:40],
@@ -804,9 +913,14 @@ def community_summary():
 
     # Formula market stats
     formula_count = Post.query.join(Board).filter(
-        Board.slug == 'formula-market', Post.is_hidden == False
+        Board.id.in_(accessible_board_ids),
+        Board.slug == 'formula-market',
+        Post.is_hidden.is_(False),
     ).count()
-    pending_purchases = PurchaseRequest.query.filter_by(status='pending').count()
+    pending_purchases = (
+        PurchaseRequest.query.filter_by(status='pending').count()
+        if user.role == 'admin' else 0
+    )
 
     return jsonify({
         'total_posts': total_posts,

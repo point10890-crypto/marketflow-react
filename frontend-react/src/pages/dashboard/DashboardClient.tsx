@@ -1,8 +1,7 @@
 
 
 import { useEffect, useState, useCallback } from 'react';
-import { Link } from 'react-router-dom';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { usAPI, krAPI, cryptoAPI, jonggaAPI, waveAPI, briefingAPI, commonAPI, communityAPI, type AIBriefing, type MarketIndexItem, type KRAIChartAnalysisResponse, type USAIChartAnalysisResponse, type CommunitySummary } from '@/lib/api';
 import { usePullToRefreshRegister } from '@/components/layout/PullToRefreshProvider';
 import { useAuth } from '@/contexts/AuthContext';

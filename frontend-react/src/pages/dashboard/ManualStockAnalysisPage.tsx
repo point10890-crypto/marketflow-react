@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { API_BASE, authHeaders } from '@/lib/api';
+import { API_BASE, authHeaders, fetchWithTimeout } from '@/lib/api';
 
 interface ManualRunSummary {
     run_id: string;
@@ -220,6 +220,7 @@ export default function ManualStockAnalysisPage() {
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState('');
     const loopRunRef = useRef('');
+    const pollInFlightRef = useRef(false);
     const hasManualRunSelectionRef = useRef(false);
     const selectedRunIdRef = useRef('');
 
@@ -237,9 +238,9 @@ export default function ManualStockAnalysisPage() {
         setLoading(true);
         setMessage('');
         try {
-            const res = await fetch(`${API_BASE}/api/manual-stock-analysis/runs`, {
+            const res = await fetchWithTimeout(`${API_BASE}/api/manual-stock-analysis/runs`, {
                 headers: authHeaders(),
-            });
+            }, 15000);
             if (!res.ok) throw new Error(`회차 목록 조회 실패 (${res.status})`);
             const data = await res.json();
             const nextRuns: ManualRunSummary[] = data.runs || [];
@@ -290,9 +291,9 @@ export default function ManualStockAnalysisPage() {
             params.set('live', '1');
         }
         try {
-            const res = await fetch(`${API_BASE}/api/manual-stock-analysis/runs/${requestedRunId}?${params.toString()}`, {
+            const res = await fetchWithTimeout(`${API_BASE}/api/manual-stock-analysis/runs/${requestedRunId}?${params.toString()}`, {
                 headers: authHeaders(),
-            });
+            }, 15000);
             if (!res.ok) throw new Error(`분석 목록 조회 실패 (${res.status})`);
             const nextDetail: ManualRunDetail = await res.json();
             if (selectedRunIdRef.current === requestedRunId) {
@@ -311,9 +312,9 @@ export default function ManualStockAnalysisPage() {
 
     const fetchLoopStatus = useCallback(async () => {
         try {
-            const res = await fetch(`${API_BASE}/api/manual-stock-analysis/scraper-loop`, {
+            const res = await fetchWithTimeout(`${API_BASE}/api/manual-stock-analysis/scraper-loop`, {
                 headers: authHeaders(),
-            });
+            }, 8000);
             if (!res.ok) return;
             const data: ScraperLoopStatus = await res.json();
             setLoopStatus(data);
@@ -347,9 +348,9 @@ export default function ManualStockAnalysisPage() {
             const params = new URLSearchParams();
             params.set('q', cleanQuery);
             params.set('limit', '1000');
-            const res = await fetch(`${API_BASE}/api/manual-stock-analysis/history?${params.toString()}`, {
+            const res = await fetchWithTimeout(`${API_BASE}/api/manual-stock-analysis/history?${params.toString()}`, {
                 headers: authHeaders(),
-            });
+            }, 15000);
             if (!res.ok) throw new Error(`분석 이력 조회 실패 (${res.status})`);
             setStockHistory(await res.json());
         } catch (err) {
@@ -365,13 +366,9 @@ export default function ManualStockAnalysisPage() {
     }, [fetchLoopStatus, fetchRuns]);
 
     useEffect(() => {
-        fetchRunDetail();
-    }, [fetchRunDetail]);
-
-    useEffect(() => {
         const id = window.setTimeout(() => fetchRunDetail(), 250);
         return () => window.clearTimeout(id);
-    }, [fetchRunDetail, query]);
+    }, [fetchRunDetail]);
 
     useEffect(() => {
         const cleanQuery = query.trim();
@@ -386,9 +383,17 @@ export default function ManualStockAnalysisPage() {
     }, [fetchStockHistory, query]);
 
     useEffect(() => {
-        const id = window.setInterval(() => {
-            fetchLoopStatus();
-            if (loopStatus?.running || shouldStreamSelectedRun) fetchRunDetail({ silent: true });
+        const id = window.setInterval(async () => {
+            if (pollInFlightRef.current) return;
+            pollInFlightRef.current = true;
+            try {
+                await fetchLoopStatus();
+                if (loopStatus?.running || shouldStreamSelectedRun) {
+                    await fetchRunDetail({ silent: true });
+                }
+            } finally {
+                pollInFlightRef.current = false;
+            }
         }, loopStatus?.running || shouldStreamSelectedRun ? 1000 : 2500);
         return () => window.clearInterval(id);
     }, [fetchLoopStatus, fetchRunDetail, loopStatus?.running, shouldStreamSelectedRun]);

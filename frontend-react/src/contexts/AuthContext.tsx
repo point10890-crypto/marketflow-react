@@ -9,7 +9,7 @@ import {
     isAdmin as checkIsAdmin,
     type AuthUserData,
 } from '@/lib/auth';
-import { postAPI, API_BASE } from '@/lib/api';
+import { postAPI, API_BASE, fetchWithTimeout } from '@/lib/api';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 핵심 원칙 (재부팅·백엔드 다운 시 유저 차단 금지)
@@ -143,13 +143,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         // (2) 백그라운드 검증 — 실패해도 user 보존
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000);
-        fetch(`${API_BASE}/api/auth/me`, {
+        fetchWithTimeout(`${API_BASE}/api/auth/me`, {
             headers: { Authorization: `Bearer ${storedToken}` },
             signal: controller.signal,
-        })
+        }, 10000)
             .then((r) => {
-                clearTimeout(timeoutId);
                 if (r.status === 401) {
                     clearToken();
                     setTokenState(null);
@@ -165,9 +163,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 }
             })
             .catch((err) => {
+                if (err instanceof DOMException && err.name === 'AbortError') return;
                 console.warn('[Auth] background /me failed (offline-tolerant):', err?.message || err);
             })
             .finally(() => setLoading(false));
+        return () => controller.abort();
     }, []);
 
     // "이 기기에서 한번이라도 로그인/가입한 적 있음" 영구 플래그.
@@ -211,9 +211,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const currentToken = getToken();
         if (!currentToken) return;
         try {
-            const res = await fetch(`${API_BASE}/api/auth/me`, {
+            const res = await fetchWithTimeout(`${API_BASE}/api/auth/me`, {
                 headers: { Authorization: `Bearer ${currentToken}` },
-            });
+            }, 10000);
             if (res.ok) {
                 const data = await res.json();
                 if (data.user) {

@@ -15,7 +15,7 @@ function safeNextPath(value: string | null): string | null {
     if (!value) return null;
     try {
         const decoded = decodeURIComponent(value);
-        if (!decoded.startsWith('/') || decoded.startsWith('//')) return null;
+        if (!decoded.startsWith('/') || decoded.startsWith('//') || decoded.includes('\\')) return null;
         return decoded;
     } catch {
         return null;

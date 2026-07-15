@@ -16,6 +16,19 @@ $env:PYTHONUNBUFFERED = "1"
 $env:HOME_SERVER = "1"
 $env:FLASK_PORT = "5001"
 $env:WERKZEUG_RUN_MAIN = $null
+# The MiniPC has a dedicated scheduler.py daemon for recurring work. Keep the
+# Flask process request-only so worker failures cannot take every API down.
+$env:MARKETFLOW_BACKGROUND_WORKERS = "false"
+# Alpha scanning already runs in scheduler.py on the MiniPC.  Starting the
+# in-process monitor here can block Flask before it binds port 5001 when the
+# MiroFish auto-runner is unhealthy, so keep the API startup independent.
+$env:WORKER_ALPHA_MONITOR_ENABLED = "0"
+# The MiniPC serves durable JSON runs. Re-scanning legacy Excel locations on
+# every /manual-stock-analysis/runs poll can block the whole Flask process.
+$env:MANUAL_STOCK_ANALYSIS_AUTO_IMPORT = "0"
+# Status polling must not launch thousands of Selenium scrapes implicitly.
+# Operators can still start a deliberate run through the POST start endpoint.
+$env:MANUAL_STOCK_ANALYSIS_AUTO_LOOP = "0"
 
 $existing = Get-CimInstance Win32_Process | Where-Object {
     $_.CommandLine -like "*flask_app.py*"

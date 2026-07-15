@@ -3,11 +3,12 @@
 import os
 import re
 import hmac
+import ipaddress
 import time
 import threading
 import requests as http_requests
 from datetime import datetime, timezone
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app, has_app_context
 from app.models import db
 from app.models.user import User, SubscriptionRequest
 from app.auth.decorators import generate_token, login_required
@@ -20,6 +21,7 @@ _login_failures = {}   # {ip: [timestamp, ...]} — 실패한 시도만 기록
 _login_lock = threading.Lock()
 _LOGIN_MAX_FAILURES = 10
 _LOGIN_WINDOW_SEC = 300  # 5 minutes
+_LOGIN_MAX_KEYS = 5000
 
 
 def _login_rate_key(ip: str, email: str = '') -> str:
@@ -57,6 +59,13 @@ def _record_login_failure(key: str):
             expired = [k for k, v in _login_failures.items() if not v or max(v) < cutoff]
             for k in expired:
                 del _login_failures[k]
+        if len(_login_failures) > _LOGIN_MAX_KEYS:
+            oldest = sorted(
+                _login_failures,
+                key=lambda item: max(_login_failures[item]) if _login_failures[item] else 0,
+            )[:500]
+            for old_key in oldest:
+                _login_failures.pop(old_key, None)
 
 
 def _reset_login_failures(key: str):
@@ -72,6 +81,39 @@ _reg_attempts = {}   # {ip: [timestamp, ...]}
 _reg_lock = threading.Lock()
 _REG_MAX_ATTEMPTS = 5
 _REG_WINDOW_SEC = 600  # 10 minutes
+_REG_MAX_KEYS = 5000
+
+
+def _client_ip() -> str:
+    """Return a validated client IP without trusting spoofable proxy headers.
+
+    Cloudflare Tunnel connects to the Flask service from loopback.  Additional
+    reverse proxies can be explicitly listed in ``TRUSTED_PROXY_IPS``.  Direct
+    clients cannot rotate ``Cf-Connecting-IP``/``X-Forwarded-For`` to bypass
+    login and registration throttles.
+    """
+    peer = (request.remote_addr or '').strip()
+    try:
+        peer_ip = ipaddress.ip_address(peer)
+    except ValueError:
+        peer_ip = None
+
+    configured = {
+        value.strip()
+        for value in os.getenv('TRUSTED_PROXY_IPS', '').split(',')
+        if value.strip()
+    }
+    trusted_proxy = bool(peer_ip and peer_ip.is_loopback) or peer in configured
+    if trusted_proxy:
+        forwarded = (
+            request.headers.get('Cf-Connecting-IP')
+            or request.headers.get('X-Forwarded-For', '').split(',')[0].strip()
+        )
+        try:
+            return str(ipaddress.ip_address((forwarded or '').strip()))
+        except ValueError:
+            pass
+    return str(peer_ip) if peer_ip else '0.0.0.0'
 
 
 def _check_reg_rate_limit(ip: str) -> bool:
@@ -96,6 +138,13 @@ def _record_reg_attempt(ip: str):
             expired = [k for k, v in _reg_attempts.items() if not v or max(v) < cutoff]
             for k in expired:
                 del _reg_attempts[k]
+        if len(_reg_attempts) > _REG_MAX_KEYS:
+            oldest = sorted(
+                _reg_attempts,
+                key=lambda item: max(_reg_attempts[item]) if _reg_attempts[item] else 0,
+            )[:500]
+            for old_key in oldest:
+                _reg_attempts.pop(old_key, None)
 
 
 # ═══════════════════════════════════════════════════════
@@ -103,6 +152,8 @@ def _record_reg_attempt(ip: str):
 # ═══════════════════════════════════════════════════════
 def _validate_password(pw: str) -> tuple[bool, str]:
     """비밀번호 정책 검증. Returns (ok, error_msg)."""
+    if len(pw) > 128:
+        return False, '비밀번호는 128자 이하여야 합니다.'
     if len(pw) < 8:
         return False, '비밀번호는 8자 이상이어야 합니다'
     if not re.search(r'[A-Za-z]', pw):
@@ -112,10 +163,30 @@ def _validate_password(pw: str) -> tuple[bool, str]:
     return True, ''
 
 
-def _notify_admin_telegram(message: str):
-    """관리자 텔레그램으로 알림 전송 (비동기, 실패는 경고 로그)."""
+def _is_reserved_notify_email(email: str | None) -> bool:
+    """테스트/감사용 예약 계정 여부 (admin.py `_is_reserved_admin_notify_target` 와 동일 규칙)."""
+    email = (email or '').strip().lower()
+    if not email:
+        return False
+    return email.endswith('@example.com') or email.startswith('audit_')
+
+
+def _notify_admin_telegram(message: str, target_email: str | None = None):
+    """관리자 텔레그램으로 알림 전송 (비동기, 실패는 경고 로그).
+
+    pytest(TESTING 앱) 실행과 @example.com 예약 계정(테스트/감사 시나리오)은
+    실제 전송하지 않는다 — 테스트 스위트가 돌 때마다 관리자에게
+    '💳 구독 요청' 스팸이 반복 발송되던 문제 차단.
+    """
     import logging as _logging
     _logger = _logging.getLogger("marketflow.telegram")
+
+    if _is_reserved_notify_email(target_email):
+        _logger.info(f"telegram[auth] suppressed reserved target: {target_email}")
+        return
+    if has_app_context() and current_app.config.get('TESTING'):
+        _logger.info("telegram[auth] skipped: TESTING app")
+        return
 
     def _send():
         try:
@@ -139,16 +210,6 @@ def _notify_admin_telegram(message: str):
 
 auth_bp = Blueprint('auth', __name__)
 
-# 관리자 비밀키 (레거시 호환) — 환경변수 필수.
-# 미설정 시 admin_set_tier_legacy 라우트가 503 을 반환하도록 None 유지.
-ADMIN_SECRET = os.getenv('ADMIN_SECRET') or None
-if not ADMIN_SECRET:
-    import logging as _al
-    _al.getLogger(__name__).warning(
-        "ADMIN_SECRET not set — /auth/admin/set-tier legacy route will return 503. "
-        "Use /api/admin/* endpoints instead."
-    )
-
 
 # ═══════════════════════════════════════════════════════
 #  Public Auth API
@@ -157,7 +218,7 @@ if not ADMIN_SECRET:
 @auth_bp.route('/register', methods=['POST'])
 def register():
     # Rate limit check
-    client_ip = request.headers.get('Cf-Connecting-IP') or request.headers.get('X-Forwarded-For', '').split(',')[0].strip() or request.remote_addr or '0.0.0.0'
+    client_ip = _client_ip()
     if _check_reg_rate_limit(client_ip):
         return jsonify({'error': '가입 요청이 너무 많습니다. 잠시 후 다시 시도하세요.'}), 429
     _record_reg_attempt(client_ip)
@@ -175,6 +236,8 @@ def register():
 
     if not email or not password or not name:
         return jsonify({'error': 'email, password, name are required'}), 400
+    if len(email) > 254 or len(name) > 100 or len(password) > 128:
+        return jsonify({'error': 'Registration field exceeds maximum length'}), 400
 
     pw_ok, pw_err = _validate_password(password)
     if not pw_ok:
@@ -186,6 +249,15 @@ def register():
     # 가입은 기본 정보만 받는다. 플랜 선택은 /plan-select 페이지에서 별도 진행.
     # requested_tier 는 하위호환 — 폼에서 보내면 그대로 저장(NULL 허용).
     is_first_user = User.query.count() == 0
+    if is_first_user:
+        bootstrap_secret = os.getenv('MARKETFLOW_BOOTSTRAP_ADMIN_SECRET', '').strip()
+        supplied_secret = request.headers.get('X-Bootstrap-Admin-Secret', '')
+        if not bootstrap_secret:
+            return jsonify({
+                'error': 'Initial admin bootstrap is not configured',
+            }), 503
+        if not hmac.compare_digest(supplied_secret, bootstrap_secret):
+            return jsonify({'error': 'Initial admin bootstrap denied'}), 403
 
     # 동일 이름 중복 가입 경고 (차단은 하지 않음 — 동명이인 가능)
     same_name_users = User.query.filter(db.func.lower(User.name) == name.lower()).all()
@@ -196,7 +268,8 @@ def register():
             f"👤 이름: {name}\n"
             f"📧 신규: {email}\n"
             f"📧 기존: {existing_emails}\n"
-            f"⚡ 동명이인일 수 있으니 확인 바랍니다."
+            f"⚡ 동명이인일 수 있으니 확인 바랍니다.",
+            target_email=email,
         )
 
     user = User(email=email, name=name)
@@ -226,7 +299,8 @@ def register():
         f"📧 이메일: {user.email}\n"
         f"👤 이름: {user.name}\n"
         f"📋 요청 플랜: {tier_label}\n"
-        f"📅 가입일: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M')}"
+        f"📅 가입일: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M')}",
+        target_email=user.email,
     )
 
     # 인앱 알림
@@ -245,7 +319,7 @@ def register():
 @auth_bp.route('/login', methods=['POST'])
 def login():
     # Rate limit check (Cloudflare Tunnel: real IP from Cf-Connecting-IP)
-    client_ip = request.headers.get('Cf-Connecting-IP') or request.headers.get('X-Forwarded-For', '').split(',')[0].strip() or request.remote_addr or '0.0.0.0'
+    client_ip = _client_ip()
 
     data = request.get_json()
     if not data:
@@ -256,6 +330,8 @@ def login():
 
     if not email or not password:
         return jsonify({'error': 'email and password are required'}), 400
+    if len(email) > 254 or len(password) > 128:
+        return jsonify({'error': 'Invalid email or password'}), 401
 
     rate_key = _login_rate_key(client_ip, email)
     if _check_login_rate_limit(rate_key):
@@ -272,11 +348,10 @@ def login():
     # 가입 직후 브라우저를 닫았거나 승인 대기 중 다시 방문한 사용자가
     # /pending-approval 또는 /plan-select 에서 결제/승인 흐름을 계속 이어갈 수
     # 있어야 한다. 실제 서비스 접근은 프론트 가드와 pro_required 에서 막는다.
-    if not user.is_admin:
-        if user.status == 'suspended':
-            return jsonify({'error': '계정이 정지되었습니다. 관리자에게 문의하세요.', 'status': 'suspended'}), 403
-        if user.status == 'rejected':
-            return jsonify({'error': '가입이 거절되었습니다.', 'status': 'rejected'}), 403
+    if user.status == 'suspended':
+        return jsonify({'error': '계정이 정지되었습니다. 관리자에게 문의하세요.', 'status': 'suspended'}), 403
+    if user.status == 'rejected':
+        return jsonify({'error': '가입이 거절되었습니다.', 'status': 'rejected'}), 403
 
     # 로그인 성공 — 실패 카운터 리셋
     _reset_login_failures(rate_key)
@@ -455,7 +530,8 @@ def request_subscription():
         f"👤 {user.name} ({user.email})\n"
         f"📋 {user.tier or 'none'} → {full_label}\n"
         f"💰 {amount or '-'}" +
-        (f"\n🤖 <b>AI Brain 알파 스캐너 포함</b> (+40,000원/30일)" if includes_aibain else '')
+        (f"\n🤖 <b>AI Brain 알파 스캐너 포함</b> (+40,000원/30일)" if includes_aibain else ''),
+        target_email=user.email,
     )
     from app.routes.admin import create_admin_notification
     create_admin_notification(
@@ -493,32 +569,7 @@ def subscription_status():
 
 @auth_bp.route('/admin/set-tier', methods=['POST'])
 def admin_set_tier_legacy():
-    """유저 tier 변경 (레거시 — X-Admin-Secret 헤더)"""
-    if not ADMIN_SECRET:
-        return jsonify({'error': 'Admin legacy endpoint disabled (ADMIN_SECRET not configured)'}), 503
-    secret = request.headers.get('X-Admin-Secret', '')
-    if not hmac.compare_digest(secret, ADMIN_SECRET):
-        return jsonify({'error': 'Admin access denied'}), 403
-
-    data = request.get_json()
-    if not data:
-        return jsonify({'error': 'Request body required'}), 400
-
-    email = (data.get('email') or '').strip().lower()
-    tier = (data.get('tier') or '').strip().lower()
-
-    if not email or tier not in ('pro', 'premium'):
-        return jsonify({'error': 'email and tier (pro/premium) are required'}), 400
-
-    user = User.query.filter_by(email=email).first()
-    if not user:
-        return jsonify({'error': f'User not found: {email}'}), 404
-
-    old_tier = user.tier
-    user.tier = tier
-    db.session.commit()
-
+    """Retired: tier changes must use the audited Bearer-token admin API."""
     return jsonify({
-        'message': f'{email}: {old_tier} → {tier}',
-        'user': user.to_dict(),
-    })
+        'error': 'Legacy admin endpoint retired; use /api/admin/users/<id>/tier',
+    }), 410

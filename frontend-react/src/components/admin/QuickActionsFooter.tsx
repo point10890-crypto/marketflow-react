@@ -11,7 +11,7 @@
  */
 import { useState } from 'react';
 import { mirofishApi } from '@/lib/mirofishApi';
-import { postAuthAPI } from '@/lib/api';
+import { fetchAPI, postAuthAPI } from '@/lib/api';
 
 type ActionState = 'idle' | 'running' | 'ok' | 'failed';
 
@@ -24,9 +24,7 @@ interface Action {
 }
 
 async function fetchKrGate(): Promise<string> {
-    const resp = await fetch('/api/kr/market-gate', { credentials: 'include' });
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-    const data = await resp.json();
+    const data = await fetchAPI<{ label?: string; status?: string }>('/api/kr/market-gate');
     return data?.label || data?.status || 'updated';
 }
 

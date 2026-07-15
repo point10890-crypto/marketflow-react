@@ -140,8 +140,7 @@ export default function VCPEnhancedPage() {
     useEffect(() => {
         setSelectedDate('latest');
         loadDates(activeTab);
-        loadData(activeTab, 'latest');
-    }, [activeTab, loadData, loadDates]);
+    }, [activeTab, loadDates]);
 
     useEffect(() => {
         loadData(activeTab, selectedDate);

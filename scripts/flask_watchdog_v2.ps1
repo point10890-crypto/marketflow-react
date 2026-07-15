@@ -6,6 +6,7 @@ $HealthUrl = 'http://localhost:5001/healthz'
 $LogFile = Join-Path $Project 'logs\flask_watchdog.log'
 $StateFile = Join-Path $Project 'data\flask_watchdog_state.json'
 $FailureThreshold = 3
+$StartupGraceSeconds = 120
 
 if ($env:COMPUTERNAME -ne $ProductionHost) { exit 0 }
 
@@ -18,6 +19,36 @@ function Test-Health {
         $response = Invoke-WebRequest -UseBasicParsing -TimeoutSec 15 -Uri $HealthUrl -ErrorAction Stop
         return $response.StatusCode -eq 200
     } catch { return $false }
+}
+
+function Get-FlaskProcesses {
+    @(Get-CimInstance Win32_Process -Filter "Name='python.exe'" -ErrorAction SilentlyContinue |
+        Where-Object {
+            $_.ExecutablePath -like "$Project\.venv\Scripts\python.exe" -and
+            $_.CommandLine -match '(^|[\\\s\"])(flask_app\.py)([\\\s\"]|$)'
+        })
+}
+
+function Test-FlaskStarting {
+    $task = Get-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue
+    if (-not $task -or $task.State -ne 'Running') { return $false }
+
+    $now = Get-Date
+    try {
+        $taskInfo = Get-ScheduledTaskInfo -TaskName $TaskName -ErrorAction Stop
+        if ($taskInfo.LastRunTime -and ($now - $taskInfo.LastRunTime).TotalSeconds -lt $StartupGraceSeconds) {
+            return $true
+        }
+    } catch {}
+    foreach ($candidate in Get-FlaskProcesses) {
+        try {
+            $process = Get-Process -Id $candidate.ProcessId -ErrorAction Stop
+            if (($now - $process.StartTime).TotalSeconds -lt $StartupGraceSeconds) {
+                return $true
+            }
+        } catch {}
+    }
+    return $false
 }
 
 function Read-Failures {
@@ -42,11 +73,18 @@ if (Test-Health) {
     exit 0
 }
 
+# At boot the Flask task and watchdog share an AtStartup trigger. Give the
+# primary task time to import routes and bind the port instead of killing a
+# healthy startup and creating overlapping launcher/listener processes.
+if (Test-FlaskStarting) {
+    Write-Log 'Health not ready, but Flask is within startup grace; skipping restart.'
+    exit 0
+}
+
 Write-Log 'Health check failed; restarting Flask task.'
 Stop-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue
 Start-Sleep -Seconds 3
-Get-CimInstance Win32_Process -Filter "Name='python.exe'" |
-    Where-Object { $_.CommandLine -like '*flask_app.py*' } |
+Get-FlaskProcesses |
     ForEach-Object { & taskkill.exe /F /T /PID $_.ProcessId 2>&1 | Out-Null }
 Start-Sleep -Seconds 3
 Start-ScheduledTask -TaskName $TaskName

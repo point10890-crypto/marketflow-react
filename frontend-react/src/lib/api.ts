@@ -16,6 +16,21 @@ export function authHeaders(extra?: Record<string, string>): Record<string, stri
     return headers;
 }
 
+/** Restrict backend-provided redirects to an absolute path on this origin. */
+export function safeLocalRedirect(value: unknown, fallback: string): string {
+    if (typeof value !== 'string' || !value.startsWith('/') || value.startsWith('//') || value.includes('\\')) {
+        return fallback;
+    }
+    try {
+        const base = typeof window !== 'undefined' ? window.location.origin : 'https://local.invalid';
+        const parsed = new URL(value, base);
+        if (parsed.origin !== base) return fallback;
+        return `${parsed.pathname}${parsed.search}${parsed.hash}`;
+    } catch {
+        return fallback;
+    }
+}
+
 /** 만료/계정정지 응답 자동 처리 — 모든 fetchAPI / postAPI 공통 사용 */
 async function _handleAuthGate(response: Response, url: string): Promise<void> {
     if (response.status !== 401 && response.status !== 403) return;
@@ -32,7 +47,10 @@ async function _handleAuthGate(response: Response, url: string): Promise<void> {
             // 무한 루프 방지: 이미 /plan-select 에 있으면 skip
             if (typeof window !== 'undefined' && !window.location.pathname.includes('/plan-select')) {
                 console.warn('[fetchAPI] subscription expired — redirect to plan-select', url);
-                window.location.replace(body.redirect_to || '/plan-select?resubscribe=1&from=expired');
+                window.location.replace(safeLocalRedirect(
+                    body.redirect_to,
+                    '/plan-select?resubscribe=1&from=expired',
+                ));
             }
         } catch { /* ignore */ }
     }
@@ -49,50 +67,84 @@ export class ApiError extends Error {
     }
 }
 
-export async function fetchAPI<T>(endpoint: string, timeoutMs = 10000): Promise<T> {
-    const url = `${API_BASE}${endpoint}`;
+export class ApiTimeoutError extends Error {
+    readonly url: string;
+    readonly timeoutMs: number;
+
+    constructor(url: string, timeoutMs: number) {
+        super(`API timeout: ${url}`);
+        this.name = 'ApiTimeoutError';
+        this.url = url;
+        this.timeoutMs = timeoutMs;
+    }
+}
+
+/** Fetch with a deadline while preserving a caller-provided abort signal. */
+export async function fetchWithTimeout(
+    input: RequestInfo | URL,
+    init: RequestInit = {},
+    timeoutMs = 15000,
+): Promise<Response> {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+    const callerSignal = init.signal;
+    let timedOut = false;
+    const abortFromCaller = () => controller.abort();
+
+    if (callerSignal?.aborted) controller.abort();
+    else callerSignal?.addEventListener('abort', abortFromCaller, { once: true });
+
+    const timeoutId = setTimeout(() => {
+        timedOut = true;
+        controller.abort();
+    }, timeoutMs);
 
     try {
-        const response = await fetch(url, {
-            signal: controller.signal,
-            headers: authHeaders(),
-        });
+        return await fetch(input, { ...init, signal: controller.signal });
+    } catch (error) {
+        if (timedOut && error instanceof DOMException && error.name === 'AbortError') {
+            throw new ApiTimeoutError(String(input), timeoutMs);
+        }
+        throw error;
+    } finally {
         clearTimeout(timeoutId);
+        callerSignal?.removeEventListener('abort', abortFromCaller);
+    }
+}
+
+export async function fetchAPI<T>(endpoint: string, timeoutMs = 10000): Promise<T> {
+    const url = `${API_BASE}${endpoint}`;
+
+    try {
+        const response = await fetchWithTimeout(url, {
+            headers: authHeaders(),
+        }, timeoutMs);
         if (!response.ok) {
             await _handleAuthGate(response, url);
             throw new ApiError(`API Error: ${endpoint} (${response.status})`, response.status);
         }
         return await response.json();
     } catch (error) {
-        clearTimeout(timeoutId);
         console.error(`[fetchAPI Error] ${url}:`, error);
         throw error;
     }
 }
 
-export async function postAPI<T>(endpoint: string, body?: any): Promise<T> {
+export async function postAPI<T>(endpoint: string, body?: any, timeoutMs = 15000): Promise<T> {
     const url = `${API_BASE}${endpoint}`;
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000);
 
     try {
-        const response = await fetch(url, {
+        const response = await fetchWithTimeout(url, {
             method: 'POST',
             headers: authHeaders({ 'Content-Type': 'application/json' }),
             body: body ? JSON.stringify(body) : undefined,
-            signal: controller.signal,
-        });
-        clearTimeout(timeoutId);
+        }, timeoutMs);
         if (!response.ok) {
             await _handleAuthGate(response, url);
             const err = await response.json().catch(() => ({ error: `HTTP ${response.status}` }));
-            throw new Error(err.error || `API Error: ${endpoint} (${response.status})`);
+            throw new ApiError(err.error || `API Error: ${endpoint} (${response.status})`, response.status);
         }
         return await response.json();
     } catch (error) {
-        clearTimeout(timeoutId);
         console.error(`[postAPI Error] ${url}:`, error);
         throw error;
     }
@@ -853,11 +905,8 @@ async function _authFetch(url: string, options: RequestInit, timeoutMs: number =
         const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
         if (token) headers.set('Authorization', `Bearer ${token}`);
     }
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
     try {
-        const response = await fetch(url, { ...options, headers, signal: controller.signal });
-        clearTimeout(timeoutId);
+        const response = await fetchWithTimeout(url, { ...options, headers }, timeoutMs);
         if (!response.ok) {
             _handle401(response.status);
             await _handleAuthGate(response, url);
@@ -866,10 +915,6 @@ async function _authFetch(url: string, options: RequestInit, timeoutMs: number =
         }
         return response;
     } catch (error) {
-        clearTimeout(timeoutId);
-        if (error instanceof DOMException && error.name === 'AbortError') {
-            throw new Error(`API timeout: ${url}`);
-        }
         console.error(`[authFetch Error] ${url}:`, error);
         throw error;
     }
@@ -917,20 +962,15 @@ export async function deleteAuthAPI<T>(endpoint: string, apiToken?: string): Pro
 }
 
 export async function putAPI<T>(endpoint: string, body?: any): Promise<T> {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000);
     try {
-        const response = await fetch(`${API_BASE}${endpoint}`, {
+        const response = await fetchWithTimeout(`${API_BASE}${endpoint}`, {
             method: 'PUT',
             headers: authHeaders({ 'Content-Type': 'application/json' }),
             body: body ? JSON.stringify(body) : undefined,
-            signal: controller.signal,
-        });
-        clearTimeout(timeoutId);
+        }, 15000);
         if (!response.ok) throw new Error(`API Error: ${response.status}`);
         return await response.json();
     } catch (error) {
-        clearTimeout(timeoutId);
         throw error;
     }
 }

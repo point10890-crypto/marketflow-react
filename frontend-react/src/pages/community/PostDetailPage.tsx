@@ -2,8 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { communityAPI, API_BASE, type CommunityPost, type CommunityComment } from '@/lib/api';
-import DOMPurify from 'dompurify';
 import FormulaPurchaseSection from './FormulaPurchaseSection';
+import { sanitizeCommunityHtml } from '@/lib/sanitizeCommunityHtml';
 
 function tierBadge(tier: string) {
     if (tier === 'premium') return { text: 'P', cls: 'bg-purple-500/25 text-purple-300' };
@@ -308,13 +308,7 @@ export default function PostDetailPage() {
                             [&_iframe]:rounded-xl [&_iframe]:my-6 [&_iframe]:w-full [&_iframe]:aspect-video"
                         dangerouslySetInnerHTML={{
                             __html: (() => {
-                                let html = DOMPurify.sanitize(post.content || '', {
-                                    ADD_TAGS: ['img', 'video', 'source', 'iframe'],
-                                    ADD_ATTR: ['target', 'rel', 'src', 'alt', 'href',
-                                        'controls', 'playsinline', 'muted', 'loop', 'autoplay',
-                                        'width', 'height', 'allowfullscreen', 'frameborder', 'allow', 'type',
-                                        'style'],
-                                });
+                                let html = sanitizeCommunityHtml(post.content || '', API_BASE);
                                 // 배포 환경: 상대 경로를 API 서버 절대 경로로 변환
                                 if (API_BASE) {
                                     html = html.replace(/src="\/api\//g, `src="${API_BASE}/api/`);

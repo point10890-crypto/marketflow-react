@@ -65,7 +65,7 @@ export default function PaymentRequestPage() {
         if (user?.name && !depositorName) {
             setDepositorName(user.name);
         }
-    }, [user?.name]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [user?.name]);
 
     if (!user || !token || !selectedMeta) {
         return null;

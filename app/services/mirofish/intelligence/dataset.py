@@ -108,9 +108,9 @@ def read_training_dataset():
         return None
 
 
-def dataset_summary():
+def dataset_summary(*, allow_build=True):
     data = read_training_dataset()
-    if data is None:
+    if data is None and allow_build:
         try:
             data = build_training_dataset(write=False)
         except Exception:

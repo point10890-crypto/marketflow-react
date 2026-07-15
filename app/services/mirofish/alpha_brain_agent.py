@@ -91,6 +91,17 @@ def build_agent_observation(*, now_iso: str | None = None) -> dict[str, Any]:
     }
 
 
+def get_learning_summary() -> dict[str, Any]:
+    """Return the read-only learning fields used by status dashboards.
+
+    Dashboard reads must not call :func:`build_agent_observation`: that full
+    agent-cycle input rebuilds and persists the edge map, reads the journal,
+    and performs other maintenance-oriented work.  The UI only needs the
+    already persisted interaction/regime summaries.
+    """
+    return _intelligence_summary(allow_dataset_build=False)
+
+
 def run_maintenance(observation: dict[str, Any], *, dry_run: bool) -> list[dict[str, Any]]:
     """Run deterministic upkeep that keeps learning data fresh."""
     decisions: list[dict[str, Any]] = []
@@ -368,7 +379,7 @@ def _advisory_summary() -> dict[str, Any]:
     }
 
 
-def _intelligence_summary() -> dict[str, Any]:
+def _intelligence_summary(*, allow_dataset_build: bool = True) -> dict[str, Any]:
     """Attach L2 interaction edges and regime distribution (read-only, isolated)."""
     interaction_map: dict[str, Any] = {}
     regime_distribution: dict[str, Any] = {}
@@ -389,7 +400,11 @@ def _intelligence_summary() -> dict[str, Any]:
     try:
         from app.services.mirofish.intelligence import dataset as _dataset
 
-        summary = _dataset.dataset_summary()
+        summary = (
+            _dataset.dataset_summary()
+            if allow_dataset_build
+            else _dataset.dataset_summary(allow_build=False)
+        )
         if isinstance(summary, dict):
             regime_distribution = summary.get('regime_distribution') or {}
     except Exception as exc:

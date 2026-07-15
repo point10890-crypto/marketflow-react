@@ -28,7 +28,7 @@ export default function NotificationToast() {
                 return unique.slice(0, MAX_VISIBLE);
             });
         }
-    }, [notifications]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [notifications]);
 
     // 자동 사라짐
     useEffect(() => {

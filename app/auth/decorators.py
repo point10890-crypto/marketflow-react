@@ -15,7 +15,10 @@ TOKEN_EXPIRY = 86400 * 30  # 30 days
 
 
 def _get_secret():
-    return current_app.config.get('SECRET_KEY', 'marketflow-default-secret')
+    secret = current_app.config.get('SECRET_KEY')
+    if not secret:
+        raise RuntimeError('SECRET_KEY is not configured')
+    return str(secret)
 
 
 def generate_token(user_id: int) -> str:
@@ -57,6 +60,11 @@ def _get_current_user():
     return db.session.get(User, user_id)
 
 
+def _is_account_blocked(user: User) -> bool:
+    """Explicit suspension/rejection overrides role and subscription bypasses."""
+    return user.status in {'suspended', 'rejected'}
+
+
 def login_required(f):
     """인증 필수 — 로그인한 유저만 접근 가능"""
     @wraps(f)
@@ -64,6 +72,8 @@ def login_required(f):
         user = _get_current_user()
         if user is None:
             return jsonify({'error': 'Authentication required'}), 401
+        if _is_account_blocked(user):
+            return jsonify({'error': 'Account access denied', 'status': user.status}), 403
         request.current_user = user
         return f(*args, **kwargs)
     return decorated
@@ -76,6 +86,8 @@ def approved_required(f):
         user = _get_current_user()
         if user is None:
             return jsonify({'error': 'Authentication required'}), 401
+        if _is_account_blocked(user):
+            return jsonify({'error': 'Account access denied', 'status': user.status}), 403
         if not user.is_approved and not user.is_admin:
             return jsonify({'error': 'Account not approved. Please wait for admin approval.'}), 403
         request.current_user = user
@@ -90,6 +102,8 @@ def pro_required(f):
         user = _get_current_user()
         if user is None:
             return jsonify({'error': 'Authentication required'}), 401
+        if _is_account_blocked(user):
+            return jsonify({'error': 'Account access denied', 'status': user.status}), 403
         if not user.is_approved and not user.is_admin:
             return jsonify({'error': 'Account not approved'}), 403
         if user.tier not in ('pro', 'premium') and not user.is_admin:
@@ -150,6 +164,8 @@ def admin_required(f):
         user = _get_current_user()
         if user is None:
             return jsonify({'error': 'Authentication required'}), 401
+        if _is_account_blocked(user):
+            return jsonify({'error': 'Account access denied', 'status': user.status}), 403
         if not user.is_admin:
             return jsonify({'error': 'Admin access denied'}), 403
 
@@ -179,6 +195,8 @@ def admin_or_aibain_required(f):
         user = _get_current_user()
         if user is None:
             return jsonify({'error': 'Authentication required'}), 401
+        if _is_account_blocked(user):
+            return jsonify({'error': 'Account access denied', 'status': user.status}), 403
         if not (user.is_admin or user.is_aibain_active):
             return jsonify({
                 'error': 'AI Brain 구독자 또는 관리자만 접근 가능합니다.'

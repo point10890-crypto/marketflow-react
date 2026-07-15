@@ -56,9 +56,17 @@ export default defineConfig({
     },
     rollupOptions: {
       output: {
-        manualChunks: {
-          vendor: ['react', 'react-dom', 'react-router-dom'],
-          query: ['@tanstack/react-query'],
+        manualChunks(id) {
+          if (id.includes('/node_modules/@tanstack/react-query/')) return 'query';
+          if (
+            id.includes('/node_modules/react/')
+            || id.includes('/node_modules/react-dom/')
+            || id.includes('/node_modules/react-router/')
+            || id.includes('/node_modules/react-router-dom/')
+          ) {
+            return 'vendor';
+          }
+          return undefined;
         },
         chunkFileNames: 'assets/[hash].js',
         entryFileNames: 'assets/[hash].js',

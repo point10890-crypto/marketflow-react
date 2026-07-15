@@ -126,6 +126,8 @@ def get_manual_run(run_id: str):
             q=request.args.get("q", ""),
             live_only=(request.args.get("live", "").lower() in {"1", "true", "yes"}),
         ))
+    except ValueError:
+        return jsonify({"error": "invalid run_id"}), 400
     except FileNotFoundError:
         return jsonify({"error": "manual run not found"}), 404
 
@@ -139,6 +141,8 @@ def export_manual_run(run_id: str):
             result=request.args.get("result", "all"),
             q=request.args.get("q", ""),
         )
+    except ValueError:
+        return jsonify({"error": "invalid run_id"}), 400
     except FileNotFoundError:
         return jsonify({"error": "manual run not found"}), 404
     return send_file(

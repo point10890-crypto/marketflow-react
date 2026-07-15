@@ -15,7 +15,7 @@ def test_overview_has_three_sections(monkeypatch):
     monkeypatch.setattr(wf, 'build_share_payload', lambda w, rank=None: {'top_items': [
         {'rank': 1, 'name': 'A', 'symbol': '000001', 'action': 'BUY_CANDIDATE'}]})
     import app.services.mirofish.alpha_brain_agent as agent
-    monkeypatch.setattr(agent, 'build_agent_observation', lambda **kw: {
+    monkeypatch.setattr(agent, 'get_learning_summary', lambda: {
         'interaction_map': {'top_positive': [{'combo': 'regime:RISK_ON & tag:foreign_buy', 'n': 6,
                                               'hit_rate': 1.0, 'expectancy_pct': 8.0}], 'top_negative': []},
         'regime_distribution': {'RISK_ON': 26}})
@@ -37,8 +37,45 @@ def test_overview_isolates_failing_source(monkeypatch):
     import app.services.mirofish.workflow as wf
     monkeypatch.setattr(wf, 'read_latest_workflow', lambda: None)
     import app.services.mirofish.alpha_brain_agent as agent
-    monkeypatch.setattr(agent, 'build_agent_observation', lambda **kw: {'interaction_map': {}, 'regime_distribution': {}})
+    monkeypatch.setattr(agent, 'get_learning_summary', lambda: {'interaction_map': {}, 'regime_distribution': {}})
     monkeypatch.setattr(agent, 'get_agent_status', lambda: {})
     out = po.get_aibain_overview()
     assert 'detections' in out and 'performance' in out and 'learning' in out
     assert out['performance'].get('error') or out['performance'].get('evaluated_count') in (0, None)
+
+
+def test_overview_does_not_build_full_agent_observation(monkeypatch):
+    monkeypatch.setattr(po, 'get_outcomes_board', lambda **kw: {'summary': {}, 'items': []})
+    import app.services.mirofish.workflow as wf
+    monkeypatch.setattr(wf, 'read_latest_workflow', lambda: None)
+    import app.services.mirofish.alpha_brain_agent as agent
+    monkeypatch.setattr(
+        agent,
+        'build_agent_observation',
+        lambda **kw: (_ for _ in ()).throw(AssertionError('full observation must not run on GET')),
+    )
+    monkeypatch.setattr(agent, 'get_learning_summary', lambda: {
+        'interaction_map': {'top_positive': [], 'top_negative': []},
+        'regime_distribution': {'NEUTRAL': 3},
+    })
+    monkeypatch.setattr(agent, 'get_agent_status', lambda: {})
+
+    out = po.get_aibain_overview()
+
+    assert out['learning']['regime_distribution'] == {'NEUTRAL': 3}
+
+
+def test_learning_summary_does_not_build_missing_training_dataset(monkeypatch):
+    import app.services.mirofish.alpha_brain_agent as agent
+    from app.services.mirofish.intelligence import dataset
+
+    monkeypatch.setattr(dataset, 'read_training_dataset', lambda: None)
+    monkeypatch.setattr(
+        dataset,
+        'build_training_dataset',
+        lambda **kw: (_ for _ in ()).throw(AssertionError('dashboard GET must not build dataset')),
+    )
+
+    summary = agent.get_learning_summary()
+
+    assert summary['regime_distribution'] == {}

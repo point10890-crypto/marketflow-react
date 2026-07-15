@@ -5,8 +5,8 @@ import os
 import json
 import logging
 import traceback
+import re
 import pandas as pd
-import yfinance as yf
 import sys
 import subprocess
 from flask import Blueprint, jsonify, request, Response, stream_with_context
@@ -15,7 +15,7 @@ from app.utils.cache import get_sector, SECTOR_MAP
 from app.utils.paths import BASE_DIR, DATA_DIR, US_OUTPUT_DIR, CRYPTO_OUTPUT_DIR
 from app.utils.json_cache import load_json_cached
 from app.utils.yf_safe import yf_download_safe, yf_ticker_history_safe
-from app.auth.decorators import admin_required
+from app.auth.decorators import admin_required, pro_required
 
 logger = logging.getLogger(__name__)
 
@@ -41,6 +41,7 @@ except Exception as e:
 
 
 @common_bp.route('/portfolio')
+@pro_required
 def get_portfolio_data():
     """포트폴리오 데이터 - KR Market"""
     try:
@@ -240,6 +241,7 @@ def get_portfolio_data():
 
 
 @common_bp.route('/portfolio-summary')
+@pro_required
 def portfolio_summary():
     """포트폴리오 요약"""
     try:
@@ -264,6 +266,7 @@ def portfolio_summary():
 
 
 @common_bp.route('/stock/<ticker>')
+@pro_required
 def get_stock_detail(ticker):
     """개별 종목 상세 정보"""
     try:
@@ -287,12 +290,31 @@ def get_stock_detail(ticker):
 
 
 @common_bp.route('/realtime-prices', methods=['POST'])
+@pro_required
 def get_realtime_prices():
     """실시간 가격 조회"""
     try:
-        data = request.get_json()
+        data = request.get_json(silent=True) or {}
         tickers = data.get('tickers', [])
-        market = data.get('market', 'kr')
+        market = str(data.get('market', 'kr')).strip().lower()
+
+        if not isinstance(tickers, list):
+            return jsonify({'error': 'tickers must be a list'}), 400
+        if len(tickers) > 50:
+            return jsonify({'error': 'Too many tickers (max 50)'}), 400
+        if market not in {'kr', 'us'}:
+            return jsonify({'error': 'market must be kr or us'}), 400
+
+        normalized_tickers = []
+        seen = set()
+        for raw_ticker in tickers:
+            ticker = str(raw_ticker or '').strip().upper()
+            if not ticker or len(ticker) > 20 or not re.fullmatch(r'[A-Z0-9.^=_-]+', ticker):
+                return jsonify({'error': f'Invalid ticker: {ticker[:20]}'}), 400
+            if ticker not in seen:
+                normalized_tickers.append(ticker)
+                seen.add(ticker)
+        tickers = normalized_tickers
         
         if not tickers:
             return jsonify({'prices': {}})
@@ -310,7 +332,12 @@ def get_realtime_prices():
                 ticker_map[yf_t] = t_padded
             
             try:
-                price_data = yf.download(yf_tickers, period='1d', interval='1m', progress=False, threads=True)
+                price_data = yf_download_safe(
+                    yf_tickers,
+                    timeout=8.0,
+                    period='1d',
+                    interval='1m',
+                )
                 if not price_data.empty:
                     price_data = price_data.ffill()
                     if 'Close' in price_data.columns:
@@ -465,6 +492,7 @@ _market_indices_cache: dict = {}  # {data, ts}
 _MARKET_INDICES_TTL = 300  # 5 minutes
 
 @common_bp.route('/market-indices')
+@pro_required
 def get_market_indices():
     """시장 지수 데이터 (가벼운 캐시 엔드포인트)"""
     import time
@@ -1134,8 +1162,8 @@ def get_backtest_summary():
     from datetime import datetime, timedelta
     
     summary = {
-        'vcp': {'status': 'No Data', 'win_rate': 0, 'avg_return': 0, 'count': 0},
-        'closing_bet': {'status': 'No Data', 'win_rate': 0, 'avg_return': 0, 'count': 0}
+        'vcp': {'status': 'No Data', 'win_rate': None, 'avg_return': None, 'count': 0},
+        'closing_bet': {'status': 'No Data', 'win_rate': None, 'avg_return': None, 'count': 0}
     }
     
     debug_info = {}
@@ -1202,8 +1230,8 @@ def get_backtest_summary():
                 'status': 'Accumulating',
                 'message': f'{len(history_files)}일 데이터 (최소 2일 필요)',
                 'count': 0,
-                'win_rate': 0,
-                'avg_return': 0
+                'win_rate': None,
+                'avg_return': None
             }
         else:
             # 히스토리 백테스트 수행
@@ -1228,58 +1256,27 @@ def get_backtest_summary():
             debug_info['total_signals'] = len(all_signals)
             
             if all_signals:
-                # 현재가 조회하여 수익률 계산
-                wins = 0
-                total_return = 0
-                valid_count = 0
-                
-                for signal in all_signals:
-                    entry_price = signal.get('entry_price', 0)
-                    target_price = signal.get('target_price', 0)
-                    stop_price = signal.get('stop_price', 0)
-                    
-                    if entry_price <= 0:
-                        continue
-                    
-                    # 간이 백테스트: target 도달 여부 (실제로는 pykrx로 미래 가격 확인 필요)
-                    # 현재는 change_pct 기반으로 추정
-                    change_pct = signal.get('change_pct', 0)
-                    
-                    if change_pct > 0:
-                        # 시그널 당일 상승 중이면 target 도달 가정 (5% 수익)
-                        est_return = 5.0
-                        wins += 1
-                    else:
-                        # 하락 중이면 손절 가정 (-3% 손실)
-                        est_return = -3.0
-                    
-                    total_return += est_return
-                    valid_count += 1
-                
-                if valid_count > 0:
-                    win_rate = (wins / valid_count) * 100
-                    avg_return = total_return / valid_count
-                    
-                    summary['closing_bet'] = {
-                        'status': 'OK',
-                        'count': valid_count,
-                        'win_rate': round(win_rate, 1),
-                        'avg_return': round(avg_return, 2)
-                    }
-                else:
-                    summary['closing_bet'] = {
-                        'status': 'No Valid Signals',
-                        'count': 0,
-                        'win_rate': 0,
-                        'avg_return': 0
-                    }
+                # A signal-day change is not a forward outcome. The previous
+                # implementation converted it into fabricated +5%/-3% returns
+                # and exposed those numbers as a successful backtest. Keep the
+                # samples visible, but publish no performance until an
+                # entry-date OHLCV replay with costs and horizon is available.
+                summary['closing_bet'] = {
+                    'status': 'Unavailable',
+                    'message': 'Forward OHLCV outcomes are not available; estimated returns are disabled.',
+                    'count': len(all_signals),
+                    'evaluated_count': 0,
+                    'win_rate': None,
+                    'avg_return': None,
+                    'lookahead_safe': False,
+                }
             else:
                 summary['closing_bet'] = {
                     'status': 'Accumulating',
                     'message': '과거 시그널 없음',
                     'count': 0,
-                    'win_rate': 0,
-                    'avg_return': 0
+                    'win_rate': None,
+                    'avg_return': None
                 }
                 
     except Exception as e:
