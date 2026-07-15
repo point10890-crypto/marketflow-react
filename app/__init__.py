@@ -404,18 +404,30 @@ def create_app(config=None):
                 f"  Registered ({len(registered)}): {sorted(list(registered))[:15]}..."
             )
 
-    # ── Pro 구독 만료 자동 다운그레이드 (1시간 간격) ──
+    # ── Pro / AI Brain 구독 만료 유지보수 (1시간 간격) ──
     background_workers_enabled = (
         not app.config.get('TESTING')
         and os.getenv('MARKETFLOW_BACKGROUND_WORKERS', 'true').strip().lower()
         not in {'0', 'false', 'no', 'off'}
     )
+    expiry_workers_raw = os.getenv('MARKETFLOW_EXPIRY_WORKERS_ENABLED')
+    expiry_workers_enabled = (
+        not app.config.get('TESTING')
+        and (
+            background_workers_enabled
+            if expiry_workers_raw is None
+            else expiry_workers_raw.strip().lower() not in {'0', 'false', 'no', 'off'}
+        )
+    )
+    if expiry_workers_enabled:
+        _start_expiry_checker(app)
+        _start_aibain_expiry_checker(app)
+    else:
+        print("[INFO] Subscription expiry workers disabled for this app instance")
+
     if not background_workers_enabled:
         print("[INFO] Background workers disabled for this app instance")
         return app
-
-    _start_expiry_checker(app)
-    _start_aibain_expiry_checker(app)
 
     # ── 클라우드 스케줄러 자동 시작 (Render 또는 SCHEDULER_ENABLED) ──
     if os.getenv('RENDER'):  # 로컬: scheduler.py --daemon 사용. 이중 스케줄러 방지

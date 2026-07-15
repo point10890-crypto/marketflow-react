@@ -2,6 +2,7 @@ from datetime import datetime, timedelta, timezone
 import sqlite3
 
 from app import create_app, _apply_aibain_expiry_state
+import app as app_package
 from app.auth.decorators import generate_token
 from app.models import db
 from app.models.user import SubscriptionRequest, User
@@ -22,6 +23,23 @@ def _user(email: str, name: str, password: str, *, status='pending', tier=None, 
     user = User(email=email, name=name, status=status, tier=tier, role=role, pro_expires_at=pro_expires_at)
     user.set_password(password)
     return user
+
+
+def test_expiry_workers_can_run_when_general_background_workers_are_disabled(monkeypatch):
+    started = []
+    monkeypatch.setenv('MARKETFLOW_BACKGROUND_WORKERS', 'false')
+    monkeypatch.setenv('MARKETFLOW_EXPIRY_WORKERS_ENABLED', 'true')
+    monkeypatch.setattr(app_package, '_start_expiry_checker', lambda app: started.append('pro'))
+    monkeypatch.setattr(app_package, '_start_aibain_expiry_checker', lambda app: started.append('aibain'))
+
+    app_package.create_app({
+        'TESTING': False,
+        'SECRET_KEY': 'expiry-worker-gate-test',
+        'SQLALCHEMY_DATABASE_URI': 'sqlite:///:memory:',
+        'SQLALCHEMY_ENGINE_OPTIONS': {},
+    })
+
+    assert started == ['pro', 'aibain']
 
 
 def test_startup_migration_adds_aibain_columns_to_legacy_db(tmp_path):

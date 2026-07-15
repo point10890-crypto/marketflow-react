@@ -19,6 +19,9 @@ $env:WERKZEUG_RUN_MAIN = $null
 # The MiniPC has a dedicated scheduler.py daemon for recurring work. Keep the
 # Flask process request-only so worker failures cannot take every API down.
 $env:MARKETFLOW_BACKGROUND_WORKERS = "false"
+# 일반 분석 워커는 끄더라도 회원 구독 만료 처리는 반드시 유지한다.
+# Pro/AI Brain 만료, Pro pause 재개, D-3/D-1 알림만 수행하는 경량 스레드다.
+$env:MARKETFLOW_EXPIRY_WORKERS_ENABLED = "true"
 # Alpha scanning already runs in scheduler.py on the MiniPC.  Starting the
 # in-process monitor here can block Flask before it binds port 5001 when the
 # MiroFish auto-runner is unhealthy, so keep the API startup independent.
