@@ -121,7 +121,7 @@ def _restrict_windows_acl(path: Path) -> None:
     root_command = ["icacls", str(path), "/inheritance:r", "/grant:r", *grants, "/C"]
     completed = subprocess.run(root_command, capture_output=True, text=True, check=False)
     if completed.returncode != 0:
-        raise RuntimeError("Failed to restrict backup ACL")
+        raise RuntimeError(f"Failed to restrict backup ACL (exit={completed.returncode})")
     # Reset descendants so they inherit the protected root ACL.  Applying
     # /inheritance:r recursively can otherwise leave child files with no ACEs.
     descendants = str(path / "*")
@@ -132,7 +132,7 @@ def _restrict_windows_acl(path: Path) -> None:
         check=False,
     )
     if reset.returncode != 0:
-        raise RuntimeError("Failed to propagate protected backup ACL")
+        raise RuntimeError(f"Failed to propagate protected backup ACL (exit={reset.returncode})")
 
 
 def _online_sqlite_backup(source: Path, destination: Path) -> None:

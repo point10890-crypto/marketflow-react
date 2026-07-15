@@ -3,6 +3,7 @@ $ErrorActionPreference = "Stop"
 $Root = "C:\bitman_marketfloww"
 $Python = Join-Path $Root ".venv\Scripts\python.exe"
 $BackupScript = Join-Path $Root "scripts\backup_marketflow_data.py"
+$Runner = Join-Path $Root "scripts\run_durable_backup_task.ps1"
 $TaskName = "MarketFlow-Durable-Backup"
 
 if (-not (Test-Path -LiteralPath $Python -PathType Leaf)) {
@@ -11,10 +12,13 @@ if (-not (Test-Path -LiteralPath $Python -PathType Leaf)) {
 if (-not (Test-Path -LiteralPath $BackupScript -PathType Leaf)) {
     throw "Backup script is missing: $BackupScript"
 }
+if (-not (Test-Path -LiteralPath $Runner -PathType Leaf)) {
+    throw "Backup task runner is missing: $Runner"
+}
 
-$Arguments = "`"$BackupScript`" --root `"$Root`" --prefix durable --retention-days 30"
+$Arguments = "-NoProfile -ExecutionPolicy Bypass -File `"$Runner`""
 $Action = New-ScheduledTaskAction `
-    -Execute $Python `
+    -Execute "powershell.exe" `
     -Argument $Arguments `
     -WorkingDirectory $Root
 $Trigger = New-ScheduledTaskTrigger -Daily -At "03:15"
