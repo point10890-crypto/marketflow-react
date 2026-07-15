@@ -116,7 +116,7 @@ def _restrict_windows_acl(path: Path) -> None:
         "*S-1-5-18:(OI)(CI)F",       # SYSTEM
         "*S-1-5-32-544:(OI)(CI)F",  # Builtin Administrators
     ]
-    if username and username.upper() != "SYSTEM":
+    if username and username.upper() != "SYSTEM" and not username.endswith("$"):
         grants.append(f"{username}:(OI)(CI)F")
     root_command = ["icacls", str(path), "/inheritance:r", "/grant:r", *grants, "/C"]
     completed = subprocess.run(root_command, capture_output=True, text=True, check=False)
