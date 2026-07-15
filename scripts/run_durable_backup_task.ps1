@@ -12,11 +12,14 @@ $started = Get-Date -Format "o"
 Add-Content -LiteralPath $LogPath -Encoding UTF8 -Value "$started backup task started"
 
 try {
+    $previousErrorPreference = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
     $output = & $Python $BackupScript `
         --root $Root `
         --prefix durable `
         --retention-days 30 2>&1
     $exitCode = $LASTEXITCODE
+    $ErrorActionPreference = $previousErrorPreference
     foreach ($line in $output) {
         Add-Content -LiteralPath $LogPath -Encoding UTF8 -Value ([string]$line)
     }
