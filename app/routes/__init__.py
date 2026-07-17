@@ -45,6 +45,10 @@ def register_blueprints(app):
     from app.routes.admin_mirofish_hermes import admin_mirofish_hermes_bp
     app.register_blueprint(admin_mirofish_hermes_bp, url_prefix='/api/admin/mirofish')
 
+    # Admin MiroFish TradingAgents deep-verification endpoints
+    from app.routes.admin_mirofish_tradingagents import admin_mirofish_tradingagents_bp
+    app.register_blueprint(admin_mirofish_tradingagents_bp, url_prefix='/api/admin/mirofish')
+
     # Admin MiroFish GraphRAG analysis routes (Phase A: status)
     from app.routes.admin_mirofish_graphrag import admin_mirofish_graphrag_bp
     app.register_blueprint(admin_mirofish_graphrag_bp, url_prefix='/api/admin/mirofish/graphrag')

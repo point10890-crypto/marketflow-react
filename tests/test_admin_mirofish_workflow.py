@@ -1,9 +1,26 @@
 from datetime import datetime, timezone
 
+import pytest
 from flask import Flask
 
 from app.routes.admin_mirofish import admin_mirofish_bp
 from app.services.mirofish import outcome_tracker, workflow
+
+
+@pytest.fixture(autouse=True)
+def _disable_tradingagents_layer(monkeypatch):
+    """These tests exercise the ranking / kalman / outcome pipeline in isolation.
+
+    The TradingAgents deep-verification layer (Task 6) is default-ON in production
+    and wired into `_complete_workflow`, but these pre-existing integration tests
+    do not mock it. Left live it would invoke the real multi-agent engine per
+    candidate — slow, log-noisy, writes to the real repo data dir, and its rule
+    verdict depends on shared on-disk data (sector RS cache), making these tests
+    order-dependent. Gate it off so each test remains hermetic and deterministic.
+    TradingAgents intervention itself is covered by
+    tests/test_mirofish_tradingagents_workflow.py.
+    """
+    monkeypatch.setenv('MIROFISH_TRADINGAGENTS_DISABLED', 'true')
 
 
 def _candidate(symbol, name, alpha, risk, rank=1, action='BUY_CANDIDATE'):

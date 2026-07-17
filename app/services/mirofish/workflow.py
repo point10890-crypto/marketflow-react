@@ -19,6 +19,7 @@ from typing import Any
 
 from app.services.mirofish import alpha_scanner, outcome_tracker, store
 import app.services.mirofish.dual_kalman as dual_kalman
+from app.services.mirofish.tradingagents import engine as ta_engine
 from app.utils.atomic_json import write_json_atomic
 
 
@@ -535,6 +536,10 @@ def build_workflow_top3_telegram_message(workflow: dict[str, Any]) -> str:
         reason = _korean_reason(item, candidate, verdict)
         if reason:
             lines.append(f"핵심 근거: {_escape(reason)}")
+        ta = item.get('tradingagents') or {}
+        if ta.get('verdict'):
+            badge = ' 🔥매수유력' if ta.get('strong_buy') else ''
+            lines.append(f"  🤝 TradingAgents: {ta['verdict']} {round(float(ta.get('confidence') or 0))}%{badge}")
         outcome = item.get('outcome') or {}
         if outcome:
             if outcome.get('forward_return_pct') is not None:
@@ -737,9 +742,78 @@ def _payload_require_buy(payload: dict[str, Any] | None) -> bool:
     return _bool(val, True)
 
 
-def _select_top3(ranked: list[dict[str, Any]], *, top_n: int, require_buy: bool) -> list[dict[str, Any]]:
-    """Pick the surfaced TOP picks. When require_buy, only CIO BUY verdicts qualify."""
+def _apply_tradingagents_layer(
+    ranked: list[dict[str, Any]],
+    *,
+    top_n: int,
+    require_buy: bool,
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    """TradingAgents 딥 검증: BUY 후보 상위 N 분석 → SELL 제외, 점수 재조정.
+
+    매수 유력 종목 검출 목적. 각 후보를 다중 에이전트 딥 분석에 통과시켜:
+      - SELL  → TOP3 후보에서 제외 (`ta_excluded` 마킹, 레코드 tail 로 보존)
+      - STRONG_BUY → +boost_strong, `strong_buy` 배지 (매수유력)
+      - BUY   → +boost_buy * (confidence/100)
+      - HOLD  → -penalty_hold
+    킬 스위치(MIROFISH_TRADINGAGENTS_DISABLED) 시 무손상 통과. 개별 종목 분석
+    실패 시 해당 종목만 조정 없이 넘어가고, 전체 ranked 는 그대로 유지된다.
+    """
+    if ta_engine.is_disabled():
+        return ranked, {'status': 'disabled', 'analyzed': 0, 'excluded': []}
+    cfg = ta_engine.get_status()['config']
     eligible = [r for r in ranked if _verdict_is_buy(r)] if require_buy else list(ranked)
+    targets = eligible[:int(cfg.get('max_candidates') or 5)]
+    excluded, analyzed = [], 0
+    for item in targets:
+        cand = item.get('candidate') or {}
+        name = cand.get('display_name') or cand.get('name') or cand.get('symbol')
+        if not name:
+            continue
+        try:
+            run = ta_engine.run_deep_analysis(name, symbol=cand.get('symbol'))
+        except Exception as exc:
+            item['tradingagents'] = {'status': 'failed', 'error': str(exc)}
+            continue
+        analyzed += 1
+        v = run.get('verdict') or {}
+        base = float(item.get('final_score') or 0.0)
+        verdict = v.get('verdict')
+        if verdict == 'SELL':
+            item['ta_excluded'] = True
+            excluded.append(cand.get('symbol'))
+        elif verdict == 'STRONG_BUY':
+            item['ta_adjusted_score'] = base + float(cfg.get('boost_strong') or 8.0)
+        elif verdict == 'BUY':
+            item['ta_adjusted_score'] = base + float(cfg.get('boost_buy') or 5.0) * (float(v.get('confidence') or 0) / 100.0)
+        elif verdict == 'HOLD':
+            item['ta_adjusted_score'] = base - float(cfg.get('penalty_hold') or 3.0)
+        item['tradingagents'] = {
+            'run_id': run.get('id'), 'verdict': verdict,
+            'confidence': v.get('confidence'), 'strong_buy': bool(v.get('strong_buy')),
+            'bull_case': v.get('bull_case'), 'bear_case': v.get('bear_case'),
+            'risk_summary': v.get('risk_summary'), 'method': run.get('method'),
+        }
+
+    def _sort_key(r):
+        val = r.get('ta_adjusted_score')
+        if val is None:
+            val = r.get('final_score')
+        return val if val is not None else -999
+
+    adjusted = sorted([r for r in ranked if not r.get('ta_excluded')], key=_sort_key, reverse=True)
+    adjusted += [r for r in ranked if r.get('ta_excluded')]   # keep excluded at tail for the record
+    return adjusted, {'status': 'applied', 'analyzed': analyzed, 'excluded': excluded, 'config': cfg}
+
+
+def _select_top3(ranked: list[dict[str, Any]], *, top_n: int, require_buy: bool) -> list[dict[str, Any]]:
+    """Pick the surfaced TOP picks. When require_buy, only CIO BUY verdicts qualify.
+
+    TradingAgents 딥 검증이 SELL 로 배제한 종목(`ta_excluded`)은 두 분기 모두에서 제외된다.
+    """
+    if require_buy:
+        eligible = [r for r in ranked if _verdict_is_buy(r) and not r.get('ta_excluded')]
+    else:
+        eligible = [r for r in ranked if not r.get('ta_excluded')]
     return eligible[:top_n]
 
 
@@ -794,6 +868,13 @@ def _complete_workflow(
             _write_workflow(workflow)
 
     ranked = sorted(results, key=lambda item: item.get('final_score', -999), reverse=True)
+    try:
+        ranked, ta_summary = _apply_tradingagents_layer(
+            ranked, top_n=top_n, require_buy=_require_buy(workflow),
+        )
+    except Exception as exc:
+        ta_summary = {'status': 'error', 'error': f'{type(exc).__name__}: {exc}'}
+    workflow['tradingagents_summary'] = ta_summary
     top3 = _select_top3(ranked, top_n=top_n, require_buy=_require_buy(workflow))
     summary = _workflow_decision_summary(top3, ranked)
     outcome_summary: dict[str, Any] = {}
