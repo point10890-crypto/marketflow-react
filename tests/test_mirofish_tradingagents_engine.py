@@ -1,0 +1,101 @@
+"""Unit tests for the deep-analysis engine (orchestration + persistence).
+
+Runs the full rule pipeline end-to-end with a patched data source, verifies the
+LOCKED run schema, persistence + retrieval, path-traversal rejection in get_run,
+and the kill-switch status flag.
+"""
+
+import app.services.mirofish.tradingagents.engine as engine
+
+
+def _patch_sources(monkeypatch, tmp_path):
+    monkeypatch.setattr(engine, 'RUNS_ROOT', str(tmp_path))
+    monkeypatch.setattr(engine.data_hub, 'gather_bundle', lambda t: {
+        'target': t, 'symbol': '005930', 'market': 'KOSPI', 'display_name': t,
+        'price': {'found': True, 'price': 70000, 'change_pct': 4.0, 'date': '2026-07-17'},
+        'corpus': '수주 계약 신고가', 'technical': {'trend': 'up', 'ma_aligned': True},
+        'rs': {'rs_rating': 90}, 'fundamentals': {}, 'errors': {}})
+
+
+def test_run_deep_analysis_rule_end_to_end(monkeypatch, tmp_path):
+    monkeypatch.delenv('MIROFISH_TRADINGAGENTS_DISABLED', raising=False)
+    _patch_sources(monkeypatch, tmp_path)
+    run = engine.run_deep_analysis('삼성전자', use_llm=False)
+    assert run['verdict']['verdict'] in ('STRONG_BUY', 'BUY', 'HOLD', 'SELL')
+    assert run['method'] == 'rule' and run['id'].startswith('ta_')
+    assert len(run['analyst_reports']) == 4
+    assert engine.get_run(run['id'])['id'] == run['id']
+    assert engine.list_runs(limit=5)[0]['id'] == run['id']
+    st = engine.get_status()
+    assert st['enabled'] is True and st['last_run_id'] == run['id']
+
+
+def test_verdict_flat_merge_fields(monkeypatch, tmp_path):
+    monkeypatch.delenv('MIROFISH_TRADINGAGENTS_DISABLED', raising=False)
+    _patch_sources(monkeypatch, tmp_path)
+    run = engine.run_deep_analysis('삼성전자', use_llm=False)
+    v = run['verdict']
+    assert {'verdict', 'confidence', 'strong_buy', 'reasoning',
+            'bull_case', 'bear_case', 'risk_summary'} <= set(v)
+    assert isinstance(v['risk_summary'], str) and v['risk_summary']
+    # risk_summary references all three risk personas
+    for role in ('risky', 'safe', 'neutral'):
+        assert role in v['risk_summary']
+
+
+def test_bundle_meta_shape(monkeypatch, tmp_path):
+    monkeypatch.delenv('MIROFISH_TRADINGAGENTS_DISABLED', raising=False)
+    _patch_sources(monkeypatch, tmp_path)
+    run = engine.run_deep_analysis('삼성전자', use_llm=False)
+    meta = run['bundle_meta']
+    assert meta['has_price'] and meta['has_technical'] and meta['has_rs']
+    assert meta['has_fundamentals'] is False
+    assert meta['corpus_chars'] == len('수주 계약 신고가')
+    assert isinstance(meta['errors'], dict)
+
+
+def test_symbol_override_preserved(monkeypatch, tmp_path):
+    monkeypatch.delenv('MIROFISH_TRADINGAGENTS_DISABLED', raising=False)
+    monkeypatch.setattr(engine, 'RUNS_ROOT', str(tmp_path))
+    monkeypatch.setattr(engine.data_hub, 'gather_bundle', lambda t: {
+        'target': t, 'symbol': None, 'market': None, 'display_name': t,
+        'price': {}, 'corpus': '', 'technical': {}, 'rs': {}, 'fundamentals': {}, 'errors': {}})
+    run = engine.run_deep_analysis('미지종목', symbol='123456', use_llm=False)
+    assert run['symbol'] == '123456'
+
+
+def test_get_run_rejects_path_traversal(monkeypatch, tmp_path):
+    _patch_sources(monkeypatch, tmp_path)
+    assert engine.get_run('../etc') is None
+    assert engine.get_run('ta_bad/../../x') is None
+    assert engine.get_run('nonexistent_ta_20260717_000000_abcdef') is None
+
+
+def test_rounds_env_clamp(monkeypatch, tmp_path):
+    monkeypatch.delenv('MIROFISH_TRADINGAGENTS_DISABLED', raising=False)
+    _patch_sources(monkeypatch, tmp_path)
+    monkeypatch.setenv('MIROFISH_TA_DEBATE_ROUNDS', '99')
+    run = engine.run_deep_analysis('삼성전자', use_llm=False)
+    assert len(run['research_debate']['rounds']) == 4
+
+
+def test_explicit_rounds_arg_overrides_env(monkeypatch, tmp_path):
+    monkeypatch.delenv('MIROFISH_TRADINGAGENTS_DISABLED', raising=False)
+    _patch_sources(monkeypatch, tmp_path)
+    monkeypatch.setenv('MIROFISH_TA_DEBATE_ROUNDS', '4')
+    run = engine.run_deep_analysis('삼성전자', rounds=1, use_llm=False)
+    assert len(run['research_debate']['rounds']) == 1
+
+
+def test_kill_switch_status(monkeypatch, tmp_path):
+    _patch_sources(monkeypatch, tmp_path)
+    monkeypatch.setenv('MIROFISH_TRADINGAGENTS_DISABLED', 'true')
+    assert engine.get_status()['enabled'] is False
+
+
+def test_status_config_exposes_tuning(monkeypatch, tmp_path):
+    _patch_sources(monkeypatch, tmp_path)
+    monkeypatch.delenv('MIROFISH_TRADINGAGENTS_DISABLED', raising=False)
+    cfg = engine.get_status()['config']
+    assert set(cfg) == {'max_candidates', 'debate_rounds', 'boost_strong', 'boost_buy', 'penalty_hold'}
+    assert cfg['max_candidates'] == 5 and cfg['boost_strong'] == 8.0
