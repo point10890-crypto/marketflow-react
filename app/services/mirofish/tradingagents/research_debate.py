@@ -85,7 +85,6 @@ def run_research_debate(
     llm_fail = 0
 
     debate_rounds: list[dict[str, Any]] = []
-    prev_bull = ''
     prev_bear = ''
     for round_num in range(1, rounds + 1):
         bull_msg, used_llm = _bull_message(target, reports, prev_bear, round_num, use_llm)
@@ -99,7 +98,7 @@ def run_research_debate(
             'bull': {'message': bull_msg},
             'bear': {'message': bear_msg},
         })
-        prev_bull, prev_bear = bull_msg, bear_msg
+        prev_bear = bear_msg
 
     bull_case = debate_rounds[-1]['bull']['message'] if debate_rounds else ''
     bear_case = debate_rounds[-1]['bear']['message'] if debate_rounds else ''

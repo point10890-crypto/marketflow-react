@@ -67,6 +67,35 @@ def test_trader_plan_shape():
     assert all(isinstance(plan[k], str) and plan[k] for k in ('action_hint', 'entry_note', 'risk_note'))
 
 
+def _fake_by_system(mapping, default=None):
+    """Build a generate_text stub that dispatches on the `system` kwarg."""
+    def fake(prompt, **kwargs):
+        system = kwargs.get('system') or ''
+        for token, response in mapping.items():
+            if token in system:
+                return response
+        return default
+    return fake
+
+
+def test_llm_pm_invalid_verdict_falls_back_to_rule(monkeypatch):
+    # Trader + risk succeed via LLM; PM returns an out-of-set verdict → the PM
+    # piece falls back to the rule verdict, so method='mixed' and verdict is the
+    # rule band for mean=40 (STRONG_BUY).
+    fake = _fake_by_system({
+        '트레이더': '{"action_hint": "매수", "entry_note": "분할 진입", "risk_note": "손절"}',
+        '포트폴리오 매니저': '{"verdict": "MODERATE_BUY", "confidence": 80, "reasoning": "x"}',
+        '리스크 애널리스트': '{"message": "리스크 판단", "vote": "approve"}',
+    })
+    monkeypatch.setattr(trader_risk.llm_client, 'generate_text', fake)
+    out = trader_risk.run_trader_and_risk('삼성전자', BUNDLE, _debate(40), use_llm=True)
+    assert out['pm_decision']['verdict'] == 'STRONG_BUY'  # rule fallback
+    assert out['pm_decision']['strong_buy'] is True
+    assert out['method'] == 'mixed'  # trader+risk LLM ok, PM fell back
+    # trader plan came from the LLM stub
+    assert out['trader_plan']['action_hint'] == '매수'
+
+
 def test_strong_buy_confidence_floor():
     # manager confidence below 75 → STRONG_BUY still floors at 75
     debate = _debate(40)

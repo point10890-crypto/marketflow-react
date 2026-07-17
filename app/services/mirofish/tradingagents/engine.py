@@ -36,6 +36,7 @@ from __future__ import annotations
 
 import glob
 import hashlib
+import itertools
 import json
 import logging
 import os
@@ -59,6 +60,11 @@ _RUN_ID_RE = re.compile(r'^ta_[0-9_]+_[0-9a-f]{6}$')
 
 _MIN_ROUNDS = 1
 _MAX_ROUNDS = 4
+
+# Monotonic per-process sequence — guarantees distinct run ids for same-second,
+# same-target runs even when the wall clock is coarse (Windows datetime.now()
+# ticks ~15ms, so %f microseconds alone can repeat back-to-back).
+_run_seq = itertools.count()
 
 
 # ── Public API ──────────────────────────────────────────────────────
@@ -213,8 +219,13 @@ def _mean_scores(reports: list[dict[str, Any]]) -> float:
 
 
 def _make_run_id(target: str, when: datetime) -> str:
+    # `ta_<YYYYMMDD_HHMMSS_ffffff>_<seq>_<sha1(target)[:6]>`. Microseconds handle
+    # cross-second spacing; the monotonic seq guarantees uniqueness under a coarse
+    # clock. Both live in the middle `[0-9_]+` group so `_RUN_ID_RE` still matches
+    # and get_run() round-trips.
     digest = hashlib.sha1(str(target).encode('utf-8')).hexdigest()[:6]
-    return f"ta_{when.strftime('%Y%m%d_%H%M%S')}_{digest}"
+    seq = next(_run_seq) % 1_000_000
+    return f"ta_{when.strftime('%Y%m%d_%H%M%S_%f')}_{seq:06d}_{digest}"
 
 
 def _summarize(data: dict[str, Any]) -> dict[str, Any]:
@@ -234,6 +245,8 @@ def _summarize(data: dict[str, Any]) -> dict[str, Any]:
 # ── Persistence ─────────────────────────────────────────────────────
 
 def _persist(record: dict[str, Any]) -> None:
+    # `latest.json` is a rolling pointer to the most recently finished run; under
+    # concurrent runs the last writer wins (the per-id file always survives).
     try:
         os.makedirs(RUNS_ROOT, exist_ok=True)
         write_json_atomic(os.path.join(RUNS_ROOT, f"{record['id']}.json"), record)

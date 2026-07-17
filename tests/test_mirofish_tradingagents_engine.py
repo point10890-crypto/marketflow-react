@@ -87,6 +87,51 @@ def test_explicit_rounds_arg_overrides_env(monkeypatch, tmp_path):
     assert len(run['research_debate']['rounds']) == 1
 
 
+def test_run_ids_unique_back_to_back(monkeypatch, tmp_path):
+    monkeypatch.delenv('MIROFISH_TRADINGAGENTS_DISABLED', raising=False)
+    _patch_sources(monkeypatch, tmp_path)
+    r1 = engine.run_deep_analysis('삼성전자', use_llm=False)
+    r2 = engine.run_deep_analysis('삼성전자', use_llm=False)
+    assert r1['id'] != r2['id']
+    # both survive on disk (neither overwrote the other) and round-trip via get_run
+    assert engine._count_runs() == 2
+    assert engine.get_run(r1['id'])['id'] == r1['id']
+    assert engine.get_run(r2['id'])['id'] == r2['id']
+
+
+def test_run_id_matches_regex(monkeypatch, tmp_path):
+    monkeypatch.delenv('MIROFISH_TRADINGAGENTS_DISABLED', raising=False)
+    _patch_sources(monkeypatch, tmp_path)
+    run = engine.run_deep_analysis('삼성전자', use_llm=False)
+    assert engine._RUN_ID_RE.match(run['id'])
+
+
+def test_engine_aggregates_mixed_method(monkeypatch, tmp_path):
+    """Analysts succeed via LLM; debate + trader_risk LLM all fail → rule.
+
+    Aggregated run method must be 'mixed' ({'llm','rule'}). Patches the shared
+    llm_client module so all three sub-layers see the same fake.
+    """
+    monkeypatch.delenv('MIROFISH_TRADINGAGENTS_DISABLED', raising=False)
+    _patch_sources(monkeypatch, tmp_path)
+
+    def fake_generate(prompt, **kwargs):
+        system = kwargs.get('system') or ''
+        # Fail every debate/trader/risk/PM piece; only analyst roles get JSON.
+        if any(tok in system for tok in ('리서처', '리서치 매니저', '트레이더',
+                                         '리스크 애널리스트', '포트폴리오 매니저')):
+            return None
+        return ('{"title": "t", "summary": "요약", "stance": "bullish", '
+                '"score": 30, "evidence": ["e"]}')
+
+    monkeypatch.setattr('app.services.mirofish.llm_client.generate_text', fake_generate)
+    run = engine.run_deep_analysis('삼성전자', use_llm=True)
+    assert all(r['method'] == 'llm' for r in run['analyst_reports'])
+    assert run['research_debate']['method'] == 'rule'
+    assert run['trader_risk']['method'] == 'rule'
+    assert run['method'] == 'mixed'
+
+
 def test_kill_switch_status(monkeypatch, tmp_path):
     _patch_sources(monkeypatch, tmp_path)
     monkeypatch.setenv('MIROFISH_TRADINGAGENTS_DISABLED', 'true')

@@ -64,3 +64,43 @@ def test_manager_confidence_math_exact():
     result = research_debate.run_research_debate('삼성전자', REPORTS, rounds=2, use_llm=False)
     # mean = 31.25, confidence = min(95, 50 + 31.25/2) = 65.62 (rounded)
     assert result['manager']['confidence'] == round(50 + 31.25 / 2, 2)
+
+
+def _fake_by_system(mapping, default=None):
+    """Build a generate_text stub that dispatches on the `system` kwarg."""
+    def fake(prompt, **kwargs):
+        system = kwargs.get('system') or ''
+        for token, response in mapping.items():
+            if token in system:
+                return response
+        return default
+    return fake
+
+
+def test_llm_full_success_method_llm(monkeypatch):
+    fake = _fake_by_system({
+        '리서치 매니저': '{"stance": "bull", "thesis": "강세 우위", "confidence": 72}',
+        'Bull': '{"message": "강세 LLM 근거 발언"}',
+        'Bear': '{"message": "약세 LLM 근거 발언"}',
+    })
+    monkeypatch.setattr(research_debate.llm_client, 'generate_text', fake)
+    result = research_debate.run_research_debate('삼성전자', REPORTS, rounds=1, use_llm=True)
+    assert result['method'] == 'llm'
+    assert result['manager']['stance'] == 'bull'
+    assert result['manager']['confidence'] == 72.0
+    assert result['rounds'][0]['bull']['message'] == '강세 LLM 근거 발언'
+
+
+def test_llm_partial_failure_method_mixed(monkeypatch):
+    # Bear call returns None → that piece falls back to rule → method='mixed'.
+    fake = _fake_by_system({
+        '리서치 매니저': '{"stance": "bull", "thesis": "t", "confidence": 60}',
+        'Bull': '{"message": "강세 LLM 발언"}',
+        'Bear': None,
+    })
+    monkeypatch.setattr(research_debate.llm_client, 'generate_text', fake)
+    result = research_debate.run_research_debate('삼성전자', REPORTS, rounds=1, use_llm=True)
+    assert result['method'] == 'mixed'
+    # bull came from LLM, bear fell back to the rule composer
+    assert result['rounds'][0]['bull']['message'] == '강세 LLM 발언'
+    assert result['rounds'][0]['bear']['message'].startswith('[약세론 R1]')
