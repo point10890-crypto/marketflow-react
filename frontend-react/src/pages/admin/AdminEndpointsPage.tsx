@@ -619,10 +619,10 @@ function AlphaBoardPanel({
                 </div>
             )}
 
-            <div className="mt-4 rounded-lg border border-cyan-300/15 bg-cyan-300/[0.06] p-3">
+            <div className="mt-4">
                 <div>
-                    <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-                        <div>
+                    <div className="flex justify-end">
+                        <div className="hidden">
                             <div className="text-[11px] font-black uppercase tracking-[0.18em] text-cyan-200/80">Top3 자동 분석 흐름</div>
                             <div className="mt-1 text-sm font-bold text-slate-200">
                                 자동 스캔 → 신규 후보 5종 선별 → 다중 GraphRAG 분석 → 최종 Top3 랭킹과 알림 생성.
@@ -676,7 +676,7 @@ function AlphaBoardPanel({
                         </div>
                     </div>
 
-                    <div className="mt-4 grid gap-2 md:grid-cols-4">
+                    <div className="hidden">
                         {[
                             ['Scanner', scannerPoolCount, 'candidate pool'],
                             ['Batch 5', workflow?.event_count ?? 0, 'new candidates'],
@@ -694,7 +694,7 @@ function AlphaBoardPanel({
                         ))}
                     </div>
 
-                    <div className="mt-3 grid gap-2 md:grid-cols-3">
+                    <div className="hidden">
                         {[
                             ['MCP HTTP', mcpHealthy ? 'online' : 'offline', mcpServer?.server_version || mcpServer?.url || '127.0.0.1:8765'],
                             ['Startup Task', startupRegistered ? 'registered' : 'missing', startupTask?.last_result || startupTask?.state || '--'],
@@ -710,14 +710,14 @@ function AlphaBoardPanel({
                         ))}
                     </div>
 
-                    <div className="mt-3 h-2 overflow-hidden rounded-full bg-black/30">
+                    <div className="hidden">
                         <div
                             className="h-full rounded-full bg-gradient-to-r from-cyan-300 via-violet-400 to-emerald-300 transition-all duration-500"
                             style={{ width: `${workflowPercent}%` }}
                         />
                     </div>
 
-                    <div className="mt-3 grid gap-2 md:grid-cols-4">
+                    <div className="hidden">
                         {[
                             ['Forward Return', outcomeAvgReturn === undefined || outcomeAvgReturn === null ? '--' : formatSignedPct(outcomeAvgReturn), 'avg verified return'],
                             ['Hit Rate', outcomeHitRate === undefined || outcomeHitRate === null ? '--' : `${Number(outcomeHitRate).toFixed(1)}%`, 'forward hit/miss'],
@@ -732,7 +732,7 @@ function AlphaBoardPanel({
                         ))}
                     </div>
 
-                    <div className="mt-3 grid gap-2 md:grid-cols-4">
+                    <div className="hidden">
                         {[
                             ['Evidence Grade', topEvidenceGrade, 'top candidate quality'],
                             ['Confidence Cap', Number.isFinite(topConfidenceCap) ? `${Math.round(topConfidenceCap * 100)}%` : '--', 'source/freshness bound'],
@@ -748,7 +748,7 @@ function AlphaBoardPanel({
                     </div>
 
                     {(workflow?.graphrag || workflow?.source_freshness) && (
-                        <div className="mt-3">
+                        <div className="hidden">
                             <SourceFreshnessMatrix
                                 sourceFreshness={workflow.source_freshness}
                                 graphrag={workflow.graphrag}
