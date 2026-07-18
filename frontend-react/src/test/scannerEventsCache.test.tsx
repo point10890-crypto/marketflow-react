@@ -47,6 +47,28 @@ describe('ScannerEventsCard cache retention', () => {
     await waitFor(() => expect(screen.getByText(/마지막 정상 캐시를 유지합니다/)).toBeInTheDocument());
   });
 
+  it('seeds the feed from the latest workflow when the scanner APIs fail on first visit', async () => {
+    mockApi.getScannerMonitorStatus.mockRejectedValue(new Error('offline'));
+    mockApi.getScannerAlertState.mockRejectedValue(new Error('offline'));
+
+    render(<ScannerEventsCard fallbackEvents={[cachedEvent]} />);
+
+    expect(await screen.findByText('SK이노베이션')).toBeInTheDocument();
+    await waitFor(() => {
+      const cached = JSON.parse(window.localStorage.getItem(cacheKey) || '{}');
+      expect(cached.alerts.feed_events).toEqual([cachedEvent]);
+    });
+  });
+
+  it('uses a successful alert response even when monitor status fails', async () => {
+    mockApi.getScannerMonitorStatus.mockRejectedValue(new Error('monitor offline'));
+    mockApi.getScannerAlertState.mockResolvedValue({ feed_events: [cachedEvent] });
+
+    render(<ScannerEventsCard />);
+
+    expect(await screen.findByText('SK이노베이션')).toBeInTheDocument();
+  });
+
   it('does not erase a cached event when the server has no newer event', async () => {
     seedCache();
     mockApi.getScannerMonitorStatus.mockResolvedValue({ last_candidate_count: 0, last_new_event_count: 0 });

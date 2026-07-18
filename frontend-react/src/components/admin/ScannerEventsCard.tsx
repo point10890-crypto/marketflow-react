@@ -128,9 +128,10 @@ interface ScannerEventsCardProps {
     compact?: boolean;
     maxEvents?: number;
     token?: string;
+    fallbackEvents?: MiroFishScannerAlertEvent[];
 }
 
-export default function ScannerEventsCard({ className = '', compact = false, maxEvents = 8 }: ScannerEventsCardProps) {
+export default function ScannerEventsCard({ className = '', compact = false, maxEvents = 8, fallbackEvents = [] }: ScannerEventsCardProps) {
     const cached = useMemo(readCache, []);
     const [monitor, setMonitor] = useState<MiroFishScannerMonitorState | null>(cached?.monitor ?? null);
     const [alerts, setAlerts] = useState<MiroFishScannerAlertState | null>(cached?.alerts ?? null);
@@ -139,6 +140,7 @@ export default function ScannerEventsCard({ className = '', compact = false, max
     const [error, setError] = useState('');
     const [lastUpdatedAt, setLastUpdatedAt] = useState<string | null>(cached?.cachedAt ?? null);
     const inFlightRef = useRef(false);
+    const monitorRef = useRef(monitor);
 
     const load = useCallback(async (opts?: { silent?: boolean }) => {
         if (inFlightRef.current) return;
@@ -146,12 +148,23 @@ export default function ScannerEventsCard({ className = '', compact = false, max
         if (opts?.silent) setRefreshing(true);
         else setLoading(true);
         try {
-            const [monitorState, alertState] = await Promise.all([
+            const [monitorResult, alertResult] = await Promise.allSettled([
                 mirofishApi.getScannerMonitorStatus(true),
                 mirofishApi.getScannerAlertState(true),
             ]);
+            if (monitorResult.status === 'rejected' && alertResult.status === 'rejected') {
+                throw new Error('scanner feed unavailable');
+            }
             const updatedAt = new Date().toISOString();
-            setMonitor(monitorState);
+            const monitorState = monitorResult.status === 'fulfilled' ? monitorResult.value : monitorRef.current;
+            const alertState = alertResult.status === 'fulfilled' ? alertResult.value : {
+                feed_events: fallbackEvents,
+                feed_event_count: fallbackEvents.length,
+            };
+            if (monitorResult.status === 'fulfilled') {
+                monitorRef.current = monitorState;
+                setMonitor(monitorState);
+            }
             setAlerts((previous) => {
                 const next = preserveLatestEvents(previous, alertState);
                 try {
@@ -164,7 +177,9 @@ export default function ScannerEventsCard({ className = '', compact = false, max
                 return next;
             });
             setLastUpdatedAt(updatedAt);
-            setError('');
+            setError(monitorResult.status === 'rejected' || alertResult.status === 'rejected'
+                ? '일부 스캐너 상태를 불러오지 못해 마지막 정상 캐시를 유지합니다.'
+                : '');
         } catch {
             setError('스캐너 이벤트를 불러오지 못했습니다.');
         } finally {
@@ -172,7 +187,27 @@ export default function ScannerEventsCard({ className = '', compact = false, max
             setRefreshing(false);
             inFlightRef.current = false;
         }
-    }, []);
+    }, [fallbackEvents]);
+
+    useEffect(() => {
+        if (fallbackEvents.length === 0) return;
+        const updatedAt = new Date().toISOString();
+        setAlerts((previous) => {
+            const next = preserveLatestEvents(previous, {
+                feed_events: fallbackEvents,
+                feed_event_count: fallbackEvents.length,
+            });
+            try {
+                window.localStorage.setItem(CACHE_KEY, JSON.stringify({
+                    monitor: monitorRef.current,
+                    alerts: next,
+                    cachedAt: updatedAt,
+                } satisfies ScannerEventsCache));
+            } catch { /* private mode / quota */ }
+            return next;
+        });
+        setLastUpdatedAt(updatedAt);
+    }, [fallbackEvents]);
 
     useEffect(() => {
         void load();

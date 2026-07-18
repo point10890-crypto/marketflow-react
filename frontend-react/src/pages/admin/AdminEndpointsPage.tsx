@@ -219,6 +219,28 @@ function preferLatestWorkflow(current: MiroFishWorkflow | null, next?: MiroFishW
     return currentTime && nextTime && nextTime < currentTime ? current : next;
 }
 
+function workflowScannerEvents(workflow?: MiroFishWorkflow | null) {
+    const eventTime = workflow?.completed_at || workflow?.created_at || null;
+    return (workflow?.top3 || []).map((result, index) => {
+        const candidate = result.candidate || {};
+        const symbol = String(result.symbol || candidate.symbol || result.verdict?.symbol || '').trim();
+        const displayName = String(candidate.display_name || candidate.name || result.target || result.verdict?.target_display || symbol).trim();
+        return {
+            event_key: `workflow:${workflow?.id || workflow?.scanner_run_id || eventTime || 'latest'}:${symbol || index}`,
+            sent_at: eventTime,
+            run_id: workflow?.scanner_run_id || workflow?.id || null,
+            rank: index + 1,
+            symbol,
+            display_name: displayName,
+            market: result.market || candidate.market || result.verdict?.market || null,
+            action: 'BUY_CANDIDATE',
+            alpha_score: result.final_score ?? candidate.alpha_score ?? null,
+            risk_score: candidate.risk_score ?? null,
+            source: 'workflow_top3_cache',
+        };
+    });
+}
+
 function formatPrice(value: unknown): string {
     const numeric = typeof value === 'number'
         ? value
@@ -1919,6 +1941,7 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
     const [deepSeekErrorText, setDeepSeekErrorText] = useState<string | null>(null);
     const [workflowState, setWorkflowState] = useState<WorkflowPanelState>('idle');
     const [workflow, setWorkflow] = useState<MiroFishWorkflow | null>(() => readWorkflowCache());
+    const workflowFallbackEvents = useMemo(() => workflowScannerEvents(workflow), [workflow]);
     const [workflowErrorText, setWorkflowErrorText] = useState<string | null>(null);
     const [autonomousStatus, setAutonomousStatus] = useState<MiroFishAutonomousStatus | null>(null);
     const [autonomousState, setAutonomousState] = useState<AutonomousPanelState>('idle');
@@ -3040,7 +3063,7 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
                                 </div>
                             )}
                         </div>
-                        {subscriberMode && <ScannerEventsCard compact maxEvents={3} className="h-full xl:col-start-3 xl:row-start-1" />}
+                        {subscriberMode && <ScannerEventsCard compact maxEvents={3} fallbackEvents={workflowFallbackEvents} className="h-full xl:col-start-3 xl:row-start-1" />}
                         {subscriberMode && <MiroFishFearIndexCard className="h-full min-w-0 xl:col-start-2 xl:row-start-1" variant="compact" />}
                     </div>
 
