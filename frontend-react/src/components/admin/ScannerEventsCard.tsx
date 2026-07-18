@@ -24,6 +24,50 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 const POLL_INTERVAL_MS = 30000;
+const CACHE_KEY = 'marketflow.mirofish.scanner-events.v1';
+
+interface ScannerEventsCache {
+    monitor: MiroFishScannerMonitorState | null;
+    alerts: MiroFishScannerAlertState | null;
+    cachedAt: string;
+}
+
+function alertEvents(alerts?: MiroFishScannerAlertState | null) {
+    return Array.isArray(alerts?.feed_events)
+        ? alerts.feed_events
+        : alerts?.recent_sent_events ?? [];
+}
+
+function eventTimestamp(event?: MiroFishScannerAlertEvent | null) {
+    const parsed = Date.parse(String(event?.sent_at || ''));
+    return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function readCache(): ScannerEventsCache | null {
+    try {
+        const raw = window.localStorage.getItem(CACHE_KEY);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw) as ScannerEventsCache;
+        return parsed && typeof parsed === 'object' ? parsed : null;
+    } catch {
+        return null;
+    }
+}
+
+function preserveLatestEvents(previous: MiroFishScannerAlertState | null, next: MiroFishScannerAlertState) {
+    const previousEvents = alertEvents(previous);
+    const nextEvents = alertEvents(next);
+    const previousLatest = Math.max(0, ...previousEvents.map(eventTimestamp));
+    const nextLatest = Math.max(0, ...nextEvents.map(eventTimestamp));
+    if (previousEvents.length > 0 && (nextEvents.length === 0 || nextLatest < previousLatest)) {
+        return {
+            ...next,
+            feed_events: previousEvents,
+            feed_event_count: previousEvents.length,
+        };
+    }
+    return next;
+}
 
 function actionLabel(action?: string | null) {
     if (!action) return '';
@@ -87,12 +131,13 @@ interface ScannerEventsCardProps {
 }
 
 export default function ScannerEventsCard({ className = '', compact = false, maxEvents = 8 }: ScannerEventsCardProps) {
-    const [monitor, setMonitor] = useState<MiroFishScannerMonitorState | null>(null);
-    const [alerts, setAlerts] = useState<MiroFishScannerAlertState | null>(null);
-    const [loading, setLoading] = useState(true);
+    const cached = useMemo(readCache, []);
+    const [monitor, setMonitor] = useState<MiroFishScannerMonitorState | null>(cached?.monitor ?? null);
+    const [alerts, setAlerts] = useState<MiroFishScannerAlertState | null>(cached?.alerts ?? null);
+    const [loading, setLoading] = useState(!cached?.alerts);
     const [refreshing, setRefreshing] = useState(false);
     const [error, setError] = useState('');
-    const [lastUpdatedAt, setLastUpdatedAt] = useState<string | null>(null);
+    const [lastUpdatedAt, setLastUpdatedAt] = useState<string | null>(cached?.cachedAt ?? null);
     const inFlightRef = useRef(false);
 
     const load = useCallback(async (opts?: { silent?: boolean }) => {
@@ -105,9 +150,20 @@ export default function ScannerEventsCard({ className = '', compact = false, max
                 mirofishApi.getScannerMonitorStatus(true),
                 mirofishApi.getScannerAlertState(true),
             ]);
+            const updatedAt = new Date().toISOString();
             setMonitor(monitorState);
-            setAlerts(alertState);
-            setLastUpdatedAt(new Date().toISOString());
+            setAlerts((previous) => {
+                const next = preserveLatestEvents(previous, alertState);
+                try {
+                    window.localStorage.setItem(CACHE_KEY, JSON.stringify({
+                        monitor: monitorState,
+                        alerts: next,
+                        cachedAt: updatedAt,
+                    } satisfies ScannerEventsCache));
+                } catch { /* private mode / quota */ }
+                return next;
+            });
+            setLastUpdatedAt(updatedAt);
             setError('');
         } catch {
             setError('스캐너 이벤트를 불러오지 못했습니다.');
@@ -137,9 +193,7 @@ export default function ScannerEventsCard({ className = '', compact = false, max
     const events = useMemo(() => {
         // feed_events is the server-filtered, delivered BUY event feed. Only use
         // recent_sent_events for older API payloads that do not expose feed_events.
-        const list = Array.isArray(alerts?.feed_events)
-            ? alerts.feed_events
-            : alerts?.recent_sent_events ?? [];
+        const list = alertEvents(alerts);
         return [...list]
             .sort((left, right) => String(right.sent_at ?? '').localeCompare(String(left.sent_at ?? '')))
             .slice(0, maxEvents);
@@ -198,14 +252,16 @@ export default function ScannerEventsCard({ className = '', compact = false, max
                 )}
             </div>
 
-            {loading ? (
+            {error && (
+                <div className="mt-4 rounded-xl border border-amber-300/20 bg-amber-300/[0.06] px-3 py-2 text-xs font-bold text-amber-100">
+                    {events.length > 0 ? '새 이벤트 확인에 실패해 마지막 정상 캐시를 유지합니다.' : error}
+                </div>
+            )}
+
+            {loading && events.length === 0 ? (
                 <div className="mt-4 flex items-center justify-center rounded-xl border border-white/10 bg-black/20 py-6 text-sm font-bold text-slate-400">
                     <i className="fas fa-spinner fa-spin mr-2 text-cyan-300" />
                     불러오는 중...
-                </div>
-            ) : error ? (
-                <div className="mt-4 rounded-xl border border-rose-400/20 bg-rose-500/5 p-4 text-sm font-bold text-rose-200">
-                    {error}
                 </div>
             ) : events.length === 0 ? (
                 <div className="mt-4 rounded-xl border border-dashed border-white/12 bg-white/[0.02] p-5 text-sm font-semibold text-slate-400">

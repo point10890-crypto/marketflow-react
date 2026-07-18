@@ -88,6 +88,7 @@ async function renderSubscriberPage() {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  window.localStorage.clear();
   mockApi.getStatus.mockResolvedValue({
     ready: true,
     source: 'test',
@@ -754,6 +755,34 @@ beforeEach(() => {
 });
 
 describe('AdminEndpointsPage analysis start input', () => {
+  it('keeps the cached TOP3 when the latest workflow has no new events', async () => {
+    window.localStorage.setItem('marketflow.mirofish.workflow-top3.v1', JSON.stringify({
+      id: 'cached_workflow',
+      status: 'completed',
+      completed_at: '2026-07-17T06:00:00Z',
+      scanner_run_id: 'cached_scanner_run',
+      top3: [{
+        symbol: '096770',
+        target: 'Cached SK Innovation',
+        final_score: 87,
+        verdict: { action: 'BUY', confidence_pct: 70 },
+      }],
+    }));
+    mockApi.getWorkflowStatus.mockResolvedValueOnce({
+      ready: true,
+      latest_workflow: {
+        id: 'no_new_workflow',
+        status: 'no_new_events',
+        created_at: '2026-07-18T06:00:00Z',
+        top3: [],
+      },
+    });
+
+    await renderPage();
+
+    expect((await screen.findAllByText('Cached SK Innovation')).length).toBeGreaterThan(0);
+  });
+
   it('loads the latest alpha scanner board on page load', async () => {
     await renderPage();
 

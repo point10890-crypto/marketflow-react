@@ -188,6 +188,37 @@ function scannerRunTimestamp(run?: MiroFishScannerRun | null): number {
     return Number.isNaN(value) ? 0 : value;
 }
 
+const WORKFLOW_CACHE_KEY = 'marketflow.mirofish.workflow-top3.v1';
+
+function workflowTimestamp(workflow?: MiroFishWorkflow | null): number {
+    const raw = workflow?.completed_at || workflow?.created_at;
+    if (!raw) return 0;
+    const value = new Date(raw).getTime();
+    return Number.isNaN(value) ? 0 : value;
+}
+
+function readWorkflowCache(): MiroFishWorkflow | null {
+    try {
+        const raw = window.localStorage.getItem(WORKFLOW_CACHE_KEY);
+        if (!raw) return null;
+        const cached = JSON.parse(raw) as MiroFishWorkflow;
+        return Array.isArray(cached.top3) && cached.top3.length > 0 ? cached : null;
+    } catch {
+        return null;
+    }
+}
+
+function preferLatestWorkflow(current: MiroFishWorkflow | null, next?: MiroFishWorkflow | null): MiroFishWorkflow | null {
+    if (!next) return current;
+    const currentHasTop3 = Boolean(current?.top3?.length);
+    const nextHasTop3 = Boolean(next.top3?.length);
+    if (currentHasTop3 && !nextHasTop3) return current;
+    if (!currentHasTop3) return next;
+    const currentTime = workflowTimestamp(current);
+    const nextTime = workflowTimestamp(next);
+    return currentTime && nextTime && nextTime < currentTime ? current : next;
+}
+
 function formatPrice(value: unknown): string {
     const numeric = typeof value === 'number'
         ? value
@@ -1887,7 +1918,7 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
     const [deepSeekSummary, setDeepSeekSummary] = useState<MiroFishDeepSeekSummaryResult | null>(null);
     const [deepSeekErrorText, setDeepSeekErrorText] = useState<string | null>(null);
     const [workflowState, setWorkflowState] = useState<WorkflowPanelState>('idle');
-    const [workflow, setWorkflow] = useState<MiroFishWorkflow | null>(null);
+    const [workflow, setWorkflow] = useState<MiroFishWorkflow | null>(() => readWorkflowCache());
     const [workflowErrorText, setWorkflowErrorText] = useState<string | null>(null);
     const [autonomousStatus, setAutonomousStatus] = useState<MiroFishAutonomousStatus | null>(null);
     const [autonomousState, setAutonomousState] = useState<AutonomousPanelState>('idle');
@@ -1908,6 +1939,15 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
         : endpointDefinitions;
     const [apiState, setApiState] = useState<ApiState>('checking');
     const [errorText, setErrorText] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (!workflow?.top3?.length) return;
+        try {
+            window.localStorage.setItem(WORKFLOW_CACHE_KEY, JSON.stringify(workflow));
+        } catch {
+            // Storage can be unavailable in private or restricted browser contexts.
+        }
+    }, [workflow]);
     const [subscriberPolicy, setSubscriberPolicy] = useState<MiroFishRun['subscriber_policy'] | null>(null);
     const [activeRunId, setActiveRunId] = useState<string | null>(null);
     const lastStartAtRef = useRef(0);
@@ -2014,7 +2054,7 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
                 if (workflowResult.status === 'fulfilled') {
                     const workflowData = workflowResult.value as { latest_workflow?: MiroFishWorkflow };
                     if (workflowData?.latest_workflow) {
-                        setWorkflow(workflowData.latest_workflow);
+                        setWorkflow((current) => preferLatestWorkflow(current, workflowData.latest_workflow));
                         setWorkflowState(workflowData.latest_workflow.status === 'completed' ? 'completed' : 'idle');
                     }
                     markEndpoint('workflow', workflowData ? 'ok' : 'idle');
@@ -2490,7 +2530,7 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
                 mode: 'full',
                 force,
             });
-            setWorkflow(result);
+            setWorkflow((current) => preferLatestWorkflow(current, result));
             if (result.status === 'blocked') {
                 setWorkflowState('blocked');
                 setWorkflowErrorText(result.blocked_reason || 'MCP workflow blocked.');
@@ -2514,7 +2554,7 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
                 for (let attempt = 0; attempt < 60; attempt += 1) {
                     await new Promise((resolve) => window.setTimeout(resolve, 2500));
                     const latest = await mirofishApi.getWorkflow(workflowId);
-                    setWorkflow(latest);
+                    setWorkflow((current) => preferLatestWorkflow(current, latest));
                     if (latest.status === 'completed') {
                         setWorkflowState('completed');
                         return;
@@ -2566,7 +2606,7 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
             if (workflowResult.status === 'fulfilled') {
                 const workflowData = workflowResult.value as { latest_workflow?: MiroFishWorkflow };
                 if (workflowData?.latest_workflow) {
-                    setWorkflow(workflowData.latest_workflow);
+                    setWorkflow((current) => preferLatestWorkflow(current, workflowData.latest_workflow));
                     setWorkflowState(workflowData.latest_workflow.status === 'completed' ? 'completed' : 'idle');
                 }
                 markEndpoint('workflow', 'ok');
