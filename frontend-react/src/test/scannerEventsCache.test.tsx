@@ -69,6 +69,19 @@ describe('ScannerEventsCard cache retention', () => {
     expect(await screen.findByText('SK이노베이션')).toBeInTheDocument();
   });
 
+  it('adds a matching verified DeepSeek brief to the cached scanner card', async () => {
+    mockApi.getScannerMonitorStatus.mockResolvedValue({ last_candidate_count: 1 });
+    mockApi.getScannerAlertState.mockResolvedValue({ feed_events: [cachedEvent] });
+
+    render(<ScannerEventsCard fallbackEvents={[{
+      ...cachedEvent,
+      deepseek_brief: 'BUY 82% · 거래량과 추세가 함께 개선되고 있습니다.',
+    }]} />);
+
+    expect(await screen.findByText(/거래량과 추세가 함께 개선되고 있습니다/)).toBeInTheDocument();
+    expect(screen.getByText('DeepSeek')).toBeInTheDocument();
+  });
+
   it('does not erase a cached event when the server has no newer event', async () => {
     seedCache();
     mockApi.getScannerMonitorStatus.mockResolvedValue({ last_candidate_count: 0, last_new_event_count: 0 });

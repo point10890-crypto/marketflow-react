@@ -819,6 +819,7 @@ def _apply_tradingagents_layer(
             'strong_buy': bool(v.get('strong_buy')),
             'bull_case': v.get('bull_case'), 'bear_case': v.get('bear_case'),
             'risk_summary': v.get('risk_summary'), 'method': run.get('method'),
+            'provider_usage': run.get('provider_usage') or {},
         }
 
     def _sort_key(r):

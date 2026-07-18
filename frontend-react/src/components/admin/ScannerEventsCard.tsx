@@ -69,6 +69,28 @@ function preserveLatestEvents(previous: MiroFishScannerAlertState | null, next: 
     return next;
 }
 
+function enrichWithDeepSeekBriefs(
+    state: MiroFishScannerAlertState,
+    fallbackEvents: MiroFishScannerAlertEvent[],
+) {
+    const briefs = new Map(
+        fallbackEvents
+            .filter((event) => event?.symbol && event.deepseek_brief)
+            .map((event) => [String(event.symbol), String(event.deepseek_brief)]),
+    );
+    if (briefs.size === 0) return state;
+    const enrich = (events?: MiroFishScannerAlertEvent[]) => events?.map((event) => {
+        if (!event || event.deepseek_brief) return event;
+        const brief = briefs.get(String(event.symbol || ''));
+        return brief ? { ...event, deepseek_brief: brief } : event;
+    });
+    return {
+        ...state,
+        feed_events: enrich(state.feed_events),
+        recent_sent_events: enrich(state.recent_sent_events),
+    };
+}
+
 function actionLabel(action?: string | null) {
     if (!action) return '';
     return ACTION_LABELS[action] || action;
@@ -166,7 +188,10 @@ export default function ScannerEventsCard({ className = '', compact = false, max
                 setMonitor(monitorState);
             }
             setAlerts((previous) => {
-                const next = preserveLatestEvents(previous, alertState);
+                const next = enrichWithDeepSeekBriefs(
+                    preserveLatestEvents(previous, alertState),
+                    fallbackEvents,
+                );
                 try {
                     window.localStorage.setItem(CACHE_KEY, JSON.stringify({
                         monitor: monitorState,
@@ -193,10 +218,10 @@ export default function ScannerEventsCard({ className = '', compact = false, max
         if (fallbackEvents.length === 0) return;
         const updatedAt = new Date().toISOString();
         setAlerts((previous) => {
-            const next = preserveLatestEvents(previous, {
+            const next = enrichWithDeepSeekBriefs(preserveLatestEvents(previous, {
                 feed_events: fallbackEvents,
                 feed_event_count: fallbackEvents.length,
-            });
+            }), fallbackEvents);
             try {
                 window.localStorage.setItem(CACHE_KEY, JSON.stringify({
                     monitor: monitorRef.current,
@@ -367,6 +392,16 @@ function ScannerEventRow({ event, compact = false }: { event: MiroFishScannerAle
                     </span>
                 )}
             </div>
+
+            {event.deepseek_brief && (
+                <div className="mt-2 flex min-w-0 items-start gap-2 rounded-lg border border-cyan-300/15 bg-cyan-300/[0.055] px-2.5 py-2">
+                    <i className="fas fa-wand-magic-sparkles mt-0.5 shrink-0 text-[10px] text-cyan-300" aria-hidden="true" />
+                    <p className="line-clamp-2 min-w-0 text-[11px] font-semibold leading-[1.45] text-slate-300">
+                        <span className="mr-1 font-black text-cyan-200">DeepSeek</span>
+                        {event.deepseek_brief}
+                    </p>
+                </div>
+            )}
         </article>
     );
 }

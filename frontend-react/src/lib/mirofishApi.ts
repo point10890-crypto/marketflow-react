@@ -616,6 +616,17 @@ export interface MiroFishWorkflowAnalysisResult {
     outcome?: MiroFishOutcomeItem;
     reason?: string;
     artifacts?: Record<string, string>;
+    tradingagents?: {
+        verdict?: string | null;
+        confidence?: number | null;
+        bull_case?: string | null;
+        bear_case?: string | null;
+        risk_summary?: string | null;
+        method?: string | null;
+        provider_usage?: {
+            providers?: Record<string, { calls?: number; successes?: number }>;
+        } | null;
+    } | null;
 }
 
 // ── Phase C: workflow-level GraphRAG summary ──
@@ -2181,6 +2192,7 @@ export interface MiroFishScannerAlertEvent {
         date?: string | null;
     } | null;
     source?: string | null;
+    deepseek_brief?: string | null;
 }
 
 export interface MiroFishScannerAlertState {

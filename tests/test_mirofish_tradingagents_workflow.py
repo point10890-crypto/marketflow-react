@@ -21,6 +21,7 @@ def _fake_engine(verdict_map):
     def fake(target, **kw):
         v = verdict_map.get(target, ('HOLD', 50))
         return {'id': f'ta_{target}', 'method': 'rule',
+                'provider_usage': {'providers': {'deepseek': {'calls': 1, 'successes': 1}}},
                 'verdict': {'verdict': v[0], 'confidence': v[1], 'strong_buy': v[0] == 'STRONG_BUY',
                             'bull_case': 'b', 'bear_case': 'r', 'risk_summary': 's', 'reasoning': 'x'}}
     return fake
@@ -39,6 +40,7 @@ def test_sell_excluded_and_replaced(monkeypatch):
     assert top[0]['candidate']['symbol'] == '001' and top[0]['ta_adjusted_score'] == 84.0
     assert top[1]['candidate']['symbol'] == '002' and top[1]['tradingagents']['strong_buy'] is True
     assert top[2]['candidate']['symbol'] == '003'
+    assert top[0]['tradingagents']['provider_usage']['providers']['deepseek']['successes'] == 1
     assert summary['excluded'] == ['000'] and summary['analyzed'] == 4
 
 

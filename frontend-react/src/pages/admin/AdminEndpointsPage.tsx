@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type CompositionEvent as ReactCompositionEvent, type KeyboardEvent as ReactKeyboardEvent } from 'react';
-import { MiroFishAlphaCandidate, MiroFishAlphaEndpointBlueprint, MiroFishAnalyst, MiroFishAutonomousActionResult, MiroFishAutonomousLearningFeedback, MiroFishAutonomousStatus, MiroFishDeepSeekStatus, MiroFishDeepSeekSummaryResult, MiroFishFearIndex, MiroFishGraphRAGEntityMatch, MiroFishLayer, MiroFishLearningReadiness, MiroFishLog, MiroFishMcpResourceSnapshot, MiroFishNode, MiroFishRun, MiroFishScannerRun, MiroFishScannerStatus, MiroFishStatus, MiroFishTargetSnapshot, MiroFishTradingViewStatus, MiroFishWorkflow, mirofishApi } from '@/lib/mirofishApi';
+import { MiroFishAlphaCandidate, MiroFishAlphaEndpointBlueprint, MiroFishAnalyst, MiroFishAutonomousActionResult, MiroFishAutonomousLearningFeedback, MiroFishAutonomousStatus, MiroFishDeepSeekStatus, MiroFishDeepSeekSummaryResult, MiroFishFearIndex, MiroFishGraphRAGEntityMatch, MiroFishLayer, MiroFishLearningReadiness, MiroFishLog, MiroFishMcpResourceSnapshot, MiroFishNode, MiroFishRun, MiroFishScannerRun, MiroFishScannerStatus, MiroFishStatus, MiroFishTargetSnapshot, MiroFishTradingViewStatus, MiroFishWorkflow, MiroFishWorkflowAnalysisResult, mirofishApi } from '@/lib/mirofishApi';
 import { shareToKakao } from '@/lib/kakaoShare';
 import MirofishChatPanel from '@/components/admin/MirofishChatPanel';
 import TodaysPipelineCard from '@/components/admin/TodaysPipelineCard';
@@ -220,6 +220,22 @@ function preferLatestWorkflow(current: MiroFishWorkflow | null, next?: MiroFishW
     return currentTime && nextTime && nextTime < currentTime ? current : next;
 }
 
+function workflowDeepSeekBrief(result: MiroFishWorkflowAnalysisResult) {
+    const ta = result.tradingagents;
+    const deepSeekSuccesses = Number(ta?.provider_usage?.providers?.deepseek?.successes || 0);
+    if (!ta || deepSeekSuccesses < 1) return null;
+    const detail = String(ta.bull_case || ta.risk_summary || ta.bear_case || '')
+        .replace(/\s+/g, ' ')
+        .trim();
+    if (!detail) return null;
+    const verdict = String(ta.verdict || '').replace(/_/g, ' ').trim();
+    const confidence = Number(ta.confidence);
+    const lead = verdict
+        ? `${verdict}${Number.isFinite(confidence) ? ` ${Math.round(confidence)}%` : ''} · `
+        : '';
+    return `${lead}${detail}`.slice(0, 160);
+}
+
 function workflowScannerEvents(workflow?: MiroFishWorkflow | null) {
     const eventTime = workflow?.completed_at || workflow?.created_at || null;
     return (workflow?.top3 || []).map((result, index) => {
@@ -237,6 +253,7 @@ function workflowScannerEvents(workflow?: MiroFishWorkflow | null) {
             action: 'BUY_CANDIDATE',
             alpha_score: result.final_score ?? candidate.alpha_score ?? null,
             risk_score: candidate.risk_score ?? null,
+            deepseek_brief: workflowDeepSeekBrief(result),
             source: 'workflow_top3_cache',
         };
     });
