@@ -567,7 +567,7 @@ function AlphaBoardPanel({
                         스캔된 후보를 수급·리스크·GraphRAG·사후성과 기준으로 압축합니다.
                     </p>
                 </div>
-                <div className="-mx-3 flex snap-x snap-mandatory flex-nowrap items-center gap-2 overflow-x-auto px-3 pb-1 [scrollbar-width:none] [&>*]:shrink-0 [&>*]:snap-start [&::-webkit-scrollbar]:hidden sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 sm:pb-0">
+                <div className="mobile-dashboard-rail-scroll -mx-3 flex snap-x snap-mandatory flex-nowrap items-center gap-2 overflow-x-auto px-3 pb-1 [&>*]:shrink-0 [&>*]:snap-start sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 sm:pb-0">
                     <span className={`rounded-full border px-3 py-1.5 text-xs font-black ${state === 'error' ? 'border-rose-300/20 bg-rose-300/10 text-rose-100' : state === 'ready' ? 'border-emerald-300/25 bg-emerald-300/10 text-emerald-100' : 'border-white/15 bg-white/8 text-slate-200'}`}>
                         {state === 'idle' ? 'IDLE' : state.toUpperCase()}
                     </span>
