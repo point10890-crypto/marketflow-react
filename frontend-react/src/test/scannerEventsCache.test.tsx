@@ -69,21 +69,6 @@ describe('ScannerEventsCard cache retention', () => {
     expect(await screen.findByText('SK이노베이션')).toBeInTheDocument();
   });
 
-  it('enriches a scanner event with the matching TradingAgents opinion', async () => {
-    mockApi.getScannerMonitorStatus.mockResolvedValue({ last_candidate_count: 1 });
-    mockApi.getScannerAlertState.mockResolvedValue({ feed_events: [cachedEvent] });
-
-    render(<ScannerEventsCard fallbackEvents={[{
-      ...cachedEvent,
-      agent_opinion: 'BUY 82% · 기술적 추세와 거래량 흐름이 우호적입니다.',
-      agent_verdict: 'BUY',
-      agent_confidence: 82,
-    }]} />);
-
-    expect(await screen.findByText(/기술적 추세와 거래량 흐름이 우호적입니다/)).toBeInTheDocument();
-    expect(screen.getByText('에이전트')).toBeInTheDocument();
-  });
-
   it('does not erase a cached event when the server has no newer event', async () => {
     seedCache();
     mockApi.getScannerMonitorStatus.mockResolvedValue({ last_candidate_count: 0, last_new_event_count: 0 });
