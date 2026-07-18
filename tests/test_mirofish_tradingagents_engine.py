@@ -124,7 +124,13 @@ def test_engine_aggregates_mixed_method(monkeypatch, tmp_path):
         return ('{"title": "t", "summary": "요약", "stance": "bullish", '
                 '"score": 30, "evidence": ["e"]}')
 
-    monkeypatch.setattr('app.services.mirofish.llm_client.generate_text', fake_generate)
+    monkeypatch.setattr(
+        'app.services.mirofish.llm_client.generate_text_with_metadata',
+        lambda *args, **kwargs: (fake_generate(*args, **kwargs), {
+            'provider': 'deepseek', 'model': 'test', 'success': True,
+            'fallback_used': False, 'attempts': [], 'latency_ms': 1,
+        }),
+    )
     run = engine.run_deep_analysis('삼성전자', use_llm=True)
     assert all(r['method'] == 'llm' for r in run['analyst_reports'])
     assert run['research_debate']['method'] == 'rule'
@@ -136,6 +142,27 @@ def test_kill_switch_status(monkeypatch, tmp_path):
     _patch_sources(monkeypatch, tmp_path)
     monkeypatch.setenv('MIROFISH_TRADINGAGENTS_DISABLED', 'true')
     assert engine.get_status()['enabled'] is False
+
+
+def test_provider_usage_summarizes_calls_fallbacks_and_providers():
+    usage = engine._provider_usage([
+        {'provider': 'deepseek', 'success': True, 'fallback_used': False,
+         'attempts': [{'provider': 'deepseek', 'success': True}]},
+        {'provider': 'openai', 'success': True, 'fallback_used': True,
+         'attempts': [{'provider': 'deepseek', 'success': False},
+                      {'provider': 'openai', 'success': True}]},
+        {'provider': 'none', 'success': False, 'fallback_used': True,
+         'attempts': [{'provider': 'deepseek', 'success': False},
+                      {'provider': 'openai', 'success': False}]},
+    ])
+    assert usage == {
+        'calls': 3, 'successes': 2, 'failures': 1, 'fallbacks': 2,
+        'providers': {
+            'deepseek': {'attempts': 3, 'successes': 1, 'failures': 2, 'selected': 1},
+            'openai': {'attempts': 2, 'successes': 1, 'failures': 1, 'selected': 1},
+        },
+        'attempts': 5,
+    }
 
 
 def test_status_config_exposes_tuning(monkeypatch, tmp_path):

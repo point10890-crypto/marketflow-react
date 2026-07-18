@@ -48,6 +48,8 @@ from app.services.mirofish.tradingagents import analysts
 from app.services.mirofish.tradingagents import data_hub
 from app.services.mirofish.tradingagents import research_debate
 from app.services.mirofish.tradingagents import trader_risk
+from app.services.mirofish.tradingagents import learning
+from app.services.mirofish import llm_client
 from app.utils.atomic_json import write_json_atomic
 
 logger = logging.getLogger(__name__)
@@ -83,16 +85,17 @@ def run_deep_analysis(target: str, *, symbol: str | None = None,
     if symbol and not bundle.get('symbol'):
         bundle['symbol'] = symbol
 
-    reports = analysts.run_analysts(bundle, use_llm=use_llm)
+    with llm_client.collect_generation_metadata() as llm_calls:
+        reports = analysts.run_analysts(bundle, use_llm=use_llm)
 
-    effective_rounds = int(rounds) if rounds is not None else _env_rounds()
-    effective_rounds = max(_MIN_ROUNDS, min(effective_rounds, _MAX_ROUNDS))
-    debate = research_debate.run_research_debate(
-        target, reports, rounds=effective_rounds, use_llm=use_llm,
-    )
-    debate['_analyst_mean'] = _mean_scores(reports)
+        effective_rounds = int(rounds) if rounds is not None else _env_rounds()
+        effective_rounds = max(_MIN_ROUNDS, min(effective_rounds, _MAX_ROUNDS))
+        debate = research_debate.run_research_debate(
+            target, reports, rounds=effective_rounds, use_llm=use_llm,
+        )
+        debate['_analyst_mean'] = _mean_scores(reports)
 
-    tr = trader_risk.run_trader_and_risk(target, bundle, debate, use_llm=use_llm)
+        tr = trader_risk.run_trader_and_risk(target, bundle, debate, use_llm=use_llm)
 
     verdict = _flat_verdict(debate, tr)
     method = _aggregate_method(reports, debate, tr)
@@ -113,6 +116,7 @@ def run_deep_analysis(target: str, *, symbol: str | None = None,
         'trader_risk': tr,
         'verdict': verdict,
         'method': method,
+        'provider_usage': _provider_usage(llm_calls),
     }
 
     _persist(record)
@@ -139,6 +143,20 @@ def get_status() -> dict[str, Any]:
         'last_run_id': (latest or {}).get('id'),
         'last_run_at': (latest or {}).get('completed_at'),
         'runs_count': _count_runs(),
+        'llm': {
+            'provider_order': llm_client.provider_order(),
+            'providers': {
+                'deepseek': {
+                    'configured': bool(os.getenv('DEEPSEEK_API_KEY')),
+                    'model': llm_client.deepseek_model(),
+                },
+                'openai': {
+                    'configured': bool(os.getenv('OPENAI_API_KEY')),
+                    'model': llm_client.openai_model(),
+                },
+            },
+        },
+        'learning': learning.get_workflow_policy(),
     }
 
 
@@ -216,6 +234,32 @@ def _mean_scores(reports: list[dict[str, Any]]) -> float:
     scores = [_safe_float(r.get('score')) for r in (reports or [])]
     scores = [s for s in scores if s is not None]
     return sum(scores) / len(scores) if scores else 0.0
+
+
+def _provider_usage(calls: list[dict[str, Any]]) -> dict[str, Any]:
+    providers: dict[str, dict[str, int]] = {}
+    for call in calls:
+        selected = str(call.get('provider') or 'none')
+        for attempt in call.get('attempts') or []:
+            provider = str(attempt.get('provider') or 'none')
+            bucket = providers.setdefault(provider, {
+                'attempts': 0, 'successes': 0, 'failures': 0, 'selected': 0,
+            })
+            bucket['attempts'] += 1
+            bucket['successes'] += int(bool(attempt.get('success')))
+            bucket['failures'] += int(not attempt.get('success'))
+        if call.get('success'):
+            providers.setdefault(selected, {
+                'attempts': 0, 'successes': 0, 'failures': 0, 'selected': 0,
+            })['selected'] += 1
+    return {
+        'calls': len(calls),
+        'successes': sum(int(bool(call.get('success'))) for call in calls),
+        'failures': sum(int(not call.get('success')) for call in calls),
+        'fallbacks': sum(int(bool(call.get('fallback_used'))) for call in calls),
+        'providers': providers,
+        'attempts': sum(len(call.get('attempts') or []) for call in calls),
+    }
 
 
 def _make_run_id(target: str, when: datetime) -> str:

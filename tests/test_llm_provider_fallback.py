@@ -89,6 +89,111 @@ def test_mirofish_llm_client_can_disable_exhausted_gemini(monkeypatch):
     assert calls == ['deepseek']
 
 
+def test_mirofish_llm_metadata_records_secret_free_fallback(monkeypatch):
+    monkeypatch.setenv('MIROFISH_LLM_PROVIDER_ORDER', 'deepseek,openai')
+    monkeypatch.setenv('MIROFISH_LLM_DISABLED', 'gemini')
+    monkeypatch.setenv('DEEPSEEK_API_KEY', 'must-not-appear')
+    monkeypatch.setenv('OPENAI_API_KEY', 'also-must-not-appear')
+
+    monkeypatch.setattr(llm_client, '_generate_deepseek', lambda *_a, **_k: None)
+    monkeypatch.setattr(llm_client, '_generate_openai', lambda *_a, **_k: '{"verdict":"BUY"}')
+
+    text, metadata = llm_client.generate_text_with_metadata('json please', json_mode=True)
+
+    assert text == '{"verdict":"BUY"}'
+    assert metadata['provider'] == 'openai'
+    assert metadata['model']
+    assert metadata['success'] is True
+    assert metadata['fallback_used'] is True
+    assert metadata['json_mode'] is True
+    assert metadata['latency_ms'] >= 0
+    assert [attempt['provider'] for attempt in metadata['attempts']] == ['deepseek', 'openai']
+    assert metadata['attempts'][0]['failure_reason'] == 'empty_response'
+    assert metadata['attempts'][1]['success'] is True
+    assert 'must-not-appear' not in repr(metadata)
+    assert llm_client.get_last_generation_metadata() == metadata
+
+
+def test_json_mode_rejects_invalid_provider_payload_and_falls_back(monkeypatch):
+    monkeypatch.setenv('MIROFISH_LLM_PROVIDER_ORDER', 'deepseek,openai')
+    monkeypatch.setenv('MIROFISH_LLM_DISABLED', 'gemini')
+    calls = []
+
+    def fake_deepseek(*_args, **_kwargs):
+        calls.append('deepseek')
+        return 'not valid json'
+
+    def fake_openai(*_args, **_kwargs):
+        calls.append('openai')
+        return '{"ok":true}'
+
+    monkeypatch.setattr(llm_client, '_generate_deepseek', fake_deepseek)
+    monkeypatch.setattr(llm_client, '_generate_openai', fake_openai)
+
+    text, metadata = llm_client.generate_text_with_metadata('return json', json_mode=True)
+
+    assert text == '{"ok":true}'
+    assert calls == ['deepseek', 'openai']
+    assert metadata['provider'] == 'openai'
+    assert metadata['attempts'][0]['failure_reason'] == 'invalid_json'
+
+
+def test_deepseek_and_openai_json_mode_use_compatible_response_format(monkeypatch):
+    class Message:
+        content = '{"ok":true}'
+
+    class Choice:
+        message = Message()
+
+    class Response:
+        choices = [Choice()]
+
+    class Completions:
+        def __init__(self):
+            self.kwargs = None
+
+        def create(self, **kwargs):
+            self.kwargs = kwargs
+            return Response()
+
+    class Client:
+        def __init__(self):
+            self.chat = type('Chat', (), {})()
+            self.chat.completions = Completions()
+
+    deepseek = Client()
+    openai = Client()
+    monkeypatch.setattr(llm_client, 'get_deepseek_client', lambda: deepseek)
+    monkeypatch.setattr(llm_client, 'get_openai_client', lambda: openai)
+
+    assert llm_client._generate_deepseek(
+        'produce data', system=None, model_env=None, temperature=0.1,
+        max_tokens=100, json_mode=True,
+    ) == '{"ok":true}'
+    assert llm_client._generate_openai(
+        'produce data', system=None, model_env=None, temperature=0.1,
+        max_tokens=100, json_mode=True,
+    ) == '{"ok":true}'
+
+    for kwargs in (deepseek.chat.completions.kwargs, openai.chat.completions.kwargs):
+        assert kwargs['response_format'] == {'type': 'json_object'}
+        assert 'json' in kwargs['messages'][-1]['content'].lower()
+
+
+def test_generation_metadata_collector_captures_run_calls(monkeypatch):
+    monkeypatch.setenv('MIROFISH_LLM_PROVIDER_ORDER', 'deepseek')
+    monkeypatch.setenv('MIROFISH_LLM_DISABLED', 'openai,gemini')
+    monkeypatch.setattr(llm_client, '_generate_deepseek', lambda *_a, **_k: 'ok')
+
+    with llm_client.collect_generation_metadata() as calls:
+        llm_client.generate_text('first')
+        llm_client.generate_text('second')
+
+    assert len(calls) == 2
+    assert all(call['provider'] == 'deepseek' for call in calls)
+    assert all(call['success'] is True for call in calls)
+
+
 class FakeGrounding:
     def __init__(self, result):
         self.result = result

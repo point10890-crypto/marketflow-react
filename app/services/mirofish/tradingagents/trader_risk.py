@@ -184,7 +184,7 @@ def _llm_trader(target: str, bundle: dict[str, Any],
         f'현재가: {price.get("price")} ({price.get("change_pct")}%)\n'
         f'기술적: {json.dumps(tech, ensure_ascii=False, default=str)[:500]}\n\n{_TRADER_JSON}'
     )
-    raw = llm_client.generate_text(
+    raw, llm_meta = llm_client.generate_text_with_metadata(
         prompt, system=_TRADER_SYSTEM, temperature=0.4, max_tokens=768, json_mode=True,
     )
     data = _parse_json_obj(raw)
@@ -197,6 +197,7 @@ def _llm_trader(target: str, bundle: dict[str, Any],
     }
     if not all(plan.values()):
         return None
+    plan['llm'] = llm_meta
     return plan
 
 
@@ -252,7 +253,7 @@ def _llm_risk(role: str, target: str, bundle: dict[str, Any], debate: dict[str, 
         f'강세 논거: {debate.get("bull_case", "")}\n약세 논거: {debate.get("bear_case", "")}\n'
         f'뉴스 코퍼스(발췌): {str(bundle.get("corpus") or "")[:600]}\n\n{_RISK_JSON}'
     )
-    raw = llm_client.generate_text(
+    raw, llm_meta = llm_client.generate_text_with_metadata(
         prompt, system=_RISK_SYSTEMS[role], temperature=0.5, max_tokens=512, json_mode=True,
     )
     data = _parse_json_obj(raw)
@@ -261,7 +262,10 @@ def _llm_risk(role: str, target: str, bundle: dict[str, Any], debate: dict[str, 
     message = str(data.get('message') or '').strip()
     if not message:
         return None
-    return {'role': role, 'message': message[:600], 'vote': _normalize_vote(data.get('vote'))}
+    return {
+        'role': role, 'message': message[:600], 'vote': _normalize_vote(data.get('vote')),
+        'llm': llm_meta,
+    }
 
 
 # ── Portfolio Manager ───────────────────────────────────────────────
@@ -319,7 +323,7 @@ def _llm_pm(target: str, debate: dict[str, Any], trader_plan: dict[str, Any],
         f'강세 논거: {debate.get("bull_case", "")}\n약세 논거: {debate.get("bear_case", "")}\n'
         f'애널리스트 평균 점수: {_analyst_mean(debate):+.1f}\n\n{_PM_JSON}'
     )
-    raw = llm_client.generate_text(
+    raw, llm_meta = llm_client.generate_text_with_metadata(
         prompt, system=_PM_SYSTEM, temperature=0.3, max_tokens=768, json_mode=True,
     )
     data = _parse_json_obj(raw)
@@ -342,6 +346,7 @@ def _llm_pm(target: str, debate: dict[str, Any], trader_plan: dict[str, Any],
         'confidence': confidence,
         'strong_buy': verdict == 'STRONG_BUY',
         'reasoning': reasoning[:1500],
+        'llm': llm_meta,
     }
 
 

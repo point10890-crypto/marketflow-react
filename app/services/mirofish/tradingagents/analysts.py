@@ -247,7 +247,7 @@ def _rule_summary(role: str, bundle: dict[str, Any], stance: str, evidence: list
 
 def _llm_report(role: str, bundle: dict[str, Any]) -> dict[str, Any] | None:
     prompt = _build_prompt(role, bundle)
-    raw = llm_client.generate_text(
+    raw, llm_meta = llm_client.generate_text_with_metadata(
         prompt,
         system=_SYSTEM_PROMPTS[role],
         temperature=0.3,
@@ -288,6 +288,7 @@ def _llm_report(role: str, bundle: dict[str, Any]) -> dict[str, Any] | None:
         'score': float(score),
         'evidence': evidence,
         'method': 'llm',
+        'llm': llm_meta,
     }
 
 

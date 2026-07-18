@@ -61,6 +61,74 @@ def test_engine_failure_falls_back(monkeypatch):
     assert summary['analyzed'] == 0
 
 
+def test_mature_learning_policy_weights_verdict_and_caps_stale_confidence(monkeypatch):
+    monkeypatch.delenv('MIROFISH_TRADINGAGENTS_DISABLED', raising=False)
+    monkeypatch.setattr(workflow, '_load_ta_learning_policy', lambda: {
+        'status': 'applied', 'applied': True, 'sample_count': 40, 'min_samples': 20,
+        'lookahead_safe': True, 'confidence_cap': 75,
+        'verdict_weights': {'BUY': 1.2},
+    })
+    ranked = _ranked()[:1]
+    ranked[0]['candidate']['source_freshness'] = {'price': {'status': 'stale'}}
+    target = ranked[0]['candidate']['display_name']
+    monkeypatch.setattr(workflow.ta_engine, 'run_deep_analysis',
+                        _fake_engine({target: ('BUY', 90)}))
+
+    adjusted, summary = workflow._apply_tradingagents_layer(ranked, top_n=1, require_buy=True)
+
+    # stale evidence caps confidence at 60: 90 + (5 * .60 * 1.2)
+    assert adjusted[0]['ta_adjusted_score'] == 93.6
+    assert adjusted[0]['tradingagents']['raw_confidence'] == 90
+    assert adjusted[0]['tradingagents']['confidence'] == 60
+    assert 'stale_source' in adjusted[0]['tradingagents']['confidence_cap_reasons']
+    assert summary['learning_policy']['applied'] is True
+
+
+def test_immature_learning_policy_is_observe_only(monkeypatch):
+    monkeypatch.setattr(workflow, '_load_ta_learning_policy', lambda: {
+        'status': 'observe_only', 'applied': False, 'sample_count': 3, 'min_samples': 20,
+        'verdict_weights': {'BUY': 1.5}, 'confidence_cap': 40,
+    })
+    ranked = _ranked()[:1]
+    target = ranked[0]['candidate']['display_name']
+    monkeypatch.setattr(workflow.ta_engine, 'run_deep_analysis',
+                        _fake_engine({target: ('BUY', 80)}))
+    adjusted, _ = workflow._apply_tradingagents_layer(ranked, top_n=1, require_buy=True)
+    assert adjusted[0]['ta_adjusted_score'] == 94.0
+    assert adjusted[0]['tradingagents']['confidence'] == 80
+
+
+def test_ranking_snapshot_records_score_movement_and_exclusion_reason():
+    items = _ranked()[:2]
+    items[1]['ta_adjusted_score'] = 95
+    items[0]['ta_excluded'] = True
+    items[0]['ta_exclusion_reason'] = 'TradingAgents SELL verdict'
+    snapshot = workflow._ranking_snapshot([items[1], items[0]], before={'000': 1, '001': 2})
+    assert snapshot[0]['symbol'] == '001'
+    assert snapshot[0]['base_score'] == 80
+    assert snapshot[0]['adjusted_score'] == 95
+    assert snapshot[0]['rank_movement'] == 1
+    assert snapshot[1]['excluded'] is True
+    assert snapshot[1]['exclusion_reason'] == 'TradingAgents SELL verdict'
+
+
+def test_learning_aggregate_converts_only_mature_verdicts_to_bounded_policy():
+    policy = workflow._ta_policy_from_aggregate({
+        'lookahead_safe_only': True,
+        'evaluated_sample_count': 12,
+        'minimum_samples_for_adjustment': 5,
+        'verdict_accuracy': {
+            'BUY': {'sample_count': 8, 'hit_rate_pct': 70},
+            'SELL': {'sample_count': 2, 'hit_rate_pct': 100},
+        },
+        'lessons': [{'scope': 'verdict', 'key': 'BUY',
+                     'suggested_confidence_cap_delta': -5}],
+    })
+    assert policy['verdict_weights'] == {'BUY': 1.1}
+    assert policy['confidence_cap'] == 95
+    assert policy['sample_count'] == 12
+
+
 def test_select_top3_never_returns_ta_excluded_item():
     ranked = [
         {'candidate': {'symbol': '000'}, 'verdict': {'action': 'BUY'}, 'final_score': 95, 'ta_excluded': True},

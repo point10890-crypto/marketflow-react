@@ -87,9 +87,17 @@ def test_llm_used_when_available_else_rule_per_role(monkeypatch):
                    '"stance": "bullish", "score": 30, "evidence": ["PER 12"]}'
         return None
 
-    monkeypatch.setattr(analysts.llm_client, 'generate_text', fake_generate)
+    monkeypatch.setattr(
+        analysts.llm_client, 'generate_text_with_metadata',
+        lambda *args, **kwargs: (fake_generate(*args, **kwargs), {
+            'provider': 'openai', 'model': 'test', 'success': True,
+            'fallback_used': False, 'attempts': [], 'latency_ms': 1,
+        }),
+    )
     reports = analysts.run_analysts(BUNDLE, use_llm=True)
     by_role = {r['role']: r for r in reports}
     assert by_role['fundamentals']['method'] == 'llm'
+    assert by_role['fundamentals']['llm']['provider'] == 'openai'
     assert by_role['fundamentals']['summary'] == 'PER 12배로 저평가.'
     assert by_role['news']['method'] == 'rule'
+    assert 'llm' not in by_role['news']

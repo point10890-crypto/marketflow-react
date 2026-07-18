@@ -7,6 +7,7 @@ and synthesizes a final Top 3 ranking for the admin console.
 from __future__ import annotations
 
 import concurrent.futures
+import copy
 import hashlib
 import html
 import json
@@ -20,6 +21,7 @@ from typing import Any
 from app.services.mirofish import alpha_scanner, outcome_tracker, store
 import app.services.mirofish.dual_kalman as dual_kalman
 from app.services.mirofish.tradingagents import engine as ta_engine
+from app.services.mirofish.tradingagents import learning as ta_learning
 from app.utils.atomic_json import write_json_atomic
 
 
@@ -769,6 +771,7 @@ def _apply_tradingagents_layer(
     if ta_engine.is_disabled():
         return ranked, {'status': 'disabled', 'analyzed': 0, 'excluded': []}
     cfg = ta_engine.get_status()['config']
+    learning = _load_ta_learning_policy()
     eligible = [r for r in ranked if _verdict_is_buy(r)] if require_buy else list(ranked)
     targets = eligible[:int(cfg.get('max_candidates') or 5)]
     excluded, analyzed = [], 0
@@ -786,18 +789,34 @@ def _apply_tradingagents_layer(
         v = run.get('verdict') or {}
         base = float(item.get('final_score') or 0.0)
         verdict = v.get('verdict')
+        raw_confidence = max(0.0, min(100.0, _number(v.get('confidence'))))
+        confidence_cap, cap_reasons = _ta_confidence_cap(cand, learning)
+        confidence = min(raw_confidence, confidence_cap)
+        verdict_weight = _ta_verdict_weight(verdict, learning)
+        adjustment = 0.0
         if verdict == 'SELL':
             item['ta_excluded'] = True
+            item['ta_exclusion_reason'] = 'TradingAgents SELL verdict'
             excluded.append(cand.get('symbol'))
         elif verdict == 'STRONG_BUY':
-            item['ta_adjusted_score'] = base + float(cfg.get('boost_strong') or 8.0)
+            adjustment = float(cfg.get('boost_strong') or 8.0) * verdict_weight
+            item['ta_adjusted_score'] = base + adjustment
         elif verdict == 'BUY':
-            item['ta_adjusted_score'] = base + float(cfg.get('boost_buy') or 5.0) * (float(v.get('confidence') or 0) / 100.0)
+            adjustment = float(cfg.get('boost_buy') or 5.0) * (confidence / 100.0) * verdict_weight
+            item['ta_adjusted_score'] = base + adjustment
         elif verdict == 'HOLD':
-            item['ta_adjusted_score'] = base - float(cfg.get('penalty_hold') or 3.0)
+            adjustment = -float(cfg.get('penalty_hold') or 3.0) * verdict_weight
+            item['ta_adjusted_score'] = base + adjustment
+        item['ta_adjustment_reason'] = (
+            f'{verdict or "UNKNOWN"} verdict; weight={verdict_weight:.3f}; '
+            f'confidence={confidence:.1f}/{raw_confidence:.1f}'
+        )
         item['tradingagents'] = {
             'run_id': run.get('id'), 'verdict': verdict,
-            'confidence': v.get('confidence'), 'strong_buy': bool(v.get('strong_buy')),
+            'confidence': confidence, 'raw_confidence': raw_confidence,
+            'confidence_cap': confidence_cap, 'confidence_cap_reasons': cap_reasons,
+            'verdict_weight': verdict_weight, 'score_adjustment': round(adjustment, 4),
+            'strong_buy': bool(v.get('strong_buy')),
             'bull_case': v.get('bull_case'), 'bear_case': v.get('bear_case'),
             'risk_summary': v.get('risk_summary'), 'method': run.get('method'),
         }
@@ -810,7 +829,128 @@ def _apply_tradingagents_layer(
 
     adjusted = sorted([r for r in ranked if not r.get('ta_excluded')], key=_sort_key, reverse=True)
     adjusted += [r for r in ranked if r.get('ta_excluded')]   # keep excluded at tail for the record
-    return adjusted, {'status': 'applied', 'analyzed': analyzed, 'excluded': excluded, 'config': cfg}
+    return adjusted, {
+        'status': 'applied', 'analyzed': analyzed, 'excluded': excluded, 'config': cfg,
+        'learning_policy': learning,
+    }
+
+
+def _load_ta_learning_policy() -> dict[str, Any]:
+    """Load an optional replay-safe TA policy without making it a hard dependency.
+
+    The learning component may expose ``get_workflow_policy()``. Its compact
+    contract is ``sample_count``, ``min_samples``, ``verdict_weights`` and
+    ``confidence_cap``. Missing, malformed, or immature policies are observe-only.
+    """
+    try:
+        from app.services.mirofish.tradingagents import learning as ta_learning
+        getter = getattr(ta_learning, 'get_workflow_policy', None)
+        if callable(getter):
+            policy = getter()
+        else:
+            memory_path = os.path.join(WORKFLOW_STATE_ROOT, 'tradingagents_learning.json')
+            aggregate = ta_learning.load_memory(memory_path, {})
+            policy = _ta_policy_from_aggregate(aggregate)
+    except (ImportError, OSError, ValueError, TypeError):
+        return {'status': 'unavailable', 'applied': False}
+    except Exception as exc:
+        return {'status': 'error', 'applied': False, 'error': f'{type(exc).__name__}: {exc}'}
+    if not isinstance(policy, dict):
+        return {'status': 'invalid', 'applied': False}
+    sample_count = int(_number(policy.get('sample_count')))
+    min_samples = max(1, int(_number(policy.get('min_samples')) or 20))
+    safe = bool(policy.get('lookahead_safe', True))
+    applied = bool(policy.get('enabled', True) and safe and sample_count >= min_samples)
+    return {**policy, 'sample_count': sample_count, 'min_samples': min_samples,
+            'lookahead_safe': safe, 'applied': applied,
+            'status': 'applied' if applied else 'observe_only'}
+
+
+def _ta_policy_from_aggregate(aggregate: Any) -> dict[str, Any]:
+    """Translate ``learning.aggregate_learning`` output to bounded workflow knobs."""
+    if not isinstance(aggregate, dict) or not aggregate:
+        return {}
+    samples = int(_number(aggregate.get('evaluated_sample_count')))
+    minimum = max(1, int(_number(aggregate.get('minimum_samples_for_adjustment')) or 5))
+    weights: dict[str, float] = {}
+    caps: list[float] = []
+    for verdict, stats in (aggregate.get('verdict_accuracy') or {}).items():
+        if not isinstance(stats, dict) or int(_number(stats.get('sample_count'))) < minimum:
+            continue
+        rate = _number(stats.get('hit_rate_pct'))
+        # A deliberately small bounded influence: 50% hit rate maps to 1.0.
+        weights[str(verdict).upper()] = round(max(0.75, min(1.25, 1.0 + (rate - 50.0) / 200.0)), 3)
+    for lesson in aggregate.get('lessons') or []:
+        if isinstance(lesson, dict) and lesson.get('scope') == 'verdict':
+            delta = _number(lesson.get('suggested_confidence_cap_delta'))
+            if delta < 0:
+                caps.append(100.0 + delta)
+    return {
+        'enabled': True,
+        'sample_count': samples,
+        'min_samples': minimum,
+        'lookahead_safe': bool(aggregate.get('lookahead_safe_only', True)),
+        'verdict_weights': weights,
+        'confidence_cap': min(caps) if caps else 100.0,
+        'source': 'tradingagents_learning.json',
+        'lessons': aggregate.get('lessons') or [],
+    }
+
+
+def _ta_verdict_weight(verdict: Any, policy: dict[str, Any]) -> float:
+    if not policy.get('applied'):
+        return 1.0
+    weights = policy.get('verdict_weights') or {}
+    raw = weights.get(str(verdict or '').upper())
+    value = 1.0 if raw in (None, '') else _number(raw)
+    return max(0.5, min(1.5, value))
+
+
+def _ta_confidence_cap(candidate: dict[str, Any], policy: dict[str, Any]) -> tuple[float, list[str]]:
+    cap, reasons = 100.0, []
+    if policy.get('applied'):
+        raw_cap = policy.get('confidence_cap')
+        learned_cap = 100.0 if raw_cap in (None, '') else _number(raw_cap)
+        cap = min(cap, max(0.0, min(100.0, learned_cap)))
+        if cap < 100:
+            reasons.append('learned_policy')
+    profile = candidate.get('analysis_profile') or {}
+    candidate_cap = profile.get('confidence_cap', candidate.get('confidence_cap'))
+    if candidate_cap not in (None, ''):
+        value = _number(candidate_cap)
+        value = value * 100.0 if 0 <= value <= 1 else value
+        cap = min(cap, max(0.0, min(100.0, value)))
+        reasons.append('candidate_evidence_cap')
+    freshness = candidate.get('source_freshness') or profile.get('source_freshness') or {}
+    statuses = []
+    if isinstance(freshness, dict):
+        statuses = [str(freshness.get('status') or '').lower()]
+        statuses += [str(v.get('status') or '').lower() for v in freshness.values() if isinstance(v, dict)]
+    if 'missing' in statuses:
+        cap, reasons = min(cap, 50.0), [*reasons, 'missing_source']
+    elif 'stale' in statuses:
+        cap, reasons = min(cap, 60.0), [*reasons, 'stale_source']
+    return round(cap, 2), list(dict.fromkeys(reasons))
+
+
+def _ranking_snapshot(items: list[dict[str, Any]], *, before: dict[str, int] | None = None) -> list[dict[str, Any]]:
+    snapshot = []
+    for rank, item in enumerate(items, start=1):
+        candidate = item.get('candidate') or {}
+        symbol = candidate.get('symbol')
+        base_rank = (before or {}).get(str(symbol))
+        snapshot.append({
+            'rank': rank, 'symbol': symbol,
+            'name': candidate.get('display_name') or candidate.get('name') or symbol,
+            'base_score': item.get('final_score'),
+            'adjusted_score': item.get('ta_adjusted_score', item.get('final_score')),
+            'previous_rank': base_rank,
+            'rank_movement': (base_rank - rank) if base_rank is not None else 0,
+            'excluded': bool(item.get('ta_excluded')),
+            'exclusion_reason': item.get('ta_exclusion_reason'),
+            'adjustment_reason': item.get('ta_adjustment_reason'),
+        })
+    return snapshot
 
 
 def _select_top3(ranked: list[dict[str, Any]], *, top_n: int, require_buy: bool) -> list[dict[str, Any]]:
@@ -876,6 +1016,12 @@ def _complete_workflow(
             _write_workflow(workflow)
 
     ranked = sorted(results, key=lambda item: item.get('final_score', -999), reverse=True)
+    pre_intervention_items = copy.deepcopy(ranked)
+    workflow['pre_intervention_ranking'] = _ranking_snapshot(ranked)
+    pre_ranks = {
+        str((item.get('candidate') or {}).get('symbol')): rank
+        for rank, item in enumerate(ranked, start=1)
+    }
     try:
         ranked, ta_summary = _apply_tradingagents_layer(
             ranked, top_n=top_n, require_buy=_require_buy(workflow),
@@ -883,10 +1029,12 @@ def _complete_workflow(
     except Exception as exc:
         ta_summary = {'status': 'error', 'error': f'{type(exc).__name__}: {exc}'}
     workflow['tradingagents_summary'] = ta_summary
+    workflow['post_intervention_ranking'] = _ranking_snapshot(ranked, before=pre_ranks)
     top3 = _select_top3(ranked, top_n=top_n, require_buy=_require_buy(workflow))
     summary = _workflow_decision_summary(top3, ranked)
     outcome_summary: dict[str, Any] = {}
     outcome_status = 'not_evaluated'
+    outcome_payload: dict[str, Any] = {}
     try:
         outcome_payload = outcome_tracker.refresh_workflow_outcomes(workflow_id, workflow={
             **workflow,
@@ -907,6 +1055,35 @@ def _complete_workflow(
             'lookahead_safe': True,
         }
         summary['outcome'] = outcome_summary
+
+    learning_summary: dict[str, Any] = {'status': 'not_recorded'}
+    try:
+        ta_runs = []
+        for item in ranked:
+            run_id = ((item.get('tradingagents') or {}).get('run_id'))
+            run = ta_engine.get_run(run_id) if run_id else None
+            if isinstance(run, dict):
+                ta_runs.append(run)
+        decision_record, learning_memory = ta_learning.persist_workflow_learning(
+            workflow_id,
+            pre_intervention_items,
+            ranked,
+            ta_runs,
+            outcome_payload.get('items') or [],
+            reference_date=str(workflow.get('created_at') or workflow.get('started_at') or '')[:10],
+            workflows_root=WORKFLOWS_ROOT,
+        )
+        learning_summary = {
+            'status': decision_record.get('status'),
+            'eligible_outcome_count': decision_record.get('eligible_outcome_count', 0),
+            'evaluated_sample_count': learning_memory.get('evaluated_sample_count', 0),
+            'agent_accuracy': learning_memory.get('agent_accuracy') or {},
+            'verdict_accuracy': learning_memory.get('verdict_accuracy') or {},
+            'lessons': learning_memory.get('lessons') or [],
+            'lookahead_safe_only': True,
+        }
+    except Exception as exc:
+        learning_summary = {'status': 'failed', 'error': f'{type(exc).__name__}: {exc}'}
     # Phase C: workflow-level graphrag + source_freshness 보강
     # scanner_run 의 freshness 는 workflow record 의 scanner_freshness 에 기록되어 있음.
     scanner_run_proxy = {
@@ -925,6 +1102,7 @@ def _complete_workflow(
         'top3': top3,
         'outcome_status': outcome_status,
         'outcome_summary': outcome_summary,
+        'tradingagents_learning': learning_summary,
         'progress': {
             'phase': 'completed',
             'completed': len(results),

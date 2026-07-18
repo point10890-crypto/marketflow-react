@@ -83,11 +83,18 @@ def test_llm_full_success_method_llm(monkeypatch):
         'Bull': '{"message": "강세 LLM 근거 발언"}',
         'Bear': '{"message": "약세 LLM 근거 발언"}',
     })
-    monkeypatch.setattr(research_debate.llm_client, 'generate_text', fake)
+    monkeypatch.setattr(
+        research_debate.llm_client, 'generate_text_with_metadata',
+        lambda *args, **kwargs: (fake(*args, **kwargs), {
+            'provider': 'deepseek', 'model': 'test', 'success': True,
+            'fallback_used': False, 'attempts': [], 'latency_ms': 1,
+        }),
+    )
     result = research_debate.run_research_debate('삼성전자', REPORTS, rounds=1, use_llm=True)
     assert result['method'] == 'llm'
     assert result['manager']['stance'] == 'bull'
     assert result['manager']['confidence'] == 72.0
+    assert result['manager']['llm']['provider'] == 'deepseek'
     assert result['rounds'][0]['bull']['message'] == '강세 LLM 근거 발언'
 
 
@@ -98,9 +105,16 @@ def test_llm_partial_failure_method_mixed(monkeypatch):
         'Bull': '{"message": "강세 LLM 발언"}',
         'Bear': None,
     })
-    monkeypatch.setattr(research_debate.llm_client, 'generate_text', fake)
+    monkeypatch.setattr(
+        research_debate.llm_client, 'generate_text_with_metadata',
+        lambda *args, **kwargs: (fake(*args, **kwargs), {
+            'provider': 'deepseek', 'model': 'test', 'success': True,
+            'fallback_used': False, 'attempts': [], 'latency_ms': 1,
+        }),
+    )
     result = research_debate.run_research_debate('삼성전자', REPORTS, rounds=1, use_llm=True)
     assert result['method'] == 'mixed'
+    assert 'llm' not in result['rounds'][0]['bear']
     # bull came from LLM, bear fell back to the rule composer
     assert result['rounds'][0]['bull']['message'] == '강세 LLM 발언'
     assert result['rounds'][0]['bear']['message'].startswith('[약세론 R1]')

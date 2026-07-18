@@ -22,17 +22,93 @@ from __future__ import annotations
 
 import logging
 import os
-from typing import Any, Callable
+import json
+import time
+from contextlib import contextmanager
+from contextvars import ContextVar
+from typing import Any, Callable, Iterator
 
 logger = logging.getLogger(__name__)
 
 DEEPSEEK_BASE_URL = os.getenv('DEEPSEEK_BASE_URL', 'https://api.deepseek.com')
 DEEPSEEK_MODEL_DEFAULT = 'deepseek-v4-flash'
 GEMINI_MODEL_DEFAULT = 'gemini-2.5-flash'
-OPENAI_MODEL_DEFAULT = 'gpt-4o-mini'
+OPENAI_MODEL_DEFAULT = 'gpt-5.5'
 
 ProviderCall = Callable[..., str | None]
 SUPPORTED_PROVIDERS = ('deepseek', 'openai', 'gemini')
+
+# Per-request diagnostics.  ContextVar keeps concurrent Flask requests from
+# overwriting one another and deliberately stores no prompts, responses, keys,
+# URLs with credentials, or exception messages.
+_provider_failure: ContextVar[dict[str, str]] = ContextVar(
+    'mirofish_llm_provider_failure', default={}
+)
+_last_generation_metadata: ContextVar[dict[str, Any] | None] = ContextVar(
+    'mirofish_llm_generation_metadata', default=None
+)
+_generation_collector: ContextVar[list[dict[str, Any]] | None] = ContextVar(
+    'mirofish_llm_generation_collector', default=None
+)
+
+
+def _safe_failure(provider: str, reason: str, exc: Exception | None = None) -> None:
+    failures = dict(_provider_failure.get())
+    failures[provider] = f'{reason}:{type(exc).__name__}' if exc else reason
+    _provider_failure.set(failures)
+
+
+def _model_for(provider: str, model_env: str | None) -> str:
+    return {
+        'deepseek': deepseek_model,
+        'openai': openai_model,
+        'gemini': gemini_model,
+    }[provider](model_env)
+
+
+def get_last_generation_metadata() -> dict[str, Any] | None:
+    """Return a copy of diagnostics for the latest call in this context.
+
+    This is safe to persist with a run artifact: it never contains prompts,
+    completions, credentials, or raw provider error messages.
+    """
+    metadata = _last_generation_metadata.get()
+    if metadata is None:
+        return None
+    return {
+        **metadata,
+        'attempts': [dict(attempt) for attempt in metadata.get('attempts', [])],
+    }
+
+
+def _publish_metadata(metadata: dict[str, Any]) -> None:
+    _last_generation_metadata.set(metadata)
+    collector = _generation_collector.get()
+    if collector is not None:
+        collector.append({
+            **metadata,
+            'attempts': [dict(attempt) for attempt in metadata.get('attempts', [])],
+        })
+
+
+@contextmanager
+def collect_generation_metadata() -> Iterator[list[dict[str, Any]]]:
+    """Collect all LLM diagnostics produced inside one engine/run scope.
+
+    Example::
+
+        with collect_generation_metadata() as llm_calls:
+            run_deep_analysis(...)
+        artifact['llm_calls'] = llm_calls
+
+    Nested and concurrent request scopes remain isolated through ContextVar.
+    """
+    collected: list[dict[str, Any]] = []
+    token = _generation_collector.set(collected)
+    try:
+        yield collected
+    finally:
+        _generation_collector.reset(token)
 
 
 def get_provider() -> str:
@@ -154,6 +230,7 @@ def _generate_deepseek(prompt: str, *, system: str | None, model_env: str | None
     client = get_deepseek_client()
     if client is None:
         logger.warning('[llm_client] DEEPSEEK_API_KEY is not configured')
+        _safe_failure('deepseek', 'client_unavailable')
         return None
     messages: list[dict[str, str]] = []
     if system:
@@ -174,7 +251,8 @@ def _generate_deepseek(prompt: str, *, system: str | None, model_env: str | None
         resp = client.chat.completions.create(**kwargs)
         return (resp.choices[0].message.content or '').strip() or None
     except Exception as exc:
-        logger.warning('[llm_client] DeepSeek call failed: %s: %s', type(exc).__name__, exc)
+        logger.warning('[llm_client] DeepSeek call failed: %s', type(exc).__name__)
+        _safe_failure('deepseek', 'provider_error', exc)
         return None
 
 
@@ -183,6 +261,7 @@ def _generate_openai(prompt: str, *, system: str | None, model_env: str | None,
     client = get_openai_client()
     if client is None:
         logger.warning('[llm_client] OPENAI_API_KEY is not configured')
+        _safe_failure('openai', 'client_unavailable')
         return None
     messages: list[dict[str, str]] = []
     if system:
@@ -190,19 +269,21 @@ def _generate_openai(prompt: str, *, system: str | None, model_env: str | None,
     if json_mode:
         prompt = _json_prompt(prompt, 'Respond only in valid JSON.')
     messages.append({'role': 'user', 'content': prompt})
-    kwargs: dict[str, Any] = {
-        'model': openai_model(model_env),
-        'messages': messages,
-        'temperature': temperature,
-        'max_tokens': max_tokens,
-    }
+    model = openai_model(model_env)
+    kwargs: dict[str, Any] = {'model': model, 'messages': messages}
+    if model.startswith(('gpt-5', 'o1', 'o3', 'o4')):
+        kwargs['max_completion_tokens'] = max_tokens
+    else:
+        kwargs['temperature'] = temperature
+        kwargs['max_tokens'] = max_tokens
     if json_mode:
         kwargs['response_format'] = {'type': 'json_object'}
     try:
         resp = client.chat.completions.create(**kwargs)
         return (resp.choices[0].message.content or '').strip() or None
     except Exception as exc:
-        logger.warning('[llm_client] OpenAI call failed: %s: %s', type(exc).__name__, exc)
+        logger.warning('[llm_client] OpenAI call failed: %s', type(exc).__name__)
+        _safe_failure('openai', 'provider_error', exc)
         return None
 
 
@@ -211,12 +292,14 @@ def _generate_gemini(prompt: str, *, system: str | None, model_env: str | None,
     api_key = os.getenv('GEMINI_API_KEY') or os.getenv('GOOGLE_API_KEY')
     if not api_key:
         logger.warning('[llm_client] GEMINI_API_KEY/GOOGLE_API_KEY is not configured')
+        _safe_failure('gemini', 'client_unavailable')
         return None
     try:
         from google import genai
         from google.genai import types as gt
     except ImportError:
         logger.warning('[llm_client] google-genai package is not installed')
+        _safe_failure('gemini', 'client_unavailable')
         return None
     config_kwargs: dict[str, Any] = {
         'temperature': temperature,
@@ -235,7 +318,8 @@ def _generate_gemini(prompt: str, *, system: str | None, model_env: str | None,
         )
         return (resp.text or '').strip() or None
     except Exception as exc:
-        logger.warning('[llm_client] Gemini call failed: %s: %s', type(exc).__name__, exc)
+        logger.warning('[llm_client] Gemini call failed: %s', type(exc).__name__)
+        _safe_failure('gemini', 'provider_error', exc)
         return None
 
 
@@ -256,23 +340,31 @@ def _call_provider(provider: str, prompt: str, *, system: str | None, model_env:
     )
 
 
-def generate_text_with_provider(prompt: str, *, system: str | None = None,
+def generate_text_with_metadata(prompt: str, *, system: str | None = None,
                                 model_env: str | None = None,
                                 temperature: float = 0.3,
                                 max_tokens: int = 4096,
-                                json_mode: bool = False) -> tuple[str | None, str]:
-    """Generate text and return the provider that succeeded.
-
-    Returns:
-        (text, provider). Provider is 'none' when every configured provider fails.
-    """
+                                json_mode: bool = False,
+                                ) -> tuple[str | None, dict[str, Any]]:
+    """Generate text plus secret-free provider/fallback diagnostics."""
     order = provider_order()
+    started = time.perf_counter()
+    attempts: list[dict[str, Any]] = []
+    _provider_failure.set({})
     if not order:
         logger.warning('[llm_client] every provider is disabled')
-        return None, 'none'
+        metadata = {
+            'provider': 'none', 'model': None, 'success': False,
+            'json_mode': json_mode, 'fallback_used': False,
+            'failure_reason': 'all_providers_disabled', 'attempts': attempts,
+            'latency_ms': round((time.perf_counter() - started) * 1000, 2),
+        }
+        _publish_metadata(metadata)
+        return None, metadata
 
     failed: list[str] = []
-    for provider in order:
+    for attempt_number, provider in enumerate(order, start=1):
+        attempt_started = time.perf_counter()
         text = _call_provider(
             provider,
             prompt,
@@ -282,14 +374,58 @@ def generate_text_with_provider(prompt: str, *, system: str | None = None,
             max_tokens=max_tokens,
             json_mode=json_mode,
         )
+        failure_reason = _provider_failure.get().get(provider)
+        if text and json_mode:
+            try:
+                json.loads(text)
+            except (TypeError, ValueError):
+                _safe_failure(provider, 'invalid_json')
+                failure_reason = 'invalid_json'
+                text = None
+        attempt = {
+            'attempt': attempt_number,
+            'provider': provider,
+            'model': _model_for(provider, model_env),
+            'success': bool(text),
+            'failure_reason': None if text else (failure_reason or 'empty_response'),
+            'latency_ms': round((time.perf_counter() - attempt_started) * 1000, 2),
+        }
+        attempts.append(attempt)
         if text:
             if failed:
                 logger.info('[llm_client] provider fallback succeeded: %s after %s', provider, failed)
-            return text, provider
+            metadata = {
+                'provider': provider, 'model': attempt['model'], 'success': True,
+                'json_mode': json_mode, 'fallback_used': bool(failed),
+                'failure_reason': None, 'attempts': attempts,
+                'latency_ms': round((time.perf_counter() - started) * 1000, 2),
+            }
+            _publish_metadata(metadata)
+            return text, metadata
         failed.append(provider)
 
     logger.warning('[llm_client] all providers failed in order: %s', order)
-    return None, 'none'
+    metadata = {
+        'provider': 'none', 'model': None, 'success': False,
+        'json_mode': json_mode, 'fallback_used': len(attempts) > 1,
+        'failure_reason': 'all_providers_failed', 'attempts': attempts,
+        'latency_ms': round((time.perf_counter() - started) * 1000, 2),
+    }
+    _publish_metadata(metadata)
+    return None, metadata
+
+
+def generate_text_with_provider(prompt: str, *, system: str | None = None,
+                                model_env: str | None = None,
+                                temperature: float = 0.3,
+                                max_tokens: int = 4096,
+                                json_mode: bool = False) -> tuple[str | None, str]:
+    """Generate text and return the provider that succeeded (legacy API)."""
+    text, metadata = generate_text_with_metadata(
+        prompt, system=system, model_env=model_env, temperature=temperature,
+        max_tokens=max_tokens, json_mode=json_mode,
+    )
+    return text, str(metadata['provider'])
 
 
 def generate_text(prompt: str, *, system: str | None = None, model_env: str | None = None,

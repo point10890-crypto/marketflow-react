@@ -87,11 +87,20 @@ def test_llm_pm_invalid_verdict_falls_back_to_rule(monkeypatch):
         '포트폴리오 매니저': '{"verdict": "MODERATE_BUY", "confidence": 80, "reasoning": "x"}',
         '리스크 애널리스트': '{"message": "리스크 판단", "vote": "approve"}',
     })
-    monkeypatch.setattr(trader_risk.llm_client, 'generate_text', fake)
+    monkeypatch.setattr(
+        trader_risk.llm_client, 'generate_text_with_metadata',
+        lambda *args, **kwargs: (fake(*args, **kwargs), {
+            'provider': 'openai', 'model': 'test', 'success': True,
+            'fallback_used': False, 'attempts': [], 'latency_ms': 1,
+        }),
+    )
     out = trader_risk.run_trader_and_risk('삼성전자', BUNDLE, _debate(40), use_llm=True)
     assert out['pm_decision']['verdict'] == 'STRONG_BUY'  # rule fallback
     assert out['pm_decision']['strong_buy'] is True
     assert out['method'] == 'mixed'  # trader+risk LLM ok, PM fell back
+    assert out['trader_plan']['llm']['provider'] == 'openai'
+    assert all(entry['llm']['provider'] == 'openai' for entry in out['risk_debate'])
+    assert 'llm' not in out['pm_decision']
     # trader plan came from the LLM stub
     assert out['trader_plan']['action_hint'] == '매수'
 
