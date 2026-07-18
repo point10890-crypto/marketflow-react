@@ -555,19 +555,19 @@ function AlphaBoardPanel({
     }
 
     return (
-        <section className="rounded-xl border border-white/10 bg-[#10151f]/90 p-4 shadow-[0_18px_70px_rgba(0,0,0,0.22)] backdrop-blur">
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <section className="rounded-xl border border-white/10 bg-[#10151f]/90 p-3 shadow-[0_18px_70px_rgba(0,0,0,0.22)] backdrop-blur sm:p-4">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between lg:gap-4">
                 <div>
                     <div className="flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.22em] text-emerald-200/70">
                         <i className="fas fa-radar text-emerald-300" />
                         Alpha Board
                     </div>
-                    <h2 className="mt-1 text-2xl font-black text-white">Top3 수익 후보 검출</h2>
+                    <h2 className="mt-1 text-xl font-black text-white sm:text-2xl">Top3 수익 후보 검출</h2>
                     <p className="mt-1 text-sm font-semibold text-slate-400">
                         스캔된 후보를 수급·리스크·GraphRAG·사후성과 기준으로 압축합니다.
                     </p>
                 </div>
-                <div className="flex flex-wrap items-center gap-2">
+                <div className="-mx-3 flex snap-x snap-mandatory flex-nowrap items-center gap-2 overflow-x-auto px-3 pb-1 [scrollbar-width:none] [&>*]:shrink-0 [&>*]:snap-start [&::-webkit-scrollbar]:hidden sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 sm:pb-0">
                     <span className={`rounded-full border px-3 py-1.5 text-xs font-black ${state === 'error' ? 'border-rose-300/20 bg-rose-300/10 text-rose-100' : state === 'ready' ? 'border-emerald-300/25 bg-emerald-300/10 text-emerald-100' : 'border-white/15 bg-white/8 text-slate-200'}`}>
                         {state === 'idle' ? 'IDLE' : state.toUpperCase()}
                     </span>
@@ -651,13 +651,13 @@ function AlphaBoardPanel({
                                 </span>
                             </div>
                         </div>
-                        <div className="flex flex-wrap gap-2">
+                        <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap">
                             {!subscriberMode && (
                                 <button
                                     type="button"
                                     onClick={onWorkflow}
                                     disabled={workflowBusy}
-                                    className="rounded-lg border border-cyan-300/25 bg-cyan-300/12 px-3 py-2 text-xs font-black text-cyan-100 transition hover:bg-cyan-300/18 disabled:cursor-wait disabled:opacity-60"
+                                    className="min-h-10 w-full rounded-lg border border-cyan-300/25 bg-cyan-300/12 px-2 py-2 text-xs font-black text-cyan-100 transition hover:bg-cyan-300/18 disabled:cursor-wait disabled:opacity-60 sm:w-auto sm:px-3"
                                 >
                                     {workflowBusy ? 'Top3 분석 중...' : '신규 이벤트 Top3'}
                                 </button>
@@ -668,7 +668,7 @@ function AlphaBoardPanel({
                                     onClick={onForceWorkflow}
                                     disabled={workflowBusy}
                                     aria-label="Run MCP Top 3 Force refresh"
-                                    className="rounded-lg border border-amber-300/25 bg-amber-300/12 px-3 py-2 text-xs font-black text-amber-100 transition hover:bg-amber-300/18 disabled:cursor-wait disabled:opacity-60"
+                                    className="min-h-10 w-full rounded-lg border border-amber-300/25 bg-amber-300/12 px-2 py-2 text-xs font-black text-amber-100 transition hover:bg-amber-300/18 disabled:cursor-wait disabled:opacity-60 sm:w-auto sm:px-3"
                                 >
                                     강제 MCP Top3 갱신
                                 </button>
@@ -870,12 +870,12 @@ function AlphaBoardPanel({
                     )}
                 </div>
                 {!subscriberMode && (
-                    <div className="flex flex-wrap items-start gap-2 md:justify-end">
+                    <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-start md:justify-end">
                         <button
                             type="button"
                             onClick={onDeepSeekSummary}
                             disabled={deepSeekBusy || (!scannerRun?.id && scannerBusy)}
-                            className="rounded-lg border border-emerald-300/25 bg-emerald-300/12 px-3 py-2 text-xs font-black text-emerald-100 transition hover:bg-emerald-300/18 disabled:cursor-not-allowed disabled:opacity-50"
+                            className="min-h-10 w-full rounded-lg border border-emerald-300/25 bg-emerald-300/12 px-2 py-2 text-xs font-black text-emerald-100 transition hover:bg-emerald-300/18 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto sm:px-3"
                         >
                             {deepSeekState === 'summarizing' ? '요약 중...' : 'DeepSeek 요약'}
                         </button>
@@ -883,7 +883,7 @@ function AlphaBoardPanel({
                             type="button"
                             onClick={onSendDeepSeekTelegram}
                             disabled={deepSeekBusy || !scannerRun?.id}
-                            className="rounded-lg border border-cyan-300/25 bg-cyan-300/12 px-3 py-2 text-xs font-black text-cyan-100 transition hover:bg-cyan-300/18 disabled:cursor-not-allowed disabled:opacity-50"
+                            className="min-h-10 w-full rounded-lg border border-cyan-300/25 bg-cyan-300/12 px-2 py-2 text-xs font-black text-cyan-100 transition hover:bg-cyan-300/18 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto sm:px-3"
                         >
                             {deepSeekState === 'sending' ? '전송 중...' : deepSeekState === 'sent' ? '전송 완료' : '텔레그램 전송'}
                         </button>
@@ -898,7 +898,7 @@ function AlphaBoardPanel({
                         type="button"
                         onClick={() => onSelect(candidate)}
                         onDoubleClick={() => onDeepDive(candidate)}
-                        className="grid gap-3 rounded-lg border border-white/10 bg-white/[0.06] p-3 text-left transition hover:border-emerald-300/30 hover:bg-white/[0.09] md:grid-cols-[44px_1.4fr_0.8fr_0.8fr_1fr_auto]"
+                        className="grid grid-cols-[40px_minmax(0,1fr)] gap-3 rounded-lg border border-white/10 bg-white/[0.06] p-3 text-left transition hover:border-emerald-300/30 hover:bg-white/[0.09] md:grid-cols-[44px_1.4fr_0.8fr_0.8fr_1fr_auto]"
                     >
                         <span className="grid h-10 w-10 place-items-center rounded-lg bg-emerald-300/12 text-sm font-black text-emerald-100">
                             #{candidate.rank}
@@ -907,15 +907,15 @@ function AlphaBoardPanel({
                             <span className="block truncate text-base font-black text-white">{candidate.display_name}</span>
                             <span className="mt-0.5 block font-mono text-[11px] font-bold text-slate-400">{candidate.symbol} · {candidate.market || 'KR'} · {candidate.horizon}</span>
                         </span>
-                        <span>
+                        <span className="rounded-lg bg-black/20 px-2 py-1.5 md:rounded-none md:bg-transparent md:p-0">
                             <span className="block text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">Alpha</span>
                             <span className="text-2xl font-black text-emerald-200">{Math.round(candidate.alpha_score)}</span>
                         </span>
-                        <span>
+                        <span className="rounded-lg bg-black/20 px-2 py-1.5 md:rounded-none md:bg-transparent md:p-0">
                             <span className="block text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">Risk</span>
                             <span className="text-2xl font-black text-amber-200">{Math.round(candidate.risk_score)}</span>
                         </span>
-                        <span className="min-w-0">
+                        <span className="col-span-2 min-w-0 md:col-auto">
                             <span className="flex flex-wrap items-center gap-1.5">
                                 <span className={`inline-flex rounded-full border px-2.5 py-1 text-[11px] font-black ${alphaActionTone(candidate.action)}`}>
                                     {candidate.action}
@@ -944,7 +944,7 @@ function AlphaBoardPanel({
                                 </span>
                             )}
                         </span>
-                        <span className="flex items-center gap-2 md:justify-end">
+                        <span className="col-span-2 flex items-center justify-between gap-2 border-t border-white/10 pt-2 md:col-auto md:justify-end md:border-0 md:pt-0">
                             <span className="font-mono text-xs font-black text-slate-300">{formatPrice(candidate.price)}</span>
                             <span
                                 role="button"
@@ -2945,13 +2945,13 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
     );
 
     return (
-        <div className="space-y-5">
+        <div className="space-y-4 pb-24 md:space-y-5 md:pb-0">
             <section className={`border-b ${
                 subscriberMode
                     ? 'border-cyan-300/15 bg-[#0d1320]/80'
                     : 'border-anthropic-darkLine bg-transparent'
             }`}>
-                <div className="px-4 py-5 sm:px-5 sm:py-7 md:px-8 md:py-10">
+                <div className="px-3 py-4 sm:px-5 sm:py-7 md:px-8 md:py-10">
                     <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3">
                         <div className={`inline-flex items-center gap-1.5 sm:gap-2 rounded-full border px-2.5 sm:px-3 py-1 sm:py-1.5 text-[11px] sm:text-xs font-medium ${
                             subscriberMode
@@ -3006,9 +3006,9 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
 
                     {!subscriberMode && <MiroFishFearIndexCard className="mt-5" variant="compact" />}
 
-                    <div className="mt-5 grid gap-5 2xl:grid-cols-[minmax(0,1.65fr)_minmax(400px,0.72fr)] 2xl:items-start">
-                        <section className="min-w-0 rounded-2xl border border-cyan-300/15 bg-cyan-300/[0.035] p-3 shadow-[0_18px_70px_rgba(8,145,178,0.10)]">
-                            <div className="mb-3 flex flex-col gap-3 rounded-xl border border-cyan-300/12 bg-black/20 px-4 py-3 md:flex-row md:items-center md:justify-between">
+                    <div className="mt-4 grid gap-4 sm:mt-5 sm:gap-5 2xl:grid-cols-[minmax(0,1.65fr)_minmax(400px,0.72fr)] 2xl:items-start">
+                        <section className="min-w-0 rounded-2xl border border-cyan-300/15 bg-cyan-300/[0.035] p-2 shadow-[0_18px_70px_rgba(8,145,178,0.10)] sm:p-3">
+                            <div className="mb-3 flex flex-col gap-3 rounded-xl border border-cyan-300/12 bg-black/20 px-3 py-3 sm:px-4 md:flex-row md:items-center md:justify-between">
                                 <div>
                                     <div className="text-[10px] font-black uppercase tracking-[0.22em] text-cyan-200/75">Left Format</div>
                                     <h2 className="mt-1 text-lg font-black text-white">검출·분석 실행 레인</h2>
