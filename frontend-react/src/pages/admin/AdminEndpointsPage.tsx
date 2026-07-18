@@ -221,15 +221,11 @@ function preferLatestWorkflow(current: MiroFishWorkflow | null, next?: MiroFishW
 
 function workflowAgentOpinion(result: MiroFishWorkflowAnalysisResult) {
     const ta = result.tradingagents;
-    const legacy = result.verdict;
-    const rawVerdict = ta?.verdict || legacy?.action;
-    if (!rawVerdict) return null;
-    const verdict = String(rawVerdict).replace(/_/g, ' ');
-    const confidence = Number(ta?.confidence ?? legacy?.confidence_pct);
+    if (!ta?.verdict) return null;
+    const verdict = String(ta.verdict).replace(/_/g, ' ');
+    const confidence = Number(ta.confidence);
     const lead = Number.isFinite(confidence) ? `${verdict} ${Math.round(confidence)}%` : verdict;
-    const detail = String(
-        ta?.bull_case || ta?.risk_summary || ta?.bear_case || legacy?.summary || result.reason || '',
-    ).trim();
+    const detail = String(ta.bull_case || ta.risk_summary || ta.bear_case || '').trim();
     return detail ? `${lead} · ${detail}` : lead;
 }
 
@@ -251,8 +247,8 @@ function workflowScannerEvents(workflow?: MiroFishWorkflow | null) {
             alpha_score: result.final_score ?? candidate.alpha_score ?? null,
             risk_score: candidate.risk_score ?? null,
             agent_opinion: workflowAgentOpinion(result),
-            agent_verdict: result.tradingagents?.verdict ?? result.verdict?.action ?? null,
-            agent_confidence: result.tradingagents?.confidence ?? result.verdict?.confidence_pct ?? null,
+            agent_verdict: result.tradingagents?.verdict ?? null,
+            agent_confidence: result.tradingagents?.confidence ?? null,
             source: 'workflow_top3_cache',
         };
     });
