@@ -23,7 +23,7 @@ function tradingAgentsBadge(ta: TradingAgentsVerdict | null | undefined): { labe
     if (ta.strong_buy || ta.verdict === 'STRONG_BUY') {
         return {
             label: `🔥 매수 유력${suffix}`,
-            tone: 'border-orange-400/50 bg-gradient-to-r from-orange-500/20 to-rose-500/20 text-orange-200 shadow-[0_0_12px_-2px_rgba(251,146,60,0.5)]',
+            tone: 'border-orange-400/50 bg-orange-500/15 text-orange-200',
         };
     }
     if (ta.verdict === 'BUY') {
@@ -32,13 +32,13 @@ function tradingAgentsBadge(ta: TradingAgentsVerdict | null | undefined): { labe
     return null;
 }
 
-function rsBadge(rating: number | null | undefined): { label: string; tone: string } | null {
-    // O'Neil 상대강도 (1~99 백분위) — 시장 주도주/후행주 구분
+function rsLabel(rating: number | null | undefined): string | null {
+    // O'Neil 상대강도 (1~99 백분위) — 색 배지 대신 무채색 텍스트로 밀도 축소
     if (rating == null || !Number.isFinite(rating) || rating < 1 || rating > 99) return null;
-    if (rating >= 85) return { label: `RS ${rating} 주도주`, tone: 'border-yellow-400/40 bg-yellow-500/10 text-yellow-300' };
-    if (rating >= 70) return { label: `RS ${rating} 강세`, tone: 'border-sky-400/30 bg-sky-500/10 text-sky-300' };
-    if (rating <= 30) return { label: `RS ${rating} 후행`, tone: 'border-rose-400/30 bg-rose-500/10 text-rose-300' };
-    return { label: `RS ${rating}`, tone: 'border-white/15 bg-white/[0.06] text-gray-300' };
+    if (rating >= 85) return `RS ${rating} 주도주`;
+    if (rating >= 70) return `RS ${rating} 강세`;
+    if (rating <= 30) return `RS ${rating} 후행`;
+    return `RS ${rating}`;
 }
 
 interface DetectionsCardProps {
@@ -53,71 +53,58 @@ export default function DetectionsCard({ data }: DetectionsCardProps) {
 
     return (
         <section className="rounded-2xl border border-cyan-400/15 bg-[#13151f] p-5">
-            <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
-                <h2 className="text-white font-bold text-base flex items-center gap-2">
-                    <i className="fas fa-bullseye text-cyan-400" />
-                    오늘의 검출 (Top 3)
-                </h2>
-                {data?.as_of && (
-                    <span className="text-[11px] text-gray-500">기준일: {data.as_of}</span>
-                )}
-            </div>
+            <h2 className="text-white font-bold text-base flex items-center gap-2 mb-4">
+                <i className="fas fa-bullseye text-cyan-400" />
+                오늘의 검출
+                <span className="text-[11px] font-medium text-gray-500">Top 3</span>
+            </h2>
 
             {items.length === 0 ? (
                 <p className="text-sm text-gray-400">오늘 신규 검출이 없습니다</p>
             ) : (
-                <div className="space-y-3">
-                    {items.map((item, idx) => (
-                        <div
-                            key={`${item.symbol ?? 'unknown'}-${idx}`}
-                            className="rounded-xl border border-white/10 bg-white/[0.03] p-3 flex items-center justify-between gap-3 flex-wrap"
-                        >
-                            <div className="min-w-0">
-                                <p className="text-sm font-bold text-white truncate">
-                                    {item.name ?? item.symbol ?? '—'}
-                                    {item.symbol && item.name && (
-                                        <span className="ml-1.5 text-xs text-gray-500 font-mono">{item.symbol}</span>
-                                    )}
-                                </p>
-                                {item.entry_date && (
-                                    <p className="text-[11px] text-gray-500 mt-0.5">진입일: {item.entry_date}</p>
-                                )}
-                            </div>
-                            <div className="flex items-center gap-2 flex-wrap">
-                                {(() => {
-                                    const ta = tradingAgentsBadge(item.tradingagents);
-                                    return ta ? (
-                                        <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-bold ${ta.tone}`}>
+                <div className="space-y-2.5">
+                    {items.map((item, idx) => {
+                        const ta = tradingAgentsBadge(item.tradingagents);
+                        const isStrong = !!(item.tradingagents?.strong_buy);
+                        const meta = [
+                            item.alpha_score != null ? `Alpha ${item.alpha_score}` : null,
+                            item.risk_score != null ? `Risk ${item.risk_score}` : null,
+                            rsLabel(item.rs_rating),
+                        ].filter(Boolean).join('  ·  ');
+
+                        return (
+                            <div
+                                key={`${item.symbol ?? 'unknown'}-${idx}`}
+                                className={`rounded-xl border p-3.5 ${
+                                    isStrong ? 'border-orange-400/25 bg-orange-500/[0.04]' : 'border-white/10 bg-white/[0.03]'
+                                }`}
+                            >
+                                <div className="flex items-center justify-between gap-3">
+                                    <div className="flex items-center gap-3 min-w-0">
+                                        <span className="shrink-0 grid place-items-center h-7 w-7 rounded-lg bg-white/[0.06] text-xs font-bold text-gray-400">
+                                            {idx + 1}
+                                        </span>
+                                        <div className="min-w-0">
+                                            <p className="text-[15px] font-bold text-white truncate">
+                                                {item.name ?? item.symbol ?? '—'}
+                                                {item.symbol && item.name && (
+                                                    <span className="ml-1.5 text-xs text-gray-500 font-mono">{item.symbol}</span>
+                                                )}
+                                            </p>
+                                            {meta && (
+                                                <p className="mt-0.5 text-[11px] font-mono text-gray-500 truncate">{meta}</p>
+                                            )}
+                                        </div>
+                                    </div>
+                                    {ta && (
+                                        <span className={`shrink-0 inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-bold ${ta.tone}`}>
                                             {ta.label}
                                         </span>
-                                    ) : null;
-                                })()}
-                                {item.action && (
-                                    <span className="inline-flex items-center rounded-full border border-cyan-400/30 bg-cyan-500/10 px-2 py-0.5 text-[10px] font-bold text-cyan-300 uppercase">
-                                        {item.action}
-                                    </span>
-                                )}
-                                {item.alpha_score != null && (
-                                    <span className="inline-flex items-center rounded-full border border-emerald-400/30 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold text-emerald-300">
-                                        Alpha {item.alpha_score}
-                                    </span>
-                                )}
-                                {item.risk_score != null && (
-                                    <span className="inline-flex items-center rounded-full border border-amber-400/30 bg-amber-500/10 px-2 py-0.5 text-[10px] font-bold text-amber-300">
-                                        Risk {item.risk_score}
-                                    </span>
-                                )}
-                                {(() => {
-                                    const rs = rsBadge(item.rs_rating);
-                                    return rs ? (
-                                        <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-bold ${rs.tone}`}>
-                                            {rs.label}
-                                        </span>
-                                    ) : null;
-                                })()}
+                                    )}
+                                </div>
                             </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             )}
         </section>

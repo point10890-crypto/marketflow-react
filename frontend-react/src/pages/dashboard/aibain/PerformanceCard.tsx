@@ -16,79 +16,81 @@ interface PerformanceCardProps {
         evaluated_count: number;
         verified: VerifiedItem[];
     };
+    learningPattern?: string | null;
 }
 
-export default function PerformanceCard({ data }: PerformanceCardProps) {
-    const verified = data?.verified ?? [];
+export default function PerformanceCard({ data, learningPattern }: PerformanceCardProps) {
+    const verified = (data?.verified ?? []).filter((v) => v.forward_return_pct != null).slice(0, 8);
     const windowDays = data?.window_days ?? 30;
+    const evaluated = data?.evaluated_count ?? 0;
 
     return (
         <section className="rounded-2xl border border-cyan-400/15 bg-[#13151f] p-5">
             <h2 className="text-white font-bold text-base flex items-center gap-2 mb-4">
                 <i className="fas fa-chart-line text-cyan-400" />
-                성과 검증 (최근 {windowDays}일)
+                성과 검증
+                <span className="text-[11px] font-medium text-gray-500">최근 {windowDays}일</span>
             </h2>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
-                <KpiTile label="적중률" value={fmtPct(data?.hit_rate_pct)} />
-                <KpiTile label="평균 수익" value={fmtPct(data?.avg_forward_return_pct)} />
-                <KpiTile label="평가 표본" value={`${data?.evaluated_count ?? 0}`} />
+            <div className="flex items-center gap-x-6 gap-y-2 flex-wrap mb-4">
+                <Stat label="적중률" value={fmtPct(data?.hit_rate_pct)} />
+                <span className="h-4 w-px bg-white/10" />
+                <Stat label="평균 수익" value={fmtSignedPct(data?.avg_forward_return_pct)} signed={data?.avg_forward_return_pct} />
+                <span className="h-4 w-px bg-white/10" />
+                <Stat label="표본" value={`${evaluated}개`} />
             </div>
 
-            {(data?.evaluated_count ?? 0) === 0 ? (
+            {evaluated === 0 ? (
                 <p className="text-sm text-gray-400">성과 검증 데이터를 누적 중입니다</p>
             ) : (
-                <div className="space-y-2">
+                <div className="flex flex-wrap gap-1.5">
                     {verified.map((item, idx) => {
-                        const ret = item.forward_return_pct;
-                        const isPositive = ret != null ? ret >= 0 : null;
+                        const ret = item.forward_return_pct as number;
+                        const up = ret >= 0;
+                        const title = `${item.name ?? item.symbol ?? ''}${item.entry_date ? ` · ${item.entry_date}` : ''}`;
                         return (
-                            <div
+                            <span
                                 key={`${item.symbol ?? 'unknown'}-${idx}`}
-                                className="rounded-xl border border-white/10 bg-white/[0.03] p-3 flex items-center justify-between gap-3 flex-wrap"
+                                title={title}
+                                className={`inline-flex items-center gap-0.5 rounded-md border px-2 py-0.5 text-[11px] font-bold font-mono ${
+                                    up ? 'border-emerald-400/25 bg-emerald-500/10 text-emerald-300' : 'border-red-400/25 bg-red-500/10 text-red-300'
+                                }`}
                             >
-                                <div className="min-w-0">
-                                    <p className="text-sm font-bold text-white truncate">
-                                        {item.name ?? item.symbol ?? '—'}
-                                        {item.symbol && item.name && (
-                                            <span className="ml-1.5 text-xs text-gray-500 font-mono">{item.symbol}</span>
-                                        )}
-                                    </p>
-                                    {item.entry_date && (
-                                        <p className="text-[11px] text-gray-500 mt-0.5">진입일: {item.entry_date}</p>
-                                    )}
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    {ret != null && (
-                                        <span
-                                            className={`inline-flex items-center gap-1 text-sm font-bold ${
-                                                isPositive ? 'text-emerald-400' : 'text-red-400'
-                                            }`}
-                                        >
-                                            {isPositive ? '▲' : '▼'}
-                                            {ret.toFixed(2)}%
-                                        </span>
-                                    )}
-                                </div>
-                            </div>
+                                {up ? '▲' : '▼'}{ret.toFixed(1)}%
+                            </span>
                         );
                     })}
                 </div>
+            )}
+
+            {learningPattern && (
+                <p className="mt-4 pt-3 border-t border-white/[0.06] text-[11px] text-gray-500">
+                    <i className="fas fa-brain mr-1.5 text-gray-600" />
+                    AI 학습: 잘 맞은 패턴 <span className="text-gray-400 font-medium">{learningPattern}</span>
+                </p>
             )}
         </section>
     );
 }
 
 function fmtPct(value: number | null | undefined): string {
-    if (value == null) return '—%';
+    if (value == null) return '—';
     return `${value}%`;
 }
 
-function KpiTile({ label, value }: { label: string; value: string }) {
+function fmtSignedPct(value: number | null | undefined): string {
+    if (value == null) return '—';
+    const sign = value > 0 ? '+' : '';
+    return `${sign}${value}%`;
+}
+
+function Stat({ label, value, signed }: { label: string; value: string; signed?: number | null }) {
+    const valueColor =
+        signed == null ? 'text-white' : signed >= 0 ? 'text-emerald-400' : 'text-red-400';
     return (
-        <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4 text-center">
-            <p className="text-2xl font-black text-white">{value}</p>
-            <p className="text-[11px] text-gray-500 mt-1">{label}</p>
+        <div className="flex items-baseline gap-1.5">
+            <span className="text-[11px] text-gray-500">{label}</span>
+            <span className={`text-lg font-black ${valueColor}`}>{value}</span>
         </div>
     );
 }

@@ -3,8 +3,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { fetchAuthAPI } from '@/lib/api';
 import DetectionsCard from './DetectionsCard';
 import PerformanceCard from './PerformanceCard';
-import LearningCard from './LearningCard';
-import ScannerEventsCard from './ScannerEventsCard';
 
 interface AiBainOverview {
     generated_at: string;
@@ -18,6 +16,7 @@ interface AiBainOverview {
             risk_score: number | null;
             rs_rating: number | null;
             entry_date: string | null;
+            tradingagents?: { verdict: string | null; confidence: number | null; strong_buy: boolean | null } | null;
         }[];
     };
     performance: {
@@ -66,12 +65,17 @@ export default function AiBainDashboard() {
         load();
     }, [load]);
 
+    const learningPattern = overview?.learning?.top_positive?.[0]?.combo ?? null;
+
     return (
         <div className="min-h-screen bg-[#09090b] text-white p-4 sm:p-6 lg:p-8">
-            <div className="max-w-5xl mx-auto space-y-6">
-                <Header />
-
-                <ScannerEventsCard token={token ?? undefined} />
+            <div className="max-w-3xl mx-auto space-y-5">
+                <Header
+                    hitRatePct={overview?.performance?.hit_rate_pct ?? null}
+                    windowDays={overview?.performance?.window_days ?? 30}
+                    asOf={overview?.detections?.as_of ?? null}
+                    live={!loading && !error}
+                />
 
                 {loading && <LoadingState />}
 
@@ -80,8 +84,7 @@ export default function AiBainDashboard() {
                 {!loading && !error && overview && (
                     <>
                         <DetectionsCard data={overview.detections} />
-                        <PerformanceCard data={overview.performance} />
-                        <LearningCard data={overview.learning} />
+                        <PerformanceCard data={overview.performance} learningPattern={learningPattern} />
                     </>
                 )}
             </div>
@@ -89,29 +92,48 @@ export default function AiBainDashboard() {
     );
 }
 
-function Header() {
+function Header({
+    hitRatePct,
+    windowDays,
+    asOf,
+    live,
+}: {
+    hitRatePct: number | null;
+    windowDays: number;
+    asOf: string | null;
+    live: boolean;
+}) {
     return (
-        <div className="rounded-2xl border border-cyan-500/25 bg-gradient-to-br from-cyan-500/[0.06] via-[#13151f] to-[#1c1c1e] p-6 sm:p-8 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-cyan-500/10 to-transparent rounded-bl-full pointer-events-none" />
-            <div className="relative flex items-start gap-4">
-                <div className="grid h-14 w-14 sm:h-16 sm:w-16 shrink-0 place-items-center rounded-2xl bg-cyan-500/15 text-cyan-300 text-3xl">
-                    <i className="fas fa-robot" />
-                </div>
-                <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2 flex-wrap">
-                        <h1 className="text-2xl sm:text-3xl font-black tracking-tight">AI Brain 알파 스캐너</h1>
-                        <span className="inline-flex items-center gap-1 rounded-full border border-cyan-400/30 bg-cyan-500/10 px-2 py-0.5 text-[10px] font-black text-cyan-300 uppercase tracking-wider">
-                            <i className="fas fa-bolt text-[10px]" />
-                            ALPHA SCAN
-                        </span>
-                    </div>
-                    <p className="mt-2 text-sm sm:text-base text-gray-300 leading-relaxed">
-                        오늘의 검출, 성과 검증, AI 학습 피드백을 한눈에 확인하세요.
-                    </p>
-                </div>
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+            <div className="flex items-center gap-2.5 min-w-0">
+                <span className="relative grid place-items-center h-2.5 w-2.5">
+                    <span className={`absolute inline-flex h-2.5 w-2.5 rounded-full ${live ? 'bg-cyan-400/60 animate-ping' : ''}`} />
+                    <span className={`relative inline-flex h-2 w-2 rounded-full ${live ? 'bg-cyan-400' : 'bg-gray-600'}`} />
+                </span>
+                <h1 className="text-xl sm:text-2xl font-black tracking-tight">AI Brain</h1>
+                {asOf && <span className="text-[11px] text-gray-500">마지막 검출 {fmtDate(asOf)}</span>}
             </div>
+            {hitRatePct != null && (
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-cyan-400/25 bg-cyan-500/10 px-3 py-1 text-xs font-bold text-cyan-300">
+                    <i className="fas fa-bullseye text-[10px]" />
+                    최근 {windowDays}일 적중률 {hitRatePct}%
+                </span>
+            )}
         </div>
     );
+}
+
+function fmtDate(iso: string): string {
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return iso.slice(0, 16).replace('T', ' ');
+    return d.toLocaleString('ko-KR', {
+        timeZone: 'Asia/Seoul',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+    });
 }
 
 function LoadingState() {
