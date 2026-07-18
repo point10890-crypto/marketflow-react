@@ -27,11 +27,11 @@
         window.__pwaInstallPrompt = e;
       });
 
-      // v4.0.0 — PWA installable SW 활성화.
+      // v4.0.1 — stale deployment cache recovery.
       // 과거 v3.1.0 kill-switch SW 사용자는 1회 unregister + cache 정리 후 신규 SW 등록.
       // 신규 유저는 바로 SW 등록 → 브라우저 install prompt 자동 발동.
       (function() {
-        var CACHE_VER = 'v4.0.0';
+        var CACHE_VER = 'v4.0.1';
         var prevVer = localStorage.getItem('cache_ver');
         var hadOldSW = 'serviceWorker' in navigator && !!navigator.serviceWorker.controller;
 

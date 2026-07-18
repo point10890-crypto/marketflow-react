@@ -1,4 +1,4 @@
-// MarketFlow PWA-installable service worker (v4.0.0)
+// MarketFlow PWA-installable service worker (v4.0.1)
 //
 // 목적: PWA 설치 가능하게 만드는 최소한의 SW.
 // Chrome / Edge / Samsung Internet 의 PWA install prompt 는 fetch 이벤트
@@ -10,7 +10,7 @@
 //   - 캐시가 필요하면 향후 신중하게 cache-first 가 아닌 stale-while-revalidate
 //     로 navigation 만 적용하는 방향으로 검토.
 
-const SW_VERSION = 'v4.0.0';
+const SW_VERSION = 'v4.0.1';
 
 self.addEventListener('install', (event) => {
     // 새 SW 즉시 활성화 — 대기 없이
