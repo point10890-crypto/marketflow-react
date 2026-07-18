@@ -69,6 +69,35 @@ function preserveLatestEvents(previous: MiroFishScannerAlertState | null, next: 
     return next;
 }
 
+function enrichWithAgentOpinions(
+    state: MiroFishScannerAlertState,
+    fallbackEvents: MiroFishScannerAlertEvent[],
+) {
+    if (fallbackEvents.length === 0) return state;
+    const opinions = new Map(
+        fallbackEvents
+            .filter((event) => event.symbol && event.agent_opinion)
+            .map((event) => [String(event.symbol), event]),
+    );
+    const enrich = (events?: MiroFishScannerAlertEvent[]) => events?.map((event) => {
+        const fallback = opinions.get(String(event.symbol || ''));
+        if (!fallback || event.agent_opinion) return event;
+        return {
+            ...event,
+            agent_opinion: fallback.agent_opinion,
+            agent_verdict: fallback.agent_verdict,
+            agent_confidence: fallback.agent_confidence,
+        };
+    });
+    return {
+        ...state,
+        feed_events: enrich(state.feed_events),
+        recent_sent_events: enrich(state.recent_sent_events),
+        latest_candidate_events: enrich(state.latest_candidate_events),
+        latest_new_events: enrich(state.latest_new_events),
+    };
+}
+
 function actionLabel(action?: string | null) {
     if (!action) return '';
     return ACTION_LABELS[action] || action;
@@ -166,7 +195,10 @@ export default function ScannerEventsCard({ className = '', compact = false, max
                 setMonitor(monitorState);
             }
             setAlerts((previous) => {
-                const next = preserveLatestEvents(previous, alertState);
+                const next = enrichWithAgentOpinions(
+                    preserveLatestEvents(previous, alertState),
+                    fallbackEvents,
+                );
                 try {
                     window.localStorage.setItem(CACHE_KEY, JSON.stringify({
                         monitor: monitorState,
@@ -193,10 +225,10 @@ export default function ScannerEventsCard({ className = '', compact = false, max
         if (fallbackEvents.length === 0) return;
         const updatedAt = new Date().toISOString();
         setAlerts((previous) => {
-            const next = preserveLatestEvents(previous, {
+            const next = enrichWithAgentOpinions(preserveLatestEvents(previous, {
                 feed_events: fallbackEvents,
                 feed_event_count: fallbackEvents.length,
-            });
+            }), fallbackEvents);
             try {
                 window.localStorage.setItem(CACHE_KEY, JSON.stringify({
                     monitor: monitorRef.current,
@@ -367,6 +399,16 @@ function ScannerEventRow({ event, compact = false }: { event: MiroFishScannerAle
                     </span>
                 )}
             </div>
+
+            {event.agent_opinion && (
+                <div className="mt-2 flex min-w-0 items-start gap-2 rounded-lg border border-cyan-300/15 bg-cyan-300/[0.055] px-2.5 py-2">
+                    <i className="fas fa-user-tie mt-0.5 shrink-0 text-[10px] text-cyan-300" aria-hidden="true" />
+                    <p className="line-clamp-2 min-w-0 text-[11px] font-semibold leading-[1.45] text-slate-300">
+                        <span className="mr-1 font-black text-cyan-200">에이전트</span>
+                        {event.agent_opinion}
+                    </p>
+                </div>
+            )}
         </article>
     );
 }
