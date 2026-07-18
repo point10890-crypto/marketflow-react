@@ -111,12 +111,12 @@ function Header({
                     <span className={`relative inline-flex h-2 w-2 rounded-full ${live ? 'bg-cyan-400' : 'bg-gray-600'}`} />
                 </span>
                 <h1 className="text-xl sm:text-2xl font-black tracking-tight">AI Brain</h1>
-                {asOf && <span className="text-[11px] text-gray-500">마지막 검출 {fmtDate(asOf)}</span>}
+                {asOf && <span className="text-[11px] text-gray-500">{`마지막 검출 ${fmtDate(asOf)}`}</span>}
             </div>
             {hitRatePct != null && (
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-cyan-400/25 bg-cyan-500/10 px-3 py-1 text-xs font-bold text-cyan-300">
                     <i className="fas fa-bullseye text-[10px]" />
-                    최근 {windowDays}일 적중률 {hitRatePct}%
+                    {`최근 ${windowDays}일 적중률 ${hitRatePct}%`}
                 </span>
             )}
         </div>

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { subscriptionAPI } from '@/lib/api';
-import AdminEndpointsPage from '@/pages/admin/AdminEndpointsPage';
+import AiBainDashboard from './aibain/AiBainDashboard';
 
 /**
  * Pro + AI Brain 구독자 전용 페이지.
@@ -10,14 +10,12 @@ import AdminEndpointsPage from '@/pages/admin/AdminEndpointsPage';
  * 라우트: /dashboard/ai-bain (ProGuard 보호)
  *
  * 가시성 분기:
- *  - admin (또는 활성 AI Brain) → 관리자 콘솔의 풀 그래프RAG Analysis 렌더 (subscriberMode)
+ *  - admin (또는 활성 AI Brain) → 전용 심플 대시보드 (AiBainDashboard)
  *  - 활성 Pro/Ultra Pro 비AI Brain → "AI Brain 구독 업그레이드" 안내 (+40,000원/30일)
  *  - 그 외 → "구독 신청" CTA → /pricing
  *
- * 본 페이지는 admin 페이지(/admin/endpoints) 의 분석 컨텐츠 (Alpha Board, Brain Signal,
- * Verdict, GraphRAG, Scan History, Recent Outcomes 등) 를 모두 노출하되,
- * 운영자 전용 컨트롤 (AutoRunner: 강제 발사 / 일시정지 / 서킷 리셋 / 카운터 리셋 /
- * LLM 임계값 추천 + QuickActionsFooter) 만 제외합니다.
+ * 구독자 화면은 핵심(오늘의 검출 Top 3 + 성과 검증)만 노출하는 전용 대시보드를 쓴다.
+ * 관리자 풀 콘솔(Alpha Board, GraphRAG, Scan History 등)은 /admin/endpoints 에 그대로 있다.
  */
 export default function AiBainPage() {
     const { user } = useAuth();
@@ -31,9 +29,9 @@ export default function AiBainPage() {
     // Pro/Premium 인데 AI Brain 미활성 → 업그레이드 신청 폼
     const showUpgradeFlow = !isAdmin && hasProBase && !isAibainActive;
 
-    // ── admin (또는 활성 AI Brain) → 전용 구독자 대시보드 ──────────────────────────
+    // ── admin (또는 활성 AI Brain) → 전용 심플 대시보드 ──────────────────────────
     if (showFullDashboard) {
-        return <AdminEndpointsPage subscriberMode />;
+        return <AiBainDashboard />;
     }
 
     // ── 활성 Pro / Ultra Pro → 업그레이드 안내 ─────────────────────────────────

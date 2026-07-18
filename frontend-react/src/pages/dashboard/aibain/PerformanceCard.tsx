@@ -66,7 +66,8 @@ export default function PerformanceCard({ data, learningPattern }: PerformanceCa
             {learningPattern && (
                 <p className="mt-4 pt-3 border-t border-white/[0.06] text-[11px] text-gray-500">
                     <i className="fas fa-brain mr-1.5 text-gray-600" />
-                    AI 학습: 잘 맞은 패턴 <span className="text-gray-400 font-medium">{learningPattern}</span>
+                    {'AI 학습: 잘 맞은 패턴 '}
+                    <span className="text-gray-400 font-medium">{learningPattern}</span>
                 </p>
             )}
         </section>
