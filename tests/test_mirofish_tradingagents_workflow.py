@@ -147,3 +147,35 @@ def test_telegram_message_no_badge_for_non_strong_buy():
 
     assert 'TradingAgents: BUY 72%' in message
     assert '매수유력' not in message
+
+
+def test_build_share_payload_surfaces_tradingagents():
+    """공유 payload 의 top_item 이 tradingagents 판정을 노출해야 대시보드 배지가 가능."""
+    payload = workflow.build_share_payload({
+        'id': 'mcp_share1',
+        'completed_at': '2026-07-17T12:00:00+00:00',
+        'top3': [{
+            'candidate': {'symbol': '005930', 'display_name': '삼성전자'},
+            'target': '삼성전자', 'symbol': '005930', 'market': 'KOSPI',
+            'final_score': 92.0,
+            'verdict': {'action': 'BUY', 'confidence_pct': 80},
+            'tradingagents': {'verdict': 'STRONG_BUY', 'confidence': 85.0, 'strong_buy': True,
+                              'bull_case': 'b', 'bear_case': 'r'},
+        }],
+    })
+    ta = payload['top_items'][0]['tradingagents']
+    assert ta == {'verdict': 'STRONG_BUY', 'confidence': 85.0, 'strong_buy': True}
+
+
+def test_build_share_payload_tradingagents_absent_is_none():
+    payload = workflow.build_share_payload({
+        'id': 'mcp_share2',
+        'completed_at': '2026-07-17T12:00:00+00:00',
+        'top3': [{
+            'candidate': {'symbol': '000660', 'display_name': 'SK하이닉스'},
+            'target': 'SK하이닉스', 'symbol': '000660', 'market': 'KOSPI',
+            'final_score': 70.0,
+            'verdict': {'action': 'BUY', 'confidence_pct': 60},
+        }],
+    })
+    assert payload['top_items'][0]['tradingagents'] is None

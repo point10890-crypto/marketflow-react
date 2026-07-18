@@ -267,6 +267,13 @@ def build_share_payload(workflow: dict[str, Any], rank: int | None = None) -> di
 
         rs_rating = _extract_rs_rating(candidate)
 
+        _ta = item.get('tradingagents') or {}
+        ta_verdict = {
+            'verdict': _ta.get('verdict'),
+            'confidence': _ta.get('confidence'),
+            'strong_buy': bool(_ta.get('strong_buy')),
+        } if _ta.get('verdict') else None
+
         top_items.append({
             'rank': index,
             'symbol': item.get('symbol') or candidate.get('symbol') or '',
@@ -287,6 +294,7 @@ def build_share_payload(workflow: dict[str, Any], rank: int | None = None) -> di
             'cio_reasoning': cio_reasoning,
             'cio_opposing': cio_opposing,
             'cio_allocation_pct': cio_allocation_pct,
+            'tradingagents': ta_verdict,
             'run_id': run_id,
         })
 

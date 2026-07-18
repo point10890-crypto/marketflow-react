@@ -1,3 +1,9 @@
+interface TradingAgentsVerdict {
+    verdict: string | null;
+    confidence: number | null;
+    strong_buy: boolean | null;
+}
+
 interface DetectionItem {
     symbol: string | null;
     name: string | null;
@@ -6,6 +12,24 @@ interface DetectionItem {
     risk_score: number | null;
     rs_rating: number | null;
     entry_date: string | null;
+    tradingagents?: TradingAgentsVerdict | null;
+}
+
+function tradingAgentsBadge(ta: TradingAgentsVerdict | null | undefined): { label: string; tone: string } | null {
+    // TradingAgents 다중 에이전트 딥 검증 판정 — 매수 유력 종목 강조
+    if (!ta || !ta.verdict) return null;
+    const conf = Number.isFinite(ta.confidence as number) ? Math.round(ta.confidence as number) : null;
+    const suffix = conf != null ? ` ${conf}%` : '';
+    if (ta.strong_buy || ta.verdict === 'STRONG_BUY') {
+        return {
+            label: `🔥 매수 유력${suffix}`,
+            tone: 'border-orange-400/50 bg-gradient-to-r from-orange-500/20 to-rose-500/20 text-orange-200 shadow-[0_0_12px_-2px_rgba(251,146,60,0.5)]',
+        };
+    }
+    if (ta.verdict === 'BUY') {
+        return { label: `AI 매수${suffix}`, tone: 'border-teal-400/40 bg-teal-500/10 text-teal-300' };
+    }
+    return null;
 }
 
 function rsBadge(rating: number | null | undefined): { label: string; tone: string } | null {
@@ -60,6 +84,14 @@ export default function DetectionsCard({ data }: DetectionsCardProps) {
                                 )}
                             </div>
                             <div className="flex items-center gap-2 flex-wrap">
+                                {(() => {
+                                    const ta = tradingAgentsBadge(item.tradingagents);
+                                    return ta ? (
+                                        <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-bold ${ta.tone}`}>
+                                            {ta.label}
+                                        </span>
+                                    ) : null;
+                                })()}
                                 {item.action && (
                                     <span className="inline-flex items-center rounded-full border border-cyan-400/30 bg-cyan-500/10 px-2 py-0.5 text-[10px] font-bold text-cyan-300 uppercase">
                                         {item.action}

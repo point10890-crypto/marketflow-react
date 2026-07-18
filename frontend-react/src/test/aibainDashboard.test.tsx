@@ -39,6 +39,7 @@ const fullOverview = {
         alpha_score: 88,
         risk_score: 21,
         entry_date: '2026-06-15',
+        tradingagents: { verdict: 'STRONG_BUY', confidence: 85, strong_buy: true },
       },
     ],
   },
@@ -126,6 +127,7 @@ describe('AiBainDashboard', () => {
     expect(await screen.findByText(/46.2/)).toBeTruthy();
     expect(await screen.findByText('광주신세계')).toBeTruthy();
     expect((await screen.findAllByText(/Alpha One/)).length).toBeGreaterThan(0);
+    expect(await screen.findByText(/매수 유력/)).toBeTruthy();
     expect(await screen.findByText(/momentum\+RISK_ON/)).toBeTruthy();
   });
 

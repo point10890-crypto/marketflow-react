@@ -65,6 +65,23 @@ def test_overview_does_not_build_full_agent_observation(monkeypatch):
     assert out['learning']['regime_distribution'] == {'NEUTRAL': 3}
 
 
+def test_overview_passes_tradingagents_verdict_to_detection(monkeypatch):
+    """TradingAgents 매수유력 판정이 검출 항목까지 흘러가야 배지를 붙일 수 있다."""
+    monkeypatch.setattr(po, 'get_outcomes_board', lambda **kw: {'summary': {}, 'items': []})
+    import app.services.mirofish.workflow as wf
+    monkeypatch.setattr(wf, 'read_latest_workflow', lambda: {'id': 'w1', 'completed_at': '2026-07-17T00:00:00Z'})
+    monkeypatch.setattr(wf, 'build_share_payload', lambda w, rank=None: {'top_items': [
+        {'rank': 1, 'name': '삼성전자', 'symbol': '005930', 'action': 'BUY',
+         'tradingagents': {'verdict': 'STRONG_BUY', 'confidence': 85.0, 'strong_buy': True}}]})
+    import app.services.mirofish.alpha_brain_agent as agent
+    monkeypatch.setattr(agent, 'get_learning_summary', lambda: {'interaction_map': {}, 'regime_distribution': {}})
+    monkeypatch.setattr(agent, 'get_agent_status', lambda: {})
+
+    out = po.get_aibain_overview()
+    ta = out['detections']['items'][0]['tradingagents']
+    assert ta['verdict'] == 'STRONG_BUY' and ta['strong_buy'] is True and ta['confidence'] == 85.0
+
+
 def test_learning_summary_does_not_build_missing_training_dataset(monkeypatch):
     import app.services.mirofish.alpha_brain_agent as agent
     from app.services.mirofish.intelligence import dataset
