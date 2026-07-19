@@ -113,10 +113,6 @@ def test_strong_buy_confidence_floor():
     assert out['pm_decision']['confidence'] == 75
 
 
-def _debate(mean):
-    return {'_analyst_mean': mean, 'manager': {'confidence': 60}, 'bull_case': '', 'bear_case': ''}
-
-
 def test_regime_boost_lifts_rule_verdict_band():
     from app.services.mirofish.tradingagents import trader_risk
     out = trader_risk.run_trader_and_risk('삼성전자', {}, _debate(12),
