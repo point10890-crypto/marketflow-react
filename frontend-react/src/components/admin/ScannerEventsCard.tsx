@@ -3,6 +3,7 @@ import {
     MiroFishScannerAlertEvent,
     MiroFishScannerAlertState,
     MiroFishScannerMonitorState,
+    MiroFishScannerTradingAgentsHistoryRecord,
     mirofishApi,
 } from '@/lib/mirofishApi';
 
@@ -28,6 +29,13 @@ const TA_VERDICT_STYLE: Record<string, string> = {
     BUY: 'border-sky-300/40 bg-sky-300/10 text-sky-200',
     HOLD: 'border-white/15 bg-white/[0.06] text-slate-300',
     SELL: 'border-rose-300/40 bg-rose-300/10 text-rose-200',
+};
+
+const TA_VERDICT_LABEL: Record<string, string> = {
+    STRONG_BUY: '강력 매수',
+    BUY: '매수',
+    HOLD: '관망',
+    SELL: '매도/회피',
 };
 
 const POLL_INTERVAL_MS = 30000;
@@ -90,6 +98,45 @@ function enrichWithDeepSeekBriefs(
         if (!event || event.deepseek_brief) return event;
         const brief = briefs.get(String(event.symbol || ''));
         return brief ? { ...event, deepseek_brief: brief } : event;
+    });
+    return {
+        ...state,
+        feed_events: enrich(state.feed_events),
+        recent_sent_events: enrich(state.recent_sent_events),
+    };
+}
+
+function enrichWithTradingAgentsHistory(
+    state: MiroFishScannerAlertState,
+    records: MiroFishScannerTradingAgentsHistoryRecord[],
+) {
+    const history = new Map(records.map((record) => [record.event_key, record]));
+    const latestBySymbol = new Map<string, MiroFishScannerTradingAgentsHistoryRecord>();
+    records.forEach((record) => {
+        const symbol = String(record.symbol || '').trim();
+        if (symbol && !latestBySymbol.has(symbol)) latestBySymbol.set(symbol, record);
+    });
+    if (history.size === 0) return state;
+    const enrich = (events?: MiroFishScannerAlertEvent[]) => events?.map((event) => {
+        if (!event || event.tradingagents) return event;
+        const exact = event.event_key ? history.get(event.event_key) : undefined;
+        const symbolMatch = latestBySymbol.get(String(event.symbol || '').trim());
+        const eventDate = String(event.sent_at || '').slice(0, 10);
+        const detectedDate = String(symbolMatch?.detected_at || '').slice(0, 10);
+        const record = exact || (eventDate && detectedDate === eventDate ? symbolMatch : undefined);
+        if (!record?.verdict) return event;
+        return {
+            ...event,
+            tradingagents: {
+                verdict: record.verdict,
+                confidence: Number(record.confidence ?? 0),
+                strong_buy: Boolean(record.strong_buy),
+                regime: record.regime ?? undefined,
+                regime_adjustment: record.regime_adjustment ?? undefined,
+                method: record.method ?? undefined,
+                verified_at: record.verified_at ?? undefined,
+            },
+        };
     });
     return {
         ...state,
@@ -177,9 +224,10 @@ export default function ScannerEventsCard({ className = '', compact = false, max
         if (opts?.silent) setRefreshing(true);
         else setLoading(true);
         try {
-            const [monitorResult, alertResult] = await Promise.allSettled([
+            const [monitorResult, alertResult, historyResult] = await Promise.allSettled([
                 mirofishApi.getScannerMonitorStatus(true),
                 mirofishApi.getScannerAlertState(true),
+                mirofishApi.getScannerTradingAgentsHistory(maxEvents * 4),
             ]);
             if (monitorResult.status === 'rejected' && alertResult.status === 'rejected') {
                 throw new Error('scanner feed unavailable');
@@ -195,9 +243,12 @@ export default function ScannerEventsCard({ className = '', compact = false, max
                 setMonitor(monitorState);
             }
             setAlerts((previous) => {
-                const next = enrichWithDeepSeekBriefs(
-                    preserveLatestEvents(previous, alertState),
-                    fallbackEvents,
+                const next = enrichWithTradingAgentsHistory(
+                    enrichWithDeepSeekBriefs(
+                        preserveLatestEvents(previous, alertState),
+                        fallbackEvents,
+                    ),
+                    historyResult.status === 'fulfilled' ? historyResult.value.records : [],
                 );
                 try {
                     window.localStorage.setItem(CACHE_KEY, JSON.stringify({
@@ -219,7 +270,7 @@ export default function ScannerEventsCard({ className = '', compact = false, max
             setRefreshing(false);
             inFlightRef.current = false;
         }
-    }, [fallbackEvents]);
+    }, [fallbackEvents, maxEvents]);
 
     useEffect(() => {
         if (fallbackEvents.length === 0) return;
@@ -404,7 +455,7 @@ function ScannerEventRow({ event, compact = false }: { event: MiroFishScannerAle
                 <div className="mt-2 flex flex-wrap items-center gap-2 rounded-lg border border-cyan-300/15 bg-cyan-300/[0.04] px-2.5 py-2">
                     <i className="fas fa-shield-halved text-[10px] text-cyan-300" aria-hidden="true" />
                     <span className={`rounded-md border px-1.5 py-0.5 text-[10px] font-black ${TA_VERDICT_STYLE[event.tradingagents.verdict] || TA_VERDICT_STYLE.HOLD}`}>
-                        {event.tradingagents.verdict}
+                        13D 딥검증 · 매매의견 {TA_VERDICT_LABEL[event.tradingagents.verdict] || event.tradingagents.verdict}
                     </span>
                     <span className="text-[10px] font-bold text-slate-400">확신 {Math.round(event.tradingagents.confidence)}%</span>
                     {event.tradingagents.strong_buy && <span className="text-[10px] font-black text-orange-300">🔥 매수유력</span>}
@@ -417,6 +468,13 @@ function ScannerEventRow({ event, compact = false }: { event: MiroFishScannerAle
                         </span>
                     )}
                     <span className="ml-auto text-[9px] font-bold uppercase tracking-wider text-cyan-300/70">TradingAgents</span>
+                </div>
+            )}
+
+            {!event.tradingagents && (
+                <div className="mt-2 flex flex-wrap items-center gap-2 rounded-lg border border-white/10 bg-white/[0.025] px-2.5 py-2 text-[10px] font-bold text-slate-500">
+                    <i className="fas fa-shield-halved text-[10px]" aria-hidden="true" />
+                    <span>13D 딥검증 · 매매의견 검증 대기</span>
                 </div>
             )}
 

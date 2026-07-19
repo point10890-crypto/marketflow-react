@@ -6,6 +6,7 @@ import ScannerEventsCard from '@/components/admin/ScannerEventsCard';
 const mockApi = vi.hoisted(() => ({
   getScannerMonitorStatus: vi.fn(),
   getScannerAlertState: vi.fn(),
+  getScannerTradingAgentsHistory: vi.fn(),
 }));
 
 vi.mock('@/lib/mirofishApi', () => ({
@@ -34,6 +35,7 @@ describe('ScannerEventsCard cache retention', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     window.localStorage.clear();
+    mockApi.getScannerTradingAgentsHistory.mockResolvedValue({ records: [], count: 0 });
   });
 
   it('keeps the last successful event visible when refresh fails', async () => {
@@ -93,5 +95,35 @@ describe('ScannerEventsCard cache retention', () => {
     expect(screen.getByText('SK이노베이션')).toBeInTheDocument();
     const cached = JSON.parse(window.localStorage.getItem(cacheKey) || '{}');
     expect(cached.alerts.feed_events).toEqual([cachedEvent]);
+  });
+
+  it('enriches a scanner event from the TradingAgents history endpoint', async () => {
+    mockApi.getScannerMonitorStatus.mockResolvedValue({ last_candidate_count: 1 });
+    mockApi.getScannerAlertState.mockResolvedValue({ feed_events: [cachedEvent] });
+    mockApi.getScannerTradingAgentsHistory.mockResolvedValue({
+      count: 1,
+      records: [{
+        event_key: '096770:BUY_CANDIDATE:2026-07-17',
+        symbol: cachedEvent.symbol,
+        detected_at: cachedEvent.sent_at,
+        verdict: 'BUY',
+        confidence: 78,
+        strong_buy: false,
+      }],
+    });
+
+    render(<ScannerEventsCard />);
+
+    expect(await screen.findByText(/13D 딥검증 · 매매의견 매수/)).toBeInTheDocument();
+    expect(screen.getByText(/78%/)).toBeInTheDocument();
+  });
+
+  it('shows an explicit pending opinion while 13D verification is unavailable', async () => {
+    mockApi.getScannerMonitorStatus.mockResolvedValue({ last_candidate_count: 1 });
+    mockApi.getScannerAlertState.mockResolvedValue({ feed_events: [cachedEvent] });
+
+    render(<ScannerEventsCard />);
+
+    expect(await screen.findByText('13D 딥검증 · 매매의견 검증 대기')).toBeInTheDocument();
   });
 });

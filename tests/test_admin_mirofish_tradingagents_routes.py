@@ -53,6 +53,7 @@ def test_routes_are_registered():
     assert '/api/admin/mirofish/tradingagents/runs' in rules
     assert '/api/admin/mirofish/tradingagents/runs/<run_id>' in rules
     assert '/api/admin/mirofish/tradingagents/status' in rules
+    assert '/api/admin/mirofish/scanner/tradingagents/history' in rules
 
 
 def test_analyze_endpoint(admin_client, monkeypatch):
@@ -90,6 +91,7 @@ def test_endpoints_require_auth():
     assert client.post('/api/admin/mirofish/tradingagents/analyze', json={'symbol': '005930'}).status_code in (401, 403)
     assert client.get('/api/admin/mirofish/tradingagents/runs').status_code in (401, 403)
     assert client.get('/api/admin/mirofish/tradingagents/status').status_code in (401, 403)
+    assert client.get('/api/admin/mirofish/scanner/tradingagents/history').status_code in (401, 403)
 
 
 def test_run_scoped_tradingagents_attaches(monkeypatch, admin_client):
@@ -130,3 +132,21 @@ def test_scanner_ta_history_endpoint(monkeypatch, admin_client):
     assert resp.status_code == 200
     body = resp.get_json()
     assert body['count'] == 1 and body['records'][0]['symbol'] == '005930'
+
+
+def test_scanner_ta_history_rejects_invalid_limit(admin_client):
+    resp = admin_client.get('/api/admin/mirofish/scanner/tradingagents/history?limit=invalid')
+    assert resp.status_code == 400
+    assert resp.get_json()['error'] == 'limit must be an integer'
+
+
+def test_scanner_ta_history_clamps_limit(monkeypatch, admin_client):
+    import app.routes.admin_mirofish_tradingagents as rt
+    captured = {}
+    monkeypatch.setattr(rt.scanner_deepverify, 'history',
+                        lambda limit=50: captured.setdefault('limit', limit) and [])
+
+    resp = admin_client.get('/api/admin/mirofish/scanner/tradingagents/history?limit=999')
+
+    assert resp.status_code == 200
+    assert captured['limit'] == 200

@@ -242,6 +242,7 @@ function workflowScannerEvents(workflow?: MiroFishWorkflow | null) {
         const candidate = result.candidate || {};
         const symbol = String(result.symbol || candidate.symbol || result.verdict?.symbol || '').trim();
         const displayName = String(candidate.display_name || candidate.name || result.target || result.verdict?.target_display || symbol).trim();
+        const ta = result.tradingagents;
         return {
             event_key: `workflow:${workflow?.id || workflow?.scanner_run_id || eventTime || 'latest'}:${symbol || index}`,
             sent_at: eventTime,
@@ -254,6 +255,15 @@ function workflowScannerEvents(workflow?: MiroFishWorkflow | null) {
             alpha_score: result.final_score ?? candidate.alpha_score ?? null,
             risk_score: candidate.risk_score ?? null,
             deepseek_brief: workflowDeepSeekBrief(result),
+            tradingagents: ta?.verdict ? {
+                verdict: ta.verdict,
+                confidence: Number(ta.confidence ?? 0),
+                strong_buy: Boolean(ta.strong_buy || ta.verdict === 'STRONG_BUY'),
+                regime: ta.regime ?? undefined,
+                regime_adjustment: ta.regime_adjustment ?? undefined,
+                method: ta.method ?? undefined,
+                verified_at: ta.verified_at ?? eventTime ?? undefined,
+            } : undefined,
             source: 'workflow_top3_cache',
         };
     });

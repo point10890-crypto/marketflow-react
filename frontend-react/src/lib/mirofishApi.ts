@@ -619,6 +619,10 @@ export interface MiroFishWorkflowAnalysisResult {
     tradingagents?: {
         verdict?: string | null;
         confidence?: number | null;
+        strong_buy?: boolean | null;
+        regime?: string | null;
+        regime_adjustment?: { direction?: string; alignment?: number | null; applied?: number } | null;
+        verified_at?: string | null;
         bull_case?: string | null;
         bear_case?: string | null;
         risk_summary?: string | null;
@@ -1764,6 +1768,9 @@ export const mirofishApi = {
     getScannerMonitorStatus: async (fresh = false) => fetchAuthAPI<MiroFishScannerMonitorState>(
         `/api/admin/mirofish/scanner/monitor/status${fresh ? `?t=${Date.now()}` : ''}`,
     ),
+    getScannerTradingAgentsHistory: async (limit = 50) => fetchAuthAPI<MiroFishScannerTradingAgentsHistoryResponse>(
+        `/api/admin/mirofish/scanner/tradingagents/history?limit=${Math.max(1, Math.min(Math.trunc(limit), 200))}`,
+    ),
     getLatestScannerRun: async () => normalizeScannerRun(
         await fetchAuthAPI<any>('/api/admin/mirofish/scanner/runs/latest'),
     ),
@@ -2202,6 +2209,30 @@ export interface MiroFishScannerAlertEvent {
         method?: string;
         verified_at?: string;
     };
+}
+
+export interface MiroFishScannerTradingAgentsHistoryRecord {
+    event_key: string;
+    symbol?: string | null;
+    display_name?: string | null;
+    market?: string | null;
+    detected_at?: string | null;
+    verified_at?: string | null;
+    verdict?: string | null;
+    confidence?: number | null;
+    strong_buy?: boolean;
+    regime?: string | null;
+    alignment?: number | null;
+    regime_adjustment?: { direction?: string; alignment?: number | null; applied?: number } | null;
+    method?: string | null;
+    ta_run_id?: string | null;
+    alpha_score?: number | null;
+    risk_score?: number | null;
+}
+
+export interface MiroFishScannerTradingAgentsHistoryResponse {
+    records: MiroFishScannerTradingAgentsHistoryRecord[];
+    count: number;
 }
 
 export interface MiroFishScannerAlertState {

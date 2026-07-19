@@ -15,6 +15,7 @@ const mockApi = vi.hoisted(() => ({
   getScannerStatus: vi.fn(),
   getScannerAlertState: vi.fn(),
   getScannerMonitorStatus: vi.fn(),
+  getScannerTradingAgentsHistory: vi.fn(),
   getLatestScannerRun: vi.fn(),
   getScannerRun: vi.fn(),
   getScannerCandidates: vi.fn(),
@@ -484,6 +485,7 @@ beforeEach(() => {
       price: { current_price: 45900, change_rate: 1.2, date: '2026-07-08' },
     }],
   });
+  mockApi.getScannerTradingAgentsHistory.mockResolvedValue({ records: [], count: 0 });
   mockApi.getLatestScannerRun.mockResolvedValue({
     id: 'mfas_latest',
     status: 'completed',
