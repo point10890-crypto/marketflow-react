@@ -793,6 +793,11 @@ def commit_scanner_alert_events(result: dict[str, Any]) -> dict[str, Any]:
     state = _read_alert_state(state_file)
     updated_state = _update_alert_state(state, run, events)
     write_json_atomic(state_file, updated_state, sort_keys=True)
+    try:
+        from app.services.mirofish import scanner_deepverify  # lazy: avoid import cycle
+        scanner_deepverify.enqueue_new_events(events, run)
+    except Exception:  # noqa: BLE001 — enrichment must never break the commit
+        pass
     return _alert_state_summary(updated_state, state_file)
 
 
@@ -4091,6 +4096,16 @@ def _alert_state_summary(
         and _is_dashboard_feed_event(entry)
     ]
     feed = _merge_alert_history(recent_for_feed, [], limit=20)
+    try:
+        from app.services.mirofish import scanner_deepverify  # lazy: avoid import cycle
+        ta_latest = scanner_deepverify.latest_by_event_key()
+        if ta_latest:
+            for entry in feed:
+                summary = ta_latest.get(str(entry.get('event_key') or ''))
+                if summary:
+                    entry['tradingagents'] = summary
+    except Exception:  # noqa: BLE001 — read-only enrichment, never break the feed
+        pass
     return {
         'state_path': state_file,
         'version': state.get('version', 1),
