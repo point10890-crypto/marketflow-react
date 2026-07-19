@@ -197,6 +197,34 @@ def get_report(run_id: str) -> dict[str, Any] | None:
     return {'run_id': safe_id, 'format': 'markdown', 'markdown': markdown}
 
 
+def attach_tradingagents(run_id: str, ta: dict[str, Any]) -> dict[str, Any] | None:
+    """TradingAgents 딥검증 결과 요약을 run.json 에 원자적으로 부착.
+
+    run 이 없으면 None. verdict 요약만 저장(전문 트레이스는 tradingagents_runs 스토어에 별도 영속).
+    """
+    safe_id = _safe_run_id(run_id)
+    run = read_run(safe_id)
+    if not run:
+        return None
+    v = (ta or {}).get('verdict') or {}
+    summary = {
+        'run_id': ta.get('id'),
+        'verdict': v.get('verdict'),
+        'confidence': v.get('confidence'),
+        'strong_buy': bool(v.get('strong_buy')),
+        'regime': v.get('regime'),
+        'regime_adjustment': v.get('regime_adjustment'),
+        'method': ta.get('method'),
+        'bull_case': v.get('bull_case'),
+        'bear_case': v.get('bear_case'),
+        'risk_summary': v.get('risk_summary'),
+        'attached_at': datetime.now(timezone.utc).isoformat(),
+    }
+    run['tradingagents'] = summary
+    write_json_atomic(os.path.join(_run_dir(safe_id), 'run.json'), run, sort_keys=False)
+    return summary
+
+
 def _create_running_run(run_id: str, target: str, agent_count: int, mode: str) -> dict[str, Any]:
     created_at = datetime.now(timezone.utc).isoformat()
     return {
