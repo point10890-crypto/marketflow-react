@@ -14,6 +14,7 @@ import ScanPerformanceCard from '@/components/admin/ScanPerformanceCard';
 import ScanHistoryCard from '@/components/admin/ScanHistoryCard';
 import SourceFreshnessMatrix from '@/components/admin/SourceFreshnessMatrix';
 import ScannerEventsCard from '@/components/admin/ScannerEventsCard';
+import RunTradingAgentsCard from '@/components/admin/RunTradingAgentsCard';
 
 const agentCounts = [3, 7, 10, 15];
 const defaultTarget = '삼성전자';
@@ -1901,6 +1902,7 @@ function ImpactPanel({ phase, run, apiState }: { phase: number; run: MiroFishRun
                 </section>
             )}
             {phase >= 5 && <FinalVerdictPanel run={run} />}
+            {phase >= 5 && run.id != null && <RunTradingAgentsCard runId={String(run.id)} />}
         </div>
     );
 }

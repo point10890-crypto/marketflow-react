@@ -1192,6 +1192,21 @@ export interface MiroFishMcpResourceSnapshot {
     rules?: Record<string, any>;
 }
 
+export interface RunTradingAgentsResult {
+    id: string;
+    method?: string;
+    verdict: {
+        verdict: 'STRONG_BUY' | 'BUY' | 'HOLD' | 'SELL' | string;
+        confidence: number;
+        strong_buy: boolean;
+        regime?: string;
+        regime_adjustment?: { direction: string; alignment: number | null; applied: number };
+        bull_case?: string;
+        bear_case?: string;
+        risk_summary?: string;
+    };
+}
+
 type RawObject = Record<string, any>;
 
 const phaseByName: Record<string, number> = {
@@ -1701,6 +1716,12 @@ export const mirofishApi = {
     getReport: async (runId: string) => normalizeReport(await fetchAuthAPI<any>(`/api/admin/mirofish/runs/${runId}/report`)),
     getEvents: async (runId: string, since = 0, limit = 200) => normalizeEvents(
         await fetchAuthAPI<any>(`/api/admin/mirofish/runs/${runId}/events?since=${since}&limit=${limit}`),
+    ),
+    runTradingAgentsForRun: async (runId: string) => postAuthAPI<RunTradingAgentsResult>(
+        `/api/admin/mirofish/runs/${encodeURIComponent(runId)}/tradingagents`,
+        {},
+        undefined,
+        120000,
     ),
     hydrateRun: async (runId: string, baseRun?: MiroFishRun) => {
         const [detail, graph, report, events] = await Promise.all([
