@@ -70,11 +70,16 @@ def test_replace_gives_up_and_raises_when_error_persists(tmp_path, monkeypatch):
 
 
 def test_survives_a_real_concurrent_reader(tmp_path):
-    """End-to-end: a reader that briefly holds the file open must not abort the write.
+    """End-to-end: a periodic concurrent reader must not abort atomic writes.
 
-    Mirrors the live dashboard poller opening run.json while the pipeline rewrites
-    it. On Windows this reproduces WinError 5 without the retry fix; on POSIX it is
-    a no-op that must still pass.
+    Mirrors the live dashboard polling run.json (open → read → close every few ms)
+    while the background pipeline rewrites it at each phase. On Windows this drove
+    the production WinError 5; the retry must absorb the transient collisions. On
+    POSIX renaming an open file always succeeds, so this is a no-op that still passes.
+
+    The poller sleeps briefly between reads — like a real client — rather than
+    hammering in a zero-delay loop, which would pin the file open ~100% of the time
+    (no consumer behaves that way) and make the test machine-timing dependent.
     """
     target = str(tmp_path / 'run.json')
     write_json_atomic(target, {'v': 0})
@@ -82,21 +87,25 @@ def test_survives_a_real_concurrent_reader(tmp_path):
     stop = threading.Event()
 
     def poller():
-        # Continuously open/read/close, like the frontend polling the run status.
         while not stop.is_set():
             try:
                 with open(target, 'r', encoding='utf-8') as f:
                     f.read()
             except (OSError, ValueError):
                 pass
+            time.sleep(0.003)
 
-    t = threading.Thread(target=poller, daemon=True)
-    t.start()
+    # Several cards poll concurrently, as the dashboard does.
+    threads = [threading.Thread(target=poller, daemon=True) for _ in range(3)]
+    for t in threads:
+        t.start()
     try:
         for i in range(1, 25):  # many phase writes, as a full pipeline would do
             write_json_atomic(target, {'v': i})
+            time.sleep(0.01)
     finally:
         stop.set()
-        t.join(timeout=2)
+        for t in threads:
+            t.join(timeout=2)
 
     assert _read(target) == {'v': 24}
