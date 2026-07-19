@@ -101,3 +101,20 @@ def test_llm_used_when_available_else_rule_per_role(monkeypatch):
     assert by_role['fundamentals']['summary'] == 'PER 12배로 저평가.'
     assert by_role['news']['method'] == 'rule'
     assert 'llm' not in by_role['news']
+
+
+def test_build_prompt_includes_regime_line_when_brain_present():
+    from app.services.mirofish.tradingagents import analysts
+    bundle = {
+        'display_name': '삼성전자', 'symbol': '005930',
+        'technical': {}, 'rs': {}, 'corpus': '', 'price': {}, 'fundamentals': {},
+        'brain': {'regime': 'constructive_bullish', 'alignment_score': 0.7},
+    }
+    prompt = analysts._build_prompt('technical', bundle)
+    assert '시장 레짐' in prompt
+
+
+def test_build_prompt_no_regime_line_without_brain():
+    from app.services.mirofish.tradingagents import analysts
+    bundle = {'display_name': '삼성전자', 'symbol': '005930', 'technical': {}, 'rs': {}}
+    assert '시장 레짐' not in analysts._build_prompt('technical', bundle)

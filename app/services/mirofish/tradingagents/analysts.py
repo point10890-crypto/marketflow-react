@@ -38,6 +38,7 @@ import logging
 from typing import Any
 
 from app.services.mirofish import llm_client
+from app.services.mirofish.tradingagents import regime as regime_mod
 
 logger = logging.getLogger(__name__)
 
@@ -296,8 +297,10 @@ def _build_prompt(role: str, bundle: dict[str, Any]) -> str:
     name = str(bundle.get('display_name') or bundle.get('target') or '대상')
     symbol = str(bundle.get('symbol') or '')
     header = f'분석 대상: {name} ({symbol})'
+    regime_line = regime_mod.regime_context(bundle.get('brain')).get('line') or ''
+    regime_block = f'\n[시장 레짐]\n{regime_line}\n' if regime_line else ''
     slice_text = _role_data_slice(role, bundle)
-    return f'{header}\n\n[데이터]\n{slice_text}\n\n{_JSON_INSTRUCTION}'
+    return f'{header}{regime_block}\n[데이터]\n{slice_text}\n\n{_JSON_INSTRUCTION}'
 
 
 def _role_data_slice(role: str, bundle: dict[str, Any]) -> str:
