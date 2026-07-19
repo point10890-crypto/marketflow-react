@@ -22,6 +22,7 @@ Contract (LOCKED — later tasks depend on this exact schema):
         'rs': dict,           # per-symbol RS entry, {} when unavailable
         'fundamentals': dict, # yfinance info subset + dart snapshot, {} on failure
         'errors': dict,       # {source_name: error_str}
+        'brain': dict,        # 엔진 주입 Brain 13D 스냅샷 (기본 {})
     }
 """
 
@@ -47,7 +48,7 @@ _YF_INFO_KEYS = (
 )
 
 
-def gather_bundle(target: str) -> dict[str, Any]:
+def gather_bundle(target: str, *, brain: dict[str, Any] | None = None) -> dict[str, Any]:
     """Assemble the deep-analysis data bundle for one KR target.
 
     Each source is isolated: a raising collector yields ``{}`` for its field and
@@ -110,6 +111,7 @@ def gather_bundle(target: str) -> dict[str, Any]:
         'rs': rs,
         'fundamentals': fundamentals,
         'errors': errors,
+        'brain': brain or {},   # 외부(엔진) 주입 Brain 13D 스냅샷 pass-through
     }
 
 

@@ -83,3 +83,16 @@ def test_technical_error_dict_becomes_empty(monkeypatch):
 
     assert b['technical'] == {}
     assert 'technical' in b['errors']
+
+
+def test_gather_bundle_carries_injected_brain(monkeypatch):
+    from app.services.mirofish.tradingagents import data_hub
+    brain = {'regime': 'constructive_bullish', 'alignment_score': 0.71}
+    bundle = data_hub.gather_bundle('삼성전자', brain=brain)
+    assert bundle['brain'] == brain
+
+
+def test_gather_bundle_brain_defaults_empty():
+    from app.services.mirofish.tradingagents import data_hub
+    bundle = data_hub.gather_bundle('삼성전자')
+    assert bundle['brain'] == {}
