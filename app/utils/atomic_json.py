@@ -25,10 +25,31 @@ safety.
 import json
 import os
 import tempfile
+import time
 from typing import Any
 
 # Re-export for convenience
 __all__ = ['write_json_atomic']
+
+# Windows: os.replace(tmp, dst) raises PermissionError [WinError 5/32] when dst is
+# transiently held open by a concurrent reader — the CRT default share mode lacks
+# FILE_SHARE_DELETE. Readers (e.g. the live dashboard polling a run.json) open →
+# read → close in milliseconds, so a short bounded retry almost always lands in a
+# free window. On POSIX this branch never triggers (open files rename fine), so
+# the retry is a harmless no-op there.
+_REPLACE_MAX_ATTEMPTS = 10
+_REPLACE_BACKOFF_STEP = 0.05  # seconds; escalates per attempt, ~2.25s worst case
+
+
+def _replace_with_retry(src: str, dst: str) -> None:
+    for attempt in range(_REPLACE_MAX_ATTEMPTS):
+        try:
+            os.replace(src, dst)
+            return
+        except PermissionError:
+            if attempt == _REPLACE_MAX_ATTEMPTS - 1:
+                raise
+            time.sleep(_REPLACE_BACKOFF_STEP * (attempt + 1))
 
 
 def write_json_atomic(
@@ -65,8 +86,10 @@ def write_json_atomic(
             )
             f.flush()
             os.fsync(f.fileno())
-        # Atomic on POSIX and NTFS (Python 3.3+).
-        os.replace(tmp_path, abs_path)
+        # Atomic on POSIX and NTFS (Python 3.3+). Retried on Windows because a
+        # concurrent reader holding `abs_path` open makes the replace fail with
+        # PermissionError until the reader's handle closes.
+        _replace_with_retry(tmp_path, abs_path)
     except Exception:
         # Clean up the temp file if anything went wrong before the rename.
         try:
