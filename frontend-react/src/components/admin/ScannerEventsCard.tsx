@@ -93,11 +93,19 @@ function enrichWithDeepSeekBriefs(
             .filter((event) => event?.symbol && event.deepseek_brief)
             .map((event) => [String(event.symbol), String(event.deepseek_brief)]),
     );
-    if (briefs.size === 0) return state;
+    const tradingAgents = new Map(
+        fallbackEvents
+            .filter((event) => event?.symbol && event.tradingagents)
+            .map((event) => [String(event.symbol), event.tradingagents!]),
+    );
+    if (briefs.size === 0 && tradingAgents.size === 0) return state;
     const enrich = (events?: MiroFishScannerAlertEvent[]) => events?.map((event) => {
-        if (!event || event.deepseek_brief) return event;
-        const brief = briefs.get(String(event.symbol || ''));
-        return brief ? { ...event, deepseek_brief: brief } : event;
+        if (!event) return event;
+        const symbol = String(event.symbol || '');
+        const brief = event.deepseek_brief || briefs.get(symbol);
+        const tradingagents = event.tradingagents || tradingAgents.get(symbol);
+        if (brief === event.deepseek_brief && tradingagents === event.tradingagents) return event;
+        return { ...event, deepseek_brief: brief, tradingagents };
     });
     return {
         ...state,

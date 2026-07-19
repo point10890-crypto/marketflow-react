@@ -126,4 +126,19 @@ describe('ScannerEventsCard cache retention', () => {
 
     expect(await screen.findByText('13D 딥검증 · 매매의견 검증 대기')).toBeInTheDocument();
   });
+
+  it('adds the workflow TradingAgents opinion to the preserved scanner cache by symbol', async () => {
+    seedCache();
+    mockApi.getScannerMonitorStatus.mockResolvedValue({ last_candidate_count: 1 });
+    mockApi.getScannerAlertState.mockResolvedValue({ feed_events: [] });
+
+    render(<ScannerEventsCard fallbackEvents={[{
+      ...cachedEvent,
+      event_key: 'workflow:latest:096770',
+      tradingagents: { verdict: 'BUY', confidence: 70, strong_buy: false },
+    }]} />);
+
+    expect(await screen.findByText(/13D 딥검증 · 매매의견 매수/)).toBeInTheDocument();
+    expect(screen.getByText(/70%/)).toBeInTheDocument();
+  });
 });
