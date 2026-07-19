@@ -121,3 +121,12 @@ def test_run_scoped_tradingagents_404(monkeypatch, admin_client):
     monkeypatch.setattr(rt.mirofish_store, 'read_run', lambda rid: None)
     resp = admin_client.post('/api/admin/mirofish/runs/mf_nope/tradingagents')
     assert resp.status_code == 404
+
+
+def test_scanner_ta_history_endpoint(monkeypatch, admin_client):
+    from app.services.mirofish import scanner_deepverify as sdv
+    monkeypatch.setattr(sdv, 'history', lambda limit=50: [{'event_key': 'k1', 'symbol': '005930', 'verdict': 'BUY'}])
+    resp = admin_client.get('/api/admin/mirofish/scanner/tradingagents/history?limit=10')
+    assert resp.status_code == 200
+    body = resp.get_json()
+    assert body['count'] == 1 and body['records'][0]['symbol'] == '005930'

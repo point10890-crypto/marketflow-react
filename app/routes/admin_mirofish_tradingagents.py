@@ -15,6 +15,7 @@ from __future__ import annotations
 from flask import Blueprint, jsonify, request
 
 from app.auth.decorators import admin_or_aibain_required
+from app.services.mirofish import scanner_deepverify
 from app.services.mirofish import store as mirofish_store
 from app.services.mirofish.tradingagents import engine
 
@@ -84,3 +85,16 @@ def analyze_run(run_id: str):
         return jsonify(ta), 200
     except Exception as exc:  # pragma: no cover - defensive production boundary
         return jsonify({'error': str(exc), 'service': 'mirofish-tradingagents'}), 500
+
+
+@admin_mirofish_tradingagents_bp.route('/scanner/tradingagents/history', methods=['GET'])
+@admin_or_aibain_required
+def scanner_history():
+    """스캐너 이벤트 자동 딥검증 히스토리(최근순)."""
+    try:
+        limit = int(request.args.get('limit', 50))
+    except (TypeError, ValueError):
+        return jsonify({'error': 'limit must be an integer'}), 400
+    limit = max(1, min(limit, 200))
+    records = scanner_deepverify.history(limit=limit)
+    return jsonify({'records': records, 'count': len(records)}), 200
