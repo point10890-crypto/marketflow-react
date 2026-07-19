@@ -118,3 +118,12 @@ def test_llm_partial_failure_method_mixed(monkeypatch):
     # bull came from LLM, bear fell back to the rule composer
     assert result['rounds'][0]['bull']['message'] == '강세 LLM 발언'
     assert result['rounds'][0]['bear']['message'].startswith('[약세론 R1]')
+
+
+def test_run_research_debate_accepts_regime_line_rule_path():
+    from app.services.mirofish.tradingagents import research_debate
+    reports = [{'role': 'technical', 'stance': 'bullish', 'score': 40, 'summary': 's'}]
+    out = research_debate.run_research_debate('삼성전자', reports, rounds=1,
+                                              use_llm=False, regime_line='시장 레짐: 강세')
+    assert out['manager']['stance'] in ('bull', 'bear', 'neutral')
+    assert out['method'] == 'rule'
