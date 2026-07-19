@@ -15,6 +15,7 @@ from __future__ import annotations
 from flask import Blueprint, jsonify, request
 
 from app.auth.decorators import admin_or_aibain_required
+from app.services.mirofish import store as mirofish_store
 from app.services.mirofish.tradingagents import engine
 
 
@@ -64,3 +65,22 @@ def get_run(run_id: str):
 @admin_or_aibain_required
 def status():
     return jsonify(engine.get_status()), 200
+
+
+@admin_mirofish_tradingagents_bp.route('/runs/<run_id>/tradingagents', methods=['POST'])
+@admin_or_aibain_required
+def analyze_run(run_id: str):
+    """라이브 run 의 Brain 13D 를 TradingAgents 딥검증에 주입하고 결과를 run 에 부착."""
+    run = mirofish_store.read_run(run_id)
+    if run is None:
+        return jsonify({'error': 'run not found'}), 404
+    target = (run.get('display_name') or run.get('target') or '').strip()
+    if not target:
+        return jsonify({'error': 'run has no target'}), 400
+    brain = run.get('brain_summary') or None
+    try:
+        ta = engine.run_deep_analysis(target, symbol=run.get('symbol'), brain=brain)
+        mirofish_store.attach_tradingagents(run_id, ta)
+        return jsonify(ta), 200
+    except Exception as exc:  # pragma: no cover - defensive production boundary
+        return jsonify({'error': str(exc), 'service': 'mirofish-tradingagents'}), 500

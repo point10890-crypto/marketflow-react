@@ -90,3 +90,34 @@ def test_endpoints_require_auth():
     assert client.post('/api/admin/mirofish/tradingagents/analyze', json={'symbol': '005930'}).status_code in (401, 403)
     assert client.get('/api/admin/mirofish/tradingagents/runs').status_code in (401, 403)
     assert client.get('/api/admin/mirofish/tradingagents/status').status_code in (401, 403)
+
+
+def test_run_scoped_tradingagents_attaches(monkeypatch, admin_client):
+    import app.routes.admin_mirofish_tradingagents as rt
+    fake_run = {'id': 'mf_x_005930', 'target': '삼성전자', 'display_name': '삼성전자',
+                'symbol': '005930', 'brain_summary': {'regime': 'constructive_bullish',
+                                                       'alignment_score': 0.8}}
+    monkeypatch.setattr(rt.mirofish_store, 'read_run', lambda rid: fake_run)
+    captured = {}
+
+    def fake_deep(target, *, symbol=None, brain=None, **kw):
+        captured['brain'] = brain
+        return {'id': 'ta_9', 'method': 'rule',
+                'verdict': {'verdict': 'BUY', 'confidence': 70, 'strong_buy': False,
+                            'regime': 'constructive_bullish',
+                            'regime_adjustment': {'direction': 'bull', 'applied': 5.0}}}
+    monkeypatch.setattr(rt.engine, 'run_deep_analysis', fake_deep)
+    attached = {}
+    monkeypatch.setattr(rt.mirofish_store, 'attach_tradingagents',
+                        lambda rid, ta: attached.setdefault('ta', ta) or {'verdict': 'BUY'})
+    resp = admin_client.post('/api/admin/mirofish/runs/mf_x_005930/tradingagents')
+    assert resp.status_code == 200
+    assert captured['brain']['regime'] == 'constructive_bullish'
+    assert attached['ta']['id'] == 'ta_9'
+
+
+def test_run_scoped_tradingagents_404(monkeypatch, admin_client):
+    import app.routes.admin_mirofish_tradingagents as rt
+    monkeypatch.setattr(rt.mirofish_store, 'read_run', lambda rid: None)
+    resp = admin_client.post('/api/admin/mirofish/runs/mf_nope/tradingagents')
+    assert resp.status_code == 404
