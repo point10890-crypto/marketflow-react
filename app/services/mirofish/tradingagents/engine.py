@@ -48,6 +48,7 @@ from app.services.mirofish.tradingagents import analysts
 from app.services.mirofish.tradingagents import data_hub
 from app.services.mirofish.tradingagents import research_debate
 from app.services.mirofish.tradingagents import trader_risk
+from app.services.mirofish.tradingagents import regime as regime_mod
 from app.services.mirofish.tradingagents import learning
 from app.services.mirofish import llm_client
 from app.utils.atomic_json import write_json_atomic
@@ -72,18 +73,24 @@ _run_seq = itertools.count()
 # ── Public API ──────────────────────────────────────────────────────
 
 def run_deep_analysis(target: str, *, symbol: str | None = None,
-                      rounds: int | None = None, use_llm: bool = True) -> dict[str, Any]:
+                      rounds: int | None = None, use_llm: bool = True,
+                      brain: dict[str, Any] | None = None) -> dict[str, Any]:
     """Run the full deep-verification pipeline for one target and persist it.
 
     Does NOT check the kill switch (the admin endpoint may run on demand); the
     workflow layer is responsible for gating. `rounds` overrides the env default
     when provided; otherwise MIROFISH_TA_DEBATE_ROUNDS (clamped 1..4) is used.
+    `brain`, when provided, is a Brain 13D snapshot used to derive the regime
+    context (see `regime.regime_context`) injected into the debate + trader/risk
+    prompts and surfaced on the flat verdict.
     """
     started = datetime.now(timezone.utc)
 
-    bundle = data_hub.gather_bundle(target) or {}
+    bundle = data_hub.gather_bundle(target, brain=brain) or {}
     if symbol and not bundle.get('symbol'):
         bundle['symbol'] = symbol
+
+    rc = regime_mod.regime_context(brain)
 
     with llm_client.collect_generation_metadata() as llm_calls:
         reports = analysts.run_analysts(bundle, use_llm=use_llm)
@@ -92,12 +99,16 @@ def run_deep_analysis(target: str, *, symbol: str | None = None,
         effective_rounds = max(_MIN_ROUNDS, min(effective_rounds, _MAX_ROUNDS))
         debate = research_debate.run_research_debate(
             target, reports, rounds=effective_rounds, use_llm=use_llm,
+            regime_line=rc['line'],
         )
         debate['_analyst_mean'] = _mean_scores(reports)
 
-        tr = trader_risk.run_trader_and_risk(target, bundle, debate, use_llm=use_llm)
+        tr = trader_risk.run_trader_and_risk(
+            target, bundle, debate, use_llm=use_llm,
+            regime_line=rc['line'], regime_adjustment=rc['adjustment'],
+        )
 
-    verdict = _flat_verdict(debate, tr)
+    verdict = _flat_verdict(debate, tr, rc)
     method = _aggregate_method(reports, debate, tr)
 
     completed = datetime.now(timezone.utc)
@@ -115,6 +126,7 @@ def run_deep_analysis(target: str, *, symbol: str | None = None,
         'research_debate': debate,
         'trader_risk': tr,
         'verdict': verdict,
+        'regime_context': rc,
         'method': method,
         'provider_usage': _provider_usage(llm_calls),
     }
@@ -184,8 +196,10 @@ def get_run(run_id: str) -> dict[str, Any] | None:
 
 # ── Assembly helpers ────────────────────────────────────────────────
 
-def _flat_verdict(debate: dict[str, Any], tr: dict[str, Any]) -> dict[str, Any]:
+def _flat_verdict(debate: dict[str, Any], tr: dict[str, Any],
+                  rc: dict[str, Any] | None = None) -> dict[str, Any]:
     pm = tr.get('pm_decision') or {}
+    rc = rc or {'regime': 'unknown', 'direction': 'neutral', 'alignment': None, 'adjustment': 0.0}
     return {
         'verdict': pm.get('verdict', 'HOLD'),
         'confidence': pm.get('confidence', 0.0),
@@ -194,6 +208,12 @@ def _flat_verdict(debate: dict[str, Any], tr: dict[str, Any]) -> dict[str, Any]:
         'bull_case': debate.get('bull_case', ''),
         'bear_case': debate.get('bear_case', ''),
         'risk_summary': _risk_summary(tr.get('risk_debate') or []),
+        'regime': rc.get('regime', 'unknown'),
+        'regime_adjustment': {
+            'direction': rc.get('direction', 'neutral'),
+            'alignment': rc.get('alignment'),
+            'applied': rc.get('adjustment', 0.0),
+        },
     }
 
 

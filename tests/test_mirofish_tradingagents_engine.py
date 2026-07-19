@@ -10,7 +10,7 @@ import app.services.mirofish.tradingagents.engine as engine
 
 def _patch_sources(monkeypatch, tmp_path):
     monkeypatch.setattr(engine, 'RUNS_ROOT', str(tmp_path))
-    monkeypatch.setattr(engine.data_hub, 'gather_bundle', lambda t: {
+    monkeypatch.setattr(engine.data_hub, 'gather_bundle', lambda t, **_: {
         'target': t, 'symbol': '005930', 'market': 'KOSPI', 'display_name': t,
         'price': {'found': True, 'price': 70000, 'change_pct': 4.0, 'date': '2026-07-17'},
         'corpus': '수주 계약 신고가', 'technical': {'trend': 'up', 'ma_aligned': True},
@@ -57,7 +57,7 @@ def test_bundle_meta_shape(monkeypatch, tmp_path):
 def test_symbol_override_preserved(monkeypatch, tmp_path):
     monkeypatch.delenv('MIROFISH_TRADINGAGENTS_DISABLED', raising=False)
     monkeypatch.setattr(engine, 'RUNS_ROOT', str(tmp_path))
-    monkeypatch.setattr(engine.data_hub, 'gather_bundle', lambda t: {
+    monkeypatch.setattr(engine.data_hub, 'gather_bundle', lambda t, **_: {
         'target': t, 'symbol': None, 'market': None, 'display_name': t,
         'price': {}, 'corpus': '', 'technical': {}, 'rs': {}, 'fundamentals': {}, 'errors': {}})
     run = engine.run_deep_analysis('미지종목', symbol='123456', use_llm=False)
@@ -171,3 +171,21 @@ def test_status_config_exposes_tuning(monkeypatch, tmp_path):
     cfg = engine.get_status()['config']
     assert set(cfg) == {'max_candidates', 'debate_rounds', 'boost_strong', 'boost_buy', 'penalty_hold'}
     assert cfg['max_candidates'] == 5 and cfg['boost_strong'] == 8.0
+
+
+def test_run_deep_analysis_threads_brain_and_regime(monkeypatch, tmp_path):
+    from app.services.mirofish.tradingagents import engine
+    monkeypatch.setattr(engine, 'RUNS_ROOT', str(tmp_path))
+    brain = {'regime': 'constructive_bullish', 'alignment_score': 0.8}
+    run = engine.run_deep_analysis('삼성전자', symbol='005930', use_llm=False, brain=brain)
+    assert run['verdict']['regime'] == 'constructive_bullish'
+    assert run['verdict']['regime_adjustment']['direction'] == 'bull'
+    assert run['regime_context']['adjustment'] == 5.0
+
+
+def test_run_deep_analysis_without_brain_is_neutral(monkeypatch, tmp_path):
+    from app.services.mirofish.tradingagents import engine
+    monkeypatch.setattr(engine, 'RUNS_ROOT', str(tmp_path))
+    run = engine.run_deep_analysis('삼성전자', symbol='005930', use_llm=False)
+    assert run['verdict']['regime'] == 'unknown'
+    assert run['regime_context']['adjustment'] == 0.0
