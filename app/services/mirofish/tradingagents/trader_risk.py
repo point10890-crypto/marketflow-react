@@ -87,12 +87,19 @@ def run_trader_and_risk(
     debate: dict[str, Any],
     *,
     use_llm: bool = True,
+    regime_line: str = '',
+    regime_adjustment: float = 0.0,
 ) -> dict[str, Any]:
     """Run trader plan → 3-role risk debate → PM final decision.
 
     `debate` carries '_analyst_mean' (injected by the engine) which drives the
     deterministic PM verdict bands. Each stage falls back to its rule on any LLM
     failure; partial success yields method='mixed'.
+
+    `regime_line` (if set) is prepended as a `[시장 레짐]` block into the
+    trader/risk/PM LLM prompts only. `regime_adjustment` is a bounded number
+    added to the analyst mean, but ONLY in the deterministic PM rule path — not
+    when the PM LLM succeeds, since the LLM already sees `regime_line`.
     """
     bundle = bundle or {}
     debate = debate or {}
@@ -100,16 +107,19 @@ def run_trader_and_risk(
     llm_ok = 0
     llm_fail = 0
 
-    trader_plan, used = _trader_plan(target, bundle, debate, use_llm)
+    trader_plan, used = _trader_plan(target, bundle, debate, use_llm, regime_line)
     llm_ok, llm_fail = _accumulate(used, use_llm, llm_ok, llm_fail)
 
     risk_debate: list[dict[str, Any]] = []
     for role in RISK_ROLES:
-        entry, used = _risk_entry(role, target, bundle, debate, trader_plan, use_llm)
+        entry, used = _risk_entry(role, target, bundle, debate, trader_plan, use_llm, regime_line)
         llm_ok, llm_fail = _accumulate(used, use_llm, llm_ok, llm_fail)
         risk_debate.append(entry)
 
-    pm_decision, used = _pm_decision(target, debate, trader_plan, risk_debate, use_llm)
+    pm_decision, used = _pm_decision(
+        target, debate, trader_plan, risk_debate, use_llm,
+        regime_line=regime_line, regime_adjustment=regime_adjustment,
+    )
     llm_ok, llm_fail = _accumulate(used, use_llm, llm_ok, llm_fail)
 
     return {
@@ -137,10 +147,10 @@ def _resolve_method(use_llm: bool, ok: int, fail: int) -> str:
 # ── Trader plan ─────────────────────────────────────────────────────
 
 def _trader_plan(target: str, bundle: dict[str, Any], debate: dict[str, Any],
-                 use_llm: bool) -> tuple[dict[str, Any], bool]:
+                 use_llm: bool, regime_line: str = '') -> tuple[dict[str, Any], bool]:
     if use_llm:
         try:
-            plan = _llm_trader(target, bundle, debate)
+            plan = _llm_trader(target, bundle, debate, regime_line=regime_line)
             if plan:
                 return plan, True
         except Exception as exc:  # noqa: BLE001 — isolate per-stage failure
@@ -172,12 +182,14 @@ def _trader_plan_rule(bundle: dict[str, Any], debate: dict[str, Any]) -> dict[st
     return {'action_hint': action, 'entry_note': entry, 'risk_note': risk}
 
 
-def _llm_trader(target: str, bundle: dict[str, Any],
-                debate: dict[str, Any]) -> dict[str, Any] | None:
+def _llm_trader(target: str, bundle: dict[str, Any], debate: dict[str, Any],
+                regime_line: str = '') -> dict[str, Any] | None:
     price = bundle.get('price') or {}
     tech = bundle.get('technical') or {}
     manager = debate.get('manager') or {}
+    regime_block = f'[시장 레짐]\n{regime_line}\n\n' if regime_line else ''
     prompt = (
+        f'{regime_block}'
         f'분석 대상: {target}\n'
         f'리서치 매니저 논지: {manager.get("thesis", "")} '
         f'(입장 {manager.get("stance", "?")}, 확신 {manager.get("confidence", "?")})\n'
@@ -204,10 +216,11 @@ def _llm_trader(target: str, bundle: dict[str, Any],
 # ── Risk team ───────────────────────────────────────────────────────
 
 def _risk_entry(role: str, target: str, bundle: dict[str, Any], debate: dict[str, Any],
-                trader_plan: dict[str, Any], use_llm: bool) -> tuple[dict[str, Any], bool]:
+                trader_plan: dict[str, Any], use_llm: bool,
+                regime_line: str = '') -> tuple[dict[str, Any], bool]:
     if use_llm:
         try:
-            entry = _llm_risk(role, target, bundle, debate, trader_plan)
+            entry = _llm_risk(role, target, bundle, debate, trader_plan, regime_line=regime_line)
             if entry:
                 return entry, True
         except Exception as exc:  # noqa: BLE001
@@ -245,8 +258,10 @@ def _risk_entry_rule(role: str, bundle: dict[str, Any], debate: dict[str, Any]) 
 
 
 def _llm_risk(role: str, target: str, bundle: dict[str, Any], debate: dict[str, Any],
-              trader_plan: dict[str, Any]) -> dict[str, Any] | None:
+              trader_plan: dict[str, Any], regime_line: str = '') -> dict[str, Any] | None:
+    regime_block = f'[시장 레짐]\n{regime_line}\n\n' if regime_line else ''
     prompt = (
+        f'{regime_block}'
         f'분석 대상: {target}\n'
         f'트레이더 계획: {trader_plan.get("action_hint", "")} | {trader_plan.get("entry_note", "")} '
         f'| {trader_plan.get("risk_note", "")}\n'
@@ -271,11 +286,13 @@ def _llm_risk(role: str, target: str, bundle: dict[str, Any], debate: dict[str, 
 # ── Portfolio Manager ───────────────────────────────────────────────
 
 def _pm_decision(target: str, debate: dict[str, Any], trader_plan: dict[str, Any],
-                 risk_debate: list[dict[str, Any]], use_llm: bool) -> tuple[dict[str, Any], bool]:
-    rule = _pm_decision_rule(debate)
+                 risk_debate: list[dict[str, Any]], use_llm: bool, *,
+                 regime_line: str = '', regime_adjustment: float = 0.0,
+                 ) -> tuple[dict[str, Any], bool]:
+    rule = _pm_decision_rule(debate, regime_adjustment)
     if use_llm:
         try:
-            llm = _llm_pm(target, debate, trader_plan, risk_debate, rule)
+            llm = _llm_pm(target, debate, trader_plan, risk_debate, rule, regime_line=regime_line)
             if llm:
                 return llm, True
         except Exception as exc:  # noqa: BLE001
@@ -283,40 +300,36 @@ def _pm_decision(target: str, debate: dict[str, Any], trader_plan: dict[str, Any
     return rule, False
 
 
-def _pm_decision_rule(debate: dict[str, Any]) -> dict[str, Any]:
-    mean = _analyst_mean(debate)
+def _pm_decision_rule(debate: dict[str, Any], regime_adjustment: float = 0.0) -> dict[str, Any]:
+    base_mean = _analyst_mean(debate)
+    mean = base_mean + float(regime_adjustment or 0.0)
     manager_conf = _safe_float((debate.get('manager') or {}).get('confidence')) or 50.0
 
     if mean >= _STRONG_BUY_CUTOFF:
-        verdict = 'STRONG_BUY'
-        confidence = max(_STRONG_BUY_CONF_FLOOR, manager_conf)
+        verdict = 'STRONG_BUY'; confidence = max(_STRONG_BUY_CONF_FLOOR, manager_conf)
     elif mean >= _BUY_CUTOFF:
-        verdict = 'BUY'
-        confidence = manager_conf
+        verdict = 'BUY'; confidence = manager_conf
     elif mean <= _SELL_CUTOFF:
-        verdict = 'SELL'
-        confidence = manager_conf
+        verdict = 'SELL'; confidence = manager_conf
     else:
-        verdict = 'HOLD'
-        confidence = manager_conf
+        verdict = 'HOLD'; confidence = manager_conf
 
     confidence = round(_clamp(confidence, 0.0, 100.0), 2)
-    reasoning = (
-        f'애널리스트 평균 {mean:+.1f}, 리서치 매니저 확신 {manager_conf:.0f} 기준 '
-        f'{verdict} 판정.'
-    )
-    return {
-        'verdict': verdict,
-        'confidence': confidence,
-        'strong_buy': verdict == 'STRONG_BUY',
-        'reasoning': reasoning,
-    }
+    adj_note = (f' (레짐 보정 {regime_adjustment:+.1f} → {mean:+.1f})'
+                if regime_adjustment else '')
+    reasoning = (f'애널리스트 평균 {base_mean:+.1f}{adj_note}, 리서치 매니저 확신 '
+                 f'{manager_conf:.0f} 기준 {verdict} 판정.')
+    return {'verdict': verdict, 'confidence': confidence,
+            'strong_buy': verdict == 'STRONG_BUY', 'reasoning': reasoning}
 
 
 def _llm_pm(target: str, debate: dict[str, Any], trader_plan: dict[str, Any],
-            risk_debate: list[dict[str, Any]], rule: dict[str, Any]) -> dict[str, Any] | None:
+            risk_debate: list[dict[str, Any]], rule: dict[str, Any],
+            regime_line: str = '') -> dict[str, Any] | None:
     votes = ', '.join(f'{r["role"]}={r["vote"]}' for r in risk_debate)
+    regime_block = f'[시장 레짐]\n{regime_line}\n\n' if regime_line else ''
     prompt = (
+        f'{regime_block}'
         f'분석 대상: {target}\n'
         f'트레이더 계획: {trader_plan.get("action_hint", "")}\n'
         f'리스크팀 투표: {votes}\n'
