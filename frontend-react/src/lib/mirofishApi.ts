@@ -2193,6 +2193,15 @@ export interface MiroFishScannerAlertEvent {
     } | null;
     source?: string | null;
     deepseek_brief?: string | null;
+    tradingagents?: {
+        verdict: string;
+        confidence: number;
+        strong_buy: boolean;
+        regime?: string;
+        regime_adjustment?: { direction?: string; alignment?: number | null; applied?: number };
+        method?: string;
+        verified_at?: string;
+    };
 }
 
 export interface MiroFishScannerAlertState {

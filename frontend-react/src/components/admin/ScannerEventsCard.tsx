@@ -23,6 +23,13 @@ const STATUS_LABELS: Record<string, string> = {
     retry_wait: '재시도 대기',
 };
 
+const TA_VERDICT_STYLE: Record<string, string> = {
+    STRONG_BUY: 'border-emerald-300/40 bg-emerald-300/10 text-emerald-200',
+    BUY: 'border-sky-300/40 bg-sky-300/10 text-sky-200',
+    HOLD: 'border-white/15 bg-white/[0.06] text-slate-300',
+    SELL: 'border-rose-300/40 bg-rose-300/10 text-rose-200',
+};
+
 const POLL_INTERVAL_MS = 30000;
 const CACHE_KEY = 'marketflow.mirofish.scanner-events.v1';
 
@@ -392,6 +399,26 @@ function ScannerEventRow({ event, compact = false }: { event: MiroFishScannerAle
                     </span>
                 )}
             </div>
+
+            {event.tradingagents && (
+                <div className="mt-2 flex flex-wrap items-center gap-2 rounded-lg border border-cyan-300/15 bg-cyan-300/[0.04] px-2.5 py-2">
+                    <i className="fas fa-shield-halved text-[10px] text-cyan-300" aria-hidden="true" />
+                    <span className={`rounded-md border px-1.5 py-0.5 text-[10px] font-black ${TA_VERDICT_STYLE[event.tradingagents.verdict] || TA_VERDICT_STYLE.HOLD}`}>
+                        {event.tradingagents.verdict}
+                    </span>
+                    <span className="text-[10px] font-bold text-slate-400">확신 {Math.round(event.tradingagents.confidence)}%</span>
+                    {event.tradingagents.strong_buy && <span className="text-[10px] font-black text-orange-300">🔥 매수유력</span>}
+                    {event.tradingagents.regime && (
+                        <span className="text-[10px] font-semibold text-slate-500">
+                            레짐 {event.tradingagents.regime}
+                            {event.tradingagents.regime_adjustment?.applied
+                                ? ` · 보정 ${event.tradingagents.regime_adjustment.applied > 0 ? '+' : ''}${event.tradingagents.regime_adjustment.applied}`
+                                : ''}
+                        </span>
+                    )}
+                    <span className="ml-auto text-[9px] font-bold uppercase tracking-wider text-cyan-300/70">TradingAgents</span>
+                </div>
+            )}
 
             {event.deepseek_brief && (
                 <div className="mt-2 flex min-w-0 items-start gap-2 rounded-lg border border-cyan-300/15 bg-cyan-300/[0.055] px-2.5 py-2">
