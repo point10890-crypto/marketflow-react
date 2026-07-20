@@ -774,7 +774,11 @@ def _apply_tradingagents_layer(
     learning = _load_ta_learning_policy()
     eligible = [r for r in ranked if _verdict_is_buy(r)] if require_buy else list(ranked)
     targets = eligible[:int(cfg.get('max_candidates') or 5)]
-    excluded, analyzed = [], 0
+    excluded, soft_sell, analyzed = [], [], 0
+    sell_exclude_min_confidence = max(
+        0.0,
+        min(100.0, float(cfg.get('sell_exclude_min_confidence') or 65.0)),
+    )
     for item in targets:
         cand = item.get('candidate') or {}
         name = cand.get('display_name') or cand.get('name') or cand.get('symbol')
@@ -794,10 +798,24 @@ def _apply_tradingagents_layer(
         confidence = min(raw_confidence, confidence_cap)
         verdict_weight = _ta_verdict_weight(verdict, learning)
         adjustment = 0.0
+        hard_exclusion = False
         if verdict == 'SELL':
-            item['ta_excluded'] = True
-            item['ta_exclusion_reason'] = 'TradingAgents SELL verdict'
-            excluded.append(cand.get('symbol'))
+            if confidence >= sell_exclude_min_confidence:
+                hard_exclusion = True
+                item['ta_excluded'] = True
+                item['ta_exclusion_reason'] = (
+                    'TradingAgents SELL verdict '
+                    f'({confidence:.1f}% >= {sell_exclude_min_confidence:.1f}%)'
+                )
+                excluded.append(cand.get('symbol'))
+            else:
+                adjustment = (
+                    -float(cfg.get('penalty_uncertain_sell') or 5.0)
+                    * (confidence / 100.0)
+                    * verdict_weight
+                )
+                item['ta_adjusted_score'] = base + adjustment
+                soft_sell.append(cand.get('symbol'))
         elif verdict == 'STRONG_BUY':
             adjustment = float(cfg.get('boost_strong') or 8.0) * verdict_weight
             item['ta_adjusted_score'] = base + adjustment
@@ -809,13 +827,16 @@ def _apply_tradingagents_layer(
             item['ta_adjusted_score'] = base + adjustment
         item['ta_adjustment_reason'] = (
             f'{verdict or "UNKNOWN"} verdict; weight={verdict_weight:.3f}; '
-            f'confidence={confidence:.1f}/{raw_confidence:.1f}'
+            f'confidence={confidence:.1f}/{raw_confidence:.1f}; '
+            f'hard_exclusion={hard_exclusion}'
         )
         item['tradingagents'] = {
             'run_id': run.get('id'), 'verdict': verdict,
             'confidence': confidence, 'raw_confidence': raw_confidence,
             'confidence_cap': confidence_cap, 'confidence_cap_reasons': cap_reasons,
             'verdict_weight': verdict_weight, 'score_adjustment': round(adjustment, 4),
+            'hard_exclusion': hard_exclusion,
+            'sell_exclude_min_confidence': sell_exclude_min_confidence,
             'strong_buy': bool(v.get('strong_buy')),
             'bull_case': v.get('bull_case'), 'bear_case': v.get('bear_case'),
             'risk_summary': v.get('risk_summary'), 'method': run.get('method'),
@@ -831,7 +852,8 @@ def _apply_tradingagents_layer(
     adjusted = sorted([r for r in ranked if not r.get('ta_excluded')], key=_sort_key, reverse=True)
     adjusted += [r for r in ranked if r.get('ta_excluded')]   # keep excluded at tail for the record
     return adjusted, {
-        'status': 'applied', 'analyzed': analyzed, 'excluded': excluded, 'config': cfg,
+        'status': 'applied', 'analyzed': analyzed, 'excluded': excluded,
+        'soft_sell': soft_sell, 'config': cfg,
         'learning_policy': learning,
     }
 

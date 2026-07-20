@@ -27,6 +27,8 @@ Env (read at call time, never at import):
     MIROFISH_TA_BOOST_STRONG         (default 8.0) exposed via get_status()['config']
     MIROFISH_TA_BOOST_BUY            (default 5.0) exposed via get_status()['config']
     MIROFISH_TA_PENALTY_HOLD         (default 3.0) exposed via get_status()['config']
+    MIROFISH_TA_SELL_EXCLUDE_MIN_CONFIDENCE (default 65.0) hard-exclusion gate
+    MIROFISH_TA_PENALTY_UNCERTAIN_SELL       (default 5.0) soft SELL penalty
 
 Note: `run_deep_analysis` does NOT check the kill switch — the on-demand admin
 endpoint may run regardless. The Task 6 workflow layer gates on `is_disabled()`.
@@ -151,6 +153,12 @@ def get_status() -> dict[str, Any]:
             'boost_strong': _env_float('MIROFISH_TA_BOOST_STRONG', 8.0),
             'boost_buy': _env_float('MIROFISH_TA_BOOST_BUY', 5.0),
             'penalty_hold': _env_float('MIROFISH_TA_PENALTY_HOLD', 3.0),
+            'sell_exclude_min_confidence': _env_float(
+                'MIROFISH_TA_SELL_EXCLUDE_MIN_CONFIDENCE', 65.0,
+            ),
+            'penalty_uncertain_sell': _env_float(
+                'MIROFISH_TA_PENALTY_UNCERTAIN_SELL', 5.0,
+            ),
         },
         'last_run_id': (latest or {}).get('id'),
         'last_run_at': (latest or {}).get('completed_at'),

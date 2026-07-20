@@ -44,6 +44,45 @@ def test_sell_excluded_and_replaced(monkeypatch):
     assert summary['excluded'] == ['000'] and summary['analyzed'] == 4
 
 
+def test_low_confidence_sell_is_soft_penalty_not_hard_exclusion(monkeypatch):
+    monkeypatch.delenv('MIROFISH_TRADINGAGENTS_DISABLED', raising=False)
+    ranked = _ranked()[:1]
+    target = ranked[0]['candidate']['display_name']
+    monkeypatch.setattr(workflow.ta_engine, 'run_deep_analysis',
+                        _fake_engine({target: ('SELL', 40)}))
+
+    adjusted, summary = workflow._apply_tradingagents_layer(
+        ranked, top_n=1, require_buy=True,
+    )
+
+    assert adjusted[0].get('ta_excluded') is not True
+    assert adjusted[0]['ta_adjusted_score'] == 88.0
+    assert adjusted[0]['tradingagents']['hard_exclusion'] is False
+    assert adjusted[0]['tradingagents']['score_adjustment'] == -2.0
+    assert summary['excluded'] == []
+    assert summary['soft_sell'] == ['000']
+
+
+def test_stale_sell_evidence_cannot_hard_exclude_candidate(monkeypatch):
+    monkeypatch.delenv('MIROFISH_TRADINGAGENTS_DISABLED', raising=False)
+    ranked = _ranked()[:1]
+    ranked[0]['candidate']['source_freshness'] = {'price': {'status': 'stale'}}
+    target = ranked[0]['candidate']['display_name']
+    monkeypatch.setattr(workflow.ta_engine, 'run_deep_analysis',
+                        _fake_engine({target: ('SELL', 90)}))
+
+    adjusted, summary = workflow._apply_tradingagents_layer(
+        ranked, top_n=1, require_buy=True,
+    )
+
+    assert adjusted[0].get('ta_excluded') is not True
+    assert adjusted[0]['tradingagents']['raw_confidence'] == 90
+    assert adjusted[0]['tradingagents']['confidence'] == 60
+    assert 'stale_source' in adjusted[0]['tradingagents']['confidence_cap_reasons']
+    assert adjusted[0]['tradingagents']['hard_exclusion'] is False
+    assert summary['soft_sell'] == ['000']
+
+
 def test_kill_switch_no_change(monkeypatch):
     monkeypatch.setenv('MIROFISH_TRADINGAGENTS_DISABLED', 'true')
     ranked = _ranked()

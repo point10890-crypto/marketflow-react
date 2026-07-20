@@ -169,8 +169,14 @@ def test_status_config_exposes_tuning(monkeypatch, tmp_path):
     _patch_sources(monkeypatch, tmp_path)
     monkeypatch.delenv('MIROFISH_TRADINGAGENTS_DISABLED', raising=False)
     cfg = engine.get_status()['config']
-    assert set(cfg) == {'max_candidates', 'debate_rounds', 'boost_strong', 'boost_buy', 'penalty_hold'}
+    assert set(cfg) == {
+        'max_candidates', 'debate_rounds', 'boost_strong', 'boost_buy',
+        'penalty_hold', 'sell_exclude_min_confidence',
+        'penalty_uncertain_sell',
+    }
     assert cfg['max_candidates'] == 5 and cfg['boost_strong'] == 8.0
+    assert cfg['sell_exclude_min_confidence'] == 65.0
+    assert cfg['penalty_uncertain_sell'] == 5.0
 
 
 def test_run_deep_analysis_threads_brain_and_regime(monkeypatch, tmp_path):
