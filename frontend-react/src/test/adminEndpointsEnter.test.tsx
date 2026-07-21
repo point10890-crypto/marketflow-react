@@ -792,7 +792,7 @@ describe('AdminEndpointsPage analysis start input', () => {
     expect(mockApi.getScannerStatus).toHaveBeenCalled();
     expect(mockApi.getAutonomousStatus).toHaveBeenCalled();
     expect(await screen.findByText('Autonomous MCP Control')).toBeTruthy();
-    expect(await screen.findByText('Latest Alpha')).toBeTruthy();
+    expect((await screen.findAllByText('Latest Alpha')).length).toBeGreaterThan(0);
     expect(await screen.findByText(/Last/)).toBeTruthy();
     expect(await screen.findByText(/Next/)).toBeTruthy();
     expect(await screen.findByText(/Fresh fresh/i)).toBeTruthy();
@@ -829,7 +829,7 @@ describe('AdminEndpointsPage analysis start input', () => {
     expect(await screen.findByText('@45,900')).toBeTruthy();
     expect(await screen.findByText('등급 B')).toBeTruthy();
     expect(await screen.findByText('리스크 40')).toBeTruthy();
-    expect(await screen.findByText('Latest Alpha')).toBeTruthy();
+    expect((await screen.findAllByText('Latest Alpha')).length).toBeGreaterThan(0);
     expect(screen.queryByRole('button', { name: /Run scanner/i })).toBeNull();
     expect(screen.queryByRole('button', { name: /Run MCP Top 3 Force refresh/i })).toBeNull();
     expect(screen.queryByRole('button', { name: /Detection dry-run/i })).toBeNull();

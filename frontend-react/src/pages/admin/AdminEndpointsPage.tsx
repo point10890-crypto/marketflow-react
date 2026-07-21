@@ -3093,10 +3093,24 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
                             )}
                         </div>
                         {subscriberMode && <ScannerEventsCard compact maxEvents={3} fallbackEvents={workflowFallbackEvents} className="h-full xl:col-start-3 xl:row-start-1" />}
-                        {subscriberMode && <MiroFishFearIndexCard className="h-full min-w-0 xl:col-start-2 xl:row-start-1" variant="compact" />}
+                        {subscriberMode && (
+                            <MiroFishFearIndexCard
+                                className="h-full min-w-0 xl:col-start-2 xl:row-start-1"
+                                variant="compact"
+                                candidates={alphaCandidates}
+                                candidatesLoading={alphaCandidates.length === 0 && (alphaScannerState === 'idle' || alphaScannerState === 'loading' || alphaScannerState === 'running')}
+                            />
+                        )}
                     </div>
 
-                    {!subscriberMode && <MiroFishFearIndexCard className="mt-5" variant="compact" />}
+                    {!subscriberMode && (
+                        <MiroFishFearIndexCard
+                            className="mt-5"
+                            variant="compact"
+                            candidates={alphaCandidates}
+                            candidatesLoading={alphaCandidates.length === 0 && (alphaScannerState === 'idle' || alphaScannerState === 'loading' || alphaScannerState === 'running')}
+                        />
+                    )}
 
                     <div className="mt-4 grid gap-4 sm:mt-5 sm:gap-5 2xl:grid-cols-[minmax(0,1.65fr)_minmax(400px,0.72fr)] 2xl:items-start">
                         <section className="min-w-0 rounded-2xl border border-cyan-300/15 bg-cyan-300/[0.035] p-2 shadow-[0_18px_70px_rgba(8,145,178,0.10)] sm:p-3">

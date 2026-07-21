@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { mirofishApi, type MiroFishFearIndex } from '@/lib/mirofishApi';
+import { mirofishApi, type MiroFishAlphaCandidate, type MiroFishFearIndex } from '@/lib/mirofishApi';
 
 type Variant = 'default' | 'compact';
 
@@ -7,6 +7,36 @@ interface MiroFishFearIndexCardProps {
     className?: string;
     variant?: Variant;
     href?: string;
+    candidates?: MiroFishAlphaCandidate[];
+    candidatesLoading?: boolean;
+}
+
+const actionLabels: Record<string, string> = {
+    BUY: '매수',
+    BUY_CANDIDATE: '매수 후보',
+    WATCH: '관망',
+    HOLD: '보유',
+    SELL: '매도',
+    SELL_CANDIDATE: '매도 후보',
+    AVOID: '제외',
+};
+
+function actionLabel(action?: string) {
+    const normalized = String(action || 'WATCH').toUpperCase();
+    return actionLabels[normalized] || normalized.split('_').join(' ');
+}
+
+function actionTone(action?: string) {
+    const normalized = String(action || '').toUpperCase();
+    if (normalized.includes('BUY')) return 'border-emerald-300/25 bg-emerald-300/10 text-emerald-100';
+    if (normalized.includes('SELL') || normalized === 'AVOID') return 'border-rose-300/25 bg-rose-300/10 text-rose-100';
+    return 'border-cyan-300/25 bg-cyan-300/10 text-cyan-100';
+}
+
+function formatPrice(value?: number | string) {
+    if (value === undefined || value === null || value === '') return '--';
+    const numeric = typeof value === 'number' ? value : Number(String(value).split(',').join(''));
+    return Number.isFinite(numeric) ? Math.round(numeric).toLocaleString('ko-KR') : String(value);
 }
 
 function toneColor(tone?: string | null) {
@@ -37,10 +67,18 @@ function formatTime(value?: string | null) {
     });
 }
 
-export default function MiroFishFearIndexCard({ className = '', variant = 'default', href = '/dashboard/ai-bain' }: MiroFishFearIndexCardProps) {
+export default function MiroFishFearIndexCard({
+    className = '',
+    variant = 'default',
+    href = '/dashboard/ai-bain',
+    candidates,
+    candidatesLoading = false,
+}: MiroFishFearIndexCardProps) {
     const [data, setData] = useState<MiroFishFearIndex | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [fetchedCandidates, setFetchedCandidates] = useState<MiroFishAlphaCandidate[]>([]);
+    const [scannerLoading, setScannerLoading] = useState(candidates === undefined);
 
     useEffect(() => {
         let active = true;
@@ -64,12 +102,47 @@ export default function MiroFishFearIndexCard({ className = '', variant = 'defau
         };
     }, []);
 
+    useEffect(() => {
+        if (candidates !== undefined) {
+            setScannerLoading(false);
+            return;
+        }
+
+        let active = true;
+        setScannerLoading(true);
+        mirofishApi.getLatestScannerRun()
+            .then(async (latestRun) => {
+                const latestCandidates = latestRun.candidates || [];
+                if (latestCandidates.length > 0 || !latestRun.id) return latestCandidates;
+                const payload = await mirofishApi.getScannerCandidates(latestRun.id);
+                return payload.candidates || [];
+            })
+            .then((latestCandidates) => {
+                if (active) setFetchedCandidates(latestCandidates);
+            })
+            .catch(() => {
+                if (active) setFetchedCandidates([]);
+            })
+            .finally(() => {
+                if (active) setScannerLoading(false);
+            });
+
+        return () => {
+            active = false;
+        };
+    }, [candidates]);
+
     const score = typeof data?.score === 'number' ? Math.round(data.score) : null;
     const level = data?.level_label || data?.level || (loading ? '불러오는 중' : '확인 필요');
     const summary = data?.summary || error || 'VIX, Fear & Greed, 환율, 지수 압력을 묶어 Top3 신뢰도 보정에 사용합니다.';
     const driver = data?.dashboard?.primary_driver || data?.dashboard?.primary_detail || 'market stress';
     const coverage = typeof data?.coverage_pct === 'number' ? `${data.coverage_pct.toFixed(0)}%` : '--';
     const componentCount = useMemo(() => data?.components?.filter((item) => item.status === 'ok').length ?? 0, [data]);
+    const topCandidates = useMemo(
+        () => [...(candidates ?? fetchedCandidates)].sort((left, right) => left.rank - right.rank).slice(0, 5),
+        [candidates, fetchedCandidates],
+    );
+    const isCandidatesLoading = candidatesLoading || scannerLoading;
     const compact = variant === 'compact';
 
     return (
@@ -135,6 +208,41 @@ export default function MiroFishFearIndexCard({ className = '', variant = 'defau
                     <span className="truncate">{driver}</span>
                     <i className="fas fa-arrow-right text-[10px] opacity-60 transition group-hover:translate-x-0.5 group-hover:opacity-100" />
                 </span>
+            </div>
+            <div className="relative mt-3 overflow-hidden rounded-xl border border-white/10 bg-black/20" data-testid="fear-index-top-candidates">
+                <div className="flex items-center justify-between border-b border-white/10 px-3 py-2">
+                    <span className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">Alpha Scanner Top 5</span>
+                    <span className="text-[10px] font-black text-cyan-100/80">최신 검출 종목</span>
+                </div>
+                {topCandidates.length > 0 ? (
+                    <ol className="divide-y divide-white/[0.07]">
+                        {topCandidates.map((candidate, index) => (
+                            <li key={`${candidate.symbol}-${candidate.rank}`} className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2.5 px-3 py-2.5 transition group-hover:bg-white/[0.015] sm:gap-3">
+                                <span className="w-5 text-center font-mono text-[11px] font-black text-emerald-200">#{index + 1}</span>
+                                <span className="min-w-0">
+                                    <span className="block truncate text-xs font-black text-white sm:text-[13px]">
+                                        {candidate.display_name || candidate.name || candidate.symbol}
+                                    </span>
+                                    <span className="mt-0.5 block truncate font-mono text-[9px] font-bold text-slate-500 sm:text-[10px]">
+                                        {candidate.symbol} · {candidate.market || 'KR'} · A {Math.round(candidate.alpha_score)} / R {Math.round(candidate.risk_score)}
+                                    </span>
+                                </span>
+                                <span className="flex min-w-[76px] flex-col items-end gap-1">
+                                    <span className={`rounded-full border px-2 py-0.5 text-[9px] font-black ${actionTone(candidate.action)}`}>
+                                        {actionLabel(candidate.action)}
+                                    </span>
+                                    <span className="font-mono text-[10px] font-black tabular-nums text-slate-300">
+                                        {candidate.price === undefined || candidate.price === null || candidate.price === '' ? '--' : `${formatPrice(candidate.price)}원`}
+                                    </span>
+                                </span>
+                            </li>
+                        ))}
+                    </ol>
+                ) : (
+                    <div className="px-3 py-5 text-center text-[11px] font-bold text-slate-500">
+                        {isCandidatesLoading ? '최신 검출 종목을 불러오는 중입니다.' : '표시할 최신 검출 종목이 없습니다.'}
+                    </div>
+                )}
             </div>
         </a>
     );
