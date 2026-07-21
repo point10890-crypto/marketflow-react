@@ -17,6 +17,7 @@ const mockApi = vi.hoisted(() => ({
   getScannerMonitorStatus: vi.fn(),
   getScannerTradingAgentsHistory: vi.fn(),
   getLatestScannerRun: vi.fn(),
+  getLatestScannerCandidates: vi.fn(),
   getScannerRun: vi.fn(),
   getScannerCandidates: vi.fn(),
   getDeepSeekStatus: vi.fn(),
@@ -510,6 +511,11 @@ beforeEach(() => {
         trading_value: 64800000000,
       },
     ],
+  });
+  mockApi.getLatestScannerCandidates.mockResolvedValue({
+    run_id: 'mfas_latest',
+    status: 'completed',
+    candidates: [],
   });
   mockApi.getScannerRun.mockResolvedValue({
     id: 'mfas_test',

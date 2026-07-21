@@ -111,15 +111,9 @@ export default function MiroFishFearIndexCard({
 
         let active = true;
         setScannerLoading(true);
-        mirofishApi.getLatestScannerRun()
-            .then(async (latestRun) => {
-                const latestCandidates = latestRun.candidates || [];
-                if (latestCandidates.length > 0 || !latestRun.id) return latestCandidates;
-                const payload = await mirofishApi.getScannerCandidates(latestRun.id);
-                return payload.candidates || [];
-            })
-            .then((latestCandidates) => {
-                if (active) setFetchedCandidates(latestCandidates);
+        mirofishApi.getLatestScannerCandidates(5)
+            .then((payload) => {
+                if (active) setFetchedCandidates(payload.candidates || []);
             })
             .catch(() => {
                 if (active) setFetchedCandidates([]);

@@ -307,6 +307,54 @@ def read_latest_scanner_run() -> dict[str, Any] | None:
     return None
 
 
+def read_latest_scanner_candidates(limit: int = 5) -> dict[str, Any] | None:
+    """Return a compact candidate list from the newest non-empty scanner run."""
+    clean_limit = max(1, min(_clean_limit(limit, default=5), 20))
+    for path in _latest_scanner_run_paths():
+        try:
+            run = _read_json(path)
+        except (OSError, json.JSONDecodeError, ValueError):
+            continue
+        if not isinstance(run, dict):
+            continue
+        candidates = [item for item in (run.get('candidates') or []) if isinstance(item, dict)]
+        if not candidates:
+            continue
+        candidates.sort(key=lambda item: _clean_rank(item.get('rank')))
+        compact_candidates = []
+        for candidate in candidates[:clean_limit]:
+            price = candidate.get('price')
+            if isinstance(price, dict):
+                price = price.get('current_price', price.get('price'))
+            compact_candidates.append({
+                'rank': candidate.get('rank'),
+                'symbol': candidate.get('symbol') or candidate.get('code') or candidate.get('ticker'),
+                'display_name': candidate.get('display_name') or candidate.get('name') or candidate.get('stock_name'),
+                'name': candidate.get('name') or candidate.get('display_name') or candidate.get('stock_name'),
+                'market': candidate.get('market'),
+                'alpha_score': candidate.get('alpha_score', candidate.get('score')),
+                'risk_score': candidate.get('risk_score', candidate.get('risk')),
+                'action': candidate.get('action') or candidate.get('verdict'),
+                'horizon': candidate.get('horizon') or candidate.get('expected_horizon'),
+                'price': price if price is not None else candidate.get('current_price'),
+            })
+        return {
+            'run_id': run.get('id') or run.get('run_id'),
+            'status': run.get('status'),
+            'generated_at': run.get('generated_at'),
+            'candidate_count': len(candidates),
+            'candidates': compact_candidates,
+        }
+    return None
+
+
+def _clean_rank(value: Any) -> float:
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return float('inf')
+
+
 def _latest_scanner_run_path() -> str | None:
     paths = _latest_scanner_run_paths()
     return paths[0] if paths else None

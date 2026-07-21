@@ -742,6 +742,19 @@ def get_latest_scanner_run():
     return jsonify(run)
 
 
+@admin_mirofish_bp.route('/scanner/candidates/latest', methods=['GET'])
+@admin_or_aibain_required
+def get_latest_scanner_candidates():
+    try:
+        limit = int(request.args.get('limit', 5))
+    except (TypeError, ValueError):
+        return jsonify({'error': 'limit must be an integer'}), 400
+    candidates = mirofish.read_latest_scanner_candidates(limit=max(1, min(limit, 20)))
+    if candidates is None:
+        return jsonify({'error': 'scanner candidates not found'}), 404
+    return jsonify(candidates)
+
+
 @admin_mirofish_bp.route('/scanner/research', methods=['GET'])
 @admin_or_aibain_required
 def get_latest_scanner_research():

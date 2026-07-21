@@ -912,6 +912,49 @@ def test_alpha_scanner_latest_run_returns_newest_and_skips_bad_files(tmp_path, m
     assert 'candidates' not in summaries[0]
 
 
+def test_latest_scanner_candidates_skips_empty_run_and_returns_compact_top_five(tmp_path, monkeypatch):
+    runs_root = tmp_path / 'runs'
+    monkeypatch.setattr(alpha_scanner, 'SCANNER_RUNS_ROOT', str(runs_root))
+    completed_dir = runs_root / 'mfas_20260504000000_aaaaaaaaaaaa'
+    running_dir = runs_root / 'mfas_20260505000000_bbbbbbbbbbbb'
+    completed_dir.mkdir(parents=True)
+    running_dir.mkdir(parents=True)
+    _write_json(completed_dir / 'run.json', {
+        'id': completed_dir.name,
+        'status': 'completed',
+        'generated_at': '2026-05-04T00:00:00+00:00',
+        'candidates': [
+            {
+                'rank': rank,
+                'symbol': f'00000{rank}',
+                'display_name': f'Candidate {rank}',
+                'market': 'KOSPI',
+                'alpha_score': 60 + rank,
+                'risk_score': 20 + rank,
+                'action': 'WATCH',
+                'horizon': 'SWING_5_20D',
+                'price': {'current_price': rank * 1000, 'unused': 'large payload'},
+                'evidence': [{'unused': True}],
+            }
+            for rank in range(1, 7)
+        ],
+    })
+    _write_json(running_dir / 'run.json', {
+        'id': running_dir.name,
+        'status': 'running',
+        'generated_at': '2026-05-05T00:00:00+00:00',
+        'candidates': [],
+    })
+
+    payload = alpha_scanner.read_latest_scanner_candidates(limit=5)
+
+    assert payload['run_id'] == completed_dir.name
+    assert payload['candidate_count'] == 6
+    assert [item['rank'] for item in payload['candidates']] == [1, 2, 3, 4, 5]
+    assert payload['candidates'][0]['price'] == 1000
+    assert 'evidence' not in payload['candidates'][0]
+
+
 def test_alpha_scanner_status_without_runs_reports_schedule_and_freshness(tmp_path, monkeypatch):
     _seed_artifacts(tmp_path)
     monkeypatch.setattr(alpha_scanner, 'DATA_ROOT', str(tmp_path))
@@ -1514,6 +1557,7 @@ def test_admin_mirofish_scanner_routes_are_registered():
     assert '/api/admin/mirofish/scanner/monitor/check' in rules
     assert '/api/admin/mirofish/scanner/monitor/status' in rules
     assert '/api/admin/mirofish/scanner/runs/latest' in rules
+    assert '/api/admin/mirofish/scanner/candidates/latest' in rules
     assert '/api/admin/mirofish/scanner/research' in rules
     assert '/api/admin/mirofish/scanner/runs/<run_id>' in rules
     assert '/api/admin/mirofish/scanner/runs/<run_id>/candidates' in rules

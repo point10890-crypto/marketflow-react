@@ -5,6 +5,7 @@ import MiroFishFearIndexCard from '@/components/mirofish/MiroFishFearIndexCard';
 
 const mockApi = vi.hoisted(() => ({
     getFearIndex: vi.fn(),
+    getLatestScannerCandidates: vi.fn(),
     getLatestScannerRun: vi.fn(),
     getScannerCandidates: vi.fn(),
 }));
@@ -38,8 +39,8 @@ describe('MiroFishFearIndexCard', () => {
             summary: '공포지수 41 (중립).',
             components: [{ status: 'ok' }],
         });
-        mockApi.getLatestScannerRun.mockResolvedValue({
-            id: 'latest-run',
+        mockApi.getLatestScannerCandidates.mockResolvedValue({
+            run_id: 'latest-run',
             status: 'completed',
             candidates: scannerCandidates,
         });
@@ -65,7 +66,7 @@ describe('MiroFishFearIndexCard', () => {
         const list = await screen.findByTestId('fear-index-top-candidates');
         await waitFor(() => expect(within(list).getAllByRole('listitem')).toHaveLength(5));
 
-        expect(mockApi.getLatestScannerRun).toHaveBeenCalledTimes(1);
+        expect(mockApi.getLatestScannerCandidates).toHaveBeenCalledWith(5);
         expect(within(list).queryByText('표시할 최신 검출 종목이 없습니다.')).toBeNull();
     });
 });

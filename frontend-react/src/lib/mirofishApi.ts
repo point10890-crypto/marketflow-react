@@ -1774,6 +1774,13 @@ export const mirofishApi = {
     getLatestScannerRun: async () => normalizeScannerRun(
         await fetchAuthAPI<any>('/api/admin/mirofish/scanner/runs/latest'),
     ),
+    getLatestScannerCandidates: async (limit = 5) => normalizeScannerCandidates(
+        await fetchAuthAPI<any>(
+            `/api/admin/mirofish/scanner/candidates/latest?limit=${Math.max(1, Math.min(Math.trunc(limit), 20))}`,
+            undefined,
+            30000,
+        ),
+    ),
     getScannerRun: async (runId: string) => normalizeScannerRun(
         await fetchAuthAPI<any>(`/api/admin/mirofish/scanner/runs/${runId}`),
     ),
