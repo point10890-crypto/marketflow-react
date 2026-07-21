@@ -351,6 +351,8 @@ export interface MiroFishFearIndex {
     coverage_pct?: number | null;
     summary?: string;
     components?: MiroFishFearIndexComponent[];
+    scanner_top_candidates?: MiroFishAlphaCandidate[];
+    scanner_run_id?: string | null;
     dashboard?: {
         display_score?: string;
         display_label?: string;

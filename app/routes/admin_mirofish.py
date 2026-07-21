@@ -239,7 +239,11 @@ def market_crash_rebound_schema():
 def market_fear_index_latest():
     """Latest deterministic market fear-index snapshot."""
     try:
-        return jsonify(mirofish.read_latest_fear_index())
+        snapshot = dict(mirofish.read_latest_fear_index() or {})
+        scanner_candidates = mirofish.read_latest_scanner_candidates(limit=5)
+        snapshot['scanner_top_candidates'] = (scanner_candidates or {}).get('candidates') or []
+        snapshot['scanner_run_id'] = (scanner_candidates or {}).get('run_id')
+        return jsonify(snapshot)
     except Exception as exc:
         return jsonify({
             'error': f'{type(exc).__name__}: {exc}',

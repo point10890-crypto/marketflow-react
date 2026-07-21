@@ -69,4 +69,20 @@ describe('MiroFishFearIndexCard', () => {
         expect(mockApi.getLatestScannerCandidates).toHaveBeenCalledWith(5);
         expect(within(list).queryByText('표시할 최신 검출 종목이 없습니다.')).toBeNull();
     });
+
+    it('renders scanner candidates bundled with the fear-index response', async () => {
+        mockApi.getFearIndex.mockResolvedValue({
+            score: 41,
+            level_label: '중립',
+            components: [],
+            scanner_top_candidates: scannerCandidates,
+        });
+        mockApi.getLatestScannerCandidates.mockReturnValue(new Promise(() => undefined));
+
+        render(<MiroFishFearIndexCard candidates={[]} candidatesLoading={false} />);
+
+        const list = await screen.findByTestId('fear-index-top-candidates');
+        await waitFor(() => expect(within(list).getAllByRole('listitem')).toHaveLength(5));
+        expect(within(list).queryByText('표시할 최신 검출 종목이 없습니다.')).toBeNull();
+    });
 });

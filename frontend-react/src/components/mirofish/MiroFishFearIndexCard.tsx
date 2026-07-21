@@ -89,6 +89,9 @@ export default function MiroFishFearIndexCard({
             .then((snapshot) => {
                 if (!active) return;
                 setData(snapshot);
+                if ((snapshot.scanner_top_candidates?.length ?? 0) > 0) {
+                    setFetchedCandidates(snapshot.scanner_top_candidates || []);
+                }
             })
             .catch((err) => {
                 if (!active) return;
