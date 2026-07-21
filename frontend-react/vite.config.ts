@@ -1,9 +1,23 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import { execFileSync } from 'node:child_process';
 import { fileURLToPath, URL } from 'node:url';
 
 // VitePWA 영구 제거 — SW가 stale 캐시 서빙해서 "앱 안 뜸" 사용자 불만 발생.
 // 오프라인 모드 포기 (어차피 거의 작동 안 함). Cloudflare CDN edge 캐시로 충분.
+
+const buildId = (() => {
+  const deploymentSha = process.env.CF_PAGES_COMMIT_SHA || process.env.GITHUB_SHA;
+  if (deploymentSha) return deploymentSha.slice(0, 12);
+  try {
+    return execFileSync('git', ['rev-parse', '--short=12', 'HEAD'], {
+      cwd: fileURLToPath(new URL('.', import.meta.url)),
+      encoding: 'utf8',
+    }).trim();
+  } catch {
+    return new Date().toISOString().replace(/\D/g, '').slice(0, 12);
+  }
+})();
 
 export default defineConfig({
   define: {
@@ -68,9 +82,11 @@ export default defineConfig({
           }
           return undefined;
         },
-        chunkFileNames: 'assets/[hash].js',
-        entryFileNames: 'assets/[hash].js',
-        assetFileNames: 'assets/[hash][extname]',
+        // Terser can change emitted bytes after Rollup calculates [hash]. Add the
+        // source revision so Cloudflare never reuses a stale immutable asset.
+        chunkFileNames: `assets/[hash]-${buildId}.js`,
+        entryFileNames: `assets/[hash]-${buildId}.js`,
+        assetFileNames: `assets/[hash]-${buildId}[extname]`,
       },
     },
   },
