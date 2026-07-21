@@ -28,6 +28,28 @@ const scannerCandidates = Array.from({ length: 6 }, (_, index) => ({
     price: 10000 * (index + 1),
 }));
 
+const workflowTop3 = Array.from({ length: 3 }, (_, index) => ({
+    run_id: `analysis-${index + 1}`,
+    symbol: `10000${index + 1}`,
+    target: `Top Result ${index + 1}`,
+    market: 'KOSPI',
+    final_score: 82 - (index * 5),
+    verdict: {
+        action: 'BUY',
+        confidence_pct: 75 - (index * 5),
+        symbol: `10000${index + 1}`,
+        market: 'KOSPI',
+        reference_date: '2026-07-21',
+        target_display: `Top Result ${index + 1}`,
+    },
+    graphrag: {
+        links: 10414 - (index * 11),
+        entities: 20 - index,
+        relations: 10 + index,
+    },
+    outcome_status: 'pending',
+}));
+
 describe('MiroFishFearIndexCard', () => {
     beforeEach(() => {
         vi.clearAllMocks();
@@ -84,5 +106,18 @@ describe('MiroFishFearIndexCard', () => {
         const list = await screen.findByTestId('fear-index-top-candidates');
         await waitFor(() => expect(within(list).getAllByRole('listitem')).toHaveLength(5));
         expect(within(list).queryByText('표시할 최신 검출 종목이 없습니다.')).toBeNull();
+    });
+
+    it('publishes the verified top three in a proportional three-card grid', async () => {
+        render(<MiroFishFearIndexCard candidates={scannerCandidates} topResults={workflowTop3} />);
+
+        const section = await screen.findByTestId('fear-index-top-results');
+        expect(within(section).getAllByRole('article')).toHaveLength(3);
+        expect(within(section).getByText('Top Result 1')).toBeTruthy();
+        expect(within(section).getByText('BUY 75%')).toBeTruthy();
+        expect(within(section).getByText('L 10414')).toBeTruthy();
+        expect(within(section).getByText('E 20')).toBeTruthy();
+        expect(within(section).getByText('R 10')).toBeTruthy();
+        expect(within(section).getAllByText('Replay-safe after 2026-07-21')).toHaveLength(3);
     });
 });

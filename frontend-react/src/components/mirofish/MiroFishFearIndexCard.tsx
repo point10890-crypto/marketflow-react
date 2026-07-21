@@ -1,5 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
-import { mirofishApi, type MiroFishAlphaCandidate, type MiroFishFearIndex } from '@/lib/mirofishApi';
+import {
+    mirofishApi,
+    type MiroFishAlphaCandidate,
+    type MiroFishFearIndex,
+    type MiroFishWorkflowAnalysisResult,
+} from '@/lib/mirofishApi';
 
 type Variant = 'default' | 'compact';
 
@@ -9,6 +14,8 @@ interface MiroFishFearIndexCardProps {
     href?: string;
     candidates?: MiroFishAlphaCandidate[];
     candidatesLoading?: boolean;
+    topResults?: MiroFishWorkflowAnalysisResult[];
+    topResultsLoading?: boolean;
 }
 
 const actionLabels: Record<string, string> = {
@@ -67,12 +74,24 @@ function formatTime(value?: string | null) {
     });
 }
 
+function topResultIdentity(result: MiroFishWorkflowAnalysisResult) {
+    const candidate = result.candidate || {};
+    const symbol = String(result.verdict?.symbol || result.symbol || candidate.symbol || '').trim();
+    return {
+        symbol,
+        market: String(result.verdict?.market || result.market || candidate.market || 'KR').trim(),
+        name: String(result.verdict?.target_display || result.target || candidate.display_name || candidate.name || symbol || 'Unknown').trim(),
+    };
+}
+
 export default function MiroFishFearIndexCard({
     className = '',
     variant = 'default',
     href = '/dashboard/ai-bain',
     candidates,
     candidatesLoading = false,
+    topResults = [],
+    topResultsLoading = false,
 }: MiroFishFearIndexCardProps) {
     const [data, setData] = useState<MiroFishFearIndex | null>(null);
     const [loading, setLoading] = useState(true);
@@ -141,6 +160,7 @@ export default function MiroFishFearIndexCard({
         [candidates, fetchedCandidates, hasProvidedCandidates],
     );
     const isCandidatesLoading = candidatesLoading || scannerLoading;
+    const displayedTopResults = topResults.slice(0, 3);
     const compact = variant === 'compact';
 
     return (
@@ -239,6 +259,64 @@ export default function MiroFishFearIndexCard({
                 ) : (
                     <div className="px-3 py-5 text-center text-[11px] font-bold text-slate-500">
                         {isCandidatesLoading ? '최신 검출 종목을 불러오는 중입니다.' : '표시할 최신 검출 종목이 없습니다.'}
+                    </div>
+                )}
+            </div>
+            <div className="relative mt-3 overflow-hidden rounded-xl border border-amber-300/15 bg-amber-300/[0.035]" data-testid="fear-index-top-results">
+                <div className="flex items-center justify-between border-b border-amber-300/10 px-3 py-2">
+                    <span className="text-[10px] font-black uppercase tracking-[0.18em] text-amber-200/70">MCP Verified Top 3</span>
+                    <span className="text-[10px] font-black text-amber-100/75">최종 분석 결과</span>
+                </div>
+                {displayedTopResults.length > 0 ? (
+                    <div className="grid gap-2 p-2 sm:grid-cols-3">
+                        {displayedTopResults.map((result, index) => {
+                            const identity = topResultIdentity(result);
+                            const action = String(result.verdict?.action || 'HOLD').toUpperCase();
+                            const confidence = Math.round(Number(result.verdict?.confidence_pct || 0));
+                            const scoreValue = Math.round(Number(result.final_score || 0));
+                            const referenceDate = String(result.verdict?.reference_date || '').slice(0, 10);
+                            const outcomeStatus = String(result.outcome_status || result.outcome?.status || 'pending').toUpperCase();
+                            return (
+                                <article key={`${identity.symbol}-${result.run_id || index}`} className="min-w-0 rounded-lg border border-white/10 bg-[#24231f]/85 p-2.5 shadow-[0_8px_24px_rgba(0,0,0,0.16)]">
+                                    <div className="text-[9px] font-black uppercase tracking-[0.14em] text-orange-300">Top {index + 1}</div>
+                                    <div className="mt-1 truncate text-[12px] font-black text-white" title={identity.name}>
+                                        {identity.name}
+                                    </div>
+                                    <div className="mt-1 truncate font-mono text-[9px] font-bold text-slate-500">
+                                        {identity.symbol || '--'} · {identity.market} · score {scoreValue}
+                                    </div>
+                                    {referenceDate && (
+                                        <div className="mt-0.5 font-mono text-[9px] font-bold text-slate-600">ref {referenceDate}</div>
+                                    )}
+                                    <div className="mt-2 flex flex-wrap items-center gap-1">
+                                        <span className={`rounded-full border px-2 py-0.5 text-[9px] font-black ${actionTone(action)}`}>
+                                            {action} {confidence}%
+                                        </span>
+                                        <span className="rounded border border-amber-300/15 bg-amber-300/[0.06] px-1.5 py-0.5 font-mono text-[8px] font-black text-amber-200/80">
+                                            L {result.graphrag?.links ?? 0}
+                                        </span>
+                                        <span className="rounded border border-amber-300/15 bg-amber-300/[0.06] px-1.5 py-0.5 font-mono text-[8px] font-black text-amber-200/80">
+                                            E {result.graphrag?.entities ?? 0}
+                                        </span>
+                                        <span className="rounded border border-amber-300/15 bg-amber-300/[0.06] px-1.5 py-0.5 font-mono text-[8px] font-black text-amber-200/80">
+                                            R {result.graphrag?.relations ?? 0}
+                                        </span>
+                                    </div>
+                                    <div className="mt-2 inline-flex rounded-full border border-amber-300/25 bg-amber-300/[0.05] px-2 py-0.5 text-[8px] font-black text-amber-100/80">
+                                        {outcomeStatus}
+                                    </div>
+                                    {referenceDate && (
+                                        <div className="mt-2 truncate text-[8px] font-black uppercase tracking-[0.08em] text-slate-600">
+                                            Replay-safe after {referenceDate}
+                                        </div>
+                                    )}
+                                </article>
+                            );
+                        })}
+                    </div>
+                ) : (
+                    <div className="px-3 py-5 text-center text-[11px] font-bold text-slate-500">
+                        {topResultsLoading ? '최종 Top 3 분석 결과를 불러오는 중입니다.' : '표시할 최종 Top 3 결과가 없습니다.'}
                     </div>
                 )}
             </div>

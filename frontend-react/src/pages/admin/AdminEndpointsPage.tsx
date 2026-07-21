@@ -3099,6 +3099,8 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
                                 variant="compact"
                                 candidates={alphaCandidates}
                                 candidatesLoading={alphaCandidates.length === 0 && (alphaScannerState === 'idle' || alphaScannerState === 'loading' || alphaScannerState === 'running')}
+                                topResults={workflow?.top3}
+                                topResultsLoading={workflowState === 'running'}
                             />
                         )}
                     </div>
@@ -3109,6 +3111,8 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
                             variant="compact"
                             candidates={alphaCandidates}
                             candidatesLoading={alphaCandidates.length === 0 && (alphaScannerState === 'idle' || alphaScannerState === 'loading' || alphaScannerState === 'running')}
+                            topResults={workflow?.top3}
+                            topResultsLoading={workflowState === 'running'}
                         />
                     )}
 
