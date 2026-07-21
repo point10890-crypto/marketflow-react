@@ -78,7 +78,8 @@ export default function MiroFishFearIndexCard({
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [fetchedCandidates, setFetchedCandidates] = useState<MiroFishAlphaCandidate[]>([]);
-    const [scannerLoading, setScannerLoading] = useState(candidates === undefined);
+    const hasProvidedCandidates = (candidates?.length ?? 0) > 0;
+    const [scannerLoading, setScannerLoading] = useState(!hasProvidedCandidates);
 
     useEffect(() => {
         let active = true;
@@ -103,7 +104,7 @@ export default function MiroFishFearIndexCard({
     }, []);
 
     useEffect(() => {
-        if (candidates !== undefined) {
+        if (hasProvidedCandidates) {
             setScannerLoading(false);
             return;
         }
@@ -130,7 +131,7 @@ export default function MiroFishFearIndexCard({
         return () => {
             active = false;
         };
-    }, [candidates]);
+    }, [hasProvidedCandidates]);
 
     const score = typeof data?.score === 'number' ? Math.round(data.score) : null;
     const level = data?.level_label || data?.level || (loading ? '불러오는 중' : '확인 필요');
@@ -139,8 +140,8 @@ export default function MiroFishFearIndexCard({
     const coverage = typeof data?.coverage_pct === 'number' ? `${data.coverage_pct.toFixed(0)}%` : '--';
     const componentCount = useMemo(() => data?.components?.filter((item) => item.status === 'ok').length ?? 0, [data]);
     const topCandidates = useMemo(
-        () => [...(candidates ?? fetchedCandidates)].sort((left, right) => left.rank - right.rank).slice(0, 5),
-        [candidates, fetchedCandidates],
+        () => [...(hasProvidedCandidates ? (candidates ?? []) : fetchedCandidates)].sort((left, right) => left.rank - right.rank).slice(0, 5),
+        [candidates, fetchedCandidates, hasProvidedCandidates],
     );
     const isCandidatesLoading = candidatesLoading || scannerLoading;
     const compact = variant === 'compact';

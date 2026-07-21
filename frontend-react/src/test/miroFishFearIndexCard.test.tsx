@@ -58,4 +58,14 @@ describe('MiroFishFearIndexCard', () => {
         expect(within(list).getAllByText('관망')).toHaveLength(4);
         expect(within(list).getByText('10,000원')).toBeTruthy();
     });
+
+    it('fetches the latest candidates when the parent supplies an empty list', async () => {
+        render(<MiroFishFearIndexCard candidates={[]} candidatesLoading={false} />);
+
+        const list = await screen.findByTestId('fear-index-top-candidates');
+        await waitFor(() => expect(within(list).getAllByRole('listitem')).toHaveLength(5));
+
+        expect(mockApi.getLatestScannerRun).toHaveBeenCalledTimes(1);
+        expect(within(list).queryByText('표시할 최신 검출 종목이 없습니다.')).toBeNull();
+    });
 });
