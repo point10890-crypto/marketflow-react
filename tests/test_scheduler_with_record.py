@@ -411,6 +411,7 @@ def test_mirofish_workflow_monitor_starts_on_new_events():
     assert payload["actions"] == scheduler.Config.MIROFISH_WORKFLOW_ACTIONS
     assert payload["max_events"] == scheduler.Config.MIROFISH_WORKFLOW_BATCH_SIZE
     assert payload["top_n"] == scheduler.Config.MIROFISH_WORKFLOW_TOP_N
+    assert payload["require_buy"] == scheduler.Config.MIROFISH_WORKFLOW_REQUIRE_BUY
     assert payload["allow_stale_sources"] == scheduler.Config.MIROFISH_WORKFLOW_ALLOW_STALE_SOURCES
     assert payload["sync"] is True
     assert payload["commit_event_state"] is False

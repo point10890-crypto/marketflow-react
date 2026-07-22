@@ -414,6 +414,10 @@ class Config:
     MIROFISH_WORKFLOW_TOP_N = int(os.environ.get('MIROFISH_WORKFLOW_TOP_N', '3'))
     MIROFISH_WORKFLOW_MAX_PARALLEL = int(os.environ.get('MIROFISH_WORKFLOW_MAX_PARALLEL', '3'))
     MIROFISH_WORKFLOW_ALLOW_STALE_SOURCES = os.environ.get('MIROFISH_WORKFLOW_ALLOW_STALE_SOURCES', 'false').lower() == 'true'
+    # The automated dashboard must surface a complete ranked TOP N with each
+    # CIO opinion (BUY/HOLD/SELL).  Alert quality remains visible in the
+    # workflow summary instead of silently shrinking TOP 3 to BUY-only rows.
+    MIROFISH_WORKFLOW_REQUIRE_BUY = os.environ.get('MIROFISH_WORKFLOW_REQUIRE_BUY', 'false').lower() == 'true'
     MIROFISH_WORKFLOW_TELEGRAM_ENABLED = os.environ.get('MIROFISH_WORKFLOW_TELEGRAM_ENABLED', 'true').lower() == 'true'
     MIROFISH_WORKFLOW_TELEGRAM_CHANNEL = os.environ.get('MIROFISH_WORKFLOW_TELEGRAM_CHANNEL', 'false').lower() == 'true'
     CRYPTO_TIMES = ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00']  # 매 4시간
@@ -1060,6 +1064,7 @@ def run_mirofish_workflow_monitor() -> bool:
             'max_events': Config.MIROFISH_WORKFLOW_BATCH_SIZE,
             'agent_count': Config.MIROFISH_WORKFLOW_AGENT_COUNT,
             'top_n': Config.MIROFISH_WORKFLOW_TOP_N,
+            'require_buy': Config.MIROFISH_WORKFLOW_REQUIRE_BUY,
             'max_parallel': Config.MIROFISH_WORKFLOW_MAX_PARALLEL,
             'allow_stale_sources': Config.MIROFISH_WORKFLOW_ALLOW_STALE_SOURCES,
             'mode': 'full',
