@@ -272,6 +272,50 @@ def test_workflow_defaults_to_five_event_batch_and_top3(tmp_path, monkeypatch):
     assert result['filters']['top_n'] == 3
 
 
+def test_workflow_backfills_single_event_but_commits_only_trigger(tmp_path, monkeypatch):
+    candidates = [
+        _candidate(f'00000{index}', f'Alpha {index}', 90 - index, 20 + index, index)
+        for index in range(1, 6)
+    ]
+    scanner_result = _scanner_result(candidates)
+    scanner_result['events'] = scanner_result['events'][:1]
+    scanner_result['new_event_count'] = 1
+
+    monkeypatch.setattr(workflow, 'WORKFLOWS_ROOT', str(tmp_path / 'workflows'))
+    monkeypatch.setattr(workflow, 'WORKFLOW_STATE_ROOT', str(tmp_path / 'workflows' / '_state'))
+    monkeypatch.setattr(
+        workflow.alpha_scanner,
+        'run_scanner_alert_check',
+        lambda *args, **kwargs: scanner_result,
+    )
+    committed = []
+    monkeypatch.setattr(
+        workflow.alpha_scanner,
+        'commit_scanner_alert_events',
+        lambda result: committed.append(result) or {'sent_event_count': len(result['events'])},
+    )
+    monkeypatch.setattr(
+        workflow,
+        '_create_analysis_run',
+        lambda candidate, agent_count, mode: _analysis_run(candidate, action='BUY', confidence=70),
+    )
+
+    result = workflow.start_workflow_from_scanner_events(
+        {'limit': 20, 'top_n': 3, 'max_events': 5},
+        async_mode=False,
+    )
+
+    assert result['status'] == 'completed'
+    assert result['event_count'] == 1
+    assert result['analysis_candidate_count'] == 5
+    assert result['backfill_count'] == 4
+    assert len(result['analysis_runs']) == 5
+    assert len(result['top3']) == 3
+    assert [item['symbol'] for item in result['event_candidates']] == ['000001']
+    assert committed
+    assert [event['candidate']['symbol'] for event in committed[0]['events']] == ['000001']
+
+
 def test_workflow_returns_no_new_events_without_creating_batch(tmp_path, monkeypatch):
     monkeypatch.setattr(workflow, 'WORKFLOWS_ROOT', str(tmp_path / 'workflows'))
     monkeypatch.setattr(workflow, 'WORKFLOW_STATE_ROOT', str(tmp_path / 'workflows' / '_state'))

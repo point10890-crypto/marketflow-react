@@ -95,6 +95,7 @@ def start_workflow_from_scanner_events(
             'blocked_reason': None,
             'state_committed': False,
         }
+        event_candidates = list(candidates)
     else:
         scanner_result = alpha_scanner.run_scanner_alert_check(
             scanner_payload,
@@ -111,6 +112,22 @@ def start_workflow_from_scanner_events(
             for event in scanner_result.get('events') or []
             if isinstance(event, dict) and isinstance(event.get('candidate'), dict)
         ]
+        event_candidates = list(candidates)
+
+        # A single new event must still produce a useful TOP 3 decision.  The
+        # event remains the trigger, while the rest of the analysis batch is
+        # filled from the same scanner snapshot.  Only event_candidates are
+        # committed to the dedupe state after delivery (see
+        # commit_workflow_event_state), so backfilled candidates do not hide a
+        # future real event.
+        candidates = _backfill_analysis_candidates(
+            event_candidates,
+            scanner_result.get('run') or {},
+            min_alpha=min_alpha,
+            max_risk=max_risk,
+            actions=actions,
+            max_count=max_events,
+        )
 
     kalman_gate_result: dict[str, Any] | None = None
     if use_dual_kalman_gate and candidates:
@@ -127,6 +144,12 @@ def start_workflow_from_scanner_events(
             kalman_gate_result,
             drop_blocked=True,
         )
+        surviving_keys = {_candidate_event_key(candidate) for candidate in candidates}
+        event_candidates = [
+            candidate
+            for candidate in event_candidates
+            if _candidate_event_key(candidate) in surviving_keys
+        ]
 
     if dry_run:
         return {
@@ -134,6 +157,8 @@ def start_workflow_from_scanner_events(
             'status': 'dry_run',
             'scanner_run_id': (scanner_result.get('run') or {}).get('id'),
             'candidate_count': len(candidates),
+            'new_event_count': len(event_candidates),
+            'backfill_count': max(0, len(candidates) - len(event_candidates)),
             'candidates': [_candidate_summary(candidate) for candidate in candidates],
             'alert_blocked': bool(scanner_result.get('alert_blocked')),
             'blocked_reason': scanner_result.get('blocked_reason'),
@@ -150,7 +175,7 @@ def start_workflow_from_scanner_events(
             'blocked_reason': scanner_result.get('blocked_reason'),
         }
 
-    if not candidates:
+    if not event_candidates:
         return {
             'ok': True,
             'status': 'kalman_blocked_all' if kalman_gate_result else 'no_new_events',
@@ -163,6 +188,7 @@ def start_workflow_from_scanner_events(
     workflow = _create_workflow_record(
         scanner_result=scanner_result,
         candidates=candidates,
+        event_candidates=event_candidates,
         agent_count=agent_count,
         top_n=top_n,
         max_parallel=max_parallel,
@@ -585,9 +611,14 @@ def commit_workflow_event_state(
     record = read_workflow(workflow) if isinstance(workflow, str) else workflow
     if not isinstance(record, dict):
         raise ValueError('workflow not found')
+    candidate_source = record.get('event_candidates')
+    if not isinstance(candidate_source, list):
+        # Backward compatibility for workflows created before trigger events
+        # were separated from analysis-batch backfills.
+        candidate_source = record.get('candidates') or []
     candidates = [
         candidate
-        for candidate in (record.get('candidates') or [])
+        for candidate in candidate_source
         if isinstance(candidate, dict)
     ]
     base_result = {
@@ -1614,6 +1645,7 @@ def _create_workflow_record(
     *,
     scanner_result: dict[str, Any],
     candidates: list[dict[str, Any]],
+    event_candidates: list[dict[str, Any]],
     agent_count: int,
     top_n: int,
     max_parallel: int,
@@ -1639,7 +1671,10 @@ def _create_workflow_record(
         'top_n': top_n,
         'max_parallel': max_parallel,
         'filters': filters,
-        'event_count': len(candidates),
+        'event_count': len(event_candidates),
+        'analysis_candidate_count': len(candidates),
+        'backfill_count': max(0, len(candidates) - len(event_candidates)),
+        'event_candidates': [_candidate_summary(candidate) for candidate in event_candidates],
         'candidates': [_candidate_summary(candidate) for candidate in candidates],
         'analysis_runs': [],
         'top3': [],
@@ -1678,8 +1713,53 @@ def _eligible_candidates(
     return candidates[:max_count]
 
 
+def _backfill_analysis_candidates(
+    event_candidates: list[dict[str, Any]],
+    scanner_run: dict[str, Any],
+    *,
+    min_alpha: float,
+    max_risk: float,
+    actions: tuple[str, ...],
+    max_count: int,
+) -> list[dict[str, Any]]:
+    """Fill a triggered workflow batch from the same replay-safe scan.
+
+    New events stay first so the triggering symbol is always analyzed.  The
+    remaining slots use the scanner's existing rank order and never introduce
+    a candidate that fails the workflow thresholds.
+    """
+    selected = list(event_candidates[:max_count])
+    seen = {_candidate_event_key(candidate) for candidate in selected}
+    if len(selected) >= max_count:
+        return selected
+
+    eligible = _eligible_candidates(
+        scanner_run,
+        min_alpha=min_alpha,
+        max_risk=max_risk,
+        actions=actions,
+        max_count=max_count,
+    )
+    for candidate in eligible:
+        key = _candidate_event_key(candidate)
+        if key in seen:
+            continue
+        selected.append(candidate)
+        seen.add(key)
+        if len(selected) >= max_count:
+            break
+    return selected
+
+
+def _candidate_event_key(candidate: dict[str, Any]) -> str:
+    return (
+        f"{candidate.get('symbol')}:{candidate.get('action')}:"
+        f"{(candidate.get('price') or {}).get('date')}"
+    )
+
+
 def _candidate_event(candidate: dict[str, Any]) -> dict[str, Any]:
-    event_key = f"{candidate.get('symbol')}:{candidate.get('action')}:{(candidate.get('price') or {}).get('date')}"
+    event_key = _candidate_event_key(candidate)
     return {
         'event_key': event_key,
         'key': event_key,
@@ -1752,6 +1832,8 @@ def _workflow_summary(workflow: dict[str, Any] | None) -> dict[str, Any] | None:
         'scanner_freshness': workflow.get('scanner_freshness'),
         'scanner_candidate_count': workflow.get('scanner_candidate_count'),
         'event_count': workflow.get('event_count'),
+        'analysis_candidate_count': workflow.get('analysis_candidate_count'),
+        'backfill_count': workflow.get('backfill_count'),
         'analyzed_count': len(workflow.get('analysis_runs') or []),
         'top3': workflow.get('top3') or [],
         'summary': workflow.get('summary') or {},
