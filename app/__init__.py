@@ -425,6 +425,19 @@ def create_app(config=None):
     else:
         print("[INFO] Subscription expiry workers disabled for this app instance")
 
+    # ── manual-stock-analysis 스크래퍼 루프 (프로세스당 1회 명시적 기동) ──
+    # 상태 GET 폴링이 스크랩을 암묵 실행하는 것은 계속 금지(MANUAL_STOCK_ANALYSIS_AUTO_LOOP=0).
+    # 대신 여기서 명시적으로 한 번만 띄운다. 이 트리거가 없으면 루프를 시작하는 주체가
+    # 아무도 없어 대시보드가 마지막 회차에서 그대로 멈춘다(2026-07-15 사고).
+    # 기본 off — MANUAL_STOCK_ANALYSIS_LOOP_AUTOSTART=true 인 호스트에서만 동작.
+    if not app.config.get('TESTING'):
+        try:
+            from app.services import manual_stock_analysis as _manual_scraper
+            if _manual_scraper.start_scraper_loop_on_boot():
+                print("[OK] Manual stock analysis scraper loop scheduled at boot")
+        except Exception as e:
+            print(f"[WARN] Manual scraper boot autostart failed: {e}")
+
     if not background_workers_enabled:
         print("[INFO] Background workers disabled for this app instance")
         return app

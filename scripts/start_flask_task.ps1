@@ -32,6 +32,10 @@ $env:MANUAL_STOCK_ANALYSIS_AUTO_IMPORT = "0"
 # Status polling must not launch thousands of Selenium scrapes implicitly.
 # Operators can still start a deliberate run through the POST start endpoint.
 $env:MANUAL_STOCK_ANALYSIS_AUTO_LOOP = "0"
+# ...but the loop is the ONLY producer of manual-stock-analysis runs, so with
+# nothing starting it the dashboard silently froze at the 2026-07-15 run. Start it
+# once per Flask process instead: deliberate, not request-triggered.
+$env:MANUAL_STOCK_ANALYSIS_LOOP_AUTOSTART = "true"
 
 $existing = Get-CimInstance Win32_Process | Where-Object {
     $_.CommandLine -like "*flask_app.py*"

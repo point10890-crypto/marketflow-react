@@ -68,6 +68,15 @@ AUTO_LOOP_JITTER_SEC = max(0, min(_env_int("MANUAL_STOCK_ANALYSIS_LOOP_JITTER_SE
 AUTO_LOOP_TIMEOUT_SEC = max(3, min(_env_int("MANUAL_STOCK_ANALYSIS_LOOP_TIMEOUT_SEC", 10), 30))
 AUTO_LOOP_ERROR_BACKOFF_SEC = max(5, min(_env_int("MANUAL_STOCK_ANALYSIS_LOOP_ERROR_BACKOFF_SEC", 30), 3600))
 
+# --- Deliberate per-process loop start (2026-07-25) ---
+# AUTO_LOOP_ENABLED only governs the *request-triggered* start. Production keeps it
+# off so a status GET can never launch thousands of Selenium scrapes -- but that left
+# the loop with no trigger at all, freezing the dashboard at the last run for 10 days.
+# This flag is the replacement trigger: one deliberate start per Flask process.
+LOOP_BOOT_AUTOSTART = _env_bool("MANUAL_STOCK_ANALYSIS_LOOP_AUTOSTART", False)
+# Delay before the boot start so app startup (port bind, blueprint warmup) finishes first.
+LOOP_BOOT_DELAY_SEC = max(0, min(_env_int("MANUAL_STOCK_ANALYSIS_LOOP_AUTOSTART_DELAY_SEC", 45), 3600))
+
 # --- Cloudflare block resilience (2026-07-08) ---
 # Consecutive block responses that trip the circuit breaker and abort the current
 # cycle (0 disables). Prevents the loop from hammering an already-blocked IP for a
@@ -469,13 +478,26 @@ def _extract_investing_snapshot_fields(text: str) -> dict[str, str]:
     }
 
 
+""" Bodies that are nothing but an HTTP status code — Investing.com's rate-limit
+response. Matched exactly, so a status code inside real content is not a block. """
+_STATUS_ONLY_BLOCK_CODES = {"403", "429", "502", "503", "504"}
+
+
 def _blocked_page_reason(text: str) -> str:
     visible_text = _clean_text(text).lower()
     if not visible_text:
         return ""
+    # Investing.com throttles with a body that is *only* the status code ("403").
+    # Missing it made the row look like an empty verdict: retryable, so the loop
+    # kept hammering a blocked IP and the circuit breaker never opened, which is
+    # how full cycles fell from 100% to 0.2% on 2026-07-15.
+    if re.sub(r"\s+", "", visible_text) in _STATUS_ONLY_BLOCK_CODES:
+        return f"http {re.sub(r'[^0-9]', '', visible_text)}"
     blocked_markers = (
         "access denied",
         "403 forbidden",
+        "too many requests",
+        "rate limit",
         "verify you are human",
         "are you a robot",
         "just a moment",
@@ -1378,6 +1400,39 @@ def ensure_scraper_loop_started() -> dict[str, Any]:
         timeout_sec=AUTO_LOOP_TIMEOUT_SEC,
         xpath=DEFAULT_INVESTING_XPATH,
     )
+
+
+def start_scraper_loop_on_boot() -> bool:
+    """Start the scraper loop once per process, off the caller's thread.
+
+    Unlike :func:`ensure_scraper_loop_started` (driven by a status GET) this is a
+    deliberate operator-level start, so it runs even when request auto-start is
+    disabled. Returns True when a starter thread was spawned. Never raises and
+    never blocks: a scraper failure must not take the API process down with it.
+    """
+    if not LOOP_BOOT_AUTOSTART:
+        return False
+
+    def _boot() -> None:
+        # Waiting on _LOOP_STOP (not sleep) lets an explicit stop cancel the pending start.
+        if _LOOP_STOP.wait(LOOP_BOOT_DELAY_SEC):
+            return
+        try:
+            start_scraper_loop(
+                max_rows=AUTO_LOOP_MAX_ROWS,
+                interval_sec=AUTO_LOOP_INTERVAL_SEC,
+                timeout_sec=AUTO_LOOP_TIMEOUT_SEC,
+                xpath=DEFAULT_INVESTING_XPATH,
+            )
+        except Exception as exc:
+            _loop_set(last_error=f"boot autostart failed: {type(exc).__name__}: {str(exc)[:180]}")
+
+    threading.Thread(
+        target=_boot,
+        name="manual-stock-analysis-boot-start",
+        daemon=True,
+    ).start()
+    return True
 
 
 def get_scraper_loop_status(*, auto_start: bool = False) -> dict[str, Any]:
