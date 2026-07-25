@@ -1435,7 +1435,30 @@ def start_scraper_loop_on_boot() -> bool:
     return True
 
 
+def latest_run_data_at() -> str:
+    """Wall-clock time the newest run file last received data ("" when none).
+
+    Deliberately file mtime (a stat, no JSON parsing): this rides on the 1s status
+    poll, while parsing every run JSON would move ~85MB per request. Disk-based on
+    purpose too -- in-memory loop flags reset on restart, which is how the
+    2026-07-15 freeze stayed invisible for 10 days.
+    """
+    try:
+        newest = max((path.stat().st_mtime for path in RUNS_DIR.glob("*.json")), default=0.0)
+    except Exception:
+        return ""
+    if not newest:
+        return ""
+    return datetime.fromtimestamp(newest).strftime("%Y-%m-%d %H:%M:%S")
+
+
 def get_scraper_loop_status(*, auto_start: bool = False) -> dict[str, Any]:
+    status = dict(_scraper_loop_status(auto_start=auto_start))
+    status["last_data_at"] = latest_run_data_at()
+    return status
+
+
+def _scraper_loop_status(*, auto_start: bool = False) -> dict[str, Any]:
     if auto_start:
         snapshot = ensure_scraper_loop_started()
         if snapshot.get("running"):

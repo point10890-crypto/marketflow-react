@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { API_BASE, authHeaders, fetchWithTimeout } from '@/lib/api';
+import { getRunFreshness, type FreshnessLevel } from '@/lib/dataFreshness';
 
 interface ManualRunSummary {
     run_id: string;
@@ -105,6 +106,8 @@ interface ScraperLoopStatus {
     last_finished_at: string;
     next_run_at: string;
     last_error: string;
+    /** Newest run file's write time — the disk-truth liveness stamp, polled every 1-2.5s. */
+    last_data_at?: string;
 }
 
 const DEFAULT_FILTERS = ['적극 매수', '매수', '중립', '매도', '적극 매도', '분석중', '오류'];
@@ -176,6 +179,15 @@ function formatRunTimestamp(value?: string) {
     if (!value) return '--';
     return value.replace('T', ' ').slice(0, 16);
 }
+
+// Only standard Tailwind opacity steps (5/10/20/30/40/50): in-between values like
+// /12 or /35 are not generated here and silently render with no background.
+const FRESHNESS_STYLES: Record<FreshnessLevel, { pill: string; icon: string }> = {
+    fresh: { pill: 'border-emerald-400/30 bg-emerald-500/10 text-emerald-200', icon: 'fa-circle-check' },
+    warn: { pill: 'border-amber-400/40 bg-amber-500/20 text-amber-100', icon: 'fa-triangle-exclamation' },
+    stale: { pill: 'border-rose-400/50 bg-rose-500/20 text-rose-100 animate-pulse', icon: 'fa-triangle-exclamation' },
+    unknown: { pill: 'border-white/10 bg-white/5 text-slate-400', icon: 'fa-circle-question' },
+};
 
 function runStatusLabel(status?: string) {
     if (status === 'running') return '진행중';
@@ -416,6 +428,17 @@ export default function ManualStockAnalysisPage() {
     const loopProgress = loopTotal > 0 ? Math.min(100, Math.round((loopProcessed / loopTotal) * 100)) : 0;
     const isLoopRunning = !!loopStatus?.running;
     const isLiveRunSelected = shouldStreamSelectedRun;
+    // Liveness comes from when data last hit disk, not the loop's in-memory flag:
+    // the 2026-07-15 freeze showed the flag can look idle while nobody notices.
+    // Prefer the polled stamp — the runs list is only fetched on mount, so on its
+    // own it would keep showing "stale" after the pipeline recovered.
+    const latestRunUpdatedAt = useMemo(
+        () => runs.reduce((latest, run) => (run.updated_at && run.updated_at > latest ? run.updated_at : latest), ''),
+        [runs],
+    );
+    const lastDataAt = loopStatus?.last_data_at || latestRunUpdatedAt;
+    const freshness = getRunFreshness(lastDataAt);
+    const freshnessStyle = FRESHNESS_STYLES[freshness.level];
     const runHistory = runs.slice(0, 18);
     const stockHistoryItems = stockHistory?.items || [];
     const showStockHistory = !!query.trim();
@@ -513,6 +536,13 @@ export default function ManualStockAnalysisPage() {
                                     </span>
                                     <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-0.5 text-[10px] font-semibold text-slate-400">
                                         {formatSeconds(loopStatus?.interval_sec ?? 0)} 간격
+                                    </span>
+                                    <span
+                                        title={lastDataAt ? `마지막 데이터 갱신: ${lastDataAt}` : '갱신 기록 없음'}
+                                        className={`flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-bold ${freshnessStyle.pill}`}
+                                    >
+                                        <i className={`fas ${freshnessStyle.icon} text-[9px]`} />
+                                        {freshness.level === 'stale' ? `갱신 중단 · ${freshness.label}` : freshness.label}
                                     </span>
                                 </div>
                                 <div className="mt-1 truncate font-mono text-[11px] text-slate-500">
