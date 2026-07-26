@@ -11,9 +11,12 @@ export type FreshnessLevel = 'unknown' | 'fresh' | 'warn' | 'stale';
 
 /**
  * A quiet gap is normal: cycles wait up to ~15min between runs and a Cloudflare
- * block cool-off adds up to ~25min. 1h is comfortably past both.
+ * block cool-off is 45-56min. Measured 2026-07-26: retrying ~21min after a block
+ * failed 3 times out of 3 while ~45min succeeded 3 out of 3, so the cool-off was
+ * raised to match and this threshold has to clear it or normal recovery reads as
+ * a warning.
  */
-export const FRESHNESS_WARN_MS = 60 * 60 * 1000;
+export const FRESHNESS_WARN_MS = 90 * 60 * 1000;
 /** Nothing healthy stays silent for 6h -- at ~18s/row a cycle writes constantly. */
 export const FRESHNESS_STALE_MS = 6 * 60 * 60 * 1000;
 

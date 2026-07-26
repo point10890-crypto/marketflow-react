@@ -200,6 +200,9 @@ const FRESHNESS_STYLES: Record<FreshnessLevel, { pill: string; icon: string }> =
 
 function runStatusLabel(status?: string) {
     if (status === 'running') return '진행중';
+    // Cut short by a Cloudflare block and queued to continue after the cool-off --
+    // still the freshest data, so it stays selectable unlike a stale run.
+    if (status === 'blocked') return '차단 대기';
     if (status === 'error') return '오류';
     if (status === 'completed') return '완료';
     return status || '기록';
@@ -207,6 +210,7 @@ function runStatusLabel(status?: string) {
 
 function runStatusClass(status?: string) {
     if (status === 'running') return 'border-cyan-300/40 bg-cyan-400/15 text-cyan-100';
+    if (status === 'blocked') return 'border-amber-400/40 bg-amber-500/20 text-amber-100';
     if (status === 'error') return 'border-rose-300/40 bg-rose-500/15 text-rose-100';
     if (status === 'completed') return 'border-emerald-300/35 bg-emerald-500/12 text-emerald-100';
     return 'border-white/10 bg-white/5 text-slate-300';

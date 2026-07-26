@@ -43,10 +43,16 @@ describe('getRunFreshness', () => {
         expect(freshness.label).toBe('방금 갱신');
     });
 
-    it('stays fresh through a normal cycle gap and block cool-off (25min)', () => {
+    it('stays fresh through a normal cycle gap and block cool-off', () => {
         const freshness = getRunFreshness(minutesAgo(25), NOW);
         expect(freshness.level).toBe('fresh');
         expect(freshness.label).toBe('25분 전');
+    });
+
+    it('stays fresh through the longest legitimate block cool-off (56min)', () => {
+        // Cool-off is 45-56min; flagging that as a warning would cry wolf on every
+        // Cloudflare recovery.
+        expect(getRunFreshness(minutesAgo(56), NOW).level).toBe('fresh');
     });
 
     it('warns once the warn threshold is reached', () => {

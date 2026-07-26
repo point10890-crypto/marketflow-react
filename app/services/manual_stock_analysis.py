@@ -84,7 +84,12 @@ LOOP_BOOT_DELAY_SEC = max(0, min(_env_int("MANUAL_STOCK_ANALYSIS_LOOP_AUTOSTART_
 # whole 2,300-row cycle, which sustains the block and stops reputation recovery.
 BLOCK_CIRCUIT_THRESHOLD = max(0, min(_env_int("MANUAL_STOCK_ANALYSIS_BLOCK_CIRCUIT", 5), 500))
 # Long cool-off applied after the circuit opens, letting the IP reputation recover.
-BLOCK_BACKOFF_SEC = max(60, min(_env_int("MANUAL_STOCK_ANALYSIS_BLOCK_BACKOFF_SEC", 1200), 7200))
+# 2026-07-26 measurement: retrying 21-23min after a block failed 3 times out of 3
+# (every request blocked, cycle dead again in ~2.6min) while 44-49min succeeded 3
+# out of 3. The old 1200s default produced 20-25min with jitter -- squarely in the
+# failing band, so every cool-off was wasted and recovery only happened when a
+# second backoff happened to land near 45min. 2700s gives 45-56min.
+BLOCK_BACKOFF_SEC = max(60, min(_env_int("MANUAL_STOCK_ANALYSIS_BLOCK_BACKOFF_SEC", 2700), 7200))
 # Per-row retry attempts on retryable (block/timeout) errors, with exponential backoff.
 RETRY_MAX = max(0, min(_env_int("MANUAL_STOCK_ANALYSIS_RETRY_MAX", 2), 5))
 # Investing.com serves one page per browser session and 403s the rest, so reusing a
@@ -95,6 +100,22 @@ RETRY_BASE_SEC = max(0.5, min(_env_float("MANUAL_STOCK_ANALYSIS_RETRY_BASE_SEC",
 # On a collection gap, carry the most recent successful verdict forward (marked stale)
 # instead of overwriting a blue-chip's real verdict with "오류".
 CARRY_LAST_GOOD = _env_bool("MANUAL_STOCK_ANALYSIS_CARRY_LAST_GOOD", True)
+
+# --- Resume after a block cool-off (2026-07-26) ---
+# Investing.com cuts us off after roughly 1,400 successful page loads, so the
+# circuit breaker above trips around 60% of the 2,341-row universe (production:
+# 1,445 and 1,409 rows). The loop used to cool off and then start a *new* run from
+# rank 1, which at ~9s/row can never clear the same ceiling: the first ~1,400
+# stocks were re-scraped forever and the last ~900 never refreshed at all.
+# Resuming the same run instead lets one cycle walk the whole universe across
+# several block windows. Set to 0/false to restore the old start-from-scratch.
+RESUME_AFTER_BLOCK = _env_bool("MANUAL_STOCK_ANALYSIS_RESUME_AFTER_BLOCK", True)
+# How stale a half-finished run may be before the loop treats it as history rather
+# than work to pick up. Covers a cycle (~6.6h) plus a cool-off with margin.
+RESUME_ADOPT_MAX_AGE_HOURS = max(1, min(_env_int("MANUAL_STOCK_ANALYSIS_RESUME_MAX_AGE_HOURS", 12), 168))
+# Rows in these states are finished for this cycle and are never re-scraped on
+# resume. "scraping" is deliberately absent: that is the row the circuit died on.
+_TERMINAL_SCRAPE_STATES = {"completed", "error"}
 
 _SUCCESS_LABELS = {"적극 매수", "매수", "중립", "매도", "적극 매도"}
 
@@ -747,7 +768,12 @@ def _public_run_status(run: dict[str, Any], active_loop_run_id: str | None = Non
         return status
     run_id = _clean_text(run.get("run_id"))
     active_run_id = active_loop_run_id if active_loop_run_id is not None else _active_loop_run_id()
-    return "running" if active_run_id and active_run_id == run_id else "stale"
+    if active_run_id and active_run_id == run_id:
+        return "running"
+    # Cut short by a Cloudflare block and queued to continue -- not abandoned. This
+    # must not be "stale": the dashboard filters stale runs out of every selection
+    # path, which would hide the run holding the freshest data.
+    return "blocked" if run.get("resume_pending") else "stale"
 
 
 def _read_run(path: Path) -> dict[str, Any] | None:
@@ -793,6 +819,102 @@ def _build_last_good_lookup(exclude_run_id: str = "", depth: int = 2) -> dict[st
                     "cycle_label": _clean_text(run.get("cycle_label")) or _clean_text(run.get("title")),
                 }
     return lookup
+
+
+def mark_run_resume_pending(run_id: str) -> bool:
+    """Record on disk that ``run_id`` was cut short and should be continued.
+
+    The in-memory intent alone is not enough: a resumed cycle stays open for 7h+,
+    and restarting Flask is how we deploy, so an intent that lives only in the
+    worker's locals would routinely be lost mid-cool-off. Returns False (never
+    raises) when there is nothing to mark -- bookkeeping must not kill the loop.
+    """
+    try:
+        run = _load_resumable_run(run_id)
+        if run is None:
+            return False
+        run["resume_pending"] = True
+        run["blocked_at"] = _now()
+        _write_run(run)
+        return True
+    except Exception:
+        return False
+
+
+def _has_unfinished_rows(run: dict[str, Any]) -> bool:
+    return any(
+        _clean_text(record.get("scrape_state")) not in _TERMINAL_SCRAPE_STATES
+        for record in (run.get("records") or [])
+    )
+
+
+def _run_is_recent(run: dict[str, Any]) -> bool:
+    stamp = _clean_text(run.get("updated_at")) or _clean_text(run.get("created_at"))
+    try:
+        updated = datetime.strptime(stamp, "%Y-%m-%d %H:%M:%S")
+    except Exception:
+        return False
+    return (datetime.now() - updated) <= timedelta(hours=RESUME_ADOPT_MAX_AGE_HOURS)
+
+
+def find_resume_pending_run() -> dict[str, Any] | None:
+    """Newest interrupted run awaiting continuation, or None.
+
+    Consulted at loop start. Two ways in: the run was explicitly marked when the
+    Cloudflare circuit opened, or it was simply left mid-scrape when the process
+    died. Restarting is how we deploy and a cycle now spans ~6.6h, so most
+    interruptions land while scraping rather than during the 45min cool-off --
+    both must be picked up or every deploy discards hours of collection.
+    Anything older than RESUME_ADOPT_MAX_AGE_HOURS is history, not work in flight.
+    """
+    if not RESUME_AFTER_BLOCK:
+        return None
+    try:
+        for path in _run_files_newest_first():
+            run = _read_run(path)
+            if not run:
+                continue
+            if _clean_text(run.get("status")) != "running":
+                continue
+            if not run.get("resume_pending"):
+                if not _run_is_recent(run) or not _has_unfinished_rows(run):
+                    continue
+            return {
+                "run_id": _clean_text(run.get("run_id")),
+                "cycle_date": _clean_text(run.get("cycle_date")),
+                "cycle_number": run.get("cycle_number"),
+                "cycle_label": _clean_text(run.get("cycle_label")),
+                "cycle_started_at": _clean_text(run.get("created_at")),
+            }
+    except Exception:
+        return None
+    return None
+
+
+def _load_resumable_run(run_id: str) -> dict[str, Any] | None:
+    """Return the persisted run for ``run_id`` when it can be continued in place.
+
+    Used after a Cloudflare cool-off so the next pass picks up the rows the block
+    interrupted instead of restarting the cycle from rank 1. Returns None (caller
+    falls back to a fresh build) whenever the run is missing or has no records.
+    """
+    clean_run_id = _clean_text(run_id)
+    if not clean_run_id:
+        return None
+    ensure_storage()
+    try:
+        path = _run_path(clean_run_id)
+    except Exception:
+        return None
+    if not path.is_file():
+        return None
+    run = _read_run(path)
+    if not run:
+        return None
+    records = run.get("records")
+    if not isinstance(records, list) or not records:
+        return None
+    return run
 
 
 def _next_cycle_number_for_date(cycle_date: str) -> int:
@@ -1080,6 +1202,10 @@ def _persist_scrape_run(run: dict[str, Any], *, records: list[dict[str, Any]], s
     run["summary"] = _summary(records)
     run["updated_at"] = _now()
     run["status"] = status
+    if status == "completed":
+        # The cycle is finished, so nothing should adopt it again on the next boot.
+        run.pop("resume_pending", None)
+        run.pop("blocked_at", None)
     return _write_run(run)
 
 
@@ -1095,38 +1221,58 @@ def scrape_source_run(
     cycle_date: str = "",
     cycle_number: int | None = None,
     cycle_label: str = "",
+    resume: bool = False,
 ) -> dict[str, Any]:
     """Run the legacy Investing.com-style scraper and persist a manual run.
 
     This is synchronous and intentionally capped because it opens a browser and
     talks to a third-party web page.  Large all-market batches should be moved
     to a background worker before production use.
+
+    ``resume=True`` continues the run already persisted under ``run_id`` instead
+    of rebuilding it from the source workbook: rows already in a terminal state
+    are kept as-is and skipped, and only the unfinished tail is scraped. This is
+    how the loop survives the site's ~1,400-page-per-IP ceiling without losing
+    the ~60% of the universe it already collected.
     """
-    source, source_records = _read_source_records(pending=True)
-    source_record_count = len(source_records)
-    safe_max_rows = _requested_record_count(int(max_rows or 0), source_record_count)
     timeout_sec = max(3, min(int(timeout_sec or 10), 30))
-    created_at = _now()
-    fingerprint = hashlib.sha1(f"{source.resolve()}:{created_at}:{safe_max_rows}".encode("utf-8", "ignore")).hexdigest()[:16]
-    current_run_id = run_id or f"manual_scrape_{fingerprint}"
-    records = source_records[:safe_max_rows]
-    for record in records:
-        record["scrape_state"] = "pending"
-        record["analyzed_at"] = ""
-    run = _build_scrape_run(
-        run_id=current_run_id,
-        source=source,
-        records=records,
-        source_record_count=source_record_count,
-        xpath=xpath,
-        max_rows=safe_max_rows,
-        timeout_sec=timeout_sec,
-        status="running",
-        created_at=created_at,
-        cycle_date=cycle_date,
-        cycle_number=cycle_number,
-        cycle_label=cycle_label,
-    )
+    resumed_run = _load_resumable_run(run_id or "") if (resume and RESUME_AFTER_BLOCK) else None
+
+    if resumed_run is not None:
+        run = resumed_run
+        # The persisted list is the WHOLE universe, terminal rows included, so
+        # progress/record_count/summary stay whole-universe (1450/2341, not 50/900).
+        records = list(run.get("records") or [])
+        current_run_id = _clean_text(run.get("run_id")) or str(run_id)
+        created_at = _clean_text(run.get("created_at")) or _now()
+        source_record_count = safe_int(run.get("source_record_count"), len(records))
+        run["status"] = "running"
+        run["updated_at"] = _now()
+    else:
+        source, source_records = _read_source_records(pending=True)
+        source_record_count = len(source_records)
+        safe_max_rows = _requested_record_count(int(max_rows or 0), source_record_count)
+        created_at = _now()
+        fingerprint = hashlib.sha1(f"{source.resolve()}:{created_at}:{safe_max_rows}".encode("utf-8", "ignore")).hexdigest()[:16]
+        current_run_id = run_id or f"manual_scrape_{fingerprint}"
+        records = source_records[:safe_max_rows]
+        for record in records:
+            record["scrape_state"] = "pending"
+            record["analyzed_at"] = ""
+        run = _build_scrape_run(
+            run_id=current_run_id,
+            source=source,
+            records=records,
+            source_record_count=source_record_count,
+            xpath=xpath,
+            max_rows=safe_max_rows,
+            timeout_sec=timeout_sec,
+            status="running",
+            created_at=created_at,
+            cycle_date=cycle_date,
+            cycle_number=cycle_number,
+            cycle_label=cycle_label,
+        )
     if persist_progress:
         _write_run(run)
 
@@ -1141,6 +1287,11 @@ def scrape_source_run(
         pages_on_driver = 0
         total = len(records)
         for index, record in enumerate(records, start=1):
+            # Resumed cycle: rows already settled before the block are not touched
+            # again. ``index`` still counts over the full list, so the dashboard
+            # keeps showing whole-universe position rather than restarting at 1.
+            if resumed_run is not None and _clean_text(record.get("scrape_state")) in _TERMINAL_SCRAPE_STATES:
+                continue
             # Recycle before the request, not after a failure: the site 403s every
             # navigation after the first in a session, so a reused driver would burn
             # an attempt and a retry backoff to reach the same place.
@@ -1283,13 +1434,27 @@ def _scraper_loop_worker(
     timeout_sec: int,
     xpath: str,
 ) -> None:
+    # Set when a cycle was cut short by the Cloudflare circuit. The next iteration
+    # then continues THAT run (same run_id/회차) instead of starting over at rank 1,
+    # which is the only way to get past the site's ~1,400-page-per-IP ceiling.
+    # Seeded from disk so a restart during a cool-off (which is how we deploy)
+    # continues the interrupted cycle instead of abandoning its ~1,400 rows.
+    pending_resume: dict[str, Any] | None = find_resume_pending_run()
     while not _LOOP_STOP.is_set():
         started_at = _now()
-        cycle_date = datetime.now().strftime("%Y-%m-%d")
-        cycle_number = _next_cycle_number_for_date(cycle_date)
-        cycle_label = f"{cycle_date} - {cycle_number}회차"
-        live_run_hash = hashlib.sha1(f"{started_at}:{max_rows}:{time.time()}".encode("utf-8", "ignore")).hexdigest()[:12]
-        live_run_id = f"manual_scrape_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{live_run_hash}"
+        if pending_resume is not None:
+            cycle_date = str(pending_resume.get("cycle_date") or "")
+            cycle_number = pending_resume.get("cycle_number")
+            cycle_label = str(pending_resume.get("cycle_label") or "")
+            live_run_id = str(pending_resume.get("run_id") or "")
+            cycle_started_at = str(pending_resume.get("cycle_started_at") or started_at)
+        else:
+            cycle_date = datetime.now().strftime("%Y-%m-%d")
+            cycle_number = _next_cycle_number_for_date(cycle_date)
+            cycle_label = f"{cycle_date} - {cycle_number}회차"
+            live_run_hash = hashlib.sha1(f"{started_at}:{max_rows}:{time.time()}".encode("utf-8", "ignore")).hexdigest()[:12]
+            live_run_id = f"manual_scrape_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{live_run_hash}"
+            cycle_started_at = started_at
         try:
             source, source_records = _read_source_records(pending=True)
             source_record_count = len(source_records)
@@ -1336,7 +1501,7 @@ def _scraper_loop_worker(
             last_run_id=live_run_id,
             last_record_count=0,
             last_started_at=started_at,
-            cycle_started_at=started_at,
+            cycle_started_at=cycle_started_at,
             current_cycle_label=cycle_label,
             next_run_at="",
             last_error="",
@@ -1353,6 +1518,10 @@ def _scraper_loop_worker(
                 current_result=record.get("result") or record.get("raw_result") or "",
             )
 
+        resume_this_cycle = pending_resume is not None
+        # Consumed here (not at loop top) so a source-read failure that `continue`s
+        # above does not silently drop the pending resume.
+        pending_resume = None
         try:
             run = scrape_source_run(
                 max_rows=max_rows,
@@ -1364,6 +1533,7 @@ def _scraper_loop_worker(
                 cycle_date=cycle_date,
                 cycle_number=cycle_number,
                 cycle_label=cycle_label,
+                resume=resume_this_cycle,
             )
             with _LOOP_LOCK:
                 iterations = int(_LOOP_STATE.get("iterations") or 0) + 1
@@ -1389,6 +1559,19 @@ def _scraper_loop_worker(
                 last_finished_at=_now(),
                 last_error=f"circuit open (Cloudflare): {str(exc)[:200]}",
             )
+            # Queue the SAME run for the post-cool-off pass. Without this the next
+            # cycle re-scraped rank 1 onward and never reached the last ~900 rows.
+            if RESUME_AFTER_BLOCK:
+                pending_resume = {
+                    "run_id": live_run_id,
+                    "cycle_date": cycle_date,
+                    "cycle_number": cycle_number,
+                    "cycle_label": cycle_label,
+                    "cycle_started_at": cycle_started_at,
+                }
+                # Mirror the intent onto the run file: the cool-off is 45-56min and
+                # a restart in that window would otherwise lose the whole cycle.
+                mark_run_resume_pending(live_run_id)
         except Exception as exc:
             with _LOOP_LOCK:
                 iterations = int(_LOOP_STATE.get("iterations") or 0) + 1
