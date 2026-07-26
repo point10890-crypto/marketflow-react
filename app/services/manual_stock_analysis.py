@@ -87,6 +87,10 @@ BLOCK_CIRCUIT_THRESHOLD = max(0, min(_env_int("MANUAL_STOCK_ANALYSIS_BLOCK_CIRCU
 BLOCK_BACKOFF_SEC = max(60, min(_env_int("MANUAL_STOCK_ANALYSIS_BLOCK_BACKOFF_SEC", 1200), 7200))
 # Per-row retry attempts on retryable (block/timeout) errors, with exponential backoff.
 RETRY_MAX = max(0, min(_env_int("MANUAL_STOCK_ANALYSIS_RETRY_MAX", 2), 5))
+# Investing.com serves one page per browser session and 403s the rest, so reusing a
+# driver made every row fail once and pay a backoff + relaunch (17s/row vs 5s).
+# Recycle up front instead. 0 disables recycling; raise it if the site relaxes.
+PAGES_PER_SESSION = max(0, min(_env_int("MANUAL_STOCK_ANALYSIS_PAGES_PER_SESSION", 1), 500))
 RETRY_BASE_SEC = max(0.5, min(_env_float("MANUAL_STOCK_ANALYSIS_RETRY_BASE_SEC", 5.0), 60.0))
 # On a collection gap, carry the most recent successful verdict forward (marked stale)
 # instead of overwriting a blue-chip's real verdict with "오류".
@@ -1121,10 +1125,18 @@ def scrape_source_run(
     consecutive_blocks = 0
     try:
         driver = _create_selenium_driver()
+        pages_on_driver = 0
         total = len(records)
         for index, record in enumerate(records, start=1):
+            # Recycle before the request, not after a failure: the site 403s every
+            # navigation after the first in a session, so a reused driver would burn
+            # an attempt and a retry backoff to reach the same place.
+            if driver is not None and PAGES_PER_SESSION and pages_on_driver >= PAGES_PER_SESSION:
+                _close_selenium_driver(driver)
+                driver = None
             if driver is None:
                 driver = _create_selenium_driver()
+                pages_on_driver = 0
             record["scrape_state"] = "scraping"
             record["analyzed_at"] = _now()
             if persist_progress:
@@ -1151,6 +1163,7 @@ def scrape_source_run(
                 attempt = 0
                 while True:
                     try:
+                        pages_on_driver += 1
                         scraped_fields = _scrape_page_fields(driver, url, xpath, timeout_sec=timeout_sec)
                         break
                     except Exception as scrape_exc:
@@ -1166,6 +1179,7 @@ def scrape_source_run(
                         backoff = _jittered(RETRY_BASE_SEC * (3 ** (attempt - 1)), RETRY_BASE_SEC)
                         time.sleep(min(backoff, 45.0))
                         driver = _create_selenium_driver()
+                        pages_on_driver = 0
                         retry_fallback = "retry_fresh_session"
                 scraped = scraped_fields.get("result", "")
                 if not scraped:
