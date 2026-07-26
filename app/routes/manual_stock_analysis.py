@@ -86,6 +86,17 @@ def stop_scraper_loop():
     return jsonify(service.stop_scraper_loop())
 
 
+@manual_stock_analysis_bp.route("/search-index", methods=["GET"])
+@pro_required
+def get_search_index():
+    """Stock/industry universe the search box filters locally for autocomplete."""
+    try:
+        return jsonify(service.build_search_index())
+    except FileNotFoundError as exc:
+        # No workbook on this host: the search box still works, just without hints.
+        return jsonify({"error": str(exc), "stocks": [], "industries": [], "count": 0}), 404
+
+
 @manual_stock_analysis_bp.route("/history", methods=["GET"])
 @pro_required
 def search_manual_stock_history():

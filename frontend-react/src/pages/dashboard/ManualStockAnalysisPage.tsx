@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { API_BASE, authHeaders, fetchWithTimeout } from '@/lib/api';
 import { getRunFreshness, type FreshnessLevel } from '@/lib/dataFreshness';
+import { buildSuggestions, type SearchIndex } from '@/lib/searchSuggestions';
 
 interface ManualRunSummary {
     run_id: string;
@@ -224,6 +225,9 @@ export default function ManualStockAnalysisPage() {
     const [selectedRunId, setSelectedRunId] = useState('');
     const [selectedResult, setSelectedResult] = useState('all');
     const [query, setQuery] = useState('');
+    const [searchIndex, setSearchIndex] = useState<SearchIndex | null>(null);
+    const [suggestOpen, setSuggestOpen] = useState(false);
+    const [suggestActive, setSuggestActive] = useState(0);
     const [detail, setDetail] = useState<ManualRunDetail | null>(null);
     const [stockHistory, setStockHistory] = useState<ManualStockHistory | null>(null);
     const [historyLoading, setHistoryLoading] = useState(false);
@@ -382,6 +386,24 @@ export default function ManualStockAnalysisPage() {
         return () => window.clearTimeout(id);
     }, [fetchRunDetail]);
 
+    // Fetched once: the whole universe (~2,300 stocks) so typing never hits the network.
+    useEffect(() => {
+        let cancelled = false;
+        (async () => {
+            try {
+                const res = await fetchWithTimeout(`${API_BASE}/api/manual-stock-analysis/search-index`, {
+                    headers: authHeaders(),
+                }, 15000);
+                if (!res.ok) return;
+                const data: SearchIndex = await res.json();
+                if (!cancelled) setSearchIndex(data);
+            } catch {
+                // Autocomplete is an assist, not a requirement -- the box still searches.
+            }
+        })();
+        return () => { cancelled = true; };
+    }, []);
+
     useEffect(() => {
         const cleanQuery = query.trim();
         if (!cleanQuery) {
@@ -438,6 +460,37 @@ export default function ManualStockAnalysisPage() {
     );
     const lastDataAt = loopStatus?.last_data_at || latestRunUpdatedAt;
     const freshness = getRunFreshness(lastDataAt);
+    const suggestions = useMemo(
+        () => (suggestOpen ? buildSuggestions(searchIndex, query) : []),
+        [query, searchIndex, suggestOpen],
+    );
+
+    const applySuggestion = useCallback((value: string) => {
+        setQuery(value);
+        setSuggestOpen(false);
+        setSuggestActive(0);
+    }, []);
+
+    const handleSearchKeyDown = useCallback((event: React.KeyboardEvent<HTMLInputElement>) => {
+        if (event.key === 'Escape') {
+            setSuggestOpen(false);
+            return;
+        }
+        if (!suggestions.length) return;
+        if (event.key === 'ArrowDown') {
+            event.preventDefault();
+            setSuggestActive((current) => (current + 1) % suggestions.length);
+        } else if (event.key === 'ArrowUp') {
+            event.preventDefault();
+            setSuggestActive((current) => (current - 1 + suggestions.length) % suggestions.length);
+        } else if (event.key === 'Enter') {
+            const picked = suggestions[suggestActive];
+            if (picked) {
+                event.preventDefault();
+                applySuggestion(picked.value);
+            }
+        }
+    }, [applySuggestion, suggestActive, suggestions]);
     const freshnessStyle = FRESHNESS_STYLES[freshness.level];
     const runHistory = runs.slice(0, 18);
     const stockHistoryItems = stockHistory?.items || [];
@@ -720,10 +773,61 @@ export default function ManualStockAnalysisPage() {
                             <i className="fas fa-magnifying-glass pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[12px] text-slate-500" />
                             <input
                                 value={query}
-                                onChange={(event) => setQuery(event.target.value)}
+                                onChange={(event) => {
+                                    setQuery(event.target.value);
+                                    setSuggestOpen(true);
+                                    setSuggestActive(0);
+                                }}
+                                onFocus={() => setSuggestOpen(true)}
+                                // Delayed so a click on a suggestion lands before the list closes.
+                                onBlur={() => window.setTimeout(() => setSuggestOpen(false), 120)}
+                                onKeyDown={handleSearchKeyDown}
                                 placeholder="종목명, 코드, 산업"
+                                autoComplete="off"
+                                role="combobox"
+                                aria-expanded={suggestions.length > 0}
+                                aria-controls="manual-search-suggestions"
                                 className="h-11 w-full rounded-xl border border-white/10 bg-black/30 pl-9 pr-4 text-sm font-semibold text-white outline-none transition placeholder:text-slate-600 focus:border-orange-400/50"
                             />
+                            {suggestions.length > 0 && (
+                                <ul
+                                    id="manual-search-suggestions"
+                                    role="listbox"
+                                    className="absolute left-0 right-0 top-[calc(100%+6px)] z-30 overflow-hidden rounded-xl border border-white/10 bg-[#141418] py-1 shadow-2xl shadow-black/60"
+                                >
+                                    {suggestions.map((suggestion, index) => (
+                                        <li key={`${suggestion.type}-${suggestion.value}`}>
+                                            <button
+                                                type="button"
+                                                role="option"
+                                                aria-selected={index === suggestActive}
+                                                onMouseEnter={() => setSuggestActive(index)}
+                                                onMouseDown={(event) => event.preventDefault()}
+                                                onClick={() => applySuggestion(suggestion.value)}
+                                                className={`flex w-full items-center gap-2.5 px-3 py-2 text-left transition ${
+                                                    index === suggestActive ? 'bg-white/[0.07]' : 'bg-transparent'
+                                                }`}
+                                            >
+                                                <span className={`shrink-0 rounded px-1.5 py-0.5 text-[9px] font-bold ${
+                                                    suggestion.type === 'stock'
+                                                        ? 'bg-orange-400/20 text-orange-200'
+                                                        : 'bg-sky-400/20 text-sky-200'
+                                                }`}>
+                                                    {suggestion.type === 'stock' ? '종목' : '산업'}
+                                                </span>
+                                                <span className="min-w-0 flex-1 truncate text-sm font-semibold text-white">
+                                                    {suggestion.label}
+                                                </span>
+                                                {suggestion.hint && (
+                                                    <span className="shrink-0 truncate font-mono text-[10px] text-slate-500">
+                                                        {suggestion.hint}
+                                                    </span>
+                                                )}
+                                            </button>
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
                         </div>
                     </label>
                 </div>

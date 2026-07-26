@@ -26,6 +26,7 @@ import pandas as pd
 
 from app.utils.atomic_json import write_json_atomic
 from app.utils.paths import DATA_DIR, TICKER_MAP_PATH
+from app.utils.safety import safe_int
 
 
 SERVICE_ROOT = Path(DATA_DIR) / "manual_stock_analysis"
@@ -1433,6 +1434,111 @@ def start_scraper_loop_on_boot() -> bool:
         daemon=True,
     ).start()
     return True
+
+
+_search_index_cache: dict[str, Any] = {}
+
+# Runs scanned newest-first when collecting industry names. A freshly started cycle
+# has no scraped rows yet, so we fall back through a few recent runs.
+_INDUSTRY_SCAN_LIMIT = 5
+# Industries drift slowly, and each scan parses ~1MB run files -- keying the cache on
+# run mtime instead would re-scan every few seconds during a live cycle.
+_INDUSTRY_CACHE_TTL_SEC = 600
+_industry_cache: dict[str, Any] = {}
+
+
+def _run_files_newest_first() -> list[Path]:
+    """Saved run files, newest first, skipping atomic-write temporaries."""
+    paths = [path for path in RUNS_DIR.glob("*.json") if not path.name.startswith(".")]
+    return sorted(paths, key=lambda path: path.stat().st_mtime, reverse=True)
+
+
+def _scraped_industries() -> list[dict[str, Any]]:
+    """Industry names as they appear on scraped rows, with stock counts.
+
+    Deliberately not from the source workbook: that stores English industries
+    ("Semiconductors") while scraping overwrites them with the Korean names the
+    run table filters on, so workbook values would suggest terms that match
+    nothing. Pending rows still hold the workbook value and are skipped.
+    """
+    now = time.time()
+    if _industry_cache and now - float(_industry_cache.get("at") or 0) < _INDUSTRY_CACHE_TTL_SEC:
+        return _industry_cache["data"]
+
+    industries = _scan_scraped_industries()
+    _industry_cache.update({"at": now, "data": industries})
+    return industries
+
+
+def _scan_scraped_industries() -> list[dict[str, Any]]:
+    for path in _run_files_newest_first()[:_INDUSTRY_SCAN_LIMIT]:
+        run = _read_run(path)
+        if not run:
+            continue
+        counts: dict[str, int] = {}
+        for record in run.get("records") or []:
+            if record.get("scrape_state") != "completed":
+                continue
+            industry = _clean_text(record.get("industry"))
+            if industry:
+                counts[industry] = counts.get(industry, 0) + 1
+        if counts:
+            return [{"name": name, "count": count} for name, count in sorted(counts.items())]
+    return []
+
+
+def build_search_index() -> dict[str, Any]:
+    """Stock/industry universe for search autocomplete.
+
+    Built from the scraping source workbook, not from run files: a live cycle
+    withholds rows it has not scraped yet, so a run-backed index would offer only
+    the handful of stocks already processed. Cached against the workbook
+    fingerprint since the file changes at most a few times a year.
+    """
+    source = _find_source_workbook()
+    # Fingerprint before parsing -- checking afterwards would still pay the read.
+    fingerprint = _file_fingerprint(source)
+    if _search_index_cache.get("fingerprint") == fingerprint:
+        # Only the workbook half is cached here: industries come from run files and
+        # carry their own (time-based) cache, so they must be re-attached each call.
+        return {
+            "stocks": _search_index_cache["stocks"],
+            "industries": _scraped_industries(),
+            "source_path": _search_index_cache["source_path"],
+            "count": len(_search_index_cache["stocks"]),
+        }
+    records = _read_excel_records(source, pending=True)[:MAX_SOURCE_ROWS]
+
+    stocks: list[dict[str, str]] = []
+    seen: set[tuple[str, str]] = set()
+    for record in records:
+        name = _clean_text(record.get("stock_name"))
+        ticker = _clean_text(record.get("ticker"))
+        if not name and not ticker:
+            continue
+        key = (name, ticker)
+        if key in seen:
+            continue
+        seen.add(key)
+        stocks.append({
+            # Workbook row order approximates market cap; the client ranks ties by it.
+            "rank": safe_int(record.get("rank"), 0),
+            "name": name,
+            "ticker": ticker,
+            "industry": _clean_text(record.get("industry")),
+        })
+
+    _search_index_cache.update({
+        "fingerprint": fingerprint,
+        "stocks": stocks,
+        "source_path": str(source),
+    })
+    return {
+        "stocks": stocks,
+        "industries": _scraped_industries(),
+        "source_path": str(source),
+        "count": len(stocks),
+    }
 
 
 def latest_run_data_at() -> str:
