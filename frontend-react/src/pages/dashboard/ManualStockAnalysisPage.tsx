@@ -45,6 +45,8 @@ interface ManualRecord {
 interface ManualRunDetail extends ManualRunSummary {
     filtered_count: number;
     records: ManualRecord[];
+    /** Stocks that held a different opinion last cycle and are 적극 매수 now. */
+    upgraded_count?: number;
 }
 
 interface ManualStockHistoryItem {
@@ -126,6 +128,12 @@ const RESULT_STYLES: Record<string, { badge: string; solid: string; dot: string 
 };
 
 const RATING_ORDER = ['적극 매수', '매수', '중립', '매도', '적극 매도'];
+
+// Virtual filter (not a verdict): an earlier date held a different opinion, now 적극 매수.
+// Compared day over day, not cycle over cycle -- verdicts do not move within a day.
+// Deliberately outside RATING_ORDER so it never enters the distribution bar, whose
+// segments must sum to the evaluated total.
+const UPGRADE_FILTER = '적극매수 전환';
 
 const LOOP_LABELS: Record<string, string> = {
     starting: '시작 중',
@@ -458,6 +466,7 @@ export default function ManualStockAnalysisPage() {
         () => runs.reduce((latest, run) => (run.updated_at && run.updated_at > latest ? run.updated_at : latest), ''),
         [runs],
     );
+    const upgradedCount = Number(detail?.upgraded_count) || 0;
     const lastDataAt = loopStatus?.last_data_at || latestRunUpdatedAt;
     const freshness = getRunFreshness(lastDataAt);
     const suggestions = useMemo(
@@ -712,6 +721,17 @@ export default function ManualStockAnalysisPage() {
                     >
                         전체 <span className="tabular-nums">{unfilteredTotal.toLocaleString('ko-KR')}</span>
                     </button>
+                    <button
+                        type="button"
+                        onClick={() => applyResultFilter(UPGRADE_FILTER)}
+                        title="이전 날짜의 판정은 적극 매수가 아니었는데 이번 회차에 적극 매수로 바뀐 종목 (판정은 하루 안에는 바뀌지 않아 전일 대비로 비교합니다)"
+                        className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-bold transition border-emerald-400/30 bg-emerald-500/10 text-emerald-200 ${
+                            selectedResult === UPGRADE_FILTER ? 'ring-2 ring-white/40' : 'opacity-90 hover:opacity-100'
+                        } ${upgradedCount === 0 ? 'opacity-40' : ''}`}
+                    >
+                        <i className="fas fa-arrow-trend-up text-[10px]" />
+                        {UPGRADE_FILTER} <span className="tabular-nums">{upgradedCount.toLocaleString('ko-KR')}</span>
+                    </button>
                     {[...RATING_ORDER, ...distribution.extras.map((e) => e.label)].map((label) => {
                         const count = Number(summary[label]) || 0;
                         if (count === 0 && !RATING_ORDER.includes(label)) return null;
@@ -761,6 +781,8 @@ export default function ManualStockAnalysisPage() {
                                 className="h-11 w-full appearance-none rounded-xl border border-white/10 bg-black/30 pl-9 pr-4 text-sm font-semibold text-white outline-none transition focus:border-orange-400/50"
                             >
                                 <option value="all" className="bg-[#16161a]">전체</option>
+                                {/* Listed so picking the chip does not leave this control blank. */}
+                                <option value={UPGRADE_FILTER} className="bg-[#16161a]">{UPGRADE_FILTER}</option>
                                 {(filters.length ? filters : DEFAULT_FILTERS).map((filter) => (
                                     <option key={filter} value={filter} className="bg-[#16161a]">{filter}</option>
                                 ))}

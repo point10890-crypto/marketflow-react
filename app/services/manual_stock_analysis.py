@@ -129,6 +129,19 @@ DEFAULT_RESULT_PATHS = [
 ]
 
 RESULT_ORDER = ["적극 매수", "매수", "중립", "매도", "적극 매도", "분석중", "오류", "미분류"]
+STRONG_BUY_LABEL = "적극 매수"
+# A virtual filter, not a verdict: stocks that held a different opinion in the last
+# cycle that had one, and are 적극 매수 now. Kept out of RESULT_ORDER so summaries
+# and the distribution bar keep counting real verdicts only.
+UPGRADE_FILTER = "적극매수 전환"
+# Measured on production (2026-07-26 6회차, 1,409 overlapping stocks): 0 verdict
+# changes against the same day's earlier cycle, 1 against the previous day, ~43
+# against two weeks back. Verdicts simply do not move within a day, so comparing
+# against the previous *cycle* would report zero forever -- the baseline is the
+# newest run from an earlier date. Scanning stops once a full day's worth is in
+# hand, since one complete run covers the whole universe.
+_PRIOR_VERDICT_SCAN_DEPTH = 6
+_PRIOR_VERDICT_ENOUGH = 1000
 DEFAULT_INVESTING_XPATH = "//*[@id='pro-score-mobile']/div/div[2]/div[3]/div/div/div[1]/div"
 
 _LOOP_LOCK = threading.RLock()
@@ -1714,11 +1727,89 @@ def list_runs() -> list[dict[str, Any]]:
     return runs
 
 
+_prior_verdict_cache: dict[str, Any] = {}
+
+
+def _record_key(record: dict[str, Any]) -> str:
+    return _clean_text(record.get("source_url")) or _clean_text(record.get("ticker"))
+
+
+_RUN_NAME_DATE = re.compile(r"^manual_scrape_(\d{4})(\d{2})(\d{2})_")
+
+
+def _run_date_from_name(path: Path) -> str:
+    """Cycle date straight from the filename, so same-day runs can be skipped
+    without parsing a ~1.3MB JSON just to read one field."""
+    match = _RUN_NAME_DATE.match(path.stem)
+    return f"{match.group(1)}-{match.group(2)}-{match.group(3)}" if match else ""
+
+
+def _run_cycle_date(run: dict[str, Any]) -> str:
+    return _clean_text(run.get("cycle_date")) or _clean_text(run.get("created_at"))[:10]
+
+
+def _prior_verdict_map(before_run_id: str, before_date: str) -> dict[str, str]:
+    """key -> the newest real verdict recorded on a date earlier than ``before_date``.
+
+    Only real verdicts count, so a stock sitting at 분석중 yesterday resolves to
+    the last day it actually had an opinion. Cached because /runs/<id> is polled
+    every second while a cycle streams; the runs scanned are finished, so the
+    cache stays warm.
+    """
+    target = _clean_text(before_run_id)
+    older: list[Path] = []
+    for path in _run_files_newest_first():
+        if path.stem == target:
+            continue
+        date = _run_date_from_name(path)
+        # An unparseable name is a legacy import; keep it rather than guess.
+        if date and before_date and date >= before_date:
+            continue
+        older.append(path)
+        if len(older) >= _PRIOR_VERDICT_SCAN_DEPTH:
+            break
+    if not older:
+        return {}
+
+    signature = (target, before_date, tuple((p.name, int(p.stat().st_mtime)) for p in older))
+    if _prior_verdict_cache.get("signature") == signature:
+        return _prior_verdict_cache["data"]
+
+    verdicts: dict[str, str] = {}
+    for path in older:
+        run = _read_run(path)
+        if not run:
+            continue
+        for record in run.get("records") or []:
+            label = _clean_text(record.get("result"))
+            if label not in _SUCCESS_LABELS:
+                continue
+            key = _record_key(record)
+            if key and key not in verdicts:
+                verdicts[key] = label
+        if len(verdicts) >= _PRIOR_VERDICT_ENOUGH:
+            break
+    _prior_verdict_cache.update({"signature": signature, "data": verdicts})
+    return verdicts
+
+
+def _is_upgrade_to_strong_buy(record: dict[str, Any], prior: dict[str, str]) -> bool:
+    if _clean_text(record.get("result")) != STRONG_BUY_LABEL:
+        return False
+    previous = prior.get(_record_key(record))
+    # No previous opinion means a new listing, not a switch.
+    return bool(previous) and previous != STRONG_BUY_LABEL
+
+
 def get_run(run_id: str, *, result: str = "all", q: str = "", live_only: bool = False) -> dict[str, Any]:
     run = _read_run(_run_path(run_id))
     if not run:
         raise FileNotFoundError(run_id)
     records = list(run.get("records") or [])
+    prior = _prior_verdict_map(_clean_text(run.get("run_id")) or run_id, _run_cycle_date(run))
+    # Counted over the whole run, like `summary`, so the chip does not change as
+    # the user switches filters or types a query.
+    upgraded_count = sum(1 for r in records if _is_upgrade_to_strong_buy(r, prior))
     if live_only:
         records = [
             r for r in records
@@ -1726,7 +1817,9 @@ def get_run(run_id: str, *, result: str = "all", q: str = "", live_only: bool = 
         ]
     result = _clean_text(result)
     q = _clean_text(q).lower()
-    if result and result != "all":
+    if result == UPGRADE_FILTER:
+        records = [r for r in records if _is_upgrade_to_strong_buy(r, prior)]
+    elif result and result != "all":
         records = [r for r in records if r.get("result") == result]
     if q:
         records = [
@@ -1741,6 +1834,7 @@ def get_run(run_id: str, *, result: str = "all", q: str = "", live_only: bool = 
         **public_run,
         "records": records,
         "filtered_count": len(records),
+        "upgraded_count": upgraded_count,
     }
 
 

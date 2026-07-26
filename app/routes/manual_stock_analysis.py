@@ -19,6 +19,9 @@ def list_manual_runs():
     return jsonify({
         "runs": service.list_runs(),
         "result_filters": service.RESULT_ORDER,
+        # Virtual filter, kept out of result_filters so the distribution bar and
+        # summaries stay limited to real verdicts.
+        "upgrade_filter": service.UPGRADE_FILTER,
     })
 
 
