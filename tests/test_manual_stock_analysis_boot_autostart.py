@@ -75,6 +75,27 @@ def test_status_poll_does_not_start_loop_when_request_autostart_disabled(monkeyp
     assert not status.get("running")
 
 
+def test_status_poll_uses_csv_ticker_lookup_without_pandas_csv_reader(monkeypatch, tmp_path):
+    """Status polling must not mix pandas CSV reads with background Excel work."""
+    _isolate_manual_service(monkeypatch, tmp_path)
+    _write_source(tmp_path / "stock_data.xlsx", rows=2)
+    ticker_map = tmp_path / "ticker_map.csv"
+    ticker_map.write_text(
+        "name,ticker,market\nSampleStock1,1,KOSPI\nSampleStock2,2,KOSDAQ\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(svc, "TICKER_MAP_PATH", ticker_map)
+    monkeypatch.setattr(
+        svc.pd,
+        "read_csv",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(AssertionError("pandas CSV read")),
+    )
+
+    status = svc.get_scraper_loop_status(auto_start=False)
+
+    assert status["source_record_count"] == 2
+
+
 def test_boot_autostart_is_off_by_default(monkeypatch, tmp_path):
     _isolate_manual_service(monkeypatch, tmp_path)
     monkeypatch.setattr(svc, "LOOP_BOOT_AUTOSTART", False)

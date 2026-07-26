@@ -8,6 +8,7 @@ silently affect automated Top3 ranking.
 
 from __future__ import annotations
 
+import csv
 import hashlib
 import json
 import os
@@ -602,17 +603,23 @@ def _is_retryable_scrape_error(exc: Exception) -> bool:
 
 
 def _ticker_lookup() -> dict[str, dict[str, str]]:
-    try:
-        df = pd.read_csv(TICKER_MAP_PATH, dtype=str, encoding="utf-8-sig").fillna("")
-    except Exception:
-        return {}
+    """Load the small name-to-ticker map without constructing pandas Series.
+
+    Status polling can overlap the scraper's Excel work in another thread.
+    Keeping the static CSV lookup on Python's thread-safe parser avoids a native
+    pandas access violation observed when both paths were active in tests.
+    """
     lookup: dict[str, dict[str, str]] = {}
-    for _, row in df.iterrows():
-        name = _clean_text(row.get("name"))
-        ticker = _clean_text(row.get("ticker")).zfill(6)
-        market = _clean_text(row.get("market"))
-        if name:
-            lookup[name] = {"ticker": ticker, "market": market}
+    try:
+        with Path(TICKER_MAP_PATH).open("r", encoding="utf-8-sig", newline="") as handle:
+            for row in csv.DictReader(handle):
+                name = _clean_text(row.get("name"))
+                ticker = _clean_text(row.get("ticker")).zfill(6)
+                market = _clean_text(row.get("market"))
+                if name:
+                    lookup[name] = {"ticker": ticker, "market": market}
+    except (OSError, UnicodeError, csv.Error):
+        return {}
     return lookup
 
 
