@@ -36,6 +36,11 @@ $env:MANUAL_STOCK_ANALYSIS_AUTO_LOOP = "0"
 # nothing starting it the dashboard silently froze at the 2026-07-15 run. Start it
 # once per Flask process instead: deliberate, not request-triggered.
 $env:MANUAL_STOCK_ANALYSIS_LOOP_AUTOSTART = "true"
+# Give the API health gate and normal request traffic time to settle before
+# Selenium starts. The default 45s overlaps this launcher's 60s health window,
+# so a large resumed scrape can starve /healthz and make Task Scheduler tear
+# down an otherwise healthy Flask process.
+$env:MANUAL_STOCK_ANALYSIS_LOOP_AUTOSTART_DELAY_SEC = "180"
 
 $existing = Get-CimInstance Win32_Process | Where-Object {
     $_.CommandLine -like "*flask_app.py*"
