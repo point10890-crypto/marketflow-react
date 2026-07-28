@@ -15,6 +15,7 @@ $env:GOODRICH_OPENAI_CREDENTIALS_FILE = Join-Path $root 'secrets\openai_credenti
 $env:GOODRICH_CORS_ORIGINS = 'https://bit-man.net,https://www.bit-man.net'
 
 Set-Location -LiteralPath $apiDir
+$ErrorActionPreference = 'Continue'
 & $python -m uvicorn goodrich.main:app --host 127.0.0.1 --port 8000 `
     1>> (Join-Path $logDir 'goodrich.out.log') `
     2>> (Join-Path $logDir 'goodrich.err.log')
