@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { fetchAuthAPI, postAuthAPI } from '@/lib/api';
 import AiBrainServiceTabs from '@/components/aibain/AiBrainServiceTabs';
+import GoodrichTop3Charts from '@/components/aibain/GoodrichTop3Charts';
 
 interface GoodrichPick {
     rank?: number;
@@ -149,6 +150,8 @@ export default function GoodrichFundManagerPage() {
                         <section className="grid gap-4 lg:grid-cols-3">
                             {data.picks.map((pick, index) => <PickCard key={pick.symbol} pick={pick} fallbackRank={index + 1} />)}
                         </section>
+
+                        <GoodrichTop3Charts picks={data.picks} />
 
                         <footer className="rounded-2xl border border-amber-400/15 bg-amber-400/[0.04] p-4 text-xs leading-5 text-slate-400">
                             <strong className="text-amber-200">범위와 책임:</strong> 이 결과는 KOSPI/KOSDAQ 전체 스캔이 아닌 Goodrich 고정 6종목 유니버스의 상위 3개입니다.
