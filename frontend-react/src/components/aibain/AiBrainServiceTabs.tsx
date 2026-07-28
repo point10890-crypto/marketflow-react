@@ -29,7 +29,7 @@ const services = [
 
 export default function AiBrainServiceTabs({ active }: AiBrainServiceTabsProps) {
     return (
-        <nav aria-label="AI Brain 서비스" className="hidden max-w-3xl grid-cols-2 gap-3 md:grid">
+        <nav aria-label="AI Brain 서비스" className="grid w-full grid-cols-1 gap-2.5 sm:gap-3 md:max-w-3xl md:grid-cols-2">
             {services.map((service) => {
                 const selected = service.id === active;
                 return (
@@ -37,19 +37,19 @@ export default function AiBrainServiceTabs({ active }: AiBrainServiceTabsProps) 
                         key={service.id}
                         href={service.href}
                         aria-current={selected ? 'page' : undefined}
-                        className={`group flex min-h-24 items-center gap-4 rounded-2xl border px-5 py-4 transition-all ${
+                        className={`group flex min-h-20 items-center gap-3.5 rounded-2xl border px-4 py-3.5 transition-all sm:min-h-24 sm:gap-4 sm:px-5 sm:py-4 ${
                             selected
                                 ? service.activeClass
                                 : 'border-white/10 bg-white/[0.035] text-gray-300 hover:-translate-y-0.5 hover:border-white/25 hover:bg-white/[0.065]'
                         }`}
                     >
-                        <span className={`grid h-12 w-12 shrink-0 place-items-center rounded-xl ${service.iconClass}`}>
-                            <i className={`fas ${service.icon} text-lg`} />
+                        <span className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl sm:h-12 sm:w-12 ${service.iconClass}`}>
+                            <i className={`fas ${service.icon} text-base sm:text-lg`} />
                         </span>
                         <span className="min-w-0 text-left">
                             <span className="block text-[10px] font-black tracking-[0.18em] text-gray-500">{service.eyebrow}</span>
-                            <span className="mt-0.5 block text-lg font-black tracking-tight text-current">{service.title}</span>
-                            <span className="mt-1 block text-xs font-medium text-gray-500">{service.description}</span>
+                            <span className="mt-0.5 block text-base font-black tracking-tight text-current sm:text-lg">{service.title}</span>
+                            <span className="mt-0.5 block text-[11px] font-medium text-gray-500 sm:mt-1 sm:text-xs">{service.description}</span>
                         </span>
                     </a>
                 );
