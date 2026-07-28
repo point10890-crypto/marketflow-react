@@ -30,6 +30,7 @@ const UsVcpPage = lazy(() => import('@/pages/dashboard/us/UsVcpPage'));
 const UsEtfPage = lazy(() => import('@/pages/dashboard/us/UsEtfPage'));
 const UsAIChartPage = lazy(() => import('@/pages/dashboard/us/UsAIChartPage'));
 const AiBainPage = lazy(() => import('@/pages/dashboard/AiBainPage'));
+const GoodrichFundManagerPage = lazy(() => import('@/pages/dashboard/aibain/GoodrichFundManagerPage'));
 const CryptoOverviewPage = lazy(() => import('@/pages/dashboard/crypto/CryptoOverviewPage'));
 const CryptoSignalsPage = lazy(() => import('@/pages/dashboard/crypto/CryptoSignalsPage'));
 const StockAnalyzerPage = lazy(() => import('@/pages/dashboard/StockAnalyzerPage'));
@@ -182,6 +183,7 @@ export default function App() {
                         <Route path="us/vcp" element={<ProGuard><Suspense fallback={<LoadingFallback />}><UsVcpPage /></Suspense></ProGuard>} />
                         <Route path="us/etf" element={<ProGuard><Suspense fallback={<LoadingFallback />}><UsEtfPage /></Suspense></ProGuard>} />
                         <Route path="us/ai-chart" element={<ProGuard><Suspense fallback={<LoadingFallback />}><UsAIChartPage /></Suspense></ProGuard>} />
+                        <Route path="ai-bain/goodrich" element={<ProGuard><Suspense fallback={<LoadingFallback />}><GoodrichFundManagerPage /></Suspense></ProGuard>} />
                         <Route path="ai-bain" element={<ProGuard><Suspense fallback={<LoadingFallback />}><AiBainPage /></Suspense></ProGuard>} />
                         <Route path="crypto" element={<ProGuard><Suspense fallback={<LoadingFallback />}><CryptoOverviewPage /></Suspense></ProGuard>} />
                         <Route path="crypto/signals" element={<ProGuard><Suspense fallback={<LoadingFallback />}><CryptoSignalsPage /></Suspense></ProGuard>} />

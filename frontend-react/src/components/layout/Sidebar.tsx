@@ -28,7 +28,18 @@ const globalTools: NavItem[] = [
     { name: 'Briefing', href: '/dashboard/briefing', icon: 'fa-newspaper', color: 'text-amber-400', bg: 'from-amber-500/15 to-amber-600/5' },
     { name: 'VCP Enhanced', href: '/dashboard/vcp-enhanced', icon: 'fa-bolt', color: 'text-yellow-400', bg: 'from-yellow-500/15 to-yellow-600/5' },
     { name: 'W Pattern', href: '/dashboard/wave', icon: 'fa-wave-square', color: 'text-pink-400', bg: 'from-pink-500/15 to-pink-600/5', glow: true, badge: 'AI' },
-    { name: 'AI Brain', href: '/dashboard/ai-bain', icon: 'fa-robot', color: 'text-cyan-400', bg: 'from-cyan-500/15 to-cyan-600/5', badge: 'NEW' },
+    {
+        name: 'AI Brain',
+        href: '/dashboard/ai-bain',
+        icon: 'fa-robot',
+        color: 'text-cyan-400',
+        bg: 'from-cyan-500/15 to-cyan-600/5',
+        badge: 'NEW',
+        children: [
+            { name: '알파 스캐너', href: '/dashboard/ai-bain', color: 'bg-cyan-500' },
+            { name: 'Goodrich TOP 3', href: '/dashboard/ai-bain/goodrich', color: 'bg-emerald-500' },
+        ],
+    },
     { name: 'AI 주식분석', href: '/dashboard/manual-stock-analysis', icon: 'fa-table-list', color: 'text-orange-300', bg: 'from-orange-500/15 to-rose-600/5', badge: 'LIVE' },
 ];
 
@@ -128,8 +139,10 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                 </div>
                 <div className="space-y-1 mb-1">
                     {globalTools.map((item) => {
-                        const isActive = pathname === item.href;
+                        const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+                        const isExpanded = isActive && item.children;
                         return (
+                            <div key={item.name}>
                             <Link key={item.name} to={item.href} onClick={onNavigate}
                                 className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-[14px] font-medium transition-all border ${
                                     isActive
@@ -159,10 +172,28 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                                         {item.badge}
                                     </span>
                                 )}
+                                {item.children && (
+                                    <i className={`fas fa-chevron-down text-[10px] ml-auto transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                                )}
                                 {isLocked && item.href !== '/dashboard' && !item.glow && (
                                     <i className="fas fa-lock text-[10px] text-gray-600 ml-auto" />
                                 )}
                             </Link>
+                            {isExpanded && item.children && (
+                                <div className="ml-11 mt-1 space-y-0.5 rounded-xl border border-white/[0.04] bg-white/[0.02] p-1.5">
+                                    {item.children.map((child) => (
+                                        <Link key={child.href} to={child.href} onClick={onNavigate}
+                                            className={`block rounded-lg px-3 py-2 text-[12px] transition-colors ${
+                                                pathname === child.href ? 'bg-white/10 text-white' : 'text-gray-500 hover:bg-white/5 hover:text-white'
+                                            }`}
+                                        >
+                                            <span className={`mr-2 inline-block h-1.5 w-1.5 rounded-full ${child.color}`} />
+                                            {child.name}
+                                        </Link>
+                                    ))}
+                                </div>
+                            )}
+                            </div>
                         );
                     })}
                 </div>

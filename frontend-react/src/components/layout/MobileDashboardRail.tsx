@@ -4,6 +4,7 @@ const primaryItems = [
     { name: 'Summary', href: '/dashboard', icon: 'fas fa-tachometer-alt' },
     { name: 'Briefing', href: '/dashboard/briefing', icon: 'fa-newspaper' },
     { name: 'AI Brain', href: '/dashboard/ai-bain', icon: 'fa-robot' },
+    { name: 'Goodrich TOP 3', href: '/dashboard/ai-bain/goodrich', icon: 'fa-ranking-star' },
     { name: 'KR', href: '/dashboard/kr', icon: 'fa-chart-line' },
     { name: 'US', href: '/dashboard/us', icon: 'fa-globe-americas' },
     { name: 'Crypto', href: '/dashboard/crypto', icon: 'fab fa-bitcoin' },
@@ -14,6 +15,7 @@ const primaryItems = [
 const pageTitles: Array<[RegExp, string, string]> = [
     [/^\/dashboard$/, 'Summary', '시장 요약'],
     [/^\/dashboard\/briefing/, 'Briefing', 'AI 브리핑'],
+    [/^\/dashboard\/ai-bain\/goodrich/, 'Goodrich TOP 3', 'AI 펀드매니저'],
     [/^\/dashboard\/ai-bain/, 'AI Brain', 'GraphRAG'],
     [/^\/dashboard\/manual-stock-analysis/, 'AI 분석 목록', '루프 스크래퍼'],
     [/^\/dashboard\/vcp-enhanced/, 'VCP Enhanced', '거래량 수축'],
@@ -38,6 +40,7 @@ const pageTitles: Array<[RegExp, string, string]> = [
 
 function activeFor(pathname: string, href: string) {
     if (href === '/dashboard') return pathname === '/dashboard';
+    if (href === '/dashboard/ai-bain') return pathname === href;
     return pathname === href || pathname.startsWith(href + '/');
 }
 

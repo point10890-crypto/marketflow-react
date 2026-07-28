@@ -37,6 +37,10 @@ def register_blueprints(app):
     from app.routes.admin_mirofish import admin_mirofish_bp
     app.register_blueprint(admin_mirofish_bp, url_prefix='/api/admin/mirofish')
 
+    # AI Brain Goodrich TradingOS service boundary
+    from app.routes.admin_mirofish_goodrich import admin_mirofish_goodrich_bp
+    app.register_blueprint(admin_mirofish_goodrich_bp, url_prefix='/api/admin/mirofish')
+
     # Admin MiroFish K-Analyst analysis endpoints
     from app.routes.admin_mirofish_analysis import admin_mirofish_analysis_bp
     app.register_blueprint(admin_mirofish_analysis_bp, url_prefix='/api/admin/mirofish')
