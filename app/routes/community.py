@@ -46,6 +46,8 @@ community_bp = Blueprint('community', __name__)
 
 TIER_ORDER = {'pro': 1, 'premium': 2}  # 'free' 플랜 폐지 — 미구독자(None)는 TIER_ORDER.get() 기본값 0으로 접근 불가
 ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png', 'gif', 'webp'}
+TIER_ORDER['none'] = 0
+PUBLIC_MEMBER_BOARD_SLUGS = {'formula-market'}
 FORMULA_FILE_EXTENSIONS = {'txt', 'csv', 'xlsx', 'xls', 'pdf', 'zip', 'hwp', 'docx'}
 VIDEO_EXTENSIONS = {'mp4', 'mov', 'webm'}
 MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
@@ -97,6 +99,19 @@ def _check_tier(user_tier, required_tier):
     if required_tier == 'admin':
         return False  # Only admin role can pass, checked separately
     return TIER_ORDER.get(user_tier, 0) >= TIER_ORDER.get(required_tier, 0)
+
+
+def _effective_min_tier(board):
+    """Return the member-facing read tier, independent from legacy DB rows."""
+    return 'none' if board.slug in PUBLIC_MEMBER_BOARD_SLUGS else board.min_tier
+
+
+def _can_read_board(user, board):
+    return (
+        user.role == 'admin'
+        or board.slug in PUBLIC_MEMBER_BOARD_SLUGS
+        or _check_tier(user.tier, board.min_tier)
+    )
 
 
 def _allowed_file(filename):
@@ -204,7 +219,7 @@ def list_boards():
 
     result = []
     for b in boards:
-        can_read = (user.role == 'admin') or _check_tier(user.tier, b.min_tier)
+        can_read = _can_read_board(user, b)
         latest_post = latest_posts.get(b.id) if can_read else None
         d = {
             'id': b.id,
@@ -213,7 +228,7 @@ def list_boards():
             'description': b.description,
             'icon': b.icon,
             'sort_order': b.sort_order,
-            'min_tier': b.min_tier,
+            'min_tier': _effective_min_tier(b),
             'write_tier': b.write_tier,
             'is_active': b.is_active,
             'post_count': post_counts.get(b.id, 0) if can_read else 0,
@@ -284,7 +299,7 @@ def list_posts(slug):
     board = Board.query.filter_by(slug=slug, is_active=True).first()
     if not board:
         return jsonify({'error': 'Board not found'}), 404
-    if user.role != 'admin' and not _check_tier(user.tier, board.min_tier):
+    if not _can_read_board(user, board):
         return jsonify({'error': 'Tier upgrade required'}), 403
 
     page = max(1, request.args.get('page', 1, type=int) or 1)
@@ -324,7 +339,7 @@ def get_post(post_id):
     if post.is_hidden and user.role != 'admin':
         return jsonify({'error': 'Post not found'}), 404
     board = post.board
-    if user.role != 'admin' and not _check_tier(user.tier, board.min_tier):
+    if not _can_read_board(user, board):
         return jsonify({'error': 'Tier upgrade required'}), 403
 
     post.view_count += 1
@@ -624,7 +639,7 @@ def list_comments(post_id):
     if post.is_hidden and user.role != 'admin':
         return jsonify({'error': 'Post not found'}), 404
     board = post.board
-    if user.role != 'admin' and not _check_tier(user.tier, board.min_tier):
+    if not _can_read_board(user, board):
         return jsonify({'error': 'Tier upgrade required'}), 403
     limit = request.args.get('limit', 200, type=int) or 200
     limit = max(1, min(limit, 500))
@@ -640,7 +655,7 @@ def create_comment(post_id):
     user = _get_current_user()
     post = Post.query.get_or_404(post_id)
     board = post.board
-    if user.role != 'admin' and not _check_tier(user.tier, board.min_tier):
+    if not _can_read_board(user, board):
         return jsonify({'error': 'Tier upgrade required'}), 403
 
     data = request.get_json() or {}
@@ -674,7 +689,7 @@ def update_comment(comment_id):
     if post.is_hidden and user.role != 'admin':
         return jsonify({'error': 'Post not found'}), 404
     board = post.board
-    if user.role != 'admin' and not _check_tier(user.tier, board.min_tier):
+    if not _can_read_board(user, board):
         return jsonify({'error': 'Tier upgrade required'}), 403
     if user.role != 'admin' and comment.author_id != user.id:
         return jsonify({'error': 'Permission denied'}), 403
@@ -701,7 +716,7 @@ def delete_comment(comment_id):
     if post.is_hidden and user.role != 'admin':
         return jsonify({'error': 'Post not found'}), 404
     board = post.board
-    if user.role != 'admin' and not _check_tier(user.tier, board.min_tier):
+    if not _can_read_board(user, board):
         return jsonify({'error': 'Tier upgrade required'}), 403
     if user.role != 'admin' and comment.author_id != user.id:
         return jsonify({'error': 'Permission denied'}), 403
@@ -880,7 +895,7 @@ def community_summary():
     boards = Board.query.filter_by(is_active=True).all()
     accessible_board_ids = [
         board.id for board in boards
-        if user.role == 'admin' or _check_tier(user.tier, board.min_tier)
+        if _can_read_board(user, board)
     ]
     visible_posts = Post.query.filter(
         Post.board_id.in_(accessible_board_ids),
@@ -954,9 +969,12 @@ def search_posts():
 
     # Tier filter: exclude boards user can't access
     if user.role != 'admin':
-        user_tier_val = TIER_ORDER.get(user.tier, 0)
+        user_tier_val = TIER_ORDER.get(user.tier or 'none', 0)
         accessible_tiers = [t for t, v in TIER_ORDER.items() if v <= user_tier_val]
-        query = query.filter(Board.min_tier.in_(accessible_tiers))
+        query = query.filter(db.or_(
+            Board.slug.in_(PUBLIC_MEMBER_BOARD_SLUGS),
+            Board.min_tier.in_(accessible_tiers),
+        ))
 
     query = query.filter(
         db.or_(Post.title.ilike(f'%{q}%'), Post.content.ilike(f'%{q}%'))
