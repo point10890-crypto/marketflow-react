@@ -113,6 +113,15 @@ def get_fund_manager() -> dict:
     return _request('GET', '/v1/fund-manager', timeout=DEFAULT_TIMEOUT_SECONDS)
 
 
+def monitor_fund_manager() -> dict:
+    return _request(
+        'POST',
+        '/v1/fund-manager/monitor',
+        timeout=DEFAULT_TIMEOUT_SECONDS,
+        validate_fund_manager=False,
+    )
+
+
 def run_research() -> dict:
     from app.services.kis_screener import run_screening
 
