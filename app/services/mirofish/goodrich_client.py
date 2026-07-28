@@ -27,6 +27,13 @@ class GoodrichServiceError(RuntimeError):
         self.status_code = status_code
 
 
+def _safe_float(value) -> float:
+    try:
+        return float(value or 0)
+    except (TypeError, ValueError):
+        return 0.0
+
+
 def _base_url() -> str:
     value = (os.getenv('GOODRICH_API_BASE_URL') or DEFAULT_BASE_URL).strip().rstrip('/')
     parsed = urlparse(value)
@@ -35,13 +42,21 @@ def _base_url() -> str:
     return value
 
 
-def _request(method: str, path: str, *, timeout: float) -> dict:
+def _request(
+    method: str,
+    path: str,
+    *,
+    timeout: float,
+    json_body: dict | None = None,
+    integration: dict | None = None,
+) -> dict:
     try:
         response = requests.request(
             method,
             f'{_base_url()}{path}',
             timeout=timeout,
             headers={'Accept': 'application/json'},
+            json=json_body,
         )
     except requests.Timeout as exc:
         raise GoodrichServiceError('Goodrich 서비스 응답 시간이 초과되었습니다.', status_code=504) from exc
@@ -58,10 +73,10 @@ def _request(method: str, path: str, *, timeout: float) -> dict:
         raise GoodrichServiceError('Goodrich 서비스 응답 형식이 올바르지 않습니다.') from exc
     if not isinstance(payload, dict):
         raise GoodrichServiceError('Goodrich 서비스 응답 형식이 올바르지 않습니다.')
-    return _validate_and_envelope(payload)
+    return _validate_and_envelope(payload, integration=integration)
 
 
-def _validate_and_envelope(payload: dict) -> dict:
+def _validate_and_envelope(payload: dict, *, integration: dict | None = None) -> dict:
     picks = payload.get('picks')
     if not isinstance(picks, list):
         raise GoodrichServiceError('Goodrich TOP 3 응답에 종목 목록이 없습니다.')
@@ -81,11 +96,12 @@ def _validate_and_envelope(payload: dict) -> dict:
         'service': 'goodrich-tradingos',
         'source': 'goodrich-api',
         'fetched_at': datetime.now(timezone.utc).isoformat(),
-        'universe': 'fixed-6',
-        'universe_size': 6,
+        'universe': 'kis-market-leaders',
+        'universe_size': len(normalized_picks),
         'ranking_owner': 'goodrich-deterministic-rules',
         'ai_role': 'verified-explanation-only',
         'ordering_enabled': False,
+        **(integration or {}),
     }
     return result
 
@@ -95,4 +111,50 @@ def get_fund_manager() -> dict:
 
 
 def run_research() -> dict:
-    return _request('POST', '/v1/fund-manager/research', timeout=RESEARCH_TIMEOUT_SECONDS)
+    from app.services.kis_screener import run_screening
+
+    screening = run_screening(force=True)
+    rows = screening.get('results') if isinstance(screening, dict) else None
+    if not isinstance(rows, list) or len(rows) < 3:
+        raise GoodrichServiceError(
+            'KIS 시장 주도주 검출 결과가 3개 미만입니다. 이전 고정 종목으로 대체하지 않습니다.',
+            status_code=503,
+        )
+
+    candidates = []
+    for row in rows[:20]:
+        if not isinstance(row, dict):
+            continue
+        symbol = str(row.get('code') or row.get('symbol') or '').strip()
+        name = str(row.get('name') or '').strip()
+        change_pct = _safe_float(row.get('change_pct'))
+        score = row.get('score')
+        total_score = _safe_float(score.get('total')) if isinstance(score, dict) else _safe_float(score)
+        is_preferred = name.endswith('우') or name.endswith('우B') or name.endswith('우C')
+        if (
+            len(symbol) == 6
+            and symbol.isdigit()
+            and name
+            and not is_preferred
+            and change_pct > 0
+            and total_score >= 50
+        ):
+            candidates.append({'symbol': symbol, 'name': name})
+    if len(candidates) < 3:
+        raise GoodrichServiceError('검증 가능한 KIS 시장 주도주 후보가 3개 미만입니다.', status_code=503)
+
+    return _request(
+        'POST',
+        '/v1/fund-manager/research',
+        timeout=RESEARCH_TIMEOUT_SECONDS,
+        json_body={'candidates': candidates},
+        integration={
+            'source': 'marketflow-kis-leading-scanner',
+            'universe': 'live-kospi-kosdaq-leaders',
+            'universe_size': len(candidates),
+            'candidate_count': len(rows),
+            'scanner_timestamp': screening.get('timestamp'),
+            'market_status': screening.get('market_status'),
+            'ranking_owner': 'marketflow-kis-rules-then-goodrich-quant',
+        },
+    )

@@ -38,6 +38,8 @@ interface GoodrichSnapshot {
         fetched_at?: string;
         universe?: string;
         universe_size?: number;
+        candidate_count?: number;
+        market_status?: string;
         ranking_owner?: string;
         ai_role?: string;
         ordering_enabled?: boolean;
@@ -111,8 +113,8 @@ export default function GoodrichFundManagerPage() {
                         </button>
                     </div>
                     <div className="mt-5 grid gap-2 text-xs sm:grid-cols-3">
-                        <Meta label="후보 범위" value={`고정 ${data?.integration?.universe_size ?? 6}종목`} />
-                        <Meta label="순위 결정" value="코드 기반 정량 규칙" />
+                        <Meta label="검출 범위" value={`KIS 주도주 ${data?.integration?.universe_size ?? 0}종목`} />
+                        <Meta label="순위 결정" value="시장 검출 + 정량 규칙" />
                         <Meta label="주문 기능" value="비활성 · 정보 제공 전용" />
                     </div>
                 </header>
@@ -154,8 +156,8 @@ export default function GoodrichFundManagerPage() {
                         <GoodrichTop3Charts picks={data.picks} />
 
                         <footer className="rounded-2xl border border-amber-400/15 bg-amber-400/[0.04] p-4 text-xs leading-5 text-slate-400">
-                            <strong className="text-amber-200">범위와 책임:</strong> 이 결과는 KOSPI/KOSDAQ 전체 스캔이 아닌 Goodrich 고정 6종목 유니버스의 상위 3개입니다.
-                            가격·순위·목표가·손절가는 KIS 데이터와 코드 규칙이 결정하며 OpenAI는 이를 변경하지 않습니다.
+                            <strong className="text-amber-200">범위와 책임:</strong> KIS 거래대금·등락률·거래량 급증 순위에서 실제 시장 주도주 후보를 검출한 뒤 TOP 3를 선정합니다.
+                            현재가·목표가·손절가는 KIS 데이터와 결정론적 규칙으로 계산하며 OpenAI는 종목이나 가격을 만들지 않고 검증된 수치의 근거와 위험만 설명합니다.
                             {data.disclosure && <span className="ml-1">{data.disclosure}</span>}
                         </footer>
                     </>

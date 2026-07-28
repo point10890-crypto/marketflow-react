@@ -34,7 +34,7 @@ def test_goodrich_client_adds_safe_integration_metadata(monkeypatch):
 
     assert captured['method'] == 'GET'
     assert captured['url'].endswith('/v1/fund-manager')
-    assert result['integration']['universe_size'] == 6
+    assert result['integration']['universe_size'] == 3
     assert result['integration']['ordering_enabled'] is False
     assert [pick['symbol'] for pick in result['picks']] == ['005930', '000660', '035420']
 
@@ -55,6 +55,16 @@ def test_goodrich_client_rejects_missing_pick_identity(monkeypatch):
 
 
 def test_goodrich_client_maps_timeout_without_upstream_details(monkeypatch):
+    monkeypatch.setattr(
+        'app.services.kis_screener.run_screening',
+        lambda force=True: {
+            'results': [
+                {'code': '005930', 'name': '삼성전자', 'change_pct': 2.1, 'score': {'total': 70}},
+                {'code': '000660', 'name': 'SK하이닉스', 'change_pct': 1.8, 'score': {'total': 68}},
+                {'code': '035420', 'name': 'NAVER', 'change_pct': 1.2, 'score': {'total': 63}},
+            ],
+        },
+    )
     monkeypatch.setattr(
         goodrich_client.requests,
         'request',
