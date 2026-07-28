@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { fetchAuthAPI, postAuthAPI } from '@/lib/api';
+import AiBrainServiceTabs from '@/components/aibain/AiBrainServiceTabs';
 
 interface GoodrichPick {
     rank?: number;
@@ -81,6 +82,7 @@ export default function GoodrichFundManagerPage() {
     return (
         <div className="min-h-screen bg-[#09090b] p-4 text-white sm:p-6 lg:p-8">
             <div className="mx-auto max-w-6xl space-y-5">
+                <AiBrainServiceTabs active="goodrich" />
                 <header className="rounded-2xl border border-emerald-400/20 bg-gradient-to-br from-emerald-500/[0.08] via-[#12171a] to-[#111318] p-5 sm:p-7">
                     <div className="flex flex-wrap items-start justify-between gap-4">
                         <div>

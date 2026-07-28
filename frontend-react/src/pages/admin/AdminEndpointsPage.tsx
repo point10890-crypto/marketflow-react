@@ -15,6 +15,7 @@ import ScanHistoryCard from '@/components/admin/ScanHistoryCard';
 import SourceFreshnessMatrix from '@/components/admin/SourceFreshnessMatrix';
 import ScannerEventsCard from '@/components/admin/ScannerEventsCard';
 import RunTradingAgentsCard from '@/components/admin/RunTradingAgentsCard';
+import AiBrainServiceTabs from '@/components/aibain/AiBrainServiceTabs';
 
 const agentCounts = [3, 7, 10, 15];
 const defaultTarget = '삼성전자';
@@ -3044,16 +3045,12 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
                     : 'border-anthropic-darkLine bg-transparent'
             }`}>
                 <div className="px-3 py-4 sm:px-5 sm:py-7 md:px-8 md:py-10">
+                    {subscriberMode && (
+                        <div className="mb-6">
+                            <AiBrainServiceTabs active="scanner" />
+                        </div>
+                    )}
                     <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3">
-                        {subscriberMode && (
-                            <a
-                                href="/dashboard/ai-bain/goodrich"
-                                className="hidden md:inline-flex items-center gap-2 rounded-xl border border-emerald-400/30 bg-emerald-500/10 px-3.5 py-2 text-xs font-black text-emerald-200 transition-colors hover:border-emerald-300/50 hover:bg-emerald-500/20"
-                            >
-                                <i className="fas fa-ranking-star" />
-                                Goodrich TOP 3
-                            </a>
-                        )}
                         <div className={`inline-flex items-center gap-1.5 sm:gap-2 rounded-full border px-2.5 sm:px-3 py-1 sm:py-1.5 text-[11px] sm:text-xs font-medium ${
                             subscriberMode
                                 ? 'border-cyan-500/30 bg-cyan-500/[0.06] text-cyan-300'
