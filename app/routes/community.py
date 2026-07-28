@@ -480,15 +480,28 @@ def toggle_notice(post_id):
 def create_purchase(post_id):
     user = _get_current_user()
     post = Post.query.get_or_404(post_id)
+    board = post.board
+    if not board or board.slug != 'formula-market' or not board.is_active:
+        return jsonify({'error': 'Purchase is only available for active formula-market posts'}), 400
+    if not _can_read_board(user, board):
+        return jsonify({'error': 'Tier upgrade required'}), 403
     data = request.get_json() or {}
     buyer_name = data.get('buyer_name', '').strip()
     if not buyer_name:
         return jsonify({'error': '입금자명을 입력하세요.'}), 400
 
     # Check if already requested
-    existing = PurchaseRequest.query.filter_by(post_id=post.id, user_id=user.id, status='pending').first()
+    existing = PurchaseRequest.query.filter(
+        PurchaseRequest.post_id == post.id,
+        PurchaseRequest.user_id == user.id,
+        PurchaseRequest.status.in_(('pending', 'approved')),
+    ).order_by(PurchaseRequest.created_at.desc()).first()
     if existing:
-        return jsonify({'error': '이미 구매신청이 접수되었습니다.'}), 400
+        return jsonify({
+            'error': 'Purchase request already exists',
+            'purchase_id': existing.id,
+            'status': existing.status,
+        }), 409
 
     pr = PurchaseRequest(post_id=post.id, user_id=user.id, buyer_name=buyer_name)
     db.session.add(pr)
@@ -514,6 +527,28 @@ def create_purchase(post_id):
     )
 
     return jsonify(pr.to_dict()), 201
+
+
+@community_bp.route('/purchases/mine', methods=['GET'])
+@approved_required
+def list_my_purchases():
+    """Return the authenticated member's formula-market purchase workflow."""
+    user = _get_current_user()
+    status_filter = (request.args.get('status') or '').strip().lower()
+    if status_filter and status_filter not in ('pending', 'approved', 'rejected'):
+        return jsonify({'error': 'Invalid status'}), 400
+
+    query = PurchaseRequest.query.join(Post).join(Board).filter(
+        PurchaseRequest.user_id == user.id,
+        Board.slug == 'formula-market',
+    )
+    if status_filter:
+        query = query.filter(PurchaseRequest.status == status_filter)
+    purchases = query.order_by(PurchaseRequest.created_at.desc()).limit(100).all()
+    return jsonify({
+        'purchases': [purchase.to_dict() for purchase in purchases],
+        'total': len(purchases),
+    })
 
 
 @community_bp.route('/purchases/summary', methods=['GET'])

@@ -1300,6 +1300,17 @@ export const communityAPI = {
     // Purchase
     createPurchase: (postId: number, buyerName: string) =>
         postAuthAPI<{ id: number; status: string }>(`/api/community/posts/${postId}/purchase`, { buyer_name: buyerName }),
+    getMyPurchases: (status?: 'pending' | 'approved' | 'rejected') =>
+        fetchAuthAPI<{ purchases: Array<{
+            id: number;
+            post_id: number;
+            post_title?: string;
+            post_price?: string;
+            buyer_name: string;
+            status: string;
+            created_at?: string;
+            approved_at?: string;
+        }>; total: number }>(`/api/community/purchases/mine${status ? `?status=${status}` : ''}`),
 
     // Search
     search: (q: string, board?: string, page = 1) => {
