@@ -71,5 +71,7 @@ if __name__ == '__main__':
     print(f"{'='*60}\n")
 
     # Cloud(Render) / 홈서버(HOME_SERVER): 0.0.0.0 / 개발PC: 127.0.0.1
-    host = '0.0.0.0' if os.getenv('RENDER') or os.getenv('HOME_SERVER') else '127.0.0.1'
+    host = os.getenv('FLASK_HOST') or (
+        '0.0.0.0' if os.getenv('RENDER') or os.getenv('HOME_SERVER') else '127.0.0.1'
+    )
     app.run(host=host, port=port, debug=False)

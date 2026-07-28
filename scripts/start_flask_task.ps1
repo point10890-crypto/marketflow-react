@@ -14,6 +14,7 @@ Set-Location $Root
 $env:PYTHONIOENCODING = "utf-8"
 $env:PYTHONUNBUFFERED = "1"
 $env:HOME_SERVER = "1"
+$env:FLASK_HOST = "127.0.0.1"
 $env:FLASK_PORT = "5001"
 $env:WERKZEUG_RUN_MAIN = $null
 # The MiniPC has a dedicated scheduler.py daemon for recurring work. Keep the
