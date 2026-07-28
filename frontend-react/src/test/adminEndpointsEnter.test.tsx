@@ -827,6 +827,7 @@ describe('AdminEndpointsPage analysis start input', () => {
   it('reuses the endpoints console in subscriber mode without admin-only mutation controls', async () => {
     await renderSubscriberPage();
 
+    expect(screen.getByRole('link', { name: /Goodrich TOP 3/i })).toHaveAttribute('href', '/dashboard/ai-bain/goodrich');
     expect(await screen.findByText('AI Brain 검출 대시보드')).toBeTruthy();
     expect(await screen.findByText('Pro + AI Brain 구독자 콘솔')).toBeTruthy();
     expect(await screen.findByText('알파 스캐너 신규 이벤트')).toBeTruthy();
