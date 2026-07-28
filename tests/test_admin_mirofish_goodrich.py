@@ -54,6 +54,27 @@ def test_goodrich_client_rejects_missing_pick_identity(monkeypatch):
         raise AssertionError('invalid payload must be rejected')
 
 
+def test_goodrich_history_and_performance_clients_forward_bounded_queries(monkeypatch):
+    urls = []
+
+    class RawResponse:
+        status_code = 200
+
+        def json(self):
+            return {'items': []} if '/history?' in urls[-1] else {'window_days': 365}
+
+    def fake_request(method, url, **kwargs):
+        urls.append(url)
+        return RawResponse()
+
+    monkeypatch.setattr(goodrich_client.requests, 'request', fake_request)
+
+    assert goodrich_client.get_detection_history(limit=999, offset=-2) == {'items': []}
+    assert goodrich_client.get_performance(window_days=999) == {'window_days': 365}
+    assert urls[0].endswith('/v1/fund-manager/history?limit=100&offset=0')
+    assert urls[1].endswith('/v1/fund-manager/performance?window_days=365')
+
+
 def test_goodrich_client_maps_timeout_without_upstream_details(monkeypatch):
     monkeypatch.setattr(
         'app.services.kis_screener.run_screening',
@@ -148,6 +169,8 @@ def test_goodrich_routes_require_auth():
 
     assert client.get('/api/admin/mirofish/goodrich/fund-manager').status_code == 401
     assert client.post('/api/admin/mirofish/goodrich/fund-manager/research').status_code == 401
+    assert client.get('/api/admin/mirofish/goodrich/fund-manager/history').status_code == 401
+    assert client.get('/api/admin/mirofish/goodrich/fund-manager/performance').status_code == 401
 
 
 def test_goodrich_routes_forward_safe_payload(admin_client, monkeypatch):
@@ -156,9 +179,25 @@ def test_goodrich_routes_forward_safe_payload(admin_client, monkeypatch):
     snapshot = {'picks': [{'symbol': '005930', 'name': '삼성전자'}]}
     monkeypatch.setattr(route.goodrich_client, 'get_fund_manager', lambda: snapshot)
     monkeypatch.setattr(route.goodrich_client, 'run_research', lambda: snapshot)
+    monkeypatch.setattr(
+        route.goodrich_client,
+        'get_detection_history',
+        lambda limit, offset: {'items': [], 'limit': limit, 'offset': offset},
+    )
+    monkeypatch.setattr(
+        route.goodrich_client,
+        'get_performance',
+        lambda window_days: {'window_days': window_days, 'total_picks': 0},
+    )
 
     assert admin_client.get('/api/admin/mirofish/goodrich/fund-manager').get_json() == snapshot
     assert admin_client.post('/api/admin/mirofish/goodrich/fund-manager/research').get_json() == snapshot
+    assert admin_client.get(
+        '/api/admin/mirofish/goodrich/fund-manager/history?limit=7&offset=2'
+    ).get_json() == {'items': [], 'limit': 7, 'offset': 2}
+    assert admin_client.get(
+        '/api/admin/mirofish/goodrich/fund-manager/performance?window_days=90'
+    ).get_json() == {'window_days': 90, 'total_picks': 0}
 
 
 def test_goodrich_route_maps_upstream_failure(admin_client, monkeypatch):

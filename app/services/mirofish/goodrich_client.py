@@ -49,6 +49,7 @@ def _request(
     timeout: float,
     json_body: dict | None = None,
     integration: dict | None = None,
+    validate_fund_manager: bool = True,
 ) -> dict:
     try:
         response = requests.request(
@@ -73,7 +74,9 @@ def _request(
         raise GoodrichServiceError('Goodrich 서비스 응답 형식이 올바르지 않습니다.') from exc
     if not isinstance(payload, dict):
         raise GoodrichServiceError('Goodrich 서비스 응답 형식이 올바르지 않습니다.')
-    return _validate_and_envelope(payload, integration=integration)
+    if validate_fund_manager:
+        return _validate_and_envelope(payload, integration=integration)
+    return payload
 
 
 def _validate_and_envelope(payload: dict, *, integration: dict | None = None) -> dict:
@@ -157,4 +160,25 @@ def run_research() -> dict:
             'market_status': screening.get('market_status'),
             'ranking_owner': 'marketflow-kis-rules-then-goodrich-quant',
         },
+    )
+
+
+def get_detection_history(*, limit: int = 20, offset: int = 0) -> dict:
+    safe_limit = max(1, min(int(limit), 100))
+    safe_offset = max(0, int(offset))
+    return _request(
+        'GET',
+        f'/v1/fund-manager/history?limit={safe_limit}&offset={safe_offset}',
+        timeout=DEFAULT_TIMEOUT_SECONDS,
+        validate_fund_manager=False,
+    )
+
+
+def get_performance(*, window_days: int = 30) -> dict:
+    safe_window = max(1, min(int(window_days), 365))
+    return _request(
+        'GET',
+        f'/v1/fund-manager/performance?window_days={safe_window}',
+        timeout=DEFAULT_TIMEOUT_SECONDS,
+        validate_fund_manager=False,
     )
