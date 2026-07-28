@@ -1,7 +1,7 @@
 $ErrorActionPreference = 'Stop'
 
 $root = 'C:\GoodrichTradingOS'
-$starter = 'C:\bitman_marketfloww\deploy\start_goodrich_tradingos.vbs'
+$starter = 'C:\bitman_marketfloww\deploy\start_goodrich_tradingos.ps1'
 $python = Join-Path $root '.venv\Scripts\python.exe'
 $api = Join-Path $root 'services\api\src\goodrich\main.py'
 $kis = Join-Path $root 'secrets\kis_credentials.txt'
@@ -13,7 +13,9 @@ foreach ($required in @($starter, $python, $api, $kis, $openai)) {
     }
 }
 
-$action = New-ScheduledTaskAction -Execute 'wscript.exe' -Argument "`"$starter`""
+$action = New-ScheduledTaskAction `
+    -Execute 'powershell.exe' `
+    -Argument "-NoProfile -ExecutionPolicy Bypass -File `"$starter`""
 $trigger = New-ScheduledTaskTrigger -AtStartup
 $principal = New-ScheduledTaskPrincipal `
     -UserId $env:USERNAME `
