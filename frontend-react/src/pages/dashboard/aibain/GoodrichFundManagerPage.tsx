@@ -46,11 +46,38 @@ interface GoodrichSnapshot {
     };
 }
 
+interface GoodrichHistoryItem {
+    cycle_id: string;
+    detected_at?: string;
+    status?: string;
+    picks: GoodrichPick[];
+}
+
+interface GoodrichHistory {
+    items: GoodrichHistoryItem[];
+    limit?: number;
+    offset?: number;
+}
+
+interface GoodrichPerformance {
+    window_days: number;
+    generated_at?: string;
+    total_picks: number;
+    active_count: number;
+    evaluated_count: number;
+    target_hits: number;
+    stop_hits: number;
+    hit_rate_pct?: number | null;
+    average_return_pct?: number | null;
+}
+
 const ENDPOINT = '/api/admin/mirofish/goodrich/fund-manager';
 
 export default function GoodrichFundManagerPage() {
     const { token } = useAuth();
     const [data, setData] = useState<GoodrichSnapshot | null>(null);
+    const [history, setHistory] = useState<GoodrichHistory | null>(null);
+    const [performance, setPerformance] = useState<GoodrichPerformance | null>(null);
     const [loading, setLoading] = useState(true);
     const [researching, setResearching] = useState(false);
     const [error, setError] = useState('');
@@ -59,7 +86,14 @@ export default function GoodrichFundManagerPage() {
         setLoading(true);
         setError('');
         try {
-            setData(await fetchAuthAPI<GoodrichSnapshot>(ENDPOINT, token ?? undefined, 20000));
+            const [snapshot, historyResult, performanceResult] = await Promise.all([
+                fetchAuthAPI<GoodrichSnapshot>(ENDPOINT, token ?? undefined, 20000),
+                fetchAuthAPI<GoodrichHistory>(`${ENDPOINT}/history?limit=10&offset=0`, token ?? undefined, 20000),
+                fetchAuthAPI<GoodrichPerformance>(`${ENDPOINT}/performance?window_days=30`, token ?? undefined, 20000),
+            ]);
+            setData(snapshot);
+            setHistory(historyResult);
+            setPerformance(performanceResult);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Goodrich 데이터를 불러오지 못했습니다.');
         } finally {
@@ -86,6 +120,32 @@ export default function GoodrichFundManagerPage() {
         <div className="min-h-screen bg-[#09090b] p-4 text-white sm:p-6 lg:p-8">
             <div className="mx-auto max-w-6xl space-y-5">
                 <AiBrainServiceTabs active="goodrich" />
+                <nav className="grid grid-cols-2 gap-3" aria-label="Goodrich 분석 엔드포인트">
+                    <a
+                        href="#goodrich-history"
+                        className="flex min-h-20 items-center gap-3 rounded-2xl border border-cyan-400/25 bg-cyan-400/[0.08] px-4 py-3 transition hover:border-cyan-300/50 hover:bg-cyan-400/[0.12] sm:min-h-24 sm:px-6"
+                    >
+                        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-cyan-300/10 text-cyan-300">
+                            <i className="fas fa-clock-rotate-left" />
+                        </span>
+                        <span>
+                            <strong className="block text-base font-black sm:text-xl">검출 이력</strong>
+                            <small className="mt-1 block text-[10px] text-cyan-100/60 sm:text-xs">TOP 3 선정 주기와 종목 변화</small>
+                        </span>
+                    </a>
+                    <a
+                        href="#goodrich-performance"
+                        className="flex min-h-20 items-center gap-3 rounded-2xl border border-amber-400/25 bg-amber-400/[0.08] px-4 py-3 transition hover:border-amber-300/50 hover:bg-amber-400/[0.12] sm:min-h-24 sm:px-6"
+                    >
+                        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-amber-300/10 text-amber-300">
+                            <i className="fas fa-chart-line" />
+                        </span>
+                        <span>
+                            <strong className="block text-base font-black sm:text-xl">성과 검증</strong>
+                            <small className="mt-1 block text-[10px] text-amber-100/60 sm:text-xs">목표가·손절가 달성 기록</small>
+                        </span>
+                    </a>
+                </nav>
                 <header className="rounded-2xl border border-emerald-400/20 bg-gradient-to-br from-emerald-500/[0.08] via-[#12171a] to-[#111318] p-5 sm:p-7">
                     <div className="flex flex-wrap items-start justify-between gap-4">
                         <div>
@@ -155,6 +215,64 @@ export default function GoodrichFundManagerPage() {
 
                         <GoodrichTop3Charts picks={data.picks} />
 
+                        <section id="goodrich-performance" className="scroll-mt-24 rounded-2xl border border-amber-400/20 bg-amber-400/[0.04] p-5 sm:p-6">
+                            <div className="flex flex-wrap items-end justify-between gap-2">
+                                <div>
+                                    <div className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-300">Performance endpoint</div>
+                                    <h2 className="mt-1 text-xl font-black">성과 검증</h2>
+                                </div>
+                                <span className="text-xs text-slate-500">최근 {performance?.window_days ?? 30}일</span>
+                            </div>
+                            <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
+                                <Metric label="누적 후보" value={performance?.total_picks ?? 0} />
+                                <Metric label="모니터링" value={performance?.active_count ?? 0} />
+                                <Metric label="평가 완료" value={performance?.evaluated_count ?? 0} />
+                                <Metric label="목표 달성" value={performance?.target_hits ?? 0} tone="text-emerald-300" />
+                                <Metric label="손절 도달" value={performance?.stop_hits ?? 0} tone="text-rose-300" />
+                                <Metric
+                                    label="적중률"
+                                    value={performance?.hit_rate_pct == null ? '누적 중' : `${performance.hit_rate_pct}%`}
+                                    tone="text-amber-200"
+                                />
+                            </div>
+                            <p className="mt-4 text-xs text-slate-500">
+                                30분 모니터링 시점의 KIS 현재가가 목표가 또는 손절가에 도달한 경우만 평가 완료로 기록합니다.
+                            </p>
+                        </section>
+
+                        <section id="goodrich-history" className="scroll-mt-24 rounded-2xl border border-cyan-400/20 bg-cyan-400/[0.04] p-5 sm:p-6">
+                            <div className="flex flex-wrap items-end justify-between gap-2">
+                                <div>
+                                    <div className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-300">Detection history endpoint</div>
+                                    <h2 className="mt-1 text-xl font-black">검출 이력</h2>
+                                </div>
+                                <span className="text-xs text-slate-500">최근 {history?.items?.length ?? 0}회</span>
+                            </div>
+                            <div className="mt-5 space-y-3">
+                                {(history?.items ?? []).map((item) => (
+                                    <article key={item.cycle_id} className="rounded-xl border border-white/[0.07] bg-black/20 p-4">
+                                        <div className="flex flex-wrap items-center justify-between gap-2">
+                                            <time className="text-xs font-bold text-cyan-100">{formatTime(item.detected_at)}</time>
+                                            <span className="font-mono text-[10px] text-slate-600">{item.cycle_id.slice(0, 8)}</span>
+                                        </div>
+                                        <div className="mt-3 grid gap-2 sm:grid-cols-3">
+                                            {item.picks.map((pick) => (
+                                                <div key={`${item.cycle_id}-${pick.symbol}`} className="rounded-lg bg-white/[0.035] px-3 py-2">
+                                                    <div className="text-xs font-black text-white">TOP {pick.rank} · {pick.name}</div>
+                                                    <div className="mt-1 text-[10px] text-slate-500">{pick.symbol} · {pick.status ?? 'monitoring'}</div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </article>
+                                ))}
+                                {(history?.items?.length ?? 0) === 0 && (
+                                    <div className="rounded-xl border border-dashed border-white/10 p-6 text-center text-sm text-slate-500">
+                                        아직 저장된 검출 이력이 없습니다.
+                                    </div>
+                                )}
+                            </div>
+                        </section>
+
                         <footer className="rounded-2xl border border-amber-400/15 bg-amber-400/[0.04] p-4 text-xs leading-5 text-slate-400">
                             <strong className="text-amber-200">범위와 책임:</strong> KIS 거래대금·등락률·거래량 급증 순위에서 실제 시장 주도주 후보를 검출한 뒤 TOP 3를 선정합니다.
                             현재가·목표가·손절가는 KIS 데이터와 결정론적 규칙으로 계산하며 OpenAI는 종목이나 가격을 만들지 않고 검증된 수치의 근거와 위험만 설명합니다.
@@ -169,6 +287,15 @@ export default function GoodrichFundManagerPage() {
 
 function Meta({ label, value }: { label: string; value: string }) {
     return <div className="rounded-xl border border-white/[0.07] bg-black/20 px-3 py-2"><span className="text-slate-500">{label}</span><span className="ml-2 font-bold text-slate-200">{value}</span></div>;
+}
+
+function Metric({ label, value, tone = 'text-white' }: { label: string; value: string | number; tone?: string }) {
+    return (
+        <div className="rounded-xl border border-white/[0.06] bg-black/20 p-3">
+            <div className="text-[10px] text-slate-500">{label}</div>
+            <div className={`mt-1 text-lg font-black ${tone}`}>{value}</div>
+        </div>
+    );
 }
 
 function PickCard({ pick, fallbackRank }: { pick: GoodrichPick; fallbackRank: number }) {
