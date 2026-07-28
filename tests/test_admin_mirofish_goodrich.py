@@ -80,6 +80,38 @@ def test_goodrich_client_maps_timeout_without_upstream_details(monkeypatch):
         raise AssertionError('timeout must become a safe service error')
 
 
+def test_goodrich_research_keeps_relative_leaders_and_excludes_crashers(monkeypatch):
+    captured = {}
+
+    monkeypatch.setattr(
+        'app.services.kis_screener.run_screening',
+        lambda force=True: {
+            'timestamp': '2026-07-28T15:30:00+09:00',
+            'market_status': 'closed',
+            'results': [
+                {'code': '413630', 'name': '씨피시스템', 'change_pct': 3.32, 'score': {'total': 73}},
+                {'code': '068270', 'name': '셀트리온', 'change_pct': -0.73, 'score': {'total': 51}},
+                {'code': '207940', 'name': '삼성바이오로직스', 'change_pct': 0.26, 'score': {'total': 48}},
+                {'code': '000660', 'name': 'SK하이닉스', 'change_pct': -14.65, 'score': {'total': 51}},
+                {'code': '005935', 'name': '삼성전자우', 'change_pct': -1.0, 'score': {'total': 60}},
+            ],
+        },
+    )
+
+    def fake_request(method, url, **kwargs):
+        captured['json'] = kwargs['json']
+        return FakeResponse()
+
+    monkeypatch.setattr(goodrich_client.requests, 'request', fake_request)
+    result = goodrich_client.run_research()
+
+    assert [row['symbol'] for row in captured['json']['candidates']] == [
+        '413630', '068270', '207940',
+    ]
+    assert result['integration']['universe_size'] == 3
+    assert result['integration']['market_status'] == 'closed'
+
+
 @pytest.fixture
 def admin_client():
     app = create_app({

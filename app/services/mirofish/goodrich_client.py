@@ -136,8 +136,8 @@ def run_research() -> dict:
             and symbol.isdigit()
             and name
             and not is_preferred
-            and change_pct > 0
-            and total_score >= 50
+            and change_pct > -2
+            and total_score >= 45
         ):
             candidates.append({'symbol': symbol, 'name': name})
     if len(candidates) < 3:
