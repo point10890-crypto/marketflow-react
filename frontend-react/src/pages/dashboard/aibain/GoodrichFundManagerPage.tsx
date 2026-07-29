@@ -47,19 +47,6 @@ interface GoodrichSnapshot {
     multi_mcp?: MultiMcpRun;
 }
 
-interface MultiMcpDomain {
-    id: string;
-    owner?: string;
-    mode?: string;
-}
-
-interface MultiMcpArchitecture {
-    objective?: string;
-    numeric_authority?: string;
-    mcp_domains?: MultiMcpDomain[];
-    agent_flow?: string[];
-}
-
 interface MultiMcpRun {
     id?: string;
     status?: 'portfolio_ready' | 'selective_portfolio' | 'cash_wait' | string;
@@ -69,7 +56,6 @@ interface MultiMcpRun {
     selected?: Array<Record<string, unknown>>;
     agent_analyses?: Array<Record<string, unknown>>;
     cash_wait_reason?: string | null;
-    architecture?: MultiMcpArchitecture;
 }
 
 interface GoodrichHistoryItem {
@@ -98,14 +84,12 @@ interface GoodrichPerformance {
 }
 
 const ENDPOINT = '/api/admin/mirofish/goodrich/fund-manager';
-const MULTI_MCP_ARCHITECTURE_ENDPOINT = '/api/admin/mirofish/tradingagents/multi-mcp/architecture';
 
 export default function GoodrichFundManagerPage() {
     const { token } = useAuth();
     const [data, setData] = useState<GoodrichSnapshot | null>(null);
     const [history, setHistory] = useState<GoodrichHistory | null>(null);
     const [performance, setPerformance] = useState<GoodrichPerformance | null>(null);
-    const [multiMcpArchitecture, setMultiMcpArchitecture] = useState<MultiMcpArchitecture | null>(null);
     const [loading, setLoading] = useState(true);
     const [researching, setResearching] = useState(false);
     const [error, setError] = useState('');
@@ -114,17 +98,14 @@ export default function GoodrichFundManagerPage() {
         setLoading(true);
         setError('');
         try {
-            const [snapshot, historyResult, performanceResult, architectureResult] = await Promise.all([
+            const [snapshot, historyResult, performanceResult] = await Promise.all([
                 fetchAuthAPI<GoodrichSnapshot>(ENDPOINT, token ?? undefined, 20000),
                 fetchAuthAPI<GoodrichHistory>(`${ENDPOINT}/history?limit=10&offset=0`, token ?? undefined, 20000),
                 fetchAuthAPI<GoodrichPerformance>(`${ENDPOINT}/performance?window_days=30`, token ?? undefined, 20000),
-                fetchAuthAPI<MultiMcpArchitecture>(MULTI_MCP_ARCHITECTURE_ENDPOINT, token ?? undefined, 20000)
-                    .catch(() => null),
             ]);
             setData(snapshot);
             setHistory(historyResult);
             setPerformance(performanceResult);
-            setMultiMcpArchitecture(architectureResult);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Goodrich 데이터를 불러오지 못했습니다.');
         } finally {
@@ -146,6 +127,7 @@ export default function GoodrichFundManagerPage() {
             setResearching(false);
         }
     };
+    const isCashWait = Boolean(data && data.picks.length === 0);
 
     return (
         <div className="min-h-screen bg-[#09090b] p-4 text-white sm:p-6 lg:p-8">
@@ -240,26 +222,28 @@ export default function GoodrichFundManagerPage() {
                             </p>
                         </section>
 
-                        <MultiMcpOperations
-                            run={data.multi_mcp}
-                            architecture={data.multi_mcp?.architecture ?? multiMcpArchitecture}
-                            fallbackSelectedCount={data.picks.length}
-                        />
-
                         <section className="grid gap-4 lg:grid-cols-3">
                             {data.picks.map((pick, index) => <PickCard key={pick.symbol} pick={pick} fallbackRank={index + 1} />)}
                         </section>
 
-                        {data.status === 'cash_wait' && data.picks.length === 0 && (
-                            <section className="rounded-2xl border border-amber-400/25 bg-amber-400/[0.06] p-6 text-center">
-                                <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-amber-300/10 text-2xl text-amber-300">
-                                    <i className="fas fa-shield-halved" />
+                        {isCashWait && (
+                            <section
+                                aria-label="현재는 현금 대기 구간입니다"
+                                className="rounded-2xl border border-amber-400/30 bg-gradient-to-br from-amber-400/[0.10] via-[#17150f] to-[#111318] p-5 sm:p-8"
+                            >
+                                <div className="flex flex-col items-center gap-4 text-center sm:flex-row sm:items-start sm:text-left">
+                                    <div className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-amber-300/10 text-2xl text-amber-300">
+                                        <i className="fas fa-shield-halved" />
+                                    </div>
+                                    <div>
+                                        <div className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-300">AI Fund Manager</div>
+                                        <h2 className="mt-1 text-xl font-black text-amber-100 sm:text-2xl">현재는 현금 대기 구간입니다.</h2>
+                                        <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">
+                                            수익 품질 게이트와 CIO 심사를 모두 통과한 주도주가 3개 미만입니다.
+                                            AI 펀드매니저는 종목을 임의로 채우지 않고 백그라운드에서 다음 검출을 계속합니다.
+                                        </p>
+                                    </div>
                                 </div>
-                                <h2 className="mt-4 text-xl font-black text-amber-100">현재는 현금 대기 구간입니다</h2>
-                                <p className="mx-auto mt-2 max-w-2xl text-sm leading-6 text-slate-300">
-                                    5일·20일 상승 추세, 20일선 상단, 낙폭과 수급 기준을 모두 통과한 종목이
-                                    3개 미만입니다. AI 펀드매니저가 TOP 3를 억지로 채우지 않았습니다.
-                                </p>
                             </section>
                         )}
 
@@ -332,105 +316,6 @@ export default function GoodrichFundManagerPage() {
                 )}
             </div>
         </div>
-    );
-}
-
-const AGENT_FLOW_LABELS: Record<string, string> = {
-    candidate_detection: 'KIS 후보 검출',
-    parallel_mcp_evidence: 'MCP 근거 병렬 수집',
-    profit_quality_gate: '수익 품질 게이트',
-    four_analyst_reports: '4개 분석 에이전트',
-    bull_bear_cross_examination: 'Bull ↔ Bear 상호 검증',
-    trader_risk_review: '트레이더·리스크 심사',
-    cio_selection_or_cash_wait: 'CIO 선정·현금 대기',
-    outcome_memory: '성과 메모리 학습',
-};
-
-const MCP_DOMAIN_LABELS: Record<string, string> = {
-    market: '시장',
-    technical: '기술',
-    evidence: '근거',
-    memory: '성과',
-    debate: '토론',
-    cio: 'CIO',
-};
-
-function MultiMcpOperations({
-    run,
-    architecture,
-    fallbackSelectedCount,
-}: {
-    run?: MultiMcpRun;
-    architecture: MultiMcpArchitecture | null;
-    fallbackSelectedCount: number;
-}) {
-    const status = run?.status ?? 'standby';
-    const selectedCount = run?.selected?.length ?? (run ? 0 : fallbackSelectedCount);
-    const domains = architecture?.mcp_domains ?? [];
-    const flow = architecture?.agent_flow ?? [];
-    const statusLabel = status === 'portfolio_ready'
-        ? '포트폴리오 준비'
-        : status === 'selective_portfolio'
-            ? '선별 포트폴리오'
-            : status === 'cash_wait'
-                ? '현금 대기'
-                : '분석 대기';
-    const statusTone = status === 'cash_wait'
-        ? 'border-amber-400/30 bg-amber-400/10 text-amber-200'
-        : status === 'portfolio_ready' || status === 'selective_portfolio'
-            ? 'border-emerald-400/30 bg-emerald-400/10 text-emerald-200'
-            : 'border-slate-400/20 bg-slate-400/10 text-slate-300';
-
-    return (
-        <section
-            aria-label="멀티 MCP 에이전트 운영 상태"
-            className="rounded-2xl border border-violet-400/20 bg-gradient-to-br from-violet-500/[0.07] to-[#11141b] p-5 sm:p-6"
-        >
-            <div className="flex flex-wrap items-start justify-between gap-3">
-                <div>
-                    <div className="text-[10px] font-black uppercase tracking-[0.2em] text-violet-300">Multi-MCP agent team</div>
-                    <h2 className="mt-1 text-xl font-black">에이전트 상호 분석 파이프라인</h2>
-                    <p className="mt-1 text-xs text-slate-500">수치는 MCP가 검증하고, 에이전트 팀은 비교·반박·기각·선정합니다.</p>
-                </div>
-                <span className={`rounded-full border px-3 py-1 text-xs font-black ${statusTone}`}>{statusLabel}</span>
-            </div>
-
-            <div className="mt-5 grid grid-cols-3 gap-2">
-                <Metric label="검출 후보" value={run?.candidate_count ?? '—'} />
-                <Metric label="게이트 통과" value={run?.profit_gate_passed_count ?? '—'} tone="text-cyan-200" />
-                <Metric label="최종 Selected" value={selectedCount} tone={selectedCount > 0 ? 'text-emerald-300' : 'text-amber-200'} />
-            </div>
-
-            <div className="mt-5">
-                <div className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">MCP domains</div>
-                <div className="mt-2 flex flex-wrap gap-2">
-                    {domains.map((domain) => (
-                        <span key={domain.id} className="rounded-lg border border-white/[0.08] bg-black/20 px-3 py-2 text-xs">
-                            <strong className="text-violet-200">{MCP_DOMAIN_LABELS[domain.id] ?? domain.id}</strong>
-                            {domain.owner && <span className="ml-2 text-[10px] text-slate-500">{domain.owner}</span>}
-                        </span>
-                    ))}
-                    {domains.length === 0 && <span className="text-xs text-slate-500">아키텍처 연결 대기</span>}
-                </div>
-            </div>
-
-            <ol className="mt-5 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-                {flow.map((step, index) => (
-                    <li key={step} className="flex items-center gap-2 rounded-xl border border-white/[0.06] bg-black/20 px-3 py-2">
-                        <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-violet-400/10 text-[10px] font-black text-violet-200">{index + 1}</span>
-                        <span className="text-[11px] font-bold text-slate-300">{AGENT_FLOW_LABELS[step] ?? step}</span>
-                    </li>
-                ))}
-            </ol>
-
-            {status === 'cash_wait' && (
-                <div className="mt-4 rounded-xl border border-amber-400/20 bg-amber-400/[0.06] px-4 py-3 text-xs leading-5 text-amber-100/80">
-                    <i className="fas fa-shield-halved mr-2 text-amber-300" />
-                    수익 품질 게이트와 CIO 심사를 통과한 종목이 없어 현금 대기를 유지합니다.
-                </div>
-            )}
-            {run?.completed_at && <div className="mt-3 text-right text-[10px] text-slate-600">최근 완료 {formatTime(run.completed_at)}</div>}
-        </section>
     );
 }
 
