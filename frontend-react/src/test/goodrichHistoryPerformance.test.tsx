@@ -64,27 +64,12 @@ describe('Goodrich history and performance endpoints', () => {
         expect(screen.getByText('목표 달성').nextElementSibling?.textContent).toBe('1');
         expect(screen.getByText('손절 도달').nextElementSibling?.textContent).toBe('1');
         expect(screen.getByText('적중률').nextElementSibling?.textContent).toBe('50%');
-        expect(screen.queryByText('에이전트 상호 분석 파이프라인')).not.toBeInTheDocument();
     });
 
-    it('renders cash-wait state and zero selected from a completed multi-MCP run', async () => {
+    it('shows the responsive cash-wait state without rendering empty charts', async () => {
         mockApi.fetchAuthAPI.mockReset();
         mockApi.fetchAuthAPI
-            .mockResolvedValueOnce({
-                status: 'research_required',
-                headline: '현금 대기',
-                picks: [],
-                multi_mcp: {
-                    status: 'selective_portfolio',
-                    candidate_count: 9,
-                    profit_gate_passed_count: 2,
-                    selected: [{ symbol: '052460' }, { symbol: '068270' }],
-                    architecture: {
-                        mcp_domains: [{ id: 'market', owner: 'KIS/regime' }],
-                        agent_flow: ['candidate_detection', 'cio_selection_or_cash_wait'],
-                    },
-                },
-            })
+            .mockResolvedValueOnce({ status: 'research_required', headline: '현금 대기', picks: [] })
             .mockResolvedValueOnce({ items: [] })
             .mockResolvedValueOnce({
                 window_days: 30,
@@ -100,6 +85,7 @@ describe('Goodrich history and performance endpoints', () => {
         expect(await screen.findByRole('region', { name: '현재는 현금 대기 구간입니다' })).toBeInTheDocument();
         expect(screen.getByText('현재는 현금 대기 구간입니다.')).toBeInTheDocument();
         expect(screen.getByText(/백그라운드에서 다음 검출을 계속합니다/)).toBeInTheDocument();
+        expect(screen.queryByText('TOP 3 charts')).not.toBeInTheDocument();
         expect(screen.queryByText('에이전트 상호 분석 파이프라인')).not.toBeInTheDocument();
     });
 });

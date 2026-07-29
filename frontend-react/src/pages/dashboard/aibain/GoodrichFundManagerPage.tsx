@@ -44,18 +44,6 @@ interface GoodrichSnapshot {
         ai_role?: string;
         ordering_enabled?: boolean;
     };
-    multi_mcp?: MultiMcpRun;
-}
-
-interface MultiMcpRun {
-    id?: string;
-    status?: 'portfolio_ready' | 'selective_portfolio' | 'cash_wait' | string;
-    completed_at?: string;
-    candidate_count?: number;
-    profit_gate_passed_count?: number;
-    selected?: Array<Record<string, unknown>>;
-    agent_analyses?: Array<Record<string, unknown>>;
-    cash_wait_reason?: string | null;
 }
 
 interface GoodrichHistoryItem {
@@ -127,7 +115,6 @@ export default function GoodrichFundManagerPage() {
             setResearching(false);
         }
     };
-    const isCashWait = Boolean(data && data.picks.length === 0);
 
     return (
         <div className="min-h-screen bg-[#09090b] p-4 text-white sm:p-6 lg:p-8">
@@ -171,7 +158,7 @@ export default function GoodrichFundManagerPage() {
                                 </span>
                                 <div>
                                     <h1 className="text-2xl font-black tracking-tight sm:text-3xl">Goodrich AI 펀드매니저</h1>
-                                    <p className="mt-1 text-sm text-slate-400">KIS 실데이터 · 수익 품질 게이트 · OpenAI 비교·기각 결정</p>
+                                    <p className="mt-1 text-sm text-slate-400">KIS 실데이터 · 결정론적 TOP 3 · OpenAI 검증 설명</p>
                                 </div>
                             </div>
                         </div>
@@ -226,10 +213,10 @@ export default function GoodrichFundManagerPage() {
                             {data.picks.map((pick, index) => <PickCard key={pick.symbol} pick={pick} fallbackRank={index + 1} />)}
                         </section>
 
-                        {isCashWait && (
+                        {data.picks.length === 0 && (
                             <section
                                 aria-label="현재는 현금 대기 구간입니다"
-                                className="rounded-2xl border border-amber-400/30 bg-gradient-to-br from-amber-400/[0.10] via-[#17150f] to-[#111318] p-5 sm:p-8"
+                                className="rounded-2xl border border-amber-400/30 bg-amber-400/[0.08] p-5 sm:p-8"
                             >
                                 <div className="flex flex-col items-center gap-4 text-center sm:flex-row sm:items-start sm:text-left">
                                     <div className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-amber-300/10 text-2xl text-amber-300">
@@ -239,8 +226,8 @@ export default function GoodrichFundManagerPage() {
                                         <div className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-300">AI Fund Manager</div>
                                         <h2 className="mt-1 text-xl font-black text-amber-100 sm:text-2xl">현재는 현금 대기 구간입니다.</h2>
                                         <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">
-                                            수익 품질 게이트와 CIO 심사를 모두 통과한 주도주가 3개 미만입니다.
-                                            AI 펀드매니저는 종목을 임의로 채우지 않고 백그라운드에서 다음 검출을 계속합니다.
+                                            승인된 주도주가 3개 미만입니다. AI 펀드매니저는 종목을 임의로 채우지 않고
+                                            백그라운드에서 다음 검출을 계속합니다.
                                         </p>
                                     </div>
                                 </div>
