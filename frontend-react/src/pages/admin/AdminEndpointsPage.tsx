@@ -190,6 +190,35 @@ function scannerRunTimestamp(run?: MiroFishScannerRun | null): number {
     return Number.isNaN(value) ? 0 : value;
 }
 
+const SCANNER_RUN_CACHE_KEY = 'marketflow.mirofish.alpha-scanner-run.v1';
+
+function readScannerRunCache(): MiroFishScannerRun | null {
+    try {
+        const raw = window.localStorage.getItem(SCANNER_RUN_CACHE_KEY);
+        if (!raw) return null;
+        const cached = JSON.parse(raw) as MiroFishScannerRun;
+        return cached?.id && Array.isArray(cached.candidates) && cached.candidates.length > 0
+            ? cached
+            : null;
+    } catch {
+        return null;
+    }
+}
+
+function preferLatestScannerRun(
+    current: MiroFishScannerRun | null,
+    next?: MiroFishScannerRun | null,
+): MiroFishScannerRun | null {
+    if (!next?.id) return current;
+    const currentHasCandidates = Boolean(current?.candidates?.length);
+    const nextHasCandidates = Boolean(next.candidates?.length);
+    if (currentHasCandidates && !nextHasCandidates) return current;
+    if (!currentHasCandidates) return next;
+    const currentTime = scannerRunTimestamp(current);
+    const nextTime = scannerRunTimestamp(next);
+    return currentTime && nextTime && nextTime < currentTime ? current : next;
+}
+
 const WORKFLOW_CACHE_KEY = 'marketflow.mirofish.workflow-top3.v1';
 
 function workflowTimestamp(workflow?: MiroFishWorkflow | null): number {
@@ -1945,6 +1974,7 @@ interface AdminEndpointsPageProps {
 }
 
 export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndpointsPageProps = {}) {
+    const cachedScannerRun = useMemo(readScannerRunCache, []);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [phase, setPhase] = useState(1);
     const [target, setTarget] = useState(defaultTarget);
@@ -1957,11 +1987,11 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
     const [activeCandidateIndex, setActiveCandidateIndex] = useState(0);
     const [recentRuns, setRecentRuns] = useState<MiroFishRun[]>([]);
     const [dataSourceCount, setDataSourceCount] = useState(0);
-    const [alphaScannerState, setAlphaScannerState] = useState<AlphaScannerState>('idle');
-    const [alphaScannerRun, setAlphaScannerRun] = useState<MiroFishScannerRun | null>(null);
+    const [alphaScannerState, setAlphaScannerState] = useState<AlphaScannerState>(cachedScannerRun ? 'ready' : 'idle');
+    const [alphaScannerRun, setAlphaScannerRun] = useState<MiroFishScannerRun | null>(cachedScannerRun);
     const alphaScannerRunRef = useRef<MiroFishScannerRun | null>(null);
     const [alphaScannerStatus, setAlphaScannerStatus] = useState<MiroFishScannerStatus | null>(null);
-    const [alphaCandidates, setAlphaCandidates] = useState<MiroFishAlphaCandidate[]>([]);
+    const [alphaCandidates, setAlphaCandidates] = useState<MiroFishAlphaCandidate[]>(cachedScannerRun?.candidates || []);
     const [alphaErrorText, setAlphaErrorText] = useState<string | null>(null);
     const [deepSeekStatus, setDeepSeekStatus] = useState<MiroFishDeepSeekStatus | null>(null);
     const [tradingViewStatus, setTradingViewStatus] = useState<MiroFishTradingViewStatus | null>(null);
@@ -2245,6 +2275,12 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
 
     useEffect(() => {
         alphaScannerRunRef.current = alphaScannerRun;
+        if (!alphaScannerRun?.id || !alphaScannerRun.candidates?.length || alphaScannerRun.status === 'failed') return;
+        try {
+            window.localStorage.setItem(SCANNER_RUN_CACHE_KEY, JSON.stringify(alphaScannerRun));
+        } catch {
+            // Storage can be unavailable in private or restricted browser contexts.
+        }
     }, [alphaScannerRun]);
 
     useEffect(() => {
@@ -2263,10 +2299,12 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
                     const currentTime = scannerRunTimestamp(currentRun);
                     const latestTime = scannerRunTimestamp(latest);
                     if (currentRun?.id && currentRun.id !== latest.id && currentTime > 0 && currentTime >= latestTime) return;
-                    setAlphaScannerRun(latest);
-                    setAlphaCandidates(latest.candidates || []);
-                    setAlphaScannerState(latest.status === 'failed' ? 'error' : latest.status === 'running' ? 'running' : 'ready');
-                    if (latest.status !== 'failed') setAlphaErrorText(null);
+                    const preferred = preferLatestScannerRun(currentRun, latest);
+                    if (!preferred) return;
+                    setAlphaScannerRun(preferred);
+                    setAlphaCandidates(preferred.candidates || []);
+                    setAlphaScannerState(preferred.status === 'failed' ? 'error' : preferred.status === 'running' ? 'running' : 'ready');
+                    if (preferred.status !== 'failed') setAlphaErrorText(null);
                 } catch {
                     if (!scannerStatus.last_run_id && alphaScannerState === 'idle') {
                         setAlphaScannerRun(null);

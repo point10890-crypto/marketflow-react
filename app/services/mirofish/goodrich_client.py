@@ -8,7 +8,7 @@ minimum response contract before presenting it to AI Brain subscribers.
 from __future__ import annotations
 
 import os
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from urllib.parse import urlparse
 
 import requests
@@ -79,6 +79,52 @@ def _request(
     return payload
 
 
+def _validate_market_leader_contract(payload: dict, picks: list) -> None:
+    if not picks:
+        return
+    selection = payload.get('selection')
+    if (
+        not isinstance(selection, dict)
+        or selection.get('source') != 'kis_detected_market_leaders'
+        or selection.get('market_data_source') != 'KIS'
+        or selection.get('simulation') is not False
+    ):
+        raise GoodrichServiceError('검증된 KIS 시장 주도주 출처가 아니므로 TOP 3를 게시하지 않습니다.')
+    if len(picks) != 3:
+        raise GoodrichServiceError('검증된 실제 시장 주도주가 3종목 미만이므로 TOP 3를 게시하지 않습니다.')
+    ai = payload.get('ai')
+    if (
+        not isinstance(ai, dict)
+        or str(ai.get('provider') or '').lower() != 'openai'
+        or ai.get('status') != 'completed'
+    ):
+        raise GoodrichServiceError('OpenAI 검증이 완료되지 않아 TOP 3를 게시하지 않습니다.')
+
+    seen_symbols: set[str] = set()
+    now = datetime.now(timezone.utc)
+    for pick in picks:
+        if not isinstance(pick, dict):
+            raise GoodrichServiceError('Goodrich TOP 3 응답 형식이 올바르지 않습니다.')
+        symbol = str(pick.get('symbol') or '').strip()
+        if len(symbol) != 6 or not symbol.isdigit() or symbol in seen_symbols:
+            raise GoodrichServiceError('실제 상장 종목 식별정보가 유효하지 않습니다.')
+        current_price = _safe_float(pick.get('current_price'))
+        target_price = _safe_float(pick.get('target_price'))
+        stop_price = _safe_float(pick.get('stop_price'))
+        if current_price <= 0 or not (0 < stop_price < current_price < target_price):
+            raise GoodrichServiceError('KIS 현재가·목표가·손절가 검증에 실패해 TOP 3를 게시하지 않습니다.')
+        try:
+            observed_at = datetime.fromisoformat(str(pick.get('observed_at') or '').replace('Z', '+00:00'))
+            if observed_at.tzinfo is None:
+                observed_at = observed_at.replace(tzinfo=timezone.utc)
+            age = now - observed_at.astimezone(timezone.utc)
+        except (TypeError, ValueError):
+            raise GoodrichServiceError('KIS 관측시각이 없어 TOP 3를 게시하지 않습니다.') from None
+        if age < -timedelta(minutes=5) or age > timedelta(minutes=90):
+            raise GoodrichServiceError('KIS 현재가가 최신 장중 데이터가 아니므로 TOP 3를 게시하지 않습니다.')
+        seen_symbols.add(symbol)
+
+
 def _validate_and_envelope(payload: dict, *, integration: dict | None = None) -> dict:
     picks = payload.get('picks')
     if not isinstance(picks, list):
@@ -93,6 +139,7 @@ def _validate_and_envelope(payload: dict, *, integration: dict | None = None) ->
             raise GoodrichServiceError('Goodrich 종목 식별 정보가 누락되었습니다.')
         normalized_picks.append(dict(pick))
 
+    _validate_market_leader_contract(payload, normalized_picks)
     result = dict(payload)
     result['picks'] = normalized_picks
     result['integration'] = {
@@ -101,8 +148,8 @@ def _validate_and_envelope(payload: dict, *, integration: dict | None = None) ->
         'fetched_at': datetime.now(timezone.utc).isoformat(),
         'universe': 'kis-market-leaders',
         'universe_size': len(normalized_picks),
-        'ranking_owner': 'goodrich-deterministic-rules',
-        'ai_role': 'verified-explanation-only',
+        'ranking_owner': 'kis-quant-plus-openai-bounded-decision',
+        'ai_role': 'bounded-rerank-and-reject',
         'ordering_enabled': False,
         **(integration or {}),
     }
@@ -126,7 +173,10 @@ def run_research() -> dict:
     from app.services.kis_screener import run_screening
 
     screening = run_screening(force=True)
-    rows = screening.get('results') if isinstance(screening, dict) else None
+    rows = screening.get('candidate_pool') if isinstance(screening, dict) else None
+    using_candidate_pool = isinstance(rows, list)
+    if not isinstance(rows, list):
+        rows = screening.get('results') if isinstance(screening, dict) else None
     if not isinstance(rows, list) or len(rows) < 3:
         raise GoodrichServiceError(
             'KIS 시장 주도주 검출 결과가 3개 미만입니다. 이전 고정 종목으로 대체하지 않습니다.',
@@ -148,8 +198,11 @@ def run_research() -> dict:
             and symbol.isdigit()
             and name
             and not is_preferred
-            and change_pct > -2
-            and total_score >= 45
+            # Goodrich is the AI decision layer. The scanner hands off genuine
+            # liquid KIS observations, including relative-strength
+            # candidates that miss the late-session B-grade cutoff.
+            and change_pct >= (-4 if using_candidate_pool else -2)
+            and total_score >= (24 if using_candidate_pool else 45)
         ):
             candidates.append({'symbol': symbol, 'name': name})
     if len(candidates) < 3:

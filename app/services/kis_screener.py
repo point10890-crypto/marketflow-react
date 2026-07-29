@@ -190,6 +190,8 @@ def fetch_fluctuation_rank(token):
                     "/uapi/domestic-stock/v1/ranking/fluctuation",
                     "FHPST01700000", {
                         "fid_cond_mrkt_div_code": "J", "fid_cond_scr_div_code": "20170",
+                        # The current KIS paper endpoint rejects the four-character
+                        # value documented by the sample repo and requires "0".
                         "fid_input_iscd": "0000", "fid_rank_sort_cls_code": "0",
                         "fid_input_cnt_1": "30", "fid_prc_cls_code": "0",
                         "fid_input_price_1": "0", "fid_input_price_2": "1000000",
@@ -530,20 +532,32 @@ def run_screening(force=False):
             "raw": item,
         }
 
+    # The KIS fluctuation ranking response does not include acml_tr_pbmn.
+    # Hydrate its leading rows with the live quote/detail endpoint before
+    # applying the liquidity floor; treating the missing field as zero drops
+    # every rising-stock candidate.
+    fluct_price_details = {}
+    fluct_detail_calls = 0
     for item in fluct_data:
         code = item.get("mksc_shrn_iscd", item.get("stck_shrn_iscd", ""))
         name = item.get("hts_kor_isnm", "")
         if not code or code in candidates or _is_etf(name):
             continue
         pct = _safe_float(item.get("prdy_ctrt"))
-        tr_amt = _safe_int(item.get("acml_tr_pbmn"))
+        if pct < 1:
+            continue
+        detail = fetch_price_detail(token, code) or {}
+        fluct_detail_calls += 1
+        if detail:
+            fluct_price_details[code] = detail
+        tr_amt = _safe_int(item.get("acml_tr_pbmn") or detail.get("acml_tr_pbmn"))
         if pct < 1 or tr_amt < 20_0000_0000:
             continue
         candidates[code] = {
             "code": code, "name": name,
-            "price": _safe_int(item.get("stck_prpr")),
+            "price": _safe_int(item.get("stck_prpr") or detail.get("stck_prpr")),
             "change_pct": pct, "tr_amt": tr_amt,
-            "volume": _safe_int(item.get("acml_vol")),
+            "volume": _safe_int(item.get("acml_vol") or detail.get("acml_vol")),
             "prdy_vol": _safe_int(item.get("prdy_vol"), 1),
             "sector": item.get("bstp_cls_code", ""),
             "raw": item,
@@ -563,14 +577,14 @@ def run_screening(force=False):
     )[:15]
 
     investor_results = {}
-    price_details = {}
+    price_details = dict(fluct_price_details)
     market_caps = {}  # {code: 시가총액(억)}
     for c in pre_scored:
         try:
             inv = fetch_investor(token, c["code"])
             investor_results[c["code"]] = inv
             time.sleep(0.05)
-            pd = fetch_price_detail(token, c["code"])
+            pd = price_details.get(c["code"]) or fetch_price_detail(token, c["code"])
             price_details[c["code"]] = pd
             # 시가총액 추출 (hts_avls: 억원)
             if pd:
@@ -583,6 +597,7 @@ def run_screening(force=False):
 
     tw = _time_weight()
     results = []
+    candidate_pool = []
     scored_candidates = 0
     filtered_grade_c = 0
     for c in candidates.values():
@@ -597,9 +612,6 @@ def run_screening(force=False):
         total = min(100, round(raw_total * tw))
         grade = _grade(total)
         scored_candidates += 1
-        if grade == "C":
-            filtered_grade_c += 1
-            continue
 
         result_item = {
             "rank": 0, "grade": grade, "code": c["code"], "name": c["name"],
@@ -618,6 +630,17 @@ def run_screening(force=False):
         # 시가총액 추가
         if c["code"] in market_caps:
             result_item["market_cap_eok"] = market_caps[c["code"]]
+        candidate_pool.append(
+            {
+                **result_item,
+                "eligible": grade != "C",
+                "raw_score": raw_total,
+                "rejection_reason": "below_grade_threshold" if grade == "C" else None,
+            }
+        )
+        if grade == "C":
+            filtered_grade_c += 1
+            continue
         results.append(result_item)
 
     results.sort(key=lambda x: x["score"]["total"], reverse=True)
@@ -696,9 +719,14 @@ def run_screening(force=False):
             else None
         ),
         "source_counts": source_counts,
+        "candidate_pool": sorted(
+            candidate_pool,
+            key=lambda x: (x["score"]["total"], x["change_pct"], x["trading_value"]),
+            reverse=True,
+        ),
         "results": results,
         "by_grade": by_grade,
-        "api_calls": 3 + len(pre_scored) * 2,
+        "api_calls": 3 + fluct_detail_calls + len(pre_scored) * 2,
         "elapsed_ms": round((time.time() - t_start) * 1000),
     }
 

@@ -205,4 +205,46 @@ def test_run_screening_marks_empty_when_candidates_are_below_grade_threshold(mon
         "volume_by_surge": 1,
     }
     assert result["results"] == []
+    assert result["candidate_pool"][0]["eligible"] is False
+    assert result["candidate_pool"][0]["rejection_reason"] == "below_grade_threshold"
     assert saved and saved[0]["empty_reason"] == "below_grade_threshold"
+
+
+def test_run_screening_hydrates_fluctuation_liquidity_from_live_detail(monkeypatch):
+    fluctuation = {
+        "stck_shrn_iscd": "123456",
+        "hts_kor_isnm": "Live Leader",
+        "stck_prpr": "10000",
+        "prdy_ctrt": "12.0",
+        "acml_vol": "300000",
+        # The real fluctuation endpoint omits acml_tr_pbmn.
+    }
+    detail = {
+        "stck_prpr": "10000",
+        "prdy_ctrt": "12.0",
+        "acml_vol": "300000",
+        "acml_tr_pbmn": str(100_0000_0000),
+        "stck_dryy_hgpr": "10000",
+        "dryy_hgpr_date": datetime.now().strftime("%Y%m%d"),
+    }
+
+    monkeypatch.setattr(kis_screener, "get_token", lambda: "token")
+    monkeypatch.setattr(kis_screener, "fetch_volume_rank", lambda *args: [])
+    monkeypatch.setattr(
+        kis_screener, "fetch_fluctuation_rank", lambda token: [fluctuation]
+    )
+    monkeypatch.setattr(kis_screener, "fetch_price_detail", lambda token, code: detail)
+    monkeypatch.setattr(
+        kis_screener,
+        "fetch_investor",
+        lambda token, code: [{"frgn_ntby_qty": "2000", "orgn_ntby_qty": "2000"}],
+    )
+    monkeypatch.setattr(kis_screener, "_time_weight", lambda: 1.0)
+    monkeypatch.setattr(kis_screener, "_save_result", lambda result: None)
+    _reset_cache(None, 0)
+
+    result = kis_screener.run_screening(force=True)
+
+    assert result["total_candidates"] == 1
+    assert result["results"][0]["code"] == "123456"
+    assert result["results"][0]["trading_value"] == 100_0000_0000

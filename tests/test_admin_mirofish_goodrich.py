@@ -12,7 +12,7 @@ class FakeResponse:
     status_code = 200
 
     def json(self):
-        return {
+        payload = {
             'status': 'monitoring',
             'picks': [
                 {'rank': 1, 'symbol': '005930', 'name': '삼성전자'},
@@ -20,6 +20,21 @@ class FakeResponse:
                 {'rank': 3, 'symbol': '035420', 'name': 'NAVER'},
             ],
         }
+        observed_at = goodrich_client.datetime.now(goodrich_client.timezone.utc).isoformat()
+        payload['selection'] = {
+            'source': 'kis_detected_market_leaders',
+            'market_data_source': 'KIS',
+            'simulation': False,
+        }
+        payload['ai'] = {'provider': 'openai', 'status': 'completed'}
+        for index, pick in enumerate(payload['picks'], start=1):
+            pick.update({
+                'current_price': index * 100,
+                'target_price': index * 110,
+                'stop_price': index * 95,
+                'observed_at': observed_at,
+            })
+        return payload
 
 
 def test_goodrich_client_adds_safe_integration_metadata(monkeypatch):
@@ -52,6 +67,19 @@ def test_goodrich_client_rejects_missing_pick_identity(monkeypatch):
         assert '식별 정보' in str(exc)
     else:
         raise AssertionError('invalid payload must be rejected')
+
+
+def test_goodrich_client_rejects_stale_market_picks(monkeypatch):
+    class StaleResponse(FakeResponse):
+        def json(self):
+            payload = super().json()
+            payload['picks'][0]['observed_at'] = '2020-01-01T00:00:00+00:00'
+            return payload
+
+    monkeypatch.setattr(goodrich_client.requests, 'request', lambda *args, **kwargs: StaleResponse())
+
+    with pytest.raises(goodrich_client.GoodrichServiceError, match='최신 장중 데이터'):
+        goodrich_client.get_fund_manager()
 
 
 def test_goodrich_history_and_performance_clients_forward_bounded_queries(monkeypatch):

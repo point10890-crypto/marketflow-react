@@ -824,6 +824,71 @@ describe('AdminEndpointsPage analysis start input', () => {
     expect((await screen.findAllByText(/best momentum/i)).length).toBeGreaterThan(0);
   });
 
+  it('restores the last non-empty alpha scanner result until a newer result arrives', async () => {
+    window.localStorage.setItem('marketflow.mirofish.alpha-scanner-run.v1', JSON.stringify({
+      id: 'mfas_cached',
+      status: 'completed',
+      generated_at: '2026-07-29T05:22:43Z',
+      candidate_count: 1,
+      candidates: [{
+        rank: 1,
+        symbol: '332570',
+        display_name: 'Persisted Alpha Candidate',
+        market: 'KOSDAQ',
+        alpha_score: 57,
+        risk_score: 38,
+        action: 'BUY_CANDIDATE',
+        price: 7530,
+        strategy_tags: ['momentum'],
+        evidence: ['cached verified evidence'],
+      }],
+    }));
+    mockApi.getScannerStatus.mockResolvedValueOnce({
+      enabled: true,
+      last_run_id: 'mfas_background_running',
+      last_run_at: '2026-07-29T05:30:00Z',
+      candidate_count: 0,
+    });
+    mockApi.getLatestScannerRun.mockResolvedValueOnce({
+      id: 'mfas_background_running',
+      status: 'running',
+      generated_at: '2026-07-29T05:30:00Z',
+      candidate_count: 0,
+      candidates: [],
+    });
+
+    await renderPage();
+
+    expect((await screen.findAllByText('Persisted Alpha Candidate')).length).toBeGreaterThan(0);
+    expect(screen.queryByText('Latest Alpha')).toBeNull();
+  });
+
+  it('replaces the cached alpha scanner result when a newer background result is ready', async () => {
+    window.localStorage.setItem('marketflow.mirofish.alpha-scanner-run.v1', JSON.stringify({
+      id: 'mfas_cached_old',
+      status: 'completed',
+      generated_at: '2026-05-04T05:22:43Z',
+      candidate_count: 1,
+      candidates: [{
+        rank: 1,
+        symbol: '332570',
+        display_name: 'Old Cached Candidate',
+        market: 'KOSDAQ',
+        alpha_score: 57,
+        risk_score: 38,
+        action: 'BUY_CANDIDATE',
+        price: 7530,
+        strategy_tags: ['momentum'],
+        evidence: ['old cached evidence'],
+      }],
+    }));
+
+    await renderPage();
+
+    expect((await screen.findAllByText('Latest Alpha')).length).toBeGreaterThan(0);
+    await waitFor(() => expect(screen.queryByText('Old Cached Candidate')).toBeNull());
+  });
+
   it('reuses the endpoints console in subscriber mode without admin-only mutation controls', async () => {
     await renderSubscriberPage();
 
