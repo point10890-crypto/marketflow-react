@@ -129,7 +129,7 @@ def test_goodrich_client_maps_timeout_without_upstream_details(monkeypatch):
         raise AssertionError('timeout must become a safe service error')
 
 
-def test_goodrich_research_keeps_relative_leaders_and_excludes_crashers(monkeypatch):
+def test_goodrich_research_keeps_uptrend_leaders_and_excludes_crashers(monkeypatch):
     captured = {}
 
     monkeypatch.setattr(
@@ -139,10 +139,33 @@ def test_goodrich_research_keeps_relative_leaders_and_excludes_crashers(monkeypa
             'market_status': 'closed',
             'results': [
                 {'code': '413630', 'name': '씨피시스템', 'change_pct': 3.32, 'score': {'total': 73}},
-                {'code': '068270', 'name': '셀트리온', 'change_pct': -0.73, 'score': {'total': 51}},
-                {'code': '207940', 'name': '삼성바이오로직스', 'change_pct': 0.26, 'score': {'total': 48}},
+                {'code': '068270', 'name': '셀트리온', 'change_pct': 1.73, 'score': {'total': 51}},
+                {'code': '207940', 'name': '삼성바이오로직스', 'change_pct': 1.26, 'score': {'total': 48}},
                 {'code': '000660', 'name': 'SK하이닉스', 'change_pct': -14.65, 'score': {'total': 51}},
                 {'code': '005935', 'name': '삼성전자우', 'change_pct': -1.0, 'score': {'total': 60}},
+            ],
+        },
+    )
+    monkeypatch.setattr(
+        'app.services.mirofish.alpha_scanner.get_price_trend_metrics',
+        lambda *args, **kwargs: {
+            'sample_days': 60,
+            'trend_5d_pct': 4.0,
+            'trend_20d_pct': 12.0,
+            'over_ma20_pct': 6.0,
+            'trend_score': 10.0,
+            'drawdown_20d_pct': 4.0,
+        },
+    )
+    monkeypatch.setattr(
+        'app.services.mirofish.multi_mcp_orchestrator.run_multi_mcp_analysis',
+        lambda candidates, **kwargs: {
+            'id': 'multi_mcp_test',
+            'status': 'portfolio_ready',
+            'profit_gate_passed_count': len(candidates),
+            'selected': [
+                {'symbol': candidate['symbol']}
+                for candidate in candidates[:3]
             ],
         },
     )
@@ -159,6 +182,50 @@ def test_goodrich_research_keeps_relative_leaders_and_excludes_crashers(monkeypa
     ]
     assert result['integration']['universe_size'] == 3
     assert result['integration']['market_status'] == 'closed'
+
+
+def test_goodrich_research_stands_aside_when_profit_trend_gate_fails(monkeypatch):
+    captured = {}
+    monkeypatch.setattr(
+        'app.services.kis_screener.run_screening',
+        lambda force=True: {
+            'candidate_pool': [
+                {
+                    'code': '005380',
+                    'name': '현대차',
+                    'price': 353500,
+                    'change_pct': -2.88,
+                    'volume': 1000,
+                    'score': {'total': 90},
+                },
+            ],
+        },
+    )
+    monkeypatch.setattr(
+        'app.services.mirofish.alpha_scanner.get_price_trend_metrics',
+        lambda *args, **kwargs: {
+            'sample_days': 120,
+            'trend_5d_pct': -17.98,
+            'trend_20d_pct': -27.04,
+            'over_ma20_pct': -18.19,
+            'trend_score': 0,
+            'drawdown_20d_pct': 28.98,
+        },
+    )
+
+    def fake_request(method, url, **kwargs):
+        captured['url'] = url
+        captured['json'] = kwargs['json']
+        return FakeResponse()
+
+    monkeypatch.setattr(goodrich_client.requests, 'request', fake_request)
+    goodrich_client.run_research()
+
+    assert captured['url'].endswith('/v1/fund-manager/stand-aside')
+    assert captured['json'] == {
+        'reason': 'profit_quality_gate_below_minimum',
+        'candidate_count': 0,
+    }
 
 
 @pytest.fixture

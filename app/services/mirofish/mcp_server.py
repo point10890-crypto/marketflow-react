@@ -15,6 +15,7 @@ import app.services.mirofish.hermes_bridge as hermes_bridge
 import app.services.mirofish.mcp_resource_catalog as mcp_resource_catalog
 import app.services.mirofish.tradingview_provider as tradingview_provider
 import app.services.mirofish.workflow as workflow
+import app.services.mirofish.multi_mcp_orchestrator as multi_mcp_orchestrator
 
 logger = logging.getLogger(__name__)
 
@@ -92,6 +93,38 @@ def create_mcp_server(
     def get_alpha_endpoint_blueprint() -> dict[str, Any]:
         """Return endpoint contracts that improve Top 3 alpha detection quality."""
         return mcp_resource_catalog.build_alpha_endpoint_blueprint()
+
+    @mcp.tool()
+    def get_multi_mcp_architecture() -> dict[str, Any]:
+        """Return the deterministic MCP domains and agent debate graph."""
+        return multi_mcp_orchestrator.architecture_manifest()
+
+    @mcp.tool()
+    def run_multi_mcp_deep_research(
+        candidates_json: str,
+        use_llm: bool = True,
+        max_parallel: int = 3,
+    ) -> dict[str, Any]:
+        """Run evidence gates, agent cross-analysis, CIO review, and cash-wait logic."""
+        candidates = json.loads(candidates_json)
+        if not isinstance(candidates, list):
+            raise ValueError('candidates_json must encode a list')
+        return multi_mcp_orchestrator.run_multi_mcp_analysis(
+            candidates,
+            use_llm=use_llm,
+            max_parallel=max_parallel,
+        )
+
+    @mcp.tool()
+    def run_multi_mcp_live_market_scan(
+        use_llm: bool = True,
+        max_parallel: int = 3,
+    ) -> dict[str, Any]:
+        """Run live KIS detection through all evidence MCPs and the CIO team."""
+        return multi_mcp_orchestrator.run_live_market_scan(
+            use_llm=use_llm,
+            max_parallel=max_parallel,
+        )
 
     @mcp.tool()
     def get_agent_brain_status() -> dict[str, Any]:

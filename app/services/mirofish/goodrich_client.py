@@ -8,6 +8,7 @@ minimum response contract before presenting it to AI Brain subscribers.
 from __future__ import annotations
 
 import os
+import json
 from datetime import datetime, timedelta, timezone
 from urllib.parse import urlparse
 
@@ -153,11 +154,44 @@ def _validate_and_envelope(payload: dict, *, integration: dict | None = None) ->
         'ordering_enabled': False,
         **(integration or {}),
     }
+    if isinstance(result['integration'].get('multi_mcp'), dict):
+        result['multi_mcp'] = result['integration']['multi_mcp']
     return result
 
 
 def get_fund_manager() -> dict:
-    return _request('GET', '/v1/fund-manager', timeout=DEFAULT_TIMEOUT_SECONDS)
+    result = _request('GET', '/v1/fund-manager', timeout=DEFAULT_TIMEOUT_SECONDS)
+    try:
+        from app.services.mirofish.multi_mcp_orchestrator import RUNS_ROOT
+
+        with open(os.path.join(RUNS_ROOT, 'latest.json'), encoding='utf-8') as handle:
+            latest = json.load(handle)
+        if isinstance(latest, dict) and latest.get('publishable_top3') is True:
+            result['multi_mcp'] = {
+                'id': latest.get('id'),
+                'status': latest.get('status'),
+                'completed_at': latest.get('completed_at'),
+                'candidate_count': latest.get('candidate_count'),
+                'profit_gate_passed_count': latest.get('profit_gate_passed_count'),
+                'selected': [
+                    {
+                        'symbol': row.get('symbol'),
+                        'name': row.get('name'),
+                        'action': row.get('action'),
+                        'confidence': row.get('confidence'),
+                        'portfolio_score': row.get('portfolio_score'),
+                    }
+                    for row in latest.get('selected') or []
+                    if isinstance(row, dict)
+                ],
+                'cash_wait_reason': latest.get('cash_wait_reason'),
+                'architecture': latest.get('architecture'),
+                'input_mode': latest.get('input_mode'),
+                'publishable_top3': True,
+            }
+    except (OSError, ValueError, TypeError):
+        pass
+    return result
 
 
 def monitor_fund_manager() -> dict:
@@ -169,21 +203,34 @@ def monitor_fund_manager() -> dict:
     )
 
 
+def stand_aside_fund_manager(*, reason: str, candidate_count: int) -> dict:
+    return _request(
+        'POST',
+        '/v1/fund-manager/stand-aside',
+        timeout=DEFAULT_TIMEOUT_SECONDS,
+        json_body={
+            'reason': reason,
+            'candidate_count': max(0, int(candidate_count)),
+        },
+    )
+
+
 def run_research() -> dict:
     from app.services.kis_screener import run_screening
+    from app.services.mirofish.alpha_scanner import get_price_trend_metrics
+    from app.services.mirofish.multi_mcp_orchestrator import run_multi_mcp_analysis
 
     screening = run_screening(force=True)
     rows = screening.get('candidate_pool') if isinstance(screening, dict) else None
     using_candidate_pool = isinstance(rows, list)
     if not isinstance(rows, list):
         rows = screening.get('results') if isinstance(screening, dict) else None
-    if not isinstance(rows, list) or len(rows) < 3:
-        raise GoodrichServiceError(
-            'KIS 시장 주도주 검출 결과가 3개 미만입니다. 이전 고정 종목으로 대체하지 않습니다.',
-            status_code=503,
-        )
+    if not isinstance(rows, list):
+        rows = []
 
     candidates = []
+    candidate_rows = []
+    rejected = []
     for row in rows[:20]:
         if not isinstance(row, dict):
             continue
@@ -193,6 +240,20 @@ def run_research() -> dict:
         score = row.get('score')
         total_score = _safe_float(score.get('total')) if isinstance(score, dict) else _safe_float(score)
         is_preferred = name.endswith('우') or name.endswith('우B') or name.endswith('우C')
+        trend = get_price_trend_metrics(
+            symbol,
+            current_price=_safe_float(row.get('price') or row.get('current_price')),
+            change_rate=change_pct,
+            volume=_safe_float(row.get('volume')),
+        )
+        trend_passed = (
+            trend.get('sample_days', 0) >= 20
+            and _safe_float(trend.get('trend_5d_pct')) > 0
+            and _safe_float(trend.get('trend_20d_pct')) > 0
+            and _safe_float(trend.get('over_ma20_pct')) >= 0
+            and _safe_float(trend.get('trend_score')) >= 8
+            and _safe_float(trend.get('drawdown_20d_pct')) <= 15
+        )
         if (
             len(symbol) == 6
             and symbol.isdigit()
@@ -201,13 +262,70 @@ def run_research() -> dict:
             # Goodrich is the AI decision layer. The scanner hands off genuine
             # liquid KIS observations, including relative-strength
             # candidates that miss the late-session B-grade cutoff.
-            and change_pct >= (-4 if using_candidate_pool else -2)
+            and change_pct > 0
             and total_score >= (24 if using_candidate_pool else 45)
+            and trend_passed
         ):
             candidates.append({'symbol': symbol, 'name': name})
+            candidate_rows.append({
+                'symbol': symbol,
+                'name': name,
+                'price': _safe_float(row.get('price') or row.get('current_price')),
+                'change_pct': change_pct,
+                'volume': _safe_float(row.get('volume')),
+                'source': 'KIS',
+                'observed_at': screening.get('timestamp'),
+            })
+        else:
+            rejected.append({'symbol': symbol, 'trend': trend})
     if len(candidates) < 3:
-        raise GoodrichServiceError('검증 가능한 KIS 시장 주도주 후보가 3개 미만입니다.', status_code=503)
+        return stand_aside_fund_manager(
+            reason='profit_quality_gate_below_minimum',
+            candidate_count=len(candidates),
+        )
 
+    deep_research = run_multi_mcp_analysis(
+        candidate_rows,
+        use_llm=True,
+        max_parallel=3,
+    )
+    approved_symbols = {
+        str(row.get('symbol') or '')
+        for row in deep_research.get('selected') or []
+        if isinstance(row, dict)
+    }
+    candidates = [
+        candidate for candidate in candidates
+        if candidate['symbol'] in approved_symbols
+    ]
+    if len(candidates) < 3:
+        return stand_aside_fund_manager(
+            reason='multi_mcp_cio_approved_below_minimum',
+            candidate_count=len(candidates),
+        )
+
+    multi_mcp_snapshot = {
+        'id': deep_research.get('id'),
+        'status': deep_research.get('status'),
+        'completed_at': deep_research.get('completed_at'),
+        'candidate_count': deep_research.get('candidate_count'),
+        'profit_gate_passed_count': deep_research.get('profit_gate_passed_count'),
+        'selected': [
+            {
+                'symbol': row.get('symbol'),
+                'name': row.get('name'),
+                'action': row.get('action'),
+                'confidence': row.get('confidence'),
+                'portfolio_score': row.get('portfolio_score'),
+            }
+            for row in deep_research.get('selected') or []
+            if isinstance(row, dict)
+        ],
+        'cash_wait_reason': deep_research.get('cash_wait_reason'),
+        'architecture': deep_research.get('architecture'),
+        'input_mode': deep_research.get('input_mode'),
+        'publishable_top3': deep_research.get('publishable_top3'),
+    }
     return _request(
         'POST',
         '/v1/fund-manager/research',
@@ -218,6 +336,18 @@ def run_research() -> dict:
             'universe': 'live-kospi-kosdaq-leaders',
             'universe_size': len(candidates),
             'candidate_count': len(rows),
+            'trend_gate': {
+                'required': True,
+                'minimum_trend_score': 8,
+                'positive_5d_and_20d': True,
+                'above_ma20': True,
+                'maximum_drawdown_20d_pct': 15,
+                'rejected_count': len(rejected),
+            },
+            'multi_mcp': {
+                **multi_mcp_snapshot,
+                'cio_selected_count': len(candidates),
+            },
             'scanner_timestamp': screening.get('timestamp'),
             'market_status': screening.get('market_status'),
             'ranking_owner': 'marketflow-kis-rules-then-goodrich-quant',

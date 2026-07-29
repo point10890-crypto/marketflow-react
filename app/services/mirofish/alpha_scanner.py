@@ -438,6 +438,27 @@ def read_price_chart(symbol: str, limit: int = 120) -> dict[str, Any]:
     }
 
 
+def get_price_trend_metrics(
+    symbol: str,
+    *,
+    current_price: float,
+    change_rate: float,
+    volume: float,
+) -> dict[str, Any]:
+    """Return deterministic multi-day trend evidence for a live KIS candidate."""
+    clean_symbol = _symbol(symbol)
+    if not clean_symbol:
+        raise ValueError('invalid symbol')
+    history = _load_price_history_cached().get(clean_symbol, [])
+    latest = {
+        'date': datetime.now().date().isoformat(),
+        'current_price': current_price,
+        'change_rate': change_rate,
+        'volume': volume,
+    }
+    return _price_analysis(history, latest)
+
+
 def get_scanner_schedule_status(now: datetime | None = None) -> dict[str, Any]:
     """Return alpha scanner schedule, latest run, and source freshness status."""
     current = (now or datetime.now(KST)).astimezone(KST)

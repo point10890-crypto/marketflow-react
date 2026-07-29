@@ -18,6 +18,7 @@ from app.auth.decorators import admin_or_aibain_required
 from app.services.mirofish import scanner_deepverify
 from app.services.mirofish import store as mirofish_store
 from app.services.mirofish.tradingagents import engine
+from app.services.mirofish import multi_mcp_orchestrator
 
 
 admin_mirofish_tradingagents_bp = Blueprint('admin_mirofish_tradingagents', __name__)
@@ -66,6 +67,37 @@ def get_run(run_id: str):
 @admin_or_aibain_required
 def status():
     return jsonify(engine.get_status()), 200
+
+
+@admin_mirofish_tradingagents_bp.route('/tradingagents/multi-mcp/architecture', methods=['GET'])
+@admin_or_aibain_required
+def multi_mcp_architecture():
+    return jsonify(multi_mcp_orchestrator.architecture_manifest()), 200
+
+
+@admin_mirofish_tradingagents_bp.route('/tradingagents/multi-mcp/analyze', methods=['POST'])
+@admin_or_aibain_required
+def multi_mcp_analyze():
+    payload = request.get_json(silent=True) or {}
+    candidates = payload.get('candidates')
+    try:
+        options = {
+            'use_llm': bool(payload.get('use_llm', True)),
+            'max_parallel': int(payload.get('max_parallel') or 3),
+        }
+        if candidates is None:
+            result = multi_mcp_orchestrator.run_live_market_scan(**options)
+        elif isinstance(candidates, list):
+            result = multi_mcp_orchestrator.run_multi_mcp_analysis(
+                candidates,
+                input_mode='authenticated_debug',
+                **options,
+            )
+        else:
+            return jsonify({'error': 'candidates must be a list when provided'}), 400
+        return jsonify(result), 200
+    except Exception as exc:
+        return jsonify({'error': str(exc), 'service': 'mirofish-multi-mcp'}), 500
 
 
 @admin_mirofish_tradingagents_bp.route('/runs/<run_id>/tradingagents', methods=['POST'])

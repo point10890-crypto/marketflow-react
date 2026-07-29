@@ -53,6 +53,8 @@ def test_routes_are_registered():
     assert '/api/admin/mirofish/tradingagents/runs' in rules
     assert '/api/admin/mirofish/tradingagents/runs/<run_id>' in rules
     assert '/api/admin/mirofish/tradingagents/status' in rules
+    assert '/api/admin/mirofish/tradingagents/multi-mcp/architecture' in rules
+    assert '/api/admin/mirofish/tradingagents/multi-mcp/analyze' in rules
     assert '/api/admin/mirofish/scanner/tradingagents/history' in rules
 
 
@@ -79,6 +81,38 @@ def test_runs_and_status(admin_client, monkeypatch):
     assert admin_client.get('/api/admin/mirofish/tradingagents/status').get_json()['enabled'] is True
 
 
+def test_multi_mcp_endpoints(admin_client, monkeypatch):
+    import app.routes.admin_mirofish_tradingagents as mod
+
+    monkeypatch.setattr(
+        mod.multi_mcp_orchestrator,
+        'run_multi_mcp_analysis',
+        lambda candidates, **kwargs: {
+            'status': 'selective_portfolio',
+            'selected': candidates[:1],
+        },
+    )
+    architecture = admin_client.get(
+        '/api/admin/mirofish/tradingagents/multi-mcp/architecture'
+    )
+    result = admin_client.post(
+        '/api/admin/mirofish/tradingagents/multi-mcp/analyze',
+        json={
+            'candidates': [
+                {'symbol': '005930', 'name': '삼성전자'},
+            ],
+            'use_llm': False,
+        },
+    )
+
+    assert architecture.status_code == 200
+    assert architecture.get_json()['numeric_authority'] == (
+        'deterministic_mcp_tools_only'
+    )
+    assert result.status_code == 200
+    assert result.get_json()['status'] == 'selective_portfolio'
+
+
 def test_endpoints_require_auth():
     app = create_app({
         'TESTING': True,
@@ -91,6 +125,13 @@ def test_endpoints_require_auth():
     assert client.post('/api/admin/mirofish/tradingagents/analyze', json={'symbol': '005930'}).status_code in (401, 403)
     assert client.get('/api/admin/mirofish/tradingagents/runs').status_code in (401, 403)
     assert client.get('/api/admin/mirofish/tradingagents/status').status_code in (401, 403)
+    assert client.get(
+        '/api/admin/mirofish/tradingagents/multi-mcp/architecture'
+    ).status_code in (401, 403)
+    assert client.post(
+        '/api/admin/mirofish/tradingagents/multi-mcp/analyze',
+        json={'candidates': []},
+    ).status_code in (401, 403)
     assert client.get('/api/admin/mirofish/scanner/tradingagents/history').status_code in (401, 403)
 
 
