@@ -36,6 +36,7 @@ def test_cycle_skips_when_market_is_closed(monkeypatch, tmp_path):
 def test_forced_cycle_monitors_before_detecting_new_candidates(monkeypatch, tmp_path):
     _use_temp_paths(monkeypatch, tmp_path)
     calls = []
+    sent_results = []
 
     def monitor():
         calls.append("monitor")
@@ -69,6 +70,11 @@ def test_forced_cycle_monitors_before_detecting_new_candidates(monkeypatch, tmp_
         "app.services.mirofish.goodrich_client.run_research",
         research,
     )
+    monkeypatch.setattr(
+        scheduler,
+        "_send_top3_telegram",
+        lambda result: sent_results.append(result.copy()) or True,
+    )
 
     result = scheduler.run_cycle(force=True)
 
@@ -77,6 +83,8 @@ def test_forced_cycle_monitors_before_detecting_new_candidates(monkeypatch, tmp_
     assert result["detected_candidates"] == 9
     assert result["monitored_active_count"] == 3
     assert result["top3"][0]["symbol"] == "005930"
+    assert result["telegram_sent"] is True
+    assert sent_results[0]["top3"][0]["current_price"] == 100
     assert not scheduler.LOCK_PATH.exists()
 
 
@@ -88,3 +96,49 @@ def test_cycle_skips_when_another_cycle_holds_the_lock(monkeypatch, tmp_path):
 
     assert result["status"] == "skipped"
     assert result["reason"] == "cycle_already_running"
+
+
+def test_top3_message_escapes_names_and_formats_api_prices():
+    message = scheduler._build_top3_telegram_message(
+        {
+            "completed_at": scheduler.datetime(2026, 7, 29, 1, 30, tzinfo=scheduler.UTC),
+            "market_status": "open",
+            "detected_candidates": 12,
+            "qualified_candidates": 3,
+            "top3": [
+                {
+                    "symbol": "005930",
+                    "name": "삼성전자 <우>",
+                    "current_price": 100000,
+                    "target_price": 110000,
+                    "stop_price": 95000,
+                }
+            ],
+        }
+    )
+
+    assert "2026-07-29 10:30 KST" in message
+    assert "삼성전자 &lt;우&gt;" in message
+    assert "현재가 100,000원" in message
+    assert "목표가 110,000원 | 손절가 95,000원" in message
+    assert "12개 검출 → 3개 선정" in message
+
+
+def test_telegram_failure_is_visible_in_status(monkeypatch, tmp_path):
+    _use_temp_paths(monkeypatch, tmp_path)
+    monkeypatch.setattr(
+        "app.services.mirofish.goodrich_client.monitor_fund_manager",
+        lambda: {"active_count": 0},
+    )
+    monkeypatch.setattr(
+        "app.services.mirofish.goodrich_client.run_research",
+        lambda: {"integration": {}, "picks": []},
+    )
+    monkeypatch.setattr(scheduler, "_send_top3_telegram", lambda result: False)
+
+    result = scheduler.run_cycle(force=True)
+
+    assert result["status"] == "completed_with_telegram_error"
+    assert result["telegram_sent"] is False
+    saved = json.loads(scheduler.STATUS_PATH.read_text(encoding="utf-8"))
+    assert saved["telegram_error"] == "telegram_send_failed"
