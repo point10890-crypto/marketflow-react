@@ -2,7 +2,7 @@ $ErrorActionPreference = 'Continue'
 $Project = 'C:\bitman_marketfloww'
 $ProductionHost = 'MINIPC-NQYLP'
 $TaskName = 'MarketFlow-Flask'
-$HealthUrl = 'http://localhost:5001/healthz'
+$HealthUrl = 'http://localhost:5003/healthz'
 $LogFile = Join-Path $Project 'logs\flask_watchdog.log'
 $StateFile = Join-Path $Project 'data\flask_watchdog_state.json'
 $FailureThreshold = 3
@@ -104,10 +104,8 @@ Write-State $failures
 Write-Log ("Flask recovery failed; consecutive_failures=$failures")
 
 if ($failures -ge $FailureThreshold) {
-    $rebootAt = (Get-Date).ToString('s')
-    Write-State $failures $rebootAt
-    Write-Log 'Failure threshold reached; scheduling MiniPC reboot in 60 seconds.'
-    & shutdown.exe /r /t 60 /f /c 'MarketFlow Flask watchdog recovery'
+    Write-State $failures
+    Write-Log 'Failure threshold reached; leaving recovery to the MarketFlow operator without rebooting the MiniPC.'
 }
 
 exit 1

@@ -15,7 +15,7 @@ $env:PYTHONIOENCODING = "utf-8"
 $env:PYTHONUNBUFFERED = "1"
 $env:HOME_SERVER = "1"
 $env:FLASK_HOST = "127.0.0.1"
-$env:FLASK_PORT = "5001"
+$env:FLASK_PORT = "5003"
 $env:WERKZEUG_RUN_MAIN = $null
 # The MiniPC has a dedicated scheduler.py daemon for recurring work. Keep the
 # Flask process request-only so worker failures cannot take every API down.
@@ -24,7 +24,7 @@ $env:MARKETFLOW_BACKGROUND_WORKERS = "false"
 # Pro/AI Brain 만료, Pro pause 재개, D-3/D-1 알림만 수행하는 경량 스레드다.
 $env:MARKETFLOW_EXPIRY_WORKERS_ENABLED = "true"
 # Alpha scanning already runs in scheduler.py on the MiniPC.  Starting the
-# in-process monitor here can block Flask before it binds port 5001 when the
+# in-process monitor here can block Flask before it binds port 5003 when the
 # MiroFish auto-runner is unhealthy, so keep the API startup independent.
 $env:WORKER_ALPHA_MONITOR_ENABLED = "0"
 # The MiniPC serves durable JSON runs. Re-scanning legacy Excel locations on
@@ -58,12 +58,12 @@ foreach ($proc in $existing) {
 
 Start-Sleep -Seconds 2
 
-$portOwner = Get-NetTCPConnection -LocalPort 5001 -State Listen -ErrorAction SilentlyContinue |
+$portOwner = Get-NetTCPConnection -LocalPort 5003 -State Listen -ErrorAction SilentlyContinue |
     Select-Object -ExpandProperty OwningProcess -Unique
 foreach ($ownerPid in $portOwner) {
     try {
         Stop-Process -Id $ownerPid -Force -ErrorAction Stop
-        Add-Content -Path $OutLog -Encoding UTF8 -Value "$(Get-Date -Format o) stopped stale port 5001 pid=$ownerPid"
+        Add-Content -Path $OutLog -Encoding UTF8 -Value "$(Get-Date -Format o) stopped stale port 5003 pid=$ownerPid"
     } catch {
         Add-Content -Path $ErrLog -Encoding UTF8 -Value "$(Get-Date -Format o) failed to stop port pid=${ownerPid}: $($_.Exception.Message)"
     }
@@ -95,7 +95,7 @@ for ($attempt = 1; $attempt -le 30; $attempt++) {
     }
 
     try {
-        $response = Invoke-WebRequest -UseBasicParsing -TimeoutSec 3 -Uri "http://127.0.0.1:5001/healthz"
+        $response = Invoke-WebRequest -UseBasicParsing -TimeoutSec 3 -Uri "http://127.0.0.1:5003/healthz"
         if ($response.StatusCode -ge 200 -and $response.StatusCode -lt 500) {
             Add-Content -Path $ControlLog -Encoding UTF8 -Value "$(Get-Date -Format o) flask healthz reachable status=$($response.StatusCode)"
             $healthy = $true
