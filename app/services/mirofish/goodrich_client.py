@@ -18,6 +18,9 @@ import requests
 DEFAULT_BASE_URL = 'http://127.0.0.1:8000'
 DEFAULT_TIMEOUT_SECONDS = 12.0
 RESEARCH_TIMEOUT_SECONDS = 90.0
+# A selective, fully validated portfolio is publishable. Requiring three CIO
+# approvals converted ordinary low-breadth conditions into a detection outage.
+MINIMUM_PUBLISHABLE_CANDIDATES = 1
 
 
 class GoodrichServiceError(RuntimeError):
@@ -299,7 +302,7 @@ def run_research() -> dict:
         'market_status': screening.get('market_status'),
         'ranking_owner': 'marketflow-kis-rules-then-goodrich-quant',
     }
-    if len(candidates) < 3:
+    if len(candidates) < MINIMUM_PUBLISHABLE_CANDIDATES:
         return stand_aside_fund_manager(
             reason='profit_quality_gate_below_minimum',
             candidate_count=len(candidates),
@@ -320,7 +323,7 @@ def run_research() -> dict:
         candidate for candidate in candidates
         if candidate['symbol'] in approved_symbols
     ]
-    if len(candidates) < 3:
+    if len(candidates) < MINIMUM_PUBLISHABLE_CANDIDATES:
         return stand_aside_fund_manager(
             reason='multi_mcp_cio_approved_below_minimum',
             candidate_count=len(candidates),

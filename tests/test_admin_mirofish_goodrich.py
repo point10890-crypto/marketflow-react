@@ -289,9 +289,18 @@ def test_goodrich_research_rejects_bounded_recovery_leader(monkeypatch):
         'app.services.mirofish.alpha_scanner.get_price_trend_metrics',
         fake_trend,
     )
+    def selective_portfolio(candidates, **kwargs):
+        orchestrator_calls.append(candidates)
+        return {
+            'id': 'selective-portfolio',
+            'status': 'selective_portfolio',
+            'profit_gate_passed_count': len(candidates),
+            'selected': [{'symbol': candidate['symbol']} for candidate in candidates],
+        }
+
     monkeypatch.setattr(
         'app.services.mirofish.multi_mcp_orchestrator.run_multi_mcp_analysis',
-        lambda candidates, **kwargs: orchestrator_calls.append(candidates),
+        selective_portfolio,
     )
 
     def fake_request(method, url, **kwargs):
@@ -302,12 +311,11 @@ def test_goodrich_research_rejects_bounded_recovery_leader(monkeypatch):
     monkeypatch.setattr(goodrich_client.requests, 'request', fake_request)
     result = goodrich_client.run_research()
 
-    assert orchestrator_calls == [], 'rebound-only pool must not reach deep research'
-    assert captured['url'].endswith('/v1/fund-manager/stand-aside')
-    assert captured['json'] == {
-        'reason': 'profit_quality_gate_below_minimum',
-        'candidate_count': 2,
-    }
+    assert [[row['symbol'] for row in rows] for rows in orchestrator_calls] == [
+        ['068270', '002210'],
+    ]
+    assert captured['url'].endswith('/v1/fund-manager/research')
+    assert [row['symbol'] for row in captured['json']['candidates']] == ['068270', '002210']
     assert result['integration']['trend_gate']['passed_count'] == 2
     assert result['integration']['trend_gate']['rejected_count'] == 1
     assert 'recovery_leader' not in result['integration']['trend_gate']
