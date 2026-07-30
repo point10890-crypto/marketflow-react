@@ -23,6 +23,35 @@ from app.utils.atomic_json import write_json_atomic
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 RUNS_ROOT = os.path.join(REPO_ROOT, 'data', 'admin_mirofish', 'multi_mcp_runs')
 
+# Single source of truth for the deterministic trend gate. Every upstream
+# detector must screen with this exact rule set: a candidate that reaches deep
+# research without passing it can only end in a late stand aside, after the
+# LLM budget has already been spent.
+TREND_GATE_RULES = {
+    'minimum_sample_days': 20,
+    'minimum_trend_score': 8,
+    'maximum_drawdown_20d_pct': 15,
+    'positive_5d_and_20d': True,
+    'above_ma20': True,
+}
+
+
+def trend_gate_checks(trend: dict[str, Any] | None) -> dict[str, bool]:
+    """Return each deterministic trend rule and whether the candidate met it."""
+    metrics = trend or {}
+    return {
+        'sample_days': _float(metrics.get('sample_days')) >= TREND_GATE_RULES['minimum_sample_days'],
+        'positive_5d': _float(metrics.get('trend_5d_pct')) > 0,
+        'positive_20d': _float(metrics.get('trend_20d_pct')) > 0,
+        'above_ma20': _float(metrics.get('over_ma20_pct')) >= 0,
+        'trend_score': _float(metrics.get('trend_score')) >= TREND_GATE_RULES['minimum_trend_score'],
+        'drawdown': _float(metrics.get('drawdown_20d_pct')) <= TREND_GATE_RULES['maximum_drawdown_20d_pct'],
+    }
+
+
+def passes_trend_gate(trend: dict[str, Any] | None) -> bool:
+    return all(trend_gate_checks(trend).values())
+
 
 def architecture_manifest() -> dict[str, Any]:
     return {
@@ -48,10 +77,11 @@ def architecture_manifest() -> dict[str, Any]:
             'outcome_memory',
         ],
         'hard_rules': {
-            'positive_5d_and_20d_trend': True,
-            'above_ma20': True,
-            'minimum_trend_score': 8,
-            'maximum_drawdown_20d_pct': 15,
+            'positive_5d_and_20d_trend': TREND_GATE_RULES['positive_5d_and_20d'],
+            'above_ma20': TREND_GATE_RULES['above_ma20'],
+            'minimum_sample_days': TREND_GATE_RULES['minimum_sample_days'],
+            'minimum_trend_score': TREND_GATE_RULES['minimum_trend_score'],
+            'maximum_drawdown_20d_pct': TREND_GATE_RULES['maximum_drawdown_20d_pct'],
             'minimum_cio_confidence': 60,
             'forced_top3': False,
             'automatic_ordering': False,
@@ -212,12 +242,7 @@ def _evidence_packet(candidate: dict[str, Any]) -> dict[str, Any]:
     )
     checks = {
         'fresh_observation': _is_fresh_observation(candidate.get('observed_at')),
-        'sample_days': trend.get('sample_days', 0) >= 20,
-        'positive_5d': _float(trend.get('trend_5d_pct')) > 0,
-        'positive_20d': _float(trend.get('trend_20d_pct')) > 0,
-        'above_ma20': _float(trend.get('over_ma20_pct')) >= 0,
-        'trend_score': _float(trend.get('trend_score')) >= 8,
-        'drawdown': _float(trend.get('drawdown_20d_pct')) <= 15,
+        **trend_gate_checks(trend),
         'positive_session': candidate['change_rate'] > 0,
     }
     return {

@@ -235,8 +235,16 @@ def test_goodrich_research_stands_aside_when_profit_trend_gate_fails(monkeypatch
     assert result['integration']['trend_gate']['rejected_count'] == 1
 
 
-def test_goodrich_research_accepts_bounded_recovery_leader(monkeypatch):
+def test_goodrich_research_rejects_bounded_recovery_leader(monkeypatch):
+    """A rebound name that fails the trend gate must never consume LLM budget.
+
+    The Multi-MCP profit gate re-applies the same deterministic trend rules, so
+    admitting a relaxed 'recovery leader' could only ever end in a late stand
+    aside after paying for deep research.
+    """
     captured = {}
+    orchestrator_calls = []
+
     monkeypatch.setattr(
         'app.services.kis_screener.run_screening',
         lambda force=True: {
@@ -264,6 +272,8 @@ def test_goodrich_research_accepts_bounded_recovery_leader(monkeypatch):
 
     def fake_trend(symbol, **kwargs):
         if symbol == '005930':
+            # Bounded rebound: inside the old 5~15% band with a shallow enough
+            # drawdown, but still below MA20 with a negative multi-day trend.
             return {
                 'sample_days': 121, 'trend_5d_pct': -16,
                 'trend_20d_pct': -28, 'over_ma20_pct': -15,
@@ -281,31 +291,114 @@ def test_goodrich_research_accepts_bounded_recovery_leader(monkeypatch):
     )
     monkeypatch.setattr(
         'app.services.mirofish.multi_mcp_orchestrator.run_multi_mcp_analysis',
-        lambda candidates, **kwargs: {
-            'id': 'recovery-test',
-            'status': 'portfolio_ready',
-            'candidate_count': len(candidates),
-            'profit_gate_passed_count': 3,
-            'publishable_top3': True,
-            'selected': [
-                {'symbol': row['symbol'], 'name': row['name']}
-                for row in candidates
-            ],
-        },
+        lambda candidates, **kwargs: orchestrator_calls.append(candidates),
     )
 
     def fake_request(method, url, **kwargs):
+        captured['url'] = url
         captured['json'] = kwargs['json']
         return FakeResponse()
 
     monkeypatch.setattr(goodrich_client.requests, 'request', fake_request)
     result = goodrich_client.run_research()
 
-    assert [row['symbol'] for row in captured['json']['candidates']] == [
-        '005930', '068270', '002210',
-    ]
-    assert result['integration']['trend_gate']['recovery_leader_count'] == 1
-    assert result['integration']['trend_gate']['established_trend_count'] == 2
+    assert orchestrator_calls == [], 'rebound-only pool must not reach deep research'
+    assert captured['url'].endswith('/v1/fund-manager/stand-aside')
+    assert captured['json'] == {
+        'reason': 'profit_quality_gate_below_minimum',
+        'candidate_count': 2,
+    }
+    assert result['integration']['trend_gate']['passed_count'] == 2
+    assert result['integration']['trend_gate']['rejected_count'] == 1
+    assert 'recovery_leader' not in result['integration']['trend_gate']
+
+
+def test_goodrich_trend_gate_never_admits_a_multi_mcp_reject(monkeypatch):
+    """Every forwarded candidate must survive the real Multi-MCP profit gate."""
+    from app.services.mirofish import multi_mcp_orchestrator
+
+    observed_at = goodrich_client.datetime.now(
+        goodrich_client.timezone.utc
+    ).isoformat()
+    monkeypatch.setattr(
+        'app.services.kis_screener.run_screening',
+        lambda force=True: {
+            'timestamp': observed_at,
+            'market_status': 'open',
+            'candidate_pool': [
+                {
+                    'code': '413630', 'name': '씨피시스템', 'price': 12000,
+                    'change_pct': 3.32, 'volume': 500000, 'score': {'total': 73},
+                },
+                {
+                    'code': '068270', 'name': '셀트리온', 'price': 191000,
+                    'change_pct': 6.11, 'volume': 800000, 'score': {'total': 48},
+                },
+                {
+                    'code': '207940', 'name': '삼성바이오로직스', 'price': 980000,
+                    'change_pct': 1.26, 'volume': 200000, 'score': {'total': 48},
+                },
+                {
+                    'code': '002210', 'name': '동성제약', 'price': 2050,
+                    'change_pct': 5.34, 'volume': 700000, 'score': {'total': 53},
+                },
+            ],
+        },
+    )
+
+    def fake_trend(symbol, **kwargs):
+        if symbol == '002210':
+            return {
+                'sample_days': 121, 'trend_5d_pct': -16,
+                'trend_20d_pct': -28, 'over_ma20_pct': -15,
+                'trend_score': 0, 'drawdown_20d_pct': 28,
+            }
+        return {
+            'sample_days': 121, 'trend_5d_pct': 5,
+            'trend_20d_pct': 8, 'over_ma20_pct': 4,
+            'trend_score': 10, 'drawdown_20d_pct': 2,
+        }
+
+    monkeypatch.setattr(
+        'app.services.mirofish.alpha_scanner.get_price_trend_metrics',
+        fake_trend,
+    )
+    monkeypatch.setattr(
+        'app.services.mirofish.multi_mcp_orchestrator.get_price_trend_metrics',
+        fake_trend,
+    )
+
+    forwarded = {}
+
+    def assert_every_candidate_passes_the_profit_gate(candidates, **kwargs):
+        forwarded['symbols'] = [row['symbol'] for row in candidates]
+        for row in candidates:
+            normalized = multi_mcp_orchestrator._normalize_candidate(row)
+            assert normalized is not None, f"{row['symbol']} failed normalization"
+            packet = multi_mcp_orchestrator._evidence_packet(normalized)
+            failed = [
+                name for name, ok in packet['profit_gate']['checks'].items()
+                if not ok
+            ]
+            assert not failed, f"{row['symbol']} forwarded but fails {failed}"
+        return {
+            'id': 'gate-parity',
+            'status': 'portfolio_ready',
+            'selected': [{'symbol': row['symbol']} for row in candidates],
+        }
+
+    monkeypatch.setattr(
+        'app.services.mirofish.multi_mcp_orchestrator.run_multi_mcp_analysis',
+        assert_every_candidate_passes_the_profit_gate,
+    )
+    monkeypatch.setattr(
+        goodrich_client.requests, 'request',
+        lambda method, url, **kwargs: FakeResponse(),
+    )
+
+    goodrich_client.run_research()
+
+    assert forwarded['symbols'] == ['413630', '068270', '207940']
 
 
 @pytest.fixture

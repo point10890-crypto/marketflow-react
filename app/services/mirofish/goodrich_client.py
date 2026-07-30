@@ -224,7 +224,11 @@ def stand_aside_fund_manager(
 def run_research() -> dict:
     from app.services.kis_screener import run_screening
     from app.services.mirofish.alpha_scanner import get_price_trend_metrics
-    from app.services.mirofish.multi_mcp_orchestrator import run_multi_mcp_analysis
+    from app.services.mirofish.multi_mcp_orchestrator import (
+        TREND_GATE_RULES,
+        passes_trend_gate,
+        run_multi_mcp_analysis,
+    )
 
     screening = run_screening(force=True)
     rows = screening.get('candidate_pool') if isinstance(screening, dict) else None
@@ -237,8 +241,6 @@ def run_research() -> dict:
     candidates = []
     candidate_rows = []
     rejected = []
-    established_trend_count = 0
-    recovery_leader_count = 0
     for row in rows[:20]:
         if not isinstance(row, dict):
             continue
@@ -247,7 +249,6 @@ def run_research() -> dict:
         change_pct = _safe_float(row.get('change_pct'))
         score = row.get('score')
         total_score = _safe_float(score.get('total')) if isinstance(score, dict) else _safe_float(score)
-        is_preferred = name.endswith('우') or name.endswith('우B') or name.endswith('우C')
         trend = get_price_trend_metrics(
             symbol,
             current_price=_safe_float(row.get('price') or row.get('current_price')),
@@ -255,20 +256,6 @@ def run_research() -> dict:
             volume=_safe_float(row.get('volume')),
         )
         is_preferred = name.endswith(('우', '우B', '우C'))
-        trend_passed = (
-            trend.get('sample_days', 0) >= 20
-            and _safe_float(trend.get('trend_5d_pct')) > 0
-            and _safe_float(trend.get('trend_20d_pct')) > 0
-            and _safe_float(trend.get('over_ma20_pct')) >= 0
-            and _safe_float(trend.get('trend_score')) >= 8
-            and _safe_float(trend.get('drawdown_20d_pct')) <= 15
-        )
-        recovery_leader_passed = (
-            5 <= change_pct <= 15
-            and total_score >= 45
-            and _safe_float(trend.get('sample_days')) >= 20
-            and _safe_float(trend.get('drawdown_20d_pct')) <= 35
-        )
         if (
             len(symbol) == 6
             and symbol.isdigit()
@@ -279,13 +266,10 @@ def run_research() -> dict:
             # candidates that miss the late-session B-grade cutoff.
             and change_pct > 0
             and total_score >= (24 if using_candidate_pool else 45)
-            and (trend_passed or recovery_leader_passed)
+            # Screen with the same deterministic rules Multi-MCP re-applies, so
+            # no candidate can reach deep research only to be rejected there.
+            and passes_trend_gate(trend)
         ):
-            gate_mode = 'established_trend' if trend_passed else 'recovery_leader'
-            if trend_passed:
-                established_trend_count += 1
-            else:
-                recovery_leader_count += 1
             candidates.append({'symbol': symbol, 'name': name})
             candidate_rows.append({
                 'symbol': symbol,
@@ -295,7 +279,6 @@ def run_research() -> dict:
                 'volume': _safe_float(row.get('volume')),
                 'source': 'KIS',
                 'observed_at': screening.get('timestamp'),
-                'gate_mode': gate_mode,
             })
         else:
             rejected.append({'symbol': symbol, 'trend': trend})
@@ -307,19 +290,9 @@ def run_research() -> dict:
         'candidate_count': len(rows),
         'trend_gate': {
             'required': True,
-            'minimum_trend_score': 8,
-            'positive_5d_and_20d': True,
-            'above_ma20': True,
-            'maximum_drawdown_20d_pct': 15,
-            'recovery_leader': {
-                'enabled': True,
-                'minimum_change_pct': 5,
-                'maximum_change_pct': 15,
-                'minimum_scanner_score': 45,
-                'maximum_drawdown_20d_pct': 35,
-            },
-            'established_trend_count': established_trend_count,
-            'recovery_leader_count': recovery_leader_count,
+            'rule_source': 'multi_mcp_orchestrator.TREND_GATE_RULES',
+            **TREND_GATE_RULES,
+            'passed_count': len(candidates),
             'rejected_count': len(rejected),
         },
         'scanner_timestamp': screening.get('timestamp'),
