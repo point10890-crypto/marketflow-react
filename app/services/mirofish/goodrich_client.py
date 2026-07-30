@@ -187,6 +187,18 @@ def get_fund_manager() -> dict:
                     for row in latest.get('selected') or []
                     if isinstance(row, dict)
                 ],
+                'analysis_candidates': [
+                    {
+                        'symbol': row.get('symbol'),
+                        'name': row.get('name'),
+                        'action': row.get('action'),
+                        'confidence': row.get('confidence'),
+                        'portfolio_score': row.get('portfolio_score'),
+                        'reasoning': row.get('cio_reasoning'),
+                    }
+                    for row in latest.get('agent_analyses') or []
+                    if isinstance(row, dict)
+                ],
                 'cash_wait_reason': latest.get('cash_wait_reason'),
                 'architecture': latest.get('architecture'),
                 'input_mode': latest.get('input_mode'),

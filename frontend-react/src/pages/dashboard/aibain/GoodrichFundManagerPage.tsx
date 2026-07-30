@@ -34,6 +34,16 @@ interface GoodrichSnapshot {
     };
     picks: GoodrichPick[];
     alerts?: Array<Record<string, unknown>>;
+    multi_mcp?: {
+        status?: string;
+        analysis_candidates?: Array<{
+            symbol?: string;
+            name?: string;
+            action?: string;
+            confidence?: number;
+            reasoning?: string;
+        }>;
+    };
     integration?: {
         fetched_at?: string;
         universe?: string;
@@ -230,6 +240,25 @@ export default function GoodrichFundManagerPage() {
                                             백그라운드에서 다음 검출을 계속합니다.
                                         </p>
                                     </div>
+                                </div>
+                            </section>
+                        )}
+
+                        {(data.multi_mcp?.analysis_candidates?.length ?? 0) > 0 && (
+                            <section className="rounded-2xl border border-cyan-400/20 bg-cyan-400/[0.04] p-5">
+                                <div className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-300">Agent analysis</div>
+                                <h2 className="mt-1 text-xl font-black">분석 후보와 판단</h2>
+                                <p className="mt-2 text-sm text-slate-400">추천으로 채택되지 않은 종목도 에이전트 판단과 함께 표시합니다.</p>
+                                <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                                    {data.multi_mcp?.analysis_candidates?.map((candidate) => (
+                                        <article key={candidate.symbol} className="rounded-xl border border-white/[0.08] bg-black/20 p-4">
+                                            <div className="flex items-start justify-between gap-2">
+                                                <div><h3 className="font-black">{candidate.name || candidate.symbol}</h3><p className="text-xs text-slate-500">{candidate.symbol}</p></div>
+                                                <span className="rounded-full bg-white/[0.07] px-2 py-1 text-[10px] font-black text-cyan-200">{candidate.action || 'REVIEW'}</span>
+                                            </div>
+                                            <p className="mt-3 text-xs leading-5 text-slate-400">{candidate.reasoning || '분석 근거를 확인 중입니다.'}</p>
+                                        </article>
+                                    ))}
                                 </div>
                             </section>
                         )}
