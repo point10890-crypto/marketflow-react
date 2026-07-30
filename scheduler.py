@@ -87,6 +87,14 @@ try:
 except ImportError:
     build_freshness = None
 
+# 로컬 Flask API base — 포트 드리프트 방지 (5001 → 5003 이전 대응)
+try:
+    from app.utils.local_api import local_api_base
+except ImportError:
+    def local_api_base():
+        port = (os.getenv('FLASK_PORT') or '').strip() or '5003'
+        return f'http://127.0.0.1:{port}'
+
 # Process-level filelock
 try:
     from filelock import FileLock, Timeout as FileLockTimeout
@@ -1886,7 +1894,7 @@ def post_daily_analysis_to_community() -> bool:
             [Config.PYTHON_PATH, script_path],
             '커뮤니티 종목분석 게시 (자동)',
             timeout=300,  # 이미지 5장 생성 여유 (30s × 5)
-            env_extra={'MARKETFLOW_API': 'http://localhost:5001'},
+            env_extra={'MARKETFLOW_API': local_api_base()},
         )
     except Exception as e:
         logger.warning(f"post_daily_analysis 예외 (무시): {e}")

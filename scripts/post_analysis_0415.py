@@ -12,7 +12,9 @@ import requests
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, BASE_DIR)
 
-API_URL = os.environ.get('MARKETFLOW_API', 'http://localhost:5001')
+from app.utils.local_api import local_api_base
+
+API_URL = local_api_base()
 ADMIN_EMAIL = "point10890@gmail.com"
 UPLOAD_DIR = os.path.join(BASE_DIR, 'data', 'uploads', 'community')
 

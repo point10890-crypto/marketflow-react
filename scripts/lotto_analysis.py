@@ -44,7 +44,9 @@ DB_FILE = os.path.join(BASE_DIR, 'data', 'users.db')
 LOTTO_BOARD_SLUG = 'lotto-ai'
 LOTTO_BOARD_ID = 7  # boards.slug='lotto-ai' 의 id (스키마 변경 시 helper 가 자동 fallback)
 UPLOAD_DIR = os.path.join(BASE_DIR, 'data', 'uploads', 'community')
-API_URL = os.getenv("MARKETFLOW_API_URL") or os.getenv("COMMUNITY_API_URL") or "http://localhost:5001"
+from app.utils.local_api import local_api_base
+
+API_URL = local_api_base()
 ADMIN_EMAIL = os.getenv("MARKETFLOW_ADMIN_EMAIL") or os.getenv("COMMUNITY_ADMIN_EMAIL") or "point10890@gmail.com"
 ADMIN_TOKEN = os.getenv("MARKETFLOW_ADMIN_TOKEN") or os.getenv("COMMUNITY_ADMIN_TOKEN")
 ADMIN_PASSWORD = os.getenv("MARKETFLOW_ADMIN_PASSWORD") or os.getenv("COMMUNITY_ADMIN_PASSWORD")

@@ -35,7 +35,9 @@ if not logger.handlers:
     logger.addHandler(h)
     logger.setLevel(logging.INFO)
 
-API_URL = os.environ.get('MARKETFLOW_API', 'http://localhost:5001')
+from app.utils.local_api import local_api_base
+
+API_URL = local_api_base()
 ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL', 'point10890@gmail.com')
 UPLOAD_DIR = os.path.join(BASE_DIR, 'data', 'uploads', 'community')
 JONGGA_JSON = os.path.join(BASE_DIR, 'data', 'jongga_v2_latest.json')
