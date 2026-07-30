@@ -203,7 +203,12 @@ def monitor_fund_manager() -> dict:
     )
 
 
-def stand_aside_fund_manager(*, reason: str, candidate_count: int) -> dict:
+def stand_aside_fund_manager(
+    *,
+    reason: str,
+    candidate_count: int,
+    integration: dict | None = None,
+) -> dict:
     return _request(
         'POST',
         '/v1/fund-manager/stand-aside',
@@ -212,6 +217,7 @@ def stand_aside_fund_manager(*, reason: str, candidate_count: int) -> dict:
             'reason': reason,
             'candidate_count': max(0, int(candidate_count)),
         },
+        integration=integration,
     )
 
 
@@ -278,10 +284,29 @@ def run_research() -> dict:
             })
         else:
             rejected.append({'symbol': symbol, 'trend': trend})
+
+    screening_integration = {
+        'source': 'marketflow-kis-leading-scanner',
+        'universe': 'live-kospi-kosdaq-leaders',
+        'universe_size': len(candidates),
+        'candidate_count': len(rows),
+        'trend_gate': {
+            'required': True,
+            'minimum_trend_score': 8,
+            'positive_5d_and_20d': True,
+            'above_ma20': True,
+            'maximum_drawdown_20d_pct': 15,
+            'rejected_count': len(rejected),
+        },
+        'scanner_timestamp': screening.get('timestamp'),
+        'market_status': screening.get('market_status'),
+        'ranking_owner': 'marketflow-kis-rules-then-goodrich-quant',
+    }
     if len(candidates) < 3:
         return stand_aside_fund_manager(
             reason='profit_quality_gate_below_minimum',
             candidate_count=len(candidates),
+            integration=screening_integration,
         )
 
     deep_research = run_multi_mcp_analysis(
@@ -302,6 +327,19 @@ def run_research() -> dict:
         return stand_aside_fund_manager(
             reason='multi_mcp_cio_approved_below_minimum',
             candidate_count=len(candidates),
+            integration={
+                **screening_integration,
+                'universe_size': len(candidates),
+                'multi_mcp': {
+                    'id': deep_research.get('id'),
+                    'status': deep_research.get('status'),
+                    'candidate_count': deep_research.get('candidate_count'),
+                    'profit_gate_passed_count': deep_research.get('profit_gate_passed_count'),
+                    'cash_wait_reason': deep_research.get('cash_wait_reason'),
+                    'publishable_top3': deep_research.get('publishable_top3'),
+                    'cio_selected_count': len(candidates),
+                },
+            },
         )
 
     multi_mcp_snapshot = {
@@ -332,25 +370,12 @@ def run_research() -> dict:
         timeout=RESEARCH_TIMEOUT_SECONDS,
         json_body={'candidates': candidates},
         integration={
-            'source': 'marketflow-kis-leading-scanner',
-            'universe': 'live-kospi-kosdaq-leaders',
+            **screening_integration,
             'universe_size': len(candidates),
-            'candidate_count': len(rows),
-            'trend_gate': {
-                'required': True,
-                'minimum_trend_score': 8,
-                'positive_5d_and_20d': True,
-                'above_ma20': True,
-                'maximum_drawdown_20d_pct': 15,
-                'rejected_count': len(rejected),
-            },
             'multi_mcp': {
                 **multi_mcp_snapshot,
                 'cio_selected_count': len(candidates),
             },
-            'scanner_timestamp': screening.get('timestamp'),
-            'market_status': screening.get('market_status'),
-            'ranking_owner': 'marketflow-kis-rules-then-goodrich-quant',
         },
     )
 

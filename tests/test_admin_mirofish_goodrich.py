@@ -189,6 +189,8 @@ def test_goodrich_research_stands_aside_when_profit_trend_gate_fails(monkeypatch
     monkeypatch.setattr(
         'app.services.kis_screener.run_screening',
         lambda force=True: {
+            'timestamp': '2026-07-30T10:30:00+09:00',
+            'market_status': 'open',
             'candidate_pool': [
                 {
                     'code': '005380',
@@ -219,13 +221,18 @@ def test_goodrich_research_stands_aside_when_profit_trend_gate_fails(monkeypatch
         return FakeResponse()
 
     monkeypatch.setattr(goodrich_client.requests, 'request', fake_request)
-    goodrich_client.run_research()
+    result = goodrich_client.run_research()
 
     assert captured['url'].endswith('/v1/fund-manager/stand-aside')
     assert captured['json'] == {
         'reason': 'profit_quality_gate_below_minimum',
         'candidate_count': 0,
     }
+    assert result['integration']['candidate_count'] == 1
+    assert result['integration']['universe_size'] == 0
+    assert result['integration']['market_status'] == 'open'
+    assert result['integration']['scanner_timestamp'] == '2026-07-30T10:30:00+09:00'
+    assert result['integration']['trend_gate']['rejected_count'] == 1
 
 
 @pytest.fixture
