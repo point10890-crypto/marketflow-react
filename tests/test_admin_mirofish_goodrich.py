@@ -54,6 +54,25 @@ def test_goodrich_client_adds_safe_integration_metadata(monkeypatch):
     assert [pick['symbol'] for pick in result['picks']] == ['005930', '000660', '035420']
 
 
+def test_goodrich_client_allows_a_verified_selective_portfolio(monkeypatch):
+    class SelectiveResponse(FakeResponse):
+        def json(self):
+            payload = super().json()
+            payload['picks'] = payload['picks'][:1]
+            return payload
+
+    monkeypatch.setattr(
+        goodrich_client.requests,
+        'request',
+        lambda *args, **kwargs: SelectiveResponse(),
+    )
+
+    result = goodrich_client.get_fund_manager()
+
+    assert result['integration']['universe_size'] == 1
+    assert [pick['symbol'] for pick in result['picks']] == ['005930']
+
+
 def test_goodrich_client_rejects_missing_pick_identity(monkeypatch):
     class BadResponse(FakeResponse):
         def json(self):

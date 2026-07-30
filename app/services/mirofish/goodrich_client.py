@@ -94,8 +94,8 @@ def _validate_market_leader_contract(payload: dict, picks: list) -> None:
         or selection.get('simulation') is not False
     ):
         raise GoodrichServiceError('검증된 KIS 시장 주도주 출처가 아니므로 TOP 3를 게시하지 않습니다.')
-    if len(picks) != 3:
-        raise GoodrichServiceError('검증된 실제 시장 주도주가 3종목 미만이므로 TOP 3를 게시하지 않습니다.')
+    if not 1 <= len(picks) <= 3:
+        raise GoodrichServiceError('검증된 시장 주도주가 없어 결과를 게시하지 않습니다.')
     ai = payload.get('ai')
     if (
         not isinstance(ai, dict)
