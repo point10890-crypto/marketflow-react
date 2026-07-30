@@ -235,6 +235,79 @@ def test_goodrich_research_stands_aside_when_profit_trend_gate_fails(monkeypatch
     assert result['integration']['trend_gate']['rejected_count'] == 1
 
 
+def test_goodrich_research_accepts_bounded_recovery_leader(monkeypatch):
+    captured = {}
+    monkeypatch.setattr(
+        'app.services.kis_screener.run_screening',
+        lambda force=True: {
+            'timestamp': '2026-07-30T11:00:00+09:00',
+            'market_status': 'open',
+            'candidate_pool': [
+                {
+                    'code': '005930', 'name': '삼성전자', 'price': 224500,
+                    'change_pct': 7.67, 'volume': 1000000,
+                    'score': {'total': 53},
+                },
+                {
+                    'code': '068270', 'name': '셀트리온', 'price': 191000,
+                    'change_pct': 6.11, 'volume': 800000,
+                    'score': {'total': 48},
+                },
+                {
+                    'code': '002210', 'name': '동성제약', 'price': 2050,
+                    'change_pct': 5.34, 'volume': 700000,
+                    'score': {'total': 43},
+                },
+            ],
+        },
+    )
+
+    def fake_trend(symbol, **kwargs):
+        if symbol == '005930':
+            return {
+                'sample_days': 121, 'trend_5d_pct': -16,
+                'trend_20d_pct': -28, 'over_ma20_pct': -15,
+                'trend_score': 0, 'drawdown_20d_pct': 28,
+            }
+        return {
+            'sample_days': 121, 'trend_5d_pct': 5,
+            'trend_20d_pct': 8, 'over_ma20_pct': 4,
+            'trend_score': 10, 'drawdown_20d_pct': 2,
+        }
+
+    monkeypatch.setattr(
+        'app.services.mirofish.alpha_scanner.get_price_trend_metrics',
+        fake_trend,
+    )
+    monkeypatch.setattr(
+        'app.services.mirofish.multi_mcp_orchestrator.run_multi_mcp_analysis',
+        lambda candidates, **kwargs: {
+            'id': 'recovery-test',
+            'status': 'portfolio_ready',
+            'candidate_count': len(candidates),
+            'profit_gate_passed_count': 3,
+            'publishable_top3': True,
+            'selected': [
+                {'symbol': row['symbol'], 'name': row['name']}
+                for row in candidates
+            ],
+        },
+    )
+
+    def fake_request(method, url, **kwargs):
+        captured['json'] = kwargs['json']
+        return FakeResponse()
+
+    monkeypatch.setattr(goodrich_client.requests, 'request', fake_request)
+    result = goodrich_client.run_research()
+
+    assert [row['symbol'] for row in captured['json']['candidates']] == [
+        '005930', '068270', '002210',
+    ]
+    assert result['integration']['trend_gate']['recovery_leader_count'] == 1
+    assert result['integration']['trend_gate']['established_trend_count'] == 2
+
+
 @pytest.fixture
 def admin_client():
     app = create_app({
