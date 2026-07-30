@@ -2153,7 +2153,17 @@ def _list_from(data: Any, key: str) -> list[dict[str, Any]]:
 
 def _price_analysis(history: list[dict[str, Any]], latest: dict[str, Any]) -> dict[str, Any]:
     ordered = [item for item in history if _float(item.get('current_price')) > 0]
-    if latest and (not ordered or ordered[-1].get('date') != latest.get('date')):
+    # The daily CSV can already contain a row for today. For a live KIS
+    # candidate that row is only a snapshot and may be older than the quote
+    # supplied by the screener. Replace today's history rows with the live
+    # observation so momentum/MA/drawdown are calculated at one price basis.
+    if latest:
+        latest_date = str(latest.get('date') or '')
+        if latest_date:
+            ordered = [
+                item for item in ordered
+                if str(item.get('date') or '') != latest_date
+            ]
         ordered.append(latest)
     ordered.sort(key=lambda item: (str(item.get('date') or ''), str(item.get('update_time') or '')))
     closes = [_float(item.get('current_price')) for item in ordered if _float(item.get('current_price')) > 0]
