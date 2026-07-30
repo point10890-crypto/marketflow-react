@@ -1131,8 +1131,25 @@ def run_mirofish_workflow_monitor() -> bool:
 # [KR Market] 작업 함수들
 # ============================================================
 
+def _with_benchmark_tickers(tickers, names_map):
+    """Ensure the index proxies are collected alongside ordinary listings.
+
+    fdr.StockListing('KRX') returns stocks only, so without this the benchmark
+    ETFs never enter daily_prices.csv and excess return stays unmeasurable.
+    """
+    from app.services.mirofish.goodrich_ledger import BENCHMARK_TICKERS
+
+    tickers = list(tickers)
+    names_map = dict(names_map)
+    for code, label in BENCHMARK_TICKERS.items():
+        if code not in names_map:
+            tickers.append(code)
+        names_map.setdefault(code, label)
+    return tickers, names_map
+
+
 def update_daily_prices():
-    """일별 가격 데이터 업데이트 — FDR listing + pykrx OHLCV 수집"""
+    """일별 가격 데이터 업데이트 — FDR listing + pykrx OHLCV 수집 (벤치마크 ETF 포함)"""
     import pandas as pd
     from datetime import timedelta
     csv_path = os.path.join(Config.DATA_DIR, 'daily_prices.csv')
@@ -1174,7 +1191,8 @@ def update_daily_prices():
         listing = fdr.StockListing('KRX')
         tickers = listing['Code'].tolist()
         names_map = dict(zip(listing['Code'], listing['Name']))
-        logger.info(f"📊 FDR 종목 목록: {len(tickers)}개")
+        tickers, names_map = _with_benchmark_tickers(tickers, names_map)
+        logger.info(f"📊 FDR 종목 목록: {len(tickers)}개 (벤치마크 ETF 포함)")
     except Exception as e:
         logger.error(f"FDR 종목 목록 실패: {e}")
         return False

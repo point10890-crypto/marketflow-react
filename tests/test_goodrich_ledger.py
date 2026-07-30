@@ -170,6 +170,52 @@ def test_backfill_ingests_every_cycle_from_a_history_payload(tmp_path):
     assert goodrich_ledger.backfill_from_history(history, ledger_path=str(ledger)) == 0
 
 
+def test_benchmark_ticker_follows_the_market_the_pick_trades_on():
+    assert goodrich_ledger.benchmark_ticker({'market': 'KOSDAQ'}) == '229200'
+    assert goodrich_ledger.benchmark_ticker({'market': 'KQ'}) == '229200'
+    assert goodrich_ledger.benchmark_ticker({'market': 'KOSPI'}) == '069500'
+    # Unknown market must fall back to the broad KR benchmark, never to nothing.
+    assert goodrich_ledger.benchmark_ticker({}) == '069500'
+
+
+def test_price_collection_universe_always_includes_the_benchmarks():
+    """Excess return is unmeasurable unless the index proxies are collected."""
+    import scheduler
+
+    tickers = ['005930', '069500']
+    names = {'005930': '삼성전자', '069500': '이미있음'}
+
+    result_tickers, result_names = scheduler._with_benchmark_tickers(tickers, names)
+
+    assert result_tickers.count('069500') == 1, 'must not duplicate an existing ticker'
+    assert result_names['069500'] == '이미있음', 'must not overwrite a real listing name'
+    for code in goodrich_ledger.BENCHMARK_TICKERS:
+        assert code in result_tickers
+        assert result_names.get(code)
+
+
+def test_evaluate_ledger_uses_the_matching_benchmark_series():
+    ledger = [
+        {'symbol': '005930', 'name': '삼성전자', 'market': 'KOSPI',
+         'entry_date': '2026-07-28', 'entry_price': 100.0},
+    ]
+    history = {
+        '005930': _rows([('2026-07-28', 100.0), ('2026-07-29', 110.0)]),
+        '069500': _rows([('2026-07-28', 1000.0), ('2026-07-29', 1040.0)]),
+        '229200': _rows([('2026-07-28', 500.0), ('2026-07-29', 400.0)]),
+    }
+
+    evaluations = goodrich_ledger.evaluate_ledger(
+        ledger, history, horizons=(1,), round_trip_cost_pct=0.0,
+    )
+
+    t1 = evaluations[0]['horizons']['1']
+    assert t1['return_pct'] == 10.0
+    assert t1['benchmark_ticker'] == '069500'
+    assert t1['benchmark_return_pct'] == 4.0
+    assert t1['excess_return_pct'] == 6.0
+
+
 def test_summary_reports_win_rate_and_mean_excess_per_horizon():
     evaluations = [
         {'horizons': {'1': {'return_pct': 10.0, 'net_return_pct': 9.77,

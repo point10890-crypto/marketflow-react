@@ -32,6 +32,16 @@ LEDGER_PATH = os.path.join(DATA_ROOT, 'admin_mirofish', 'goodrich_ledger.jsonl')
 
 DEFAULT_HORIZONS = (1, 3, 5, 20)
 
+# Index proxies collected alongside ordinary listings in daily_prices.csv, so a
+# benchmark close exists on exactly the sessions the picks traded. Excess return
+# is only claimed when both legs have a close on the same date.
+BENCHMARK_TICKERS = {
+    '069500': 'KODEX 200',
+    '229200': 'KODEX 코스닥150',
+}
+KOSPI_BENCHMARK = '069500'
+KOSDAQ_BENCHMARK = '229200'
+
 # Korean round-trip friction: securities transaction tax plus both brokerage
 # legs. Treat this as an assumption to confirm against the live brokerage
 # schedule, not as a fact - it is reported back in every evaluation so a wrong
@@ -71,6 +81,7 @@ def record_snapshot(
             'cycle_id': cycle_id,
             'symbol': symbol,
             'name': pick.get('name'),
+            'market': pick.get('market'),
             'rank': pick.get('rank'),
             'detected_at': detected_at,
             'entry_date': entry_date,
@@ -125,6 +136,41 @@ def read_ledger(*, ledger_path: str | None = None) -> list[dict[str, Any]]:
             if isinstance(entry, dict):
                 entries.append(entry)
     return entries
+
+
+def benchmark_ticker(entry: dict[str, Any]) -> str:
+    """Index proxy for one pick. Unknown market falls back to the broad KR index."""
+    market = str((entry or {}).get('market') or '').strip().upper()
+    if market.startswith('KOSDAQ') or market in {'KQ', 'KOSDAQ_GLOBAL'}:
+        return KOSDAQ_BENCHMARK
+    return KOSPI_BENCHMARK
+
+
+def evaluate_ledger(
+    entries: Iterable[dict[str, Any]],
+    price_history: dict[str, list[dict[str, Any]]],
+    *,
+    horizons: tuple[int, ...] = DEFAULT_HORIZONS,
+    round_trip_cost_pct: float = DEFAULT_ROUND_TRIP_COST_PCT,
+) -> list[dict[str, Any]]:
+    """Evaluate every ledger entry against its own market's benchmark series."""
+    evaluations = []
+    for entry in entries:
+        if not isinstance(entry, dict):
+            continue
+        ticker = benchmark_ticker(entry)
+        evaluation = evaluate_pick(
+            entry,
+            price_history.get(_symbol(entry.get('symbol'))) or [],
+            price_history.get(ticker) or [],
+            horizons=horizons,
+            round_trip_cost_pct=round_trip_cost_pct,
+        )
+        evaluation['benchmark_ticker'] = ticker
+        for row in evaluation['horizons'].values():
+            row['benchmark_ticker'] = ticker
+        evaluations.append(evaluation)
+    return evaluations
 
 
 def evaluate_pick(
