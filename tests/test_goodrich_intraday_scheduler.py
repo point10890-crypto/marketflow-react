@@ -88,6 +88,75 @@ def test_forced_cycle_monitors_before_detecting_new_candidates(monkeypatch, tmp_
     assert not scheduler.LOCK_PATH.exists()
 
 
+def test_cycle_records_published_picks_into_the_measurement_ledger(monkeypatch, tmp_path):
+    """Every cycle must leave an evaluable record, even though picks get replaced."""
+    _use_temp_paths(monkeypatch, tmp_path)
+    ledger = tmp_path / "ledger.jsonl"
+    monkeypatch.setattr(scheduler, "LEDGER_PATH", ledger)
+    monkeypatch.setattr(
+        "app.services.mirofish.goodrich_client.monitor_fund_manager",
+        lambda: {"active_count": 1},
+    )
+    monkeypatch.setattr(
+        "app.services.mirofish.goodrich_client.run_research",
+        lambda: {
+            "integration": {"market_status": "open"},
+            "cycle_id": "cycle-42",
+            "picks": [
+                {
+                    "symbol": "005930", "name": "삼성전자", "rank": 1,
+                    "current_price": 70000, "target_price": 77000, "stop_price": 65000,
+                    "observed_at": "2026-07-30T10:30:00+09:00",
+                },
+            ],
+        },
+    )
+    monkeypatch.setattr(scheduler, "_send_top3_telegram", lambda result: True)
+
+    result = scheduler.run_cycle(force=True)
+
+    assert result["ledger_recorded"] == 1
+    from app.services.mirofish import goodrich_ledger
+
+    entries = goodrich_ledger.read_ledger(ledger_path=str(ledger))
+    assert len(entries) == 1
+    assert entries[0]["symbol"] == "005930"
+    assert entries[0]["entry_date"] == "2026-07-30"
+    assert entries[0]["entry_price"] == 70000
+
+
+def test_ledger_failure_never_breaks_the_cycle(monkeypatch, tmp_path):
+    _use_temp_paths(monkeypatch, tmp_path)
+    monkeypatch.setattr(
+        "app.services.mirofish.goodrich_client.monitor_fund_manager",
+        lambda: {"active_count": 0},
+    )
+    monkeypatch.setattr(
+        "app.services.mirofish.goodrich_client.run_research",
+        lambda: {
+            "integration": {"market_status": "open"},
+            "picks": [{
+                "symbol": "005930", "name": "삼성전자", "current_price": 70000,
+                "observed_at": "2026-07-30T10:30:00+09:00",
+            }],
+        },
+    )
+    monkeypatch.setattr(scheduler, "_send_top3_telegram", lambda result: True)
+
+    def explode(*args, **kwargs):
+        raise OSError("disk full")
+
+    monkeypatch.setattr(
+        "app.services.mirofish.goodrich_ledger.record_snapshot", explode,
+    )
+
+    result = scheduler.run_cycle(force=True)
+
+    assert result["status"] == "completed"
+    assert result["ledger_recorded"] == 0
+    assert result["ledger_error"] == "OSError"
+
+
 def test_cycle_skips_when_another_cycle_holds_the_lock(monkeypatch, tmp_path):
     _use_temp_paths(monkeypatch, tmp_path)
     scheduler.LOCK_PATH.write_text("active", encoding="utf-8")

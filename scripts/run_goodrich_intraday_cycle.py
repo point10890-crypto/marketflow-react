@@ -21,6 +21,7 @@ load_dotenv(ROOT / ".env", override=False)
 
 LOCK_PATH = ROOT / "data" / "admin_mirofish" / "goodrich_intraday.lock"
 STATUS_PATH = ROOT / "data" / "admin_mirofish" / "goodrich_intraday_status.json"
+LEDGER_PATH = ROOT / "data" / "admin_mirofish" / "goodrich_ledger.jsonl"
 LOCK_STALE_SECONDS = 25 * 60
 
 
@@ -77,6 +78,41 @@ def _send_top3_telegram(result: dict) -> bool:
         _build_top3_telegram_message(result),
         channel=False,
     )
+
+
+def _record_ledger(research: dict, started_at: datetime) -> tuple[int, str | None]:
+    """Persist this cycle's published picks so replacement cannot erase them.
+
+    Measurement must never be able to break detection, so any failure here is
+    reported in the cycle status instead of propagating.
+    """
+    try:
+        from app.services.mirofish import goodrich_ledger
+
+        picks = research.get("picks") or []
+        if not picks:
+            return 0, None
+        cycle_id = str(
+            research.get("cycle_id")
+            or (picks[0] or {}).get("cycle_id")
+            or f"cycle_{started_at:%Y%m%d_%H%M%S}"
+        )
+        detected_at = str(
+            (picks[0] or {}).get("observed_at")
+            or research.get("detected_at")
+            or started_at.isoformat()
+        )
+        written = goodrich_ledger.record_snapshot(
+            {
+                "cycle_id": cycle_id,
+                "detected_at": detected_at,
+                "picks": picks,
+            },
+            ledger_path=str(LEDGER_PATH),
+        )
+        return written, None
+    except Exception as error:  # measurement must not break the cycle
+        return 0, type(error).__name__
 
 
 def _write_status(payload: dict) -> None:
@@ -153,6 +189,10 @@ def run_cycle(*, force: bool = False) -> dict:
                 for pick in research.get("picks", [])[:3]
             ],
         }
+        recorded, ledger_error = _record_ledger(research, started_at)
+        result["ledger_recorded"] = recorded
+        if ledger_error:
+            result["ledger_error"] = ledger_error
         result["telegram_sent"] = _send_top3_telegram(result)
         if not result["telegram_sent"]:
             result["status"] = "completed_with_telegram_error"
