@@ -6,8 +6,10 @@ from scripts import run_goodrich_intraday_cycle as scheduler
 
 
 def _use_temp_paths(monkeypatch, tmp_path):
+    """Redirect every artifact the cycle writes. Missing one pollutes real data."""
     monkeypatch.setattr(scheduler, "LOCK_PATH", tmp_path / "cycle.lock")
     monkeypatch.setattr(scheduler, "STATUS_PATH", tmp_path / "status.json")
+    monkeypatch.setattr(scheduler, "LEDGER_PATH", tmp_path / "ledger.jsonl")
 
 
 def test_cycle_skips_when_market_is_closed(monkeypatch, tmp_path):
@@ -91,8 +93,7 @@ def test_forced_cycle_monitors_before_detecting_new_candidates(monkeypatch, tmp_
 def test_cycle_records_published_picks_into_the_measurement_ledger(monkeypatch, tmp_path):
     """Every cycle must leave an evaluable record, even though picks get replaced."""
     _use_temp_paths(monkeypatch, tmp_path)
-    ledger = tmp_path / "ledger.jsonl"
-    monkeypatch.setattr(scheduler, "LEDGER_PATH", ledger)
+    ledger = scheduler.LEDGER_PATH
     monkeypatch.setattr(
         "app.services.mirofish.goodrich_client.monitor_fund_manager",
         lambda: {"active_count": 1},
