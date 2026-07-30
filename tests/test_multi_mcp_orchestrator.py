@@ -23,7 +23,7 @@ def test_architecture_separates_evidence_mcp_from_decision_agents():
     assert manifest['hard_rules']['forced_top3'] is False
 
 
-def test_downtrend_candidate_is_blocked_before_llm(monkeypatch, tmp_path):
+def test_downtrend_candidate_reaches_agents_with_explicit_risk_evidence(monkeypatch, tmp_path):
     monkeypatch.setattr(orchestrator, 'RUNS_ROOT', str(tmp_path))
     monkeypatch.setattr(orchestrator.crash_rebound_gate, 'read_latest_crash_rebound_gate', lambda: {})
     monkeypatch.setattr(orchestrator.fear_index, 'read_latest_fear_index', lambda: {})
@@ -47,14 +47,18 @@ def test_downtrend_candidate_is_blocked_before_llm(monkeypatch, tmp_path):
     monkeypatch.setattr(
         orchestrator.tradingagents,
         'run_deep_analysis',
-        lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError('LLM must not run')),
+        lambda *args, **kwargs: {
+            'id': 'downtrend-review',
+            'verdict': {'verdict': 'HOLD', 'confidence': 55},
+        },
     )
 
     result = orchestrator.run_multi_mcp_analysis([_candidate()], use_llm=True)
 
     assert result['status'] == 'cash_wait'
-    assert result['profit_gate_passed_count'] == 0
+    assert result['profit_gate_passed_count'] == 1
     assert result['selected'] == []
+    assert 'positive_5d' in result['evidence_packets'][0]['profit_gate']['risk_flags']
 
 
 def test_mutual_agents_can_approve_only_verified_symbol(monkeypatch, tmp_path):

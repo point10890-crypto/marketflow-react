@@ -244,34 +244,30 @@ def run_research() -> dict:
     candidates = []
     candidate_rows = []
     rejected = []
+    trend_passed_count = 0
     for row in rows[:20]:
         if not isinstance(row, dict):
             continue
         symbol = str(row.get('code') or row.get('symbol') or '').strip()
         name = str(row.get('name') or '').strip()
         change_pct = _safe_float(row.get('change_pct'))
-        score = row.get('score')
-        total_score = _safe_float(score.get('total')) if isinstance(score, dict) else _safe_float(score)
         trend = get_price_trend_metrics(
             symbol,
             current_price=_safe_float(row.get('price') or row.get('current_price')),
             change_rate=change_pct,
             volume=_safe_float(row.get('volume')),
         )
+        if passes_trend_gate(trend):
+            trend_passed_count += 1
         is_preferred = name.endswith(('우', '우B', '우C'))
         if (
             len(symbol) == 6
             and symbol.isdigit()
             and name
             and not is_preferred
-            # Goodrich is the AI decision layer. The scanner hands off genuine
-            # liquid KIS observations, including relative-strength
-            # candidates that miss the late-session B-grade cutoff.
+            # Goodrich is the decision layer. Scanner score and trend are
+            # evidence for the agents, not pre-analysis rejection rules.
             and change_pct > 0
-            and total_score >= (24 if using_candidate_pool else 45)
-            # Screen with the same deterministic rules Multi-MCP re-applies, so
-            # no candidate can reach deep research only to be rejected there.
-            and passes_trend_gate(trend)
         ):
             candidates.append({'symbol': symbol, 'name': name})
             candidate_rows.append({
@@ -292,10 +288,11 @@ def run_research() -> dict:
         'universe_size': len(candidates),
         'candidate_count': len(rows),
         'trend_gate': {
-            'required': True,
+            'required': False,
+            'role': 'agent_risk_evidence',
             'rule_source': 'multi_mcp_orchestrator.TREND_GATE_RULES',
             **TREND_GATE_RULES,
-            'passed_count': len(candidates),
+            'passed_count': trend_passed_count,
             'rejected_count': len(rejected),
         },
         'scanner_timestamp': screening.get('timestamp'),

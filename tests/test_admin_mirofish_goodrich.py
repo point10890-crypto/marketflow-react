@@ -312,12 +312,12 @@ def test_goodrich_research_rejects_bounded_recovery_leader(monkeypatch):
     result = goodrich_client.run_research()
 
     assert [[row['symbol'] for row in rows] for rows in orchestrator_calls] == [
-        ['068270', '002210'],
+        ['005930', '068270', '002210'],
     ]
     assert captured['url'].endswith('/v1/fund-manager/research')
-    assert [row['symbol'] for row in captured['json']['candidates']] == ['068270', '002210']
+    assert [row['symbol'] for row in captured['json']['candidates']] == ['005930', '068270', '002210']
     assert result['integration']['trend_gate']['passed_count'] == 2
-    assert result['integration']['trend_gate']['rejected_count'] == 1
+    assert result['integration']['trend_gate']['rejected_count'] == 0
     assert 'recovery_leader' not in result['integration']['trend_gate']
 
 
@@ -378,26 +378,22 @@ def test_goodrich_trend_gate_never_admits_a_multi_mcp_reject(monkeypatch):
 
     forwarded = {}
 
-    def assert_every_candidate_passes_the_profit_gate(candidates, **kwargs):
+    def assert_every_candidate_has_valid_analysis_input(candidates, **kwargs):
         forwarded['symbols'] = [row['symbol'] for row in candidates]
         for row in candidates:
             normalized = multi_mcp_orchestrator._normalize_candidate(row)
             assert normalized is not None, f"{row['symbol']} failed normalization"
             packet = multi_mcp_orchestrator._evidence_packet(normalized)
-            failed = [
-                name for name, ok in packet['profit_gate']['checks'].items()
-                if not ok
-            ]
-            assert not failed, f"{row['symbol']} forwarded but fails {failed}"
+            assert packet['profit_gate']['passed'] is True
         return {
             'id': 'gate-parity',
             'status': 'portfolio_ready',
-            'selected': [{'symbol': row['symbol']} for row in candidates],
+            'selected': [{'symbol': row['symbol']} for row in candidates[:3]],
         }
 
     monkeypatch.setattr(
         'app.services.mirofish.multi_mcp_orchestrator.run_multi_mcp_analysis',
-        assert_every_candidate_passes_the_profit_gate,
+        assert_every_candidate_has_valid_analysis_input,
     )
     monkeypatch.setattr(
         goodrich_client.requests, 'request',
@@ -406,7 +402,7 @@ def test_goodrich_trend_gate_never_admits_a_multi_mcp_reject(monkeypatch):
 
     goodrich_client.run_research()
 
-    assert forwarded['symbols'] == ['413630', '068270', '207940']
+    assert forwarded['symbols'] == ['413630', '068270', '207940', '002210']
 
 
 @pytest.fixture

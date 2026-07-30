@@ -23,10 +23,9 @@ from app.utils.atomic_json import write_json_atomic
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 RUNS_ROOT = os.path.join(REPO_ROOT, 'data', 'admin_mirofish', 'multi_mcp_runs')
 
-# Single source of truth for the deterministic trend gate. Every upstream
-# detector must screen with this exact rule set: a candidate that reaches deep
-# research without passing it can only end in a late stand aside, after the
-# LLM budget has already been spent.
+# Deterministic trend measurements remain a shared evidence contract. They are
+# risk signals for the agents, not an admission gate that suppresses a genuine
+# candidate before it can be analysed.
 TREND_GATE_RULES = {
     'minimum_sample_days': 20,
     'minimum_trend_score': 8,
@@ -240,17 +239,30 @@ def _evidence_packet(candidate: dict[str, Any]) -> dict[str, Any]:
         change_rate=candidate['change_rate'],
         volume=candidate['volume'],
     )
-    checks = {
+    admission_checks = {
         'fresh_observation': _is_fresh_observation(candidate.get('observed_at')),
-        **trend_gate_checks(trend),
         'positive_session': candidate['change_rate'] > 0,
+    }
+    trend_checks = trend_gate_checks(trend)
+    risk_flags = [
+        name for name, passed in trend_checks.items()
+        if not passed
+    ]
+    checks = {
+        **admission_checks,
+        **trend_gate_checks(trend),
     }
     return {
         **candidate,
         'trend': trend,
         'profit_gate': {
-            'passed': all(checks.values()),
+            # Only a verified, fresh positive market observation may enter
+            # agent analysis. Trend failures are retained as explicit risk
+            # evidence for the analyst and CIO instead of silently deleting
+            # the candidate before analysis.
+            'passed': all(admission_checks.values()),
             'checks': checks,
+            'risk_flags': risk_flags,
         },
     }
 
