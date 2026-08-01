@@ -14,6 +14,7 @@ import csv
 import os
 from dataclasses import dataclass
 
+from app.services.kis_screener import ETF_KEYWORDS as _KIS_ETF_KEYWORDS
 from app.services.mirofish.goodrich_backtest.prices import PriceBook
 
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..'))
@@ -35,6 +36,14 @@ MAX_DAILY_MOVE_PCT = 31.0
 # 이는 살 수 없는 가격으로 계산된 수익이다. 체결 가능성은 랭커의 성질이
 # 아니라 시장의 성질이므로 유니버스 단계에서 모두에게 동일하게 적용한다.
 LIMIT_LOCK_PCT = 29.0
+
+# 운영 유니버스 필터 (goodrich_client.py:275-283, kis_screener.py:519-523).
+# 재현에서 빠져 있었고, 그 결과 low_volatility 가 벤치마크 ETF(069500 / 229200)
+# 자체를 매수해 초과수익을 구조적으로 0(=왕복비용만) 으로 만들었다.
+# 지수를 사서 지수를 이겼다고 보고할 뻔했다.
+ETF_KEYWORDS = _KIS_ETF_KEYWORDS
+MIN_TURNOVER_KRW = 20_0000_0000   # 20억 — kis_screener 의 유동성 하한
+PREFERRED_SUFFIXES = ('우', '우B', '우C')
 
 
 @dataclass(frozen=True)
@@ -66,6 +75,20 @@ def load_markets(path: str | None = None) -> dict[str, str]:
             if ticker and market:
                 out[ticker] = market
     return out
+
+
+def is_tradable_name(name: str) -> bool:
+    """운영이 후보로 받아들이는 이름인가 — ETF/ETN 도 우선주도 아니어야 한다.
+
+    ETF 키워드는 `kis_screener.ETF_KEYWORDS` 를 그대로 import 한다. 복사해두면
+    운영이 키워드를 추가할 때 재현물만 뒤처진다.
+    """
+    if not name:
+        return True   # 이름을 모르면 배제 근거가 없다
+    upper = name.upper()
+    if any(keyword.upper() in upper for keyword in ETF_KEYWORDS):
+        return False
+    return not name.endswith(PREFERRED_SUFFIXES)
 
 
 def is_limit_locked(bar, change_pct: float) -> bool:
@@ -102,6 +125,10 @@ def reconstruct_universe(
             continue  # 가격제한폭 초과 = 데이터 오류
         if is_limit_locked(bar, change):
             continue  # 상한가 잠김 = 종가 매수 불가
+        if not is_tradable_name(book.name(ticker)):
+            continue  # ETF/ETN·우선주 = 운영 유니버스 밖
+        if bar.turnover < MIN_TURNOVER_KRW:
+            continue  # 운영 유동성 하한 20억
         prior = book.prior_bars(ticker, date, VOLUME_SURGE_WINDOW)
         avg_volume = sum(b.volume for b in prior) / len(prior) if prior else 0.0
         surge = bar.volume / avg_volume if avg_volume > 0 else 0.0

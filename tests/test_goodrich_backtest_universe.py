@@ -3,10 +3,15 @@ from app.services.mirofish.goodrich_backtest.prices import Bar, PriceBook
 from app.services.mirofish.goodrich_backtest import universe as U
 
 
+# 유니버스는 운영과 같은 거래대금 하한(20억)을 적용한다. 픽스처의 거래량을
+# 일괄 배율로 키워 하한을 넘기되, 소스별 순위 관계는 그대로 유지한다.
+_VOLUME_SCALE = 10_000_000
+
+
 def _book(spec):
-    """spec: {ticker: [(date, close, volume), ...]}"""
+    """spec: {ticker: [(date, close, volume), ...]} — volume 은 _VOLUME_SCALE 배."""
     return PriceBook({
-        ticker: [Bar(date=d, close=c, volume=v) for d, c, v in bars]
+        ticker: [Bar(date=d, close=c, volume=v * _VOLUME_SCALE) for d, c, v in bars]
         for ticker, bars in spec.items()
     })
 
@@ -58,7 +63,7 @@ def test_candidate_carries_fields_ranking_needs():
     assert c.date == '2024-01-03'
     assert c.close == 110.0
     assert c.change_pct == 10.0
-    assert c.turnover == 110.0 * 20
+    assert c.turnover == 110.0 * 20 * _VOLUME_SCALE
 
 
 def test_market_is_attached_so_benchmark_can_be_chosen():
@@ -142,12 +147,12 @@ def test_limit_locked_names_are_excluded_because_they_cannot_be_bought():
 
     book = PriceBook({
         '000001': [
-            Bar(date='2024-01-02', close=1000, volume=100),
-            Bar(date='2024-01-03', close=1300, volume=500, high=1300, low=1100),  # 잠김
+            Bar(date='2024-01-02', close=1000, volume=10_000_000),
+            Bar(date='2024-01-03', close=1300, volume=10_000_000, high=1300, low=1100),  # 잠김
         ],
         '000002': [
-            Bar(date='2024-01-02', close=1000, volume=100),
-            Bar(date='2024-01-03', close=1290, volume=500, high=1300, low=1100),  # 고가 미달
+            Bar(date='2024-01-02', close=1000, volume=10_000_000),
+            Bar(date='2024-01-03', close=1290, volume=10_000_000, high=1300, low=1100),  # 고가 미달
         ],
     })
 
@@ -162,8 +167,8 @@ def test_a_big_gain_that_did_not_close_at_the_high_is_still_tradable():
     from app.services.mirofish.goodrich_backtest.prices import Bar, PriceBook
 
     book = PriceBook({'000001': [
-        Bar(date='2024-01-02', close=1000, volume=100),
-        Bar(date='2024-01-03', close=1290, volume=500, high=1300, low=1050),
+        Bar(date='2024-01-02', close=1000, volume=10_000_000),
+        Bar(date='2024-01-03', close=1290, volume=10_000_000, high=1300, low=1050),
     ]})
 
     assert {c.symbol for c in U.reconstruct_universe('2024-01-03', book, markets={})} == {'000001'}
@@ -174,8 +179,69 @@ def test_missing_high_low_does_not_trigger_exclusion():
     from app.services.mirofish.goodrich_backtest.prices import Bar, PriceBook
 
     book = PriceBook({'000001': [
-        Bar(date='2024-01-02', close=1000, volume=100),
-        Bar(date='2024-01-03', close=1300, volume=500),
+        Bar(date='2024-01-02', close=1000, volume=10_000_000),
+        Bar(date='2024-01-03', close=1300, volume=10_000_000),
     ]})
 
     assert {c.symbol for c in U.reconstruct_universe('2024-01-03', book, markets={})} == {'000001'}
+
+
+def test_benchmark_etfs_are_excluded_so_the_ranker_cannot_buy_the_yardstick():
+    """069500 / 229200 은 초과수익을 재는 기준 지수다.
+
+    유니버스에 남겨두면 랭커가 그것을 매수해 초과수익을 구조적으로 -왕복비용
+    으로 만든다. 실제로 low_volatility 가 이 경로로 '개선'을 냈다.
+    """
+    from app.services.mirofish.goodrich_backtest.prices import Bar, PriceBook
+
+    bars = [Bar(date='2024-01-02', close=1000, volume=10_000_000),
+            Bar(date='2024-01-03', close=1050, volume=10_000_000)]
+    book = PriceBook(
+        {'069500': list(bars), '229200': list(bars), '005930': list(bars)},
+        names={'069500': 'KODEX 200', '229200': 'KODEX 코스닥150', '005930': '삼성전자'},
+    )
+
+    symbols = {c.symbol for c in U.reconstruct_universe('2024-01-03', book, markets={})}
+
+    assert symbols == {'005930'}
+
+
+def test_preferred_shares_are_excluded_like_production():
+    from app.services.mirofish.goodrich_backtest.prices import Bar, PriceBook
+
+    bars = [Bar(date='2024-01-02', close=1000, volume=10_000_000),
+            Bar(date='2024-01-03', close=1050, volume=10_000_000)]
+    book = PriceBook(
+        {'005930': list(bars), '005935': list(bars)},
+        names={'005930': '삼성전자', '005935': '삼성전자우'},
+    )
+
+    symbols = {c.symbol for c in U.reconstruct_universe('2024-01-03', book, markets={})}
+
+    assert symbols == {'005930'}
+
+
+def test_thin_names_below_the_production_liquidity_floor_are_excluded():
+    """운영은 거래대금 20억 미만을 후보로 받지 않는다."""
+    from app.services.mirofish.goodrich_backtest.prices import Bar, PriceBook
+
+    book = PriceBook(
+        {
+            '000001': [Bar(date='2024-01-02', close=1000, volume=10_000_000),
+                       Bar(date='2024-01-03', close=1050, volume=100)],        # 1.05억
+            '000002': [Bar(date='2024-01-02', close=1000, volume=10_000_000),
+                       Bar(date='2024-01-03', close=1050, volume=10_000_000)],  # 105억
+        },
+        names={'000001': '소형주', '000002': '대형주'},
+    )
+
+    symbols = {c.symbol for c in U.reconstruct_universe('2024-01-03', book, markets={})}
+
+    assert symbols == {'000002'}
+
+
+def test_etf_keywords_stay_in_sync_with_the_live_screener():
+    """키워드를 복사해두면 운영이 추가할 때 재현물만 뒤처진다."""
+    from app.services.kis_screener import ETF_KEYWORDS as live
+
+    assert U.ETF_KEYWORDS is live

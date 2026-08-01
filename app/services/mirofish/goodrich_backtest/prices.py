@@ -62,8 +62,11 @@ class Bar:
 class PriceBook:
     """티커별 일봉 시계열. 모든 조회는 사전 계산된 인덱스를 쓴다."""
 
-    def __init__(self, series: dict[str, list[Bar]], *, intraday_share: dict[str, float] | None = None):
+    def __init__(self, series: dict[str, list[Bar]], *,
+                 intraday_share: dict[str, float] | None = None,
+                 names: dict[str, str] | None = None):
         self._series = series
+        self._names = names or {}
         self._index: dict[str, dict[str, int]] = {
             ticker: {bar.date: i for i, bar in enumerate(bars)}
             for ticker, bars in series.items()
@@ -73,6 +76,10 @@ class PriceBook:
 
     def tickers(self) -> list[str]:
         return sorted(self._series)
+
+    def name(self, ticker: str) -> str:
+        """종목명. 유니버스가 ETF·우선주를 걸러내려면 이름이 필요하다."""
+        return self._names.get(ticker, '')
 
     def series(self, ticker: str) -> list[Bar]:
         return list(self._series.get(ticker, ()))
@@ -156,6 +163,7 @@ def load_prices(path: str | None = None) -> PriceBook:
 
     # (ticker, date) -> (update_time, Bar). 가장 늦은 update_time 만 남긴다.
     latest: dict[tuple[str, str], tuple[str, Bar]] = {}
+    names: dict[str, str] = {}
     capture: dict[str, list[int]] = {}   # date -> [장중 수집 수, 전체]
 
     with open(target, 'r', encoding='utf-8-sig', newline='') as f:
@@ -165,6 +173,9 @@ def load_prices(path: str | None = None) -> PriceBook:
             if not ticker or not date:
                 continue
             ticker = ticker.zfill(6)
+            name = str(row.get('name') or '').strip()
+            if name:
+                names[ticker] = name
 
             close = _finite(row.get('current_price'))
             if close is None or close <= 0:
@@ -203,4 +214,4 @@ def load_prices(path: str | None = None) -> PriceBook:
         date: (intraday / total if total else 0.0)
         for date, (intraday, total) in capture.items()
     }
-    return PriceBook(by_ticker, intraday_share=intraday_share)
+    return PriceBook(by_ticker, intraday_share=intraday_share, names=names)
