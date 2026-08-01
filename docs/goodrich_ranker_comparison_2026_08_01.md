@@ -1,4 +1,14 @@
-# Goodrich 랭커 비교 — Phase 2 판정
+# Goodrich 랭커 비교 — Phase 2 판정 ⚠ 무효 (superseded)
+
+> **이 문서의 수치는 전부 무효다.** [개정판](goodrich_ranker_comparison_2026_08_01_v2.md) 을 볼 것.
+>
+> 운영 원장의 실제 검출과 대조하자 하네스 결함 3건이 드러났고, 그중 둘은 이 문서의
+> 비교 대상 자체를 왜곡했다. `baseline_current` 가 운영 공식의 최대 배점 항
+> (`range_position`, 25점)을 상수로 대체하고 있었고, 유니버스가 운영 필터
+> (ETF·우선주·거래대금 하한·상한가 잠김)를 적용하지 않았다.
+>
+> 결론("개선 확인 0건")은 개정판에서도 유지되지만 **근거는 성립하지 않는다.**
+> 기록 목적으로만 보존한다.
 
 측정일: 2026-08-01
 선행 문서: [설계](superpowers/specs/2026-07-31-goodrich-return-enhancement-design.md) · [구현 plan](superpowers/plans/2026-07-31-goodrich-backtest-harness.md) · [최초 측정](goodrich_detection_measurement_2026_07_30.md)
