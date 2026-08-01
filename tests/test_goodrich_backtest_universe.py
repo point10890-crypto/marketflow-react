@@ -129,3 +129,53 @@ def test_load_markets_reads_ticker_map(tmp_path):
     )
 
     assert U.load_markets(str(path)) == {'005930': 'KOSPI', '247540': 'KOSDAQ'}
+
+
+def test_limit_locked_names_are_excluded_because_they_cannot_be_bought():
+    """상한가로 잠긴 종목은 매도 호가가 없어 종가에 살 수 없다.
+
+    남겨두면 종가==고가 -> range_position 1.0 -> 최대 배점이라 랭커가 그쪽으로
+    쏠린다. 실측에서 baseline 픽의 81.8% 가 상한가였고, 살 수 없는 가격으로
+    계산된 초과수익 +4.18% 가 나왔다.
+    """
+    from app.services.mirofish.goodrich_backtest.prices import Bar, PriceBook
+
+    book = PriceBook({
+        '000001': [
+            Bar(date='2024-01-02', close=1000, volume=100),
+            Bar(date='2024-01-03', close=1300, volume=500, high=1300, low=1100),  # 잠김
+        ],
+        '000002': [
+            Bar(date='2024-01-02', close=1000, volume=100),
+            Bar(date='2024-01-03', close=1290, volume=500, high=1300, low=1100),  # 고가 미달
+        ],
+    })
+
+    symbols = {c.symbol for c in U.reconstruct_universe('2024-01-03', book, markets={})}
+
+    assert '000001' not in symbols
+    assert '000002' in symbols
+
+
+def test_a_big_gain_that_did_not_close_at_the_high_is_still_tradable():
+    """+29% 여도 고가에서 밀렸으면 매수 가능하다. 과잉 제거하지 않는다."""
+    from app.services.mirofish.goodrich_backtest.prices import Bar, PriceBook
+
+    book = PriceBook({'000001': [
+        Bar(date='2024-01-02', close=1000, volume=100),
+        Bar(date='2024-01-03', close=1290, volume=500, high=1300, low=1050),
+    ]})
+
+    assert {c.symbol for c in U.reconstruct_universe('2024-01-03', book, markets={})} == {'000001'}
+
+
+def test_missing_high_low_does_not_trigger_exclusion():
+    """고저 결측(실측 2.6%)은 판단 근거가 없다 — 배제 사유가 아니다."""
+    from app.services.mirofish.goodrich_backtest.prices import Bar, PriceBook
+
+    book = PriceBook({'000001': [
+        Bar(date='2024-01-02', close=1000, volume=100),
+        Bar(date='2024-01-03', close=1300, volume=500),
+    ]})
+
+    assert {c.symbol for c in U.reconstruct_universe('2024-01-03', book, markets={})} == {'000001'}
