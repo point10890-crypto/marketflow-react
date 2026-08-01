@@ -80,3 +80,33 @@ def test_rank_candidates_sorts_descending_and_breaks_ties_by_symbol():
     ordered = R.rank_candidates(rows, R.RANKERS['baseline_current'], ctx)
 
     assert [c.symbol for c, _ in ordered] == ['000001', '000002']
+
+
+def test_baseline_uses_real_range_position_not_a_constant():
+    """운영 _score 는 종가가 당일 고가 근처일수록 높은 점수를 준다.
+
+    이 항을 1.0 상수로 고정했던 이전 버전은 운영 top3 와 한 종목도 겹치지 않았다.
+    같은 등락률·같은 거래대금이면 고가 마감이 저가 마감을 이겨야 한다.
+    """
+    book = PriceBook({
+        '000001': [Bar(date='2024-01-03', close=119.0, volume=10, high=120.0, low=100.0)],
+        '000002': [Bar(date='2024-01-03', close=101.0, volume=10, high=120.0, low=100.0)],
+    })
+    ctx = _ctx(book=book)
+
+    near_high = R.RANKERS['baseline_current'](_candidate('000001'), ctx)
+    near_low = R.RANKERS['baseline_current'](_candidate('000002'), ctx)
+
+    assert near_high > near_low
+
+
+def test_baseline_falls_back_to_one_when_the_bar_has_no_range():
+    """고저 결측 봉(실측 2.6%)에서도 점수가 나와야 한다.
+
+    거래대금이 0 이면 liquidity 도 0 이므로 50 + 1.0*25 + 0 + 0 = 75 로 확정된다.
+    """
+    book = PriceBook({'000001': [Bar(date='2024-01-03', close=100.0, volume=0.0)]})
+
+    score = R.RANKERS['baseline_current'](_candidate('000001', change_pct=0.0), _ctx(book=book))
+
+    assert score == 75.0

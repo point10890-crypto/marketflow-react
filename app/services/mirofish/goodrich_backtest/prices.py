@@ -38,10 +38,25 @@ class Bar:
     close: float
     volume: float
     change_rate: float | None = None
+    high: float | None = None
+    low: float | None = None
 
     @property
     def turnover(self) -> float:
         return self.close * self.volume
+
+    @property
+    def range_position(self) -> float | None:
+        """당일 고저 대비 종가 위치 (0~1). 고저가 없으면 None.
+
+        운영 `_score` 의 최대 배점 항(25점)이다. 고저를 싣지 않으면 이 항을
+        상수로 대체할 수밖에 없고, 그러면 재현물이 순위를 가르는 항 하나를
+        통째로 잃는다. 실측 충전율 97.4% 이므로 대부분의 봉에서 복원 가능하다.
+        """
+        if self.high is None or self.low is None:
+            return None
+        day_range = max(self.high - self.low, 1.0)   # 운영과 동일한 하한
+        return (self.close - self.low) / day_range
 
 
 class PriceBook:
@@ -165,11 +180,17 @@ def load_prices(path: str | None = None) -> PriceBook:
             if _is_intraday_capture(date, update_time):
                 counts[0] += 1
 
+            high = _finite(row.get('high'))
+            low = _finite(row.get('low'))
+            if high is None or low is None or high <= 0 or low <= 0 or high < low:
+                high = low = None   # 부분 결측은 range_position 을 못 만든다
+
             key = (ticker, date)
             previous = latest.get(key)
             if previous is None or update_time >= previous[0]:
                 latest[key] = (update_time, Bar(
                     date=date, close=close, volume=volume, change_rate=change_rate,
+                    high=high, low=low,
                 ))
 
     by_ticker: dict[str, list[Bar]] = {}

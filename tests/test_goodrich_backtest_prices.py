@@ -252,3 +252,44 @@ def test_same_day_capture_before_close_is_intraday_even_after_15_00(tmp_path):
     book = P.load_prices(str(csv_path))
 
     assert book.usable_sessions() == []
+
+
+def test_high_low_are_loaded_so_range_position_is_recoverable(tmp_path):
+    """운영 _score 의 최대 배점 항(range_position, 25점)은 고저가 있어야 만든다.
+
+    실측 충전율 97.4% 인 컬럼을 싣지 않으면 재현물이 그 항을 상수로 대체하게 되고,
+    원장 대조에서 운영 top3 와 한 종목도 겹치지 않는 결과가 나왔다.
+    """
+    csv_path = tmp_path / 'daily_prices.csv'
+    _write_csv(csv_path, [_row('000660', '2024-01-02', 110, 10, high=120, low=100)])
+
+    bar = P.load_prices(str(csv_path)).bar('000660', '2024-01-02')
+
+    assert (bar.high, bar.low) == (120.0, 100.0)
+    assert bar.range_position == 0.5
+
+
+def test_range_position_is_none_when_high_low_missing(tmp_path):
+    csv_path = tmp_path / 'daily_prices.csv'
+    rows = [_row('000660', '2024-01-02', 110, 10)]
+    rows[0]['high'] = ''
+    rows[0]['low'] = ''
+    _write_csv(csv_path, rows)
+
+    assert P.load_prices(str(csv_path)).bar('000660', '2024-01-02').range_position is None
+
+
+def test_inverted_high_low_is_rejected_rather_than_producing_a_negative_position(tmp_path):
+    csv_path = tmp_path / 'daily_prices.csv'
+    _write_csv(csv_path, [_row('000660', '2024-01-02', 110, 10, high=100, low=120)])
+
+    assert P.load_prices(str(csv_path)).bar('000660', '2024-01-02').range_position is None
+
+
+def test_range_position_floors_the_day_range_like_production(tmp_path):
+    """운영은 max(high - low, 1) 로 0 나눗셈을 막는다. 상한가 직행처럼
+    고저가 같은 날 종가가 고가에 붙어도 1.0 이 아니라 0.0 이 된다."""
+    csv_path = tmp_path / 'daily_prices.csv'
+    _write_csv(csv_path, [_row('000660', '2024-01-02', 100, 10, high=100, low=100)])
+
+    assert P.load_prices(str(csv_path)).bar('000660', '2024-01-02').range_position == 0.0

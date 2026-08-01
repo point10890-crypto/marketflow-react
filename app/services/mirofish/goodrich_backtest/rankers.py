@@ -36,14 +36,20 @@ def baseline_current(candidate: Candidate, ctx: RankContext) -> float:
         liquidity      = min(log10(max(trading_value, 1)) / 14, 1)
         return round(50 + range_position*25 + momentum*0.8 + liquidity*20, 2)
 
-    momentum 클램프(±15)와 liquidity 변환은 원본과 **문자 그대로 동일**하다.
-    유일한 차이는 range_position 이다 — 일봉에는 장중 고저가 없어 1.0 으로
-    고정한다. 이는 종가=당일 고가를 가정하는 것이라 baseline 을 최대로
-    유리하게 잡는 방향이며, 따라서 개선 주장이 과대평가되지 않는다.
+    네 항 모두 원본과 동일하다. range_position 은 CSV 의 high/low 로 복원한다
+    (충전율 97.4%). 고저가 없는 봉만 1.0 으로 대체한다.
+
+    이전 버전은 range_position 을 항상 1.0 으로 고정했는데, 원장 대조 결과
+    그 항의 실측 산포가 8.58점이었다 — 상수로 바꾸면 순위를 가르는 항 하나를
+    잃는다. 실제로 그때는 운영 top3 와 단 한 종목도 겹치지 않았다.
     """
     momentum = max(min(candidate.change_pct, 15), -15)
     liquidity = S.liquidity(candidate.symbol, ctx.date, ctx.book)
-    return round(50 + 1.0 * 25 + momentum * 0.8 + liquidity * 20, 2)
+    bar = ctx.book.bar(candidate.symbol, ctx.date)
+    position = None if bar is None else bar.range_position
+    if position is None:
+        position = 1.0
+    return round(50 + position * 25 + momentum * 0.8 + liquidity * 20, 2)
 
 
 def rs_led(candidate: Candidate, ctx: RankContext) -> float:
