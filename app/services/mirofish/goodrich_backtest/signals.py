@@ -100,3 +100,64 @@ def rs_rating(ticker: str, ratings: dict[str, Any]) -> int:
         return int(entry.get('rs_rating'))
     except (TypeError, ValueError):
         return NEUTRAL_RS
+
+
+# O'Neil 가중 상대강도 — app/services/mirofish/sector_rs.py 와 동일한 공식이지만
+# 과거 시점 기준으로 재계산한다. 아티팩트(alpha_rs_ratings.json)는 오늘자 한 장뿐이라
+# 백테스트에 그대로 쓰면 look-ahead 가 된다.
+RS_HORIZONS: tuple[tuple[int, float], ...] = (
+    (63, 0.4),
+    (126, 0.2),
+    (189, 0.2),
+    (252, 0.2),
+)
+RS_MIN_HISTORY = 63
+
+
+def _weighted_return(closes: list[float]) -> float | None:
+    """closes 는 과거->현재 순서. 가용 구간만으로 가중치를 재정규화."""
+    n = len(closes)
+    if n < RS_MIN_HISTORY:
+        return None
+    last = closes[-1]
+    if last <= 0:
+        return None
+    weighted = 0.0
+    weight_sum = 0.0
+    for lookback, weight in RS_HORIZONS:
+        idx = n - 1 - lookback
+        if idx < 0:
+            continue
+        base = closes[idx]
+        if base <= 0:
+            continue
+        weighted += weight * (last / base - 1.0)
+        weight_sum += weight
+    if weight_sum <= 0:
+        return None
+    return weighted / weight_sum
+
+
+def rs_from_book(date: str, book: PriceBook) -> dict[str, int]:
+    """date 시점 기준 RS 백분위(1~99). date 이후 세션은 절대 보지 않는다."""
+    scored: dict[str, float] = {}
+    for ticker in book.tickers():
+        bars = book.prior_bars(ticker, date, 10_000)
+        bar = book.bar(ticker, date)
+        if bar is None:
+            continue
+        closes = [b.close for b in bars] + [bar.close]
+        value = _weighted_return(closes)
+        if value is not None:
+            scored[ticker] = value
+
+    total = len(scored)
+    if total == 0:
+        return {}
+    ordered = sorted(scored.items(), key=lambda kv: kv[1])
+    if total == 1:
+        return {ordered[0][0]: NEUTRAL_RS}
+    return {
+        ticker: int(1 + round(rank / (total - 1) * 98))
+        for rank, (ticker, _) in enumerate(ordered)
+    }

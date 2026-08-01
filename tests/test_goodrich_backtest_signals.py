@@ -73,3 +73,40 @@ def test_rs_rating_reads_artifact_and_defaults_when_absent():
 
     assert S.rs_rating('000001', ratings) == 88
     assert S.rs_rating('999999', ratings) == 50  # 미상은 중립
+
+
+def test_rs_from_book_ranks_stronger_performer_higher():
+    from app.services.mirofish.goodrich_backtest.prices import Bar, PriceBook
+
+    # 3개월(63세션) 이상 필요하므로 70세션을 만든다.
+    dates = [f'2024-{(i // 20) + 1:02d}-{(i % 20) + 1:02d}' for i in range(70)]
+    strong = [Bar(date=d, close=100 + i * 2, volume=10) for i, d in enumerate(dates)]
+    weak = [Bar(date=d, close=100 - i * 0.5, volume=10) for i, d in enumerate(dates)]
+    book = PriceBook({'000001': strong, '000002': weak})
+
+    ratings = S.rs_from_book(dates[-1], book)
+
+    assert ratings['000001'] > ratings['000002']
+    assert 1 <= ratings['000002'] <= 99
+
+
+def test_rs_from_book_excludes_short_history():
+    from app.services.mirofish.goodrich_backtest.prices import Bar, PriceBook
+
+    dates = [f'2024-01-{i + 1:02d}' for i in range(10)]
+    book = PriceBook({'000001': [Bar(date=d, close=100 + i, volume=10) for i, d in enumerate(dates)]})
+
+    assert S.rs_from_book(dates[-1], book) == {}
+
+
+def test_rs_from_book_ignores_future_sessions():
+    from app.services.mirofish.goodrich_backtest.prices import Bar, PriceBook
+
+    dates = [f'2024-{(i // 20) + 1:02d}-{(i % 20) + 1:02d}' for i in range(70)]
+    base = [Bar(date=d, close=100 + i, volume=10) for i, d in enumerate(dates)]
+    future = base + [Bar(date='2025-01-01', close=99999, volume=10)]
+
+    a = S.rs_from_book(dates[-1], PriceBook({'000001': base, '000002': base}))
+    b = S.rs_from_book(dates[-1], PriceBook({'000001': future, '000002': future}))
+
+    assert a == b
