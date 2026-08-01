@@ -27,14 +27,23 @@ Ranker = Callable[[Candidate, RankContext], float]
 def baseline_current(candidate: Candidate, ctx: RankContext) -> float:
     """현행 _score 재현.
 
-    원본: 50 + range_position*25 + momentum*0.8 + liquidity*20
-    일봉에는 장중 고저가 없으므로 range_position 은 1.0 으로 고정한다.
-    이는 baseline 을 유리하게 잡는 방향(종가=고가 가정)이라 개선 주장이
-    과대평가되지 않는다.
+    원본 (2026-08-01 miniPC 에서 대조 확인,
+    `C:\\GoodrichTradingOS\\services\\api\\src\\goodrich\\fund_manager.py::_score`):
+
+        day_range      = max(high - low, 1)
+        range_position = (price - low) / day_range
+        momentum       = max(min(change_rate, 15), -15)
+        liquidity      = min(log10(max(trading_value, 1)) / 14, 1)
+        return round(50 + range_position*25 + momentum*0.8 + liquidity*20, 2)
+
+    momentum 클램프(±15)와 liquidity 변환은 원본과 **문자 그대로 동일**하다.
+    유일한 차이는 range_position 이다 — 일봉에는 장중 고저가 없어 1.0 으로
+    고정한다. 이는 종가=당일 고가를 가정하는 것이라 baseline 을 최대로
+    유리하게 잡는 방향이며, 따라서 개선 주장이 과대평가되지 않는다.
     """
     momentum = max(min(candidate.change_pct, 15), -15)
     liquidity = S.liquidity(candidate.symbol, ctx.date, ctx.book)
-    return round(50 + 1.0 * 25 + momentum * 0.8 + liquidity * 20, 4)
+    return round(50 + 1.0 * 25 + momentum * 0.8 + liquidity * 20, 2)
 
 
 def rs_led(candidate: Candidate, ctx: RankContext) -> float:
