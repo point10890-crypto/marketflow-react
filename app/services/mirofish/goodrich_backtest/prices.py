@@ -9,8 +9,8 @@
    합치지 않으면 `prior_bars` 가 조회일을 과거로 돌려주고, `change_pct` 가
    같은 날을 자기와 비교하며, `evaluate_pick` 의 위치 인덱싱이 어긋난다.
    가장 늦은 `update_time` 을 남긴다.
-3. 33.0% 의 행이 15:00 이전에 수집됐다 — 저장된 "종가" 가 장중 스냅샷이다.
-   장중수집이 과반인 세션은 `usable_sessions()` 에서 제외한다.
+3. 15.1% 의 행이 **그 행의 장중에** 수집됐다 — 저장된 "종가" 가 장중 스냅샷이다.
+   장중수집이 과반인 세션은 `usable_sessions()` 에서 제외한다 (628 중 83 세션).
 """
 
 from __future__ import annotations
@@ -24,9 +24,11 @@ from typing import Any
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..'))
 DEFAULT_PRICE_PATH = os.path.join(REPO_ROOT, 'data', 'daily_prices.csv')
 
-# 한국 정규장 종료는 15:30 이지만, 스크래퍼는 15:00 이후 배치로 돈다.
-# 이보다 이른 수집은 장중 스냅샷으로 본다.
-CLOSE_CAPTURE_TIME = '15:00'
+# 한국 정규장은 15:30 에 마감한다(종가 단일가 15:20~15:30). 그 전에 수집된 값은
+# 체결 진행 중의 스냅샷이므로 종가가 아니다. 실측 분포도 이를 뒷받침한다:
+# 82.8% 는 행 날짜보다 뒤에 수집돼 종가가 확정된 것이고, 15.1% 는 당일 장중,
+# 2.1% 만 당일 15:30 이후다.
+CLOSE_CAPTURE_TIME = '15:30'
 MAX_INTRADAY_SHARE = 0.5
 
 
@@ -107,6 +109,22 @@ class PriceBook:
         ]
 
 
+def _is_intraday_capture(date: str, update_time: str) -> bool:
+    """이 행이 그 날의 장중에 수집됐는가 — 즉 close 가 종가가 아닌가.
+
+    수집 시각만 보면 안 된다. 15:04 는 행 날짜와 같은 날이면 장중이지만,
+    다음 날이면 이미 확정된 종가를 읽은 것이다.
+    """
+    if len(update_time) < 16:
+        return False   # 판단 근거 없음 — 배제하지 않는다
+    captured_date, captured_time = update_time[:10], update_time[11:16]
+    if captured_date > date:
+        return False   # 후일 수집 = 종가 확정
+    if captured_date < date:
+        return False   # 행 날짜보다 이른 수집 — 별개 이상이며 여기서 다루지 않는다
+    return captured_time < CLOSE_CAPTURE_TIME
+
+
 def _finite(value: Any) -> float | None:
     try:
         number = float(value)
@@ -144,7 +162,7 @@ def load_prices(path: str | None = None) -> PriceBook:
             update_time = str(row.get('update_time') or '')
             counts = capture.setdefault(date, [0, 0])
             counts[1] += 1
-            if len(update_time) >= 16 and update_time[11:16] < CLOSE_CAPTURE_TIME:
+            if _is_intraday_capture(date, update_time):
                 counts[0] += 1
 
             key = (ticker, date)

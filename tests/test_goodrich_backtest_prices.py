@@ -214,13 +214,41 @@ def test_usable_sessions_drops_intraday_captured_days(tmp_path):
         _row('000660', '2024-01-03', 110, 10),
         _row('000661', '2024-01-03', 110, 10),
     ]
-    rows[0]['update_time'] = '2024-01-02 15:40:00'
+    rows[0]['update_time'] = '2024-01-02 15:40:00'   # 당일 마감(15:30) 이후
     rows[1]['update_time'] = '2024-01-02 15:41:00'
-    rows[2]['update_time'] = '2024-01-03 12:00:00'   # 장중
-    rows[3]['update_time'] = '2024-01-03 11:00:00'   # 장중
+    rows[2]['update_time'] = '2024-01-03 12:00:00'   # 당일 장중
+    rows[3]['update_time'] = '2024-01-03 11:00:00'   # 당일 장중
     _write_csv(csv_path, rows)
 
     book = P.load_prices(str(csv_path))
 
     assert book.sessions == ['2024-01-02', '2024-01-03']
     assert book.usable_sessions() == ['2024-01-02']
+
+
+def test_capture_on_a_later_date_counts_as_a_settled_close(tmp_path):
+    """15:04 라도 행 날짜보다 뒤에 수집됐으면 이미 확정된 종가를 읽은 것이다.
+
+    실데이터의 82.8% 가 이 유형이다. 시각만 보고 장중으로 몰면 사용 가능
+    세션이 545 -> 518 로 부당하게 줄어든다.
+    """
+    csv_path = tmp_path / 'daily_prices.csv'
+    rows = [_row('000660', '2024-01-02', 100, 10)]
+    rows[0]['update_time'] = '2024-01-03 05:04:00'   # 다음 날 새벽 배치
+    _write_csv(csv_path, rows)
+
+    book = P.load_prices(str(csv_path))
+
+    assert book.usable_sessions() == ['2024-01-02']
+
+
+def test_same_day_capture_before_close_is_intraday_even_after_15_00(tmp_path):
+    """정규장 마감은 15:30 이다. 당일 15:04 수집은 여전히 장중이다."""
+    csv_path = tmp_path / 'daily_prices.csv'
+    rows = [_row('000660', '2024-01-02', 100, 10)]
+    rows[0]['update_time'] = '2024-01-02 15:04:00'
+    _write_csv(csv_path, rows)
+
+    book = P.load_prices(str(csv_path))
+
+    assert book.usable_sessions() == []

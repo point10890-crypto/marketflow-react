@@ -18,13 +18,13 @@
 |---|---|
 | CSV 총 세션 | 628일 (2024-01-02 ~ 2026-07-31) |
 | **중복 `(ticker, date)` 행** | **25,900키 / 28,784행, 9개 세션** — Task 1b 에서 제거 |
-| **장중(15:00 이전) 수집 행** | **572,952행 (33.0%)** — 저장된 "종가"가 장중 스냅샷 |
-| **사용 가능 세션** | **518일** (장중수집 ≤50% 인 세션만). 2024 244/244, 2025 242/242, **2026 32/142** |
+| **그 행의 장중에 수집된 행** | **262,976행 (15.1%)** — 저장된 "종가"가 장중 스냅샷. 82.8%는 후일 수집(종가 확정) |
+| **사용 가능 세션** | **545일** (그 행의 장중에 수집된 비율 ≤50%). 2024 244/244, 2025 242/242, **2026 59/142** |
 | 수집 종목 | 2,967개 |
 | `change_rate` 컬럼 신뢰도 | **18.2%만 non-zero** → 연속 종가로 계산 필수 |
 | 재현 유니버스 | 세션당 중앙값 54종목 (30~74) |
 | 평가 가능 진입일 | T+1 626 / T+3 624 / T+5 622 / T+20 607 |
-| 학습 / holdout | **388일 / 130일 (2025-08-06 분할)** — 사용 가능 518일의 75% 지점 |
+| 학습 / holdout | **408일 / 137일 (2025-09-04 분할)** — 사용 가능 545일의 75% 지점 |
 | 표본 해상도 | 약 0.5%p (α=0.05, power=0.80) |
 
 ---
@@ -505,9 +505,11 @@ from typing import Any
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..'))
 DEFAULT_PRICE_PATH = os.path.join(REPO_ROOT, 'data', 'daily_prices.csv')
 
-# 한국 정규장 종료는 15:30 이지만, 스크래퍼는 15:00 이후 배치로 돈다.
-# 이보다 이른 수집은 장중 스냅샷으로 본다.
-CLOSE_CAPTURE_TIME = '15:00'
+# 한국 정규장은 15:30 에 마감한다(종가 단일가 15:20~15:30). 그 전에 수집된 값은
+# 체결 진행 중의 스냅샷이므로 종가가 아니다. 실측 분포도 이를 뒷받침한다:
+# 82.8% 는 행 날짜보다 뒤에 수집돼 종가가 확정된 것이고, 15.1% 는 당일 장중,
+# 2.1% 만 당일 15:30 이후다.
+CLOSE_CAPTURE_TIME = '15:30'
 MAX_INTRADAY_SHARE = 0.5
 
 
@@ -588,6 +590,22 @@ class PriceBook:
         ]
 
 
+def _is_intraday_capture(date: str, update_time: str) -> bool:
+    """이 행이 그 날의 장중에 수집됐는가 — 즉 close 가 종가가 아닌가.
+
+    수집 시각만 보면 안 된다. 15:04 는 행 날짜와 같은 날이면 장중이지만,
+    다음 날이면 이미 확정된 종가를 읽은 것이다.
+    """
+    if len(update_time) < 16:
+        return False   # 판단 근거 없음 — 배제하지 않는다
+    captured_date, captured_time = update_time[:10], update_time[11:16]
+    if captured_date > date:
+        return False   # 후일 수집 = 종가 확정
+    if captured_date < date:
+        return False   # 행 날짜보다 이른 수집 — 별개 이상이며 여기서 다루지 않는다
+    return captured_time < CLOSE_CAPTURE_TIME
+
+
 def _finite(value: Any) -> float | None:
     try:
         number = float(value)
@@ -625,7 +643,7 @@ def load_prices(path: str | None = None) -> PriceBook:
             update_time = str(row.get('update_time') or '')
             counts = capture.setdefault(date, [0, 0])
             counts[1] += 1
-            if len(update_time) >= 16 and update_time[11:16] < CLOSE_CAPTURE_TIME:
+            if _is_intraday_capture(date, update_time):
                 counts[0] += 1
 
             key = (ticker, date)
@@ -655,7 +673,7 @@ PYTHON="/c/bitman_marketfloww/.venv/Scripts/python.exe"
 cd /c/bitman_marketfloww
 PYTHONIOENCODING=utf-8 "$PYTHON" -m pytest tests/test_goodrich_backtest_prices.py -q
 ```
-Expected: `14 passed` (기존 5 + 신규 9)
+Expected: `16 passed` (기존 5 + 신규 11)
 
 - [ ] **Step 5: 실데이터 재검증**
 
@@ -677,7 +695,7 @@ print('2026-04-02 look-ahead leaks in first 500 tickers:', leak, '(0 이어야 �
 print('005930 change on 2026-04-02:', book.change_pct('005930', '2026-04-02'), '(약 -7.23% 여야 함)')
 "
 ```
-Expected: `usable` 518, dedup True, leaks 0, 등락률 −7.23 부근
+Expected: `usable` 545, dedup True, leaks 0
 
 - [ ] **Step 6: 커밋**
 
@@ -1627,7 +1645,7 @@ def test_verdict_requires_interval_to_exclude_zero():
 def test_split_dates_reserves_holdout():
     dates = ['2025-12-30', '2026-01-02', '2026-07-31']
 
-    train, holdout = E.split_dates(dates, holdout_start='2025-08-06')
+    train, holdout = E.split_dates(dates, holdout_start='2025-09-04')
 
     assert train == ['2025-12-30']
     assert holdout == ['2026-01-02', '2026-07-31']
@@ -1940,7 +1958,7 @@ sys.path.insert(0, BASE_DIR)
 
 from app.services.mirofish.goodrich_backtest import engine, prices, rankers  # noqa: E402
 
-HOLDOUT_START = '2025-08-06'  # 사용 가능 518세션의 75% 지점
+HOLDOUT_START = '2025-09-04'  # 사용 가능 545세션의 75% 지점
 
 
 def main() -> int:
