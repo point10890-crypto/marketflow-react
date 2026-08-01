@@ -1362,6 +1362,20 @@ git add app/services/mirofish/goodrich_backtest/signals.py tests/test_goodrich_b
 git commit -m "feat(goodrich-backtest): point-in-time RS so backtests avoid look-ahead"
 ```
 
+**검증 결과 (2026-08-01, 실데이터):** `rs_from_book` 을 출하된 `data/alpha_rs_ratings.json`
+과 대조하면 corr=+0.374 로 낮게 나온다. **코드 결함이 아니다.** 차이를 분해하면:
+
+| 비교 | corr | 해석 |
+|------|------|------|
+| `rs_from_book@2026-07-31` vs 프로덕션 공식(동일 CSV) | **+0.985** | 공식 이식 정확 |
+| `rs_from_book@2026-07-15` vs `@2026-07-31` | +0.906 | 16일 격차 영향 |
+| 프로덕션 공식(현재 CSV) vs 출하 아티팩트 | **+0.243** | ← 이상점 |
+
+아티팩트의 `history_days` 최대값이 592 인데 현재 CSV 는 638 이다. 즉 그 파일은 본PC 가
+CSV 를 동기화(2026-07-31)하기 **전**의 6월 5일자 CSV 로 07-28 에 만들어진 로컬 개발
+부산물이다. miniPC 운영본은 `is_artifact_stale(max_age_hours=20)` 로 매일 재생성되므로
+운영 이슈가 아니다. 이 대조는 백테스트 판정에 쓰지 않는다 — 근거는 위 표의 +0.985 다.
+
 ---
 
 ## Task 5: 랭커 (`rankers.py`)
