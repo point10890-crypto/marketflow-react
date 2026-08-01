@@ -1,0 +1,59 @@
+{
+  "generated_at": "2026-08-01T12:06:40",
+  "segment": "train",
+  "regime": "NEUTRAL",
+  "horizon_days": 3,
+  "top_k": 3,
+  "session_count": 137,
+  "results": [
+    {
+      "ranker": "rs_led",
+      "horizon_days": 3,
+      "entry_days": 136,
+      "challenger_mean_excess_pct": -2.2507,
+      "baseline_mean_excess_pct": -1.0079,
+      "diff_ci95": [
+        -2.4013,
+        -0.1269
+      ],
+      "verdict": "worse"
+    },
+    {
+      "ranker": "pullback",
+      "horizon_days": 3,
+      "entry_days": 136,
+      "challenger_mean_excess_pct": -1.4738,
+      "baseline_mean_excess_pct": -1.0079,
+      "diff_ci95": [
+        -2.2031,
+        1.2081
+      ],
+      "verdict": "inconclusive"
+    },
+    {
+      "ranker": "low_volatility",
+      "horizon_days": 3,
+      "entry_days": 136,
+      "challenger_mean_excess_pct": 0.1897,
+      "baseline_mean_excess_pct": -1.0079,
+      "diff_ci95": [
+        -0.0534,
+        2.3591
+      ],
+      "verdict": "inconclusive"
+    },
+    {
+      "ranker": "composite",
+      "horizon_days": 3,
+      "entry_days": 136,
+      "challenger_mean_excess_pct": -0.8614,
+      "baseline_mean_excess_pct": -1.0079,
+      "diff_ci95": [
+        -1.4605,
+        1.6991
+      ],
+      "verdict": "inconclusive"
+    }
+  ],
+  "elapsed_sec": 62.7
+}

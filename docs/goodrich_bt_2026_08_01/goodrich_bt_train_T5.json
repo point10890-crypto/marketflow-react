@@ -1,0 +1,59 @@
+{
+  "generated_at": "2026-08-01T11:59:06",
+  "segment": "train",
+  "regime": "any",
+  "horizon_days": 5,
+  "top_k": 3,
+  "session_count": 408,
+  "results": [
+    {
+      "ranker": "rs_led",
+      "horizon_days": 5,
+      "entry_days": 407,
+      "challenger_mean_excess_pct": -2.2737,
+      "baseline_mean_excess_pct": -2.1185,
+      "diff_ci95": [
+        -1.2158,
+        0.8889
+      ],
+      "verdict": "inconclusive"
+    },
+    {
+      "ranker": "pullback",
+      "horizon_days": 5,
+      "entry_days": 407,
+      "challenger_mean_excess_pct": -1.2998,
+      "baseline_mean_excess_pct": -2.1185,
+      "diff_ci95": [
+        -0.336,
+        2.0076
+      ],
+      "verdict": "inconclusive"
+    },
+    {
+      "ranker": "low_volatility",
+      "horizon_days": 5,
+      "entry_days": 407,
+      "challenger_mean_excess_pct": -0.3374,
+      "baseline_mean_excess_pct": -2.1185,
+      "diff_ci95": [
+        0.8657,
+        2.7625
+      ],
+      "verdict": "improved"
+    },
+    {
+      "ranker": "composite",
+      "horizon_days": 5,
+      "entry_days": 407,
+      "challenger_mean_excess_pct": -0.7769,
+      "baseline_mean_excess_pct": -2.1185,
+      "diff_ci95": [
+        0.2706,
+        2.4261
+      ],
+      "verdict": "improved"
+    }
+  ],
+  "elapsed_sec": 155.0
+}
