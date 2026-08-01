@@ -173,10 +173,16 @@ def compare(
     *,
     top_k: int = 3,
     horizon: int = 3,
+    baseline: dict[str, list[float]] | None = None,
 ) -> dict[str, Any]:
-    """challenger 를 baseline_current 와 같은 조건에서 비교한다."""
+    """challenger 를 baseline_current 와 같은 조건에서 비교한다.
+
+    baseline 을 넘기면 재사용한다. 같은 (구간, horizon) 에서 challenger 4종을
+    비교할 때 baseline 을 4번 다시 돌릴 이유가 없다 — 결과도 동일하다.
+    """
     challenger = run_ranker(challenger_name, dates, book, top_k=top_k, horizon=horizon)
-    baseline = run_ranker('baseline_current', dates, book, top_k=top_k, horizon=horizon)
+    if baseline is None:
+        baseline = run_ranker('baseline_current', dates, book, top_k=top_k, horizon=horizon)
     diffs = paired_daily_diff(challenger, baseline)
     interval = bootstrap_interval(diffs)
 
