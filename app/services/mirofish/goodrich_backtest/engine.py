@@ -16,7 +16,7 @@ from typing import Any
 from app.services.mirofish import goodrich_ledger as ledger
 from app.services.mirofish.goodrich_backtest import rankers as R
 from app.services.mirofish.goodrich_backtest import signals as S
-from app.services.mirofish.goodrich_backtest.disclosures import load_disclosures
+from app.services.mirofish.goodrich_backtest.disclosures import classify_v2, load_disclosures
 from app.services.mirofish.goodrich_backtest.financials import load_financials
 from app.services.mirofish.goodrich_backtest.prices import PriceBook
 from app.services.mirofish.goodrich_backtest.universe import (
@@ -74,7 +74,10 @@ def run_ranker(
     markets = load_markets()
     # 공시·재무 아카이브는 한 번만 읽는다. 없으면 빈 book 이 되고, 이를 쓰는
     # 랭커는 중립으로 떨어져 baseline 과 같아진다.
-    disclosure_book = load_disclosures()
+    # v1(운영 사전)은 호재 판정의 27.9% 가 오분류였다 — '대규모기업집단현황공시'
+    # 같은 의무 공시와 전환사채 발행 같은 희석 이벤트가 호재로 잡혔다.
+    # v2 로 바꾸면 호재 픽이 절반으로 줄면서 평균 초과수익은 +1.29% -> +2.96% 가 된다.
+    disclosure_book = load_disclosures(classifier=classify_v2)
     financial_book = load_financials()
     benchmark_cache: dict[str, list[dict[str, Any]]] = {}
     out: dict[str, list[float]] = {}

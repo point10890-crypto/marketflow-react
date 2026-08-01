@@ -56,13 +56,111 @@ def classify(report_nm: str) -> float:
     return 0.0
 
 
+# ── 개선 분류기 (classify_v2) ────────────────────────────────
+#
+# 평면 키워드 목록(`classify`)은 반대말을 구분하지 못한다. 전체 아카이브
+# 327,640건에서 호재로 분류된 51,006건 중 **27.9% 가 오분류**였다:
+#
+#   6,320건  매출액또는손익구조30%(대규모법인은15%)이상변동
+#            -> 괄호 속 '대규모' 에 걸림. 증가인지 감소인지 제목에 없다.
+#   2,995건  대규모기업집단현황공시  -> 대기업 의무 분기공시
+#   2,703건  전환사채권발행결정      -> 희석인데 호재
+#   2,701건  주식매수선택권부여      -> 희석인데 호재
+#   2,535건  자기주식처분결정/결과   -> 매각인데 '자기주식' 으로 호재
+#
+# 그 결과 삼성전자가 '대규모기업집단현황공시' 때문에 강한 호재로 top3 에 올랐다.
+# 여기서는 (1) 중립 목록을 먼저 걸러내고 (2) 반대말 쌍을 명시 순서로 판정한다.
+# 순서가 규칙의 일부이므로 튜플로 고정한다.
+
+# 제목만으로 방향을 알 수 없거나 의무 공시인 것들. 무엇보다 먼저 걸러낸다.
+NEUTRAL_MARKERS: tuple[str, ...] = (
+    '대규모기업집단현황',
+    '매출액또는손익구조',
+    '임원ㆍ주요주주',
+    '대량보유상황보고서',
+    '최대주주등소유주식변동',
+    '기업설명회',
+    '주주총회소집',
+    '주주명부폐쇄',
+    '증권발행실적보고서',
+    '투자설명서',
+    '일괄신고',
+    '결산실적공시예고',
+)
+
+# (키워드, 점수). 앞에서 맞으면 뒤는 보지 않는다 — 반대말 쌍은 부정형을 먼저 둔다.
+CLASSIFY_RULES: tuple[tuple[str, float], ...] = (
+    # 계약: 해지가 체결보다 먼저
+    ('공급계약해지', -2.0),
+    ('계약해지', -2.0),
+    ('공급계약체결', 2.0),
+    ('단일판매', 2.0),
+    ('수주', 2.0),
+    ('납품계약', 2.0),
+    # 자기주식: 처분(매각)이 취득보다 먼저
+    ('자기주식처분', -1.0),
+    ('자사주처분', -1.0),
+    ('자기주식취득', 2.0),
+    ('자사주취득', 2.0),
+    ('주식소각', 2.0),
+    # 지분: 양도(매각)가 취득보다 먼저
+    ('출자증권양도', -1.0),
+    ('타법인주식및출자증권양도', -1.0),
+    ('영업양도', -1.0),
+    ('출자증권취득', 1.0),
+    ('타법인주식', 1.0),
+    ('영업양수', 1.0),
+    # 희석: 전부 악재
+    ('유상증자', -2.0),
+    ('전환사채', -2.0),
+    ('신주인수권', -2.0),
+    ('교환사채', -1.0),
+    ('주식매수선택권', -1.0),
+    # 파탄
+    ('상장폐지', -2.0),
+    ('감자', -2.0),
+    ('자본감소', -2.0),
+    ('부도', -2.0),
+    ('파산', -2.0),
+    ('회생절차', -2.0),
+    ('워크아웃', -2.0),
+    ('영업정지', -2.0),
+    ('횡령', -2.0),
+    ('배임', -2.0),
+    # 주주환원
+    ('무상증자', 2.0),
+    ('주식배당', 2.0),
+    ('배당결정', 1.0),
+    ('현금ㆍ현물배당', 1.0),
+    ('합병결정', 1.0),
+)
+
+
+def classify_v2(report_nm: str) -> float:
+    """공시 제목 -> 방향 점수 (개선판).
+
+    중립 표식을 먼저 제거한 뒤, 순서 있는 규칙으로 판정한다.
+    '[기재정정]' 접두는 판정에 영향을 주지 않는다 — 정정이어도 사건은 같다.
+    """
+    title = (report_nm or '').strip()
+    if not title:
+        return 0.0
+    if any(marker in title for marker in NEUTRAL_MARKERS):
+        return 0.0
+    for keyword, score in CLASSIFY_RULES:
+        if keyword in title:
+            return score
+    return 0.0
+
+
 class DisclosureBook:
     """티커별 (접수일자, 보고서명) 시계열. 조회는 항상 진입일 이전으로 잘린다."""
 
-    def __init__(self, by_ticker: dict[str, list[tuple[str, str]]]):
+    def __init__(self, by_ticker: dict[str, list[tuple[str, str]]], *, classifier=None):
         self._by_ticker = {
             ticker: sorted(items) for ticker, items in by_ticker.items()
         }
+        self._classify = classifier or classify
 
     def tickers(self) -> list[str]:
         return sorted(self._by_ticker)
@@ -84,21 +182,21 @@ class DisclosureBook:
     def score(self, ticker: str, date: str, *,
               days: int = DEFAULT_LOOKBACK_DAYS) -> float:
         """진입일 이전 공시의 방향 점수 합 (상하한 적용)."""
-        total = sum(classify(name) for _, name in self.prior(ticker, date, days=days))
+        total = sum(self._classify(name) for _, name in self.prior(ticker, date, days=days))
         return round(max(MIN_SCORE, min(MAX_SCORE, total)), 4)
 
     def has_negative(self, ticker: str, date: str, *,
                      days: int = DEFAULT_LOOKBACK_DAYS) -> bool:
         """악재 공시가 하나라도 있었는가 — 회피 규칙용."""
-        return any(classify(name) < 0 for _, name in self.prior(ticker, date, days=days))
+        return any(self._classify(name) < 0 for _, name in self.prior(ticker, date, days=days))
 
 
-def load_disclosures(directory: str | None = None) -> DisclosureBook:
+def load_disclosures(directory: str | None = None, *, classifier=None) -> DisclosureBook:
     """월별 JSONL 아카이브를 읽어 DisclosureBook 을 만든다. 없으면 빈 book."""
     target = directory or DEFAULT_DISCLOSURE_DIR
     by_ticker: dict[str, list[tuple[str, str]]] = {}
     if not os.path.isdir(target):
-        return DisclosureBook({})
+        return DisclosureBook({}, classifier=classifier)
 
     for path in sorted(glob.glob(os.path.join(target, '*.jsonl'))):
         with open(path, 'r', encoding='utf-8') as f:
@@ -117,4 +215,4 @@ def load_disclosures(directory: str | None = None) -> DisclosureBook:
                 by_ticker.setdefault(ticker, []).append(
                     (rcept_dt, str(row.get('report_nm') or ''))
                 )
-    return DisclosureBook(by_ticker)
+    return DisclosureBook(by_ticker, classifier=classifier)
