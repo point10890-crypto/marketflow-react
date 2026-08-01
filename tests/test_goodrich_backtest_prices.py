@@ -78,3 +78,149 @@ def test_missing_file_returns_empty_book(tmp_path):
 
     assert book.sessions == []
     assert book.series('000660') == []
+
+
+def test_duplicate_ticker_date_rows_are_collapsed(tmp_path):
+    """실데이터에 25,900개의 중복 (ticker, date) 가 있다. 재스크랩 결과이며
+    별개의 봉이 아니다. 마지막 update_time 을 남기고 하나로 합쳐야 한다."""
+    csv_path = tmp_path / 'daily_prices.csv'
+    rows = [
+        _row('000660', '2024-01-02', 100, 10),
+        _row('000660', '2024-01-03', 105, 10),
+        _row('000660', '2024-01-03', 110, 20),   # 같은 날 재스크랩 (뒤가 최신)
+    ]
+    rows[1]['update_time'] = '2024-01-03 12:00:00'
+    rows[2]['update_time'] = '2024-01-03 15:40:00'
+    _write_csv(csv_path, rows)
+
+    book = P.load_prices(str(csv_path))
+
+    assert [bar.date for bar in book.series('000660')] == ['2024-01-02', '2024-01-03']
+    assert book.bar('000660', '2024-01-03').close == 110.0   # 최신 스크랩
+
+
+def test_prior_bars_never_returns_the_queried_date_even_with_duplicates(tmp_path):
+    """중복이 있어도 진입일이 '과거'로 새어나오면 안 된다 — 하네스의 핵심 성질."""
+    csv_path = tmp_path / 'daily_prices.csv'
+    rows = [
+        _row('000660', '2024-01-02', 100, 10),
+        _row('000660', '2024-01-03', 105, 10),
+        _row('000660', '2024-01-03', 110, 20),
+    ]
+    rows[1]['update_time'] = '2024-01-03 12:00:00'
+    rows[2]['update_time'] = '2024-01-03 15:40:00'
+    _write_csv(csv_path, rows)
+
+    book = P.load_prices(str(csv_path))
+
+    assert [b.date for b in book.prior_bars('000660', '2024-01-03', 5)] == ['2024-01-02']
+
+
+def test_change_pct_uses_the_previous_calendar_session_not_a_duplicate(tmp_path):
+    csv_path = tmp_path / 'daily_prices.csv'
+    rows = [
+        _row('000660', '2024-01-02', 100, 10),
+        _row('000660', '2024-01-03', 105, 10),
+        _row('000660', '2024-01-03', 110, 20),
+    ]
+    rows[1]['update_time'] = '2024-01-03 12:00:00'
+    rows[2]['update_time'] = '2024-01-03 15:40:00'
+    _write_csv(csv_path, rows)
+
+    book = P.load_prices(str(csv_path))
+
+    # 110/100-1 = +10%. 110/105-1 = +4.76% (중복 비교) 가 나오면 실패.
+    assert book.change_pct('000660', '2024-01-03') == 10.0
+
+
+def test_ledger_rows_emit_one_row_per_date(tmp_path):
+    """evaluate_pick 은 future[horizon-1] 로 위치 인덱싱하므로 중복이 있으면
+    T+1 과 T+2 가 같은 날로 해석된다."""
+    csv_path = tmp_path / 'daily_prices.csv'
+    rows = [
+        _row('000660', '2024-01-02', 100, 10),
+        _row('000660', '2024-01-03', 105, 10),
+        _row('000660', '2024-01-03', 110, 20),
+    ]
+    rows[1]['update_time'] = '2024-01-03 12:00:00'
+    rows[2]['update_time'] = '2024-01-03 15:40:00'
+    _write_csv(csv_path, rows)
+
+    book = P.load_prices(str(csv_path))
+
+    dates = [r['date'] for r in book.ledger_rows('000660')]
+    assert dates == sorted(set(dates))
+
+
+def test_blank_ticker_is_skipped_not_filed_under_000000(tmp_path):
+    """zfill 이 먼저 돌면 ''.zfill(6) == '000000' 이라 빈 티커 가드가 죽는다."""
+    csv_path = tmp_path / 'daily_prices.csv'
+    _write_csv(csv_path, [
+        _row('', '2024-01-02', 100, 10),
+        _row('000660', '2024-01-02', 200, 10),
+    ])
+
+    book = P.load_prices(str(csv_path))
+
+    assert book.tickers() == ['000660']
+
+
+def test_unparseable_volume_keeps_the_price_bar(tmp_path):
+    """거래량 파싱 실패로 봉을 버리면 계열에 구멍이 생겨 change_pct 가
+    1일 수익률을 2일 수익률로 바꿔버린다."""
+    csv_path = tmp_path / 'daily_prices.csv'
+    rows = [_row('000660', '2024-01-02', 100, 10), _row('000660', '2024-01-03', 110, 10)]
+    rows[1]['volume'] = 'N/A'
+    _write_csv(csv_path, rows)
+
+    book = P.load_prices(str(csv_path))
+
+    assert [b.date for b in book.series('000660')] == ['2024-01-02', '2024-01-03']
+    assert book.bar('000660', '2024-01-03').volume == 0.0
+
+
+def test_nan_and_inf_closes_are_rejected(tmp_path):
+    """float('nan') <= 0 은 False 라 양수 가드를 통과한다."""
+    csv_path = tmp_path / 'daily_prices.csv'
+    rows = [_row('000660', '2024-01-02', 100, 10), _row('000660', '2024-01-03', 110, 10)]
+    rows[0]['current_price'] = 'nan'
+    rows[1]['current_price'] = 'inf'
+    _write_csv(csv_path, rows)
+
+    book = P.load_prices(str(csv_path))
+
+    assert book.series('000660') == []
+
+
+def test_series_does_not_expose_the_internal_list(tmp_path):
+    """호출부가 정렬/추가하면 인덱스가 어긋나 bar() 가 조용히 틀린 값을 준다."""
+    csv_path = tmp_path / 'daily_prices.csv'
+    _write_csv(csv_path, [_row('000660', '2024-01-02', 100, 10)])
+
+    book = P.load_prices(str(csv_path))
+    got = book.series('000660')
+    got.clear()
+
+    assert len(book.series('000660')) == 1
+
+
+def test_usable_sessions_drops_intraday_captured_days(tmp_path):
+    """저장된 '종가' 가 장중 스냅샷인 세션은 수익률 계산의 근거가 못 된다.
+    실데이터에서 110세션(전부 2026년)이 장중수집 과반이다."""
+    csv_path = tmp_path / 'daily_prices.csv'
+    rows = [
+        _row('000660', '2024-01-02', 100, 10),
+        _row('000661', '2024-01-02', 100, 10),
+        _row('000660', '2024-01-03', 110, 10),
+        _row('000661', '2024-01-03', 110, 10),
+    ]
+    rows[0]['update_time'] = '2024-01-02 15:40:00'
+    rows[1]['update_time'] = '2024-01-02 15:41:00'
+    rows[2]['update_time'] = '2024-01-03 12:00:00'   # 장중
+    rows[3]['update_time'] = '2024-01-03 11:00:00'   # 장중
+    _write_csv(csv_path, rows)
+
+    book = P.load_prices(str(csv_path))
+
+    assert book.sessions == ['2024-01-02', '2024-01-03']
+    assert book.usable_sessions() == ['2024-01-02']
