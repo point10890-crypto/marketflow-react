@@ -16,6 +16,8 @@ from typing import Any
 from app.services.mirofish import goodrich_ledger as ledger
 from app.services.mirofish.goodrich_backtest import rankers as R
 from app.services.mirofish.goodrich_backtest import signals as S
+from app.services.mirofish.goodrich_backtest.disclosures import load_disclosures
+from app.services.mirofish.goodrich_backtest.financials import load_financials
 from app.services.mirofish.goodrich_backtest.prices import PriceBook
 from app.services.mirofish.goodrich_backtest.universe import (
     MAX_DAILY_MOVE_PCT,
@@ -70,6 +72,10 @@ def run_ranker(
     """
     ranker = R.RANKERS[ranker_name]
     markets = load_markets()
+    # 공시·재무 아카이브는 한 번만 읽는다. 없으면 빈 book 이 되고, 이를 쓰는
+    # 랭커는 중립으로 떨어져 baseline 과 같아진다.
+    disclosure_book = load_disclosures()
+    financial_book = load_financials()
     benchmark_cache: dict[str, list[dict[str, Any]]] = {}
     out: dict[str, list[float]] = {}
 
@@ -79,7 +85,10 @@ def run_ranker(
         )
         if len(candidates) < top_k:
             continue
-        ctx = R.RankContext(date=date, book=book, rs_ratings=S.rs_from_book(date, book))
+        ctx = R.RankContext(
+            date=date, book=book, rs_ratings=S.rs_from_book(date, book),
+            disclosures=disclosure_book, financials=financial_book,
+        )
         picks = R.rank_candidates(candidates, ranker, ctx)[:top_k]
 
         values = []

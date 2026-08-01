@@ -22,6 +22,7 @@ def _ctx(book=None, rs=None):
 def test_all_rankers_are_registered():
     assert set(R.RANKERS) == {
         'baseline_current', 'rs_led', 'pullback', 'low_volatility', 'composite',
+        'disclosure_led', 'fundamental_guard', 'fusion',
     }
 
 
@@ -110,3 +111,72 @@ def test_baseline_falls_back_to_one_when_the_bar_has_no_range():
     score = R.RANKERS['baseline_current'](_candidate('000001', change_pct=0.0), _ctx(book=book))
 
     assert score == 75.0
+
+
+class _FakeDisclosures:
+    def __init__(self, scores):
+        self._scores = scores
+
+    def score(self, symbol, date, **_):
+        return self._scores.get(symbol, 0.0)
+
+
+class _FakeFinancials:
+    def __init__(self, scores):
+        self._scores = scores
+
+    def health_score(self, symbol, date, **_):
+        return self._scores.get(symbol, 0.0)
+
+
+def test_new_rankers_are_registered():
+    assert {'disclosure_led', 'fundamental_guard', 'fusion'} <= set(R.RANKERS)
+
+
+def test_disclosure_led_prefers_a_surge_backed_by_a_positive_filing():
+    ctx = R.RankContext(
+        date='2024-01-03', book=PriceBook({}), rs_ratings={},
+        disclosures=_FakeDisclosures({'000001': 2.0, '000002': -2.0}),
+    )
+
+    backed = R.RANKERS['disclosure_led'](_candidate('000001'), ctx)
+    unbacked = R.RANKERS['disclosure_led'](_candidate('000002'), ctx)
+
+    assert backed > unbacked
+
+
+def test_fundamental_guard_penalises_capital_impairment():
+    ctx = R.RankContext(
+        date='2024-01-03', book=PriceBook({}), rs_ratings={},
+        financials=_FakeFinancials({'000001': -3.0, '000002': 1.0}),
+    )
+
+    weak = R.RANKERS['fundamental_guard'](_candidate('000001'), ctx)
+    sound = R.RANKERS['fundamental_guard'](_candidate('000002'), ctx)
+
+    assert sound > weak
+
+
+def test_missing_archives_make_the_new_rankers_equal_the_baseline():
+    """아카이브가 없다고 감점하면 데이터 부재가 신호로 둔갑한다."""
+    ctx = _ctx()
+    candidate = _candidate('000001', change_pct=7.0)
+    base = R.RANKERS['baseline_current'](candidate, ctx)
+
+    for name in ('disclosure_led', 'fundamental_guard', 'fusion'):
+        assert R.RANKERS[name](candidate, ctx) == base, name
+
+
+def test_fusion_combines_both_axes():
+    ctx = R.RankContext(
+        date='2024-01-03', book=PriceBook({}), rs_ratings={},
+        disclosures=_FakeDisclosures({'000001': 2.0}),
+        financials=_FakeFinancials({'000001': 1.0}),
+    )
+    candidate = _candidate('000001')
+
+    expected = round(
+        R.RANKERS['baseline_current'](candidate, ctx)
+        + 2.0 * R.DISCLOSURE_WEIGHT + 1.0 * R.FINANCIAL_WEIGHT, 2)
+
+    assert R.RANKERS['fusion'](candidate, ctx) == expected

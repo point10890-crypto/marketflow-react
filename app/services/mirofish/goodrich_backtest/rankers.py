@@ -10,8 +10,16 @@ from dataclasses import dataclass
 from typing import Callable
 
 from app.services.mirofish.goodrich_backtest import signals as S
+from app.services.mirofish.goodrich_backtest.disclosures import DisclosureBook
+from app.services.mirofish.goodrich_backtest.financials import FinancialBook
 from app.services.mirofish.goodrich_backtest.prices import PriceBook
 from app.services.mirofish.goodrich_backtest.universe import Candidate
+
+# 새 항의 가중치는 기존 momentum 항(+-12점)과 사거리를 맞춘 값이다.
+# 공시 -3~+3 -> +-9점, 재무 -3~+2 -> -9~+6점. 임의로 크게 잡아 신호를
+# 지배하게 만들면 백테스트가 '가중치를 튜닝했는가' 를 재게 된다.
+DISCLOSURE_WEIGHT = 3.0
+FINANCIAL_WEIGHT = 3.0
 
 
 @dataclass(frozen=True)
@@ -19,6 +27,16 @@ class RankContext:
     date: str
     book: PriceBook
     rs_ratings: dict[str, int]
+    # 공시·재무는 선택 주입이다. 아카이브가 없으면 None 이고, 이를 쓰는 랭커는
+    # 중립(0)으로 떨어져 baseline 과 같아진다 — 데이터 부재가 감점이 되면 안 된다.
+    disclosures: DisclosureBook | None = None
+    financials: FinancialBook | None = None
+
+    def disclosure_score(self, symbol: str) -> float:
+        return 0.0 if self.disclosures is None else self.disclosures.score(symbol, self.date)
+
+    def financial_score(self, symbol: str) -> float:
+        return 0.0 if self.financials is None else self.financials.health_score(symbol, self.date)
 
 
 Ranker = Callable[[Candidate, RankContext], float]
@@ -94,12 +112,52 @@ def composite(candidate: Candidate, ctx: RankContext) -> float:
     )
 
 
+def disclosure_led(candidate: Candidate, ctx: RankContext) -> float:
+    """현행 점수 + 공시 근거.
+
+    가설: 같은 급등이라도 공급계약·자사주 같은 공시가 뒤를 받치는 상승은
+    근거 없는 상승보다 되돌림이 덜하다. 현 점수의 문제는 '왜 올랐는지' 를
+    전혀 보지 않는 것이므로, 그 축을 하나 더한다.
+    """
+    return round(
+        baseline_current(candidate, ctx)
+        + ctx.disclosure_score(candidate.symbol) * DISCLOSURE_WEIGHT,
+        2,
+    )
+
+
+def fundamental_guard(candidate: Candidate, ctx: RankContext) -> float:
+    """현행 점수 + 재무 건전성.
+
+    알파를 더하는 항이 아니라 **회피** 항이다. 자본잠식·고레버리지·영업적자
+    종목은 같은 급등이어도 되돌림이 급하다.
+    """
+    return round(
+        baseline_current(candidate, ctx)
+        + ctx.financial_score(candidate.symbol) * FINANCIAL_WEIGHT,
+        2,
+    )
+
+
+def fusion(candidate: Candidate, ctx: RankContext) -> float:
+    """현행 점수 + 공시 + 재무. 파라미터를 더 늘리지 않는다."""
+    return round(
+        baseline_current(candidate, ctx)
+        + ctx.disclosure_score(candidate.symbol) * DISCLOSURE_WEIGHT
+        + ctx.financial_score(candidate.symbol) * FINANCIAL_WEIGHT,
+        2,
+    )
+
+
 RANKERS: dict[str, Ranker] = {
     'baseline_current': baseline_current,
     'rs_led': rs_led,
     'pullback': pullback,
     'low_volatility': low_volatility,
     'composite': composite,
+    'disclosure_led': disclosure_led,
+    'fundamental_guard': fundamental_guard,
+    'fusion': fusion,
 }
 
 
