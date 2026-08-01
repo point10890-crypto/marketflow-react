@@ -368,6 +368,32 @@ def test_unknown_market_is_empty_string_not_a_guess():
     assert got[0].market == ''
 
 
+def test_impossible_daily_move_is_rejected_as_corrupt_data():
+    """한국 가격제한폭은 ±30%. 초과분은 물리적으로 불가능하므로 데이터 오류다.
+
+    실측: daily_prices.csv 에 616건(466종목)이 이 범위를 넘는다. 예) 052670 이
+    2,080 -> 610,000 (+29,227%). 하나라도 랭킹에 들어오면 평균 초과수익이 통째로
+    오염되므로 후보 단계에서 배제한다.
+    """
+    book = _book({
+        '000001': [('2024-01-02', 100, 10), ('2024-01-03', 110, 10)],      # +10% 정상
+        '000002': [('2024-01-02', 100, 10), ('2024-01-03', 30000, 10)],    # +29,900% 오류
+    })
+
+    got = U.reconstruct_universe('2024-01-03', book, per_source_top_n=10)
+
+    assert [c.symbol for c in got] == ['000001']
+
+
+def test_limit_up_at_the_boundary_is_kept():
+    """정상 상한가(+29.9%)는 버리지 않는다."""
+    book = _book({'000001': [('2024-01-02', 100, 10), ('2024-01-03', 129.9, 10)]})
+
+    got = U.reconstruct_universe('2024-01-03', book, per_source_top_n=10)
+
+    assert [c.symbol for c in got] == ['000001']
+
+
 def test_load_markets_reads_ticker_map(tmp_path):
     path = tmp_path / 'ticker_to_yahoo_map.csv'
     path.write_text(
@@ -429,6 +455,10 @@ DEFAULT_TICKER_MAP_PATH = os.path.join(REPO_ROOT, 'data', 'ticker_to_yahoo_map.c
 
 VOLUME_SURGE_WINDOW = 20
 
+# 한국 가격제한폭은 ±30%. 이를 넘는 일간 변동은 체결로 발생할 수 없으므로
+# 데이터 오류다 (실측 616건 / 466종목). 1%p 여유를 둔다.
+MAX_DAILY_MOVE_PCT = 31.0
+
 
 @dataclass(frozen=True)
 class Candidate:
@@ -478,6 +508,8 @@ def reconstruct_universe(
         change = book.change_pct(ticker, date)
         if change is None:
             continue
+        if abs(change) > MAX_DAILY_MOVE_PCT:
+            continue  # 가격제한폭 초과 = 데이터 오류
         prior = book.prior_bars(ticker, date, VOLUME_SURGE_WINDOW)
         avg_volume = sum(b.volume for b in prior) / len(prior) if prior else 0.0
         surge = bar.volume / avg_volume if avg_volume > 0 else 0.0
@@ -518,7 +550,7 @@ PYTHON="/c/bitman_marketfloww/.venv/Scripts/python.exe"
 cd /c/bitman_marketfloww
 PYTHONIOENCODING=utf-8 "$PYTHON" -m pytest tests/test_goodrich_backtest_universe.py -q
 ```
-Expected: `8 passed`
+Expected: `10 passed`
 
 - [ ] **Step 5: 커밋**
 
@@ -1186,6 +1218,40 @@ def test_split_dates_reserves_holdout():
     assert holdout == ['2026-01-02', '2026-07-31']
 
 
+def test_corrupt_price_path_is_rejected_so_fake_returns_never_enter():
+    """진입은 정상이어도 보유 구간에 가격제한폭 초과가 있으면 그 픽을 버린다.
+
+    예) 2,080 -> 610,000 같은 오류가 출구가 되면 +29,000% 수익이 평균을 지배한다.
+    """
+    from app.services.mirofish.goodrich_backtest.prices import Bar, PriceBook
+
+    clean = PriceBook({'000001': [
+        Bar(date='2024-01-02', close=100, volume=10),
+        Bar(date='2024-01-03', close=105, volume=10),
+        Bar(date='2024-01-04', close=110, volume=10),
+    ]})
+    dirty = PriceBook({'000001': [
+        Bar(date='2024-01-02', close=100, volume=10),
+        Bar(date='2024-01-03', close=105, volume=10),
+        Bar(date='2024-01-04', close=99999, volume=10),
+    ]})
+
+    assert E.has_clean_path(clean, '000001', '2024-01-02', '2024-01-04') is True
+    assert E.has_clean_path(dirty, '000001', '2024-01-02', '2024-01-04') is False
+
+
+def test_clean_path_ignores_sessions_outside_the_holding_window():
+    from app.services.mirofish.goodrich_backtest.prices import Bar, PriceBook
+
+    book = PriceBook({'000001': [
+        Bar(date='2024-01-02', close=100, volume=10),
+        Bar(date='2024-01-03', close=105, volume=10),
+        Bar(date='2024-01-04', close=99999, volume=10),  # 보유 구간 밖
+    ]})
+
+    assert E.has_clean_path(book, '000001', '2024-01-02', '2024-01-03') is True
+
+
 def test_benchmark_follows_the_candidate_market():
     """코스닥 종목을 KOSPI 지수와 비교하던 원장 결함을 백테스트가 반복하지 않는다."""
     from app.services.mirofish.goodrich_backtest.universe import Candidate
@@ -1232,7 +1298,12 @@ from app.services.mirofish import goodrich_ledger as ledger
 from app.services.mirofish.goodrich_backtest import rankers as R
 from app.services.mirofish.goodrich_backtest import signals as S
 from app.services.mirofish.goodrich_backtest.prices import PriceBook
-from app.services.mirofish.goodrich_backtest.universe import Candidate, load_markets, reconstruct_universe
+from app.services.mirofish.goodrich_backtest.universe import (
+    MAX_DAILY_MOVE_PCT,
+    Candidate,
+    load_markets,
+    reconstruct_universe,
+)
 
 
 def split_dates(dates: list[str], *, holdout_start: str) -> tuple[list[str], list[str]]:
@@ -1245,6 +1316,24 @@ def split_dates(dates: list[str], *, holdout_start: str) -> tuple[list[str], lis
 def benchmark_for(candidate: Candidate) -> str:
     """후보의 시장에 맞는 지수 프록시. ledger 의 해석기를 그대로 쓴다."""
     return ledger.benchmark_ticker({'market': candidate.market})
+
+
+def has_clean_path(book: PriceBook, ticker: str, entry_date: str, exit_date: str) -> bool:
+    """보유 구간 [entry_date, exit_date] 안에 가격제한폭 초과가 없는지.
+
+    universe 필터는 진입일 등락률만 본다. 출구 가격이 오염된 경우
+    (예: 2,080 -> 610,000) 가짜 수익이 평균을 지배하므로 여기서 한 번 더 막는다.
+    """
+    window = [
+        bar for bar in book.series(ticker)
+        if entry_date <= bar.date <= exit_date
+    ]
+    for prev, cur in zip(window, window[1:]):
+        if prev.close <= 0:
+            return False
+        if abs(cur.close / prev.close - 1) * 100 > MAX_DAILY_MOVE_PCT:
+            return False
+    return True
 
 
 def run_ranker(
@@ -1293,8 +1382,12 @@ def run_ranker(
             )
             row = (evaluation.get('horizons') or {}).get(str(horizon)) or {}
             excess = row.get('net_excess_return_pct')
-            if excess is not None:
-                values.append(float(excess))
+            exit_date = str(row.get('exit_date') or '')
+            if excess is None or not exit_date:
+                continue
+            if not has_clean_path(book, candidate.symbol, date, exit_date):
+                continue  # 보유 구간에 데이터 오류 -> 수익률을 신뢰할 수 없다
+            values.append(float(excess))
         if values:
             out[date] = values
     return out
@@ -1390,7 +1483,7 @@ PYTHON="/c/bitman_marketfloww/.venv/Scripts/python.exe"
 cd /c/bitman_marketfloww
 PYTHONIOENCODING=utf-8 "$PYTHON" -m pytest tests/test_goodrich_backtest_engine.py -q
 ```
-Expected: `7 passed`
+Expected: `9 passed`
 
 - [ ] **Step 5: 커밋**
 
@@ -1502,7 +1595,7 @@ PYTHON="/c/bitman_marketfloww/.venv/Scripts/python.exe"
 cd /c/bitman_marketfloww
 PYTHONIOENCODING=utf-8 "$PYTHON" -m pytest tests/ -q -k "goodrich"
 ```
-Expected: 신규 41개 + 기존 Goodrich 테스트 전부 통과
+Expected: 신규 45개 + 기존 Goodrich 테스트 전부 통과
 
 - [ ] **Step 4: 커밋**
 
@@ -1577,8 +1670,9 @@ git commit -m "docs: Goodrich ranker comparison results"
 
 ## 완료 조건
 
-- [ ] Task 1~6: 5개 모듈 + 단위 테스트 **41개** 통과
-      (prices 5 / universe 8 / signals 11 / rankers 7 / engine 7 + look-ahead 회귀 3건 포함)
+- [ ] Task 1~6: 5개 모듈 + 단위 테스트 **45개** 통과
+      (prices 5 / universe 10 / signals 11 / rankers 7 / engine 9
+       — look-ahead 회귀 3건, 데이터 오염 차단 4건 포함)
 - [ ] Task 7: CLI 로 학습 구간 실행 성공, 결과 JSON 생성
 - [ ] Task 8: 학습 → holdout 순서로 판정, 레짐별 성과 포함, 결과 문서 커밋
 - [ ] 프로덕션 파일 무변경 확인 — 아래가 **빈 출력**이어야 한다:
