@@ -1,0 +1,95 @@
+{
+  "generated_at": "2026-08-01T20:50:46",
+  "segment": "holdout",
+  "regime": "any",
+  "horizon_days": 3,
+  "top_k": 3,
+  "session_count": 137,
+  "results": [
+    {
+      "ranker": "rs_led",
+      "horizon_days": 3,
+      "entry_days": 137,
+      "challenger_mean_excess_pct": -0.6291,
+      "baseline_mean_excess_pct": -1.1138,
+      "diff_ci95": [
+        -1.4805,
+        2.5921
+      ],
+      "verdict": "inconclusive"
+    },
+    {
+      "ranker": "pullback",
+      "horizon_days": 3,
+      "entry_days": 137,
+      "challenger_mean_excess_pct": -1.4541,
+      "baseline_mean_excess_pct": -1.1138,
+      "diff_ci95": [
+        -2.0345,
+        1.5035
+      ],
+      "verdict": "inconclusive"
+    },
+    {
+      "ranker": "low_volatility",
+      "horizon_days": 3,
+      "entry_days": 137,
+      "challenger_mean_excess_pct": -0.2089,
+      "baseline_mean_excess_pct": -1.1138,
+      "diff_ci95": [
+        -0.6391,
+        2.6447
+      ],
+      "verdict": "inconclusive"
+    },
+    {
+      "ranker": "composite",
+      "horizon_days": 3,
+      "entry_days": 137,
+      "challenger_mean_excess_pct": -1.4251,
+      "baseline_mean_excess_pct": -1.1138,
+      "diff_ci95": [
+        -1.9491,
+        1.528
+      ],
+      "verdict": "inconclusive"
+    },
+    {
+      "ranker": "disclosure_led",
+      "horizon_days": 3,
+      "entry_days": 137,
+      "challenger_mean_excess_pct": -0.4828,
+      "baseline_mean_excess_pct": -1.1138,
+      "diff_ci95": [
+        0.0891,
+        1.2527
+      ],
+      "verdict": "improved"
+    },
+    {
+      "ranker": "fundamental_guard",
+      "horizon_days": 3,
+      "entry_days": 137,
+      "challenger_mean_excess_pct": -0.9243,
+      "baseline_mean_excess_pct": -1.1138,
+      "diff_ci95": [
+        -0.943,
+        1.3181
+      ],
+      "verdict": "inconclusive"
+    },
+    {
+      "ranker": "fusion",
+      "horizon_days": 3,
+      "entry_days": 137,
+      "challenger_mean_excess_pct": -0.8757,
+      "baseline_mean_excess_pct": -1.1138,
+      "diff_ci95": [
+        -0.9665,
+        1.4121
+      ],
+      "verdict": "inconclusive"
+    }
+  ],
+  "elapsed_sec": 67.3
+}
