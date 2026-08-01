@@ -1131,14 +1131,20 @@ def pullback_depth(ticker: str, date: str, book: PriceBook, *, window: int = 20)
 
 
 def volatility_norm(ticker: str, date: str, book: PriceBook, *, window: int = 14) -> float:
-    """직전 window 세션 일간수익률 표준편차(%). 이력이 없으면 0."""
-    bars = book.prior_bars(ticker, date, window + 1)
-    if len(bars) < 3:
+    """당일 포함 최근 window+1 세션의 일간수익률 표준편차(%). 이력이 없으면 0.
+
+    pullback_depth / overheat 와 마찬가지로 진입일 종가를 포함한다. 진입일
+    종가는 랭킹 시점에 이미 알려진 값이므로 look-ahead 가 아니다.
+    """
+    bars = book.prior_bars(ticker, date, window)
+    bar = book.bar(ticker, date)
+    if bar is None:
         return 0.0
+    closes = [b.close for b in bars] + [bar.close]
     rets = []
-    for prev, cur in zip(bars, bars[1:]):
-        if prev.close > 0:
-            rets.append((cur.close / prev.close - 1) * 100)
+    for prev, cur in zip(closes, closes[1:]):
+        if prev > 0:
+            rets.append((cur / prev - 1) * 100)
     if len(rets) < 2:
         return 0.0
     mean = sum(rets) / len(rets)
