@@ -16,12 +16,15 @@
 
 | 항목 | 값 |
 |---|---|
-| 백테스트 가능 세션 | 628일 (2024-01-02 ~ 2026-07-31) |
+| CSV 총 세션 | 628일 (2024-01-02 ~ 2026-07-31) |
+| **중복 `(ticker, date)` 행** | **25,900키 / 28,784행, 9개 세션** — Task 1b 에서 제거 |
+| **장중(15:00 이전) 수집 행** | **572,952행 (33.0%)** — 저장된 "종가"가 장중 스냅샷 |
+| **사용 가능 세션** | **518일** (장중수집 ≤50% 인 세션만). 2024 244/244, 2025 242/242, **2026 32/142** |
 | 수집 종목 | 2,967개 |
 | `change_rate` 컬럼 신뢰도 | **18.2%만 non-zero** → 연속 종가로 계산 필수 |
 | 재현 유니버스 | 세션당 중앙값 54종목 (30~74) |
 | 평가 가능 진입일 | T+1 626 / T+3 624 / T+5 622 / T+20 607 |
-| 학습 / holdout | 486일 / 142일 (2026-01-01 분할) |
+| 학습 / holdout | **388일 / 130일 (2025-08-06 분할)** — 사용 가능 518일의 75% 지점 |
 | 표본 해상도 | 약 0.5%p (α=0.05, power=0.80) |
 
 ---
@@ -281,6 +284,411 @@ git commit -m "feat(goodrich-backtest): price loader computing change from conse
 
 ---
 
+## Task 1b: 로더 결함 수정 — 중복 행·세션 품질
+
+Task 1 의 코드 리뷰가 실데이터에서만 드러나는 결함을 찾았다. 합성 데이터 테스트는
+전부 통과했지만 **실제 CSV 에서는 하네스의 존재 이유인 look-ahead 차단이 깨진다.**
+
+**실측 근거**:
+
+| 사실 | 값 |
+|---|---|
+| 중복 `(ticker, date)` | 25,900키 / 28,784행, **9개 세션** |
+| 2026-04-02 중복 비율 | 2,884 / 2,967 종목 (사실상 전 종목) |
+| 장중(15:00 이전) 수집 | 572,952행 (**33.0%**) |
+| 장중수집 과반 세션 | 110일 — **전부 2026년**, 2024·2025 는 0일 |
+
+**중복이 만드는 3가지 고장** (전부 조용히 일어남):
+
+1. `prior_bars` 가 **조회일 자신을 반환** — 인덱스가 마지막 사본을 가리켜 슬라이스에
+   같은 날짜의 앞 사본이 남는다. 2026-04-02 에 2,884종목이 `[..., 04-02, 04-02]` 를
+   "과거"로 돌려준다. 진입일 종가·거래량이 그대로 신호에 들어간다.
+2. `change_pct` 가 **같은 날을 자기 자신과 비교** — 005930 이 실제 −7.23% 인데
+   +0.796% 를 반환한다. 그 세션에서 1,481종목의 부호가 뒤집히고, 실제 상승 383종목이
+   1,520종목으로 보고된다. `MAX_DAILY_MOVE_PCT` 가드는 0 을 통과시키므로 못 잡는다.
+3. `ledger_rows` 가 **`evaluate_pick` 의 호라이즌을 어긋나게 함** — 그 함수는
+   `future[horizon - 1]` 로 위치 인덱싱한다. 005930 은 628 날짜에 638행이므로
+   T+1 과 T+2 가 같은 날로 해석된다. 즉 전방수익률 자체가 틀린다.
+
+**Files:**
+- Modify: `app/services/mirofish/goodrich_backtest/prices.py`
+- Modify: `tests/test_goodrich_backtest_prices.py`
+
+- [ ] **Step 1: 회귀 테스트 추가 (실패 확인용)**
+
+`tests/test_goodrich_backtest_prices.py` 끝에 추가:
+
+```python
+def test_duplicate_ticker_date_rows_are_collapsed(tmp_path):
+    """실데이터에 25,900개의 중복 (ticker, date) 가 있다. 재스크랩 결과이며
+    별개의 봉이 아니다. 마지막 update_time 을 남기고 하나로 합쳐야 한다."""
+    csv_path = tmp_path / 'daily_prices.csv'
+    rows = [
+        _row('000660', '2024-01-02', 100, 10),
+        _row('000660', '2024-01-03', 105, 10),
+        _row('000660', '2024-01-03', 110, 20),   # 같은 날 재스크랩 (뒤가 최신)
+    ]
+    rows[1]['update_time'] = '2024-01-03 12:00:00'
+    rows[2]['update_time'] = '2024-01-03 15:40:00'
+    _write_csv(csv_path, rows)
+
+    book = P.load_prices(str(csv_path))
+
+    assert [bar.date for bar in book.series('000660')] == ['2024-01-02', '2024-01-03']
+    assert book.bar('000660', '2024-01-03').close == 110.0   # 최신 스크랩
+
+
+def test_prior_bars_never_returns_the_queried_date_even_with_duplicates(tmp_path):
+    """중복이 있어도 진입일이 '과거'로 새어나오면 안 된다 — 하네스의 핵심 성질."""
+    csv_path = tmp_path / 'daily_prices.csv'
+    rows = [
+        _row('000660', '2024-01-02', 100, 10),
+        _row('000660', '2024-01-03', 105, 10),
+        _row('000660', '2024-01-03', 110, 20),
+    ]
+    rows[1]['update_time'] = '2024-01-03 12:00:00'
+    rows[2]['update_time'] = '2024-01-03 15:40:00'
+    _write_csv(csv_path, rows)
+
+    book = P.load_prices(str(csv_path))
+
+    assert [b.date for b in book.prior_bars('000660', '2024-01-03', 5)] == ['2024-01-02']
+
+
+def test_change_pct_uses_the_previous_calendar_session_not_a_duplicate(tmp_path):
+    csv_path = tmp_path / 'daily_prices.csv'
+    rows = [
+        _row('000660', '2024-01-02', 100, 10),
+        _row('000660', '2024-01-03', 105, 10),
+        _row('000660', '2024-01-03', 110, 20),
+    ]
+    rows[1]['update_time'] = '2024-01-03 12:00:00'
+    rows[2]['update_time'] = '2024-01-03 15:40:00'
+    _write_csv(csv_path, rows)
+
+    book = P.load_prices(str(csv_path))
+
+    # 110/100-1 = +10%. 110/105-1 = +4.76% (중복 비교) 가 나오면 실패.
+    assert book.change_pct('000660', '2024-01-03') == 10.0
+
+
+def test_ledger_rows_emit_one_row_per_date(tmp_path):
+    """evaluate_pick 은 future[horizon-1] 로 위치 인덱싱하므로 중복이 있으면
+    T+1 과 T+2 가 같은 날로 해석된다."""
+    csv_path = tmp_path / 'daily_prices.csv'
+    rows = [
+        _row('000660', '2024-01-02', 100, 10),
+        _row('000660', '2024-01-03', 105, 10),
+        _row('000660', '2024-01-03', 110, 20),
+    ]
+    rows[1]['update_time'] = '2024-01-03 12:00:00'
+    rows[2]['update_time'] = '2024-01-03 15:40:00'
+    _write_csv(csv_path, rows)
+
+    book = P.load_prices(str(csv_path))
+
+    dates = [r['date'] for r in book.ledger_rows('000660')]
+    assert dates == sorted(set(dates))
+
+
+def test_blank_ticker_is_skipped_not_filed_under_000000(tmp_path):
+    """zfill 이 먼저 돌면 ''.zfill(6) == '000000' 이라 빈 티커 가드가 죽는다."""
+    csv_path = tmp_path / 'daily_prices.csv'
+    _write_csv(csv_path, [
+        _row('', '2024-01-02', 100, 10),
+        _row('000660', '2024-01-02', 200, 10),
+    ])
+
+    book = P.load_prices(str(csv_path))
+
+    assert book.tickers() == ['000660']
+
+
+def test_unparseable_volume_keeps_the_price_bar(tmp_path):
+    """거래량 파싱 실패로 봉을 버리면 계열에 구멍이 생겨 change_pct 가
+    1일 수익률을 2일 수익률로 바꿔버린다."""
+    csv_path = tmp_path / 'daily_prices.csv'
+    rows = [_row('000660', '2024-01-02', 100, 10), _row('000660', '2024-01-03', 110, 10)]
+    rows[1]['volume'] = 'N/A'
+    _write_csv(csv_path, rows)
+
+    book = P.load_prices(str(csv_path))
+
+    assert [b.date for b in book.series('000660')] == ['2024-01-02', '2024-01-03']
+    assert book.bar('000660', '2024-01-03').volume == 0.0
+
+
+def test_nan_and_inf_closes_are_rejected(tmp_path):
+    """float('nan') <= 0 은 False 라 양수 가드를 통과한다."""
+    csv_path = tmp_path / 'daily_prices.csv'
+    rows = [_row('000660', '2024-01-02', 100, 10), _row('000660', '2024-01-03', 110, 10)]
+    rows[0]['current_price'] = 'nan'
+    rows[1]['current_price'] = 'inf'
+    _write_csv(csv_path, rows)
+
+    book = P.load_prices(str(csv_path))
+
+    assert book.series('000660') == []
+
+
+def test_series_does_not_expose_the_internal_list(tmp_path):
+    """호출부가 정렬/추가하면 인덱스가 어긋나 bar() 가 조용히 틀린 값을 준다."""
+    csv_path = tmp_path / 'daily_prices.csv'
+    _write_csv(csv_path, [_row('000660', '2024-01-02', 100, 10)])
+
+    book = P.load_prices(str(csv_path))
+    got = book.series('000660')
+    got.clear()
+
+    assert len(book.series('000660')) == 1
+
+
+def test_usable_sessions_drops_intraday_captured_days(tmp_path):
+    """저장된 '종가' 가 장중 스냅샷인 세션은 수익률 계산의 근거가 못 된다.
+    실데이터에서 110세션(전부 2026년)이 장중수집 과반이다."""
+    csv_path = tmp_path / 'daily_prices.csv'
+    rows = [
+        _row('000660', '2024-01-02', 100, 10),
+        _row('000661', '2024-01-02', 100, 10),
+        _row('000660', '2024-01-03', 110, 10),
+        _row('000661', '2024-01-03', 110, 10),
+    ]
+    rows[0]['update_time'] = '2024-01-02 15:40:00'
+    rows[1]['update_time'] = '2024-01-02 15:41:00'
+    rows[2]['update_time'] = '2024-01-03 12:00:00'   # 장중
+    rows[3]['update_time'] = '2024-01-03 11:00:00'   # 장중
+    _write_csv(csv_path, rows)
+
+    book = P.load_prices(str(csv_path))
+
+    assert book.sessions == ['2024-01-02', '2024-01-03']
+    assert book.usable_sessions() == ['2024-01-02']
+```
+
+- [ ] **Step 2: 실패 확인**
+
+```bash
+PYTHON="/c/bitman_marketfloww/.venv/Scripts/python.exe"
+cd /c/bitman_marketfloww
+PYTHONIOENCODING=utf-8 "$PYTHON" -m pytest tests/test_goodrich_backtest_prices.py -q
+```
+Expected: 신규 9개 중 다수 FAIL (중복 미제거, `usable_sessions` 미존재 등)
+
+- [ ] **Step 3: `prices.py` 수정**
+
+전체 파일을 아래로 교체한다:
+
+```python
+"""daily_prices.csv 로더.
+
+이 스크래퍼 출력은 신뢰할 수 없다. 실측된 결함 세 가지를 로더에서 흡수한다.
+
+1. `change_rate` 컬럼이 1,736,800행 중 18.2% 에서만 0 이 아니다. 값이 있으면
+   그것이 권위 있는 값(벤더가 공식 전일종가 대비 계산)이므로 우선 쓰고,
+   없으면 연속 종가로 유도한다. 단위는 **퍼센트**다.
+2. 같은 `(ticker, date)` 가 25,900건 중복된다(9개 세션, 장중 재스크랩).
+   합치지 않으면 `prior_bars` 가 조회일을 과거로 돌려주고, `change_pct` 가
+   같은 날을 자기와 비교하며, `evaluate_pick` 의 위치 인덱싱이 어긋난다.
+   가장 늦은 `update_time` 을 남긴다.
+3. 33.0% 의 행이 15:00 이전에 수집됐다 — 저장된 "종가" 가 장중 스냅샷이다.
+   장중수집이 과반인 세션은 `usable_sessions()` 에서 제외한다.
+"""
+
+from __future__ import annotations
+
+import csv
+import math
+import os
+from dataclasses import dataclass
+from typing import Any
+
+REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..'))
+DEFAULT_PRICE_PATH = os.path.join(REPO_ROOT, 'data', 'daily_prices.csv')
+
+# 한국 정규장 종료는 15:30 이지만, 스크래퍼는 15:00 이후 배치로 돈다.
+# 이보다 이른 수집은 장중 스냅샷으로 본다.
+CLOSE_CAPTURE_TIME = '15:00'
+MAX_INTRADAY_SHARE = 0.5
+
+
+@dataclass(frozen=True, slots=True)
+class Bar:
+    date: str
+    close: float
+    volume: float
+    change_rate: float | None = None
+
+    @property
+    def turnover(self) -> float:
+        return self.close * self.volume
+
+
+class PriceBook:
+    """티커별 일봉 시계열. 모든 조회는 사전 계산된 인덱스를 쓴다."""
+
+    def __init__(self, series: dict[str, list[Bar]], *, intraday_share: dict[str, float] | None = None):
+        self._series = series
+        self._index: dict[str, dict[str, int]] = {
+            ticker: {bar.date: i for i, bar in enumerate(bars)}
+            for ticker, bars in series.items()
+        }
+        self._intraday_share = intraday_share or {}
+        self.sessions: list[str] = sorted({bar.date for bars in series.values() for bar in bars})
+
+    def tickers(self) -> list[str]:
+        return sorted(self._series)
+
+    def series(self, ticker: str) -> list[Bar]:
+        return list(self._series.get(ticker, ()))
+
+    def bar(self, ticker: str, date: str) -> Bar | None:
+        idx = self._index.get(ticker)
+        if idx is None:
+            return None
+        i = idx.get(date)
+        return None if i is None else self._series[ticker][i]
+
+    def prior_bars(self, ticker: str, date: str, count: int) -> list[Bar]:
+        """date 직전 세션부터 과거로 count 개. date 자신은 절대 포함하지 않는다."""
+        idx = self._index.get(ticker)
+        if idx is None:
+            return []
+        i = idx.get(date)
+        if i is None:
+            return []
+        return self._series[ticker][max(0, i - count):i]
+
+    def change_pct(self, ticker: str, date: str) -> float | None:
+        """등락률(%). change_rate 컬럼이 있으면 그것을, 없으면 연속 종가로 유도."""
+        idx = self._index.get(ticker)
+        if idx is None:
+            return None
+        i = idx.get(date)
+        if i is None:
+            return None
+        bar = self._series[ticker][i]
+        if bar.change_rate is not None:
+            return bar.change_rate
+        if i == 0:
+            return None
+        prev = self._series[ticker][i - 1].close
+        if prev <= 0:
+            return None
+        return round((bar.close / prev - 1) * 100, 4)
+
+    def ledger_rows(self, ticker: str) -> list[dict[str, Any]]:
+        """goodrich_ledger.evaluate_pick 이 기대하는 형태. 날짜당 정확히 한 행."""
+        return [{'date': bar.date, 'current_price': bar.close} for bar in self._series.get(ticker, ())]
+
+    def usable_sessions(self, *, max_intraday_share: float = MAX_INTRADAY_SHARE) -> list[str]:
+        """장중 수집이 과반이 아닌 세션만. 저장된 종가를 믿을 수 있는 날들이다."""
+        return [
+            date for date in self.sessions
+            if self._intraday_share.get(date, 0.0) <= max_intraday_share
+        ]
+
+
+def _finite(value: Any) -> float | None:
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return None
+    return number if math.isfinite(number) else None
+
+
+def load_prices(path: str | None = None) -> PriceBook:
+    """CSV 를 1회 전체 순회해 PriceBook 을 만든다. 파일이 없으면 빈 book."""
+    target = path or DEFAULT_PRICE_PATH
+    if not os.path.isfile(target):
+        return PriceBook({})
+
+    # (ticker, date) -> (update_time, Bar). 가장 늦은 update_time 만 남긴다.
+    latest: dict[tuple[str, str], tuple[str, Bar]] = {}
+    capture: dict[str, list[int]] = {}   # date -> [장중 수집 수, 전체]
+
+    with open(target, 'r', encoding='utf-8-sig', newline='') as f:
+        for row in csv.DictReader(f):
+            ticker = str(row.get('ticker') or '').strip()
+            date = str(row.get('date') or '').strip()
+            if not ticker or not date:
+                continue
+            ticker = ticker.zfill(6)
+
+            close = _finite(row.get('current_price'))
+            if close is None or close <= 0:
+                continue
+            volume = _finite(row.get('volume')) or 0.0
+            change_rate = _finite(row.get('change_rate'))
+            if change_rate == 0:
+                change_rate = None   # 0 은 '미기록' 과 구분되지 않는다
+
+            update_time = str(row.get('update_time') or '')
+            counts = capture.setdefault(date, [0, 0])
+            counts[1] += 1
+            if len(update_time) >= 16 and update_time[11:16] < CLOSE_CAPTURE_TIME:
+                counts[0] += 1
+
+            key = (ticker, date)
+            previous = latest.get(key)
+            if previous is None or update_time >= previous[0]:
+                latest[key] = (update_time, Bar(
+                    date=date, close=close, volume=volume, change_rate=change_rate,
+                ))
+
+    by_ticker: dict[str, list[Bar]] = {}
+    for (ticker, _date), (_update_time, bar) in latest.items():
+        by_ticker.setdefault(ticker, []).append(bar)
+    for ticker in by_ticker:
+        by_ticker[ticker].sort(key=lambda bar: bar.date)
+
+    intraday_share = {
+        date: (intraday / total if total else 0.0)
+        for date, (intraday, total) in capture.items()
+    }
+    return PriceBook(by_ticker, intraday_share=intraday_share)
+```
+
+- [ ] **Step 4: 통과 확인**
+
+```bash
+PYTHON="/c/bitman_marketfloww/.venv/Scripts/python.exe"
+cd /c/bitman_marketfloww
+PYTHONIOENCODING=utf-8 "$PYTHON" -m pytest tests/test_goodrich_backtest_prices.py -q
+```
+Expected: `14 passed` (기존 5 + 신규 9)
+
+- [ ] **Step 5: 실데이터 재검증**
+
+```bash
+PYTHON="/c/bitman_marketfloww/.venv/Scripts/python.exe"
+cd /c/bitman_marketfloww
+PYTHONIOENCODING=utf-8 "$PYTHON" -c "
+from app.services.mirofish.goodrich_backtest import prices as P
+book = P.load_prices()
+print('sessions', len(book.sessions), 'usable', len(book.usable_sessions()), 'tickers', len(book.tickers()))
+# 중복이 남아 있으면 날짜당 2행이 된다
+rows = book.ledger_rows('005930')
+dates = [r['date'] for r in rows]
+print('005930 rows', len(rows), 'unique dates', len(set(dates)), '-> dedup', len(rows) == len(set(dates)))
+# 리뷰가 지목한 세션에서 prior_bars 가 조회일을 흘리는지
+leak = sum(1 for t in book.tickers()[:500]
+           if any(b.date >= '2026-04-02' for b in book.prior_bars(t, '2026-04-02', 5)))
+print('2026-04-02 look-ahead leaks in first 500 tickers:', leak, '(0 이어야 함)')
+print('005930 change on 2026-04-02:', book.change_pct('005930', '2026-04-02'), '(약 -7.23% 여야 함)')
+"
+```
+Expected: `usable` 518, dedup True, leaks 0, 등락률 −7.23 부근
+
+- [ ] **Step 6: 커밋**
+
+```bash
+cd /c/bitman_marketfloww
+git add app/services/mirofish/goodrich_backtest/prices.py tests/test_goodrich_backtest_prices.py
+git commit -m "fix(goodrich-backtest): collapse duplicate bars and flag intraday-captured sessions"
+```
+
+---
+
 ## Task 2: 유니버스 재현 (`universe.py`)
 
 **Files:**
@@ -317,11 +725,18 @@ def test_only_positive_change_names_enter_universe():
 
 
 def test_union_of_three_sources():
-    # 000001: 등락률 1위 / 000002: 거래대금 1위 / 000003: 거래량급증 1위
+    """소스마다 승자가 달라야 합집합이 3종목이 된다.
+
+    000001 등락률 1위(+29%, 가격제한폭 안) / 000002 거래대금 1위 / 000003 거래량급증 1위.
+    셋 다 ±31% 안에 있어야 corrupt-data 필터에 걸리지 않는다.
+    """
     book = _book({
-        '000001': [('2024-01-02', 100, 10), ('2024-01-03', 150, 10)],
-        '000002': [('2024-01-02', 100, 10), ('2024-01-03', 101, 100000)],
-        '000003': [('2024-01-02', 100, 1), ('2024-01-03', 101, 5000)],
+        # change +29%, turnover 129,000, surge 1.0
+        '000001': [('2024-01-02', 100, 1000), ('2024-01-03', 129, 1000)],
+        # change +0.1%, turnover 100,100,000, surge 1.0
+        '000002': [('2024-01-02', 100000, 1000), ('2024-01-03', 100100, 1000)],
+        # change +1%, turnover 50,500, surge 500.0
+        '000003': [('2024-01-02', 100, 1), ('2024-01-03', 101, 500)],
     })
 
     got = U.reconstruct_universe('2024-01-03', book, per_source_top_n=1)
@@ -1212,7 +1627,7 @@ def test_verdict_requires_interval_to_exclude_zero():
 def test_split_dates_reserves_holdout():
     dates = ['2025-12-30', '2026-01-02', '2026-07-31']
 
-    train, holdout = E.split_dates(dates, holdout_start='2026-01-01')
+    train, holdout = E.split_dates(dates, holdout_start='2025-08-06')
 
     assert train == ['2025-12-30']
     assert holdout == ['2026-01-02', '2026-07-31']
@@ -1525,7 +1940,7 @@ sys.path.insert(0, BASE_DIR)
 
 from app.services.mirofish.goodrich_backtest import engine, prices, rankers  # noqa: E402
 
-HOLDOUT_START = '2026-01-01'
+HOLDOUT_START = '2025-08-06'  # 사용 가능 518세션의 75% 지점
 
 
 def main() -> int:
@@ -1542,7 +1957,7 @@ def main() -> int:
         print('daily_prices.csv 를 읽지 못했습니다.')
         return 1
 
-    train, holdout = engine.split_dates(book.sessions, holdout_start=HOLDOUT_START)
+    train, holdout = engine.split_dates(book.usable_sessions(), holdout_start=HOLDOUT_START)
     dates = {'train': train, 'holdout': holdout, 'all': book.sessions}[args.segment]
     print(f'세션 {len(book.sessions)}일 | 대상 구간 {args.segment} {len(dates)}일 '
           f'| horizon T+{args.horizon} | top{args.top_k}')
