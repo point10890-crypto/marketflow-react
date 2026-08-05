@@ -840,6 +840,32 @@ class ClaudeScreener:
 class BaseScreener:
     """AI 스크리너 공통 베이스 클래스"""
 
+    async def _chat_with_token_limit(self, client, *, model: str, messages: list,
+                                     max_output_tokens: int, **kwargs):
+        """OpenAI 호환 chat 호출. 토큰 한도 파라미터명을 모델에 맞춰 협상한다.
+
+        구형 모델은 `max_tokens`, 신형(o1·gpt-5 계열)은 `max_completion_tokens`
+        만 받는다. 모델명으로 분기하면 모델을 바꿀 때마다 다시 깨지므로,
+        거부 응답을 보고 한 번 재시도한다.
+
+        2026-08-05: 계정에 gpt-4o 가 없어 gpt-5.5 로 바꿨더니 이번엔
+        "Unsupported parameter: 'max_tokens' ... Use 'max_completion_tokens'"
+        로 스크리너가 통째로 실패했다.
+        """
+        try:
+            return await client.chat.completions.create(
+                model=model, messages=messages,
+                max_tokens=max_output_tokens, **kwargs
+            )
+        except Exception as exc:
+            text = str(exc)
+            if 'max_completion_tokens' not in text:
+                raise
+            return await client.chat.completions.create(
+                model=model, messages=messages,
+                max_completion_tokens=max_output_tokens, **kwargs
+            )
+
     def _build_candidates_summary(self, signals_data: List[Dict]) -> str:
         """시그널 데이터를 AI에 전달할 간결한 텍스트로 변환"""
         lines = []
@@ -973,14 +999,15 @@ class OpenAIScreener(BaseScreener):
         prompt = self._build_screening_prompt(candidates_text, len(signals_data))
 
         try:
-            response = await self.client.chat.completions.create(
+            response = await self._chat_with_token_limit(
+                self.client,
                 model=self.model_name,
-                max_tokens=4096,
+                max_output_tokens=4096,
                 messages=[
                     {"role": "system", "content": "You are a professional Korean stock market portfolio manager. Respond only in valid JSON. Analyze all candidates comprehensively."},
                     {"role": "user", "content": prompt}
                 ],
-                response_format={"type": "json_object"}
+                response_format={"type": "json_object"},
             )
             content = response.choices[0].message.content.strip()
             result = self._parse_json_response(content)
@@ -1017,14 +1044,15 @@ class GrokScreener(BaseScreener):
         prompt = self._build_screening_prompt(candidates_text, len(signals_data))
 
         try:
-            response = await self.client.chat.completions.create(
+            response = await self._chat_with_token_limit(
+                self.client,
                 model=self.model_name,
-                max_tokens=4096,
+                max_output_tokens=4096,
                 messages=[
                     {"role": "system", "content": "You are a professional Korean stock market portfolio manager. Respond only in valid JSON. Analyze all candidates comprehensively."},
                     {"role": "user", "content": prompt}
                 ],
-                response_format={"type": "json_object"}
+                response_format={"type": "json_object"},
             )
             content = response.choices[0].message.content.strip()
             result = self._parse_json_response(content)
