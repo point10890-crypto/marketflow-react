@@ -1705,20 +1705,28 @@ def run_lotto_analysis_bounded():
         return False
 
 
-def update_jongga_v2():
-    """종가베팅 V2 데이터 업데이트 + S/A급 텔레그램 전송
+PREFLIGHT_TIMEOUT_SEC = 180
 
-    subprocess 방식 유지 (git pull 후 디스크의 최신 코드를 항상 사용).
-    pre-flight 검증으로 코드 버그 사전 탐지 + 실패 시 텔레그램 즉시 알림.
+# 놓친 스케줄 복구와 정규 스케줄이 같은 작업을 동시에 띄울 수 있다.
+# 2026-08-05: 14:52(복구)와 14:56(정규)가 겹쳐 가격 수집이 2,874종목씩 두 번
+# 동시에 돌았고, 그 부하가 pre-flight 를 타임아웃시켜 하루치 결과가 날아갔다.
+_JONGGA_V2_LOCK = threading.Lock()
+
+
+def _run_v2_preflight(timeout: int = PREFLIGHT_TIMEOUT_SEC) -> str:
+    """V2 임포트 검증. 'ok' | 'import_error' | 'timeout'.
+
+    타임아웃과 임포트 오류는 다른 사건이다. 이 검사의 목적은 코드 버그를
+    미리 잡는 것이고, 타임아웃은 코드가 아니라 호스트 부하의 증상이다.
+    둘을 같이 취급하면 부하가 곧 '코드 버그' 로 보고되고 실행이 막힌다.
+
+    2026-08-05 실측: 유휴 상태 임포트 7.7초. 중복 실행으로 부하가 걸리자
+    60초를 넘겨 4회 시도가 전부 차단됐고, 수동 실행에서는 엔진이 118초 만에
+    19개 시그널을 정상 생성했다. 엔진에 1200초를 주면서 그것을 지키는 검사에
+    60초만 준 것이 원인이다.
     """
-    # ── Pre-flight: subprocess로 import만 테스트 (최신 디스크 코드 검증) ──
-    # Keep this a true import pre-flight. Constructing LLMAnalyzer here can
-    # perform slow provider initialization and turn host load into a false
-    # "code import bug" alert before the engine itself is even attempted.
-    if not _kr_market_task_allowed('jongga_v2'):
-        return True
-
-    preflight = run_command(
+    started = time.time()
+    completed = run_command(
         [Config.PYTHON_PATH, '-c',
          'from engine.generator import run_screener; '
          'from engine.llm_analyzer import LLMAnalyzer; '
@@ -1726,17 +1734,64 @@ def update_jongga_v2():
          'import anthropic, openai; '  # V2 런타임 필수 SDK
          'print("OK")'],
         'V2 pre-flight 검증',
-        timeout=60
+        timeout=timeout,
     )
-    if not preflight:
+    if completed:
+        return 'ok'
+    # run_command 는 타임아웃과 비정상 종료를 모두 False 로 돌려준다.
+    # 경과 시간으로 구분한다 — 임포트 오류는 예산을 다 쓰지 않고 몇 초 만에 끝난다.
+    return 'timeout' if (time.time() - started) >= timeout else 'import_error'
+
+
+def update_jongga_v2():
+    """종가베팅 V2 데이터 업데이트 + S/A급 텔레그램 전송
+
+    subprocess 방식 유지 (git pull 후 디스크의 최신 코드를 항상 사용).
+    pre-flight 검증으로 코드 버그 사전 탐지 + 실패 시 텔레그램 즉시 알림.
+    """
+    if not _kr_market_task_allowed('jongga_v2'):
+        return True
+
+    # 놓친 스케줄 복구와 정규 스케줄이 같은 작업을 동시에 띄우면 전 종목
+    # 가격 수집이 두 번 겹쳐 돌고, 그 부하가 다른 단계를 타임아웃시킨다.
+    if not _JONGGA_V2_LOCK.acquire(blocking=False):
+        logger.info("⏭️ 종가베팅 V2: 이미 실행 중 — 중복 실행 건너뜀")
+        return True
+    try:
+        return _update_jongga_v2_locked()
+    finally:
+        _JONGGA_V2_LOCK.release()
+
+
+def _update_jongga_v2_locked():
+    """update_jongga_v2 본체. 동시 실행 가드 안에서만 호출한다."""
+    # ── Pre-flight: subprocess로 import만 테스트 (최신 디스크 코드 검증) ──
+    # Keep this a true import pre-flight. Constructing LLMAnalyzer here can
+    # perform slow provider initialization and turn host load into a false
+    # "code import bug" alert before the engine itself is even attempted.
+
+    status = _run_v2_preflight()
+    if status == 'import_error':
         send_telegram(
             "<b>🚨 종가베팅 V2 코드 버그</b>\n\n"
-            "V2 pre-flight 실패 — import 오류 또는 실행 지연 가능.\n"
-            "scheduler 로그에서 Exit Code/타임아웃을 확인하세요.",
+            "V2 pre-flight 임포트 실패 — 코드 오류입니다.\n"
+            "scheduler 로그에서 traceback 을 확인하세요.",
             channel=False
         )
         return False
-    logger.info("✅ V2 pre-flight 임포트 검증 통과")
+    if status == 'timeout':
+        # 부하 증상이지 코드 버그가 아니다. 엔진은 자체 1200초 예산을 갖고 있고,
+        # 진짜 임포트 오류라면 거기서도 몇 초 만에 죽는다. 여기서 막으면
+        # 일시적 부하가 하루치 결과를 통째로 날린다.
+        logger.warning("⚠️ V2 pre-flight 지연 — 호스트 부하로 판단하고 엔진 실행을 계속합니다")
+        send_telegram(
+            "<b>⚠️ 종가베팅 V2 pre-flight 지연</b>\n\n"
+            f"임포트 검증이 {PREFLIGHT_TIMEOUT_SEC}초를 넘겼습니다 (부하 추정).\n"
+            "엔진 실행은 계속합니다.",
+            channel=False
+        )
+    else:
+        logger.info("✅ V2 pre-flight 임포트 검증 통과")
 
     # ── 메인 실행 (subprocess — 항상 디스크 최신 코드 사용) ──
     script = (
