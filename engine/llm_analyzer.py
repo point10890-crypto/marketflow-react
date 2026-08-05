@@ -50,9 +50,15 @@ def reset_api_status():
 class GeminiGroundingClient:
     """Gemini + Google Search Grounding (REST API) — 실시간 검색+분석 통합"""
 
+    # gemini-2.0-flash 는 2026-08 시점에 폐기됐다 (HTTP 404 "no longer available").
+    # 하드코딩돼 있어서 전 종목의 실시간 검색 분석이 조용히 DeepSeek 폴백으로
+    # 넘어갔다 — 폴백에는 웹 검색이 없으므로 결과가 아니라 근거가 바뀐 것이다.
+    # 다음 폐기 때 코드 수정 없이 넘기도록 env 로 뺀다.
+    DEFAULT_MODEL = "gemini-2.5-flash"
+
     def __init__(self, api_key: str = None):
         self.api_key = api_key or os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
-        self.model_name = "gemini-2.0-flash"
+        self.model_name = os.getenv("GEMINI_GROUNDING_MODEL", self.DEFAULT_MODEL)
         self.base_url = f"https://generativelanguage.googleapis.com/v1beta/models/{self.model_name}:generateContent"
 
     async def search_and_analyze(self, stock_name: str, traditional_news: List[Dict] = None, dart_text: str = "") -> Dict:
