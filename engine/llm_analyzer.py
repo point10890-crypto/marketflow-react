@@ -97,10 +97,20 @@ class GeminiGroundingClient:
 
 JSON Format: {{"score": 2, "reason": "...", "themes": ["...", "..."], "news_summary": "..."}}"""
 
+        # gemini-2.5-flash 는 추론 모델이라 사고 토큰을 출력 예산에서 먼저 쓴다.
+        # 실측: 예산 1024 에 사고만 1,532 토큰 -> finishReason=MAX_TOKENS 로 JSON 이
+        # 81자에서 잘리고, 파싱 실패 후 전 종목이 DeepSeek 폴백으로 넘어갔다.
+        #
+        # 이 호출은 추론 과제가 아니라 '검색 후 구조화 추출' 이므로 사고를 끈다.
+        # 끄면 같은 예산에서 출력 700 토큰이 나오고 인용도 8 -> 11 개로 늘었다.
         payload = {
             "contents": [{"parts": [{"text": prompt}]}],
             "tools": [{"google_search": {}}],
-            "generationConfig": {"temperature": 0.2, "maxOutputTokens": 1024}
+            "generationConfig": {
+                "temperature": 0.2,
+                "maxOutputTokens": 2048,
+                "thinkingConfig": {"thinkingBudget": 0},
+            }
         }
 
         try:

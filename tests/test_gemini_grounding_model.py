@@ -48,3 +48,52 @@ def test_either_key_variable_is_accepted(monkeypatch, present, absent):
     monkeypatch.delenv(absent, raising=False)
 
     assert GeminiGroundingClient().api_key == 'k'
+
+
+def _payload_of(client, monkeypatch):
+    """search_and_analyze 가 실제로 보내는 payload 를 가로챈다."""
+    import asyncio, httpx
+
+    captured = {}
+
+    class _Resp:
+        def raise_for_status(self): pass
+        def json(self): return {'candidates': [{'content': {'parts': [
+            {'text': '{"score":1,"reason":"x","themes":[],"news_summary":"y"}'}]}}]}
+
+    class _Client:
+        async def __aenter__(self): return self
+        async def __aexit__(self, *a): return False
+        async def post(self, url, json=None):
+            captured['url'] = url
+            captured['body'] = json
+            return _Resp()
+
+    monkeypatch.setattr(httpx, 'AsyncClient', lambda **k: _Client())
+    asyncio.run(client.search_and_analyze('삼성전자'))
+    return captured
+
+
+def test_thinking_is_disabled_so_the_json_is_not_truncated(monkeypatch):
+    """실측: 예산 1024 에 사고만 1,532 토큰 -> MAX_TOKENS -> JSON 81자에서 잘림.
+
+    이 호출은 추론이 아니라 '검색 후 구조화 추출' 이다. 사고를 켜두면 답변이
+    잘리고 전 종목이 DeepSeek 폴백으로 넘어간다 — 폴백에는 검색이 없다.
+    """
+    cfg = _payload_of(GeminiGroundingClient(api_key='k'), monkeypatch)['body']['generationConfig']
+
+    assert cfg['thinkingConfig']['thinkingBudget'] == 0
+
+
+def test_output_budget_has_headroom_over_the_measured_need(monkeypatch):
+    """사고를 끈 상태의 실측 출력이 803 토큰이었다."""
+    cfg = _payload_of(GeminiGroundingClient(api_key='k'), monkeypatch)['body']['generationConfig']
+
+    assert cfg['maxOutputTokens'] >= 2048
+
+
+def test_google_search_tool_is_still_attached(monkeypatch):
+    """검색이 빠지면 grounding 이 아니라 그냥 LLM 호출이 된다."""
+    body = _payload_of(GeminiGroundingClient(api_key='k'), monkeypatch)['body']
+
+    assert body['tools'] == [{'google_search': {}}]
