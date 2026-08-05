@@ -8,6 +8,8 @@
 """
 import subprocess
 import sys
+import threading
+import time
 
 import pytest
 
@@ -82,19 +84,34 @@ def test_sweep_failure_never_raises(monkeypatch, boom):
 
 def test_boot_sweeps_even_when_the_loop_autostart_is_off(monkeypatch):
     """운영은 루프 자동시작을 끄고 쓰기도 한다. 잔해는 그와 무관하게 쌓인다."""
-    calls = []
-    monkeypatch.setattr(M, 'sweep_orphan_browsers', lambda *a, **k: calls.append(1) or 0)
+    done = threading.Event()
+    monkeypatch.setattr(M, 'sweep_orphan_browsers', lambda *a, **k: done.set() or 0)
     monkeypatch.setattr(M, 'LOOP_BOOT_AUTOSTART', False)
 
     assert M.start_scraper_loop_on_boot() is False
-    assert calls == [1]
+    assert done.wait(timeout=5), '정리가 실행되지 않았다'
+
+
+def test_boot_does_not_wait_for_the_sweep(monkeypatch):
+    """이 함수의 계약은 '절대 블로킹하지 않는다' 다. 정리는 셸을 띄우므로 느리다."""
+    monkeypatch.setattr(M, 'LOOP_BOOT_AUTOSTART', False)
+    monkeypatch.setattr(M, 'sweep_orphan_browsers', lambda *a, **k: time.sleep(1.5) or 0)
+
+    started = time.time()
+    M.start_scraper_loop_on_boot()
+
+    assert time.time() - started < 0.5
 
 
 def test_boot_survives_a_sweep_failure(monkeypatch):
+    raised = threading.Event()
+
     def _boom(*a, **k):
+        raised.set()
         raise RuntimeError('sweep exploded')
 
     monkeypatch.setattr(M, 'sweep_orphan_browsers', _boom)
     monkeypatch.setattr(M, 'LOOP_BOOT_AUTOSTART', False)
 
     assert M.start_scraper_loop_on_boot() is False
+    assert raised.wait(timeout=5)

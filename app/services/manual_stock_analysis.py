@@ -1680,6 +1680,19 @@ def sweep_orphan_browsers(timeout_sec: int = 30) -> int:
     return killed
 
 
+def _spawn_orphan_sweep() -> threading.Thread:
+    """정리를 백그라운드로 돌린다. 실패해도 기동을 막지 않는다."""
+    def _run() -> None:
+        try:
+            sweep_orphan_browsers()
+        except Exception as exc:
+            _log.warning('고아 브라우저 정리 실패: %s: %s', type(exc).__name__, exc)
+
+    thread = threading.Thread(target=_run, name='manual-scrape-orphan-sweep', daemon=True)
+    thread.start()
+    return thread
+
+
 def start_scraper_loop_on_boot() -> bool:
     """Start the scraper loop once per process, off the caller's thread.
 
@@ -1688,12 +1701,13 @@ def start_scraper_loop_on_boot() -> bool:
     disabled. Returns True when a starter thread was spawned. Never raises and
     never blocks: a scraper failure must not take the API process down with it.
     """
-    # 이전 프로세스가 강제 종료되며 남긴 브라우저를 먼저 걷어낸다.
-    # 이 정리는 루프 자동시작 여부와 무관하다 — 잔해는 루프를 켜지 않아도 쌓여 있다.
-    try:
-        sweep_orphan_browsers()
-    except Exception as exc:   # 정리 실패가 앱 기동을 막아서는 안 된다
-        _log.warning('고아 브라우저 정리 실패: %s: %s', type(exc).__name__, exc)
+    # 이전 프로세스가 강제 종료되며 남긴 브라우저를 걷어낸다. 루프 자동시작
+    # 여부와 무관하게 돌린다 — 잔해는 루프를 켜지 않아도 쌓인다.
+    #
+    # 반드시 별도 스레드다. 이 함수의 계약은 '절대 블로킹하지 않는다' 이고,
+    # 정리는 프로세스 열거를 위해 셸을 띄우므로 수 초가 걸린다. 호출자 스레드에
+    # 두면 Flask 가 포트를 열기 전에 그만큼 멈춘다.
+    _spawn_orphan_sweep()
 
     if not LOOP_BOOT_AUTOSTART:
         return False
