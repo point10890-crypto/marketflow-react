@@ -10,11 +10,14 @@ from __future__ import annotations
 
 import csv
 import hashlib
+import logging
 import json
 import os
 import random
 import re
 import shutil
+import subprocess
+import sys
 import tempfile
 import threading
 import time
@@ -75,6 +78,12 @@ AUTO_LOOP_ERROR_BACKOFF_SEC = max(5, min(_env_int("MANUAL_STOCK_ANALYSIS_LOOP_ER
 # off so a status GET can never launch thousands of Selenium scrapes -- but that left
 # the loop with no trigger at all, freezing the dashboard at the last run for 10 days.
 # This flag is the replacement trigger: one deliberate start per Flask process.
+_log = logging.getLogger(__name__)
+
+# 스크래퍼가 띄우는 Chrome 의 --user-data-dir 접두어. 강제 종료로 남은
+# 고아 브라우저를 이 표식으로만 골라 죽인다 (사용자의 실제 Chrome 제외).
+SCRAPE_PROFILE_PREFIX = "marketflow_manual_scrape_"
+
 LOOP_BOOT_AUTOSTART = _env_bool("MANUAL_STOCK_ANALYSIS_LOOP_AUTOSTART", False)
 # Delay before the boot start so app startup (port bind, blueprint warmup) finishes first.
 LOOP_BOOT_DELAY_SEC = max(0, min(_env_int("MANUAL_STOCK_ANALYSIS_LOOP_AUTOSTART_DELAY_SEC", 45), 3600))
@@ -1026,7 +1035,7 @@ def _create_selenium_driver():
     except ImportError as exc:
         raise RuntimeError("Selenium 스크래퍼 실행에는 selenium, webdriver-manager 패키지가 필요합니다.") from exc
 
-    user_data_dir = tempfile.mkdtemp(prefix="marketflow_manual_scrape_")
+    user_data_dir = tempfile.mkdtemp(prefix=SCRAPE_PROFILE_PREFIX)
     chrome_options = Options()
     chrome_options.add_argument("--headless=new")
     chrome_options.add_argument("--window-size=1365,1400")
@@ -1620,6 +1629,57 @@ def ensure_scraper_loop_started() -> dict[str, Any]:
     )
 
 
+def sweep_orphan_browsers(timeout_sec: int = 30) -> int:
+    """이전 프로세스가 남긴 스크래퍼 브라우저를 정리한다. 종료한 개수를 돌려준다.
+
+    `_close_selenium_driver` 는 정상 종료와 예외를 모두 덮지만, **프로세스가
+    강제 종료되면 finally 가 돌지 않는다.** 워치독이 Flask 를 재시작하거나
+    재부팅할 때마다 그 안에서 돌던 브라우저가 통째로 고아가 된다.
+
+    2026-08-05 실측: 07-31·08-02 자 고아가 chrome 581 프로세스 9.72GB 를 점유해
+    15.4GB 머신의 가용 메모리가 1.16GB(92.5% 사용)까지 떨어졌다. 스왑 때문에
+    파일 하나 읽는 /api/health 가 10.7초까지 걸려 앱이 죽은 것처럼 보였다.
+    우리 파이썬 프로세스 10개는 합쳐서 0.09GB 였다 — 코드가 아니라 잔해가 문제였다.
+
+    user-data-dir 접두어로 우리가 띄운 것만 식별한다. 사용자의 실제 Chrome 은
+    이 접두어를 갖지 않으므로 건드리지 않는다.
+    """
+    if not sys.platform.startswith('win'):
+        return 0
+
+    script = (
+        "$p = Get-CimInstance Win32_Process -Filter \"Name='chrome.exe'\" | "
+        f"Where-Object {{ $_.CommandLine -like '*{SCRAPE_PROFILE_PREFIX}*' }}; "
+        "$n = ($p | Measure-Object).Count; "
+        "$p | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }; "
+        "Write-Output $n"
+    )
+    try:
+        done = subprocess.run(
+            ['powershell', '-NoProfile', '-Command', script],
+            capture_output=True, text=True, timeout=timeout_sec,
+        )
+        killed = int((done.stdout or '0').strip() or 0)
+    except (OSError, ValueError, subprocess.SubprocessError):
+        return 0
+
+    # 프로필 디렉토리도 함께 남는다. 브라우저를 죽인 뒤라야 지워진다.
+    removed = 0
+    try:
+        for entry in Path(tempfile.gettempdir()).glob(f'{SCRAPE_PROFILE_PREFIX}*'):
+            shutil.rmtree(entry, ignore_errors=True)
+            removed += 1
+    except OSError:
+        pass
+
+    if killed or removed:
+        _log.warning(
+            '고아 스크래퍼 브라우저 정리: 프로세스 %d개, 프로필 디렉토리 %d개',
+            killed, removed,
+        )
+    return killed
+
+
 def start_scraper_loop_on_boot() -> bool:
     """Start the scraper loop once per process, off the caller's thread.
 
@@ -1628,6 +1688,13 @@ def start_scraper_loop_on_boot() -> bool:
     disabled. Returns True when a starter thread was spawned. Never raises and
     never blocks: a scraper failure must not take the API process down with it.
     """
+    # 이전 프로세스가 강제 종료되며 남긴 브라우저를 먼저 걷어낸다.
+    # 이 정리는 루프 자동시작 여부와 무관하다 — 잔해는 루프를 켜지 않아도 쌓여 있다.
+    try:
+        sweep_orphan_browsers()
+    except Exception as exc:   # 정리 실패가 앱 기동을 막아서는 안 된다
+        _log.warning('고아 브라우저 정리 실패: %s: %s', type(exc).__name__, exc)
+
     if not LOOP_BOOT_AUTOSTART:
         return False
 
