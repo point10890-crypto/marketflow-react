@@ -115,3 +115,67 @@ def test_boot_survives_a_sweep_failure(monkeypatch):
 
     assert M.start_scraper_loop_on_boot() is False
     assert raised.wait(timeout=5)
+
+
+# ── quit() 실패 시 강제 종료 ───────────────────────────────
+# 2026-08-06: 어제 581개를 정리했는데 하루 만에 898개로 돌아왔다. 부팅 시 정리만
+# 으로는 부족했다 — 10분 주기 루프가 사이클마다 하나씩 남기고 있었다.
+# 원인은 _close_selenium_driver 의 `except Exception: pass` 로, quit() 이 실패해도
+# 조용히 넘어가 Chrome 프로세스가 영원히 살아남았다.
+
+class _Driver:
+    def __init__(self, profile, fail=False):
+        self._marketflow_user_data_dir = profile
+        self.fail = fail
+        self.quit_called = False
+
+    def quit(self):
+        self.quit_called = True
+        if self.fail:
+            raise RuntimeError('browser unresponsive')
+
+
+def test_force_kill_runs_when_quit_raises(monkeypatch, tmp_path):
+    profile = tmp_path / f'{M.SCRAPE_PROFILE_PREFIX}xyz'
+    profile.mkdir()
+    killed = []
+    monkeypatch.setattr(M, 'kill_chrome_by_profile', lambda m, **k: killed.append(m) or 1)
+
+    M._close_selenium_driver(_Driver(str(profile), fail=True))
+
+    assert killed == [profile.name], 'quit() 실패 후 강제 종료가 없으면 브라우저가 영원히 남는다'
+    assert not profile.exists()
+
+
+def test_force_kill_also_runs_when_quit_succeeds(monkeypatch, tmp_path):
+    """quit() 이 성공을 반환해도 프로세스가 남는 경우가 실제로 있었다."""
+    profile = tmp_path / f'{M.SCRAPE_PROFILE_PREFIX}ok'
+    profile.mkdir()
+    killed = []
+    monkeypatch.setattr(M, 'kill_chrome_by_profile', lambda m, **k: killed.append(m) or 0)
+
+    driver = _Driver(str(profile))
+    M._close_selenium_driver(driver)
+
+    assert driver.quit_called
+    assert killed == [profile.name]
+
+
+def test_kill_targets_the_specific_profile_not_every_scrape_browser(monkeypatch):
+    """진행 중인 다른 사이클의 브라우저까지 죽이면 안 된다."""
+    seen = {}
+    monkeypatch.setattr(sys, 'platform', 'win32')
+
+    def _run(cmd, **kwargs):
+        seen['script'] = cmd[-1]
+        return subprocess.CompletedProcess(cmd, 0, stdout='2', stderr='')
+
+    monkeypatch.setattr(subprocess, 'run', _run)
+
+    assert M.kill_chrome_by_profile('marketflow_manual_scrape_abc123') == 2
+    assert 'marketflow_manual_scrape_abc123' in seen['script']
+
+
+def test_kill_with_empty_marker_is_refused():
+    """빈 marker 로 부르면 like '**' 가 되어 모든 Chrome 을 죽인다."""
+    assert M.kill_chrome_by_profile('') == 0

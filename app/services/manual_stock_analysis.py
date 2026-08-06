@@ -1082,13 +1082,48 @@ def _create_selenium_driver():
     return driver
 
 
+def kill_chrome_by_profile(marker: str, timeout_sec: int = 30) -> int:
+    """--user-data-dir 에 marker 를 가진 chrome 을 강제 종료. 종료 개수를 돌려준다.
+
+    marker 는 우리가 만든 임시 프로필 경로 조각이라 사용자의 실제 Chrome 과
+    절대 겹치지 않는다.
+    """
+    if not sys.platform.startswith('win') or not marker:
+        return 0
+    safe = marker.replace("'", "''")
+    script = (
+        "$p = Get-CimInstance Win32_Process -Filter \"Name='chrome.exe'\" | "
+        f"Where-Object {{ $_.CommandLine -like '*{safe}*' }}; "
+        "$n = ($p | Measure-Object).Count; "
+        "$p | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }; "
+        "Write-Output $n"
+    )
+    try:
+        done = subprocess.run(
+            ['powershell', '-NoProfile', '-Command', script],
+            capture_output=True, text=True, timeout=timeout_sec,
+        )
+        return int((done.stdout or '0').strip() or 0)
+    except (OSError, ValueError, subprocess.SubprocessError):
+        return 0
+
+
 def _close_selenium_driver(driver: Any) -> None:
     user_data_dir = getattr(driver, "_marketflow_user_data_dir", "")
     try:
         driver.quit()
-    except Exception:
-        pass
+    except Exception as exc:
+        # 삼키되 남기지는 않는다. 예전에는 여기서 끝나 Chrome 이 영원히 살아남았다.
+        _log.warning('driver.quit() 실패: %s: %s', type(exc).__name__, str(exc)[:160])
+
+    # quit() 이 성공했다고 프로세스가 반드시 사라지지는 않는다. 무응답 브라우저나
+    # 차단 페이지에서 quit() 이 조용히 실패하면 사이클마다 하나씩 쌓인다 —
+    # 실측 2026-08-06: 10분 주기 루프가 하루 만에 chrome 898 프로세스를 만들어
+    # 메모리 96.3% 를 먹었고 /api/health 가 16.5초까지 늘었다.
     if user_data_dir:
+        leaked = kill_chrome_by_profile(os.path.basename(user_data_dir))
+        if leaked:
+            _log.warning('quit() 후에도 남은 브라우저 %d개를 강제 종료', leaked)
         shutil.rmtree(user_data_dir, ignore_errors=True)
 
 
@@ -1457,6 +1492,14 @@ def _scraper_loop_worker(
     # continues the interrupted cycle instead of abandoning its ~1,400 rows.
     pending_resume: dict[str, Any] | None = find_resume_pending_run()
     while not _LOOP_STOP.is_set():
+        # 사이클 시작마다 지난 회차 잔해를 확인한다. _close_selenium_driver 가
+        # 이미 강제 종료까지 하지만, 워커 스레드가 통째로 죽으면 그마저 못 돈다.
+        # 잔해는 곧바로 메모리 압박이 되므로 여기서 한 번 더 막는다.
+        try:
+            sweep_orphan_browsers()
+        except Exception as exc:
+            _log.warning('사이클 전 브라우저 정리 실패: %s: %s', type(exc).__name__, exc)
+
         started_at = _now()
         if pending_resume is not None:
             cycle_date = str(pending_resume.get("cycle_date") or "")
@@ -1644,24 +1687,7 @@ def sweep_orphan_browsers(timeout_sec: int = 30) -> int:
     user-data-dir 접두어로 우리가 띄운 것만 식별한다. 사용자의 실제 Chrome 은
     이 접두어를 갖지 않으므로 건드리지 않는다.
     """
-    if not sys.platform.startswith('win'):
-        return 0
-
-    script = (
-        "$p = Get-CimInstance Win32_Process -Filter \"Name='chrome.exe'\" | "
-        f"Where-Object {{ $_.CommandLine -like '*{SCRAPE_PROFILE_PREFIX}*' }}; "
-        "$n = ($p | Measure-Object).Count; "
-        "$p | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }; "
-        "Write-Output $n"
-    )
-    try:
-        done = subprocess.run(
-            ['powershell', '-NoProfile', '-Command', script],
-            capture_output=True, text=True, timeout=timeout_sec,
-        )
-        killed = int((done.stdout or '0').strip() or 0)
-    except (OSError, ValueError, subprocess.SubprocessError):
-        return 0
+    killed = kill_chrome_by_profile(SCRAPE_PROFILE_PREFIX, timeout_sec)
 
     # 프로필 디렉토리도 함께 남는다. 브라우저를 죽인 뒤라야 지워진다.
     removed = 0
