@@ -79,6 +79,9 @@ def main() -> int:
     parser.add_argument('--force', action='store_true', help='결과가 있어도 다시 생성')
     parser.add_argument('--check', action='store_true', help='판정만 하고 생성하지 않음')
     parser.add_argument('--date', help='기준일 YYYY-MM-DD (기본: 오늘)')
+    parser.add_argument('--no-telegram', action='store_true', help='알림 없이 결과만 생성')
+    parser.add_argument('--notify-only', action='store_true',
+                        help='이미 있는 결과로 알림만 재전송 (엔진 실행 안 함)')
     args = parser.parse_args()
 
     target = date.fromisoformat(args.date) if args.date else date.today()
@@ -89,6 +92,18 @@ def main() -> int:
         return 0
 
     existing = existing_result(target)
+
+    if args.notify_only:
+        # 오늘처럼 결과는 있는데 알림만 빠진 상황을 손으로 메울 때 쓴다.
+        if not existing:
+            print(f'[{stamp}] {target} 결과가 없어 보낼 것이 없음')
+            return 1
+        from scheduler import send_jongga_v2_telegram
+        # 이미 만들어진 결과를 다시 알리는 용도이므로 신선도 게이트를 넓힌다.
+        sent = send_jongga_v2_telegram(max_age_sec=24 * 3600)
+        print(f'[{stamp}] 알림만 재전송: {"성공" if sent else "실패"}')
+        return 0 if sent else 1
+
     if existing and not args.force:
         print(f'[{stamp}] {target} 결과 이미 있음 '
               f'(시그널 {len(existing.get("signals") or [])}개) — 실행 안 함')
@@ -121,6 +136,19 @@ def main() -> int:
         grades[s.get('grade')] = grades.get(s.get('grade'), 0) + 1
     print(f'[OK] 시그널 {len(signals)}개  '
           f'{" ".join(f"{g}:{n}" for g, n in sorted(grades.items()) if g)}')
+
+    # 데이터만 만들고 알림을 안 보내면 사용자에게는 여전히 '갱신 안 됨' 이다.
+    # 전송은 데몬 안에만 있었고, 그래서 이 안전망의 첫 판은 조용히 돌았다.
+    if args.no_telegram:
+        print('  --no-telegram: 알림 생략')
+        return 0
+    try:
+        from scheduler import send_jongga_v2_telegram
+        sent = send_jongga_v2_telegram()
+        print(f'  텔레그램 {"전송함" if sent else "전송 안 함(파일이 낡았거나 없음)"}')
+    except Exception as exc:
+        # 알림 실패로 종료코드를 더럽히지 않는다 — 결과 생성은 이미 성공했다.
+        print(f'  텔레그램 실패(무시): {type(exc).__name__}: {str(exc)[:120]}')
     return 0
 
 

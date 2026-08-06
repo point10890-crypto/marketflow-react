@@ -1705,6 +1705,85 @@ def run_lotto_analysis_bounded():
         return False
 
 
+def send_jongga_v2_telegram(max_age_sec: int = 300) -> bool:
+    """최신 V2 결과를 텔레그램으로 보낸다. 전송했으면 True.
+
+    데몬 경로와 안전망(scripts/ensure_jongga_v2.py) 이 같은 함수를 쓴다.
+    분리 전에는 전송이 데몬 안에만 있어서, 안전망이나 수동 실행으로 결과를
+    만들어도 알림은 나가지 않았다 — 사용자에게는 여전히 "갱신 안 됨" 이다.
+
+    max_age_sec: 결과 파일이 이보다 오래되면 보내지 않는다. 낡은 결과를
+    오늘 것처럼 알리는 쪽이 침묵보다 나쁘기 때문이다.
+    """
+    try:
+        json_path = os.path.join(Config.DATA_DIR, "jongga_v2_latest.json")
+        if not os.path.exists(json_path) or (time.time() - os.path.getmtime(json_path)) > max_age_sec:
+            logger.warning("⚠️ 종가베팅 결과 파일 없거나 오래됨")
+            return False
+
+        with open(json_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+
+        date_str = data.get("date", "")
+        all_signals = data.get("signals", [])
+        total_count = len(all_signals)
+
+        sa_signals = [s for s in all_signals if s.get("grade") in ["S", "A"]]
+        s_count = len([s for s in all_signals if s.get("grade") == "S"])
+        a_count = len([s for s in all_signals if s.get("grade") == "A"])
+        b_count = len([s for s in all_signals if s.get("grade") == "B"])
+
+        header = f"<b>🎯 종가베팅 V2 ({date_str})</b>\n\n"
+        header += f"총 {total_count}개 시그널 (S:{s_count} A:{a_count} B:{b_count})\n"
+        header += "────────────────────"
+
+        if not sa_signals:
+            send_telegram(header + "\n\n⚠️ S/A급 시그널 없음 (B급 제외됨)")
+        else:
+            seen_codes = set()
+            items = []
+            for s in sa_signals:
+                code = s.get("stock_code", "")
+                if code in seen_codes:
+                    continue
+                seen_codes.add(code)
+
+                grade = s.get("grade", "B")
+                icon = "🥇" if grade == "S" else "🥈"
+                change_pct = s.get("change_pct", 0)
+
+                item = f"\n{icon} <b>{s.get('stock_name')}</b> ({code}) {s.get('market', '')}\n"
+                item += f"   등급: {grade} | 점수: {s.get('score', {}).get('total', 0)} | 등락: {change_pct:+.1f}%\n"
+                item += f"   진입: {s.get('entry_price', 0):,}원 | 목표: {s.get('target_price', 0):,}원\n"
+                if s.get("themes"):
+                    item += f"   테마: {', '.join(s.get('themes')[:3])}\n"
+                llm_reason = s.get('score', {}).get('llm_reason', '')
+                if llm_reason:
+                    item += f"   💡 {llm_reason[:60]}...\n"
+                items.append(item)
+
+            chunks = []
+            current_chunk = header
+            for item in items:
+                if len(current_chunk) + len(item) > 3800:
+                    chunks.append(current_chunk)
+                    current_chunk = item
+                else:
+                    current_chunk += item
+            if current_chunk:
+                chunks.append(current_chunk)
+
+            for i, chunk in enumerate(chunks):
+                if i > 0:
+                    chunk = f"<b>🎯 종가베팅 V2 계속 ({i+1}/{len(chunks)})</b>\n" + chunk
+                send_telegram(chunk)
+                time.sleep(0.5)
+
+    except Exception as e:
+        logger.error(f"❌ 종가베팅 결과 전송 실패: {e}")
+    return True
+
+
 PREFLIGHT_TIMEOUT_SEC = 180
 
 # 놓친 스케줄 복구와 정규 스케줄이 같은 작업을 동시에 띄울 수 있다.
@@ -1821,73 +1900,7 @@ def _update_jongga_v2_locked():
         )
         return False
 
-    # ── 결과 검증 + 텔레그램 전송 ──
-    try:
-        json_path = os.path.join(Config.DATA_DIR, "jongga_v2_latest.json")
-        if not os.path.exists(json_path) or (time.time() - os.path.getmtime(json_path)) > 300:
-            logger.warning("⚠️ 종가베팅 결과 파일 없거나 오래됨")
-            return False
-
-        with open(json_path, 'r', encoding='utf-8') as f:
-            data = json.load(f)
-
-        date_str = data.get("date", "")
-        all_signals = data.get("signals", [])
-        total_count = len(all_signals)
-
-        sa_signals = [s for s in all_signals if s.get("grade") in ["S", "A"]]
-        s_count = len([s for s in all_signals if s.get("grade") == "S"])
-        a_count = len([s for s in all_signals if s.get("grade") == "A"])
-        b_count = len([s for s in all_signals if s.get("grade") == "B"])
-
-        header = f"<b>🎯 종가베팅 V2 ({date_str})</b>\n\n"
-        header += f"총 {total_count}개 시그널 (S:{s_count} A:{a_count} B:{b_count})\n"
-        header += "────────────────────"
-
-        if not sa_signals:
-            send_telegram(header + "\n\n⚠️ S/A급 시그널 없음 (B급 제외됨)")
-        else:
-            seen_codes = set()
-            items = []
-            for s in sa_signals:
-                code = s.get("stock_code", "")
-                if code in seen_codes:
-                    continue
-                seen_codes.add(code)
-
-                grade = s.get("grade", "B")
-                icon = "🥇" if grade == "S" else "🥈"
-                change_pct = s.get("change_pct", 0)
-
-                item = f"\n{icon} <b>{s.get('stock_name')}</b> ({code}) {s.get('market', '')}\n"
-                item += f"   등급: {grade} | 점수: {s.get('score', {}).get('total', 0)} | 등락: {change_pct:+.1f}%\n"
-                item += f"   진입: {s.get('entry_price', 0):,}원 | 목표: {s.get('target_price', 0):,}원\n"
-                if s.get("themes"):
-                    item += f"   테마: {', '.join(s.get('themes')[:3])}\n"
-                llm_reason = s.get('score', {}).get('llm_reason', '')
-                if llm_reason:
-                    item += f"   💡 {llm_reason[:60]}...\n"
-                items.append(item)
-
-            chunks = []
-            current_chunk = header
-            for item in items:
-                if len(current_chunk) + len(item) > 3800:
-                    chunks.append(current_chunk)
-                    current_chunk = item
-                else:
-                    current_chunk += item
-            if current_chunk:
-                chunks.append(current_chunk)
-
-            for i, chunk in enumerate(chunks):
-                if i > 0:
-                    chunk = f"<b>🎯 종가베팅 V2 계속 ({i+1}/{len(chunks)})</b>\n" + chunk
-                send_telegram(chunk)
-                time.sleep(0.5)
-
-    except Exception as e:
-        logger.error(f"❌ 종가베팅 결과 전송 실패: {e}")
+    send_jongga_v2_telegram()
 
     # 누적 성과 캐시 무효화
     try:

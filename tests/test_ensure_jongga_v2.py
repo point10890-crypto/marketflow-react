@@ -144,3 +144,93 @@ def test_engine_finishing_without_an_artifact_is_a_failure(tmp_path, monkeypatch
     monkeypatch.setattr('sys.argv', ['x', '--date', '2026-08-06'])
 
     assert ensure.main() == 1
+
+
+# ── 알림 경로 ──────────────────────────────────────────────
+# 2026-08-06: 안전망이 결과는 만들었는데 텔레그램이 오지 않았다. 전송 로직이
+# scheduler.py 의 데몬 경로 안에만 있었고, 엔진을 직접 부르는 안전망·수동 실행은
+# 그 경로를 타지 않는다. 데이터만 갱신되고 알림이 없으면 사용자에게는 여전히
+# '갱신 안 됨' 이다.
+
+def test_successful_run_also_notifies(tmp_path, monkeypatch):
+    monkeypatch.setattr(ensure, 'DATA_DIR', str(tmp_path))
+    monkeypatch.setattr(ensure, 'is_trading_day', lambda d: True)
+    target = date(2026, 8, 6)
+
+    sent = []
+    monkeypatch.setitem(
+        __import__('sys').modules, 'scheduler',
+        type('M', (), {'send_jongga_v2_telegram': lambda **k: sent.append(1) or True})
+    )
+    monkeypatch.setattr(ensure.asyncio, 'run',
+                        lambda *a, **k: _write(tmp_path, target, [{'grade': 'S'}]))
+    monkeypatch.setattr('sys.argv', ['x', '--date', '2026-08-06'])
+
+    assert ensure.main() == 0
+    assert sent == [1], '결과만 만들고 알림을 안 보내면 사용자에겐 갱신 안 된 것과 같다'
+
+
+def test_notification_failure_does_not_fail_the_run(tmp_path, monkeypatch):
+    """결과 생성은 성공했다. 알림 실패로 종료코드를 더럽히면 재실행을 유발한다."""
+    monkeypatch.setattr(ensure, 'DATA_DIR', str(tmp_path))
+    monkeypatch.setattr(ensure, 'is_trading_day', lambda d: True)
+    target = date(2026, 8, 6)
+
+    def _boom(**k):
+        raise RuntimeError('telegram down')
+
+    monkeypatch.setitem(
+        __import__('sys').modules, 'scheduler',
+        type('M', (), {'send_jongga_v2_telegram': staticmethod(_boom)})
+    )
+    monkeypatch.setattr(ensure.asyncio, 'run',
+                        lambda *a, **k: _write(tmp_path, target, [{'grade': 'A'}]))
+    monkeypatch.setattr('sys.argv', ['x', '--date', '2026-08-06'])
+
+    assert ensure.main() == 0
+
+
+def test_no_telegram_flag_skips_the_notification(tmp_path, monkeypatch):
+    monkeypatch.setattr(ensure, 'DATA_DIR', str(tmp_path))
+    monkeypatch.setattr(ensure, 'is_trading_day', lambda d: True)
+    target = date(2026, 8, 6)
+
+    sent = []
+    monkeypatch.setitem(
+        __import__('sys').modules, 'scheduler',
+        type('M', (), {'send_jongga_v2_telegram': lambda **k: sent.append(1) or True})
+    )
+    monkeypatch.setattr(ensure.asyncio, 'run',
+                        lambda *a, **k: _write(tmp_path, target, [{'grade': 'S'}]))
+    monkeypatch.setattr('sys.argv', ['x', '--no-telegram', '--date', '2026-08-06'])
+
+    assert ensure.main() == 0
+    assert sent == []
+
+
+def test_notify_only_does_not_run_the_engine(tmp_path, monkeypatch):
+    """결과는 있는데 알림만 빠진 상황을 메우는 경로다."""
+    monkeypatch.setattr(ensure, 'DATA_DIR', str(tmp_path))
+    monkeypatch.setattr(ensure, 'is_trading_day', lambda d: True)
+    _write(tmp_path, date(2026, 8, 6), [{'grade': 'S'}])
+
+    ran, sent = [], []
+    monkeypatch.setattr(ensure.asyncio, 'run', lambda *a, **k: ran.append(1))
+    monkeypatch.setitem(
+        __import__('sys').modules, 'scheduler',
+        type('M', (), {'send_jongga_v2_telegram': lambda **k: sent.append(k) or True})
+    )
+    monkeypatch.setattr('sys.argv', ['x', '--notify-only', '--date', '2026-08-06'])
+
+    assert ensure.main() == 0
+    assert ran == []
+    assert sent and sent[0].get('max_age_sec', 0) > 3600, \
+        '재전송은 이미 만들어진 결과 대상이므로 신선도 게이트를 넓혀야 한다'
+
+
+def test_notify_only_reports_failure_when_there_is_no_result(tmp_path, monkeypatch):
+    monkeypatch.setattr(ensure, 'DATA_DIR', str(tmp_path))
+    monkeypatch.setattr(ensure, 'is_trading_day', lambda d: True)
+    monkeypatch.setattr('sys.argv', ['x', '--notify-only', '--date', '2026-08-06'])
+
+    assert ensure.main() == 1
