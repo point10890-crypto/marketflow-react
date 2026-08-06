@@ -551,8 +551,48 @@ def scan_kr_market() -> Dict:
 
 # ── Helpers ───────────────────────────────────────────────────────────────
 
+# 결과가 '수상한 빈 값' 인지 판정한다. 종목은 훑었는데 1차 관문조차 아무도 못
+# 넘었다면 시장이 조용한 게 아니라 데이터 소스가 죽은 쪽에 가깝다.
+# scheduler 의 self-verify 도 같은 조건을 쓰지만, 그건 저장이 끝난 뒤에 돌기 때문에
+# 이상을 알아채도 이미 멀쩡한 결과를 덮어쓴 뒤다.
+LAST_GOOD_MAX_AGE_SEC = 36 * 3600
+
+
+def _looks_like_a_data_outage(data: Dict) -> bool:
+    summary = data.get('summary') or {}
+    return bool(
+        (summary.get('total_screened') or 0) > 0
+        and (summary.get('stage2_passed') or 0) == 0
+        and not (data.get('signals') or [])
+    )
+
+
+def _has_recent_signals(path: str) -> bool:
+    """기존 파일에 살아있는 시그널이 있는가 (너무 오래된 것은 지켜줄 가치가 없다)."""
+    try:
+        if time.time() - os.path.getmtime(path) > LAST_GOOD_MAX_AGE_SEC:
+            return False
+        with open(path, 'r', encoding='utf-8') as f:
+            return bool((json.load(f).get('signals') or []))
+    except (OSError, ValueError):
+        return False
+
+
 def _save_result(data: Dict, filename: str):
     path = os.path.join(DATA_DIR, filename)
+
+    # 빈 결과로 멀쩡한 결과를 덮지 않는다.
+    # 2026-08-06 실측: 16:21 에 다른 스캐너가 시그널 1건을 저장했는데, 16:26·16:27
+    # 이 스캔이 stage2=0 (screened=50) 으로 두 번 덮어써 대시보드가 빈 채로 남았다.
+    # 로그에는 이미 "self-verify 실패 — yfinance 일시 장애 의심" 이 찍혀 있었다.
+    if _looks_like_a_data_outage(data) and _has_recent_signals(path):
+        logger.warning(
+            "  ⏭️ 저장 건너뜀: stage2=0 (screened=%s) 인데 기존 결과에 시그널이 있음 — "
+            "직전 정상 결과 유지: %s",
+            (data.get('summary') or {}).get('total_screened'), path,
+        )
+        return
+
     # default=str 처리: datetime 등 비직렬화 객체를 사전에 변환
     serializable = json.loads(json.dumps(data, ensure_ascii=False, default=str))
     write_json_atomic(path, serializable)
