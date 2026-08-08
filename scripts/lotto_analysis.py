@@ -44,6 +44,11 @@ DB_FILE = os.path.join(BASE_DIR, 'data', 'users.db')
 LOTTO_BOARD_SLUG = 'lotto-ai'
 LOTTO_BOARD_ID = 7  # boards.slug='lotto-ai' 의 id (스키마 변경 시 helper 가 자동 fallback)
 UPLOAD_DIR = os.path.join(BASE_DIR, 'data', 'uploads', 'community')
+IMAGE_PLACEHOLDER = '{{IMAGE}}'
+DEFAULT_IMAGE_PROMPT = (
+    'Bright cheerful illustration of Korean Lotto 6/45 lottery balls floating with soft '
+    'sparkles, clean modern digital art, no text, no logo, no watermark'
+)
 from app.utils.local_api import local_api_base
 
 API_URL = local_api_base()
@@ -698,7 +703,7 @@ def generate_lotto_post_fallback(stats: dict, candidates: dict, reason: str = ""
     content = f"""
 <p>안녕하세요, MarketFlow AI 로또 분석입니다.</p>
 {fallback_note}
-{{IMAGE}}
+{{{{IMAGE}}}}
 <h2>🎯 AI 추천 번호 (제{next_drw}회)</h2>
 {''.join(style_blocks)}
 <h2>📌 최근 당첨 복기</h2>
@@ -906,8 +911,20 @@ def generate_lotto_post(client, stats: dict, candidates: dict) -> dict:
 
 
 def generate_image(client, prompt: str) -> bytes | None:
-    """Nano Banana로 이미지 생성"""
+    """Nano Banana(gemini-2.5-flash-image)로 이미지 생성.
+
+    client 가 None 이면 여기서 직접 발급한다. 과거 호출부는
+    `generate_image(client, ...) if client else None` 이었는데, GPT-5.5 가 본문을
+    쓰는 정상 경로에서는 Gemini client 가 아예 만들어지지 않아 Nano Banana 가
+    통째로 건너뛰어졌다 (제1231~1236회 이미지 유실의 원인).
+    """
     from google.genai import types
+    if client is None:
+        try:
+            client = get_gemini_client()
+        except Exception as e:
+            logger.warning(f"Gemini client 발급 실패: {type(e).__name__}: {e}")
+            return None
     try:
         response = client.models.generate_content(
             model='gemini-2.5-flash-image',
@@ -970,64 +987,122 @@ def generate_openai_image(prompt: str) -> bytes | None:
     return None
 
 
-def _extract_safe_svg(text: str) -> str | None:
-    """Extract a simple self-contained SVG from OpenAI text output."""
-    raw = (text or '').strip()
-    if raw.startswith('```'):
-        raw = raw.split('\n', 1)[1] if '\n' in raw else raw[3:]
-    if raw.endswith('```'):
-        raw = raw[:-3]
-    if raw.lstrip().startswith('svg'):
-        raw = raw.lstrip()[3:].lstrip()
-    start = raw.find('<svg')
-    end = raw.rfind('</svg>')
-    if start < 0 or end < start:
-        return None
-    svg = raw[start:end + len('</svg>')].strip()
-    lowered = svg.lower()
-    blocked = ('<script', 'javascript:', ' onload=', ' onclick=', ' onerror=', '<foreignobject')
-    if any(token in lowered for token in blocked):
-        return None
-    return svg
+def _ball_color(n: int) -> tuple[int, int, int]:
+    """동행복권 공식 구간 색상."""
+    if n <= 10:
+        return (251, 197, 49)    # yellow
+    if n <= 20:
+        return (60, 133, 214)    # blue
+    if n <= 30:
+        return (214, 74, 74)     # red
+    if n <= 40:
+        return (140, 142, 150)   # gray
+    return (91, 168, 84)         # green
 
 
-def generate_openai_svg_image(prompt: str) -> str | None:
-    """Use an accessible OpenAI text model to generate a safe SVG illustration."""
+def _load_font(size: int, bold: bool = False):
+    """한글 렌더 가능한 트루타입 폰트 확보 (Windows/Linux 공통)."""
+    from PIL import ImageFont
+    candidates = [
+        r'C:\Windows\Fonts\malgunbd.ttf' if bold else r'C:\Windows\Fonts\malgun.ttf',
+        r'C:\Windows\Fonts\malgun.ttf',
+        r'C:\Windows\Fonts\arialbd.ttf' if bold else r'C:\Windows\Fonts\arial.ttf',
+        '/usr/share/fonts/truetype/nanum/NanumGothicBold.ttf' if bold
+        else '/usr/share/fonts/truetype/nanum/NanumGothic.ttf',
+        '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf' if bold
+        else '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',
+    ]
+    for path in candidates:
+        try:
+            if os.path.exists(path):
+                return ImageFont.truetype(path, size)
+        except Exception:
+            continue
     try:
-        from dotenv import load_dotenv
-        load_dotenv(os.path.join(BASE_DIR, '.env'))
-        api_key = os.getenv('OPENAI_API_KEY')
-        if not api_key:
-            return None
+        return ImageFont.load_default(size)
+    except TypeError:  # Pillow < 10.1
+        return ImageFont.load_default()
 
-        from openai import OpenAI
-        client = OpenAI(api_key=api_key)
-        model = os.getenv('OPENAI_SVG_MODEL', os.getenv('OPENAI_FALLBACK_MODEL', 'gpt-5.5'))
-        instruction = (
-            "Return only one complete self-contained SVG image. No markdown. "
-            "Canvas 1280x720. No text, no logos, no watermark, no external hrefs, no scripts. "
-            "Use gradients, circles, sparkles, and lottery-ball motifs. "
-            f"Design brief: {prompt}"
-        )
-        text = ''
-        if hasattr(client, 'responses'):
-            response = client.responses.create(model=model, input=instruction)
-            text = getattr(response, 'output_text', '') or str(response)
-        else:
-            response = client.chat.completions.create(
-                model=model,
-                messages=[
-                    {'role': 'system', 'content': 'You generate safe self-contained SVG only.'},
-                    {'role': 'user', 'content': instruction},
-                ],
-            )
-            text = response.choices[0].message.content or ''
-        svg = _extract_safe_svg(text)
-        if svg:
-            logger.info("OpenAI SVG image generated with %s", model)
-        return svg
+
+def _best_candidate_set(candidates: dict) -> tuple[str, dict] | None:
+    """모든 성향 중 최고 점수 세트."""
+    best: tuple[str, dict] | None = None
+    for style_name, data in (candidates or {}).items():
+        for item in (data or {}).get('sets', []) or []:
+            if not item.get('numbers'):
+                continue
+            if best is None or item.get('score', 0) > best[1].get('score', 0):
+                best = (style_name, item)
+    return best
+
+
+def render_fallback_card_png(stats: dict, candidates: dict) -> bytes | None:
+    """외부 이미지 API 가 모두 실패했을 때 쓰는 로컬 렌더 카드.
+
+    네트워크/쿼터/모델권한과 무관하게 이미지를 확보하기 위한 최종 폴백.
+    Pillow 만 사용하므로 외부 호출 0회.
+    """
+    try:
+        import io
+        from PIL import Image, ImageDraw, ImageFilter
+
+        W, H = 1280, 720
+        img = Image.new('RGB', (W, H), (14, 14, 17))
+
+        # 코너 글로우 (앱 다크 테마 계열)
+        glow = Image.new('RGB', (W, H), (14, 14, 17))
+        gd = ImageDraw.Draw(glow)
+        gd.ellipse([-300, -460, 720, 320], fill=(40, 36, 78))
+        gd.ellipse([720, -380, 1580, 300], fill=(62, 38, 30))
+        gd.ellipse([180, 520, 1120, 1080], fill=(24, 34, 52))
+        glow = glow.filter(ImageFilter.GaussianBlur(170))
+        img = Image.blend(img, glow, 0.9)
+        d = ImageDraw.Draw(img)
+
+        next_drw = (stats or {}).get('last_draw', {}).get('drwNo', 0) + 1
+        f_kicker = _load_font(30)
+        f_title = _load_font(72, bold=True)
+        f_ball = _load_font(52, bold=True)
+        f_foot = _load_font(26)
+
+        d.text((W // 2, 118), 'MarketFlow · AI LOTTO ANALYSIS',
+               font=f_kicker, fill=(150, 152, 168), anchor='mm')
+        d.text((W // 2, 205), f'제{next_drw}회 AI 추천 번호',
+               font=f_title, fill=(245, 245, 248), anchor='mm')
+        d.line([(W // 2 - 90, 262), (W // 2 + 90, 262)], fill=(120, 110, 200), width=4)
+
+        best = _best_candidate_set(candidates)
+        numbers = sorted(best[1]['numbers']) if best else []
+        if numbers:
+            r, gap = 66, 36
+            total_w = len(numbers) * (r * 2) + (len(numbers) - 1) * gap
+            x = (W - total_w) // 2 + r
+            y = 430
+            for n in numbers:
+                color = _ball_color(n)
+                d.ellipse([x - r + 5, y - r + 9, x + r + 5, y + r + 9], fill=(9, 9, 12))
+                d.ellipse([x - r, y - r, x + r, y + r], fill=color)
+                d.ellipse([x - r + 17, y - r + 14, x - r + 52, y - r + 42],
+                          fill=tuple(min(255, c + 55) for c in color))
+                luma = 0.299 * color[0] + 0.587 * color[1] + 0.114 * color[2]
+                d.text((x, y + 3), str(n), font=f_ball,
+                       fill=(24, 24, 28) if luma > 150 else (255, 255, 255), anchor='mm')
+                x += r * 2 + gap
+
+            style_label = best[0] if best else ''
+            score = best[1].get('score', 0) if best else 0
+            d.text((W // 2, 556), f'{style_label} · 균형 점수 {score}',
+                   font=f_kicker, fill=(168, 170, 186), anchor='mm')
+
+        d.text((W // 2, 640), '통계 기반 참고용 · 당첨을 보장하지 않습니다',
+               font=f_foot, fill=(118, 120, 134), anchor='mm')
+
+        buf = io.BytesIO()
+        img.save(buf, format='PNG', optimize=True)
+        logger.info("로컬 렌더 카드 PNG 생성 완료 (%d bytes)", buf.tell())
+        return buf.getvalue()
     except Exception as e:
-        logger.warning("OpenAI SVG image generation failed: %s: %s", type(e).__name__, e)
+        logger.warning("로컬 카드 렌더 실패: %s: %s", type(e).__name__, e)
         return None
 
 
@@ -1041,14 +1116,64 @@ def save_image(image_data: bytes) -> str:
     return f"/api/community/uploads/{filename}"
 
 
-def save_svg_image(svg_text: str) -> str:
-    """Save an SVG illustration and return its community URL."""
-    os.makedirs(UPLOAD_DIR, exist_ok=True)
-    filename = f"{uuid.uuid4().hex}.svg"
-    filepath = os.path.join(UPLOAD_DIR, filename)
-    with open(filepath, 'w', encoding='utf-8') as f:
-        f.write(svg_text)
-    return f"/api/community/uploads/{filename}"
+def build_img_tag(image_url: str) -> str:
+    return (
+        f'<img src="{image_url}" alt="AI 로또 분석 일러스트" '
+        'style="width:100%;max-width:680px;border-radius:12px;margin:16px auto;display:block;" />'
+    )
+
+
+def ensure_image_html(content: str, image_prompt: str, stats: dict, candidates: dict) -> tuple[str, str]:
+    """본문에 실제로 렌더되는 <img> 를 반드시 하나 확보한다.
+
+    체인: Nano Banana → OpenAI Images → 로컬 렌더 카드 PNG.
+    `{{IMAGE}}` 플레이스홀더가 없으면 본문 맨 앞에 삽입한다.
+    로컬 폴백까지 내려가면 텔레그램으로 경보한다.
+
+    저장 포맷은 PNG 만 쓴다. 과거 SVG 폴백은 파일 저장까지는 "성공" 했지만
+    `serve_upload()` 화이트리스트(jpg/jpeg/png/gif/webp)에 svg 가 없어 항상 404 →
+    게시글에는 깨진 이미지가 남았다.
+
+    Returns: (본문, 사용된 이미지 소스)
+    """
+    prompt = (image_prompt or '').strip() or DEFAULT_IMAGE_PROMPT
+
+    logger.info("[5/6] Nano Banana 이미지 생성 중...")
+    image_data = generate_image(None, prompt)
+    source = 'nano_banana'
+
+    if not image_data:
+        logger.info("[5/6] OpenAI Images 폴백 시도...")
+        image_data = generate_openai_image(prompt)
+        source = 'openai_image'
+
+    if not image_data:
+        logger.warning("[5/6] 외부 이미지 API 전부 실패 — 로컬 렌더 카드로 대체")
+        image_data = render_fallback_card_png(stats, candidates)
+        source = 'local_card'
+        if image_data:
+            _alert_telegram(
+                '⚠️ <b>AI 로또 분석 — 이미지 폴백 사용</b>\n'
+                'Nano Banana / OpenAI Images 모두 실패해 로컬 렌더 카드로 게시했습니다.\n'
+                'API 키·쿼터 확인 필요.'
+            )
+
+    if not image_data:
+        logger.error("[5/6] 모든 이미지 경로 실패 — 이미지 없음")
+        return content.replace(IMAGE_PLACEHOLDER, ''), 'none'
+
+    image_url = save_image(image_data)
+    img_tag = build_img_tag(image_url)
+    if IMAGE_PLACEHOLDER in content:
+        content = content.replace(IMAGE_PLACEHOLDER, img_tag, 1)
+        content = content.replace(IMAGE_PLACEHOLDER, '')
+    else:
+        # 플레이스홀더를 LLM 이 빠뜨려도 이미지는 반드시 들어간다
+        logger.warning("[5/6] {{IMAGE}} 플레이스홀더 없음 — 본문 상단에 삽입")
+        content = f"{img_tag}\n{content}"
+
+    logger.info(f"[5/6] 이미지 확보 완료: {image_url} (source={source})")
+    return content, source
 
 
 def _existing_lotto_post_for_draw(draw_no: int) -> dict | None:
@@ -1299,33 +1424,18 @@ def run_lotto_analysis_post(dry_run: bool = False) -> bool:
         logger.info(f"[4/6] 제목: {title}")
         logger.info(f"[4/6] 본문: {len(content)}자")
 
-        # 5. 이미지 생성
-        if image_prompt and '{{IMAGE}}' in content:
-            logger.info("[5/6] Nano Banana로 이미지 생성 중...")
-            image_data = generate_image(client, image_prompt) if client else None
-            if not image_data:
-                logger.info("[5/6] OpenAI image fallback 생성 중...")
-                image_data = generate_openai_image(image_prompt)
-            if image_data:
-                image_url = save_image(image_data)
-                img_tag = f'<img src="{image_url}" alt="AI 로또 분석 일러스트" style="width:100%;max-width:680px;border-radius:12px;margin:16px auto;display:block;" />'
-                content = content.replace('{{IMAGE}}', img_tag, 1)
-                content = content.replace('{{IMAGE}}', '')
-                logger.info(f"[5/6] 이미지 생성 완료: {image_url}")
-            else:
-                svg_text = generate_openai_svg_image(image_prompt)
-                if svg_text:
-                    image_url = save_svg_image(svg_text)
-                    img_tag = f'<img src="{image_url}" alt="AI 로또 분석 일러스트" style="width:100%;max-width:680px;border-radius:12px;margin:16px auto;display:block;" />'
-                    content = content.replace('{{IMAGE}}', img_tag, 1)
-                    content = content.replace('{{IMAGE}}', '')
-                    logger.info(f"[5/6] OpenAI SVG 이미지 생성 완료: {image_url}")
-                else:
-                    content = content.replace('{{IMAGE}}', '')
-                    logger.warning("[5/6] 이미지 생성 실패 — 텍스트만 게시")
-        else:
-            content = content.replace('{{IMAGE}}', '')
-            logger.info("[5/6] 이미지 플레이스홀더 없음 — 스킵")
+        # 5. 이미지 확보 — Nano Banana → OpenAI Images → 로컬 렌더 카드
+        content, image_source = ensure_image_html(content, image_prompt, stats, candidates)
+
+        # 이미지 없는 글은 게시하지 않는다 (조용히 나가던 경로 차단)
+        if '<img' not in content:
+            logger.error("[BLOCK] 이미지 확보 실패 — 게시 중단")
+            _alert_telegram(
+                '⚠️ <b>AI 로또 분석 게시 중단</b>\n'
+                '이미지를 한 장도 확보하지 못해 게시하지 않았습니다.\n'
+                'Nano Banana / OpenAI / 로컬 렌더 전부 실패 — 수동 확인 필요.'
+            )
+            return False
 
         # 6. 게시
         logger.info("[6/6] 관리자 로그인 + 게시...")

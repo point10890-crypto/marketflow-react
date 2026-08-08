@@ -154,13 +154,123 @@ def test_generate_lotto_post_fallback_contains_draw_and_candidates():
     assert "제1231회" in post["title"]
     assert "1, 10, 14, 20, 38, 39" in post["content"]
     assert "LLM 문장 생성기" in post["content"]
+    # 폴백 본문의 플레이스홀더가 f-string 에 먹혀 {IMAGE} 로 새면 이미지가 엉뚱한 데 붙는다
+    assert "{{IMAGE}}" in post["content"]
 
 
-def test_extract_safe_svg_blocks_script_payloads():
+def _image_stats_candidates():
+    stats = {
+        "last_draw": {"drwNo": 1236, "date": "2026-08-01",
+                      "numbers": [1, 2, 3, 4, 5, 6], "bonus": 7},
+    }
+    candidates = {
+        "안정형": {"desc": "분산형",
+                 "sets": [{"numbers": [3, 11, 19, 28, 34, 42], "score": 95.0}]},
+    }
+    return stats, candidates
+
+
+def test_generate_image_creates_client_when_none(monkeypatch):
+    """GPT-5.5 가 본문을 쓰는 정상 경로에서도 Nano Banana 가 호출돼야 한다.
+
+    회귀 대상: `generate_image(client, ...) if client else None` 때문에
+    제1231~1236회 게시글이 Nano Banana 를 통째로 건너뛴 사고.
+    """
     import lotto_analysis
 
-    assert lotto_analysis._extract_safe_svg("```svg\n<svg><circle /></svg>\n```") == "<svg><circle /></svg>"
-    assert lotto_analysis._extract_safe_svg("<svg><script>alert(1)</script></svg>") is None
+    made = {}
+
+    class _Part:
+        class inline_data:
+            data = b"PNGDATA"
+
+    class _Client:
+        class models:
+            @staticmethod
+            def generate_content(**kwargs):
+                made["model"] = kwargs.get("model")
+                response = MagicMock()
+                response.candidates = [MagicMock(content=MagicMock(parts=[_Part()]))]
+                return response
+
+    monkeypatch.setattr(lotto_analysis, "get_gemini_client", lambda: _Client())
+
+    assert lotto_analysis.generate_image(None, "prompt") == b"PNGDATA"
+    assert made["model"] == "gemini-2.5-flash-image"
+
+
+def test_ensure_image_html_falls_back_to_local_png(monkeypatch, tmp_path):
+    """외부 이미지 API 가 전부 죽어도 <img> 는 반드시 들어간다."""
+    import lotto_analysis
+
+    stats, candidates = _image_stats_candidates()
+    monkeypatch.setattr(lotto_analysis, "generate_image", lambda *a, **k: None)
+    monkeypatch.setattr(lotto_analysis, "generate_openai_image", lambda *a, **k: None)
+    monkeypatch.setattr(lotto_analysis, "UPLOAD_DIR", str(tmp_path))
+    alerts = []
+    monkeypatch.setattr(lotto_analysis, "_alert_telegram", lambda text: alerts.append(text))
+
+    content, source = lotto_analysis.ensure_image_html(
+        "<p>본문</p>\n{{IMAGE}}", "prompt", stats, candidates
+    )
+
+    assert source == "local_card"
+    assert '<img src="/api/community/uploads/' in content
+    assert content.endswith('.png" alt="AI 로또 분석 일러스트" '
+                            'style="width:100%;max-width:680px;border-radius:12px;'
+                            'margin:16px auto;display:block;" />')
+    assert "{{IMAGE}}" not in content
+    assert alerts, "로컬 폴백을 쓰면 텔레그램 경보가 나가야 한다"
+    saved = list(tmp_path.glob("*.png"))
+    assert len(saved) == 1 and saved[0].stat().st_size > 0
+
+
+def test_ensure_image_html_never_saves_svg(monkeypatch, tmp_path):
+    """svg 는 serve_upload() 화이트리스트에 없어 404 → 저장 자체를 금지."""
+    import lotto_analysis
+
+    stats, candidates = _image_stats_candidates()
+    monkeypatch.setattr(lotto_analysis, "generate_image", lambda *a, **k: None)
+    monkeypatch.setattr(lotto_analysis, "generate_openai_image", lambda *a, **k: None)
+    monkeypatch.setattr(lotto_analysis, "UPLOAD_DIR", str(tmp_path))
+    monkeypatch.setattr(lotto_analysis, "_alert_telegram", lambda text: None)
+
+    content, _ = lotto_analysis.ensure_image_html("<p>본문</p>", "prompt", stats, candidates)
+
+    assert not list(tmp_path.glob("*.svg"))
+    assert ".svg" not in content
+    assert not hasattr(lotto_analysis, "save_svg_image")
+    assert not hasattr(lotto_analysis, "generate_openai_svg_image")
+
+
+def test_ensure_image_html_inserts_when_placeholder_missing(monkeypatch, tmp_path):
+    """LLM 이 {{IMAGE}} 를 빠뜨려도 이미지는 본문 상단에 들어간다."""
+    import lotto_analysis
+
+    stats, candidates = _image_stats_candidates()
+    monkeypatch.setattr(lotto_analysis, "generate_image", lambda *a, **k: b"\x89PNG-fake")
+    monkeypatch.setattr(lotto_analysis, "UPLOAD_DIR", str(tmp_path))
+
+    content, source = lotto_analysis.ensure_image_html(
+        "<p>플레이스홀더 없는 본문</p>", "prompt", stats, candidates
+    )
+
+    assert source == "nano_banana"
+    assert content.startswith('<img src="/api/community/uploads/')
+    assert "<p>플레이스홀더 없는 본문</p>" in content
+
+
+def test_render_fallback_card_png_is_a_real_png():
+    """로컬 폴백은 외부 호출 없이 실제 PNG 를 만들어야 한다."""
+    import lotto_analysis
+
+    stats, candidates = _image_stats_candidates()
+    data = lotto_analysis.render_fallback_card_png(stats, candidates)
+
+    assert data and data[:8] == b"\x89PNG\r\n\x1a\n"
+    from PIL import Image
+    import io
+    assert Image.open(io.BytesIO(data)).size == (1280, 720)
 
 
 def test_existing_lotto_post_for_draw_detects_visible_duplicate(monkeypatch, tmp_db):
