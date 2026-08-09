@@ -256,12 +256,27 @@ export default function PostDetailPage() {
             <article className="bg-[#1c1c1e]/80 border border-white/[0.06] rounded-2xl overflow-hidden">
                 {/* Header */}
                 <div className="px-5 md:px-7 pt-5 md:pt-7 pb-5 border-b border-white/[0.04]">
-                    {/* Notice */}
-                    {post.is_notice && (
-                        <span className="inline-block bg-amber-500/15 text-amber-400 text-[10px] px-2 py-0.5 rounded-full font-bold mb-3">
-                            <i className="fas fa-thumbtack mr-1" />공지
-                        </span>
-                    )}
+                    {/* Notice + top-right edit */}
+                    <div className="flex items-start justify-between gap-3 mb-3 min-h-[26px]">
+                        {post.is_notice ? (
+                            <span className="inline-block bg-amber-500/15 text-amber-400 text-[10px] px-2 py-0.5 rounded-full font-bold">
+                                <i className="fas fa-thumbtack mr-1" />공지
+                            </span>
+                        ) : <span />}
+
+                        {canEdit && (
+                            <button
+                                onClick={() => navigate(`/dashboard/community/post/${post.id}/edit`)}
+                                title="글 수정"
+                                aria-label="글 수정"
+                                className="shrink-0 inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-white
+                                    bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] hover:border-white/[0.12]
+                                    rounded-lg px-3 py-1.5 transition-colors"
+                            >
+                                <i className="fas fa-pen text-[10px]" />글 수정
+                            </button>
+                        )}
+                    </div>
 
                     {/* Title */}
                     <h1 className="text-lg md:text-xl font-bold text-white mb-4 leading-snug">{post.title}</h1>
