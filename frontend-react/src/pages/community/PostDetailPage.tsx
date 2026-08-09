@@ -257,7 +257,7 @@ export default function PostDetailPage() {
                 {/* Header */}
                 <div className="px-5 md:px-7 pt-5 md:pt-7 pb-5 border-b border-white/[0.04]">
                     {/* Notice + top-right edit */}
-                    <div className="flex items-start justify-between gap-3 mb-3 min-h-[26px]">
+                    <div className="flex items-center justify-between gap-3 mb-3 min-h-[26px]">
                         {post.is_notice ? (
                             <span className="inline-block bg-amber-500/15 text-amber-400 text-[10px] px-2 py-0.5 rounded-full font-bold">
                                 <i className="fas fa-thumbtack mr-1" />공지
@@ -269,11 +269,9 @@ export default function PostDetailPage() {
                                 onClick={() => navigate(`/dashboard/community/post/${post.id}/edit`)}
                                 title="글 수정"
                                 aria-label="글 수정"
-                                className="shrink-0 inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-white
-                                    bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] hover:border-white/[0.12]
-                                    rounded-lg px-3 py-1.5 transition-colors"
+                                className="bg-yellow-500 hover:bg-yellow-500/85 text-black font-bold text-sm rounded-xl px-5 py-2.5 transition-colors flex items-center gap-2 flex-shrink-0 active:scale-95"
                             >
-                                <i className="fas fa-pen text-[10px]" />글 수정
+                                <i className="fas fa-pen text-xs" />글 수정
                             </button>
                         )}
                     </div>
