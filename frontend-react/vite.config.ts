@@ -19,9 +19,27 @@ const buildId = (() => {
   }
 })();
 
+// The Pages hostname bypasses the custom-domain cache rule that has served
+// stale SPA HTML for JavaScript requests. Override this with a local preview
+// origin when a production build must load its own emitted assets.
+const staticAssetOrigin = (
+  process.env.VITE_STATIC_ASSET_ORIGIN ?? 'https://bitman-marketflow.pages.dev'
+).replace(/\/+$/, '');
+
 export default defineConfig({
   define: {
     __BUILD_TIME__: JSON.stringify(new Date().toISOString()),
+  },
+  experimental: {
+    // The custom domain has a second Cloudflare cache layer. It has cached the
+    // SPA fallback under JavaScript paths, so serve build assets from the
+    // canonical Pages origin and include the revision in the cache key.
+    renderBuiltUrl(filename) {
+      if (filename.startsWith('assets/')) {
+        return `${staticAssetOrigin}/${filename}?v=${buildId}`;
+      }
+      return undefined;
+    },
   },
   plugins: [
     react(),
