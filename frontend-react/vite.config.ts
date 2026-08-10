@@ -62,6 +62,10 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
+    // Vite 8 defaults to Safari/iOS 16.4. Keep the initial bundle parseable on
+    // older iPhones that are still common among mobile users.
+    target: ['es2018', 'safari13'],
+    cssTarget: 'safari13',
     sourcemap: false,
     minify: 'terser',
     terserOptions: {

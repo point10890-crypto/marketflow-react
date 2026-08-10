@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { usePWAInstall } from '@/hooks/usePWAInstall';
+import { safeGetItem, safeSetItem } from '@/lib/safeStorage';
 
 export default function InstallPrompt() {
     const { canInstall, isInstalled, isIOS, install } = usePWAInstall();
@@ -9,7 +10,7 @@ export default function InstallPrompt() {
     useEffect(() => {
         if (isInstalled) return;
 
-        const dismissed = localStorage.getItem('install-dismissed');
+        const dismissed = safeGetItem('local', 'install-dismissed');
         if (dismissed && Date.now() - Number(dismissed) < 24 * 60 * 60 * 1000) return;
 
         const timer = setTimeout(() => setShowBanner(true), 3000);
@@ -28,7 +29,7 @@ export default function InstallPrompt() {
     const handleDismiss = () => {
         setShowBanner(false);
         setShowGuide(false);
-        localStorage.setItem('install-dismissed', String(Date.now()));
+        safeSetItem('local', 'install-dismissed', String(Date.now()));
     };
 
     if (!showBanner || isInstalled) return null;

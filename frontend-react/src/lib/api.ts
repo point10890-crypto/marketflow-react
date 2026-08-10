@@ -4,13 +4,15 @@
 //   Dev:  Vite proxy /api/* → Flask 5001 (vite.config.ts)
 //   Prod: VITE_API_BASE_URL → Cloudflare Tunnel → Flask 5001
 
+import { getToken } from './auth';
+
 export const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 
 // 모든 API 호출에 사용할 인증 헤더.
 // localStorage/sessionStorage 에서 토큰을 읽어 Bearer 헤더를 생성.
 // 토큰이 없으면 빈 객체 반환 → public 엔드포인트도 호출 가능.
 export function authHeaders(extra?: Record<string, string>): Record<string, string> {
-    const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+    const token = getToken();
     const headers: Record<string, string> = extra ? { ...extra } : {};
     if (token) headers.Authorization = `Bearer ${token}`;
     return headers;
@@ -913,7 +915,7 @@ async function _authFetch(url: string, options: RequestInit, timeoutMs: number =
     // Auto-inject auth token if not already present
     const headers = new Headers(options.headers as HeadersInit);
     if (!headers.has('Authorization')) {
-        const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+        const token = getToken();
         if (token) headers.set('Authorization', `Bearer ${token}`);
     }
     try {

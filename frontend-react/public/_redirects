@@ -1,0 +1,17 @@
+# Proxy only known React routes. Pages canonicalizes /index.html proxy targets
+# to a 308 redirect, so use the equivalent root index target instead.
+# Deliberately do not add a catch-all: missing /assets/* requests must stay 404.
+# Public React routes
+/ / 200
+/login / 200
+/signup / 200
+/plan-select / 200
+/payment-request / 200
+/pricing / 200
+/pending-approval / 200
+
+# Authenticated React route trees
+/dashboard / 200
+/dashboard/* / 200
+/admin / 200
+/admin/* / 200

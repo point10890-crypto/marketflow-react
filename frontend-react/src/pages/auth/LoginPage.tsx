@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { BANK_ACCOUNT, PLAN_PAYMENT_META } from '@/lib/billingInfo';
 import KakaoSupportLink from '@/components/ui/KakaoSupportLink';
+import { getUser } from '@/lib/auth';
 
 type LoginUser = {
     role?: string;
@@ -63,14 +64,10 @@ export default function LoginPage() {
         setLoading(true);
         try {
             await login(email, password, remember);
-            const stored = localStorage.getItem('auth_user') || sessionStorage.getItem('auth_user');
-            if (stored) {
-                try {
-                    navigate(nextPathForUser(JSON.parse(stored), nextPath), { replace: true });
-                    return;
-                } catch {
-                    // corrupted storage: fall through to dashboard
-                }
+            const storedUser = getUser();
+            if (storedUser) {
+                navigate(nextPathForUser(storedUser, nextPath), { replace: true });
+                return;
             }
             navigate(nextPath?.startsWith('/dashboard') ? nextPath : '/dashboard', { replace: true });
         } catch (err) {

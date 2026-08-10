@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react';
+import { safeGetItem, safeRemoveItem, safeSetItem } from '@/lib/safeStorage';
 
 export interface AppNotification {
     id: string;
@@ -27,22 +28,20 @@ const MAX_NOTIFICATIONS = 30;
 
 function loadFromStorage(): AppNotification[] {
     try {
-        const raw = localStorage.getItem(STORAGE_KEY);
+        const raw = safeGetItem('local', STORAGE_KEY);
         if (!raw) return [];
         const parsed = JSON.parse(raw) as AppNotification[];
         // 24시간 이내 것만 유지
         const cutoff = Date.now() - 24 * 60 * 60 * 1000;
         return parsed.filter(n => n.timestamp > cutoff).slice(0, MAX_NOTIFICATIONS);
     } catch {
-        localStorage.removeItem(STORAGE_KEY);
+        safeRemoveItem('local', STORAGE_KEY);
         return [];
     }
 }
 
 function saveToStorage(notifications: AppNotification[]) {
-    try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(notifications.slice(0, MAX_NOTIFICATIONS)));
-    } catch { /* quota exceeded */ }
+    safeSetItem('local', STORAGE_KEY, JSON.stringify(notifications.slice(0, MAX_NOTIFICATIONS)));
 }
 
 export function NotificationProvider({ children }: { children: ReactNode }) {

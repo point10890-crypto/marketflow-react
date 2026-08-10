@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { BANK_ACCOUNT } from '@/lib/billingInfo';
 import { subscriptionAPI, type SubscriptionRequest } from '@/lib/api';
 import KakaoSupportLink from '@/components/ui/KakaoSupportLink';
+import { getUser } from '@/lib/auth';
 
 const FLOW_STEPS = ['계정 생성', '플랜 선택', '입금 정보', '승인 대기'];
 
@@ -77,9 +78,8 @@ export default function PendingApprovalPage() {
             await refreshUser();
             const sr = await fetchSubReq();
             setTimeout(() => {
-                const stored = localStorage.getItem('auth_user') || sessionStorage.getItem('auth_user');
-                if (stored) {
-                    const parsed = JSON.parse(stored);
+                const parsed = getUser();
+                if (parsed) {
                     const hasAccess = parsed.status === 'approved' && (parsed.tier === 'pro' || parsed.tier === 'premium');
                     // 활성 + sub_req 없음 = 승인 완료
                     if ((hasAccess && !sr) || parsed.role === 'admin') {

@@ -7,7 +7,7 @@ import { PLAN_PAYMENT_META, planToQuery, type BillingPlan } from '@/lib/billingI
 const FLOW_STEPS = ['계정 생성', '플랜 선택', '입금 정보', '승인 대기'];
 
 export default function PlanSelectPage() {
-    const { user, token, loading } = useAuth();
+    const { user, token, loading, logout } = useAuth();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const isResubscribe = searchParams.get('resubscribe') === '1' || searchParams.get('from') === 'expired';
@@ -140,10 +140,7 @@ export default function PlanSelectPage() {
                         <button
                             type="button"
                             onClick={() => {
-                                localStorage.removeItem('auth_token');
-                                sessionStorage.removeItem('auth_token');
-                                localStorage.removeItem('auth_user');
-                                sessionStorage.removeItem('auth_user');
+                                logout();
                                 navigate('/login', { replace: true });
                             }}
                             className="text-gray-500 hover:text-red-400 transition-colors"

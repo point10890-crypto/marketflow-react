@@ -12,10 +12,6 @@
 /workbox-*.js
   Cache-Control: public, max-age=0, must-revalidate
 
-# 해시된 정적 에셋은 장기 캐시 OK
-/assets/*
-  Cache-Control: public, max-age=31536000, immutable
-
 # 정적 데이터 파일은 5분 캐시
 /data/*
   Cache-Control: public, max-age=300

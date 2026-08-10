@@ -27,19 +27,15 @@
         window.__pwaInstallPrompt = e;
       });
 
-      // v4.0.1 — stale deployment cache recovery.
-      // 과거 v3.1.0 kill-switch SW 사용자는 1회 unregister + cache 정리 후 신규 SW 등록.
-      // 신규 유저는 바로 SW 등록 → 브라우저 install prompt 자동 발동.
+      // Keep one network-first service worker. Version the script URL so an
+      // upstream cache cannot pin iOS home-screen users to an older worker.
       (function() {
-        var CACHE_VER = 'v4.0.1';
-        var prevVer = localStorage.getItem('cache_ver');
-        var hadOldSW = 'serviceWorker' in navigator && !!navigator.serviceWorker.controller;
+        if (!('serviceWorker' in navigator)) return;
 
         function registerNewSW() {
-          if (!('serviceWorker' in navigator)) return;
-          navigator.serviceWorker.register('/sw.js')
+          navigator.serviceWorker.register('/sw.js?v=4.1.0', { updateViaCache: 'none' })
             .then(function(reg) {
-              // 업데이트 발견 시 자동으로 새 SW 로 교체
+              reg.update().catch(function() {});
               reg.addEventListener('updatefound', function() {
                 var nw = reg.installing;
                 if (nw) nw.addEventListener('statechange', function() {
@@ -52,29 +48,8 @@
             .catch(function() { /* ignore */ });
         }
 
-        if (prevVer !== CACHE_VER) {
-          // Migration: 이전 SW (있다면) unregister + caches 비우기 → reload (있을 때만)
-          if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.getRegistrations().then(function(regs) {
-              regs.forEach(function(r) { r.unregister(); });
-            }).catch(function(){});
-          }
-          if ('caches' in window) {
-            caches.keys().then(function(names) {
-              names.forEach(function(name) { caches.delete(name); });
-            }).catch(function(){});
-          }
-          localStorage.setItem('cache_ver', CACHE_VER);
-          if (hadOldSW) {
-            // 기존 SW 가 통제 중이었으면 1회 reload → 다음 로드에서 신규 SW 등록
-            setTimeout(function() { window.location.reload(); }, 150);
-            return;
-          }
-        }
-
-        // 정상 경로: 신규 SW 등록 (PWA install prompt 활성화)
         if (document.readyState === 'complete') registerNewSW();
-        else window.addEventListener('load', registerNewSW);
+        else window.addEventListener('load', registerNewSW, { once: true });
       })();
     </script>
     <script type="module" src="/src/main.tsx"></script>
