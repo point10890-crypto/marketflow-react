@@ -32,11 +32,11 @@ export default defineConfig({
   },
   experimental: {
     // The custom domain has a second Cloudflare cache layer. It has cached the
-    // SPA fallback under JavaScript paths, so serve build assets from the
-    // canonical Pages origin and include the revision in the cache key.
+    // SPA fallback under JavaScript paths, so serve revision-named build
+    // assets from the canonical Pages origin instead.
     renderBuiltUrl(filename) {
       if (filename.startsWith('assets/')) {
-        return `${staticAssetOrigin}/${filename}?v=${buildId}`;
+        return `${staticAssetOrigin}/${filename}`;
       }
       return undefined;
     },
