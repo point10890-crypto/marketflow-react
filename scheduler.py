@@ -2079,6 +2079,28 @@ def run_vcp_all_markets(skip_sync: bool = False):
     return all(r[1] for r in results)
 
 
+def _scan_preserved_last_good(result_file: str, max_age_sec: int = 900) -> bool:
+    """이번 실행이 결과 파일을 '일부러' 안 쓴 것인지 확인.
+
+    vcp_enhanced_scanner 는 빈 결과로 멀쩡한 결과를 덮지 않는다(last-known-good 보존).
+    그때 결과 파일 mtime 은 그대로라, mtime 만 보면 '스캔이 죽어서 못 씀' 과 구분이
+    안 된다. 스캐너가 매 실행마다 남기는 상태 파일이 그 둘을 가른다.
+
+    max_age_sec: 이 시간 안에 쓰인 상태만 '이번 실행의 것' 으로 인정한다.
+                 (스캔 1회는 5분 이내 — 지난주 상태가 오늘 실패를 가리면 안 된다)
+    """
+    status_path = result_file.replace('_latest.json', '_scan_status.json')
+    if status_path == result_file:
+        return False
+    try:
+        if time.time() - os.path.getmtime(status_path) > max_age_sec:
+            return False
+        with open(status_path, 'r', encoding='utf-8') as f:
+            return json.load(f).get('outcome') == 'preserved'
+    except (OSError, ValueError):
+        return False
+
+
 def run_vcp_enhanced_scan(market: str) -> bool:
     """US / Crypto / KR VCP Enhanced Scanner 실행 + 결과 검증 + 재시도"""
     script = os.path.join(Config.BASE_DIR, 'vcp_enhanced_scanner.py')
@@ -2114,11 +2136,20 @@ def run_vcp_enhanced_scan(market: str) -> bool:
                 total_screened = int(summary.get('total_screened', 0) or 0)
                 mtime = os.path.getmtime(result_file)
                 file_age = time.time() - mtime
-                if file_age > 300:  # 5분 이상 된 파일 = 갱신 안 됨
-                    logger.warning(f"⚠️ {market_upper} VCP 결과 파일이 오래됨 ({int(file_age)}초)")
-                    if attempt < max_retries:
-                        time.sleep(10)
-                    continue
+                if file_age > 300:  # 5분 이상 된 파일 = 이번 실행이 안 썼다는 뜻
+                    # 안 쓴 이유가 둘이다: 스캐너가 죽었거나(실패), 빈 결과로 멀쩡한
+                    # 결과를 덮지 않으려고 일부러 건너뛰었거나(정상). 후자는 실패가
+                    # 아니다 — 보존본이 쓸 만한지는 바로 아래 freshness 가 계속 본다.
+                    if _scan_preserved_last_good(result_file):
+                        logger.info(
+                            f"ℹ️ {market_upper} VCP: 직전 정상 결과 유지 "
+                            f"(이번 스캔은 저장 스킵, 파일 {int(file_age)}초 전)"
+                        )
+                    else:
+                        logger.warning(f"⚠️ {market_upper} VCP 결과 파일이 오래됨 ({int(file_age)}초)")
+                        if attempt < max_retries:
+                            time.sleep(10)
+                        continue
                 if build_freshness:
                     max_age_hours = 12 if market_upper == 'CRYPTO' else 96
                     freshness = build_freshness(result_file, data, max_age_hours=max_age_hours)

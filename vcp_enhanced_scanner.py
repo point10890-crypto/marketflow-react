@@ -349,6 +349,8 @@ def scan_us_market() -> Dict:
         },
         'summary': {
             'total_screened': len(tickers),
+            # stage2=0 이 '소스가 죽음' 인지 '시장이 하락추세' 인지는 이것 없이는 못 가른다
+            'download_failed': download_failed,
             'stage2_passed': stage2_count,
             'trend_passed': stage2_count,
             'vcp_found': vcp_found,
@@ -441,6 +443,8 @@ def scan_crypto_market() -> Dict:
         },
         'summary': {
             'total_screened': len(tickers),
+            # stage2=0 이 '소스가 죽음' 인지 '시장이 하락추세' 인지는 이것 없이는 못 가른다
+            'download_failed': download_failed,
             'stage2_passed': stage2_count,
             'trend_passed': stage2_count,
             'vcp_found': vcp_found,
@@ -536,6 +540,8 @@ def scan_kr_market() -> Dict:
         },
         'summary': {
             'total_screened': len(tickers),
+            # stage2=0 이 '소스가 죽음' 인지 '시장이 하락추세' 인지는 이것 없이는 못 가른다
+            'download_failed': download_failed,
             'stage2_passed': stage2_count,
             'trend_passed': stage2_count,
             'vcp_found': vcp_found,
@@ -578,7 +584,28 @@ def _has_recent_signals(path: str) -> bool:
         return False
 
 
-def _save_result(data: Dict, filename: str):
+def _write_scan_status(filename: str, outcome: str, data: Dict):
+    """이번 실행이 결과 파일에 무엇을 했는지 남긴다 ('saved' | 'preserved').
+
+    last-known-good 을 지키려 저장을 건너뛰면 결과 파일 mtime 이 그대로다.
+    mtime 만 보는 호출자는 그것을 '스캔이 죽어서 아무것도 못 썼다' 와 구분할 수
+    없다 — 2026-07-28~08-10 사이 vcp_all 이 거래일마다 오탐 알림을 띄운 이유다.
+    """
+    status_name = filename.replace('_latest.json', '_scan_status.json')
+    if status_name == filename:  # 결과 파일을 상태 파일로 덮어쓰는 사고 방지
+        return
+    try:
+        write_json_atomic(os.path.join(DATA_DIR, status_name), {
+            'outcome': outcome,
+            'scanned_at': datetime.now().isoformat(),
+            'result_file': filename,
+            'summary': (data.get('summary') or {}),
+        })
+    except OSError as e:
+        logger.warning(f"  ⚠️ 스캔 상태 기록 실패: {e}")
+
+
+def _save_result(data: Dict, filename: str) -> str:
     path = os.path.join(DATA_DIR, filename)
 
     # 빈 결과로 멀쩡한 결과를 덮지 않는다.
@@ -591,7 +618,8 @@ def _save_result(data: Dict, filename: str):
             "직전 정상 결과 유지: %s",
             (data.get('summary') or {}).get('total_screened'), path,
         )
-        return
+        _write_scan_status(filename, 'preserved', data)
+        return 'preserved'
 
     # default=str 처리: datetime 등 비직렬화 객체를 사전에 변환
     serializable = json.loads(json.dumps(data, ensure_ascii=False, default=str))
@@ -600,12 +628,14 @@ def _save_result(data: Dict, filename: str):
 
     # 날짜별 아카이브 저장 (*_latest.json → *_YYYYMMDD.json)
     if filename.endswith('_latest.json'):
-        from datetime import datetime
         date_str = datetime.now().strftime('%Y%m%d')
         archive_name = filename.replace('_latest.json', f'_{date_str}.json')
         archive_path = os.path.join(DATA_DIR, archive_name)
         write_json_atomic(archive_path, serializable)
         logger.info(f"  💾 아카이브: {archive_path}")
+
+    _write_scan_status(filename, 'saved', data)
+    return 'saved'
 
 
 def _get_benchmark_closes(ticker: str) -> Optional[np.ndarray]:
