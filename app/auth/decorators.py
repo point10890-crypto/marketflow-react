@@ -5,6 +5,7 @@ import hmac
 import os
 import time
 import threading
+from datetime import timezone
 from functools import wraps
 from flask import request, jsonify, current_app
 from app.models import db
@@ -49,6 +50,11 @@ def validate_token(token: str):
         return None
 
 
+# 토큰 발급시각 비교 여유 (초). expiry 가 초 단위 절삭이라 발급 직후 토큰이
+# password_changed_at 보다 미세하게 과거로 보일 수 있다 (가입 직후 토큰 등).
+_PW_CHANGE_GRACE_SEC = 5
+
+
 def _get_current_user():
     auth = request.headers.get('Authorization', '')
     if not auth.startswith('Bearer '):
@@ -57,7 +63,24 @@ def _get_current_user():
     user_id = validate_token(token)
     if user_id is None:
         return None
-    return db.session.get(User, user_id)
+    user = db.session.get(User, user_id)
+    if user is None:
+        return None
+    # 비밀번호 변경 이전에 발급된 토큰은 무효 — 유출 토큰/구 세션 강제 로그아웃.
+    changed = getattr(user, 'password_changed_at', None)
+    if changed is not None:
+        try:
+            expiry = int(token.split(':')[1])
+            issued_at = expiry - TOKEN_EXPIRY
+            if changed.tzinfo is None:
+                changed_ts = changed.replace(tzinfo=timezone.utc).timestamp()
+            else:
+                changed_ts = changed.timestamp()
+            if issued_at + _PW_CHANGE_GRACE_SEC < changed_ts:
+                return None
+        except (ValueError, IndexError):
+            return None
+    return user
 
 
 def _is_account_blocked(user: User) -> bool:
@@ -114,47 +137,6 @@ def pro_required(f):
         request.current_user = user
         return f(*args, **kwargs)
     return decorated
-
-
-# ═══════════════════════════════════════════════════════
-#  Admin Rate Limiter (consecutive failures → 15min block)
-# ═══════════════════════════════════════════════════════
-_admin_failures = {}   # {ip: {'count': int, 'blocked_until': float}}
-_admin_lock = threading.Lock()
-_ADMIN_MAX_FAILURES = 3
-_ADMIN_BLOCK_SEC = 900  # 15 minutes
-
-
-def _check_admin_rate_limit(ip: str) -> bool:
-    """Returns True if IP is blocked due to consecutive admin auth failures."""
-    now = time.time()
-    with _admin_lock:
-        entry = _admin_failures.get(ip)
-        if not entry:
-            return False
-        if entry.get('blocked_until', 0) > now:
-            return True  # still blocked
-        # Block expired, reset
-        if entry.get('blocked_until', 0) <= now and entry.get('blocked_until', 0) > 0:
-            del _admin_failures[ip]
-        return False
-
-
-def _record_admin_failure(ip: str):
-    """Record a failed admin auth attempt. Block after 3 consecutive failures."""
-    now = time.time()
-    with _admin_lock:
-        entry = _admin_failures.get(ip, {'count': 0, 'blocked_until': 0})
-        entry['count'] = entry.get('count', 0) + 1
-        if entry['count'] >= _ADMIN_MAX_FAILURES:
-            entry['blocked_until'] = now + _ADMIN_BLOCK_SEC
-        _admin_failures[ip] = entry
-
-
-def _reset_admin_failures(ip: str):
-    """Reset failure count on successful admin auth."""
-    with _admin_lock:
-        _admin_failures.pop(ip, None)
 
 
 def admin_required(f):

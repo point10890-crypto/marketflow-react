@@ -35,6 +35,10 @@ class User(db.Model):
     # 만료일이 갱신되면(extend/tier 변경) NULL 로 리셋해 알림이 다시 발송된다.
     pro_expiry_alert_stage = db.Column(db.String(10), nullable=True)
 
+    # 마지막 비밀번호 변경 시각 (UTC). 이 시각 이전에 발급된 토큰은 무효 —
+    # 비밀번호 변경/관리자 리셋 시 기존 세션을 전부 로그아웃시키는 근거.
+    password_changed_at = db.Column(db.DateTime, nullable=True)
+
     # 가입 시 유저가 선택한 구독 플랜 ('pro'|'premium'|NULL).
     # 관리자가 승인 시 이 값을 기본으로 tier 를 부여한다.
     # 기존 유저는 NULL 유지 — 마이그레이션에서 채우지 않음.
@@ -55,6 +59,8 @@ class User(db.Model):
         self.password_hash = bcrypt.hashpw(
             password.encode('utf-8'), bcrypt.gensalt()
         ).decode('utf-8')
+        # 이 시각 이전 발급 토큰은 무효 (decorators._get_current_user 참조)
+        self.password_changed_at = datetime.now(timezone.utc)
 
     def check_password(self, password: str) -> bool:
         return bcrypt.checkpw(

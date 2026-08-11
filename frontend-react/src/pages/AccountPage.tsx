@@ -7,7 +7,7 @@ import { InstallGuide } from '@/components/layout/InstallPrompt';
 import KakaoSupportLink from '@/components/ui/KakaoSupportLink';
 
 export default function AccountPage() {
-    const { user, token, refreshUser } = useAuth();
+    const { user, token, refreshUser, setSession } = useAuth();
     const [requests, setRequests] = useState<SubscriptionRequest[]>([]);
     const [loading, setLoading] = useState(true);
     const [requesting, setRequesting] = useState(false);
@@ -42,7 +42,9 @@ export default function AccountPage() {
         if (!pwValid) { setPwMsg({ text: '비밀번호는 8자 이상, 영문+숫자를 포함해야 합니다', error: true }); return; }
         setPwLoading(true);
         try {
-            await subscriptionAPI.changePassword(currentPw, newPw, token);
+            const res = await subscriptionAPI.changePassword(currentPw, newPw, token);
+            // 비밀번호 변경으로 기존 토큰이 전부 무효화됨 — 응답의 새 토큰으로 세션 갱신
+            if (res.token && user) setSession(res.token, user);
             setPwMsg({ text: '비밀번호가 변경되었습니다', error: false });
             setCurrentPw(''); setNewPw(''); setConfirmPw('');
             setTimeout(() => setShowPwChange(false), 2000);

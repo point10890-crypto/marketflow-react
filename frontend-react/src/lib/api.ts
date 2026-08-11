@@ -861,6 +861,8 @@ export interface AdminDashboard {
     approved_users: number;
     suspended_users: number;
     pending_subscriptions: number;
+    pending_signups?: number;         // 가입만 완료 · 플랜 미선택 (팔로업 대상)
+    pro_expiring_soon?: number;       // Pro 베이스 D-3 이내 만료 임박
     // AI Brain 알파 스캐너 (애드온) 통계
     aibain_active_users?: number;
     aibain_expiring_soon?: number;   // D-3 이내 만료 임박
@@ -1095,7 +1097,7 @@ export const subscriptionAPI = {
         aibain_subscription?: AibainSubscriptionStatus;
     }>('/api/auth/subscription/status', token),
     updateProfile: (name: string, token?: string) => putAuthAPI<{ user: AdminUser }>('/api/auth/profile', { name }, token),
-    changePassword: (currentPassword: string, newPassword: string, token?: string) => putAuthAPI<{ message: string }>('/api/auth/change-password', { current_password: currentPassword, new_password: newPassword }, token),
+    changePassword: (currentPassword: string, newPassword: string, token?: string) => putAuthAPI<{ message: string; token?: string }>('/api/auth/change-password', { current_password: currentPassword, new_password: newPassword }, token),
 };
 
 // ── AI Briefing API (조간/마감 브리핑) ──

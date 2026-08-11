@@ -201,6 +201,22 @@ def _has_active_same_tier(user: User | None, tier: str | None) -> bool:
     return expires > datetime.now(timezone.utc)
 
 
+def _pro_expiry_needs_refresh(user: User) -> bool:
+    """'pro' 부여 시 만료일을 새로 잡아야 하는지.
+
+    만료일이 없거나 이미 지난 경우 True. AI Brain pause 중(pro_paused_at 세팅)이면
+    저장된 날짜가 과거여도 pause 해제 시 보정되므로 건드리지 않는다.
+    """
+    if user.pro_paused_at is not None:
+        return False
+    if user.pro_expires_at is None:
+        return True
+    expires = user.pro_expires_at
+    if expires.tzinfo is None:
+        expires = expires.replace(tzinfo=timezone.utc)
+    return expires <= datetime.now(timezone.utc)
+
+
 def _extend_aibain_expiry(user: User, days: int = 30) -> None:
     """Enable AI Brain and extend from the later of now or current expiry."""
     user.aibain_enabled = True
@@ -248,6 +264,27 @@ def dashboard():
             if expires <= soon_threshold:
                 aibain_expiring_count += 1
 
+    # 대시보드 "오늘 처리할 일" 카운트
+    # 1) 가입만 하고 구독 신청 없이 이탈한 pending 유저 (관리자 사각지대 제로 원칙)
+    pending_req_user_ids = {
+        r.user_id
+        for r in SubscriptionRequest.query.filter_by(status='pending').all()
+    }
+    pending_signup_count = sum(
+        1 for u in users
+        if u.status == 'pending' and u.id not in pending_req_user_ids
+    )
+    # 2) Pro 베이스 만료 임박 (D-3 이내, AI Brain pause 중 제외)
+    pro_expiring_count = 0
+    for u in users:
+        if u.tier != 'pro' or u.pro_expires_at is None or u.pro_paused_at is not None:
+            continue
+        expires = u.pro_expires_at
+        if expires.tzinfo is not None:
+            expires = expires.astimezone(timezone.utc).replace(tzinfo=None)
+        if now_naive < expires <= soon_threshold:
+            pro_expiring_count += 1
+
     return jsonify({
         'total_users': len(users),
         'pro_users': sum(1 for u in users if u.tier == 'pro'),
@@ -258,6 +295,8 @@ def dashboard():
         'approved_users': sum(1 for u in users if u.status == 'approved'),
         'suspended_users': sum(1 for u in users if u.status == 'suspended'),
         'pending_subscriptions': pending_subs,
+        'pending_signups': pending_signup_count,   # 가입만 완료 · 플랜 미선택
+        'pro_expiring_soon': pro_expiring_count,   # Pro D-3 이내 만료
         # AI Brain 알파 스캐너 (애드온)
         'aibain_active_users': aibain_active_count,
         'aibain_expiring_soon': aibain_expiring_count,  # D-3 이내 만료
@@ -427,7 +466,7 @@ def set_tier(user_id):
         admin = _admin_user()
         user.approved_at = datetime.now(timezone.utc)
         user.approved_by = admin.id if admin else None
-    if tier == 'pro' and not user.pro_expires_at:
+    if tier == 'pro' and _pro_expiry_needs_refresh(user):
         user.pro_expires_at = datetime.now(timezone.utc) + timedelta(days=30)
     elif tier == 'premium':
         user.pro_expires_at = None
@@ -596,11 +635,15 @@ def revoke_subscription(user_id):
     before = {
         'pro_expires_at': user.pro_expires_at.isoformat() if user.pro_expires_at else None,
         'pro_expiry_alert_stage': user.pro_expiry_alert_stage,
+        'pro_paused_at': user.pro_paused_at.isoformat() if user.pro_paused_at else None,
     }
 
     # 1분 전으로 세팅해서 즉시 만료 상태로 만듦
     user.pro_expires_at = datetime.now(timezone.utc) - timedelta(minutes=1)
     user.pro_expiry_alert_stage = 'expired'   # 중복 알림 방지
+    # AI Brain pause marker 가 남아 있으면 is_pro_expired 가 영원히 False 라
+    # revoke 가 무효화된다 — 즉시 만료 의도이므로 pause 도 함께 해제한다.
+    user.pro_paused_at = None
     db.session.commit()
 
     after = {
@@ -638,6 +681,12 @@ def enable_aibain(user_id):
     # AI Brain 은 활성 베이스 (Pro/Premium) 회원에게만 의미 있음
     if user.tier not in ('pro', 'premium'):
         return jsonify({'error': f'AI Brain 은 Pro/Ultra Pro 회원에게만 부여 가능 (tier={user.tier})'}), 400
+    # 만료된 Pro 베이스에 AI Brain 을 활성화하면 pause marker 가 Pro 만료 판정을
+    # 우회해 베이스 구독까지 공짜로 부활한다 — 베이스 갱신(extend)부터 처리해야 한다.
+    if user.tier == 'pro' and _pro_expiry_needs_refresh(user) and user.pro_expires_at is not None:
+        return jsonify({
+            'error': '베이스 Pro 가 만료된 회원입니다. Pro 연장(extend)을 먼저 처리한 뒤 AI Brain 을 활성화하세요.'
+        }), 400
 
     data = request.get_json() or {}
     try:
@@ -974,7 +1023,7 @@ def bulk_tier():
             user.status = 'approved'
             user.approved_at = datetime.now(timezone.utc)
             user.approved_by = admin.id if admin else None
-        if tier == 'pro' and not user.pro_expires_at:
+        if tier == 'pro' and _pro_expiry_needs_refresh(user):
             user.pro_expires_at = datetime.now(timezone.utc) + timedelta(days=30)
         elif tier == 'premium':
             user.pro_expires_at = None

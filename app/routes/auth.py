@@ -387,6 +387,8 @@ def update_profile():
 
     data = request.get_json() or {}
     name = (data.get('name') or '').strip()
+    if len(name) > 100:
+        return jsonify({'error': '이름은 100자 이하여야 합니다'}), 400
     if name:
         user.name = name
         db.session.commit()
@@ -417,7 +419,12 @@ def change_password():
     user.set_password(new_password)
     db.session.commit()
 
-    return jsonify({'message': '비밀번호가 변경되었습니다'})
+    # 비밀번호 변경으로 기존 토큰이 전부 무효화되므로 새 토큰을 발급해
+    # 현재 세션은 끊기지 않게 한다. 프론트는 이 토큰으로 세션을 갱신해야 한다.
+    return jsonify({
+        'message': '비밀번호가 변경되었습니다',
+        'token': generate_token(user.id),
+    })
 
 
 @auth_bp.route('/subscription/request', methods=['POST'])

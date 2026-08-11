@@ -23,6 +23,7 @@ export default function PendingApprovalPage() {
     const [checking, setChecking] = useState(false);
     const [message, setMessage] = useState('');
     const [pendingSubReq, setPendingSubReq] = useState<SubscriptionRequest | null>(null);
+    const [rejectedSubReq, setRejectedSubReq] = useState<SubscriptionRequest | null>(null);
     const [subReqLoaded, setSubReqLoaded] = useState(false);
     const pollRef = useRef<number | null>(null);
 
@@ -30,8 +31,12 @@ export default function PendingApprovalPage() {
         if (!token) return null;
         try {
             const resp = await subscriptionAPI.getStatus(token);
-            const pending = (resp.requests || []).find((r) => r.status === 'pending') || null;
+            const reqs = resp.requests || [];
+            const pending = reqs.find((r) => r.status === 'pending') || null;
             setPendingSubReq(pending);
+            // 대기 중 요청이 없을 때 가장 최근 요청이 거절이면 사유를 노출한다 —
+            // 이전에는 거절돼도 "플랜 선택이 필요합니다" 로만 보여 유저가 알 수 없었다.
+            setRejectedSubReq(!pending && reqs[0]?.status === 'rejected' ? reqs[0] : null);
             return pending;
         } catch {
             return null;
@@ -118,8 +123,13 @@ export default function PendingApprovalPage() {
     let headerTitle = '승인 대기 중';
     let headerSubtitle = '구독 신청이 접수되었습니다. 입금 확인 후 관리자가 서비스를 활성화합니다.';
     if (!pendingSubReq && !isUpgradeFromActive) {
-        headerTitle = '플랜 선택이 필요합니다';
-        headerSubtitle = '계정은 만들어졌지만 아직 구독 신청이 접수되지 않았습니다. 플랜을 선택하면 입금 안내와 승인 신청이 이어집니다.';
+        if (rejectedSubReq) {
+            headerTitle = '구독 신청이 거절되었습니다';
+            headerSubtitle = '아래 사유를 확인한 뒤 다시 신청하거나 카카오톡으로 문의해 주세요.';
+        } else {
+            headerTitle = '플랜 선택이 필요합니다';
+            headerSubtitle = '계정은 만들어졌지만 아직 구독 신청이 접수되지 않았습니다. 플랜을 선택하면 입금 안내와 승인 신청이 이어집니다.';
+        }
     }
     if (isAibainAddon) {
         headerTitle = isAibainRenewal ? 'AI Brain 재구독 승인 대기 중' : 'AI Brain 활성화 대기 중';
@@ -154,6 +164,26 @@ export default function PendingApprovalPage() {
 
                     <h1 className="text-2xl font-bold text-white mb-2">{headerTitle}</h1>
                     <p className="text-gray-400 text-sm mb-6 leading-relaxed">{headerSubtitle}</p>
+
+                    {rejectedSubReq && !pendingSubReq && !isUpgradeFromActive && (
+                        <div className="p-4 rounded-xl bg-red-500/[0.07] border border-red-500/25 mb-6 text-left">
+                            <div className="flex items-center gap-2 mb-1.5">
+                                <i className="fas fa-circle-xmark text-red-400 text-sm" />
+                                <span className="text-red-300 font-bold text-sm">거절된 신청</span>
+                                <span className="text-[10px] text-gray-500">
+                                    {rejectedSubReq.processed_at ? new Date(rejectedSubReq.processed_at).toLocaleDateString() : ''}
+                                </span>
+                            </div>
+                            <div className="text-xs text-gray-400">
+                                요청 플랜: {rejectedSubReq.to_tier === 'premium' ? 'Ultra Pro' : 'Pro'}
+                            </div>
+                            <p className="text-xs text-gray-300 mt-1.5 leading-relaxed">
+                                {rejectedSubReq.admin_note
+                                    ? <>사유: {rejectedSubReq.admin_note}</>
+                                    : '사유가 기재되지 않았습니다. 카카오톡으로 문의해 주세요.'}
+                            </p>
+                        </div>
+                    )}
                     <p className="text-gray-600 text-[11px] mb-4">
                         30초마다 자동으로 승인 상태를 확인합니다.
                     </p>

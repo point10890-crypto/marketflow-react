@@ -2,7 +2,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { adminAPI } from '@/lib/api';
-import { UsersTab } from '@/pages/admin/AdminPage';
+import { UsersTab } from '@/pages/admin/tabs/UsersTab';
 
 describe('admin user search', () => {
   beforeEach(() => {

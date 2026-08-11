@@ -152,6 +152,9 @@ def create_app(config=None):
                     conn.execute(text('ALTER TABLE users ADD COLUMN aibain_alert_stage VARCHAR(10)'))
                 if 'pro_paused_at' not in user_cols:
                     conn.execute(text('ALTER TABLE users ADD COLUMN pro_paused_at DATETIME'))
+                # 비밀번호 변경 시각 — 이전 발급 토큰 무효화 근거 (2026-08-11)
+                if 'password_changed_at' not in user_cols:
+                    conn.execute(text('ALTER TABLE users ADD COLUMN password_changed_at DATETIME'))
         except Exception:
             pass  # table may not exist yet (create_all handles it)
 
