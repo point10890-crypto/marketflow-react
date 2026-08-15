@@ -134,23 +134,20 @@ ANALYSIS_PROMPT = """당신은 25년 경력의 기술적 분석 전문가입니�
 # Step 1: 차트 생성
 # ════════════════════════════════════════════════
 
-def generate_chart(ticker: str, name: str) -> str | None:
-    """종목 1년치 캔들차트 PNG 생성 → 파일 경로 반환"""
+def render_chart(df: 'pd.DataFrame', ticker: str, name: str) -> str | None:
+    """OHLCV 프레임으로 캔들차트 PNG 생성 → 파일 경로 반환.
+
+    가격 출처와 렌더링을 분리해 둔다. yfinance 가 스로틀링에 걸리면 로컬
+    daily_prices.csv 같은 다른 소스로 같은 차트를 그릴 수 있어야 한다
+    (scripts/screen_buy_candidates.py). 차트 모양이 같아야 Vision 판정도
+    서로 비교 가능하다.
+
+    df: DatetimeIndex + Open/High/Low/Close/Volume 컬럼.
+    """
     try:
-        df = yf.download(ticker, period='1y', progress=False)
-
-        if df.empty or len(df) < 20:
-            logger.warning(f"[SKIP] {name}({ticker}): 데이터 부족 ({len(df)}행)")
+        if df is None or df.empty or len(df) < 20:
+            logger.warning(f"[SKIP] {name}({ticker}): 데이터 부족 ({0 if df is None else len(df)}행)")
             return None
-
-        # MultiIndex 컬럼 처리
-        if isinstance(df.columns, pd.MultiIndex):
-            df = df.droplevel('Ticker', axis=1)
-
-        # 인덱스 정리 (timezone 제거)
-        df.index = pd.to_datetime(df.index)
-        if df.index.tz is not None:
-            df.index = df.index.tz_localize(None)
 
         # 이동평균선 addplot
         ap = []
@@ -186,6 +183,30 @@ def generate_chart(ticker: str, name: str) -> str | None:
         plt.close('all')
 
         return filepath
+    except Exception as e:
+        logger.error(f"[CHART ERROR] {name}({ticker}): {e}")
+        plt.close('all')
+        return None
+
+
+def generate_chart(ticker: str, name: str) -> str | None:
+    """yfinance 1년치를 받아 캔들차트 생성."""
+    try:
+        df = yf.download(ticker, period='1y', progress=False)
+        if df is None or df.empty:
+            logger.warning(f"[SKIP] {name}({ticker}): 가격 데이터 없음")
+            return None
+
+        # MultiIndex 컬럼 처리
+        if isinstance(df.columns, pd.MultiIndex):
+            df = df.droplevel('Ticker', axis=1)
+
+        # 인덱스 정리 (timezone 제거)
+        df.index = pd.to_datetime(df.index)
+        if df.index.tz is not None:
+            df.index = df.index.tz_localize(None)
+
+        return render_chart(df, ticker, name)
     except Exception as e:
         logger.error(f"[CHART ERROR] {name}({ticker}): {e}")
         plt.close('all')
