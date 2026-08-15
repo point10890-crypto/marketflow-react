@@ -32,6 +32,10 @@ load_dotenv()
 API_KEY = os.getenv('GOOGLE_API_KEY') or os.getenv('GEMINI_API_KEY', '')
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', '')
 MODEL = os.getenv('GEMINI_MODEL', 'gemini-2.5-flash')
+# Vision 폴백 모델. 하드코딩된 gpt-4o-mini 는 이 계정에 접근 권한이 없어
+# (403 model_not_found) 폴백이 항상 실패했다. 계정에서 쓸 수 있는 모델로 두고
+# 환경변수로 교체 가능하게 한다.
+OPENAI_VISION_MODEL = os.getenv('KR_CHART_OPENAI_MODEL') or os.getenv('OPENAI_MODEL') or 'gpt-5.5'
 
 if not API_KEY and not OPENAI_API_KEY:
     logger.error("GEMINI_API_KEY, OPENAI_API_KEY 둘 다 .env에 없습니다.")
@@ -61,44 +65,47 @@ plt.rcParams['axes.unicode_minus'] = False
 CHARTS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'charts_kr')
 os.makedirs(CHARTS_DIR, exist_ok=True)
 
-# ── 종목 리스트 (코스피/코스닥 상위 100) ──
+# ── 종목 리스트 (코스피 상위 75 + 코스닥 상위 25) ──
+# 2026-08-15 KRX 상장 기준으로 재생성. 이전 목록은 상장폐지된
+# 쌍용C&E(003410) 를 매 회차 조회 실패시키고 ETF(KODEX 200) 까지 섞여 있었다.
+# 갱신: scripts/refresh_kr_chart_universe.py --write
 STOCKS = {
-    # 코스피
-    "005930.KS": "삼성전자", "000660.KS": "SK하이닉스", "373220.KS": "LG에너지솔루션",
-    "207940.KS": "삼성바이오로직스", "005380.KS": "현대차", "000270.KS": "기아",
-    "006400.KS": "삼성SDI", "051910.KS": "LG화학", "035420.KS": "NAVER",
-    "035720.KS": "카카오", "005490.KS": "POSCO홀딩스", "055550.KS": "신한지주",
-    "105560.KS": "KB금융", "003670.KS": "포스코퓨처엠", "012330.KS": "현대모비스",
-    "066570.KS": "LG전자", "003550.KS": "LG", "032830.KS": "삼성생명",
-    "086790.KS": "하나금융지주", "034730.KS": "SK", "015760.KS": "한국전력",
-    "096770.KS": "SK이노베이션", "017670.KS": "SK텔레콤", "030200.KS": "KT",
-    "316140.KS": "우리금융지주", "009150.KS": "삼성전기", "010130.KS": "고려아연",
-    "028260.KS": "삼성물산", "034020.KS": "두산에너빌리티", "011200.KS": "HMM",
-    "018260.KS": "삼성에스디에스", "033780.KS": "KT&G", "000810.KS": "삼성화재",
-    "010950.KS": "S-Oil", "009540.KS": "HD한국조선해양", "267250.KS": "HD현대",
-    "003490.KS": "대한항공", "036570.KS": "엔씨소프트", "011170.KS": "롯데케미칼",
-    "024110.KS": "기업은행", "000720.KS": "현대건설", "010140.KS": "삼성중공업",
-    "047050.KS": "포스코인터내셔널", "009240.KS": "한샘", "090430.KS": "아모레퍼시픽",
-    "051900.KS": "LG생활건강", "329180.KS": "HD현대중공업", "004020.KS": "현대제철",
-    "000100.KS": "유한양행", "011780.KS": "금호석유", "016360.KS": "삼성증권",
-    "006800.KS": "미래에셋증권", "138040.KS": "메리츠금융지주", "003410.KS": "쌍용C&E",
-    "069500.KS": "KODEX 200", "352820.KS": "하이브", "259960.KS": "크래프톤",
-    "042660.KS": "한화오션", "402340.KS": "SK스퀘어", "361610.KS": "SK아이이테크놀로지",
-    "001570.KS": "금양", "271560.KS": "오리온", "000080.KS": "하이트진로",
-    "002790.KS": "아모레G", "088350.KS": "한화생명", "161390.KS": "한국타이어앤테크놀로지",
-    "004170.KS": "신세계", "021240.KS": "코웨이", "006360.KS": "GS건설",
-    "071050.KS": "한국금융지주", "139480.KS": "이마트", "326030.KS": "SK바이오팜",
-    "180640.KS": "한진칼", "032640.KS": "LG유플러스", "078930.KS": "GS",
-    # 코스닥
-    "247540.KQ": "에코프로비엠", "086520.KQ": "에코프로", "377300.KQ": "카카오페이",
-    "263750.KQ": "펄어비스", "068270.KQ": "셀트리온", "196170.KQ": "알테오젠",
-    "145020.KQ": "휴젤", "041510.KQ": "에스엠", "293490.KQ": "카카오게임즈",
-    "112040.KQ": "위메이드", "035900.KQ": "JYP Ent.", "357780.KQ": "솔브레인",
-    "028300.KQ": "에이치엘비", "095340.KQ": "ISC", "039030.KQ": "이오테크닉스",
-    "058470.KQ": "리노공업", "005290.KQ": "동진쎄미켐", "383220.KQ": "F&F",
-    "454910.KQ": "에이피알", "322510.KQ": "제이엘케이", "236810.KQ": "엔비티",
-    "403870.KQ": "HPSP", "067310.KQ": "하나마이크론", "218410.KQ": "RFHIC",
-    "041920.KQ": "메디아나",
+    # 코스피 (시총 상위 75)
+    "005930.KS": "삼성전자", "000660.KS": "SK하이닉스", "402340.KS": "SK스퀘어",
+    "009150.KS": "삼성전기", "005380.KS": "현대차", "373220.KS": "LG에너지솔루션",
+    "207940.KS": "삼성바이오로직스", "032830.KS": "삼성생명", "028260.KS": "삼성물산",
+    "012450.KS": "한화에어로스페이스", "105560.KS": "KB금융", "000270.KS": "기아",
+    "329180.KS": "HD현대중공업", "034020.KS": "두산에너빌리티", "055550.KS": "신한지주",
+    "012330.KS": "현대모비스", "068270.KS": "셀트리온", "034730.KS": "SK",
+    "006400.KS": "삼성SDI", "086790.KS": "하나금융지주", "035420.KS": "NAVER",
+    "066570.KS": "LG전자", "010120.KS": "LS ELECTRIC", "042660.KS": "한화오션",
+    "267260.KS": "HD현대일렉트릭", "298040.KS": "효성중공업", "000810.KS": "삼성화재",
+    "009540.KS": "HD한국조선해양", "005490.KS": "POSCO홀딩스", "010130.KS": "고려아연",
+    "316140.KS": "우리금융지주", "042700.KS": "한미반도체", "096770.KS": "SK이노베이션",
+    "017670.KS": "SK텔레콤", "015760.KS": "한국전력", "006800.KS": "미래에셋증권",
+    "000150.KS": "두산", "011200.KS": "HMM", "051910.KS": "LG화학",
+    "010140.KS": "삼성중공업", "138040.KS": "메리츠금융지주", "018260.KS": "삼성에스디에스",
+    "267250.KS": "HD현대", "033780.KS": "KT&G", "003550.KS": "LG",
+    "079550.KS": "LIG디펜스앤에어로스페이스", "035720.KS": "카카오", "010950.KS": "S-Oil",
+    "024110.KS": "기업은행", "064350.KS": "현대로템", "086280.KS": "현대글로비스",
+    "011070.KS": "LG이노텍", "272210.KS": "한화시스템", "003670.KS": "포스코퓨처엠",
+    "278470.KS": "에이피알", "047810.KS": "한국항공우주", "030200.KS": "KT",
+    "307950.KS": "현대오토에버", "000720.KS": "현대건설", "005830.KS": "DB손해보험",
+    "071050.KS": "한국금융지주", "259960.KS": "크래프톤", "078930.KS": "GS",
+    "005940.KS": "NH투자증권", "323410.KS": "카카오뱅크", "006260.KS": "LS",
+    "028050.KS": "삼성E&A", "003490.KS": "대한항공", "003230.KS": "삼양식품",
+    "047050.KS": "포스코인터내셔널", "161390.KS": "한국타이어앤테크놀로지", "443060.KS": "HD현대마린솔루션",
+    "016360.KS": "삼성증권", "180640.KS": "한진칼", "009830.KS": "한화솔루션",
+    # 코스닥 (시총 상위 25)
+    "196170.KQ": "알테오젠", "086520.KQ": "에코프로", "247540.KQ": "에코프로비엠",
+    "277810.KQ": "레인보우로보틱스", "036930.KQ": "주성엔지니어링", "028300.KQ": "HLB",
+    "240810.KQ": "원익IPS", "058470.KQ": "리노공업", "039030.KQ": "이오테크닉스",
+    "298380.KQ": "에이비엘바이오", "087010.KQ": "펩트론", "000250.KQ": "삼천당제약",
+    "141080.KQ": "리가켐바이오", "214450.KQ": "파마리서치", "108490.KQ": "로보티즈",
+    "222800.KQ": "심텍", "319660.KQ": "피에스케이", "095340.KQ": "ISC",
+    "214370.KQ": "케어젠", "403870.KQ": "HPSP", "310210.KQ": "보로노이",
+    "440110.KQ": "파두", "145020.KQ": "휴젤", "319400.KQ": "현대무벡스",
+    "084370.KQ": "유진테크",
 }
 
 # ── Gemini 분석 프롬프트 ──
@@ -278,6 +285,28 @@ def _call_gemini(client: genai.Client, ticker: str, name: str, image_path: str) 
         return None
 
 
+def _openai_chat_with_token_limit(client, *, model: str, messages: list,
+                                  max_output_tokens: int, **kwargs):
+    """토큰 한도 파라미터명을 모델에 맞춰 협상하는 chat 호출.
+
+    구형 모델은 `max_tokens`, 신형(gpt-5 계열)은 `max_completion_tokens` 만
+    받는다. 모델명으로 분기하면 모델을 바꿀 때마다 다시 깨지므로 거부 응답을
+    보고 재시도한다 (engine/llm_analyzer.py 의 동일 패턴).
+    """
+    try:
+        return client.chat.completions.create(
+            model=model, messages=messages, max_tokens=max_output_tokens, **kwargs
+        )
+    except Exception as exc:
+        text = str(exc)
+        if 'max_completion_tokens' not in text:
+            raise
+        return client.chat.completions.create(
+            model=model, messages=messages,
+            max_completion_tokens=max_output_tokens, **kwargs
+        )
+
+
 def _call_openai_vision(ticker: str, name: str, image_path: str) -> dict | None:
     """OpenAI Vision 폴백 — Gemini 실패 시 차트 분석"""
     try:
@@ -290,8 +319,9 @@ def _call_openai_vision(ticker: str, name: str, image_path: str) -> dict | None:
 
         prompt = ANALYSIS_PROMPT.format(name=name, ticker=ticker)
 
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
+        response = _openai_chat_with_token_limit(
+            client,
+            model=OPENAI_VISION_MODEL,
             messages=[
                 {"role": "system", "content": "You are a professional technical chart analyst. Respond only in valid JSON."},
                 {"role": "user", "content": [
@@ -299,8 +329,7 @@ def _call_openai_vision(ticker: str, name: str, image_path: str) -> dict | None:
                     {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{b64_image}", "detail": "high"}},
                 ]},
             ],
-            max_tokens=4096,
-            temperature=0.3,
+            max_output_tokens=4096,
         )
 
         text = response.choices[0].message.content.strip()
@@ -315,24 +344,61 @@ def _call_openai_vision(ticker: str, name: str, image_path: str) -> dict | None:
         return None
 
 
-# Gemini 세션 내 가용 상태 추적
-_gemini_available = True
+# ── Gemini 세션 내 가용 상태 추적 ──
+# 2026-08-15: 예전에는 단 1건이라도 실패하면 곧바로 Gemini 를 껐다. 삼성전기
+# 한 종목의 JSON 파싱 실패가 래치를 트립시켜 나머지 62종목이 전부 (권한 없는)
+# OpenAI 폴백으로 넘어가 통째로 드롭됐다 — 100종목 중 37종목만 분석된 원인.
+# 이제는 "연속" 실패가 임계치를 넘을 때만(=키 소진·인증 실패 같은 지속적 장애)
+# 끈다. 간헐적 실패는 종목 단위 재시도로 흡수한다.
+GEMINI_FAILURE_THRESHOLD = max(1, int(os.getenv('KR_CHART_GEMINI_FAILURE_THRESHOLD', '8')))
+GEMINI_ITEM_RETRIES = max(0, int(os.getenv('KR_CHART_GEMINI_RETRIES', '1')))
+
+_gemini_consecutive_failures = 0
+_gemini_disabled = False
+
+
+def reset_vision_health() -> None:
+    """세션 상태 초기화 (테스트/재실행용)."""
+    global _gemini_consecutive_failures, _gemini_disabled
+    _gemini_consecutive_failures = 0
+    _gemini_disabled = False
+
+
+def gemini_is_available() -> bool:
+    return not _gemini_disabled
+
+
+def _record_gemini_outcome(success: bool, ticker: str, name: str) -> None:
+    global _gemini_consecutive_failures, _gemini_disabled
+    if success:
+        _gemini_consecutive_failures = 0
+        return
+    _gemini_consecutive_failures += 1
+    if _gemini_consecutive_failures >= GEMINI_FAILURE_THRESHOLD and not _gemini_disabled:
+        _gemini_disabled = True
+        logger.warning(
+            f"[FALLBACK] Gemini 연속 {_gemini_consecutive_failures}종목 실패 "
+            f"→ 남은 종목은 OpenAI Vision 으로 전환 (마지막: {name}({ticker}))"
+        )
 
 
 async def analyze_chart(client: genai.Client, ticker: str, name: str,
                         image_path: str, semaphore: asyncio.Semaphore) -> dict | None:
     """비동기 래핑: Gemini Vision → OpenAI Vision 폴백"""
-    global _gemini_available
     async with semaphore:
         loop = asyncio.get_event_loop()
         result = None
 
-        # Gemini 시도 (이미 실패 확인되면 스킵)
-        if _gemini_available and API_KEY:
-            result = await loop.run_in_executor(_executor, _call_gemini, client, ticker, name, image_path)
-            if result is None and OPENAI_API_KEY:
-                _gemini_available = False
-                logger.warning(f"[FALLBACK] Gemini 실패 → OpenAI Vision 전환: {name}({ticker})")
+        # Gemini 시도 (지속적 장애로 꺼진 경우에만 스킵)
+        if gemini_is_available() and API_KEY:
+            for attempt in range(GEMINI_ITEM_RETRIES + 1):
+                result = await loop.run_in_executor(
+                    _executor, _call_gemini, client, ticker, name, image_path)
+                if result is not None:
+                    break
+                if attempt < GEMINI_ITEM_RETRIES:
+                    logger.info(f"  ↻ Gemini 재시도 {attempt + 1}/{GEMINI_ITEM_RETRIES}: {name}({ticker})")
+            _record_gemini_outcome(result is not None, ticker, name)
 
         # OpenAI Vision 폴백
         if result is None and OPENAI_API_KEY:
