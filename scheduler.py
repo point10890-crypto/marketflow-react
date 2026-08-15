@@ -383,6 +383,14 @@ class Config:
     VCP_UPDATE_TIME = os.environ.get('VCP_UPDATE_TIME', '16:00')         # 전 시장 VCP 시그널
     KR_VCP_MORNING_TIME = os.environ.get('KR_VCP_MORNING_TIME', '11:00') # 평일 오전 KR VCP refresh (주말 후 stale 방지)
     WAVE_SCAN_TIME = os.environ.get('WAVE_SCAN_TIME', '16:30')           # Wave 패턴 스캔
+    # AI 매수 후보 선별 — 로컬 daily_prices.csv 를 쓰므로 14:50 KR 갱신 이후,
+    # 그리고 16:00 VCP / 16:05 브리핑 / 16:30 Wave 와 겹치지 않는 시각으로 둔다.
+    BUY_SCREEN_TIME = os.environ.get('BUY_SCREEN_TIME', '17:30')
+    BUY_SCREEN_TARGET = int(os.environ.get('BUY_SCREEN_TARGET', '100'))
+    BUY_SCREEN_BATCH = int(os.environ.get('BUY_SCREEN_BATCH', '200'))
+    BUY_SCREEN_MAX_UNIVERSE = int(os.environ.get('BUY_SCREEN_MAX_UNIVERSE', '1200'))
+    # 기본은 개인 봇만. 구독자 채널로 내보내려면 명시적으로 켠다.
+    BUY_SCREEN_TO_CHANNEL = os.environ.get('BUY_SCREEN_TO_CHANNEL', 'false').lower() == 'true'
     AI_CHART_TIME = os.environ.get('AI_CHART_TIME', '14:00')             # AI Chart Analysis KR (Gemini Vision)
     US_AI_CHART_TIME = os.environ.get('US_AI_CHART_TIME', '04:30')       # AI Chart Analysis US (Gemini Vision) — 04:00 US 마켓갱신과 분리하여 리소스 경합 회피
     HISTORY_TIME = os.environ.get('KR_MARKET_HISTORY_TIME', '10:00')
@@ -3157,6 +3165,7 @@ def check_and_run_missed_tasks():
             (16 * 60,      'vcp_all',          run_vcp_all_markets,         'VCP 전시장',         23 * 60, None),
             (16 * 60 + 5,  'closing_briefing', run_closing_briefing,        'AI 마감 브리핑',     23 * 60, None),
             (16 * 60 + 30, 'wave_scan',        _run_wave_scan,              'Wave 패턴 스캔',     23 * 60, None),
+            (17 * 60 + 30, 'buy_screen',       _run_buy_candidate_screen,   'AI 매수 후보 선별',  23 * 60, None),
             # ── 금요일 전용 ──
             (17 * 60,      'lotto_analysis',   run_lotto_analysis,          'AI 로또 분석 게시',  23 * 60, {4}),
             # ── 토요일 전용 ──
@@ -3393,6 +3402,55 @@ def _run_orphan_file_audit() -> bool:
         return True
     except Exception as e:
         logger.warning(f"orphan audit failed: {type(e).__name__}: {e}")
+        return False
+
+
+def _run_buy_candidate_screen() -> bool:
+    """AI 차트 매수 후보 선별 — BUY 판정 종목을 목표 개수만큼 채워 텔레그램 발송.
+
+    _run_ai_chart_analysis 와 다르다: 저쪽은 고정 100종목을 분석해 신호를
+    집계하고, 이쪽은 **BUY 종목을 목표 개수만큼 확보**할 때까지 시총 상위
+    유니버스를 배치로 넓혀 간다. 가격은 로컬 daily_prices.csv 를 쓰므로
+    14:50 KR 갱신 작업이 끝난 뒤에 돌아야 당일 데이터가 반영된다.
+    """
+    logger.info("=" * 60)
+    logger.info(f"🟢 AI 매수 후보 선별 시작 (목표 {Config.BUY_SCREEN_TARGET}종목)")
+    logger.info("=" * 60)
+
+    try:
+        script = os.path.join(Config.BASE_DIR, 'scripts', 'screen_buy_candidates.py')
+        cmd = [Config.PYTHON_PATH, script,
+               '--target', str(Config.BUY_SCREEN_TARGET),
+               '--batch', str(Config.BUY_SCREEN_BATCH),
+               '--max-universe', str(Config.BUY_SCREEN_MAX_UNIVERSE)]
+        if Config.BUY_SCREEN_TO_CHANNEL:
+            cmd.append('--channel')
+
+        result = subprocess.run(
+            cmd, capture_output=True, text=True, timeout=3600,
+            cwd=Config.BASE_DIR,
+            env={**os.environ, 'PYTHONIOENCODING': 'utf-8'},
+        )
+        if result.returncode != 0:
+            logger.error(f"❌ 매수 후보 선별 실패:\n{(result.stderr or '')[-800:]}")
+            return False
+
+        csv_path = os.path.join(Config.DATA_DIR, 'buy_candidates_kr.csv')
+        if not os.path.exists(csv_path):
+            logger.error("❌ 매수 후보 CSV 미생성")
+            return False
+        import pandas as pd
+        picks = pd.read_csv(csv_path, encoding='utf-8-sig')
+        logger.info(f"🟢 매수 후보 선별 완료: {len(picks)}종목")
+        if len(picks) < Config.BUY_SCREEN_TARGET:
+            logger.warning(f"⚠️ 목표 {Config.BUY_SCREEN_TARGET}종목 미달 ({len(picks)}종목) "
+                           f"— BUY_SCREEN_MAX_UNIVERSE 확대 검토")
+        return True
+    except subprocess.TimeoutExpired:
+        logger.error("❌ 매수 후보 선별 타임아웃 (60분)")
+        return False
+    except Exception as e:
+        logger.error(f"❌ 매수 후보 선별 실패: {e}", exc_info=True)
         return False
 
 
@@ -3847,6 +3905,10 @@ class Scheduler:
             getattr(schedule.every(), day).at(Config.WAVE_SCAN_TIME).do(
                 self._with_record(_run_wave_scan, 'wave_scan',
                                   max_retries=1, retry_delay=600))
+            # 17:30 — AI 매수 후보 선별 (BUY 목표 개수 충족까지) → 텔레그램
+            getattr(schedule.every(), day).at(Config.BUY_SCREEN_TIME).do(
+                self._with_record(_run_buy_candidate_screen, 'buy_screen',
+                                  max_retries=1, retry_delay=900))
             # 09:05 — AI 조간 브리핑 (US 시장 중심)
             getattr(schedule.every(), day).at(Config.MORNING_BRIEFING_TIME).do(
                 self._with_record(run_morning_briefing, 'morning_briefing',
@@ -3906,6 +3968,8 @@ class Scheduler:
         logger.info(f"   📈 평일 {Config.VCP_UPDATE_TIME}  전 시장 VCP 시그널 (KR+US+Crypto) → 텔레그램")
         logger.info(f"   🌊 평일 {Config.WAVE_SCAN_TIME}  Wave 패턴 스캔 (KR)")
         logger.info(f"   🤖 평일 {Config.AI_CHART_TIME}  AI Chart Analysis KR (Gemini Vision)")
+        logger.info(f"   🟢 평일 {Config.BUY_SCREEN_TIME}  AI 매수 후보 {Config.BUY_SCREEN_TARGET}종목 선별 → 텔레그램"
+                    f"{' (채널 포함)' if Config.BUY_SCREEN_TO_CHANNEL else ' (개인봇)'}")
         logger.info(f"   🤖 평일 {Config.US_AI_CHART_TIME}  US AI Chart Analysis (Gemini Vision)")
         logger.info(f"   📰 평일 {Config.MORNING_BRIEFING_TIME}  AI 조간 브리핑 (Gemini)")
         logger.info(f"   📰 평일 {Config.CLOSING_BRIEFING_TIME}  AI 마감 브리핑 (Gemini)")
@@ -4008,6 +4072,7 @@ def main():
     parser.add_argument('--alpha-scanner', action='store_true', help='MiroFish Alpha Scanner alert check')
     # AI Chart Analysis
     parser.add_argument('--ai-chart', action='store_true', help='AI Chart Analysis KR (Gemini Vision 100종목)')
+    parser.add_argument('--buy-screen', action='store_true', help='AI 매수 후보 선별 (BUY 목표 개수까지)')
     parser.add_argument('--us-ai-chart', action='store_true', help='US AI Chart Analysis (Gemini Vision S&P 500)')
     # 로또 분석
     parser.add_argument('--lotto', action='store_true', help='AI 로또 분석 게시 (즉시 실행)')
@@ -4182,6 +4247,12 @@ def main():
 
     if args.ai_chart:
         _run_ai_chart_analysis()
+        ran_any = True
+        if not args.daemon:
+            return
+
+    if args.buy_screen:
+        _run_buy_candidate_screen()
         ran_any = True
         if not args.daemon:
             return
