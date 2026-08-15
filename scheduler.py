@@ -3450,6 +3450,46 @@ def _run_wave_scan() -> bool:
         return False
 
 
+_AI_CHART_SIGNAL_STYLE = [
+    ('BUY', '🟢', '매수'),
+    ('HOLD', '🟡', '관망'),
+    ('SELL', '🔴', '매도'),
+]
+# send_telegram_long 은 빈 줄("\n\n") 경계로만 자른다. 한 그룹이 통째로
+# 4000자를 넘으면 못 자르므로, 그룹 안에서도 이 줄 수마다 경계를 넣는다.
+_AI_CHART_ROWS_PER_BLOCK = 20
+
+
+def format_ai_chart_message(df) -> str:
+    """AI Chart 결과를 텔레그램 본문으로 — 분석한 종목을 전부 싣는다.
+
+    예전에는 BUY 상위 10종목만 실어서 "100종목 분석"이라 써놓고 정작 목록은
+    잘려 나갔다. 신호별로 묶고 확신도 내림차순으로 전부 나열한다.
+    """
+    counts = {sig: int((df['signal'] == sig).sum()) for sig, _, _ in _AI_CHART_SIGNAL_STYLE}
+    head = [
+        f"<b>🤖 AI Chart Analysis ({len(df)}종목)</b>",
+        " | ".join(f"{icon} {sig}: {counts[sig]}" for sig, icon, _ in _AI_CHART_SIGNAL_STYLE),
+    ]
+    blocks = ["\n".join(head)]
+
+    for sig, icon, label in _AI_CHART_SIGNAL_STYLE:
+        sub = df[df['signal'] == sig].sort_values('confidence', ascending=False)
+        if sub.empty:
+            continue
+        rows = [
+            f"  {icon} <b>{r['종목명']}</b> ({r['종목코드']}) conf={r['confidence']}"
+            for _, r in sub.iterrows()
+        ]
+        for i in range(0, len(rows), _AI_CHART_ROWS_PER_BLOCK):
+            chunk = rows[i:i + _AI_CHART_ROWS_PER_BLOCK]
+            title = (f"<b>{icon} {sig} · {label} ({len(sub)})</b>" if i == 0
+                     else f"<b>{icon} {sig} (계속)</b>")
+            blocks.append(title + "\n" + "\n".join(chunk))
+
+    return "\n\n".join(blocks)
+
+
 def _run_ai_chart_analysis() -> bool:
     """AI Chart Analysis — Gemini Vision 100종목 차트 분석"""
     logger.info("=" * 60)
@@ -3473,15 +3513,10 @@ def _run_ai_chart_analysis() -> bool:
                 buy_count = len(df[df['signal'] == 'BUY'])
                 logger.info(f"🤖 AI Chart 분석 완료: {len(df)}개 종목 (BUY: {buy_count})")
 
-                # 텔레그램 알림 (BUY 종목)
-                if buy_count > 0:
-                    buy_df = df[df['signal'] == 'BUY'].sort_values('confidence', ascending=False)
-                    lines = [f"<b>🤖 AI Chart Analysis ({len(df)}종목)</b>\n"]
-                    lines.append(f"🟢 BUY: {buy_count} | 🟡 HOLD: {len(df[df['signal'] == 'HOLD'])} | 🔴 SELL: {len(df[df['signal'] == 'SELL'])}\n")
-                    for _, row in buy_df.head(10).iterrows():
-                        lines.append(f"  🟢 <b>{row['종목명']}</b> ({row['종목코드']}) conf={row['confidence']}")
+                # 텔레그램 알림 — 분석한 종목 전체 (BUY 상위 10개만 보내던 것을 교체)
+                if len(df) > 0:
                     try:
-                        send_telegram('\n'.join(lines))
+                        send_telegram_long(format_ai_chart_message(df))
                     except Exception as e:
                         logger.warning(f"⚠️ KR AI Chart 텔레그램 전송 실패: {e}")
 
