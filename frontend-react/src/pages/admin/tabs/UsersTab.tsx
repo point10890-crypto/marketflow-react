@@ -407,8 +407,8 @@ export function UsersTab({ apiToken, currentUserId }: { apiToken?: string; curre
                                                         <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${TIER_STYLES[acc.tier || 'none']?.cls || 'bg-gray-500/20 text-gray-400'}`}>
                                                             {TIER_STYLES[acc.tier || 'none']?.label || 'No Tier'}
                                                         </span>
-                                                        <span className={`text-[10px] ${acc.status === 'approved' ? 'text-emerald-400' : acc.status === 'suspended' ? 'text-red-400' : 'text-amber-400'}`}>
-                                                            {acc.status === 'approved' ? '활성' : acc.status === 'suspended' ? '정지' : '대기'}
+                                                        <span className={`text-[10px] ${acc.status === 'approved' ? 'text-emerald-400' : acc.status === 'suspended' ? 'text-red-400' : acc.status === 'expired' ? 'text-orange-400' : 'text-amber-400'}`}>
+                                                            {acc.status === 'approved' ? '활성' : acc.status === 'suspended' ? '정지' : acc.status === 'expired' ? '만료' : '대기'}
                                                         </span>
                                                         <span className="text-[10px] text-gray-600 hidden sm:inline">
                                                             {acc.last_login_at ? `로그인 ${new Date(acc.last_login_at).toLocaleDateString('ko-KR')}` : '미접속'}
@@ -493,6 +493,7 @@ export function UsersTab({ apiToken, currentUserId }: { apiToken?: string; curre
                         { key: 'all', label: '상태 전체', cls: 'text-gray-500' },
                         { key: 'pending', label: '대기', cls: 'text-amber-400' },
                         { key: 'approved', label: '승인', cls: 'text-emerald-400' },
+                        { key: 'expired', label: '만료', cls: 'text-orange-400' },
                         { key: 'suspended', label: '정지', cls: 'text-red-400' },
                     ].map(tab => (
                         <button key={tab.key} onClick={() => { setFilterStatus(tab.key); setPage(1); }}
@@ -553,6 +554,7 @@ export function UsersTab({ apiToken, currentUserId }: { apiToken?: string; curre
                                                     {isAdmin && <span className="text-[9px] px-1 py-0.5 bg-red-500/20 text-red-400 rounded shrink-0">관리자</span>}
                                                     {isSuspended && <span className="text-[9px] px-1 py-0.5 bg-red-500/20 text-red-400 rounded shrink-0">정지</span>}
                                                     {user.status === 'pending' && <span className="text-[9px] px-1 py-0.5 bg-amber-500/20 text-amber-400 rounded shrink-0">대기</span>}
+                                                    {user.status === 'expired' && <span className="text-[9px] px-1 py-0.5 bg-orange-500/20 text-orange-400 rounded shrink-0">만료</span>}
                                                     {/* 중복 의심 경고 배지 — 승인 전 눈에 띄게 */}
                                                     {dupInfo && (
                                                         <span
@@ -859,7 +861,7 @@ export function UsersTab({ apiToken, currentUserId }: { apiToken?: string; curre
                                         { label: '가입일', value: detailUser.created_at ? new Date(detailUser.created_at).toLocaleString('ko-KR') : '-' },
                                         { label: '마지막 로그인', value: detailUser.last_login_at ? new Date(detailUser.last_login_at).toLocaleString('ko-KR') : '없음' },
                                         { label: '플랜', value: detailUser.tier === 'premium' ? 'Ultra Pro' : detailUser.tier === 'pro' ? 'Pro' : '없음' },
-                                        { label: '상태', value: detailUser.status === 'approved' ? '승인' : detailUser.status === 'pending' ? '대기' : detailUser.status === 'suspended' ? '정지' : detailUser.status },
+                                        { label: '상태', value: detailUser.status === 'approved' ? '승인' : detailUser.status === 'pending' ? '대기' : detailUser.status === 'suspended' ? '정지' : detailUser.status === 'expired' ? '만료 (재구독 대기)' : detailUser.status },
                                         { label: '역할', value: detailUser.role === 'admin' ? '관리자' : '일반 사용자' },
                                         { label: 'Pro 만료일', value: detailUser.pro_expires_at ? new Date(detailUser.pro_expires_at).toLocaleDateString('ko-KR') : '—' },
                                     ].map(item => (

@@ -1,9 +1,10 @@
 import { useEffect, useState, useCallback } from 'react';
-import { adminAPI, SubscriptionRequest, PendingSignup } from '@/lib/api';
+import { adminAPI, SubscriptionRequest, PendingSignup, ExpiredMember } from '@/lib/api';
 
 export default function SubscriptionsTab({ apiToken, onCountChange }: { apiToken?: string; onCountChange: (n: number) => void }) {
     const [requests, setRequests] = useState<SubscriptionRequest[]>([]);
     const [pendingSignups, setPendingSignups] = useState<PendingSignup[]>([]);
+    const [expiredMembers, setExpiredMembers] = useState<ExpiredMember[]>([]);
     const [loading, setLoading] = useState(true);
     const [actionMsg, setActionMsg] = useState('');
     // 처리 중인 request id 추적 — 같은 row 더블클릭 방지 + 이미 처리된 row 보호
@@ -18,6 +19,7 @@ export default function SubscriptionsTab({ apiToken, onCountChange }: { apiToken
             const reqs = res.requests || [];
             setRequests(reqs);
             setPendingSignups(res.pending_signups || []);
+            setExpiredMembers(res.expired_members || []);
             onCountChange(reqs.filter((r: SubscriptionRequest) => r.status === 'pending').length);
         } catch { /* */ }
         if (!silent) setLoading(false);
@@ -103,6 +105,21 @@ export default function SubscriptionsTab({ apiToken, onCountChange }: { apiToken
             showAction(`❌ ${err.message}`);
         } finally {
             setGrantingUser(prev => { const n = new Set(prev); n.delete(userId); return n; });
+        }
+    };
+
+    // 만료 회원 — 원클릭 재활성화 (tier 재부여 = status approved 승격 + 30일)
+    const handleReactivate = async (member: ExpiredMember, tier: 'pro' | 'premium') => {
+        if (grantingUser.has(member.id)) return;
+        setGrantingUser(prev => { const n = new Set(prev); n.add(member.id); return n; });
+        try {
+            await adminAPI.setUserTier(member.id, tier, apiToken);
+            setExpiredMembers(prev => prev.filter(u => u.id !== member.id));
+            showAction(`✅ ${member.name} — ${tier === 'premium' ? 'Ultra Pro' : 'Pro'} 재활성화 완료`);
+        } catch (err: any) {
+            showAction(`❌ ${err.message}`);
+        } finally {
+            setGrantingUser(prev => { const n = new Set(prev); n.delete(member.id); return n; });
         }
     };
 
@@ -228,6 +245,63 @@ export default function SubscriptionsTab({ apiToken, onCountChange }: { apiToken
                 )}
             </div>
 
+            {/* 만료 · 재구독 대기 — 재구독 요청 제출 전인 만료 회원 (이탈 방지 팔로업 대상) */}
+            {expiredMembers.length > 0 && (
+                <div>
+                    <h2 className="text-lg font-semibold text-amber-400 mb-3">
+                        <i className="fas fa-hourglass-end mr-2" />만료 · 재구독 대기 ({expiredMembers.length})
+                    </h2>
+                    <div className="space-y-3">
+                        {expiredMembers.map(m => (
+                            <div key={m.id} className="apple-glass rounded-xl p-4 border border-amber-500/20">
+                                <div className="flex items-center justify-between flex-wrap gap-3">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 bg-amber-500/10 rounded-full flex items-center justify-center">
+                                            <i className="fas fa-hourglass-end text-amber-400" />
+                                        </div>
+                                        <div>
+                                            <div className="text-white font-medium">{m.name || `User #${m.id}`}</div>
+                                            <div className="text-xs text-gray-400">{m.email}</div>
+                                            <div className="text-xs text-gray-500 mt-1 flex flex-wrap items-center gap-1">
+                                                <span className="px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-300 font-bold">
+                                                    {m.tier === 'premium' ? 'Ultra Pro' : 'Pro'} 만료
+                                                    {m.days_since_expiry != null && ` · ${m.days_since_expiry}일 경과`}
+                                                </span>
+                                                {m.pro_expires_at && (
+                                                    <span className="px-1.5 py-0.5 rounded bg-gray-500/20 text-gray-400">
+                                                        만료일 {new Date(m.pro_expires_at).toLocaleDateString('ko-KR')}
+                                                    </span>
+                                                )}
+                                                {m.last_login_at && (
+                                                    <span className="px-1.5 py-0.5 rounded bg-sky-500/10 text-sky-300">
+                                                        <i className="fas fa-right-to-bracket text-[10px] mr-1" />
+                                                        최근 로그인 {new Date(m.last_login_at).toLocaleDateString('ko-KR')}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <button onClick={() => handleReactivate(m, 'pro')}
+                                            disabled={grantingUser.has(m.id)}
+                                            className="px-4 py-2 rounded-lg text-sm font-medium bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                                            <i className={`fas ${grantingUser.has(m.id) ? 'fa-spinner fa-spin' : 'fa-rotate-right'} mr-1`} />
+                                            Pro 재활성화
+                                        </button>
+                                        <button onClick={() => handleReactivate(m, 'premium')}
+                                            disabled={grantingUser.has(m.id)}
+                                            className="px-4 py-2 rounded-lg text-sm font-medium bg-purple-500/20 text-purple-400 hover:bg-purple-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                                            <i className={`fas ${grantingUser.has(m.id) ? 'fa-spinner fa-spin' : 'fa-gem'} mr-1`} />
+                                            Ultra Pro
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
             {/* 플랜 미선택 — 가입만 한 pending 유저 (승인요청 제출 전/이탈) */}
             {pendingSignups.length > 0 && (
                 <div>
@@ -283,8 +357,8 @@ export default function SubscriptionsTab({ apiToken, onCountChange }: { apiToken
                     <h2 className="text-lg font-semibold text-gray-400 mb-3">
                         <i className="fas fa-history mr-2" />처리 이력 ({processed.length})
                     </h2>
-                    <div className="apple-glass rounded-xl overflow-hidden">
-                        <table className="w-full">
+                    <div className="apple-glass rounded-xl overflow-hidden overflow-x-auto">
+                        <table className="w-full min-w-[560px]">
                             <thead>
                                 <tr className="border-b border-white/5">
                                     <th className="text-left text-xs font-semibold text-gray-400 uppercase px-4 py-3">회원</th>

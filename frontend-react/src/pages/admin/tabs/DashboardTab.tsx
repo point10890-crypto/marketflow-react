@@ -98,6 +98,13 @@ export default function DashboardTab({ data, onNavigate, apiToken }: {
             tab: 'pro' as AdminTabKey,
         },
         {
+            count: data?.churn?.expired_unrenewed ?? data?.expired_users ?? 0,
+            label: '만료 · 재구독 대기',
+            sub: '재구독 유도 팔로업 (원클릭 재활성화)',
+            icon: 'fa-hourglass-end', color: 'text-orange-400', bg: 'bg-orange-500/10', border: 'border-orange-500/25',
+            tab: 'subscriptions' as AdminTabKey,
+        },
+        {
             count: data?.aibain_expiring_soon || 0,
             label: 'AI Brain 만료 임박 (D-3)',
             sub: '애드온 갱신 안내',
@@ -179,6 +186,33 @@ export default function DashboardTab({ data, onNavigate, apiToken }: {
                             className="text-center py-1 hover:bg-white/[0.03] rounded-lg transition-colors"
                         >
                             <div className={`text-xl font-bold ${s.color}`}>{s.value}</div>
+                            <div className="text-[10px] text-gray-500 mt-0.5">{s.label}</div>
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            {/* 2b. 이탈(churn) 지표 — 만료→재구독 퍼널 */}
+            <div className="apple-glass rounded-xl overflow-hidden">
+                <div className="flex items-center gap-2 px-4 py-2.5 border-b border-white/[0.06]">
+                    <i className="fas fa-arrows-rotate text-orange-400 text-xs" />
+                    <span className="text-xs font-semibold text-white">구독 유지 · 재구독</span>
+                </div>
+                <div className="grid grid-cols-3 divide-x divide-white/[0.06]">
+                    {[
+                        { label: '만료 임박 D-3', value: data?.churn?.expiring_d3 ?? 0, color: 'text-red-400', icon: 'fa-hourglass-half', tab: 'pro' as AdminTabKey },
+                        { label: '만료 후 미재구독', value: data?.churn?.expired_unrenewed ?? 0, color: 'text-orange-400', icon: 'fa-user-clock', tab: 'subscriptions' as AdminTabKey },
+                        { label: '이번 달 재구독', value: data?.churn?.resubscribed_this_month ?? 0, color: 'text-emerald-400', icon: 'fa-rotate-right', tab: 'subscriptions' as AdminTabKey },
+                    ].map(s => (
+                        <button
+                            key={s.label}
+                            onClick={() => onNavigate(s.tab)}
+                            className="text-center py-3 hover:bg-white/[0.03] transition-colors"
+                        >
+                            <div className={`text-lg font-bold ${s.color}`}>
+                                <i className={`fas ${s.icon} text-[10px] mr-1.5 opacity-70`} />
+                                {s.value}
+                            </div>
                             <div className="text-[10px] text-gray-500 mt-0.5">{s.label}</div>
                         </button>
                     ))}

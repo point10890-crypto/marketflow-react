@@ -64,7 +64,8 @@ export default function PlanSelectPage() {
                                     </span>
                                 </div>
                                 <p className="mt-2 text-sm text-rose-100/75 leading-relaxed">
-                                    기존 계정은 유지됩니다. 원하는 플랜을 선택하고 입금자명만 확인하면 승인 대기 단계로 넘어갑니다.
+                                    기존 계정과 이용 기록은 그대로 유지됩니다. 플랜을 선택하고 입금자명만 확인하면 승인 대기 단계로
+                                    넘어가며, <strong className="text-rose-50">승인 즉시 30일이 새로 시작</strong>됩니다.
                                 </p>
                                 {expiredAt && (
                                     <p className="mt-1 text-xs text-rose-200/60 tabular-nums">
@@ -113,9 +114,11 @@ export default function PlanSelectPage() {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                    <PlanCard plan="pro" onSelect={select} badgeIcon="fa-crown" badgeText="기본" />
+                    <PlanCard plan="pro" onSelect={select} badgeIcon="fa-crown" badgeText="기본"
+                              isPrevious={isExpired && user?.tier === 'pro'} />
                     <PlanCard plan="pro_aibain" onSelect={select} badgeIcon="fa-robot" badgeText="추천" highlighted />
-                    <PlanCard plan="premium" onSelect={select} badgeIcon="fa-gem" badgeText="평생 이용" />
+                    <PlanCard plan="premium" onSelect={select} badgeIcon="fa-gem" badgeText="평생 이용"
+                              isPrevious={isExpired && user?.tier === 'premium'} />
                     <PlanCard plan="premium_aibain" onSelect={select} badgeIcon="fa-crown" badgeText="평생 + AI Brain" />
                 </div>
 
@@ -160,6 +163,8 @@ interface PlanCardProps {
     badgeIcon: string;
     badgeText: string;
     highlighted?: boolean;
+    /** 재구독 화면에서 만료 전 이용하던 플랜 — 원클릭 재시작 대상으로 강조 */
+    isPrevious?: boolean;
 }
 
 const COLOR_STYLES: Record<BillingPlan, {
@@ -219,7 +224,7 @@ const COLOR_STYLES: Record<BillingPlan, {
     },
 };
 
-function PlanCard({ plan, onSelect, badgeIcon, badgeText, highlighted }: PlanCardProps) {
+function PlanCard({ plan, onSelect, badgeIcon, badgeText, highlighted, isPrevious }: PlanCardProps) {
     const meta = PLAN_PAYMENT_META[plan];
     const c = COLOR_STYLES[plan];
     const priceMajor = meta.amountNumber.toLocaleString();
@@ -229,9 +234,15 @@ function PlanCard({ plan, onSelect, badgeIcon, badgeText, highlighted }: PlanCar
         <button
             type="button"
             onClick={() => onSelect(plan)}
-            className={`p-6 rounded-2xl border ${c.border} bg-[#1c1c1e] ring-1 ${c.ring} hover:ring-2 ${c.hoverRing} transition-all text-left relative overflow-hidden ${highlighted ? 'sm:scale-[1.02]' : ''}`}
+            autoFocus={isPrevious}
+            className={`p-6 rounded-2xl border ${c.border} bg-[#1c1c1e] ${isPrevious ? 'ring-2 ring-emerald-400/60' : `ring-1 ${c.ring}`} hover:ring-2 ${c.hoverRing} transition-all text-left relative overflow-hidden ${highlighted ? 'sm:scale-[1.02]' : ''}`}
         >
             <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl ${c.bgOverlay} rounded-bl-full pointer-events-none`} />
+            {isPrevious && (
+                <div className="absolute top-3 right-3 inline-flex items-center gap-1 rounded-full border border-emerald-400/40 bg-emerald-500/15 px-2.5 py-1 text-[10px] font-black text-emerald-200 uppercase tracking-wider">
+                    <i className="fas fa-history" /> 이전 플랜
+                </div>
+            )}
             <div className={`inline-flex items-center gap-1 px-3 py-1 rounded-full ${c.badgeBg} ${c.badgeText} text-xs font-bold mb-3`}>
                 <i className={`fas ${badgeIcon}`} /> {badgeText}
             </div>
@@ -256,7 +267,11 @@ function PlanCard({ plan, onSelect, badgeIcon, badgeText, highlighted }: PlanCar
                 ))}
             </ul>
             <div className={`w-full py-3 rounded-xl bg-gradient-to-r ${c.btn} ${c.btnText} font-bold text-center text-sm`}>
-                {meta.label} 선택
+                {isPrevious ? (
+                    <><i className="fas fa-rotate-right mr-1.5" />{meta.label} 다시 시작하기</>
+                ) : (
+                    `${meta.label} 선택`
+                )}
             </div>
         </button>
     );

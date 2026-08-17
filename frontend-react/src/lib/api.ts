@@ -860,6 +860,12 @@ export interface AdminDashboard {
     pending_users: number;
     approved_users: number;
     suspended_users: number;
+    expired_users?: number;           // 만료 · 재구독 대기
+    churn?: {
+        expiring_d3: number;              // 만료 임박 (D-3 이내)
+        expired_unrenewed: number;        // 만료 후 미재구독
+        resubscribed_this_month: number;  // 이번 달 재구독 승인
+    };
     pending_subscriptions: number;
     pending_signups?: number;         // 가입만 완료 · 플랜 미선택 (팔로업 대상)
     pro_expiring_soon?: number;       // Pro 베이스 D-3 이내 만료 임박
@@ -902,6 +908,17 @@ export interface PendingSignup {
     name: string;
     created_at: string | null;
     requested_tier: string | null;
+}
+
+/** 만료 · 재구독 대기 회원 (사각지대 제로 원칙의 만료 확장) */
+export interface ExpiredMember {
+    id: number;
+    email: string;
+    name: string;
+    tier: string | null;
+    pro_expires_at: string | null;
+    days_since_expiry: number | null;
+    last_login_at: string | null;
 }
 
 // ── Authenticated API helpers (Bearer token 포함) ──
@@ -1025,7 +1042,7 @@ export const adminAPI = {
     resetPassword: (id: number, password: string, token?: string, note?: string) => putAuthAPI<{ message: string; user: AdminUser }>(`/api/admin/users/${id}/reset-password`, { password, note }, token),
     deleteUser: (id: number, token?: string) => deleteAuthAPI<{ message: string }>(`/api/admin/users/${id}`, token),
     getDuplicates: (token?: string) => fetchAuthAPI<{ groups: Array<{ reason: string; key: string; accounts: Array<{ id: number; email: string; name: string; tier: string | null; status: string; created_at: string | null; last_login_at: string | null }> }>; total_groups: number }>('/api/admin/users/duplicates', token),
-    getSubscriptions: (token?: string) => fetchAuthAPI<{ requests: SubscriptionRequest[]; pending_signups?: PendingSignup[] }>('/api/admin/subscriptions', token),
+    getSubscriptions: (token?: string) => fetchAuthAPI<{ requests: SubscriptionRequest[]; pending_signups?: PendingSignup[]; expired_members?: ExpiredMember[] }>('/api/admin/subscriptions', token),
     approveSubscription: (id: number, token?: string) => putAuthAPI<{ request: SubscriptionRequest }>(`/api/admin/subscriptions/${id}/approve`, undefined, token),
     rejectSubscription: (id: number, note?: string, token?: string) => putAuthAPI<{ request: SubscriptionRequest }>(`/api/admin/subscriptions/${id}/reject`, { note }, token),
     getNotifications: (token?: string, page = 1) => fetchAuthAPI<{ notifications: AdminNotification[]; total: number; page: number; total_pages: number }>(`/api/admin/notifications?page=${page}`, token),

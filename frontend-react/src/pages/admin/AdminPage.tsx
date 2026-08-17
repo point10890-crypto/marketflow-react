@@ -65,6 +65,12 @@ export default function AdminPage() {
                                 {pendingCount}
                             </span>
                         )}
+                        {tab.key === 'subscriptions' && (dashData?.expired_users ?? 0) > 0 && (
+                            <span title={`만료 · 재구독 대기 ${dashData?.expired_users}명`}
+                                  className="px-1.5 py-0.5 rounded-full bg-orange-500/20 text-orange-400 text-[10px] font-bold">
+                                {dashData?.expired_users}
+                            </span>
+                        )}
                     </button>
                 ))}
             </div>
