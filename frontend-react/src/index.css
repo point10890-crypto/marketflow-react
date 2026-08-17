@@ -535,3 +535,128 @@ body {
   text-decoration: underline;
   cursor: pointer;
 }
+
+/* ═══════════════════════════════════════════════════════
+   Public zone — 다크 터미널 에디토리얼 (/community, /privacy, /terms, /about)
+   ═══════════════════════════════════════════════════════ */
+
+.pub-root {
+    font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont,
+        "SF Pro Text", "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* 상단 은은한 앰버 글로우 — 대시보드와 같은 세계관, 더 차분한 톤 */
+.pub-glow {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background:
+        radial-gradient(60% 40% at 50% -10%, rgba(245, 158, 11, 0.07), transparent 70%),
+        radial-gradient(40% 30% at 85% 0%, rgba(56, 189, 248, 0.04), transparent 70%);
+}
+
+/* 섹션 라벨 — 터미널 코멘트 모티프 */
+.pub-label {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: rgb(245 158 11 / 0.75);
+}
+
+/* 진입 스태거 */
+@keyframes pubRise {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.pub-rise { animation: pubRise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
+@media (prefers-reduced-motion: reduce) {
+    .pub-rise { animation: none; }
+}
+
+/* 에디토리얼 본문 — 서버 생성 HTML 게시물 */
+.pub-prose {
+    font-size: 15px;
+    line-height: 1.9;
+    color: rgb(209 213 219);
+    word-break: keep-all;
+    overflow-wrap: break-word;
+}
+.pub-prose h1, .pub-prose h2, .pub-prose h3 {
+    color: #fff;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    margin: 1.6em 0 0.6em;
+    line-height: 1.4;
+}
+.pub-prose h1 { font-size: 1.35em; }
+.pub-prose h2 { font-size: 1.2em; }
+.pub-prose h3 { font-size: 1.05em; }
+.pub-prose p { margin: 0.9em 0; }
+.pub-prose a { color: rgb(252 211 77); text-decoration: underline; text-underline-offset: 3px; }
+.pub-prose img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 14px;
+    border: 1px solid rgb(255 255 255 / 0.07);
+    margin: 1.2em auto;
+    display: block;
+}
+.pub-prose hr { border: none; border-top: 1px solid rgb(255 255 255 / 0.08); margin: 2em 0; }
+.pub-prose ul, .pub-prose ol { padding-left: 1.4em; margin: 0.9em 0; }
+.pub-prose li { margin: 0.35em 0; }
+.pub-prose blockquote {
+    border-left: 2px solid rgb(245 158 11 / 0.5);
+    padding-left: 1em;
+    color: rgb(156 163 175);
+    margin: 1.2em 0;
+}
+.pub-prose table { width: 100%; border-collapse: collapse; font-size: 0.92em; margin: 1.2em 0; display: block; overflow-x: auto; }
+.pub-prose th, .pub-prose td { border: 1px solid rgb(255 255 255 / 0.08); padding: 0.5em 0.75em; text-align: left; }
+.pub-prose th { background: rgb(255 255 255 / 0.04); color: #fff; }
+.pub-prose pre, .pub-prose code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.88em;
+    background: rgb(255 255 255 / 0.05);
+    border-radius: 6px;
+}
+.pub-prose pre { padding: 1em; overflow-x: auto; }
+.pub-prose code { padding: 0.15em 0.4em; }
+
+/* 정책 문서 본문 */
+.pub-policy {
+    font-size: 14px;
+    line-height: 1.9;
+    color: rgb(209 213 219);
+    word-break: keep-all;
+}
+.pub-policy h2 {
+    color: #fff;
+    font-size: 16px;
+    font-weight: 800;
+    margin: 2em 0 0.6em;
+    padding-top: 1.2em;
+    border-top: 1px solid rgb(255 255 255 / 0.06);
+}
+.pub-policy h2:first-of-type { border-top: none; padding-top: 0; margin-top: 1.2em; }
+.pub-policy p { margin: 0.8em 0; }
+.pub-policy ul { padding-left: 1.3em; margin: 0.8em 0; list-style: disc; }
+.pub-policy li { margin: 0.4em 0; }
+.pub-policy a { color: rgb(252 211 77); text-decoration: underline; text-underline-offset: 3px; }
+.pub-policy strong { color: #fff; }
+
+/* 광고 슬롯 — 미승인/차단 시 자연스럽게 접힘 */
+.pub-ad { position: relative; }
+.pub-ad-tag {
+    display: block;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 8px;
+    letter-spacing: 0.3em;
+    color: rgb(107 114 128 / 0.6);
+    text-align: center;
+    margin-bottom: 2px;
+}
+.pub-ad:has(ins[data-ad-status="unfilled"]) { display: none; }

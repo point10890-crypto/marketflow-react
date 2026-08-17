@@ -1352,3 +1352,49 @@ export interface CommunitySummary {
     formula_count: number;
     pending_purchases: number;
 }
+
+// ═══════════════════════════════════════════════════════
+//  Public Community (비로그인 공개 읽기 — AdSense 심사 콘텐츠)
+// ═══════════════════════════════════════════════════════
+
+export interface PublicBoard {
+    slug: string;
+    name: string;
+    description?: string | null;
+    post_count: number;
+}
+
+export interface PublicPostSummary {
+    id: number;
+    title: string;
+    author_name: string;
+    is_notice: boolean;
+    view_count: number;
+    comment_count: number;
+    created_at: string | null;
+}
+
+export interface PublicPostDetail extends PublicPostSummary {
+    content: string;
+    board: { slug: string; name: string };
+}
+
+export interface PublicComment {
+    id: number;
+    author_name: string;
+    content: string;
+    created_at: string | null;
+}
+
+export const publicCommunityAPI = {
+    getBoards: () => fetchAPI<{ boards: PublicBoard[] }>('/api/public/community/boards'),
+    getPosts: (slug: string, page = 1) =>
+        fetchAPI<{
+            board: { slug: string; name: string };
+            posts: PublicPostSummary[];
+            notices: PublicPostSummary[];
+            total: number; page: number; per_page: number; total_pages: number;
+        }>(`/api/public/community/boards/${slug}/posts?page=${page}`),
+    getPost: (id: number) =>
+        fetchAPI<{ post: PublicPostDetail; comments: PublicComment[] }>(`/api/public/community/posts/${id}`),
+};

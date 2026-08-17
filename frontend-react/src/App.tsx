@@ -48,6 +48,12 @@ const PostWritePage = lazy(() => import('@/pages/community/PostWritePage'));
 const FormulaWritePage = lazy(() => import('@/pages/community/FormulaWritePage'));
 const FormulaListPage = lazy(() => import('@/pages/community/FormulaListPage'));
 const PurchaseAdminPage = lazy(() => import('@/pages/community/PurchaseAdminPage'));
+// 공개(비로그인) 영역 — AdSense 심사용 공개 콘텐츠 + 정책 페이지
+const PublicCommunityPage = lazy(() => import('@/pages/public/PublicCommunityPage'));
+const PublicPostPage = lazy(() => import('@/pages/public/PublicPostPage'));
+const PrivacyPage = lazy(() => import('@/pages/static/PolicyPages').then(m => ({ default: m.PrivacyPage })));
+const TermsPage = lazy(() => import('@/pages/static/PolicyPages').then(m => ({ default: m.TermsPage })));
+const AboutPage = lazy(() => import('@/pages/static/PolicyPages').then(m => ({ default: m.AboutPage })));
 
 // Unified app access gate: login → approved status → pro/premium tier.
 // New signups land in /pending-approval until an admin assigns them a paid tier.
@@ -165,6 +171,14 @@ export default function App() {
                     <Route path="/payment-request" element={<PaymentRequestPage />} />
                     <Route path="/pricing" element={<PricingPage />} />
                     <Route path="/pending-approval" element={<PendingApprovalPage />} />
+
+                    {/* 공개(비로그인) 영역 — 커뮤니티 열람 + 정책 페이지 */}
+                    <Route path="/community" element={<Suspense fallback={<LoadingFallback />}><PublicCommunityPage /></Suspense>} />
+                    <Route path="/community/post/:postId" element={<Suspense fallback={<LoadingFallback />}><PublicPostPage /></Suspense>} />
+                    <Route path="/community/:board" element={<Suspense fallback={<LoadingFallback />}><PublicCommunityPage /></Suspense>} />
+                    <Route path="/privacy" element={<Suspense fallback={<LoadingFallback />}><PrivacyPage /></Suspense>} />
+                    <Route path="/terms" element={<Suspense fallback={<LoadingFallback />}><TermsPage /></Suspense>} />
+                    <Route path="/about" element={<Suspense fallback={<LoadingFallback />}><AboutPage /></Suspense>} />
 
                     {/* Dashboard routes (ApprovedGuard blocks pending users) */}
                     <Route path="/dashboard" element={<ApprovedGuard><DashboardLayout /></ApprovedGuard>}>

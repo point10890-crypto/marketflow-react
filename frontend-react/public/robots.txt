@@ -1,2 +1,26 @@
+# MarketFlow — 공개 영역은 크롤 허용, 회원 영역은 차단.
+# AdSense 심사는 공개 콘텐츠를 크롤할 수 있어야 통과한다:
+# 전체 차단(Disallow: /)이면 "콘텐츠 없음"으로 거절된다.
+
+# AdSense 콘텐츠 크롤러 — 광고 매칭/심사용, 전체 허용
+User-agent: Mediapartners-Google
+Disallow:
+
+# 일반 크롤러 — 공개 페이지만 허용
 User-agent: *
-Disallow: /
+Allow: /$
+Allow: /community
+Allow: /privacy
+Allow: /terms
+Allow: /about
+Allow: /pricing
+Disallow: /dashboard
+Disallow: /admin
+Disallow: /login
+Disallow: /signup
+Disallow: /plan-select
+Disallow: /payment-request
+Disallow: /pending-approval
+Disallow: /api/
+
+Sitemap: https://bit-man.net/sitemap.xml

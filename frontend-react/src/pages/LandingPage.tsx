@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { usePWAInstall } from '@/hooks/usePWAInstall';
 import { InstallGuide } from '@/components/layout/InstallPrompt';
 import { useAuth } from '@/contexts/AuthContext';
+import { AdSlot, PublicFooter } from '@/components/public/PublicShell';
 
 const features = [
     { icon: 'fa-flag', title: 'KR Market', desc: '종가베팅, 주도주LIVE, VCP, AI Chart, Track Record', color: 'from-blue-500 to-indigo-600' },
@@ -495,12 +496,24 @@ export default function LandingPage() {
                     </section>
                 )}
 
-                {/* ============ Footer ============ */}
-                <footer className="w-full max-w-5xl px-6 pb-10 text-center">
-                    <div className="text-gray-700 text-[10px]">
-                        © {new Date().getFullYear()} BitMan · Mark Minervini Project · 본 서비스는 마크 미너비니의 매매 전략을 학습 목적으로 자동화한 도구이며, 투자 권유가 아닙니다.
+                {/* ============ 커뮤니티 미리보기 유도 + 광고 ============ */}
+                <section className="w-full max-w-5xl px-6 pb-4">
+                    <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-5 text-center sm:p-6">
+                        <div className="text-sm font-bold text-white">
+                            매일 갱신되는 AI 시장 분석, 가입 없이 먼저 읽어보세요
+                        </div>
+                        <Link to="/community"
+                              className="mt-3 inline-flex min-h-[44px] items-center gap-2 rounded-xl border border-amber-400/30 bg-amber-500/10 px-5 text-[13px] font-black text-amber-300 transition-colors hover:bg-amber-500/20">
+                            <i className="far fa-newspaper" /> 공개 커뮤니티 보기
+                        </Link>
                     </div>
-                </footer>
+                    <AdSlot slot="7141592830" className="mt-6" />
+                </section>
+
+                {/* ============ Footer (공용 — 정책 링크 + 면책) ============ */}
+                <div className="w-full">
+                    <PublicFooter />
+                </div>
             </div>
 
             {showGuide && <InstallGuide isIOS={isIOS} onClose={() => setShowGuide(false)} />}
