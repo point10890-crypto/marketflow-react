@@ -115,7 +115,7 @@ def public_post_detail(post_id):
 
     comments = (
         Comment.query.options(joinedload(Comment.author))
-        .filter_by(post_id=post.id)
+        .filter_by(post_id=post.id, is_hidden=False)
         .order_by(Comment.created_at.asc()).limit(100).all()
     )
 

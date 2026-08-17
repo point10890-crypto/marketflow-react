@@ -107,3 +107,19 @@ def test_per_page_capped(client):
     r = client.get('/api/public/community/boards/notice/posts?per_page=500')
     assert r.status_code == 200
     assert r.get_json()['per_page'] <= 30
+
+
+def test_hidden_comments_not_exposed(app, client):
+    from app.models.community import Comment
+    from app.models import db as _db
+    with app.app_context():
+        pass
+    pid = app.config['_test_ids']['post']
+    with app.app_context():
+        author = User.query.filter_by(email='writer@example.com').first()
+        _db.session.add(Comment(post_id=pid, author_id=author.id,
+                                content='숨긴 댓글', is_hidden=True))
+        _db.session.commit()
+    body = client.get(f'/api/public/community/posts/{pid}').get_json()
+    contents = [c['content'] for c in body['comments']]
+    assert '숨긴 댓글' not in contents
