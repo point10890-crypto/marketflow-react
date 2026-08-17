@@ -10,6 +10,13 @@
 /pricing / 200
 /pending-approval / 200
 
+# Public content zone (AdSense-reviewable) — 크롤러가 200 을 받아야 심사 통과
+/community / 200
+/community/* / 200
+/privacy / 200
+/terms / 200
+/about / 200
+
 # Authenticated React route trees
 /dashboard / 200
 /dashboard/* / 200
