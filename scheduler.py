@@ -383,6 +383,17 @@ class Config:
     VCP_UPDATE_TIME = os.environ.get('VCP_UPDATE_TIME', '16:00')         # 전 시장 VCP 시그널
     KR_VCP_MORNING_TIME = os.environ.get('KR_VCP_MORNING_TIME', '11:00') # 평일 오전 KR VCP refresh (주말 후 stale 방지)
     WAVE_SCAN_TIME = os.environ.get('WAVE_SCAN_TIME', '16:30')           # Wave 패턴 스캔
+    # ── Alpha Position Engine (알파캐치형 완결 신호) 타임라인 ──
+    # 08:30 스코어 상위 / 15:00 마감 매매신호(진입+청산) / 18:00 성과 브리핑.
+    # 장중 감시는 10분 간격 — 보유 포지션의 목표가/손절 터치 즉시 신호.
+    ALPHA_MORNING_TIME = os.environ.get('ALPHA_MORNING_TIME', '08:30')
+    ALPHA_CLOSE_TIME = os.environ.get('ALPHA_CLOSE_TIME', '15:00')
+    ALPHA_BRIEF_TIME = os.environ.get('ALPHA_BRIEF_TIME', '18:00')
+    ALPHA_INTRADAY_TIMES = [
+        f'{h:02d}:{m:02d}' for h in range(9, 16) for m in (5, 15, 25, 35, 45, 55)
+        if not (h == 15 and m > 25)
+    ]
+
     # AI 매수 후보 선별 — 로컬 daily_prices.csv 를 쓰므로 14:50 KR 갱신 이후,
     # 그리고 16:00 VCP / 16:05 브리핑 / 16:30 Wave 와 겹치지 않는 시각으로 둔다.
     BUY_SCREEN_TIME = os.environ.get('BUY_SCREEN_TIME', '17:30')
@@ -3166,6 +3177,9 @@ def check_and_run_missed_tasks():
             (16 * 60 + 5,  'closing_briefing', run_closing_briefing,        'AI 마감 브리핑',     23 * 60, None),
             (16 * 60 + 30, 'wave_scan',        _run_wave_scan,              'Wave 패턴 스캔',     23 * 60, None),
             (17 * 60 + 30, 'buy_screen',       _run_buy_candidate_screen,   'AI 매수 후보 선별',  23 * 60, None),
+            (8 * 60 + 30,  'alpha_morning_top', _run_alpha_morning_top,     '알파 모닝 브리핑',   14 * 60, None),
+            (15 * 60,      'alpha_close_signals', _run_alpha_close_signals, '알파 매매신호',      23 * 60, None),
+            (18 * 60,      'alpha_performance_brief', _run_alpha_performance_brief, '알파 성과 브리핑', 23 * 60, None),
             # ── 금요일 전용 ──
             (17 * 60,      'lotto_analysis',   run_lotto_analysis,          'AI 로또 분석 게시',  23 * 60, {4}),
             # ── 토요일 전용 ──
@@ -3402,6 +3416,73 @@ def _run_orphan_file_audit() -> bool:
         return True
     except Exception as e:
         logger.warning(f"orphan audit failed: {type(e).__name__}: {e}")
+        return False
+
+
+def _alpha_market_open_now() -> bool:
+    now = datetime.now()
+    if now.weekday() >= 5:
+        return False
+    minutes = now.hour * 60 + now.minute
+    return 9 * 60 <= minutes <= 15 * 60 + 30
+
+
+def _run_alpha_morning_top() -> bool:
+    """08:30 — 알파스코어 상위 + 시장 4국면 → 텔레그램 (개인봇)."""
+    try:
+        from app.services.mirofish.paper_orchestrator import morning_top_message
+        msg = morning_top_message()
+        if msg:
+            send_telegram(msg, channel=False)
+        logger.info("🌅 알파 모닝 브리핑 발송 완료")
+        return True
+    except Exception as e:
+        logger.error(f"❌ 알파 모닝 브리핑 실패: {e}", exc_info=True)
+        return False
+
+
+def _run_alpha_close_signals() -> bool:
+    """15:00 — 신규 가상 진입 + 만료/CIO 청산 신호 → 텔레그램 (개인봇)."""
+    try:
+        from app.services.mirofish.paper_orchestrator import run_close_cycle
+        result = run_close_cycle()
+        if result.get('message'):
+            send_telegram(result['message'], channel=False)
+        logger.info(
+            f"🔔 알파 매매신호: 검출수집 {result.get('ingested', 0)} · "
+            f"진입 {len(result.get('entered', []))} · 청산 {len(result.get('exits', []))}"
+        )
+        return True
+    except Exception as e:
+        logger.error(f"❌ 알파 매매신호 실패: {e}", exc_info=True)
+        return False
+
+
+def _run_alpha_performance_brief() -> bool:
+    """18:00 — 보유 현황 + 30일 완결 성과 브리핑 → 텔레그램 (개인봇)."""
+    try:
+        from app.services.mirofish.paper_orchestrator import performance_brief_message
+        send_telegram(performance_brief_message(), channel=False)
+        logger.info("📊 알파 성과 브리핑 발송 완료")
+        return True
+    except Exception as e:
+        logger.error(f"❌ 알파 성과 브리핑 실패: {e}", exc_info=True)
+        return False
+
+
+def _run_alpha_intraday_watch() -> bool:
+    """장중 10분 간격 — 보유 포지션 목표/손절 터치 즉시 신호. 장외 시간은 스킵."""
+    if not _alpha_market_open_now():
+        return True
+    try:
+        from app.services.mirofish.paper_orchestrator import run_intraday_watch
+        result = run_intraday_watch()
+        if result.get('message'):
+            send_telegram(result['message'], channel=False)
+            logger.info(f"⚡ 알파 장중 청산 신호 {len(result.get('exits', []))}건 발송")
+        return True
+    except Exception as e:
+        logger.error(f"❌ 알파 장중 감시 실패: {e}", exc_info=True)
         return False
 
 
@@ -3909,6 +3990,19 @@ class Scheduler:
             getattr(schedule.every(), day).at(Config.BUY_SCREEN_TIME).do(
                 self._with_record(_run_buy_candidate_screen, 'buy_screen',
                                   max_retries=1, retry_delay=900))
+            # ── Alpha Position Engine 타임라인 (알파캐치형 완결 신호) ──
+            getattr(schedule.every(), day).at(Config.ALPHA_MORNING_TIME).do(
+                self._with_record(_run_alpha_morning_top, 'alpha_morning_top',
+                                  max_retries=1, retry_delay=300))
+            getattr(schedule.every(), day).at(Config.ALPHA_CLOSE_TIME).do(
+                self._with_record(_run_alpha_close_signals, 'alpha_close_signals',
+                                  max_retries=1, retry_delay=300))
+            getattr(schedule.every(), day).at(Config.ALPHA_BRIEF_TIME).do(
+                self._with_record(_run_alpha_performance_brief, 'alpha_performance_brief',
+                                  max_retries=1, retry_delay=300))
+            # 장중 감시 — 함수 내부에서 장시간(09:00~15:30) 게이트, 신호 시에만 발송
+            for hm in Config.ALPHA_INTRADAY_TIMES:
+                getattr(schedule.every(), day).at(hm).do(_run_alpha_intraday_watch)
             # 09:05 — AI 조간 브리핑 (US 시장 중심)
             getattr(schedule.every(), day).at(Config.MORNING_BRIEFING_TIME).do(
                 self._with_record(run_morning_briefing, 'morning_briefing',
