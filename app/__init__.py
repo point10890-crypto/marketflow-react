@@ -334,7 +334,11 @@ def create_app(config=None):
         })
 
     # ── 스케줄러 상태 API ──
+    # 내부 스케줄 구성(작업 목록/실행 시각)이 그대로 노출되므로 관리자 전용.
+    from app.auth.decorators import admin_required as _status_admin_required
+
     @app.route('/api/scheduler/status')
+    @_status_admin_required
     def scheduler_status():
         from flask import jsonify as _jsonify
         from app.utils.scheduler import get_scheduler_status
@@ -392,7 +396,9 @@ def create_app(config=None):
         return _jsonify(result)
 
     # ── 자가진단 API ──
+    # 내부 호스트/포트/경로와 에러 상세가 포함되므로 관리자 전용 (info disclosure).
     @app.route('/api/system/diagnostics')
+    @_status_admin_required
     def system_diagnostics():
         from flask import jsonify as _jsonify
         from app.utils.diagnostics import get_cached_or_run

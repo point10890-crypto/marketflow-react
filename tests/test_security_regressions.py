@@ -315,3 +315,45 @@ def test_admin_cannot_demote_self_or_last_admin():
 
     assert response.status_code == 400
     assert 'Cannot demote' in response.get_json()['error']
+
+
+def test_internal_status_endpoints_require_admin():
+    """2026-08-16 점검: 스케줄러/자가진단 상태는 내부 구성·경로·에러 상세를
+    노출하므로 비인증 접근을 막는다 (info disclosure)."""
+    app = create_app({
+        'TESTING': True,
+        'SECRET_KEY': 'internal-status-secret',
+        'SQLALCHEMY_DATABASE_URI': 'sqlite:///:memory:',
+        'SQLALCHEMY_ENGINE_OPTIONS': {},
+    })
+    client = app.test_client()
+    for path in ('/api/scheduler/status', '/api/system/diagnostics'):
+        r = client.get(path)
+        assert r.status_code == 401, f'{path} must not be public (got {r.status_code})'
+
+
+def test_expired_user_blocked_from_gated_data():
+    """expired 는 로그인은 되지만 Pro 데이터 게이트에서는 재구독 안내와 함께 403."""
+    app = create_app({
+        'TESTING': True,
+        'SECRET_KEY': 'expired-gate-secret',
+        'SQLALCHEMY_DATABASE_URI': 'sqlite:///:memory:',
+        'SQLALCHEMY_ENGINE_OPTIONS': {},
+    })
+    with app.app_context():
+        user = User(
+            email='expired-gate@example.com', password_hash='unused', name='Expired',
+            status='expired', tier='pro', role='user',
+        )
+        db.session.add(user)
+        db.session.commit()
+        token = generate_token(user.id)
+
+    r = app.test_client().get(
+        '/api/kr/jongga-v2/latest',
+        headers={'Authorization': f'Bearer {token}'},
+    )
+    assert r.status_code == 403
+    body = r.get_json()
+    assert body['expired'] is True
+    assert 'plan-select?resubscribe=1' in body['redirect_to']
