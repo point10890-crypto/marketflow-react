@@ -285,6 +285,21 @@ def dashboard():
         if now_naive < expires <= soon_threshold:
             pro_expiring_count += 1
 
+    # 이탈(churn) 지표 — 만료는 '재구독 유도' 상태이므로 상시 추적한다.
+    expired_users_count = sum(1 for u in users if u.status == 'expired')
+    month_start = now_naive.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    resubscribed_this_month = 0
+    for r in SubscriptionRequest.query.filter_by(status='approved').all():
+        if r.request_type not in ('renewal', 'upgrade'):
+            continue
+        processed = r.processed_at
+        if processed is None:
+            continue
+        if processed.tzinfo is not None:
+            processed = processed.astimezone(timezone.utc).replace(tzinfo=None)
+        if processed >= month_start and r.from_tier in ('pro', 'premium'):
+            resubscribed_this_month += 1
+
     return jsonify({
         'total_users': len(users),
         'pro_users': sum(1 for u in users if u.tier == 'pro'),
@@ -294,6 +309,12 @@ def dashboard():
         'pending_users': sum(1 for u in users if u.status == 'pending'),
         'approved_users': sum(1 for u in users if u.status == 'approved'),
         'suspended_users': sum(1 for u in users if u.status == 'suspended'),
+        'expired_users': expired_users_count,      # 만료 · 재구독 대기
+        'churn': {
+            'expiring_d3': pro_expiring_count,             # 만료 임박 (D-3 이내)
+            'expired_unrenewed': expired_users_count,      # 만료 후 미재구독
+            'resubscribed_this_month': resubscribed_this_month,
+        },
         'pending_subscriptions': pending_subs,
         'pending_signups': pending_signup_count,   # 가입만 완료 · 플랜 미선택
         'pro_expiring_soon': pro_expiring_count,   # Pro D-3 이내 만료
@@ -324,7 +345,7 @@ def list_users():
     q = User.query
 
     status = (request.args.get('status') or '').strip().lower()
-    if status in ('pending', 'approved', 'rejected', 'suspended'):
+    if status in ('pending', 'approved', 'rejected', 'suspended', 'expired'):
         q = q.filter(User.status == status)
 
     tier = (request.args.get('tier') or '').strip().lower()
@@ -500,8 +521,8 @@ def set_status(user_id):
 
     data = request.get_json() or {}
     status = (data.get('status') or '').strip().lower()
-    if status not in ('pending', 'approved', 'rejected', 'suspended'):
-        return jsonify({'error': 'Status must be pending, approved, rejected, or suspended'}), 400
+    if status not in ('pending', 'approved', 'rejected', 'suspended', 'expired'):
+        return jsonify({'error': 'Status must be pending, approved, rejected, suspended, or expired'}), 400
     actor = _admin_user()
     if actor and actor.id == user.id and status in {'rejected', 'suspended'}:
         return jsonify({'error': 'Cannot block your own admin account'}), 400
@@ -1093,6 +1114,24 @@ def list_subscriptions():
     if pending_req_user_ids:
         signup_only_q = signup_only_q.filter(~User.id.in_(pending_req_user_ids))
     signup_only_users = signup_only_q.order_by(User.created_at.desc()).all()
+
+    # 만료 · 재구독 대기 — 사각지대 제로 원칙의 만료 확장. 재구독 요청을 이미
+    # 제출한 유저는 requests 갈래에 있으므로 여기서 제외해 중복 노출을 막는다.
+    expired_q = User.query.filter(User.status == 'expired')
+    if pending_req_user_ids:
+        expired_q = expired_q.filter(~User.id.in_(pending_req_user_ids))
+    expired_users = expired_q.order_by(User.pro_expires_at.desc()).all()
+
+    now_naive = datetime.utcnow()
+
+    def _days_since_expiry(u) -> int | None:
+        if u.pro_expires_at is None:
+            return None
+        expires = u.pro_expires_at
+        if expires.tzinfo is not None:
+            expires = expires.astimezone(timezone.utc).replace(tzinfo=None)
+        return max(0, (now_naive - expires).days)
+
     return jsonify({
         'requests': [r.to_dict() for r in reqs],
         'pending_signups': [
@@ -1103,6 +1142,17 @@ def list_subscriptions():
                 'created_at': u.created_at.isoformat() if u.created_at else None,
                 'requested_tier': u.requested_tier,
             } for u in signup_only_users
+        ],
+        'expired_members': [
+            {
+                'id': u.id,
+                'email': u.email,
+                'name': u.name,
+                'tier': u.tier,
+                'pro_expires_at': u.pro_expires_at.isoformat() if u.pro_expires_at else None,
+                'days_since_expiry': _days_since_expiry(u),
+                'last_login_at': u.last_login_at.isoformat() if u.last_login_at else None,
+            } for u in expired_users
         ],
     })
 
