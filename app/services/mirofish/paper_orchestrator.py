@@ -147,8 +147,17 @@ def market_phase() -> dict[str, Any]:
 # ─────────────────────────────────────────────────────────────────────────────
 
 def run_close_cycle() -> dict[str, Any]:
-    """15:00 마감 신호 — 검출 수집(국면 게이트) → 체결 → 청산 평가."""
+    """15:00 마감 신호 — 국면 갱신 → 검출 수집(국면 게이트) → 체결 → 청산 평가."""
     from app.services.mirofish.workflow import read_latest_workflow
+
+    # 국면 게이트는 최신 breadth 에 의존한다 — daily_prices(14:50 갱신) 기준으로
+    # timeline 을 매일 재생성. 실패해도 사이클은 계속(직전 timeline 사용).
+    try:
+        from app.services.mirofish.intelligence.regime import build_regime_timeline
+        build_regime_timeline(write=True)
+    except Exception:
+        pass
+
     try:
         workflow = read_latest_workflow()
     except Exception:
