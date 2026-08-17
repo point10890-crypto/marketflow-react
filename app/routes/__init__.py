@@ -85,4 +85,9 @@ def register_blueprints(app):
     from app.routes.community import community_bp
     app.register_blueprint(community_bp, url_prefix='/api/community')
 
+    # Public community (read-only, no auth) — AdSense 심사용 공개 콘텐츠.
+    # /api/public/ 프리픽스는 _GATED_PREFIXES 밖이어야 한다 (app/__init__.py).
+    from app.routes.public_community import public_community_bp
+    app.register_blueprint(public_community_bp, url_prefix='/api/public/community')
+
     print("[OK] Blueprints registered (KR + US + Crypto + Econ + Auth + Admin + MiroFish + Stripe + StockAnalyzer + ManualStockAnalysis + Wave + Briefing + Community)")
