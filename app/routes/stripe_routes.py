@@ -110,10 +110,10 @@ def webhook():
         if customer_id:
             user = User.query.filter_by(stripe_customer_id=customer_id).first()
             if user:
-                # 'free' 플랜 폐지 — 구독 취소 시 tier 제거 + 접근 차단
-                user.tier = None
-                user.pro_expires_at = None
-                user.status = 'suspended'
+                # 구독 취소 = '만료' (재구독 유도 상태). 'suspended' 는 수동 정지
+                # 전용 — expired 는 로그인 후 /plan-select?resubscribe=1 로 안내된다.
+                user.status = 'expired'
+                user.pro_expiry_alert_stage = 'expired'
                 db.session.commit()
 
     return jsonify({'status': 'ok'})
