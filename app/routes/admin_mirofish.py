@@ -64,6 +64,18 @@ def agent_status():
     return jsonify(alpha_brain_agent.get_agent_status())
 
 
+@admin_mirofish_bp.route('/paper/overview', methods=['GET'])
+@admin_or_aibain_required
+def paper_overview():
+    """Alpha Position Engine — 구독자 대시보드용 통합 뷰.
+
+    시장 4국면 + 보유 가상 포지션 + 최근 신호 + 30일 완결 매매 성과를 한 번에.
+    read-only, 섹션 실패 격리는 orchestrator 내부에서 처리.
+    """
+    from app.services.mirofish.paper_orchestrator import paper_overview as build
+    return jsonify(build())
+
+
 @admin_mirofish_bp.route('/chat', methods=['POST'])
 @admin_or_aibain_required
 def chat():

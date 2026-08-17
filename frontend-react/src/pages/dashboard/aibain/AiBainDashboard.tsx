@@ -3,6 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { fetchAuthAPI } from '@/lib/api';
 import DetectionsCard from './DetectionsCard';
 import PerformanceCard from './PerformanceCard';
+import PaperTradingCard, { PaperOverview } from './PaperTradingCard';
 
 interface AiBainOverview {
     generated_at: string;
@@ -45,15 +46,25 @@ interface AiBainOverview {
 export default function AiBainDashboard() {
     const { token } = useAuth();
     const [overview, setOverview] = useState<AiBainOverview | null>(null);
+    const [paper, setPaper] = useState<PaperOverview | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [showDetail, setShowDetail] = useState(false);
 
     const load = useCallback(async () => {
         setLoading(true);
         setError('');
         try {
-            const data = await fetchAuthAPI<AiBainOverview>('/api/admin/mirofish/aibain/overview', token ?? undefined);
-            setOverview(data);
+            // 두 뷰는 독립 — 한쪽 실패가 다른 쪽을 가리지 않게 개별 수집
+            const [ov, pa] = await Promise.allSettled([
+                fetchAuthAPI<AiBainOverview>('/api/admin/mirofish/aibain/overview', token ?? undefined),
+                fetchAuthAPI<PaperOverview>('/api/admin/mirofish/paper/overview', token ?? undefined),
+            ]);
+            if (ov.status === 'fulfilled') setOverview(ov.value);
+            if (pa.status === 'fulfilled') setPaper(pa.value);
+            if (ov.status !== 'fulfilled' && pa.status !== 'fulfilled') {
+                setError('데이터를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.');
+            }
         } catch {
             setError('데이터를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.');
         } finally {
@@ -81,10 +92,32 @@ export default function AiBainDashboard() {
 
                 {!loading && error && <ErrorState error={error} onRetry={load} />}
 
-                {!loading && !error && overview && (
+                {!loading && !error && (
                     <>
-                        <DetectionsCard data={overview.detections} />
-                        <PerformanceCard data={overview.performance} learningPattern={learningPattern} />
+                        {/* 핵심: 가상 매매 시그널 (국면·보유·성과) — 사용자가 매일 보는 것 */}
+                        {paper && <PaperTradingCard data={paper} />}
+
+                        {/* 검출 Top3 */}
+                        {overview && <DetectionsCard data={overview.detections} />}
+
+                        {/* 상세 분석(검증·학습)은 접힘 — 필요한 사람만 펼쳐본다 */}
+                        {overview && (
+                            <div>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowDetail(v => !v)}
+                                    className="flex w-full items-center justify-between rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 py-3 text-[12px] font-bold text-gray-500 transition-colors hover:text-gray-300"
+                                >
+                                    <span><i className="fas fa-flask mr-2 text-[10px]" />상세 분석 (검증 표본 · 학습 패턴)</span>
+                                    <i className={`fas fa-chevron-${showDetail ? 'up' : 'down'} text-[10px]`} />
+                                </button>
+                                {showDetail && (
+                                    <div className="mt-3">
+                                        <PerformanceCard data={overview.performance} learningPattern={learningPattern} />
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </>
                 )}
             </div>
