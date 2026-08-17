@@ -147,13 +147,14 @@ def market_phase() -> dict[str, Any]:
 # ─────────────────────────────────────────────────────────────────────────────
 
 def run_close_cycle() -> dict[str, Any]:
-    """15:00 마감 신호 — 검출 수집 → 체결 → 청산 평가."""
+    """15:00 마감 신호 — 검출 수집(국면 게이트) → 체결 → 청산 평가."""
     from app.services.mirofish.workflow import read_latest_workflow
     try:
         workflow = read_latest_workflow()
     except Exception:
         workflow = None
-    ingested = pp.ingest_detections(workflow)
+    phase = market_phase()
+    ingested = pp.ingest_detections(workflow, phase=phase.get('phase'))
 
     ledger = pp.load_ledger()
     feed = load_price_feed(_ledger_symbols(ledger))
@@ -164,11 +165,17 @@ def run_close_cycle() -> dict[str, Any]:
     feed = load_price_feed(_ledger_symbols(ledger))
     exits = pp.evaluate_positions(feed, cio_actions=collect_cio_actions())
 
+    gate_blocked = bool(
+        workflow and not ingested
+        and phase.get('phase') in pp.PHASE_GATE_BLOCKED
+    )
     return {
         'ingested': ingested,
         'entered': entered,
         'exits': exits,
-        'message': _close_cycle_message(entered, exits),
+        'phase': phase,
+        'gate_blocked': gate_blocked,
+        'message': _close_cycle_message(entered, exits, phase=phase, gate_blocked=gate_blocked),
     }
 
 
@@ -264,10 +271,18 @@ def performance_brief_message() -> str:
     return "\n".join(lines)
 
 
-def _close_cycle_message(entered: list[dict[str, Any]], exits: list[dict[str, Any]]) -> str:
-    if not entered and not exits:
+def _close_cycle_message(entered: list[dict[str, Any]], exits: list[dict[str, Any]],
+                         *, phase: dict[str, Any] | None = None,
+                         gate_blocked: bool = False) -> str:
+    if not entered and not exits and not gate_blocked:
         return ''
     lines = ["<b>🔔 알파 매매신호</b>", ""]
+    if gate_blocked and phase:
+        lines.append(
+            f"⛔ 시장 국면 <b>{phase.get('phase_label')}</b> — 신규 진입을 보류합니다 "
+            f"(실측: 이 국면의 검출은 기대수익 음수)."
+        )
+        lines.append("")
     if entered:
         lines.append("<b>🟢 신규 진입 (가상)</b>")
         for position in entered:

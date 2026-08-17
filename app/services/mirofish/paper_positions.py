@@ -90,9 +90,25 @@ def save_ledger(ledger: dict[str, Any]) -> None:
 # 1) 검출 수집 — CIO BUY 만 진입 대기로 등록
 # ─────────────────────────────────────────────────────────────────────────────
 
-def ingest_detections(workflow: dict[str, Any] | None) -> int:
-    """워크플로우 top3 에서 BUY 판정 종목을 pending 으로 등록. 반환: 신규 등록 수."""
+PHASE_GATE_BLOCKED = {'downtrend', 'rebound_early'}
+
+
+def _phase_gate_on() -> bool:
+    return (os.getenv('MIROFISH_PAPER_PHASE_GATE', 'true') or '').strip().lower() not in {
+        '0', 'false', 'no', 'off'}
+
+
+def ingest_detections(workflow: dict[str, Any] | None, *, phase: str | None = None) -> int:
+    """워크플로우 top3 에서 BUY 판정 종목을 pending 으로 등록. 반환: 신규 등록 수.
+
+    phase 게이트 — Detection Alpha Lab 실측(2026-08-17, 검출 603건 리플레이):
+    하락/반등초입 국면의 검출은 기대수익 음수(-2.07%/-2.16%), 상승확산/주도주장세는
+    양수(+3.00%/+1.96%). 양(+)국면에서만 진입한다 (승률 37%→63%, PF 0.67→2.06).
+    phase 미상(None/'')이면 기존 동작 유지(허용). env MIROFISH_PAPER_PHASE_GATE=false 로 해제.
+    """
     if _disabled() or not workflow:
+        return 0
+    if _phase_gate_on() and phase and phase in PHASE_GATE_BLOCKED:
         return 0
     top3 = [it for it in (workflow.get('top3') or []) if isinstance(it, dict)]
     if not top3:

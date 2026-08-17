@@ -202,3 +202,24 @@ def test_performance_summary(ledger_path):
     assert perf['win_rate_pct'] == pytest.approx(66.7, abs=0.1)
     assert perf['avg_return_pct'] == pytest.approx((8 - 7 + 3) / 3, abs=0.01)
     assert perf['cumulative_return_pct'] == pytest.approx(3.55, abs=0.1)  # 복리
+
+
+def test_phase_gate_blocks_negative_phases(ledger_path):
+    """실측 근거(2026-08-17 Detection Alpha Lab): 하락·반등초입 국면의 검출은
+    기대수익 음수(-2.07%/-2.16%) — 양(+)국면에서만 진입한다."""
+    blocked = pp.ingest_detections(SAMPLE_WORKFLOW, phase='downtrend')
+    assert blocked == 0
+    blocked = pp.ingest_detections(SAMPLE_WORKFLOW, phase='rebound_early')
+    assert blocked == 0
+    allowed = pp.ingest_detections(SAMPLE_WORKFLOW, phase='uptrend_broadening')
+    assert allowed == 1
+
+
+def test_phase_gate_allows_when_phase_unknown(ledger_path):
+    """국면 정보가 없으면(타임라인 결측) 기존 동작 유지 — 진입 허용."""
+    assert pp.ingest_detections(SAMPLE_WORKFLOW, phase=None) == 1
+
+
+def test_phase_gate_env_off(ledger_path, monkeypatch):
+    monkeypatch.setenv('MIROFISH_PAPER_PHASE_GATE', 'false')
+    assert pp.ingest_detections(SAMPLE_WORKFLOW, phase='downtrend') == 1
