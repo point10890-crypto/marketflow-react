@@ -125,5 +125,64 @@ def main() -> int:
     return 0
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+# 확장 그리드 — 1차 실측에서 드러난 가설 검증용
+#   (승률 37% × (+8/-7) 은 수학적으로 음수 기대값 — 비대칭/필터가 레버)
+# ─────────────────────────────────────────────────────────────────────────────
+
+def extended_rulesets():
+    import copy
+    out = []
+    # 손익 비대칭 그리드
+    for tgt, stp in [(12, 7), (16, 8), (10, 10), (20, 10), (8, 10), (15, 12)]:
+        out.append(dl.RuleSet(name=f'T{tgt}/S{stp}', target_pct=tgt, stop_pct=stp))
+    # 손절 없음 (만료-only) — 손절이 알파를 죽이는지 분리 검증
+    out.append(dl.RuleSet(name='no_stop_hold8', stop_pct=99.0))
+    out.append(dl.RuleSet(name='no_stop_hold15', stop_pct=99.0, max_hold_days=15))
+    # 점수 컷 (extra['min_score'] 는 main2 에서 검출 필터로 적용)
+    for cut in (65, 70, 75):
+        rs = dl.RuleSet(name=f'score>={cut}')
+        rs.extra['min_score'] = cut
+        out.append(rs)
+    # 레짐 게이트 (타임라인 생성 후 유효)
+    out.append(dl.RuleSet(name='V1_regime_gate', regime_gate=True))
+    out.append(dl.RuleSet(name='V1+T16/S8', regime_gate=True, target_pct=16, stop_pct=8))
+    out.append(dl.RuleSet(name='V1+no_stop', regime_gate=True, stop_pct=99.0))
+    return out
+
+
+def main2() -> int:
+    """확장 그리드 실행 (main 과 동일 데이터, 변형만 확대)."""
+    detections = dl.collect_historical_detections()
+    symbols = {d['symbol'] for d in detections}
+    series = load_series(symbols)
+    phases = dl.phase_timeline()
+    print(f'검출 {len(detections)} · 국면 타임라인 {len(phases)}일')
+
+    rows = []
+    for rules in extended_rulesets():
+        dets = detections
+        if rules.extra.get('min_score'):
+            dets = [d for d in detections
+                    if isinstance(d.get('score'), (int, float))
+                    and d['score'] >= rules.extra['min_score']]
+        out = dl.replay(dets, series, rules, phase_by_date=phases)
+        m = out['metrics']
+        rows.append((rules.name, m))
+
+    print(f"{'ruleset':<16}{'n':>5}{'win%':>7}{'exp%':>8}{'PF':>6}{'cum%':>9}{'MDD%':>8}{'hold':>6}")
+    for name, m in rows:
+        pf = m['profit_factor'] if m['profit_factor'] is not None else 0
+        print(f"{name:<16}{m['trades']:>5}{m['win_rate_pct']:>7.1f}{m['expectancy_pct']:>8.2f}"
+              f"{pf:>6.2f}{m['cumulative_pct']:>9.1f}{m['max_drawdown_pct']:>8.1f}"
+              f"{m['avg_holding_days']:>6.1f}")
+    # 국면별 분해 (baseline 재계산)
+    base = dl.replay(detections, series, dl.RuleSet(), phase_by_date=phases)
+    print('\nbaseline 국면별:')
+    for phase, stats in sorted(base['metrics'].get('by_phase', {}).items()):
+        print(f"  [{phase}] n={stats['trades']} win={stats['win_rate_pct']}% exp={stats['expectancy_pct']:+.2f}%")
+    return 0
+
+
 if __name__ == '__main__':
-    sys.exit(main())
+    sys.exit(main2() if '--grid' in sys.argv else main())
