@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { subscriptionAPI } from '@/lib/api';
-import AdminEndpointsPage from '@/pages/admin/AdminEndpointsPage';
+import AiBainDashboard from '@/pages/dashboard/aibain/AiBainDashboard';
 
 /**
  * Pro + AI Brain 구독자 전용 페이지.
@@ -10,13 +10,11 @@ import AdminEndpointsPage from '@/pages/admin/AdminEndpointsPage';
  * 라우트: /dashboard/ai-bain (ProGuard 보호)
  *
  * 가시성 분기:
- *  - admin (또는 활성 AI Brain) → 구독자 콘솔 (AdminEndpointsPage subscriberMode, 전체 기능)
+ *  - admin (또는 활성 AI Brain) → 심플 구독자 대시보드 (AiBainDashboard:
+ *    가상 매매 시그널 · 검출 Top3 · 접힘 상세 분석). 콘솔형 복잡성은
+ *    /admin/endpoints 에만 남긴다 — 구독자에게 필요한 정보만 보여준다.
  *  - 활성 Pro/Ultra Pro 비AI Brain → "AI Brain 구독 업그레이드" 안내 (+40,000원/30일)
  *  - 그 외 → "구독 신청" CTA → /pricing
- *
- * 구독자 콘솔은 admin 페이지(/admin/endpoints)의 분석 기능(MiroFish 어시스턴트, Alpha Board,
- * Brain Signal, Verdict, GraphRAG, Scan History, Recent Outcomes 등)을 모두 노출하되
- * 운영자 전용 컨트롤만 제외한다.
  */
 export default function AiBainPage() {
     const { user } = useAuth();
@@ -25,14 +23,28 @@ export default function AiBainPage() {
     const isAdmin = role === 'admin';
     const hasProBase = tier === 'pro' || tier === 'premium';
     const isAibainActive = !!user?.is_aibain_active;
-    // admin 또는 AI Brain 활성 구독자 → 풀 콘솔
+    // admin 또는 AI Brain 활성 구독자 → 심플 대시보드
     const showFullDashboard = isAdmin || isAibainActive;
     // Pro/Premium 인데 AI Brain 미활성 → 업그레이드 신청 폼
     const showUpgradeFlow = !isAdmin && hasProBase && !isAibainActive;
 
-    // ── admin (또는 활성 AI Brain) → 구독자 콘솔 (전체 기능 유지) ──────────────────
+    // ── admin (또는 활성 AI Brain) → 심플 구독자 대시보드 ─────────────────────────
     if (showFullDashboard) {
-        return <AdminEndpointsPage subscriberMode />;
+        return (
+            <div>
+                {isAdmin && (
+                    <div className="bg-[#09090b] px-4 pt-4 sm:px-6 lg:px-8">
+                        <div className="mx-auto flex max-w-3xl justify-end">
+                            <Link to="/admin/endpoints"
+                                  className="text-[11px] text-gray-600 transition-colors hover:text-cyan-300">
+                                <i className="fas fa-terminal mr-1" />운영 콘솔 열기
+                            </Link>
+                        </div>
+                    </div>
+                )}
+                <AiBainDashboard />
+            </div>
+        );
     }
 
     // ── 활성 Pro / Ultra Pro → 업그레이드 안내 ─────────────────────────────────
