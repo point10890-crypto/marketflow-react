@@ -45,6 +45,7 @@ const mockApi = vi.hoisted(() => ({
   getMcpResources: vi.fn(),
   getAlphaEndpointBlueprint: vi.fn(),
   getFearIndex: vi.fn(),
+  getAlphaServiceDashboard: vi.fn(),
 }));
 
 vi.mock('@/lib/mirofishApi', () => ({
@@ -72,6 +73,56 @@ function runPayload(target: string, status = 'running', overrides: Record<string
   };
 }
 
+const alphaServiceDashboard = {
+  schema_version: 'mirofish.alpha_service_dashboard.v1',
+  generated_at: '2026-08-20T08:40:00+09:00',
+  timezone: 'Asia/Seoul',
+  date_kst: '2026-08-20',
+  status: 'ready',
+  warnings: [],
+  links: {},
+  services: [
+    {
+      id: 'market_brief', order: 1, title: '전일 시장 정리', description: '시장 국면과 시장 폭을 확인합니다.',
+      schedule: { label: '오전 8시', time_kst: '08:00', phase: 'elapsed', calendar_status: 'unverified' },
+      data_status: 'ready', as_of: '2026-08-19', summary: '상승 추세 확산',
+      metrics: [{ key: 'breadth', label: '시장 폭', value: 54.2, unit: '%', tone: 'neutral' }],
+      items: [], warnings: [], provenance: { sources: [] },
+    },
+    {
+      id: 'score_leaders', order: 2, title: '알파스코어 상위 종목', description: '최근 비어 있지 않은 스캔 후보입니다.',
+      schedule: { label: '오전 8시 30분', time_kst: '08:30', phase: 'due', calendar_status: 'unverified' },
+      data_status: 'ready', as_of: '2026-08-20T08:30:00+09:00', summary: '1개 후보', metrics: [],
+      items: [{ rank: 1, symbol: '005930', name: '삼성전자', market: 'KOSPI', alpha_score: 87.4, risk_score: 21, action: 'BUY_CANDIDATE', horizon: '5d', price: 71500 }],
+      warnings: [], provenance: { sources: [] },
+    },
+    {
+      id: 'intraday_flow', order: 3, title: '장중 종목 흐름 체크', description: '마지막 저장 종가 기준 포지션입니다.',
+      schedule: { label: '장중', time_kst: null, phase: 'due', calendar_status: 'unverified' },
+      data_status: 'ready', as_of: '2026-08-19', summary: '1개 포지션', metrics: [],
+      items: [{ symbol: '005930', name: '삼성전자', entry_price: 70000, last_close: 71500, last_close_date: '2026-08-19', unrealized_pct: 2.14, held_trading_days: 2, target_price: 75600, stop_price: 65100 }],
+      warnings: [], provenance: { sources: [] },
+    },
+    {
+      id: 'trade_signals', order: 4, title: '당일 매매 신호', description: '가상 매매와 파이프라인 상태입니다.',
+      schedule: { label: '오후 3시', time_kst: '15:00', phase: 'upcoming', calendar_status: 'unverified' },
+      data_status: 'ready', as_of: '2026-08-20T08:40:00+09:00', summary: '대기 1건', metrics: [],
+      items: [{ key: 'pending', label: '진입 대기', count: 1, window_days: null, status: 'waiting' }],
+      warnings: [], provenance: { sources: [] },
+    },
+    {
+      id: 'performance_brief', order: 5, title: '최근 성과 브리핑', description: '두 성과 표본을 분리해 봅니다.',
+      schedule: { label: '오후 6시', time_kst: '18:00', phase: 'upcoming', calendar_status: 'unverified' },
+      data_status: 'ready', as_of: '2026-08-20T08:40:00+09:00', summary: '성과 표본 10건', metrics: [],
+      items: [
+        { source: 'paper_30d', sample_count: 4, window_days: 30, win_rate: 75, average_return_pct: 2.5, cumulative_return_pct: 10.2, hit_count: null, miss_count: null },
+        { source: 'workflow_outcomes', sample_count: 6, window_days: 30, win_rate: 66.67, average_return_pct: 3.1, cumulative_return_pct: null, hit_count: 4, miss_count: 2 },
+      ],
+      warnings: [], provenance: { sources: [] },
+    },
+  ],
+} as const;
+
 async function renderPage() {
   render(<AdminEndpointsPage />);
   await waitFor(() => expect(mockApi.getStatus).toHaveBeenCalled());
@@ -98,6 +149,7 @@ beforeEach(() => {
     pipeline: { status: 'ready', graph_links: 0, similar_events: 0, agent_count: 10 },
   });
   mockApi.getDataSources.mockResolvedValue({ files: [] });
+  mockApi.getAlphaServiceDashboard.mockResolvedValue(alphaServiceDashboard);
   const alphaEndpointBlueprint = {
     schema_version: 'mirofish.alpha_endpoint_blueprint.v1',
     objective: 'Improve profitable Top 3 candidate detection with evidence-first endpoint gates.',
@@ -822,6 +874,20 @@ describe('AdminEndpointsPage analysis start input', () => {
     expect((await screen.findAllByText(/Hit vs Miss Score Profile/i)).length).toBeGreaterThan(0);
     expect((await screen.findAllByText(/Signal Cohorts/i)).length).toBeGreaterThan(0);
     expect((await screen.findAllByText(/best momentum/i)).length).toBeGreaterThan(0);
+    const alphaServiceClock = await screen.findByRole('region', { name: 'Alpha Service Clock' });
+    expect(alphaServiceClock).toBeInTheDocument();
+    expect(alphaServiceClock.parentElement?.firstElementChild).toBe(alphaServiceClock);
+    expect(await screen.findByText('전일 시장 정리')).toBeInTheDocument();
+    expect(mockApi.getAlphaServiceDashboard).toHaveBeenCalledTimes(1);
+  });
+
+  it('remounts the alpha service clock when the operations lane is refreshed', async () => {
+    await renderPage();
+    await waitFor(() => expect(mockApi.getAlphaServiceDashboard).toHaveBeenCalledTimes(1));
+
+    fireEvent.click(screen.getByRole('button', { name: '운영 현황 새로고침' }));
+
+    await waitFor(() => expect(mockApi.getAlphaServiceDashboard).toHaveBeenCalledTimes(2));
   });
 
   it('restores the last non-empty alpha scanner result until a newer result arrives', async () => {
@@ -1069,7 +1135,7 @@ describe('AdminEndpointsPage analysis start input', () => {
     fireEvent.keyDown(input, { key: 'Enter', code: 'Enter', keyCode: 13 });
 
     expect(await screen.findByText('단일 분석 대상 최종판결')).toBeTruthy();
-    expect(await screen.findByText((text) => text.includes('005930') && text.includes('KOSPI'))).toBeTruthy();
+    expect((await screen.findAllByText((text) => text.includes('005930') && text.includes('KOSPI'))).length).toBeGreaterThan(0);
     expect(await screen.findByText(/전체 종목 판정이 아니라/)).toBeTruthy();
   });
 
@@ -1079,7 +1145,7 @@ describe('AdminEndpointsPage analysis start input', () => {
     fireEvent.click(screen.getByRole('button', { name: /Run scanner/i }));
 
     expect((await screen.findAllByText('Alpha One')).length).toBeGreaterThan(0);
-    expect(await screen.findByText('BUY_CANDIDATE')).toBeTruthy();
+    expect((await screen.findAllByText('BUY_CANDIDATE')).length).toBeGreaterThan(0);
 
     fireEvent.click(screen.getByText('Deep Dive'));
 

@@ -923,6 +923,11 @@ def test_latest_scanner_candidates_skips_empty_run_and_returns_compact_top_five(
         'id': completed_dir.name,
         'status': 'completed',
         'generated_at': '2026-05-04T00:00:00+00:00',
+        'source': 'local_marketflow_artifacts',
+        'freshness': {'status': 'stale', 'stale_files': 2},
+        'source_files': [
+            {'file': 'daily_prices.csv', 'freshness': 'stale', 'as_of': '2026-05-03'},
+        ],
         'candidates': [
             {
                 'rank': rank,
@@ -949,6 +954,9 @@ def test_latest_scanner_candidates_skips_empty_run_and_returns_compact_top_five(
     payload = alpha_scanner.read_latest_scanner_candidates(limit=5)
 
     assert payload['run_id'] == completed_dir.name
+    assert payload['source'] == 'local_marketflow_artifacts'
+    assert payload['freshness'] == {'status': 'stale', 'stale_files': 2}
+    assert payload['source_files'][0]['file'] == 'daily_prices.csv'
     assert payload['candidate_count'] == 6
     assert [item['rank'] for item in payload['candidates']] == [1, 2, 3, 4, 5]
     assert payload['candidates'][0]['price'] == 1000
@@ -1549,6 +1557,7 @@ def test_admin_mirofish_scanner_routes_are_registered():
 
     rules = {str(rule) for rule in app.url_map.iter_rules()}
 
+    assert '/api/admin/mirofish/alpha-dashboard' in rules
     assert '/api/admin/mirofish/scanner/runs' in rules
     assert '/api/admin/mirofish/scanner/status' in rules
     assert '/api/admin/mirofish/scanner/diagnostics' in rules

@@ -79,3 +79,63 @@ def test_close_cycle_message_includes_disclaimer():
     )
     assert '가상 매매' in msg and '투자 권유가 아닙니다' in msg
     assert 'SK텔레콤' in msg
+
+
+def test_paper_overview_preserves_last_close_date(monkeypatch):
+    ledger = {
+        'pending': [],
+        'open': [{
+            'symbol': '005930', 'name': '삼성전자',
+            'entry_date': '2026-08-18', 'entry_price': 70000,
+            'target_price': 75600, 'stop_price': 65100,
+        }],
+        'closed': [],
+    }
+    rows = [
+        {'date': '2026-08-18', 'open': 70000, 'high': 71000, 'low': 69500, 'close': 70500},
+        {'date': '2026-08-19', 'open': 70600, 'high': 72000, 'low': 70400, 'close': 71500},
+    ]
+    monkeypatch.setattr(po.pp, 'load_ledger', lambda: ledger)
+    monkeypatch.setattr(po.pp, 'performance_summary', lambda days: {
+        'window_days': days, 'trades': 0, 'win_rate_pct': 0.0,
+        'avg_return_pct': 0.0, 'cumulative_return_pct': 0.0,
+        'recent': [], 'open_count': 1,
+    })
+    monkeypatch.setattr(po, 'load_price_feed', lambda symbols: lambda symbol: rows)
+    monkeypatch.setattr(po, 'market_phase', lambda: {
+        'phase': 'leader_market', 'phase_label': '주도주 장세',
+        'regime': 'NEUTRAL', 'breadth': 0.51, 'as_of': '2026-08-19',
+    })
+
+    position = po.paper_overview()['open_positions'][0]
+
+    assert position['last_close'] == 71500
+    assert position['last_close_date'] == '2026-08-19'
+
+
+def test_paper_overview_uses_none_last_close_date_without_price_rows(monkeypatch):
+    ledger = {
+        'pending': [],
+        'open': [{
+            'symbol': '005930', 'name': '삼성전자',
+            'entry_date': '2026-08-18', 'entry_price': 70000,
+            'target_price': 75600, 'stop_price': 65100,
+        }],
+        'closed': [],
+    }
+    monkeypatch.setattr(po.pp, 'load_ledger', lambda: ledger)
+    monkeypatch.setattr(po.pp, 'performance_summary', lambda days: {
+        'window_days': days, 'trades': 0, 'win_rate_pct': 0.0,
+        'avg_return_pct': 0.0, 'cumulative_return_pct': 0.0,
+        'recent': [], 'open_count': 1,
+    })
+    monkeypatch.setattr(po, 'load_price_feed', lambda symbols: lambda symbol: [])
+    monkeypatch.setattr(po, 'market_phase', lambda: {
+        'phase': 'leader_market', 'phase_label': '주도주 장세',
+        'regime': 'NEUTRAL', 'breadth': 0.51, 'as_of': '2026-08-19',
+    })
+
+    position = po.paper_overview()['open_positions'][0]
+
+    assert position['last_close'] is None
+    assert position['last_close_date'] is None

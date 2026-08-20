@@ -500,6 +500,158 @@ export interface MiroFishScannerCandidatesResponse {
     candidates: MiroFishAlphaCandidate[];
 }
 
+export type MiroFishAlphaDashboardStatus = 'ready' | 'stale' | 'partial' | 'empty';
+export type MiroFishAlphaSchedulePhase = 'upcoming' | 'due' | 'elapsed';
+export type MiroFishAlphaServiceId =
+    | 'market_brief'
+    | 'score_leaders'
+    | 'intraday_flow'
+    | 'trade_signals'
+    | 'performance_brief';
+
+export interface MiroFishAlphaMetric {
+    key: string;
+    label: string;
+    value: number | string | null;
+    unit: string | null;
+    tone: 'positive' | 'neutral' | 'warning' | 'negative';
+}
+
+export interface MiroFishAlphaWarning {
+    section?: string;
+    code: string;
+    message: string;
+    severity: 'info' | 'warning' | 'error';
+}
+
+export interface MiroFishAlphaProvenanceSource {
+    source: string;
+    run_id: string | null;
+    as_of: string | null;
+    freshness: string;
+    fallback: boolean;
+}
+
+export interface MiroFishAlphaServiceBase {
+    id: MiroFishAlphaServiceId;
+    order: number;
+    title: string;
+    description: string;
+    schedule: {
+        label: string;
+        time_kst: string | null;
+        phase: MiroFishAlphaSchedulePhase;
+        calendar_status: 'unverified';
+    };
+    data_status: MiroFishAlphaDashboardStatus;
+    as_of: string | null;
+    summary: string;
+    metrics: MiroFishAlphaMetric[];
+    warnings: MiroFishAlphaWarning[];
+    provenance: { sources: MiroFishAlphaProvenanceSource[] };
+}
+
+export interface MiroFishScoreLeaderItem {
+    rank: number | null;
+    symbol: string | null;
+    name: string | null;
+    market: string | null;
+    alpha_score: number | null;
+    risk_score: number | null;
+    action: string | null;
+    horizon: string | null;
+    price: number | null;
+}
+
+export interface MiroFishIntradayFlowItem {
+    symbol: string | null;
+    name: string | null;
+    entry_price: number | null;
+    last_close: number | null;
+    last_close_date: string | null;
+    unrealized_pct: number | null;
+    held_trading_days: number | null;
+    target_price: number | null;
+    stop_price: number | null;
+}
+
+export interface MiroFishTradeSignalItem {
+    key: string;
+    label: string;
+    count: number | null;
+    window_days: number | null;
+    status: string | null;
+}
+
+export interface MiroFishPerformanceBriefItem {
+    source: 'paper_30d' | 'workflow_outcomes';
+    sample_count: number | null;
+    window_days: number | null;
+    win_rate: number | null;
+    average_return_pct: number | null;
+    cumulative_return_pct: number | null;
+    hit_count: number | null;
+    miss_count: number | null;
+}
+
+export interface MiroFishMarketBriefService extends MiroFishAlphaServiceBase {
+    id: 'market_brief';
+    items: never[];
+}
+
+export interface MiroFishScoreLeadersService extends MiroFishAlphaServiceBase {
+    id: 'score_leaders';
+    items: MiroFishScoreLeaderItem[];
+}
+
+export interface MiroFishIntradayFlowService extends MiroFishAlphaServiceBase {
+    id: 'intraday_flow';
+    items: MiroFishIntradayFlowItem[];
+}
+
+export interface MiroFishTradeSignalsService extends MiroFishAlphaServiceBase {
+    id: 'trade_signals';
+    items: MiroFishTradeSignalItem[];
+}
+
+export interface MiroFishPerformanceBriefService extends MiroFishAlphaServiceBase {
+    id: 'performance_brief';
+    items: MiroFishPerformanceBriefItem[];
+}
+
+export type MiroFishAlphaService =
+    | MiroFishMarketBriefService
+    | MiroFishScoreLeadersService
+    | MiroFishIntradayFlowService
+    | MiroFishTradeSignalsService
+    | MiroFishPerformanceBriefService;
+
+export interface MiroFishAlphaServiceDashboardResponse {
+    schema_version: 'mirofish.alpha_service_dashboard.v1';
+    generated_at: string;
+    timezone: 'Asia/Seoul';
+    date_kst: string;
+    status: MiroFishAlphaDashboardStatus;
+    services: MiroFishAlphaService[];
+    warnings: MiroFishAlphaWarning[];
+    links: Record<string, string>;
+}
+
+export interface MiroFishAlphaServiceDashboardParams {
+    candidateLimit?: number;
+    outcomeDays?: number;
+    outcomeLimit?: number;
+}
+
+export function buildAlphaServiceDashboardPath(params: MiroFishAlphaServiceDashboardParams = {}) {
+    const search = new URLSearchParams();
+    if (params.candidateLimit !== undefined) search.set('candidate_limit', String(params.candidateLimit));
+    if (params.outcomeDays !== undefined) search.set('outcome_days', String(params.outcomeDays));
+    if (params.outcomeLimit !== undefined) search.set('outcome_limit', String(params.outcomeLimit));
+    const query = search.toString();
+    return `/api/admin/mirofish/alpha-dashboard${query ? `?${query}` : ''}`;
+}
+
 export interface MiroFishDeepSeekStatus {
     provider?: string;
     configured?: boolean;
@@ -1721,6 +1873,13 @@ function normalizeScannerCandidates(payload: any): MiroFishScannerCandidatesResp
 export const mirofishApi = {
     getStatus: async () => normalizeStatus(await fetchAuthAPI<any>('/api/admin/mirofish/status')),
     getDataSources: async () => fetchAuthAPI<any>('/api/admin/mirofish/data-sources'),
+    getAlphaServiceDashboard: async (params: MiroFishAlphaServiceDashboardParams = {}) => {
+        return fetchAuthAPI<MiroFishAlphaServiceDashboardResponse>(
+            buildAlphaServiceDashboardPath(params),
+            undefined,
+            30000,
+        );
+    },
     searchTargets: async (target: string, limit = 16) => fetchAuthAPI<MiroFishTargetSearchResponse>(`/api/admin/mirofish/targets/search?target=${encodeURIComponent(target)}&limit=${limit}`),
     resolveTarget: async (target: string) => fetchAuthAPI<MiroFishTargetSnapshot>(`/api/admin/mirofish/targets/resolve?target=${encodeURIComponent(target)}`),
     listRuns: async () => {

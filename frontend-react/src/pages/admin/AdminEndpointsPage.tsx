@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState, type CompositionEvent as ReactCom
 import { MiroFishAlphaCandidate, MiroFishAlphaEndpointBlueprint, MiroFishAnalyst, MiroFishAutonomousActionResult, MiroFishAutonomousLearningFeedback, MiroFishAutonomousStatus, MiroFishDeepSeekStatus, MiroFishDeepSeekSummaryResult, MiroFishFearIndex, MiroFishGraphRAGEntityMatch, MiroFishLayer, MiroFishLearningReadiness, MiroFishLog, MiroFishMcpResourceSnapshot, MiroFishNode, MiroFishRun, MiroFishScannerRun, MiroFishScannerStatus, MiroFishStatus, MiroFishTargetSnapshot, MiroFishTradingViewStatus, MiroFishWorkflow, MiroFishWorkflowAnalysisResult, mirofishApi } from '@/lib/mirofishApi';
 import { shareToKakao } from '@/lib/kakaoShare';
 import MirofishChatPanel from '@/components/admin/MirofishChatPanel';
+import AlphaServiceDashboard from '@/components/admin/AlphaServiceDashboard';
 import TodaysPipelineCard from '@/components/admin/TodaysPipelineCard';
 import MiroFishFearIndexCard from '@/components/mirofish/MiroFishFearIndexCard';
 import RecentOutcomesBoard from '@/components/admin/RecentOutcomesBoard';
@@ -3262,6 +3263,7 @@ export default function AdminEndpointsPage({ subscriberMode = false }: AdminEndp
                                     </div>
                                 </div>
                                 <div key={`ops-lane-${opsLaneRefreshKey}`} className="flex flex-col gap-3">
+                                    <AlphaServiceDashboard />
                                     <TodaysPipelineCard />
                                     <ScanPerformanceCard />
                                     <ScanHistoryCard />

@@ -336,6 +336,7 @@ def paper_overview() -> dict[str, Any]:
         open_positions.append({
             **position,
             'last_close': last_close,
+            'last_close_date': str(rows[-1].get('date') or '').strip() or None if rows else None,
             'unrealized_pct': round((last_close / float(position['entry_price']) - 1) * 100, 2)
             if last_close else None,
             'held_trading_days': bars_held,

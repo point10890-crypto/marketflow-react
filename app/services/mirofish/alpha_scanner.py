@@ -342,6 +342,9 @@ def read_latest_scanner_candidates(limit: int = 5) -> dict[str, Any] | None:
             'run_id': run.get('id') or run.get('run_id'),
             'status': run.get('status'),
             'generated_at': run.get('generated_at'),
+            'source': run.get('source'),
+            'freshness': run.get('freshness'),
+            'source_files': run.get('source_files') or [],
             'candidate_count': len(candidates),
             'candidates': compact_candidates,
         }

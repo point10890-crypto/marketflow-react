@@ -1,4 +1,5 @@
 import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import AiBainDashboard from '@/pages/dashboard/aibain/AiBainDashboard';
@@ -89,7 +90,8 @@ describe('AiBainDashboard', () => {
   });
 
   it('renders a slim dashboard: hit-rate, Top 3 detection with verdict badge, and learning one-liner', async () => {
-    mockApi.fetchAuthAPI.mockResolvedValueOnce(fullOverview);
+    const user = userEvent.setup();
+    mockApi.fetchAuthAPI.mockResolvedValueOnce(fullOverview).mockResolvedValueOnce(null);
 
     render(<AiBainDashboard />);
 
@@ -101,6 +103,8 @@ describe('AiBainDashboard', () => {
     expect((await screen.findAllByText(/Alpha One/)).length).toBeGreaterThan(0);
     expect(await screen.findByText(/매수 유력/)).toBeTruthy();
     expect(await screen.findByText(/RS 92 주도주/)).toBeTruthy();
+    expect(screen.queryByText(/momentum\+RISK_ON/)).toBeNull();
+    await user.click(screen.getByRole('button', { name: /상세 분석/ }));
     // learning signal preserved as a single footer line
     expect(await screen.findByText(/momentum\+RISK_ON/)).toBeTruthy();
     // the live scanner feed (30s polling) is removed from the subscriber view
@@ -109,13 +113,15 @@ describe('AiBainDashboard', () => {
   });
 
   it('renders empty-state messaging when sections have no data', async () => {
-    mockApi.fetchAuthAPI.mockResolvedValueOnce(emptyOverview);
+    const user = userEvent.setup();
+    mockApi.fetchAuthAPI.mockResolvedValueOnce(emptyOverview).mockResolvedValueOnce(null);
 
     render(<AiBainDashboard />);
 
     await waitFor(() => expect(mockApi.fetchAuthAPI).toHaveBeenCalled());
 
     expect(await screen.findByText('오늘 신규 검출이 없습니다')).toBeTruthy();
+    await user.click(screen.getByRole('button', { name: /상세 분석/ }));
     expect(await screen.findByText('성과 검증 데이터를 누적 중입니다')).toBeTruthy();
   });
 });

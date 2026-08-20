@@ -88,6 +88,9 @@ from app.services.mirofish.pipeline_overview import (
     get_pipeline_operating_snapshot,
     get_pipeline_today_snapshot,
 )
+from app.services.mirofish.alpha_dashboard import (
+    get_alpha_service_dashboard,
+)
 from app.services.mirofish.mcp_resource_catalog import (
     build_alpha_endpoint_blueprint,
     build_mcp_resource_snapshot,
@@ -156,6 +159,7 @@ __all__ = [
     'get_report',
     'get_autonomous_status',
     'get_alpha_research_snapshot',
+    'get_alpha_service_dashboard',
     'get_market_clock',
     'auto_runner',
     'build_mcp_resource_snapshot',

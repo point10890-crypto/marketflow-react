@@ -50,10 +50,43 @@ def _payload_int(payload: dict, key: str, default: int) -> int:
         raise ValueError(f'{key} must be an integer')
 
 
+def _strict_dashboard_int_arg(name: str, default: int, minimum: int, maximum: int) -> int:
+    raw = request.args.get(name)
+    if raw is None:
+        return default
+    if not raw or not raw.isascii() or not raw.isdecimal():
+        raise ValueError(f'{name} must be an integer between {minimum} and {maximum}')
+    value = int(raw)
+    if value < minimum or value > maximum:
+        raise ValueError(f'{name} must be an integer between {minimum} and {maximum}')
+    return value
+
+
 @admin_mirofish_bp.route('/status', methods=['GET'])
 @admin_or_aibain_required
 def status():
     return jsonify(mirofish.get_status())
+
+
+@admin_mirofish_bp.route('/alpha-dashboard', methods=['GET'])
+@admin_or_aibain_required
+def alpha_service_dashboard():
+    try:
+        candidate_limit = _strict_dashboard_int_arg('candidate_limit', 5, 1, 20)
+        outcome_days = _strict_dashboard_int_arg('outcome_days', 30, 1, 180)
+        outcome_limit = _strict_dashboard_int_arg('outcome_limit', 10, 1, 50)
+    except ValueError as exc:
+        response = jsonify({'error': 'invalid_query', 'message': str(exc)})
+        response.headers['Cache-Control'] = 'no-store'
+        return response, 400
+
+    response = jsonify(mirofish.get_alpha_service_dashboard(
+        candidate_limit=candidate_limit,
+        outcome_days=outcome_days,
+        outcome_limit=outcome_limit,
+    ))
+    response.headers['Cache-Control'] = 'no-store'
+    return response
 
 
 @admin_mirofish_bp.route('/agent/status', methods=['GET'])
