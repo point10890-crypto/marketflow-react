@@ -11,6 +11,7 @@ import hashlib
 import json
 import math
 import os
+import re
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable
@@ -478,12 +479,16 @@ def _read_ledger(path: Path) -> dict[str, Any] | None:
         return None
     deliveries = payload.get('deliveries')
     if payload.get('schema_version') == RECEIPT_SCHEMA_VERSION:
-        if not isinstance(deliveries, list) or not all(isinstance(item, dict) for item in deliveries):
+        if not isinstance(deliveries, list) or not all(_valid_delivery_entry(item) for item in deliveries):
             return None
         return {'schema_version': RECEIPT_SCHEMA_VERSION, 'updated_at': payload.get('updated_at') or _now_iso(), 'deliveries': deliveries}
     # Safely retain a receipt written by the first release as a historical entry.
-    if payload.get('schema_version') == 1 and _text(payload.get('run_id')) and _text(payload.get('message_sha256')):
-        return {'schema_version': RECEIPT_SCHEMA_VERSION, 'updated_at': _now_iso(), 'deliveries': [payload]}
+    if payload.get('schema_version') == 1:
+        legacy = dict(payload)
+        legacy.setdefault('event_keys', [])
+        legacy.setdefault('state_committed', False)
+        if _valid_delivery_entry(legacy):
+            return {'schema_version': RECEIPT_SCHEMA_VERSION, 'updated_at': _now_iso(), 'deliveries': [legacy]}
     return None
 
 
@@ -525,6 +530,43 @@ def _event_keys(events: list[dict[str, Any]]) -> list[str]:
         if symbol and price_date:
             keys.add(f"{symbol}:{_text(candidate.get('action'))}:{price_date}")
     return sorted(keys)
+
+
+def _valid_delivery_entry(entry: Any) -> bool:
+    """Accept only semantically coherent receipt state; invalid history fails closed."""
+    if not isinstance(entry, dict):
+        return False
+    status = entry.get('status')
+    if status not in {'pending', 'uncertain', 'failed', 'delivered', 'blocked'}:
+        return False
+    if not _text(entry.get('run_id')) or not isinstance(entry.get('message_sha256'), str):
+        return False
+    if re.fullmatch(r'[0-9a-fA-F]{64}', entry['message_sha256']) is None:
+        return False
+    if not isinstance(entry.get('delivered'), bool) or not isinstance(entry.get('state_committed'), bool):
+        return False
+    for field in ('candidate_count', 'event_count'):
+        value = entry.get(field)
+        if not isinstance(value, int) or isinstance(value, bool) or value < 0:
+            return False
+    for field in ('symbols', 'event_keys'):
+        value = entry.get(field)
+        if not isinstance(value, list) or not all(isinstance(item, str) for item in value):
+            return False
+    message_id = entry.get('message_id')
+    positive_message_id = _positive_int(message_id)
+    if status in {'delivered', 'blocked'}:
+        if not entry['delivered'] or not positive_message_id:
+            return False
+    elif entry['delivered'] or message_id is not None:
+        return False
+    if status == 'failed' and entry.get('retryable') is not True:
+        return False
+    if status == 'blocked' and entry['state_committed']:
+        return False
+    if entry['state_committed'] and status != 'delivered':
+        return False
+    return True
 
 
 def _now_iso() -> str:

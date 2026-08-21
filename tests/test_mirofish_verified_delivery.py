@@ -516,3 +516,45 @@ def test_invalid_existing_ledger_fails_closed_without_telegram(scanner, monkeypa
 
     assert result == {'ok': False, 'status': 'receipt_invalid', 'run_id': RUN_ID, 'error_code': 'receipt_invalid', 'sent': False}
     assert receipt_path.read_text(encoding='utf-8') == contents
+
+
+@pytest.mark.parametrize(
+    'mutate',
+    [
+        lambda entry: entry.update({'delivered': True, 'message_id': 42}),
+        lambda entry: entry.__setitem__('message_sha256', 'not-a-digest'),
+        lambda entry: entry.__setitem__('symbols', ['005930', 7]),
+        lambda entry: entry.__setitem__('event_keys', '005930:BUY:2026-08-20'),
+        lambda entry: entry.__setitem__('status', 'made_up'),
+        lambda entry: entry.update({'status': 'delivered', 'delivered': True, 'message_id': None}),
+    ],
+)
+def test_semantically_invalid_v2_entry_fails_closed_without_overwrite(scanner, monkeypatch, tmp_path, mutate):
+    """Contradictory historical state must not be ignored to reopen a Telegram send."""
+    receipt_path = tmp_path / 'receipt.json'
+    entry = {
+        'run_id': 'previous-run',
+        'message_sha256': 'a' * 64,
+        'status': 'failed',
+        'delivered': False,
+        'message_id': None,
+        'candidate_count': 1,
+        'event_count': 1,
+        'symbols': ['005930'],
+        'event_keys': ['005930:BUY_CANDIDATE:2026-08-20'],
+        'state_committed': False,
+        'retryable': True,
+    }
+    mutate(entry)
+    contents = json.dumps({'schema_version': 2, 'deliveries': [entry]})
+    receipt_path.write_text(contents, encoding='utf-8')
+    monkeypatch.setattr(verified_delivery, 'post_private_telegram', pytest.fail)
+
+    result = verified_delivery.run_verified_detection(
+        send=True,
+        confirmation='SEND_VERIFIED_ALPHA_TELEGRAM',
+        receipt_path=str(receipt_path),
+    )
+
+    assert result == {'ok': False, 'status': 'receipt_invalid', 'run_id': RUN_ID, 'error_code': 'receipt_invalid', 'sent': False}
+    assert receipt_path.read_text(encoding='utf-8') == contents
