@@ -30,20 +30,33 @@ def _corpus() -> str:
     )
 
 
-def test_skill_routes_each_operator_mode_to_one_level_reference() -> None:
-    """Fails if an operator loses a safe route for any supported mode."""
+def test_skill_routes_every_relevant_mode_to_one_level_references_in_safe_order() -> None:
+    """Fails if a combined request is forced to choose only one required reference."""
     text = _read(SKILL / "SKILL.md")
     assert text.startswith("---\nname: marketflow-openclaw-ops\n")
     assert "description: Use when" in text
     for name in REFERENCE_NAMES:
         assert f"references/{name}" in text
+    assert "Read every relevant reference" in text
+    assert text.index("references/operational-state.md") < text.index(
+        "references/main-pc-validation.md"
+    )
+    assert text.index("references/main-pc-validation.md") < text.index(
+        "references/telegram-delivery.md"
+    )
+    assert text.index("references/telegram-delivery.md") < text.index(
+        "references/minipc-deployment.md"
+    )
 
 
 def test_telegram_reference_requires_preview_confirmation_and_private_only_delivery() -> None:
     """Fails if the confirmation gate or private-only boundary is removed."""
     text = _read(SKILL / "references" / "telegram-delivery.md")
-    assert "scripts/run_verified_alpha_telegram.py" in text
-    assert "--send --confirm SEND_VERIFIED_ALPHA_TELEGRAM" in text
+    assert ".\\.venv\\Scripts\\python.exe scripts/run_verified_alpha_telegram.py" in text
+    assert (
+        ".\\.venv\\Scripts\\python.exe scripts/run_verified_alpha_telegram.py "
+        "--send --confirm SEND_VERIFIED_ALPHA_TELEGRAM"
+    ) in text
     assert "private" in text.lower()
     assert "검출 보류" in text
     assert "stale" in text.lower()
@@ -69,6 +82,33 @@ def test_skill_preserves_openclaw_ports_and_separation_invariants() -> None:
         "8080",
     ):
         assert required in corpus
+
+
+def test_main_pc_reference_has_only_non_mutating_openclaw_verification_commands() -> None:
+    """Fails if an operator cannot verify the exact read-only OpenClaw contract."""
+    text = _read(SKILL / "references" / "main-pc-validation.md")
+    for required in (
+        ".\\.venv\\Scripts\\python.exe scripts/setup_openclaw_mcp.py --json",
+        "Join-Path $env:LOCALAPPDATA 'OpenClaw\\deps\\portable-node\\openclaw.cmd'",
+        "fail if absent",
+        "config validate --json",
+        "mcp doctor marketflow --probe",
+        "mcp probe marketflow --json",
+        "skills check --agent marketflow",
+        "agents list --bindings --json",
+        "security audit --json",
+        "19/0/0/all/none/mutation false",
+        "no apply",
+        "future explicitly authorized configuration change",
+    ):
+        assert required in text
+
+
+def test_installer_requires_an_existing_same_target_link_to_be_a_junction() -> None:
+    """Fails if a same-target symlink can masquerade as the committed junction."""
+    text = _read(INSTALLER)
+    assert "LinkType" in text
+    assert "Junction" in text
 
 
 def test_deployment_reference_fails_closed_on_unsafe_git_platform_and_health_gaps() -> None:
@@ -134,9 +174,45 @@ def test_installer_creates_only_a_same_source_junction_and_refuses_unrelated_des
     destination = destination_root / "marketflow-openclaw-ops"
     assert destination.is_dir()
     assert destination.resolve() == SKILL.resolve()
+    link_type = subprocess.run(
+        [
+            "powershell",
+            "-NoProfile",
+            "-Command",
+            f"(Get-Item -LiteralPath '{destination}').LinkType",
+        ],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert link_type.returncode == 0, link_type.stderr
+    assert link_type.stdout.strip().lower() == "junction"
 
     second = subprocess.run(command, cwd=ROOT, capture_output=True, text=True, check=False)
     assert second.returncode == 0, second.stderr
+
+    destination.rmdir()
+    symbolic_link = subprocess.run(
+        [
+            "powershell",
+            "-NoProfile",
+            "-Command",
+            (
+                f"New-Item -ItemType SymbolicLink -Path '{destination}' "
+                f"-Target '{SKILL}' -ErrorAction Stop | Out-Null"
+            ),
+        ],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if symbolic_link.returncode != 0:
+        pytest.skip("symbolic-link creation is unavailable on this platform")
+    rejected_link = subprocess.run(command, cwd=ROOT, capture_output=True, text=True, check=False)
+    assert rejected_link.returncode != 0
+    assert destination.resolve() == SKILL.resolve()
 
     destination.rmdir()
     destination.mkdir()

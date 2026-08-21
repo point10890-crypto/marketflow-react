@@ -23,6 +23,9 @@ if (Test-Path -LiteralPath $destination) {
     if (($existing.Attributes -band [System.IO.FileAttributes]::ReparsePoint) -eq 0) {
         throw "Refusing to overwrite unrelated destination: $destination"
     }
+    if (-not [string]::Equals([string]$existing.LinkType, 'Junction', [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw "Refusing non-junction destination: $destination"
+    }
     $target = @($existing.Target)[0]
     if ([string]::IsNullOrWhiteSpace($target)) {
         throw "Refusing unresolved junction destination: $destination"
