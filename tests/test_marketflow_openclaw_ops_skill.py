@@ -457,7 +457,7 @@ def test_telegram_reference_requires_preview_confirmation_and_private_only_deliv
     assert "never print, copy, stage, or commit" in normalized
 
 
-def test_operator_references_enforce_exclusive_flags_and_preserve_pending_gates() -> None:
+def test_operator_references_enforce_exclusive_flags_and_preserve_release_blockers() -> None:
     """Future operators must not confuse legacy opt-ins with verified delivery."""
     main = " ".join(_read(SKILL / "references" / "main-pc-validation.md").split())
     telegram = " ".join(_read(SKILL / "references" / "telegram-delivery.md").split())
@@ -506,9 +506,11 @@ def test_operator_references_enforce_exclusive_flags_and_preserve_pending_gates(
         assert "MiniPC deployment" in text
         assert "blocked" in text
         assert "follow-up" in text
-        assert "full test" in text
+        assert "functional" in text
+        assert "host stability release gate" in text
         assert "Telegram" in text
-        assert "pending" in text
+        assert "Telegram was not sent" in text
+        assert "recipient remains blocked" in text
 
 
 def test_skill_preserves_openclaw_ports_and_separation_invariants() -> None:
@@ -1008,14 +1010,46 @@ def test_release_docs_preserve_hardware_gate_and_truthful_task_status() -> None:
             "18 Python Application Error crashes (python.exe 16 + python3.13.exe 2)",
             "latest matching Application Error event occurred at 2026-08-21 17:42 KST",
             "the 18th is python.exe RecordId 3440795 during final test work",
-            "current total remains 18 with no later matching event",
             "93 WHEA hardware errors",
             "Fresh gate failed",
             "94 WHEA hardware errors",
             "WHEA-Logger Event ID 19, RecordId 102348, at 2026-08-21 19:15:51 KST",
             "historical 2026-08-21 18:02:38 KST WHEA snapshot remains 93 with max RecordId 101636",
-            "Application Error max RecordId 3440795",
-            "WHEA-Logger max RecordId 101636",
+            "fresh baseline at 2026-08-21 20:16:40 KST",
+            "Python count 18 / max RecordId 3440795",
+            "WHEA count 94 / max RecordId 102348",
+            "repository `.venv`",
+            "`pytest -q` three times",
+            "`pytest --collect-only -q` three times",
+            "all six invocations passed",
+            "five existing `ensure_jongga_v2` unawaited-coroutine warnings",
+            "two existing ops symlink skips",
+            "17 files / 90 tests",
+            "package-lock hash remained unchanged",
+            "Application Error Event ID 1000, RecordId 3440809, at 2026-08-21 20:19:58.2780602 KST",
+            "python.exe 3.12",
+            "codex-primary-runtime",
+            "python312.dll",
+            "0xc0000005",
+            "post-check Python count is 19",
+            "WHEA remained 94 with max RecordId 102348",
+            "functional gate is GREEN",
+            "host stability release gate is FAIL",
+            "Further stress reruns stopped",
+            "MiniPC deployment remains blocked",
+            "Telegram was not sent",
+            "recipient remains blocked",
+            "final read-only predeploy audit exited 0",
+            "Database `quick_check=ok`",
+            "11 foreign-key violations remain",
+            "Backup roots/files remain 0/0",
+            "community references remain missing 0 / unreferenced 8",
+            "disk free is 63.24%",
+            "Workflow directories total 7: completed 6 and running 1",
+            "running age bucket `1h_to24h`",
+            "workflow JSON/outcomes errors remain 0",
+            "stale running workflow is a MiniPC deployment-review blocker",
+            "scanner runs total 4097",
             "fresh pre-test maximum",
             "FAIL if any matching Python Application Error Event ID 1000 or WHEA-Logger event has RecordId greater than its fresh pre-test maximum",
             "pass only if none do",
@@ -1030,21 +1064,40 @@ def test_release_docs_preserve_hardware_gate_and_truthful_task_status() -> None:
         assert "17 predated the feature" not in normalized
         assert "one additional python.exe crash" not in normalized
         assert "crash occurred during the final single-process rerun" not in normalized
+        assert "current total remains 18 with no later matching event" not in normalized
+        assert "host stability release gate is GREEN" not in normalized
+        assert "current full test gate and actual Telegram delivery remain pending" not in normalized
+        assert "workflows completed 6/6" not in normalized
+        assert "disk free is 63.15%" not in normalized
+        assert "ReportId" not in normalized
         assert "port-SSOT reconciliation" not in normalized
         assert "Task 4 is blocked only" not in normalized
     normalized_plan = " ".join(plan.split())
     assert "ed65734" in normalized_plan
     assert "71 verified-delivery" in normalized_plan
     assert "149 related regression" in normalized_plan
-    assert "final full pytest rerun is not yet claimed" in normalized_plan
+    assert "final full pytest rerun is not yet claimed" not in normalized_plan
     assert "C:\\Users\\" not in plan
     assert "$env:USERPROFILE" in plan
 
+    task_one = plan.split("### Task 1:", 1)[1].split("### Task 2:", 1)[0]
+    assert "- [x] **Step 4:" in task_one
+
     task_four = plan.split("### Task 4:", 1)[1]
-    for completed_step in (2, 3):
+    for completed_step in (1, 2, 3, 5):
         assert f"- [x] **Step {completed_step}:" in task_four
-    for incomplete_step in (1, 4, 5):
+    for incomplete_step in (4,):
         assert f"- [ ] **Step {incomplete_step}:" in task_four
+
+    minipc = " ".join(
+        _read(SKILL / "references" / "minipc-deployment.md").split()
+    )
+    assert "functional full-test gate is GREEN" in minipc
+    assert "host stability release gate is FAIL" in minipc
+    assert "Telegram was not sent" in minipc
+    assert "recipient remains blocked" in minipc
+    assert "stale running workflow" in minipc
+    assert "1h_to24h" in minipc
 
 
 def test_telegram_runbook_matches_current_bound_send_and_public_redaction_contract() -> None:

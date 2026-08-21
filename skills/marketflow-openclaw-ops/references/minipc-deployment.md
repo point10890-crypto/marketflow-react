@@ -11,8 +11,15 @@ launcher, Flask/tunnel watchdogs, tunnel route, and health endpoints.
 Core commit `6fb75cb` leaves automated Telegram transport disabled by default,
 but legacy boolean sender paths still have timeout-after-accept ambiguity and
 are not integrated with the shared verified-delivery ledger. MiniPC deployment
-is blocked until that follow-up is resolved, the full test gate passes, and the
-pending verified Telegram operation is completed or explicitly waived.
+is blocked until that follow-up is resolved, the host stability release gate
+passes, and the verified Telegram operation is completed or explicitly waived.
+The functional full-test gate is GREEN, but the host stability release gate is
+FAIL after a fresh Python Application Error. Telegram was not sent; the
+recipient remains blocked.
+
+The final read-only predeploy audit also found one stale running workflow in age
+bucket `1h_to24h`; that stale running workflow is a deployment-review blocker
+alongside the 11 foreign-key violations and missing verified backup.
 
 Fail closed before any future commit/push/deploy request:
 

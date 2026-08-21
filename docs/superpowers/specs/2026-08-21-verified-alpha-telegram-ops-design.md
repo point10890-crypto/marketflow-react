@@ -102,8 +102,9 @@ and unchanged in responsibility.
 - Core commit `6fb75cb` disables automated transports by default, but legacy
   boolean sender paths retain timeout-after-accept ambiguity and do not use the
   shared verified-delivery ledger. MiniPC deployment stays blocked until that
-  follow-up is resolved, the full test gate passes, and pending Telegram
-  delivery is completed or explicitly waived.
+  follow-up is resolved, the host stability release gate passes, and Telegram
+  delivery is completed or explicitly waived. The functional full-test gate is
+  GREEN; it does not override the failed host gate.
 
 ## Verification
 
@@ -125,15 +126,20 @@ and unchanged in responsibility.
 - A historical focused checkpoint through `ed65734` passed 71
   verified-delivery tests and 149 related regression tests. A historical full
   pytest rerun through `33dc203` reached 100% and exited 0 with five
-  pre-existing unawaited-coroutine warnings; a final full pytest rerun is not
-  yet claimed through `ed65734`.
+  pre-existing unawaited-coroutine warnings.
 - Core commit `6fb75cb` added canonical serialization and explicit transport
-  opt-ins; its focused bundle reported 269 green. The current full test gate and
-  actual Telegram operation remain pending and are not complete.
+  opt-ins; its focused bundle reported 269 green.
 - The read-only exclusivity verifier passed locally with the required
   false/false/false/true values, all resolved from safe defaults, and emitted no
   raw environment value or path.
-- Frontend validation passed: 17 files / 90 tests and the build. OpenClaw
+- Fresh functional verification used the repository `.venv`. The fresh baseline
+  at 2026-08-21 20:16:40 KST was Python count 18 / max RecordId 3440795 and WHEA
+  count 94 / max RecordId 102348. `pytest -q` three times and
+  `pytest --collect-only -q` three times all passed; all six invocations passed.
+  Each invocation reported five existing `ensure_jongga_v2`
+  unawaited-coroutine warnings and two existing ops symlink skips. Frontend
+  validation also passed 17 files / 90 tests and the production build; the
+  package-lock hash remained unchanged. The functional gate is GREEN. OpenClaw
   `2026.7.1-2` config validated; MCP doctor/probe passed; its boundary remains
   19 read-only tools, zero bindings, mutation false, sandbox `all`, workspace
   `none`, and audit critical 0 / warn 1 (trusted-proxy warning). The Codex skill
@@ -144,18 +150,21 @@ and unchanged in responsibility.
   and a write-capability probe returned 403 because the recipient blocked the
   configured bot. No message ID or delivery exists; known failed retryable
   ledger records must not be retried until the recipient unblocks the bot.
+  Telegram was not sent; the recipient remains blocked.
 - Tasks 1–3 are implemented through current HEAD. Task 4 remains incomplete at
-  the stable-host/full verification gate, the external Telegram unblock, and
-  the final sanitized snapshot/commit gate. MiniPC deployment remains
-  unauthorized and blocked by legacy credential redaction/rotation, the host
-  verification gate, database integrity, and backup proof. A read-only
-  predeploy audit exited 0: database `quick_check=ok` and required user schema
-  is present, but 11 foreign-key violations remain (`post_images -> posts`);
-  no configured backup roots/candidates were found; community file references
-  have 0 missing and 8 unreferenced files; workflows completed 6/6 with no JSON
-  errors; disk free is 63.15%. Deployment remains blocked until the FK
-  violations and a verified backup are resolved/approved; no push or deployment
-  occurred.
+  the stable-host release gate and the external Telegram unblock. MiniPC
+  deployment remains unauthorized and blocked by legacy credential
+  redaction/rotation, the host
+  verification gate, database integrity, and backup proof. The final read-only
+  predeploy audit exited 0. Database `quick_check=ok` and the
+  required user schema is present, but 11 foreign-key violations remain
+  (`post_images -> posts`). Backup roots/files remain 0/0; community references
+  remain missing 0 / unreferenced 8; disk free is 63.24%; scanner runs total
+  4097. Workflow directories total 7: completed 6 and running 1, with running
+  age bucket `1h_to24h`; workflow JSON/outcomes errors remain 0. The stale
+  running workflow is a MiniPC deployment-review blocker. Deployment remains
+  blocked until the FK violations, stale workflow, and verified backup are
+  resolved/approved; no push or deployment occurred.
 - MiniPC deployment also remains blocked on the legacy boolean sender
   timeout-after-accept ambiguity and missing shared verified-delivery ledger;
   migration or removal is a follow-up even though `6fb75cb` defaults those
@@ -166,22 +175,28 @@ and unchanged in responsibility.
   found 18 Python Application Error crashes (python.exe 16 + python3.13.exe 2)
   and 93 WHEA hardware errors. The latest matching Application Error event
   occurred at 2026-08-21 17:42 KST (17:42:03); the 18th is python.exe RecordId
-  3440795 during final test work. The current total remains 18 with no later
-  matching event. **Fresh gate failed** for the attempted current release
-  evidence: the current count became 94 WHEA hardware errors after WHEA-Logger
+  3440795 during final test work. **Fresh gate failed** for an earlier attempted
+  release evidence window: the count became 94 WHEA hardware errors after WHEA-Logger
   Event ID 19, RecordId 102348, at 2026-08-21 19:15:51 KST. The historical
   2026-08-21 18:02:38 KST WHEA snapshot remains 93 with max RecordId 101636.
   Recent WHEA errors are predominantly CPU internal parity/TLB on APIC 16/17;
   crashes span multiple Python distributions and other applications.
-  Historical diagnostic baseline: Application Error max RecordId 3440795 and
-  WHEA-Logger max RecordId 101636. Immediately before
-  the three consecutive `pytest -q` and `pytest --collect-only -q` runs, capture
-  the current maxima for matching events as the fresh release-test baseline.
-  After all runs, FAIL if any matching Python Application Error Event ID 1000 or
-  WHEA-Logger event has RecordId greater than its fresh pre-test maximum; pass
-  only if none do. System time is not primary. No dependency, pytest, or
-  native-FFI configuration changed here, so rollback is not indicated. Future
-  MiniPC release requires an independent stable-PC/CI rerun.
+  For the latest gate, the fresh baseline at 2026-08-21 20:16:40 KST was Python
+  count 18 / max RecordId 3440795 and WHEA count 94 / max RecordId 102348.
+  A post-run read-only check found Application Error Event ID 1000, RecordId
+  3440809, at 2026-08-21 20:19:58.2780602 KST. It involved python.exe 3.12 in
+  `codex-primary-runtime`, `python312.dll`, and exception `0xc0000005`; no raw
+  report or full runtime path is retained. The post-check Python count is 19.
+  WHEA remained 94 with max RecordId 102348. The functional gate is GREEN, but
+  the host stability release gate is FAIL. Further stress reruns stopped, and
+  MiniPC deployment remains blocked pending independent stable-PC/CI evidence.
+  Immediately before three consecutive `pytest -q` and three consecutive
+  `pytest --collect-only -q` runs, capture the current maxima for matching
+  events as the fresh release-test baseline. After all runs, FAIL if any
+  matching Python Application Error Event ID 1000 or WHEA-Logger event has
+  RecordId greater than its fresh pre-test maximum; pass only if none do.
+  System time is not primary. No dependency, pytest, or native-FFI configuration
+  changed here, so rollback is not indicated.
   BIOS defaults/standard performance and a cold boot are an operator-only
   recommendation, never an agent action. Any system-setting or reboot action
   requires separate explicit authorization and vendor recovery/BitLocker/virtualization prep.
